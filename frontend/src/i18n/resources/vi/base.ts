@@ -8,7 +8,7 @@ const Base = {
       "configItem": "配置项",
       "description": "Mô Tả",
       "econAIConfig": "经济日历AI配置",
-      "editConfig": "Edit Config: {{key}}",
+      "editConfig": "编辑配置: {{key}}",
       "enableToggle": "Kích Hoạt",
       "fillTemplate": "填充模板",
       "formatJson": "格式化JSON",
@@ -23,18 +23,18 @@ const Base = {
       },
       "modelName": "模型名称",
       "off": "关",
-      "on": "On",
+      "on": "开",
       "placeholders": {
         "apiKey": "输入API Key",
         "baseUrl": "输入Base URL",
         "configValue": "输入配置值",
-        "description": "Enter description",
+        "description": "输入描述",
         "json": "输入JSON",
         "model": "输入模型名称"
       },
       "provider": "提供商",
       "providerOptions": {
-        "custom": "Custom / OpenAI Compatible",
+        "custom": "自定义 / OpenAI 兼容",
         "deepseek": "DeepSeek",
         "zhipu": "智谱AI"
       },
@@ -42,7 +42,7 @@ const Base = {
       "strategyHealthConfig": "策略健康度配置",
       "thresholdDesc": "阈值描述",
       "thresholdInfo": "阈值说明",
-      "title": "System Configuration",
+      "title": "系统配置",
       "toggle": "切换",
       "updatedAt": "更新时间",
       "validation": {
@@ -52,7 +52,7 @@ const Base = {
         "jsonEmpty": "JSON不能为空",
         "jsonInvalid": "JSON格式无效",
         "minSampleSizeNonNegative": "最小样本量需≥0",
-        "modelRequired": "Model name cannot be empty",
+        "modelRequired": "模型名称不能为空",
         "yellowNotGreaterThanGreen": "黄色阈值不能超过绿色阈值",
         "yellowSuccessRateRange": "黄色成功率需在0-100之间"
       },
@@ -80,7 +80,7 @@ const Base = {
       "onlineAccounts": "Trực Tuyến",
       "recentLogs": "Nhật Ký Gần Đây",
       "riskMetrics": {
-        "orderCloseFailed": "Order Closed Failed",
+        "orderCloseFailed": "平仓失败",
         "orderCloseSuccess": "平仓成功",
         "orderSendFailed": "下单失败",
         "orderSendSuccess": "下单成功",
@@ -91,7 +91,7 @@ const Base = {
         "title": "风控指标"
       },
       "riskWindow": {
-        "noData": "No window metrics data",
+        "noData": "暂无窗口指标数据",
         "noRejectData": "本时段无拒绝记录",
         "orderCloseFailed": "平仓失败",
         "orderCloseSuccess": "平仓成功",
@@ -111,10 +111,10 @@ const Base = {
       "totalUsers": "Tổng Người Dùng"
     },
     "header": {
-      "admin": "Admin",
-      "adminMode": "Admin Mode",
-      "adminPanel": "Admin Panel",
-      "backToUser": "Back to User",
+      "admin": "管理",
+      "adminMode": "管理员模式",
+      "adminPanel": "管理后台",
+      "backToUser": "返回用户端",
       "logout": "Đăng xuất"
     },
     "jurisdiction": {
@@ -141,11 +141,11 @@ const Base = {
         "countryRemoved": "国家已移除",
         "kycUpdateFailed": "更新KYC状态失败",
         "kycUpdated": "KYC状态已更新",
-        "overrideUpdateFailed": "Failed to update sanctioned override",
+        "overrideUpdateFailed": "更新制裁豁免失败",
         "overrideUpdated": "豁免状态已更新"
       },
       "override": "Ghi Đè",
-      "overrideWarning": "This user is from a sanctioned country. Granting override will allow trading.",
+      "overrideWarning": "此用户来自受制裁国家，授予豁免将允许交易。",
       "pending": "Đang Chờ",
       "questionnaire": "问卷",
       "rejected": "Đã Từ Chối",
@@ -165,12 +165,12 @@ const Base = {
       "accountManagement": "Quản Lý Tài Khoản",
       "dashboard": "Bảng điều khiển",
       "jurisdiction": "Kiểm Soát Quyền Hạn",
-      "operationLogs": "Operation Logs",
-      "shareManagement": "Share Analytics",
+      "operationLogs": "操作日志",
+      "shareManagement": "分享分析",
       "systemConfig": "Cấu Hình Hệ Thống",
       "tradingMonitor": "Giám Sát Giao Dịch",
       "userManagement": "Quản Lý Người Dùng",
-      "walletManagement": "Wallets"
+      "walletManagement": "钱包管理"
     },
     "trading": {
       "accounts": "Tài Khoản",
@@ -178,10 +178,10 @@ const Base = {
       "byPlatform": "按平台",
       "closedOrders": "Đã Đóng",
       "connectedAccounts": "Đã Kết Nối",
-      "loadFailed": "Failed to load trading statistics",
+      "loadFailed": "加载交易统计失败",
       "netProfit": "Lợi Nhuận Ròng",
       "orders": "Lệnh",
-      "pendingOrders": "Pending Orders",
+      "pendingOrders": "挂单",
       "platform": "Nền Tảng",
       "profitStats": "Thống Kê Lợi Nhuận",
       "title": "Giám Sát Giao Dịch",
@@ -195,7 +195,7 @@ const Base = {
     },
     "userManagement": {
       "actions": {
-        "changePassword": "Change Password",
+        "changePassword": "修改密码",
         "details": "Chi Tiết",
         "disable": "Vô Hiệu",
         "enable": "Kích Hoạt"
@@ -223,7 +223,7 @@ const Base = {
       "filters": {
         "rolePlaceholder": "Lọc theo vai trò",
         "searchPlaceholder": "Tìm theo email hoặc biệt danh",
-        "statusPlaceholder": "Filter by status"
+        "statusPlaceholder": "按状态筛选"
       },
       "form": {
         "accountNumber": "Số Tài Khoản",
@@ -234,13 +234,13 @@ const Base = {
         "placeholders": {
           "email": "Nhập email",
           "nickname": "Nhập biệt danh",
-          "password": "Enter password"
+          "password": "输入密码"
         },
         "role": "Vai Trò",
         "status": "Trạng Thái"
       },
       "messages": {
-        "newPasswordIs": "New password is: {{password}}",
+        "newPasswordIs": "新密码为: {{password}}",
         "passwordUpdateFailed": "Cập nhật mật khẩu thất bại",
         "passwordUpdatedSuccess": "Đã cập nhật mật khẩu",
         "userCreateFailed": "Tạo người dùng thất bại",
@@ -255,16 +255,16 @@ const Base = {
       "modals": {
         "createTitle": "Tạo Người Dùng",
         "editTitle": "Sửa Người Dùng",
-        "passwordTitle": "Change Password"
+        "passwordTitle": "修改密码"
       },
       "pagination": {
-        "total": "Total {{total}} users"
+        "total": "共 {{total}} 位用户"
       },
       "passwordForm": {
         "confirmPassword": "Xác Nhận Mật Khẩu",
         "newPassword": "Mật Khẩu Mới",
         "placeholders": {
-          "confirmPassword": "Re-enter new password",
+          "confirmPassword": "再次输入新密码",
           "newPassword": "Nhập mật khẩu mới"
         },
         "submit": "Cập Nhật Mật Khẩu",
@@ -273,11 +273,11 @@ const Base = {
           "newPasswordRequired": "Vui lòng nhập mật khẩu mới",
           "passwordMin8": "Mật khẩu phải có ít nhất 8 ký tự",
           "passwordMismatch": "Mật khẩu không khớp",
-          "passwordMustContainLettersAndNumbers": "Password must contain both letters and numbers"
+          "passwordMustContainLettersAndNumbers": "密码必须包含字母和数字"
         }
       },
       "roles": {
-        "audit": "Audit",
+        "audit": "审计",
         "customerService": "CSKH",
         "operation": "Vận Hành",
         "superAdmin": "Quản Trị Viên",
@@ -285,7 +285,7 @@ const Base = {
       },
       "status": {
         "active": "Hoạt Động",
-        "suspended": "Suspended"
+        "suspended": "已停用"
       },
       "table": {
         "actions": "Thao Tác",
@@ -318,26 +318,26 @@ const Base = {
   },
   "auth": {
     "fields": {
-      "confirmPassword": "Confirm password",
+      "confirmPassword": "确认密码",
       "email": "用户邮箱",
       "password": "Mật Khẩu"
     },
     "forgotPassword": {
-      "backToLogin": "Back to Login",
+      "backToLogin": "返回登录",
       "hint": "Vui lòng liên hệ quản trị viên hoặc hỗ trợ để đặt lại mật khẩu.",
       "title": "Đặt lại Mật khẩu"
     },
     "login": {
       "forgotPassword": "Quên mật khẩu?",
       "login": "Đăng nhập ngay",
-      "noAccount": "Don't have an account?",
+      "noAccount": "没有账户？",
       "registerNow": "Đăng ký ngay",
       "rememberMe": "Ghi nhớ đăng nhập",
       "signingIn": "Đang đăng nhập...",
       "subtitle": "Đây là bản thử nghiệm và không chịu trách nhiệm"
     },
     "messages": {
-      "fetchMeFailed": "Failed to load user profile",
+      "fetchMeFailed": "加载用户信息失败",
       "loginFailed": "Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu.",
       "loginSuccess": "Đăng nhập thành công",
       "logoutSuccess": "Đã đăng xuất",
@@ -367,7 +367,7 @@ const Base = {
         "price": "Giá",
         "profit": "Lãi/Lỗ",
         "symbol": "Mã",
-        "ticket": "Ticket",
+        "ticket": "单号",
         "time": "Thời Gian",
         "volume": "Khối Lượng"
       },
@@ -376,7 +376,7 @@ const Base = {
     },
     "messages": {
       "loadFailed": "Tải dữ liệu giao dịch tự động thất bại",
-      "toggleFailed": "Failed to toggle auto trading"
+      "toggleFailed": "切换自动交易失败"
     },
     "settings": {
       "maxDailyLoss": "Lỗ Tối Đa Hàng Ngày",
@@ -389,7 +389,7 @@ const Base = {
       "maxPositionsHint": "Số vị thế mở tối đa",
       "maxRiskPercent": "Rủi Ro Tối Đa %",
       "maxRiskPercentHint": "Phần trăm số dư để rủi ro mỗi giao dịch",
-      "saveFailed": "Failed to save settings",
+      "saveFailed": "保存设置失败",
       "saveSuccess": "Đã lưu cài đặt",
       "title": "Cài Đặt Rủi Ro Toàn Cục"
     },
@@ -434,18 +434,18 @@ const Base = {
     "loading": "Đang tải...",
     "loadingFailed": "Tải thất bại",
     "months": {
-      "jan": "Jan",
-      "jul": "Jul"
+      "jan": "1月",
+      "jul": "7月"
     },
     "next": "Tiếp theo",
-    "no": "No",
+    "no": "否",
     "noData": "Không có dữ liệu",
     "noOpenPositionsForSymbol": "Không có vị thế mở cho {{symbol}}",
     "none": "Không có",
     "ok": "OK",
     "operationFailed": "操作失败",
     "pageError": "Lỗi trang",
-    "pageUnderDevelopment": "This page is under development",
+    "pageUnderDevelopment": "此页面开发中",
     "pleaseWait": "Vui lòng chờ...",
     "previous": "Quay lại",
     "refresh": "Làm mới",
@@ -462,7 +462,7 @@ const Base = {
     "time": {
       "day": "{{n}}ngày",
       "hour": "{{n}}giờ",
-      "lessThanMinute": "<1m",
+      "lessThanMinute": "<1分钟",
       "minute": "{{n}}ph"
     },
     "totalItems": "Tổng {{count}} mục",
@@ -488,7 +488,7 @@ const Base = {
       "config_service_not_initialized": "Dịch vụ cấu hình AI chưa được khởi tạo",
       "config_valid": "Cấu hình AI hợp lệ",
       "failed_to_create_request": "Không thể tạo request",
-      "forbidden_quota": "Quota exceeded",
+      "forbidden_quota": "配额超限",
       "free_tier_exhausted": "Đã hết hạn mức miễn phí của AI. Vui lòng tắt “use free tier only” trong trang quản trị nhà cung cấp hoặc chuyển sang khóa trả phí.",
       "invalid_base_url": "Base URL không hợp lệ",
       "invalid_provider": "Nhà cung cấp không hợp lệ",
@@ -504,7 +504,7 @@ const Base = {
     "auto_trading_disabled": "Đã tắt giao dịch tự động",
     "auto_trading_enabled": "Đã bật giao dịch tự động",
     "connection_failed": {
-      "content": "Unable to connect to the server. Please check your network and try again.",
+      "content": "无法连接到服务器，请检查网络后重试。",
       "title": "Kết nối thất bại"
     },
     "email_already_registered": "Email đã được đăng ký",
@@ -533,7 +533,7 @@ const Base = {
     "noSymbolsFound": "Không tìm thấy mã nào",
     "popularSymbols": "Mã phổ biến",
     "searchPlaceholder": "Tìm kiếm mã (VD: EURUSD, XAUUSD)",
-    "searchSymbol": "Search symbol...",
+    "searchSymbol": "搜索品种...",
     "selectAccount": "Chọn tài khoản giao dịch",
     "selectSymbol": "Chọn mã giao dịch",
     "spread": "Chênh lệch",
@@ -657,16 +657,16 @@ const Base = {
     "markAllRead": "Đánh dấu đã đọc",
     "stream": {
       "autoTrading": {
-        "fallback": "Auto trading event triggered",
+        "fallback": "自动交易事件触发",
         "title": "Giao Dịch Tự Động"
       },
       "riskAlert": {
-        "fallback": "Alert type: {{alertType}}",
+        "fallback": "警报类型: {{alertType}}",
         "title": "Cảnh báo Rủi ro"
       },
       "strategyExecution": {
         "completed": "{{symbol}} {{action}} đã hoàn thành",
-        "failed": "Execution failed: {{error}}",
+        "failed": "执行失败: {{error}}",
         "title": "Thực thi Chiến lược"
       },
       "strategySignal": {
@@ -676,14 +676,14 @@ const Base = {
     },
     "tabs": {
       "all": "Tất cả ({{count}})",
-      "unread": "Unread ({{count}})"
+      "unread": "未读 ({{count}})"
     },
     "title": "Thông báo",
     "types": {
       "risk_alert": "Cảnh báo Rủi ro",
       "signal": "Tín hiệu",
       "strategy_execution": "Chiến lược",
-      "system": "System",
+      "system": "系统",
       "trade": "Giao dịch"
     },
     "unread": "Chưa đọc"
@@ -691,7 +691,7 @@ const Base = {
   "profile": {
     "lastLogin": "Đăng Nhập Cuối",
     "nickname": "Biệt Danh",
-    "registered": "Registered",
+    "registered": "已注册",
     "role": "Vai Trò",
     "status": "Trạng Thái",
     "title": "Hồ sơ"
@@ -700,11 +700,11 @@ const Base = {
     "actions": "Thao Tác",
     "createNew": "Tạo Liên Kết Chia Sẻ Mới",
     "createdAt": "Đã tạo",
-    "deleteConfirm": "Delete this share link?",
+    "deleteConfirm": "删除此分享链接？",
     "empty": "Chưa có liên kết chia sẻ",
     "expires": "Hết Hạn",
-    "positions": "Positions",
-    "showPositions": "Show positions on new link",
+    "positions": "持仓",
+    "showPositions": "显示持仓",
     "title": "Quản Lý Chia Sẻ",
     "token": "Liên Kết Chia Sẻ",
     "userId": "Người Dùng",
@@ -727,12 +727,12 @@ const Base = {
     "losingTrades": "Lệnh Thua",
     "maxDrawdown": "Sụt Giảm Tối Đa",
     "netProfit": "Lợi Nhuận Ròng",
-    "noPositions": "No open positions",
+    "noPositions": "暂无持仓",
     "noTrades": "Chưa có giao dịch",
     "notFound": "Không tìm thấy",
-    "openPrice": "Open",
-    "positions": "Open Positions",
-    "positionsLocked": "Positions hidden by creator",
+    "openPrice": "开仓价",
+    "positions": "当前持仓",
+    "positionsLocked": "创建者未开放持仓查看",
     "profit": "Lợi Nhuận",
     "profitFactor": "Hệ Số Lợi Nhuận",
     "sharpeRatio": "Tỷ Số Sharpe",

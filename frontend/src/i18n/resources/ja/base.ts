@@ -8,7 +8,7 @@ const Base = {
       "configItem": "配置项",
       "description": "説明",
       "econAIConfig": "经济日历AI配置",
-      "editConfig": "Edit Config: {{key}}",
+      "editConfig": "编辑配置: {{key}}",
       "enableToggle": "有効化",
       "fillTemplate": "填充模板",
       "formatJson": "格式化JSON",
@@ -23,18 +23,18 @@ const Base = {
       },
       "modelName": "模型名称",
       "off": "关",
-      "on": "On",
+      "on": "开",
       "placeholders": {
         "apiKey": "输入API Key",
         "baseUrl": "输入Base URL",
         "configValue": "输入配置值",
-        "description": "Enter description",
+        "description": "输入描述",
         "json": "输入JSON",
         "model": "输入模型名称"
       },
       "provider": "提供商",
       "providerOptions": {
-        "custom": "Custom / OpenAI Compatible",
+        "custom": "自定义 / OpenAI 兼容",
         "deepseek": "DeepSeek",
         "zhipu": "智谱AI"
       },
@@ -42,7 +42,7 @@ const Base = {
       "strategyHealthConfig": "策略健康度配置",
       "thresholdDesc": "阈值描述",
       "thresholdInfo": "阈值说明",
-      "title": "System Configuration",
+      "title": "系统配置",
       "toggle": "切换",
       "updatedAt": "更新时间",
       "validation": {
@@ -52,7 +52,7 @@ const Base = {
         "jsonEmpty": "JSON不能为空",
         "jsonInvalid": "JSON格式无效",
         "minSampleSizeNonNegative": "最小样本量需≥0",
-        "modelRequired": "Model name cannot be empty",
+        "modelRequired": "模型名称不能为空",
         "yellowNotGreaterThanGreen": "黄色阈值不能超过绿色阈值",
         "yellowSuccessRateRange": "黄色成功率需在0-100之间"
       },
@@ -80,7 +80,7 @@ const Base = {
       "onlineAccounts": "オンラインアカウント",
       "recentLogs": "最近のログ",
       "riskMetrics": {
-        "orderCloseFailed": "Order Closed Failed",
+        "orderCloseFailed": "平仓失败",
         "orderCloseSuccess": "決済成功",
         "orderSendFailed": "注文失敗",
         "orderSendSuccess": "注文成功",
@@ -91,7 +91,7 @@ const Base = {
         "title": "リスク検証指標"
       },
       "riskWindow": {
-        "noData": "No window metrics data",
+        "noData": "暂无窗口指标数据",
         "noRejectData": "この期間に拒否はありません",
         "orderCloseFailed": "決済失敗",
         "orderCloseSuccess": "決済OK",
@@ -111,10 +111,10 @@ const Base = {
       "totalUsers": "総ユーザー数"
     },
     "header": {
-      "admin": "Admin",
-      "adminMode": "Admin Mode",
-      "adminPanel": "Admin Panel",
-      "backToUser": "Back to User",
+      "admin": "管理",
+      "adminMode": "管理员模式",
+      "adminPanel": "管理后台",
+      "backToUser": "返回用户端",
       "logout": "ログアウト"
     },
     "jurisdiction": {
@@ -141,11 +141,11 @@ const Base = {
         "countryRemoved": "国を削除しました",
         "kycUpdateFailed": "KYCステータス更新に失敗しました",
         "kycUpdated": "KYCステータスを更新しました",
-        "overrideUpdateFailed": "Failed to update sanctioned override",
+        "overrideUpdateFailed": "更新制裁豁免失败",
         "overrideUpdated": "上書き設定を更新しました"
       },
       "override": "上書き",
-      "overrideWarning": "This user is from a sanctioned country. Granting override will allow trading.",
+      "overrideWarning": "此用户来自受制裁国家，授予豁免将允许交易。",
       "pending": "保留中",
       "questionnaire": "アンケート",
       "rejected": "拒否",
@@ -165,12 +165,12 @@ const Base = {
       "accountManagement": "アカウント管理",
       "dashboard": "ダッシュボード",
       "jurisdiction": "管轄権管理",
-      "operationLogs": "Operation Logs",
-      "shareManagement": "Share Analytics",
+      "operationLogs": "操作日志",
+      "shareManagement": "分享分析",
       "systemConfig": "システム設定",
       "tradingMonitor": "取引監視",
       "userManagement": "ユーザー管理",
-      "walletManagement": "Wallets"
+      "walletManagement": "钱包管理"
     },
     "trading": {
       "accounts": "アカウント",
@@ -178,10 +178,10 @@ const Base = {
       "byPlatform": "プラットフォーム別",
       "closedOrders": "決済済み",
       "connectedAccounts": "接続済み",
-      "loadFailed": "Failed to load trading statistics",
+      "loadFailed": "加载交易统计失败",
       "netProfit": "純利益",
       "orders": "注文",
-      "pendingOrders": "Pending Orders",
+      "pendingOrders": "挂单",
       "platform": "プラットフォーム",
       "profitStats": "損益統計",
       "title": "取引監視",
@@ -195,7 +195,7 @@ const Base = {
     },
     "userManagement": {
       "actions": {
-        "changePassword": "Change Password",
+        "changePassword": "修改密码",
         "details": "詳細",
         "disable": "無効化",
         "enable": "有効化"
@@ -223,7 +223,7 @@ const Base = {
       "filters": {
         "rolePlaceholder": "役割でフィルター",
         "searchPlaceholder": "メールまたは名前で検索",
-        "statusPlaceholder": "Filter by status"
+        "statusPlaceholder": "按状态筛选"
       },
       "form": {
         "accountNumber": "口座番号",
@@ -234,13 +234,13 @@ const Base = {
         "placeholders": {
           "email": "メールを入力",
           "nickname": "ニックネームを入力",
-          "password": "Enter password"
+          "password": "输入密码"
         },
         "role": "役割",
         "status": "ステータス"
       },
       "messages": {
-        "newPasswordIs": "New password is: {{password}}",
+        "newPasswordIs": "新密码为: {{password}}",
         "passwordUpdateFailed": "パスワード更新に失敗しました",
         "passwordUpdatedSuccess": "パスワードを更新しました",
         "userCreateFailed": "ユーザー作成に失敗しました",
@@ -255,16 +255,16 @@ const Base = {
       "modals": {
         "createTitle": "ユーザー作成",
         "editTitle": "ユーザー編集",
-        "passwordTitle": "Change Password"
+        "passwordTitle": "修改密码"
       },
       "pagination": {
-        "total": "Total {{total}} users"
+        "total": "共 {{total}} 位用户"
       },
       "passwordForm": {
         "confirmPassword": "パスワード確認",
         "newPassword": "新しいパスワード",
         "placeholders": {
-          "confirmPassword": "Re-enter new password",
+          "confirmPassword": "再次输入新密码",
           "newPassword": "新しいパスワードを入力"
         },
         "submit": "パスワード更新",
@@ -273,11 +273,11 @@ const Base = {
           "newPasswordRequired": "新しいパスワードが必要です",
           "passwordMin8": "パスワードは8文字以上必要です",
           "passwordMismatch": "パスワードが一致しません",
-          "passwordMustContainLettersAndNumbers": "Password must contain both letters and numbers"
+          "passwordMustContainLettersAndNumbers": "密码必须包含字母和数字"
         }
       },
       "roles": {
-        "audit": "Audit",
+        "audit": "审计",
         "customerService": "カスタマーサポート",
         "operation": "運用",
         "superAdmin": "スーパー管理者",
@@ -285,7 +285,7 @@ const Base = {
       },
       "status": {
         "active": "アクティブ",
-        "suspended": "Suspended"
+        "suspended": "已停用"
       },
       "table": {
         "actions": "操作",
@@ -318,26 +318,26 @@ const Base = {
   },
   "auth": {
     "fields": {
-      "confirmPassword": "Confirm password",
+      "confirmPassword": "确认密码",
       "email": "メール",
       "password": "パスワード"
     },
     "forgotPassword": {
-      "backToLogin": "Back to Login",
+      "backToLogin": "返回登录",
       "hint": "管理者またはサポートに連絡してパスワードをリセットしてください。",
       "title": "パスワードリセット"
     },
     "login": {
       "forgotPassword": "パスワードをお忘れですか？",
       "login": "ログイン",
-      "noAccount": "Don't have an account?",
+      "noAccount": "没有账户？",
       "registerNow": "新規登録",
       "rememberMe": "ログイン状態を保持",
       "signingIn": "ログイン中...",
       "subtitle": "本サービスはテストであり責任を負いません"
     },
     "messages": {
-      "fetchMeFailed": "Failed to load user profile",
+      "fetchMeFailed": "加载用户信息失败",
       "loginFailed": "ログインに失敗しました。メールアドレスとパスワードを確認してください。",
       "loginSuccess": "ログインしました",
       "logoutSuccess": "ログアウトしました",
@@ -367,7 +367,7 @@ const Base = {
         "price": "価格",
         "profit": "損益",
         "symbol": "銘柄",
-        "ticket": "Ticket",
+        "ticket": "单号",
         "time": "時間",
         "volume": "数量"
       },
@@ -376,7 +376,7 @@ const Base = {
     },
     "messages": {
       "loadFailed": "自動取引データの読み込みに失敗しました",
-      "toggleFailed": "Failed to toggle auto trading"
+      "toggleFailed": "切换自动交易失败"
     },
     "settings": {
       "maxDailyLoss": "最大日次損失",
@@ -389,7 +389,7 @@ const Base = {
       "maxPositionsHint": "最大同時オープンポジション数",
       "maxRiskPercent": "最大リスク%",
       "maxRiskPercentHint": "1取引あたりのリスク許容額（残高の％）",
-      "saveFailed": "Failed to save settings",
+      "saveFailed": "保存设置失败",
       "saveSuccess": "設定を保存しました",
       "title": "グローバルリスク設定"
     },
@@ -434,18 +434,18 @@ const Base = {
     "loading": "読み込み中...",
     "loadingFailed": "読み込みに失敗しました",
     "months": {
-      "jan": "Jan",
-      "jul": "Jul"
+      "jan": "1月",
+      "jul": "7月"
     },
     "next": "次へ",
-    "no": "No",
+    "no": "否",
     "noData": "データがありません",
     "noOpenPositionsForSymbol": "{{symbol}} のポジションはありません",
     "none": "なし",
     "ok": "OK",
     "operationFailed": "操作失败",
     "pageError": "ページエラー",
-    "pageUnderDevelopment": "This page is under development",
+    "pageUnderDevelopment": "此页面开发中",
     "pleaseWait": "しばらくお待ちください...",
     "previous": "戻る",
     "refresh": "更新",
@@ -462,7 +462,7 @@ const Base = {
     "time": {
       "day": "{{n}}天",
       "hour": "{{n}}时",
-      "lessThanMinute": "<1m",
+      "lessThanMinute": "<1分钟",
       "minute": "{{n}}分"
     },
     "totalItems": "共 {{count}} 项",
@@ -488,7 +488,7 @@ const Base = {
       "config_service_not_initialized": "AI 設定サービスが初期化されていません",
       "config_valid": "AI 設定は有効です",
       "failed_to_create_request": "リクエストの作成に失敗しました",
-      "forbidden_quota": "Quota exceeded",
+      "forbidden_quota": "配额超限",
       "free_tier_exhausted": "AI の無料枠が上限に達しました。プロバイダー管理画面で「無料枠のみ使用」を無効化するか、有料キーに切り替えてください。",
       "invalid_base_url": "Base URL が無効です",
       "invalid_provider": "無効なプロバイダです",
@@ -504,7 +504,7 @@ const Base = {
     "auto_trading_disabled": "自動売買を無効にしました",
     "auto_trading_enabled": "自動売買を有効にしました",
     "connection_failed": {
-      "content": "Unable to connect to the server. Please check your network and try again.",
+      "content": "无法连接到服务器，请检查网络后重试。",
       "title": "接続に失敗しました"
     },
     "email_already_registered": "このメールアドレスは既に登録されています",
@@ -533,7 +533,7 @@ const Base = {
     "noSymbolsFound": "銘柄が見つかりません",
     "popularSymbols": "人気銘柄",
     "searchPlaceholder": "銘柄を検索（例: EURUSD, XAUUSD）",
-    "searchSymbol": "Search symbol...",
+    "searchSymbol": "搜索品种...",
     "selectAccount": "取引口座を選択",
     "selectSymbol": "銘柄を選択",
     "spread": "スプレッド",
@@ -657,16 +657,16 @@ const Base = {
     "markAllRead": "すべて既読",
     "stream": {
       "autoTrading": {
-        "fallback": "Auto trading event triggered",
+        "fallback": "自动交易事件触发",
         "title": "自動取引"
       },
       "riskAlert": {
-        "fallback": "Alert type: {{alertType}}",
+        "fallback": "警报类型: {{alertType}}",
         "title": "リスクアラート"
       },
       "strategyExecution": {
         "completed": "{{symbol}} {{action}} が完了しました",
-        "failed": "Execution failed: {{error}}",
+        "failed": "执行失败: {{error}}",
         "title": "戦略実行"
       },
       "strategySignal": {
@@ -676,14 +676,14 @@ const Base = {
     },
     "tabs": {
       "all": "すべて ({{count}})",
-      "unread": "Unread ({{count}})"
+      "unread": "未读 ({{count}})"
     },
     "title": "通知",
     "types": {
       "risk_alert": "リスクアラート",
       "signal": "シグナル",
       "strategy_execution": "戦略",
-      "system": "System",
+      "system": "系统",
       "trade": "取引"
     },
     "unread": "未読"
@@ -691,7 +691,7 @@ const Base = {
   "profile": {
     "lastLogin": "最終ログイン",
     "nickname": "ニックネーム",
-    "registered": "Registered",
+    "registered": "已注册",
     "role": "役割",
     "status": "ステータス",
     "title": "プロフィール"
@@ -700,11 +700,11 @@ const Base = {
     "actions": "操作",
     "createNew": "新しい共有リンクを作成",
     "createdAt": "作成しました",
-    "deleteConfirm": "Delete this share link?",
+    "deleteConfirm": "删除此分享链接？",
     "empty": "共有リンクはまだありません",
     "expires": "有効期限",
-    "positions": "Positions",
-    "showPositions": "Show positions on new link",
+    "positions": "持仓",
+    "showPositions": "显示持仓",
     "title": "共有管理",
     "token": "共有リンク",
     "userId": "ユーザー",
@@ -727,12 +727,12 @@ const Base = {
     "losingTrades": "負けトレード数",
     "maxDrawdown": "最大ドローダウン",
     "netProfit": "純損益",
-    "noPositions": "No open positions",
+    "noPositions": "暂无持仓",
     "noTrades": "取引履歴がありません",
     "notFound": "見つかりません",
-    "openPrice": "Open",
-    "positions": "Open Positions",
-    "positionsLocked": "Positions hidden by creator",
+    "openPrice": "开仓价",
+    "positions": "当前持仓",
+    "positionsLocked": "创建者未开放持仓查看",
     "profit": "損益",
     "profitFactor": "プロフィットファクター",
     "sharpeRatio": "シャープレシオ",

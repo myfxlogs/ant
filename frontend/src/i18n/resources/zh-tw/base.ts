@@ -8,7 +8,7 @@ const Base = {
       "configItem": "配置項目",
       "description": "描述",
       "econAIConfig": "經濟日曆AI配置",
-      "editConfig": "Edit Config: {{key}}",
+      "editConfig": "编辑配置: {{key}}",
       "enableToggle": "啟用",
       "fillTemplate": "填入範本",
       "formatJson": "格式化JSON",
@@ -23,18 +23,18 @@ const Base = {
       },
       "modelName": "模型名稱",
       "off": "關",
-      "on": "On",
+      "on": "开",
       "placeholders": {
         "apiKey": "輸入API Key",
         "baseUrl": "輸入Base URL",
         "configValue": "輸入配置值",
-        "description": "Enter description",
+        "description": "输入描述",
         "json": "輸入JSON",
         "model": "輸入模型名稱"
       },
       "provider": "提供者",
       "providerOptions": {
-        "custom": "Custom / OpenAI Compatible",
+        "custom": "自定义 / OpenAI 兼容",
         "deepseek": "DeepSeek",
         "zhipu": "智谱AI"
       },
@@ -42,7 +42,7 @@ const Base = {
       "strategyHealthConfig": "策略健康度配置",
       "thresholdDesc": "閾值描述",
       "thresholdInfo": "閾值說明",
-      "title": "System Configuration",
+      "title": "系统配置",
       "toggle": "切换",
       "updatedAt": "更新時間",
       "validation": {
@@ -52,7 +52,7 @@ const Base = {
         "jsonEmpty": "JSON不能為空白",
         "jsonInvalid": "JSON格式無效",
         "minSampleSizeNonNegative": "最小样本量需≥0",
-        "modelRequired": "Model name cannot be empty",
+        "modelRequired": "模型名称不能为空",
         "yellowNotGreaterThanGreen": "黄色閾值不能超過绿色閾值",
         "yellowSuccessRateRange": "黄色成功率需在0-100之間"
       },
@@ -80,7 +80,7 @@ const Base = {
       "onlineAccounts": "在線账戶",
       "recentLogs": "最近日誌",
       "riskMetrics": {
-        "orderCloseFailed": "Order Closed Failed",
+        "orderCloseFailed": "平仓失败",
         "orderCloseSuccess": "平倉成功",
         "orderSendFailed": "下單失敗",
         "orderSendSuccess": "下單成功",
@@ -91,7 +91,7 @@ const Base = {
         "title": "風控指標"
       },
       "riskWindow": {
-        "noData": "No window metrics data",
+        "noData": "暂无窗口指标数据",
         "noRejectData": "此時段无拒絕記錄",
         "orderCloseFailed": "平倉失敗",
         "orderCloseSuccess": "平倉成功",
@@ -111,10 +111,10 @@ const Base = {
       "totalUsers": "總用戶數"
     },
     "header": {
-      "admin": "Admin",
-      "adminMode": "Admin Mode",
-      "adminPanel": "Admin Panel",
-      "backToUser": "Back to User",
+      "admin": "管理",
+      "adminMode": "管理员模式",
+      "adminPanel": "管理后台",
+      "backToUser": "返回用户端",
       "logout": "退出登入"
     },
     "jurisdiction": {
@@ -141,11 +141,11 @@ const Base = {
         "countryRemoved": "國家已移除",
         "kycUpdateFailed": "更新KYC狀態失敗",
         "kycUpdated": "KYC狀態已更新",
-        "overrideUpdateFailed": "Failed to update sanctioned override",
+        "overrideUpdateFailed": "更新制裁豁免失败",
         "overrideUpdated": "豁免狀態已更新"
       },
       "override": "豁免",
-      "overrideWarning": "This user is from a sanctioned country. Granting override will allow trading.",
+      "overrideWarning": "此用户来自受制裁国家，授予豁免将允许交易。",
       "pending": "待審核",
       "questionnaire": "問卷",
       "rejected": "已拒絕",
@@ -165,12 +165,12 @@ const Base = {
       "accountManagement": "账戶管理",
       "dashboard": "儀表板",
       "jurisdiction": "管轄权管理",
-      "operationLogs": "Operation Logs",
-      "shareManagement": "Share Analytics",
+      "operationLogs": "操作日志",
+      "shareManagement": "分享分析",
       "systemConfig": "系统配置",
       "tradingMonitor": "交易監控",
       "userManagement": "用戶管理",
-      "walletManagement": "Wallets"
+      "walletManagement": "钱包管理"
     },
     "trading": {
       "accounts": "账戶",
@@ -178,10 +178,10 @@ const Base = {
       "byPlatform": "按平台",
       "closedOrders": "已平倉",
       "connectedAccounts": "已连接",
-      "loadFailed": "Failed to load trading statistics",
+      "loadFailed": "加载交易统计失败",
       "netProfit": "淨利潤",
       "orders": "訂單",
-      "pendingOrders": "Pending Orders",
+      "pendingOrders": "挂单",
       "platform": "平台",
       "profitStats": "盈虧統計",
       "title": "交易監控",
@@ -195,7 +195,7 @@ const Base = {
     },
     "userManagement": {
       "actions": {
-        "changePassword": "Change Password",
+        "changePassword": "修改密码",
         "details": "詳細",
         "disable": "停用",
         "enable": "啟用"
@@ -223,7 +223,7 @@ const Base = {
       "filters": {
         "rolePlaceholder": "按角色篩選",
         "searchPlaceholder": "搜尋電子郵件或暱稱",
-        "statusPlaceholder": "Filter by status"
+        "statusPlaceholder": "按状态筛选"
       },
       "form": {
         "accountNumber": "錢包號",
@@ -234,13 +234,13 @@ const Base = {
         "placeholders": {
           "email": "輸入電子郵件",
           "nickname": "輸入暱稱",
-          "password": "Enter password"
+          "password": "输入密码"
         },
         "role": "角色",
         "status": "狀態"
       },
       "messages": {
-        "newPasswordIs": "New password is: {{password}}",
+        "newPasswordIs": "新密码为: {{password}}",
         "passwordUpdateFailed": "密碼更新失敗",
         "passwordUpdatedSuccess": "密碼更新成功",
         "userCreateFailed": "建立用戶失敗",
@@ -255,16 +255,16 @@ const Base = {
       "modals": {
         "createTitle": "新建用戶",
         "editTitle": "編輯用戶",
-        "passwordTitle": "Change Password"
+        "passwordTitle": "修改密码"
       },
       "pagination": {
-        "total": "Total {{total}} users"
+        "total": "共 {{total}} 位用户"
       },
       "passwordForm": {
         "confirmPassword": "確認密碼",
         "newPassword": "新密碼",
         "placeholders": {
-          "confirmPassword": "Re-enter new password",
+          "confirmPassword": "再次输入新密码",
           "newPassword": "輸入新密碼"
         },
         "submit": "更新密碼",
@@ -273,11 +273,11 @@ const Base = {
           "newPasswordRequired": "请輸入新密碼",
           "passwordMin8": "密碼至少8位元",
           "passwordMismatch": "两次密碼不一致",
-          "passwordMustContainLettersAndNumbers": "Password must contain both letters and numbers"
+          "passwordMustContainLettersAndNumbers": "密码必须包含字母和数字"
         }
       },
       "roles": {
-        "audit": "Audit",
+        "audit": "审计",
         "customerService": "客服",
         "operation": "營運",
         "superAdmin": "超級管理員",
@@ -285,7 +285,7 @@ const Base = {
       },
       "status": {
         "active": "正常",
-        "suspended": "Suspended"
+        "suspended": "已停用"
       },
       "table": {
         "actions": "操作",
@@ -318,26 +318,26 @@ const Base = {
   },
   "auth": {
     "fields": {
-      "confirmPassword": "Confirm password",
+      "confirmPassword": "确认密码",
       "email": "電子郵件",
       "password": "密碼"
     },
     "forgotPassword": {
-      "backToLogin": "Back to Login",
+      "backToLogin": "返回登录",
       "hint": "請聯繫管理員或支援人員重設密碼。",
       "title": "重設密碼"
     },
     "login": {
       "forgotPassword": "忘記密碼？",
       "login": "立即登入",
-      "noAccount": "Don't have an account?",
+      "noAccount": "没有账户？",
       "registerNow": "立即註冊",
       "rememberMe": "記住我",
       "signingIn": "登入中...",
       "subtitle": "這是一個測試不具備責任能力"
     },
     "messages": {
-      "fetchMeFailed": "Failed to load user profile",
+      "fetchMeFailed": "加载用户信息失败",
       "loginFailed": "登入失敗，請檢查信箱與密碼",
       "loginSuccess": "登入成功",
       "logoutSuccess": "已登出",
@@ -367,7 +367,7 @@ const Base = {
         "price": "價格",
         "profit": "盈虧",
         "symbol": "商品",
-        "ticket": "Ticket",
+        "ticket": "单号",
         "time": "時間",
         "volume": "數量"
       },
@@ -376,7 +376,7 @@ const Base = {
     },
     "messages": {
       "loadFailed": "載入自動交易資料失敗",
-      "toggleFailed": "Failed to toggle auto trading"
+      "toggleFailed": "切换自动交易失败"
     },
     "settings": {
       "maxDailyLoss": "每日最大虧損",
@@ -389,7 +389,7 @@ const Base = {
       "maxPositionsHint": "同時持有的最大倉位數量",
       "maxRiskPercent": "最大風險%",
       "maxRiskPercentHint": "每筆交易風險佔餘額百分比",
-      "saveFailed": "Failed to save settings",
+      "saveFailed": "保存设置失败",
       "saveSuccess": "設定已儲存",
       "title": "全域風控設定"
     },
@@ -434,18 +434,18 @@ const Base = {
     "loading": "載入中...",
     "loadingFailed": "載入失敗",
     "months": {
-      "jan": "Jan",
-      "jul": "Jul"
+      "jan": "1月",
+      "jul": "7月"
     },
     "next": "下一步",
-    "no": "No",
+    "no": "否",
     "noData": "尚無資料",
     "noOpenPositionsForSymbol": "{{symbol}} 暫無持倉",
     "none": "無",
     "ok": "OK",
     "operationFailed": "操作失敗",
     "pageError": "頁面錯誤",
-    "pageUnderDevelopment": "This page is under development",
+    "pageUnderDevelopment": "此页面开发中",
     "pleaseWait": "請稍候...",
     "previous": "上一步",
     "refresh": "刷新",
@@ -462,7 +462,7 @@ const Base = {
     "time": {
       "day": "{{n}}天",
       "hour": "{{n}}時",
-      "lessThanMinute": "<1m",
+      "lessThanMinute": "<1分钟",
       "minute": "{{n}}分"
     },
     "totalItems": "共 {{count}} 項",
@@ -488,7 +488,7 @@ const Base = {
       "config_service_not_initialized": "AI 設定服務未初始化",
       "config_valid": "AI 設定有效",
       "failed_to_create_request": "建立請求失敗",
-      "forbidden_quota": "Quota exceeded",
+      "forbidden_quota": "配额超限",
       "free_tier_exhausted": "AI 模型免費額度已耗盡：請在模型供應商管理後台關閉「use free tier only」或更換付費 Key。",
       "invalid_base_url": "Base URL 無效",
       "invalid_provider": "服務商無效",
@@ -504,7 +504,7 @@ const Base = {
     "auto_trading_disabled": "自動交易已關閉",
     "auto_trading_enabled": "自動交易已開啟",
     "connection_failed": {
-      "content": "Unable to connect to the server. Please check your network and try again.",
+      "content": "无法连接到服务器，请检查网络后重试。",
       "title": "連線失敗"
     },
     "email_already_registered": "信箱已註冊",
@@ -533,7 +533,7 @@ const Base = {
     "noSymbolsFound": "找不到品種",
     "popularSymbols": "熱門品種",
     "searchPlaceholder": "搜尋品種（如 EURUSD, XAUUSD）",
-    "searchSymbol": "Search symbol...",
+    "searchSymbol": "搜索品种...",
     "selectAccount": "選擇交易賬戶",
     "selectSymbol": "選擇品種",
     "spread": "點差",
@@ -657,16 +657,16 @@ const Base = {
     "markAllRead": "全部已讀",
     "stream": {
       "autoTrading": {
-        "fallback": "Auto trading event triggered",
+        "fallback": "自动交易事件触发",
         "title": "自動交易"
       },
       "riskAlert": {
-        "fallback": "Alert type: {{alertType}}",
+        "fallback": "警报类型: {{alertType}}",
         "title": "風險警示"
       },
       "strategyExecution": {
         "completed": "{{symbol}} {{action}} 已完成",
-        "failed": "Execution failed: {{error}}",
+        "failed": "执行失败: {{error}}",
         "title": "策略執行"
       },
       "strategySignal": {
@@ -676,14 +676,14 @@ const Base = {
     },
     "tabs": {
       "all": "全部 ({{count}})",
-      "unread": "Unread ({{count}})"
+      "unread": "未读 ({{count}})"
     },
     "title": "通知中心",
     "types": {
       "risk_alert": "風險警示",
       "signal": "訊號",
       "strategy_execution": "策略",
-      "system": "System",
+      "system": "系统",
       "trade": "交易"
     },
     "unread": "未讀"
@@ -691,7 +691,7 @@ const Base = {
   "profile": {
     "lastLogin": "最后登入",
     "nickname": "暱稱",
-    "registered": "Registered",
+    "registered": "已注册",
     "role": "角色",
     "status": "狀態",
     "title": "個人資訊"
@@ -700,11 +700,11 @@ const Base = {
     "actions": "操作",
     "createNew": "創建新分享連結",
     "createdAt": "已建立",
-    "deleteConfirm": "Delete this share link?",
+    "deleteConfirm": "删除此分享链接？",
     "empty": "尚無分享連結",
     "expires": "過期時間",
-    "positions": "Positions",
-    "showPositions": "Show positions on new link",
+    "positions": "持仓",
+    "showPositions": "显示持仓",
     "title": "分享管理",
     "token": "分享連結",
     "userId": "一般用戶",
@@ -727,12 +727,12 @@ const Base = {
     "losingTrades": "虧損筆數",
     "maxDrawdown": "最大回撤",
     "netProfit": "淨損益",
-    "noPositions": "No open positions",
+    "noPositions": "暂无持仓",
     "noTrades": "暫無交易紀錄",
     "notFound": "找不到",
-    "openPrice": "Open",
-    "positions": "Open Positions",
-    "positionsLocked": "Positions hidden by creator",
+    "openPrice": "开仓价",
+    "positions": "当前持仓",
+    "positionsLocked": "创建者未开放持仓查看",
     "profit": "損益",
     "profitFactor": "獲利因子",
     "sharpeRatio": "夏普比率",

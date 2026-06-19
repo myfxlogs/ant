@@ -22,637 +22,637 @@ const (
 )
 
 type BaseI18N struct {
-	state                                                                                                        protoimpl.MessageState `protogen:"open.v1"`
-	AppName                                                                                                      string                 `protobuf:"bytes,1,opt,name=app_name,json=appName,proto3" json:"app_name,omitempty"`                                                                                                                                                                                                                                                                                                                                                // AntTrader
-	AuthFieldsConfirmPassword                                                                                    string                 `protobuf:"bytes,2,opt,name=auth_fields_confirm_password,json=authFieldsConfirmPassword,proto3" json:"auth_fields_confirm_password,omitempty"`                                                                                                                                                                                                                                                                                      // Confirm password
-	AuthFieldsEmail                                                                                              string                 `protobuf:"bytes,3,opt,name=auth_fields_email,json=authFieldsEmail,proto3" json:"auth_fields_email,omitempty"`                                                                                                                                                                                                                                                                                                                      // Email
-	AuthFieldsPassword                                                                                           string                 `protobuf:"bytes,4,opt,name=auth_fields_password,json=authFieldsPassword,proto3" json:"auth_fields_password,omitempty"`                                                                                                                                                                                                                                                                                                             // Password
-	AuthForgotPasswordBackToLogin                                                                                string                 `protobuf:"bytes,5,opt,name=auth_forgot_password_back_to_login,json=authForgotPasswordBackToLogin,proto3" json:"auth_forgot_password_back_to_login,omitempty"`                                                                                                                                                                                                                                                                      // Back to Login
-	AuthForgotPasswordHint                                                                                       string                 `protobuf:"bytes,6,opt,name=auth_forgot_password_hint,json=authForgotPasswordHint,proto3" json:"auth_forgot_password_hint,omitempty"`                                                                                                                                                                                                                                                                                               // Please contact your administrator or support to reset your p
-	AuthForgotPasswordTitle                                                                                      string                 `protobuf:"bytes,7,opt,name=auth_forgot_password_title,json=authForgotPasswordTitle,proto3" json:"auth_forgot_password_title,omitempty"`                                                                                                                                                                                                                                                                                            // Reset Password
-	AuthLoginForgotPassword                                                                                      string                 `protobuf:"bytes,8,opt,name=auth_login_forgot_password,json=authLoginForgotPassword,proto3" json:"auth_login_forgot_password,omitempty"`                                                                                                                                                                                                                                                                                            // Forgot password?
-	AuthLoginLogin                                                                                               string                 `protobuf:"bytes,9,opt,name=auth_login_login,json=authLoginLogin,proto3" json:"auth_login_login,omitempty"`                                                                                                                                                                                                                                                                                                                         // Sign in
-	AuthLoginNoAccount                                                                                           string                 `protobuf:"bytes,10,opt,name=auth_login_no_account,json=authLoginNoAccount,proto3" json:"auth_login_no_account,omitempty"`                                                                                                                                                                                                                                                                                                          // Don't have an account?
-	AuthLoginRegisterNow                                                                                         string                 `protobuf:"bytes,11,opt,name=auth_login_register_now,json=authLoginRegisterNow,proto3" json:"auth_login_register_now,omitempty"`                                                                                                                                                                                                                                                                                                    // Register now
-	AuthLoginRememberMe                                                                                          string                 `protobuf:"bytes,12,opt,name=auth_login_remember_me,json=authLoginRememberMe,proto3" json:"auth_login_remember_me,omitempty"`                                                                                                                                                                                                                                                                                                       // Remember me
-	AuthLoginSigningIn                                                                                           string                 `protobuf:"bytes,13,opt,name=auth_login_signing_in,json=authLoginSigningIn,proto3" json:"auth_login_signing_in,omitempty"`                                                                                                                                                                                                                                                                                                          // Signing in...
-	AuthLoginSubtitle                                                                                            string                 `protobuf:"bytes,14,opt,name=auth_login_subtitle,json=authLoginSubtitle,proto3" json:"auth_login_subtitle,omitempty"`                                                                                                                                                                                                                                                                                                               // Sign in to continue
-	AuthMessagesFetchMeFailed                                                                                    string                 `protobuf:"bytes,15,opt,name=auth_messages_fetch_me_failed,json=authMessagesFetchMeFailed,proto3" json:"auth_messages_fetch_me_failed,omitempty"`                                                                                                                                                                                                                                                                                   // Failed to load user profile
-	AuthMessagesLoginFailed                                                                                      string                 `protobuf:"bytes,16,opt,name=auth_messages_login_failed,json=authMessagesLoginFailed,proto3" json:"auth_messages_login_failed,omitempty"`                                                                                                                                                                                                                                                                                           // Sign-in failed. Please check your email and password.
-	AuthMessagesLoginSuccess                                                                                     string                 `protobuf:"bytes,17,opt,name=auth_messages_login_success,json=authMessagesLoginSuccess,proto3" json:"auth_messages_login_success,omitempty"`                                                                                                                                                                                                                                                                                        // Signed in
-	AuthMessagesLogoutSuccess                                                                                    string                 `protobuf:"bytes,18,opt,name=auth_messages_logout_success,json=authMessagesLogoutSuccess,proto3" json:"auth_messages_logout_success,omitempty"`                                                                                                                                                                                                                                                                                     // Signed out
-	AuthMessagesRegisterFailed                                                                                   string                 `protobuf:"bytes,19,opt,name=auth_messages_register_failed,json=authMessagesRegisterFailed,proto3" json:"auth_messages_register_failed,omitempty"`                                                                                                                                                                                                                                                                                  // Registration failed. Please try again later.
-	AuthMessagesRegisterSuccess                                                                                  string                 `protobuf:"bytes,20,opt,name=auth_messages_register_success,json=authMessagesRegisterSuccess,proto3" json:"auth_messages_register_success,omitempty"`                                                                                                                                                                                                                                                                               // Registered successfully. Please sign in.
-	AuthRegisterHaveAccount                                                                                      string                 `protobuf:"bytes,21,opt,name=auth_register_have_account,json=authRegisterHaveAccount,proto3" json:"auth_register_have_account,omitempty"`                                                                                                                                                                                                                                                                                           // Already have an account?
-	AuthRegisterLoginNow                                                                                         string                 `protobuf:"bytes,22,opt,name=auth_register_login_now,json=authRegisterLoginNow,proto3" json:"auth_register_login_now,omitempty"`                                                                                                                                                                                                                                                                                                    // Sign in
-	AuthRegisterRegister                                                                                         string                 `protobuf:"bytes,23,opt,name=auth_register_register,json=authRegisterRegister,proto3" json:"auth_register_register,omitempty"`                                                                                                                                                                                                                                                                                                      // Register
-	AuthRegisterSigningUp                                                                                        string                 `protobuf:"bytes,24,opt,name=auth_register_signing_up,json=authRegisterSigningUp,proto3" json:"auth_register_signing_up,omitempty"`                                                                                                                                                                                                                                                                                                 // Signing up...
-	AuthRegisterSubtitle                                                                                         string                 `protobuf:"bytes,25,opt,name=auth_register_subtitle,json=authRegisterSubtitle,proto3" json:"auth_register_subtitle,omitempty"`                                                                                                                                                                                                                                                                                                      // Create an account to get started
-	AuthValidationConfirmPasswordRequired                                                                        string                 `protobuf:"bytes,26,opt,name=auth_validation_confirm_password_required,json=authValidationConfirmPasswordRequired,proto3" json:"auth_validation_confirm_password_required,omitempty"`                                                                                                                                                                                                                                               // Please confirm your password
-	AuthValidationEmailInvalid                                                                                   string                 `protobuf:"bytes,27,opt,name=auth_validation_email_invalid,json=authValidationEmailInvalid,proto3" json:"auth_validation_email_invalid,omitempty"`                                                                                                                                                                                                                                                                                  // Invalid email address
-	AuthValidationEmailRequired                                                                                  string                 `protobuf:"bytes,28,opt,name=auth_validation_email_required,json=authValidationEmailRequired,proto3" json:"auth_validation_email_required,omitempty"`                                                                                                                                                                                                                                                                               // Email is required
-	AuthValidationPasswordMin8                                                                                   string                 `protobuf:"bytes,29,opt,name=auth_validation_password_min8,json=authValidationPasswordMin8,proto3" json:"auth_validation_password_min8,omitempty"`                                                                                                                                                                                                                                                                                  // Password must be at least 8 characters
-	AuthValidationPasswordMismatch                                                                               string                 `protobuf:"bytes,30,opt,name=auth_validation_password_mismatch,json=authValidationPasswordMismatch,proto3" json:"auth_validation_password_mismatch,omitempty"`                                                                                                                                                                                                                                                                      // Passwords do not match
-	AuthValidationPasswordRequired                                                                               string                 `protobuf:"bytes,31,opt,name=auth_validation_password_required,json=authValidationPasswordRequired,proto3" json:"auth_validation_password_required,omitempty"`                                                                                                                                                                                                                                                                      // Password is required
-	CommonActive                                                                                                 string                 `protobuf:"bytes,32,opt,name=common_active,json=commonActive,proto3" json:"common_active,omitempty"`                                                                                                                                                                                                                                                                                                                                // Active
-	CommonBack                                                                                                   string                 `protobuf:"bytes,33,opt,name=common_back,json=commonBack,proto3" json:"common_back,omitempty"`                                                                                                                                                                                                                                                                                                                                      // Back
-	CommonCancel                                                                                                 string                 `protobuf:"bytes,34,opt,name=common_cancel,json=commonCancel,proto3" json:"common_cancel,omitempty"`                                                                                                                                                                                                                                                                                                                                // Cancel
-	CommonClear                                                                                                  string                 `protobuf:"bytes,35,opt,name=common_clear,json=commonClear,proto3" json:"common_clear,omitempty"`                                                                                                                                                                                                                                                                                                                                   // Clear
-	CommonClose                                                                                                  string                 `protobuf:"bytes,36,opt,name=common_close,json=commonClose,proto3" json:"common_close,omitempty"`                                                                                                                                                                                                                                                                                                                                   // Close
-	CommonComingSoon                                                                                             string                 `protobuf:"bytes,37,opt,name=common_coming_soon,json=commonComingSoon,proto3" json:"common_coming_soon,omitempty"`                                                                                                                                                                                                                                                                                                                  // Coming Soon
-	CommonConfirm                                                                                                string                 `protobuf:"bytes,38,opt,name=common_confirm,json=commonConfirm,proto3" json:"common_confirm,omitempty"`                                                                                                                                                                                                                                                                                                                             // Confirm
-	CommonCopied                                                                                                 string                 `protobuf:"bytes,39,opt,name=common_copied,json=commonCopied,proto3" json:"common_copied,omitempty"`                                                                                                                                                                                                                                                                                                                                // Copied
-	CommonCopy                                                                                                   string                 `protobuf:"bytes,40,opt,name=common_copy,json=commonCopy,proto3" json:"common_copy,omitempty"`                                                                                                                                                                                                                                                                                                                                      // Copy
-	CommonCopyFailed                                                                                             string                 `protobuf:"bytes,41,opt,name=common_copy_failed,json=commonCopyFailed,proto3" json:"common_copy_failed,omitempty"`                                                                                                                                                                                                                                                                                                                  // Copy failed
-	CommonCreate                                                                                                 string                 `protobuf:"bytes,42,opt,name=common_create,json=commonCreate,proto3" json:"common_create,omitempty"`                                                                                                                                                                                                                                                                                                                                // Create
-	CommonCreated                                                                                                string                 `protobuf:"bytes,43,opt,name=common_created,json=commonCreated,proto3" json:"common_created,omitempty"`                                                                                                                                                                                                                                                                                                                             // Created
-	CommonCurrentPosition                                                                                        string                 `protobuf:"bytes,44,opt,name=common_current_position,json=commonCurrentPosition,proto3" json:"common_current_position,omitempty"`                                                                                                                                                                                                                                                                                                   // 📊 Current Position
-	CommonDelete                                                                                                 string                 `protobuf:"bytes,45,opt,name=common_delete,json=commonDelete,proto3" json:"common_delete,omitempty"`                                                                                                                                                                                                                                                                                                                                // Delete
-	CommonDeleteFailed                                                                                           string                 `protobuf:"bytes,46,opt,name=common_delete_failed,json=commonDeleteFailed,proto3" json:"common_delete_failed,omitempty"`                                                                                                                                                                                                                                                                                                            // Delete failed
-	CommonDeleteSelected                                                                                         string                 `protobuf:"bytes,47,opt,name=common_delete_selected,json=commonDeleteSelected,proto3" json:"common_delete_selected,omitempty"`                                                                                                                                                                                                                                                                                                      // Delete selected ({{count}})
-	CommonDeleted                                                                                                string                 `protobuf:"bytes,48,opt,name=common_deleted,json=commonDeleted,proto3" json:"common_deleted,omitempty"`                                                                                                                                                                                                                                                                                                                             // Deleted
-	CommonDisable                                                                                                string                 `protobuf:"bytes,49,opt,name=common_disable,json=commonDisable,proto3" json:"common_disable,omitempty"`                                                                                                                                                                                                                                                                                                                             // Disable
-	CommonDisabled                                                                                               string                 `protobuf:"bytes,50,opt,name=common_disabled,json=commonDisabled,proto3" json:"common_disabled,omitempty"`                                                                                                                                                                                                                                                                                                                          // Disabled
-	CommonEdit                                                                                                   string                 `protobuf:"bytes,51,opt,name=common_edit,json=commonEdit,proto3" json:"common_edit,omitempty"`                                                                                                                                                                                                                                                                                                                                      // Edit
-	CommonEnable                                                                                                 string                 `protobuf:"bytes,52,opt,name=common_enable,json=commonEnable,proto3" json:"common_enable,omitempty"`                                                                                                                                                                                                                                                                                                                                // Enable
-	CommonEnabled                                                                                                string                 `protobuf:"bytes,53,opt,name=common_enabled,json=commonEnabled,proto3" json:"common_enabled,omitempty"`                                                                                                                                                                                                                                                                                                                             // Enabled
-	CommonError                                                                                                  string                 `protobuf:"bytes,54,opt,name=common_error,json=commonError,proto3" json:"common_error,omitempty"`                                                                                                                                                                                                                                                                                                                                   // Error
-	CommonGotIt                                                                                                  string                 `protobuf:"bytes,55,opt,name=common_got_it,json=commonGotIt,proto3" json:"common_got_it,omitempty"`                                                                                                                                                                                                                                                                                                                                 // Got it
-	CommonHideDetails                                                                                            string                 `protobuf:"bytes,56,opt,name=common_hide_details,json=commonHideDetails,proto3" json:"common_hide_details,omitempty"`                                                                                                                                                                                                                                                                                                               // Hide details
-	CommonInactive                                                                                               string                 `protobuf:"bytes,57,opt,name=common_inactive,json=commonInactive,proto3" json:"common_inactive,omitempty"`                                                                                                                                                                                                                                                                                                                          // Inactive
-	CommonIndicatorSettings                                                                                      string                 `protobuf:"bytes,58,opt,name=common_indicator_settings,json=commonIndicatorSettings,proto3" json:"common_indicator_settings,omitempty"`                                                                                                                                                                                                                                                                                             // {{name}} Settings
-	CommonLineColor                                                                                              string                 `protobuf:"bytes,59,opt,name=common_line_color,json=commonLineColor,proto3" json:"common_line_color,omitempty"`                                                                                                                                                                                                                                                                                                                     // Line Color
-	CommonLoading                                                                                                string                 `protobuf:"bytes,60,opt,name=common_loading,json=commonLoading,proto3" json:"common_loading,omitempty"`                                                                                                                                                                                                                                                                                                                             // Loading...
-	CommonLoadingFailed                                                                                          string                 `protobuf:"bytes,61,opt,name=common_loading_failed,json=commonLoadingFailed,proto3" json:"common_loading_failed,omitempty"`                                                                                                                                                                                                                                                                                                         // Loading failed
-	CommonMonthsJan                                                                                              string                 `protobuf:"bytes,62,opt,name=common_months_jan,json=commonMonthsJan,proto3" json:"common_months_jan,omitempty"`                                                                                                                                                                                                                                                                                                                     // Jan
-	CommonMonthsJul                                                                                              string                 `protobuf:"bytes,63,opt,name=common_months_jul,json=commonMonthsJul,proto3" json:"common_months_jul,omitempty"`                                                                                                                                                                                                                                                                                                                     // Jul
-	CommonNext                                                                                                   string                 `protobuf:"bytes,64,opt,name=common_next,json=commonNext,proto3" json:"common_next,omitempty"`                                                                                                                                                                                                                                                                                                                                      // Next
-	CommonNo                                                                                                     string                 `protobuf:"bytes,65,opt,name=common_no,json=commonNo,proto3" json:"common_no,omitempty"`                                                                                                                                                                                                                                                                                                                                            // No
-	CommonNoData                                                                                                 string                 `protobuf:"bytes,66,opt,name=common_no_data,json=commonNoData,proto3" json:"common_no_data,omitempty"`                                                                                                                                                                                                                                                                                                                              // No data
-	CommonNoOpenPositionsForSymbol                                                                               string                 `protobuf:"bytes,67,opt,name=common_no_open_positions_for_symbol,json=commonNoOpenPositionsForSymbol,proto3" json:"common_no_open_positions_for_symbol,omitempty"`                                                                                                                                                                                                                                                                  // No open positions for {{symbol}}
-	CommonNone                                                                                                   string                 `protobuf:"bytes,68,opt,name=common_none,json=commonNone,proto3" json:"common_none,omitempty"`                                                                                                                                                                                                                                                                                                                                      // None
-	CommonOk                                                                                                     string                 `protobuf:"bytes,69,opt,name=common_ok,json=commonOk,proto3" json:"common_ok,omitempty"`                                                                                                                                                                                                                                                                                                                                            // OK
-	CommonOperationFailed                                                                                        string                 `protobuf:"bytes,70,opt,name=common_operation_failed,json=commonOperationFailed,proto3" json:"common_operation_failed,omitempty"`                                                                                                                                                                                                                                                                                                   // Operation failed
-	CommonPageError                                                                                              string                 `protobuf:"bytes,71,opt,name=common_page_error,json=commonPageError,proto3" json:"common_page_error,omitempty"`                                                                                                                                                                                                                                                                                                                     // Page Error
-	CommonPageUnderDevelopment                                                                                   string                 `protobuf:"bytes,72,opt,name=common_page_under_development,json=commonPageUnderDevelopment,proto3" json:"common_page_under_development,omitempty"`                                                                                                                                                                                                                                                                                  // This page is under development
-	CommonPleaseWait                                                                                             string                 `protobuf:"bytes,73,opt,name=common_please_wait,json=commonPleaseWait,proto3" json:"common_please_wait,omitempty"`                                                                                                                                                                                                                                                                                                                  // Please wait...
-	CommonPrevious                                                                                               string                 `protobuf:"bytes,74,opt,name=common_previous,json=commonPrevious,proto3" json:"common_previous,omitempty"`                                                                                                                                                                                                                                                                                                                          // Previous
-	CommonRefresh                                                                                                string                 `protobuf:"bytes,75,opt,name=common_refresh,json=commonRefresh,proto3" json:"common_refresh,omitempty"`                                                                                                                                                                                                                                                                                                                             // Refresh
-	CommonRemove                                                                                                 string                 `protobuf:"bytes,76,opt,name=common_remove,json=commonRemove,proto3" json:"common_remove,omitempty"`                                                                                                                                                                                                                                                                                                                                // Remove
-	CommonRequired                                                                                               string                 `protobuf:"bytes,77,opt,name=common_required,json=commonRequired,proto3" json:"common_required,omitempty"`                                                                                                                                                                                                                                                                                                                          // Required
-	CommonRetry                                                                                                  string                 `protobuf:"bytes,78,opt,name=common_retry,json=commonRetry,proto3" json:"common_retry,omitempty"`                                                                                                                                                                                                                                                                                                                                   // Retry
-	CommonSave                                                                                                   string                 `protobuf:"bytes,79,opt,name=common_save,json=commonSave,proto3" json:"common_save,omitempty"`                                                                                                                                                                                                                                                                                                                                      // Save
-	CommonSaveFailed                                                                                             string                 `protobuf:"bytes,80,opt,name=common_save_failed,json=commonSaveFailed,proto3" json:"common_save_failed,omitempty"`                                                                                                                                                                                                                                                                                                                  // Save failed
-	CommonSaveSuccess                                                                                            string                 `protobuf:"bytes,81,opt,name=common_save_success,json=commonSaveSuccess,proto3" json:"common_save_success,omitempty"`                                                                                                                                                                                                                                                                                                               // Saved successfully
-	CommonSearching                                                                                              string                 `protobuf:"bytes,82,opt,name=common_searching,json=commonSearching,proto3" json:"common_searching,omitempty"`                                                                                                                                                                                                                                                                                                                       // Searching...
-	CommonSelectSymbolToViewChart                                                                                string                 `protobuf:"bytes,83,opt,name=common_select_symbol_to_view_chart,json=commonSelectSymbolToViewChart,proto3" json:"common_select_symbol_to_view_chart,omitempty"`                                                                                                                                                                                                                                                                     // Select a symbol to view chart
-	CommonSend                                                                                                   string                 `protobuf:"bytes,84,opt,name=common_send,json=commonSend,proto3" json:"common_send,omitempty"`                                                                                                                                                                                                                                                                                                                                      // Send
-	CommonShowDetails                                                                                            string                 `protobuf:"bytes,85,opt,name=common_show_details,json=commonShowDetails,proto3" json:"common_show_details,omitempty"`                                                                                                                                                                                                                                                                                                               // Show details
-	CommonTimeDay                                                                                                string                 `protobuf:"bytes,86,opt,name=common_time_day,json=commonTimeDay,proto3" json:"common_time_day,omitempty"`                                                                                                                                                                                                                                                                                                                           // {{n}}d
-	CommonTimeHour                                                                                               string                 `protobuf:"bytes,87,opt,name=common_time_hour,json=commonTimeHour,proto3" json:"common_time_hour,omitempty"`                                                                                                                                                                                                                                                                                                                        // {{n}}h
-	CommonTimeLessThanMinute                                                                                     string                 `protobuf:"bytes,88,opt,name=common_time_less_than_minute,json=commonTimeLessThanMinute,proto3" json:"common_time_less_than_minute,omitempty"`                                                                                                                                                                                                                                                                                      // <1m
-	CommonTimeMinute                                                                                             string                 `protobuf:"bytes,89,opt,name=common_time_minute,json=commonTimeMinute,proto3" json:"common_time_minute,omitempty"`                                                                                                                                                                                                                                                                                                                  // {{n}}m
-	CommonTotalItems                                                                                             string                 `protobuf:"bytes,90,opt,name=common_total_items,json=commonTotalItems,proto3" json:"common_total_items,omitempty"`                                                                                                                                                                                                                                                                                                                  // Total {{count}} items
-	CommonTranslate                                                                                              string                 `protobuf:"bytes,91,opt,name=common_translate,json=commonTranslate,proto3" json:"common_translate,omitempty"`                                                                                                                                                                                                                                                                                                                       // Translate
-	CommonUnexpectedError                                                                                        string                 `protobuf:"bytes,92,opt,name=common_unexpected_error,json=commonUnexpectedError,proto3" json:"common_unexpected_error,omitempty"`                                                                                                                                                                                                                                                                                                   // An unexpected error occurred
-	CommonUnknown                                                                                                string                 `protobuf:"bytes,93,opt,name=common_unknown,json=commonUnknown,proto3" json:"common_unknown,omitempty"`                                                                                                                                                                                                                                                                                                                             // Unknown
-	CommonUpdated                                                                                                string                 `protobuf:"bytes,94,opt,name=common_updated,json=commonUpdated,proto3" json:"common_updated,omitempty"`                                                                                                                                                                                                                                                                                                                             // Updated
-	CommonViewOriginal                                                                                           string                 `protobuf:"bytes,95,opt,name=common_view_original,json=commonViewOriginal,proto3" json:"common_view_original,omitempty"`                                                                                                                                                                                                                                                                                                            // View original
-	CommonViewTranslation                                                                                        string                 `protobuf:"bytes,96,opt,name=common_view_translation,json=commonViewTranslation,proto3" json:"common_view_translation,omitempty"`                                                                                                                                                                                                                                                                                                   // View translation
-	CommonYes                                                                                                    string                 `protobuf:"bytes,97,opt,name=common_yes,json=commonYes,proto3" json:"common_yes,omitempty"`                                                                                                                                                                                                                                                                                                                                         // Yes
-	CommonYou                                                                                                    string                 `protobuf:"bytes,98,opt,name=common_you,json=commonYou,proto3" json:"common_you,omitempty"`                                                                                                                                                                                                                                                                                                                                         // You
-	LanguageEnglish                                                                                              string                 `protobuf:"bytes,99,opt,name=language_english,json=languageEnglish,proto3" json:"language_english,omitempty"`                                                                                                                                                                                                                                                                                                                       // English
-	LanguageJapanese                                                                                             string                 `protobuf:"bytes,100,opt,name=language_japanese,json=languageJapanese,proto3" json:"language_japanese,omitempty"`                                                                                                                                                                                                                                                                                                                   // 日本語
-	LanguageSimplifiedChinese                                                                                    string                 `protobuf:"bytes,101,opt,name=language_simplified_chinese,json=languageSimplifiedChinese,proto3" json:"language_simplified_chinese,omitempty"`                                                                                                                                                                                                                                                                                      // 简体中文
-	LanguageTraditionalChinese                                                                                   string                 `protobuf:"bytes,102,opt,name=language_traditional_chinese,json=languageTraditionalChinese,proto3" json:"language_traditional_chinese,omitempty"`                                                                                                                                                                                                                                                                                   // 繁體中文
-	LanguageVietnamese                                                                                           string                 `protobuf:"bytes,103,opt,name=language_vietnamese,json=languageVietnamese,proto3" json:"language_vietnamese,omitempty"`                                                                                                                                                                                                                                                                                                             // Tiếng Việt
-	MarketplaceFilterAssetClassRiskAdminConfigAiProviderCatalog                                                  string                 `protobuf:"bytes,104,opt,name=marketplace_filter_asset_class_risk_admin_config_ai_provider_catalog,json=marketplaceFilterAssetClassRiskAdminConfigAiProviderCatalog,proto3" json:"marketplace_filter_asset_class_risk_admin_config_ai_provider_catalog,omitempty"`                                                                                                                                                                  // AI Model Provider Catalog
-	MarketplaceFilterAssetClassRiskAdminConfigBaseUrlLabel                                                       string                 `protobuf:"bytes,105,opt,name=marketplace_filter_asset_class_risk_admin_config_base_url_label,json=marketplaceFilterAssetClassRiskAdminConfigBaseUrlLabel,proto3" json:"marketplace_filter_asset_class_risk_admin_config_base_url_label,omitempty"`                                                                                                                                                                                 // Base URL (optional, custom/OpenAI compatible only)
-	MarketplaceFilterAssetClassRiskAdminConfigConfigItem                                                         string                 `protobuf:"bytes,106,opt,name=marketplace_filter_asset_class_risk_admin_config_config_item,json=marketplaceFilterAssetClassRiskAdminConfigConfigItem,proto3" json:"marketplace_filter_asset_class_risk_admin_config_config_item,omitempty"`                                                                                                                                                                                         // Config Item
-	MarketplaceFilterAssetClassRiskAdminConfigDescription                                                        string                 `protobuf:"bytes,107,opt,name=marketplace_filter_asset_class_risk_admin_config_description,json=marketplaceFilterAssetClassRiskAdminConfigDescription,proto3" json:"marketplace_filter_asset_class_risk_admin_config_description,omitempty"`                                                                                                                                                                                        // Description
-	MarketplaceFilterAssetClassRiskAdminConfigEconAIConfig                                                       string                 `protobuf:"bytes,108,opt,name=marketplace_filter_asset_class_risk_admin_config_econ_a_i_config,json=marketplaceFilterAssetClassRiskAdminConfigEconAIConfig,proto3" json:"marketplace_filter_asset_class_risk_admin_config_econ_a_i_config,omitempty"`                                                                                                                                                                               // Economic Calendar Translation AI Config
-	MarketplaceFilterAssetClassRiskAdminConfigEditConfig                                                         string                 `protobuf:"bytes,109,opt,name=marketplace_filter_asset_class_risk_admin_config_edit_config,json=marketplaceFilterAssetClassRiskAdminConfigEditConfig,proto3" json:"marketplace_filter_asset_class_risk_admin_config_edit_config,omitempty"`                                                                                                                                                                                         // Edit Config: {{key}}
-	MarketplaceFilterAssetClassRiskAdminConfigEnableToggle                                                       string                 `protobuf:"bytes,110,opt,name=marketplace_filter_asset_class_risk_admin_config_enable_toggle,json=marketplaceFilterAssetClassRiskAdminConfigEnableToggle,proto3" json:"marketplace_filter_asset_class_risk_admin_config_enable_toggle,omitempty"`                                                                                                                                                                                   // Enable
-	MarketplaceFilterAssetClassRiskAdminConfigFillTemplate                                                       string                 `protobuf:"bytes,111,opt,name=marketplace_filter_asset_class_risk_admin_config_fill_template,json=marketplaceFilterAssetClassRiskAdminConfigFillTemplate,proto3" json:"marketplace_filter_asset_class_risk_admin_config_fill_template,omitempty"`                                                                                                                                                                                   // Fill Example
-	MarketplaceFilterAssetClassRiskAdminConfigFormatJson                                                         string                 `protobuf:"bytes,112,opt,name=marketplace_filter_asset_class_risk_admin_config_format_json,json=marketplaceFilterAssetClassRiskAdminConfigFormatJson,proto3" json:"marketplace_filter_asset_class_risk_admin_config_format_json,omitempty"`                                                                                                                                                                                         // Format JSON
-	MarketplaceFilterAssetClassRiskAdminConfigMaxAccountsPerUser                                                 string                 `protobuf:"bytes,113,opt,name=marketplace_filter_asset_class_risk_admin_config_max_accounts_per_user,json=marketplaceFilterAssetClassRiskAdminConfigMaxAccountsPerUser,proto3" json:"marketplace_filter_asset_class_risk_admin_config_max_accounts_per_user,omitempty"`                                                                                                                                                             // Max Accounts Per User
-	MarketplaceFilterAssetClassRiskAdminConfigMessagesDisabled                                                   string                 `protobuf:"bytes,114,opt,name=marketplace_filter_asset_class_risk_admin_config_messages_disabled,json=marketplaceFilterAssetClassRiskAdminConfigMessagesDisabled,proto3" json:"marketplace_filter_asset_class_risk_admin_config_messages_disabled,omitempty"`                                                                                                                                                                       // Config disabled
-	MarketplaceFilterAssetClassRiskAdminConfigMessagesEnabled                                                    string                 `protobuf:"bytes,115,opt,name=marketplace_filter_asset_class_risk_admin_config_messages_enabled,json=marketplaceFilterAssetClassRiskAdminConfigMessagesEnabled,proto3" json:"marketplace_filter_asset_class_risk_admin_config_messages_enabled,omitempty"`                                                                                                                                                                          // Config enabled
-	MarketplaceFilterAssetClassRiskAdminConfigMessagesLoadFailed                                                 string                 `protobuf:"bytes,116,opt,name=marketplace_filter_asset_class_risk_admin_config_messages_load_failed,json=marketplaceFilterAssetClassRiskAdminConfigMessagesLoadFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_config_messages_load_failed,omitempty"`                                                                                                                                                               // Failed to load configs
-	MarketplaceFilterAssetClassRiskAdminConfigMessagesOperationFailed                                            string                 `protobuf:"bytes,117,opt,name=marketplace_filter_asset_class_risk_admin_config_messages_operation_failed,json=marketplaceFilterAssetClassRiskAdminConfigMessagesOperationFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_config_messages_operation_failed,omitempty"`                                                                                                                                                // Operation failed
-	MarketplaceFilterAssetClassRiskAdminConfigMessagesUpdateFailed                                               string                 `protobuf:"bytes,118,opt,name=marketplace_filter_asset_class_risk_admin_config_messages_update_failed,json=marketplaceFilterAssetClassRiskAdminConfigMessagesUpdateFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_config_messages_update_failed,omitempty"`                                                                                                                                                         // Update failed
-	MarketplaceFilterAssetClassRiskAdminConfigMessagesUpdated                                                    string                 `protobuf:"bytes,119,opt,name=marketplace_filter_asset_class_risk_admin_config_messages_updated,json=marketplaceFilterAssetClassRiskAdminConfigMessagesUpdated,proto3" json:"marketplace_filter_asset_class_risk_admin_config_messages_updated,omitempty"`                                                                                                                                                                          // Config updated
-	MarketplaceFilterAssetClassRiskAdminConfigModelName                                                          string                 `protobuf:"bytes,120,opt,name=marketplace_filter_asset_class_risk_admin_config_model_name,json=marketplaceFilterAssetClassRiskAdminConfigModelName,proto3" json:"marketplace_filter_asset_class_risk_admin_config_model_name,omitempty"`                                                                                                                                                                                            // Model Name
-	MarketplaceFilterAssetClassRiskAdminConfigOff                                                                string                 `protobuf:"bytes,121,opt,name=marketplace_filter_asset_class_risk_admin_config_off,json=marketplaceFilterAssetClassRiskAdminConfigOff,proto3" json:"marketplace_filter_asset_class_risk_admin_config_off,omitempty"`                                                                                                                                                                                                                // Off
-	MarketplaceFilterAssetClassRiskAdminConfigOn                                                                 string                 `protobuf:"bytes,122,opt,name=marketplace_filter_asset_class_risk_admin_config_on,json=marketplaceFilterAssetClassRiskAdminConfigOn,proto3" json:"marketplace_filter_asset_class_risk_admin_config_on,omitempty"`                                                                                                                                                                                                                   // On
-	MarketplaceFilterAssetClassRiskAdminConfigPlaceholdersApiKey                                                 string                 `protobuf:"bytes,123,opt,name=marketplace_filter_asset_class_risk_admin_config_placeholders_api_key,json=marketplaceFilterAssetClassRiskAdminConfigPlaceholdersApiKey,proto3" json:"marketplace_filter_asset_class_risk_admin_config_placeholders_api_key,omitempty"`                                                                                                                                                               // Enter API Key
-	MarketplaceFilterAssetClassRiskAdminConfigPlaceholdersBaseUrl                                                string                 `protobuf:"bytes,124,opt,name=marketplace_filter_asset_class_risk_admin_config_placeholders_base_url,json=marketplaceFilterAssetClassRiskAdminConfigPlaceholdersBaseUrl,proto3" json:"marketplace_filter_asset_class_risk_admin_config_placeholders_base_url,omitempty"`                                                                                                                                                            // e.g. https://api.openai.com or self-hosted gateway
-	MarketplaceFilterAssetClassRiskAdminConfigPlaceholdersConfigValue                                            string                 `protobuf:"bytes,125,opt,name=marketplace_filter_asset_class_risk_admin_config_placeholders_config_value,json=marketplaceFilterAssetClassRiskAdminConfigPlaceholdersConfigValue,proto3" json:"marketplace_filter_asset_class_risk_admin_config_placeholders_config_value,omitempty"`                                                                                                                                                // Enter config value
-	MarketplaceFilterAssetClassRiskAdminConfigPlaceholdersDescription                                            string                 `protobuf:"bytes,126,opt,name=marketplace_filter_asset_class_risk_admin_config_placeholders_description,json=marketplaceFilterAssetClassRiskAdminConfigPlaceholdersDescription,proto3" json:"marketplace_filter_asset_class_risk_admin_config_placeholders_description,omitempty"`                                                                                                                                                  // Enter description
-	MarketplaceFilterAssetClassRiskAdminConfigPlaceholdersJson                                                   string                 `protobuf:"bytes,127,opt,name=marketplace_filter_asset_class_risk_admin_config_placeholders_json,json=marketplaceFilterAssetClassRiskAdminConfigPlaceholdersJson,proto3" json:"marketplace_filter_asset_class_risk_admin_config_placeholders_json,omitempty"`                                                                                                                                                                       // Enter JSON
-	MarketplaceFilterAssetClassRiskAdminConfigPlaceholdersModel                                                  string                 `protobuf:"bytes,128,opt,name=marketplace_filter_asset_class_risk_admin_config_placeholders_model,json=marketplaceFilterAssetClassRiskAdminConfigPlaceholdersModel,proto3" json:"marketplace_filter_asset_class_risk_admin_config_placeholders_model,omitempty"`                                                                                                                                                                    // e.g. glm-4-flash / deepseek-chat / gpt-4o-mini
-	MarketplaceFilterAssetClassRiskAdminConfigProvider                                                           string                 `protobuf:"bytes,129,opt,name=marketplace_filter_asset_class_risk_admin_config_provider,json=marketplaceFilterAssetClassRiskAdminConfigProvider,proto3" json:"marketplace_filter_asset_class_risk_admin_config_provider,omitempty"`                                                                                                                                                                                                 // Provider
-	MarketplaceFilterAssetClassRiskAdminConfigProviderOptionsCustom                                              string                 `protobuf:"bytes,130,opt,name=marketplace_filter_asset_class_risk_admin_config_provider_options_custom,json=marketplaceFilterAssetClassRiskAdminConfigProviderOptionsCustom,proto3" json:"marketplace_filter_asset_class_risk_admin_config_provider_options_custom,omitempty"`                                                                                                                                                      // Custom / OpenAI Compatible
-	MarketplaceFilterAssetClassRiskAdminConfigProviderOptionsDeepseek                                            string                 `protobuf:"bytes,131,opt,name=marketplace_filter_asset_class_risk_admin_config_provider_options_deepseek,json=marketplaceFilterAssetClassRiskAdminConfigProviderOptionsDeepseek,proto3" json:"marketplace_filter_asset_class_risk_admin_config_provider_options_deepseek,omitempty"`                                                                                                                                                // DeepSeek
-	MarketplaceFilterAssetClassRiskAdminConfigProviderOptionsZhipu                                               string                 `protobuf:"bytes,132,opt,name=marketplace_filter_asset_class_risk_admin_config_provider_options_zhipu,json=marketplaceFilterAssetClassRiskAdminConfigProviderOptionsZhipu,proto3" json:"marketplace_filter_asset_class_risk_admin_config_provider_options_zhipu,omitempty"`                                                                                                                                                         // Zhipu
-	MarketplaceFilterAssetClassRiskAdminConfigStatus                                                             string                 `protobuf:"bytes,133,opt,name=marketplace_filter_asset_class_risk_admin_config_status,json=marketplaceFilterAssetClassRiskAdminConfigStatus,proto3" json:"marketplace_filter_asset_class_risk_admin_config_status,omitempty"`                                                                                                                                                                                                       // Status
-	MarketplaceFilterAssetClassRiskAdminConfigStrategyHealthConfig                                               string                 `protobuf:"bytes,134,opt,name=marketplace_filter_asset_class_risk_admin_config_strategy_health_config,json=marketplaceFilterAssetClassRiskAdminConfigStrategyHealthConfig,proto3" json:"marketplace_filter_asset_class_risk_admin_config_strategy_health_config,omitempty"`                                                                                                                                                         // Strategy Health Grading Config
-	MarketplaceFilterAssetClassRiskAdminConfigThresholdDesc                                                      string                 `protobuf:"bytes,135,opt,name=marketplace_filter_asset_class_risk_admin_config_threshold_desc,json=marketplaceFilterAssetClassRiskAdminConfigThresholdDesc,proto3" json:"marketplace_filter_asset_class_risk_admin_config_threshold_desc,omitempty"`                                                                                                                                                                                // green_success_rate: green success rate threshold; green_max_
-	MarketplaceFilterAssetClassRiskAdminConfigThresholdInfo                                                      string                 `protobuf:"bytes,136,opt,name=marketplace_filter_asset_class_risk_admin_config_threshold_info,json=marketplaceFilterAssetClassRiskAdminConfigThresholdInfo,proto3" json:"marketplace_filter_asset_class_risk_admin_config_threshold_info,omitempty"`                                                                                                                                                                                // Threshold Field Description
-	MarketplaceFilterAssetClassRiskAdminConfigTitle                                                              string                 `protobuf:"bytes,137,opt,name=marketplace_filter_asset_class_risk_admin_config_title,json=marketplaceFilterAssetClassRiskAdminConfigTitle,proto3" json:"marketplace_filter_asset_class_risk_admin_config_title,omitempty"`                                                                                                                                                                                                          // System Configuration
-	MarketplaceFilterAssetClassRiskAdminConfigToggle                                                             string                 `protobuf:"bytes,138,opt,name=marketplace_filter_asset_class_risk_admin_config_toggle,json=marketplaceFilterAssetClassRiskAdminConfigToggle,proto3" json:"marketplace_filter_asset_class_risk_admin_config_toggle,omitempty"`                                                                                                                                                                                                       // Toggle
-	MarketplaceFilterAssetClassRiskAdminConfigUpdatedAt                                                          string                 `protobuf:"bytes,139,opt,name=marketplace_filter_asset_class_risk_admin_config_updated_at,json=marketplaceFilterAssetClassRiskAdminConfigUpdatedAt,proto3" json:"marketplace_filter_asset_class_risk_admin_config_updated_at,omitempty"`                                                                                                                                                                                            // Updated At
-	MarketplaceFilterAssetClassRiskAdminConfigValidationApiKeyRequired                                           string                 `protobuf:"bytes,140,opt,name=marketplace_filter_asset_class_risk_admin_config_validation_api_key_required,json=marketplaceFilterAssetClassRiskAdminConfigValidationApiKeyRequired,proto3" json:"marketplace_filter_asset_class_risk_admin_config_validation_api_key_required,omitempty"`                                                                                                                                           // API Key cannot be empty
-	MarketplaceFilterAssetClassRiskAdminConfigValidationGreenMaxFailedRunsNonNegative                            string                 `protobuf:"bytes,141,opt,name=marketplace_filter_asset_class_risk_admin_config_validation_green_max_failed_runs_non_negative,json=marketplaceFilterAssetClassRiskAdminConfigValidationGreenMaxFailedRunsNonNegative,proto3" json:"marketplace_filter_asset_class_risk_admin_config_validation_green_max_failed_runs_non_negative,omitempty"`                                                                                        // green_max_failed_runs must be >= 0
-	MarketplaceFilterAssetClassRiskAdminConfigValidationGreenSuccessRateRange                                    string                 `protobuf:"bytes,142,opt,name=marketplace_filter_asset_class_risk_admin_config_validation_green_success_rate_range,json=marketplaceFilterAssetClassRiskAdminConfigValidationGreenSuccessRateRange,proto3" json:"marketplace_filter_asset_class_risk_admin_config_validation_green_success_rate_range,omitempty"`                                                                                                                    // green_success_rate must be between 0 and 100
-	MarketplaceFilterAssetClassRiskAdminConfigValidationJsonEmpty                                                string                 `protobuf:"bytes,143,opt,name=marketplace_filter_asset_class_risk_admin_config_validation_json_empty,json=marketplaceFilterAssetClassRiskAdminConfigValidationJsonEmpty,proto3" json:"marketplace_filter_asset_class_risk_admin_config_validation_json_empty,omitempty"`                                                                                                                                                            // JSON cannot be empty
-	MarketplaceFilterAssetClassRiskAdminConfigValidationJsonInvalid                                              string                 `protobuf:"bytes,144,opt,name=marketplace_filter_asset_class_risk_admin_config_validation_json_invalid,json=marketplaceFilterAssetClassRiskAdminConfigValidationJsonInvalid,proto3" json:"marketplace_filter_asset_class_risk_admin_config_validation_json_invalid,omitempty"`                                                                                                                                                      // Invalid JSON format
-	MarketplaceFilterAssetClassRiskAdminConfigValidationMinSampleSizeNonNegative                                 string                 `protobuf:"bytes,145,opt,name=marketplace_filter_asset_class_risk_admin_config_validation_min_sample_size_non_negative,json=marketplaceFilterAssetClassRiskAdminConfigValidationMinSampleSizeNonNegative,proto3" json:"marketplace_filter_asset_class_risk_admin_config_validation_min_sample_size_non_negative,omitempty"`                                                                                                         // min_sample_size must be >= 0
-	MarketplaceFilterAssetClassRiskAdminConfigValidationModelRequired                                            string                 `protobuf:"bytes,146,opt,name=marketplace_filter_asset_class_risk_admin_config_validation_model_required,json=marketplaceFilterAssetClassRiskAdminConfigValidationModelRequired,proto3" json:"marketplace_filter_asset_class_risk_admin_config_validation_model_required,omitempty"`                                                                                                                                                // Model name cannot be empty
-	MarketplaceFilterAssetClassRiskAdminConfigValidationYellowNotGreaterThanGreen                                string                 `protobuf:"bytes,147,opt,name=marketplace_filter_asset_class_risk_admin_config_validation_yellow_not_greater_than_green,json=marketplaceFilterAssetClassRiskAdminConfigValidationYellowNotGreaterThanGreen,proto3" json:"marketplace_filter_asset_class_risk_admin_config_validation_yellow_not_greater_than_green,omitempty"`                                                                                                      // yellow_success_rate cannot be greater than green_success_rat
-	MarketplaceFilterAssetClassRiskAdminConfigValidationYellowSuccessRateRange                                   string                 `protobuf:"bytes,148,opt,name=marketplace_filter_asset_class_risk_admin_config_validation_yellow_success_rate_range,json=marketplaceFilterAssetClassRiskAdminConfigValidationYellowSuccessRateRange,proto3" json:"marketplace_filter_asset_class_risk_admin_config_validation_yellow_success_rate_range,omitempty"`                                                                                                                 // yellow_success_rate must be between 0 and 100
-	MarketplaceFilterAssetClassRiskAdminConfigValue                                                              string                 `protobuf:"bytes,149,opt,name=marketplace_filter_asset_class_risk_admin_config_value,json=marketplaceFilterAssetClassRiskAdminConfigValue,proto3" json:"marketplace_filter_asset_class_risk_admin_config_value,omitempty"`                                                                                                                                                                                                          // Value
-	MarketplaceFilterAssetClassRiskAdminDashboardActiveUsers                                                     string                 `protobuf:"bytes,150,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_active_users,json=marketplaceFilterAssetClassRiskAdminDashboardActiveUsers,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_active_users,omitempty"`                                                                                                                                                                             // Active Users
-	MarketplaceFilterAssetClassRiskAdminDashboardLoadFailed                                                      string                 `protobuf:"bytes,151,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_load_failed,json=marketplaceFilterAssetClassRiskAdminDashboardLoadFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_load_failed,omitempty"`                                                                                                                                                                                // Failed to load dashboard data
-	MarketplaceFilterAssetClassRiskAdminDashboardLogsActionType                                                  string                 `protobuf:"bytes,152,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_logs_action_type,json=marketplaceFilterAssetClassRiskAdminDashboardLogsActionType,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_logs_action_type,omitempty"`                                                                                                                                                                  // Action Type
-	MarketplaceFilterAssetClassRiskAdminDashboardLogsFailed                                                      string                 `protobuf:"bytes,153,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_logs_failed,json=marketplaceFilterAssetClassRiskAdminDashboardLogsFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_logs_failed,omitempty"`                                                                                                                                                                                // Failed
-	MarketplaceFilterAssetClassRiskAdminDashboardLogsModule                                                      string                 `protobuf:"bytes,154,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_logs_module,json=marketplaceFilterAssetClassRiskAdminDashboardLogsModule,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_logs_module,omitempty"`                                                                                                                                                                                // Module
-	MarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapAccountManagement                                  string                 `protobuf:"bytes,155,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_logs_module_map_account_management,json=marketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapAccountManagement,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_logs_module_map_account_management,omitempty"`                                                                                                              // Account Management
-	MarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapSystemConfig                                       string                 `protobuf:"bytes,156,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_logs_module_map_system_config,json=marketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapSystemConfig,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_logs_module_map_system_config,omitempty"`                                                                                                                             // System Config
-	MarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapTrading                                            string                 `protobuf:"bytes,157,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_logs_module_map_trading,json=marketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapTrading,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_logs_module_map_trading,omitempty"`                                                                                                                                              // Trading
-	MarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapUserManagement                                     string                 `protobuf:"bytes,158,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_logs_module_map_user_management,json=marketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapUserManagement,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_logs_module_map_user_management,omitempty"`                                                                                                                       // User Management
-	MarketplaceFilterAssetClassRiskAdminDashboardLogsStatus                                                      string                 `protobuf:"bytes,159,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_logs_status,json=marketplaceFilterAssetClassRiskAdminDashboardLogsStatus,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_logs_status,omitempty"`                                                                                                                                                                                // Status
-	MarketplaceFilterAssetClassRiskAdminDashboardLogsSuccess                                                     string                 `protobuf:"bytes,160,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_logs_success,json=marketplaceFilterAssetClassRiskAdminDashboardLogsSuccess,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_logs_success,omitempty"`                                                                                                                                                                             // Success
-	MarketplaceFilterAssetClassRiskAdminDashboardLogsTarget                                                      string                 `protobuf:"bytes,161,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_logs_target,json=marketplaceFilterAssetClassRiskAdminDashboardLogsTarget,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_logs_target,omitempty"`                                                                                                                                                                                // Target
-	MarketplaceFilterAssetClassRiskAdminDashboardLogsTime                                                        string                 `protobuf:"bytes,162,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_logs_time,json=marketplaceFilterAssetClassRiskAdminDashboardLogsTime,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_logs_time,omitempty"`                                                                                                                                                                                      // Time
-	MarketplaceFilterAssetClassRiskAdminDashboardMtAccounts                                                      string                 `protobuf:"bytes,163,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_mt_accounts,json=marketplaceFilterAssetClassRiskAdminDashboardMtAccounts,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_mt_accounts,omitempty"`                                                                                                                                                                                // MT Accounts
-	MarketplaceFilterAssetClassRiskAdminDashboardOnlineAccounts                                                  string                 `protobuf:"bytes,164,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_online_accounts,json=marketplaceFilterAssetClassRiskAdminDashboardOnlineAccounts,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_online_accounts,omitempty"`                                                                                                                                                                    // Online Accounts
-	MarketplaceFilterAssetClassRiskAdminDashboardRecentLogs                                                      string                 `protobuf:"bytes,165,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_recent_logs,json=marketplaceFilterAssetClassRiskAdminDashboardRecentLogs,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_recent_logs,omitempty"`                                                                                                                                                                                // Recent Operation Logs
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderCloseFailed                                     string                 `protobuf:"bytes,166,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_order_close_failed,json=marketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderCloseFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_order_close_failed,omitempty"`                                                                                                                       // Order Closed Failed
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderCloseSuccess                                    string                 `protobuf:"bytes,167,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_order_close_success,json=marketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderCloseSuccess,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_order_close_success,omitempty"`                                                                                                                    // Order Closed Success
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderSendFailed                                      string                 `protobuf:"bytes,168,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_order_send_failed,json=marketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderSendFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_order_send_failed,omitempty"`                                                                                                                          // Order Sent Failed
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderSendSuccess                                     string                 `protobuf:"bytes,169,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_order_send_success,json=marketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderSendSuccess,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_order_send_success,omitempty"`                                                                                                                       // Order Sent Success
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateError                                    string                 `protobuf:"bytes,170,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_risk_validate_error,json=marketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateError,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_risk_validate_error,omitempty"`                                                                                                                    // Risk Validated Error
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidatePass                                     string                 `protobuf:"bytes,171,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_risk_validate_pass,json=marketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidatePass,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_risk_validate_pass,omitempty"`                                                                                                                       // Risk Validated Pass
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateReject                                   string                 `protobuf:"bytes,172,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_risk_validate_reject,json=marketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateReject,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_risk_validate_reject,omitempty"`                                                                                                                 // Risk Validated Reject
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateTotal                                    string                 `protobuf:"bytes,173,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_risk_validate_total,json=marketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateTotal,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_risk_validate_total,omitempty"`                                                                                                                    // Risk Validated Total
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsTitle                                                string                 `protobuf:"bytes,174,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_title,json=marketplaceFilterAssetClassRiskAdminDashboardRiskMetricsTitle,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_title,omitempty"`                                                                                                                                                            // Risk Control Metrics (Real-time)
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowNoData                                                string                 `protobuf:"bytes,175,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_window_no_data,json=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowNoData,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_window_no_data,omitempty"`                                                                                                                                                          // No window metrics data
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowNoRejectData                                          string                 `protobuf:"bytes,176,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_window_no_reject_data,json=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowNoRejectData,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_window_no_reject_data,omitempty"`                                                                                                                                      // No reject data for current window
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderCloseFailed                                      string                 `protobuf:"bytes,177,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_window_order_close_failed,json=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderCloseFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_window_order_close_failed,omitempty"`                                                                                                                          // {{window}} Close Failed
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderCloseSuccess                                     string                 `protobuf:"bytes,178,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_window_order_close_success,json=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderCloseSuccess,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_window_order_close_success,omitempty"`                                                                                                                       // {{window}} Close Success
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderSendFailed                                       string                 `protobuf:"bytes,179,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_window_order_send_failed,json=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderSendFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_window_order_send_failed,omitempty"`                                                                                                                             // {{window}} Order Failed
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderSendSuccess                                      string                 `protobuf:"bytes,180,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_window_order_send_success,json=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderSendSuccess,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_window_order_send_success,omitempty"`                                                                                                                          // {{window}} Order Sent
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowRejectCount                                           string                 `protobuf:"bytes,181,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_window_reject_count,json=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowRejectCount,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_window_reject_count,omitempty"`                                                                                                                                           // Reject Count
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowRejectRiskCodesHeader                                 string                 `protobuf:"bytes,182,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_window_reject_risk_codes_header,json=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowRejectRiskCodesHeader,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_window_reject_risk_codes_header,omitempty"`                                                                                                         // Top N Reject Risk Codes ({{window}})
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowTitle                                                 string                 `protobuf:"bytes,183,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_window_title,json=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowTitle,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_window_title,omitempty"`                                                                                                                                                               // Risk Control Window Metrics (1h / 24h / 72h)
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateError                                         string                 `protobuf:"bytes,184,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_window_validate_error,json=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateError,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_window_validate_error,omitempty"`                                                                                                                                     // {{window}} Error
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidatePass                                          string                 `protobuf:"bytes,185,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_window_validate_pass,json=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidatePass,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_window_validate_pass,omitempty"`                                                                                                                                        // {{window}} Pass
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateReject                                        string                 `protobuf:"bytes,186,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_window_validate_reject,json=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateReject,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_window_validate_reject,omitempty"`                                                                                                                                  // {{window}} Reject
-	MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateTotal                                         string                 `protobuf:"bytes,187,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_risk_window_validate_total,json=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateTotal,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_risk_window_validate_total,omitempty"`                                                                                                                                     // {{window}} Validated Total
-	MarketplaceFilterAssetClassRiskAdminDashboardTitle                                                           string                 `protobuf:"bytes,188,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_title,json=marketplaceFilterAssetClassRiskAdminDashboardTitle,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_title,omitempty"`                                                                                                                                                                                                 // Admin Dashboard
-	MarketplaceFilterAssetClassRiskAdminDashboardTodayProfit                                                     string                 `protobuf:"bytes,189,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_today_profit,json=marketplaceFilterAssetClassRiskAdminDashboardTodayProfit,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_today_profit,omitempty"`                                                                                                                                                                             // Today P&L
-	MarketplaceFilterAssetClassRiskAdminDashboardTodayTrades                                                     string                 `protobuf:"bytes,190,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_today_trades,json=marketplaceFilterAssetClassRiskAdminDashboardTodayTrades,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_today_trades,omitempty"`                                                                                                                                                                             // Today Trades
-	MarketplaceFilterAssetClassRiskAdminDashboardTotalUsers                                                      string                 `protobuf:"bytes,191,opt,name=marketplace_filter_asset_class_risk_admin_dashboard_total_users,json=marketplaceFilterAssetClassRiskAdminDashboardTotalUsers,proto3" json:"marketplace_filter_asset_class_risk_admin_dashboard_total_users,omitempty"`                                                                                                                                                                                // Total Users
-	MarketplaceFilterAssetClassRiskAdminHeaderAdmin                                                              string                 `protobuf:"bytes,192,opt,name=marketplace_filter_asset_class_risk_admin_header_admin,json=marketplaceFilterAssetClassRiskAdminHeaderAdmin,proto3" json:"marketplace_filter_asset_class_risk_admin_header_admin,omitempty"`                                                                                                                                                                                                          // Admin
-	MarketplaceFilterAssetClassRiskAdminHeaderAdminMode                                                          string                 `protobuf:"bytes,193,opt,name=marketplace_filter_asset_class_risk_admin_header_admin_mode,json=marketplaceFilterAssetClassRiskAdminHeaderAdminMode,proto3" json:"marketplace_filter_asset_class_risk_admin_header_admin_mode,omitempty"`                                                                                                                                                                                            // Admin Mode
-	MarketplaceFilterAssetClassRiskAdminHeaderAdminPanel                                                         string                 `protobuf:"bytes,194,opt,name=marketplace_filter_asset_class_risk_admin_header_admin_panel,json=marketplaceFilterAssetClassRiskAdminHeaderAdminPanel,proto3" json:"marketplace_filter_asset_class_risk_admin_header_admin_panel,omitempty"`                                                                                                                                                                                         // Admin Panel
-	MarketplaceFilterAssetClassRiskAdminHeaderBackToUser                                                         string                 `protobuf:"bytes,195,opt,name=marketplace_filter_asset_class_risk_admin_header_back_to_user,json=marketplaceFilterAssetClassRiskAdminHeaderBackToUser,proto3" json:"marketplace_filter_asset_class_risk_admin_header_back_to_user,omitempty"`                                                                                                                                                                                       // Back to User
-	MarketplaceFilterAssetClassRiskAdminHeaderLogout                                                             string                 `protobuf:"bytes,196,opt,name=marketplace_filter_asset_class_risk_admin_header_logout,json=marketplaceFilterAssetClassRiskAdminHeaderLogout,proto3" json:"marketplace_filter_asset_class_risk_admin_header_logout,omitempty"`                                                                                                                                                                                                       // Logout
-	MarketplaceFilterAssetClassRiskAdminJurisdictionActions                                                      string                 `protobuf:"bytes,197,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_actions,json=marketplaceFilterAssetClassRiskAdminJurisdictionActions,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_actions,omitempty"`                                                                                                                                                                                  // Actions
-	MarketplaceFilterAssetClassRiskAdminJurisdictionAddCountry                                                   string                 `protobuf:"bytes,198,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_add_country,json=marketplaceFilterAssetClassRiskAdminJurisdictionAddCountry,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_add_country,omitempty"`                                                                                                                                                                       // Add Country
-	MarketplaceFilterAssetClassRiskAdminJurisdictionAddSanctionedCountry                                         string                 `protobuf:"bytes,199,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_add_sanctioned_country,json=marketplaceFilterAssetClassRiskAdminJurisdictionAddSanctionedCountry,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_add_sanctioned_country,omitempty"`                                                                                                                                       // Add Sanctioned Country
-	MarketplaceFilterAssetClassRiskAdminJurisdictionAddedBy                                                      string                 `protobuf:"bytes,200,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_added_by,json=marketplaceFilterAssetClassRiskAdminJurisdictionAddedBy,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_added_by,omitempty"`                                                                                                                                                                                // Added By
-	MarketplaceFilterAssetClassRiskAdminJurisdictionConfirmGrantOverride                                         string                 `protobuf:"bytes,201,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_confirm_grant_override,json=marketplaceFilterAssetClassRiskAdminJurisdictionConfirmGrantOverride,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_confirm_grant_override,omitempty"`                                                                                                                                       // Grant override access to this user?
-	MarketplaceFilterAssetClassRiskAdminJurisdictionConfirmRevokeOverride                                        string                 `protobuf:"bytes,202,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_confirm_revoke_override,json=marketplaceFilterAssetClassRiskAdminJurisdictionConfirmRevokeOverride,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_confirm_revoke_override,omitempty"`                                                                                                                                    // Revoke override access from this user?
-	MarketplaceFilterAssetClassRiskAdminJurisdictionCountry                                                      string                 `protobuf:"bytes,203,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_country,json=marketplaceFilterAssetClassRiskAdminJurisdictionCountry,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_country,omitempty"`                                                                                                                                                                                  // Country
-	MarketplaceFilterAssetClassRiskAdminJurisdictionCountryCode                                                  string                 `protobuf:"bytes,204,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_country_code,json=marketplaceFilterAssetClassRiskAdminJurisdictionCountryCode,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_country_code,omitempty"`                                                                                                                                                                    // Country Code
-	MarketplaceFilterAssetClassRiskAdminJurisdictionCountryLabel                                                 string                 `protobuf:"bytes,205,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_country_label,json=marketplaceFilterAssetClassRiskAdminJurisdictionCountryLabel,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_country_label,omitempty"`                                                                                                                                                                 // Label
-	MarketplaceFilterAssetClassRiskAdminJurisdictionDisclaimer                                                   string                 `protobuf:"bytes,206,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_disclaimer,json=marketplaceFilterAssetClassRiskAdminJurisdictionDisclaimer,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_disclaimer,omitempty"`                                                                                                                                                                         // Disclaimer
-	MarketplaceFilterAssetClassRiskAdminJurisdictionEmptyKYC                                                     string                 `protobuf:"bytes,207,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_empty_k_y_c,json=marketplaceFilterAssetClassRiskAdminJurisdictionEmptyKYC,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_empty_k_y_c,omitempty"`                                                                                                                                                                         // No users match the selected KYC filter
-	MarketplaceFilterAssetClassRiskAdminJurisdictionEmptySanctions                                               string                 `protobuf:"bytes,208,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_empty_sanctions,json=marketplaceFilterAssetClassRiskAdminJurisdictionEmptySanctions,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_empty_sanctions,omitempty"`                                                                                                                                                           // No sanctioned countries configured
-	MarketplaceFilterAssetClassRiskAdminJurisdictionFilterByKYCStatus                                            string                 `protobuf:"bytes,209,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_filter_by_k_y_c_status,json=marketplaceFilterAssetClassRiskAdminJurisdictionFilterByKYCStatus,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_filter_by_k_y_c_status,omitempty"`                                                                                                                                          // Filter by KYC status
-	MarketplaceFilterAssetClassRiskAdminJurisdictionGrantOverride                                                string                 `protobuf:"bytes,210,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_grant_override,json=marketplaceFilterAssetClassRiskAdminJurisdictionGrantOverride,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_grant_override,omitempty"`                                                                                                                                                              // Grant Override
-	MarketplaceFilterAssetClassRiskAdminJurisdictionKycStatus                                                    string                 `protobuf:"bytes,211,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_kyc_status,json=marketplaceFilterAssetClassRiskAdminJurisdictionKycStatus,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_kyc_status,omitempty"`                                                                                                                                                                          // KYC Status
-	MarketplaceFilterAssetClassRiskAdminJurisdictionKycStatusTab                                                 string                 `protobuf:"bytes,212,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_kyc_status_tab,json=marketplaceFilterAssetClassRiskAdminJurisdictionKycStatusTab,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_kyc_status_tab,omitempty"`                                                                                                                                                               // User KYC Status
-	MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryAddFailed                                     string                 `protobuf:"bytes,213,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_messages_country_add_failed,json=marketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryAddFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_messages_country_add_failed,omitempty"`                                                                                                                         // Failed to add sanctioned country
-	MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryAdded                                         string                 `protobuf:"bytes,214,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_messages_country_added,json=marketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryAdded,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_messages_country_added,omitempty"`                                                                                                                                       // Sanctioned country added
-	MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryRemoveFailed                                  string                 `protobuf:"bytes,215,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_messages_country_remove_failed,json=marketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryRemoveFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_messages_country_remove_failed,omitempty"`                                                                                                                // Failed to remove sanctioned country
-	MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryRemoved                                       string                 `protobuf:"bytes,216,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_messages_country_removed,json=marketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryRemoved,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_messages_country_removed,omitempty"`                                                                                                                                 // Sanctioned country removed
-	MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesKycUpdateFailed                                      string                 `protobuf:"bytes,217,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_messages_kyc_update_failed,json=marketplaceFilterAssetClassRiskAdminJurisdictionMessagesKycUpdateFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_messages_kyc_update_failed,omitempty"`                                                                                                                            // Failed to update KYC status
-	MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesKycUpdated                                           string                 `protobuf:"bytes,218,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_messages_kyc_updated,json=marketplaceFilterAssetClassRiskAdminJurisdictionMessagesKycUpdated,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_messages_kyc_updated,omitempty"`                                                                                                                                             // KYC status updated
-	MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesOverrideUpdateFailed                                 string                 `protobuf:"bytes,219,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_messages_override_update_failed,json=marketplaceFilterAssetClassRiskAdminJurisdictionMessagesOverrideUpdateFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_messages_override_update_failed,omitempty"`                                                                                                             // Failed to update sanctioned override
-	MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesOverrideUpdated                                      string                 `protobuf:"bytes,220,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_messages_override_updated,json=marketplaceFilterAssetClassRiskAdminJurisdictionMessagesOverrideUpdated,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_messages_override_updated,omitempty"`                                                                                                                              // Sanctioned override updated
-	MarketplaceFilterAssetClassRiskAdminJurisdictionOverride                                                     string                 `protobuf:"bytes,221,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_override,json=marketplaceFilterAssetClassRiskAdminJurisdictionOverride,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_override,omitempty"`                                                                                                                                                                               // Override
-	MarketplaceFilterAssetClassRiskAdminJurisdictionOverrideWarning                                              string                 `protobuf:"bytes,222,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_override_warning,json=marketplaceFilterAssetClassRiskAdminJurisdictionOverrideWarning,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_override_warning,omitempty"`                                                                                                                                                        // This user is from a sanctioned country. Granting override wi
-	MarketplaceFilterAssetClassRiskAdminJurisdictionPending                                                      string                 `protobuf:"bytes,223,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_pending,json=marketplaceFilterAssetClassRiskAdminJurisdictionPending,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_pending,omitempty"`                                                                                                                                                                                  // Pending
-	MarketplaceFilterAssetClassRiskAdminJurisdictionQuestionnaire                                                string                 `protobuf:"bytes,224,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_questionnaire,json=marketplaceFilterAssetClassRiskAdminJurisdictionQuestionnaire,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_questionnaire,omitempty"`                                                                                                                                                                // Questionnaire
-	MarketplaceFilterAssetClassRiskAdminJurisdictionRejected                                                     string                 `protobuf:"bytes,225,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_rejected,json=marketplaceFilterAssetClassRiskAdminJurisdictionRejected,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_rejected,omitempty"`                                                                                                                                                                               // Rejected
-	MarketplaceFilterAssetClassRiskAdminJurisdictionRevokeOverride                                               string                 `protobuf:"bytes,226,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_revoke_override,json=marketplaceFilterAssetClassRiskAdminJurisdictionRevokeOverride,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_revoke_override,omitempty"`                                                                                                                                                           // Revoke Override
-	MarketplaceFilterAssetClassRiskAdminJurisdictionSanctioned                                                   string                 `protobuf:"bytes,227,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_sanctioned,json=marketplaceFilterAssetClassRiskAdminJurisdictionSanctioned,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_sanctioned,omitempty"`                                                                                                                                                                         // Sanctioned
-	MarketplaceFilterAssetClassRiskAdminJurisdictionSanctionedCountries                                          string                 `protobuf:"bytes,228,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_sanctioned_countries,json=marketplaceFilterAssetClassRiskAdminJurisdictionSanctionedCountries,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_sanctioned_countries,omitempty"`                                                                                                                                            // Sanctioned Countries
-	MarketplaceFilterAssetClassRiskAdminJurisdictionSanctionedCountriesTab                                       string                 `protobuf:"bytes,229,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_sanctioned_countries_tab,json=marketplaceFilterAssetClassRiskAdminJurisdictionSanctionedCountriesTab,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_sanctioned_countries_tab,omitempty"`                                                                                                                                 // Sanctioned Countries
-	MarketplaceFilterAssetClassRiskAdminJurisdictionSetKYC                                                       string                 `protobuf:"bytes,230,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_set_k_y_c,json=marketplaceFilterAssetClassRiskAdminJurisdictionSetKYC,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_set_k_y_c,omitempty"`                                                                                                                                                                               // Set KYC
-	MarketplaceFilterAssetClassRiskAdminJurisdictionSetKYCStatus                                                 string                 `protobuf:"bytes,231,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_set_k_y_c_status,json=marketplaceFilterAssetClassRiskAdminJurisdictionSetKYCStatus,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_set_k_y_c_status,omitempty"`                                                                                                                                                           // Set KYC Status
-	MarketplaceFilterAssetClassRiskAdminJurisdictionTitle                                                        string                 `protobuf:"bytes,232,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_title,json=marketplaceFilterAssetClassRiskAdminJurisdictionTitle,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_title,omitempty"`                                                                                                                                                                                        // Jurisdiction Gate
-	MarketplaceFilterAssetClassRiskAdminJurisdictionUnverified                                                   string                 `protobuf:"bytes,233,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_unverified,json=marketplaceFilterAssetClassRiskAdminJurisdictionUnverified,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_unverified,omitempty"`                                                                                                                                                                         // Unverified
-	MarketplaceFilterAssetClassRiskAdminJurisdictionUserEmail                                                    string                 `protobuf:"bytes,234,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_user_email,json=marketplaceFilterAssetClassRiskAdminJurisdictionUserEmail,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_user_email,omitempty"`                                                                                                                                                                          // Email
-	MarketplaceFilterAssetClassRiskAdminJurisdictionUserKYCStatus                                                string                 `protobuf:"bytes,235,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_user_k_y_c_status,json=marketplaceFilterAssetClassRiskAdminJurisdictionUserKYCStatus,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_user_k_y_c_status,omitempty"`                                                                                                                                                        // User KYC Status
-	MarketplaceFilterAssetClassRiskAdminJurisdictionVerified                                                     string                 `protobuf:"bytes,236,opt,name=marketplace_filter_asset_class_risk_admin_jurisdiction_verified,json=marketplaceFilterAssetClassRiskAdminJurisdictionVerified,proto3" json:"marketplace_filter_asset_class_risk_admin_jurisdiction_verified,omitempty"`                                                                                                                                                                               // Verified
-	MarketplaceFilterAssetClassRiskAdminSidebarAccountManagement                                                 string                 `protobuf:"bytes,237,opt,name=marketplace_filter_asset_class_risk_admin_sidebar_account_management,json=marketplaceFilterAssetClassRiskAdminSidebarAccountManagement,proto3" json:"marketplace_filter_asset_class_risk_admin_sidebar_account_management,omitempty"`                                                                                                                                                                 // Account Management
-	MarketplaceFilterAssetClassRiskAdminSidebarDashboard                                                         string                 `protobuf:"bytes,238,opt,name=marketplace_filter_asset_class_risk_admin_sidebar_dashboard,json=marketplaceFilterAssetClassRiskAdminSidebarDashboard,proto3" json:"marketplace_filter_asset_class_risk_admin_sidebar_dashboard,omitempty"`                                                                                                                                                                                           // Dashboard
-	MarketplaceFilterAssetClassRiskAdminSidebarJurisdiction                                                      string                 `protobuf:"bytes,239,opt,name=marketplace_filter_asset_class_risk_admin_sidebar_jurisdiction,json=marketplaceFilterAssetClassRiskAdminSidebarJurisdiction,proto3" json:"marketplace_filter_asset_class_risk_admin_sidebar_jurisdiction,omitempty"`                                                                                                                                                                                  // Jurisdiction Gate
-	MarketplaceFilterAssetClassRiskAdminSidebarOperationLogs                                                     string                 `protobuf:"bytes,240,opt,name=marketplace_filter_asset_class_risk_admin_sidebar_operation_logs,json=marketplaceFilterAssetClassRiskAdminSidebarOperationLogs,proto3" json:"marketplace_filter_asset_class_risk_admin_sidebar_operation_logs,omitempty"`                                                                                                                                                                             // Operation Logs
-	MarketplaceFilterAssetClassRiskAdminSidebarShareManagement                                                   string                 `protobuf:"bytes,241,opt,name=marketplace_filter_asset_class_risk_admin_sidebar_share_management,json=marketplaceFilterAssetClassRiskAdminSidebarShareManagement,proto3" json:"marketplace_filter_asset_class_risk_admin_sidebar_share_management,omitempty"`                                                                                                                                                                       // Share Analytics
-	MarketplaceFilterAssetClassRiskAdminSidebarSystemConfig                                                      string                 `protobuf:"bytes,242,opt,name=marketplace_filter_asset_class_risk_admin_sidebar_system_config,json=marketplaceFilterAssetClassRiskAdminSidebarSystemConfig,proto3" json:"marketplace_filter_asset_class_risk_admin_sidebar_system_config,omitempty"`                                                                                                                                                                                // System Config
-	MarketplaceFilterAssetClassRiskAdminSidebarTradingMonitor                                                    string                 `protobuf:"bytes,243,opt,name=marketplace_filter_asset_class_risk_admin_sidebar_trading_monitor,json=marketplaceFilterAssetClassRiskAdminSidebarTradingMonitor,proto3" json:"marketplace_filter_asset_class_risk_admin_sidebar_trading_monitor,omitempty"`                                                                                                                                                                          // Trading Monitor
-	MarketplaceFilterAssetClassRiskAdminSidebarUserManagement                                                    string                 `protobuf:"bytes,244,opt,name=marketplace_filter_asset_class_risk_admin_sidebar_user_management,json=marketplaceFilterAssetClassRiskAdminSidebarUserManagement,proto3" json:"marketplace_filter_asset_class_risk_admin_sidebar_user_management,omitempty"`                                                                                                                                                                          // User Management
-	MarketplaceFilterAssetClassRiskAdminSidebarWalletManagement                                                  string                 `protobuf:"bytes,245,opt,name=marketplace_filter_asset_class_risk_admin_sidebar_wallet_management,json=marketplaceFilterAssetClassRiskAdminSidebarWalletManagement,proto3" json:"marketplace_filter_asset_class_risk_admin_sidebar_wallet_management,omitempty"`                                                                                                                                                                    // Wallets
-	MarketplaceFilterAssetClassRiskAdminTradingAccounts                                                          string                 `protobuf:"bytes,246,opt,name=marketplace_filter_asset_class_risk_admin_trading_accounts,json=marketplaceFilterAssetClassRiskAdminTradingAccounts,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_accounts,omitempty"`                                                                                                                                                                                              // Accounts
-	MarketplaceFilterAssetClassRiskAdminTradingActiveUsers                                                       string                 `protobuf:"bytes,247,opt,name=marketplace_filter_asset_class_risk_admin_trading_active_users,json=marketplaceFilterAssetClassRiskAdminTradingActiveUsers,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_active_users,omitempty"`                                                                                                                                                                                   // Active Users
-	MarketplaceFilterAssetClassRiskAdminTradingByPlatform                                                        string                 `protobuf:"bytes,248,opt,name=marketplace_filter_asset_class_risk_admin_trading_by_platform,json=marketplaceFilterAssetClassRiskAdminTradingByPlatform,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_by_platform,omitempty"`                                                                                                                                                                                      // By Platform
-	MarketplaceFilterAssetClassRiskAdminTradingClosedOrders                                                      string                 `protobuf:"bytes,249,opt,name=marketplace_filter_asset_class_risk_admin_trading_closed_orders,json=marketplaceFilterAssetClassRiskAdminTradingClosedOrders,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_closed_orders,omitempty"`                                                                                                                                                                                // Closed Orders
-	MarketplaceFilterAssetClassRiskAdminTradingConnectedAccounts                                                 string                 `protobuf:"bytes,250,opt,name=marketplace_filter_asset_class_risk_admin_trading_connected_accounts,json=marketplaceFilterAssetClassRiskAdminTradingConnectedAccounts,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_connected_accounts,omitempty"`                                                                                                                                                                 // Connected Accounts
-	MarketplaceFilterAssetClassRiskAdminTradingLoadFailed                                                        string                 `protobuf:"bytes,251,opt,name=marketplace_filter_asset_class_risk_admin_trading_load_failed,json=marketplaceFilterAssetClassRiskAdminTradingLoadFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_load_failed,omitempty"`                                                                                                                                                                                      // Failed to load trading statistics
-	MarketplaceFilterAssetClassRiskAdminTradingNetProfit                                                         string                 `protobuf:"bytes,252,opt,name=marketplace_filter_asset_class_risk_admin_trading_net_profit,json=marketplaceFilterAssetClassRiskAdminTradingNetProfit,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_net_profit,omitempty"`                                                                                                                                                                                         // Net P&L
-	MarketplaceFilterAssetClassRiskAdminTradingOrders                                                            string                 `protobuf:"bytes,253,opt,name=marketplace_filter_asset_class_risk_admin_trading_orders,json=marketplaceFilterAssetClassRiskAdminTradingOrders,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_orders,omitempty"`                                                                                                                                                                                                    // Orders
-	MarketplaceFilterAssetClassRiskAdminTradingPendingOrders                                                     string                 `protobuf:"bytes,254,opt,name=marketplace_filter_asset_class_risk_admin_trading_pending_orders,json=marketplaceFilterAssetClassRiskAdminTradingPendingOrders,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_pending_orders,omitempty"`                                                                                                                                                                             // Pending Orders
-	MarketplaceFilterAssetClassRiskAdminTradingPlatform                                                          string                 `protobuf:"bytes,255,opt,name=marketplace_filter_asset_class_risk_admin_trading_platform,json=marketplaceFilterAssetClassRiskAdminTradingPlatform,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_platform,omitempty"`                                                                                                                                                                                              // Platform
-	MarketplaceFilterAssetClassRiskAdminTradingProfitStats                                                       string                 `protobuf:"bytes,256,opt,name=marketplace_filter_asset_class_risk_admin_trading_profit_stats,json=marketplaceFilterAssetClassRiskAdminTradingProfitStats,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_profit_stats,omitempty"`                                                                                                                                                                                   // P&L Statistics
-	MarketplaceFilterAssetClassRiskAdminTradingTitle                                                             string                 `protobuf:"bytes,257,opt,name=marketplace_filter_asset_class_risk_admin_trading_title,json=marketplaceFilterAssetClassRiskAdminTradingTitle,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_title,omitempty"`                                                                                                                                                                                                       // Trading Monitor
-	MarketplaceFilterAssetClassRiskAdminTradingTotalAccounts                                                     string                 `protobuf:"bytes,258,opt,name=marketplace_filter_asset_class_risk_admin_trading_total_accounts,json=marketplaceFilterAssetClassRiskAdminTradingTotalAccounts,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_total_accounts,omitempty"`                                                                                                                                                                             // Total Accounts
-	MarketplaceFilterAssetClassRiskAdminTradingTotalLoss                                                         string                 `protobuf:"bytes,259,opt,name=marketplace_filter_asset_class_risk_admin_trading_total_loss,json=marketplaceFilterAssetClassRiskAdminTradingTotalLoss,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_total_loss,omitempty"`                                                                                                                                                                                         // Total Loss
-	MarketplaceFilterAssetClassRiskAdminTradingTotalOrders                                                       string                 `protobuf:"bytes,260,opt,name=marketplace_filter_asset_class_risk_admin_trading_total_orders,json=marketplaceFilterAssetClassRiskAdminTradingTotalOrders,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_total_orders,omitempty"`                                                                                                                                                                                   // Total Orders
-	MarketplaceFilterAssetClassRiskAdminTradingTotalProfit                                                       string                 `protobuf:"bytes,261,opt,name=marketplace_filter_asset_class_risk_admin_trading_total_profit,json=marketplaceFilterAssetClassRiskAdminTradingTotalProfit,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_total_profit,omitempty"`                                                                                                                                                                                   // Total Profit
-	MarketplaceFilterAssetClassRiskAdminTradingTotalUsers                                                        string                 `protobuf:"bytes,262,opt,name=marketplace_filter_asset_class_risk_admin_trading_total_users,json=marketplaceFilterAssetClassRiskAdminTradingTotalUsers,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_total_users,omitempty"`                                                                                                                                                                                      // Total Users
-	MarketplaceFilterAssetClassRiskAdminTradingTotalVolume                                                       string                 `protobuf:"bytes,263,opt,name=marketplace_filter_asset_class_risk_admin_trading_total_volume,json=marketplaceFilterAssetClassRiskAdminTradingTotalVolume,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_total_volume,omitempty"`                                                                                                                                                                                   // Total Volume
-	MarketplaceFilterAssetClassRiskAdminTradingVolume                                                            string                 `protobuf:"bytes,264,opt,name=marketplace_filter_asset_class_risk_admin_trading_volume,json=marketplaceFilterAssetClassRiskAdminTradingVolume,proto3" json:"marketplace_filter_asset_class_risk_admin_trading_volume,omitempty"`                                                                                                                                                                                                    // Volume
-	MarketplaceFilterAssetClassRiskAdminUserManagementActionsChangePassword                                      string                 `protobuf:"bytes,265,opt,name=marketplace_filter_asset_class_risk_admin_user_management_actions_change_password,json=marketplaceFilterAssetClassRiskAdminUserManagementActionsChangePassword,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_actions_change_password,omitempty"`                                                                                                                            // Change Password
-	MarketplaceFilterAssetClassRiskAdminUserManagementActionsDetails                                             string                 `protobuf:"bytes,266,opt,name=marketplace_filter_asset_class_risk_admin_user_management_actions_details,json=marketplaceFilterAssetClassRiskAdminUserManagementActionsDetails,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_actions_details,omitempty"`                                                                                                                                                   // Details
-	MarketplaceFilterAssetClassRiskAdminUserManagementActionsDisable                                             string                 `protobuf:"bytes,267,opt,name=marketplace_filter_asset_class_risk_admin_user_management_actions_disable,json=marketplaceFilterAssetClassRiskAdminUserManagementActionsDisable,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_actions_disable,omitempty"`                                                                                                                                                   // Disable
-	MarketplaceFilterAssetClassRiskAdminUserManagementActionsEnable                                              string                 `protobuf:"bytes,268,opt,name=marketplace_filter_asset_class_risk_admin_user_management_actions_enable,json=marketplaceFilterAssetClassRiskAdminUserManagementActionsEnable,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_actions_enable,omitempty"`                                                                                                                                                      // Enable
-	MarketplaceFilterAssetClassRiskAdminUserManagementAddUser                                                    string                 `protobuf:"bytes,269,opt,name=marketplace_filter_asset_class_risk_admin_user_management_add_user,json=marketplaceFilterAssetClassRiskAdminUserManagementAddUser,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_add_user,omitempty"`                                                                                                                                                                        // Add User
-	MarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeleteConfirm                            string                 `protobuf:"bytes,270,opt,name=marketplace_filter_asset_class_risk_admin_user_management_delete_confirm_batch_delete_confirm,json=marketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeleteConfirm,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_delete_confirm_batch_delete_confirm,omitempty"`                                                                                          // Delete {{count}} user(s)? This action cannot be undone.
-	MarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeletePartial                            string                 `protobuf:"bytes,271,opt,name=marketplace_filter_asset_class_risk_admin_user_management_delete_confirm_batch_delete_partial,json=marketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeletePartial,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_delete_confirm_batch_delete_partial,omitempty"`                                                                                          // {{deleted}} deleted, {{failed}} failed
-	MarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeleteSuccess                            string                 `protobuf:"bytes,272,opt,name=marketplace_filter_asset_class_risk_admin_user_management_delete_confirm_batch_delete_success,json=marketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeleteSuccess,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_delete_confirm_batch_delete_success,omitempty"`                                                                                          // {{count}} user(s) deleted
-	MarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmTitle                                         string                 `protobuf:"bytes,273,opt,name=marketplace_filter_asset_class_risk_admin_user_management_delete_confirm_title,json=marketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmTitle,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_delete_confirm_title,omitempty"`                                                                                                                                     // Delete this user? This action cannot be undone.
-	MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsCreatedAt                                      string                 `protobuf:"bytes,274,opt,name=marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_created_at,json=marketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsCreatedAt,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_created_at,omitempty"`                                                                                                                          // Created At
-	MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsEmail                                          string                 `protobuf:"bytes,275,opt,name=marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_email,json=marketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsEmail,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_email,omitempty"`                                                                                                                                        // Email
-	MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsId                                             string                 `protobuf:"bytes,276,opt,name=marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_id,json=marketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsId,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_id,omitempty"`                                                                                                                                                 // ID
-	MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsLastLogin                                      string                 `protobuf:"bytes,277,opt,name=marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_last_login,json=marketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsLastLogin,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_last_login,omitempty"`                                                                                                                          // Last Login
-	MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsMtAccountCount                                 string                 `protobuf:"bytes,278,opt,name=marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_mt_account_count,json=marketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsMtAccountCount,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_mt_account_count,omitempty"`                                                                                                         // MT Accounts
-	MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsNickname                                       string                 `protobuf:"bytes,279,opt,name=marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_nickname,json=marketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsNickname,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_nickname,omitempty"`                                                                                                                               // Nickname
-	MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsRole                                           string                 `protobuf:"bytes,280,opt,name=marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_role,json=marketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsRole,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_role,omitempty"`                                                                                                                                           // Role
-	MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsStatus                                         string                 `protobuf:"bytes,281,opt,name=marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_status,json=marketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsStatus,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_drawer_labels_status,omitempty"`                                                                                                                                     // Status
-	MarketplaceFilterAssetClassRiskAdminUserManagementDrawerTitle                                                string                 `protobuf:"bytes,282,opt,name=marketplace_filter_asset_class_risk_admin_user_management_drawer_title,json=marketplaceFilterAssetClassRiskAdminUserManagementDrawerTitle,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_drawer_title,omitempty"`                                                                                                                                                            // User Details
-	MarketplaceFilterAssetClassRiskAdminUserManagementFiltersRolePlaceholder                                     string                 `protobuf:"bytes,283,opt,name=marketplace_filter_asset_class_risk_admin_user_management_filters_role_placeholder,json=marketplaceFilterAssetClassRiskAdminUserManagementFiltersRolePlaceholder,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_filters_role_placeholder,omitempty"`                                                                                                                         // Filter by role
-	MarketplaceFilterAssetClassRiskAdminUserManagementFiltersSearchPlaceholder                                   string                 `protobuf:"bytes,284,opt,name=marketplace_filter_asset_class_risk_admin_user_management_filters_search_placeholder,json=marketplaceFilterAssetClassRiskAdminUserManagementFiltersSearchPlaceholder,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_filters_search_placeholder,omitempty"`                                                                                                                   // Search by email or nickname
-	MarketplaceFilterAssetClassRiskAdminUserManagementFiltersStatusPlaceholder                                   string                 `protobuf:"bytes,285,opt,name=marketplace_filter_asset_class_risk_admin_user_management_filters_status_placeholder,json=marketplaceFilterAssetClassRiskAdminUserManagementFiltersStatusPlaceholder,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_filters_status_placeholder,omitempty"`                                                                                                                   // Filter by status
-	MarketplaceFilterAssetClassRiskAdminUserManagementFormAccountNumber                                          string                 `protobuf:"bytes,286,opt,name=marketplace_filter_asset_class_risk_admin_user_management_form_account_number,json=marketplaceFilterAssetClassRiskAdminUserManagementFormAccountNumber,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_form_account_number,omitempty"`                                                                                                                                        // Account Number
-	MarketplaceFilterAssetClassRiskAdminUserManagementFormAccountNumberInvalid                                   string                 `protobuf:"bytes,287,opt,name=marketplace_filter_asset_class_risk_admin_user_management_form_account_number_invalid,json=marketplaceFilterAssetClassRiskAdminUserManagementFormAccountNumberInvalid,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_form_account_number_invalid,omitempty"`                                                                                                                 // 5-6 digits, no leading 0, no 4 or 7
-	MarketplaceFilterAssetClassRiskAdminUserManagementFormEmail                                                  string                 `protobuf:"bytes,288,opt,name=marketplace_filter_asset_class_risk_admin_user_management_form_email,json=marketplaceFilterAssetClassRiskAdminUserManagementFormEmail,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_form_email,omitempty"`                                                                                                                                                                  // Email
-	MarketplaceFilterAssetClassRiskAdminUserManagementFormNickname                                               string                 `protobuf:"bytes,289,opt,name=marketplace_filter_asset_class_risk_admin_user_management_form_nickname,json=marketplaceFilterAssetClassRiskAdminUserManagementFormNickname,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_form_nickname,omitempty"`                                                                                                                                                         // Nickname
-	MarketplaceFilterAssetClassRiskAdminUserManagementFormPassword                                               string                 `protobuf:"bytes,290,opt,name=marketplace_filter_asset_class_risk_admin_user_management_form_password,json=marketplaceFilterAssetClassRiskAdminUserManagementFormPassword,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_form_password,omitempty"`                                                                                                                                                         // Password
-	MarketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersEmail                                      string                 `protobuf:"bytes,291,opt,name=marketplace_filter_asset_class_risk_admin_user_management_form_placeholders_email,json=marketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersEmail,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_form_placeholders_email,omitempty"`                                                                                                                            // Enter email
-	MarketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersNickname                                   string                 `protobuf:"bytes,292,opt,name=marketplace_filter_asset_class_risk_admin_user_management_form_placeholders_nickname,json=marketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersNickname,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_form_placeholders_nickname,omitempty"`                                                                                                                   // Enter nickname
-	MarketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersPassword                                   string                 `protobuf:"bytes,293,opt,name=marketplace_filter_asset_class_risk_admin_user_management_form_placeholders_password,json=marketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersPassword,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_form_placeholders_password,omitempty"`                                                                                                                   // Enter password
-	MarketplaceFilterAssetClassRiskAdminUserManagementFormRole                                                   string                 `protobuf:"bytes,294,opt,name=marketplace_filter_asset_class_risk_admin_user_management_form_role,json=marketplaceFilterAssetClassRiskAdminUserManagementFormRole,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_form_role,omitempty"`                                                                                                                                                                     // Role
-	MarketplaceFilterAssetClassRiskAdminUserManagementFormStatus                                                 string                 `protobuf:"bytes,295,opt,name=marketplace_filter_asset_class_risk_admin_user_management_form_status,json=marketplaceFilterAssetClassRiskAdminUserManagementFormStatus,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_form_status,omitempty"`                                                                                                                                                               // Status
-	MarketplaceFilterAssetClassRiskAdminUserManagementMessagesNewPasswordIs                                      string                 `protobuf:"bytes,296,opt,name=marketplace_filter_asset_class_risk_admin_user_management_messages_new_password_is,json=marketplaceFilterAssetClassRiskAdminUserManagementMessagesNewPasswordIs,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_messages_new_password_is,omitempty"`                                                                                                                          // New password is: {{password}}
-	MarketplaceFilterAssetClassRiskAdminUserManagementMessagesPasswordUpdateFailed                               string                 `protobuf:"bytes,297,opt,name=marketplace_filter_asset_class_risk_admin_user_management_messages_password_update_failed,json=marketplaceFilterAssetClassRiskAdminUserManagementMessagesPasswordUpdateFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_messages_password_update_failed,omitempty"`                                                                                                     // Failed to update password
-	MarketplaceFilterAssetClassRiskAdminUserManagementMessagesPasswordUpdatedSuccess                             string                 `protobuf:"bytes,298,opt,name=marketplace_filter_asset_class_risk_admin_user_management_messages_password_updated_success,json=marketplaceFilterAssetClassRiskAdminUserManagementMessagesPasswordUpdatedSuccess,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_messages_password_updated_success,omitempty"`                                                                                               // Password updated successfully
-	MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserCreateFailed                                   string                 `protobuf:"bytes,299,opt,name=marketplace_filter_asset_class_risk_admin_user_management_messages_user_create_failed,json=marketplaceFilterAssetClassRiskAdminUserManagementMessagesUserCreateFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_messages_user_create_failed,omitempty"`                                                                                                                 // Failed to create user
-	MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserCreatedSuccess                                 string                 `protobuf:"bytes,300,opt,name=marketplace_filter_asset_class_risk_admin_user_management_messages_user_created_success,json=marketplaceFilterAssetClassRiskAdminUserManagementMessagesUserCreatedSuccess,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_messages_user_created_success,omitempty"`                                                                                                           // User created successfully
-	MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDeleteFailed                                   string                 `protobuf:"bytes,301,opt,name=marketplace_filter_asset_class_risk_admin_user_management_messages_user_delete_failed,json=marketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDeleteFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_messages_user_delete_failed,omitempty"`                                                                                                                 // Failed to delete user
-	MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDeletedSuccess                                 string                 `protobuf:"bytes,302,opt,name=marketplace_filter_asset_class_risk_admin_user_management_messages_user_deleted_success,json=marketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDeletedSuccess,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_messages_user_deleted_success,omitempty"`                                                                                                           // User deleted successfully
-	MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDisabled                                       string                 `protobuf:"bytes,303,opt,name=marketplace_filter_asset_class_risk_admin_user_management_messages_user_disabled,json=marketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDisabled,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_messages_user_disabled,omitempty"`                                                                                                                               // User disabled
-	MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserEnabled                                        string                 `protobuf:"bytes,304,opt,name=marketplace_filter_asset_class_risk_admin_user_management_messages_user_enabled,json=marketplaceFilterAssetClassRiskAdminUserManagementMessagesUserEnabled,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_messages_user_enabled,omitempty"`                                                                                                                                  // User enabled
-	MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserUpdateFailed                                   string                 `protobuf:"bytes,305,opt,name=marketplace_filter_asset_class_risk_admin_user_management_messages_user_update_failed,json=marketplaceFilterAssetClassRiskAdminUserManagementMessagesUserUpdateFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_messages_user_update_failed,omitempty"`                                                                                                                 // Failed to update user
-	MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserUpdatedSuccess                                 string                 `protobuf:"bytes,306,opt,name=marketplace_filter_asset_class_risk_admin_user_management_messages_user_updated_success,json=marketplaceFilterAssetClassRiskAdminUserManagementMessagesUserUpdatedSuccess,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_messages_user_updated_success,omitempty"`                                                                                                           // User updated successfully
-	MarketplaceFilterAssetClassRiskAdminUserManagementModalsCreateTitle                                          string                 `protobuf:"bytes,307,opt,name=marketplace_filter_asset_class_risk_admin_user_management_modals_create_title,json=marketplaceFilterAssetClassRiskAdminUserManagementModalsCreateTitle,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_modals_create_title,omitempty"`                                                                                                                                        // Create User
-	MarketplaceFilterAssetClassRiskAdminUserManagementModalsEditTitle                                            string                 `protobuf:"bytes,308,opt,name=marketplace_filter_asset_class_risk_admin_user_management_modals_edit_title,json=marketplaceFilterAssetClassRiskAdminUserManagementModalsEditTitle,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_modals_edit_title,omitempty"`                                                                                                                                              // Edit User
-	MarketplaceFilterAssetClassRiskAdminUserManagementModalsPasswordTitle                                        string                 `protobuf:"bytes,309,opt,name=marketplace_filter_asset_class_risk_admin_user_management_modals_password_title,json=marketplaceFilterAssetClassRiskAdminUserManagementModalsPasswordTitle,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_modals_password_title,omitempty"`                                                                                                                                  // Change Password
-	MarketplaceFilterAssetClassRiskAdminUserManagementPaginationTotal                                            string                 `protobuf:"bytes,310,opt,name=marketplace_filter_asset_class_risk_admin_user_management_pagination_total,json=marketplaceFilterAssetClassRiskAdminUserManagementPaginationTotal,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_pagination_total,omitempty"`                                                                                                                                                // Total {{total}} users
-	MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormConfirmPassword                                string                 `protobuf:"bytes,311,opt,name=marketplace_filter_asset_class_risk_admin_user_management_password_form_confirm_password,json=marketplaceFilterAssetClassRiskAdminUserManagementPasswordFormConfirmPassword,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_password_form_confirm_password,omitempty"`                                                                                                        // Confirm Password
-	MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormNewPassword                                    string                 `protobuf:"bytes,312,opt,name=marketplace_filter_asset_class_risk_admin_user_management_password_form_new_password,json=marketplaceFilterAssetClassRiskAdminUserManagementPasswordFormNewPassword,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_password_form_new_password,omitempty"`                                                                                                                    // New Password
-	MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormPlaceholdersConfirmPassword                    string                 `protobuf:"bytes,313,opt,name=marketplace_filter_asset_class_risk_admin_user_management_password_form_placeholders_confirm_password,json=marketplaceFilterAssetClassRiskAdminUserManagementPasswordFormPlaceholdersConfirmPassword,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_password_form_placeholders_confirm_password,omitempty"`                                                                  // Re-enter new password
-	MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormPlaceholdersNewPassword                        string                 `protobuf:"bytes,314,opt,name=marketplace_filter_asset_class_risk_admin_user_management_password_form_placeholders_new_password,json=marketplaceFilterAssetClassRiskAdminUserManagementPasswordFormPlaceholdersNewPassword,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_password_form_placeholders_new_password,omitempty"`                                                                              // Enter new password
-	MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormSubmit                                         string                 `protobuf:"bytes,315,opt,name=marketplace_filter_asset_class_risk_admin_user_management_password_form_submit,json=marketplaceFilterAssetClassRiskAdminUserManagementPasswordFormSubmit,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_password_form_submit,omitempty"`                                                                                                                                     // Update Password
-	MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationConfirmPasswordRequired              string                 `protobuf:"bytes,316,opt,name=marketplace_filter_asset_class_risk_admin_user_management_password_form_validation_confirm_password_required,json=marketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationConfirmPasswordRequired,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_password_form_validation_confirm_password_required,omitempty"`                                              // Please confirm the new password
-	MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationNewPasswordRequired                  string                 `protobuf:"bytes,317,opt,name=marketplace_filter_asset_class_risk_admin_user_management_password_form_validation_new_password_required,json=marketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationNewPasswordRequired,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_password_form_validation_new_password_required,omitempty"`                                                          // New password is required
-	MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMin8                         string                 `protobuf:"bytes,318,opt,name=marketplace_filter_asset_class_risk_admin_user_management_password_form_validation_password_min8,json=marketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMin8,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_password_form_validation_password_min8,omitempty"`                                                                                 // Password must be at least 8 characters
-	MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMismatch                     string                 `protobuf:"bytes,319,opt,name=marketplace_filter_asset_class_risk_admin_user_management_password_form_validation_password_mismatch,json=marketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMismatch,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_password_form_validation_password_mismatch,omitempty"`                                                                     // Passwords do not match
-	MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMustContainLettersAndNumbers string                 `protobuf:"bytes,320,opt,name=marketplace_filter_asset_class_risk_admin_user_management_password_form_validation_password_must_contain_letters_and_numbers,json=marketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMustContainLettersAndNumbers,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_password_form_validation_password_must_contain_letters_and_numbers,omitempty"` // Password must contain both letters and numbers
-	MarketplaceFilterAssetClassRiskAdminUserManagementRolesAudit                                                 string                 `protobuf:"bytes,321,opt,name=marketplace_filter_asset_class_risk_admin_user_management_roles_audit,json=marketplaceFilterAssetClassRiskAdminUserManagementRolesAudit,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_roles_audit,omitempty"`                                                                                                                                                               // Audit
-	MarketplaceFilterAssetClassRiskAdminUserManagementRolesCustomerService                                       string                 `protobuf:"bytes,322,opt,name=marketplace_filter_asset_class_risk_admin_user_management_roles_customer_service,json=marketplaceFilterAssetClassRiskAdminUserManagementRolesCustomerService,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_roles_customer_service,omitempty"`                                                                                                                               // Customer Service
-	MarketplaceFilterAssetClassRiskAdminUserManagementRolesOperation                                             string                 `protobuf:"bytes,323,opt,name=marketplace_filter_asset_class_risk_admin_user_management_roles_operation,json=marketplaceFilterAssetClassRiskAdminUserManagementRolesOperation,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_roles_operation,omitempty"`                                                                                                                                                   // Operation
-	MarketplaceFilterAssetClassRiskAdminUserManagementRolesSuperAdmin                                            string                 `protobuf:"bytes,324,opt,name=marketplace_filter_asset_class_risk_admin_user_management_roles_super_admin,json=marketplaceFilterAssetClassRiskAdminUserManagementRolesSuperAdmin,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_roles_super_admin,omitempty"`                                                                                                                                              // Super Admin
-	MarketplaceFilterAssetClassRiskAdminUserManagementRolesUser                                                  string                 `protobuf:"bytes,325,opt,name=marketplace_filter_asset_class_risk_admin_user_management_roles_user,json=marketplaceFilterAssetClassRiskAdminUserManagementRolesUser,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_roles_user,omitempty"`                                                                                                                                                                  // User
-	MarketplaceFilterAssetClassRiskAdminUserManagementStatusActive                                               string                 `protobuf:"bytes,326,opt,name=marketplace_filter_asset_class_risk_admin_user_management_status_active,json=marketplaceFilterAssetClassRiskAdminUserManagementStatusActive,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_status_active,omitempty"`                                                                                                                                                         // Active
-	MarketplaceFilterAssetClassRiskAdminUserManagementStatusSuspended                                            string                 `protobuf:"bytes,327,opt,name=marketplace_filter_asset_class_risk_admin_user_management_status_suspended,json=marketplaceFilterAssetClassRiskAdminUserManagementStatusSuspended,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_status_suspended,omitempty"`                                                                                                                                                // Suspended
-	MarketplaceFilterAssetClassRiskAdminUserManagementTableActions                                               string                 `protobuf:"bytes,328,opt,name=marketplace_filter_asset_class_risk_admin_user_management_table_actions,json=marketplaceFilterAssetClassRiskAdminUserManagementTableActions,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_table_actions,omitempty"`                                                                                                                                                         // Actions
-	MarketplaceFilterAssetClassRiskAdminUserManagementTableCreatedAt                                             string                 `protobuf:"bytes,329,opt,name=marketplace_filter_asset_class_risk_admin_user_management_table_created_at,json=marketplaceFilterAssetClassRiskAdminUserManagementTableCreatedAt,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_table_created_at,omitempty"`                                                                                                                                                 // Created At
-	MarketplaceFilterAssetClassRiskAdminUserManagementTableEmail                                                 string                 `protobuf:"bytes,330,opt,name=marketplace_filter_asset_class_risk_admin_user_management_table_email,json=marketplaceFilterAssetClassRiskAdminUserManagementTableEmail,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_table_email,omitempty"`                                                                                                                                                               // Email
-	MarketplaceFilterAssetClassRiskAdminUserManagementTableId                                                    string                 `protobuf:"bytes,331,opt,name=marketplace_filter_asset_class_risk_admin_user_management_table_id,json=marketplaceFilterAssetClassRiskAdminUserManagementTableId,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_table_id,omitempty"`                                                                                                                                                                        // ID
-	MarketplaceFilterAssetClassRiskAdminUserManagementTableMtAccountCount                                        string                 `protobuf:"bytes,332,opt,name=marketplace_filter_asset_class_risk_admin_user_management_table_mt_account_count,json=marketplaceFilterAssetClassRiskAdminUserManagementTableMtAccountCount,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_table_mt_account_count,omitempty"`                                                                                                                                // MT Accounts
-	MarketplaceFilterAssetClassRiskAdminUserManagementTableNickname                                              string                 `protobuf:"bytes,333,opt,name=marketplace_filter_asset_class_risk_admin_user_management_table_nickname,json=marketplaceFilterAssetClassRiskAdminUserManagementTableNickname,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_table_nickname,omitempty"`                                                                                                                                                      // Nickname
-	MarketplaceFilterAssetClassRiskAdminUserManagementTableRole                                                  string                 `protobuf:"bytes,334,opt,name=marketplace_filter_asset_class_risk_admin_user_management_table_role,json=marketplaceFilterAssetClassRiskAdminUserManagementTableRole,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_table_role,omitempty"`                                                                                                                                                                  // Role
-	MarketplaceFilterAssetClassRiskAdminUserManagementTableStatus                                                string                 `protobuf:"bytes,335,opt,name=marketplace_filter_asset_class_risk_admin_user_management_table_status,json=marketplaceFilterAssetClassRiskAdminUserManagementTableStatus,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_table_status,omitempty"`                                                                                                                                                            // Status
-	MarketplaceFilterAssetClassRiskAdminUserManagementTitle                                                      string                 `protobuf:"bytes,336,opt,name=marketplace_filter_asset_class_risk_admin_user_management_title,json=marketplaceFilterAssetClassRiskAdminUserManagementTitle,proto3" json:"marketplace_filter_asset_class_risk_admin_user_management_title,omitempty"`                                                                                                                                                                                // User Management
-	MarketplaceFilterAssetClassRiskAdminWalletAccountNumber                                                      string                 `protobuf:"bytes,337,opt,name=marketplace_filter_asset_class_risk_admin_wallet_account_number,json=marketplaceFilterAssetClassRiskAdminWalletAccountNumber,proto3" json:"marketplace_filter_asset_class_risk_admin_wallet_account_number,omitempty"`                                                                                                                                                                                // Account
-	MarketplaceFilterAssetClassRiskAdminWalletAdd                                                                string                 `protobuf:"bytes,338,opt,name=marketplace_filter_asset_class_risk_admin_wallet_add,json=marketplaceFilterAssetClassRiskAdminWalletAdd,proto3" json:"marketplace_filter_asset_class_risk_admin_wallet_add,omitempty"`                                                                                                                                                                                                                // Add
-	MarketplaceFilterAssetClassRiskAdminWalletAdjustBalance                                                      string                 `protobuf:"bytes,339,opt,name=marketplace_filter_asset_class_risk_admin_wallet_adjust_balance,json=marketplaceFilterAssetClassRiskAdminWalletAdjustBalance,proto3" json:"marketplace_filter_asset_class_risk_admin_wallet_adjust_balance,omitempty"`                                                                                                                                                                                // Adjust Balance
-	MarketplaceFilterAssetClassRiskAdminWalletAdjustFailed                                                       string                 `protobuf:"bytes,340,opt,name=marketplace_filter_asset_class_risk_admin_wallet_adjust_failed,json=marketplaceFilterAssetClassRiskAdminWalletAdjustFailed,proto3" json:"marketplace_filter_asset_class_risk_admin_wallet_adjust_failed,omitempty"`                                                                                                                                                                                   // Adjustment failed
-	MarketplaceFilterAssetClassRiskAdminWalletAdjustSuccess                                                      string                 `protobuf:"bytes,341,opt,name=marketplace_filter_asset_class_risk_admin_wallet_adjust_success,json=marketplaceFilterAssetClassRiskAdminWalletAdjustSuccess,proto3" json:"marketplace_filter_asset_class_risk_admin_wallet_adjust_success,omitempty"`                                                                                                                                                                                // Balance adjusted
-	MarketplaceFilterAssetClassRiskAdminWalletDeduct                                                             string                 `protobuf:"bytes,342,opt,name=marketplace_filter_asset_class_risk_admin_wallet_deduct,json=marketplaceFilterAssetClassRiskAdminWalletDeduct,proto3" json:"marketplace_filter_asset_class_risk_admin_wallet_deduct,omitempty"`                                                                                                                                                                                                       // Deduct
-	MarketplaceFilterAssetClassRiskAdminWalletNoUsers                                                            string                 `protobuf:"bytes,343,opt,name=marketplace_filter_asset_class_risk_admin_wallet_no_users,json=marketplaceFilterAssetClassRiskAdminWalletNoUsers,proto3" json:"marketplace_filter_asset_class_risk_admin_wallet_no_users,omitempty"`                                                                                                                                                                                                  // No users found
-	MarketplaceFilterAssetClassRiskAdminWalletReason                                                             string                 `protobuf:"bytes,344,opt,name=marketplace_filter_asset_class_risk_admin_wallet_reason,json=marketplaceFilterAssetClassRiskAdminWalletReason,proto3" json:"marketplace_filter_asset_class_risk_admin_wallet_reason,omitempty"`                                                                                                                                                                                                       // Reason for adjustment...
-	MarketplaceFilterAssetClassRiskAdminWalletSearchPlaceholder                                                  string                 `protobuf:"bytes,345,opt,name=marketplace_filter_asset_class_risk_admin_wallet_search_placeholder,json=marketplaceFilterAssetClassRiskAdminWalletSearchPlaceholder,proto3" json:"marketplace_filter_asset_class_risk_admin_wallet_search_placeholder,omitempty"`                                                                                                                                                                    // Search by email or account number...
-	MarketplaceFilterAssetClassRiskAdminWalletTitle                                                              string                 `protobuf:"bytes,346,opt,name=marketplace_filter_asset_class_risk_admin_wallet_title,json=marketplaceFilterAssetClassRiskAdminWalletTitle,proto3" json:"marketplace_filter_asset_class_risk_admin_wallet_title,omitempty"`                                                                                                                                                                                                          // Wallet Management
-	MarketplaceFilterAssetClassRiskAdminWalletWalletFor                                                          string                 `protobuf:"bytes,347,opt,name=marketplace_filter_asset_class_risk_admin_wallet_wallet_for,json=marketplaceFilterAssetClassRiskAdminWalletWalletFor,proto3" json:"marketplace_filter_asset_class_risk_admin_wallet_wallet_for,omitempty"`                                                                                                                                                                                            // Wallet for
-	MarketplaceFilterAssetClassRiskAuthorAvgRating                                                               string                 `protobuf:"bytes,348,opt,name=marketplace_filter_asset_class_risk_author_avg_rating,json=marketplaceFilterAssetClassRiskAuthorAvgRating,proto3" json:"marketplace_filter_asset_class_risk_author_avg_rating,omitempty"`                                                                                                                                                                                                             // Avg Rating
-	MarketplaceFilterAssetClassRiskAuthorEmpty                                                                   string                 `protobuf:"bytes,349,opt,name=marketplace_filter_asset_class_risk_author_empty,json=marketplaceFilterAssetClassRiskAuthorEmpty,proto3" json:"marketplace_filter_asset_class_risk_author_empty,omitempty"`                                                                                                                                                                                                                           // No strategies published yet. Go to Strategy Library to publi
-	MarketplaceFilterAssetClassRiskAuthorPublished                                                               string                 `protobuf:"bytes,350,opt,name=marketplace_filter_asset_class_risk_author_published,json=marketplaceFilterAssetClassRiskAuthorPublished,proto3" json:"marketplace_filter_asset_class_risk_author_published,omitempty"`                                                                                                                                                                                                               // Published
-	MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsAction                                                  string                 `protobuf:"bytes,351,opt,name=marketplace_filter_asset_class_risk_auto_trading_logs_columns_action,json=marketplaceFilterAssetClassRiskAutoTradingLogsColumnsAction,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_logs_columns_action,omitempty"`                                                                                                                                                                  // Action
-	MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsPrice                                                   string                 `protobuf:"bytes,352,opt,name=marketplace_filter_asset_class_risk_auto_trading_logs_columns_price,json=marketplaceFilterAssetClassRiskAutoTradingLogsColumnsPrice,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_logs_columns_price,omitempty"`                                                                                                                                                                     // Price
-	MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsProfit                                                  string                 `protobuf:"bytes,353,opt,name=marketplace_filter_asset_class_risk_auto_trading_logs_columns_profit,json=marketplaceFilterAssetClassRiskAutoTradingLogsColumnsProfit,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_logs_columns_profit,omitempty"`                                                                                                                                                                  // P&L
-	MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsSymbol                                                  string                 `protobuf:"bytes,354,opt,name=marketplace_filter_asset_class_risk_auto_trading_logs_columns_symbol,json=marketplaceFilterAssetClassRiskAutoTradingLogsColumnsSymbol,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_logs_columns_symbol,omitempty"`                                                                                                                                                                  // Symbol
-	MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsTicket                                                  string                 `protobuf:"bytes,355,opt,name=marketplace_filter_asset_class_risk_auto_trading_logs_columns_ticket,json=marketplaceFilterAssetClassRiskAutoTradingLogsColumnsTicket,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_logs_columns_ticket,omitempty"`                                                                                                                                                                  // Ticket
-	MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsTime                                                    string                 `protobuf:"bytes,356,opt,name=marketplace_filter_asset_class_risk_auto_trading_logs_columns_time,json=marketplaceFilterAssetClassRiskAutoTradingLogsColumnsTime,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_logs_columns_time,omitempty"`                                                                                                                                                                        // Time
-	MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsVolume                                                  string                 `protobuf:"bytes,357,opt,name=marketplace_filter_asset_class_risk_auto_trading_logs_columns_volume,json=marketplaceFilterAssetClassRiskAutoTradingLogsColumnsVolume,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_logs_columns_volume,omitempty"`                                                                                                                                                                  // Volume
-	MarketplaceFilterAssetClassRiskAutoTradingLogsEmpty                                                          string                 `protobuf:"bytes,358,opt,name=marketplace_filter_asset_class_risk_auto_trading_logs_empty,json=marketplaceFilterAssetClassRiskAutoTradingLogsEmpty,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_logs_empty,omitempty"`                                                                                                                                                                                            // No trading logs yet
-	MarketplaceFilterAssetClassRiskAutoTradingLogsTitle                                                          string                 `protobuf:"bytes,359,opt,name=marketplace_filter_asset_class_risk_auto_trading_logs_title,json=marketplaceFilterAssetClassRiskAutoTradingLogsTitle,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_logs_title,omitempty"`                                                                                                                                                                                            // Recent Trading Logs
-	MarketplaceFilterAssetClassRiskAutoTradingMessagesLoadFailed                                                 string                 `protobuf:"bytes,360,opt,name=marketplace_filter_asset_class_risk_auto_trading_messages_load_failed,json=marketplaceFilterAssetClassRiskAutoTradingMessagesLoadFailed,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_messages_load_failed,omitempty"`                                                                                                                                                               // Failed to load auto trading data
-	MarketplaceFilterAssetClassRiskAutoTradingMessagesToggleFailed                                               string                 `protobuf:"bytes,361,opt,name=marketplace_filter_asset_class_risk_auto_trading_messages_toggle_failed,json=marketplaceFilterAssetClassRiskAutoTradingMessagesToggleFailed,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_messages_toggle_failed,omitempty"`                                                                                                                                                         // Failed to toggle auto trading
-	MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDailyLoss                                               string                 `protobuf:"bytes,362,opt,name=marketplace_filter_asset_class_risk_auto_trading_settings_max_daily_loss,json=marketplaceFilterAssetClassRiskAutoTradingSettingsMaxDailyLoss,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_settings_max_daily_loss,omitempty"`                                                                                                                                                       // Max Daily Loss
-	MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDailyLossHint                                           string                 `protobuf:"bytes,363,opt,name=marketplace_filter_asset_class_risk_auto_trading_settings_max_daily_loss_hint,json=marketplaceFilterAssetClassRiskAutoTradingSettingsMaxDailyLossHint,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_settings_max_daily_loss_hint,omitempty"`                                                                                                                                         // Auto-disable trading if daily loss exceeds this
-	MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDrawdownPercent                                         string                 `protobuf:"bytes,364,opt,name=marketplace_filter_asset_class_risk_auto_trading_settings_max_drawdown_percent,json=marketplaceFilterAssetClassRiskAutoTradingSettingsMaxDrawdownPercent,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_settings_max_drawdown_percent,omitempty"`                                                                                                                                     // Max Drawdown %
-	MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDrawdownPercentHint                                     string                 `protobuf:"bytes,365,opt,name=marketplace_filter_asset_class_risk_auto_trading_settings_max_drawdown_percent_hint,json=marketplaceFilterAssetClassRiskAutoTradingSettingsMaxDrawdownPercentHint,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_settings_max_drawdown_percent_hint,omitempty"`                                                                                                                       // Auto-disable trading if drawdown exceeds this
-	MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxLotSize                                                 string                 `protobuf:"bytes,366,opt,name=marketplace_filter_asset_class_risk_auto_trading_settings_max_lot_size,json=marketplaceFilterAssetClassRiskAutoTradingSettingsMaxLotSize,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_settings_max_lot_size,omitempty"`                                                                                                                                                             // Max Lot Size
-	MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxLotSizeHint                                             string                 `protobuf:"bytes,367,opt,name=marketplace_filter_asset_class_risk_auto_trading_settings_max_lot_size_hint,json=marketplaceFilterAssetClassRiskAutoTradingSettingsMaxLotSizeHint,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_settings_max_lot_size_hint,omitempty"`                                                                                                                                               // Maximum volume per trade (lots)
-	MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxPositions                                               string                 `protobuf:"bytes,368,opt,name=marketplace_filter_asset_class_risk_auto_trading_settings_max_positions,json=marketplaceFilterAssetClassRiskAutoTradingSettingsMaxPositions,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_settings_max_positions,omitempty"`                                                                                                                                                         // Max Positions
-	MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxPositionsHint                                           string                 `protobuf:"bytes,369,opt,name=marketplace_filter_asset_class_risk_auto_trading_settings_max_positions_hint,json=marketplaceFilterAssetClassRiskAutoTradingSettingsMaxPositionsHint,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_settings_max_positions_hint,omitempty"`                                                                                                                                           // Maximum concurrent open positions
-	MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxRiskPercent                                             string                 `protobuf:"bytes,370,opt,name=marketplace_filter_asset_class_risk_auto_trading_settings_max_risk_percent,json=marketplaceFilterAssetClassRiskAutoTradingSettingsMaxRiskPercent,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_settings_max_risk_percent,omitempty"`                                                                                                                                                 // Max Risk %
-	MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxRiskPercentHint                                         string                 `protobuf:"bytes,371,opt,name=marketplace_filter_asset_class_risk_auto_trading_settings_max_risk_percent_hint,json=marketplaceFilterAssetClassRiskAutoTradingSettingsMaxRiskPercentHint,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_settings_max_risk_percent_hint,omitempty"`                                                                                                                                   // Percentage of balance to risk per trade
-	MarketplaceFilterAssetClassRiskAutoTradingSettingsSaveFailed                                                 string                 `protobuf:"bytes,372,opt,name=marketplace_filter_asset_class_risk_auto_trading_settings_save_failed,json=marketplaceFilterAssetClassRiskAutoTradingSettingsSaveFailed,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_settings_save_failed,omitempty"`                                                                                                                                                               // Failed to save settings
-	MarketplaceFilterAssetClassRiskAutoTradingSettingsSaveSuccess                                                string                 `protobuf:"bytes,373,opt,name=marketplace_filter_asset_class_risk_auto_trading_settings_save_success,json=marketplaceFilterAssetClassRiskAutoTradingSettingsSaveSuccess,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_settings_save_success,omitempty"`                                                                                                                                                            // Settings saved
-	MarketplaceFilterAssetClassRiskAutoTradingSettingsTitle                                                      string                 `protobuf:"bytes,374,opt,name=marketplace_filter_asset_class_risk_auto_trading_settings_title,json=marketplaceFilterAssetClassRiskAutoTradingSettingsTitle,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_settings_title,omitempty"`                                                                                                                                                                                // Global Risk Settings
-	MarketplaceFilterAssetClassRiskAutoTradingStatusActiveStrategies                                             string                 `protobuf:"bytes,375,opt,name=marketplace_filter_asset_class_risk_auto_trading_status_active_strategies,json=marketplaceFilterAssetClassRiskAutoTradingStatusActiveStrategies,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_status_active_strategies,omitempty"`                                                                                                                                                   // Active Strategies
-	MarketplaceFilterAssetClassRiskAutoTradingStatusDisabled                                                     string                 `protobuf:"bytes,376,opt,name=marketplace_filter_asset_class_risk_auto_trading_status_disabled,json=marketplaceFilterAssetClassRiskAutoTradingStatusDisabled,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_status_disabled,omitempty"`                                                                                                                                                                             // Auto Trading Disabled
-	MarketplaceFilterAssetClassRiskAutoTradingStatusEnabled                                                      string                 `protobuf:"bytes,377,opt,name=marketplace_filter_asset_class_risk_auto_trading_status_enabled,json=marketplaceFilterAssetClassRiskAutoTradingStatusEnabled,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_status_enabled,omitempty"`                                                                                                                                                                                // Auto Trading Enabled
-	MarketplaceFilterAssetClassRiskAutoTradingStatusTodayExecutions                                              string                 `protobuf:"bytes,378,opt,name=marketplace_filter_asset_class_risk_auto_trading_status_today_executions,json=marketplaceFilterAssetClassRiskAutoTradingStatusTodayExecutions,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_status_today_executions,omitempty"`                                                                                                                                                      // Today's Executions
-	MarketplaceFilterAssetClassRiskAutoTradingStatusTodayProfit                                                  string                 `protobuf:"bytes,379,opt,name=marketplace_filter_asset_class_risk_auto_trading_status_today_profit,json=marketplaceFilterAssetClassRiskAutoTradingStatusTodayProfit,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_status_today_profit,omitempty"`                                                                                                                                                                  // Today's Profit
-	MarketplaceFilterAssetClassRiskAutoTradingTitle                                                              string                 `protobuf:"bytes,380,opt,name=marketplace_filter_asset_class_risk_auto_trading_title,json=marketplaceFilterAssetClassRiskAutoTradingTitle,proto3" json:"marketplace_filter_asset_class_risk_auto_trading_title,omitempty"`                                                                                                                                                                                                          // Auto Trading
-	MarketplaceFilterAssetClassRiskDetailAssetClass                                                              string                 `protobuf:"bytes,381,opt,name=marketplace_filter_asset_class_risk_detail_asset_class,json=marketplaceFilterAssetClassRiskDetailAssetClass,proto3" json:"marketplace_filter_asset_class_risk_detail_asset_class,omitempty"`                                                                                                                                                                                                          // Asset Class
-	MarketplaceFilterAssetClassRiskDetailAuthor                                                                  string                 `protobuf:"bytes,382,opt,name=marketplace_filter_asset_class_risk_detail_author,json=marketplaceFilterAssetClassRiskDetailAuthor,proto3" json:"marketplace_filter_asset_class_risk_detail_author,omitempty"`                                                                                                                                                                                                                        // Author
-	MarketplaceFilterAssetClassRiskDetailCommentPlaceholder                                                      string                 `protobuf:"bytes,383,opt,name=marketplace_filter_asset_class_risk_detail_comment_placeholder,json=marketplaceFilterAssetClassRiskDetailCommentPlaceholder,proto3" json:"marketplace_filter_asset_class_risk_detail_comment_placeholder,omitempty"`                                                                                                                                                                                  // Write a comment...
-	MarketplaceFilterAssetClassRiskDetailComments                                                                string                 `protobuf:"bytes,384,opt,name=marketplace_filter_asset_class_risk_detail_comments,json=marketplaceFilterAssetClassRiskDetailComments,proto3" json:"marketplace_filter_asset_class_risk_detail_comments,omitempty"`                                                                                                                                                                                                                  // Comments
-	MarketplaceFilterAssetClassRiskDetailDescription                                                             string                 `protobuf:"bytes,385,opt,name=marketplace_filter_asset_class_risk_detail_description,json=marketplaceFilterAssetClassRiskDetailDescription,proto3" json:"marketplace_filter_asset_class_risk_detail_description,omitempty"`                                                                                                                                                                                                         // Description
-	MarketplaceFilterAssetClassRiskDetailGetFree                                                                 string                 `protobuf:"bytes,386,opt,name=marketplace_filter_asset_class_risk_detail_get_free,json=marketplaceFilterAssetClassRiskDetailGetFree,proto3" json:"marketplace_filter_asset_class_risk_detail_get_free,omitempty"`                                                                                                                                                                                                                   // Get Free
-	MarketplaceFilterAssetClassRiskDetailRentPrice                                                               string                 `protobuf:"bytes,387,opt,name=marketplace_filter_asset_class_risk_detail_rent_price,json=marketplaceFilterAssetClassRiskDetailRentPrice,proto3" json:"marketplace_filter_asset_class_risk_detail_rent_price,omitempty"`                                                                                                                                                                                                             // ¥{{amount}} / month
-	MarketplaceFilterAssetClassRiskDetailSubscribers                                                             string                 `protobuf:"bytes,388,opt,name=marketplace_filter_asset_class_risk_detail_subscribers,json=marketplaceFilterAssetClassRiskDetailSubscribers,proto3" json:"marketplace_filter_asset_class_risk_detail_subscribers,omitempty"`                                                                                                                                                                                                         // Subscribers
-	MarketplaceFilterAssetClassRiskDetailYourRating                                                              string                 `protobuf:"bytes,389,opt,name=marketplace_filter_asset_class_risk_detail_your_rating,json=marketplaceFilterAssetClassRiskDetailYourRating,proto3" json:"marketplace_filter_asset_class_risk_detail_your_rating,omitempty"`                                                                                                                                                                                                          // Your Rating
-	MarketplaceFilterAssetClassRiskErrorsAccessDenied                                                            string                 `protobuf:"bytes,390,opt,name=marketplace_filter_asset_class_risk_errors_access_denied,json=marketplaceFilterAssetClassRiskErrorsAccessDenied,proto3" json:"marketplace_filter_asset_class_risk_errors_access_denied,omitempty"`                                                                                                                                                                                                    // Access denied
-	MarketplaceFilterAssetClassRiskErrorsAccountConnected                                                        string                 `protobuf:"bytes,391,opt,name=marketplace_filter_asset_class_risk_errors_account_connected,json=marketplaceFilterAssetClassRiskErrorsAccountConnected,proto3" json:"marketplace_filter_asset_class_risk_errors_account_connected,omitempty"`                                                                                                                                                                                        // Connected to trading server
-	MarketplaceFilterAssetClassRiskErrorsAccountConnectionFailed                                                 string                 `protobuf:"bytes,392,opt,name=marketplace_filter_asset_class_risk_errors_account_connection_failed,json=marketplaceFilterAssetClassRiskErrorsAccountConnectionFailed,proto3" json:"marketplace_filter_asset_class_risk_errors_account_connection_failed,omitempty"`                                                                                                                                                                 // Could not connect to the trading server
-	MarketplaceFilterAssetClassRiskErrorsAccountNotFound                                                         string                 `protobuf:"bytes,393,opt,name=marketplace_filter_asset_class_risk_errors_account_not_found,json=marketplaceFilterAssetClassRiskErrorsAccountNotFound,proto3" json:"marketplace_filter_asset_class_risk_errors_account_not_found,omitempty"`                                                                                                                                                                                         // Account not found
-	MarketplaceFilterAssetClassRiskErrorsAiApiKeyRequired                                                        string                 `protobuf:"bytes,394,opt,name=marketplace_filter_asset_class_risk_errors_ai_api_key_required,json=marketplaceFilterAssetClassRiskErrorsAiApiKeyRequired,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_api_key_required,omitempty"`                                                                                                                                                                                    // API Key is required
-	MarketplaceFilterAssetClassRiskErrorsAiBaseUrlRequired                                                       string                 `protobuf:"bytes,395,opt,name=marketplace_filter_asset_class_risk_errors_ai_base_url_required,json=marketplaceFilterAssetClassRiskErrorsAiBaseUrlRequired,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_base_url_required,omitempty"`                                                                                                                                                                                 // Base URL is required
-	MarketplaceFilterAssetClassRiskErrorsAiBaseUrlSchemeInvalid                                                  string                 `protobuf:"bytes,396,opt,name=marketplace_filter_asset_class_risk_errors_ai_base_url_scheme_invalid,json=marketplaceFilterAssetClassRiskErrorsAiBaseUrlSchemeInvalid,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_base_url_scheme_invalid,omitempty"`                                                                                                                                                                // Base URL must start with http:// or https://
-	MarketplaceFilterAssetClassRiskErrorsAiBaseUrlShouldNotEndWithChatCompletions                                string                 `protobuf:"bytes,397,opt,name=marketplace_filter_asset_class_risk_errors_ai_base_url_should_not_end_with_chat_completions,json=marketplaceFilterAssetClassRiskErrorsAiBaseUrlShouldNotEndWithChatCompletions,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_base_url_should_not_end_with_chat_completions,omitempty"`                                                                                                  // Base URL should not end with /chat/completions
-	MarketplaceFilterAssetClassRiskErrorsAiConfigServiceNotInitialized                                           string                 `protobuf:"bytes,398,opt,name=marketplace_filter_asset_class_risk_errors_ai_config_service_not_initialized,json=marketplaceFilterAssetClassRiskErrorsAiConfigServiceNotInitialized,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_config_service_not_initialized,omitempty"`                                                                                                                                           // AI config service has not been initialized
-	MarketplaceFilterAssetClassRiskErrorsAiConfigValid                                                           string                 `protobuf:"bytes,399,opt,name=marketplace_filter_asset_class_risk_errors_ai_config_valid,json=marketplaceFilterAssetClassRiskErrorsAiConfigValid,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_config_valid,omitempty"`                                                                                                                                                                                               // AI config is valid
-	MarketplaceFilterAssetClassRiskErrorsAiFailedToCreateRequest                                                 string                 `protobuf:"bytes,400,opt,name=marketplace_filter_asset_class_risk_errors_ai_failed_to_create_request,json=marketplaceFilterAssetClassRiskErrorsAiFailedToCreateRequest,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_failed_to_create_request,omitempty"`                                                                                                                                                             // Failed to create request
-	MarketplaceFilterAssetClassRiskErrorsAiForbiddenQuota                                                        string                 `protobuf:"bytes,401,opt,name=marketplace_filter_asset_class_risk_errors_ai_forbidden_quota,json=marketplaceFilterAssetClassRiskErrorsAiForbiddenQuota,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_forbidden_quota,omitempty"`                                                                                                                                                                                      // Quota exceeded
-	MarketplaceFilterAssetClassRiskErrorsAiFreeTierExhausted                                                     string                 `protobuf:"bytes,402,opt,name=marketplace_filter_asset_class_risk_errors_ai_free_tier_exhausted,json=marketplaceFilterAssetClassRiskErrorsAiFreeTierExhausted,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_free_tier_exhausted,omitempty"`                                                                                                                                                                           // Free tier exhausted
-	MarketplaceFilterAssetClassRiskErrorsAiInvalidBaseUrl                                                        string                 `protobuf:"bytes,403,opt,name=marketplace_filter_asset_class_risk_errors_ai_invalid_base_url,json=marketplaceFilterAssetClassRiskErrorsAiInvalidBaseUrl,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_invalid_base_url,omitempty"`                                                                                                                                                                                    // Invalid Base URL
-	MarketplaceFilterAssetClassRiskErrorsAiInvalidProvider                                                       string                 `protobuf:"bytes,404,opt,name=marketplace_filter_asset_class_risk_errors_ai_invalid_provider,json=marketplaceFilterAssetClassRiskErrorsAiInvalidProvider,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_invalid_provider,omitempty"`                                                                                                                                                                                   // Invalid provider
-	MarketplaceFilterAssetClassRiskErrorsAiNoTradeDataAvailable                                                  string                 `protobuf:"bytes,405,opt,name=marketplace_filter_asset_class_risk_errors_ai_no_trade_data_available,json=marketplaceFilterAssetClassRiskErrorsAiNoTradeDataAvailable,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_no_trade_data_available,omitempty"`                                                                                                                                                                // No trade data available
-	MarketplaceFilterAssetClassRiskErrorsAiNotConfigured                                                         string                 `protobuf:"bytes,406,opt,name=marketplace_filter_asset_class_risk_errors_ai_not_configured,json=marketplaceFilterAssetClassRiskErrorsAiNotConfigured,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_not_configured,omitempty"`                                                                                                                                                                                         // AI is not configured. Please enable and configure it in AI S
-	MarketplaceFilterAssetClassRiskErrorsAiProbeOk                                                               string                 `protobuf:"bytes,407,opt,name=marketplace_filter_asset_class_risk_errors_ai_probe_ok,json=marketplaceFilterAssetClassRiskErrorsAiProbeOk,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_probe_ok,omitempty"`                                                                                                                                                                                                           // OK
-	MarketplaceFilterAssetClassRiskErrorsAiProbeOkNoModels                                                       string                 `protobuf:"bytes,408,opt,name=marketplace_filter_asset_class_risk_errors_ai_probe_ok_no_models,json=marketplaceFilterAssetClassRiskErrorsAiProbeOkNoModels,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_probe_ok_no_models,omitempty"`                                                                                                                                                                               // OK (no models returned)
-	MarketplaceFilterAssetClassRiskErrorsAiProviderRequired                                                      string                 `protobuf:"bytes,409,opt,name=marketplace_filter_asset_class_risk_errors_ai_provider_required,json=marketplaceFilterAssetClassRiskErrorsAiProviderRequired,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_provider_required,omitempty"`                                                                                                                                                                                // Please select a provider first
-	MarketplaceFilterAssetClassRiskErrorsAiProviderReturnedEmptyMessage                                          string                 `protobuf:"bytes,410,opt,name=marketplace_filter_asset_class_risk_errors_ai_provider_returned_empty_message,json=marketplaceFilterAssetClassRiskErrorsAiProviderReturnedEmptyMessage,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_provider_returned_empty_message,omitempty"`                                                                                                                                        // AI provider returned an empty response
-	MarketplaceFilterAssetClassRiskErrorsAiRateLimited                                                           string                 `protobuf:"bytes,411,opt,name=marketplace_filter_asset_class_risk_errors_ai_rate_limited,json=marketplaceFilterAssetClassRiskErrorsAiRateLimited,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_rate_limited,omitempty"`                                                                                                                                                                                               // Rate limited. Please try again later.
-	MarketplaceFilterAssetClassRiskErrorsAiRequestFailed                                                         string                 `protobuf:"bytes,412,opt,name=marketplace_filter_asset_class_risk_errors_ai_request_failed,json=marketplaceFilterAssetClassRiskErrorsAiRequestFailed,proto3" json:"marketplace_filter_asset_class_risk_errors_ai_request_failed,omitempty"`                                                                                                                                                                                         // API request failed
-	MarketplaceFilterAssetClassRiskErrorsAutoTradingDisabled                                                     string                 `protobuf:"bytes,413,opt,name=marketplace_filter_asset_class_risk_errors_auto_trading_disabled,json=marketplaceFilterAssetClassRiskErrorsAutoTradingDisabled,proto3" json:"marketplace_filter_asset_class_risk_errors_auto_trading_disabled,omitempty"`                                                                                                                                                                             // Auto trading disabled
-	MarketplaceFilterAssetClassRiskErrorsAutoTradingEnabled                                                      string                 `protobuf:"bytes,414,opt,name=marketplace_filter_asset_class_risk_errors_auto_trading_enabled,json=marketplaceFilterAssetClassRiskErrorsAutoTradingEnabled,proto3" json:"marketplace_filter_asset_class_risk_errors_auto_trading_enabled,omitempty"`                                                                                                                                                                                // Auto trading enabled
-	MarketplaceFilterAssetClassRiskErrorsConnectionFailedContent                                                 string                 `protobuf:"bytes,415,opt,name=marketplace_filter_asset_class_risk_errors_connection_failed_content,json=marketplaceFilterAssetClassRiskErrorsConnectionFailedContent,proto3" json:"marketplace_filter_asset_class_risk_errors_connection_failed_content,omitempty"`                                                                                                                                                                 // Unable to connect to the server. Please check your network a
-	MarketplaceFilterAssetClassRiskErrorsConnectionFailedTitle                                                   string                 `protobuf:"bytes,416,opt,name=marketplace_filter_asset_class_risk_errors_connection_failed_title,json=marketplaceFilterAssetClassRiskErrorsConnectionFailedTitle,proto3" json:"marketplace_filter_asset_class_risk_errors_connection_failed_title,omitempty"`                                                                                                                                                                       // Connection failed
-	MarketplaceFilterAssetClassRiskErrorsEmailAlreadyRegistered                                                  string                 `protobuf:"bytes,417,opt,name=marketplace_filter_asset_class_risk_errors_email_already_registered,json=marketplaceFilterAssetClassRiskErrorsEmailAlreadyRegistered,proto3" json:"marketplace_filter_asset_class_risk_errors_email_already_registered,omitempty"`                                                                                                                                                                    // This email is already registered
-	MarketplaceFilterAssetClassRiskErrorsInvalidCredentials                                                      string                 `protobuf:"bytes,418,opt,name=marketplace_filter_asset_class_risk_errors_invalid_credentials,json=marketplaceFilterAssetClassRiskErrorsInvalidCredentials,proto3" json:"marketplace_filter_asset_class_risk_errors_invalid_credentials,omitempty"`                                                                                                                                                                                  // Invalid email or password
-	MarketplaceFilterAssetClassRiskErrorsNotAuthenticated                                                        string                 `protobuf:"bytes,419,opt,name=marketplace_filter_asset_class_risk_errors_not_authenticated,json=marketplaceFilterAssetClassRiskErrorsNotAuthenticated,proto3" json:"marketplace_filter_asset_class_risk_errors_not_authenticated,omitempty"`                                                                                                                                                                                        // Not signed in
-	MarketplaceFilterAssetClassRiskErrorsScheduleServiceNotAvailable                                             string                 `protobuf:"bytes,420,opt,name=marketplace_filter_asset_class_risk_errors_schedule_service_not_available,json=marketplaceFilterAssetClassRiskErrorsScheduleServiceNotAvailable,proto3" json:"marketplace_filter_asset_class_risk_errors_schedule_service_not_available,omitempty"`                                                                                                                                                   // Schedule service is unavailable
-	MarketplaceFilterAssetClassRiskErrorsTranslateFailed                                                         string                 `protobuf:"bytes,421,opt,name=marketplace_filter_asset_class_risk_errors_translate_failed,json=marketplaceFilterAssetClassRiskErrorsTranslateFailed,proto3" json:"marketplace_filter_asset_class_risk_errors_translate_failed,omitempty"`                                                                                                                                                                                           // Translation failed
-	MarketplaceFilterAssetClassRiskErrorsUserNotFound                                                            string                 `protobuf:"bytes,422,opt,name=marketplace_filter_asset_class_risk_errors_user_not_found,json=marketplaceFilterAssetClassRiskErrorsUserNotFound,proto3" json:"marketplace_filter_asset_class_risk_errors_user_not_found,omitempty"`                                                                                                                                                                                                  // User not found
-	MarketplaceFilterAssetClassRiskMarketAllSymbols                                                              string                 `protobuf:"bytes,423,opt,name=marketplace_filter_asset_class_risk_market_all_symbols,json=marketplaceFilterAssetClassRiskMarketAllSymbols,proto3" json:"marketplace_filter_asset_class_risk_market_all_symbols,omitempty"`                                                                                                                                                                                                          // All Symbols
-	MarketplaceFilterAssetClassRiskMarketAsk                                                                     string                 `protobuf:"bytes,424,opt,name=marketplace_filter_asset_class_risk_market_ask,json=marketplaceFilterAssetClassRiskMarketAsk,proto3" json:"marketplace_filter_asset_class_risk_market_ask,omitempty"`                                                                                                                                                                                                                                 // Ask
-	MarketplaceFilterAssetClassRiskMarketBid                                                                     string                 `protobuf:"bytes,425,opt,name=marketplace_filter_asset_class_risk_market_bid,json=marketplaceFilterAssetClassRiskMarketBid,proto3" json:"marketplace_filter_asset_class_risk_market_bid,omitempty"`                                                                                                                                                                                                                                 // Bid
-	MarketplaceFilterAssetClassRiskMarketCommon                                                                  string                 `protobuf:"bytes,426,opt,name=marketplace_filter_asset_class_risk_market_common,json=marketplaceFilterAssetClassRiskMarketCommon,proto3" json:"marketplace_filter_asset_class_risk_market_common,omitempty"`                                                                                                                                                                                                                        // Common
-	MarketplaceFilterAssetClassRiskMarketEmptyWatchlist                                                          string                 `protobuf:"bytes,427,opt,name=marketplace_filter_asset_class_risk_market_empty_watchlist,json=marketplaceFilterAssetClassRiskMarketEmptyWatchlist,proto3" json:"marketplace_filter_asset_class_risk_market_empty_watchlist,omitempty"`                                                                                                                                                                                              // No symbols in watchlist
-	MarketplaceFilterAssetClassRiskMarketLoadingSymbols                                                          string                 `protobuf:"bytes,428,opt,name=marketplace_filter_asset_class_risk_market_loading_symbols,json=marketplaceFilterAssetClassRiskMarketLoadingSymbols,proto3" json:"marketplace_filter_asset_class_risk_market_loading_symbols,omitempty"`                                                                                                                                                                                              // Loading...
-	MarketplaceFilterAssetClassRiskMarketMid                                                                     string                 `protobuf:"bytes,429,opt,name=marketplace_filter_asset_class_risk_market_mid,json=marketplaceFilterAssetClassRiskMarketMid,proto3" json:"marketplace_filter_asset_class_risk_market_mid,omitempty"`                                                                                                                                                                                                                                 // Mid
-	MarketplaceFilterAssetClassRiskMarketNoSymbolSelected                                                        string                 `protobuf:"bytes,430,opt,name=marketplace_filter_asset_class_risk_market_no_symbol_selected,json=marketplaceFilterAssetClassRiskMarketNoSymbolSelected,proto3" json:"marketplace_filter_asset_class_risk_market_no_symbol_selected,omitempty"`                                                                                                                                                                                      // Select a symbol to view market data
-	MarketplaceFilterAssetClassRiskMarketNoSymbolsFound                                                          string                 `protobuf:"bytes,431,opt,name=marketplace_filter_asset_class_risk_market_no_symbols_found,json=marketplaceFilterAssetClassRiskMarketNoSymbolsFound,proto3" json:"marketplace_filter_asset_class_risk_market_no_symbols_found,omitempty"`                                                                                                                                                                                            // No symbols found
-	MarketplaceFilterAssetClassRiskMarketPopularSymbols                                                          string                 `protobuf:"bytes,432,opt,name=marketplace_filter_asset_class_risk_market_popular_symbols,json=marketplaceFilterAssetClassRiskMarketPopularSymbols,proto3" json:"marketplace_filter_asset_class_risk_market_popular_symbols,omitempty"`                                                                                                                                                                                              // Popular Symbols
-	MarketplaceFilterAssetClassRiskMarketSearchPlaceholder                                                       string                 `protobuf:"bytes,433,opt,name=marketplace_filter_asset_class_risk_market_search_placeholder,json=marketplaceFilterAssetClassRiskMarketSearchPlaceholder,proto3" json:"marketplace_filter_asset_class_risk_market_search_placeholder,omitempty"`                                                                                                                                                                                     // Search symbol (e.g. EURUSD, XAUUSD)
-	MarketplaceFilterAssetClassRiskMarketSearchSymbol                                                            string                 `protobuf:"bytes,434,opt,name=marketplace_filter_asset_class_risk_market_search_symbol,json=marketplaceFilterAssetClassRiskMarketSearchSymbol,proto3" json:"marketplace_filter_asset_class_risk_market_search_symbol,omitempty"`                                                                                                                                                                                                    // Search symbol...
-	MarketplaceFilterAssetClassRiskMarketSelectAccount                                                           string                 `protobuf:"bytes,435,opt,name=marketplace_filter_asset_class_risk_market_select_account,json=marketplaceFilterAssetClassRiskMarketSelectAccount,proto3" json:"marketplace_filter_asset_class_risk_market_select_account,omitempty"`                                                                                                                                                                                                 // Select trading account
-	MarketplaceFilterAssetClassRiskMarketSelectSymbol                                                            string                 `protobuf:"bytes,436,opt,name=marketplace_filter_asset_class_risk_market_select_symbol,json=marketplaceFilterAssetClassRiskMarketSelectSymbol,proto3" json:"marketplace_filter_asset_class_risk_market_select_symbol,omitempty"`                                                                                                                                                                                                    // Select symbol
-	MarketplaceFilterAssetClassRiskMarketSpread                                                                  string                 `protobuf:"bytes,437,opt,name=marketplace_filter_asset_class_risk_market_spread,json=marketplaceFilterAssetClassRiskMarketSpread,proto3" json:"marketplace_filter_asset_class_risk_market_spread,omitempty"`                                                                                                                                                                                                                        // Spread
-	MarketplaceFilterAssetClassRiskMarketWatchlist                                                               string                 `protobuf:"bytes,438,opt,name=marketplace_filter_asset_class_risk_market_watchlist,json=marketplaceFilterAssetClassRiskMarketWatchlist,proto3" json:"marketplace_filter_asset_class_risk_market_watchlist,omitempty"`                                                                                                                                                                                                               // Watchlist
-	MarketplaceFilterAssetClassRiskMessagesCommentFailed                                                         string                 `protobuf:"bytes,439,opt,name=marketplace_filter_asset_class_risk_messages_comment_failed,json=marketplaceFilterAssetClassRiskMessagesCommentFailed,proto3" json:"marketplace_filter_asset_class_risk_messages_comment_failed,omitempty"`                                                                                                                                                                                           // Comment failed
-	MarketplaceFilterAssetClassRiskMessagesCommentPosted                                                         string                 `protobuf:"bytes,440,opt,name=marketplace_filter_asset_class_risk_messages_comment_posted,json=marketplaceFilterAssetClassRiskMessagesCommentPosted,proto3" json:"marketplace_filter_asset_class_risk_messages_comment_posted,omitempty"`                                                                                                                                                                                           // Comment posted
-	MarketplaceFilterAssetClassRiskMessagesLoginFirst                                                            string                 `protobuf:"bytes,441,opt,name=marketplace_filter_asset_class_risk_messages_login_first,json=marketplaceFilterAssetClassRiskMessagesLoginFirst,proto3" json:"marketplace_filter_asset_class_risk_messages_login_first,omitempty"`                                                                                                                                                                                                    // Please log in first
-	MarketplaceFilterAssetClassRiskMessagesPaymentComingSoon                                                     string                 `protobuf:"bytes,442,opt,name=marketplace_filter_asset_class_risk_messages_payment_coming_soon,json=marketplaceFilterAssetClassRiskMessagesPaymentComingSoon,proto3" json:"marketplace_filter_asset_class_risk_messages_payment_coming_soon,omitempty"`                                                                                                                                                                             // Payment coming soon
-	MarketplaceFilterAssetClassRiskMessagesRateFailed                                                            string                 `protobuf:"bytes,443,opt,name=marketplace_filter_asset_class_risk_messages_rate_failed,json=marketplaceFilterAssetClassRiskMessagesRateFailed,proto3" json:"marketplace_filter_asset_class_risk_messages_rate_failed,omitempty"`                                                                                                                                                                                                    // Rating failed
-	MarketplaceFilterAssetClassRiskMessagesRated                                                                 string                 `protobuf:"bytes,444,opt,name=marketplace_filter_asset_class_risk_messages_rated,json=marketplaceFilterAssetClassRiskMessagesRated,proto3" json:"marketplace_filter_asset_class_risk_messages_rated,omitempty"`                                                                                                                                                                                                                     // Rating submitted
-	MarketplaceFilterAssetClassRiskMessagesSubscribeFailed                                                       string                 `protobuf:"bytes,445,opt,name=marketplace_filter_asset_class_risk_messages_subscribe_failed,json=marketplaceFilterAssetClassRiskMessagesSubscribeFailed,proto3" json:"marketplace_filter_asset_class_risk_messages_subscribe_failed,omitempty"`                                                                                                                                                                                     // Failed
-	MarketplaceFilterAssetClassRiskMessagesSubscribed                                                            string                 `protobuf:"bytes,446,opt,name=marketplace_filter_asset_class_risk_messages_subscribed,json=marketplaceFilterAssetClassRiskMessagesSubscribed,proto3" json:"marketplace_filter_asset_class_risk_messages_subscribed,omitempty"`                                                                                                                                                                                                      // Added to your purchases
-	MarketplaceFilterAssetClassRiskNotificationsActionsClearAll                                                  string                 `protobuf:"bytes,447,opt,name=marketplace_filter_asset_class_risk_notifications_actions_clear_all,json=marketplaceFilterAssetClassRiskNotificationsActionsClearAll,proto3" json:"marketplace_filter_asset_class_risk_notifications_actions_clear_all,omitempty"`                                                                                                                                                                    // Clear all
-	MarketplaceFilterAssetClassRiskNotificationsActionsClearAllConfirm                                           string                 `protobuf:"bytes,448,opt,name=marketplace_filter_asset_class_risk_notifications_actions_clear_all_confirm,json=marketplaceFilterAssetClassRiskNotificationsActionsClearAllConfirm,proto3" json:"marketplace_filter_asset_class_risk_notifications_actions_clear_all_confirm,omitempty"`                                                                                                                                             // Clear all notifications?
-	MarketplaceFilterAssetClassRiskNotificationsActionsMarkAllAsRead                                             string                 `protobuf:"bytes,449,opt,name=marketplace_filter_asset_class_risk_notifications_actions_mark_all_as_read,json=marketplaceFilterAssetClassRiskNotificationsActionsMarkAllAsRead,proto3" json:"marketplace_filter_asset_class_risk_notifications_actions_mark_all_as_read,omitempty"`                                                                                                                                                 // Mark all as read
-	MarketplaceFilterAssetClassRiskNotificationsAll                                                              string                 `protobuf:"bytes,450,opt,name=marketplace_filter_asset_class_risk_notifications_all,json=marketplaceFilterAssetClassRiskNotificationsAll,proto3" json:"marketplace_filter_asset_class_risk_notifications_all,omitempty"`                                                                                                                                                                                                            // All
-	MarketplaceFilterAssetClassRiskNotificationsClearAll                                                         string                 `protobuf:"bytes,451,opt,name=marketplace_filter_asset_class_risk_notifications_clear_all,json=marketplaceFilterAssetClassRiskNotificationsClearAll,proto3" json:"marketplace_filter_asset_class_risk_notifications_clear_all,omitempty"`                                                                                                                                                                                           // Clear all
-	MarketplaceFilterAssetClassRiskNotificationsConfirmClearAll                                                  string                 `protobuf:"bytes,452,opt,name=marketplace_filter_asset_class_risk_notifications_confirm_clear_all,json=marketplaceFilterAssetClassRiskNotificationsConfirmClearAll,proto3" json:"marketplace_filter_asset_class_risk_notifications_confirm_clear_all,omitempty"`                                                                                                                                                                    // Clear all notifications?
-	MarketplaceFilterAssetClassRiskNotificationsEmpty                                                            string                 `protobuf:"bytes,453,opt,name=marketplace_filter_asset_class_risk_notifications_empty,json=marketplaceFilterAssetClassRiskNotificationsEmpty,proto3" json:"marketplace_filter_asset_class_risk_notifications_empty,omitempty"`                                                                                                                                                                                                      // No notifications
-	MarketplaceFilterAssetClassRiskNotificationsMarkAllRead                                                      string                 `protobuf:"bytes,454,opt,name=marketplace_filter_asset_class_risk_notifications_mark_all_read,json=marketplaceFilterAssetClassRiskNotificationsMarkAllRead,proto3" json:"marketplace_filter_asset_class_risk_notifications_mark_all_read,omitempty"`                                                                                                                                                                                // Mark all as read
-	MarketplaceFilterAssetClassRiskNotificationsStreamAutoTradingFallback                                        string                 `protobuf:"bytes,455,opt,name=marketplace_filter_asset_class_risk_notifications_stream_auto_trading_fallback,json=marketplaceFilterAssetClassRiskNotificationsStreamAutoTradingFallback,proto3" json:"marketplace_filter_asset_class_risk_notifications_stream_auto_trading_fallback,omitempty"`                                                                                                                                    // Auto trading event triggered
-	MarketplaceFilterAssetClassRiskNotificationsStreamAutoTradingTitle                                           string                 `protobuf:"bytes,456,opt,name=marketplace_filter_asset_class_risk_notifications_stream_auto_trading_title,json=marketplaceFilterAssetClassRiskNotificationsStreamAutoTradingTitle,proto3" json:"marketplace_filter_asset_class_risk_notifications_stream_auto_trading_title,omitempty"`                                                                                                                                             // Auto Trading
-	MarketplaceFilterAssetClassRiskNotificationsStreamRiskAlertFallback                                          string                 `protobuf:"bytes,457,opt,name=marketplace_filter_asset_class_risk_notifications_stream_risk_alert_fallback,json=marketplaceFilterAssetClassRiskNotificationsStreamRiskAlertFallback,proto3" json:"marketplace_filter_asset_class_risk_notifications_stream_risk_alert_fallback,omitempty"`                                                                                                                                          // Alert type: {{alertType}}
-	MarketplaceFilterAssetClassRiskNotificationsStreamRiskAlertTitle                                             string                 `protobuf:"bytes,458,opt,name=marketplace_filter_asset_class_risk_notifications_stream_risk_alert_title,json=marketplaceFilterAssetClassRiskNotificationsStreamRiskAlertTitle,proto3" json:"marketplace_filter_asset_class_risk_notifications_stream_risk_alert_title,omitempty"`                                                                                                                                                   // Risk Alert
-	MarketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionCompleted                                 string                 `protobuf:"bytes,459,opt,name=marketplace_filter_asset_class_risk_notifications_stream_strategy_execution_completed,json=marketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionCompleted,proto3" json:"marketplace_filter_asset_class_risk_notifications_stream_strategy_execution_completed,omitempty"`                                                                                                               // {{symbol}} {{action}} completed
-	MarketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionFailed                                    string                 `protobuf:"bytes,460,opt,name=marketplace_filter_asset_class_risk_notifications_stream_strategy_execution_failed,json=marketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionFailed,proto3" json:"marketplace_filter_asset_class_risk_notifications_stream_strategy_execution_failed,omitempty"`                                                                                                                        // Execution failed: {{error}}
-	MarketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionTitle                                     string                 `protobuf:"bytes,461,opt,name=marketplace_filter_asset_class_risk_notifications_stream_strategy_execution_title,json=marketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionTitle,proto3" json:"marketplace_filter_asset_class_risk_notifications_stream_strategy_execution_title,omitempty"`                                                                                                                           // Strategy Execution
-	MarketplaceFilterAssetClassRiskNotificationsStreamStrategySignalMessage                                      string                 `protobuf:"bytes,462,opt,name=marketplace_filter_asset_class_risk_notifications_stream_strategy_signal_message,json=marketplaceFilterAssetClassRiskNotificationsStreamStrategySignalMessage,proto3" json:"marketplace_filter_asset_class_risk_notifications_stream_strategy_signal_message,omitempty"`                                                                                                                              // {{symbol}} triggered {{signalType}}
-	MarketplaceFilterAssetClassRiskNotificationsStreamStrategySignalTitle                                        string                 `protobuf:"bytes,463,opt,name=marketplace_filter_asset_class_risk_notifications_stream_strategy_signal_title,json=marketplaceFilterAssetClassRiskNotificationsStreamStrategySignalTitle,proto3" json:"marketplace_filter_asset_class_risk_notifications_stream_strategy_signal_title,omitempty"`                                                                                                                                    // Strategy Signal
-	MarketplaceFilterAssetClassRiskNotificationsTabsAll                                                          string                 `protobuf:"bytes,464,opt,name=marketplace_filter_asset_class_risk_notifications_tabs_all,json=marketplaceFilterAssetClassRiskNotificationsTabsAll,proto3" json:"marketplace_filter_asset_class_risk_notifications_tabs_all,omitempty"`                                                                                                                                                                                              // All ({{count}})
-	MarketplaceFilterAssetClassRiskNotificationsTabsUnread                                                       string                 `protobuf:"bytes,465,opt,name=marketplace_filter_asset_class_risk_notifications_tabs_unread,json=marketplaceFilterAssetClassRiskNotificationsTabsUnread,proto3" json:"marketplace_filter_asset_class_risk_notifications_tabs_unread,omitempty"`                                                                                                                                                                                     // Unread ({{count}})
-	MarketplaceFilterAssetClassRiskNotificationsTitle                                                            string                 `protobuf:"bytes,466,opt,name=marketplace_filter_asset_class_risk_notifications_title,json=marketplaceFilterAssetClassRiskNotificationsTitle,proto3" json:"marketplace_filter_asset_class_risk_notifications_title,omitempty"`                                                                                                                                                                                                      // Notifications
-	MarketplaceFilterAssetClassRiskNotificationsTypesRiskAlert                                                   string                 `protobuf:"bytes,467,opt,name=marketplace_filter_asset_class_risk_notifications_types_risk_alert,json=marketplaceFilterAssetClassRiskNotificationsTypesRiskAlert,proto3" json:"marketplace_filter_asset_class_risk_notifications_types_risk_alert,omitempty"`                                                                                                                                                                       // Risk Alert
-	MarketplaceFilterAssetClassRiskNotificationsTypesSignal                                                      string                 `protobuf:"bytes,468,opt,name=marketplace_filter_asset_class_risk_notifications_types_signal,json=marketplaceFilterAssetClassRiskNotificationsTypesSignal,proto3" json:"marketplace_filter_asset_class_risk_notifications_types_signal,omitempty"`                                                                                                                                                                                  // Signal
-	MarketplaceFilterAssetClassRiskNotificationsTypesStrategyExecution                                           string                 `protobuf:"bytes,469,opt,name=marketplace_filter_asset_class_risk_notifications_types_strategy_execution,json=marketplaceFilterAssetClassRiskNotificationsTypesStrategyExecution,proto3" json:"marketplace_filter_asset_class_risk_notifications_types_strategy_execution,omitempty"`                                                                                                                                               // Execution
-	MarketplaceFilterAssetClassRiskNotificationsTypesSystem                                                      string                 `protobuf:"bytes,470,opt,name=marketplace_filter_asset_class_risk_notifications_types_system,json=marketplaceFilterAssetClassRiskNotificationsTypesSystem,proto3" json:"marketplace_filter_asset_class_risk_notifications_types_system,omitempty"`                                                                                                                                                                                  // System
-	MarketplaceFilterAssetClassRiskNotificationsTypesTrade                                                       string                 `protobuf:"bytes,471,opt,name=marketplace_filter_asset_class_risk_notifications_types_trade,json=marketplaceFilterAssetClassRiskNotificationsTypesTrade,proto3" json:"marketplace_filter_asset_class_risk_notifications_types_trade,omitempty"`                                                                                                                                                                                     // Trade
-	MarketplaceFilterAssetClassRiskNotificationsUnread                                                           string                 `protobuf:"bytes,472,opt,name=marketplace_filter_asset_class_risk_notifications_unread,json=marketplaceFilterAssetClassRiskNotificationsUnread,proto3" json:"marketplace_filter_asset_class_risk_notifications_unread,omitempty"`                                                                                                                                                                                                   // Unread
-	MarketplaceFilterAssetClassRiskPaymentAlreadyPurchased                                                       string                 `protobuf:"bytes,473,opt,name=marketplace_filter_asset_class_risk_payment_already_purchased,json=marketplaceFilterAssetClassRiskPaymentAlreadyPurchased,proto3" json:"marketplace_filter_asset_class_risk_payment_already_purchased,omitempty"`                                                                                                                                                                                     // You already own this strategy.
-	MarketplaceFilterAssetClassRiskPaymentBalanceAfter                                                           string                 `protobuf:"bytes,474,opt,name=marketplace_filter_asset_class_risk_payment_balance_after,json=marketplaceFilterAssetClassRiskPaymentBalanceAfter,proto3" json:"marketplace_filter_asset_class_risk_payment_balance_after,omitempty"`                                                                                                                                                                                                 // Balance after purchase
-	MarketplaceFilterAssetClassRiskPaymentCancel                                                                 string                 `protobuf:"bytes,475,opt,name=marketplace_filter_asset_class_risk_payment_cancel,json=marketplaceFilterAssetClassRiskPaymentCancel,proto3" json:"marketplace_filter_asset_class_risk_payment_cancel,omitempty"`                                                                                                                                                                                                                     // Cancel
-	MarketplaceFilterAssetClassRiskPaymentConfirm                                                                string                 `protobuf:"bytes,476,opt,name=marketplace_filter_asset_class_risk_payment_confirm,json=marketplaceFilterAssetClassRiskPaymentConfirm,proto3" json:"marketplace_filter_asset_class_risk_payment_confirm,omitempty"`                                                                                                                                                                                                                  // Confirm Purchase
-	MarketplaceFilterAssetClassRiskPaymentDepositPrompt                                                          string                 `protobuf:"bytes,477,opt,name=marketplace_filter_asset_class_risk_payment_deposit_prompt,json=marketplaceFilterAssetClassRiskPaymentDepositPrompt,proto3" json:"marketplace_filter_asset_class_risk_payment_deposit_prompt,omitempty"`                                                                                                                                                                                              // Please deposit funds to continue.
-	MarketplaceFilterAssetClassRiskPaymentGoToDeposit                                                            string                 `protobuf:"bytes,478,opt,name=marketplace_filter_asset_class_risk_payment_go_to_deposit,json=marketplaceFilterAssetClassRiskPaymentGoToDeposit,proto3" json:"marketplace_filter_asset_class_risk_payment_go_to_deposit,omitempty"`                                                                                                                                                                                                  // Deposit
-	MarketplaceFilterAssetClassRiskPaymentInsufficientBalance                                                    string                 `protobuf:"bytes,479,opt,name=marketplace_filter_asset_class_risk_payment_insufficient_balance,json=marketplaceFilterAssetClassRiskPaymentInsufficientBalance,proto3" json:"marketplace_filter_asset_class_risk_payment_insufficient_balance,omitempty"`                                                                                                                                                                            // Insufficient balance
-	MarketplaceFilterAssetClassRiskPaymentOneTimePurchase                                                        string                 `protobuf:"bytes,480,opt,name=marketplace_filter_asset_class_risk_payment_one_time_purchase,json=marketplaceFilterAssetClassRiskPaymentOneTimePurchase,proto3" json:"marketplace_filter_asset_class_risk_payment_one_time_purchase,omitempty"`                                                                                                                                                                                      // ¥{{amount}} one-time
-	MarketplaceFilterAssetClassRiskPaymentPrice                                                                  string                 `protobuf:"bytes,481,opt,name=marketplace_filter_asset_class_risk_payment_price,json=marketplaceFilterAssetClassRiskPaymentPrice,proto3" json:"marketplace_filter_asset_class_risk_payment_price,omitempty"`                                                                                                                                                                                                                        // Price
-	MarketplaceFilterAssetClassRiskPaymentPurchaseFailed                                                         string                 `protobuf:"bytes,482,opt,name=marketplace_filter_asset_class_risk_payment_purchase_failed,json=marketplaceFilterAssetClassRiskPaymentPurchaseFailed,proto3" json:"marketplace_filter_asset_class_risk_payment_purchase_failed,omitempty"`                                                                                                                                                                                           // Purchase failed. Please try again.
-	MarketplaceFilterAssetClassRiskPaymentPurchaseSuccess                                                        string                 `protobuf:"bytes,483,opt,name=marketplace_filter_asset_class_risk_payment_purchase_success,json=marketplaceFilterAssetClassRiskPaymentPurchaseSuccess,proto3" json:"marketplace_filter_asset_class_risk_payment_purchase_success,omitempty"`                                                                                                                                                                                        // Purchase successful! Strategy added to your library.
-	MarketplaceFilterAssetClassRiskPaymentPurchasing                                                             string                 `protobuf:"bytes,484,opt,name=marketplace_filter_asset_class_risk_payment_purchasing,json=marketplaceFilterAssetClassRiskPaymentPurchasing,proto3" json:"marketplace_filter_asset_class_risk_payment_purchasing,omitempty"`                                                                                                                                                                                                         // Processing...
-	MarketplaceFilterAssetClassRiskPaymentStrategyName                                                           string                 `protobuf:"bytes,485,opt,name=marketplace_filter_asset_class_risk_payment_strategy_name,json=marketplaceFilterAssetClassRiskPaymentStrategyName,proto3" json:"marketplace_filter_asset_class_risk_payment_strategy_name,omitempty"`                                                                                                                                                                                                 // Strategy
-	MarketplaceFilterAssetClassRiskPaymentTitle                                                                  string                 `protobuf:"bytes,486,opt,name=marketplace_filter_asset_class_risk_payment_title,json=marketplaceFilterAssetClassRiskPaymentTitle,proto3" json:"marketplace_filter_asset_class_risk_payment_title,omitempty"`                                                                                                                                                                                                                        // Confirm Purchase
-	MarketplaceFilterAssetClassRiskPaymentWalletBalance                                                          string                 `protobuf:"bytes,487,opt,name=marketplace_filter_asset_class_risk_payment_wallet_balance,json=marketplaceFilterAssetClassRiskPaymentWalletBalance,proto3" json:"marketplace_filter_asset_class_risk_payment_wallet_balance,omitempty"`                                                                                                                                                                                              // Your Balance
-	MarketplaceFilterAssetClassRiskProfileLastLogin                                                              string                 `protobuf:"bytes,488,opt,name=marketplace_filter_asset_class_risk_profile_last_login,json=marketplaceFilterAssetClassRiskProfileLastLogin,proto3" json:"marketplace_filter_asset_class_risk_profile_last_login,omitempty"`                                                                                                                                                                                                          // Last Login
-	MarketplaceFilterAssetClassRiskProfileNickname                                                               string                 `protobuf:"bytes,489,opt,name=marketplace_filter_asset_class_risk_profile_nickname,json=marketplaceFilterAssetClassRiskProfileNickname,proto3" json:"marketplace_filter_asset_class_risk_profile_nickname,omitempty"`                                                                                                                                                                                                               // Nickname
-	MarketplaceFilterAssetClassRiskProfileRegistered                                                             string                 `protobuf:"bytes,490,opt,name=marketplace_filter_asset_class_risk_profile_registered,json=marketplaceFilterAssetClassRiskProfileRegistered,proto3" json:"marketplace_filter_asset_class_risk_profile_registered,omitempty"`                                                                                                                                                                                                         // Registered
-	MarketplaceFilterAssetClassRiskProfileRole                                                                   string                 `protobuf:"bytes,491,opt,name=marketplace_filter_asset_class_risk_profile_role,json=marketplaceFilterAssetClassRiskProfileRole,proto3" json:"marketplace_filter_asset_class_risk_profile_role,omitempty"`                                                                                                                                                                                                                           // Role
-	MarketplaceFilterAssetClassRiskProfileStatus                                                                 string                 `protobuf:"bytes,492,opt,name=marketplace_filter_asset_class_risk_profile_status,json=marketplaceFilterAssetClassRiskProfileStatus,proto3" json:"marketplace_filter_asset_class_risk_profile_status,omitempty"`                                                                                                                                                                                                                     // Status
-	MarketplaceFilterAssetClassRiskProfileTitle                                                                  string                 `protobuf:"bytes,493,opt,name=marketplace_filter_asset_class_risk_profile_title,json=marketplaceFilterAssetClassRiskProfileTitle,proto3" json:"marketplace_filter_asset_class_risk_profile_title,omitempty"`                                                                                                                                                                                                                        // Profile
-	MarketplaceFilterAssetClassRiskPurchasesEmpty                                                                string                 `protobuf:"bytes,494,opt,name=marketplace_filter_asset_class_risk_purchases_empty,json=marketplaceFilterAssetClassRiskPurchasesEmpty,proto3" json:"marketplace_filter_asset_class_risk_purchases_empty,omitempty"`                                                                                                                                                                                                                  // No purchases yet. Browse the market to find strategies.
-	MarketplaceFilterAssetClassRiskPurchasesStatus                                                               string                 `protobuf:"bytes,495,opt,name=marketplace_filter_asset_class_risk_purchases_status,json=marketplaceFilterAssetClassRiskPurchasesStatus,proto3" json:"marketplace_filter_asset_class_risk_purchases_status,omitempty"`                                                                                                                                                                                                               // Status
-	MarketplaceFilterAssetClassRiskPurchasesStrategy                                                             string                 `protobuf:"bytes,496,opt,name=marketplace_filter_asset_class_risk_purchases_strategy,json=marketplaceFilterAssetClassRiskPurchasesStrategy,proto3" json:"marketplace_filter_asset_class_risk_purchases_strategy,omitempty"`                                                                                                                                                                                                         // Strategy
-	MarketplaceFilterAssetClassRiskShareActions                                                                  string                 `protobuf:"bytes,497,opt,name=marketplace_filter_asset_class_risk_share_actions,json=marketplaceFilterAssetClassRiskShareActions,proto3" json:"marketplace_filter_asset_class_risk_share_actions,omitempty"`                                                                                                                                                                                                                        // Actions
-	MarketplaceFilterAssetClassRiskShareCreateNew                                                                string                 `protobuf:"bytes,498,opt,name=marketplace_filter_asset_class_risk_share_create_new,json=marketplaceFilterAssetClassRiskShareCreateNew,proto3" json:"marketplace_filter_asset_class_risk_share_create_new,omitempty"`                                                                                                                                                                                                                // Create New Share Link
-	MarketplaceFilterAssetClassRiskShareCreatedAt                                                                string                 `protobuf:"bytes,499,opt,name=marketplace_filter_asset_class_risk_share_created_at,json=marketplaceFilterAssetClassRiskShareCreatedAt,proto3" json:"marketplace_filter_asset_class_risk_share_created_at,omitempty"`                                                                                                                                                                                                                // Created
-	MarketplaceFilterAssetClassRiskShareDeleteConfirm                                                            string                 `protobuf:"bytes,500,opt,name=marketplace_filter_asset_class_risk_share_delete_confirm,json=marketplaceFilterAssetClassRiskShareDeleteConfirm,proto3" json:"marketplace_filter_asset_class_risk_share_delete_confirm,omitempty"`                                                                                                                                                                                                    // Delete this share link?
-	MarketplaceFilterAssetClassRiskShareEmpty                                                                    string                 `protobuf:"bytes,501,opt,name=marketplace_filter_asset_class_risk_share_empty,json=marketplaceFilterAssetClassRiskShareEmpty,proto3" json:"marketplace_filter_asset_class_risk_share_empty,omitempty"`                                                                                                                                                                                                                              // No share links yet
-	MarketplaceFilterAssetClassRiskShareExpires                                                                  string                 `protobuf:"bytes,502,opt,name=marketplace_filter_asset_class_risk_share_expires,json=marketplaceFilterAssetClassRiskShareExpires,proto3" json:"marketplace_filter_asset_class_risk_share_expires,omitempty"`                                                                                                                                                                                                                        // Expires
-	MarketplaceFilterAssetClassRiskSharePositions                                                                string                 `protobuf:"bytes,503,opt,name=marketplace_filter_asset_class_risk_share_positions,json=marketplaceFilterAssetClassRiskSharePositions,proto3" json:"marketplace_filter_asset_class_risk_share_positions,omitempty"`                                                                                                                                                                                                                  // Positions
-	MarketplaceFilterAssetClassRiskShareShowPositions                                                            string                 `protobuf:"bytes,504,opt,name=marketplace_filter_asset_class_risk_share_show_positions,json=marketplaceFilterAssetClassRiskShareShowPositions,proto3" json:"marketplace_filter_asset_class_risk_share_show_positions,omitempty"`                                                                                                                                                                                                    // Show positions on new link
-	MarketplaceFilterAssetClassRiskShareTitle                                                                    string                 `protobuf:"bytes,505,opt,name=marketplace_filter_asset_class_risk_share_title,json=marketplaceFilterAssetClassRiskShareTitle,proto3" json:"marketplace_filter_asset_class_risk_share_title,omitempty"`                                                                                                                                                                                                                              // Share Management
-	MarketplaceFilterAssetClassRiskShareToken                                                                    string                 `protobuf:"bytes,506,opt,name=marketplace_filter_asset_class_risk_share_token,json=marketplaceFilterAssetClassRiskShareToken,proto3" json:"marketplace_filter_asset_class_risk_share_token,omitempty"`                                                                                                                                                                                                                              // Share Link
-	MarketplaceFilterAssetClassRiskShareUserId                                                                   string                 `protobuf:"bytes,507,opt,name=marketplace_filter_asset_class_risk_share_user_id,json=marketplaceFilterAssetClassRiskShareUserId,proto3" json:"marketplace_filter_asset_class_risk_share_user_id,omitempty"`                                                                                                                                                                                                                         // User
-	MarketplaceFilterAssetClassRiskShareViews                                                                    string                 `protobuf:"bytes,508,opt,name=marketplace_filter_asset_class_risk_share_views,json=marketplaceFilterAssetClassRiskShareViews,proto3" json:"marketplace_filter_asset_class_risk_share_views,omitempty"`                                                                                                                                                                                                                              // Views
-	MarketplaceFilterAssetClassRiskSharePageAvgHolding                                                           string                 `protobuf:"bytes,509,opt,name=marketplace_filter_asset_class_risk_share_page_avg_holding,json=marketplaceFilterAssetClassRiskSharePageAvgHolding,proto3" json:"marketplace_filter_asset_class_risk_share_page_avg_holding,omitempty"`                                                                                                                                                                                               // Avg Holding
-	MarketplaceFilterAssetClassRiskSharePageAvgLoss                                                              string                 `protobuf:"bytes,510,opt,name=marketplace_filter_asset_class_risk_share_page_avg_loss,json=marketplaceFilterAssetClassRiskSharePageAvgLoss,proto3" json:"marketplace_filter_asset_class_risk_share_page_avg_loss,omitempty"`                                                                                                                                                                                                        // Avg Loss
-	MarketplaceFilterAssetClassRiskSharePageAvgWin                                                               string                 `protobuf:"bytes,511,opt,name=marketplace_filter_asset_class_risk_share_page_avg_win,json=marketplaceFilterAssetClassRiskSharePageAvgWin,proto3" json:"marketplace_filter_asset_class_risk_share_page_avg_win,omitempty"`                                                                                                                                                                                                           // Avg Win
-	MarketplaceFilterAssetClassRiskSharePageBestTrade                                                            string                 `protobuf:"bytes,512,opt,name=marketplace_filter_asset_class_risk_share_page_best_trade,json=marketplaceFilterAssetClassRiskSharePageBestTrade,proto3" json:"marketplace_filter_asset_class_risk_share_page_best_trade,omitempty"`                                                                                                                                                                                                  // Best Trade
-	MarketplaceFilterAssetClassRiskSharePageBySymbol                                                             string                 `protobuf:"bytes,513,opt,name=marketplace_filter_asset_class_risk_share_page_by_symbol,json=marketplaceFilterAssetClassRiskSharePageBySymbol,proto3" json:"marketplace_filter_asset_class_risk_share_page_by_symbol,omitempty"`                                                                                                                                                                                                     // Performance by Symbol
-	MarketplaceFilterAssetClassRiskSharePageCloseTime                                                            string                 `protobuf:"bytes,514,opt,name=marketplace_filter_asset_class_risk_share_page_close_time,json=marketplaceFilterAssetClassRiskSharePageCloseTime,proto3" json:"marketplace_filter_asset_class_risk_share_page_close_time,omitempty"`                                                                                                                                                                                                  // Close
-	MarketplaceFilterAssetClassRiskSharePageCount                                                                string                 `protobuf:"bytes,515,opt,name=marketplace_filter_asset_class_risk_share_page_count,json=marketplaceFilterAssetClassRiskSharePageCount,proto3" json:"marketplace_filter_asset_class_risk_share_page_count,omitempty"`                                                                                                                                                                                                                // Trades
-	MarketplaceFilterAssetClassRiskSharePageDisclaimer                                                           string                 `protobuf:"bytes,516,opt,name=marketplace_filter_asset_class_risk_share_page_disclaimer,json=marketplaceFilterAssetClassRiskSharePageDisclaimer,proto3" json:"marketplace_filter_asset_class_risk_share_page_disclaimer,omitempty"`                                                                                                                                                                                                 // Past performance is not indicative of future results.
-	MarketplaceFilterAssetClassRiskSharePageEquityCurve                                                          string                 `protobuf:"bytes,517,opt,name=marketplace_filter_asset_class_risk_share_page_equity_curve,json=marketplaceFilterAssetClassRiskSharePageEquityCurve,proto3" json:"marketplace_filter_asset_class_risk_share_page_equity_curve,omitempty"`                                                                                                                                                                                            // Equity Curve
-	MarketplaceFilterAssetClassRiskSharePageExpired                                                              string                 `protobuf:"bytes,518,opt,name=marketplace_filter_asset_class_risk_share_page_expired,json=marketplaceFilterAssetClassRiskSharePageExpired,proto3" json:"marketplace_filter_asset_class_risk_share_page_expired,omitempty"`                                                                                                                                                                                                          // This share link has expired
-	MarketplaceFilterAssetClassRiskSharePageFooter                                                               string                 `protobuf:"bytes,519,opt,name=marketplace_filter_asset_class_risk_share_page_footer,json=marketplaceFilterAssetClassRiskSharePageFooter,proto3" json:"marketplace_filter_asset_class_risk_share_page_footer,omitempty"`                                                                                                                                                                                                             // Generated by AntTrader
-	MarketplaceFilterAssetClassRiskSharePageLanguage                                                             string                 `protobuf:"bytes,520,opt,name=marketplace_filter_asset_class_risk_share_page_language,json=marketplaceFilterAssetClassRiskSharePageLanguage,proto3" json:"marketplace_filter_asset_class_risk_share_page_language,omitempty"`                                                                                                                                                                                                       // Language
-	MarketplaceFilterAssetClassRiskSharePageLoadFailed                                                           string                 `protobuf:"bytes,521,opt,name=marketplace_filter_asset_class_risk_share_page_load_failed,json=marketplaceFilterAssetClassRiskSharePageLoadFailed,proto3" json:"marketplace_filter_asset_class_risk_share_page_load_failed,omitempty"`                                                                                                                                                                                               // Failed to load shared performance
-	MarketplaceFilterAssetClassRiskSharePageLosingTrades                                                         string                 `protobuf:"bytes,522,opt,name=marketplace_filter_asset_class_risk_share_page_losing_trades,json=marketplaceFilterAssetClassRiskSharePageLosingTrades,proto3" json:"marketplace_filter_asset_class_risk_share_page_losing_trades,omitempty"`                                                                                                                                                                                         // Losing Trades
-	MarketplaceFilterAssetClassRiskSharePageMaxDrawdown                                                          string                 `protobuf:"bytes,523,opt,name=marketplace_filter_asset_class_risk_share_page_max_drawdown,json=marketplaceFilterAssetClassRiskSharePageMaxDrawdown,proto3" json:"marketplace_filter_asset_class_risk_share_page_max_drawdown,omitempty"`                                                                                                                                                                                            // Max Drawdown
-	MarketplaceFilterAssetClassRiskSharePageNetProfit                                                            string                 `protobuf:"bytes,524,opt,name=marketplace_filter_asset_class_risk_share_page_net_profit,json=marketplaceFilterAssetClassRiskSharePageNetProfit,proto3" json:"marketplace_filter_asset_class_risk_share_page_net_profit,omitempty"`                                                                                                                                                                                                  // Net Profit
-	MarketplaceFilterAssetClassRiskSharePageNoPositions                                                          string                 `protobuf:"bytes,525,opt,name=marketplace_filter_asset_class_risk_share_page_no_positions,json=marketplaceFilterAssetClassRiskSharePageNoPositions,proto3" json:"marketplace_filter_asset_class_risk_share_page_no_positions,omitempty"`                                                                                                                                                                                            // No open positions
-	MarketplaceFilterAssetClassRiskSharePageNoTrades                                                             string                 `protobuf:"bytes,526,opt,name=marketplace_filter_asset_class_risk_share_page_no_trades,json=marketplaceFilterAssetClassRiskSharePageNoTrades,proto3" json:"marketplace_filter_asset_class_risk_share_page_no_trades,omitempty"`                                                                                                                                                                                                     // No trade records yet
-	MarketplaceFilterAssetClassRiskSharePageNotFound                                                             string                 `protobuf:"bytes,527,opt,name=marketplace_filter_asset_class_risk_share_page_not_found,json=marketplaceFilterAssetClassRiskSharePageNotFound,proto3" json:"marketplace_filter_asset_class_risk_share_page_not_found,omitempty"`                                                                                                                                                                                                     // Not found
-	MarketplaceFilterAssetClassRiskSharePageOpenPrice                                                            string                 `protobuf:"bytes,528,opt,name=marketplace_filter_asset_class_risk_share_page_open_price,json=marketplaceFilterAssetClassRiskSharePageOpenPrice,proto3" json:"marketplace_filter_asset_class_risk_share_page_open_price,omitempty"`                                                                                                                                                                                                  // Open
-	MarketplaceFilterAssetClassRiskSharePagePositions                                                            string                 `protobuf:"bytes,529,opt,name=marketplace_filter_asset_class_risk_share_page_positions,json=marketplaceFilterAssetClassRiskSharePagePositions,proto3" json:"marketplace_filter_asset_class_risk_share_page_positions,omitempty"`                                                                                                                                                                                                    // Open Positions
-	MarketplaceFilterAssetClassRiskSharePagePositionsLocked                                                      string                 `protobuf:"bytes,530,opt,name=marketplace_filter_asset_class_risk_share_page_positions_locked,json=marketplaceFilterAssetClassRiskSharePagePositionsLocked,proto3" json:"marketplace_filter_asset_class_risk_share_page_positions_locked,omitempty"`                                                                                                                                                                                // Positions hidden by creator
-	MarketplaceFilterAssetClassRiskSharePageProfit                                                               string                 `protobuf:"bytes,531,opt,name=marketplace_filter_asset_class_risk_share_page_profit,json=marketplaceFilterAssetClassRiskSharePageProfit,proto3" json:"marketplace_filter_asset_class_risk_share_page_profit,omitempty"`                                                                                                                                                                                                             // Profit
-	MarketplaceFilterAssetClassRiskSharePageProfitFactor                                                         string                 `protobuf:"bytes,532,opt,name=marketplace_filter_asset_class_risk_share_page_profit_factor,json=marketplaceFilterAssetClassRiskSharePageProfitFactor,proto3" json:"marketplace_filter_asset_class_risk_share_page_profit_factor,omitempty"`                                                                                                                                                                                         // Profit Factor
-	MarketplaceFilterAssetClassRiskSharePageSharpeRatio                                                          string                 `protobuf:"bytes,533,opt,name=marketplace_filter_asset_class_risk_share_page_sharpe_ratio,json=marketplaceFilterAssetClassRiskSharePageSharpeRatio,proto3" json:"marketplace_filter_asset_class_risk_share_page_sharpe_ratio,omitempty"`                                                                                                                                                                                            // Sharpe Ratio
-	MarketplaceFilterAssetClassRiskSharePageSide                                                                 string                 `protobuf:"bytes,534,opt,name=marketplace_filter_asset_class_risk_share_page_side,json=marketplaceFilterAssetClassRiskSharePageSide,proto3" json:"marketplace_filter_asset_class_risk_share_page_side,omitempty"`                                                                                                                                                                                                                   // Side
-	MarketplaceFilterAssetClassRiskSharePageSubtitle                                                             string                 `protobuf:"bytes,535,opt,name=marketplace_filter_asset_class_risk_share_page_subtitle,json=marketplaceFilterAssetClassRiskSharePageSubtitle,proto3" json:"marketplace_filter_asset_class_risk_share_page_subtitle,omitempty"`                                                                                                                                                                                                       // Verified trading results
-	MarketplaceFilterAssetClassRiskSharePageSymbol                                                               string                 `protobuf:"bytes,536,opt,name=marketplace_filter_asset_class_risk_share_page_symbol,json=marketplaceFilterAssetClassRiskSharePageSymbol,proto3" json:"marketplace_filter_asset_class_risk_share_page_symbol,omitempty"`                                                                                                                                                                                                             // Symbol
-	MarketplaceFilterAssetClassRiskSharePageTitle                                                                string                 `protobuf:"bytes,537,opt,name=marketplace_filter_asset_class_risk_share_page_title,json=marketplaceFilterAssetClassRiskSharePageTitle,proto3" json:"marketplace_filter_asset_class_risk_share_page_title,omitempty"`                                                                                                                                                                                                                // Trading Performance
-	MarketplaceFilterAssetClassRiskSharePageTotalReturn                                                          string                 `protobuf:"bytes,538,opt,name=marketplace_filter_asset_class_risk_share_page_total_return,json=marketplaceFilterAssetClassRiskSharePageTotalReturn,proto3" json:"marketplace_filter_asset_class_risk_share_page_total_return,omitempty"`                                                                                                                                                                                            // Net Profit
-	MarketplaceFilterAssetClassRiskSharePageTotalTrades                                                          string                 `protobuf:"bytes,539,opt,name=marketplace_filter_asset_class_risk_share_page_total_trades,json=marketplaceFilterAssetClassRiskSharePageTotalTrades,proto3" json:"marketplace_filter_asset_class_risk_share_page_total_trades,omitempty"`                                                                                                                                                                                            // Total Trades
-	MarketplaceFilterAssetClassRiskSharePageTotalVolume                                                          string                 `protobuf:"bytes,540,opt,name=marketplace_filter_asset_class_risk_share_page_total_volume,json=marketplaceFilterAssetClassRiskSharePageTotalVolume,proto3" json:"marketplace_filter_asset_class_risk_share_page_total_volume,omitempty"`                                                                                                                                                                                            // Total Volume
-	MarketplaceFilterAssetClassRiskSharePageTradeRecords                                                         string                 `protobuf:"bytes,541,opt,name=marketplace_filter_asset_class_risk_share_page_trade_records,json=marketplaceFilterAssetClassRiskSharePageTradeRecords,proto3" json:"marketplace_filter_asset_class_risk_share_page_trade_records,omitempty"`                                                                                                                                                                                         // Trade Records
-	MarketplaceFilterAssetClassRiskSharePageVolume                                                               string                 `protobuf:"bytes,542,opt,name=marketplace_filter_asset_class_risk_share_page_volume,json=marketplaceFilterAssetClassRiskSharePageVolume,proto3" json:"marketplace_filter_asset_class_risk_share_page_volume,omitempty"`                                                                                                                                                                                                             // Volume
-	MarketplaceFilterAssetClassRiskSharePageWinRate                                                              string                 `protobuf:"bytes,543,opt,name=marketplace_filter_asset_class_risk_share_page_win_rate,json=marketplaceFilterAssetClassRiskSharePageWinRate,proto3" json:"marketplace_filter_asset_class_risk_share_page_win_rate,omitempty"`                                                                                                                                                                                                        // Win Rate
-	MarketplaceFilterAssetClassRiskSharePageWinningTrades                                                        string                 `protobuf:"bytes,544,opt,name=marketplace_filter_asset_class_risk_share_page_winning_trades,json=marketplaceFilterAssetClassRiskSharePageWinningTrades,proto3" json:"marketplace_filter_asset_class_risk_share_page_winning_trades,omitempty"`                                                                                                                                                                                      // Winning Trades
-	MarketplaceFilterAssetClassRiskSharePageWorstTrade                                                           string                 `protobuf:"bytes,545,opt,name=marketplace_filter_asset_class_risk_share_page_worst_trade,json=marketplaceFilterAssetClassRiskSharePageWorstTrade,proto3" json:"marketplace_filter_asset_class_risk_share_page_worst_trade,omitempty"`                                                                                                                                                                                               // Worst Trade
-	MarketplaceFilterAssetClassRiskSymbolDetectionLabel                                                          string                 `protobuf:"bytes,546,opt,name=marketplace_filter_asset_class_risk_symbol_detection_label,json=marketplaceFilterAssetClassRiskSymbolDetectionLabel,proto3" json:"marketplace_filter_asset_class_risk_symbol_detection_label,omitempty"`                                                                                                                                                                                              // Detected Symbols
-	MarketplaceFilterAssetClassRiskSymbolDetectionLoading                                                        string                 `protobuf:"bytes,547,opt,name=marketplace_filter_asset_class_risk_symbol_detection_loading,json=marketplaceFilterAssetClassRiskSymbolDetectionLoading,proto3" json:"marketplace_filter_asset_class_risk_symbol_detection_loading,omitempty"`                                                                                                                                                                                        // Parsing…
-	MarketplaceFilterAssetClassRiskSymbolDetectionNoSymbols                                                      string                 `protobuf:"bytes,548,opt,name=marketplace_filter_asset_class_risk_symbol_detection_no_symbols,json=marketplaceFilterAssetClassRiskSymbolDetectionNoSymbols,proto3" json:"marketplace_filter_asset_class_risk_symbol_detection_no_symbols,omitempty"`                                                                                                                                                                                // No trading symbols detected. Try including specific symbol n
-	MarketplaceFilterAssetClassRiskSymbolDetectionResolvedTooltip                                                string                 `protobuf:"bytes,549,opt,name=marketplace_filter_asset_class_risk_symbol_detection_resolved_tooltip,json=marketplaceFilterAssetClassRiskSymbolDetectionResolvedTooltip,proto3" json:"marketplace_filter_asset_class_risk_symbol_detection_resolved_tooltip,omitempty"`                                                                                                                                                              // broker: {{broker}} | mode: {{mode}}
-	MarketplaceFilterAssetClassRiskSymbolDetectionTradeModeDisabled                                              string                 `protobuf:"bytes,550,opt,name=marketplace_filter_asset_class_risk_symbol_detection_trade_mode_disabled,json=marketplaceFilterAssetClassRiskSymbolDetectionTradeModeDisabled,proto3" json:"marketplace_filter_asset_class_risk_symbol_detection_trade_mode_disabled,omitempty"`                                                                                                                                                      // Disabled
-	MarketplaceFilterAssetClassRiskSymbolDetectionTradeModeLongOnly                                              string                 `protobuf:"bytes,551,opt,name=marketplace_filter_asset_class_risk_symbol_detection_trade_mode_long_only,json=marketplaceFilterAssetClassRiskSymbolDetectionTradeModeLongOnly,proto3" json:"marketplace_filter_asset_class_risk_symbol_detection_trade_mode_long_only,omitempty"`                                                                                                                                                    // Long Only
-	MarketplaceFilterAssetClassRiskSymbolDetectionTradeModeLongShort                                             string                 `protobuf:"bytes,552,opt,name=marketplace_filter_asset_class_risk_symbol_detection_trade_mode_long_short,json=marketplaceFilterAssetClassRiskSymbolDetectionTradeModeLongShort,proto3" json:"marketplace_filter_asset_class_risk_symbol_detection_trade_mode_long_short,omitempty"`                                                                                                                                                 // Long & Short
-	MarketplaceFilterAssetClassRiskSymbolDetectionTradeModeShortOnly                                             string                 `protobuf:"bytes,553,opt,name=marketplace_filter_asset_class_risk_symbol_detection_trade_mode_short_only,json=marketplaceFilterAssetClassRiskSymbolDetectionTradeModeShortOnly,proto3" json:"marketplace_filter_asset_class_risk_symbol_detection_trade_mode_short_only,omitempty"`                                                                                                                                                 // Short Only
-	MarketplaceFilterAssetClassRiskSymbolDetectionTradeModeUnknown                                               string                 `protobuf:"bytes,554,opt,name=marketplace_filter_asset_class_risk_symbol_detection_trade_mode_unknown,json=marketplaceFilterAssetClassRiskSymbolDetectionTradeModeUnknown,proto3" json:"marketplace_filter_asset_class_risk_symbol_detection_trade_mode_unknown,omitempty"`                                                                                                                                                         // Unknown
-	MarketplaceFilterAssetClassRiskSymbolDetectionUnresolvedTooltip                                              string                 `protobuf:"bytes,555,opt,name=marketplace_filter_asset_class_risk_symbol_detection_unresolved_tooltip,json=marketplaceFilterAssetClassRiskSymbolDetectionUnresolvedTooltip,proto3" json:"marketplace_filter_asset_class_risk_symbol_detection_unresolved_tooltip,omitempty"`                                                                                                                                                        // No trading account bound yet, unable to resolve
-	MarketplaceFilterAssetClassRiskTopbarLogout                                                                  string                 `protobuf:"bytes,556,opt,name=marketplace_filter_asset_class_risk_topbar_logout,json=marketplaceFilterAssetClassRiskTopbarLogout,proto3" json:"marketplace_filter_asset_class_risk_topbar_logout,omitempty"`                                                                                                                                                                                                                        // Logout
-	MarketplaceFilterAssetClassRiskTopbarProfile                                                                 string                 `protobuf:"bytes,557,opt,name=marketplace_filter_asset_class_risk_topbar_profile,json=marketplaceFilterAssetClassRiskTopbarProfile,proto3" json:"marketplace_filter_asset_class_risk_topbar_profile,omitempty"`                                                                                                                                                                                                                     // Profile
-	MarketplaceFilterAssetClassRiskTopbarSettings                                                                string                 `protobuf:"bytes,558,opt,name=marketplace_filter_asset_class_risk_topbar_settings,json=marketplaceFilterAssetClassRiskTopbarSettings,proto3" json:"marketplace_filter_asset_class_risk_topbar_settings,omitempty"`                                                                                                                                                                                                                  // Settings
-	MarketplaceFilterAssetClassRiskTopbarSwitchToAdmin                                                           string                 `protobuf:"bytes,559,opt,name=marketplace_filter_asset_class_risk_topbar_switch_to_admin,json=marketplaceFilterAssetClassRiskTopbarSwitchToAdmin,proto3" json:"marketplace_filter_asset_class_risk_topbar_switch_to_admin,omitempty"`                                                                                                                                                                                               // Switch to Admin
-	MarketplaceFilterAssetClassRiskTopbarSystemOk                                                                string                 `protobuf:"bytes,560,opt,name=marketplace_filter_asset_class_risk_topbar_system_ok,json=marketplaceFilterAssetClassRiskTopbarSystemOk,proto3" json:"marketplace_filter_asset_class_risk_topbar_system_ok,omitempty"`                                                                                                                                                                                                                // System running normally
-	MarketplaceFilterAssetClassRiskTopbarUser                                                                    string                 `protobuf:"bytes,561,opt,name=marketplace_filter_asset_class_risk_topbar_user,json=marketplaceFilterAssetClassRiskTopbarUser,proto3" json:"marketplace_filter_asset_class_risk_topbar_user,omitempty"`                                                                                                                                                                                                                              // User
-	MarketplaceFilterAssetClassRiskWalletAccountNumber                                                           string                 `protobuf:"bytes,562,opt,name=marketplace_filter_asset_class_risk_wallet_account_number,json=marketplaceFilterAssetClassRiskWalletAccountNumber,proto3" json:"marketplace_filter_asset_class_risk_wallet_account_number,omitempty"`                                                                                                                                                                                                 // Account
-	MarketplaceFilterAssetClassRiskWalletBalance                                                                 string                 `protobuf:"bytes,563,opt,name=marketplace_filter_asset_class_risk_wallet_balance,json=marketplaceFilterAssetClassRiskWalletBalance,proto3" json:"marketplace_filter_asset_class_risk_wallet_balance,omitempty"`                                                                                                                                                                                                                     // Balance
-	MarketplaceFilterAssetClassRiskWalletCurrency                                                                string                 `protobuf:"bytes,564,opt,name=marketplace_filter_asset_class_risk_wallet_currency,json=marketplaceFilterAssetClassRiskWalletCurrency,proto3" json:"marketplace_filter_asset_class_risk_wallet_currency,omitempty"`                                                                                                                                                                                                                  // Currency
-	MarketplaceFilterAssetClassRiskWalletDeposit                                                                 string                 `protobuf:"bytes,565,opt,name=marketplace_filter_asset_class_risk_wallet_deposit,json=marketplaceFilterAssetClassRiskWalletDeposit,proto3" json:"marketplace_filter_asset_class_risk_wallet_deposit,omitempty"`                                                                                                                                                                                                                     // Deposit
-	MarketplaceFilterAssetClassRiskWalletFrozen                                                                  string                 `protobuf:"bytes,566,opt,name=marketplace_filter_asset_class_risk_wallet_frozen,json=marketplaceFilterAssetClassRiskWalletFrozen,proto3" json:"marketplace_filter_asset_class_risk_wallet_frozen,omitempty"`                                                                                                                                                                                                                        // Frozen
-	MarketplaceFilterAssetClassRiskWalletFrozenBalance                                                           string                 `protobuf:"bytes,567,opt,name=marketplace_filter_asset_class_risk_wallet_frozen_balance,json=marketplaceFilterAssetClassRiskWalletFrozenBalance,proto3" json:"marketplace_filter_asset_class_risk_wallet_frozen_balance,omitempty"`                                                                                                                                                                                                 // Frozen
-	MarketplaceFilterAssetClassRiskWalletHistory                                                                 string                 `protobuf:"bytes,568,opt,name=marketplace_filter_asset_class_risk_wallet_history,json=marketplaceFilterAssetClassRiskWalletHistory,proto3" json:"marketplace_filter_asset_class_risk_wallet_history,omitempty"`                                                                                                                                                                                                                     // History
-	MarketplaceFilterAssetClassRiskWalletTableAmount                                                             string                 `protobuf:"bytes,569,opt,name=marketplace_filter_asset_class_risk_wallet_table_amount,json=marketplaceFilterAssetClassRiskWalletTableAmount,proto3" json:"marketplace_filter_asset_class_risk_wallet_table_amount,omitempty"`                                                                                                                                                                                                       // Amount
-	MarketplaceFilterAssetClassRiskWalletTableBalanceAfter                                                       string                 `protobuf:"bytes,570,opt,name=marketplace_filter_asset_class_risk_wallet_table_balance_after,json=marketplaceFilterAssetClassRiskWalletTableBalanceAfter,proto3" json:"marketplace_filter_asset_class_risk_wallet_table_balance_after,omitempty"`                                                                                                                                                                                   // Balance After
-	MarketplaceFilterAssetClassRiskWalletTableDescription                                                        string                 `protobuf:"bytes,571,opt,name=marketplace_filter_asset_class_risk_wallet_table_description,json=marketplaceFilterAssetClassRiskWalletTableDescription,proto3" json:"marketplace_filter_asset_class_risk_wallet_table_description,omitempty"`                                                                                                                                                                                        // Description
-	MarketplaceFilterAssetClassRiskWalletTableTime                                                               string                 `protobuf:"bytes,572,opt,name=marketplace_filter_asset_class_risk_wallet_table_time,json=marketplaceFilterAssetClassRiskWalletTableTime,proto3" json:"marketplace_filter_asset_class_risk_wallet_table_time,omitempty"`                                                                                                                                                                                                             // Time
-	MarketplaceFilterAssetClassRiskWalletTableType                                                               string                 `protobuf:"bytes,573,opt,name=marketplace_filter_asset_class_risk_wallet_table_type,json=marketplaceFilterAssetClassRiskWalletTableType,proto3" json:"marketplace_filter_asset_class_risk_wallet_table_type,omitempty"`                                                                                                                                                                                                             // Type
-	MarketplaceFilterAssetClassRiskWalletTitle                                                                   string                 `protobuf:"bytes,574,opt,name=marketplace_filter_asset_class_risk_wallet_title,json=marketplaceFilterAssetClassRiskWalletTitle,proto3" json:"marketplace_filter_asset_class_risk_wallet_title,omitempty"`                                                                                                                                                                                                                           // My Wallet
-	MarketplaceFilterAssetClassRiskWalletTransactions                                                            string                 `protobuf:"bytes,575,opt,name=marketplace_filter_asset_class_risk_wallet_transactions,json=marketplaceFilterAssetClassRiskWalletTransactions,proto3" json:"marketplace_filter_asset_class_risk_wallet_transactions,omitempty"`                                                                                                                                                                                                      // Transactions
-	MarketplaceFilterAssetClassRiskWalletTxTypeAdjustment                                                        string                 `protobuf:"bytes,576,opt,name=marketplace_filter_asset_class_risk_wallet_tx_type_adjustment,json=marketplaceFilterAssetClassRiskWalletTxTypeAdjustment,proto3" json:"marketplace_filter_asset_class_risk_wallet_tx_type_adjustment,omitempty"`                                                                                                                                                                                      // Adjustment
-	MarketplaceFilterAssetClassRiskWalletTxTypeDeposit                                                           string                 `protobuf:"bytes,577,opt,name=marketplace_filter_asset_class_risk_wallet_tx_type_deposit,json=marketplaceFilterAssetClassRiskWalletTxTypeDeposit,proto3" json:"marketplace_filter_asset_class_risk_wallet_tx_type_deposit,omitempty"`                                                                                                                                                                                               // Deposit
-	MarketplaceFilterAssetClassRiskWalletTxTypeFee                                                               string                 `protobuf:"bytes,578,opt,name=marketplace_filter_asset_class_risk_wallet_tx_type_fee,json=marketplaceFilterAssetClassRiskWalletTxTypeFee,proto3" json:"marketplace_filter_asset_class_risk_wallet_tx_type_fee,omitempty"`                                                                                                                                                                                                           // Fee
-	MarketplaceFilterAssetClassRiskWalletTxTypeReversal                                                          string                 `protobuf:"bytes,579,opt,name=marketplace_filter_asset_class_risk_wallet_tx_type_reversal,json=marketplaceFilterAssetClassRiskWalletTxTypeReversal,proto3" json:"marketplace_filter_asset_class_risk_wallet_tx_type_reversal,omitempty"`                                                                                                                                                                                            // Reversal
-	MarketplaceFilterAssetClassRiskWalletTxTypeWithdrawal                                                        string                 `protobuf:"bytes,580,opt,name=marketplace_filter_asset_class_risk_wallet_tx_type_withdrawal,json=marketplaceFilterAssetClassRiskWalletTxTypeWithdrawal,proto3" json:"marketplace_filter_asset_class_risk_wallet_tx_type_withdrawal,omitempty"`                                                                                                                                                                                      // Withdrawal
-	MarketplaceFilterAssetClassRiskWalletWithdraw                                                                string                 `protobuf:"bytes,581,opt,name=marketplace_filter_asset_class_risk_wallet_withdraw,json=marketplaceFilterAssetClassRiskWalletWithdraw,proto3" json:"marketplace_filter_asset_class_risk_wallet_withdraw,omitempty"`                                                                                                                                                                                                                  // Withdraw
-	MarketplaceFilterCardBy                                                                                      string                 `protobuf:"bytes,582,opt,name=marketplace_filter_card_by,json=marketplaceFilterCardBy,proto3" json:"marketplace_filter_card_by,omitempty"`                                                                                                                                                                                                                                                                                          // by
-	MarketplaceFilterCardFree                                                                                    string                 `protobuf:"bytes,583,opt,name=marketplace_filter_card_free,json=marketplaceFilterCardFree,proto3" json:"marketplace_filter_card_free,omitempty"`                                                                                                                                                                                                                                                                                    // Free
-	MarketplaceFilterCardOwned                                                                                   string                 `protobuf:"bytes,584,opt,name=marketplace_filter_card_owned,json=marketplaceFilterCardOwned,proto3" json:"marketplace_filter_card_owned,omitempty"`                                                                                                                                                                                                                                                                                 // Purchased
-	MarketplaceFilterCardSubscribers                                                                             string                 `protobuf:"bytes,585,opt,name=marketplace_filter_card_subscribers,json=marketplaceFilterCardSubscribers,proto3" json:"marketplace_filter_card_subscribers,omitempty"`                                                                                                                                                                                                                                                               // Subscribers
-	MarketplaceFilterCardWinRate                                                                                 string                 `protobuf:"bytes,586,opt,name=marketplace_filter_card_win_rate,json=marketplaceFilterCardWinRate,proto3" json:"marketplace_filter_card_win_rate,omitempty"`                                                                                                                                                                                                                                                                         // Win Rate
-	MarketplaceFilterEmpty                                                                                       string                 `protobuf:"bytes,587,opt,name=marketplace_filter_empty,json=marketplaceFilterEmpty,proto3" json:"marketplace_filter_empty,omitempty"`                                                                                                                                                                                                                                                                                               // No strategies published yet
-	MarketplaceFilterNoSubscriptions                                                                             string                 `protobuf:"bytes,588,opt,name=marketplace_filter_no_subscriptions,json=marketplaceFilterNoSubscriptions,proto3" json:"marketplace_filter_no_subscriptions,omitempty"`                                                                                                                                                                                                                                                               // No subscriptions yet
-	MarketplaceFilterSortNewest                                                                                  string                 `protobuf:"bytes,589,opt,name=marketplace_filter_sort_newest,json=marketplaceFilterSortNewest,proto3" json:"marketplace_filter_sort_newest,omitempty"`                                                                                                                                                                                                                                                                              // Newest
-	MarketplaceFilterSortPerformance                                                                             string                 `protobuf:"bytes,590,opt,name=marketplace_filter_sort_performance,json=marketplaceFilterSortPerformance,proto3" json:"marketplace_filter_sort_performance,omitempty"`                                                                                                                                                                                                                                                               // Best Performance
-	MarketplaceFilterSortPopular                                                                                 string                 `protobuf:"bytes,591,opt,name=marketplace_filter_sort_popular,json=marketplaceFilterSortPopular,proto3" json:"marketplace_filter_sort_popular,omitempty"`                                                                                                                                                                                                                                                                           // Most Popular
-	MarketplaceFilterSortPriceAsc                                                                                string                 `protobuf:"bytes,592,opt,name=marketplace_filter_sort_price_asc,json=marketplaceFilterSortPriceAsc,proto3" json:"marketplace_filter_sort_price_asc,omitempty"`                                                                                                                                                                                                                                                                      // Price: Low to High
-	MarketplaceFilterSortPriceDesc                                                                               string                 `protobuf:"bytes,593,opt,name=marketplace_filter_sort_price_desc,json=marketplaceFilterSortPriceDesc,proto3" json:"marketplace_filter_sort_price_desc,omitempty"`                                                                                                                                                                                                                                                                   // Price: High to Low
-	MarketplaceFilterSortRating                                                                                  string                 `protobuf:"bytes,594,opt,name=marketplace_filter_sort_rating,json=marketplaceFilterSortRating,proto3" json:"marketplace_filter_sort_rating,omitempty"`                                                                                                                                                                                                                                                                              // Highest Rated
-	MarketplaceFilterSortScore                                                                                   string                 `protobuf:"bytes,595,opt,name=marketplace_filter_sort_score,json=marketplaceFilterSortScore,proto3" json:"marketplace_filter_sort_score,omitempty"`                                                                                                                                                                                                                                                                                 // Composite Score
-	MarketplaceFilterByClass                                                                                     string                 `protobuf:"bytes,596,opt,name=marketplace_filter_by_class,json=marketplaceFilterByClass,proto3" json:"marketplace_filter_by_class,omitempty"`                                                                                                                                                                                                                                                                                       // Filter by asset class
-	MarketplacePublish                                                                                           string                 `protobuf:"bytes,597,opt,name=marketplace_publish,json=marketplacePublish,proto3" json:"marketplace_publish,omitempty"`                                                                                                                                                                                                                                                                                                             // Publish Strategy
-	MarketplaceSearchPlaceholder                                                                                 string                 `protobuf:"bytes,598,opt,name=marketplace_search_placeholder,json=marketplaceSearchPlaceholder,proto3" json:"marketplace_search_placeholder,omitempty"`                                                                                                                                                                                                                                                                             // Search strategies...
-	MarketplaceSubtitle                                                                                          string                 `protobuf:"bytes,599,opt,name=marketplace_subtitle,json=marketplaceSubtitle,proto3" json:"marketplace_subtitle,omitempty"`                                                                                                                                                                                                                                                                                                          // Discover, buy, and use community strategies
-	MarketplaceTabsAuthor                                                                                        string                 `protobuf:"bytes,600,opt,name=marketplace_tabs_author,json=marketplaceTabsAuthor,proto3" json:"marketplace_tabs_author,omitempty"`                                                                                                                                                                                                                                                                                                  // Author Center
-	MarketplaceTabsMarketplace                                                                                   string                 `protobuf:"bytes,601,opt,name=marketplace_tabs_marketplace,json=marketplaceTabsMarketplace,proto3" json:"marketplace_tabs_marketplace,omitempty"`                                                                                                                                                                                                                                                                                   // Market
-	MarketplaceTabsPurchases                                                                                     string                 `protobuf:"bytes,602,opt,name=marketplace_tabs_purchases,json=marketplaceTabsPurchases,proto3" json:"marketplace_tabs_purchases,omitempty"`                                                                                                                                                                                                                                                                                         // My Purchases
-	MarketplaceTabsSubscriptions                                                                                 string                 `protobuf:"bytes,603,opt,name=marketplace_tabs_subscriptions,json=marketplaceTabsSubscriptions,proto3" json:"marketplace_tabs_subscriptions,omitempty"`                                                                                                                                                                                                                                                                             // My Subscriptions
-	MarketplaceTitle                                                                                             string                 `protobuf:"bytes,604,opt,name=marketplace_title,json=marketplaceTitle,proto3" json:"marketplace_title,omitempty"`                                                                                                                                                                                                                                                                                                                   // Strategy Marketplace
-	MenuAccounts                                                                                                 string                 `protobuf:"bytes,605,opt,name=menu_accounts,json=menuAccounts,proto3" json:"menu_accounts,omitempty"`                                                                                                                                                                                                                                                                                                                               // Accounts
-	MenuAiAssistant                                                                                              string                 `protobuf:"bytes,606,opt,name=menu_ai_assistant,json=menuAiAssistant,proto3" json:"menu_ai_assistant,omitempty"`                                                                                                                                                                                                                                                                                                                    // AI Assistant
-	MenuAlgoDashboard                                                                                            string                 `protobuf:"bytes,607,opt,name=menu_algo_dashboard,json=menuAlgoDashboard,proto3" json:"menu_algo_dashboard,omitempty"`                                                                                                                                                                                                                                                                                                              // Algo Dashboard
-	MenuAnalytics                                                                                                string                 `protobuf:"bytes,608,opt,name=menu_analytics,json=menuAnalytics,proto3" json:"menu_analytics,omitempty"`                                                                                                                                                                                                                                                                                                                            // Analytics
-	MenuAssetAnalysis                                                                                            string                 `protobuf:"bytes,609,opt,name=menu_asset_analysis,json=menuAssetAnalysis,proto3" json:"menu_asset_analysis,omitempty"`                                                                                                                                                                                                                                                                                                              // AI Analysis
-	MenuAssets                                                                                                   string                 `protobuf:"bytes,610,opt,name=menu_assets,json=menuAssets,proto3" json:"menu_assets,omitempty"`                                                                                                                                                                                                                                                                                                                                     // Assets
-	MenuAutoTrading                                                                                              string                 `protobuf:"bytes,611,opt,name=menu_auto_trading,json=menuAutoTrading,proto3" json:"menu_auto_trading,omitempty"`                                                                                                                                                                                                                                                                                                                    // Auto Trading
-	MenuDashboard                                                                                                string                 `protobuf:"bytes,612,opt,name=menu_dashboard,json=menuDashboard,proto3" json:"menu_dashboard,omitempty"`                                                                                                                                                                                                                                                                                                                            // Dashboard
-	MenuDevGroup                                                                                                 string                 `protobuf:"bytes,613,opt,name=menu_dev_group,json=menuDevGroup,proto3" json:"menu_dev_group,omitempty"`                                                                                                                                                                                                                                                                                                                             // Development
-	MenuExperiments                                                                                              string                 `protobuf:"bytes,614,opt,name=menu_experiments,json=menuExperiments,proto3" json:"menu_experiments,omitempty"`                                                                                                                                                                                                                                                                                                                      // Experiments
-	MenuIndicatorCatalog                                                                                         string                 `protobuf:"bytes,615,opt,name=menu_indicator_catalog,json=menuIndicatorCatalog,proto3" json:"menu_indicator_catalog,omitempty"`                                                                                                                                                                                                                                                                                                     // Indicator Catalog
-	MenuLogs                                                                                                     string                 `protobuf:"bytes,616,opt,name=menu_logs,json=menuLogs,proto3" json:"menu_logs,omitempty"`                                                                                                                                                                                                                                                                                                                                           // System Logs
-	MenuMarket                                                                                                   string                 `protobuf:"bytes,617,opt,name=menu_market,json=menuMarket,proto3" json:"menu_market,omitempty"`                                                                                                                                                                                                                                                                                                                                     // Market
-	MenuMarketRegime                                                                                             string                 `protobuf:"bytes,618,opt,name=menu_market_regime,json=menuMarketRegime,proto3" json:"menu_market_regime,omitempty"`                                                                                                                                                                                                                                                                                                                 // Market Regime
-	MenuMarketTools                                                                                              string                 `protobuf:"bytes,619,opt,name=menu_market_tools,json=menuMarketTools,proto3" json:"menu_market_tools,omitempty"`                                                                                                                                                                                                                                                                                                                    // Market Tools
-	MenuMarketplace                                                                                              string                 `protobuf:"bytes,620,opt,name=menu_marketplace,json=menuMarketplace,proto3" json:"menu_marketplace,omitempty"`                                                                                                                                                                                                                                                                                                                      // Marketplace
-	MenuOpsGroup                                                                                                 string                 `protobuf:"bytes,621,opt,name=menu_ops_group,json=menuOpsGroup,proto3" json:"menu_ops_group,omitempty"`                                                                                                                                                                                                                                                                                                                             // Operations
-	MenuSchedules                                                                                                string                 `protobuf:"bytes,622,opt,name=menu_schedules,json=menuSchedules,proto3" json:"menu_schedules,omitempty"`                                                                                                                                                                                                                                                                                                                            // Schedules
-	MenuStrategies                                                                                               string                 `protobuf:"bytes,623,opt,name=menu_strategies,json=menuStrategies,proto3" json:"menu_strategies,omitempty"`                                                                                                                                                                                                                                                                                                                         // Strategies
-	MenuStrategy                                                                                                 string                 `protobuf:"bytes,624,opt,name=menu_strategy,json=menuStrategy,proto3" json:"menu_strategy,omitempty"`                                                                                                                                                                                                                                                                                                                               // Strategy
-	MenuStrategyLibrary                                                                                          string                 `protobuf:"bytes,625,opt,name=menu_strategy_library,json=menuStrategyLibrary,proto3" json:"menu_strategy_library,omitempty"`                                                                                                                                                                                                                                                                                                        // Strategy Library
-	MenuStrategyWorkspace                                                                                        string                 `protobuf:"bytes,626,opt,name=menu_strategy_workspace,json=menuStrategyWorkspace,proto3" json:"menu_strategy_workspace,omitempty"`                                                                                                                                                                                                                                                                                                  // Strategy Workspace
-	MenuTrading                                                                                                  string                 `protobuf:"bytes,627,opt,name=menu_trading,json=menuTrading,proto3" json:"menu_trading,omitempty"`                                                                                                                                                                                                                                                                                                                                  // Trading
-	MenuWallet                                                                                                   string                 `protobuf:"bytes,628,opt,name=menu_wallet,json=menuWallet,proto3" json:"menu_wallet,omitempty"`                                                                                                                                                                                                                                                                                                                                     // Wallet
-	unknownFields                                                                                                protoimpl.UnknownFields
-	sizeCache                                                                                                    protoimpl.SizeCache
+	state                                                                         protoimpl.MessageState `protogen:"open.v1"`
+	AdminConfigAiProviderCatalog                                                  string                 `protobuf:"bytes,1,opt,name=admin_config_ai_provider_catalog,json=adminConfigAiProviderCatalog,proto3" json:"admin_config_ai_provider_catalog,omitempty"`                                                                                                                                                                    // AI Model Provider Catalog
+	AdminConfigBaseUrlLabel                                                       string                 `protobuf:"bytes,2,opt,name=admin_config_base_url_label,json=adminConfigBaseUrlLabel,proto3" json:"admin_config_base_url_label,omitempty"`                                                                                                                                                                                   // Base URL (optional, custom/OpenAI compatible only)
+	AdminConfigConfigItem                                                         string                 `protobuf:"bytes,3,opt,name=admin_config_config_item,json=adminConfigConfigItem,proto3" json:"admin_config_config_item,omitempty"`                                                                                                                                                                                           // Config Item
+	AdminConfigDescription                                                        string                 `protobuf:"bytes,4,opt,name=admin_config_description,json=adminConfigDescription,proto3" json:"admin_config_description,omitempty"`                                                                                                                                                                                          // Description
+	AdminConfigEconAIConfig                                                       string                 `protobuf:"bytes,5,opt,name=admin_config_econ_a_i_config,json=adminConfigEconAIConfig,proto3" json:"admin_config_econ_a_i_config,omitempty"`                                                                                                                                                                                 // Economic Calendar Translation AI Config
+	AdminConfigEditConfig                                                         string                 `protobuf:"bytes,6,opt,name=admin_config_edit_config,json=adminConfigEditConfig,proto3" json:"admin_config_edit_config,omitempty"`                                                                                                                                                                                           // Edit Config: {{key}}
+	AdminConfigEnableToggle                                                       string                 `protobuf:"bytes,7,opt,name=admin_config_enable_toggle,json=adminConfigEnableToggle,proto3" json:"admin_config_enable_toggle,omitempty"`                                                                                                                                                                                     // Enable
+	AdminConfigFillTemplate                                                       string                 `protobuf:"bytes,8,opt,name=admin_config_fill_template,json=adminConfigFillTemplate,proto3" json:"admin_config_fill_template,omitempty"`                                                                                                                                                                                     // Fill Example
+	AdminConfigFormatJson                                                         string                 `protobuf:"bytes,9,opt,name=admin_config_format_json,json=adminConfigFormatJson,proto3" json:"admin_config_format_json,omitempty"`                                                                                                                                                                                           // Format JSON
+	AdminConfigMaxAccountsPerUser                                                 string                 `protobuf:"bytes,10,opt,name=admin_config_max_accounts_per_user,json=adminConfigMaxAccountsPerUser,proto3" json:"admin_config_max_accounts_per_user,omitempty"`                                                                                                                                                              // Max Accounts Per User
+	AdminConfigMessagesDisabled                                                   string                 `protobuf:"bytes,11,opt,name=admin_config_messages_disabled,json=adminConfigMessagesDisabled,proto3" json:"admin_config_messages_disabled,omitempty"`                                                                                                                                                                        // Config disabled
+	AdminConfigMessagesEnabled                                                    string                 `protobuf:"bytes,12,opt,name=admin_config_messages_enabled,json=adminConfigMessagesEnabled,proto3" json:"admin_config_messages_enabled,omitempty"`                                                                                                                                                                           // Config enabled
+	AdminConfigMessagesLoadFailed                                                 string                 `protobuf:"bytes,13,opt,name=admin_config_messages_load_failed,json=adminConfigMessagesLoadFailed,proto3" json:"admin_config_messages_load_failed,omitempty"`                                                                                                                                                                // Failed to load configs
+	AdminConfigMessagesOperationFailed                                            string                 `protobuf:"bytes,14,opt,name=admin_config_messages_operation_failed,json=adminConfigMessagesOperationFailed,proto3" json:"admin_config_messages_operation_failed,omitempty"`                                                                                                                                                 // Operation failed
+	AdminConfigMessagesUpdateFailed                                               string                 `protobuf:"bytes,15,opt,name=admin_config_messages_update_failed,json=adminConfigMessagesUpdateFailed,proto3" json:"admin_config_messages_update_failed,omitempty"`                                                                                                                                                          // Update failed
+	AdminConfigMessagesUpdated                                                    string                 `protobuf:"bytes,16,opt,name=admin_config_messages_updated,json=adminConfigMessagesUpdated,proto3" json:"admin_config_messages_updated,omitempty"`                                                                                                                                                                           // Config updated
+	AdminConfigModelName                                                          string                 `protobuf:"bytes,17,opt,name=admin_config_model_name,json=adminConfigModelName,proto3" json:"admin_config_model_name,omitempty"`                                                                                                                                                                                             // Model Name
+	AdminConfigOff                                                                string                 `protobuf:"bytes,18,opt,name=admin_config_off,json=adminConfigOff,proto3" json:"admin_config_off,omitempty"`                                                                                                                                                                                                                 // Off
+	AdminConfigOn                                                                 string                 `protobuf:"bytes,19,opt,name=admin_config_on,json=adminConfigOn,proto3" json:"admin_config_on,omitempty"`                                                                                                                                                                                                                    // On
+	AdminConfigPlaceholdersApiKey                                                 string                 `protobuf:"bytes,20,opt,name=admin_config_placeholders_api_key,json=adminConfigPlaceholdersApiKey,proto3" json:"admin_config_placeholders_api_key,omitempty"`                                                                                                                                                                // Enter API Key
+	AdminConfigPlaceholdersBaseUrl                                                string                 `protobuf:"bytes,21,opt,name=admin_config_placeholders_base_url,json=adminConfigPlaceholdersBaseUrl,proto3" json:"admin_config_placeholders_base_url,omitempty"`                                                                                                                                                             // e.g. https://api.openai.com or self-hosted gateway
+	AdminConfigPlaceholdersConfigValue                                            string                 `protobuf:"bytes,22,opt,name=admin_config_placeholders_config_value,json=adminConfigPlaceholdersConfigValue,proto3" json:"admin_config_placeholders_config_value,omitempty"`                                                                                                                                                 // Enter config value
+	AdminConfigPlaceholdersDescription                                            string                 `protobuf:"bytes,23,opt,name=admin_config_placeholders_description,json=adminConfigPlaceholdersDescription,proto3" json:"admin_config_placeholders_description,omitempty"`                                                                                                                                                   // Enter description
+	AdminConfigPlaceholdersJson                                                   string                 `protobuf:"bytes,24,opt,name=admin_config_placeholders_json,json=adminConfigPlaceholdersJson,proto3" json:"admin_config_placeholders_json,omitempty"`                                                                                                                                                                        // Enter JSON
+	AdminConfigPlaceholdersModel                                                  string                 `protobuf:"bytes,25,opt,name=admin_config_placeholders_model,json=adminConfigPlaceholdersModel,proto3" json:"admin_config_placeholders_model,omitempty"`                                                                                                                                                                     // e.g. glm-4-flash / deepseek-chat / gpt-4o-mini
+	AdminConfigProvider                                                           string                 `protobuf:"bytes,26,opt,name=admin_config_provider,json=adminConfigProvider,proto3" json:"admin_config_provider,omitempty"`                                                                                                                                                                                                  // Provider
+	AdminConfigProviderOptionsCustom                                              string                 `protobuf:"bytes,27,opt,name=admin_config_provider_options_custom,json=adminConfigProviderOptionsCustom,proto3" json:"admin_config_provider_options_custom,omitempty"`                                                                                                                                                       // Custom / OpenAI Compatible
+	AdminConfigProviderOptionsDeepseek                                            string                 `protobuf:"bytes,28,opt,name=admin_config_provider_options_deepseek,json=adminConfigProviderOptionsDeepseek,proto3" json:"admin_config_provider_options_deepseek,omitempty"`                                                                                                                                                 // DeepSeek
+	AdminConfigProviderOptionsZhipu                                               string                 `protobuf:"bytes,29,opt,name=admin_config_provider_options_zhipu,json=adminConfigProviderOptionsZhipu,proto3" json:"admin_config_provider_options_zhipu,omitempty"`                                                                                                                                                          // Zhipu
+	AdminConfigStatus                                                             string                 `protobuf:"bytes,30,opt,name=admin_config_status,json=adminConfigStatus,proto3" json:"admin_config_status,omitempty"`                                                                                                                                                                                                        // Status
+	AdminConfigStrategyHealthConfig                                               string                 `protobuf:"bytes,31,opt,name=admin_config_strategy_health_config,json=adminConfigStrategyHealthConfig,proto3" json:"admin_config_strategy_health_config,omitempty"`                                                                                                                                                          // Strategy Health Grading Config
+	AdminConfigThresholdDesc                                                      string                 `protobuf:"bytes,32,opt,name=admin_config_threshold_desc,json=adminConfigThresholdDesc,proto3" json:"admin_config_threshold_desc,omitempty"`                                                                                                                                                                                 // green_success_rate: green success rate threshold; green_max_
+	AdminConfigThresholdInfo                                                      string                 `protobuf:"bytes,33,opt,name=admin_config_threshold_info,json=adminConfigThresholdInfo,proto3" json:"admin_config_threshold_info,omitempty"`                                                                                                                                                                                 // Threshold Field Description
+	AdminConfigTitle                                                              string                 `protobuf:"bytes,34,opt,name=admin_config_title,json=adminConfigTitle,proto3" json:"admin_config_title,omitempty"`                                                                                                                                                                                                           // System Configuration
+	AdminConfigToggle                                                             string                 `protobuf:"bytes,35,opt,name=admin_config_toggle,json=adminConfigToggle,proto3" json:"admin_config_toggle,omitempty"`                                                                                                                                                                                                        // Toggle
+	AdminConfigUpdatedAt                                                          string                 `protobuf:"bytes,36,opt,name=admin_config_updated_at,json=adminConfigUpdatedAt,proto3" json:"admin_config_updated_at,omitempty"`                                                                                                                                                                                             // Updated At
+	AdminConfigValidationApiKeyRequired                                           string                 `protobuf:"bytes,37,opt,name=admin_config_validation_api_key_required,json=adminConfigValidationApiKeyRequired,proto3" json:"admin_config_validation_api_key_required,omitempty"`                                                                                                                                            // API Key cannot be empty
+	AdminConfigValidationGreenMaxFailedRunsNonNegative                            string                 `protobuf:"bytes,38,opt,name=admin_config_validation_green_max_failed_runs_non_negative,json=adminConfigValidationGreenMaxFailedRunsNonNegative,proto3" json:"admin_config_validation_green_max_failed_runs_non_negative,omitempty"`                                                                                         // green_max_failed_runs must be >= 0
+	AdminConfigValidationGreenSuccessRateRange                                    string                 `protobuf:"bytes,39,opt,name=admin_config_validation_green_success_rate_range,json=adminConfigValidationGreenSuccessRateRange,proto3" json:"admin_config_validation_green_success_rate_range,omitempty"`                                                                                                                     // green_success_rate must be between 0 and 100
+	AdminConfigValidationJsonEmpty                                                string                 `protobuf:"bytes,40,opt,name=admin_config_validation_json_empty,json=adminConfigValidationJsonEmpty,proto3" json:"admin_config_validation_json_empty,omitempty"`                                                                                                                                                             // JSON cannot be empty
+	AdminConfigValidationJsonInvalid                                              string                 `protobuf:"bytes,41,opt,name=admin_config_validation_json_invalid,json=adminConfigValidationJsonInvalid,proto3" json:"admin_config_validation_json_invalid,omitempty"`                                                                                                                                                       // Invalid JSON format
+	AdminConfigValidationMinSampleSizeNonNegative                                 string                 `protobuf:"bytes,42,opt,name=admin_config_validation_min_sample_size_non_negative,json=adminConfigValidationMinSampleSizeNonNegative,proto3" json:"admin_config_validation_min_sample_size_non_negative,omitempty"`                                                                                                          // min_sample_size must be >= 0
+	AdminConfigValidationModelRequired                                            string                 `protobuf:"bytes,43,opt,name=admin_config_validation_model_required,json=adminConfigValidationModelRequired,proto3" json:"admin_config_validation_model_required,omitempty"`                                                                                                                                                 // Model name cannot be empty
+	AdminConfigValidationYellowNotGreaterThanGreen                                string                 `protobuf:"bytes,44,opt,name=admin_config_validation_yellow_not_greater_than_green,json=adminConfigValidationYellowNotGreaterThanGreen,proto3" json:"admin_config_validation_yellow_not_greater_than_green,omitempty"`                                                                                                       // yellow_success_rate cannot be greater than green_success_rat
+	AdminConfigValidationYellowSuccessRateRange                                   string                 `protobuf:"bytes,45,opt,name=admin_config_validation_yellow_success_rate_range,json=adminConfigValidationYellowSuccessRateRange,proto3" json:"admin_config_validation_yellow_success_rate_range,omitempty"`                                                                                                                  // yellow_success_rate must be between 0 and 100
+	AdminConfigValue                                                              string                 `protobuf:"bytes,46,opt,name=admin_config_value,json=adminConfigValue,proto3" json:"admin_config_value,omitempty"`                                                                                                                                                                                                           // Value
+	AdminDashboardActiveUsers                                                     string                 `protobuf:"bytes,47,opt,name=admin_dashboard_active_users,json=adminDashboardActiveUsers,proto3" json:"admin_dashboard_active_users,omitempty"`                                                                                                                                                                              // Active Users
+	AdminDashboardLoadFailed                                                      string                 `protobuf:"bytes,48,opt,name=admin_dashboard_load_failed,json=adminDashboardLoadFailed,proto3" json:"admin_dashboard_load_failed,omitempty"`                                                                                                                                                                                 // Failed to load dashboard data
+	AdminDashboardLogsActionType                                                  string                 `protobuf:"bytes,49,opt,name=admin_dashboard_logs_action_type,json=adminDashboardLogsActionType,proto3" json:"admin_dashboard_logs_action_type,omitempty"`                                                                                                                                                                   // Action Type
+	AdminDashboardLogsFailed                                                      string                 `protobuf:"bytes,50,opt,name=admin_dashboard_logs_failed,json=adminDashboardLogsFailed,proto3" json:"admin_dashboard_logs_failed,omitempty"`                                                                                                                                                                                 // Failed
+	AdminDashboardLogsModule                                                      string                 `protobuf:"bytes,51,opt,name=admin_dashboard_logs_module,json=adminDashboardLogsModule,proto3" json:"admin_dashboard_logs_module,omitempty"`                                                                                                                                                                                 // Module
+	AdminDashboardLogsModuleMapAccountManagement                                  string                 `protobuf:"bytes,52,opt,name=admin_dashboard_logs_module_map_account_management,json=adminDashboardLogsModuleMapAccountManagement,proto3" json:"admin_dashboard_logs_module_map_account_management,omitempty"`                                                                                                               // Account Management
+	AdminDashboardLogsModuleMapSystemConfig                                       string                 `protobuf:"bytes,53,opt,name=admin_dashboard_logs_module_map_system_config,json=adminDashboardLogsModuleMapSystemConfig,proto3" json:"admin_dashboard_logs_module_map_system_config,omitempty"`                                                                                                                              // System Config
+	AdminDashboardLogsModuleMapTrading                                            string                 `protobuf:"bytes,54,opt,name=admin_dashboard_logs_module_map_trading,json=adminDashboardLogsModuleMapTrading,proto3" json:"admin_dashboard_logs_module_map_trading,omitempty"`                                                                                                                                               // Trading
+	AdminDashboardLogsModuleMapUserManagement                                     string                 `protobuf:"bytes,55,opt,name=admin_dashboard_logs_module_map_user_management,json=adminDashboardLogsModuleMapUserManagement,proto3" json:"admin_dashboard_logs_module_map_user_management,omitempty"`                                                                                                                        // User Management
+	AdminDashboardLogsStatus                                                      string                 `protobuf:"bytes,56,opt,name=admin_dashboard_logs_status,json=adminDashboardLogsStatus,proto3" json:"admin_dashboard_logs_status,omitempty"`                                                                                                                                                                                 // Status
+	AdminDashboardLogsSuccess                                                     string                 `protobuf:"bytes,57,opt,name=admin_dashboard_logs_success,json=adminDashboardLogsSuccess,proto3" json:"admin_dashboard_logs_success,omitempty"`                                                                                                                                                                              // Success
+	AdminDashboardLogsTarget                                                      string                 `protobuf:"bytes,58,opt,name=admin_dashboard_logs_target,json=adminDashboardLogsTarget,proto3" json:"admin_dashboard_logs_target,omitempty"`                                                                                                                                                                                 // Target
+	AdminDashboardLogsTime                                                        string                 `protobuf:"bytes,59,opt,name=admin_dashboard_logs_time,json=adminDashboardLogsTime,proto3" json:"admin_dashboard_logs_time,omitempty"`                                                                                                                                                                                       // Time
+	AdminDashboardMtAccounts                                                      string                 `protobuf:"bytes,60,opt,name=admin_dashboard_mt_accounts,json=adminDashboardMtAccounts,proto3" json:"admin_dashboard_mt_accounts,omitempty"`                                                                                                                                                                                 // MT Accounts
+	AdminDashboardOnlineAccounts                                                  string                 `protobuf:"bytes,61,opt,name=admin_dashboard_online_accounts,json=adminDashboardOnlineAccounts,proto3" json:"admin_dashboard_online_accounts,omitempty"`                                                                                                                                                                     // Online Accounts
+	AdminDashboardRecentLogs                                                      string                 `protobuf:"bytes,62,opt,name=admin_dashboard_recent_logs,json=adminDashboardRecentLogs,proto3" json:"admin_dashboard_recent_logs,omitempty"`                                                                                                                                                                                 // Recent Operation Logs
+	AdminDashboardRiskMetricsOrderCloseFailed                                     string                 `protobuf:"bytes,63,opt,name=admin_dashboard_risk_metrics_order_close_failed,json=adminDashboardRiskMetricsOrderCloseFailed,proto3" json:"admin_dashboard_risk_metrics_order_close_failed,omitempty"`                                                                                                                        // Order Closed Failed
+	AdminDashboardRiskMetricsOrderCloseSuccess                                    string                 `protobuf:"bytes,64,opt,name=admin_dashboard_risk_metrics_order_close_success,json=adminDashboardRiskMetricsOrderCloseSuccess,proto3" json:"admin_dashboard_risk_metrics_order_close_success,omitempty"`                                                                                                                     // Order Closed Success
+	AdminDashboardRiskMetricsOrderSendFailed                                      string                 `protobuf:"bytes,65,opt,name=admin_dashboard_risk_metrics_order_send_failed,json=adminDashboardRiskMetricsOrderSendFailed,proto3" json:"admin_dashboard_risk_metrics_order_send_failed,omitempty"`                                                                                                                           // Order Sent Failed
+	AdminDashboardRiskMetricsOrderSendSuccess                                     string                 `protobuf:"bytes,66,opt,name=admin_dashboard_risk_metrics_order_send_success,json=adminDashboardRiskMetricsOrderSendSuccess,proto3" json:"admin_dashboard_risk_metrics_order_send_success,omitempty"`                                                                                                                        // Order Sent Success
+	AdminDashboardRiskMetricsRiskValidateError                                    string                 `protobuf:"bytes,67,opt,name=admin_dashboard_risk_metrics_risk_validate_error,json=adminDashboardRiskMetricsRiskValidateError,proto3" json:"admin_dashboard_risk_metrics_risk_validate_error,omitempty"`                                                                                                                     // Risk Validated Error
+	AdminDashboardRiskMetricsRiskValidatePass                                     string                 `protobuf:"bytes,68,opt,name=admin_dashboard_risk_metrics_risk_validate_pass,json=adminDashboardRiskMetricsRiskValidatePass,proto3" json:"admin_dashboard_risk_metrics_risk_validate_pass,omitempty"`                                                                                                                        // Risk Validated Pass
+	AdminDashboardRiskMetricsRiskValidateReject                                   string                 `protobuf:"bytes,69,opt,name=admin_dashboard_risk_metrics_risk_validate_reject,json=adminDashboardRiskMetricsRiskValidateReject,proto3" json:"admin_dashboard_risk_metrics_risk_validate_reject,omitempty"`                                                                                                                  // Risk Validated Reject
+	AdminDashboardRiskMetricsRiskValidateTotal                                    string                 `protobuf:"bytes,70,opt,name=admin_dashboard_risk_metrics_risk_validate_total,json=adminDashboardRiskMetricsRiskValidateTotal,proto3" json:"admin_dashboard_risk_metrics_risk_validate_total,omitempty"`                                                                                                                     // Risk Validated Total
+	AdminDashboardRiskMetricsTitle                                                string                 `protobuf:"bytes,71,opt,name=admin_dashboard_risk_metrics_title,json=adminDashboardRiskMetricsTitle,proto3" json:"admin_dashboard_risk_metrics_title,omitempty"`                                                                                                                                                             // Risk Control Metrics (Real-time)
+	AdminDashboardRiskWindowNoData                                                string                 `protobuf:"bytes,72,opt,name=admin_dashboard_risk_window_no_data,json=adminDashboardRiskWindowNoData,proto3" json:"admin_dashboard_risk_window_no_data,omitempty"`                                                                                                                                                           // No window metrics data
+	AdminDashboardRiskWindowNoRejectData                                          string                 `protobuf:"bytes,73,opt,name=admin_dashboard_risk_window_no_reject_data,json=adminDashboardRiskWindowNoRejectData,proto3" json:"admin_dashboard_risk_window_no_reject_data,omitempty"`                                                                                                                                       // No reject data for current window
+	AdminDashboardRiskWindowOrderCloseFailed                                      string                 `protobuf:"bytes,74,opt,name=admin_dashboard_risk_window_order_close_failed,json=adminDashboardRiskWindowOrderCloseFailed,proto3" json:"admin_dashboard_risk_window_order_close_failed,omitempty"`                                                                                                                           // {{window}} Close Failed
+	AdminDashboardRiskWindowOrderCloseSuccess                                     string                 `protobuf:"bytes,75,opt,name=admin_dashboard_risk_window_order_close_success,json=adminDashboardRiskWindowOrderCloseSuccess,proto3" json:"admin_dashboard_risk_window_order_close_success,omitempty"`                                                                                                                        // {{window}} Close Success
+	AdminDashboardRiskWindowOrderSendFailed                                       string                 `protobuf:"bytes,76,opt,name=admin_dashboard_risk_window_order_send_failed,json=adminDashboardRiskWindowOrderSendFailed,proto3" json:"admin_dashboard_risk_window_order_send_failed,omitempty"`                                                                                                                              // {{window}} Order Failed
+	AdminDashboardRiskWindowOrderSendSuccess                                      string                 `protobuf:"bytes,77,opt,name=admin_dashboard_risk_window_order_send_success,json=adminDashboardRiskWindowOrderSendSuccess,proto3" json:"admin_dashboard_risk_window_order_send_success,omitempty"`                                                                                                                           // {{window}} Order Sent
+	AdminDashboardRiskWindowRejectCount                                           string                 `protobuf:"bytes,78,opt,name=admin_dashboard_risk_window_reject_count,json=adminDashboardRiskWindowRejectCount,proto3" json:"admin_dashboard_risk_window_reject_count,omitempty"`                                                                                                                                            // Reject Count
+	AdminDashboardRiskWindowRejectRiskCodesHeader                                 string                 `protobuf:"bytes,79,opt,name=admin_dashboard_risk_window_reject_risk_codes_header,json=adminDashboardRiskWindowRejectRiskCodesHeader,proto3" json:"admin_dashboard_risk_window_reject_risk_codes_header,omitempty"`                                                                                                          // Top N Reject Risk Codes ({{window}})
+	AdminDashboardRiskWindowTitle                                                 string                 `protobuf:"bytes,80,opt,name=admin_dashboard_risk_window_title,json=adminDashboardRiskWindowTitle,proto3" json:"admin_dashboard_risk_window_title,omitempty"`                                                                                                                                                                // Risk Control Window Metrics (1h / 24h / 72h)
+	AdminDashboardRiskWindowValidateError                                         string                 `protobuf:"bytes,81,opt,name=admin_dashboard_risk_window_validate_error,json=adminDashboardRiskWindowValidateError,proto3" json:"admin_dashboard_risk_window_validate_error,omitempty"`                                                                                                                                      // {{window}} Error
+	AdminDashboardRiskWindowValidatePass                                          string                 `protobuf:"bytes,82,opt,name=admin_dashboard_risk_window_validate_pass,json=adminDashboardRiskWindowValidatePass,proto3" json:"admin_dashboard_risk_window_validate_pass,omitempty"`                                                                                                                                         // {{window}} Pass
+	AdminDashboardRiskWindowValidateReject                                        string                 `protobuf:"bytes,83,opt,name=admin_dashboard_risk_window_validate_reject,json=adminDashboardRiskWindowValidateReject,proto3" json:"admin_dashboard_risk_window_validate_reject,omitempty"`                                                                                                                                   // {{window}} Reject
+	AdminDashboardRiskWindowValidateTotal                                         string                 `protobuf:"bytes,84,opt,name=admin_dashboard_risk_window_validate_total,json=adminDashboardRiskWindowValidateTotal,proto3" json:"admin_dashboard_risk_window_validate_total,omitempty"`                                                                                                                                      // {{window}} Validated Total
+	AdminDashboardTitle                                                           string                 `protobuf:"bytes,85,opt,name=admin_dashboard_title,json=adminDashboardTitle,proto3" json:"admin_dashboard_title,omitempty"`                                                                                                                                                                                                  // Admin Dashboard
+	AdminDashboardTodayProfit                                                     string                 `protobuf:"bytes,86,opt,name=admin_dashboard_today_profit,json=adminDashboardTodayProfit,proto3" json:"admin_dashboard_today_profit,omitempty"`                                                                                                                                                                              // Today P&L
+	AdminDashboardTodayTrades                                                     string                 `protobuf:"bytes,87,opt,name=admin_dashboard_today_trades,json=adminDashboardTodayTrades,proto3" json:"admin_dashboard_today_trades,omitempty"`                                                                                                                                                                              // Today Trades
+	AdminDashboardTotalUsers                                                      string                 `protobuf:"bytes,88,opt,name=admin_dashboard_total_users,json=adminDashboardTotalUsers,proto3" json:"admin_dashboard_total_users,omitempty"`                                                                                                                                                                                 // Total Users
+	AdminHeaderAdmin                                                              string                 `protobuf:"bytes,89,opt,name=admin_header_admin,json=adminHeaderAdmin,proto3" json:"admin_header_admin,omitempty"`                                                                                                                                                                                                           // Admin
+	AdminHeaderAdminMode                                                          string                 `protobuf:"bytes,90,opt,name=admin_header_admin_mode,json=adminHeaderAdminMode,proto3" json:"admin_header_admin_mode,omitempty"`                                                                                                                                                                                             // Admin Mode
+	AdminHeaderAdminPanel                                                         string                 `protobuf:"bytes,91,opt,name=admin_header_admin_panel,json=adminHeaderAdminPanel,proto3" json:"admin_header_admin_panel,omitempty"`                                                                                                                                                                                          // Admin Panel
+	AdminHeaderBackToUser                                                         string                 `protobuf:"bytes,92,opt,name=admin_header_back_to_user,json=adminHeaderBackToUser,proto3" json:"admin_header_back_to_user,omitempty"`                                                                                                                                                                                        // Back to User
+	AdminHeaderLogout                                                             string                 `protobuf:"bytes,93,opt,name=admin_header_logout,json=adminHeaderLogout,proto3" json:"admin_header_logout,omitempty"`                                                                                                                                                                                                        // Logout
+	AdminJurisdictionActions                                                      string                 `protobuf:"bytes,94,opt,name=admin_jurisdiction_actions,json=adminJurisdictionActions,proto3" json:"admin_jurisdiction_actions,omitempty"`                                                                                                                                                                                   // Actions
+	AdminJurisdictionAddCountry                                                   string                 `protobuf:"bytes,95,opt,name=admin_jurisdiction_add_country,json=adminJurisdictionAddCountry,proto3" json:"admin_jurisdiction_add_country,omitempty"`                                                                                                                                                                        // Add Country
+	AdminJurisdictionAddSanctionedCountry                                         string                 `protobuf:"bytes,96,opt,name=admin_jurisdiction_add_sanctioned_country,json=adminJurisdictionAddSanctionedCountry,proto3" json:"admin_jurisdiction_add_sanctioned_country,omitempty"`                                                                                                                                        // Add Sanctioned Country
+	AdminJurisdictionAddedBy                                                      string                 `protobuf:"bytes,97,opt,name=admin_jurisdiction_added_by,json=adminJurisdictionAddedBy,proto3" json:"admin_jurisdiction_added_by,omitempty"`                                                                                                                                                                                 // Added By
+	AdminJurisdictionConfirmGrantOverride                                         string                 `protobuf:"bytes,98,opt,name=admin_jurisdiction_confirm_grant_override,json=adminJurisdictionConfirmGrantOverride,proto3" json:"admin_jurisdiction_confirm_grant_override,omitempty"`                                                                                                                                        // Grant override access to this user?
+	AdminJurisdictionConfirmRevokeOverride                                        string                 `protobuf:"bytes,99,opt,name=admin_jurisdiction_confirm_revoke_override,json=adminJurisdictionConfirmRevokeOverride,proto3" json:"admin_jurisdiction_confirm_revoke_override,omitempty"`                                                                                                                                     // Revoke override access from this user?
+	AdminJurisdictionCountry                                                      string                 `protobuf:"bytes,100,opt,name=admin_jurisdiction_country,json=adminJurisdictionCountry,proto3" json:"admin_jurisdiction_country,omitempty"`                                                                                                                                                                                  // Country
+	AdminJurisdictionCountryCode                                                  string                 `protobuf:"bytes,101,opt,name=admin_jurisdiction_country_code,json=adminJurisdictionCountryCode,proto3" json:"admin_jurisdiction_country_code,omitempty"`                                                                                                                                                                    // Country Code
+	AdminJurisdictionCountryLabel                                                 string                 `protobuf:"bytes,102,opt,name=admin_jurisdiction_country_label,json=adminJurisdictionCountryLabel,proto3" json:"admin_jurisdiction_country_label,omitempty"`                                                                                                                                                                 // Label
+	AdminJurisdictionDisclaimer                                                   string                 `protobuf:"bytes,103,opt,name=admin_jurisdiction_disclaimer,json=adminJurisdictionDisclaimer,proto3" json:"admin_jurisdiction_disclaimer,omitempty"`                                                                                                                                                                         // Disclaimer
+	AdminJurisdictionEmptyKYC                                                     string                 `protobuf:"bytes,104,opt,name=admin_jurisdiction_empty_k_y_c,json=adminJurisdictionEmptyKYC,proto3" json:"admin_jurisdiction_empty_k_y_c,omitempty"`                                                                                                                                                                         // No users match the selected KYC filter
+	AdminJurisdictionEmptySanctions                                               string                 `protobuf:"bytes,105,opt,name=admin_jurisdiction_empty_sanctions,json=adminJurisdictionEmptySanctions,proto3" json:"admin_jurisdiction_empty_sanctions,omitempty"`                                                                                                                                                           // No sanctioned countries configured
+	AdminJurisdictionFilterByKYCStatus                                            string                 `protobuf:"bytes,106,opt,name=admin_jurisdiction_filter_by_k_y_c_status,json=adminJurisdictionFilterByKYCStatus,proto3" json:"admin_jurisdiction_filter_by_k_y_c_status,omitempty"`                                                                                                                                          // Filter by KYC status
+	AdminJurisdictionGrantOverride                                                string                 `protobuf:"bytes,107,opt,name=admin_jurisdiction_grant_override,json=adminJurisdictionGrantOverride,proto3" json:"admin_jurisdiction_grant_override,omitempty"`                                                                                                                                                              // Grant Override
+	AdminJurisdictionKycStatus                                                    string                 `protobuf:"bytes,108,opt,name=admin_jurisdiction_kyc_status,json=adminJurisdictionKycStatus,proto3" json:"admin_jurisdiction_kyc_status,omitempty"`                                                                                                                                                                          // KYC Status
+	AdminJurisdictionKycStatusTab                                                 string                 `protobuf:"bytes,109,opt,name=admin_jurisdiction_kyc_status_tab,json=adminJurisdictionKycStatusTab,proto3" json:"admin_jurisdiction_kyc_status_tab,omitempty"`                                                                                                                                                               // User KYC Status
+	AdminJurisdictionMessagesCountryAddFailed                                     string                 `protobuf:"bytes,110,opt,name=admin_jurisdiction_messages_country_add_failed,json=adminJurisdictionMessagesCountryAddFailed,proto3" json:"admin_jurisdiction_messages_country_add_failed,omitempty"`                                                                                                                         // Failed to add sanctioned country
+	AdminJurisdictionMessagesCountryAdded                                         string                 `protobuf:"bytes,111,opt,name=admin_jurisdiction_messages_country_added,json=adminJurisdictionMessagesCountryAdded,proto3" json:"admin_jurisdiction_messages_country_added,omitempty"`                                                                                                                                       // Sanctioned country added
+	AdminJurisdictionMessagesCountryRemoveFailed                                  string                 `protobuf:"bytes,112,opt,name=admin_jurisdiction_messages_country_remove_failed,json=adminJurisdictionMessagesCountryRemoveFailed,proto3" json:"admin_jurisdiction_messages_country_remove_failed,omitempty"`                                                                                                                // Failed to remove sanctioned country
+	AdminJurisdictionMessagesCountryRemoved                                       string                 `protobuf:"bytes,113,opt,name=admin_jurisdiction_messages_country_removed,json=adminJurisdictionMessagesCountryRemoved,proto3" json:"admin_jurisdiction_messages_country_removed,omitempty"`                                                                                                                                 // Sanctioned country removed
+	AdminJurisdictionMessagesKycUpdateFailed                                      string                 `protobuf:"bytes,114,opt,name=admin_jurisdiction_messages_kyc_update_failed,json=adminJurisdictionMessagesKycUpdateFailed,proto3" json:"admin_jurisdiction_messages_kyc_update_failed,omitempty"`                                                                                                                            // Failed to update KYC status
+	AdminJurisdictionMessagesKycUpdated                                           string                 `protobuf:"bytes,115,opt,name=admin_jurisdiction_messages_kyc_updated,json=adminJurisdictionMessagesKycUpdated,proto3" json:"admin_jurisdiction_messages_kyc_updated,omitempty"`                                                                                                                                             // KYC status updated
+	AdminJurisdictionMessagesOverrideUpdateFailed                                 string                 `protobuf:"bytes,116,opt,name=admin_jurisdiction_messages_override_update_failed,json=adminJurisdictionMessagesOverrideUpdateFailed,proto3" json:"admin_jurisdiction_messages_override_update_failed,omitempty"`                                                                                                             // Failed to update sanctioned override
+	AdminJurisdictionMessagesOverrideUpdated                                      string                 `protobuf:"bytes,117,opt,name=admin_jurisdiction_messages_override_updated,json=adminJurisdictionMessagesOverrideUpdated,proto3" json:"admin_jurisdiction_messages_override_updated,omitempty"`                                                                                                                              // Sanctioned override updated
+	AdminJurisdictionOverride                                                     string                 `protobuf:"bytes,118,opt,name=admin_jurisdiction_override,json=adminJurisdictionOverride,proto3" json:"admin_jurisdiction_override,omitempty"`                                                                                                                                                                               // Override
+	AdminJurisdictionOverrideWarning                                              string                 `protobuf:"bytes,119,opt,name=admin_jurisdiction_override_warning,json=adminJurisdictionOverrideWarning,proto3" json:"admin_jurisdiction_override_warning,omitempty"`                                                                                                                                                        // This user is from a sanctioned country. Granting override wi
+	AdminJurisdictionPending                                                      string                 `protobuf:"bytes,120,opt,name=admin_jurisdiction_pending,json=adminJurisdictionPending,proto3" json:"admin_jurisdiction_pending,omitempty"`                                                                                                                                                                                  // Pending
+	AdminJurisdictionQuestionnaire                                                string                 `protobuf:"bytes,121,opt,name=admin_jurisdiction_questionnaire,json=adminJurisdictionQuestionnaire,proto3" json:"admin_jurisdiction_questionnaire,omitempty"`                                                                                                                                                                // Questionnaire
+	AdminJurisdictionRejected                                                     string                 `protobuf:"bytes,122,opt,name=admin_jurisdiction_rejected,json=adminJurisdictionRejected,proto3" json:"admin_jurisdiction_rejected,omitempty"`                                                                                                                                                                               // Rejected
+	AdminJurisdictionRevokeOverride                                               string                 `protobuf:"bytes,123,opt,name=admin_jurisdiction_revoke_override,json=adminJurisdictionRevokeOverride,proto3" json:"admin_jurisdiction_revoke_override,omitempty"`                                                                                                                                                           // Revoke Override
+	AdminJurisdictionSanctioned                                                   string                 `protobuf:"bytes,124,opt,name=admin_jurisdiction_sanctioned,json=adminJurisdictionSanctioned,proto3" json:"admin_jurisdiction_sanctioned,omitempty"`                                                                                                                                                                         // Sanctioned
+	AdminJurisdictionSanctionedCountries                                          string                 `protobuf:"bytes,125,opt,name=admin_jurisdiction_sanctioned_countries,json=adminJurisdictionSanctionedCountries,proto3" json:"admin_jurisdiction_sanctioned_countries,omitempty"`                                                                                                                                            // Sanctioned Countries
+	AdminJurisdictionSanctionedCountriesTab                                       string                 `protobuf:"bytes,126,opt,name=admin_jurisdiction_sanctioned_countries_tab,json=adminJurisdictionSanctionedCountriesTab,proto3" json:"admin_jurisdiction_sanctioned_countries_tab,omitempty"`                                                                                                                                 // Sanctioned Countries
+	AdminJurisdictionSetKYC                                                       string                 `protobuf:"bytes,127,opt,name=admin_jurisdiction_set_k_y_c,json=adminJurisdictionSetKYC,proto3" json:"admin_jurisdiction_set_k_y_c,omitempty"`                                                                                                                                                                               // Set KYC
+	AdminJurisdictionSetKYCStatus                                                 string                 `protobuf:"bytes,128,opt,name=admin_jurisdiction_set_k_y_c_status,json=adminJurisdictionSetKYCStatus,proto3" json:"admin_jurisdiction_set_k_y_c_status,omitempty"`                                                                                                                                                           // Set KYC Status
+	AdminJurisdictionTitle                                                        string                 `protobuf:"bytes,129,opt,name=admin_jurisdiction_title,json=adminJurisdictionTitle,proto3" json:"admin_jurisdiction_title,omitempty"`                                                                                                                                                                                        // Jurisdiction Gate
+	AdminJurisdictionUnverified                                                   string                 `protobuf:"bytes,130,opt,name=admin_jurisdiction_unverified,json=adminJurisdictionUnverified,proto3" json:"admin_jurisdiction_unverified,omitempty"`                                                                                                                                                                         // Unverified
+	AdminJurisdictionUserEmail                                                    string                 `protobuf:"bytes,131,opt,name=admin_jurisdiction_user_email,json=adminJurisdictionUserEmail,proto3" json:"admin_jurisdiction_user_email,omitempty"`                                                                                                                                                                          // Email
+	AdminJurisdictionUserKYCStatus                                                string                 `protobuf:"bytes,132,opt,name=admin_jurisdiction_user_k_y_c_status,json=adminJurisdictionUserKYCStatus,proto3" json:"admin_jurisdiction_user_k_y_c_status,omitempty"`                                                                                                                                                        // User KYC Status
+	AdminJurisdictionVerified                                                     string                 `protobuf:"bytes,133,opt,name=admin_jurisdiction_verified,json=adminJurisdictionVerified,proto3" json:"admin_jurisdiction_verified,omitempty"`                                                                                                                                                                               // Verified
+	AdminSidebarAccountManagement                                                 string                 `protobuf:"bytes,134,opt,name=admin_sidebar_account_management,json=adminSidebarAccountManagement,proto3" json:"admin_sidebar_account_management,omitempty"`                                                                                                                                                                 // Account Management
+	AdminSidebarDashboard                                                         string                 `protobuf:"bytes,135,opt,name=admin_sidebar_dashboard,json=adminSidebarDashboard,proto3" json:"admin_sidebar_dashboard,omitempty"`                                                                                                                                                                                           // Dashboard
+	AdminSidebarJurisdiction                                                      string                 `protobuf:"bytes,136,opt,name=admin_sidebar_jurisdiction,json=adminSidebarJurisdiction,proto3" json:"admin_sidebar_jurisdiction,omitempty"`                                                                                                                                                                                  // Jurisdiction Gate
+	AdminSidebarOperationLogs                                                     string                 `protobuf:"bytes,137,opt,name=admin_sidebar_operation_logs,json=adminSidebarOperationLogs,proto3" json:"admin_sidebar_operation_logs,omitempty"`                                                                                                                                                                             // Operation Logs
+	AdminSidebarShareManagement                                                   string                 `protobuf:"bytes,138,opt,name=admin_sidebar_share_management,json=adminSidebarShareManagement,proto3" json:"admin_sidebar_share_management,omitempty"`                                                                                                                                                                       // Share Analytics
+	AdminSidebarSystemConfig                                                      string                 `protobuf:"bytes,139,opt,name=admin_sidebar_system_config,json=adminSidebarSystemConfig,proto3" json:"admin_sidebar_system_config,omitempty"`                                                                                                                                                                                // System Config
+	AdminSidebarTradingMonitor                                                    string                 `protobuf:"bytes,140,opt,name=admin_sidebar_trading_monitor,json=adminSidebarTradingMonitor,proto3" json:"admin_sidebar_trading_monitor,omitempty"`                                                                                                                                                                          // Trading Monitor
+	AdminSidebarUserManagement                                                    string                 `protobuf:"bytes,141,opt,name=admin_sidebar_user_management,json=adminSidebarUserManagement,proto3" json:"admin_sidebar_user_management,omitempty"`                                                                                                                                                                          // User Management
+	AdminSidebarWalletManagement                                                  string                 `protobuf:"bytes,142,opt,name=admin_sidebar_wallet_management,json=adminSidebarWalletManagement,proto3" json:"admin_sidebar_wallet_management,omitempty"`                                                                                                                                                                    // Wallets
+	AdminTradingAccounts                                                          string                 `protobuf:"bytes,143,opt,name=admin_trading_accounts,json=adminTradingAccounts,proto3" json:"admin_trading_accounts,omitempty"`                                                                                                                                                                                              // Accounts
+	AdminTradingActiveUsers                                                       string                 `protobuf:"bytes,144,opt,name=admin_trading_active_users,json=adminTradingActiveUsers,proto3" json:"admin_trading_active_users,omitempty"`                                                                                                                                                                                   // Active Users
+	AdminTradingByPlatform                                                        string                 `protobuf:"bytes,145,opt,name=admin_trading_by_platform,json=adminTradingByPlatform,proto3" json:"admin_trading_by_platform,omitempty"`                                                                                                                                                                                      // By Platform
+	AdminTradingClosedOrders                                                      string                 `protobuf:"bytes,146,opt,name=admin_trading_closed_orders,json=adminTradingClosedOrders,proto3" json:"admin_trading_closed_orders,omitempty"`                                                                                                                                                                                // Closed Orders
+	AdminTradingConnectedAccounts                                                 string                 `protobuf:"bytes,147,opt,name=admin_trading_connected_accounts,json=adminTradingConnectedAccounts,proto3" json:"admin_trading_connected_accounts,omitempty"`                                                                                                                                                                 // Connected Accounts
+	AdminTradingLoadFailed                                                        string                 `protobuf:"bytes,148,opt,name=admin_trading_load_failed,json=adminTradingLoadFailed,proto3" json:"admin_trading_load_failed,omitempty"`                                                                                                                                                                                      // Failed to load trading statistics
+	AdminTradingNetProfit                                                         string                 `protobuf:"bytes,149,opt,name=admin_trading_net_profit,json=adminTradingNetProfit,proto3" json:"admin_trading_net_profit,omitempty"`                                                                                                                                                                                         // Net P&L
+	AdminTradingOrders                                                            string                 `protobuf:"bytes,150,opt,name=admin_trading_orders,json=adminTradingOrders,proto3" json:"admin_trading_orders,omitempty"`                                                                                                                                                                                                    // Orders
+	AdminTradingPendingOrders                                                     string                 `protobuf:"bytes,151,opt,name=admin_trading_pending_orders,json=adminTradingPendingOrders,proto3" json:"admin_trading_pending_orders,omitempty"`                                                                                                                                                                             // Pending Orders
+	AdminTradingPlatform                                                          string                 `protobuf:"bytes,152,opt,name=admin_trading_platform,json=adminTradingPlatform,proto3" json:"admin_trading_platform,omitempty"`                                                                                                                                                                                              // Platform
+	AdminTradingProfitStats                                                       string                 `protobuf:"bytes,153,opt,name=admin_trading_profit_stats,json=adminTradingProfitStats,proto3" json:"admin_trading_profit_stats,omitempty"`                                                                                                                                                                                   // P&L Statistics
+	AdminTradingTitle                                                             string                 `protobuf:"bytes,154,opt,name=admin_trading_title,json=adminTradingTitle,proto3" json:"admin_trading_title,omitempty"`                                                                                                                                                                                                       // Trading Monitor
+	AdminTradingTotalAccounts                                                     string                 `protobuf:"bytes,155,opt,name=admin_trading_total_accounts,json=adminTradingTotalAccounts,proto3" json:"admin_trading_total_accounts,omitempty"`                                                                                                                                                                             // Total Accounts
+	AdminTradingTotalLoss                                                         string                 `protobuf:"bytes,156,opt,name=admin_trading_total_loss,json=adminTradingTotalLoss,proto3" json:"admin_trading_total_loss,omitempty"`                                                                                                                                                                                         // Total Loss
+	AdminTradingTotalOrders                                                       string                 `protobuf:"bytes,157,opt,name=admin_trading_total_orders,json=adminTradingTotalOrders,proto3" json:"admin_trading_total_orders,omitempty"`                                                                                                                                                                                   // Total Orders
+	AdminTradingTotalProfit                                                       string                 `protobuf:"bytes,158,opt,name=admin_trading_total_profit,json=adminTradingTotalProfit,proto3" json:"admin_trading_total_profit,omitempty"`                                                                                                                                                                                   // Total Profit
+	AdminTradingTotalUsers                                                        string                 `protobuf:"bytes,159,opt,name=admin_trading_total_users,json=adminTradingTotalUsers,proto3" json:"admin_trading_total_users,omitempty"`                                                                                                                                                                                      // Total Users
+	AdminTradingTotalVolume                                                       string                 `protobuf:"bytes,160,opt,name=admin_trading_total_volume,json=adminTradingTotalVolume,proto3" json:"admin_trading_total_volume,omitempty"`                                                                                                                                                                                   // Total Volume
+	AdminTradingVolume                                                            string                 `protobuf:"bytes,161,opt,name=admin_trading_volume,json=adminTradingVolume,proto3" json:"admin_trading_volume,omitempty"`                                                                                                                                                                                                    // Volume
+	AdminUserManagementActionsChangePassword                                      string                 `protobuf:"bytes,162,opt,name=admin_user_management_actions_change_password,json=adminUserManagementActionsChangePassword,proto3" json:"admin_user_management_actions_change_password,omitempty"`                                                                                                                            // Change Password
+	AdminUserManagementActionsDetails                                             string                 `protobuf:"bytes,163,opt,name=admin_user_management_actions_details,json=adminUserManagementActionsDetails,proto3" json:"admin_user_management_actions_details,omitempty"`                                                                                                                                                   // Details
+	AdminUserManagementActionsDisable                                             string                 `protobuf:"bytes,164,opt,name=admin_user_management_actions_disable,json=adminUserManagementActionsDisable,proto3" json:"admin_user_management_actions_disable,omitempty"`                                                                                                                                                   // Disable
+	AdminUserManagementActionsEnable                                              string                 `protobuf:"bytes,165,opt,name=admin_user_management_actions_enable,json=adminUserManagementActionsEnable,proto3" json:"admin_user_management_actions_enable,omitempty"`                                                                                                                                                      // Enable
+	AdminUserManagementAddUser                                                    string                 `protobuf:"bytes,166,opt,name=admin_user_management_add_user,json=adminUserManagementAddUser,proto3" json:"admin_user_management_add_user,omitempty"`                                                                                                                                                                        // Add User
+	AdminUserManagementDeleteConfirmBatchDeleteConfirm                            string                 `protobuf:"bytes,167,opt,name=admin_user_management_delete_confirm_batch_delete_confirm,json=adminUserManagementDeleteConfirmBatchDeleteConfirm,proto3" json:"admin_user_management_delete_confirm_batch_delete_confirm,omitempty"`                                                                                          // Delete {{count}} user(s)? This action cannot be undone.
+	AdminUserManagementDeleteConfirmBatchDeletePartial                            string                 `protobuf:"bytes,168,opt,name=admin_user_management_delete_confirm_batch_delete_partial,json=adminUserManagementDeleteConfirmBatchDeletePartial,proto3" json:"admin_user_management_delete_confirm_batch_delete_partial,omitempty"`                                                                                          // {{deleted}} deleted, {{failed}} failed
+	AdminUserManagementDeleteConfirmBatchDeleteSuccess                            string                 `protobuf:"bytes,169,opt,name=admin_user_management_delete_confirm_batch_delete_success,json=adminUserManagementDeleteConfirmBatchDeleteSuccess,proto3" json:"admin_user_management_delete_confirm_batch_delete_success,omitempty"`                                                                                          // {{count}} user(s) deleted
+	AdminUserManagementDeleteConfirmTitle                                         string                 `protobuf:"bytes,170,opt,name=admin_user_management_delete_confirm_title,json=adminUserManagementDeleteConfirmTitle,proto3" json:"admin_user_management_delete_confirm_title,omitempty"`                                                                                                                                     // Delete this user? This action cannot be undone.
+	AdminUserManagementDrawerLabelsCreatedAt                                      string                 `protobuf:"bytes,171,opt,name=admin_user_management_drawer_labels_created_at,json=adminUserManagementDrawerLabelsCreatedAt,proto3" json:"admin_user_management_drawer_labels_created_at,omitempty"`                                                                                                                          // Created At
+	AdminUserManagementDrawerLabelsEmail                                          string                 `protobuf:"bytes,172,opt,name=admin_user_management_drawer_labels_email,json=adminUserManagementDrawerLabelsEmail,proto3" json:"admin_user_management_drawer_labels_email,omitempty"`                                                                                                                                        // Email
+	AdminUserManagementDrawerLabelsId                                             string                 `protobuf:"bytes,173,opt,name=admin_user_management_drawer_labels_id,json=adminUserManagementDrawerLabelsId,proto3" json:"admin_user_management_drawer_labels_id,omitempty"`                                                                                                                                                 // ID
+	AdminUserManagementDrawerLabelsLastLogin                                      string                 `protobuf:"bytes,174,opt,name=admin_user_management_drawer_labels_last_login,json=adminUserManagementDrawerLabelsLastLogin,proto3" json:"admin_user_management_drawer_labels_last_login,omitempty"`                                                                                                                          // Last Login
+	AdminUserManagementDrawerLabelsMtAccountCount                                 string                 `protobuf:"bytes,175,opt,name=admin_user_management_drawer_labels_mt_account_count,json=adminUserManagementDrawerLabelsMtAccountCount,proto3" json:"admin_user_management_drawer_labels_mt_account_count,omitempty"`                                                                                                         // MT Accounts
+	AdminUserManagementDrawerLabelsNickname                                       string                 `protobuf:"bytes,176,opt,name=admin_user_management_drawer_labels_nickname,json=adminUserManagementDrawerLabelsNickname,proto3" json:"admin_user_management_drawer_labels_nickname,omitempty"`                                                                                                                               // Nickname
+	AdminUserManagementDrawerLabelsRole                                           string                 `protobuf:"bytes,177,opt,name=admin_user_management_drawer_labels_role,json=adminUserManagementDrawerLabelsRole,proto3" json:"admin_user_management_drawer_labels_role,omitempty"`                                                                                                                                           // Role
+	AdminUserManagementDrawerLabelsStatus                                         string                 `protobuf:"bytes,178,opt,name=admin_user_management_drawer_labels_status,json=adminUserManagementDrawerLabelsStatus,proto3" json:"admin_user_management_drawer_labels_status,omitempty"`                                                                                                                                     // Status
+	AdminUserManagementDrawerTitle                                                string                 `protobuf:"bytes,179,opt,name=admin_user_management_drawer_title,json=adminUserManagementDrawerTitle,proto3" json:"admin_user_management_drawer_title,omitempty"`                                                                                                                                                            // User Details
+	AdminUserManagementFiltersRolePlaceholder                                     string                 `protobuf:"bytes,180,opt,name=admin_user_management_filters_role_placeholder,json=adminUserManagementFiltersRolePlaceholder,proto3" json:"admin_user_management_filters_role_placeholder,omitempty"`                                                                                                                         // Filter by role
+	AdminUserManagementFiltersSearchPlaceholder                                   string                 `protobuf:"bytes,181,opt,name=admin_user_management_filters_search_placeholder,json=adminUserManagementFiltersSearchPlaceholder,proto3" json:"admin_user_management_filters_search_placeholder,omitempty"`                                                                                                                   // Search by email or nickname
+	AdminUserManagementFiltersStatusPlaceholder                                   string                 `protobuf:"bytes,182,opt,name=admin_user_management_filters_status_placeholder,json=adminUserManagementFiltersStatusPlaceholder,proto3" json:"admin_user_management_filters_status_placeholder,omitempty"`                                                                                                                   // Filter by status
+	AdminUserManagementFormAccountNumber                                          string                 `protobuf:"bytes,183,opt,name=admin_user_management_form_account_number,json=adminUserManagementFormAccountNumber,proto3" json:"admin_user_management_form_account_number,omitempty"`                                                                                                                                        // Account Number
+	AdminUserManagementFormAccountNumberInvalid                                   string                 `protobuf:"bytes,184,opt,name=admin_user_management_form_account_number_invalid,json=adminUserManagementFormAccountNumberInvalid,proto3" json:"admin_user_management_form_account_number_invalid,omitempty"`                                                                                                                 // 5-6 digits, no leading 0, no 4 or 7
+	AdminUserManagementFormEmail                                                  string                 `protobuf:"bytes,185,opt,name=admin_user_management_form_email,json=adminUserManagementFormEmail,proto3" json:"admin_user_management_form_email,omitempty"`                                                                                                                                                                  // Email
+	AdminUserManagementFormNickname                                               string                 `protobuf:"bytes,186,opt,name=admin_user_management_form_nickname,json=adminUserManagementFormNickname,proto3" json:"admin_user_management_form_nickname,omitempty"`                                                                                                                                                         // Nickname
+	AdminUserManagementFormPassword                                               string                 `protobuf:"bytes,187,opt,name=admin_user_management_form_password,json=adminUserManagementFormPassword,proto3" json:"admin_user_management_form_password,omitempty"`                                                                                                                                                         // Password
+	AdminUserManagementFormPlaceholdersEmail                                      string                 `protobuf:"bytes,188,opt,name=admin_user_management_form_placeholders_email,json=adminUserManagementFormPlaceholdersEmail,proto3" json:"admin_user_management_form_placeholders_email,omitempty"`                                                                                                                            // Enter email
+	AdminUserManagementFormPlaceholdersNickname                                   string                 `protobuf:"bytes,189,opt,name=admin_user_management_form_placeholders_nickname,json=adminUserManagementFormPlaceholdersNickname,proto3" json:"admin_user_management_form_placeholders_nickname,omitempty"`                                                                                                                   // Enter nickname
+	AdminUserManagementFormPlaceholdersPassword                                   string                 `protobuf:"bytes,190,opt,name=admin_user_management_form_placeholders_password,json=adminUserManagementFormPlaceholdersPassword,proto3" json:"admin_user_management_form_placeholders_password,omitempty"`                                                                                                                   // Enter password
+	AdminUserManagementFormRole                                                   string                 `protobuf:"bytes,191,opt,name=admin_user_management_form_role,json=adminUserManagementFormRole,proto3" json:"admin_user_management_form_role,omitempty"`                                                                                                                                                                     // Role
+	AdminUserManagementFormStatus                                                 string                 `protobuf:"bytes,192,opt,name=admin_user_management_form_status,json=adminUserManagementFormStatus,proto3" json:"admin_user_management_form_status,omitempty"`                                                                                                                                                               // Status
+	AdminUserManagementMessagesNewPasswordIs                                      string                 `protobuf:"bytes,193,opt,name=admin_user_management_messages_new_password_is,json=adminUserManagementMessagesNewPasswordIs,proto3" json:"admin_user_management_messages_new_password_is,omitempty"`                                                                                                                          // New password is: {{password}}
+	AdminUserManagementMessagesPasswordUpdateFailed                               string                 `protobuf:"bytes,194,opt,name=admin_user_management_messages_password_update_failed,json=adminUserManagementMessagesPasswordUpdateFailed,proto3" json:"admin_user_management_messages_password_update_failed,omitempty"`                                                                                                     // Failed to update password
+	AdminUserManagementMessagesPasswordUpdatedSuccess                             string                 `protobuf:"bytes,195,opt,name=admin_user_management_messages_password_updated_success,json=adminUserManagementMessagesPasswordUpdatedSuccess,proto3" json:"admin_user_management_messages_password_updated_success,omitempty"`                                                                                               // Password updated successfully
+	AdminUserManagementMessagesUserCreateFailed                                   string                 `protobuf:"bytes,196,opt,name=admin_user_management_messages_user_create_failed,json=adminUserManagementMessagesUserCreateFailed,proto3" json:"admin_user_management_messages_user_create_failed,omitempty"`                                                                                                                 // Failed to create user
+	AdminUserManagementMessagesUserCreatedSuccess                                 string                 `protobuf:"bytes,197,opt,name=admin_user_management_messages_user_created_success,json=adminUserManagementMessagesUserCreatedSuccess,proto3" json:"admin_user_management_messages_user_created_success,omitempty"`                                                                                                           // User created successfully
+	AdminUserManagementMessagesUserDeleteFailed                                   string                 `protobuf:"bytes,198,opt,name=admin_user_management_messages_user_delete_failed,json=adminUserManagementMessagesUserDeleteFailed,proto3" json:"admin_user_management_messages_user_delete_failed,omitempty"`                                                                                                                 // Failed to delete user
+	AdminUserManagementMessagesUserDeletedSuccess                                 string                 `protobuf:"bytes,199,opt,name=admin_user_management_messages_user_deleted_success,json=adminUserManagementMessagesUserDeletedSuccess,proto3" json:"admin_user_management_messages_user_deleted_success,omitempty"`                                                                                                           // User deleted successfully
+	AdminUserManagementMessagesUserDisabled                                       string                 `protobuf:"bytes,200,opt,name=admin_user_management_messages_user_disabled,json=adminUserManagementMessagesUserDisabled,proto3" json:"admin_user_management_messages_user_disabled,omitempty"`                                                                                                                               // User disabled
+	AdminUserManagementMessagesUserEnabled                                        string                 `protobuf:"bytes,201,opt,name=admin_user_management_messages_user_enabled,json=adminUserManagementMessagesUserEnabled,proto3" json:"admin_user_management_messages_user_enabled,omitempty"`                                                                                                                                  // User enabled
+	AdminUserManagementMessagesUserUpdateFailed                                   string                 `protobuf:"bytes,202,opt,name=admin_user_management_messages_user_update_failed,json=adminUserManagementMessagesUserUpdateFailed,proto3" json:"admin_user_management_messages_user_update_failed,omitempty"`                                                                                                                 // Failed to update user
+	AdminUserManagementMessagesUserUpdatedSuccess                                 string                 `protobuf:"bytes,203,opt,name=admin_user_management_messages_user_updated_success,json=adminUserManagementMessagesUserUpdatedSuccess,proto3" json:"admin_user_management_messages_user_updated_success,omitempty"`                                                                                                           // User updated successfully
+	AdminUserManagementModalsCreateTitle                                          string                 `protobuf:"bytes,204,opt,name=admin_user_management_modals_create_title,json=adminUserManagementModalsCreateTitle,proto3" json:"admin_user_management_modals_create_title,omitempty"`                                                                                                                                        // Create User
+	AdminUserManagementModalsEditTitle                                            string                 `protobuf:"bytes,205,opt,name=admin_user_management_modals_edit_title,json=adminUserManagementModalsEditTitle,proto3" json:"admin_user_management_modals_edit_title,omitempty"`                                                                                                                                              // Edit User
+	AdminUserManagementModalsPasswordTitle                                        string                 `protobuf:"bytes,206,opt,name=admin_user_management_modals_password_title,json=adminUserManagementModalsPasswordTitle,proto3" json:"admin_user_management_modals_password_title,omitempty"`                                                                                                                                  // Change Password
+	AdminUserManagementPaginationTotal                                            string                 `protobuf:"bytes,207,opt,name=admin_user_management_pagination_total,json=adminUserManagementPaginationTotal,proto3" json:"admin_user_management_pagination_total,omitempty"`                                                                                                                                                // Total {{total}} users
+	AdminUserManagementPasswordFormConfirmPassword                                string                 `protobuf:"bytes,208,opt,name=admin_user_management_password_form_confirm_password,json=adminUserManagementPasswordFormConfirmPassword,proto3" json:"admin_user_management_password_form_confirm_password,omitempty"`                                                                                                        // Confirm Password
+	AdminUserManagementPasswordFormNewPassword                                    string                 `protobuf:"bytes,209,opt,name=admin_user_management_password_form_new_password,json=adminUserManagementPasswordFormNewPassword,proto3" json:"admin_user_management_password_form_new_password,omitempty"`                                                                                                                    // New Password
+	AdminUserManagementPasswordFormPlaceholdersConfirmPassword                    string                 `protobuf:"bytes,210,opt,name=admin_user_management_password_form_placeholders_confirm_password,json=adminUserManagementPasswordFormPlaceholdersConfirmPassword,proto3" json:"admin_user_management_password_form_placeholders_confirm_password,omitempty"`                                                                  // Re-enter new password
+	AdminUserManagementPasswordFormPlaceholdersNewPassword                        string                 `protobuf:"bytes,211,opt,name=admin_user_management_password_form_placeholders_new_password,json=adminUserManagementPasswordFormPlaceholdersNewPassword,proto3" json:"admin_user_management_password_form_placeholders_new_password,omitempty"`                                                                              // Enter new password
+	AdminUserManagementPasswordFormSubmit                                         string                 `protobuf:"bytes,212,opt,name=admin_user_management_password_form_submit,json=adminUserManagementPasswordFormSubmit,proto3" json:"admin_user_management_password_form_submit,omitempty"`                                                                                                                                     // Update Password
+	AdminUserManagementPasswordFormValidationConfirmPasswordRequired              string                 `protobuf:"bytes,213,opt,name=admin_user_management_password_form_validation_confirm_password_required,json=adminUserManagementPasswordFormValidationConfirmPasswordRequired,proto3" json:"admin_user_management_password_form_validation_confirm_password_required,omitempty"`                                              // Please confirm the new password
+	AdminUserManagementPasswordFormValidationNewPasswordRequired                  string                 `protobuf:"bytes,214,opt,name=admin_user_management_password_form_validation_new_password_required,json=adminUserManagementPasswordFormValidationNewPasswordRequired,proto3" json:"admin_user_management_password_form_validation_new_password_required,omitempty"`                                                          // New password is required
+	AdminUserManagementPasswordFormValidationPasswordMin8                         string                 `protobuf:"bytes,215,opt,name=admin_user_management_password_form_validation_password_min8,json=adminUserManagementPasswordFormValidationPasswordMin8,proto3" json:"admin_user_management_password_form_validation_password_min8,omitempty"`                                                                                 // Password must be at least 8 characters
+	AdminUserManagementPasswordFormValidationPasswordMismatch                     string                 `protobuf:"bytes,216,opt,name=admin_user_management_password_form_validation_password_mismatch,json=adminUserManagementPasswordFormValidationPasswordMismatch,proto3" json:"admin_user_management_password_form_validation_password_mismatch,omitempty"`                                                                     // Passwords do not match
+	AdminUserManagementPasswordFormValidationPasswordMustContainLettersAndNumbers string                 `protobuf:"bytes,217,opt,name=admin_user_management_password_form_validation_password_must_contain_letters_and_numbers,json=adminUserManagementPasswordFormValidationPasswordMustContainLettersAndNumbers,proto3" json:"admin_user_management_password_form_validation_password_must_contain_letters_and_numbers,omitempty"` // Password must contain both letters and numbers
+	AdminUserManagementRolesAudit                                                 string                 `protobuf:"bytes,218,opt,name=admin_user_management_roles_audit,json=adminUserManagementRolesAudit,proto3" json:"admin_user_management_roles_audit,omitempty"`                                                                                                                                                               // Audit
+	AdminUserManagementRolesCustomerService                                       string                 `protobuf:"bytes,219,opt,name=admin_user_management_roles_customer_service,json=adminUserManagementRolesCustomerService,proto3" json:"admin_user_management_roles_customer_service,omitempty"`                                                                                                                               // Customer Service
+	AdminUserManagementRolesOperation                                             string                 `protobuf:"bytes,220,opt,name=admin_user_management_roles_operation,json=adminUserManagementRolesOperation,proto3" json:"admin_user_management_roles_operation,omitempty"`                                                                                                                                                   // Operation
+	AdminUserManagementRolesSuperAdmin                                            string                 `protobuf:"bytes,221,opt,name=admin_user_management_roles_super_admin,json=adminUserManagementRolesSuperAdmin,proto3" json:"admin_user_management_roles_super_admin,omitempty"`                                                                                                                                              // Super Admin
+	AdminUserManagementRolesUser                                                  string                 `protobuf:"bytes,222,opt,name=admin_user_management_roles_user,json=adminUserManagementRolesUser,proto3" json:"admin_user_management_roles_user,omitempty"`                                                                                                                                                                  // User
+	AdminUserManagementStatusActive                                               string                 `protobuf:"bytes,223,opt,name=admin_user_management_status_active,json=adminUserManagementStatusActive,proto3" json:"admin_user_management_status_active,omitempty"`                                                                                                                                                         // Active
+	AdminUserManagementStatusSuspended                                            string                 `protobuf:"bytes,224,opt,name=admin_user_management_status_suspended,json=adminUserManagementStatusSuspended,proto3" json:"admin_user_management_status_suspended,omitempty"`                                                                                                                                                // Suspended
+	AdminUserManagementTableActions                                               string                 `protobuf:"bytes,225,opt,name=admin_user_management_table_actions,json=adminUserManagementTableActions,proto3" json:"admin_user_management_table_actions,omitempty"`                                                                                                                                                         // Actions
+	AdminUserManagementTableCreatedAt                                             string                 `protobuf:"bytes,226,opt,name=admin_user_management_table_created_at,json=adminUserManagementTableCreatedAt,proto3" json:"admin_user_management_table_created_at,omitempty"`                                                                                                                                                 // Created At
+	AdminUserManagementTableEmail                                                 string                 `protobuf:"bytes,227,opt,name=admin_user_management_table_email,json=adminUserManagementTableEmail,proto3" json:"admin_user_management_table_email,omitempty"`                                                                                                                                                               // Email
+	AdminUserManagementTableId                                                    string                 `protobuf:"bytes,228,opt,name=admin_user_management_table_id,json=adminUserManagementTableId,proto3" json:"admin_user_management_table_id,omitempty"`                                                                                                                                                                        // ID
+	AdminUserManagementTableMtAccountCount                                        string                 `protobuf:"bytes,229,opt,name=admin_user_management_table_mt_account_count,json=adminUserManagementTableMtAccountCount,proto3" json:"admin_user_management_table_mt_account_count,omitempty"`                                                                                                                                // MT Accounts
+	AdminUserManagementTableNickname                                              string                 `protobuf:"bytes,230,opt,name=admin_user_management_table_nickname,json=adminUserManagementTableNickname,proto3" json:"admin_user_management_table_nickname,omitempty"`                                                                                                                                                      // Nickname
+	AdminUserManagementTableRole                                                  string                 `protobuf:"bytes,231,opt,name=admin_user_management_table_role,json=adminUserManagementTableRole,proto3" json:"admin_user_management_table_role,omitempty"`                                                                                                                                                                  // Role
+	AdminUserManagementTableStatus                                                string                 `protobuf:"bytes,232,opt,name=admin_user_management_table_status,json=adminUserManagementTableStatus,proto3" json:"admin_user_management_table_status,omitempty"`                                                                                                                                                            // Status
+	AdminUserManagementTitle                                                      string                 `protobuf:"bytes,233,opt,name=admin_user_management_title,json=adminUserManagementTitle,proto3" json:"admin_user_management_title,omitempty"`                                                                                                                                                                                // User Management
+	AdminWalletAccountNumber                                                      string                 `protobuf:"bytes,234,opt,name=admin_wallet_account_number,json=adminWalletAccountNumber,proto3" json:"admin_wallet_account_number,omitempty"`                                                                                                                                                                                // Account
+	AdminWalletAdd                                                                string                 `protobuf:"bytes,235,opt,name=admin_wallet_add,json=adminWalletAdd,proto3" json:"admin_wallet_add,omitempty"`                                                                                                                                                                                                                // Add
+	AdminWalletAdjustBalance                                                      string                 `protobuf:"bytes,236,opt,name=admin_wallet_adjust_balance,json=adminWalletAdjustBalance,proto3" json:"admin_wallet_adjust_balance,omitempty"`                                                                                                                                                                                // Adjust Balance
+	AdminWalletAdjustFailed                                                       string                 `protobuf:"bytes,237,opt,name=admin_wallet_adjust_failed,json=adminWalletAdjustFailed,proto3" json:"admin_wallet_adjust_failed,omitempty"`                                                                                                                                                                                   // Adjustment failed
+	AdminWalletAdjustSuccess                                                      string                 `protobuf:"bytes,238,opt,name=admin_wallet_adjust_success,json=adminWalletAdjustSuccess,proto3" json:"admin_wallet_adjust_success,omitempty"`                                                                                                                                                                                // Balance adjusted
+	AdminWalletDeduct                                                             string                 `protobuf:"bytes,239,opt,name=admin_wallet_deduct,json=adminWalletDeduct,proto3" json:"admin_wallet_deduct,omitempty"`                                                                                                                                                                                                       // Deduct
+	AdminWalletNoUsers                                                            string                 `protobuf:"bytes,240,opt,name=admin_wallet_no_users,json=adminWalletNoUsers,proto3" json:"admin_wallet_no_users,omitempty"`                                                                                                                                                                                                  // No users found
+	AdminWalletReason                                                             string                 `protobuf:"bytes,241,opt,name=admin_wallet_reason,json=adminWalletReason,proto3" json:"admin_wallet_reason,omitempty"`                                                                                                                                                                                                       // Reason for adjustment...
+	AdminWalletSearchPlaceholder                                                  string                 `protobuf:"bytes,242,opt,name=admin_wallet_search_placeholder,json=adminWalletSearchPlaceholder,proto3" json:"admin_wallet_search_placeholder,omitempty"`                                                                                                                                                                    // Search by email or account number...
+	AdminWalletTitle                                                              string                 `protobuf:"bytes,243,opt,name=admin_wallet_title,json=adminWalletTitle,proto3" json:"admin_wallet_title,omitempty"`                                                                                                                                                                                                          // Wallet Management
+	AdminWalletWalletFor                                                          string                 `protobuf:"bytes,244,opt,name=admin_wallet_wallet_for,json=adminWalletWalletFor,proto3" json:"admin_wallet_wallet_for,omitempty"`                                                                                                                                                                                            // Wallet for
+	AppName                                                                       string                 `protobuf:"bytes,245,opt,name=app_name,json=appName,proto3" json:"app_name,omitempty"`                                                                                                                                                                                                                                       // AntTrader
+	AuthFieldsConfirmPassword                                                     string                 `protobuf:"bytes,246,opt,name=auth_fields_confirm_password,json=authFieldsConfirmPassword,proto3" json:"auth_fields_confirm_password,omitempty"`                                                                                                                                                                             // Confirm password
+	AuthFieldsEmail                                                               string                 `protobuf:"bytes,247,opt,name=auth_fields_email,json=authFieldsEmail,proto3" json:"auth_fields_email,omitempty"`                                                                                                                                                                                                             // Email
+	AuthFieldsPassword                                                            string                 `protobuf:"bytes,248,opt,name=auth_fields_password,json=authFieldsPassword,proto3" json:"auth_fields_password,omitempty"`                                                                                                                                                                                                    // Password
+	AuthForgotPasswordBackToLogin                                                 string                 `protobuf:"bytes,249,opt,name=auth_forgot_password_back_to_login,json=authForgotPasswordBackToLogin,proto3" json:"auth_forgot_password_back_to_login,omitempty"`                                                                                                                                                             // Back to Login
+	AuthForgotPasswordHint                                                        string                 `protobuf:"bytes,250,opt,name=auth_forgot_password_hint,json=authForgotPasswordHint,proto3" json:"auth_forgot_password_hint,omitempty"`                                                                                                                                                                                      // Please contact your administrator or support to reset your p
+	AuthForgotPasswordTitle                                                       string                 `protobuf:"bytes,251,opt,name=auth_forgot_password_title,json=authForgotPasswordTitle,proto3" json:"auth_forgot_password_title,omitempty"`                                                                                                                                                                                   // Reset Password
+	AuthLoginForgotPassword                                                       string                 `protobuf:"bytes,252,opt,name=auth_login_forgot_password,json=authLoginForgotPassword,proto3" json:"auth_login_forgot_password,omitempty"`                                                                                                                                                                                   // Forgot password?
+	AuthLoginLogin                                                                string                 `protobuf:"bytes,253,opt,name=auth_login_login,json=authLoginLogin,proto3" json:"auth_login_login,omitempty"`                                                                                                                                                                                                                // Sign in
+	AuthLoginNoAccount                                                            string                 `protobuf:"bytes,254,opt,name=auth_login_no_account,json=authLoginNoAccount,proto3" json:"auth_login_no_account,omitempty"`                                                                                                                                                                                                  // Don't have an account?
+	AuthLoginRegisterNow                                                          string                 `protobuf:"bytes,255,opt,name=auth_login_register_now,json=authLoginRegisterNow,proto3" json:"auth_login_register_now,omitempty"`                                                                                                                                                                                            // Register now
+	AuthLoginRememberMe                                                           string                 `protobuf:"bytes,256,opt,name=auth_login_remember_me,json=authLoginRememberMe,proto3" json:"auth_login_remember_me,omitempty"`                                                                                                                                                                                               // Remember me
+	AuthLoginSigningIn                                                            string                 `protobuf:"bytes,257,opt,name=auth_login_signing_in,json=authLoginSigningIn,proto3" json:"auth_login_signing_in,omitempty"`                                                                                                                                                                                                  // Signing in...
+	AuthLoginSubtitle                                                             string                 `protobuf:"bytes,258,opt,name=auth_login_subtitle,json=authLoginSubtitle,proto3" json:"auth_login_subtitle,omitempty"`                                                                                                                                                                                                       // Sign in to continue
+	AuthMessagesFetchMeFailed                                                     string                 `protobuf:"bytes,259,opt,name=auth_messages_fetch_me_failed,json=authMessagesFetchMeFailed,proto3" json:"auth_messages_fetch_me_failed,omitempty"`                                                                                                                                                                           // Failed to load user profile
+	AuthMessagesLoginFailed                                                       string                 `protobuf:"bytes,260,opt,name=auth_messages_login_failed,json=authMessagesLoginFailed,proto3" json:"auth_messages_login_failed,omitempty"`                                                                                                                                                                                   // Sign-in failed. Please check your email and password.
+	AuthMessagesLoginSuccess                                                      string                 `protobuf:"bytes,261,opt,name=auth_messages_login_success,json=authMessagesLoginSuccess,proto3" json:"auth_messages_login_success,omitempty"`                                                                                                                                                                                // Signed in
+	AuthMessagesLogoutSuccess                                                     string                 `protobuf:"bytes,262,opt,name=auth_messages_logout_success,json=authMessagesLogoutSuccess,proto3" json:"auth_messages_logout_success,omitempty"`                                                                                                                                                                             // Signed out
+	AuthMessagesRegisterFailed                                                    string                 `protobuf:"bytes,263,opt,name=auth_messages_register_failed,json=authMessagesRegisterFailed,proto3" json:"auth_messages_register_failed,omitempty"`                                                                                                                                                                          // Registration failed. Please try again later.
+	AuthMessagesRegisterSuccess                                                   string                 `protobuf:"bytes,264,opt,name=auth_messages_register_success,json=authMessagesRegisterSuccess,proto3" json:"auth_messages_register_success,omitempty"`                                                                                                                                                                       // Registered successfully. Please sign in.
+	AuthRegisterHaveAccount                                                       string                 `protobuf:"bytes,265,opt,name=auth_register_have_account,json=authRegisterHaveAccount,proto3" json:"auth_register_have_account,omitempty"`                                                                                                                                                                                   // Already have an account?
+	AuthRegisterLoginNow                                                          string                 `protobuf:"bytes,266,opt,name=auth_register_login_now,json=authRegisterLoginNow,proto3" json:"auth_register_login_now,omitempty"`                                                                                                                                                                                            // Sign in
+	AuthRegisterRegister                                                          string                 `protobuf:"bytes,267,opt,name=auth_register_register,json=authRegisterRegister,proto3" json:"auth_register_register,omitempty"`                                                                                                                                                                                              // Register
+	AuthRegisterSigningUp                                                         string                 `protobuf:"bytes,268,opt,name=auth_register_signing_up,json=authRegisterSigningUp,proto3" json:"auth_register_signing_up,omitempty"`                                                                                                                                                                                         // Signing up...
+	AuthRegisterSubtitle                                                          string                 `protobuf:"bytes,269,opt,name=auth_register_subtitle,json=authRegisterSubtitle,proto3" json:"auth_register_subtitle,omitempty"`                                                                                                                                                                                              // Create an account to get started
+	AuthValidationConfirmPasswordRequired                                         string                 `protobuf:"bytes,270,opt,name=auth_validation_confirm_password_required,json=authValidationConfirmPasswordRequired,proto3" json:"auth_validation_confirm_password_required,omitempty"`                                                                                                                                       // Please confirm your password
+	AuthValidationEmailInvalid                                                    string                 `protobuf:"bytes,271,opt,name=auth_validation_email_invalid,json=authValidationEmailInvalid,proto3" json:"auth_validation_email_invalid,omitempty"`                                                                                                                                                                          // Invalid email address
+	AuthValidationEmailRequired                                                   string                 `protobuf:"bytes,272,opt,name=auth_validation_email_required,json=authValidationEmailRequired,proto3" json:"auth_validation_email_required,omitempty"`                                                                                                                                                                       // Email is required
+	AuthValidationPasswordMin8                                                    string                 `protobuf:"bytes,273,opt,name=auth_validation_password_min8,json=authValidationPasswordMin8,proto3" json:"auth_validation_password_min8,omitempty"`                                                                                                                                                                          // Password must be at least 8 characters
+	AuthValidationPasswordMismatch                                                string                 `protobuf:"bytes,274,opt,name=auth_validation_password_mismatch,json=authValidationPasswordMismatch,proto3" json:"auth_validation_password_mismatch,omitempty"`                                                                                                                                                              // Passwords do not match
+	AuthValidationPasswordRequired                                                string                 `protobuf:"bytes,275,opt,name=auth_validation_password_required,json=authValidationPasswordRequired,proto3" json:"auth_validation_password_required,omitempty"`                                                                                                                                                              // Password is required
+	AutoTradingLogsColumnsAction                                                  string                 `protobuf:"bytes,276,opt,name=auto_trading_logs_columns_action,json=autoTradingLogsColumnsAction,proto3" json:"auto_trading_logs_columns_action,omitempty"`                                                                                                                                                                  // Action
+	AutoTradingLogsColumnsPrice                                                   string                 `protobuf:"bytes,277,opt,name=auto_trading_logs_columns_price,json=autoTradingLogsColumnsPrice,proto3" json:"auto_trading_logs_columns_price,omitempty"`                                                                                                                                                                     // Price
+	AutoTradingLogsColumnsProfit                                                  string                 `protobuf:"bytes,278,opt,name=auto_trading_logs_columns_profit,json=autoTradingLogsColumnsProfit,proto3" json:"auto_trading_logs_columns_profit,omitempty"`                                                                                                                                                                  // P&L
+	AutoTradingLogsColumnsSymbol                                                  string                 `protobuf:"bytes,279,opt,name=auto_trading_logs_columns_symbol,json=autoTradingLogsColumnsSymbol,proto3" json:"auto_trading_logs_columns_symbol,omitempty"`                                                                                                                                                                  // Symbol
+	AutoTradingLogsColumnsTicket                                                  string                 `protobuf:"bytes,280,opt,name=auto_trading_logs_columns_ticket,json=autoTradingLogsColumnsTicket,proto3" json:"auto_trading_logs_columns_ticket,omitempty"`                                                                                                                                                                  // Ticket
+	AutoTradingLogsColumnsTime                                                    string                 `protobuf:"bytes,281,opt,name=auto_trading_logs_columns_time,json=autoTradingLogsColumnsTime,proto3" json:"auto_trading_logs_columns_time,omitempty"`                                                                                                                                                                        // Time
+	AutoTradingLogsColumnsVolume                                                  string                 `protobuf:"bytes,282,opt,name=auto_trading_logs_columns_volume,json=autoTradingLogsColumnsVolume,proto3" json:"auto_trading_logs_columns_volume,omitempty"`                                                                                                                                                                  // Volume
+	AutoTradingLogsEmpty                                                          string                 `protobuf:"bytes,283,opt,name=auto_trading_logs_empty,json=autoTradingLogsEmpty,proto3" json:"auto_trading_logs_empty,omitempty"`                                                                                                                                                                                            // No trading logs yet
+	AutoTradingLogsTitle                                                          string                 `protobuf:"bytes,284,opt,name=auto_trading_logs_title,json=autoTradingLogsTitle,proto3" json:"auto_trading_logs_title,omitempty"`                                                                                                                                                                                            // Recent Trading Logs
+	AutoTradingMessagesLoadFailed                                                 string                 `protobuf:"bytes,285,opt,name=auto_trading_messages_load_failed,json=autoTradingMessagesLoadFailed,proto3" json:"auto_trading_messages_load_failed,omitempty"`                                                                                                                                                               // Failed to load auto trading data
+	AutoTradingMessagesToggleFailed                                               string                 `protobuf:"bytes,286,opt,name=auto_trading_messages_toggle_failed,json=autoTradingMessagesToggleFailed,proto3" json:"auto_trading_messages_toggle_failed,omitempty"`                                                                                                                                                         // Failed to toggle auto trading
+	AutoTradingSettingsMaxDailyLoss                                               string                 `protobuf:"bytes,287,opt,name=auto_trading_settings_max_daily_loss,json=autoTradingSettingsMaxDailyLoss,proto3" json:"auto_trading_settings_max_daily_loss,omitempty"`                                                                                                                                                       // Max Daily Loss
+	AutoTradingSettingsMaxDailyLossHint                                           string                 `protobuf:"bytes,288,opt,name=auto_trading_settings_max_daily_loss_hint,json=autoTradingSettingsMaxDailyLossHint,proto3" json:"auto_trading_settings_max_daily_loss_hint,omitempty"`                                                                                                                                         // Auto-disable trading if daily loss exceeds this
+	AutoTradingSettingsMaxDrawdownPercent                                         string                 `protobuf:"bytes,289,opt,name=auto_trading_settings_max_drawdown_percent,json=autoTradingSettingsMaxDrawdownPercent,proto3" json:"auto_trading_settings_max_drawdown_percent,omitempty"`                                                                                                                                     // Max Drawdown %
+	AutoTradingSettingsMaxDrawdownPercentHint                                     string                 `protobuf:"bytes,290,opt,name=auto_trading_settings_max_drawdown_percent_hint,json=autoTradingSettingsMaxDrawdownPercentHint,proto3" json:"auto_trading_settings_max_drawdown_percent_hint,omitempty"`                                                                                                                       // Auto-disable trading if drawdown exceeds this
+	AutoTradingSettingsMaxLotSize                                                 string                 `protobuf:"bytes,291,opt,name=auto_trading_settings_max_lot_size,json=autoTradingSettingsMaxLotSize,proto3" json:"auto_trading_settings_max_lot_size,omitempty"`                                                                                                                                                             // Max Lot Size
+	AutoTradingSettingsMaxLotSizeHint                                             string                 `protobuf:"bytes,292,opt,name=auto_trading_settings_max_lot_size_hint,json=autoTradingSettingsMaxLotSizeHint,proto3" json:"auto_trading_settings_max_lot_size_hint,omitempty"`                                                                                                                                               // Maximum volume per trade (lots)
+	AutoTradingSettingsMaxPositions                                               string                 `protobuf:"bytes,293,opt,name=auto_trading_settings_max_positions,json=autoTradingSettingsMaxPositions,proto3" json:"auto_trading_settings_max_positions,omitempty"`                                                                                                                                                         // Max Positions
+	AutoTradingSettingsMaxPositionsHint                                           string                 `protobuf:"bytes,294,opt,name=auto_trading_settings_max_positions_hint,json=autoTradingSettingsMaxPositionsHint,proto3" json:"auto_trading_settings_max_positions_hint,omitempty"`                                                                                                                                           // Maximum concurrent open positions
+	AutoTradingSettingsMaxRiskPercent                                             string                 `protobuf:"bytes,295,opt,name=auto_trading_settings_max_risk_percent,json=autoTradingSettingsMaxRiskPercent,proto3" json:"auto_trading_settings_max_risk_percent,omitempty"`                                                                                                                                                 // Max Risk %
+	AutoTradingSettingsMaxRiskPercentHint                                         string                 `protobuf:"bytes,296,opt,name=auto_trading_settings_max_risk_percent_hint,json=autoTradingSettingsMaxRiskPercentHint,proto3" json:"auto_trading_settings_max_risk_percent_hint,omitempty"`                                                                                                                                   // Percentage of balance to risk per trade
+	AutoTradingSettingsSaveFailed                                                 string                 `protobuf:"bytes,297,opt,name=auto_trading_settings_save_failed,json=autoTradingSettingsSaveFailed,proto3" json:"auto_trading_settings_save_failed,omitempty"`                                                                                                                                                               // Failed to save settings
+	AutoTradingSettingsSaveSuccess                                                string                 `protobuf:"bytes,298,opt,name=auto_trading_settings_save_success,json=autoTradingSettingsSaveSuccess,proto3" json:"auto_trading_settings_save_success,omitempty"`                                                                                                                                                            // Settings saved
+	AutoTradingSettingsTitle                                                      string                 `protobuf:"bytes,299,opt,name=auto_trading_settings_title,json=autoTradingSettingsTitle,proto3" json:"auto_trading_settings_title,omitempty"`                                                                                                                                                                                // Global Risk Settings
+	AutoTradingStatusActiveStrategies                                             string                 `protobuf:"bytes,300,opt,name=auto_trading_status_active_strategies,json=autoTradingStatusActiveStrategies,proto3" json:"auto_trading_status_active_strategies,omitempty"`                                                                                                                                                   // Active Strategies
+	AutoTradingStatusDisabled                                                     string                 `protobuf:"bytes,301,opt,name=auto_trading_status_disabled,json=autoTradingStatusDisabled,proto3" json:"auto_trading_status_disabled,omitempty"`                                                                                                                                                                             // Auto Trading Disabled
+	AutoTradingStatusEnabled                                                      string                 `protobuf:"bytes,302,opt,name=auto_trading_status_enabled,json=autoTradingStatusEnabled,proto3" json:"auto_trading_status_enabled,omitempty"`                                                                                                                                                                                // Auto Trading Enabled
+	AutoTradingStatusTodayExecutions                                              string                 `protobuf:"bytes,303,opt,name=auto_trading_status_today_executions,json=autoTradingStatusTodayExecutions,proto3" json:"auto_trading_status_today_executions,omitempty"`                                                                                                                                                      // Today's Executions
+	AutoTradingStatusTodayProfit                                                  string                 `protobuf:"bytes,304,opt,name=auto_trading_status_today_profit,json=autoTradingStatusTodayProfit,proto3" json:"auto_trading_status_today_profit,omitempty"`                                                                                                                                                                  // Today's Profit
+	AutoTradingTitle                                                              string                 `protobuf:"bytes,305,opt,name=auto_trading_title,json=autoTradingTitle,proto3" json:"auto_trading_title,omitempty"`                                                                                                                                                                                                          // Auto Trading
+	CommonActive                                                                  string                 `protobuf:"bytes,306,opt,name=common_active,json=commonActive,proto3" json:"common_active,omitempty"`                                                                                                                                                                                                                        // Active
+	CommonBack                                                                    string                 `protobuf:"bytes,307,opt,name=common_back,json=commonBack,proto3" json:"common_back,omitempty"`                                                                                                                                                                                                                              // Back
+	CommonCancel                                                                  string                 `protobuf:"bytes,308,opt,name=common_cancel,json=commonCancel,proto3" json:"common_cancel,omitempty"`                                                                                                                                                                                                                        // Cancel
+	CommonClear                                                                   string                 `protobuf:"bytes,309,opt,name=common_clear,json=commonClear,proto3" json:"common_clear,omitempty"`                                                                                                                                                                                                                           // Clear
+	CommonClose                                                                   string                 `protobuf:"bytes,310,opt,name=common_close,json=commonClose,proto3" json:"common_close,omitempty"`                                                                                                                                                                                                                           // Close
+	CommonComingSoon                                                              string                 `protobuf:"bytes,311,opt,name=common_coming_soon,json=commonComingSoon,proto3" json:"common_coming_soon,omitempty"`                                                                                                                                                                                                          // Coming Soon
+	CommonConfirm                                                                 string                 `protobuf:"bytes,312,opt,name=common_confirm,json=commonConfirm,proto3" json:"common_confirm,omitempty"`                                                                                                                                                                                                                     // Confirm
+	CommonCopied                                                                  string                 `protobuf:"bytes,313,opt,name=common_copied,json=commonCopied,proto3" json:"common_copied,omitempty"`                                                                                                                                                                                                                        // Copied
+	CommonCopy                                                                    string                 `protobuf:"bytes,314,opt,name=common_copy,json=commonCopy,proto3" json:"common_copy,omitempty"`                                                                                                                                                                                                                              // Copy
+	CommonCopyFailed                                                              string                 `protobuf:"bytes,315,opt,name=common_copy_failed,json=commonCopyFailed,proto3" json:"common_copy_failed,omitempty"`                                                                                                                                                                                                          // Copy failed
+	CommonCreate                                                                  string                 `protobuf:"bytes,316,opt,name=common_create,json=commonCreate,proto3" json:"common_create,omitempty"`                                                                                                                                                                                                                        // Create
+	CommonCreated                                                                 string                 `protobuf:"bytes,317,opt,name=common_created,json=commonCreated,proto3" json:"common_created,omitempty"`                                                                                                                                                                                                                     // Created
+	CommonCurrentPosition                                                         string                 `protobuf:"bytes,318,opt,name=common_current_position,json=commonCurrentPosition,proto3" json:"common_current_position,omitempty"`                                                                                                                                                                                           // 📊 Current Position
+	CommonDelete                                                                  string                 `protobuf:"bytes,319,opt,name=common_delete,json=commonDelete,proto3" json:"common_delete,omitempty"`                                                                                                                                                                                                                        // Delete
+	CommonDeleteFailed                                                            string                 `protobuf:"bytes,320,opt,name=common_delete_failed,json=commonDeleteFailed,proto3" json:"common_delete_failed,omitempty"`                                                                                                                                                                                                    // Delete failed
+	CommonDeleteSelected                                                          string                 `protobuf:"bytes,321,opt,name=common_delete_selected,json=commonDeleteSelected,proto3" json:"common_delete_selected,omitempty"`                                                                                                                                                                                              // Delete selected ({{count}})
+	CommonDeleted                                                                 string                 `protobuf:"bytes,322,opt,name=common_deleted,json=commonDeleted,proto3" json:"common_deleted,omitempty"`                                                                                                                                                                                                                     // Deleted
+	CommonDisable                                                                 string                 `protobuf:"bytes,323,opt,name=common_disable,json=commonDisable,proto3" json:"common_disable,omitempty"`                                                                                                                                                                                                                     // Disable
+	CommonDisabled                                                                string                 `protobuf:"bytes,324,opt,name=common_disabled,json=commonDisabled,proto3" json:"common_disabled,omitempty"`                                                                                                                                                                                                                  // Disabled
+	CommonEdit                                                                    string                 `protobuf:"bytes,325,opt,name=common_edit,json=commonEdit,proto3" json:"common_edit,omitempty"`                                                                                                                                                                                                                              // Edit
+	CommonEnable                                                                  string                 `protobuf:"bytes,326,opt,name=common_enable,json=commonEnable,proto3" json:"common_enable,omitempty"`                                                                                                                                                                                                                        // Enable
+	CommonEnabled                                                                 string                 `protobuf:"bytes,327,opt,name=common_enabled,json=commonEnabled,proto3" json:"common_enabled,omitempty"`                                                                                                                                                                                                                     // Enabled
+	CommonError                                                                   string                 `protobuf:"bytes,328,opt,name=common_error,json=commonError,proto3" json:"common_error,omitempty"`                                                                                                                                                                                                                           // Error
+	CommonGotIt                                                                   string                 `protobuf:"bytes,329,opt,name=common_got_it,json=commonGotIt,proto3" json:"common_got_it,omitempty"`                                                                                                                                                                                                                         // Got it
+	CommonHideDetails                                                             string                 `protobuf:"bytes,330,opt,name=common_hide_details,json=commonHideDetails,proto3" json:"common_hide_details,omitempty"`                                                                                                                                                                                                       // Hide details
+	CommonInactive                                                                string                 `protobuf:"bytes,331,opt,name=common_inactive,json=commonInactive,proto3" json:"common_inactive,omitempty"`                                                                                                                                                                                                                  // Inactive
+	CommonIndicatorSettings                                                       string                 `protobuf:"bytes,332,opt,name=common_indicator_settings,json=commonIndicatorSettings,proto3" json:"common_indicator_settings,omitempty"`                                                                                                                                                                                     // {{name}} Settings
+	CommonLineColor                                                               string                 `protobuf:"bytes,333,opt,name=common_line_color,json=commonLineColor,proto3" json:"common_line_color,omitempty"`                                                                                                                                                                                                             // Line Color
+	CommonLoading                                                                 string                 `protobuf:"bytes,334,opt,name=common_loading,json=commonLoading,proto3" json:"common_loading,omitempty"`                                                                                                                                                                                                                     // Loading...
+	CommonLoadingFailed                                                           string                 `protobuf:"bytes,335,opt,name=common_loading_failed,json=commonLoadingFailed,proto3" json:"common_loading_failed,omitempty"`                                                                                                                                                                                                 // Loading failed
+	CommonMonthsJan                                                               string                 `protobuf:"bytes,336,opt,name=common_months_jan,json=commonMonthsJan,proto3" json:"common_months_jan,omitempty"`                                                                                                                                                                                                             // Jan
+	CommonMonthsJul                                                               string                 `protobuf:"bytes,337,opt,name=common_months_jul,json=commonMonthsJul,proto3" json:"common_months_jul,omitempty"`                                                                                                                                                                                                             // Jul
+	CommonNext                                                                    string                 `protobuf:"bytes,338,opt,name=common_next,json=commonNext,proto3" json:"common_next,omitempty"`                                                                                                                                                                                                                              // Next
+	CommonNo                                                                      string                 `protobuf:"bytes,339,opt,name=common_no,json=commonNo,proto3" json:"common_no,omitempty"`                                                                                                                                                                                                                                    // No
+	CommonNoData                                                                  string                 `protobuf:"bytes,340,opt,name=common_no_data,json=commonNoData,proto3" json:"common_no_data,omitempty"`                                                                                                                                                                                                                      // No data
+	CommonNoOpenPositionsForSymbol                                                string                 `protobuf:"bytes,341,opt,name=common_no_open_positions_for_symbol,json=commonNoOpenPositionsForSymbol,proto3" json:"common_no_open_positions_for_symbol,omitempty"`                                                                                                                                                          // No open positions for {{symbol}}
+	CommonNone                                                                    string                 `protobuf:"bytes,342,opt,name=common_none,json=commonNone,proto3" json:"common_none,omitempty"`                                                                                                                                                                                                                              // None
+	CommonOk                                                                      string                 `protobuf:"bytes,343,opt,name=common_ok,json=commonOk,proto3" json:"common_ok,omitempty"`                                                                                                                                                                                                                                    // OK
+	CommonOperationFailed                                                         string                 `protobuf:"bytes,344,opt,name=common_operation_failed,json=commonOperationFailed,proto3" json:"common_operation_failed,omitempty"`                                                                                                                                                                                           // Operation failed
+	CommonPageError                                                               string                 `protobuf:"bytes,345,opt,name=common_page_error,json=commonPageError,proto3" json:"common_page_error,omitempty"`                                                                                                                                                                                                             // Page Error
+	CommonPageUnderDevelopment                                                    string                 `protobuf:"bytes,346,opt,name=common_page_under_development,json=commonPageUnderDevelopment,proto3" json:"common_page_under_development,omitempty"`                                                                                                                                                                          // This page is under development
+	CommonPleaseWait                                                              string                 `protobuf:"bytes,347,opt,name=common_please_wait,json=commonPleaseWait,proto3" json:"common_please_wait,omitempty"`                                                                                                                                                                                                          // Please wait...
+	CommonPrevious                                                                string                 `protobuf:"bytes,348,opt,name=common_previous,json=commonPrevious,proto3" json:"common_previous,omitempty"`                                                                                                                                                                                                                  // Previous
+	CommonRefresh                                                                 string                 `protobuf:"bytes,349,opt,name=common_refresh,json=commonRefresh,proto3" json:"common_refresh,omitempty"`                                                                                                                                                                                                                     // Refresh
+	CommonRemove                                                                  string                 `protobuf:"bytes,350,opt,name=common_remove,json=commonRemove,proto3" json:"common_remove,omitempty"`                                                                                                                                                                                                                        // Remove
+	CommonRequired                                                                string                 `protobuf:"bytes,351,opt,name=common_required,json=commonRequired,proto3" json:"common_required,omitempty"`                                                                                                                                                                                                                  // Required
+	CommonRetry                                                                   string                 `protobuf:"bytes,352,opt,name=common_retry,json=commonRetry,proto3" json:"common_retry,omitempty"`                                                                                                                                                                                                                           // Retry
+	CommonSave                                                                    string                 `protobuf:"bytes,353,opt,name=common_save,json=commonSave,proto3" json:"common_save,omitempty"`                                                                                                                                                                                                                              // Save
+	CommonSaveFailed                                                              string                 `protobuf:"bytes,354,opt,name=common_save_failed,json=commonSaveFailed,proto3" json:"common_save_failed,omitempty"`                                                                                                                                                                                                          // Save failed
+	CommonSaveSuccess                                                             string                 `protobuf:"bytes,355,opt,name=common_save_success,json=commonSaveSuccess,proto3" json:"common_save_success,omitempty"`                                                                                                                                                                                                       // Saved successfully
+	CommonSearching                                                               string                 `protobuf:"bytes,356,opt,name=common_searching,json=commonSearching,proto3" json:"common_searching,omitempty"`                                                                                                                                                                                                               // Searching...
+	CommonSelectSymbolToViewChart                                                 string                 `protobuf:"bytes,357,opt,name=common_select_symbol_to_view_chart,json=commonSelectSymbolToViewChart,proto3" json:"common_select_symbol_to_view_chart,omitempty"`                                                                                                                                                             // Select a symbol to view chart
+	CommonSend                                                                    string                 `protobuf:"bytes,358,opt,name=common_send,json=commonSend,proto3" json:"common_send,omitempty"`                                                                                                                                                                                                                              // Send
+	CommonShowDetails                                                             string                 `protobuf:"bytes,359,opt,name=common_show_details,json=commonShowDetails,proto3" json:"common_show_details,omitempty"`                                                                                                                                                                                                       // Show details
+	CommonTimeDay                                                                 string                 `protobuf:"bytes,360,opt,name=common_time_day,json=commonTimeDay,proto3" json:"common_time_day,omitempty"`                                                                                                                                                                                                                   // {{n}}d
+	CommonTimeHour                                                                string                 `protobuf:"bytes,361,opt,name=common_time_hour,json=commonTimeHour,proto3" json:"common_time_hour,omitempty"`                                                                                                                                                                                                                // {{n}}h
+	CommonTimeLessThanMinute                                                      string                 `protobuf:"bytes,362,opt,name=common_time_less_than_minute,json=commonTimeLessThanMinute,proto3" json:"common_time_less_than_minute,omitempty"`                                                                                                                                                                              // <1m
+	CommonTimeMinute                                                              string                 `protobuf:"bytes,363,opt,name=common_time_minute,json=commonTimeMinute,proto3" json:"common_time_minute,omitempty"`                                                                                                                                                                                                          // {{n}}m
+	CommonTotalItems                                                              string                 `protobuf:"bytes,364,opt,name=common_total_items,json=commonTotalItems,proto3" json:"common_total_items,omitempty"`                                                                                                                                                                                                          // Total {{count}} items
+	CommonTranslate                                                               string                 `protobuf:"bytes,365,opt,name=common_translate,json=commonTranslate,proto3" json:"common_translate,omitempty"`                                                                                                                                                                                                               // Translate
+	CommonUnexpectedError                                                         string                 `protobuf:"bytes,366,opt,name=common_unexpected_error,json=commonUnexpectedError,proto3" json:"common_unexpected_error,omitempty"`                                                                                                                                                                                           // An unexpected error occurred
+	CommonUnknown                                                                 string                 `protobuf:"bytes,367,opt,name=common_unknown,json=commonUnknown,proto3" json:"common_unknown,omitempty"`                                                                                                                                                                                                                     // Unknown
+	CommonUpdated                                                                 string                 `protobuf:"bytes,368,opt,name=common_updated,json=commonUpdated,proto3" json:"common_updated,omitempty"`                                                                                                                                                                                                                     // Updated
+	CommonViewOriginal                                                            string                 `protobuf:"bytes,369,opt,name=common_view_original,json=commonViewOriginal,proto3" json:"common_view_original,omitempty"`                                                                                                                                                                                                    // View original
+	CommonViewTranslation                                                         string                 `protobuf:"bytes,370,opt,name=common_view_translation,json=commonViewTranslation,proto3" json:"common_view_translation,omitempty"`                                                                                                                                                                                           // View translation
+	CommonYes                                                                     string                 `protobuf:"bytes,371,opt,name=common_yes,json=commonYes,proto3" json:"common_yes,omitempty"`                                                                                                                                                                                                                                 // Yes
+	CommonYou                                                                     string                 `protobuf:"bytes,372,opt,name=common_you,json=commonYou,proto3" json:"common_you,omitempty"`                                                                                                                                                                                                                                 // You
+	ErrorsAccessDenied                                                            string                 `protobuf:"bytes,373,opt,name=errors_access_denied,json=errorsAccessDenied,proto3" json:"errors_access_denied,omitempty"`                                                                                                                                                                                                    // Access denied
+	ErrorsAccountConnected                                                        string                 `protobuf:"bytes,374,opt,name=errors_account_connected,json=errorsAccountConnected,proto3" json:"errors_account_connected,omitempty"`                                                                                                                                                                                        // Connected to trading server
+	ErrorsAccountConnectionFailed                                                 string                 `protobuf:"bytes,375,opt,name=errors_account_connection_failed,json=errorsAccountConnectionFailed,proto3" json:"errors_account_connection_failed,omitempty"`                                                                                                                                                                 // Could not connect to the trading server
+	ErrorsAccountNotFound                                                         string                 `protobuf:"bytes,376,opt,name=errors_account_not_found,json=errorsAccountNotFound,proto3" json:"errors_account_not_found,omitempty"`                                                                                                                                                                                         // Account not found
+	ErrorsAiApiKeyRequired                                                        string                 `protobuf:"bytes,377,opt,name=errors_ai_api_key_required,json=errorsAiApiKeyRequired,proto3" json:"errors_ai_api_key_required,omitempty"`                                                                                                                                                                                    // API Key is required
+	ErrorsAiBaseUrlRequired                                                       string                 `protobuf:"bytes,378,opt,name=errors_ai_base_url_required,json=errorsAiBaseUrlRequired,proto3" json:"errors_ai_base_url_required,omitempty"`                                                                                                                                                                                 // Base URL is required
+	ErrorsAiBaseUrlSchemeInvalid                                                  string                 `protobuf:"bytes,379,opt,name=errors_ai_base_url_scheme_invalid,json=errorsAiBaseUrlSchemeInvalid,proto3" json:"errors_ai_base_url_scheme_invalid,omitempty"`                                                                                                                                                                // Base URL must start with http:// or https://
+	ErrorsAiBaseUrlShouldNotEndWithChatCompletions                                string                 `protobuf:"bytes,380,opt,name=errors_ai_base_url_should_not_end_with_chat_completions,json=errorsAiBaseUrlShouldNotEndWithChatCompletions,proto3" json:"errors_ai_base_url_should_not_end_with_chat_completions,omitempty"`                                                                                                  // Base URL should not end with /chat/completions
+	ErrorsAiConfigServiceNotInitialized                                           string                 `protobuf:"bytes,381,opt,name=errors_ai_config_service_not_initialized,json=errorsAiConfigServiceNotInitialized,proto3" json:"errors_ai_config_service_not_initialized,omitempty"`                                                                                                                                           // AI config service has not been initialized
+	ErrorsAiConfigValid                                                           string                 `protobuf:"bytes,382,opt,name=errors_ai_config_valid,json=errorsAiConfigValid,proto3" json:"errors_ai_config_valid,omitempty"`                                                                                                                                                                                               // AI config is valid
+	ErrorsAiFailedToCreateRequest                                                 string                 `protobuf:"bytes,383,opt,name=errors_ai_failed_to_create_request,json=errorsAiFailedToCreateRequest,proto3" json:"errors_ai_failed_to_create_request,omitempty"`                                                                                                                                                             // Failed to create request
+	ErrorsAiForbiddenQuota                                                        string                 `protobuf:"bytes,384,opt,name=errors_ai_forbidden_quota,json=errorsAiForbiddenQuota,proto3" json:"errors_ai_forbidden_quota,omitempty"`                                                                                                                                                                                      // Quota exceeded
+	ErrorsAiFreeTierExhausted                                                     string                 `protobuf:"bytes,385,opt,name=errors_ai_free_tier_exhausted,json=errorsAiFreeTierExhausted,proto3" json:"errors_ai_free_tier_exhausted,omitempty"`                                                                                                                                                                           // Free tier exhausted
+	ErrorsAiInvalidBaseUrl                                                        string                 `protobuf:"bytes,386,opt,name=errors_ai_invalid_base_url,json=errorsAiInvalidBaseUrl,proto3" json:"errors_ai_invalid_base_url,omitempty"`                                                                                                                                                                                    // Invalid Base URL
+	ErrorsAiInvalidProvider                                                       string                 `protobuf:"bytes,387,opt,name=errors_ai_invalid_provider,json=errorsAiInvalidProvider,proto3" json:"errors_ai_invalid_provider,omitempty"`                                                                                                                                                                                   // Invalid provider
+	ErrorsAiNoTradeDataAvailable                                                  string                 `protobuf:"bytes,388,opt,name=errors_ai_no_trade_data_available,json=errorsAiNoTradeDataAvailable,proto3" json:"errors_ai_no_trade_data_available,omitempty"`                                                                                                                                                                // No trade data available
+	ErrorsAiNotConfigured                                                         string                 `protobuf:"bytes,389,opt,name=errors_ai_not_configured,json=errorsAiNotConfigured,proto3" json:"errors_ai_not_configured,omitempty"`                                                                                                                                                                                         // AI is not configured. Please enable and configure it in AI S
+	ErrorsAiProbeOk                                                               string                 `protobuf:"bytes,390,opt,name=errors_ai_probe_ok,json=errorsAiProbeOk,proto3" json:"errors_ai_probe_ok,omitempty"`                                                                                                                                                                                                           // OK
+	ErrorsAiProbeOkNoModels                                                       string                 `protobuf:"bytes,391,opt,name=errors_ai_probe_ok_no_models,json=errorsAiProbeOkNoModels,proto3" json:"errors_ai_probe_ok_no_models,omitempty"`                                                                                                                                                                               // OK (no models returned)
+	ErrorsAiProviderRequired                                                      string                 `protobuf:"bytes,392,opt,name=errors_ai_provider_required,json=errorsAiProviderRequired,proto3" json:"errors_ai_provider_required,omitempty"`                                                                                                                                                                                // Please select a provider first
+	ErrorsAiProviderReturnedEmptyMessage                                          string                 `protobuf:"bytes,393,opt,name=errors_ai_provider_returned_empty_message,json=errorsAiProviderReturnedEmptyMessage,proto3" json:"errors_ai_provider_returned_empty_message,omitempty"`                                                                                                                                        // AI provider returned an empty response
+	ErrorsAiRateLimited                                                           string                 `protobuf:"bytes,394,opt,name=errors_ai_rate_limited,json=errorsAiRateLimited,proto3" json:"errors_ai_rate_limited,omitempty"`                                                                                                                                                                                               // Rate limited. Please try again later.
+	ErrorsAiRequestFailed                                                         string                 `protobuf:"bytes,395,opt,name=errors_ai_request_failed,json=errorsAiRequestFailed,proto3" json:"errors_ai_request_failed,omitempty"`                                                                                                                                                                                         // API request failed
+	ErrorsAutoTradingDisabled                                                     string                 `protobuf:"bytes,396,opt,name=errors_auto_trading_disabled,json=errorsAutoTradingDisabled,proto3" json:"errors_auto_trading_disabled,omitempty"`                                                                                                                                                                             // Auto trading disabled
+	ErrorsAutoTradingEnabled                                                      string                 `protobuf:"bytes,397,opt,name=errors_auto_trading_enabled,json=errorsAutoTradingEnabled,proto3" json:"errors_auto_trading_enabled,omitempty"`                                                                                                                                                                                // Auto trading enabled
+	ErrorsConnectionFailedContent                                                 string                 `protobuf:"bytes,398,opt,name=errors_connection_failed_content,json=errorsConnectionFailedContent,proto3" json:"errors_connection_failed_content,omitempty"`                                                                                                                                                                 // Unable to connect to the server. Please check your network a
+	ErrorsConnectionFailedTitle                                                   string                 `protobuf:"bytes,399,opt,name=errors_connection_failed_title,json=errorsConnectionFailedTitle,proto3" json:"errors_connection_failed_title,omitempty"`                                                                                                                                                                       // Connection failed
+	ErrorsEmailAlreadyRegistered                                                  string                 `protobuf:"bytes,400,opt,name=errors_email_already_registered,json=errorsEmailAlreadyRegistered,proto3" json:"errors_email_already_registered,omitempty"`                                                                                                                                                                    // This email is already registered
+	ErrorsInvalidCredentials                                                      string                 `protobuf:"bytes,401,opt,name=errors_invalid_credentials,json=errorsInvalidCredentials,proto3" json:"errors_invalid_credentials,omitempty"`                                                                                                                                                                                  // Invalid email or password
+	ErrorsNotAuthenticated                                                        string                 `protobuf:"bytes,402,opt,name=errors_not_authenticated,json=errorsNotAuthenticated,proto3" json:"errors_not_authenticated,omitempty"`                                                                                                                                                                                        // Not signed in
+	ErrorsScheduleServiceNotAvailable                                             string                 `protobuf:"bytes,403,opt,name=errors_schedule_service_not_available,json=errorsScheduleServiceNotAvailable,proto3" json:"errors_schedule_service_not_available,omitempty"`                                                                                                                                                   // Schedule service is unavailable
+	ErrorsTranslateFailed                                                         string                 `protobuf:"bytes,404,opt,name=errors_translate_failed,json=errorsTranslateFailed,proto3" json:"errors_translate_failed,omitempty"`                                                                                                                                                                                           // Translation failed
+	ErrorsUserNotFound                                                            string                 `protobuf:"bytes,405,opt,name=errors_user_not_found,json=errorsUserNotFound,proto3" json:"errors_user_not_found,omitempty"`                                                                                                                                                                                                  // User not found
+	LanguageEnglish                                                               string                 `protobuf:"bytes,406,opt,name=language_english,json=languageEnglish,proto3" json:"language_english,omitempty"`                                                                                                                                                                                                               // English
+	LanguageJapanese                                                              string                 `protobuf:"bytes,407,opt,name=language_japanese,json=languageJapanese,proto3" json:"language_japanese,omitempty"`                                                                                                                                                                                                            // 日本語
+	LanguageSimplifiedChinese                                                     string                 `protobuf:"bytes,408,opt,name=language_simplified_chinese,json=languageSimplifiedChinese,proto3" json:"language_simplified_chinese,omitempty"`                                                                                                                                                                               // 简体中文
+	LanguageTraditionalChinese                                                    string                 `protobuf:"bytes,409,opt,name=language_traditional_chinese,json=languageTraditionalChinese,proto3" json:"language_traditional_chinese,omitempty"`                                                                                                                                                                            // 繁體中文
+	LanguageVietnamese                                                            string                 `protobuf:"bytes,410,opt,name=language_vietnamese,json=languageVietnamese,proto3" json:"language_vietnamese,omitempty"`                                                                                                                                                                                                      // Tiếng Việt
+	MarketAllSymbols                                                              string                 `protobuf:"bytes,411,opt,name=market_all_symbols,json=marketAllSymbols,proto3" json:"market_all_symbols,omitempty"`                                                                                                                                                                                                          // All Symbols
+	MarketAsk                                                                     string                 `protobuf:"bytes,412,opt,name=market_ask,json=marketAsk,proto3" json:"market_ask,omitempty"`                                                                                                                                                                                                                                 // Ask
+	MarketBid                                                                     string                 `protobuf:"bytes,413,opt,name=market_bid,json=marketBid,proto3" json:"market_bid,omitempty"`                                                                                                                                                                                                                                 // Bid
+	MarketCommon                                                                  string                 `protobuf:"bytes,414,opt,name=market_common,json=marketCommon,proto3" json:"market_common,omitempty"`                                                                                                                                                                                                                        // Common
+	MarketEmptyWatchlist                                                          string                 `protobuf:"bytes,415,opt,name=market_empty_watchlist,json=marketEmptyWatchlist,proto3" json:"market_empty_watchlist,omitempty"`                                                                                                                                                                                              // No symbols in watchlist
+	MarketLoadingSymbols                                                          string                 `protobuf:"bytes,416,opt,name=market_loading_symbols,json=marketLoadingSymbols,proto3" json:"market_loading_symbols,omitempty"`                                                                                                                                                                                              // Loading...
+	MarketMid                                                                     string                 `protobuf:"bytes,417,opt,name=market_mid,json=marketMid,proto3" json:"market_mid,omitempty"`                                                                                                                                                                                                                                 // Mid
+	MarketNoSymbolSelected                                                        string                 `protobuf:"bytes,418,opt,name=market_no_symbol_selected,json=marketNoSymbolSelected,proto3" json:"market_no_symbol_selected,omitempty"`                                                                                                                                                                                      // Select a symbol to view market data
+	MarketNoSymbolsFound                                                          string                 `protobuf:"bytes,419,opt,name=market_no_symbols_found,json=marketNoSymbolsFound,proto3" json:"market_no_symbols_found,omitempty"`                                                                                                                                                                                            // No symbols found
+	MarketPopularSymbols                                                          string                 `protobuf:"bytes,420,opt,name=market_popular_symbols,json=marketPopularSymbols,proto3" json:"market_popular_symbols,omitempty"`                                                                                                                                                                                              // Popular Symbols
+	MarketSearchPlaceholder                                                       string                 `protobuf:"bytes,421,opt,name=market_search_placeholder,json=marketSearchPlaceholder,proto3" json:"market_search_placeholder,omitempty"`                                                                                                                                                                                     // Search symbol (e.g. EURUSD, XAUUSD)
+	MarketSearchSymbol                                                            string                 `protobuf:"bytes,422,opt,name=market_search_symbol,json=marketSearchSymbol,proto3" json:"market_search_symbol,omitempty"`                                                                                                                                                                                                    // Search symbol...
+	MarketSelectAccount                                                           string                 `protobuf:"bytes,423,opt,name=market_select_account,json=marketSelectAccount,proto3" json:"market_select_account,omitempty"`                                                                                                                                                                                                 // Select trading account
+	MarketSelectSymbol                                                            string                 `protobuf:"bytes,424,opt,name=market_select_symbol,json=marketSelectSymbol,proto3" json:"market_select_symbol,omitempty"`                                                                                                                                                                                                    // Select symbol
+	MarketSpread                                                                  string                 `protobuf:"bytes,425,opt,name=market_spread,json=marketSpread,proto3" json:"market_spread,omitempty"`                                                                                                                                                                                                                        // Spread
+	MarketWatchlist                                                               string                 `protobuf:"bytes,426,opt,name=market_watchlist,json=marketWatchlist,proto3" json:"market_watchlist,omitempty"`                                                                                                                                                                                                               // Watchlist
+	MarketplaceAuthorAvgRating                                                    string                 `protobuf:"bytes,427,opt,name=marketplace_author_avg_rating,json=marketplaceAuthorAvgRating,proto3" json:"marketplace_author_avg_rating,omitempty"`                                                                                                                                                                          // Avg Rating
+	MarketplaceAuthorEmpty                                                        string                 `protobuf:"bytes,428,opt,name=marketplace_author_empty,json=marketplaceAuthorEmpty,proto3" json:"marketplace_author_empty,omitempty"`                                                                                                                                                                                        // No strategies published yet. Go to Strategy Library to publi
+	MarketplaceAuthorPublished                                                    string                 `protobuf:"bytes,429,opt,name=marketplace_author_published,json=marketplaceAuthorPublished,proto3" json:"marketplace_author_published,omitempty"`                                                                                                                                                                            // Published
+	MarketplaceCardBy                                                             string                 `protobuf:"bytes,430,opt,name=marketplace_card_by,json=marketplaceCardBy,proto3" json:"marketplace_card_by,omitempty"`                                                                                                                                                                                                       // by
+	MarketplaceCardFree                                                           string                 `protobuf:"bytes,431,opt,name=marketplace_card_free,json=marketplaceCardFree,proto3" json:"marketplace_card_free,omitempty"`                                                                                                                                                                                                 // Free
+	MarketplaceCardOwned                                                          string                 `protobuf:"bytes,432,opt,name=marketplace_card_owned,json=marketplaceCardOwned,proto3" json:"marketplace_card_owned,omitempty"`                                                                                                                                                                                              // Purchased
+	MarketplaceCardSubscribers                                                    string                 `protobuf:"bytes,433,opt,name=marketplace_card_subscribers,json=marketplaceCardSubscribers,proto3" json:"marketplace_card_subscribers,omitempty"`                                                                                                                                                                            // Subscribers
+	MarketplaceCardWinRate                                                        string                 `protobuf:"bytes,434,opt,name=marketplace_card_win_rate,json=marketplaceCardWinRate,proto3" json:"marketplace_card_win_rate,omitempty"`                                                                                                                                                                                      // Win Rate
+	MarketplaceDetailAssetClass                                                   string                 `protobuf:"bytes,435,opt,name=marketplace_detail_asset_class,json=marketplaceDetailAssetClass,proto3" json:"marketplace_detail_asset_class,omitempty"`                                                                                                                                                                       // Asset Class
+	MarketplaceDetailAuthor                                                       string                 `protobuf:"bytes,436,opt,name=marketplace_detail_author,json=marketplaceDetailAuthor,proto3" json:"marketplace_detail_author,omitempty"`                                                                                                                                                                                     // Author
+	MarketplaceDetailCommentPlaceholder                                           string                 `protobuf:"bytes,437,opt,name=marketplace_detail_comment_placeholder,json=marketplaceDetailCommentPlaceholder,proto3" json:"marketplace_detail_comment_placeholder,omitempty"`                                                                                                                                               // Write a comment...
+	MarketplaceDetailComments                                                     string                 `protobuf:"bytes,438,opt,name=marketplace_detail_comments,json=marketplaceDetailComments,proto3" json:"marketplace_detail_comments,omitempty"`                                                                                                                                                                               // Comments
+	MarketplaceDetailDescription                                                  string                 `protobuf:"bytes,439,opt,name=marketplace_detail_description,json=marketplaceDetailDescription,proto3" json:"marketplace_detail_description,omitempty"`                                                                                                                                                                      // Description
+	MarketplaceDetailGetFree                                                      string                 `protobuf:"bytes,440,opt,name=marketplace_detail_get_free,json=marketplaceDetailGetFree,proto3" json:"marketplace_detail_get_free,omitempty"`                                                                                                                                                                                // Get Free
+	MarketplaceDetailRentPrice                                                    string                 `protobuf:"bytes,441,opt,name=marketplace_detail_rent_price,json=marketplaceDetailRentPrice,proto3" json:"marketplace_detail_rent_price,omitempty"`                                                                                                                                                                          // ¥{{amount}} / month
+	MarketplaceDetailSubscribers                                                  string                 `protobuf:"bytes,442,opt,name=marketplace_detail_subscribers,json=marketplaceDetailSubscribers,proto3" json:"marketplace_detail_subscribers,omitempty"`                                                                                                                                                                      // Subscribers
+	MarketplaceDetailYourRating                                                   string                 `protobuf:"bytes,443,opt,name=marketplace_detail_your_rating,json=marketplaceDetailYourRating,proto3" json:"marketplace_detail_your_rating,omitempty"`                                                                                                                                                                       // Your Rating
+	MarketplaceEmpty                                                              string                 `protobuf:"bytes,444,opt,name=marketplace_empty,json=marketplaceEmpty,proto3" json:"marketplace_empty,omitempty"`                                                                                                                                                                                                            // No strategies published yet
+	MarketplaceFilterByClass                                                      string                 `protobuf:"bytes,445,opt,name=marketplace_filter_by_class,json=marketplaceFilterByClass,proto3" json:"marketplace_filter_by_class,omitempty"`                                                                                                                                                                                // Filter by asset class
+	MarketplaceMessagesCommentFailed                                              string                 `protobuf:"bytes,446,opt,name=marketplace_messages_comment_failed,json=marketplaceMessagesCommentFailed,proto3" json:"marketplace_messages_comment_failed,omitempty"`                                                                                                                                                        // Comment failed
+	MarketplaceMessagesCommentPosted                                              string                 `protobuf:"bytes,447,opt,name=marketplace_messages_comment_posted,json=marketplaceMessagesCommentPosted,proto3" json:"marketplace_messages_comment_posted,omitempty"`                                                                                                                                                        // Comment posted
+	MarketplaceMessagesLoginFirst                                                 string                 `protobuf:"bytes,448,opt,name=marketplace_messages_login_first,json=marketplaceMessagesLoginFirst,proto3" json:"marketplace_messages_login_first,omitempty"`                                                                                                                                                                 // Please log in first
+	MarketplaceMessagesPaymentComingSoon                                          string                 `protobuf:"bytes,449,opt,name=marketplace_messages_payment_coming_soon,json=marketplaceMessagesPaymentComingSoon,proto3" json:"marketplace_messages_payment_coming_soon,omitempty"`                                                                                                                                          // Payment coming soon
+	MarketplaceMessagesRateFailed                                                 string                 `protobuf:"bytes,450,opt,name=marketplace_messages_rate_failed,json=marketplaceMessagesRateFailed,proto3" json:"marketplace_messages_rate_failed,omitempty"`                                                                                                                                                                 // Rating failed
+	MarketplaceMessagesRated                                                      string                 `protobuf:"bytes,451,opt,name=marketplace_messages_rated,json=marketplaceMessagesRated,proto3" json:"marketplace_messages_rated,omitempty"`                                                                                                                                                                                  // Rating submitted
+	MarketplaceMessagesSubscribeFailed                                            string                 `protobuf:"bytes,452,opt,name=marketplace_messages_subscribe_failed,json=marketplaceMessagesSubscribeFailed,proto3" json:"marketplace_messages_subscribe_failed,omitempty"`                                                                                                                                                  // Failed
+	MarketplaceMessagesSubscribed                                                 string                 `protobuf:"bytes,453,opt,name=marketplace_messages_subscribed,json=marketplaceMessagesSubscribed,proto3" json:"marketplace_messages_subscribed,omitempty"`                                                                                                                                                                   // Added to your purchases
+	MarketplaceNoSubscriptions                                                    string                 `protobuf:"bytes,454,opt,name=marketplace_no_subscriptions,json=marketplaceNoSubscriptions,proto3" json:"marketplace_no_subscriptions,omitempty"`                                                                                                                                                                            // No subscriptions yet
+	MarketplacePaymentAlreadyPurchased                                            string                 `protobuf:"bytes,455,opt,name=marketplace_payment_already_purchased,json=marketplacePaymentAlreadyPurchased,proto3" json:"marketplace_payment_already_purchased,omitempty"`                                                                                                                                                  // You already own this strategy.
+	MarketplacePaymentBalanceAfter                                                string                 `protobuf:"bytes,456,opt,name=marketplace_payment_balance_after,json=marketplacePaymentBalanceAfter,proto3" json:"marketplace_payment_balance_after,omitempty"`                                                                                                                                                              // Balance after purchase
+	MarketplacePaymentCancel                                                      string                 `protobuf:"bytes,457,opt,name=marketplace_payment_cancel,json=marketplacePaymentCancel,proto3" json:"marketplace_payment_cancel,omitempty"`                                                                                                                                                                                  // Cancel
+	MarketplacePaymentConfirm                                                     string                 `protobuf:"bytes,458,opt,name=marketplace_payment_confirm,json=marketplacePaymentConfirm,proto3" json:"marketplace_payment_confirm,omitempty"`                                                                                                                                                                               // Confirm Purchase
+	MarketplacePaymentDepositPrompt                                               string                 `protobuf:"bytes,459,opt,name=marketplace_payment_deposit_prompt,json=marketplacePaymentDepositPrompt,proto3" json:"marketplace_payment_deposit_prompt,omitempty"`                                                                                                                                                           // Please deposit funds to continue.
+	MarketplacePaymentGoToDeposit                                                 string                 `protobuf:"bytes,460,opt,name=marketplace_payment_go_to_deposit,json=marketplacePaymentGoToDeposit,proto3" json:"marketplace_payment_go_to_deposit,omitempty"`                                                                                                                                                               // Deposit
+	MarketplacePaymentInsufficientBalance                                         string                 `protobuf:"bytes,461,opt,name=marketplace_payment_insufficient_balance,json=marketplacePaymentInsufficientBalance,proto3" json:"marketplace_payment_insufficient_balance,omitempty"`                                                                                                                                         // Insufficient balance
+	MarketplacePaymentOneTimePurchase                                             string                 `protobuf:"bytes,462,opt,name=marketplace_payment_one_time_purchase,json=marketplacePaymentOneTimePurchase,proto3" json:"marketplace_payment_one_time_purchase,omitempty"`                                                                                                                                                   // ¥{{amount}} one-time
+	MarketplacePaymentPrice                                                       string                 `protobuf:"bytes,463,opt,name=marketplace_payment_price,json=marketplacePaymentPrice,proto3" json:"marketplace_payment_price,omitempty"`                                                                                                                                                                                     // Price
+	MarketplacePaymentPurchaseFailed                                              string                 `protobuf:"bytes,464,opt,name=marketplace_payment_purchase_failed,json=marketplacePaymentPurchaseFailed,proto3" json:"marketplace_payment_purchase_failed,omitempty"`                                                                                                                                                        // Purchase failed. Please try again.
+	MarketplacePaymentPurchaseSuccess                                             string                 `protobuf:"bytes,465,opt,name=marketplace_payment_purchase_success,json=marketplacePaymentPurchaseSuccess,proto3" json:"marketplace_payment_purchase_success,omitempty"`                                                                                                                                                     // Purchase successful! Strategy added to your library.
+	MarketplacePaymentPurchasing                                                  string                 `protobuf:"bytes,466,opt,name=marketplace_payment_purchasing,json=marketplacePaymentPurchasing,proto3" json:"marketplace_payment_purchasing,omitempty"`                                                                                                                                                                      // Processing...
+	MarketplacePaymentStrategyName                                                string                 `protobuf:"bytes,467,opt,name=marketplace_payment_strategy_name,json=marketplacePaymentStrategyName,proto3" json:"marketplace_payment_strategy_name,omitempty"`                                                                                                                                                              // Strategy
+	MarketplacePaymentTitle                                                       string                 `protobuf:"bytes,468,opt,name=marketplace_payment_title,json=marketplacePaymentTitle,proto3" json:"marketplace_payment_title,omitempty"`                                                                                                                                                                                     // Confirm Purchase
+	MarketplacePaymentWalletBalance                                               string                 `protobuf:"bytes,469,opt,name=marketplace_payment_wallet_balance,json=marketplacePaymentWalletBalance,proto3" json:"marketplace_payment_wallet_balance,omitempty"`                                                                                                                                                           // Your Balance
+	MarketplacePublish                                                            string                 `protobuf:"bytes,470,opt,name=marketplace_publish,json=marketplacePublish,proto3" json:"marketplace_publish,omitempty"`                                                                                                                                                                                                      // Publish Strategy
+	MarketplacePurchasesEmpty                                                     string                 `protobuf:"bytes,471,opt,name=marketplace_purchases_empty,json=marketplacePurchasesEmpty,proto3" json:"marketplace_purchases_empty,omitempty"`                                                                                                                                                                               // No purchases yet. Browse the market to find strategies.
+	MarketplacePurchasesStatus                                                    string                 `protobuf:"bytes,472,opt,name=marketplace_purchases_status,json=marketplacePurchasesStatus,proto3" json:"marketplace_purchases_status,omitempty"`                                                                                                                                                                            // Status
+	MarketplacePurchasesStrategy                                                  string                 `protobuf:"bytes,473,opt,name=marketplace_purchases_strategy,json=marketplacePurchasesStrategy,proto3" json:"marketplace_purchases_strategy,omitempty"`                                                                                                                                                                      // Strategy
+	MarketplaceSearchPlaceholder                                                  string                 `protobuf:"bytes,474,opt,name=marketplace_search_placeholder,json=marketplaceSearchPlaceholder,proto3" json:"marketplace_search_placeholder,omitempty"`                                                                                                                                                                      // Search strategies...
+	MarketplaceSortNewest                                                         string                 `protobuf:"bytes,475,opt,name=marketplace_sort_newest,json=marketplaceSortNewest,proto3" json:"marketplace_sort_newest,omitempty"`                                                                                                                                                                                           // Newest
+	MarketplaceSortPerformance                                                    string                 `protobuf:"bytes,476,opt,name=marketplace_sort_performance,json=marketplaceSortPerformance,proto3" json:"marketplace_sort_performance,omitempty"`                                                                                                                                                                            // Best Performance
+	MarketplaceSortPopular                                                        string                 `protobuf:"bytes,477,opt,name=marketplace_sort_popular,json=marketplaceSortPopular,proto3" json:"marketplace_sort_popular,omitempty"`                                                                                                                                                                                        // Most Popular
+	MarketplaceSortPriceAsc                                                       string                 `protobuf:"bytes,478,opt,name=marketplace_sort_price_asc,json=marketplaceSortPriceAsc,proto3" json:"marketplace_sort_price_asc,omitempty"`                                                                                                                                                                                   // Price: Low to High
+	MarketplaceSortPriceDesc                                                      string                 `protobuf:"bytes,479,opt,name=marketplace_sort_price_desc,json=marketplaceSortPriceDesc,proto3" json:"marketplace_sort_price_desc,omitempty"`                                                                                                                                                                                // Price: High to Low
+	MarketplaceSortRating                                                         string                 `protobuf:"bytes,480,opt,name=marketplace_sort_rating,json=marketplaceSortRating,proto3" json:"marketplace_sort_rating,omitempty"`                                                                                                                                                                                           // Highest Rated
+	MarketplaceSortScore                                                          string                 `protobuf:"bytes,481,opt,name=marketplace_sort_score,json=marketplaceSortScore,proto3" json:"marketplace_sort_score,omitempty"`                                                                                                                                                                                              // Composite Score
+	MarketplaceSubtitle                                                           string                 `protobuf:"bytes,482,opt,name=marketplace_subtitle,json=marketplaceSubtitle,proto3" json:"marketplace_subtitle,omitempty"`                                                                                                                                                                                                   // Discover, buy, and use community strategies
+	MarketplaceTabsAuthor                                                         string                 `protobuf:"bytes,483,opt,name=marketplace_tabs_author,json=marketplaceTabsAuthor,proto3" json:"marketplace_tabs_author,omitempty"`                                                                                                                                                                                           // Author Center
+	MarketplaceTabsMarketplace                                                    string                 `protobuf:"bytes,484,opt,name=marketplace_tabs_marketplace,json=marketplaceTabsMarketplace,proto3" json:"marketplace_tabs_marketplace,omitempty"`                                                                                                                                                                            // Market
+	MarketplaceTabsPurchases                                                      string                 `protobuf:"bytes,485,opt,name=marketplace_tabs_purchases,json=marketplaceTabsPurchases,proto3" json:"marketplace_tabs_purchases,omitempty"`                                                                                                                                                                                  // My Purchases
+	MarketplaceTabsSubscriptions                                                  string                 `protobuf:"bytes,486,opt,name=marketplace_tabs_subscriptions,json=marketplaceTabsSubscriptions,proto3" json:"marketplace_tabs_subscriptions,omitempty"`                                                                                                                                                                      // My Subscriptions
+	MarketplaceTitle                                                              string                 `protobuf:"bytes,487,opt,name=marketplace_title,json=marketplaceTitle,proto3" json:"marketplace_title,omitempty"`                                                                                                                                                                                                            // Strategy Marketplace
+	MenuAccounts                                                                  string                 `protobuf:"bytes,488,opt,name=menu_accounts,json=menuAccounts,proto3" json:"menu_accounts,omitempty"`                                                                                                                                                                                                                        // Accounts
+	MenuAiAssistant                                                               string                 `protobuf:"bytes,489,opt,name=menu_ai_assistant,json=menuAiAssistant,proto3" json:"menu_ai_assistant,omitempty"`                                                                                                                                                                                                             // AI Assistant
+	MenuAlgoDashboard                                                             string                 `protobuf:"bytes,490,opt,name=menu_algo_dashboard,json=menuAlgoDashboard,proto3" json:"menu_algo_dashboard,omitempty"`                                                                                                                                                                                                       // Algo Dashboard
+	MenuAnalytics                                                                 string                 `protobuf:"bytes,491,opt,name=menu_analytics,json=menuAnalytics,proto3" json:"menu_analytics,omitempty"`                                                                                                                                                                                                                     // Analytics
+	MenuAssetAnalysis                                                             string                 `protobuf:"bytes,492,opt,name=menu_asset_analysis,json=menuAssetAnalysis,proto3" json:"menu_asset_analysis,omitempty"`                                                                                                                                                                                                       // AI Analysis
+	MenuAssets                                                                    string                 `protobuf:"bytes,493,opt,name=menu_assets,json=menuAssets,proto3" json:"menu_assets,omitempty"`                                                                                                                                                                                                                              // Assets
+	MenuAutoTrading                                                               string                 `protobuf:"bytes,494,opt,name=menu_auto_trading,json=menuAutoTrading,proto3" json:"menu_auto_trading,omitempty"`                                                                                                                                                                                                             // Auto Trading
+	MenuDashboard                                                                 string                 `protobuf:"bytes,495,opt,name=menu_dashboard,json=menuDashboard,proto3" json:"menu_dashboard,omitempty"`                                                                                                                                                                                                                     // Dashboard
+	MenuDevGroup                                                                  string                 `protobuf:"bytes,496,opt,name=menu_dev_group,json=menuDevGroup,proto3" json:"menu_dev_group,omitempty"`                                                                                                                                                                                                                      // Development
+	MenuExperiments                                                               string                 `protobuf:"bytes,497,opt,name=menu_experiments,json=menuExperiments,proto3" json:"menu_experiments,omitempty"`                                                                                                                                                                                                               // Experiments
+	MenuIndicatorCatalog                                                          string                 `protobuf:"bytes,498,opt,name=menu_indicator_catalog,json=menuIndicatorCatalog,proto3" json:"menu_indicator_catalog,omitempty"`                                                                                                                                                                                              // Indicator Catalog
+	MenuLogs                                                                      string                 `protobuf:"bytes,499,opt,name=menu_logs,json=menuLogs,proto3" json:"menu_logs,omitempty"`                                                                                                                                                                                                                                    // System Logs
+	MenuMarket                                                                    string                 `protobuf:"bytes,500,opt,name=menu_market,json=menuMarket,proto3" json:"menu_market,omitempty"`                                                                                                                                                                                                                              // Market
+	MenuMarketRegime                                                              string                 `protobuf:"bytes,501,opt,name=menu_market_regime,json=menuMarketRegime,proto3" json:"menu_market_regime,omitempty"`                                                                                                                                                                                                          // Market Regime
+	MenuMarketTools                                                               string                 `protobuf:"bytes,502,opt,name=menu_market_tools,json=menuMarketTools,proto3" json:"menu_market_tools,omitempty"`                                                                                                                                                                                                             // Market Tools
+	MenuMarketplace                                                               string                 `protobuf:"bytes,503,opt,name=menu_marketplace,json=menuMarketplace,proto3" json:"menu_marketplace,omitempty"`                                                                                                                                                                                                               // Marketplace
+	MenuOpsGroup                                                                  string                 `protobuf:"bytes,504,opt,name=menu_ops_group,json=menuOpsGroup,proto3" json:"menu_ops_group,omitempty"`                                                                                                                                                                                                                      // Operations
+	MenuSchedules                                                                 string                 `protobuf:"bytes,505,opt,name=menu_schedules,json=menuSchedules,proto3" json:"menu_schedules,omitempty"`                                                                                                                                                                                                                     // Schedules
+	MenuStrategies                                                                string                 `protobuf:"bytes,506,opt,name=menu_strategies,json=menuStrategies,proto3" json:"menu_strategies,omitempty"`                                                                                                                                                                                                                  // Strategies
+	MenuStrategy                                                                  string                 `protobuf:"bytes,507,opt,name=menu_strategy,json=menuStrategy,proto3" json:"menu_strategy,omitempty"`                                                                                                                                                                                                                        // Strategy
+	MenuStrategyLibrary                                                           string                 `protobuf:"bytes,508,opt,name=menu_strategy_library,json=menuStrategyLibrary,proto3" json:"menu_strategy_library,omitempty"`                                                                                                                                                                                                 // Strategy Library
+	MenuStrategyWorkspace                                                         string                 `protobuf:"bytes,509,opt,name=menu_strategy_workspace,json=menuStrategyWorkspace,proto3" json:"menu_strategy_workspace,omitempty"`                                                                                                                                                                                           // Strategy Workspace
+	MenuTrading                                                                   string                 `protobuf:"bytes,510,opt,name=menu_trading,json=menuTrading,proto3" json:"menu_trading,omitempty"`                                                                                                                                                                                                                           // Trading
+	MenuWallet                                                                    string                 `protobuf:"bytes,511,opt,name=menu_wallet,json=menuWallet,proto3" json:"menu_wallet,omitempty"`                                                                                                                                                                                                                              // Wallet
+	NotificationsActionsClearAll                                                  string                 `protobuf:"bytes,512,opt,name=notifications_actions_clear_all,json=notificationsActionsClearAll,proto3" json:"notifications_actions_clear_all,omitempty"`                                                                                                                                                                    // Clear all
+	NotificationsActionsClearAllConfirm                                           string                 `protobuf:"bytes,513,opt,name=notifications_actions_clear_all_confirm,json=notificationsActionsClearAllConfirm,proto3" json:"notifications_actions_clear_all_confirm,omitempty"`                                                                                                                                             // Clear all notifications?
+	NotificationsActionsMarkAllAsRead                                             string                 `protobuf:"bytes,514,opt,name=notifications_actions_mark_all_as_read,json=notificationsActionsMarkAllAsRead,proto3" json:"notifications_actions_mark_all_as_read,omitempty"`                                                                                                                                                 // Mark all as read
+	NotificationsAll                                                              string                 `protobuf:"bytes,515,opt,name=notifications_all,json=notificationsAll,proto3" json:"notifications_all,omitempty"`                                                                                                                                                                                                            // All
+	NotificationsClearAll                                                         string                 `protobuf:"bytes,516,opt,name=notifications_clear_all,json=notificationsClearAll,proto3" json:"notifications_clear_all,omitempty"`                                                                                                                                                                                           // Clear all
+	NotificationsConfirmClearAll                                                  string                 `protobuf:"bytes,517,opt,name=notifications_confirm_clear_all,json=notificationsConfirmClearAll,proto3" json:"notifications_confirm_clear_all,omitempty"`                                                                                                                                                                    // Clear all notifications?
+	NotificationsEmpty                                                            string                 `protobuf:"bytes,518,opt,name=notifications_empty,json=notificationsEmpty,proto3" json:"notifications_empty,omitempty"`                                                                                                                                                                                                      // No notifications
+	NotificationsMarkAllRead                                                      string                 `protobuf:"bytes,519,opt,name=notifications_mark_all_read,json=notificationsMarkAllRead,proto3" json:"notifications_mark_all_read,omitempty"`                                                                                                                                                                                // Mark all as read
+	NotificationsStreamAutoTradingFallback                                        string                 `protobuf:"bytes,520,opt,name=notifications_stream_auto_trading_fallback,json=notificationsStreamAutoTradingFallback,proto3" json:"notifications_stream_auto_trading_fallback,omitempty"`                                                                                                                                    // Auto trading event triggered
+	NotificationsStreamAutoTradingTitle                                           string                 `protobuf:"bytes,521,opt,name=notifications_stream_auto_trading_title,json=notificationsStreamAutoTradingTitle,proto3" json:"notifications_stream_auto_trading_title,omitempty"`                                                                                                                                             // Auto Trading
+	NotificationsStreamRiskAlertFallback                                          string                 `protobuf:"bytes,522,opt,name=notifications_stream_risk_alert_fallback,json=notificationsStreamRiskAlertFallback,proto3" json:"notifications_stream_risk_alert_fallback,omitempty"`                                                                                                                                          // Alert type: {{alertType}}
+	NotificationsStreamRiskAlertTitle                                             string                 `protobuf:"bytes,523,opt,name=notifications_stream_risk_alert_title,json=notificationsStreamRiskAlertTitle,proto3" json:"notifications_stream_risk_alert_title,omitempty"`                                                                                                                                                   // Risk Alert
+	NotificationsStreamStrategyExecutionCompleted                                 string                 `protobuf:"bytes,524,opt,name=notifications_stream_strategy_execution_completed,json=notificationsStreamStrategyExecutionCompleted,proto3" json:"notifications_stream_strategy_execution_completed,omitempty"`                                                                                                               // {{symbol}} {{action}} completed
+	NotificationsStreamStrategyExecutionFailed                                    string                 `protobuf:"bytes,525,opt,name=notifications_stream_strategy_execution_failed,json=notificationsStreamStrategyExecutionFailed,proto3" json:"notifications_stream_strategy_execution_failed,omitempty"`                                                                                                                        // Execution failed: {{error}}
+	NotificationsStreamStrategyExecutionTitle                                     string                 `protobuf:"bytes,526,opt,name=notifications_stream_strategy_execution_title,json=notificationsStreamStrategyExecutionTitle,proto3" json:"notifications_stream_strategy_execution_title,omitempty"`                                                                                                                           // Strategy Execution
+	NotificationsStreamStrategySignalMessage                                      string                 `protobuf:"bytes,527,opt,name=notifications_stream_strategy_signal_message,json=notificationsStreamStrategySignalMessage,proto3" json:"notifications_stream_strategy_signal_message,omitempty"`                                                                                                                              // {{symbol}} triggered {{signalType}}
+	NotificationsStreamStrategySignalTitle                                        string                 `protobuf:"bytes,528,opt,name=notifications_stream_strategy_signal_title,json=notificationsStreamStrategySignalTitle,proto3" json:"notifications_stream_strategy_signal_title,omitempty"`                                                                                                                                    // Strategy Signal
+	NotificationsTabsAll                                                          string                 `protobuf:"bytes,529,opt,name=notifications_tabs_all,json=notificationsTabsAll,proto3" json:"notifications_tabs_all,omitempty"`                                                                                                                                                                                              // All ({{count}})
+	NotificationsTabsUnread                                                       string                 `protobuf:"bytes,530,opt,name=notifications_tabs_unread,json=notificationsTabsUnread,proto3" json:"notifications_tabs_unread,omitempty"`                                                                                                                                                                                     // Unread ({{count}})
+	NotificationsTitle                                                            string                 `protobuf:"bytes,531,opt,name=notifications_title,json=notificationsTitle,proto3" json:"notifications_title,omitempty"`                                                                                                                                                                                                      // Notifications
+	NotificationsTypesRiskAlert                                                   string                 `protobuf:"bytes,532,opt,name=notifications_types_risk_alert,json=notificationsTypesRiskAlert,proto3" json:"notifications_types_risk_alert,omitempty"`                                                                                                                                                                       // Risk Alert
+	NotificationsTypesSignal                                                      string                 `protobuf:"bytes,533,opt,name=notifications_types_signal,json=notificationsTypesSignal,proto3" json:"notifications_types_signal,omitempty"`                                                                                                                                                                                  // Signal
+	NotificationsTypesStrategyExecution                                           string                 `protobuf:"bytes,534,opt,name=notifications_types_strategy_execution,json=notificationsTypesStrategyExecution,proto3" json:"notifications_types_strategy_execution,omitempty"`                                                                                                                                               // Execution
+	NotificationsTypesSystem                                                      string                 `protobuf:"bytes,535,opt,name=notifications_types_system,json=notificationsTypesSystem,proto3" json:"notifications_types_system,omitempty"`                                                                                                                                                                                  // System
+	NotificationsTypesTrade                                                       string                 `protobuf:"bytes,536,opt,name=notifications_types_trade,json=notificationsTypesTrade,proto3" json:"notifications_types_trade,omitempty"`                                                                                                                                                                                     // Trade
+	NotificationsUnread                                                           string                 `protobuf:"bytes,537,opt,name=notifications_unread,json=notificationsUnread,proto3" json:"notifications_unread,omitempty"`                                                                                                                                                                                                   // Unread
+	ProfileLastLogin                                                              string                 `protobuf:"bytes,538,opt,name=profile_last_login,json=profileLastLogin,proto3" json:"profile_last_login,omitempty"`                                                                                                                                                                                                          // Last Login
+	ProfileNickname                                                               string                 `protobuf:"bytes,539,opt,name=profile_nickname,json=profileNickname,proto3" json:"profile_nickname,omitempty"`                                                                                                                                                                                                               // Nickname
+	ProfileRegistered                                                             string                 `protobuf:"bytes,540,opt,name=profile_registered,json=profileRegistered,proto3" json:"profile_registered,omitempty"`                                                                                                                                                                                                         // Registered
+	ProfileRole                                                                   string                 `protobuf:"bytes,541,opt,name=profile_role,json=profileRole,proto3" json:"profile_role,omitempty"`                                                                                                                                                                                                                           // Role
+	ProfileStatus                                                                 string                 `protobuf:"bytes,542,opt,name=profile_status,json=profileStatus,proto3" json:"profile_status,omitempty"`                                                                                                                                                                                                                     // Status
+	ProfileTitle                                                                  string                 `protobuf:"bytes,543,opt,name=profile_title,json=profileTitle,proto3" json:"profile_title,omitempty"`                                                                                                                                                                                                                        // Profile
+	ShareActions                                                                  string                 `protobuf:"bytes,544,opt,name=share_actions,json=shareActions,proto3" json:"share_actions,omitempty"`                                                                                                                                                                                                                        // Actions
+	ShareCreateNew                                                                string                 `protobuf:"bytes,545,opt,name=share_create_new,json=shareCreateNew,proto3" json:"share_create_new,omitempty"`                                                                                                                                                                                                                // Create New Share Link
+	ShareCreatedAt                                                                string                 `protobuf:"bytes,546,opt,name=share_created_at,json=shareCreatedAt,proto3" json:"share_created_at,omitempty"`                                                                                                                                                                                                                // Created
+	ShareDeleteConfirm                                                            string                 `protobuf:"bytes,547,opt,name=share_delete_confirm,json=shareDeleteConfirm,proto3" json:"share_delete_confirm,omitempty"`                                                                                                                                                                                                    // Delete this share link?
+	ShareEmpty                                                                    string                 `protobuf:"bytes,548,opt,name=share_empty,json=shareEmpty,proto3" json:"share_empty,omitempty"`                                                                                                                                                                                                                              // No share links yet
+	ShareExpires                                                                  string                 `protobuf:"bytes,549,opt,name=share_expires,json=shareExpires,proto3" json:"share_expires,omitempty"`                                                                                                                                                                                                                        // Expires
+	SharePositions                                                                string                 `protobuf:"bytes,550,opt,name=share_positions,json=sharePositions,proto3" json:"share_positions,omitempty"`                                                                                                                                                                                                                  // Positions
+	ShareShowPositions                                                            string                 `protobuf:"bytes,551,opt,name=share_show_positions,json=shareShowPositions,proto3" json:"share_show_positions,omitempty"`                                                                                                                                                                                                    // Show positions on new link
+	ShareTitle                                                                    string                 `protobuf:"bytes,552,opt,name=share_title,json=shareTitle,proto3" json:"share_title,omitempty"`                                                                                                                                                                                                                              // Share Management
+	ShareToken                                                                    string                 `protobuf:"bytes,553,opt,name=share_token,json=shareToken,proto3" json:"share_token,omitempty"`                                                                                                                                                                                                                              // Share Link
+	ShareUserId                                                                   string                 `protobuf:"bytes,554,opt,name=share_user_id,json=shareUserId,proto3" json:"share_user_id,omitempty"`                                                                                                                                                                                                                         // User
+	ShareViews                                                                    string                 `protobuf:"bytes,555,opt,name=share_views,json=shareViews,proto3" json:"share_views,omitempty"`                                                                                                                                                                                                                              // Views
+	SharePageAvgHolding                                                           string                 `protobuf:"bytes,556,opt,name=share_page_avg_holding,json=sharePageAvgHolding,proto3" json:"share_page_avg_holding,omitempty"`                                                                                                                                                                                               // Avg Holding
+	SharePageAvgLoss                                                              string                 `protobuf:"bytes,557,opt,name=share_page_avg_loss,json=sharePageAvgLoss,proto3" json:"share_page_avg_loss,omitempty"`                                                                                                                                                                                                        // Avg Loss
+	SharePageAvgWin                                                               string                 `protobuf:"bytes,558,opt,name=share_page_avg_win,json=sharePageAvgWin,proto3" json:"share_page_avg_win,omitempty"`                                                                                                                                                                                                           // Avg Win
+	SharePageBestTrade                                                            string                 `protobuf:"bytes,559,opt,name=share_page_best_trade,json=sharePageBestTrade,proto3" json:"share_page_best_trade,omitempty"`                                                                                                                                                                                                  // Best Trade
+	SharePageBySymbol                                                             string                 `protobuf:"bytes,560,opt,name=share_page_by_symbol,json=sharePageBySymbol,proto3" json:"share_page_by_symbol,omitempty"`                                                                                                                                                                                                     // Performance by Symbol
+	SharePageCloseTime                                                            string                 `protobuf:"bytes,561,opt,name=share_page_close_time,json=sharePageCloseTime,proto3" json:"share_page_close_time,omitempty"`                                                                                                                                                                                                  // Close
+	SharePageCount                                                                string                 `protobuf:"bytes,562,opt,name=share_page_count,json=sharePageCount,proto3" json:"share_page_count,omitempty"`                                                                                                                                                                                                                // Trades
+	SharePageDisclaimer                                                           string                 `protobuf:"bytes,563,opt,name=share_page_disclaimer,json=sharePageDisclaimer,proto3" json:"share_page_disclaimer,omitempty"`                                                                                                                                                                                                 // Past performance is not indicative of future results.
+	SharePageEquityCurve                                                          string                 `protobuf:"bytes,564,opt,name=share_page_equity_curve,json=sharePageEquityCurve,proto3" json:"share_page_equity_curve,omitempty"`                                                                                                                                                                                            // Equity Curve
+	SharePageExpired                                                              string                 `protobuf:"bytes,565,opt,name=share_page_expired,json=sharePageExpired,proto3" json:"share_page_expired,omitempty"`                                                                                                                                                                                                          // This share link has expired
+	SharePageFooter                                                               string                 `protobuf:"bytes,566,opt,name=share_page_footer,json=sharePageFooter,proto3" json:"share_page_footer,omitempty"`                                                                                                                                                                                                             // Generated by AntTrader
+	SharePageLanguage                                                             string                 `protobuf:"bytes,567,opt,name=share_page_language,json=sharePageLanguage,proto3" json:"share_page_language,omitempty"`                                                                                                                                                                                                       // Language
+	SharePageLoadFailed                                                           string                 `protobuf:"bytes,568,opt,name=share_page_load_failed,json=sharePageLoadFailed,proto3" json:"share_page_load_failed,omitempty"`                                                                                                                                                                                               // Failed to load shared performance
+	SharePageLosingTrades                                                         string                 `protobuf:"bytes,569,opt,name=share_page_losing_trades,json=sharePageLosingTrades,proto3" json:"share_page_losing_trades,omitempty"`                                                                                                                                                                                         // Losing Trades
+	SharePageMaxDrawdown                                                          string                 `protobuf:"bytes,570,opt,name=share_page_max_drawdown,json=sharePageMaxDrawdown,proto3" json:"share_page_max_drawdown,omitempty"`                                                                                                                                                                                            // Max Drawdown
+	SharePageNetProfit                                                            string                 `protobuf:"bytes,571,opt,name=share_page_net_profit,json=sharePageNetProfit,proto3" json:"share_page_net_profit,omitempty"`                                                                                                                                                                                                  // Net Profit
+	SharePageNoPositions                                                          string                 `protobuf:"bytes,572,opt,name=share_page_no_positions,json=sharePageNoPositions,proto3" json:"share_page_no_positions,omitempty"`                                                                                                                                                                                            // No open positions
+	SharePageNoTrades                                                             string                 `protobuf:"bytes,573,opt,name=share_page_no_trades,json=sharePageNoTrades,proto3" json:"share_page_no_trades,omitempty"`                                                                                                                                                                                                     // No trade records yet
+	SharePageNotFound                                                             string                 `protobuf:"bytes,574,opt,name=share_page_not_found,json=sharePageNotFound,proto3" json:"share_page_not_found,omitempty"`                                                                                                                                                                                                     // Not found
+	SharePageOpenPrice                                                            string                 `protobuf:"bytes,575,opt,name=share_page_open_price,json=sharePageOpenPrice,proto3" json:"share_page_open_price,omitempty"`                                                                                                                                                                                                  // Open
+	SharePagePositions                                                            string                 `protobuf:"bytes,576,opt,name=share_page_positions,json=sharePagePositions,proto3" json:"share_page_positions,omitempty"`                                                                                                                                                                                                    // Open Positions
+	SharePagePositionsLocked                                                      string                 `protobuf:"bytes,577,opt,name=share_page_positions_locked,json=sharePagePositionsLocked,proto3" json:"share_page_positions_locked,omitempty"`                                                                                                                                                                                // Positions hidden by creator
+	SharePageProfit                                                               string                 `protobuf:"bytes,578,opt,name=share_page_profit,json=sharePageProfit,proto3" json:"share_page_profit,omitempty"`                                                                                                                                                                                                             // Profit
+	SharePageProfitFactor                                                         string                 `protobuf:"bytes,579,opt,name=share_page_profit_factor,json=sharePageProfitFactor,proto3" json:"share_page_profit_factor,omitempty"`                                                                                                                                                                                         // Profit Factor
+	SharePageSharpeRatio                                                          string                 `protobuf:"bytes,580,opt,name=share_page_sharpe_ratio,json=sharePageSharpeRatio,proto3" json:"share_page_sharpe_ratio,omitempty"`                                                                                                                                                                                            // Sharpe Ratio
+	SharePageSide                                                                 string                 `protobuf:"bytes,581,opt,name=share_page_side,json=sharePageSide,proto3" json:"share_page_side,omitempty"`                                                                                                                                                                                                                   // Side
+	SharePageSubtitle                                                             string                 `protobuf:"bytes,582,opt,name=share_page_subtitle,json=sharePageSubtitle,proto3" json:"share_page_subtitle,omitempty"`                                                                                                                                                                                                       // Verified trading results
+	SharePageSymbol                                                               string                 `protobuf:"bytes,583,opt,name=share_page_symbol,json=sharePageSymbol,proto3" json:"share_page_symbol,omitempty"`                                                                                                                                                                                                             // Symbol
+	SharePageTitle                                                                string                 `protobuf:"bytes,584,opt,name=share_page_title,json=sharePageTitle,proto3" json:"share_page_title,omitempty"`                                                                                                                                                                                                                // Trading Performance
+	SharePageTotalReturn                                                          string                 `protobuf:"bytes,585,opt,name=share_page_total_return,json=sharePageTotalReturn,proto3" json:"share_page_total_return,omitempty"`                                                                                                                                                                                            // Net Profit
+	SharePageTotalTrades                                                          string                 `protobuf:"bytes,586,opt,name=share_page_total_trades,json=sharePageTotalTrades,proto3" json:"share_page_total_trades,omitempty"`                                                                                                                                                                                            // Total Trades
+	SharePageTotalVolume                                                          string                 `protobuf:"bytes,587,opt,name=share_page_total_volume,json=sharePageTotalVolume,proto3" json:"share_page_total_volume,omitempty"`                                                                                                                                                                                            // Total Volume
+	SharePageTradeRecords                                                         string                 `protobuf:"bytes,588,opt,name=share_page_trade_records,json=sharePageTradeRecords,proto3" json:"share_page_trade_records,omitempty"`                                                                                                                                                                                         // Trade Records
+	SharePageVolume                                                               string                 `protobuf:"bytes,589,opt,name=share_page_volume,json=sharePageVolume,proto3" json:"share_page_volume,omitempty"`                                                                                                                                                                                                             // Volume
+	SharePageWinRate                                                              string                 `protobuf:"bytes,590,opt,name=share_page_win_rate,json=sharePageWinRate,proto3" json:"share_page_win_rate,omitempty"`                                                                                                                                                                                                        // Win Rate
+	SharePageWinningTrades                                                        string                 `protobuf:"bytes,591,opt,name=share_page_winning_trades,json=sharePageWinningTrades,proto3" json:"share_page_winning_trades,omitempty"`                                                                                                                                                                                      // Winning Trades
+	SharePageWorstTrade                                                           string                 `protobuf:"bytes,592,opt,name=share_page_worst_trade,json=sharePageWorstTrade,proto3" json:"share_page_worst_trade,omitempty"`                                                                                                                                                                                               // Worst Trade
+	SymbolDetectionLabel                                                          string                 `protobuf:"bytes,593,opt,name=symbol_detection_label,json=symbolDetectionLabel,proto3" json:"symbol_detection_label,omitempty"`                                                                                                                                                                                              // Detected Symbols
+	SymbolDetectionLoading                                                        string                 `protobuf:"bytes,594,opt,name=symbol_detection_loading,json=symbolDetectionLoading,proto3" json:"symbol_detection_loading,omitempty"`                                                                                                                                                                                        // Parsing…
+	SymbolDetectionNoSymbols                                                      string                 `protobuf:"bytes,595,opt,name=symbol_detection_no_symbols,json=symbolDetectionNoSymbols,proto3" json:"symbol_detection_no_symbols,omitempty"`                                                                                                                                                                                // No trading symbols detected. Try including specific symbol n
+	SymbolDetectionResolvedTooltip                                                string                 `protobuf:"bytes,596,opt,name=symbol_detection_resolved_tooltip,json=symbolDetectionResolvedTooltip,proto3" json:"symbol_detection_resolved_tooltip,omitempty"`                                                                                                                                                              // broker: {{broker}} | mode: {{mode}}
+	SymbolDetectionTradeModeDisabled                                              string                 `protobuf:"bytes,597,opt,name=symbol_detection_trade_mode_disabled,json=symbolDetectionTradeModeDisabled,proto3" json:"symbol_detection_trade_mode_disabled,omitempty"`                                                                                                                                                      // Disabled
+	SymbolDetectionTradeModeLongOnly                                              string                 `protobuf:"bytes,598,opt,name=symbol_detection_trade_mode_long_only,json=symbolDetectionTradeModeLongOnly,proto3" json:"symbol_detection_trade_mode_long_only,omitempty"`                                                                                                                                                    // Long Only
+	SymbolDetectionTradeModeLongShort                                             string                 `protobuf:"bytes,599,opt,name=symbol_detection_trade_mode_long_short,json=symbolDetectionTradeModeLongShort,proto3" json:"symbol_detection_trade_mode_long_short,omitempty"`                                                                                                                                                 // Long & Short
+	SymbolDetectionTradeModeShortOnly                                             string                 `protobuf:"bytes,600,opt,name=symbol_detection_trade_mode_short_only,json=symbolDetectionTradeModeShortOnly,proto3" json:"symbol_detection_trade_mode_short_only,omitempty"`                                                                                                                                                 // Short Only
+	SymbolDetectionTradeModeUnknown                                               string                 `protobuf:"bytes,601,opt,name=symbol_detection_trade_mode_unknown,json=symbolDetectionTradeModeUnknown,proto3" json:"symbol_detection_trade_mode_unknown,omitempty"`                                                                                                                                                         // Unknown
+	SymbolDetectionUnresolvedTooltip                                              string                 `protobuf:"bytes,602,opt,name=symbol_detection_unresolved_tooltip,json=symbolDetectionUnresolvedTooltip,proto3" json:"symbol_detection_unresolved_tooltip,omitempty"`                                                                                                                                                        // No trading account bound yet, unable to resolve
+	TopbarLogout                                                                  string                 `protobuf:"bytes,603,opt,name=topbar_logout,json=topbarLogout,proto3" json:"topbar_logout,omitempty"`                                                                                                                                                                                                                        // Logout
+	TopbarProfile                                                                 string                 `protobuf:"bytes,604,opt,name=topbar_profile,json=topbarProfile,proto3" json:"topbar_profile,omitempty"`                                                                                                                                                                                                                     // Profile
+	TopbarSettings                                                                string                 `protobuf:"bytes,605,opt,name=topbar_settings,json=topbarSettings,proto3" json:"topbar_settings,omitempty"`                                                                                                                                                                                                                  // Settings
+	TopbarSwitchToAdmin                                                           string                 `protobuf:"bytes,606,opt,name=topbar_switch_to_admin,json=topbarSwitchToAdmin,proto3" json:"topbar_switch_to_admin,omitempty"`                                                                                                                                                                                               // Switch to Admin
+	TopbarSystemOk                                                                string                 `protobuf:"bytes,607,opt,name=topbar_system_ok,json=topbarSystemOk,proto3" json:"topbar_system_ok,omitempty"`                                                                                                                                                                                                                // System running normally
+	TopbarUser                                                                    string                 `protobuf:"bytes,608,opt,name=topbar_user,json=topbarUser,proto3" json:"topbar_user,omitempty"`                                                                                                                                                                                                                              // User
+	WalletAccountNumber                                                           string                 `protobuf:"bytes,609,opt,name=wallet_account_number,json=walletAccountNumber,proto3" json:"wallet_account_number,omitempty"`                                                                                                                                                                                                 // Account
+	WalletBalance                                                                 string                 `protobuf:"bytes,610,opt,name=wallet_balance,json=walletBalance,proto3" json:"wallet_balance,omitempty"`                                                                                                                                                                                                                     // Balance
+	WalletCurrency                                                                string                 `protobuf:"bytes,611,opt,name=wallet_currency,json=walletCurrency,proto3" json:"wallet_currency,omitempty"`                                                                                                                                                                                                                  // Currency
+	WalletDeposit                                                                 string                 `protobuf:"bytes,612,opt,name=wallet_deposit,json=walletDeposit,proto3" json:"wallet_deposit,omitempty"`                                                                                                                                                                                                                     // Deposit
+	WalletFrozen                                                                  string                 `protobuf:"bytes,613,opt,name=wallet_frozen,json=walletFrozen,proto3" json:"wallet_frozen,omitempty"`                                                                                                                                                                                                                        // Frozen
+	WalletFrozenBalance                                                           string                 `protobuf:"bytes,614,opt,name=wallet_frozen_balance,json=walletFrozenBalance,proto3" json:"wallet_frozen_balance,omitempty"`                                                                                                                                                                                                 // Frozen
+	WalletHistory                                                                 string                 `protobuf:"bytes,615,opt,name=wallet_history,json=walletHistory,proto3" json:"wallet_history,omitempty"`                                                                                                                                                                                                                     // History
+	WalletTableAmount                                                             string                 `protobuf:"bytes,616,opt,name=wallet_table_amount,json=walletTableAmount,proto3" json:"wallet_table_amount,omitempty"`                                                                                                                                                                                                       // Amount
+	WalletTableBalanceAfter                                                       string                 `protobuf:"bytes,617,opt,name=wallet_table_balance_after,json=walletTableBalanceAfter,proto3" json:"wallet_table_balance_after,omitempty"`                                                                                                                                                                                   // Balance After
+	WalletTableDescription                                                        string                 `protobuf:"bytes,618,opt,name=wallet_table_description,json=walletTableDescription,proto3" json:"wallet_table_description,omitempty"`                                                                                                                                                                                        // Description
+	WalletTableTime                                                               string                 `protobuf:"bytes,619,opt,name=wallet_table_time,json=walletTableTime,proto3" json:"wallet_table_time,omitempty"`                                                                                                                                                                                                             // Time
+	WalletTableType                                                               string                 `protobuf:"bytes,620,opt,name=wallet_table_type,json=walletTableType,proto3" json:"wallet_table_type,omitempty"`                                                                                                                                                                                                             // Type
+	WalletTitle                                                                   string                 `protobuf:"bytes,621,opt,name=wallet_title,json=walletTitle,proto3" json:"wallet_title,omitempty"`                                                                                                                                                                                                                           // My Wallet
+	WalletTransactions                                                            string                 `protobuf:"bytes,622,opt,name=wallet_transactions,json=walletTransactions,proto3" json:"wallet_transactions,omitempty"`                                                                                                                                                                                                      // Transactions
+	WalletTxTypeAdjustment                                                        string                 `protobuf:"bytes,623,opt,name=wallet_tx_type_adjustment,json=walletTxTypeAdjustment,proto3" json:"wallet_tx_type_adjustment,omitempty"`                                                                                                                                                                                      // Adjustment
+	WalletTxTypeDeposit                                                           string                 `protobuf:"bytes,624,opt,name=wallet_tx_type_deposit,json=walletTxTypeDeposit,proto3" json:"wallet_tx_type_deposit,omitempty"`                                                                                                                                                                                               // Deposit
+	WalletTxTypeFee                                                               string                 `protobuf:"bytes,625,opt,name=wallet_tx_type_fee,json=walletTxTypeFee,proto3" json:"wallet_tx_type_fee,omitempty"`                                                                                                                                                                                                           // Fee
+	WalletTxTypeReversal                                                          string                 `protobuf:"bytes,626,opt,name=wallet_tx_type_reversal,json=walletTxTypeReversal,proto3" json:"wallet_tx_type_reversal,omitempty"`                                                                                                                                                                                            // Reversal
+	WalletTxTypeWithdrawal                                                        string                 `protobuf:"bytes,627,opt,name=wallet_tx_type_withdrawal,json=walletTxTypeWithdrawal,proto3" json:"wallet_tx_type_withdrawal,omitempty"`                                                                                                                                                                                      // Withdrawal
+	WalletWithdraw                                                                string                 `protobuf:"bytes,628,opt,name=wallet_withdraw,json=walletWithdraw,proto3" json:"wallet_withdraw,omitempty"`                                                                                                                                                                                                                  // Withdraw
+	unknownFields                                                                 protoimpl.UnknownFields
+	sizeCache                                                                     protoimpl.SizeCache
 }
 
 func (x *BaseI18N) Reset() {
@@ -683,6 +683,1714 @@ func (x *BaseI18N) ProtoReflect() protoreflect.Message {
 // Deprecated: Use BaseI18N.ProtoReflect.Descriptor instead.
 func (*BaseI18N) Descriptor() ([]byte, []int) {
 	return file_i18n_base_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *BaseI18N) GetAdminConfigAiProviderCatalog() string {
+	if x != nil {
+		return x.AdminConfigAiProviderCatalog
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigBaseUrlLabel() string {
+	if x != nil {
+		return x.AdminConfigBaseUrlLabel
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigConfigItem() string {
+	if x != nil {
+		return x.AdminConfigConfigItem
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigDescription() string {
+	if x != nil {
+		return x.AdminConfigDescription
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigEconAIConfig() string {
+	if x != nil {
+		return x.AdminConfigEconAIConfig
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigEditConfig() string {
+	if x != nil {
+		return x.AdminConfigEditConfig
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigEnableToggle() string {
+	if x != nil {
+		return x.AdminConfigEnableToggle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigFillTemplate() string {
+	if x != nil {
+		return x.AdminConfigFillTemplate
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigFormatJson() string {
+	if x != nil {
+		return x.AdminConfigFormatJson
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigMaxAccountsPerUser() string {
+	if x != nil {
+		return x.AdminConfigMaxAccountsPerUser
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigMessagesDisabled() string {
+	if x != nil {
+		return x.AdminConfigMessagesDisabled
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigMessagesEnabled() string {
+	if x != nil {
+		return x.AdminConfigMessagesEnabled
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigMessagesLoadFailed() string {
+	if x != nil {
+		return x.AdminConfigMessagesLoadFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigMessagesOperationFailed() string {
+	if x != nil {
+		return x.AdminConfigMessagesOperationFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigMessagesUpdateFailed() string {
+	if x != nil {
+		return x.AdminConfigMessagesUpdateFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigMessagesUpdated() string {
+	if x != nil {
+		return x.AdminConfigMessagesUpdated
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigModelName() string {
+	if x != nil {
+		return x.AdminConfigModelName
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigOff() string {
+	if x != nil {
+		return x.AdminConfigOff
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigOn() string {
+	if x != nil {
+		return x.AdminConfigOn
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigPlaceholdersApiKey() string {
+	if x != nil {
+		return x.AdminConfigPlaceholdersApiKey
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigPlaceholdersBaseUrl() string {
+	if x != nil {
+		return x.AdminConfigPlaceholdersBaseUrl
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigPlaceholdersConfigValue() string {
+	if x != nil {
+		return x.AdminConfigPlaceholdersConfigValue
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigPlaceholdersDescription() string {
+	if x != nil {
+		return x.AdminConfigPlaceholdersDescription
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigPlaceholdersJson() string {
+	if x != nil {
+		return x.AdminConfigPlaceholdersJson
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigPlaceholdersModel() string {
+	if x != nil {
+		return x.AdminConfigPlaceholdersModel
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigProvider() string {
+	if x != nil {
+		return x.AdminConfigProvider
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigProviderOptionsCustom() string {
+	if x != nil {
+		return x.AdminConfigProviderOptionsCustom
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigProviderOptionsDeepseek() string {
+	if x != nil {
+		return x.AdminConfigProviderOptionsDeepseek
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigProviderOptionsZhipu() string {
+	if x != nil {
+		return x.AdminConfigProviderOptionsZhipu
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigStatus() string {
+	if x != nil {
+		return x.AdminConfigStatus
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigStrategyHealthConfig() string {
+	if x != nil {
+		return x.AdminConfigStrategyHealthConfig
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigThresholdDesc() string {
+	if x != nil {
+		return x.AdminConfigThresholdDesc
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigThresholdInfo() string {
+	if x != nil {
+		return x.AdminConfigThresholdInfo
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigTitle() string {
+	if x != nil {
+		return x.AdminConfigTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigToggle() string {
+	if x != nil {
+		return x.AdminConfigToggle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigUpdatedAt() string {
+	if x != nil {
+		return x.AdminConfigUpdatedAt
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigValidationApiKeyRequired() string {
+	if x != nil {
+		return x.AdminConfigValidationApiKeyRequired
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigValidationGreenMaxFailedRunsNonNegative() string {
+	if x != nil {
+		return x.AdminConfigValidationGreenMaxFailedRunsNonNegative
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigValidationGreenSuccessRateRange() string {
+	if x != nil {
+		return x.AdminConfigValidationGreenSuccessRateRange
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigValidationJsonEmpty() string {
+	if x != nil {
+		return x.AdminConfigValidationJsonEmpty
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigValidationJsonInvalid() string {
+	if x != nil {
+		return x.AdminConfigValidationJsonInvalid
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigValidationMinSampleSizeNonNegative() string {
+	if x != nil {
+		return x.AdminConfigValidationMinSampleSizeNonNegative
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigValidationModelRequired() string {
+	if x != nil {
+		return x.AdminConfigValidationModelRequired
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigValidationYellowNotGreaterThanGreen() string {
+	if x != nil {
+		return x.AdminConfigValidationYellowNotGreaterThanGreen
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigValidationYellowSuccessRateRange() string {
+	if x != nil {
+		return x.AdminConfigValidationYellowSuccessRateRange
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminConfigValue() string {
+	if x != nil {
+		return x.AdminConfigValue
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardActiveUsers() string {
+	if x != nil {
+		return x.AdminDashboardActiveUsers
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardLoadFailed() string {
+	if x != nil {
+		return x.AdminDashboardLoadFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardLogsActionType() string {
+	if x != nil {
+		return x.AdminDashboardLogsActionType
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardLogsFailed() string {
+	if x != nil {
+		return x.AdminDashboardLogsFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardLogsModule() string {
+	if x != nil {
+		return x.AdminDashboardLogsModule
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardLogsModuleMapAccountManagement() string {
+	if x != nil {
+		return x.AdminDashboardLogsModuleMapAccountManagement
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardLogsModuleMapSystemConfig() string {
+	if x != nil {
+		return x.AdminDashboardLogsModuleMapSystemConfig
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardLogsModuleMapTrading() string {
+	if x != nil {
+		return x.AdminDashboardLogsModuleMapTrading
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardLogsModuleMapUserManagement() string {
+	if x != nil {
+		return x.AdminDashboardLogsModuleMapUserManagement
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardLogsStatus() string {
+	if x != nil {
+		return x.AdminDashboardLogsStatus
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardLogsSuccess() string {
+	if x != nil {
+		return x.AdminDashboardLogsSuccess
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardLogsTarget() string {
+	if x != nil {
+		return x.AdminDashboardLogsTarget
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardLogsTime() string {
+	if x != nil {
+		return x.AdminDashboardLogsTime
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardMtAccounts() string {
+	if x != nil {
+		return x.AdminDashboardMtAccounts
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardOnlineAccounts() string {
+	if x != nil {
+		return x.AdminDashboardOnlineAccounts
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRecentLogs() string {
+	if x != nil {
+		return x.AdminDashboardRecentLogs
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskMetricsOrderCloseFailed() string {
+	if x != nil {
+		return x.AdminDashboardRiskMetricsOrderCloseFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskMetricsOrderCloseSuccess() string {
+	if x != nil {
+		return x.AdminDashboardRiskMetricsOrderCloseSuccess
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskMetricsOrderSendFailed() string {
+	if x != nil {
+		return x.AdminDashboardRiskMetricsOrderSendFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskMetricsOrderSendSuccess() string {
+	if x != nil {
+		return x.AdminDashboardRiskMetricsOrderSendSuccess
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskMetricsRiskValidateError() string {
+	if x != nil {
+		return x.AdminDashboardRiskMetricsRiskValidateError
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskMetricsRiskValidatePass() string {
+	if x != nil {
+		return x.AdminDashboardRiskMetricsRiskValidatePass
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskMetricsRiskValidateReject() string {
+	if x != nil {
+		return x.AdminDashboardRiskMetricsRiskValidateReject
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskMetricsRiskValidateTotal() string {
+	if x != nil {
+		return x.AdminDashboardRiskMetricsRiskValidateTotal
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskMetricsTitle() string {
+	if x != nil {
+		return x.AdminDashboardRiskMetricsTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskWindowNoData() string {
+	if x != nil {
+		return x.AdminDashboardRiskWindowNoData
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskWindowNoRejectData() string {
+	if x != nil {
+		return x.AdminDashboardRiskWindowNoRejectData
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskWindowOrderCloseFailed() string {
+	if x != nil {
+		return x.AdminDashboardRiskWindowOrderCloseFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskWindowOrderCloseSuccess() string {
+	if x != nil {
+		return x.AdminDashboardRiskWindowOrderCloseSuccess
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskWindowOrderSendFailed() string {
+	if x != nil {
+		return x.AdminDashboardRiskWindowOrderSendFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskWindowOrderSendSuccess() string {
+	if x != nil {
+		return x.AdminDashboardRiskWindowOrderSendSuccess
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskWindowRejectCount() string {
+	if x != nil {
+		return x.AdminDashboardRiskWindowRejectCount
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskWindowRejectRiskCodesHeader() string {
+	if x != nil {
+		return x.AdminDashboardRiskWindowRejectRiskCodesHeader
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskWindowTitle() string {
+	if x != nil {
+		return x.AdminDashboardRiskWindowTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskWindowValidateError() string {
+	if x != nil {
+		return x.AdminDashboardRiskWindowValidateError
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskWindowValidatePass() string {
+	if x != nil {
+		return x.AdminDashboardRiskWindowValidatePass
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskWindowValidateReject() string {
+	if x != nil {
+		return x.AdminDashboardRiskWindowValidateReject
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardRiskWindowValidateTotal() string {
+	if x != nil {
+		return x.AdminDashboardRiskWindowValidateTotal
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardTitle() string {
+	if x != nil {
+		return x.AdminDashboardTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardTodayProfit() string {
+	if x != nil {
+		return x.AdminDashboardTodayProfit
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardTodayTrades() string {
+	if x != nil {
+		return x.AdminDashboardTodayTrades
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminDashboardTotalUsers() string {
+	if x != nil {
+		return x.AdminDashboardTotalUsers
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminHeaderAdmin() string {
+	if x != nil {
+		return x.AdminHeaderAdmin
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminHeaderAdminMode() string {
+	if x != nil {
+		return x.AdminHeaderAdminMode
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminHeaderAdminPanel() string {
+	if x != nil {
+		return x.AdminHeaderAdminPanel
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminHeaderBackToUser() string {
+	if x != nil {
+		return x.AdminHeaderBackToUser
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminHeaderLogout() string {
+	if x != nil {
+		return x.AdminHeaderLogout
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionActions() string {
+	if x != nil {
+		return x.AdminJurisdictionActions
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionAddCountry() string {
+	if x != nil {
+		return x.AdminJurisdictionAddCountry
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionAddSanctionedCountry() string {
+	if x != nil {
+		return x.AdminJurisdictionAddSanctionedCountry
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionAddedBy() string {
+	if x != nil {
+		return x.AdminJurisdictionAddedBy
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionConfirmGrantOverride() string {
+	if x != nil {
+		return x.AdminJurisdictionConfirmGrantOverride
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionConfirmRevokeOverride() string {
+	if x != nil {
+		return x.AdminJurisdictionConfirmRevokeOverride
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionCountry() string {
+	if x != nil {
+		return x.AdminJurisdictionCountry
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionCountryCode() string {
+	if x != nil {
+		return x.AdminJurisdictionCountryCode
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionCountryLabel() string {
+	if x != nil {
+		return x.AdminJurisdictionCountryLabel
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionDisclaimer() string {
+	if x != nil {
+		return x.AdminJurisdictionDisclaimer
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionEmptyKYC() string {
+	if x != nil {
+		return x.AdminJurisdictionEmptyKYC
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionEmptySanctions() string {
+	if x != nil {
+		return x.AdminJurisdictionEmptySanctions
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionFilterByKYCStatus() string {
+	if x != nil {
+		return x.AdminJurisdictionFilterByKYCStatus
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionGrantOverride() string {
+	if x != nil {
+		return x.AdminJurisdictionGrantOverride
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionKycStatus() string {
+	if x != nil {
+		return x.AdminJurisdictionKycStatus
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionKycStatusTab() string {
+	if x != nil {
+		return x.AdminJurisdictionKycStatusTab
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionMessagesCountryAddFailed() string {
+	if x != nil {
+		return x.AdminJurisdictionMessagesCountryAddFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionMessagesCountryAdded() string {
+	if x != nil {
+		return x.AdminJurisdictionMessagesCountryAdded
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionMessagesCountryRemoveFailed() string {
+	if x != nil {
+		return x.AdminJurisdictionMessagesCountryRemoveFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionMessagesCountryRemoved() string {
+	if x != nil {
+		return x.AdminJurisdictionMessagesCountryRemoved
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionMessagesKycUpdateFailed() string {
+	if x != nil {
+		return x.AdminJurisdictionMessagesKycUpdateFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionMessagesKycUpdated() string {
+	if x != nil {
+		return x.AdminJurisdictionMessagesKycUpdated
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionMessagesOverrideUpdateFailed() string {
+	if x != nil {
+		return x.AdminJurisdictionMessagesOverrideUpdateFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionMessagesOverrideUpdated() string {
+	if x != nil {
+		return x.AdminJurisdictionMessagesOverrideUpdated
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionOverride() string {
+	if x != nil {
+		return x.AdminJurisdictionOverride
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionOverrideWarning() string {
+	if x != nil {
+		return x.AdminJurisdictionOverrideWarning
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionPending() string {
+	if x != nil {
+		return x.AdminJurisdictionPending
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionQuestionnaire() string {
+	if x != nil {
+		return x.AdminJurisdictionQuestionnaire
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionRejected() string {
+	if x != nil {
+		return x.AdminJurisdictionRejected
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionRevokeOverride() string {
+	if x != nil {
+		return x.AdminJurisdictionRevokeOverride
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionSanctioned() string {
+	if x != nil {
+		return x.AdminJurisdictionSanctioned
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionSanctionedCountries() string {
+	if x != nil {
+		return x.AdminJurisdictionSanctionedCountries
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionSanctionedCountriesTab() string {
+	if x != nil {
+		return x.AdminJurisdictionSanctionedCountriesTab
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionSetKYC() string {
+	if x != nil {
+		return x.AdminJurisdictionSetKYC
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionSetKYCStatus() string {
+	if x != nil {
+		return x.AdminJurisdictionSetKYCStatus
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionTitle() string {
+	if x != nil {
+		return x.AdminJurisdictionTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionUnverified() string {
+	if x != nil {
+		return x.AdminJurisdictionUnverified
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionUserEmail() string {
+	if x != nil {
+		return x.AdminJurisdictionUserEmail
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionUserKYCStatus() string {
+	if x != nil {
+		return x.AdminJurisdictionUserKYCStatus
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminJurisdictionVerified() string {
+	if x != nil {
+		return x.AdminJurisdictionVerified
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminSidebarAccountManagement() string {
+	if x != nil {
+		return x.AdminSidebarAccountManagement
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminSidebarDashboard() string {
+	if x != nil {
+		return x.AdminSidebarDashboard
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminSidebarJurisdiction() string {
+	if x != nil {
+		return x.AdminSidebarJurisdiction
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminSidebarOperationLogs() string {
+	if x != nil {
+		return x.AdminSidebarOperationLogs
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminSidebarShareManagement() string {
+	if x != nil {
+		return x.AdminSidebarShareManagement
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminSidebarSystemConfig() string {
+	if x != nil {
+		return x.AdminSidebarSystemConfig
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminSidebarTradingMonitor() string {
+	if x != nil {
+		return x.AdminSidebarTradingMonitor
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminSidebarUserManagement() string {
+	if x != nil {
+		return x.AdminSidebarUserManagement
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminSidebarWalletManagement() string {
+	if x != nil {
+		return x.AdminSidebarWalletManagement
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingAccounts() string {
+	if x != nil {
+		return x.AdminTradingAccounts
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingActiveUsers() string {
+	if x != nil {
+		return x.AdminTradingActiveUsers
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingByPlatform() string {
+	if x != nil {
+		return x.AdminTradingByPlatform
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingClosedOrders() string {
+	if x != nil {
+		return x.AdminTradingClosedOrders
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingConnectedAccounts() string {
+	if x != nil {
+		return x.AdminTradingConnectedAccounts
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingLoadFailed() string {
+	if x != nil {
+		return x.AdminTradingLoadFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingNetProfit() string {
+	if x != nil {
+		return x.AdminTradingNetProfit
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingOrders() string {
+	if x != nil {
+		return x.AdminTradingOrders
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingPendingOrders() string {
+	if x != nil {
+		return x.AdminTradingPendingOrders
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingPlatform() string {
+	if x != nil {
+		return x.AdminTradingPlatform
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingProfitStats() string {
+	if x != nil {
+		return x.AdminTradingProfitStats
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingTitle() string {
+	if x != nil {
+		return x.AdminTradingTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingTotalAccounts() string {
+	if x != nil {
+		return x.AdminTradingTotalAccounts
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingTotalLoss() string {
+	if x != nil {
+		return x.AdminTradingTotalLoss
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingTotalOrders() string {
+	if x != nil {
+		return x.AdminTradingTotalOrders
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingTotalProfit() string {
+	if x != nil {
+		return x.AdminTradingTotalProfit
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingTotalUsers() string {
+	if x != nil {
+		return x.AdminTradingTotalUsers
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingTotalVolume() string {
+	if x != nil {
+		return x.AdminTradingTotalVolume
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminTradingVolume() string {
+	if x != nil {
+		return x.AdminTradingVolume
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementActionsChangePassword() string {
+	if x != nil {
+		return x.AdminUserManagementActionsChangePassword
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementActionsDetails() string {
+	if x != nil {
+		return x.AdminUserManagementActionsDetails
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementActionsDisable() string {
+	if x != nil {
+		return x.AdminUserManagementActionsDisable
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementActionsEnable() string {
+	if x != nil {
+		return x.AdminUserManagementActionsEnable
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementAddUser() string {
+	if x != nil {
+		return x.AdminUserManagementAddUser
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementDeleteConfirmBatchDeleteConfirm() string {
+	if x != nil {
+		return x.AdminUserManagementDeleteConfirmBatchDeleteConfirm
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementDeleteConfirmBatchDeletePartial() string {
+	if x != nil {
+		return x.AdminUserManagementDeleteConfirmBatchDeletePartial
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementDeleteConfirmBatchDeleteSuccess() string {
+	if x != nil {
+		return x.AdminUserManagementDeleteConfirmBatchDeleteSuccess
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementDeleteConfirmTitle() string {
+	if x != nil {
+		return x.AdminUserManagementDeleteConfirmTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementDrawerLabelsCreatedAt() string {
+	if x != nil {
+		return x.AdminUserManagementDrawerLabelsCreatedAt
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementDrawerLabelsEmail() string {
+	if x != nil {
+		return x.AdminUserManagementDrawerLabelsEmail
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementDrawerLabelsId() string {
+	if x != nil {
+		return x.AdminUserManagementDrawerLabelsId
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementDrawerLabelsLastLogin() string {
+	if x != nil {
+		return x.AdminUserManagementDrawerLabelsLastLogin
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementDrawerLabelsMtAccountCount() string {
+	if x != nil {
+		return x.AdminUserManagementDrawerLabelsMtAccountCount
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementDrawerLabelsNickname() string {
+	if x != nil {
+		return x.AdminUserManagementDrawerLabelsNickname
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementDrawerLabelsRole() string {
+	if x != nil {
+		return x.AdminUserManagementDrawerLabelsRole
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementDrawerLabelsStatus() string {
+	if x != nil {
+		return x.AdminUserManagementDrawerLabelsStatus
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementDrawerTitle() string {
+	if x != nil {
+		return x.AdminUserManagementDrawerTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementFiltersRolePlaceholder() string {
+	if x != nil {
+		return x.AdminUserManagementFiltersRolePlaceholder
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementFiltersSearchPlaceholder() string {
+	if x != nil {
+		return x.AdminUserManagementFiltersSearchPlaceholder
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementFiltersStatusPlaceholder() string {
+	if x != nil {
+		return x.AdminUserManagementFiltersStatusPlaceholder
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementFormAccountNumber() string {
+	if x != nil {
+		return x.AdminUserManagementFormAccountNumber
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementFormAccountNumberInvalid() string {
+	if x != nil {
+		return x.AdminUserManagementFormAccountNumberInvalid
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementFormEmail() string {
+	if x != nil {
+		return x.AdminUserManagementFormEmail
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementFormNickname() string {
+	if x != nil {
+		return x.AdminUserManagementFormNickname
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementFormPassword() string {
+	if x != nil {
+		return x.AdminUserManagementFormPassword
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementFormPlaceholdersEmail() string {
+	if x != nil {
+		return x.AdminUserManagementFormPlaceholdersEmail
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementFormPlaceholdersNickname() string {
+	if x != nil {
+		return x.AdminUserManagementFormPlaceholdersNickname
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementFormPlaceholdersPassword() string {
+	if x != nil {
+		return x.AdminUserManagementFormPlaceholdersPassword
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementFormRole() string {
+	if x != nil {
+		return x.AdminUserManagementFormRole
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementFormStatus() string {
+	if x != nil {
+		return x.AdminUserManagementFormStatus
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementMessagesNewPasswordIs() string {
+	if x != nil {
+		return x.AdminUserManagementMessagesNewPasswordIs
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementMessagesPasswordUpdateFailed() string {
+	if x != nil {
+		return x.AdminUserManagementMessagesPasswordUpdateFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementMessagesPasswordUpdatedSuccess() string {
+	if x != nil {
+		return x.AdminUserManagementMessagesPasswordUpdatedSuccess
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementMessagesUserCreateFailed() string {
+	if x != nil {
+		return x.AdminUserManagementMessagesUserCreateFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementMessagesUserCreatedSuccess() string {
+	if x != nil {
+		return x.AdminUserManagementMessagesUserCreatedSuccess
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementMessagesUserDeleteFailed() string {
+	if x != nil {
+		return x.AdminUserManagementMessagesUserDeleteFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementMessagesUserDeletedSuccess() string {
+	if x != nil {
+		return x.AdminUserManagementMessagesUserDeletedSuccess
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementMessagesUserDisabled() string {
+	if x != nil {
+		return x.AdminUserManagementMessagesUserDisabled
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementMessagesUserEnabled() string {
+	if x != nil {
+		return x.AdminUserManagementMessagesUserEnabled
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementMessagesUserUpdateFailed() string {
+	if x != nil {
+		return x.AdminUserManagementMessagesUserUpdateFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementMessagesUserUpdatedSuccess() string {
+	if x != nil {
+		return x.AdminUserManagementMessagesUserUpdatedSuccess
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementModalsCreateTitle() string {
+	if x != nil {
+		return x.AdminUserManagementModalsCreateTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementModalsEditTitle() string {
+	if x != nil {
+		return x.AdminUserManagementModalsEditTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementModalsPasswordTitle() string {
+	if x != nil {
+		return x.AdminUserManagementModalsPasswordTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementPaginationTotal() string {
+	if x != nil {
+		return x.AdminUserManagementPaginationTotal
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementPasswordFormConfirmPassword() string {
+	if x != nil {
+		return x.AdminUserManagementPasswordFormConfirmPassword
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementPasswordFormNewPassword() string {
+	if x != nil {
+		return x.AdminUserManagementPasswordFormNewPassword
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementPasswordFormPlaceholdersConfirmPassword() string {
+	if x != nil {
+		return x.AdminUserManagementPasswordFormPlaceholdersConfirmPassword
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementPasswordFormPlaceholdersNewPassword() string {
+	if x != nil {
+		return x.AdminUserManagementPasswordFormPlaceholdersNewPassword
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementPasswordFormSubmit() string {
+	if x != nil {
+		return x.AdminUserManagementPasswordFormSubmit
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementPasswordFormValidationConfirmPasswordRequired() string {
+	if x != nil {
+		return x.AdminUserManagementPasswordFormValidationConfirmPasswordRequired
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementPasswordFormValidationNewPasswordRequired() string {
+	if x != nil {
+		return x.AdminUserManagementPasswordFormValidationNewPasswordRequired
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementPasswordFormValidationPasswordMin8() string {
+	if x != nil {
+		return x.AdminUserManagementPasswordFormValidationPasswordMin8
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementPasswordFormValidationPasswordMismatch() string {
+	if x != nil {
+		return x.AdminUserManagementPasswordFormValidationPasswordMismatch
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementPasswordFormValidationPasswordMustContainLettersAndNumbers() string {
+	if x != nil {
+		return x.AdminUserManagementPasswordFormValidationPasswordMustContainLettersAndNumbers
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementRolesAudit() string {
+	if x != nil {
+		return x.AdminUserManagementRolesAudit
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementRolesCustomerService() string {
+	if x != nil {
+		return x.AdminUserManagementRolesCustomerService
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementRolesOperation() string {
+	if x != nil {
+		return x.AdminUserManagementRolesOperation
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementRolesSuperAdmin() string {
+	if x != nil {
+		return x.AdminUserManagementRolesSuperAdmin
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementRolesUser() string {
+	if x != nil {
+		return x.AdminUserManagementRolesUser
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementStatusActive() string {
+	if x != nil {
+		return x.AdminUserManagementStatusActive
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementStatusSuspended() string {
+	if x != nil {
+		return x.AdminUserManagementStatusSuspended
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementTableActions() string {
+	if x != nil {
+		return x.AdminUserManagementTableActions
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementTableCreatedAt() string {
+	if x != nil {
+		return x.AdminUserManagementTableCreatedAt
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementTableEmail() string {
+	if x != nil {
+		return x.AdminUserManagementTableEmail
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementTableId() string {
+	if x != nil {
+		return x.AdminUserManagementTableId
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementTableMtAccountCount() string {
+	if x != nil {
+		return x.AdminUserManagementTableMtAccountCount
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementTableNickname() string {
+	if x != nil {
+		return x.AdminUserManagementTableNickname
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementTableRole() string {
+	if x != nil {
+		return x.AdminUserManagementTableRole
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementTableStatus() string {
+	if x != nil {
+		return x.AdminUserManagementTableStatus
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminUserManagementTitle() string {
+	if x != nil {
+		return x.AdminUserManagementTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminWalletAccountNumber() string {
+	if x != nil {
+		return x.AdminWalletAccountNumber
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminWalletAdd() string {
+	if x != nil {
+		return x.AdminWalletAdd
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminWalletAdjustBalance() string {
+	if x != nil {
+		return x.AdminWalletAdjustBalance
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminWalletAdjustFailed() string {
+	if x != nil {
+		return x.AdminWalletAdjustFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminWalletAdjustSuccess() string {
+	if x != nil {
+		return x.AdminWalletAdjustSuccess
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminWalletDeduct() string {
+	if x != nil {
+		return x.AdminWalletDeduct
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminWalletNoUsers() string {
+	if x != nil {
+		return x.AdminWalletNoUsers
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminWalletReason() string {
+	if x != nil {
+		return x.AdminWalletReason
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminWalletSearchPlaceholder() string {
+	if x != nil {
+		return x.AdminWalletSearchPlaceholder
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminWalletTitle() string {
+	if x != nil {
+		return x.AdminWalletTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAdminWalletWalletFor() string {
+	if x != nil {
+		return x.AdminWalletWalletFor
+	}
+	return ""
 }
 
 func (x *BaseI18N) GetAppName() string {
@@ -898,6 +2606,216 @@ func (x *BaseI18N) GetAuthValidationPasswordMismatch() string {
 func (x *BaseI18N) GetAuthValidationPasswordRequired() string {
 	if x != nil {
 		return x.AuthValidationPasswordRequired
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingLogsColumnsAction() string {
+	if x != nil {
+		return x.AutoTradingLogsColumnsAction
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingLogsColumnsPrice() string {
+	if x != nil {
+		return x.AutoTradingLogsColumnsPrice
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingLogsColumnsProfit() string {
+	if x != nil {
+		return x.AutoTradingLogsColumnsProfit
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingLogsColumnsSymbol() string {
+	if x != nil {
+		return x.AutoTradingLogsColumnsSymbol
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingLogsColumnsTicket() string {
+	if x != nil {
+		return x.AutoTradingLogsColumnsTicket
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingLogsColumnsTime() string {
+	if x != nil {
+		return x.AutoTradingLogsColumnsTime
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingLogsColumnsVolume() string {
+	if x != nil {
+		return x.AutoTradingLogsColumnsVolume
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingLogsEmpty() string {
+	if x != nil {
+		return x.AutoTradingLogsEmpty
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingLogsTitle() string {
+	if x != nil {
+		return x.AutoTradingLogsTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingMessagesLoadFailed() string {
+	if x != nil {
+		return x.AutoTradingMessagesLoadFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingMessagesToggleFailed() string {
+	if x != nil {
+		return x.AutoTradingMessagesToggleFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingSettingsMaxDailyLoss() string {
+	if x != nil {
+		return x.AutoTradingSettingsMaxDailyLoss
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingSettingsMaxDailyLossHint() string {
+	if x != nil {
+		return x.AutoTradingSettingsMaxDailyLossHint
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingSettingsMaxDrawdownPercent() string {
+	if x != nil {
+		return x.AutoTradingSettingsMaxDrawdownPercent
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingSettingsMaxDrawdownPercentHint() string {
+	if x != nil {
+		return x.AutoTradingSettingsMaxDrawdownPercentHint
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingSettingsMaxLotSize() string {
+	if x != nil {
+		return x.AutoTradingSettingsMaxLotSize
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingSettingsMaxLotSizeHint() string {
+	if x != nil {
+		return x.AutoTradingSettingsMaxLotSizeHint
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingSettingsMaxPositions() string {
+	if x != nil {
+		return x.AutoTradingSettingsMaxPositions
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingSettingsMaxPositionsHint() string {
+	if x != nil {
+		return x.AutoTradingSettingsMaxPositionsHint
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingSettingsMaxRiskPercent() string {
+	if x != nil {
+		return x.AutoTradingSettingsMaxRiskPercent
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingSettingsMaxRiskPercentHint() string {
+	if x != nil {
+		return x.AutoTradingSettingsMaxRiskPercentHint
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingSettingsSaveFailed() string {
+	if x != nil {
+		return x.AutoTradingSettingsSaveFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingSettingsSaveSuccess() string {
+	if x != nil {
+		return x.AutoTradingSettingsSaveSuccess
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingSettingsTitle() string {
+	if x != nil {
+		return x.AutoTradingSettingsTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingStatusActiveStrategies() string {
+	if x != nil {
+		return x.AutoTradingStatusActiveStrategies
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingStatusDisabled() string {
+	if x != nil {
+		return x.AutoTradingStatusDisabled
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingStatusEnabled() string {
+	if x != nil {
+		return x.AutoTradingStatusEnabled
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingStatusTodayExecutions() string {
+	if x != nil {
+		return x.AutoTradingStatusTodayExecutions
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingStatusTodayProfit() string {
+	if x != nil {
+		return x.AutoTradingStatusTodayProfit
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetAutoTradingTitle() string {
+	if x != nil {
+		return x.AutoTradingTitle
 	}
 	return ""
 }
@@ -1371,6 +3289,237 @@ func (x *BaseI18N) GetCommonYou() string {
 	return ""
 }
 
+func (x *BaseI18N) GetErrorsAccessDenied() string {
+	if x != nil {
+		return x.ErrorsAccessDenied
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAccountConnected() string {
+	if x != nil {
+		return x.ErrorsAccountConnected
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAccountConnectionFailed() string {
+	if x != nil {
+		return x.ErrorsAccountConnectionFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAccountNotFound() string {
+	if x != nil {
+		return x.ErrorsAccountNotFound
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiApiKeyRequired() string {
+	if x != nil {
+		return x.ErrorsAiApiKeyRequired
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiBaseUrlRequired() string {
+	if x != nil {
+		return x.ErrorsAiBaseUrlRequired
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiBaseUrlSchemeInvalid() string {
+	if x != nil {
+		return x.ErrorsAiBaseUrlSchemeInvalid
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiBaseUrlShouldNotEndWithChatCompletions() string {
+	if x != nil {
+		return x.ErrorsAiBaseUrlShouldNotEndWithChatCompletions
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiConfigServiceNotInitialized() string {
+	if x != nil {
+		return x.ErrorsAiConfigServiceNotInitialized
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiConfigValid() string {
+	if x != nil {
+		return x.ErrorsAiConfigValid
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiFailedToCreateRequest() string {
+	if x != nil {
+		return x.ErrorsAiFailedToCreateRequest
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiForbiddenQuota() string {
+	if x != nil {
+		return x.ErrorsAiForbiddenQuota
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiFreeTierExhausted() string {
+	if x != nil {
+		return x.ErrorsAiFreeTierExhausted
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiInvalidBaseUrl() string {
+	if x != nil {
+		return x.ErrorsAiInvalidBaseUrl
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiInvalidProvider() string {
+	if x != nil {
+		return x.ErrorsAiInvalidProvider
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiNoTradeDataAvailable() string {
+	if x != nil {
+		return x.ErrorsAiNoTradeDataAvailable
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiNotConfigured() string {
+	if x != nil {
+		return x.ErrorsAiNotConfigured
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiProbeOk() string {
+	if x != nil {
+		return x.ErrorsAiProbeOk
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiProbeOkNoModels() string {
+	if x != nil {
+		return x.ErrorsAiProbeOkNoModels
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiProviderRequired() string {
+	if x != nil {
+		return x.ErrorsAiProviderRequired
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiProviderReturnedEmptyMessage() string {
+	if x != nil {
+		return x.ErrorsAiProviderReturnedEmptyMessage
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiRateLimited() string {
+	if x != nil {
+		return x.ErrorsAiRateLimited
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAiRequestFailed() string {
+	if x != nil {
+		return x.ErrorsAiRequestFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAutoTradingDisabled() string {
+	if x != nil {
+		return x.ErrorsAutoTradingDisabled
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsAutoTradingEnabled() string {
+	if x != nil {
+		return x.ErrorsAutoTradingEnabled
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsConnectionFailedContent() string {
+	if x != nil {
+		return x.ErrorsConnectionFailedContent
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsConnectionFailedTitle() string {
+	if x != nil {
+		return x.ErrorsConnectionFailedTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsEmailAlreadyRegistered() string {
+	if x != nil {
+		return x.ErrorsEmailAlreadyRegistered
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsInvalidCredentials() string {
+	if x != nil {
+		return x.ErrorsInvalidCredentials
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsNotAuthenticated() string {
+	if x != nil {
+		return x.ErrorsNotAuthenticated
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsScheduleServiceNotAvailable() string {
+	if x != nil {
+		return x.ErrorsScheduleServiceNotAvailable
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsTranslateFailed() string {
+	if x != nil {
+		return x.ErrorsTranslateFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetErrorsUserNotFound() string {
+	if x != nil {
+		return x.ErrorsUserNotFound
+	}
+	return ""
+}
+
 func (x *BaseI18N) GetLanguageEnglish() string {
 	if x != nil {
 		return x.LanguageEnglish
@@ -1406,3446 +3555,240 @@ func (x *BaseI18N) GetLanguageVietnamese() string {
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigAiProviderCatalog() string {
+func (x *BaseI18N) GetMarketAllSymbols() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigAiProviderCatalog
+		return x.MarketAllSymbols
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigBaseUrlLabel() string {
+func (x *BaseI18N) GetMarketAsk() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigBaseUrlLabel
+		return x.MarketAsk
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigConfigItem() string {
+func (x *BaseI18N) GetMarketBid() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigConfigItem
+		return x.MarketBid
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigDescription() string {
+func (x *BaseI18N) GetMarketCommon() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigDescription
+		return x.MarketCommon
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigEconAIConfig() string {
+func (x *BaseI18N) GetMarketEmptyWatchlist() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigEconAIConfig
+		return x.MarketEmptyWatchlist
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigEditConfig() string {
+func (x *BaseI18N) GetMarketLoadingSymbols() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigEditConfig
+		return x.MarketLoadingSymbols
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigEnableToggle() string {
+func (x *BaseI18N) GetMarketMid() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigEnableToggle
+		return x.MarketMid
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigFillTemplate() string {
+func (x *BaseI18N) GetMarketNoSymbolSelected() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigFillTemplate
+		return x.MarketNoSymbolSelected
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigFormatJson() string {
+func (x *BaseI18N) GetMarketNoSymbolsFound() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigFormatJson
+		return x.MarketNoSymbolsFound
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigMaxAccountsPerUser() string {
+func (x *BaseI18N) GetMarketPopularSymbols() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigMaxAccountsPerUser
+		return x.MarketPopularSymbols
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigMessagesDisabled() string {
+func (x *BaseI18N) GetMarketSearchPlaceholder() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigMessagesDisabled
+		return x.MarketSearchPlaceholder
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigMessagesEnabled() string {
+func (x *BaseI18N) GetMarketSearchSymbol() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigMessagesEnabled
+		return x.MarketSearchSymbol
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigMessagesLoadFailed() string {
+func (x *BaseI18N) GetMarketSelectAccount() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigMessagesLoadFailed
+		return x.MarketSelectAccount
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigMessagesOperationFailed() string {
+func (x *BaseI18N) GetMarketSelectSymbol() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigMessagesOperationFailed
+		return x.MarketSelectSymbol
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigMessagesUpdateFailed() string {
+func (x *BaseI18N) GetMarketSpread() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigMessagesUpdateFailed
+		return x.MarketSpread
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigMessagesUpdated() string {
+func (x *BaseI18N) GetMarketWatchlist() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigMessagesUpdated
+		return x.MarketWatchlist
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigModelName() string {
+func (x *BaseI18N) GetMarketplaceAuthorAvgRating() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigModelName
+		return x.MarketplaceAuthorAvgRating
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigOff() string {
+func (x *BaseI18N) GetMarketplaceAuthorEmpty() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigOff
+		return x.MarketplaceAuthorEmpty
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigOn() string {
+func (x *BaseI18N) GetMarketplaceAuthorPublished() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigOn
+		return x.MarketplaceAuthorPublished
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigPlaceholdersApiKey() string {
+func (x *BaseI18N) GetMarketplaceCardBy() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigPlaceholdersApiKey
+		return x.MarketplaceCardBy
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigPlaceholdersBaseUrl() string {
+func (x *BaseI18N) GetMarketplaceCardFree() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigPlaceholdersBaseUrl
+		return x.MarketplaceCardFree
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigPlaceholdersConfigValue() string {
+func (x *BaseI18N) GetMarketplaceCardOwned() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigPlaceholdersConfigValue
+		return x.MarketplaceCardOwned
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigPlaceholdersDescription() string {
+func (x *BaseI18N) GetMarketplaceCardSubscribers() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigPlaceholdersDescription
+		return x.MarketplaceCardSubscribers
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigPlaceholdersJson() string {
+func (x *BaseI18N) GetMarketplaceCardWinRate() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigPlaceholdersJson
+		return x.MarketplaceCardWinRate
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigPlaceholdersModel() string {
+func (x *BaseI18N) GetMarketplaceDetailAssetClass() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigPlaceholdersModel
+		return x.MarketplaceDetailAssetClass
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigProvider() string {
+func (x *BaseI18N) GetMarketplaceDetailAuthor() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigProvider
+		return x.MarketplaceDetailAuthor
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigProviderOptionsCustom() string {
+func (x *BaseI18N) GetMarketplaceDetailCommentPlaceholder() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigProviderOptionsCustom
+		return x.MarketplaceDetailCommentPlaceholder
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigProviderOptionsDeepseek() string {
+func (x *BaseI18N) GetMarketplaceDetailComments() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigProviderOptionsDeepseek
+		return x.MarketplaceDetailComments
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigProviderOptionsZhipu() string {
+func (x *BaseI18N) GetMarketplaceDetailDescription() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigProviderOptionsZhipu
+		return x.MarketplaceDetailDescription
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigStatus() string {
+func (x *BaseI18N) GetMarketplaceDetailGetFree() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigStatus
+		return x.MarketplaceDetailGetFree
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigStrategyHealthConfig() string {
+func (x *BaseI18N) GetMarketplaceDetailRentPrice() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigStrategyHealthConfig
+		return x.MarketplaceDetailRentPrice
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigThresholdDesc() string {
+func (x *BaseI18N) GetMarketplaceDetailSubscribers() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigThresholdDesc
+		return x.MarketplaceDetailSubscribers
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigThresholdInfo() string {
+func (x *BaseI18N) GetMarketplaceDetailYourRating() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigThresholdInfo
+		return x.MarketplaceDetailYourRating
 	}
 	return ""
 }
 
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigTitle() string {
+func (x *BaseI18N) GetMarketplaceEmpty() string {
 	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigToggle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigToggle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigUpdatedAt() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigUpdatedAt
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigValidationApiKeyRequired() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigValidationApiKeyRequired
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigValidationGreenMaxFailedRunsNonNegative() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigValidationGreenMaxFailedRunsNonNegative
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigValidationGreenSuccessRateRange() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigValidationGreenSuccessRateRange
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigValidationJsonEmpty() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigValidationJsonEmpty
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigValidationJsonInvalid() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigValidationJsonInvalid
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigValidationMinSampleSizeNonNegative() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigValidationMinSampleSizeNonNegative
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigValidationModelRequired() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigValidationModelRequired
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigValidationYellowNotGreaterThanGreen() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigValidationYellowNotGreaterThanGreen
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigValidationYellowSuccessRateRange() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigValidationYellowSuccessRateRange
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminConfigValue() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminConfigValue
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardActiveUsers() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardActiveUsers
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardLoadFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardLoadFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardLogsActionType() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardLogsActionType
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardLogsFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardLogsFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardLogsModule() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardLogsModule
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapAccountManagement() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapAccountManagement
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapSystemConfig() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapSystemConfig
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapTrading() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapTrading
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapUserManagement() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapUserManagement
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardLogsStatus() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardLogsStatus
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardLogsSuccess() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardLogsSuccess
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardLogsTarget() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardLogsTarget
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardLogsTime() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardLogsTime
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardMtAccounts() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardMtAccounts
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardOnlineAccounts() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardOnlineAccounts
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRecentLogs() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRecentLogs
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderCloseFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderCloseFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderCloseSuccess() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderCloseSuccess
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderSendFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderSendFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderSendSuccess() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderSendSuccess
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateError() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateError
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidatePass() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidatePass
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateReject() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateReject
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateTotal() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateTotal
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskWindowNoData() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowNoData
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskWindowNoRejectData() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowNoRejectData
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderCloseFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderCloseFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderCloseSuccess() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderCloseSuccess
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderSendFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderSendFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderSendSuccess() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderSendSuccess
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskWindowRejectCount() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowRejectCount
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskWindowRejectRiskCodesHeader() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowRejectRiskCodesHeader
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskWindowTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateError() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateError
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidatePass() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidatePass
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateReject() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateReject
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateTotal() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateTotal
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardTodayProfit() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardTodayProfit
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardTodayTrades() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardTodayTrades
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminDashboardTotalUsers() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminDashboardTotalUsers
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminHeaderAdmin() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminHeaderAdmin
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminHeaderAdminMode() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminHeaderAdminMode
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminHeaderAdminPanel() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminHeaderAdminPanel
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminHeaderBackToUser() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminHeaderBackToUser
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminHeaderLogout() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminHeaderLogout
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionActions() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionActions
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionAddCountry() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionAddCountry
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionAddSanctionedCountry() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionAddSanctionedCountry
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionAddedBy() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionAddedBy
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionConfirmGrantOverride() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionConfirmGrantOverride
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionConfirmRevokeOverride() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionConfirmRevokeOverride
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionCountry() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionCountry
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionCountryCode() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionCountryCode
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionCountryLabel() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionCountryLabel
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionDisclaimer() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionDisclaimer
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionEmptyKYC() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionEmptyKYC
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionEmptySanctions() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionEmptySanctions
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionFilterByKYCStatus() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionFilterByKYCStatus
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionGrantOverride() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionGrantOverride
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionKycStatus() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionKycStatus
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionKycStatusTab() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionKycStatusTab
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryAddFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryAddFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryAdded() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryAdded
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryRemoveFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryRemoveFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryRemoved() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryRemoved
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionMessagesKycUpdateFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesKycUpdateFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionMessagesKycUpdated() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesKycUpdated
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionMessagesOverrideUpdateFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesOverrideUpdateFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionMessagesOverrideUpdated() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionMessagesOverrideUpdated
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionOverride() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionOverride
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionOverrideWarning() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionOverrideWarning
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionPending() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionPending
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionQuestionnaire() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionQuestionnaire
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionRejected() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionRejected
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionRevokeOverride() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionRevokeOverride
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionSanctioned() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionSanctioned
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionSanctionedCountries() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionSanctionedCountries
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionSanctionedCountriesTab() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionSanctionedCountriesTab
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionSetKYC() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionSetKYC
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionSetKYCStatus() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionSetKYCStatus
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionUnverified() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionUnverified
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionUserEmail() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionUserEmail
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionUserKYCStatus() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionUserKYCStatus
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminJurisdictionVerified() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminJurisdictionVerified
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminSidebarAccountManagement() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminSidebarAccountManagement
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminSidebarDashboard() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminSidebarDashboard
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminSidebarJurisdiction() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminSidebarJurisdiction
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminSidebarOperationLogs() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminSidebarOperationLogs
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminSidebarShareManagement() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminSidebarShareManagement
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminSidebarSystemConfig() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminSidebarSystemConfig
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminSidebarTradingMonitor() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminSidebarTradingMonitor
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminSidebarUserManagement() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminSidebarUserManagement
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminSidebarWalletManagement() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminSidebarWalletManagement
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingAccounts() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingAccounts
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingActiveUsers() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingActiveUsers
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingByPlatform() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingByPlatform
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingClosedOrders() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingClosedOrders
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingConnectedAccounts() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingConnectedAccounts
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingLoadFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingLoadFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingNetProfit() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingNetProfit
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingOrders() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingOrders
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingPendingOrders() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingPendingOrders
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingPlatform() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingPlatform
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingProfitStats() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingProfitStats
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingTotalAccounts() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingTotalAccounts
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingTotalLoss() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingTotalLoss
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingTotalOrders() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingTotalOrders
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingTotalProfit() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingTotalProfit
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingTotalUsers() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingTotalUsers
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingTotalVolume() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingTotalVolume
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminTradingVolume() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminTradingVolume
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementActionsChangePassword() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementActionsChangePassword
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementActionsDetails() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementActionsDetails
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementActionsDisable() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementActionsDisable
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementActionsEnable() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementActionsEnable
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementAddUser() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementAddUser
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeleteConfirm() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeleteConfirm
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeletePartial() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeletePartial
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeleteSuccess() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeleteSuccess
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsCreatedAt() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsCreatedAt
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsEmail() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsEmail
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsId() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsId
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsLastLogin() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsLastLogin
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsMtAccountCount() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsMtAccountCount
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsNickname() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsNickname
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsRole() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsRole
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsStatus() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsStatus
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementDrawerTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementDrawerTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementFiltersRolePlaceholder() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementFiltersRolePlaceholder
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementFiltersSearchPlaceholder() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementFiltersSearchPlaceholder
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementFiltersStatusPlaceholder() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementFiltersStatusPlaceholder
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementFormAccountNumber() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementFormAccountNumber
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementFormAccountNumberInvalid() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementFormAccountNumberInvalid
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementFormEmail() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementFormEmail
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementFormNickname() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementFormNickname
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementFormPassword() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementFormPassword
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersEmail() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersEmail
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersNickname() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersNickname
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersPassword() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersPassword
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementFormRole() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementFormRole
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementFormStatus() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementFormStatus
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementMessagesNewPasswordIs() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementMessagesNewPasswordIs
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementMessagesPasswordUpdateFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementMessagesPasswordUpdateFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementMessagesPasswordUpdatedSuccess() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementMessagesPasswordUpdatedSuccess
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserCreateFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserCreateFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserCreatedSuccess() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserCreatedSuccess
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDeleteFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDeleteFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDeletedSuccess() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDeletedSuccess
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDisabled() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDisabled
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserEnabled() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserEnabled
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserUpdateFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserUpdateFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserUpdatedSuccess() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserUpdatedSuccess
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementModalsCreateTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementModalsCreateTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementModalsEditTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementModalsEditTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementModalsPasswordTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementModalsPasswordTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementPaginationTotal() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementPaginationTotal
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormConfirmPassword() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormConfirmPassword
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormNewPassword() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormNewPassword
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormPlaceholdersConfirmPassword() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormPlaceholdersConfirmPassword
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormPlaceholdersNewPassword() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormPlaceholdersNewPassword
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormSubmit() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormSubmit
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationConfirmPasswordRequired() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationConfirmPasswordRequired
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationNewPasswordRequired() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationNewPasswordRequired
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMin8() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMin8
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMismatch() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMismatch
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMustContainLettersAndNumbers() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMustContainLettersAndNumbers
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementRolesAudit() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementRolesAudit
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementRolesCustomerService() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementRolesCustomerService
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementRolesOperation() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementRolesOperation
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementRolesSuperAdmin() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementRolesSuperAdmin
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementRolesUser() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementRolesUser
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementStatusActive() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementStatusActive
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementStatusSuspended() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementStatusSuspended
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementTableActions() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementTableActions
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementTableCreatedAt() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementTableCreatedAt
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementTableEmail() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementTableEmail
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementTableId() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementTableId
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementTableMtAccountCount() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementTableMtAccountCount
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementTableNickname() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementTableNickname
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementTableRole() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementTableRole
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementTableStatus() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementTableStatus
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminUserManagementTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminUserManagementTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminWalletAccountNumber() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminWalletAccountNumber
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminWalletAdd() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminWalletAdd
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminWalletAdjustBalance() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminWalletAdjustBalance
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminWalletAdjustFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminWalletAdjustFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminWalletAdjustSuccess() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminWalletAdjustSuccess
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminWalletDeduct() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminWalletDeduct
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminWalletNoUsers() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminWalletNoUsers
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminWalletReason() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminWalletReason
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminWalletSearchPlaceholder() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminWalletSearchPlaceholder
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminWalletTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminWalletTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAdminWalletWalletFor() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAdminWalletWalletFor
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAuthorAvgRating() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAuthorAvgRating
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAuthorEmpty() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAuthorEmpty
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAuthorPublished() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAuthorPublished
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingLogsColumnsAction() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsAction
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingLogsColumnsPrice() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsPrice
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingLogsColumnsProfit() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsProfit
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingLogsColumnsSymbol() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsSymbol
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingLogsColumnsTicket() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsTicket
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingLogsColumnsTime() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsTime
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingLogsColumnsVolume() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingLogsColumnsVolume
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingLogsEmpty() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingLogsEmpty
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingLogsTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingLogsTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingMessagesLoadFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingMessagesLoadFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingMessagesToggleFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingMessagesToggleFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDailyLoss() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDailyLoss
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDailyLossHint() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDailyLossHint
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDrawdownPercent() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDrawdownPercent
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDrawdownPercentHint() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDrawdownPercentHint
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingSettingsMaxLotSize() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxLotSize
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingSettingsMaxLotSizeHint() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxLotSizeHint
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingSettingsMaxPositions() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxPositions
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingSettingsMaxPositionsHint() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxPositionsHint
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingSettingsMaxRiskPercent() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxRiskPercent
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingSettingsMaxRiskPercentHint() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingSettingsMaxRiskPercentHint
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingSettingsSaveFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingSettingsSaveFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingSettingsSaveSuccess() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingSettingsSaveSuccess
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingSettingsTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingSettingsTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingStatusActiveStrategies() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingStatusActiveStrategies
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingStatusDisabled() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingStatusDisabled
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingStatusEnabled() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingStatusEnabled
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingStatusTodayExecutions() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingStatusTodayExecutions
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingStatusTodayProfit() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingStatusTodayProfit
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskAutoTradingTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskAutoTradingTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskDetailAssetClass() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskDetailAssetClass
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskDetailAuthor() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskDetailAuthor
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskDetailCommentPlaceholder() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskDetailCommentPlaceholder
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskDetailComments() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskDetailComments
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskDetailDescription() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskDetailDescription
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskDetailGetFree() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskDetailGetFree
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskDetailRentPrice() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskDetailRentPrice
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskDetailSubscribers() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskDetailSubscribers
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskDetailYourRating() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskDetailYourRating
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAccessDenied() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAccessDenied
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAccountConnected() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAccountConnected
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAccountConnectionFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAccountConnectionFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAccountNotFound() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAccountNotFound
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiApiKeyRequired() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiApiKeyRequired
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiBaseUrlRequired() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiBaseUrlRequired
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiBaseUrlSchemeInvalid() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiBaseUrlSchemeInvalid
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiBaseUrlShouldNotEndWithChatCompletions() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiBaseUrlShouldNotEndWithChatCompletions
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiConfigServiceNotInitialized() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiConfigServiceNotInitialized
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiConfigValid() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiConfigValid
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiFailedToCreateRequest() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiFailedToCreateRequest
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiForbiddenQuota() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiForbiddenQuota
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiFreeTierExhausted() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiFreeTierExhausted
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiInvalidBaseUrl() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiInvalidBaseUrl
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiInvalidProvider() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiInvalidProvider
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiNoTradeDataAvailable() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiNoTradeDataAvailable
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiNotConfigured() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiNotConfigured
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiProbeOk() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiProbeOk
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiProbeOkNoModels() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiProbeOkNoModels
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiProviderRequired() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiProviderRequired
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiProviderReturnedEmptyMessage() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiProviderReturnedEmptyMessage
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiRateLimited() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiRateLimited
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAiRequestFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAiRequestFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAutoTradingDisabled() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAutoTradingDisabled
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsAutoTradingEnabled() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsAutoTradingEnabled
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsConnectionFailedContent() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsConnectionFailedContent
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsConnectionFailedTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsConnectionFailedTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsEmailAlreadyRegistered() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsEmailAlreadyRegistered
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsInvalidCredentials() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsInvalidCredentials
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsNotAuthenticated() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsNotAuthenticated
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsScheduleServiceNotAvailable() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsScheduleServiceNotAvailable
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsTranslateFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsTranslateFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskErrorsUserNotFound() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskErrorsUserNotFound
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketAllSymbols() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketAllSymbols
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketAsk() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketAsk
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketBid() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketBid
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketCommon() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketCommon
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketEmptyWatchlist() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketEmptyWatchlist
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketLoadingSymbols() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketLoadingSymbols
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketMid() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketMid
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketNoSymbolSelected() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketNoSymbolSelected
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketNoSymbolsFound() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketNoSymbolsFound
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketPopularSymbols() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketPopularSymbols
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketSearchPlaceholder() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketSearchPlaceholder
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketSearchSymbol() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketSearchSymbol
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketSelectAccount() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketSelectAccount
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketSelectSymbol() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketSelectSymbol
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketSpread() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketSpread
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMarketWatchlist() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMarketWatchlist
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMessagesCommentFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMessagesCommentFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMessagesCommentPosted() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMessagesCommentPosted
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMessagesLoginFirst() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMessagesLoginFirst
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMessagesPaymentComingSoon() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMessagesPaymentComingSoon
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMessagesRateFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMessagesRateFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMessagesRated() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMessagesRated
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMessagesSubscribeFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMessagesSubscribeFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskMessagesSubscribed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskMessagesSubscribed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsActionsClearAll() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsActionsClearAll
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsActionsClearAllConfirm() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsActionsClearAllConfirm
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsActionsMarkAllAsRead() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsActionsMarkAllAsRead
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsAll() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsAll
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsClearAll() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsClearAll
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsConfirmClearAll() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsConfirmClearAll
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsEmpty() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsEmpty
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsMarkAllRead() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsMarkAllRead
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsStreamAutoTradingFallback() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsStreamAutoTradingFallback
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsStreamAutoTradingTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsStreamAutoTradingTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsStreamRiskAlertFallback() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsStreamRiskAlertFallback
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsStreamRiskAlertTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsStreamRiskAlertTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionCompleted() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionCompleted
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsStreamStrategySignalMessage() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsStreamStrategySignalMessage
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsStreamStrategySignalTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsStreamStrategySignalTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsTabsAll() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsTabsAll
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsTabsUnread() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsTabsUnread
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsTypesRiskAlert() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsTypesRiskAlert
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsTypesSignal() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsTypesSignal
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsTypesStrategyExecution() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsTypesStrategyExecution
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsTypesSystem() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsTypesSystem
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsTypesTrade() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsTypesTrade
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskNotificationsUnread() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskNotificationsUnread
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentAlreadyPurchased() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentAlreadyPurchased
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentBalanceAfter() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentBalanceAfter
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentCancel() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentCancel
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentConfirm() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentConfirm
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentDepositPrompt() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentDepositPrompt
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentGoToDeposit() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentGoToDeposit
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentInsufficientBalance() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentInsufficientBalance
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentOneTimePurchase() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentOneTimePurchase
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentPrice() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentPrice
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentPurchaseFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentPurchaseFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentPurchaseSuccess() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentPurchaseSuccess
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentPurchasing() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentPurchasing
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentStrategyName() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentStrategyName
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPaymentWalletBalance() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPaymentWalletBalance
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskProfileLastLogin() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskProfileLastLogin
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskProfileNickname() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskProfileNickname
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskProfileRegistered() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskProfileRegistered
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskProfileRole() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskProfileRole
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskProfileStatus() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskProfileStatus
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskProfileTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskProfileTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPurchasesEmpty() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPurchasesEmpty
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPurchasesStatus() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPurchasesStatus
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskPurchasesStrategy() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskPurchasesStrategy
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskShareActions() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskShareActions
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskShareCreateNew() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskShareCreateNew
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskShareCreatedAt() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskShareCreatedAt
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskShareDeleteConfirm() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskShareDeleteConfirm
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskShareEmpty() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskShareEmpty
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskShareExpires() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskShareExpires
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePositions() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePositions
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskShareShowPositions() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskShareShowPositions
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskShareTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskShareTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskShareToken() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskShareToken
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskShareUserId() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskShareUserId
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskShareViews() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskShareViews
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageAvgHolding() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageAvgHolding
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageAvgLoss() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageAvgLoss
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageAvgWin() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageAvgWin
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageBestTrade() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageBestTrade
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageBySymbol() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageBySymbol
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageCloseTime() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageCloseTime
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageCount() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageCount
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageDisclaimer() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageDisclaimer
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageEquityCurve() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageEquityCurve
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageExpired() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageExpired
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageFooter() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageFooter
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageLanguage() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageLanguage
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageLoadFailed() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageLoadFailed
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageLosingTrades() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageLosingTrades
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageMaxDrawdown() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageMaxDrawdown
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageNetProfit() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageNetProfit
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageNoPositions() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageNoPositions
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageNoTrades() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageNoTrades
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageNotFound() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageNotFound
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageOpenPrice() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageOpenPrice
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePagePositions() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePagePositions
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePagePositionsLocked() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePagePositionsLocked
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageProfit() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageProfit
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageProfitFactor() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageProfitFactor
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageSharpeRatio() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageSharpeRatio
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageSide() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageSide
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageSubtitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageSubtitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageSymbol() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageSymbol
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageTotalReturn() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageTotalReturn
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageTotalTrades() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageTotalTrades
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageTotalVolume() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageTotalVolume
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageTradeRecords() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageTradeRecords
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageVolume() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageVolume
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageWinRate() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageWinRate
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageWinningTrades() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageWinningTrades
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSharePageWorstTrade() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSharePageWorstTrade
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSymbolDetectionLabel() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSymbolDetectionLabel
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSymbolDetectionLoading() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSymbolDetectionLoading
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSymbolDetectionNoSymbols() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSymbolDetectionNoSymbols
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSymbolDetectionResolvedTooltip() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSymbolDetectionResolvedTooltip
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSymbolDetectionTradeModeDisabled() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSymbolDetectionTradeModeDisabled
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSymbolDetectionTradeModeLongOnly() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSymbolDetectionTradeModeLongOnly
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSymbolDetectionTradeModeLongShort() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSymbolDetectionTradeModeLongShort
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSymbolDetectionTradeModeShortOnly() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSymbolDetectionTradeModeShortOnly
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSymbolDetectionTradeModeUnknown() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSymbolDetectionTradeModeUnknown
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskSymbolDetectionUnresolvedTooltip() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskSymbolDetectionUnresolvedTooltip
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskTopbarLogout() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskTopbarLogout
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskTopbarProfile() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskTopbarProfile
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskTopbarSettings() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskTopbarSettings
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskTopbarSwitchToAdmin() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskTopbarSwitchToAdmin
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskTopbarSystemOk() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskTopbarSystemOk
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskTopbarUser() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskTopbarUser
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletAccountNumber() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletAccountNumber
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletBalance() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletBalance
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletCurrency() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletCurrency
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletDeposit() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletDeposit
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletFrozen() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletFrozen
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletFrozenBalance() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletFrozenBalance
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletHistory() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletHistory
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletTableAmount() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletTableAmount
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletTableBalanceAfter() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletTableBalanceAfter
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletTableDescription() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletTableDescription
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletTableTime() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletTableTime
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletTableType() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletTableType
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletTitle() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletTitle
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletTransactions() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletTransactions
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletTxTypeAdjustment() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletTxTypeAdjustment
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletTxTypeDeposit() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletTxTypeDeposit
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletTxTypeFee() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletTxTypeFee
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletTxTypeReversal() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletTxTypeReversal
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletTxTypeWithdrawal() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletTxTypeWithdrawal
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterAssetClassRiskWalletWithdraw() string {
-	if x != nil {
-		return x.MarketplaceFilterAssetClassRiskWalletWithdraw
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterCardBy() string {
-	if x != nil {
-		return x.MarketplaceFilterCardBy
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterCardFree() string {
-	if x != nil {
-		return x.MarketplaceFilterCardFree
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterCardOwned() string {
-	if x != nil {
-		return x.MarketplaceFilterCardOwned
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterCardSubscribers() string {
-	if x != nil {
-		return x.MarketplaceFilterCardSubscribers
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterCardWinRate() string {
-	if x != nil {
-		return x.MarketplaceFilterCardWinRate
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterEmpty() string {
-	if x != nil {
-		return x.MarketplaceFilterEmpty
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterNoSubscriptions() string {
-	if x != nil {
-		return x.MarketplaceFilterNoSubscriptions
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterSortNewest() string {
-	if x != nil {
-		return x.MarketplaceFilterSortNewest
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterSortPerformance() string {
-	if x != nil {
-		return x.MarketplaceFilterSortPerformance
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterSortPopular() string {
-	if x != nil {
-		return x.MarketplaceFilterSortPopular
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterSortPriceAsc() string {
-	if x != nil {
-		return x.MarketplaceFilterSortPriceAsc
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterSortPriceDesc() string {
-	if x != nil {
-		return x.MarketplaceFilterSortPriceDesc
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterSortRating() string {
-	if x != nil {
-		return x.MarketplaceFilterSortRating
-	}
-	return ""
-}
-
-func (x *BaseI18N) GetMarketplaceFilterSortScore() string {
-	if x != nil {
-		return x.MarketplaceFilterSortScore
+		return x.MarketplaceEmpty
 	}
 	return ""
 }
@@ -4857,6 +3800,174 @@ func (x *BaseI18N) GetMarketplaceFilterByClass() string {
 	return ""
 }
 
+func (x *BaseI18N) GetMarketplaceMessagesCommentFailed() string {
+	if x != nil {
+		return x.MarketplaceMessagesCommentFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceMessagesCommentPosted() string {
+	if x != nil {
+		return x.MarketplaceMessagesCommentPosted
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceMessagesLoginFirst() string {
+	if x != nil {
+		return x.MarketplaceMessagesLoginFirst
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceMessagesPaymentComingSoon() string {
+	if x != nil {
+		return x.MarketplaceMessagesPaymentComingSoon
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceMessagesRateFailed() string {
+	if x != nil {
+		return x.MarketplaceMessagesRateFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceMessagesRated() string {
+	if x != nil {
+		return x.MarketplaceMessagesRated
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceMessagesSubscribeFailed() string {
+	if x != nil {
+		return x.MarketplaceMessagesSubscribeFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceMessagesSubscribed() string {
+	if x != nil {
+		return x.MarketplaceMessagesSubscribed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceNoSubscriptions() string {
+	if x != nil {
+		return x.MarketplaceNoSubscriptions
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentAlreadyPurchased() string {
+	if x != nil {
+		return x.MarketplacePaymentAlreadyPurchased
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentBalanceAfter() string {
+	if x != nil {
+		return x.MarketplacePaymentBalanceAfter
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentCancel() string {
+	if x != nil {
+		return x.MarketplacePaymentCancel
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentConfirm() string {
+	if x != nil {
+		return x.MarketplacePaymentConfirm
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentDepositPrompt() string {
+	if x != nil {
+		return x.MarketplacePaymentDepositPrompt
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentGoToDeposit() string {
+	if x != nil {
+		return x.MarketplacePaymentGoToDeposit
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentInsufficientBalance() string {
+	if x != nil {
+		return x.MarketplacePaymentInsufficientBalance
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentOneTimePurchase() string {
+	if x != nil {
+		return x.MarketplacePaymentOneTimePurchase
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentPrice() string {
+	if x != nil {
+		return x.MarketplacePaymentPrice
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentPurchaseFailed() string {
+	if x != nil {
+		return x.MarketplacePaymentPurchaseFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentPurchaseSuccess() string {
+	if x != nil {
+		return x.MarketplacePaymentPurchaseSuccess
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentPurchasing() string {
+	if x != nil {
+		return x.MarketplacePaymentPurchasing
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentStrategyName() string {
+	if x != nil {
+		return x.MarketplacePaymentStrategyName
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentTitle() string {
+	if x != nil {
+		return x.MarketplacePaymentTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePaymentWalletBalance() string {
+	if x != nil {
+		return x.MarketplacePaymentWalletBalance
+	}
+	return ""
+}
+
 func (x *BaseI18N) GetMarketplacePublish() string {
 	if x != nil {
 		return x.MarketplacePublish
@@ -4864,9 +3975,79 @@ func (x *BaseI18N) GetMarketplacePublish() string {
 	return ""
 }
 
+func (x *BaseI18N) GetMarketplacePurchasesEmpty() string {
+	if x != nil {
+		return x.MarketplacePurchasesEmpty
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePurchasesStatus() string {
+	if x != nil {
+		return x.MarketplacePurchasesStatus
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplacePurchasesStrategy() string {
+	if x != nil {
+		return x.MarketplacePurchasesStrategy
+	}
+	return ""
+}
+
 func (x *BaseI18N) GetMarketplaceSearchPlaceholder() string {
 	if x != nil {
 		return x.MarketplaceSearchPlaceholder
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceSortNewest() string {
+	if x != nil {
+		return x.MarketplaceSortNewest
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceSortPerformance() string {
+	if x != nil {
+		return x.MarketplaceSortPerformance
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceSortPopular() string {
+	if x != nil {
+		return x.MarketplaceSortPopular
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceSortPriceAsc() string {
+	if x != nil {
+		return x.MarketplaceSortPriceAsc
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceSortPriceDesc() string {
+	if x != nil {
+		return x.MarketplaceSortPriceDesc
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceSortRating() string {
+	if x != nil {
+		return x.MarketplaceSortRating
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetMarketplaceSortScore() string {
+	if x != nil {
+		return x.MarketplaceSortScore
 	}
 	return ""
 }
@@ -5081,653 +4262,1480 @@ func (x *BaseI18N) GetMenuWallet() string {
 	return ""
 }
 
+func (x *BaseI18N) GetNotificationsActionsClearAll() string {
+	if x != nil {
+		return x.NotificationsActionsClearAll
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsActionsClearAllConfirm() string {
+	if x != nil {
+		return x.NotificationsActionsClearAllConfirm
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsActionsMarkAllAsRead() string {
+	if x != nil {
+		return x.NotificationsActionsMarkAllAsRead
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsAll() string {
+	if x != nil {
+		return x.NotificationsAll
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsClearAll() string {
+	if x != nil {
+		return x.NotificationsClearAll
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsConfirmClearAll() string {
+	if x != nil {
+		return x.NotificationsConfirmClearAll
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsEmpty() string {
+	if x != nil {
+		return x.NotificationsEmpty
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsMarkAllRead() string {
+	if x != nil {
+		return x.NotificationsMarkAllRead
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsStreamAutoTradingFallback() string {
+	if x != nil {
+		return x.NotificationsStreamAutoTradingFallback
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsStreamAutoTradingTitle() string {
+	if x != nil {
+		return x.NotificationsStreamAutoTradingTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsStreamRiskAlertFallback() string {
+	if x != nil {
+		return x.NotificationsStreamRiskAlertFallback
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsStreamRiskAlertTitle() string {
+	if x != nil {
+		return x.NotificationsStreamRiskAlertTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsStreamStrategyExecutionCompleted() string {
+	if x != nil {
+		return x.NotificationsStreamStrategyExecutionCompleted
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsStreamStrategyExecutionFailed() string {
+	if x != nil {
+		return x.NotificationsStreamStrategyExecutionFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsStreamStrategyExecutionTitle() string {
+	if x != nil {
+		return x.NotificationsStreamStrategyExecutionTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsStreamStrategySignalMessage() string {
+	if x != nil {
+		return x.NotificationsStreamStrategySignalMessage
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsStreamStrategySignalTitle() string {
+	if x != nil {
+		return x.NotificationsStreamStrategySignalTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsTabsAll() string {
+	if x != nil {
+		return x.NotificationsTabsAll
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsTabsUnread() string {
+	if x != nil {
+		return x.NotificationsTabsUnread
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsTitle() string {
+	if x != nil {
+		return x.NotificationsTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsTypesRiskAlert() string {
+	if x != nil {
+		return x.NotificationsTypesRiskAlert
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsTypesSignal() string {
+	if x != nil {
+		return x.NotificationsTypesSignal
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsTypesStrategyExecution() string {
+	if x != nil {
+		return x.NotificationsTypesStrategyExecution
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsTypesSystem() string {
+	if x != nil {
+		return x.NotificationsTypesSystem
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsTypesTrade() string {
+	if x != nil {
+		return x.NotificationsTypesTrade
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsUnread() string {
+	if x != nil {
+		return x.NotificationsUnread
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetProfileLastLogin() string {
+	if x != nil {
+		return x.ProfileLastLogin
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetProfileNickname() string {
+	if x != nil {
+		return x.ProfileNickname
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetProfileRegistered() string {
+	if x != nil {
+		return x.ProfileRegistered
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetProfileRole() string {
+	if x != nil {
+		return x.ProfileRole
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetProfileStatus() string {
+	if x != nil {
+		return x.ProfileStatus
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetProfileTitle() string {
+	if x != nil {
+		return x.ProfileTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetShareActions() string {
+	if x != nil {
+		return x.ShareActions
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetShareCreateNew() string {
+	if x != nil {
+		return x.ShareCreateNew
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetShareCreatedAt() string {
+	if x != nil {
+		return x.ShareCreatedAt
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetShareDeleteConfirm() string {
+	if x != nil {
+		return x.ShareDeleteConfirm
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetShareEmpty() string {
+	if x != nil {
+		return x.ShareEmpty
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetShareExpires() string {
+	if x != nil {
+		return x.ShareExpires
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePositions() string {
+	if x != nil {
+		return x.SharePositions
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetShareShowPositions() string {
+	if x != nil {
+		return x.ShareShowPositions
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetShareTitle() string {
+	if x != nil {
+		return x.ShareTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetShareToken() string {
+	if x != nil {
+		return x.ShareToken
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetShareUserId() string {
+	if x != nil {
+		return x.ShareUserId
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetShareViews() string {
+	if x != nil {
+		return x.ShareViews
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageAvgHolding() string {
+	if x != nil {
+		return x.SharePageAvgHolding
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageAvgLoss() string {
+	if x != nil {
+		return x.SharePageAvgLoss
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageAvgWin() string {
+	if x != nil {
+		return x.SharePageAvgWin
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageBestTrade() string {
+	if x != nil {
+		return x.SharePageBestTrade
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageBySymbol() string {
+	if x != nil {
+		return x.SharePageBySymbol
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageCloseTime() string {
+	if x != nil {
+		return x.SharePageCloseTime
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageCount() string {
+	if x != nil {
+		return x.SharePageCount
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageDisclaimer() string {
+	if x != nil {
+		return x.SharePageDisclaimer
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageEquityCurve() string {
+	if x != nil {
+		return x.SharePageEquityCurve
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageExpired() string {
+	if x != nil {
+		return x.SharePageExpired
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageFooter() string {
+	if x != nil {
+		return x.SharePageFooter
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageLanguage() string {
+	if x != nil {
+		return x.SharePageLanguage
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageLoadFailed() string {
+	if x != nil {
+		return x.SharePageLoadFailed
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageLosingTrades() string {
+	if x != nil {
+		return x.SharePageLosingTrades
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageMaxDrawdown() string {
+	if x != nil {
+		return x.SharePageMaxDrawdown
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageNetProfit() string {
+	if x != nil {
+		return x.SharePageNetProfit
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageNoPositions() string {
+	if x != nil {
+		return x.SharePageNoPositions
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageNoTrades() string {
+	if x != nil {
+		return x.SharePageNoTrades
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageNotFound() string {
+	if x != nil {
+		return x.SharePageNotFound
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageOpenPrice() string {
+	if x != nil {
+		return x.SharePageOpenPrice
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePagePositions() string {
+	if x != nil {
+		return x.SharePagePositions
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePagePositionsLocked() string {
+	if x != nil {
+		return x.SharePagePositionsLocked
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageProfit() string {
+	if x != nil {
+		return x.SharePageProfit
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageProfitFactor() string {
+	if x != nil {
+		return x.SharePageProfitFactor
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageSharpeRatio() string {
+	if x != nil {
+		return x.SharePageSharpeRatio
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageSide() string {
+	if x != nil {
+		return x.SharePageSide
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageSubtitle() string {
+	if x != nil {
+		return x.SharePageSubtitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageSymbol() string {
+	if x != nil {
+		return x.SharePageSymbol
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageTitle() string {
+	if x != nil {
+		return x.SharePageTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageTotalReturn() string {
+	if x != nil {
+		return x.SharePageTotalReturn
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageTotalTrades() string {
+	if x != nil {
+		return x.SharePageTotalTrades
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageTotalVolume() string {
+	if x != nil {
+		return x.SharePageTotalVolume
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageTradeRecords() string {
+	if x != nil {
+		return x.SharePageTradeRecords
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageVolume() string {
+	if x != nil {
+		return x.SharePageVolume
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageWinRate() string {
+	if x != nil {
+		return x.SharePageWinRate
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageWinningTrades() string {
+	if x != nil {
+		return x.SharePageWinningTrades
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSharePageWorstTrade() string {
+	if x != nil {
+		return x.SharePageWorstTrade
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSymbolDetectionLabel() string {
+	if x != nil {
+		return x.SymbolDetectionLabel
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSymbolDetectionLoading() string {
+	if x != nil {
+		return x.SymbolDetectionLoading
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSymbolDetectionNoSymbols() string {
+	if x != nil {
+		return x.SymbolDetectionNoSymbols
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSymbolDetectionResolvedTooltip() string {
+	if x != nil {
+		return x.SymbolDetectionResolvedTooltip
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSymbolDetectionTradeModeDisabled() string {
+	if x != nil {
+		return x.SymbolDetectionTradeModeDisabled
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSymbolDetectionTradeModeLongOnly() string {
+	if x != nil {
+		return x.SymbolDetectionTradeModeLongOnly
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSymbolDetectionTradeModeLongShort() string {
+	if x != nil {
+		return x.SymbolDetectionTradeModeLongShort
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSymbolDetectionTradeModeShortOnly() string {
+	if x != nil {
+		return x.SymbolDetectionTradeModeShortOnly
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSymbolDetectionTradeModeUnknown() string {
+	if x != nil {
+		return x.SymbolDetectionTradeModeUnknown
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetSymbolDetectionUnresolvedTooltip() string {
+	if x != nil {
+		return x.SymbolDetectionUnresolvedTooltip
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetTopbarLogout() string {
+	if x != nil {
+		return x.TopbarLogout
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetTopbarProfile() string {
+	if x != nil {
+		return x.TopbarProfile
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetTopbarSettings() string {
+	if x != nil {
+		return x.TopbarSettings
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetTopbarSwitchToAdmin() string {
+	if x != nil {
+		return x.TopbarSwitchToAdmin
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetTopbarSystemOk() string {
+	if x != nil {
+		return x.TopbarSystemOk
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetTopbarUser() string {
+	if x != nil {
+		return x.TopbarUser
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletAccountNumber() string {
+	if x != nil {
+		return x.WalletAccountNumber
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletBalance() string {
+	if x != nil {
+		return x.WalletBalance
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletCurrency() string {
+	if x != nil {
+		return x.WalletCurrency
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletDeposit() string {
+	if x != nil {
+		return x.WalletDeposit
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletFrozen() string {
+	if x != nil {
+		return x.WalletFrozen
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletFrozenBalance() string {
+	if x != nil {
+		return x.WalletFrozenBalance
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletHistory() string {
+	if x != nil {
+		return x.WalletHistory
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletTableAmount() string {
+	if x != nil {
+		return x.WalletTableAmount
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletTableBalanceAfter() string {
+	if x != nil {
+		return x.WalletTableBalanceAfter
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletTableDescription() string {
+	if x != nil {
+		return x.WalletTableDescription
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletTableTime() string {
+	if x != nil {
+		return x.WalletTableTime
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletTableType() string {
+	if x != nil {
+		return x.WalletTableType
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletTitle() string {
+	if x != nil {
+		return x.WalletTitle
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletTransactions() string {
+	if x != nil {
+		return x.WalletTransactions
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletTxTypeAdjustment() string {
+	if x != nil {
+		return x.WalletTxTypeAdjustment
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletTxTypeDeposit() string {
+	if x != nil {
+		return x.WalletTxTypeDeposit
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletTxTypeFee() string {
+	if x != nil {
+		return x.WalletTxTypeFee
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletTxTypeReversal() string {
+	if x != nil {
+		return x.WalletTxTypeReversal
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletTxTypeWithdrawal() string {
+	if x != nil {
+		return x.WalletTxTypeWithdrawal
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetWalletWithdraw() string {
+	if x != nil {
+		return x.WalletWithdraw
+	}
+	return ""
+}
+
 var File_i18n_base_proto protoreflect.FileDescriptor
 
 const file_i18n_base_proto_rawDesc = "" +
 	"\n" +
-	"\x0fi18n/base.proto\x12\vant.v1.i18n\"\xfd\xba\x04\n" +
-	"\bBaseI18n\x12\x19\n" +
-	"\bapp_name\x18\x01 \x01(\tR\aappName\x12?\n" +
-	"\x1cauth_fields_confirm_password\x18\x02 \x01(\tR\x19authFieldsConfirmPassword\x12*\n" +
-	"\x11auth_fields_email\x18\x03 \x01(\tR\x0fauthFieldsEmail\x120\n" +
-	"\x14auth_fields_password\x18\x04 \x01(\tR\x12authFieldsPassword\x12I\n" +
-	"\"auth_forgot_password_back_to_login\x18\x05 \x01(\tR\x1dauthForgotPasswordBackToLogin\x129\n" +
-	"\x19auth_forgot_password_hint\x18\x06 \x01(\tR\x16authForgotPasswordHint\x12;\n" +
-	"\x1aauth_forgot_password_title\x18\a \x01(\tR\x17authForgotPasswordTitle\x12;\n" +
-	"\x1aauth_login_forgot_password\x18\b \x01(\tR\x17authLoginForgotPassword\x12(\n" +
-	"\x10auth_login_login\x18\t \x01(\tR\x0eauthLoginLogin\x121\n" +
-	"\x15auth_login_no_account\x18\n" +
-	" \x01(\tR\x12authLoginNoAccount\x125\n" +
-	"\x17auth_login_register_now\x18\v \x01(\tR\x14authLoginRegisterNow\x123\n" +
-	"\x16auth_login_remember_me\x18\f \x01(\tR\x13authLoginRememberMe\x121\n" +
-	"\x15auth_login_signing_in\x18\r \x01(\tR\x12authLoginSigningIn\x12.\n" +
-	"\x13auth_login_subtitle\x18\x0e \x01(\tR\x11authLoginSubtitle\x12@\n" +
-	"\x1dauth_messages_fetch_me_failed\x18\x0f \x01(\tR\x19authMessagesFetchMeFailed\x12;\n" +
-	"\x1aauth_messages_login_failed\x18\x10 \x01(\tR\x17authMessagesLoginFailed\x12=\n" +
-	"\x1bauth_messages_login_success\x18\x11 \x01(\tR\x18authMessagesLoginSuccess\x12?\n" +
-	"\x1cauth_messages_logout_success\x18\x12 \x01(\tR\x19authMessagesLogoutSuccess\x12A\n" +
-	"\x1dauth_messages_register_failed\x18\x13 \x01(\tR\x1aauthMessagesRegisterFailed\x12C\n" +
-	"\x1eauth_messages_register_success\x18\x14 \x01(\tR\x1bauthMessagesRegisterSuccess\x12;\n" +
-	"\x1aauth_register_have_account\x18\x15 \x01(\tR\x17authRegisterHaveAccount\x125\n" +
-	"\x17auth_register_login_now\x18\x16 \x01(\tR\x14authRegisterLoginNow\x124\n" +
-	"\x16auth_register_register\x18\x17 \x01(\tR\x14authRegisterRegister\x127\n" +
-	"\x18auth_register_signing_up\x18\x18 \x01(\tR\x15authRegisterSigningUp\x124\n" +
-	"\x16auth_register_subtitle\x18\x19 \x01(\tR\x14authRegisterSubtitle\x12X\n" +
-	")auth_validation_confirm_password_required\x18\x1a \x01(\tR%authValidationConfirmPasswordRequired\x12A\n" +
-	"\x1dauth_validation_email_invalid\x18\x1b \x01(\tR\x1aauthValidationEmailInvalid\x12C\n" +
-	"\x1eauth_validation_email_required\x18\x1c \x01(\tR\x1bauthValidationEmailRequired\x12A\n" +
-	"\x1dauth_validation_password_min8\x18\x1d \x01(\tR\x1aauthValidationPasswordMin8\x12I\n" +
-	"!auth_validation_password_mismatch\x18\x1e \x01(\tR\x1eauthValidationPasswordMismatch\x12I\n" +
-	"!auth_validation_password_required\x18\x1f \x01(\tR\x1eauthValidationPasswordRequired\x12#\n" +
-	"\rcommon_active\x18  \x01(\tR\fcommonActive\x12\x1f\n" +
-	"\vcommon_back\x18! \x01(\tR\n" +
-	"commonBack\x12#\n" +
-	"\rcommon_cancel\x18\" \x01(\tR\fcommonCancel\x12!\n" +
-	"\fcommon_clear\x18# \x01(\tR\vcommonClear\x12!\n" +
-	"\fcommon_close\x18$ \x01(\tR\vcommonClose\x12,\n" +
-	"\x12common_coming_soon\x18% \x01(\tR\x10commonComingSoon\x12%\n" +
-	"\x0ecommon_confirm\x18& \x01(\tR\rcommonConfirm\x12#\n" +
-	"\rcommon_copied\x18' \x01(\tR\fcommonCopied\x12\x1f\n" +
-	"\vcommon_copy\x18( \x01(\tR\n" +
-	"commonCopy\x12,\n" +
-	"\x12common_copy_failed\x18) \x01(\tR\x10commonCopyFailed\x12#\n" +
-	"\rcommon_create\x18* \x01(\tR\fcommonCreate\x12%\n" +
-	"\x0ecommon_created\x18+ \x01(\tR\rcommonCreated\x126\n" +
-	"\x17common_current_position\x18, \x01(\tR\x15commonCurrentPosition\x12#\n" +
-	"\rcommon_delete\x18- \x01(\tR\fcommonDelete\x120\n" +
-	"\x14common_delete_failed\x18. \x01(\tR\x12commonDeleteFailed\x124\n" +
-	"\x16common_delete_selected\x18/ \x01(\tR\x14commonDeleteSelected\x12%\n" +
-	"\x0ecommon_deleted\x180 \x01(\tR\rcommonDeleted\x12%\n" +
-	"\x0ecommon_disable\x181 \x01(\tR\rcommonDisable\x12'\n" +
-	"\x0fcommon_disabled\x182 \x01(\tR\x0ecommonDisabled\x12\x1f\n" +
-	"\vcommon_edit\x183 \x01(\tR\n" +
-	"commonEdit\x12#\n" +
-	"\rcommon_enable\x184 \x01(\tR\fcommonEnable\x12%\n" +
-	"\x0ecommon_enabled\x185 \x01(\tR\rcommonEnabled\x12!\n" +
-	"\fcommon_error\x186 \x01(\tR\vcommonError\x12\"\n" +
-	"\rcommon_got_it\x187 \x01(\tR\vcommonGotIt\x12.\n" +
-	"\x13common_hide_details\x188 \x01(\tR\x11commonHideDetails\x12'\n" +
-	"\x0fcommon_inactive\x189 \x01(\tR\x0ecommonInactive\x12:\n" +
-	"\x19common_indicator_settings\x18: \x01(\tR\x17commonIndicatorSettings\x12*\n" +
-	"\x11common_line_color\x18; \x01(\tR\x0fcommonLineColor\x12%\n" +
-	"\x0ecommon_loading\x18< \x01(\tR\rcommonLoading\x122\n" +
-	"\x15common_loading_failed\x18= \x01(\tR\x13commonLoadingFailed\x12*\n" +
-	"\x11common_months_jan\x18> \x01(\tR\x0fcommonMonthsJan\x12*\n" +
-	"\x11common_months_jul\x18? \x01(\tR\x0fcommonMonthsJul\x12\x1f\n" +
-	"\vcommon_next\x18@ \x01(\tR\n" +
-	"commonNext\x12\x1b\n" +
-	"\tcommon_no\x18A \x01(\tR\bcommonNo\x12$\n" +
-	"\x0ecommon_no_data\x18B \x01(\tR\fcommonNoData\x12K\n" +
-	"#common_no_open_positions_for_symbol\x18C \x01(\tR\x1ecommonNoOpenPositionsForSymbol\x12\x1f\n" +
-	"\vcommon_none\x18D \x01(\tR\n" +
-	"commonNone\x12\x1b\n" +
-	"\tcommon_ok\x18E \x01(\tR\bcommonOk\x126\n" +
-	"\x17common_operation_failed\x18F \x01(\tR\x15commonOperationFailed\x12*\n" +
-	"\x11common_page_error\x18G \x01(\tR\x0fcommonPageError\x12A\n" +
-	"\x1dcommon_page_under_development\x18H \x01(\tR\x1acommonPageUnderDevelopment\x12,\n" +
-	"\x12common_please_wait\x18I \x01(\tR\x10commonPleaseWait\x12'\n" +
-	"\x0fcommon_previous\x18J \x01(\tR\x0ecommonPrevious\x12%\n" +
-	"\x0ecommon_refresh\x18K \x01(\tR\rcommonRefresh\x12#\n" +
-	"\rcommon_remove\x18L \x01(\tR\fcommonRemove\x12'\n" +
-	"\x0fcommon_required\x18M \x01(\tR\x0ecommonRequired\x12!\n" +
-	"\fcommon_retry\x18N \x01(\tR\vcommonRetry\x12\x1f\n" +
-	"\vcommon_save\x18O \x01(\tR\n" +
-	"commonSave\x12,\n" +
-	"\x12common_save_failed\x18P \x01(\tR\x10commonSaveFailed\x12.\n" +
-	"\x13common_save_success\x18Q \x01(\tR\x11commonSaveSuccess\x12)\n" +
-	"\x10common_searching\x18R \x01(\tR\x0fcommonSearching\x12I\n" +
-	"\"common_select_symbol_to_view_chart\x18S \x01(\tR\x1dcommonSelectSymbolToViewChart\x12\x1f\n" +
-	"\vcommon_send\x18T \x01(\tR\n" +
-	"commonSend\x12.\n" +
-	"\x13common_show_details\x18U \x01(\tR\x11commonShowDetails\x12&\n" +
-	"\x0fcommon_time_day\x18V \x01(\tR\rcommonTimeDay\x12(\n" +
-	"\x10common_time_hour\x18W \x01(\tR\x0ecommonTimeHour\x12>\n" +
-	"\x1ccommon_time_less_than_minute\x18X \x01(\tR\x18commonTimeLessThanMinute\x12,\n" +
-	"\x12common_time_minute\x18Y \x01(\tR\x10commonTimeMinute\x12,\n" +
-	"\x12common_total_items\x18Z \x01(\tR\x10commonTotalItems\x12)\n" +
-	"\x10common_translate\x18[ \x01(\tR\x0fcommonTranslate\x126\n" +
-	"\x17common_unexpected_error\x18\\ \x01(\tR\x15commonUnexpectedError\x12%\n" +
-	"\x0ecommon_unknown\x18] \x01(\tR\rcommonUnknown\x12%\n" +
-	"\x0ecommon_updated\x18^ \x01(\tR\rcommonUpdated\x120\n" +
-	"\x14common_view_original\x18_ \x01(\tR\x12commonViewOriginal\x126\n" +
-	"\x17common_view_translation\x18` \x01(\tR\x15commonViewTranslation\x12\x1d\n" +
+	"\x0fi18n/base.proto\x12\vant.v1.i18n\"\x8c\xc4\x02\n" +
+	"\bBaseI18n\x12F\n" +
+	" admin_config_ai_provider_catalog\x18\x01 \x01(\tR\x1cadminConfigAiProviderCatalog\x12<\n" +
+	"\x1badmin_config_base_url_label\x18\x02 \x01(\tR\x17adminConfigBaseUrlLabel\x127\n" +
+	"\x18admin_config_config_item\x18\x03 \x01(\tR\x15adminConfigConfigItem\x128\n" +
+	"\x18admin_config_description\x18\x04 \x01(\tR\x16adminConfigDescription\x12=\n" +
+	"\x1cadmin_config_econ_a_i_config\x18\x05 \x01(\tR\x17adminConfigEconAIConfig\x127\n" +
+	"\x18admin_config_edit_config\x18\x06 \x01(\tR\x15adminConfigEditConfig\x12;\n" +
+	"\x1aadmin_config_enable_toggle\x18\a \x01(\tR\x17adminConfigEnableToggle\x12;\n" +
+	"\x1aadmin_config_fill_template\x18\b \x01(\tR\x17adminConfigFillTemplate\x127\n" +
+	"\x18admin_config_format_json\x18\t \x01(\tR\x15adminConfigFormatJson\x12I\n" +
+	"\"admin_config_max_accounts_per_user\x18\n" +
+	" \x01(\tR\x1dadminConfigMaxAccountsPerUser\x12C\n" +
+	"\x1eadmin_config_messages_disabled\x18\v \x01(\tR\x1badminConfigMessagesDisabled\x12A\n" +
+	"\x1dadmin_config_messages_enabled\x18\f \x01(\tR\x1aadminConfigMessagesEnabled\x12H\n" +
+	"!admin_config_messages_load_failed\x18\r \x01(\tR\x1dadminConfigMessagesLoadFailed\x12R\n" +
+	"&admin_config_messages_operation_failed\x18\x0e \x01(\tR\"adminConfigMessagesOperationFailed\x12L\n" +
+	"#admin_config_messages_update_failed\x18\x0f \x01(\tR\x1fadminConfigMessagesUpdateFailed\x12A\n" +
+	"\x1dadmin_config_messages_updated\x18\x10 \x01(\tR\x1aadminConfigMessagesUpdated\x125\n" +
+	"\x17admin_config_model_name\x18\x11 \x01(\tR\x14adminConfigModelName\x12(\n" +
+	"\x10admin_config_off\x18\x12 \x01(\tR\x0eadminConfigOff\x12&\n" +
+	"\x0fadmin_config_on\x18\x13 \x01(\tR\radminConfigOn\x12H\n" +
+	"!admin_config_placeholders_api_key\x18\x14 \x01(\tR\x1dadminConfigPlaceholdersApiKey\x12J\n" +
+	"\"admin_config_placeholders_base_url\x18\x15 \x01(\tR\x1eadminConfigPlaceholdersBaseUrl\x12R\n" +
+	"&admin_config_placeholders_config_value\x18\x16 \x01(\tR\"adminConfigPlaceholdersConfigValue\x12Q\n" +
+	"%admin_config_placeholders_description\x18\x17 \x01(\tR\"adminConfigPlaceholdersDescription\x12C\n" +
+	"\x1eadmin_config_placeholders_json\x18\x18 \x01(\tR\x1badminConfigPlaceholdersJson\x12E\n" +
+	"\x1fadmin_config_placeholders_model\x18\x19 \x01(\tR\x1cadminConfigPlaceholdersModel\x122\n" +
+	"\x15admin_config_provider\x18\x1a \x01(\tR\x13adminConfigProvider\x12N\n" +
+	"$admin_config_provider_options_custom\x18\x1b \x01(\tR adminConfigProviderOptionsCustom\x12R\n" +
+	"&admin_config_provider_options_deepseek\x18\x1c \x01(\tR\"adminConfigProviderOptionsDeepseek\x12L\n" +
+	"#admin_config_provider_options_zhipu\x18\x1d \x01(\tR\x1fadminConfigProviderOptionsZhipu\x12.\n" +
+	"\x13admin_config_status\x18\x1e \x01(\tR\x11adminConfigStatus\x12L\n" +
+	"#admin_config_strategy_health_config\x18\x1f \x01(\tR\x1fadminConfigStrategyHealthConfig\x12=\n" +
+	"\x1badmin_config_threshold_desc\x18  \x01(\tR\x18adminConfigThresholdDesc\x12=\n" +
+	"\x1badmin_config_threshold_info\x18! \x01(\tR\x18adminConfigThresholdInfo\x12,\n" +
+	"\x12admin_config_title\x18\" \x01(\tR\x10adminConfigTitle\x12.\n" +
+	"\x13admin_config_toggle\x18# \x01(\tR\x11adminConfigToggle\x125\n" +
+	"\x17admin_config_updated_at\x18$ \x01(\tR\x14adminConfigUpdatedAt\x12U\n" +
+	"(admin_config_validation_api_key_required\x18% \x01(\tR#adminConfigValidationApiKeyRequired\x12v\n" +
+	":admin_config_validation_green_max_failed_runs_non_negative\x18& \x01(\tR2adminConfigValidationGreenMaxFailedRunsNonNegative\x12d\n" +
+	"0admin_config_validation_green_success_rate_range\x18' \x01(\tR*adminConfigValidationGreenSuccessRateRange\x12J\n" +
+	"\"admin_config_validation_json_empty\x18( \x01(\tR\x1eadminConfigValidationJsonEmpty\x12N\n" +
+	"$admin_config_validation_json_invalid\x18) \x01(\tR adminConfigValidationJsonInvalid\x12k\n" +
+	"4admin_config_validation_min_sample_size_non_negative\x18* \x01(\tR-adminConfigValidationMinSampleSizeNonNegative\x12R\n" +
+	"&admin_config_validation_model_required\x18+ \x01(\tR\"adminConfigValidationModelRequired\x12m\n" +
+	"5admin_config_validation_yellow_not_greater_than_green\x18, \x01(\tR.adminConfigValidationYellowNotGreaterThanGreen\x12f\n" +
+	"1admin_config_validation_yellow_success_rate_range\x18- \x01(\tR+adminConfigValidationYellowSuccessRateRange\x12,\n" +
+	"\x12admin_config_value\x18. \x01(\tR\x10adminConfigValue\x12?\n" +
+	"\x1cadmin_dashboard_active_users\x18/ \x01(\tR\x19adminDashboardActiveUsers\x12=\n" +
+	"\x1badmin_dashboard_load_failed\x180 \x01(\tR\x18adminDashboardLoadFailed\x12F\n" +
+	" admin_dashboard_logs_action_type\x181 \x01(\tR\x1cadminDashboardLogsActionType\x12=\n" +
+	"\x1badmin_dashboard_logs_failed\x182 \x01(\tR\x18adminDashboardLogsFailed\x12=\n" +
+	"\x1badmin_dashboard_logs_module\x183 \x01(\tR\x18adminDashboardLogsModule\x12h\n" +
+	"2admin_dashboard_logs_module_map_account_management\x184 \x01(\tR,adminDashboardLogsModuleMapAccountManagement\x12^\n" +
+	"-admin_dashboard_logs_module_map_system_config\x185 \x01(\tR'adminDashboardLogsModuleMapSystemConfig\x12S\n" +
+	"'admin_dashboard_logs_module_map_trading\x186 \x01(\tR\"adminDashboardLogsModuleMapTrading\x12b\n" +
+	"/admin_dashboard_logs_module_map_user_management\x187 \x01(\tR)adminDashboardLogsModuleMapUserManagement\x12=\n" +
+	"\x1badmin_dashboard_logs_status\x188 \x01(\tR\x18adminDashboardLogsStatus\x12?\n" +
+	"\x1cadmin_dashboard_logs_success\x189 \x01(\tR\x19adminDashboardLogsSuccess\x12=\n" +
+	"\x1badmin_dashboard_logs_target\x18: \x01(\tR\x18adminDashboardLogsTarget\x129\n" +
+	"\x19admin_dashboard_logs_time\x18; \x01(\tR\x16adminDashboardLogsTime\x12=\n" +
+	"\x1badmin_dashboard_mt_accounts\x18< \x01(\tR\x18adminDashboardMtAccounts\x12E\n" +
+	"\x1fadmin_dashboard_online_accounts\x18= \x01(\tR\x1cadminDashboardOnlineAccounts\x12=\n" +
+	"\x1badmin_dashboard_recent_logs\x18> \x01(\tR\x18adminDashboardRecentLogs\x12b\n" +
+	"/admin_dashboard_risk_metrics_order_close_failed\x18? \x01(\tR)adminDashboardRiskMetricsOrderCloseFailed\x12d\n" +
+	"0admin_dashboard_risk_metrics_order_close_success\x18@ \x01(\tR*adminDashboardRiskMetricsOrderCloseSuccess\x12`\n" +
+	".admin_dashboard_risk_metrics_order_send_failed\x18A \x01(\tR(adminDashboardRiskMetricsOrderSendFailed\x12b\n" +
+	"/admin_dashboard_risk_metrics_order_send_success\x18B \x01(\tR)adminDashboardRiskMetricsOrderSendSuccess\x12d\n" +
+	"0admin_dashboard_risk_metrics_risk_validate_error\x18C \x01(\tR*adminDashboardRiskMetricsRiskValidateError\x12b\n" +
+	"/admin_dashboard_risk_metrics_risk_validate_pass\x18D \x01(\tR)adminDashboardRiskMetricsRiskValidatePass\x12f\n" +
+	"1admin_dashboard_risk_metrics_risk_validate_reject\x18E \x01(\tR+adminDashboardRiskMetricsRiskValidateReject\x12d\n" +
+	"0admin_dashboard_risk_metrics_risk_validate_total\x18F \x01(\tR*adminDashboardRiskMetricsRiskValidateTotal\x12J\n" +
+	"\"admin_dashboard_risk_metrics_title\x18G \x01(\tR\x1eadminDashboardRiskMetricsTitle\x12K\n" +
+	"#admin_dashboard_risk_window_no_data\x18H \x01(\tR\x1eadminDashboardRiskWindowNoData\x12X\n" +
+	"*admin_dashboard_risk_window_no_reject_data\x18I \x01(\tR$adminDashboardRiskWindowNoRejectData\x12`\n" +
+	".admin_dashboard_risk_window_order_close_failed\x18J \x01(\tR(adminDashboardRiskWindowOrderCloseFailed\x12b\n" +
+	"/admin_dashboard_risk_window_order_close_success\x18K \x01(\tR)adminDashboardRiskWindowOrderCloseSuccess\x12^\n" +
+	"-admin_dashboard_risk_window_order_send_failed\x18L \x01(\tR'adminDashboardRiskWindowOrderSendFailed\x12`\n" +
+	".admin_dashboard_risk_window_order_send_success\x18M \x01(\tR(adminDashboardRiskWindowOrderSendSuccess\x12U\n" +
+	"(admin_dashboard_risk_window_reject_count\x18N \x01(\tR#adminDashboardRiskWindowRejectCount\x12k\n" +
+	"4admin_dashboard_risk_window_reject_risk_codes_header\x18O \x01(\tR-adminDashboardRiskWindowRejectRiskCodesHeader\x12H\n" +
+	"!admin_dashboard_risk_window_title\x18P \x01(\tR\x1dadminDashboardRiskWindowTitle\x12Y\n" +
+	"*admin_dashboard_risk_window_validate_error\x18Q \x01(\tR%adminDashboardRiskWindowValidateError\x12W\n" +
+	")admin_dashboard_risk_window_validate_pass\x18R \x01(\tR$adminDashboardRiskWindowValidatePass\x12[\n" +
+	"+admin_dashboard_risk_window_validate_reject\x18S \x01(\tR&adminDashboardRiskWindowValidateReject\x12Y\n" +
+	"*admin_dashboard_risk_window_validate_total\x18T \x01(\tR%adminDashboardRiskWindowValidateTotal\x122\n" +
+	"\x15admin_dashboard_title\x18U \x01(\tR\x13adminDashboardTitle\x12?\n" +
+	"\x1cadmin_dashboard_today_profit\x18V \x01(\tR\x19adminDashboardTodayProfit\x12?\n" +
+	"\x1cadmin_dashboard_today_trades\x18W \x01(\tR\x19adminDashboardTodayTrades\x12=\n" +
+	"\x1badmin_dashboard_total_users\x18X \x01(\tR\x18adminDashboardTotalUsers\x12,\n" +
+	"\x12admin_header_admin\x18Y \x01(\tR\x10adminHeaderAdmin\x125\n" +
+	"\x17admin_header_admin_mode\x18Z \x01(\tR\x14adminHeaderAdminMode\x127\n" +
+	"\x18admin_header_admin_panel\x18[ \x01(\tR\x15adminHeaderAdminPanel\x128\n" +
+	"\x19admin_header_back_to_user\x18\\ \x01(\tR\x15adminHeaderBackToUser\x12.\n" +
+	"\x13admin_header_logout\x18] \x01(\tR\x11adminHeaderLogout\x12<\n" +
+	"\x1aadmin_jurisdiction_actions\x18^ \x01(\tR\x18adminJurisdictionActions\x12C\n" +
+	"\x1eadmin_jurisdiction_add_country\x18_ \x01(\tR\x1badminJurisdictionAddCountry\x12X\n" +
+	")admin_jurisdiction_add_sanctioned_country\x18` \x01(\tR%adminJurisdictionAddSanctionedCountry\x12=\n" +
+	"\x1badmin_jurisdiction_added_by\x18a \x01(\tR\x18adminJurisdictionAddedBy\x12X\n" +
+	")admin_jurisdiction_confirm_grant_override\x18b \x01(\tR%adminJurisdictionConfirmGrantOverride\x12Z\n" +
+	"*admin_jurisdiction_confirm_revoke_override\x18c \x01(\tR&adminJurisdictionConfirmRevokeOverride\x12<\n" +
+	"\x1aadmin_jurisdiction_country\x18d \x01(\tR\x18adminJurisdictionCountry\x12E\n" +
+	"\x1fadmin_jurisdiction_country_code\x18e \x01(\tR\x1cadminJurisdictionCountryCode\x12G\n" +
+	" admin_jurisdiction_country_label\x18f \x01(\tR\x1dadminJurisdictionCountryLabel\x12B\n" +
+	"\x1dadmin_jurisdiction_disclaimer\x18g \x01(\tR\x1badminJurisdictionDisclaimer\x12A\n" +
+	"\x1eadmin_jurisdiction_empty_k_y_c\x18h \x01(\tR\x19adminJurisdictionEmptyKYC\x12K\n" +
+	"\"admin_jurisdiction_empty_sanctions\x18i \x01(\tR\x1fadminJurisdictionEmptySanctions\x12U\n" +
+	")admin_jurisdiction_filter_by_k_y_c_status\x18j \x01(\tR\"adminJurisdictionFilterByKYCStatus\x12I\n" +
+	"!admin_jurisdiction_grant_override\x18k \x01(\tR\x1eadminJurisdictionGrantOverride\x12A\n" +
+	"\x1dadmin_jurisdiction_kyc_status\x18l \x01(\tR\x1aadminJurisdictionKycStatus\x12H\n" +
+	"!admin_jurisdiction_kyc_status_tab\x18m \x01(\tR\x1dadminJurisdictionKycStatusTab\x12a\n" +
+	".admin_jurisdiction_messages_country_add_failed\x18n \x01(\tR)adminJurisdictionMessagesCountryAddFailed\x12X\n" +
+	")admin_jurisdiction_messages_country_added\x18o \x01(\tR%adminJurisdictionMessagesCountryAdded\x12g\n" +
+	"1admin_jurisdiction_messages_country_remove_failed\x18p \x01(\tR,adminJurisdictionMessagesCountryRemoveFailed\x12\\\n" +
+	"+admin_jurisdiction_messages_country_removed\x18q \x01(\tR'adminJurisdictionMessagesCountryRemoved\x12_\n" +
+	"-admin_jurisdiction_messages_kyc_update_failed\x18r \x01(\tR(adminJurisdictionMessagesKycUpdateFailed\x12T\n" +
+	"'admin_jurisdiction_messages_kyc_updated\x18s \x01(\tR#adminJurisdictionMessagesKycUpdated\x12i\n" +
+	"2admin_jurisdiction_messages_override_update_failed\x18t \x01(\tR-adminJurisdictionMessagesOverrideUpdateFailed\x12^\n" +
+	",admin_jurisdiction_messages_override_updated\x18u \x01(\tR(adminJurisdictionMessagesOverrideUpdated\x12>\n" +
+	"\x1badmin_jurisdiction_override\x18v \x01(\tR\x19adminJurisdictionOverride\x12M\n" +
+	"#admin_jurisdiction_override_warning\x18w \x01(\tR adminJurisdictionOverrideWarning\x12<\n" +
+	"\x1aadmin_jurisdiction_pending\x18x \x01(\tR\x18adminJurisdictionPending\x12H\n" +
+	" admin_jurisdiction_questionnaire\x18y \x01(\tR\x1eadminJurisdictionQuestionnaire\x12>\n" +
+	"\x1badmin_jurisdiction_rejected\x18z \x01(\tR\x19adminJurisdictionRejected\x12K\n" +
+	"\"admin_jurisdiction_revoke_override\x18{ \x01(\tR\x1fadminJurisdictionRevokeOverride\x12B\n" +
+	"\x1dadmin_jurisdiction_sanctioned\x18| \x01(\tR\x1badminJurisdictionSanctioned\x12U\n" +
+	"'admin_jurisdiction_sanctioned_countries\x18} \x01(\tR$adminJurisdictionSanctionedCountries\x12\\\n" +
+	"+admin_jurisdiction_sanctioned_countries_tab\x18~ \x01(\tR'adminJurisdictionSanctionedCountriesTab\x12=\n" +
+	"\x1cadmin_jurisdiction_set_k_y_c\x18\x7f \x01(\tR\x17adminJurisdictionSetKYC\x12K\n" +
+	"#admin_jurisdiction_set_k_y_c_status\x18\x80\x01 \x01(\tR\x1dadminJurisdictionSetKYCStatus\x129\n" +
+	"\x18admin_jurisdiction_title\x18\x81\x01 \x01(\tR\x16adminJurisdictionTitle\x12C\n" +
+	"\x1dadmin_jurisdiction_unverified\x18\x82\x01 \x01(\tR\x1badminJurisdictionUnverified\x12B\n" +
+	"\x1dadmin_jurisdiction_user_email\x18\x83\x01 \x01(\tR\x1aadminJurisdictionUserEmail\x12M\n" +
+	"$admin_jurisdiction_user_k_y_c_status\x18\x84\x01 \x01(\tR\x1eadminJurisdictionUserKYCStatus\x12?\n" +
+	"\x1badmin_jurisdiction_verified\x18\x85\x01 \x01(\tR\x19adminJurisdictionVerified\x12H\n" +
+	" admin_sidebar_account_management\x18\x86\x01 \x01(\tR\x1dadminSidebarAccountManagement\x127\n" +
+	"\x17admin_sidebar_dashboard\x18\x87\x01 \x01(\tR\x15adminSidebarDashboard\x12=\n" +
+	"\x1aadmin_sidebar_jurisdiction\x18\x88\x01 \x01(\tR\x18adminSidebarJurisdiction\x12@\n" +
+	"\x1cadmin_sidebar_operation_logs\x18\x89\x01 \x01(\tR\x19adminSidebarOperationLogs\x12D\n" +
+	"\x1eadmin_sidebar_share_management\x18\x8a\x01 \x01(\tR\x1badminSidebarShareManagement\x12>\n" +
+	"\x1badmin_sidebar_system_config\x18\x8b\x01 \x01(\tR\x18adminSidebarSystemConfig\x12B\n" +
+	"\x1dadmin_sidebar_trading_monitor\x18\x8c\x01 \x01(\tR\x1aadminSidebarTradingMonitor\x12B\n" +
+	"\x1dadmin_sidebar_user_management\x18\x8d\x01 \x01(\tR\x1aadminSidebarUserManagement\x12F\n" +
+	"\x1fadmin_sidebar_wallet_management\x18\x8e\x01 \x01(\tR\x1cadminSidebarWalletManagement\x125\n" +
+	"\x16admin_trading_accounts\x18\x8f\x01 \x01(\tR\x14adminTradingAccounts\x12<\n" +
+	"\x1aadmin_trading_active_users\x18\x90\x01 \x01(\tR\x17adminTradingActiveUsers\x12:\n" +
+	"\x19admin_trading_by_platform\x18\x91\x01 \x01(\tR\x16adminTradingByPlatform\x12>\n" +
+	"\x1badmin_trading_closed_orders\x18\x92\x01 \x01(\tR\x18adminTradingClosedOrders\x12H\n" +
+	" admin_trading_connected_accounts\x18\x93\x01 \x01(\tR\x1dadminTradingConnectedAccounts\x12:\n" +
+	"\x19admin_trading_load_failed\x18\x94\x01 \x01(\tR\x16adminTradingLoadFailed\x128\n" +
+	"\x18admin_trading_net_profit\x18\x95\x01 \x01(\tR\x15adminTradingNetProfit\x121\n" +
+	"\x14admin_trading_orders\x18\x96\x01 \x01(\tR\x12adminTradingOrders\x12@\n" +
+	"\x1cadmin_trading_pending_orders\x18\x97\x01 \x01(\tR\x19adminTradingPendingOrders\x125\n" +
+	"\x16admin_trading_platform\x18\x98\x01 \x01(\tR\x14adminTradingPlatform\x12<\n" +
+	"\x1aadmin_trading_profit_stats\x18\x99\x01 \x01(\tR\x17adminTradingProfitStats\x12/\n" +
+	"\x13admin_trading_title\x18\x9a\x01 \x01(\tR\x11adminTradingTitle\x12@\n" +
+	"\x1cadmin_trading_total_accounts\x18\x9b\x01 \x01(\tR\x19adminTradingTotalAccounts\x128\n" +
+	"\x18admin_trading_total_loss\x18\x9c\x01 \x01(\tR\x15adminTradingTotalLoss\x12<\n" +
+	"\x1aadmin_trading_total_orders\x18\x9d\x01 \x01(\tR\x17adminTradingTotalOrders\x12<\n" +
+	"\x1aadmin_trading_total_profit\x18\x9e\x01 \x01(\tR\x17adminTradingTotalProfit\x12:\n" +
+	"\x19admin_trading_total_users\x18\x9f\x01 \x01(\tR\x16adminTradingTotalUsers\x12<\n" +
+	"\x1aadmin_trading_total_volume\x18\xa0\x01 \x01(\tR\x17adminTradingTotalVolume\x121\n" +
+	"\x14admin_trading_volume\x18\xa1\x01 \x01(\tR\x12adminTradingVolume\x12`\n" +
+	"-admin_user_management_actions_change_password\x18\xa2\x01 \x01(\tR(adminUserManagementActionsChangePassword\x12Q\n" +
+	"%admin_user_management_actions_details\x18\xa3\x01 \x01(\tR!adminUserManagementActionsDetails\x12Q\n" +
+	"%admin_user_management_actions_disable\x18\xa4\x01 \x01(\tR!adminUserManagementActionsDisable\x12O\n" +
+	"$admin_user_management_actions_enable\x18\xa5\x01 \x01(\tR adminUserManagementActionsEnable\x12C\n" +
+	"\x1eadmin_user_management_add_user\x18\xa6\x01 \x01(\tR\x1aadminUserManagementAddUser\x12v\n" +
+	"9admin_user_management_delete_confirm_batch_delete_confirm\x18\xa7\x01 \x01(\tR2adminUserManagementDeleteConfirmBatchDeleteConfirm\x12v\n" +
+	"9admin_user_management_delete_confirm_batch_delete_partial\x18\xa8\x01 \x01(\tR2adminUserManagementDeleteConfirmBatchDeletePartial\x12v\n" +
+	"9admin_user_management_delete_confirm_batch_delete_success\x18\xa9\x01 \x01(\tR2adminUserManagementDeleteConfirmBatchDeleteSuccess\x12Z\n" +
+	"*admin_user_management_delete_confirm_title\x18\xaa\x01 \x01(\tR%adminUserManagementDeleteConfirmTitle\x12a\n" +
+	".admin_user_management_drawer_labels_created_at\x18\xab\x01 \x01(\tR(adminUserManagementDrawerLabelsCreatedAt\x12X\n" +
+	")admin_user_management_drawer_labels_email\x18\xac\x01 \x01(\tR$adminUserManagementDrawerLabelsEmail\x12R\n" +
+	"&admin_user_management_drawer_labels_id\x18\xad\x01 \x01(\tR!adminUserManagementDrawerLabelsId\x12a\n" +
+	".admin_user_management_drawer_labels_last_login\x18\xae\x01 \x01(\tR(adminUserManagementDrawerLabelsLastLogin\x12l\n" +
+	"4admin_user_management_drawer_labels_mt_account_count\x18\xaf\x01 \x01(\tR-adminUserManagementDrawerLabelsMtAccountCount\x12^\n" +
+	",admin_user_management_drawer_labels_nickname\x18\xb0\x01 \x01(\tR'adminUserManagementDrawerLabelsNickname\x12V\n" +
+	"(admin_user_management_drawer_labels_role\x18\xb1\x01 \x01(\tR#adminUserManagementDrawerLabelsRole\x12Z\n" +
+	"*admin_user_management_drawer_labels_status\x18\xb2\x01 \x01(\tR%adminUserManagementDrawerLabelsStatus\x12K\n" +
+	"\"admin_user_management_drawer_title\x18\xb3\x01 \x01(\tR\x1eadminUserManagementDrawerTitle\x12b\n" +
+	".admin_user_management_filters_role_placeholder\x18\xb4\x01 \x01(\tR)adminUserManagementFiltersRolePlaceholder\x12f\n" +
+	"0admin_user_management_filters_search_placeholder\x18\xb5\x01 \x01(\tR+adminUserManagementFiltersSearchPlaceholder\x12f\n" +
+	"0admin_user_management_filters_status_placeholder\x18\xb6\x01 \x01(\tR+adminUserManagementFiltersStatusPlaceholder\x12X\n" +
+	")admin_user_management_form_account_number\x18\xb7\x01 \x01(\tR$adminUserManagementFormAccountNumber\x12g\n" +
+	"1admin_user_management_form_account_number_invalid\x18\xb8\x01 \x01(\tR+adminUserManagementFormAccountNumberInvalid\x12G\n" +
+	" admin_user_management_form_email\x18\xb9\x01 \x01(\tR\x1cadminUserManagementFormEmail\x12M\n" +
+	"#admin_user_management_form_nickname\x18\xba\x01 \x01(\tR\x1fadminUserManagementFormNickname\x12M\n" +
+	"#admin_user_management_form_password\x18\xbb\x01 \x01(\tR\x1fadminUserManagementFormPassword\x12`\n" +
+	"-admin_user_management_form_placeholders_email\x18\xbc\x01 \x01(\tR(adminUserManagementFormPlaceholdersEmail\x12f\n" +
+	"0admin_user_management_form_placeholders_nickname\x18\xbd\x01 \x01(\tR+adminUserManagementFormPlaceholdersNickname\x12f\n" +
+	"0admin_user_management_form_placeholders_password\x18\xbe\x01 \x01(\tR+adminUserManagementFormPlaceholdersPassword\x12E\n" +
+	"\x1fadmin_user_management_form_role\x18\xbf\x01 \x01(\tR\x1badminUserManagementFormRole\x12I\n" +
+	"!admin_user_management_form_status\x18\xc0\x01 \x01(\tR\x1dadminUserManagementFormStatus\x12a\n" +
+	".admin_user_management_messages_new_password_is\x18\xc1\x01 \x01(\tR(adminUserManagementMessagesNewPasswordIs\x12o\n" +
+	"5admin_user_management_messages_password_update_failed\x18\xc2\x01 \x01(\tR/adminUserManagementMessagesPasswordUpdateFailed\x12s\n" +
+	"7admin_user_management_messages_password_updated_success\x18\xc3\x01 \x01(\tR1adminUserManagementMessagesPasswordUpdatedSuccess\x12g\n" +
+	"1admin_user_management_messages_user_create_failed\x18\xc4\x01 \x01(\tR+adminUserManagementMessagesUserCreateFailed\x12k\n" +
+	"3admin_user_management_messages_user_created_success\x18\xc5\x01 \x01(\tR-adminUserManagementMessagesUserCreatedSuccess\x12g\n" +
+	"1admin_user_management_messages_user_delete_failed\x18\xc6\x01 \x01(\tR+adminUserManagementMessagesUserDeleteFailed\x12k\n" +
+	"3admin_user_management_messages_user_deleted_success\x18\xc7\x01 \x01(\tR-adminUserManagementMessagesUserDeletedSuccess\x12^\n" +
+	",admin_user_management_messages_user_disabled\x18\xc8\x01 \x01(\tR'adminUserManagementMessagesUserDisabled\x12\\\n" +
+	"+admin_user_management_messages_user_enabled\x18\xc9\x01 \x01(\tR&adminUserManagementMessagesUserEnabled\x12g\n" +
+	"1admin_user_management_messages_user_update_failed\x18\xca\x01 \x01(\tR+adminUserManagementMessagesUserUpdateFailed\x12k\n" +
+	"3admin_user_management_messages_user_updated_success\x18\xcb\x01 \x01(\tR-adminUserManagementMessagesUserUpdatedSuccess\x12X\n" +
+	")admin_user_management_modals_create_title\x18\xcc\x01 \x01(\tR$adminUserManagementModalsCreateTitle\x12T\n" +
+	"'admin_user_management_modals_edit_title\x18\xcd\x01 \x01(\tR\"adminUserManagementModalsEditTitle\x12\\\n" +
+	"+admin_user_management_modals_password_title\x18\xce\x01 \x01(\tR&adminUserManagementModalsPasswordTitle\x12S\n" +
+	"&admin_user_management_pagination_total\x18\xcf\x01 \x01(\tR\"adminUserManagementPaginationTotal\x12m\n" +
+	"4admin_user_management_password_form_confirm_password\x18\xd0\x01 \x01(\tR.adminUserManagementPasswordFormConfirmPassword\x12e\n" +
+	"0admin_user_management_password_form_new_password\x18\xd1\x01 \x01(\tR*adminUserManagementPasswordFormNewPassword\x12\x86\x01\n" +
+	"Aadmin_user_management_password_form_placeholders_confirm_password\x18\xd2\x01 \x01(\tR:adminUserManagementPasswordFormPlaceholdersConfirmPassword\x12~\n" +
+	"=admin_user_management_password_form_placeholders_new_password\x18\xd3\x01 \x01(\tR6adminUserManagementPasswordFormPlaceholdersNewPassword\x12Z\n" +
+	"*admin_user_management_password_form_submit\x18\xd4\x01 \x01(\tR%adminUserManagementPasswordFormSubmit\x12\x93\x01\n" +
+	"Hadmin_user_management_password_form_validation_confirm_password_required\x18\xd5\x01 \x01(\tR@adminUserManagementPasswordFormValidationConfirmPasswordRequired\x12\x8b\x01\n" +
+	"Dadmin_user_management_password_form_validation_new_password_required\x18\xd6\x01 \x01(\tR<adminUserManagementPasswordFormValidationNewPasswordRequired\x12|\n" +
+	"<admin_user_management_password_form_validation_password_min8\x18\xd7\x01 \x01(\tR5adminUserManagementPasswordFormValidationPasswordMin8\x12\x84\x01\n" +
+	"@admin_user_management_password_form_validation_password_mismatch\x18\xd8\x01 \x01(\tR9adminUserManagementPasswordFormValidationPasswordMismatch\x12\xb0\x01\n" +
+	"Xadmin_user_management_password_form_validation_password_must_contain_letters_and_numbers\x18\xd9\x01 \x01(\tRMadminUserManagementPasswordFormValidationPasswordMustContainLettersAndNumbers\x12I\n" +
+	"!admin_user_management_roles_audit\x18\xda\x01 \x01(\tR\x1dadminUserManagementRolesAudit\x12^\n" +
+	",admin_user_management_roles_customer_service\x18\xdb\x01 \x01(\tR'adminUserManagementRolesCustomerService\x12Q\n" +
+	"%admin_user_management_roles_operation\x18\xdc\x01 \x01(\tR!adminUserManagementRolesOperation\x12T\n" +
+	"'admin_user_management_roles_super_admin\x18\xdd\x01 \x01(\tR\"adminUserManagementRolesSuperAdmin\x12G\n" +
+	" admin_user_management_roles_user\x18\xde\x01 \x01(\tR\x1cadminUserManagementRolesUser\x12M\n" +
+	"#admin_user_management_status_active\x18\xdf\x01 \x01(\tR\x1fadminUserManagementStatusActive\x12S\n" +
+	"&admin_user_management_status_suspended\x18\xe0\x01 \x01(\tR\"adminUserManagementStatusSuspended\x12M\n" +
+	"#admin_user_management_table_actions\x18\xe1\x01 \x01(\tR\x1fadminUserManagementTableActions\x12R\n" +
+	"&admin_user_management_table_created_at\x18\xe2\x01 \x01(\tR!adminUserManagementTableCreatedAt\x12I\n" +
+	"!admin_user_management_table_email\x18\xe3\x01 \x01(\tR\x1dadminUserManagementTableEmail\x12C\n" +
+	"\x1eadmin_user_management_table_id\x18\xe4\x01 \x01(\tR\x1aadminUserManagementTableId\x12]\n" +
+	",admin_user_management_table_mt_account_count\x18\xe5\x01 \x01(\tR&adminUserManagementTableMtAccountCount\x12O\n" +
+	"$admin_user_management_table_nickname\x18\xe6\x01 \x01(\tR adminUserManagementTableNickname\x12G\n" +
+	" admin_user_management_table_role\x18\xe7\x01 \x01(\tR\x1cadminUserManagementTableRole\x12K\n" +
+	"\"admin_user_management_table_status\x18\xe8\x01 \x01(\tR\x1eadminUserManagementTableStatus\x12>\n" +
+	"\x1badmin_user_management_title\x18\xe9\x01 \x01(\tR\x18adminUserManagementTitle\x12>\n" +
+	"\x1badmin_wallet_account_number\x18\xea\x01 \x01(\tR\x18adminWalletAccountNumber\x12)\n" +
+	"\x10admin_wallet_add\x18\xeb\x01 \x01(\tR\x0eadminWalletAdd\x12>\n" +
+	"\x1badmin_wallet_adjust_balance\x18\xec\x01 \x01(\tR\x18adminWalletAdjustBalance\x12<\n" +
+	"\x1aadmin_wallet_adjust_failed\x18\xed\x01 \x01(\tR\x17adminWalletAdjustFailed\x12>\n" +
+	"\x1badmin_wallet_adjust_success\x18\xee\x01 \x01(\tR\x18adminWalletAdjustSuccess\x12/\n" +
+	"\x13admin_wallet_deduct\x18\xef\x01 \x01(\tR\x11adminWalletDeduct\x122\n" +
+	"\x15admin_wallet_no_users\x18\xf0\x01 \x01(\tR\x12adminWalletNoUsers\x12/\n" +
+	"\x13admin_wallet_reason\x18\xf1\x01 \x01(\tR\x11adminWalletReason\x12F\n" +
+	"\x1fadmin_wallet_search_placeholder\x18\xf2\x01 \x01(\tR\x1cadminWalletSearchPlaceholder\x12-\n" +
+	"\x12admin_wallet_title\x18\xf3\x01 \x01(\tR\x10adminWalletTitle\x126\n" +
+	"\x17admin_wallet_wallet_for\x18\xf4\x01 \x01(\tR\x14adminWalletWalletFor\x12\x1a\n" +
+	"\bapp_name\x18\xf5\x01 \x01(\tR\aappName\x12@\n" +
+	"\x1cauth_fields_confirm_password\x18\xf6\x01 \x01(\tR\x19authFieldsConfirmPassword\x12+\n" +
+	"\x11auth_fields_email\x18\xf7\x01 \x01(\tR\x0fauthFieldsEmail\x121\n" +
+	"\x14auth_fields_password\x18\xf8\x01 \x01(\tR\x12authFieldsPassword\x12J\n" +
+	"\"auth_forgot_password_back_to_login\x18\xf9\x01 \x01(\tR\x1dauthForgotPasswordBackToLogin\x12:\n" +
+	"\x19auth_forgot_password_hint\x18\xfa\x01 \x01(\tR\x16authForgotPasswordHint\x12<\n" +
+	"\x1aauth_forgot_password_title\x18\xfb\x01 \x01(\tR\x17authForgotPasswordTitle\x12<\n" +
+	"\x1aauth_login_forgot_password\x18\xfc\x01 \x01(\tR\x17authLoginForgotPassword\x12)\n" +
+	"\x10auth_login_login\x18\xfd\x01 \x01(\tR\x0eauthLoginLogin\x122\n" +
+	"\x15auth_login_no_account\x18\xfe\x01 \x01(\tR\x12authLoginNoAccount\x126\n" +
+	"\x17auth_login_register_now\x18\xff\x01 \x01(\tR\x14authLoginRegisterNow\x124\n" +
+	"\x16auth_login_remember_me\x18\x80\x02 \x01(\tR\x13authLoginRememberMe\x122\n" +
+	"\x15auth_login_signing_in\x18\x81\x02 \x01(\tR\x12authLoginSigningIn\x12/\n" +
+	"\x13auth_login_subtitle\x18\x82\x02 \x01(\tR\x11authLoginSubtitle\x12A\n" +
+	"\x1dauth_messages_fetch_me_failed\x18\x83\x02 \x01(\tR\x19authMessagesFetchMeFailed\x12<\n" +
+	"\x1aauth_messages_login_failed\x18\x84\x02 \x01(\tR\x17authMessagesLoginFailed\x12>\n" +
+	"\x1bauth_messages_login_success\x18\x85\x02 \x01(\tR\x18authMessagesLoginSuccess\x12@\n" +
+	"\x1cauth_messages_logout_success\x18\x86\x02 \x01(\tR\x19authMessagesLogoutSuccess\x12B\n" +
+	"\x1dauth_messages_register_failed\x18\x87\x02 \x01(\tR\x1aauthMessagesRegisterFailed\x12D\n" +
+	"\x1eauth_messages_register_success\x18\x88\x02 \x01(\tR\x1bauthMessagesRegisterSuccess\x12<\n" +
+	"\x1aauth_register_have_account\x18\x89\x02 \x01(\tR\x17authRegisterHaveAccount\x126\n" +
+	"\x17auth_register_login_now\x18\x8a\x02 \x01(\tR\x14authRegisterLoginNow\x125\n" +
+	"\x16auth_register_register\x18\x8b\x02 \x01(\tR\x14authRegisterRegister\x128\n" +
+	"\x18auth_register_signing_up\x18\x8c\x02 \x01(\tR\x15authRegisterSigningUp\x125\n" +
+	"\x16auth_register_subtitle\x18\x8d\x02 \x01(\tR\x14authRegisterSubtitle\x12Y\n" +
+	")auth_validation_confirm_password_required\x18\x8e\x02 \x01(\tR%authValidationConfirmPasswordRequired\x12B\n" +
+	"\x1dauth_validation_email_invalid\x18\x8f\x02 \x01(\tR\x1aauthValidationEmailInvalid\x12D\n" +
+	"\x1eauth_validation_email_required\x18\x90\x02 \x01(\tR\x1bauthValidationEmailRequired\x12B\n" +
+	"\x1dauth_validation_password_min8\x18\x91\x02 \x01(\tR\x1aauthValidationPasswordMin8\x12J\n" +
+	"!auth_validation_password_mismatch\x18\x92\x02 \x01(\tR\x1eauthValidationPasswordMismatch\x12J\n" +
+	"!auth_validation_password_required\x18\x93\x02 \x01(\tR\x1eauthValidationPasswordRequired\x12G\n" +
+	" auto_trading_logs_columns_action\x18\x94\x02 \x01(\tR\x1cautoTradingLogsColumnsAction\x12E\n" +
+	"\x1fauto_trading_logs_columns_price\x18\x95\x02 \x01(\tR\x1bautoTradingLogsColumnsPrice\x12G\n" +
+	" auto_trading_logs_columns_profit\x18\x96\x02 \x01(\tR\x1cautoTradingLogsColumnsProfit\x12G\n" +
+	" auto_trading_logs_columns_symbol\x18\x97\x02 \x01(\tR\x1cautoTradingLogsColumnsSymbol\x12G\n" +
+	" auto_trading_logs_columns_ticket\x18\x98\x02 \x01(\tR\x1cautoTradingLogsColumnsTicket\x12C\n" +
+	"\x1eauto_trading_logs_columns_time\x18\x99\x02 \x01(\tR\x1aautoTradingLogsColumnsTime\x12G\n" +
+	" auto_trading_logs_columns_volume\x18\x9a\x02 \x01(\tR\x1cautoTradingLogsColumnsVolume\x126\n" +
+	"\x17auto_trading_logs_empty\x18\x9b\x02 \x01(\tR\x14autoTradingLogsEmpty\x126\n" +
+	"\x17auto_trading_logs_title\x18\x9c\x02 \x01(\tR\x14autoTradingLogsTitle\x12I\n" +
+	"!auto_trading_messages_load_failed\x18\x9d\x02 \x01(\tR\x1dautoTradingMessagesLoadFailed\x12M\n" +
+	"#auto_trading_messages_toggle_failed\x18\x9e\x02 \x01(\tR\x1fautoTradingMessagesToggleFailed\x12N\n" +
+	"$auto_trading_settings_max_daily_loss\x18\x9f\x02 \x01(\tR\x1fautoTradingSettingsMaxDailyLoss\x12W\n" +
+	")auto_trading_settings_max_daily_loss_hint\x18\xa0\x02 \x01(\tR#autoTradingSettingsMaxDailyLossHint\x12Z\n" +
+	"*auto_trading_settings_max_drawdown_percent\x18\xa1\x02 \x01(\tR%autoTradingSettingsMaxDrawdownPercent\x12c\n" +
+	"/auto_trading_settings_max_drawdown_percent_hint\x18\xa2\x02 \x01(\tR)autoTradingSettingsMaxDrawdownPercentHint\x12J\n" +
+	"\"auto_trading_settings_max_lot_size\x18\xa3\x02 \x01(\tR\x1dautoTradingSettingsMaxLotSize\x12S\n" +
+	"'auto_trading_settings_max_lot_size_hint\x18\xa4\x02 \x01(\tR!autoTradingSettingsMaxLotSizeHint\x12M\n" +
+	"#auto_trading_settings_max_positions\x18\xa5\x02 \x01(\tR\x1fautoTradingSettingsMaxPositions\x12V\n" +
+	"(auto_trading_settings_max_positions_hint\x18\xa6\x02 \x01(\tR#autoTradingSettingsMaxPositionsHint\x12R\n" +
+	"&auto_trading_settings_max_risk_percent\x18\xa7\x02 \x01(\tR!autoTradingSettingsMaxRiskPercent\x12[\n" +
+	"+auto_trading_settings_max_risk_percent_hint\x18\xa8\x02 \x01(\tR%autoTradingSettingsMaxRiskPercentHint\x12I\n" +
+	"!auto_trading_settings_save_failed\x18\xa9\x02 \x01(\tR\x1dautoTradingSettingsSaveFailed\x12K\n" +
+	"\"auto_trading_settings_save_success\x18\xaa\x02 \x01(\tR\x1eautoTradingSettingsSaveSuccess\x12>\n" +
+	"\x1bauto_trading_settings_title\x18\xab\x02 \x01(\tR\x18autoTradingSettingsTitle\x12Q\n" +
+	"%auto_trading_status_active_strategies\x18\xac\x02 \x01(\tR!autoTradingStatusActiveStrategies\x12@\n" +
+	"\x1cauto_trading_status_disabled\x18\xad\x02 \x01(\tR\x19autoTradingStatusDisabled\x12>\n" +
+	"\x1bauto_trading_status_enabled\x18\xae\x02 \x01(\tR\x18autoTradingStatusEnabled\x12O\n" +
+	"$auto_trading_status_today_executions\x18\xaf\x02 \x01(\tR autoTradingStatusTodayExecutions\x12G\n" +
+	" auto_trading_status_today_profit\x18\xb0\x02 \x01(\tR\x1cautoTradingStatusTodayProfit\x12-\n" +
+	"\x12auto_trading_title\x18\xb1\x02 \x01(\tR\x10autoTradingTitle\x12$\n" +
+	"\rcommon_active\x18\xb2\x02 \x01(\tR\fcommonActive\x12 \n" +
+	"\vcommon_back\x18\xb3\x02 \x01(\tR\n" +
+	"commonBack\x12$\n" +
+	"\rcommon_cancel\x18\xb4\x02 \x01(\tR\fcommonCancel\x12\"\n" +
+	"\fcommon_clear\x18\xb5\x02 \x01(\tR\vcommonClear\x12\"\n" +
+	"\fcommon_close\x18\xb6\x02 \x01(\tR\vcommonClose\x12-\n" +
+	"\x12common_coming_soon\x18\xb7\x02 \x01(\tR\x10commonComingSoon\x12&\n" +
+	"\x0ecommon_confirm\x18\xb8\x02 \x01(\tR\rcommonConfirm\x12$\n" +
+	"\rcommon_copied\x18\xb9\x02 \x01(\tR\fcommonCopied\x12 \n" +
+	"\vcommon_copy\x18\xba\x02 \x01(\tR\n" +
+	"commonCopy\x12-\n" +
+	"\x12common_copy_failed\x18\xbb\x02 \x01(\tR\x10commonCopyFailed\x12$\n" +
+	"\rcommon_create\x18\xbc\x02 \x01(\tR\fcommonCreate\x12&\n" +
+	"\x0ecommon_created\x18\xbd\x02 \x01(\tR\rcommonCreated\x127\n" +
+	"\x17common_current_position\x18\xbe\x02 \x01(\tR\x15commonCurrentPosition\x12$\n" +
+	"\rcommon_delete\x18\xbf\x02 \x01(\tR\fcommonDelete\x121\n" +
+	"\x14common_delete_failed\x18\xc0\x02 \x01(\tR\x12commonDeleteFailed\x125\n" +
+	"\x16common_delete_selected\x18\xc1\x02 \x01(\tR\x14commonDeleteSelected\x12&\n" +
+	"\x0ecommon_deleted\x18\xc2\x02 \x01(\tR\rcommonDeleted\x12&\n" +
+	"\x0ecommon_disable\x18\xc3\x02 \x01(\tR\rcommonDisable\x12(\n" +
+	"\x0fcommon_disabled\x18\xc4\x02 \x01(\tR\x0ecommonDisabled\x12 \n" +
+	"\vcommon_edit\x18\xc5\x02 \x01(\tR\n" +
+	"commonEdit\x12$\n" +
+	"\rcommon_enable\x18\xc6\x02 \x01(\tR\fcommonEnable\x12&\n" +
+	"\x0ecommon_enabled\x18\xc7\x02 \x01(\tR\rcommonEnabled\x12\"\n" +
+	"\fcommon_error\x18\xc8\x02 \x01(\tR\vcommonError\x12#\n" +
+	"\rcommon_got_it\x18\xc9\x02 \x01(\tR\vcommonGotIt\x12/\n" +
+	"\x13common_hide_details\x18\xca\x02 \x01(\tR\x11commonHideDetails\x12(\n" +
+	"\x0fcommon_inactive\x18\xcb\x02 \x01(\tR\x0ecommonInactive\x12;\n" +
+	"\x19common_indicator_settings\x18\xcc\x02 \x01(\tR\x17commonIndicatorSettings\x12+\n" +
+	"\x11common_line_color\x18\xcd\x02 \x01(\tR\x0fcommonLineColor\x12&\n" +
+	"\x0ecommon_loading\x18\xce\x02 \x01(\tR\rcommonLoading\x123\n" +
+	"\x15common_loading_failed\x18\xcf\x02 \x01(\tR\x13commonLoadingFailed\x12+\n" +
+	"\x11common_months_jan\x18\xd0\x02 \x01(\tR\x0fcommonMonthsJan\x12+\n" +
+	"\x11common_months_jul\x18\xd1\x02 \x01(\tR\x0fcommonMonthsJul\x12 \n" +
+	"\vcommon_next\x18\xd2\x02 \x01(\tR\n" +
+	"commonNext\x12\x1c\n" +
+	"\tcommon_no\x18\xd3\x02 \x01(\tR\bcommonNo\x12%\n" +
+	"\x0ecommon_no_data\x18\xd4\x02 \x01(\tR\fcommonNoData\x12L\n" +
+	"#common_no_open_positions_for_symbol\x18\xd5\x02 \x01(\tR\x1ecommonNoOpenPositionsForSymbol\x12 \n" +
+	"\vcommon_none\x18\xd6\x02 \x01(\tR\n" +
+	"commonNone\x12\x1c\n" +
+	"\tcommon_ok\x18\xd7\x02 \x01(\tR\bcommonOk\x127\n" +
+	"\x17common_operation_failed\x18\xd8\x02 \x01(\tR\x15commonOperationFailed\x12+\n" +
+	"\x11common_page_error\x18\xd9\x02 \x01(\tR\x0fcommonPageError\x12B\n" +
+	"\x1dcommon_page_under_development\x18\xda\x02 \x01(\tR\x1acommonPageUnderDevelopment\x12-\n" +
+	"\x12common_please_wait\x18\xdb\x02 \x01(\tR\x10commonPleaseWait\x12(\n" +
+	"\x0fcommon_previous\x18\xdc\x02 \x01(\tR\x0ecommonPrevious\x12&\n" +
+	"\x0ecommon_refresh\x18\xdd\x02 \x01(\tR\rcommonRefresh\x12$\n" +
+	"\rcommon_remove\x18\xde\x02 \x01(\tR\fcommonRemove\x12(\n" +
+	"\x0fcommon_required\x18\xdf\x02 \x01(\tR\x0ecommonRequired\x12\"\n" +
+	"\fcommon_retry\x18\xe0\x02 \x01(\tR\vcommonRetry\x12 \n" +
+	"\vcommon_save\x18\xe1\x02 \x01(\tR\n" +
+	"commonSave\x12-\n" +
+	"\x12common_save_failed\x18\xe2\x02 \x01(\tR\x10commonSaveFailed\x12/\n" +
+	"\x13common_save_success\x18\xe3\x02 \x01(\tR\x11commonSaveSuccess\x12*\n" +
+	"\x10common_searching\x18\xe4\x02 \x01(\tR\x0fcommonSearching\x12J\n" +
+	"\"common_select_symbol_to_view_chart\x18\xe5\x02 \x01(\tR\x1dcommonSelectSymbolToViewChart\x12 \n" +
+	"\vcommon_send\x18\xe6\x02 \x01(\tR\n" +
+	"commonSend\x12/\n" +
+	"\x13common_show_details\x18\xe7\x02 \x01(\tR\x11commonShowDetails\x12'\n" +
+	"\x0fcommon_time_day\x18\xe8\x02 \x01(\tR\rcommonTimeDay\x12)\n" +
+	"\x10common_time_hour\x18\xe9\x02 \x01(\tR\x0ecommonTimeHour\x12?\n" +
+	"\x1ccommon_time_less_than_minute\x18\xea\x02 \x01(\tR\x18commonTimeLessThanMinute\x12-\n" +
+	"\x12common_time_minute\x18\xeb\x02 \x01(\tR\x10commonTimeMinute\x12-\n" +
+	"\x12common_total_items\x18\xec\x02 \x01(\tR\x10commonTotalItems\x12*\n" +
+	"\x10common_translate\x18\xed\x02 \x01(\tR\x0fcommonTranslate\x127\n" +
+	"\x17common_unexpected_error\x18\xee\x02 \x01(\tR\x15commonUnexpectedError\x12&\n" +
+	"\x0ecommon_unknown\x18\xef\x02 \x01(\tR\rcommonUnknown\x12&\n" +
+	"\x0ecommon_updated\x18\xf0\x02 \x01(\tR\rcommonUpdated\x121\n" +
+	"\x14common_view_original\x18\xf1\x02 \x01(\tR\x12commonViewOriginal\x127\n" +
+	"\x17common_view_translation\x18\xf2\x02 \x01(\tR\x15commonViewTranslation\x12\x1e\n" +
 	"\n" +
-	"common_yes\x18a \x01(\tR\tcommonYes\x12\x1d\n" +
+	"common_yes\x18\xf3\x02 \x01(\tR\tcommonYes\x12\x1e\n" +
 	"\n" +
-	"common_you\x18b \x01(\tR\tcommonYou\x12)\n" +
-	"\x10language_english\x18c \x01(\tR\x0flanguageEnglish\x12+\n" +
-	"\x11language_japanese\x18d \x01(\tR\x10languageJapanese\x12>\n" +
-	"\x1blanguage_simplified_chinese\x18e \x01(\tR\x19languageSimplifiedChinese\x12@\n" +
-	"\x1clanguage_traditional_chinese\x18f \x01(\tR\x1alanguageTraditionalChinese\x12/\n" +
-	"\x13language_vietnamese\x18g \x01(\tR\x12languageVietnamese\x12\x89\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_admin_config_ai_provider_catalog\x18h \x01(\tR;marketplaceFilterAssetClassRiskAdminConfigAiProviderCatalog\x12\x7f\n" +
-	"?marketplace_filter_asset_class_risk_admin_config_base_url_label\x18i \x01(\tR6marketplaceFilterAssetClassRiskAdminConfigBaseUrlLabel\x12z\n" +
-	"<marketplace_filter_asset_class_risk_admin_config_config_item\x18j \x01(\tR4marketplaceFilterAssetClassRiskAdminConfigConfigItem\x12{\n" +
-	"<marketplace_filter_asset_class_risk_admin_config_description\x18k \x01(\tR5marketplaceFilterAssetClassRiskAdminConfigDescription\x12\x80\x01\n" +
-	"@marketplace_filter_asset_class_risk_admin_config_econ_a_i_config\x18l \x01(\tR6marketplaceFilterAssetClassRiskAdminConfigEconAIConfig\x12z\n" +
-	"<marketplace_filter_asset_class_risk_admin_config_edit_config\x18m \x01(\tR4marketplaceFilterAssetClassRiskAdminConfigEditConfig\x12~\n" +
-	">marketplace_filter_asset_class_risk_admin_config_enable_toggle\x18n \x01(\tR6marketplaceFilterAssetClassRiskAdminConfigEnableToggle\x12~\n" +
-	">marketplace_filter_asset_class_risk_admin_config_fill_template\x18o \x01(\tR6marketplaceFilterAssetClassRiskAdminConfigFillTemplate\x12z\n" +
-	"<marketplace_filter_asset_class_risk_admin_config_format_json\x18p \x01(\tR4marketplaceFilterAssetClassRiskAdminConfigFormatJson\x12\x8c\x01\n" +
-	"Fmarketplace_filter_asset_class_risk_admin_config_max_accounts_per_user\x18q \x01(\tR<marketplaceFilterAssetClassRiskAdminConfigMaxAccountsPerUser\x12\x86\x01\n" +
-	"Bmarketplace_filter_asset_class_risk_admin_config_messages_disabled\x18r \x01(\tR:marketplaceFilterAssetClassRiskAdminConfigMessagesDisabled\x12\x84\x01\n" +
-	"Amarketplace_filter_asset_class_risk_admin_config_messages_enabled\x18s \x01(\tR9marketplaceFilterAssetClassRiskAdminConfigMessagesEnabled\x12\x8b\x01\n" +
-	"Emarketplace_filter_asset_class_risk_admin_config_messages_load_failed\x18t \x01(\tR<marketplaceFilterAssetClassRiskAdminConfigMessagesLoadFailed\x12\x95\x01\n" +
-	"Jmarketplace_filter_asset_class_risk_admin_config_messages_operation_failed\x18u \x01(\tRAmarketplaceFilterAssetClassRiskAdminConfigMessagesOperationFailed\x12\x8f\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_admin_config_messages_update_failed\x18v \x01(\tR>marketplaceFilterAssetClassRiskAdminConfigMessagesUpdateFailed\x12\x84\x01\n" +
-	"Amarketplace_filter_asset_class_risk_admin_config_messages_updated\x18w \x01(\tR9marketplaceFilterAssetClassRiskAdminConfigMessagesUpdated\x12x\n" +
-	";marketplace_filter_asset_class_risk_admin_config_model_name\x18x \x01(\tR3marketplaceFilterAssetClassRiskAdminConfigModelName\x12k\n" +
-	"4marketplace_filter_asset_class_risk_admin_config_off\x18y \x01(\tR-marketplaceFilterAssetClassRiskAdminConfigOff\x12i\n" +
-	"3marketplace_filter_asset_class_risk_admin_config_on\x18z \x01(\tR,marketplaceFilterAssetClassRiskAdminConfigOn\x12\x8b\x01\n" +
-	"Emarketplace_filter_asset_class_risk_admin_config_placeholders_api_key\x18{ \x01(\tR<marketplaceFilterAssetClassRiskAdminConfigPlaceholdersApiKey\x12\x8d\x01\n" +
-	"Fmarketplace_filter_asset_class_risk_admin_config_placeholders_base_url\x18| \x01(\tR=marketplaceFilterAssetClassRiskAdminConfigPlaceholdersBaseUrl\x12\x95\x01\n" +
-	"Jmarketplace_filter_asset_class_risk_admin_config_placeholders_config_value\x18} \x01(\tRAmarketplaceFilterAssetClassRiskAdminConfigPlaceholdersConfigValue\x12\x94\x01\n" +
-	"Imarketplace_filter_asset_class_risk_admin_config_placeholders_description\x18~ \x01(\tRAmarketplaceFilterAssetClassRiskAdminConfigPlaceholdersDescription\x12\x86\x01\n" +
-	"Bmarketplace_filter_asset_class_risk_admin_config_placeholders_json\x18\x7f \x01(\tR:marketplaceFilterAssetClassRiskAdminConfigPlaceholdersJson\x12\x89\x01\n" +
-	"Cmarketplace_filter_asset_class_risk_admin_config_placeholders_model\x18\x80\x01 \x01(\tR;marketplaceFilterAssetClassRiskAdminConfigPlaceholdersModel\x12v\n" +
-	"9marketplace_filter_asset_class_risk_admin_config_provider\x18\x81\x01 \x01(\tR2marketplaceFilterAssetClassRiskAdminConfigProvider\x12\x92\x01\n" +
-	"Hmarketplace_filter_asset_class_risk_admin_config_provider_options_custom\x18\x82\x01 \x01(\tR?marketplaceFilterAssetClassRiskAdminConfigProviderOptionsCustom\x12\x96\x01\n" +
-	"Jmarketplace_filter_asset_class_risk_admin_config_provider_options_deepseek\x18\x83\x01 \x01(\tRAmarketplaceFilterAssetClassRiskAdminConfigProviderOptionsDeepseek\x12\x90\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_admin_config_provider_options_zhipu\x18\x84\x01 \x01(\tR>marketplaceFilterAssetClassRiskAdminConfigProviderOptionsZhipu\x12r\n" +
-	"7marketplace_filter_asset_class_risk_admin_config_status\x18\x85\x01 \x01(\tR0marketplaceFilterAssetClassRiskAdminConfigStatus\x12\x90\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_admin_config_strategy_health_config\x18\x86\x01 \x01(\tR>marketplaceFilterAssetClassRiskAdminConfigStrategyHealthConfig\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_config_threshold_desc\x18\x87\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminConfigThresholdDesc\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_config_threshold_info\x18\x88\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminConfigThresholdInfo\x12p\n" +
-	"6marketplace_filter_asset_class_risk_admin_config_title\x18\x89\x01 \x01(\tR/marketplaceFilterAssetClassRiskAdminConfigTitle\x12r\n" +
-	"7marketplace_filter_asset_class_risk_admin_config_toggle\x18\x8a\x01 \x01(\tR0marketplaceFilterAssetClassRiskAdminConfigToggle\x12y\n" +
-	";marketplace_filter_asset_class_risk_admin_config_updated_at\x18\x8b\x01 \x01(\tR3marketplaceFilterAssetClassRiskAdminConfigUpdatedAt\x12\x99\x01\n" +
-	"Lmarketplace_filter_asset_class_risk_admin_config_validation_api_key_required\x18\x8c\x01 \x01(\tRBmarketplaceFilterAssetClassRiskAdminConfigValidationApiKeyRequired\x12\xba\x01\n" +
-	"^marketplace_filter_asset_class_risk_admin_config_validation_green_max_failed_runs_non_negative\x18\x8d\x01 \x01(\tRQmarketplaceFilterAssetClassRiskAdminConfigValidationGreenMaxFailedRunsNonNegative\x12\xa8\x01\n" +
-	"Tmarketplace_filter_asset_class_risk_admin_config_validation_green_success_rate_range\x18\x8e\x01 \x01(\tRImarketplaceFilterAssetClassRiskAdminConfigValidationGreenSuccessRateRange\x12\x8e\x01\n" +
-	"Fmarketplace_filter_asset_class_risk_admin_config_validation_json_empty\x18\x8f\x01 \x01(\tR=marketplaceFilterAssetClassRiskAdminConfigValidationJsonEmpty\x12\x92\x01\n" +
-	"Hmarketplace_filter_asset_class_risk_admin_config_validation_json_invalid\x18\x90\x01 \x01(\tR?marketplaceFilterAssetClassRiskAdminConfigValidationJsonInvalid\x12\xaf\x01\n" +
-	"Xmarketplace_filter_asset_class_risk_admin_config_validation_min_sample_size_non_negative\x18\x91\x01 \x01(\tRLmarketplaceFilterAssetClassRiskAdminConfigValidationMinSampleSizeNonNegative\x12\x96\x01\n" +
-	"Jmarketplace_filter_asset_class_risk_admin_config_validation_model_required\x18\x92\x01 \x01(\tRAmarketplaceFilterAssetClassRiskAdminConfigValidationModelRequired\x12\xb1\x01\n" +
-	"Ymarketplace_filter_asset_class_risk_admin_config_validation_yellow_not_greater_than_green\x18\x93\x01 \x01(\tRMmarketplaceFilterAssetClassRiskAdminConfigValidationYellowNotGreaterThanGreen\x12\xaa\x01\n" +
-	"Umarketplace_filter_asset_class_risk_admin_config_validation_yellow_success_rate_range\x18\x94\x01 \x01(\tRJmarketplaceFilterAssetClassRiskAdminConfigValidationYellowSuccessRateRange\x12p\n" +
-	"6marketplace_filter_asset_class_risk_admin_config_value\x18\x95\x01 \x01(\tR/marketplaceFilterAssetClassRiskAdminConfigValue\x12\x83\x01\n" +
-	"@marketplace_filter_asset_class_risk_admin_dashboard_active_users\x18\x96\x01 \x01(\tR8marketplaceFilterAssetClassRiskAdminDashboardActiveUsers\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_dashboard_load_failed\x18\x97\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminDashboardLoadFailed\x12\x8a\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_admin_dashboard_logs_action_type\x18\x98\x01 \x01(\tR;marketplaceFilterAssetClassRiskAdminDashboardLogsActionType\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_dashboard_logs_failed\x18\x99\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminDashboardLogsFailed\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_dashboard_logs_module\x18\x9a\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminDashboardLogsModule\x12\xac\x01\n" +
-	"Vmarketplace_filter_asset_class_risk_admin_dashboard_logs_module_map_account_management\x18\x9b\x01 \x01(\tRKmarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapAccountManagement\x12\xa2\x01\n" +
-	"Qmarketplace_filter_asset_class_risk_admin_dashboard_logs_module_map_system_config\x18\x9c\x01 \x01(\tRFmarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapSystemConfig\x12\x97\x01\n" +
-	"Kmarketplace_filter_asset_class_risk_admin_dashboard_logs_module_map_trading\x18\x9d\x01 \x01(\tRAmarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapTrading\x12\xa6\x01\n" +
-	"Smarketplace_filter_asset_class_risk_admin_dashboard_logs_module_map_user_management\x18\x9e\x01 \x01(\tRHmarketplaceFilterAssetClassRiskAdminDashboardLogsModuleMapUserManagement\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_dashboard_logs_status\x18\x9f\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminDashboardLogsStatus\x12\x83\x01\n" +
-	"@marketplace_filter_asset_class_risk_admin_dashboard_logs_success\x18\xa0\x01 \x01(\tR8marketplaceFilterAssetClassRiskAdminDashboardLogsSuccess\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_dashboard_logs_target\x18\xa1\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminDashboardLogsTarget\x12}\n" +
-	"=marketplace_filter_asset_class_risk_admin_dashboard_logs_time\x18\xa2\x01 \x01(\tR5marketplaceFilterAssetClassRiskAdminDashboardLogsTime\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_dashboard_mt_accounts\x18\xa3\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminDashboardMtAccounts\x12\x89\x01\n" +
-	"Cmarketplace_filter_asset_class_risk_admin_dashboard_online_accounts\x18\xa4\x01 \x01(\tR;marketplaceFilterAssetClassRiskAdminDashboardOnlineAccounts\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_dashboard_recent_logs\x18\xa5\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminDashboardRecentLogs\x12\xa6\x01\n" +
-	"Smarketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_order_close_failed\x18\xa6\x01 \x01(\tRHmarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderCloseFailed\x12\xa8\x01\n" +
-	"Tmarketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_order_close_success\x18\xa7\x01 \x01(\tRImarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderCloseSuccess\x12\xa4\x01\n" +
-	"Rmarketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_order_send_failed\x18\xa8\x01 \x01(\tRGmarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderSendFailed\x12\xa6\x01\n" +
-	"Smarketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_order_send_success\x18\xa9\x01 \x01(\tRHmarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsOrderSendSuccess\x12\xa8\x01\n" +
-	"Tmarketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_risk_validate_error\x18\xaa\x01 \x01(\tRImarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateError\x12\xa6\x01\n" +
-	"Smarketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_risk_validate_pass\x18\xab\x01 \x01(\tRHmarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidatePass\x12\xaa\x01\n" +
-	"Umarketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_risk_validate_reject\x18\xac\x01 \x01(\tRJmarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateReject\x12\xa8\x01\n" +
-	"Tmarketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_risk_validate_total\x18\xad\x01 \x01(\tRImarketplaceFilterAssetClassRiskAdminDashboardRiskMetricsRiskValidateTotal\x12\x8e\x01\n" +
-	"Fmarketplace_filter_asset_class_risk_admin_dashboard_risk_metrics_title\x18\xae\x01 \x01(\tR=marketplaceFilterAssetClassRiskAdminDashboardRiskMetricsTitle\x12\x8f\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_admin_dashboard_risk_window_no_data\x18\xaf\x01 \x01(\tR=marketplaceFilterAssetClassRiskAdminDashboardRiskWindowNoData\x12\x9c\x01\n" +
-	"Nmarketplace_filter_asset_class_risk_admin_dashboard_risk_window_no_reject_data\x18\xb0\x01 \x01(\tRCmarketplaceFilterAssetClassRiskAdminDashboardRiskWindowNoRejectData\x12\xa4\x01\n" +
-	"Rmarketplace_filter_asset_class_risk_admin_dashboard_risk_window_order_close_failed\x18\xb1\x01 \x01(\tRGmarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderCloseFailed\x12\xa6\x01\n" +
-	"Smarketplace_filter_asset_class_risk_admin_dashboard_risk_window_order_close_success\x18\xb2\x01 \x01(\tRHmarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderCloseSuccess\x12\xa2\x01\n" +
-	"Qmarketplace_filter_asset_class_risk_admin_dashboard_risk_window_order_send_failed\x18\xb3\x01 \x01(\tRFmarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderSendFailed\x12\xa4\x01\n" +
-	"Rmarketplace_filter_asset_class_risk_admin_dashboard_risk_window_order_send_success\x18\xb4\x01 \x01(\tRGmarketplaceFilterAssetClassRiskAdminDashboardRiskWindowOrderSendSuccess\x12\x99\x01\n" +
-	"Lmarketplace_filter_asset_class_risk_admin_dashboard_risk_window_reject_count\x18\xb5\x01 \x01(\tRBmarketplaceFilterAssetClassRiskAdminDashboardRiskWindowRejectCount\x12\xaf\x01\n" +
-	"Xmarketplace_filter_asset_class_risk_admin_dashboard_risk_window_reject_risk_codes_header\x18\xb6\x01 \x01(\tRLmarketplaceFilterAssetClassRiskAdminDashboardRiskWindowRejectRiskCodesHeader\x12\x8c\x01\n" +
-	"Emarketplace_filter_asset_class_risk_admin_dashboard_risk_window_title\x18\xb7\x01 \x01(\tR<marketplaceFilterAssetClassRiskAdminDashboardRiskWindowTitle\x12\x9d\x01\n" +
-	"Nmarketplace_filter_asset_class_risk_admin_dashboard_risk_window_validate_error\x18\xb8\x01 \x01(\tRDmarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateError\x12\x9b\x01\n" +
-	"Mmarketplace_filter_asset_class_risk_admin_dashboard_risk_window_validate_pass\x18\xb9\x01 \x01(\tRCmarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidatePass\x12\x9f\x01\n" +
-	"Omarketplace_filter_asset_class_risk_admin_dashboard_risk_window_validate_reject\x18\xba\x01 \x01(\tREmarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateReject\x12\x9d\x01\n" +
-	"Nmarketplace_filter_asset_class_risk_admin_dashboard_risk_window_validate_total\x18\xbb\x01 \x01(\tRDmarketplaceFilterAssetClassRiskAdminDashboardRiskWindowValidateTotal\x12v\n" +
-	"9marketplace_filter_asset_class_risk_admin_dashboard_title\x18\xbc\x01 \x01(\tR2marketplaceFilterAssetClassRiskAdminDashboardTitle\x12\x83\x01\n" +
-	"@marketplace_filter_asset_class_risk_admin_dashboard_today_profit\x18\xbd\x01 \x01(\tR8marketplaceFilterAssetClassRiskAdminDashboardTodayProfit\x12\x83\x01\n" +
-	"@marketplace_filter_asset_class_risk_admin_dashboard_today_trades\x18\xbe\x01 \x01(\tR8marketplaceFilterAssetClassRiskAdminDashboardTodayTrades\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_dashboard_total_users\x18\xbf\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminDashboardTotalUsers\x12p\n" +
-	"6marketplace_filter_asset_class_risk_admin_header_admin\x18\xc0\x01 \x01(\tR/marketplaceFilterAssetClassRiskAdminHeaderAdmin\x12y\n" +
-	";marketplace_filter_asset_class_risk_admin_header_admin_mode\x18\xc1\x01 \x01(\tR3marketplaceFilterAssetClassRiskAdminHeaderAdminMode\x12{\n" +
-	"<marketplace_filter_asset_class_risk_admin_header_admin_panel\x18\xc2\x01 \x01(\tR4marketplaceFilterAssetClassRiskAdminHeaderAdminPanel\x12|\n" +
-	"=marketplace_filter_asset_class_risk_admin_header_back_to_user\x18\xc3\x01 \x01(\tR4marketplaceFilterAssetClassRiskAdminHeaderBackToUser\x12r\n" +
-	"7marketplace_filter_asset_class_risk_admin_header_logout\x18\xc4\x01 \x01(\tR0marketplaceFilterAssetClassRiskAdminHeaderLogout\x12\x80\x01\n" +
-	">marketplace_filter_asset_class_risk_admin_jurisdiction_actions\x18\xc5\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminJurisdictionActions\x12\x87\x01\n" +
-	"Bmarketplace_filter_asset_class_risk_admin_jurisdiction_add_country\x18\xc6\x01 \x01(\tR:marketplaceFilterAssetClassRiskAdminJurisdictionAddCountry\x12\x9c\x01\n" +
-	"Mmarketplace_filter_asset_class_risk_admin_jurisdiction_add_sanctioned_country\x18\xc7\x01 \x01(\tRDmarketplaceFilterAssetClassRiskAdminJurisdictionAddSanctionedCountry\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_jurisdiction_added_by\x18\xc8\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminJurisdictionAddedBy\x12\x9c\x01\n" +
-	"Mmarketplace_filter_asset_class_risk_admin_jurisdiction_confirm_grant_override\x18\xc9\x01 \x01(\tRDmarketplaceFilterAssetClassRiskAdminJurisdictionConfirmGrantOverride\x12\x9e\x01\n" +
-	"Nmarketplace_filter_asset_class_risk_admin_jurisdiction_confirm_revoke_override\x18\xca\x01 \x01(\tREmarketplaceFilterAssetClassRiskAdminJurisdictionConfirmRevokeOverride\x12\x80\x01\n" +
-	">marketplace_filter_asset_class_risk_admin_jurisdiction_country\x18\xcb\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminJurisdictionCountry\x12\x89\x01\n" +
-	"Cmarketplace_filter_asset_class_risk_admin_jurisdiction_country_code\x18\xcc\x01 \x01(\tR;marketplaceFilterAssetClassRiskAdminJurisdictionCountryCode\x12\x8b\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_admin_jurisdiction_country_label\x18\xcd\x01 \x01(\tR<marketplaceFilterAssetClassRiskAdminJurisdictionCountryLabel\x12\x86\x01\n" +
-	"Amarketplace_filter_asset_class_risk_admin_jurisdiction_disclaimer\x18\xce\x01 \x01(\tR:marketplaceFilterAssetClassRiskAdminJurisdictionDisclaimer\x12\x85\x01\n" +
-	"Bmarketplace_filter_asset_class_risk_admin_jurisdiction_empty_k_y_c\x18\xcf\x01 \x01(\tR8marketplaceFilterAssetClassRiskAdminJurisdictionEmptyKYC\x12\x8f\x01\n" +
-	"Fmarketplace_filter_asset_class_risk_admin_jurisdiction_empty_sanctions\x18\xd0\x01 \x01(\tR>marketplaceFilterAssetClassRiskAdminJurisdictionEmptySanctions\x12\x99\x01\n" +
-	"Mmarketplace_filter_asset_class_risk_admin_jurisdiction_filter_by_k_y_c_status\x18\xd1\x01 \x01(\tRAmarketplaceFilterAssetClassRiskAdminJurisdictionFilterByKYCStatus\x12\x8d\x01\n" +
-	"Emarketplace_filter_asset_class_risk_admin_jurisdiction_grant_override\x18\xd2\x01 \x01(\tR=marketplaceFilterAssetClassRiskAdminJurisdictionGrantOverride\x12\x85\x01\n" +
-	"Amarketplace_filter_asset_class_risk_admin_jurisdiction_kyc_status\x18\xd3\x01 \x01(\tR9marketplaceFilterAssetClassRiskAdminJurisdictionKycStatus\x12\x8c\x01\n" +
-	"Emarketplace_filter_asset_class_risk_admin_jurisdiction_kyc_status_tab\x18\xd4\x01 \x01(\tR<marketplaceFilterAssetClassRiskAdminJurisdictionKycStatusTab\x12\xa5\x01\n" +
-	"Rmarketplace_filter_asset_class_risk_admin_jurisdiction_messages_country_add_failed\x18\xd5\x01 \x01(\tRHmarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryAddFailed\x12\x9c\x01\n" +
-	"Mmarketplace_filter_asset_class_risk_admin_jurisdiction_messages_country_added\x18\xd6\x01 \x01(\tRDmarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryAdded\x12\xab\x01\n" +
-	"Umarketplace_filter_asset_class_risk_admin_jurisdiction_messages_country_remove_failed\x18\xd7\x01 \x01(\tRKmarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryRemoveFailed\x12\xa0\x01\n" +
-	"Omarketplace_filter_asset_class_risk_admin_jurisdiction_messages_country_removed\x18\xd8\x01 \x01(\tRFmarketplaceFilterAssetClassRiskAdminJurisdictionMessagesCountryRemoved\x12\xa3\x01\n" +
-	"Qmarketplace_filter_asset_class_risk_admin_jurisdiction_messages_kyc_update_failed\x18\xd9\x01 \x01(\tRGmarketplaceFilterAssetClassRiskAdminJurisdictionMessagesKycUpdateFailed\x12\x98\x01\n" +
-	"Kmarketplace_filter_asset_class_risk_admin_jurisdiction_messages_kyc_updated\x18\xda\x01 \x01(\tRBmarketplaceFilterAssetClassRiskAdminJurisdictionMessagesKycUpdated\x12\xad\x01\n" +
-	"Vmarketplace_filter_asset_class_risk_admin_jurisdiction_messages_override_update_failed\x18\xdb\x01 \x01(\tRLmarketplaceFilterAssetClassRiskAdminJurisdictionMessagesOverrideUpdateFailed\x12\xa2\x01\n" +
-	"Pmarketplace_filter_asset_class_risk_admin_jurisdiction_messages_override_updated\x18\xdc\x01 \x01(\tRGmarketplaceFilterAssetClassRiskAdminJurisdictionMessagesOverrideUpdated\x12\x82\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_jurisdiction_override\x18\xdd\x01 \x01(\tR8marketplaceFilterAssetClassRiskAdminJurisdictionOverride\x12\x91\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_admin_jurisdiction_override_warning\x18\xde\x01 \x01(\tR?marketplaceFilterAssetClassRiskAdminJurisdictionOverrideWarning\x12\x80\x01\n" +
-	">marketplace_filter_asset_class_risk_admin_jurisdiction_pending\x18\xdf\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminJurisdictionPending\x12\x8c\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_admin_jurisdiction_questionnaire\x18\xe0\x01 \x01(\tR=marketplaceFilterAssetClassRiskAdminJurisdictionQuestionnaire\x12\x82\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_jurisdiction_rejected\x18\xe1\x01 \x01(\tR8marketplaceFilterAssetClassRiskAdminJurisdictionRejected\x12\x8f\x01\n" +
-	"Fmarketplace_filter_asset_class_risk_admin_jurisdiction_revoke_override\x18\xe2\x01 \x01(\tR>marketplaceFilterAssetClassRiskAdminJurisdictionRevokeOverride\x12\x86\x01\n" +
-	"Amarketplace_filter_asset_class_risk_admin_jurisdiction_sanctioned\x18\xe3\x01 \x01(\tR:marketplaceFilterAssetClassRiskAdminJurisdictionSanctioned\x12\x99\x01\n" +
-	"Kmarketplace_filter_asset_class_risk_admin_jurisdiction_sanctioned_countries\x18\xe4\x01 \x01(\tRCmarketplaceFilterAssetClassRiskAdminJurisdictionSanctionedCountries\x12\xa0\x01\n" +
-	"Omarketplace_filter_asset_class_risk_admin_jurisdiction_sanctioned_countries_tab\x18\xe5\x01 \x01(\tRFmarketplaceFilterAssetClassRiskAdminJurisdictionSanctionedCountriesTab\x12\x81\x01\n" +
-	"@marketplace_filter_asset_class_risk_admin_jurisdiction_set_k_y_c\x18\xe6\x01 \x01(\tR6marketplaceFilterAssetClassRiskAdminJurisdictionSetKYC\x12\x8e\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_admin_jurisdiction_set_k_y_c_status\x18\xe7\x01 \x01(\tR<marketplaceFilterAssetClassRiskAdminJurisdictionSetKYCStatus\x12|\n" +
-	"<marketplace_filter_asset_class_risk_admin_jurisdiction_title\x18\xe8\x01 \x01(\tR5marketplaceFilterAssetClassRiskAdminJurisdictionTitle\x12\x86\x01\n" +
-	"Amarketplace_filter_asset_class_risk_admin_jurisdiction_unverified\x18\xe9\x01 \x01(\tR:marketplaceFilterAssetClassRiskAdminJurisdictionUnverified\x12\x85\x01\n" +
-	"Amarketplace_filter_asset_class_risk_admin_jurisdiction_user_email\x18\xea\x01 \x01(\tR9marketplaceFilterAssetClassRiskAdminJurisdictionUserEmail\x12\x90\x01\n" +
-	"Hmarketplace_filter_asset_class_risk_admin_jurisdiction_user_k_y_c_status\x18\xeb\x01 \x01(\tR=marketplaceFilterAssetClassRiskAdminJurisdictionUserKYCStatus\x12\x82\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_jurisdiction_verified\x18\xec\x01 \x01(\tR8marketplaceFilterAssetClassRiskAdminJurisdictionVerified\x12\x8b\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_admin_sidebar_account_management\x18\xed\x01 \x01(\tR<marketplaceFilterAssetClassRiskAdminSidebarAccountManagement\x12z\n" +
-	";marketplace_filter_asset_class_risk_admin_sidebar_dashboard\x18\xee\x01 \x01(\tR4marketplaceFilterAssetClassRiskAdminSidebarDashboard\x12\x80\x01\n" +
-	">marketplace_filter_asset_class_risk_admin_sidebar_jurisdiction\x18\xef\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminSidebarJurisdiction\x12\x83\x01\n" +
-	"@marketplace_filter_asset_class_risk_admin_sidebar_operation_logs\x18\xf0\x01 \x01(\tR8marketplaceFilterAssetClassRiskAdminSidebarOperationLogs\x12\x87\x01\n" +
-	"Bmarketplace_filter_asset_class_risk_admin_sidebar_share_management\x18\xf1\x01 \x01(\tR:marketplaceFilterAssetClassRiskAdminSidebarShareManagement\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_sidebar_system_config\x18\xf2\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminSidebarSystemConfig\x12\x85\x01\n" +
-	"Amarketplace_filter_asset_class_risk_admin_sidebar_trading_monitor\x18\xf3\x01 \x01(\tR9marketplaceFilterAssetClassRiskAdminSidebarTradingMonitor\x12\x85\x01\n" +
-	"Amarketplace_filter_asset_class_risk_admin_sidebar_user_management\x18\xf4\x01 \x01(\tR9marketplaceFilterAssetClassRiskAdminSidebarUserManagement\x12\x89\x01\n" +
-	"Cmarketplace_filter_asset_class_risk_admin_sidebar_wallet_management\x18\xf5\x01 \x01(\tR;marketplaceFilterAssetClassRiskAdminSidebarWalletManagement\x12x\n" +
-	":marketplace_filter_asset_class_risk_admin_trading_accounts\x18\xf6\x01 \x01(\tR3marketplaceFilterAssetClassRiskAdminTradingAccounts\x12\x7f\n" +
-	">marketplace_filter_asset_class_risk_admin_trading_active_users\x18\xf7\x01 \x01(\tR6marketplaceFilterAssetClassRiskAdminTradingActiveUsers\x12}\n" +
-	"=marketplace_filter_asset_class_risk_admin_trading_by_platform\x18\xf8\x01 \x01(\tR5marketplaceFilterAssetClassRiskAdminTradingByPlatform\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_trading_closed_orders\x18\xf9\x01 \x01(\tR7marketplaceFilterAssetClassRiskAdminTradingClosedOrders\x12\x8b\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_admin_trading_connected_accounts\x18\xfa\x01 \x01(\tR<marketplaceFilterAssetClassRiskAdminTradingConnectedAccounts\x12}\n" +
-	"=marketplace_filter_asset_class_risk_admin_trading_load_failed\x18\xfb\x01 \x01(\tR5marketplaceFilterAssetClassRiskAdminTradingLoadFailed\x12{\n" +
-	"<marketplace_filter_asset_class_risk_admin_trading_net_profit\x18\xfc\x01 \x01(\tR4marketplaceFilterAssetClassRiskAdminTradingNetProfit\x12t\n" +
-	"8marketplace_filter_asset_class_risk_admin_trading_orders\x18\xfd\x01 \x01(\tR1marketplaceFilterAssetClassRiskAdminTradingOrders\x12\x83\x01\n" +
-	"@marketplace_filter_asset_class_risk_admin_trading_pending_orders\x18\xfe\x01 \x01(\tR8marketplaceFilterAssetClassRiskAdminTradingPendingOrders\x12x\n" +
-	":marketplace_filter_asset_class_risk_admin_trading_platform\x18\xff\x01 \x01(\tR3marketplaceFilterAssetClassRiskAdminTradingPlatform\x12\x7f\n" +
-	">marketplace_filter_asset_class_risk_admin_trading_profit_stats\x18\x80\x02 \x01(\tR6marketplaceFilterAssetClassRiskAdminTradingProfitStats\x12r\n" +
-	"7marketplace_filter_asset_class_risk_admin_trading_title\x18\x81\x02 \x01(\tR0marketplaceFilterAssetClassRiskAdminTradingTitle\x12\x83\x01\n" +
-	"@marketplace_filter_asset_class_risk_admin_trading_total_accounts\x18\x82\x02 \x01(\tR8marketplaceFilterAssetClassRiskAdminTradingTotalAccounts\x12{\n" +
-	"<marketplace_filter_asset_class_risk_admin_trading_total_loss\x18\x83\x02 \x01(\tR4marketplaceFilterAssetClassRiskAdminTradingTotalLoss\x12\x7f\n" +
-	">marketplace_filter_asset_class_risk_admin_trading_total_orders\x18\x84\x02 \x01(\tR6marketplaceFilterAssetClassRiskAdminTradingTotalOrders\x12\x7f\n" +
-	">marketplace_filter_asset_class_risk_admin_trading_total_profit\x18\x85\x02 \x01(\tR6marketplaceFilterAssetClassRiskAdminTradingTotalProfit\x12}\n" +
-	"=marketplace_filter_asset_class_risk_admin_trading_total_users\x18\x86\x02 \x01(\tR5marketplaceFilterAssetClassRiskAdminTradingTotalUsers\x12\x7f\n" +
-	">marketplace_filter_asset_class_risk_admin_trading_total_volume\x18\x87\x02 \x01(\tR6marketplaceFilterAssetClassRiskAdminTradingTotalVolume\x12t\n" +
-	"8marketplace_filter_asset_class_risk_admin_trading_volume\x18\x88\x02 \x01(\tR1marketplaceFilterAssetClassRiskAdminTradingVolume\x12\xa3\x01\n" +
-	"Qmarketplace_filter_asset_class_risk_admin_user_management_actions_change_password\x18\x89\x02 \x01(\tRGmarketplaceFilterAssetClassRiskAdminUserManagementActionsChangePassword\x12\x94\x01\n" +
-	"Imarketplace_filter_asset_class_risk_admin_user_management_actions_details\x18\x8a\x02 \x01(\tR@marketplaceFilterAssetClassRiskAdminUserManagementActionsDetails\x12\x94\x01\n" +
-	"Imarketplace_filter_asset_class_risk_admin_user_management_actions_disable\x18\x8b\x02 \x01(\tR@marketplaceFilterAssetClassRiskAdminUserManagementActionsDisable\x12\x92\x01\n" +
-	"Hmarketplace_filter_asset_class_risk_admin_user_management_actions_enable\x18\x8c\x02 \x01(\tR?marketplaceFilterAssetClassRiskAdminUserManagementActionsEnable\x12\x86\x01\n" +
-	"Bmarketplace_filter_asset_class_risk_admin_user_management_add_user\x18\x8d\x02 \x01(\tR9marketplaceFilterAssetClassRiskAdminUserManagementAddUser\x12\xb9\x01\n" +
-	"]marketplace_filter_asset_class_risk_admin_user_management_delete_confirm_batch_delete_confirm\x18\x8e\x02 \x01(\tRQmarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeleteConfirm\x12\xb9\x01\n" +
-	"]marketplace_filter_asset_class_risk_admin_user_management_delete_confirm_batch_delete_partial\x18\x8f\x02 \x01(\tRQmarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeletePartial\x12\xb9\x01\n" +
-	"]marketplace_filter_asset_class_risk_admin_user_management_delete_confirm_batch_delete_success\x18\x90\x02 \x01(\tRQmarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmBatchDeleteSuccess\x12\x9d\x01\n" +
-	"Nmarketplace_filter_asset_class_risk_admin_user_management_delete_confirm_title\x18\x91\x02 \x01(\tRDmarketplaceFilterAssetClassRiskAdminUserManagementDeleteConfirmTitle\x12\xa4\x01\n" +
-	"Rmarketplace_filter_asset_class_risk_admin_user_management_drawer_labels_created_at\x18\x92\x02 \x01(\tRGmarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsCreatedAt\x12\x9b\x01\n" +
-	"Mmarketplace_filter_asset_class_risk_admin_user_management_drawer_labels_email\x18\x93\x02 \x01(\tRCmarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsEmail\x12\x95\x01\n" +
-	"Jmarketplace_filter_asset_class_risk_admin_user_management_drawer_labels_id\x18\x94\x02 \x01(\tR@marketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsId\x12\xa4\x01\n" +
-	"Rmarketplace_filter_asset_class_risk_admin_user_management_drawer_labels_last_login\x18\x95\x02 \x01(\tRGmarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsLastLogin\x12\xaf\x01\n" +
-	"Xmarketplace_filter_asset_class_risk_admin_user_management_drawer_labels_mt_account_count\x18\x96\x02 \x01(\tRLmarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsMtAccountCount\x12\xa1\x01\n" +
-	"Pmarketplace_filter_asset_class_risk_admin_user_management_drawer_labels_nickname\x18\x97\x02 \x01(\tRFmarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsNickname\x12\x99\x01\n" +
-	"Lmarketplace_filter_asset_class_risk_admin_user_management_drawer_labels_role\x18\x98\x02 \x01(\tRBmarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsRole\x12\x9d\x01\n" +
-	"Nmarketplace_filter_asset_class_risk_admin_user_management_drawer_labels_status\x18\x99\x02 \x01(\tRDmarketplaceFilterAssetClassRiskAdminUserManagementDrawerLabelsStatus\x12\x8e\x01\n" +
-	"Fmarketplace_filter_asset_class_risk_admin_user_management_drawer_title\x18\x9a\x02 \x01(\tR=marketplaceFilterAssetClassRiskAdminUserManagementDrawerTitle\x12\xa5\x01\n" +
-	"Rmarketplace_filter_asset_class_risk_admin_user_management_filters_role_placeholder\x18\x9b\x02 \x01(\tRHmarketplaceFilterAssetClassRiskAdminUserManagementFiltersRolePlaceholder\x12\xa9\x01\n" +
-	"Tmarketplace_filter_asset_class_risk_admin_user_management_filters_search_placeholder\x18\x9c\x02 \x01(\tRJmarketplaceFilterAssetClassRiskAdminUserManagementFiltersSearchPlaceholder\x12\xa9\x01\n" +
-	"Tmarketplace_filter_asset_class_risk_admin_user_management_filters_status_placeholder\x18\x9d\x02 \x01(\tRJmarketplaceFilterAssetClassRiskAdminUserManagementFiltersStatusPlaceholder\x12\x9b\x01\n" +
-	"Mmarketplace_filter_asset_class_risk_admin_user_management_form_account_number\x18\x9e\x02 \x01(\tRCmarketplaceFilterAssetClassRiskAdminUserManagementFormAccountNumber\x12\xaa\x01\n" +
-	"Umarketplace_filter_asset_class_risk_admin_user_management_form_account_number_invalid\x18\x9f\x02 \x01(\tRJmarketplaceFilterAssetClassRiskAdminUserManagementFormAccountNumberInvalid\x12\x8a\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_admin_user_management_form_email\x18\xa0\x02 \x01(\tR;marketplaceFilterAssetClassRiskAdminUserManagementFormEmail\x12\x90\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_admin_user_management_form_nickname\x18\xa1\x02 \x01(\tR>marketplaceFilterAssetClassRiskAdminUserManagementFormNickname\x12\x90\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_admin_user_management_form_password\x18\xa2\x02 \x01(\tR>marketplaceFilterAssetClassRiskAdminUserManagementFormPassword\x12\xa3\x01\n" +
-	"Qmarketplace_filter_asset_class_risk_admin_user_management_form_placeholders_email\x18\xa3\x02 \x01(\tRGmarketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersEmail\x12\xa9\x01\n" +
-	"Tmarketplace_filter_asset_class_risk_admin_user_management_form_placeholders_nickname\x18\xa4\x02 \x01(\tRJmarketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersNickname\x12\xa9\x01\n" +
-	"Tmarketplace_filter_asset_class_risk_admin_user_management_form_placeholders_password\x18\xa5\x02 \x01(\tRJmarketplaceFilterAssetClassRiskAdminUserManagementFormPlaceholdersPassword\x12\x88\x01\n" +
-	"Cmarketplace_filter_asset_class_risk_admin_user_management_form_role\x18\xa6\x02 \x01(\tR:marketplaceFilterAssetClassRiskAdminUserManagementFormRole\x12\x8c\x01\n" +
-	"Emarketplace_filter_asset_class_risk_admin_user_management_form_status\x18\xa7\x02 \x01(\tR<marketplaceFilterAssetClassRiskAdminUserManagementFormStatus\x12\xa4\x01\n" +
-	"Rmarketplace_filter_asset_class_risk_admin_user_management_messages_new_password_is\x18\xa8\x02 \x01(\tRGmarketplaceFilterAssetClassRiskAdminUserManagementMessagesNewPasswordIs\x12\xb2\x01\n" +
-	"Ymarketplace_filter_asset_class_risk_admin_user_management_messages_password_update_failed\x18\xa9\x02 \x01(\tRNmarketplaceFilterAssetClassRiskAdminUserManagementMessagesPasswordUpdateFailed\x12\xb6\x01\n" +
-	"[marketplace_filter_asset_class_risk_admin_user_management_messages_password_updated_success\x18\xaa\x02 \x01(\tRPmarketplaceFilterAssetClassRiskAdminUserManagementMessagesPasswordUpdatedSuccess\x12\xaa\x01\n" +
-	"Umarketplace_filter_asset_class_risk_admin_user_management_messages_user_create_failed\x18\xab\x02 \x01(\tRJmarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserCreateFailed\x12\xae\x01\n" +
-	"Wmarketplace_filter_asset_class_risk_admin_user_management_messages_user_created_success\x18\xac\x02 \x01(\tRLmarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserCreatedSuccess\x12\xaa\x01\n" +
-	"Umarketplace_filter_asset_class_risk_admin_user_management_messages_user_delete_failed\x18\xad\x02 \x01(\tRJmarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDeleteFailed\x12\xae\x01\n" +
-	"Wmarketplace_filter_asset_class_risk_admin_user_management_messages_user_deleted_success\x18\xae\x02 \x01(\tRLmarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDeletedSuccess\x12\xa1\x01\n" +
-	"Pmarketplace_filter_asset_class_risk_admin_user_management_messages_user_disabled\x18\xaf\x02 \x01(\tRFmarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserDisabled\x12\x9f\x01\n" +
-	"Omarketplace_filter_asset_class_risk_admin_user_management_messages_user_enabled\x18\xb0\x02 \x01(\tREmarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserEnabled\x12\xaa\x01\n" +
-	"Umarketplace_filter_asset_class_risk_admin_user_management_messages_user_update_failed\x18\xb1\x02 \x01(\tRJmarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserUpdateFailed\x12\xae\x01\n" +
-	"Wmarketplace_filter_asset_class_risk_admin_user_management_messages_user_updated_success\x18\xb2\x02 \x01(\tRLmarketplaceFilterAssetClassRiskAdminUserManagementMessagesUserUpdatedSuccess\x12\x9b\x01\n" +
-	"Mmarketplace_filter_asset_class_risk_admin_user_management_modals_create_title\x18\xb3\x02 \x01(\tRCmarketplaceFilterAssetClassRiskAdminUserManagementModalsCreateTitle\x12\x97\x01\n" +
-	"Kmarketplace_filter_asset_class_risk_admin_user_management_modals_edit_title\x18\xb4\x02 \x01(\tRAmarketplaceFilterAssetClassRiskAdminUserManagementModalsEditTitle\x12\x9f\x01\n" +
-	"Omarketplace_filter_asset_class_risk_admin_user_management_modals_password_title\x18\xb5\x02 \x01(\tREmarketplaceFilterAssetClassRiskAdminUserManagementModalsPasswordTitle\x12\x96\x01\n" +
-	"Jmarketplace_filter_asset_class_risk_admin_user_management_pagination_total\x18\xb6\x02 \x01(\tRAmarketplaceFilterAssetClassRiskAdminUserManagementPaginationTotal\x12\xb0\x01\n" +
-	"Xmarketplace_filter_asset_class_risk_admin_user_management_password_form_confirm_password\x18\xb7\x02 \x01(\tRMmarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormConfirmPassword\x12\xa8\x01\n" +
-	"Tmarketplace_filter_asset_class_risk_admin_user_management_password_form_new_password\x18\xb8\x02 \x01(\tRImarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormNewPassword\x12\xc9\x01\n" +
-	"emarketplace_filter_asset_class_risk_admin_user_management_password_form_placeholders_confirm_password\x18\xb9\x02 \x01(\tRYmarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormPlaceholdersConfirmPassword\x12\xc1\x01\n" +
-	"amarketplace_filter_asset_class_risk_admin_user_management_password_form_placeholders_new_password\x18\xba\x02 \x01(\tRUmarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormPlaceholdersNewPassword\x12\x9d\x01\n" +
-	"Nmarketplace_filter_asset_class_risk_admin_user_management_password_form_submit\x18\xbb\x02 \x01(\tRDmarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormSubmit\x12\xd6\x01\n" +
-	"lmarketplace_filter_asset_class_risk_admin_user_management_password_form_validation_confirm_password_required\x18\xbc\x02 \x01(\tR_marketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationConfirmPasswordRequired\x12\xce\x01\n" +
-	"hmarketplace_filter_asset_class_risk_admin_user_management_password_form_validation_new_password_required\x18\xbd\x02 \x01(\tR[marketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationNewPasswordRequired\x12\xbf\x01\n" +
-	"`marketplace_filter_asset_class_risk_admin_user_management_password_form_validation_password_min8\x18\xbe\x02 \x01(\tRTmarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMin8\x12\xc7\x01\n" +
-	"dmarketplace_filter_asset_class_risk_admin_user_management_password_form_validation_password_mismatch\x18\xbf\x02 \x01(\tRXmarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMismatch\x12\xf3\x01\n" +
-	"|marketplace_filter_asset_class_risk_admin_user_management_password_form_validation_password_must_contain_letters_and_numbers\x18\xc0\x02 \x01(\tRlmarketplaceFilterAssetClassRiskAdminUserManagementPasswordFormValidationPasswordMustContainLettersAndNumbers\x12\x8c\x01\n" +
-	"Emarketplace_filter_asset_class_risk_admin_user_management_roles_audit\x18\xc1\x02 \x01(\tR<marketplaceFilterAssetClassRiskAdminUserManagementRolesAudit\x12\xa1\x01\n" +
-	"Pmarketplace_filter_asset_class_risk_admin_user_management_roles_customer_service\x18\xc2\x02 \x01(\tRFmarketplaceFilterAssetClassRiskAdminUserManagementRolesCustomerService\x12\x94\x01\n" +
-	"Imarketplace_filter_asset_class_risk_admin_user_management_roles_operation\x18\xc3\x02 \x01(\tR@marketplaceFilterAssetClassRiskAdminUserManagementRolesOperation\x12\x97\x01\n" +
-	"Kmarketplace_filter_asset_class_risk_admin_user_management_roles_super_admin\x18\xc4\x02 \x01(\tRAmarketplaceFilterAssetClassRiskAdminUserManagementRolesSuperAdmin\x12\x8a\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_admin_user_management_roles_user\x18\xc5\x02 \x01(\tR;marketplaceFilterAssetClassRiskAdminUserManagementRolesUser\x12\x90\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_admin_user_management_status_active\x18\xc6\x02 \x01(\tR>marketplaceFilterAssetClassRiskAdminUserManagementStatusActive\x12\x96\x01\n" +
-	"Jmarketplace_filter_asset_class_risk_admin_user_management_status_suspended\x18\xc7\x02 \x01(\tRAmarketplaceFilterAssetClassRiskAdminUserManagementStatusSuspended\x12\x90\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_admin_user_management_table_actions\x18\xc8\x02 \x01(\tR>marketplaceFilterAssetClassRiskAdminUserManagementTableActions\x12\x95\x01\n" +
-	"Jmarketplace_filter_asset_class_risk_admin_user_management_table_created_at\x18\xc9\x02 \x01(\tR@marketplaceFilterAssetClassRiskAdminUserManagementTableCreatedAt\x12\x8c\x01\n" +
-	"Emarketplace_filter_asset_class_risk_admin_user_management_table_email\x18\xca\x02 \x01(\tR<marketplaceFilterAssetClassRiskAdminUserManagementTableEmail\x12\x86\x01\n" +
-	"Bmarketplace_filter_asset_class_risk_admin_user_management_table_id\x18\xcb\x02 \x01(\tR9marketplaceFilterAssetClassRiskAdminUserManagementTableId\x12\xa0\x01\n" +
-	"Pmarketplace_filter_asset_class_risk_admin_user_management_table_mt_account_count\x18\xcc\x02 \x01(\tREmarketplaceFilterAssetClassRiskAdminUserManagementTableMtAccountCount\x12\x92\x01\n" +
-	"Hmarketplace_filter_asset_class_risk_admin_user_management_table_nickname\x18\xcd\x02 \x01(\tR?marketplaceFilterAssetClassRiskAdminUserManagementTableNickname\x12\x8a\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_admin_user_management_table_role\x18\xce\x02 \x01(\tR;marketplaceFilterAssetClassRiskAdminUserManagementTableRole\x12\x8e\x01\n" +
-	"Fmarketplace_filter_asset_class_risk_admin_user_management_table_status\x18\xcf\x02 \x01(\tR=marketplaceFilterAssetClassRiskAdminUserManagementTableStatus\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_user_management_title\x18\xd0\x02 \x01(\tR7marketplaceFilterAssetClassRiskAdminUserManagementTitle\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_wallet_account_number\x18\xd1\x02 \x01(\tR7marketplaceFilterAssetClassRiskAdminWalletAccountNumber\x12l\n" +
-	"4marketplace_filter_asset_class_risk_admin_wallet_add\x18\xd2\x02 \x01(\tR-marketplaceFilterAssetClassRiskAdminWalletAdd\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_wallet_adjust_balance\x18\xd3\x02 \x01(\tR7marketplaceFilterAssetClassRiskAdminWalletAdjustBalance\x12\x7f\n" +
-	">marketplace_filter_asset_class_risk_admin_wallet_adjust_failed\x18\xd4\x02 \x01(\tR6marketplaceFilterAssetClassRiskAdminWalletAdjustFailed\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_admin_wallet_adjust_success\x18\xd5\x02 \x01(\tR7marketplaceFilterAssetClassRiskAdminWalletAdjustSuccess\x12r\n" +
-	"7marketplace_filter_asset_class_risk_admin_wallet_deduct\x18\xd6\x02 \x01(\tR0marketplaceFilterAssetClassRiskAdminWalletDeduct\x12u\n" +
-	"9marketplace_filter_asset_class_risk_admin_wallet_no_users\x18\xd7\x02 \x01(\tR1marketplaceFilterAssetClassRiskAdminWalletNoUsers\x12r\n" +
-	"7marketplace_filter_asset_class_risk_admin_wallet_reason\x18\xd8\x02 \x01(\tR0marketplaceFilterAssetClassRiskAdminWalletReason\x12\x89\x01\n" +
-	"Cmarketplace_filter_asset_class_risk_admin_wallet_search_placeholder\x18\xd9\x02 \x01(\tR;marketplaceFilterAssetClassRiskAdminWalletSearchPlaceholder\x12p\n" +
-	"6marketplace_filter_asset_class_risk_admin_wallet_title\x18\xda\x02 \x01(\tR/marketplaceFilterAssetClassRiskAdminWalletTitle\x12y\n" +
-	";marketplace_filter_asset_class_risk_admin_wallet_wallet_for\x18\xdb\x02 \x01(\tR3marketplaceFilterAssetClassRiskAdminWalletWalletFor\x12n\n" +
-	"5marketplace_filter_asset_class_risk_author_avg_rating\x18\xdc\x02 \x01(\tR.marketplaceFilterAssetClassRiskAuthorAvgRating\x12e\n" +
-	"0marketplace_filter_asset_class_risk_author_empty\x18\xdd\x02 \x01(\tR*marketplaceFilterAssetClassRiskAuthorEmpty\x12m\n" +
-	"4marketplace_filter_asset_class_risk_author_published\x18\xde\x02 \x01(\tR.marketplaceFilterAssetClassRiskAuthorPublished\x12\x8a\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_auto_trading_logs_columns_action\x18\xdf\x02 \x01(\tR;marketplaceFilterAssetClassRiskAutoTradingLogsColumnsAction\x12\x88\x01\n" +
-	"Cmarketplace_filter_asset_class_risk_auto_trading_logs_columns_price\x18\xe0\x02 \x01(\tR:marketplaceFilterAssetClassRiskAutoTradingLogsColumnsPrice\x12\x8a\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_auto_trading_logs_columns_profit\x18\xe1\x02 \x01(\tR;marketplaceFilterAssetClassRiskAutoTradingLogsColumnsProfit\x12\x8a\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_auto_trading_logs_columns_symbol\x18\xe2\x02 \x01(\tR;marketplaceFilterAssetClassRiskAutoTradingLogsColumnsSymbol\x12\x8a\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_auto_trading_logs_columns_ticket\x18\xe3\x02 \x01(\tR;marketplaceFilterAssetClassRiskAutoTradingLogsColumnsTicket\x12\x86\x01\n" +
-	"Bmarketplace_filter_asset_class_risk_auto_trading_logs_columns_time\x18\xe4\x02 \x01(\tR9marketplaceFilterAssetClassRiskAutoTradingLogsColumnsTime\x12\x8a\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_auto_trading_logs_columns_volume\x18\xe5\x02 \x01(\tR;marketplaceFilterAssetClassRiskAutoTradingLogsColumnsVolume\x12y\n" +
-	";marketplace_filter_asset_class_risk_auto_trading_logs_empty\x18\xe6\x02 \x01(\tR3marketplaceFilterAssetClassRiskAutoTradingLogsEmpty\x12y\n" +
-	";marketplace_filter_asset_class_risk_auto_trading_logs_title\x18\xe7\x02 \x01(\tR3marketplaceFilterAssetClassRiskAutoTradingLogsTitle\x12\x8c\x01\n" +
-	"Emarketplace_filter_asset_class_risk_auto_trading_messages_load_failed\x18\xe8\x02 \x01(\tR<marketplaceFilterAssetClassRiskAutoTradingMessagesLoadFailed\x12\x90\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_auto_trading_messages_toggle_failed\x18\xe9\x02 \x01(\tR>marketplaceFilterAssetClassRiskAutoTradingMessagesToggleFailed\x12\x91\x01\n" +
-	"Hmarketplace_filter_asset_class_risk_auto_trading_settings_max_daily_loss\x18\xea\x02 \x01(\tR>marketplaceFilterAssetClassRiskAutoTradingSettingsMaxDailyLoss\x12\x9a\x01\n" +
-	"Mmarketplace_filter_asset_class_risk_auto_trading_settings_max_daily_loss_hint\x18\xeb\x02 \x01(\tRBmarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDailyLossHint\x12\x9d\x01\n" +
-	"Nmarketplace_filter_asset_class_risk_auto_trading_settings_max_drawdown_percent\x18\xec\x02 \x01(\tRDmarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDrawdownPercent\x12\xa6\x01\n" +
-	"Smarketplace_filter_asset_class_risk_auto_trading_settings_max_drawdown_percent_hint\x18\xed\x02 \x01(\tRHmarketplaceFilterAssetClassRiskAutoTradingSettingsMaxDrawdownPercentHint\x12\x8d\x01\n" +
-	"Fmarketplace_filter_asset_class_risk_auto_trading_settings_max_lot_size\x18\xee\x02 \x01(\tR<marketplaceFilterAssetClassRiskAutoTradingSettingsMaxLotSize\x12\x96\x01\n" +
-	"Kmarketplace_filter_asset_class_risk_auto_trading_settings_max_lot_size_hint\x18\xef\x02 \x01(\tR@marketplaceFilterAssetClassRiskAutoTradingSettingsMaxLotSizeHint\x12\x90\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_auto_trading_settings_max_positions\x18\xf0\x02 \x01(\tR>marketplaceFilterAssetClassRiskAutoTradingSettingsMaxPositions\x12\x99\x01\n" +
-	"Lmarketplace_filter_asset_class_risk_auto_trading_settings_max_positions_hint\x18\xf1\x02 \x01(\tRBmarketplaceFilterAssetClassRiskAutoTradingSettingsMaxPositionsHint\x12\x95\x01\n" +
-	"Jmarketplace_filter_asset_class_risk_auto_trading_settings_max_risk_percent\x18\xf2\x02 \x01(\tR@marketplaceFilterAssetClassRiskAutoTradingSettingsMaxRiskPercent\x12\x9e\x01\n" +
-	"Omarketplace_filter_asset_class_risk_auto_trading_settings_max_risk_percent_hint\x18\xf3\x02 \x01(\tRDmarketplaceFilterAssetClassRiskAutoTradingSettingsMaxRiskPercentHint\x12\x8c\x01\n" +
-	"Emarketplace_filter_asset_class_risk_auto_trading_settings_save_failed\x18\xf4\x02 \x01(\tR<marketplaceFilterAssetClassRiskAutoTradingSettingsSaveFailed\x12\x8e\x01\n" +
-	"Fmarketplace_filter_asset_class_risk_auto_trading_settings_save_success\x18\xf5\x02 \x01(\tR=marketplaceFilterAssetClassRiskAutoTradingSettingsSaveSuccess\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_auto_trading_settings_title\x18\xf6\x02 \x01(\tR7marketplaceFilterAssetClassRiskAutoTradingSettingsTitle\x12\x94\x01\n" +
-	"Imarketplace_filter_asset_class_risk_auto_trading_status_active_strategies\x18\xf7\x02 \x01(\tR@marketplaceFilterAssetClassRiskAutoTradingStatusActiveStrategies\x12\x83\x01\n" +
-	"@marketplace_filter_asset_class_risk_auto_trading_status_disabled\x18\xf8\x02 \x01(\tR8marketplaceFilterAssetClassRiskAutoTradingStatusDisabled\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_auto_trading_status_enabled\x18\xf9\x02 \x01(\tR7marketplaceFilterAssetClassRiskAutoTradingStatusEnabled\x12\x92\x01\n" +
-	"Hmarketplace_filter_asset_class_risk_auto_trading_status_today_executions\x18\xfa\x02 \x01(\tR?marketplaceFilterAssetClassRiskAutoTradingStatusTodayExecutions\x12\x8a\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_auto_trading_status_today_profit\x18\xfb\x02 \x01(\tR;marketplaceFilterAssetClassRiskAutoTradingStatusTodayProfit\x12p\n" +
-	"6marketplace_filter_asset_class_risk_auto_trading_title\x18\xfc\x02 \x01(\tR/marketplaceFilterAssetClassRiskAutoTradingTitle\x12p\n" +
-	"6marketplace_filter_asset_class_risk_detail_asset_class\x18\xfd\x02 \x01(\tR/marketplaceFilterAssetClassRiskDetailAssetClass\x12g\n" +
-	"1marketplace_filter_asset_class_risk_detail_author\x18\xfe\x02 \x01(\tR+marketplaceFilterAssetClassRiskDetailAuthor\x12\x80\x01\n" +
-	">marketplace_filter_asset_class_risk_detail_comment_placeholder\x18\xff\x02 \x01(\tR7marketplaceFilterAssetClassRiskDetailCommentPlaceholder\x12k\n" +
-	"3marketplace_filter_asset_class_risk_detail_comments\x18\x80\x03 \x01(\tR-marketplaceFilterAssetClassRiskDetailComments\x12q\n" +
-	"6marketplace_filter_asset_class_risk_detail_description\x18\x81\x03 \x01(\tR0marketplaceFilterAssetClassRiskDetailDescription\x12j\n" +
-	"3marketplace_filter_asset_class_risk_detail_get_free\x18\x82\x03 \x01(\tR,marketplaceFilterAssetClassRiskDetailGetFree\x12n\n" +
-	"5marketplace_filter_asset_class_risk_detail_rent_price\x18\x83\x03 \x01(\tR.marketplaceFilterAssetClassRiskDetailRentPrice\x12q\n" +
-	"6marketplace_filter_asset_class_risk_detail_subscribers\x18\x84\x03 \x01(\tR0marketplaceFilterAssetClassRiskDetailSubscribers\x12p\n" +
-	"6marketplace_filter_asset_class_risk_detail_your_rating\x18\x85\x03 \x01(\tR/marketplaceFilterAssetClassRiskDetailYourRating\x12t\n" +
-	"8marketplace_filter_asset_class_risk_errors_access_denied\x18\x86\x03 \x01(\tR1marketplaceFilterAssetClassRiskErrorsAccessDenied\x12|\n" +
-	"<marketplace_filter_asset_class_risk_errors_account_connected\x18\x87\x03 \x01(\tR5marketplaceFilterAssetClassRiskErrorsAccountConnected\x12\x8b\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_errors_account_connection_failed\x18\x88\x03 \x01(\tR<marketplaceFilterAssetClassRiskErrorsAccountConnectionFailed\x12{\n" +
-	"<marketplace_filter_asset_class_risk_errors_account_not_found\x18\x89\x03 \x01(\tR4marketplaceFilterAssetClassRiskErrorsAccountNotFound\x12~\n" +
-	">marketplace_filter_asset_class_risk_errors_ai_api_key_required\x18\x8a\x03 \x01(\tR5marketplaceFilterAssetClassRiskErrorsAiApiKeyRequired\x12\x80\x01\n" +
-	"?marketplace_filter_asset_class_risk_errors_ai_base_url_required\x18\x8b\x03 \x01(\tR6marketplaceFilterAssetClassRiskErrorsAiBaseUrlRequired\x12\x8b\x01\n" +
-	"Emarketplace_filter_asset_class_risk_errors_ai_base_url_scheme_invalid\x18\x8c\x03 \x01(\tR;marketplaceFilterAssetClassRiskErrorsAiBaseUrlSchemeInvalid\x12\xb3\x01\n" +
-	"[marketplace_filter_asset_class_risk_errors_ai_base_url_should_not_end_with_chat_completions\x18\x8d\x03 \x01(\tRMmarketplaceFilterAssetClassRiskErrorsAiBaseUrlShouldNotEndWithChatCompletions\x12\x99\x01\n" +
-	"Lmarketplace_filter_asset_class_risk_errors_ai_config_service_not_initialized\x18\x8e\x03 \x01(\tRBmarketplaceFilterAssetClassRiskErrorsAiConfigServiceNotInitialized\x12w\n" +
-	":marketplace_filter_asset_class_risk_errors_ai_config_valid\x18\x8f\x03 \x01(\tR2marketplaceFilterAssetClassRiskErrorsAiConfigValid\x12\x8d\x01\n" +
-	"Fmarketplace_filter_asset_class_risk_errors_ai_failed_to_create_request\x18\x90\x03 \x01(\tR<marketplaceFilterAssetClassRiskErrorsAiFailedToCreateRequest\x12}\n" +
-	"=marketplace_filter_asset_class_risk_errors_ai_forbidden_quota\x18\x91\x03 \x01(\tR5marketplaceFilterAssetClassRiskErrorsAiForbiddenQuota\x12\x84\x01\n" +
-	"Amarketplace_filter_asset_class_risk_errors_ai_free_tier_exhausted\x18\x92\x03 \x01(\tR8marketplaceFilterAssetClassRiskErrorsAiFreeTierExhausted\x12~\n" +
-	">marketplace_filter_asset_class_risk_errors_ai_invalid_base_url\x18\x93\x03 \x01(\tR5marketplaceFilterAssetClassRiskErrorsAiInvalidBaseUrl\x12\x7f\n" +
-	">marketplace_filter_asset_class_risk_errors_ai_invalid_provider\x18\x94\x03 \x01(\tR6marketplaceFilterAssetClassRiskErrorsAiInvalidProvider\x12\x8b\x01\n" +
-	"Emarketplace_filter_asset_class_risk_errors_ai_no_trade_data_available\x18\x95\x03 \x01(\tR;marketplaceFilterAssetClassRiskErrorsAiNoTradeDataAvailable\x12{\n" +
-	"<marketplace_filter_asset_class_risk_errors_ai_not_configured\x18\x96\x03 \x01(\tR4marketplaceFilterAssetClassRiskErrorsAiNotConfigured\x12o\n" +
-	"6marketplace_filter_asset_class_risk_errors_ai_probe_ok\x18\x97\x03 \x01(\tR.marketplaceFilterAssetClassRiskErrorsAiProbeOk\x12\x81\x01\n" +
-	"@marketplace_filter_asset_class_risk_errors_ai_probe_ok_no_models\x18\x98\x03 \x01(\tR6marketplaceFilterAssetClassRiskErrorsAiProbeOkNoModels\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_errors_ai_provider_required\x18\x99\x03 \x01(\tR7marketplaceFilterAssetClassRiskErrorsAiProviderRequired\x12\x9b\x01\n" +
-	"Mmarketplace_filter_asset_class_risk_errors_ai_provider_returned_empty_message\x18\x9a\x03 \x01(\tRCmarketplaceFilterAssetClassRiskErrorsAiProviderReturnedEmptyMessage\x12w\n" +
-	":marketplace_filter_asset_class_risk_errors_ai_rate_limited\x18\x9b\x03 \x01(\tR2marketplaceFilterAssetClassRiskErrorsAiRateLimited\x12{\n" +
-	"<marketplace_filter_asset_class_risk_errors_ai_request_failed\x18\x9c\x03 \x01(\tR4marketplaceFilterAssetClassRiskErrorsAiRequestFailed\x12\x83\x01\n" +
-	"@marketplace_filter_asset_class_risk_errors_auto_trading_disabled\x18\x9d\x03 \x01(\tR8marketplaceFilterAssetClassRiskErrorsAutoTradingDisabled\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_errors_auto_trading_enabled\x18\x9e\x03 \x01(\tR7marketplaceFilterAssetClassRiskErrorsAutoTradingEnabled\x12\x8b\x01\n" +
-	"Dmarketplace_filter_asset_class_risk_errors_connection_failed_content\x18\x9f\x03 \x01(\tR<marketplaceFilterAssetClassRiskErrorsConnectionFailedContent\x12\x87\x01\n" +
-	"Bmarketplace_filter_asset_class_risk_errors_connection_failed_title\x18\xa0\x03 \x01(\tR:marketplaceFilterAssetClassRiskErrorsConnectionFailedTitle\x12\x89\x01\n" +
-	"Cmarketplace_filter_asset_class_risk_errors_email_already_registered\x18\xa1\x03 \x01(\tR;marketplaceFilterAssetClassRiskErrorsEmailAlreadyRegistered\x12\x80\x01\n" +
-	">marketplace_filter_asset_class_risk_errors_invalid_credentials\x18\xa2\x03 \x01(\tR7marketplaceFilterAssetClassRiskErrorsInvalidCredentials\x12|\n" +
-	"<marketplace_filter_asset_class_risk_errors_not_authenticated\x18\xa3\x03 \x01(\tR5marketplaceFilterAssetClassRiskErrorsNotAuthenticated\x12\x94\x01\n" +
-	"Imarketplace_filter_asset_class_risk_errors_schedule_service_not_available\x18\xa4\x03 \x01(\tR@marketplaceFilterAssetClassRiskErrorsScheduleServiceNotAvailable\x12z\n" +
-	";marketplace_filter_asset_class_risk_errors_translate_failed\x18\xa5\x03 \x01(\tR4marketplaceFilterAssetClassRiskErrorsTranslateFailed\x12u\n" +
-	"9marketplace_filter_asset_class_risk_errors_user_not_found\x18\xa6\x03 \x01(\tR1marketplaceFilterAssetClassRiskErrorsUserNotFound\x12p\n" +
-	"6marketplace_filter_asset_class_risk_market_all_symbols\x18\xa7\x03 \x01(\tR/marketplaceFilterAssetClassRiskMarketAllSymbols\x12a\n" +
-	".marketplace_filter_asset_class_risk_market_ask\x18\xa8\x03 \x01(\tR(marketplaceFilterAssetClassRiskMarketAsk\x12a\n" +
-	".marketplace_filter_asset_class_risk_market_bid\x18\xa9\x03 \x01(\tR(marketplaceFilterAssetClassRiskMarketBid\x12g\n" +
-	"1marketplace_filter_asset_class_risk_market_common\x18\xaa\x03 \x01(\tR+marketplaceFilterAssetClassRiskMarketCommon\x12x\n" +
-	":marketplace_filter_asset_class_risk_market_empty_watchlist\x18\xab\x03 \x01(\tR3marketplaceFilterAssetClassRiskMarketEmptyWatchlist\x12x\n" +
-	":marketplace_filter_asset_class_risk_market_loading_symbols\x18\xac\x03 \x01(\tR3marketplaceFilterAssetClassRiskMarketLoadingSymbols\x12a\n" +
-	".marketplace_filter_asset_class_risk_market_mid\x18\xad\x03 \x01(\tR(marketplaceFilterAssetClassRiskMarketMid\x12}\n" +
-	"=marketplace_filter_asset_class_risk_market_no_symbol_selected\x18\xae\x03 \x01(\tR5marketplaceFilterAssetClassRiskMarketNoSymbolSelected\x12y\n" +
-	";marketplace_filter_asset_class_risk_market_no_symbols_found\x18\xaf\x03 \x01(\tR3marketplaceFilterAssetClassRiskMarketNoSymbolsFound\x12x\n" +
-	":marketplace_filter_asset_class_risk_market_popular_symbols\x18\xb0\x03 \x01(\tR3marketplaceFilterAssetClassRiskMarketPopularSymbols\x12~\n" +
-	"=marketplace_filter_asset_class_risk_market_search_placeholder\x18\xb1\x03 \x01(\tR6marketplaceFilterAssetClassRiskMarketSearchPlaceholder\x12t\n" +
-	"8marketplace_filter_asset_class_risk_market_search_symbol\x18\xb2\x03 \x01(\tR1marketplaceFilterAssetClassRiskMarketSearchSymbol\x12v\n" +
-	"9marketplace_filter_asset_class_risk_market_select_account\x18\xb3\x03 \x01(\tR2marketplaceFilterAssetClassRiskMarketSelectAccount\x12t\n" +
-	"8marketplace_filter_asset_class_risk_market_select_symbol\x18\xb4\x03 \x01(\tR1marketplaceFilterAssetClassRiskMarketSelectSymbol\x12g\n" +
-	"1marketplace_filter_asset_class_risk_market_spread\x18\xb5\x03 \x01(\tR+marketplaceFilterAssetClassRiskMarketSpread\x12m\n" +
-	"4marketplace_filter_asset_class_risk_market_watchlist\x18\xb6\x03 \x01(\tR.marketplaceFilterAssetClassRiskMarketWatchlist\x12z\n" +
-	";marketplace_filter_asset_class_risk_messages_comment_failed\x18\xb7\x03 \x01(\tR4marketplaceFilterAssetClassRiskMessagesCommentFailed\x12z\n" +
-	";marketplace_filter_asset_class_risk_messages_comment_posted\x18\xb8\x03 \x01(\tR4marketplaceFilterAssetClassRiskMessagesCommentPosted\x12t\n" +
-	"8marketplace_filter_asset_class_risk_messages_login_first\x18\xb9\x03 \x01(\tR1marketplaceFilterAssetClassRiskMessagesLoginFirst\x12\x83\x01\n" +
-	"@marketplace_filter_asset_class_risk_messages_payment_coming_soon\x18\xba\x03 \x01(\tR8marketplaceFilterAssetClassRiskMessagesPaymentComingSoon\x12t\n" +
-	"8marketplace_filter_asset_class_risk_messages_rate_failed\x18\xbb\x03 \x01(\tR1marketplaceFilterAssetClassRiskMessagesRateFailed\x12i\n" +
-	"2marketplace_filter_asset_class_risk_messages_rated\x18\xbc\x03 \x01(\tR,marketplaceFilterAssetClassRiskMessagesRated\x12~\n" +
-	"=marketplace_filter_asset_class_risk_messages_subscribe_failed\x18\xbd\x03 \x01(\tR6marketplaceFilterAssetClassRiskMessagesSubscribeFailed\x12s\n" +
-	"7marketplace_filter_asset_class_risk_messages_subscribed\x18\xbe\x03 \x01(\tR1marketplaceFilterAssetClassRiskMessagesSubscribed\x12\x89\x01\n" +
-	"Cmarketplace_filter_asset_class_risk_notifications_actions_clear_all\x18\xbf\x03 \x01(\tR;marketplaceFilterAssetClassRiskNotificationsActionsClearAll\x12\x98\x01\n" +
-	"Kmarketplace_filter_asset_class_risk_notifications_actions_clear_all_confirm\x18\xc0\x03 \x01(\tRBmarketplaceFilterAssetClassRiskNotificationsActionsClearAllConfirm\x12\x95\x01\n" +
-	"Jmarketplace_filter_asset_class_risk_notifications_actions_mark_all_as_read\x18\xc1\x03 \x01(\tR@marketplaceFilterAssetClassRiskNotificationsActionsMarkAllAsRead\x12o\n" +
-	"5marketplace_filter_asset_class_risk_notifications_all\x18\xc2\x03 \x01(\tR/marketplaceFilterAssetClassRiskNotificationsAll\x12z\n" +
-	";marketplace_filter_asset_class_risk_notifications_clear_all\x18\xc3\x03 \x01(\tR4marketplaceFilterAssetClassRiskNotificationsClearAll\x12\x89\x01\n" +
-	"Cmarketplace_filter_asset_class_risk_notifications_confirm_clear_all\x18\xc4\x03 \x01(\tR;marketplaceFilterAssetClassRiskNotificationsConfirmClearAll\x12s\n" +
-	"7marketplace_filter_asset_class_risk_notifications_empty\x18\xc5\x03 \x01(\tR1marketplaceFilterAssetClassRiskNotificationsEmpty\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_notifications_mark_all_read\x18\xc6\x03 \x01(\tR7marketplaceFilterAssetClassRiskNotificationsMarkAllRead\x12\x9e\x01\n" +
-	"Nmarketplace_filter_asset_class_risk_notifications_stream_auto_trading_fallback\x18\xc7\x03 \x01(\tREmarketplaceFilterAssetClassRiskNotificationsStreamAutoTradingFallback\x12\x98\x01\n" +
-	"Kmarketplace_filter_asset_class_risk_notifications_stream_auto_trading_title\x18\xc8\x03 \x01(\tRBmarketplaceFilterAssetClassRiskNotificationsStreamAutoTradingTitle\x12\x9a\x01\n" +
-	"Lmarketplace_filter_asset_class_risk_notifications_stream_risk_alert_fallback\x18\xc9\x03 \x01(\tRCmarketplaceFilterAssetClassRiskNotificationsStreamRiskAlertFallback\x12\x94\x01\n" +
-	"Imarketplace_filter_asset_class_risk_notifications_stream_risk_alert_title\x18\xca\x03 \x01(\tR@marketplaceFilterAssetClassRiskNotificationsStreamRiskAlertTitle\x12\xac\x01\n" +
-	"Umarketplace_filter_asset_class_risk_notifications_stream_strategy_execution_completed\x18\xcb\x03 \x01(\tRLmarketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionCompleted\x12\xa6\x01\n" +
-	"Rmarketplace_filter_asset_class_risk_notifications_stream_strategy_execution_failed\x18\xcc\x03 \x01(\tRImarketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionFailed\x12\xa4\x01\n" +
-	"Qmarketplace_filter_asset_class_risk_notifications_stream_strategy_execution_title\x18\xcd\x03 \x01(\tRHmarketplaceFilterAssetClassRiskNotificationsStreamStrategyExecutionTitle\x12\xa2\x01\n" +
-	"Pmarketplace_filter_asset_class_risk_notifications_stream_strategy_signal_message\x18\xce\x03 \x01(\tRGmarketplaceFilterAssetClassRiskNotificationsStreamStrategySignalMessage\x12\x9e\x01\n" +
-	"Nmarketplace_filter_asset_class_risk_notifications_stream_strategy_signal_title\x18\xcf\x03 \x01(\tREmarketplaceFilterAssetClassRiskNotificationsStreamStrategySignalTitle\x12x\n" +
-	":marketplace_filter_asset_class_risk_notifications_tabs_all\x18\xd0\x03 \x01(\tR3marketplaceFilterAssetClassRiskNotificationsTabsAll\x12~\n" +
-	"=marketplace_filter_asset_class_risk_notifications_tabs_unread\x18\xd1\x03 \x01(\tR6marketplaceFilterAssetClassRiskNotificationsTabsUnread\x12s\n" +
-	"7marketplace_filter_asset_class_risk_notifications_title\x18\xd2\x03 \x01(\tR1marketplaceFilterAssetClassRiskNotificationsTitle\x12\x87\x01\n" +
-	"Bmarketplace_filter_asset_class_risk_notifications_types_risk_alert\x18\xd3\x03 \x01(\tR:marketplaceFilterAssetClassRiskNotificationsTypesRiskAlert\x12\x80\x01\n" +
-	">marketplace_filter_asset_class_risk_notifications_types_signal\x18\xd4\x03 \x01(\tR7marketplaceFilterAssetClassRiskNotificationsTypesSignal\x12\x97\x01\n" +
-	"Jmarketplace_filter_asset_class_risk_notifications_types_strategy_execution\x18\xd5\x03 \x01(\tRBmarketplaceFilterAssetClassRiskNotificationsTypesStrategyExecution\x12\x80\x01\n" +
-	">marketplace_filter_asset_class_risk_notifications_types_system\x18\xd6\x03 \x01(\tR7marketplaceFilterAssetClassRiskNotificationsTypesSystem\x12~\n" +
-	"=marketplace_filter_asset_class_risk_notifications_types_trade\x18\xd7\x03 \x01(\tR6marketplaceFilterAssetClassRiskNotificationsTypesTrade\x12u\n" +
-	"8marketplace_filter_asset_class_risk_notifications_unread\x18\xd8\x03 \x01(\tR2marketplaceFilterAssetClassRiskNotificationsUnread\x12~\n" +
-	"=marketplace_filter_asset_class_risk_payment_already_purchased\x18\xd9\x03 \x01(\tR6marketplaceFilterAssetClassRiskPaymentAlreadyPurchased\x12v\n" +
-	"9marketplace_filter_asset_class_risk_payment_balance_after\x18\xda\x03 \x01(\tR2marketplaceFilterAssetClassRiskPaymentBalanceAfter\x12i\n" +
-	"2marketplace_filter_asset_class_risk_payment_cancel\x18\xdb\x03 \x01(\tR,marketplaceFilterAssetClassRiskPaymentCancel\x12k\n" +
-	"3marketplace_filter_asset_class_risk_payment_confirm\x18\xdc\x03 \x01(\tR-marketplaceFilterAssetClassRiskPaymentConfirm\x12x\n" +
-	":marketplace_filter_asset_class_risk_payment_deposit_prompt\x18\xdd\x03 \x01(\tR3marketplaceFilterAssetClassRiskPaymentDepositPrompt\x12u\n" +
-	"9marketplace_filter_asset_class_risk_payment_go_to_deposit\x18\xde\x03 \x01(\tR1marketplaceFilterAssetClassRiskPaymentGoToDeposit\x12\x84\x01\n" +
-	"@marketplace_filter_asset_class_risk_payment_insufficient_balance\x18\xdf\x03 \x01(\tR9marketplaceFilterAssetClassRiskPaymentInsufficientBalance\x12}\n" +
-	"=marketplace_filter_asset_class_risk_payment_one_time_purchase\x18\xe0\x03 \x01(\tR5marketplaceFilterAssetClassRiskPaymentOneTimePurchase\x12g\n" +
-	"1marketplace_filter_asset_class_risk_payment_price\x18\xe1\x03 \x01(\tR+marketplaceFilterAssetClassRiskPaymentPrice\x12z\n" +
-	";marketplace_filter_asset_class_risk_payment_purchase_failed\x18\xe2\x03 \x01(\tR4marketplaceFilterAssetClassRiskPaymentPurchaseFailed\x12|\n" +
-	"<marketplace_filter_asset_class_risk_payment_purchase_success\x18\xe3\x03 \x01(\tR5marketplaceFilterAssetClassRiskPaymentPurchaseSuccess\x12q\n" +
-	"6marketplace_filter_asset_class_risk_payment_purchasing\x18\xe4\x03 \x01(\tR0marketplaceFilterAssetClassRiskPaymentPurchasing\x12v\n" +
-	"9marketplace_filter_asset_class_risk_payment_strategy_name\x18\xe5\x03 \x01(\tR2marketplaceFilterAssetClassRiskPaymentStrategyName\x12g\n" +
-	"1marketplace_filter_asset_class_risk_payment_title\x18\xe6\x03 \x01(\tR+marketplaceFilterAssetClassRiskPaymentTitle\x12x\n" +
-	":marketplace_filter_asset_class_risk_payment_wallet_balance\x18\xe7\x03 \x01(\tR3marketplaceFilterAssetClassRiskPaymentWalletBalance\x12p\n" +
-	"6marketplace_filter_asset_class_risk_profile_last_login\x18\xe8\x03 \x01(\tR/marketplaceFilterAssetClassRiskProfileLastLogin\x12m\n" +
-	"4marketplace_filter_asset_class_risk_profile_nickname\x18\xe9\x03 \x01(\tR.marketplaceFilterAssetClassRiskProfileNickname\x12q\n" +
-	"6marketplace_filter_asset_class_risk_profile_registered\x18\xea\x03 \x01(\tR0marketplaceFilterAssetClassRiskProfileRegistered\x12e\n" +
-	"0marketplace_filter_asset_class_risk_profile_role\x18\xeb\x03 \x01(\tR*marketplaceFilterAssetClassRiskProfileRole\x12i\n" +
-	"2marketplace_filter_asset_class_risk_profile_status\x18\xec\x03 \x01(\tR,marketplaceFilterAssetClassRiskProfileStatus\x12g\n" +
-	"1marketplace_filter_asset_class_risk_profile_title\x18\xed\x03 \x01(\tR+marketplaceFilterAssetClassRiskProfileTitle\x12k\n" +
-	"3marketplace_filter_asset_class_risk_purchases_empty\x18\xee\x03 \x01(\tR-marketplaceFilterAssetClassRiskPurchasesEmpty\x12m\n" +
-	"4marketplace_filter_asset_class_risk_purchases_status\x18\xef\x03 \x01(\tR.marketplaceFilterAssetClassRiskPurchasesStatus\x12q\n" +
-	"6marketplace_filter_asset_class_risk_purchases_strategy\x18\xf0\x03 \x01(\tR0marketplaceFilterAssetClassRiskPurchasesStrategy\x12g\n" +
-	"1marketplace_filter_asset_class_risk_share_actions\x18\xf1\x03 \x01(\tR+marketplaceFilterAssetClassRiskShareActions\x12l\n" +
-	"4marketplace_filter_asset_class_risk_share_create_new\x18\xf2\x03 \x01(\tR-marketplaceFilterAssetClassRiskShareCreateNew\x12l\n" +
-	"4marketplace_filter_asset_class_risk_share_created_at\x18\xf3\x03 \x01(\tR-marketplaceFilterAssetClassRiskShareCreatedAt\x12t\n" +
-	"8marketplace_filter_asset_class_risk_share_delete_confirm\x18\xf4\x03 \x01(\tR1marketplaceFilterAssetClassRiskShareDeleteConfirm\x12c\n" +
-	"/marketplace_filter_asset_class_risk_share_empty\x18\xf5\x03 \x01(\tR)marketplaceFilterAssetClassRiskShareEmpty\x12g\n" +
-	"1marketplace_filter_asset_class_risk_share_expires\x18\xf6\x03 \x01(\tR+marketplaceFilterAssetClassRiskShareExpires\x12k\n" +
-	"3marketplace_filter_asset_class_risk_share_positions\x18\xf7\x03 \x01(\tR-marketplaceFilterAssetClassRiskSharePositions\x12t\n" +
-	"8marketplace_filter_asset_class_risk_share_show_positions\x18\xf8\x03 \x01(\tR1marketplaceFilterAssetClassRiskShareShowPositions\x12c\n" +
-	"/marketplace_filter_asset_class_risk_share_title\x18\xf9\x03 \x01(\tR)marketplaceFilterAssetClassRiskShareTitle\x12c\n" +
-	"/marketplace_filter_asset_class_risk_share_token\x18\xfa\x03 \x01(\tR)marketplaceFilterAssetClassRiskShareToken\x12f\n" +
-	"1marketplace_filter_asset_class_risk_share_user_id\x18\xfb\x03 \x01(\tR*marketplaceFilterAssetClassRiskShareUserId\x12c\n" +
-	"/marketplace_filter_asset_class_risk_share_views\x18\xfc\x03 \x01(\tR)marketplaceFilterAssetClassRiskShareViews\x12w\n" +
-	":marketplace_filter_asset_class_risk_share_page_avg_holding\x18\xfd\x03 \x01(\tR2marketplaceFilterAssetClassRiskSharePageAvgHolding\x12q\n" +
-	"7marketplace_filter_asset_class_risk_share_page_avg_loss\x18\xfe\x03 \x01(\tR/marketplaceFilterAssetClassRiskSharePageAvgLoss\x12o\n" +
-	"6marketplace_filter_asset_class_risk_share_page_avg_win\x18\xff\x03 \x01(\tR.marketplaceFilterAssetClassRiskSharePageAvgWin\x12u\n" +
-	"9marketplace_filter_asset_class_risk_share_page_best_trade\x18\x80\x04 \x01(\tR1marketplaceFilterAssetClassRiskSharePageBestTrade\x12s\n" +
-	"8marketplace_filter_asset_class_risk_share_page_by_symbol\x18\x81\x04 \x01(\tR0marketplaceFilterAssetClassRiskSharePageBySymbol\x12u\n" +
-	"9marketplace_filter_asset_class_risk_share_page_close_time\x18\x82\x04 \x01(\tR1marketplaceFilterAssetClassRiskSharePageCloseTime\x12l\n" +
-	"4marketplace_filter_asset_class_risk_share_page_count\x18\x83\x04 \x01(\tR-marketplaceFilterAssetClassRiskSharePageCount\x12v\n" +
-	"9marketplace_filter_asset_class_risk_share_page_disclaimer\x18\x84\x04 \x01(\tR2marketplaceFilterAssetClassRiskSharePageDisclaimer\x12y\n" +
-	";marketplace_filter_asset_class_risk_share_page_equity_curve\x18\x85\x04 \x01(\tR3marketplaceFilterAssetClassRiskSharePageEquityCurve\x12p\n" +
-	"6marketplace_filter_asset_class_risk_share_page_expired\x18\x86\x04 \x01(\tR/marketplaceFilterAssetClassRiskSharePageExpired\x12n\n" +
-	"5marketplace_filter_asset_class_risk_share_page_footer\x18\x87\x04 \x01(\tR.marketplaceFilterAssetClassRiskSharePageFooter\x12r\n" +
-	"7marketplace_filter_asset_class_risk_share_page_language\x18\x88\x04 \x01(\tR0marketplaceFilterAssetClassRiskSharePageLanguage\x12w\n" +
-	":marketplace_filter_asset_class_risk_share_page_load_failed\x18\x89\x04 \x01(\tR2marketplaceFilterAssetClassRiskSharePageLoadFailed\x12{\n" +
-	"<marketplace_filter_asset_class_risk_share_page_losing_trades\x18\x8a\x04 \x01(\tR4marketplaceFilterAssetClassRiskSharePageLosingTrades\x12y\n" +
-	";marketplace_filter_asset_class_risk_share_page_max_drawdown\x18\x8b\x04 \x01(\tR3marketplaceFilterAssetClassRiskSharePageMaxDrawdown\x12u\n" +
-	"9marketplace_filter_asset_class_risk_share_page_net_profit\x18\x8c\x04 \x01(\tR1marketplaceFilterAssetClassRiskSharePageNetProfit\x12y\n" +
-	";marketplace_filter_asset_class_risk_share_page_no_positions\x18\x8d\x04 \x01(\tR3marketplaceFilterAssetClassRiskSharePageNoPositions\x12s\n" +
-	"8marketplace_filter_asset_class_risk_share_page_no_trades\x18\x8e\x04 \x01(\tR0marketplaceFilterAssetClassRiskSharePageNoTrades\x12s\n" +
-	"8marketplace_filter_asset_class_risk_share_page_not_found\x18\x8f\x04 \x01(\tR0marketplaceFilterAssetClassRiskSharePageNotFound\x12u\n" +
-	"9marketplace_filter_asset_class_risk_share_page_open_price\x18\x90\x04 \x01(\tR1marketplaceFilterAssetClassRiskSharePageOpenPrice\x12t\n" +
-	"8marketplace_filter_asset_class_risk_share_page_positions\x18\x91\x04 \x01(\tR1marketplaceFilterAssetClassRiskSharePagePositions\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_share_page_positions_locked\x18\x92\x04 \x01(\tR7marketplaceFilterAssetClassRiskSharePagePositionsLocked\x12n\n" +
-	"5marketplace_filter_asset_class_risk_share_page_profit\x18\x93\x04 \x01(\tR.marketplaceFilterAssetClassRiskSharePageProfit\x12{\n" +
-	"<marketplace_filter_asset_class_risk_share_page_profit_factor\x18\x94\x04 \x01(\tR4marketplaceFilterAssetClassRiskSharePageProfitFactor\x12y\n" +
-	";marketplace_filter_asset_class_risk_share_page_sharpe_ratio\x18\x95\x04 \x01(\tR3marketplaceFilterAssetClassRiskSharePageSharpeRatio\x12j\n" +
-	"3marketplace_filter_asset_class_risk_share_page_side\x18\x96\x04 \x01(\tR,marketplaceFilterAssetClassRiskSharePageSide\x12r\n" +
-	"7marketplace_filter_asset_class_risk_share_page_subtitle\x18\x97\x04 \x01(\tR0marketplaceFilterAssetClassRiskSharePageSubtitle\x12n\n" +
-	"5marketplace_filter_asset_class_risk_share_page_symbol\x18\x98\x04 \x01(\tR.marketplaceFilterAssetClassRiskSharePageSymbol\x12l\n" +
-	"4marketplace_filter_asset_class_risk_share_page_title\x18\x99\x04 \x01(\tR-marketplaceFilterAssetClassRiskSharePageTitle\x12y\n" +
-	";marketplace_filter_asset_class_risk_share_page_total_return\x18\x9a\x04 \x01(\tR3marketplaceFilterAssetClassRiskSharePageTotalReturn\x12y\n" +
-	";marketplace_filter_asset_class_risk_share_page_total_trades\x18\x9b\x04 \x01(\tR3marketplaceFilterAssetClassRiskSharePageTotalTrades\x12y\n" +
-	";marketplace_filter_asset_class_risk_share_page_total_volume\x18\x9c\x04 \x01(\tR3marketplaceFilterAssetClassRiskSharePageTotalVolume\x12{\n" +
-	"<marketplace_filter_asset_class_risk_share_page_trade_records\x18\x9d\x04 \x01(\tR4marketplaceFilterAssetClassRiskSharePageTradeRecords\x12n\n" +
-	"5marketplace_filter_asset_class_risk_share_page_volume\x18\x9e\x04 \x01(\tR.marketplaceFilterAssetClassRiskSharePageVolume\x12q\n" +
-	"7marketplace_filter_asset_class_risk_share_page_win_rate\x18\x9f\x04 \x01(\tR/marketplaceFilterAssetClassRiskSharePageWinRate\x12}\n" +
-	"=marketplace_filter_asset_class_risk_share_page_winning_trades\x18\xa0\x04 \x01(\tR5marketplaceFilterAssetClassRiskSharePageWinningTrades\x12w\n" +
-	":marketplace_filter_asset_class_risk_share_page_worst_trade\x18\xa1\x04 \x01(\tR2marketplaceFilterAssetClassRiskSharePageWorstTrade\x12x\n" +
-	":marketplace_filter_asset_class_risk_symbol_detection_label\x18\xa2\x04 \x01(\tR3marketplaceFilterAssetClassRiskSymbolDetectionLabel\x12|\n" +
-	"<marketplace_filter_asset_class_risk_symbol_detection_loading\x18\xa3\x04 \x01(\tR5marketplaceFilterAssetClassRiskSymbolDetectionLoading\x12\x81\x01\n" +
-	"?marketplace_filter_asset_class_risk_symbol_detection_no_symbols\x18\xa4\x04 \x01(\tR7marketplaceFilterAssetClassRiskSymbolDetectionNoSymbols\x12\x8d\x01\n" +
-	"Emarketplace_filter_asset_class_risk_symbol_detection_resolved_tooltip\x18\xa5\x04 \x01(\tR=marketplaceFilterAssetClassRiskSymbolDetectionResolvedTooltip\x12\x92\x01\n" +
-	"Hmarketplace_filter_asset_class_risk_symbol_detection_trade_mode_disabled\x18\xa6\x04 \x01(\tR?marketplaceFilterAssetClassRiskSymbolDetectionTradeModeDisabled\x12\x93\x01\n" +
-	"Imarketplace_filter_asset_class_risk_symbol_detection_trade_mode_long_only\x18\xa7\x04 \x01(\tR?marketplaceFilterAssetClassRiskSymbolDetectionTradeModeLongOnly\x12\x95\x01\n" +
-	"Jmarketplace_filter_asset_class_risk_symbol_detection_trade_mode_long_short\x18\xa8\x04 \x01(\tR@marketplaceFilterAssetClassRiskSymbolDetectionTradeModeLongShort\x12\x95\x01\n" +
-	"Jmarketplace_filter_asset_class_risk_symbol_detection_trade_mode_short_only\x18\xa9\x04 \x01(\tR@marketplaceFilterAssetClassRiskSymbolDetectionTradeModeShortOnly\x12\x90\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_symbol_detection_trade_mode_unknown\x18\xaa\x04 \x01(\tR>marketplaceFilterAssetClassRiskSymbolDetectionTradeModeUnknown\x12\x91\x01\n" +
-	"Gmarketplace_filter_asset_class_risk_symbol_detection_unresolved_tooltip\x18\xab\x04 \x01(\tR?marketplaceFilterAssetClassRiskSymbolDetectionUnresolvedTooltip\x12g\n" +
-	"1marketplace_filter_asset_class_risk_topbar_logout\x18\xac\x04 \x01(\tR+marketplaceFilterAssetClassRiskTopbarLogout\x12i\n" +
-	"2marketplace_filter_asset_class_risk_topbar_profile\x18\xad\x04 \x01(\tR,marketplaceFilterAssetClassRiskTopbarProfile\x12k\n" +
-	"3marketplace_filter_asset_class_risk_topbar_settings\x18\xae\x04 \x01(\tR-marketplaceFilterAssetClassRiskTopbarSettings\x12w\n" +
-	":marketplace_filter_asset_class_risk_topbar_switch_to_admin\x18\xaf\x04 \x01(\tR2marketplaceFilterAssetClassRiskTopbarSwitchToAdmin\x12l\n" +
-	"4marketplace_filter_asset_class_risk_topbar_system_ok\x18\xb0\x04 \x01(\tR-marketplaceFilterAssetClassRiskTopbarSystemOk\x12c\n" +
-	"/marketplace_filter_asset_class_risk_topbar_user\x18\xb1\x04 \x01(\tR)marketplaceFilterAssetClassRiskTopbarUser\x12v\n" +
-	"9marketplace_filter_asset_class_risk_wallet_account_number\x18\xb2\x04 \x01(\tR2marketplaceFilterAssetClassRiskWalletAccountNumber\x12i\n" +
-	"2marketplace_filter_asset_class_risk_wallet_balance\x18\xb3\x04 \x01(\tR,marketplaceFilterAssetClassRiskWalletBalance\x12k\n" +
-	"3marketplace_filter_asset_class_risk_wallet_currency\x18\xb4\x04 \x01(\tR-marketplaceFilterAssetClassRiskWalletCurrency\x12i\n" +
-	"2marketplace_filter_asset_class_risk_wallet_deposit\x18\xb5\x04 \x01(\tR,marketplaceFilterAssetClassRiskWalletDeposit\x12g\n" +
-	"1marketplace_filter_asset_class_risk_wallet_frozen\x18\xb6\x04 \x01(\tR+marketplaceFilterAssetClassRiskWalletFrozen\x12v\n" +
-	"9marketplace_filter_asset_class_risk_wallet_frozen_balance\x18\xb7\x04 \x01(\tR2marketplaceFilterAssetClassRiskWalletFrozenBalance\x12i\n" +
-	"2marketplace_filter_asset_class_risk_wallet_history\x18\xb8\x04 \x01(\tR,marketplaceFilterAssetClassRiskWalletHistory\x12r\n" +
-	"7marketplace_filter_asset_class_risk_wallet_table_amount\x18\xb9\x04 \x01(\tR0marketplaceFilterAssetClassRiskWalletTableAmount\x12\x7f\n" +
-	">marketplace_filter_asset_class_risk_wallet_table_balance_after\x18\xba\x04 \x01(\tR6marketplaceFilterAssetClassRiskWalletTableBalanceAfter\x12|\n" +
-	"<marketplace_filter_asset_class_risk_wallet_table_description\x18\xbb\x04 \x01(\tR5marketplaceFilterAssetClassRiskWalletTableDescription\x12n\n" +
-	"5marketplace_filter_asset_class_risk_wallet_table_time\x18\xbc\x04 \x01(\tR.marketplaceFilterAssetClassRiskWalletTableTime\x12n\n" +
-	"5marketplace_filter_asset_class_risk_wallet_table_type\x18\xbd\x04 \x01(\tR.marketplaceFilterAssetClassRiskWalletTableType\x12e\n" +
-	"0marketplace_filter_asset_class_risk_wallet_title\x18\xbe\x04 \x01(\tR*marketplaceFilterAssetClassRiskWalletTitle\x12s\n" +
-	"7marketplace_filter_asset_class_risk_wallet_transactions\x18\xbf\x04 \x01(\tR1marketplaceFilterAssetClassRiskWalletTransactions\x12}\n" +
-	"=marketplace_filter_asset_class_risk_wallet_tx_type_adjustment\x18\xc0\x04 \x01(\tR5marketplaceFilterAssetClassRiskWalletTxTypeAdjustment\x12w\n" +
-	":marketplace_filter_asset_class_risk_wallet_tx_type_deposit\x18\xc1\x04 \x01(\tR2marketplaceFilterAssetClassRiskWalletTxTypeDeposit\x12o\n" +
-	"6marketplace_filter_asset_class_risk_wallet_tx_type_fee\x18\xc2\x04 \x01(\tR.marketplaceFilterAssetClassRiskWalletTxTypeFee\x12y\n" +
-	";marketplace_filter_asset_class_risk_wallet_tx_type_reversal\x18\xc3\x04 \x01(\tR3marketplaceFilterAssetClassRiskWalletTxTypeReversal\x12}\n" +
-	"=marketplace_filter_asset_class_risk_wallet_tx_type_withdrawal\x18\xc4\x04 \x01(\tR5marketplaceFilterAssetClassRiskWalletTxTypeWithdrawal\x12k\n" +
-	"3marketplace_filter_asset_class_risk_wallet_withdraw\x18\xc5\x04 \x01(\tR-marketplaceFilterAssetClassRiskWalletWithdraw\x12<\n" +
-	"\x1amarketplace_filter_card_by\x18\xc6\x04 \x01(\tR\x17marketplaceFilterCardBy\x12@\n" +
-	"\x1cmarketplace_filter_card_free\x18\xc7\x04 \x01(\tR\x19marketplaceFilterCardFree\x12B\n" +
-	"\x1dmarketplace_filter_card_owned\x18\xc8\x04 \x01(\tR\x1amarketplaceFilterCardOwned\x12N\n" +
-	"#marketplace_filter_card_subscribers\x18\xc9\x04 \x01(\tR marketplaceFilterCardSubscribers\x12G\n" +
-	" marketplace_filter_card_win_rate\x18\xca\x04 \x01(\tR\x1cmarketplaceFilterCardWinRate\x129\n" +
-	"\x18marketplace_filter_empty\x18\xcb\x04 \x01(\tR\x16marketplaceFilterEmpty\x12N\n" +
-	"#marketplace_filter_no_subscriptions\x18\xcc\x04 \x01(\tR marketplaceFilterNoSubscriptions\x12D\n" +
-	"\x1emarketplace_filter_sort_newest\x18\xcd\x04 \x01(\tR\x1bmarketplaceFilterSortNewest\x12N\n" +
-	"#marketplace_filter_sort_performance\x18\xce\x04 \x01(\tR marketplaceFilterSortPerformance\x12F\n" +
-	"\x1fmarketplace_filter_sort_popular\x18\xcf\x04 \x01(\tR\x1cmarketplaceFilterSortPopular\x12I\n" +
-	"!marketplace_filter_sort_price_asc\x18\xd0\x04 \x01(\tR\x1dmarketplaceFilterSortPriceAsc\x12K\n" +
-	"\"marketplace_filter_sort_price_desc\x18\xd1\x04 \x01(\tR\x1emarketplaceFilterSortPriceDesc\x12D\n" +
-	"\x1emarketplace_filter_sort_rating\x18\xd2\x04 \x01(\tR\x1bmarketplaceFilterSortRating\x12B\n" +
-	"\x1dmarketplace_filter_sort_score\x18\xd3\x04 \x01(\tR\x1amarketplaceFilterSortScore\x12>\n" +
-	"\x1bmarketplace_filter_by_class\x18\xd4\x04 \x01(\tR\x18marketplaceFilterByClass\x120\n" +
-	"\x13marketplace_publish\x18\xd5\x04 \x01(\tR\x12marketplacePublish\x12E\n" +
-	"\x1emarketplace_search_placeholder\x18\xd6\x04 \x01(\tR\x1cmarketplaceSearchPlaceholder\x122\n" +
-	"\x14marketplace_subtitle\x18\xd7\x04 \x01(\tR\x13marketplaceSubtitle\x127\n" +
-	"\x17marketplace_tabs_author\x18\xd8\x04 \x01(\tR\x15marketplaceTabsAuthor\x12A\n" +
-	"\x1cmarketplace_tabs_marketplace\x18\xd9\x04 \x01(\tR\x1amarketplaceTabsMarketplace\x12=\n" +
-	"\x1amarketplace_tabs_purchases\x18\xda\x04 \x01(\tR\x18marketplaceTabsPurchases\x12E\n" +
-	"\x1emarketplace_tabs_subscriptions\x18\xdb\x04 \x01(\tR\x1cmarketplaceTabsSubscriptions\x12,\n" +
-	"\x11marketplace_title\x18\xdc\x04 \x01(\tR\x10marketplaceTitle\x12$\n" +
-	"\rmenu_accounts\x18\xdd\x04 \x01(\tR\fmenuAccounts\x12+\n" +
-	"\x11menu_ai_assistant\x18\xde\x04 \x01(\tR\x0fmenuAiAssistant\x12/\n" +
-	"\x13menu_algo_dashboard\x18\xdf\x04 \x01(\tR\x11menuAlgoDashboard\x12&\n" +
-	"\x0emenu_analytics\x18\xe0\x04 \x01(\tR\rmenuAnalytics\x12/\n" +
-	"\x13menu_asset_analysis\x18\xe1\x04 \x01(\tR\x11menuAssetAnalysis\x12 \n" +
-	"\vmenu_assets\x18\xe2\x04 \x01(\tR\n" +
+	"common_you\x18\xf4\x02 \x01(\tR\tcommonYou\x121\n" +
+	"\x14errors_access_denied\x18\xf5\x02 \x01(\tR\x12errorsAccessDenied\x129\n" +
+	"\x18errors_account_connected\x18\xf6\x02 \x01(\tR\x16errorsAccountConnected\x12H\n" +
+	" errors_account_connection_failed\x18\xf7\x02 \x01(\tR\x1derrorsAccountConnectionFailed\x128\n" +
+	"\x18errors_account_not_found\x18\xf8\x02 \x01(\tR\x15errorsAccountNotFound\x12;\n" +
+	"\x1aerrors_ai_api_key_required\x18\xf9\x02 \x01(\tR\x16errorsAiApiKeyRequired\x12=\n" +
+	"\x1berrors_ai_base_url_required\x18\xfa\x02 \x01(\tR\x17errorsAiBaseUrlRequired\x12H\n" +
+	"!errors_ai_base_url_scheme_invalid\x18\xfb\x02 \x01(\tR\x1cerrorsAiBaseUrlSchemeInvalid\x12p\n" +
+	"7errors_ai_base_url_should_not_end_with_chat_completions\x18\xfc\x02 \x01(\tR.errorsAiBaseUrlShouldNotEndWithChatCompletions\x12V\n" +
+	"(errors_ai_config_service_not_initialized\x18\xfd\x02 \x01(\tR#errorsAiConfigServiceNotInitialized\x124\n" +
+	"\x16errors_ai_config_valid\x18\xfe\x02 \x01(\tR\x13errorsAiConfigValid\x12J\n" +
+	"\"errors_ai_failed_to_create_request\x18\xff\x02 \x01(\tR\x1derrorsAiFailedToCreateRequest\x12:\n" +
+	"\x19errors_ai_forbidden_quota\x18\x80\x03 \x01(\tR\x16errorsAiForbiddenQuota\x12A\n" +
+	"\x1derrors_ai_free_tier_exhausted\x18\x81\x03 \x01(\tR\x19errorsAiFreeTierExhausted\x12;\n" +
+	"\x1aerrors_ai_invalid_base_url\x18\x82\x03 \x01(\tR\x16errorsAiInvalidBaseUrl\x12<\n" +
+	"\x1aerrors_ai_invalid_provider\x18\x83\x03 \x01(\tR\x17errorsAiInvalidProvider\x12H\n" +
+	"!errors_ai_no_trade_data_available\x18\x84\x03 \x01(\tR\x1cerrorsAiNoTradeDataAvailable\x128\n" +
+	"\x18errors_ai_not_configured\x18\x85\x03 \x01(\tR\x15errorsAiNotConfigured\x12,\n" +
+	"\x12errors_ai_probe_ok\x18\x86\x03 \x01(\tR\x0ferrorsAiProbeOk\x12>\n" +
+	"\x1cerrors_ai_probe_ok_no_models\x18\x87\x03 \x01(\tR\x17errorsAiProbeOkNoModels\x12>\n" +
+	"\x1berrors_ai_provider_required\x18\x88\x03 \x01(\tR\x18errorsAiProviderRequired\x12X\n" +
+	")errors_ai_provider_returned_empty_message\x18\x89\x03 \x01(\tR$errorsAiProviderReturnedEmptyMessage\x124\n" +
+	"\x16errors_ai_rate_limited\x18\x8a\x03 \x01(\tR\x13errorsAiRateLimited\x128\n" +
+	"\x18errors_ai_request_failed\x18\x8b\x03 \x01(\tR\x15errorsAiRequestFailed\x12@\n" +
+	"\x1cerrors_auto_trading_disabled\x18\x8c\x03 \x01(\tR\x19errorsAutoTradingDisabled\x12>\n" +
+	"\x1berrors_auto_trading_enabled\x18\x8d\x03 \x01(\tR\x18errorsAutoTradingEnabled\x12H\n" +
+	" errors_connection_failed_content\x18\x8e\x03 \x01(\tR\x1derrorsConnectionFailedContent\x12D\n" +
+	"\x1eerrors_connection_failed_title\x18\x8f\x03 \x01(\tR\x1berrorsConnectionFailedTitle\x12F\n" +
+	"\x1ferrors_email_already_registered\x18\x90\x03 \x01(\tR\x1cerrorsEmailAlreadyRegistered\x12=\n" +
+	"\x1aerrors_invalid_credentials\x18\x91\x03 \x01(\tR\x18errorsInvalidCredentials\x129\n" +
+	"\x18errors_not_authenticated\x18\x92\x03 \x01(\tR\x16errorsNotAuthenticated\x12Q\n" +
+	"%errors_schedule_service_not_available\x18\x93\x03 \x01(\tR!errorsScheduleServiceNotAvailable\x127\n" +
+	"\x17errors_translate_failed\x18\x94\x03 \x01(\tR\x15errorsTranslateFailed\x122\n" +
+	"\x15errors_user_not_found\x18\x95\x03 \x01(\tR\x12errorsUserNotFound\x12*\n" +
+	"\x10language_english\x18\x96\x03 \x01(\tR\x0flanguageEnglish\x12,\n" +
+	"\x11language_japanese\x18\x97\x03 \x01(\tR\x10languageJapanese\x12?\n" +
+	"\x1blanguage_simplified_chinese\x18\x98\x03 \x01(\tR\x19languageSimplifiedChinese\x12A\n" +
+	"\x1clanguage_traditional_chinese\x18\x99\x03 \x01(\tR\x1alanguageTraditionalChinese\x120\n" +
+	"\x13language_vietnamese\x18\x9a\x03 \x01(\tR\x12languageVietnamese\x12-\n" +
+	"\x12market_all_symbols\x18\x9b\x03 \x01(\tR\x10marketAllSymbols\x12\x1e\n" +
+	"\n" +
+	"market_ask\x18\x9c\x03 \x01(\tR\tmarketAsk\x12\x1e\n" +
+	"\n" +
+	"market_bid\x18\x9d\x03 \x01(\tR\tmarketBid\x12$\n" +
+	"\rmarket_common\x18\x9e\x03 \x01(\tR\fmarketCommon\x125\n" +
+	"\x16market_empty_watchlist\x18\x9f\x03 \x01(\tR\x14marketEmptyWatchlist\x125\n" +
+	"\x16market_loading_symbols\x18\xa0\x03 \x01(\tR\x14marketLoadingSymbols\x12\x1e\n" +
+	"\n" +
+	"market_mid\x18\xa1\x03 \x01(\tR\tmarketMid\x12:\n" +
+	"\x19market_no_symbol_selected\x18\xa2\x03 \x01(\tR\x16marketNoSymbolSelected\x126\n" +
+	"\x17market_no_symbols_found\x18\xa3\x03 \x01(\tR\x14marketNoSymbolsFound\x125\n" +
+	"\x16market_popular_symbols\x18\xa4\x03 \x01(\tR\x14marketPopularSymbols\x12;\n" +
+	"\x19market_search_placeholder\x18\xa5\x03 \x01(\tR\x17marketSearchPlaceholder\x121\n" +
+	"\x14market_search_symbol\x18\xa6\x03 \x01(\tR\x12marketSearchSymbol\x123\n" +
+	"\x15market_select_account\x18\xa7\x03 \x01(\tR\x13marketSelectAccount\x121\n" +
+	"\x14market_select_symbol\x18\xa8\x03 \x01(\tR\x12marketSelectSymbol\x12$\n" +
+	"\rmarket_spread\x18\xa9\x03 \x01(\tR\fmarketSpread\x12*\n" +
+	"\x10market_watchlist\x18\xaa\x03 \x01(\tR\x0fmarketWatchlist\x12B\n" +
+	"\x1dmarketplace_author_avg_rating\x18\xab\x03 \x01(\tR\x1amarketplaceAuthorAvgRating\x129\n" +
+	"\x18marketplace_author_empty\x18\xac\x03 \x01(\tR\x16marketplaceAuthorEmpty\x12A\n" +
+	"\x1cmarketplace_author_published\x18\xad\x03 \x01(\tR\x1amarketplaceAuthorPublished\x12/\n" +
+	"\x13marketplace_card_by\x18\xae\x03 \x01(\tR\x11marketplaceCardBy\x123\n" +
+	"\x15marketplace_card_free\x18\xaf\x03 \x01(\tR\x13marketplaceCardFree\x125\n" +
+	"\x16marketplace_card_owned\x18\xb0\x03 \x01(\tR\x14marketplaceCardOwned\x12A\n" +
+	"\x1cmarketplace_card_subscribers\x18\xb1\x03 \x01(\tR\x1amarketplaceCardSubscribers\x12:\n" +
+	"\x19marketplace_card_win_rate\x18\xb2\x03 \x01(\tR\x16marketplaceCardWinRate\x12D\n" +
+	"\x1emarketplace_detail_asset_class\x18\xb3\x03 \x01(\tR\x1bmarketplaceDetailAssetClass\x12;\n" +
+	"\x19marketplace_detail_author\x18\xb4\x03 \x01(\tR\x17marketplaceDetailAuthor\x12T\n" +
+	"&marketplace_detail_comment_placeholder\x18\xb5\x03 \x01(\tR#marketplaceDetailCommentPlaceholder\x12?\n" +
+	"\x1bmarketplace_detail_comments\x18\xb6\x03 \x01(\tR\x19marketplaceDetailComments\x12E\n" +
+	"\x1emarketplace_detail_description\x18\xb7\x03 \x01(\tR\x1cmarketplaceDetailDescription\x12>\n" +
+	"\x1bmarketplace_detail_get_free\x18\xb8\x03 \x01(\tR\x18marketplaceDetailGetFree\x12B\n" +
+	"\x1dmarketplace_detail_rent_price\x18\xb9\x03 \x01(\tR\x1amarketplaceDetailRentPrice\x12E\n" +
+	"\x1emarketplace_detail_subscribers\x18\xba\x03 \x01(\tR\x1cmarketplaceDetailSubscribers\x12D\n" +
+	"\x1emarketplace_detail_your_rating\x18\xbb\x03 \x01(\tR\x1bmarketplaceDetailYourRating\x12,\n" +
+	"\x11marketplace_empty\x18\xbc\x03 \x01(\tR\x10marketplaceEmpty\x12>\n" +
+	"\x1bmarketplace_filter_by_class\x18\xbd\x03 \x01(\tR\x18marketplaceFilterByClass\x12N\n" +
+	"#marketplace_messages_comment_failed\x18\xbe\x03 \x01(\tR marketplaceMessagesCommentFailed\x12N\n" +
+	"#marketplace_messages_comment_posted\x18\xbf\x03 \x01(\tR marketplaceMessagesCommentPosted\x12H\n" +
+	" marketplace_messages_login_first\x18\xc0\x03 \x01(\tR\x1dmarketplaceMessagesLoginFirst\x12W\n" +
+	"(marketplace_messages_payment_coming_soon\x18\xc1\x03 \x01(\tR$marketplaceMessagesPaymentComingSoon\x12H\n" +
+	" marketplace_messages_rate_failed\x18\xc2\x03 \x01(\tR\x1dmarketplaceMessagesRateFailed\x12=\n" +
+	"\x1amarketplace_messages_rated\x18\xc3\x03 \x01(\tR\x18marketplaceMessagesRated\x12R\n" +
+	"%marketplace_messages_subscribe_failed\x18\xc4\x03 \x01(\tR\"marketplaceMessagesSubscribeFailed\x12G\n" +
+	"\x1fmarketplace_messages_subscribed\x18\xc5\x03 \x01(\tR\x1dmarketplaceMessagesSubscribed\x12A\n" +
+	"\x1cmarketplace_no_subscriptions\x18\xc6\x03 \x01(\tR\x1amarketplaceNoSubscriptions\x12R\n" +
+	"%marketplace_payment_already_purchased\x18\xc7\x03 \x01(\tR\"marketplacePaymentAlreadyPurchased\x12J\n" +
+	"!marketplace_payment_balance_after\x18\xc8\x03 \x01(\tR\x1emarketplacePaymentBalanceAfter\x12=\n" +
+	"\x1amarketplace_payment_cancel\x18\xc9\x03 \x01(\tR\x18marketplacePaymentCancel\x12?\n" +
+	"\x1bmarketplace_payment_confirm\x18\xca\x03 \x01(\tR\x19marketplacePaymentConfirm\x12L\n" +
+	"\"marketplace_payment_deposit_prompt\x18\xcb\x03 \x01(\tR\x1fmarketplacePaymentDepositPrompt\x12I\n" +
+	"!marketplace_payment_go_to_deposit\x18\xcc\x03 \x01(\tR\x1dmarketplacePaymentGoToDeposit\x12X\n" +
+	"(marketplace_payment_insufficient_balance\x18\xcd\x03 \x01(\tR%marketplacePaymentInsufficientBalance\x12Q\n" +
+	"%marketplace_payment_one_time_purchase\x18\xce\x03 \x01(\tR!marketplacePaymentOneTimePurchase\x12;\n" +
+	"\x19marketplace_payment_price\x18\xcf\x03 \x01(\tR\x17marketplacePaymentPrice\x12N\n" +
+	"#marketplace_payment_purchase_failed\x18\xd0\x03 \x01(\tR marketplacePaymentPurchaseFailed\x12P\n" +
+	"$marketplace_payment_purchase_success\x18\xd1\x03 \x01(\tR!marketplacePaymentPurchaseSuccess\x12E\n" +
+	"\x1emarketplace_payment_purchasing\x18\xd2\x03 \x01(\tR\x1cmarketplacePaymentPurchasing\x12J\n" +
+	"!marketplace_payment_strategy_name\x18\xd3\x03 \x01(\tR\x1emarketplacePaymentStrategyName\x12;\n" +
+	"\x19marketplace_payment_title\x18\xd4\x03 \x01(\tR\x17marketplacePaymentTitle\x12L\n" +
+	"\"marketplace_payment_wallet_balance\x18\xd5\x03 \x01(\tR\x1fmarketplacePaymentWalletBalance\x120\n" +
+	"\x13marketplace_publish\x18\xd6\x03 \x01(\tR\x12marketplacePublish\x12?\n" +
+	"\x1bmarketplace_purchases_empty\x18\xd7\x03 \x01(\tR\x19marketplacePurchasesEmpty\x12A\n" +
+	"\x1cmarketplace_purchases_status\x18\xd8\x03 \x01(\tR\x1amarketplacePurchasesStatus\x12E\n" +
+	"\x1emarketplace_purchases_strategy\x18\xd9\x03 \x01(\tR\x1cmarketplacePurchasesStrategy\x12E\n" +
+	"\x1emarketplace_search_placeholder\x18\xda\x03 \x01(\tR\x1cmarketplaceSearchPlaceholder\x127\n" +
+	"\x17marketplace_sort_newest\x18\xdb\x03 \x01(\tR\x15marketplaceSortNewest\x12A\n" +
+	"\x1cmarketplace_sort_performance\x18\xdc\x03 \x01(\tR\x1amarketplaceSortPerformance\x129\n" +
+	"\x18marketplace_sort_popular\x18\xdd\x03 \x01(\tR\x16marketplaceSortPopular\x12<\n" +
+	"\x1amarketplace_sort_price_asc\x18\xde\x03 \x01(\tR\x17marketplaceSortPriceAsc\x12>\n" +
+	"\x1bmarketplace_sort_price_desc\x18\xdf\x03 \x01(\tR\x18marketplaceSortPriceDesc\x127\n" +
+	"\x17marketplace_sort_rating\x18\xe0\x03 \x01(\tR\x15marketplaceSortRating\x125\n" +
+	"\x16marketplace_sort_score\x18\xe1\x03 \x01(\tR\x14marketplaceSortScore\x122\n" +
+	"\x14marketplace_subtitle\x18\xe2\x03 \x01(\tR\x13marketplaceSubtitle\x127\n" +
+	"\x17marketplace_tabs_author\x18\xe3\x03 \x01(\tR\x15marketplaceTabsAuthor\x12A\n" +
+	"\x1cmarketplace_tabs_marketplace\x18\xe4\x03 \x01(\tR\x1amarketplaceTabsMarketplace\x12=\n" +
+	"\x1amarketplace_tabs_purchases\x18\xe5\x03 \x01(\tR\x18marketplaceTabsPurchases\x12E\n" +
+	"\x1emarketplace_tabs_subscriptions\x18\xe6\x03 \x01(\tR\x1cmarketplaceTabsSubscriptions\x12,\n" +
+	"\x11marketplace_title\x18\xe7\x03 \x01(\tR\x10marketplaceTitle\x12$\n" +
+	"\rmenu_accounts\x18\xe8\x03 \x01(\tR\fmenuAccounts\x12+\n" +
+	"\x11menu_ai_assistant\x18\xe9\x03 \x01(\tR\x0fmenuAiAssistant\x12/\n" +
+	"\x13menu_algo_dashboard\x18\xea\x03 \x01(\tR\x11menuAlgoDashboard\x12&\n" +
+	"\x0emenu_analytics\x18\xeb\x03 \x01(\tR\rmenuAnalytics\x12/\n" +
+	"\x13menu_asset_analysis\x18\xec\x03 \x01(\tR\x11menuAssetAnalysis\x12 \n" +
+	"\vmenu_assets\x18\xed\x03 \x01(\tR\n" +
 	"menuAssets\x12+\n" +
-	"\x11menu_auto_trading\x18\xe3\x04 \x01(\tR\x0fmenuAutoTrading\x12&\n" +
-	"\x0emenu_dashboard\x18\xe4\x04 \x01(\tR\rmenuDashboard\x12%\n" +
-	"\x0emenu_dev_group\x18\xe5\x04 \x01(\tR\fmenuDevGroup\x12*\n" +
-	"\x10menu_experiments\x18\xe6\x04 \x01(\tR\x0fmenuExperiments\x125\n" +
-	"\x16menu_indicator_catalog\x18\xe7\x04 \x01(\tR\x14menuIndicatorCatalog\x12\x1c\n" +
-	"\tmenu_logs\x18\xe8\x04 \x01(\tR\bmenuLogs\x12 \n" +
-	"\vmenu_market\x18\xe9\x04 \x01(\tR\n" +
+	"\x11menu_auto_trading\x18\xee\x03 \x01(\tR\x0fmenuAutoTrading\x12&\n" +
+	"\x0emenu_dashboard\x18\xef\x03 \x01(\tR\rmenuDashboard\x12%\n" +
+	"\x0emenu_dev_group\x18\xf0\x03 \x01(\tR\fmenuDevGroup\x12*\n" +
+	"\x10menu_experiments\x18\xf1\x03 \x01(\tR\x0fmenuExperiments\x125\n" +
+	"\x16menu_indicator_catalog\x18\xf2\x03 \x01(\tR\x14menuIndicatorCatalog\x12\x1c\n" +
+	"\tmenu_logs\x18\xf3\x03 \x01(\tR\bmenuLogs\x12 \n" +
+	"\vmenu_market\x18\xf4\x03 \x01(\tR\n" +
 	"menuMarket\x12-\n" +
-	"\x12menu_market_regime\x18\xea\x04 \x01(\tR\x10menuMarketRegime\x12+\n" +
-	"\x11menu_market_tools\x18\xeb\x04 \x01(\tR\x0fmenuMarketTools\x12*\n" +
-	"\x10menu_marketplace\x18\xec\x04 \x01(\tR\x0fmenuMarketplace\x12%\n" +
-	"\x0emenu_ops_group\x18\xed\x04 \x01(\tR\fmenuOpsGroup\x12&\n" +
-	"\x0emenu_schedules\x18\xee\x04 \x01(\tR\rmenuSchedules\x12(\n" +
-	"\x0fmenu_strategies\x18\xef\x04 \x01(\tR\x0emenuStrategies\x12$\n" +
-	"\rmenu_strategy\x18\xf0\x04 \x01(\tR\fmenuStrategy\x123\n" +
-	"\x15menu_strategy_library\x18\xf1\x04 \x01(\tR\x13menuStrategyLibrary\x127\n" +
-	"\x17menu_strategy_workspace\x18\xf2\x04 \x01(\tR\x15menuStrategyWorkspace\x12\"\n" +
-	"\fmenu_trading\x18\xf3\x04 \x01(\tR\vmenuTrading\x12 \n" +
-	"\vmenu_wallet\x18\xf4\x04 \x01(\tR\n" +
-	"menuWalletB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x12menu_market_regime\x18\xf5\x03 \x01(\tR\x10menuMarketRegime\x12+\n" +
+	"\x11menu_market_tools\x18\xf6\x03 \x01(\tR\x0fmenuMarketTools\x12*\n" +
+	"\x10menu_marketplace\x18\xf7\x03 \x01(\tR\x0fmenuMarketplace\x12%\n" +
+	"\x0emenu_ops_group\x18\xf8\x03 \x01(\tR\fmenuOpsGroup\x12&\n" +
+	"\x0emenu_schedules\x18\xf9\x03 \x01(\tR\rmenuSchedules\x12(\n" +
+	"\x0fmenu_strategies\x18\xfa\x03 \x01(\tR\x0emenuStrategies\x12$\n" +
+	"\rmenu_strategy\x18\xfb\x03 \x01(\tR\fmenuStrategy\x123\n" +
+	"\x15menu_strategy_library\x18\xfc\x03 \x01(\tR\x13menuStrategyLibrary\x127\n" +
+	"\x17menu_strategy_workspace\x18\xfd\x03 \x01(\tR\x15menuStrategyWorkspace\x12\"\n" +
+	"\fmenu_trading\x18\xfe\x03 \x01(\tR\vmenuTrading\x12 \n" +
+	"\vmenu_wallet\x18\xff\x03 \x01(\tR\n" +
+	"menuWallet\x12F\n" +
+	"\x1fnotifications_actions_clear_all\x18\x80\x04 \x01(\tR\x1cnotificationsActionsClearAll\x12U\n" +
+	"'notifications_actions_clear_all_confirm\x18\x81\x04 \x01(\tR#notificationsActionsClearAllConfirm\x12R\n" +
+	"&notifications_actions_mark_all_as_read\x18\x82\x04 \x01(\tR!notificationsActionsMarkAllAsRead\x12,\n" +
+	"\x11notifications_all\x18\x83\x04 \x01(\tR\x10notificationsAll\x127\n" +
+	"\x17notifications_clear_all\x18\x84\x04 \x01(\tR\x15notificationsClearAll\x12F\n" +
+	"\x1fnotifications_confirm_clear_all\x18\x85\x04 \x01(\tR\x1cnotificationsConfirmClearAll\x120\n" +
+	"\x13notifications_empty\x18\x86\x04 \x01(\tR\x12notificationsEmpty\x12>\n" +
+	"\x1bnotifications_mark_all_read\x18\x87\x04 \x01(\tR\x18notificationsMarkAllRead\x12[\n" +
+	"*notifications_stream_auto_trading_fallback\x18\x88\x04 \x01(\tR&notificationsStreamAutoTradingFallback\x12U\n" +
+	"'notifications_stream_auto_trading_title\x18\x89\x04 \x01(\tR#notificationsStreamAutoTradingTitle\x12W\n" +
+	"(notifications_stream_risk_alert_fallback\x18\x8a\x04 \x01(\tR$notificationsStreamRiskAlertFallback\x12Q\n" +
+	"%notifications_stream_risk_alert_title\x18\x8b\x04 \x01(\tR!notificationsStreamRiskAlertTitle\x12i\n" +
+	"1notifications_stream_strategy_execution_completed\x18\x8c\x04 \x01(\tR-notificationsStreamStrategyExecutionCompleted\x12c\n" +
+	".notifications_stream_strategy_execution_failed\x18\x8d\x04 \x01(\tR*notificationsStreamStrategyExecutionFailed\x12a\n" +
+	"-notifications_stream_strategy_execution_title\x18\x8e\x04 \x01(\tR)notificationsStreamStrategyExecutionTitle\x12_\n" +
+	",notifications_stream_strategy_signal_message\x18\x8f\x04 \x01(\tR(notificationsStreamStrategySignalMessage\x12[\n" +
+	"*notifications_stream_strategy_signal_title\x18\x90\x04 \x01(\tR&notificationsStreamStrategySignalTitle\x125\n" +
+	"\x16notifications_tabs_all\x18\x91\x04 \x01(\tR\x14notificationsTabsAll\x12;\n" +
+	"\x19notifications_tabs_unread\x18\x92\x04 \x01(\tR\x17notificationsTabsUnread\x120\n" +
+	"\x13notifications_title\x18\x93\x04 \x01(\tR\x12notificationsTitle\x12D\n" +
+	"\x1enotifications_types_risk_alert\x18\x94\x04 \x01(\tR\x1bnotificationsTypesRiskAlert\x12=\n" +
+	"\x1anotifications_types_signal\x18\x95\x04 \x01(\tR\x18notificationsTypesSignal\x12T\n" +
+	"&notifications_types_strategy_execution\x18\x96\x04 \x01(\tR#notificationsTypesStrategyExecution\x12=\n" +
+	"\x1anotifications_types_system\x18\x97\x04 \x01(\tR\x18notificationsTypesSystem\x12;\n" +
+	"\x19notifications_types_trade\x18\x98\x04 \x01(\tR\x17notificationsTypesTrade\x122\n" +
+	"\x14notifications_unread\x18\x99\x04 \x01(\tR\x13notificationsUnread\x12-\n" +
+	"\x12profile_last_login\x18\x9a\x04 \x01(\tR\x10profileLastLogin\x12*\n" +
+	"\x10profile_nickname\x18\x9b\x04 \x01(\tR\x0fprofileNickname\x12.\n" +
+	"\x12profile_registered\x18\x9c\x04 \x01(\tR\x11profileRegistered\x12\"\n" +
+	"\fprofile_role\x18\x9d\x04 \x01(\tR\vprofileRole\x12&\n" +
+	"\x0eprofile_status\x18\x9e\x04 \x01(\tR\rprofileStatus\x12$\n" +
+	"\rprofile_title\x18\x9f\x04 \x01(\tR\fprofileTitle\x12$\n" +
+	"\rshare_actions\x18\xa0\x04 \x01(\tR\fshareActions\x12)\n" +
+	"\x10share_create_new\x18\xa1\x04 \x01(\tR\x0eshareCreateNew\x12)\n" +
+	"\x10share_created_at\x18\xa2\x04 \x01(\tR\x0eshareCreatedAt\x121\n" +
+	"\x14share_delete_confirm\x18\xa3\x04 \x01(\tR\x12shareDeleteConfirm\x12 \n" +
+	"\vshare_empty\x18\xa4\x04 \x01(\tR\n" +
+	"shareEmpty\x12$\n" +
+	"\rshare_expires\x18\xa5\x04 \x01(\tR\fshareExpires\x12(\n" +
+	"\x0fshare_positions\x18\xa6\x04 \x01(\tR\x0esharePositions\x121\n" +
+	"\x14share_show_positions\x18\xa7\x04 \x01(\tR\x12shareShowPositions\x12 \n" +
+	"\vshare_title\x18\xa8\x04 \x01(\tR\n" +
+	"shareTitle\x12 \n" +
+	"\vshare_token\x18\xa9\x04 \x01(\tR\n" +
+	"shareToken\x12#\n" +
+	"\rshare_user_id\x18\xaa\x04 \x01(\tR\vshareUserId\x12 \n" +
+	"\vshare_views\x18\xab\x04 \x01(\tR\n" +
+	"shareViews\x124\n" +
+	"\x16share_page_avg_holding\x18\xac\x04 \x01(\tR\x13sharePageAvgHolding\x12.\n" +
+	"\x13share_page_avg_loss\x18\xad\x04 \x01(\tR\x10sharePageAvgLoss\x12,\n" +
+	"\x12share_page_avg_win\x18\xae\x04 \x01(\tR\x0fsharePageAvgWin\x122\n" +
+	"\x15share_page_best_trade\x18\xaf\x04 \x01(\tR\x12sharePageBestTrade\x120\n" +
+	"\x14share_page_by_symbol\x18\xb0\x04 \x01(\tR\x11sharePageBySymbol\x122\n" +
+	"\x15share_page_close_time\x18\xb1\x04 \x01(\tR\x12sharePageCloseTime\x12)\n" +
+	"\x10share_page_count\x18\xb2\x04 \x01(\tR\x0esharePageCount\x123\n" +
+	"\x15share_page_disclaimer\x18\xb3\x04 \x01(\tR\x13sharePageDisclaimer\x126\n" +
+	"\x17share_page_equity_curve\x18\xb4\x04 \x01(\tR\x14sharePageEquityCurve\x12-\n" +
+	"\x12share_page_expired\x18\xb5\x04 \x01(\tR\x10sharePageExpired\x12+\n" +
+	"\x11share_page_footer\x18\xb6\x04 \x01(\tR\x0fsharePageFooter\x12/\n" +
+	"\x13share_page_language\x18\xb7\x04 \x01(\tR\x11sharePageLanguage\x124\n" +
+	"\x16share_page_load_failed\x18\xb8\x04 \x01(\tR\x13sharePageLoadFailed\x128\n" +
+	"\x18share_page_losing_trades\x18\xb9\x04 \x01(\tR\x15sharePageLosingTrades\x126\n" +
+	"\x17share_page_max_drawdown\x18\xba\x04 \x01(\tR\x14sharePageMaxDrawdown\x122\n" +
+	"\x15share_page_net_profit\x18\xbb\x04 \x01(\tR\x12sharePageNetProfit\x126\n" +
+	"\x17share_page_no_positions\x18\xbc\x04 \x01(\tR\x14sharePageNoPositions\x120\n" +
+	"\x14share_page_no_trades\x18\xbd\x04 \x01(\tR\x11sharePageNoTrades\x120\n" +
+	"\x14share_page_not_found\x18\xbe\x04 \x01(\tR\x11sharePageNotFound\x122\n" +
+	"\x15share_page_open_price\x18\xbf\x04 \x01(\tR\x12sharePageOpenPrice\x121\n" +
+	"\x14share_page_positions\x18\xc0\x04 \x01(\tR\x12sharePagePositions\x12>\n" +
+	"\x1bshare_page_positions_locked\x18\xc1\x04 \x01(\tR\x18sharePagePositionsLocked\x12+\n" +
+	"\x11share_page_profit\x18\xc2\x04 \x01(\tR\x0fsharePageProfit\x128\n" +
+	"\x18share_page_profit_factor\x18\xc3\x04 \x01(\tR\x15sharePageProfitFactor\x126\n" +
+	"\x17share_page_sharpe_ratio\x18\xc4\x04 \x01(\tR\x14sharePageSharpeRatio\x12'\n" +
+	"\x0fshare_page_side\x18\xc5\x04 \x01(\tR\rsharePageSide\x12/\n" +
+	"\x13share_page_subtitle\x18\xc6\x04 \x01(\tR\x11sharePageSubtitle\x12+\n" +
+	"\x11share_page_symbol\x18\xc7\x04 \x01(\tR\x0fsharePageSymbol\x12)\n" +
+	"\x10share_page_title\x18\xc8\x04 \x01(\tR\x0esharePageTitle\x126\n" +
+	"\x17share_page_total_return\x18\xc9\x04 \x01(\tR\x14sharePageTotalReturn\x126\n" +
+	"\x17share_page_total_trades\x18\xca\x04 \x01(\tR\x14sharePageTotalTrades\x126\n" +
+	"\x17share_page_total_volume\x18\xcb\x04 \x01(\tR\x14sharePageTotalVolume\x128\n" +
+	"\x18share_page_trade_records\x18\xcc\x04 \x01(\tR\x15sharePageTradeRecords\x12+\n" +
+	"\x11share_page_volume\x18\xcd\x04 \x01(\tR\x0fsharePageVolume\x12.\n" +
+	"\x13share_page_win_rate\x18\xce\x04 \x01(\tR\x10sharePageWinRate\x12:\n" +
+	"\x19share_page_winning_trades\x18\xcf\x04 \x01(\tR\x16sharePageWinningTrades\x124\n" +
+	"\x16share_page_worst_trade\x18\xd0\x04 \x01(\tR\x13sharePageWorstTrade\x125\n" +
+	"\x16symbol_detection_label\x18\xd1\x04 \x01(\tR\x14symbolDetectionLabel\x129\n" +
+	"\x18symbol_detection_loading\x18\xd2\x04 \x01(\tR\x16symbolDetectionLoading\x12>\n" +
+	"\x1bsymbol_detection_no_symbols\x18\xd3\x04 \x01(\tR\x18symbolDetectionNoSymbols\x12J\n" +
+	"!symbol_detection_resolved_tooltip\x18\xd4\x04 \x01(\tR\x1esymbolDetectionResolvedTooltip\x12O\n" +
+	"$symbol_detection_trade_mode_disabled\x18\xd5\x04 \x01(\tR symbolDetectionTradeModeDisabled\x12P\n" +
+	"%symbol_detection_trade_mode_long_only\x18\xd6\x04 \x01(\tR symbolDetectionTradeModeLongOnly\x12R\n" +
+	"&symbol_detection_trade_mode_long_short\x18\xd7\x04 \x01(\tR!symbolDetectionTradeModeLongShort\x12R\n" +
+	"&symbol_detection_trade_mode_short_only\x18\xd8\x04 \x01(\tR!symbolDetectionTradeModeShortOnly\x12M\n" +
+	"#symbol_detection_trade_mode_unknown\x18\xd9\x04 \x01(\tR\x1fsymbolDetectionTradeModeUnknown\x12N\n" +
+	"#symbol_detection_unresolved_tooltip\x18\xda\x04 \x01(\tR symbolDetectionUnresolvedTooltip\x12$\n" +
+	"\rtopbar_logout\x18\xdb\x04 \x01(\tR\ftopbarLogout\x12&\n" +
+	"\x0etopbar_profile\x18\xdc\x04 \x01(\tR\rtopbarProfile\x12(\n" +
+	"\x0ftopbar_settings\x18\xdd\x04 \x01(\tR\x0etopbarSettings\x124\n" +
+	"\x16topbar_switch_to_admin\x18\xde\x04 \x01(\tR\x13topbarSwitchToAdmin\x12)\n" +
+	"\x10topbar_system_ok\x18\xdf\x04 \x01(\tR\x0etopbarSystemOk\x12 \n" +
+	"\vtopbar_user\x18\xe0\x04 \x01(\tR\n" +
+	"topbarUser\x123\n" +
+	"\x15wallet_account_number\x18\xe1\x04 \x01(\tR\x13walletAccountNumber\x12&\n" +
+	"\x0ewallet_balance\x18\xe2\x04 \x01(\tR\rwalletBalance\x12(\n" +
+	"\x0fwallet_currency\x18\xe3\x04 \x01(\tR\x0ewalletCurrency\x12&\n" +
+	"\x0ewallet_deposit\x18\xe4\x04 \x01(\tR\rwalletDeposit\x12$\n" +
+	"\rwallet_frozen\x18\xe5\x04 \x01(\tR\fwalletFrozen\x123\n" +
+	"\x15wallet_frozen_balance\x18\xe6\x04 \x01(\tR\x13walletFrozenBalance\x12&\n" +
+	"\x0ewallet_history\x18\xe7\x04 \x01(\tR\rwalletHistory\x12/\n" +
+	"\x13wallet_table_amount\x18\xe8\x04 \x01(\tR\x11walletTableAmount\x12<\n" +
+	"\x1awallet_table_balance_after\x18\xe9\x04 \x01(\tR\x17walletTableBalanceAfter\x129\n" +
+	"\x18wallet_table_description\x18\xea\x04 \x01(\tR\x16walletTableDescription\x12+\n" +
+	"\x11wallet_table_time\x18\xeb\x04 \x01(\tR\x0fwalletTableTime\x12+\n" +
+	"\x11wallet_table_type\x18\xec\x04 \x01(\tR\x0fwalletTableType\x12\"\n" +
+	"\fwallet_title\x18\xed\x04 \x01(\tR\vwalletTitle\x120\n" +
+	"\x13wallet_transactions\x18\xee\x04 \x01(\tR\x12walletTransactions\x12:\n" +
+	"\x19wallet_tx_type_adjustment\x18\xef\x04 \x01(\tR\x16walletTxTypeAdjustment\x124\n" +
+	"\x16wallet_tx_type_deposit\x18\xf0\x04 \x01(\tR\x13walletTxTypeDeposit\x12,\n" +
+	"\x12wallet_tx_type_fee\x18\xf1\x04 \x01(\tR\x0fwalletTxTypeFee\x126\n" +
+	"\x17wallet_tx_type_reversal\x18\xf2\x04 \x01(\tR\x14walletTxTypeReversal\x12:\n" +
+	"\x19wallet_tx_type_withdrawal\x18\xf3\x04 \x01(\tR\x16walletTxTypeWithdrawal\x12(\n" +
+	"\x0fwallet_withdraw\x18\xf4\x04 \x01(\tR\x0ewalletWithdrawB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_base_proto_rawDescOnce sync.Once
