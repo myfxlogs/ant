@@ -83,22 +83,10 @@ const ja = mergeResources(
   StrategyAi,
   StrategyTuning,
   StrategyBacktestParams,
-  StrategyWorkspace,
   strategyWorkspace,
   errors,
   admin,
-  Accounts,
   AiCore,
-  AiSettings,
-  AiWizard,
-  AiStore,
-  Base,
-  Dashboard,
-  Trading,
-  Analytics,
-  Admin,
-  Logs,
-  Errors,
 ) as const;
 
 export default ja;

@@ -1,6 +1,74 @@
-// All translations now auto-generated from proto/ant/v1/i18n/
-// See scripts/i18n-build.ts and scripts/i18n-check.ts
-// DO NOT EDIT — translations are maintained in textproto files
-
-const stub = {} as const;
-export default stub;
+// Auto-generated from proto/ant/v1/i18n/errors_vi.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const Errors = {
+  "errors": {
+    "account_already_bound": "Tài khoản giao dịch này đã được liên kết",
+    "account_auth_failed": "Xác thực tài khoản giao dịch thất bại",
+    "account_connection_failed": "Không thể kết nối đến máy chủ giao dịch",
+    "account_disconnected": "Tài khoản giao dịch đã ngắt kết nối",
+    "account_limit_exceeded": "Đã đạt số lượng tài khoản giao dịch tối đa",
+    "account_not_connected": "Tài khoản giao dịch chưa được kết nối",
+    "account_not_found": "Không tìm thấy tài khoản giao dịch",
+    "account_timeout": "Kết nối đến máy chủ giao dịch đã hết thời gian",
+    "admin_access_denied": "Yêu cầu quyền quản trị viên",
+    "ai": {
+      "internal_error": "Lỗi dịch vụ AI. Vui lòng thử lại sau.",
+      "not_configured": "Chưa cấu hình nhà cung cấp AI. Nhấp ⚙ để thiết lập API Key trong Cài đặt AI."
+    },
+    "analytics_not_available": "Dữ liệu phân tích không khả dụng",
+    "audit_log_not_found": "Không tìm thấy mục nhật ký kiểm toán",
+    "broker_not_found": "Không tìm thấy nhà môi giới",
+    "broker_search_failed": "Tìm kiếm nhà môi giới thất bại",
+    "broker_server_unavailable": "Máy chủ nhà môi giới hiện không khả dụng",
+    "cannot_close_position": "Không thể đóng vị thế này",
+    "cannot_modify_order": "Không thể sửa lệnh này",
+    "email_not_verified": "Email chưa được xác minh",
+    "forbidden": "Truy cập bị từ chối",
+    "history_not_available": "Dữ liệu lịch sử không khả dụng",
+    "insufficient_data": "Không đủ dữ liệu để phân tích",
+    "insufficient_margin": "Ký quỹ không đủ",
+    "internal": "Lỗi máy chủ nội bộ",
+    "invalid_account_type": "Loại tài khoản không được hỗ trợ",
+    "invalid_date_range": "Khoảng ngày không hợp lệ",
+    "invalid_order_type": "Loại lệnh không hợp lệ",
+    "invalid_parameter": "Tham số không hợp lệ",
+    "invalid_password": "Email hoặc mật khẩu không hợp lệ",
+    "invalid_price": "Giá lệnh không hợp lệ",
+    "invalid_time_range": "Khoảng thời gian không hợp lệ",
+    "invalid_timeframe": "Khung thời gian không hợp lệ",
+    "invalid_volume": "Khối lượng giao dịch không hợp lệ",
+    "market_closed": "Thị trường hiện đã đóng cửa",
+    "no_market_data": "Không có dữ liệu thị trường",
+    "not_found": "Không tìm thấy tài nguyên",
+    "old_password_incorrect": "Mật khẩu hiện tại không chính xác",
+    "operation_forbidden": "Không được phép thực hiện thao tác này",
+    "order_already_cancelled": "Lệnh đã bị hủy",
+    "order_already_filled": "Lệnh đã được khớp",
+    "order_not_found": "Không tìm thấy lệnh",
+    "order_rejected": "Lệnh bị từ chối",
+    "order_timeout": "Thực hiện lệnh đã hết thời gian",
+    "password_too_weak": "Mật khẩu phải có ít nhất 8 ký tự",
+    "platform_not_supported": "Nền tảng giao dịch này không được hỗ trợ",
+    "position_not_found": "Không tìm thấy vị thế",
+    "quote_not_available": "Báo giá không khả dụng",
+    "rate_limited": "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
+    "report_generation_failed": "Tạo báo cáo thất bại",
+    "request_timeout": "Yêu cầu đã hết thời gian",
+    "service_unavailable": "Dịch vụ tạm thời không khả dụng",
+    "slippage_exceeded": "Trượt giá vượt quá dung sai",
+    "subscription_failed": "Đăng ký dữ liệu thị trường thất bại",
+    "success": "Thành công",
+    "symbol_not_found": "Không tìm thấy mã giao dịch",
+    "symbol_not_subscribed": "Chưa đăng ký mã giao dịch",
+    "token_expired": "Phiên đã hết hạn. Vui lòng đăng nhập lại.",
+    "token_invalid": "Token phiên không hợp lệ",
+    "token_missing": "Yêu cầu xác thực",
+    "unauthorized": "Vui lòng đăng nhập để tiếp tục",
+    "unknown": "Đã xảy ra lỗi không xác định",
+    "unsubscription_failed": "Hủy đăng ký dữ liệu thị trường thất bại",
+    "user_already_exists": "Email này đã được đăng ký",
+    "user_disabled": "Tài khoản đã bị vô hiệu hóa",
+    "user_not_found": "Không tìm thấy người dùng"
+  }
+} as const;
+export default Errors;

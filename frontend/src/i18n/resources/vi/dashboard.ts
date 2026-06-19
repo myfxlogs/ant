@@ -1,6 +1,49 @@
-// All translations now auto-generated from proto/ant/v1/i18n/
-// See scripts/i18n-build.ts and scripts/i18n-check.ts
-// DO NOT EDIT — translations are maintained in textproto files
-
-const stub = {} as const;
-export default stub;
+// Auto-generated from proto/ant/v1/i18n/dashboard_vi.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const Dashboard = {
+  "dashboard": {
+    "accountList": "Danh sách tài khoản",
+    "accountOverview": "Tổng quan tài khoản",
+    "accountStatus": {
+      "connected": "Đã kết nối",
+      "connecting": "Đang kết nối",
+      "disabled": "Đã tắt",
+      "disconnected": "已断开"
+    },
+    "bindAccount": "Liên kết tài khoản",
+    "defaultName": "我的仪表盘",
+    "fields": {
+      "balance": "Số dư",
+      "equity": "Vốn",
+      "floating": "浮动盈亏"
+    },
+    "logs": "Nhật ký",
+    "noAccounts": "Chưa có tài khoản. Hãy nhấn “Liên kết tài khoản”.",
+    "quickActions": {
+      "accounts": "Tài khoản",
+      "analytics": "Phân tích",
+      "bindAccount": "Liên kết",
+      "closePosition": "平仓",
+      "library": "Thư viện",
+      "logs": "Nhật ký",
+      "market": "Thị trường",
+      "templates": "Mẫu",
+      "title": "Thao tác nhanh",
+      "trading": "Giao dịch"
+    },
+    "stats": {
+      "accountCount": "Tài khoản",
+      "connected": "Đã kết nối",
+      "totalBalance": "Tổng số dư",
+      "totalEquity": "Tổng vốn",
+      "totalProfit": "总浮动盈亏"
+    },
+    "streamLive": "Kết nối trực tiếp",
+    "streamOffline": "Ngoại tuyến",
+    "subtitle": "Xem tổng quan tài khoản của bạn",
+    "templates": "Mẫu",
+    "viewAll": "Xem tất cả",
+    "welcome": "Chào mừng trở lại, {{name}}"
+  }
+} as const;
+export default Dashboard;
