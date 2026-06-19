@@ -1,3 +1,5 @@
+import { TABLE_ACTIONS_KEY, TABLE_NAME_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
+import { ACTIONS_BACKTEST_KEY, ACTIONS_COPY_KEY, ACTIONS_LAUNCH_SCHEDULE_KEY, ACTIONS_VIEW_CODE_KEY, BADGES_PRESET_KEY, DELETE_CONFIRM_KEY, TABLE_CREATED_AT_KEY, TABLE_DESCRIPTION_KEY, TABLE_TAGS_KEY, TABLE_USE_COUNT_KEY, TABLE_VISIBILITY_KEY, VISIBILITY_PRIVATE_KEY, VISIBILITY_PUBLIC_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
 
 import { Button, Space, Tag, Tooltip, Typography, Popconfirm } from 'antd';
 import {

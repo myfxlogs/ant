@@ -1,3 +1,4 @@
+import { WATCHLIST_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { useState, useCallback } from 'react';
 
 const WATCHLIST_KEY = 'ant_watchlist_symbols';

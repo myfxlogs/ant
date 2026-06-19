@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { ANALYZING_KEY, FEEDBACK_KEY, RESET_KEY, REVISE_KEY, STREAMING_KEY, TITLE_KEY as AI_CHAT_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_ai_chat_keys';
 import { CODE_UPDATED_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
 import { TITLE_KEY as GEN_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
+import { TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_market_regime_keys';
 import { generateStrategyStream } from '@/client/strategyGen';
 import { codeAssistApi, type CodeChatMessage } from '@/client/codeAssist';
 import { pythonStrategyApi } from '@/client/pythonStrategy';

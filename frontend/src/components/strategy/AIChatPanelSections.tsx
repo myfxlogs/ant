@@ -1,3 +1,7 @@
+import { AI_KEY, APPLY_CODE_KEY, DISMISS_KEY, REVIEW_CODE_KEY, YOU_KEY } from '@/gen/ant/v1/i18n/strategy_ai_chat_keys';
+import { METRICS_MAX_DRAWDOWN_KEY, METRICS_SHARPE_KEY, METRICS_WIN_RATE_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_run_keys';
+import { REVISE_INPUT_PLACEHOLDER_KEY, REVISE_SEND_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
+import { CLARIFY_TITLE_KEY, FEEDBACK_HEADING_KEY, FEEDBACK_PLACEHOLDER_KEY, METRICS_RETURN_KEY, METRICS_TRADES_KEY, PLACEHOLDER_KEY, USE_DEFAULTS_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 
 // AIChatPanelSections.tsx — Display-only subcomponents + shared helpers extracted from AIChatPanel.
 // These are pure presentational components: messages, clarification, backtest metrics,
