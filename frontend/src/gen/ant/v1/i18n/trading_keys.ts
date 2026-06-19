@@ -439,6 +439,30 @@ export const ALGO_POV_KEY = 'algo.pov' as const;
 /** algo.shortfall */
 export const ALGO_SHORTFALL_KEY = 'algo.shortfall' as const;
 
+/** algo.twap.name */
+export const ALGO_TWAP_NAME_KEY = 'algo.twap.name' as const;
+
+/** algo.twap.description */
+export const ALGO_TWAP_DESCRIPTION_KEY = 'algo.twap.description' as const;
+
+/** algo.vwap.name */
+export const ALGO_VWAP_NAME_KEY = 'algo.vwap.name' as const;
+
+/** algo.vwap.description */
+export const ALGO_VWAP_DESCRIPTION_KEY = 'algo.vwap.description' as const;
+
+/** algo.pov.name */
+export const ALGO_POV_NAME_KEY = 'algo.pov.name' as const;
+
+/** algo.pov.description */
+export const ALGO_POV_DESCRIPTION_KEY = 'algo.pov.description' as const;
+
+/** algo.shortfall.name */
+export const ALGO_SHORTFALL_NAME_KEY = 'algo.shortfall.name' as const;
+
+/** algo.shortfall.description */
+export const ALGO_SHORTFALL_DESCRIPTION_KEY = 'algo.shortfall.description' as const;
+
 export const TRADING_KEYS = {
   algo_actions_cancel: '__root__.algo.actions.cancel',
   algo_actions_start: '__root__.algo.actions.start',
@@ -586,6 +610,14 @@ export const TRADING_KEYS = {
   algo_vwap: '__root__.algo.vwap',
   algo_pov: '__root__.algo.pov',
   algo_shortfall: '__root__.algo.shortfall',
+  algo_twap_name: '__root__.algo.twap.name',
+  algo_twap_description: '__root__.algo.twap.description',
+  algo_vwap_name: '__root__.algo.vwap.name',
+  algo_vwap_description: '__root__.algo.vwap.description',
+  algo_pov_name: '__root__.algo.pov.name',
+  algo_pov_description: '__root__.algo.pov.description',
+  algo_shortfall_name: '__root__.algo.shortfall.name',
+  algo_shortfall_description: '__root__.algo.shortfall.description',
 } as const;
 
 export type TradingKey = typeof TRADING_KEYS[keyof typeof TRADING_KEYS];

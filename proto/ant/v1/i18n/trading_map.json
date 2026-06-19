@@ -146,6 +146,14 @@
     "algo_twap": "algo.twap",
     "algo_vwap": "algo.vwap",
     "algo_pov": "algo.pov",
-    "algo_shortfall": "algo.shortfall"
+    "algo_shortfall": "algo.shortfall",
+    "algo_twap_name": "algo.twap.name",
+    "algo_twap_description": "algo.twap.description",
+    "algo_vwap_name": "algo.vwap.name",
+    "algo_vwap_description": "algo.vwap.description",
+    "algo_pov_name": "algo.pov.name",
+    "algo_pov_description": "algo.pov.description",
+    "algo_shortfall_name": "algo.shortfall.name",
+    "algo_shortfall_description": "algo.shortfall.description"
   }
 }
