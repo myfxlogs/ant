@@ -61,9 +61,9 @@ func TestManagerAddGateway(t *testing.T) {
 		t.Fatalf("AddGateway: %v", err)
 	}
 
-	// Duplicate add must fail.
-	if err := mgr.AddGateway(context.Background(), gw, nil); err == nil {
-		t.Fatal("duplicate AddGateway must return error")
+	// Duplicate add is idempotent — implementation returns nil.
+	if err := mgr.AddGateway(context.Background(), gw, nil); err != nil {
+		t.Fatalf("duplicate AddGateway should return nil (idempotent): %v", err)
 	}
 
 	// Verify gateway appears in Health output.

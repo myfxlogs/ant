@@ -8,15 +8,15 @@ all: build
 
 build:
 	@echo "Building $(APP_NAME)..."
-	@cd backend && go build -o ../$(BUILD_DIR)/$(APP_NAME) ./$(CMD_DIR)
+	@cd backend && /usr/local/go/bin/go build -o ../$(BUILD_DIR)/$(APP_NAME) ./$(CMD_DIR)
 
 run:
 	@echo "Running $(APP_NAME)..."
-	@cd backend && go run ./$(CMD_DIR)
+	@cd backend && /usr/local/go/bin/go run ./$(CMD_DIR)
 
 test:
 	@echo "Running tests..."
-	@cd backend && go test -v ./...
+	@cd backend && /usr/local/go/bin/go test -v ./...
 
 coverage:
 	@echo "Running tests with coverage..."
@@ -139,7 +139,7 @@ verify:
 	@$(MAKE) check-lines
 	@$(MAKE) check-fk
 	@$(MAKE) check-i18n
-	@cd backend && go test ./...
+	@cd backend && /usr/local/go/bin/go test ./...
 
 # ── RTK (Rust Token Killer) ──────────────────────────────────────────
 # Token-optimized CLI proxy. All shell output filtered for LLM context.
