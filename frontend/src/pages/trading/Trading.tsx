@@ -2,7 +2,6 @@ import { useEffect, useState, lazy, Suspense } from 'react';
 import { Row, Col, Spin } from 'antd';
 import { useTranslation } from 'react-i18next'
 import { SELECT_SYMBOL_KEY, TITLE_KEY } from '@/gen/ant/v1/i18n/trading_keys';
-
 ;
 import { useAccount } from '@/hooks/useAccount';
 import { useTradingStore } from '@/stores/tradingStore';

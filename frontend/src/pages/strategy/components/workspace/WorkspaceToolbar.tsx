@@ -2,6 +2,8 @@ import { Select, Space, Button, Tooltip, Tag } from 'antd';
 import { ThunderboltOutlined, CodeOutlined, RiseOutlined, FallOutlined, BankOutlined, AimOutlined, KeyOutlined, EyeOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { BALANCE_KEY, EQUITY_KEY, FREE_MARGIN_KEY, MARGIN_LEVEL_KEY, POSITIONS_KEY, POSITION_LEVERAGE_KEY, PROFIT_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
+import { HIDE_CODE_KEY, INVESTOR_READ_ONLY_KEY, MASTER_TRADING_KEY, QUICK_TRADE_KEY, SELECT_ACCOUNT_KEY, SHOW_CODE_KEY, WATCHLIST_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
 ;
 import SymbolPicker from '@/components/chart/SymbolPicker';

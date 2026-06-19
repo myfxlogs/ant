@@ -3,7 +3,6 @@ import { Table, Tag, Card, Pagination } from 'antd';
 import { HistoryOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { NO_ORDERS_KEY, ORDER_HISTORY_KEY, PRICE_KEY, SYMBOL_KEY, TYPE_KEY, VOLUME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
-
 ;
 import { useTradingStore } from '@/stores/tradingStore';
 import { useTrading } from '@/hooks/useTrading';

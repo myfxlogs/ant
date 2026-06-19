@@ -4,6 +4,7 @@ import { PositionPrice } from '@/components/PositionPrice';
 import { formatPrice } from '@/utils/price';
 import { useTranslation } from 'react-i18next'
 import { STRATEGY_EXECUTE_CONFIRM_BUY_KEY, STRATEGY_EXECUTE_CONFIRM_SELL_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { DETAIL_BALANCE_RECORD_DEPOSIT_ICON_TEXT_KEY, DETAIL_BALANCE_RECORD_DEPOSIT_KEY, DETAIL_BALANCE_RECORD_WITHDRAW_ICON_TEXT_KEY, DETAIL_BALANCE_RECORD_WITHDRAW_KEY, DETAIL_ORDER_TYPES_BUY_LIMIT_KEY, DETAIL_ORDER_TYPES_BUY_STOP_KEY, DETAIL_ORDER_TYPES_SELL_LIMIT_KEY, DETAIL_ORDER_TYPES_SELL_STOP_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 
 ;
 import type { Position } from '@/types/trading';

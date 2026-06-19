@@ -7,6 +7,9 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { CODE_KEY, COPY_KEY, RUNTIME_MODE_KEY, SAVE_FAILED_KEY, SAVE_KEY, VALIDATE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import { AGENT_FIELDS_MODEL_PROFILE_EMPTY_KEY, PRIMARY_PLACEHOLDER_KEY } from '@/gen/ant/v1/i18n/ai_settings_keys';
+import { CHECK_SETTINGS_KEY, REFRESH_FAILED_KEY, SETTINGS_KEY } from '@/gen/ant/v1/i18n/strategy_ai_keys';
+import { EVENT_DRIVEN_MODE_KEY, VECTORIZED_MODE_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 
 ;
 import { useSystemAIConfigsQuery } from '@/queries/useSystemAIConfigsQuery';

@@ -2,7 +2,6 @@ import { Card, Select, Statistic, Row, Col, Tag, Typography } from 'antd';
 import { WalletOutlined, DollarOutlined, PieChartOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { ACCOUNT_KEY, BALANCE_KEY, EQUITY_KEY, FREE_MARGIN_KEY, MARGIN_KEY, MARGIN_LEVEL_KEY, NO_ACCOUNT_KEY } from '@/gen/ant/v1/i18n/trading_keys';
-
 ;
 import { useAccount } from '@/hooks/useAccount';
 import { useTradingStore } from '@/stores/tradingStore';

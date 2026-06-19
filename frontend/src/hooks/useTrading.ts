@@ -1,5 +1,6 @@
 
 import { MESSAGES_FETCH_ORDER_HISTORY_FAILED_KEY, MESSAGES_ORDER_CLOSE_FAILED_KEY, MESSAGES_ORDER_CLOSE_SUCCESS_KEY, MESSAGES_ORDER_SEND_FAILED_KEY, MESSAGES_ORDER_SEND_SUCCESS_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { MESSAGES_CONNECT_FAILED_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 
 import { useCallback } from 'react'
 ;

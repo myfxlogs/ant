@@ -3,7 +3,6 @@ import { Input, Button, Space, Tag, Typography, Alert } from 'antd';
 import { ThunderboltOutlined, SendOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { BACKTEST_MSG_KEY, BACKTEST_STARTED_KEY, CLARIFY_TITLE_KEY, DONE_KEY, GENERATING_KEY, PLACEHOLDER_KEY, REGENERATE_KEY, RESET_KEY, SEND_KEY, TEMPLATE_KEY, TITLE_KEY, USE_DEFAULTS_KEY, VALIDATING_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
-
 ;
 import { generateStrategyStream } from '@/client/strategyGen';
 

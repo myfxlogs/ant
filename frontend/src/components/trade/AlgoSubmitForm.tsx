@@ -3,6 +3,7 @@ import { Card, Form, Select, InputNumber, DatePicker, Button, Space, message, De
 import { PlayCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { MARKET_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
 
 ;
 import dayjs from 'dayjs';

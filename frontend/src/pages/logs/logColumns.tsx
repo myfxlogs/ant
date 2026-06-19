@@ -5,7 +5,6 @@ import type { OrderHistoryRecord } from '@/gen/ant/v1/log_order_pb';
 import type { OperationLog } from '@/gen/ant/v1/log_operation_pb';
 import type { TFunction } from 'react-i18next'
 import { ACTION_KEY, COST_KEY, DETAILS_KEY, DURATION_KEY, ERROR_KEY, EVENT_TYPE_KEY, EXECUTION_PRICE_KEY, FAILED_KEY, IP_KEY, LOGIN_ID_KEY, MESSAGE_KEY, MODULE_KEY, ORDER_TABLE_CLOSE_KEY, ORDER_TABLE_LOTS_KEY, ORDER_TABLE_OPEN_KEY, ORDER_TABLE_TICKET_KEY, ORDER_TABLE_TYPE_KEY, PERIOD_KEY, PRODUCT_KEY, PROFIT_KEY, REQUEST_ID_KEY, RESULT_KEY, RISK_CODE_KEY, SERVER_KEY, SIGNAL_KEY, SIGNAL_PRICE_KEY, STATUS_KEY, SUCCESS_KEY, TIME_KEY, TRIGGER_SOURCE_KEY } from '@/gen/ant/v1/i18n/logs_keys';
-
 ;
 
 interface AccountLike { id: string; brokerServer?: string; brokerHost?: string; brokerCompany?: string; [key: string]: unknown; }

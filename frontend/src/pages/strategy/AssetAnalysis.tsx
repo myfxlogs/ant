@@ -8,7 +8,9 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
-
+import { SUBTITLE_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
+import { AI_RECOMMENDATION_KEY, AI_UNAVAILABLE_KEY, ANALYZE_KEY, ATR_PCT_KEY, CONFIGURE_A_I_KEY, FETCHING_DATA_KEY, MTF_OUTLOOK_KEY, NO_LEVELS_KEY, NO_RESULTS_KEY, PHASE_KEY, SR_LEVELS_KEY, STATE_KEY, SYMBOL_PLACEHOLDER_KEY, VOLATILITY_KEY, VOL_EXTREME_KEY, VOL_HIGH_KEY, VOL_LOW_KEY, VOL_NORMAL_KEY } from '@/gen/ant/v1/i18n/strategy_asset_analysis_keys';
+import { FORM_ACCOUNT_ID_PLACEHOLDER_KEY, TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_market_regime_keys';
 ;
 import ReactMarkdown from 'react-markdown';
 import { useMemo, useEffect, useState } from 'react';

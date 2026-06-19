@@ -3,7 +3,7 @@ import { Tag, Button } from 'antd';
 import { CaretUpOutlined, CaretDownOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { CLOSE_POSITION_KEY, MARK_PRICE_KEY, PNL_KEY, PRICE_KEY, SIDE_KEY, SYMBOL_KEY, VOLUME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
-
+import { OPEN_POSITIONS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 ;
 import type { QuickTradePosition } from '../../hooks/useStrategyWorkspaceState';
 

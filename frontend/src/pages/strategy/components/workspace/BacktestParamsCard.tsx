@@ -2,7 +2,6 @@ import { Button, Row, Col, InputNumber, DatePicker, Segmented, Dropdown, Tooltip
 import { PlayCircleOutlined, SettingOutlined, CaretUpOutlined, CaretDownOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { BOTH_KEY, CAPITAL_KEY, COMMISSION_KEY, CURRENT_DRAFT_KEY, DATE_RANGE_KEY, DIRECTION_KEY, END_DATE_KEY, EXECUTION_KEY, HISTORY_KEY, LEVERAGE_KEY, LONG_KEY, RUN_KEY, SHORT_KEY, SLIPPAGE_KEY, START_DATE_KEY, STRICT_MODE_KEY, STRICT_MODE_OFF_DESC_KEY, STRICT_MODE_OFF_KEY, STRICT_MODE_OFF_TOOLTIP_KEY, STRICT_MODE_ON_DESC_KEY, STRICT_MODE_ON_KEY, STRICT_MODE_ON_TOOLTIP_KEY, TITLE_KEY, TRADE_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
-
 ;
 import dayjs from 'dayjs';
 import { DATE_PRESETS } from '../../hooks/useBacktestParams';

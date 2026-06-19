@@ -2,7 +2,6 @@ import { Table, Button, Popconfirm, Tag } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { CLOSE_POSITION_CONFIRM_KEY, CLOSE_POSITION_KEY, NO_POSITIONS_KEY, OPEN_TIME_KEY, PRICE_KEY, SIDE_KEY, STOP_LOSS_KEY, SYMBOL_KEY, TAKE_PROFIT_KEY, VOLUME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
-
 ;
 import { useMemo, useCallback } from 'react';
 import { useTradingStore } from '@/stores/tradingStore';

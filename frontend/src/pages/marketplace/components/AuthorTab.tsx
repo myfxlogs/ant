@@ -2,7 +2,6 @@ import { Card, Row, Col, Statistic, Table, Tag, Typography, Empty } from 'antd';
 import { ShopOutlined, StarOutlined, SendOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { TABLE_NAME_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
-
 ;
 import { useMarketplaceCtx } from '../MarketplaceContext';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';

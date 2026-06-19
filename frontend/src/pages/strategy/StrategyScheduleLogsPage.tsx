@@ -6,7 +6,6 @@ import { scheduleHealthApi } from '@/client/scheduleHealth';
 import { StatusResult } from '@/components/common/StatusResult';
 import { useTranslation } from 'react-i18next'
 import { TABS_EXEC_LOGS_KEY, TABS_ORDER_LOGS_KEY, TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_schedule_logs_keys';
-
 ;
 import type { ScheduleRunLog } from '@/gen/ant/v1/log_schedule_pb';
 import type { OrderHistoryRecord } from '@/gen/ant/v1/log_order_pb';

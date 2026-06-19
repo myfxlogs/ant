@@ -8,6 +8,10 @@ import { useRpcQuery } from '@/hooks/useRpcQuery';
 import { StatusResult } from '@/components/common/StatusResult';
 import { useTranslation } from 'react-i18next'
 import { COPY_SUFFIX_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+import { SUBTITLE_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
+import { ACTIONS_KEY, ASSET_LIST_KEY, ASSET_NAME_KEY, CLONE_AS_DRAFT_KEY, CLONE_COUNT_KEY, DESCRIPTION_KEY, EMPTY_KEY, MESSAGES_CLONE_FAILED_KEY, MESSAGES_CLONE_SUCCESS_KEY, MESSAGES_SUBMIT_SUCCESS_KEY, NAME_KEY, REVIEW_STATUS_KEY, SOURCE_TEMPLATE_KEY, SUBMIT_ASSET_KEY, SUBMIT_KEY, VALIDATION_ENTER_NAME_KEY, VALIDATION_SELECT_TEMPLATE_KEY, VERSION_KEY, VISIBILITY_KEY } from '@/gen/ant/v1/i18n/strategy_asset_keys';
+import { MESSAGES_SUBMIT_FAILED_KEY } from '@/gen/ant/v1/i18n/strategy_experiment_keys';
+import { TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_market_regime_keys';
 
 ;
 

@@ -2,7 +2,8 @@ import { Alert, Button, Card, Descriptions, Form, InputNumber, Select, Space, Ta
 import { showError, showSuccess } from '@/utils/message';
 import { useTranslation } from 'react-i18next'
 import { NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
-
+import { SUBTITLE_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
+import { DETECT_FAILED_KEY, DETECT_SUCCESS_KEY, FORM_ACCOUNT_ID_KEY, FORM_ACCOUNT_ID_PLACEHOLDER_KEY, FORM_ACCOUNT_ID_REQUIRED_KEY, FORM_KLINE_COUNT_KEY, FORM_SUBMIT_KEY, FORM_SYMBOL_KEY, FORM_SYMBOL_PLACEHOLDER_KEY, FORM_SYMBOL_REQUIRED_KEY, FORM_TIMEFRAME_KEY, FORM_TITLE_KEY, RESULT_CONFIDENCE_KEY, RESULT_FEATURES_KEY, RESULT_MODEL_VERSION_KEY, RESULT_RECORD_ID_KEY, RESULT_STATUS_KEY, RESULT_STRATEGY_FAMILIES_KEY, RESULT_TITLE_KEY, RULE_VERSION_ALERT_KEY, TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_market_regime_keys';
 ;
 import { TIMEFRAMES } from '@/constants/timeframes';
 import SymbolPicker from '@/components/chart/SymbolPicker';

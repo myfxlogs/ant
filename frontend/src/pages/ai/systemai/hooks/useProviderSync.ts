@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next'
 import { DISCOVER_ERRORS_GENERIC_KEY, MESSAGES_VALIDATE_FAILED_KEY } from '@/gen/ant/v1/i18n/ai_settings_keys';
+import { SYSTEM_A_I_CUSTOM_PROVIDER_NAME_REQUIRED_KEY, SYSTEM_A_I_MESSAGES_AUTO_DISCOVERED_MODELS_KEY, SYSTEM_A_I_MESSAGES_AUTO_VALIDATED_MODELS_KEY, SYSTEM_A_I_MESSAGES_SECRET_AUTO_SAVE_FAILED_KEY, SYSTEM_A_I_MESSAGES_SECRET_SAVED_AUTO_DISCOVER_KEY } from '@/gen/ant/v1/i18n/ai_core_keys';
 
 ;
 import {

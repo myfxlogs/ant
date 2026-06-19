@@ -1,6 +1,4 @@
 
-import { CLARIFY_TITLE_KEY, FEEDBACK_HEADING_KEY, FEEDBACK_PLACEHOLDER_KEY, METRICS_MAX_DRAWDOWN_KEY, METRICS_RETURN_KEY, METRICS_SHARPE_KEY, METRICS_TRADES_KEY, METRICS_WIN_RATE_KEY, PLACEHOLDER_KEY, USE_DEFAULTS_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
-
 // AIChatPanelSections.tsx — Display-only subcomponents + shared helpers extracted from AIChatPanel.
 // These are pure presentational components: messages, clarification, backtest metrics,
 // pending code banner, and input bar. They receive data/events via props only.

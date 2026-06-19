@@ -3,7 +3,6 @@ import type { FormInstance } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { CREATE_SCHEDULE_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
-
 ;
 import ScheduleTable from '../ScheduleTable';
 import EditScheduleModal from '../EditScheduleModal';

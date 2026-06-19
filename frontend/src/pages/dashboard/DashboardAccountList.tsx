@@ -3,6 +3,7 @@ import { BankOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next'
 import { ACCOUNT_LIST_KEY, FIELDS_BALANCE_KEY, FIELDS_EQUITY_KEY, FIELDS_FLOATING_KEY, NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
+import { CARD_STATUS_CONNECTED_KEY, CARD_STATUS_CONNECTING_KEY, CARD_STATUS_DISABLED_KEY, CARD_STATUS_DISCONNECTED_KEY, CARD_STATUS_ERROR_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 
 ;
 import { StatusResult } from '@/components/common/StatusResult';

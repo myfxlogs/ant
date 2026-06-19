@@ -2,7 +2,6 @@ import { Tag, Tooltip, Button, Space } from 'antd';
 import { EyeOutlined, EyeInvisibleOutlined, SettingOutlined, CloseOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { HIDE_KEY, REMOVE_KEY, SETTINGS_KEY, SHOW_KEY } from '@/gen/ant/v1/i18n/strategy_chart_tools_keys';
-
 ;
 import { useChartIndicatorsStore } from '@/stores/chartIndicatorsStore';
 import { useState } from 'react';

@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback } from 'react';
 import { Form, message } from 'antd';
 import { useTranslation } from 'react-i18next'
 import { ACTIONS_COPY_KEY, MESSAGES_CODE_COPIED_KEY, MESSAGES_COPY_FAILED_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+import { VIEW_CODE_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
 
 ;
 import { useStrategyLibrary } from './hooks/useStrategyLibrary';

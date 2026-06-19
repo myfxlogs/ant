@@ -3,7 +3,6 @@ import { Card, Form, Button, InputNumber, Radio, Space } from 'antd';
 import { SendOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { BUY_KEY, LIMIT_KEY, MARKET_KEY, PLACE_ORDER_KEY, PRICE_KEY, SELL_KEY, STOP_KEY, STOP_LOSS_KEY, SYMBOL_KEY, TAKE_PROFIT_KEY, VOLUME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
-
 ;
 import { useTradingStore } from '@/stores/tradingStore';
 import { useTrading } from '@/hooks/useTrading';

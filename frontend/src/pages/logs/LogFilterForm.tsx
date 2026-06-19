@@ -1,7 +1,6 @@
 import { Form, DatePicker, Select, Button, Space, Input } from 'antd';
 import { useTranslation } from 'react-i18next'
 import { ACCOUNT_ID_KEY, DATE_RANGE_KEY, EXAMPLE_SYMBOL_PLACEHOLDER_KEY, FAILED_KEY, REQUEST_ID_KEY, RESET_KEY, RESULT_KEY, RISK_CODE_KEY, RISK_LOG_QUICK_FILTER_KEY, SEARCH_KEY, STATUS_KEY, SUCCESS_KEY, SYMBOL_KEY, TRIGGER_SOURCE_KEY } from '@/gen/ant/v1/i18n/logs_keys';
-
 ;
 
 const { RangePicker } = DatePicker;

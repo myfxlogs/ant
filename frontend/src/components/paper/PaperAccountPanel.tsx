@@ -6,6 +6,10 @@ import { Button, Card, Input, List, Modal, Space, Tag, Typography, message, Stat
 import { PlusOutlined, PlayCircleOutlined, StopOutlined, RiseOutlined, FallOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { BALANCE_KEY, EQUITY_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
+import { CREATE_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
+import { TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_market_regime_keys';
+import { ACCOUNT_NAME_KEY, CREATE_ACCOUNT_KEY, MESSAGES_CREATED_KEY, MESSAGES_CREATE_FAILED_KEY, MESSAGES_ENTER_NAME_KEY, MESSAGES_PASTE_CODE_KEY, MESSAGES_START_FAILED_KEY, MESSAGES_STOP_FAILED_KEY, MESSAGES_STRATEGY_STARTED_KEY, MESSAGES_STRATEGY_STOPPED_KEY, PAPER_KEY, RUNNING_KEY, START_KEY, START_STRATEGY_KEY, STOP_KEY, STRATEGY_CODE_KEY, SYMBOL_KEY, TIMEFRAME_KEY, WATCH_KEY } from '@/gen/ant/v1/i18n/strategy_paper_keys';
 
 ;
 import { paperTradingClient, paperTradingStreamClient } from '@/client/connect';
