@@ -4,65 +4,65 @@ const Trading = {
   "algo": {
     "actions": {
       "cancel": "取消",
-      "start": "启动"
+      "start": "開始"
     },
     "dashboard": {
-      "activeExecutions": "执行中",
-      "noActive": "暂无活跃执行",
-      "title": "算法面板"
+      "activeExecutions": "実行中",
+      "noActive": "アクティブな実行はありません",
+      "title": "アルゴダッシュボード"
     },
     "fields": {
-      "account": "账户",
-      "algo": "算法",
-      "limitPrice": "限价",
-      "participationRate": "参与率",
+      "account": "口座",
+      "algo": "アルゴリズム",
+      "limitPrice": "指値",
+      "participationRate": "参加率",
       "side": "方向",
-      "sliceInterval": "切片间隔",
-      "symbol": "品种",
-      "timeRange": "时间范围",
-      "urgency": "紧急度",
+      "sliceInterval": "スライス間隔",
+      "symbol": "銘柄",
+      "timeRange": "期間",
+      "urgency": "緊急度",
       "volume": "数量"
     },
     "info": {
-      "description": "描述",
-      "name": "名称"
+      "description": "説明",
+      "name": "名前"
     },
     "messages": {
-      "started": "算法已启动"
+      "started": "アルゴリズム開始"
     },
     "side": {
-      "buy": "买入",
-      "sell": "卖出"
+      "buy": "買い",
+      "sell": "売り"
     },
     "submitForm": {
-      "title": "启动算法"
+      "title": "アルゴリズム起動"
     },
     "table": {
       "actions": "操作",
-      "algo": "算法",
-      "executionId": "执行ID",
-      "progress": "进度",
+      "algo": "アルゴリズム",
+      "executionId": "実行ID",
+      "progress": "進捗",
       "side": "方向",
-      "state": "状态",
-      "symbol": "品种",
+      "state": "状態",
+      "symbol": "銘柄",
       "volume": "数量"
     },
     "timePresets": {
-      "EOD": "当日结束"
+      "EOD": "当日終了"
     },
-    "twap": "TWAP (时间加权均价)",
-    "vwap": "VWAP (成交量加权均价)",
-    "pov": "POV (参与率算法)",
-    "shortfall": "Shortfall (最小缺口)"
+    "twap": "TWAP (時間加重平均)",
+    "vwap": "VWAP (出来高加重平均)",
+    "pov": "POV (参加率アルゴリズム)",
+    "shortfall": "Shortfall (最小ショートフォール)"
   },
   "trading": {
-    "account": "账户",
+    "account": "口座",
     "autoTrade": {
       "confirm": {
         "disableConfirm": "無効化",
         "disableInfoDescription": "無効化すると自動取引は停止しますが、有効化済みの戦略は市場監視を継続する場合があります。",
         "disableInfoTitle": "自動取引を無効化",
-        "disableQuestion": "确定要关闭自动交易？",
+        "disableQuestion": "自動取引を無効化しますか？",
         "disableTitle": "自動取引を無効化",
         "enableBullet1": "戦略条件に合致した取引が自動で実行されます",
         "enableBullet2": "リスク設定が正しいことを確認してください",
@@ -75,7 +75,7 @@ const Trading = {
       }
     },
     "balance": "残高",
-    "buy": "买入",
+    "buy": "買い",
     "closePosition": "決済",
     "closePositionConfirm": "このポジションを決済しますか？",
     "closePositionTitle": "ポジションを決済",
@@ -87,7 +87,7 @@ const Trading = {
     "markPrice": "マーク価格",
     "market": "成行",
     "messages": {
-      "fetchOrderHistoryFailed": "加载订单历史失败",
+      "fetchOrderHistoryFailed": "注文履歴の取得に失敗しました",
       "fetchPendingOrdersFailed": "未決注文の取得に失敗しました",
       "fetchPositionsFailed": "保有ポジションの取得に失敗しました",
       "orderCloseFailed": "決済に失敗しました",
@@ -99,8 +99,8 @@ const Trading = {
     },
     "noAccount": "口座が選択されていません",
     "noOrders": "まだ注文はありません",
-    "noPositions": "オープンポジションはありません",
-    "openPositionsTitle": "オープンポジション",
+    "noPositions": "保有ポジションなし",
+    "openPositionsTitle": "保有ポジション",
     "openTime": "エントリー時間",
     "orderHistory": "注文履歴",
     "ordersCount": "{{count}} 件の注文",
@@ -108,9 +108,9 @@ const Trading = {
     "pnl": "損益",
     "positionEntryPrice": "エントリー価格",
     "positionLeverage": "レバレッジ",
-    "positionLong": "LONG",
+    "positionLong": "ロング",
     "positionMarkPrice": "マーク価格",
-    "positionShort": "SHORT",
+    "positionShort": "ショート",
     "positionSide": "方向",
     "positionSize": "数量",
     "positionUnrealizedPnL": "含み損益",
@@ -121,51 +121,51 @@ const Trading = {
     "risk": {
       "errors": {
         "RISK_ACCOUNT_TRADE_DISABLED": {
-          "action": "检查账户状态和权限后重试。",
+          "action": "口座の状態と権限を確認してから再試行してください。",
           "title": "この口座では取引が無効化されています。"
         },
         "RISK_INTERNAL_RULE_UNAVAILABLE": {
-          "action": "稍后重试；如问题持续请联系客服。",
+          "action": "後で再試行。問題が続く場合はサポートに連絡してください。",
           "title": "リスクルールが一時的に利用できません。"
         },
         "RISK_MARGIN_INSUFFICIENT": {
-          "action": "减少手数、平仓或充值。",
+          "action": "数量を減らすか、ポジションを決済するか、資金を追加してください。",
           "title": "この注文に必要な余剰証拠金が不足しています。"
         },
         "RISK_MARKET_SESSION_CLOSED": {
-          "action": "等待下一个交易时段后重试。",
+          "action": "次の取引セッションを待って再試行してください。",
           "title": "この銘柄の市場は休場中です。"
         },
         "RISK_MAX_OPEN_POSITIONS_EXCEEDED": {
-          "action": "平掉现有持仓或提高上限。",
+          "action": "既存のポジションを決済するか、上限を引き上げてください。",
           "title": "最大保有ポジション数に達しています。"
         },
         "RISK_MAX_PENDING_ORDERS_EXCEEDED": {
-          "action": "取消现有挂单或提高上限。",
+          "action": "既存の未決注文を取消すか、上限を引き上げてください。",
           "title": "最大未決注文数に達しています。"
         },
         "RISK_ORDER_FROZEN_ZONE": {
-          "action": "等待价格离开冻结区域后重试。",
+          "action": "価格が凍結距離から離れるまで待ってから再試行してください。",
           "title": "凍結ゾーン内のため注文を変更できません。"
         },
         "RISK_ORDER_TYPE_UNSUPPORTED": {
-          "action": "选择支持的订单类型后重试。",
+          "action": "サポートされている注文タイプを選択して再試行してください。",
           "title": "この銘柄ではこの注文タイプはサポートされていません。"
         },
         "RISK_STOP_DISTANCE_TOO_CLOSE": {
-          "action": "增加止损/止盈距离后重试。",
+          "action": "SL/TPの距離を広げて再試行してください。",
           "title": "損切りまたは利確が現在価格に近すぎます。"
         },
         "RISK_SYMBOL_TRADE_DISABLED": {
-          "action": "切换到可交易品种或稍后重试。",
+          "action": "取引可能な銘柄に切り替えるか、後で試してください。",
           "title": "この銘柄は現在取引できません。"
         },
         "RISK_VOLUME_INVALID": {
-          "action": "调整手数以匹配最小/最大/步长要求。",
+          "action": "最小/最大/ステップ要件に合わせて数量を調整してください。",
           "title": "注文数量が無効です。"
         },
         "unknown": {
-          "action": "请检查订单参数后重试。",
+          "action": "注文パラメータを確認して再試行してください。",
           "title": "取引リクエストが拒否されました。"
         }
       }
@@ -174,7 +174,7 @@ const Trading = {
       "confirm": {
         "confirmText": "保存",
         "description": "以下のリスク設定を確認してください：",
-        "info": "保存后，所有自动交易将遵循新的风险限额。",
+        "info": "保存後、すべての自動取引は新しいリスク制限に従います。",
         "title": "リスク設定の保存確認"
       },
       "fields": {
@@ -184,30 +184,30 @@ const Trading = {
         "maxPositions": "最大ポジション数",
         "maxRiskPercent": "1回あたり最大リスク",
         "trailingStopEnabled": "トレーリングストップ",
-        "trailingStopPips": "移动止损 (点)"
+        "trailingStopPips": "トレーリングストップ (pips)"
       }
     },
-    "selectSymbol": "选择品种",
-    "sell": "卖出",
+    "selectSymbol": "銘柄を選択",
+    "sell": "売り",
     "side": "方向",
     "stop": "逆指値",
-    "stopLoss": "ストップロス",
+    "stopLoss": "損切り",
     "strategyExecute": {
       "confirm": {
         "action": "方向",
-        "buy": "买入",
+        "buy": "買い",
         "confirmText": "実行",
-        "sell": "卖出",
+        "sell": "売り",
         "strategyName": "戦略名",
-        "symbol": "品种",
+        "symbol": "銘柄",
         "title": "取引実行の確認",
         "volume": "数量",
         "warningDescription": "この操作は即時に実取引を実行します。パラメータをよく確認してください。",
         "warningTitle": "取引実行確認"
       }
     },
-    "symbol": "品种",
-    "takeProfit": "テイクプロフィット",
+    "symbol": "銘柄",
+    "takeProfit": "利確",
     "time": "時間",
     "title": "取引",
     "type": "タイプ",
