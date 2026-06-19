@@ -1,3 +1,6 @@
+
+import { TOKEN_EXPIRED_KEY } from '@/gen/ant/v1/i18n/errors_keys';
+
 import { createConnectTransport } from '@connectrpc/connect-web';
 import { ConnectError, Code, type Interceptor } from '@connectrpc/connect';
 import { Modal, message } from 'antd';
@@ -134,7 +137,7 @@ const interceptors: Interceptor[] = [
         // StreamService auth failure (expired/missing token) — the reactive
         // refresh interceptor already tried and failed; show friendly re-login prompt.
         if (isStreamServiceProcedure(proc) && isStreamAuthFailure(error)) {
-          message.error(i18n.t('errors.token_expired'));
+          message.error(i18n.t(TOKEN_EXPIRED_KEY));
           throw error;
         }
         // Skip global toast for user-input validation errors — the caller

@@ -3,7 +3,10 @@ import { Button, Card, message, Popconfirm, Space, Table, Tag, Tooltip, Typograp
 import type { ColumnsType, TableRowSelection } from 'antd/es/table';
 import { DeleteOutlined, SyncOutlined } from '@ant-design/icons';
 import { formatDateTime } from '@/utils/date';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { BACKTEST_RUNS_ACTIONS_LAUNCH_SCHEDULE_KEY, BACKTEST_RUNS_ACTIONS_VIEW_KEY, BACKTEST_RUNS_BATCH_DELETE_CONFIRM_KEY, BACKTEST_RUNS_BATCH_DELETE_SUCCESS_KEY, BACKTEST_RUNS_DELETE_CONFIRM_KEY, BACKTEST_RUNS_EMPTY_KEY, BACKTEST_RUNS_STATUS_CANCELED_KEY, BACKTEST_RUNS_STATUS_CANCELING_KEY, BACKTEST_RUNS_STATUS_COMPLETED_KEY, BACKTEST_RUNS_STATUS_FAILED_KEY, BACKTEST_RUNS_STATUS_QUEUED_KEY, BACKTEST_RUNS_STATUS_RUNNING_KEY, BACKTEST_RUNS_TABLE_ACTIONS_KEY, BACKTEST_RUNS_TABLE_CREATED_AT_KEY, BACKTEST_RUNS_TABLE_STATUS_KEY, BACKTEST_RUNS_TABLE_SYMBOL_KEY, BACKTEST_RUNS_TABLE_TIMEFRAME_KEY, BACKTEST_RUNS_TABLE_TITLE_KEY, BACKTEST_RUNS_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
+;
 
 const { Text } = Typography;
 
@@ -21,17 +24,17 @@ type Props = {
 function statusText(s: unknown, t: (key: string) => string) {
   switch (Number(s)) {
     case 1:
-      return t('strategy.templates.backtestRuns.status.queued');
+      return t(BACKTEST_RUNS_STATUS_QUEUED_KEY);
     case 2:
-      return t('strategy.templates.backtestRuns.status.running');
+      return t(BACKTEST_RUNS_STATUS_RUNNING_KEY);
     case 3:
-      return t('strategy.templates.backtestRuns.status.completed');
+      return t(BACKTEST_RUNS_STATUS_COMPLETED_KEY);
     case 4:
-      return t('strategy.templates.backtestRuns.status.failed');
+      return t(BACKTEST_RUNS_STATUS_FAILED_KEY);
     case 5:
-      return t('strategy.templates.backtestRuns.status.canceling');
+      return t(BACKTEST_RUNS_STATUS_CANCELING_KEY);
     case 6:
-      return t('strategy.templates.backtestRuns.status.canceled');
+      return t(BACKTEST_RUNS_STATUS_CANCELED_KEY);
     default:
       return String(s ?? '-');
   }
@@ -65,7 +68,7 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
         }
       }
       message.success(
-        t('strategy.templates.backtestRuns.batchDeleteSuccess', {
+        t(BACKTEST_RUNS_BATCH_DELETE_SUCCESS_KEY, {
           count: selectedRowKeys.length,
         }),
       );
@@ -78,7 +81,7 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
   };
   const columns: ColumnsType<any> = [
     {
-      title: t('strategy.templates.backtestRuns.table.title'),
+      title: t(BACKTEST_RUNS_TABLE_TITLE_KEY),
       dataIndex: 'title',
       key: 'title',
       width: 260,
@@ -101,47 +104,47 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
       },
     },
     {
-      title: t('strategy.templates.backtestRuns.table.status'),
+      title: t(BACKTEST_RUNS_TABLE_STATUS_KEY),
       dataIndex: 'status',
       key: 'status',
       width: 120,
       render: (s: unknown) => <Tag>{statusText(s, t)}</Tag>,
     },
     {
-      title: t('strategy.templates.backtestRuns.table.symbol'),
+      title: t(BACKTEST_RUNS_TABLE_SYMBOL_KEY),
       dataIndex: 'symbol',
       key: 'symbol',
       width: 120,
     },
     {
-      title: t('strategy.templates.backtestRuns.table.timeframe'),
+      title: t(BACKTEST_RUNS_TABLE_TIMEFRAME_KEY),
       dataIndex: 'timeframe',
       key: 'timeframe',
       width: 100,
     },
     {
-      title: t('strategy.templates.backtestRuns.table.createdAt'),
+      title: t(BACKTEST_RUNS_TABLE_CREATED_AT_KEY),
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 180,
       render: (v: unknown) => formatDateTime(v as string),
     },
     {
-      title: t('strategy.templates.backtestRuns.table.actions'),
+      title: t(BACKTEST_RUNS_TABLE_ACTIONS_KEY),
       key: 'action',
       width: 220,
       fixed: 'right',
       render: (_: unknown, r: BacktestRun) => (
         <Space size="small">
           <Button type="link" size="small" onClick={() => onView(String(r.id || ''))}>
-            {t('strategy.templates.backtestRuns.actions.view')}
+            {t(BACKTEST_RUNS_ACTIONS_VIEW_KEY)}
           </Button>
           {typeof onViewScore === 'function' ? (
             <Button type="link" size="small" onClick={() => onViewScore(String(r.id || ''))}>
-              {t('strategy.templates.backtestRuns.actions.launchSchedule')}
+              {t(BACKTEST_RUNS_ACTIONS_LAUNCH_SCHEDULE_KEY)}
             </Button>
           ) : null}
-          <Popconfirm title={t('strategy.templates.backtestRuns.deleteConfirm')} onConfirm={() => onDelete(String(r.id || ''))}>
+          <Popconfirm title={t(BACKTEST_RUNS_DELETE_CONFIRM_KEY)} onConfirm={() => onDelete(String(r.id || ''))}>
             <Button type="link" size="small" danger icon={<DeleteOutlined />}>
               {t('common.delete')}
             </Button>
@@ -153,12 +156,12 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
 
   return (
     <Card
-      title={t('strategy.templates.backtestRuns.title')}
+      title={t(BACKTEST_RUNS_TITLE_KEY)}
       extra={
         <Space>
           {selectedRowKeys.length > 0 && (
             <Popconfirm
-              title={t('strategy.templates.backtestRuns.batchDeleteConfirm', {
+              title={t(BACKTEST_RUNS_BATCH_DELETE_CONFIRM_KEY, {
                 count: selectedRowKeys.length,
               })}
               onConfirm={handleBatchDelete}
@@ -192,7 +195,7 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
           showQuickJumper: true,
           showTotal: (total) => t('common.totalItems', { total }),
         }}
-        locale={{ emptyText: t('strategy.templates.backtestRuns.empty') }}
+        locale={{ emptyText: t(BACKTEST_RUNS_EMPTY_KEY) }}
       />
     </Card>
   );

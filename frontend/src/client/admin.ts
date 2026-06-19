@@ -54,7 +54,6 @@ export type LogListParams = {
   actionType?: string;
 };
 
-
 export const adminApi = {
   getDashboard: async () => {
     const resp = await adminUserClient.getDashboard({});

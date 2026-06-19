@@ -1,6 +1,9 @@
 import { Button, Typography } from 'antd';
 import { TrophyOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { REPORT_AI_ANALYSIS_KEY, REPORT_GO_TO_A_I_SETTINGS_KEY, REPORT_SECTIONS_FINDINGS_KEY, REPORT_SECTIONS_RECOMMENDATIONS_KEY, REPORT_SECTIONS_SUMMARY_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -22,7 +25,7 @@ export default function ReportNarrative({
   return (
     <div className="rounded-2xl p-6 mb-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
       <Title level={5} style={{ marginBottom: 16 }}>
-        <TrophyOutlined /> {t('accounts.report.aiAnalysis')}
+        <TrophyOutlined /> {t(REPORT_AI_ANALYSIS_KEY)}
       </Title>
       {reportError && (
         <div className="rounded-lg p-3 mb-4" style={{ background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger-bg-subtle)', color: 'var(--color-danger)' }}>
@@ -30,26 +33,26 @@ export default function ReportNarrative({
           {/AI|api[_\s]?key|api key|未配置|not configured|API Key/i.test(reportError) && (
             <Button type="link" size="small" style={{ padding: 0, marginTop: 8 }}
               onClick={onNavigateAISettings}>
-              {t('accounts.report.goToAISettings', 'AI Settings →')}
+              {t(REPORT_GO_TO_A_I_SETTINGS_KEY, 'AI Settings →')}
             </Button>
           )}
         </div>
       )}
       {sections.summary && (
         <div className="mb-4">
-          <Text strong style={{ color: 'var(--color-text)' }}>{t('accounts.report.sections.summary')}</Text>
+          <Text strong style={{ color: 'var(--color-text)' }}>{t(REPORT_SECTIONS_SUMMARY_KEY)}</Text>
           <Paragraph style={{ color: 'var(--color-text-secondary)', marginTop: 4 }}>{sections.summary}</Paragraph>
         </div>
       )}
       {sections.findings && (
         <div className="mb-4">
-          <Text strong style={{ color: 'var(--color-text)' }}>{t('accounts.report.sections.findings')}</Text>
+          <Text strong style={{ color: 'var(--color-text)' }}>{t(REPORT_SECTIONS_FINDINGS_KEY)}</Text>
           <Paragraph style={{ color: 'var(--color-text-secondary)', marginTop: 4, whiteSpace: 'pre-wrap' }}>{sections.findings}</Paragraph>
         </div>
       )}
       {sections.recommendations && (
         <div className="mb-4">
-          <Text strong style={{ color: 'var(--color-text)' }}>{t('accounts.report.sections.recommendations')}</Text>
+          <Text strong style={{ color: 'var(--color-text)' }}>{t(REPORT_SECTIONS_RECOMMENDATIONS_KEY)}</Text>
           <Paragraph style={{ color: 'var(--color-text-secondary)', marginTop: 4, whiteSpace: 'pre-wrap' }}>{sections.recommendations}</Paragraph>
         </div>
       )}

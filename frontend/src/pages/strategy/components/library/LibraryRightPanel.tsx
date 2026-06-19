@@ -1,5 +1,8 @@
 import { Tabs, Typography, Empty } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { BACKTEST_HISTORY_KEY, OVERVIEW_KEY, SCHEDULES_KEY, SELECT_HINT_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
+
+;
 import { useLibraryCtx } from '../../LibraryContext';
 import { isSystemTemplate } from '../../hooks/libraryTypes';
 import LibraryOverviewTab from './LibraryOverviewTab';
@@ -16,7 +19,7 @@ export default function LibraryRightPanel() {
   if (!lib.selected) {
     return (
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8c8c8c', flexDirection: 'column', gap: 8 }}>
-        <Empty description={t('strategy.library.selectHint')} />
+        <Empty description={t(SELECT_HINT_KEY)} />
       </div>
     );
   }
@@ -26,17 +29,17 @@ export default function LibraryRightPanel() {
   const tabItems = [
     {
       key: 'overview' as LibraryTab,
-      label: t('strategy.library.overview'),
+      label: t(OVERVIEW_KEY),
       children: <LibraryOverviewTab />,
     },
     {
       key: 'schedules' as LibraryTab,
-      label: t('strategy.library.schedules'),
+      label: t(SCHEDULES_KEY),
       children: <LibraryScheduleTab {...lib.scheduleProps} />,
     },
     {
       key: 'backtest' as LibraryTab,
-      label: t('strategy.library.backtestHistory'),
+      label: t(BACKTEST_HISTORY_KEY),
       children: <LibraryBacktestHistoryTab />,
     },
   ];

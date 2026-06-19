@@ -1,7 +1,10 @@
 import React from 'react';
 import { Modal, Button, Collapse, Form, Input, Switch } from 'antd';
 import { CopyOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { CODE_MODAL_ACTIONS_COPY_KEY, CODE_MODAL_TITLE_KEY, EDIT_TEMPLATE_MODAL_ACTIONS_VALIDATE_CODE_KEY, EDIT_TEMPLATE_MODAL_FIELDS_CODE_KEY, EDIT_TEMPLATE_MODAL_FIELDS_DESCRIPTION_KEY, EDIT_TEMPLATE_MODAL_FIELDS_NAME_KEY, EDIT_TEMPLATE_MODAL_FIELDS_PUBLIC_SHARE_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_CODE_SAMPLE_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_DESCRIPTION_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_NAME_KEY, EDIT_TEMPLATE_MODAL_TITLE_CREATE_KEY, EDIT_TEMPLATE_MODAL_TITLE_EDIT_KEY, EDIT_TEMPLATE_MODAL_VALIDATION_CODE_REQUIRED_KEY, EDIT_TEMPLATE_MODAL_VALIDATION_NAME_REQUIRED_KEY, VISIBILITY_PRIVATE_KEY, VISIBILITY_PUBLIC_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
+;
 import type { FormInstance } from 'antd';
 import type { StrategyTemplate } from '@/client/strategy';
 import { AICodeReviseChat, CodeExplainPanel } from '@/components/strategy/CodeAssist';
@@ -47,19 +50,19 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 	const collapseItems = [
 		{
 			key: 'ai',
-			label: t('strategy.codeAssist.tabAI', { defaultValue: 'AI revise' }),
+			label: t(TAB_A_I_KEY, { defaultValue: 'AI revise' }),
 			children: <AICodeReviseChat code={code} onApply={applyAICode} />,
 		},
 		{
 			key: 'explain',
-			label: t('strategy.codeAssist.tabExplain', { defaultValue: 'Explain code' }),
+			label: t(TAB_EXPLAIN_KEY, { defaultValue: 'Explain code' }),
 			children: <CodeExplainPanel code={code} />,
 		},
 	];
 
 	return (
 		<Modal
-			title={editingTemplate ? t('strategy.templates.editTemplateModal.title.edit') : t('strategy.templates.editTemplateModal.title.create')}
+			title={editingTemplate ? t(EDIT_TEMPLATE_MODAL_TITLE_EDIT_KEY) : t(EDIT_TEMPLATE_MODAL_TITLE_CREATE_KEY)}
 			open={open}
 			onCancel={onCancel}
 			footer={[
@@ -67,7 +70,7 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 					{t('common.cancel')}
 				</Button>,
 				<Button key="validate" onClick={onValidate} loading={codeValidating}>
-					{t('strategy.templates.editTemplateModal.actions.validateCode')}
+					{t(EDIT_TEMPLATE_MODAL_ACTIONS_VALIDATE_CODE_KEY)}
 				</Button>,
 				<Button
 					key="save"
@@ -76,7 +79,7 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 					loading={codeValidating}
 					disabled={!code.trim() || code !== lastValidatedCode}
 					title={code && code !== lastValidatedCode
-						? t('strategy.codeAssist.saveBlockedNotValidated', {
+						? t(SAVE_BLOCKED_NOT_VALIDATED_KEY, {
 							defaultValue: 'Please run "Validate code" first. Save is disabled until validation passes.',
 						})
 						: undefined}
@@ -95,29 +98,29 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 			>
 				<Form.Item
 					name="name"
-					label={t('strategy.templates.editTemplateModal.fields.name')}
-					rules={[{ required: true, message: t('strategy.templates.editTemplateModal.validation.nameRequired') }]}
+					label={t(EDIT_TEMPLATE_MODAL_FIELDS_NAME_KEY)}
+					rules={[{ required: true, message: t(EDIT_TEMPLATE_MODAL_VALIDATION_NAME_REQUIRED_KEY) }]}
 				>
-					<Input placeholder={t('strategy.templates.editTemplateModal.placeholders.name')} />
+					<Input placeholder={t(EDIT_TEMPLATE_MODAL_PLACEHOLDERS_NAME_KEY)} />
 				</Form.Item>
-				<Form.Item name="description" label={t('strategy.templates.editTemplateModal.fields.description')}>
-					<TextArea rows={2} placeholder={t('strategy.templates.editTemplateModal.placeholders.description')} />
+				<Form.Item name="description" label={t(EDIT_TEMPLATE_MODAL_FIELDS_DESCRIPTION_KEY)}>
+					<TextArea rows={2} placeholder={t(EDIT_TEMPLATE_MODAL_PLACEHOLDERS_DESCRIPTION_KEY)} />
 				</Form.Item>
 				<Form.Item
 					name="code"
-					label={t('strategy.templates.editTemplateModal.fields.code')}
-					rules={[{ required: true, message: t('strategy.templates.editTemplateModal.validation.codeRequired') }]}
+					label={t(EDIT_TEMPLATE_MODAL_FIELDS_CODE_KEY)}
+					rules={[{ required: true, message: t(EDIT_TEMPLATE_MODAL_VALIDATION_CODE_REQUIRED_KEY) }]}
 				>
 					<TextArea
 						rows={12}
-						placeholder={t('strategy.templates.editTemplateModal.placeholders.codeSample')}
+						placeholder={t(EDIT_TEMPLATE_MODAL_PLACEHOLDERS_CODE_SAMPLE_KEY)}
 						style={{ fontFamily: 'monospace' }}
 					/>
 				</Form.Item>
-				<Form.Item name="isPublic" label={t('strategy.templates.editTemplateModal.fields.publicShare')} valuePropName="checked">
+				<Form.Item name="isPublic" label={t(EDIT_TEMPLATE_MODAL_FIELDS_PUBLIC_SHARE_KEY)} valuePropName="checked">
 					<Switch
-						checkedChildren={t('strategy.templates.visibility.public')}
-						unCheckedChildren={t('strategy.templates.visibility.private')}
+						checkedChildren={t(VISIBILITY_PUBLIC_KEY)}
+						unCheckedChildren={t(VISIBILITY_PRIVATE_KEY)}
 					/>
 				</Form.Item>
 			</Form>
@@ -137,12 +140,12 @@ export const StrategyTemplateCodeViewModal: React.FC<StrategyTemplateCodeViewMod
 	const { t } = useTranslation();
 	return (
 		<Modal
-			title={t('strategy.templates.codeModal.title')}
+			title={t(CODE_MODAL_TITLE_KEY)}
 			open={open}
 			onCancel={onClose}
 			footer={[
 				<Button key="copy" icon={<CopyOutlined />} onClick={() => onCopy(code)}>
-					{t('strategy.templates.codeModal.actions.copy')}
+					{t(CODE_MODAL_ACTIONS_COPY_KEY)}
 				</Button>,
 				<Button key="close" onClick={onClose}>
 					{t('common.close')}

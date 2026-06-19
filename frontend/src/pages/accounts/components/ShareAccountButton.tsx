@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button, Modal, Table, message, Tag, Space, Typography, Popconfirm, Switch } from 'antd';
 import { ShareAltOutlined, CopyOutlined, LinkOutlined, DeleteOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { SHARE_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
+
+;
 import { getAccessToken } from '@/utils/getAccessToken';
 
 interface ShareItem {
@@ -147,7 +150,7 @@ export default function ShareAccountButton({ accountId }: Props) {
   return (
     <>
       <Button icon={<ShareAltOutlined />} onClick={() => setOpen(true)}>
-        {t('strategy.library.share', { defaultValue: 'Share' })}
+        {t(SHARE_KEY, { defaultValue: 'Share' })}
       </Button>
       <Modal
         title={t('share.title', { defaultValue: 'Share Management' })}

@@ -1,4 +1,8 @@
-import { useCallback } from 'react';
+
+import { MESSAGES_FETCH_ORDER_HISTORY_FAILED_KEY, MESSAGES_ORDER_CLOSE_FAILED_KEY, MESSAGES_ORDER_CLOSE_SUCCESS_KEY, MESSAGES_ORDER_SEND_FAILED_KEY, MESSAGES_ORDER_SEND_SUCCESS_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+
+import { useCallback } from 'react'
+;
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/queries/queryKeys';
 import { useTradingStore } from '@/stores/tradingStore';
@@ -43,10 +47,10 @@ export function useTrading() {
         );
         return null;
       }
-      showSuccess(i18n.t('trading.messages.orderSendSuccess'));
+      showSuccess(i18n.t(MESSAGES_ORDER_SEND_SUCCESS_KEY));
       return result.order;
     } catch (error) {
-      showError(getErrorMessage(error, i18n.t('trading.messages.orderSendFailed')));
+      showError(getErrorMessage(error, i18n.t(MESSAGES_ORDER_SEND_FAILED_KEY)));
       throw error;
     } finally {
       setLoading(false);
@@ -75,11 +79,11 @@ export function useTrading() {
         );
         return null;
       }
-      showSuccess(i18n.t('trading.messages.orderCloseSuccess'));
+      showSuccess(i18n.t(MESSAGES_ORDER_CLOSE_SUCCESS_KEY));
       queryClient.invalidateQueries({ queryKey: queryKeys.positions.byAccount(params.accountId) });
       return result.order;
     } catch (error) {
-      showError(getErrorMessage(error, i18n.t('trading.messages.orderCloseFailed')));
+      showError(getErrorMessage(error, i18n.t(MESSAGES_ORDER_CLOSE_FAILED_KEY)));
       throw error;
     } finally {
       setLoading(false);
@@ -97,7 +101,7 @@ export function useTrading() {
       const result = await tradingApi.getOrderHistory(params);
       return result;
     } catch (error) {
-      showError(getErrorMessage(error, i18n.t('trading.messages.fetchOrderHistoryFailed')));
+      showError(getErrorMessage(error, i18n.t(MESSAGES_FETCH_ORDER_HISTORY_FAILED_KEY)));
       return { orders: [], total: 0, page: 1, pageSize: 50 };
     }
   }, []);
@@ -107,7 +111,7 @@ export function useTrading() {
       const result = await accountApi.connect(accountId);
       return result;
     } catch (error) {
-      showError(getErrorMessage(error, i18n.t('accounts.messages.connectFailed')));
+      showError(getErrorMessage(error, i18n.t(MESSAGES_CONNECT_FAILED_KEY)));
       throw error;
     }
   }, []);

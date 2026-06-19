@@ -1,4 +1,7 @@
-import { useMemo } from 'react';
+
+import { DEFAULTS_LOADED_KEY, DEFAULTS_RESET_KEY, DEFAULTS_SAVED_KEY, SETTINGS_LOAD_KEY, SETTINGS_RESET_KEY, SETTINGS_SAVE_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
+import { useMemo } from 'react'
+;
 import { message } from 'antd';
 import type { MenuProps } from 'antd';
 import type { TFunction } from 'i18next';
@@ -37,25 +40,25 @@ export function useBacktestDefaults(
 
   const settingsItems: MenuProps['items'] = useMemo(() => [
     {
-      key: 'save', label: t('strategy.backtestParams.settingsSave'),
+      key: 'save', label: t(SETTINGS_SAVE_KEY),
       onClick: () => {
         saveDefaults(current);
-        message.success(t('strategy.backtestParams.defaultsSaved'));
+        message.success(t(DEFAULTS_SAVED_KEY));
       },
     },
     ...(saved ? [{
-      key: 'load', label: t('strategy.backtestParams.settingsLoad'),
+      key: 'load', label: t(SETTINGS_LOAD_KEY),
       onClick: () => {
         onApplyDefaults?.(saved);
-        message.success(t('strategy.backtestParams.defaultsLoaded'));
+        message.success(t(DEFAULTS_LOADED_KEY));
       },
     }] : []),
     {
-      key: 'reset', label: t('strategy.backtestParams.settingsReset'),
+      key: 'reset', label: t(SETTINGS_RESET_KEY),
       onClick: () => {
         removeDefaults();
         onApplyDefaults?.(FACTORY_DEFAULTS);
-        message.success(t('strategy.backtestParams.defaultsReset'));
+        message.success(t(DEFAULTS_RESET_KEY));
       },
     },
   ], [t, current, saved, onApplyDefaults]);

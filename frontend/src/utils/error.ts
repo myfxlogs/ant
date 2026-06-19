@@ -1,3 +1,6 @@
+
+import { UNKNOWN_KEY } from '@/gen/ant/v1/i18n/errors_keys';
+
 import i18n from '@/i18n';
 
 interface ApiErrorResponse {
@@ -98,7 +101,7 @@ export function getErrorMessageByCode(code: number, fallback?: string): string {
     const translated = i18n.t(key);
     if (translated && translated !== key) return translated;
   }
-  return fallback ?? i18n.t('errors.unknown');
+  return fallback ?? i18n.t(UNKNOWN_KEY);
 }
 
 export function translateMaybeI18nKey(msg: unknown, fallback: string): string {

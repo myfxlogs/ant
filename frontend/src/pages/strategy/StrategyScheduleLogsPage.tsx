@@ -4,7 +4,10 @@ import { useParams } from 'react-router-dom';
 import { Typography } from 'antd';
 import { scheduleHealthApi } from '@/client/scheduleHealth';
 import { StatusResult } from '@/components/common/StatusResult';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { TABS_EXEC_LOGS_KEY, TABS_ORDER_LOGS_KEY, TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_schedule_logs_keys';
+
+;
 import type { ScheduleRunLog } from '@/gen/ant/v1/log_schedule_pb';
 import type { OrderHistoryRecord } from '@/gen/ant/v1/log_order_pb';
 import {
@@ -63,13 +66,13 @@ export default function StrategyScheduleLogsPage() {
     <div className="p-6">
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <Title level={4} style={{ margin: 0 }}>{t('strategy.scheduleLogs.title')}</Title>
+          <Title level={4} style={{ margin: 0 }}>{t(TITLE_KEY)}</Title>
           <Text type="secondary">{scheduleId}</Text>
         </div>
         <Tabs activeKey={activeTab} onChange={setActiveTab}
           items={[
-            { key: 'exec', label: t('strategy.scheduleLogs.tabs.execLogs') },
-            { key: 'orders', label: t('strategy.scheduleLogs.tabs.orderLogs') },
+            { key: 'exec', label: t(TABS_EXEC_LOGS_KEY) },
+            { key: 'orders', label: t(TABS_ORDER_LOGS_KEY) },
           ]} />
         <StatusResult loading={loading} error={error} onRetry={refresh}
           empty={!loading && !error && activeTab === 'exec' && execLogs.length === 0}

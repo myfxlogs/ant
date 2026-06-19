@@ -1,7 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, Form, Select, InputNumber, DatePicker, Button, Space, message, Descriptions } from 'antd';
 import { PlayCircleOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { MARKET_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+
+;
 import dayjs from 'dayjs';
 import { create } from '@bufbuild/protobuf';
 import { executionAlgoClient } from '@/client/connect';
@@ -85,7 +88,7 @@ export default function AlgoSubmitForm({ onStarted }: Props) {
             showSearch
             onChange={handleAccountChange}
             optionFilterProp="label"
-            notFoundContent={t('strategy.workspace.noAccounts')}
+            notFoundContent={t(NO_ACCOUNTS_KEY)}
             options={activeAccounts.map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))}
             style={{ width: '30%' }}
           />
@@ -118,7 +121,7 @@ export default function AlgoSubmitForm({ onStarted }: Props) {
         </Form.Item>
         <Space wrap>
           <Form.Item name="limitPrice" label={t('algo.fields.limitPrice')}>
-            <InputNumber min={0} step={0.0001} style={{ width: 120 }} placeholder={t('trading.market')} />
+            <InputNumber min={0} step={0.0001} style={{ width: 120 }} placeholder={t(MARKET_KEY)} />
           </Form.Item>
           <Form.Item name="sliceInterval" label={t('algo.fields.sliceInterval')}>
             <InputNumber min={1} max={3600} style={{ width: 100 }} placeholder="60s" addonAfter="s" />

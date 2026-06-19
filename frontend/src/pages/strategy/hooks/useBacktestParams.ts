@@ -1,6 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { message } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { BACKTEST_FAILED_KEY, ENTER_CODE_AND_SYMBOL_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
+
+;
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { backtestRunsApi, type BacktestTrade } from '@/client/backtestRuns';
 import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
@@ -103,7 +106,7 @@ export function useBacktestParams() {
     templateId?: string;
   }) => {
     const { code, accountId, symbol, timeframe, templateId } = params;
-    if (!code || !symbol) { message.warning(t('strategy.backtestParams.enterCodeAndSymbol')); return; }
+    if (!code || !symbol) { message.warning(t(ENTER_CODE_AND_SYMBOL_KEY)); return; }
     setSubmitting(true);
     try {
       const result = await pythonStrategyApi.startBacktestRun({
@@ -152,7 +155,7 @@ export function useBacktestParams() {
       });
       backtestWatchRef.current = stopWatching;
     } catch (e: any) {
-      message.error(e?.message || t('strategy.backtestParams.backtestFailed'));
+      message.error(e?.message || t(BACKTEST_FAILED_KEY));
       setStatus('error'); setErrorMsg(e?.message || 'Unknown error');
     } finally { setSubmitting(false); }
   }, [initialCapital, commission, slippage, leverage, tradeDirection, strictMode, startDate, endDate, t]);

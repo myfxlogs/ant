@@ -1,3 +1,6 @@
+
+import { MESSAGES_BACKTEST_SUBMITTED_KEY, MESSAGES_READ_STRATEGY_CODE_FAILED_KEY, MESSAGES_SELECT_BACKTEST_RANGE_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
 import dayjs from 'dayjs';
 import { message } from 'antd';
 import type { FormInstance } from 'antd';
@@ -30,7 +33,7 @@ export async function doSubmitBacktest(
   const values = await backtestForm.validateFields();
   const range = values.range as [dayjs.Dayjs, dayjs.Dayjs] | undefined;
   if (!range?.[0] || !range?.[1] || typeof range[0].toDate !== 'function') {
-    message.error(t('strategy.templates.messages.selectBacktestRange')); return;
+    message.error(t(MESSAGES_SELECT_BACKTEST_RANGE_KEY)); return;
   }
   const fromDate = range[0].toDate(); const toDate = range[1].toDate();
   const extraSymbols = Array.isArray(values.extraSymbols) ? (values.extraSymbols as string[]).map((s) => String(s)).filter((s) => !!s && s !== String(values.symbol)) : [];
@@ -48,7 +51,7 @@ export async function doSubmitBacktest(
     extraSymbols,
   });
   saveRunTitle(String(resp?.runId || ''), String(values.title || dayjs().format('YYYY-MM-DD')));
-  message.success(t('strategy.templates.messages.backtestSubmitted'));
+  message.success(t(MESSAGES_BACKTEST_SUBMITTED_KEY));
   return resp.runId;
 }
 
@@ -67,7 +70,7 @@ export async function openBacktestModal(
 ) {
   let full: StrategyTemplate;
   try { full = await fetchTemplateCodeIfNeeded(template); setBacktestTemplate(full); }
-  catch { message.error(t('strategy.templates.messages.readStrategyCodeFailed')); return; }
+  catch { message.error(t(MESSAGES_READ_STRATEGY_CODE_FAILED_KEY)); return; }
   setBacktestRequiredParams([]); setBacktestParamValues({});
   try { const ext = await codeAssistApi.validateExtended(String(full?.code || '')); if (ext.valid) setBacktestRequiredParams(ext.parameters || []); }
   catch { /* ignore */ }

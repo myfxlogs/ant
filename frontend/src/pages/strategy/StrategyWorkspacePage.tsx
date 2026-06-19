@@ -1,7 +1,10 @@
 import { Suspense, lazy } from 'react';
 import { Collapse, Grid } from 'antd';
 import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { BACKTEST_RESULTS_LABEL_KEY, CHART_ERROR_KEY, CODE_KEY, COMPLETED_STATUS_KEY, NO_OPEN_POSITIONS_KEY, OPEN_POSITIONS_KEY, RUNNING_STATUS_KEY, SELECT_SYMBOL_HINT_KEY, SMART_TUNING_KEY, TEMPLATE_TITLE_KEY, TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+
+;
 import { useStrategyWorkspaceState, DATE_PRESETS } from './hooks/useStrategyWorkspaceState';
 import WorkspaceCodePanel from './components/workspace/WorkspaceCodePanel';
 import WorkspaceBacktestPanel from './components/workspace/WorkspaceBacktestPanel';
@@ -40,7 +43,7 @@ export default function StrategyWorkspacePage() {
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 112px)', background: '#fff' }}>
       {/* Title bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0 12px' }}>
-        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{t('strategy.workspace.title', 'Strategy Workspace')}</h2>
+        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{t(TITLE_KEY, 'Strategy Workspace')}</h2>
       </div>
 
       {/* ═══ TOP TOOLBAR ═══ */}
@@ -73,7 +76,7 @@ export default function StrategyWorkspacePage() {
             : <DoubleRightOutlined style={{ fontSize: 14 }} />
           }
           <span style={{ fontSize: 10, writingMode: 'vertical-rl', fontWeight: 500,
-            color: ws.layout.codePanelVisible ? '#fff' : 'inherit' }}>{t('strategy.workspace.code')}</span>
+            color: ws.layout.codePanelVisible ? '#fff' : 'inherit' }}>{t(CODE_KEY)}</span>
         </div>
 
         {/* ── Expanded code panel (overlays chart, stays within workspace) ── */}
@@ -98,7 +101,7 @@ export default function StrategyWorkspacePage() {
             />
             <AIChatPanel code={ws.code.code} symbol={ws.account.symbol} timeframe={ws.account.timeframe} onApply={ws.code.setCode} initialPrompt={ws.ai.optimizePrompt} autoApply={ws.ai.chatAutoApply} sessionId={sessionId} chatHistory={chatHistory} />
             <Collapse ghost size="small" style={{ background: 'transparent' }} items={[
-              { key: 'template', label: t('strategy.workspace.template.title', 'Template'), children: <WorkspaceTemplateManager templates={ws.code.templates} loading={ws.code.templatesLoading} loadedTemplate={ws.code.loadedTemplate} onLoad={ws.code.handleLoadTemplate} onSaveAs={ws.code.handleSaveAs} /> },
+              { key: 'template', label: t(TEMPLATE_TITLE_KEY, 'Template'), children: <WorkspaceTemplateManager templates={ws.code.templates} loading={ws.code.templatesLoading} loadedTemplate={ws.code.loadedTemplate} onLoad={ws.code.handleLoadTemplate} onSaveAs={ws.code.handleSaveAs} /> },
             ]} />
           </div>
         )}
@@ -119,7 +122,7 @@ export default function StrategyWorkspacePage() {
               borderBottom: '1px solid ' + C.border,
             }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
-                {t('strategy.workspace.openPositions', { count: ws.quickTrade.allPositions.length })}
+                {t(OPEN_POSITIONS_KEY, { count: ws.quickTrade.allPositions.length })}
               </span>
               <span onClick={() => ws.layout.setPositionsPanelVisible(false)} role="button" tabIndex={0}
                 onKeyUp={e => e.key === 'Enter' && ws.layout.setPositionsPanelVisible(false)}
@@ -130,7 +133,7 @@ export default function StrategyWorkspacePage() {
                 <MiniPositionsTable positions={ws.quickTrade.allPositions} onClosePosition={ws.quickTrade.handleClosePosition} />
               ) : (
                 <div style={{ textAlign: 'center', padding: 40, color: '#8c8c8c', fontSize: 13 }}>
-                  {t('strategy.workspace.noOpenPositions')}
+                  {t(NO_OPEN_POSITIONS_KEY)}
                 </div>
               )}
             </div>
@@ -141,7 +144,7 @@ export default function StrategyWorkspacePage() {
         <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ flex: '1 1 0', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {ws.account.symbol ? (
-              <WorkspaceErrorBoundary fallback={<div style={{ display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'#8c8c8c' }}>{t('strategy.workspace.chartError')}</div>}>
+              <WorkspaceErrorBoundary fallback={<div style={{ display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'#8c8c8c' }}>{t(CHART_ERROR_KEY)}</div>}>
                 <PriceChart
                   symbol={ws.account.symbol} timeframe={ws.account.timeframe} onTimeframeChange={ws.account.setTimeframe}
                   accountId={ws.account.accountId}
@@ -154,7 +157,7 @@ export default function StrategyWorkspacePage() {
                 height: '100%', color: '#6b7280',
                 border: '1px dashed rgba(0,0,0,0.12)', borderRadius: 8, margin: 12,
               }}>
-                {t('strategy.workspace.selectSymbolHint', 'Select a trading account and symbol to view chart')}
+                {t(SELECT_SYMBOL_HINT_KEY, 'Select a trading account and symbol to view chart')}
               </div>
             )}
           </div>
@@ -193,9 +196,9 @@ export default function StrategyWorkspacePage() {
                   background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
                 }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: '#262626' }}>
-                  {ws.tuning.subTab === 'tuning' ? t('strategy.workspace.smartTuning') : t('strategy.workspace.backtestResultsLabel')}
-                  {ws.backtest.status === 'running' && <span style={{ color: '#1890ff', marginLeft: 8, fontSize: 11 }}>{t('strategy.workspace.runningStatus')}</span>}
-                  {ws.backtest.status === 'completed' && <span style={{ color: '#26a69a', marginLeft: 8, fontSize: 11 }}>{t('strategy.workspace.completedStatus')}</span>}
+                  {ws.tuning.subTab === 'tuning' ? t(SMART_TUNING_KEY) : t(BACKTEST_RESULTS_LABEL_KEY)}
+                  {ws.backtest.status === 'running' && <span style={{ color: '#1890ff', marginLeft: 8, fontSize: 11 }}>{t(RUNNING_STATUS_KEY)}</span>}
+                  {ws.backtest.status === 'completed' && <span style={{ color: '#26a69a', marginLeft: 8, fontSize: 11 }}>{t(COMPLETED_STATUS_KEY)}</span>}
                 </span>
                 <span style={{ fontSize: 10, color: C.muted }}>{ws.backtest.resultsExpanded ? '▲' : '▼'}</span>
               </div>

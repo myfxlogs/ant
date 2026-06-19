@@ -1,3 +1,6 @@
+
+import { CLIENT_ERRORS_CONTENT_BLOCKED_KEY, CLIENT_ERRORS_CONTEXT_TOO_LONG_KEY, CLIENT_ERRORS_EDGE_GATEWAY_TIMEOUT_KEY, CLIENT_ERRORS_FORBIDDEN_KEY, CLIENT_ERRORS_INSUFFICIENT_BALANCE_KEY, CLIENT_ERRORS_INVALID_MODEL_ID_KEY, CLIENT_ERRORS_NETWORK_UNREACHABLE_KEY, CLIENT_ERRORS_PROVIDER_INTERNAL_ERROR_KEY, CLIENT_ERRORS_RATE_LIMITED_KEY, CLIENT_ERRORS_REGION_NOT_SUPPORTED_KEY, CLIENT_ERRORS_REQUEST_FAILED_KEY, CLIENT_ERRORS_UNAUTHORIZED_KEY } from '@/gen/ant/v1/i18n/ai_core_keys';
+
 import i18n from '@/i18n';
 
 // Shared mapper that converts a raw provider/gateway error message into a
@@ -38,7 +41,7 @@ function pickErrorText(raw: unknown): string {
 
 export function toFriendlyAIError(raw: unknown): string {
   const rawMsg = pickErrorText(raw).trim();
-  if (!rawMsg) return i18n.t('ai.client.errors.requestFailed');
+  if (!rawMsg) return i18n.t(CLIENT_ERRORS_REQUEST_FAILED_KEY);
   const msg = unwrapProviderMessage(rawMsg);
   const lower = msg.toLowerCase();
 
@@ -76,7 +79,7 @@ export function toFriendlyAIError(raw: unknown): string {
     msg.includes('尚未开通') ||
     msg.includes('请先开通')
   ) {
-    return i18n.t('ai.client.errors.insufficientBalance');
+    return i18n.t(CLIENT_ERRORS_INSUFFICIENT_BALANCE_KEY);
   }
 
   if (
@@ -90,7 +93,7 @@ export function toFriendlyAIError(raw: unknown): string {
     msg.includes('请求过于频繁') ||
     msg.includes('限流')
   ) {
-    return i18n.t('ai.client.errors.rateLimited');
+    return i18n.t(CLIENT_ERRORS_RATE_LIMITED_KEY);
   }
 
   if (
@@ -102,10 +105,10 @@ export function toFriendlyAIError(raw: unknown): string {
     msg.includes('密钥无效') ||
     msg.includes('鉴权失败')
   ) {
-    return i18n.t('ai.client.errors.unauthorized');
+    return i18n.t(CLIENT_ERRORS_UNAUTHORIZED_KEY);
   }
   if (lower.includes('forbidden') || lower.includes(' 403') || lower.includes('status 403')) {
-    return i18n.t('ai.client.errors.forbidden');
+    return i18n.t(CLIENT_ERRORS_FORBIDDEN_KEY);
   }
 
   if (
@@ -122,7 +125,7 @@ export function toFriendlyAIError(raw: unknown): string {
   ) {
     const m = msg.match(/(?:Invalid model id|model `?)([\w./:-]+)/i);
     const model = m?.[1] ? `（${m[1]}）` : '';
-    return i18n.t('ai.client.errors.invalidModelId', { model });
+    return i18n.t(CLIENT_ERRORS_INVALID_MODEL_ID_KEY, { model });
   }
 
   if (
@@ -134,7 +137,7 @@ export function toFriendlyAIError(raw: unknown): string {
     msg.includes('上下文超长') ||
     msg.includes('内容过长')
   ) {
-    return i18n.t('ai.client.errors.contextTooLong');
+    return i18n.t(CLIENT_ERRORS_CONTEXT_TOO_LONG_KEY);
   }
 
   if (
@@ -146,7 +149,7 @@ export function toFriendlyAIError(raw: unknown): string {
     msg.includes('内容违规') ||
     msg.includes('敏感内容')
   ) {
-    return i18n.t('ai.client.errors.contentBlocked');
+    return i18n.t(CLIENT_ERRORS_CONTENT_BLOCKED_KEY);
   }
 
   if (
@@ -154,11 +157,11 @@ export function toFriendlyAIError(raw: unknown): string {
     lower.includes('country, region') ||
     lower.includes('unsupported_country_region_territory')
   ) {
-    return i18n.t('ai.client.errors.regionNotSupported');
+    return i18n.t(CLIENT_ERRORS_REGION_NOT_SUPPORTED_KEY);
   }
 
   if (/\b524\b/.test(lower) || /\b523\b/.test(lower) || /\b522\b/.test(lower) || /\b521\b/.test(lower) || /\b520\b/.test(lower)) {
-    return i18n.t('ai.client.errors.edgeGatewayTimeout');
+    return i18n.t(CLIENT_ERRORS_EDGE_GATEWAY_TIMEOUT_KEY);
   }
 
   if (
@@ -171,7 +174,7 @@ export function toFriendlyAIError(raw: unknown): string {
     lower.includes('service unavailable') ||
     lower.includes('internal server error')
   ) {
-    return i18n.t('ai.client.errors.providerInternalError');
+    return i18n.t(CLIENT_ERRORS_PROVIDER_INTERNAL_ERROR_KEY);
   }
 
   if (
@@ -187,7 +190,7 @@ export function toFriendlyAIError(raw: unknown): string {
     lower.includes('econnrefused') ||
     lower.includes('etimedout')
   ) {
-    return i18n.t('ai.client.errors.networkUnreachable');
+    return i18n.t(CLIENT_ERRORS_NETWORK_UNREACHABLE_KEY);
   }
 
   return msg;

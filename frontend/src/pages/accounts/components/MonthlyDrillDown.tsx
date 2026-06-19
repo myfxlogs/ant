@@ -1,4 +1,7 @@
-import React, { useMemo } from 'react';
+
+import { ANALYTICS_EMPTY_MONTHLY_PROFIT_KEY, ANALYTICS_MONTHLY_DETAIL_HOLDING_TITLE_KEY, ANALYTICS_MONTHLY_DETAIL_LONG_KEY, ANALYTICS_MONTHLY_DETAIL_POPULARITY_TITLE_KEY, ANALYTICS_MONTHLY_DETAIL_RISK_REWARD_TITLE_KEY, ANALYTICS_MONTHLY_DETAIL_SHORT_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+import React, { useMemo } from 'react'
+;
 import {
   Bar, BarChart, CartesianGrid, Cell, LabelList, Legend, Pie, PieChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
@@ -57,9 +60,9 @@ const RiskRewardPanel = React.memo(({ risks, t }: {
   if (!chartData.length) {
     return (
       <div style={sectionStyle}>
-        <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.riskRewardTitle')}</h4>
+        <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_RISK_REWARD_TITLE_KEY)}</h4>
         <div className="flex items-center justify-center h-[100px]" style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>
-          {t('accounts.analytics.empty.monthlyProfit')}
+          {t(ANALYTICS_EMPTY_MONTHLY_PROFIT_KEY)}
         </div>
       </div>
     );
@@ -67,7 +70,7 @@ const RiskRewardPanel = React.memo(({ risks, t }: {
 
   return (
     <div style={sectionStyle}>
-      <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.riskRewardTitle')}</h4>
+      <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_RISK_REWARD_TITLE_KEY)}</h4>
       <ResponsiveContainer width="100%" height={Math.max(chartData.length * 36, 140)}>
         <BarChart layout="vertical" data={chartData} margin={{ top: 0, right: 28, bottom: 0, left: 0 }} barCategoryGap="8%">
           <CartesianGrid strokeDasharray="2 2" stroke="var(--color-border)" horizontal={false} />
@@ -122,9 +125,9 @@ const PopularityPanel = React.memo(({ popularity, t }: {
   if (!pieData.length) {
     return (
       <div style={sectionStyle}>
-        <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.popularityTitle')}</h4>
+        <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_POPULARITY_TITLE_KEY)}</h4>
         <div className="flex items-center justify-center h-[140px]" style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>
-          {t('accounts.analytics.empty.monthlyProfit')}
+          {t(ANALYTICS_EMPTY_MONTHLY_PROFIT_KEY)}
         </div>
       </div>
     );
@@ -132,7 +135,7 @@ const PopularityPanel = React.memo(({ popularity, t }: {
 
   return (
     <div style={sectionStyle}>
-      <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.popularityTitle')}</h4>
+      <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_POPULARITY_TITLE_KEY)}</h4>
       <ResponsiveContainer width="100%" height={pieHeight}>
         <PieChart>
           <Pie
@@ -180,9 +183,9 @@ const HoldingSplitPanel = React.memo(({ holdingSplit, t }: {
   if (!chartData.length) {
     return (
       <div style={sectionStyle}>
-        <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.holdingTitle')}</h4>
+        <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_HOLDING_TITLE_KEY)}</h4>
         <div className="flex items-center justify-center h-[100px]" style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>
-          {t('accounts.analytics.empty.monthlyProfit')}
+          {t(ANALYTICS_EMPTY_MONTHLY_PROFIT_KEY)}
         </div>
       </div>
     );
@@ -204,7 +207,7 @@ const HoldingSplitPanel = React.memo(({ holdingSplit, t }: {
 
   return (
     <div style={sectionStyle}>
-      <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.holdingTitle')}</h4>
+      <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_HOLDING_TITLE_KEY)}</h4>
       <ResponsiveContainer width="100%" height={Math.max(chartData.length * 44, 150)}>
         <BarChart layout="vertical" data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
           barGap={1} barCategoryGap="6%">
@@ -216,9 +219,9 @@ const HoldingSplitPanel = React.memo(({ holdingSplit, t }: {
           <Tooltip contentStyle={tooltipStyle}
             formatter={(v: number) => [fmtMs(Number(v)), '']} />
           <Bar dataKey="long" radius={[0, 3, 3, 0]} maxBarSize={22} cursor="pointer" isAnimationActive={false}
-            fill="rgba(83, 243, 2, 0.7)" name={t('accounts.analytics.monthlyDetail.long')} />
+            fill="rgba(83, 243, 2, 0.7)" name={t(ANALYTICS_MONTHLY_DETAIL_LONG_KEY)} />
           <Bar dataKey="short" radius={[0, 3, 3, 0]} maxBarSize={22} cursor="pointer" isAnimationActive={false}
-            fill="rgba(255, 0, 0, 0.7)" name={t('accounts.analytics.monthlyDetail.short')} />
+            fill="rgba(255, 0, 0, 0.7)" name={t(ANALYTICS_MONTHLY_DETAIL_SHORT_KEY)} />
           <Legend
             wrapperStyle={{ fontSize: 10, color: 'var(--color-text-muted)', paddingTop: 4 }}
             iconSize={10}

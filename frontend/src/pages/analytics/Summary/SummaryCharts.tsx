@@ -4,7 +4,10 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar,
 } from 'recharts';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { SUMMARY_LABELS_PNL_KEY, SUMMARY_SECTIONS_EQUITY_CURVE_KEY, SUMMARY_SECTIONS_MONTHLY_STATS_KEY } from '@/gen/ant/v1/i18n/analytics_keys';
+
+;
 
 interface ChartDataPoint {
   date?: string;
@@ -33,7 +36,7 @@ function SummaryCharts({
   return (
     <>
       <div className="rounded-2xl p-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
-        <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>{t('analytics.summary.sections.equityCurve')}</h2>
+        <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>{t(SUMMARY_SECTIONS_EQUITY_CURVE_KEY)}</h2>
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={equityCurveData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF0" />
@@ -47,7 +50,7 @@ function SummaryCharts({
 
       <div className="rounded-2xl p-6 mt-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>{t('analytics.summary.sections.monthlyStats')}</h2>
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>{t(SUMMARY_SECTIONS_MONTHLY_STATS_KEY)}</h2>
           <Select value={selectedYear} onChange={onYearChange} options={yearOptions} style={{ width: 100 }} />
         </div>
         <ResponsiveContainer width="100%" height={200}>
@@ -57,7 +60,7 @@ function SummaryCharts({
             <YAxis stroke="var(--color-text-muted)" fontSize={12} />
             <Tooltip
               contentStyle={{ background: 'var(--color-bg-card)', border: '1px solid rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}
-              formatter={(value: number | undefined) => [`$${(value || 0).toFixed(2)}`, t('analytics.summary.labels.pnl')]}
+              formatter={(value: number | undefined) => [`$${(value || 0).toFixed(2)}`, t(SUMMARY_LABELS_PNL_KEY)]}
             />
             <Bar dataKey="profit" fill="#D4AF37" radius={[4, 4, 0, 0]} />
           </BarChart>

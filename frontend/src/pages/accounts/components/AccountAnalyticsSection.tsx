@@ -2,7 +2,10 @@ import { Segmented, Switch, Tag } from 'antd';
 import { Bar, CartesianGrid, ComposedChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { BarChartOutlined, TrophyOutlined, FallOutlined, DownOutlined, RightOutlined } from '@ant-design/icons';
 import React, { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { ANALYTICS_ADVANCED_STATS_TITLE_KEY, ANALYTICS_CHART_PERIOD_ALL_KEY, ANALYTICS_CHART_PERIOD_DAY_KEY, ANALYTICS_CHART_PERIOD_MONTH_KEY, ANALYTICS_CHART_PERIOD_WEEK_KEY, ANALYTICS_EMPTY_SYMBOL_DISTRIBUTION_KEY, ANALYTICS_STATS_AVG_DAILY_RETURN_KEY, ANALYTICS_STATS_AVG_HOLDING_KEY, ANALYTICS_STATS_AVG_LOSS_KEY, ANALYTICS_STATS_AVG_PROFIT_KEY, ANALYTICS_STATS_CALMAR_KEY, ANALYTICS_STATS_CONSECUTIVE_WINS_LOSSES_KEY, ANALYTICS_STATS_LARGEST_LOSS_KEY, ANALYTICS_STATS_LARGEST_WIN_KEY, ANALYTICS_STATS_MAX_DRAWDOWN_KEY, ANALYTICS_STATS_NET_DEPOSIT_KEY, ANALYTICS_STATS_NET_PROFIT_KEY, ANALYTICS_STATS_PROFIT_FACTOR_KEY, ANALYTICS_STATS_SHARPE_KEY, ANALYTICS_STATS_SORTINO_KEY, ANALYTICS_STATS_TOTAL_DEPOSIT_KEY, ANALYTICS_STATS_TOTAL_TRADES_KEY, ANALYTICS_STATS_TOTAL_WITHDRAWAL_KEY, ANALYTICS_STATS_VOLATILITY_KEY, ANALYTICS_STATS_WIN_RATE_KEY, REPORT_DIRECTION_LONG_KEY, REPORT_DIRECTION_SHORT_KEY, REPORT_DRAWDOWN_EVENTS_KEY, REPORT_SYMBOL_PN_L_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 import { useQuery } from '@tanstack/react-query';
 import { CHART_COLORS } from '@/constants/performance';
 import { formatHoldingTime } from '@/utils/date';
@@ -94,9 +97,9 @@ function AccountAnalyticsSection(props: Props) {
   const dirCards = useMemo(() => {
     if (!attr?.direction) return [];
     return [
-      { key: 'long', label: t('accounts.report.directionLong'), color: 'var(--color-success)',
+      { key: 'long', label: t(REPORT_DIRECTION_LONG_KEY), color: 'var(--color-success)',
         profit: attr.direction.longProfit ?? 0, trades: attr.direction.longTrades ?? 0, winRate: attr.direction.longWinRate ?? 0 },
-      { key: 'short', label: t('accounts.report.directionShort'), color: 'var(--color-danger)',
+      { key: 'short', label: t(REPORT_DIRECTION_SHORT_KEY), color: 'var(--color-danger)',
         profit: attr.direction.shortProfit ?? 0, trades: attr.direction.shortTrades ?? 0, winRate: attr.direction.shortWinRate ?? 0 },
     ];
   }, [attr?.direction, t]);
@@ -123,10 +126,10 @@ function AccountAnalyticsSection(props: Props) {
           <div className="flex items-center gap-3">
             <Segmented value={chartPeriod} onChange={(v) => setChartPeriod(v as typeof chartPeriod)}
               options={[
-                { label: t('accounts.analytics.chartPeriod.day'), value: 'day' },
-                { label: t('accounts.analytics.chartPeriod.week'), value: 'week' },
-                { label: t('accounts.analytics.chartPeriod.month'), value: 'month' },
-                { label: t('accounts.analytics.chartPeriod.all'), value: 'all' },
+                { label: t(ANALYTICS_CHART_PERIOD_DAY_KEY), value: 'day' },
+                { label: t(ANALYTICS_CHART_PERIOD_WEEK_KEY), value: 'week' },
+                { label: t(ANALYTICS_CHART_PERIOD_MONTH_KEY), value: 'month' },
+                { label: t(ANALYTICS_CHART_PERIOD_ALL_KEY), value: 'all' },
               ]} size="small" />
             {roll?.drawdownCurve?.length ? (
               <span style={{ fontSize: 12, color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>
@@ -140,7 +143,7 @@ function AccountAnalyticsSection(props: Props) {
         {showDrawdown && roll?.drawdownEvents?.length ? (
           <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--color-border)' }}>
             <div className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-              <FallOutlined className="mr-1" />{t('accounts.report.drawdownEvents')}
+              <FallOutlined className="mr-1" />{t(REPORT_DRAWDOWN_EVENTS_KEY)}
             </div>
             <div className="flex flex-wrap gap-2">
               {roll.drawdownEvents.slice(0, 6).map((e, i) => (
@@ -176,7 +179,7 @@ function AccountAnalyticsSection(props: Props) {
             style={{ background: 'none', border: 'none', padding: 0, color: 'var(--color-text)' }}
           >
             <h2 className="text-base font-semibold flex items-center gap-2 m-0" style={{ color: 'var(--color-text)' }}>
-              <TrophyOutlined />{t('accounts.analytics.advancedStatsTitle')}
+              <TrophyOutlined />{t(ANALYTICS_ADVANCED_STATS_TITLE_KEY)}
             </h2>
             {statsExpanded
               ? <DownOutlined style={{ fontSize: 12, color: 'var(--color-text-muted)' }} />
@@ -185,25 +188,25 @@ function AccountAnalyticsSection(props: Props) {
           </button>
           {statsExpanded && (
             <div className="grid grid-cols-3 gap-x-3 gap-y-2">
-              <StatCell label={t('accounts.analytics.stats.winRate')} value={`${(stats.winRate || 0).toFixed(1)}%`} color="var(--color-success)" />
-              <StatCell label={t('accounts.analytics.stats.profitFactor')} value={`${(stats.profitFactor || 0).toFixed(2)}`} color="var(--color-primary)" />
-              <StatCell label={t('accounts.analytics.stats.maxDrawdown')} value={`${(risks.maxDrawdownPercent || 0).toFixed(2)}%`} color="var(--color-danger)" />
-              <StatCell label={t('accounts.analytics.stats.totalTrades')} value={`${stats.totalTrades || 0}`} />
-              <StatCell label={t('accounts.analytics.stats.avgProfit')} value={`+${(stats.averageProfit || 0).toFixed(2)}`} color="var(--color-success)" />
-              <StatCell label={t('accounts.analytics.stats.avgLoss')} value={`${(stats.averageLoss || 0).toFixed(2)}`} color="var(--color-danger)" />
-              <StatCell label={t('accounts.analytics.stats.avgHolding')} value={formatHoldingTime(stats.averageHoldingTime) || '-'} />
-              <StatCell label={t('accounts.analytics.stats.consecutiveWinsLosses')} value={`${stats.maxConsecutiveWins || 0}/${stats.maxConsecutiveLosses || 0}`} />
-              <StatCell label={t('accounts.analytics.stats.sharpe')} value={`${(risks.sharpeRatio || 0).toFixed(2)}`} color="var(--color-success)" />
-              <StatCell label={t('accounts.analytics.stats.sortino')} value={`${(risks.sortinoRatio || 0).toFixed(2)}`} />
-              <StatCell label={t('accounts.analytics.stats.calmar')} value={`${(risks.calmarRatio || 0).toFixed(2)}`} />
-              <StatCell label={t('accounts.analytics.stats.largestWin')} value={`+${(stats.largestWin || 0).toFixed(2)}`} color="var(--color-success)" />
-              <StatCell label={t('accounts.analytics.stats.largestLoss')} value={`${(stats.largestLoss || 0).toFixed(2)}`} color="var(--color-danger)" />
-              <StatCell label={t('accounts.analytics.stats.avgDailyReturn')} value={`${(risks.averageDailyReturn || 0).toFixed(2)}`} />
-              <StatCell label={t('accounts.analytics.stats.volatility')} value={`${(risks.volatility || 0).toFixed(2)}`} color="var(--color-info)" />
-              <StatCell label={t('accounts.analytics.stats.netProfit')} value={`${(stats.netProfit || 0).toFixed(2)}`} color={(stats.netProfit || 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
-              <StatCell label={t('accounts.analytics.stats.totalDeposit')} value={`+${(stats.totalDeposit || 0).toFixed(2)}`} />
-              <StatCell label={t('accounts.analytics.stats.totalWithdrawal')} value={`-${(stats.totalWithdrawal || 0).toFixed(2)}`} />
-              <StatCell label={t('accounts.analytics.stats.netDeposit')} value={`${(stats.netDeposit || 0).toFixed(2)}`} color={(stats.netDeposit || 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
+              <StatCell label={t(ANALYTICS_STATS_WIN_RATE_KEY)} value={`${(stats.winRate || 0).toFixed(1)}%`} color="var(--color-success)" />
+              <StatCell label={t(ANALYTICS_STATS_PROFIT_FACTOR_KEY)} value={`${(stats.profitFactor || 0).toFixed(2)}`} color="var(--color-primary)" />
+              <StatCell label={t(ANALYTICS_STATS_MAX_DRAWDOWN_KEY)} value={`${(risks.maxDrawdownPercent || 0).toFixed(2)}%`} color="var(--color-danger)" />
+              <StatCell label={t(ANALYTICS_STATS_TOTAL_TRADES_KEY)} value={`${stats.totalTrades || 0}`} />
+              <StatCell label={t(ANALYTICS_STATS_AVG_PROFIT_KEY)} value={`+${(stats.averageProfit || 0).toFixed(2)}`} color="var(--color-success)" />
+              <StatCell label={t(ANALYTICS_STATS_AVG_LOSS_KEY)} value={`${(stats.averageLoss || 0).toFixed(2)}`} color="var(--color-danger)" />
+              <StatCell label={t(ANALYTICS_STATS_AVG_HOLDING_KEY)} value={formatHoldingTime(stats.averageHoldingTime) || '-'} />
+              <StatCell label={t(ANALYTICS_STATS_CONSECUTIVE_WINS_LOSSES_KEY)} value={`${stats.maxConsecutiveWins || 0}/${stats.maxConsecutiveLosses || 0}`} />
+              <StatCell label={t(ANALYTICS_STATS_SHARPE_KEY)} value={`${(risks.sharpeRatio || 0).toFixed(2)}`} color="var(--color-success)" />
+              <StatCell label={t(ANALYTICS_STATS_SORTINO_KEY)} value={`${(risks.sortinoRatio || 0).toFixed(2)}`} />
+              <StatCell label={t(ANALYTICS_STATS_CALMAR_KEY)} value={`${(risks.calmarRatio || 0).toFixed(2)}`} />
+              <StatCell label={t(ANALYTICS_STATS_LARGEST_WIN_KEY)} value={`+${(stats.largestWin || 0).toFixed(2)}`} color="var(--color-success)" />
+              <StatCell label={t(ANALYTICS_STATS_LARGEST_LOSS_KEY)} value={`${(stats.largestLoss || 0).toFixed(2)}`} color="var(--color-danger)" />
+              <StatCell label={t(ANALYTICS_STATS_AVG_DAILY_RETURN_KEY)} value={`${(risks.averageDailyReturn || 0).toFixed(2)}`} />
+              <StatCell label={t(ANALYTICS_STATS_VOLATILITY_KEY)} value={`${(risks.volatility || 0).toFixed(2)}`} color="var(--color-info)" />
+              <StatCell label={t(ANALYTICS_STATS_NET_PROFIT_KEY)} value={`${(stats.netProfit || 0).toFixed(2)}`} color={(stats.netProfit || 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
+              <StatCell label={t(ANALYTICS_STATS_TOTAL_DEPOSIT_KEY)} value={`+${(stats.totalDeposit || 0).toFixed(2)}`} />
+              <StatCell label={t(ANALYTICS_STATS_TOTAL_WITHDRAWAL_KEY)} value={`-${(stats.totalWithdrawal || 0).toFixed(2)}`} />
+              <StatCell label={t(ANALYTICS_STATS_NET_DEPOSIT_KEY)} value={`${(stats.netDeposit || 0).toFixed(2)}`} color={(stats.netDeposit || 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
             </div>
           )}
         </div>
@@ -211,7 +214,7 @@ function AccountAnalyticsSection(props: Props) {
         {/* Symbol P&L — pie chart + ranking + direction */}
         <div className="p-4" style={cardStyle}>
           <h2 className="text-base font-semibold flex items-center gap-2 mb-3" style={{ color: 'var(--color-text)' }}>
-            <BarChartOutlined />{t('accounts.report.symbolPnL')}
+            <BarChartOutlined />{t(REPORT_SYMBOL_PN_L_KEY)}
           </h2>
           <StatusResult loading={attributionQ.isLoading} error={attributionQ.error?.message}>
             {attr?.symbolPnls?.length ? (
@@ -274,8 +277,8 @@ function AccountAnalyticsSection(props: Props) {
                         <div className="text-xs font-semibold" style={{ color }}>{label}</div>
                         <div className="text-xs" style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
                           <div>P&L: <strong style={{ color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{profit >= 0 ? '+' : ''}{profit.toFixed(2)}</strong></div>
-                          <div>{t('accounts.analytics.stats.totalTrades')}: {trades}</div>
-                          <div>{t('accounts.analytics.stats.winRate')}: {winRate.toFixed(1)}%</div>
+                          <div>{t(ANALYTICS_STATS_TOTAL_TRADES_KEY)}: {trades}</div>
+                          <div>{t(ANALYTICS_STATS_WIN_RATE_KEY)}: {winRate.toFixed(1)}%</div>
                         </div>
                       </div>
                     ))}
@@ -284,7 +287,7 @@ function AccountAnalyticsSection(props: Props) {
               </div>
             ) : (
               <div className="flex items-center justify-center h-[200px]" style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>
-                {t('accounts.analytics.empty.symbolDistribution')}
+                {t(ANALYTICS_EMPTY_SYMBOL_DISTRIBUTION_KEY)}
               </div>
             )}
           </StatusResult>

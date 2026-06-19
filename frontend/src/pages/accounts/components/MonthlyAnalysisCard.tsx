@@ -1,6 +1,9 @@
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { ANALYTICS_MONTHLY_ANALYSIS_CHART_MAIN_TITLE_KEY, ANALYTICS_MONTHLY_ANALYSIS_METRICS_CHANGE_KEY, ANALYTICS_MONTHLY_ANALYSIS_METRICS_LOTS_KEY, ANALYTICS_MONTHLY_ANALYSIS_METRICS_PIPS_KEY, ANALYTICS_MONTHLY_ANALYSIS_METRICS_PROFIT_KEY, ANALYTICS_MONTHLY_ANALYSIS_TITLE_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 import { useQuery } from '@tanstack/react-query';
 import { Spin } from 'antd';
 
@@ -78,10 +81,10 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
   }, [data, selectedYear, winRateMap]);
 
   const metricTitleMap: Record<MetricType, string> = {
-    change: t('accounts.analytics.monthlyAnalysis.metrics.change'),
-    profit: t('accounts.analytics.monthlyAnalysis.metrics.profit'),
-    lots: t('accounts.analytics.monthlyAnalysis.metrics.lots'),
-    pips: t('accounts.analytics.monthlyAnalysis.metrics.pips'),
+    change: t(ANALYTICS_MONTHLY_ANALYSIS_METRICS_CHANGE_KEY),
+    profit: t(ANALYTICS_MONTHLY_ANALYSIS_METRICS_PROFIT_KEY),
+    lots: t(ANALYTICS_MONTHLY_ANALYSIS_METRICS_LOTS_KEY),
+    pips: t(ANALYTICS_MONTHLY_ANALYSIS_METRICS_PIPS_KEY),
   };
 
   const monthLabels = useMemo(() => getMonthLabels(t), [t]);
@@ -169,7 +172,7 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <div className="flex items-center gap-1">
           <span className="text-sm font-semibold px-3 py-1" style={{ color: 'var(--color-text-muted)' }}>
-            {t('accounts.analytics.monthlyAnalysis.title')}
+            {t(ANALYTICS_MONTHLY_ANALYSIS_TITLE_KEY)}
           </span>
           <div className="flex items-center gap-0.5 rounded-md p-0.5" style={{ background: 'var(--color-bg-secondary)' }}>
             {years.map((year) => (
@@ -211,7 +214,7 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
 
       {/* Chart title */}
       <div className="text-center text-xs font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-        {t('accounts.analytics.monthlyAnalysis.chartMainTitle', { metric: metricTitleMap[selectedMetric] })}
+        {t(ANALYTICS_MONTHLY_ANALYSIS_CHART_MAIN_TITLE_KEY, { metric: metricTitleMap[selectedMetric] })}
       </div>
 
       {/* myfxbook 2×2 grid: Row1=Chart+RiskReward, Row2=Popularity+HoldingSplit */}

@@ -1,6 +1,9 @@
 import { Button, Descriptions, Space, Tag, Typography, Popconfirm, message } from 'antd';
 import { EditOutlined, DeleteOutlined, CodeOutlined, ExportOutlined, BankOutlined, GlobalOutlined, LockOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { ACTIONS_COPY_KEY, ACTIONS_VIEW_CODE_KEY, DELETE_CONFIRM_KEY, MESSAGES_CODE_COPIED_KEY, MESSAGES_COPY_FAILED_KEY, TABLE_CREATED_AT_KEY, TABLE_DESCRIPTION_KEY, TABLE_NAME_KEY, TABLE_USE_COUNT_KEY, TABLE_VISIBILITY_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
+;
 import { useNavigate } from 'react-router-dom';
 import { formatDateTime } from '@/utils/date';
 import { copyToClipboard } from '@/utils/clipboard';
@@ -24,26 +27,26 @@ export default function LibraryOverviewTab() {
 
   const handleCopyCode = async () => {
     const ok = await copyToClipboard(code);
-    if (ok) message.success(t('strategy.templates.messages.codeCopied'));
-    else message.error(t('strategy.templates.messages.copyFailed'));
+    if (ok) message.success(t(MESSAGES_CODE_COPIED_KEY));
+    else message.error(t(MESSAGES_COPY_FAILED_KEY));
   };
 
   return (
     <div style={{ padding: '16px 0' }}>
       <Descriptions column={1} size="small" bordered style={{ marginBottom: 16 }}>
-        <Descriptions.Item label={t('strategy.templates.table.name')}><Text strong>{tpl.name}</Text></Descriptions.Item>
-        <Descriptions.Item label={t('strategy.templates.table.description')}>{tpl.description || '-'}</Descriptions.Item>
-        <Descriptions.Item label={t('strategy.templates.table.visibility')}>
-          {system ? <Tag color="gold" icon={<BankOutlined />}>{t('strategy.library.system')}</Tag>
-            : public_ ? <Tag color="blue" icon={<GlobalOutlined />}>{t('strategy.library.shared')}</Tag>
-            : <Tag color="default" icon={<LockOutlined />}>{t('strategy.library.private')}</Tag>}
+        <Descriptions.Item label={t(TABLE_NAME_KEY)}><Text strong>{tpl.name}</Text></Descriptions.Item>
+        <Descriptions.Item label={t(TABLE_DESCRIPTION_KEY)}>{tpl.description || '-'}</Descriptions.Item>
+        <Descriptions.Item label={t(TABLE_VISIBILITY_KEY)}>
+          {system ? <Tag color="gold" icon={<BankOutlined />}>{t(SYSTEM_KEY)}</Tag>
+            : public_ ? <Tag color="blue" icon={<GlobalOutlined />}>{t(SHARED_KEY)}</Tag>
+            : <Tag color="default" icon={<LockOutlined />}>{t(PRIVATE_KEY)}</Tag>}
         </Descriptions.Item>
-        <Descriptions.Item label={t('strategy.library.scheduleCount')}>
+        <Descriptions.Item label={t(SCHEDULE_COUNT_KEY)}>
           {count > 0 ? <Text style={{ color: '#1677ff' }}>{t('strategy.library.scheduleRunningCount', '{{count}} 个运行中', { count })}</Text>
-            : <Text type="secondary">{t('strategy.library.noSchedules')}</Text>}
+            : <Text type="secondary">{t(NO_SCHEDULES_KEY)}</Text>}
         </Descriptions.Item>
-        <Descriptions.Item label={t('strategy.templates.table.useCount')}>{String(tpl.useCount || 0)}</Descriptions.Item>
-        <Descriptions.Item label={t('strategy.templates.table.createdAt')}>{formatDateTime(String(tpl.createdAt || ''))}</Descriptions.Item>
+        <Descriptions.Item label={t(TABLE_USE_COUNT_KEY)}>{String(tpl.useCount || 0)}</Descriptions.Item>
+        <Descriptions.Item label={t(TABLE_CREATED_AT_KEY)}>{formatDateTime(String(tpl.createdAt || ''))}</Descriptions.Item>
       </Descriptions>
 
       <Space wrap>
@@ -51,29 +54,29 @@ export default function LibraryOverviewTab() {
           <>
             <Button icon={<EditOutlined />} onClick={() => lib.openEdit(tpl)}>{t('common.edit')}</Button>
             {public_ ? (
-              <Button onClick={() => lib.handleUnpublish(id)} loading={lib.publishing}>{t('strategy.library.unpublish')}</Button>
+              <Button onClick={() => lib.handleUnpublish(id)} loading={lib.publishing}>{t(UNPUBLISH_KEY)}</Button>
             ) : (
-              <Button type="primary" icon={<GlobalOutlined />} onClick={() => lib.handlePublish(id)} loading={lib.publishing}>{t('strategy.library.share')}</Button>
+              <Button type="primary" icon={<GlobalOutlined />} onClick={() => lib.handlePublish(id)} loading={lib.publishing}>{t(SHARE_KEY)}</Button>
             )}
-            <Popconfirm title={t('strategy.templates.deleteConfirm')} onConfirm={() => lib.handleDelete(id)}>
+            <Popconfirm title={t(DELETE_CONFIRM_KEY)} onConfirm={() => lib.handleDelete(id)}>
               <Button danger icon={<DeleteOutlined />}>{t('common.delete')}</Button>
             </Popconfirm>
           </>
         )}
-        {code && <Button icon={<CodeOutlined />} onClick={() => { lib.setViewingCode(code); lib.setCodeViewOpen(true); }}>{t('strategy.templates.actions.viewCode')}</Button>}
+        {code && <Button icon={<CodeOutlined />} onClick={() => { lib.setViewingCode(code); lib.setCodeViewOpen(true); }}>{t(ACTIONS_VIEW_CODE_KEY)}</Button>}
         {system ? (
-          <Button type="primary" onClick={() => lib.handleSaveAsMine(tpl)}>{t('strategy.library.saveAsMine')}</Button>
+          <Button type="primary" onClick={() => lib.handleSaveAsMine(tpl)}>{t(SAVE_AS_MINE_KEY)}</Button>
         ) : (
-          <Button onClick={lib.scheduleProps.openCreate}>{t('strategy.library.createSchedule')}</Button>
+          <Button onClick={lib.scheduleProps.openCreate}>{t(CREATE_SCHEDULE_KEY)}</Button>
         )}
-        <Button icon={<ExportOutlined />} onClick={() => navigate(`/strategy/workspace?templateId=${id}`)}>{t('strategy.library.openInWorkspace')}</Button>
+        <Button icon={<ExportOutlined />} onClick={() => navigate(`/strategy/workspace?templateId=${id}`)}>{t(OPEN_IN_WORKSPACE_KEY)}</Button>
       </Space>
 
       {code && (
         <div style={{ marginTop: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <Text strong>{t('strategy.library.codePreview')}</Text>
-            <Button size="small" onClick={handleCopyCode}>{t('strategy.templates.actions.copy')}</Button>
+            <Text strong>{t(CODE_PREVIEW_KEY)}</Text>
+            <Button size="small" onClick={handleCopyCode}>{t(ACTIONS_COPY_KEY)}</Button>
           </div>
           <pre style={{ background: '#1e1e1e', color: '#d4d4d4', padding: 12, borderRadius: 6, fontSize: 12, maxHeight: 240, overflow: 'auto', margin: 0 }}>
             {code.split('\n').slice(0, 20).join('\n')}

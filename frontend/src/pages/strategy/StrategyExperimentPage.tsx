@@ -6,7 +6,10 @@ import { strategyExperimentApi, type StrategyExperiment, type StrategyExperiment
 import { jobApi, type JobEvent } from '@/client/job';
 import { useRpcQuery } from '@/hooks/useRpcQuery';
 import { showError, showSuccess } from '@/utils/message';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { CANDIDATES_COLUMN_ACTIONS_KEY, CANDIDATES_COLUMN_GENERATE_DRAFT_KEY, CANDIDATES_COLUMN_GRADE_KEY, CANDIDATES_COLUMN_PARAMETERS_KEY, CANDIDATES_COLUMN_RANK_KEY, CANDIDATES_COLUMN_RECOMMENDATION_KEY, CANDIDATES_COLUMN_SCORE_KEY, CANDIDATES_COLUMN_SUMMARY_KEY, CANDIDATES_TITLE_KEY, CANDIDATES_TITLE_WITH_ID_KEY, JOB_EVENT_STREAM_KEY, LIST_COLUMN_ACTIONS_KEY, LIST_COLUMN_MAX_CANDIDATES_KEY, LIST_COLUMN_OBJECTIVE_KEY, LIST_COLUMN_SEARCH_METHOD_KEY, LIST_COLUMN_STATUS_KEY, LIST_COLUMN_VIEW_CANDIDATES_KEY, LIST_TITLE_KEY, MESSAGES_CANDIDATES_GENERATED_KEY, MESSAGES_DRAFT_GENERATED_KEY, MESSAGES_PROMOTE_FAILED_KEY, MESSAGES_SUBMIT_FAILED_KEY, MESSAGES_SUBSCRIBE_JOB_FAILED_KEY, NO_EVENTS_KEY, RULE_VERSION_ALERT_KEY, SELECT_JOB_TO_VIEW_KEY, SUBMIT_FORM_BASE_TEMPLATE_KEY, SUBMIT_FORM_BASE_TEMPLATE_PLACEHOLDER_KEY, SUBMIT_FORM_BASE_TEMPLATE_REQUIRED_KEY, SUBMIT_FORM_MAX_CANDIDATES_KEY, SUBMIT_FORM_OBJECTIVE_KEY, SUBMIT_FORM_PARAMETER_SPACE_KEY, SUBMIT_FORM_PARAMETER_SPACE_REQUIRED_KEY, SUBMIT_FORM_SEARCH_METHOD_KEY, SUBMIT_FORM_SUBMIT_KEY, SUBMIT_FORM_TITLE_KEY, SUBTITLE_KEY, TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_experiment_keys';
+
+;
 
 const { Text, Title } = Typography;
 const maxJobEvents = 20;
@@ -28,14 +31,14 @@ function JobEventStreamCard({ jobId, events, t }: { jobId?: string; events: JobE
   const progressPercent = Math.round((latestEvent?.progress || 0) * 100);
 
   return (
-    <Card title={t('strategy.experiment.jobEventStream')}>
+    <Card title={t(JOB_EVENT_STREAM_KEY)}>
       {jobId ? (
         <div className="space-y-3">
           <Progress percent={progressPercent} size="small" />
           <List
             size="small"
             dataSource={events}
-            locale={{ emptyText: t('strategy.experiment.noEvents') }}
+            locale={{ emptyText: t(NO_EVENTS_KEY) }}
             renderItem={event => (
               <List.Item>
                 <Space>
@@ -48,7 +51,7 @@ function JobEventStreamCard({ jobId, events, t }: { jobId?: string; events: JobE
           />
         </div>
       ) : (
-        <Text type="secondary">{t('strategy.experiment.selectJobToView')}</Text>
+        <Text type="secondary">{t(SELECT_JOB_TO_VIEW_KEY)}</Text>
       )}
     </Card>
   );
@@ -99,7 +102,7 @@ export default function StrategyExperimentPage() {
       }
     }).catch(() => {
       if (!cancelled) {
-        showError(t('strategy.experiment.messages.subscribeJobFailed'));
+        showError(t(MESSAGES_SUBSCRIBE_JOB_FAILED_KEY));
       }
     });
     return () => {
@@ -118,13 +121,13 @@ export default function StrategyExperimentPage() {
         maxCandidates: values.maxCandidates,
         objective: values.objective,
       });
-      showSuccess(t('strategy.experiment.messages.candidatesGenerated'));
+      showSuccess(t(MESSAGES_CANDIDATES_GENERATED_KEY));
       await refetchExperiments();
       if (res.experiment?.id) {
         setSelectedExperimentId(res.experiment.id);
       }
     } catch {
-      showError(t('strategy.experiment.messages.submitFailed'));
+      showError(t(MESSAGES_SUBMIT_FAILED_KEY));
     } finally {
       setLoading(false);
     }
@@ -133,87 +136,87 @@ export default function StrategyExperimentPage() {
   const promote = async (candidate: StrategyExperimentCandidate) => {
     try {
       const res = await strategyExperimentApi.promoteCandidateToDraft(candidate.id, `实验候选 ${candidate.rank}`);
-      showSuccess(t('strategy.experiment.messages.draftGenerated', { templateId: res.templateId }));
+      showSuccess(t(MESSAGES_DRAFT_GENERATED_KEY, { templateId: res.templateId }));
     } catch {
-      showError(t('strategy.experiment.messages.promoteFailed'));
+      showError(t(MESSAGES_PROMOTE_FAILED_KEY));
     }
   };
 
   const experimentColumns: ColumnsType<StrategyExperiment> = [
-    { title: t('strategy.experiment.list.column.status'), dataIndex: 'status', render: v => <Tag color={v === 'SUCCEEDED' ? 'green' : 'blue'}>{v}</Tag> },
-    { title: t('strategy.experiment.list.column.searchMethod'), dataIndex: 'searchMethod' },
-    { title: t('strategy.experiment.list.column.maxCandidates'), dataIndex: 'maxCandidates' },
-    { title: t('strategy.experiment.list.column.objective'), dataIndex: 'objective' },
+    { title: t(LIST_COLUMN_STATUS_KEY), dataIndex: 'status', render: v => <Tag color={v === 'SUCCEEDED' ? 'green' : 'blue'}>{v}</Tag> },
+    { title: t(LIST_COLUMN_SEARCH_METHOD_KEY), dataIndex: 'searchMethod' },
+    { title: t(LIST_COLUMN_MAX_CANDIDATES_KEY), dataIndex: 'maxCandidates' },
+    { title: t(LIST_COLUMN_OBJECTIVE_KEY), dataIndex: 'objective' },
     { title: 'Job', dataIndex: 'jobId', ellipsis: true },
     {
-      title: t('strategy.experiment.list.column.actions'),
-      render: (_, row) => <Button size="small" onClick={() => setSelectedExperimentId(row.id)}>{t('strategy.experiment.list.column.viewCandidates')}</Button>,
+      title: t(LIST_COLUMN_ACTIONS_KEY),
+      render: (_, row) => <Button size="small" onClick={() => setSelectedExperimentId(row.id)}>{t(LIST_COLUMN_VIEW_CANDIDATES_KEY)}</Button>,
     },
   ];
 
   const candidateColumns: ColumnsType<StrategyExperimentCandidate> = [
-    { title: t('strategy.experiment.candidates.column.rank'), dataIndex: 'rank', width: 80 },
-    { title: t('strategy.experiment.candidates.column.grade'), dataIndex: 'grade', width: 80, render: v => <Tag color={v === 'A' ? 'gold' : v === 'B' ? 'blue' : 'default'}>{v}</Tag> },
-    { title: t('strategy.experiment.candidates.column.score'), dataIndex: 'score', width: 100, render: v => Number(v).toFixed(1) },
-    { title: t('strategy.experiment.candidates.column.parameters'), dataIndex: 'parameters', render: v => <Text code>{JSON.stringify(v)}</Text> },
-    { title: t('strategy.experiment.candidates.column.summary'), dataIndex: 'summary' },
-    { title: t('strategy.experiment.candidates.column.recommendation'), dataIndex: 'recommendation' },
+    { title: t(CANDIDATES_COLUMN_RANK_KEY), dataIndex: 'rank', width: 80 },
+    { title: t(CANDIDATES_COLUMN_GRADE_KEY), dataIndex: 'grade', width: 80, render: v => <Tag color={v === 'A' ? 'gold' : v === 'B' ? 'blue' : 'default'}>{v}</Tag> },
+    { title: t(CANDIDATES_COLUMN_SCORE_KEY), dataIndex: 'score', width: 100, render: v => Number(v).toFixed(1) },
+    { title: t(CANDIDATES_COLUMN_PARAMETERS_KEY), dataIndex: 'parameters', render: v => <Text code>{JSON.stringify(v)}</Text> },
+    { title: t(CANDIDATES_COLUMN_SUMMARY_KEY), dataIndex: 'summary' },
+    { title: t(CANDIDATES_COLUMN_RECOMMENDATION_KEY), dataIndex: 'recommendation' },
     {
-      title: t('strategy.experiment.candidates.column.actions'),
+      title: t(CANDIDATES_COLUMN_ACTIONS_KEY),
       width: 120,
-      render: (_, row) => <Button size="small" type="primary" onClick={() => void promote(row)}>{t('strategy.experiment.candidates.column.generateDraft')}</Button>,
+      render: (_, row) => <Button size="small" type="primary" onClick={() => void promote(row)}>{t(CANDIDATES_COLUMN_GENERATE_DRAFT_KEY)}</Button>,
     },
   ];
 
   return (
     <div className="space-y-4">
       <div>
-        <Title level={3}>{t('strategy.experiment.title')}</Title>
-        <Text type="secondary">{t('strategy.experiment.subtitle')}</Text>
+        <Title level={3}>{t(TITLE_KEY)}</Title>
+        <Text type="secondary">{t(SUBTITLE_KEY)}</Text>
       </div>
 
-      <Alert type="info" showIcon message={t('strategy.experiment.ruleVersionAlert')} />
+      <Alert type="info" showIcon message={t(RULE_VERSION_ALERT_KEY)} />
 
-      <Card title={t('strategy.experiment.submitForm.title')}>
+      <Card title={t(SUBMIT_FORM_TITLE_KEY)}>
         <Form
           layout="vertical"
           initialValues={{ parameterSpace: defaultParameterSpace(), searchMethod: 'grid', maxCandidates: 12, objective: 'balanced' }}
           onFinish={handleSubmit}
         >
-          <Form.Item name="baseTemplateId" label={t('strategy.experiment.submitForm.baseTemplate')} rules={[{ required: true, message: t('strategy.experiment.submitForm.baseTemplateRequired') }]}>
+          <Form.Item name="baseTemplateId" label={t(SUBMIT_FORM_BASE_TEMPLATE_KEY)} rules={[{ required: true, message: t(SUBMIT_FORM_BASE_TEMPLATE_REQUIRED_KEY) }]}>
             <Select
               showSearch
               options={templates.map(t => ({ value: t.id, label: `${t.name || t.id} (${t.status || '-'})` }))}
-              placeholder={t('strategy.experiment.submitForm.baseTemplatePlaceholder')}
+              placeholder={t(SUBMIT_FORM_BASE_TEMPLATE_PLACEHOLDER_KEY)}
             />
           </Form.Item>
-          <Form.Item name="parameterSpace" label={t('strategy.experiment.submitForm.parameterSpace')} rules={[{ required: true, message: t('strategy.experiment.submitForm.parameterSpaceRequired') }]}>
+          <Form.Item name="parameterSpace" label={t(SUBMIT_FORM_PARAMETER_SPACE_KEY)} rules={[{ required: true, message: t(SUBMIT_FORM_PARAMETER_SPACE_REQUIRED_KEY) }]}>
             <Input.TextArea rows={8} />
           </Form.Item>
           <Space size="large" wrap>
-            <Form.Item name="searchMethod" label={t('strategy.experiment.submitForm.searchMethod')}>
+            <Form.Item name="searchMethod" label={t(SUBMIT_FORM_SEARCH_METHOD_KEY)}>
               <Select style={{ width: 160 }} options={[{ value: 'grid', label: 'Grid' }, { value: 'random', label: 'Random' }]} />
             </Form.Item>
-            <Form.Item name="maxCandidates" label={t('strategy.experiment.submitForm.maxCandidates')}>
+            <Form.Item name="maxCandidates" label={t(SUBMIT_FORM_MAX_CANDIDATES_KEY)}>
               <InputNumber min={1} max={50} />
             </Form.Item>
-            <Form.Item name="objective" label={t('strategy.experiment.submitForm.objective')}>
+            <Form.Item name="objective" label={t(SUBMIT_FORM_OBJECTIVE_KEY)}>
               <Input style={{ width: 220 }} />
             </Form.Item>
           </Space>
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading}>{t('strategy.experiment.submitForm.submit')}</Button>
+            <Button type="primary" htmlType="submit" loading={loading}>{t(SUBMIT_FORM_SUBMIT_KEY)}</Button>
           </Form.Item>
         </Form>
       </Card>
 
-      <Card title={t('strategy.experiment.list.title')}>
+      <Card title={t(LIST_TITLE_KEY)}>
         <Table rowKey="id" size="small" dataSource={experiments} columns={experimentColumns} pagination={false} />
       </Card>
 
       <JobEventStreamCard jobId={selectedExperiment?.jobId} events={jobEvents} t={t} />
 
-      <Card title={selectedExperiment ? t('strategy.experiment.candidates.titleWithId', { id: selectedExperiment.id }) : t('strategy.experiment.candidates.title')}>
+      <Card title={selectedExperiment ? t(CANDIDATES_TITLE_WITH_ID_KEY, { id: selectedExperiment.id }) : t(CANDIDATES_TITLE_KEY)}>
         <Table rowKey="id" size="small" loading={candidateLoading} dataSource={candidates} columns={candidateColumns} pagination={false} scroll={{ x: 1100 }} />
       </Card>
     </div>

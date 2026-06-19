@@ -9,7 +9,10 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useMemo } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next"
+import { FORMAT_CRON_KEY, FORMAT_INTERVAL_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
+
+;
 import { useNavigate } from "react-router-dom";
 
 const { Text } = Typography;
@@ -226,10 +229,10 @@ function formatSchedule(t: (key: string) => string, row: any) {
           : undefined;
     if (typeof ms === "number" && Number.isFinite(ms) && ms > 0) {
       const s = Math.max(1, Math.floor(ms / 1000));
-      return t('strategy.schedules.format.interval', { s });
+      return t(FORMAT_INTERVAL_KEY, { s });
     }
     return "-";
   }
   const cron = String(conf?.cronExpression || "").trim();
-  return cron ? t('strategy.schedules.format.cron', { expr: cron }) : "-";
+  return cron ? t(FORMAT_CRON_KEY, { expr: cron }) : "-";
 }

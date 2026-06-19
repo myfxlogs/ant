@@ -2,7 +2,10 @@ import {
   LineChartOutlined, RiseOutlined, FallOutlined, PercentageOutlined,
   WalletOutlined, DollarOutlined, WarningOutlined,
 } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { DETAIL_CARDS_BALANCE_KEY, DETAIL_CARDS_CREDIT_KEY, DETAIL_CARDS_EQUITY_KEY, DETAIL_CARDS_FLOATING_PROFIT_KEY, DETAIL_CARDS_MARGIN_FREE_KEY, DETAIL_CARDS_MARGIN_LEVEL_KEY, DETAIL_CARDS_MARGIN_USED_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 import { SmallInfoCard } from './AccountDetail.shared';
 
 type Props = {
@@ -34,14 +37,14 @@ export default function AccountMetricsCards({
         <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
           <div className="flex items-center gap-2 mb-1">
             <LineChartOutlined style={{ color: 'var(--color-text-muted)', fontSize: 14 }} />
-            <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.detail.cards.equity')}</span>
+            <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t(DETAIL_CARDS_EQUITY_KEY)}</span>
           </div>
           {isStreamLoading
             ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
             : <div className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>{formatCurrency(equity)}</div>
           }
           <div style={{ color: 'var(--color-text-muted)', fontSize: 11, marginTop: 2 }}>
-            {t('accounts.detail.cards.balance')}: {formatCurrency(balance)}
+            {t(DETAIL_CARDS_BALANCE_KEY)}: {formatCurrency(balance)}
           </div>
         </div>
 
@@ -49,7 +52,7 @@ export default function AccountMetricsCards({
         <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
           <div className="flex items-center gap-2 mb-1">
             {profit >= 0 ? <RiseOutlined style={{ color: 'var(--color-success)', fontSize: 14 }} /> : <FallOutlined style={{ color: 'var(--color-danger)', fontSize: 14 }} />}
-            <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.detail.cards.floatingProfit')}</span>
+            <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t(DETAIL_CARDS_FLOATING_PROFIT_KEY)}</span>
           </div>
           {isStreamLoading
             ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
@@ -68,7 +71,7 @@ export default function AccountMetricsCards({
         <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
           <div className="flex items-center gap-2 mb-1">
             <PercentageOutlined style={{ color: 'var(--color-text-muted)', fontSize: 14 }} />
-            <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.detail.cards.marginLevel')}</span>
+            <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t(DETAIL_CARDS_MARGIN_LEVEL_KEY)}</span>
           </div>
           {isStreamLoading
             ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
@@ -79,7 +82,7 @@ export default function AccountMetricsCards({
                 {margin > 0 ? `${(marginLevel || 0).toFixed(2)}%` : '--'}
               </div>
               <div style={{ color: 'var(--color-text-muted)', fontSize: 11, marginTop: 2 }}>
-                {t('accounts.detail.cards.marginUsed')}: {formatCurrency(margin)}
+                {t(DETAIL_CARDS_MARGIN_USED_KEY)}: {formatCurrency(margin)}
               </div>
             </>
           }
@@ -90,25 +93,25 @@ export default function AccountMetricsCards({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <SmallInfoCard
           icon={<WalletOutlined style={{ color: 'var(--color-text-muted)', fontSize: 13 }} />}
-          label={t('accounts.detail.cards.balance')}
+          label={t(DETAIL_CARDS_BALANCE_KEY)}
           value={formatCurrency(balance)}
           loading={isStreamLoading}
         />
         <SmallInfoCard
           icon={<DollarOutlined style={{ color: 'var(--color-text-muted)', fontSize: 13 }} />}
-          label={t('accounts.detail.cards.marginUsed')}
+          label={t(DETAIL_CARDS_MARGIN_USED_KEY)}
           value={formatCurrency(margin)}
           loading={isStreamLoading}
         />
         <SmallInfoCard
           icon={<DollarOutlined style={{ color: 'var(--color-text-muted)', fontSize: 13 }} />}
-          label={t('accounts.detail.cards.marginFree')}
+          label={t(DETAIL_CARDS_MARGIN_FREE_KEY)}
           value={formatCurrency(freeMargin)}
           loading={isStreamLoading}
         />
         <SmallInfoCard
           icon={<WarningOutlined style={{ color: 'var(--color-text-muted)', fontSize: 13 }} />}
-          label={t('accounts.detail.cards.credit')}
+          label={t(DETAIL_CARDS_CREDIT_KEY)}
           value={formatCurrency(credit)}
           loading={isStreamLoading}
         />

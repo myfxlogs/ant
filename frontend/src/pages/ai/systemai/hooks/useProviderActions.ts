@@ -1,6 +1,9 @@
 import { message } from 'antd';
 import { useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { MESSAGES_DISABLED_KEY, MESSAGES_ENABLED_KEY, MESSAGES_VALIDATE_FAILED_KEY } from '@/gen/ant/v1/i18n/ai_settings_keys';
+
+;
 import {
   clearSystemAISecret,
   discoverSystemAIModels,
@@ -57,11 +60,11 @@ export function useProviderActions(params: UseProviderActionsParams) {
         }
         return [...prev, draft];
       });
-      setNotice(t('ai.systemAI.messages.configSaved'));
+      setNotice(t(SYSTEM_A_I_MESSAGES_CONFIG_SAVED_KEY));
       setError('');
       void silentReload();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : t('ai.systemAI.messages.configSaveFailed');
+      const msg = e instanceof Error ? e.message : t(SYSTEM_A_I_MESSAGES_CONFIG_SAVE_FAILED_KEY);
       message.error(msg, 3);
       setError(msg);
       console.error('saveConfig failed', e);
@@ -95,7 +98,7 @@ export function useProviderActions(params: UseProviderActionsParams) {
     setSecretInput('');
     setDiscoveredModels([]);
     setValidated(false);
-    setNotice(t('ai.systemAI.customProvider.fillNameFirst', { defaultValue: '请先填写厂商名称，再保存这个自定义模型服务。' }));
+    setNotice(t(SYSTEM_A_I_CUSTOM_PROVIDER_FILL_NAME_FIRST_KEY, { defaultValue: '请先填写厂商名称，再保存这个自定义模型服务。' }));
     setError('');
   }, [t, prevProviderIdRef, setConfigs, setSelectedProviderId, setDraft, setSecretInput, setDiscoveredModels, setValidated, setNotice, setError]);
 
@@ -106,12 +109,12 @@ export function useProviderActions(params: UseProviderActionsParams) {
     setSavingConfig(true);
     try {
       await persistDraftConfig(optimistic);
-      setNotice(next ? t('ai.settings.messages.enabled') : t('ai.settings.messages.disabled'));
+      setNotice(next ? t(MESSAGES_ENABLED_KEY) : t(MESSAGES_DISABLED_KEY));
       setError('');
       void silentReload();
     } catch (e) {
       setDraft((prev) => prev ? { ...prev, enabled: !next } : prev);
-      const msg = e instanceof Error ? e.message : t('ai.systemAI.messages.toggleEnabledFailed');
+      const msg = e instanceof Error ? e.message : t(SYSTEM_A_I_MESSAGES_TOGGLE_ENABLED_FAILED_KEY);
       message.error(msg, 3);
       setError(msg);
     } finally {
@@ -134,7 +137,7 @@ export function useProviderActions(params: UseProviderActionsParams) {
       setLastAutoSavedSecretKey('');
       setLastAutoDiscoverKey('');
       setDiscoveredModels([]);
-      setNotice(t('ai.systemAI.customProvider.deleted', { defaultValue: '自定义厂商已删除' }));
+      setNotice(t(SYSTEM_A_I_CUSTOM_PROVIDER_DELETED_KEY, { defaultValue: '自定义厂商已删除' }));
       setError('');
       setValidated(false);
       void silentReload();
@@ -176,7 +179,7 @@ export function useProviderActions(params: UseProviderActionsParams) {
         enabled: false,
         has_secret: false,
       } : prev);
-      setNotice(t('ai.systemAI.messages.secretDeletedConfigReset'));
+      setNotice(t(SYSTEM_A_I_MESSAGES_SECRET_DELETED_CONFIG_RESET_KEY));
       setError('');
       setValidated(false);
       void silentReload();
@@ -186,7 +189,7 @@ export function useProviderActions(params: UseProviderActionsParams) {
         removeLocalCustomProvider();
         return;
       }
-      setError(msg || t('ai.systemAI.messages.deleteSecretFailed'));
+      setError(msg || t(SYSTEM_A_I_MESSAGES_DELETE_SECRET_FAILED_KEY));
     } finally {
       setSavingSecret(false);
     }
@@ -208,13 +211,13 @@ export function useProviderActions(params: UseProviderActionsParams) {
       }
       const body = await validateSystemAI(draft.provider_id);
       setValidated(true);
-      setNotice(t('ai.systemAI.messages.validationPassedModels', { count: body.model_count ?? 0 }));
+      setNotice(t(SYSTEM_A_I_MESSAGES_VALIDATION_PASSED_MODELS_KEY, { count: body.model_count ?? 0 }));
       setError('');
     } catch (e) {
-      const msg = e instanceof Error ? e.message : t('ai.settings.messages.validateFailed');
+      const msg = e instanceof Error ? e.message : t(MESSAGES_VALIDATE_FAILED_KEY);
       setValidated(false);
       if (msg.includes('401/403') && !draft.has_secret && !secretInput.trim()) {
-        setError(t('ai.systemAI.messages.validationFailedNeedApiKey'));
+        setError(t(SYSTEM_A_I_MESSAGES_VALIDATION_FAILED_NEED_API_KEY_KEY));
       } else {
         setError(toFriendlyDiscoverMessage(msg, t));
       }

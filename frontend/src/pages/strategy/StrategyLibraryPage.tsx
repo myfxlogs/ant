@@ -1,6 +1,9 @@
 import { lazy, Suspense, useCallback } from 'react';
 import { Form, message } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { ACTIONS_COPY_KEY, MESSAGES_CODE_COPIED_KEY, MESSAGES_COPY_FAILED_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
+;
 import { useStrategyLibrary } from './hooks/useStrategyLibrary';
 import { LibraryProvider } from './LibraryContext';
 import LibraryLeftPanel from './components/library/LibraryLeftPanel';
@@ -99,8 +102,8 @@ function LibraryUI() {
           onCopy={async (c: string) => {
             const { copyToClipboard } = await import('@/utils/clipboard');
             const ok = await copyToClipboard(c);
-            if (ok) message.success(t('strategy.templates.messages.codeCopied'));
-            else message.error(t('strategy.templates.messages.copyFailed'));
+            if (ok) message.success(t(MESSAGES_CODE_COPIED_KEY));
+            else message.error(t(MESSAGES_COPY_FAILED_KEY));
           }} />
       )}
 
@@ -121,12 +124,12 @@ function CodeModal({ open, code, onClose, onCopy }: { open: boolean; code: strin
     <div style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={onClose}>
       <div style={{ background: '#fff', borderRadius: 8, width: 800, maxHeight: '80vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontWeight: 600, fontSize: 15 }}>{t('strategy.library.viewCode')}</span>
+          <span style={{ fontWeight: 600, fontSize: 15 }}>{t(VIEW_CODE_KEY)}</span>
           <button onClick={onClose} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 18, color: '#8c8c8c' }}>✕</button>
         </div>
         <pre style={{ flex: 1, overflow: 'auto', padding: 16, margin: 0, background: '#1e1e1e', color: '#d4d4d4', fontSize: 13, lineHeight: 1.5 }}>{code}</pre>
         <div style={{ padding: '10px 20px', borderTop: '1px solid #f0f0f0', textAlign: 'right' }}>
-          <button onClick={() => onCopy(code)} style={{ padding: '4px 16px', border: '1px solid #d9d9d9', borderRadius: 4, background: '#fff', cursor: 'pointer', fontSize: 13 }}>{t('strategy.templates.actions.copy')}</button>
+          <button onClick={() => onCopy(code)} style={{ padding: '4px 16px', border: '1px solid #d9d9d9', borderRadius: 4, background: '#fff', cursor: 'pointer', fontSize: 13 }}>{t(ACTIONS_COPY_KEY)}</button>
         </div>
       </div>
     </div>

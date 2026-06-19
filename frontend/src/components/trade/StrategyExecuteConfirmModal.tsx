@@ -1,6 +1,9 @@
 import React from 'react';
 import { Typography, Space, Alert } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { STRATEGY_EXECUTE_CONFIRM_ACTION_KEY, STRATEGY_EXECUTE_CONFIRM_BUY_KEY, STRATEGY_EXECUTE_CONFIRM_CONFIRM_TEXT_KEY, STRATEGY_EXECUTE_CONFIRM_SELL_KEY, STRATEGY_EXECUTE_CONFIRM_STRATEGY_NAME_KEY, STRATEGY_EXECUTE_CONFIRM_SYMBOL_KEY, STRATEGY_EXECUTE_CONFIRM_TITLE_KEY, STRATEGY_EXECUTE_CONFIRM_VOLUME_KEY, STRATEGY_EXECUTE_CONFIRM_WARNING_DESCRIPTION_KEY, STRATEGY_EXECUTE_CONFIRM_WARNING_TITLE_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+
+;
 import { TradeConfirmModal } from './TradeConfirmModal';
 
 const { Text } = Typography;
@@ -24,35 +27,35 @@ export const StrategyExecuteConfirmModal: React.FC<StrategyExecuteConfirmProps> 
   return (
     <TradeConfirmModal
       open={open}
-      title={t('trading.strategyExecute.confirm.title')}
+      title={t(STRATEGY_EXECUTE_CONFIRM_TITLE_KEY)}
       danger
-      confirmText={t('trading.strategyExecute.confirm.confirmText')}
+      confirmText={t(STRATEGY_EXECUTE_CONFIRM_CONFIRM_TEXT_KEY)}
       loading={loading}
       onConfirm={onConfirm}
       onCancel={onCancel}
       content={
         <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
           <Alert type="warning" showIcon
-            message={t('trading.strategyExecute.confirm.warningTitle')}
-            description={t('trading.strategyExecute.confirm.warningDescription')} />
+            message={t(STRATEGY_EXECUTE_CONFIRM_WARNING_TITLE_KEY)}
+            description={t(STRATEGY_EXECUTE_CONFIRM_WARNING_DESCRIPTION_KEY)} />
           <div style={{ background: '#fff1f0', padding: 12, borderRadius: 4, border: '1px solid #ffa39e' }}>
             <Space orientation="vertical" size="small" style={{ width: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Text type="secondary">{t('trading.strategyExecute.confirm.strategyName')}:</Text>
+                <Text type="secondary">{t(STRATEGY_EXECUTE_CONFIRM_STRATEGY_NAME_KEY)}:</Text>
                 <Text strong>{strategyName}</Text>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Text type="secondary">{t('trading.strategyExecute.confirm.symbol')}:</Text>
+                <Text type="secondary">{t(STRATEGY_EXECUTE_CONFIRM_SYMBOL_KEY)}:</Text>
                 <Text strong>{symbol}</Text>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Text type="secondary">{t('trading.strategyExecute.confirm.action')}:</Text>
+                <Text type="secondary">{t(STRATEGY_EXECUTE_CONFIRM_ACTION_KEY)}:</Text>
                 <Text strong style={{ color: action === 'buy' ? '#52c41a' : '#ff4d4f' }}>
-                  {action === 'buy' ? t('trading.strategyExecute.confirm.buy') : t('trading.strategyExecute.confirm.sell')}
+                  {action === 'buy' ? t(STRATEGY_EXECUTE_CONFIRM_BUY_KEY) : t(STRATEGY_EXECUTE_CONFIRM_SELL_KEY)}
                 </Text>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Text type="secondary">{t('trading.strategyExecute.confirm.volume')}:</Text>
+                <Text type="secondary">{t(STRATEGY_EXECUTE_CONFIRM_VOLUME_KEY)}:</Text>
                 <Text strong>{volume}</Text>
               </div>
             </Space>

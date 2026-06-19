@@ -1,6 +1,9 @@
 import { Button, Card, Row, Col, Statistic, Table, Tag, Empty, Spin } from 'antd';
 import { RiseOutlined, FallOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { BACKTEST_COMPLETED_KEY, BACKTEST_EMPTY_KEY, BACKTEST_ERROR_KEY, BACKTEST_RUNNING_KEY, BACKTEST_TAB_KEY, EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY, EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY, EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY, EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY, EXEC_ASSUMPTIONS_FIELDS_MODE_KEY, EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY, EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY, EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY, EXEC_ASSUMPTIONS_KEY, GATE_TAB_KEY, TUNING_TAB_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+
+;
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import SmartTuningPanel from './SmartTuningPanel';
 import GatePanel from './GatePanel';
@@ -76,24 +79,24 @@ export default function WorkspaceBacktestPanel({
           ...tabStyle,
           color: subTab === 'results' ? '#1890ff' : '#8c8c8c',
           borderBottomColor: subTab === 'results' ? '#1890ff' : 'transparent',
-        }}>{t('strategy.workspace.backtestTab')}</div>
+        }}>{t(BACKTEST_TAB_KEY)}</div>
         <div onClick={() => onSubTabChange('tuning')} style={{
           ...tabStyle,
           color: subTab === 'tuning' ? '#1890ff' : '#8c8c8c',
           borderBottomColor: subTab === 'tuning' ? '#1890ff' : 'transparent',
-        }}>{t('strategy.workspace.tuningTab')}</div>
+        }}>{t(TUNING_TAB_KEY)}</div>
         <div onClick={() => onSubTabChange('gate')} style={{
           ...tabStyle,
           color: subTab === 'gate' ? '#1890ff' : '#8c8c8c',
           borderBottomColor: subTab === 'gate' ? '#1890ff' : 'transparent',
-        }}>{t('strategy.workspace.gateTab', 'Gate')}</div>
+        }}>{t(GATE_TAB_KEY, 'Gate')}</div>
       </div>
 
       {/* Results Tab */}
       {subTab === 'results' && (
         <>
           {status === 'idle' && (
-            <Empty description={t('strategy.workspace.backtestEmpty', 'Run a backtest to see results')}
+            <Empty description={t(BACKTEST_EMPTY_KEY, 'Run a backtest to see results')}
               style={{ padding: 48 }} />
           )}
 
@@ -101,11 +104,11 @@ export default function WorkspaceBacktestPanel({
           <div style={{ marginBottom: 12 }}>
             {status === 'running' && (
               <Tag color="processing" icon={<Spin size="small" />}>
-                {t('strategy.workspace.backtestRunning')}{metrics?.processedBars != null ? ` — ${metrics.processedBars} bars processed` : '...'}
+                {t(BACKTEST_RUNNING_KEY)}{metrics?.processedBars != null ? ` — ${metrics.processedBars} bars processed` : '...'}
               </Tag>
             )}
             {status === 'completed' && (
-              <Tag color="success">{t('strategy.workspace.backtestCompleted')}</Tag>
+              <Tag color="success">{t(BACKTEST_COMPLETED_KEY)}</Tag>
             )}
             {status === 'completed' && onAIOptimize && metrics && (
               <Button size="small" type="dashed" onClick={onAIOptimize}
@@ -114,7 +117,7 @@ export default function WorkspaceBacktestPanel({
               </Button>
             )}
             {status === 'error' && (
-              <Tag color="error">{errorMessage || t('strategy.workspace.backtestError', 'Backtest failed')}</Tag>
+              <Tag color="error">{errorMessage || t(BACKTEST_ERROR_KEY, 'Backtest failed')}</Tag>
             )}
           </div>
 
@@ -126,18 +129,18 @@ export default function WorkspaceBacktestPanel({
               background: 'linear-gradient(180deg, #f8fbff 0%, #f4f9ff 100%)',
             }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>
-                {t('strategy.workspace.execAssumptions')}
+                {t(EXEC_ASSUMPTIONS_KEY)}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '4px 12px', fontSize: 11 }}>
-                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.mode')}:</span> <strong>{executionAssumptions.simulationMode || '-'}</strong></div>
-                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.timing')}:</span> <strong>{executionAssumptions.signalTiming || '-'}</strong></div>
-                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.fillRule')}:</span> <strong>{executionAssumptions.fillRule || '-'}</strong></div>
-                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.direction')}:</span> <strong>{executionAssumptions.tradeDirection || '-'}</strong></div>
-                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.commission')}:</span> <strong>{executionAssumptions.actualCommission != null ? (executionAssumptions.actualCommission * 100).toFixed(4) + '%' : '-'}</strong></div>
-                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.slippage')}:</span> <strong>{executionAssumptions.actualSlippage != null ? (executionAssumptions.actualSlippage * 100).toFixed(4) + '%' : '-'}</strong></div>
-                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.leverage')}:</span> <strong>{executionAssumptions.actualLeverage || '-'}x</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)}:</span> <strong>{executionAssumptions.simulationMode || '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)}:</span> <strong>{executionAssumptions.signalTiming || '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)}:</span> <strong>{executionAssumptions.fillRule || '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY)}:</span> <strong>{executionAssumptions.tradeDirection || '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY)}:</span> <strong>{executionAssumptions.actualCommission != null ? (executionAssumptions.actualCommission * 100).toFixed(4) + '%' : '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY)}:</span> <strong>{executionAssumptions.actualSlippage != null ? (executionAssumptions.actualSlippage * 100).toFixed(4) + '%' : '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY)}:</span> <strong>{executionAssumptions.actualLeverage || '-'}x</strong></div>
                 {executionAssumptions.mtfFallbackReason && (
-                  <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>{t('strategy.workspace.execAssumptionsFields.mtfFallback')}:</span> <strong>{executionAssumptions.mtfFallbackReason}</strong></div>
+                  <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY)}:</span> <strong>{executionAssumptions.mtfFallbackReason}</strong></div>
                 )}
               </div>
             </div>
@@ -148,7 +151,7 @@ export default function WorkspaceBacktestPanel({
               <Row gutter={[12, 12]}>
                 <Col span={8}>
                   <Card size="small">
-                    <Statistic title={t('strategy.backtest.totalReturn', 'Total Return')}
+                    <Statistic title={t(TOTAL_RETURN_KEY, 'Total Return')}
                       value={pct(metrics.totalReturn)}
                       prefix={metrics.totalReturn != null && metrics.totalReturn >= 0
                         ? <RiseOutlined style={{ color: '#26a69a' }} />
@@ -158,39 +161,39 @@ export default function WorkspaceBacktestPanel({
                 </Col>
                 <Col span={8}>
                   <Card size="small">
-                    <Statistic title={t('strategy.backtest.annualReturn', 'Annual Return')}
+                    <Statistic title={t(ANNUAL_RETURN_KEY, 'Annual Return')}
                       value={pct(metrics.annualReturn)} valueStyle={metricStyle} />
                   </Card>
                 </Col>
                 <Col span={8}>
                   <Card size="small">
-                    <Statistic title={t('strategy.backtest.maxDrawdown', 'Max Drawdown')}
+                    <Statistic title={t(MAX_DRAWDOWN_KEY, 'Max Drawdown')}
                       value={pct(metrics.maxDrawdown)}
                       valueStyle={{ ...metricStyle, color: '#ef5350' }} />
                   </Card>
                 </Col>
                 <Col span={8}>
                   <Card size="small">
-                    <Statistic title={t('strategy.backtest.sharpe', 'Sharpe')}
+                    <Statistic title={t(SHARPE_KEY, 'Sharpe')}
                       value={num(metrics.sharpeRatio)} valueStyle={metricStyle} />
                   </Card>
                 </Col>
                 <Col span={8}>
                   <Card size="small">
-                    <Statistic title={t('strategy.backtest.winRate', 'Win Rate')}
+                    <Statistic title={t(WIN_RATE_KEY, 'Win Rate')}
                       value={pct(metrics.winRate)} valueStyle={metricStyle} />
                   </Card>
                 </Col>
                 <Col span={8}>
                   <Card size="small">
-                    <Statistic title={t('strategy.backtest.totalTrades', 'Total Trades')}
+                    <Statistic title={t(TOTAL_TRADES_KEY, 'Total Trades')}
                       value={metrics.totalTrades ?? '-'} valueStyle={metricStyle} />
                   </Card>
                 </Col>
               </Row>
 
               {metrics.equityCurve && metrics.equityCurve.length > 0 && (
-                <Card size="small" title={t('strategy.backtest.equityCurve', 'Equity Curve')} style={{ marginTop: 12 }}>
+                <Card size="small" title={t(EQUITY_CURVE_KEY, 'Equity Curve')} style={{ marginTop: 12 }}>
                   <ResponsiveContainer width="100%" height={200}>
                     <LineChart data={metrics.equityCurve}>
                       <XAxis dataKey="time" hide />
@@ -203,15 +206,15 @@ export default function WorkspaceBacktestPanel({
               )}
 
               {metrics.trades && metrics.trades.length > 0 && (
-                <Card size="small" title={t('strategy.backtest.tradeLog', 'Trade Log')} style={{ marginTop: 12 }}>
+                <Card size="small" title={t(TRADE_LOG_KEY, 'Trade Log')} style={{ marginTop: 12 }}>
                   <Table dataSource={metrics.trades} rowKey="id" size="small"
                     pagination={{ pageSize: 20, size: 'small' }}
                     columns={[
-                      { title: t('strategy.backtest.tradeTime', 'Time'), dataIndex: 'time',
+                      { title: t(TRADE_TIME_KEY, 'Time'), dataIndex: 'time',
                         render: (v: number) => v ? new Date(v * 1000).toLocaleString() : '-' },
-                      { title: t('strategy.backtest.tradeSide', 'Side'), dataIndex: 'side', width: 60 },
-                      { title: t('strategy.backtest.tradePrice', 'Price'), dataIndex: 'price', width: 80 },
-                      { title: t('strategy.backtest.tradeVolume', 'Volume'), dataIndex: 'volume', width: 80,
+                      { title: t(TRADE_SIDE_KEY, 'Side'), dataIndex: 'side', width: 60 },
+                      { title: t(TRADE_PRICE_KEY, 'Price'), dataIndex: 'price', width: 80 },
+                      { title: t(TRADE_VOLUME_KEY, 'Volume'), dataIndex: 'volume', width: 80,
                         render: (v: number) => v?.toFixed(2) },
                       { title: 'PnL', dataIndex: 'pnl', width: 80,
                         render: (v: number) => v != null ? (

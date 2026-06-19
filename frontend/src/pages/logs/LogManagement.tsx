@@ -10,7 +10,10 @@ import type { OperationLog } from '@/gen/ant/v1/log_operation_pb';
 import { getDeviceLocale, getDeviceTimeZone } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import { StatusResult } from '@/components/common/StatusResult';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { CONNECTION_LOGS_KEY, EXECUTION_LOGS_KEY, LOAD_FAILED_KEY, OPERATION_LOGS_KEY, ORDER_HISTORY_KEY } from '@/gen/ant/v1/i18n/logs_keys';
+
+;
 import LogFilterForm from './LogFilterForm';
 import {
   buildConnectionColumns, buildExecutionColumns, buildOrderColumns, buildOperationColumns,
@@ -54,7 +57,7 @@ export default function LogManagement() {
   const logs = (queryResult as { logs?: LogEntry[]; orders?: OrderHistoryRecord[]; total: number } | undefined)?.logs
     || (queryResult as { orders?: OrderHistoryRecord[] } | undefined)?.orders || [];
   const total = (queryResult as { total?: number } | undefined)?.total || 0;
-  const error = queryError ? getErrorMessage(queryError, t('logs.loadFailed')) : null;
+  const error = queryError ? getErrorMessage(queryError, t(LOAD_FAILED_KEY)) : null;
 
   const accountById = useMemo(() => {
     const m = new Map<string, AccountLike>();
@@ -127,10 +130,10 @@ export default function LogManagement() {
       <Card>
         <Tabs activeKey={activeTab} onChange={setActiveTab}
           items={[
-            { key: 'connection', label: t('logs.connectionLogs') },
-            { key: 'execution', label: t('logs.executionLogs') },
-            { key: 'orders', label: t('logs.orderHistory') },
-            { key: 'operations', label: t('logs.operationLogs') },
+            { key: 'connection', label: t(CONNECTION_LOGS_KEY) },
+            { key: 'execution', label: t(EXECUTION_LOGS_KEY) },
+            { key: 'orders', label: t(ORDER_HISTORY_KEY) },
+            { key: 'operations', label: t(OPERATION_LOGS_KEY) },
           ]} className="mb-4" />
         <LogFilterForm
           activeTab={activeTab}

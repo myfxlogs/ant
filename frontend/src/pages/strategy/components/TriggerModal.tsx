@@ -1,5 +1,8 @@
 import { Button, Card, Descriptions, Modal, Popconfirm, Space, Typography } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { TRIGGER_MODAL_ACTIONS_CONFIRM_ORDER_KEY, TRIGGER_MODAL_ACTIONS_RERUN_KEY, TRIGGER_MODAL_CARDS_LOGS_KEY, TRIGGER_MODAL_CARDS_SIGNAL_KEY, TRIGGER_MODAL_CONFIRM_ORDER_OK_KEY, TRIGGER_MODAL_CONFIRM_ORDER_TITLE_KEY, TRIGGER_MODAL_EMPTY_LOGS_KEY, TRIGGER_MODAL_EMPTY_SIGNAL_KEY, TRIGGER_MODAL_MESSAGES_SIGNAL_NOT_ORDERABLE_KEY, TRIGGER_MODAL_SUMMARY_ACCOUNT_KEY, TRIGGER_MODAL_SUMMARY_SCHEDULE_NAME_KEY, TRIGGER_MODAL_SUMMARY_SYMBOL_KEY, TRIGGER_MODAL_SUMMARY_TIMEFRAME_KEY, TRIGGER_MODAL_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
+
+;
 
 const { Text } = Typography;
 
@@ -47,7 +50,7 @@ export default function TriggerModal({
 
   return (
     <Modal
-      title={t('strategy.schedules.triggerModal.title')}
+      title={t(TRIGGER_MODAL_TITLE_KEY)}
       open={open}
       onCancel={() => {
         if (triggering) return;
@@ -64,14 +67,14 @@ export default function TriggerModal({
             {t('common.close')}
           </Button>
           <Popconfirm
-            title={t('strategy.schedules.triggerModal.confirmOrder.title')}
-            okText={t('strategy.schedules.triggerModal.confirmOrder.ok')}
+            title={t(TRIGGER_MODAL_CONFIRM_ORDER_TITLE_KEY)}
+            okText={t(TRIGGER_MODAL_CONFIRM_ORDER_OK_KEY)}
             cancelText={t('common.cancel')}
             onConfirm={onConfirmOrder}
             disabled={!canOrder || triggering}
           >
             <Button type="primary" disabled={!canOrder} loading={triggering}>
-              {t('strategy.schedules.triggerModal.actions.confirmOrder')}
+              {t(TRIGGER_MODAL_ACTIONS_CONFIRM_ORDER_KEY)}
             </Button>
           </Popconfirm>
         </Space>
@@ -80,34 +83,34 @@ export default function TriggerModal({
     >
       <Space orientation="vertical" style={{ width: '100%' }}>
         <Descriptions size="small" bordered column={2}>
-          <Descriptions.Item label={t('strategy.schedules.triggerModal.summary.scheduleName')}>{triggerContext?.schedule?.name || '-'}</Descriptions.Item>
-          <Descriptions.Item label={t('strategy.schedules.triggerModal.summary.account')}>{triggerContext?.accountId || '-'}</Descriptions.Item>
-          <Descriptions.Item label={t('strategy.schedules.triggerModal.summary.symbol')}>{triggerContext?.schedule?.symbol || '-'}</Descriptions.Item>
-          <Descriptions.Item label={t('strategy.schedules.triggerModal.summary.timeframe')}>{triggerContext?.schedule?.timeframe || '-'}</Descriptions.Item>
+          <Descriptions.Item label={t(TRIGGER_MODAL_SUMMARY_SCHEDULE_NAME_KEY)}>{triggerContext?.schedule?.name || '-'}</Descriptions.Item>
+          <Descriptions.Item label={t(TRIGGER_MODAL_SUMMARY_ACCOUNT_KEY)}>{triggerContext?.accountId || '-'}</Descriptions.Item>
+          <Descriptions.Item label={t(TRIGGER_MODAL_SUMMARY_SYMBOL_KEY)}>{triggerContext?.schedule?.symbol || '-'}</Descriptions.Item>
+          <Descriptions.Item label={t(TRIGGER_MODAL_SUMMARY_TIMEFRAME_KEY)}>{triggerContext?.schedule?.timeframe || '-'}</Descriptions.Item>
         </Descriptions>
 
         <Button onClick={onRerun} loading={triggering} disabled={!triggerContext?.schedule}>
-          {t('strategy.schedules.triggerModal.actions.rerun')}
+          {t(TRIGGER_MODAL_ACTIONS_RERUN_KEY)}
         </Button>
 
         {triggerResult?.meta?.error ? <Text type="danger">{triggerResult.meta.error}</Text> : null}
         {!canOrder && triggerResult?.signal ? (
-          <Text type="secondary">{t('strategy.schedules.triggerModal.messages.signalNotOrderable')}</Text>
+          <Text type="secondary">{t(TRIGGER_MODAL_MESSAGES_SIGNAL_NOT_ORDERABLE_KEY)}</Text>
         ) : null}
 
-        <Card size="small" title={t('strategy.schedules.triggerModal.cards.logs')} styles={{ body: { maxHeight: 200, overflow: 'auto' } }}>
+        <Card size="small" title={t(TRIGGER_MODAL_CARDS_LOGS_KEY)} styles={{ body: { maxHeight: 200, overflow: 'auto' } }}>
           {triggerResult?.logs?.length ? (
             <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{triggerResult.logs.join('\n')}</pre>
           ) : (
-            <Text type="secondary">{t('strategy.schedules.triggerModal.emptyLogs')}</Text>
+            <Text type="secondary">{t(TRIGGER_MODAL_EMPTY_LOGS_KEY)}</Text>
           )}
         </Card>
 
-        <Card size="small" title={t('strategy.schedules.triggerModal.cards.signal')} styles={{ body: { maxHeight: 240, overflow: 'auto' } }}>
+        <Card size="small" title={t(TRIGGER_MODAL_CARDS_SIGNAL_KEY)} styles={{ body: { maxHeight: 240, overflow: 'auto' } }}>
           {triggerResult?.signal ? (
             <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{safeStringify(triggerResult.signal)}</pre>
           ) : (
-            <Text type="secondary">{t('strategy.schedules.triggerModal.emptySignal')}</Text>
+            <Text type="secondary">{t(TRIGGER_MODAL_EMPTY_SIGNAL_KEY)}</Text>
           )}
         </Card>
       </Space>

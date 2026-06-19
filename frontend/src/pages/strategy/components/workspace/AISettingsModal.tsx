@@ -1,7 +1,10 @@
 import { Suspense, lazy } from 'react';
 import { Modal, Spin } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { PAGE_TITLE_KEY } from '@/gen/ant/v1/i18n/ai_settings_keys';
+
+;
 
 const SystemAI = lazy(() => import('@/pages/ai/SystemAI'));
 
@@ -14,7 +17,7 @@ export default function AISettingsModal({ open, onClose }: Props) {
   const { t } = useTranslation();
 
   return (
-    <Modal title={<><SettingOutlined style={{ marginRight: 8 }} />{t('ai.settings.pageTitle', 'AI Settings')}</>}
+    <Modal title={<><SettingOutlined style={{ marginRight: 8 }} />{t(PAGE_TITLE_KEY, 'AI Settings')}</>}
       open={open} onCancel={onClose} footer={null} width={900} style={{ top: 8 }}>
       <div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
         <style>{`

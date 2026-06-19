@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Input, Space, message } from 'antd';
 import { RobotOutlined, SendOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { AI_REVISE_TITLE_KEY, CODE_UPDATED_KEY, ENTER_INSTRUCTION_KEY, GENERATE_PLACEHOLDER_KEY, REVISE_INPUT_PLACEHOLDER_KEY, REVISE_SEND_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
+
+;
 import { codeAssistApi, type CodeChatMessage } from '@/client/codeAssist';
 
 const { TextArea } = Input;
@@ -25,7 +28,7 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
   const send = () => {
     const instr = draft.trim();
     if (!instr) {
-      message.warning(t('strategy.codeAssist.enterInstruction', { defaultValue: 'Please describe what you want to change.' }));
+      message.warning(t(ENTER_INSTRUCTION_KEY, { defaultValue: 'Please describe what you want to change.' }));
       return;
     }
     stopRef.current?.();
@@ -50,7 +53,7 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
           setStreamingText('');
           if (python) {
             onApply(python);
-            message.success(t('strategy.codeAssist.codeUpdated', { defaultValue: 'Code updated.' }));
+            message.success(t(CODE_UPDATED_KEY, { defaultValue: 'Code updated.' }));
           }
         },
         onError: (e: unknown) => {
@@ -84,7 +87,7 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
     <div style={{ border: '1px solid #f0f0f0', borderRadius: 6, padding: 8, background: '#fff' }}>
       <Space style={{ marginBottom: 6 }}>
         <RobotOutlined />
-        <span>{t('strategy.codeAssist.aiReviseTitle', { defaultValue: 'AI assistant' })}</span>
+        <span>{t(AI_REVISE_TITLE_KEY, { defaultValue: 'AI assistant' })}</span>
       </Space>
       <div style={{ maxHeight: 200, overflow: 'auto', marginBottom: 6 }}>
         {messagesView}
@@ -100,12 +103,12 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
       </div>
       <TextArea rows={2} value={draft} onChange={(e) => setDraft(e.target.value)}
         placeholder={code.trim()
-          ? t('strategy.codeAssist.reviseInputPlaceholder', { defaultValue: 'e.g. Replace SMA(20) with EMA(50) and add a 1% stop-loss.' })
-          : t('strategy.codeAssist.generatePlaceholder', { defaultValue: 'Describe a strategy, e.g. Bollinger Bands mean-reversion for EURUSD with 2% stop-loss' })}
+          ? t(REVISE_INPUT_PLACEHOLDER_KEY, { defaultValue: 'e.g. Replace SMA(20) with EMA(50) and add a 1% stop-loss.' })
+          : t(GENERATE_PLACEHOLDER_KEY, { defaultValue: 'Describe a strategy, e.g. Bollinger Bands mean-reversion for EURUSD with 2% stop-loss' })}
       />
       <div style={{ marginTop: 6, textAlign: 'right' }}>
         <Button type="primary" icon={<SendOutlined />} loading={loading} onClick={() => { send(); }}>
-          {t('strategy.codeAssist.reviseSend', { defaultValue: 'Send to AI' })}
+          {t(REVISE_SEND_KEY, { defaultValue: 'Send to AI' })}
         </Button>
       </div>
     </div>

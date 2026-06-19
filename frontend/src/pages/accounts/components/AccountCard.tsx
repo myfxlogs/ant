@@ -12,7 +12,10 @@ import {
 } from '@ant-design/icons';
 import { useMemo } from 'react';
 import type { Account } from '@/types/account';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { CARD_ACTIONS_DETAILS_KEY, CARD_ACTIONS_ORDERS_KEY, CARD_ACTIONS_POSITIONS_KEY, CARD_DELETE_CONFIRM_CONTENT_KEY, CARD_DELETE_CONFIRM_TITLE_KEY, CARD_FIELDS_BALANCE_KEY, CARD_FIELDS_BROKER_KEY, CARD_FIELDS_EQUITY_KEY, CARD_FIELDS_SERVER_KEY, CARD_STATUS_CONNECTED_KEY, CARD_STATUS_CONNECTING_KEY, CARD_STATUS_DISABLED_KEY, CARD_STATUS_DISCONNECTED_KEY, CARD_STATUS_ERROR_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 
 type Props = {
   account: Account;
@@ -29,17 +32,17 @@ type Props = {
 
 const getStatusIndicator = (account: Account, t: (key: string) => string) => {
   if (account.isDisabled) {
-    return { icon: '⚪', color: 'var(--color-text-muted)', text: t('accounts.card.status.disabled') };
+    return { icon: '⚪', color: 'var(--color-text-muted)', text: t(CARD_STATUS_DISABLED_KEY) };
   }
   switch (account.status) {
     case 'connected':
-      return { icon: '🟢', color: '#00A651', text: t('accounts.card.status.connected') };
+      return { icon: '🟢', color: '#00A651', text: t(CARD_STATUS_CONNECTED_KEY) };
     case 'connecting':
-      return { icon: '🟡', color: '#FF9800', text: t('accounts.card.status.connecting') };
+      return { icon: '🟡', color: '#FF9800', text: t(CARD_STATUS_CONNECTING_KEY) };
     case 'disconnected':
-      return { icon: '🔴', color: '#E53935', text: t('accounts.card.status.disconnected') };
+      return { icon: '🔴', color: '#E53935', text: t(CARD_STATUS_DISCONNECTED_KEY) };
     case 'error':
-      return { icon: '🔴', color: '#E53935', text: t('accounts.card.status.error') };
+      return { icon: '🔴', color: '#E53935', text: t(CARD_STATUS_ERROR_KEY) };
     default:
       return { icon: '⚪', color: 'var(--color-text-muted)', text: t('common.unknown') };
   }
@@ -117,8 +120,8 @@ export default function AccountCard({
       danger: true,
       onClick: () => {
         Modal.confirm({
-          title: t('accounts.card.deleteConfirm.title'),
-          content: t('accounts.card.deleteConfirm.content'),
+          title: t(CARD_DELETE_CONFIRM_TITLE_KEY),
+          content: t(CARD_DELETE_CONFIRM_CONTENT_KEY),
           okText: t('common.confirm'),
           cancelText: t('common.cancel'),
           onOk: () => onDelete(account.id),
@@ -177,25 +180,25 @@ export default function AccountCard({
 
         <div className="space-y-2 mb-4">
           <div className="flex justify-between">
-            <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.card.fields.balance')}</span>
+            <span style={{ color: 'var(--color-text-muted)' }}>{t(CARD_FIELDS_BALANCE_KEY)}</span>
             <span className="font-medium" style={{ color: balanceDisplay.color }}>
               {balanceDisplay.text}
             </span>
           </div>
           <div className="flex justify-between">
-            <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.card.fields.equity')}</span>
+            <span style={{ color: 'var(--color-text-muted)' }}>{t(CARD_FIELDS_EQUITY_KEY)}</span>
             <span className="font-medium" style={{ color: equityDisplay.color }}>
               {equityDisplay.text}
             </span>
           </div>
           <div className="flex justify-between">
-            <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.card.fields.broker')}</span>
+            <span style={{ color: 'var(--color-text-muted)' }}>{t(CARD_FIELDS_BROKER_KEY)}</span>
             <span className="font-medium" style={{ color: 'var(--color-text)' }}>
               {account.brokerCompany}
             </span>
           </div>
           <div className="flex justify-between">
-            <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.card.fields.server')}</span>
+            <span style={{ color: 'var(--color-text-muted)' }}>{t(CARD_FIELDS_SERVER_KEY)}</span>
             <span className="font-medium" style={{ color: 'var(--color-text)' }}>
               {account.brokerServer}
             </span>
@@ -209,7 +212,7 @@ export default function AccountCard({
             onClick={() => onNavigateToTrading(account.id)}
             style={{ borderRadius: '6px' }}
           >
-            {t('accounts.card.actions.positions')}
+            {t(CARD_ACTIONS_POSITIONS_KEY)}
           </Button>
           <Button
             size="small"
@@ -217,7 +220,7 @@ export default function AccountCard({
             onClick={() => onNavigateToDetail(account.id)}
             style={{ borderRadius: '6px' }}
           >
-            {t('accounts.card.actions.orders')}
+            {t(CARD_ACTIONS_ORDERS_KEY)}
           </Button>
           <Button
             size="small"
@@ -225,7 +228,7 @@ export default function AccountCard({
             onClick={() => onNavigateToDetail(account.id)}
             style={{ borderRadius: '6px' }}
           >
-            {t('accounts.card.actions.details')}
+            {t(CARD_ACTIONS_DETAILS_KEY)}
           </Button>
         </div>
       </div>

@@ -3,7 +3,10 @@ import {
   BarChartOutlined, PieChartOutlined, LineChartOutlined,
   RiseOutlined, FallOutlined,
 } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { ANALYTICS_EMPTY_SYMBOL_DISTRIBUTION_KEY, ANALYTICS_STATS_NET_PROFIT_KEY, ANALYTICS_STATS_TOTAL_TRADES_KEY, ANALYTICS_STATS_WIN_RATE_KEY, REPORT_DIRECTION_KEY, REPORT_DIRECTION_LONG_KEY, REPORT_DIRECTION_SHORT_KEY, REPORT_DRAWDOWN_EVENTS_KEY, REPORT_DRAWDOWN_OVERLAY_KEY, REPORT_RECOVERED_KEY, REPORT_SYMBOL_PN_L_KEY, REPORT_TRADE_DISTRIBUTION_KEY, REPORT_WIN_RATE_TREND_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 import {
   Bar, CartesianGrid, ComposedChart, Cell, Line,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
@@ -56,7 +59,7 @@ export default function ReportChartPanels({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Symbol P&L ranking */}
           <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-            <Title level={5}><BarChartOutlined /> {t('accounts.report.symbolPnL')}</Title>
+            <Title level={5}><BarChartOutlined /> {t(REPORT_SYMBOL_PN_L_KEY)}</Title>
             {attribution?.symbolPnls?.length ? (() => {
               const data = attribution.symbolPnls.slice(0, 8);
               const maxSymbolLen = Math.max(...data.map((s: { symbol: string }) => s.symbol.length), 3);
@@ -77,37 +80,37 @@ export default function ReportChartPanels({
                 </ComposedChart>
               </ResponsiveContainer>
               );
-            })() : <div className="flex items-center justify-center h-[280px]" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.analytics.empty.symbolDistribution')}</div>}
+            })() : <div className="flex items-center justify-center h-[280px]" style={{ color: 'var(--color-text-muted)' }}>{t(ANALYTICS_EMPTY_SYMBOL_DISTRIBUTION_KEY)}</div>}
           </div>
 
           {/* Direction breakdown */}
           <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-            <Title level={5}><PieChartOutlined /> {t('accounts.report.direction')}</Title>
+            <Title level={5}><PieChartOutlined /> {t(REPORT_DIRECTION_KEY)}</Title>
             {attribution?.direction ? (
               <div className="grid grid-cols-2 gap-4 mt-4">
                 {[
-                  { label: t('accounts.report.directionLong'), color: 'var(--color-success)', d: { profit: attribution.direction.longProfit ?? 0, trades: attribution.direction.longTrades ?? 0, winRate: attribution.direction.longWinRate ?? 0 } },
-                  { label: t('accounts.report.directionShort'), color: 'var(--color-danger)', d: { profit: attribution.direction.shortProfit ?? 0, trades: attribution.direction.shortTrades ?? 0, winRate: attribution.direction.shortWinRate ?? 0 } },
+                  { label: t(REPORT_DIRECTION_LONG_KEY), color: 'var(--color-success)', d: { profit: attribution.direction.longProfit ?? 0, trades: attribution.direction.longTrades ?? 0, winRate: attribution.direction.longWinRate ?? 0 } },
+                  { label: t(REPORT_DIRECTION_SHORT_KEY), color: 'var(--color-danger)', d: { profit: attribution.direction.shortProfit ?? 0, trades: attribution.direction.shortTrades ?? 0, winRate: attribution.direction.shortWinRate ?? 0 } },
                 ].map(({ label, color, d }) => (
                   <div key={label} className="rounded-xl p-4" style={{ border: '1px solid var(--color-border)' }}>
                     <Text strong style={{ color }}>{label}</Text>
                     <div className="mt-2 space-y-1" style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
-                      <div>{t('accounts.analytics.stats.netProfit')}: <strong style={{ color: d.profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{d.profit >= 0 ? '+' : ''}{d.profit.toFixed(2)}</strong></div>
-                      <div>{t('accounts.analytics.stats.totalTrades')}: {d.trades}</div>
-                      <div>{t('accounts.analytics.stats.winRate')}: {d.winRate.toFixed(1)}%</div>
+                      <div>{t(ANALYTICS_STATS_NET_PROFIT_KEY)}: <strong style={{ color: d.profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{d.profit >= 0 ? '+' : ''}{d.profit.toFixed(2)}</strong></div>
+                      <div>{t(ANALYTICS_STATS_TOTAL_TRADES_KEY)}: {d.trades}</div>
+                      <div>{t(ANALYTICS_STATS_WIN_RATE_KEY)}: {d.winRate.toFixed(1)}%</div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-[200px]" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.analytics.empty.symbolDistribution')}</div>
+              <div className="flex items-center justify-center h-[200px]" style={{ color: 'var(--color-text-muted)' }}>{t(ANALYTICS_EMPTY_SYMBOL_DISTRIBUTION_KEY)}</div>
             )}
           </div>
 
           {/* Trade profit distribution */}
           {attribution?.tradeDistribution?.profitBuckets?.length ? (
             <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-              <Title level={5}><BarChartOutlined /> {t('accounts.report.tradeDistribution')}</Title>
+              <Title level={5}><BarChartOutlined /> {t(REPORT_TRADE_DISTRIBUTION_KEY)}</Title>
               <ResponsiveContainer width="100%" height={250}>
                 <ComposedChart data={attribution.tradeDistribution.profitBuckets} barCategoryGap="10%">
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -144,7 +147,7 @@ export default function ReportChartPanels({
           {/* Equity + Drawdown overlay */}
           {rolling?.equityCurve?.length ? (
             <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-              <Title level={5}><LineChartOutlined /> {t('accounts.report.drawdownOverlay')}</Title>
+              <Title level={5}><LineChartOutlined /> {t(REPORT_DRAWDOWN_OVERLAY_KEY)}</Title>
               <ResponsiveContainer width="100%" height={280}>
                 <ComposedChart data={rolling.equityCurve.map((p, i) => ({
                   ...p,
@@ -165,13 +168,13 @@ export default function ReportChartPanels({
           {/* Drawdown events */}
           {rolling?.drawdownEvents?.length ? (
             <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-              <Title level={5}><FallOutlined /> {t('accounts.report.drawdownEvents')}</Title>
+              <Title level={5}><FallOutlined /> {t(REPORT_DRAWDOWN_EVENTS_KEY)}</Title>
               <div className="space-y-2 max-h-[280px] overflow-y-auto">
                 {rolling.drawdownEvents.map((e, i) => (
                   <div key={i} className="flex items-center justify-between rounded-lg p-3" style={{ border: '1px solid var(--color-border)' }}>
                     <div>
                       <Text style={{ color: 'var(--color-text)', fontSize: 13 }}>{e.startDate} → {e.endDate || '...'}</Text>
-                      {e.recoveryDate && <Text style={{ color: 'var(--color-text-muted)', fontSize: 12, marginLeft: 8 }}>{t('accounts.report.recovered')}: {e.recoveryDate}</Text>}
+                      {e.recoveryDate && <Text style={{ color: 'var(--color-text-muted)', fontSize: 12, marginLeft: 8 }}>{t(REPORT_RECOVERED_KEY)}: {e.recoveryDate}</Text>}
                     </div>
                     <Tag color="error">{(e.depthPercent ?? 0).toFixed(1)}%</Tag>
                   </div>
@@ -183,7 +186,7 @@ export default function ReportChartPanels({
           {/* Monthly win rate trend */}
           {rolling?.monthlyWinRates?.length ? (
             <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-              <Title level={5}><RiseOutlined /> {t('accounts.report.winRateTrend')}</Title>
+              <Title level={5}><RiseOutlined /> {t(REPORT_WIN_RATE_TREND_KEY)}</Title>
               <ResponsiveContainer width="100%" height={250}>
                 <ComposedChart data={rolling.monthlyWinRates}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />

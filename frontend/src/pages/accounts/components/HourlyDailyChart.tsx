@@ -1,7 +1,10 @@
 import type React from 'react';
 import { useState } from 'react';
 import { Bar, CartesianGrid, Cell, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { ANALYTICS_DAILY_PN_L_TITLE_KEY, ANALYTICS_HOURLY_TITLE_KEY, ANALYTICS_TIME_DETAIL_BALANCE_KEY, ANALYTICS_TIME_DETAIL_LOTS_KEY, ANALYTICS_TIME_DETAIL_MAX_FLOATING_LOSS_AMOUNT_KEY, ANALYTICS_TIME_DETAIL_MAX_FLOATING_LOSS_RATIO_KEY, ANALYTICS_TIME_DETAIL_MAX_FLOATING_PROFIT_AMOUNT_KEY, ANALYTICS_TIME_DETAIL_MAX_FLOATING_PROFIT_RATIO_KEY, ANALYTICS_TIME_DETAIL_PROFIT_AMOUNT_KEY, ANALYTICS_TIME_DETAIL_PROFIT_FACTOR_KEY, ANALYTICS_TIME_DETAIL_TRADES_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 
 type Props = {
   hourlyData: Record<string, unknown>[];
@@ -73,7 +76,7 @@ export function HourlyDailyChart({ hourlyData, dailyPnLData, currency }: Props) 
     <div className="rounded-2xl p-5 mb-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-          {t('accounts.analytics.hourlyTitle')} / {t('accounts.analytics.dailyPnLTitle')}
+          {t(ANALYTICS_HOURLY_TITLE_KEY)} / {t(ANALYTICS_DAILY_PN_L_TITLE_KEY)}
         </h2>
         <div className="inline-flex rounded-lg p-1" style={{ background: 'var(--color-bg-secondary)' }}>
           {(['hourly', 'daily'] as const).map((tab) => (
@@ -92,15 +95,15 @@ export function HourlyDailyChart({ hourlyData, dailyPnLData, currency }: Props) 
             {timeView === 'hourly' ? (selectedTimePoint?.hourLabel || '--') : `${selectedTimePoint?.date || '--'} ${selectedTimePoint?.day || ''}`}
           </div>
           <div className="text-xs space-y-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-            <div>{t('accounts.analytics.timeDetail.lots')}: <span className="font-semibold">{Number(selectedTimePoint?.lots || 0).toFixed(2)}</span></div>
-            <div>{t('accounts.analytics.timeDetail.trades')}: <span className="font-semibold">{Number(selectedTimePoint?.trades || 0)}</span></div>
-            <div>{t('accounts.analytics.timeDetail.profitAmount')}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.profit || 0))}</span></div>
-            <div>{t('accounts.analytics.timeDetail.balance')}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.balance || 0))}</span></div>
-            <div>{t('accounts.analytics.timeDetail.profitFactor')}: <span className="font-semibold">{Number(selectedTimePoint?.profitFactor || 0).toFixed(2)}</span></div>
-            <div>{t('accounts.analytics.timeDetail.maxFloatingLossAmount')}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.maxFloatingLossAmount || 0))}</span></div>
-            <div>{t('accounts.analytics.timeDetail.maxFloatingLossRatio')}: <span className="font-semibold">{formatRatio(Number(selectedTimePoint?.maxFloatingLossRatio || 0))}</span></div>
-            <div>{t('accounts.analytics.timeDetail.maxFloatingProfitAmount')}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.maxFloatingProfitAmount || 0))}</span></div>
-            <div>{t('accounts.analytics.timeDetail.maxFloatingProfitRatio')}: <span className="font-semibold">{formatRatio(Number(selectedTimePoint?.maxFloatingProfitRatio || 0))}</span></div>
+            <div>{t(ANALYTICS_TIME_DETAIL_LOTS_KEY)}: <span className="font-semibold">{Number(selectedTimePoint?.lots || 0).toFixed(2)}</span></div>
+            <div>{t(ANALYTICS_TIME_DETAIL_TRADES_KEY)}: <span className="font-semibold">{Number(selectedTimePoint?.trades || 0)}</span></div>
+            <div>{t(ANALYTICS_TIME_DETAIL_PROFIT_AMOUNT_KEY)}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.profit || 0))}</span></div>
+            <div>{t(ANALYTICS_TIME_DETAIL_BALANCE_KEY)}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.balance || 0))}</span></div>
+            <div>{t(ANALYTICS_TIME_DETAIL_PROFIT_FACTOR_KEY)}: <span className="font-semibold">{Number(selectedTimePoint?.profitFactor || 0).toFixed(2)}</span></div>
+            <div>{t(ANALYTICS_TIME_DETAIL_MAX_FLOATING_LOSS_AMOUNT_KEY)}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.maxFloatingLossAmount || 0))}</span></div>
+            <div>{t(ANALYTICS_TIME_DETAIL_MAX_FLOATING_LOSS_RATIO_KEY)}: <span className="font-semibold">{formatRatio(Number(selectedTimePoint?.maxFloatingLossRatio || 0))}</span></div>
+            <div>{t(ANALYTICS_TIME_DETAIL_MAX_FLOATING_PROFIT_AMOUNT_KEY)}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.maxFloatingProfitAmount || 0))}</span></div>
+            <div>{t(ANALYTICS_TIME_DETAIL_MAX_FLOATING_PROFIT_RATIO_KEY)}: <span className="font-semibold">{formatRatio(Number(selectedTimePoint?.maxFloatingProfitRatio || 0))}</span></div>
           </div>
         </div>
       </div>

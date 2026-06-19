@@ -8,7 +8,10 @@ import {
   LinkOutlined,
   ControlOutlined,
 } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { PROVIDERS_MODELS_UNIT_KEY } from '@/gen/ant/v1/i18n/ai_settings_keys';
+
+;
 import { Button, Empty } from 'antd';
 import { useSystemAIPage } from './systemai/hooks';
 import type { ProviderMeta } from './systemai/types';
@@ -100,19 +103,19 @@ export default function SystemAI() {
   }, [draft?.base_url]);
 
   const overallStatus: { tone: 'success' | 'warning' | 'error' | 'info'; title: string; desc: string } = useMemo(() => {
-    if (!draft) return { tone: 'info', title: t('ai.systemAI.status.noProvider', { defaultValue: '尚未选择厂商' }), desc: t('ai.systemAI.status.noProviderDesc', { defaultValue: '请从下方卡片挑选一个模型厂商开始配置' }) };
-    if (error) return { tone: 'error', title: t('ai.systemAI.status.error', { defaultValue: '存在异常' }), desc: error };
+    if (!draft) return { tone: 'info', title: t(SYSTEM_A_I_STATUS_NO_PROVIDER_KEY, { defaultValue: '尚未选择厂商' }), desc: t(SYSTEM_A_I_STATUS_NO_PROVIDER_DESC_KEY, { defaultValue: '请从下方卡片挑选一个模型厂商开始配置' }) };
+    if (error) return { tone: 'error', title: t(SYSTEM_A_I_STATUS_ERROR_KEY, { defaultValue: '存在异常' }), desc: error };
     const modelCount = (draft.models || []).length;
     if (validated && draft.enabled) {
       const summary = modelCount > 0
-        ? `${providerLabel(draft.provider_id, draft.name)} · ${modelCount} ${t('ai.settings.providers.modelsUnit', { defaultValue: '个模型' })}`
+        ? `${providerLabel(draft.provider_id, draft.name)} · ${modelCount} ${t(PROVIDERS_MODELS_UNIT_KEY, { defaultValue: '个模型' })}`
         : `${providerLabel(draft.provider_id, draft.name)}`;
-      return { tone: 'success', title: t('ai.systemAI.status.ready', { defaultValue: '运行就绪' }), desc: `${summary} ${t('ai.systemAI.status.readyDesc', { defaultValue: '已启用并连接正常' })}` };
+      return { tone: 'success', title: t(SYSTEM_A_I_STATUS_READY_KEY, { defaultValue: '运行就绪' }), desc: `${summary} ${t(SYSTEM_A_I_STATUS_READY_DESC_KEY, { defaultValue: '已启用并连接正常' })}` };
     }
-    if (validated) return { tone: 'warning', title: t('ai.systemAI.status.notEnabled', { defaultValue: '连接正常，尚未启用' }), desc: t('ai.systemAI.status.notEnabledDesc', { defaultValue: '打开「启用」开关即可投入使用' }) };
-    if (hasSecret && urlDiagnostics.ok) return { tone: 'info', title: t('ai.systemAI.status.configReady', { defaultValue: '配置已就绪' }), desc: t('ai.systemAI.status.configReadyDesc', { defaultValue: '添加可用模型后系统将自动完成连通性检测' }) };
-    if (hasSecret) return { tone: 'warning', title: t('ai.systemAI.status.checkUrl', { defaultValue: '请检查 Base URL' }), desc: t('ai.systemAI.status.checkUrlDesc', { defaultValue: 'API Key 已就绪，但地址似乎无效' }) };
-    return { tone: 'info', title: t('ai.systemAI.status.needKey', { defaultValue: '请完成密钥配置' }), desc: t('ai.systemAI.status.needKeyDesc', { defaultValue: '填写 API Key 后将自动发现模型列表' }) };
+    if (validated) return { tone: 'warning', title: t(SYSTEM_A_I_STATUS_NOT_ENABLED_KEY, { defaultValue: '连接正常，尚未启用' }), desc: t(SYSTEM_A_I_STATUS_NOT_ENABLED_DESC_KEY, { defaultValue: '打开「启用」开关即可投入使用' }) };
+    if (hasSecret && urlDiagnostics.ok) return { tone: 'info', title: t(SYSTEM_A_I_STATUS_CONFIG_READY_KEY, { defaultValue: '配置已就绪' }), desc: t(SYSTEM_A_I_STATUS_CONFIG_READY_DESC_KEY, { defaultValue: '添加可用模型后系统将自动完成连通性检测' }) };
+    if (hasSecret) return { tone: 'warning', title: t(SYSTEM_A_I_STATUS_CHECK_URL_KEY, { defaultValue: '请检查 Base URL' }), desc: t(SYSTEM_A_I_STATUS_CHECK_URL_DESC_KEY, { defaultValue: 'API Key 已就绪，但地址似乎无效' }) };
+    return { tone: 'info', title: t(SYSTEM_A_I_STATUS_NEED_KEY_KEY, { defaultValue: '请完成密钥配置' }), desc: t(SYSTEM_A_I_STATUS_NEED_KEY_DESC_KEY, { defaultValue: '填写 API Key 后将自动发现模型列表' }) };
   }, [draft, error, validated, hasSecret, urlDiagnostics.ok, t, providerLabel]);
 
   const selectedMeta = draft ? metaOf(draft.provider_id, draft.name) : null;
@@ -140,9 +143,9 @@ export default function SystemAI() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <RobotOutlined className="w-6 h-6 text-slate-700" /> {t('ai.systemAI.pageTitle', { defaultValue: '系统 AI 配置' })}
+            <RobotOutlined className="w-6 h-6 text-slate-700" /> {t(SYSTEM_A_I_PAGE_TITLE_KEY, { defaultValue: '系统 AI 配置' })}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">{t('ai.systemAI.pageSubtitle', { defaultValue: '统一管理大模型服务商、API 密钥与可用模型；支持 OpenAI 协议兼容端点。' })}</p>
+          <p className="text-sm text-gray-500 mt-1">{t(SYSTEM_A_I_PAGE_SUBTITLE_KEY, { defaultValue: '统一管理大模型服务商、API 密钥与可用模型；支持 OpenAI 协议兼容端点。' })}</p>
         </div>
         <Button icon={<ReloadOutlined className="w-4 h-4" />} onClick={load} loading={loading}>
           {t('common.refresh', { defaultValue: '刷新' })}
@@ -174,7 +177,7 @@ export default function SystemAI() {
 
       {!loading && configs.length === 0 && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12">
-          <Empty description={t('ai.systemAI.emptyConfigs', { defaultValue: '暂无 AI Provider 配置（系统启动时会自动创建默认 Provider）' })} />
+          <Empty description={t(SYSTEM_A_I_EMPTY_CONFIGS_KEY, { defaultValue: '暂无 AI Provider 配置（系统启动时会自动创建默认 Provider）' })} />
         </div>
       )}
 

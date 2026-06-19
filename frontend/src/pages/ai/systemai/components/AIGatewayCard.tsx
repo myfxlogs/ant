@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Card, Select, Tag, Typography, Row, Col, Progress, Button, Spin, message } from 'antd';
 import { ThunderboltOutlined, ApiOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { GATEWAY_MODEL_PLACEHOLDER_KEY, GATEWAY_MONTHLY_COST_KEY, GATEWAY_MONTHLY_TOKENS_KEY, GATEWAY_NO_MODELS_KEY, GATEWAY_SELECT_MODEL_KEY, GATEWAY_TITLE_KEY, GATEWAY_USAGE_BY_FEATURE_KEY, GATEWAY_USE_GATEWAY_DESC_KEY, GATEWAY_USE_GATEWAY_KEY, GATEWAY_USE_OWN_KEY_DESC_KEY, GATEWAY_USE_OWN_KEY_HINT_KEY, GATEWAY_USE_OWN_KEY_KEY } from '@/gen/ant/v1/i18n/ai_core_keys';
+
+;
 import { aiGatewayApi, type SystemModelInfo, type TokenUsageInfo } from '@/client/aiGateway';
 import { aiApi } from '@/client/ai';
 
@@ -67,7 +70,7 @@ export default function AIGatewayCard({ useGateway, onToggle, selectedModel, onM
       title={
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <ApiOutlined style={{ color: '#722ed1' }} />
-          <span>{t('ai.gateway.title', 'AI 网关')}</span>
+          <span>{t(GATEWAY_TITLE_KEY, 'AI 网关')}</span>
           <Tag color="purple" style={{ fontSize: 11 }}>Beta</Tag>
         </span>
       }
@@ -83,9 +86,9 @@ export default function AIGatewayCard({ useGateway, onToggle, selectedModel, onM
               style={{ flex: 1, borderRadius: 6 }}
               onClick={() => onToggle(true)}
             >
-              <ThunderboltOutlined /> {t('ai.gateway.useGateway', 'AI 网关')}
+              <ThunderboltOutlined /> {t(GATEWAY_USE_GATEWAY_KEY, 'AI 网关')}
               <div style={{ fontSize: 10, color: useGateway ? '#fff' : '#8c8c8c' }}>
-                {t('ai.gateway.useGatewayDesc', '扣钱包余额 · 按 Token 计费')}
+                {t(GATEWAY_USE_GATEWAY_DESC_KEY, '扣钱包余额 · 按 Token 计费')}
               </div>
             </Button>
             <Button
@@ -94,9 +97,9 @@ export default function AIGatewayCard({ useGateway, onToggle, selectedModel, onM
               style={{ flex: 1, borderRadius: 6 }}
               onClick={() => onToggle(false)}
             >
-              <ApiOutlined /> {t('ai.gateway.useOwnKey', '我的 API Key')}
+              <ApiOutlined /> {t(GATEWAY_USE_OWN_KEY_KEY, '我的 API Key')}
               <div style={{ fontSize: 10, color: !useGateway ? '#fff' : '#8c8c8c' }}>
-                {t('ai.gateway.useOwnKeyDesc', '直付厂商 · 自行管理')}
+                {t(GATEWAY_USE_OWN_KEY_DESC_KEY, '直付厂商 · 自行管理')}
               </div>
             </Button>
           </div>
@@ -108,7 +111,7 @@ export default function AIGatewayCard({ useGateway, onToggle, selectedModel, onM
         <>
           <Row gutter={[16, 12]} align="middle" style={{ marginBottom: 16 }}>
             <Col xs={24} sm={8}>
-              <Text type="secondary" style={{ fontSize: 12 }}>{t('ai.gateway.selectModel', '选择模型')}</Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>{t(GATEWAY_SELECT_MODEL_KEY, '选择模型')}</Text>
             </Col>
             <Col xs={24} sm={16}>
               {modelsLoading ? <Spin size="small" /> : (
@@ -117,8 +120,8 @@ export default function AIGatewayCard({ useGateway, onToggle, selectedModel, onM
                   value={selectedModel}
                   onChange={handleModelSelect}
                   style={{ width: '100%' }}
-                  placeholder={t('ai.gateway.modelPlaceholder', '选择 AI 模型')}
-                  notFoundContent={t('ai.gateway.noModels', '暂无可用模型')}
+                  placeholder={t(GATEWAY_MODEL_PLACEHOLDER_KEY, '选择 AI 模型')}
+                  notFoundContent={t(GATEWAY_NO_MODELS_KEY, '暂无可用模型')}
                   options={models.map(m => ({
                     value: m.id,
                     label: (
@@ -138,7 +141,7 @@ export default function AIGatewayCard({ useGateway, onToggle, selectedModel, onM
             <Col span={12}>
               <Card size="small" style={{ textAlign: 'center', borderRadius: 8 }}>
                 <ThunderboltOutlined style={{ fontSize: 18, color: '#722ed1' }} />
-                <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>{t('ai.gateway.monthlyTokens', '本月 Token')}</div>
+                <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>{t(GATEWAY_MONTHLY_TOKENS_KEY, '本月 Token')}</div>
                 <Title level={5} style={{ margin: 0, color: '#722ed1' }}>
                   {usageLoading ? <Spin size="small" /> : `${(totalTokens / 1000).toFixed(1)}K`}
                 </Title>
@@ -147,7 +150,7 @@ export default function AIGatewayCard({ useGateway, onToggle, selectedModel, onM
             <Col span={12}>
               <Card size="small" style={{ textAlign: 'center', borderRadius: 8 }}>
                 <span style={{ fontSize: 18 }}>💸</span>
-                <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>{t('ai.gateway.monthlyCost', '本月费用')}</div>
+                <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>{t(GATEWAY_MONTHLY_COST_KEY, '本月费用')}</div>
                 <Title level={5} style={{ margin: 0, color: '#52c41a' }}>
                   {usage?.records?.reduce((s, r) => s + parseFloat(r.cost || '0'), 0).toFixed(4) || '0'}$</Title>
               </Card>
@@ -158,7 +161,7 @@ export default function AIGatewayCard({ useGateway, onToggle, selectedModel, onM
           {featureBars.length > 0 && (
             <>
               <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
-                {t('ai.gateway.usageByFeature', '按功能用量')}
+                {t(GATEWAY_USAGE_BY_FEATURE_KEY, '按功能用量')}
               </Text>
               {featureBars.map(f => (
                 <div key={f.name} style={{ marginBottom: 6 }}>
@@ -176,7 +179,7 @@ export default function AIGatewayCard({ useGateway, onToggle, selectedModel, onM
 
       {!useGateway && (
         <Text type="secondary" style={{ fontSize: 13 }}>
-          {t('ai.gateway.useOwnKeyHint', '使用你自己配置的 API Key，直接向所选厂商付费。在下方选择厂商卡片进行配置。')}
+          {t(GATEWAY_USE_OWN_KEY_HINT_KEY, '使用你自己配置的 API Key，直接向所选厂商付费。在下方选择厂商卡片进行配置。')}
         </Text>
       )}
     </Card>

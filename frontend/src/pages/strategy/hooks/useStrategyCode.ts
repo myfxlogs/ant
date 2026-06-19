@@ -1,6 +1,9 @@
 import { useState, useCallback } from 'react';
 import { Form, message } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { COPY_FAILED_KEY, COPY_SUCCESS_KEY, SAVE_SUCCESS_KEY, VALIDATE_BEFORE_SAVE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+
+;
 import { strategyApi, type StrategyTemplate } from '@/client/strategy';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
 
@@ -54,12 +57,12 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
   const canSave = code.length > 0 && lastValidatedCode.length > 0 && code === lastValidatedCode;
 
   const handleSave = useCallback(async () => {
-    if (!canSave) { message.warning(t('strategy.workspace.validateBeforeSave')); return; }
+    if (!canSave) { message.warning(t(VALIDATE_BEFORE_SAVE_KEY)); return; }
     if (loadedTemplate) {
       setSaveLoading(true);
       try {
         await strategyApi.updateTemplate({ id: loadedTemplate.id, code });
-        message.success(t('strategy.workspace.saveSuccess')); loadTemplates();
+        message.success(t(SAVE_SUCCESS_KEY)); loadTemplates();
       } catch (e: unknown) { message.error((e as Error)?.message || 'Save failed'); }
       finally { setSaveLoading(false); }
     } else { setSaveModalOpen(true); }
@@ -71,7 +74,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
       const values = await saveForm.validateFields(); setSaveLoading(true);
       const tpl = await strategyApi.createTemplate({ name: values.name, description: values.description || '', code });
       if (tpl?.id) setLastSavedId(tpl.id);
-      message.success(t('strategy.workspace.saveSuccess')); setSaveModalOpen(false); loadTemplates();
+      message.success(t(SAVE_SUCCESS_KEY)); setSaveModalOpen(false); loadTemplates();
     } catch (e: unknown) {
       // Ant Design validateFields rejects with errorFields, not message.
       const err = e as { message?: string; errorFields?: unknown[] };
@@ -83,7 +86,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
 
   const handleCopy = useCallback(() => {
     if (!code) return;
-    navigator.clipboard.writeText(code).then(() => message.success(t('strategy.workspace.copySuccess'))).catch(() => message.error(t('strategy.workspace.copyFailed')));
+    navigator.clipboard.writeText(code).then(() => message.success(t(COPY_SUCCESS_KEY))).catch(() => message.error(t(COPY_FAILED_KEY)));
   }, [code, t]);
 
   return { code, setCode, validating, validationResult, setValidationResult,

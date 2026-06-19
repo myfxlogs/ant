@@ -2,7 +2,10 @@ import { Button, Modal, Tag } from 'antd';
 import { CaretRightOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import type { Account } from '@/types/account';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { DISABLED_CONFIRM_DELETE_CONTENT_KEY, DISABLED_CONFIRM_DELETE_TITLE_KEY, DISABLED_MOBILE_BALANCE_LABEL_KEY, DISABLED_MOBILE_EQUITY_LABEL_KEY, DISABLED_TABLE_ACCOUNT_KEY, DISABLED_TABLE_ACTIONS_KEY, DISABLED_TABLE_BALANCE_KEY, DISABLED_TABLE_BROKER_KEY, DISABLED_TABLE_EQUITY_KEY, DISABLED_TABLE_TYPE_KEY, DISABLED_TITLE_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 
 type Props = {
   accounts: Account[];
@@ -18,7 +21,7 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
   return (
     <div className="mt-8">
       <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-muted)' }}>
-        {t('accounts.disabled.title')}
+        {t(DISABLED_TITLE_KEY)}
       </h3>
       <div
         className="hidden md:block rounded-xl overflow-hidden"
@@ -28,22 +31,22 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
           <thead>
             <tr style={{ background: 'var(--color-bg-secondary)' }}>
               <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                {t('accounts.disabled.table.account')}
+                {t(DISABLED_TABLE_ACCOUNT_KEY)}
               </th>
               <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                {t('accounts.disabled.table.type')}
+                {t(DISABLED_TABLE_TYPE_KEY)}
               </th>
               <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                {t('accounts.disabled.table.broker')}
+                {t(DISABLED_TABLE_BROKER_KEY)}
               </th>
               <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                {t('accounts.disabled.table.balance')}
+                {t(DISABLED_TABLE_BALANCE_KEY)}
               </th>
               <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                {t('accounts.disabled.table.equity')}
+                {t(DISABLED_TABLE_EQUITY_KEY)}
               </th>
               <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                {t('accounts.disabled.table.actions')}
+                {t(DISABLED_TABLE_ACTIONS_KEY)}
               </th>
             </tr>
           </thead>
@@ -88,8 +91,8 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
                       icon={<DeleteOutlined style={{ fontSize: 14 }} />}
                       onClick={() => {
                         Modal.confirm({
-                          title: t('accounts.disabled.confirmDelete.title'),
-                          content: t('accounts.disabled.confirmDelete.content'),
+                          title: t(DISABLED_CONFIRM_DELETE_TITLE_KEY),
+                          content: t(DISABLED_CONFIRM_DELETE_CONTENT_KEY),
                           okText: t('common.confirm'),
                           cancelText: t('common.cancel'),
                           onOk: () => onDelete(account.id),
@@ -131,11 +134,11 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
             </div>
             <div className="flex justify-between mb-3 text-sm">
               <div>
-                <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.disabled.mobile.balanceLabel')}</span>
+                <span style={{ color: 'var(--color-text-muted)' }}>{t(DISABLED_MOBILE_BALANCE_LABEL_KEY)}</span>
                 <span style={{ color: 'var(--color-text)' }}>{(account.balance || 0).toFixed(2)}</span>
               </div>
               <div>
-                <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.disabled.mobile.equityLabel')}</span>
+                <span style={{ color: 'var(--color-text-muted)' }}>{t(DISABLED_MOBILE_EQUITY_LABEL_KEY)}</span>
                 <span style={{ color: 'var(--color-text)' }}>{(account.equity || 0).toFixed(2)}</span>
               </div>
               <div style={{ color: 'var(--color-text-muted)' }}>{account.currency || 'USD'}</div>
@@ -155,8 +158,8 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
                 icon={<DeleteOutlined style={{ fontSize: 14 }} />}
                 onClick={() => {
                   Modal.confirm({
-                    title: t('accounts.disabled.confirmDelete.title'),
-                    content: t('accounts.disabled.confirmDelete.content'),
+                    title: t(DISABLED_CONFIRM_DELETE_TITLE_KEY),
+                    content: t(DISABLED_CONFIRM_DELETE_CONTENT_KEY),
                     okText: t('common.confirm'),
                     cancelText: t('common.cancel'),
                     onOk: () => onDelete(account.id),

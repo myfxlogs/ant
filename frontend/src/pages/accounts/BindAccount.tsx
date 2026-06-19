@@ -9,7 +9,10 @@ import { accountApi } from '@/client/account';
 import { getErrorMessage } from '@/utils/error';
 import type { BindAccountRequest } from '@/types/account';
 import type { Account } from '@/types/account';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { BIND_ERRORS_BROKER_UNAVAILABLE_KEY, BIND_ERRORS_CONNECTION_FAILED_KEY, BIND_ERRORS_INVALID_CREDENTIALS_KEY, BIND_ERRORS_TIMEOUT_KEY, BIND_MESSAGES_BIND_FAILED_KEY, BIND_MESSAGES_BIND_SUCCESS_KEY, BIND_MESSAGES_ENTER_BROKER_NAME_KEY, BIND_MESSAGES_ENTER_PASSWORD_KEY, BIND_MESSAGES_ENTER_TRADING_ACCOUNT_KEY, BIND_MESSAGES_FOUND_BROKERS_KEY, BIND_MESSAGES_NO_ACCESS_HOSTS_KEY, BIND_MESSAGES_NO_BROKERS_FOUND_KEY, BIND_MESSAGES_SEARCH_FAILED_KEY, BIND_MESSAGES_SELECT_SERVER_KEY, BIND_MESSAGES_VERIFY_FAILED_KEY, BIND_TITLE_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 import i18n from '@/i18n';
 import { ConnectContext } from '@/providers/connectContext';
 import { Step1SearchBroker, Step2Credentials, Step3Verify } from './BindAccountSteps';
@@ -39,16 +42,16 @@ export interface VerifyResult {
 function friendlyError(msg: string | undefined): string {
   if (!msg) return '';
   if (msg.includes('SERVICE_NOT_AVAILABLE') || msg.includes('code=11')) {
-    return i18n.t('accounts.bind.errors.brokerUnavailable');
+    return i18n.t(BIND_ERRORS_BROKER_UNAVAILABLE_KEY);
   }
   if (msg.includes('INVALID_ACCOUNT') || msg.includes('code=1001')) {
-    return i18n.t('accounts.bind.errors.invalidCredentials');
+    return i18n.t(BIND_ERRORS_INVALID_CREDENTIALS_KEY);
   }
   if (msg.includes('connection failed') || msg.includes('connect')) {
-    return i18n.t('accounts.bind.errors.connectionFailed');
+    return i18n.t(BIND_ERRORS_CONNECTION_FAILED_KEY);
   }
   if (msg.includes('timeout') || msg.includes('Timed out')) {
-    return i18n.t('accounts.bind.errors.timeout');
+    return i18n.t(BIND_ERRORS_TIMEOUT_KEY);
   }
   return msg;
 }
@@ -75,7 +78,7 @@ export default function BindAccount() {
   const [alias, setAlias] = useState('');
 
   const handleSearch = async () => {
-    if (!companySearch.trim()) { showWarning(t('accounts.bind.messages.enterBrokerName')); return; }
+    if (!companySearch.trim()) { showWarning(t(BIND_MESSAGES_ENTER_BROKER_NAME_KEY)); return; }
     setSearching(true); setSearchResults([]); setSelectedCompany(null); setSelectedServer(null);
     try {
       const companies = await accountApi.searchBroker(companySearch.trim(), mtType);
@@ -87,11 +90,11 @@ export default function BindAccount() {
           })),
         }));
         setSearchResults(results);
-        showSuccess(t('accounts.bind.messages.foundBrokers', { count: results.length }));
+        showSuccess(t(BIND_MESSAGES_FOUND_BROKERS_KEY, { count: results.length }));
       } else {
-        showInfo(t('accounts.bind.messages.noBrokersFound'));
+        showInfo(t(BIND_MESSAGES_NO_BROKERS_FOUND_KEY));
       }
-    } catch { showError(t('accounts.bind.messages.searchFailed')); }
+    } catch { showError(t(BIND_MESSAGES_SEARCH_FAILED_KEY)); }
     finally { setSearching(false); }
   };
 
@@ -106,18 +109,18 @@ export default function BindAccount() {
   };
 
   const handleVerify = async () => {
-    if (!selectedCompany || !selectedServer) { showWarning(t('accounts.bind.messages.selectServer')); return; }
-    if (!login.trim()) { showWarning(t('accounts.bind.messages.enterTradingAccount')); return; }
-    if (!password.trim()) { showWarning(t('accounts.bind.messages.enterPassword')); return; }
-    if (!selectedServer.access || selectedServer.access.length === 0) { showError(t('accounts.bind.messages.noAccessHosts')); return; }
+    if (!selectedCompany || !selectedServer) { showWarning(t(BIND_MESSAGES_SELECT_SERVER_KEY)); return; }
+    if (!login.trim()) { showWarning(t(BIND_MESSAGES_ENTER_TRADING_ACCOUNT_KEY)); return; }
+    if (!password.trim()) { showWarning(t(BIND_MESSAGES_ENTER_PASSWORD_KEY)); return; }
+    if (!selectedServer.access || selectedServer.access.length === 0) { showError(t(BIND_MESSAGES_NO_ACCESS_HOSTS_KEY)); return; }
     setVerifying(true); setVerifyError(''); setVerifyResult(null);
     try {
       const host = selectedServer.access[0];
       const result = await accountApi.verifyAccount({ login: login.trim(), password, mtType, brokerHost: host });
       setVerifyResult(result);
-      if (!result.verified) setVerifyError(friendlyError(result.message) || t('accounts.bind.messages.verifyFailed'));
+      if (!result.verified) setVerifyError(friendlyError(result.message) || t(BIND_MESSAGES_VERIFY_FAILED_KEY));
     } catch (error) {
-      setVerifyError(friendlyError(getErrorMessage(error, '')) || t('accounts.bind.messages.verifyFailed'));
+      setVerifyError(friendlyError(getErrorMessage(error, '')) || t(BIND_MESSAGES_VERIFY_FAILED_KEY));
     } finally { setVerifying(false); }
   };
 
@@ -125,7 +128,7 @@ export default function BindAccount() {
     if (!selectedCompany || !selectedServer) return;
     setLoading(true);
     try {
-      if (!selectedServer.access || selectedServer.access.length === 0) { showError(t('accounts.bind.messages.noAccessHosts')); return; }
+      if (!selectedServer.access || selectedServer.access.length === 0) { showError(t(BIND_MESSAGES_NO_ACCESS_HOSTS_KEY)); return; }
       const host = selectedServer.access[0];
       const request: BindAccountRequest = {
         alias: alias || selectedServer.name, mtType,
@@ -137,11 +140,11 @@ export default function BindAccount() {
       setPassword('');
       await accountApi.connect(account.id);
       await connectCtx?.reconnect();
-      showSuccess(t('accounts.bind.messages.bindSuccess'));
+      showSuccess(t(BIND_MESSAGES_BIND_SUCCESS_KEY));
       navigate(`/accounts/${account.id}`);
     } catch (error) {
       setPassword('');
-      showError(friendlyError(getErrorMessage(error, '')) || t('accounts.bind.messages.bindFailed'));
+      showError(friendlyError(getErrorMessage(error, '')) || t(BIND_MESSAGES_BIND_FAILED_KEY));
     } finally { setLoading(false); }
   };
 
@@ -164,7 +167,7 @@ export default function BindAccount() {
       <div className="max-w-xl mx-auto p-4">
         <div className="flex items-center gap-4 mb-8">
           <Button type="text" icon={<ArrowLeftOutlined style={{ fontSize: 20 }} />} onClick={() => navigate('/')} style={{ color: 'var(--color-text-muted)' }} />
-          <h1 className="text-2xl font-bold" style={{ fontFamily: 'Poppins, sans-serif', color: 'var(--color-text)' }}>{t('accounts.bind.title')}</h1>
+          <h1 className="text-2xl font-bold" style={{ fontFamily: 'Poppins, sans-serif', color: 'var(--color-text)' }}>{t(BIND_TITLE_KEY)}</h1>
         </div>
         <div className="rounded-2xl p-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
           {renderStepIndicator()}

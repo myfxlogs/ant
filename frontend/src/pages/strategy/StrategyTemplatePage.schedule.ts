@@ -1,3 +1,6 @@
+
+import { MESSAGES_CREATE_SCHEDULE_FAILED_KEY, MESSAGES_MISSING_SCHEDULE_INFO_KEY, MESSAGES_READ_TEMPLATE_STATUS_FAILED_KEY, MESSAGES_SCHEDULE_CREATED_AND_ENABLED_KEY, MESSAGES_SCHEDULE_CREATED_KEY, MESSAGES_TEMPLATE_NOT_PUBLISHED_CANNOT_CREATE_SCHEDULE_KEY, SCHEDULE_NAME_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
 import dayjs from 'dayjs';
 import { message } from 'antd';
 import type { TFunction } from 'i18next';
@@ -14,7 +17,7 @@ export const buildScheduleName = (run: { metrics?: Record<string, unknown>; stat
 	const title = String(run?.title || '').trim();
 	if (title) return title;
 	const nowText = dayjs().format('YYYY-MM-DD HH:mm');
-	return String(t('strategy.templates.scheduleName', { symbol, timeframe, nowText })).trim();
+	return String(t(SCHEDULE_NAME_KEY, { symbol, timeframe, nowText })).trim();
 };
 
 // 0-100 的综合评分：回撤/夏普/胜率/收益的加权平均。
@@ -93,7 +96,7 @@ export async function createScheduleFromRun(
 	const scheduleName = customName || String(fallbackName);
 
 	if (!params.templateId || !accountId || !symbol || !timeframe) {
-		message.error(String(t('strategy.templates.messages.missingScheduleInfo')));
+		message.error(String(t(MESSAGES_MISSING_SCHEDULE_INFO_KEY)));
 		return;
 	}
 
@@ -101,11 +104,11 @@ export async function createScheduleFromRun(
 		const tpl: any = await strategyApi.getTemplate(String(params.templateId || '').trim());
 		const status = String(tpl?.status || '').trim().toLowerCase();
 		if (status !== 'published') {
-			message.warning(String(t('strategy.templates.messages.templateNotPublishedCannotCreateSchedule')));
+			message.warning(String(t(MESSAGES_TEMPLATE_NOT_PUBLISHED_CANNOT_CREATE_SCHEDULE_KEY)));
 			return;
 		}
 	} catch (_e) {
-		message.warning(String(t('strategy.templates.messages.readTemplateStatusFailed')));
+		message.warning(String(t(MESSAGES_READ_TEMPLATE_STATUS_FAILED_KEY)));
 		return;
 	}
 
@@ -128,15 +131,15 @@ export async function createScheduleFromRun(
 		message.success(
 			String(
 				params.enableAfterCreate
-					? t('strategy.templates.messages.scheduleCreatedAndEnabled')
-					: t('strategy.templates.messages.scheduleCreated'),
+					? t(MESSAGES_SCHEDULE_CREATED_AND_ENABLED_KEY)
+					: t(MESSAGES_SCHEDULE_CREATED_KEY),
 			),
 		);
 		void fetchTemplates();
 		void fetchRuns();
 		onClose();
 	} catch (e: unknown) {
-		message.error(String(e?.message || e || t('strategy.templates.messages.createScheduleFailed')));
+		message.error(String(e?.message || e || t(MESSAGES_CREATE_SCHEDULE_FAILED_KEY)));
 	} finally {
 		setScheduleFlow((p) => ({ ...p, creating: false }));
 	}

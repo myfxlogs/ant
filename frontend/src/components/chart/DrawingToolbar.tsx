@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Tooltip } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { CLEAR_DRAWINGS_KEY } from '@/gen/ant/v1/i18n/strategy_chart_tools_keys';
+
+;
 import {
   LineChartOutlined, MinusOutlined, ColumnWidthOutlined,
   VerticalAlignMiddleOutlined, ArrowUpOutlined, DashOutlined,
@@ -106,7 +109,7 @@ export default function DrawingToolbar({ chart }: Props) {
       {/* Separator */}
       <div style={{ height: 1, margin: '4px 4px', background: 'rgba(255,255,255,0.1)' }} />
 
-      <Tooltip title={t('strategy.chartTools.clearDrawings')} placement="right">
+      <Tooltip title={t(CLEAR_DRAWINGS_KEY)} placement="right">
         <div
           onClick={handleClearAll}
           style={{

@@ -1,7 +1,10 @@
 import { Card, Tag } from 'antd';
 import { BankOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { ACCOUNT_LIST_KEY, FIELDS_BALANCE_KEY, FIELDS_EQUITY_KEY, FIELDS_FLOATING_KEY, NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
+
+;
 import { StatusResult } from '@/components/common/StatusResult';
 import type { Account } from '@/types/account';
 
@@ -14,17 +17,17 @@ interface Props {
 
 function getStatusTag(item: Account, t: (key: string) => string) {
   if (item?.isDisabled) {
-    return <Tag color="default">{t('accounts.card.status.disabled')}</Tag>;
+    return <Tag color="default">{t(CARD_STATUS_DISABLED_KEY)}</Tag>;
   }
   const s = item?.status || item?.accountStatus;
   if (!s || s === 'unknown') return null;
   const colors: Record<string, string> = { connected: 'green', disconnected: 'red', error: 'red', connecting: 'blue' };
   const labels: Record<string, string> = {
-    connected: t('accounts.card.status.connected'),
-    connecting: t('accounts.card.status.connecting'),
-    disconnected: t('accounts.card.status.disconnected'),
-    error: t('accounts.card.status.error'),
-    disabled: t('accounts.card.status.disabled'),
+    connected: t(CARD_STATUS_CONNECTED_KEY),
+    connecting: t(CARD_STATUS_CONNECTING_KEY),
+    disconnected: t(CARD_STATUS_DISCONNECTED_KEY),
+    error: t(CARD_STATUS_ERROR_KEY),
+    disabled: t(CARD_STATUS_DISABLED_KEY),
   };
   return <Tag color={colors[s] || 'default'}>{labels[s] || s}</Tag>;
 }
@@ -77,21 +80,21 @@ function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: st
       {/* Financials — 3 columns */}
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
-          <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t('dashboard.fields.balance')}</div>
+          <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t(FIELDS_BALANCE_KEY)}</div>
           <div className="text-sm font-semibold" style={{ color: isDisabled ? 'var(--color-text-muted)' : 'var(--color-text)' }}>{fmt(balance, '$')}</div>
         </div>
         <div>
-          <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t('dashboard.fields.equity')}</div>
+          <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t(FIELDS_EQUITY_KEY)}</div>
           <div className="text-sm font-semibold" style={{ color: isDisabled ? 'var(--color-text-muted)' : 'var(--color-text)' }}>{fmt(equity, '$')}</div>
         </div>
         {isDisabled ? (
           <div>
-            <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t('dashboard.fields.floating')}</div>
+            <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t(FIELDS_FLOATING_KEY)}</div>
             <div className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>--</div>
           </div>
         ) : (
         <div>
-          <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t('dashboard.fields.floating')}</div>
+          <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t(FIELDS_FLOATING_KEY)}</div>
           <div
             className="text-sm font-semibold flex items-center justify-center gap-1"
             style={{ color: (Number.isFinite(floating) ? floating : 0) >= 0 ? '#00A651' : '#E53935' }}
@@ -116,7 +119,7 @@ export default function DashboardAccountList({ accounts, loading, error, onRetry
 
   return (
     <Card
-      title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t('dashboard.accountList')}</span>}
+      title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t(ACCOUNT_LIST_KEY)}</span>}
       className="glass-card"
     >
       <StatusResult
@@ -124,7 +127,7 @@ export default function DashboardAccountList({ accounts, loading, error, onRetry
         error={error}
         onRetry={onRetry}
         empty={!loading && !error && (!accounts || accounts.length === 0)}
-        emptyText={t('dashboard.noAccounts')}
+        emptyText={t(NO_ACCOUNTS_KEY)}
       >
         <div style={{ maxHeight: 520, overflowY: 'auto' }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

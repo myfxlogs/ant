@@ -2,7 +2,10 @@ import { lazy } from 'react';
 import { Tabs, Typography } from 'antd';
 import { BulbOutlined, RadarChartOutlined } from '@ant-design/icons';
 import { useSearchParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { TITLE_KEY as ASSET_ANALYSIS_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_asset_analysis_keys';
+import { TITLE_KEY as MARKET_REGIME_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_market_regime_keys';
+
 import { PageWrapper } from '@/components/common/PageWrapper';
 
 const AssetAnalysisPage = lazy(() => import('@/pages/strategy/AssetAnalysis'));
@@ -33,7 +36,7 @@ export default function MarketToolsPage() {
               label: (
                 <span>
                   <BulbOutlined />
-                  {t('strategy.assetAnalysis.title')}
+                  {t(ASSET_ANALYSIS_TITLE_KEY)}
                 </span>
               ),
               children: <AssetAnalysisPage />,
@@ -43,7 +46,7 @@ export default function MarketToolsPage() {
               label: (
                 <span>
                   <RadarChartOutlined />
-                  {t('strategy.marketRegime.title')}
+                  {t(MARKET_REGIME_TITLE_KEY)}
                 </span>
               ),
               children: <MarketRegimePage />,

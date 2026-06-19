@@ -1,3 +1,6 @@
+
+import { CLARIFY_TITLE_KEY, FEEDBACK_HEADING_KEY, FEEDBACK_PLACEHOLDER_KEY, METRICS_MAX_DRAWDOWN_KEY, METRICS_RETURN_KEY, METRICS_SHARPE_KEY, METRICS_TRADES_KEY, METRICS_WIN_RATE_KEY, PLACEHOLDER_KEY, USE_DEFAULTS_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
+
 // AIChatPanelSections.tsx — Display-only subcomponents + shared helpers extracted from AIChatPanel.
 // These are pure presentational components: messages, clarification, backtest metrics,
 // pending code banner, and input bar. They receive data/events via props only.
@@ -66,7 +69,7 @@ export function ChatMessagesView({ history, analysisText, adviceText, streamText
           background: m.role === 'user' ? '#e6f4ff' : '#f6ffed', fontSize: 12, whiteSpace: 'pre-wrap',
         }}>
           <b style={{ color: m.role === 'user' ? '#1677ff' : '#389e0d' }}>
-            {m.role === 'user' ? t('strategy.aiChat.you') : t('strategy.aiChat.ai')}
+            {m.role === 'user' ? t(YOU_KEY) : t(AI_KEY)}
           </b>
           <div>{m.content}</div>
         </div>
@@ -86,7 +89,7 @@ export function ChatMessagesView({ history, analysisText, adviceText, streamText
       {streamText && (
         <div style={{ margin: '6px 0', padding: '6px 10px', borderRadius: 6,
           background: '#f6ffed', fontSize: 12, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
-          <b style={{ color: '#389e0d' }}>{t('strategy.aiChat.ai')}</b>
+          <b style={{ color: '#389e0d' }}>{t(AI_KEY)}</b>
           <div>{streamText}</div>
         </div>
       )}
@@ -94,39 +97,39 @@ export function ChatMessagesView({ history, analysisText, adviceText, streamText
         <div style={{ margin: '6px 0', padding: '10px', borderRadius: 6,
           background: '#f6ffed', border: '1px solid #b7eb8f' }}>
           <Typography.Text strong style={{ fontSize: 11, marginBottom: 4, display: 'block' }}>
-            {t('strategy.gen.feedback.heading')}
+            {t(FEEDBACK_HEADING_KEY)}
           </Typography.Text>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
             {backtestMetrics.sharpeRatio != null && (
               <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8' }}>
-                <b>{t('strategy.gen.metrics.sharpe')}</b> {backtestMetrics.sharpeRatio.toFixed(2)}
+                <b>{t(METRICS_SHARPE_KEY)}</b> {backtestMetrics.sharpeRatio.toFixed(2)}
               </span>
             )}
             {backtestMetrics.maxDrawdown != null && (
               <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8',
                 color: backtestMetrics.maxDrawdown > 0.2 ? '#cf1322' : '#595959' }}>
-                <b>{t('strategy.gen.metrics.maxDrawdown')}</b> {(backtestMetrics.maxDrawdown * 100).toFixed(1)}%
+                <b>{t(METRICS_MAX_DRAWDOWN_KEY)}</b> {(backtestMetrics.maxDrawdown * 100).toFixed(1)}%
               </span>
             )}
             {backtestMetrics.winRate != null && (
               <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8' }}>
-                <b>{t('strategy.gen.metrics.winRate')}</b> {(backtestMetrics.winRate * 100).toFixed(0)}%
+                <b>{t(METRICS_WIN_RATE_KEY)}</b> {(backtestMetrics.winRate * 100).toFixed(0)}%
               </span>
             )}
             {backtestMetrics.totalTrades != null && (
               <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8' }}>
-                <b>{t('strategy.gen.metrics.trades')}</b> {backtestMetrics.totalTrades}
+                <b>{t(METRICS_TRADES_KEY)}</b> {backtestMetrics.totalTrades}
               </span>
             )}
             {backtestMetrics.totalReturn != null && (
               <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8',
                 color: backtestMetrics.totalReturn > 0 ? '#389e0d' : '#cf1322' }}>
-                <b>{t('strategy.gen.metrics.return')}</b> {(backtestMetrics.totalReturn * 100).toFixed(1)}%
+                <b>{t(METRICS_RETURN_KEY)}</b> {(backtestMetrics.totalReturn * 100).toFixed(1)}%
               </span>
             )}
           </div>
           <Typography.Text type="secondary" style={{ fontSize: 9 }}>
-            {t('strategy.gen.feedback.placeholder')}
+            {t(FEEDBACK_PLACEHOLDER_KEY)}
           </Typography.Text>
         </div>
       )}
@@ -148,7 +151,7 @@ export function ChatClarificationView({ questions, clarifyRound, onAnswer, onUse
   return (
     <div style={{ padding: 12, background: '#fffbe6', borderRadius: 6, border: '1px solid #ffe58f' }}>
       <Typography.Text strong style={{ fontSize: 13 }}>
-        {t('strategy.gen.clarifyTitle', '需要确认几个细节：')}
+        {t(CLARIFY_TITLE_KEY, '需要确认几个细节：')}
       </Typography.Text>
       <Space direction="vertical" size={6} style={{ width: '100%', marginTop: 8 }}>
         {questions.map((q, i) => (
@@ -157,7 +160,7 @@ export function ChatClarificationView({ questions, clarifyRound, onAnswer, onUse
         ))}
         {clarifyRound >= 3 && (
           <Button block size="small" type="primary" onClick={onUseDefaults}>
-            {t('strategy.gen.useDefaults', '使用默认设置继续')}
+            {t(USE_DEFAULTS_KEY, '使用默认设置继续')}
           </Button>
         )}
       </Space>
@@ -179,13 +182,13 @@ export function ChatPendingCodeBanner({ pendingCode, onApply, onDismiss, t }: Ch
     <div style={{ padding: 8, marginBottom: 8, background: '#f6ffed', borderRadius: 6,
       border: '1px solid #b7eb8f', display: 'flex', alignItems: 'center', gap: 8 }}>
       <span style={{ fontSize: 12, flex: 1 }}>
-        {t('strategy.aiChat.reviewCode')}
+        {t(REVIEW_CODE_KEY)}
       </span>
       <Space size={6}>
         <Button size="small" onClick={() => { onApply(pendingCode); }}>
-          {t('strategy.aiChat.applyCode')}
+          {t(APPLY_CODE_KEY)}
         </Button>
-        <Button size="small" onClick={onDismiss}>{t('strategy.aiChat.dismiss')}</Button>
+        <Button size="small" onClick={onDismiss}>{t(DISMISS_KEY)}</Button>
       </Space>
     </div>
   );
@@ -212,8 +215,8 @@ export function ChatInputBar({ draft, busy, hasCode, hasBacktest, modeTag, modeC
         disabled={busy}
         placeholder={
           !hasCode
-            ? t('strategy.gen.placeholder', '描述你想创建的交易策略，例如："做一个 EURUSD 的布林带均值回归策略"')
-            : t('strategy.codeAssist.reviseInputPlaceholder', 'e.g. Replace SMA(20) with EMA(50) and add a 1% stop-loss.')
+            ? t(PLACEHOLDER_KEY, '描述你想创建的交易策略，例如："做一个 EURUSD 的布林带均值回归策略"')
+            : t(REVISE_INPUT_PLACEHOLDER_KEY, 'e.g. Replace SMA(20) with EMA(50) and add a 1% stop-loss.')
         }
         onPressEnter={e => { if (!e.shiftKey) { e.preventDefault(); onSend(); } }}
         style={{ fontSize: 13, marginBottom: 8 }}
@@ -222,7 +225,7 @@ export function ChatInputBar({ draft, busy, hasCode, hasBacktest, modeTag, modeC
         <Tag color={modeColor}>{modeTag}</Tag>
         <Button type="primary" icon={<SendOutlined />} loading={busy}
           onClick={onSend} disabled={!draft.trim()}>
-          {t('strategy.codeAssist.reviseSend', 'Send to AI')}
+          {t(REVISE_SEND_KEY, 'Send to AI')}
         </Button>
       </div>
     </>

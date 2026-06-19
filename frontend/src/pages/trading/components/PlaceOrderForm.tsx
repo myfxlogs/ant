@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { Card, Form, Button, InputNumber, Radio, Space } from 'antd';
 import { SendOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { BUY_KEY, LIMIT_KEY, MARKET_KEY, PLACE_ORDER_KEY, PRICE_KEY, SELL_KEY, STOP_KEY, STOP_LOSS_KEY, SYMBOL_KEY, TAKE_PROFIT_KEY, VOLUME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+
+;
 import { useTradingStore } from '@/stores/tradingStore';
 import { useTrading } from '@/hooks/useTrading';
 import SymbolPicker from '@/components/chart/SymbolPicker';
@@ -42,7 +45,7 @@ export default function PlaceOrderForm({ onSymbolChange }: PlaceOrderFormProps) 
       title={
         <span>
           <SendOutlined style={{ marginRight: 8 }} />
-          {t('trading.placeOrder', 'Place Order')}
+          {t(PLACE_ORDER_KEY, 'Place Order')}
         </span>
       }
       style={{ marginTop: 16 }}
@@ -51,39 +54,39 @@ export default function PlaceOrderForm({ onSymbolChange }: PlaceOrderFormProps) 
         <Space style={{ marginBottom: 12 }}>
           <Radio.Group value={side} onChange={(e) => setSide(e.target.value)} buttonStyle="solid">
             <Radio.Button value="buy" style={{ color: side === 'buy' ? '#52c41a' : undefined }}>
-              {t('trading.buy', 'Buy')}
+              {t(BUY_KEY, 'Buy')}
             </Radio.Button>
             <Radio.Button value="sell" style={{ color: side === 'sell' ? '#ff4d4f' : undefined }}>
-              {t('trading.sell', 'Sell')}
+              {t(SELL_KEY, 'Sell')}
             </Radio.Button>
           </Radio.Group>
           <Radio.Group value={orderType} onChange={(e) => setOrderType(e.target.value)} buttonStyle="outline">
-            <Radio.Button value="market">{t('trading.market', 'Market')}</Radio.Button>
-            <Radio.Button value="limit">{t('trading.limit', 'Limit')}</Radio.Button>
-            <Radio.Button value="stop">{t('trading.stop', 'Stop')}</Radio.Button>
+            <Radio.Button value="market">{t(MARKET_KEY, 'Market')}</Radio.Button>
+            <Radio.Button value="limit">{t(LIMIT_KEY, 'Limit')}</Radio.Button>
+            <Radio.Button value="stop">{t(STOP_KEY, 'Stop')}</Radio.Button>
           </Radio.Group>
         </Space>
 
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <Form.Item name="symbol" label={t('trading.symbol', 'Symbol')} rules={[{ required: true }]} style={{ width: 180 }}>
+          <Form.Item name="symbol" label={t(SYMBOL_KEY, 'Symbol')} rules={[{ required: true }]} style={{ width: 180 }}>
             <SymbolPicker
               accountId={currentAccountId || ''}
               onChange={(sym) => onSymbolChange?.(sym)}
               placeholder="EURUSD"
             />
           </Form.Item>
-          <Form.Item name="volume" label={t('trading.volume', 'Volume')} rules={[{ required: true, type: 'number', min: 0.01 }]} style={{ width: 100 }}>
+          <Form.Item name="volume" label={t(VOLUME_KEY, 'Volume')} rules={[{ required: true, type: 'number', min: 0.01 }]} style={{ width: 100 }}>
             <InputNumber min={0.01} step={0.01} placeholder="0.01" />
           </Form.Item>
           {orderType !== 'market' && (
-            <Form.Item name="price" label={t('trading.price', 'Price')} rules={[{ required: true, type: 'number' }]} style={{ width: 120 }}>
+            <Form.Item name="price" label={t(PRICE_KEY, 'Price')} rules={[{ required: true, type: 'number' }]} style={{ width: 120 }}>
               <InputNumber style={{ width: '100%' }} placeholder="1.0000" />
             </Form.Item>
           )}
-          <Form.Item name="stopLoss" label={t('trading.stopLoss', 'SL')} style={{ width: 110 }}>
+          <Form.Item name="stopLoss" label={t(STOP_LOSS_KEY, 'SL')} style={{ width: 110 }}>
             <InputNumber style={{ width: '100%' }} placeholder="0" />
           </Form.Item>
-          <Form.Item name="takeProfit" label={t('trading.takeProfit', 'TP')} style={{ width: 110 }}>
+          <Form.Item name="takeProfit" label={t(TAKE_PROFIT_KEY, 'TP')} style={{ width: 110 }}>
             <InputNumber style={{ width: '100%' }} placeholder="0" />
           </Form.Item>
           <Form.Item label=" " style={{ width: 80 }}>
@@ -95,7 +98,7 @@ export default function PlaceOrderForm({ onSymbolChange }: PlaceOrderFormProps) 
               disabled={!currentAccountId}
               danger={side === 'sell'}
             >
-              {side === 'buy' ? t('trading.buy', 'Buy') : t('trading.sell', 'Sell')}
+              {side === 'buy' ? t(BUY_KEY, 'Buy') : t(SELL_KEY, 'Sell')}
             </Button>
           </Form.Item>
         </div>

@@ -1,6 +1,9 @@
 import { Card, Select, Statistic, Row, Col, Tag, Typography } from 'antd';
 import { WalletOutlined, DollarOutlined, PieChartOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { ACCOUNT_KEY, BALANCE_KEY, EQUITY_KEY, FREE_MARGIN_KEY, MARGIN_KEY, MARGIN_LEVEL_KEY, NO_ACCOUNT_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+
+;
 import { useAccount } from '@/hooks/useAccount';
 import { useTradingStore } from '@/stores/tradingStore';
 import type { Account } from '@/types/account';
@@ -42,14 +45,14 @@ export default function AccountSummaryCard() {
       title={
         <span>
           <WalletOutlined style={{ marginRight: 8 }} />
-          {t('trading.account', 'Account')}
+          {t(ACCOUNT_KEY, 'Account')}
         </span>
       }
       extra={
         <Select
           value={currentAccountId ?? undefined}
           onChange={handleAccountChange}
-          placeholder={t('trading.noAccount', 'No account selected')}
+          placeholder={t(NO_ACCOUNT_KEY, 'No account selected')}
           style={{ width: 260 }}
           allowClear
         >
@@ -62,42 +65,42 @@ export default function AccountSummaryCard() {
       }
     >
       {!currentAccountId ? (
-        <Text type="secondary">{t('trading.noAccount', 'No account selected')}</Text>
+        <Text type="secondary">{t(NO_ACCOUNT_KEY, 'No account selected')}</Text>
       ) : (
         <>
           {statusTag}
           <Row gutter={16} style={{ marginTop: 12 }}>
             <Col span={4}>
               <Statistic
-                title={<span><DollarOutlined /> {t('trading.balance', 'Balance')}</span>}
+                title={<span><DollarOutlined /> {t(BALANCE_KEY, 'Balance')}</span>}
                 value={fmt(accountInfo.balance)}
                 precision={2}
               />
             </Col>
             <Col span={4}>
               <Statistic
-                title={<span><PieChartOutlined /> {t('trading.equity', 'Equity')}</span>}
+                title={<span><PieChartOutlined /> {t(EQUITY_KEY, 'Equity')}</span>}
                 value={fmt(accountInfo.equity)}
                 precision={2}
               />
             </Col>
             <Col span={4}>
               <Statistic
-                title={<span><SafetyCertificateOutlined /> {t('trading.margin', 'Margin')}</span>}
+                title={<span><SafetyCertificateOutlined /> {t(MARGIN_KEY, 'Margin')}</span>}
                 value={fmt(accountInfo.margin)}
                 precision={2}
               />
             </Col>
             <Col span={6}>
               <Statistic
-                title={t('trading.freeMargin', 'Free Margin')}
+                title={t(FREE_MARGIN_KEY, 'Free Margin')}
                 value={fmt(accountInfo.freeMargin)}
                 precision={2}
               />
             </Col>
             <Col span={6}>
               <Statistic
-                title={t('trading.marginLevel', 'Margin Level')}
+                title={t(MARGIN_LEVEL_KEY, 'Margin Level')}
                 value={fmt(accountInfo.marginLevel)}
                 suffix="%"
                 precision={2}

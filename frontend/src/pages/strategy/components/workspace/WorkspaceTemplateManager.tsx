@@ -1,5 +1,8 @@
 import { Select, Button, Space } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { TEMPLATE_LOADED_KEY, TEMPLATE_SAVE_AS_KEY, TEMPLATE_SELECT_PLACEHOLDER_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+
+;
 import type { StrategyTemplate } from '@/client/strategy';
 
 interface Props {
@@ -21,17 +24,17 @@ export default function WorkspaceTemplateManager({ templates, loading, loadedTem
         allowClear
         optionFilterProp="label"
         value={loadedTemplate?.id}
-        placeholder={t('strategy.workspace.template.selectPlaceholder', 'Select a template...')}
+        placeholder={t(TEMPLATE_SELECT_PLACEHOLDER_KEY, 'Select a template...')}
         options={templates.map((tpl) => ({ value: tpl.id, label: tpl.name }))}
         onChange={(val) => { if (val) onLoad(val); }}
       />
       <Space>
         <Button size="small" onClick={onSaveAs}>
-          {t('strategy.workspace.template.saveAs', 'Save As New')}
+          {t(TEMPLATE_SAVE_AS_KEY, 'Save As New')}
         </Button>
         {loadedTemplate && (
           <span style={{ fontSize: 12, color: '#8c8c8c' }}>
-            {t('strategy.workspace.template.loaded', 'Loaded')}: {loadedTemplate.name}
+            {t(TEMPLATE_LOADED_KEY, 'Loaded')}: {loadedTemplate.name}
           </span>
         )}
       </Space>

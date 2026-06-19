@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Form, message } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { HEALTH_MESSAGES_LOAD_FAILED_KEY, MESSAGES_EXECUTE_FAILED_KEY, MESSAGES_NO_ORDERABLE_SIGNAL_KEY, MESSAGES_ORDER_FAILED_KEY, MESSAGES_ORDER_SUBMITTED_KEY, MESSAGES_PARAMETERS_PARSE_FAILED_KEY, MESSAGES_SIGNAL_HOLD_CANNOT_ORDER_KEY, MESSAGES_STRATEGY_EXECUTE_FAILED_KEY, MESSAGES_TEMPLATE_CODE_EMPTY_CANNOT_EXECUTE_KEY, MESSAGES_VOLUME_INVALID_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
+
+;
 import { strategyScheduleV2Api, strategyTemplateApi } from '@/client/strategy-schedules';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { tradingApi } from '@/client/trading';
@@ -41,7 +44,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
   const loadScheduleHealth = useCallback(async (row: ScheduleRow) => {
     if (!row?.id) return; setHealthLoading(true);
     try { setHealthSummary(await scheduleHealthApi.getScheduleHealth(row.id) as ScheduleHealthSummary); }
-    catch (e: any) { message.error(e?.message || t('strategy.schedules.health.messages.loadFailed')); setHealthSummary(null); }
+    catch (e: any) { message.error(e?.message || t(HEALTH_MESSAGES_LOAD_FAILED_KEY)); setHealthSummary(null); }
     finally { setHealthLoading(false); }
   }, [t]);
 
@@ -57,12 +60,12 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     try {
       const tpl = await strategyTemplateApi.get(row.templateId);
       const code = String(tpl?.code || '');
-      if (!code) throw new Error(t('strategy.schedules.messages.templateCodeEmptyCannotExecute'));
+      if (!code) throw new Error(t(MESSAGES_TEMPLATE_CODE_EMPTY_CANNOT_EXECUTE_KEY));
       const exec = await pythonStrategyApi.execute({ code, accountId: row.accountId, symbol: row.symbol, timeframe: row.timeframe });
-      if (!exec.success) throw new Error(exec.error || t('strategy.schedules.messages.strategyExecuteFailed'));
+      if (!exec.success) throw new Error(exec.error || t(MESSAGES_STRATEGY_EXECUTE_FAILED_KEY));
       setTriggerResult({ logs: exec.logs || [], signal: exec.signal as any, meta: { templateId: row.templateId, scheduleId: row.id } });
     } catch (e: any) {
-      setTriggerResult({ logs: [], signal: null, meta: { error: e?.message || t('strategy.schedules.messages.executeFailed') } });
+      setTriggerResult({ logs: [], signal: null, meta: { error: e?.message || t(MESSAGES_EXECUTE_FAILED_KEY) } });
     }
     finally { setTriggering(false); }
   }, [t]);
@@ -71,14 +74,14 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     if (!triggerContext?.schedule) return;
     const { schedule } = triggerContext;
     const raw = triggerResult?.signal;
-    if (!raw) { message.error(t('strategy.schedules.messages.noOrderableSignal')); return; }
+    if (!raw) { message.error(t(MESSAGES_NO_ORDERABLE_SIGNAL_KEY)); return; }
     const signal = raw;
     const rawAction = String(signal?.type ?? signal?.signalType ?? signal?.signal ?? '').trim().toLowerCase();
     const action = rawAction === 'buy' || rawAction === 'sell' ? rawAction : '';
     const volumeNum = typeof signal?.volume === 'number' ? signal.volume : Number(signal?.volume);
     const volume = Number.isFinite(volumeNum) ? volumeNum : 0;
-    if (!action || action === 'hold') { message.error(t('strategy.schedules.messages.signalHoldCannotOrder')); return; }
-    if (!(volume > 0)) { message.error(t('strategy.schedules.messages.volumeInvalid')); return; }
+    if (!action || action === 'hold') { message.error(t(MESSAGES_SIGNAL_HOLD_CANNOT_ORDER_KEY)); return; }
+    if (!(volume > 0)) { message.error(t(MESSAGES_VOLUME_INVALID_KEY)); return; }
     const payload: any = {
       accountId: schedule.accountId, symbol: signal.symbol || schedule.symbol, type: action, volume,
       price: typeof signal?.price === 'number' ? signal.price : Number(signal?.price || 0),
@@ -88,10 +91,10 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     };
     try {
       const res = await tradingApi.orderSend(payload);
-      if (res.error) { message.error(getTradingRiskToastMessage({ riskCode: res.riskError?.code, error: res.error, message: res.message, fallback: res.error || t('strategy.schedules.messages.orderFailed') })); return; }
-      message.success(t('strategy.schedules.messages.orderSubmitted'));
+      if (res.error) { message.error(getTradingRiskToastMessage({ riskCode: res.riskError?.code, error: res.error, message: res.message, fallback: res.error || t(MESSAGES_ORDER_FAILED_KEY) })); return; }
+      message.success(t(MESSAGES_ORDER_SUBMITTED_KEY));
       setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null);
-    } catch (e: any) { message.error(e?.message || t('strategy.schedules.messages.orderFailed')); }
+    } catch (e: any) { message.error(e?.message || t(MESSAGES_ORDER_FAILED_KEY)); }
   }, [triggerContext, triggerResult, t]);
 
   // ── Schedule CRUD ──
@@ -186,7 +189,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     const v = await form.validateFields();
     let params: Record<string, string> = {};
     try { params = v.parametersJson && v.parametersJson.trim() ? JSON.parse(v.parametersJson) : {}; }
-    catch { message.error(t('strategy.schedules.messages.parametersParseFailed')); return; }
+    catch { message.error(t(MESSAGES_PARAMETERS_PARSE_FAILED_KEY)); return; }
     const merged = { ...params, ...buildParametersFromForm(v) };
     const sType: ScheduleType = (v.scheduleType || 'kline_close') as ScheduleType;
     const scheduleConfig: Record<string, unknown> = {

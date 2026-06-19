@@ -1,6 +1,9 @@
 import { Button, Steps, Alert, Select, Tag } from 'antd';
 import { ThunderboltOutlined, CheckCircleFilled, CloseCircleFilled, LoadingOutlined, ClockCircleFilled, MinusCircleOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { BACKTEST_RUN_ID_LABEL_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+
+;
 import type { GateResult, GatePipelineSummary } from '@/gen/ant/v1/ai_gate_pb';
 
 interface Props {
@@ -30,17 +33,17 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
       {/* Run selector + button */}
       <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
         {availableRunIds && availableRunIds.length > 0 && onSelectRun && (
-          <Select size="small" style={{ minWidth: 240 }} placeholder={t('strategy.workspace.backtestRunIdLabel')}
+          <Select size="small" style={{ minWidth: 240 }} placeholder={t(BACKTEST_RUN_ID_LABEL_KEY)}
             value={runId || undefined} onChange={onSelectRun}
             options={availableRunIds.map(id => ({ label: id.slice(0, 8) + '...', value: id }))} />
         )}
         <Button type="primary" icon={<ThunderboltOutlined />} loading={loading}
           onClick={onRun} disabled={!canRun || status !== 'completed'}>
-          {t('ai.gate.runPipeline', 'Run Gate Evaluation')}
+          {t(GATE_RUN_PIPELINE_KEY, 'Run Gate Evaluation')}
         </Button>
         {!canRun && status === 'idle' && (
           <span style={{ marginLeft: 8, fontSize: 11, color: '#8c8c8c' }}>
-            {t('ai.gate.runHint', 'Complete a backtest first')}
+            {t(GATE_RUN_HINT_KEY, 'Complete a backtest first')}
           </span>
         )}
       </div>
@@ -57,7 +60,7 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
             const isCurrent = loading && gates.length === GATE_ORDER.indexOf(gate);
             if (isCurrent) {
               return { title: <span><LoadingOutlined style={{ color: '#1677ff' }} /> <span style={{ marginLeft: 8 }}>{t(GATE_KEY[gate] || gate, gate)}</span></span>,
-                description: <span style={{ fontSize: 12, color: '#8c8c8c' }}>{t('ai.gate.evaluating', 'Evaluating...')}</span>, status: 'process' as const };
+                description: <span style={{ fontSize: 12, color: '#8c8c8c' }}>{t(GATE_EVALUATING_KEY, 'Evaluating...')}</span>, status: 'process' as const };
             }
             if (!gs) {
               return { title: <span><ClockCircleFilled style={{ color: '#d9d9d9' }} /> <span style={{ marginLeft: 8 }}>{t(GATE_KEY[gate] || gate, gate)}</span></span>,
@@ -68,7 +71,7 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
                 {t(GATE_KEY[gs.gate] || gs.gate, gs.gate)}
                 <Tag style={{ marginLeft: 8, fontSize: 10 }}>{gs.gate}</Tag>
               </span>,
-                description: <span style={{ fontSize: 12, color: '#8c8c8c' }}>{t('ai.gate.skipped', 'SKIPPED')} — {gs.reason || t('ai.gate.noData', 'no data')}</span>,
+                description: <span style={{ fontSize: 12, color: '#8c8c8c' }}>{t(GATE_SKIPPED_KEY, 'SKIPPED')} — {gs.reason || t(GATE_NO_DATA_KEY, 'no data')}</span>,
                 status: 'wait' as const };
             }
             return { title: <span>{gs.passed
@@ -78,7 +81,7 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
               <Tag style={{ marginLeft: 8, fontSize: 10 }}>{gs.gate}</Tag>
             </span>,
               description: <span style={{ fontSize: 12 }}>
-                {gs.passed ? t('ai.gate.pass', 'PASS') : `${t('ai.gate.fail', 'FAIL')} — ${gs.reason || t('ai.gate.unknown', 'unknown')}`}
+                {gs.passed ? t(GATE_PASS_KEY, 'PASS') : `${t(GATE_FAIL_KEY, 'FAIL')} — ${gs.reason || t(GATE_UNKNOWN_KEY, 'unknown')}`}
                 {gs.score !== 0 ? ` (score: ${gs.score.toFixed(4)})` : ''}
                 {` — ${gs.durationMs}ms`}
               </span>,
@@ -92,7 +95,7 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
         <Alert type={summary.passed ? 'success' : 'error'} showIcon
           style={{ marginTop: 12 }}
           message={summary.passed
-            ? t('ai.gate.allPassed', 'All 6 gates passed — strategy eligible for live deployment')
+            ? t(GATE_ALL_PASSED_KEY, 'All 6 gates passed — strategy eligible for live deployment')
             : t('ai.gate.failed', { defaultValue: `Failed at ${summary.firstFail}` })}
           description={!summary.passed ? summary.summary : undefined} />
       )}

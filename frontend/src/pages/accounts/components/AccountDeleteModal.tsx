@@ -1,5 +1,8 @@
 import { Modal, Input } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { DETAIL_ACTIONS_DELETE_ACCOUNT_KEY, DETAIL_ACTIONS_DELETE_CONFIRM_KEY, DETAIL_ACTIONS_DELETE_PASSWORD_HINT_KEY, DETAIL_ACTIONS_DELETE_PASSWORD_PLACEHOLDER_KEY, DETAIL_ACTIONS_DELETE_WARNING_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 
 type Props = {
   open: boolean;
@@ -18,20 +21,20 @@ export default function AccountDeleteModal({
 
   return (
     <Modal
-      title={t('accounts.detail.actions.deleteAccount')}
+      title={t(DETAIL_ACTIONS_DELETE_ACCOUNT_KEY)}
       open={open}
       onOk={onDelete}
       onCancel={onCancel}
       confirmLoading={deleting}
-      okText={t('accounts.detail.actions.deleteConfirm')}
+      okText={t(DETAIL_ACTIONS_DELETE_CONFIRM_KEY)}
       cancelText={t('common.cancel')}
       okButtonProps={{ danger: true }}
       destroyOnClose
     >
-      <div style={{ marginBottom: 16, color: 'var(--color-danger)' }}>{t('accounts.detail.actions.deleteWarning')}</div>
-      <div style={{ marginBottom: 8, color: 'var(--color-text-muted)' }}>{t('accounts.detail.actions.deletePasswordHint')}</div>
+      <div style={{ marginBottom: 16, color: 'var(--color-danger)' }}>{t(DETAIL_ACTIONS_DELETE_WARNING_KEY)}</div>
+      <div style={{ marginBottom: 8, color: 'var(--color-text-muted)' }}>{t(DETAIL_ACTIONS_DELETE_PASSWORD_HINT_KEY)}</div>
       <Input
-        placeholder={t('accounts.detail.actions.deletePasswordPlaceholder')}
+        placeholder={t(DETAIL_ACTIONS_DELETE_PASSWORD_PLACEHOLDER_KEY)}
         value={deletePassword}
         onChange={(e) => onPasswordChange(e.target.value)}
         onPressEnter={onDelete}

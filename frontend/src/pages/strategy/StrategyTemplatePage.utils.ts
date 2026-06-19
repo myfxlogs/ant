@@ -1,3 +1,6 @@
+
+import { BACKTEST_QUICK_RANGE_CUSTOM_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
 export type QuickRangeKey = 'CUSTOM' | '1D' | '3D' | '1W' | '1Y';
 
 export const clamp01 = (x: number) => {
@@ -35,7 +38,7 @@ export const quickRangeLabel = (t: (key: string) => string, key: QuickRangeKey) 
     case '1Y':
       return t('strategy.templates.backtest.quickRange.1y');
     default:
-      return t('strategy.templates.backtest.quickRange.custom');
+      return t(BACKTEST_QUICK_RANGE_CUSTOM_KEY);
   }
 };
 

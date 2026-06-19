@@ -1,3 +1,6 @@
+
+import { ACTIONS_BACKTEST_KEY, ACTIONS_COPY_KEY, ACTIONS_LAUNCH_SCHEDULE_KEY, ACTIONS_VIEW_CODE_KEY, BADGES_PRESET_KEY, DELETE_CONFIRM_KEY, TABLE_ACTIONS_KEY, TABLE_CREATED_AT_KEY, TABLE_DESCRIPTION_KEY, TABLE_NAME_KEY, TABLE_TAGS_KEY, TABLE_USE_COUNT_KEY, TABLE_VISIBILITY_KEY, VISIBILITY_PRIVATE_KEY, VISIBILITY_PUBLIC_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
 import { Button, Space, Tag, Tooltip, Typography, Popconfirm } from 'antd';
 import {
 	CodeOutlined,
@@ -29,7 +32,7 @@ export const buildStrategyTemplateColumns = (params: BuildColumnsParams): Column
 	const { t, onBacktest, onViewCode, onCopyToCreate, onEdit, onDelete, onLaunchSchedule } = params;
 	return [
 		{
-			title: t('strategy.templates.table.name'),
+			title: t(TABLE_NAME_KEY),
 			dataIndex: 'name',
 			key: 'name',
 			width: 220,
@@ -43,7 +46,7 @@ export const buildStrategyTemplateColumns = (params: BuildColumnsParams): Column
 						<Text strong>{name}</Text>
 						{isSystem && (
 							<Tag color="gold" style={{ marginInlineEnd: 0 }}>
-								{t('strategy.templates.badges.preset', '预设')}
+								{t(BADGES_PRESET_KEY, '预设')}
 							</Tag>
 						)}
 					</Space>
@@ -51,7 +54,7 @@ export const buildStrategyTemplateColumns = (params: BuildColumnsParams): Column
 			},
 		},
 		{
-			title: t('strategy.templates.table.description'),
+			title: t(TABLE_DESCRIPTION_KEY),
 			dataIndex: 'description',
 			key: 'description',
 			width: 250,
@@ -63,7 +66,7 @@ export const buildStrategyTemplateColumns = (params: BuildColumnsParams): Column
 			),
 		},
 		{
-			title: t('strategy.templates.table.tags', '标签'),
+			title: t(TABLE_TAGS_KEY, '标签'),
 			dataIndex: 'tags',
 			key: 'tags',
 			width: 220,
@@ -83,33 +86,33 @@ export const buildStrategyTemplateColumns = (params: BuildColumnsParams): Column
 			},
 		},
 		{
-			title: t('strategy.templates.table.visibility'),
+			title: t(TABLE_VISIBILITY_KEY),
 			dataIndex: 'isPublic',
 			key: 'isPublic',
 			width: 80,
 			render: (isPublic: boolean) =>
 				isPublic ? (
-					<Tag icon={<GlobalOutlined />} color="blue">{t('strategy.templates.visibility.public')}</Tag>
+					<Tag icon={<GlobalOutlined />} color="blue">{t(VISIBILITY_PUBLIC_KEY)}</Tag>
 				) : (
-					<Tag>{t('strategy.templates.visibility.private')}</Tag>
+					<Tag>{t(VISIBILITY_PRIVATE_KEY)}</Tag>
 				),
 		},
 		{
-			title: t('strategy.templates.table.useCount'),
+			title: t(TABLE_USE_COUNT_KEY),
 			dataIndex: 'useCount',
 			key: 'useCount',
 			width: 100,
 			render: (count: number) => <Tag color="green">{count || 0}</Tag>,
 		},
 		{
-			title: t('strategy.templates.table.createdAt'),
+			title: t(TABLE_CREATED_AT_KEY),
 			dataIndex: 'createdAt',
 			key: 'createdAt',
 			width: 180,
 			render: (date: string) => formatDateTime(date),
 		},
 		{
-			title: t('strategy.templates.table.actions'),
+			title: t(TABLE_ACTIONS_KEY),
 			key: 'action',
 			width: 380,
 			fixed: 'right',
@@ -129,21 +132,21 @@ export const buildStrategyTemplateColumns = (params: BuildColumnsParams): Column
 						icon={<ThunderboltOutlined />}
 						onClick={() => onLaunchSchedule(record)}
 					>
-						{t('strategy.templates.actions.launchSchedule', '上线到调度')}
+						{t(ACTIONS_LAUNCH_SCHEDULE_KEY, '上线到调度')}
 					</Button>
 				) : null;
 				if (isSystem) {
 					return (
 						<Space size="small">
 							<Button type="link" size="small" icon={<HistoryOutlined />} onClick={() => onBacktest(record)}>
-								{t('strategy.templates.actions.backtest')}
+								{t(ACTIONS_BACKTEST_KEY)}
 							</Button>
 							{launchBtn}
 							<Button type="link" size="small" icon={<CodeOutlined />} onClick={() => onViewCode(record)}>
-								{t('strategy.templates.actions.viewCode')}
+								{t(ACTIONS_VIEW_CODE_KEY)}
 							</Button>
 							<Button type="link" size="small" icon={<CopyOutlined />} onClick={() => onCopyToCreate(record)}>
-								{t('strategy.templates.actions.copy')}
+								{t(ACTIONS_COPY_KEY)}
 							</Button>
 						</Space>
 					);
@@ -151,16 +154,16 @@ export const buildStrategyTemplateColumns = (params: BuildColumnsParams): Column
 				return (
 					<Space size="small">
 						<Button type="link" size="small" icon={<HistoryOutlined />} onClick={() => onBacktest(record)}>
-							{t('strategy.templates.actions.backtest')}
+							{t(ACTIONS_BACKTEST_KEY)}
 						</Button>
 						{launchBtn}
 						<Button type="link" size="small" icon={<CodeOutlined />} onClick={() => onViewCode(record)}>
-							{t('strategy.templates.actions.viewCode')}
+							{t(ACTIONS_VIEW_CODE_KEY)}
 						</Button>
 						<Button type="link" size="small" icon={<EditOutlined />} onClick={() => onEdit(record)}>
 							{t('common.edit')}
 						</Button>
-						<Popconfirm title={t('strategy.templates.deleteConfirm')} onConfirm={() => onDelete(record.id)}>
+						<Popconfirm title={t(DELETE_CONFIRM_KEY)} onConfirm={() => onDelete(record.id)}>
 							<Button type="link" size="small" danger icon={<DeleteOutlined />}>
 								{t('common.delete')}
 							</Button>

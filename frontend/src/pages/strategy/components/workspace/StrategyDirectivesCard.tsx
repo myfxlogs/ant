@@ -1,6 +1,9 @@
 import { Tooltip } from 'antd';
 import { LockOutlined, EditOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { JUMP_TO_CODE_KEY, RISK_CONTROLS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+
+;
 import type { StrategyDirective } from '../../hooks/useBacktestParams';
 
 interface Props {
@@ -38,9 +41,9 @@ export function StrategyDirectivesCard({ directives, onJumpToLine }: Props) {
         fontSize: 10, fontWeight: 600, color: '#1677ff',
       }}>
         <LockOutlined />
-        <span>{t('strategy.workspace.riskControls')}</span>
+        <span>{t(RISK_CONTROLS_KEY)}</span>
         {onJumpToLine && (
-          <Tooltip title={t('strategy.workspace.jumpToCode')}>
+          <Tooltip title={t(JUMP_TO_CODE_KEY)}>
             <EditOutlined
               style={{ marginLeft: 'auto', cursor: 'pointer', fontSize: 11 }}
               onClick={() => onJumpToLine('first')}

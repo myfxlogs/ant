@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Card, Select, Button, Space, Typography, message } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { AGENT_FIELDS_MODEL_PROFILE_EMPTY_KEY, PRIMARY_HINT_KEY, PRIMARY_PLACEHOLDER_KEY, PRIMARY_TITLE_KEY } from '@/gen/ant/v1/i18n/ai_settings_keys';
+
+;
 
 import { aiApi } from '@/client/ai';
 import type { AIConfig as SystemAIConfig } from '@/pages/ai/systemai/model';
@@ -102,12 +105,12 @@ export default function DefaultPrimaryModelCard({
 	return (
 		<Card
 			className="mb-4"
-			title={t('ai.settings.primary.title', { defaultValue: 'Default Primary Model' })}
+			title={t(PRIMARY_TITLE_KEY, { defaultValue: 'Default Primary Model' })}
 			loading={!loaded}
 		>
 			<div style={{ marginBottom: 8 }}>
 				<Text type="secondary">
-					{t('ai.settings.primary.hint', {
+					{t(PRIMARY_HINT_KEY, {
 						defaultValue:
 							'Used by Clarify Intent, code generation, the strategy template "AI Assistant — modify code" panel, and any Agent that has not picked its own model.',
 					})}
@@ -122,15 +125,15 @@ export default function DefaultPrimaryModelCard({
 					value={value || undefined}
 					placeholder={
 						empty
-							? t('ai.settings.agent.fields.modelProfileEmpty', {
+							? t(AGENT_FIELDS_MODEL_PROFILE_EMPTY_KEY, {
 									defaultValue: 'No usable model — please configure providers above first.',
 								})
-							: t('ai.settings.primary.placeholder', {
+							: t(PRIMARY_PLACEHOLDER_KEY, {
 									defaultValue: 'Pick a provider · model as the default brain',
 								})
 					}
 					options={options}
-					notFoundContent={t('ai.settings.agent.fields.modelProfileEmpty', {
+					notFoundContent={t(AGENT_FIELDS_MODEL_PROFILE_EMPTY_KEY, {
 						defaultValue: 'No usable model',
 					})}
 					disabled={saving || empty}

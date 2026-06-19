@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Select, Spin, Tag } from 'antd';
 import { ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { DETAIL_CARDS_BALANCE_KEY, DETAIL_CARDS_EQUITY_KEY, DETAIL_CARDS_FLOATING_PROFIT_KEY, DETAIL_CARDS_MARGIN_FREE_KEY, DETAIL_CARDS_MARGIN_LEVEL_KEY, DETAIL_CARDS_MARGIN_USED_KEY, REPORT_GENERATE_KEY, REPORT_PERIODS_MONTH_KEY, REPORT_PERIODS_QUARTER_KEY, REPORT_PERIODS_WEEK_KEY, REPORT_PERIODS_YEAR_KEY, REPORT_TITLE_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '@/client/analytics';
 import type { AttributionAnalysisData, RollingMetricsData, AccountAnalyticsData } from '@/client/analytics';
@@ -98,8 +101,8 @@ export default function AccountReport() {
   const monthlyAnalysisData: MonthlyAnalysisPoint[] = Array.isArray(raw) ? raw as MonthlyAnalysisPoint[] : [];
 
   const periodLabels: Record<Period, string> = {
-    week: t('accounts.report.periods.week'), month: t('accounts.report.periods.month'),
-    quarter: t('accounts.report.periods.quarter'), year: t('accounts.report.periods.year'),
+    week: t(REPORT_PERIODS_WEEK_KEY), month: t(REPORT_PERIODS_MONTH_KEY),
+    quarter: t(REPORT_PERIODS_QUARTER_KEY), year: t(REPORT_PERIODS_YEAR_KEY),
   };
 
   if (!currentAccount) {
@@ -116,7 +119,7 @@ export default function AccountReport() {
               onClick={() => navigate(`/accounts/${id}`)} style={{ color: 'var(--color-text-muted)' }} />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{t('accounts.report.title')}</h1>
+                <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{t(REPORT_TITLE_KEY)}</h1>
                 <Tag color={currentAccount.mtType === 'MT4' ? 'blue' : 'purple'}>{currentAccount.mtType}</Tag>
               </div>
               <p style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>{currentAccount.login} · {currentAccount.brokerCompany}</p>
@@ -126,7 +129,7 @@ export default function AccountReport() {
             <Select value={period} onChange={(v) => setPeriod(v)} style={{ width: 120 }}
               options={Object.entries(periodLabels).map(([k, v]) => ({ value: k, label: v }))} />
             <Button type="primary" icon={<ReloadOutlined />} loading={generating} onClick={handleGenerate}>
-              {t('accounts.report.generate')}
+              {t(REPORT_GENERATE_KEY)}
             </Button>
           </div>
         </div>
@@ -134,12 +137,12 @@ export default function AccountReport() {
         {/* Account snapshot cards */}
         <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
           {[
-            { label: t('accounts.detail.cards.balance'), value: `${balance.toFixed(2)} ${currentAccount.currency || 'USD'}` },
-            { label: t('accounts.detail.cards.equity'), value: `${equity.toFixed(2)} ${currentAccount.currency || 'USD'}` },
-            { label: t('accounts.detail.cards.floatingProfit'), value: `${profit >= 0 ? '+' : ''}${profit.toFixed(2)} (${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%)`, color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' },
-            { label: t('accounts.detail.cards.marginUsed'), value: `${margin.toFixed(2)} ${currentAccount.currency || 'USD'}` },
-            { label: t('accounts.detail.cards.marginFree'), value: `${freeMargin.toFixed(2)} ${currentAccount.currency || 'USD'}` },
-            { label: t('accounts.detail.cards.marginLevel'), value: `${marginLevel.toFixed(2)}%` },
+            { label: t(DETAIL_CARDS_BALANCE_KEY), value: `${balance.toFixed(2)} ${currentAccount.currency || 'USD'}` },
+            { label: t(DETAIL_CARDS_EQUITY_KEY), value: `${equity.toFixed(2)} ${currentAccount.currency || 'USD'}` },
+            { label: t(DETAIL_CARDS_FLOATING_PROFIT_KEY), value: `${profit >= 0 ? '+' : ''}${profit.toFixed(2)} (${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%)`, color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' },
+            { label: t(DETAIL_CARDS_MARGIN_USED_KEY), value: `${margin.toFixed(2)} ${currentAccount.currency || 'USD'}` },
+            { label: t(DETAIL_CARDS_MARGIN_FREE_KEY), value: `${freeMargin.toFixed(2)} ${currentAccount.currency || 'USD'}` },
+            { label: t(DETAIL_CARDS_MARGIN_LEVEL_KEY), value: `${marginLevel.toFixed(2)}%` },
           ].map((card, i) => (
             <div key={i} className="rounded-xl p-3" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
               <div style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{card.label}</div>

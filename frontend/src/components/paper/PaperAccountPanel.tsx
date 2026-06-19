@@ -4,7 +4,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button, Card, Input, List, Modal, Space, Tag, Typography, message, Statistic, Row, Col, Form, Select } from 'antd';
 import { PlusOutlined, PlayCircleOutlined, StopOutlined, RiseOutlined, FallOutlined, ReloadOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { BALANCE_KEY, EQUITY_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+
+;
 import { paperTradingClient, paperTradingStreamClient } from '@/client/connect';
 import type { PaperAccount, PaperAccountUpdate } from '@/gen/ant/v1/paper_trading_pb';
 import { useAuthStore } from '@/stores/authStore';
@@ -107,19 +110,19 @@ export default function PaperAccountPanel() {
 
   // ── Handlers ──
   const handleCreate = useCallback(async () => {
-    if (!createName.trim()) { message.warning(t('strategy.paper.messages.enterName')); return; }
+    if (!createName.trim()) { message.warning(t(MESSAGES_ENTER_NAME_KEY)); return; }
     try {
       const resp = await paperTradingClient.createPaperAccount({
         name: createName,
         initialBalance: createBalance,
       });
-      message.success(t('strategy.paper.messages.created'));
+      message.success(t(MESSAGES_CREATED_KEY));
       setCreateName('');
       setCreateBalance('10000');
       // Add to frontend state immediately and subscribe.
       setAccounts(prev => [...prev, resp]);
       subscribeAccount(resp.id);
-    } catch { message.error(t('strategy.paper.messages.createFailed')); }
+    } catch { message.error(t(MESSAGES_CREATE_FAILED_KEY)); }
   }, [createName, createBalance, subscribeAccount]);
 
   const openStartModal = useCallback((accountId: string) => {
@@ -131,7 +134,7 @@ export default function PaperAccountPanel() {
   }, []);
 
   const handleStart = useCallback(async () => {
-    if (!startCode.trim()) { message.warning(t('strategy.paper.messages.pasteCode')); return; }
+    if (!startCode.trim()) { message.warning(t(MESSAGES_PASTE_CODE_KEY)); return; }
     setStarting(true);
     try {
       await paperTradingClient.startPaperStrategy({
@@ -141,13 +144,13 @@ export default function PaperAccountPanel() {
         timeframe: startTimeframe,
         params: {},
       });
-      message.success(t('strategy.paper.messages.strategyStarted'));
+      message.success(t(MESSAGES_STRATEGY_STARTED_KEY));
       setRunning(prev => ({
         ...prev,
         [startTargetId]: { symbol: startSymbol, timeframe: startTimeframe },
       }));
       setStartModalOpen(false);
-    } catch { message.error(t('strategy.paper.messages.startFailed')); }
+    } catch { message.error(t(MESSAGES_START_FAILED_KEY)); }
     setStarting(false);
   }, [startCode, startTargetId, startSymbol, startTimeframe]);
 
@@ -155,31 +158,31 @@ export default function PaperAccountPanel() {
     setStopping(prev => ({ ...prev, [accountId]: true }));
     try {
       await paperTradingClient.stopPaperStrategy({ paperAccountId: accountId });
-      message.success(t('strategy.paper.messages.strategyStopped'));
+      message.success(t(MESSAGES_STRATEGY_STOPPED_KEY));
       setRunning(prev => {
         const next = { ...prev };
         delete next[accountId];
         return next;
       });
-    } catch { message.error(t('strategy.paper.messages.stopFailed')); }
+    } catch { message.error(t(MESSAGES_STOP_FAILED_KEY)); }
     setStopping(prev => ({ ...prev, [accountId]: false }));
   }, []);
 
   return (
     <div style={{ padding: 16 }}>
-      <Title level={5} style={{ marginBottom: 16 }}>{t('strategy.paper.title')}</Title>
+      <Title level={5} style={{ marginBottom: 16 }}>{t(TITLE_KEY)}</Title>
 
       {/* Create account */}
       <Card size="small" style={{ marginBottom: 16, background: '#fafafa' }}>
         <Space direction="vertical" style={{ width: '100%' }}>
-          <Text strong style={{ fontSize: 12 }}>{t('strategy.paper.createAccount')}</Text>
+          <Text strong style={{ fontSize: 12 }}>{t(CREATE_ACCOUNT_KEY)}</Text>
           <Space>
-            <Input size="small" placeholder={t('strategy.paper.accountName')} value={createName}
+            <Input size="small" placeholder={t(ACCOUNT_NAME_KEY)} value={createName}
               onChange={e => setCreateName(e.target.value)} style={{ width: 160 }} />
-            <Input size="small" placeholder={t('trading.balance')} value={createBalance}
+            <Input size="small" placeholder={t(BALANCE_KEY)} value={createBalance}
               onChange={e => setCreateBalance(e.target.value)} style={{ width: 100 }} />
             <Button size="small" type="primary" icon={<PlusOutlined />}
-              onClick={handleCreate}>{t('strategy.paper.create')}</Button>
+              onClick={handleCreate}>{t(CREATE_KEY)}</Button>
           </Space>
         </Space>
       </Card>
@@ -188,7 +191,7 @@ export default function PaperAccountPanel() {
       <List
         loading={loading}
         dataSource={accounts}
-        locale={{ emptyText: t('strategy.paper.noAccounts') }}
+        locale={{ emptyText: t(NO_ACCOUNTS_KEY) }}
         renderItem={(a: PaperAccount) => {
           const isRunning = !!running[a.id];
           const isBusy = stopping[a.id] || false;
@@ -203,11 +206,11 @@ export default function PaperAccountPanel() {
                   <Text type="secondary" style={{ fontSize: 11 }}>{a.id?.slice(0, 8)}</Text>
                 </Col>
                 <Col span={8}>
-                  <Statistic title={t('trading.balance')} value={a.currentBalance || '0'}
+                  <Statistic title={t(BALANCE_KEY)} value={a.currentBalance || '0'}
                     valueStyle={{ fontSize: 14 }} prefix="$" />
                 </Col>
                 <Col span={8}>
-                  <Statistic title={t('trading.equity')} value={a.equity || '0'}
+                  <Statistic title={t(EQUITY_KEY)} value={a.equity || '0'}
                     valueStyle={{ fontSize: 14, color: eq >= ib ? '#26a69a' : '#ef5350' }}
                     prefix={eq >= ib ? <RiseOutlined /> : <FallOutlined />} />
                 </Col>
@@ -216,28 +219,28 @@ export default function PaperAccountPanel() {
                 {isRunning ? (
                   <>
                     <Tag color="green">
-                      {t('strategy.paper.running', { symbol: running[a.id].symbol, timeframe: running[a.id].timeframe })}
+                      {t(RUNNING_KEY, { symbol: running[a.id].symbol, timeframe: running[a.id].timeframe })}
                     </Tag>
                     <Button size="small" icon={<StopOutlined />} danger
                       loading={isBusy}
                       onClick={() => handleStop(a.id)}>
-                      {t('strategy.paper.stop')}
+                      {t(STOP_KEY)}
                     </Button>
                   </>
                 ) : (
                   <>
                     <Button size="small" icon={<PlayCircleOutlined />}
                       onClick={() => openStartModal(a.id)}>
-                      {t('strategy.paper.start')}
+                      {t(START_KEY)}
                     </Button>
-                    <Button size="small" icon={<StopOutlined />} disabled>{t('strategy.paper.stop')}</Button>
+                    <Button size="small" icon={<StopOutlined />} disabled>{t(STOP_KEY)}</Button>
                   </>
                 )}
                 <Button size="small" icon={<ReloadOutlined />}
                   onClick={() => subscribeAccount(a.id)}>
-                  {t('strategy.paper.watch')}
+                  {t(WATCH_KEY)}
                 </Button>
-                <Tag color="blue">{t('strategy.paper.paper')}</Tag>
+                <Tag color="blue">{t(PAPER_KEY)}</Tag>
               </Space>
             </Card>
           );
@@ -246,29 +249,29 @@ export default function PaperAccountPanel() {
 
       {/* Start Strategy Modal */}
       <Modal
-        title={t('strategy.paper.startStrategy')}
+        title={t(START_STRATEGY_KEY)}
         open={startModalOpen}
         onCancel={() => setStartModalOpen(false)}
         onOk={handleStart}
         confirmLoading={starting}
-        okText={t('strategy.paper.start')}
+        okText={t(START_KEY)}
       >
         <Form layout="vertical" size="small" style={{ marginTop: 16 }}>
-          <Form.Item label={t('strategy.paper.symbol')}>
+          <Form.Item label={t(SYMBOL_KEY)}>
             <Input
               value={startSymbol}
               onChange={e => setStartSymbol(e.target.value.toUpperCase())}
               placeholder="XAUUSD"
             />
           </Form.Item>
-          <Form.Item label={t('strategy.paper.timeframe')}>
+          <Form.Item label={t(TIMEFRAME_KEY)}>
             <Select value={startTimeframe} onChange={setStartTimeframe}>
               {TIMEFRAMES.map(tf => (
                 <Select.Option key={tf} value={tf}>{tf}</Select.Option>
               ))}
             </Select>
           </Form.Item>
-          <Form.Item label={t('strategy.paper.strategyCode')}>
+          <Form.Item label={t(STRATEGY_CODE_KEY)}>
             <Input.TextArea
               rows={6}
               value={startCode}

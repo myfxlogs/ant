@@ -2,7 +2,10 @@ import { Tag } from 'antd';
 import React, { memo } from 'react';
 import { PositionPrice } from '@/components/PositionPrice';
 import { formatPrice } from '@/utils/price';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { STRATEGY_EXECUTE_CONFIRM_BUY_KEY, STRATEGY_EXECUTE_CONFIRM_SELL_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+
+;
 import type { Position } from '@/types/trading';
 import type { TradeRecordItem } from '@/client/analyticsTypes';
 
@@ -87,7 +90,7 @@ export const PositionRow = memo(({ position }: { position: Position }) => {
     <td className="p-3" style={{ color: 'var(--color-text)' }}>{position.symbol}</td>
     <td className="p-3">
       <Tag style={{ background: position.type === 'buy' ? 'var(--color-success-bg)' : 'var(--color-danger-bg)', color: position.type === 'buy' ? 'var(--color-success)' : 'var(--color-danger)', border: 'none', borderRadius: '4px' }}>
-        {position.type === 'buy' ? t('trading.strategyExecute.confirm.buy') : t('trading.strategyExecute.confirm.sell')}
+        {position.type === 'buy' ? t(STRATEGY_EXECUTE_CONFIRM_BUY_KEY) : t(STRATEGY_EXECUTE_CONFIRM_SELL_KEY)}
       </Tag>
     </td>
     <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{position.volume}</td>
@@ -122,12 +125,12 @@ export const PendingOrderRow = memo(({ order }: { order: Position }) => {
     <td className="p-3">
       <Tag style={{ background: (typeof order.type === 'string' && order.type.includes('buy')) ? 'var(--color-success-bg)' : 'var(--color-danger-bg)', color: (typeof order.type === 'string' && order.type.includes('buy')) ? 'var(--color-success)' : 'var(--color-danger)', border: 'none', borderRadius: '4px' }}>
         {order.type === 'buy_limit'
-          ? t('accounts.detail.orderTypes.buyLimit')
+          ? t(DETAIL_ORDER_TYPES_BUY_LIMIT_KEY)
           : order.type === 'sell_limit'
-            ? t('accounts.detail.orderTypes.sellLimit')
+            ? t(DETAIL_ORDER_TYPES_SELL_LIMIT_KEY)
             : order.type === 'buy_stop'
-              ? t('accounts.detail.orderTypes.buyStop')
-              : t('accounts.detail.orderTypes.sellStop')}
+              ? t(DETAIL_ORDER_TYPES_BUY_STOP_KEY)
+              : t(DETAIL_ORDER_TYPES_SELL_STOP_KEY)}
       </Tag>
     </td>
     <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{order.volume}</td>
@@ -169,16 +172,16 @@ export const HistoryTradeRow = memo(({ trade }: { trade: TradeRecordItem }) => {
     <tr className="border-b" style={{ borderColor: 'var(--color-border)', background: isBalanceRecord ? 'var(--color-gold-bg-hover)' : 'transparent' }}>
       <td className="p-3 font-medium" style={{ color: 'var(--color-text)' }}>{trade.ticket}</td>
       <td className="p-3" style={{ color: 'var(--color-text)' }}>
-        {isBalanceRecord ? (isDeposit ? t('accounts.detail.balanceRecord.depositIconText') : t('accounts.detail.balanceRecord.withdrawIconText')) : (trade.symbol || '--')}
+        {isBalanceRecord ? (isDeposit ? t(DETAIL_BALANCE_RECORD_DEPOSIT_ICON_TEXT_KEY) : t(DETAIL_BALANCE_RECORD_WITHDRAW_ICON_TEXT_KEY)) : (trade.symbol || '--')}
       </td>
       <td className="p-3">
         {isBalanceRecord ? (
           <Tag style={{ background: isDeposit ? 'var(--color-gold-bg)' : 'var(--color-danger-bg)', color: isDeposit ? 'var(--color-primary)' : 'var(--color-danger)', border: 'none', borderRadius: '4px' }}>
-            {isDeposit ? t('accounts.detail.balanceRecord.deposit') : t('accounts.detail.balanceRecord.withdraw')}
+            {isDeposit ? t(DETAIL_BALANCE_RECORD_DEPOSIT_KEY) : t(DETAIL_BALANCE_RECORD_WITHDRAW_KEY)}
           </Tag>
         ) : (
           <Tag style={{ background: orderType.includes('buy') ? 'var(--color-success-bg)' : 'var(--color-danger-bg)', color: orderType.includes('buy') ? 'var(--color-success)' : 'var(--color-danger)', border: 'none', borderRadius: '4px' }}>
-            {orderType.includes('buy') ? t('trading.strategyExecute.confirm.buy') : t('trading.strategyExecute.confirm.sell')}
+            {orderType.includes('buy') ? t(STRATEGY_EXECUTE_CONFIRM_BUY_KEY) : t(STRATEGY_EXECUTE_CONFIRM_SELL_KEY)}
           </Tag>
         )}
       </td>

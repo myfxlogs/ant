@@ -1,6 +1,9 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { Row, Col, Spin } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { SELECT_SYMBOL_KEY, TITLE_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+
+;
 import { useAccount } from '@/hooks/useAccount';
 import { useTradingStore } from '@/stores/tradingStore';
 import AccountSummaryCard from './components/AccountSummaryCard';
@@ -32,7 +35,7 @@ export default function Trading() {
 
   return (
     <div style={{ padding: '0 0 24px 0' }}>
-      <h2 style={{ marginBottom: 16 }}>{t('trading.title', 'Trading')}</h2>
+      <h2 style={{ marginBottom: 16 }}>{t(TITLE_KEY, 'Trading')}</h2>
       <AccountSummaryCard />
 
       {/* Chart with symbol picker */}
@@ -41,7 +44,7 @@ export default function Trading() {
           accountId={currentAccountId || ''}
           value={chartSymbol}
           onChange={setChartSymbol}
-          placeholder={t('trading.selectSymbol', 'Select symbol')}
+          placeholder={t(SELECT_SYMBOL_KEY, 'Select symbol')}
           style={{ width: 200 }}
         />
       </div>

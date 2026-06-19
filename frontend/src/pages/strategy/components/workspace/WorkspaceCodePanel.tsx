@@ -5,7 +5,10 @@ import {
   SaveOutlined, SettingOutlined, RobotOutlined,
   ThunderboltOutlined, KeyOutlined,
 } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { CODE_KEY, COPY_KEY, RUNTIME_MODE_KEY, SAVE_FAILED_KEY, SAVE_KEY, VALIDATE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+
+;
 import { useSystemAIConfigsQuery } from '@/queries/useSystemAIConfigsQuery';
 import { aiApi } from '@/client/ai';
 import { aiGatewayApi } from '@/client/aiGateway';
@@ -177,7 +180,7 @@ export default function WorkspaceCodePanel({
       const saved = await aiApi.setPrimary({ providerId: dec.providerId, model: dec.model });
       setPrimaryValue(saved.providerId ? `${saved.providerId}|${saved.model || ''}` : '');
     } catch (e: unknown) {
-      message.error(String((e as Error)?.message || t('strategy.workspace.saveFailed')));
+      message.error(String((e as Error)?.message || t(SAVE_FAILED_KEY)));
     } finally { setPrimarySaving(false); }
   };
 
@@ -187,19 +190,19 @@ export default function WorkspaceCodePanel({
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <span style={{ fontSize: 13, fontWeight: 500, color: '#595959' }}>
-            {t('strategy.workspace.code', 'Strategy Code')}
+            {t(CODE_KEY, 'Strategy Code')}
           </span>
           <Space size={4}>
-            <Tooltip title={t('strategy.workspace.copy', 'Copy')}>
+            <Tooltip title={t(COPY_KEY, 'Copy')}>
               <Button size="small" icon={<CopyOutlined />} onClick={onCopy} disabled={!code} style={btnStyle} />
             </Tooltip>
-            <Tooltip title={t('strategy.workspace.validate', 'Validate')}>
+            <Tooltip title={t(VALIDATE_KEY, 'Validate')}>
               <Button size="small" icon={<CheckCircleOutlined />} loading={validating} onClick={onValidate} style={btnStyle} />
             </Tooltip>
-            <Tooltip title={t('strategy.workspace.save', 'Save')}>
+            <Tooltip title={t(SAVE_KEY, 'Save')}>
               <Button size="small" type="primary" icon={<SaveOutlined />} onClick={onSave} disabled={!canSave} style={btnStyle} />
             </Tooltip>
-            <Tooltip title={t('strategy.ai.settings', 'AI Settings')}>
+            <Tooltip title={t(SETTINGS_KEY, 'AI Settings')}>
               <Button size="small" icon={<SettingOutlined />} onClick={() => setSettingsOpen(true)} style={btnStyle} />
             </Tooltip>
           </Space>
@@ -214,7 +217,7 @@ export default function WorkspaceCodePanel({
           <RobotOutlined style={{ fontSize: 11, color: '#8c8c8c' }} />
           {modelOptions.length === 0 ? (
             <span style={{ flex: 1, fontSize: 12, color: '#8c8c8c' }}>
-              {t('ai.settings.primary.placeholder', { defaultValue: 'Loading models...' })}
+              {t(PRIMARY_PLACEHOLDER_KEY, { defaultValue: 'Loading models...' })}
             </span>
           ) : (
             <Select
@@ -222,7 +225,7 @@ export default function WorkspaceCodePanel({
               style={{ flex: 1, minWidth: 0 }}
               variant="borderless"
               value={primaryValue || undefined}
-              placeholder={t('ai.settings.primary.placeholder', { defaultValue: 'Default AI model...' })}
+              placeholder={t(PRIMARY_PLACEHOLDER_KEY, { defaultValue: 'Default AI model...' })}
               options={modelOptions}
               onChange={(v) => { if (v) savePrimary(v); }}
               showSearch
@@ -232,7 +235,7 @@ export default function WorkspaceCodePanel({
                 const text = typeof label === 'string' ? label : (label?.props?.children?.[1] || label?.props?.children || '');
                 return String(text).toLowerCase().includes(input.toLowerCase());
               }}
-              notFoundContent={t('ai.settings.agent.fields.modelProfileEmpty', { defaultValue: 'No model — configure in AI Settings' })}
+              notFoundContent={t(AGENT_FIELDS_MODEL_PROFILE_EMPTY_KEY, { defaultValue: 'No model — configure in AI Settings' })}
             />
           )}
           {primarySaving && <span style={{ fontSize: 11, color: '#1677ff' }}>saving...</span>}
@@ -245,11 +248,11 @@ export default function WorkspaceCodePanel({
             color: '#ad6800', background: '#fffbe6', borderRadius: 4,
             border: '1px solid #ffe58f',
           }}>
-            ⚠ {t('strategy.ai.refreshFailed', { defaultValue: 'Model list refresh failed for' })}:{' '}
+            ⚠ {t(REFRESH_FAILED_KEY, { defaultValue: 'Model list refresh failed for' })}:{' '}
             {refreshWarnings.join(', ')}.{' '}
             <span style={{ cursor: 'pointer', textDecoration: 'underline' }}
               onClick={() => setSettingsOpen(true)}>
-              {t('strategy.ai.checkSettings', { defaultValue: 'Check AI Settings →' })}
+              {t(CHECK_SETTINGS_KEY, { defaultValue: 'Check AI Settings →' })}
             </span>
           </div>
         )}
@@ -261,13 +264,13 @@ export default function WorkspaceCodePanel({
             padding: '2px 0', marginBottom: 4,
           }}>
             <span style={{ fontSize: 10, color: '#8c8c8c' }}>
-              {t('strategy.workspace.runtimeMode', 'Runtime')}:
+              {t(RUNTIME_MODE_KEY, 'Runtime')}:
             </span>
             <Tag color={validationResult.strategyType === 'run_dataframe' ? 'green' : 'blue'}
               style={{ fontSize: 10, margin: 0, lineHeight: '18px' }}>
               {validationResult.strategyType === 'run_dataframe'
-                ? t('strategy.backtestParams.vectorizedMode', 'Vectorized')
-                : t('strategy.backtestParams.eventDrivenMode', 'Run(context)')}
+                ? t(VECTORIZED_MODE_KEY, 'Vectorized')
+                : t(EVENT_DRIVEN_MODE_KEY, 'Run(context)')}
             </Tag>
           </div>
         )}

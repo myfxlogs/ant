@@ -20,8 +20,6 @@ export interface RefreshTokenResult {
   expiresAt: bigint;
 }
 
-
-
 export const authApi = {
   login: async (login: string, password: string): Promise<LoginResult> => {
     const response: any = await authClient.login({ login, password });

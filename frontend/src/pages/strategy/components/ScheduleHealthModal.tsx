@@ -1,5 +1,8 @@
 import { Button, Modal } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { HEALTH_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
+
+;
 import ScheduleHealthContent from './ScheduleHealthContent';
 
 type Props = {
@@ -16,7 +19,7 @@ export default function ScheduleHealthModal({ open, target, loading, summary, on
   const { t } = useTranslation();
   return (
     <Modal
-      title={t('strategy.schedules.health.title', { name: (target?.name as string) || '' })}
+      title={t(HEALTH_TITLE_KEY, { name: (target?.name as string) || '' })}
       open={open} onCancel={onClose} width={980}
       footer={[
         <Button key="refresh" onClick={onRefresh} loading={loading}>{t('common.refresh')}</Button>,

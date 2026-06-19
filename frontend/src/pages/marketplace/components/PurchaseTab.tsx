@@ -1,7 +1,10 @@
 import { Table, Tag, Typography, Button, Space, Empty } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { EyeOutlined, ExportOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { OPEN_IN_WORKSPACE_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
+
+;
 import { formatDateTime } from '@/utils/date';
 import { useMarketplaceCtx } from '../MarketplaceContext';
 import type { PurchasedItem } from '../hooks/useMarketplace';
@@ -50,7 +53,7 @@ export default function PurchaseTab() {
           <Button size="small" icon={<ExportOutlined />} onClick={() => {
             window.open(`/strategy/workspace?templateId=${row.strategyId}`, '_blank');
           }}>
-            {t('strategy.library.openInWorkspace')}
+            {t(OPEN_IN_WORKSPACE_KEY)}
           </Button>
         </Space>
       ),

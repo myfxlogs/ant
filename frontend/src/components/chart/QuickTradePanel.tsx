@@ -1,7 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button, Select, InputNumber, Radio, message, Row, Col } from 'antd';
 import { SendOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { BUY_KEY, OPEN_POSITIONS_TITLE_KEY, PRICE_KEY, SELL_KEY, STOP_LOSS_KEY, TAKE_PROFIT_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+
+;
 import { tradingApi } from '@/client/trading';
 import PositionSection, { type PositionItem } from './PositionSection';
 import TradeHistorySection, { type TradeItem } from './TradeHistorySection';
@@ -55,9 +58,9 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
 
   const handleSubmit = useCallback(async () => {
     if (submitting) return; // prevent double-click
-    if (!symbol || !accountId) { message.warning(t('strategy.quickTradeSection.selectSymbol')); return; }
-    if (!volume || volume <= 0) { message.warning(t('strategy.quickTradeSection.validVolume')); return; }
-    if (isLimitOrStop && (!price || price <= 0)) { message.warning(t('strategy.quickTradeSection.priceRequired')); return; }
+    if (!symbol || !accountId) { message.warning(t(SELECT_SYMBOL_KEY)); return; }
+    if (!volume || volume <= 0) { message.warning(t(VALID_VOLUME_KEY)); return; }
+    if (isLimitOrStop && (!price || price <= 0)) { message.warning(t(PRICE_REQUIRED_KEY)); return; }
     setSubmitting(true);
     try {
       const typeStr = `${side}${isLimitOrStop ? `_${orderKind.toLowerCase()}` : ''}`;
@@ -71,8 +74,8 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
       });
       if (result.error && result.error !== '0' && result.error !== '') {
         message.error(result.message || result.error);
-      } else { message.success(t('strategy.quickTradeSection.orderPlaced', { side: side === 'buy' ? t('trading.buy') : t('trading.sell') })); }
-    } catch (e: any) { message.error(e?.message || t('strategy.quickTradeSection.orderFailed')); }
+      } else { message.success(t(ORDER_PLACED_KEY, { side: side === 'buy' ? t('trading.buy') : t('trading.sell') })); }
+    } catch (e: any) { message.error(e?.message || t(ORDER_FAILED_KEY)); }
     finally { setSubmitting(false); }
   }, [accountId, symbol, side, orderKind, volume, price, stopLoss, takeProfit, isLimitOrStop]);
 
@@ -102,7 +105,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
             background: side === 'buy' ? '#22c55e' : '#f1f5f9',
             borderColor: side === 'buy' ? '#22c55e' : '#d1d5db',
             color: side === 'buy' ? '#fff' : '#64748b',
-          }}>{t('trading.buy')}</Button>
+          }}>{t(BUY_KEY)}</Button>
         <Button block type={side === 'sell' ? 'primary' : 'default'}
           onClick={() => setSide('sell')} icon={<FallOutlined />}
           style={{
@@ -110,7 +113,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
             background: side === 'sell' ? '#ef4444' : '#f1f5f9',
             borderColor: side === 'sell' ? '#ef4444' : '#d1d5db',
             color: side === 'sell' ? '#fff' : '#64748b',
-          }}>{t('trading.sell')}</Button>
+          }}>{t(SELL_KEY)}</Button>
       </div>
 
       {/* Order type */}
@@ -120,7 +123,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
 
       {/* Volume */}
       <div>
-        <div style={labelSm}>{t('strategy.quickTradeSection.amountLots')}</div>
+        <div style={labelSm}>{t(AMOUNT_LOTS_KEY)}</div>
         <InputNumber size="small" style={{ width: '100%' }} min={0.01} step={0.01}
           value={volume} onChange={(v) => setVolume(v ?? 0.01)} placeholder="0.01" />
       </div>
@@ -128,7 +131,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
       {/* Price (Limit/Stop only) */}
       {isLimitOrStop && (
         <div>
-          <div style={labelSm}>{t('trading.price')}</div>
+          <div style={labelSm}>{t(PRICE_KEY)}</div>
           <InputNumber size="small" style={{ width: '100%' }} min={0} step={0.00001}
             value={price} onChange={(v) => setPrice(v)} placeholder="0.00000" />
         </div>
@@ -136,27 +139,27 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
 
       {/* Margin Mode — MT5 supports cross/isolated; MT4 only cross */}
       <div>
-        <div style={labelSm}>{t('strategy.quickTradeSection.marginMode')}</div>
+        <div style={labelSm}>{t(MARGIN_MODE_KEY)}</div>
         <Radio.Group size="small" buttonStyle="solid"
           value={marginMode} onChange={e => setMarginMode(e.target.value)}
           disabled={!isMT5}>
-          <Radio.Button value="cross">{t('strategy.quickTradeSection.cross')}</Radio.Button>
-          <Radio.Button value="isolated">{t('strategy.quickTradeSection.isolated')}</Radio.Button>
+          <Radio.Button value="cross">{t(CROSS_KEY)}</Radio.Button>
+          <Radio.Button value="isolated">{t(ISOLATED_KEY)}</Radio.Button>
         </Radio.Group>
         {!isMT5 && (
-          <div style={{ fontSize: 9, color: '#8c8c8c', marginTop: 2 }}>{t('strategy.quickTradeSection.mt4CrossOnly')}</div>
+          <div style={{ fontSize: 9, color: '#8c8c8c', marginTop: 2 }}>{t(MT4_CROSS_ONLY_KEY)}</div>
         )}
       </div>
 
       {/* SL / TP */}
       <Row gutter={8}>
         <Col span={12}>
-          <div style={labelSm}>{t('trading.stopLoss')}</div>
+          <div style={labelSm}>{t(STOP_LOSS_KEY)}</div>
           <InputNumber size="small" style={{ width: '100%' }} min={0} step={0.00001}
             value={stopLoss} onChange={(v) => setStopLoss(v)} placeholder="SL" />
         </Col>
         <Col span={12}>
-          <div style={labelSm}>{t('trading.takeProfit')}</div>
+          <div style={labelSm}>{t(TAKE_PROFIT_KEY)}</div>
           <InputNumber size="small" style={{ width: '100%' }} min={0} step={0.00001}
             value={takeProfit} onChange={(v) => setTakeProfit(v)} placeholder="TP" />
         </Col>
@@ -175,7 +178,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
             ? '0 2px 8px rgba(34,197,94,0.35)'
             : '0 2px 8px rgba(239,68,68,0.35)',
         }}>
-        {side === 'buy' ? t('trading.buy') : t('trading.sell')} {symbol || '—'}
+        {side === 'buy' ? t(BUY_KEY) : t(SELL_KEY)} {symbol || '—'}
       </Button>
       </>)}
 
@@ -183,7 +186,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
       <div onClick={onToggleAllPositions} role="button" tabIndex={0}
         onKeyUp={e => e.key === 'Enter' && onToggleAllPositions?.()}
         style={{ ...cardBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-        <span style={labelSm}>{t('trading.openPositionsTitle')}</span>
+        <span style={labelSm}>{t(OPEN_POSITIONS_TITLE_KEY)}</span>
         <span style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>
           {totalLots.toFixed(2)} lots · {allPositions.length} &gt;
         </span>

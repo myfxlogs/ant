@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Button, Form, Input, InputNumber, Space, Spin, Switch, Tag, message } from 'antd';
 import { BulbOutlined, RobotOutlined, SendOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { APPLY_ALL_SUGGESTIONS_KEY, DEFAULT_LABEL_KEY, EXPLAIN_KEY, OPTIONAL_PARAMS_DESC_KEY, OPTIONAL_PARAMS_TITLE_KEY, REQUIRED_KEY, REQUIRED_PARAMS_DESC_KEY, REQUIRED_PARAMS_TITLE_KEY, SUGGESTED_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
+
+;
 
 import { codeAssistApi, type CodeChatMessage, type RequiredParamSpec } from '@/client/codeAssist';
 
@@ -105,8 +108,8 @@ export const RequiredParamsForm: React.FC<RequiredParamsFormProps> = ({ paramete
 					type="warning"
 					showIcon
 					style={{ marginBottom: 8 }}
-					message={t('strategy.codeAssist.requiredParamsTitle', { defaultValue: 'Required parameters' })}
-					description={t('strategy.codeAssist.requiredParamsDesc', {
+					message={t(REQUIRED_PARAMS_TITLE_KEY, { defaultValue: 'Required parameters' })}
+					description={t(REQUIRED_PARAMS_DESC_KEY, {
 						defaultValue: 'The strategy reads these parameters but no default was provided. Fill them in before saving.',
 					})}
 				/>
@@ -114,7 +117,7 @@ export const RequiredParamsForm: React.FC<RequiredParamsFormProps> = ({ paramete
 			{required.length > 0 && hasAnySuggestion && (
 				<div style={{ marginBottom: 8 }}>
 					<Button size="small" icon={<ThunderboltOutlined />} onClick={applyAllSuggestions}>
-						{t('strategy.codeAssist.applyAllSuggestions', { defaultValue: 'Apply suggested defaults' })}
+						{t(APPLY_ALL_SUGGESTIONS_KEY, { defaultValue: 'Apply suggested defaults' })}
 					</Button>
 				</div>
 			)}
@@ -125,11 +128,11 @@ export const RequiredParamsForm: React.FC<RequiredParamsFormProps> = ({ paramete
 						label={
 							<Space>
 								<span style={{ fontFamily: 'monospace' }}>{p.key}</span>
-								<Tag color="red">{t('strategy.codeAssist.required', { defaultValue: 'required' })}</Tag>
+								<Tag color="red">{t(REQUIRED_KEY, { defaultValue: 'required' })}</Tag>
 								{p.type ? <Tag>{p.type}</Tag> : null}
 								{p.suggested !== undefined && p.suggested !== null ? (
 									<Tag color="blue">
-										{t('strategy.codeAssist.suggested', { defaultValue: 'suggested' })}: {String(p.suggested)}
+										{t(SUGGESTED_KEY, { defaultValue: 'suggested' })}: {String(p.suggested)}
 									</Tag>
 								) : null}
 							</Space>
@@ -146,8 +149,8 @@ export const RequiredParamsForm: React.FC<RequiredParamsFormProps> = ({ paramete
 							type="info"
 							showIcon
 							style={{ marginTop: 8, marginBottom: 8 }}
-							message={t('strategy.codeAssist.optionalParamsTitle', { defaultValue: 'Optional parameters' })}
-							description={t('strategy.codeAssist.optionalParamsDesc', {
+							message={t(OPTIONAL_PARAMS_TITLE_KEY, { defaultValue: 'Optional parameters' })}
+							description={t(OPTIONAL_PARAMS_DESC_KEY, {
 								defaultValue:
 									'These parameters already have defaults from the code. Leave a field blank to use the default, or override it for this run only — the saved strategy is not modified.',
 							})}
@@ -161,7 +164,7 @@ export const RequiredParamsForm: React.FC<RequiredParamsFormProps> = ({ paramete
 										{p.type ? <Tag>{p.type}</Tag> : null}
 										{p.default !== undefined && p.default !== null ? (
 											<Tag color="default">
-												{t('strategy.codeAssist.defaultLabel', { defaultValue: 'default' })}: {String(p.default)}
+												{t(DEFAULT_LABEL_KEY, { defaultValue: 'default' })}: {String(p.default)}
 											</Tag>
 										) : null}
 									</Space>
@@ -219,7 +222,7 @@ export const CodeExplainPanel: React.FC<CodeExplainPanelProps> = ({ code, autoOn
 		<div style={{ marginTop: 8 }}>
 			<Space style={{ marginBottom: 8 }}>
 				<Button icon={<BulbOutlined />} onClick={() => void explain()} loading={loading} disabled={!code.trim()}>
-					{t('strategy.codeAssist.explain', { defaultValue: 'Explain code' })}
+					{t(EXPLAIN_KEY, { defaultValue: 'Explain code' })}
 				</Button>
 			</Space>
 			{loading && !text ? <Spin /> : null}
@@ -242,7 +245,6 @@ export const CodeExplainPanel: React.FC<CodeExplainPanelProps> = ({ code, autoOn
 		</div>
 	);
 };
-
 
 // AICodeReviseChat extracted to its own file for size compliance.
 export { AICodeReviseChat, type AICodeReviseChatProps } from "./AICodeReviseChat";

@@ -1,7 +1,10 @@
 import { memo } from 'react';
 import { Row, Col } from 'antd';
 import { RiseOutlined, LineChartOutlined, AimOutlined, PieChartOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { SUMMARY_METRICS_BALANCE_KEY, SUMMARY_METRICS_EQUITY_KEY, SUMMARY_METRICS_EQUITY_VALUE_KEY, SUMMARY_METRICS_NET_PROFIT_KEY } from '@/gen/ant/v1/i18n/analytics_keys';
+
+;
 
 interface Props {
   netProfit: number;
@@ -12,10 +15,10 @@ interface Props {
 function SummaryTopMetrics({ netProfit, latestEquity, latestBalance }: Props) {
   const { t } = useTranslation();
   const cards = [
-    { icon: <RiseOutlined />, color: '#00A651', label: t('analytics.summary.metrics.netProfit'), value: `$${Number(netProfit || 0).toFixed(2)}`, valueColor: netProfit >= 0 ? '#00A651' : '#E53935' },
-    { icon: <LineChartOutlined />, color: '#2196F3', label: t('analytics.summary.metrics.equity'), value: `$${latestEquity.toFixed(2)}`, valueColor: 'var(--color-text)' },
-    { icon: <AimOutlined />, color: '#D4AF37', label: t('analytics.summary.metrics.balance'), value: `$${Number(latestBalance).toFixed(2)}`, valueColor: 'var(--color-text)' },
-    { icon: <PieChartOutlined />, color: '#9C27B0', label: t('analytics.summary.metrics.equityValue'), value: `$${latestEquity.toFixed(2)}`, valueColor: 'var(--color-text)' },
+    { icon: <RiseOutlined />, color: '#00A651', label: t(SUMMARY_METRICS_NET_PROFIT_KEY), value: `$${Number(netProfit || 0).toFixed(2)}`, valueColor: netProfit >= 0 ? '#00A651' : '#E53935' },
+    { icon: <LineChartOutlined />, color: '#2196F3', label: t(SUMMARY_METRICS_EQUITY_KEY), value: `$${latestEquity.toFixed(2)}`, valueColor: 'var(--color-text)' },
+    { icon: <AimOutlined />, color: '#D4AF37', label: t(SUMMARY_METRICS_BALANCE_KEY), value: `$${Number(latestBalance).toFixed(2)}`, valueColor: 'var(--color-text)' },
+    { icon: <PieChartOutlined />, color: '#9C27B0', label: t(SUMMARY_METRICS_EQUITY_VALUE_KEY), value: `$${latestEquity.toFixed(2)}`, valueColor: 'var(--color-text)' },
   ];
   return (
     <Row gutter={[16, 16]} className="mt-6">

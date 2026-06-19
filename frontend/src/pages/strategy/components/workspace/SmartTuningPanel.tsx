@@ -1,7 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Radio, Button, Checkbox, Tag, Table, Typography, Tooltip, Alert } from 'antd';
 import { ExperimentOutlined, TrophyOutlined, ThunderboltOutlined, RobotOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { APPLY_KEY, DEGRADATION_KEY, ENABLED_COMBINATIONS_KEY, GRADE_KEY, GRID_WARNING_KEY, HIDE_KEY, OOS_FOOTNOTE_KEY, OOS_SCORE_KEY, OPTIMIZER_METHOD_KEY, OVERFIT_KEY, OVERFIT_WARNING_KEY, PARAMETERS_KEY, PARAMETER_DIMENSIONS_KEY, PREVIEW_KEY, PREVIEW_TITLE_KEY, RANK_KEY, REQUIRES_A_I_KEY, RESULTS_KEY, RUN_KEY, SCORE_KEY, SUMMARY_KEY, SWITCH_TO_D_E_KEY, TRUNCATED_KEY, TUNING_KEY, WAITING_KEY } from '@/gen/ant/v1/i18n/strategy_tuning_keys';
+
+;
 import type { SweepDimension, TuneMethod } from '../../hooks/useBacktestParams';
 import { OPTIMIZER_INFO } from '../../hooks/useBacktestParams';
 import { strategyExperimentApi } from '@/client/strategyExperiment';
@@ -109,7 +112,7 @@ export default function SmartTuningPanel({
       {/* Optimizer selection */}
       <div style={{ marginBottom: 12 }}>
         <Typography.Text type="secondary" style={{ fontSize: 10, marginBottom: 4, display: 'block' }}>
-          {t('strategy.tuning.optimizerMethod')}
+          {t(OPTIMIZER_METHOD_KEY)}
         </Typography.Text>
         <Radio.Group value={tuneMethod} onChange={e => onTuneMethodChange(e.target.value)} size="small"
           buttonStyle="solid" style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -129,11 +132,11 @@ export default function SmartTuningPanel({
           type="info" showIcon style={{ marginBottom: 12, padding: '6px 12px' }}
           message={
             <span style={{ fontSize: 11 }}
-              dangerouslySetInnerHTML={{ __html: t('strategy.tuning.gridWarning', { count: cartesianSize.toLocaleString() }) }} />
+              dangerouslySetInnerHTML={{ __html: t(GRID_WARNING_KEY, { count: cartesianSize.toLocaleString() }) }} />
           }
           action={
             <Button size="small" type="primary" onClick={() => onTuneMethodChange('de')}>
-              {t('strategy.tuning.switchToDE')}
+              {t(SWITCH_TO_D_E_KEY)}
             </Button>
           }
         />
@@ -142,21 +145,21 @@ export default function SmartTuningPanel({
       {/* Run button + AI hint */}
       <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
         <Button size="small" type="primary" loading={tuningRunning} disabled={!canRun || enabledSweepDims.length === 0}
-          onClick={handleRunTuning}>{tuningRunning ? t('strategy.tuning.tuning') : t('strategy.tuning.run', { count: cartesianSize.toLocaleString() })}</Button>
-        {tuneMethod === 'ai' && <span style={{ fontSize: 10, color: '#fa8c16' }}>{t('strategy.tuning.requiresAI')}</span>}
+          onClick={handleRunTuning}>{tuningRunning ? t(TUNING_KEY) : t(RUN_KEY, { count: cartesianSize.toLocaleString() })}</Button>
+        {tuneMethod === 'ai' && <span style={{ fontSize: 10, color: '#fa8c16' }}>{t(REQUIRES_A_I_KEY)}</span>}
       </div>
 
       {/* Sweep dimensions (hidden for AI optimizer) */}
       {tuneMethod !== 'ai' && sweepDimensions.length > 0 && (
         <div style={{ marginBottom: 12, padding: 10, borderRadius: 6, border: '1px solid #e8e8e8', background: '#fcfcfd' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <Typography.Text type="secondary" style={{ fontSize: 10 }}>{t('strategy.tuning.parameterDimensions')}</Typography.Text>
+            <Typography.Text type="secondary" style={{ fontSize: 10 }}>{t(PARAMETER_DIMENSIONS_KEY)}</Typography.Text>
             <span style={{ fontSize: 9, color: '#8c8c8c' }}>
-              {t('strategy.tuning.enabledCombinations', { enabled: enabledSweepDims.length, combos: cartesianSize.toLocaleString() })}
+              {t(ENABLED_COMBINATIONS_KEY, { enabled: enabledSweepDims.length, combos: cartesianSize.toLocaleString() })}
               {cartesianSize > 0 && (
                 <Button type="link" size="small" style={{ fontSize: 10, padding: '0 4px' }}
                   onClick={() => setShowPreview(!showPreview)}>
-                  {showPreview ? t('strategy.tuning.hide') : t('strategy.tuning.preview')}
+                  {showPreview ? t(HIDE_KEY) : t(PREVIEW_KEY)}
                 </Button>
               )}
             </span>
@@ -177,8 +180,8 @@ export default function SmartTuningPanel({
             <div style={{ marginTop: 8, padding: 8, borderRadius: 4, background: '#f6f8fa', border: '1px solid #e1e4e8' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span style={{ fontSize: 9, fontWeight: 600, color: '#595959' }}>
-                  {t('strategy.tuning.previewTitle', { shown: previewRows.length, total: cartesianSize.toLocaleString() })}</span>
-                {previewTruncated && <Tag color="orange" style={{ fontSize: 8, lineHeight: '14px' }}>{t('strategy.tuning.truncated')}</Tag>}
+                  {t(PREVIEW_TITLE_KEY, { shown: previewRows.length, total: cartesianSize.toLocaleString() })}</span>
+                {previewTruncated && <Tag color="orange" style={{ fontSize: 8, lineHeight: '14px' }}>{t(TRUNCATED_KEY)}</Tag>}
               </div>
               <Table dataSource={previewRows} rowKey={(_, i) => String(i)} size="small" pagination={false}
                 scroll={{ x: 300 }}
@@ -196,45 +199,45 @@ export default function SmartTuningPanel({
         <div style={{ marginTop: 12, padding: 10, borderRadius: 6, border: '1px solid #e8e8e8', background: '#fcfcfd' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <TrophyOutlined style={{ color: '#faad14' }} />
-            <Typography.Text strong style={{ fontSize: 12 }}>{t('strategy.tuning.results', { count: candidates.length })}</Typography.Text>
+            <Typography.Text strong style={{ fontSize: 12 }}>{t(RESULTS_KEY, { count: candidates.length })}</Typography.Text>
           </div>
           <Table dataSource={candidates} rowKey="id" size="small" pagination={false} scroll={{ x: 700 }}
             columns={[
-              { title: t('strategy.tuning.rank'), dataIndex: 'rank', width: 40, render: (v: number) => v || '-' },
-              { title: t('strategy.tuning.grade'), dataIndex: 'grade', width: 60,
+              { title: t(RANK_KEY), dataIndex: 'rank', width: 40, render: (v: number) => v || '-' },
+              { title: t(GRADE_KEY), dataIndex: 'grade', width: 60,
                 render: (g: string) => <Tag color={gradeColors[g] || 'default'}>{g || 'C'}</Tag> },
-              { title: t('strategy.tuning.score'), dataIndex: 'score', width: 60,
+              { title: t(SCORE_KEY), dataIndex: 'score', width: 60,
                 render: (s: number) => s > 0 ? s.toFixed(1) : '-' },
-              { title: t('strategy.tuning.parameters'), dataIndex: 'parameters', ellipsis: true,
+              { title: t(PARAMETERS_KEY), dataIndex: 'parameters', ellipsis: true,
                 render: (p: unknown) => {
                   if (!p) return '-';
                   try {
                     return Object.entries(p as Record<string, unknown>).map(([k, v]) => `${k}=${v}`).join(', ');
                   } catch { return String(p); }
                 }},
-              { title: t('strategy.tuning.summary'), dataIndex: 'summary', ellipsis: true, width: 150,
+              { title: t(SUMMARY_KEY), dataIndex: 'summary', ellipsis: true, width: 150,
                 render: (s: string) => s || '-' },
-              { title: t('strategy.tuning.oosScore'), dataIndex: 'oosScore', width: 70,
+              { title: t(OOS_SCORE_KEY), dataIndex: 'oosScore', width: 70,
                 render: (s: number | undefined) => s != null ? s.toFixed(1) : '-' },
-              { title: t('strategy.tuning.degradation'), dataIndex: 'degradationPct', width: 90,
+              { title: t(DEGRADATION_KEY), dataIndex: 'degradationPct', width: 90,
                 render: (pct: number | undefined) => {
                   if (pct == null) return '-';
                   const color = pct < 20 ? 'green' : pct < 40 ? 'orange' : 'red';
                   return <Tag color={color} style={{ fontSize: 9, margin: 0 }}>{pct.toFixed(1)}%</Tag>;
                 }},
-              { title: t('strategy.tuning.overfit'), dataIndex: 'isOverfit', width: 70,
-                render: (v: boolean) => v ? <Tag color="red" style={{ fontSize: 9, margin: 0 }}>{t('strategy.tuning.overfitWarning')}</Tag> : <span style={{ color: '#bfbfbf', fontSize: 10 }}>-</span> },
+              { title: t(OVERFIT_KEY), dataIndex: 'isOverfit', width: 70,
+                render: (v: boolean) => v ? <Tag color="red" style={{ fontSize: 9, margin: 0 }}>{t(OVERFIT_WARNING_KEY)}</Tag> : <span style={{ color: '#bfbfbf', fontSize: 10 }}>-</span> },
               ...(onApplyToCode ? [{
                 title: '', width: 60,
                 render: (_: any, record: StrategyExperimentCandidate) => (
                   <Button size="small" type="link" style={{ fontSize: 10 }}
-                    onClick={() => applyParamsToCode(record)}>{t('strategy.tuning.apply')}</Button>
+                    onClick={() => applyParamsToCode(record)}>{t(APPLY_KEY)}</Button>
                 ),
               }] : []),
             ]} />
             {candidates.some(c => c.oosScore != null) && (
               <Typography.Text type="secondary" style={{ fontSize: 9, display: 'block', marginTop: 4 }}>
-                {t('strategy.tuning.oosFootnote')}
+                {t(OOS_FOOTNOTE_KEY)}
               </Typography.Text>
             )}
         </div>
@@ -242,7 +245,7 @@ export default function SmartTuningPanel({
 
       {watching && (
         <div style={{ textAlign: 'center', padding: 4, fontSize: 10, color: '#8c8c8c' }}>
-          {t('strategy.tuning.waiting')}
+          {t(WAITING_KEY)}
         </div>
       )}
     </div>

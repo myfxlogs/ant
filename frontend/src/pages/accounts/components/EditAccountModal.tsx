@@ -3,7 +3,10 @@ import { useState } from 'react';
 import { showError, showSuccess, showWarning } from '@/utils/message';
 import type { Account } from '@/types/account';
 import GradientButton from '@/components/common/GradientButton';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { EDIT_FIELDS_OLD_PASSWORD_KEY, EDIT_FIELDS_PASSWORD_KEY, EDIT_FIELDS_SERVER_KEY, EDIT_FIELDS_TRADING_ACCOUNT_KEY, EDIT_MESSAGES_ENTER_OLD_PASSWORD_KEY, EDIT_MESSAGES_ENTER_PASSWORD_KEY, EDIT_MESSAGES_PASSWORD_SAVED_KEY, EDIT_MESSAGES_PASSWORD_VERIFY_FAILED_KEY, EDIT_PLACEHOLDERS_NEW_PASSWORD_KEY, EDIT_PLACEHOLDERS_OLD_PASSWORD_KEY, EDIT_TITLE_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 import { accountApi } from '@/client/account';
 
 type Props = {
@@ -20,11 +23,11 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
 
   const handleSavePassword = async () => {
     if (!oldPassword) {
-      showWarning(t('accounts.edit.messages.enterOldPassword'));
+      showWarning(t(EDIT_MESSAGES_ENTER_OLD_PASSWORD_KEY));
       return;
     }
     if (!newPassword) {
-      showWarning(t('accounts.edit.messages.enterPassword'));
+      showWarning(t(EDIT_MESSAGES_ENTER_PASSWORD_KEY));
       return;
     }
     if (!account) return;
@@ -32,32 +35,32 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
     try {
       const result = await accountApi.updateTradingPassword(account.id, newPassword, oldPassword);
       if (result.success) {
-        showSuccess(t('accounts.edit.messages.passwordSaved'));
+        showSuccess(t(EDIT_MESSAGES_PASSWORD_SAVED_KEY));
         setOldPassword('');
         setNewPassword('');
         onClose();
       } else {
-        showError(result.message || t('accounts.edit.messages.passwordVerifyFailed'));
+        showError(result.message || t(EDIT_MESSAGES_PASSWORD_VERIFY_FAILED_KEY));
       }
     } catch (e: unknown) {
       const msg = (e as { message?: string })?.message || '';
-      showError(msg || t('accounts.edit.messages.passwordVerifyFailed'));
+      showError(msg || t(EDIT_MESSAGES_PASSWORD_VERIFY_FAILED_KEY));
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <Modal title={t('accounts.edit.title')} open={open} onCancel={onClose} footer={null} width={480}>
+    <Modal title={t(EDIT_TITLE_KEY)} open={open} onCancel={onClose} footer={null} width={480}>
       {account && (
         <div className="space-y-4">
           <div className="p-4 rounded-xl" style={{ background: 'var(--color-bg-secondary)' }}>
             <div className="flex justify-between mb-2">
-              <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.edit.fields.tradingAccount')}</span>
+              <span style={{ color: 'var(--color-text-muted)' }}>{t(EDIT_FIELDS_TRADING_ACCOUNT_KEY)}</span>
               <span style={{ color: 'var(--color-text)' }}>{account.login}</span>
             </div>
             <div className="flex justify-between">
-              <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.edit.fields.server')}</span>
+              <span style={{ color: 'var(--color-text-muted)' }}>{t(EDIT_FIELDS_SERVER_KEY)}</span>
               <span style={{ color: 'var(--color-text)' }}>
                 {account.brokerServer || account.brokerCompany}
               </span>
@@ -66,13 +69,13 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
 
           <div>
             <label className="block mb-2" style={{ color: 'var(--color-text-muted)' }}>
-              {t('accounts.edit.fields.oldPassword')}
+              {t(EDIT_FIELDS_OLD_PASSWORD_KEY)}
             </label>
             <Input
               autoComplete="current-password"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
-              placeholder={t('accounts.edit.placeholders.oldPassword')}
+              placeholder={t(EDIT_PLACEHOLDERS_OLD_PASSWORD_KEY)}
               className="flex-1 outline-none transition-all w-full"
               style={{
                 background: 'var(--color-bg-card)',
@@ -87,13 +90,13 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
 
           <div>
             <label className="block mb-2" style={{ color: 'var(--color-text-muted)' }}>
-              {t('accounts.edit.fields.password')}
+              {t(EDIT_FIELDS_PASSWORD_KEY)}
             </label>
             <Input
               autoComplete="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder={t('accounts.edit.placeholders.newPassword')}
+              placeholder={t(EDIT_PLACEHOLDERS_NEW_PASSWORD_KEY)}
               className="flex-1 outline-none transition-all w-full"
               style={{
                 background: 'var(--color-bg-card)',

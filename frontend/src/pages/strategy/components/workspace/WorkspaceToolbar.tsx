@@ -1,6 +1,9 @@
 import { Select, Space, Button, Tooltip, Tag } from 'antd';
 import { ThunderboltOutlined, CodeOutlined, RiseOutlined, FallOutlined, BankOutlined, AimOutlined, KeyOutlined, EyeOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { BALANCE_KEY, EQUITY_KEY, FREE_MARGIN_KEY, MARGIN_LEVEL_KEY, POSITIONS_KEY, POSITION_LEVERAGE_KEY, PROFIT_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+
+;
 import SymbolPicker from '@/components/chart/SymbolPicker';
 import type { AccountInfo } from '@/stores/tradingStore';
 import type { Account } from '@/types/account';
@@ -75,13 +78,13 @@ export default function WorkspaceToolbar({
     }}>
       {/* Watchlist group */}
       <div style={{ ...groupStyle, flex: '0 0 auto' }}>
-        <div style={groupLabelStyle}>{t('strategy.workspace.watchlist')}</div>
+        <div style={groupLabelStyle}>{t(WATCHLIST_KEY)}</div>
         <Space size={4}>
           <Select size="small" style={{ minWidth: 120, width: 220, maxWidth: '36vw' }}
             value={accountId || undefined} onChange={onAccountChange} disabled={busy}
             onDropdownVisibleChange={maybeCloseCode}
-            placeholder={t('strategy.workspace.selectAccount')} showSearch optionFilterProp="label"
-            notFoundContent={t('strategy.workspace.noAccounts')}
+            placeholder={t(SELECT_ACCOUNT_KEY)} showSearch optionFilterProp="label"
+            notFoundContent={t(NO_ACCOUNTS_KEY)}
             options={(accounts || []).map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))} />
           <SymbolPicker accountId={accountId} value={symbol} onChange={onSymbolChange}
             onDropdownVisibleChange={maybeCloseCode} style={{ width: 120 }} />
@@ -91,19 +94,19 @@ export default function WorkspaceToolbar({
       {/* Account Summary — shown inline in spare toolbar space */}
       {hasData && (
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <SummaryChip label={t('trading.balance')} value={`$${fmtCompact(accountInfo!.balance)}`} />
-          <SummaryChip label={t('trading.equity')} value={`$${fmtCompact(accountInfo!.equity)}`} />
+          <SummaryChip label={t(BALANCE_KEY)} value={`$${fmtCompact(accountInfo!.balance)}`} />
+          <SummaryChip label={t(EQUITY_KEY)} value={`$${fmtCompact(accountInfo!.equity)}`} />
           <SummaryChip
-            label={t('trading.profit')}
+            label={t(PROFIT_KEY)}
             value={`$${fmtCompact(Math.abs(accountInfo!.profit))}`}
             color={profitColor}
             icon={accountInfo!.profit >= 0
               ? <RiseOutlined style={{ fontSize: 11 }} />
               : <FallOutlined style={{ fontSize: 11 }} />}
           />
-          <SummaryChip label={t('trading.freeMargin')} value={`$${fmtCompact(accountInfo!.freeMargin)}`} />
+          <SummaryChip label={t(FREE_MARGIN_KEY)} value={`$${fmtCompact(accountInfo!.freeMargin)}`} />
           {accountInfo!.marginLevel > 0 && (
-            <SummaryChip label={t('trading.marginLevel')} value={`${accountInfo!.marginLevel.toFixed(0)}%`} />
+            <SummaryChip label={t(MARGIN_LEVEL_KEY)} value={`${accountInfo!.marginLevel.toFixed(0)}%`} />
           )}
         </div>
       )}
@@ -112,7 +115,7 @@ export default function WorkspaceToolbar({
       <div onClick={onTogglePositionsPanel} role="button" tabIndex={0}
         onKeyUp={e => e.key === 'Enter' && onTogglePositionsPanel?.()}
         style={{ cursor: 'pointer' }}>
-        <SummaryChip label={t('trading.positions')} value={positionCount != null ? String(positionCount) : '0'}
+        <SummaryChip label={t(POSITIONS_KEY)} value={positionCount != null ? String(positionCount) : '0'}
           color={positionCount != null && positionCount > 0 ? '#1677ff' : undefined} />
       </div>
 
@@ -134,10 +137,10 @@ export default function WorkspaceToolbar({
               : <KeyOutlined style={{ fontSize: 10 }} />}
             color={selectedAccount.isInvestor ? 'orange' : 'green'}
             style={{ fontSize: 10, margin: 0, lineHeight: '18px' }}>
-            {selectedAccount.isInvestor ? t('strategy.workspace.investorReadOnly') : t('strategy.workspace.masterTrading')}
+            {selectedAccount.isInvestor ? t(INVESTOR_READ_ONLY_KEY) : t(MASTER_TRADING_KEY)}
           </Tag>
           {selectedAccount.leverage && selectedAccount.leverage > 0 && (
-            <SummaryChip label={t('trading.positionLeverage')} value={`1:${selectedAccount.leverage}`} />
+            <SummaryChip label={t(POSITION_LEVERAGE_KEY)} value={`1:${selectedAccount.leverage}`} />
           )}
         </div>
       )}
@@ -147,7 +150,7 @@ export default function WorkspaceToolbar({
 
       {/* Actions — chart toolbar handles timeframe + indicators internally */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-        <Tooltip title={codePanelVisible ? t('strategy.workspace.hideCode') : t('strategy.workspace.showCode')}>
+        <Tooltip title={codePanelVisible ? t(HIDE_CODE_KEY) : t(SHOW_CODE_KEY)}>
           <Button size="small" type={codePanelVisible ? 'primary' : 'default'}
             icon={<CodeOutlined />} onClick={onToggleCodePanel}
             style={{ width: 30, height: 30, borderRadius: 6, padding: 0,
@@ -159,7 +162,7 @@ export default function WorkspaceToolbar({
             background: quickTradeVisible ? '#1890ff' : undefined,
             borderColor: quickTradeVisible ? '#1890ff' : undefined,
             boxShadow: quickTradeVisible ? '0 2px 8px rgba(24,144,255,0.3)' : undefined }}>
-          {t('strategy.workspace.quickTrade')}
+          {t(QUICK_TRADE_KEY)}
         </Button>
       </div>
 

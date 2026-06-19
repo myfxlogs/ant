@@ -1,6 +1,9 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { MESSAGES_CONNECTING_MT_SERVER_KEY, MESSAGES_CONNECT_FAILED_KEY, MESSAGES_DISABLED_SUCCESS_KEY, MESSAGES_ENABLED_SUCCESS_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 import { showSuccessModal, showErrorModal, showLoadingModal, showSuccess, showError } from '@/utils/message';
 import { translateMaybeI18nKey } from '@/utils/error';
 import type { ConnectAccountResult } from '@/client/account';
@@ -80,7 +83,7 @@ export function useAccountDetailData(id: string | undefined) {
         if (msg) showSuccess(msg);
         reconnect();
       } else {
-        showError(translateMaybeI18nKey(result?.message, t('accounts.messages.connectFailed')));
+        showError(translateMaybeI18nKey(result?.message, t(MESSAGES_CONNECT_FAILED_KEY)));
       }
     } catch { /* mutation onError handles toast */ }
     finally { setConnecting(false); }
@@ -89,17 +92,17 @@ export function useAccountDetailData(id: string | undefined) {
   const handleToggleStatus = useCallback(async () => {
     if (!currentAccount) return;
     if (currentAccount.isDisabled) {
-      const modal = showLoadingModal(t('accounts.messages.connectingMtServer'), t('common.pleaseWait'));
+      const modal = showLoadingModal(t(MESSAGES_CONNECTING_MT_SERVER_KEY), t('common.pleaseWait'));
       try {
         await toggleMut.mutateAsync({ id: currentAccount.id, isDisabled: false });
         modal.destroy();
-        showSuccessModal(t('accounts.messages.enabledSuccess'));
+        showSuccessModal(t(MESSAGES_ENABLED_SUCCESS_KEY));
       } catch { modal.destroy(); showErrorModal(t('common.operationFailed')); }
     } else {
       setDisabling(true);
       try {
         await toggleMut.mutateAsync({ id: currentAccount.id, isDisabled: true });
-        showSuccessModal(t('accounts.messages.disabledSuccess'));
+        showSuccessModal(t(MESSAGES_DISABLED_SUCCESS_KEY));
       } catch { showErrorModal(t('common.operationFailed')); }
       finally { setDisabling(false); }
     }

@@ -1,7 +1,10 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Select, Space, Affix } from 'antd';
 import { StatusResult } from '@/components/common/StatusResult';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { SUMMARY_PLACEHOLDERS_SELECT_ACCOUNT_KEY, SUMMARY_TITLE_KEY } from '@/gen/ant/v1/i18n/analytics_keys';
+
+;
 import { useAccount } from '@/hooks/useAccount';
 import { analyticsApi } from '@/client/analytics';
 import { useRpcQuery } from '@/hooks/useRpcQuery';
@@ -100,10 +103,10 @@ export default function Summary() {
       <Affix offsetTop={0} target={() => window}>
         <div className="flex items-center justify-between" style={{ zIndex: 10, background: 'var(--color-bg)', padding: '8px 0' }}>
           <h1 className="text-2xl font-bold" style={{ fontFamily: 'Poppins, sans-serif', color: 'var(--color-text)', margin: 0 }}>
-            {t('analytics.summary.title')}
+            {t(SUMMARY_TITLE_KEY)}
           </h1>
           <Space>
-            <Select value={selectedAccount} onChange={setSelectedAccount} style={{ width: 200 }} placeholder={t('analytics.summary.placeholders.selectAccount')}>
+            <Select value={selectedAccount} onChange={setSelectedAccount} style={{ width: 200 }} placeholder={t(SUMMARY_PLACEHOLDERS_SELECT_ACCOUNT_KEY)}>
               {(accounts || []).map(a => <Select.Option key={a.id} value={a.id}>{a.login} · {a.brokerServer}</Select.Option>)}
             </Select>
             <Select value={selectedPeriod} onChange={setSelectedPeriod} options={periodOptions(t)} style={{ width: 120 }} />

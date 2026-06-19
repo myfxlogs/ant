@@ -1,4 +1,7 @@
-import { useState, useCallback, useMemo } from 'react';
+
+import { STARTED_KEY } from '@/gen/ant/v1/i18n/strategy_tuning_keys';
+import { useState, useCallback, useMemo } from 'react'
+;
 import { message } from 'antd';
 import type { TFunction } from 'i18next';
 import { backendSweepToSweepDimensions, DEFAULT_SWEEP_DIMS, OPTIMIZER_INFO } from './backtestParamHelpers';
@@ -55,7 +58,7 @@ export function useTuning(t: TFunction) {
         fromTsUnixMs: BigInt(fromMs),
         toTsUnixMs: BigInt(toMs),
       });
-      message.success(t('strategy.tuning.started'));
+      message.success(t(STARTED_KEY));
       return result.experiment?.id || result.jobId || '';
     } catch (e: any) {
       message.error(e?.message || 'Tuning failed');

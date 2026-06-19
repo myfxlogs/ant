@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { SYSTEM_A_I_CUSTOM_PROVIDER_NAME_REQUIRED_KEY, SYSTEM_A_I_MESSAGES_LOAD_CONFIG_FAILED_KEY } from '@/gen/ant/v1/i18n/ai_core_keys';
+
+;
 import {
   listSystemAIConfigs,
   updateSystemAIConfig,
@@ -48,7 +51,7 @@ export function useSystemAIPage() {
 
   const persistDraftConfig = async (cfg: AIConfig) => {
     if (isCustomProvider(cfg.provider_id) && !cfg.name.trim()) {
-      throw new Error(t('ai.systemAI.customProvider.nameRequired', { defaultValue: '请先填写自定义厂商名称' }));
+      throw new Error(t(SYSTEM_A_I_CUSTOM_PROVIDER_NAME_REQUIRED_KEY, { defaultValue: '请先填写自定义厂商名称' }));
     }
     await updateSystemAIConfig(cfg.provider_id, {
       name: cfg.name,
@@ -79,7 +82,7 @@ export function useSystemAIPage() {
       if (!mountedRef.current) return;
     } catch {
       if (!mountedRef.current) return;
-      setError(t('ai.systemAI.messages.loadConfigFailed'));
+      setError(t(SYSTEM_A_I_MESSAGES_LOAD_CONFIG_FAILED_KEY));
     } finally {
       if (mountedRef.current) setLoading(false);
     }

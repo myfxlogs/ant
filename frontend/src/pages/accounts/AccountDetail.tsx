@@ -7,7 +7,10 @@ import {
   WarningOutlined, DeleteOutlined, FileTextOutlined,
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { DETAIL_ACCOUNT_TYPE_DEMO_KEY, DETAIL_ACCOUNT_TYPE_REAL_KEY, DETAIL_ACTIONS_DELETE_ACCOUNT_KEY, DETAIL_ACTIONS_DISABLE_ACCOUNT_KEY, DETAIL_ACTIONS_ENABLE_ACCOUNT_KEY, DETAIL_LEVERAGE_KEY, DETAIL_MESSAGES_FETCH_ACCOUNT_FAILED_KEY, DETAIL_MODE_INVESTOR_KEY, DETAIL_MODE_TRADER_KEY, DETAIL_STATUS_CONNECTED_KEY, DETAIL_STATUS_CONNECTING_KEY, DETAIL_STATUS_DISABLED_KEY, DETAIL_STATUS_DISCONNECTED_KEY, DETAIL_STATUS_ERROR_KEY, REPORT_TITLE_SHORT_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+
+;
 import AccountTradeTabs from './components/AccountTradeTabs';
 import AccountAnalyticsSection from './components/AccountAnalyticsSection';
 import AccountMetricsCards from './components/AccountMetricsCards';
@@ -49,12 +52,12 @@ export default function AccountDetail() {
 
   const statusConfig = useMemo(() => {
     if (!currentAccount) return { color: 'var(--color-text-muted)', bg: 'var(--color-bg-tertiary)', text: t('common.unknown') };
-    if (currentAccount.isDisabled) return { color: 'var(--color-text-muted)', bg: 'var(--color-bg-tertiary)', text: t('accounts.detail.status.disabled') };
+    if (currentAccount.isDisabled) return { color: 'var(--color-text-muted)', bg: 'var(--color-bg-tertiary)', text: t(DETAIL_STATUS_DISABLED_KEY) };
     switch (currentAccount.status) {
-      case 'connected': return { color: 'var(--color-success)', bg: 'var(--color-success-bg)', text: t('accounts.detail.status.connected') };
-      case 'connecting': return { color: 'var(--color-warning)', bg: 'var(--color-warning-bg)', text: t('accounts.detail.status.connecting') };
-      case 'disconnected': return { color: 'var(--color-danger)', bg: 'var(--color-danger-bg)', text: t('accounts.detail.status.disconnected') };
-      case 'error': return { color: 'var(--color-danger)', bg: 'var(--color-danger-bg)', text: t('accounts.detail.status.error') };
+      case 'connected': return { color: 'var(--color-success)', bg: 'var(--color-success-bg)', text: t(DETAIL_STATUS_CONNECTED_KEY) };
+      case 'connecting': return { color: 'var(--color-warning)', bg: 'var(--color-warning-bg)', text: t(DETAIL_STATUS_CONNECTING_KEY) };
+      case 'disconnected': return { color: 'var(--color-danger)', bg: 'var(--color-danger-bg)', text: t(DETAIL_STATUS_DISCONNECTED_KEY) };
+      case 'error': return { color: 'var(--color-danger)', bg: 'var(--color-danger-bg)', text: t(DETAIL_STATUS_ERROR_KEY) };
       default: return { color: 'var(--color-text-muted)', bg: 'var(--color-bg-tertiary)', text: t('common.unknown') };
     }
   }, [currentAccount, t]);
@@ -63,8 +66,8 @@ export default function AccountDetail() {
     {
       key: 'toggle',
       label: currentAccount?.isDisabled
-        ? t('accounts.detail.actions.enableAccount')
-        : t('accounts.detail.actions.disableAccount'),
+        ? t(DETAIL_ACTIONS_ENABLE_ACCOUNT_KEY)
+        : t(DETAIL_ACTIONS_DISABLE_ACCOUNT_KEY),
       icon: togglePending ? <Spin size="small" />
         : currentAccount?.isDisabled ? <CaretRightOutlined /> : <PauseCircleOutlined />,
       onClick: handleToggleStatus,
@@ -72,7 +75,7 @@ export default function AccountDetail() {
     },
     {
       key: 'delete',
-      label: t('accounts.detail.actions.deleteAccount'),
+      label: t(DETAIL_ACTIONS_DELETE_ACCOUNT_KEY),
       icon: <DeleteOutlined style={{ color: 'var(--color-danger)' }} />,
       onClick: () => setDeleteModalOpen(true),
       danger: true,
@@ -86,7 +89,7 @@ export default function AccountDetail() {
       return (
         <div className="p-4 flex flex-col justify-center items-center h-64 gap-4">
           <div style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>
-            {t('accounts.detail.messages.fetchAccountFailed')}
+            {t(DETAIL_MESSAGES_FETCH_ACCOUNT_FAILED_KEY)}
           </div>
           <Button onClick={handleRetry}>{t('common.retry')}</Button>
         </div>
@@ -121,7 +124,7 @@ export default function AccountDetail() {
                     color: currentAccount.accountType === 'real' ? 'var(--color-danger)' : 'var(--color-info)',
                     border: 'none',
                   }}>
-                    {currentAccount.accountType === 'real' ? t('accounts.detail.accountType.real') : t('accounts.detail.accountType.demo')}
+                    {currentAccount.accountType === 'real' ? t(DETAIL_ACCOUNT_TYPE_REAL_KEY) : t(DETAIL_ACCOUNT_TYPE_DEMO_KEY)}
                   </Tag>
                 )}
                 <Tag style={{
@@ -130,13 +133,13 @@ export default function AccountDetail() {
                   color: currentAccount.isInvestor ? 'var(--color-warning)' : 'var(--color-success)',
                   border: 'none',
                 }}>
-                  {currentAccount.isInvestor ? t('accounts.detail.mode.investor') : t('accounts.detail.mode.trader')}
+                  {currentAccount.isInvestor ? t(DETAIL_MODE_INVESTOR_KEY) : t(DETAIL_MODE_TRADER_KEY)}
                 </Tag>
               </div>
               <div className="flex items-center gap-3 mt-0.5 flex-wrap" style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>
                 <span>{currentAccount.brokerCompany} · {currentAccount.brokerServer}</span>
                 <span>·</span>
-                <span>{t('accounts.detail.leverage', { leverage: currentAccount.leverage })}</span>
+                <span>{t(DETAIL_LEVERAGE_KEY, { leverage: currentAccount.leverage })}</span>
                 <span>·</span>
                 <Tag
                   style={{
@@ -146,14 +149,14 @@ export default function AccountDetail() {
                   }}
                   onClick={() => { if (currentAccount.status === 'disconnected' || currentAccount.status === 'error') handleConnect(); }}
                 >
-                  {connecting ? t('accounts.detail.status.connecting') : statusConfig.text}
+                  {connecting ? t(DETAIL_STATUS_CONNECTING_KEY) : statusConfig.text}
                 </Tag>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Button icon={<FileTextOutlined />} onClick={() => navigate(`/accounts/${id}/report`)}>
-              {t('accounts.report.titleShort')}
+              {t(REPORT_TITLE_SHORT_KEY)}
             </Button>
             {id && <ShareAccountButton accountId={id} />}
             <Button icon={<ReloadOutlined />} onClick={handleRefresh} loading={analyticsLoading}>
@@ -190,7 +193,7 @@ export default function AccountDetail() {
           {disabled ? (
             <div className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
               <PauseCircleOutlined style={{ fontSize: 48, opacity: 0.3 }} />
-              <p className="mt-4">{t('accounts.detail.status.disabled')}</p>
+              <p className="mt-4">{t(DETAIL_STATUS_DISABLED_KEY)}</p>
             </div>
           ) : (
             <AccountTradeTabs

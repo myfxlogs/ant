@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { message } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { MESSAGES_CODE_VALIDATION_NOT_PASSED_KEY, MESSAGES_FETCH_TEMPLATE_LIST_FAILED_KEY, MESSAGES_SYSTEM_TEMPLATE_READ_ONLY_KEY, MESSAGES_TEMPLATE_CREATED_KEY, MESSAGES_TEMPLATE_DELETED_KEY, MESSAGES_TEMPLATE_UPDATED_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
+;
 import { useQueryClient } from '@tanstack/react-query';
 import type { StrategyTemplate } from '@/client/strategy';
 import { strategyTemplateApi, type CreateTemplateRequest } from '@/client/strategy-schedules';
@@ -32,7 +35,7 @@ export function useLibraryTemplates() {
       const resp = await strategyTemplateApi.list();
       setTemplates(resp || []);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t('strategy.templates.messages.fetchTemplateListFailed'));
+      setError(err instanceof Error ? err.message : t(MESSAGES_FETCH_TEMPLATE_LIST_FAILED_KEY));
     } finally { setLoading(false); }
   }, [t]);
 
@@ -74,7 +77,7 @@ export function useLibraryTemplates() {
   const handleSaveAsMine = useCallback(async (tpl: StrategyTemplate) => {
     try {
       const data: CreateTemplateRequest = {
-        name: `${String(tpl.name || '')} (${t('strategy.library.myCopy')})`,
+        name: `${String(tpl.name || '')} (${t(MY_COPY_KEY)})`,
         description: String(tpl.description || ''),
         code: String(tpl.code || ''),
         parameters: [],
@@ -82,7 +85,7 @@ export function useLibraryTemplates() {
         tags: Array.isArray(tpl.tags) ? [...tpl.tags] : [],
       };
       const created = await strategyTemplateApi.create(data);
-      message.success(t('strategy.library.saveAsMineSuccess'));
+      message.success(t(SAVE_AS_MINE_SUCCESS_KEY));
       fetchTemplates();
       setSelectedId(String(created.id || ''));
       setFilter('user');
@@ -94,10 +97,10 @@ export function useLibraryTemplates() {
       setCodeValidating(true);
       const code = String(values.code || '');
       const ext = await codeAssistApi.validateExtended(code);
-      if (!ext.valid) { message.error(ext.errors?.[0] || ext.warnings?.[0] || t('strategy.templates.messages.codeValidationNotPassed')); return; }
+      if (!ext.valid) { message.error(ext.errors?.[0] || ext.warnings?.[0] || t(MESSAGES_CODE_VALIDATION_NOT_PASSED_KEY)); return; }
       const data: CreateTemplateRequest = { name: String(values.name || ''), description: String(values.description || ''), code, parameters: [], isPublic: Boolean(values.isPublic) || false, tags: [] };
-      if (editing) { await strategyTemplateApi.update({ id: editing.id, ...data }); message.success(t('strategy.templates.messages.templateUpdated')); }
-      else { await strategyTemplateApi.create(data); message.success(t('strategy.templates.messages.templateCreated')); setFilter('user'); }
+      if (editing) { await strategyTemplateApi.update({ id: editing.id, ...data }); message.success(t(MESSAGES_TEMPLATE_UPDATED_KEY)); }
+      else { await strategyTemplateApi.create(data); message.success(t(MESSAGES_TEMPLATE_CREATED_KEY)); setFilter('user'); }
       setEditOpen(false); fetchTemplates();
     } catch { message.error(t('common.saveFailed')); }
     finally { setCodeValidating(false); }
@@ -106,14 +109,14 @@ export function useLibraryTemplates() {
   const handleDelete = useCallback(async (id: string) => {
     try {
       await strategyTemplateApi.delete(id);
-      message.success(t('strategy.templates.messages.templateDeleted'));
+      message.success(t(MESSAGES_TEMPLATE_DELETED_KEY));
       if (String(selectedId) === id) setSelectedId('');
       fetchTemplates();
     } catch (err: unknown) {
       const e = err as { code?: string; rawMessage?: string; message?: string };
       if (String(e?.code || '').toLowerCase().includes('permission')
         || String(e?.rawMessage || e?.message || '').toLowerCase().includes('system template')) {
-        message.error(t('strategy.templates.messages.systemTemplateReadOnly'));
+        message.error(t(MESSAGES_SYSTEM_TEMPLATE_READ_ONLY_KEY));
         return;
       }
       message.error(t('common.deleteFailed'));
@@ -124,7 +127,7 @@ export function useLibraryTemplates() {
     setPublishing(true);
     try {
       await strategyTemplateApi.update({ id, isPublic: true });
-      message.success(t('strategy.library.publishSuccess'));
+      message.success(t(PUBLISH_SUCCESS_KEY));
       fetchTemplates();
       queryClient.invalidateQueries({ queryKey: ['marketplace'] });
     } catch { message.error(t('common.saveFailed')); }
@@ -135,7 +138,7 @@ export function useLibraryTemplates() {
     setPublishing(true);
     try {
       await strategyTemplateApi.update({ id, isPublic: false });
-      message.success(t('strategy.library.unpublishSuccess'));
+      message.success(t(UNPUBLISH_SUCCESS_KEY));
       fetchTemplates();
       queryClient.invalidateQueries({ queryKey: ['marketplace'] });
     } catch { message.error(t('common.saveFailed')); }

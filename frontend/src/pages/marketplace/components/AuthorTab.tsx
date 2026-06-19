@@ -1,6 +1,9 @@
 import { Card, Row, Col, Statistic, Table, Tag, Typography, Empty } from 'antd';
 import { ShopOutlined, StarOutlined, SendOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { TABLE_NAME_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
+;
 import { useMarketplaceCtx } from '../MarketplaceContext';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
 
@@ -41,7 +44,7 @@ export default function AuthorTab() {
         pagination={{ pageSize: 10 }}
         size="small"
         columns={[
-          { title: t('strategy.templates.table.name'), dataIndex: 'strategyName', key: 'name', render: (n: string, row: PublishedStrategy) => <Text strong>{n || row.title || 'Unknown'}</Text> },
+          { title: t(TABLE_NAME_KEY), dataIndex: 'strategyName', key: 'name', render: (n: string, row: PublishedStrategy) => <Text strong>{n || row.title || 'Unknown'}</Text> },
           { title: t('marketplace.detail.price'), key: 'price', render: (_: unknown, row: PublishedStrategy) => (<Tag color={!row.priceAmount || row.priceModel === 'free' ? 'green' : 'gold'}>{!row.priceAmount || row.priceModel === 'free' ? t('marketplace.card.free') : `¥${row.priceAmount}`}</Tag>) },
           { title: t('marketplace.author.subscribers'), dataIndex: 'totalSubscribers', key: 'subscribers' },
           { title: t('marketplace.author.avgRating'), key: 'rating', render: (_: unknown, row: PublishedStrategy) => Number(row.avgRating || 0).toFixed(1) },

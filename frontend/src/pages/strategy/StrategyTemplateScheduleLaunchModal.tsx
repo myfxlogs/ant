@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Modal, Space } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { SCHEDULE_LAUNCH_ACTIONS_PUBLISH_TEMPLATE_KEY, SCHEDULE_LAUNCH_BACKTEST_RUNNING_HINT_KEY, SCHEDULE_LAUNCH_KEY_METRICS_KEY, SCHEDULE_LAUNCH_LAUNCH_SECTION_KEY, SCHEDULE_LAUNCH_METRICS_ANNUAL_RETURN_KEY, SCHEDULE_LAUNCH_METRICS_MAX_DRAWDOWN_KEY, SCHEDULE_LAUNCH_METRICS_SHARPE_KEY, SCHEDULE_LAUNCH_METRICS_TOTAL_RETURN_KEY, SCHEDULE_LAUNCH_METRICS_TOTAL_TRADES_KEY, SCHEDULE_LAUNCH_METRICS_WIN_RATE_KEY, SCHEDULE_LAUNCH_NO_RUN_KEY, SCHEDULE_LAUNCH_SCORE_KEY, SCHEDULE_LAUNCH_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
+;
 import { codeAssistApi, type RequiredParamSpec } from '@/client/codeAssist';
 import { strategyApi } from '@/client/strategy';
 import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
@@ -132,7 +135,7 @@ export const StrategyTemplateScheduleLaunchModal: React.FC<StrategyTemplateSched
 
 	return (
 		<Modal
-			title={t('strategy.templates.scheduleLaunch.title')}
+			title={t(SCHEDULE_LAUNCH_TITLE_KEY)}
 			open={open}
 			onCancel={onCancel}
 			footer={null}
@@ -142,37 +145,37 @@ export const StrategyTemplateScheduleLaunchModal: React.FC<StrategyTemplateSched
 			{scoreLoading ? (
 				<div className="text-sm text-gray-500">{t('common.loading')}</div>
 			) : !hasRun && !canBypassRun ? (
-				<div className="text-sm text-gray-500">{t('strategy.templates.scheduleLaunch.noRun')}</div>
+				<div className="text-sm text-gray-500">{t(SCHEDULE_LAUNCH_NO_RUN_KEY)}</div>
 			) : (
 				<div>
 					{hasRun ? (
 						<>
 							<div className="text-sm text-gray-700">
-								{t('strategy.templates.scheduleLaunch.score')}
+								{t(SCHEDULE_LAUNCH_SCORE_KEY)}
 							</div>
 							<div className="text-2xl font-semibold mt-1">
 								{typeof scoreValue === 'number' ? `${scoreValue}%` : '-'}
 							</div>
 							<div className="mt-3 text-sm text-gray-700">
-								{t('strategy.templates.scheduleLaunch.keyMetrics')}
+								{t(SCHEDULE_LAUNCH_KEY_METRICS_KEY)}
 							</div>
 							<div className="mt-2 text-sm text-gray-600 whitespace-pre-wrap">
-								{t('strategy.templates.scheduleLaunch.metrics.totalReturn')}:{' '}
+								{t(SCHEDULE_LAUNCH_METRICS_TOTAL_RETURN_KEY)}:{' '}
 								{formatPercent(pickMetric(scoreSnapshot.metrics, ['totalReturn', 'total_return']))}
 								{'\n'}
-								{t('strategy.templates.scheduleLaunch.metrics.annualReturn')}:{' '}
+								{t(SCHEDULE_LAUNCH_METRICS_ANNUAL_RETURN_KEY)}:{' '}
 								{formatPercent(pickMetric(scoreSnapshot.metrics, ['annualReturn', 'annual_return']))}
 								{'\n'}
-								{t('strategy.templates.scheduleLaunch.metrics.maxDrawdown')}:{' '}
+								{t(SCHEDULE_LAUNCH_METRICS_MAX_DRAWDOWN_KEY)}:{' '}
 								{formatPercent(pickMetric(scoreSnapshot.metrics, ['maxDrawdown', 'max_drawdown']))}
 								{'\n'}
-								{t('strategy.templates.scheduleLaunch.metrics.sharpe')}:{' '}
+								{t(SCHEDULE_LAUNCH_METRICS_SHARPE_KEY)}:{' '}
 								{formatFloat(pickMetric(scoreSnapshot.metrics, ['sharpeRatio', 'sharpe_ratio']))}
 								{'\n'}
-								{t('strategy.templates.scheduleLaunch.metrics.winRate')}:{' '}
+								{t(SCHEDULE_LAUNCH_METRICS_WIN_RATE_KEY)}:{' '}
 								{formatPercent(pickMetric(scoreSnapshot.metrics, ['winRate', 'win_rate']))}
 								{'\n'}
-								{t('strategy.templates.scheduleLaunch.metrics.totalTrades')}:{' '}
+								{t(SCHEDULE_LAUNCH_METRICS_TOTAL_TRADES_KEY)}:{' '}
 								{formatInt(pickMetric(scoreSnapshot.metrics, ['totalTrades', 'total_trades']))}
 							</div>
 						</>
@@ -180,11 +183,11 @@ export const StrategyTemplateScheduleLaunchModal: React.FC<StrategyTemplateSched
 
 					<div className="mt-5 border-t pt-4">
 						<div className="text-sm text-gray-700 mb-2">
-							{t('strategy.templates.scheduleLaunch.launchSection')}
+							{t(SCHEDULE_LAUNCH_LAUNCH_SECTION_KEY)}
 						</div>
 						{hasRun && !isTerminal ? (
 							<div className="text-xs text-gray-500 mb-2">
-								{t('strategy.templates.scheduleLaunch.backtestRunningHint')}
+								{t(SCHEDULE_LAUNCH_BACKTEST_RUNNING_HINT_KEY)}
 							</div>
 						) : null}
 
@@ -197,7 +200,7 @@ export const StrategyTemplateScheduleLaunchModal: React.FC<StrategyTemplateSched
 									loading={scheduleFlow.publishing}
 									onClick={() => void handlePublishTemplate()}
 								>
-									{t('strategy.templates.scheduleLaunch.actions.publishTemplate')}
+									{t(SCHEDULE_LAUNCH_ACTIONS_PUBLISH_TEMPLATE_KEY)}
 								</Button>
 							</Space>
 						) : null}

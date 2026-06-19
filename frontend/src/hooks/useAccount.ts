@@ -1,4 +1,7 @@
-import { useCallback } from 'react';
+
+import { MESSAGES_DELETED_KEY, MESSAGES_DELETE_FAILED_KEY, MESSAGES_DISABLE_FAILED_KEY, MESSAGES_DISCONNECT_FAILED_KEY, MESSAGES_ENABLE_FAILED_KEY, MESSAGES_FETCH_ACCOUNT_FAILED_KEY, MESSAGES_FETCH_LIST_FAILED_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+import { useCallback } from 'react'
+;
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAccountStore } from '@/stores/accountStore';
 import { accountApi } from '@/client/account';
@@ -38,7 +41,7 @@ export function useAccount() {
       queryClient.setQueryData(queryKeys.accounts.list(), list);
       return list;
     } catch (error) {
-      showError(getErrorMessage(error, i18n.t('accounts.messages.fetchListFailed')));
+      showError(getErrorMessage(error, i18n.t(MESSAGES_FETCH_LIST_FAILED_KEY)));
       return [];
     } finally {
       setLoading(false);
@@ -52,7 +55,7 @@ export function useAccount() {
       setCurrentAccount(account);
       return account;
     } catch (error) {
-      showError(getErrorMessage(error, i18n.t('accounts.messages.fetchAccountFailed')));
+      showError(getErrorMessage(error, i18n.t(MESSAGES_FETCH_ACCOUNT_FAILED_KEY)));
       return null;
     } finally {
       if (showLoading) setLoading(false);
@@ -94,7 +97,7 @@ export function useAccount() {
       queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
         old?.map((a) => a.id === id ? account : a));
     } catch (error) {
-      showError(getErrorMessage(error, i18n.t('accounts.messages.disconnectFailed')));
+      showError(getErrorMessage(error, i18n.t(MESSAGES_DISCONNECT_FAILED_KEY)));
       throw error;
     }
   }, [queryClient]);
@@ -109,7 +112,7 @@ export function useAccount() {
       queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
         old?.map((a) => a.id === id ? account : a));
     } catch (error) {
-      showError(getErrorMessage(error, i18n.t('accounts.messages.disableFailed')));
+      showError(getErrorMessage(error, i18n.t(MESSAGES_DISABLE_FAILED_KEY)));
       // Rollback by refetching.
       try {
         const account = await accountApi.get(id);
@@ -132,7 +135,7 @@ export function useAccount() {
         old?.map((a) => a.id === id ? account : a));
       return account;
     } catch (error) {
-      showError(getErrorMessage(error, i18n.t('accounts.messages.enableFailed')));
+      showError(getErrorMessage(error, i18n.t(MESSAGES_ENABLE_FAILED_KEY)));
       // Rollback.
       try {
         const account = await accountApi.get(id);
@@ -150,10 +153,10 @@ export function useAccount() {
       await accountApi.delete(id, password);
       queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
         old?.filter((a) => a.id !== id));
-      showSuccess(i18n.t('accounts.messages.deleted'));
+      showSuccess(i18n.t(MESSAGES_DELETED_KEY));
     } catch (error) {
       const msg = getErrorMessage(error, '');
-      showError(msg || i18n.t('accounts.messages.deleteFailed'));
+      showError(msg || i18n.t(MESSAGES_DELETE_FAILED_KEY));
       throw error;
     }
   }, [queryClient]);

@@ -1,6 +1,9 @@
 import { Alert, Space, Button, Tag } from 'antd';
 import { CheckCircleOutlined, ExclamationCircleOutlined, RobotOutlined, WarningOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { AUTO_FIX_ASK_A_I_KEY, AUTO_FIX_BUTTON_KEY, AUTO_FIX_DISMISS_KEY, AUTO_FIX_FAILED_KEY, AUTO_FIX_FIXED_KEY, AUTO_FIX_FIXING_KEY, AUTO_FIX_LINE_INFO_KEY, AUTO_FIX_NEW_REGRESSION_KEY, AUTO_FIX_PASSED_KEY, AUTO_FIX_REMAINING_KEY, VALIDATE_FAILED_KEY, VALIDATE_PASS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+
+;
 import type { ValidateExtendedResult } from '@/client/codeAssist';
 import type { AutoFixDebug } from '@/pages/strategy/hooks/useAIWorkflow';
 
@@ -77,8 +80,8 @@ export default function ValidationResultAlert({
           icon={autoFixDebug.passed ? <CheckCircleOutlined /> : <ExclamationCircleOutlined />}
           message={
             autoFixDebug.passed
-              ? t('strategy.workspace.autoFix.passed', { iterations: autoFixDebug.iterations, plural: autoFixDebug.iterations > 1 ? 's' : '' })
-              : t('strategy.workspace.autoFix.failed', { remaining: issueCount(autoFixDebug.remaining), iterations: autoFixDebug.iterations })
+              ? t(AUTO_FIX_PASSED_KEY, { iterations: autoFixDebug.iterations, plural: autoFixDebug.iterations > 1 ? 's' : '' })
+              : t(AUTO_FIX_FAILED_KEY, { remaining: issueCount(autoFixDebug.remaining), iterations: autoFixDebug.iterations })
           }
           description={
             <div style={{ fontSize: 12, marginTop: 4 }}>
@@ -86,7 +89,7 @@ export default function ValidationResultAlert({
               {issueCount(autoFixDebug.fixed) > 0 && (
                 <div style={{ marginBottom: 8 }}>
                   <div style={{ fontWeight: 600, color: '#389e0d', marginBottom: 4 }}>
-                    {t('strategy.workspace.autoFix.fixed', { count: issueCount(autoFixDebug.fixed) })}
+                    {t(AUTO_FIX_FIXED_KEY, { count: issueCount(autoFixDebug.fixed) })}
                   </div>
                   <div style={{
                     maxHeight: 120, overflowY: 'auto', padding: '4px 6px',
@@ -104,7 +107,7 @@ export default function ValidationResultAlert({
               {issueCount(autoFixDebug.remaining) > 0 && (
                 <div style={{ marginBottom: 8 }}>
                   <div style={{ fontWeight: 600, color: '#ad6800', marginBottom: 4 }}>
-                    {t('strategy.workspace.autoFix.remaining', { count: issueCount(autoFixDebug.remaining) })}
+                    {t(AUTO_FIX_REMAINING_KEY, { count: issueCount(autoFixDebug.remaining) })}
                   </div>
                   <div style={{
                     maxHeight: 120, overflowY: 'auto', padding: '4px 6px',
@@ -122,7 +125,7 @@ export default function ValidationResultAlert({
               {issueCount(autoFixDebug.introduced) > 0 && (
                 <div style={{ marginBottom: 4 }}>
                   <div style={{ fontWeight: 600, color: '#cf1322', marginBottom: 4 }}>
-                    {t('strategy.workspace.autoFix.newRegression', { count: issueCount(autoFixDebug.introduced) })}
+                    {t(AUTO_FIX_NEW_REGRESSION_KEY, { count: issueCount(autoFixDebug.introduced) })}
                   </div>
                   <div style={{
                     maxHeight: 120, overflowY: 'auto', padding: '4px 6px',
@@ -138,7 +141,7 @@ export default function ValidationResultAlert({
 
               {onDismissDebug && (
                 <Button size="small" type="link" onClick={onDismissDebug} style={{ padding: 0, marginTop: 4 }}>
-                  {t('strategy.workspace.autoFix.dismiss')}
+                  {t(AUTO_FIX_DISMISS_KEY)}
                 </Button>
               )}
             </div>
@@ -153,8 +156,8 @@ export default function ValidationResultAlert({
       <Alert
         type={valid ? 'success' : 'warning'} showIcon
         message={valid
-          ? t('strategy.workspace.validatePass', 'Validation passed')
-          : t('strategy.workspace.validateFailed', 'Validation failed')}
+          ? t(VALIDATE_PASS_KEY, 'Validation passed')
+          : t(VALIDATE_FAILED_KEY, 'Validation failed')}
         description={
           hasIssues ? (
             <div style={{
@@ -196,7 +199,7 @@ export default function ValidationResultAlert({
                   <span style={{ fontWeight: 500 }}>{h.message}</span>
                   {h.line > 0 && (
                     <span style={{ color: '#8c8c8c', marginLeft: 4 }}>
-                      ({t('strategy.workspace.autoFix.lineInfo', { line: h.line })})
+                      ({t(AUTO_FIX_LINE_INFO_KEY, { line: h.line })})
                     </span>
                   )}
                 </div>
@@ -210,13 +213,13 @@ export default function ValidationResultAlert({
               {onAutoFix && (
                 <Button size="small" type="primary" icon={<RobotOutlined />}
                   loading={autoFixing} onClick={onAutoFix}>
-                  {autoFixing ? t('strategy.workspace.autoFix.fixing') : t('strategy.workspace.autoFix.button')}
+                  {autoFixing ? t(AUTO_FIX_FIXING_KEY) : t(AUTO_FIX_BUTTON_KEY)}
                 </Button>
               )}
               {onAskAI && (
                 <Button size="small" type="primary" ghost icon={<RobotOutlined />}
                   onClick={onAskAI}>
-                  {t('strategy.workspace.autoFix.askAI')}
+                  {t(AUTO_FIX_ASK_A_I_KEY)}
                 </Button>
               )}
             </Space>

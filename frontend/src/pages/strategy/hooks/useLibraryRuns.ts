@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { message } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { MESSAGES_BACKTEST_REPORT_DELETED_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
+;
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { isTerminalRun, loadRunTitles } from '../StrategyTemplatePage.utils';
 import type { BacktestRunRow } from './libraryTypes';
@@ -80,7 +83,7 @@ export function useLibraryRuns(templateId: string | undefined) {
     setDeleting(true);
     try {
       await pythonStrategyApi.deleteBacktestRun(runId);
-      message.success(t('strategy.templates.messages.backtestReportDeleted'));
+      message.success(t(MESSAGES_BACKTEST_REPORT_DELETED_KEY));
       const newPage = runs.length <= 1 && page > 1 ? page - 1 : page;
       setPage(newPage); fetchRuns(newPage, pageSize);
     } catch (e) { console.error('deleteBacktestRun failed', e); message.error(t('common.deleteFailed')); }

@@ -6,7 +6,10 @@ import {
   ThunderboltOutlined, DashboardOutlined, SettingOutlined,
   BulbOutlined, RiseOutlined, FallOutlined, MinusOutlined,
 } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+
+;
 import ReactMarkdown from 'react-markdown';
 import { useMemo, useEffect, useState } from 'react';
 import { useAccount } from '@/hooks/useAccount';
@@ -61,7 +64,7 @@ function renderTfCard(label: string, tf: TfOutlook | undefined) {
 }
 
 function renderSRLevels(levels: SRLevelType[], t: (key: string) => string) {
-  if (!levels?.length) return <Text type="secondary">{t('strategy.assetAnalysis.noLevels')}</Text>;
+  if (!levels?.length) return <Text type="secondary">{t(NO_LEVELS_KEY)}</Text>;
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
       {levels.map((lvl, i) => (
@@ -105,10 +108,10 @@ export default function AssetAnalysisPage() {
     <div style={{ maxWidth: 960, margin: '0 auto', padding: isMobile ? '16px 12px' : '24px 16px' }}>
       <Title level={3}>
         <BulbOutlined style={{ marginRight: 8 }} />
-        {t('strategy.assetAnalysis.title')}
+        {t(TITLE_KEY)}
       </Title>
       <Text type="secondary" style={{ display: 'block', marginBottom: 24 }}>
-        {t('strategy.assetAnalysis.subtitle')}
+        {t(SUBTITLE_KEY)}
       </Text>
 
       {/* Account + Symbol selectors — both use the same column width for visual alignment. */}
@@ -116,11 +119,11 @@ export default function AssetAnalysisPage() {
         <Col xs={24} sm={12} md={8}>
           <Select
             showSearch
-            placeholder={t('strategy.marketRegime.form.accountIdPlaceholder')}
+            placeholder={t(FORM_ACCOUNT_ID_PLACEHOLDER_KEY)}
             value={accountId || undefined}
             onChange={(val) => { setAccountId(val); setSymbol(''); }}
             optionFilterProp="label"
-            notFoundContent={t('strategy.workspace.noAccounts')}
+            notFoundContent={t(NO_ACCOUNTS_KEY)}
             options={activeAccounts.map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))}
             style={{ width: '100%', borderRadius: 8 }}
             disabled={loading}
@@ -131,7 +134,7 @@ export default function AssetAnalysisPage() {
             accountId={accountId}
             value={symbol}
             onChange={(val) => setSymbol(val)}
-            placeholder={t('strategy.assetAnalysis.symbolPlaceholder')}
+            placeholder={t(SYMBOL_PLACEHOLDER_KEY)}
             style={{ width: '100%', borderRadius: 8 }}
           />
         </Col>
@@ -145,7 +148,7 @@ export default function AssetAnalysisPage() {
             style={{ borderRadius: 8, width: '100%' }}
             block
           >
-            {t('strategy.assetAnalysis.analyze')}
+            {t(ANALYZE_KEY)}
           </Button>
         </Col>
       </Row>
@@ -154,7 +157,7 @@ export default function AssetAnalysisPage() {
         <div style={{ marginBottom: 16 }}>
           <Progress percent={progress} status="active" size="small" />
           <Text type="secondary" style={{ fontSize: 12 }}>
-            {phase === 'idle' ? t('strategy.assetAnalysis.fetchingData') : t('strategy.assetAnalysis.phase', { phase })}
+            {phase === 'idle' ? t(FETCHING_DATA_KEY) : t(PHASE_KEY, { phase })}
           </Text>
         </div>
       )}
@@ -168,7 +171,7 @@ export default function AssetAnalysisPage() {
           {/* MTF Outlook */}
           {(phase === 'mtf_outlook' || phase === 'sr_levels' || phase === 'volatility' || phase === 'ai_recommendation' || phase === 'complete') && result.multiTf && (
             <Card
-              title={<><DashboardOutlined /> {t('strategy.assetAnalysis.mtfOutlook')}</>}
+              title={<><DashboardOutlined /> {t(MTF_OUTLOOK_KEY)}</>}
               size="small"
               style={{ marginBottom: 16, borderRadius: 12 }}
             >
@@ -184,7 +187,7 @@ export default function AssetAnalysisPage() {
           {/* S/R Levels */}
           {(phase === 'sr_levels' || phase === 'volatility' || phase === 'ai_recommendation' || phase === 'complete') && (
             <Card
-              title={t('strategy.assetAnalysis.srLevels')}
+              title={t(SR_LEVELS_KEY)}
               size="small"
               style={{ marginBottom: 16, borderRadius: 12 }}
               extra={result.keyLevels?.length ? <Tag>{result.keyLevels.length} levels</Tag> : null}
@@ -196,25 +199,25 @@ export default function AssetAnalysisPage() {
           {/* Volatility */}
           {(phase === 'volatility' || phase === 'ai_recommendation' || phase === 'complete') && result.volatilityState && (
             <Card
-              title={t('strategy.assetAnalysis.volatility')}
+              title={t(VOLATILITY_KEY)}
               size="small"
               style={{ marginBottom: 16, borderRadius: 12 }}
             >
               <Descriptions column={{ xs: 1, sm: 2 }} size="small">
-                <Descriptions.Item label={t('strategy.assetAnalysis.state')}>
+                <Descriptions.Item label={t(STATE_KEY)}>
                   <Tag color={VOL_COLORS[result.volatilityState] || 'default'}>
                     {result.volatilityState}
                   </Tag>
                 </Descriptions.Item>
-                <Descriptions.Item label={t('strategy.assetAnalysis.atrPct')}>
+                <Descriptions.Item label={t(ATR_PCT_KEY)}>
                   <Text strong>{result.volatilityValue?.toFixed(2)}%</Text>
                 </Descriptions.Item>
               </Descriptions>
               <Paragraph style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 8, marginBottom: 0 }}>
-                {result.volatilityState === 'LOW' && t('strategy.assetAnalysis.volLow')}
-                {result.volatilityState === 'NORMAL' && t('strategy.assetAnalysis.volNormal')}
-                {result.volatilityState === 'HIGH' && t('strategy.assetAnalysis.volHigh')}
-                {result.volatilityState === 'EXTREME' && t('strategy.assetAnalysis.volExtreme')}
+                {result.volatilityState === 'LOW' && t(VOL_LOW_KEY)}
+                {result.volatilityState === 'NORMAL' && t(VOL_NORMAL_KEY)}
+                {result.volatilityState === 'HIGH' && t(VOL_HIGH_KEY)}
+                {result.volatilityState === 'EXTREME' && t(VOL_EXTREME_KEY)}
               </Paragraph>
             </Card>
           )}
@@ -222,7 +225,7 @@ export default function AssetAnalysisPage() {
           {/* AI Recommendation */}
           {(phase === 'ai_recommendation' || phase === 'complete') && (
             <Card
-              title={<><BulbOutlined /> {t('strategy.assetAnalysis.aiRecommendation')}</>}
+              title={<><BulbOutlined /> {t(AI_RECOMMENDATION_KEY)}</>}
               size="small"
               style={{ marginBottom: 16, borderRadius: 12, borderColor: '#D4AF37' }}
             >
@@ -233,14 +236,14 @@ export default function AssetAnalysisPage() {
               ) : (
                 <div style={{ textAlign: 'center', padding: '16px 0' }}>
                   <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-                    {t('strategy.assetAnalysis.aiUnavailable')}
+                    {t(AI_UNAVAILABLE_KEY)}
                   </Text>
                   <Button
                     type="primary"
                     icon={<SettingOutlined />}
                     onClick={() => setAiSettingsOpen(true)}
                   >
-                    {t('strategy.assetAnalysis.configureAI')}
+                    {t(CONFIGURE_A_I_KEY)}
                   </Button>
                 </div>
               )}
@@ -250,7 +253,7 @@ export default function AssetAnalysisPage() {
       )}
 
       {phase === 'complete' && !hasData && !error && (
-        <Alert type="info" message={t('strategy.assetAnalysis.noResults')} />
+        <Alert type="info" message={t(NO_RESULTS_KEY)} />
       )}
 
       <AISettingsModal open={aiSettingsOpen} onClose={() => setAiSettingsOpen(false)} />

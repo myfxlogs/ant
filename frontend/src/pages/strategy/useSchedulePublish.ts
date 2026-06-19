@@ -1,3 +1,6 @@
+
+import { DEFAULT_DRAFT_NAME_KEY, MESSAGES_BACKTEST_RUNNING_CANNOT_PUBLISH_KEY, MESSAGES_CANNOT_PUBLISH_AND_CREATE_DRAFT_FAILED_KEY, MESSAGES_MISSING_DRAFT_ID_CANNOT_PUBLISH_KEY, MESSAGES_PUBLISHED_BUT_NO_TEMPLATE_ID_KEY, MESSAGES_PUBLISH_FAILED_KEY, MESSAGES_REPUBLISHED_BUT_NO_TEMPLATE_ID_KEY, MESSAGES_STRATEGY_CODE_EMPTY_CANNOT_PUBLISH_KEY, MESSAGES_TEMPLATE_ALREADY_PUBLISHED_KEY, MESSAGES_TEMPLATE_NOT_DRAFT_UNKNOWN_PUBLISH_STATUS_KEY, MESSAGES_TEMPLATE_PUBLISHED_KEY, MESSAGES_TEMPLATE_REPUBLISHED_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
 import { message } from 'antd';
 import { strategyApi } from '@/client/strategy';
 import { codeAssistApi, type RequiredParamSpec } from '@/client/codeAssist';
@@ -40,12 +43,12 @@ export function useSchedulePublish({
 }) {
   const handlePublishTemplate = async () => {
     if (!isTerminalRun((scheduleFlow as any).run)) {
-      message.warning(t('strategy.templates.messages.backtestRunningCannotPublish'));
+      message.warning(t(MESSAGES_BACKTEST_RUNNING_CANNOT_PUBLISH_KEY));
       return;
     }
     const draftId = String(scheduleFlow.templateDraftId || '').trim();
     if (!draftId) {
-      message.error(t('strategy.templates.messages.missingDraftIdCannotPublish'));
+      message.error(t(MESSAGES_MISSING_DRAFT_ID_CANNOT_PUBLISH_KEY));
       return;
     }
     setScheduleFlow((p) => ({ ...p, publishing: true }));
@@ -53,13 +56,13 @@ export function useSchedulePublish({
       const draft: any = await strategyApi.getTemplate(draftId);
       const draftCode = String(draft?.code || '').trim();
       if (!draftCode) {
-        message.error(t('strategy.templates.messages.strategyCodeEmptyCannotPublish'));
+        message.error(t(MESSAGES_STRATEGY_CODE_EMPTY_CANNOT_PUBLISH_KEY));
         return;
       }
       const resp: any = await strategyApi.publishTemplateDraft(draftId);
       const tid = String(resp?.id || resp?.template?.id || resp?.templateId || '').trim();
       if (!tid) {
-        message.warning(t('strategy.templates.messages.publishedButNoTemplateId'));
+        message.warning(t(MESSAGES_PUBLISHED_BUT_NO_TEMPLATE_ID_KEY));
         return;
       }
       setScheduleFlow((p) => ({ ...p, templateId: tid }));
@@ -68,7 +71,7 @@ export function useSchedulePublish({
           String(it?.id || '') === String(scoreRunId || '') ? { ...it, templateId: tid } : it,
         ),
       );
-      message.success(t('strategy.templates.messages.templatePublished'));
+      message.success(t(MESSAGES_TEMPLATE_PUBLISHED_KEY));
     } catch (e: unknown) {
       if (isErrTemplateNotDraft(e)) {
         try {
@@ -76,17 +79,17 @@ export function useSchedulePublish({
           const status = String(tpl?.status || '').trim().toLowerCase();
           if (status !== 'published') {
             const baseName =
-              String(tpl?.name || t('strategy.templates.defaultDraftName')).trim() ||
-              t('strategy.templates.defaultDraftName');
+              String(tpl?.name || t(DEFAULT_DRAFT_NAME_KEY)).trim() ||
+              t(DEFAULT_DRAFT_NAME_KEY);
             const newDraft: any = await strategyApi.createTemplateDraft({ name: baseName });
             const newId = String(newDraft?.id || '').trim();
             if (!newId) {
-              message.warning(t('strategy.templates.messages.cannotPublishAndCreateDraftFailed'));
+              message.warning(t(MESSAGES_CANNOT_PUBLISH_AND_CREATE_DRAFT_FAILED_KEY));
               return;
             }
             const codeToPublish = String(tpl?.code || '').trim();
             if (!codeToPublish) {
-              message.error(t('strategy.templates.messages.strategyCodeEmptyCannotPublish'));
+              message.error(t(MESSAGES_STRATEGY_CODE_EMPTY_CANNOT_PUBLISH_KEY));
               return;
             }
             await strategyApi.updateTemplateDraft({
@@ -100,7 +103,7 @@ export function useSchedulePublish({
             const pub: any = await strategyApi.publishTemplateDraft(newId);
             const tid = String(pub?.id || pub?.template?.id || pub?.templateId || '').trim();
             if (!tid) {
-              message.warning(t('strategy.templates.messages.republishedButNoTemplateId'));
+              message.warning(t(MESSAGES_REPUBLISHED_BUT_NO_TEMPLATE_ID_KEY));
               return;
             }
             setScheduleFlow((p) => ({ ...p, templateId: tid }));
@@ -111,7 +114,7 @@ export function useSchedulePublish({
                   : it,
               ),
             );
-            message.success(t('strategy.templates.messages.templateRepublished'));
+            message.success(t(MESSAGES_TEMPLATE_REPUBLISHED_KEY));
             return;
           }
           setScheduleFlow((p) => ({ ...p, templateId: draftId }));
@@ -122,10 +125,10 @@ export function useSchedulePublish({
                 : it,
             ),
           );
-          message.info(t('strategy.templates.messages.templateAlreadyPublished'));
+          message.info(t(MESSAGES_TEMPLATE_ALREADY_PUBLISHED_KEY));
           return;
         } catch (_e2) {
-          message.warning(t('strategy.templates.messages.templateNotDraftUnknownPublishStatus'));
+          message.warning(t(MESSAGES_TEMPLATE_NOT_DRAFT_UNKNOWN_PUBLISH_STATUS_KEY));
           return;
         }
       }
@@ -134,7 +137,7 @@ export function useSchedulePublish({
           (e as any)?.rawMessage ||
             ((e as any)?.code !== undefined ? `code=${String((e as any).code)} ` : '') + ((e as any)?.message || '') ||
             e,
-        ) || t('strategy.templates.messages.publishFailed');
+        ) || t(MESSAGES_PUBLISH_FAILED_KEY);
       message.error(errMsg);
     } finally {
       setScheduleFlow((p) => ({ ...p, publishing: false }));

@@ -3,7 +3,10 @@ import { Button, Modal, Popconfirm, Space, Table, Tag, Typography } from 'antd';
 import type { ColumnsType, TableRowSelection } from 'antd/es/table';
 import { DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
 import { formatDateTime } from '@/utils/date';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { BACKTEST_RUNS_ACTIONS_VIEW_KEY, BACKTEST_RUNS_DELETE_CONFIRM_KEY, BACKTEST_RUNS_EMPTY_KEY, BACKTEST_RUNS_STATUS_CANCELED_KEY, BACKTEST_RUNS_STATUS_CANCELING_KEY, BACKTEST_RUNS_STATUS_COMPLETED_KEY, BACKTEST_RUNS_STATUS_FAILED_KEY, BACKTEST_RUNS_STATUS_QUEUED_KEY, BACKTEST_RUNS_STATUS_RUNNING_KEY, BACKTEST_RUNS_TABLE_ACTIONS_KEY, BACKTEST_RUNS_TABLE_CREATED_AT_KEY, BACKTEST_RUNS_TABLE_STATUS_KEY, BACKTEST_RUNS_TABLE_SYMBOL_KEY, BACKTEST_RUNS_TABLE_TIMEFRAME_KEY, BACKTEST_RUNS_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
+;
 
 const { Text } = Typography;
 
@@ -27,12 +30,12 @@ interface Props {
 
 function statusText(s: unknown, t: (key: string) => string): string {
   switch (Number(s)) {
-    case 1: return t('strategy.templates.backtestRuns.status.queued');
-    case 2: return t('strategy.templates.backtestRuns.status.running');
-    case 3: return t('strategy.templates.backtestRuns.status.completed');
-    case 4: return t('strategy.templates.backtestRuns.status.failed');
-    case 5: return t('strategy.templates.backtestRuns.status.canceling');
-    case 6: return t('strategy.templates.backtestRuns.status.canceled');
+    case 1: return t(BACKTEST_RUNS_STATUS_QUEUED_KEY);
+    case 2: return t(BACKTEST_RUNS_STATUS_RUNNING_KEY);
+    case 3: return t(BACKTEST_RUNS_STATUS_COMPLETED_KEY);
+    case 4: return t(BACKTEST_RUNS_STATUS_FAILED_KEY);
+    case 5: return t(BACKTEST_RUNS_STATUS_CANCELING_KEY);
+    case 6: return t(BACKTEST_RUNS_STATUS_CANCELED_KEY);
     default: return String(s ?? '-');
   }
 }
@@ -65,44 +68,44 @@ const BacktestHistoryModal: React.FC<Props> = ({
 
   const columns: ColumnsType<any> = useMemo(() => [
     {
-      title: t('strategy.templates.backtestRuns.table.status', 'Status'),
+      title: t(BACKTEST_RUNS_TABLE_STATUS_KEY, 'Status'),
       dataIndex: 'status',
       key: 'status',
       width: 100,
       render: (s: unknown) => <Tag color={statusColor(s)}>{statusText(s, t)}</Tag>,
     },
     {
-      title: t('strategy.templates.backtestRuns.table.symbol', 'Symbol'),
+      title: t(BACKTEST_RUNS_TABLE_SYMBOL_KEY, 'Symbol'),
       dataIndex: 'symbol',
       key: 'symbol',
       width: 110,
       render: (v: string) => <Text>{v || '-'}</Text>,
     },
     {
-      title: t('strategy.templates.backtestRuns.table.timeframe', 'Timeframe'),
+      title: t(BACKTEST_RUNS_TABLE_TIMEFRAME_KEY, 'Timeframe'),
       dataIndex: 'timeframe',
       key: 'timeframe',
       width: 90,
       render: (v: string) => <Text>{v || '-'}</Text>,
     },
     {
-      title: t('strategy.templates.backtestRuns.table.createdAt', 'Created'),
+      title: t(BACKTEST_RUNS_TABLE_CREATED_AT_KEY, 'Created'),
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 170,
       render: (v: string | undefined) => <Text>{v ? formatDateTime(v) : '-'}</Text>,
     },
     {
-      title: t('strategy.templates.backtestRuns.table.actions', 'Actions'),
+      title: t(BACKTEST_RUNS_TABLE_ACTIONS_KEY, 'Actions'),
       key: 'actions',
       width: 140,
       render: (_: unknown, record: any) => (
         <Space size="small">
           <Button type="link" size="small" onClick={() => onViewRun(record.id)}>
-            {t('strategy.templates.backtestRuns.actions.view', 'View')}
+            {t(BACKTEST_RUNS_ACTIONS_VIEW_KEY, 'View')}
           </Button>
           <Popconfirm
-            title={t('strategy.templates.backtestRuns.deleteConfirm', 'Delete this backtest run?')}
+            title={t(BACKTEST_RUNS_DELETE_CONFIRM_KEY, 'Delete this backtest run?')}
             onConfirm={() => onDeleteRun(record.id)}
             okText={t('common.yes', 'Yes')}
             cancelText={t('common.no', 'No')}
@@ -116,7 +119,7 @@ const BacktestHistoryModal: React.FC<Props> = ({
 
   return (
     <Modal
-      title={t('strategy.templates.backtestRuns.title', 'Backtest History')}
+      title={t(BACKTEST_RUNS_TITLE_KEY, 'Backtest History')}
       open={open}
       onCancel={onClose}
       width={1100}
@@ -158,7 +161,7 @@ const BacktestHistoryModal: React.FC<Props> = ({
           onChange: onPageChange,
         }}
         size="small"
-        locale={{ emptyText: t('strategy.templates.backtestRuns.empty', 'No backtest runs found') }}
+        locale={{ emptyText: t(BACKTEST_RUNS_EMPTY_KEY, 'No backtest runs found') }}
         scroll={{ x: 610 }}
       />
     </Modal>

@@ -2,7 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Descriptions, Modal, Space, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { ACTIONS_CANCEL_KEY, STATUS_CANCELED_KEY, STATUS_CANCELING_KEY, STATUS_COMPLETED_KEY, STATUS_ENDED_KEY, STATUS_FAILED_KEY, STATUS_QUEUED_KEY, STATUS_RUNNING_KEY, TITLE_KEY, TRADES_CLOSE_PRICE_KEY, TRADES_CLOSE_TIME_KEY, TRADES_COMMISSION_KEY, TRADES_OPEN_PRICE_KEY, TRADES_OPEN_TIME_KEY, TRADES_PNL_KEY, TRADES_REASON_KEY, TRADES_SIDE_BUY_KEY, TRADES_SIDE_KEY, TRADES_SIDE_SELL_KEY, TRADES_SUMMARY_KEY, TRADES_TICKET_KEY, TRADES_VOLUME_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_run_keys';
+
+;
 
 import { useWatchBacktestRun } from '@/hooks/useWatchBacktestRun';
 import { backtestRunsApi, type BacktestTrade, type BacktestTradeSummary } from '@/client/backtestRuns';
@@ -72,17 +75,17 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 	const statusText = (() => {
 		switch (watched.run?.status) {
 			case 1:
-				return t('strategy.backtestRun.status.queued');
+				return t(STATUS_QUEUED_KEY);
 			case 2:
-				return t('strategy.backtestRun.status.running');
+				return t(STATUS_RUNNING_KEY);
 			case 3:
-				return t('strategy.backtestRun.status.completed');
+				return t(STATUS_COMPLETED_KEY);
 			case 4:
-				return t('strategy.backtestRun.status.failed');
+				return t(STATUS_FAILED_KEY);
 			case 5:
-				return t('strategy.backtestRun.status.canceling');
+				return t(STATUS_CANCELING_KEY);
 			case 6:
-				return t('strategy.backtestRun.status.canceled');
+				return t(STATUS_CANCELED_KEY);
 			default:
 				return watched.run?.status != null ? String(watched.run.status) : '-';
 		}
@@ -90,7 +93,7 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 
 	const summary = useMemo(() => {
 		if (!visibleTradeSummary || !visibleTradeSummary.count) return null;
-		return t('strategy.backtestRun.trades.summary', {
+		return t(TRADES_SUMMARY_KEY, {
 			count: visibleTradeSummary.count,
 			wins: visibleTradeSummary.wins,
 			losses: visibleTradeSummary.losses,
@@ -100,9 +103,9 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 
 	const columns = useMemo<ColumnsType<BacktestTrade>>(
 		() => [
-			{ title: t('strategy.backtestRun.trades.ticket'), dataIndex: 'ticket', key: 'ticket', width: 70 },
+			{ title: t(TRADES_TICKET_KEY), dataIndex: 'ticket', key: 'ticket', width: 70 },
 			{
-				title: t('strategy.backtestRun.trades.side'),
+				title: t(TRADES_SIDE_KEY),
 				dataIndex: 'side',
 				key: 'side',
 				width: 70,
@@ -110,46 +113,46 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 					const isBuy = String(v).toLowerCase() === 'buy';
 					return (
 						<Tag color={isBuy ? 'green' : 'red'}>
-							{isBuy ? t('strategy.backtestRun.trades.sideBuy') : t('strategy.backtestRun.trades.sideSell')}
+							{isBuy ? t(TRADES_SIDE_BUY_KEY) : t(TRADES_SIDE_SELL_KEY)}
 						</Tag>
 					);
 				},
 			},
 			{
-				title: t('strategy.backtestRun.trades.volume'),
+				title: t(TRADES_VOLUME_KEY),
 				dataIndex: 'volume',
 				key: 'volume',
 				width: 80,
 				render: (v: number) => fmt(v, 2),
 			},
 			{
-				title: t('strategy.backtestRun.trades.openTime'),
+				title: t(TRADES_OPEN_TIME_KEY),
 				dataIndex: 'open_ts',
 				key: 'open_ts',
 				render: (v: number) => fmtTs(v),
 			},
 			{
-				title: t('strategy.backtestRun.trades.openPrice'),
+				title: t(TRADES_OPEN_PRICE_KEY),
 				dataIndex: 'open_price',
 				key: 'open_price',
 				width: 100,
 				render: (v: number) => fmt(v, 5),
 			},
 			{
-				title: t('strategy.backtestRun.trades.closeTime'),
+				title: t(TRADES_CLOSE_TIME_KEY),
 				dataIndex: 'close_ts',
 				key: 'close_ts',
 				render: (v: number) => fmtTs(v),
 			},
 			{
-				title: t('strategy.backtestRun.trades.closePrice'),
+				title: t(TRADES_CLOSE_PRICE_KEY),
 				dataIndex: 'close_price',
 				key: 'close_price',
 				width: 100,
 				render: (v: number) => fmt(v, 5),
 			},
 			{
-				title: t('strategy.backtestRun.trades.pnl'),
+				title: t(TRADES_PNL_KEY),
 				dataIndex: 'pnl',
 				key: 'pnl',
 				width: 100,
@@ -160,14 +163,14 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 				sorter: (a, b) => a.pnl - b.pnl,
 			},
 			{
-				title: t('strategy.backtestRun.trades.commission'),
+				title: t(TRADES_COMMISSION_KEY),
 				dataIndex: 'commission',
 				key: 'commission',
 				width: 100,
 				render: (v: number) => fmt(v, 2),
 			},
 			{
-				title: t('strategy.backtestRun.trades.reason'),
+				title: t(TRADES_REASON_KEY),
 				dataIndex: 'reason',
 				key: 'reason',
 				width: 110,
@@ -177,10 +180,9 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 		[t],
 	);
 
-
 	return (
 		<Modal
-			title={t('strategy.backtestRun.title')}
+			title={t(TITLE_KEY)}
 			open={open}
 			onCancel={onClose}
 			destroyOnClose
@@ -189,10 +191,10 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 			footer={
 				<Space>
 					{watched.isTerminal ? (
-						<Button disabled>{statusText || t('strategy.backtestRun.status.ended')}</Button>
+						<Button disabled>{statusText || t(STATUS_ENDED_KEY)}</Button>
 					) : (
 						<Button onClick={onCancel} loading={!!canceling} disabled={!runId || watched.isTerminal}>
-							{t('strategy.backtestRun.actions.cancel')}
+							{t(ACTIONS_CANCEL_KEY)}
 						</Button>
 					)}
 					<Button type="primary" onClick={onClose}>{t('common.close', { defaultValue: 'Close' })}</Button>

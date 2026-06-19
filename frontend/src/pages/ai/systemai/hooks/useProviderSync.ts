@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { DISCOVER_ERRORS_GENERIC_KEY, MESSAGES_VALIDATE_FAILED_KEY } from '@/gen/ant/v1/i18n/ai_settings_keys';
+
+;
 import {
   discoverSystemAIModels,
   updateSystemAIConfig,
@@ -94,7 +97,7 @@ export function useProviderSync(params: UseProviderSyncParams) {
 
     const timer = setTimeout(async () => {
       if (isCustomProvider(draft.provider_id) && !draft.name.trim()) {
-        setError(t('ai.systemAI.customProvider.nameRequired', { defaultValue: '请先填写自定义厂商名称' }));
+        setError(t(SYSTEM_A_I_CUSTOM_PROVIDER_NAME_REQUIRED_KEY, { defaultValue: '请先填写自定义厂商名称' }));
         return;
       }
       setSavingSecret(true);
@@ -105,10 +108,10 @@ export function useProviderSync(params: UseProviderSyncParams) {
         setValidated(false);
         setDraft((prev) => prev ? { ...prev, has_secret: true } : prev);
         setLastAutoDiscoverKey('');
-        setNotice(t('ai.systemAI.messages.secretSavedAutoDiscover'));
+        setNotice(t(SYSTEM_A_I_MESSAGES_SECRET_SAVED_AUTO_DISCOVER_KEY));
         void silentReload();
       } catch (e) {
-        const msg = e instanceof Error ? e.message : t('ai.systemAI.messages.secretAutoSaveFailed');
+        const msg = e instanceof Error ? e.message : t(SYSTEM_A_I_MESSAGES_SECRET_AUTO_SAVE_FAILED_KEY);
         setError(msg);
       } finally {
         setSavingSecret(false);
@@ -147,7 +150,7 @@ export function useProviderSync(params: UseProviderSyncParams) {
             }
             return next;
           });
-          setNotice(t('ai.systemAI.messages.autoDiscoveredModels', { count: models.length }));
+          setNotice(t(SYSTEM_A_I_MESSAGES_AUTO_DISCOVERED_MODELS_KEY, { count: models.length }));
           setError('');
           setValidated(false);
             void updateSystemAIConfig(draft.provider_id, {
@@ -161,7 +164,7 @@ export function useProviderSync(params: UseProviderSyncParams) {
           setLastAutoDiscoverKey(key);
         }
       } catch (e) {
-        const msg = e instanceof Error ? e.message : t('ai.settings.discoverErrors.generic');
+        const msg = e instanceof Error ? e.message : t(DISCOVER_ERRORS_GENERIC_KEY);
         setError(toFriendlyDiscoverMessage(msg, t));
       } finally {
         setDiscovering(false);
@@ -191,10 +194,10 @@ export function useProviderSync(params: UseProviderSyncParams) {
         }
         const body = await validateSystemAI(draft.provider_id);
         setValidated(true);
-        setNotice(t('ai.systemAI.messages.autoValidatedModels', { count: body.model_count ?? 0 }));
+        setNotice(t(SYSTEM_A_I_MESSAGES_AUTO_VALIDATED_MODELS_KEY, { count: body.model_count ?? 0 }));
         setError('');
       } catch (e) {
-        const msg = e instanceof Error ? e.message : t('ai.settings.messages.validateFailed');
+        const msg = e instanceof Error ? e.message : t(MESSAGES_VALIDATE_FAILED_KEY);
         setValidated(false);
         setError(toFriendlyDiscoverMessage(msg, t));
       } finally {

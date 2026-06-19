@@ -1,3 +1,6 @@
+
+import { SUMMARY_DIRECTION_BUY_KEY, SUMMARY_DIRECTION_SELL_KEY, SUMMARY_PROFIT_LOSS_KEY, SUMMARY_PROFIT_WIN_KEY, SUMMARY_YEAR_OPTION_KEY } from '@/gen/ant/v1/i18n/analytics_keys';
+
 import { COLORS } from './Summary.constants';
 
 interface TradeStatsLike {
@@ -58,13 +61,13 @@ export const getDirectionPieData = (t: (key: string, opts?: Record<string, unkno
   const short = Number(direction?.shortTrades || 0);
   if (long === 0 && short === 0) {
     return [
-      { name: t('analytics.summary.direction.buy'), value: 0, color: '#00A651' },
-      { name: t('analytics.summary.direction.sell'), value: 0, color: '#E53935' },
+      { name: t(SUMMARY_DIRECTION_BUY_KEY), value: 0, color: '#00A651' },
+      { name: t(SUMMARY_DIRECTION_SELL_KEY), value: 0, color: '#E53935' },
     ];
   }
   return [
-    { name: t('analytics.summary.direction.buy'), value: long, color: '#00A651' },
-    { name: t('analytics.summary.direction.sell'), value: short, color: '#E53935' },
+    { name: t(SUMMARY_DIRECTION_BUY_KEY), value: long, color: '#00A651' },
+    { name: t(SUMMARY_DIRECTION_SELL_KEY), value: short, color: '#E53935' },
   ];
 };
 
@@ -74,8 +77,8 @@ export const getProfitPieData = (t: (key: string, opts?: Record<string, unknown>
   const wins = Math.round(total * winRate / 100);
   const losses = total - wins;
   return [
-    { name: t('analytics.summary.profit.win'), value: wins, color: '#00A651' },
-    { name: t('analytics.summary.profit.loss'), value: losses, color: '#E53935' },
+    { name: t(SUMMARY_PROFIT_WIN_KEY), value: wins, color: '#00A651' },
+    { name: t(SUMMARY_PROFIT_LOSS_KEY), value: losses, color: '#E53935' },
   ];
 };
 
@@ -83,7 +86,7 @@ export const getYearOptions = (t: (key: string, opts?: Record<string, unknown>) 
   const yearOptions: { value: number; label: string }[] = [];
   const currentYear = new Date().getFullYear();
   for (let y = currentYear; y >= currentYear - 5; y--) {
-    yearOptions.push({ value: y, label: t('analytics.summary.yearOption', { year: y }) });
+    yearOptions.push({ value: y, label: t(SUMMARY_YEAR_OPTION_KEY, { year: y }) });
   }
   return yearOptions;
 };

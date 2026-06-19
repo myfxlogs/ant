@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Table, Button, Tag, Space, Modal, Input, Popconfirm, message, Tabs, Form, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, WarningOutlined, StopOutlined, UndoOutlined, FileProtectOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { STRATEGY_ACTIONS_ARCHIVE_CONFIRM_KEY, STRATEGY_ACTIONS_CODE_KEY, STRATEGY_ACTIONS_DISABLE_CONFIRM_KEY, STRATEGY_ACTIONS_ENABLE_KEY, STRATEGY_ACTIONS_FLAG_KEY, STRATEGY_ACTIONS_PUBLISH_KEY, STRATEGY_ACTIONS_UNFLAG_KEY, STRATEGY_ACTIONS_UNPUBLISH_KEY, STRATEGY_ALL_ALL_ACTIVE_KEY, STRATEGY_ALL_ARCHIVED_KEY, STRATEGY_ALL_DISABLED_KEY, STRATEGY_ALL_FLAGGED_KEY, STRATEGY_ALL_FLAG_FILTER_KEY, STRATEGY_ALL_SEARCH_PLACEHOLDER_KEY, STRATEGY_ALL_TOTAL_KEY, STRATEGY_COLUMNS_ACTIONS_KEY, STRATEGY_COLUMNS_CODE_KEY, STRATEGY_COLUMNS_DESCRIPTION_KEY, STRATEGY_COLUMNS_FLAG_KEY, STRATEGY_COLUMNS_NAME_KEY, STRATEGY_COLUMNS_NO_KEY, STRATEGY_COLUMNS_OWNER_KEY, STRATEGY_COLUMNS_PRESET_KEY, STRATEGY_COLUMNS_PUBLIC_KEY, STRATEGY_COLUMNS_SCHEDULES_KEY, STRATEGY_COLUMNS_STATUS_KEY, STRATEGY_COLUMNS_SYSTEM_KEY, STRATEGY_COLUMNS_TAGS_KEY, STRATEGY_COLUMNS_TAGS_PLACEHOLDER_KEY, STRATEGY_COLUMNS_TYPE_KEY, STRATEGY_COLUMNS_USER_KEY, STRATEGY_COLUMNS_USES_KEY, STRATEGY_COLUMNS_YES_KEY, STRATEGY_MESSAGES_ARCHIVE_FAILED_KEY, STRATEGY_MESSAGES_ARCHIVE_SUCCESS_KEY, STRATEGY_MESSAGES_DELETE_FAILED_KEY, STRATEGY_MESSAGES_DISABLE_FAILED_KEY, STRATEGY_MESSAGES_DISABLE_SUCCESS_KEY, STRATEGY_MESSAGES_ENABLE_FAILED_KEY, STRATEGY_MESSAGES_ENABLE_SUCCESS_KEY, STRATEGY_MESSAGES_FLAG_FAILED_KEY, STRATEGY_MESSAGES_FLAG_SUCCESS_KEY, STRATEGY_MESSAGES_LOAD_PRESET_FAILED_KEY, STRATEGY_MESSAGES_LOAD_STRATEGIES_FAILED_KEY, STRATEGY_MESSAGES_PRESET_CREATED_KEY, STRATEGY_MESSAGES_PRESET_DELETED_KEY, STRATEGY_MESSAGES_PRESET_UPDATED_KEY, STRATEGY_MESSAGES_PUBLISH_FAILED_KEY, STRATEGY_MESSAGES_PUBLISH_SUCCESS_KEY, STRATEGY_MESSAGES_SAVE_FAILED_KEY, STRATEGY_MESSAGES_UNFLAG_FAILED_KEY, STRATEGY_MESSAGES_UNFLAG_SUCCESS_KEY, STRATEGY_MESSAGES_UNPUBLISH_FAILED_KEY, STRATEGY_MESSAGES_UNPUBLISH_SUCCESS_KEY, STRATEGY_PRESET_ADD_KEY, STRATEGY_PRESET_CREATE_KEY, STRATEGY_PRESET_DELETE_CONFIRM_KEY, STRATEGY_PRESET_EDIT_KEY, STRATEGY_TABS_ALL_STRATEGIES_KEY, STRATEGY_TABS_PRESET_KEY } from '@/gen/ant/v1/i18n/admin_keys';
+
+;
 import { adminStrategyApi } from '@/client/admin';
 import type { SystemStrategy } from '@/gen/ant/v1/admin_strategy_pb';
 import type { StrategySummary } from '@/gen/ant/v1/admin_strategy_pb';
@@ -42,7 +45,7 @@ export default function StrategyManagement() {
     try {
       const resp = await adminStrategyApi.listSystemStrategies();
       setPresets(resp.strategies || []);
-    } catch { message.error(t('admin.strategy.messages.loadPresetFailed')); }
+    } catch { message.error(t(STRATEGY_MESSAGES_LOAD_PRESET_FAILED_KEY)); }
     finally { setPresetsLoading(false); }
   }, [t]);
 
@@ -67,23 +70,23 @@ export default function StrategyManagement() {
     try {
       if (editingPreset) {
         await adminStrategyApi.updateSystemStrategy({ id: editingPreset.id, name: values.name, description: values.description, code: values.code, tags });
-        message.success(t('admin.strategy.messages.presetUpdated'));
+        message.success(t(STRATEGY_MESSAGES_PRESET_UPDATED_KEY));
       } else {
         await adminStrategyApi.createSystemStrategy({ name: values.name, description: values.description, code: values.code, tags });
-        message.success(t('admin.strategy.messages.presetCreated'));
+        message.success(t(STRATEGY_MESSAGES_PRESET_CREATED_KEY));
       }
       setEditModalOpen(false);
       fetchPresets();
-    } catch { message.error(t('admin.strategy.messages.saveFailed')); }
+    } catch { message.error(t(STRATEGY_MESSAGES_SAVE_FAILED_KEY)); }
     finally { setPresetSaving(false); }
   };
 
   const handleDeletePreset = async (id: string) => {
     try {
       await adminStrategyApi.deleteSystemStrategy(id);
-      message.success(t('admin.strategy.messages.presetDeleted'));
+      message.success(t(STRATEGY_MESSAGES_PRESET_DELETED_KEY));
       fetchPresets();
-    } catch { message.error(t('admin.strategy.messages.deleteFailed')); }
+    } catch { message.error(t(STRATEGY_MESSAGES_DELETE_FAILED_KEY)); }
   };
 
   // ── All strategies oversight ──
@@ -95,7 +98,7 @@ export default function StrategyManagement() {
       });
       setAllStrategies(resp.strategies || []);
       setAllTotal(resp.total || 0);
-    } catch { message.error(t('admin.strategy.messages.loadStrategiesFailed')); }
+    } catch { message.error(t(STRATEGY_MESSAGES_LOAD_STRATEGIES_FAILED_KEY)); }
     finally { setAllLoading(false); }
   }, [t]);
 
@@ -109,7 +112,7 @@ export default function StrategyManagement() {
       const d = await adminStrategyApi.getStrategyDetail(id);
       setViewingCode(d.code || '');
       setCodeViewOpen(true);
-    } catch { message.error(t('admin.strategy.messages.loadStrategiesFailed')); }
+    } catch { message.error(t(STRATEGY_MESSAGES_LOAD_STRATEGIES_FAILED_KEY)); }
   };
 
   const runAction = async (action: () => Promise<void>, successMsg: string, failMsg: string, id: string) => {
@@ -126,8 +129,8 @@ export default function StrategyManagement() {
     if (!flagReason.trim()) return;
     await runAction(
       () => adminStrategyApi.flagStrategy(flagTarget, flagReason),
-      t('admin.strategy.messages.flagSuccess'),
-      t('admin.strategy.messages.flagFailed'),
+      t(STRATEGY_MESSAGES_FLAG_SUCCESS_KEY),
+      t(STRATEGY_MESSAGES_FLAG_FAILED_KEY),
       flagTarget,
     );
     setFlagModalOpen(false);
@@ -137,8 +140,8 @@ export default function StrategyManagement() {
   const handleUnflag = (id: string) => {
     runAction(
       () => adminStrategyApi.unflagStrategy(id),
-      t('admin.strategy.messages.unflagSuccess'),
-      t('admin.strategy.messages.unflagFailed'),
+      t(STRATEGY_MESSAGES_UNFLAG_SUCCESS_KEY),
+      t(STRATEGY_MESSAGES_UNFLAG_FAILED_KEY),
       id,
     );
   };
@@ -146,8 +149,8 @@ export default function StrategyManagement() {
   const handleUnpublish = (id: string) => {
     runAction(
       () => adminStrategyApi.unpublishStrategy(id),
-      t('admin.strategy.messages.unpublishSuccess'),
-      t('admin.strategy.messages.unpublishFailed'),
+      t(STRATEGY_MESSAGES_UNPUBLISH_SUCCESS_KEY),
+      t(STRATEGY_MESSAGES_UNPUBLISH_FAILED_KEY),
       id,
     );
   };
@@ -155,8 +158,8 @@ export default function StrategyManagement() {
   const handlePublish = (id: string) => {
     runAction(
       () => adminStrategyApi.publishStrategy(id),
-      t('admin.strategy.messages.publishSuccess'),
-      t('admin.strategy.messages.publishFailed'),
+      t(STRATEGY_MESSAGES_PUBLISH_SUCCESS_KEY),
+      t(STRATEGY_MESSAGES_PUBLISH_FAILED_KEY),
       id,
     );
   };
@@ -164,8 +167,8 @@ export default function StrategyManagement() {
   const handleDisable = (id: string) => {
     runAction(
       () => adminStrategyApi.disableStrategy(id),
-      t('admin.strategy.messages.disableSuccess'),
-      t('admin.strategy.messages.disableFailed'),
+      t(STRATEGY_MESSAGES_DISABLE_SUCCESS_KEY),
+      t(STRATEGY_MESSAGES_DISABLE_FAILED_KEY),
       id,
     );
   };
@@ -173,8 +176,8 @@ export default function StrategyManagement() {
   const handleEnable = (id: string) => {
     runAction(
       () => adminStrategyApi.enableStrategy(id),
-      t('admin.strategy.messages.enableSuccess'),
-      t('admin.strategy.messages.enableFailed'),
+      t(STRATEGY_MESSAGES_ENABLE_SUCCESS_KEY),
+      t(STRATEGY_MESSAGES_ENABLE_FAILED_KEY),
       id,
     );
   };
@@ -182,8 +185,8 @@ export default function StrategyManagement() {
   const handleArchive = (id: string) => {
     runAction(
       () => adminStrategyApi.archiveStrategy(id),
-      t('admin.strategy.messages.archiveSuccess'),
-      t('admin.strategy.messages.archiveFailed'),
+      t(STRATEGY_MESSAGES_ARCHIVE_SUCCESS_KEY),
+      t(STRATEGY_MESSAGES_ARCHIVE_FAILED_KEY),
       id,
     );
   };
@@ -197,16 +200,16 @@ export default function StrategyManagement() {
 
   // ── Columns ──
   const presetColumns = [
-    { title: t('admin.strategy.columns.name'), dataIndex: 'name', key: 'name', width: 200 },
-    { title: t('admin.strategy.columns.description'), dataIndex: 'description', key: 'description', ellipsis: true },
-    { title: t('admin.strategy.columns.tags'), dataIndex: 'tags', key: 'tags', render: (tags: string[]) => tags?.map(tg => <Tag key={tg}>{tg}</Tag>) },
-    { title: t('admin.strategy.columns.uses'), dataIndex: 'useCount', key: 'useCount', width: 80 },
+    { title: t(STRATEGY_COLUMNS_NAME_KEY), dataIndex: 'name', key: 'name', width: 200 },
+    { title: t(STRATEGY_COLUMNS_DESCRIPTION_KEY), dataIndex: 'description', key: 'description', ellipsis: true },
+    { title: t(STRATEGY_COLUMNS_TAGS_KEY), dataIndex: 'tags', key: 'tags', render: (tags: string[]) => tags?.map(tg => <Tag key={tg}>{tg}</Tag>) },
+    { title: t(STRATEGY_COLUMNS_USES_KEY), dataIndex: 'useCount', key: 'useCount', width: 80 },
     {
-      title: t('admin.strategy.columns.actions'), key: 'actions', width: 120,
+      title: t(STRATEGY_COLUMNS_ACTIONS_KEY), key: 'actions', width: 120,
       render: (_: unknown, r: SystemStrategy) => (
         <Space>
           <Button size="small" icon={<EditOutlined />} onClick={() => openEditPreset(r)} />
-          <Popconfirm title={t('admin.strategy.preset.deleteConfirm')} onConfirm={() => handleDeletePreset(r.id)}>
+          <Popconfirm title={t(STRATEGY_PRESET_DELETE_CONFIRM_KEY)} onConfirm={() => handleDeletePreset(r.id)}>
             <Button size="small" danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
@@ -215,23 +218,23 @@ export default function StrategyManagement() {
   ];
 
   const allColumns = [
-    { title: t('admin.strategy.columns.name'), dataIndex: 'name', key: 'name', width: 180 },
-    { title: t('admin.strategy.columns.owner'), key: 'owner', width: 150, render: (_: unknown, r: StrategySummary) => r.userEmail || r.userId || (r.isSystem ? t('admin.strategy.columns.system') : '—') },
-    { title: t('admin.strategy.columns.type'), key: 'type', width: 80, render: (_: unknown, r: StrategySummary) => r.isSystem ? <Tag color="gold">{t('admin.strategy.columns.preset')}</Tag> : <Tag>{t('admin.strategy.columns.user')}</Tag> },
-    { title: t('admin.strategy.columns.status'), dataIndex: 'status', key: 'status', width: 90 },
-    { title: t('admin.strategy.columns.public'), key: 'public', width: 80, render: (_: unknown, r: StrategySummary) => r.isPublic ? <Tag color="blue">{t('admin.strategy.columns.yes')}</Tag> : <Tag>{t('admin.strategy.columns.no')}</Tag> },
+    { title: t(STRATEGY_COLUMNS_NAME_KEY), dataIndex: 'name', key: 'name', width: 180 },
+    { title: t(STRATEGY_COLUMNS_OWNER_KEY), key: 'owner', width: 150, render: (_: unknown, r: StrategySummary) => r.userEmail || r.userId || (r.isSystem ? t(STRATEGY_COLUMNS_SYSTEM_KEY) : '—') },
+    { title: t(STRATEGY_COLUMNS_TYPE_KEY), key: 'type', width: 80, render: (_: unknown, r: StrategySummary) => r.isSystem ? <Tag color="gold">{t(STRATEGY_COLUMNS_PRESET_KEY)}</Tag> : <Tag>{t(STRATEGY_COLUMNS_USER_KEY)}</Tag> },
+    { title: t(STRATEGY_COLUMNS_STATUS_KEY), dataIndex: 'status', key: 'status', width: 90 },
+    { title: t(STRATEGY_COLUMNS_PUBLIC_KEY), key: 'public', width: 80, render: (_: unknown, r: StrategySummary) => r.isPublic ? <Tag color="blue">{t(STRATEGY_COLUMNS_YES_KEY)}</Tag> : <Tag>{t(STRATEGY_COLUMNS_NO_KEY)}</Tag> },
     {
-      title: t('admin.strategy.columns.flag'), dataIndex: 'flag', key: 'flag', width: 120,
+      title: t(STRATEGY_COLUMNS_FLAG_KEY), dataIndex: 'flag', key: 'flag', width: 120,
       render: (f: string, r: StrategySummary) => f ? <Tag color={flagColor(f)}>{f}{r.flagReason ? `: ${r.flagReason}` : ''}</Tag> : <span style={{ color: 'var(--color-text-secondary)' }}>—</span>,
     },
-    { title: t('admin.strategy.columns.schedules'), dataIndex: 'scheduleCount', key: 'scheduleCount', width: 90 },
-    { title: t('admin.strategy.columns.uses'), dataIndex: 'useCount', key: 'useCount', width: 70 },
+    { title: t(STRATEGY_COLUMNS_SCHEDULES_KEY), dataIndex: 'scheduleCount', key: 'scheduleCount', width: 90 },
+    { title: t(STRATEGY_COLUMNS_USES_KEY), dataIndex: 'useCount', key: 'useCount', width: 70 },
     {
-      title: t('admin.strategy.columns.actions'), key: 'actions', width: 240, fixed: 'right' as const,
+      title: t(STRATEGY_COLUMNS_ACTIONS_KEY), key: 'actions', width: 240, fixed: 'right' as const,
       render: (_: unknown, r: StrategySummary) => (
         <Space size="small">
           <Button size="small" icon={<EyeOutlined />} onClick={() => handleViewCode(r.id)} loading={actionLoading === r.id}>
-            {t('admin.strategy.actions.code')}
+            {t(STRATEGY_ACTIONS_CODE_KEY)}
           </Button>
           {r.flag !== 'archived' && (
             <>
@@ -239,13 +242,13 @@ export default function StrategyManagement() {
                 <Button size="small" icon={<CheckCircleOutlined />}
                   loading={actionLoading === r.id}
                   onClick={() => handleUnflag(r.id)}>
-                  {t('admin.strategy.actions.unflag')}
+                  {t(STRATEGY_ACTIONS_UNFLAG_KEY)}
                 </Button>
               ) : (
                 <Button size="small" icon={<WarningOutlined />}
                   loading={actionLoading === r.id}
                   onClick={() => { setFlagTarget(r.id); setFlagModalOpen(true); }}>
-                  {t('admin.strategy.actions.flag')}
+                  {t(STRATEGY_ACTIONS_FLAG_KEY)}
                 </Button>
               )}
               {r.flag !== 'disabled' ? (
@@ -253,16 +256,16 @@ export default function StrategyManagement() {
                   {!r.isSystem && r.isPublic ? (
                     <Button size="small" loading={actionLoading === r.id}
                       onClick={() => handleUnpublish(r.id)}>
-                      {t('admin.strategy.actions.unpublish')}
+                      {t(STRATEGY_ACTIONS_UNPUBLISH_KEY)}
                     </Button>
                   ) : !r.isSystem && !r.isPublic ? (
                     <Button size="small" loading={actionLoading === r.id}
                       onClick={() => handlePublish(r.id)}>
-                      {t('admin.strategy.actions.publish')}
+                      {t(STRATEGY_ACTIONS_PUBLISH_KEY)}
                     </Button>
                   ) : null}
                   {!r.isSystem && (
-                    <Popconfirm title={t('admin.strategy.actions.disableConfirm')} onConfirm={() => handleDisable(r.id)}>
+                    <Popconfirm title={t(STRATEGY_ACTIONS_DISABLE_CONFIRM_KEY)} onConfirm={() => handleDisable(r.id)}>
                       <Button size="small" danger icon={<StopOutlined />} loading={actionLoading === r.id} />
                     </Popconfirm>
                   )}
@@ -271,9 +274,9 @@ export default function StrategyManagement() {
                 <>
                   <Button size="small" icon={<UndoOutlined />} loading={actionLoading === r.id}
                     onClick={() => handleEnable(r.id)}>
-                    {t('admin.strategy.actions.enable')}
+                    {t(STRATEGY_ACTIONS_ENABLE_KEY)}
                   </Button>
-                  <Popconfirm title={t('admin.strategy.actions.archiveConfirm')} onConfirm={() => handleArchive(r.id)}>
+                  <Popconfirm title={t(STRATEGY_ACTIONS_ARCHIVE_CONFIRM_KEY)} onConfirm={() => handleArchive(r.id)}>
                     <Button size="small" icon={<FileProtectOutlined />} loading={actionLoading === r.id} />
                   </Popconfirm>
                 </>
@@ -290,12 +293,12 @@ export default function StrategyManagement() {
       <Tabs activeKey={tab} onChange={setTab} items={[
         {
           key: 'preset',
-          label: t('admin.strategy.tabs.preset'),
+          label: t(STRATEGY_TABS_PRESET_KEY),
           children: (
             <div>
               <div style={{ marginBottom: 12 }}>
                 <Button type="primary" icon={<PlusOutlined />} onClick={openCreatePreset}>
-                  {t('admin.strategy.preset.add')}
+                  {t(STRATEGY_PRESET_ADD_KEY)}
                 </Button>
               </div>
               <Table rowKey="id" columns={presetColumns} dataSource={presets} loading={presetsLoading} size="small" pagination={false} />
@@ -304,23 +307,23 @@ export default function StrategyManagement() {
         },
         {
           key: 'all',
-          label: t('admin.strategy.tabs.allStrategies'),
+          label: t(STRATEGY_TABS_ALL_STRATEGIES_KEY),
           children: (
             <div>
               <Space style={{ marginBottom: 12 }}>
-                <Input.Search placeholder={t('admin.strategy.all.searchPlaceholder')} allowClear style={{ width: 240 }}
+                <Input.Search placeholder={t(STRATEGY_ALL_SEARCH_PLACEHOLDER_KEY)} allowClear style={{ width: 240 }}
                   value={allSearch} onChange={e => { setAllSearch(e.target.value); setAllPage(1); }} />
-                <Select allowClear placeholder={t('admin.strategy.all.flagFilter')} style={{ width: 140 }} value={flagFilter || undefined}
+                <Select allowClear placeholder={t(STRATEGY_ALL_FLAG_FILTER_KEY)} style={{ width: 140 }} value={flagFilter || undefined}
                   onChange={v => { setFlagFilter(v || ''); setAllPage(1); }}
                   options={[
-                    { value: '', label: t('admin.strategy.all.allActive') },
-                    { value: 'flagged', label: t('admin.strategy.all.flagged') },
-                    { value: 'disabled', label: t('admin.strategy.all.disabled') },
-                    { value: 'archived', label: t('admin.strategy.all.archived') },
+                    { value: '', label: t(STRATEGY_ALL_ALL_ACTIVE_KEY) },
+                    { value: 'flagged', label: t(STRATEGY_ALL_FLAGGED_KEY) },
+                    { value: 'disabled', label: t(STRATEGY_ALL_DISABLED_KEY) },
+                    { value: 'archived', label: t(STRATEGY_ALL_ARCHIVED_KEY) },
                   ]} />
               </Space>
               <Table rowKey="id" columns={allColumns} dataSource={allStrategies} loading={allLoading} size="small"
-                pagination={{ current: allPage, pageSize, total: allTotal, onChange: (p) => setAllPage(p), showSizeChanger: false, showTotal: (cnt) => t('admin.strategy.all.total', { count: cnt }) }}
+                pagination={{ current: allPage, pageSize, total: allTotal, onChange: (p) => setAllPage(p), showSizeChanger: false, showTotal: (cnt) => t(STRATEGY_ALL_TOTAL_KEY, { count: cnt }) }}
                 scroll={{ x: 1200 }} />
             </div>
           ),
@@ -328,35 +331,35 @@ export default function StrategyManagement() {
       ]} />
 
       {/* Preset edit/create modal */}
-      <Modal title={editingPreset ? t('admin.strategy.preset.edit') : t('admin.strategy.preset.create')} open={editModalOpen}
+      <Modal title={editingPreset ? t(STRATEGY_PRESET_EDIT_KEY) : t(STRATEGY_PRESET_CREATE_KEY)} open={editModalOpen}
         onCancel={() => setEditModalOpen(false)} onOk={handleSavePreset} confirmLoading={presetSaving} width={700}>
         <Form form={form} layout="vertical">
-          <Form.Item name="name" label={t('admin.strategy.columns.name')} rules={[{ required: true }]}>
+          <Form.Item name="name" label={t(STRATEGY_COLUMNS_NAME_KEY)} rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="description" label={t('admin.strategy.columns.description')}>
+          <Form.Item name="description" label={t(STRATEGY_COLUMNS_DESCRIPTION_KEY)}>
             <Input />
           </Form.Item>
-          <Form.Item name="code" label={t('admin.strategy.columns.code')} rules={[{ required: true }]}>
+          <Form.Item name="code" label={t(STRATEGY_COLUMNS_CODE_KEY)} rules={[{ required: true }]}>
             <TextArea rows={12} style={{ fontFamily: 'monospace', fontSize: 13 }} />
           </Form.Item>
-          <Form.Item name="tags" label={t('admin.strategy.columns.tags')}>
-            <Input placeholder={t('admin.strategy.columns.tagsPlaceholder')} />
+          <Form.Item name="tags" label={t(STRATEGY_COLUMNS_TAGS_KEY)}>
+            <Input placeholder={t(STRATEGY_COLUMNS_TAGS_PLACEHOLDER_KEY)} />
           </Form.Item>
         </Form>
       </Modal>
 
       {/* Code view modal */}
-      <Modal title={t('admin.strategy.actions.code')} open={codeViewOpen} onCancel={() => setCodeViewOpen(false)} footer={null} width={700}>
+      <Modal title={t(STRATEGY_ACTIONS_CODE_KEY)} open={codeViewOpen} onCancel={() => setCodeViewOpen(false)} footer={null} width={700}>
         <pre style={{ background: '#1e1e1e', color: '#d4d4d4', padding: 12, borderRadius: 6, fontSize: 12, maxHeight: 500, overflow: 'auto' }}>{viewingCode}</pre>
       </Modal>
 
       {/* Flag reason modal */}
-      <Modal title={t('admin.strategy.actions.flag')} open={flagModalOpen}
+      <Modal title={t(STRATEGY_ACTIONS_FLAG_KEY)} open={flagModalOpen}
         onCancel={() => { setFlagModalOpen(false); setFlagReason(''); }}
         onOk={handleFlag}
         confirmLoading={actionLoading === flagTarget}>
-        <TextArea rows={3} placeholder={t('admin.strategy.columns.flag') + '...'} value={flagReason} onChange={e => setFlagReason(e.target.value)} />
+        <TextArea rows={3} placeholder={t(STRATEGY_COLUMNS_FLAG_KEY) + '...'} value={flagReason} onChange={e => setFlagReason(e.target.value)} />
       </Modal>
     </div>
   );

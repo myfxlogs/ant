@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Form, message } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { SCHEDULE_LAUNCH_ERROR_INVESTOR_ACCOUNT_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+
+;
 import { accountApi } from '@/client/account';
 import type { RequiredParamSpec } from '@/client/codeAssist';
 import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
@@ -100,7 +103,7 @@ export function useScheduleLaunchForm({
     try {
       const v = (await form.validateFields()) as ScheduleLaunchFormValues;
       if (tradePermission.verified && tradePermission.isInvestor) {
-        message.error(t('strategy.templates.scheduleLaunch.errorInvestorAccount', '所选账户是投资者只读模式，请先填写交易密码'));
+        message.error(t(SCHEDULE_LAUNCH_ERROR_INVESTOR_ACCOUNT_KEY, '所选账户是投资者只读模式，请先填写交易密码'));
         return;
       }
       const missingParams = (requiredParams || []).filter((p) => p.required).filter((p) => {

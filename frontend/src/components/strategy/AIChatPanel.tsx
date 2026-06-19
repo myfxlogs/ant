@@ -1,7 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button, Space, Tag, Typography, message } from 'antd';
 import { ThunderboltOutlined, LoadingOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { ANALYZING_KEY, FEEDBACK_KEY, RESET_KEY, REVISE_KEY, STREAMING_KEY, TITLE_KEY as AI_CHAT_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_ai_chat_keys';
+import { CODE_UPDATED_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
+import { TITLE_KEY as GEN_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
+
 import { generateStrategyStream } from '@/client/strategyGen';
 import { codeAssistApi, type CodeChatMessage } from '@/client/codeAssist';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
@@ -139,7 +143,7 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
           if (python) {
             if (autoApply) {
               onApply(python);
-              message.success(t('strategy.codeAssist.codeUpdated', 'Code updated.'));
+              message.success(t(CODE_UPDATED_KEY, 'Code updated.'));
             } else {
               setPendingCode(python);
             }
@@ -194,18 +198,18 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
         <ThunderboltOutlined style={{ color: '#faad14' }} />
-        <Typography.Text strong style={{ fontSize: 13 }}>{t('strategy.aiChat.title')}</Typography.Text>
+        <Typography.Text strong style={{ fontSize: 13 }}>{t(AI_CHAT_TITLE_KEY)}</Typography.Text>
         <Space size={4} wrap style={{ marginLeft: 8 }}>
-          {!code.trim() && !backtestMetrics && <Tag color="blue">{t('strategy.gen.title', '策略生成')}</Tag>}
-          {!!code.trim() && !backtestMetrics && <Tag color="green">{t('strategy.aiChat.revise')}</Tag>}
-          {backtestMetrics && <Tag color="purple">{t('strategy.aiChat.feedback')}</Tag>}
-          {isBusy && <Tag icon={<LoadingOutlined />} color="processing">{t('strategy.aiChat.streaming')}</Tag>}
-          {phase === 'analyzing' && isBusy && <Tag color="orange">{t('strategy.aiChat.analyzing')}</Tag>}
+          {!code.trim() && !backtestMetrics && <Tag color="blue">{t(GEN_TITLE_KEY, '策略生成')}</Tag>}
+          {!!code.trim() && !backtestMetrics && <Tag color="green">{t(REVISE_KEY)}</Tag>}
+          {backtestMetrics && <Tag color="purple">{t(FEEDBACK_KEY)}</Tag>}
+          {isBusy && <Tag icon={<LoadingOutlined />} color="processing">{t(STREAMING_KEY)}</Tag>}
+          {phase === 'analyzing' && isBusy && <Tag color="orange">{t(ANALYZING_KEY)}</Tag>}
           {phase && !isBusy && phase !== 'done' && <Tag>{phase}</Tag>}
           {backtestId && <Tag color="success">backtest: {backtestId.slice(0, 8)}</Tag>}
         </Space>
         {mode !== 'idle' && !isBusy && (
-          <Button size="small" type="link" onClick={reset} style={{ marginLeft: 'auto' }}>{t('strategy.aiChat.reset')}</Button>
+          <Button size="small" type="link" onClick={reset} style={{ marginLeft: 'auto' }}>{t(RESET_KEY)}</Button>
         )}
       </div>
 
@@ -230,7 +234,7 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
       {pendingCode && !autoApply && (
         <ChatPendingCodeBanner
           pendingCode={pendingCode}
-          onApply={(c) => { onApply(c); setPendingCode(null); message.success(t('strategy.codeAssist.codeUpdated', 'Code updated.')); }}
+          onApply={(c) => { onApply(c); setPendingCode(null); message.success(t(CODE_UPDATED_KEY, 'Code updated.')); }}
           onDismiss={() => setPendingCode(null)}
           t={t}
         />

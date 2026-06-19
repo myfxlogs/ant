@@ -1,7 +1,10 @@
 import { Button } from 'antd';
 import type { FormInstance } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { CREATE_SCHEDULE_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
+
+;
 import ScheduleTable from '../ScheduleTable';
 import EditScheduleModal from '../EditScheduleModal';
 import type { ScheduleFormValues } from '../EditScheduleModal';
@@ -51,7 +54,7 @@ export default function LibraryScheduleTab(props: Props) {
       <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span />
         <Button type="primary" icon={<PlusOutlined />} onClick={props.openCreate}>
-          {t('strategy.schedules.createSchedule', '新建运行')}
+          {t(CREATE_SCHEDULE_KEY, '新建运行')}
         </Button>
       </div>
 
