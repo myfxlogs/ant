@@ -3,19 +3,19 @@
 const Trading = {
   "algo": {
     "actions": {
-      "cancel": "Cancel",
+      "cancel": "取消",
       "start": "启动"
     },
     "dashboard": {
       "activeExecutions": "执行中",
-      "noActive": "No active algo executions",
+      "noActive": "暂无活跃执行",
       "title": "算法面板"
     },
     "fields": {
       "account": "账户",
       "algo": "算法",
       "limitPrice": "限价",
-      "participationRate": "Participation Rate",
+      "participationRate": "参与率",
       "side": "方向",
       "sliceInterval": "切片间隔",
       "symbol": "品种",
@@ -24,21 +24,21 @@ const Trading = {
       "volume": "数量"
     },
     "info": {
-      "description": "Description",
+      "description": "描述",
       "name": "名称"
     },
     "messages": {
-      "started": "Algo started"
+      "started": "算法已启动"
     },
     "side": {
       "buy": "买入",
       "sell": "卖出"
     },
     "submitForm": {
-      "title": "Launch Algo"
+      "title": "启动算法"
     },
     "table": {
-      "actions": "Actions",
+      "actions": "操作",
       "algo": "算法",
       "executionId": "执行ID",
       "progress": "进度",
@@ -48,7 +48,7 @@ const Trading = {
       "volume": "数量"
     },
     "timePresets": {
-      "EOD": "End of Day"
+      "EOD": "当日结束"
     }
   },
   "trading": {
@@ -58,7 +58,7 @@ const Trading = {
         "disableConfirm": "确认关闭",
         "disableInfoDescription": "关闭后，系统将停止自动执行交易，但已开启的策略仍会继续监控市场。",
         "disableInfoTitle": "关闭自动交易",
-        "disableQuestion": "Are you sure you want to disable auto trading?",
+        "disableQuestion": "确定要关闭自动交易？",
         "disableTitle": "关闭自动交易",
         "enableBullet1": "系统将自动执行符合策略条件的交易",
         "enableBullet2": "请确保风险配置已正确设置",
@@ -83,7 +83,7 @@ const Trading = {
     "markPrice": "标记价",
     "market": "市价",
     "messages": {
-      "fetchOrderHistoryFailed": "Failed to load order history",
+      "fetchOrderHistoryFailed": "加载订单历史失败",
       "fetchPendingOrdersFailed": "获取挂单失败",
       "fetchPositionsFailed": "获取持仓失败",
       "orderCloseFailed": "平仓失败",
@@ -117,51 +117,51 @@ const Trading = {
     "risk": {
       "errors": {
         "RISK_ACCOUNT_TRADE_DISABLED": {
-          "action": "Check account status and permissions, then try again.",
+          "action": "检查账户状态和权限后重试。",
           "title": "当前账户被禁止交易。"
         },
         "RISK_INTERNAL_RULE_UNAVAILABLE": {
-          "action": "Retry later; contact support if the issue persists.",
+          "action": "稍后重试；如问题持续请联系客服。",
           "title": "风控规则暂不可用。"
         },
         "RISK_MARGIN_INSUFFICIENT": {
-          "action": "Reduce volume, close positions, or add funds.",
+          "action": "减少手数、平仓或充值。",
           "title": "可用保证金不足，无法下单。"
         },
         "RISK_MARKET_SESSION_CLOSED": {
-          "action": "Wait for the next trading session and retry.",
+          "action": "等待下一个交易时段后重试。",
           "title": "当前品种处于休市时段。"
         },
         "RISK_MAX_OPEN_POSITIONS_EXCEEDED": {
-          "action": "Close existing positions or raise the limit.",
+          "action": "平掉现有持仓或提高上限。",
           "title": "已达到最大持仓数量限制。"
         },
         "RISK_MAX_PENDING_ORDERS_EXCEEDED": {
-          "action": "Cancel existing pending orders or raise the limit.",
+          "action": "取消现有挂单或提高上限。",
           "title": "已达到最大挂单数量限制。"
         },
         "RISK_ORDER_FROZEN_ZONE": {
-          "action": "Wait until price moves away from freeze distance, then retry.",
+          "action": "等待价格离开冻结区域后重试。",
           "title": "订单处于冻结区，当前不可修改。"
         },
         "RISK_ORDER_TYPE_UNSUPPORTED": {
-          "action": "Choose a supported order type and retry.",
+          "action": "选择支持的订单类型后重试。",
           "title": "当前品种不支持该订单类型。"
         },
         "RISK_STOP_DISTANCE_TOO_CLOSE": {
-          "action": "Increase SL/TP distance and retry.",
+          "action": "增加止损/止盈距离后重试。",
           "title": "止损或止盈距离当前价格过近。"
         },
         "RISK_SYMBOL_TRADE_DISABLED": {
-          "action": "Switch to a tradable symbol or try later.",
+          "action": "切换到可交易品种或稍后重试。",
           "title": "当前品种暂不可交易。"
         },
         "RISK_VOLUME_INVALID": {
-          "action": "Adjust volume to match min/max/step requirements.",
+          "action": "调整手数以匹配最小/最大/步长要求。",
           "title": "下单手数不合法。"
         },
         "unknown": {
-          "action": "Please review order parameters and try again.",
+          "action": "请检查订单参数后重试。",
           "title": "交易请求被拒绝。"
         }
       }
@@ -170,7 +170,7 @@ const Trading = {
       "confirm": {
         "confirmText": "确认保存",
         "description": "请确认以下风险配置：",
-        "info": "After saving, all auto trading will follow the new risk limits.",
+        "info": "保存后，所有自动交易将遵循新的风险限额。",
         "title": "确认保存风险配置"
       },
       "fields": {
@@ -180,10 +180,10 @@ const Trading = {
         "maxPositions": "最大持仓数量",
         "maxRiskPercent": "单笔最大风险",
         "trailingStopEnabled": "移动止损",
-        "trailingStopPips": "Trailing Stop (pips)"
+        "trailingStopPips": "移动止损 (点)"
       }
     },
-    "selectSymbol": "Select a symbol",
+    "selectSymbol": "选择品种",
     "sell": "卖出",
     "side": "方向",
     "stop": "止损",

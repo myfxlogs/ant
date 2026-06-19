@@ -3,19 +3,19 @@
 const Trading = {
   "algo": {
     "actions": {
-      "cancel": "Cancel",
+      "cancel": "取消",
       "start": "Bắt Đầu"
     },
     "dashboard": {
       "activeExecutions": "Đang Thực Thi",
-      "noActive": "No active algo executions",
+      "noActive": "暂无活跃执行",
       "title": "Bảng Thuật Toán"
     },
     "fields": {
       "account": "Tài Khoản",
       "algo": "Thuật Toán",
       "limitPrice": "限价",
-      "participationRate": "Participation Rate",
+      "participationRate": "参与率",
       "side": "Hướng",
       "sliceInterval": "切片间隔",
       "symbol": "Mã",
@@ -24,21 +24,21 @@ const Trading = {
       "volume": "Khối Lượng"
     },
     "info": {
-      "description": "Description",
+      "description": "描述",
       "name": "Tên"
     },
     "messages": {
-      "started": "Algo started"
+      "started": "算法已启动"
     },
     "side": {
       "buy": "Mua",
       "sell": "Bán"
     },
     "submitForm": {
-      "title": "Launch Algo"
+      "title": "启动算法"
     },
     "table": {
-      "actions": "Actions",
+      "actions": "操作",
       "algo": "Thuật Toán",
       "executionId": "执行ID",
       "progress": "Tiến Độ",
@@ -48,7 +48,7 @@ const Trading = {
       "volume": "Khối Lượng"
     },
     "timePresets": {
-      "EOD": "End of Day"
+      "EOD": "当日结束"
     }
   },
   "trading": {
@@ -58,7 +58,7 @@ const Trading = {
         "disableConfirm": "Xác nhận tắt",
         "disableInfoDescription": "Sau khi tắt, hệ thống sẽ dừng giao dịch tự động, nhưng các chiến lược đang bật vẫn có thể tiếp tục theo dõi thị trường.",
         "disableInfoTitle": "Tắt giao dịch tự động",
-        "disableQuestion": "Are you sure you want to disable auto trading?",
+        "disableQuestion": "确定要关闭自动交易？",
         "disableTitle": "Tắt giao dịch tự động",
         "enableBullet1": "Hệ thống sẽ tự động thực hiện giao dịch khi điều kiện chiến lược thỏa mãn",
         "enableBullet2": "Hãy đảm bảo cấu hình rủi ro đã được thiết lập đúng",
@@ -83,7 +83,7 @@ const Trading = {
     "markPrice": "Giá thị trường",
     "market": "Thị trường",
     "messages": {
-      "fetchOrderHistoryFailed": "Failed to load order history",
+      "fetchOrderHistoryFailed": "加载订单历史失败",
       "fetchPendingOrdersFailed": "Không thể tải lệnh chờ",
       "fetchPositionsFailed": "Không thể tải vị thế",
       "orderCloseFailed": "Đóng lệnh thất bại",
@@ -117,51 +117,51 @@ const Trading = {
     "risk": {
       "errors": {
         "RISK_ACCOUNT_TRADE_DISABLED": {
-          "action": "Check account status and permissions, then try again.",
+          "action": "检查账户状态和权限后重试。",
           "title": "Giao dịch đã bị tắt cho tài khoản này."
         },
         "RISK_INTERNAL_RULE_UNAVAILABLE": {
-          "action": "Retry later; contact support if the issue persists.",
+          "action": "稍后重试；如问题持续请联系客服。",
           "title": "Quy tắc rủi ro tạm thời chưa khả dụng."
         },
         "RISK_MARGIN_INSUFFICIENT": {
-          "action": "Reduce volume, close positions, or add funds.",
+          "action": "减少手数、平仓或充值。",
           "title": "Không đủ ký quỹ khả dụng để đặt lệnh này."
         },
         "RISK_MARKET_SESSION_CLOSED": {
-          "action": "Wait for the next trading session and retry.",
+          "action": "等待下一个交易时段后重试。",
           "title": "Thị trường của mã này đang đóng cửa."
         },
         "RISK_MAX_OPEN_POSITIONS_EXCEEDED": {
-          "action": "Close existing positions or raise the limit.",
+          "action": "平掉现有持仓或提高上限。",
           "title": "Đã đạt giới hạn số vị thế mở tối đa."
         },
         "RISK_MAX_PENDING_ORDERS_EXCEEDED": {
-          "action": "Cancel existing pending orders or raise the limit.",
+          "action": "取消现有挂单或提高上限。",
           "title": "Đã đạt giới hạn số lệnh chờ tối đa."
         },
         "RISK_ORDER_FROZEN_ZONE": {
-          "action": "Wait until price moves away from freeze distance, then retry.",
+          "action": "等待价格离开冻结区域后重试。",
           "title": "Không thể sửa lệnh trong vùng đóng băng."
         },
         "RISK_ORDER_TYPE_UNSUPPORTED": {
-          "action": "Choose a supported order type and retry.",
+          "action": "选择支持的订单类型后重试。",
           "title": "Loại lệnh này không được hỗ trợ cho mã đã chọn."
         },
         "RISK_STOP_DISTANCE_TOO_CLOSE": {
-          "action": "Increase SL/TP distance and retry.",
+          "action": "增加止损/止盈距离后重试。",
           "title": "Stop-loss hoặc take-profit quá gần giá thị trường."
         },
         "RISK_SYMBOL_TRADE_DISABLED": {
-          "action": "Switch to a tradable symbol or try later.",
+          "action": "切换到可交易品种或稍后重试。",
           "title": "Mã này hiện không thể giao dịch."
         },
         "RISK_VOLUME_INVALID": {
-          "action": "Adjust volume to match min/max/step requirements.",
+          "action": "调整手数以匹配最小/最大/步长要求。",
           "title": "Khối lượng lệnh không hợp lệ."
         },
         "unknown": {
-          "action": "Please review order parameters and try again.",
+          "action": "请检查订单参数后重试。",
           "title": "Yêu cầu giao dịch đã bị từ chối."
         }
       }
@@ -170,7 +170,7 @@ const Trading = {
       "confirm": {
         "confirmText": "Lưu",
         "description": "Vui lòng xác nhận cấu hình rủi ro sau:",
-        "info": "After saving, all auto trading will follow the new risk limits.",
+        "info": "保存后，所有自动交易将遵循新的风险限额。",
         "title": "Xác nhận lưu cấu hình rủi ro"
       },
       "fields": {
@@ -180,10 +180,10 @@ const Trading = {
         "maxPositions": "Số vị thế tối đa",
         "maxRiskPercent": "Rủi ro tối đa mỗi lệnh",
         "trailingStopEnabled": "Trailing stop",
-        "trailingStopPips": "Trailing Stop (pips)"
+        "trailingStopPips": "移动止损 (点)"
       }
     },
-    "selectSymbol": "Select a symbol",
+    "selectSymbol": "选择品种",
     "sell": "Bán",
     "side": "Hướng",
     "stop": "Dừng",
