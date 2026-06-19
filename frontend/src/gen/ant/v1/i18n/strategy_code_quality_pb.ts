@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file i18n/strategy_code_quality.proto.
  */
 export const file_i18n_strategy_code_quality: GenFile = /*@__PURE__*/
-  fileDesc("CiBpMThuL3N0cmF0ZWd5X2NvZGVfcXVhbGl0eS5wcm90bxILYW50LnYxLmkxOG4iuQIKD0NvZGVRdWFsaXR5STE4bhIvCidjYXRlZ29yeV9fZl91X3RfdV9yX2VfX2RfYV90X2FfX2xfZV9hX2sYASABKAkSKgoiY2F0ZWdvcnlfX21faV9zX3NfaV9uX2dfX3BfYV9yX2FfbRgCIAEoCRI5CjFjYXRlZ29yeV9fbl9kX2Ffcl9yX2FfeV9fcF9hX25fZF9hX3NfX21faV9zX3Vfc19lGAMgASgJEicKH2NhdGVnb3J5X19uX29fX2Vfbl90X3JfeV9fcF9jX3QYBCABKAkSOwozY2F0ZWdvcnlfX25fb19fc190X29fcF9fYV9uX2RfX3RfYV9rX2VfX3Bfcl9vX2ZfaV90GAUgASgJEigKIGNhdGVnb3J5X191X25fcl9lX2FfZF9fcF9hX3JfYV9tGAYgASgJQiFaH2FudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxL2kxOG5iBnByb3RvMw");
+  fileDesc("CiBpMThuL3N0cmF0ZWd5X2NvZGVfcXVhbGl0eS5wcm90bxILYW50LnYxLmkxOG4ipwIKD0NvZGVRdWFsaXR5STE4bhIsCiRjYXRlZ29yeV9mX3VfdF91X3JfZV9kX2FfdF9hX2xfZV9hX2sYASABKAkSKAogY2F0ZWdvcnlfbV9pX3Nfc19pX25fZ19wX2Ffcl9hX20YAiABKAkSNgouY2F0ZWdvcnlfbl9kX2Ffcl9yX2FfeV9wX2Ffbl9kX2Ffc19tX2lfc191X3NfZRgDIAEoCRIkChxjYXRlZ29yeV9uX29fZV9uX3Rfcl95X3BfY190GAQgASgJEjYKLmNhdGVnb3J5X25fb19zX3Rfb19wX2Ffbl9kX3RfYV9rX2VfcF9yX29fZl9pX3QYBSABKAkSJgoeY2F0ZWdvcnlfdV9uX3JfZV9hX2RfcF9hX3JfYV9tGAYgASgJQiFaH2FudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxL2kxOG5iBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.i18n.CodeQualityI18n
@@ -19,42 +19,42 @@ export type CodeQualityI18n = Message<"ant.v1.i18n.CodeQualityI18n"> & {
   /**
    * Future Data Leak
    *
-   * @generated from field: string category__f_u_t_u_r_e__d_a_t_a__l_e_a_k = 1;
+   * @generated from field: string category_f_u_t_u_r_e_d_a_t_a_l_e_a_k = 1;
    */
   categoryFUTUREDATALEAK: string;
 
   /**
    * Missing Param
    *
-   * @generated from field: string category__m_i_s_s_i_n_g__p_a_r_a_m = 2;
+   * @generated from field: string category_m_i_s_s_i_n_g_p_a_r_a_m = 2;
    */
   categoryMISSINGPARAM: string;
 
   /**
    * ndarray/pandas Misuse
    *
-   * @generated from field: string category__n_d_a_r_r_a_y__p_a_n_d_a_s__m_i_s_u_s_e = 3;
+   * @generated from field: string category_n_d_a_r_r_a_y_p_a_n_d_a_s_m_i_s_u_s_e = 3;
    */
   categoryNDARRAYPANDASMISUSE: string;
 
   /**
    * Missing Entry %
    *
-   * @generated from field: string category__n_o__e_n_t_r_y__p_c_t = 4;
+   * @generated from field: string category_n_o_e_n_t_r_y_p_c_t = 4;
    */
   categoryNOENTRYPCT: string;
 
   /**
    * Missing Stop/Take Profit
    *
-   * @generated from field: string category__n_o__s_t_o_p__a_n_d__t_a_k_e__p_r_o_f_i_t = 5;
+   * @generated from field: string category_n_o_s_t_o_p_a_n_d_t_a_k_e_p_r_o_f_i_t = 5;
    */
   categoryNOSTOPANDTAKEPROFIT: string;
 
   /**
    * Unread Param
    *
-   * @generated from field: string category__u_n_r_e_a_d__p_a_r_a_m = 6;
+   * @generated from field: string category_u_n_r_e_a_d_p_a_r_a_m = 6;
    */
   categoryUNREADPARAM: string;
 };

@@ -22,63 +22,63 @@ const (
 )
 
 type AnalyticsI18N struct {
-	state                                      protoimpl.MessageState `protogen:"open.v1"`
-	SummaryCardsDirectionShare                 string                 `protobuf:"bytes,1,opt,name=summary_cards_direction_share,json=summaryCardsDirectionShare,proto3" json:"summary_cards_direction_share,omitempty"`                                                                 // Direction share
-	SummaryCardsEconomicCalendar               string                 `protobuf:"bytes,2,opt,name=summary_cards_economic_calendar,json=summaryCardsEconomicCalendar,proto3" json:"summary_cards_economic_calendar,omitempty"`                                                           // Economic calendar
-	SummaryCardsPnlShare                       string                 `protobuf:"bytes,3,opt,name=summary_cards_pnl_share,json=summaryCardsPnlShare,proto3" json:"summary_cards_pnl_share,omitempty"`                                                                                   // P/L share
-	SummaryCardsRiskMetrics                    string                 `protobuf:"bytes,4,opt,name=summary_cards_risk_metrics,json=summaryCardsRiskMetrics,proto3" json:"summary_cards_risk_metrics,omitempty"`                                                                          // Risk metrics
-	SummaryCardsSymbolPnlCompare               string                 `protobuf:"bytes,5,opt,name=summary_cards_symbol_pnl_compare,json=summaryCardsSymbolPnlCompare,proto3" json:"summary_cards_symbol_pnl_compare,omitempty"`                                                         // Symbol P/L comparison
-	SummaryCardsSymbolTradeShare               string                 `protobuf:"bytes,6,opt,name=summary_cards_symbol_trade_share,json=summaryCardsSymbolTradeShare,proto3" json:"summary_cards_symbol_trade_share,omitempty"`                                                         // Symbol trade share
-	SummaryCardsTradeStats                     string                 `protobuf:"bytes,7,opt,name=summary_cards_trade_stats,json=summaryCardsTradeStats,proto3" json:"summary_cards_trade_stats,omitempty"`                                                                             // Trade stats
-	SummaryDirectionBuy                        string                 `protobuf:"bytes,8,opt,name=summary_direction_buy,json=summaryDirectionBuy,proto3" json:"summary_direction_buy,omitempty"`                                                                                        // Buy
-	SummaryDirectionSell                       string                 `protobuf:"bytes,9,opt,name=summary_direction_sell,json=summaryDirectionSell,proto3" json:"summary_direction_sell,omitempty"`                                                                                     // Sell
-	SummaryEconomicCalendarActual              string                 `protobuf:"bytes,10,opt,name=summary_economic_calendar_actual,json=summaryEconomicCalendarActual,proto3" json:"summary_economic_calendar_actual,omitempty"`                                                       // Actual
-	SummaryEconomicCalendarEmpty               string                 `protobuf:"bytes,11,opt,name=summary_economic_calendar_empty,json=summaryEconomicCalendarEmpty,proto3" json:"summary_economic_calendar_empty,omitempty"`                                                          // No economic events available.
-	SummaryEconomicCalendarEstimate            string                 `protobuf:"bytes,12,opt,name=summary_economic_calendar_estimate,json=summaryEconomicCalendarEstimate,proto3" json:"summary_economic_calendar_estimate,omitempty"`                                                 // Estimate
-	SummaryEconomicCalendarIndicators_CPI      string                 `protobuf:"bytes,13,opt,name=summary_economic_calendar_indicators__c_p_i,json=summaryEconomicCalendarIndicatorsCPI,proto3" json:"summary_economic_calendar_indicators__c_p_i,omitempty"`                          // Inflation (CPI)
-	SummaryEconomicCalendarIndicators_FEDFUNDS string                 `protobuf:"bytes,14,opt,name=summary_economic_calendar_indicators__f_e_d_f_u_n_d_s,json=summaryEconomicCalendarIndicatorsFEDFUNDS,proto3" json:"summary_economic_calendar_indicators__f_e_d_f_u_n_d_s,omitempty"` // Fed funds rate
-	SummaryEconomicCalendarIndicators_GDP      string                 `protobuf:"bytes,15,opt,name=summary_economic_calendar_indicators__g_d_p,json=summaryEconomicCalendarIndicatorsGDP,proto3" json:"summary_economic_calendar_indicators__g_d_p,omitempty"`                          // Real GDP
-	SummaryEconomicCalendarIndicators_UNRATE   string                 `protobuf:"bytes,16,opt,name=summary_economic_calendar_indicators__u_n_r_a_t_e,json=summaryEconomicCalendarIndicatorsUNRATE,proto3" json:"summary_economic_calendar_indicators__u_n_r_a_t_e,omitempty"`           // Unemployment rate
-	SummaryEconomicCalendarKeyIndicatorsTitle  string                 `protobuf:"bytes,17,opt,name=summary_economic_calendar_key_indicators_title,json=summaryEconomicCalendarKeyIndicatorsTitle,proto3" json:"summary_economic_calendar_key_indicators_title,omitempty"`               // Key macro indicators
-	SummaryEconomicCalendarLoading             string                 `protobuf:"bytes,18,opt,name=summary_economic_calendar_loading,json=summaryEconomicCalendarLoading,proto3" json:"summary_economic_calendar_loading,omitempty"`                                                    // Loading economic calendar...
-	SummaryEconomicCalendarPrevious            string                 `protobuf:"bytes,19,opt,name=summary_economic_calendar_previous,json=summaryEconomicCalendarPrevious,proto3" json:"summary_economic_calendar_previous,omitempty"`                                                 // Previous
-	SummaryLabelsPnl                           string                 `protobuf:"bytes,20,opt,name=summary_labels_pnl,json=summaryLabelsPnl,proto3" json:"summary_labels_pnl,omitempty"`                                                                                                // P/L
-	SummaryMetricsBalance                      string                 `protobuf:"bytes,21,opt,name=summary_metrics_balance,json=summaryMetricsBalance,proto3" json:"summary_metrics_balance,omitempty"`                                                                                 // Balance
-	SummaryMetricsEquity                       string                 `protobuf:"bytes,22,opt,name=summary_metrics_equity,json=summaryMetricsEquity,proto3" json:"summary_metrics_equity,omitempty"`                                                                                    // Equity
-	SummaryMetricsEquityValue                  string                 `protobuf:"bytes,23,opt,name=summary_metrics_equity_value,json=summaryMetricsEquityValue,proto3" json:"summary_metrics_equity_value,omitempty"`                                                                   // Equity value
-	SummaryMetricsNetProfit                    string                 `protobuf:"bytes,24,opt,name=summary_metrics_net_profit,json=summaryMetricsNetProfit,proto3" json:"summary_metrics_net_profit,omitempty"`                                                                         // Net profit
-	SummaryPeriodsAll                          string                 `protobuf:"bytes,25,opt,name=summary_periods_all,json=summaryPeriodsAll,proto3" json:"summary_periods_all,omitempty"`                                                                                             // All
-	SummaryPeriodsMonth                        string                 `protobuf:"bytes,26,opt,name=summary_periods_month,json=summaryPeriodsMonth,proto3" json:"summary_periods_month,omitempty"`                                                                                       // This month
-	SummaryPeriodsToday                        string                 `protobuf:"bytes,27,opt,name=summary_periods_today,json=summaryPeriodsToday,proto3" json:"summary_periods_today,omitempty"`                                                                                       // Today
-	SummaryPeriodsWeek                         string                 `protobuf:"bytes,28,opt,name=summary_periods_week,json=summaryPeriodsWeek,proto3" json:"summary_periods_week,omitempty"`                                                                                          // This week
-	SummaryPeriodsYear                         string                 `protobuf:"bytes,29,opt,name=summary_periods_year,json=summaryPeriodsYear,proto3" json:"summary_periods_year,omitempty"`                                                                                          // This year
-	SummaryPlaceholdersSelectAccount           string                 `protobuf:"bytes,30,opt,name=summary_placeholders_select_account,json=summaryPlaceholdersSelectAccount,proto3" json:"summary_placeholders_select_account,omitempty"`                                              // Select an account
-	SummaryProfitLoss                          string                 `protobuf:"bytes,31,opt,name=summary_profit_loss,json=summaryProfitLoss,proto3" json:"summary_profit_loss,omitempty"`                                                                                             // Loss
-	SummaryProfitWin                           string                 `protobuf:"bytes,32,opt,name=summary_profit_win,json=summaryProfitWin,proto3" json:"summary_profit_win,omitempty"`                                                                                                // Win
-	SummaryRiskMaxDrawdown                     string                 `protobuf:"bytes,33,opt,name=summary_risk_max_drawdown,json=summaryRiskMaxDrawdown,proto3" json:"summary_risk_max_drawdown,omitempty"`                                                                            // Max drawdown
-	SummaryRiskMaxDrawdownPct                  string                 `protobuf:"bytes,34,opt,name=summary_risk_max_drawdown_pct,json=summaryRiskMaxDrawdownPct,proto3" json:"summary_risk_max_drawdown_pct,omitempty"`                                                                 // Max drawdown (%)
-	SummaryRiskSharpe                          string                 `protobuf:"bytes,35,opt,name=summary_risk_sharpe,json=summaryRiskSharpe,proto3" json:"summary_risk_sharpe,omitempty"`                                                                                             // Sharpe
-	SummaryRiskSortino                         string                 `protobuf:"bytes,36,opt,name=summary_risk_sortino,json=summaryRiskSortino,proto3" json:"summary_risk_sortino,omitempty"`                                                                                          // Sortino
-	SummaryRiskVar95                           string                 `protobuf:"bytes,37,opt,name=summary_risk_var95,json=summaryRiskVar95,proto3" json:"summary_risk_var95,omitempty"`                                                                                                // Value at Risk (95%)
-	SummaryRiskVolatility                      string                 `protobuf:"bytes,38,opt,name=summary_risk_volatility,json=summaryRiskVolatility,proto3" json:"summary_risk_volatility,omitempty"`                                                                                 // Volatility
-	SummarySectionsEquityCurve                 string                 `protobuf:"bytes,39,opt,name=summary_sections_equity_curve,json=summarySectionsEquityCurve,proto3" json:"summary_sections_equity_curve,omitempty"`                                                                // Equity curve
-	SummarySectionsMonthlyStats                string                 `protobuf:"bytes,40,opt,name=summary_sections_monthly_stats,json=summarySectionsMonthlyStats,proto3" json:"summary_sections_monthly_stats,omitempty"`                                                             // Monthly stats
-	SummaryTitle                               string                 `protobuf:"bytes,41,opt,name=summary_title,json=summaryTitle,proto3" json:"summary_title,omitempty"`                                                                                                              // Analytics Summary
-	SummaryTradeStatsAvgHolding                string                 `protobuf:"bytes,42,opt,name=summary_trade_stats_avg_holding,json=summaryTradeStatsAvgHolding,proto3" json:"summary_trade_stats_avg_holding,omitempty"`                                                           // Avg holding
-	SummaryTradeStatsAvgLoss                   string                 `protobuf:"bytes,43,opt,name=summary_trade_stats_avg_loss,json=summaryTradeStatsAvgLoss,proto3" json:"summary_trade_stats_avg_loss,omitempty"`                                                                    // Avg loss
-	SummaryTradeStatsAvgProfit                 string                 `protobuf:"bytes,44,opt,name=summary_trade_stats_avg_profit,json=summaryTradeStatsAvgProfit,proto3" json:"summary_trade_stats_avg_profit,omitempty"`                                                              // Avg profit
-	SummaryTradeStatsAvgVolume                 string                 `protobuf:"bytes,45,opt,name=summary_trade_stats_avg_volume,json=summaryTradeStatsAvgVolume,proto3" json:"summary_trade_stats_avg_volume,omitempty"`                                                              // Avg volume
-	SummaryTradeStatsLosses                    string                 `protobuf:"bytes,46,opt,name=summary_trade_stats_losses,json=summaryTradeStatsLosses,proto3" json:"summary_trade_stats_losses,omitempty"`                                                                         // Losses
-	SummaryTradeStatsMaxConsecutiveLosses      string                 `protobuf:"bytes,47,opt,name=summary_trade_stats_max_consecutive_losses,json=summaryTradeStatsMaxConsecutiveLosses,proto3" json:"summary_trade_stats_max_consecutive_losses,omitempty"`                           // Max consecutive losses
-	SummaryTradeStatsMaxConsecutiveWins        string                 `protobuf:"bytes,48,opt,name=summary_trade_stats_max_consecutive_wins,json=summaryTradeStatsMaxConsecutiveWins,proto3" json:"summary_trade_stats_max_consecutive_wins,omitempty"`                                 // Max consecutive wins
-	SummaryTradeStatsMaxHolding                string                 `protobuf:"bytes,49,opt,name=summary_trade_stats_max_holding,json=summaryTradeStatsMaxHolding,proto3" json:"summary_trade_stats_max_holding,omitempty"`                                                           // Max holding
-	SummaryTradeStatsProfitFactor              string                 `protobuf:"bytes,50,opt,name=summary_trade_stats_profit_factor,json=summaryTradeStatsProfitFactor,proto3" json:"summary_trade_stats_profit_factor,omitempty"`                                                     // Profit factor
-	SummaryTradeStatsTotalTrades               string                 `protobuf:"bytes,51,opt,name=summary_trade_stats_total_trades,json=summaryTradeStatsTotalTrades,proto3" json:"summary_trade_stats_total_trades,omitempty"`                                                        // Total trades
-	SummaryTradeStatsWinRate                   string                 `protobuf:"bytes,52,opt,name=summary_trade_stats_win_rate,json=summaryTradeStatsWinRate,proto3" json:"summary_trade_stats_win_rate,omitempty"`                                                                    // Win rate
-	SummaryTradeStatsWins                      string                 `protobuf:"bytes,53,opt,name=summary_trade_stats_wins,json=summaryTradeStatsWins,proto3" json:"summary_trade_stats_wins,omitempty"`                                                                               // Wins
-	SummaryYearOption                          string                 `protobuf:"bytes,54,opt,name=summary_year_option,json=summaryYearOption,proto3" json:"summary_year_option,omitempty"`                                                                                             // {{year}}
-	unknownFields                              protoimpl.UnknownFields
-	sizeCache                                  protoimpl.SizeCache
+	state                                     protoimpl.MessageState `protogen:"open.v1"`
+	SummaryCardsDirectionShare                string                 `protobuf:"bytes,1,opt,name=summary_cards_direction_share,json=summaryCardsDirectionShare,proto3" json:"summary_cards_direction_share,omitempty"`                                                               // Direction share
+	SummaryCardsEconomicCalendar              string                 `protobuf:"bytes,2,opt,name=summary_cards_economic_calendar,json=summaryCardsEconomicCalendar,proto3" json:"summary_cards_economic_calendar,omitempty"`                                                         // Economic calendar
+	SummaryCardsPnlShare                      string                 `protobuf:"bytes,3,opt,name=summary_cards_pnl_share,json=summaryCardsPnlShare,proto3" json:"summary_cards_pnl_share,omitempty"`                                                                                 // P/L share
+	SummaryCardsRiskMetrics                   string                 `protobuf:"bytes,4,opt,name=summary_cards_risk_metrics,json=summaryCardsRiskMetrics,proto3" json:"summary_cards_risk_metrics,omitempty"`                                                                        // Risk metrics
+	SummaryCardsSymbolPnlCompare              string                 `protobuf:"bytes,5,opt,name=summary_cards_symbol_pnl_compare,json=summaryCardsSymbolPnlCompare,proto3" json:"summary_cards_symbol_pnl_compare,omitempty"`                                                       // Symbol P/L comparison
+	SummaryCardsSymbolTradeShare              string                 `protobuf:"bytes,6,opt,name=summary_cards_symbol_trade_share,json=summaryCardsSymbolTradeShare,proto3" json:"summary_cards_symbol_trade_share,omitempty"`                                                       // Symbol trade share
+	SummaryCardsTradeStats                    string                 `protobuf:"bytes,7,opt,name=summary_cards_trade_stats,json=summaryCardsTradeStats,proto3" json:"summary_cards_trade_stats,omitempty"`                                                                           // Trade stats
+	SummaryDirectionBuy                       string                 `protobuf:"bytes,8,opt,name=summary_direction_buy,json=summaryDirectionBuy,proto3" json:"summary_direction_buy,omitempty"`                                                                                      // Buy
+	SummaryDirectionSell                      string                 `protobuf:"bytes,9,opt,name=summary_direction_sell,json=summaryDirectionSell,proto3" json:"summary_direction_sell,omitempty"`                                                                                   // Sell
+	SummaryEconomicCalendarActual             string                 `protobuf:"bytes,10,opt,name=summary_economic_calendar_actual,json=summaryEconomicCalendarActual,proto3" json:"summary_economic_calendar_actual,omitempty"`                                                     // Actual
+	SummaryEconomicCalendarEmpty              string                 `protobuf:"bytes,11,opt,name=summary_economic_calendar_empty,json=summaryEconomicCalendarEmpty,proto3" json:"summary_economic_calendar_empty,omitempty"`                                                        // No economic events available.
+	SummaryEconomicCalendarEstimate           string                 `protobuf:"bytes,12,opt,name=summary_economic_calendar_estimate,json=summaryEconomicCalendarEstimate,proto3" json:"summary_economic_calendar_estimate,omitempty"`                                               // Estimate
+	SummaryEconomicCalendarIndicatorsCPI      string                 `protobuf:"bytes,13,opt,name=summary_economic_calendar_indicators_c_p_i,json=summaryEconomicCalendarIndicatorsCPI,proto3" json:"summary_economic_calendar_indicators_c_p_i,omitempty"`                          // Inflation (CPI)
+	SummaryEconomicCalendarIndicatorsFEDFUNDS string                 `protobuf:"bytes,14,opt,name=summary_economic_calendar_indicators_f_e_d_f_u_n_d_s,json=summaryEconomicCalendarIndicatorsFEDFUNDS,proto3" json:"summary_economic_calendar_indicators_f_e_d_f_u_n_d_s,omitempty"` // Fed funds rate
+	SummaryEconomicCalendarIndicatorsGDP      string                 `protobuf:"bytes,15,opt,name=summary_economic_calendar_indicators_g_d_p,json=summaryEconomicCalendarIndicatorsGDP,proto3" json:"summary_economic_calendar_indicators_g_d_p,omitempty"`                          // Real GDP
+	SummaryEconomicCalendarIndicatorsUNRATE   string                 `protobuf:"bytes,16,opt,name=summary_economic_calendar_indicators_u_n_r_a_t_e,json=summaryEconomicCalendarIndicatorsUNRATE,proto3" json:"summary_economic_calendar_indicators_u_n_r_a_t_e,omitempty"`           // Unemployment rate
+	SummaryEconomicCalendarKeyIndicatorsTitle string                 `protobuf:"bytes,17,opt,name=summary_economic_calendar_key_indicators_title,json=summaryEconomicCalendarKeyIndicatorsTitle,proto3" json:"summary_economic_calendar_key_indicators_title,omitempty"`             // Key macro indicators
+	SummaryEconomicCalendarLoading            string                 `protobuf:"bytes,18,opt,name=summary_economic_calendar_loading,json=summaryEconomicCalendarLoading,proto3" json:"summary_economic_calendar_loading,omitempty"`                                                  // Loading economic calendar...
+	SummaryEconomicCalendarPrevious           string                 `protobuf:"bytes,19,opt,name=summary_economic_calendar_previous,json=summaryEconomicCalendarPrevious,proto3" json:"summary_economic_calendar_previous,omitempty"`                                               // Previous
+	SummaryLabelsPnl                          string                 `protobuf:"bytes,20,opt,name=summary_labels_pnl,json=summaryLabelsPnl,proto3" json:"summary_labels_pnl,omitempty"`                                                                                              // P/L
+	SummaryMetricsBalance                     string                 `protobuf:"bytes,21,opt,name=summary_metrics_balance,json=summaryMetricsBalance,proto3" json:"summary_metrics_balance,omitempty"`                                                                               // Balance
+	SummaryMetricsEquity                      string                 `protobuf:"bytes,22,opt,name=summary_metrics_equity,json=summaryMetricsEquity,proto3" json:"summary_metrics_equity,omitempty"`                                                                                  // Equity
+	SummaryMetricsEquityValue                 string                 `protobuf:"bytes,23,opt,name=summary_metrics_equity_value,json=summaryMetricsEquityValue,proto3" json:"summary_metrics_equity_value,omitempty"`                                                                 // Equity value
+	SummaryMetricsNetProfit                   string                 `protobuf:"bytes,24,opt,name=summary_metrics_net_profit,json=summaryMetricsNetProfit,proto3" json:"summary_metrics_net_profit,omitempty"`                                                                       // Net profit
+	SummaryPeriodsAll                         string                 `protobuf:"bytes,25,opt,name=summary_periods_all,json=summaryPeriodsAll,proto3" json:"summary_periods_all,omitempty"`                                                                                           // All
+	SummaryPeriodsMonth                       string                 `protobuf:"bytes,26,opt,name=summary_periods_month,json=summaryPeriodsMonth,proto3" json:"summary_periods_month,omitempty"`                                                                                     // This month
+	SummaryPeriodsToday                       string                 `protobuf:"bytes,27,opt,name=summary_periods_today,json=summaryPeriodsToday,proto3" json:"summary_periods_today,omitempty"`                                                                                     // Today
+	SummaryPeriodsWeek                        string                 `protobuf:"bytes,28,opt,name=summary_periods_week,json=summaryPeriodsWeek,proto3" json:"summary_periods_week,omitempty"`                                                                                        // This week
+	SummaryPeriodsYear                        string                 `protobuf:"bytes,29,opt,name=summary_periods_year,json=summaryPeriodsYear,proto3" json:"summary_periods_year,omitempty"`                                                                                        // This year
+	SummaryPlaceholdersSelectAccount          string                 `protobuf:"bytes,30,opt,name=summary_placeholders_select_account,json=summaryPlaceholdersSelectAccount,proto3" json:"summary_placeholders_select_account,omitempty"`                                            // Select an account
+	SummaryProfitLoss                         string                 `protobuf:"bytes,31,opt,name=summary_profit_loss,json=summaryProfitLoss,proto3" json:"summary_profit_loss,omitempty"`                                                                                           // Loss
+	SummaryProfitWin                          string                 `protobuf:"bytes,32,opt,name=summary_profit_win,json=summaryProfitWin,proto3" json:"summary_profit_win,omitempty"`                                                                                              // Win
+	SummaryRiskMaxDrawdown                    string                 `protobuf:"bytes,33,opt,name=summary_risk_max_drawdown,json=summaryRiskMaxDrawdown,proto3" json:"summary_risk_max_drawdown,omitempty"`                                                                          // Max drawdown
+	SummaryRiskMaxDrawdownPct                 string                 `protobuf:"bytes,34,opt,name=summary_risk_max_drawdown_pct,json=summaryRiskMaxDrawdownPct,proto3" json:"summary_risk_max_drawdown_pct,omitempty"`                                                               // Max drawdown (%)
+	SummaryRiskSharpe                         string                 `protobuf:"bytes,35,opt,name=summary_risk_sharpe,json=summaryRiskSharpe,proto3" json:"summary_risk_sharpe,omitempty"`                                                                                           // Sharpe
+	SummaryRiskSortino                        string                 `protobuf:"bytes,36,opt,name=summary_risk_sortino,json=summaryRiskSortino,proto3" json:"summary_risk_sortino,omitempty"`                                                                                        // Sortino
+	SummaryRiskVar95                          string                 `protobuf:"bytes,37,opt,name=summary_risk_var95,json=summaryRiskVar95,proto3" json:"summary_risk_var95,omitempty"`                                                                                              // Value at Risk (95%)
+	SummaryRiskVolatility                     string                 `protobuf:"bytes,38,opt,name=summary_risk_volatility,json=summaryRiskVolatility,proto3" json:"summary_risk_volatility,omitempty"`                                                                               // Volatility
+	SummarySectionsEquityCurve                string                 `protobuf:"bytes,39,opt,name=summary_sections_equity_curve,json=summarySectionsEquityCurve,proto3" json:"summary_sections_equity_curve,omitempty"`                                                              // Equity curve
+	SummarySectionsMonthlyStats               string                 `protobuf:"bytes,40,opt,name=summary_sections_monthly_stats,json=summarySectionsMonthlyStats,proto3" json:"summary_sections_monthly_stats,omitempty"`                                                           // Monthly stats
+	SummaryTitle                              string                 `protobuf:"bytes,41,opt,name=summary_title,json=summaryTitle,proto3" json:"summary_title,omitempty"`                                                                                                            // Analytics Summary
+	SummaryTradeStatsAvgHolding               string                 `protobuf:"bytes,42,opt,name=summary_trade_stats_avg_holding,json=summaryTradeStatsAvgHolding,proto3" json:"summary_trade_stats_avg_holding,omitempty"`                                                         // Avg holding
+	SummaryTradeStatsAvgLoss                  string                 `protobuf:"bytes,43,opt,name=summary_trade_stats_avg_loss,json=summaryTradeStatsAvgLoss,proto3" json:"summary_trade_stats_avg_loss,omitempty"`                                                                  // Avg loss
+	SummaryTradeStatsAvgProfit                string                 `protobuf:"bytes,44,opt,name=summary_trade_stats_avg_profit,json=summaryTradeStatsAvgProfit,proto3" json:"summary_trade_stats_avg_profit,omitempty"`                                                            // Avg profit
+	SummaryTradeStatsAvgVolume                string                 `protobuf:"bytes,45,opt,name=summary_trade_stats_avg_volume,json=summaryTradeStatsAvgVolume,proto3" json:"summary_trade_stats_avg_volume,omitempty"`                                                            // Avg volume
+	SummaryTradeStatsLosses                   string                 `protobuf:"bytes,46,opt,name=summary_trade_stats_losses,json=summaryTradeStatsLosses,proto3" json:"summary_trade_stats_losses,omitempty"`                                                                       // Losses
+	SummaryTradeStatsMaxConsecutiveLosses     string                 `protobuf:"bytes,47,opt,name=summary_trade_stats_max_consecutive_losses,json=summaryTradeStatsMaxConsecutiveLosses,proto3" json:"summary_trade_stats_max_consecutive_losses,omitempty"`                         // Max consecutive losses
+	SummaryTradeStatsMaxConsecutiveWins       string                 `protobuf:"bytes,48,opt,name=summary_trade_stats_max_consecutive_wins,json=summaryTradeStatsMaxConsecutiveWins,proto3" json:"summary_trade_stats_max_consecutive_wins,omitempty"`                               // Max consecutive wins
+	SummaryTradeStatsMaxHolding               string                 `protobuf:"bytes,49,opt,name=summary_trade_stats_max_holding,json=summaryTradeStatsMaxHolding,proto3" json:"summary_trade_stats_max_holding,omitempty"`                                                         // Max holding
+	SummaryTradeStatsProfitFactor             string                 `protobuf:"bytes,50,opt,name=summary_trade_stats_profit_factor,json=summaryTradeStatsProfitFactor,proto3" json:"summary_trade_stats_profit_factor,omitempty"`                                                   // Profit factor
+	SummaryTradeStatsTotalTrades              string                 `protobuf:"bytes,51,opt,name=summary_trade_stats_total_trades,json=summaryTradeStatsTotalTrades,proto3" json:"summary_trade_stats_total_trades,omitempty"`                                                      // Total trades
+	SummaryTradeStatsWinRate                  string                 `protobuf:"bytes,52,opt,name=summary_trade_stats_win_rate,json=summaryTradeStatsWinRate,proto3" json:"summary_trade_stats_win_rate,omitempty"`                                                                  // Win rate
+	SummaryTradeStatsWins                     string                 `protobuf:"bytes,53,opt,name=summary_trade_stats_wins,json=summaryTradeStatsWins,proto3" json:"summary_trade_stats_wins,omitempty"`                                                                             // Wins
+	SummaryYearOption                         string                 `protobuf:"bytes,54,opt,name=summary_year_option,json=summaryYearOption,proto3" json:"summary_year_option,omitempty"`                                                                                           // {{year}}
+	unknownFields                             protoimpl.UnknownFields
+	sizeCache                                 protoimpl.SizeCache
 }
 
 func (x *AnalyticsI18N) Reset() {
@@ -195,30 +195,30 @@ func (x *AnalyticsI18N) GetSummaryEconomicCalendarEstimate() string {
 	return ""
 }
 
-func (x *AnalyticsI18N) GetSummaryEconomicCalendarIndicators_CPI() string {
+func (x *AnalyticsI18N) GetSummaryEconomicCalendarIndicatorsCPI() string {
 	if x != nil {
-		return x.SummaryEconomicCalendarIndicators_CPI
+		return x.SummaryEconomicCalendarIndicatorsCPI
 	}
 	return ""
 }
 
-func (x *AnalyticsI18N) GetSummaryEconomicCalendarIndicators_FEDFUNDS() string {
+func (x *AnalyticsI18N) GetSummaryEconomicCalendarIndicatorsFEDFUNDS() string {
 	if x != nil {
-		return x.SummaryEconomicCalendarIndicators_FEDFUNDS
+		return x.SummaryEconomicCalendarIndicatorsFEDFUNDS
 	}
 	return ""
 }
 
-func (x *AnalyticsI18N) GetSummaryEconomicCalendarIndicators_GDP() string {
+func (x *AnalyticsI18N) GetSummaryEconomicCalendarIndicatorsGDP() string {
 	if x != nil {
-		return x.SummaryEconomicCalendarIndicators_GDP
+		return x.SummaryEconomicCalendarIndicatorsGDP
 	}
 	return ""
 }
 
-func (x *AnalyticsI18N) GetSummaryEconomicCalendarIndicators_UNRATE() string {
+func (x *AnalyticsI18N) GetSummaryEconomicCalendarIndicatorsUNRATE() string {
 	if x != nil {
-		return x.SummaryEconomicCalendarIndicators_UNRATE
+		return x.SummaryEconomicCalendarIndicatorsUNRATE
 	}
 	return ""
 }
@@ -493,7 +493,7 @@ var File_i18n_analytics_proto protoreflect.FileDescriptor
 
 const file_i18n_analytics_proto_rawDesc = "" +
 	"\n" +
-	"\x14i18n/analytics.proto\x12\vant.v1.i18n\"\xd1\x1b\n" +
+	"\x14i18n/analytics.proto\x12\vant.v1.i18n\"\xcd\x1b\n" +
 	"\rAnalyticsI18n\x12A\n" +
 	"\x1dsummary_cards_direction_share\x18\x01 \x01(\tR\x1asummaryCardsDirectionShare\x12E\n" +
 	"\x1fsummary_cards_economic_calendar\x18\x02 \x01(\tR\x1csummaryCardsEconomicCalendar\x125\n" +
@@ -507,11 +507,11 @@ const file_i18n_analytics_proto_rawDesc = "" +
 	" summary_economic_calendar_actual\x18\n" +
 	" \x01(\tR\x1dsummaryEconomicCalendarActual\x12E\n" +
 	"\x1fsummary_economic_calendar_empty\x18\v \x01(\tR\x1csummaryEconomicCalendarEmpty\x12K\n" +
-	"\"summary_economic_calendar_estimate\x18\f \x01(\tR\x1fsummaryEconomicCalendarEstimate\x12Y\n" +
-	"+summary_economic_calendar_indicators__c_p_i\x18\r \x01(\tR$summaryEconomicCalendarIndicatorsCPI\x12h\n" +
-	"5summary_economic_calendar_indicators__f_e_d_f_u_n_d_s\x18\x0e \x01(\tR)summaryEconomicCalendarIndicatorsFEDFUNDS\x12Y\n" +
-	"+summary_economic_calendar_indicators__g_d_p\x18\x0f \x01(\tR$summaryEconomicCalendarIndicatorsGDP\x12b\n" +
-	"1summary_economic_calendar_indicators__u_n_r_a_t_e\x18\x10 \x01(\tR'summaryEconomicCalendarIndicatorsUNRATE\x12a\n" +
+	"\"summary_economic_calendar_estimate\x18\f \x01(\tR\x1fsummaryEconomicCalendarEstimate\x12X\n" +
+	"*summary_economic_calendar_indicators_c_p_i\x18\r \x01(\tR$summaryEconomicCalendarIndicatorsCPI\x12g\n" +
+	"4summary_economic_calendar_indicators_f_e_d_f_u_n_d_s\x18\x0e \x01(\tR)summaryEconomicCalendarIndicatorsFEDFUNDS\x12X\n" +
+	"*summary_economic_calendar_indicators_g_d_p\x18\x0f \x01(\tR$summaryEconomicCalendarIndicatorsGDP\x12a\n" +
+	"0summary_economic_calendar_indicators_u_n_r_a_t_e\x18\x10 \x01(\tR'summaryEconomicCalendarIndicatorsUNRATE\x12a\n" +
 	".summary_economic_calendar_key_indicators_title\x18\x11 \x01(\tR)summaryEconomicCalendarKeyIndicatorsTitle\x12I\n" +
 	"!summary_economic_calendar_loading\x18\x12 \x01(\tR\x1esummaryEconomicCalendarLoading\x12K\n" +
 	"\"summary_economic_calendar_previous\x18\x13 \x01(\tR\x1fsummaryEconomicCalendarPrevious\x12,\n" +

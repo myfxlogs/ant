@@ -22,15 +22,15 @@ const (
 )
 
 type CodeQualityI18N struct {
-	state                            protoimpl.MessageState `protogen:"open.v1"`
-	Category_FUTURE_DATA_LEAK        string                 `protobuf:"bytes,1,opt,name=category__f_u_t_u_r_e__d_a_t_a__l_e_a_k,json=categoryFUTUREDATALEAK,proto3" json:"category__f_u_t_u_r_e__d_a_t_a__l_e_a_k,omitempty"`                              // Future Data Leak
-	Category_MISSING_PARAM           string                 `protobuf:"bytes,2,opt,name=category__m_i_s_s_i_n_g__p_a_r_a_m,json=categoryMISSINGPARAM,proto3" json:"category__m_i_s_s_i_n_g__p_a_r_a_m,omitempty"`                                          // Missing Param
-	Category_NDARRAY_PANDAS_MISUSE   string                 `protobuf:"bytes,3,opt,name=category__n_d_a_r_r_a_y__p_a_n_d_a_s__m_i_s_u_s_e,json=categoryNDARRAYPANDASMISUSE,proto3" json:"category__n_d_a_r_r_a_y__p_a_n_d_a_s__m_i_s_u_s_e,omitempty"`     // ndarray/pandas Misuse
-	Category_NO_ENTRY_PCT            string                 `protobuf:"bytes,4,opt,name=category__n_o__e_n_t_r_y__p_c_t,json=categoryNOENTRYPCT,proto3" json:"category__n_o__e_n_t_r_y__p_c_t,omitempty"`                                                  // Missing Entry %
-	Category_NO_STOP_AND_TAKE_PROFIT string                 `protobuf:"bytes,5,opt,name=category__n_o__s_t_o_p__a_n_d__t_a_k_e__p_r_o_f_i_t,json=categoryNOSTOPANDTAKEPROFIT,proto3" json:"category__n_o__s_t_o_p__a_n_d__t_a_k_e__p_r_o_f_i_t,omitempty"` // Missing Stop/Take Profit
-	Category_UNREAD_PARAM            string                 `protobuf:"bytes,6,opt,name=category__u_n_r_e_a_d__p_a_r_a_m,json=categoryUNREADPARAM,proto3" json:"category__u_n_r_e_a_d__p_a_r_a_m,omitempty"`                                               // Unread Param
-	unknownFields                    protoimpl.UnknownFields
-	sizeCache                        protoimpl.SizeCache
+	state                       protoimpl.MessageState `protogen:"open.v1"`
+	CategoryFUTUREDATALEAK      string                 `protobuf:"bytes,1,opt,name=category_f_u_t_u_r_e_d_a_t_a_l_e_a_k,json=categoryFUTUREDATALEAK,proto3" json:"category_f_u_t_u_r_e_d_a_t_a_l_e_a_k,omitempty"`                          // Future Data Leak
+	CategoryMISSINGPARAM        string                 `protobuf:"bytes,2,opt,name=category_m_i_s_s_i_n_g_p_a_r_a_m,json=categoryMISSINGPARAM,proto3" json:"category_m_i_s_s_i_n_g_p_a_r_a_m,omitempty"`                                    // Missing Param
+	CategoryNDARRAYPANDASMISUSE string                 `protobuf:"bytes,3,opt,name=category_n_d_a_r_r_a_y_p_a_n_d_a_s_m_i_s_u_s_e,json=categoryNDARRAYPANDASMISUSE,proto3" json:"category_n_d_a_r_r_a_y_p_a_n_d_a_s_m_i_s_u_s_e,omitempty"` // ndarray/pandas Misuse
+	CategoryNOENTRYPCT          string                 `protobuf:"bytes,4,opt,name=category_n_o_e_n_t_r_y_p_c_t,json=categoryNOENTRYPCT,proto3" json:"category_n_o_e_n_t_r_y_p_c_t,omitempty"`                                              // Missing Entry %
+	CategoryNOSTOPANDTAKEPROFIT string                 `protobuf:"bytes,5,opt,name=category_n_o_s_t_o_p_a_n_d_t_a_k_e_p_r_o_f_i_t,json=categoryNOSTOPANDTAKEPROFIT,proto3" json:"category_n_o_s_t_o_p_a_n_d_t_a_k_e_p_r_o_f_i_t,omitempty"` // Missing Stop/Take Profit
+	CategoryUNREADPARAM         string                 `protobuf:"bytes,6,opt,name=category_u_n_r_e_a_d_p_a_r_a_m,json=categoryUNREADPARAM,proto3" json:"category_u_n_r_e_a_d_p_a_r_a_m,omitempty"`                                         // Unread Param
+	unknownFields               protoimpl.UnknownFields
+	sizeCache                   protoimpl.SizeCache
 }
 
 func (x *CodeQualityI18N) Reset() {
@@ -63,44 +63,44 @@ func (*CodeQualityI18N) Descriptor() ([]byte, []int) {
 	return file_i18n_strategy_code_quality_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *CodeQualityI18N) GetCategory_FUTURE_DATA_LEAK() string {
+func (x *CodeQualityI18N) GetCategoryFUTUREDATALEAK() string {
 	if x != nil {
-		return x.Category_FUTURE_DATA_LEAK
+		return x.CategoryFUTUREDATALEAK
 	}
 	return ""
 }
 
-func (x *CodeQualityI18N) GetCategory_MISSING_PARAM() string {
+func (x *CodeQualityI18N) GetCategoryMISSINGPARAM() string {
 	if x != nil {
-		return x.Category_MISSING_PARAM
+		return x.CategoryMISSINGPARAM
 	}
 	return ""
 }
 
-func (x *CodeQualityI18N) GetCategory_NDARRAY_PANDAS_MISUSE() string {
+func (x *CodeQualityI18N) GetCategoryNDARRAYPANDASMISUSE() string {
 	if x != nil {
-		return x.Category_NDARRAY_PANDAS_MISUSE
+		return x.CategoryNDARRAYPANDASMISUSE
 	}
 	return ""
 }
 
-func (x *CodeQualityI18N) GetCategory_NO_ENTRY_PCT() string {
+func (x *CodeQualityI18N) GetCategoryNOENTRYPCT() string {
 	if x != nil {
-		return x.Category_NO_ENTRY_PCT
+		return x.CategoryNOENTRYPCT
 	}
 	return ""
 }
 
-func (x *CodeQualityI18N) GetCategory_NO_STOP_AND_TAKE_PROFIT() string {
+func (x *CodeQualityI18N) GetCategoryNOSTOPANDTAKEPROFIT() string {
 	if x != nil {
-		return x.Category_NO_STOP_AND_TAKE_PROFIT
+		return x.CategoryNOSTOPANDTAKEPROFIT
 	}
 	return ""
 }
 
-func (x *CodeQualityI18N) GetCategory_UNREAD_PARAM() string {
+func (x *CodeQualityI18N) GetCategoryUNREADPARAM() string {
 	if x != nil {
-		return x.Category_UNREAD_PARAM
+		return x.CategoryUNREADPARAM
 	}
 	return ""
 }
@@ -109,14 +109,14 @@ var File_i18n_strategy_code_quality_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_code_quality_proto_rawDesc = "" +
 	"\n" +
-	" i18n/strategy_code_quality.proto\x12\vant.v1.i18n\"\xca\x03\n" +
-	"\x0fCodeQualityI18n\x12G\n" +
-	"'category__f_u_t_u_r_e__d_a_t_a__l_e_a_k\x18\x01 \x01(\tR\x16categoryFUTUREDATALEAK\x12@\n" +
-	"\"category__m_i_s_s_i_n_g__p_a_r_a_m\x18\x02 \x01(\tR\x14categoryMISSINGPARAM\x12V\n" +
-	"1category__n_d_a_r_r_a_y__p_a_n_d_a_s__m_i_s_u_s_e\x18\x03 \x01(\tR\x1bcategoryNDARRAYPANDASMISUSE\x12;\n" +
-	"\x1fcategory__n_o__e_n_t_r_y__p_c_t\x18\x04 \x01(\tR\x12categoryNOENTRYPCT\x12X\n" +
-	"3category__n_o__s_t_o_p__a_n_d__t_a_k_e__p_r_o_f_i_t\x18\x05 \x01(\tR\x1bcategoryNOSTOPANDTAKEPROFIT\x12=\n" +
-	" category__u_n_r_e_a_d__p_a_r_a_m\x18\x06 \x01(\tR\x13categoryUNREADPARAMB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	" i18n/strategy_code_quality.proto\x12\vant.v1.i18n\"\xb8\x03\n" +
+	"\x0fCodeQualityI18n\x12D\n" +
+	"$category_f_u_t_u_r_e_d_a_t_a_l_e_a_k\x18\x01 \x01(\tR\x16categoryFUTUREDATALEAK\x12>\n" +
+	" category_m_i_s_s_i_n_g_p_a_r_a_m\x18\x02 \x01(\tR\x14categoryMISSINGPARAM\x12S\n" +
+	".category_n_d_a_r_r_a_y_p_a_n_d_a_s_m_i_s_u_s_e\x18\x03 \x01(\tR\x1bcategoryNDARRAYPANDASMISUSE\x128\n" +
+	"\x1ccategory_n_o_e_n_t_r_y_p_c_t\x18\x04 \x01(\tR\x12categoryNOENTRYPCT\x12S\n" +
+	".category_n_o_s_t_o_p_a_n_d_t_a_k_e_p_r_o_f_i_t\x18\x05 \x01(\tR\x1bcategoryNOSTOPANDTAKEPROFIT\x12;\n" +
+	"\x1ecategory_u_n_r_e_a_d_p_a_r_a_m\x18\x06 \x01(\tR\x13categoryUNREADPARAMB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_code_quality_proto_rawDescOnce sync.Once

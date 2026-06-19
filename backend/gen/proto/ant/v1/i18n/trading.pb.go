@@ -22,121 +22,121 @@ const (
 )
 
 type TradingI18N struct {
-	state                                             protoimpl.MessageState `protogen:"open.v1"`
-	Account                                           string                 `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`                                                                                                                                                                                                    // Account
-	AutoTradeConfirmDisableConfirm                    string                 `protobuf:"bytes,2,opt,name=auto_trade_confirm_disable_confirm,json=autoTradeConfirmDisableConfirm,proto3" json:"auto_trade_confirm_disable_confirm,omitempty"`                                                                                                          // Disable
-	AutoTradeConfirmDisableInfoDescription            string                 `protobuf:"bytes,3,opt,name=auto_trade_confirm_disable_info_description,json=autoTradeConfirmDisableInfoDescription,proto3" json:"auto_trade_confirm_disable_info_description,omitempty"`                                                                                // Auto trading will stop placing new orders.
-	AutoTradeConfirmDisableInfoTitle                  string                 `protobuf:"bytes,4,opt,name=auto_trade_confirm_disable_info_title,json=autoTradeConfirmDisableInfoTitle,proto3" json:"auto_trade_confirm_disable_info_title,omitempty"`                                                                                                  // Disable auto trading
-	AutoTradeConfirmDisableQuestion                   string                 `protobuf:"bytes,5,opt,name=auto_trade_confirm_disable_question,json=autoTradeConfirmDisableQuestion,proto3" json:"auto_trade_confirm_disable_question,omitempty"`                                                                                                       // Are you sure you want to disable auto trading?
-	AutoTradeConfirmDisableTitle                      string                 `protobuf:"bytes,6,opt,name=auto_trade_confirm_disable_title,json=autoTradeConfirmDisableTitle,proto3" json:"auto_trade_confirm_disable_title,omitempty"`                                                                                                                // Disable auto trading
-	AutoTradeConfirmEnableBullet1                     string                 `protobuf:"bytes,7,opt,name=auto_trade_confirm_enable_bullet1,json=autoTradeConfirmEnableBullet1,proto3" json:"auto_trade_confirm_enable_bullet1,omitempty"`                                                                                                             // Orders will be executed automatically.
-	AutoTradeConfirmEnableBullet2                     string                 `protobuf:"bytes,8,opt,name=auto_trade_confirm_enable_bullet2,json=autoTradeConfirmEnableBullet2,proto3" json:"auto_trade_confirm_enable_bullet2,omitempty"`                                                                                                             // Market volatility can cause losses.
-	AutoTradeConfirmEnableBullet3                     string                 `protobuf:"bytes,9,opt,name=auto_trade_confirm_enable_bullet3,json=autoTradeConfirmEnableBullet3,proto3" json:"auto_trade_confirm_enable_bullet3,omitempty"`                                                                                                             // You can disable auto trading at any time.
-	AutoTradeConfirmEnableConfirm                     string                 `protobuf:"bytes,10,opt,name=auto_trade_confirm_enable_confirm,json=autoTradeConfirmEnableConfirm,proto3" json:"auto_trade_confirm_enable_confirm,omitempty"`                                                                                                            // Enable
-	AutoTradeConfirmEnableQuestion                    string                 `protobuf:"bytes,11,opt,name=auto_trade_confirm_enable_question,json=autoTradeConfirmEnableQuestion,proto3" json:"auto_trade_confirm_enable_question,omitempty"`                                                                                                         // Are you sure you want to enable auto trading?
-	AutoTradeConfirmEnableRiskDescription             string                 `protobuf:"bytes,12,opt,name=auto_trade_confirm_enable_risk_description,json=autoTradeConfirmEnableRiskDescription,proto3" json:"auto_trade_confirm_enable_risk_description,omitempty"`                                                                                  // Auto trading will place orders automatically. Please ensure
-	AutoTradeConfirmEnableRiskTitle                   string                 `protobuf:"bytes,13,opt,name=auto_trade_confirm_enable_risk_title,json=autoTradeConfirmEnableRiskTitle,proto3" json:"auto_trade_confirm_enable_risk_title,omitempty"`                                                                                                    // Risk notice
-	AutoTradeConfirmEnableTitle                       string                 `protobuf:"bytes,14,opt,name=auto_trade_confirm_enable_title,json=autoTradeConfirmEnableTitle,proto3" json:"auto_trade_confirm_enable_title,omitempty"`                                                                                                                  // Enable auto trading
-	Balance                                           string                 `protobuf:"bytes,15,opt,name=balance,proto3" json:"balance,omitempty"`                                                                                                                                                                                                   // Balance
-	Buy                                               string                 `protobuf:"bytes,16,opt,name=buy,proto3" json:"buy,omitempty"`                                                                                                                                                                                                           // Buy
-	ClosePosition                                     string                 `protobuf:"bytes,17,opt,name=close_position,json=closePosition,proto3" json:"close_position,omitempty"`                                                                                                                                                                  // Close
-	ClosePositionConfirm                              string                 `protobuf:"bytes,18,opt,name=close_position_confirm,json=closePositionConfirm,proto3" json:"close_position_confirm,omitempty"`                                                                                                                                           // Close this position?
-	ClosePositionTitle                                string                 `protobuf:"bytes,19,opt,name=close_position_title,json=closePositionTitle,proto3" json:"close_position_title,omitempty"`                                                                                                                                                 // Close Position
-	Equity                                            string                 `protobuf:"bytes,20,opt,name=equity,proto3" json:"equity,omitempty"`                                                                                                                                                                                                     // Equity
-	FreeMargin                                        string                 `protobuf:"bytes,21,opt,name=free_margin,json=freeMargin,proto3" json:"free_margin,omitempty"`                                                                                                                                                                           // Free Margin
-	Limit                                             string                 `protobuf:"bytes,22,opt,name=limit,proto3" json:"limit,omitempty"`                                                                                                                                                                                                       // Limit
-	Margin                                            string                 `protobuf:"bytes,23,opt,name=margin,proto3" json:"margin,omitempty"`                                                                                                                                                                                                     // Margin
-	MarginLevel                                       string                 `protobuf:"bytes,24,opt,name=margin_level,json=marginLevel,proto3" json:"margin_level,omitempty"`                                                                                                                                                                        // Margin Level
-	MarkPrice                                         string                 `protobuf:"bytes,25,opt,name=mark_price,json=markPrice,proto3" json:"mark_price,omitempty"`                                                                                                                                                                              // Mark Price
-	Market                                            string                 `protobuf:"bytes,26,opt,name=market,proto3" json:"market,omitempty"`                                                                                                                                                                                                     // Market
-	MessagesFetchOrderHistoryFailed                   string                 `protobuf:"bytes,27,opt,name=messages_fetch_order_history_failed,json=messagesFetchOrderHistoryFailed,proto3" json:"messages_fetch_order_history_failed,omitempty"`                                                                                                      // Failed to load order history
-	MessagesFetchPendingOrdersFailed                  string                 `protobuf:"bytes,28,opt,name=messages_fetch_pending_orders_failed,json=messagesFetchPendingOrdersFailed,proto3" json:"messages_fetch_pending_orders_failed,omitempty"`                                                                                                   // Failed to load pending orders
-	MessagesFetchPositionsFailed                      string                 `protobuf:"bytes,29,opt,name=messages_fetch_positions_failed,json=messagesFetchPositionsFailed,proto3" json:"messages_fetch_positions_failed,omitempty"`                                                                                                                 // Failed to load positions
-	MessagesOrderCloseFailed                          string                 `protobuf:"bytes,30,opt,name=messages_order_close_failed,json=messagesOrderCloseFailed,proto3" json:"messages_order_close_failed,omitempty"`                                                                                                                             // Failed to close position
-	MessagesOrderCloseSuccess                         string                 `protobuf:"bytes,31,opt,name=messages_order_close_success,json=messagesOrderCloseSuccess,proto3" json:"messages_order_close_success,omitempty"`                                                                                                                          // Position closed successfully
-	MessagesOrderModifyFailed                         string                 `protobuf:"bytes,32,opt,name=messages_order_modify_failed,json=messagesOrderModifyFailed,proto3" json:"messages_order_modify_failed,omitempty"`                                                                                                                          // Failed to update order
-	MessagesOrderModifySuccess                        string                 `protobuf:"bytes,33,opt,name=messages_order_modify_success,json=messagesOrderModifySuccess,proto3" json:"messages_order_modify_success,omitempty"`                                                                                                                       // Order updated successfully
-	MessagesOrderSendFailed                           string                 `protobuf:"bytes,34,opt,name=messages_order_send_failed,json=messagesOrderSendFailed,proto3" json:"messages_order_send_failed,omitempty"`                                                                                                                                // Failed to place order
-	MessagesOrderSendSuccess                          string                 `protobuf:"bytes,35,opt,name=messages_order_send_success,json=messagesOrderSendSuccess,proto3" json:"messages_order_send_success,omitempty"`                                                                                                                             // Order placed successfully
-	NoAccount                                         string                 `protobuf:"bytes,36,opt,name=no_account,json=noAccount,proto3" json:"no_account,omitempty"`                                                                                                                                                                              // No account selected
-	NoOrders                                          string                 `protobuf:"bytes,37,opt,name=no_orders,json=noOrders,proto3" json:"no_orders,omitempty"`                                                                                                                                                                                 // No orders yet
-	NoPositions                                       string                 `protobuf:"bytes,38,opt,name=no_positions,json=noPositions,proto3" json:"no_positions,omitempty"`                                                                                                                                                                        // No open positions
-	OpenPositionsTitle                                string                 `protobuf:"bytes,39,opt,name=open_positions_title,json=openPositionsTitle,proto3" json:"open_positions_title,omitempty"`                                                                                                                                                 // Open Positions
-	OpenTime                                          string                 `protobuf:"bytes,40,opt,name=open_time,json=openTime,proto3" json:"open_time,omitempty"`                                                                                                                                                                                 // Open Time
-	OrderHistory                                      string                 `protobuf:"bytes,41,opt,name=order_history,json=orderHistory,proto3" json:"order_history,omitempty"`                                                                                                                                                                     // Order History
-	OrdersCount                                       string                 `protobuf:"bytes,42,opt,name=orders_count,json=ordersCount,proto3" json:"orders_count,omitempty"`                                                                                                                                                                        // {{count}} orders
-	PlaceOrder                                        string                 `protobuf:"bytes,43,opt,name=place_order,json=placeOrder,proto3" json:"place_order,omitempty"`                                                                                                                                                                           // Place Order
-	Pnl                                               string                 `protobuf:"bytes,44,opt,name=pnl,proto3" json:"pnl,omitempty"`                                                                                                                                                                                                           // P&L
-	PositionEntryPrice                                string                 `protobuf:"bytes,45,opt,name=position_entry_price,json=positionEntryPrice,proto3" json:"position_entry_price,omitempty"`                                                                                                                                                 // Entry Price
-	PositionLeverage                                  string                 `protobuf:"bytes,46,opt,name=position_leverage,json=positionLeverage,proto3" json:"position_leverage,omitempty"`                                                                                                                                                         // Leverage
-	PositionLong                                      string                 `protobuf:"bytes,47,opt,name=position_long,json=positionLong,proto3" json:"position_long,omitempty"`                                                                                                                                                                     // LONG
-	PositionMarkPrice                                 string                 `protobuf:"bytes,48,opt,name=position_mark_price,json=positionMarkPrice,proto3" json:"position_mark_price,omitempty"`                                                                                                                                                    // Mark Price
-	PositionShort                                     string                 `protobuf:"bytes,49,opt,name=position_short,json=positionShort,proto3" json:"position_short,omitempty"`                                                                                                                                                                  // SHORT
-	PositionSide                                      string                 `protobuf:"bytes,50,opt,name=position_side,json=positionSide,proto3" json:"position_side,omitempty"`                                                                                                                                                                     // Side
-	PositionSize                                      string                 `protobuf:"bytes,51,opt,name=position_size,json=positionSize,proto3" json:"position_size,omitempty"`                                                                                                                                                                     // Size
-	PositionUnrealizedPnL                             string                 `protobuf:"bytes,52,opt,name=position_unrealized_pn_l,json=positionUnrealizedPnL,proto3" json:"position_unrealized_pn_l,omitempty"`                                                                                                                                      // Unrealized PnL
-	Positions                                         string                 `protobuf:"bytes,53,opt,name=positions,proto3" json:"positions,omitempty"`                                                                                                                                                                                               // Positions
-	Price                                             string                 `protobuf:"bytes,54,opt,name=price,proto3" json:"price,omitempty"`                                                                                                                                                                                                       // Price
-	Profit                                            string                 `protobuf:"bytes,55,opt,name=profit,proto3" json:"profit,omitempty"`                                                                                                                                                                                                     // Profit
-	RecentTrades                                      string                 `protobuf:"bytes,56,opt,name=recent_trades,json=recentTrades,proto3" json:"recent_trades,omitempty"`                                                                                                                                                                     // Recent Trades
-	RiskErrors_RISK_ACCOUNT_TRADE_DISABLEDAction      string                 `protobuf:"bytes,57,opt,name=risk_errors__r_i_s_k__a_c_c_o_u_n_t__t_r_a_d_e__d_i_s_a_b_l_e_d_action,json=riskErrorsRISKACCOUNTTRADEDISABLEDAction,proto3" json:"risk_errors__r_i_s_k__a_c_c_o_u_n_t__t_r_a_d_e__d_i_s_a_b_l_e_d_action,omitempty"`                       // Check account status and permissions, then try again.
-	RiskErrors_RISK_ACCOUNT_TRADE_DISABLEDTitle       string                 `protobuf:"bytes,58,opt,name=risk_errors__r_i_s_k__a_c_c_o_u_n_t__t_r_a_d_e__d_i_s_a_b_l_e_d_title,json=riskErrorsRISKACCOUNTTRADEDISABLEDTitle,proto3" json:"risk_errors__r_i_s_k__a_c_c_o_u_n_t__t_r_a_d_e__d_i_s_a_b_l_e_d_title,omitempty"`                          // Trading is disabled for this account.
-	RiskErrors_RISK_INTERNAL_RULE_UNAVAILABLEAction   string                 `protobuf:"bytes,59,opt,name=risk_errors__r_i_s_k__i_n_t_e_r_n_a_l__r_u_l_e__u_n_a_v_a_i_l_a_b_l_e_action,json=riskErrorsRISKINTERNALRULEUNAVAILABLEAction,proto3" json:"risk_errors__r_i_s_k__i_n_t_e_r_n_a_l__r_u_l_e__u_n_a_v_a_i_l_a_b_l_e_action,omitempty"`        // Retry later; contact support if the issue persists.
-	RiskErrors_RISK_INTERNAL_RULE_UNAVAILABLETitle    string                 `protobuf:"bytes,60,opt,name=risk_errors__r_i_s_k__i_n_t_e_r_n_a_l__r_u_l_e__u_n_a_v_a_i_l_a_b_l_e_title,json=riskErrorsRISKINTERNALRULEUNAVAILABLETitle,proto3" json:"risk_errors__r_i_s_k__i_n_t_e_r_n_a_l__r_u_l_e__u_n_a_v_a_i_l_a_b_l_e_title,omitempty"`           // Risk rules are temporarily unavailable.
-	RiskErrors_RISK_MARGIN_INSUFFICIENTAction         string                 `protobuf:"bytes,61,opt,name=risk_errors__r_i_s_k__m_a_r_g_i_n__i_n_s_u_f_f_i_c_i_e_n_t_action,json=riskErrorsRISKMARGININSUFFICIENTAction,proto3" json:"risk_errors__r_i_s_k__m_a_r_g_i_n__i_n_s_u_f_f_i_c_i_e_n_t_action,omitempty"`                                   // Reduce volume, close positions, or add funds.
-	RiskErrors_RISK_MARGIN_INSUFFICIENTTitle          string                 `protobuf:"bytes,62,opt,name=risk_errors__r_i_s_k__m_a_r_g_i_n__i_n_s_u_f_f_i_c_i_e_n_t_title,json=riskErrorsRISKMARGININSUFFICIENTTitle,proto3" json:"risk_errors__r_i_s_k__m_a_r_g_i_n__i_n_s_u_f_f_i_c_i_e_n_t_title,omitempty"`                                      // Insufficient free margin to place this order.
-	RiskErrors_RISK_MARKET_SESSION_CLOSEDAction       string                 `protobuf:"bytes,63,opt,name=risk_errors__r_i_s_k__m_a_r_k_e_t__s_e_s_s_i_o_n__c_l_o_s_e_d_action,json=riskErrorsRISKMARKETSESSIONCLOSEDAction,proto3" json:"risk_errors__r_i_s_k__m_a_r_k_e_t__s_e_s_s_i_o_n__c_l_o_s_e_d_action,omitempty"`                            // Wait for the next trading session and retry.
-	RiskErrors_RISK_MARKET_SESSION_CLOSEDTitle        string                 `protobuf:"bytes,64,opt,name=risk_errors__r_i_s_k__m_a_r_k_e_t__s_e_s_s_i_o_n__c_l_o_s_e_d_title,json=riskErrorsRISKMARKETSESSIONCLOSEDTitle,proto3" json:"risk_errors__r_i_s_k__m_a_r_k_e_t__s_e_s_s_i_o_n__c_l_o_s_e_d_title,omitempty"`                               // Market is closed for this symbol.
-	RiskErrors_RISK_MAX_OPEN_POSITIONS_EXCEEDEDAction string                 `protobuf:"bytes,65,opt,name=risk_errors__r_i_s_k__m_a_x__o_p_e_n__p_o_s_i_t_i_o_n_s__e_x_c_e_e_d_e_d_action,json=riskErrorsRISKMAXOPENPOSITIONSEXCEEDEDAction,proto3" json:"risk_errors__r_i_s_k__m_a_x__o_p_e_n__p_o_s_i_t_i_o_n_s__e_x_c_e_e_d_e_d_action,omitempty"` // Close existing positions or raise the limit.
-	RiskErrors_RISK_MAX_OPEN_POSITIONS_EXCEEDEDTitle  string                 `protobuf:"bytes,66,opt,name=risk_errors__r_i_s_k__m_a_x__o_p_e_n__p_o_s_i_t_i_o_n_s__e_x_c_e_e_d_e_d_title,json=riskErrorsRISKMAXOPENPOSITIONSEXCEEDEDTitle,proto3" json:"risk_errors__r_i_s_k__m_a_x__o_p_e_n__p_o_s_i_t_i_o_n_s__e_x_c_e_e_d_e_d_title,omitempty"`    // Maximum open positions limit reached.
-	RiskErrors_RISK_MAX_PENDING_ORDERS_EXCEEDEDAction string                 `protobuf:"bytes,67,opt,name=risk_errors__r_i_s_k__m_a_x__p_e_n_d_i_n_g__o_r_d_e_r_s__e_x_c_e_e_d_e_d_action,json=riskErrorsRISKMAXPENDINGORDERSEXCEEDEDAction,proto3" json:"risk_errors__r_i_s_k__m_a_x__p_e_n_d_i_n_g__o_r_d_e_r_s__e_x_c_e_e_d_e_d_action,omitempty"` // Cancel existing pending orders or raise the limit.
-	RiskErrors_RISK_MAX_PENDING_ORDERS_EXCEEDEDTitle  string                 `protobuf:"bytes,68,opt,name=risk_errors__r_i_s_k__m_a_x__p_e_n_d_i_n_g__o_r_d_e_r_s__e_x_c_e_e_d_e_d_title,json=riskErrorsRISKMAXPENDINGORDERSEXCEEDEDTitle,proto3" json:"risk_errors__r_i_s_k__m_a_x__p_e_n_d_i_n_g__o_r_d_e_r_s__e_x_c_e_e_d_e_d_title,omitempty"`    // Maximum pending orders limit reached.
-	RiskErrors_RISK_ORDER_FROZEN_ZONEAction           string                 `protobuf:"bytes,69,opt,name=risk_errors__r_i_s_k__o_r_d_e_r__f_r_o_z_e_n__z_o_n_e_action,json=riskErrorsRISKORDERFROZENZONEAction,proto3" json:"risk_errors__r_i_s_k__o_r_d_e_r__f_r_o_z_e_n__z_o_n_e_action,omitempty"`                                                // Wait until price moves away from freeze distance, then retry
-	RiskErrors_RISK_ORDER_FROZEN_ZONETitle            string                 `protobuf:"bytes,70,opt,name=risk_errors__r_i_s_k__o_r_d_e_r__f_r_o_z_e_n__z_o_n_e_title,json=riskErrorsRISKORDERFROZENZONETitle,proto3" json:"risk_errors__r_i_s_k__o_r_d_e_r__f_r_o_z_e_n__z_o_n_e_title,omitempty"`                                                   // Order cannot be modified in the freeze zone.
-	RiskErrors_RISK_ORDER_TYPE_UNSUPPORTEDAction      string                 `protobuf:"bytes,71,opt,name=risk_errors__r_i_s_k__o_r_d_e_r__t_y_p_e__u_n_s_u_p_p_o_r_t_e_d_action,json=riskErrorsRISKORDERTYPEUNSUPPORTEDAction,proto3" json:"risk_errors__r_i_s_k__o_r_d_e_r__t_y_p_e__u_n_s_u_p_p_o_r_t_e_d_action,omitempty"`                       // Choose a supported order type and retry.
-	RiskErrors_RISK_ORDER_TYPE_UNSUPPORTEDTitle       string                 `protobuf:"bytes,72,opt,name=risk_errors__r_i_s_k__o_r_d_e_r__t_y_p_e__u_n_s_u_p_p_o_r_t_e_d_title,json=riskErrorsRISKORDERTYPEUNSUPPORTEDTitle,proto3" json:"risk_errors__r_i_s_k__o_r_d_e_r__t_y_p_e__u_n_s_u_p_p_o_r_t_e_d_title,omitempty"`                          // This order type is not supported for the symbol.
-	RiskErrors_RISK_STOP_DISTANCE_TOO_CLOSEAction     string                 `protobuf:"bytes,73,opt,name=risk_errors__r_i_s_k__s_t_o_p__d_i_s_t_a_n_c_e__t_o_o__c_l_o_s_e_action,json=riskErrorsRISKSTOPDISTANCETOOCLOSEAction,proto3" json:"risk_errors__r_i_s_k__s_t_o_p__d_i_s_t_a_n_c_e__t_o_o__c_l_o_s_e_action,omitempty"`                     // Increase SL/TP distance and retry.
-	RiskErrors_RISK_STOP_DISTANCE_TOO_CLOSETitle      string                 `protobuf:"bytes,74,opt,name=risk_errors__r_i_s_k__s_t_o_p__d_i_s_t_a_n_c_e__t_o_o__c_l_o_s_e_title,json=riskErrorsRISKSTOPDISTANCETOOCLOSETitle,proto3" json:"risk_errors__r_i_s_k__s_t_o_p__d_i_s_t_a_n_c_e__t_o_o__c_l_o_s_e_title,omitempty"`                        // Stop-loss or take-profit is too close to market price.
-	RiskErrors_RISK_SYMBOL_TRADE_DISABLEDAction       string                 `protobuf:"bytes,75,opt,name=risk_errors__r_i_s_k__s_y_m_b_o_l__t_r_a_d_e__d_i_s_a_b_l_e_d_action,json=riskErrorsRISKSYMBOLTRADEDISABLEDAction,proto3" json:"risk_errors__r_i_s_k__s_y_m_b_o_l__t_r_a_d_e__d_i_s_a_b_l_e_d_action,omitempty"`                            // Switch to a tradable symbol or try later.
-	RiskErrors_RISK_SYMBOL_TRADE_DISABLEDTitle        string                 `protobuf:"bytes,76,opt,name=risk_errors__r_i_s_k__s_y_m_b_o_l__t_r_a_d_e__d_i_s_a_b_l_e_d_title,json=riskErrorsRISKSYMBOLTRADEDISABLEDTitle,proto3" json:"risk_errors__r_i_s_k__s_y_m_b_o_l__t_r_a_d_e__d_i_s_a_b_l_e_d_title,omitempty"`                               // This symbol is currently not tradable.
-	RiskErrors_RISK_VOLUME_INVALIDAction              string                 `protobuf:"bytes,77,opt,name=risk_errors__r_i_s_k__v_o_l_u_m_e__i_n_v_a_l_i_d_action,json=riskErrorsRISKVOLUMEINVALIDAction,proto3" json:"risk_errors__r_i_s_k__v_o_l_u_m_e__i_n_v_a_l_i_d_action,omitempty"`                                                            // Adjust volume to match min/max/step requirements.
-	RiskErrors_RISK_VOLUME_INVALIDTitle               string                 `protobuf:"bytes,78,opt,name=risk_errors__r_i_s_k__v_o_l_u_m_e__i_n_v_a_l_i_d_title,json=riskErrorsRISKVOLUMEINVALIDTitle,proto3" json:"risk_errors__r_i_s_k__v_o_l_u_m_e__i_n_v_a_l_i_d_title,omitempty"`                                                               // Order volume is invalid.
-	RiskErrorsUnknownAction                           string                 `protobuf:"bytes,79,opt,name=risk_errors_unknown_action,json=riskErrorsUnknownAction,proto3" json:"risk_errors_unknown_action,omitempty"`                                                                                                                                // Please review order parameters and try again.
-	RiskErrorsUnknownTitle                            string                 `protobuf:"bytes,80,opt,name=risk_errors_unknown_title,json=riskErrorsUnknownTitle,proto3" json:"risk_errors_unknown_title,omitempty"`                                                                                                                                   // Trade request was rejected.
-	RiskConfigConfirmConfirmText                      string                 `protobuf:"bytes,81,opt,name=risk_config_confirm_confirm_text,json=riskConfigConfirmConfirmText,proto3" json:"risk_config_confirm_confirm_text,omitempty"`                                                                                                               // Save
-	RiskConfigConfirmDescription                      string                 `protobuf:"bytes,82,opt,name=risk_config_confirm_description,json=riskConfigConfirmDescription,proto3" json:"risk_config_confirm_description,omitempty"`                                                                                                                 // Please confirm the following risk settings:
-	RiskConfigConfirmInfo                             string                 `protobuf:"bytes,83,opt,name=risk_config_confirm_info,json=riskConfigConfirmInfo,proto3" json:"risk_config_confirm_info,omitempty"`                                                                                                                                      // After saving, all auto trading will follow the new risk limi
-	RiskConfigConfirmTitle                            string                 `protobuf:"bytes,84,opt,name=risk_config_confirm_title,json=riskConfigConfirmTitle,proto3" json:"risk_config_confirm_title,omitempty"`                                                                                                                                   // Confirm Risk Settings
-	RiskConfigFieldsMaxDailyLoss                      string                 `protobuf:"bytes,85,opt,name=risk_config_fields_max_daily_loss,json=riskConfigFieldsMaxDailyLoss,proto3" json:"risk_config_fields_max_daily_loss,omitempty"`                                                                                                             // Max Daily Loss
-	RiskConfigFieldsMaxDrawdownPercent                string                 `protobuf:"bytes,86,opt,name=risk_config_fields_max_drawdown_percent,json=riskConfigFieldsMaxDrawdownPercent,proto3" json:"risk_config_fields_max_drawdown_percent,omitempty"`                                                                                           // Max Drawdown Limit
-	RiskConfigFieldsMaxLotSize                        string                 `protobuf:"bytes,87,opt,name=risk_config_fields_max_lot_size,json=riskConfigFieldsMaxLotSize,proto3" json:"risk_config_fields_max_lot_size,omitempty"`                                                                                                                   // Max Lot Size
-	RiskConfigFieldsMaxPositions                      string                 `protobuf:"bytes,88,opt,name=risk_config_fields_max_positions,json=riskConfigFieldsMaxPositions,proto3" json:"risk_config_fields_max_positions,omitempty"`                                                                                                               // Max Open Positions
-	RiskConfigFieldsMaxRiskPercent                    string                 `protobuf:"bytes,89,opt,name=risk_config_fields_max_risk_percent,json=riskConfigFieldsMaxRiskPercent,proto3" json:"risk_config_fields_max_risk_percent,omitempty"`                                                                                                       // Max Risk per Trade
-	RiskConfigFieldsTrailingStopEnabled               string                 `protobuf:"bytes,90,opt,name=risk_config_fields_trailing_stop_enabled,json=riskConfigFieldsTrailingStopEnabled,proto3" json:"risk_config_fields_trailing_stop_enabled,omitempty"`                                                                                        // Trailing Stop
-	RiskConfigFieldsTrailingStopPips                  string                 `protobuf:"bytes,91,opt,name=risk_config_fields_trailing_stop_pips,json=riskConfigFieldsTrailingStopPips,proto3" json:"risk_config_fields_trailing_stop_pips,omitempty"`                                                                                                 // Trailing Stop (pips)
-	SelectSymbol                                      string                 `protobuf:"bytes,92,opt,name=select_symbol,json=selectSymbol,proto3" json:"select_symbol,omitempty"`                                                                                                                                                                     // Select a symbol
-	Sell                                              string                 `protobuf:"bytes,93,opt,name=sell,proto3" json:"sell,omitempty"`                                                                                                                                                                                                         // Sell
-	Side                                              string                 `protobuf:"bytes,94,opt,name=side,proto3" json:"side,omitempty"`                                                                                                                                                                                                         // Side
-	Stop                                              string                 `protobuf:"bytes,95,opt,name=stop,proto3" json:"stop,omitempty"`                                                                                                                                                                                                         // Stop
-	StopLoss                                          string                 `protobuf:"bytes,96,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`                                                                                                                                                                                 // Stop Loss
-	StrategyExecuteConfirmAction                      string                 `protobuf:"bytes,97,opt,name=strategy_execute_confirm_action,json=strategyExecuteConfirmAction,proto3" json:"strategy_execute_confirm_action,omitempty"`                                                                                                                 // Side
-	StrategyExecuteConfirmBuy                         string                 `protobuf:"bytes,98,opt,name=strategy_execute_confirm_buy,json=strategyExecuteConfirmBuy,proto3" json:"strategy_execute_confirm_buy,omitempty"`                                                                                                                          // Buy
-	StrategyExecuteConfirmConfirmText                 string                 `protobuf:"bytes,99,opt,name=strategy_execute_confirm_confirm_text,json=strategyExecuteConfirmConfirmText,proto3" json:"strategy_execute_confirm_confirm_text,omitempty"`                                                                                                // Execute
-	StrategyExecuteConfirmSell                        string                 `protobuf:"bytes,100,opt,name=strategy_execute_confirm_sell,json=strategyExecuteConfirmSell,proto3" json:"strategy_execute_confirm_sell,omitempty"`                                                                                                                      // Sell
-	StrategyExecuteConfirmStrategyName                string                 `protobuf:"bytes,101,opt,name=strategy_execute_confirm_strategy_name,json=strategyExecuteConfirmStrategyName,proto3" json:"strategy_execute_confirm_strategy_name,omitempty"`                                                                                            // Strategy
-	StrategyExecuteConfirmSymbol                      string                 `protobuf:"bytes,102,opt,name=strategy_execute_confirm_symbol,json=strategyExecuteConfirmSymbol,proto3" json:"strategy_execute_confirm_symbol,omitempty"`                                                                                                                // Symbol
-	StrategyExecuteConfirmTitle                       string                 `protobuf:"bytes,103,opt,name=strategy_execute_confirm_title,json=strategyExecuteConfirmTitle,proto3" json:"strategy_execute_confirm_title,omitempty"`                                                                                                                   // Confirm Trade Execution
-	StrategyExecuteConfirmVolume                      string                 `protobuf:"bytes,104,opt,name=strategy_execute_confirm_volume,json=strategyExecuteConfirmVolume,proto3" json:"strategy_execute_confirm_volume,omitempty"`                                                                                                                // Volume
-	StrategyExecuteConfirmWarningDescription          string                 `protobuf:"bytes,105,opt,name=strategy_execute_confirm_warning_description,json=strategyExecuteConfirmWarningDescription,proto3" json:"strategy_execute_confirm_warning_description,omitempty"`                                                                          // This action will place a real trade immediately. Please veri
-	StrategyExecuteConfirmWarningTitle                string                 `protobuf:"bytes,106,opt,name=strategy_execute_confirm_warning_title,json=strategyExecuteConfirmWarningTitle,proto3" json:"strategy_execute_confirm_warning_title,omitempty"`                                                                                            // Trade execution confirmation
-	Symbol                                            string                 `protobuf:"bytes,107,opt,name=symbol,proto3" json:"symbol,omitempty"`                                                                                                                                                                                                    // Symbol
-	TakeProfit                                        string                 `protobuf:"bytes,108,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`                                                                                                                                                                          // Take Profit
-	Time                                              string                 `protobuf:"bytes,109,opt,name=time,proto3" json:"time,omitempty"`                                                                                                                                                                                                        // Time
-	Title                                             string                 `protobuf:"bytes,110,opt,name=title,proto3" json:"title,omitempty"`                                                                                                                                                                                                      // Trading
-	Type                                              string                 `protobuf:"bytes,111,opt,name=type,proto3" json:"type,omitempty"`                                                                                                                                                                                                        // Type
-	Volume                                            string                 `protobuf:"bytes,112,opt,name=volume,proto3" json:"volume,omitempty"`                                                                                                                                                                                                    // Volume
-	unknownFields                                     protoimpl.UnknownFields
-	sizeCache                                         protoimpl.SizeCache
+	state                                        protoimpl.MessageState `protogen:"open.v1"`
+	Account                                      string                 `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`                                                                                                                                                                                          // Account
+	AutoTradeConfirmDisableConfirm               string                 `protobuf:"bytes,2,opt,name=auto_trade_confirm_disable_confirm,json=autoTradeConfirmDisableConfirm,proto3" json:"auto_trade_confirm_disable_confirm,omitempty"`                                                                                                // Disable
+	AutoTradeConfirmDisableInfoDescription       string                 `protobuf:"bytes,3,opt,name=auto_trade_confirm_disable_info_description,json=autoTradeConfirmDisableInfoDescription,proto3" json:"auto_trade_confirm_disable_info_description,omitempty"`                                                                      // Auto trading will stop placing new orders.
+	AutoTradeConfirmDisableInfoTitle             string                 `protobuf:"bytes,4,opt,name=auto_trade_confirm_disable_info_title,json=autoTradeConfirmDisableInfoTitle,proto3" json:"auto_trade_confirm_disable_info_title,omitempty"`                                                                                        // Disable auto trading
+	AutoTradeConfirmDisableQuestion              string                 `protobuf:"bytes,5,opt,name=auto_trade_confirm_disable_question,json=autoTradeConfirmDisableQuestion,proto3" json:"auto_trade_confirm_disable_question,omitempty"`                                                                                             // Are you sure you want to disable auto trading?
+	AutoTradeConfirmDisableTitle                 string                 `protobuf:"bytes,6,opt,name=auto_trade_confirm_disable_title,json=autoTradeConfirmDisableTitle,proto3" json:"auto_trade_confirm_disable_title,omitempty"`                                                                                                      // Disable auto trading
+	AutoTradeConfirmEnableBullet1                string                 `protobuf:"bytes,7,opt,name=auto_trade_confirm_enable_bullet1,json=autoTradeConfirmEnableBullet1,proto3" json:"auto_trade_confirm_enable_bullet1,omitempty"`                                                                                                   // Orders will be executed automatically.
+	AutoTradeConfirmEnableBullet2                string                 `protobuf:"bytes,8,opt,name=auto_trade_confirm_enable_bullet2,json=autoTradeConfirmEnableBullet2,proto3" json:"auto_trade_confirm_enable_bullet2,omitempty"`                                                                                                   // Market volatility can cause losses.
+	AutoTradeConfirmEnableBullet3                string                 `protobuf:"bytes,9,opt,name=auto_trade_confirm_enable_bullet3,json=autoTradeConfirmEnableBullet3,proto3" json:"auto_trade_confirm_enable_bullet3,omitempty"`                                                                                                   // You can disable auto trading at any time.
+	AutoTradeConfirmEnableConfirm                string                 `protobuf:"bytes,10,opt,name=auto_trade_confirm_enable_confirm,json=autoTradeConfirmEnableConfirm,proto3" json:"auto_trade_confirm_enable_confirm,omitempty"`                                                                                                  // Enable
+	AutoTradeConfirmEnableQuestion               string                 `protobuf:"bytes,11,opt,name=auto_trade_confirm_enable_question,json=autoTradeConfirmEnableQuestion,proto3" json:"auto_trade_confirm_enable_question,omitempty"`                                                                                               // Are you sure you want to enable auto trading?
+	AutoTradeConfirmEnableRiskDescription        string                 `protobuf:"bytes,12,opt,name=auto_trade_confirm_enable_risk_description,json=autoTradeConfirmEnableRiskDescription,proto3" json:"auto_trade_confirm_enable_risk_description,omitempty"`                                                                        // Auto trading will place orders automatically. Please ensure
+	AutoTradeConfirmEnableRiskTitle              string                 `protobuf:"bytes,13,opt,name=auto_trade_confirm_enable_risk_title,json=autoTradeConfirmEnableRiskTitle,proto3" json:"auto_trade_confirm_enable_risk_title,omitempty"`                                                                                          // Risk notice
+	AutoTradeConfirmEnableTitle                  string                 `protobuf:"bytes,14,opt,name=auto_trade_confirm_enable_title,json=autoTradeConfirmEnableTitle,proto3" json:"auto_trade_confirm_enable_title,omitempty"`                                                                                                        // Enable auto trading
+	Balance                                      string                 `protobuf:"bytes,15,opt,name=balance,proto3" json:"balance,omitempty"`                                                                                                                                                                                         // Balance
+	Buy                                          string                 `protobuf:"bytes,16,opt,name=buy,proto3" json:"buy,omitempty"`                                                                                                                                                                                                 // Buy
+	ClosePosition                                string                 `protobuf:"bytes,17,opt,name=close_position,json=closePosition,proto3" json:"close_position,omitempty"`                                                                                                                                                        // Close
+	ClosePositionConfirm                         string                 `protobuf:"bytes,18,opt,name=close_position_confirm,json=closePositionConfirm,proto3" json:"close_position_confirm,omitempty"`                                                                                                                                 // Close this position?
+	ClosePositionTitle                           string                 `protobuf:"bytes,19,opt,name=close_position_title,json=closePositionTitle,proto3" json:"close_position_title,omitempty"`                                                                                                                                       // Close Position
+	Equity                                       string                 `protobuf:"bytes,20,opt,name=equity,proto3" json:"equity,omitempty"`                                                                                                                                                                                           // Equity
+	FreeMargin                                   string                 `protobuf:"bytes,21,opt,name=free_margin,json=freeMargin,proto3" json:"free_margin,omitempty"`                                                                                                                                                                 // Free Margin
+	Limit                                        string                 `protobuf:"bytes,22,opt,name=limit,proto3" json:"limit,omitempty"`                                                                                                                                                                                             // Limit
+	Margin                                       string                 `protobuf:"bytes,23,opt,name=margin,proto3" json:"margin,omitempty"`                                                                                                                                                                                           // Margin
+	MarginLevel                                  string                 `protobuf:"bytes,24,opt,name=margin_level,json=marginLevel,proto3" json:"margin_level,omitempty"`                                                                                                                                                              // Margin Level
+	MarkPrice                                    string                 `protobuf:"bytes,25,opt,name=mark_price,json=markPrice,proto3" json:"mark_price,omitempty"`                                                                                                                                                                    // Mark Price
+	Market                                       string                 `protobuf:"bytes,26,opt,name=market,proto3" json:"market,omitempty"`                                                                                                                                                                                           // Market
+	MessagesFetchOrderHistoryFailed              string                 `protobuf:"bytes,27,opt,name=messages_fetch_order_history_failed,json=messagesFetchOrderHistoryFailed,proto3" json:"messages_fetch_order_history_failed,omitempty"`                                                                                            // Failed to load order history
+	MessagesFetchPendingOrdersFailed             string                 `protobuf:"bytes,28,opt,name=messages_fetch_pending_orders_failed,json=messagesFetchPendingOrdersFailed,proto3" json:"messages_fetch_pending_orders_failed,omitempty"`                                                                                         // Failed to load pending orders
+	MessagesFetchPositionsFailed                 string                 `protobuf:"bytes,29,opt,name=messages_fetch_positions_failed,json=messagesFetchPositionsFailed,proto3" json:"messages_fetch_positions_failed,omitempty"`                                                                                                       // Failed to load positions
+	MessagesOrderCloseFailed                     string                 `protobuf:"bytes,30,opt,name=messages_order_close_failed,json=messagesOrderCloseFailed,proto3" json:"messages_order_close_failed,omitempty"`                                                                                                                   // Failed to close position
+	MessagesOrderCloseSuccess                    string                 `protobuf:"bytes,31,opt,name=messages_order_close_success,json=messagesOrderCloseSuccess,proto3" json:"messages_order_close_success,omitempty"`                                                                                                                // Position closed successfully
+	MessagesOrderModifyFailed                    string                 `protobuf:"bytes,32,opt,name=messages_order_modify_failed,json=messagesOrderModifyFailed,proto3" json:"messages_order_modify_failed,omitempty"`                                                                                                                // Failed to update order
+	MessagesOrderModifySuccess                   string                 `protobuf:"bytes,33,opt,name=messages_order_modify_success,json=messagesOrderModifySuccess,proto3" json:"messages_order_modify_success,omitempty"`                                                                                                             // Order updated successfully
+	MessagesOrderSendFailed                      string                 `protobuf:"bytes,34,opt,name=messages_order_send_failed,json=messagesOrderSendFailed,proto3" json:"messages_order_send_failed,omitempty"`                                                                                                                      // Failed to place order
+	MessagesOrderSendSuccess                     string                 `protobuf:"bytes,35,opt,name=messages_order_send_success,json=messagesOrderSendSuccess,proto3" json:"messages_order_send_success,omitempty"`                                                                                                                   // Order placed successfully
+	NoAccount                                    string                 `protobuf:"bytes,36,opt,name=no_account,json=noAccount,proto3" json:"no_account,omitempty"`                                                                                                                                                                    // No account selected
+	NoOrders                                     string                 `protobuf:"bytes,37,opt,name=no_orders,json=noOrders,proto3" json:"no_orders,omitempty"`                                                                                                                                                                       // No orders yet
+	NoPositions                                  string                 `protobuf:"bytes,38,opt,name=no_positions,json=noPositions,proto3" json:"no_positions,omitempty"`                                                                                                                                                              // No open positions
+	OpenPositionsTitle                           string                 `protobuf:"bytes,39,opt,name=open_positions_title,json=openPositionsTitle,proto3" json:"open_positions_title,omitempty"`                                                                                                                                       // Open Positions
+	OpenTime                                     string                 `protobuf:"bytes,40,opt,name=open_time,json=openTime,proto3" json:"open_time,omitempty"`                                                                                                                                                                       // Open Time
+	OrderHistory                                 string                 `protobuf:"bytes,41,opt,name=order_history,json=orderHistory,proto3" json:"order_history,omitempty"`                                                                                                                                                           // Order History
+	OrdersCount                                  string                 `protobuf:"bytes,42,opt,name=orders_count,json=ordersCount,proto3" json:"orders_count,omitempty"`                                                                                                                                                              // {{count}} orders
+	PlaceOrder                                   string                 `protobuf:"bytes,43,opt,name=place_order,json=placeOrder,proto3" json:"place_order,omitempty"`                                                                                                                                                                 // Place Order
+	Pnl                                          string                 `protobuf:"bytes,44,opt,name=pnl,proto3" json:"pnl,omitempty"`                                                                                                                                                                                                 // P&L
+	PositionEntryPrice                           string                 `protobuf:"bytes,45,opt,name=position_entry_price,json=positionEntryPrice,proto3" json:"position_entry_price,omitempty"`                                                                                                                                       // Entry Price
+	PositionLeverage                             string                 `protobuf:"bytes,46,opt,name=position_leverage,json=positionLeverage,proto3" json:"position_leverage,omitempty"`                                                                                                                                               // Leverage
+	PositionLong                                 string                 `protobuf:"bytes,47,opt,name=position_long,json=positionLong,proto3" json:"position_long,omitempty"`                                                                                                                                                           // LONG
+	PositionMarkPrice                            string                 `protobuf:"bytes,48,opt,name=position_mark_price,json=positionMarkPrice,proto3" json:"position_mark_price,omitempty"`                                                                                                                                          // Mark Price
+	PositionShort                                string                 `protobuf:"bytes,49,opt,name=position_short,json=positionShort,proto3" json:"position_short,omitempty"`                                                                                                                                                        // SHORT
+	PositionSide                                 string                 `protobuf:"bytes,50,opt,name=position_side,json=positionSide,proto3" json:"position_side,omitempty"`                                                                                                                                                           // Side
+	PositionSize                                 string                 `protobuf:"bytes,51,opt,name=position_size,json=positionSize,proto3" json:"position_size,omitempty"`                                                                                                                                                           // Size
+	PositionUnrealizedPnL                        string                 `protobuf:"bytes,52,opt,name=position_unrealized_pn_l,json=positionUnrealizedPnL,proto3" json:"position_unrealized_pn_l,omitempty"`                                                                                                                            // Unrealized PnL
+	Positions                                    string                 `protobuf:"bytes,53,opt,name=positions,proto3" json:"positions,omitempty"`                                                                                                                                                                                     // Positions
+	Price                                        string                 `protobuf:"bytes,54,opt,name=price,proto3" json:"price,omitempty"`                                                                                                                                                                                             // Price
+	Profit                                       string                 `protobuf:"bytes,55,opt,name=profit,proto3" json:"profit,omitempty"`                                                                                                                                                                                           // Profit
+	RecentTrades                                 string                 `protobuf:"bytes,56,opt,name=recent_trades,json=recentTrades,proto3" json:"recent_trades,omitempty"`                                                                                                                                                           // Recent Trades
+	RiskErrorsRISKACCOUNTTRADEDISABLEDAction     string                 `protobuf:"bytes,57,opt,name=risk_errors_r_i_s_k_a_c_c_o_u_n_t_t_r_a_d_e_d_i_s_a_b_l_e_d_action,json=riskErrorsRISKACCOUNTTRADEDISABLEDAction,proto3" json:"risk_errors_r_i_s_k_a_c_c_o_u_n_t_t_r_a_d_e_d_i_s_a_b_l_e_d_action,omitempty"`                     // Check account status and permissions, then try again.
+	RiskErrorsRISKACCOUNTTRADEDISABLEDTitle      string                 `protobuf:"bytes,58,opt,name=risk_errors_r_i_s_k_a_c_c_o_u_n_t_t_r_a_d_e_d_i_s_a_b_l_e_d_title,json=riskErrorsRISKACCOUNTTRADEDISABLEDTitle,proto3" json:"risk_errors_r_i_s_k_a_c_c_o_u_n_t_t_r_a_d_e_d_i_s_a_b_l_e_d_title,omitempty"`                        // Trading is disabled for this account.
+	RiskErrorsRISKINTERNALRULEUNAVAILABLEAction  string                 `protobuf:"bytes,59,opt,name=risk_errors_r_i_s_k_i_n_t_e_r_n_a_l_r_u_l_e_u_n_a_v_a_i_l_a_b_l_e_action,json=riskErrorsRISKINTERNALRULEUNAVAILABLEAction,proto3" json:"risk_errors_r_i_s_k_i_n_t_e_r_n_a_l_r_u_l_e_u_n_a_v_a_i_l_a_b_l_e_action,omitempty"`      // Retry later; contact support if the issue persists.
+	RiskErrorsRISKINTERNALRULEUNAVAILABLETitle   string                 `protobuf:"bytes,60,opt,name=risk_errors_r_i_s_k_i_n_t_e_r_n_a_l_r_u_l_e_u_n_a_v_a_i_l_a_b_l_e_title,json=riskErrorsRISKINTERNALRULEUNAVAILABLETitle,proto3" json:"risk_errors_r_i_s_k_i_n_t_e_r_n_a_l_r_u_l_e_u_n_a_v_a_i_l_a_b_l_e_title,omitempty"`         // Risk rules are temporarily unavailable.
+	RiskErrorsRISKMARGININSUFFICIENTAction       string                 `protobuf:"bytes,61,opt,name=risk_errors_r_i_s_k_m_a_r_g_i_n_i_n_s_u_f_f_i_c_i_e_n_t_action,json=riskErrorsRISKMARGININSUFFICIENTAction,proto3" json:"risk_errors_r_i_s_k_m_a_r_g_i_n_i_n_s_u_f_f_i_c_i_e_n_t_action,omitempty"`                               // Reduce volume, close positions, or add funds.
+	RiskErrorsRISKMARGININSUFFICIENTTitle        string                 `protobuf:"bytes,62,opt,name=risk_errors_r_i_s_k_m_a_r_g_i_n_i_n_s_u_f_f_i_c_i_e_n_t_title,json=riskErrorsRISKMARGININSUFFICIENTTitle,proto3" json:"risk_errors_r_i_s_k_m_a_r_g_i_n_i_n_s_u_f_f_i_c_i_e_n_t_title,omitempty"`                                  // Insufficient free margin to place this order.
+	RiskErrorsRISKMARKETSESSIONCLOSEDAction      string                 `protobuf:"bytes,63,opt,name=risk_errors_r_i_s_k_m_a_r_k_e_t_s_e_s_s_i_o_n_c_l_o_s_e_d_action,json=riskErrorsRISKMARKETSESSIONCLOSEDAction,proto3" json:"risk_errors_r_i_s_k_m_a_r_k_e_t_s_e_s_s_i_o_n_c_l_o_s_e_d_action,omitempty"`                          // Wait for the next trading session and retry.
+	RiskErrorsRISKMARKETSESSIONCLOSEDTitle       string                 `protobuf:"bytes,64,opt,name=risk_errors_r_i_s_k_m_a_r_k_e_t_s_e_s_s_i_o_n_c_l_o_s_e_d_title,json=riskErrorsRISKMARKETSESSIONCLOSEDTitle,proto3" json:"risk_errors_r_i_s_k_m_a_r_k_e_t_s_e_s_s_i_o_n_c_l_o_s_e_d_title,omitempty"`                             // Market is closed for this symbol.
+	RiskErrorsRISKMAXOPENPOSITIONSEXCEEDEDAction string                 `protobuf:"bytes,65,opt,name=risk_errors_r_i_s_k_m_a_x_o_p_e_n_p_o_s_i_t_i_o_n_s_e_x_c_e_e_d_e_d_action,json=riskErrorsRISKMAXOPENPOSITIONSEXCEEDEDAction,proto3" json:"risk_errors_r_i_s_k_m_a_x_o_p_e_n_p_o_s_i_t_i_o_n_s_e_x_c_e_e_d_e_d_action,omitempty"` // Close existing positions or raise the limit.
+	RiskErrorsRISKMAXOPENPOSITIONSEXCEEDEDTitle  string                 `protobuf:"bytes,66,opt,name=risk_errors_r_i_s_k_m_a_x_o_p_e_n_p_o_s_i_t_i_o_n_s_e_x_c_e_e_d_e_d_title,json=riskErrorsRISKMAXOPENPOSITIONSEXCEEDEDTitle,proto3" json:"risk_errors_r_i_s_k_m_a_x_o_p_e_n_p_o_s_i_t_i_o_n_s_e_x_c_e_e_d_e_d_title,omitempty"`    // Maximum open positions limit reached.
+	RiskErrorsRISKMAXPENDINGORDERSEXCEEDEDAction string                 `protobuf:"bytes,67,opt,name=risk_errors_r_i_s_k_m_a_x_p_e_n_d_i_n_g_o_r_d_e_r_s_e_x_c_e_e_d_e_d_action,json=riskErrorsRISKMAXPENDINGORDERSEXCEEDEDAction,proto3" json:"risk_errors_r_i_s_k_m_a_x_p_e_n_d_i_n_g_o_r_d_e_r_s_e_x_c_e_e_d_e_d_action,omitempty"` // Cancel existing pending orders or raise the limit.
+	RiskErrorsRISKMAXPENDINGORDERSEXCEEDEDTitle  string                 `protobuf:"bytes,68,opt,name=risk_errors_r_i_s_k_m_a_x_p_e_n_d_i_n_g_o_r_d_e_r_s_e_x_c_e_e_d_e_d_title,json=riskErrorsRISKMAXPENDINGORDERSEXCEEDEDTitle,proto3" json:"risk_errors_r_i_s_k_m_a_x_p_e_n_d_i_n_g_o_r_d_e_r_s_e_x_c_e_e_d_e_d_title,omitempty"`    // Maximum pending orders limit reached.
+	RiskErrorsRISKORDERFROZENZONEAction          string                 `protobuf:"bytes,69,opt,name=risk_errors_r_i_s_k_o_r_d_e_r_f_r_o_z_e_n_z_o_n_e_action,json=riskErrorsRISKORDERFROZENZONEAction,proto3" json:"risk_errors_r_i_s_k_o_r_d_e_r_f_r_o_z_e_n_z_o_n_e_action,omitempty"`                                              // Wait until price moves away from freeze distance, then retry
+	RiskErrorsRISKORDERFROZENZONETitle           string                 `protobuf:"bytes,70,opt,name=risk_errors_r_i_s_k_o_r_d_e_r_f_r_o_z_e_n_z_o_n_e_title,json=riskErrorsRISKORDERFROZENZONETitle,proto3" json:"risk_errors_r_i_s_k_o_r_d_e_r_f_r_o_z_e_n_z_o_n_e_title,omitempty"`                                                 // Order cannot be modified in the freeze zone.
+	RiskErrorsRISKORDERTYPEUNSUPPORTEDAction     string                 `protobuf:"bytes,71,opt,name=risk_errors_r_i_s_k_o_r_d_e_r_t_y_p_e_u_n_s_u_p_p_o_r_t_e_d_action,json=riskErrorsRISKORDERTYPEUNSUPPORTEDAction,proto3" json:"risk_errors_r_i_s_k_o_r_d_e_r_t_y_p_e_u_n_s_u_p_p_o_r_t_e_d_action,omitempty"`                     // Choose a supported order type and retry.
+	RiskErrorsRISKORDERTYPEUNSUPPORTEDTitle      string                 `protobuf:"bytes,72,opt,name=risk_errors_r_i_s_k_o_r_d_e_r_t_y_p_e_u_n_s_u_p_p_o_r_t_e_d_title,json=riskErrorsRISKORDERTYPEUNSUPPORTEDTitle,proto3" json:"risk_errors_r_i_s_k_o_r_d_e_r_t_y_p_e_u_n_s_u_p_p_o_r_t_e_d_title,omitempty"`                        // This order type is not supported for the symbol.
+	RiskErrorsRISKSTOPDISTANCETOOCLOSEAction     string                 `protobuf:"bytes,73,opt,name=risk_errors_r_i_s_k_s_t_o_p_d_i_s_t_a_n_c_e_t_o_o_c_l_o_s_e_action,json=riskErrorsRISKSTOPDISTANCETOOCLOSEAction,proto3" json:"risk_errors_r_i_s_k_s_t_o_p_d_i_s_t_a_n_c_e_t_o_o_c_l_o_s_e_action,omitempty"`                     // Increase SL/TP distance and retry.
+	RiskErrorsRISKSTOPDISTANCETOOCLOSETitle      string                 `protobuf:"bytes,74,opt,name=risk_errors_r_i_s_k_s_t_o_p_d_i_s_t_a_n_c_e_t_o_o_c_l_o_s_e_title,json=riskErrorsRISKSTOPDISTANCETOOCLOSETitle,proto3" json:"risk_errors_r_i_s_k_s_t_o_p_d_i_s_t_a_n_c_e_t_o_o_c_l_o_s_e_title,omitempty"`                        // Stop-loss or take-profit is too close to market price.
+	RiskErrorsRISKSYMBOLTRADEDISABLEDAction      string                 `protobuf:"bytes,75,opt,name=risk_errors_r_i_s_k_s_y_m_b_o_l_t_r_a_d_e_d_i_s_a_b_l_e_d_action,json=riskErrorsRISKSYMBOLTRADEDISABLEDAction,proto3" json:"risk_errors_r_i_s_k_s_y_m_b_o_l_t_r_a_d_e_d_i_s_a_b_l_e_d_action,omitempty"`                          // Switch to a tradable symbol or try later.
+	RiskErrorsRISKSYMBOLTRADEDISABLEDTitle       string                 `protobuf:"bytes,76,opt,name=risk_errors_r_i_s_k_s_y_m_b_o_l_t_r_a_d_e_d_i_s_a_b_l_e_d_title,json=riskErrorsRISKSYMBOLTRADEDISABLEDTitle,proto3" json:"risk_errors_r_i_s_k_s_y_m_b_o_l_t_r_a_d_e_d_i_s_a_b_l_e_d_title,omitempty"`                             // This symbol is currently not tradable.
+	RiskErrorsRISKVOLUMEINVALIDAction            string                 `protobuf:"bytes,77,opt,name=risk_errors_r_i_s_k_v_o_l_u_m_e_i_n_v_a_l_i_d_action,json=riskErrorsRISKVOLUMEINVALIDAction,proto3" json:"risk_errors_r_i_s_k_v_o_l_u_m_e_i_n_v_a_l_i_d_action,omitempty"`                                                        // Adjust volume to match min/max/step requirements.
+	RiskErrorsRISKVOLUMEINVALIDTitle             string                 `protobuf:"bytes,78,opt,name=risk_errors_r_i_s_k_v_o_l_u_m_e_i_n_v_a_l_i_d_title,json=riskErrorsRISKVOLUMEINVALIDTitle,proto3" json:"risk_errors_r_i_s_k_v_o_l_u_m_e_i_n_v_a_l_i_d_title,omitempty"`                                                           // Order volume is invalid.
+	RiskErrorsUnknownAction                      string                 `protobuf:"bytes,79,opt,name=risk_errors_unknown_action,json=riskErrorsUnknownAction,proto3" json:"risk_errors_unknown_action,omitempty"`                                                                                                                      // Please review order parameters and try again.
+	RiskErrorsUnknownTitle                       string                 `protobuf:"bytes,80,opt,name=risk_errors_unknown_title,json=riskErrorsUnknownTitle,proto3" json:"risk_errors_unknown_title,omitempty"`                                                                                                                         // Trade request was rejected.
+	RiskConfigConfirmConfirmText                 string                 `protobuf:"bytes,81,opt,name=risk_config_confirm_confirm_text,json=riskConfigConfirmConfirmText,proto3" json:"risk_config_confirm_confirm_text,omitempty"`                                                                                                     // Save
+	RiskConfigConfirmDescription                 string                 `protobuf:"bytes,82,opt,name=risk_config_confirm_description,json=riskConfigConfirmDescription,proto3" json:"risk_config_confirm_description,omitempty"`                                                                                                       // Please confirm the following risk settings:
+	RiskConfigConfirmInfo                        string                 `protobuf:"bytes,83,opt,name=risk_config_confirm_info,json=riskConfigConfirmInfo,proto3" json:"risk_config_confirm_info,omitempty"`                                                                                                                            // After saving, all auto trading will follow the new risk limi
+	RiskConfigConfirmTitle                       string                 `protobuf:"bytes,84,opt,name=risk_config_confirm_title,json=riskConfigConfirmTitle,proto3" json:"risk_config_confirm_title,omitempty"`                                                                                                                         // Confirm Risk Settings
+	RiskConfigFieldsMaxDailyLoss                 string                 `protobuf:"bytes,85,opt,name=risk_config_fields_max_daily_loss,json=riskConfigFieldsMaxDailyLoss,proto3" json:"risk_config_fields_max_daily_loss,omitempty"`                                                                                                   // Max Daily Loss
+	RiskConfigFieldsMaxDrawdownPercent           string                 `protobuf:"bytes,86,opt,name=risk_config_fields_max_drawdown_percent,json=riskConfigFieldsMaxDrawdownPercent,proto3" json:"risk_config_fields_max_drawdown_percent,omitempty"`                                                                                 // Max Drawdown Limit
+	RiskConfigFieldsMaxLotSize                   string                 `protobuf:"bytes,87,opt,name=risk_config_fields_max_lot_size,json=riskConfigFieldsMaxLotSize,proto3" json:"risk_config_fields_max_lot_size,omitempty"`                                                                                                         // Max Lot Size
+	RiskConfigFieldsMaxPositions                 string                 `protobuf:"bytes,88,opt,name=risk_config_fields_max_positions,json=riskConfigFieldsMaxPositions,proto3" json:"risk_config_fields_max_positions,omitempty"`                                                                                                     // Max Open Positions
+	RiskConfigFieldsMaxRiskPercent               string                 `protobuf:"bytes,89,opt,name=risk_config_fields_max_risk_percent,json=riskConfigFieldsMaxRiskPercent,proto3" json:"risk_config_fields_max_risk_percent,omitempty"`                                                                                             // Max Risk per Trade
+	RiskConfigFieldsTrailingStopEnabled          string                 `protobuf:"bytes,90,opt,name=risk_config_fields_trailing_stop_enabled,json=riskConfigFieldsTrailingStopEnabled,proto3" json:"risk_config_fields_trailing_stop_enabled,omitempty"`                                                                              // Trailing Stop
+	RiskConfigFieldsTrailingStopPips             string                 `protobuf:"bytes,91,opt,name=risk_config_fields_trailing_stop_pips,json=riskConfigFieldsTrailingStopPips,proto3" json:"risk_config_fields_trailing_stop_pips,omitempty"`                                                                                       // Trailing Stop (pips)
+	SelectSymbol                                 string                 `protobuf:"bytes,92,opt,name=select_symbol,json=selectSymbol,proto3" json:"select_symbol,omitempty"`                                                                                                                                                           // Select a symbol
+	Sell                                         string                 `protobuf:"bytes,93,opt,name=sell,proto3" json:"sell,omitempty"`                                                                                                                                                                                               // Sell
+	Side                                         string                 `protobuf:"bytes,94,opt,name=side,proto3" json:"side,omitempty"`                                                                                                                                                                                               // Side
+	Stop                                         string                 `protobuf:"bytes,95,opt,name=stop,proto3" json:"stop,omitempty"`                                                                                                                                                                                               // Stop
+	StopLoss                                     string                 `protobuf:"bytes,96,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`                                                                                                                                                                       // Stop Loss
+	StrategyExecuteConfirmAction                 string                 `protobuf:"bytes,97,opt,name=strategy_execute_confirm_action,json=strategyExecuteConfirmAction,proto3" json:"strategy_execute_confirm_action,omitempty"`                                                                                                       // Side
+	StrategyExecuteConfirmBuy                    string                 `protobuf:"bytes,98,opt,name=strategy_execute_confirm_buy,json=strategyExecuteConfirmBuy,proto3" json:"strategy_execute_confirm_buy,omitempty"`                                                                                                                // Buy
+	StrategyExecuteConfirmConfirmText            string                 `protobuf:"bytes,99,opt,name=strategy_execute_confirm_confirm_text,json=strategyExecuteConfirmConfirmText,proto3" json:"strategy_execute_confirm_confirm_text,omitempty"`                                                                                      // Execute
+	StrategyExecuteConfirmSell                   string                 `protobuf:"bytes,100,opt,name=strategy_execute_confirm_sell,json=strategyExecuteConfirmSell,proto3" json:"strategy_execute_confirm_sell,omitempty"`                                                                                                            // Sell
+	StrategyExecuteConfirmStrategyName           string                 `protobuf:"bytes,101,opt,name=strategy_execute_confirm_strategy_name,json=strategyExecuteConfirmStrategyName,proto3" json:"strategy_execute_confirm_strategy_name,omitempty"`                                                                                  // Strategy
+	StrategyExecuteConfirmSymbol                 string                 `protobuf:"bytes,102,opt,name=strategy_execute_confirm_symbol,json=strategyExecuteConfirmSymbol,proto3" json:"strategy_execute_confirm_symbol,omitempty"`                                                                                                      // Symbol
+	StrategyExecuteConfirmTitle                  string                 `protobuf:"bytes,103,opt,name=strategy_execute_confirm_title,json=strategyExecuteConfirmTitle,proto3" json:"strategy_execute_confirm_title,omitempty"`                                                                                                         // Confirm Trade Execution
+	StrategyExecuteConfirmVolume                 string                 `protobuf:"bytes,104,opt,name=strategy_execute_confirm_volume,json=strategyExecuteConfirmVolume,proto3" json:"strategy_execute_confirm_volume,omitempty"`                                                                                                      // Volume
+	StrategyExecuteConfirmWarningDescription     string                 `protobuf:"bytes,105,opt,name=strategy_execute_confirm_warning_description,json=strategyExecuteConfirmWarningDescription,proto3" json:"strategy_execute_confirm_warning_description,omitempty"`                                                                // This action will place a real trade immediately. Please veri
+	StrategyExecuteConfirmWarningTitle           string                 `protobuf:"bytes,106,opt,name=strategy_execute_confirm_warning_title,json=strategyExecuteConfirmWarningTitle,proto3" json:"strategy_execute_confirm_warning_title,omitempty"`                                                                                  // Trade execution confirmation
+	Symbol                                       string                 `protobuf:"bytes,107,opt,name=symbol,proto3" json:"symbol,omitempty"`                                                                                                                                                                                          // Symbol
+	TakeProfit                                   string                 `protobuf:"bytes,108,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`                                                                                                                                                                // Take Profit
+	Time                                         string                 `protobuf:"bytes,109,opt,name=time,proto3" json:"time,omitempty"`                                                                                                                                                                                              // Time
+	Title                                        string                 `protobuf:"bytes,110,opt,name=title,proto3" json:"title,omitempty"`                                                                                                                                                                                            // Trading
+	Type                                         string                 `protobuf:"bytes,111,opt,name=type,proto3" json:"type,omitempty"`                                                                                                                                                                                              // Type
+	Volume                                       string                 `protobuf:"bytes,112,opt,name=volume,proto3" json:"volume,omitempty"`                                                                                                                                                                                          // Volume
+	unknownFields                                protoimpl.UnknownFields
+	sizeCache                                    protoimpl.SizeCache
 }
 
 func (x *TradingI18N) Reset() {
@@ -561,156 +561,156 @@ func (x *TradingI18N) GetRecentTrades() string {
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_ACCOUNT_TRADE_DISABLEDAction() string {
+func (x *TradingI18N) GetRiskErrorsRISKACCOUNTTRADEDISABLEDAction() string {
 	if x != nil {
-		return x.RiskErrors_RISK_ACCOUNT_TRADE_DISABLEDAction
+		return x.RiskErrorsRISKACCOUNTTRADEDISABLEDAction
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_ACCOUNT_TRADE_DISABLEDTitle() string {
+func (x *TradingI18N) GetRiskErrorsRISKACCOUNTTRADEDISABLEDTitle() string {
 	if x != nil {
-		return x.RiskErrors_RISK_ACCOUNT_TRADE_DISABLEDTitle
+		return x.RiskErrorsRISKACCOUNTTRADEDISABLEDTitle
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_INTERNAL_RULE_UNAVAILABLEAction() string {
+func (x *TradingI18N) GetRiskErrorsRISKINTERNALRULEUNAVAILABLEAction() string {
 	if x != nil {
-		return x.RiskErrors_RISK_INTERNAL_RULE_UNAVAILABLEAction
+		return x.RiskErrorsRISKINTERNALRULEUNAVAILABLEAction
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_INTERNAL_RULE_UNAVAILABLETitle() string {
+func (x *TradingI18N) GetRiskErrorsRISKINTERNALRULEUNAVAILABLETitle() string {
 	if x != nil {
-		return x.RiskErrors_RISK_INTERNAL_RULE_UNAVAILABLETitle
+		return x.RiskErrorsRISKINTERNALRULEUNAVAILABLETitle
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_MARGIN_INSUFFICIENTAction() string {
+func (x *TradingI18N) GetRiskErrorsRISKMARGININSUFFICIENTAction() string {
 	if x != nil {
-		return x.RiskErrors_RISK_MARGIN_INSUFFICIENTAction
+		return x.RiskErrorsRISKMARGININSUFFICIENTAction
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_MARGIN_INSUFFICIENTTitle() string {
+func (x *TradingI18N) GetRiskErrorsRISKMARGININSUFFICIENTTitle() string {
 	if x != nil {
-		return x.RiskErrors_RISK_MARGIN_INSUFFICIENTTitle
+		return x.RiskErrorsRISKMARGININSUFFICIENTTitle
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_MARKET_SESSION_CLOSEDAction() string {
+func (x *TradingI18N) GetRiskErrorsRISKMARKETSESSIONCLOSEDAction() string {
 	if x != nil {
-		return x.RiskErrors_RISK_MARKET_SESSION_CLOSEDAction
+		return x.RiskErrorsRISKMARKETSESSIONCLOSEDAction
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_MARKET_SESSION_CLOSEDTitle() string {
+func (x *TradingI18N) GetRiskErrorsRISKMARKETSESSIONCLOSEDTitle() string {
 	if x != nil {
-		return x.RiskErrors_RISK_MARKET_SESSION_CLOSEDTitle
+		return x.RiskErrorsRISKMARKETSESSIONCLOSEDTitle
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_MAX_OPEN_POSITIONS_EXCEEDEDAction() string {
+func (x *TradingI18N) GetRiskErrorsRISKMAXOPENPOSITIONSEXCEEDEDAction() string {
 	if x != nil {
-		return x.RiskErrors_RISK_MAX_OPEN_POSITIONS_EXCEEDEDAction
+		return x.RiskErrorsRISKMAXOPENPOSITIONSEXCEEDEDAction
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_MAX_OPEN_POSITIONS_EXCEEDEDTitle() string {
+func (x *TradingI18N) GetRiskErrorsRISKMAXOPENPOSITIONSEXCEEDEDTitle() string {
 	if x != nil {
-		return x.RiskErrors_RISK_MAX_OPEN_POSITIONS_EXCEEDEDTitle
+		return x.RiskErrorsRISKMAXOPENPOSITIONSEXCEEDEDTitle
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_MAX_PENDING_ORDERS_EXCEEDEDAction() string {
+func (x *TradingI18N) GetRiskErrorsRISKMAXPENDINGORDERSEXCEEDEDAction() string {
 	if x != nil {
-		return x.RiskErrors_RISK_MAX_PENDING_ORDERS_EXCEEDEDAction
+		return x.RiskErrorsRISKMAXPENDINGORDERSEXCEEDEDAction
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_MAX_PENDING_ORDERS_EXCEEDEDTitle() string {
+func (x *TradingI18N) GetRiskErrorsRISKMAXPENDINGORDERSEXCEEDEDTitle() string {
 	if x != nil {
-		return x.RiskErrors_RISK_MAX_PENDING_ORDERS_EXCEEDEDTitle
+		return x.RiskErrorsRISKMAXPENDINGORDERSEXCEEDEDTitle
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_ORDER_FROZEN_ZONEAction() string {
+func (x *TradingI18N) GetRiskErrorsRISKORDERFROZENZONEAction() string {
 	if x != nil {
-		return x.RiskErrors_RISK_ORDER_FROZEN_ZONEAction
+		return x.RiskErrorsRISKORDERFROZENZONEAction
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_ORDER_FROZEN_ZONETitle() string {
+func (x *TradingI18N) GetRiskErrorsRISKORDERFROZENZONETitle() string {
 	if x != nil {
-		return x.RiskErrors_RISK_ORDER_FROZEN_ZONETitle
+		return x.RiskErrorsRISKORDERFROZENZONETitle
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_ORDER_TYPE_UNSUPPORTEDAction() string {
+func (x *TradingI18N) GetRiskErrorsRISKORDERTYPEUNSUPPORTEDAction() string {
 	if x != nil {
-		return x.RiskErrors_RISK_ORDER_TYPE_UNSUPPORTEDAction
+		return x.RiskErrorsRISKORDERTYPEUNSUPPORTEDAction
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_ORDER_TYPE_UNSUPPORTEDTitle() string {
+func (x *TradingI18N) GetRiskErrorsRISKORDERTYPEUNSUPPORTEDTitle() string {
 	if x != nil {
-		return x.RiskErrors_RISK_ORDER_TYPE_UNSUPPORTEDTitle
+		return x.RiskErrorsRISKORDERTYPEUNSUPPORTEDTitle
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_STOP_DISTANCE_TOO_CLOSEAction() string {
+func (x *TradingI18N) GetRiskErrorsRISKSTOPDISTANCETOOCLOSEAction() string {
 	if x != nil {
-		return x.RiskErrors_RISK_STOP_DISTANCE_TOO_CLOSEAction
+		return x.RiskErrorsRISKSTOPDISTANCETOOCLOSEAction
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_STOP_DISTANCE_TOO_CLOSETitle() string {
+func (x *TradingI18N) GetRiskErrorsRISKSTOPDISTANCETOOCLOSETitle() string {
 	if x != nil {
-		return x.RiskErrors_RISK_STOP_DISTANCE_TOO_CLOSETitle
+		return x.RiskErrorsRISKSTOPDISTANCETOOCLOSETitle
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_SYMBOL_TRADE_DISABLEDAction() string {
+func (x *TradingI18N) GetRiskErrorsRISKSYMBOLTRADEDISABLEDAction() string {
 	if x != nil {
-		return x.RiskErrors_RISK_SYMBOL_TRADE_DISABLEDAction
+		return x.RiskErrorsRISKSYMBOLTRADEDISABLEDAction
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_SYMBOL_TRADE_DISABLEDTitle() string {
+func (x *TradingI18N) GetRiskErrorsRISKSYMBOLTRADEDISABLEDTitle() string {
 	if x != nil {
-		return x.RiskErrors_RISK_SYMBOL_TRADE_DISABLEDTitle
+		return x.RiskErrorsRISKSYMBOLTRADEDISABLEDTitle
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_VOLUME_INVALIDAction() string {
+func (x *TradingI18N) GetRiskErrorsRISKVOLUMEINVALIDAction() string {
 	if x != nil {
-		return x.RiskErrors_RISK_VOLUME_INVALIDAction
+		return x.RiskErrorsRISKVOLUMEINVALIDAction
 	}
 	return ""
 }
 
-func (x *TradingI18N) GetRiskErrors_RISK_VOLUME_INVALIDTitle() string {
+func (x *TradingI18N) GetRiskErrorsRISKVOLUMEINVALIDTitle() string {
 	if x != nil {
-		return x.RiskErrors_RISK_VOLUME_INVALIDTitle
+		return x.RiskErrorsRISKVOLUMEINVALIDTitle
 	}
 	return ""
 }
@@ -957,7 +957,7 @@ var File_i18n_trading_proto protoreflect.FileDescriptor
 
 const file_i18n_trading_proto_rawDesc = "" +
 	"\n" +
-	"\x12i18n/trading.proto\x12\vant.v1.i18n\"\xe39\n" +
+	"\x12i18n/trading.proto\x12\vant.v1.i18n\"\x869\n" +
 	"\vTradingI18n\x12\x18\n" +
 	"\aaccount\x18\x01 \x01(\tR\aaccount\x12J\n" +
 	"\"auto_trade_confirm_disable_confirm\x18\x02 \x01(\tR\x1eautoTradeConfirmDisableConfirm\x12[\n" +
@@ -1019,29 +1019,29 @@ const file_i18n_trading_proto_rawDesc = "" +
 	"\tpositions\x185 \x01(\tR\tpositions\x12\x14\n" +
 	"\x05price\x186 \x01(\tR\x05price\x12\x16\n" +
 	"\x06profit\x187 \x01(\tR\x06profit\x12#\n" +
-	"\rrecent_trades\x188 \x01(\tR\frecentTrades\x12x\n" +
-	"Frisk_errors__r_i_s_k__a_c_c_o_u_n_t__t_r_a_d_e__d_i_s_a_b_l_e_d_action\x189 \x01(\tR(riskErrorsRISKACCOUNTTRADEDISABLEDAction\x12v\n" +
-	"Erisk_errors__r_i_s_k__a_c_c_o_u_n_t__t_r_a_d_e__d_i_s_a_b_l_e_d_title\x18: \x01(\tR'riskErrorsRISKACCOUNTTRADEDISABLEDTitle\x12\x81\x01\n" +
-	"Lrisk_errors__r_i_s_k__i_n_t_e_r_n_a_l__r_u_l_e__u_n_a_v_a_i_l_a_b_l_e_action\x18; \x01(\tR+riskErrorsRISKINTERNALRULEUNAVAILABLEAction\x12\x7f\n" +
-	"Krisk_errors__r_i_s_k__i_n_t_e_r_n_a_l__r_u_l_e__u_n_a_v_a_i_l_a_b_l_e_title\x18< \x01(\tR*riskErrorsRISKINTERNALRULEUNAVAILABLETitle\x12q\n" +
-	"Arisk_errors__r_i_s_k__m_a_r_g_i_n__i_n_s_u_f_f_i_c_i_e_n_t_action\x18= \x01(\tR&riskErrorsRISKMARGININSUFFICIENTAction\x12o\n" +
-	"@risk_errors__r_i_s_k__m_a_r_g_i_n__i_n_s_u_f_f_i_c_i_e_n_t_title\x18> \x01(\tR%riskErrorsRISKMARGININSUFFICIENTTitle\x12u\n" +
-	"Drisk_errors__r_i_s_k__m_a_r_k_e_t__s_e_s_s_i_o_n__c_l_o_s_e_d_action\x18? \x01(\tR'riskErrorsRISKMARKETSESSIONCLOSEDAction\x12s\n" +
-	"Crisk_errors__r_i_s_k__m_a_r_k_e_t__s_e_s_s_i_o_n__c_l_o_s_e_d_title\x18@ \x01(\tR&riskErrorsRISKMARKETSESSIONCLOSEDTitle\x12\x85\x01\n" +
-	"Orisk_errors__r_i_s_k__m_a_x__o_p_e_n__p_o_s_i_t_i_o_n_s__e_x_c_e_e_d_e_d_action\x18A \x01(\tR,riskErrorsRISKMAXOPENPOSITIONSEXCEEDEDAction\x12\x83\x01\n" +
-	"Nrisk_errors__r_i_s_k__m_a_x__o_p_e_n__p_o_s_i_t_i_o_n_s__e_x_c_e_e_d_e_d_title\x18B \x01(\tR+riskErrorsRISKMAXOPENPOSITIONSEXCEEDEDTitle\x12\x85\x01\n" +
-	"Orisk_errors__r_i_s_k__m_a_x__p_e_n_d_i_n_g__o_r_d_e_r_s__e_x_c_e_e_d_e_d_action\x18C \x01(\tR,riskErrorsRISKMAXPENDINGORDERSEXCEEDEDAction\x12\x83\x01\n" +
-	"Nrisk_errors__r_i_s_k__m_a_x__p_e_n_d_i_n_g__o_r_d_e_r_s__e_x_c_e_e_d_e_d_title\x18D \x01(\tR+riskErrorsRISKMAXPENDINGORDERSEXCEEDEDTitle\x12i\n" +
-	"<risk_errors__r_i_s_k__o_r_d_e_r__f_r_o_z_e_n__z_o_n_e_action\x18E \x01(\tR#riskErrorsRISKORDERFROZENZONEAction\x12g\n" +
-	";risk_errors__r_i_s_k__o_r_d_e_r__f_r_o_z_e_n__z_o_n_e_title\x18F \x01(\tR\"riskErrorsRISKORDERFROZENZONETitle\x12x\n" +
-	"Frisk_errors__r_i_s_k__o_r_d_e_r__t_y_p_e__u_n_s_u_p_p_o_r_t_e_d_action\x18G \x01(\tR(riskErrorsRISKORDERTYPEUNSUPPORTEDAction\x12v\n" +
-	"Erisk_errors__r_i_s_k__o_r_d_e_r__t_y_p_e__u_n_s_u_p_p_o_r_t_e_d_title\x18H \x01(\tR'riskErrorsRISKORDERTYPEUNSUPPORTEDTitle\x12y\n" +
-	"Grisk_errors__r_i_s_k__s_t_o_p__d_i_s_t_a_n_c_e__t_o_o__c_l_o_s_e_action\x18I \x01(\tR(riskErrorsRISKSTOPDISTANCETOOCLOSEAction\x12w\n" +
-	"Frisk_errors__r_i_s_k__s_t_o_p__d_i_s_t_a_n_c_e__t_o_o__c_l_o_s_e_title\x18J \x01(\tR'riskErrorsRISKSTOPDISTANCETOOCLOSETitle\x12u\n" +
-	"Drisk_errors__r_i_s_k__s_y_m_b_o_l__t_r_a_d_e__d_i_s_a_b_l_e_d_action\x18K \x01(\tR'riskErrorsRISKSYMBOLTRADEDISABLEDAction\x12s\n" +
-	"Crisk_errors__r_i_s_k__s_y_m_b_o_l__t_r_a_d_e__d_i_s_a_b_l_e_d_title\x18L \x01(\tR&riskErrorsRISKSYMBOLTRADEDISABLEDTitle\x12b\n" +
-	"7risk_errors__r_i_s_k__v_o_l_u_m_e__i_n_v_a_l_i_d_action\x18M \x01(\tR!riskErrorsRISKVOLUMEINVALIDAction\x12`\n" +
-	"6risk_errors__r_i_s_k__v_o_l_u_m_e__i_n_v_a_l_i_d_title\x18N \x01(\tR riskErrorsRISKVOLUMEINVALIDTitle\x12;\n" +
+	"\rrecent_trades\x188 \x01(\tR\frecentTrades\x12t\n" +
+	"Brisk_errors_r_i_s_k_a_c_c_o_u_n_t_t_r_a_d_e_d_i_s_a_b_l_e_d_action\x189 \x01(\tR(riskErrorsRISKACCOUNTTRADEDISABLEDAction\x12r\n" +
+	"Arisk_errors_r_i_s_k_a_c_c_o_u_n_t_t_r_a_d_e_d_i_s_a_b_l_e_d_title\x18: \x01(\tR'riskErrorsRISKACCOUNTTRADEDISABLEDTitle\x12}\n" +
+	"Hrisk_errors_r_i_s_k_i_n_t_e_r_n_a_l_r_u_l_e_u_n_a_v_a_i_l_a_b_l_e_action\x18; \x01(\tR+riskErrorsRISKINTERNALRULEUNAVAILABLEAction\x12{\n" +
+	"Grisk_errors_r_i_s_k_i_n_t_e_r_n_a_l_r_u_l_e_u_n_a_v_a_i_l_a_b_l_e_title\x18< \x01(\tR*riskErrorsRISKINTERNALRULEUNAVAILABLETitle\x12n\n" +
+	">risk_errors_r_i_s_k_m_a_r_g_i_n_i_n_s_u_f_f_i_c_i_e_n_t_action\x18= \x01(\tR&riskErrorsRISKMARGININSUFFICIENTAction\x12l\n" +
+	"=risk_errors_r_i_s_k_m_a_r_g_i_n_i_n_s_u_f_f_i_c_i_e_n_t_title\x18> \x01(\tR%riskErrorsRISKMARGININSUFFICIENTTitle\x12q\n" +
+	"@risk_errors_r_i_s_k_m_a_r_k_e_t_s_e_s_s_i_o_n_c_l_o_s_e_d_action\x18? \x01(\tR'riskErrorsRISKMARKETSESSIONCLOSEDAction\x12o\n" +
+	"?risk_errors_r_i_s_k_m_a_r_k_e_t_s_e_s_s_i_o_n_c_l_o_s_e_d_title\x18@ \x01(\tR&riskErrorsRISKMARKETSESSIONCLOSEDTitle\x12\x80\x01\n" +
+	"Jrisk_errors_r_i_s_k_m_a_x_o_p_e_n_p_o_s_i_t_i_o_n_s_e_x_c_e_e_d_e_d_action\x18A \x01(\tR,riskErrorsRISKMAXOPENPOSITIONSEXCEEDEDAction\x12~\n" +
+	"Irisk_errors_r_i_s_k_m_a_x_o_p_e_n_p_o_s_i_t_i_o_n_s_e_x_c_e_e_d_e_d_title\x18B \x01(\tR+riskErrorsRISKMAXOPENPOSITIONSEXCEEDEDTitle\x12\x80\x01\n" +
+	"Jrisk_errors_r_i_s_k_m_a_x_p_e_n_d_i_n_g_o_r_d_e_r_s_e_x_c_e_e_d_e_d_action\x18C \x01(\tR,riskErrorsRISKMAXPENDINGORDERSEXCEEDEDAction\x12~\n" +
+	"Irisk_errors_r_i_s_k_m_a_x_p_e_n_d_i_n_g_o_r_d_e_r_s_e_x_c_e_e_d_e_d_title\x18D \x01(\tR+riskErrorsRISKMAXPENDINGORDERSEXCEEDEDTitle\x12e\n" +
+	"8risk_errors_r_i_s_k_o_r_d_e_r_f_r_o_z_e_n_z_o_n_e_action\x18E \x01(\tR#riskErrorsRISKORDERFROZENZONEAction\x12c\n" +
+	"7risk_errors_r_i_s_k_o_r_d_e_r_f_r_o_z_e_n_z_o_n_e_title\x18F \x01(\tR\"riskErrorsRISKORDERFROZENZONETitle\x12t\n" +
+	"Brisk_errors_r_i_s_k_o_r_d_e_r_t_y_p_e_u_n_s_u_p_p_o_r_t_e_d_action\x18G \x01(\tR(riskErrorsRISKORDERTYPEUNSUPPORTEDAction\x12r\n" +
+	"Arisk_errors_r_i_s_k_o_r_d_e_r_t_y_p_e_u_n_s_u_p_p_o_r_t_e_d_title\x18H \x01(\tR'riskErrorsRISKORDERTYPEUNSUPPORTEDTitle\x12t\n" +
+	"Brisk_errors_r_i_s_k_s_t_o_p_d_i_s_t_a_n_c_e_t_o_o_c_l_o_s_e_action\x18I \x01(\tR(riskErrorsRISKSTOPDISTANCETOOCLOSEAction\x12r\n" +
+	"Arisk_errors_r_i_s_k_s_t_o_p_d_i_s_t_a_n_c_e_t_o_o_c_l_o_s_e_title\x18J \x01(\tR'riskErrorsRISKSTOPDISTANCETOOCLOSETitle\x12q\n" +
+	"@risk_errors_r_i_s_k_s_y_m_b_o_l_t_r_a_d_e_d_i_s_a_b_l_e_d_action\x18K \x01(\tR'riskErrorsRISKSYMBOLTRADEDISABLEDAction\x12o\n" +
+	"?risk_errors_r_i_s_k_s_y_m_b_o_l_t_r_a_d_e_d_i_s_a_b_l_e_d_title\x18L \x01(\tR&riskErrorsRISKSYMBOLTRADEDISABLEDTitle\x12_\n" +
+	"4risk_errors_r_i_s_k_v_o_l_u_m_e_i_n_v_a_l_i_d_action\x18M \x01(\tR!riskErrorsRISKVOLUMEINVALIDAction\x12]\n" +
+	"3risk_errors_r_i_s_k_v_o_l_u_m_e_i_n_v_a_l_i_d_title\x18N \x01(\tR riskErrorsRISKVOLUMEINVALIDTitle\x12;\n" +
 	"\x1arisk_errors_unknown_action\x18O \x01(\tR\x17riskErrorsUnknownAction\x129\n" +
 	"\x19risk_errors_unknown_title\x18P \x01(\tR\x16riskErrorsUnknownTitle\x12F\n" +
 	" risk_config_confirm_confirm_text\x18Q \x01(\tR\x1criskConfigConfirmConfirmText\x12E\n" +
