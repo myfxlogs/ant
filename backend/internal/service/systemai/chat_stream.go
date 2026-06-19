@@ -76,6 +76,12 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 		if errBody != "" {
 			msg += " (" + errBody + ")"
 		}
+		// Auto-fallback: if streaming is not supported, retry same provider
+		// without streaming. Transparent to the caller — the frontend still
+		// receives chunks via onChunk (as a single full-content chunk).
+		if resp.StatusCode == 400 && isStreamingNotSupportedError(errBody) {
+			return s.fallbackNonStream(ctx, p, messages, onChunk)
+		}
 		if transient {
 			recordProviderFailure(p.userID, p.providerID)
 		}
@@ -133,6 +139,32 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 		s.tokenRecorder(ctx, TokenRecord{
 			UserID: p.userID, ProviderID: p.providerID, Model: p.model,
 			Feature: feature, InputTokens: streamUsage.PromptTokens, OutputTokens: streamUsage.CompletionTokens,
+		})
+	}
+	return nil
+}
+
+// fallbackNonStream retries the chat completion on the same provider with
+// streaming disabled, then delivers the full content as a single chunk.
+// Used when the provider returns 400 "streaming not supported".
+func (s *Service) fallbackNonStream(ctx context.Context, p chatProvider, messages []ChatMessage, onChunk func(chunk ChatStreamChunk) error) error {
+	result, usage, err := s.tryChatCompletion(ctx, p, messages)
+	if err != nil {
+		return err
+	}
+	// Deliver as a single chunk (frontend stream consumers handle this).
+	if err := onChunk(ChatStreamChunk{Content: result, Done: true}); err != nil {
+		return err
+	}
+	// Record token usage from the non-streaming fallback.
+	if s.tokenRecorder != nil && usage != nil {
+		feature := "chat"
+		if v := ctx.Value(aiFeatureKey{}); v != nil {
+			feature = v.(string)
+		}
+		s.tokenRecorder(ctx, TokenRecord{
+			UserID: p.userID, ProviderID: p.providerID, Model: p.model,
+			Feature: feature, InputTokens: usage.PromptTokens, OutputTokens: usage.CompletionTokens,
 		})
 	}
 	return nil

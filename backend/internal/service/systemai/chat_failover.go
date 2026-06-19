@@ -141,6 +141,19 @@ func isContentTooLongError(body string) bool {
 		strings.Contains(low, "reduce the length") ||
 		strings.Contains(low, "context_length_exceeded")
 }
+
+// isStreamingNotSupportedError checks whether a provider error body indicates
+// the model doesn't support SSE streaming. When true, the caller should retry
+// the same provider with streaming=false rather than failing over.
+func isStreamingNotSupportedError(body string) bool {
+	low := strings.ToLower(body)
+	return strings.Contains(low, "streaming is not supported") ||
+		strings.Contains(low, "does not support streaming") ||
+		strings.Contains(low, "streaming not available") ||
+		strings.Contains(low, "streaming disabled") ||
+		strings.Contains(low, "streaming is disabled")
+}
+
 // readAPIErrorBody reads up to 8 KiB of a non-2xx response body and extracts
 // a human-readable error message (OpenAI-compatible error JSON or raw text).
 func readAPIErrorBody(resp *http.Response) string {
