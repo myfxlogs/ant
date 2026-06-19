@@ -141,7 +141,7 @@ export const StrategyTemplateCodeViewModal: React.FC<StrategyTemplateCodeViewMod
 	const { t } = useTranslation();
 	return (
 		<Modal
-			title={t(CODE_MODAL_TRADING_TITLE_KEY)}
+			title={t(CODE_MODAL_TITLE_KEY)}
 			open={open}
 			onCancel={onClose}
 			footer={[

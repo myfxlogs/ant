@@ -37,14 +37,14 @@ export default function AccountMetricsCards({
         <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
           <div className="flex items-center gap-2 mb-1">
             <LineChartOutlined style={{ color: 'var(--color-text-muted)', fontSize: 14 }} />
-            <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t(DETAIL_CARDS_TRADING_EQUITY_KEY)}</span>
+            <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t(DETAIL_CARDS_EQUITY_KEY)}</span>
           </div>
           {isStreamLoading
             ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
             : <div className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>{formatCurrency(equity)}</div>
           }
           <div style={{ color: 'var(--color-text-muted)', fontSize: 11, marginTop: 2 }}>
-            {t(DETAIL_CARDS_TRADING_BALANCE_KEY)}: {formatCurrency(balance)}
+            {t(DETAIL_CARDS_BALANCE_KEY)}: {formatCurrency(balance)}
           </div>
         </div>
 
@@ -52,7 +52,7 @@ export default function AccountMetricsCards({
         <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
           <div className="flex items-center gap-2 mb-1">
             {profit >= 0 ? <RiseOutlined style={{ color: 'var(--color-success)', fontSize: 14 }} /> : <FallOutlined style={{ color: 'var(--color-danger)', fontSize: 14 }} />}
-            <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t(DETAIL_CARDS_FLOATING_TRADING_PROFIT_KEY)}</span>
+            <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t(DETAIL_CARDS_FLOATING_PROFIT_KEY)}</span>
           </div>
           {isStreamLoading
             ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
@@ -71,7 +71,7 @@ export default function AccountMetricsCards({
         <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
           <div className="flex items-center gap-2 mb-1">
             <PercentageOutlined style={{ color: 'var(--color-text-muted)', fontSize: 14 }} />
-            <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t(DETAIL_CARDS_TRADING_MARGIN_LEVEL_KEY)}</span>
+            <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t(DETAIL_CARDS_MARGIN_LEVEL_KEY)}</span>
           </div>
           {isStreamLoading
             ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
@@ -93,7 +93,7 @@ export default function AccountMetricsCards({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <SmallInfoCard
           icon={<WalletOutlined style={{ color: 'var(--color-text-muted)', fontSize: 13 }} />}
-          label={t(DETAIL_CARDS_TRADING_BALANCE_KEY)}
+          label={t(DETAIL_CARDS_BALANCE_KEY)}
           value={formatCurrency(balance)}
           loading={isStreamLoading}
         />

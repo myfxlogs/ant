@@ -82,7 +82,7 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
 
   const metricTitleMap: Record<MetricType, string> = {
     change: t(ANALYTICS_MONTHLY_ANALYSIS_METRICS_CHANGE_KEY),
-    profit: t(ANALYTICS_MONTHLY_ANALYSIS_METRICS_TRADING_PROFIT_KEY),
+    profit: t(ANALYTICS_MONTHLY_ANALYSIS_METRICS_PROFIT_KEY),
     lots: t(ANALYTICS_MONTHLY_ANALYSIS_METRICS_LOTS_KEY),
     pips: t(ANALYTICS_MONTHLY_ANALYSIS_METRICS_PIPS_KEY),
   };
@@ -172,7 +172,7 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <div className="flex items-center gap-1">
           <span className="text-sm font-semibold px-3 py-1" style={{ color: 'var(--color-text-muted)' }}>
-            {t(ANALYTICS_MONTHLY_ANALYSIS_TRADING_TITLE_KEY)}
+            {t(ANALYTICS_MONTHLY_ANALYSIS_TITLE_KEY)}
           </span>
           <div className="flex items-center gap-0.5 rounded-md p-0.5" style={{ background: 'var(--color-bg-secondary)' }}>
             {years.map((year) => (
@@ -214,7 +214,7 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
 
       {/* Chart title */}
       <div className="text-center text-xs font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-        {t(ANALYTICS_MONTHLY_ANALYSIS_CHART_MAIN_TRADING_TITLE_KEY, { metric: metricTitleMap[selectedMetric] })}
+        {t(ANALYTICS_MONTHLY_ANALYSIS_CHART_MAIN_TITLE_KEY, { metric: metricTitleMap[selectedMetric] })}
       </div>
 
       {/* myfxbook 2×2 grid: Row1=Chart+RiskReward, Row2=Popularity+HoldingSplit */}

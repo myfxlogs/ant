@@ -87,7 +87,7 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
     <div style={{ border: '1px solid #f0f0f0', borderRadius: 6, padding: 8, background: '#fff' }}>
       <Space style={{ marginBottom: 6 }}>
         <RobotOutlined />
-        <span>{t(AI_REVISE_TRADING_TITLE_KEY, { defaultValue: 'AI assistant' })}</span>
+        <span>{t(AI_REVISE_TITLE_KEY, { defaultValue: 'AI assistant' })}</span>
       </Space>
       <div style={{ maxHeight: 200, overflow: 'auto', marginBottom: 6 }}>
         {messagesView}

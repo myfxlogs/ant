@@ -46,9 +46,9 @@ export function EquityChart({ chartType, chartPeriod, data }: Props) {
         <YAxis yAxisId="left" stroke="var(--color-text-muted)" fontSize={11} />
         {hasDrawdown && <YAxis yAxisId="right" orientation="right" stroke="var(--color-danger)" fontSize={11} reversed domain={[100, 0]} />}
         <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
-        {chartType === 'equity' && <Area yAxisId="left" type="monotone" dataKey="equity" stroke="var(--color-primary)" strokeWidth={2} fillOpacity={1} fill="url(#colorEquityGradient)" name={t(ANALYTICS_CHART_SERIES_TRADING_EQUITY_KEY)} isAnimationActive={false} />}
-        {chartType === 'balance' && <Area yAxisId="left" type="monotone" dataKey="balance" stroke="var(--color-info)" strokeWidth={2} fillOpacity={1} fill="url(#colorBalanceGradient)" name={t(ANALYTICS_CHART_SERIES_TRADING_BALANCE_KEY)} isAnimationActive={false} />}
-        {chartType === 'profit' && <Area yAxisId="left" type="monotone" dataKey="profit" stroke="var(--color-success)" strokeWidth={2} fillOpacity={1} fill="url(#colorProfitGradient)" name={t(ANALYTICS_CHART_SERIES_TRADING_PROFIT_KEY)} isAnimationActive={false} />}
+        {chartType === 'equity' && <Area yAxisId="left" type="monotone" dataKey="equity" stroke="var(--color-primary)" strokeWidth={2} fillOpacity={1} fill="url(#colorEquityGradient)" name={t(ANALYTICS_CHART_SERIES_EQUITY_KEY)} isAnimationActive={false} />}
+        {chartType === 'balance' && <Area yAxisId="left" type="monotone" dataKey="balance" stroke="var(--color-info)" strokeWidth={2} fillOpacity={1} fill="url(#colorBalanceGradient)" name={t(ANALYTICS_CHART_SERIES_BALANCE_KEY)} isAnimationActive={false} />}
+        {chartType === 'profit' && <Area yAxisId="left" type="monotone" dataKey="profit" stroke="var(--color-success)" strokeWidth={2} fillOpacity={1} fill="url(#colorProfitGradient)" name={t(ANALYTICS_CHART_SERIES_PROFIT_KEY)} isAnimationActive={false} />}
         {hasDrawdown && <Line yAxisId="right" type="monotone" dataKey="drawdown" stroke="var(--color-danger)" strokeWidth={1.5} dot={false} name="DD%" isAnimationActive={false} />}
       </Chart>
     </ResponsiveContainer>

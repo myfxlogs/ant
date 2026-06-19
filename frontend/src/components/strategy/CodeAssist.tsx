@@ -108,7 +108,7 @@ export const RequiredParamsForm: React.FC<RequiredParamsFormProps> = ({ paramete
 					type="warning"
 					showIcon
 					style={{ marginBottom: 8 }}
-					message={t(REQUIRED_PARAMS_TRADING_TITLE_KEY, { defaultValue: 'Required parameters' })}
+					message={t(REQUIRED_PARAMS_TITLE_KEY, { defaultValue: 'Required parameters' })}
 					description={t(REQUIRED_PARAMS_DESC_KEY, {
 						defaultValue: 'The strategy reads these parameters but no default was provided. Fill them in before saving.',
 					})}
@@ -149,7 +149,7 @@ export const RequiredParamsForm: React.FC<RequiredParamsFormProps> = ({ paramete
 							type="info"
 							showIcon
 							style={{ marginTop: 8, marginBottom: 8 }}
-							message={t(OPTIONAL_PARAMS_TRADING_TITLE_KEY, { defaultValue: 'Optional parameters' })}
+							message={t(OPTIONAL_PARAMS_TITLE_KEY, { defaultValue: 'Optional parameters' })}
 							description={t(OPTIONAL_PARAMS_DESC_KEY, {
 								defaultValue:
 									'These parameters already have defaults from the code. Leave a field blank to use the default, or override it for this run only — the saved strategy is not modified.',

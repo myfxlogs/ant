@@ -179,7 +179,7 @@ function AccountAnalyticsSection(props: Props) {
             style={{ background: 'none', border: 'none', padding: 0, color: 'var(--color-text)' }}
           >
             <h2 className="text-base font-semibold flex items-center gap-2 m-0" style={{ color: 'var(--color-text)' }}>
-              <TrophyOutlined />{t(ANALYTICS_ADVANCED_STATS_TRADING_TITLE_KEY)}
+              <TrophyOutlined />{t(ANALYTICS_ADVANCED_STATS_TITLE_KEY)}
             </h2>
             {statsExpanded
               ? <DownOutlined style={{ fontSize: 12, color: 'var(--color-text-muted)' }} />
@@ -192,7 +192,7 @@ function AccountAnalyticsSection(props: Props) {
               <StatCell label={t(ANALYTICS_STATS_PROFIT_FACTOR_KEY)} value={`${(stats.profitFactor || 0).toFixed(2)}`} color="var(--color-primary)" />
               <StatCell label={t(ANALYTICS_STATS_MAX_DRAWDOWN_KEY)} value={`${(risks.maxDrawdownPercent || 0).toFixed(2)}%`} color="var(--color-danger)" />
               <StatCell label={t(ANALYTICS_STATS_TOTAL_TRADES_KEY)} value={`${stats.totalTrades || 0}`} />
-              <StatCell label={t(ANALYTICS_STATS_AVG_TRADING_PROFIT_KEY)} value={`+${(stats.averageProfit || 0).toFixed(2)}`} color="var(--color-success)" />
+              <StatCell label={t(ANALYTICS_STATS_AVG_PROFIT_KEY)} value={`+${(stats.averageProfit || 0).toFixed(2)}`} color="var(--color-success)" />
               <StatCell label={t(ANALYTICS_STATS_AVG_LOSS_KEY)} value={`${(stats.averageLoss || 0).toFixed(2)}`} color="var(--color-danger)" />
               <StatCell label={t(ANALYTICS_STATS_AVG_HOLDING_KEY)} value={formatHoldingTime(stats.averageHoldingTime) || '-'} />
               <StatCell label={t(ANALYTICS_STATS_CONSECUTIVE_WINS_LOSSES_KEY)} value={`${stats.maxConsecutiveWins || 0}/${stats.maxConsecutiveLosses || 0}`} />
@@ -203,7 +203,7 @@ function AccountAnalyticsSection(props: Props) {
               <StatCell label={t(ANALYTICS_STATS_LARGEST_LOSS_KEY)} value={`${(stats.largestLoss || 0).toFixed(2)}`} color="var(--color-danger)" />
               <StatCell label={t(ANALYTICS_STATS_AVG_DAILY_RETURN_KEY)} value={`${(risks.averageDailyReturn || 0).toFixed(2)}`} />
               <StatCell label={t(ANALYTICS_STATS_VOLATILITY_KEY)} value={`${(risks.volatility || 0).toFixed(2)}`} color="var(--color-info)" />
-              <StatCell label={t(ANALYTICS_STATS_NET_TRADING_PROFIT_KEY)} value={`${(stats.netProfit || 0).toFixed(2)}`} color={(stats.netProfit || 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
+              <StatCell label={t(ANALYTICS_STATS_NET_PROFIT_KEY)} value={`${(stats.netProfit || 0).toFixed(2)}`} color={(stats.netProfit || 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
               <StatCell label={t(ANALYTICS_STATS_TOTAL_DEPOSIT_KEY)} value={`+${(stats.totalDeposit || 0).toFixed(2)}`} />
               <StatCell label={t(ANALYTICS_STATS_TOTAL_WITHDRAWAL_KEY)} value={`-${(stats.totalWithdrawal || 0).toFixed(2)}`} />
               <StatCell label={t(ANALYTICS_STATS_NET_DEPOSIT_KEY)} value={`${(stats.netDeposit || 0).toFixed(2)}`} color={(stats.netDeposit || 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />

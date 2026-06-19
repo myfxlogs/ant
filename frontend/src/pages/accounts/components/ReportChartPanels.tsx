@@ -95,7 +95,7 @@ export default function ReportChartPanels({
                   <div key={label} className="rounded-xl p-4" style={{ border: '1px solid var(--color-border)' }}>
                     <Text strong style={{ color }}>{label}</Text>
                     <div className="mt-2 space-y-1" style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
-                      <div>{t(ANALYTICS_STATS_NET_TRADING_PROFIT_KEY)}: <strong style={{ color: d.profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{d.profit >= 0 ? '+' : ''}{d.profit.toFixed(2)}</strong></div>
+                      <div>{t(ANALYTICS_STATS_NET_PROFIT_KEY)}: <strong style={{ color: d.profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{d.profit >= 0 ? '+' : ''}{d.profit.toFixed(2)}</strong></div>
                       <div>{t(ANALYTICS_STATS_TOTAL_TRADES_KEY)}: {d.trades}</div>
                       <div>{t(ANALYTICS_STATS_WIN_RATE_KEY)}: {d.winRate.toFixed(1)}%</div>
                     </div>

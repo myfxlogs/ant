@@ -110,7 +110,7 @@ export default function BindAccount() {
 
   const handleVerify = async () => {
     if (!selectedCompany || !selectedServer) { showWarning(t(BIND_MESSAGES_SELECT_SERVER_KEY)); return; }
-    if (!login.trim()) { showWarning(t(BIND_MESSAGES_ENTER_TRADING_TRADING_ACCOUNT_KEY)); return; }
+    if (!login.trim()) { showWarning(t(BIND_MESSAGES_ENTER_ACCOUNT_KEY)); return; }
     if (!password.trim()) { showWarning(t(BIND_MESSAGES_ENTER_PASSWORD_KEY)); return; }
     if (!selectedServer.access || selectedServer.access.length === 0) { showError(t(BIND_MESSAGES_NO_ACCESS_HOSTS_KEY)); return; }
     setVerifying(true); setVerifyError(''); setVerifyResult(null);
@@ -167,7 +167,7 @@ export default function BindAccount() {
       <div className="max-w-xl mx-auto p-4">
         <div className="flex items-center gap-4 mb-8">
           <Button type="text" icon={<ArrowLeftOutlined style={{ fontSize: 20 }} />} onClick={() => navigate('/')} style={{ color: 'var(--color-text-muted)' }} />
-          <h1 className="text-2xl font-bold" style={{ fontFamily: 'Poppins, sans-serif', color: 'var(--color-text)' }}>{t(BIND_TRADING_TITLE_KEY)}</h1>
+          <h1 className="text-2xl font-bold" style={{ fontFamily: 'Poppins, sans-serif', color: 'var(--color-text)' }}>{t(BIND_TITLE_KEY)}</h1>
         </div>
         <div className="rounded-2xl p-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
           {renderStepIndicator()}

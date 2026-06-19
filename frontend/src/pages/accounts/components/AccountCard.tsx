@@ -120,7 +120,7 @@ export default function AccountCard({
       danger: true,
       onClick: () => {
         Modal.confirm({
-          title: t(CARD_DELETE_CONFIRM_TRADING_TITLE_KEY),
+          title: t(CARD_DELETE_CONFIRM_TITLE_KEY),
           content: t(CARD_DELETE_CONFIRM_CONTENT_KEY),
           okText: t('common.confirm'),
           cancelText: t('common.cancel'),
@@ -180,13 +180,13 @@ export default function AccountCard({
 
         <div className="space-y-2 mb-4">
           <div className="flex justify-between">
-            <span style={{ color: 'var(--color-text-muted)' }}>{t(CARD_FIELDS_TRADING_BALANCE_KEY)}</span>
+            <span style={{ color: 'var(--color-text-muted)' }}>{t(CARD_FIELDS_BALANCE_KEY)}</span>
             <span className="font-medium" style={{ color: balanceDisplay.color }}>
               {balanceDisplay.text}
             </span>
           </div>
           <div className="flex justify-between">
-            <span style={{ color: 'var(--color-text-muted)' }}>{t(CARD_FIELDS_TRADING_EQUITY_KEY)}</span>
+            <span style={{ color: 'var(--color-text-muted)' }}>{t(CARD_FIELDS_EQUITY_KEY)}</span>
             <span className="font-medium" style={{ color: equityDisplay.color }}>
               {equityDisplay.text}
             </span>
@@ -212,7 +212,7 @@ export default function AccountCard({
             onClick={() => onNavigateToTrading(account.id)}
             style={{ borderRadius: '6px' }}
           >
-            {t(CARD_ACTIONS_TRADING_POSITIONS_KEY)}
+            {t(CARD_ACTIONS_POSITIONS_KEY)}
           </Button>
           <Button
             size="small"

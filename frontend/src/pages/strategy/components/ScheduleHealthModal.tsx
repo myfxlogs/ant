@@ -19,7 +19,7 @@ export default function ScheduleHealthModal({ open, target, loading, summary, on
   const { t } = useTranslation();
   return (
     <Modal
-      title={t(HEALTH_TRADING_TITLE_KEY, { name: (target?.name as string) || '' })}
+      title={t(HEALTH_TITLE_KEY, { name: (target?.name as string) || '' })}
       open={open} onCancel={onClose} width={980}
       footer={[
         <Button key="refresh" onClick={onRefresh} loading={loading}>{t('common.refresh')}</Button>,

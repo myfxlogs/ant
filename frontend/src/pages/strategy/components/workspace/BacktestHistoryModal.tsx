@@ -75,7 +75,7 @@ const BacktestHistoryModal: React.FC<Props> = ({
       render: (s: unknown) => <Tag color={statusColor(s)}>{statusText(s, t)}</Tag>,
     },
     {
-      title: t(BACKTEST_RUNS_TABLE_TRADING_SYMBOL_KEY, 'Symbol'),
+      title: t(BACKTEST_RUNS_TABLE_SYMBOL_KEY, 'Symbol'),
       dataIndex: 'symbol',
       key: 'symbol',
       width: 110,
@@ -119,7 +119,7 @@ const BacktestHistoryModal: React.FC<Props> = ({
 
   return (
     <Modal
-      title={t(BACKTEST_RUNS_TRADING_TITLE_KEY, 'Backtest History')}
+      title={t(BACKTEST_RUNS_TITLE_KEY, 'Backtest History')}
       open={open}
       onCancel={onClose}
       width={1100}

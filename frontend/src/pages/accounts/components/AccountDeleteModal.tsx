@@ -21,7 +21,7 @@ export default function AccountDeleteModal({
 
   return (
     <Modal
-      title={t(DETAIL_ACTIONS_DELETE_TRADING_ACCOUNT_KEY)}
+      title={t(DETAIL_ACTIONS_DELETE_ACCOUNT_KEY)}
       open={open}
       onOk={onDelete}
       onCancel={onCancel}

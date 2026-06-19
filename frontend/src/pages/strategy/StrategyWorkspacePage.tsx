@@ -100,7 +100,7 @@ export default function StrategyWorkspacePage() {
             />
             <AIChatPanel code={ws.code.code} symbol={ws.account.symbol} timeframe={ws.account.timeframe} onApply={ws.code.setCode} initialPrompt={ws.ai.optimizePrompt} autoApply={ws.ai.chatAutoApply} sessionId={sessionId} chatHistory={chatHistory} />
             <Collapse ghost size="small" style={{ background: 'transparent' }} items={[
-              { key: 'template', label: t(TEMPLATE_TRADING_TITLE_KEY, 'Template'), children: <WorkspaceTemplateManager templates={ws.code.templates} loading={ws.code.templatesLoading} loadedTemplate={ws.code.loadedTemplate} onLoad={ws.code.handleLoadTemplate} onSaveAs={ws.code.handleSaveAs} /> },
+              { key: 'template', label: t(TEMPLATE_TITLE_KEY, 'Template'), children: <WorkspaceTemplateManager templates={ws.code.templates} loading={ws.code.templatesLoading} loadedTemplate={ws.code.loadedTemplate} onLoad={ws.code.handleLoadTemplate} onSaveAs={ws.code.handleSaveAs} /> },
             ]} />
           </div>
         )}
@@ -121,7 +121,7 @@ export default function StrategyWorkspacePage() {
               borderBottom: '1px solid ' + C.border,
             }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
-                {t(OPEN_TRADING_POSITIONS_KEY, { count: ws.quickTrade.allPositions.length })}
+                {t(OPEN_POSITIONS_KEY, { count: ws.quickTrade.allPositions.length })}
               </span>
               <span onClick={() => ws.layout.setPositionsPanelVisible(false)} role="button" tabIndex={0}
                 onKeyUp={e => e.key === 'Enter' && ws.layout.setPositionsPanelVisible(false)}
@@ -132,7 +132,7 @@ export default function StrategyWorkspacePage() {
                 <MiniPositionsTable positions={ws.quickTrade.allPositions} onClosePosition={ws.quickTrade.handleClosePosition} />
               ) : (
                 <div style={{ textAlign: 'center', padding: 40, color: '#8c8c8c', fontSize: 13 }}>
-                  {t(NO_OPEN_TRADING_POSITIONS_KEY)}
+                  {t(NO_OPEN_POSITIONS_KEY)}
                 </div>
               )}
             </div>

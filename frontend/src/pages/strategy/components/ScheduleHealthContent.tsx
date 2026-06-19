@@ -53,7 +53,7 @@ export default function ScheduleHealthContent({ summary, loading, formatTime }: 
         <Descriptions.Item label={t(HEALTH_FIELDS_LATEST_TICKET_KEY)}>{summary?.latestOrderTicket as string || '-'}</Descriptions.Item>
         <Descriptions.Item label={t(HEALTH_FIELDS_SUCCESS_OVER_TOTAL_KEY)}>{summary ? `${summary.successRuns}/${summary.totalRuns}` : '-'}</Descriptions.Item>
         <Descriptions.Item label={t(HEALTH_FIELDS_FAILED_RUNS_KEY)}>{summary ? (summary.failedRuns as number) : '-'}</Descriptions.Item>
-        <Descriptions.Item label={t(HEALTH_FIELDS_LATEST_TRADING_PROFIT_KEY)}>{summary?.latestOrderProfit != null ? (summary.latestOrderProfit as number).toFixed(2) : '-'}</Descriptions.Item>
+        <Descriptions.Item label={t(HEALTH_FIELDS_LATEST_PROFIT_KEY)}>{summary?.latestOrderProfit != null ? (summary.latestOrderProfit as number).toFixed(2) : '-'}</Descriptions.Item>
         <Descriptions.Item label={t(HEALTH_FIELDS_LATEST_ERROR_KEY)}>{(summary?.latestError as string) || '-'}</Descriptions.Item>
       </Descriptions>
 
@@ -61,9 +61,9 @@ export default function ScheduleHealthContent({ summary, loading, formatTime }: 
       <Table scroll={{ x: 'max-content' }} rowKey={(row) => String(row?.id || '')} size="small" loading={loading} pagination={false}
         dataSource={(summary?.runLogs || []) as Record<string, unknown>[]}
         columns={[
-          { title: t(EXEC_TABLE_TRADING_TIME_KEY), key: 'createdAt', width: 180, render: (_: unknown, row: { createdAt?: string | Date }) => formatTime(row?.createdAt) },
+          { title: t(EXEC_TABLE_TIME_KEY), key: 'createdAt', width: 180, render: (_: unknown, row: { createdAt?: string | Date }) => formatTime(row?.createdAt) },
           { title: t(EXEC_TABLE_STATUS_KEY), dataIndex: 'status', key: 'status', width: 120 },
-          { title: t(HEALTH_RUN_LOGS_SIGNAL_TRADING_TYPE_KEY), dataIndex: 'signalType', key: 'signalType', width: 120 },
+          { title: t(HEALTH_RUN_LOGS_SIGNAL_TYPE_KEY), dataIndex: 'signalType', key: 'signalType', width: 120 },
           { title: t(EXEC_TABLE_DURATION_MS_KEY), dataIndex: 'durationMs', key: 'durationMs', width: 110, render: (v: unknown) => toNumber(v) },
           { title: t(EXEC_TABLE_ERROR_KEY), dataIndex: 'errorMessage', key: 'errorMessage', render: (v: unknown) => String(v || '-') },
         ]}
@@ -73,11 +73,11 @@ export default function ScheduleHealthContent({ summary, loading, formatTime }: 
       <Table scroll={{ x: 'max-content' }} rowKey={(row) => String(row?.id || row?.ticket || '')} size="small" loading={loading} pagination={false}
         dataSource={(summary?.orders || []) as Record<string, unknown>[]}
         columns={[
-          { title: t(ORDERS_TABLE_TRADING_TIME_KEY), key: 'time', width: 180, render: (_: unknown, row: Record<string, unknown>) => formatTime(row?.closeTime || row?.openTime) },
+          { title: t(ORDERS_TABLE_TIME_KEY), key: 'time', width: 180, render: (_: unknown, row: Record<string, unknown>) => formatTime(row?.closeTime || row?.openTime) },
           { title: t(ORDERS_TABLE_TICKET_KEY), dataIndex: 'ticket', key: 'ticket', width: 110 },
-          { title: t(ORDERS_TABLE_TRADING_SIDE_KEY), dataIndex: 'orderType', key: 'orderType', width: 110 },
-          { title: t(ORDERS_TABLE_TRADING_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol', width: 120 },
-          { title: t(ORDERS_TABLE_TRADING_PROFIT_KEY), dataIndex: 'profit', key: 'profit', width: 100, render: (v: unknown) => toNumber(v).toFixed(2) },
+          { title: t(ORDERS_TABLE_SIDE_KEY), dataIndex: 'orderType', key: 'orderType', width: 110 },
+          { title: t(ORDERS_TABLE_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol', width: 120 },
+          { title: t(ORDERS_TABLE_PROFIT_KEY), dataIndex: 'profit', key: 'profit', width: 100, render: (v: unknown) => toNumber(v).toFixed(2) },
         ]}
       />
     </Space>

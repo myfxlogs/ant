@@ -179,7 +179,7 @@ export default function PaperAccountPanel() {
       {/* Create account */}
       <Card size="small" style={{ marginBottom: 16, background: '#fafafa' }}>
         <Space direction="vertical" style={{ width: '100%' }}>
-          <Text strong style={{ fontSize: 12 }}>{t(CREATE_TRADING_ACCOUNT_KEY)}</Text>
+          <Text strong style={{ fontSize: 12 }}>{t(CREATE_ACCOUNT_KEY)}</Text>
           <Space>
             <Input size="small" placeholder={t(ACCOUNT_NAME_KEY)} value={createName}
               onChange={e => setCreateName(e.target.value)} style={{ width: 160 }} />

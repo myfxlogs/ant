@@ -106,7 +106,7 @@ export function useBacktestParams() {
     templateId?: string;
   }) => {
     const { code, accountId, symbol, timeframe, templateId } = params;
-    if (!code || !symbol) { message.warning(t(ENTER_CODE_AND_TRADING_SYMBOL_KEY)); return; }
+    if (!code || !symbol) { message.warning(t(ENTER_CODE_AND_SYMBOL_KEY)); return; }
     setSubmitting(true);
     try {
       const result = await pythonStrategyApi.startBacktestRun({

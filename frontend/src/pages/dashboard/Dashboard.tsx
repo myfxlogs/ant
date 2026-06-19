@@ -60,7 +60,7 @@ export default function Dashboard() {
             {t(WELCOME_KEY, { name: getDisplayName() })}
           </h1>
           <p className="mt-1" style={{ color: 'var(--color-text-muted)' }}>
-            {t(SUBTRADING_TITLE_KEY)}
+            {t(SUBTITLE_KEY)}
             <span className="ml-3 inline-flex items-center gap-1" style={{ fontSize: 12, color: streamConnected ? '#00A651' : '#E53935' }}>
               {streamConnected ? <WifiOutlined size={14} /> : <DisconnectOutlined size={14} />}
               {streamConnected ? t(STREAM_LIVE_KEY) : t(STREAM_OFFLINE_KEY)}
@@ -68,7 +68,7 @@ export default function Dashboard() {
           </p>
         </div>
         <Button type="primary" icon={<PlusOutlined size={16} />} onClick={() => navigate('/accounts/bind')}
-          style={{ background: PRIMARY_GRADIENT, border: 'none' }}>{t(BIND_TRADING_ACCOUNT_KEY)}</Button>
+          style={{ background: PRIMARY_GRADIENT, border: 'none' }}>{t(BIND_ACCOUNT_KEY)}</Button>
       </div>
 
       <div className="rounded-2xl p-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
@@ -81,7 +81,7 @@ export default function Dashboard() {
           <DashboardAccountList accounts={accts} loading={localLoading} error={loadError} onRetry={fetchAccounts} />
         </Col>
         <Col xs={24} lg={8}>
-          <Card title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t(QUICK_ACTIONS_TRADING_TITLE_KEY)}</span>} className="glass-card h-full">
+          <Card title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t(QUICK_ACTIONS_TITLE_KEY)}</span>} className="glass-card h-full">
             <div className="grid grid-cols-2 gap-3">
               {quickActions.map((action) => (
                 <div key={action.key} onClick={() => navigate(action.path)}

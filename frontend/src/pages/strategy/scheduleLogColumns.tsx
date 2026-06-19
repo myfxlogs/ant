@@ -44,7 +44,7 @@ export function renderMs(v: unknown) {
 
 export function renderOperationAction(v: unknown, t: (key: string, opts?: unknown) => string) {
   const s = String(v || '').toLowerCase();
-  const map: Record<string, string> = { start: t(ACTION_START_KEY), stop: t(ACTION_TRADING_STOP_KEY), restart: t(ACTION_RESTART_KEY) };
+  const map: Record<string, string> = { start: t(ACTION_START_KEY), stop: t(ACTION_STOP_KEY), restart: t(ACTION_RESTART_KEY) };
   return <Text>{map[s] || s.toUpperCase()}</Text>;
 }
 
@@ -58,8 +58,8 @@ export function renderOperationStatus(v: unknown, t: (key: string, opts?: unknow
 export function renderOrderTypeTag(value: string, t: (key: string, opts?: unknown) => string) {
   if (!value) return <Text>-</Text>;
   const s = value.toLowerCase();
-  if (s === 'buy' || s === 'market_buy') return <Tag color="green">{t(ORDER_SIDE_TRADING_BUY_KEY)}</Tag>;
-  if (s === 'sell' || s === 'market_sell') return <Tag color="red">{t(ORDER_SIDE_TRADING_SELL_KEY)}</Tag>;
+  if (s === 'buy' || s === 'market_buy') return <Tag color="green">{t(ORDER_SIDE_BUY_KEY)}</Tag>;
+  if (s === 'sell' || s === 'market_sell') return <Tag color="red">{t(ORDER_SIDE_SELL_KEY)}</Tag>;
   return <Tag>{value.toUpperCase()}</Tag>;
 }
 
@@ -67,7 +67,7 @@ interface ColOpts { t: TFunction; formatTime: (v: unknown) => string; }
 
 export function buildExecColumns({ t, formatTime }: ColOpts): ColumnsType<ScheduleRunLog> {
   return [
-    { title: t(EXEC_TABLE_TRADING_TIME_KEY), dataIndex: 'createdAt', key: 'createdAt', width: 180, render: (_v: unknown, row: ScheduleRunLog) => <Text>{formatTime(row?.createdAt)}</Text> },
+    { title: t(EXEC_TABLE_TIME_KEY), dataIndex: 'createdAt', key: 'createdAt', width: 180, render: (_v: unknown, row: ScheduleRunLog) => <Text>{formatTime(row?.createdAt)}</Text> },
     { title: t(EXEC_TABLE_ACTION_KEY), key: 'action', width: 160, render: (_: unknown, row: ScheduleRunLog) => {
       if (String(row?.kind || '').toLowerCase() === 'operation') return renderOperationAction(row?.action, t);
       const st = String(row?.signalType || row?.action || '').toLowerCase();
@@ -89,13 +89,13 @@ export function buildExecColumns({ t, formatTime }: ColOpts): ColumnsType<Schedu
 
 export function buildOrderColumns({ t, formatTime }: ColOpts): ColumnsType<OrderHistoryRecord> {
   return [
-    { title: t(ORDERS_TABLE_TRADING_TIME_KEY), key: 'time', width: 180, render: (_: unknown, row: ScheduleRunLog) => <Text>{formatTime(row?.closeTime || row?.openTime)}</Text> },
-    { title: t(ORDERS_TABLE_TRADING_SIDE_KEY), dataIndex: 'orderType', key: 'orderType', width: 100, render: (v: unknown) => renderOrderTypeTag(String(v || ''), t) },
-    { title: t(ORDERS_TABLE_TRADING_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol', width: 120, render: (v: unknown) => <Text>{String(v || '-')}</Text> },
+    { title: t(ORDERS_TABLE_TIME_KEY), key: 'time', width: 180, render: (_: unknown, row: ScheduleRunLog) => <Text>{formatTime(row?.closeTime || row?.openTime)}</Text> },
+    { title: t(ORDERS_TABLE_SIDE_KEY), dataIndex: 'orderType', key: 'orderType', width: 100, render: (v: unknown) => renderOrderTypeTag(String(v || ''), t) },
+    { title: t(ORDERS_TABLE_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol', width: 120, render: (v: unknown) => <Text>{String(v || '-')}</Text> },
     { title: t(ORDERS_TABLE_LOTS_KEY), dataIndex: 'lots', key: 'lots', width: 90, render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text> },
-    { title: t(ORDERS_TABLE_OPEN_TRADING_PRICE_KEY), dataIndex: 'openPrice', key: 'openPrice', width: 120, render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text> },
-    { title: t(ORDERS_TABLE_CLOSE_TRADING_PRICE_KEY), dataIndex: 'closePrice', key: 'closePrice', width: 120, render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text> },
-    { title: t(ORDERS_TABLE_TRADING_PROFIT_KEY), dataIndex: 'profit', key: 'profit', width: 120, render: (v: unknown) => {
+    { title: t(ORDERS_TABLE_OPEN_PRICE_KEY), dataIndex: 'openPrice', key: 'openPrice', width: 120, render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text> },
+    { title: t(ORDERS_TABLE_CLOSE_PRICE_KEY), dataIndex: 'closePrice', key: 'closePrice', width: 120, render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text> },
+    { title: t(ORDERS_TABLE_PROFIT_KEY), dataIndex: 'profit', key: 'profit', width: 120, render: (v: unknown) => {
       const n = typeof v === 'number' ? v : Number(v);
       if (!isFinite(n)) return <Text>-</Text>;
       if (n > 0) return <Text style={{ color: '#00A651' }}>{n.toFixed(2)}</Text>;

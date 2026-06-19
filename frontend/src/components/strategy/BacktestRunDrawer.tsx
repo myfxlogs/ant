@@ -104,7 +104,7 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 		() => [
 			{ title: t(TRADES_TICKET_KEY), dataIndex: 'ticket', key: 'ticket', width: 70 },
 			{
-				title: t(TRADES_TRADING_SIDE_KEY),
+				title: t(TRADES_SIDE_KEY),
 				dataIndex: 'side',
 				key: 'side',
 				width: 70,
@@ -112,46 +112,46 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 					const isBuy = String(v).toLowerCase() === 'buy';
 					return (
 						<Tag color={isBuy ? 'green' : 'red'}>
-							{isBuy ? t(TRADES_SIDE_TRADING_BUY_KEY) : t(TRADES_SIDE_TRADING_SELL_KEY)}
+							{isBuy ? t(TRADES_SIDE_BUY_KEY) : t(TRADES_SIDE_SELL_KEY)}
 						</Tag>
 					);
 				},
 			},
 			{
-				title: t(TRADES_TRADING_VOLUME_KEY),
+				title: t(TRADES_VOLUME_KEY),
 				dataIndex: 'volume',
 				key: 'volume',
 				width: 80,
 				render: (v: number) => fmt(v, 2),
 			},
 			{
-				title: t(TRADES_TRADING_OPEN_TRADING_TIME_KEY),
+				title: t(TRADES_OPEN_TIME_KEY),
 				dataIndex: 'open_ts',
 				key: 'open_ts',
 				render: (v: number) => fmtTs(v),
 			},
 			{
-				title: t(TRADES_OPEN_TRADING_PRICE_KEY),
+				title: t(TRADES_OPEN_PRICE_KEY),
 				dataIndex: 'open_price',
 				key: 'open_price',
 				width: 100,
 				render: (v: number) => fmt(v, 5),
 			},
 			{
-				title: t(TRADES_CLOSE_TRADING_TIME_KEY),
+				title: t(TRADES_CLOSE_TIME_KEY),
 				dataIndex: 'close_ts',
 				key: 'close_ts',
 				render: (v: number) => fmtTs(v),
 			},
 			{
-				title: t(TRADES_CLOSE_TRADING_PRICE_KEY),
+				title: t(TRADES_CLOSE_PRICE_KEY),
 				dataIndex: 'close_price',
 				key: 'close_price',
 				width: 100,
 				render: (v: number) => fmt(v, 5),
 			},
 			{
-				title: t(TRADES_TRADING_PNL_KEY),
+				title: t(TRADES_PNL_KEY),
 				dataIndex: 'pnl',
 				key: 'pnl',
 				width: 100,

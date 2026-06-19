@@ -220,7 +220,7 @@ export default function StrategyManagement() {
   const allColumns = [
     { title: t(STRATEGY_COLUMNS_NAME_KEY), dataIndex: 'name', key: 'name', width: 180 },
     { title: t(STRATEGY_COLUMNS_OWNER_KEY), key: 'owner', width: 150, render: (_: unknown, r: StrategySummary) => r.userEmail || r.userId || (r.isSystem ? t(STRATEGY_COLUMNS_SYSTEM_KEY) : '—') },
-    { title: t(STRATEGY_COLUMNS_TRADING_TYPE_KEY), key: 'type', width: 80, render: (_: unknown, r: StrategySummary) => r.isSystem ? <Tag color="gold">{t(STRATEGY_COLUMNS_PRESET_KEY)}</Tag> : <Tag>{t(STRATEGY_COLUMNS_USER_KEY)}</Tag> },
+    { title: t(STRATEGY_COLUMNS_TYPE_KEY), key: 'type', width: 80, render: (_: unknown, r: StrategySummary) => r.isSystem ? <Tag color="gold">{t(STRATEGY_COLUMNS_PRESET_KEY)}</Tag> : <Tag>{t(STRATEGY_COLUMNS_USER_KEY)}</Tag> },
     { title: t(STRATEGY_COLUMNS_STATUS_KEY), dataIndex: 'status', key: 'status', width: 90 },
     { title: t(STRATEGY_COLUMNS_PUBLIC_KEY), key: 'public', width: 80, render: (_: unknown, r: StrategySummary) => r.isPublic ? <Tag color="blue">{t(STRATEGY_COLUMNS_YES_KEY)}</Tag> : <Tag>{t(STRATEGY_COLUMNS_NO_KEY)}</Tag> },
     {

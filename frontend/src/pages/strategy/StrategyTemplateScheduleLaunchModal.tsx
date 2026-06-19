@@ -135,7 +135,7 @@ export const StrategyTemplateScheduleLaunchModal: React.FC<StrategyTemplateSched
 
 	return (
 		<Modal
-			title={t(SCHEDULE_LAUNCH_TRADING_TITLE_KEY)}
+			title={t(SCHEDULE_LAUNCH_TITLE_KEY)}
 			open={open}
 			onCancel={onCancel}
 			footer={null}

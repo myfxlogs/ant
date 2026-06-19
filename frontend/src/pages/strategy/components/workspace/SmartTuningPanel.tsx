@@ -180,7 +180,7 @@ export default function SmartTuningPanel({
             <div style={{ marginTop: 8, padding: 8, borderRadius: 4, background: '#f6f8fa', border: '1px solid #e1e4e8' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span style={{ fontSize: 9, fontWeight: 600, color: '#595959' }}>
-                  {t(PREVIEW_TRADING_TITLE_KEY, { shown: previewRows.length, total: cartesianSize.toLocaleString() })}</span>
+                  {t(PREVIEW_TITLE_KEY, { shown: previewRows.length, total: cartesianSize.toLocaleString() })}</span>
                 {previewTruncated && <Tag color="orange" style={{ fontSize: 8, lineHeight: '14px' }}>{t(TRUNCATED_KEY)}</Tag>}
               </div>
               <Table dataSource={previewRows} rowKey={(_, i) => String(i)} size="small" pagination={false}

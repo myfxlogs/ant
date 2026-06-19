@@ -50,7 +50,7 @@ export default function TriggerModal({
 
   return (
     <Modal
-      title={t(TRIGGER_MODAL_TRADING_TITLE_KEY)}
+      title={t(TRIGGER_MODAL_TITLE_KEY)}
       open={open}
       onCancel={() => {
         if (triggering) return;
@@ -67,7 +67,7 @@ export default function TriggerModal({
             {t('common.close')}
           </Button>
           <Popconfirm
-            title={t(TRIGGER_MODAL_CONFIRM_ORDER_TRADING_TITLE_KEY)}
+            title={t(TRIGGER_MODAL_CONFIRM_ORDER_TITLE_KEY)}
             okText={t(TRIGGER_MODAL_CONFIRM_ORDER_OK_KEY)}
             cancelText={t('common.cancel')}
             onConfirm={onConfirmOrder}
@@ -84,8 +84,8 @@ export default function TriggerModal({
       <Space orientation="vertical" style={{ width: '100%' }}>
         <Descriptions size="small" bordered column={2}>
           <Descriptions.Item label={t(TRIGGER_MODAL_SUMMARY_SCHEDULE_NAME_KEY)}>{triggerContext?.schedule?.name || '-'}</Descriptions.Item>
-          <Descriptions.Item label={t(TRIGGER_MODAL_SUMMARY_TRADING_ACCOUNT_KEY)}>{triggerContext?.accountId || '-'}</Descriptions.Item>
-          <Descriptions.Item label={t(TRIGGER_MODAL_SUMMARY_TRADING_SYMBOL_KEY)}>{triggerContext?.schedule?.symbol || '-'}</Descriptions.Item>
+          <Descriptions.Item label={t(TRIGGER_MODAL_SUMMARY_ACCOUNT_KEY)}>{triggerContext?.accountId || '-'}</Descriptions.Item>
+          <Descriptions.Item label={t(TRIGGER_MODAL_SUMMARY_SYMBOL_KEY)}>{triggerContext?.schedule?.symbol || '-'}</Descriptions.Item>
           <Descriptions.Item label={t(TRIGGER_MODAL_SUMMARY_TIMEFRAME_KEY)}>{triggerContext?.schedule?.timeframe || '-'}</Descriptions.Item>
         </Descriptions>
 

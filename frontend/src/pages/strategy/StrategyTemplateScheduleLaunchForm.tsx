@@ -57,11 +57,11 @@ export const StrategyTemplateScheduleLaunchForm: React.FC<Props> = ({
 
   const noAccountBanner = ctx.accountOptions.length === 0 ? (
     <Alert type="warning" showIcon icon={<ExclamationCircleOutlined />} className="mb-3"
-      message={t(SCHEDULE_LAUNCH_NO_ACCOUNT_TRADING_TITLE_KEY, '还没有可用的交易账号')}
+      message={t(SCHEDULE_LAUNCH_NO_ACCOUNT_TITLE_KEY, '还没有可用的交易账号')}
       description={
         <div>
           {t(SCHEDULE_LAUNCH_NO_ACCOUNT_BODY_KEY, '请先在"账户管理"中添加并绑定 MT4/MT5 账号，账号联机成功后才能上线调度。')}
-          <div className="mt-2"><Button size="small" type="primary" onClick={() => window.open('/accounts/bind', '_blank')}>{t(SCHEDULE_LAUNCH_ACTIONS_ADD_TRADING_ACCOUNT_KEY, '去添加交易账号')}</Button></div>
+          <div className="mt-2"><Button size="small" type="primary" onClick={() => window.open('/accounts/bind', '_blank')}>{t(SCHEDULE_LAUNCH_ACTIONS_ADD_ACCOUNT_KEY, '去添加交易账号')}</Button></div>
         </div>
       }
     />
@@ -69,7 +69,7 @@ export const StrategyTemplateScheduleLaunchForm: React.FC<Props> = ({
 
   const investorBanner = ctx.tradePermission.isInvestor ? (
     <Alert type="error" showIcon icon={<ExclamationCircleOutlined />} className="mb-3"
-      message={t(SCHEDULE_LAUNCH_INVESTOR_WARNING_TRADING_TITLE_KEY, '此账户无交易权限（投资者只读模式）')}
+      message={t(SCHEDULE_LAUNCH_INVESTOR_WARNING_TITLE_KEY, '此账户无交易权限（投资者只读模式）')}
       description={
         <div>
           {t(SCHEDULE_LAUNCH_INVESTOR_WARNING_BODY_KEY, '请填写该账户的交易密码以启用自动下单。')}
@@ -94,7 +94,7 @@ export const StrategyTemplateScheduleLaunchForm: React.FC<Props> = ({
           <Input placeholder={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_NAME_PLACEHOLDER_KEY, '可选，用于在调度列表中区分')} />
         </Form.Item>
 
-        <Form.Item label={t(SCHEDULE_LAUNCH_FORM_TRADING_ACCOUNT_KEY, '交易账户')} name="accountId"
+        <Form.Item label={t(SCHEDULE_LAUNCH_FORM_ACCOUNT_KEY, '交易账户')} name="accountId"
           rules={[{ required: true, message: t('common.required', '必填') }]}>
           <Select showSearch placeholder={t(SCHEDULE_LAUNCH_FORM_ACCOUNT_PLACEHOLDER_KEY, '选择账户')}
             onChange={(v) => { const id = String(v || ''); ctx.setSelectedAccountId(id); ctx.form.setFieldsValue({ symbol: '' }); void onAccountChange?.(id); }}
@@ -107,7 +107,7 @@ export const StrategyTemplateScheduleLaunchForm: React.FC<Props> = ({
           />
         </Form.Item>
 
-        <Form.Item label={t(SCHEDULE_LAUNCH_FORM_TRADING_SYMBOL_KEY, '交易品种')} name="symbol"
+        <Form.Item label={t(SCHEDULE_LAUNCH_FORM_SYMBOL_KEY, '交易品种')} name="symbol"
           rules={[{ required: true, message: t('common.required', '必填') }]}>
           <Select showSearch allowClear loading={symbolsLoading}
             placeholder={symbols.length === 0 && !symbolsLoading ? t(SCHEDULE_LAUNCH_FORM_SYMBOL_PLACEHOLDER_EMPTY_KEY, '请先选择账户') : t(SCHEDULE_LAUNCH_FORM_SYMBOL_PLACEHOLDER_KEY, '搜索品种，如 EURUSD')}
@@ -119,7 +119,7 @@ export const StrategyTemplateScheduleLaunchForm: React.FC<Props> = ({
           <Select options={TIMEFRAMES.map((tf) => ({ value: tf, label: tf }))} />
         </Form.Item>
 
-        <Form.Item label={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TRADING_TYPE_KEY, '调度类型')} name="scheduleType" rules={[{ required: true }]}>
+        <Form.Item label={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPE_KEY, '调度类型')} name="scheduleType" rules={[{ required: true }]}>
           <Select options={[
             { value: 'interval', label: t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPES_INTERVAL_KEY, '固定间隔') },
             { value: 'kline_close', label: t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPES_KLINE_CLOSE_KEY, 'K线收盘触发') },
@@ -142,10 +142,10 @@ export const StrategyTemplateScheduleLaunchForm: React.FC<Props> = ({
 
         <Divider orientation="left" plain>{t(SCHEDULE_LAUNCH_FORM_RISK_SECTION_KEY, '风控参数（可选）')}</Divider>
 
-        <Form.Item label={<Tooltip title={t(SCHEDULE_LAUNCH_FORM_DEFAULT_VOLUME_TIP_KEY, '策略信号里 volume=0 时默认下单量。手数单位。')}><span>{t(SCHEDULE_LAUNCH_FORM_DEFAULT_TRADING_VOLUME_KEY, '默认手数')}</span></Tooltip>} name="defaultVolume">
+        <Form.Item label={<Tooltip title={t(SCHEDULE_LAUNCH_FORM_DEFAULT_VOLUME_TIP_KEY, '策略信号里 volume=0 时默认下单量。手数单位。')}><span>{t(SCHEDULE_LAUNCH_FORM_DEFAULT_VOLUME_KEY, '默认手数')}</span></Tooltip>} name="defaultVolume">
           <InputNumber style={{ width: '100%' }} min={0} step={0.01} placeholder="0.01" />
         </Form.Item>
-        <Form.Item label={<Tooltip title={t(SCHEDULE_LAUNCH_FORM_MAX_POSITIONS_TIP_KEY, '同一品种上允许同时持有的最多持仓数；达到后本次信号跳过。')}><span>{t(SCHEDULE_LAUNCH_FORM_MAX_TRADING_POSITIONS_KEY, '最大持仓数')}</span></Tooltip>} name="maxPositions">
+        <Form.Item label={<Tooltip title={t(SCHEDULE_LAUNCH_FORM_MAX_POSITIONS_TIP_KEY, '同一品种上允许同时持有的最多持仓数；达到后本次信号跳过。')}><span>{t(SCHEDULE_LAUNCH_FORM_MAX_POSITIONS_KEY, '最大持仓数')}</span></Tooltip>} name="maxPositions">
           <InputNumber style={{ width: '100%' }} min={1} step={1} placeholder="不限" />
         </Form.Item>
 

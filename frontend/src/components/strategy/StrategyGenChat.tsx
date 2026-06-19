@@ -88,7 +88,7 @@ export default function StrategyGenChat({ symbol, timeframe, onApply }: Props) {
     return (
       <div style={{ padding: 12, background: '#fffbe6', borderRadius: 6, border: '1px solid #ffe58f' }}>
         <Typography.Text strong style={{ fontSize: 13 }}>
-          {t(CLARIFY_TRADING_TITLE_KEY, '需要确认几个细节：')}
+          {t(CLARIFY_TITLE_KEY, '需要确认几个细节：')}
         </Typography.Text>
         <Space direction="vertical" size={6} style={{ width: '100%', marginTop: 8 }}>
           {questions.map((q, i) => (

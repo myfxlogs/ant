@@ -103,7 +103,7 @@ export function useScheduleLaunchForm({
     try {
       const v = (await form.validateFields()) as ScheduleLaunchFormValues;
       if (tradePermission.verified && tradePermission.isInvestor) {
-        message.error(t(SCHEDULE_LAUNCH_ERROR_INVESTOR_TRADING_ACCOUNT_KEY, '所选账户是投资者只读模式，请先填写交易密码'));
+        message.error(t(SCHEDULE_LAUNCH_ERROR_INVESTOR_ACCOUNT_KEY, '所选账户是投资者只读模式，请先填写交易密码'));
         return;
       }
       const missingParams = (requiredParams || []).filter((p) => p.required).filter((p) => {

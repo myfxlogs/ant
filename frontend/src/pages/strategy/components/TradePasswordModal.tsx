@@ -46,7 +46,7 @@ const TradePasswordModal: React.FC<TradePasswordModalProps> = ({ open, accountId
 
   return (
     <Modal
-      title={t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_TRADING_TITLE_KEY, '填写交易密码')}
+      title={t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_TITLE_KEY, '填写交易密码')}
       open={open}
       onCancel={onCancel}
       onOk={() => void handleSubmit()}

@@ -126,12 +126,12 @@ export const PendingOrderRow = memo(({ order }: { order: Position }) => {
     <td className="p-3">
       <Tag style={{ background: (typeof order.type === 'string' && order.type.includes('buy')) ? 'var(--color-success-bg)' : 'var(--color-danger-bg)', color: (typeof order.type === 'string' && order.type.includes('buy')) ? 'var(--color-success)' : 'var(--color-danger)', border: 'none', borderRadius: '4px' }}>
         {order.type === 'buy_limit'
-          ? t(DETAIL_ORDER_TYPES_BUY_TRADING_LIMIT_KEY)
+          ? t(DETAIL_ORDER_TYPES_BUY_LIMIT_KEY)
           : order.type === 'sell_limit'
-            ? t(DETAIL_ORDER_TYPES_SELL_TRADING_LIMIT_KEY)
+            ? t(DETAIL_ORDER_TYPES_SELL_LIMIT_KEY)
             : order.type === 'buy_stop'
-              ? t(DETAIL_ORDER_TYPES_BUY_TRADING_STOP_KEY)
-              : t(DETAIL_ORDER_TYPES_SELL_TRADING_STOP_KEY)}
+              ? t(DETAIL_ORDER_TYPES_BUY_STOP_KEY)
+              : t(DETAIL_ORDER_TYPES_SELL_STOP_KEY)}
       </Tag>
     </td>
     <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{order.volume}</td>

@@ -171,12 +171,12 @@ export default function StrategyExperimentPage() {
     <div className="space-y-4">
       <div>
         <Title level={3}>{t(TITLE_KEY)}</Title>
-        <Text type="secondary">{t(SUBTRADING_TITLE_KEY)}</Text>
+        <Text type="secondary">{t(SUBTITLE_KEY)}</Text>
       </div>
 
       <Alert type="info" showIcon message={t(RULE_VERSION_ALERT_KEY)} />
 
-      <Card title={t(SUBMIT_FORM_TRADING_TITLE_KEY)}>
+      <Card title={t(SUBMIT_FORM_TITLE_KEY)}>
         <Form
           layout="vertical"
           initialValues={{ parameterSpace: defaultParameterSpace(), searchMethod: 'grid', maxCandidates: 12, objective: 'balanced' }}
@@ -209,13 +209,13 @@ export default function StrategyExperimentPage() {
         </Form>
       </Card>
 
-      <Card title={t(LIST_TRADING_TITLE_KEY)}>
+      <Card title={t(LIST_TITLE_KEY)}>
         <Table rowKey="id" size="small" dataSource={experiments} columns={experimentColumns} pagination={false} />
       </Card>
 
       <JobEventStreamCard jobId={selectedExperiment?.jobId} events={jobEvents} t={t} />
 
-      <Card title={selectedExperiment ? t(CANDIDATES_TITLE_WITH_ID_KEY, { id: selectedExperiment.id }) : t(CANDIDATES_TRADING_TITLE_KEY)}>
+      <Card title={selectedExperiment ? t(CANDIDATES_TITLE_WITH_ID_KEY, { id: selectedExperiment.id }) : t(CANDIDATES_TITLE_KEY)}>
         <Table rowKey="id" size="small" loading={candidateLoading} dataSource={candidates} columns={candidateColumns} pagination={false} scroll={{ x: 1100 }} />
       </Card>
     </div>

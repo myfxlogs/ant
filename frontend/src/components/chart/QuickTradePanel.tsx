@@ -59,8 +59,8 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
 
   const handleSubmit = useCallback(async () => {
     if (submitting) return; // prevent double-click
-    if (!symbol || !accountId) { message.warning(t(SELECT_TRADING_SYMBOL_KEY)); return; }
-    if (!volume || volume <= 0) { message.warning(t(VALID_TRADING_VOLUME_KEY)); return; }
+    if (!symbol || !accountId) { message.warning(t(SELECT_SYMBOL_KEY)); return; }
+    if (!volume || volume <= 0) { message.warning(t(VALID_VOLUME_KEY)); return; }
     if (isLimitOrStop && (!price || price <= 0)) { message.warning(t(PRICE_REQUIRED_KEY)); return; }
     setSubmitting(true);
     try {

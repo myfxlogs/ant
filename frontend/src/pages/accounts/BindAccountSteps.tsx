@@ -35,8 +35,8 @@ export function Step1SearchBroker({
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>{t(BIND_STEP1_TRADING_TITLE_KEY)}</h2>
-        <p className="mt-2" style={{ color: 'var(--color-text-muted)' }}>{t(BIND_STEP1_SUBTRADING_TITLE_KEY)}</p>
+        <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>{t(BIND_STEP1_TITLE_KEY)}</h2>
+        <p className="mt-2" style={{ color: 'var(--color-text-muted)' }}>{t(BIND_STEP1_SUBTITLE_KEY)}</p>
       </div>
       <div>
         <label className="block mb-3 font-medium" style={{ color: 'var(--color-text)' }}>{t(BIND_FIELDS_PLATFORM_KEY)}</label>
@@ -120,8 +120,8 @@ export function Step2Credentials({
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>{t(BIND_STEP2_TRADING_TITLE_KEY)}</h2>
-        <p className="mt-2" style={{ color: 'var(--color-text-muted)' }}>{t(BIND_STEP2_SUBTRADING_TITLE_KEY)}</p>
+        <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>{t(BIND_STEP2_TITLE_KEY)}</h2>
+        <p className="mt-2" style={{ color: 'var(--color-text-muted)' }}>{t(BIND_STEP2_SUBTITLE_KEY)}</p>
       </div>
       <div className="p-4 rounded-xl" style={{ background: 'var(--color-bg-secondary)' }}>
         <div className="flex items-center gap-3">
@@ -131,9 +131,9 @@ export function Step2Credentials({
         </div>
       </div>
       <div>
-        <label className="block mb-2 font-medium" style={{ color: 'var(--color-text)' }}>{t(BIND_FIELDS_TRADING_TRADING_ACCOUNT_KEY)}</label>
+        <label className="block mb-2 font-medium" style={{ color: 'var(--color-text)' }}>{t(BIND_FIELDS_ACCOUNT_KEY)}</label>
         <input type="text" value={login} onChange={(e) => setLogin(e.target.value)}
-          placeholder={t(BIND_PLACEHOLDERS_TRADING_TRADING_ACCOUNT_KEY)} className="w-full outline-none transition-all"
+          placeholder={t(BIND_PLACEHOLDERS_ACCOUNT_KEY)} className="w-full outline-none transition-all"
           style={{ background: 'var(--color-bg-card)', border: `1px solid ${loginHasNonDigits ? '#E53935' : 'rgba(185, 201, 223, 0.4)'}`, borderRadius: '10px', padding: '14px 16px', fontSize: '16px', color: 'var(--color-text)', height: '48px' }} />
         {loginHasNonDigits && (
           <p className="mt-1 text-xs" style={{ color: '#E53935' }}>{t(BIND_MESSAGES_LOGIN_DIGITS_ONLY_KEY)}</p>
@@ -176,8 +176,8 @@ export function Step3Verify({
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>{t(BIND_STEP3_TRADING_TITLE_KEY)}</h2>
-        <p className="mt-2" style={{ color: 'var(--color-text-muted)' }}>{t(BIND_STEP3_SUBTRADING_TITLE_KEY)}</p>
+        <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>{t(BIND_STEP3_TITLE_KEY)}</h2>
+        <p className="mt-2" style={{ color: 'var(--color-text-muted)' }}>{t(BIND_STEP3_SUBTITLE_KEY)}</p>
       </div>
 
       <div className="p-4 rounded-xl" style={{ background: 'var(--color-bg-secondary)' }}>
@@ -192,7 +192,7 @@ export function Step3Verify({
         <div className="flex justify-between pt-4">
           <Button onClick={onBack} style={{ borderRadius: '10px' }}>{t('common.previous')}</Button>
           <GradientButton loading={verifying} onClick={handleVerify} style={{ padding: '0 32px' }}>
-            {t(BIND_ACTIONS_VERIFY_TRADING_ACCOUNT_KEY)}
+            {t(BIND_ACTIONS_VERIFY_ACCOUNT_KEY)}
           </GradientButton>
         </div>
       </>)}
@@ -215,10 +215,10 @@ export function Step3Verify({
             <span className="font-medium" style={{ color: '#00A651' }}>{t(BIND_SUMMARY_VERIFIED_KEY)}</span>
           </div>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_TRADING_BALANCE_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{Number(verifyResult.balance || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
-            <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_TRADING_EQUITY_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{Number(verifyResult.equity || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
-            <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_TRADING_MARGIN_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{Number(verifyResult.margin || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
-            <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_TRADING_FREE_TRADING_MARGIN_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{Number(verifyResult.freeMargin || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
+            <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_BALANCE_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{Number(verifyResult.balance || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
+            <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_EQUITY_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{Number(verifyResult.equity || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
+            <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_MARGIN_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{Number(verifyResult.margin || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
+            <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_FREE_MARGIN_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{Number(verifyResult.freeMargin || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
             {verifyResult.leverage > 0 && <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_LEVERAGE_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>1:{verifyResult.leverage}</span></div>}
             <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_CURRENCY_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{verifyResult.currency || '-'}</span></div>
           </div>

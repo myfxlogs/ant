@@ -211,11 +211,11 @@ export default function WorkspaceBacktestPanel({
                   <Table dataSource={metrics.trades} rowKey="id" size="small"
                     pagination={{ pageSize: 20, size: 'small' }}
                     columns={[
-                      { title: t(TRADE_TRADING_TIME_KEY, 'Time'), dataIndex: 'time',
+                      { title: t(TRADE_TIME_KEY, 'Time'), dataIndex: 'time',
                         render: (v: number) => v ? new Date(v * 1000).toLocaleString() : '-' },
-                      { title: t(TRADE_TRADING_SIDE_KEY, 'Side'), dataIndex: 'side', width: 60 },
-                      { title: t(TRADE_TRADING_PRICE_KEY, 'Price'), dataIndex: 'price', width: 80 },
-                      { title: t(TRADE_TRADING_VOLUME_KEY, 'Volume'), dataIndex: 'volume', width: 80,
+                      { title: t(TRADE_SIDE_KEY, 'Side'), dataIndex: 'side', width: 60 },
+                      { title: t(TRADE_PRICE_KEY, 'Price'), dataIndex: 'price', width: 80 },
+                      { title: t(TRADE_VOLUME_KEY, 'Volume'), dataIndex: 'volume', width: 80,
                         render: (v: number) => v?.toFixed(2) },
                       { title: 'PnL', dataIndex: 'pnl', width: 80,
                         render: (v: number) => v != null ? (

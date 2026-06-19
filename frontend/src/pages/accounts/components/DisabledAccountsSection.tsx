@@ -21,7 +21,7 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
   return (
     <div className="mt-8">
       <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-muted)' }}>
-        {t(DISABLED_TRADING_TITLE_KEY)}
+        {t(DISABLED_TITLE_KEY)}
       </h3>
       <div
         className="hidden md:block rounded-xl overflow-hidden"
@@ -31,19 +31,19 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
           <thead>
             <tr style={{ background: 'var(--color-bg-secondary)' }}>
               <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                {t(DISABLED_TABLE_TRADING_ACCOUNT_KEY)}
+                {t(DISABLED_TABLE_ACCOUNT_KEY)}
               </th>
               <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                {t(DISABLED_TABLE_TRADING_TYPE_KEY)}
+                {t(DISABLED_TABLE_TYPE_KEY)}
               </th>
               <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
                 {t(DISABLED_TABLE_BROKER_KEY)}
               </th>
               <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                {t(DISABLED_TABLE_TRADING_BALANCE_KEY)}
+                {t(DISABLED_TABLE_BALANCE_KEY)}
               </th>
               <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                {t(DISABLED_TABLE_TRADING_EQUITY_KEY)}
+                {t(DISABLED_TABLE_EQUITY_KEY)}
               </th>
               <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
                 {t(DISABLED_TABLE_ACTIONS_KEY)}
@@ -91,7 +91,7 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
                       icon={<DeleteOutlined style={{ fontSize: 14 }} />}
                       onClick={() => {
                         Modal.confirm({
-                          title: t(DISABLED_CONFIRM_DELETE_TRADING_TITLE_KEY),
+                          title: t(DISABLED_CONFIRM_DELETE_TITLE_KEY),
                           content: t(DISABLED_CONFIRM_DELETE_CONTENT_KEY),
                           okText: t('common.confirm'),
                           cancelText: t('common.cancel'),
@@ -158,7 +158,7 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
                 icon={<DeleteOutlined style={{ fontSize: 14 }} />}
                 onClick={() => {
                   Modal.confirm({
-                    title: t(DISABLED_CONFIRM_DELETE_TRADING_TITLE_KEY),
+                    title: t(DISABLED_CONFIRM_DELETE_TITLE_KEY),
                     content: t(DISABLED_CONFIRM_DELETE_CONTENT_KEY),
                     okText: t('common.confirm'),
                     cancelText: t('common.cancel'),

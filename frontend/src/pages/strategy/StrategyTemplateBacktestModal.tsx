@@ -79,7 +79,7 @@ export const StrategyTemplateBacktestModal: React.FC<StrategyTemplateBacktestMod
 						}}
 					>
 						<Typography.Text strong>
-							{t(BACKTEST_PARAMETERS_TRADING_TITLE_KEY, '策略参数')}
+							{t(BACKTEST_PARAMETERS_TITLE_KEY, '策略参数')}
 						</Typography.Text>
 						<div style={{ marginTop: 6 }}>
 							<Space size={[6, 6]} wrap>
@@ -96,19 +96,19 @@ export const StrategyTemplateBacktestModal: React.FC<StrategyTemplateBacktestMod
 						</div>
 					</div>
 				)}
-				<Form.Item name="title" label={t(BACKTEST_FIELDS_TRADING_TITLE_KEY)}>
+				<Form.Item name="title" label={t(BACKTEST_FIELDS_TITLE_KEY)}>
 					<Input readOnly />
 				</Form.Item>
 				<Row gutter={8}>
 					<Col flex="260px">
 						<Form.Item
 							name="accountId"
-							label={t(BACKTEST_FIELDS_TRADING_ACCOUNT_KEY)}
+							label={t(BACKTEST_FIELDS_ACCOUNT_KEY)}
 							rules={[{ required: true, message: t(BACKTEST_VALIDATION_ACCOUNT_REQUIRED_KEY) }]}
 						>
 							<Select
 								size="small"
-								placeholder={t(BACKTEST_PLACEHOLDERS_TRADING_ACCOUNT_KEY)}
+								placeholder={t(BACKTEST_PLACEHOLDERS_ACCOUNT_KEY)}
 								onChange={async (v) => {
 									form.setFieldsValue({ symbol: '' });
 									await onAccountChange(String(v));
@@ -124,7 +124,7 @@ export const StrategyTemplateBacktestModal: React.FC<StrategyTemplateBacktestMod
 					<Col flex="260px">
 						<Form.Item
 							name="symbol"
-							label={t(BACKTEST_FIELDS_TRADING_SYMBOL_KEY)}
+							label={t(BACKTEST_FIELDS_SYMBOL_KEY)}
 							rules={[{ required: true, message: t(BACKTEST_VALIDATION_SYMBOL_REQUIRED_KEY) }]}
 						>
 							<Select
@@ -132,7 +132,7 @@ export const StrategyTemplateBacktestModal: React.FC<StrategyTemplateBacktestMod
 								showSearch
 								allowClear
 								loading={symbolsLoading}
-								placeholder={t(BACKTEST_PLACEHOLDERS_TRADING_SYMBOL_KEY)}
+								placeholder={t(BACKTEST_PLACEHOLDERS_SYMBOL_KEY)}
 								options={symbols}
 								optionFilterProp="label"
 							/>
