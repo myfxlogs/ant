@@ -1,0 +1,17 @@
+{
+  "prefix": "strategy.backtest",
+  "fields": {
+    "annual_return": "annualReturn",
+    "equity_curve": "equityCurve",
+    "max_drawdown": "maxDrawdown",
+    "sharpe": "sharpe",
+    "total_return": "totalReturn",
+    "total_trades": "totalTrades",
+    "trade_log": "tradeLog",
+    "trade_price": "tradePrice",
+    "trade_side": "tradeSide",
+    "trade_time": "tradeTime",
+    "trade_volume": "tradeVolume",
+    "win_rate": "winRate"
+  }
+}

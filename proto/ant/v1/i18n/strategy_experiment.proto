@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// ExperimentI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message ExperimentI18n {
+  string candidates_column_actions = 1;  // Actions
+  string candidates_column_generate_draft = 2;  // Generate Draft
+  string candidates_column_grade = 3;  // Grade
+  string candidates_column_parameters = 4;  // Parameters
+  string candidates_column_rank = 5;  // Rank
+  string candidates_column_recommendation = 6;  // Recommendation
+  string candidates_column_score = 7;  // Score
+  string candidates_column_summary = 8;  // Summary
+  string candidates_column_view_candidates = 9;  // View Candidates
+  string candidates_title = 10;  // Candidates
+  string candidates_title_with_id = 11;  // Candidates: {{id}}
+  string job_event_stream = 12;  // Job Event Stream
+  string list_column_actions = 13;  // Actions
+  string list_column_max_candidates = 14;  // Max Candidates
+  string list_column_objective = 15;  // Objective
+  string list_column_search_method = 16;  // Search Method
+  string list_column_status = 17;  // Status
+  string list_column_view_candidates = 18;  // View Candidates
+  string list_title = 19;  // Experiment List
+  string messages_candidates_generated = 20;  // Strategy experiment candidates generated
+  string messages_draft_generated = 21;  // Draft template generated: {{templateId}}
+  string messages_load_candidates_failed = 22;  // Failed to load candidates
+  string messages_load_experiments_failed = 23;  // Failed to load experiment list
+  string messages_load_templates_failed = 24;  // Failed to load strategy templates
+  string messages_promote_failed = 25;  // Failed to promote candidate to draft
+  string messages_submit_failed = 26;  // Failed to submit experiment. Please verify the parameter space is valid JSON.
+  string messages_subscribe_job_failed = 27;  // Failed to subscribe to experiment Job events
+  string no_events = 28;  // No events
+  string rule_version_alert = 29;  // Current minimal loop: deterministic parameter experiment. Candidates only genera
+  string select_job_to_view = 30;  // Select an experiment with a Job to view events.
+  string submit_form_base_template = 31;  // Base Strategy Template
+  string submit_form_base_template_placeholder = 32;  // Select template
+  string submit_form_base_template_required = 33;  // Please select a base strategy template
+  string submit_form_max_candidates = 34;  // Max Candidates
+  string submit_form_objective = 35;  // Objective
+  string submit_form_parameter_space = 36;  // Parameter Space JSON
+  string submit_form_parameter_space_required = 37;  // Please enter parameter space JSON
+  string submit_form_search_method = 38;  // Search Method
+  string submit_form_submit = 39;  // Submit Experiment
+  string submit_form_title = 40;  // Submit Experiment
+  string subtitle = 41;  // Submit parameter combinations to automatically run experiments, score candidate 
+  string title = 42;  // Strategy Experiment
+}

@@ -1,0 +1,15 @@
+{
+  "prefix": "strategy.quickTradeSection",
+  "fields": {
+    "amount_lots": "amountLots",
+    "cross": "cross",
+    "isolated": "isolated",
+    "margin_mode": "marginMode",
+    "mt4_cross_only": "mt4CrossOnly",
+    "order_failed": "orderFailed",
+    "order_placed": "orderPlaced",
+    "price_required": "priceRequired",
+    "select_symbol": "selectSymbol",
+    "valid_volume": "validVolume"
+  }
+}

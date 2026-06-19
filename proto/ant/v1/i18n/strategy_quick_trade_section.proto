@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// QuickTradeSectionI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message QuickTradeSectionI18n {
+  string amount_lots = 1;  // Amount (Lots)
+  string cross = 2;  // Cross
+  string isolated = 3;  // Isolated
+  string margin_mode = 4;  // Margin Mode
+  string mt4_cross_only = 5;  // MT4 only supports Cross margin
+  string order_failed = 6;  // Order failed
+  string order_placed = 7;  // Order placed successfully
+  string price_required = 8;  // Price is required
+  string select_symbol = 9;  // Please select a symbol
+  string valid_volume = 10;  // Volume must be ≥ 0.01 lots
+}

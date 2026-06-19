@@ -1,0 +1,29 @@
+{
+  "prefix": "strategy.gen",
+  "fields": {
+    "backtest_msg": "backtestMsg",
+    "backtest_started": "backtestStarted",
+    "chat_discuss": "chat.discuss",
+    "chat_generate": "chat.generate",
+    "chat_repair": "chat.repair",
+    "chat_revise": "chat.revise",
+    "clarify_title": "clarifyTitle",
+    "done": "done",
+    "feedback_heading": "feedback.heading",
+    "feedback_placeholder": "feedback.placeholder",
+    "generating": "generating",
+    "metrics_max_drawdown": "metrics.maxDrawdown",
+    "metrics_return": "metrics.return",
+    "metrics_sharpe": "metrics.sharpe",
+    "metrics_trades": "metrics.trades",
+    "metrics_win_rate": "metrics.winRate",
+    "placeholder": "placeholder",
+    "regenerate": "regenerate",
+    "reset": "reset",
+    "send": "send",
+    "template": "template",
+    "title": "title",
+    "use_defaults": "useDefaults",
+    "validating": "validating"
+  }
+}

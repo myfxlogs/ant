@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// BacktestParamsI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message BacktestParamsI18n {
+  string backtest_failed = 1;  // Backtest failed
+  string both = 2;  // Both
+  string capital = 3;  // Capital
+  string commission = 4;  // Commission
+  string current_draft = 5;  // 📝 Current Draft
+  string date_range = 6;  // Date Range
+  string defaults_loaded = 7;  // Defaults loaded
+  string defaults_reset = 8;  // Reset to factory defaults
+  string defaults_saved = 9;  // Defaults saved
+  string direction = 10;  // Direction
+  string end_date = 11;  // End
+  string enter_code_and_symbol = 12;  // Please enter strategy code and select a symbol
+  string event_driven_mode = 13;  // Run(context)
+  string execution = 14;  // Execution
+  string history = 15;  // Backtest History
+  string leverage = 16;  // Leverage
+  string long = 17;  // ↑ Long
+  string presets_exploration = 18;  // Exploration
+  string presets_live_aligned = 19;  // Live Aligned
+  string run = 20;  // ▶ Run
+  string runtime_mode = 21;  // Runtime
+  string settings_load = 22;  // Load My Defaults
+  string settings_reset = 23;  // Reset to Factory
+  string settings_save = 24;  // Save as My Defaults
+  string short = 25;  // ↓ Short
+  string slippage = 26;  // Slippage
+  string start_date = 27;  // Start
+  string strict_mode = 28;  // Strict Mode
+  string strict_mode_off = 29;  // OFF
+  string strict_mode_off_desc = 30;  // Same-bar-close + MTF 1m. Higher precision.
+  string strict_mode_off_tooltip = 31;  // OFF: same-bar close execution with 1m sub-resolution
+  string strict_mode_on = 32;  // ON
+  string strict_mode_on_desc = 33;  // Next-bar-open. Standard, conservative.
+  string strict_mode_on_tooltip = 34;  // ON: signals confirmed at bar close, executed next bar open
+  string title = 35;  // Backtest
+  string trade = 36;  // Trade
+  string vectorized_mode = 37;  // Vectorized
+}

@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// BacktestRunI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message BacktestRunI18n {
+  string actions_cancel = 1;  // Cancel
+  string fields_error = 2;  // Error
+  string fields_max_drawdown = 3;  // Max Drawdown
+  string fields_sharpe = 4;  // Sharpe
+  string fields_status = 5;  // Status
+  string hints_canceling = 6;  // Canceling backtest
+  string hints_queued = 7;  // Backtest is queued
+  string hints_running = 8;  // Backtest is running
+  string metrics_annual_return = 9;  // Annual return
+  string metrics_equity_curve_points = 10;  // Equity curve points
+  string metrics_max_drawdown = 11;  // Max drawdown
+  string metrics_sharpe = 12;  // Sharpe ratio
+  string metrics_total_return = 13;  // Total return
+  string metrics_total_trades = 14;  // Total trades
+  string metrics_win_rate = 15;  // Win rate
+  string status_canceled = 16;  // Canceled
+  string status_canceling = 17;  // Canceling
+  string status_completed = 18;  // Completed
+  string status_ended = 19;  // Ended
+  string status_failed = 20;  // Failed
+  string status_queued = 21;  // Queued
+  string status_running = 22;  // Running
+  string title = 23;  // Backtest run
+  string trades_close_price = 24;  // Close price
+  string trades_close_time = 25;  // Close time
+  string trades_commission = 26;  // Commission
+  string trades_empty = 27;  // No trades recorded
+  string trades_load_failed = 28;  // Failed to load order details
+  string trades_open_price = 29;  // Open price
+  string trades_open_time = 30;  // Open time
+  string trades_pnl = 31;  // P&L
+  string trades_reason = 32;  // Close reason
+  string trades_reasons_end_of_test = 33;  // End of test
+  string trades_reasons_expired = 34;  // Expired
+  string trades_reasons_margin_call = 35;  // Margin call
+  string trades_reasons_signal = 36;  // Signal
+  string trades_reasons_sl = 37;  // Stop loss
+  string trades_reasons_tp = 38;  // Take profit
+  string trades_side = 39;  // Side
+  string trades_side_buy = 40;  // Buy
+  string trades_side_sell = 41;  // Sell
+  string trades_summary = 42;  // {{count}} trades · {{wins}} wins / {{losses}} losses · net P&L {{pnl}}
+  string trades_ticket = 43;  // Ticket
+  string trades_title = 44;  // Order details
+  string trades_volume = 45;  // Volume
+}

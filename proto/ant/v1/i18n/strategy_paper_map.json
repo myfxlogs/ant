@@ -1,0 +1,27 @@
+{
+  "prefix": "strategy.paper",
+  "fields": {
+    "account_name": "accountName",
+    "create": "create",
+    "create_account": "createAccount",
+    "messages_create_failed": "messages.createFailed",
+    "messages_created": "messages.created",
+    "messages_enter_name": "messages.enterName",
+    "messages_paste_code": "messages.pasteCode",
+    "messages_start_failed": "messages.startFailed",
+    "messages_stop_failed": "messages.stopFailed",
+    "messages_strategy_started": "messages.strategyStarted",
+    "messages_strategy_stopped": "messages.strategyStopped",
+    "no_accounts": "noAccounts",
+    "paper": "paper",
+    "running": "running",
+    "start": "start",
+    "start_strategy": "startStrategy",
+    "stop": "stop",
+    "strategy_code": "strategyCode",
+    "symbol": "symbol",
+    "timeframe": "timeframe",
+    "title": "title",
+    "watch": "watch"
+  }
+}

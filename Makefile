@@ -120,11 +120,25 @@ check-fk:
 	@echo "Checking FK constraints referencing users(id)..."
 	@python3 scripts/check-fk-cascade.py
 
+check-i18n:
+	@echo "Checking i18n translation completeness..."
+	@npx tsx scripts/i18n-check.ts --strict
+
+check-i18n-build:
+	@echo "Building i18n resources from textproto..."
+	@npx tsx scripts/i18n-build.ts
+
+verify-i18n:
+	@echo "Verifying i18n (build + check)..."
+	@$(MAKE) check-i18n-build
+	@$(MAKE) check-i18n
+
 verify:
-	@echo "Verifying repo (proto + line limits + FK check + go test)..."
+	@echo "Verifying repo (proto + line limits + FK check + i18n + go test)..."
 	@$(MAKE) proto
 	@$(MAKE) check-lines
 	@$(MAKE) check-fk
+	@$(MAKE) check-i18n
 	@cd backend && go test ./...
 
 # ── RTK (Rust Token Killer) ──────────────────────────────────────────

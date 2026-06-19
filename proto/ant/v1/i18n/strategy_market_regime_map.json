@@ -1,0 +1,27 @@
+{
+  "prefix": "strategy.marketRegime",
+  "fields": {
+    "detect_failed": "detectFailed",
+    "detect_success": "detectSuccess",
+    "form_account_id": "form.accountId",
+    "form_account_id_placeholder": "form.accountIdPlaceholder",
+    "form_account_id_required": "form.accountIdRequired",
+    "form_kline_count": "form.klineCount",
+    "form_submit": "form.submit",
+    "form_symbol": "form.symbol",
+    "form_symbol_placeholder": "form.symbolPlaceholder",
+    "form_symbol_required": "form.symbolRequired",
+    "form_timeframe": "form.timeframe",
+    "form_title": "form.title",
+    "result_confidence": "result.confidence",
+    "result_features": "result.features",
+    "result_model_version": "result.modelVersion",
+    "result_record_id": "result.recordId",
+    "result_status": "result.status",
+    "result_strategy_families": "result.strategyFamilies",
+    "result_title": "result.title",
+    "rule_version_alert": "ruleVersionAlert",
+    "subtitle": "subtitle",
+    "title": "title"
+  }
+}

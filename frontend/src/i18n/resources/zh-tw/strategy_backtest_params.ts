@@ -1,0 +1,48 @@
+// Auto-generated from proto/ant/v1/i18n/strategy_backtest_params_zh-tw.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const BacktestParams = {
+  "strategy": {
+    "backtestParams": {
+      "backtestFailed": "回測失敗",
+      "both": "双向",
+      "capital": "本金",
+      "commission": "手續費",
+      "currentDraft": "📝 当前草稿",
+      "dateRange": "日期範圍",
+      "defaultsLoaded": "預設值已載入",
+      "defaultsReset": "已復原出廠預設值",
+      "defaultsSaved": "預設值已儲存",
+      "direction": "方向",
+      "endDate": "結束日期",
+      "enterCodeAndSymbol": "請輸入策略程式碼並選擇品種",
+      "eventDrivenMode": "Run(context) 事件驅動",
+      "execution": "執行參數",
+      "history": "回測歷史",
+      "leverage": "槓桿",
+      "long": "↑ 做多",
+      "presets": {
+        "exploration": "探索模式",
+        "liveAligned": "實盤對齊"
+      },
+      "run": "▶ 執行",
+      "runtimeMode": "執行模式",
+      "settingsLoad": "載入我的預設值",
+      "settingsReset": "復原出廠預設",
+      "settingsSave": "儲存為我的預設值",
+      "short": "↓ 做空",
+      "slippage": "滑價",
+      "startDate": "開始日期",
+      "strictMode": "嚴格模式",
+      "strictModeOff": "關閉",
+      "strictModeOffDesc": "同根K線收盤 + 1分鐘子解析度。精度更高。",
+      "strictModeOffTooltip": "關閉: 同根K線收盤執行，1分鐘子解析度",
+      "strictModeOn": "開啟",
+      "strictModeOnDesc": "次根K線開盤執行。標準保守模式。",
+      "strictModeOnTooltip": "開啟: 訊號在K線收盤確認，次根開盤執行",
+      "title": "回測",
+      "trade": "交易",
+      "vectorizedMode": "向量化"
+    }
+  }
+} as const;
+export default BacktestParams;

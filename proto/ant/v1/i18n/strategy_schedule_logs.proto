@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// ScheduleLogsI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message ScheduleLogsI18n {
+  string action_restart = 1;  // Restart
+  string action_start = 2;  // Start
+  string action_stop = 3;  // Stop
+  string exec_status_completed = 4;  // Completed
+  string exec_status_failed = 5;  // Failed
+  string exec_status_pending = 6;  // Pending
+  string exec_status_running = 7;  // Running
+  string exec_status_skipped = 8;  // Skipped
+  string exec_table_action = 9;  // Action
+  string exec_table_duration_ms = 10;  // Duration (ms)
+  string exec_table_error = 11;  // Error
+  string exec_table_execute = 12;  // Execute
+  string exec_table_status = 13;  // Status
+  string exec_table_time = 14;  // Time
+  string messages_missing_schedule_id = 15;  // Missing schedule ID
+  string operation_status_failed = 16;  // Failed
+  string operation_status_running = 17;  // Running
+  string operation_status_success = 18;  // Success
+  string order_side_buy = 19;  // Market buy
+  string order_side_buy_limit = 20;  // Buy limit
+  string order_side_buy_stop = 21;  // Buy stop
+  string order_side_buy_stop_limit = 22;  // Buy stop limit
+  string order_side_close = 23;  // Close
+  string order_side_sell = 24;  // Market sell
+  string order_side_sell_limit = 25;  // Sell limit
+  string order_side_sell_stop = 26;  // Sell stop
+  string order_side_sell_stop_limit = 27;  // Sell stop limit
+  string orders_table_close_price = 28;  // Close price
+  string orders_table_lots = 29;  // Lots
+  string orders_table_open_price = 30;  // Open price
+  string orders_table_profit = 31;  // P/L
+  string orders_table_side = 32;  // Side
+  string orders_table_symbol = 33;  // Symbol
+  string orders_table_ticket = 34;  // Ticket
+  string orders_table_time = 35;  // Time
+  string schedule_id_label = 36;  // Schedule ID:
+  string status_failed = 37;  // Failed
+  string status_success = 38;  // Success
+  string summary_enable_count = 39;  // Enabled count
+  string summary_last_error = 40;  // Last error
+  string summary_last_run = 41;  // Last run
+  string summary_name = 42;  // Name
+  string summary_status = 43;  // Status
+  string summary_trade = 44;  // Trade
+  string tabs_exec = 45;  // Executions
+  string tabs_exec_logs = 46;  // Execution Logs
+  string tabs_order_logs = 47;  // Order Logs
+  string tabs_orders = 48;  // Orders
+  string title = 49;  // Schedule logs
+  string title_with_name = 50;  // Schedule logs: {{name}}
+}

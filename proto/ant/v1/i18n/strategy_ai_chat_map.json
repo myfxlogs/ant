@@ -1,0 +1,16 @@
+{
+  "prefix": "strategy.aiChat",
+  "fields": {
+    "ai": "ai",
+    "analyzing": "analyzing",
+    "apply_code": "applyCode",
+    "dismiss": "dismiss",
+    "feedback": "feedback",
+    "reset": "reset",
+    "review_code": "reviewCode",
+    "revise": "revise",
+    "streaming": "streaming",
+    "title": "title",
+    "you": "you"
+  }
+}

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// DefaultTemplatesI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message DefaultTemplatesI18n {
+  string force_buy_description = 1;  // For verifying the order pipeline: always returns buy on each execution, reads lo
+  string force_buy_name = 2;  // Force BUY Test
+  string ma_cross_description = 3;  // Buy when fast MA crosses above slow MA, sell when it crosses below
+  string ma_cross_name = 4;  // Dual MA Crossover Strategy
+  string macd_description = 5;  // Buy on MACD golden cross, sell on death cross
+  string macd_name = 6;  // MACD Strategy
+  string rsi_description = 7;  // Buy when RSI < 30 (oversold), sell when RSI > 70 (overbought)
+  string rsi_name = 8;  // RSI Overbought/Oversold Strategy
+}

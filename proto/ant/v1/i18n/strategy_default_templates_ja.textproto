@@ -1,0 +1,8 @@
+force_buy_description: '注文パイプライン検証用：毎回買いを返し、context/paramsから数量読込'
+force_buy_name: '強制BUYテスト'
+ma_cross_description: '高速MAが低速MAを上抜けで買い、下抜けで売り'
+ma_cross_name: 'デュアルMAクロス戦略'
+macd_description: 'MACDゴールデンクロスで買い、デッドクロスで売り'
+macd_name: 'MACD戦略'
+rsi_description: 'RSI < 30 (売られ過ぎ) で買い、RSI > 70 (買われ過ぎ) で売り'
+rsi_name: 'RSI売買戦略'

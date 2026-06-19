@@ -1,0 +1,25 @@
+{
+  "prefix": "strategy.assetAnalysis",
+  "fields": {
+    "ai_recommendation": "aiRecommendation",
+    "ai_unavailable": "aiUnavailable",
+    "analyze": "analyze",
+    "atr_pct": "atrPct",
+    "configure_a_i": "configureAI",
+    "fetching_data": "fetchingData",
+    "mtf_outlook": "mtfOutlook",
+    "no_levels": "noLevels",
+    "no_results": "noResults",
+    "phase": "phase",
+    "sr_levels": "srLevels",
+    "state": "state",
+    "subtitle": "subtitle",
+    "symbol_placeholder": "symbolPlaceholder",
+    "title": "title",
+    "vol_extreme": "volExtreme",
+    "vol_high": "volHigh",
+    "vol_low": "volLow",
+    "vol_normal": "volNormal",
+    "volatility": "volatility"
+  }
+}

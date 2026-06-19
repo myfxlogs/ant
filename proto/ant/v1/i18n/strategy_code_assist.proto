@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// CodeAssistI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message CodeAssistI18n {
+  string ai_revise_title = 1;  // AI assistant — revise code
+  string apply_all_suggestions = 2;  // Apply suggested defaults
+  string code_empty = 3;  // There is no code to revise yet.
+  string code_updated = 4;  // Code updated. Please re-run validation before saving.
+  string default_label = 5;  // default
+  string enter_instruction = 6;  // Please describe what you want to change.
+  string explain = 7;  // Explain code
+  string fill_required_params = 8;  // Please fill the required parameters: {{keys}}
+  string generate_placeholder = 9;  // Describe your strategy requirements...
+  string no_python = 10;  // AI did not return a Python block. Try rephrasing.
+  string optional_params_desc = 11;  // These parameters already have defaults from the code. Leave a field blank to use
+  string optional_params_title = 12;  // Optional parameters
+  string param_descriptions_confidence = 13;  // Signal confidence threshold (0-1). Signals below this value are ignored.
+  string param_descriptions_ema_period = 14;  // EMA (exponential moving average) lookback in bars.
+  string param_descriptions_fast_period = 15;  // Fast period (number of bars). Used by MACD / dual-MA; smaller is more reactive.
+  string param_descriptions_generic_percent = 16;  // Percentage / ratio parameter (e.g. 1 means 1%).
+  string param_descriptions_generic_period = 17;  // Lookback window in bars used for indicator calculation.
+  string param_descriptions_lot_size = 18;  // Order size (lots / volume). Larger size means more risk.
+  string param_descriptions_max_loss = 19;  // Max loss per trade as a fraction of equity (0.01 = 1%).
+  string param_descriptions_risk_level = 20;  // Risk level (low / medium / high). Controls position size and stop/take-profit wi
+  string param_descriptions_rsi_period = 21;  // RSI lookback (number of bars). Typical value: 14.
+  string param_descriptions_signal_period = 22;  // Signal period (number of bars). Smoothing length for MACD DIF/DEA.
+  string param_descriptions_slow_period = 23;  // Slow period (number of bars). Used by MACD / dual-MA; larger is smoother.
+  string param_descriptions_sma_period = 24;  // SMA (simple moving average) lookback in bars.
+  string param_descriptions_stop_loss = 25;  // Stop-loss distance (%). Close the position once price moves this far against you
+  string param_descriptions_take_profit = 26;  // Take-profit distance (%). Close the position once price moves this far in your f
+  string param_descriptions_threshold = 27;  // Threshold that triggers a signal. Exact meaning depends on the strategy logic.
+  string required = 28;  // required
+  string required_params_desc = 29;  // The strategy reads these parameters but no default was provided. Fill them in be
+  string required_params_title = 30;  // Required parameters
+  string revise_input_placeholder = 31;  // e.g. Replace SMA(20) with EMA(50) and add a 1% stop-loss.
+  string revise_send = 32;  // Send to AI
+  string save_blocked_not_validated = 33;  // Please click "Validate code" first. Save is disabled until validation passes.
+  string suggested = 34;  // suggested
+  string tab_a_i = 35;  // AI revise
+  string tab_explain = 36;  // Explain code
+}

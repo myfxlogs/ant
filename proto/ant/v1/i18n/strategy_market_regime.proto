@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// MarketRegimeI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message MarketRegimeI18n {
+  string detect_failed = 1;  // Market regime detection failed
+  string detect_success = 2;  // Market regime detection completed
+  string form_account_id = 3;  // Account ID
+  string form_account_id_placeholder = 4;  // MT account UUID
+  string form_account_id_required = 5;  // Account ID is required
+  string form_kline_count = 6;  // K-line Count
+  string form_submit = 7;  // Start Detection
+  string form_symbol = 8;  // Symbol
+  string form_symbol_placeholder = 9;  // EURUSD
+  string form_symbol_required = 10;  // Symbol is required
+  string form_timeframe = 11;  // Timeframe
+  string form_title = 12;  // Detection Parameters
+  string result_confidence = 13;  // Confidence
+  string result_features = 14;  // Features
+  string result_model_version = 15;  // Model Version
+  string result_record_id = 16;  // Record ID
+  string result_status = 17;  // Status
+  string result_strategy_families = 18;  // Strategy Families
+  string result_title = 19;  // Detection Result
+  string rule_version_alert = 20;  // Currently using rule-based detection model rule-v1, driven by real-time K-line m
+  string subtitle = 21;  // Analyzes trend direction, volatility regime, and price efficiency from historica
+  string title = 22;  // Market Regime Detection
+}

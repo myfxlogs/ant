@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// AssetI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message AssetI18n {
+  string actions = 1;  // Actions
+  string asset_list = 2;  // Asset List
+  string asset_name = 3;  // Asset Name
+  string clone_as_draft = 4;  // Clone as Draft
+  string clone_count = 5;  // Clones
+  string description = 6;  // Description
+  string empty = 7;  // No strategy assets yet
+  string messages_clone_failed = 8;  // Failed to clone strategy asset
+  string messages_clone_success = 9;  // Cloned as template: {{templateId}}
+  string messages_load_failed = 10;  // Failed to load strategy assets
+  string messages_submit_failed = 11;  // Failed to submit strategy asset
+  string messages_submit_success = 12;  // Strategy asset submitted
+  string name = 13;  // Name
+  string review_status = 14;  // Review Status
+  string source_template = 15;  // Source Template
+  string submit = 16;  // Submit
+  string submit_asset = 17;  // Submit Asset
+  string subtitle = 18;  // Asset publishing, review status, and cloning are maintained by the system. Clone
+  string title = 19;  // Strategy Assets
+  string validation_enter_name = 20;  // Please enter asset name
+  string validation_select_template = 21;  // Please select a source template
+  string version = 22;  // Version
+  string visibility = 23;  // Visibility
+}

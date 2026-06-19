@@ -1,0 +1,13 @@
+{
+  "prefix": "strategy.defaultTemplates",
+  "fields": {
+    "force_buy_description": "forceBuy.description",
+    "force_buy_name": "forceBuy.name",
+    "ma_cross_description": "maCross.description",
+    "ma_cross_name": "maCross.name",
+    "macd_description": "macd.description",
+    "macd_name": "macd.name",
+    "rsi_description": "rsi.description",
+    "rsi_name": "rsi.name"
+  }
+}

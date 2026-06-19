@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// AiChatI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message AiChatI18n {
+  string ai = 1;  // AI
+  string analyzing = 2;  // analyzing
+  string apply_code = 3;  // Apply Code
+  string dismiss = 4;  // Dismiss
+  string feedback = 5;  // 🔄 feedback
+  string reset = 6;  // reset
+  string review_code = 7;  // AI generated code — review the chat above before applying.
+  string revise = 8;  // revise
+  string streaming = 9;  // streaming
+  string title = 10;  // AI Chat
+  string you = 11;  // You
+}

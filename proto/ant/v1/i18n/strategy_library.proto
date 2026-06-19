@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// LibraryI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message LibraryI18n {
+  string backtest_history = 1;  // Backtest History
+  string code_preview = 2;  // Code Preview
+  string create = 3;  // Create
+  string create_schedule = 4;  // Create Run
+  string draft = 5;  // Draft
+  string empty = 6;  // No strategies found
+  string filter_all = 7;  // All
+  string filter_mine = 8;  // My
+  string filter_system = 9;  // Preset
+  string my_copy = 10;  // My Copy
+  string my_strategies = 11;  // My Strategies
+  string no_schedules = 12;  // Not running
+  string open_in_workspace = 13;  // Open in Workspace
+  string overview = 14;  // Overview
+  string private = 15;  // Private
+  string publish = 16;  // Publish to Market
+  string publish_status = 17;  // Marketplace Status
+  string publish_success = 18;  // Published
+  string published = 19;  // Published
+  string save_as_mine = 20;  // Save as Mine
+  string save_as_mine_success = 21;  // Saved to My Strategies
+  string schedule_count = 22;  // {{count}} running
+  string schedule_running_count = 23;  // {{count}} running
+  string schedules = 24;  // Run
+  string search_placeholder = 25;  // Search strategies...
+  string select_hint = 26;  // Select a strategy from the list to view details
+  string share = 27;  // Share
+  string shared = 28;  // Shared
+  string system = 29;  // System
+  string title = 30;  // Strategy Library
+  string unpublish = 31;  // Unpublish
+  string unpublish_short = 32;  // Off
+  string unpublish_success = 33;  // Unpublished
+  string view_code = 34;  // View Strategy Code
+}

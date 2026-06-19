@@ -1,0 +1,10 @@
+{
+  "prefix": "strategy.chartTools",
+  "fields": {
+    "clear_drawings": "clearDrawings",
+    "hide": "hide",
+    "remove": "remove",
+    "settings": "settings",
+    "show": "show"
+  }
+}

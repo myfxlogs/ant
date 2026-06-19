@@ -1,0 +1,8 @@
+{
+  "prefix": "strategy.ai",
+  "fields": {
+    "check_settings": "checkSettings",
+    "refresh_failed": "refreshFailed",
+    "settings": "settings"
+  }
+}

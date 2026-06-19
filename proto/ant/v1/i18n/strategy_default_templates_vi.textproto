@@ -1,0 +1,8 @@
+force_buy_description: 'Dùng để xác minh pipeline đặt lệnh: luôn trả về mua, đọc khối lượng từ context/params'
+force_buy_name: 'Kiểm Tra BUY Bắt Buộc'
+ma_cross_description: 'Mua khi MA nhanh cắt lên MA chậm, bán khi cắt xuống'
+ma_cross_name: 'Chiến Lược Giao Cắt MA Kép'
+macd_description: 'Mua khi MACD cắt vàng, bán khi cắt tử thần'
+macd_name: 'Chiến Lược MACD'
+rsi_description: 'Mua khi RSI < 30 (quá bán), bán khi RSI > 70 (quá mua)'
+rsi_name: 'Chiến Lược RSI Quá Mua/Quá Bán'

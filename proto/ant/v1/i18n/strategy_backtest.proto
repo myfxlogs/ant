@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// BacktestI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message BacktestI18n {
+  string annual_return = 1;  // Annual Return
+  string equity_curve = 2;  // Equity Curve
+  string max_drawdown = 3;  // Max Drawdown
+  string sharpe = 4;  // Sharpe
+  string total_return = 5;  // Total Return
+  string total_trades = 6;  // Total Trades
+  string trade_log = 7;  // Trade Log
+  string trade_price = 8;  // Price
+  string trade_side = 9;  // Side
+  string trade_time = 10;  // Time
+  string trade_volume = 11;  // Volume
+  string win_rate = 12;  // Win Rate
+}

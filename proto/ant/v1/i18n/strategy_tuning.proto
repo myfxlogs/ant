@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// TuningI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message TuningI18n {
+  string apply = 1;  // Apply
+  string degradation = 2;  // Degradation
+  string enabled_combinations = 3;  // {{enabled}} enabled · {{combos}} combinations
+  string grade = 4;  // Grade
+  string grid_warning = 5;  // Grid Search would test <b>{{count}}</b> combinations (budget: 48). Consider swit
+  string hide = 6;  // Hide
+  string oos_footnote = 7;  // OOS validation run on top-5 candidates (by IS score). Green degradation <20%, or
+  string oos_score = 8;  // OOS Score
+  string optimizer_ags = 9;  // Annealed Gaussian
+  string optimizer_ags_desc = 10;  // Gaussian jitter with sigma annealing. Lightweight alternative to TPE.
+  string optimizer_ai = 11;  // AI Optimizer
+  string optimizer_ai_desc = 12;  // LLM multi-round proposal. Learns from previous results over 3 rounds.
+  string optimizer_de = 13;  // Differential Evolution
+  string optimizer_de_desc = 14;  // rand/1/bin mutation. Converges fast on smooth landscapes.
+  string optimizer_grid = 15;  // Grid Search
+  string optimizer_grid_desc = 16;  // Exhaustive Cartesian product. Best for ≤3 params.
+  string optimizer_random = 17;  // Random Search
+  string optimizer_random_desc = 18;  // Uniform random sampling. Good for exploration.
+  string optimizer_tpe = 19;  // TPE (KDE)
+  string optimizer_tpe_desc = 20;  // Tree-structured Parzen Estimator. KDE models good/bad distributions.
+  string optimizer_method = 21;  // Optimizer method
+  string overfit = 22;  // Overfit
+  string overfit_warning = 23;  // ⚠ OVERFIT
+  string parameter_dimensions = 24;  // Parameter dimensions
+  string parameters = 25;  // Parameters
+  string preview = 26;  // Preview
+  string preview_title = 27;  // Preview ({{shown}} of {{total}})
+  string rank = 28;  // #
+  string requires_a_i = 29;  // Requires AI provider configured
+  string results = 30;  // Results ({{count}})
+  string run = 31;  // Run ({{count}})
+  string score = 32;  // Score
+  string started = 33;  // Smart Tuning started
+  string summary = 34;  // Summary
+  string switch_to_d_e = 35;  // Switch to DE
+  string truncated = 36;  // TRUNCATED
+  string tuning = 37;  // Tuning…
+  string waiting = 38;  // Waiting for experiment... (SSE auto-refresh)
+}

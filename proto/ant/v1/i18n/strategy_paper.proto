@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// PaperI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message PaperI18n {
+  string account_name = 1;  // Account name
+  string create = 2;  // Create
+  string create_account = 3;  // Create Paper Account
+  string messages_create_failed = 4;  // Create failed
+  string messages_created = 5;  // Paper account created
+  string messages_enter_name = 6;  // Enter a name
+  string messages_paste_code = 7;  // Paste your strategy code
+  string messages_start_failed = 8;  // Start failed
+  string messages_stop_failed = 9;  // Stop failed
+  string messages_strategy_started = 10;  // Paper strategy started
+  string messages_strategy_stopped = 11;  // Paper strategy stopped
+  string no_accounts = 12;  // No paper accounts. Create one to start simulated trading.
+  string paper = 13;  // Paper
+  string running = 14;  // Running {{symbol}} {{timeframe}}
+  string start = 15;  // Start
+  string start_strategy = 16;  // Start Paper Strategy
+  string stop = 17;  // Stop
+  string strategy_code = 18;  // Strategy Code (Python)
+  string symbol = 19;  // Symbol
+  string timeframe = 20;  // Timeframe
+  string title = 21;  // 📊 Paper Trading
+  string watch = 22;  // Watch
+}

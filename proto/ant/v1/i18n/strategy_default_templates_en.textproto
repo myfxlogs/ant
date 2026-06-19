@@ -1,0 +1,8 @@
+force_buy_description: 'For verifying the order pipeline: always returns buy on each execution, reads lot from context/params as volume'
+force_buy_name: 'Force BUY Test'
+ma_cross_description: 'Buy when fast MA crosses above slow MA, sell when it crosses below'
+ma_cross_name: 'Dual MA Crossover Strategy'
+macd_description: 'Buy on MACD golden cross, sell on death cross'
+macd_name: 'MACD Strategy'
+rsi_description: 'Buy when RSI < 30 (oversold), sell when RSI > 70 (overbought)'
+rsi_name: 'RSI Overbought/Oversold Strategy'

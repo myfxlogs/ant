@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// AssetAnalysisI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message AssetAnalysisI18n {
+  string ai_recommendation = 1;  // AI Strategy Recommendation
+  string ai_unavailable = 2;  // AI recommendation unavailable. Please configure an AI provider in Settings.
+  string analyze = 3;  // Analyze
+  string atr_pct = 4;  // ATR %
+  string configure_a_i = 5;  // Configure AI Provider
+  string fetching_data = 6;  // Fetching market data...
+  string mtf_outlook = 7;  // Multi-Timeframe Outlook
+  string no_levels = 8;  // No significant levels detected
+  string no_results = 9;  // No analysis results returned. Try a different symbol.
+  string phase = 10;  // Phase: {{phase}}
+  string sr_levels = 11;  // Support / Resistance Levels
+  string state = 12;  // State
+  string subtitle = 13;  // Multi-timeframe trend outlook, S/R level detection, volatility classification, a
+  string symbol_placeholder = 14;  // Enter symbol (e.g. EURUSD, XAUUSD, BTCUSD)
+  string title = 15;  // AI Asset Analysis
+  string vol_extreme = 16;  // Extreme volatility — reduce position sizes significantly; wide stops required.
+  string vol_high = 17;  // High volatility — wider stops recommended; trend-following and breakout strategi
+  string vol_low = 18;  // Low volatility — consider breakout or mean-reversion strategies with tight stops
+  string vol_normal = 19;  // Normal volatility — suitable for most strategy types.
+  string volatility = 20;  // Volatility
+}

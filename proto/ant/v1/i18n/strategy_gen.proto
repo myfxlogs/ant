@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// GenI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message GenI18n {
+  string backtest_msg = 1;  // Backtest task created
+  string backtest_started = 2;  // Backtest Started
+  string chat_discuss = 3;  // 💬 Discuss
+  string chat_generate = 4;  // ⚡ Generate
+  string chat_repair = 5;  // 🔧 Repair
+  string chat_revise = 6;  // ✏️ Revise
+  string clarify_title = 7;  // A few details to confirm:
+  string done = 8;  // Done
+  string feedback_heading = 9;  // 📊 Backtest Results
+  string feedback_placeholder = 10;  // Provide feedback to iterate (e.g. "Too aggressive", "Add stop loss")
+  string generating = 11;  // Generating...
+  string metrics_max_drawdown = 12;  // Max DD
+  string metrics_return = 13;  // Return
+  string metrics_sharpe = 14;  // Sharpe
+  string metrics_trades = 15;  // Trades
+  string metrics_win_rate = 16;  // Win
+  string placeholder = 17;  // Describe the trading strategy you want to create, e.g.: "Make a Bollinger Band m
+  string regenerate = 18;  // Regenerate
+  string reset = 19;  // Start Over
+  string send = 20;  // Generate Strategy
+  string template = 21;  // Template
+  string title = 22;  // Strategy Generation
+  string use_defaults = 23;  // Continue with defaults
+  string validating = 24;  // Compliance Check
+}

@@ -1,0 +1,28 @@
+{
+  "prefix": "strategy.asset",
+  "fields": {
+    "actions": "actions",
+    "asset_list": "assetList",
+    "asset_name": "assetName",
+    "clone_as_draft": "cloneAsDraft",
+    "clone_count": "cloneCount",
+    "description": "description",
+    "empty": "empty",
+    "messages_clone_failed": "messages.cloneFailed",
+    "messages_clone_success": "messages.cloneSuccess",
+    "messages_load_failed": "messages.loadFailed",
+    "messages_submit_failed": "messages.submitFailed",
+    "messages_submit_success": "messages.submitSuccess",
+    "name": "name",
+    "review_status": "reviewStatus",
+    "source_template": "sourceTemplate",
+    "submit": "submit",
+    "submit_asset": "submitAsset",
+    "subtitle": "subtitle",
+    "title": "title",
+    "validation_enter_name": "validation.enterName",
+    "validation_select_template": "validation.selectTemplate",
+    "version": "version",
+    "visibility": "visibility"
+  }
+}

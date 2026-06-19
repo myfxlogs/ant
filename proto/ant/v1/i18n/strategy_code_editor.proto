@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// CodeEditorI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message CodeEditorI18n {
+  string actions_copy = 1;  // Copy
+  string actions_preview = 2;  // Preview
+  string actions_save_as_template = 3;  // Save as template
+  string actions_send_to_a_i = 4;  // Send to AI
+  string actions_send_to_a_i_fix_title_preview = 5;  // Fix preview issues
+  string actions_send_to_a_i_fix_title_validate = 6;  // Fix validation issues
+  string actions_validate = 7;  // Validate
+  string ai_prompt_current_code_title = 8;  // Current code
+  string ai_prompt_fence_end = 9;  // ```
+  string ai_prompt_intro = 10;  // Please help fix the strategy based on the following issues:
+  string ai_prompt_output_title = 11;  // Output fixed code
+  string ai_prompt_outro = 12;  // Return only the fixed code wrapped in ```python```.
+  string ai_prompt_problem = 13;  // Problem
+  string ai_prompt_python_fence_start = 14;  // ```python
+  string cards_preview_result = 15;  // Preview result
+  string cards_validation_result = 16;  // Validation result
+  string hints_preview_info = 17;  // Preview will execute with sample market data.
+  string labels_account = 18;  // Account
+  string labels_code = 19;  // Strategy code
+  string labels_disabled_suffix = 20;  //  (disabled)
+  string labels_symbol = 21;  // Symbol
+  string labels_timeframe = 22;  // Timeframe
+  string messages_copied = 23;  // Copied
+  string messages_copy_failed = 24;  // Copy failed
+  string messages_enter_code = 25;  // Please enter strategy code
+  string messages_exec_failed = 26;  // Execution failed
+  string messages_preview_failed = 27;  // Preview failed
+  string messages_preview_ok = 28;  // Preview completed
+  string messages_preview_success = 29;  // Preview succeeded
+  string messages_saved_as_template = 30;  // Saved as template
+  string messages_select_account = 31;  // Please select an account
+  string messages_validate_error = 32;  // Validation error
+  string messages_validate_failed = 33;  // Validation failed
+  string messages_validate_ok = 34;  // Validation passed
+  string placeholders_code = 35;  // Paste strategy code here
+  string placeholders_loading_symbols = 36;  // Loading symbols...
+  string placeholders_no_symbols = 37;  // No symbols available
+  string placeholders_select_account = 38;  // Select an account
+  string placeholders_select_account_first = 39;  // Select an account first
+  string placeholders_select_symbol = 40;  // Select a symbol
+  string title = 41;  // Strategy editor
+}

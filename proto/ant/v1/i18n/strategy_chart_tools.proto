@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// ChartToolsI18n — auto-generated from strategy.ts
+// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
+
+message ChartToolsI18n {
+  string clear_drawings = 1;  // Clear All Drawings
+  string hide = 2;  // Hide
+  string remove = 3;  // Remove
+  string settings = 4;  // Settings
+  string show = 5;  // Show
+}

@@ -1,0 +1,8 @@
+force_buy_description: '用于验证订单管道：每次执行始终返回买入信号，从 context/params 读取手数'
+force_buy_name: '强制买入测试'
+ma_cross_description: '快线上穿慢线时买入，下穿时卖出'
+ma_cross_name: '双均线交叉策略'
+macd_description: 'MACD 金叉买入，死叉卖出'
+macd_name: 'MACD 策略'
+rsi_description: 'RSI < 30 (超卖) 时买入，RSI > 70 (超买) 时卖出'
+rsi_name: 'RSI 超买超卖策略'

@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+// StrategyWorkspaceI18n holds all UI strings for the Strategy Workspace page.
+// Each field is a required translation key — buf + CI scripts verify every locale fills every field.
+//
+// Field numbering: grouped by logical section for readability.
+// Fields with interpolation variables use i18next syntax (e.g. "{{count}}", "{{side}}").
+
+message StrategyWorkspaceI18n {
+  // ── Top bar / title (1-10) ──
+  string title = 1;
+  string select_account = 2;
+  string select_symbol = 3;
+  string code = 4;
+  string select_symbol_hint = 5;
+  string no_accounts = 6;
+
+  // ── Code panel actions (11-30) ──
+  string validate = 11;
+  string validate_pass = 12;
+  string validate_failed = 13;
+  string validate_before_save = 14;
+  string run_backtest = 15;
+  string save = 16;
+  string copy = 17;
+  string copy_success = 18;
+  string copy_failed = 19;
+  string save_success = 20;
+  string save_failed = 21;
+  string hide_code = 22;
+  string show_code = 23;
+  string ai_assist = 24;
+
+  // ── Auto-fix (31-40) ──
+  string auto_fix_fixing = 31;
+  string auto_fix_button = 32;
+  string auto_fix_ask_ai = 33;
+  string auto_fix_dismiss = 34;
+  string auto_fix_passed = 35;
+  string auto_fix_failed = 36;
+  string auto_fix_fixed = 37;
+  string auto_fix_remaining = 38;
+  string auto_fix_new_regression = 39;
+  string auto_fix_line_info = 40;
+
+  // ── Template manager (41-50) ──
+  string template_title = 41;
+  string template_select_placeholder = 42;
+  string template_load = 43;
+  string template_save_as = 44;
+  string template_loaded = 45;
+
+  // ── Status chips (51-60) ──
+  string running_status = 51;
+  string completed_status = 52;
+  string backtest_running = 53;
+  string backtest_completed = 54;
+  string backtest_error = 55;
+  string backtest_empty = 56;
+
+  // ── Section labels (61-80) ──
+  string chart = 61;
+  string backtest = 62;
+  string backtest_results_label = 63;
+  string backtest_tab = 64;
+  string tuning_tab = 65;
+  string smart_tuning = 66;
+  string quick_trade = 67;
+  string quick_trade_hint = 68;
+  string gate_tab = 69;
+  string chart_error = 70;
+  string chart_window = 71;
+  string watchlist = 72;
+  string runtime_mode = 73;
+  string ai = 74;
+
+  // ── Account info (81-90) ──
+  string account = 81;
+  string account_placeholder = 82;
+  string investor_read_only = 83;
+  string master_trading = 84;
+  string risk_controls = 85;
+  string jump_to_code = 86;
+
+  // ── Positions (91-100) ──
+  string open_positions = 91;
+  string no_open_positions = 92;
+  string backtest_run_id_label = 93;
+
+  // ── Execution assumptions (101-110) ──
+  string exec_assumptions = 101;
+  string exec_mode = 102;
+  string exec_timing = 103;
+  string exec_fill_rule = 104;
+  string exec_direction = 105;
+  string exec_commission = 106;
+  string exec_slippage = 107;
+  string exec_leverage = 108;
+  string exec_mtf_fallback = 109;
+
+  // ── Chart tools (111-130) ──
+  string chart_tools_stream_active = 111;
+  string chart_tools_stream_unavailable = 112;
+  string chart_tools_hide = 113;
+  string chart_tools_show = 114;
+  string chart_tools_settings = 115;
+  string chart_tools_remove = 116;
+  string chart_tools_clear_drawings = 117;
+  string chart_tools_candle = 118;
+  string chart_tools_ohlc = 119;
+  string chart_tools_area = 120;
+  string chart_tools_live = 121;
+  string chart_tools_error = 122;
+  string chart_tools_static = 123;
+
+  // ── Quick trade section (131-145) ──
+  string quick_trade_select_symbol = 131;
+  string quick_trade_valid_volume = 132;
+  string quick_trade_price_required = 133;
+  string quick_trade_order_placed = 134;
+  string quick_trade_order_failed = 135;
+  string quick_trade_amount_lots = 136;
+  string quick_trade_margin_mode = 137;
+  string quick_trade_cross = 138;
+  string quick_trade_isolated = 139;
+  string quick_trade_mt4_cross_only = 140;
+}
