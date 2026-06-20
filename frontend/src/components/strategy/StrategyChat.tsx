@@ -31,6 +31,8 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
   const [copied, setCopied] = useState(false);
   const [modelOptions, setModelOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [selectedModel, setSelectedModel] = useState('');
+  const [templates, setTemplates] = useState<Array<{ id: string; name: string; code: string }>>([]);
+  const [loadedTemplateId, setLoadedTemplateId] = useState('');
 
   // Refs avoid closure staleness
   const planRef = useRef('');
