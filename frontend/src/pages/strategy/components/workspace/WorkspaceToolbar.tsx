@@ -78,9 +78,8 @@ export default function WorkspaceToolbar({
       padding: '8px 12px 10px', background: '#f8fafc',
       borderBottom: '1px solid #e8e8e8', flexShrink: 0,
     }}>
-      {/* Watchlist group */}
+      {/* Account & Symbol selector */}
       <div style={{ ...groupStyle, flex: '0 0 auto' }}>
-        <div style={groupLabelStyle}>{t(WATCHLIST_KEY)}</div>
         <Space size={4}>
           <Select size="small" style={{ minWidth: 120, width: 220, maxWidth: '36vw' }}
             value={accountId || undefined} onChange={onAccountChange} disabled={busy}

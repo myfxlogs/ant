@@ -178,9 +178,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
           placeholder={templates.length > 0 ? "加载策略" : "暂无策略"}
           allowClear disabled={templates.length === 0}
         />
-        {codeRef.current && (
-          <Button size="small" onClick={handleSaveTemplate} style={{ fontSize: 10 }}>保存</Button>
-        )}
+        
         <Button size="small" type="link" style={{ fontSize: 10, marginLeft: 'auto' }}
           onClick={async () => {
             try {
@@ -238,6 +236,21 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
           </div>
         )}
         <div ref={chatEndRef} />
+      </div>
+
+      {/* Strategy List */}
+      <div style={{ padding: '4px 14px', borderTop: '1px solid #f0f0f0', flexShrink: 0, display: 'flex', gap: 8, alignItems: 'center' }}>
+        <Typography.Text style={{ fontSize: 11, color: '#8c8c8c', flexShrink: 0 }}>策略:</Typography.Text>
+        <Select size="small" value={loadedTemplateId || undefined}
+          onChange={(v) => v && handleLoadTemplate(v)}
+          style={{ flex: 1, fontSize: 11 }}
+          options={templates.map(t => ({ value: t.id, label: t.name }))}
+          placeholder={templates.length > 0 ? "加载已保存的策略" : "暂无已保存的策略"}
+          allowClear disabled={templates.length === 0}
+        />
+        {codeRef.current && (
+          <Button size="small" onClick={handleSaveTemplate} style={{ fontSize: 11, flexShrink: 0 }}>保存当前</Button>
+        )}
       </div>
 
       {/* Input */}
