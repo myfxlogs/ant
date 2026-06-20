@@ -82,7 +82,6 @@ SELECT string_agg(t, ',') FROM (
     ('mt_accounts'),
     ('orders'),
     ('positions'),
-    ('api_keys'),
     ('backtest_runs'),
     ('strategy_execution_logs'),
     ('order_history'),
