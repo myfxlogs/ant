@@ -93,8 +93,16 @@ def validate_strategy_code(code: str) -> StrategyValidationResult:
 
     run_defs: List[ast.FunctionDef] = []
     for node in ast.walk(tree):
-        if isinstance(node, (ast.Import, ast.ImportFrom)):
-            errors.append("禁止 import")
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                name = alias.name.split('.')[0]
+                if name not in ("math", "numpy"):
+                    errors.append(f"禁止 import {name}（沙箱只允许 import math/numpy，且它们已预注入可直接使用）")
+        if isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            name = module.split(".")[0]
+            if name not in ("math", "numpy"):
+                errors.append(f"禁止 from {module} import ...（沙箱只允许 import math/numpy，且它们已预注入可直接使用）")
         if isinstance(node, (ast.Global, ast.Nonlocal)):
             errors.append("禁止 global/nonlocal")
         if isinstance(node, ast.Attribute) and node.attr.startswith("__"):
@@ -167,6 +175,8 @@ class _RestrictedEnv:
             default_guarded_getiter,
         )
         from RestrictedPython.Guards import full_write_guard, safe_builtins
+        global _guarded_unpack_sequence, _guarded_iter_unpack_sequence
+        from RestrictedPython.Guards import guarded_unpack_sequence as _guarded_unpack_sequence, guarded_iter_unpack_sequence as _guarded_iter_unpack_sequence
         from RestrictedPython.PrintCollector import PrintCollector
 
         self.compile_restricted = compile_restricted
@@ -259,7 +269,8 @@ def build_sandbox_globals() -> dict:
         "_getattr_": env.guarded_getattr,
         "_getitem_": env.guarded_getitem,
         "_getiter_": env.guarded_getiter,
-        "_iter_unpack_sequence_": env.guarded_getiter,  # RestrictedPython for-loop tuple unpack
+        "_unpack_sequence_": _guarded_unpack_sequence,
+        "_iter_unpack_sequence_": _guarded_iter_unpack_sequence,
         "_write_": env.guarded_write,
         "_print_": env.print_collector,
         "np": np,
@@ -408,15 +419,19 @@ class StrategyRunner(BaseSandbox):
     def _call_impl(self, ctx: dict) -> Optional[dict]:
         """Internal execution without timeout machinery."""
         globals_dict = self._build_globals()
-        locals_dict = dict(ctx)
+
+        # Use the same dict for both globals and locals so that module-level
+        # definitions (e.g. helper functions) are visible inside run().
+        # ctx values are copied in at call time to avoid polluting the module scope.
+        exec_scope = dict(globals_dict)
         try:
-            exec(self._bytecode, globals_dict, locals_dict)
+            exec(self._bytecode, exec_scope, exec_scope)
         except SandboxTimeoutError:
             raise
         except Exception as e:
             raise StrategyRuntimeError(f"策略代码执行错误: {e}") from e
 
-        run_fn: Optional[Callable[[dict], Any]] = locals_dict.get("run")  # type: ignore[assignment]
+        run_fn: Optional[Callable[[dict], Any]] = exec_scope.get("run")
         if callable(run_fn):
             try:
                 result = run_fn(dict(ctx))
@@ -426,8 +441,8 @@ class StrategyRunner(BaseSandbox):
                 raise StrategyRuntimeError(f"run() 抛出异常: {e}") from e
             return self._coerce_signal(result)
 
-        if "signal" in locals_dict:
-            return self._coerce_signal(locals_dict["signal"])
+        if "signal" in exec_scope:
+            return self._coerce_signal(exec_scope["signal"])
 
         raise StrategyRuntimeError("策略代码必须定义 signal 变量或 run(context) 函数")
 
