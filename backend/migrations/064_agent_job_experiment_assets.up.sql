@@ -165,20 +165,6 @@ CREATE TABLE IF NOT EXISTS market_regimes (
 
 CREATE INDEX IF NOT EXISTS idx_market_regimes_user_symbol_created_at ON market_regimes(user_id, symbol, created_at DESC);
 
-CREATE TABLE IF NOT EXISTS kline_cache_metadata (
-    id UUID PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    cache_key TEXT NOT NULL UNIQUE,
-    source TEXT NOT NULL,
-    account_id UUID,
-    symbol TEXT NOT NULL,
-    timeframe TEXT NOT NULL,
-    start_time TIMESTAMPTZ,
-    end_time TIMESTAMPTZ,
-    hit BOOLEAN NOT NULL DEFAULT FALSE,
-    ttl_seconds INTEGER NOT NULL DEFAULT 0,
-    fetched_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    expired_at TIMESTAMPTZ
-);
+-- kline_cache_metadata dropped (166_cleanup_dead_tables)
 
-CREATE INDEX IF NOT EXISTS idx_kline_cache_metadata_user_symbol ON kline_cache_metadata(user_id, symbol, timeframe);
+

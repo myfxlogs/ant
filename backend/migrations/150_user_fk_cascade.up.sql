@@ -45,11 +45,8 @@ ALTER TABLE system_operation_logs
   ADD CONSTRAINT system_operation_logs_user_id_fkey
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
-ALTER TABLE user_ai_agents
-  DROP CONSTRAINT user_ai_agents_user_id_fkey;
-ALTER TABLE user_ai_agents
-  ADD CONSTRAINT user_ai_agents_user_id_fkey
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+-- user_ai_agents FK dropped (166_cleanup_dead_tables)
+-- user_ai_agents FK dropped (166_cleanup_dead_tables)
 
 ALTER TABLE user_strategy_publishes
   DROP CONSTRAINT user_strategy_publishes_user_id_fkey;

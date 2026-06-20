@@ -136,21 +136,7 @@ CREATE TABLE symbols (
 
 CREATE INDEX idx_symbols_symbol ON symbols(symbol);
 
--- 实时报价缓存表
-CREATE TABLE market_quotes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    symbol VARCHAR(20) NOT NULL UNIQUE,
-    bid DECIMAL(18, 8),
-    ask DECIMAL(18, 8),
-    last DECIMAL(18, 8),
-    volume DECIMAL(18, 2),
-    high DECIMAL(18, 8),
-    low DECIMAL(18, 8),
-    server_time TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_quotes_symbol ON market_quotes(symbol);
+-- market_quotes dropped (166_cleanup)
 
 -- 系统配置表
 CREATE TABLE system_config (

@@ -28,16 +28,7 @@ CREATE TABLE IF NOT EXISTS platform_factors (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS platform_ai_agents (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name            TEXT NOT NULL UNIQUE,
-    role            TEXT NOT NULL,
-    system_prompt   TEXT NOT NULL,
-    model           TEXT NOT NULL DEFAULT 'deepseek-chat',
-    temperature     DOUBLE PRECISION NOT NULL DEFAULT 0.7,
-    is_default      BOOLEAN NOT NULL DEFAULT false,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+-- platform_ai_agents dropped (166_cleanup_dead_tables)
 
 CREATE TABLE IF NOT EXISTS admins (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -91,14 +82,4 @@ CREATE TABLE IF NOT EXISTS user_factor_overrides (
     UNIQUE (user_id, factor_name)
 );
 
-CREATE TABLE IF NOT EXISTS user_ai_agents (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID NOT NULL REFERENCES users(id),
-    agent_name      TEXT NOT NULL,
-    system_prompt   TEXT,
-    model           TEXT,
-    temperature     DOUBLE PRECISION,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE (user_id, agent_name)
-);
+-- user_ai_agents dropped (166_cleanup_dead_tables)

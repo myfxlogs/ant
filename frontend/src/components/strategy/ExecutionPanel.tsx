@@ -45,6 +45,7 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
   const [error, setError] = useState('');
   const [feedback, setFeedback] = useState('');
   const [analysis, setAnalysis] = useState('');
+  const [discussionReply, setDiscussionReply] = useState('');
   const [metrics, setMetrics] = useState<BacktestMetricsMsg | null>(null);
   const abortRef = useRef<(() => void) | null>(null);
   const watchRef = useRef<(() => void) | null>(null);
@@ -99,8 +100,13 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
     const msg = feedback.trim();
     if (!msg) return;
     setFeedback('');
+    setDiscussionReply('');
+    setAnalysis('');
     const currentCode = code || streamCode;
-    setPrevCode(currentCode); setStreamCode(''); setCode(''); setAnalysis('');
+
+    // All feedback goes through ExecutePlan — the LLM decides whether
+    // to just answer (pure question) or regenerate code (change request).
+    setPrevCode(currentCode); setStreamCode(''); setCode('');
     setPhase('generating'); setToolResults([]); setError(''); setMetrics(null);
 
     const abort = executePlan(
@@ -148,6 +154,9 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
     { key: 'long_only', label: t(EXEC_CHIP_LONG_ONLY_KEY, 'Long Only') },
   ];
 
+  // Parse plan into numbered steps for the checklist
+  const planSteps = plan.split('\n').filter(line => /^\d+[\.\)]\s/.test(line.trim()));
+
   const hasSymbol = !!(symbol && timeframe);
 
   return (
@@ -166,28 +175,25 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
 
       <Card size="small" style={{ marginBottom: 8, background: '#f6ffed', borderColor: '#b7eb8f' }}>
         <Typography.Text style={{ fontSize: 11, color: '#8c8c8c' }}>{t(EXEC_PLAN_LABEL_KEY, 'Execution Plan')}</Typography.Text>
-        <Typography.Paragraph ellipsis={{ rows: 2 }} style={{ fontSize: 12, margin: 0 }}>{plan}</Typography.Paragraph>
+        {planSteps.length > 0 ? (
+          <div style={{ marginTop: 4 }}>
+            {planSteps.map((step, i) => (
+              <div key={i} style={{ fontSize: 12, padding: '1px 0', color: '#595959' }}>
+                <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 4, fontSize: 11 }} />
+                {step.replace(/^\d+[\.\)]\s*/, '')}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Typography.Paragraph ellipsis={{ rows: 2 }} style={{ fontSize: 12, margin: 0 }}>{plan}</Typography.Paragraph>
+        )}
       </Card>
 
       <StepProgress phase={busy ? currentPhase : phase === 'done' ? 'done' : 'idle'} plan={undefined} />
 
-      {toolResults.map((tr, i) => (
-        <div key={i} style={{
-          padding: '6px 10px', marginBottom: 4, borderRadius: 4, fontSize: 11,
-          background: tr.success ? '#f6ffed' : '#fff2f0',
-          border: `1px solid ${tr.success ? '#b7eb8f' : '#ffa39e'}`,
-        }}>
-          <Space>
-            {tr.success ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : <CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
-            <span>{toolIcon(tr.name)} <b>{toolLabel(tr.name)}</b></span>
-            {tr.error && <span style={{ color: '#cf1322' }}>{tr.error}</span>}
-          </Space>
-        </div>
-      ))}
-
-      {currentTool && (
-        <div style={{ padding: '6px 10px', marginBottom: 4, borderRadius: 4, fontSize: 11, background: '#e6f4ff', border: '1px solid #91caff' }}>
-          <LoadingOutlined style={{ marginRight: 4 }} /> {toolIcon(currentTool)} {t(EXEC_TOOL_RUNNING_KEY, 'Running {tool}...').replace('{tool}', toolLabel(currentTool))}
+      {discussionReply && (
+        <div style={{ padding: '8px 10px', marginBottom: 6, borderRadius: 4, background: '#f5f5f5', border: '1px solid #d9d9d9', fontSize: 12, whiteSpace: 'pre-wrap', color: '#595959' }}>
+          💬 {discussionReply}
         </div>
       )}
 
@@ -196,6 +202,24 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
           💡 {analysis}
         </div>
       )}
+
+      {toolResults.map((tr, i) => (
+        <div key={i} style={{
+          padding: '6px 10px', marginBottom: 4, borderRadius: 4, fontSize: 11,
+          // compliance: green/red is meaningful (pass/fail); backtest: neutral (ran ≠ good result)
+          background: tr.name === 'backtest' ? '#f0f5ff' : (tr.success ? '#f6ffed' : '#fff2f0'),
+          border: `1px solid ${tr.name === 'backtest' ? '#d6e4ff' : (tr.success ? '#b7eb8f' : '#ffa39e')}`,
+        }}>
+          <Space>
+            {tr.name === 'backtest'
+              ? <span style={{ color: '#2f54eb' }}>📊</span>
+              : (tr.success ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : <CloseCircleOutlined style={{ color: '#ff4d4f' }} />)
+            }
+            <span>{toolIcon(tr.name)} <b>{toolLabel(tr.name)}</b></span>
+            {tr.error && <span style={{ color: '#cf1322' }}>{tr.error}</span>}
+          </Space>
+        </div>
+      ))}
 
       {metrics && (
         <div style={{ padding: '6px 10px', marginBottom: 6, borderRadius: 4, background: '#f6ffed', border: '1px solid #b7eb8f', fontSize: 11 }}>

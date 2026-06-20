@@ -411,4 +411,7 @@ def run_backtest(req: BacktestRequest) -> BacktestResult:
     The backend is expected to have pre-loaded ``req.bars`` (and optional
     ``req.ticks``) before dispatching into this process.
     """
-    return BacktestRunner(req).run()
+    try:
+        return BacktestRunner(req).run()
+    except Exception as e:
+        return BacktestResult(success=False, error=f"策略执行错误: {e}")

@@ -2,7 +2,6 @@ package ai
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -144,57 +143,15 @@ func (s *StrategyPlanServer) ExecutePlan(
 		}
 	}
 
-	// ToolCall: compliance_check
-	call1 := "call_compliance"
-	_ = stream.Send(&antv1.ExecutePlanChunk{
-		Phase: "tool_call", ToolCall: &antv1.ToolCall{CallId: call1, Name: "compliance_check", ParamsJson: `{}`},
+	// ── Tool pipeline (registry-driven, extensible) ──
+	NewToolRegistry(s.backtestRepo).Execute(ctx, ToolInput{
+		Code: code, Symbol: m.Symbol, Timeframe: m.Timeframe, UserID: userID,
+	}, func(chunk *antv1.ExecutePlanChunk) error {
+		return stream.Send(chunk)
 	})
-	blocks, warns := ai.NewCodeComplianceScanner().Scan(code)
-	allIssues := append(blocks, warns...)
-	var issueProtos []*antv1.ComplianceIssue
-	for _, iss := range allIssues {
-		issueProtos = append(issueProtos, &antv1.ComplianceIssue{
-			Rule: iss.RuleName, Message: iss.Message, Severity: iss.Severity, Line: int32(iss.Line),
-		})
-	}
-	res1, _ := json.Marshal(&antv1.ComplianceResult{Passed: len(blocks) == 0, Issues: issueProtos})
-	_ = stream.Send(&antv1.ExecutePlanChunk{
-		Phase: "tool_result", ToolResult: &antv1.ToolResult{CallId: call1, Name: "compliance_check", Success: len(blocks) == 0, OutputJson: string(res1)},
-	})
-
-	// ToolCall: backtest
-	call2 := "call_backtest"
-	_ = stream.Send(&antv1.ExecutePlanChunk{
-		Phase: "tool_call", ToolCall: &antv1.ToolCall{CallId: call2, Name: "backtest", ParamsJson: `{}`},
-	})
-	runID, btErr := s.triggerBacktest(ctx, userID, code, m.Symbol, m.Timeframe)
-	if btErr == "" {
-		outJSON, _ := json.Marshal(map[string]string{"run_id": runID})
-		_ = stream.Send(&antv1.ExecutePlanChunk{
-			Phase: "tool_result", ToolResult: &antv1.ToolResult{CallId: call2, Name: "backtest", Success: true, OutputJson: string(outJSON)},
-		})
-	} else {
-		_ = stream.Send(&antv1.ExecutePlanChunk{
-			Phase: "tool_result", ToolResult: &antv1.ToolResult{CallId: call2, Name: "backtest", Success: false, Error: btErr},
-		})
-	}
 
 	s.persistExchange(ctx, userID, m.ConversationId, m.Plan, code, m.FeedbackMessage)
 	return stream.Send(&antv1.ExecutePlanChunk{Phase: "done", Code: code, PreviousCode: m.PreviousCode, Analysis: analysis})
-}
-
-func (s *StrategyPlanServer) triggerBacktest(ctx context.Context, userID uuid.UUID, code, symbol, timeframe string) (string, string) {
-	if symbol == "" {
-		symbol = "EURUSD"
-	}
-	if timeframe == "" {
-		timeframe = "1h"
-	}
-	runID, err := CreateBacktestRun(ctx, s.backtestRepo, userID, code, symbol, timeframe)
-	if err != nil {
-		return "", err.Error()
-	}
-	return runID, ""
 }
 
 func (s *StrategyPlanServer) persistPlan(ctx context.Context, userID uuid.UUID, convID, userMsg, plan string) {
@@ -227,14 +184,78 @@ func (s *StrategyPlanServer) persistExchange(ctx context.Context, userID uuid.UU
 	_ = s.convRepo.Touch(ctx, cid, userID)
 }
 
+// ── DiscussPlan: pure Q&A, no code generation ──
+
+func (s *StrategyPlanServer) DiscussPlan(
+	ctx context.Context,
+	req *connect.Request[antv1.DiscussPlanRequest],
+	stream *connect.ServerStream[antv1.AnalyzePlanChunk],
+) error {
+	userID, err := userIDFromCtx(ctx)
+	if err != nil {
+		return err
+	}
+	m := req.Msg
+	lang := LangFromAccept(req.Header().Get("Accept-Language"))
+
+	sysPrompt := discussSystemPrompt(lang)
+	userPrompt := fmt.Sprintf(
+		"## 执行计划\n%s\n\n## 当前代码\n```python\n%s\n```\n\n## 回测数据\n%s\n\n## 用户的问题\n%s\n\n请直接回答用户的问题。如果用户问的是回测结果，请根据回测数据分析并解释。不要生成代码，只回答问题。",
+		m.Plan, m.CurrentCode, m.BacktestMetricsJson, m.Message,
+	)
+
+	var fullBuf strings.Builder
+	err = s.systemSvc.ChatCompletionStream(ctx, userID,
+		[]systemai.ChatMessage{{Role: "system", Content: sysPrompt}, {Role: "user", Content: userPrompt}},
+		func(chunk systemai.ChatStreamChunk) error {
+			fullBuf.WriteString(chunk.Content)
+			send := &antv1.AnalyzePlanChunk{Phase: "analyzing", Delta: chunk.Content}
+			if chunk.Done {
+				send.Phase = "plan_ready"
+				send.Plan = fullBuf.String()
+			}
+			return stream.Send(send)
+		})
+	if err != nil {
+		return stream.Send(&antv1.AnalyzePlanChunk{Phase: "error", Error: systemai.FriendlyError(err)})
+	}
+
+	s.persistDiscuss(ctx, userID, m.ConversationId, m.Message, fullBuf.String())
+	return nil
+}
+
+func (s *StrategyPlanServer) persistDiscuss(ctx context.Context, userID uuid.UUID, convID, question, answer string) {
+	if convID == "" {
+		return
+	}
+	cid, err := uuid.Parse(convID)
+	if err != nil {
+		return
+	}
+	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "user", question)
+	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "assistant", "[ANSWER]\n"+answer)
+	_ = s.convRepo.Touch(ctx, cid, userID)
+}
+
+func discussSystemPrompt(lang string) string {
+	switch lang {
+	case "zh":
+		return "你是一个专业的量化交易助手。用户会在策略开发过程中向你提问。请根据提供的执行计划、当前代码和回测数据，直接回答用户的问题。只回答问题，不要生成代码。保持简洁、准确。"
+	case "zh-tw":
+		return "你是一個專業的量化交易助手。用戶會在策略開發過程中向你提問。請根據提供的執行計畫、當前程式碼和回測數據，直接回答用戶的問題。只回答問題，不要生成程式碼。保持簡潔、準確。"
+	default:
+		return "You are a professional quantitative trading assistant. The user is asking questions during strategy development. Answer the user's question directly based on the provided plan, current code, and backtest data. Only answer the question — do NOT generate code. Keep it concise and accurate."
+	}
+}
+
 func planSystemPrompt(lang string) string {
 	switch lang {
 	case "zh":
-		return "你是一个量化策略规划师。根据用户需求和已有分析，用简洁的中文写出1-2句话的执行计划。包含：策略类型、关键指标、入场/出场逻辑、风控措施。直接输出计划，不要有任何前缀。"
+		return "你是一个量化策略规划师。根据用户需求，输出一个编号的执行计划。每行一个步骤，用 1. 2. 3. 开头。包含：策略类型、关键指标、入场/出场逻辑、风控措施。直接输出编号列表，不要任何其他文字。例如：\n1. 使用 EMA20/EMA50 判断趋势方向\n2. RSI < 30 时入场做多\n3. 设置 2% 止损和 4% 止盈"
 	case "zh-tw":
-		return "你是一個量化策略規劃師。根據用戶需求和已有分析，用簡潔的繁體中文寫出1-2句話的執行計劃。包含：策略類型、關鍵指標、入場/出場邏輯、風控措施。直接輸出計劃，不要有任何前綴。"
+		return "你是一個量化策略規劃師。根據用戶需求，輸出一個編號的執行計畫。每行一個步驟，用 1. 2. 3. 開頭。包含：策略類型、關鍵指標、入場/出場邏輯、風控措施。直接輸出編號列表，不要任何其他文字。"
 	default:
-		return "You are a quantitative strategy planner. Based on the user's request and analysis, write a concise 1-2 sentence execution plan in English. Include: strategy type, key indicators, entry/exit logic, risk controls. Output the plan directly, no prefix."
+		return "You are a quantitative strategy planner. Output a numbered execution plan. One step per line, starting with 1. 2. 3. Include: strategy type, key indicators, entry/exit logic, risk controls. Output ONLY the numbered list, nothing else. Example:\n1. Use EMA20/EMA50 for trend direction\n2. Enter long when RSI < 30\n3. Set 2% stop loss and 4% take profit"
 	}
 }
 
@@ -273,14 +294,13 @@ func buildFallbackPlan(intent *ai.IntentResult) string {
 func buildExecuteUserPrompt(m *antv1.ExecutePlanRequest) string {
 	if m.FeedbackMessage != "" {
 		p := "## 执行计划\n" + m.Plan + "\n\n"
-		p += "## 用户的问题或反馈\n" + m.FeedbackMessage + "\n\n"
+		p += "## 用户的后续消息\n" + m.FeedbackMessage + "\n\n"
 		if m.PreviousCode != "" {
-			p += "## 当前的策略代码（请在此基础修改，不要完全重写）\n```python\n" + m.PreviousCode + "\n```\n\n"
+			p += "## 当前的策略代码\n```python\n" + m.PreviousCode + "\n```\n\n"
 		}
 		if m.BacktestMetricsJson != "" {
 			p += "## 回测数据\n" + m.BacktestMetricsJson + "\n"
 		}
-		p += "\n请先直接回答用户的问题（解释原因），然后给出修改后的完整代码。不要完全重写，只修改需要改的部分。"
 		return p
 	}
 	return m.Plan
@@ -289,10 +309,25 @@ func buildExecuteUserPrompt(m *antv1.ExecutePlanRequest) string {
 func diagnoseAndFixPrompt(lang string) string {
 	switch lang {
 	case "zh":
-		return "你是一个专业的量化策略诊断专家。用户会提出问题或修改要求，并提供当前代码和回测数据。你必须：1) 先直接回答用户的问题，用简洁的中文解释原因 2) 然后给出修改后的完整 Python 代码。重要：在现有代码基础上修改，不要完全重写。对于用户的问题（如\"为什么拿不到回测数据\"），先解释原因再给方案。代码不要有任何 markdown 格式。"
+		return "你是策略迭代助手。用户会发送后续消息——可能是问题、反馈或修改要求。\n\n" +
+			"规则：\n" +
+			"1. 先判断用户意图：纯问题 → 只回答，不生成代码。修改要求 → 先解释，再给新代码。\n" +
+			"2. 如果只是问问题（如\"回测结果是什么\"），直接回答问题即可。不要生成代码。\n" +
+			"3. 如果要求修改，在现有代码基础上改，不要完全重写。\n" +
+			"4. 如果要生成代码，先写分析/解释，然后输出代码。代码不要有 markdown 格式。"
 	case "zh-tw":
-		return "你是一個專業的量化策略診斷專家。用戶會提出問題或修改要求，並提供當前程式碼和回測數據。你必須：1) 先直接回答用戶的問題，用簡潔的繁體中文解釋原因 2) 然後給出修改後的完整 Python 程式碼。重要：在現有程式碼基礎上修改，不要完全重寫。對於用戶的問題（如「為什麼拿不到回測數據」），先解釋原因再給方案。程式碼不要有任何 markdown 格式。"
+		return "你是策略迭代助手。用戶會發送後續訊息——可能是問題、回饋或修改要求。\n\n" +
+			"規則：\n" +
+			"1. 先判斷用戶意圖：純問題 → 只回答，不生成程式碼。修改要求 → 先解釋，再給新程式碼。\n" +
+			"2. 如果只是問問題（如\"回測結果是什麼\"），直接回答問題即可。不要生成程式碼。\n" +
+			"3. 如果要求修改，在現有程式碼基礎上改，不要完全重寫。\n" +
+			"4. 如果要生成程式碼，先寫分析/解釋，然後輸出程式碼。程式碼不要有 markdown 格式。"
 	default:
-		return "You are a professional quantitative strategy diagnostician. The user will ask questions or request changes, providing current code and backtest data. You MUST: 1) First directly answer the user's question in concise English 2) Then provide the modified complete Python code. IMPORTANT: modify the existing code, do NOT rewrite from scratch. For questions like 'why can't I get backtest data', explain the reason first then propose the fix. Code must not have markdown formatting."
+		return "You are a strategy iteration assistant. The user sends follow-up messages — questions, feedback, or change requests.\n\n" +
+			"Rules:\n" +
+			"1. First classify the intent: pure question → just answer, no code. Change request → explain then give new code.\n" +
+			"2. If it's just a question (e.g. 'what are the backtest results?'), answer it directly. Do NOT generate code.\n" +
+			"3. If it's a change request, modify the existing code — do not rewrite from scratch.\n" +
+			"4. If you generate code, write analysis/explanation first, then output code. Code must not have markdown formatting."
 	}
 }

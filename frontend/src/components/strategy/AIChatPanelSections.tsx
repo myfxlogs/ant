@@ -31,8 +31,12 @@ export function detectMode(msg: string, hasCode: boolean, hasBacktest = false): 
     '验证失败','syntax error','syntaxerror','undefined','未定义',
     '缺少 required','参数不足','attributeerror','typeerror'];
   if (repairKw.some(k => lower.includes(k))) return 'repair';
-  const discussKw = ['为什么','什么意思','怎么样','对吗','分析','解释',
-    'what','why','how','explain','对不对'];
+  const discussKw = [
+    '为什么','什么意思','怎么样','对吗','分析','解释','对不对',
+    '是什么','是什么','如何','怎么','多少','能否','可以吗',
+    '有没有','怎么回事','告诉我','结果','数据','指标',
+    'what','why','how','explain','result','tell me','show',
+  ];
   if (discussKw.some(k => lower.includes(k))) return 'discuss';
   return 'revise';
 }

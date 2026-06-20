@@ -14,17 +14,7 @@ END $$;
 ALTER TABLE platform_strategies ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64) NOT NULL DEFAULT 'default';
 
 -- Tenant configuration table: key/value store with versioning.
-CREATE TABLE IF NOT EXISTS tenant_config (
-    id            BIGSERIAL PRIMARY KEY,
-    tenant_id     VARCHAR(64) NOT NULL,
-    config_key    VARCHAR(128) NOT NULL,
-    config_value  TEXT NOT NULL,
-    version       INT NOT NULL DEFAULT 1,
-    updated_by    VARCHAR(128),
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE (tenant_id, config_key)
-);
+-- tenant_config dropped (166_cleanup_dead_tables)
 
 -- Notify on config change so in-memory cache can hot-reload.
 CREATE OR REPLACE FUNCTION notify_tenant_config_change() RETURNS TRIGGER AS $$

@@ -140,7 +140,11 @@ func (s *PythonStrategyServer) Backtest(ctx context.Context, req *connect.Reques
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if !resp.Msg.GetSuccess() {
-		return connect.NewResponse(&antv1.BacktestStrategyResponse{Success: false}), nil
+		errMsg := resp.Msg.GetError()
+		if errMsg == "" {
+			errMsg = "backtest failed"
+		}
+		return connect.NewResponse(&antv1.BacktestStrategyResponse{Success: false, Error: errMsg}), nil
 	}
 	met := resp.Msg.GetMetrics()
 	return connect.NewResponse(&antv1.BacktestStrategyResponse{
