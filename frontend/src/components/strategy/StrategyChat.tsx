@@ -6,6 +6,7 @@ import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 import ChatMessageItem, { type ChatMsg } from './ChatMessageItem';
 import WorkflowBar from './WorkflowBar';
+import StrategyList from './StrategyList';
 import { aiApi } from '@/client/ai';
 const AISettingsModal = lazy(() => import('@/pages/strategy/components/workspace/AISettingsModal'));
 import { aiGatewayApi } from '@/client/aiGateway';
@@ -154,6 +155,27 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
   const handleLoadTemplate = async (id: string) => {
     const tpl = templates.find(t => t.id === id);
     if (tpl?.code) { setLoadedTemplateId(id); onApplyCode(tpl.code); addMsg('ai', { text: `📂 已加载策略: ${tpl.name}` }); }
+  };
+  const handleSendToAI = (code: string, name: string) => {
+    codeRef.current = code; onApplyCode(code);
+    setLoadedTemplateId(templates.find(t => t.code === code)?.id || '');
+    addMsg('user', { text: `请帮我看一下"${name}"这个策略，分析一下它的逻辑并给出优化建议。` });
+    setTab('chat');
+  };
+  const handleRenameTemplate = async (id: string, name: string) => {
+    if (!name || name === templates.find(t => t.id === id)?.name) return;
+    try {
+      const { strategyTemplateApi } = await import('@/client/strategy-schedules');
+      await strategyTemplateApi.update({ id, name });
+      fetchTemplates();
+    } catch {}
+  };
+  const handleDeleteTemplate = async (id: string) => {
+    try {
+      const { strategyTemplateApi } = await import('@/client/strategy-schedules');
+      await strategyTemplateApi.delete(id);
+      fetchTemplates();
+    } catch {}
   };
   const handleSaveTemplate = async () => {
     const c = codeRef.current; if (!c) return;
@@ -328,28 +350,10 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
         )}
 
         {tab === 'strategies' && (
-          <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <Typography.Text style={{ fontSize: 13, fontWeight: 600 }}><FileTextOutlined style={{ marginRight: 6 }} />策略模板</Typography.Text>
-              {codeRef.current && <Button size="small" type="primary" onClick={handleSaveTemplate}>保存当前策略</Button>}
-            </div>
-            {templates.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {templates.map(tpl => (
-                  <div key={tpl.id} onClick={() => handleLoadTemplate(tpl.id)}
-                    style={{ padding: '10px 12px', cursor: 'pointer', borderRadius: 8, fontSize: 12,
-                      background: tpl.id === loadedTemplateId ? '#f6ffed' : '#fafafa',
-                      border: tpl.id === loadedTemplateId ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.15s' }}>
-                    <span style={{ color: '#262626', fontWeight: tpl.id === loadedTemplateId ? 600 : 400 }}>
-                      {tpl.id === loadedTemplateId && <span style={{ color: '#52c41a', marginRight: 4 }}>●</span>}{tpl.name}
-                    </span>
-                    <span style={{ color: '#8c8c8c', fontSize: 10 }}>{tpl.code ? `${tpl.code.split('\n').length} 行` : ''}</span>
-                  </div>
-                ))}
-              </div>
-            ) : <div style={{ fontSize: 13, color: '#8c8c8c', textAlign: 'center', padding: '40px 0' }}>暂无已保存的策略模板</div>}
-          </div>
+          <StrategyList templates={templates} loadedId={loadedTemplateId}
+            hasCode={!!codeRef.current} onLoad={handleLoadTemplate} onSave={handleSaveTemplate}
+            onRename={handleRenameTemplate} onDelete={handleDeleteTemplate}
+            onSendToAI={handleSendToAI} />
         )}
       </div>
 
