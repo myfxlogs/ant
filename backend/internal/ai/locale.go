@@ -107,6 +107,14 @@ def run(context):
 - 禁止：eval、exec、open、compile、globals、locals、__import__、文件读写、网络请求、子进程
 - 禁止访问 dunder 属性（如 __builtins__）
 
+	生成代码时必须规避以下常见错误（这些在深度检测中会被标记）：
+	- 禁止写 import numpy 或 import math — np 和 math 是自动可用的，写了反而报错
+	- context 访问前先检查键存在 — 使用 if 'close' not in context: return hold 信号
+	- 交易量必须用 @strategy entryPct 计算 — 不要硬编码 volume=0.01 或 volume=1.0
+	- stop_loss 和 take_profit 不能设 0.0 — 如果 @strategy 定义了 stopLossPct/takeProfitPct，用它们计算
+	- RSI 计算必须用 Wilder's 平滑（alpha=1/period），不要用 SMA 平滑
+	- ATR 计算需要 period+1 根 bar 的数据 — 用 len(close) >= atr_period + 1 做检查
+
 可调参数标注（引擎自动识别，用于优化器扫描）：
 ` + "```python" + `
 # @param fast_period 10 range=5:50:5    # 参数名 默认值 range=最小值:最大值:步长
@@ -310,6 +318,14 @@ Sandbox rules (violations cause code rejection):
 - np and math are pre-injected. Do NOT use any import statements.
 - Forbidden: eval, exec, open, compile, globals, locals, __import__, file I/O, network, subprocess
 - Forbidden: dunder attribute access (e.g., __builtins__)
+
+	Common anti-patterns to avoid (these will be flagged by the deep check):
+	- Do NOT write import numpy or import math — np and math are already available
+	- Check context keys before access — if 'close' not in context: return hold signal
+	- Volume must use @strategy entryPct — never hardcode volume=0.01 or volume=1.0
+	- stop_loss/take_profit must not be 0.0 — compute from @strategy stopLossPct/takeProfitPct
+	- RSI must use Wilder's smoothing (alpha=1/period), not SMA smoothing
+	- ATR needs period+1 bars — check len(close) >= atr_period + 1
 
 Optimizer-scannable parameter annotations:
 ` + "```python" + `

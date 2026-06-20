@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { Button } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, ThunderboltOutlined, SafetyOutlined, SaveOutlined } from '@ant-design/icons';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { codeAssistApi } from '@/client/codeAssist';
@@ -106,7 +105,7 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
   };
 
   const stepConfig = [
-    { key: 'check' as StepKey, label: '深度检测', icon: <SafetyOutlined />, canRun: !disabled && status.check !== 'done', action: runCheck },
+    { key: 'check' as StepKey, label: '策略审查', icon: <SafetyOutlined />, canRun: !disabled && status.check !== 'done', action: runCheck },
     { key: 'backtest' as StepKey, label: '运行回测', icon: <ThunderboltOutlined />, canRun: canBacktest && status.backtest !== 'done', action: runBacktest },
     { key: 'save' as StepKey, label: '保存策略', icon: <SaveOutlined />, canRun: canSave && status.save !== 'done', action: runSave },
   ];
@@ -114,14 +113,18 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
   return (
     <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
       {stepConfig.map(s => (
-        <div key={s.key} style={{ display: 'flex', alignItems: 'center', gap: 4,
-          padding: '3px 8px', borderRadius: 6, fontSize: 11,
-          background: status[s.key] === 'done' ? '#f6ffed' : status[s.key] === 'failed' ? '#fff2f0' : '#fafafa',
-          border: `1px solid ${status[s.key] === 'done' ? '#b7eb8f' : status[s.key] === 'failed' ? '#ffccc7' : '#e8e8e8'}`,
-        }}>
+        <div key={s.key}
+          onClick={s.canRun ? s.action : undefined}
+          style={{ display: 'flex', alignItems: 'center', gap: 5,
+            padding: '4px 12px', borderRadius: 6, fontSize: 12,
+            cursor: s.canRun ? 'pointer' : 'default',
+            background: status[s.key] === 'done' ? '#f6ffed' : status[s.key] === 'failed' ? '#fff2f0' : '#fafafa',
+            border: `1px solid ${status[s.key] === 'done' ? '#b7eb8f' : status[s.key] === 'failed' ? '#ffccc7' : '#e8e8e8'}`,
+            transition: 'all 0.15s',
+            userSelect: 'none' as const,
+          }}>
           <StatusIcon s={status[s.key]} />
-          <span style={{ color: '#262626', fontWeight: 500 }}>{s.label}</span>
-          {s.canRun && <Button size="small" type="link" icon={s.icon} onClick={s.action} style={{ fontSize: 10, padding: '0 4px', height: 20 }} />}
+          {s.canRun ? <span style={{ color: '#1677ff', fontWeight: 600 }}>{s.label}</span> : <span style={{ color: '#262626', fontWeight: 500 }}>{s.label}</span>}
         </div>
       ))}
     </div>
