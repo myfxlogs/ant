@@ -1,10 +1,11 @@
 import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react';
 import { Button, Input, Tag, Typography, Select, Segmented, Popconfirm } from 'antd';
-import { SendOutlined, LoadingOutlined, SettingOutlined, HistoryOutlined, FileTextOutlined, EditOutlined, CheckOutlined, CloseOutlined, DeleteOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { SendOutlined, LoadingOutlined, SettingOutlined, HistoryOutlined, FileTextOutlined, EditOutlined, CheckOutlined, CloseOutlined, DeleteOutlined } from '@ant-design/icons';
 import { conversate, type ConversateCallbacks } from '@/client/strategyPlan';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 import ChatMessageItem, { type ChatMsg } from './ChatMessageItem';
+import WorkflowBar from './WorkflowBar';
 import { aiApi } from '@/client/ai';
 const AISettingsModal = lazy(() => import('@/pages/strategy/components/workspace/AISettingsModal'));
 import { aiGatewayApi } from '@/client/aiGateway';
@@ -163,20 +164,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
       fetchTemplates(); addMsg('ai', { text: `✅ 已保存策略: ${name}` });
     } catch {}
   };
-  const handleRunBacktest = async () => {
-    const c = codeRef.current;
-    if (!c) { addMsg('ai', { text: '⚠️ 没有可回测的代码，请先生成策略代码。' }); return; }
-    if (!hasSymbol || !accountId) { addMsg('ai', { text: '⚠️ 请先选择交易品种和账户。' }); return; }
-    setBusy(true); addMsg('ai', { text: '⚡ 正在启动回测...' });
-    try {
-      const r = await pythonStrategyApi.backtest({ code: c, accountId, symbol: symbol!, timeframe: timeframe!, initialCapital: 10000 });
-      if (r.success && r.metrics) {
-        setMetrics({ totalReturn: r.metrics.totalReturn, sharpeRatio: r.metrics.sharpeRatio, maxDrawdown: r.metrics.maxDrawdown, winRate: r.metrics.winRate, totalTrades: r.metrics.totalTrades, profitFactor: r.metrics.profitFactor });
-        addMsg('ai', { text: `✅ 回测完成 | Sharpe: ${r.metrics.sharpeRatio?.toFixed(2) ?? '-'} | 回撤: ${((r.metrics.maxDrawdown??0)*100).toFixed(1)}% | 胜率: ${((r.metrics.winRate??0)*100).toFixed(0)}% | 交易: ${r.metrics.totalTrades??0}次` });
-      } else { addMsg('ai', { text: `❌ 回测失败: ${r.error || '未知错误'}` }); }
-    } catch (e: any) { addMsg('ai', { text: `❌ 回测异常: ${e?.message || e}` }); }
-    setBusy(false);
-  };
   const handleNewConv = async () => {
     try {
       const conv = await aiApi.createConversation('新对话');
@@ -279,9 +266,11 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
               <Button type="primary" icon={<SendOutlined />} onClick={handleSend} loading={busy} disabled={!draft.trim() || !hasSymbol} style={{ borderRadius: 8, flexShrink: 0 }} />
             </div>
             <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>Enter 发送 · Shift+Enter 换行</div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-              <Button size="small" icon={<ThunderboltOutlined />} onClick={handleRunBacktest} disabled={busy || !codeRef.current} style={{ fontSize: 11, borderRadius: 6 }}>运行回测</Button>
-              <Button size="small" onClick={handleSaveTemplate} disabled={!codeRef.current} style={{ fontSize: 11, borderRadius: 6 }}>保存策略</Button></div>
+            <WorkflowBar
+              codeRef={codeRef} busy={busy} hasSymbol={hasSymbol} accountId={accountId}
+              symbol={symbol} timeframe={timeframe}
+              addMsg={addMsg} setMetrics={setMetrics} fetchTemplates={fetchTemplates}
+            />
           </div>
         </>)}
 

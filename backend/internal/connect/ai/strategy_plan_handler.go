@@ -3,7 +3,6 @@ package ai
 import (
 	internalai "anttrader/internal/ai"
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -167,45 +166,9 @@ func (s *StrategyPlanServer) Conversate(
 		code = ""
 	}
 
-	// Compliance check → auto-fix loop (Claude Code style: try → fail → fix → retry)
-	passed := false
-	if code != "" {
-		const maxRetries = 3
-		for retry := 0; retry < maxRetries; retry++ {
-			compliant := &complianceTool{}
-			result := compliant.Run(ctx, ToolInput{Code: code})
-			_ = stream.Send(&antv1.ConversateChunk{
-				Phase: "tool_result",
-				ToolResult: &antv1.ToolResult{CallId: "call_compliance", Name: "compliance_check", Success: result.Success, Error: result.Error},
-			})
 
-			if result.Success {
-				passed = true
-				break
-			}
-
-			if retry < maxRetries-1 {
-				fixPrompt := fmt.Sprintf("[SYSTEM] 合规检查失败: %s\n请修复以上问题并重新输出完整代码。", result.Error)
-				fixed, fixErr := loop.RunWithHistory(ctx, sysPrompt, fixPrompt, append(history,
-					systemai.ChatMessage{Role: "assistant", Content: raw},
-				), userID)
-				if fixErr != nil { break }
-				code = ExtractCode(fixed)
-				if code == "" { break }
-			}
-		}
-
-		// Backtest only if compliance passed
-		if passed && code != "" {
-			bt := &backtestTool{repo: s.backtestRepo}
-			btResult := bt.Run(ctx, ToolInput{Code: code, Symbol: m.Symbol, Timeframe: m.Timeframe, UserID: userID})
-			outJSON, _ := json.Marshal(btResult.Output)
-			_ = stream.Send(&antv1.ConversateChunk{
-				Phase: "tool_result",
-				ToolResult: &antv1.ToolResult{CallId: "call_backtest", Name: "backtest", Success: btResult.Success, OutputJson: string(outJSON), Error: btResult.Error},
-			})
-		}
-	}
+// Compliance, backtest, and save are now manual user actions
+		// (buttons below the chat input: validate → backtest → save).
 
 	s.persistExchange(ctx, userID, m.ConversationId, plan, code, m.Message)
 
