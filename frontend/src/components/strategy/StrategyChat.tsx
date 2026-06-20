@@ -72,7 +72,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     if (hasSymbol && !greeted.current && !busy && messages.length === 0) {
       greeted.current = true;
       setBusy(true);
-      const msg = `介绍一下 ${symbol} ${timeframe} 当前的市场状态，并给出策略建议`;
+      const msg = `你好，介绍一下当前 ${symbol} ${timeframe} 的市场概况`;
       addMsg('user', { text: msg });
       const abort = conversate(
         { message: msg, conversationId: sessionId, symbol, timeframe, plan: '', currentCode: '', backtestMetricsJson: '' },
