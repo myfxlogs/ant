@@ -81,8 +81,15 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, _ 
 		// doesn't see its own hallucination in the next round, and the
 		// frontend doesn't display contradictory text.
 		calls := parseToolCalls(roundText)
+		hadPostToolText := false
 		if len(calls) > 0 {
 			if idx := strings.Index(roundText, "[TOOL:") ; idx >= 0 {
+				postTool := strings.TrimSpace(roundText[idx:])
+				// If there's substantial text beyond just the tool call syntax,
+				// the LLM speculated about tool results — flag for correction.
+				if len(postTool) > len("[TOOL: x y]")+20 {
+					hadPostToolText = true
+				}
 				roundText = strings.TrimSpace(roundText[:idx])
 			}
 		}
@@ -124,9 +131,15 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, _ 
 
 		// Feed truncated assistant response + tool results to next round.
 		// The AI never sees its hallucinated text — only the real tool results.
+		sysMsg := strings.Join(toolResults, "\n")
+		if hadPostToolText {
+			// The LLM speculated about tool results before they ran.
+			// Inject a strong correction reminder so the AI reconciles.
+			sysMsg += "\n[SYSTEM] 以上是工具返回的真实数据。如果你在调用工具后曾猜测过结果，那些猜测是错的——忽略它们，以这里的数据为准。如果真实数据与你之前说的不一致，主动承认并更正。"
+		}
 		messages = append(messages,
 			systemai.ChatMessage{Role: "assistant", Content: roundText},
-			systemai.ChatMessage{Role: "system", Content: strings.Join(toolResults, "\n")},
+			systemai.ChatMessage{Role: "system", Content: sysMsg},
 		)
 	}
 
