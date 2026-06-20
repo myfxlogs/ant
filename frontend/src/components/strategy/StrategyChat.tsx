@@ -160,20 +160,20 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
       {/* Header */}
       <div style={{ padding: '8px 12px', borderBottom: '1px solid #e8e8e8', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, background: '#fff' }}>
         <ThunderboltOutlined style={{ color: '#faad14', fontSize: 16 }} />
-        <Typography.Text strong style={{ fontSize: 13, color: '#262626' }}>Strategy Code</Typography.Text>
-        {hasSymbol ? <Tag color="blue" style={{ fontSize: 10, margin: 0 }}>{symbol} · {timeframe}</Tag> : <Tag color="warning" style={{ fontSize: 10, margin: 0 }}>选择品种</Tag>}
+        <Typography.Text strong style={{ fontSize: 14, color: '#262626' }}>Strategy Code</Typography.Text>
+        {hasSymbol ? <Tag color="blue" style={{ fontSize: 12, margin: 0 }}>{symbol} · {timeframe}</Tag> : <Tag color="warning" style={{ fontSize: 12, margin: 0 }}>选择品种</Tag>}
         {modelOptions.length > 0 && (
           <Select size="small" value={selectedModel || undefined}
             onChange={async (v) => { setSelectedModel(v); const [pid, model] = v.split('|'); try { await aiApi.setPrimary({ providerId: pid, model }); } catch {} }}
-            style={{ width: 160, fontSize: 11 }} options={modelOptions} placeholder="选择模型" />
+            style={{ width: 160, fontSize: 12 }} options={modelOptions} placeholder="选择模型" />
         )}
         <Button size="small" type="text" icon={<SettingOutlined />}
           onClick={() => setAiSettingsOpen(true)}
-          style={{ fontSize: 11 }} title="AI 网关设置" />
+          style={{ fontSize: 12 }} title="AI 网关设置" />
         {busy && <LoadingOutlined style={{ color: '#1677ff', marginLeft: 'auto' }} />}
         <Select size="small" value={loadedTemplateId || undefined}
           onChange={(v) => v && handleLoadTemplate(v)}
-          style={{ width: 140, fontSize: 11 }}
+          style={{ width: 140, fontSize: 12 }}
           options={templates.map(t => ({ value: t.id, label: t.name }))}
           placeholder={templates.length > 0 ? "加载策略" : "暂无策略"}
           allowClear disabled={templates.length === 0}
@@ -193,7 +193,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {messages.length === 0 && !busy && (
-          <div style={{ textAlign: 'center', color: '#8c8c8c', marginTop: 40, fontSize: 13 }}>
+          <div style={{ textAlign: 'center', color: '#8c8c8c', marginTop: 40, fontSize: 14 }}>
             <RobotOutlined style={{ fontSize: 32, color: '#d9d9d9', display: 'block', margin: '0 auto 12' }} />
             告诉我你想创建什么样的交易策略
           </div>
@@ -205,10 +205,10 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
               {m.role === 'user' ? <UserOutlined style={iconStyle} /> : <RobotOutlined style={iconStyle} />}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              {m.text && <div style={{ fontSize: 12, lineHeight: '20px', color: '#262626', whiteSpace: 'pre-wrap' }}>{m.text}</div>}
+              {m.text && <div style={{ fontSize: 13, lineHeight: '22px', color: '#262626', whiteSpace: 'pre-wrap' }}>{m.text}</div>}
               {m.plan && (
                 <div style={{ padding: '10px 12px', borderRadius: 6, fontSize: 12, background: '#f6ffed', border: '1px solid #b7eb8f', color: '#389e0d', whiteSpace: 'pre-wrap', lineHeight: '20px' }}>
-                  <div style={{ fontSize: 10, color: '#52c41a', marginBottom: 4, fontWeight: 600 }}>📋 执行计划</div>
+                  <div style={{ fontSize: 12, color: '#52c41a', marginBottom: 4, fontWeight: 600 }}>📋 执行计划</div>
                   {m.plan}
                 </div>
               )}
@@ -216,13 +216,13 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
               {m.code && (
                 <div style={{ marginTop: 4, position: 'relative' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 10px', background: '#282c34', borderRadius: '6px 6px 0 0' }}>
-                    <span style={{ fontSize: 10, color: '#abb2bf' }}><CodeOutlined /> Python</span>
-                    <Button size="small" type="text" icon={<CopyOutlined />} onClick={() => handleCopy(m.code!)} style={{ color: '#abb2bf', fontSize: 11 }}>{copied ? '已复制' : '复制'}</Button>
+                    <span style={{ fontSize: 12, color: '#abb2bf' }}><CodeOutlined /> Python</span>
+                    <Button size="small" type="text" icon={<CopyOutlined />} onClick={() => handleCopy(m.code!)} style={{ color: '#abb2bf', fontSize: 12 }}>{copied ? '已复制' : '复制'}</Button>
                   </div>
-                  <SyntaxHighlighter language="python" style={atomOneDark} showLineNumbers wrapLines customStyle={{ margin: 0, borderRadius: '0 0 6px 6px', fontSize: 11, padding: '8px 0', maxHeight: 300 }} lineNumberStyle={{ fontSize: 10, minWidth: '2em', color: '#636d83' }}>
+                  <SyntaxHighlighter language="python" style={atomOneDark} showLineNumbers wrapLines customStyle={{ margin: 0, borderRadius: '0 0 6px 6px', fontSize: 12, padding: '8px 0', maxHeight: 300 }} lineNumberStyle={{ fontSize: 11, minWidth: '2em', color: '#636d83' }}>
                     {m.code}
                   </SyntaxHighlighter>
-                  <div style={{ fontSize: 10, color: '#8c8c8c', marginTop: 4, textAlign: 'center' }}>
+                  <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4, textAlign: 'center' }}>
                     ✅ 代码已生成，合规检查和回测将自动运行。你可以继续讨论修改。
                   </div>
                 </div>
@@ -247,10 +247,10 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
             placeholder={hasSymbol ? '描述你的策略需求，或继续对话...' : '请先在顶栏选择交易品种和周期'}
             autoSize={{ minRows: 1, maxRows: 4 }}
             onPressEnter={e => { if (!e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            disabled={busy || !hasSymbol} style={{ fontSize: 12, borderRadius: 8 }} />
+            disabled={busy || !hasSymbol} style={{ fontSize: 13, borderRadius: 8 }} />
           <Button type="primary" icon={<SendOutlined />} onClick={handleSend} loading={busy} disabled={!draft.trim() || !hasSymbol} style={{ borderRadius: 8, flexShrink: 0 }} />
         </div>
-        <div style={{ fontSize: 10, color: '#8c8c8c', marginTop: 4 }}>Enter 发送 · Shift+Enter 换行</div>
+        <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>Enter 发送 · Shift+Enter 换行</div>
       </div>
       {/* AI Settings Modal */}
       <Suspense fallback={null}>
