@@ -48,7 +48,39 @@ type GenI18N struct {
 	UseDefaults              string                 `protobuf:"bytes,23,opt,name=use_defaults,json=useDefaults,proto3" json:"use_defaults,omitempty"`                                          // Continue with defaults
 	Validating               string                 `protobuf:"bytes,24,opt,name=validating,proto3" json:"validating,omitempty"`                                                               // Compliance Check
 	UseDefaultsHint          string                 `protobuf:"bytes,25,opt,name=use_defaults_hint,json=useDefaultsHint,proto3" json:"use_defaults_hint,omitempty"`                            // AI will generate a generic strategy template with default parameters
-	FeedbackInputPlaceholder string                 `protobuf:"bytes,26,opt,name=feedback_input_placeholder,json=feedbackInputPlaceholder,proto3" json:"feedback_input_placeholder,omitempty"` // Not satisfied? Provide feedback to refine, e.g.: "Too aggressive, add stop loss"
+	FeedbackInputPlaceholder string                 `protobuf:"bytes,26,opt,name=feedback_input_placeholder,json=feedbackInputPlaceholder,proto3" json:"feedback_input_placeholder,omitempty"` // Not satisfied? Provide feedback to refine
+	PlanTitle                string                 `protobuf:"bytes,27,opt,name=plan_title,json=planTitle,proto3" json:"plan_title,omitempty"`                                                // AI Strategy Planner
+	PlanAnalyzing            string                 `protobuf:"bytes,28,opt,name=plan_analyzing,json=planAnalyzing,proto3" json:"plan_analyzing,omitempty"`                                    // Analyzing
+	PlanErrorTag             string                 `protobuf:"bytes,29,opt,name=plan_error_tag,json=planErrorTag,proto3" json:"plan_error_tag,omitempty"`                                     // Error
+	PlanReset                string                 `protobuf:"bytes,30,opt,name=plan_reset,json=planReset,proto3" json:"plan_reset,omitempty"`                                                // Start Over
+	PlanCardTitle            string                 `protobuf:"bytes,31,opt,name=plan_card_title,json=planCardTitle,proto3" json:"plan_card_title,omitempty"`                                  // AI Execution Plan
+	PlanEdit                 string                 `protobuf:"bytes,32,opt,name=plan_edit,json=planEdit,proto3" json:"plan_edit,omitempty"`                                                   // Edit
+	PlanEditCancel           string                 `protobuf:"bytes,33,opt,name=plan_edit_cancel,json=planEditCancel,proto3" json:"plan_edit_cancel,omitempty"`                               // Cancel
+	PlanConfirmBtn           string                 `protobuf:"bytes,34,opt,name=plan_confirm_btn,json=planConfirmBtn,proto3" json:"plan_confirm_btn,omitempty"`                               // Confirm & Generate Code
+	PlanSendBtn              string                 `protobuf:"bytes,35,opt,name=plan_send_btn,json=planSendBtn,proto3" json:"plan_send_btn,omitempty"`                                        // Analyze & Generate Plan
+	PlanSymbolWarn           string                 `protobuf:"bytes,36,opt,name=plan_symbol_warn,json=planSymbolWarn,proto3" json:"plan_symbol_warn,omitempty"`                               // Please select symbol and timeframe first
+	PlanSymbolOk             string                 `protobuf:"bytes,37,opt,name=plan_symbol_ok,json=planSymbolOk,proto3" json:"plan_symbol_ok,omitempty"`                                     // {symbol} · {timeframe}
+	PlanPrerequisiteMsg      string                 `protobuf:"bytes,38,opt,name=plan_prerequisite_msg,json=planPrerequisiteMsg,proto3" json:"plan_prerequisite_msg,omitempty"`                // Pre-flight check: select symbol+timeframe before generating
+	ExecTitle                string                 `protobuf:"bytes,39,opt,name=exec_title,json=execTitle,proto3" json:"exec_title,omitempty"`                                                // AI Executing
+	ExecRunning              string                 `protobuf:"bytes,40,opt,name=exec_running,json=execRunning,proto3" json:"exec_running,omitempty"`                                          // Running
+	ExecDone                 string                 `protobuf:"bytes,41,opt,name=exec_done,json=execDone,proto3" json:"exec_done,omitempty"`                                                   // Done
+	ExecBackToPlan           string                 `protobuf:"bytes,42,opt,name=exec_back_to_plan,json=execBackToPlan,proto3" json:"exec_back_to_plan,omitempty"`                             // Back to Plan
+	ExecPlanLabel            string                 `protobuf:"bytes,43,opt,name=exec_plan_label,json=execPlanLabel,proto3" json:"exec_plan_label,omitempty"`                                  // Execution Plan
+	ExecComplianceTool       string                 `protobuf:"bytes,44,opt,name=exec_compliance_tool,json=execComplianceTool,proto3" json:"exec_compliance_tool,omitempty"`                   // Compliance Check
+	ExecBacktestTool         string                 `protobuf:"bytes,45,opt,name=exec_backtest_tool,json=execBacktestTool,proto3" json:"exec_backtest_tool,omitempty"`                         // Backtest
+	ExecToolRunning          string                 `protobuf:"bytes,46,opt,name=exec_tool_running,json=execToolRunning,proto3" json:"exec_tool_running,omitempty"`                            // Running {tool}...
+	ExecFeedbackTitle        string                 `protobuf:"bytes,47,opt,name=exec_feedback_title,json=execFeedbackTitle,proto3" json:"exec_feedback_title,omitempty"`                      // Continue AI conversation
+	ExecFeedbackHint         string                 `protobuf:"bytes,48,opt,name=exec_feedback_hint,json=execFeedbackHint,proto3" json:"exec_feedback_hint,omitempty"`                         // Use natural language to guide AI adjustments
+	ExecFeedbackPlaceholder  string                 `protobuf:"bytes,49,opt,name=exec_feedback_placeholder,json=execFeedbackPlaceholder,proto3" json:"exec_feedback_placeholder,omitempty"`    // Try saying: "tighten stop to 1%" / "why is Sharpe low?"
+	ExecChipLowerDd          string                 `protobuf:"bytes,50,opt,name=exec_chip_lower_dd,json=execChipLowerDd,proto3" json:"exec_chip_lower_dd,omitempty"`                          // Lower Drawdown
+	ExecChipRaiseReturn      string                 `protobuf:"bytes,51,opt,name=exec_chip_raise_return,json=execChipRaiseReturn,proto3" json:"exec_chip_raise_return,omitempty"`              // Increase Returns
+	ExecChipTightenSl        string                 `protobuf:"bytes,52,opt,name=exec_chip_tighten_sl,json=execChipTightenSl,proto3" json:"exec_chip_tighten_sl,omitempty"`                    // Tighten Stop
+	ExecChipLongOnly         string                 `protobuf:"bytes,53,opt,name=exec_chip_long_only,json=execChipLongOnly,proto3" json:"exec_chip_long_only,omitempty"`                       // Long Only
+	ExecSendFeedback         string                 `protobuf:"bytes,54,opt,name=exec_send_feedback,json=execSendFeedback,proto3" json:"exec_send_feedback,omitempty"`                         // Send to AI
+	ExecClear                string                 `protobuf:"bytes,55,opt,name=exec_clear,json=execClear,proto3" json:"exec_clear,omitempty"`                                                // Clear
+	ExecApplyCode            string                 `protobuf:"bytes,56,opt,name=exec_apply_code,json=execApplyCode,proto3" json:"exec_apply_code,omitempty"`                                  // Apply Code to Editor
+	ExecSkipNoSymbol         string                 `protobuf:"bytes,57,opt,name=exec_skip_no_symbol,json=execSkipNoSymbol,proto3" json:"exec_skip_no_symbol,omitempty"`                       // Backtest skipped: no symbol selected
+	ExecSkipNoCode           string                 `protobuf:"bytes,58,opt,name=exec_skip_no_code,json=execSkipNoCode,proto3" json:"exec_skip_no_code,omitempty"`                             // Backtest skipped: no code
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -265,11 +297,235 @@ func (x *GenI18N) GetFeedbackInputPlaceholder() string {
 	return ""
 }
 
+func (x *GenI18N) GetPlanTitle() string {
+	if x != nil {
+		return x.PlanTitle
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanAnalyzing() string {
+	if x != nil {
+		return x.PlanAnalyzing
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanErrorTag() string {
+	if x != nil {
+		return x.PlanErrorTag
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanReset() string {
+	if x != nil {
+		return x.PlanReset
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanCardTitle() string {
+	if x != nil {
+		return x.PlanCardTitle
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanEdit() string {
+	if x != nil {
+		return x.PlanEdit
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanEditCancel() string {
+	if x != nil {
+		return x.PlanEditCancel
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanConfirmBtn() string {
+	if x != nil {
+		return x.PlanConfirmBtn
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanSendBtn() string {
+	if x != nil {
+		return x.PlanSendBtn
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanSymbolWarn() string {
+	if x != nil {
+		return x.PlanSymbolWarn
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanSymbolOk() string {
+	if x != nil {
+		return x.PlanSymbolOk
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanPrerequisiteMsg() string {
+	if x != nil {
+		return x.PlanPrerequisiteMsg
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecTitle() string {
+	if x != nil {
+		return x.ExecTitle
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecRunning() string {
+	if x != nil {
+		return x.ExecRunning
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecDone() string {
+	if x != nil {
+		return x.ExecDone
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecBackToPlan() string {
+	if x != nil {
+		return x.ExecBackToPlan
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecPlanLabel() string {
+	if x != nil {
+		return x.ExecPlanLabel
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecComplianceTool() string {
+	if x != nil {
+		return x.ExecComplianceTool
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecBacktestTool() string {
+	if x != nil {
+		return x.ExecBacktestTool
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecToolRunning() string {
+	if x != nil {
+		return x.ExecToolRunning
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecFeedbackTitle() string {
+	if x != nil {
+		return x.ExecFeedbackTitle
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecFeedbackHint() string {
+	if x != nil {
+		return x.ExecFeedbackHint
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecFeedbackPlaceholder() string {
+	if x != nil {
+		return x.ExecFeedbackPlaceholder
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecChipLowerDd() string {
+	if x != nil {
+		return x.ExecChipLowerDd
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecChipRaiseReturn() string {
+	if x != nil {
+		return x.ExecChipRaiseReturn
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecChipTightenSl() string {
+	if x != nil {
+		return x.ExecChipTightenSl
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecChipLongOnly() string {
+	if x != nil {
+		return x.ExecChipLongOnly
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecSendFeedback() string {
+	if x != nil {
+		return x.ExecSendFeedback
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecClear() string {
+	if x != nil {
+		return x.ExecClear
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecApplyCode() string {
+	if x != nil {
+		return x.ExecApplyCode
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecSkipNoSymbol() string {
+	if x != nil {
+		return x.ExecSkipNoSymbol
+	}
+	return ""
+}
+
+func (x *GenI18N) GetExecSkipNoCode() string {
+	if x != nil {
+		return x.ExecSkipNoCode
+	}
+	return ""
+}
+
 var File_i18n_strategy_gen_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_gen_proto_rawDesc = "" +
 	"\n" +
-	"\x17i18n/strategy_gen.proto\x12\vant.v1.i18n\"\xb4\a\n" +
+	"\x17i18n/strategy_gen.proto\x12\vant.v1.i18n\"\xe9\x11\n" +
 	"\aGenI18n\x12!\n" +
 	"\fbacktest_msg\x18\x01 \x01(\tR\vbacktestMsg\x12)\n" +
 	"\x10backtest_started\x18\x02 \x01(\tR\x0fbacktestStarted\x12!\n" +
@@ -305,7 +561,43 @@ const file_i18n_strategy_gen_proto_rawDesc = "" +
 	"validating\x18\x18 \x01(\tR\n" +
 	"validating\x12*\n" +
 	"\x11use_defaults_hint\x18\x19 \x01(\tR\x0fuseDefaultsHint\x12<\n" +
-	"\x1afeedback_input_placeholder\x18\x1a \x01(\tR\x18feedbackInputPlaceholderB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x1afeedback_input_placeholder\x18\x1a \x01(\tR\x18feedbackInputPlaceholder\x12\x1d\n" +
+	"\n" +
+	"plan_title\x18\x1b \x01(\tR\tplanTitle\x12%\n" +
+	"\x0eplan_analyzing\x18\x1c \x01(\tR\rplanAnalyzing\x12$\n" +
+	"\x0eplan_error_tag\x18\x1d \x01(\tR\fplanErrorTag\x12\x1d\n" +
+	"\n" +
+	"plan_reset\x18\x1e \x01(\tR\tplanReset\x12&\n" +
+	"\x0fplan_card_title\x18\x1f \x01(\tR\rplanCardTitle\x12\x1b\n" +
+	"\tplan_edit\x18  \x01(\tR\bplanEdit\x12(\n" +
+	"\x10plan_edit_cancel\x18! \x01(\tR\x0eplanEditCancel\x12(\n" +
+	"\x10plan_confirm_btn\x18\" \x01(\tR\x0eplanConfirmBtn\x12\"\n" +
+	"\rplan_send_btn\x18# \x01(\tR\vplanSendBtn\x12(\n" +
+	"\x10plan_symbol_warn\x18$ \x01(\tR\x0eplanSymbolWarn\x12$\n" +
+	"\x0eplan_symbol_ok\x18% \x01(\tR\fplanSymbolOk\x122\n" +
+	"\x15plan_prerequisite_msg\x18& \x01(\tR\x13planPrerequisiteMsg\x12\x1d\n" +
+	"\n" +
+	"exec_title\x18' \x01(\tR\texecTitle\x12!\n" +
+	"\fexec_running\x18( \x01(\tR\vexecRunning\x12\x1b\n" +
+	"\texec_done\x18) \x01(\tR\bexecDone\x12)\n" +
+	"\x11exec_back_to_plan\x18* \x01(\tR\x0eexecBackToPlan\x12&\n" +
+	"\x0fexec_plan_label\x18+ \x01(\tR\rexecPlanLabel\x120\n" +
+	"\x14exec_compliance_tool\x18, \x01(\tR\x12execComplianceTool\x12,\n" +
+	"\x12exec_backtest_tool\x18- \x01(\tR\x10execBacktestTool\x12*\n" +
+	"\x11exec_tool_running\x18. \x01(\tR\x0fexecToolRunning\x12.\n" +
+	"\x13exec_feedback_title\x18/ \x01(\tR\x11execFeedbackTitle\x12,\n" +
+	"\x12exec_feedback_hint\x180 \x01(\tR\x10execFeedbackHint\x12:\n" +
+	"\x19exec_feedback_placeholder\x181 \x01(\tR\x17execFeedbackPlaceholder\x12+\n" +
+	"\x12exec_chip_lower_dd\x182 \x01(\tR\x0fexecChipLowerDd\x123\n" +
+	"\x16exec_chip_raise_return\x183 \x01(\tR\x13execChipRaiseReturn\x12/\n" +
+	"\x14exec_chip_tighten_sl\x184 \x01(\tR\x11execChipTightenSl\x12-\n" +
+	"\x13exec_chip_long_only\x185 \x01(\tR\x10execChipLongOnly\x12,\n" +
+	"\x12exec_send_feedback\x186 \x01(\tR\x10execSendFeedback\x12\x1d\n" +
+	"\n" +
+	"exec_clear\x187 \x01(\tR\texecClear\x12&\n" +
+	"\x0fexec_apply_code\x188 \x01(\tR\rexecApplyCode\x12-\n" +
+	"\x13exec_skip_no_symbol\x189 \x01(\tR\x10execSkipNoSymbol\x12)\n" +
+	"\x11exec_skip_no_code\x18: \x01(\tR\x0eexecSkipNoCodeB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_gen_proto_rawDescOnce sync.Once

@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file i18n/strategy_gen.proto.
  */
 export const file_i18n_strategy_gen: GenFile = /*@__PURE__*/
-  fileDesc("ChdpMThuL3N0cmF0ZWd5X2dlbi5wcm90bxILYW50LnYxLmkxOG4i0QQKB0dlbkkxOG4SFAoMYmFja3Rlc3RfbXNnGAEgASgJEhgKEGJhY2t0ZXN0X3N0YXJ0ZWQYAiABKAkSFAoMY2hhdF9kaXNjdXNzGAMgASgJEhUKDWNoYXRfZ2VuZXJhdGUYBCABKAkSEwoLY2hhdF9yZXBhaXIYBSABKAkSEwoLY2hhdF9yZXZpc2UYBiABKAkSFQoNY2xhcmlmeV90aXRsZRgHIAEoCRIMCgRkb25lGAggASgJEhgKEGZlZWRiYWNrX2hlYWRpbmcYCSABKAkSHAoUZmVlZGJhY2tfcGxhY2Vob2xkZXIYCiABKAkSEgoKZ2VuZXJhdGluZxgLIAEoCRIcChRtZXRyaWNzX21heF9kcmF3ZG93bhgMIAEoCRIWCg5tZXRyaWNzX3JldHVybhgNIAEoCRIWCg5tZXRyaWNzX3NoYXJwZRgOIAEoCRIWCg5tZXRyaWNzX3RyYWRlcxgPIAEoCRIYChBtZXRyaWNzX3dpbl9yYXRlGBAgASgJEhMKC3BsYWNlaG9sZGVyGBEgASgJEhIKCnJlZ2VuZXJhdGUYEiABKAkSDQoFcmVzZXQYEyABKAkSDAoEc2VuZBgUIAEoCRIQCgh0ZW1wbGF0ZRgVIAEoCRINCgV0aXRsZRgWIAEoCRIUCgx1c2VfZGVmYXVsdHMYFyABKAkSEgoKdmFsaWRhdGluZxgYIAEoCRIZChF1c2VfZGVmYXVsdHNfaGludBgZIAEoCRIiChpmZWVkYmFja19pbnB1dF9wbGFjZWhvbGRlchgaIAEoCUIhWh9hbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MS9pMThuYgZwcm90bzM");
+  fileDesc("ChdpMThuL3N0cmF0ZWd5X2dlbi5wcm90bxILYW50LnYxLmkxOG4iiwsKB0dlbkkxOG4SFAoMYmFja3Rlc3RfbXNnGAEgASgJEhgKEGJhY2t0ZXN0X3N0YXJ0ZWQYAiABKAkSFAoMY2hhdF9kaXNjdXNzGAMgASgJEhUKDWNoYXRfZ2VuZXJhdGUYBCABKAkSEwoLY2hhdF9yZXBhaXIYBSABKAkSEwoLY2hhdF9yZXZpc2UYBiABKAkSFQoNY2xhcmlmeV90aXRsZRgHIAEoCRIMCgRkb25lGAggASgJEhgKEGZlZWRiYWNrX2hlYWRpbmcYCSABKAkSHAoUZmVlZGJhY2tfcGxhY2Vob2xkZXIYCiABKAkSEgoKZ2VuZXJhdGluZxgLIAEoCRIcChRtZXRyaWNzX21heF9kcmF3ZG93bhgMIAEoCRIWCg5tZXRyaWNzX3JldHVybhgNIAEoCRIWCg5tZXRyaWNzX3NoYXJwZRgOIAEoCRIWCg5tZXRyaWNzX3RyYWRlcxgPIAEoCRIYChBtZXRyaWNzX3dpbl9yYXRlGBAgASgJEhMKC3BsYWNlaG9sZGVyGBEgASgJEhIKCnJlZ2VuZXJhdGUYEiABKAkSDQoFcmVzZXQYEyABKAkSDAoEc2VuZBgUIAEoCRIQCgh0ZW1wbGF0ZRgVIAEoCRINCgV0aXRsZRgWIAEoCRIUCgx1c2VfZGVmYXVsdHMYFyABKAkSEgoKdmFsaWRhdGluZxgYIAEoCRIZChF1c2VfZGVmYXVsdHNfaGludBgZIAEoCRIiChpmZWVkYmFja19pbnB1dF9wbGFjZWhvbGRlchgaIAEoCRISCgpwbGFuX3RpdGxlGBsgASgJEhYKDnBsYW5fYW5hbHl6aW5nGBwgASgJEhYKDnBsYW5fZXJyb3JfdGFnGB0gASgJEhIKCnBsYW5fcmVzZXQYHiABKAkSFwoPcGxhbl9jYXJkX3RpdGxlGB8gASgJEhEKCXBsYW5fZWRpdBggIAEoCRIYChBwbGFuX2VkaXRfY2FuY2VsGCEgASgJEhgKEHBsYW5fY29uZmlybV9idG4YIiABKAkSFQoNcGxhbl9zZW5kX2J0bhgjIAEoCRIYChBwbGFuX3N5bWJvbF93YXJuGCQgASgJEhYKDnBsYW5fc3ltYm9sX29rGCUgASgJEh0KFXBsYW5fcHJlcmVxdWlzaXRlX21zZxgmIAEoCRISCgpleGVjX3RpdGxlGCcgASgJEhQKDGV4ZWNfcnVubmluZxgoIAEoCRIRCglleGVjX2RvbmUYKSABKAkSGQoRZXhlY19iYWNrX3RvX3BsYW4YKiABKAkSFwoPZXhlY19wbGFuX2xhYmVsGCsgASgJEhwKFGV4ZWNfY29tcGxpYW5jZV90b29sGCwgASgJEhoKEmV4ZWNfYmFja3Rlc3RfdG9vbBgtIAEoCRIZChFleGVjX3Rvb2xfcnVubmluZxguIAEoCRIbChNleGVjX2ZlZWRiYWNrX3RpdGxlGC8gASgJEhoKEmV4ZWNfZmVlZGJhY2tfaGludBgwIAEoCRIhChlleGVjX2ZlZWRiYWNrX3BsYWNlaG9sZGVyGDEgASgJEhoKEmV4ZWNfY2hpcF9sb3dlcl9kZBgyIAEoCRIeChZleGVjX2NoaXBfcmFpc2VfcmV0dXJuGDMgASgJEhwKFGV4ZWNfY2hpcF90aWdodGVuX3NsGDQgASgJEhsKE2V4ZWNfY2hpcF9sb25nX29ubHkYNSABKAkSGgoSZXhlY19zZW5kX2ZlZWRiYWNrGDYgASgJEhIKCmV4ZWNfY2xlYXIYNyABKAkSFwoPZXhlY19hcHBseV9jb2RlGDggASgJEhsKE2V4ZWNfc2tpcF9ub19zeW1ib2wYOSABKAkSGQoRZXhlY19za2lwX25vX2NvZGUYOiABKAlCIVofYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjEvaTE4bmIGcHJvdG8z");
 
 /**
  * @generated from message ant.v1.i18n.GenI18n
@@ -192,11 +192,235 @@ export type GenI18n = Message<"ant.v1.i18n.GenI18n"> & {
   useDefaultsHint: string;
 
   /**
-   * Not satisfied? Provide feedback to refine, e.g.: "Too aggressive, add stop loss"
+   * Not satisfied? Provide feedback to refine
    *
    * @generated from field: string feedback_input_placeholder = 26;
    */
   feedbackInputPlaceholder: string;
+
+  /**
+   * AI Strategy Planner
+   *
+   * @generated from field: string plan_title = 27;
+   */
+  planTitle: string;
+
+  /**
+   * Analyzing
+   *
+   * @generated from field: string plan_analyzing = 28;
+   */
+  planAnalyzing: string;
+
+  /**
+   * Error
+   *
+   * @generated from field: string plan_error_tag = 29;
+   */
+  planErrorTag: string;
+
+  /**
+   * Start Over
+   *
+   * @generated from field: string plan_reset = 30;
+   */
+  planReset: string;
+
+  /**
+   * AI Execution Plan
+   *
+   * @generated from field: string plan_card_title = 31;
+   */
+  planCardTitle: string;
+
+  /**
+   * Edit
+   *
+   * @generated from field: string plan_edit = 32;
+   */
+  planEdit: string;
+
+  /**
+   * Cancel
+   *
+   * @generated from field: string plan_edit_cancel = 33;
+   */
+  planEditCancel: string;
+
+  /**
+   * Confirm & Generate Code
+   *
+   * @generated from field: string plan_confirm_btn = 34;
+   */
+  planConfirmBtn: string;
+
+  /**
+   * Analyze & Generate Plan
+   *
+   * @generated from field: string plan_send_btn = 35;
+   */
+  planSendBtn: string;
+
+  /**
+   * Please select symbol and timeframe first
+   *
+   * @generated from field: string plan_symbol_warn = 36;
+   */
+  planSymbolWarn: string;
+
+  /**
+   * {symbol} · {timeframe}
+   *
+   * @generated from field: string plan_symbol_ok = 37;
+   */
+  planSymbolOk: string;
+
+  /**
+   * Pre-flight check: select symbol+timeframe before generating
+   *
+   * @generated from field: string plan_prerequisite_msg = 38;
+   */
+  planPrerequisiteMsg: string;
+
+  /**
+   * AI Executing
+   *
+   * @generated from field: string exec_title = 39;
+   */
+  execTitle: string;
+
+  /**
+   * Running
+   *
+   * @generated from field: string exec_running = 40;
+   */
+  execRunning: string;
+
+  /**
+   * Done
+   *
+   * @generated from field: string exec_done = 41;
+   */
+  execDone: string;
+
+  /**
+   * Back to Plan
+   *
+   * @generated from field: string exec_back_to_plan = 42;
+   */
+  execBackToPlan: string;
+
+  /**
+   * Execution Plan
+   *
+   * @generated from field: string exec_plan_label = 43;
+   */
+  execPlanLabel: string;
+
+  /**
+   * Compliance Check
+   *
+   * @generated from field: string exec_compliance_tool = 44;
+   */
+  execComplianceTool: string;
+
+  /**
+   * Backtest
+   *
+   * @generated from field: string exec_backtest_tool = 45;
+   */
+  execBacktestTool: string;
+
+  /**
+   * Running {tool}...
+   *
+   * @generated from field: string exec_tool_running = 46;
+   */
+  execToolRunning: string;
+
+  /**
+   * Continue AI conversation
+   *
+   * @generated from field: string exec_feedback_title = 47;
+   */
+  execFeedbackTitle: string;
+
+  /**
+   * Use natural language to guide AI adjustments
+   *
+   * @generated from field: string exec_feedback_hint = 48;
+   */
+  execFeedbackHint: string;
+
+  /**
+   * Try saying: "tighten stop to 1%" / "why is Sharpe low?"
+   *
+   * @generated from field: string exec_feedback_placeholder = 49;
+   */
+  execFeedbackPlaceholder: string;
+
+  /**
+   * Lower Drawdown
+   *
+   * @generated from field: string exec_chip_lower_dd = 50;
+   */
+  execChipLowerDd: string;
+
+  /**
+   * Increase Returns
+   *
+   * @generated from field: string exec_chip_raise_return = 51;
+   */
+  execChipRaiseReturn: string;
+
+  /**
+   * Tighten Stop
+   *
+   * @generated from field: string exec_chip_tighten_sl = 52;
+   */
+  execChipTightenSl: string;
+
+  /**
+   * Long Only
+   *
+   * @generated from field: string exec_chip_long_only = 53;
+   */
+  execChipLongOnly: string;
+
+  /**
+   * Send to AI
+   *
+   * @generated from field: string exec_send_feedback = 54;
+   */
+  execSendFeedback: string;
+
+  /**
+   * Clear
+   *
+   * @generated from field: string exec_clear = 55;
+   */
+  execClear: string;
+
+  /**
+   * Apply Code to Editor
+   *
+   * @generated from field: string exec_apply_code = 56;
+   */
+  execApplyCode: string;
+
+  /**
+   * Backtest skipped: no symbol selected
+   *
+   * @generated from field: string exec_skip_no_symbol = 57;
+   */
+  execSkipNoSymbol: string;
+
+  /**
+   * Backtest skipped: no code
+   *
+   * @generated from field: string exec_skip_no_code = 58;
+   */
+  execSkipNoCode: string;
 };
 
 /**
