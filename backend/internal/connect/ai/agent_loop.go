@@ -60,7 +60,7 @@ func (a *AgentLoop) Run(ctx context.Context, systemPrompt, userPrompt string, us
 	return a.RunWithHistory(ctx, systemPrompt, userPrompt, nil, userID)
 }
 
-func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, _ uuid.UUID) (string, error) {
+func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, userID uuid.UUID) (string, error) {
 	var fullBuf strings.Builder
 
 	for round := 0; round < a.maxRounds; round++ {
@@ -107,6 +107,7 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, _ 
 		// Execute each tool call
 		var toolResults []string
 		for _, call := range calls {
+			call.Input.UserID = userID // wire authenticated user for DB tools (remember, save, etc.)
 			tool := a.toolRegistry.FindPreTool(call.Name)
 			var result ToolOutput
 			if tool == nil {
