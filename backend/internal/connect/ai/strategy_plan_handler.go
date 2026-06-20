@@ -131,7 +131,13 @@ func (s *StrategyPlanServer) Conversate(
 	sysPrompt := internalai.AgentPrompt(lang)
 
 	history := s.loadHistory(ctx, userID, m.ConversationId, 20)
-	userPrompt := m.Message
+
+	// Inject workspace context into the user prompt
+	ctxInfo := fmt.Sprintf("[当前工作区: 品种=%s, 周期=%s]", m.Symbol, m.Timeframe)
+	if m.Symbol != "" && m.Timeframe != "" {
+		ctxInfo = fmt.Sprintf("[当前工作区: 品种=%s, 周期=%s。你可以直接使用这些信息，无需询问用户。]", m.Symbol, m.Timeframe)
+	}
+	userPrompt := ctxInfo + " " + m.Message
 	oldCode := m.CurrentCode
 
 	chunk := func(delta string) error {
