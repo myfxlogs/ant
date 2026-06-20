@@ -126,6 +126,14 @@ class DataFrameStrategyRunner(BaseSandbox):
     def source_sha256(self) -> str:
         return code_sha256(self._source)
 
+    def call(self, ctx: dict) -> Optional[dict]:
+        raise NotImplementedError(
+            "DataFrameStrategyRunner uses call_dataframe(df, params) "
+            "instead of call(ctx). The engine calls call_dataframe once "
+            "with the full OHLC DataFrame, then uses extract_signal_at() "
+            "to read signals bar-by-bar."
+        )
+
     def shutdown(self) -> None:
         pass
 
