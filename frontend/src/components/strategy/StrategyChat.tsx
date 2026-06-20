@@ -35,7 +35,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
   const [templates, setTemplates] = useState<Array<{ id: string; name: string; code: string }>>([]);
   const [loadedTemplateId, setLoadedTemplateId] = useState('');
   const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
-  const [tab, setTab] = useState<string>('chat');
   const [conversations, setConversations] = useState<Array<{ id: string; title: string; created_at: string }>>([]);
   const [activeConvId, setActiveConvId] = useState('');
 
@@ -223,7 +222,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#fafbfc' }}>
       {/* Header */}
       <div style={{ padding: '8px 12px', borderBottom: '1px solid #e8e8e8', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, background: '#fff' }}>
-        <RobotOutlined style={{ color: '#52c41a', fontSize: 16 }} />
+        <ThunderboltOutlined style={{ color: '#faad14', fontSize: 16 }} />
         <Typography.Text strong style={{ fontSize: 14, color: '#262626' }}>Strategy Code</Typography.Text>
         {hasSymbol ? <Tag color="blue" style={{ fontSize: 12, margin: 0 }}>{symbol} · {timeframe}</Tag> : <Tag color="warning" style={{ fontSize: 12, margin: 0 }}>选择品种</Tag>}
         {modelOptions.length > 0 && (
@@ -243,13 +242,8 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
         {busy && <LoadingOutlined style={{ color: '#1677ff', marginLeft: 'auto' }} />}
       </div>
 
-      {/* Tab bar */}
-      <Segmented size="small" value={tab} onChange={(v) => setTab(String(v))}
-        options={[{ label: '💬 对话', value: 'chat' }, { label: '📜 历史', value: 'history' }, { label: '📋 策略', value: 'strategies' }]}
-        block style={{ marginBottom: 0 }}
-      />
-
-      {tab === 'chat' && <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* Messages */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12, maxHeight: '50%' }}>
         {messages.length === 0 && !busy && (
           <div style={{ textAlign: 'center', color: '#8c8c8c', marginTop: 40, fontSize: 14 }}>
             <RobotOutlined style={{ fontSize: 32, color: '#d9d9d9', display: 'block', margin: '0 auto 12' }} />
@@ -298,8 +292,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
         <div ref={chatEndRef} />
       </div>
 
-      </div>}
-
       {/* Input */}
       <div style={{ padding: '10px 14px', borderTop: '1px solid #e8e8e8', flexShrink: 0, background: '#fff' }}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
@@ -313,9 +305,8 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
         <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>Enter 发送 · Shift+Enter 换行</div>
       </div>
 
-      </div>}
-
-      {tab === 'history' && <div style={{ flex: 1, overflowY: 'auto', padding: '6px 14px', borderTop: '1px solid #e8e8e8', background: '#fff' }}>
+      {/* Conversation History */}
+      <div style={{ padding: '6px 14px', borderTop: '1px solid #e8e8e8', background: '#fff', flexShrink: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <Typography.Text style={{ fontSize: 11, color: '#8c8c8c' }}>历史对话</Typography.Text>
           <Button size="small" type="link" style={{ fontSize: 10 }} onClick={handleNewConv}>+ 新建</Button>
@@ -339,9 +330,8 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
         </div>
       </div>
 
-      </div>}
-
-      {tab === 'strategies' && <div style={{ flex: 1, overflowY: 'auto', padding: '6px 14px', borderTop: '1px solid #e8e8e8', background: '#fff' }}>
+      {/* Strategy List */}
+      <div style={{ padding: '6px 14px', borderTop: '1px solid #e8e8e8', flexShrink: 0, display: 'flex', gap: 8, alignItems: 'center', background: '#fff' }}>
         <Typography.Text style={{ fontSize: 11, color: '#8c8c8c', flexShrink: 0 }}>策略:</Typography.Text>
         <Select size="small" value={loadedTemplateId || undefined}
           onChange={(v) => v && handleLoadTemplate(v)}
