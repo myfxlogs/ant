@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -201,20 +202,46 @@ type readKlineTool struct{ repo repository.MarketDataStore }
 
 func (t *readKlineTool) Name() string { return "read_kline" }
 func (t *readKlineTool) Run(_ context.Context, in ToolInput) ToolOutput {
-	bars, err := t.repo.GetKlines(context.Background(), in.Symbol, "", in.Timeframe, nil, nil, 2000)
-	if err != nil {
-		return ToolOutput{Success: false, Error: err.Error()}
+	// Try exact symbol, then MT5 suffix variants.
+	symbols := []string{in.Symbol}
+	if !strings.HasSuffix(in.Symbol, "m") {
+		symbols = append(symbols, in.Symbol+"m")
+	} else {
+		symbols = append(symbols, strings.TrimSuffix(in.Symbol, "m"))
+	}
+	var bars []repository.KlineBar
+	var usedSymbol string
+	for _, sym := range symbols {
+		b, err := t.repo.GetKlines(context.Background(), sym, "", in.Timeframe, nil, nil, 2000)
+		if err != nil {
+			return ToolOutput{Success: false, Error: err.Error()}
+		}
+		if len(b) > 0 {
+			bars = b
+			usedSymbol = sym
+			break
+		}
 	}
 	if len(bars) == 0 {
-		return ToolOutput{Success: true, Output: map[string]any{"bars": 0, "message": "no data for this symbol/timeframe"}}
+		return ToolOutput{Success: true, Output: map[string]any{
+			"bars": 0,
+			"message": "NO DATA in database for " + in.Symbol + " (also tried " + in.Symbol + "m). " +
+				"Do NOT fabricate dates or bar counts. Tell the user there is no market data for this symbol.",
+		}}
 	}
+	// Human-readable timestamps so the AI doesn't need to convert Unix ms.
+	first := int64(bars[0].CloseTsUnixMs)
+	last := int64(bars[len(bars)-1].CloseTsUnixMs)
 	return ToolOutput{
 		Success: true,
 		Output: map[string]any{
-			"symbol": in.Symbol, "timeframe": in.Timeframe,
-			"bars":   len(bars),
-			"first":  bars[0].CloseTsUnixMs,
-			"last":   bars[len(bars)-1].CloseTsUnixMs,
+			"symbol":    usedSymbol,
+			"timeframe": in.Timeframe,
+			"bars":      len(bars),
+			"first_ms":  first,
+			"last_ms":   last,
+			"first_utc": time.UnixMilli(first).UTC().Format("2006-01-02 15:04:05"),
+			"last_utc":  time.UnixMilli(last).UTC().Format("2006-01-02 15:04:05"),
 		},
 	}
 }
