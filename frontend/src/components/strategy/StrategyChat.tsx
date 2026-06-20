@@ -63,7 +63,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
     try {
       const { strategyTemplateApi } = await import('@/client/strategy-schedules');
       const list = await strategyTemplateApi.list();
-      setTemplates(list.items || []);
+      setTemplates(list || []);
     } catch {}
   };
   useEffect(() => { fetchTemplates(); }, []);
