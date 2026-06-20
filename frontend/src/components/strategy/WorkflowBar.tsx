@@ -148,8 +148,8 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
         ))}
       </div>
       <Modal title="保存策略" open={saveOpen} onOk={handleSaveConfirm} onCancel={() => setSaveOpen(false)}
-        style={{ top: 'calc(100vh - 280px)' }}
-        okText="保存" cancelText="取消" okButtonProps={{ disabled: !saveName.trim() || saveDup }}>
+        centered okText="保存" cancelText="取消"
+        okButtonProps={{ disabled: !saveName.trim() || saveDup }}>
         <div style={{ marginBottom: 8 }}>
           <Input placeholder="输入策略名称" value={saveName} onChange={e => handleSaveNameChange(e.target.value)}
             onPressEnter={handleSaveConfirm} autoFocus style={{ fontSize: 13 }} />
