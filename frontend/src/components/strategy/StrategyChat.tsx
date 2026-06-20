@@ -170,7 +170,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
       setActiveConvId(conv.id); setMessages([]);
       planRef.current = ''; codeRef.current = ''; prevCodeRef.current = '';
       titleGeneratedRef.current = false; firstUserMsgRef.current = '';
-      fetchConversations();
+      setTab('chat'); fetchConversations();
     } catch {}
   };
   const handleLoadConv = async (id: string) => {
