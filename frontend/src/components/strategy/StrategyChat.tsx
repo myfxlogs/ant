@@ -45,6 +45,8 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
   const [editingConvId, setEditingConvId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const planRef = useRef(''), codeRef = useRef(''), prevCodeRef = useRef('');
+  const [codeGenKey, setCodeGenKey] = useState(0);
+  const bumpCodeGen = () => setCodeGenKey(k => k + 1);
   const metricsRef = useRef<BacktestMetricsMsg | null>(null);
   const abortRef = useRef<(() => void) | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -108,7 +110,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
       {
         onDelta: () => {},
         onPlan: (p) => { planRef.current = p; },
-        onCode: (c) => { codeRef.current = c; prevCodeRef.current = curCode; },
+        onCode: (c) => { codeRef.current = c; prevCodeRef.current = curCode; bumpCodeGen(); },
         onPreviousCode: (c) => { prevCodeRef.current = c; },
         onToolCall: () => {},
         onToolResult: (tr: ToolResult) => {
@@ -145,8 +147,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
   const handleSend = useCallback(() => {
     const msg = draft.trim();
     if (!msg || busy) return;
-    if (!hasSymbol) { addMsg('ai', { text: '请先选择交易品种和时间周期。' }); return; }
-    const isFirst = messages.length === 0 && !titleGeneratedRef.current;
+const isFirst = messages.length === 0 && !titleGeneratedRef.current;
     if (isFirst) firstUserMsgRef.current = msg;
     setDraft(''); setBusy(true);
     addMsg('user', { text: msg });
@@ -158,10 +159,9 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
   };
   const handleSendToAI = (code: string, name: string) => {
     codeRef.current = code; prevCodeRef.current = '';
-    onApplyCode(code);
+    bumpCodeGen(); onApplyCode(code);
     setLoadedTemplateId(templates.find(t => t.code === code)?.id || '');
     addMsg('ai', { text: `📂 已加载策略: ${name}`, code, prevCode: codeRef.current });
-    addMsg('user', { text: `请帮我分析一下"${name}"这个策略的逻辑，并给出优化建议。` });
     setTab('chat');
   };
   const handleRenameTemplate = async (id: string, name: string) => {
@@ -226,7 +226,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
     if (activeConvId === convId) { setActiveConvId(''); setMessages([]); }
   };
   const getPlaceholder = () => {
-    if (!hasSymbol) return '请先在顶栏选择交易品种和周期';
+    if (!hasSymbol && messages.length === 0) return '选择品种和周期开始，或从策略模板加载代码';
     if (messages.length === 0) return '描述你想要的交易策略，例如：\"写一个基于RSI和MACD的趋势跟踪策略\"';
     const lastAi = [...messages].reverse().find(m => m.role === 'ai');
     if (lastAi?.code) return '描述你的修改需求，或继续讨论优化方案...';
@@ -286,13 +286,13 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
                 placeholder={getPlaceholder()}
                 autoSize={{ minRows: 1, maxRows: 4 }}
                 onPressEnter={e => { if (!e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                disabled={busy || !hasSymbol} style={{ fontSize: 13, borderRadius: 8 }} />
-              <Button type="primary" icon={<SendOutlined />} onClick={handleSend} loading={busy} disabled={!draft.trim() || !hasSymbol} style={{ borderRadius: 8, flexShrink: 0 }} />
+                disabled={busy} style={{ fontSize: 13, borderRadius: 8 }} />
+              <Button type="primary" icon={<SendOutlined />} onClick={handleSend} loading={busy} disabled={!draft.trim() || busy} style={{ borderRadius: 8, flexShrink: 0 }} />
             </div>
             <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>Enter 发送 · Shift+Enter 换行</div>
             <WorkflowBar
               codeRef={codeRef} busy={busy} hasSymbol={hasSymbol} accountId={accountId}
-              symbol={symbol} timeframe={timeframe} templates={templates}
+              symbol={symbol} timeframe={timeframe} templates={templates} codeGenKey={codeGenKey}
               addMsg={addMsg} setMetrics={setMetrics} fetchTemplates={fetchTemplates}
             />
           </div>

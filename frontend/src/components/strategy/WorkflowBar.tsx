@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Modal, Input, Tooltip } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, ThunderboltOutlined, SafetyOutlined, SaveOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
@@ -18,6 +18,7 @@ interface Props {
   symbol?: string;
   timeframe?: string;
   templates: TemplateInfo[];
+  codeGenKey: number;
   addMsg: (role: 'ai', extra: { text: string }) => void;
   setMetrics: (m: BacktestMetricsMsg | null) => void;
   fetchTemplates: () => void;
@@ -25,8 +26,13 @@ interface Props {
 
 const iconStyle = { fontSize: 11 };
 
-export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbol, timeframe, templates, addMsg, setMetrics, fetchTemplates }: Props) {
+export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbol, timeframe, templates, codeGenKey, addMsg, setMetrics, fetchTemplates }: Props) {
   const [status, setStatus] = useState<Record<StepKey, StepStatus>>({ check: 'idle', backtest: 'idle', save: 'idle' });
+
+  // Reset workflow when code changes (agent regenerated after failed check)
+  useEffect(() => {
+    setStatus({ check: 'idle', backtest: 'idle', save: 'idle' });
+  }, [codeGenKey]);
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveName, setSaveName] = useState('');
   const [saveDup, setSaveDup] = useState(false);
