@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button, Input, Tag, Typography, Space, Collapse, Select } from 'antd';
-import { ThunderboltOutlined, SendOutlined, LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined, CodeOutlined, CopyOutlined, RobotOutlined, UserOutlined } from '@ant-design/icons';
+import { ThunderboltOutlined, SendOutlined, LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined, CodeOutlined, CopyOutlined, RobotOutlined, UserOutlined, SettingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
@@ -165,15 +165,17 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
             onChange={async (v) => { setSelectedModel(v); const [pid, model] = v.split('|'); try { await aiApi.setPrimary({ providerId: pid, model }); } catch {} }}
             style={{ width: 160, fontSize: 11 }} options={modelOptions} placeholder="选择模型" />
         )}
+        <Button size="small" type="text" icon={<SettingOutlined />}
+          onClick={() => window.open('/ai/settings', '_blank')}
+          style={{ fontSize: 11 }} title="AI 网关设置" />
         {busy && <LoadingOutlined style={{ color: '#1677ff', marginLeft: 'auto' }} />}
-        {templates.length > 0 && (
-          <Select size="small" value={loadedTemplateId || undefined}
-            onChange={(v) => handleLoadTemplate(v)}
-            style={{ width: 140, fontSize: 11 }}
-            options={templates.map(t => ({ value: t.id, label: t.name }))}
-            placeholder="加载策略" allowClear
-          />
-        )}
+        <Select size="small" value={loadedTemplateId || undefined}
+          onChange={(v) => v && handleLoadTemplate(v)}
+          style={{ width: 140, fontSize: 11 }}
+          options={templates.map(t => ({ value: t.id, label: t.name }))}
+          placeholder={templates.length > 0 ? "加载策略" : "暂无策略"}
+          allowClear disabled={templates.length === 0}
+        />
         {codeRef.current && (
           <Button size="small" onClick={handleSaveTemplate} style={{ fontSize: 10 }}>保存</Button>
         )}
