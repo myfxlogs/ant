@@ -13,7 +13,7 @@ import {
 } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 import StepProgress from './StepProgress';
 import DiffView from './DiffView';
-import { executePlan, type ExecuteCallbacks } from '@/client/strategyPlan';
+import { executePlan, diagnosePlan, type ExecuteCallbacks, type PlanCallbacks } from '@/client/strategyPlan';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 import type { ToolCall, ToolResult, BacktestMetricsMsg } from '@/gen/ant/v1/strategy_execution_pb';
@@ -96,21 +96,42 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
   const started = useRef(false);
   if (!started.current) { started.current = true; setTimeout(start, 0); }
 
+  const [diagnosis, setDiagnosis] = useState('');
+  const [pendingFeedback, setPendingFeedback] = useState('');
+
   const handleFeedback = useCallback(() => {
     const msg = feedback.trim();
     if (!msg) return;
     setFeedback('');
-    setDiscussionReply('');
-    setAnalysis('');
-    const currentCode = code || streamCode;
+    setDiagnosis('');
+    setPendingFeedback(msg);
+    setPhase('generating'); setError('');
 
-    // All feedback goes through ExecutePlan — the LLM decides whether
-    // to just answer (pure question) or regenerate code (change request).
-    setPrevCode(currentCode); setStreamCode(''); setCode('');
+    // Phase 1: Diagnosis only — no code generation
+    const abort = diagnosePlan(
+      { plan, conversationId: sessionId, feedbackMessage: msg,
+        currentCode: code || streamCode,
+        backtestMetricsJson: metrics ? JSON.stringify(metrics) : '' },
+      {
+        onDelta: () => {}, // ignore streaming, show final
+        onPlan: (p) => { setDiagnosis(p); setPhase('done'); },
+        onError: (e) => { setError(e); setPhase('error'); },
+        onDone: () => {},
+      } satisfies PlanCallbacks,
+    );
+    abortRef.current = abort;
+  }, [feedback, plan, sessionId, code, streamCode, metrics]);
+
+  const handleConfirmDiagnosis = useCallback(() => {
+    const msg = pendingFeedback;
+    setDiagnosis(''); setPendingFeedback('');
+    const currentCode = code || streamCode;
+    setPrevCode(currentCode); setStreamCode(''); setCode(''); setAnalysis('');
     setPhase('generating'); setToolResults([]); setError(''); setMetrics(null);
 
     const abort = executePlan(
-      { plan, conversationId: sessionId, symbol, timeframe, previousCode: currentCode, feedbackMessage: msg, backtestMetricsJson: metrics ? JSON.stringify(metrics) : '' },
+      { plan, conversationId: sessionId, symbol, timeframe, previousCode: currentCode,
+        feedbackMessage: msg, backtestMetricsJson: metrics ? JSON.stringify(metrics) : '' },
       {
         onPhase: (p) => setCurrentPhase(p),
         onAnalysis: (a) => setAnalysis(a),
@@ -127,7 +148,14 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
       } satisfies ExecuteCallbacks,
     );
     abortRef.current = abort;
-  }, [feedback, plan, sessionId, symbol, timeframe, code, streamCode, metrics]);
+  }, [pendingFeedback, plan, sessionId, symbol, timeframe, code, streamCode, metrics]);
+
+  const handleRetryFeedback = useCallback(() => {
+    const msg = pendingFeedback;
+    setDiagnosis(''); setPendingFeedback('');
+    setFeedback(msg); // put it back so user can edit
+    setPhase('done');
+  }, [pendingFeedback]);
 
   const busy = phase === 'generating' || phase === 'tool_call';
 
@@ -237,6 +265,32 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
 
       {error && (
         <div style={{ padding: 6, marginBottom: 8, background: '#fff2f0', borderRadius: 4, fontSize: 11, color: '#cf1322' }}>{error}</div>
+      )}
+
+      {/* Diagnosis card — AI suggests, user confirms */}
+      {diagnosis && phase === 'done' && (
+        <div style={{ marginBottom: 8, padding: 10, background: '#fffbe6', borderRadius: 6, border: '1px solid #ffe58f' }}>
+          <Typography.Text strong style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+            💡 AI 诊断与建议
+          </Typography.Text>
+          <div style={{ fontSize: 12, whiteSpace: 'pre-wrap', color: '#595959', marginBottom: 8 }}>
+            {diagnosis}
+          </div>
+          <Space>
+            <Button size="small" type="primary" icon={<CheckCircleOutlined />}
+              onClick={handleConfirmDiagnosis}>
+              按此修改
+            </Button>
+            <Button size="small" icon={<EditOutlined />}
+              onClick={handleRetryFeedback}>
+              调整反馈
+            </Button>
+            <Button size="small" type="text"
+              onClick={() => { setDiagnosis(''); setPendingFeedback(''); }}>
+              忽略
+            </Button>
+          </Space>
+        </div>
       )}
 
       {phase === 'done' && code && (

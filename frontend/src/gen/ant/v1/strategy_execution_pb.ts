@@ -10,7 +10,166 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file strategy_execution.proto.
  */
 export const file_strategy_execution: GenFile = /*@__PURE__*/
-  fileDesc("ChhzdHJhdGVneV9leGVjdXRpb24ucHJvdG8SBmFudC52MSJhChJBbmFseXplUGxhblJlcXVlc3QSDwoHbWVzc2FnZRgBIAEoCRIXCg9jb252ZXJzYXRpb25faWQYAiABKAkSDgoGc3ltYm9sGAMgASgJEhEKCXRpbWVmcmFtZRgEIAEoCSJNChBBbmFseXplUGxhbkNodW5rEg0KBXBoYXNlGAEgASgJEg0KBWRlbHRhGAIgASgJEgwKBHBsYW4YAyABKAkSDQoFZXJyb3IYBCABKAkirgEKEkV4ZWN1dGVQbGFuUmVxdWVzdBIMCgRwbGFuGAEgASgJEhcKD2NvbnZlcnNhdGlvbl9pZBgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJEhUKDXByZXZpb3VzX2NvZGUYBSABKAkSGAoQZmVlZGJhY2tfbWVzc2FnZRgGIAEoCRIdChViYWNrdGVzdF9tZXRyaWNzX2pzb24YByABKAkisgEKEEV4ZWN1dGVQbGFuQ2h1bmsSDQoFcGhhc2UYASABKAkSDQoFZGVsdGEYAiABKAkSDAoEY29kZRgDIAEoCRIVCg1wcmV2aW91c19jb2RlGAQgASgJEiMKCXRvb2xfY2FsbBgFIAEoCzIQLmFudC52MS5Ub29sQ2FsbBInCgt0b29sX3Jlc3VsdBgGIAEoCzISLmFudC52MS5Ub29sUmVzdWx0Eg0KBWVycm9yGAcgASgJInMKE0V4ZWN1dGVQbGFuUmVzcG9uc2USDAoEY29kZRgBIAEoCRIVCg1wcmV2aW91c19jb2RlGAIgASgJEigKDHRvb2xfcmVzdWx0cxgDIAMoCzISLmFudC52MS5Ub29sUmVzdWx0Eg0KBWVycm9yGAQgASgJIj4KCFRvb2xDYWxsEg8KB2NhbGxfaWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtwYXJhbXNfanNvbhgDIAEoCSJgCgpUb29sUmVzdWx0Eg8KB2NhbGxfaWQYASABKAkSDAoEbmFtZRgCIAEoCRIPCgdzdWNjZXNzGAMgASgIEhMKC291dHB1dF9qc29uGAQgASgJEg0KBWVycm9yGAUgASgJIlAKD0NvbXBsaWFuY2VJc3N1ZRIMCgRydWxlGAEgASgJEg8KB21lc3NhZ2UYAiABKAkSEAoIc2V2ZXJpdHkYAyABKAkSDAoEbGluZRgEIAEoBSJLChBDb21wbGlhbmNlUmVzdWx0Eg4KBnBhc3NlZBgBIAEoCBInCgZpc3N1ZXMYAiADKAsyFy5hbnQudjEuQ29tcGxpYW5jZUlzc3VlIpUBChJCYWNrdGVzdE1ldHJpY3NNc2cSFAoMdG90YWxfcmV0dXJuGAEgASgBEhQKDHNoYXJwZV9yYXRpbxgCIAEoARIUCgxtYXhfZHJhd2Rvd24YAyABKAESEAoId2luX3JhdGUYBCABKAESFQoNcHJvZml0X2ZhY3RvchgFIAEoARIUCgx0b3RhbF90cmFkZXMYBiABKAUiSwoUR2F0ZUV2YWx1YXRpb25SZXN1bHQSDgoGcGFzc2VkGAEgASgIEhMKC2ZhaWxlZF9nYXRlGAIgASgJEg4KBnJlYXNvbhgDIAEoCTKjAQoTU3RyYXRlZ3lQbGFuU2VydmljZRJFCgtBbmFseXplUGxhbhIaLmFudC52MS5BbmFseXplUGxhblJlcXVlc3QaGC5hbnQudjEuQW5hbHl6ZVBsYW5DaHVuazABEkUKC0V4ZWN1dGVQbGFuEhouYW50LnYxLkV4ZWN1dGVQbGFuUmVxdWVzdBoYLmFudC52MS5FeGVjdXRlUGxhbkNodW5rMAFCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
+  fileDesc("ChhzdHJhdGVneV9leGVjdXRpb24ucHJvdG8SBmFudC52MSKjAQoRQ29udmVyc2F0ZVJlcXVlc3QSDwoHbWVzc2FnZRgBIAEoCRIXCg9jb252ZXJzYXRpb25faWQYAiABKAkSDgoGc3ltYm9sGAMgASgJEhEKCXRpbWVmcmFtZRgEIAEoCRIMCgRwbGFuGAUgASgJEhQKDGN1cnJlbnRfY29kZRgGIAEoCRIdChViYWNrdGVzdF9tZXRyaWNzX2pzb24YByABKAki0QEKD0NvbnZlcnNhdGVDaHVuaxINCgVwaGFzZRgBIAEoCRINCgVkZWx0YRgCIAEoCRIMCgRwbGFuGAMgASgJEgwKBGNvZGUYBCABKAkSFQoNcHJldmlvdXNfY29kZRgFIAEoCRIQCghhbmFseXNpcxgGIAEoCRIjCgl0b29sX2NhbGwYByABKAsyEC5hbnQudjEuVG9vbENhbGwSJwoLdG9vbF9yZXN1bHQYCCABKAsyEi5hbnQudjEuVG9vbFJlc3VsdBINCgVlcnJvchgJIAEoCSKHAQoPRGlhZ25vc2VSZXF1ZXN0EgwKBHBsYW4YASABKAkSFwoPY29udmVyc2F0aW9uX2lkGAIgASgJEhgKEGZlZWRiYWNrX21lc3NhZ2UYAyABKAkSFAoMY3VycmVudF9jb2RlGAQgASgJEh0KFWJhY2t0ZXN0X21ldHJpY3NfanNvbhgFIAEoCSJhChJBbmFseXplUGxhblJlcXVlc3QSDwoHbWVzc2FnZRgBIAEoCRIXCg9jb252ZXJzYXRpb25faWQYAiABKAkSDgoGc3ltYm9sGAMgASgJEhEKCXRpbWVmcmFtZRgEIAEoCSJNChBBbmFseXplUGxhbkNodW5rEg0KBXBoYXNlGAEgASgJEg0KBWRlbHRhGAIgASgJEgwKBHBsYW4YAyABKAkSDQoFZXJyb3IYBCABKAkirgEKEkV4ZWN1dGVQbGFuUmVxdWVzdBIMCgRwbGFuGAEgASgJEhcKD2NvbnZlcnNhdGlvbl9pZBgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJEhUKDXByZXZpb3VzX2NvZGUYBSABKAkSGAoQZmVlZGJhY2tfbWVzc2FnZRgGIAEoCRIdChViYWNrdGVzdF9tZXRyaWNzX2pzb24YByABKAkixAEKEEV4ZWN1dGVQbGFuQ2h1bmsSDQoFcGhhc2UYASABKAkSDQoFZGVsdGEYAiABKAkSDAoEY29kZRgDIAEoCRIVCg1wcmV2aW91c19jb2RlGAQgASgJEiMKCXRvb2xfY2FsbBgFIAEoCzIQLmFudC52MS5Ub29sQ2FsbBInCgt0b29sX3Jlc3VsdBgGIAEoCzISLmFudC52MS5Ub29sUmVzdWx0Eg0KBWVycm9yGAcgASgJEhAKCGFuYWx5c2lzGAggASgJInMKE0V4ZWN1dGVQbGFuUmVzcG9uc2USDAoEY29kZRgBIAEoCRIVCg1wcmV2aW91c19jb2RlGAIgASgJEigKDHRvb2xfcmVzdWx0cxgDIAMoCzISLmFudC52MS5Ub29sUmVzdWx0Eg0KBWVycm9yGAQgASgJIj4KCFRvb2xDYWxsEg8KB2NhbGxfaWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtwYXJhbXNfanNvbhgDIAEoCSJgCgpUb29sUmVzdWx0Eg8KB2NhbGxfaWQYASABKAkSDAoEbmFtZRgCIAEoCRIPCgdzdWNjZXNzGAMgASgIEhMKC291dHB1dF9qc29uGAQgASgJEg0KBWVycm9yGAUgASgJIlAKD0NvbXBsaWFuY2VJc3N1ZRIMCgRydWxlGAEgASgJEg8KB21lc3NhZ2UYAiABKAkSEAoIc2V2ZXJpdHkYAyABKAkSDAoEbGluZRgEIAEoBSJLChBDb21wbGlhbmNlUmVzdWx0Eg4KBnBhc3NlZBgBIAEoCBInCgZpc3N1ZXMYAiADKAsyFy5hbnQudjEuQ29tcGxpYW5jZUlzc3VlIpUBChJCYWNrdGVzdE1ldHJpY3NNc2cSFAoMdG90YWxfcmV0dXJuGAEgASgBEhQKDHNoYXJwZV9yYXRpbxgCIAEoARIUCgxtYXhfZHJhd2Rvd24YAyABKAESEAoId2luX3JhdGUYBCABKAESFQoNcHJvZml0X2ZhY3RvchgFIAEoARIUCgx0b3RhbF90cmFkZXMYBiABKAUiSwoUR2F0ZUV2YWx1YXRpb25SZXN1bHQSDgoGcGFzc2VkGAEgASgIEhMKC2ZhaWxlZF9nYXRlGAIgASgJEg4KBnJlYXNvbhgDIAEoCTKoAgoTU3RyYXRlZ3lQbGFuU2VydmljZRJFCgtBbmFseXplUGxhbhIaLmFudC52MS5BbmFseXplUGxhblJlcXVlc3QaGC5hbnQudjEuQW5hbHl6ZVBsYW5DaHVuazABEj8KCERpYWdub3NlEhcuYW50LnYxLkRpYWdub3NlUmVxdWVzdBoYLmFudC52MS5BbmFseXplUGxhbkNodW5rMAESRQoLRXhlY3V0ZVBsYW4SGi5hbnQudjEuRXhlY3V0ZVBsYW5SZXF1ZXN0GhguYW50LnYxLkV4ZWN1dGVQbGFuQ2h1bmswARJCCgpDb252ZXJzYXRlEhkuYW50LnYxLkNvbnZlcnNhdGVSZXF1ZXN0GhcuYW50LnYxLkNvbnZlcnNhdGVDaHVuazABQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+
+/**
+ * @generated from message ant.v1.ConversateRequest
+ */
+export type ConversateRequest = Message<"ant.v1.ConversateRequest"> & {
+  /**
+   * @generated from field: string message = 1;
+   */
+  message: string;
+
+  /**
+   * @generated from field: string conversation_id = 2;
+   */
+  conversationId: string;
+
+  /**
+   * @generated from field: string symbol = 3;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: string timeframe = 4;
+   */
+  timeframe: string;
+
+  /**
+   * current plan (empty on first message)
+   *
+   * @generated from field: string plan = 5;
+   */
+  plan: string;
+
+  /**
+   * current strategy code
+   *
+   * @generated from field: string current_code = 6;
+   */
+  currentCode: string;
+
+  /**
+   * @generated from field: string backtest_metrics_json = 7;
+   */
+  backtestMetricsJson: string;
+};
+
+/**
+ * Describes the message ant.v1.ConversateRequest.
+ * Use `create(ConversateRequestSchema)` to create a new message.
+ */
+export const ConversateRequestSchema: GenMessage<ConversateRequest> = /*@__PURE__*/
+  messageDesc(file_strategy_execution, 0);
+
+/**
+ * @generated from message ant.v1.ConversateChunk
+ */
+export type ConversateChunk = Message<"ant.v1.ConversateChunk"> & {
+  /**
+   * "thinking" | "tool_call" | "tool_result" | "done"
+   *
+   * @generated from field: string phase = 1;
+   */
+  phase: string;
+
+  /**
+   * streaming text
+   *
+   * @generated from field: string delta = 2;
+   */
+  delta: string;
+
+  /**
+   * extracted plan
+   *
+   * @generated from field: string plan = 3;
+   */
+  plan: string;
+
+  /**
+   * extracted code
+   *
+   * @generated from field: string code = 4;
+   */
+  code: string;
+
+  /**
+   * @generated from field: string previous_code = 5;
+   */
+  previousCode: string;
+
+  /**
+   * @generated from field: string analysis = 6;
+   */
+  analysis: string;
+
+  /**
+   * @generated from field: ant.v1.ToolCall tool_call = 7;
+   */
+  toolCall?: ToolCall | undefined;
+
+  /**
+   * @generated from field: ant.v1.ToolResult tool_result = 8;
+   */
+  toolResult?: ToolResult | undefined;
+
+  /**
+   * @generated from field: string error = 9;
+   */
+  error: string;
+};
+
+/**
+ * Describes the message ant.v1.ConversateChunk.
+ * Use `create(ConversateChunkSchema)` to create a new message.
+ */
+export const ConversateChunkSchema: GenMessage<ConversateChunk> = /*@__PURE__*/
+  messageDesc(file_strategy_execution, 1);
+
+/**
+ * @generated from message ant.v1.DiagnoseRequest
+ */
+export type DiagnoseRequest = Message<"ant.v1.DiagnoseRequest"> & {
+  /**
+   * @generated from field: string plan = 1;
+   */
+  plan: string;
+
+  /**
+   * @generated from field: string conversation_id = 2;
+   */
+  conversationId: string;
+
+  /**
+   * user's feedback
+   *
+   * @generated from field: string feedback_message = 3;
+   */
+  feedbackMessage: string;
+
+  /**
+   * current strategy code for context
+   *
+   * @generated from field: string current_code = 4;
+   */
+  currentCode: string;
+
+  /**
+   * latest metrics
+   *
+   * @generated from field: string backtest_metrics_json = 5;
+   */
+  backtestMetricsJson: string;
+};
+
+/**
+ * Describes the message ant.v1.DiagnoseRequest.
+ * Use `create(DiagnoseRequestSchema)` to create a new message.
+ */
+export const DiagnoseRequestSchema: GenMessage<DiagnoseRequest> = /*@__PURE__*/
+  messageDesc(file_strategy_execution, 2);
 
 /**
  * @generated from message ant.v1.AnalyzePlanRequest
@@ -42,7 +201,7 @@ export type AnalyzePlanRequest = Message<"ant.v1.AnalyzePlanRequest"> & {
  * Use `create(AnalyzePlanRequestSchema)` to create a new message.
  */
 export const AnalyzePlanRequestSchema: GenMessage<AnalyzePlanRequest> = /*@__PURE__*/
-  messageDesc(file_strategy_execution, 0);
+  messageDesc(file_strategy_execution, 3);
 
 /**
  * @generated from message ant.v1.AnalyzePlanChunk
@@ -82,7 +241,7 @@ export type AnalyzePlanChunk = Message<"ant.v1.AnalyzePlanChunk"> & {
  * Use `create(AnalyzePlanChunkSchema)` to create a new message.
  */
 export const AnalyzePlanChunkSchema: GenMessage<AnalyzePlanChunk> = /*@__PURE__*/
-  messageDesc(file_strategy_execution, 1);
+  messageDesc(file_strategy_execution, 4);
 
 /**
  * @generated from message ant.v1.ExecutePlanRequest
@@ -137,7 +296,7 @@ export type ExecutePlanRequest = Message<"ant.v1.ExecutePlanRequest"> & {
  * Use `create(ExecutePlanRequestSchema)` to create a new message.
  */
 export const ExecutePlanRequestSchema: GenMessage<ExecutePlanRequest> = /*@__PURE__*/
-  messageDesc(file_strategy_execution, 2);
+  messageDesc(file_strategy_execution, 5);
 
 /**
  * @generated from message ant.v1.ExecutePlanChunk
@@ -189,6 +348,13 @@ export type ExecutePlanChunk = Message<"ant.v1.ExecutePlanChunk"> & {
    * @generated from field: string error = 7;
    */
   error: string;
+
+  /**
+   * AI explanation/diagnosis (done phase, when feedback)
+   *
+   * @generated from field: string analysis = 8;
+   */
+  analysis: string;
 };
 
 /**
@@ -196,7 +362,7 @@ export type ExecutePlanChunk = Message<"ant.v1.ExecutePlanChunk"> & {
  * Use `create(ExecutePlanChunkSchema)` to create a new message.
  */
 export const ExecutePlanChunkSchema: GenMessage<ExecutePlanChunk> = /*@__PURE__*/
-  messageDesc(file_strategy_execution, 3);
+  messageDesc(file_strategy_execution, 6);
 
 /**
  * @generated from message ant.v1.ExecutePlanResponse
@@ -228,7 +394,7 @@ export type ExecutePlanResponse = Message<"ant.v1.ExecutePlanResponse"> & {
  * Use `create(ExecutePlanResponseSchema)` to create a new message.
  */
 export const ExecutePlanResponseSchema: GenMessage<ExecutePlanResponse> = /*@__PURE__*/
-  messageDesc(file_strategy_execution, 4);
+  messageDesc(file_strategy_execution, 7);
 
 /**
  * @generated from message ant.v1.ToolCall
@@ -259,7 +425,7 @@ export type ToolCall = Message<"ant.v1.ToolCall"> & {
  * Use `create(ToolCallSchema)` to create a new message.
  */
 export const ToolCallSchema: GenMessage<ToolCall> = /*@__PURE__*/
-  messageDesc(file_strategy_execution, 5);
+  messageDesc(file_strategy_execution, 8);
 
 /**
  * @generated from message ant.v1.ToolResult
@@ -298,7 +464,7 @@ export type ToolResult = Message<"ant.v1.ToolResult"> & {
  * Use `create(ToolResultSchema)` to create a new message.
  */
 export const ToolResultSchema: GenMessage<ToolResult> = /*@__PURE__*/
-  messageDesc(file_strategy_execution, 6);
+  messageDesc(file_strategy_execution, 9);
 
 /**
  * @generated from message ant.v1.ComplianceIssue
@@ -332,7 +498,7 @@ export type ComplianceIssue = Message<"ant.v1.ComplianceIssue"> & {
  * Use `create(ComplianceIssueSchema)` to create a new message.
  */
 export const ComplianceIssueSchema: GenMessage<ComplianceIssue> = /*@__PURE__*/
-  messageDesc(file_strategy_execution, 7);
+  messageDesc(file_strategy_execution, 10);
 
 /**
  * @generated from message ant.v1.ComplianceResult
@@ -354,7 +520,7 @@ export type ComplianceResult = Message<"ant.v1.ComplianceResult"> & {
  * Use `create(ComplianceResultSchema)` to create a new message.
  */
 export const ComplianceResultSchema: GenMessage<ComplianceResult> = /*@__PURE__*/
-  messageDesc(file_strategy_execution, 8);
+  messageDesc(file_strategy_execution, 11);
 
 /**
  * @generated from message ant.v1.BacktestMetricsMsg
@@ -396,7 +562,7 @@ export type BacktestMetricsMsg = Message<"ant.v1.BacktestMetricsMsg"> & {
  * Use `create(BacktestMetricsMsgSchema)` to create a new message.
  */
 export const BacktestMetricsMsgSchema: GenMessage<BacktestMetricsMsg> = /*@__PURE__*/
-  messageDesc(file_strategy_execution, 9);
+  messageDesc(file_strategy_execution, 12);
 
 /**
  * @generated from message ant.v1.GateEvaluationResult
@@ -425,7 +591,7 @@ export type GateEvaluationResult = Message<"ant.v1.GateEvaluationResult"> & {
  * Use `create(GateEvaluationResultSchema)` to create a new message.
  */
 export const GateEvaluationResultSchema: GenMessage<GateEvaluationResult> = /*@__PURE__*/
-  messageDesc(file_strategy_execution, 10);
+  messageDesc(file_strategy_execution, 13);
 
 /**
  * @generated from service ant.v1.StrategyPlanService
@@ -440,12 +606,28 @@ export const StrategyPlanService: GenService<{
     output: typeof AnalyzePlanChunkSchema;
   },
   /**
+   * @generated from rpc ant.v1.StrategyPlanService.Diagnose
+   */
+  diagnose: {
+    methodKind: "server_streaming";
+    input: typeof DiagnoseRequestSchema;
+    output: typeof AnalyzePlanChunkSchema;
+  },
+  /**
    * @generated from rpc ant.v1.StrategyPlanService.ExecutePlan
    */
   executePlan: {
     methodKind: "server_streaming";
     input: typeof ExecutePlanRequestSchema;
     output: typeof ExecutePlanChunkSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.StrategyPlanService.Conversate
+   */
+  conversate: {
+    methodKind: "server_streaming";
+    input: typeof ConversateRequestSchema;
+    output: typeof ConversateChunkSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_strategy_execution, 0);

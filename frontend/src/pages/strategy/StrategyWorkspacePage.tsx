@@ -87,21 +87,7 @@ export default function StrategyWorkspacePage() {
             boxShadow: '4px 0 24px rgba(0,0,0,0.1)',
             padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12,
           }}>
-            <WorkspaceCodePanel
-              code={ws.code.code} onCodeChange={ws.code.setCode}
-              validating={ws.code.validating} onValidate={ws.code.handleValidate}
-              validationResult={ws.code.validationResult}
-              canSave={ws.code.canSave} onSave={ws.code.handleSave} onCopy={ws.code.handleCopy}
-              onAskAI={ws.ai.askForValidation}
-              onAutoFix={ws.ai.autoFix}
-              autoFixing={ws.ai.autoFixing}
-              autoFixDebug={ws.ai.autoFixDebug}
-              onDismissDebug={ws.ai.dismissDebug}
-            />
             <AICodePanel symbol={ws.account.symbol} timeframe={ws.account.timeframe} sessionId={sessionId} onApply={(code, prevCode) => { ws.code.setCode(code); }} />
-            <Collapse ghost size="small" style={{ background: 'transparent' }} items={[
-              { key: 'template', label: t(TEMPLATE_TITLE_KEY, 'Template'), children: <WorkspaceTemplateManager templates={ws.code.templates} loading={ws.code.templatesLoading} loadedTemplate={ws.code.loadedTemplate} onLoad={ws.code.handleLoadTemplate} onSaveAs={ws.code.handleSaveAs} /> },
-            ]} />
           </div>
         )}
 

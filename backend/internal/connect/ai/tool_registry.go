@@ -3,6 +3,7 @@ package ai
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	"github.com/google/uuid"
 
@@ -38,17 +39,49 @@ type Tool interface {
 
 // ToolRegistry holds the ordered list of tools to execute after code generation.
 type ToolRegistry struct {
-	tools []Tool
+	preTools []Tool     // tools the AI can request during planning/generation
+	tools    []Tool     // auto-run tools after code generation
 }
 
 // NewToolRegistry creates a registry with the standard tool set.
-func NewToolRegistry(backtestRepo *repository.BacktestRunRepository) *ToolRegistry {
+func NewToolRegistry(backtestRepo *repository.BacktestRunRepository, store repository.MarketDataStore) *ToolRegistry {
 	return &ToolRegistry{
+		preTools: []Tool{
+			&readKlineTool{repo: store},
+			&readBacktestLogTool{repo: backtestRepo},
+		},
 		tools: []Tool{
 			&complianceTool{},
 			&backtestTool{repo: backtestRepo},
 		},
 	}
+}
+
+
+// WireMemoryDB wires the PG pool for memory tools.
+func (r *ToolRegistry) WireMemoryDB(execFn func(ctx context.Context, sql string, args ...any) error, queryFn func(ctx context.Context, sql string, args ...any) (string, error)) {
+	rem := &rememberTool{execFn: execFn}
+	rec := &recallTool{queryFn: queryFn}
+	r.preTools = append(r.preTools, rem, rec)
+}
+
+// PreToolNames returns the names of pre-execution tools the AI can request.
+func (r *ToolRegistry) PreToolNames() []string {
+	var names []string
+	for _, t := range r.preTools {
+		names = append(names, t.Name())
+	}
+	return names
+}
+
+// FindPreTool looks up a pre-execution tool by name. Returns nil if not found.
+func (r *ToolRegistry) FindPreTool(name string) Tool {
+	for _, t := range r.preTools {
+		if t.Name() == name {
+			return t
+		}
+	}
+	return nil
 }
 
 // Execute runs all registered tools in order, streaming results via the callback.
@@ -93,6 +126,91 @@ func (t *complianceTool) Run(_ context.Context, in ToolInput) ToolOutput {
 		Success: len(blocks) == 0,
 		Output:  &antv1.ComplianceResult{Passed: len(blocks) == 0, Issues: issueProtos},
 	}
+}
+
+// ── read_kline tool ──
+
+type readKlineTool struct{ repo repository.MarketDataStore }
+
+func (t *readKlineTool) Name() string { return "read_kline" }
+func (t *readKlineTool) Run(_ context.Context, in ToolInput) ToolOutput {
+	bars, err := t.repo.GetKlines(context.Background(), in.Symbol, "", in.Timeframe, nil, nil, 2000)
+	if err != nil {
+		return ToolOutput{Success: false, Error: err.Error()}
+	}
+	if len(bars) == 0 {
+		return ToolOutput{Success: true, Output: map[string]any{"bars": 0, "message": "no data for this symbol/timeframe"}}
+	}
+	return ToolOutput{
+		Success: true,
+		Output: map[string]any{
+			"symbol": in.Symbol, "timeframe": in.Timeframe,
+			"bars":   len(bars),
+			"first":  bars[0].CloseTsUnixMs,
+			"last":   bars[len(bars)-1].CloseTsUnixMs,
+		},
+	}
+}
+
+// ── read_backtest_log tool ──
+
+type readBacktestLogTool struct{ repo *repository.BacktestRunRepository }
+
+func (t *readBacktestLogTool) Name() string { return "read_backtest_log" }
+func (t *readBacktestLogTool) Run(ctx context.Context, in ToolInput) ToolOutput {
+	// Use the most recent backtest run for this code hash
+	runs, err := t.repo.ListByUser(ctx, in.UserID, nil, nil, 1, 0)
+	if err != nil || len(runs) == 0 {
+		return ToolOutput{Success: false, Error: "no recent backtest runs found"}
+	}
+	run := runs[0]
+	out := map[string]any{
+		"run_id": run.ID.String(), "symbol": run.Symbol, "timeframe": run.Timeframe,
+		"status": run.Status,
+	}
+	if run.Error != "" {
+		out["error"] = run.Error
+	}
+	return ToolOutput{Success: true, Output: out}
+}
+
+
+// ── remember tool ──
+
+type rememberTool struct{ execFn func(ctx context.Context, sql string, args ...any) error }
+
+func (t *rememberTool) Name() string { return "remember" }
+func (t *rememberTool) Run(ctx context.Context, in ToolInput) ToolOutput {
+	if t.execFn == nil { return ToolOutput{Success: false, Error: "db not wired"} }
+	parts := strings.SplitN(in.Symbol, " ", 2) // abuse Symbol field for "key value"
+	key := in.Symbol
+	val := in.Timeframe
+	if len(parts) >= 2 {
+		key = parts[0]
+		val = strings.Join(parts[1:], " ")
+	}
+	err := t.execFn(ctx,
+		"INSERT INTO ai_memory (user_id, key, value, updated_at) VALUES ($1,$2,$3,NOW()) ON CONFLICT (user_id,key) DO UPDATE SET value=$3, updated_at=NOW()",
+		in.UserID, key, val)
+	if err != nil {
+		return ToolOutput{Success: false, Error: err.Error()}
+	}
+	return ToolOutput{Success: true, Output: map[string]string{"key": key, "value": val}}
+}
+
+// ── recall tool ──
+
+type recallTool struct{ queryFn func(ctx context.Context, sql string, args ...any) (string, error) }
+
+func (t *recallTool) Name() string { return "recall" }
+func (t *recallTool) Run(ctx context.Context, in ToolInput) ToolOutput {
+	if t.queryFn == nil { return ToolOutput{Success: false, Error: "db not wired"} }
+	key := in.Symbol
+	val, err := t.queryFn(ctx, "SELECT value FROM ai_memory WHERE user_id=$1 AND key=$2 ORDER BY updated_at DESC LIMIT 1", in.UserID, key)
+	if err != nil || val == "" {
+		return ToolOutput{Success: false, Error: "not found"}
+	}
+	return ToolOutput{Success: true, Output: map[string]string{"key": key, "value": val}}
 }
 
 // ── backtest tool ──

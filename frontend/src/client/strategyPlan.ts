@@ -1,5 +1,5 @@
 import { strategyPlanClient } from './connect';
-import type { AnalyzePlanChunk, ExecutePlanChunk, ToolCall, ToolResult } from '../gen/ant/v1/strategy_execution_pb';
+import type { AnalyzePlanChunk, ExecutePlanChunk, ConversateChunk, ToolCall, ToolResult } from '../gen/ant/v1/strategy_execution_pb';
 
 export interface PlanCallbacks {
   onDelta: (delta: string) => void;
@@ -20,6 +20,49 @@ export interface ExecuteCallbacks {
   onDone: () => void;
 }
 
+export interface ConversateCallbacks {
+  onDelta: (delta: string) => void;
+  onPlan: (plan: string) => void;
+  onCode: (code: string) => void;
+  onPreviousCode: (code: string) => void;
+  onToolCall: (call: ToolCall) => void;
+  onToolResult: (result: ToolResult) => void;
+  onError: (error: string) => void;
+  onDone: () => void;
+}
+
+export function conversate(
+  input: { message: string; conversationId?: string; symbol?: string; timeframe?: string; plan?: string; currentCode?: string; backtestMetricsJson?: string },
+  callbacks: ConversateCallbacks,
+): () => void {
+  const abort = new AbortController();
+  (async () => {
+    try {
+      const stream = strategyPlanClient.conversate({
+        message: input.message, conversationId: input.conversationId || '',
+        symbol: input.symbol || '', timeframe: input.timeframe || '',
+        plan: input.plan || '', currentCode: input.currentCode || '',
+        backtestMetricsJson: input.backtestMetricsJson || '',
+      }, { signal: abort.signal });
+      for await (const chunk of stream) {
+        if (chunk.delta) callbacks.onDelta(chunk.delta);
+        if (chunk.plan) callbacks.onPlan(chunk.plan);
+        if (chunk.code) callbacks.onCode(chunk.code);
+        if (chunk.previousCode) callbacks.onPreviousCode(chunk.previousCode);
+        if (chunk.toolCall) callbacks.onToolCall(chunk.toolCall);
+        if (chunk.toolResult) callbacks.onToolResult(chunk.toolResult);
+        if (chunk.error) callbacks.onError(chunk.error);
+      }
+      callbacks.onDone();
+    } catch (e: unknown) {
+      const s = String(e);
+      if ((e as { name?: string })?.name === 'AbortError' || s.includes('canceled')) return;
+      callbacks.onError(s);
+    }
+  })();
+  return () => abort.abort();
+}
+
 export function analyzePlan(
   input: { message: string; conversationId?: string; symbol?: string; timeframe?: string },
   callbacks: PlanCallbacks,
@@ -32,6 +75,33 @@ export function analyzePlan(
         conversationId: input.conversationId || '',
         symbol: input.symbol || '',
         timeframe: input.timeframe || '',
+      }, { signal: abort.signal });
+      for await (const chunk of stream) {
+        if (chunk.delta) callbacks.onDelta(chunk.delta);
+        if (chunk.plan) callbacks.onPlan(chunk.plan);
+        if (chunk.error) callbacks.onError(chunk.error);
+      }
+      callbacks.onDone();
+    } catch (e: unknown) {
+      const s = String(e);
+      if ((e as { name?: string })?.name === 'AbortError' || s.includes('canceled')) return;
+      callbacks.onError(s);
+    }
+  })();
+  return () => abort.abort();
+}
+
+export function diagnosePlan(
+  input: { plan: string; conversationId?: string; feedbackMessage: string; currentCode: string; backtestMetricsJson: string },
+  callbacks: PlanCallbacks,
+): () => void {
+  const abort = new AbortController();
+  (async () => {
+    try {
+      const stream = strategyPlanClient.diagnose({
+        plan: input.plan, conversationId: input.conversationId || '',
+        feedbackMessage: input.feedbackMessage, currentCode: input.currentCode,
+        backtestMetricsJson: input.backtestMetricsJson,
       }, { signal: abort.signal });
       for await (const chunk of stream) {
         if (chunk.delta) callbacks.onDelta(chunk.delta);

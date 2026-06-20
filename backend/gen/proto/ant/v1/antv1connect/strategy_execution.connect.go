@@ -36,15 +36,23 @@ const (
 	// StrategyPlanServiceAnalyzePlanProcedure is the fully-qualified name of the StrategyPlanService's
 	// AnalyzePlan RPC.
 	StrategyPlanServiceAnalyzePlanProcedure = "/ant.v1.StrategyPlanService/AnalyzePlan"
+	// StrategyPlanServiceDiagnoseProcedure is the fully-qualified name of the StrategyPlanService's
+	// Diagnose RPC.
+	StrategyPlanServiceDiagnoseProcedure = "/ant.v1.StrategyPlanService/Diagnose"
 	// StrategyPlanServiceExecutePlanProcedure is the fully-qualified name of the StrategyPlanService's
 	// ExecutePlan RPC.
 	StrategyPlanServiceExecutePlanProcedure = "/ant.v1.StrategyPlanService/ExecutePlan"
+	// StrategyPlanServiceConversateProcedure is the fully-qualified name of the StrategyPlanService's
+	// Conversate RPC.
+	StrategyPlanServiceConversateProcedure = "/ant.v1.StrategyPlanService/Conversate"
 )
 
 // StrategyPlanServiceClient is a client for the ant.v1.StrategyPlanService service.
 type StrategyPlanServiceClient interface {
 	AnalyzePlan(context.Context, *connect.Request[v1.AnalyzePlanRequest]) (*connect.ServerStreamForClient[v1.AnalyzePlanChunk], error)
+	Diagnose(context.Context, *connect.Request[v1.DiagnoseRequest]) (*connect.ServerStreamForClient[v1.AnalyzePlanChunk], error)
 	ExecutePlan(context.Context, *connect.Request[v1.ExecutePlanRequest]) (*connect.ServerStreamForClient[v1.ExecutePlanChunk], error)
+	Conversate(context.Context, *connect.Request[v1.ConversateRequest]) (*connect.ServerStreamForClient[v1.ConversateChunk], error)
 }
 
 // NewStrategyPlanServiceClient constructs a client for the ant.v1.StrategyPlanService service. By
@@ -64,10 +72,22 @@ func NewStrategyPlanServiceClient(httpClient connect.HTTPClient, baseURL string,
 			connect.WithSchema(strategyPlanServiceMethods.ByName("AnalyzePlan")),
 			connect.WithClientOptions(opts...),
 		),
+		diagnose: connect.NewClient[v1.DiagnoseRequest, v1.AnalyzePlanChunk](
+			httpClient,
+			baseURL+StrategyPlanServiceDiagnoseProcedure,
+			connect.WithSchema(strategyPlanServiceMethods.ByName("Diagnose")),
+			connect.WithClientOptions(opts...),
+		),
 		executePlan: connect.NewClient[v1.ExecutePlanRequest, v1.ExecutePlanChunk](
 			httpClient,
 			baseURL+StrategyPlanServiceExecutePlanProcedure,
 			connect.WithSchema(strategyPlanServiceMethods.ByName("ExecutePlan")),
+			connect.WithClientOptions(opts...),
+		),
+		conversate: connect.NewClient[v1.ConversateRequest, v1.ConversateChunk](
+			httpClient,
+			baseURL+StrategyPlanServiceConversateProcedure,
+			connect.WithSchema(strategyPlanServiceMethods.ByName("Conversate")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -76,7 +96,9 @@ func NewStrategyPlanServiceClient(httpClient connect.HTTPClient, baseURL string,
 // strategyPlanServiceClient implements StrategyPlanServiceClient.
 type strategyPlanServiceClient struct {
 	analyzePlan *connect.Client[v1.AnalyzePlanRequest, v1.AnalyzePlanChunk]
+	diagnose    *connect.Client[v1.DiagnoseRequest, v1.AnalyzePlanChunk]
 	executePlan *connect.Client[v1.ExecutePlanRequest, v1.ExecutePlanChunk]
+	conversate  *connect.Client[v1.ConversateRequest, v1.ConversateChunk]
 }
 
 // AnalyzePlan calls ant.v1.StrategyPlanService.AnalyzePlan.
@@ -84,15 +106,27 @@ func (c *strategyPlanServiceClient) AnalyzePlan(ctx context.Context, req *connec
 	return c.analyzePlan.CallServerStream(ctx, req)
 }
 
+// Diagnose calls ant.v1.StrategyPlanService.Diagnose.
+func (c *strategyPlanServiceClient) Diagnose(ctx context.Context, req *connect.Request[v1.DiagnoseRequest]) (*connect.ServerStreamForClient[v1.AnalyzePlanChunk], error) {
+	return c.diagnose.CallServerStream(ctx, req)
+}
+
 // ExecutePlan calls ant.v1.StrategyPlanService.ExecutePlan.
 func (c *strategyPlanServiceClient) ExecutePlan(ctx context.Context, req *connect.Request[v1.ExecutePlanRequest]) (*connect.ServerStreamForClient[v1.ExecutePlanChunk], error) {
 	return c.executePlan.CallServerStream(ctx, req)
 }
 
+// Conversate calls ant.v1.StrategyPlanService.Conversate.
+func (c *strategyPlanServiceClient) Conversate(ctx context.Context, req *connect.Request[v1.ConversateRequest]) (*connect.ServerStreamForClient[v1.ConversateChunk], error) {
+	return c.conversate.CallServerStream(ctx, req)
+}
+
 // StrategyPlanServiceHandler is an implementation of the ant.v1.StrategyPlanService service.
 type StrategyPlanServiceHandler interface {
 	AnalyzePlan(context.Context, *connect.Request[v1.AnalyzePlanRequest], *connect.ServerStream[v1.AnalyzePlanChunk]) error
+	Diagnose(context.Context, *connect.Request[v1.DiagnoseRequest], *connect.ServerStream[v1.AnalyzePlanChunk]) error
 	ExecutePlan(context.Context, *connect.Request[v1.ExecutePlanRequest], *connect.ServerStream[v1.ExecutePlanChunk]) error
+	Conversate(context.Context, *connect.Request[v1.ConversateRequest], *connect.ServerStream[v1.ConversateChunk]) error
 }
 
 // NewStrategyPlanServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -108,18 +142,34 @@ func NewStrategyPlanServiceHandler(svc StrategyPlanServiceHandler, opts ...conne
 		connect.WithSchema(strategyPlanServiceMethods.ByName("AnalyzePlan")),
 		connect.WithHandlerOptions(opts...),
 	)
+	strategyPlanServiceDiagnoseHandler := connect.NewServerStreamHandler(
+		StrategyPlanServiceDiagnoseProcedure,
+		svc.Diagnose,
+		connect.WithSchema(strategyPlanServiceMethods.ByName("Diagnose")),
+		connect.WithHandlerOptions(opts...),
+	)
 	strategyPlanServiceExecutePlanHandler := connect.NewServerStreamHandler(
 		StrategyPlanServiceExecutePlanProcedure,
 		svc.ExecutePlan,
 		connect.WithSchema(strategyPlanServiceMethods.ByName("ExecutePlan")),
 		connect.WithHandlerOptions(opts...),
 	)
+	strategyPlanServiceConversateHandler := connect.NewServerStreamHandler(
+		StrategyPlanServiceConversateProcedure,
+		svc.Conversate,
+		connect.WithSchema(strategyPlanServiceMethods.ByName("Conversate")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.StrategyPlanService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case StrategyPlanServiceAnalyzePlanProcedure:
 			strategyPlanServiceAnalyzePlanHandler.ServeHTTP(w, r)
+		case StrategyPlanServiceDiagnoseProcedure:
+			strategyPlanServiceDiagnoseHandler.ServeHTTP(w, r)
 		case StrategyPlanServiceExecutePlanProcedure:
 			strategyPlanServiceExecutePlanHandler.ServeHTTP(w, r)
+		case StrategyPlanServiceConversateProcedure:
+			strategyPlanServiceConversateHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -133,6 +183,14 @@ func (UnimplementedStrategyPlanServiceHandler) AnalyzePlan(context.Context, *con
 	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyPlanService.AnalyzePlan is not implemented"))
 }
 
+func (UnimplementedStrategyPlanServiceHandler) Diagnose(context.Context, *connect.Request[v1.DiagnoseRequest], *connect.ServerStream[v1.AnalyzePlanChunk]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyPlanService.Diagnose is not implemented"))
+}
+
 func (UnimplementedStrategyPlanServiceHandler) ExecutePlan(context.Context, *connect.Request[v1.ExecutePlanRequest], *connect.ServerStream[v1.ExecutePlanChunk]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyPlanService.ExecutePlan is not implemented"))
+}
+
+func (UnimplementedStrategyPlanServiceHandler) Conversate(context.Context, *connect.Request[v1.ConversateRequest], *connect.ServerStream[v1.ConversateChunk]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyPlanService.Conversate is not implemented"))
 }

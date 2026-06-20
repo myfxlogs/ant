@@ -1,11 +1,10 @@
 import { useState, useRef, useCallback } from 'react';
-import { Button, Card, Input, Space, Tag, Typography, Spin } from 'antd';
-import { ThunderboltOutlined, CheckCircleOutlined, EditOutlined, SendOutlined } from '@ant-design/icons';
+import { Button, Input, Space, Tag, Typography, Spin } from 'antd';
+import { ThunderboltOutlined, SendOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import {
   PLACEHOLDER_KEY, PLAN_TITLE_KEY, PLAN_ANALYZING_KEY, PLAN_ERROR_TAG_KEY,
-  PLAN_RESET_KEY, PLAN_CARD_TITLE_KEY, PLAN_EDIT_KEY, PLAN_EDIT_CANCEL_KEY,
-  PLAN_CONFIRM_BTN_KEY, PLAN_SEND_BTN_KEY, PLAN_SYMBOL_WARN_KEY,
+  PLAN_RESET_KEY, PLAN_SEND_BTN_KEY, PLAN_SYMBOL_WARN_KEY,
   PLAN_SYMBOL_OK_KEY, PLAN_PREREQUISITE_MSG_KEY,
 } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 import { analyzePlan, type PlanCallbacks } from '@/client/strategyPlan';
@@ -28,14 +27,14 @@ export default function PlanPanel({ symbol, timeframe, sessionId, onPlanConfirme
   const [plan, setPlan] = useState('');
   const [streamText, setStreamText] = useState('');
   const [error, setError] = useState('');
-  const [editing, setEditing] = useState(false);
-  const [editDraft, setEditDraft] = useState('');
+  const [refining, setRefining] = useState(false);
+  const [planDraft, setPlanDraft] = useState('');
   const abortRef = useRef<(() => void) | null>(null);
 
   const reset = useCallback(() => {
     abortRef.current?.();
     setPhase('idle'); setPlan(''); setStreamText(''); setError('');
-    setEditing(false); setEditDraft('');
+    setRefining(false); setPlanDraft('');
   }, []);
 
   const handleSend = useCallback(() => {
@@ -59,49 +58,77 @@ export default function PlanPanel({ symbol, timeframe, sessionId, onPlanConfirme
     abortRef.current = abort;
   }, [draft, sessionId, symbol, timeframe, t]);
 
-  const handleConfirm = () => {
-    const finalPlan = editing ? editDraft.trim() : plan;
-    if (finalPlan) onPlanConfirmed(finalPlan);
-  };
+  const handleRefine = useCallback(() => {
+    const msg = planDraft.trim();
+    if (!msg) return;
+    // Natural language: user can discuss or say "generate"
+    if (/生成代码|可以|好|行|ok|yes|go|继续|确认/.test(msg)) {
+      onPlanConfirmed(plan);
+      return;
+    }
+    setPlanDraft(''); setRefining(true); setError('');
+    const abort = analyzePlan(
+      { message: `关于这个策略计划：${plan}\n\n用户的反馈：${msg}\n\n请根据反馈修改计划，直接输出修改后的计划。`, conversationId: sessionId, symbol, timeframe },
+      {
+        onDelta: () => {},
+        onPlan: (p) => { setPlan(p); setRefining(false); },
+        onError: (e) => { setError(e); setRefining(false); },
+        onDone: () => {},
+      } satisfies PlanCallbacks,
+    );
+    abortRef.current = abort;
+  }, [planDraft, plan, sessionId, symbol, timeframe, onPlanConfirmed]);
 
   const hasSymbol = !!(symbol && timeframe);
 
-  if (phase === 'plan_ready' || editing) {
-    const displayPlan = editing ? editDraft : plan;
+  if (phase === 'plan_ready') {
     return (
-      <div style={{ padding: 10 }}>
-        <Card size="small" style={{ borderRadius: 8, borderColor: '#b7eb8f', background: '#f6ffed' }}
-          title={<span><CheckCircleOutlined style={{ color: '#52c41a' }} /> {t(PLAN_CARD_TITLE_KEY, 'AI Execution Plan')}</span>}
-          actions={[
-            <Button key="edit" size="small" icon={<EditOutlined />}
-              onClick={() => { setEditing(!editing); if (!editing) setEditDraft(plan); }}>
-              {editing ? t(PLAN_EDIT_CANCEL_KEY, 'Cancel') : t(PLAN_EDIT_KEY, 'Edit')}
-            </Button>,
-            <Button key="confirm" type="primary" size="small" icon={<ThunderboltOutlined />}
-              onClick={handleConfirm}>
-              {t(PLAN_CONFIRM_BTN_KEY, 'Confirm & Generate Code')}
-            </Button>,
-          ]}
-        >
-          {editing ? (
-            <TextArea rows={6} value={editDraft} onChange={e => setEditDraft(e.target.value)}
-              style={{ fontSize: 13, fontFamily: 'monospace' }} />
-          ) : (
-            <Typography.Paragraph style={{ fontSize: 13, whiteSpace: 'pre-wrap', margin: 0 }}>
-              {displayPlan}
-            </Typography.Paragraph>
-          )}
-        </Card>
+      <div style={{ padding: 10, border: '1px solid #f0f0f0', borderRadius: 6, background: '#fafafa' }}>
+        <div style={{ padding: '8px 10px', marginBottom: 8, borderRadius: 6,
+          background: '#f6ffed', border: '1px solid #b7eb8f' }}>
+          <Typography.Text strong style={{ fontSize: 11, color: '#389e0d', display: 'block', marginBottom: 4 }}>
+            ✅ AI 执行计划
+          </Typography.Text>
+          <Typography.Paragraph style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: '#262626' }}>
+            {plan}
+          </Typography.Paragraph>
+        </div>
+
+        {refining && (
+          <div style={{ padding: 6, textAlign: 'center', color: '#8c8c8c', fontSize: 12 }}>
+            <LoadingOutlined style={{ marginRight: 4 }} />AI 正在修改计划...
+          </div>
+        )}
+
+        {error && (
+          <div style={{ padding: 6, marginBottom: 6, background: '#fffbe6', borderRadius: 4, fontSize: 11, color: '#ad6800' }}>
+            {error}
+          </div>
+        )}
+
+        <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 6 }}>
+          你可以讨论这个计划，或直接说"生成代码"开始执行。
+        </div>
+        <Space.Compact style={{ width: '100%' }}>
+          <Input value={planDraft} onChange={e => setPlanDraft(e.target.value)}
+            placeholder="说说你的想法..."
+            onPressEnter={handleRefine}
+            disabled={refining}
+            style={{ fontSize: 12 }}
+          />
+          <Button type="primary" icon={<SendOutlined />}
+            onClick={handleRefine} loading={refining}
+            disabled={!planDraft.trim()}>发送</Button>
+        </Space.Compact>
       </div>
     );
   }
 
   return (
     <div style={{ padding: 10, border: '1px solid #f0f0f0', borderRadius: 6, background: '#fafafa' }}>
-      {/* Symbol indicator */}
       <div style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
         {hasSymbol ? (
-          <Tag color="blue" style={{ fontSize: 11 }}>📊 {t(PLAN_SYMBOL_OK_KEY, '{symbol} · {timeframe}').replace('{symbol}', symbol!).replace('{timeframe}', timeframe!)}</Tag>
+          <Tag color="blue" style={{ fontSize: 11 }}>📊 {symbol} · {timeframe}</Tag>
         ) : (
           <Tag color="warning" style={{ fontSize: 11 }}>{t(PLAN_SYMBOL_WARN_KEY, 'Please select symbol and timeframe above')}</Tag>
         )}

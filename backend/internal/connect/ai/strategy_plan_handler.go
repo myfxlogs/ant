@@ -1,6 +1,7 @@
 package ai
 
 import (
+	internalai "anttrader/internal/ai"
 	"context"
 	"fmt"
 	"strings"
@@ -12,7 +13,6 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/ai"
 	"anttrader/internal/repository"
 	systemai "anttrader/internal/service/systemai"
 )
@@ -23,20 +23,31 @@ type StrategyPlanServer struct {
 	templatesRepo  *repository.AIStrategyTemplatesRepository
 	backtestRepo   *repository.BacktestRunRepository
 	convRepo       *repository.AIConversationRepository
-	intentAnalyzer *ai.IntentAnalyzer
+	marketDataRepo repository.MarketDataStore
+	memoryExec     func(ctx context.Context, sql string, args ...any) error
+	memoryQuery    func(ctx context.Context, sql string, args ...any) (string, error)
+	intentAnalyzer *internalai.IntentAnalyzer
 	log            *zap.Logger
 }
 
 var _ antv1c.StrategyPlanServiceHandler = (*StrategyPlanServer)(nil)
+
+// SetPoolAdapter wires the PG pool for memory tools (remember/recall).
+// Call this after construction to enable memory persistence.
+func (s *StrategyPlanServer) SetPoolAdapter(execFn func(ctx context.Context, sql string, args ...any) error, queryFn func(ctx context.Context, sql string, args ...any) (string, error)) {
+	s.memoryExec = execFn
+	s.memoryQuery = queryFn
+}
 
 func NewStrategyPlanServer(
 	systemSvc *systemai.Service,
 	templatesRepo *repository.AIStrategyTemplatesRepository,
 	backtestRepo *repository.BacktestRunRepository,
 	convRepo *repository.AIConversationRepository,
+	marketDataRepo repository.MarketDataStore,
 	log *zap.Logger,
 ) *StrategyPlanServer {
-	analyzer := ai.NewIntentAnalyzer(func(ctx context.Context, userID uuid.UUID, messages []ai.ChatMessage, _ string) (string, error) {
+	analyzer := internalai.NewIntentAnalyzer(func(ctx context.Context, userID uuid.UUID, messages []internalai.ChatMessage, _ string) (string, error) {
 		sysMsgs := make([]systemai.ChatMessage, len(messages))
 		for i, m := range messages {
 			sysMsgs[i] = systemai.ChatMessage{Role: m.Role, Content: m.Content}
@@ -45,7 +56,8 @@ func NewStrategyPlanServer(
 	})
 	return &StrategyPlanServer{
 		systemSvc: systemSvc, templatesRepo: templatesRepo, backtestRepo: backtestRepo,
-		convRepo: convRepo, intentAnalyzer: analyzer, log: log,
+		convRepo: convRepo, marketDataRepo: marketDataRepo, intentAnalyzer: analyzer, log: log,
+		// memoryExec and memoryQuery are set via SetPoolAdapter after construction
 	}
 }
 
@@ -74,7 +86,7 @@ func (s *StrategyPlanServer) AnalyzePlan(
 		plan = buildFallbackPlan(intent)
 	}
 
-	sysPrompt := planSystemPrompt(lang)
+	sysPrompt := internalai.AgentPrompt(lang) + "\n\n## 当前任务：制定执行计划（绝对不要生成代码！）\n分析用户需求，输出一个纯文本的执行计划。每行一个步骤，用 1. 2. 3. 开头。只讨论策略逻辑和方案，不要写任何代码。"
 	userPrompt := fmt.Sprintf("用户需求: %s\n\n分析结果: 策略类型=%s, 方向=%s, 风险=%s\n请用1-2句话生成一个简明的执行计划。",
 		m.Message, intent.StrategyFamily, intent.TradeDirection, intent.RiskLevel)
 
@@ -98,6 +110,79 @@ func (s *StrategyPlanServer) AnalyzePlan(
 	return nil
 }
 
+// ── Conversate: unified agent conversation (Claude Code style) ──
+
+func (s *StrategyPlanServer) Conversate(
+	ctx context.Context,
+	req *connect.Request[antv1.ConversateRequest],
+	stream *connect.ServerStream[antv1.ConversateChunk],
+) error {
+	userID, err := userIDFromCtx(ctx)
+	if err != nil {
+		return err
+	}
+	m := req.Msg
+	lang := LangFromAccept(req.Header().Get("Accept-Language"))
+
+	registry := NewToolRegistry(s.backtestRepo, s.marketDataRepo)
+	registry.WireMemoryDB(s.memoryExec, s.memoryQuery)
+
+	sysPrompt := internalai.AgentPrompt(lang)
+
+	history := s.loadHistory(ctx, userID, m.ConversationId, 20)
+	userPrompt := m.Message
+	oldCode := m.CurrentCode
+
+	chunk := func(delta string) error {
+		return stream.Send(&antv1.ConversateChunk{Phase: "thinking", Delta: delta})
+	}
+	toolEvt := func(tc *antv1.ToolCall, tr *antv1.ToolResult) error {
+		return stream.Send(&antv1.ConversateChunk{Phase: "tool_result", ToolCall: tc, ToolResult: tr})
+	}
+
+	loop := NewAgentLoop(registry,
+		func(ctx context.Context, msgs []systemai.ChatMessage, onChunk func(systemai.ChatStreamChunk) error) error {
+			return s.systemSvc.ChatCompletionStream(ctx, userID, msgs, onChunk)
+		},
+		chunk, toolEvt,
+	)
+
+	raw, err := loop.RunWithHistory(ctx, sysPrompt, userPrompt, history, userID)
+	if err != nil {
+		return stream.Send(&antv1.ConversateChunk{Phase: "done", Error: systemai.FriendlyError(err)})
+	}
+
+	// Extract plan/code from the response
+	plan := extractPlan(raw)
+	code := ExtractCode(raw)
+
+	// Auto-run post-generation tools if code was generated
+	if code != "" {
+		registry.Execute(ctx, ToolInput{Code: code, Symbol: m.Symbol, Timeframe: m.Timeframe, UserID: userID},
+			func(ch *antv1.ExecutePlanChunk) error {
+				return stream.Send(&antv1.ConversateChunk{
+					Phase: "tool_result",
+					ToolCall: ch.ToolCall, ToolResult: ch.ToolResult,
+				})
+			})
+	}
+
+	s.persistExchange(ctx, userID, m.ConversationId, plan, code, m.Message)
+	return stream.Send(&antv1.ConversateChunk{Phase: "done", Code: code, Plan: plan, PreviousCode: oldCode})
+}
+
+// extractPlan pulls the first non-code text that looks like a plan from the response.
+func extractPlan(raw string) string {
+	code := ExtractCode(raw)
+	if code == "" {
+		return raw
+	}
+	if idx := strings.Index(raw, code); idx > 0 {
+		return strings.TrimSpace(raw[:idx])
+	}
+	return ""
+}
+
 // ── ExecutePlan: execution phase ──
 
 func (s *StrategyPlanServer) ExecutePlan(
@@ -114,44 +199,76 @@ func (s *StrategyPlanServer) ExecutePlan(
 
 	_ = stream.Send(&antv1.ExecutePlanChunk{Phase: "generating"})
 
-	sysPrompt := codeFromPlanPrompt(lang)
+	registry := NewToolRegistry(s.backtestRepo, s.marketDataRepo)
+	registry.WireMemoryDB(s.memoryExec, s.memoryQuery)
+	sysPrompt := internalai.AgentPrompt(lang) + "\n\n## 当前任务：生成或修改策略代码\n根据执行计划和用户的最新消息，输出完整的 Python 策略代码。你可以使用 [TOOL: name args] 来查询信息。"
 	userPrompt := buildExecuteUserPrompt(m)
-	if m.FeedbackMessage != "" {
-		sysPrompt = diagnoseAndFixPrompt(lang)
-	}
 
-	var fullBuf strings.Builder
-	isFeedback := m.FeedbackMessage != ""
-	err = s.systemSvc.ChatCompletionStream(ctx, userID,
-		[]systemai.ChatMessage{{Role: "system", Content: sysPrompt}, {Role: "user", Content: userPrompt}},
-		func(chunk systemai.ChatStreamChunk) error {
-			fullBuf.WriteString(chunk.Content)
-			return stream.Send(&antv1.ExecutePlanChunk{Phase: "generating", Delta: chunk.Content})
-		})
+	// Agent Loop: LLM ↔ Tools (Claude Code / OpenAI Agents SDK pattern)
+	loop := NewAgentLoop(registry,
+		func(ctx context.Context, messages []systemai.ChatMessage, onChunk func(systemai.ChatStreamChunk) error) error {
+			return s.systemSvc.ChatCompletionStream(ctx, userID, messages, onChunk)
+		},
+		func(delta string) error {
+			return stream.Send(&antv1.ExecutePlanChunk{Phase: "generating", Delta: delta})
+		},
+		func(tc *antv1.ToolCall, tr *antv1.ToolResult) error {
+			return stream.Send(&antv1.ExecutePlanChunk{Phase: "tool_result", ToolCall: tc, ToolResult: tr})
+		},
+	)
+
+	raw, err := loop.Run(ctx, sysPrompt, userPrompt, userID)
 	if err != nil {
 		return stream.Send(&antv1.ExecutePlanChunk{Phase: "error", Error: systemai.FriendlyError(err)})
 	}
 
-	raw := fullBuf.String()
 	code := ExtractCode(raw)
+	// If code is less than 30% of the response, it's likely just code snippets
+	// in a discussion — treat the whole response as analysis, not code output.
+	if code != "" && len(code) < len(raw)/3 {
+		code = ""
+	}
 	var analysis string
-	if isFeedback && code != "" && raw != code {
-		// Split AI's explanation from the code block
-		idx := strings.Index(raw, code)
-		if idx > 0 {
+	if m.FeedbackMessage != "" && code != "" && raw != code {
+		if idx := strings.Index(raw, code); idx > 0 {
 			analysis = strings.TrimSpace(raw[:idx])
 		}
 	}
 
-	// ── Tool pipeline (registry-driven, extensible) ──
-	NewToolRegistry(s.backtestRepo).Execute(ctx, ToolInput{
-		Code: code, Symbol: m.Symbol, Timeframe: m.Timeframe, UserID: userID,
-	}, func(chunk *antv1.ExecutePlanChunk) error {
-		return stream.Send(chunk)
-	})
+	// ── Auto-run tools after code generation ──
+	registry.Execute(ctx, ToolInput{Code: code, Symbol: m.Symbol, Timeframe: m.Timeframe, UserID: userID},
+		func(chunk *antv1.ExecutePlanChunk) error { return stream.Send(chunk) })
 
 	s.persistExchange(ctx, userID, m.ConversationId, m.Plan, code, m.FeedbackMessage)
 	return stream.Send(&antv1.ExecutePlanChunk{Phase: "done", Code: code, PreviousCode: m.PreviousCode, Analysis: analysis})
+}
+
+
+// loadHistory loads recent conversation messages as context for the AgentLoop.
+func (s *StrategyPlanServer) loadHistory(ctx context.Context, userID uuid.UUID, convID string, limit int) []systemai.ChatMessage {
+	if convID == "" {
+		return nil
+	}
+	cid, err := uuid.Parse(convID)
+	if err != nil {
+		return nil
+	}
+	msgs, err := s.convRepo.GetMessages(ctx, userID, cid)
+	if err != nil || len(msgs) == 0 {
+		return nil
+	}
+	if limit > 0 && len(msgs) > limit {
+		msgs = msgs[len(msgs)-limit:]
+	}
+	out := make([]systemai.ChatMessage, len(msgs))
+	for i, m := range msgs {
+		role := m.Role
+		if role == "assistant" {
+			role = "assistant"
+		}
+		out[i] = systemai.ChatMessage{Role: role, Content: m.Content}
+	}
+	return out
 }
 
 func (s *StrategyPlanServer) persistPlan(ctx context.Context, userID uuid.UUID, convID, userMsg, plan string) {
@@ -178,35 +295,81 @@ func (s *StrategyPlanServer) persistExchange(ctx context.Context, userID uuid.UU
 	if feedback != "" {
 		_, _ = s.convRepo.AddMessage(ctx, userID, cid, "user", feedback)
 	} else {
-		_, _ = s.convRepo.AddMessage(ctx, userID, cid, "user", "[EXECUTED]\n"+plan)
+		_, _ = s.convRepo.AddMessage(ctx, userID, cid, "user", plan)
 	}
-	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "assistant", "[CODE]\n"+code)
+	tag := "[DISCUSSION]"
+	if code != "" {
+		tag = "[CODE]"
+	} else if plan != "" {
+		tag = "[PLAN]"
+	}
+	content := code
+	if content == "" {
+		content = plan
+	}
+	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "assistant", tag+"\n"+content)
 	_ = s.convRepo.Touch(ctx, cid, userID)
 }
 
-func planSystemPrompt(lang string) string {
-	switch lang {
-	case "zh":
-		return "你是一个量化策略规划师。根据用户需求，输出一个编号的执行计划。每行一个步骤，用 1. 2. 3. 开头。包含：策略类型、关键指标、入场/出场逻辑、风控措施。直接输出编号列表，不要任何其他文字。例如：\n1. 使用 EMA20/EMA50 判断趋势方向\n2. RSI < 30 时入场做多\n3. 设置 2% 止损和 4% 止盈"
-	case "zh-tw":
-		return "你是一個量化策略規劃師。根據用戶需求，輸出一個編號的執行計畫。每行一個步驟，用 1. 2. 3. 開頭。包含：策略類型、關鍵指標、入場/出場邏輯、風控措施。直接輸出編號列表，不要任何其他文字。"
-	default:
-		return "You are a quantitative strategy planner. Output a numbered execution plan. One step per line, starting with 1. 2. 3. Include: strategy type, key indicators, entry/exit logic, risk controls. Output ONLY the numbered list, nothing else. Example:\n1. Use EMA20/EMA50 for trend direction\n2. Enter long when RSI < 30\n3. Set 2% stop loss and 4% take profit"
+// ── Diagnose: analysis only, no code generation ──
+
+func (s *StrategyPlanServer) Diagnose(
+	ctx context.Context,
+	req *connect.Request[antv1.DiagnoseRequest],
+	stream *connect.ServerStream[antv1.AnalyzePlanChunk],
+) error {
+	userID, err := userIDFromCtx(ctx)
+	if err != nil {
+		return err
 	}
+	m := req.Msg
+	lang := LangFromAccept(req.Header().Get("Accept-Language"))
+
+	sysPrompt := internalai.AgentPrompt(lang) + "\n\n## 当前任务：诊断问题，提出建议\n分析用户的反馈和回测数据，给出具体的修改建议。每行一个建议，用 - 开头。不要生成代码，只输出诊断分析和建议。"
+	userPrompt := fmt.Sprintf(
+		"## 执行计划\n%s\n\n## 当前代码\n```python\n%s\n```\n\n## 回测数据\n%s\n\n## 用户反馈\n%s\n\n请诊断问题并给出修改建议。每行一个建议，用 - 开头。",
+		m.Plan, m.CurrentCode, m.BacktestMetricsJson, m.FeedbackMessage,
+	)
+
+	var fullBuf strings.Builder
+	err = s.systemSvc.ChatCompletionStream(ctx, userID,
+		[]systemai.ChatMessage{{Role: "system", Content: sysPrompt}, {Role: "user", Content: userPrompt}},
+		func(chunk systemai.ChatStreamChunk) error {
+			fullBuf.WriteString(chunk.Content)
+			send := &antv1.AnalyzePlanChunk{Phase: "analyzing", Delta: chunk.Content}
+			if chunk.Done {
+				send.Phase = "plan_ready"
+				send.Plan = fullBuf.String()
+			}
+			return stream.Send(send)
+		})
+	if err != nil {
+		return stream.Send(&antv1.AnalyzePlanChunk{Phase: "error", Error: systemai.FriendlyError(err)})
+	}
+
+	s.persistDiagnose(ctx, userID, m.ConversationId, m.FeedbackMessage, fullBuf.String())
+	return nil
 }
 
-func codeFromPlanPrompt(lang string) string {
-	switch lang {
-	case "zh":
-		return "你是一个专业的量化策略实现工程师。根据执行计划生成完整的 Python 策略代码。只输出代码，不要有任何解释或 markdown 格式。使用 run_context 模式。包含完整的止损止盈逻辑和仓位管理。"
-	case "zh-tw":
-		return "你是一個專業的量化策略實現工程師。根據執行計劃生成完整的 Python 策略程式碼。只輸出程式碼，不要有任何解釋或 markdown 格式。使用 run_context 模式。包含完整的止損止盈邏輯和倉位管理。"
-	default:
-		return "You are a professional quantitative strategy engineer. Generate complete Python strategy code from the execution plan. Output ONLY code, no explanations or markdown formatting. Use run_context mode. Include full stop-loss/take-profit logic and position sizing."
+func (s *StrategyPlanServer) persistDiagnose(ctx context.Context, userID uuid.UUID, convID, question, answer string) {
+	if convID == "" {
+		return
 	}
+	cid, err := uuid.Parse(convID)
+	if err != nil {
+		return
+	}
+	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "user", question)
+	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "assistant", "[DIAGNOSIS]\n"+answer)
+	_ = s.convRepo.Touch(ctx, cid, userID)
 }
 
-func buildFallbackPlan(intent *ai.IntentResult) string {
+
+
+
+
+
+func buildFallbackPlan(intent *internalai.IntentResult) string {
 	s := "Strategy Plan:\n"
 	if intent.StrategyFamily != "" && intent.StrategyFamily != "unknown" {
 		s += "- Type: " + intent.StrategyFamily + "\n"
@@ -242,28 +405,3 @@ func buildExecuteUserPrompt(m *antv1.ExecutePlanRequest) string {
 	return m.Plan
 }
 
-func diagnoseAndFixPrompt(lang string) string {
-	switch lang {
-	case "zh":
-		return "你是策略迭代助手。用户会发送后续消息——可能是问题、反馈或修改要求。\n\n" +
-			"规则：\n" +
-			"1. 先判断用户意图：纯问题 → 只回答，不生成代码。修改要求 → 先解释，再给新代码。\n" +
-			"2. 如果只是问问题（如\"回测结果是什么\"），直接回答问题即可。不要生成代码。\n" +
-			"3. 如果要求修改，在现有代码基础上改，不要完全重写。\n" +
-			"4. 如果要生成代码，先写分析/解释，然后输出代码。代码不要有 markdown 格式。"
-	case "zh-tw":
-		return "你是策略迭代助手。用戶會發送後續訊息——可能是問題、回饋或修改要求。\n\n" +
-			"規則：\n" +
-			"1. 先判斷用戶意圖：純問題 → 只回答，不生成程式碼。修改要求 → 先解釋，再給新程式碼。\n" +
-			"2. 如果只是問問題（如\"回測結果是什麼\"），直接回答問題即可。不要生成程式碼。\n" +
-			"3. 如果要求修改，在現有程式碼基礎上改，不要完全重寫。\n" +
-			"4. 如果要生成程式碼，先寫分析/解釋，然後輸出程式碼。程式碼不要有 markdown 格式。"
-	default:
-		return "You are a strategy iteration assistant. The user sends follow-up messages — questions, feedback, or change requests.\n\n" +
-			"Rules:\n" +
-			"1. First classify the intent: pure question → just answer, no code. Change request → explain then give new code.\n" +
-			"2. If it's just a question (e.g. 'what are the backtest results?'), answer it directly. Do NOT generate code.\n" +
-			"3. If it's a change request, modify the existing code — do not rewrite from scratch.\n" +
-			"4. If you generate code, write analysis/explanation first, then output code. Code must not have markdown formatting."
-	}
-}

@@ -9,7 +9,39 @@ option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
 service StrategyPlanService {
   rpc AnalyzePlan(AnalyzePlanRequest) returns (stream AnalyzePlanChunk);
+  rpc Diagnose(DiagnoseRequest) returns (stream AnalyzePlanChunk);
   rpc ExecutePlan(ExecutePlanRequest) returns (stream ExecutePlanChunk);
+  rpc Conversate(ConversateRequest) returns (stream ConversateChunk);
+}
+
+message ConversateRequest {
+  string message = 1;
+  string conversation_id = 2;
+  string symbol = 3;
+  string timeframe = 4;
+  string plan = 5;                // current plan (empty on first message)
+  string current_code = 6;        // current strategy code
+  string backtest_metrics_json = 7;
+}
+
+message ConversateChunk {
+  string phase = 1;    // "thinking" | "tool_call" | "tool_result" | "done"
+  string delta = 2;    // streaming text
+  string plan = 3;     // extracted plan
+  string code = 4;     // extracted code
+  string previous_code = 5;
+  string analysis = 6;
+  ToolCall tool_call = 7;
+  ToolResult tool_result = 8;
+  string error = 9;
+}
+
+message DiagnoseRequest {
+  string plan = 1;
+  string conversation_id = 2;
+  string feedback_message = 3;       // user's feedback
+  string current_code = 4;           // current strategy code for context
+  string backtest_metrics_json = 5;  // latest metrics
 }
 
 message AnalyzePlanRequest {
