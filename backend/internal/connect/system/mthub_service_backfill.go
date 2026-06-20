@@ -73,6 +73,10 @@ func (s *MtHubServer) backfillKlines(accountID, rawSymbol string) {
 		total    int
 		eg       errgroup.Group
 	)
+	// Limit concurrent broker PriceHistory calls. Some MT servers silently
+	// drop concurrent requests for the same symbol, causing data loss (e.g.
+	// brokerFallback grabbed the 1h slot while backfill was fetching it).
+	eg.SetLimit(4)
 
 	for _, period := range periods {
 		p := period // capture
@@ -82,6 +86,7 @@ func (s *MtHubServer) backfillKlines(accountID, rawSymbol string) {
 			if minFrom := now - 730*24*3600; from < minFrom {
 				from = minFrom
 			}
+
 			bars, err := s.svc.PriceHistory(ctx, accountID, rawSymbol, p, from, now, 500)
 			if err != nil {
 				s.log.Warn("backfill: fetch failed",
@@ -149,6 +154,34 @@ func (s *MtHubServer) backfillKlines(accountID, rawSymbol string) {
 func (s *MtHubServer) brokerFallback(
 	ctx context.Context, accountID, symbol, period string, limit int,
 ) []repository.KlineBar {
+	key := accountID + ":" + symbol
+
+	// If backfill is in progress for this symbol, wait for it to finish
+	// and re-query the database. Avoids duplicate broker calls that cause
+	// MT connection contention — the backfill's concurrent PriceHistory
+	// call for the same period would otherwise return empty.
+	s.backfillMu.Lock()
+	bfRunning := s.backfilling[key]
+	s.backfillMu.Unlock()
+
+	if bfRunning {
+		for i := 0; i < 20; i++ {
+			time.Sleep(500 * time.Millisecond)
+			s.backfillMu.Lock()
+			stillRunning := s.backfilling[key]
+			s.backfillMu.Unlock()
+			if !stillRunning {
+				break
+			}
+		}
+		// Re-query: backfill should have populated the database.
+		dbBars, err := s.marketData.GetKlines(ctx, symbol, "", period, nil, nil, int32(limit))
+		if err == nil && len(dbBars) >= 50 {
+			return dbBars
+		}
+	}
+
+	// Database still insufficient — call broker directly.
 	now := time.Now().Unix()
 	from := now - int64(limit)*periodSeconds(period)
 	bars, err := s.svc.PriceHistory(ctx, accountID, symbol, period, from, now, limit)
