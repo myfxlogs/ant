@@ -162,9 +162,9 @@ func (s *StrategyPlanServer) Conversate(
 	}
 
 	// Compliance check → auto-fix loop (Claude Code style: try → fail → fix → retry)
+	passed := false
 	if code != "" {
 		const maxRetries = 3
-		passed := false
 		for retry := 0; retry < maxRetries; retry++ {
 			compliant := &complianceTool{}
 			result := compliant.Run(ctx, ToolInput{Code: code})
@@ -202,6 +202,7 @@ func (s *StrategyPlanServer) Conversate(
 	}
 
 	s.persistExchange(ctx, userID, m.ConversationId, plan, code, m.Message)
+
 	return stream.Send(&antv1.ConversateChunk{Phase: "done", Code: code, Plan: plan, PreviousCode: oldCode})
 }
 

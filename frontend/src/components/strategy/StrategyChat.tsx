@@ -161,6 +161,9 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
                   <SyntaxHighlighter language="python" style={atomOneDark} showLineNumbers wrapLines customStyle={{ margin: 0, borderRadius: '0 0 6px 6px', fontSize: 11, padding: '8px 0', maxHeight: 300 }} lineNumberStyle={{ fontSize: 10, minWidth: '2em', color: '#636d83' }}>
                     {m.code}
                   </SyntaxHighlighter>
+                  <div style={{ fontSize: 10, color: '#8c8c8c', marginTop: 4, textAlign: 'center' }}>
+                    ✅ 代码已生成，合规检查和回测将自动运行。你可以继续讨论修改。
+                  </div>
                 </div>
               )}
             </div>
