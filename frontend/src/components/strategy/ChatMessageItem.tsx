@@ -1,5 +1,5 @@
 import { Button } from 'antd';
-import { CodeOutlined, CopyOutlined, RobotOutlined, UserOutlined } from '@ant-design/icons';
+import { CodeOutlined, CopyOutlined, UserOutlined } from '@ant-design/icons';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
 import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -19,7 +19,7 @@ export default function ChatMessageItem({ msg, copied, onCopy }: {
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
       <div style={{ width: 28, height: 28, borderRadius: 14, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: msg.role === 'user' ? '#1677ff' : '#52c41a', color: '#fff' }}>
-        {msg.role === 'user' ? <UserOutlined style={iconStyle} /> : <RobotOutlined style={iconStyle} />}
+        {msg.role === 'user' ? <UserOutlined style={iconStyle} /> : <span style={{ fontSize: 16 }}>🤖</span>}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         {msg.text && <div style={{ fontSize: 13, lineHeight: '22px', color: '#262626', whiteSpace: 'pre-wrap' }}>{msg.text}</div>}
@@ -40,7 +40,7 @@ export default function ChatMessageItem({ msg, copied, onCopy }: {
               {msg.code}
             </SyntaxHighlighter>
             <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4, textAlign: 'center' }}>
-              ✅ 代码已生成，合规检查和回测将自动运行。你可以继续讨论修改。
+              ✅ 代码已生成。请使用下方按钮运行策略审查和回测。
             </div>
           </div>
         )}

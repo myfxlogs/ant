@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Modal, Input } from 'antd';
+import { Modal, Input, Tooltip } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, ThunderboltOutlined, SafetyOutlined, SaveOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { codeAssistApi } from '@/client/codeAssist';
@@ -109,29 +109,36 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
     if (s === 'failed') return <CloseCircleOutlined style={{ color: '#ff4d4f', ...iconStyle }} />;
     return <span style={{ color: '#d9d9d9', fontSize: 11 }}>○</span>;
   };
-
   const stepConfig = [
-    { key: 'check' as StepKey, label: '策略审查', icon: <SafetyOutlined />, canRun: !disabled && status.check !== 'done', action: runCheck },
-    { key: 'backtest' as StepKey, label: '运行回测', icon: <ThunderboltOutlined />, canRun: canBacktest && status.backtest !== 'done', action: runBacktest },
-    { key: 'save' as StepKey, label: '保存策略', icon: <SaveOutlined />, canRun: canSave && status.save !== 'done', action: openSave },
+    { key: 'check' as StepKey, label: '策略审查', icon: <SafetyOutlined />, canRun: !disabled && status.check !== 'done', action: runCheck,
+      hint: disabled ? '需要代码' : status.check === 'done' ? '已完成' : '' },
+    { key: 'backtest' as StepKey, label: '运行回测', icon: <ThunderboltOutlined />, canRun: canBacktest && status.backtest !== 'done', action: runBacktest,
+      hint: status.check !== 'done' ? '请先完成策略审查'
+        : !hasSymbol ? '请选择交易品种和周期'
+        : !accountId ? '请选择交易账户'
+        : status.backtest === 'done' ? '已完成' : '' },
+    { key: 'save' as StepKey, label: '保存策略', icon: <SaveOutlined />, canRun: canSave && status.save !== 'done', action: openSave,
+      hint: status.backtest !== 'done' ? '请先完成回测' : status.save === 'done' ? '已保存' : '' },
   ];
 
   return (
     <>
       <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
         {stepConfig.map(s => (
-          <div key={s.key}
-            onClick={s.canRun ? s.action : undefined}
-            style={{ display: 'flex', alignItems: 'center', gap: 5,
-              padding: '4px 12px', borderRadius: 6, fontSize: 12,
-              cursor: s.canRun ? 'pointer' : 'default',
-              background: status[s.key] === 'done' ? '#f6ffed' : status[s.key] === 'failed' ? '#fff2f0' : '#fafafa',
-              border: `1px solid ${status[s.key] === 'done' ? '#b7eb8f' : status[s.key] === 'failed' ? '#ffccc7' : '#e8e8e8'}`,
-              transition: 'all 0.15s', userSelect: 'none' as const,
-            }}>
-            <StatusIcon s={status[s.key]} />
-            {s.canRun ? <span style={{ color: '#1677ff', fontWeight: 600 }}>{s.label}</span> : <span style={{ color: '#262626', fontWeight: 500 }}>{s.label}</span>}
-          </div>
+          <Tooltip key={s.key} title={s.hint || undefined}>
+            <div
+              onClick={s.canRun ? s.action : undefined}
+              style={{ display: 'flex', alignItems: 'center', gap: 5,
+                padding: '4px 12px', borderRadius: 6, fontSize: 12,
+                cursor: s.canRun ? 'pointer' : 'default',
+                background: status[s.key] === 'done' ? '#f6ffed' : status[s.key] === 'failed' ? '#fff2f0' : '#fafafa',
+                border: `1px solid ${status[s.key] === 'done' ? '#b7eb8f' : status[s.key] === 'failed' ? '#ffccc7' : '#e8e8e8'}`,
+                transition: 'all 0.15s', userSelect: 'none' as const,
+              }}>
+              <StatusIcon s={status[s.key]} />
+              {s.canRun ? <span style={{ color: '#1677ff', fontWeight: 600 }}>{s.label}</span> : <span style={{ color: '#262626', fontWeight: 500 }}>{s.label}</span>}
+            </div>
+          </Tooltip>
         ))}
       </div>
       <Modal title="保存策略" open={saveOpen} onOk={handleSaveConfirm} onCancel={() => setSaveOpen(false)}
