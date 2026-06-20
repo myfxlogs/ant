@@ -34,6 +34,16 @@ func EnsureMarketDataPartitions(ctx context.Context, pool *pgxpool.Pool, log *za
 func ensurePartitionsForTable(ctx context.Context, pool *pgxpool.Pool, log *zap.Logger,
 	table, rangeCol string, now time.Time, lookAheadMonths, retentionDays int,
 ) {
+	// Create past partitions (within retention window).
+	// Without these, backfill of larger periods (1d/1w) fails because
+	// returned bars fall before the earliest partition.
+	pastMonths := (retentionDays / 30) + 1
+	for i := -pastMonths; i < 0; i++ {
+		monthStart := now.AddDate(0, i, 0)
+		monthStart = time.Date(monthStart.Year(), monthStart.Month(), 1, 0, 0, 0, 0, time.UTC)
+		createPartitionIfNotExists(ctx, pool, log, table, rangeCol, monthStart)
+	}
+
 	// Create future partitions.
 	for i := 0; i < lookAheadMonths; i++ {
 		monthStart := now.AddDate(0, i, 0)

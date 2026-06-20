@@ -97,6 +97,12 @@ func (s *MtHubServer) fetchAllPeriods(
 		p := period // capture for closure
 		eg.Go(func() error {
 			from := now - 300*periodSeconds(p)
+			// Cap at 2-year retention boundary (md_bars partition TTL). If larger
+			// periods (1d/1w) fetch bars before the earliest PG partition, the
+			// entire batch insert fails. Clamp to retention window.
+			if minFrom := now - 730*24*3600; from < minFrom {
+				from = minFrom
+			}
 			bars, err := s.svc.PriceHistory(ctx, accountID, symbol, p, from, now, 500)
 			if err != nil {
 				s.log.Warn("backfill: period failed",
