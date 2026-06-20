@@ -35,6 +35,8 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
   const [templates, setTemplates] = useState<Array<{ id: string; name: string; code: string }>>([]);
   const [loadedTemplateId, setLoadedTemplateId] = useState('');
   const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
+  const [conversations, setConversations] = useState<Array<{ id: string; title: string; created_at: string }>>([]);
+  const [activeConvId, setActiveConvId] = useState('');
 
   // Refs avoid closure staleness
   const planRef = useRef('');
@@ -65,6 +67,12 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     } catch {}
   };
   useEffect(() => { fetchTemplates(); }, []);
+
+  // Fetch conversation list
+  const fetchConversations = async () => {
+    try { const list = await aiApi.listConversations(); setConversations(list.map(c => ({ id: c.id, title: c.title || '新对话', created_at: c.createdAt?.toISOString() || '' }))); } catch {}
+  };
+  useEffect(() => { fetchConversations(); }, []);
 
   // Auto-greet when symbol+timeframe become available for the first time
   const greeted = useRef(false);
@@ -186,6 +194,28 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     } catch {}
   };
 
+  const handleNewConv = async () => {
+    try {
+      const conv = await aiApi.createConversation('新对话');
+      setActiveConvId(conv.id);
+      setMessages([]);
+      planRef.current = ''; codeRef.current = ''; codeRef.current = '';
+      fetchConversations();
+    } catch {}
+  };
+
+  const handleLoadConv = async (id: string) => {
+    try {
+      const detail = await aiApi.getConversation(id);
+      setActiveConvId(id);
+      const msgs: ChatMsg[] = (detail.messages || []).map(m => ({
+        role: m.role === 'user' ? 'user' : 'ai',
+        text: m.content,
+      }));
+      setMessages(msgs);
+    } catch {}
+  };
+
   const handleCopy = (text: string) => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); };
 
   return (
@@ -213,7 +243,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
       </div>
 
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12, maxHeight: '50%' }}>
         {messages.length === 0 && !busy && (
           <div style={{ textAlign: 'center', color: '#8c8c8c', marginTop: 40, fontSize: 14 }}>
             <RobotOutlined style={{ fontSize: 32, color: '#d9d9d9', display: 'block', margin: '0 auto 12' }} />
@@ -273,6 +303,31 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
           <Button type="primary" icon={<SendOutlined />} onClick={handleSend} loading={busy} disabled={!draft.trim() || !hasSymbol} style={{ borderRadius: 8, flexShrink: 0 }} />
         </div>
         <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>Enter 发送 · Shift+Enter 换行</div>
+      </div>
+
+      {/* Conversation History */}
+      <div style={{ padding: '6px 14px', borderTop: '1px solid #e8e8e8', background: '#fff', flexShrink: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <Typography.Text style={{ fontSize: 11, color: '#8c8c8c' }}>历史对话</Typography.Text>
+          <Button size="small" type="link" style={{ fontSize: 10 }} onClick={handleNewConv}>+ 新建</Button>
+        </div>
+        <div style={{ maxHeight: 120, overflowY: 'auto' }}>
+          {conversations.slice(0, 10).map(conv => (
+            <div key={conv.id}
+              onClick={() => handleLoadConv(conv.id)}
+              style={{
+                padding: '4px 8px', cursor: 'pointer', borderRadius: 4, fontSize: 11,
+                background: conv.id === activeConvId ? '#e6f4ff' : 'transparent',
+                display: 'flex', justifyContent: 'space-between',
+              }}>
+              <span style={{ color: '#262626' }}>{conv.title}</span>
+              <span style={{ color: '#8c8c8c', fontSize: 10 }}>{conv.created_at?.slice(0, 10)}</span>
+            </div>
+          ))}
+          {conversations.length === 0 && (
+            <div style={{ fontSize: 11, color: '#8c8c8c', textAlign: 'center', padding: 8 }}>暂无历史对话</div>
+          )}
+        </div>
       </div>
 
       {/* Strategy List */}
