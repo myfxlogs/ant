@@ -132,6 +132,13 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
             style={{ width: 160, fontSize: 11 }} options={modelOptions} placeholder="选择模型" />
         )}
         {busy && <LoadingOutlined style={{ color: '#1677ff', marginLeft: 'auto' }} />}
+        <Button size="small" type="link" style={{ fontSize: 10, marginLeft: 'auto' }}
+          onClick={async () => {
+            try {
+              const r = await aiGatewayApi.listSystemModels();
+              setModelOptions(r.map(m => ({ value: `${m.providerId}|${m.modelName}`, label: `${m.displayName || m.modelName} (${m.providerId})` })));
+            } catch {}
+          }}>刷新模型</Button>
       </div>
 
       {/* Messages */}

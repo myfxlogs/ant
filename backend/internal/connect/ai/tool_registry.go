@@ -62,9 +62,10 @@ func NewToolRegistry(backtestRepo *repository.BacktestRunRepository, store repos
 func (r *ToolRegistry) WireMemoryDB(execFn func(ctx context.Context, sql string, args ...any) error, queryFn func(ctx context.Context, sql string, args ...any) (string, error)) {
 	rem := &rememberTool{execFn: execFn}
 	rec := &recallTool{queryFn: queryFn}
+	ls := &listStrategiesTool{queryFn: queryFn}
 	sv := &saveStrategyTool{execFn: execFn}
 	ld := &loadStrategyTool{queryFn: queryFn}
-	r.preTools = append(r.preTools, rem, rec, sv, ld)
+	r.preTools = append(r.preTools, rem, rec, ls, sv, ld)
 }
 
 // PreToolNames returns the names of pre-execution tools the AI can request.
@@ -215,6 +216,22 @@ func (t *recallTool) Run(ctx context.Context, in ToolInput) ToolOutput {
 	return ToolOutput{Success: true, Output: map[string]string{"key": key, "value": val}}
 }
 
+
+
+// ── list_strategies tool ──
+
+type listStrategiesTool struct{ queryFn func(ctx context.Context, sql string, args ...any) (string, error) }
+
+func (t *listStrategiesTool) Name() string { return "list_strategies" }
+func (t *listStrategiesTool) Run(ctx context.Context, in ToolInput) ToolOutput {
+	code, err := t.queryFn(ctx,
+		`SELECT json_agg(json_build_object('name', name, 'created', created_at) ORDER BY created_at DESC) 
+		 FROM strategy_templates WHERE user_id=$1 LIMIT 20`, in.UserID)
+	if err != nil || code == "" || code == "[null]" {
+		return ToolOutput{Success: true, Output: map[string]string{"strategies": "none"}}
+	}
+	return ToolOutput{Success: true, Output: map[string]string{"strategies": code}}
+}
 
 // ── save_strategy tool ──
 
