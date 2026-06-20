@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react';
 import { Button, Input, Tag, Typography, Select, Segmented } from 'antd';
-import { RobotOutlined, SendOutlined, LoadingOutlined, SettingOutlined, HistoryOutlined, FileTextOutlined } from '@ant-design/icons';
+import { RobotOutlined, SendOutlined, LoadingOutlined, SettingOutlined, HistoryOutlined, FileTextOutlined, EditOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { conversate, type ConversateCallbacks } from '@/client/strategyPlan';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
@@ -16,6 +16,18 @@ type TabKey = 'chat' | 'history' | 'strategies';
 
 interface Props { symbol?: string; timeframe?: string; sessionId?: string; onApplyCode: (code: string) => void; }
 
+/** Ask the LLM to generate a short conversation title from the first user message. */
+async function generateTitle(firstMsg: string): Promise<string> {
+  try {
+    const prompt = `你是一个标题生成器。根据用户的第一条消息，生成一个简短的对话标题（3-8个字）。只返回标题本身，不要加引号、句号或任何额外文字。\n\n用户消息: "${firstMsg}"\n\n标题:`;
+    const result = await aiApi.chat({ message: prompt });
+    const title = (result.message || '').replace(/^["'「『]|["'」』]$/g, '').trim();
+    return title.slice(0, 30) || firstMsg.slice(0, 20);
+  } catch {
+    return firstMsg.slice(0, 20);
+  }
+}
+
 export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode }: Props) {
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
@@ -30,11 +42,15 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
   const [conversations, setConversations] = useState<Array<{ id: string; title: string; created_at: string }>>([]);
   const [activeConvId, setActiveConvId] = useState('');
   const [tab, setTab] = useState<TabKey>('chat');
+  const [editingConvId, setEditingConvId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
 
   const planRef = useRef(''), codeRef = useRef(''), prevCodeRef = useRef('');
   const metricsRef = useRef<BacktestMetricsMsg | null>(null);
   const abortRef = useRef<(() => void) | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const titleGeneratedRef = useRef(false);
+  const firstUserMsgRef = useRef('');
   const hasSymbol = !!(symbol && timeframe);
 
   useEffect(() => { metricsRef.current = metrics; }, [metrics]);
@@ -68,10 +84,10 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
   useEffect(() => {
     if (hasSymbol && !greeted.current && !busy && messages.length === 0) {
       greeted.current = true;
+      firstUserMsgRef.current = `你好，介绍一下当前 ${symbol} ${timeframe} 的市场概况`;
       setBusy(true);
-      const msg = `你好，介绍一下当前 ${symbol} ${timeframe} 的市场概况`;
-      addMsg('user', { text: msg });
-      abortRef.current = runConversate(msg, '');
+      addMsg('user', { text: firstUserMsgRef.current });
+      abortRef.current = runConversate(firstUserMsgRef.current, '', true);
     }
   }, [hasSymbol, symbol, timeframe, sessionId, busy, messages.length]);
 
@@ -81,7 +97,19 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     setMessages(prev => [...prev, { role, ...extra }]);
   };
 
-  const runConversate = (msg: string, curCode: string) => {
+  // Try to auto-name the conversation after the first exchange
+  const tryAutoName = useCallback(async (convId: string, firstMsg: string) => {
+    if (titleGeneratedRef.current || !convId || !firstMsg) return;
+    titleGeneratedRef.current = true;
+    const title = await generateTitle(firstMsg);
+    if (title) {
+      try { await aiApi.updateConversationTitle(convId, title); } catch {}
+      setConversations(prev => prev.map(c => c.id === convId ? { ...c, title } : c));
+      setActiveConvId(convId);
+    }
+  }, []);
+
+  const runConversate = (msg: string, curCode: string, isFirst: boolean) => {
     const curPlan = planRef.current, curPrevCode = prevCodeRef.current;
     const curMetrics = metricsRef.current;
     return conversate(
@@ -114,6 +142,11 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
           if (!hasContent) chatMsg.text = '收到，请继续。';
           addMsg('ai', chatMsg);
           setBusy(false);
+          // Auto-name after first exchange
+          if (isFirst && sessionId) {
+            const firstMsg = firstUserMsgRef.current || msg;
+            tryAutoName(sessionId, firstMsg);
+          }
         },
       } satisfies ConversateCallbacks,
     );
@@ -123,10 +156,12 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     const msg = draft.trim();
     if (!msg || busy) return;
     if (!hasSymbol) { addMsg('ai', { text: '请先选择交易品种和时间周期。' }); return; }
+    const isFirst = messages.length === 0 && !titleGeneratedRef.current;
+    if (isFirst) firstUserMsgRef.current = msg;
     setDraft(''); setBusy(true);
     addMsg('user', { text: msg });
-    abortRef.current = runConversate(msg, codeRef.current);
-  }, [draft, busy, hasSymbol, sessionId, symbol, timeframe]);
+    abortRef.current = runConversate(msg, codeRef.current, isFirst);
+  }, [draft, busy, hasSymbol, sessionId, symbol, timeframe, messages.length]);
 
   const handleLoadTemplate = async (id: string) => {
     const tpl = templates.find(t => t.id === id);
@@ -148,6 +183,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
       const conv = await aiApi.createConversation('新对话');
       setActiveConvId(conv.id); setMessages([]);
       planRef.current = ''; codeRef.current = ''; prevCodeRef.current = '';
+      titleGeneratedRef.current = false; firstUserMsgRef.current = '';
       fetchConversations();
     } catch {}
   };
@@ -156,11 +192,29 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     try {
       const detail = await aiApi.getConversation(id); setActiveConvId(id);
       setMessages((detail.messages || []).map(m => ({ role: m.role === 'user' ? 'user' : 'ai', text: m.content })));
+      titleGeneratedRef.current = true; // prevent auto-rename on loaded conversations
       setTab('chat');
     } catch {}
   };
 
   const handleCopy = (text: string) => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+
+  // ── Conversation rename ──
+  const handleStartRename = (convId: string, currentTitle: string) => {
+    setEditingConvId(convId);
+    setEditTitle(currentTitle);
+  };
+
+  const handleCancelRename = () => { setEditingConvId(null); setEditTitle(''); };
+
+  const handleConfirmRename = async (convId: string) => {
+    const title = editTitle.trim();
+    if (title && title !== conversations.find(c => c.id === convId)?.title) {
+      try { await aiApi.updateConversationTitle(convId, title); } catch {}
+      setConversations(prev => prev.map(c => c.id === convId ? { ...c, title } : c));
+    }
+    setEditingConvId(null); setEditTitle('');
+  };
 
   const symbolTag = hasSymbol
     ? <Tag color="blue" style={{ fontSize: 12, margin: 0 }}>{symbol} · {timeframe}</Tag>
@@ -231,15 +285,35 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
             {conversations.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {conversations.map(conv => (
-                  <div key={conv.id} onClick={() => handleLoadConv(conv.id)}
-                    style={{ padding: '10px 12px', cursor: 'pointer', borderRadius: 8, fontSize: 12,
+                  <div key={conv.id}
+                    style={{ padding: '8px 10px', cursor: editingConvId === conv.id ? 'default' : 'pointer', borderRadius: 8, fontSize: 12,
                       background: conv.id === activeConvId ? '#e6f4ff' : '#fafafa',
                       border: conv.id === activeConvId ? '1px solid #91caff' : '1px solid #f0f0f0',
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.15s' }}>
-                    <span style={{ color: '#262626', fontWeight: conv.id === activeConvId ? 600 : 400 }}>
-                      {conv.id === activeConvId && <span style={{ color: '#1677ff', marginRight: 4 }}>●</span>}{conv.title}
-                    </span>
-                    <span style={{ color: '#8c8c8c', fontSize: 10 }}>{conv.created_at?.slice(0, 10)}</span>
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, transition: 'all 0.15s' }}>
+                    {editingConvId === conv.id ? (
+                      <div style={{ display: 'flex', gap: 4, flex: 1, alignItems: 'center' }}>
+                        <Input size="small" value={editTitle}
+                          onChange={e => setEditTitle(e.target.value)}
+                          onPressEnter={() => handleConfirmRename(conv.id)}
+                          style={{ flex: 1, fontSize: 12 }} autoFocus />
+                        <Button size="small" type="text" icon={<CheckOutlined />} onClick={() => handleConfirmRename(conv.id)}
+                          style={{ color: '#52c41a', padding: '0 4px' }} />
+                        <Button size="small" type="text" icon={<CloseOutlined />} onClick={handleCancelRename}
+                          style={{ color: '#ff4d4f', padding: '0 4px' }} />
+                      </div>
+                    ) : (
+                      <>
+                        <span onClick={() => handleLoadConv(conv.id)}
+                          style={{ color: '#262626', fontWeight: conv.id === activeConvId ? 600 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {conv.id === activeConvId && <span style={{ color: '#1677ff', marginRight: 4 }}>●</span>}{conv.title}
+                        </span>
+                        <span style={{ color: '#8c8c8c', fontSize: 10, flexShrink: 0 }}>{conv.created_at?.slice(0, 10)}</span>
+                        <Button size="small" type="text" icon={<EditOutlined style={{ fontSize: 11 }} />}
+                          onClick={(e) => { e.stopPropagation(); handleStartRename(conv.id, conv.title); }}
+                          style={{ color: '#8c8c8c', padding: '0 2px', flexShrink: 0 }}
+                          title="重命名" />
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
