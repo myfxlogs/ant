@@ -136,6 +136,11 @@ func (s *StrategyPlanServer) Conversate(
 	if m.Symbol != "" && m.Timeframe != "" {
 		ctxInfo = fmt.Sprintf("[当前工作区: 品种=%s, 周期=%s。你可以直接使用这些信息，无需询问用户。]", m.Symbol, m.Timeframe)
 	}
+		// If code is loaded, tell the AI so it can reference it without asking the user.
+		if m.CurrentCode != "" {
+			codeLen := len(m.CurrentCode)
+			ctxInfo += fmt.Sprintf(" [用户已加载策略代码 (%d 字符)，在对话中可以看到。不要问用户要代码，直接分析/修改即可。]", codeLen)
+		}
 	userPrompt := ctxInfo + " " + m.Message
 	oldCode := m.CurrentCode
 
