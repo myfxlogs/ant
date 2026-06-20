@@ -171,21 +171,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
           onClick={() => setAiSettingsOpen(true)}
           style={{ fontSize: 12 }} title="AI 网关设置" />
         {busy && <LoadingOutlined style={{ color: '#1677ff', marginLeft: 'auto' }} />}
-        <Select size="small" value={loadedTemplateId || undefined}
-          onChange={(v) => v && handleLoadTemplate(v)}
-          style={{ width: 140, fontSize: 12 }}
-          options={templates.map(t => ({ value: t.id, label: t.name }))}
-          placeholder={templates.length > 0 ? "加载策略" : "暂无策略"}
-          allowClear disabled={templates.length === 0}
-        />
-        
-        <Button size="small" type="link" style={{ fontSize: 10, marginLeft: 'auto' }}
-          onClick={async () => {
-            try {
-              const r = await aiGatewayApi.listSystemModels();
-              setModelOptions(r.map(m => ({ value: `${m.providerId}|${m.modelName}`, label: `${m.displayName || m.modelName} (${m.providerId})` })));
-            } catch {}
-          }}>刷新模型</Button>
       </div>
 
       {/* Messages */}
