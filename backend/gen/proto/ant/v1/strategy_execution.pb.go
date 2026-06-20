@@ -21,82 +21,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type DiscussPlanRequest struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	Plan                string                 `protobuf:"bytes,1,opt,name=plan,proto3" json:"plan,omitempty"`
-	ConversationId      string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
-	Message             string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`                            // user's question
-	CurrentCode         string                 `protobuf:"bytes,4,opt,name=current_code,json=currentCode,proto3" json:"current_code,omitempty"` // for context
-	BacktestMetricsJson string                 `protobuf:"bytes,5,opt,name=backtest_metrics_json,json=backtestMetricsJson,proto3" json:"backtest_metrics_json,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
-}
-
-func (x *DiscussPlanRequest) Reset() {
-	*x = DiscussPlanRequest{}
-	mi := &file_strategy_execution_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DiscussPlanRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DiscussPlanRequest) ProtoMessage() {}
-
-func (x *DiscussPlanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_execution_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DiscussPlanRequest.ProtoReflect.Descriptor instead.
-func (*DiscussPlanRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_execution_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *DiscussPlanRequest) GetPlan() string {
-	if x != nil {
-		return x.Plan
-	}
-	return ""
-}
-
-func (x *DiscussPlanRequest) GetConversationId() string {
-	if x != nil {
-		return x.ConversationId
-	}
-	return ""
-}
-
-func (x *DiscussPlanRequest) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
-func (x *DiscussPlanRequest) GetCurrentCode() string {
-	if x != nil {
-		return x.CurrentCode
-	}
-	return ""
-}
-
-func (x *DiscussPlanRequest) GetBacktestMetricsJson() string {
-	if x != nil {
-		return x.BacktestMetricsJson
-	}
-	return ""
-}
-
 type AnalyzePlanRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Message        string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
@@ -109,7 +33,7 @@ type AnalyzePlanRequest struct {
 
 func (x *AnalyzePlanRequest) Reset() {
 	*x = AnalyzePlanRequest{}
-	mi := &file_strategy_execution_proto_msgTypes[1]
+	mi := &file_strategy_execution_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -121,7 +45,7 @@ func (x *AnalyzePlanRequest) String() string {
 func (*AnalyzePlanRequest) ProtoMessage() {}
 
 func (x *AnalyzePlanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_execution_proto_msgTypes[1]
+	mi := &file_strategy_execution_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -134,7 +58,7 @@ func (x *AnalyzePlanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AnalyzePlanRequest.ProtoReflect.Descriptor instead.
 func (*AnalyzePlanRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_execution_proto_rawDescGZIP(), []int{1}
+	return file_strategy_execution_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *AnalyzePlanRequest) GetMessage() string {
@@ -177,7 +101,7 @@ type AnalyzePlanChunk struct {
 
 func (x *AnalyzePlanChunk) Reset() {
 	*x = AnalyzePlanChunk{}
-	mi := &file_strategy_execution_proto_msgTypes[2]
+	mi := &file_strategy_execution_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -189,7 +113,7 @@ func (x *AnalyzePlanChunk) String() string {
 func (*AnalyzePlanChunk) ProtoMessage() {}
 
 func (x *AnalyzePlanChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_execution_proto_msgTypes[2]
+	mi := &file_strategy_execution_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -202,7 +126,7 @@ func (x *AnalyzePlanChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AnalyzePlanChunk.ProtoReflect.Descriptor instead.
 func (*AnalyzePlanChunk) Descriptor() ([]byte, []int) {
-	return file_strategy_execution_proto_rawDescGZIP(), []int{2}
+	return file_strategy_execution_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *AnalyzePlanChunk) GetPhase() string {
@@ -248,7 +172,7 @@ type ExecutePlanRequest struct {
 
 func (x *ExecutePlanRequest) Reset() {
 	*x = ExecutePlanRequest{}
-	mi := &file_strategy_execution_proto_msgTypes[3]
+	mi := &file_strategy_execution_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -260,7 +184,7 @@ func (x *ExecutePlanRequest) String() string {
 func (*ExecutePlanRequest) ProtoMessage() {}
 
 func (x *ExecutePlanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_execution_proto_msgTypes[3]
+	mi := &file_strategy_execution_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -273,7 +197,7 @@ func (x *ExecutePlanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecutePlanRequest.ProtoReflect.Descriptor instead.
 func (*ExecutePlanRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_execution_proto_rawDescGZIP(), []int{3}
+	return file_strategy_execution_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ExecutePlanRequest) GetPlan() string {
@@ -341,7 +265,7 @@ type ExecutePlanChunk struct {
 
 func (x *ExecutePlanChunk) Reset() {
 	*x = ExecutePlanChunk{}
-	mi := &file_strategy_execution_proto_msgTypes[4]
+	mi := &file_strategy_execution_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -353,7 +277,7 @@ func (x *ExecutePlanChunk) String() string {
 func (*ExecutePlanChunk) ProtoMessage() {}
 
 func (x *ExecutePlanChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_execution_proto_msgTypes[4]
+	mi := &file_strategy_execution_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -366,7 +290,7 @@ func (x *ExecutePlanChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecutePlanChunk.ProtoReflect.Descriptor instead.
 func (*ExecutePlanChunk) Descriptor() ([]byte, []int) {
-	return file_strategy_execution_proto_rawDescGZIP(), []int{4}
+	return file_strategy_execution_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ExecutePlanChunk) GetPhase() string {
@@ -437,7 +361,7 @@ type ExecutePlanResponse struct {
 
 func (x *ExecutePlanResponse) Reset() {
 	*x = ExecutePlanResponse{}
-	mi := &file_strategy_execution_proto_msgTypes[5]
+	mi := &file_strategy_execution_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -449,7 +373,7 @@ func (x *ExecutePlanResponse) String() string {
 func (*ExecutePlanResponse) ProtoMessage() {}
 
 func (x *ExecutePlanResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_execution_proto_msgTypes[5]
+	mi := &file_strategy_execution_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -462,7 +386,7 @@ func (x *ExecutePlanResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecutePlanResponse.ProtoReflect.Descriptor instead.
 func (*ExecutePlanResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_execution_proto_rawDescGZIP(), []int{5}
+	return file_strategy_execution_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ExecutePlanResponse) GetCode() string {
@@ -504,7 +428,7 @@ type ToolCall struct {
 
 func (x *ToolCall) Reset() {
 	*x = ToolCall{}
-	mi := &file_strategy_execution_proto_msgTypes[6]
+	mi := &file_strategy_execution_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -516,7 +440,7 @@ func (x *ToolCall) String() string {
 func (*ToolCall) ProtoMessage() {}
 
 func (x *ToolCall) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_execution_proto_msgTypes[6]
+	mi := &file_strategy_execution_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -529,7 +453,7 @@ func (x *ToolCall) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ToolCall.ProtoReflect.Descriptor instead.
 func (*ToolCall) Descriptor() ([]byte, []int) {
-	return file_strategy_execution_proto_rawDescGZIP(), []int{6}
+	return file_strategy_execution_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ToolCall) GetCallId() string {
@@ -566,7 +490,7 @@ type ToolResult struct {
 
 func (x *ToolResult) Reset() {
 	*x = ToolResult{}
-	mi := &file_strategy_execution_proto_msgTypes[7]
+	mi := &file_strategy_execution_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -578,7 +502,7 @@ func (x *ToolResult) String() string {
 func (*ToolResult) ProtoMessage() {}
 
 func (x *ToolResult) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_execution_proto_msgTypes[7]
+	mi := &file_strategy_execution_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -591,7 +515,7 @@ func (x *ToolResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ToolResult.ProtoReflect.Descriptor instead.
 func (*ToolResult) Descriptor() ([]byte, []int) {
-	return file_strategy_execution_proto_rawDescGZIP(), []int{7}
+	return file_strategy_execution_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ToolResult) GetCallId() string {
@@ -641,7 +565,7 @@ type ComplianceIssue struct {
 
 func (x *ComplianceIssue) Reset() {
 	*x = ComplianceIssue{}
-	mi := &file_strategy_execution_proto_msgTypes[8]
+	mi := &file_strategy_execution_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -653,7 +577,7 @@ func (x *ComplianceIssue) String() string {
 func (*ComplianceIssue) ProtoMessage() {}
 
 func (x *ComplianceIssue) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_execution_proto_msgTypes[8]
+	mi := &file_strategy_execution_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -666,7 +590,7 @@ func (x *ComplianceIssue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ComplianceIssue.ProtoReflect.Descriptor instead.
 func (*ComplianceIssue) Descriptor() ([]byte, []int) {
-	return file_strategy_execution_proto_rawDescGZIP(), []int{8}
+	return file_strategy_execution_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ComplianceIssue) GetRule() string {
@@ -707,7 +631,7 @@ type ComplianceResult struct {
 
 func (x *ComplianceResult) Reset() {
 	*x = ComplianceResult{}
-	mi := &file_strategy_execution_proto_msgTypes[9]
+	mi := &file_strategy_execution_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -719,7 +643,7 @@ func (x *ComplianceResult) String() string {
 func (*ComplianceResult) ProtoMessage() {}
 
 func (x *ComplianceResult) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_execution_proto_msgTypes[9]
+	mi := &file_strategy_execution_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -732,7 +656,7 @@ func (x *ComplianceResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ComplianceResult.ProtoReflect.Descriptor instead.
 func (*ComplianceResult) Descriptor() ([]byte, []int) {
-	return file_strategy_execution_proto_rawDescGZIP(), []int{9}
+	return file_strategy_execution_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ComplianceResult) GetPassed() bool {
@@ -763,7 +687,7 @@ type BacktestMetricsMsg struct {
 
 func (x *BacktestMetricsMsg) Reset() {
 	*x = BacktestMetricsMsg{}
-	mi := &file_strategy_execution_proto_msgTypes[10]
+	mi := &file_strategy_execution_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -775,7 +699,7 @@ func (x *BacktestMetricsMsg) String() string {
 func (*BacktestMetricsMsg) ProtoMessage() {}
 
 func (x *BacktestMetricsMsg) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_execution_proto_msgTypes[10]
+	mi := &file_strategy_execution_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -788,7 +712,7 @@ func (x *BacktestMetricsMsg) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BacktestMetricsMsg.ProtoReflect.Descriptor instead.
 func (*BacktestMetricsMsg) Descriptor() ([]byte, []int) {
-	return file_strategy_execution_proto_rawDescGZIP(), []int{10}
+	return file_strategy_execution_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *BacktestMetricsMsg) GetTotalReturn() float64 {
@@ -844,7 +768,7 @@ type GateEvaluationResult struct {
 
 func (x *GateEvaluationResult) Reset() {
 	*x = GateEvaluationResult{}
-	mi := &file_strategy_execution_proto_msgTypes[11]
+	mi := &file_strategy_execution_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -856,7 +780,7 @@ func (x *GateEvaluationResult) String() string {
 func (*GateEvaluationResult) ProtoMessage() {}
 
 func (x *GateEvaluationResult) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_execution_proto_msgTypes[11]
+	mi := &file_strategy_execution_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -869,7 +793,7 @@ func (x *GateEvaluationResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GateEvaluationResult.ProtoReflect.Descriptor instead.
 func (*GateEvaluationResult) Descriptor() ([]byte, []int) {
-	return file_strategy_execution_proto_rawDescGZIP(), []int{11}
+	return file_strategy_execution_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GateEvaluationResult) GetPassed() bool {
@@ -897,13 +821,7 @@ var File_strategy_execution_proto protoreflect.FileDescriptor
 
 const file_strategy_execution_proto_rawDesc = "" +
 	"\n" +
-	"\x18strategy_execution.proto\x12\x06ant.v1\"\xc2\x01\n" +
-	"\x12DiscussPlanRequest\x12\x12\n" +
-	"\x04plan\x18\x01 \x01(\tR\x04plan\x12'\n" +
-	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationId\x12\x18\n" +
-	"\amessage\x18\x03 \x01(\tR\amessage\x12!\n" +
-	"\fcurrent_code\x18\x04 \x01(\tR\vcurrentCode\x122\n" +
-	"\x15backtest_metrics_json\x18\x05 \x01(\tR\x13backtestMetricsJson\"\x8d\x01\n" +
+	"\x18strategy_execution.proto\x12\x06ant.v1\"\x8d\x01\n" +
 	"\x12AnalyzePlanRequest\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\x12'\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationId\x12\x16\n" +
@@ -969,11 +887,10 @@ const file_strategy_execution_proto_rawDesc = "" +
 	"\x06passed\x18\x01 \x01(\bR\x06passed\x12\x1f\n" +
 	"\vfailed_gate\x18\x02 \x01(\tR\n" +
 	"failedGate\x12\x16\n" +
-	"\x06reason\x18\x03 \x01(\tR\x06reason2\xea\x01\n" +
+	"\x06reason\x18\x03 \x01(\tR\x06reason2\xa3\x01\n" +
 	"\x13StrategyPlanService\x12E\n" +
 	"\vAnalyzePlan\x12\x1a.ant.v1.AnalyzePlanRequest\x1a\x18.ant.v1.AnalyzePlanChunk0\x01\x12E\n" +
-	"\vExecutePlan\x12\x1a.ant.v1.ExecutePlanRequest\x1a\x18.ant.v1.ExecutePlanChunk0\x01\x12E\n" +
-	"\vDiscussPlan\x12\x1a.ant.v1.DiscussPlanRequest\x1a\x18.ant.v1.AnalyzePlanChunk0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\vExecutePlan\x12\x1a.ant.v1.ExecutePlanRequest\x1a\x18.ant.v1.ExecutePlanChunk0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_execution_proto_rawDescOnce sync.Once
@@ -987,34 +904,31 @@ func file_strategy_execution_proto_rawDescGZIP() []byte {
 	return file_strategy_execution_proto_rawDescData
 }
 
-var file_strategy_execution_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_strategy_execution_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_strategy_execution_proto_goTypes = []any{
-	(*DiscussPlanRequest)(nil),   // 0: ant.v1.DiscussPlanRequest
-	(*AnalyzePlanRequest)(nil),   // 1: ant.v1.AnalyzePlanRequest
-	(*AnalyzePlanChunk)(nil),     // 2: ant.v1.AnalyzePlanChunk
-	(*ExecutePlanRequest)(nil),   // 3: ant.v1.ExecutePlanRequest
-	(*ExecutePlanChunk)(nil),     // 4: ant.v1.ExecutePlanChunk
-	(*ExecutePlanResponse)(nil),  // 5: ant.v1.ExecutePlanResponse
-	(*ToolCall)(nil),             // 6: ant.v1.ToolCall
-	(*ToolResult)(nil),           // 7: ant.v1.ToolResult
-	(*ComplianceIssue)(nil),      // 8: ant.v1.ComplianceIssue
-	(*ComplianceResult)(nil),     // 9: ant.v1.ComplianceResult
-	(*BacktestMetricsMsg)(nil),   // 10: ant.v1.BacktestMetricsMsg
-	(*GateEvaluationResult)(nil), // 11: ant.v1.GateEvaluationResult
+	(*AnalyzePlanRequest)(nil),   // 0: ant.v1.AnalyzePlanRequest
+	(*AnalyzePlanChunk)(nil),     // 1: ant.v1.AnalyzePlanChunk
+	(*ExecutePlanRequest)(nil),   // 2: ant.v1.ExecutePlanRequest
+	(*ExecutePlanChunk)(nil),     // 3: ant.v1.ExecutePlanChunk
+	(*ExecutePlanResponse)(nil),  // 4: ant.v1.ExecutePlanResponse
+	(*ToolCall)(nil),             // 5: ant.v1.ToolCall
+	(*ToolResult)(nil),           // 6: ant.v1.ToolResult
+	(*ComplianceIssue)(nil),      // 7: ant.v1.ComplianceIssue
+	(*ComplianceResult)(nil),     // 8: ant.v1.ComplianceResult
+	(*BacktestMetricsMsg)(nil),   // 9: ant.v1.BacktestMetricsMsg
+	(*GateEvaluationResult)(nil), // 10: ant.v1.GateEvaluationResult
 }
 var file_strategy_execution_proto_depIdxs = []int32{
-	6, // 0: ant.v1.ExecutePlanChunk.tool_call:type_name -> ant.v1.ToolCall
-	7, // 1: ant.v1.ExecutePlanChunk.tool_result:type_name -> ant.v1.ToolResult
-	7, // 2: ant.v1.ExecutePlanResponse.tool_results:type_name -> ant.v1.ToolResult
-	8, // 3: ant.v1.ComplianceResult.issues:type_name -> ant.v1.ComplianceIssue
-	1, // 4: ant.v1.StrategyPlanService.AnalyzePlan:input_type -> ant.v1.AnalyzePlanRequest
-	3, // 5: ant.v1.StrategyPlanService.ExecutePlan:input_type -> ant.v1.ExecutePlanRequest
-	0, // 6: ant.v1.StrategyPlanService.DiscussPlan:input_type -> ant.v1.DiscussPlanRequest
-	2, // 7: ant.v1.StrategyPlanService.AnalyzePlan:output_type -> ant.v1.AnalyzePlanChunk
-	4, // 8: ant.v1.StrategyPlanService.ExecutePlan:output_type -> ant.v1.ExecutePlanChunk
-	2, // 9: ant.v1.StrategyPlanService.DiscussPlan:output_type -> ant.v1.AnalyzePlanChunk
-	7, // [7:10] is the sub-list for method output_type
-	4, // [4:7] is the sub-list for method input_type
+	5, // 0: ant.v1.ExecutePlanChunk.tool_call:type_name -> ant.v1.ToolCall
+	6, // 1: ant.v1.ExecutePlanChunk.tool_result:type_name -> ant.v1.ToolResult
+	6, // 2: ant.v1.ExecutePlanResponse.tool_results:type_name -> ant.v1.ToolResult
+	7, // 3: ant.v1.ComplianceResult.issues:type_name -> ant.v1.ComplianceIssue
+	0, // 4: ant.v1.StrategyPlanService.AnalyzePlan:input_type -> ant.v1.AnalyzePlanRequest
+	2, // 5: ant.v1.StrategyPlanService.ExecutePlan:input_type -> ant.v1.ExecutePlanRequest
+	1, // 6: ant.v1.StrategyPlanService.AnalyzePlan:output_type -> ant.v1.AnalyzePlanChunk
+	3, // 7: ant.v1.StrategyPlanService.ExecutePlan:output_type -> ant.v1.ExecutePlanChunk
+	6, // [6:8] is the sub-list for method output_type
+	4, // [4:6] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name
 	4, // [4:4] is the sub-list for extension extendee
 	0, // [0:4] is the sub-list for field type_name
@@ -1031,7 +945,7 @@ func file_strategy_execution_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_strategy_execution_proto_rawDesc), len(file_strategy_execution_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

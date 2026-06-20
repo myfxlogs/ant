@@ -48,35 +48,6 @@ export function analyzePlan(
   return () => abort.abort();
 }
 
-export function discussPlan(
-  input: { plan: string; conversationId?: string; message: string; currentCode?: string; backtestMetricsJson?: string },
-  callbacks: PlanCallbacks,
-): () => void {
-  const abort = new AbortController();
-  (async () => {
-    try {
-      const stream = strategyPlanClient.discussPlan({
-        plan: input.plan,
-        conversationId: input.conversationId || '',
-        message: input.message,
-        currentCode: input.currentCode || '',
-        backtestMetricsJson: input.backtestMetricsJson || '',
-      }, { signal: abort.signal });
-      for await (const chunk of stream) {
-        if (chunk.delta) callbacks.onDelta(chunk.delta);
-        if (chunk.plan) callbacks.onPlan(chunk.plan);
-        if (chunk.error) callbacks.onError(chunk.error);
-      }
-      callbacks.onDone();
-    } catch (e: unknown) {
-      const s = String(e);
-      if ((e as { name?: string })?.name === 'AbortError' || s.includes('canceled')) return;
-      callbacks.onError(s);
-    }
-  })();
-  return () => abort.abort();
-}
-
 export function executePlan(
   input: { plan: string; conversationId?: string; symbol?: string; timeframe?: string; previousCode?: string; feedbackMessage?: string; backtestMetricsJson?: string },
   callbacks: ExecuteCallbacks,

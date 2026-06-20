@@ -10,17 +10,6 @@ option go_package = "anttrader/gen/proto/ant/v1;antv1";
 service StrategyPlanService {
   rpc AnalyzePlan(AnalyzePlanRequest) returns (stream AnalyzePlanChunk);
   rpc ExecutePlan(ExecutePlanRequest) returns (stream ExecutePlanChunk);
-  rpc DiscussPlan(DiscussPlanRequest) returns (stream AnalyzePlanChunk);
-}
-
-// ── Discuss: pure Q&A, no code generation ──
-
-message DiscussPlanRequest {
-  string plan = 1;
-  string conversation_id = 2;
-  string message = 3;             // user's question
-  string current_code = 4;        // for context
-  string backtest_metrics_json = 5;
 }
 
 message AnalyzePlanRequest {
