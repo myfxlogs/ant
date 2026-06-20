@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react';
 import { Button, Input, Tag, Typography, Space, Collapse, Select } from 'antd';
 import { ThunderboltOutlined, SendOutlined, LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined, CodeOutlined, CopyOutlined, RobotOutlined, UserOutlined, SettingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
@@ -10,6 +10,7 @@ import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 import DiffView from './DiffView';
 import { aiApi } from '@/client/ai';
+const AISettingsModal = lazy(() => import('@/pages/strategy/components/workspace/AISettingsModal'));
 import { aiGatewayApi } from '@/client/aiGateway';
 import type { ToolCall, ToolResult, BacktestMetricsMsg } from '@/gen/ant/v1/strategy_execution_pb';
 import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
@@ -33,6 +34,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
   const [selectedModel, setSelectedModel] = useState('');
   const [templates, setTemplates] = useState<Array<{ id: string; name: string; code: string }>>([]);
   const [loadedTemplateId, setLoadedTemplateId] = useState('');
+  const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
 
   // Refs avoid closure staleness
   const planRef = useRef('');
@@ -166,7 +168,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
             style={{ width: 160, fontSize: 11 }} options={modelOptions} placeholder="选择模型" />
         )}
         <Button size="small" type="text" icon={<SettingOutlined />}
-          onClick={() => window.open('/ai/settings', '_blank')}
+          onClick={() => setAiSettingsOpen(true)}
           style={{ fontSize: 11 }} title="AI 网关设置" />
         {busy && <LoadingOutlined style={{ color: '#1677ff', marginLeft: 'auto' }} />}
         <Select size="small" value={loadedTemplateId || undefined}
@@ -250,6 +252,10 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
         </div>
         <div style={{ fontSize: 10, color: '#8c8c8c', marginTop: 4 }}>Enter 发送 · Shift+Enter 换行</div>
       </div>
+      {/* AI Settings Modal */}
+      <Suspense fallback={null}>
+        <AISettingsModal open={aiSettingsOpen} onClose={() => setAiSettingsOpen(false)} />
+      </Suspense>
     </div>
   );
 }
