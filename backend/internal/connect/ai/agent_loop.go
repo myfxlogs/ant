@@ -66,9 +66,6 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, _ 
 	for round := 0; round < a.maxRounds; round++ {
 		var roundBuf strings.Builder
 		err := a.llmStream(ctx, messages, func(chunk systemai.ChatStreamChunk) error {
-			if a.streamChunk != nil {
-				_ = a.streamChunk(chunk.Content)
-			}
 			roundBuf.WriteString(chunk.Content)
 			return nil
 		})
@@ -77,12 +74,27 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, _ 
 		}
 
 		roundText := roundBuf.String()
+
+		// Parse tool calls and truncate at the first [TOOL: marker.
+		// Everything after [TOOL: is speculative — the LLM hallucinated
+		// a tool result before the tool actually ran. Truncate so the AI
+		// doesn't see its own hallucination in the next round, and the
+		// frontend doesn't display contradictory text.
+		calls := parseToolCalls(roundText)
+		if len(calls) > 0 {
+			if idx := strings.Index(roundText, "[TOOL:") ; idx >= 0 {
+				roundText = strings.TrimSpace(roundText[:idx])
+			}
+		}
+
+		// Stream the sanitized (non-hallucinated) text to frontend.
+		if roundText != "" && a.streamChunk != nil {
+			_ = a.streamChunk(roundText)
+		}
 		fullBuf.WriteString(roundText)
 
-		// Parse tool calls from the LLM response
-		calls := parseToolCalls(roundText)
 		if len(calls) == 0 {
-			return fullBuf.String(), nil // done — no more tools
+			return fullBuf.String(), nil
 		}
 
 		// Execute each tool call
@@ -110,7 +122,8 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, _ 
 			}
 		}
 
-		// Feed results back as system message for next round
+		// Feed truncated assistant response + tool results to next round.
+		// The AI never sees its hallucinated text — only the real tool results.
 		messages = append(messages,
 			systemai.ChatMessage{Role: "assistant", Content: roundText},
 			systemai.ChatMessage{Role: "system", Content: strings.Join(toolResults, "\n")},
