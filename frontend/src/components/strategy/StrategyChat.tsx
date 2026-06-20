@@ -257,7 +257,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
         <Select size="small" value={loadedTemplateId || undefined}
           onChange={(v) => v && handleLoadTemplate(v)}
           style={{ flex: 1, fontSize: 11 }}
-          options={templates.map(t => ({{ value: t.id, label: t.name }}))}
+          options={templates.map(t => ({ value: t.id, label: t.name }))}
           placeholder={templates.length > 0 ? "加载已保存的策略" : "暂无已保存的策略"}
           allowClear disabled={templates.length === 0}
         />
