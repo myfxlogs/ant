@@ -3,6 +3,7 @@ package ai
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/google/uuid"
@@ -128,6 +129,69 @@ func (t *complianceTool) Run(_ context.Context, in ToolInput) ToolOutput {
 	return ToolOutput{
 		Success: len(blocks) == 0,
 		Output:  &antv1.ComplianceResult{Passed: len(blocks) == 0, Issues: issueProtos},
+	}
+}
+
+
+// ── detect_regime tool ──
+
+type detectRegimeTool struct{ store repository.MarketDataStore }
+
+func (t *detectRegimeTool) Name() string { return "detect_regime" }
+func (t *detectRegimeTool) Run(ctx context.Context, in ToolInput) ToolOutput {
+	if t.store == nil {
+		return ToolOutput{Success: false, Error: "market data store not wired"}
+	}
+	bars, err := t.store.GetKlines(ctx, in.Symbol, "", in.Timeframe, nil, nil, 200)
+	if err != nil || len(bars) < 20 {
+		return ToolOutput{Success: false, Error: fmt.Sprintf("insufficient kline data: %d bars", len(bars))}
+	}
+	regime := detectRegimeFromBars(bars)
+	return ToolOutput{Success: true, Output: map[string]string{
+		"symbol": in.Symbol, "timeframe": in.Timeframe,
+		"regime": regime, "bars": fmt.Sprintf("%d", len(bars)),
+	}}
+}
+
+func detectRegimeFromBars(bars []repository.KlineBar) string {
+	if len(bars) < 20 { return "unknown" }
+	closes := make([]float64, len(bars))
+	for i, b := range bars { closes[i] = b.Close }
+
+	// Simple trend detection: linear regression slope
+	n := float64(len(closes))
+	sumX, sumY, sumXY, sumX2 := 0.0, 0.0, 0.0, 0.0
+	for i, y := range closes {
+		x := float64(i)
+		sumX += x; sumY += y; sumXY += x*y; sumX2 += x*x
+	}
+	slope := (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX)
+	avgPrice := sumY / n
+	normalizedSlope := slope / avgPrice * 100
+
+	// Volatility
+	var variance float64
+	for _, y := range closes {
+		variance += (y - avgPrice) * (y - avgPrice)
+	}
+	vol := variance / n
+	avgVol := avgPrice * 0.02 // 2% baseline
+
+	switch {
+	case normalizedSlope > 0.5 && vol > avgVol:
+		return "bull_trend_volatile"
+	case normalizedSlope > 0.3:
+		return "bull_trend"
+	case normalizedSlope < -0.5 && vol > avgVol:
+		return "bear_trend_volatile"
+	case normalizedSlope < -0.3:
+		return "bear_trend"
+	case vol > avgVol*2:
+		return "high_volatility"
+	case vol < avgVol*0.5:
+		return "range_compression"
+	default:
+		return "ranging"
 	}
 }
 
