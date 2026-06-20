@@ -62,7 +62,9 @@ func NewToolRegistry(backtestRepo *repository.BacktestRunRepository, store repos
 func (r *ToolRegistry) WireMemoryDB(execFn func(ctx context.Context, sql string, args ...any) error, queryFn func(ctx context.Context, sql string, args ...any) (string, error)) {
 	rem := &rememberTool{execFn: execFn}
 	rec := &recallTool{queryFn: queryFn}
-	r.preTools = append(r.preTools, rem, rec)
+	sv := &saveStrategyTool{execFn: execFn}
+	ld := &loadStrategyTool{queryFn: queryFn}
+	r.preTools = append(r.preTools, rem, rec, sv, ld)
 }
 
 // PreToolNames returns the names of pre-execution tools the AI can request.
@@ -212,6 +214,47 @@ func (t *recallTool) Run(ctx context.Context, in ToolInput) ToolOutput {
 	}
 	return ToolOutput{Success: true, Output: map[string]string{"key": key, "value": val}}
 }
+
+
+// ── save_strategy tool ──
+
+type saveStrategyTool struct{ execFn func(ctx context.Context, sql string, args ...any) error }
+
+func (t *saveStrategyTool) Name() string { return "save_strategy" }
+func (t *saveStrategyTool) Run(ctx context.Context, in ToolInput) ToolOutput {
+	name := in.Symbol
+	code := in.Code
+	if name == "" || code == "" {
+		return ToolOutput{Success: false, Error: "用法: [TOOL: save_strategy 策略名称]. 例如: [TOOL: save_strategy BTCUSD均线策略]"}
+	}
+	err := t.execFn(ctx,
+		"INSERT INTO strategy_templates (user_id, name, code) VALUES ($1,$2,$3)",
+		in.UserID, name, code)
+	if err != nil {
+		return ToolOutput{Success: false, Error: err.Error()}
+	}
+	return ToolOutput{Success: true, Output: map[string]string{"name": name, "message": "策略已保存到模板库，可在Workspace中加载"}}
+}
+
+// ── load_strategy tool ──
+
+type loadStrategyTool struct{ queryFn func(ctx context.Context, sql string, args ...any) (string, error) }
+
+func (t *loadStrategyTool) Name() string { return "load_strategy" }
+func (t *loadStrategyTool) Run(ctx context.Context, in ToolInput) ToolOutput {
+	name := in.Symbol
+	if name == "" {
+		return ToolOutput{Success: false, Error: "用法: [TOOL: load_strategy 策略名称]"}
+	}
+	code, err := t.queryFn(ctx,
+		"SELECT code FROM strategy_templates WHERE user_id=$1 AND name=$2 ORDER BY created_at DESC LIMIT 1",
+		in.UserID, name)
+	if err != nil || code == "" {
+		return ToolOutput{Success: false, Error: "未找到策略: " + name}
+	}
+	return ToolOutput{Success: true, Output: map[string]string{"name": name, "code": code}}
+}
+
 
 // ── backtest tool ──
 
