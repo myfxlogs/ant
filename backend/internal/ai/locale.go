@@ -114,6 +114,7 @@ def run(context):
 	- stop_loss 和 take_profit 不能设 0.0 — 如果 @strategy 定义了 stopLossPct/takeProfitPct，用它们计算
 	- RSI 计算必须用 Wilder's 平滑（alpha=1/period），不要用 SMA 平滑
 	- ATR 计算需要 period+1 根 bar 的数据 — 用 len(close) >= atr_period + 1 做检查
+	- 沙箱禁止 dict[key]=value 赋值 — 必须用字面量返回结果: return {"signal":"buy","volume":0.1} 而不是逐行 result["signal"] = "buy"
 
 可调参数标注（引擎自动识别，用于优化器扫描）：
 ` + "```python" + `
@@ -325,6 +326,7 @@ Sandbox rules (violations cause code rejection):
 	- Volume must use @strategy entryPct — never hardcode volume=0.01 or volume=1.0
 	- stop_loss/take_profit must not be 0.0 — compute from @strategy stopLossPct/takeProfitPct
 	- RSI must use Wilder's smoothing (alpha=1/period), not SMA smoothing
+	- Sandbox blocks dict[key]=value assignment — always use dict literals: return {"signal":"buy","volume":0.1} not result["signal"] = "buy"
 	- ATR needs period+1 bars — check len(close) >= atr_period + 1
 
 Optimizer-scannable parameter annotations:
