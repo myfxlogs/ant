@@ -35,7 +35,8 @@ func periodSeconds(period string) int64 {
 }
 
 // backfillKlines pulls historical bars from the broker for ALL timeframes
-// (1m/5m/15m/30m/1h/4h/1d/1w) and inserts them into ClickHouse.
+// (1m/5m/15m/30m/1h/4h/1d/1w). Each period is fetched and inserted
+// independently — one period failing does not affect the others.
 // Deduplicates: only one backfill per account+symbol runs at a time.
 func (s *MtHubServer) backfillKlines(accountID, rawSymbol string) {
 	key := accountID + ":" + rawSymbol
@@ -62,62 +63,45 @@ func (s *MtHubServer) backfillKlines(accountID, rawSymbol string) {
 		return
 	}
 
-	allBars, gotCount := s.fetchAllPeriods(ctx, accountID, rawSymbol, broker)
-	if len(allBars) == 0 {
-		s.log.Info("backfill: no bars for any period",
-			zap.String("symbol", rawSymbol), zap.String("account", accountID))
-		return
-	}
-	if err := s.marketData.InsertBars(ctx, allBars); err != nil {
-		s.log.Warn("backfill: insert bars failed",
-			zap.String("symbol", rawSymbol), zap.Int("count", len(allBars)), zap.Error(err))
-		return
-	}
-	s.log.Info("backfill: inserted bars",
-		zap.String("symbol", rawSymbol),
-		zap.Int("total", len(allBars)), zap.Int("periods", gotCount))
-}
-
-// fetchAllPeriods calls broker PriceHistory for each timeframe in parallel
-// and returns ClickHouse-ready bars. Each period gets a lookback of ~300 bars.
-func (s *MtHubServer) fetchAllPeriods(
-	ctx context.Context, accountID, symbol, broker string,
-) ([]repository.KlineBar, int) {
 	now := time.Now().Unix()
 	periods := []string{"1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"}
 
 	var (
-		mu   sync.Mutex
-		all  []repository.KlineBar
-		got  int
-		eg   errgroup.Group
+		mu       sync.Mutex
+		inserted int
+		failed   int
+		total    int
+		eg       errgroup.Group
 	)
 
 	for _, period := range periods {
-		p := period // capture for closure
+		p := period // capture
 		eg.Go(func() error {
 			from := now - 300*periodSeconds(p)
-			// Cap at 2-year retention boundary (md_bars partition TTL). If larger
-			// periods (1d/1w) fetch bars before the earliest PG partition, the
-			// entire batch insert fails. Clamp to retention window.
+			// Cap at 2-year retention (md_bars partition TTL).
 			if minFrom := now - 730*24*3600; from < minFrom {
 				from = minFrom
 			}
-			bars, err := s.svc.PriceHistory(ctx, accountID, symbol, p, from, now, 500)
+			bars, err := s.svc.PriceHistory(ctx, accountID, rawSymbol, p, from, now, 500)
 			if err != nil {
-				s.log.Warn("backfill: period failed",
-					zap.String("period", p), zap.String("symbol", symbol), zap.Error(err))
-				return nil // one period failing shouldn't block others
+				s.log.Warn("backfill: fetch failed",
+					zap.String("symbol", rawSymbol), zap.String("period", p), zap.Error(err))
+				mu.Lock()
+				failed++
+				mu.Unlock()
+				return nil
 			}
 			if len(bars) == 0 {
 				return nil
 			}
-			mu.Lock()
+
+			// Convert to KlineBar.
 			closeMs := uint64(periodSeconds(p) * 1000)
-			for _, b := range bars {
-				all = append(all, repository.KlineBar{
+			klines := make([]repository.KlineBar, len(bars))
+			for i, b := range bars {
+				klines[i] = repository.KlineBar{
 					Broker:        broker,
-					Canonical:     symbol,
+					Canonical:     rawSymbol,
 					Period:        p,
 					OpenTsUnixMs:  uint64(b.Time.UnixMilli()),
 					CloseTsUnixMs: uint64(b.Time.UnixMilli()) + closeMs,
@@ -126,20 +110,41 @@ func (s *MtHubServer) fetchAllPeriods(
 					Low:           b.Low,
 					Close:         b.Close,
 					Volume:        b.Volume,
-				})
+				}
 			}
-			got++
+
+			// Insert per-period — a partition gap in 1w won't kill 1m/1h/etc.
+			if err := s.marketData.InsertBars(ctx, klines); err != nil {
+				s.log.Warn("backfill: insert failed",
+					zap.String("symbol", rawSymbol), zap.String("period", p),
+					zap.Int("bars", len(klines)), zap.Error(err))
+				mu.Lock()
+				failed++
+				mu.Unlock()
+				return nil
+			}
+
+			s.log.Info("backfill: inserted",
+				zap.String("symbol", rawSymbol), zap.String("period", p),
+				zap.Int("bars", len(klines)))
+			mu.Lock()
+			inserted++
+			total += len(klines)
 			mu.Unlock()
 			return nil
 		})
 	}
 
-	_ = eg.Wait() // errors are logged individually; always return what we have
-	return all, got
+	_ = eg.Wait()
+	s.log.Info("backfill: complete",
+		zap.String("symbol", rawSymbol),
+		zap.Int("total_bars", total),
+		zap.Int("periods_ok", inserted),
+		zap.Int("periods_failed", failed))
 }
 
 // brokerFallback fetches K-line bars directly from the broker for a single
-// period when ClickHouse has no data yet. Returns []repository.KlineBar so
+// period when the database has no data yet. Returns []repository.KlineBar so
 // the caller can reuse the same OHLCV conversion path as GetKlines.
 func (s *MtHubServer) brokerFallback(
 	ctx context.Context, accountID, symbol, period string, limit int,
@@ -171,7 +176,7 @@ func (s *MtHubServer) brokerFallback(
 	return out
 }
 
-// needsBrokerFallback returns true when ClickHouse data is insufficient or has
+// needsBrokerFallback returns true when database data is insufficient or has
 // large discontinuities (e.g., account disconnected for days — old cached bars
 // + new bars pass the count check but span a gap). Broker fallback fills the gap.
 func (s *MtHubServer) needsBrokerFallback(bars []repository.KlineBar, period string, limit int) bool {
