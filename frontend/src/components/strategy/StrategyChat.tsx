@@ -203,6 +203,12 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
         <Button size="small" type="text" icon={<SettingOutlined />}
           onClick={() => setAiSettingsOpen(true)}
           style={{ fontSize: 12 }} title="AI 网关设置" />
+        {messages.length > 0 && !busy && (
+          <Button size="small" type="text" style={{ fontSize: 11, marginLeft: 'auto', color: '#8c8c8c' }}
+            onClick={() => { setMessages([]); planRef.current = ''; codeRef.current = ''; }}>
+            新对话
+          </Button>
+        )}
         {busy && <LoadingOutlined style={{ color: '#1677ff', marginLeft: 'auto' }} />}
       </div>
 

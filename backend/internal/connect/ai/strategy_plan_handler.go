@@ -130,7 +130,7 @@ func (s *StrategyPlanServer) Conversate(
 
 	sysPrompt := internalai.AgentPrompt(lang)
 
-	history := s.loadHistory(ctx, userID, m.ConversationId, 20)
+	history := s.loadHistory(ctx, userID, m.ConversationId, 5)
 
 	// Inject workspace context into the user prompt
 	ctxInfo := fmt.Sprintf("[当前工作区: 品种=%s, 周期=%s]", m.Symbol, m.Timeframe)
