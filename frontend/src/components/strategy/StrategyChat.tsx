@@ -52,6 +52,16 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     })();
   }, []);
 
+  // Fetch saved templates
+  const fetchTemplates = async () => {
+    try {
+      const { strategyTemplateApi } = await import('@/client/strategy-schedules');
+      const list = await strategyTemplateApi.list();
+      setTemplates(list.items || []);
+    } catch {}
+  };
+  useEffect(() => { fetchTemplates(); }, []);
+
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const addMsg = (role: 'user' | 'ai', extra: Partial<ChatMsg>) => {
@@ -117,6 +127,28 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     abortRef.current = abort;
   }, [draft, busy, hasSymbol, sessionId, symbol, timeframe, t]);
 
+  const handleLoadTemplate = async (id: string) => {
+    const tpl = templates.find(t => t.id === id);
+    if (tpl?.code) {
+      setLoadedTemplateId(id);
+      onApplyCode(tpl.code);
+      addMsg('ai', { text: `📂 已加载策略: ${tpl.name}` });
+    }
+  };
+
+  const handleSaveTemplate = async () => {
+    const c = codeRef.current;
+    if (!c) return;
+    try {
+      const { strategyTemplateApi } = await import('@/client/strategy-schedules');
+      const name = prompt('策略名称:');
+      if (!name) return;
+      await strategyTemplateApi.create({ name, code: c });
+      fetchTemplates();
+      addMsg('ai', { text: `✅ 已保存策略: ${name}` });
+    } catch {}
+  };
+
   const handleCopy = (text: string) => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); };
 
   return (
@@ -132,6 +164,17 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
             style={{ width: 160, fontSize: 11 }} options={modelOptions} placeholder="选择模型" />
         )}
         {busy && <LoadingOutlined style={{ color: '#1677ff', marginLeft: 'auto' }} />}
+        {templates.length > 0 && (
+          <Select size="small" value={loadedTemplateId || undefined}
+            onChange={(v) => handleLoadTemplate(v)}
+            style={{ width: 140, fontSize: 11 }}
+            options={templates.map(t => ({ value: t.id, label: t.name }))}
+            placeholder="加载策略" allowClear
+          />
+        )}
+        {codeRef.current && (
+          <Button size="small" onClick={handleSaveTemplate} style={{ fontSize: 10 }}>保存</Button>
+        )}
         <Button size="small" type="link" style={{ fontSize: 10, marginLeft: 'auto' }}
           onClick={async () => {
             try {

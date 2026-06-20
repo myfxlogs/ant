@@ -225,8 +225,10 @@ type listStrategiesTool struct{ queryFn func(ctx context.Context, sql string, ar
 func (t *listStrategiesTool) Name() string { return "list_strategies" }
 func (t *listStrategiesTool) Run(ctx context.Context, in ToolInput) ToolOutput {
 	code, err := t.queryFn(ctx,
-		`SELECT json_agg(json_build_object('name', name, 'created', created_at) ORDER BY created_at DESC) 
-		 FROM strategy_templates WHERE user_id=$1 LIMIT 20`, in.UserID)
+		`SELECT json_agg(s ORDER BY s.created_at DESC) FROM (
+		 SELECT t.name, t.created_at,
+		   COALESCE((SELECT status FROM backtest_runs WHERE strategy_code_hash=md5(t.code)::text ORDER BY created_at DESC LIMIT 1), 'not_run') as bt_status
+		 FROM strategy_templates t WHERE t.user_id=$1 LIMIT 20) s`, in.UserID)
 	if err != nil || code == "" || code == "[null]" {
 		return ToolOutput{Success: true, Output: map[string]string{"strategies": "none"}}
 	}
