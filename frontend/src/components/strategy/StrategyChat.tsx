@@ -38,6 +38,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
   const [conversations, setConversations] = useState<Array<{ id: string; title: string; created_at: string }>>([]);
   const [activeConvId, setActiveConvId] = useState('');
   const [tab, setTab] = useState<string>('chat');
+  const [tab, setTab] = useState<string>('chat');
 
   // Refs avoid closure staleness
   const planRef = useRef('');
@@ -223,7 +224,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#fafbfc' }}>
       {/* Header */}
       <div style={{ padding: '8px 12px', borderBottom: '1px solid #e8e8e8', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, background: '#fff' }}>
-        <ThunderboltOutlined style={{ color: '#faad14', fontSize: 16 }} />
+        <RobotOutlined style={{ color: '#52c41a', fontSize: 16 }} />
         <Typography.Text strong style={{ fontSize: 14, color: '#262626' }}>Strategy Code</Typography.Text>
         {hasSymbol ? <Tag color="blue" style={{ fontSize: 12, margin: 0 }}>{symbol} · {timeframe}</Tag> : <Tag color="warning" style={{ fontSize: 12, margin: 0 }}>选择品种</Tag>}
         {modelOptions.length > 0 && (
@@ -371,7 +372,52 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
 
       </div>
 
+      </>
+      )}
+
+      {/* History tab */}
+      {tab === 'history' && (
+        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Typography.Text strong style={{ fontSize: 12 }}>历史对话</Typography.Text>
+            <Button size="small" onClick={handleNewConv}>+ 新建</Button>
+          </div>
+          {conversations.map(conv => (
+            <div key={conv.id}
+              onClick={() => { handleLoadConv(conv.id); setTab('chat'); }}
+              style={{ padding: '8px 10px', cursor: 'pointer', borderRadius: 6, fontSize: 12, background: conv.id === activeConvId ? '#e6f4ff' : '#fafafa', marginBottom: 4, border: '1px solid #f0f0f0' }}>
+              <div style={{ color: '#262626' }}>{conv.title}</div>
+              <div style={{ color: '#8c8c8c', fontSize: 10 }}>{conv.created_at?.slice(0, 10)}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Strategies tab */}
+      {tab === 'strategies' && (
+        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px' }}>
+          <Typography.Text strong style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>策略列表</Typography.Text>
+          <Select size="small" value={loadedTemplateId || undefined}
+            onChange={(v) => v && handleLoadTemplate(v)}
+            style={{ width: '100%', fontSize: 12, marginBottom: 8 }}
+            options={templates.map(t => ({ value: t.id, label: t.name }))}
+            placeholder={templates.length > 0 ? '选择要加载的策略' : '暂无已保存的策略'}
+            allowClear disabled={templates.length === 0}
+          />
+          {codeRef.current && (
+            <Button size="small" onClick={handleSaveTemplate} style={{ marginBottom: 8 }}>保存当前代码</Button>
+          )}
+          {templates.map(t => (
+            <div key={t.id} onClick={() => { handleLoadTemplate(t.id); setTab('chat'); }}
+              style={{ padding: '8px 10px', cursor: 'pointer', borderRadius: 6, fontSize: 12, background: t.id === loadedTemplateId ? '#e6f4ff' : '#fafafa', marginBottom: 4, border: '1px solid #f0f0f0' }}>
+              <div style={{ color: '#262626' }}>{t.name}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Input */}
+{/* Input */}
       <div style={{ padding: '10px 14px', borderTop: '1px solid #e8e8e8', flexShrink: 0, background: '#fff' }}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
           <TextArea value={draft} onChange={e => setDraft(e.target.value)}
