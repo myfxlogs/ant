@@ -66,6 +66,39 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
   };
   useEffect(() => { fetchTemplates(); }, []);
 
+  // Auto-greet when symbol+timeframe become available for the first time
+  const greeted = useRef(false);
+  useEffect(() => {
+    if (hasSymbol && !greeted.current && !busy && messages.length === 0) {
+      greeted.current = true;
+      setBusy(true);
+      const msg = `介绍一下 ${symbol} ${timeframe} 当前的市场状态，并给出策略建议`;
+      addMsg('user', { text: msg });
+      const abort = conversate(
+        { message: msg, conversationId: sessionId, symbol, timeframe, plan: '', currentCode: '', backtestMetricsJson: '' },
+        {
+          onDelta: () => {},
+          onPlan: (p) => { planRef.current = p; },
+          onCode: (c) => { codeRef.current = c; },
+          onPreviousCode: () => {},
+          onToolCall: () => {},
+          onToolResult: () => {},
+          onError: (e) => { addMsg('ai', { text: '❌ ' + e }); setBusy(false); },
+          onDone: () => {
+            const p = planRef.current; const c = codeRef.current;
+            const chatMsg: Partial<ChatMsg> = { role: 'ai' };
+            if (p) chatMsg.plan = p;
+            if (c) { chatMsg.code = c; chatMsg.prevCode = ''; }
+            if (!p && !c) chatMsg.text = '收到，请继续。';
+            addMsg('ai', chatMsg);
+            setBusy(false);
+          },
+        } satisfies ConversateCallbacks,
+      );
+      abortRef.current = abort;
+    }
+  }, [hasSymbol, symbol, timeframe, sessionId, busy, messages.length]);
+
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const addMsg = (role: 'user' | 'ai', extra: Partial<ChatMsg>) => {
