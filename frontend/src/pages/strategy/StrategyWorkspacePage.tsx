@@ -87,7 +87,7 @@ export default function StrategyWorkspacePage() {
             boxShadow: '4px 0 24px rgba(0,0,0,0.1)',
             padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12,
           }}>
-            <AICodePanel symbol={ws.account.symbol} timeframe={ws.account.timeframe} sessionId={sessionId} onApply={(code, prevCode) => { ws.code.setCode(code); }} />
+            <AICodePanel accountId={ws.account.accountId} symbol={ws.account.symbol} timeframe={ws.account.timeframe} sessionId={sessionId} onApply={(code, prevCode) => { ws.code.setCode(code); }} />
           </div>
         )}
 

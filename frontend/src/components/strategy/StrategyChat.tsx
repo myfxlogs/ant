@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react';
-import { Button, Input, Tag, Typography, Select, Segmented } from 'antd';
-import { RobotOutlined, SendOutlined, LoadingOutlined, SettingOutlined, HistoryOutlined, FileTextOutlined, EditOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { Button, Input, Tag, Typography, Select, Segmented, Popconfirm } from 'antd';
+import { SendOutlined, LoadingOutlined, SettingOutlined, HistoryOutlined, FileTextOutlined, EditOutlined, CheckOutlined, CloseOutlined, DeleteOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { conversate, type ConversateCallbacks } from '@/client/strategyPlan';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
@@ -13,8 +13,7 @@ import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
 
 const { TextArea } = Input;
 type TabKey = 'chat' | 'history' | 'strategies';
-
-interface Props { symbol?: string; timeframe?: string; sessionId?: string; onApplyCode: (code: string) => void; }
+interface Props { symbol?: string; timeframe?: string; sessionId?: string; accountId?: string; onApplyCode: (code: string) => void; }
 
 /** Ask the LLM to generate a short conversation title from the first user message. */
 async function generateTitle(firstMsg: string): Promise<string> {
@@ -27,8 +26,7 @@ async function generateTitle(firstMsg: string): Promise<string> {
     return firstMsg.slice(0, 20);
   }
 }
-
-export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode }: Props) {
+export default function StrategyChat({ symbol, timeframe, sessionId, accountId, onApplyCode }: Props) {
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<ChatMsg[]>([]);
@@ -44,7 +42,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
   const [tab, setTab] = useState<TabKey>('chat');
   const [editingConvId, setEditingConvId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
-
   const planRef = useRef(''), codeRef = useRef(''), prevCodeRef = useRef('');
   const metricsRef = useRef<BacktestMetricsMsg | null>(null);
   const abortRef = useRef<(() => void) | null>(null);
@@ -52,9 +49,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
   const titleGeneratedRef = useRef(false);
   const firstUserMsgRef = useRef('');
   const hasSymbol = !!(symbol && timeframe);
-
   useEffect(() => { metricsRef.current = metrics; }, [metrics]);
-
   // Fetch model options
   useEffect(() => {
     (async () => {
@@ -62,7 +57,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
       try { const list = await aiGatewayApi.listSystemModels(); setModelOptions(list.map(m => ({ value: `${m.providerId}|${m.modelName}`, label: `${m.displayName || m.modelName} (${m.providerId})` }))); } catch {}
     })();
   }, []);
-
   // Fetch saved templates
   const fetchTemplates = async () => {
     try {
@@ -72,13 +66,11 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     } catch {}
   };
   useEffect(() => { fetchTemplates(); }, []);
-
   // Fetch conversation list
   const fetchConversations = async () => {
     try { const list = await aiApi.listConversations(); setConversations(list.map(c => ({ id: c.id, title: c.title || '新对话', created_at: c.createdAt?.toISOString() || '' }))); } catch {}
   };
   useEffect(() => { fetchConversations(); }, []);
-
   // Auto-greet
   const greeted = useRef(false);
   useEffect(() => {
@@ -92,11 +84,9 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
   }, [hasSymbol, symbol, timeframe, sessionId, busy, messages.length]);
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
-
   const addMsg = (role: 'user' | 'ai', extra: Partial<ChatMsg>) => {
     setMessages(prev => [...prev, { role, ...extra }]);
   };
-
   // Try to auto-name the conversation after the first exchange
   const tryAutoName = useCallback(async (convId: string, firstMsg: string) => {
     if (titleGeneratedRef.current || !convId || !firstMsg) return;
@@ -108,7 +98,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
       setActiveConvId(convId);
     }
   }, []);
-
   const runConversate = (msg: string, curCode: string, isFirst: boolean) => {
     const curPlan = planRef.current, curPrevCode = prevCodeRef.current;
     const curMetrics = metricsRef.current;
@@ -151,7 +140,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
       } satisfies ConversateCallbacks,
     );
   };
-
   const handleSend = useCallback(() => {
     const msg = draft.trim();
     if (!msg || busy) return;
@@ -162,12 +150,10 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     addMsg('user', { text: msg });
     abortRef.current = runConversate(msg, codeRef.current, isFirst);
   }, [draft, busy, hasSymbol, sessionId, symbol, timeframe, messages.length]);
-
   const handleLoadTemplate = async (id: string) => {
     const tpl = templates.find(t => t.id === id);
     if (tpl?.code) { setLoadedTemplateId(id); onApplyCode(tpl.code); addMsg('ai', { text: `📂 已加载策略: ${tpl.name}` }); }
   };
-
   const handleSaveTemplate = async () => {
     const c = codeRef.current; if (!c) return;
     try {
@@ -177,7 +163,20 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
       fetchTemplates(); addMsg('ai', { text: `✅ 已保存策略: ${name}` });
     } catch {}
   };
-
+  const handleRunBacktest = async () => {
+    const c = codeRef.current;
+    if (!c) { addMsg('ai', { text: '⚠️ 没有可回测的代码，请先生成策略代码。' }); return; }
+    if (!hasSymbol || !accountId) { addMsg('ai', { text: '⚠️ 请先选择交易品种和账户。' }); return; }
+    setBusy(true); addMsg('ai', { text: '⚡ 正在启动回测...' });
+    try {
+      const r = await pythonStrategyApi.backtest({ code: c, accountId, symbol: symbol!, timeframe: timeframe!, initialCapital: 10000 });
+      if (r.success && r.metrics) {
+        setMetrics({ totalReturn: r.metrics.totalReturn, sharpeRatio: r.metrics.sharpeRatio, maxDrawdown: r.metrics.maxDrawdown, winRate: r.metrics.winRate, totalTrades: r.metrics.totalTrades, profitFactor: r.metrics.profitFactor });
+        addMsg('ai', { text: `✅ 回测完成 | Sharpe: ${r.metrics.sharpeRatio?.toFixed(2) ?? '-'} | 回撤: ${((r.metrics.maxDrawdown??0)*100).toFixed(1)}% | 胜率: ${((r.metrics.winRate??0)*100).toFixed(0)}% | 交易: ${r.metrics.totalTrades??0}次` });
+      } else { addMsg('ai', { text: `❌ 回测失败: ${r.error || '未知错误'}` }); }
+    } catch (e: any) { addMsg('ai', { text: `❌ 回测异常: ${e?.message || e}` }); }
+    setBusy(false);
+  };
   const handleNewConv = async () => {
     try {
       const conv = await aiApi.createConversation('新对话');
@@ -187,7 +186,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
       fetchConversations();
     } catch {}
   };
-
   const handleLoadConv = async (id: string) => {
     try {
       const detail = await aiApi.getConversation(id); setActiveConvId(id);
@@ -196,17 +194,13 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
       setTab('chat');
     } catch {}
   };
-
   const handleCopy = (text: string) => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); };
-
   // ── Conversation rename ──
   const handleStartRename = (convId: string, currentTitle: string) => {
     setEditingConvId(convId);
     setEditTitle(currentTitle);
   };
-
   const handleCancelRename = () => { setEditingConvId(null); setEditTitle(''); };
-
   const handleConfirmRename = async (convId: string) => {
     const title = editTitle.trim();
     if (title && title !== conversations.find(c => c.id === convId)?.title) {
@@ -215,7 +209,19 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     }
     setEditingConvId(null); setEditTitle('');
   };
-
+  const handleDeleteConv = async (convId: string) => {
+    try { await aiApi.deleteConversation(convId); } catch {}
+    setConversations(prev => prev.filter(c => c.id !== convId));
+    if (activeConvId === convId) { setActiveConvId(''); setMessages([]); }
+  };
+  const getPlaceholder = () => {
+    if (!hasSymbol) return '请先在顶栏选择交易品种和周期';
+    if (messages.length === 0) return '描述你想要的交易策略，例如：\"写一个基于RSI和MACD的趋势跟踪策略\"';
+    const lastAi = [...messages].reverse().find(m => m.role === 'ai');
+    if (lastAi?.code) return '描述你的修改需求，或继续讨论优化方案...';
+    if (lastAi?.plan) return '你可以要求修改计划，或输入 \"生成代码\" 开始实现';
+    return '继续描述你的策略需求...';
+  };
   const symbolTag = hasSymbol
     ? <Tag color="blue" style={{ fontSize: 12, margin: 0 }}>{symbol} · {timeframe}</Tag>
     : <Tag color="warning" style={{ fontSize: 12, margin: 0 }}>选择品种</Tag>;
@@ -224,7 +230,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#fafbfc' }}>
       {/* Header */}
       <div style={{ padding: '8px 12px', borderBottom: '1px solid #e8e8e8', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, background: '#fff' }}>
-        <RobotOutlined style={{ color: '#52c41a', fontSize: 16 }} />
+        <span style={{ fontSize: 16 }}>🤖</span>
         <Typography.Text strong style={{ fontSize: 14, color: '#262626' }}>Strategy Code</Typography.Text>
         {symbolTag}
         {modelOptions.length > 0 && (
@@ -250,14 +256,14 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
           <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             {messages.length === 0 && !busy && (
               <div style={{ textAlign: 'center', color: '#8c8c8c', marginTop: 40, fontSize: 14 }}>
-                <RobotOutlined style={{ fontSize: 32, color: '#d9d9d9', display: 'block', margin: '0 auto 12' }} />
+                <div style={{ fontSize: 32, marginBottom: 12 }}>🤖</div>
                 告诉我你想创建什么样的交易策略
               </div>
             )}
             {messages.map((m, i) => <ChatMessageItem key={i} msg={m} copied={copied} onCopy={handleCopy} />)}
             {busy && messages.length > 0 && messages[messages.length - 1]?.role === 'user' && (
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <div style={{ width: 28, height: 28, borderRadius: 14, background: '#52c41a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><RobotOutlined style={{ color: '#fff', fontSize: 14 }} /></div>
+                <div style={{ width: 28, height: 28, borderRadius: 14, background: '#52c41a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🤖</div>
                 <LoadingOutlined style={{ color: '#1677ff' }} /><span style={{ fontSize: 11, color: '#8c8c8c' }}>思考中...</span>
               </div>
             )}
@@ -266,13 +272,16 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
           <div style={{ padding: '10px 14px', borderTop: '1px solid #e8e8e8', flexShrink: 0, background: '#fff' }}>
             <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
               <TextArea value={draft} onChange={e => setDraft(e.target.value)}
-                placeholder={hasSymbol ? '描述你的策略需求，或继续对话...' : '请先在顶栏选择交易品种和周期'}
+                placeholder={getPlaceholder()}
                 autoSize={{ minRows: 1, maxRows: 4 }}
                 onPressEnter={e => { if (!e.shiftKey) { e.preventDefault(); handleSend(); } }}
                 disabled={busy || !hasSymbol} style={{ fontSize: 13, borderRadius: 8 }} />
               <Button type="primary" icon={<SendOutlined />} onClick={handleSend} loading={busy} disabled={!draft.trim() || !hasSymbol} style={{ borderRadius: 8, flexShrink: 0 }} />
             </div>
             <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>Enter 发送 · Shift+Enter 换行</div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+              <Button size="small" icon={<ThunderboltOutlined />} onClick={handleRunBacktest} disabled={busy || !codeRef.current} style={{ fontSize: 11, borderRadius: 6 }}>运行回测</Button>
+              <Button size="small" onClick={handleSaveTemplate} disabled={!codeRef.current} style={{ fontSize: 11, borderRadius: 6 }}>保存策略</Button></div>
           </div>
         </>)}
 
@@ -312,6 +321,14 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
                           onClick={(e) => { e.stopPropagation(); handleStartRename(conv.id, conv.title); }}
                           style={{ color: '#8c8c8c', padding: '0 2px', flexShrink: 0 }}
                           title="重命名" />
+                        <Popconfirm title="确定删除此对话？" okText="删除" cancelText="取消"
+                          okButtonProps={{ danger: true }}
+                          onConfirm={() => handleDeleteConv(conv.id)}>
+                          <Button size="small" type="text" icon={<DeleteOutlined style={{ fontSize: 11 }} />}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ color: '#ff4d4f', padding: '0 2px', flexShrink: 0 }}
+                            title="删除" />
+                        </Popconfirm>
                       </>
                     )}
                   </div>
@@ -327,12 +344,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
               <Typography.Text style={{ fontSize: 13, fontWeight: 600 }}><FileTextOutlined style={{ marginRight: 6 }} />策略模板</Typography.Text>
               {codeRef.current && <Button size="small" type="primary" onClick={handleSaveTemplate}>保存当前策略</Button>}
             </div>
-            <Select size="small" value={loadedTemplateId || undefined}
-              onChange={(v) => v && handleLoadTemplate(v)}
-              style={{ width: '100%', fontSize: 12, marginBottom: 12 }}
-              options={templates.map(t => ({ value: t.id, label: t.name }))}
-              placeholder={templates.length > 0 ? "选择已保存的策略加载" : "暂无已保存的策略"}
-              allowClear disabled={templates.length === 0} />
             {templates.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {templates.map(tpl => (
