@@ -155,6 +155,10 @@ func (s *StrategyPlanServer) Conversate(
 	// Extract plan/code from the response
 	plan := extractPlan(raw)
 	code := ExtractCode(raw)
+	// If less than 30% of response, it's discussion, not code output
+	if code != "" && len(code) < len(raw)/3 {
+		code = ""
+	}
 
 	// Auto-run post-generation tools if code was generated
 	if code != "" {

@@ -98,7 +98,7 @@ func ExtractCode(raw string) string {
 	if len(codeLines) > 0 {
 		return fixUnclosedBraces(strings.Join(codeLines, "\n"))
 	}
-	return fixUnclosedBraces(raw)
+	return "" // no code found — don't treat entire response as code
 }
 
 // fixUnclosedBraces adds missing closing braces/returns for truncated code.
