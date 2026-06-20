@@ -202,40 +202,22 @@ type readKlineTool struct{ repo repository.MarketDataStore }
 
 func (t *readKlineTool) Name() string { return "read_kline" }
 func (t *readKlineTool) Run(_ context.Context, in ToolInput) ToolOutput {
-	// Try exact symbol, then MT5 suffix variants.
-	symbols := []string{in.Symbol}
-	if !strings.HasSuffix(in.Symbol, "m") {
-		symbols = append(symbols, in.Symbol+"m")
-	} else {
-		symbols = append(symbols, strings.TrimSuffix(in.Symbol, "m"))
-	}
-	var bars []repository.KlineBar
-	var usedSymbol string
-	for _, sym := range symbols {
-		b, err := t.repo.GetKlines(context.Background(), sym, "", in.Timeframe, nil, nil, 2000)
-		if err != nil {
-			return ToolOutput{Success: false, Error: err.Error()}
-		}
-		if len(b) > 0 {
-			bars = b
-			usedSymbol = sym
-			break
-		}
+	bars, err := t.repo.GetKlines(context.Background(), in.Symbol, "", in.Timeframe, nil, nil, 2000)
+	if err != nil {
+		return ToolOutput{Success: false, Error: err.Error()}
 	}
 	if len(bars) == 0 {
 		return ToolOutput{Success: true, Output: map[string]any{
-			"bars": 0,
-			"message": "NO DATA in database for " + in.Symbol + " (also tried " + in.Symbol + "m). " +
-				"Do NOT fabricate dates or bar counts. Tell the user there is no market data for this symbol.",
+			"bars":    0,
+			"message": fmt.Sprintf("数据库中无 %s %s 的数据。请如实告诉用户：该品种暂无K线数据。不要编造任何日期或数量。", in.Symbol, in.Timeframe),
 		}}
 	}
-	// Human-readable timestamps so the AI doesn't need to convert Unix ms.
 	first := int64(bars[0].CloseTsUnixMs)
 	last := int64(bars[len(bars)-1].CloseTsUnixMs)
 	return ToolOutput{
 		Success: true,
 		Output: map[string]any{
-			"symbol":    usedSymbol,
+			"symbol":    in.Symbol,
 			"timeframe": in.Timeframe,
 			"bars":      len(bars),
 			"first_ms":  first,
