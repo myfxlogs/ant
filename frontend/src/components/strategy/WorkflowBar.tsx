@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Button } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, ThunderboltOutlined, SafetyOutlined, SaveOutlined } from '@ant-design/icons';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { codeAssistApi } from '@/client/codeAssist';
 import type { BacktestMetricsMsg } from '@/gen/ant/v1/strategy_execution_pb';
 
 type StepKey = 'check' | 'backtest' | 'save';
@@ -30,18 +31,42 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
 
   const runCheck = useCallback(async () => {
     const code = getCode(); if (!code) return;
-    setStep('check', 'running'); addMsg('ai', { text: '🔍 合规检查中...' });
+    setStep('check', 'running'); addMsg('ai', { text: '🔍 深度检测中（安全+参数+质量）...' });
     try {
-      const r = await pythonStrategyApi.validate(code);
+      const r = await codeAssistApi.validateExtended(code);
+      const parts: string[] = [];
       if (r.valid && r.errors.length === 0) {
-        setStep('check', 'done'); setStep('backtest', 'idle');
-        addMsg('ai', { text: '✅ 合规检查通过' });
+        parts.push('✅ 安全检测通过');
       } else {
         setStep('check', 'failed');
-        const msgs = [...r.errors, ...r.warnings].map(e => `• ${e}`).join('\n');
-        addMsg('ai', { text: `❌ 合规检查未通过:\n${msgs}` });
+        parts.push('❌ 安全检测未通过:');
+        r.errors.forEach(e => parts.push(`  • ${e}`));
+        r.warnings.forEach(w => parts.push(`  ⚠ ${w}`));
+        addMsg('ai', { text: parts.join('\n') });
+        return;
       }
-    } catch (e: any) { setStep('check', 'failed'); addMsg('ai', { text: `❌ 检查异常: ${e?.message || e}` }); }
+      // Parameters extracted
+      if (r.parameters.length > 0) {
+        parts.push(`📐 可调参数: ${r.parameters.map(p => `${p.key}${p.required ? '*' : ''}`).join(', ')}`);
+      }
+      // Strategy directives
+      if (r.strategyDirectives.length > 0) {
+        parts.push(`⚙ 策略指令: ${r.strategyDirectives.map(d => `${d.key}=${d.value}`).join(', ')}`);
+      }
+      // Sweep dimensions
+      if (r.sweepDimensions.length > 0) {
+        parts.push(`🔀 扫参维度: ${r.sweepDimensions.length} 维`);
+      }
+      // Quality hints
+      if (r.qualityHints.length > 0) {
+        const warns = r.qualityHints.filter(h => h.severity === 'warn');
+        const infos = r.qualityHints.filter(h => h.severity === 'info');
+        if (warns.length > 0) parts.push(`💡 建议: ${warns.map(h => h.message).join('; ')}`);
+        if (infos.length > 0) parts.push(`ℹ ${infos.map(h => h.message).join('; ')}`);
+      }
+      setStep('check', 'done'); setStep('backtest', 'idle');
+      addMsg('ai', { text: parts.join('\n') });
+    } catch (e: any) { setStep('check', 'failed'); addMsg('ai', { text: `❌ 检测异常: ${e?.message || e}` }); }
   }, [addMsg]);
 
   const runBacktest = useCallback(async () => {
@@ -81,7 +106,7 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
   };
 
   const stepConfig = [
-    { key: 'check' as StepKey, label: '合规检查', icon: <SafetyOutlined />, canRun: !disabled && status.check !== 'done', action: runCheck },
+    { key: 'check' as StepKey, label: '深度检测', icon: <SafetyOutlined />, canRun: !disabled && status.check !== 'done', action: runCheck },
     { key: 'backtest' as StepKey, label: '运行回测', icon: <ThunderboltOutlined />, canRun: canBacktest && status.backtest !== 'done', action: runBacktest },
     { key: 'save' as StepKey, label: '保存策略', icon: <SaveOutlined />, canRun: canSave && status.save !== 'done', action: runSave },
   ];
