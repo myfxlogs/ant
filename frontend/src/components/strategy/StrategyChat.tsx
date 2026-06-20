@@ -80,6 +80,11 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
         onPreviousCode: (c) => { prevCodeRef.current = c; },
         onToolCall: () => {},
         onToolResult: (tr: ToolResult) => {
+          // Show tool results inline in the conversation
+          const icon = tr.success ? '✅' : '❌';
+          const label = tr.name === 'compliance_check' ? '合规检查' : tr.name === 'backtest' ? '回测' : tr.name;
+          const detail = tr.error || (tr.success ? '通过' : '');
+          addMsg('ai', { text: `${icon} ${label}: ${detail}` });
           if (tr.name === 'backtest' && tr.outputJson) try {
             const out = JSON.parse(tr.outputJson);
             if (out.run_id) pythonStrategyApi.watchBacktestRun(out.run_id, (u: BacktestRunUpdate) => {
