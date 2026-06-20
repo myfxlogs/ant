@@ -268,7 +268,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
             <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>Enter 发送 · Shift+Enter 换行</div>
             <WorkflowBar
               codeRef={codeRef} busy={busy} hasSymbol={hasSymbol} accountId={accountId}
-              symbol={symbol} timeframe={timeframe}
+              symbol={symbol} timeframe={timeframe} templates={templates}
               addMsg={addMsg} setMetrics={setMetrics} fetchTemplates={fetchTemplates}
             />
           </div>
