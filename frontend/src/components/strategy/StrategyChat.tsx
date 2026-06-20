@@ -157,9 +157,11 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
     if (tpl?.code) { setLoadedTemplateId(id); onApplyCode(tpl.code); addMsg('ai', { text: `📂 已加载策略: ${tpl.name}` }); }
   };
   const handleSendToAI = (code: string, name: string) => {
-    codeRef.current = code; onApplyCode(code);
+    codeRef.current = code; prevCodeRef.current = '';
+    onApplyCode(code);
     setLoadedTemplateId(templates.find(t => t.code === code)?.id || '');
-    addMsg('user', { text: `请帮我看一下"${name}"这个策略，分析一下它的逻辑并给出优化建议。` });
+    addMsg('ai', { text: `📂 已加载策略: ${name}`, code, prevCode: codeRef.current });
+    addMsg('user', { text: `请帮我分析一下"${name}"这个策略的逻辑，并给出优化建议。` });
     setTab('chat');
   };
   const handleRenameTemplate = async (id: string, name: string) => {
