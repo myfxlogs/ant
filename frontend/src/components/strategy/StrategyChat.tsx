@@ -238,21 +238,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
         <div ref={chatEndRef} />
       </div>
 
-      {/* Strategy List */}
-      <div style={{ padding: '4px 14px', borderTop: '1px solid #f0f0f0', flexShrink: 0, display: 'flex', gap: 8, alignItems: 'center' }}>
-        <Typography.Text style={{ fontSize: 11, color: '#8c8c8c', flexShrink: 0 }}>策略:</Typography.Text>
-        <Select size="small" value={loadedTemplateId || undefined}
-          onChange={(v) => v && handleLoadTemplate(v)}
-          style={{ flex: 1, fontSize: 11 }}
-          options={templates.map(t => ({ value: t.id, label: t.name }))}
-          placeholder={templates.length > 0 ? "加载已保存的策略" : "暂无已保存的策略"}
-          allowClear disabled={templates.length === 0}
-        />
-        {codeRef.current && (
-          <Button size="small" onClick={handleSaveTemplate} style={{ fontSize: 11, flexShrink: 0 }}>保存当前</Button>
-        )}
-      </div>
-
       {/* Input */}
       <div style={{ padding: '10px 14px', borderTop: '1px solid #e8e8e8', flexShrink: 0, background: '#fff' }}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
@@ -264,6 +249,21 @@ export default function StrategyChat({ symbol, timeframe, sessionId, onApplyCode
           <Button type="primary" icon={<SendOutlined />} onClick={handleSend} loading={busy} disabled={!draft.trim() || !hasSymbol} style={{ borderRadius: 8, flexShrink: 0 }} />
         </div>
         <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>Enter 发送 · Shift+Enter 换行</div>
+      </div>
+
+      {/* Strategy List */}
+      <div style={{ padding: '6px 14px', borderTop: '1px solid #e8e8e8', flexShrink: 0, display: 'flex', gap: 8, alignItems: 'center', background: '#fff' }}>
+        <Typography.Text style={{ fontSize: 11, color: '#8c8c8c', flexShrink: 0 }}>策略:</Typography.Text>
+        <Select size="small" value={loadedTemplateId || undefined}
+          onChange={(v) => v && handleLoadTemplate(v)}
+          style={{ flex: 1, fontSize: 11 }}
+          options={templates.map(t => ({{ value: t.id, label: t.name }}))}
+          placeholder={templates.length > 0 ? "加载已保存的策略" : "暂无已保存的策略"}
+          allowClear disabled={templates.length === 0}
+        />
+        {codeRef.current && (
+          <Button size="small" onClick={handleSaveTemplate} style={{ fontSize: 11, flexShrink: 0 }}>保存当前</Button>
+        )}
       </div>
       {/* AI Settings Modal */}
       <Suspense fallback={null}>
