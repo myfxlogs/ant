@@ -34,8 +34,8 @@ type PublishParams struct {
 	Timeframe           string
 	RiskLevel           string
 	Tags                []string
-	CodeSnippet         string // optional public code preview set by publisher
-	BacktestSnapshotJSON string // optional JSON-serialized backtest snapshot
+	CodeSnippet          string  // optional public code preview set by publisher
+	BacktestSnapshotJSON *string // optional JSON-serialized backtest snapshot (nil → SQL NULL)
 }
 
 // BacktestSnapshot holds key backtest metrics at publish time.

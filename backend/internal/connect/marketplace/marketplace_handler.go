@@ -57,11 +57,12 @@ func (s *MarketplaceServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
 
 func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Request[antv1.PublishStrategyRequest]) (*connect.Response[antv1.PublishStrategyResponse], error) {
 	m := req.Msg
-	// Serialize backtest snapshot to JSON if present.
-	snapshotJSON := ""
+	// Serialize backtest snapshot to JSON if present (nil for JSONB null).
+	var snapshotJSON *string
 	if m.BacktestSnapshot != nil {
 		if b, err := json.Marshal(m.BacktestSnapshot); err == nil {
-			snapshotJSON = string(b)
+			s := string(b)
+			snapshotJSON = &s
 		}
 	}
 	userID := interceptor.GetUserID(ctx)
