@@ -137,11 +137,24 @@ def run(context):
     # ❌ NEVER do this: sl_pct = 0.02                ← hardcoded instead of context.get()
 ` + "```" + `
 
-### Rule 2: Stop-loss & take-profit MUST be set on EVERY bar when holding a position
+### Rule 2: Use CORRECT position dict keys — NEVER invent fake field names
+The engine injects position as a dict with these EXACT keys:
+` + "```python" + `
+position = context.get('position')  # None means no position
+if position is not None:
+    side   = position['side']         # ✅ 'buy'=long, 'sell'=short
+    volume = position['volume']       # ✅ lot size
+    price  = position['open_price']   # ✅ entry price
+    sl     = position.get('sl', 0)    # ✅ current stop-loss
+    tp     = position.get('tp', 0)    # ✅ current take-profit
+    # ❌ NEVER use: position['direction'], position['type'], position['price']
+` + "```" + `
+
+### Rule 3: Stop-loss & take-profit MUST be set on EVERY bar when holding a position
 ` + "```python" + `
     if position is not None:
-        entry_price = position.get('open_price', close[-1])
-        if position.get('type') == 'long':
+        entry_price = position['open_price']
+        if position['side'] == 'buy':
             stop_loss   = entry_price * (1 - sl_pct)    # ✅ every bar
             take_profit = entry_price * (1 + tp_pct)    # ✅ every bar
         else:
@@ -150,16 +163,16 @@ def run(context):
     # ❌ NEVER: stop_loss=0.0, take_profit=0.0 when position exists
 ` + "```" + `
 
-### Rule 3: Position sizing MUST use initial_balance, NOT current balance
+### Rule 4: Position sizing MUST use initial_balance, NOT current balance
 ` + "```python" + `
     initial_balance = float(context.get('initial_balance', 10000.0))
     volume_ordered = (initial_balance * entry_pct) / close[-1]   # ✅
     # ❌ NEVER: volume = (context.get('balance') * entry_pct) / close[-1]
 ` + "```" + `
 
-### Rule 4: ALL variables must be defined at function start, before any return
-### Rule 5: np and math are pre-injected — do NOT import them
-### Rule 6: Function signature: def run(context): return {'signal':..., 'volume':..., 'stop_loss':..., 'take_profit':...}
+### Rule 5: ALL variables must be defined at function start, before any return
+### Rule 6: np and math are pre-injected — do NOT import them
+### Rule 7: Function signature: def run(context): return {'signal':..., 'volume':..., 'stop_loss':..., 'take_profit':...}
 
 ## Output: ONLY Python code. No markdown fences. No explanations.`
 }
