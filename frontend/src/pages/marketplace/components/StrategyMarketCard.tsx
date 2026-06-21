@@ -87,8 +87,8 @@ export default function StrategyMarketCard({ strategy, isPurchased, onOpenDetail
       {/* Tags */}
       <div style={{ marginTop: 10 }}>
         <Space size={4} wrap>
-          {strategy.assetClass && <Tag style={{ fontSize: 10 }}>{String(strategy.assetClass)}</Tag>}
-          {strategy.riskLevel && <Tag style={{ fontSize: 10 }}>{String(strategy.riskLevel)}</Tag>}
+          {strategy.assetClass && <Tag style={{ fontSize: 10 }}>{t(`marketplace.publish.assetClass.${strategy.assetClass}`, { defaultValue: String(strategy.assetClass) })}</Tag>}
+          {strategy.riskLevel && <Tag style={{ fontSize: 10 }}>{t(`marketplace.publish.riskLevel.${strategy.riskLevel}`, { defaultValue: String(strategy.riskLevel) })}</Tag>}
           {isPurchased && <Tag color="green" style={{ fontSize: 10 }}>{t('marketplace.card.owned')}</Tag>}
         </Space>
       </div>

@@ -82,10 +82,10 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, onClo
           <Tag color={isFree ? 'green' : 'gold'}>{priceText(strategy, t)}</Tag>
         </Descriptions.Item>
         <Descriptions.Item label={t('marketplace.detail.assetClass')}>
-          {String(strategy.assetClass || '-')}
+          {t(`marketplace.publish.assetClass.${strategy.assetClass}`, { defaultValue: strategy.assetClass || '-' })}
         </Descriptions.Item>
         <Descriptions.Item label={t('marketplace.detail.riskLevel')}>
-          {String(strategy.riskLevel || '-')}
+          {t(`marketplace.publish.riskLevel.${strategy.riskLevel}`, { defaultValue: strategy.riskLevel || '-' })}
         </Descriptions.Item>
         <Descriptions.Item label={t('marketplace.detail.subscribers')}>
           {String(strategy.totalSubscribers || 0)}

@@ -79,7 +79,7 @@ func (s *Service) ListPublished(ctx context.Context, userID string, limit int, a
 
 func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit int) (string, []interface{}) {
 	query := `SELECT usp.id, usp.platform_strategy_id, COALESCE(ms.title,st.name,usp.platform_strategy_id::text),
-			usp.user_id, usp.published_at, COALESCE(ms.title,''), COALESCE(ms.description,''),
+			COALESCE(u.email, u.nickname, usp.user_id::text), usp.published_at, COALESCE(ms.title,''), COALESCE(ms.description,''),
 			COALESCE(ms.price_model,''), ms.price_amount, COALESCE(ms.asset_class,''),
 			COALESCE(ms.symbols::text,'{}'), ms.timeframe, COALESCE(ms.risk_level,''),
 			COALESCE(ms.tags::text,'{}'), COALESCE(ms.total_subscribers,0), ms.win_rate, ms.total_pnl,
@@ -88,6 +88,7 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit int) 
 		 FROM user_strategy_publishes usp
 		 LEFT JOIN marketplace_strategies ms ON ms.strategy_id=usp.platform_strategy_id
 		 LEFT JOIN strategy_templates st ON st.id::text=usp.platform_strategy_id::text
+		 LEFT JOIN users u ON u.id = usp.user_id
 		 LEFT JOIN (SELECT strategy_id, AVG(rating) AS avg_rating, COUNT(*)::int AS rating_count FROM marketplace_ratings GROUP BY strategy_id) r ON r.strategy_id=ms.id
 		 WHERE 1=1`
 	args := []interface{}{}
