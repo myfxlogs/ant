@@ -120,11 +120,13 @@ export default function BacktestParamsCard(props: Props) {
           <Dropdown menu={{ items: settingsItems }} trigger={['click']} placement="bottomRight">
             <Button size="small" type="text" icon={<SettingOutlined />} style={{ borderRadius: 6 }} />
           </Dropdown>
-          <Button type="primary" size="small" loading={running} disabled={!canRun}
-            onClick={onRunBacktest}
-            style={{ borderRadius: 6, fontWeight: 600, boxShadow: '0 2px 8px rgba(24,144,255,0.25)' }}>
-            {t(RUN_KEY)}
-          </Button>
+          <Tooltip title={!canRun ? t('strategy.workspace.runDisabledHint' as any, 'Select account & symbol, and load strategy code first') : undefined}>
+            <Button type="primary" size="small" loading={running} disabled={!canRun}
+              onClick={onRunBacktest}
+              style={{ borderRadius: 6, fontWeight: 600, boxShadow: '0 2px 8px rgba(24,144,255,0.25)' }}>
+              {t(RUN_KEY)}
+            </Button>
+          </Tooltip>
           <span style={{ fontSize: 9, color: '#8c8c8c', cursor: 'pointer' }}>
             {expanded ? <CaretUpOutlined /> : <CaretDownOutlined />}
           </span>
