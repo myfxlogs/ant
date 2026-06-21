@@ -35,7 +35,7 @@ func validateBacktestRun(run *repository.BacktestRun) {
 	if run.Leverage == nil || *run.Leverage == 0 {
 		run.Leverage = ptr.F64(1)
 	}
-	if run.Leverage != nil && (*run.Leverage < 1 || *run.Leverage > 125) {
+	if run.Leverage != nil && *run.Leverage < 1 {
 		run.Leverage = ptr.F64(1)
 	}
 	if run.TradeDirection == nil || *run.TradeDirection == "" {
