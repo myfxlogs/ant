@@ -81,8 +81,8 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit int) 
 	query := `SELECT usp.id, usp.platform_strategy_id, COALESCE(ms.title,st.name,usp.platform_strategy_id::text),
 			usp.user_id, usp.published_at, COALESCE(ms.title,''), COALESCE(ms.description,''),
 			COALESCE(ms.price_model,''), ms.price_amount, COALESCE(ms.asset_class,''),
-			COALESCE(ms.symbols,'{}'), ms.timeframe, COALESCE(ms.risk_level,''),
-			COALESCE(ms.tags,'{}'), COALESCE(ms.total_subscribers,0), ms.win_rate, ms.total_pnl,
+			COALESCE(ms.symbols::text,'{}'), ms.timeframe, COALESCE(ms.risk_level,''),
+			COALESCE(ms.tags::text,'{}'), COALESCE(ms.total_subscribers,0), ms.win_rate, ms.total_pnl,
 			COALESCE(r.avg_rating,0), COALESCE(r.rating_count,0),
 			COALESCE(ms.code_snippet,''), ms.backtest_snapshot::text
 		 FROM user_strategy_publishes usp
