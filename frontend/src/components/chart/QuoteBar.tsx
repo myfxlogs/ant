@@ -6,8 +6,6 @@ interface QuoteBarProps {
 }
 
 export default function QuoteBar({ symbol, bid, ask }: QuoteBarProps) {
-  if (!bid && !ask) return null;
-
   const spread = (() => {
     if (!bid || !ask) return '';
     const b = Number(bid);
