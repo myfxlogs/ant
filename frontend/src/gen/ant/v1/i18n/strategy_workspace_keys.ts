@@ -223,6 +223,9 @@ export const RISK_CONTROLS_KEY = 'strategy.workspace.riskControls' as const;
 /** runBacktest */
 export const RUN_BACKTEST_KEY = 'strategy.workspace.runBacktest' as const;
 
+/** runDisabledHint */
+export const RUN_DISABLED_HINT_KEY = 'strategy.workspace.runDisabledHint' as const;
+
 /** runningStatus */
 export const RUNNING_STATUS_KEY = 'strategy.workspace.runningStatus' as const;
 
@@ -364,6 +367,7 @@ export const STRATEGYWORKSPACE_KEYS = {
   quick_trade_section_valid_volume: 'strategy.workspace.quickTradeSection.validVolume',
   risk_controls: 'strategy.workspace.riskControls',
   run_backtest: 'strategy.workspace.runBacktest',
+  run_disabled_hint: 'strategy.workspace.runDisabledHint',
   running_status: 'strategy.workspace.runningStatus',
   runtime_mode: 'strategy.workspace.runtimeMode',
   save: 'strategy.workspace.save',

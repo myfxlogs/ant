@@ -69,6 +69,7 @@ const StrategyWorkspace = {
       "quickTradeHint": "最初に銘柄を選択してください",
       "riskControls": "コードのリスク管理",
       "runBacktest": "バックテスト実行",
+      "runDisabledHint": "最初にアカウント、銘柄を選択し、ストラテジーコードを読み込んでください",
       "runningStatus": "実行中...",
       "runtimeMode": "ランタイム",
       "save": "保存",

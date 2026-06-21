@@ -75,6 +75,7 @@
     "quick_trade_section_valid_volume": "quickTradeSection.validVolume",
     "risk_controls": "riskControls",
     "run_backtest": "runBacktest",
+    "run_disabled_hint": "runDisabledHint",
     "running_status": "runningStatus",
     "runtime_mode": "runtimeMode",
     "save": "save",

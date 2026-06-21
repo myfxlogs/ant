@@ -69,6 +69,7 @@ const StrategyWorkspace = {
       "quickTradeHint": "Chọn mã trước",
       "riskControls": "Kiểm Soát Rủi Ro Từ Code",
       "runBacktest": "Chạy Backtest",
+      "runDisabledHint": "Chọn tài khoản & biểu tượng, và tải mã chiến lược trước",
       "runningStatus": "Đang chạy...",
       "runtimeMode": "Thời Gian Chạy",
       "save": "Lưu",

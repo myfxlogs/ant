@@ -69,6 +69,7 @@ const StrategyWorkspace = {
       "quickTradeHint": "Select a symbol first",
       "riskControls": "Risk Controls from Code",
       "runBacktest": "Run Backtest",
+      "runDisabledHint": "Select account & symbol, and load strategy code first",
       "runningStatus": "Running...",
       "runtimeMode": "Runtime",
       "save": "Save",

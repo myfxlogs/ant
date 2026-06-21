@@ -69,6 +69,7 @@ const StrategyWorkspace = {
       "quickTradeHint": "请先选择品种",
       "riskControls": "代码中的风控规则",
       "runBacktest": "运行回测",
+      "runDisabledHint": "请先选择账户、品种并加载策略代码",
       "runningStatus": "运行中...",
       "runtimeMode": "运行模式",
       "save": "保存",
