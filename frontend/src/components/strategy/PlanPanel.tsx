@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import {
   PLACEHOLDER_KEY, PLAN_TITLE_KEY, PLAN_ANALYZING_KEY, PLAN_ERROR_TAG_KEY,
   PLAN_RESET_KEY, PLAN_SEND_BTN_KEY, PLAN_SYMBOL_WARN_KEY,
-  PLAN_SYMBOL_OK_KEY, PLAN_PREREQUISITE_MSG_KEY,
+  PLAN_PREREQUISITE_MSG_KEY,
   PLAN_HINT_KEY, PLAN_INPUT_PLACEHOLDER_KEY,
 } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 import { analyzePlan, type PlanCallbacks } from '@/client/strategyPlan';

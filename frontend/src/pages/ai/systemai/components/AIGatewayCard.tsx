@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, Select, Tag, Typography, Row, Col, Progress, Button, Spin, message } from 'antd';
-import { ThunderboltOutlined, ApiOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { ThunderboltOutlined, ApiOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { GATEWAY_MODEL_PLACEHOLDER_KEY, GATEWAY_MONTHLY_COST_KEY, GATEWAY_MONTHLY_TOKENS_KEY, GATEWAY_NO_MODELS_KEY, GATEWAY_SELECT_MODEL_KEY, GATEWAY_TITLE_KEY, GATEWAY_USAGE_BY_FEATURE_KEY, GATEWAY_USE_GATEWAY_DESC_KEY, GATEWAY_USE_GATEWAY_KEY, GATEWAY_USE_OWN_KEY_DESC_KEY, GATEWAY_USE_OWN_KEY_HINT_KEY, GATEWAY_USE_OWN_KEY_KEY } from '@/gen/ant/v1/i18n/ai_core_keys';
 
