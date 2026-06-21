@@ -37,6 +37,9 @@ export function useChartData(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [streamActive, setStreamActive] = useState(false);
+  const [latestBid, setLatestBid] = useState<string>('');
+  const [latestAsk, setLatestAsk] = useState<string>('');
+  const precisionRef = useRef(5);
   const barsRef = useRef<KlineData[]>([]);
   const loadingMore = useRef(false);
   const loadedAll = useRef(false);
@@ -67,7 +70,12 @@ export function useChartData(
         if (barTime === 0) return;
 
         const b = Number(ev.bid || '0'), a = Number(ev.ask || '0');
-        if (b > 0 || a > 0) setBidAsk(barTime * 1000, b, a);
+        if (b > 0 || a > 0) {
+          setBidAsk(barTime * 1000, b, a);
+          const d = precisionRef.current;
+          setLatestBid(b > 0 ? b.toFixed(d) : '');
+          setLatestAsk(a > 0 ? a.toFixed(d) : '');
+        }
 
         const bar: KlineData = {
           time: barTime, open: Number(ev.open ?? '0'), high: Number(ev.high ?? '0'),
@@ -114,7 +122,10 @@ export function useChartData(
     clearBidAsk();
 
     marketApi.getSymbolParams(accountId, [marketApi.resolveSymbol(symbol)]).then((infos) => {
-      if (!cancelled && infos.length > 0 && infos[0].digits != null) setBidAskPrecision(infos[0].digits);
+      if (!cancelled && infos.length > 0 && infos[0].digits != null) {
+        setBidAskPrecision(infos[0].digits);
+        precisionRef.current = infos[0].digits;
+      }
     }).catch(() => {});
 
     marketApi.getKlines({ symbol: marketApi.resolveSymbol(symbol), timeframe, count: INITIAL_BARS, accountId })
@@ -133,5 +144,5 @@ export function useChartData(
     return () => { cancelled = true; };
   }, [symbol, timeframe, accountId]);
 
-  return { bars, loading, error, streamActive, barsRef, loadingMore, loadedAll };
+  return { bars, loading, error, streamActive, barsRef, loadingMore, loadedAll, latestBid, latestAsk };
 }
