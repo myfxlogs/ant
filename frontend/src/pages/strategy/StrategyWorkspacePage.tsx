@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useRef, useCallback } from 'react';
 import { Collapse, Grid } from 'antd';
 import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
@@ -34,6 +34,15 @@ export default function StrategyWorkspacePage() {
     ws.account.timeframe,
     ws.code.lastSavedId,
   );
+
+  // Click-outside: auto-collapse code panel when clicking main content area
+  const codePanelRef = useRef<HTMLDivElement>(null);
+  const handleContentClick = useCallback((e: React.MouseEvent) => {
+    if (!ws.layout.codePanelVisible) return;
+    if (codePanelRef.current && !codePanelRef.current.contains(e.target as Node)) {
+      ws.layout.setCodePanelVisible(false);
+    }
+  }, [ws.layout.codePanelVisible, ws.layout.setCodePanelVisible]);
 
   // The workspace uses fixed-width panels (750+520 px) and is unusable on narrow screens.
   if (!screens.lg) return <MobileGuard />;
@@ -80,7 +89,7 @@ export default function StrategyWorkspacePage() {
 
         {/* ── Expanded code panel (overlays chart, stays within workspace) ── */}
         {ws.layout.codePanelVisible && (
-          <div style={{
+          <div ref={codePanelRef} style={{
             position: 'absolute', left: 32, top: 0, bottom: 0, zIndex: 100,
             width: CODE_PANEL_WIDTH, overflowY: 'auto',
             background: '#fcfdfd', borderRight: '1px solid ' + C.border,
@@ -126,7 +135,7 @@ export default function StrategyWorkspacePage() {
         )}
 
         {/* ── MIDDLE: Chart + Backtest ── */}
-        <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div onClick={handleContentClick} style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ flex: '1 1 0', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {ws.account.symbol ? (
               <WorkspaceErrorBoundary fallback={<div style={{ display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'#8c8c8c' }}>{t(CHART_ERROR_KEY)}</div>}>

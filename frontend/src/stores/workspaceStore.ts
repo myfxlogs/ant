@@ -28,7 +28,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       accountId: '',
       symbol: '',
       timeframe: '1h',
-      codePanelVisible: true,
+      codePanelVisible: false,
       quickTradeVisible: true,
       positionsPanelVisible: false,
       _hasHydrated: false,
