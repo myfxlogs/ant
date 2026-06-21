@@ -12,6 +12,7 @@ import (
 	"connectrpc.com/connect"
 
 	antv1 "anttrader/gen/proto/ant/v1"
+	"anttrader/internal/interceptor"
 	"anttrader/internal/marketplace"
 )
 
@@ -93,8 +94,9 @@ func TestMarketplace_PublishStrategy_Success(t *testing.T) {
 	t.Parallel()
 	svc := &stubMarketplaceSvc{publishID: "pub-1"}
 	h := testMarketplaceHandler(svc)
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, "00000000-0000-0000-0000-000000000001")
 
-	resp, err := h.PublishStrategy(context.Background(), connect.NewRequest(&antv1.PublishStrategyRequest{
+	resp, err := h.PublishStrategy(ctx, connect.NewRequest(&antv1.PublishStrategyRequest{
 		StrategyId: "s1", Title: "My Strategy",
 	}))
 	if err != nil {
@@ -109,8 +111,9 @@ func TestMarketplace_PublishStrategy_Error(t *testing.T) {
 	t.Parallel()
 	svc := &stubMarketplaceSvc{err: errors.New("db down")}
 	h := testMarketplaceHandler(svc)
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, "00000000-0000-0000-0000-000000000001")
 
-	_, err := h.PublishStrategy(context.Background(), connect.NewRequest(&antv1.PublishStrategyRequest{}))
+	_, err := h.PublishStrategy(ctx, connect.NewRequest(&antv1.PublishStrategyRequest{}))
 	if err == nil {
 		t.Fatal("expected error")
 	}
