@@ -59,7 +59,7 @@ export function useBacktestParams() {
   const [tradeDirection, setTradeDirection] = useState('both');
   const [strictMode, setStrictMode] = useState(true);
   const [paramsExpanded, setParamsExpanded] = useState(true);
-  const [resultsExpanded, setResultsExpanded] = useState(false);
+  const [resultsExpanded, setResultsExpanded] = useState(true);
   const [strategyDirectives, setStrategyDirectives] = useState<StrategyDirective[]>([]);
 
   const [backtestRunId, setBacktestRunId] = useState('');

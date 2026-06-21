@@ -56,7 +56,7 @@ function num(v: number | undefined, decimals = 2): string {
 const metricStyle: React.CSSProperties = { fontSize: 16, fontFamily: 'monospace' };
 
 const tabStyle: React.CSSProperties = {
-  padding: '8px 16px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+  padding: '6px 12px', fontSize: 11, fontWeight: 600, cursor: 'pointer',
   color: '#8c8c8c', borderBottom: '2px solid transparent', transition: 'all 0.15s',
 };
 
@@ -75,7 +75,7 @@ export default function WorkspaceBacktestPanel({
   return (
     <div className="space-y-4">
       {/* Sub-tab navigation */}
-      <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid #e8e8e8', marginBottom: 12 }}>
+      <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid #e8e8e8', marginBottom: 8 }}>
         <div onClick={() => onSubTabChange('results')} style={{
           ...tabStyle,
           color: subTab === 'results' ? '#1890ff' : '#8c8c8c',
@@ -98,11 +98,11 @@ export default function WorkspaceBacktestPanel({
         <>
           {status === 'idle' && (
             <Empty description={t(BACKTEST_EMPTY_KEY, 'Run a backtest to see results')}
-              style={{ padding: 48 }} />
+              style={{ padding: 24 }} />
           )}
 
           {/* Status */}
-          <div style={{ marginBottom: 12 }}>
+          <div style={{ marginBottom: 8 }}>
             {status === 'running' && (
               <Tag color="processing" icon={<Spin size="small" />}>
                 {t(BACKTEST_RUNNING_KEY)}{metrics?.processedBars != null ? ` — ${metrics.processedBars} bars processed` : '...'}

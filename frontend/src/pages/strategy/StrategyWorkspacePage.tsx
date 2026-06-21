@@ -184,7 +184,7 @@ export default function StrategyWorkspacePage() {
               </div>
 
               {/* Right: Backtest Results */}
-              <div style={{ flex: 1, minWidth: 0, borderLeft: '1px solid #e8e8e8', background: '#fafbfc' }}>
+              <div style={{ flex: 1, minWidth: 0, borderLeft: '1px solid #e8e8e8', background: '#fafbfc', overflowY: 'auto' }}>
                 <div onClick={() => ws.backtest.setResultsExpanded(!ws.backtest.resultsExpanded)} role="button" tabIndex={0}
                   onKeyUp={e => e.key === 'Enter' && ws.backtest.setResultsExpanded(!ws.backtest.resultsExpanded)}
                   style={{
