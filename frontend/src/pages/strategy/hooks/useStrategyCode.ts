@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Form, message } from 'antd';
 import { useTranslation } from 'react-i18next'
 import { COPY_FAILED_KEY, COPY_SUCCESS_KEY, SAVE_SUCCESS_KEY, VALIDATE_BEFORE_SAVE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
@@ -14,6 +14,18 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
   const [lastValidatedCode, setLastValidatedCode] = useState('');
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<ValidateExtendedResult | null>(null);
+  // Track previous code to detect external changes (AI apply, template load, etc.)
+  const prevCodeRef = useRef(code);
+
+  // Reset validation state when code changes externally (AI apply / template load).
+  useEffect(() => {
+    if (code !== prevCodeRef.current) {
+      prevCodeRef.current = code;
+      setValidating(false);
+      setValidationResult(null);
+      setLastValidatedCode('');
+    }
+  }, [code]);
 
   const handleValidate = useCallback(async () => {
     if (!code.trim()) return;

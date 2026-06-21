@@ -172,8 +172,14 @@ export function useBacktestParams() {
     setStrictMode(d.strictMode);
   }, []);
 
+  const resetStatus = useCallback(() => {
+    setStatus('idle'); setErrorMsg(''); setMetrics(null);
+    setExecutionAssumptions(null); setChartTrades([]);
+  }, []);
+
   return {
     submitting, status, metrics, executionAssumptions, errorMsg,
+    resetStatus,
     initialCapital, setInitialCapital, leverage, setLeverage,
     commission, setCommission, slippage, setSlippage,
     startDate, setStartDate, endDate, setEndDate,

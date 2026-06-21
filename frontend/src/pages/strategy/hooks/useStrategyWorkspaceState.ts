@@ -159,6 +159,11 @@ export function useStrategyWorkspaceState() {
   // AI workflow
   const ai = useAIWorkflow(codeCtx, btCtx.metrics, setCodePanelVisible);
 
+  // Reset backtest state when code changes (AI apply, template load, manual edit).
+  useEffect(() => {
+    btCtx.resetStatus();
+  }, [codeCtx.code]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Clear stale accountId from localStorage when the persisted account no longer
   // exists (deleted) or the user has no accounts — prevents 404/403 API calls.
   useEffect(() => {
