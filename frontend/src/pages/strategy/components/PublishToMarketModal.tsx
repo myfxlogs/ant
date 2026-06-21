@@ -19,16 +19,19 @@ interface Props {
   onPublished: () => void;
 }
 
-const ASSET_CLASSES = ['forex', 'crypto', 'commodity', 'index', 'stock'];
-const RISK_LEVELS = ['low', 'medium', 'high'];
-const PRICE_MODELS = [
-  { value: 'free', label: 'Free' },
-  { value: 'monthly', label: 'Monthly Subscription' },
-  { value: 'once', label: 'One-Time Purchase' },
-];
-
 export default function PublishToMarketModal({ open, template, backtestSnapshot, onClose, onPublished }: Props) {
   const { t } = useTranslation();
+  const assetClassOptions = ['forex', 'crypto', 'commodity', 'index', 'stock'].map(v => ({
+    value: v, label: t(`marketplace.publish.assetClass.${v}`, { defaultValue: v }),
+  }));
+  const riskLevelOptions = ['low', 'medium', 'high'].map(v => ({
+    value: v, label: t(`marketplace.publish.riskLevel.${v}`, { defaultValue: v }),
+  }));
+  const priceModelOptions = [
+    { value: 'free', label: t('marketplace.publish.priceModel.free', { defaultValue: 'Free' }) },
+    { value: 'monthly', label: t('marketplace.publish.priceModel.monthly', { defaultValue: 'Monthly Subscription' }) },
+    { value: 'once', label: t('marketplace.publish.priceModel.once', { defaultValue: 'One-Time Purchase' }) },
+  ];
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
   const [includeSnapshot, setIncludeSnapshot] = useState(false);
@@ -100,17 +103,17 @@ export default function PublishToMarketModal({ open, template, backtestSnapshot,
         </Form.Item>
 
         <div style={{ display: 'flex', gap: 12 }}>
-          <Form.Item name="assetClass" label={t('marketplace.publish.assetClass', 'Asset Class')} style={{ flex: 1 }}>
-            <Select options={ASSET_CLASSES.map(v => ({ value: v, label: v }))} />
+          <Form.Item name="assetClass" label={t('marketplace.publish.assetClass.label', 'Asset Class')} style={{ flex: 1 }}>
+            <Select options={assetClassOptions} />
           </Form.Item>
-          <Form.Item name="riskLevel" label={t('marketplace.publish.riskLevel', 'Risk Level')} style={{ flex: 1 }}>
-            <Select options={RISK_LEVELS.map(v => ({ value: v, label: v }))} />
+          <Form.Item name="riskLevel" label={t('marketplace.publish.riskLevel.label', 'Risk Level')} style={{ flex: 1 }}>
+            <Select options={riskLevelOptions} />
           </Form.Item>
         </div>
 
         <div style={{ display: 'flex', gap: 12 }}>
-          <Form.Item name="priceModel" label={t('marketplace.publish.priceModel', 'Pricing')} style={{ flex: 1 }}>
-            <Select options={PRICE_MODELS} />
+          <Form.Item name="priceModel" label={t('marketplace.publish.priceModel.label', 'Pricing')} style={{ flex: 1 }}>
+            <Select options={priceModelOptions} />
           </Form.Item>
           <Form.Item name="priceAmount" label={t('marketplace.publish.priceAmount', 'Amount')} style={{ flex: 1 }}
             dependencies={['priceModel']}>

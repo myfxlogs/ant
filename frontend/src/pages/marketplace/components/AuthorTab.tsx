@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { Card, Row, Col, Statistic, Table, Tag, Typography, Empty, Button, Space, Popconfirm } from 'antd';
-import { ShopOutlined, StarOutlined, SendOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Statistic, Table, Tag, Typography, Empty, Button, Space } from 'antd';
+import { ShopOutlined, StarOutlined, SendOutlined, PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { TABLE_NAME_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
 ;

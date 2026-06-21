@@ -9,9 +9,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- INSERT: notify on every new run (initial PENDING status).
 DROP TRIGGER IF EXISTS backtest_status_notify ON backtest_runs;
 CREATE TRIGGER backtest_status_notify
-    AFTER INSERT OR UPDATE ON backtest_runs
+    AFTER INSERT ON backtest_runs
     FOR EACH ROW
-    WHEN (OLD IS NULL OR NEW.status IS DISTINCT FROM OLD.status)
+    EXECUTE FUNCTION notify_backtest_status_change();
+
+-- UPDATE: notify only when status actually changes (avoids noise from lease updates).
+DROP TRIGGER IF EXISTS backtest_status_update_notify ON backtest_runs;
+CREATE TRIGGER backtest_status_update_notify
+    AFTER UPDATE ON backtest_runs
+    FOR EACH ROW
+    WHEN (NEW.status IS DISTINCT FROM OLD.status)
     EXECUTE FUNCTION notify_backtest_status_change();

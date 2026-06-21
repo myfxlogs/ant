@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Tabs, Typography, Grid, Drawer } from 'antd';
+import { Tabs, Typography, Drawer } from 'antd';
 import { ShopOutlined, BookOutlined, UserOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useMarketplace } from './hooks/useMarketplace';

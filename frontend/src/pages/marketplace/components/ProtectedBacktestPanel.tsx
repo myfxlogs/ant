@@ -9,7 +9,6 @@ import { create } from '@bufbuild/protobuf';
 import { RunMarketBacktestRequestSchema } from '@/gen/ant/v1/marketplace_service_pb';
 import { TradeDirection } from '@/gen/ant/v1/backtest_execution_config_pb';
 import { BacktestRunStatus } from '@/gen/ant/v1/backtest_run_pb';
-import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
 
 const { Text } = Typography;
 

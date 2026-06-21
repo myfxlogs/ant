@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { Modal, Descriptions, Tag, Button, Typography, Space, Divider, Input, List, Spin, Rate } from 'antd';
 import { ShoppingCartOutlined, DownloadOutlined, UserOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useMarketplaceCtx } from '../MarketplaceContext';
 import { useStrategyDiscussion } from '../hooks/useStrategyDiscussion';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
 
@@ -19,12 +18,12 @@ interface Props {
   onRunBacktest?: (s: PublishedStrategy) => void;
 }
 
-function priceText(s: PublishedStrategy, t: (k: string) => string): string {
+function priceText(s: PublishedStrategy, t: (k: string, opts?: Record<string,unknown>) => string): string {
   const model = String(s.priceModel || '').toLowerCase();
   const amount = Number(s.priceAmount || 0);
-  if (model === 'free' || !amount) return t('marketplace.card.free', '免费');
-  if (model === 'subscription') return t('marketplace.detail.rentPrice', '¥{{amount}} / 月', { amount: amount.toFixed(0) });
-  return t('marketplace.detail.buyPrice', '¥{{amount}} 买断', { amount: amount.toFixed(0) });
+  if (model === 'free' || !amount) return t('marketplace.card.free', { defaultValue: 'Free' });
+  if (model === 'subscription') return t('marketplace.detail.rentPrice', { amount: amount.toFixed(0), defaultValue: `¥${amount.toFixed(0)} / month` });
+  return t('marketplace.detail.buyPrice', { amount: amount.toFixed(0), defaultValue: `¥${amount.toFixed(0)} one-time` });
 }
 
 function fmtTime(ts: { seconds?: bigint | number } | undefined | null): string {
@@ -34,9 +33,8 @@ function fmtTime(ts: { seconds?: bigint | number } | undefined | null): string {
   return new Date(s * 1000).toLocaleString();
 }
 
-export default function StrategyDetailModal({ strategy, open, isPurchased, onClose, onGetFree, onBuy }: Props) {
+export default function StrategyDetailModal({ strategy, open, isPurchased, onClose, onGetFree, onBuy, onRunBacktest }: Props) {
   const { t } = useTranslation();
-  const m = useMarketplaceCtx();
   const d = useStrategyDiscussion();
 
   const [commentText, setCommentText] = useState('');

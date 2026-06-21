@@ -47,6 +47,7 @@ import Analytics from './analytics';
 import Admin from './admin';
 import Logs from './logs';
 import Errors from './errors';
+import Marketplace from './marketplace';
 import { mergeResources } from '../merge';
 
 const zhtw = mergeResources(
@@ -87,6 +88,7 @@ const zhtw = mergeResources(
   errors,
   admin,
   AiCore,
+  Marketplace,
 ) as const;
 
 export default zhtw;

@@ -1,0 +1,35 @@
+const Marketplace = {
+  "marketplace": {
+    "title": "策略市场",
+    "subtitle": "发现和订阅交易策略",
+    "tabs": { "marketplace": "市场", "purchases": "我的购买", "author": "作者中心" },
+    "searchPlaceholder": "搜索策略...",
+    "empty": "暂无策略",
+    "filter": { "all": "全部", "free": "免费", "paid": "付费" },
+    "sort": { "score": "评分", "newest": "最新", "popular": "最热", "rating": "评价", "priceAsc": "价格从低到高", "priceDesc": "价格从高到低" },
+    "card": { "free": "免费", "owned": "已拥有", "winRate": "胜率", "pnl": "总盈亏", "users": "订阅者", "rent": "¥{{amount}}/月", "buy": "¥{{amount}}" },
+    "messages": { "loginFirst": "请先登录", "subscribed": "订阅成功", "subscribeFailed": "订阅失败", "published": "策略已发布到市场", "publishFailed": "发布失败", "rated": "已评分！" },
+    "detail": { "author": "作者", "price": "价格", "assetClass": "资产类别", "riskLevel": "风险等级", "subscribers": "订阅者", "avgRating": "评分", "description": "描述", "tags": "标签", "yourRating": "你的评分", "comments": "评论", "noComments": "暂无评论", "commentPlaceholder": "写评论...", "getFree": "免费获取", "buyNow": "立即购买", "owned": "已拥有", "freePrice": "免费", "rentPrice": "¥{{amount}} / 月", "buyPrice": "¥{{amount}} 买断", "runBacktest": "运行回测" },
+    "purchases": { "empty": "暂无购买", "strategy": "策略", "date": "购买时间", "status": "状态", "actions": "操作", "runBacktest": "运行回测" },
+    "author": { "empty": "暂无已发布策略", "noPublished": "暂无已发布策略", "published": "已发布", "subscribers": "订阅者", "avgRating": "平均评分", "myStrategies": "我的已发布策略", "publishNew": "发布新策略", "goToLibrary": "前往策略库" },
+    "payment": { "purchaseSuccess": "购买成功！策略已添加到你的库中。", "purchaseFailed": "购买失败，请重试。", "insufficientBalance": "余额不足", "alreadyPurchased": "你已经拥有这个策略。", "title": "确认购买", "balance": "钱包余额", "confirm": "确认支付", "cancel": "取消" },
+    "publish": {
+      "title": "发布到市场",
+      "titleLabel": "标题",
+      "titlePlaceholder": "如：金叉策略",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "描述你的策略逻辑、入场/出场规则...",
+      "assetClass": { "label": "资产类别", "forex": "外汇", "crypto": "加密货币", "commodity": "大宗商品", "index": "指数", "stock": "股票" },
+      "riskLevel": { "label": "风险等级", "low": "低", "medium": "中", "high": "高" },
+      "priceModel": { "label": "定价", "free": "免费", "monthly": "按月订阅", "once": "一次性购买" },
+      "priceAmount": "金额",
+      "tags": "标签",
+      "tagsPlaceholder": "输入并按回车添加标签",
+      "codeSnippet": "策略预览（公开）",
+      "codeSnippetPlaceholder": "可选：分享策略的高层思路或代码片段（所有人可见）",
+      "includeBacktestSnapshot": "附带最新回测成绩"
+    },
+    "backtest": { "title": "策略回测", "protected": "策略代码受保护，回测在服务器端执行。", "run": "运行回测", "idle": "设置参数并运行回测" }
+  }
+};
+export default Marketplace;
