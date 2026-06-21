@@ -428,4 +428,10 @@ def run_backtest(req: BacktestRequest) -> BacktestResult:
     try:
         return BacktestRunner(req).run()
     except Exception as e:
-        return BacktestResult(success=False, error=f"策略执行错误: {e}")
+        import traceback
+        tb = traceback.format_exc()
+        return BacktestResult(
+            run_id=req.run_id,
+            success=False,
+            error=f"策略执行错误: {e}\n{tb}",
+        )
