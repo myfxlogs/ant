@@ -171,8 +171,19 @@ if position is not None:
 ` + "```" + `
 
 ### Rule 5: ALL variables must be defined at function start, before any return
-### Rule 6: np and math are pre-injected — do NOT import them
-### Rule 7: Function signature: def run(context): return {'signal':..., 'volume':..., 'stop_loss':..., 'take_profit':...}
+### Rule 6: RestrictedPython sandbox — NEVER use augmented assignment on attributes
+` + "```python" + `
+# ❌ RestrictedPython REJECTS these:
+#     self.attr += 1
+#     obj.x -= value
+#     lst[i] += delta
+# ✅ Replace with:
+#     self.attr = self.attr + 1
+#     obj.x = obj.x - value
+#     lst[i] = lst[i] + delta
+` + "```" + `
+### Rule 7: np and math are pre-injected — do NOT import them
+### Rule 8: Function signature: def run(context): return {'signal':..., 'volume':..., 'stop_loss':..., 'take_profit':...}
 
 ## Output: ONLY Python code. No markdown fences. No explanations.`
 }
