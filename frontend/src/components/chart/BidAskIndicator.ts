@@ -30,9 +30,25 @@ const BIDASK_INDICATOR: IndicatorCreate = {
   shortName: 'B/A',
   precision: 5,
   shouldOhlc: false,
-  // No figures — custom draw() handles all rendering.
-  figures: [],
-  calc: (_list: KLineData[]) => [],
+  figures: [
+    { key: 'bid', title: 'Bid', type: 'line' },
+    { key: 'ask', title: 'Ask', type: 'line' },
+  ],
+  styles: {
+    lines: [
+      { color: '#ef5350', size: 1, style: 'dash' as any, dashedValue: [4, 3] as any },
+      { color: '#26a69a', size: 1, style: 'dash' as any, dashedValue: [4, 3] as any },
+    ],
+  },
+  calc: (list: KLineData[]) => {
+    if (!list || list.length === 0) return [];
+    const bv = latest?.bid || 0;
+    const av = latest?.ask || 0;
+    return list.map((k: any) => ({
+      bid: bv > 0 ? bv : k.close,
+      ask: av > 0 ? av : k.close,
+    }));
+  },
   draw: ({ ctx, bounding, yAxis, kLineDataList }: any) => {
     const line = (price: number, color: string) => {
       if (!(price > 0)) return;
