@@ -54,10 +54,10 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     if (!containerRef.current) return;
     const chart = init(containerRef.current, { styles: DARK_THEME, locale: 'en-US' });
     chartRef.current = chart;
-    // Auto-load Bid/Ask price lines on main K-line chart (must be first — isStack stacks on previous pane)
-    try { chart.createIndicator('BIDASK', true, { id: 'bidask_overlay' }); } catch { /* best-effort */ }
-    // Auto-load Volume sub-pane (isStack=false creates new sub-pane)
+    // Auto-load Volume sub-pane
     try { chart.createIndicator('VOL', false, { id: 'volume_pane' }); } catch { /* best-effort */ }
+    // B/A price lines on main chart — isStack=true + id:'candle_pane' forces candle pane placement
+    try { chart.createIndicator('BIDASK', true, { id: 'candle_pane' }); } catch { /* best-effort */ }
     onChartReady?.(chart);
     const ro = new ResizeObserver(([entry]) => {
       const w = entry?.contentRect?.width || 400;

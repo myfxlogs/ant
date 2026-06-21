@@ -2,19 +2,21 @@ import { registerIndicator, type KLineData } from 'klinecharts';
 import type { IndicatorCreate } from 'klinecharts';
 
 // Module-level state for real-time bid/ask.
+const liveMap = new Map<number, { bid: number; ask: number }>();
 let latest: { bid: number; ask: number } | null = null;
 let precision = 5;
 
-export function setBidAsk(_tsSec: number, bid: number, ask: number) {
-  latest = {
-    bid: bid > 0 ? bid : latest?.bid ?? 0,
-    ask: ask > 0 ? ask : latest?.ask ?? 0,
-  };
+export function setBidAsk(tsSec: number, bid: number, ask: number) {
+  const cur = liveMap.get(tsSec);
+  const nb = bid > 0 ? bid : cur?.bid ?? 0;
+  const na = ask > 0 ? ask : cur?.ask ?? 0;
+  liveMap.set(tsSec, { bid: nb, ask: na });
+  latest = { bid: nb || latest?.bid || 0, ask: na || latest?.ask || 0 };
 }
 
 export function clearBidAsk() {
+  liveMap.clear();
   latest = null;
-  precision = 5;
 }
 
 export function setBidAskPrecision(digits: number) {
@@ -36,10 +38,11 @@ const BIDASK_INDICATOR: IndicatorCreate = {
   ],
   styles: {
     lines: [
-      { color: '#ef5350', size: 1, style: 'dash' as any, dashedValue: [4, 3] as any },
-      { color: '#26a69a', size: 1, style: 'dash' as any, dashedValue: [4, 3] as any },
+      { color: '#ef5350', size: 1.5, style: 'solid' as any, smooth: false, dashedValue: [2, 2] as any },
+      { color: '#26a69a', size: 1.5, style: 'solid' as any, smooth: false, dashedValue: [2, 2] as any },
     ],
   },
+
   calc: (list: KLineData[]) => {
     if (!list || list.length === 0) return [];
     const bv = latest?.bid || 0;
@@ -49,6 +52,7 @@ const BIDASK_INDICATOR: IndicatorCreate = {
       ask: av > 0 ? av : k.close,
     }));
   },
+
   draw: ({ ctx, bounding, yAxis, kLineDataList }: any) => {
     const line = (price: number, color: string) => {
       if (!(price > 0)) return;
@@ -64,7 +68,7 @@ const BIDASK_INDICATOR: IndicatorCreate = {
       ctx.lineTo(bounding.width, y);
       ctx.stroke();
 
-      // Right-side label pill
+      // Right-side label pill.
       const label = fmt(price);
       if (label) {
         ctx.setLineDash([]);
@@ -84,10 +88,11 @@ const BIDASK_INDICATOR: IndicatorCreate = {
       line(latest.bid, '#ef5350');
       line(latest.ask, '#26a69a');
     } else {
+      // Fallback: gray line at last close.
       const last = kLineDataList?.[kLineDataList.length - 1];
       if (last?.close > 0) line(last.close, '#888888');
     }
-    return true;
+    return true; // skip default per-bar rendering
   },
 };
 
