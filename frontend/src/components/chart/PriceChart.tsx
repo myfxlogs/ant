@@ -56,8 +56,8 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     chartRef.current = chart;
     // Auto-load Volume sub-pane (default sub-chart)
     try { chart.createIndicator('VOL', false, { id: 'volume_pane' }); } catch { /* best-effort */ }
-    // Auto-load Bid/Ask price line overlay on main K-line chart
-    try { chart.createOverlay({ name: 'bidask' }); } catch { /* best-effort */ }
+    // Auto-load Bid/Ask price lines on main chart (isStack=true = overlay on K-line pane)
+    try { chart.createIndicator('BIDASK', true, { id: 'bidask_overlay' }); } catch { /* best-effort */ }
     onChartReady?.(chart);
     const ro = new ResizeObserver(([entry]) => {
       const w = entry?.contentRect?.width || 400;
