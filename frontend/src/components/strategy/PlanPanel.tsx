@@ -6,6 +6,7 @@ import {
   PLACEHOLDER_KEY, PLAN_TITLE_KEY, PLAN_ANALYZING_KEY, PLAN_ERROR_TAG_KEY,
   PLAN_RESET_KEY, PLAN_SEND_BTN_KEY, PLAN_SYMBOL_WARN_KEY,
   PLAN_SYMBOL_OK_KEY, PLAN_PREREQUISITE_MSG_KEY,
+  PLAN_HINT_KEY, PLAN_INPUT_PLACEHOLDER_KEY,
 } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 import { analyzePlan, type PlanCallbacks } from '@/client/strategyPlan';
 
@@ -87,7 +88,7 @@ export default function PlanPanel({ symbol, timeframe, sessionId, onPlanConfirme
         <div style={{ padding: '8px 10px', marginBottom: 8, borderRadius: 6,
           background: '#f6ffed', border: '1px solid #b7eb8f' }}>
           <Typography.Text strong style={{ fontSize: 11, color: '#389e0d', display: 'block', marginBottom: 4 }}>
-            ✅ AI 执行计划
+            {t(PLAN_TITLE_KEY)}
           </Typography.Text>
           <Typography.Paragraph style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: '#262626' }}>
             {plan}
@@ -96,7 +97,7 @@ export default function PlanPanel({ symbol, timeframe, sessionId, onPlanConfirme
 
         {refining && (
           <div style={{ padding: 6, textAlign: 'center', color: '#8c8c8c', fontSize: 12 }}>
-            <LoadingOutlined style={{ marginRight: 4 }} />AI 正在修改计划...
+            <LoadingOutlined style={{ marginRight: 4 }} />{t(PLAN_ANALYZING_KEY)}
           </div>
         )}
 
@@ -107,18 +108,18 @@ export default function PlanPanel({ symbol, timeframe, sessionId, onPlanConfirme
         )}
 
         <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 6 }}>
-          你可以讨论这个计划，或直接说"生成代码"开始执行。
+          {t(PLAN_HINT_KEY)}
         </div>
         <Space.Compact style={{ width: '100%' }}>
           <Input value={planDraft} onChange={e => setPlanDraft(e.target.value)}
-            placeholder="说说你的想法..."
+            placeholder={t(PLAN_INPUT_PLACEHOLDER_KEY)}
             onPressEnter={handleRefine}
             disabled={refining}
             style={{ fontSize: 12 }}
           />
           <Button type="primary" icon={<SendOutlined />}
             onClick={handleRefine} loading={refining}
-            disabled={!planDraft.trim()}>发送</Button>
+            disabled={!planDraft.trim()}>{t(PLAN_SEND_BTN_KEY)}</Button>
         </Space.Compact>
       </div>
     );

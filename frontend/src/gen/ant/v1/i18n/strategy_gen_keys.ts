@@ -109,6 +109,12 @@ export const PLAN_SYMBOL_WARN_KEY = 'strategy.gen.planSymbolWarn' as const;
 /** planSymbolOk */
 export const PLAN_SYMBOL_OK_KEY = 'strategy.gen.planSymbolOk' as const;
 
+/** planHint */
+export const PLAN_HINT_KEY = 'strategy.gen.planHint' as const;
+
+/** planInputPlaceholder */
+export const PLAN_INPUT_PLACEHOLDER_KEY = 'strategy.gen.planInputPlaceholder' as const;
+
 /** planPrerequisiteMsg */
 export const PLAN_PREREQUISITE_MSG_KEY = 'strategy.gen.planPrerequisiteMsg' as const;
 
@@ -212,6 +218,8 @@ export const STRATEGYGEN_KEYS = {
   plan_send_btn: 'strategy.gen.planSendBtn',
   plan_symbol_warn: 'strategy.gen.planSymbolWarn',
   plan_symbol_ok: 'strategy.gen.planSymbolOk',
+  plan_hint: 'strategy.gen.planHint',
+  plan_input_placeholder: 'strategy.gen.planInputPlaceholder',
   plan_prerequisite_msg: 'strategy.gen.planPrerequisiteMsg',
   exec_title: 'strategy.gen.execTitle',
   exec_running: 'strategy.gen.execRunning',

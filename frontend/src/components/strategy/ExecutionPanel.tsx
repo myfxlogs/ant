@@ -271,7 +271,7 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
       {diagnosis && phase === 'done' && (
         <div style={{ marginBottom: 8, padding: 10, background: '#fffbe6', borderRadius: 6, border: '1px solid #ffe58f' }}>
           <Typography.Text strong style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-            💡 AI 诊断与建议
+            {t(EXEC_TITLE_KEY)}
           </Typography.Text>
           <div style={{ fontSize: 12, whiteSpace: 'pre-wrap', color: '#595959', marginBottom: 8 }}>
             {diagnosis}
@@ -279,15 +279,15 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
           <Space>
             <Button size="small" type="primary" icon={<CheckCircleOutlined />}
               onClick={handleConfirmDiagnosis}>
-              按此修改
+              {t(EXEC_APPLY_CODE_KEY)}
             </Button>
             <Button size="small" icon={<EditOutlined />}
               onClick={handleRetryFeedback}>
-              调整反馈
+              {t(EXEC_SEND_FEEDBACK_KEY)}
             </Button>
             <Button size="small" type="text"
               onClick={() => { setDiagnosis(''); setPendingFeedback(''); }}>
-              忽略
+              {t(EXEC_CLEAR_KEY)}
             </Button>
           </Space>
         </div>

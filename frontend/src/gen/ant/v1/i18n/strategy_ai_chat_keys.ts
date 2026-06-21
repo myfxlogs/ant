@@ -16,6 +16,21 @@ export const DISMISS_KEY = 'strategy.aiChat.dismiss' as const;
 /** feedback */
 export const FEEDBACK_KEY = 'strategy.aiChat.feedback' as const;
 
+/** newConversation */
+export const NEW_CONVERSATION_KEY = 'strategy.aiChat.newConversation' as const;
+
+/** rename */
+export const RENAME_KEY = 'strategy.aiChat.rename' as const;
+
+/** delete */
+export const DELETE_KEY = 'strategy.aiChat.delete' as const;
+
+/** cancel */
+export const CANCEL_KEY = 'strategy.aiChat.cancel' as const;
+
+/** deleteConfirm */
+export const DELETE_CONFIRM_KEY = 'strategy.aiChat.deleteConfirm' as const;
+
 /** reset */
 export const RESET_KEY = 'strategy.aiChat.reset' as const;
 
@@ -25,8 +40,14 @@ export const REVIEW_CODE_KEY = 'strategy.aiChat.reviewCode' as const;
 /** revise */
 export const REVISE_KEY = 'strategy.aiChat.revise' as const;
 
+/** send */
+export const SEND_KEY = 'strategy.aiChat.send' as const;
+
 /** streaming */
 export const STREAMING_KEY = 'strategy.aiChat.streaming' as const;
+
+/** thinking */
+export const THINKING_KEY = 'strategy.aiChat.thinking' as const;
 
 /** title */
 export const TITLE_KEY = 'strategy.aiChat.title' as const;
@@ -34,18 +55,109 @@ export const TITLE_KEY = 'strategy.aiChat.title' as const;
 /** you */
 export const YOU_KEY = 'strategy.aiChat.you' as const;
 
+/** historyTitle */
+export const HISTORY_TITLE_KEY = 'strategy.aiChat.historyTitle' as const;
+
+/** noHistory */
+export const NO_HISTORY_KEY = 'strategy.aiChat.noHistory' as const;
+
+/** selectSymbol */
+export const SELECT_SYMBOL_KEY = 'strategy.aiChat.selectSymbol' as const;
+
+/** selectModel */
+export const SELECT_MODEL_KEY = 'strategy.aiChat.selectModel' as const;
+
+/** aiGatewaySettings */
+export const AI_GATEWAY_SETTINGS_KEY = 'strategy.aiChat.aiGatewaySettings' as const;
+
+/** chatTab */
+export const CHAT_TAB_KEY = 'strategy.aiChat.chatTab' as const;
+
+/** historyTab */
+export const HISTORY_TAB_KEY = 'strategy.aiChat.historyTab' as const;
+
+/** strategiesTab */
+export const STRATEGIES_TAB_KEY = 'strategy.aiChat.strategiesTab' as const;
+
+/** placeholderDescribeStrategy */
+export const PLACEHOLDER_DESCRIBE_STRATEGY_KEY = 'strategy.aiChat.placeholderDescribeStrategy' as const;
+
+/** placeholderModify */
+export const PLACEHOLDER_MODIFY_KEY = 'strategy.aiChat.placeholderModify' as const;
+
+/** placeholderContinue */
+export const PLACEHOLDER_CONTINUE_KEY = 'strategy.aiChat.placeholderContinue' as const;
+
+/** placeholderStart */
+export const PLACEHOLDER_START_KEY = 'strategy.aiChat.placeholderStart' as const;
+
+/** placeholderRevisePlan */
+export const PLACEHOLDER_REVISE_PLAN_KEY = 'strategy.aiChat.placeholderRevisePlan' as const;
+
+/** inputHint */
+export const INPUT_HINT_KEY = 'strategy.aiChat.inputHint' as const;
+
+/** strategyNamePrompt */
+export const STRATEGY_NAME_PROMPT_KEY = 'strategy.aiChat.strategyNamePrompt' as const;
+
+/** loadedStrategy */
+export const LOADED_STRATEGY_KEY = 'strategy.aiChat.loadedStrategy' as const;
+
+/** savedStrategy */
+export const SAVED_STRATEGY_KEY = 'strategy.aiChat.savedStrategy' as const;
+
+/** continueMessage */
+export const CONTINUE_MESSAGE_KEY = 'strategy.aiChat.continueMessage' as const;
+
+/** complianceCheck */
+export const COMPLIANCE_CHECK_KEY = 'strategy.aiChat.complianceCheck' as const;
+
+/** backtestLabel */
+export const BACKTEST_LABEL_KEY = 'strategy.aiChat.backtestLabel' as const;
+
+/** passed */
+export const PASSED_KEY = 'strategy.aiChat.passed' as const;
+
 export const STRATEGYAICHAT_KEYS = {
   ai: 'strategy.aiChat.ai',
   analyzing: 'strategy.aiChat.analyzing',
   apply_code: 'strategy.aiChat.applyCode',
   dismiss: 'strategy.aiChat.dismiss',
   feedback: 'strategy.aiChat.feedback',
+  new_conversation: 'strategy.aiChat.newConversation',
+  rename: 'strategy.aiChat.rename',
+  delete: 'strategy.aiChat.delete',
+  cancel: 'strategy.aiChat.cancel',
+  delete_confirm: 'strategy.aiChat.deleteConfirm',
   reset: 'strategy.aiChat.reset',
   review_code: 'strategy.aiChat.reviewCode',
   revise: 'strategy.aiChat.revise',
+  send: 'strategy.aiChat.send',
   streaming: 'strategy.aiChat.streaming',
+  thinking: 'strategy.aiChat.thinking',
   title: 'strategy.aiChat.title',
   you: 'strategy.aiChat.you',
+  history_title: 'strategy.aiChat.historyTitle',
+  no_history: 'strategy.aiChat.noHistory',
+  select_symbol: 'strategy.aiChat.selectSymbol',
+  select_model: 'strategy.aiChat.selectModel',
+  ai_gateway_settings: 'strategy.aiChat.aiGatewaySettings',
+  chat_tab: 'strategy.aiChat.chatTab',
+  history_tab: 'strategy.aiChat.historyTab',
+  strategies_tab: 'strategy.aiChat.strategiesTab',
+  placeholder_describe_strategy: 'strategy.aiChat.placeholderDescribeStrategy',
+  placeholder_modify: 'strategy.aiChat.placeholderModify',
+  placeholder_continue: 'strategy.aiChat.placeholderContinue',
+  placeholder_start: 'strategy.aiChat.placeholderStart',
+  placeholder_revise_plan: 'strategy.aiChat.placeholderRevisePlan',
+  input_hint: 'strategy.aiChat.inputHint',
+  strategy_name_prompt: 'strategy.aiChat.strategyNamePrompt',
+  loaded_strategy: 'strategy.aiChat.loadedStrategy',
+  saved_strategy: 'strategy.aiChat.savedStrategy',
+  continue_message: 'strategy.aiChat.continueMessage',
+  compliance_check: 'strategy.aiChat.complianceCheck',
+  backtest_label: 'strategy.aiChat.backtestLabel',
+  passed: 'strategy.aiChat.passed',
 } as const;
 
 export type StrategyAiChatKey = typeof STRATEGYAICHAT_KEYS[keyof typeof STRATEGYAICHAT_KEYS];

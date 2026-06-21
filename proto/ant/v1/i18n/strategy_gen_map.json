@@ -37,6 +37,8 @@
     "plan_send_btn": "planSendBtn",
     "plan_symbol_warn": "planSymbolWarn",
     "plan_symbol_ok": "planSymbolOk",
+    "plan_hint": "planHint",
+    "plan_input_placeholder": "planInputPlaceholder",
     "plan_prerequisite_msg": "planPrerequisiteMsg",
     "exec_title": "execTitle",
     "exec_running": "execRunning",

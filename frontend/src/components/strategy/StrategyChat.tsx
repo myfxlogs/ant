@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react';
 import { Button, Input, Tag, Typography, Select, Segmented, Popconfirm } from 'antd';
 import { SendOutlined, LoadingOutlined, SettingOutlined, HistoryOutlined, FileTextOutlined, EditOutlined, CheckOutlined, CloseOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { conversate, type ConversateCallbacks } from '@/client/strategyPlan';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
@@ -12,6 +13,7 @@ const AISettingsModal = lazy(() => import('@/pages/strategy/components/workspace
 import { aiGatewayApi } from '@/client/aiGateway';
 import type { ToolResult, BacktestMetricsMsg } from '@/gen/ant/v1/strategy_execution_pb';
 import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
+import { AI_GATEWAY_SETTINGS_KEY, BACKTEST_LABEL_KEY, CANCEL_KEY, CHAT_TAB_KEY, COMPLIANCE_CHECK_KEY, CONTINUE_MESSAGE_KEY, DELETE_CONFIRM_KEY, DELETE_KEY, HISTORY_TAB_KEY, HISTORY_TITLE_KEY, INPUT_HINT_KEY, LOADED_STRATEGY_KEY, NEW_CONVERSATION_KEY, NO_HISTORY_KEY, PASSED_KEY, PLACEHOLDER_CONTINUE_KEY, PLACEHOLDER_DESCRIBE_STRATEGY_KEY, PLACEHOLDER_MODIFY_KEY, PLACEHOLDER_REVISE_PLAN_KEY, PLACEHOLDER_START_KEY, RENAME_KEY, SAVED_STRATEGY_KEY, SELECT_MODEL_KEY, SELECT_SYMBOL_KEY, STRATEGIES_TAB_KEY, STRATEGY_NAME_PROMPT_KEY, THINKING_KEY } from '@/gen/ant/v1/i18n/strategy_ai_chat_keys';
 
 const { TextArea } = Input;
 type TabKey = 'chat' | 'history' | 'strategies';
@@ -29,6 +31,7 @@ async function generateTitle(firstMsg: string): Promise<string> {
   }
 }
 export default function StrategyChat({ symbol, timeframe, sessionId, accountId, onApplyCode }: Props) {
+  const { t } = useTranslation();
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<ChatMsg[]>([]);
@@ -72,7 +75,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
   useEffect(() => { fetchTemplates(); }, []);
   // Fetch conversation list
   const fetchConversations = async () => {
-    try { const list = await aiApi.listConversations(); setConversations(list.map(c => ({ id: c.id, title: c.title || '新对话', created_at: c.createdAt?.toISOString() || '' }))); } catch {}
+    try { const list = await aiApi.listConversations(); setConversations(list.map(c => ({ id: c.id, title: c.title || t(NEW_CONVERSATION_KEY), created_at: c.createdAt?.toISOString() || '' }))); } catch {}
   };
   useEffect(() => { fetchConversations(); }, []);
   // Auto-greet
@@ -115,8 +118,8 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
         onToolCall: () => {},
         onToolResult: (tr: ToolResult) => {
           const icon = tr.success ? '✅' : '❌';
-          const label = tr.name === 'compliance_check' ? '合规检查' : tr.name === 'backtest' ? '回测' : tr.name;
-          const detail = tr.error || (tr.success ? '通过' : '');
+          const label = tr.name === 'compliance_check' ? t(COMPLIANCE_CHECK_KEY) : tr.name === 'backtest' ? t(BACKTEST_LABEL_KEY) : tr.name;
+          const detail = tr.error || (tr.success ? t(PASSED_KEY) : '');
           addMsg('ai', { text: `${icon} ${label}: ${detail}` });
           if (tr.name === 'backtest' && tr.outputJson) try {
             const out = JSON.parse(tr.outputJson);
@@ -132,7 +135,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
           let hasContent = false;
           if (p) { chatMsg.plan = p; hasContent = true; }
           if (c) { chatMsg.code = c; chatMsg.prevCode = pc; hasContent = true; }
-          if (!hasContent) chatMsg.text = '收到，请继续。';
+          if (!hasContent) chatMsg.text = t(CONTINUE_MESSAGE_KEY);
           addMsg('ai', chatMsg);
           setBusy(false);
           // Auto-name after first exchange
@@ -155,13 +158,13 @@ const isFirst = messages.length === 0 && !titleGeneratedRef.current;
   }, [draft, busy, hasSymbol, sessionId, symbol, timeframe, messages.length]);
   const handleLoadTemplate = async (id: string) => {
     const tpl = templates.find(t => t.id === id);
-    if (tpl?.code) { setLoadedTemplateId(id); onApplyCode(tpl.code); addMsg('ai', { text: `📂 已加载策略: ${tpl.name}` }); }
+    if (tpl?.code) { setLoadedTemplateId(id); onApplyCode(tpl.code); addMsg('ai', { text: `${t(LOADED_STRATEGY_KEY)}: ${tpl.name}` }); }
   };
   const handleSendToAI = (code: string, name: string) => {
     codeRef.current = code; prevCodeRef.current = '';
     bumpCodeGen(); onApplyCode(code);
     setLoadedTemplateId(templates.find(t => t.code === code)?.id || '');
-    addMsg('ai', { text: `📂 已加载策略: ${name}`, code, prevCode: codeRef.current });
+    addMsg('ai', { text: `${t(LOADED_STRATEGY_KEY)}: ${name}`, code, prevCode: codeRef.current });
     setTab('chat');
   };
   const handleRenameTemplate = async (id: string, name: string) => {
@@ -183,14 +186,14 @@ const isFirst = messages.length === 0 && !titleGeneratedRef.current;
     const c = codeRef.current; if (!c) return;
     try {
       const { strategyTemplateApi } = await import('@/client/strategy-schedules');
-      const name = prompt('策略名称:'); if (!name) return;
+      const name = prompt(t(STRATEGY_NAME_PROMPT_KEY)); if (!name) return;
       await strategyTemplateApi.create({ name, code: c });
-      fetchTemplates(); addMsg('ai', { text: `✅ 已保存策略: ${name}` });
+      fetchTemplates(); addMsg('ai', { text: `${t(SAVED_STRATEGY_KEY)}: ${name}` });
     } catch {}
   };
   const handleNewConv = async () => {
     try {
-      const conv = await aiApi.createConversation('新对话');
+      const conv = await aiApi.createConversation(t(NEW_CONVERSATION_KEY));
       setActiveConvId(conv.id); setMessages([]);
       planRef.current = ''; codeRef.current = ''; prevCodeRef.current = '';
       titleGeneratedRef.current = false; firstUserMsgRef.current = '';
@@ -226,16 +229,16 @@ const isFirst = messages.length === 0 && !titleGeneratedRef.current;
     if (activeConvId === convId) { setActiveConvId(''); setMessages([]); }
   };
   const getPlaceholder = () => {
-    if (!hasSymbol && messages.length === 0) return '选择品种和周期开始，或从策略模板加载代码';
-    if (messages.length === 0) return '描述你想要的交易策略，例如：\"写一个基于RSI和MACD的趋势跟踪策略\"';
+    if (!hasSymbol && messages.length === 0) return t(PLACEHOLDER_START_KEY);
+    if (messages.length === 0) return t(PLACEHOLDER_DESCRIBE_STRATEGY_KEY);
     const lastAi = [...messages].reverse().find(m => m.role === 'ai');
-    if (lastAi?.code) return '描述你的修改需求，或继续讨论优化方案...';
-    if (lastAi?.plan) return '你可以要求修改计划，或输入 \"生成代码\" 开始实现';
-    return '继续描述你的策略需求...';
+    if (lastAi?.code) return t(PLACEHOLDER_MODIFY_KEY);
+    if (lastAi?.plan) return t(PLACEHOLDER_REVISE_PLAN_KEY);
+    return t(PLACEHOLDER_CONTINUE_KEY);
   };
   const symbolTag = hasSymbol
     ? <Tag color="blue" style={{ fontSize: 12, margin: 0 }}>{symbol} · {timeframe}</Tag>
-    : <Tag color="warning" style={{ fontSize: 12, margin: 0 }}>选择品种</Tag>;
+    : <Tag color="warning" style={{ fontSize: 12, margin: 0 }}>{t(SELECT_SYMBOL_KEY)}</Tag>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#fafbfc' }}>
@@ -247,9 +250,9 @@ const isFirst = messages.length === 0 && !titleGeneratedRef.current;
         {modelOptions.length > 0 && (
           <Select size="small" value={selectedModel || undefined}
             onChange={async (v) => { setSelectedModel(v); const [pid, model] = v.split('|'); try { await aiApi.setPrimary({ providerId: pid, model }); } catch {} }}
-            style={{ width: 160, fontSize: 12 }} options={modelOptions} placeholder="选择模型" />
+            style={{ width: 160, fontSize: 12 }} options={modelOptions} placeholder={t(SELECT_MODEL_KEY)} />
         )}
-        <Button size="small" type="text" icon={<SettingOutlined />} onClick={() => setAiSettingsOpen(true)} style={{ fontSize: 12 }} title="AI 网关设置" />
+        <Button size="small" type="text" icon={<SettingOutlined />} onClick={() => setAiSettingsOpen(true)} style={{ fontSize: 12 }} title={t(AI_GATEWAY_SETTINGS_KEY)} />
         <div style={{ flex: 1 }} />
         {busy && <LoadingOutlined style={{ color: '#1677ff' }} />}
       </div>
@@ -257,7 +260,7 @@ const isFirst = messages.length === 0 && !titleGeneratedRef.current;
       {/* Tabs */}
       <div style={{ flexShrink: 0, padding: '6px 12px', background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
         <Segmented value={tab} onChange={(v) => setTab(v as TabKey)}
-          options={[{ label: '💬 对话', value: 'chat' }, { label: '📜 历史', value: 'history' }, { label: '📋 策略', value: 'strategies' }]}
+          options={[{ label: t(CHAT_TAB_KEY), value: 'chat' }, { label: t(HISTORY_TAB_KEY), value: 'history' }, { label: t(STRATEGIES_TAB_KEY), value: 'strategies' }]}
           block style={{ fontSize: 12 }} />
       </div>
 
@@ -268,14 +271,14 @@ const isFirst = messages.length === 0 && !titleGeneratedRef.current;
             {messages.length === 0 && !busy && (
               <div style={{ textAlign: 'center', color: '#8c8c8c', marginTop: 40, fontSize: 14 }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>🤖</div>
-                告诉我你想创建什么样的交易策略
+                {t(PLACEHOLDER_DESCRIBE_STRATEGY_KEY)}
               </div>
             )}
             {messages.map((m, i) => <ChatMessageItem key={i} msg={m} copied={copied} onCopy={handleCopy} />)}
             {busy && messages.length > 0 && messages[messages.length - 1]?.role === 'user' && (
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <div style={{ width: 28, height: 28, borderRadius: 14, background: '#52c41a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🤖</div>
-                <LoadingOutlined style={{ color: '#1677ff' }} /><span style={{ fontSize: 11, color: '#8c8c8c' }}>思考中...</span>
+                <LoadingOutlined style={{ color: '#1677ff' }} /><span style={{ fontSize: 11, color: '#8c8c8c' }}>{t(THINKING_KEY)}</span>
               </div>
             )}
             <div ref={chatEndRef} />
@@ -289,7 +292,7 @@ const isFirst = messages.length === 0 && !titleGeneratedRef.current;
                 disabled={busy} style={{ fontSize: 13, borderRadius: 8 }} />
               <Button type="primary" icon={<SendOutlined />} onClick={handleSend} loading={busy} disabled={!draft.trim() || busy} style={{ borderRadius: 8, flexShrink: 0 }} />
             </div>
-            <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>Enter 发送 · Shift+Enter 换行</div>
+            <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>{t(INPUT_HINT_KEY)}</div>
             <WorkflowBar
               codeRef={codeRef} busy={busy} hasSymbol={hasSymbol} accountId={accountId}
               symbol={symbol} timeframe={timeframe} templates={templates} codeGenKey={codeGenKey}
@@ -301,8 +304,8 @@ const isFirst = messages.length === 0 && !titleGeneratedRef.current;
         {tab === 'history' && (
           <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <Typography.Text style={{ fontSize: 13, fontWeight: 600 }}><HistoryOutlined style={{ marginRight: 6 }} />历史对话</Typography.Text>
-              <Button size="small" type="primary" onClick={handleNewConv}>+ 新建对话</Button>
+              <Typography.Text style={{ fontSize: 13, fontWeight: 600 }}><HistoryOutlined style={{ marginRight: 6 }} />{t(HISTORY_TITLE_KEY)}</Typography.Text>
+              <Button size="small" type="primary" onClick={handleNewConv}>+ {t(NEW_CONVERSATION_KEY)}</Button>
             </div>
             {conversations.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -333,21 +336,21 @@ const isFirst = messages.length === 0 && !titleGeneratedRef.current;
                         <Button size="small" type="text" icon={<EditOutlined style={{ fontSize: 11 }} />}
                           onClick={(e) => { e.stopPropagation(); handleStartRename(conv.id, conv.title); }}
                           style={{ color: '#8c8c8c', padding: '0 2px', flexShrink: 0 }}
-                          title="重命名" />
-                        <Popconfirm title="确定删除此对话？" okText="删除" cancelText="取消"
+                          title={t(RENAME_KEY)} />
+                        <Popconfirm title={t(DELETE_CONFIRM_KEY)} okText={t(DELETE_KEY)} cancelText={t(CANCEL_KEY)}
                           okButtonProps={{ danger: true }}
                           onConfirm={() => handleDeleteConv(conv.id)}>
                           <Button size="small" type="text" icon={<DeleteOutlined style={{ fontSize: 11 }} />}
                             onClick={(e) => e.stopPropagation()}
                             style={{ color: '#ff4d4f', padding: '0 2px', flexShrink: 0 }}
-                            title="删除" />
+                            title={t(DELETE_KEY)} />
                         </Popconfirm>
                       </>
                     )}
                   </div>
                 ))}
               </div>
-            ) : <div style={{ fontSize: 13, color: '#8c8c8c', textAlign: 'center', padding: '40px 0' }}>暂无历史对话</div>}
+            ) : <div style={{ fontSize: 13, color: '#8c8c8c', textAlign: 'center', padding: '40px 0' }}>{t(NO_HISTORY_KEY)}</div>}
           </div>
         )}
 

@@ -45,6 +45,8 @@ const StrategyGen = {
       "planSendBtn": "Analyze & Generate Plan",
       "planSymbolWarn": "⚠️ Please select symbol and timeframe above first",
       "planSymbolOk": "{symbol} · {timeframe}",
+      "planHint": "You can discuss this plan, or say \"generate code\" to start implementing.",
+      "planInputPlaceholder": "Share your thoughts...",
       "planPrerequisiteMsg": "Please select a trading symbol (e.g. EURUSD) and timeframe (e.g. 1H) in the toolbar above before generating a strategy. Without them, backtesting is impossible.",
       "execTitle": "AI Executing",
       "execRunning": "Running",
