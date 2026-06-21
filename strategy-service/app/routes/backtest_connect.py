@@ -90,6 +90,7 @@ async def run_backtest_connect(request: Request):
             return _respond(resp, request)
 
         m = result.metrics
+        ic = req.initial_capital or 10000.0
         resp.metrics.CopyFrom(ExecuteBacktestMetrics(
             total_return=m.total_return, annual_return=m.annual_return,
             max_drawdown=m.max_drawdown, sharpe_ratio=m.sharpe_ratio,
@@ -97,6 +98,7 @@ async def run_backtest_connect(request: Request):
             total_trades=m.total_trades, winning_trades=m.winning_trades,
             losing_trades=m.losing_trades, average_profit=m.average_profit,
             average_loss=m.average_loss,
+            total_pnl_absolute=ic * m.total_return,
         ))
 
         ra = result.risk_assessment

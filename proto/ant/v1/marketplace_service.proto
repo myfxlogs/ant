@@ -2,6 +2,8 @@ syntax = "proto3";
 package ant.v1;
 option go_package = "anttrader/gen/proto/ant/v1;antv1";
 import "google/protobuf/timestamp.proto";
+import "backtest_execution_config.proto";
+import "backtest_run_query.proto";
 
 service MarketplaceService {
   rpc PublishStrategy(PublishStrategyRequest) returns (PublishStrategyResponse);
@@ -17,6 +19,10 @@ service MarketplaceService {
   rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
   // Admin
   rpc SetStrategyPricing(SetStrategyPricingRequest) returns (SetStrategyPricingResponse);
+  // Backtest — runs backtest for a marketplace-published strategy.
+  // Strategy code is resolved server-side; client never sees it.
+  // Returns a server stream of BacktestRunUpdate for real-time progress.
+  rpc RunMarketBacktest(RunMarketBacktestRequest) returns (stream BacktestRunUpdate);
 }
 
 message PublishStrategyRequest {
@@ -32,6 +38,22 @@ message PublishStrategyRequest {
   string timeframe = 9;
   string risk_level = 10;
   repeated string tags = 11;
+  // Code protection: publisher-visible only.
+  string code_snippet = 16;  // optional public code preview set by publisher
+  BacktestSnapshot backtest_snapshot = 17;  // snapshot of backtest results at publish time
+}
+
+// BacktestSnapshot holds key backtest metrics at publish time.
+message BacktestSnapshot {
+  double total_return = 1;
+  double annual_return = 2;
+  double max_drawdown = 3;
+  double sharpe_ratio = 4;
+  double win_rate = 5;
+  int32 total_trades = 6;
+  string symbol = 7;
+  string timeframe = 8;
+  google.protobuf.Timestamp snapshot_at = 9;
 }
 message PublishStrategyResponse {
   string publish_id = 1;
@@ -98,6 +120,9 @@ message PublishedStrategy {
   double total_pnl = 17;
   double avg_rating = 18;
   int32 rating_count = 19;
+  // Code protection & performance
+  string code_snippet = 22;  // publisher-provided public code preview
+  BacktestSnapshot backtest_snapshot = 23;  // snapshot of backtest results
 }
 
 message ListSubscriptionsRequest {
@@ -189,4 +214,16 @@ message SetStrategyPricingResponse {
   string strategy_id = 1;
   string price_model = 2;
   double price_amount = 3;
+}
+
+// --- Marketplace Backtest ---
+
+message RunMarketBacktestRequest {
+  string strategy_id = 1;   // strategy_template.id
+  string symbol = 2;
+  string timeframe = 3;
+  int64 start_date_ms = 4;  // Unix milliseconds
+  int64 end_date_ms = 5;    // Unix milliseconds
+  double initial_capital = 6;
+  BacktestExecutionConfig execution_config = 7;
 }

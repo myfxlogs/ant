@@ -124,16 +124,23 @@ export function useLibraryTemplates() {
     }
   }, [selectedId, fetchTemplates, t]);
 
-  const handlePublish = useCallback(async (id: string) => {
-    setPublishing(true);
-    try {
-      await strategyTemplateApi.update({ id, isPublic: true });
-      message.success(t(PUBLISH_SUCCESS_KEY));
-      fetchTemplates();
-      queryClient.invalidateQueries({ queryKey: ['marketplace'] });
-    } catch { message.error(t('common.saveFailed')); }
-    finally { setPublishing(false); }
-  }, [fetchTemplates, t, queryClient]);
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [publishingTemplate, setPublishingTemplate] = useState<StrategyTemplate | null>(null);
+
+  const openPublishModal = useCallback((tpl: StrategyTemplate) => {
+    setPublishingTemplate(tpl);
+    setPublishModalOpen(true);
+  }, []);
+
+  const closePublishModal = useCallback(() => {
+    setPublishingTemplate(null);
+    setPublishModalOpen(false);
+  }, []);
+
+  const handlePublish = useCallback((id: string) => {
+    const tpl = allTemplates.find(t => String(t.id) === id);
+    if (tpl) openPublishModal(tpl);
+  }, [allTemplates, openPublishModal]);
 
   const handleUnpublish = useCallback(async (id: string) => {
     setPublishing(true);
@@ -154,5 +161,8 @@ export function useLibraryTemplates() {
     codeValidating, lastValidatedCode, setLastValidatedCode,
     publishing, fetchTemplates, openCreate, openEdit, handleSaveAsMine, handleSave, handleDelete,
     handlePublish, handleUnpublish,
+    // Marketplace publish modal
+    publishModalOpen, setPublishModalOpen, publishingTemplate,
+    openPublishModal, closePublishModal,
   };
 }

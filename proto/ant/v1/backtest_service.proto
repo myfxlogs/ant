@@ -102,6 +102,7 @@ message ExecuteBacktestMetrics {
   int32 losing_trades = 9;
   double average_profit = 10;
   double average_loss = 11;
+  double total_pnl_absolute = 12;  // absolute PnL (initial_capital * total_return)
 }
 
 message ExecuteRiskAssessment {
@@ -111,3 +112,4 @@ message ExecuteRiskAssessment {
   repeated string warnings = 4;
   bool is_reliable = 5;
 }
+

@@ -65,6 +65,17 @@ func (s *stubMarketplaceSvc) ListSubscriptions(_ context.Context, _ string) ([]m
 	return s.subs, s.err
 }
 func (s *stubMarketplaceSvc) SetPricing(_ context.Context, _, _ string, _ float64) error { return s.err }
+func (s *stubMarketplaceSvc) CanAccessCode(_ context.Context, _, _ string) (bool, error) {
+	if s.err != nil { return false, s.err }
+	return true, nil
+}
+func (s *stubMarketplaceSvc) StartMarketBacktest(_ context.Context, _ marketplace.StartBacktestParams) (string, error) {
+	return "run-1", s.err
+}
+func (s *stubMarketplaceSvc) QueryBacktestRun(_ context.Context, _ uuid.UUID) (*marketplace.BacktestRunSnapshot, error) {
+	if s.err != nil { return nil, s.err }
+	return &marketplace.BacktestRunSnapshot{Status: "RUNNING"}, nil
+}
 
 type stubAdminChecker struct{ isAdmin bool }
 

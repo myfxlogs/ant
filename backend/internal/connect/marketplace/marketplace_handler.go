@@ -2,6 +2,7 @@ package marketplace
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -15,6 +16,7 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/marketplace"
+	"anttrader/internal/pglisten"
 )
 
 // marketplaceSvc is the local interface for marketplace business logic.
@@ -31,13 +33,17 @@ type marketplaceSvc interface {
 	PurchaseStrategy(ctx context.Context, userID, strategyID, publisherUserID string) (*marketplace.PurchaseResult, error)
 	ListSubscriptions(ctx context.Context, userID string) ([]marketplace.SubscriptionItem, error)
 	SetPricing(ctx context.Context, strategyID, priceModel string, priceAmount float64) error
+	CanAccessCode(ctx context.Context, userID, strategyID string) (bool, error)
+	StartMarketBacktest(ctx context.Context, params marketplace.StartBacktestParams) (string, error)
+	QueryBacktestRun(ctx context.Context, runID uuid.UUID) (*marketplace.BacktestRunSnapshot, error)
 }
 
 // MarketplaceServer implements ant.v1.MarketplaceServiceHandler.
 type MarketplaceServer struct {
-	svc   marketplaceSvc
-	admin interceptor.AdminChecker
-	log   *zap.Logger
+	svc      marketplaceSvc
+	admin    interceptor.AdminChecker
+	log      *zap.Logger
+	pgListen *pglisten.Listener // Push-First: PG LISTEN for backtest status updates
 }
 
 var _ antv1c.MarketplaceServiceHandler = (*MarketplaceServer)(nil)
@@ -46,20 +52,32 @@ func NewMarketplaceServer(svc marketplaceSvc, admin interceptor.AdminChecker, lo
 	return &MarketplaceServer{svc: svc, admin: admin, log: log}
 }
 
+// SetPgListen injects the PG listener for push-first SSE streaming.
+func (s *MarketplaceServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
+
 func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Request[antv1.PublishStrategyRequest]) (*connect.Response[antv1.PublishStrategyResponse], error) {
 	m := req.Msg
+	// Serialize backtest snapshot to JSON if present.
+	snapshotJSON := ""
+	if m.BacktestSnapshot != nil {
+		if b, err := json.Marshal(m.BacktestSnapshot); err == nil {
+			snapshotJSON = string(b)
+		}
+	}
 	id, err := s.svc.Publish(ctx, marketplace.PublishParams{
-		UserID:      m.UserId,
-		StrategyID:  m.StrategyId,
-		Title:       m.Title,
-		Description: m.Description,
-		PriceModel:  m.PriceModel,
-		PriceAmount: m.PriceAmount,
-		AssetClass:  m.AssetClass,
-		Symbols:     m.Symbols,
-		Timeframe:   m.Timeframe,
-		RiskLevel:   m.RiskLevel,
-		Tags:        m.Tags,
+		UserID:              m.UserId,
+		StrategyID:          m.StrategyId,
+		Title:               m.Title,
+		Description:         m.Description,
+		PriceModel:          m.PriceModel,
+		PriceAmount:         m.PriceAmount,
+		AssetClass:          m.AssetClass,
+		Symbols:             m.Symbols,
+		Timeframe:           m.Timeframe,
+		RiskLevel:           m.RiskLevel,
+		Tags:                m.Tags,
+		CodeSnippet:         m.CodeSnippet,
+		BacktestSnapshotJSON: snapshotJSON,
 	})
 	if err != nil {
 		s.log.Error("PublishStrategy", zap.Error(err))
@@ -147,6 +165,21 @@ func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Requ
 		}
 		if p.TotalPnL != nil {
 			item.TotalPnl = *p.TotalPnL
+		}
+		if p.CodeSnippet != "" {
+			item.CodeSnippet = p.CodeSnippet
+		}
+		if p.BacktestSnapshot != nil {
+			item.BacktestSnapshot = &antv1.BacktestSnapshot{
+				TotalReturn:  p.BacktestSnapshot.TotalReturn,
+				AnnualReturn: p.BacktestSnapshot.AnnualReturn,
+				MaxDrawdown:  p.BacktestSnapshot.MaxDrawdown,
+				SharpeRatio:  p.BacktestSnapshot.SharpeRatio,
+				WinRate:      p.BacktestSnapshot.WinRate,
+				TotalTrades:  p.BacktestSnapshot.TotalTrades,
+				Symbol:       p.BacktestSnapshot.Symbol,
+				Timeframe:    p.BacktestSnapshot.Timeframe,
+			}
 		}
 			item.AvgRating = p.AvgRating
 			item.RatingCount = p.RatingCount
@@ -247,4 +280,55 @@ func (s *MarketplaceServer) SetStrategyPricing(ctx context.Context, req *connect
 	return connect.NewResponse(&antv1.SetStrategyPricingResponse{
 		StrategyId: m.StrategyId, PriceModel: m.PriceModel, PriceAmount: m.PriceAmount,
 	}), nil
+}
+
+// --- Marketplace Backtest ---
+
+func (s *MarketplaceServer) RunMarketBacktest(ctx context.Context, req *connect.Request[antv1.RunMarketBacktestRequest], stream *connect.ServerStream[antv1.BacktestRunUpdate]) error {
+	m := req.Msg
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+
+	dir := "both"
+	if m.ExecutionConfig != nil {
+		switch m.ExecutionConfig.TradeDirection {
+		case antv1.TradeDirection_TRADE_DIRECTION_LONG:
+			dir = "long"
+		case antv1.TradeDirection_TRADE_DIRECTION_SHORT:
+			dir = "short"
+		}
+	}
+	params := marketplace.StartBacktestParams{
+		UserID:         userID,
+		StrategyID:     m.StrategyId,
+		Symbol:         m.Symbol,
+		Timeframe:      m.Timeframe,
+		StartDateMs:    m.StartDateMs,
+		EndDateMs:      m.EndDateMs,
+		InitialCapital: m.InitialCapital,
+		TradeDirection: dir,
+	}
+	if m.ExecutionConfig != nil {
+		params.Commission = m.ExecutionConfig.Commission
+		params.Slippage = m.ExecutionConfig.Slippage
+		params.Leverage = m.ExecutionConfig.Leverage
+	}
+	runID, err := s.svc.StartMarketBacktest(ctx, params)
+	if err != nil {
+		s.log.Error("RunMarketBacktest", zap.Error(err))
+		msg := err.Error()
+		if strings.Contains(msg, "access denied") {
+			return connect.NewError(connect.CodePermissionDenied, err)
+		}
+		if strings.Contains(msg, "not found") {
+			return connect.NewError(connect.CodeNotFound, err)
+		}
+		return connect.NewError(connect.CodeInternal, err)
+	}
+
+	// Stream backtest progress via SSE using the existing PG listen mechanism.
+	runUUID, _ := uuid.Parse(runID)
+	return s.streamBacktestProgress(ctx, runUUID, stream)
 }

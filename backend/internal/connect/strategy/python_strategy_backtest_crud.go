@@ -11,43 +11,16 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	antv1 "anttrader/gen/proto/ant/v1"
+	"anttrader/internal/backtest"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/pkg/ptr"
 	"anttrader/internal/repository"
 )
 
 
-// validateBacktestRun clamps backtest run parameters to safe ranges.
-// Backend is the final authority on value validation.
+// validateBacktestRun delegates to the shared backtest.ApplyDefaults.
 func validateBacktestRun(run *repository.BacktestRun) {
-	if run.Mode == "" {
-		run.Mode = "KLINE_RANGE"
-	}
-	if run.Commission == nil || *run.Commission == 0 {
-		run.Commission = ptr.F64(0.001)
-	}
-	if run.Commission != nil && (*run.Commission < 0 || *run.Commission > 10) {
-		run.Commission = ptr.F64(0.001)
-	}
-	if run.Slippage != nil && (*run.Slippage < 0 || *run.Slippage > 10) {
-		run.Slippage = ptr.F64(0)
-	}
-	if run.Leverage == nil || *run.Leverage == 0 {
-		run.Leverage = ptr.F64(1)
-	}
-	if run.Leverage != nil && *run.Leverage < 1 {
-		run.Leverage = ptr.F64(1)
-	}
-	if run.TradeDirection == nil || *run.TradeDirection == "" {
-		run.TradeDirection = ptr.Str("both")
-	}
-	if run.StrictMode == nil {
-		t := true
-		run.StrictMode = &t
-	}
-	if run.ExtraSymbols == nil {
-		run.ExtraSymbols = []string{}
-	}
+	backtest.ApplyDefaults(run)
 }
 
 func (s *PythonStrategyServer) StartBacktestRun(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) (*connect.Response[antv1.StartBacktestRunResponse], error) {

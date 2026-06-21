@@ -14,6 +14,11 @@ import (
 	"anttrader/internal/pglisten"
 )
 
+// CodeAccessChecker checks whether a user can view full strategy code.
+type CodeAccessChecker interface {
+	CanAccessCode(ctx context.Context, userID, strategyID string) (bool, error)
+}
+
 type StrategyServer struct {
 	svc            *service.StrategySvc
 	backtestClient antv1c.BacktestServiceClient   // ConnectRPC to Python BacktestService
@@ -21,7 +26,11 @@ type StrategyServer struct {
 	log            *zap.Logger
 	pgListen       *pglisten.Listener
 	engine         *ScheduleEngine
+	codeAccess     CodeAccessChecker // marketplace code-access checks
 }
+
+// SetCodeAccessChecker injects the marketplace service for code protection.
+func (s *StrategyServer) SetCodeAccessChecker(c CodeAccessChecker) { s.codeAccess = c }
 
 var _ antv1c.StrategyServiceHandler = (*StrategyServer)(nil)
 

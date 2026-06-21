@@ -277,6 +277,9 @@ func (s *PythonStrategyServer) saveBacktestResult(ctx context.Context, run *repo
 
 	s.persistBacktestTrades(ctx, run.ID, result.GetTrades())
 
+	// Sync performance metrics to marketplace_strategies if published.
+	s.syncMarketplacePerformance(ctx, run, result)
+
 	s.log.Info("backtest worker: run completed", zap.String("runID", run.ID.String()),
 		zap.Float64("total_return", result.GetMetrics().GetTotalReturn()),
 		zap.Float64("sharpe", result.GetMetrics().GetSharpeRatio()))
@@ -325,6 +328,29 @@ func (s *PythonStrategyServer) failRun(ctx context.Context, run *repository.Back
 			fmt.Sprintf("Backtest Failed: %s %s", run.Symbol, run.Timeframe),
 			errMsg,
 			string(data))
+	}
+}
+
+// syncMarketplacePerformance updates marketplace_strategies with the latest backtest
+// metrics when the run is associated with a published strategy template.
+func (s *PythonStrategyServer) syncMarketplacePerformance(ctx context.Context, run *repository.BacktestRun, result *antv1.ExecuteBacktestResponse) {
+	if run.TemplateID == nil {
+		return
+	}
+	m := result.GetMetrics()
+	// Use total_pnl_absolute (correct absolute PnL), fall back to total_return percentage.
+	pnl := m.GetTotalPnlAbsolute()
+	if pnl == 0 {
+		pnl = m.GetTotalReturn() // legacy: percentage as proxy
+	}
+	_, err := s.backtestRepo.DB().Exec(ctx,
+		`UPDATE marketplace_strategies SET win_rate = $1, total_pnl = $2, updated_at = now()
+		 WHERE strategy_id = $3`,
+		m.GetWinRate(), pnl, *run.TemplateID,
+	)
+	if err != nil {
+		s.log.Debug("marketplace sync: template not published or update failed",
+			zap.String("template_id", run.TemplateID.String()), zap.Error(err))
 	}
 }
 

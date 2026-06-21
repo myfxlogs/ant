@@ -66,6 +66,9 @@ const (
 	// MarketplaceServiceSetStrategyPricingProcedure is the fully-qualified name of the
 	// MarketplaceService's SetStrategyPricing RPC.
 	MarketplaceServiceSetStrategyPricingProcedure = "/ant.v1.MarketplaceService/SetStrategyPricing"
+	// MarketplaceServiceRunMarketBacktestProcedure is the fully-qualified name of the
+	// MarketplaceService's RunMarketBacktest RPC.
+	MarketplaceServiceRunMarketBacktestProcedure = "/ant.v1.MarketplaceService/RunMarketBacktest"
 )
 
 // MarketplaceServiceClient is a client for the ant.v1.MarketplaceService service.
@@ -83,6 +86,10 @@ type MarketplaceServiceClient interface {
 	ListComments(context.Context, *connect.Request[v1.ListCommentsRequest]) (*connect.Response[v1.ListCommentsResponse], error)
 	// Admin
 	SetStrategyPricing(context.Context, *connect.Request[v1.SetStrategyPricingRequest]) (*connect.Response[v1.SetStrategyPricingResponse], error)
+	// Backtest — runs backtest for a marketplace-published strategy.
+	// Strategy code is resolved server-side; client never sees it.
+	// Returns a server stream of BacktestRunUpdate for real-time progress.
+	RunMarketBacktest(context.Context, *connect.Request[v1.RunMarketBacktestRequest]) (*connect.ServerStreamForClient[v1.BacktestRunUpdate], error)
 }
 
 // NewMarketplaceServiceClient constructs a client for the ant.v1.MarketplaceService service. By
@@ -162,6 +169,12 @@ func NewMarketplaceServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(marketplaceServiceMethods.ByName("SetStrategyPricing")),
 			connect.WithClientOptions(opts...),
 		),
+		runMarketBacktest: connect.NewClient[v1.RunMarketBacktestRequest, v1.BacktestRunUpdate](
+			httpClient,
+			baseURL+MarketplaceServiceRunMarketBacktestProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("RunMarketBacktest")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -178,6 +191,7 @@ type marketplaceServiceClient struct {
 	commentOnStrategy  *connect.Client[v1.CommentOnStrategyRequest, v1.CommentOnStrategyResponse]
 	listComments       *connect.Client[v1.ListCommentsRequest, v1.ListCommentsResponse]
 	setStrategyPricing *connect.Client[v1.SetStrategyPricingRequest, v1.SetStrategyPricingResponse]
+	runMarketBacktest  *connect.Client[v1.RunMarketBacktestRequest, v1.BacktestRunUpdate]
 }
 
 // PublishStrategy calls ant.v1.MarketplaceService.PublishStrategy.
@@ -235,6 +249,11 @@ func (c *marketplaceServiceClient) SetStrategyPricing(ctx context.Context, req *
 	return c.setStrategyPricing.CallUnary(ctx, req)
 }
 
+// RunMarketBacktest calls ant.v1.MarketplaceService.RunMarketBacktest.
+func (c *marketplaceServiceClient) RunMarketBacktest(ctx context.Context, req *connect.Request[v1.RunMarketBacktestRequest]) (*connect.ServerStreamForClient[v1.BacktestRunUpdate], error) {
+	return c.runMarketBacktest.CallServerStream(ctx, req)
+}
+
 // MarketplaceServiceHandler is an implementation of the ant.v1.MarketplaceService service.
 type MarketplaceServiceHandler interface {
 	PublishStrategy(context.Context, *connect.Request[v1.PublishStrategyRequest]) (*connect.Response[v1.PublishStrategyResponse], error)
@@ -250,6 +269,10 @@ type MarketplaceServiceHandler interface {
 	ListComments(context.Context, *connect.Request[v1.ListCommentsRequest]) (*connect.Response[v1.ListCommentsResponse], error)
 	// Admin
 	SetStrategyPricing(context.Context, *connect.Request[v1.SetStrategyPricingRequest]) (*connect.Response[v1.SetStrategyPricingResponse], error)
+	// Backtest — runs backtest for a marketplace-published strategy.
+	// Strategy code is resolved server-side; client never sees it.
+	// Returns a server stream of BacktestRunUpdate for real-time progress.
+	RunMarketBacktest(context.Context, *connect.Request[v1.RunMarketBacktestRequest], *connect.ServerStream[v1.BacktestRunUpdate]) error
 }
 
 // NewMarketplaceServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -325,6 +348,12 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 		connect.WithSchema(marketplaceServiceMethods.ByName("SetStrategyPricing")),
 		connect.WithHandlerOptions(opts...),
 	)
+	marketplaceServiceRunMarketBacktestHandler := connect.NewServerStreamHandler(
+		MarketplaceServiceRunMarketBacktestProcedure,
+		svc.RunMarketBacktest,
+		connect.WithSchema(marketplaceServiceMethods.ByName("RunMarketBacktest")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.MarketplaceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case MarketplaceServicePublishStrategyProcedure:
@@ -349,6 +378,8 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 			marketplaceServiceListCommentsHandler.ServeHTTP(w, r)
 		case MarketplaceServiceSetStrategyPricingProcedure:
 			marketplaceServiceSetStrategyPricingHandler.ServeHTTP(w, r)
+		case MarketplaceServiceRunMarketBacktestProcedure:
+			marketplaceServiceRunMarketBacktestHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -400,4 +431,8 @@ func (UnimplementedMarketplaceServiceHandler) ListComments(context.Context, *con
 
 func (UnimplementedMarketplaceServiceHandler) SetStrategyPricing(context.Context, *connect.Request[v1.SetStrategyPricingRequest]) (*connect.Response[v1.SetStrategyPricingResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.SetStrategyPricing is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) RunMarketBacktest(context.Context, *connect.Request[v1.RunMarketBacktestRequest], *connect.ServerStream[v1.BacktestRunUpdate]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.RunMarketBacktest is not implemented"))
 }

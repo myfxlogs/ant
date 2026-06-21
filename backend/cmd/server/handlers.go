@@ -220,9 +220,11 @@ func registerHandlers(
 
 	strategySvc := service.NewStrategySvc(pool)
 	strategyServer := strategy.NewStrategyServer(strategySvc, log)
+	strategyServer.SetCodeAccessChecker(mktplaceSvc) // marketplace code protection
 	strategy.SetProtoLog(log)
 	pgListen := pglisten.New(pool, log)
 	strategyServer.SetPgListen(pgListen)
+	mktplaceHandler.SetPgListen(pgListen) // marketplace SSE streaming
 	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	// Paper trading + notification deps created early — both needed by PythonStrategyServer config.

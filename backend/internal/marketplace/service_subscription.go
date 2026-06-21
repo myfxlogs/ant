@@ -79,3 +79,32 @@ func (s *Service) ListSubscriptions(ctx context.Context, userID string) ([]Subsc
 	}
 	return out, rows.Err()
 }
+
+// CanAccessCode returns true if the user can view the full strategy code.
+// Access is granted if the user is the template owner OR has an active
+// subscription/purchase to the published strategy.
+func (s *Service) CanAccessCode(ctx context.Context, userID, strategyID string) (bool, error) {
+	// Check if user is the template owner.
+	var ownerID string
+	err := s.pg.QueryRow(ctx,
+		`SELECT user_id::text FROM strategy_templates WHERE id::text = $1`,
+		strategyID,
+	).Scan(&ownerID)
+	if err != nil {
+		return false, nil // template not found → deny
+	}
+	if ownerID == userID {
+		return true, nil // owner always has access
+	}
+
+	// Check if user has an active subscription.
+	var exists bool
+	err = s.pg.QueryRow(ctx,
+		`SELECT EXISTS(SELECT 1 FROM user_subscriptions WHERE subscriber_user_id::text = $1 AND target_strategy_id = $2 AND active = true)`,
+		userID, strategyID,
+	).Scan(&exists)
+	if err != nil {
+		return false, nil
+	}
+	return exists, nil
+}

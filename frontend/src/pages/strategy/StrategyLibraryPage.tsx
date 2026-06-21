@@ -10,6 +10,7 @@ import { LibraryProvider } from './LibraryContext';
 import LibraryLeftPanel from './components/library/LibraryLeftPanel';
 import LibraryRightPanel from './components/library/LibraryRightPanel';
 import WorkspaceErrorBoundary from './components/workspace/WorkspaceErrorBoundary';
+import PublishToMarketModal from './components/PublishToMarketModal';
 import type { StrategyTemplate } from '@/client/strategy';
 
 const StrategyTemplateEditModal = lazy(() => import('./StrategyTemplateEditModal').then(m => ({ default: m.StrategyTemplateEditModal })));
@@ -37,6 +38,10 @@ function LibraryUI() {
     openCreate: tCtx.openCreate, openEdit: (tpl: StrategyTemplate) => { tCtx.openEdit(tpl); editForm.setFieldsValue({ name: tpl.name, description: tpl.description, code: (tpl as any).code, isPublic: (tpl as any).isPublic }); },
     handleDelete: tCtx.handleDelete, handlePublish: tCtx.handlePublish, handleUnpublish: tCtx.handleUnpublish,
     handleSaveAsMine: tCtx.handleSaveAsMine,
+    // Marketplace publish
+    publishModalOpen: tCtx.publishModalOpen, setPublishModalOpen: tCtx.setPublishModalOpen,
+    publishingTemplate: tCtx.publishingTemplate,
+    openPublishModal: tCtx.openPublishModal, closePublishModal: tCtx.closePublishModal,
     editOpen: tCtx.editOpen, setEditOpen: tCtx.setEditOpen,
     editing: tCtx.editing, setEditing: tCtx.setEditing,
     codeValidating: tCtx.codeValidating, lastValidatedCode: tCtx.lastValidatedCode, setLastValidatedCode: tCtx.setLastValidatedCode,
@@ -114,6 +119,13 @@ function LibraryUI() {
             onClose={() => rCtx.setDrawerOpen(false)} onCancel={() => rCtx.setDrawerOpen(false)} />
         )}
       </Suspense>
+
+      <PublishToMarketModal
+        open={tCtx.publishModalOpen}
+        template={tCtx.publishingTemplate}
+        onClose={tCtx.closePublishModal}
+        onPublished={() => { tCtx.fetchTemplates(); }}
+      />
     </LibraryProvider>
   );
 }

@@ -26,6 +26,11 @@ export interface LibraryCtx {
   handleDelete: (id: string) => void;
   handlePublish: (id: string) => void;
   handleUnpublish: (id: string) => void;
+  // Marketplace publish
+  publishModalOpen: boolean; setPublishModalOpen: (v: boolean) => void;
+  publishingTemplate: StrategyTemplate | null;
+  openPublishModal: (tpl: StrategyTemplate) => void;
+  closePublishModal: () => void;
   // CRUD modal
   editOpen: boolean; setEditOpen: (v: boolean) => void;
   editing: StrategyTemplate | null; setEditing: (tpl: StrategyTemplate | null) => void;

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Modal, Descriptions, Tag, Button, Typography, Space, Divider, Input, List, Spin, Rate } from 'antd';
-import { ShoppingCartOutlined, DownloadOutlined, UserOutlined } from '@ant-design/icons';
+import { ShoppingCartOutlined, DownloadOutlined, UserOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useMarketplaceCtx } from '../MarketplaceContext';
 import { useStrategyDiscussion } from '../hooks/useStrategyDiscussion';
@@ -16,6 +16,7 @@ interface Props {
   onClose: () => void;
   onGetFree: (s: PublishedStrategy) => void;
   onBuy: (s: PublishedStrategy) => void;
+  onRunBacktest?: (s: PublishedStrategy) => void;
 }
 
 function priceText(s: PublishedStrategy, t: (k: string) => string): string {
@@ -233,9 +234,14 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, onClo
       <Divider />
 
       {/* Action buttons */}
-      <div style={{ textAlign: 'right' }}>
+      <div style={{ textAlign: 'right', display: 'flex', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
         {isPurchased ? (
-          <Tag color="green" style={{ padding: '4px 16px', fontSize: 14 }}>{t('marketplace.card.owned')}</Tag>
+          <>
+            <Tag color="green" style={{ padding: '4px 16px', fontSize: 14 }}>{t('marketplace.card.owned')}</Tag>
+            <Button type="primary" icon={<ThunderboltOutlined />} onClick={() => onRunBacktest?.(strategy)}>
+              {t('marketplace.detail.runBacktest', 'Run Backtest')}
+            </Button>
+          </>
         ) : isFree ? (
           <Button type="primary" icon={<DownloadOutlined />} size="large" onClick={() => onGetFree(strategy)}>
             {t('marketplace.detail.getFree')}

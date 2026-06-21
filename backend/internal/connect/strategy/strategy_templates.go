@@ -31,9 +31,20 @@ func (s *StrategyServer) GetTemplate(ctx context.Context, req *connect.Request[a
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	row, err := s.svc.GetTemplate(ctx, id, s.userID(ctx))
+	userID := s.userID(ctx)
+	row, err := s.svc.GetTemplate(ctx, id, userID)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	// Code protection: if template is published to marketplace, only owner/purchaser
+	// can see the full code. Others get an empty/masked code.
+	if s.codeAccess != nil && row.Code != "" {
+		allowed, checkErr := s.codeAccess.CanAccessCode(ctx, userID.String(), req.Msg.Id)
+		if checkErr == nil && !allowed {
+			// Return template metadata but mask the code.
+			row.Code = "# This strategy is published in the marketplace.\n# Purchase or subscribe to unlock full access.\n"
+		}
+		// If checkErr != nil, the template is probably not published — allow full access.
 	}
 	return connect.NewResponse(templateRowToProto(row)), nil
 }

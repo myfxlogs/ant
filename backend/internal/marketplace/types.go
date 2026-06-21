@@ -3,6 +3,7 @@ package marketplace
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -22,41 +23,84 @@ func New(pg *pgxpool.Pool) *Service {
 
 // PublishParams carries the full strategy metadata for publishing.
 type PublishParams struct {
-	UserID      string
-	StrategyID  string
-	Title       string
-	Description string
-	PriceModel  string
-	PriceAmount float64
-	AssetClass  string
-	Symbols     []string
-	Timeframe   string
-	RiskLevel   string
-	Tags        []string
+	UserID              string
+	StrategyID          string
+	Title               string
+	Description         string
+	PriceModel          string
+	PriceAmount         float64
+	AssetClass          string
+	Symbols             []string
+	Timeframe           string
+	RiskLevel           string
+	Tags                []string
+	CodeSnippet         string // optional public code preview set by publisher
+	BacktestSnapshotJSON string // optional JSON-serialized backtest snapshot
+}
+
+// BacktestSnapshot holds key backtest metrics at publish time.
+type BacktestSnapshot struct {
+	TotalReturn  float64 `json:"total_return"`
+	AnnualReturn float64 `json:"annual_return"`
+	MaxDrawdown  float64 `json:"max_drawdown"`
+	SharpeRatio  float64 `json:"sharpe_ratio"`
+	WinRate      float64 `json:"win_rate"`
+	TotalTrades  int32   `json:"total_trades"`
+	Symbol       string  `json:"symbol"`
+	Timeframe    string  `json:"timeframe"`
 }
 
 // PublishedStrategy represents a strategy listed in the marketplace
 // with full metadata from marketplace_strategies (M12-B1).
 type PublishedStrategy struct {
-	PublishID        string
-	StrategyID       string
-	StrategyName     string
-	PublisherUserID  string
-	PublishedAt      time.Time
-	Title            string
-	Description      string
-	PriceModel       string
-	PriceAmount      *float64
-	AssetClass       string
-	Symbols          []string
-	Timeframe        *string
-	RiskLevel        string
-	Tags             []string
-	TotalSubscribers int
-	WinRate          *float64
-	TotalPnL         *float64
-	AvgRating        float64
-	RatingCount      int32
+	PublishID          string
+	StrategyID         string
+	StrategyName       string
+	PublisherUserID    string
+	PublishedAt        time.Time
+	Title              string
+	Description        string
+	PriceModel         string
+	PriceAmount        *float64
+	AssetClass         string
+	Symbols            []string
+	Timeframe          *string
+	RiskLevel          string
+	Tags               []string
+	TotalSubscribers   int
+	WinRate            *float64
+	TotalPnL           *float64
+	AvgRating          float64
+	RatingCount        int32
+	CodeSnippet        string            // publisher-provided code preview
+	BacktestSnapshot   *BacktestSnapshot // optional backtest snapshot
+}
+
+// BacktestRunSnapshot is a lightweight read of a single backtest_runs row.
+type BacktestRunSnapshot struct {
+	Status        string
+	Error         string
+	Symbol        string
+	Timeframe     string
+	ProtoResponse []byte
+	StartedAt     *time.Time
+	FinishedAt    *time.Time
+	TemplateID    *uuid.UUID
+}
+
+// StartBacktestParams carries the parameters for marketplace backtest execution.
+type StartBacktestParams struct {
+	UserID             string
+	StrategyID         string
+	Symbol             string
+	Timeframe          string
+	StartDateMs        int64
+	EndDateMs          int64
+	InitialCapital     float64
+	Commission         float64
+	Slippage           float64
+	Leverage           float64
+	TradeDirection     string
 }
 
 // PurchaseResult holds the outcome of a paid strategy purchase.

@@ -1,19 +1,22 @@
-import { Table, Tag, Typography, Button, Space, Empty } from 'antd';
+import { useState } from 'react';
+import { Table, Tag, Typography, Button, Space, Empty, Drawer } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { EyeOutlined, ExportOutlined } from '@ant-design/icons';
+import { EyeOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
-import { OPEN_IN_WORKSPACE_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
 
 ;
 import { formatDateTime } from '@/utils/date';
 import { useMarketplaceCtx } from '../MarketplaceContext';
 import type { PurchasedItem } from '../hooks/useMarketplace';
+import ProtectedBacktestPanel from './ProtectedBacktestPanel';
 
 const { Text } = Typography;
 
 export default function PurchaseTab() {
   const { t } = useTranslation();
   const m = useMarketplaceCtx();
+  const [backtestDrawerOpen, setBacktestDrawerOpen] = useState(false);
+  const [backtestStrategyId, setBacktestStrategyId] = useState('');
 
   if (!m.purchasesLoading && m.purchases.length === 0) {
     return <Empty description={t('marketplace.purchases.empty')} />;
@@ -23,7 +26,10 @@ export default function PurchaseTab() {
     {
       title: t('marketplace.purchases.strategy'),
       dataIndex: 'strategyId', key: 'strategy',
-      render: (id: string) => <Text>{String(id).slice(0, 12)}</Text>,
+      render: (id: string, row: PurchasedItem) => {
+        const s = m.strategies.find(st => st.strategyId === row.strategyId);
+        return <Text>{s?.title || s?.strategyName || String(id).slice(0, 12)}</Text>;
+      },
     },
     {
       title: t('marketplace.purchases.date'),
@@ -50,10 +56,11 @@ export default function PurchaseTab() {
           }}>
             {t('strategy.backtestHistory.actions.view')}
           </Button>
-          <Button size="small" icon={<ExportOutlined />} onClick={() => {
-            window.open(`/strategy/workspace?templateId=${row.strategyId}`, '_blank');
+          <Button size="small" type="primary" icon={<ThunderboltOutlined />} onClick={() => {
+            setBacktestStrategyId(row.strategyId);
+            setBacktestDrawerOpen(true);
           }}>
-            {t(OPEN_IN_WORKSPACE_KEY)}
+            {t('marketplace.purchases.runBacktest', 'Run Backtest')}
           </Button>
         </Space>
       ),
@@ -61,13 +68,25 @@ export default function PurchaseTab() {
   ];
 
   return (
-    <Table
-      rowKey="subscriptionId"
-      columns={columns}
-      dataSource={m.purchases}
-      loading={m.purchasesLoading}
-      pagination={{ pageSize: 10 }}
-      size="small"
-    />
+    <>
+      <Table
+        rowKey="subscriptionId"
+        columns={columns}
+        dataSource={m.purchases}
+        loading={m.purchasesLoading}
+        pagination={{ pageSize: 10 }}
+        size="small"
+      />
+
+      <Drawer
+        title={t('marketplace.backtest.title', 'Strategy Backtest')}
+        open={backtestDrawerOpen}
+        onClose={() => setBacktestDrawerOpen(false)}
+        width={640}
+        destroyOnClose
+      >
+        {backtestStrategyId && <ProtectedBacktestPanel strategyId={backtestStrategyId} />}
+      </Drawer>
+    </>
   );
 }

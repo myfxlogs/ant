@@ -92,6 +92,15 @@ export function useMarketplace(): MarketplaceCtx {
       : 0,
   }), [myPublished]);
 
+  // ── Backtest drawer ──
+  const [backtestDrawerOpen, setBacktestDrawerOpen] = useState(false);
+  const [backtestStrategyId, setBacktestStrategyId] = useState('');
+  const handleRunBacktest = useCallback((s: PublishedStrategy) => {
+    setDetailOpen(false); // close detail
+    setBacktestStrategyId(s.strategyId);
+    setBacktestDrawerOpen(true);
+  }, []);
+
   // ── Detail ──
   const openDetail = useCallback((s: PublishedStrategy) => {
     setDetailStrategy(s); setDetailOpen(true);
@@ -170,8 +179,10 @@ export function useMarketplace(): MarketplaceCtx {
     activeTab, setActiveTab, searchText, setSearchText,
     priceFilter, setPriceFilter, sortBy, setSortBy,
     page, pageSize, total, setPage, setPageSize,
-    refetch, isPurchased, handleGetFree, handleBuy,
+    refetch, isPurchased, handleGetFree, handleBuy, handleRunBacktest,
     openDetail, closeDetail, detailStrategy, detailOpen,
+    // Backtest drawer
+    backtestDrawerOpen, setBacktestDrawerOpen, backtestStrategyId,
     // Payment
     paymentModalOpen, paymentLoading, paymentStrategy, walletBalance,
     handleConfirmPayment, handleCancelPayment,

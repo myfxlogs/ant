@@ -53,6 +53,11 @@ func NewBacktestRunRepository(db *pgxpool.Pool) *BacktestRunRepository {
 	return &BacktestRunRepository{db: db}
 }
 
+// DB returns the underlying pgxpool for ad-hoc queries.
+func (r *BacktestRunRepository) DB() *pgxpool.Pool {
+	return r.db
+}
+
 func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (uuid.UUID, error) {
 	query := `
 		INSERT INTO backtest_runs (

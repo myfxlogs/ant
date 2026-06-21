@@ -23,11 +23,15 @@ export interface MarketplaceCtx {
   isPurchased: (id: string) => boolean;
   handleGetFree: (s: PublishedStrategy) => void;
   handleBuy: (s: PublishedStrategy) => void;
+  handleRunBacktest: (s: PublishedStrategy) => void;
   // Detail
   openDetail: (s: PublishedStrategy) => void;
   closeDetail: () => void;
   detailStrategy: PublishedStrategy | null;
   detailOpen: boolean;
+  // Backtest drawer
+  backtestDrawerOpen: boolean; setBacktestDrawerOpen: (v: boolean) => void;
+  backtestStrategyId: string;
   // Payment
   paymentModalOpen: boolean;
   paymentLoading: boolean;

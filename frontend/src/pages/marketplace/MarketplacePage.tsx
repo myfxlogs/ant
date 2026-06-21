@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Tabs, Typography, Grid } from 'antd';
+import { Tabs, Typography, Grid, Drawer } from 'antd';
 import { ShopOutlined, BookOutlined, UserOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useMarketplace } from './hooks/useMarketplace';
@@ -9,6 +9,7 @@ import PurchaseTab from './components/PurchaseTab';
 import AuthorTab from './components/AuthorTab';
 import StrategyDetailModal from './components/StrategyDetailModal';
 import PaymentModal from './components/PaymentModal';
+import ProtectedBacktestPanel from './components/ProtectedBacktestPanel';
 
 const { Title, Text } = Typography;
 
@@ -39,7 +40,17 @@ function MarketplaceUI() {
             strategy={m.detailStrategy} open={m.detailOpen}
             isPurchased={m.detailStrategy ? m.isPurchased(m.detailStrategy.strategyId) : false}
             onClose={m.closeDetail} onGetFree={m.handleGetFree} onBuy={m.handleBuy}
+            onRunBacktest={m.handleRunBacktest}
           />
+          <Drawer
+            title="Strategy Backtest"
+            open={m.backtestDrawerOpen}
+            onClose={() => m.setBacktestDrawerOpen(false)}
+            width={680}
+            destroyOnClose
+          >
+            {m.backtestStrategyId && <ProtectedBacktestPanel strategyId={m.backtestStrategyId} />}
+          </Drawer>
           <PaymentModal
             strategy={m.paymentStrategy}
             walletBalance={m.walletBalance}
