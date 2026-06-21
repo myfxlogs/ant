@@ -303,8 +303,22 @@ class BacktestRunner:
         tp = float(signal.get("take_profit") or 0.0)
 
         if action in ("buy", "sell"):
-            if self._req.single_position_only and self._portfolio.has_open():
-                return
+            if self._portfolio.has_open():
+                if self._req.single_position_only:
+                    # Close existing position(s) first, then stop.
+                    # A sell while long (or buy while short) is a close signal.
+                    for trade in self._portfolio.force_liquidate_all(tick, CloseReason.SIGNAL):
+                        self._events.append(self._close_event(trade))
+                    return
+                else:
+                    # Multi-position mode: close opposite side before opening.
+                    is_buy = action == "buy"
+                    if is_buy:
+                        for trade in self._portfolio.force_liquidate_side(tick, Side.SELL, CloseReason.SIGNAL):
+                            self._events.append(self._close_event(trade))
+                    else:
+                        for trade in self._portfolio.force_liquidate_side(tick, Side.BUY, CloseReason.SIGNAL):
+                            self._events.append(self._close_event(trade))
             order = Order(
                 id=0,
                 type=OrderType.BUY if action == "buy" else OrderType.SELL,

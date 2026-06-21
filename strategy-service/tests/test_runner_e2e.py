@@ -103,15 +103,17 @@ def test_buy_then_end_of_test_liquidates_when_not_legacy():
     assert res.trades[0].pnl == pytest.approx(0.3)
 
 
-def test_single_position_only_blocks_second_buy():
+def test_single_position_only_closes_before_reopening():
     code = (
         "def run(context):\n"
         "    return {'signal': 'buy', 'volume': 1.0}\n"
     )
-    # Strategy tries to buy every bar; single_position_only must reject all but first.
+    # Strategy buys every bar. single_position_only closes existing before re-opening.
     res = run_backtest(_req(code, [1.0, 1.1, 1.2]))
     opens = [e for e in res.events if e["type"] == "position_open"]
-    assert len(opens) == 1
+    closes = [e for e in res.events if e["type"] == "position_close"]
+    assert len(opens) >= 2  # re-opens after close
+    assert len(closes) >= 1  # closed between re-opens
 
 
 def test_single_position_off_allows_multiple_buys():
