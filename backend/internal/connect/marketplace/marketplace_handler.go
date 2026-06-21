@@ -64,8 +64,12 @@ func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Re
 			snapshotJSON = string(b)
 		}
 	}
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
 	id, err := s.svc.Publish(ctx, marketplace.PublishParams{
-		UserID:              m.UserId,
+		UserID:              userID,
 		StrategyID:          m.StrategyId,
 		Title:               m.Title,
 		Description:         m.Description,
