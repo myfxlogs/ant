@@ -6,7 +6,6 @@ import type { Chart } from 'klinecharts';
 import DARK_THEME from './chartTheme';
 import DrawingToolbar from './DrawingToolbar';
 import ChartToolbar from './ChartToolbar';
-import QuoteBar from './QuoteBar';
 import type { ChartType } from './ChartToolbar';
 import { marketApi } from '@/client/market';
 import { useChartData, toChartBar } from './useChartData';
@@ -37,7 +36,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   const [chartType, setChartType] = useState<ChartType>('candle_solid');
   const volumeCollapsedRef = useRef(false);
 
-  const { bars, loading, error, streamActive, loadingMore, loadedAll, latestBid, latestAsk } = useChartData(symbol, timeframe, accountId, chartRef);
+  const { bars, loading, error, streamActive, loadingMore, loadedAll } = useChartData(symbol, timeframe, accountId, chartRef);
   const { active: activeIndicators, getDef, addIndicator, removeIndicator } = useChartIndicatorsStore();
   const [editingIndId, setEditingIndId] = useState<string | null>(null);
   // Track klinecharts paneIds keyed by store instanceId
@@ -58,7 +57,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     // Auto-load Volume sub-pane (default sub-chart)
     try { chart.createIndicator('VOL', false, { id: 'volume_pane' }); } catch { /* best-effort */ }
     // Auto-load Bid/Ask price line overlay on main K-line chart
-    try { chart.createIndicator('BIDASK', true, { id: 'bidask_overlay' }); } catch { /* best-effort */ }
+    try { chart.createOverlay({ name: 'bidask' }); } catch { /* best-effort */ }
     onChartReady?.(chart);
     const ro = new ResizeObserver(([entry]) => {
       const w = entry?.contentRect?.width || 400;
@@ -214,7 +213,6 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
 
   return (
     <div ref={wrapperRef} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <QuoteBar symbol={symbol} bid={latestBid} ask={latestAsk} />
       <ChartToolbar
         timeframe={timeframe} chartType={chartType}
         streamActive={streamActive || serverStreaming} error={error}
