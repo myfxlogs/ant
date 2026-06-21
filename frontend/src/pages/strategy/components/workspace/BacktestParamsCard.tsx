@@ -174,7 +174,7 @@ export default function BacktestParamsCard(props: Props) {
                 </Col>
                 <Col span={12}>
                   <div style={fieldLabel}>{t(LEVERAGE_KEY)}</div>
-                  <InputNumber size="small" style={narrow} min={1} max={125} step={1}
+                  <InputNumber size="small" style={narrow} min={1} step={1}
                     value={leverage} onChange={onLeverageChange}
                     formatter={v => `${v}x`} parser={v => v!.replace('x', '') as unknown as number} />
                 </Col>
