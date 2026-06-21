@@ -226,6 +226,8 @@ type GetTokenUsageResponse struct {
 	// feature → total tokens this month
 	FeatureTokens map[string]int32    `protobuf:"bytes,1,rep,name=feature_tokens,json=featureTokens,proto3" json:"feature_tokens,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	Records       []*TokenUsageRecord `protobuf:"bytes,2,rep,name=records,proto3" json:"records,omitempty"`
+	// total cost this month
+	MonthlyCost   string `protobuf:"bytes,3,opt,name=monthly_cost,json=monthlyCost,proto3" json:"monthly_cost,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -272,6 +274,13 @@ func (x *GetTokenUsageResponse) GetRecords() []*TokenUsageRecord {
 		return x.Records
 	}
 	return nil
+}
+
+func (x *GetTokenUsageResponse) GetMonthlyCost() string {
+	if x != nil {
+		return x.MonthlyCost
+	}
+	return ""
 }
 
 type TokenUsageRecord struct {
@@ -1159,10 +1168,11 @@ const file_ai_gateway_proto_rawDesc = "" +
 	"\fdisplay_name\x18\x04 \x01(\tR\vdisplayName\x12+\n" +
 	"\x12price_per_1m_input\x18\x05 \x01(\tR\x0fpricePer1mInput\x12-\n" +
 	"\x13price_per_1m_output\x18\x06 \x01(\tR\x10pricePer1mOutput\"\x16\n" +
-	"\x14GetTokenUsageRequest\"\xe6\x01\n" +
+	"\x14GetTokenUsageRequest\"\x89\x02\n" +
 	"\x15GetTokenUsageResponse\x12W\n" +
 	"\x0efeature_tokens\x18\x01 \x03(\v20.ant.v1.GetTokenUsageResponse.FeatureTokensEntryR\rfeatureTokens\x122\n" +
-	"\arecords\x18\x02 \x03(\v2\x18.ant.v1.TokenUsageRecordR\arecords\x1a@\n" +
+	"\arecords\x18\x02 \x03(\v2\x18.ant.v1.TokenUsageRecordR\arecords\x12!\n" +
+	"\fmonthly_cost\x18\x03 \x01(\tR\vmonthlyCost\x1a@\n" +
 	"\x12FeatureTokensEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\"\x9a\x02\n" +

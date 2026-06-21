@@ -152,7 +152,7 @@ export default function AIGatewayCard({ useGateway, onToggle, selectedModel, onM
                 <span style={{ fontSize: 18 }}>💸</span>
                 <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>{t(GATEWAY_MONTHLY_COST_KEY, '本月费用')}</div>
                 <Title level={5} style={{ margin: 0, color: '#52c41a' }}>
-                  {usage?.records?.reduce((s, r) => s + parseFloat(r.cost || '0'), 0).toFixed(4) || '0'}$</Title>
+                  {parseFloat(usage?.monthlyCost || '0').toFixed(4)}$</Title>
               </Card>
             </Col>
           </Row>

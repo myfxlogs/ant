@@ -51,6 +51,8 @@ message GetTokenUsageResponse {
   // feature → total tokens this month
   map<string, int32> feature_tokens = 1;
   repeated TokenUsageRecord records = 2;
+  // total cost this month
+  string monthly_cost = 3;
 }
 
 message TokenUsageRecord {

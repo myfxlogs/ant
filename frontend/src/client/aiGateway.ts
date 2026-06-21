@@ -23,6 +23,7 @@ export interface SystemModelInfo {
 
 export interface TokenUsageInfo {
   featureTokens: Record<string, number>;
+  monthlyCost: string;
   records: Array<{
     id: string;
     paidBy: string;
@@ -74,6 +75,7 @@ export const aiGatewayApi = {
     const resp = await aiGatewayClient.getTokenUsage(req);
     return {
       featureTokens: resp.featureTokens || {},
+      monthlyCost: resp.monthlyCost || '0',
       records: (resp.records || []).map(r => ({
         id: r.id,
         paidBy: r.paidBy,

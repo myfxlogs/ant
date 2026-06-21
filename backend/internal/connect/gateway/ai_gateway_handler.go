@@ -84,6 +84,10 @@ func (s *AIGatewayServer) GetTokenUsage(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	monthlyCost, err := s.tokenUsageRepo.MonthlyCost(ctx, userID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 	records, err := s.tokenUsageRepo.ListByUser(ctx, userID, 30)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -100,7 +104,7 @@ func (s *AIGatewayServer) GetTokenUsage(
 	ft := make(map[string]int32, len(summary))
 	for k, v := range summary { ft[k] = int32(v) }
 	return connect.NewResponse(&antv1.GetTokenUsageResponse{
-		FeatureTokens: ft, Records: pbRecords,
+		FeatureTokens: ft, Records: pbRecords, MonthlyCost: monthlyCost,
 	}), nil
 }
 

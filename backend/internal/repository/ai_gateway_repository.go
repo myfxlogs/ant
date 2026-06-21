@@ -312,6 +312,15 @@ func (r *AITokenUsageRepository) ListByUser(ctx context.Context, userID uuid.UUI
 	return scanTokenUsageRows(rows)
 }
 
+func (r *AITokenUsageRepository) MonthlyCost(ctx context.Context, userID uuid.UUID) (string, error) {
+	var cost string
+	err := r.db.QueryRow(ctx,
+		`SELECT COALESCE(SUM(cost::numeric), 0)::text
+		 FROM ai_token_usage
+		 WHERE user_id = $1 AND created_at >= date_trunc('month', NOW())`, userID).Scan(&cost)
+	return cost, err
+}
+
 func (r *AITokenUsageRepository) MonthlySummary(ctx context.Context, userID uuid.UUID) (map[string]int, error) {
 	rows, err := r.db.Query(ctx,
 		`SELECT feature, SUM(input_tokens + output_tokens)::int AS total
