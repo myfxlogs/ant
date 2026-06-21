@@ -118,8 +118,16 @@ Generate a complete Python trading strategy based on the user's description.
 
 ## Strategy Code Specification
 - Must define a run(context) function
-- Return a trade signal dict: {'signal': 'buy'|'sell'|'hold', 'volume': 1.0, ...}
+- Return a trade signal dict: {'signal': 'buy'|'sell'|'hold', 'volume': 1.0, 'stop_loss': 0.0, 'take_profit': 0.0}
 - Tunable parameters must use # @param annotations
+
+## MANDATORY Safety Rules (violations = rejected code)
+1. Every @param MUST be read from context.get(): "fast = int(context.get('fast', 20))" — NEVER hardcode the value
+2. Every @strategy param (entryPct/stopLossPct/takeProfitPct) MUST be read from context.get()
+3. Stop-loss & take-profit MUST be returned on EVERY bar when holding a position, not just on entry
+4. Position sizing MUST use initial_balance (context.get('initial_balance')), NOT current balance
+5. All variables MUST be defined before use — avoid NameError
+6. np and math are pre-injected — do NOT import them
 
 ## Prohibited
 - Do NOT use eval(), exec(), compile()
@@ -135,7 +143,14 @@ Revise the following Python strategy code according to the user's instruction.
 ## Revision Rules
 - Keep the existing code structure and style
 - Only modify what the instruction asks for
-- Preserve all existing # @param annotations
+- Preserve all existing # @param and # @strategy annotations
+
+## MANDATORY Safety Checks (fix these even if not explicitly asked)
+1. Every @param MUST read from context.get() — replace any hardcoded values that match @param defaults
+2. Every @strategy param MUST read from context.get()
+3. Stop-loss & take-profit MUST be returned on EVERY bar when holding a position
+4. Position sizing MUST use initial_balance, NOT current balance
+5. All variables MUST be defined before any return statement
 
 ## Output Rules
 - Output the COMPLETE revised code
@@ -161,6 +176,13 @@ func repairPrompt(errors []string) string {
 5. Do NOT analyze the error causes
 6. Do NOT give suggestions or tips
 7. If you cannot fix, output the original code with # FIXME: <reason> comments
+
+## ALSO FIX these common issues (even if not listed above)
+- @param values hardcoded → read from context.get()
+- @strategy params (entryPct/stopLossPct/takeProfitPct) not read from context
+- stop_loss/take_profit == 0 when holding a position → calculate from entry price
+- Position size uses current balance → use context.get('initial_balance')
+- Variable used before definition → define at function start
 
 ## Errors to Fix
 ` + errList + `
