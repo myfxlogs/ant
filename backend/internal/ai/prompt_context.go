@@ -116,46 +116,68 @@ func generatePrompt() string {
 	return `You are a professional quantitative trading strategy engineer.
 Generate a complete Python trading strategy based on the user's description.
 
-## Strategy Code Specification
-- Must define a run(context) function
-- Return a trade signal dict: {'signal': 'buy'|'sell'|'hold', 'volume': 1.0, 'stop_loss': 0.0, 'take_profit': 0.0}
-- Tunable parameters must use # @param annotations
+## ⛔ IRON RULES — violating ANY of these = code is REJECTED ⛔
 
-## MANDATORY Safety Rules (violations = rejected code)
-1. Every @param MUST be read from context.get(): "fast = int(context.get('fast', 20))" — NEVER hardcode the value
-2. Every @strategy param (entryPct/stopLossPct/takeProfitPct) MUST be read from context.get()
-3. Stop-loss & take-profit MUST be returned on EVERY bar when holding a position, not just on entry
-4. Position sizing MUST use initial_balance (context.get('initial_balance')), NOT current balance
-5. All variables MUST be defined before use — avoid NameError
-6. np and math are pre-injected — do NOT import them
+### Rule 1: Every @param and @strategy MUST read from context.get()
+` + "```python" + `
+# @param fast_period 20 range=10:50:10
+# @param slow_period 50 range=30:80:10
+# @strategy entryPct 0.25
+# @strategy stopLossPct 0.02
+# @strategy takeProfitPct 0.04
 
-## Prohibited
-- Do NOT use eval(), exec(), compile()
-- Do NOT import os, subprocess, socket
-- Do NOT use open() for file operations
-- Output ONLY Python code — no explanations or markdown fences`
+def run(context):
+    fast_period = int(context.get('fast_period', 20))    # ✅ MUST read from context
+    slow_period = int(context.get('slow_period', 50))    # ✅ MUST read from context
+    entry_pct   = float(context.get('entryPct', 0.25))   # ✅ MUST read from context
+    sl_pct      = float(context.get('stopLossPct', 0.02))
+    tp_pct      = float(context.get('takeProfitPct', 0.04))
+
+    # ❌ NEVER do this: ema20 = calc_ema(close, 20)  ← hardcoded 20 instead of fast_period
+    # ❌ NEVER do this: sl_pct = 0.02                ← hardcoded instead of context.get()
+` + "```" + `
+
+### Rule 2: Stop-loss & take-profit MUST be set on EVERY bar when holding a position
+` + "```python" + `
+    if position is not None:
+        entry_price = position.get('open_price', close[-1])
+        if position.get('type') == 'long':
+            stop_loss   = entry_price * (1 - sl_pct)    # ✅ every bar
+            take_profit = entry_price * (1 + tp_pct)    # ✅ every bar
+        else:
+            stop_loss   = entry_price * (1 + sl_pct)
+            take_profit = entry_price * (1 - tp_pct)
+    # ❌ NEVER: stop_loss=0.0, take_profit=0.0 when position exists
+` + "```" + `
+
+### Rule 3: Position sizing MUST use initial_balance, NOT current balance
+` + "```python" + `
+    initial_balance = float(context.get('initial_balance', 10000.0))
+    volume_ordered = (initial_balance * entry_pct) / close[-1]   # ✅
+    # ❌ NEVER: volume = (context.get('balance') * entry_pct) / close[-1]
+` + "```" + `
+
+### Rule 4: ALL variables must be defined at function start, before any return
+### Rule 5: np and math are pre-injected — do NOT import them
+### Rule 6: Function signature: def run(context): return {'signal':..., 'volume':..., 'stop_loss':..., 'take_profit':...}
+
+## Output: ONLY Python code. No markdown fences. No explanations.`
 }
 
 func revisePrompt() string {
 	return `You are a professional quantitative trading strategy engineer.
 Revise the following Python strategy code according to the user's instruction.
 
-## Revision Rules
-- Keep the existing code structure and style
-- Only modify what the instruction asks for
-- Preserve all existing # @param and # @strategy annotations
+## ⛔ IRON RULES — fix these even if the user didn't explicitly ask:
 
-## MANDATORY Safety Checks (fix these even if not explicitly asked)
-1. Every @param MUST read from context.get() — replace any hardcoded values that match @param defaults
-2. Every @strategy param MUST read from context.get()
-3. Stop-loss & take-profit MUST be returned on EVERY bar when holding a position
-4. Position sizing MUST use initial_balance, NOT current balance
-5. All variables MUST be defined before any return statement
+1. Every @param value used in code MUST come from context.get() — find and replace ALL hardcoded values
+   Example: if "# @param fast_period 20" exists, replace "calc_ema(close, 20)" with "calc_ema(close, fast_period)"
+2. Every @strategy param (entryPct/stopLossPct/takeProfitPct) MUST read from context.get()
+3. When position is not None, stop_loss and take_profit MUST NOT be 0.0 — calculate from entry price
+4. Position sizing MUST use initial_balance = context.get('initial_balance', 10000.0), NOT context.get('balance')
+5. All variables MUST be defined before any return statement to avoid NameError
 
-## Output Rules
-- Output the COMPLETE revised code
-- Do NOT include explanations or markdown fences
-- The first character must be import, def, class, or #`
+## Output: ONLY the COMPLETE revised Python code. No markdown, no explanations.`
 }
 
 func repairPrompt(errors []string) string {
