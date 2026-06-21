@@ -29,6 +29,16 @@ const StrategyWorkspace = {
         "streamActive": "Luồng nến trực tiếp đang hoạt động",
         "streamUnavailable": "Luồng không khả dụng"
       },
+      "execAssumptionsFields": {
+        "commission": "Hoa hồng",
+        "direction": "Hướng giao dịch",
+        "fillRule": "Quy tắc khớp lệnh",
+        "leverage": "Đòn bẩy",
+        "mode": "Chế độ",
+        "mtfFallback": "MTF dự phòng",
+        "slippage": "Trượt giá",
+        "timing": "Thời điểm tín hiệu"
+      },
       "template": {
         "load": "Tải",
         "loaded": "Đã Tải",

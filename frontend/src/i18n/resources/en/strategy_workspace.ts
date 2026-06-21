@@ -29,6 +29,16 @@ const StrategyWorkspace = {
         "streamActive": "Live bar stream active",
         "streamUnavailable": "Stream unavailable"
       },
+      "execAssumptionsFields": {
+        "commission": "Commission",
+        "direction": "Direction",
+        "fillRule": "Fill Rule",
+        "leverage": "Leverage",
+        "mode": "Mode",
+        "mtfFallback": "MTF Fallback",
+        "slippage": "Slippage",
+        "timing": "Signal Timing"
+      },
       "template": {
         "load": "Load",
         "loaded": "Loaded",

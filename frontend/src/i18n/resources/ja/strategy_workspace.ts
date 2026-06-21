@@ -29,6 +29,16 @@ const StrategyWorkspace = {
         "streamActive": "リアルタイムバー配信中",
         "streamUnavailable": "配信利用不可"
       },
+      "execAssumptionsFields": {
+        "commission": "手数料",
+        "direction": "取引方向",
+        "fillRule": "約定ルール",
+        "leverage": "レバレッジ",
+        "mode": "モード",
+        "mtfFallback": "MTFフォールバック",
+        "slippage": "スリッページ",
+        "timing": "シグナルタイミング"
+      },
       "template": {
         "load": "読込",
         "loaded": "読込済",

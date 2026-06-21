@@ -29,6 +29,16 @@ const StrategyWorkspace = {
         "streamActive": "即時K線流已連接",
         "streamUnavailable": "資料串流不可用"
       },
+      "execAssumptionsFields": {
+        "commission": "手續費",
+        "direction": "交易方向",
+        "fillRule": "成交規則",
+        "leverage": "槓桿",
+        "mode": "模式",
+        "mtfFallback": "多週期降級",
+        "slippage": "滑點",
+        "timing": "訊號時機"
+      },
       "template": {
         "load": "載入",
         "loaded": "已載入",
