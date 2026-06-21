@@ -119,8 +119,15 @@ type complianceTool struct{}
 func (t *complianceTool) Name() string { return "compliance_check" }
 
 func (t *complianceTool) Run(_ context.Context, in ToolInput) ToolOutput {
-	blocks, warns := ai.NewCodeComplianceScanner().Scan(in.Code)
+	scanner := ai.NewCodeComplianceScanner()
+	blocks, warns := scanner.Scan(in.Code)
 	allIssues := append(blocks, warns...)
+	// Add structural warnings as warn-severity issues
+	for _, msg := range scanner.StructuralWarnings(in.Code) {
+		allIssues = append(allIssues, ai.ComplianceIssue{
+			RuleName: "structural", Message: msg, Severity: "warn",
+		})
+	}
 	var issueProtos []*antv1.ComplianceIssue
 	for _, iss := range allIssues {
 		issueProtos = append(issueProtos, &antv1.ComplianceIssue{

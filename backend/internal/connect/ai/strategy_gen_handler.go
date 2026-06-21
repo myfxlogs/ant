@@ -191,7 +191,11 @@ func (s *StrategyGenServer) runComplianceCheck(code string) []string {
 	scanner := ai.NewCodeComplianceScanner()
 	blocks, _ := scanner.Scan(code)
 	_, missingSigs := scanner.HasRequiredSignature(code)
-	return s.collectComplianceIssues(blocks, missingSigs)
+	issues := s.collectComplianceIssues(blocks, missingSigs)
+	// Append structural warnings (undefined vars, hardcoded params, etc.)
+	structWarns := scanner.StructuralWarnings(code)
+	issues = append(issues, structWarns...)
+	return issues
 }
 
 func (s *StrategyGenServer) finalizeWithBacktest(ctx context.Context, userID uuid.UUID, code, symbol, timeframe string) (string, string) {

@@ -53,14 +53,86 @@ func init() {
 	}
 }
 
-// CodeComplianceScanner checks generated code against all 13 rules.
+// CodeComplianceScanner checks generated code against all rules (sandbox + code quality).
 type CodeComplianceScanner struct {
 	rules []ComplianceRule
 }
 
-// NewCodeComplianceScanner creates a scanner with the default 13 rules.
+// NewCodeComplianceScanner creates a scanner with all compliance rules.
 func NewCodeComplianceScanner() *CodeComplianceScanner {
 	return &CodeComplianceScanner{rules: complianceRules}
+}
+
+// StructuralWarnings runs structural code-quality checks beyond regex sandbox rules.
+// These detect undefined variables, missing protections, and position sizing errors.
+func (s *CodeComplianceScanner) StructuralWarnings(code string) []string {
+	var warns []string
+
+	// 1. @param declared but not used (no variable definition or context.get)
+	paramRe := regexp.MustCompile(`#\s*@param\s+(\w+)`)
+	contextGetRe := regexp.MustCompile(`context\.get\(['"](\w+)['"]`)
+	variableDefRe := regexp.MustCompile(`(?m)^(\w+)\s*=\s*`)
+
+	declaredParams := map[string]bool{}
+	for _, m := range paramRe.FindAllStringSubmatch(code, -1) {
+		declaredParams[m[1]] = true
+	}
+	usedViaContext := map[string]bool{}
+	for _, m := range contextGetRe.FindAllStringSubmatch(code, -1) {
+		usedViaContext[m[1]] = true
+	}
+	definedVars := map[string]bool{}
+	for _, m := range variableDefRe.FindAllStringSubmatch(code, -1) {
+		definedVars[m[1]] = true
+	}
+	for name := range declaredParams {
+		if !usedViaContext[name] && !definedVars[name] {
+			warns = append(warns, "未定义变量: "+name+" — @param 声明了但代码中未从 context.get() 读取，也未定义同名变量，会导致 NameError")
+		}
+	}
+
+	// 2. @strategy entryPct not read from context
+	strategyRe := regexp.MustCompile(`#\s*@strategy\s+(\w+)`)
+	for _, m := range strategyRe.FindAllStringSubmatch(code, -1) {
+		name := m[1]
+		if name == "tradeDirection" || name == "leverage" {
+			continue // these are engine-level, not code-level
+		}
+		if !usedViaContext[name] && !definedVars[name] {
+			warns = append(warns, "未定义变量: "+name+" — @strategy 声明了但未从 context.get() 读取")
+		}
+	}
+
+	// 3. stop_loss/take_profit = 0 in hold path
+	if strings.Contains(code, "'signal': 'hold'") || strings.Contains(code, "\"signal\": \"hold\"") {
+		if strings.Contains(code, "stop_loss': 0.0") || strings.Contains(code, "stop_loss\": 0.0") {
+			warns = append(warns, "持有时止损为 0：当 position is not None 时应返回实际的止损价格，不能设为 0")
+		}
+	}
+
+	// 4. Position sizing using current balance instead of initial_balance
+	if strings.Contains(code, "context.get('balance'") || strings.Contains(code, "context['balance']") {
+		if strings.Contains(code, "volume") || strings.Contains(code, "手数") || strings.Contains(code, "lot") {
+			warns = append(warns, "仓位大小使用了当前余额 context['balance']，应该使用 context.get('initial_balance') 避免每根 bar 重复计算")
+		}
+	}
+
+	// 5. Hardcoded values matching @param defaults
+	for name := range declaredParams {
+		defRe := regexp.MustCompile(`#\s*@param\s+` + regexp.QuoteMeta(name) + `\s+(\d+(?:\.\d+)?)`)
+		match := defRe.FindStringSubmatch(code)
+		if match == nil {
+			continue
+		}
+		defaultVal := match[1]
+		// Check if the default value is hardcoded literally (not via context.get or variable)
+		hardcodedRe := regexp.MustCompile(`(?m)(?:calc_ema|calc_sma|sma|ema|period|len)\s*\(\s*\w+\s*,\s*` + regexp.QuoteMeta(defaultVal) + `\s*\)`)
+		if hardcodedRe.MatchString(code) && !usedViaContext[name] {
+			warns = append(warns, "参数硬编码: "+name+" 的默认值 "+defaultVal+" 直接写死在代码中，应使用变量 "+name)
+		}
+	}
+
+	return warns
 }
 
 // Scan runs all compliance rules against the given code.
