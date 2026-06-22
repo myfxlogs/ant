@@ -1,5 +1,5 @@
 import { Input, Segmented, List, Tag, Typography, Button, Popconfirm } from 'antd';
-import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, SendOutlined, LoadingOutlined, BankOutlined, GlobalOutlined, LockOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SendOutlined, LoadingOutlined, BankOutlined, GlobalOutlined, LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { DELETE_CONFIRM_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
 import { EMPTY_KEY } from '@/gen/ant/v1/i18n/strategy_asset_keys';
@@ -36,7 +36,7 @@ export default function LibraryLeftPanel() {
           ]}
           style={{ marginBottom: 8 }}
         />
-        <Input size="small" prefix={<SearchOutlined />} placeholder={t(SEARCH_PLACEHOLDER_KEY)}
+        <Input size="small" className="marketplace-search-input" placeholder={t(SEARCH_PLACEHOLDER_KEY)}
           value={lib.search} onChange={e => lib.setSearch(e.target.value)} allowClear />
       </div>
 
