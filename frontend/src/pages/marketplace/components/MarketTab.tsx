@@ -14,8 +14,19 @@ export default function MarketTab() {
       {/* Toolbar */}
       <Row gutter={[8, 8]} style={{ marginBottom: 16 }}>
         <Col xs={24} sm={8}>
-          <Input placeholder={t('marketplace.searchPlaceholder')} allowClear variant="borderless"
-            value={m.searchText} onChange={e => m.setSearchText(e.target.value)} />
+          <Input
+            placeholder={t('marketplace.searchPlaceholder')}
+            allowClear
+            value={m.searchText}
+            onChange={e => m.setSearchText(e.target.value)}
+            styles={{
+              affixWrapper: {
+                border: '1px solid #d9d9d9',
+                boxShadow: 'none',
+                borderRadius: 6,
+              },
+            }}
+          />
         </Col>
         <Col xs={12} sm={4}>
           <Select value={m.priceFilter} onChange={v => m.setPriceFilter(v as PriceFilter)} style={{ width: '100%' }}
