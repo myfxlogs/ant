@@ -59,11 +59,9 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
         onResult: (python) => {
           setLoading(false);
           const finalContent = streamingRef.current || python;
-          const aiMsg: CodeChatMessage = { role: 'assistant' as const, content: finalContent };
-          setHistory(prev => [...prev, aiMsg]);
+          setHistory(prev => [...prev, { role: 'assistant' as const, content: finalContent }]);
           streamingRef.current = '';
           setStreamingText('');
-          // Always apply — use extracted Python if available, otherwise the raw response.
           const codeToApply = python || finalContent;
           if (codeToApply.trim()) {
             onApply(codeToApply);

@@ -189,19 +189,16 @@ if position is not None:
 }
 
 func revisePrompt() string {
-	return `You are a professional quantitative trading strategy engineer.
-Revise the following Python strategy code according to the user's instruction.
+	return `You are a trading strategy engineer. Revise the Python code per the user's instruction.
 
-## ⛔ IRON RULES — fix these even if the user didn't explicitly ask:
+## RULES — follow exactly
+1. Make ONLY the changes the user asked for — preserve everything else untouched
+2. Output ONLY the complete Python code — NO markdown, NO explanations, NO "here is the revised code"
+3. Every @param value in code MUST use context.get(param_name) — never hardcode parameter values
+4. stop_loss/take_profit MUST NOT be 0.0 when holding a position
+5. Position size MUST use context.get('initial_balance', 10000.0), NOT context.get('balance')
 
-1. Every @param value used in code MUST come from context.get() — find and replace ALL hardcoded values
-   Example: if "# @param fast_period 20" exists, replace "calc_ema(close, 20)" with "calc_ema(close, fast_period)"
-2. Every @strategy param (entryPct/stopLossPct/takeProfitPct) MUST read from context.get()
-3. When position is not None, stop_loss and take_profit MUST NOT be 0.0 — calculate from entry price
-4. Position sizing MUST use initial_balance = context.get('initial_balance', 10000.0), NOT context.get('balance')
-5. All variables MUST be defined before any return statement to avoid NameError
-
-## Output: ONLY the COMPLETE revised Python code. No markdown, no explanations.`
+## OUTPUT: The complete revised code, starting with import/def/class/# — nothing else.`
 }
 
 func repairPrompt(errors []string) string {
@@ -212,31 +209,24 @@ func repairPrompt(errors []string) string {
 	if errList == "" {
 		errList = "- (errors provided in user message)\n"
 	}
-	return `You are a trading strategy CODE REPAIR TOOL. Your ONLY job is to fix errors.
+	return `You are a trading strategy CODE REPAIR EXPERT. Fix ONLY the listed errors — do NOT change anything else.
 
-## STRICT OUTPUT RULES — VIOLATION WILL BREAK THE PIPELINE
-1. Output ONLY the complete, corrected Python code
-2. Do NOT include ANY explanatory text
-3. Do NOT say "here is the fixed code" or similar
-4. Do NOT wrap code in markdown fences (` + "```python ```" + `)
-5. Do NOT analyze the error causes
-6. Do NOT give suggestions or tips
-7. If you cannot fix, output the original code with # FIXME: <reason> comments
+## ⛔ CRITICAL RULES
+1. Output ONLY the complete corrected Python code — NO markdown, NO explanations
+2. Start directly with import/def/class/# — your output IS the strategy file
+3. Preserve ALL existing logic, parameters, and comments — only fix the errors
+4. Do NOT rename variables, restructure code, or "improve" anything not in the error list
+5. If an error is unclear, add # FIXME: <reason> at that line — do NOT guess
 
-## ALSO FIX these common issues (even if not listed above)
-- @param values hardcoded → read from context.get()
-- @strategy params (entryPct/stopLossPct/takeProfitPct) not read from context
-- stop_loss/take_profit == 0 when holding a position → calculate from entry price
-- Position size uses current balance → use context.get('initial_balance')
-- Variable used before definition → define at function start
+## VERIFY BEFORE OUTPUT
+- Does the fix address the exact error listed?
+- Did I preserve the original strategy logic unchanged?
+- Did I introduce any new undefined variables or syntax errors?
 
-## Errors to Fix
+## Errors to Fix (one by one)
 ` + errList + `
 
-## CRITICAL REMINDER
-Your response will be written directly to a strategy file and executed.
-If it contains non-code text, the pipeline will FAIL.
-Output MUST start with import, def, class, #, or a blank line.`
+## OUTPUT ONLY THE COMPLETE CORRECTED CODE NOW`
 }
 
 func discussPrompt(code string) string {
