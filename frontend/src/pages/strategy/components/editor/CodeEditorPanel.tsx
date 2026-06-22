@@ -28,8 +28,8 @@ export default function CodeEditorPanel({ form, code }: Props) {
       return;
     }
     setEaTranslating(true); setEaResult('');
-    // Wrap in void to prevent React from logging the rejection stack trace.
-    void (async () => {
+    // IIFE isolates the promise so React doesn't trace rejections to the event handler.
+    (async () => {
       try {
         const resp = await codeAssistClient.transformCode({ sourceCode: eaCode, sourceLang: 'auto', targetLang: 'python' });
         setEaResult(resp.targetCode || '');
@@ -42,7 +42,7 @@ export default function CodeEditorPanel({ form, code }: Props) {
         }
       }
       finally { setEaTranslating(false); }
-    })();
+    })().catch(() => {});
   }, [eaCode, t]);
 
   const applyEaResult = useCallback(() => {
