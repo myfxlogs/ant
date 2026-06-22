@@ -560,6 +560,18 @@ const Base = {
       "reviseHint": "Write code first, then ask AI to improve it.",
       "explainHint": "Write code to see AI explanation."
     },
+    "validate": {
+      "allClear": "All checks passed — no issues found.",
+      "errors": "Errors",
+      "failed": "Validation Failed",
+      "hint": "Click \"Validate Code\" to check syntax, imports, and strategy structure.",
+      "hints": "Suggestions",
+      "parameters": "parameters",
+      "passed": "Validation Passed",
+      "running": "Running validation...",
+      "tab": "Validate",
+      "warnings": "Warnings"
+    },
     "importEA": {
       "apply": "Apply to Editor",
       "applied": "EA code translated and applied to editor.",

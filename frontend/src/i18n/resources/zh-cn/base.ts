@@ -560,6 +560,18 @@ const Base = {
       "reviseHint": "请先编写代码，然后让 AI 进行优化。",
       "explainHint": "编写代码后即可查看 AI 解释。"
     },
+    "validate": {
+      "allClear": "全部检查通过，未发现问题。",
+      "errors": "错误",
+      "failed": "验证失败",
+      "hint": "点击「验证代码」检查语法、导入和策略结构。",
+      "hints": "建议",
+      "parameters": "个参数",
+      "passed": "验证通过",
+      "running": "正在验证...",
+      "tab": "验证",
+      "warnings": "警告"
+    },
     "importEA": {
       "apply": "应用到编辑器",
       "applied": "EA 代码已翻译并应用到编辑器。",

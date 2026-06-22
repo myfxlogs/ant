@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Modal, Button, Form, Input, Switch, Row, Col, Typography, Tabs, Space, Tag, Segmented, message, Spin } from 'antd';
-import { CopyOutlined, CodeOutlined, BulbOutlined, ThunderboltOutlined, ImportOutlined, RobotOutlined } from '@ant-design/icons';
+import { CopyOutlined, CodeOutlined, BulbOutlined, ThunderboltOutlined, ImportOutlined, RobotOutlined, CheckCircleOutlined, CloseCircleOutlined, WarningOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { CODE_MODAL_ACTIONS_COPY_KEY, CODE_MODAL_TITLE_KEY, EDIT_TEMPLATE_MODAL_ACTIONS_VALIDATE_CODE_KEY, EDIT_TEMPLATE_MODAL_FIELDS_CODE_KEY, EDIT_TEMPLATE_MODAL_FIELDS_DESCRIPTION_KEY, EDIT_TEMPLATE_MODAL_FIELDS_NAME_KEY, EDIT_TEMPLATE_MODAL_FIELDS_PUBLIC_SHARE_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_CODE_SAMPLE_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_DESCRIPTION_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_NAME_KEY, EDIT_TEMPLATE_MODAL_TITLE_CREATE_KEY, EDIT_TEMPLATE_MODAL_TITLE_EDIT_KEY, EDIT_TEMPLATE_MODAL_VALIDATION_CODE_REQUIRED_KEY, EDIT_TEMPLATE_MODAL_VALIDATION_NAME_REQUIRED_KEY, VISIBILITY_PRIVATE_KEY, VISIBILITY_PUBLIC_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
 import { SAVE_BLOCKED_NOT_VALIDATED_KEY, TAB_A_I_KEY, TAB_EXPLAIN_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
@@ -253,20 +253,6 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 						</div>
 					</Col>
 
-						{validationResult && (
-							<div style={{ marginTop: 10, padding: "8px 12px", borderRadius: 8,
-								background: validationResult.valid ? "#f6ffed" : "#fff2f0",
-								border: `1px solid ${validationResult.valid ? "#b7eb8f" : "#ffccc7"}` }}>
-								{validationResult.valid
-									? <Text type="success" style={{ fontSize: 12 }}>
-										{t("strategy.validate.passedDetail", { defaultValue: "Validation passed" })}
-										{validationResult.warnings?.length ? ` — ${validationResult.warnings.length} warning(s)` : ""}
-									</Text>
-									: <Text type="danger" style={{ fontSize: 12 }}>
-										{validationResult.errors?.[0] || t("strategy.validate.failed", { defaultValue: "Validation failed" })}
-									</Text>}
-							</div>
-						)}
 					{/* Right: AI assistant — Revise & Explain in tabs */}
 					<Col span={9}>
 						<div style={{
@@ -307,6 +293,92 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 													</Text>
 												) : (
 													<CodeExplainPanel code={code} />
+												)}
+											</div>
+										),
+									},
+									{
+										key: 'validate',
+										label: <span><CheckCircleOutlined /> {t('strategy.validate.tab', { defaultValue: 'Validate' })}</span>,
+										children: (
+											<div style={{ height: 416, overflow: 'auto', padding: '12px' }}>
+												{codeValidating ? (
+													<div style={{ textAlign: 'center', padding: 60 }}>
+														<Spin size="large" />
+														<Text type="secondary" style={{ display: 'block', marginTop: 12 }}>
+															{t('strategy.validate.running', { defaultValue: 'Running validation...' })}
+														</Text>
+													</div>
+												) : validationResult ? (
+													<div>
+														<div style={{
+															padding: '10px 14px', borderRadius: 8, marginBottom: 12,
+															background: validationResult.valid ? '#f6ffed' : '#fff2f0',
+															border: `1px solid ${validationResult.valid ? '#b7eb8f' : '#ffccc7'}`,
+															display: 'flex', alignItems: 'center', gap: 8,
+														}}>
+															{validationResult.valid
+																? <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 18 }} />
+																: <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 18 }} />
+															}
+															<Text strong style={{ color: validationResult.valid ? '#52c41a' : '#ff4d4f' }}>
+																{validationResult.valid
+																	? t('strategy.validate.passed', { defaultValue: 'Validation Passed' })
+																	: t('strategy.validate.failed', { defaultValue: 'Validation Failed' })}
+															</Text>
+														</div>
+														{validationResult.errors?.length > 0 && (
+															<div style={{ marginBottom: 10 }}>
+																<Text strong style={{ fontSize: 12, color: '#ff4d4f' }}>❌ {t('strategy.validate.errors', { defaultValue: 'Errors' })}</Text>
+																{validationResult.errors.map((e: string, i: number) => (
+																	<div key={i} style={{ fontSize: 12, padding: '4px 8px', marginTop: 2, background: '#fff2f0', borderRadius: 4 }}>
+																		<CloseCircleOutlined style={{ color: '#ff4d4f', marginRight: 4 }} />{e}
+																	</div>
+																))}
+															</div>
+														)}
+														{validationResult.warnings?.length > 0 && (
+															<div style={{ marginBottom: 10 }}>
+																<Text strong style={{ fontSize: 12, color: '#fa8c16' }}>⚠️ {t('strategy.validate.warnings', { defaultValue: 'Warnings' })}</Text>
+																{validationResult.warnings.map((w: string, i: number) => (
+																	<div key={i} style={{ fontSize: 12, padding: '4px 8px', marginTop: 2, background: '#fff7e6', borderRadius: 4 }}>
+																		<WarningOutlined style={{ color: '#fa8c16', marginRight: 4 }} />{w}
+																	</div>
+																))}
+															</div>
+														)}
+														{(validationResult as any).parameters?.length > 0 && (
+															<div style={{ marginBottom: 10 }}>
+																<Text strong style={{ fontSize: 12, color: '#1677ff' }}>📋 {(validationResult as any).parameters.length} {t('strategy.validate.parameters', { defaultValue: 'parameters' })}</Text>
+																{(validationResult as any).parameters.map((p: any, i: number) => (
+																	<Tag key={i} style={{ marginTop: 2 }}>{p.key}{p.defaultValue ? ` = ${p.defaultValue}` : ''}</Tag>
+																))}
+															</div>
+														)}
+														{(validationResult as any).qualityHints?.length > 0 && (
+															<div style={{ marginBottom: 10 }}>
+																<Text strong style={{ fontSize: 12 }}>💡 {t('strategy.validate.hints', { defaultValue: 'Suggestions' })}</Text>
+																{(validationResult as any).qualityHints.map((h: any, i: number) => (
+																	<div key={i} style={{ fontSize: 11, padding: '3px 6px', marginTop: 2, background: '#f0f5ff', borderRadius: 4 }}>
+																		<InfoCircleOutlined style={{ color: '#1677ff', marginRight: 4 }} />
+																		{h.message || h.description || JSON.stringify(h)}
+																	</div>
+																))}
+															</div>
+														)}
+														{!validationResult.errors?.length && !validationResult.warnings?.length && validationResult.valid && (
+															<Text type="secondary" style={{ textAlign: 'center', display: 'block', padding: 12 }}>
+																{t('strategy.validate.allClear', { defaultValue: 'All checks passed — no issues found.' })}
+															</Text>
+														)}
+													</div>
+												) : (
+													<div style={{ textAlign: 'center', padding: 40 }}>
+														<ThunderboltOutlined style={{ fontSize: 28, color: '#d9d9d9' }} />
+														<Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+															{t('strategy.validate.hint', { defaultValue: 'Click "Validate Code" to check syntax, imports, and strategy structure.' })}
+														</Text>
+													</div>
 												)}
 											</div>
 										),
