@@ -13,13 +13,12 @@ interface Props {
   code: string;
   codeValidating: boolean;
   validationResult: { valid?: boolean; errors?: string[]; warnings?: string[]; parameters?: { key: string; defaultValue?: string }[]; qualityHints?: { message?: string; description?: string }[] } | null;
-  validationStale?: boolean;
   fixInstruction: string;
   onApplyCode: (newCode: string) => void;
   onFixWithAI: () => void;
 }
 
-export default function AIPanel({ activeTab, onTabChange, code, codeValidating, validationResult, validationStale, fixInstruction, onApplyCode, onFixWithAI }: Props) {
+export default function AIPanel({ activeTab, onTabChange, code, codeValidating, validationResult, fixInstruction, onApplyCode, onFixWithAI }: Props) {
   const { t } = useTranslation();
   const hasCode = !!code.trim();
 
@@ -62,19 +61,6 @@ export default function AIPanel({ activeTab, onTabChange, code, codeValidating, 
                   <div style={{ textAlign: 'center', padding: 60 }}>
                     <Spin size="large" />
                     <Text type="secondary" style={{ display: 'block', marginTop: 12 }}>{t('strategy.validate.running', { defaultValue: 'Running validation...' })}</Text>
-                  </div>
-                ) : validationStale ? (
-                  <div style={{ textAlign: 'center', padding: 30 }}>
-                    <ThunderboltOutlined style={{ fontSize: 28, color: '#fa8c16' }} />
-                    <Text type="warning" style={{ display: 'block', marginTop: 8, fontWeight: 500 }}>
-                      {t('strategy.validate.stale', { defaultValue: 'Code was modified — re-validate to check.' })}
-                    </Text>
-                    <Text type="secondary" style={{ display: 'block', marginTop: 4, fontSize: 12 }}>
-                      {t('strategy.validate.staleHint', { defaultValue: 'The validation results below are from the previous code version.' })}
-                    </Text>
-                    <div style={{ marginTop: 12 }}>
-                      <ValidationResults result={validationResult} onFixWithAI={onFixWithAI} />
-                    </div>
                   </div>
                 ) : validationResult ? (
                   <ValidationResults result={validationResult} onFixWithAI={onFixWithAI} />

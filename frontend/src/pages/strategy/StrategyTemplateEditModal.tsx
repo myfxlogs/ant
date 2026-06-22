@@ -43,12 +43,10 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 
   const applyAICode = useCallback((newCode: string) => {
     form.setFieldsValue({ code: newCode });
+    // Auto-validate after AI applies code — user wants real results immediately.
+    onValidate(newCode);
     setAiTab('validate');
-  }, [form]);
-
-  // Stale validation guard: if code was modified (e.g. by AI), old results are invalid.
-  const validationStale = !codeValidating && validationResult && code !== lastValidatedCode;
-  const displayResult = validationStale ? null : validationResult;
+  }, [form, onValidate]);
   const handleFixWithAI = useCallback(() => {
     if (!validationResult) return;
     const parts: string[] = [];
@@ -80,8 +78,7 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
           <Col span={15}><CodeEditorPanel form={form} code={code} /></Col>
           <Col span={9}>
             <AIPanel activeTab={aiTab} onTabChange={setAiTab} code={code} codeValidating={codeValidating}
-              validationResult={displayResult} validationStale={validationStale}
-              fixInstruction={fixInstruction}
+              validationResult={validationResult} fixInstruction={fixInstruction}
               onApplyCode={applyAICode} onFixWithAI={handleFixWithAI} />
           </Col>
         </Row>
