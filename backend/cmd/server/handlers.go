@@ -184,7 +184,7 @@ func registerHandlers(
 	aiSvc.SetGatewayProviderRepo(gatewayProviderRepo)
 
 	// Wire wallet pre-check: block AI calls when balance is insufficient.
-	aiMinBalance := 0.0001
+	aiMinBalance := 1.0
 	if v := os.Getenv("AI_MIN_BALANCE"); v != "" {
 		if parsed, err := strconv.ParseFloat(v, 64); err == nil && parsed >= 0 {
 			aiMinBalance = parsed
@@ -213,7 +213,7 @@ func registerHandlers(
 			outCost := float64(r.OutputTokens) / 1_000_000.0 * op
 			cost = strconv.FormatFloat(inCost+outCost, 'f', 8, 64)
 		}
-		_ = gatewayServer.RecordTokenUsage(ctx, r.UserID, "system", r.ProviderID, r.Model, r.Feature, r.InputTokens, r.OutputTokens, cost)
+		if err := gatewayServer.RecordTokenUsage(ctx, r.UserID, "system", r.ProviderID, r.Model, r.Feature, r.InputTokens, r.OutputTokens, cost); err != nil { log.Error("AI billing: wallet deduction failed", zap.String("user_id", r.UserID.String()), zap.Int("input_tokens", r.InputTokens), zap.Int("output_tokens", r.OutputTokens), zap.String("cost", cost), zap.Error(err)) }
 	})
 
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
