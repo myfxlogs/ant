@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, Input, Space, message } from 'antd';
 import { RobotOutlined, SendOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
@@ -31,6 +31,8 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
     if (initialInstruction) setDraft(initialInstruction);
   }, [initialInstruction]);
 
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
   const send = () => {
     const instr = draft.trim();
     if (!instr) {
@@ -41,20 +43,23 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
     setLoading(true);
     setStreamingText('');
     streamingRef.current = '';
-    const userMsg = instr;
     setDraft('');
 
+    // Optimistic: show user message immediately, don't wait for AI response.
+    const userMsg: CodeChatMessage = { role: 'user', content: instr };
+    setHistory(prev => [...prev, userMsg]);
+
     const stop = codeAssistApi.reviseStream(
-      { code, instruction: instr, history, locale: i18n.language },
+      { code, instruction: instr, history: [...history, userMsg], locale: i18n.language },
       {
-        onDelta: (delta) => { setStreamingText((prev) => prev + delta); },
+        onDelta: (delta) => {
+          streamingRef.current += delta;
+          setStreamingText(streamingRef.current);
+        },
         onResult: (python) => {
           setLoading(false);
-          setHistory([
-            ...history,
-            { role: 'user' as const, content: userMsg },
-            { role: 'assistant' as const, content: streamingRef.current || python },
-          ]);
+          const aiMsg: CodeChatMessage = { role: 'assistant' as const, content: streamingRef.current || python };
+          setHistory(prev => [...prev, aiMsg]);
           streamingRef.current = '';
           setStreamingText('');
           if (python) {
@@ -66,7 +71,6 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
           setLoading(false);
           streamingRef.current = '';
           setStreamingText('');
-          // ConnectRPC errors are handled globally by the transport interceptor (Modal).
           if ((e as any)?.code == null) {
             message.error(String((e as Error)?.message || e || 'failed'));
           }
@@ -76,30 +80,36 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
     stopRef.current = stop;
   };
 
-  const messagesView = useMemo(
-    () => history.map((m, i) => (
-      <div key={i} style={{
-        margin: '6px 0', padding: '6px 10px', borderRadius: 6,
-        background: m.role === 'user' ? '#e6f4ff' : '#f6ffed',
-        fontSize: 12, whiteSpace: 'pre-wrap',
-      }}>
-        <b style={{ color: m.role === 'user' ? '#1677ff' : '#389e0d' }}>
-          {m.role === 'user' ? t('common.you', { defaultValue: 'You' }) : 'AI'}
-        </b>
-        <div>{m.content}</div>
-      </div>
-    )),
-    [history, t],
-  );
+  // Auto-scroll to bottom when new messages arrive.
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [history, streamingText]);
 
   return (
-    <div style={{ border: '1px solid #f0f0f0', borderRadius: 6, padding: 8, background: '#fff' }}>
-      <Space style={{ marginBottom: 6 }}>
+    <div style={{ border: '1px solid #f0f0f0', borderRadius: 6, padding: 8, background: '#fff', display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Space style={{ marginBottom: 6, flex: 'none' }}>
         <RobotOutlined />
         <span>{t(AI_REVISE_TITLE_KEY, { defaultValue: 'AI assistant' })}</span>
+        {loading && <span style={{ fontSize: 11, color: '#1677ff' }}>●</span>}
       </Space>
-      <div style={{ maxHeight: 200, overflow: 'auto', marginBottom: 6 }}>
-        {messagesView}
+      <div style={{ flex: 1, overflow: 'auto', marginBottom: 6, minHeight: 0 }}>
+        {history.length === 0 && !streamingText && (
+          <div style={{ textAlign: 'center', padding: 20, color: '#8c8c8c', fontSize: 12 }}>
+            {t('strategy.codeAssist.aiHint', { defaultValue: 'Describe the changes you want, e.g. "Add a 2% stop-loss" or "Replace SMA with EMA"' })}
+          </div>
+        )}
+        {history.map((m, i) => (
+          <div key={i} style={{
+            margin: '6px 0', padding: '6px 10px', borderRadius: 6,
+            background: m.role === 'user' ? '#e6f4ff' : '#f6ffed',
+            fontSize: 12, whiteSpace: 'pre-wrap',
+          }}>
+            <b style={{ color: m.role === 'user' ? '#1677ff' : '#389e0d' }}>
+              {m.role === 'user' ? t('common.you', { defaultValue: 'You' }) : 'AI'}
+            </b>
+            <div>{m.content}</div>
+          </div>
+        ))}
         {streamingText && (
           <div style={{
             margin: '6px 0', padding: '6px 10px', borderRadius: 6,
@@ -109,6 +119,7 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
             <div>{streamingText}</div>
           </div>
         )}
+        <div ref={chatEndRef} />
       </div>
       <TextArea rows={2} value={draft} onChange={(e) => setDraft(e.target.value)}
         placeholder={code.trim()
