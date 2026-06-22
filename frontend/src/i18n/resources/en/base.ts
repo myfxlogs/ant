@@ -526,6 +526,8 @@ const Base = {
       "config_valid": "AI config is valid",
       "failed_to_create_request": "Failed to create request",
       "forbidden_quota": "Quota exceeded",
+      "insufficient_balance": "AI balance insufficient. Please top up in AI Settings before using AI features.",
+      "insufficient_balance_title": "Insufficient Balance",
       "free_tier_exhausted": "Free tier exhausted",
       "invalid_base_url": "Invalid Base URL",
       "invalid_provider": "Invalid provider",
@@ -558,7 +560,8 @@ const Base = {
   "strategy": {
     "ai": {
       "reviseHint": "Write code first, then ask AI to improve it.",
-      "explainHint": "Write code to see AI explanation."
+      "explainHint": "Write code to see AI explanation.",
+      "modelLabel": "AI Model",
     },
     "validate": {
       "allClear": "All checks passed — no issues found.",

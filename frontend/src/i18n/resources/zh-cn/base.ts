@@ -558,7 +558,8 @@ const Base = {
   "strategy": {
     "ai": {
       "reviseHint": "请先编写代码，然后让 AI 进行优化。",
-      "explainHint": "编写代码后即可查看 AI 解释。"
+      "explainHint": "编写代码后即可查看 AI 解释。",
+      "modelLabel": "AI 模型",
     },
     "validate": {
       "allClear": "全部检查通过，未发现问题。",

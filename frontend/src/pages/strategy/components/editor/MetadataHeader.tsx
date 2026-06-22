@@ -37,7 +37,7 @@ export default function MetadataHeader({ aiModel }: Props) {
           </Form.Item>
         </Col>
         <Col span={4}>
-          <Form.Item label={<Text strong>{t('strategy.ai.modelLabel', { defaultValue: 'AI Model' })}</Text>} style={{ marginBottom: 0 }}>
+          <Form.Item label={<Text strong>{t('strategy.ai.modelLabel')}</Text>} style={{ marginBottom: 0 }}>
             <Tooltip title={t('strategy.ai.settingsHint', { defaultValue: 'Configure AI provider and model' })}>
               <Button icon={<SettingOutlined />} onClick={() => setSettingsOpen(true)}
                 style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 6 }}>
