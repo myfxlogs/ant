@@ -564,6 +564,8 @@ const Base = {
       "modelLabel": "AI Model",
     },
     "validate": {
+      "stale": "Code was modified — re-validate to check.",
+      "staleHint": "The results below are from the previous code version.",
       "allClear": "All checks passed — no issues found.",
       "errors": "Errors",
       "failed": "Validation Failed",

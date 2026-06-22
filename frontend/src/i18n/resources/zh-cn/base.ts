@@ -562,6 +562,8 @@ const Base = {
       "modelLabel": "AI 模型",
     },
     "validate": {
+      "stale": "代码已修改 — 请重新验证。",
+      "staleHint": "下方是旧版代码的验证结果。",
       "allClear": "全部检查通过，未发现问题。",
       "errors": "错误",
       "failed": "验证失败",
