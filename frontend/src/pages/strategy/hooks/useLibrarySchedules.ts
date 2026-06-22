@@ -116,30 +116,31 @@ export function useLibrarySchedules(selectedTemplateId: string) {
 
   useEffect(() => { void refresh(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // SSE — start after initial fetch, auto-reconnect on disconnect.
+  // SSE — start after initial fetch, proactive reconnect before Cloudflare 100s timeout.
   const [sseReady, setSseReady] = useState(false);
   useEffect(() => { if (!loading) setSseReady(true); }, [loading]);
   useEffect(() => {
     if (!sseReady) return;
     let active = true;
-    let retryMs = 1000;
+    const RECONNECT_MS = 90_000; // reconnect before Cloudflare 100s timeout
 
     const connect = async () => {
       while (active) {
         const ctrl = new AbortController();
         try {
-          for await (const event of strategyScheduleV2Api.watch(ctrl.signal)) {
-            if (!active) break;
-            setSchedules((event.schedules || []) as ScheduleRow[]);
-            retryMs = 1000; // reset on success
-          }
-        } catch {
-          // Stream disconnected (timeout, network, etc.) — reconnect with backoff.
-          if (!active) break;
-          await new Promise(r => setTimeout(r, retryMs));
-          retryMs = Math.min(retryMs * 2, 30000);
-        }
-        try { ctrl.abort(); } catch { /* ignore */ }
+          // Race: stream vs proactive reconnect timer.
+          const streamDone = (async () => {
+            for await (const event of strategyScheduleV2Api.watch(ctrl.signal)) {
+              if (!active) break;
+              setSchedules((event.schedules || []) as ScheduleRow[]);
+            }
+          })();
+          const timerDone = new Promise(r => setTimeout(r, RECONNECT_MS));
+          await Promise.race([streamDone, timerDone]);
+          ctrl.abort(); // proactively abort before Cloudflare kills it
+        } catch { /* stream error — reconnect immediately */ }
+        if (!active) break;
+        await new Promise(r => setTimeout(r, 2000)); // brief pause before reconnect
       }
     };
     connect();
