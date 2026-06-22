@@ -35,6 +35,7 @@ export interface LibraryCtx {
   editOpen: boolean; setEditOpen: (v: boolean) => void;
   editing: StrategyTemplate | null; setEditing: (tpl: StrategyTemplate | null) => void;
   codeValidating: boolean; lastValidatedCode: string; setLastValidatedCode: (s: string) => void;
+  validationResult: any; handleValidate: (code: string) => void;
   handleSave: (values: Record<string, unknown>) => void;
   // Code view
   codeViewOpen: boolean; setCodeViewOpen: (v: boolean) => void;

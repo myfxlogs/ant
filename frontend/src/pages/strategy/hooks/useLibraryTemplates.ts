@@ -8,7 +8,7 @@ import { MY_COPY_KEY, SAVE_AS_MINE_SUCCESS_KEY, UNPUBLISH_SUCCESS_KEY } from '@/
 import { useQueryClient } from '@tanstack/react-query';
 import type { StrategyTemplate } from '@/client/strategy';
 import { strategyTemplateApi, type CreateTemplateRequest } from '@/client/strategy-schedules';
-import { codeAssistApi } from '@/client/codeAssist';
+import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
 import { useAuthStore } from '@/stores/authStore';
 import { isSystemTemplate } from './libraryTypes';
 
@@ -26,6 +26,7 @@ export function useLibraryTemplates() {
   const [editing, setEditing] = useState<StrategyTemplate | null>(null);
   const [codeValidating, setCodeValidating] = useState(false);
   const [lastValidatedCode, setLastValidatedCode] = useState<string>('');
+  const [validationResult, setValidationResult] = useState<ValidateExtendedResult | null>(null);
   const [publishing, setPublishing] = useState(false);
   const queryClient = useQueryClient();
   const currentUserId = useAuthStore(s => s.user?.id);
@@ -93,6 +94,23 @@ export function useLibraryTemplates() {
     } catch { message.error(t('common.saveFailed')); }
   }, [fetchTemplates, t]);
 
+  const handleValidate = useCallback(async (code: string) => {
+    if (!code.trim()) return;
+    setCodeValidating(true);
+    setValidationResult(null);
+    try {
+      const result = await codeAssistApi.validateExtended(code);
+      setValidationResult(result);
+      if (result.valid) {
+        setLastValidatedCode(code);
+        message.success(t('strategy.validate.passed', { defaultValue: 'Validation passed — Save is now unlocked.' }));
+      } else {
+        message.error(result.errors?.[0] || result.warnings?.[0] || t(MESSAGES_CODE_VALIDATION_NOT_PASSED_KEY));
+      }
+    } catch (e: unknown) { message.error((e as Error)?.message || 'Validation failed'); }
+    finally { setCodeValidating(false); }
+  }, [t]);
+
   const handleSave = useCallback(async (values: Record<string, unknown>) => {
     try {
       setCodeValidating(true);
@@ -158,8 +176,8 @@ export function useLibraryTemplates() {
     loading, error, filter, setFilter, search, setSearch,
     selectedId, setSelectedId, selected,
     editOpen, setEditOpen, editing, setEditing,
-    codeValidating, lastValidatedCode, setLastValidatedCode,
-    publishing, fetchTemplates, openCreate, openEdit, handleSaveAsMine, handleSave, handleDelete,
+    codeValidating, lastValidatedCode, setLastValidatedCode, validationResult,
+    publishing, fetchTemplates, openCreate, openEdit, handleSaveAsMine, handleValidate, handleSave, handleDelete,
     handlePublish, handleUnpublish,
     // Marketplace publish modal
     publishModalOpen, setPublishModalOpen, publishingTemplate,

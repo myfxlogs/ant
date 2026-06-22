@@ -19,13 +19,14 @@ export type StrategyTemplateEditModalProps = {
 	editingTemplate: StrategyTemplate | null;
 	form: FormInstance;
 	codeValidating: boolean;
+		validationResult?: { valid?: boolean; errors?: string[]; warnings?: string[] } | null;
 	// Code that last passed validation. Save is disabled until the current
 	// code in the form matches this value, forcing the user to (re-)run
 	// validation after every edit. Required-param values are NOT collected
 	// here — they are now collected at backtest/schedule submit time.
-	lastValidatedCode?: string;
+		lastValidatedCode?: string;
 	onCancel: () => void;
-	onValidate: () => void;
+	onValidate: (code: string) => void;
 	onSubmit: (values: Record<string, unknown>) => void;
 };
 
@@ -35,6 +36,7 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 	form,
 	codeValidating,
 	lastValidatedCode = '',
+		validationResult,
 	onCancel,
 	onValidate,
 	onSubmit,
@@ -102,7 +104,7 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 				<Button key="cancel" onClick={onCancel} disabled={codeValidating}>
 					{t('common.cancel')}
 				</Button>,
-				<Button key="validate" onClick={onValidate} loading={codeValidating} icon={<ThunderboltOutlined />}>
+				<Button key="validate" onClick={() => onValidate(code)} loading={codeValidating} icon={<ThunderboltOutlined />}>
 					{t(EDIT_TEMPLATE_MODAL_ACTIONS_VALIDATE_CODE_KEY)}
 				</Button>,
 				<Button
@@ -251,6 +253,20 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 						</div>
 					</Col>
 
+						{validationResult && (
+							<div style={{ marginTop: 10, padding: "8px 12px", borderRadius: 8,
+								background: validationResult.valid ? "#f6ffed" : "#fff2f0",
+								border: `1px solid ${validationResult.valid ? "#b7eb8f" : "#ffccc7"}` }}>
+								{validationResult.valid
+									? <Text type="success" style={{ fontSize: 12 }}>
+										{t("strategy.validate.passedDetail", { defaultValue: "Validation passed" })}
+										{validationResult.warnings?.length ? ` — ${validationResult.warnings.length} warning(s)` : ""}
+									</Text>
+									: <Text type="danger" style={{ fontSize: 12 }}>
+										{validationResult.errors?.[0] || t("strategy.validate.failed", { defaultValue: "Validation failed" })}
+									</Text>}
+							</div>
+						)}
 					{/* Right: AI assistant — Revise & Explain in tabs */}
 					<Col span={9}>
 						<div style={{

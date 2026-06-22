@@ -45,6 +45,8 @@ function LibraryUI() {
     editOpen: tCtx.editOpen, setEditOpen: tCtx.setEditOpen,
     editing: tCtx.editing, setEditing: tCtx.setEditing,
     codeValidating: tCtx.codeValidating, lastValidatedCode: tCtx.lastValidatedCode, setLastValidatedCode: tCtx.setLastValidatedCode,
+    validationResult: tCtx.validationResult,
+    handleValidate: (code: string) => { tCtx.handleValidate(code); },
     handleSave: async (values: Record<string, unknown>) => { await tCtx.handleSave(values); editForm.resetFields(); },
     codeViewOpen: lib.codeViewOpen, setCodeViewOpen: lib.setCodeViewOpen,
     viewingCode: lib.viewingCode, setViewingCode: lib.setViewingCode,
@@ -96,8 +98,9 @@ function LibraryUI() {
         {tCtx.editOpen && (
           <StrategyTemplateEditModal open={tCtx.editOpen} editingTemplate={tCtx.editing} form={editForm}
             codeValidating={tCtx.codeValidating} lastValidatedCode={tCtx.lastValidatedCode}
+            validationResult={tCtx.validationResult}
             onCancel={() => { tCtx.setEditOpen(false); editForm.resetFields(); }}
-            onValidate={() => {}}
+            onValidate={(code: string) => { tCtx.handleValidate(code); }}
             onSubmit={ctxValue.handleSave} />
         )}
       </Suspense>
