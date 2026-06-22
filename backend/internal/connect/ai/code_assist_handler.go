@@ -224,8 +224,10 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 	result, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
 	if err != nil {
 		s.log.Warn("CodeAssist: TransformCode LLM call failed", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal,
-			fmt.Errorf("translation failed — AI service error. Please try again."))
+		if errors.Is(err, systemai.ErrInsufficientBalance) {
+			return nil, systemai.WrapAIError(err)
+		}
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
 	}
 
 	// Extract Python code from response (strip markdown fences if present).
