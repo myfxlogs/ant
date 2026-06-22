@@ -46,21 +46,21 @@ export function useStrategyWorkspaceState() {
   const [searchParams] = useSearchParams();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
 
-  // Load template from URL on mount (e.g. from Library "Open in Workspace").
-  useEffect(() => {
-    const tid = searchParams.get('templateId');
-    if (tid) handleSelectTemplate(tid);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleSelectTemplate = useCallback(async (templateId: string | null) => {
     if (!templateId) {
       setSelectedTemplateId('');
       return;
     }
-    setSelectedTemplateId(templateId); // Optimistic — reverts below on failure
+    setSelectedTemplateId(templateId);
     const ok = await codeCtx.handleLoadTemplate(templateId);
     if (!ok) setSelectedTemplateId('');
   }, [codeCtx.handleLoadTemplate]);
+
+  // Load template from URL on mount (e.g. from Library "Open in Workspace").
+  useEffect(() => {
+    const tid = searchParams.get('templateId');
+    if (tid) handleSelectTemplate(tid);
+  }, [searchParams, handleSelectTemplate]);
 
   const handleRunBacktest = useCallback(() => {
     btCtx.runBacktest({
