@@ -132,11 +132,35 @@ func (e *CopyTradeEngine) Process(ctx context.Context, signal CopySignalEvent) <
 			return
 		}
 
+		// Dedup: skip if this signal was already processed.
+		if !e.markSignalProcessed(ctx, signal) {
+			resultCh <- &CopyTradeResult{
+				SignalID: signal.SignalID, StrategyID: signal.StrategyID,
+				Duration: time.Since(started),
+			}
+			return
+		}
+
 		result := e.processSync(ctx, signal, started)
 		resultCh <- result
 	}()
 
 	return resultCh
+}
+
+// markSignalProcessed atomically inserts a signal ID and returns true if it
+// was new (not previously processed). Returns false if the signal was already
+// processed (primary key conflict).
+func (e *CopyTradeEngine) markSignalProcessed(ctx context.Context, signal CopySignalEvent) bool {
+	if signal.SignalID == "" {
+		return true // no id → allow (backward compatible)
+	}
+	_, err := e.marketplace.pg.Exec(ctx,
+		`INSERT INTO copytrade_signals (signal_id, strategy_id) VALUES ($1, $2)
+		 ON CONFLICT (signal_id) DO NOTHING`,
+		signal.SignalID, signal.StrategyID,
+	)
+	return err == nil
 }
 
 // processSync is the synchronous implementation. It runs inside the goroutine

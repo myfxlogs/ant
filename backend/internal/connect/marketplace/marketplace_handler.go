@@ -34,6 +34,7 @@ type marketplaceSvc interface {
 	ListSubscriptions(ctx context.Context, userID string) ([]marketplace.SubscriptionItem, error)
 	SetPricing(ctx context.Context, strategyID, priceModel string, priceAmount, platformFeeRate float64) error
 	Unpublish(ctx context.Context, strategyID, userID string, isAdmin bool) error
+	GetPublisherStats(ctx context.Context, userID string) (*marketplace.PublisherStats, error)
 	CanAccessCode(ctx context.Context, userID, strategyID string) (bool, error)
 	StartMarketBacktest(ctx context.Context, params marketplace.StartBacktestParams) (string, error)
 	QueryBacktestRun(ctx context.Context, runID uuid.UUID) (*marketplace.BacktestRunSnapshot, error)
@@ -338,6 +339,30 @@ func (s *MarketplaceServer) UnpublishStrategy(ctx context.Context, req *connect.
 	}
 	return connect.NewResponse(&antv1.UnpublishMarketStrategyResponse{
 		StrategyId: m.StrategyId, Status: "hidden",
+	}), nil
+}
+
+// --- Publisher Stats ---
+
+func (s *MarketplaceServer) GetPublisherStats(ctx context.Context, req *connect.Request[antv1.GetPublisherStatsRequest]) (*connect.Response[antv1.GetPublisherStatsResponse], error) {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+	stats, err := s.svc.GetPublisherStats(ctx, userID)
+	if err != nil {
+		s.log.Error("GetPublisherStats", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.GetPublisherStatsResponse{
+		TotalPublished:   stats.TotalPublished,
+		TotalSubscribers: stats.TotalSubscribers,
+		TotalRevenue:     stats.TotalRevenue,
+		MonthlyRevenue:   stats.MonthlyRevenue,
+		AvgRating:        stats.AvgRating,
+		TopStrategyId:    stats.TopStrategyID,
+		TopStrategyTitle: stats.TopStrategyTitle,
+		TopStrategySubs:  stats.TopStrategySubs,
 	}), nil
 }
 

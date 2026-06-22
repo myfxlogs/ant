@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 // SubscriptionItem represents a user's subscription.
@@ -35,7 +36,7 @@ func (s *Service) Subscribe(ctx context.Context, userID, publisherUserID, strate
 	var priceAmount float64
 	var dbPublisherID string
 	err := s.pg.QueryRow(ctx,
-		`SELECT price_model, COALESCE(price_amount, 0), publisher_id::text FROM marketplace_strategies WHERE strategy_id = $1`,
+		`SELECT price_model, COALESCE(price_amount, 0), publisher_id::text FROM marketplace_strategies WHERE strategy_id = $1 AND status = 'published'`,
 		strategyID,
 	).Scan(&priceModel, &priceAmount, &dbPublisherID)
 	if err == nil {
@@ -74,6 +75,7 @@ func (s *Service) ListActiveSubscribers(ctx context.Context, strategyID string) 
 		SELECT id, subscriber_user_id, target_strategy_id, kind, active, created_at
 		FROM user_subscriptions
 		WHERE target_strategy_id = $1 AND active = true
+		  AND (expires_at IS NULL OR expires_at > now())
 		ORDER BY created_at DESC
 	`, strategyID)
 	if err != nil {
@@ -91,15 +93,40 @@ func (s *Service) ListActiveSubscribers(ctx context.Context, strategyID string) 
 	return out, rows.Err()
 }
 
-// Unsubscribe deactivates a subscription.
+// Unsubscribe deactivates a subscription and decrements the subscriber counter.
 func (s *Service) Unsubscribe(ctx context.Context, userID, subscriptionID string) error {
-	_, err := s.pg.Exec(ctx, `
-		UPDATE user_subscriptions SET active = false
-		WHERE id = $1 AND subscriber_user_id = $2
-	`, subscriptionID, userID)
+	tx, err := s.pg.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("marketplace: unsubscribe begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Deactivate the subscription and get the strategy ID.
+	var strategyID string
+	err = tx.QueryRow(ctx,
+		`UPDATE user_subscriptions SET active = false
+		 WHERE id = $1 AND subscriber_user_id = $2 AND active = true
+		 RETURNING target_strategy_id::text`,
+		subscriptionID, userID,
+	).Scan(&strategyID)
 	if err != nil {
 		return fmt.Errorf("marketplace: unsubscribe: %w", err)
 	}
+
+	// Decrement subscriber counter (floor at 0).
+	_, err = tx.Exec(ctx,
+		`UPDATE marketplace_strategies SET total_subscribers = GREATEST(total_subscribers - 1, 0)
+		 WHERE strategy_id = $1`,
+		strategyID,
+	)
+	if err != nil {
+		return fmt.Errorf("marketplace: decrement subscribers: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("marketplace: unsubscribe commit: %w", err)
+	}
+	publishedCacheClear()
 	return nil
 }
 
@@ -124,6 +151,110 @@ func (s *Service) ListSubscriptions(ctx context.Context, userID string) ([]Subsc
 		out = append(out, sub)
 	}
 	return out, rows.Err()
+}
+
+// RenewSubscriptions finds active subscription-model subscriptions that have
+// expired and attempts to charge for another period. Successful renewals get
+// a 30-day extension; failed ones (insufficient balance) are deactivated.
+// Returns the number of renewed and failed subscriptions.
+func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, err error) {
+	rows, qErr := s.pg.Query(ctx, `
+		SELECT us.id, us.subscriber_user_id::text, us.target_strategy_id::text,
+		       ms.price_amount, ms.title, ms.platform_fee_rate
+		FROM user_subscriptions us
+		JOIN marketplace_strategies ms ON ms.strategy_id = us.target_strategy_id
+		WHERE us.kind = $1 AND us.active = true
+		  AND us.expires_at IS NOT NULL AND us.expires_at <= now()
+		FOR UPDATE OF us SKIP LOCKED
+		LIMIT 100`, SubKindSubscription)
+	if qErr != nil {
+		return 0, 0, qErr
+	}
+	defer rows.Close()
+
+	type renewalItem struct {
+		subID, userID, strategyID, title string
+		priceAmount, platformFeeRate     float64
+	}
+	var renewals []renewalItem
+	for rows.Next() {
+		var r renewalItem
+		if err := rows.Scan(&r.subID, &r.userID, &r.strategyID, &r.priceAmount, &r.title, &r.platformFeeRate); err != nil {
+			continue
+		}
+		renewals = append(renewals, r)
+	}
+	rows.Close()
+
+	for _, p := range renewals {
+		tx, txErr := s.pg.Begin(ctx)
+		if txErr != nil {
+			failed++
+			continue
+		}
+
+		amountStr := fmt.Sprintf("%.2f", p.priceAmount)
+		var balAfter string
+		chargeErr := tx.QueryRow(ctx,
+			`UPDATE user_wallets SET balance = balance - $1::numeric, updated_at = now()
+			 WHERE user_id = $2 AND balance >= $1::numeric
+			 RETURNING balance::text`,
+			amountStr, p.userID,
+		).Scan(&balAfter)
+
+		if chargeErr != nil {
+			// Insufficient balance — deactivate.
+			tx.Exec(ctx, `UPDATE user_subscriptions SET active = false WHERE id = $1`, p.subID)
+			tx.Commit(ctx)
+			failed++
+			continue
+		}
+
+		// Extend subscription by 30 days.
+		tx.Exec(ctx,
+			`UPDATE user_subscriptions SET expires_at = now() + INTERVAL '30 days' WHERE id = $1`,
+			p.subID,
+		)
+
+		// Record renewal transaction.
+		uid, _ := uuid.Parse(p.userID)
+		tx.Exec(ctx,
+			fmt.Sprintf(`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+			 VALUES ($1, (SELECT id FROM user_wallets WHERE user_id = $2), $2, '%s', $3::numeric, '0', $4, $5)`,
+				TxTypePurchase),
+			uuid.New(), uid, "-"+amountStr, balAfter,
+			fmt.Sprintf("Subscription renewal: %s", p.title),
+		)
+
+		tx.Commit(ctx)
+		renewed++
+	}
+
+	return renewed, failed, nil
+}
+
+// StartRenewalLoop runs a daily subscription renewal ticker in a background
+// goroutine. Call during server startup.
+func (s *Service) StartRenewalLoop(log *zap.Logger) {
+	go func() {
+		ticker := time.NewTicker(24 * time.Hour)
+		defer ticker.Stop()
+		// Run once at startup to catch overdue renewals.
+		renewed, failed, _ := s.RenewSubscriptions(context.Background())
+		if renewed+failed > 0 {
+			log.Info("subscription renewal startup run", zap.Int("renewed", renewed), zap.Int("failed", failed))
+		}
+		for range ticker.C {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			renewed, failed, err := s.RenewSubscriptions(ctx)
+			cancel()
+			if err != nil {
+				log.Error("subscription renewal failed", zap.Error(err))
+			} else if renewed+failed > 0 {
+				log.Info("subscription renewal complete", zap.Int("renewed", renewed), zap.Int("failed", failed))
+			}
+		}
+	}()
 }
 
 // CanAccessCode returns true if the user can view the full strategy code.

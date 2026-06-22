@@ -95,6 +95,54 @@ func (s *Service) Unpublish(ctx context.Context, strategyID, userID string, isAd
 	return nil
 }
 
+// GetPublisherStats returns aggregated dashboard statistics for a publisher.
+func (s *Service) GetPublisherStats(ctx context.Context, userID string) (*PublisherStats, error) {
+	var stats PublisherStats
+	err := s.pg.QueryRow(ctx,
+		`SELECT COUNT(*), COALESCE(SUM(total_subscribers),0)
+		 FROM marketplace_strategies WHERE publisher_id::text = $1 AND status = 'published'`,
+		userID,
+	).Scan(&stats.TotalPublished, &stats.TotalSubscribers)
+	if err != nil {
+		return nil, err
+	}
+
+	// Total revenue from sale transactions.
+	_ = s.pg.QueryRow(ctx,
+		`SELECT COALESCE(SUM(amount::numeric),0)::text FROM wallet_transactions
+		 WHERE user_id::text = $1 AND tx_type = 'sale'`,
+		userID,
+	).Scan(&stats.TotalRevenue)
+
+	// Monthly revenue (last 30 days).
+	_ = s.pg.QueryRow(ctx,
+		`SELECT COALESCE(SUM(amount::numeric),0)::text FROM wallet_transactions
+		 WHERE user_id::text = $1 AND tx_type = 'sale'
+		   AND created_at > now() - INTERVAL '30 days'`,
+		userID,
+	).Scan(&stats.MonthlyRevenue)
+
+	// Average rating across all published strategies.
+	_ = s.pg.QueryRow(ctx,
+		`SELECT COALESCE(AVG(r.avg_rating),0)
+		 FROM marketplace_strategies ms
+		 LEFT JOIN (SELECT strategy_id, AVG(rating) AS avg_rating FROM marketplace_ratings GROUP BY strategy_id) r ON r.strategy_id = ms.id
+		 WHERE ms.publisher_id::text = $1 AND ms.status = 'published'`,
+		userID,
+	).Scan(&stats.AvgRating)
+
+	// Top strategy by subscribers.
+	_ = s.pg.QueryRow(ctx,
+		`SELECT strategy_id::text, COALESCE(title,''), total_subscribers
+		 FROM marketplace_strategies
+		 WHERE publisher_id::text = $1 AND status = 'published'
+		 ORDER BY total_subscribers DESC LIMIT 1`,
+		userID,
+	).Scan(&stats.TopStrategyID, &stats.TopStrategyTitle, &stats.TopStrategySubs)
+
+	return &stats, nil
+}
+
 // Publish adds a strategy to the marketplace. Writes to both
 // user_strategy_publishes (ownership tracking) and marketplace_strategies
 // (rich listing metadata). Uses a transaction for atomicity.
@@ -199,32 +247,35 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit, offs
 		 LEFT JOIN strategy_templates st ON st.id::text=usp.platform_strategy_id::text
 		 LEFT JOIN users u ON u.id = usp.user_id
 		 LEFT JOIN (SELECT strategy_id, AVG(rating) AS avg_rating, COUNT(*)::int AS rating_count FROM marketplace_ratings GROUP BY strategy_id) r ON r.strategy_id=ms.id
-		 WHERE 1=1`
+		 WHERE ms.status = 'published'`
 	args := []interface{}{}
+	p := 0 // positional parameter counter
+	next := func() int { p++; return p }
+
 	if userID != "" {
-		query += fmt.Sprintf(" AND usp.user_id::text = $%d", len(args)+1)
+		query += fmt.Sprintf(" AND usp.user_id::text = $%d", next())
 		args = append(args, userID)
 	}
 	if assetClass != "" {
-		query += fmt.Sprintf(" AND ms.asset_class = $%d", len(args)+1)
+		query += fmt.Sprintf(" AND ms.asset_class = $%d", next())
 		args = append(args, assetClass)
 	}
 	if keyword != "" {
 		kw := "%" + keyword + "%"
-		query += fmt.Sprintf(" AND (ms.title ILIKE $%d OR ms.description ILIKE $%d OR ms.tags::text ILIKE $%d)", len(args)+1, len(args)+1, len(args)+1)
+		query += fmt.Sprintf(" AND (ms.title ILIKE $%d OR ms.description ILIKE $%d OR ms.tags::text ILIKE $%d)", next(), next(), next())
 		args = append(args, kw)
 	}
 	switch sortBy {
 	case "popular":
-		query += fmt.Sprintf(" ORDER BY COALESCE(ms.total_subscribers,0) DESC LIMIT $%d", len(args)+1)
+		query += fmt.Sprintf(" ORDER BY COALESCE(ms.total_subscribers,0) DESC LIMIT $%d", next())
 	case "performance":
-		query += fmt.Sprintf(" ORDER BY COALESCE(ms.win_rate,0) DESC LIMIT $%d", len(args)+1)
+		query += fmt.Sprintf(" ORDER BY COALESCE(ms.win_rate,0) DESC LIMIT $%d", next())
 	default:
-		query += fmt.Sprintf(" ORDER BY usp.published_at DESC LIMIT $%d", len(args)+1)
+		query += fmt.Sprintf(" ORDER BY usp.published_at DESC LIMIT $%d", next())
 	}
 	args = append(args, limit)
 	if offset > 0 {
-		query += fmt.Sprintf(" OFFSET $%d", len(args)+1)
+		query += fmt.Sprintf(" OFFSET $%d", next())
 		args = append(args, offset)
 	}
 	return query, args

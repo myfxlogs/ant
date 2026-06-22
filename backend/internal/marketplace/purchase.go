@@ -3,6 +3,7 @@ package marketplace
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -23,10 +24,16 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 		return nil, fmt.Errorf("marketplace: invalid strategy_id: %w", err)
 	}
 
-	// 0. Idempotency check — if a subscription already exists with this key, return it.
+	tx, err := s.pg.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// 0. Idempotency check inside transaction — serialized to prevent races.
 	if idempotencyKey != "" {
 		var existingSubID, existingTxID, existingAmount, existingBalance string
-		err := s.pg.QueryRow(ctx,
+		err := tx.QueryRow(ctx,
 			`SELECT us.id::text, wt.id::text, ABS(wt.amount)::text, w.balance::text
 			 FROM user_subscriptions us
 			 JOIN wallet_transactions wt ON wt.user_id = us.subscriber_user_id AND wt.tx_type = $1
@@ -36,6 +43,7 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 			TxTypePurchase, idempotencyKey, uid,
 		).Scan(&existingSubID, &existingTxID, &existingAmount, &existingBalance)
 		if err == nil {
+			tx.Rollback(ctx)
 			return &PurchaseResult{
 				SubscriptionID: existingSubID,
 				TransactionID:  existingTxID,
@@ -44,12 +52,6 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 			}, nil
 		}
 	}
-
-	tx, err := s.pg.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: begin tx: %w", err)
-	}
-	defer tx.Rollback(ctx)
 
 	// 1. Look up strategy price, publisher, and platform fee (source of truth from DB).
 	var priceModel string
@@ -60,7 +62,7 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 	err = tx.QueryRow(ctx,
 		`SELECT price_model, COALESCE(price_amount, 0), title, publisher_id::text,
 		        COALESCE(platform_fee_rate, 0)
-		 FROM marketplace_strategies WHERE strategy_id = $1`,
+		 FROM marketplace_strategies WHERE strategy_id = $1 AND status = 'published'`,
 		sid,
 	).Scan(&priceModel, &priceAmount, &strategyTitle, &dbPublisherID, &platformFeeRate)
 	if err != nil {
@@ -72,11 +74,11 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 
 	// Determine subscription kind and expiry.
 	subKind := SubKindPurchase
-	var expiresAt *string // nil = permanent
+	var expiresAt *time.Time // nil = permanent
 	if priceModel == PriceModelSubscription {
 		subKind = SubKindSubscription
-		expiry := "now() + INTERVAL '30 days'"
-		expiresAt = &expiry
+		exp := time.Now().Add(30 * 24 * time.Hour)
+		expiresAt = &exp
 	}
 
 	// Use publisher from DB as source of truth (ignore client-supplied value).
@@ -198,24 +200,76 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 		return nil, fmt.Errorf("marketplace: record publisher transaction: %w", err)
 	}
 
+	// 8b. Credit platform fee to system wallet with full balance tracking.
+	if platformFee > 0 {
+		feeStr := fmt.Sprintf("%.2f", platformFee)
+
+		// Ensure system wallet exists.
+		var sysWalletID uuid.UUID
+		var sysBalBefore string
+		err = tx.QueryRow(ctx,
+			`INSERT INTO user_wallets (user_id) VALUES ($1)
+			 ON CONFLICT (user_id) DO UPDATE SET user_id = $1
+			 RETURNING id, balance::text`,
+			SystemUserID,
+		).Scan(&sysWalletID, &sysBalBefore)
+		if err != nil {
+			return nil, fmt.Errorf("marketplace: system wallet: %w", err)
+		}
+
+		// Credit system wallet.
+		var sysBalAfter string
+		err = tx.QueryRow(ctx,
+			`UPDATE user_wallets SET balance = balance + $1::numeric, updated_at = now()
+			 WHERE id = $2 RETURNING balance::text`,
+			feeStr, sysWalletID,
+		).Scan(&sysBalAfter)
+		if err != nil {
+			return nil, fmt.Errorf("marketplace: credit system wallet: %w", err)
+		}
+
+		// Record platform fee transaction.
+		feeTxID := uuid.New()
+		feeDesc := fmt.Sprintf("Platform fee from strategy sale: %s", strategyTitle)
+		_, err = tx.Exec(ctx,
+			fmt.Sprintf(`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+				 VALUES ($1, $2, $3, '%s', $4::numeric, $5::numeric, $6::numeric, $7)`, TxTypePlatformFee),
+			feeTxID, sysWalletID, SystemUserID, feeStr, sysBalBefore, sysBalAfter, feeDesc,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("marketplace: record platform fee: %w", err)
+		}
+	}
+
 	// 9. Insert subscription row (target_user_id = publisher from DB).
 	subID := uuid.New()
-	if expiresAt != nil {
-		err = tx.QueryRow(ctx,
-			fmt.Sprintf(`INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active, idempotency_key, expires_at)
-				 VALUES ($1, $2, $3, $4, '%s', true, $5, %s)
-				 RETURNING id`, subKind, *expiresAt),
-			subID, uid, pid, sid, idempotencyKey,
-		).Scan(&subID)
-	} else {
-		err = tx.QueryRow(ctx,
-			fmt.Sprintf(`INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active, idempotency_key)
-				 VALUES ($1, $2, $3, $4, '%s', true, $5)
-				 RETURNING id`, subKind),
-			subID, uid, pid, sid, idempotencyKey,
-		).Scan(&subID)
-	}
+	err = tx.QueryRow(ctx,
+		fmt.Sprintf(`INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active, idempotency_key, expires_at)
+			 VALUES ($1, $2, $3, $4, '%s', true, $5, $6)
+			 RETURNING id`, subKind),
+		subID, uid, pid, sid, idempotencyKey, expiresAt,
+	).Scan(&subID)
 	if err != nil {
+		// If unique violation on idempotency_key, another request won the race.
+		// Return the now-existing subscription gracefully.
+		if idempotencyKey != "" && isUniqueViolation(err) {
+			tx.Rollback(ctx)
+			var dupSubID, dupTxID, dupAmount, dupBalance string
+			if err2 := s.pg.QueryRow(ctx,
+				`SELECT us.id::text, wt.id::text, ABS(wt.amount)::text, w.balance::text
+				 FROM user_subscriptions us
+				 JOIN wallet_transactions wt ON wt.user_id = us.subscriber_user_id AND wt.tx_type = $1
+				 JOIN user_wallets w ON w.user_id = us.subscriber_user_id
+				 WHERE us.idempotency_key = $2 AND us.subscriber_user_id = $3
+				 ORDER BY wt.created_at DESC LIMIT 1`,
+				TxTypePurchase, idempotencyKey, uid,
+			).Scan(&dupSubID, &dupTxID, &dupAmount, &dupBalance); err2 == nil {
+				return &PurchaseResult{
+					SubscriptionID: dupSubID, TransactionID: dupTxID,
+					AmountCharged: dupAmount, BalanceAfter: dupBalance,
+				}, nil
+			}
+		}
 		return nil, fmt.Errorf("marketplace: create subscription: %w", err)
 	}
 

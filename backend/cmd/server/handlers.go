@@ -114,6 +114,8 @@ func registerHandlers(
 	mktplaceHandler := mktplace.NewMarketplaceServer(mktplaceSvc, platformSvc, log)
 	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
+	mktplaceSvc.StartRenewalLoop(log) // daily subscription renewal (background goroutine)
+
 	// M12-A2: Execution Algo handler (TWAP/VWAP/POV/Shortfall).
 	// brokerReg is created in main.go before the pipeline starts; gateways register
 	// via adapter.RegisterDefaults inside the mdgateway runner after connection.

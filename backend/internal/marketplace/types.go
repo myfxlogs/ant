@@ -1,9 +1,11 @@
 package marketplace
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -13,6 +15,9 @@ import (
 type Service struct {
 	pg *pgxpool.Pool
 }
+
+// SystemUserID is the designated platform system account for fee collection.
+var SystemUserID = uuid.Nil
 
 // New creates a marketplace service.
 func New(pg *pgxpool.Pool) *Service {
@@ -42,6 +47,7 @@ const (
 	TxTypeSale           = "sale"
 	TxTypeRefund         = "refund"
 	TxTypeRefundReversal = "refund_reversal"
+	TxTypePlatformFee    = "platform_fee"
 )
 
 // ── Request / Response types ──────────────────────────────────────────────────
@@ -127,6 +133,18 @@ type StartBacktestParams struct {
 	Slippage           float64
 	Leverage           float64
 	TradeDirection     string
+}
+
+// PublisherStats holds aggregated dashboard statistics for a strategy publisher.
+type PublisherStats struct {
+	TotalPublished    int32
+	TotalSubscribers  int32
+	TotalRevenue      string  // decimal string
+	MonthlyRevenue    string  // decimal string (last 30 days)
+	AvgRating         float64
+	TopStrategyID     string
+	TopStrategyTitle  string
+	TopStrategySubs   int32
 }
 
 // PurchaseResult holds the outcome of a paid strategy purchase.
@@ -242,4 +260,17 @@ func splitJSONArray(s string) []string {
 		parts = append(parts, current)
 	}
 	return parts
+}
+
+// isUniqueViolation checks whether err is a PostgreSQL unique constraint violation.
+func isUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	if err != nil {
+		// pgx wraps the PgError — unwrap to find it.
+		if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique") {
+			return true
+		}
+		_ = pgErr // silence unused
+	}
+	return false
 }

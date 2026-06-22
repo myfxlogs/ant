@@ -21,6 +21,8 @@ service MarketplaceService {
   rpc SetStrategyPricing(SetStrategyPricingRequest) returns (SetStrategyPricingResponse);
   // Unpublish — author or admin can hide a strategy from the marketplace.
   rpc UnpublishStrategy(UnpublishMarketStrategyRequest) returns (UnpublishMarketStrategyResponse);
+  // Publisher dashboard stats.
+  rpc GetPublisherStats(GetPublisherStatsRequest) returns (GetPublisherStatsResponse);
   // Backtest — runs backtest for a marketplace-published strategy.
   // Strategy code is resolved server-side; client never sees it.
   // Returns a server stream of BacktestRunUpdate for real-time progress.
@@ -231,6 +233,21 @@ message UnpublishMarketStrategyRequest {
 message UnpublishMarketStrategyResponse {
   string strategy_id = 1;
   string status = 2;        // new status (e.g. "hidden")
+}
+
+// --- Publisher Stats ---
+
+message GetPublisherStatsRequest {}
+
+message GetPublisherStatsResponse {
+  int32 total_published = 1;
+  int32 total_subscribers = 2;
+  string total_revenue = 3;
+  string monthly_revenue = 4;
+  double avg_rating = 5;
+  string top_strategy_id = 6;
+  string top_strategy_title = 7;
+  int32 top_strategy_subs = 8;
 }
 
 // --- Marketplace Backtest ---

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, Row, Col, Statistic, Table, Tag, Typography, Empty, Button, Space } from 'antd';
-import { ShopOutlined, StarOutlined, SendOutlined, PlusOutlined } from '@ant-design/icons';
+import { ShopOutlined, StarOutlined, SendOutlined, PlusOutlined, DollarOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { TABLE_NAME_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
 ;
@@ -39,7 +39,17 @@ export default function AuthorTab() {
         </Col>
         <Col xs={12} sm={6}>
           <Card size="small" style={{ background: '#fff7e6', borderRadius: 12, border: 'none' }}>
-            <Statistic title={t('marketplace.author.avgRating')} value={authorStats.avgRating.toFixed(1)} prefix={<StarOutlined />} />
+            <Statistic title={t('marketplace.author.avgRating')} value={Number(authorStats.avgRating || 0).toFixed(1)} prefix={<StarOutlined />} />
+          </Card>
+        </Col>
+        <Col xs={12} sm={6}>
+          <Card size="small" style={{ background: '#f0f5ff', borderRadius: 12, border: 'none' }}>
+            <Statistic title={t('marketplace.author.monthlyRevenue', 'Monthly Revenue')} value={`¥${Number(authorStats.monthlyRevenue || 0).toFixed(2)}`} prefix={<DollarOutlined />} />
+          </Card>
+        </Col>
+        <Col xs={12} sm={6}>
+          <Card size="small" style={{ background: '#f9f0ff', borderRadius: 12, border: 'none' }}>
+            <Statistic title={t('marketplace.author.totalRevenue', 'Total Revenue')} value={`¥${Number(authorStats.totalRevenue || 0).toFixed(2)}`} prefix={<DollarOutlined />} />
           </Card>
         </Col>
       </Row>

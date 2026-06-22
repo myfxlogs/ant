@@ -70,7 +70,7 @@ export function useMarketplace(): MarketplaceCtx {
     ['marketplace', 'purchases', userId],
     async (): Promise<PurchasedItem[]> => {
       if (!userId) return [];
-      const resp = await marketplaceClient.listSubscriptions({ userId });
+      const resp = await marketplaceClient.listSubscriptions({});
       return (resp.subscriptions || []).map((s: SubscriptionItem): PurchasedItem => ({
         ...s,
         id: s.subscriptionId,
@@ -94,13 +94,23 @@ export function useMarketplace(): MarketplaceCtx {
     { enabled: !!userId },
   );
 
-  const authorStats = useMemo(() => ({
-    published: myPublished.length,
-    totalSubscribers: myPublished.reduce((sum: number, s: PublishedStrategy) => sum + (s.totalSubscribers || 0), 0),
-    avgRating: myPublished.length > 0
-      ? myPublished.reduce((sum: number, s: PublishedStrategy) => sum + (s.avgRating || 0), 0) / myPublished.length
-      : 0,
-  }), [myPublished]);
+  // ── Publisher stats (server-side aggregation) ──
+  const { data: authorStats } = useRpcQuery(
+    ['marketplace', 'publisherStats', userId],
+    async () => {
+      if (!userId) return { published: 0, totalSubscribers: 0, totalRevenue: '0', monthlyRevenue: '0', avgRating: 0, topStrategyTitle: '' };
+      const resp = await marketplaceClient.getPublisherStats({});
+      return {
+        published: resp.totalPublished || 0,
+        totalSubscribers: resp.totalSubscribers || 0,
+        totalRevenue: resp.totalRevenue || '0',
+        monthlyRevenue: resp.monthlyRevenue || '0',
+        avgRating: resp.avgRating || 0,
+        topStrategyTitle: resp.topStrategyTitle || '',
+      };
+    },
+    { enabled: !!userId },
+  );
 
   // ── Backtest drawer ──
   const [backtestDrawerOpen, setBacktestDrawerOpen] = useState(false);
