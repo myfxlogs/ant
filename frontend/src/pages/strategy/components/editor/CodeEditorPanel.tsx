@@ -32,11 +32,11 @@ export default function CodeEditorPanel({ form, code }: Props) {
       const resp = await codeAssistClient.transformCode({ sourceCode: eaCode, sourceLang: 'auto', targetLang: 'python' });
       setEaResult(resp.targetCode || '');
     } catch (err: any) {
-      const msg = String(err?.message || '');
+      const msg = String(err?.rawMessage || err?.message || '');
       if (msg.includes('insufficient') || msg.includes('balance') || msg.includes('InsufficientBalance')) {
         message.error(t('strategy.importEA.insufficientBalance', { defaultValue: 'AI balance insufficient. Please top up in AI Gateway settings.' }));
       } else {
-        message.error(t('strategy.importEA.translateFailed', { defaultValue: 'Translation failed. Please try again.' }));
+        message.error(msg || t('strategy.importEA.translateFailed', { defaultValue: 'Translation failed. Please try again.' }));
       }
     }
     finally { setEaTranslating(false); }
