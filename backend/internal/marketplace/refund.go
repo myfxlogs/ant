@@ -50,7 +50,7 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 	if !subActive {
 		return nil, fmt.Errorf("marketplace: subscription already inactive")
 	}
-	if subKind != "purchase" {
+	if subKind != SubKindPurchase {
 		return nil, fmt.Errorf("marketplace: only purchased subscriptions can be refunded")
 	}
 
@@ -58,9 +58,9 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 	var purchaseAmount string
 	var purchaseTxID string
 	err = tx.QueryRow(ctx,
-		`SELECT amount::text, id::text FROM wallet_transactions
-		 WHERE user_id = $1 AND tx_type = 'purchase'
-		 ORDER BY created_at DESC LIMIT 1`,
+		fmt.Sprintf(`SELECT amount::text, id::text FROM wallet_transactions
+		 WHERE user_id = $1 AND tx_type = '%s'
+		 ORDER BY created_at DESC LIMIT 1`, TxTypePurchase),
 		uid,
 	).Scan(&purchaseAmount, &purchaseTxID)
 	if err != nil {
@@ -97,49 +97,69 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 	refundTxID := uuid.New()
 	refundDesc := fmt.Sprintf("Refund for subscription %s", subscriptionID)
 	err = tx.QueryRow(ctx,
-		`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
-		 VALUES ($1, $2, $3, 'refund', $4::numeric, $5::numeric, $6::numeric, $7) RETURNING id`,
+		fmt.Sprintf(`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+		 VALUES ($1, $2, $3, '%s', $4::numeric, $5::numeric, $6::numeric, $7) RETURNING id`, TxTypeRefund),
 		refundTxID, buyerWalletID, uid, absAmount, buyerBalBefore, buyerBalAfter, refundDesc,
 	).Scan(&refundTxID)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: record refund: %w", err)
 	}
 
-	// 5. Debit publisher (reverse the sale).
-	pubUUID, _ := uuid.Parse(subTargetUserID)
-	var pubWalletID uuid.UUID
-	var pubBalBefore, pubBalAfter string
+	// 5. Find publisher's original sale transaction to get the net amount
+	//    they actually received (after platform fee deduction).
+	var pubNetReceived string
 	err = tx.QueryRow(ctx,
-		`SELECT id, balance::text FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
-		pubUUID,
-	).Scan(&pubWalletID, &pubBalBefore)
+		fmt.Sprintf(`SELECT amount::text FROM wallet_transactions
+		 WHERE user_id = $1 AND tx_type = '%s'
+		 ORDER BY created_at DESC LIMIT 1`, TxTypeSale),
+		subTargetUserID,
+	).Scan(&pubNetReceived)
 	if err != nil {
-		// Publisher may no longer have a wallet — skip debit but log.
-		pubBalBefore = "0"
-	} else {
-		err = tx.QueryRow(ctx,
-			`UPDATE user_wallets SET balance = balance - $1::numeric, updated_at = now()
-			 WHERE user_id = $2 AND balance >= $1::numeric
-			 RETURNING balance::text`,
-			absAmount, pubUUID,
-		).Scan(&pubBalAfter)
-		if err != nil {
-			// Publisher has insufficient balance — still proceed with refund.
-			pubBalAfter = pubBalBefore
-		}
-
-		// Record reversal transaction for publisher.
-		revTxID := uuid.New()
-		revDesc := fmt.Sprintf("Refund reversal for subscription %s", subscriptionID)
-		negAbs := "-" + absAmount
-		_, _ = tx.Exec(ctx,
-			`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
-			 VALUES ($1, $2, $3, 'refund_reversal', $4::numeric, $5::numeric, $6::numeric, $7)`,
-			revTxID, pubWalletID, pubUUID, negAbs, pubBalBefore, pubBalAfter, revDesc,
-		)
+		// No sale transaction found — skip publisher debit.
+		pubNetReceived = "0"
+	}
+	// Normalize: remove leading sign if present.
+	if len(pubNetReceived) > 0 && pubNetReceived[0] == '-' {
+		pubNetReceived = pubNetReceived[1:]
 	}
 
-	// 6. Deactivate subscription.
+	// 6. Debit publisher by the net amount they actually received.
+	if pubNetReceived != "0" {
+		pubUUID, _ := uuid.Parse(subTargetUserID)
+		var pubWalletID uuid.UUID
+		var pubBalBefore, pubBalAfter string
+		err = tx.QueryRow(ctx,
+			`SELECT id, balance::text FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
+			pubUUID,
+		).Scan(&pubWalletID, &pubBalBefore)
+		if err != nil {
+			// Publisher may no longer have a wallet — skip debit.
+			pubBalBefore = "0"
+		} else {
+			err = tx.QueryRow(ctx,
+				`UPDATE user_wallets SET balance = balance - $1::numeric, updated_at = now()
+				 WHERE user_id = $2 AND balance >= $1::numeric
+				 RETURNING balance::text`,
+				pubNetReceived, pubUUID,
+			).Scan(&pubBalAfter)
+			if err != nil {
+				// Publisher has insufficient balance — still proceed with refund.
+				pubBalAfter = pubBalBefore
+			}
+
+			// Record reversal transaction for publisher.
+			revTxID := uuid.New()
+			revDesc := fmt.Sprintf("Refund reversal for subscription %s", subscriptionID)
+			negNet := "-" + pubNetReceived
+			_, _ = tx.Exec(ctx,
+				fmt.Sprintf(`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+				 VALUES ($1, $2, $3, '%s', $4::numeric, $5::numeric, $6::numeric, $7)`, TxTypeRefundReversal),
+				revTxID, pubWalletID, pubUUID, negNet, pubBalBefore, pubBalAfter, revDesc,
+			)
+		}
+	}
+
+	// 7. Deactivate subscription.
 	_, err = tx.Exec(ctx,
 		`UPDATE user_subscriptions SET active = false WHERE id = $1`,
 		sid,
@@ -148,7 +168,7 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 		return nil, fmt.Errorf("marketplace: deactivate subscription: %w", err)
 	}
 
-	// 7. Decrement subscriber counter (floor at 0).
+	// 8. Decrement subscriber counter (floor at 0).
 	_, err = tx.Exec(ctx,
 		`UPDATE marketplace_strategies SET total_subscribers = GREATEST(total_subscribers - 1, 0)
 		 WHERE strategy_id = $1`,

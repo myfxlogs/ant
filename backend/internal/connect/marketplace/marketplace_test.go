@@ -65,7 +65,8 @@ func (s *stubMarketplaceSvc) PurchaseStrategy(_ context.Context, _, _, _ string)
 func (s *stubMarketplaceSvc) ListSubscriptions(_ context.Context, _ string) ([]marketplace.SubscriptionItem, error) {
 	return s.subs, s.err
 }
-func (s *stubMarketplaceSvc) SetPricing(_ context.Context, _, _ string, _ float64) error { return s.err }
+func (s *stubMarketplaceSvc) SetPricing(_ context.Context, _, _ string, _, _ float64) error { return s.err }
+func (s *stubMarketplaceSvc) Unpublish(_ context.Context, _, _ string, _ bool) error { return s.err }
 func (s *stubMarketplaceSvc) CanAccessCode(_ context.Context, _, _ string) (bool, error) {
 	if s.err != nil { return false, s.err }
 	return true, nil

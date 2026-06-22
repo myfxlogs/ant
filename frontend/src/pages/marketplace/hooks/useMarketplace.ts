@@ -81,10 +81,18 @@ export function useMarketplace(): MarketplaceCtx {
   );
 
   // ── Author: my published strategies ──
-  const myPublished = useMemo(() => {
-    if (!userId) return [];
-    return allStrategies.filter((s: PublishedStrategy) => s.publisherUserId === userId);
-  }, [allStrategies, userId]);
+  const { data: myPublished = [] } = useRpcQuery(
+    ['marketplace', 'myPublished', userId],
+    async (): Promise<PublishedStrategy[]> => {
+      if (!userId) return [];
+      const resp = await marketplaceClient.listPublished({
+        userId, limit: 100,
+        sortBy: 'newest',
+      });
+      return (resp.strategies || []) as PublishedStrategy[];
+    },
+    { enabled: !!userId },
+  );
 
   const authorStats = useMemo(() => ({
     published: myPublished.length,

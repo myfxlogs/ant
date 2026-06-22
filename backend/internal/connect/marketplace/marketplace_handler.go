@@ -30,9 +30,10 @@ type marketplaceSvc interface {
 	ListComments(ctx context.Context, strategyID string, limit, offset int32) ([]marketplace.CommentItem, int32, error)
 	Subscribe(ctx context.Context, userID, publisherUserID, strategyID, kind string) (string, error)
 	Unsubscribe(ctx context.Context, userID, subscriptionID string) error
-	PurchaseStrategy(ctx context.Context, userID, strategyID, publisherUserID string) (*marketplace.PurchaseResult, error)
+	PurchaseStrategy(ctx context.Context, userID, strategyID, idempotencyKey string) (*marketplace.PurchaseResult, error)
 	ListSubscriptions(ctx context.Context, userID string) ([]marketplace.SubscriptionItem, error)
-	SetPricing(ctx context.Context, strategyID, priceModel string, priceAmount float64) error
+	SetPricing(ctx context.Context, strategyID, priceModel string, priceAmount, platformFeeRate float64) error
+	Unpublish(ctx context.Context, strategyID, userID string, isAdmin bool) error
 	CanAccessCode(ctx context.Context, userID, strategyID string) (bool, error)
 	StartMarketBacktest(ctx context.Context, params marketplace.StartBacktestParams) (string, error)
 	QueryBacktestRun(ctx context.Context, runID uuid.UUID) (*marketplace.BacktestRunSnapshot, error)
@@ -128,7 +129,7 @@ func (s *MarketplaceServer) PurchaseStrategy(ctx context.Context, req *connect.R
 	if userID == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
 	}
-	result, err := s.svc.PurchaseStrategy(ctx, userID, m.StrategyId, m.PublisherUserId)
+	result, err := s.svc.PurchaseStrategy(ctx, userID, m.StrategyId, m.IdempotencyKey)
 	if err != nil {
 		s.log.Error("PurchaseStrategy", zap.Error(err))
 		msg := err.Error()
@@ -307,12 +308,36 @@ func (s *MarketplaceServer) SetStrategyPricing(ctx context.Context, req *connect
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin required"))
 	}
 	m := req.Msg
-	if err := s.svc.SetPricing(ctx, m.StrategyId, m.PriceModel, m.PriceAmount); err != nil {
+	if err := s.svc.SetPricing(ctx, m.StrategyId, m.PriceModel, m.PriceAmount, m.PlatformFeeRate); err != nil {
 		s.log.Error("SetStrategyPricing", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.SetStrategyPricingResponse{
-		StrategyId: m.StrategyId, PriceModel: m.PriceModel, PriceAmount: m.PriceAmount,
+		StrategyId: m.StrategyId, PriceModel: m.PriceModel, PriceAmount: m.PriceAmount, PlatformFeeRate: m.PlatformFeeRate,
+	}), nil
+}
+
+// --- Unpublish Strategy ---
+
+func (s *MarketplaceServer) UnpublishStrategy(ctx context.Context, req *connect.Request[antv1.UnpublishMarketStrategyRequest]) (*connect.Response[antv1.UnpublishMarketStrategyResponse], error) {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+	uid, _ := uuid.Parse(userID)
+	isAdmin, _ := s.admin.IsAdmin(ctx, uid)
+
+	m := req.Msg
+	if err := s.svc.Unpublish(ctx, m.StrategyId, userID, isAdmin); err != nil {
+		s.log.Error("UnpublishStrategy", zap.Error(err))
+		msg := err.Error()
+		if strings.Contains(msg, "only the publisher") {
+			return nil, connect.NewError(connect.CodePermissionDenied, err)
+		}
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.UnpublishMarketStrategyResponse{
+		StrategyId: m.StrategyId, Status: "hidden",
 	}), nil
 }
 

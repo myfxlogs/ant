@@ -21,6 +21,11 @@ type SubscriptionItem struct {
 
 // Subscribe subscribes a user to a published strategy. Only free strategies
 // can be obtained via Subscribe; paid strategies must use PurchaseStrategy.
+//
+// publisherUserID is used as a fallback when the strategy is not found in
+// marketplace_strategies (e.g. internal/copy-trade subscriptions). When the
+// strategy is published, the actual publisher is read from the DB and the
+// parameter is overwritten.
 func (s *Service) Subscribe(ctx context.Context, userID, publisherUserID, strategyID, kind string) (string, error) {
 	// Look up strategy metadata from marketplace_strategies.
 	// Use the DB publisher_id as the source of truth; fall back to the
@@ -38,7 +43,7 @@ func (s *Service) Subscribe(ctx context.Context, userID, publisherUserID, strate
 		publisherUserID = dbPublisherID
 
 		// Guard: any priced strategy (once, subscription, etc.) must go through PurchaseStrategy.
-		if priceModel != "free" && priceAmount > 0 {
+		if priceModel != PriceModelFree && priceAmount > 0 {
 			return "", fmt.Errorf("marketplace: paid strategies require purchase, not subscribe")
 		}
 	}
@@ -63,9 +68,10 @@ func (s *Service) Subscribe(ctx context.Context, userID, publisherUserID, strate
 
 // ListActiveSubscribers returns active subscriptions for a specific strategy.
 // Used by CopyTradeEngine to efficiently find subscribers for signal replication.
+// NOTE: TargetUserID is populated with subscriber_user_id (the account to copy TO).
 func (s *Service) ListActiveSubscribers(ctx context.Context, strategyID string) ([]SubscriptionItem, error) {
 	rows, err := s.pg.Query(ctx, `
-		SELECT id, target_user_id, target_strategy_id, kind, active, created_at
+		SELECT id, subscriber_user_id, target_strategy_id, kind, active, created_at
 		FROM user_subscriptions
 		WHERE target_strategy_id = $1 AND active = true
 		ORDER BY created_at DESC
@@ -137,10 +143,12 @@ func (s *Service) CanAccessCode(ctx context.Context, userID, strategyID string) 
 		return true, nil // owner always has access
 	}
 
-	// Check if user has an active subscription.
+	// Check if user has an active, non-expired subscription.
 	var exists bool
 	err = s.pg.QueryRow(ctx,
-		`SELECT EXISTS(SELECT 1 FROM user_subscriptions WHERE subscriber_user_id::text = $1 AND target_strategy_id = $2 AND active = true)`,
+		`SELECT EXISTS(SELECT 1 FROM user_subscriptions
+		 WHERE subscriber_user_id::text = $1 AND target_strategy_id = $2 AND active = true
+		   AND (expires_at IS NULL OR expires_at > now()))`,
 		userID, strategyID,
 	).Scan(&exists)
 	if err != nil {

@@ -37,6 +37,16 @@ func publishedCacheGet(key string) ([]PublishedStrategy, bool) {
 	return e.data, true
 }
 
+// publishedCacheClear removes all cached entries. Call after any mutation that
+// affects the published listing (publish, purchase, pricing change).
+func publishedCacheClear() {
+	publishedCacheMu.Lock()
+	defer publishedCacheMu.Unlock()
+	for k := range publishedCacheMap {
+		delete(publishedCacheMap, k)
+	}
+}
+
 func publishedCacheSet(key string, data []PublishedStrategy) {
 	publishedCacheMu.Lock()
 	defer publishedCacheMu.Unlock()
@@ -49,6 +59,40 @@ func publishedCacheSet(key string, data []PublishedStrategy) {
 		}
 	}
 	publishedCacheMap[key] = publishedCacheEntry{data: data, expiresAt: time.Now().Add(publishedCacheTTL)}
+}
+
+// Unpublish hides a strategy from the marketplace by setting its status to "hidden".
+// The strategy still exists in the database but no longer appears in listings.
+func (s *Service) Unpublish(ctx context.Context, strategyID, userID string, isAdmin bool) error {
+	sid, err := uuid.Parse(strategyID)
+	if err != nil {
+		return fmt.Errorf("marketplace: invalid strategy_id: %w", err)
+	}
+
+	// Verify ownership unless admin.
+	if !isAdmin {
+		var publisherID string
+		err := s.pg.QueryRow(ctx,
+			`SELECT publisher_id::text FROM marketplace_strategies WHERE strategy_id = $1`,
+			sid,
+		).Scan(&publisherID)
+		if err != nil {
+			return fmt.Errorf("marketplace: strategy not found")
+		}
+		if publisherID != userID {
+			return fmt.Errorf("marketplace: only the publisher can unpublish this strategy")
+		}
+	}
+
+	_, err = s.pg.Exec(ctx,
+		`UPDATE marketplace_strategies SET status = 'hidden', updated_at = now() WHERE strategy_id = $1`,
+		sid,
+	)
+	if err != nil {
+		return fmt.Errorf("marketplace: unpublish: %w", err)
+	}
+	publishedCacheClear()
+	return nil
 }
 
 // Publish adds a strategy to the marketplace. Writes to both
@@ -80,6 +124,7 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 	if err := tx.Commit(ctx); err != nil {
 		return "", fmt.Errorf("marketplace: publish commit: %w", err)
 	}
+	publishedCacheClear()
 	return publishID.String(), nil
 }
 

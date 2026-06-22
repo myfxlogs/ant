@@ -66,6 +66,9 @@ const (
 	// MarketplaceServiceSetStrategyPricingProcedure is the fully-qualified name of the
 	// MarketplaceService's SetStrategyPricing RPC.
 	MarketplaceServiceSetStrategyPricingProcedure = "/ant.v1.MarketplaceService/SetStrategyPricing"
+	// MarketplaceServiceUnpublishStrategyProcedure is the fully-qualified name of the
+	// MarketplaceService's UnpublishStrategy RPC.
+	MarketplaceServiceUnpublishStrategyProcedure = "/ant.v1.MarketplaceService/UnpublishStrategy"
 	// MarketplaceServiceRunMarketBacktestProcedure is the fully-qualified name of the
 	// MarketplaceService's RunMarketBacktest RPC.
 	MarketplaceServiceRunMarketBacktestProcedure = "/ant.v1.MarketplaceService/RunMarketBacktest"
@@ -86,6 +89,8 @@ type MarketplaceServiceClient interface {
 	ListComments(context.Context, *connect.Request[v1.ListCommentsRequest]) (*connect.Response[v1.ListCommentsResponse], error)
 	// Admin
 	SetStrategyPricing(context.Context, *connect.Request[v1.SetStrategyPricingRequest]) (*connect.Response[v1.SetStrategyPricingResponse], error)
+	// Unpublish — author or admin can hide a strategy from the marketplace.
+	UnpublishStrategy(context.Context, *connect.Request[v1.UnpublishMarketStrategyRequest]) (*connect.Response[v1.UnpublishMarketStrategyResponse], error)
 	// Backtest — runs backtest for a marketplace-published strategy.
 	// Strategy code is resolved server-side; client never sees it.
 	// Returns a server stream of BacktestRunUpdate for real-time progress.
@@ -169,6 +174,12 @@ func NewMarketplaceServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(marketplaceServiceMethods.ByName("SetStrategyPricing")),
 			connect.WithClientOptions(opts...),
 		),
+		unpublishStrategy: connect.NewClient[v1.UnpublishMarketStrategyRequest, v1.UnpublishMarketStrategyResponse](
+			httpClient,
+			baseURL+MarketplaceServiceUnpublishStrategyProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("UnpublishStrategy")),
+			connect.WithClientOptions(opts...),
+		),
 		runMarketBacktest: connect.NewClient[v1.RunMarketBacktestRequest, v1.BacktestRunUpdate](
 			httpClient,
 			baseURL+MarketplaceServiceRunMarketBacktestProcedure,
@@ -191,6 +202,7 @@ type marketplaceServiceClient struct {
 	commentOnStrategy  *connect.Client[v1.CommentOnStrategyRequest, v1.CommentOnStrategyResponse]
 	listComments       *connect.Client[v1.ListCommentsRequest, v1.ListCommentsResponse]
 	setStrategyPricing *connect.Client[v1.SetStrategyPricingRequest, v1.SetStrategyPricingResponse]
+	unpublishStrategy  *connect.Client[v1.UnpublishMarketStrategyRequest, v1.UnpublishMarketStrategyResponse]
 	runMarketBacktest  *connect.Client[v1.RunMarketBacktestRequest, v1.BacktestRunUpdate]
 }
 
@@ -249,6 +261,11 @@ func (c *marketplaceServiceClient) SetStrategyPricing(ctx context.Context, req *
 	return c.setStrategyPricing.CallUnary(ctx, req)
 }
 
+// UnpublishStrategy calls ant.v1.MarketplaceService.UnpublishStrategy.
+func (c *marketplaceServiceClient) UnpublishStrategy(ctx context.Context, req *connect.Request[v1.UnpublishMarketStrategyRequest]) (*connect.Response[v1.UnpublishMarketStrategyResponse], error) {
+	return c.unpublishStrategy.CallUnary(ctx, req)
+}
+
 // RunMarketBacktest calls ant.v1.MarketplaceService.RunMarketBacktest.
 func (c *marketplaceServiceClient) RunMarketBacktest(ctx context.Context, req *connect.Request[v1.RunMarketBacktestRequest]) (*connect.ServerStreamForClient[v1.BacktestRunUpdate], error) {
 	return c.runMarketBacktest.CallServerStream(ctx, req)
@@ -269,6 +286,8 @@ type MarketplaceServiceHandler interface {
 	ListComments(context.Context, *connect.Request[v1.ListCommentsRequest]) (*connect.Response[v1.ListCommentsResponse], error)
 	// Admin
 	SetStrategyPricing(context.Context, *connect.Request[v1.SetStrategyPricingRequest]) (*connect.Response[v1.SetStrategyPricingResponse], error)
+	// Unpublish — author or admin can hide a strategy from the marketplace.
+	UnpublishStrategy(context.Context, *connect.Request[v1.UnpublishMarketStrategyRequest]) (*connect.Response[v1.UnpublishMarketStrategyResponse], error)
 	// Backtest — runs backtest for a marketplace-published strategy.
 	// Strategy code is resolved server-side; client never sees it.
 	// Returns a server stream of BacktestRunUpdate for real-time progress.
@@ -348,6 +367,12 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 		connect.WithSchema(marketplaceServiceMethods.ByName("SetStrategyPricing")),
 		connect.WithHandlerOptions(opts...),
 	)
+	marketplaceServiceUnpublishStrategyHandler := connect.NewUnaryHandler(
+		MarketplaceServiceUnpublishStrategyProcedure,
+		svc.UnpublishStrategy,
+		connect.WithSchema(marketplaceServiceMethods.ByName("UnpublishStrategy")),
+		connect.WithHandlerOptions(opts...),
+	)
 	marketplaceServiceRunMarketBacktestHandler := connect.NewServerStreamHandler(
 		MarketplaceServiceRunMarketBacktestProcedure,
 		svc.RunMarketBacktest,
@@ -378,6 +403,8 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 			marketplaceServiceListCommentsHandler.ServeHTTP(w, r)
 		case MarketplaceServiceSetStrategyPricingProcedure:
 			marketplaceServiceSetStrategyPricingHandler.ServeHTTP(w, r)
+		case MarketplaceServiceUnpublishStrategyProcedure:
+			marketplaceServiceUnpublishStrategyHandler.ServeHTTP(w, r)
 		case MarketplaceServiceRunMarketBacktestProcedure:
 			marketplaceServiceRunMarketBacktestHandler.ServeHTTP(w, r)
 		default:
@@ -431,6 +458,10 @@ func (UnimplementedMarketplaceServiceHandler) ListComments(context.Context, *con
 
 func (UnimplementedMarketplaceServiceHandler) SetStrategyPricing(context.Context, *connect.Request[v1.SetStrategyPricingRequest]) (*connect.Response[v1.SetStrategyPricingResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.SetStrategyPricing is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) UnpublishStrategy(context.Context, *connect.Request[v1.UnpublishMarketStrategyRequest]) (*connect.Response[v1.UnpublishMarketStrategyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.UnpublishStrategy is not implemented"))
 }
 
 func (UnimplementedMarketplaceServiceHandler) RunMarketBacktest(context.Context, *connect.Request[v1.RunMarketBacktestRequest], *connect.ServerStream[v1.BacktestRunUpdate]) error {

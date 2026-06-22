@@ -19,6 +19,31 @@ func New(pg *pgxpool.Pool) *Service {
 	return &Service{pg: pg}
 }
 
+// ── Price model constants ────────────────────────────────────────────────────
+
+const (
+	PriceModelFree         = "free"
+	PriceModelOnce         = "once"
+	PriceModelSubscription = "subscription"
+)
+
+// ── Subscription kind constants ──────────────────────────────────────────────
+
+const (
+	SubKindPurchase     = "purchase"
+	SubKindSubscription = "subscription"
+	SubKindCopyTrade    = "copy_trade"
+)
+
+// ── Wallet transaction type constants ────────────────────────────────────────
+
+const (
+	TxTypePurchase       = "purchase"
+	TxTypeSale           = "sale"
+	TxTypeRefund         = "refund"
+	TxTypeRefundReversal = "refund_reversal"
+)
+
 // ── Request / Response types ──────────────────────────────────────────────────
 
 // PublishParams carries the full strategy metadata for publishing.

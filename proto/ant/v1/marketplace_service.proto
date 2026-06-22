@@ -19,6 +19,8 @@ service MarketplaceService {
   rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
   // Admin
   rpc SetStrategyPricing(SetStrategyPricingRequest) returns (SetStrategyPricingResponse);
+  // Unpublish — author or admin can hide a strategy from the marketplace.
+  rpc UnpublishStrategy(UnpublishMarketStrategyRequest) returns (UnpublishMarketStrategyResponse);
   // Backtest — runs backtest for a marketplace-published strategy.
   // Strategy code is resolved server-side; client never sees it.
   // Returns a server stream of BacktestRunUpdate for real-time progress.
@@ -79,6 +81,7 @@ message PurchaseStrategyRequest {
   string user_id = 1;
   string strategy_id = 2;        // publish_id
   string publisher_user_id = 3;
+  string idempotency_key = 4;    // client-generated unique key to prevent double-charge on retry
 }
 
 message PurchaseStrategyResponse {
@@ -206,15 +209,28 @@ message CommentItem {
 // --- Admin Pricing ---
 
 message SetStrategyPricingRequest {
-  string strategy_id = 1;     // publish_id
-  string price_model = 2;     // "free" | "paid"
+  string strategy_id = 1;       // publish_id
+  string price_model = 2;       // "free" | "once" | "subscription"
   double price_amount = 3;
+  double platform_fee_rate = 4; // 0.0–1.0, platform commission rate (e.g. 0.10 = 10%)
 }
 
 message SetStrategyPricingResponse {
   string strategy_id = 1;
   string price_model = 2;
   double price_amount = 3;
+  double platform_fee_rate = 4;
+}
+
+// --- Unpublish ---
+
+message UnpublishMarketStrategyRequest {
+  string strategy_id = 1;   // publish_id of the strategy to unpublish
+}
+
+message UnpublishMarketStrategyResponse {
+  string strategy_id = 1;
+  string status = 2;        // new status (e.g. "hidden")
 }
 
 // --- Marketplace Backtest ---
