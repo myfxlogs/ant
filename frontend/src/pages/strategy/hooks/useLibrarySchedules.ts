@@ -116,20 +116,34 @@ export function useLibrarySchedules(selectedTemplateId: string) {
 
   useEffect(() => { void refresh(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // SSE — start after initial fetch to avoid race
+  // SSE — start after initial fetch, auto-reconnect on disconnect.
   const [sseReady, setSseReady] = useState(false);
   useEffect(() => { if (!loading) setSseReady(true); }, [loading]);
   useEffect(() => {
     if (!sseReady) return;
-    const ctrl = new AbortController();
-    (async () => {
-      try {
-        for await (const event of strategyScheduleV2Api.watch(ctrl.signal)) {
-          setSchedules((event.schedules || []) as ScheduleRow[]);
+    let active = true;
+    let retryMs = 1000;
+
+    const connect = async () => {
+      while (active) {
+        const ctrl = new AbortController();
+        try {
+          for await (const event of strategyScheduleV2Api.watch(ctrl.signal)) {
+            if (!active) break;
+            setSchedules((event.schedules || []) as ScheduleRow[]);
+            retryMs = 1000; // reset on success
+          }
+        } catch {
+          // Stream disconnected (timeout, network, etc.) — reconnect with backoff.
+          if (!active) break;
+          await new Promise(r => setTimeout(r, retryMs));
+          retryMs = Math.min(retryMs * 2, 30000);
         }
-      } catch { /* stream closed */ }
-    })();
-    return () => ctrl.abort();
+        try { ctrl.abort(); } catch { /* ignore */ }
+      }
+    };
+    connect();
+    return () => { active = false; };
   }, [sseReady]);
 
   // Re-fetch on template change
