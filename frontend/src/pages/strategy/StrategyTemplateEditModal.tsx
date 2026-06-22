@@ -38,7 +38,7 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
   const [aiModel, setAiModel] = useState('');
 
   useEffect(() => {
-    if (open) { aiPrimaryClient.getAiPrimary({}).then(r => setAiModel(r.model || '')).catch(() => {}); }
+    if (open) { aiPrimaryClient.getAIPrimary({}).then(r => setAiModel(r.model || '')).catch(() => {}); }
   }, [open]);
 
   const applyAICode = useCallback((newCode: string) => { form.setFieldsValue({ code: newCode }); setAiTab('explain'); }, [form]);
