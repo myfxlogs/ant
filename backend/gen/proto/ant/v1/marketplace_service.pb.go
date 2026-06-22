@@ -652,6 +652,7 @@ type ListPublishedRequest struct {
 	AssetClass    string                 `protobuf:"bytes,3,opt,name=asset_class,json=assetClass,proto3" json:"asset_class,omitempty"` // optional filter by asset class
 	Keyword       string                 `protobuf:"bytes,4,opt,name=keyword,proto3" json:"keyword,omitempty"`                         // search title/description/tags (ILIKE)
 	SortBy        string                 `protobuf:"bytes,5,opt,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"`             // newest | popular | performance (default: newest)
+	Offset        int32                  `protobuf:"varint,6,opt,name=offset,proto3" json:"offset,omitempty"`                          // pagination offset (default: 0)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -719,6 +720,13 @@ func (x *ListPublishedRequest) GetSortBy() string {
 		return x.SortBy
 	}
 	return ""
+}
+
+func (x *ListPublishedRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
 }
 
 type ListPublishedResponse struct {
@@ -1990,14 +1998,15 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x0fsubscription_id\x18\x01 \x01(\tR\x0esubscriptionId\x12%\n" +
 	"\x0etransaction_id\x18\x02 \x01(\tR\rtransactionId\x12%\n" +
 	"\x0eamount_charged\x18\x03 \x01(\tR\ramountCharged\x12#\n" +
-	"\rbalance_after\x18\x04 \x01(\tR\fbalanceAfter\"\x99\x01\n" +
+	"\rbalance_after\x18\x04 \x01(\tR\fbalanceAfter\"\xb1\x01\n" +
 	"\x14ListPublishedRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x1f\n" +
 	"\vasset_class\x18\x03 \x01(\tR\n" +
 	"assetClass\x12\x18\n" +
 	"\akeyword\x18\x04 \x01(\tR\akeyword\x12\x17\n" +
-	"\asort_by\x18\x05 \x01(\tR\x06sortBy\"R\n" +
+	"\asort_by\x18\x05 \x01(\tR\x06sortBy\x12\x16\n" +
+	"\x06offset\x18\x06 \x01(\x05R\x06offset\"R\n" +
 	"\x15ListPublishedResponse\x129\n" +
 	"\n" +
 	"strategies\x18\x01 \x03(\v2\x19.ant.v1.PublishedStrategyR\n" +

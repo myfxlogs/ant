@@ -40,11 +40,13 @@ export function useMarketplace(): MarketplaceCtx {
   const [walletBalance, setWalletBalance] = useState('0');
 
   // ── Market listing (server-side pagination via API) ──
+  // NOTE: userId is NOT passed — the market shows ALL published strategies.
+  // Author tab filters client-side via myPublished (by publisherUserId).
   const { data: allStrategies = [], isLoading: loading, error, refetch } = useRpcQuery(
-    ['marketplace', 'published', userId, searchText, sortBy, page, pageSize],
+    ['marketplace', 'published', searchText, sortBy, page, pageSize],
     async () => {
       const resp = await marketplaceClient.listPublished({
-        userId, limit: pageSize, offset: (page - 1) * pageSize,
+        limit: pageSize, offset: (page - 1) * pageSize,
         keyword: searchText || undefined,
         sortBy: sortBy || undefined,
       });
@@ -112,6 +114,8 @@ export function useMarketplace(): MarketplaceCtx {
   // ── Purchase / Get (Set for O(1) lookup) ──
   const purchasedIds = useMemo(() => new Set(purchases.map((p: PurchasedItem) => p.strategyId)), [purchases]);
   const isPurchased = useCallback((strategyId: string) => purchasedIds.has(strategyId), [purchasedIds]);
+  const ownedIds = useMemo(() => new Set(myPublished.map((s: PublishedStrategy) => s.strategyId)), [myPublished]);
+  const isOwner = useCallback((strategyId: string) => ownedIds.has(strategyId), [ownedIds]);
 
   const handleGetFree = useCallback(async (strategy: PublishedStrategy) => {
     if (!userId) { message.warning(t('marketplace.messages.loginFirst')); return; }
@@ -157,6 +161,11 @@ export function useMarketplace(): MarketplaceCtx {
       const msg = String((err as { message?: string })?.message || '');
       if (msg.includes('insufficient balance') || msg.includes('insufficient_balance')) {
         message.error(t('marketplace.payment.insufficientBalance', 'Insufficient balance'));
+        // Refresh wallet balance so the UI shows the latest amount.
+        try {
+          const wallet = await walletApi.getWallet(userId);
+          if (wallet?.balance != null) setWalletBalance(wallet.balance);
+        } catch { /* ignore refresh errors */ }
       } else if (msg.includes('already subscribed') || msg.includes('already_exists')) {
         message.info(t('marketplace.payment.alreadyPurchased', 'You already own this strategy.'));
         setPaymentModalOpen(false);
@@ -179,7 +188,7 @@ export function useMarketplace(): MarketplaceCtx {
     activeTab, setActiveTab, searchText, setSearchText,
     priceFilter, setPriceFilter, sortBy, setSortBy,
     page, pageSize, total, setPage, setPageSize,
-    refetch, isPurchased, handleGetFree, handleBuy, handleRunBacktest,
+    refetch, isPurchased, isOwner, handleGetFree, handleBuy, handleRunBacktest,
     openDetail, closeDetail, detailStrategy, detailOpen,
     // Backtest drawer
     backtestDrawerOpen, setBacktestDrawerOpen, backtestStrategyId,

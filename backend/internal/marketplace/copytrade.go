@@ -177,15 +177,7 @@ func (e *CopyTradeEngine) processSync(ctx context.Context, signal CopySignalEven
 }
 
 func (e *CopyTradeEngine) filterActiveSubscriptions(ctx context.Context, signal CopySignalEvent) ([]SubscriptionItem, error) {
-	subs, err := e.marketplace.ListSubscriptions(ctx, signal.PublisherUserID)
-	if err != nil { return nil, err }
-	var out []SubscriptionItem
-	for _, sub := range subs {
-		if sub.StrategyID == signal.StrategyID && sub.Active {
-			out = append(out, sub)
-		}
-	}
-	return out, nil
+	return e.marketplace.ListActiveSubscribers(ctx, signal.StrategyID)
 }
 
 func (e *CopyTradeEngine) fetchSubscriberAccounts(ctx context.Context, strategySubs []SubscriptionItem) []subAccount {

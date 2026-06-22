@@ -39,6 +39,7 @@ function MarketplaceUI() {
           <StrategyDetailModal
             strategy={m.detailStrategy} open={m.detailOpen}
             isPurchased={m.detailStrategy ? m.isPurchased(m.detailStrategy.strategyId) : false}
+            isOwner={m.detailStrategy ? m.isOwner(m.detailStrategy.strategyId) : false}
             onClose={m.closeDetail} onGetFree={m.handleGetFree} onBuy={m.handleBuy}
             onRunBacktest={m.handleRunBacktest}
           />

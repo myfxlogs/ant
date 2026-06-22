@@ -49,6 +49,7 @@ export default function MarketTab() {
               <StrategyMarketCard
                 strategy={s}
                 isPurchased={m.isPurchased(s.strategyId)}
+                isOwner={m.isOwner(s.strategyId)}
                 onOpenDetail={m.openDetail}
                 onGetFree={m.handleGetFree}
               />

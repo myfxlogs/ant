@@ -12,6 +12,7 @@ interface Props {
   strategy: PublishedStrategy | null;
   open: boolean;
   isPurchased: boolean;
+  isOwner: boolean;
   onClose: () => void;
   onGetFree: (s: PublishedStrategy) => void;
   onBuy: (s: PublishedStrategy) => void;
@@ -33,7 +34,7 @@ function fmtTime(ts: { seconds?: bigint | number } | undefined | null): string {
   return new Date(s * 1000).toLocaleString();
 }
 
-export default function StrategyDetailModal({ strategy, open, isPurchased, onClose, onGetFree, onBuy, onRunBacktest }: Props) {
+export default function StrategyDetailModal({ strategy, open, isPurchased, isOwner, onClose, onGetFree, onBuy, onRunBacktest }: Props) {
   const { t } = useTranslation();
   const d = useStrategyDiscussion();
 
@@ -233,7 +234,14 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, onClo
 
       {/* Action buttons */}
       <div style={{ textAlign: 'right', display: 'flex', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
-        {isPurchased ? (
+        {isOwner ? (
+          <>
+            <Tag color="blue" style={{ padding: '4px 16px', fontSize: 14 }}>{t('marketplace.card.yourStrategy', 'Your Strategy')}</Tag>
+            <Button type="primary" icon={<ThunderboltOutlined />} onClick={() => onRunBacktest?.(strategy)}>
+              {t('marketplace.detail.runBacktest', 'Run Backtest')}
+            </Button>
+          </>
+        ) : isPurchased ? (
           <>
             <Tag color="green" style={{ padding: '4px 16px', fontSize: 14 }}>{t('marketplace.card.owned')}</Tag>
             <Button type="primary" icon={<ThunderboltOutlined />} onClick={() => onRunBacktest?.(strategy)}>

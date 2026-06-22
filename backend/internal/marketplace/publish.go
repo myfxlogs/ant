@@ -4,9 +4,52 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
+	"time"
 
 	"github.com/google/uuid"
 )
+
+// ── Published listing cache ─────────────────────────────────────────────────
+
+type publishedCacheEntry struct {
+	data      []PublishedStrategy
+	expiresAt time.Time
+}
+
+var (
+	publishedCacheMap   = make(map[string]publishedCacheEntry)
+	publishedCacheMu    sync.RWMutex
+	publishedCacheTTL   = 60 * time.Second
+)
+
+func publishedCacheKey(userID, assetClass, keyword, sortBy string, limit, offset int) string {
+	return fmt.Sprintf("%s|%s|%s|%s|%d|%d", userID, assetClass, keyword, sortBy, limit, offset)
+}
+
+func publishedCacheGet(key string) ([]PublishedStrategy, bool) {
+	publishedCacheMu.RLock()
+	defer publishedCacheMu.RUnlock()
+	e, ok := publishedCacheMap[key]
+	if !ok || time.Now().After(e.expiresAt) {
+		return nil, false
+	}
+	return e.data, true
+}
+
+func publishedCacheSet(key string, data []PublishedStrategy) {
+	publishedCacheMu.Lock()
+	defer publishedCacheMu.Unlock()
+	// Evict stale entries when map grows too large (simple cap).
+	if len(publishedCacheMap) > 256 {
+		for k, v := range publishedCacheMap {
+			if time.Now().After(v.expiresAt) {
+				delete(publishedCacheMap, k)
+			}
+		}
+	}
+	publishedCacheMap[key] = publishedCacheEntry{data: data, expiresAt: time.Now().Add(publishedCacheTTL)}
+}
 
 // Publish adds a strategy to the marketplace. Writes to both
 // user_strategy_publishes (ownership tracking) and marketplace_strategies
@@ -25,11 +68,11 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 		return "", fmt.Errorf("marketplace: insert publish: %w", err)
 	}
 
-	_, err = tx.Exec(ctx, `INSERT INTO marketplace_strategies (id, strategy_id, publisher_id, title, description, price_model, price_amount, asset_class, symbols, timeframe, risk_level, tags, code_snippet, backtest_snapshot, status, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'published',now(),now())`,
+	_, err = tx.Exec(ctx, `INSERT INTO marketplace_strategies (id, strategy_id, publisher_id, title, description, price_model, price_amount, asset_class, symbols, timeframe, risk_level, tags, code_snippet, backtest_snapshot, platform_fee_rate, status, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'published',now(),now())`,
 		stratID, params.StrategyID, params.UserID, params.Title, params.Description,
 		params.PriceModel, params.PriceAmount, params.AssetClass,
 		pgTextArray(params.Symbols), params.Timeframe, params.RiskLevel, pgTextArray(params.Tags),
-		params.CodeSnippet, params.BacktestSnapshotJSON)
+		params.CodeSnippet, params.BacktestSnapshotJSON, params.PlatformFeeRate)
 	if err != nil {
 		return "", fmt.Errorf("marketplace: insert listing: %w", err)
 	}
@@ -41,12 +84,26 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 }
 
 // ListPublished returns strategies published to the marketplace with full
-// metadata from marketplace_strategies (M12-B1). Supports keyword search and sorting.
-func (s *Service) ListPublished(ctx context.Context, userID string, limit int, assetClass, keyword, sortBy string) ([]PublishedStrategy, error) {
+// metadata from marketplace_strategies (M12-B1). Supports keyword search, sorting, and offset pagination.
+// Results are cached for 60s to reduce DB load on the market listing page.
+func (s *Service) ListPublished(ctx context.Context, userID string, limit int, offset int, assetClass, keyword, sortBy string) ([]PublishedStrategy, error) {
 	if limit <= 0 {
 		limit = 50
 	}
-	query, args := buildPublishedQuery(userID, assetClass, keyword, sortBy, limit)
+	if offset < 0 {
+		offset = 0
+	}
+
+	// Check cache (skip for keyword searches — they vary too much to cache effectively).
+	var cacheKey string
+	if keyword == "" {
+		cacheKey = publishedCacheKey(userID, assetClass, keyword, sortBy, limit, offset)
+		if cached, ok := publishedCacheGet(cacheKey); ok {
+			return cached, nil
+		}
+	}
+
+	query, args := buildPublishedQuery(userID, assetClass, keyword, sortBy, limit, offset)
 	rows, err := s.pg.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -74,10 +131,17 @@ func (s *Service) ListPublished(ctx context.Context, userID string, limit int, a
 		}
 		out = append(out, p)
 	}
-	return out, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	// Cache the result for non-keyword queries.
+	if cacheKey != "" {
+		publishedCacheSet(cacheKey, out)
+	}
+	return out, nil
 }
 
-func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit int) (string, []interface{}) {
+func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit, offset int) (string, []interface{}) {
 	query := `SELECT usp.id, usp.platform_strategy_id, COALESCE(ms.title,st.name,usp.platform_strategy_id::text),
 			COALESCE(u.email, u.nickname, usp.user_id::text), usp.published_at, COALESCE(ms.title,''), COALESCE(ms.description,''),
 			COALESCE(ms.price_model,''), ms.price_amount, COALESCE(ms.asset_class,''),
@@ -114,5 +178,9 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit int) 
 		query += fmt.Sprintf(" ORDER BY usp.published_at DESC LIMIT $%d", len(args)+1)
 	}
 	args = append(args, limit)
+	if offset > 0 {
+		query += fmt.Sprintf(" OFFSET $%d", len(args)+1)
+		args = append(args, offset)
+	}
 	return query, args
 }

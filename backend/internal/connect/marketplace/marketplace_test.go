@@ -32,7 +32,7 @@ type stubMarketplaceSvc struct {
 func (s *stubMarketplaceSvc) Publish(_ context.Context, _ marketplace.PublishParams) (string, error) {
 	return s.publishID, s.err
 }
-func (s *stubMarketplaceSvc) ListPublished(_ context.Context, _ string, _ int, _, _, _ string) ([]marketplace.PublishedStrategy, error) {
+func (s *stubMarketplaceSvc) ListPublished(_ context.Context, _ string, _ int, _ int, _, _, _ string) ([]marketplace.PublishedStrategy, error) {
 	return s.published, s.err
 }
 func (s *stubMarketplaceSvc) Rate(_ context.Context, _, _ string, _ int32) (float64, int32, error) {
@@ -161,8 +161,9 @@ func TestMarketplace_RateStrategy(t *testing.T) {
 	t.Parallel()
 	svc := &stubMarketplaceSvc{avgRating: 4.5, rateCount: 10}
 	h := testMarketplaceHandler(svc)
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, "00000000-0000-0000-0000-000000000001")
 
-	resp, err := h.RateStrategy(context.Background(), connect.NewRequest(&antv1.RateStrategyRequest{
+	resp, err := h.RateStrategy(ctx, connect.NewRequest(&antv1.RateStrategyRequest{
 		StrategyId: "s1", Rating: 5,
 	}))
 	if err != nil {
@@ -176,9 +177,10 @@ func TestMarketplace_RateStrategy(t *testing.T) {
 func TestMarketplace_Subscribe_Success(t *testing.T) {
 	t.Parallel()
 	h := testMarketplaceHandler(&stubMarketplaceSvc{})
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, "00000000-0000-0000-0000-000000000001")
 
-	resp, err := h.Subscribe(context.Background(), connect.NewRequest(&antv1.SubscribeRequest{
-		UserId: "u1", StrategyId: "s1",
+	resp, err := h.Subscribe(ctx, connect.NewRequest(&antv1.SubscribeRequest{
+		PublisherUserId: "u2", StrategyId: "s1",
 	}))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -208,8 +210,9 @@ func TestMarketplace_ListSubscriptions(t *testing.T) {
 		},
 	}
 	h := testMarketplaceHandler(svc)
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, "00000000-0000-0000-0000-000000000001")
 
-	resp, err := h.ListSubscriptions(context.Background(), connect.NewRequest(&antv1.ListSubscriptionsRequest{UserId: "u1"}))
+	resp, err := h.ListSubscriptions(ctx, connect.NewRequest(&antv1.ListSubscriptionsRequest{}))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -222,8 +225,9 @@ func TestMarketplace_Unsubscribe_Error(t *testing.T) {
 	t.Parallel()
 	svc := &stubMarketplaceSvc{err: errors.New("not found")}
 	h := testMarketplaceHandler(svc)
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, "00000000-0000-0000-0000-000000000001")
 
-	_, err := h.Unsubscribe(context.Background(), connect.NewRequest(&antv1.UnsubscribeRequest{}))
+	_, err := h.Unsubscribe(ctx, connect.NewRequest(&antv1.UnsubscribeRequest{}))
 	if err == nil {
 		t.Fatal("expected error from unsubscribe")
 	}
@@ -232,8 +236,9 @@ func TestMarketplace_Unsubscribe_Error(t *testing.T) {
 func TestMarketplace_CommentOnStrategy(t *testing.T) {
 	t.Parallel()
 	h := testMarketplaceHandler(&stubMarketplaceSvc{})
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, "00000000-0000-0000-0000-000000000001")
 
-	resp, err := h.CommentOnStrategy(context.Background(), connect.NewRequest(&antv1.CommentOnStrategyRequest{
+	resp, err := h.CommentOnStrategy(ctx, connect.NewRequest(&antv1.CommentOnStrategyRequest{
 		StrategyId: "s1", Content: "Great!",
 	}))
 	if err != nil {

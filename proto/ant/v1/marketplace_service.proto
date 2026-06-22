@@ -94,6 +94,7 @@ message ListPublishedRequest {
   string asset_class = 3; // optional filter by asset class
   string keyword = 4;    // search title/description/tags (ILIKE)
   string sort_by = 5;    // newest | popular | performance (default: newest)
+  int32 offset = 6;      // pagination offset (default: 0)
 }
 message ListPublishedResponse {
   repeated PublishedStrategy strategies = 1;

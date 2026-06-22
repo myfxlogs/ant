@@ -22,17 +22,33 @@ type SubscriptionItem struct {
 // Subscribe subscribes a user to a published strategy. Only free strategies
 // can be obtained via Subscribe; paid strategies must use PurchaseStrategy.
 func (s *Service) Subscribe(ctx context.Context, userID, publisherUserID, strategyID, kind string) (string, error) {
-	// Guard: reject paid strategies — they must go through PurchaseStrategy.
+	// Look up strategy metadata from marketplace_strategies.
+	// Use the DB publisher_id as the source of truth; fall back to the
+	// client-supplied value only when the strategy is not in the marketplace
+	// (e.g. internal subscriptions).
 	var priceModel string
 	var priceAmount float64
+	var dbPublisherID string
 	err := s.pg.QueryRow(ctx,
-		`SELECT price_model, COALESCE(price_amount, 0) FROM marketplace_strategies WHERE strategy_id = $1`,
+		`SELECT price_model, COALESCE(price_amount, 0), publisher_id::text FROM marketplace_strategies WHERE strategy_id = $1`,
 		strategyID,
-	).Scan(&priceModel, &priceAmount)
-	if err == nil && priceModel == "once" && priceAmount > 0 {
-		return "", fmt.Errorf("marketplace: paid strategies require purchase, not subscribe")
+	).Scan(&priceModel, &priceAmount, &dbPublisherID)
+	if err == nil {
+		// Strategy is published — use DB publisher as source of truth.
+		publisherUserID = dbPublisherID
+
+		// Guard: any priced strategy (once, subscription, etc.) must go through PurchaseStrategy.
+		if priceModel != "free" && priceAmount > 0 {
+			return "", fmt.Errorf("marketplace: paid strategies require purchase, not subscribe")
+		}
 	}
-	// If the strategy is not in marketplace_strategies (e.g. internal subscriptions), allow.
+	// If the strategy is not in marketplace_strategies (e.g. internal subscriptions),
+	// fall back to the provided publisherUserID.
+
+	// Guard: cannot subscribe to your own strategy (self-subscribe is nonsensical).
+	if userID == publisherUserID {
+		return "", fmt.Errorf("marketplace: cannot subscribe to your own strategy")
+	}
 
 	id := uuid.New().String()
 	_, err = s.pg.Exec(ctx, `
@@ -43,6 +59,30 @@ func (s *Service) Subscribe(ctx context.Context, userID, publisherUserID, strate
 		return "", fmt.Errorf("marketplace: subscribe: %w", err)
 	}
 	return id, nil
+}
+
+// ListActiveSubscribers returns active subscriptions for a specific strategy.
+// Used by CopyTradeEngine to efficiently find subscribers for signal replication.
+func (s *Service) ListActiveSubscribers(ctx context.Context, strategyID string) ([]SubscriptionItem, error) {
+	rows, err := s.pg.Query(ctx, `
+		SELECT id, target_user_id, target_strategy_id, kind, active, created_at
+		FROM user_subscriptions
+		WHERE target_strategy_id = $1 AND active = true
+		ORDER BY created_at DESC
+	`, strategyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []SubscriptionItem
+	for rows.Next() {
+		var sub SubscriptionItem
+		if err := rows.Scan(&sub.SubscriptionID, &sub.TargetUserID, &sub.StrategyID, &sub.Kind, &sub.Active, &sub.CreatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, sub)
+	}
+	return out, rows.Err()
 }
 
 // Unsubscribe deactivates a subscription.

@@ -36,6 +36,7 @@ type PublishParams struct {
 	Tags                []string
 	CodeSnippet          string  // optional public code preview set by publisher
 	BacktestSnapshotJSON *string // optional JSON-serialized backtest snapshot (nil → SQL NULL)
+	PlatformFeeRate      float64 // platform commission rate (0.0–1.0)
 }
 
 // BacktestSnapshot holds key backtest metrics at publish time.

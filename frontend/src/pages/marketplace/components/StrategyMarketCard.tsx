@@ -8,6 +8,7 @@ const { Text, Title } = Typography;
 interface Props {
   strategy: PublishedStrategy;
   isPurchased: boolean;
+  isOwner: boolean;
   onOpenDetail: (s: PublishedStrategy) => void;
   onGetFree: (s: PublishedStrategy) => void;
 }
@@ -20,7 +21,7 @@ function priceLabel(s: PublishedStrategy, t: (k: string) => string): { text: str
   return { text: t('marketplace.card.buy', '¥{{amount}}', { amount: amount.toFixed(0) }), color: '#D4AF37' };
 }
 
-export default function StrategyMarketCard({ strategy, isPurchased, onOpenDetail, onGetFree }: Props) {
+export default function StrategyMarketCard({ strategy, isPurchased, isOwner, onOpenDetail, onGetFree }: Props) {
   const { t } = useTranslation();
   const price = priceLabel(strategy, t);
   const name = strategy.strategyName || strategy.title || 'Unknown';
@@ -37,9 +38,15 @@ export default function StrategyMarketCard({ strategy, isPurchased, onOpenDetail
       style={{ borderRadius: 12, height: '100%' }}
       onClick={() => onOpenDetail(strategy)}
       extra={
-        <Tag color={price.color} style={{ margin: 0, fontWeight: 600, fontSize: 12 }}>
-          {price.text}
-        </Tag>
+        isOwner ? (
+          <Tag color="blue" style={{ margin: 0, fontWeight: 600, fontSize: 12 }}>
+            {t('marketplace.card.yourStrategy', 'Your Strategy')}
+          </Tag>
+        ) : (
+          <Tag color={price.color} style={{ margin: 0, fontWeight: 600, fontSize: 12 }}>
+            {price.text}
+          </Tag>
+        )
       }
     >
       {/* Name */}
@@ -89,7 +96,8 @@ export default function StrategyMarketCard({ strategy, isPurchased, onOpenDetail
         <Space size={4} wrap>
           {strategy.assetClass && <Tag style={{ fontSize: 10 }}>{t(`marketplace.publish.assetClass.${strategy.assetClass}`, { defaultValue: String(strategy.assetClass) })}</Tag>}
           {strategy.riskLevel && <Tag style={{ fontSize: 10 }}>{t(`marketplace.publish.riskLevel.${strategy.riskLevel}`, { defaultValue: String(strategy.riskLevel) })}</Tag>}
-          {isPurchased && <Tag color="green" style={{ fontSize: 10 }}>{t('marketplace.card.owned')}</Tag>}
+          {isOwner && <Tag color="blue" style={{ fontSize: 10 }}>{t('marketplace.card.yourStrategy', 'Your Strategy')}</Tag>}
+          {isPurchased && !isOwner && <Tag color="green" style={{ fontSize: 10 }}>{t('marketplace.card.owned')}</Tag>}
         </Space>
       </div>
     </Card>

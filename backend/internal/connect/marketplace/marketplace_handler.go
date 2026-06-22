@@ -23,7 +23,7 @@ import (
 // Defined on the consumer side — marketplace.Service package need not know about it.
 type marketplaceSvc interface {
 	Publish(ctx context.Context, params marketplace.PublishParams) (string, error)
-	ListPublished(ctx context.Context, userID string, limit int, assetClass, keyword, sortBy string) ([]marketplace.PublishedStrategy, error)
+	ListPublished(ctx context.Context, userID string, limit int, offset int, assetClass, keyword, sortBy string) ([]marketplace.PublishedStrategy, error)
 	Rate(ctx context.Context, userID, strategyID string, rating int32) (float64, int32, error)
 	ListRatings(ctx context.Context, strategyID string) ([]marketplace.RatingItem, float64, int32, error)
 	Comment(ctx context.Context, userID, strategyID, content string) (string, error)
@@ -83,6 +83,7 @@ func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Re
 		Tags:                m.Tags,
 		CodeSnippet:         m.CodeSnippet,
 		BacktestSnapshotJSON: snapshotJSON,
+		PlatformFeeRate:     0, // system-controlled, default no fee
 	})
 	if err != nil {
 		s.log.Error("PublishStrategy", zap.Error(err))
@@ -93,17 +94,28 @@ func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Re
 
 func (s *MarketplaceServer) Subscribe(ctx context.Context, req *connect.Request[antv1.SubscribeRequest]) (*connect.Response[antv1.SubscribeResponse], error) {
 	m := req.Msg
-	id, err := s.svc.Subscribe(ctx, m.UserId, m.PublisherUserId, m.StrategyId, m.Kind)
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+	id, err := s.svc.Subscribe(ctx, userID, m.PublisherUserId, m.StrategyId, m.Kind)
 	if err != nil {
 		s.log.Error("Subscribe", zap.Error(err))
+		msg := err.Error()
+		if strings.Contains(msg, "cannot subscribe to your own") {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.SubscribeResponse{SubscriptionId: id}), nil
 }
 
 func (s *MarketplaceServer) Unsubscribe(ctx context.Context, req *connect.Request[antv1.UnsubscribeRequest]) (*connect.Response[antv1.UnsubscribeResponse], error) {
-	m := req.Msg
-	if err := s.svc.Unsubscribe(ctx, m.UserId, m.SubscriptionId); err != nil {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+	if err := s.svc.Unsubscribe(ctx, userID, req.Msg.SubscriptionId); err != nil {
 		s.log.Error("Unsubscribe", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -112,7 +124,11 @@ func (s *MarketplaceServer) Unsubscribe(ctx context.Context, req *connect.Reques
 
 func (s *MarketplaceServer) PurchaseStrategy(ctx context.Context, req *connect.Request[antv1.PurchaseStrategyRequest]) (*connect.Response[antv1.PurchaseStrategyResponse], error) {
 	m := req.Msg
-	result, err := s.svc.PurchaseStrategy(ctx, m.UserId, m.StrategyId, m.PublisherUserId)
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+	result, err := s.svc.PurchaseStrategy(ctx, userID, m.StrategyId, m.PublisherUserId)
 	if err != nil {
 		s.log.Error("PurchaseStrategy", zap.Error(err))
 		msg := err.Error()
@@ -121,6 +137,9 @@ func (s *MarketplaceServer) PurchaseStrategy(ctx context.Context, req *connect.R
 		}
 		if strings.Contains(msg, "already subscribed") {
 			return nil, connect.NewError(connect.CodeAlreadyExists, err)
+		}
+		if strings.Contains(msg, "cannot purchase your own") {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 		if strings.Contains(msg, "not purchasable") || strings.Contains(msg, "not published") {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -137,7 +156,7 @@ func (s *MarketplaceServer) PurchaseStrategy(ctx context.Context, req *connect.R
 
 func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Request[antv1.ListPublishedRequest]) (*connect.Response[antv1.ListPublishedResponse], error) {
 	m := req.Msg
-	list, err := s.svc.ListPublished(ctx, m.UserId, int(m.Limit), m.AssetClass, m.Keyword, m.SortBy)
+	list, err := s.svc.ListPublished(ctx, m.UserId, int(m.Limit), int(m.Offset), m.AssetClass, m.Keyword, m.SortBy)
 	if err != nil {
 		s.log.Error("ListPublished", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -194,7 +213,11 @@ func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Requ
 }
 
 func (s *MarketplaceServer) ListSubscriptions(ctx context.Context, req *connect.Request[antv1.ListSubscriptionsRequest]) (*connect.Response[antv1.ListSubscriptionsResponse], error) {
-	list, err := s.svc.ListSubscriptions(ctx, req.Msg.UserId)
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+	list, err := s.svc.ListSubscriptions(ctx, userID)
 	if err != nil {
 		s.log.Error("ListSubscriptions", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -213,8 +236,11 @@ func (s *MarketplaceServer) ListSubscriptions(ctx context.Context, req *connect.
 // --- Rating ---------------------------------------------------------------
 
 func (s *MarketplaceServer) RateStrategy(ctx context.Context, req *connect.Request[antv1.RateStrategyRequest]) (*connect.Response[antv1.RateStrategyResponse], error) {
-	m := req.Msg
-	avg, count, err := s.svc.Rate(ctx, m.UserId, m.StrategyId, m.Rating)
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+	avg, count, err := s.svc.Rate(ctx, userID, req.Msg.StrategyId, req.Msg.Rating)
 	if err != nil {
 		s.log.Error("RateStrategy", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -241,8 +267,11 @@ func (s *MarketplaceServer) ListRatings(ctx context.Context, req *connect.Reques
 // --- Comment ---------------------------------------------------------------
 
 func (s *MarketplaceServer) CommentOnStrategy(ctx context.Context, req *connect.Request[antv1.CommentOnStrategyRequest]) (*connect.Response[antv1.CommentOnStrategyResponse], error) {
-	m := req.Msg
-	id, err := s.svc.Comment(ctx, m.UserId, m.StrategyId, m.Content)
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+	id, err := s.svc.Comment(ctx, userID, req.Msg.StrategyId, req.Msg.Content)
 	if err != nil {
 		s.log.Error("CommentOnStrategy", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)

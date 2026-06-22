@@ -21,6 +21,7 @@ export interface MarketplaceCtx {
   // Actions
   refetch: () => void;
   isPurchased: (id: string) => boolean;
+  isOwner: (id: string) => boolean;
   handleGetFree: (s: PublishedStrategy) => void;
   handleBuy: (s: PublishedStrategy) => void;
   handleRunBacktest: (s: PublishedStrategy) => void;
