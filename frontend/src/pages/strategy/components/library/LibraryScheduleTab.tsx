@@ -5,10 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { CREATE_SCHEDULE_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
 ;
 import ScheduleTable from '../ScheduleTable';
-import EditScheduleModal from '../EditScheduleModal';
 import type { ScheduleFormValues } from '../EditScheduleModal';
-import TriggerModal from '../TriggerModal';
-import ScheduleHealthModal from '../ScheduleHealthModal';
 import type { ScheduleRow, ScheduleHealthSummary, TriggerResult, TriggerContext, TemplateOption, AccountRow } from '../../hooks/libraryTypes';
 
 interface Props {
@@ -72,36 +69,6 @@ export default function LibraryScheduleTab(props: Props) {
         onDelete={props.onDelete}
       />
 
-      <EditScheduleModal
-        editing={props.editing}
-        open={props.openEdit}
-        loading={props.loading}
-        form={props.form}
-        templates={props.templates}
-        accounts={props.accounts}
-        symbols={props.symbols}
-        symbolsLoading={props.symbolsLoading}
-        accountIdWatch={props.accountIdWatch}
-        onCancel={() => { props.setOpenEdit(false); props.setEditing(null); props.form.resetFields(); }}
-        onOk={props.submitEdit}
-      />
-
-      <TriggerModal
-        open={props.openTrigger}
-        triggering={props.triggering}
-        result={props.triggerResult}
-        context={props.triggerContext}
-        onCancel={() => { props.setOpenTrigger(false); props.setTriggerContext(null); props.setTriggerResult(null); }}
-        onOrderSend={props.doOrderSend}
-      />
-
-      <ScheduleHealthModal
-        open={props.healthOpen}
-        loading={props.healthLoading}
-        target={props.healthTarget}
-        summary={props.healthSummary}
-        onClose={() => { props.setHealthOpen(false); props.setHealthTarget(null); props.setHealthSummary(null); }}
-      />
     </div>
   );
 }

@@ -67,7 +67,7 @@ export default function LibraryOverviewTab() {
         {system ? (
           <Button type="primary" onClick={() => lib.handleSaveAsMine(tpl)}>{t(SAVE_AS_MINE_KEY)}</Button>
         ) : (
-          <Button onClick={() => { console.log('Create Run clicked', lib.scheduleProps); lib.scheduleProps.openCreate(); }}>{t(CREATE_SCHEDULE_KEY)}</Button>
+          <Button onClick={lib.scheduleProps.openCreate}>{t(CREATE_SCHEDULE_KEY)}</Button>
         )}
         <Button icon={<ExportOutlined />} onClick={() => navigate(`/strategy/workspace?templateId=${id}`)}>{t(OPEN_IN_WORKSPACE_KEY)}</Button>
       </Space>

@@ -12,6 +12,10 @@ import type { LibraryTab } from '../../hooks/useStrategyLibrary';
 
 const { Title, Text } = Typography;
 
+import EditScheduleModal from '../EditScheduleModal';
+import TriggerModal from '../TriggerModal';
+import ScheduleHealthModal from '../ScheduleHealthModal';
+
 export default function LibraryRightPanel() {
   const { t } = useTranslation();
   const lib = useLibraryCtx();
@@ -53,8 +57,37 @@ export default function LibraryRightPanel() {
         </div>
       </div>
       <Tabs activeKey={lib.activeTab} onChange={key => lib.setActiveTab(key as LibraryTab)}
-        destroyInactiveTabPane={false}
         items={tabItems.map(item => ({ key: item.key, label: item.label, children: item.children }))} />
+
+      {/* Schedule modals rendered outside Tabs so they work from any tab */}
+      <EditScheduleModal
+        editing={lib.scheduleProps.editing}
+        open={lib.scheduleProps.openEdit}
+        loading={lib.scheduleProps.loading}
+        form={lib.scheduleProps.form}
+        templates={lib.scheduleProps.templates}
+        accounts={lib.scheduleProps.accounts}
+        symbols={lib.scheduleProps.symbols}
+        symbolsLoading={lib.scheduleProps.symbolsLoading}
+        accountIdWatch={lib.scheduleProps.accountIdWatch}
+        onCancel={() => { lib.scheduleProps.setOpenEdit(false); lib.scheduleProps.setEditing(null); lib.scheduleProps.form.resetFields(); }}
+        onOk={lib.scheduleProps.submitEdit}
+      />
+      <TriggerModal
+        open={lib.scheduleProps.openTrigger}
+        triggering={lib.scheduleProps.triggering}
+        result={lib.scheduleProps.triggerResult}
+        context={lib.scheduleProps.triggerContext}
+        onCancel={() => { lib.scheduleProps.setOpenTrigger(false); lib.scheduleProps.setTriggerContext(null); lib.scheduleProps.setTriggerResult(null); }}
+        onOrderSend={lib.scheduleProps.doOrderSend}
+      />
+      <ScheduleHealthModal
+        open={lib.scheduleProps.healthOpen}
+        loading={lib.scheduleProps.healthLoading}
+        target={lib.scheduleProps.healthTarget}
+        summary={lib.scheduleProps.healthSummary}
+        onClose={() => { lib.scheduleProps.setHealthOpen(false); lib.scheduleProps.setHealthTarget(null); lib.scheduleProps.setHealthSummary(null); }}
+      />
     </div>
   );
 }
