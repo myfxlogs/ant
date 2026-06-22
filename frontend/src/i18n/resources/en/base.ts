@@ -570,7 +570,8 @@ const Base = {
       "passed": "Validation Passed",
       "running": "Running validation...",
       "tab": "Validate",
-      "warnings": "Warnings"
+      "warnings": "Warnings",
+      "fixWithAI": "Send errors to AI Revise",
     },
     "importEA": {
       "apply": "Apply to Editor",

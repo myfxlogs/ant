@@ -12,12 +12,13 @@ const { TextArea } = Input;
 export interface AICodeReviseChatProps {
   code: string;
   onApply: (newCode: string) => void;
+  initialInstruction?: string;
 }
 
-export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onApply }) => {
+export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onApply, initialInstruction }) => {
   const { t, i18n } = useTranslation();
   const [history, setHistory] = useState<CodeChatMessage[]>([]);
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState(initialInstruction || '');
   const [loading, setLoading] = useState(false);
   const [streamingText, setStreamingText] = useState('');
   const streamingRef = useRef('');

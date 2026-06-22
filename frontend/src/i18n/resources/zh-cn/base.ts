@@ -570,7 +570,8 @@ const Base = {
       "passed": "验证通过",
       "running": "正在验证...",
       "tab": "验证",
-      "warnings": "警告"
+      "warnings": "警告",
+      "fixWithAI": "发送错误给 AI 修复",
     },
     "importEA": {
       "apply": "应用到编辑器",

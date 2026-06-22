@@ -46,10 +46,24 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 	const code = watchedCode || (form.getFieldValue('code') as string) || '';
 
 	const [aiTab, setAiTab] = useState<string>('revise');
+	const [fixInstruction, setFixInstruction] = useState('');
 	const applyAICode = useCallback((newCode: string) => {
 		form.setFieldsValue({ code: newCode });
 		setAiTab('explain');
 	}, [form]);
+
+	const handleFixWithAI = useCallback(() => {
+		if (!validationResult) return;
+		const parts: string[] = [];
+		if (validationResult.errors?.length) {
+			parts.push('Fix these validation errors:\n' + validationResult.errors.map((e: string) => `- ${e}`).join('\n'));
+		}
+		if (validationResult.warnings?.length) {
+			parts.push('Also address these warnings:\n' + validationResult.warnings.map((w: string) => `- ${w}`).join('\n'));
+		}
+		setFixInstruction(parts.join('\n\n'));
+		setAiTab('revise');
+	}, [validationResult]);
 
 	// ── Import EA state ──
 	const [mode, setMode] = useState<string>('write');
@@ -104,7 +118,7 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 				<Button key="cancel" onClick={onCancel} disabled={codeValidating}>
 					{t('common.cancel')}
 				</Button>,
-				<Button key="validate" onClick={() => onValidate(code)} loading={codeValidating} icon={<ThunderboltOutlined />}>
+				<Button key="validate" onClick={() => { setAiTab('validate'); onValidate(code); }} loading={codeValidating} icon={<ThunderboltOutlined />}>
 					{t(EDIT_TEMPLATE_MODAL_ACTIONS_VALIDATE_CODE_KEY)}
 				</Button>,
 				<Button
@@ -277,7 +291,7 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 														{t('strategy.ai.reviseHint', { defaultValue: 'Write code first, then ask AI to improve it.' })}
 													</Text>
 												) : (
-													<AICodeReviseChat code={code} onApply={applyAICode} />
+													<AICodeReviseChat code={code} onApply={applyAICode} initialInstruction={fixInstruction} />
 												)}
 											</div>
 										),
@@ -347,6 +361,14 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 																))}
 															</div>
 														)}
+									{!validationResult.valid && (validationResult.errors?.length > 0 || validationResult.warnings?.length > 0) && (
+										<div style={{ textAlign: "center", marginBottom: 12 }}>
+											<Button type="primary" size="small" icon={<BulbOutlined />}
+												onClick={handleFixWithAI}>
+												{t("strategy.validate.fixWithAI", { defaultValue: "Send errors to AI Revise" })}
+											</Button>
+										</div>
+									)}
 														{(validationResult as any).parameters?.length > 0 && (
 															<div style={{ marginBottom: 10 }}>
 																<Text strong style={{ fontSize: 12, color: '#1677ff' }}>📋 {(validationResult as any).parameters.length} {t('strategy.validate.parameters', { defaultValue: 'parameters' })}</Text>
