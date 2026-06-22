@@ -44,9 +44,8 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 
   const applyAICode = useCallback((newCode: string) => {
     form.setFieldsValue({ code: newCode });
-    onClearValidation(); // old results invalid after code change
     setAiTab('validate');
-  }, [form, onClearValidation]);
+  }, [form]);
   const handleFixWithAI = useCallback(() => {
     if (!validationResult) return;
     const parts: string[] = [];
