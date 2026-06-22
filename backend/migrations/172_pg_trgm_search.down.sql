@@ -3,3 +3,6 @@
 DROP INDEX IF EXISTS idx_marketplace_title_trgm;
 DROP INDEX IF EXISTS idx_marketplace_desc_trgm;
 DROP INDEX IF EXISTS idx_marketplace_tags_trgm;
+DROP INDEX IF EXISTS idx_templates_name_trgm;
+DROP INDEX IF EXISTS idx_users_nickname_trgm;
+DROP INDEX IF EXISTS idx_users_email_trgm;

@@ -15,9 +15,7 @@ export default function MarketTab() {
       <Row gutter={[8, 8]} style={{ marginBottom: 16 }}>
         <Col xs={24} sm={8}>
           <Input
-            className="marketplace-search"
             placeholder={t('marketplace.searchPlaceholder')}
-            allowClear
             value={m.searchText}
             onChange={e => m.setSearchText(e.target.value)}
           />
