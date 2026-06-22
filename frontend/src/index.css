@@ -238,6 +238,12 @@ body {
   box-shadow: 0 0 0 2px var(--color-gold-shadow) !important;
 }
 
+/* Marketplace search — single border on wrapper, kill inner input border */
+.marketplace-search-input .ant-input {
+  border: none !important;
+  box-shadow: none !important;
+}
+
 .ant-btn-primary {
   background: linear-gradient(135deg, #D4AF37 0%, #B8960B 100%) !important;
   border: none !important;
