@@ -579,6 +579,7 @@ const Base = {
       "codeTooShort": "请粘贴完整的 EA/指标源代码。",
       "hint": "粘贴 MQL4/MQL5 代码并点击「翻译为 Python」",
       "importTab": "导入 EA",
+      "insufficientBalance": "AI 余额不足，请在 AI 网关设置中充值。",
       "pastePlaceholder": "在此粘贴 MQL4/MQL5 EA 或指标源代码...",
       "translate": "翻译为 Python",
       "translateFailed": "翻译失败，请重试。",

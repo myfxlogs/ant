@@ -579,6 +579,7 @@ const Base = {
       "codeTooShort": "Please paste complete EA/indicator source code.",
       "hint": "Paste MQL4/MQL5 code and click \"Translate to Python\"",
       "importTab": "Import EA",
+      "insufficientBalance": "AI balance insufficient. Please top up in AI Gateway settings.",
       "pastePlaceholder": "Paste MQL4/MQL5 EA or indicator source code here...",
       "translate": "Translate to Python",
       "translateFailed": "Translation failed. Please try again.",

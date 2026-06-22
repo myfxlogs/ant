@@ -31,7 +31,14 @@ export default function CodeEditorPanel({ form, code }: Props) {
     try {
       const resp = await codeAssistClient.transformCode({ sourceCode: eaCode, sourceLang: 'auto', targetLang: 'python' });
       setEaResult(resp.targetCode || '');
-    } catch { message.error(t('strategy.importEA.translateFailed', { defaultValue: 'Translation failed.' })); }
+    } catch (err: any) {
+      const msg = String(err?.message || '');
+      if (msg.includes('insufficient') || msg.includes('balance') || msg.includes('InsufficientBalance')) {
+        message.error(t('strategy.importEA.insufficientBalance', { defaultValue: 'AI balance insufficient. Please top up in AI Gateway settings.' }));
+      } else {
+        message.error(t('strategy.importEA.translateFailed', { defaultValue: 'Translation failed. Please try again.' }));
+      }
+    }
     finally { setEaTranslating(false); }
   }, [eaCode, t]);
 
