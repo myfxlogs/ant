@@ -382,3 +382,9 @@ body {
 body, #root {
   overflow-x: hidden;
 }
+
+/* Marketplace search — remove inner input border, keep only affix-wrapper border. */
+.marketplace-search.ant-input {
+  border: none !important;
+  box-shadow: none !important;
+}
