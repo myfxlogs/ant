@@ -260,21 +260,31 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit, offs
 		query += fmt.Sprintf(" AND ms.asset_class = $%d", next())
 		args = append(args, assetClass)
 	}
+	var hasFuzzySearch bool
 	if keyword != "" {
-		kw := "%" + keyword + "%"
 		n := next()
-		query += fmt.Sprintf(" AND (ms.title ILIKE $%d OR ms.description ILIKE $%d OR ms.tags::text ILIKE $%d)", n, n, n)
-		args = append(args, kw)
+		// pg_trgm similarity: filters out completely unrelated results (threshold 0.2)
+		// while catching typos, partial matches, and transliterations.
+		query += fmt.Sprintf(" AND (similarity(ms.title, $%d) > 0.2 OR similarity(ms.description, $%d) > 0.2 OR ms.tags::text %% $%d)", n, n, n)
+		args = append(args, keyword)
+		hasFuzzySearch = true
 	}
-	switch sortBy {
-	case "popular":
-		query += fmt.Sprintf(" ORDER BY COALESCE(ms.total_subscribers,0) DESC LIMIT $%d", next())
-	case "performance":
-		query += fmt.Sprintf(" ORDER BY COALESCE(ms.win_rate,0) DESC LIMIT $%d", next())
-	default:
-		query += fmt.Sprintf(" ORDER BY usp.published_at DESC LIMIT $%d", next())
+	if hasFuzzySearch {
+		// ORDER BY relevance score when searching.
+		n := next()
+		query += fmt.Sprintf(" ORDER BY GREATEST(similarity(ms.title, $%d), similarity(ms.description, $%d)) DESC LIMIT $%d", n, n, next())
+		args = append(args, keyword, limit)
+	} else {
+		switch sortBy {
+		case "popular":
+			query += fmt.Sprintf(" ORDER BY COALESCE(ms.total_subscribers,0) DESC LIMIT $%d", next())
+		case "performance":
+			query += fmt.Sprintf(" ORDER BY COALESCE(ms.win_rate,0) DESC LIMIT $%d", next())
+		default:
+			query += fmt.Sprintf(" ORDER BY usp.published_at DESC LIMIT $%d", next())
+		}
+		args = append(args, limit)
 	}
-	args = append(args, limit)
 	if offset > 0 {
 		query += fmt.Sprintf(" OFFSET $%d", next())
 		args = append(args, offset)

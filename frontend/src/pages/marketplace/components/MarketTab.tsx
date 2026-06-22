@@ -1,5 +1,4 @@
 import { Input, Select, Row, Col, Pagination } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { StatusResult } from '@/components/common/StatusResult';
 import { useMarketplaceCtx } from '../MarketplaceContext';
@@ -15,7 +14,7 @@ export default function MarketTab() {
       {/* Toolbar */}
       <Row gutter={[8, 8]} style={{ marginBottom: 16 }}>
         <Col xs={24} sm={8}>
-          <Input prefix={<SearchOutlined />} placeholder={t('marketplace.searchPlaceholder')}
+          <Input placeholder={t('marketplace.searchPlaceholder')}
             value={m.searchText} onChange={e => m.setSearchText(e.target.value)} allowClear />
         </Col>
         <Col xs={12} sm={4}>
