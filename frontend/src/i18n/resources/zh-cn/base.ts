@@ -555,6 +555,27 @@ const Base = {
     "translate_failed": "翻译失败",
     "user_not_found": "用户不存在"
   },
+  "strategy": {
+    "ai": {
+      "reviseHint": "请先编写代码，然后让 AI 进行优化。",
+      "explainHint": "编写代码后即可查看 AI 解释。"
+    },
+    "importEA": {
+      "apply": "应用到编辑器",
+      "applied": "EA 代码已翻译并应用到编辑器。",
+      "codeTooShort": "请粘贴完整的 EA/指标源代码。",
+      "hint": "粘贴 MQL4/MQL5 代码并点击「翻译为 Python」",
+      "importTab": "导入 EA",
+      "pastePlaceholder": "在此粘贴 MQL4/MQL5 EA 或指标源代码...",
+      "translate": "翻译为 Python",
+      "translateFailed": "翻译失败，请重试。",
+      "translating": "AI 翻译中...",
+      "writeTab": "编写"
+    },
+    "library": {
+      "scheduleCount": "{{count}} 个运行中"
+    }
+  },
   "marketplace": {
     "author": {
       "avgRating": "平均评分",

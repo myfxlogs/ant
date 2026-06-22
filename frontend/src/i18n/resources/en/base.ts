@@ -555,6 +555,27 @@ const Base = {
     "translate_failed": "Translation failed",
     "user_not_found": "User not found"
   },
+  "strategy": {
+    "ai": {
+      "reviseHint": "Write code first, then ask AI to improve it.",
+      "explainHint": "Write code to see AI explanation."
+    },
+    "importEA": {
+      "apply": "Apply to Editor",
+      "applied": "EA code translated and applied to editor.",
+      "codeTooShort": "Please paste complete EA/indicator source code.",
+      "hint": "Paste MQL4/MQL5 code and click \"Translate to Python\"",
+      "importTab": "Import EA",
+      "pastePlaceholder": "Paste MQL4/MQL5 EA or indicator source code here...",
+      "translate": "Translate to Python",
+      "translateFailed": "Translation failed. Please try again.",
+      "translating": "AI translating...",
+      "writeTab": "Write"
+    },
+    "library": {
+      "scheduleCount": "{{count}} active"
+    }
+  },
   "marketplace": {
     "author": {
       "avgRating": "Avg Rating",
