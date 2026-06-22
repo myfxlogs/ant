@@ -1,8 +1,8 @@
 import { Button, Descriptions, Space, Tag, Typography, Popconfirm, message } from 'antd';
-import { EditOutlined, DeleteOutlined, CodeOutlined, ExportOutlined, BankOutlined, GlobalOutlined, LockOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, CodeOutlined, BankOutlined, GlobalOutlined, LockOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
-import { ACTIONS_COPY_KEY, ACTIONS_VIEW_CODE_KEY, DELETE_CONFIRM_KEY, MESSAGES_CODE_COPIED_KEY, MESSAGES_COPY_FAILED_KEY, TABLE_CREATED_AT_KEY, TABLE_DESCRIPTION_KEY, TABLE_NAME_KEY, TABLE_USE_COUNT_KEY, TABLE_VISIBILITY_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
-import { CODE_PREVIEW_KEY, CREATE_SCHEDULE_KEY, NO_SCHEDULES_KEY, OPEN_IN_WORKSPACE_KEY, PRIVATE_KEY, SAVE_AS_MINE_KEY, SCHEDULE_COUNT_KEY, SHARED_KEY, PUBLISH_KEY, SYSTEM_KEY, UNPUBLISH_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
+import { ACTIONS_BACKTEST_KEY, ACTIONS_COPY_KEY, ACTIONS_VIEW_CODE_KEY, DELETE_CONFIRM_KEY, MESSAGES_CODE_COPIED_KEY, MESSAGES_COPY_FAILED_KEY, TABLE_CREATED_AT_KEY, TABLE_DESCRIPTION_KEY, TABLE_NAME_KEY, TABLE_USE_COUNT_KEY, TABLE_VISIBILITY_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
+import { CODE_PREVIEW_KEY, CREATE_SCHEDULE_KEY, NO_SCHEDULES_KEY, PRIVATE_KEY, SAVE_AS_MINE_KEY, SCHEDULE_COUNT_KEY, SHARED_KEY, PUBLISH_KEY, SYSTEM_KEY, UNPUBLISH_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
 ;
 import { useNavigate } from 'react-router-dom';
 import { formatDateTime } from '@/utils/date';
@@ -71,7 +71,9 @@ export default function LibraryOverviewTab() {
         ) : (
           <Button onClick={schCtx.openCreate}>{t(CREATE_SCHEDULE_KEY)}</Button>
         )}
-        <Button icon={<ExportOutlined />} onClick={() => navigate(`/strategy/workspace?templateId=${id}`)}>{t(OPEN_IN_WORKSPACE_KEY)}</Button>
+        <Button type="primary" icon={<ThunderboltOutlined />} onClick={() => navigate(`/strategy/workspace?templateId=${id}`)}>
+          {t(ACTIONS_BACKTEST_KEY)}
+        </Button>
       </Space>
 
       {code && (
