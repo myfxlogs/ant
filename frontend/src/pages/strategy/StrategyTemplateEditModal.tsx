@@ -43,10 +43,8 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 
   const applyAICode = useCallback((newCode: string) => {
     form.setFieldsValue({ code: newCode });
-    // Auto-validate after AI applies code — user wants real results immediately.
-    onValidate(newCode);
     setAiTab('validate');
-  }, [form, onValidate]);
+  }, [form]);
   const handleFixWithAI = useCallback(() => {
     if (!validationResult) return;
     const parts: string[] = [];
