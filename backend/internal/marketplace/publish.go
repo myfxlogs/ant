@@ -263,16 +263,28 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit, offs
 	var hasFuzzySearch bool
 	if keyword != "" {
 		n := next()
-		// pg_trgm similarity: filters out completely unrelated results (threshold 0.2)
-		// while catching typos, partial matches, and transliterations.
-		query += fmt.Sprintf(" AND (similarity(ms.title, $%d) > 0.2 OR similarity(ms.description, $%d) > 0.2 OR ms.tags::text %% $%d)", n, n, n)
+		// pg_trgm similarity across all searchable fields (threshold 0.2).
+		query += fmt.Sprintf(
+			" AND (similarity(ms.title, $%[1]d) > 0.2"+
+				" OR similarity(ms.description, $%[1]d) > 0.2"+
+				" OR similarity(ms.tags::text, $%[1]d) > 0.2"+
+				" OR similarity(COALESCE(st.name,''), $%[1]d) > 0.2"+
+				" OR similarity(COALESCE(u.nickname,u.email,''), $%[1]d) > 0.2)",
+			n)
 		args = append(args, keyword)
 		hasFuzzySearch = true
 	}
 	if hasFuzzySearch {
-		// ORDER BY relevance score when searching.
+		// ORDER BY best-match relevance across all searchable fields.
 		n := next()
-		query += fmt.Sprintf(" ORDER BY GREATEST(similarity(ms.title, $%d), similarity(ms.description, $%d)) DESC LIMIT $%d", n, n, next())
+		query += fmt.Sprintf(
+			" ORDER BY GREATEST("+
+				"similarity(ms.title, $%[1]d),"+
+				"similarity(ms.description, $%[1]d),"+
+				"similarity(ms.tags::text, $%[1]d),"+
+				"similarity(COALESCE(st.name,''), $%[1]d),"+
+				"similarity(COALESCE(u.nickname,u.email,''), $%[1]d)"+
+				") DESC LIMIT $%[2]d", n, next())
 		args = append(args, keyword, limit)
 	} else {
 		switch sortBy {
