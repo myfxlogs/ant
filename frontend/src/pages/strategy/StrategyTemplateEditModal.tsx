@@ -68,13 +68,13 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
       width={1280} styles={{ body: { padding: '16px 20px' } }}
     >
       <Form form={form} layout="vertical" onFinish={onSubmit} initialValues={{ isPublic: false }} onValuesChange={undefined}>
-        <MetadataHeader />
+        <MetadataHeader aiModel={aiModel} />
         <Row gutter={16}>
           <Col span={15}><CodeEditorPanel form={form} code={code} /></Col>
           <Col span={9}>
             <AIPanel activeTab={aiTab} onTabChange={setAiTab} code={code} codeValidating={codeValidating}
               validationResult={validationResult} fixInstruction={fixInstruction}
-              aiModel={aiModel} onApplyCode={applyAICode} onFixWithAI={handleFixWithAI} />
+              onApplyCode={applyAICode} onFixWithAI={handleFixWithAI} />
           </Col>
         </Row>
       </Form>
