@@ -570,7 +570,7 @@ const Base = {
       "translate": "Translate to Python",
       "translateFailed": "Translation failed. Please try again.",
       "translating": "AI translating...",
-      "writeTab": "Write"
+      "writeTab": "Strategy Code"
     },
     "library": {
       "scheduleCount": "{{count}} active"

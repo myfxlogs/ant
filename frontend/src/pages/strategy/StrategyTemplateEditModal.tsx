@@ -168,15 +168,13 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 								borderBottom: '1px solid var(--color-border)',
 								display: 'flex', alignItems: 'center', gap: 6,
 							}}>
-								<CodeOutlined />
-								<Text strong style={{ fontSize: 13 }}>{t(EDIT_TEMPLATE_MODAL_FIELDS_CODE_KEY)}</Text>
-								<Segmented size="small" style={{ marginLeft: 12 }}
-									value={mode} onChange={v => setMode(v as string)}
-									options={[
-										{ value: 'write', label: t('strategy.importEA.writeTab', { defaultValue: 'Write' }) },
-										{ value: 'import', icon: <ImportOutlined />, label: t('strategy.importEA.importTab', { defaultValue: 'Import EA' }) },
-									]}
-								/>
+								<Segmented size="small"
+								value={mode} onChange={v => setMode(v as string)}
+								options={[
+									{ value: 'write', icon: <CodeOutlined />, label: t('strategy.importEA.writeTab', { defaultValue: 'Strategy Code' }) },
+									{ value: 'import', icon: <ImportOutlined />, label: t('strategy.importEA.importTab', { defaultValue: 'Import EA' }) },
+								]}
+							/>
 								{mode === 'write' && code.trim() && (
 									<Tag style={{ marginLeft: 'auto' }}>{code.split('\n').length} lines</Tag>
 								)}
