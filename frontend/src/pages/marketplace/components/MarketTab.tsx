@@ -16,16 +16,8 @@ export default function MarketTab() {
         <Col xs={24} sm={8}>
           <Input
             placeholder={t('marketplace.searchPlaceholder')}
-            allowClear
             value={m.searchText}
             onChange={e => m.setSearchText(e.target.value)}
-            styles={{
-              affixWrapper: {
-                border: '1px solid #d9d9d9',
-                boxShadow: 'none',
-                borderRadius: 6,
-              },
-            }}
           />
         </Col>
         <Col xs={12} sm={4}>
