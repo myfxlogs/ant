@@ -22,24 +22,27 @@ export default function CodeEditorPanel({ form, code }: Props) {
   const [eaTranslating, setEaTranslating] = useState(false);
   const [eaResult, setEaResult] = useState('');
 
-  const handleImportEA = useCallback(async () => {
+  const handleImportEA = useCallback(() => {
     if (!eaCode.trim() || eaCode.trim().length < 20) {
       message.warning(t('strategy.importEA.codeTooShort', { defaultValue: 'Please paste complete EA/indicator source code.' }));
       return;
     }
     setEaTranslating(true); setEaResult('');
-    try {
-      const resp = await codeAssistClient.transformCode({ sourceCode: eaCode, sourceLang: 'auto', targetLang: 'python' });
-      setEaResult(resp.targetCode || '');
-    } catch (err: any) {
-      const msg = String(err?.rawMessage || err?.message || '');
-      if (msg.includes('insufficient') || msg.includes('balance') || msg.includes('InsufficientBalance')) {
-        message.error(t('strategy.importEA.insufficientBalance', { defaultValue: 'AI balance insufficient. Please top up in AI Gateway settings.' }));
-      } else {
-        message.error(msg || t('strategy.importEA.translateFailed', { defaultValue: 'Translation failed. Please try again.' }));
+    // Wrap in void to prevent React from logging the rejection stack trace.
+    void (async () => {
+      try {
+        const resp = await codeAssistClient.transformCode({ sourceCode: eaCode, sourceLang: 'auto', targetLang: 'python' });
+        setEaResult(resp.targetCode || '');
+      } catch (err: any) {
+        const msg = String(err?.rawMessage || err?.message || '');
+        if (msg.includes('insufficient') || msg.includes('balance') || msg.includes('InsufficientBalance')) {
+          message.error(t('strategy.importEA.insufficientBalance', { defaultValue: 'AI balance insufficient. Please top up in AI Gateway settings.' }));
+        } else {
+          message.error(msg || t('strategy.importEA.translateFailed', { defaultValue: 'Translation failed. Please try again.' }));
+        }
       }
-    }
-    finally { setEaTranslating(false); }
+      finally { setEaTranslating(false); }
+    })();
   }, [eaCode, t]);
 
   const applyEaResult = useCallback(() => {
