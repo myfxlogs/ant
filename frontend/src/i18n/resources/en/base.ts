@@ -559,26 +559,59 @@ const Base = {
     "author": {
       "avgRating": "Avg Rating",
       "empty": "No strategies published yet. Go to Strategy Library to publish one.",
-      "published": "Published"
+      "goToLibrary": "Go to Strategy Library",
+      "monthlyRevenue": "Monthly Revenue",
+      "myStrategies": "My Published Strategies",
+      "noPublished": "No published strategies",
+      "publishNew": "Publish New Strategy",
+      "published": "Published",
+      "subscribers": "Subscribers",
+      "totalRevenue": "Total Revenue"
+    },
+    "backtest": {
+      "idle": "Click \"Run Backtest\" to start",
+      "protected": "Backtest results are protected. Purchase or subscribe to run your own.",
+      "run": "Run Backtest",
+      "title": "Strategy Backtest"
     },
     "card": {
+      "buy": "¥{{amount}}",
       "by": "by",
       "free": "Free",
       "owned": "Purchased",
+      "pnl": "PnL",
+      "rent": "¥{{amount}}/mo",
       "subscribers": "Subscribers",
-      "winRate": "Win Rate"
+      "users": "Users",
+      "winRate": "Win Rate",
+      "yourStrategy": "Your Strategy"
     },
     "detail": {
       "assetClass": "Asset Class",
       "author": "Author",
+      "avgRating": "Avg Rating",
+      "buyNow": "Buy Now",
+      "buyPrice": "¥{{amount}} one-time",
       "commentPlaceholder": "Write a comment...",
       "comments": "Comments",
       "description": "Description",
       "getFree": "Get Free",
+      "noComments": "No comments yet",
+      "price": "Price",
       "rentPrice": "¥{{amount}} / month",
+      "riskLevel": "Risk Level",
+      "runBacktest": "Run Backtest",
       "subscribers": "Subscribers",
+      "tags": "Tags",
       "yourRating": "Your Rating"
     },
+    "empty": "No strategies published yet",
+    "filter": {
+      "all": "All",
+      "free": "Free",
+      "paid": "Paid"
+    },
+    "filterByClass": "Filter by asset class",
     "messages": {
       "commentFailed": "Comment failed",
       "commentPosted": "Comment posted",
@@ -589,6 +622,7 @@ const Base = {
       "subscribeFailed": "Failed",
       "subscribed": "Added to your purchases"
     },
+    "noSubscriptions": "No subscriptions yet",
     "payment": {
       "alreadyPurchased": "You already own this strategy.",
       "balanceAfter": "Balance after purchase",
@@ -606,11 +640,28 @@ const Base = {
       "title": "Confirm Purchase",
       "walletBalance": "Your Balance"
     },
+    "publish": {
+      "assetClass": {
+        "crypto": "Crypto",
+        "commodity": "Commodity",
+        "forex": "Forex",
+        "index": "Index"
+      },
+      "riskLevel": {
+        "high": "High",
+        "low": "Low",
+        "medium": "Medium"
+      }
+    },
     "purchases": {
+      "actions": "Actions",
+      "date": "Date",
       "empty": "No purchases yet. Browse the market to find strategies.",
+      "runBacktest": "Run Backtest",
       "status": "Status",
       "strategy": "Strategy"
     },
+    "searchPlaceholder": "Search strategies...",
     "sort": {
       "newest": "Newest",
       "performance": "Best Performance",
@@ -620,18 +671,13 @@ const Base = {
       "rating": "Highest Rated",
       "score": "Composite Score"
     },
+    "subtitle": "Discover, buy, and use community strategies",
     "tabs": {
       "author": "Author Center",
       "marketplace": "Market",
       "purchases": "My Purchases",
       "subscriptions": "My Subscriptions"
     },
-    "empty": "No strategies published yet",
-    "filterByClass": "Filter by asset class",
-    "noSubscriptions": "No subscriptions yet",
-    "publish": "Publish Strategy",
-    "searchPlaceholder": "Search strategies...",
-    "subtitle": "Discover, buy, and use community strategies",
     "title": "Strategy Marketplace"
   },
   "symbolDetection": {

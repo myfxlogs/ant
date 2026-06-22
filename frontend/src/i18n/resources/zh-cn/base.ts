@@ -559,26 +559,59 @@ const Base = {
     "author": {
       "avgRating": "平均评分",
       "empty": "暂无已发布策略。前往策略库发布一个。",
-      "published": "已发布"
+      "goToLibrary": "前往策略库",
+      "monthlyRevenue": "月收入",
+      "myStrategies": "我发布的策略",
+      "noPublished": "暂无已发布策略",
+      "publishNew": "发布新策略",
+      "published": "已发布",
+      "subscribers": "订阅者",
+      "totalRevenue": "总收入"
+    },
+    "backtest": {
+      "idle": "点击「运行回测」开始",
+      "protected": "回测结果受保护。请购买或订阅后自行运行。",
+      "run": "运行回测",
+      "title": "策略回测"
     },
     "card": {
+      "buy": "¥{{amount}}",
       "by": "by",
       "free": "免费",
-      "owned": "购买日期",
+      "owned": "已购买",
+      "pnl": "盈亏",
+      "rent": "¥{{amount}}/月",
       "subscribers": "订阅者",
-      "winRate": "胜率"
+      "users": "用户",
+      "winRate": "胜率",
+      "yourStrategy": "我的策略"
     },
     "detail": {
       "assetClass": "资产类别",
       "author": "作者",
+      "avgRating": "平均评分",
+      "buyNow": "立即购买",
+      "buyPrice": "¥{{amount}} 一次性买断",
       "commentPlaceholder": "写评论...",
       "comments": "评论",
       "description": "描述",
       "getFree": "免费获取",
+      "noComments": "暂无评论",
+      "price": "价格",
       "rentPrice": "¥{{amount}} / 月",
+      "riskLevel": "风险等级",
+      "runBacktest": "运行回测",
       "subscribers": "订阅者",
+      "tags": "标签",
       "yourRating": "我的评分"
     },
+    "empty": "暂无已发布策略",
+    "filter": {
+      "all": "全部",
+      "free": "免费",
+      "paid": "付费"
+    },
+    "filterByClass": "按资产类别筛选",
     "messages": {
       "commentFailed": "评论失败",
       "commentPosted": "评论已发布",
@@ -589,6 +622,7 @@ const Base = {
       "subscribeFailed": "失败",
       "subscribed": "已添加到您的购买"
     },
+    "noSubscriptions": "暂无订阅",
     "payment": {
       "alreadyPurchased": "您已拥有此策略。",
       "balanceAfter": "购买后余额",
@@ -606,11 +640,28 @@ const Base = {
       "title": "确认购买",
       "walletBalance": "我的余额"
     },
+    "publish": {
+      "assetClass": {
+        "crypto": "加密货币",
+        "commodity": "大宗商品",
+        "forex": "外汇",
+        "index": "指数"
+      },
+      "riskLevel": {
+        "high": "高",
+        "low": "低",
+        "medium": "中"
+      }
+    },
     "purchases": {
+      "actions": "操作",
+      "date": "日期",
       "empty": "暂无购买记录。前往市场发现策略。",
+      "runBacktest": "运行回测",
       "status": "状态",
       "strategy": "策略"
     },
+    "searchPlaceholder": "搜索策略...",
     "sort": {
       "newest": "最新",
       "performance": "最佳表现",
@@ -620,18 +671,13 @@ const Base = {
       "rating": "最高评分",
       "score": "综合评分"
     },
+    "subtitle": "发现、购买和使用社区策略",
     "tabs": {
       "author": "作者中心",
       "marketplace": "策略市场",
       "purchases": "我的购买",
       "subscriptions": "我的订阅"
     },
-    "empty": "暂无已发布策略",
-    "filterByClass": "按资产类别筛选",
-    "noSubscriptions": "暂无订阅",
-    "publish": "发布策略",
-    "searchPlaceholder": "搜索策略...",
-    "subtitle": "发现、购买和使用社区策略",
     "title": "策略市场"
   },
   "symbolDetection": {
