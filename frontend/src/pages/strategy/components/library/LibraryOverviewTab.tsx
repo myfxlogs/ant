@@ -7,7 +7,7 @@ import { CODE_PREVIEW_KEY, CREATE_SCHEDULE_KEY, NO_SCHEDULES_KEY, OPEN_IN_WORKSP
 import { useNavigate } from 'react-router-dom';
 import { formatDateTime } from '@/utils/date';
 import { copyToClipboard } from '@/utils/clipboard';
-import { useLibraryCtx } from '../../LibraryContext';
+import { useLibraryCtx, useTemplatesCtx, useSchedulesCtx } from '../../LibraryContext';
 import { isSystemTemplate, isPublicTemplate } from '../../hooks/libraryTypes';
 
 const { Text } = Typography;
@@ -15,15 +15,17 @@ const { Text } = Typography;
 export default function LibraryOverviewTab() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const tplCtx = useTemplatesCtx();
+  const schCtx = useSchedulesCtx();
   const lib = useLibraryCtx();
-  const tpl = lib.selected;
+  const tpl = tplCtx.selected;
   if (!tpl) return null;
 
   const id = String(tpl.id || '');
   const system = isSystemTemplate(tpl);
   const public_ = isPublicTemplate(tpl);
   const code = String(tpl.code || '');
-  const count = lib.scheduleCountByTemplate(id);
+  const count = tplCtx.scheduleCountByTemplate(id);
 
   const handleCopyCode = async () => {
     const ok = await copyToClipboard(code);
@@ -52,22 +54,22 @@ export default function LibraryOverviewTab() {
       <Space wrap>
         {!system && (
           <>
-            <Button icon={<EditOutlined />} onClick={() => lib.openEdit(tpl)}>{t('common.edit')}</Button>
+            <Button icon={<EditOutlined />} onClick={() => tplCtx.openEdit(tpl)}>{t('common.edit')}</Button>
             {public_ ? (
-              <Button onClick={() => lib.handleUnpublish(id)} loading={lib.publishing}>{t(UNPUBLISH_KEY)}</Button>
+              <Button onClick={() => tplCtx.handleUnpublish(id)} loading={tplCtx.publishing}>{t(UNPUBLISH_KEY)}</Button>
             ) : (
-              <Button type="primary" icon={<GlobalOutlined />} onClick={() => lib.handlePublish(id)} loading={lib.publishing}>{t(PUBLISH_KEY)}</Button>
+              <Button type="primary" icon={<GlobalOutlined />} onClick={() => tplCtx.handlePublish(id)} loading={tplCtx.publishing}>{t(PUBLISH_KEY)}</Button>
             )}
-            <Popconfirm title={t(DELETE_CONFIRM_KEY)} onConfirm={() => lib.handleDelete(id)}>
+            <Popconfirm title={t(DELETE_CONFIRM_KEY)} onConfirm={() => tplCtx.handleDelete(id)}>
               <Button danger icon={<DeleteOutlined />}>{t('common.delete')}</Button>
             </Popconfirm>
           </>
         )}
         {code && <Button icon={<CodeOutlined />} onClick={() => { lib.setViewingCode(code); lib.setCodeViewOpen(true); }}>{t(ACTIONS_VIEW_CODE_KEY)}</Button>}
         {system ? (
-          <Button type="primary" onClick={() => lib.handleSaveAsMine(tpl)}>{t(SAVE_AS_MINE_KEY)}</Button>
+          <Button type="primary" onClick={() => tplCtx.handleSaveAsMine(tpl)}>{t(SAVE_AS_MINE_KEY)}</Button>
         ) : (
-          <Button onClick={lib.scheduleProps.openCreate}>{t(CREATE_SCHEDULE_KEY)}</Button>
+          <Button onClick={schCtx.openCreate}>{t(CREATE_SCHEDULE_KEY)}</Button>
         )}
         <Button icon={<ExportOutlined />} onClick={() => navigate(`/strategy/workspace?templateId=${id}`)}>{t(OPEN_IN_WORKSPACE_KEY)}</Button>
       </Space>

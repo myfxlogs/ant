@@ -6,7 +6,7 @@ import { VIEW_CODE_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
 
 ;
 import { useStrategyLibrary } from './hooks/useStrategyLibrary';
-import { LibraryProvider } from './LibraryContext';
+import { LibraryProvider, TemplatesProvider, SchedulesProvider, RunsProvider } from './LibraryContext';
 import LibraryLeftPanel from './components/library/LibraryLeftPanel';
 import LibraryRightPanel from './components/library/LibraryRightPanel';
 import WorkspaceErrorBoundary from './components/workspace/WorkspaceErrorBoundary';
@@ -26,19 +26,21 @@ function LibraryUI() {
     sCtx.allSchedules.filter(s => String(s.templateId || '') === templateId && s.isActive).length,
   [sCtx.allSchedules]);
 
-  const ctxValue = {
+  const templatesValue = {
     templates: tCtx.templates, allTemplates: tCtx.allTemplates,
-    templatesLoading: tCtx.loading, templatesError: tCtx.error,
+    loading: tCtx.loading, error: tCtx.error,
     selectedId: tCtx.selectedId, selected: tCtx.selected,
     selectTemplate: lib.selectTemplate,
     filter: tCtx.filter, setFilter: tCtx.setFilter,
     search: tCtx.search, setSearch: tCtx.setSearch,
     publishing: tCtx.publishing,
     scheduleCountByTemplate,
-    openCreate: tCtx.openCreate, openEdit: (tpl: StrategyTemplate) => { tCtx.openEdit(tpl); editForm.setFieldsValue({ name: tpl.name, description: tpl.description, code: (tpl as any).code, isPublic: (tpl as any).isPublic }); },
+    openCreate: tCtx.openCreate,
+    openEdit: (tpl: StrategyTemplate) => { tCtx.openEdit(tpl); editForm.setFieldsValue({ name: tpl.name, description: tpl.description, code: (tpl as any).code, isPublic: (tpl as any).isPublic }); },
     handleDelete: tCtx.handleDelete, handlePublish: tCtx.handlePublish, handleUnpublish: tCtx.handleUnpublish,
     handleSaveAsMine: tCtx.handleSaveAsMine,
-    // Marketplace publish
+    handleValidate: tCtx.handleValidate,
+    handleSave: async (values: Record<string, unknown>) => { await tCtx.handleSave(values); editForm.resetFields(); },
     publishModalOpen: tCtx.publishModalOpen, setPublishModalOpen: tCtx.setPublishModalOpen,
     publishingTemplate: tCtx.publishingTemplate,
     openPublishModal: tCtx.openPublishModal, closePublishModal: tCtx.closePublishModal,
@@ -46,45 +48,47 @@ function LibraryUI() {
     editing: tCtx.editing, setEditing: tCtx.setEditing,
     codeValidating: tCtx.codeValidating, lastValidatedCode: tCtx.lastValidatedCode, setLastValidatedCode: tCtx.setLastValidatedCode,
     validationResult: tCtx.validationResult,
-    handleValidate: (code: string) => { tCtx.handleValidate(code); },
-    handleSave: async (values: Record<string, unknown>) => { await tCtx.handleSave(values); editForm.resetFields(); },
-    codeViewOpen: lib.codeViewOpen, setCodeViewOpen: lib.setCodeViewOpen,
-    viewingCode: lib.viewingCode, setViewingCode: lib.setViewingCode,
-    activeTab: lib.activeTab, setActiveTab: lib.setActiveTab,
-    scheduleProps: {
-      schedules: sCtx.filteredSchedules, allSchedules: sCtx.allSchedules,
-      loading: sCtx.loading, error: sCtx.error,
-      templates: sCtx.templates, accounts: sCtx.accounts,
-      symbols: sCtx.symbols, symbolsLoading: sCtx.symbolsLoading,
-      formatTime: sCtx.formatTime,
-      openEdit: sCtx.openEdit, setOpenEdit: sCtx.setOpenEdit,
-      editing: sCtx.editing, setEditing: sCtx.setEditing,
-      form: sCtx.form, accountIdWatch: sCtx.accountIdWatch,
-      loadSymbols: sCtx.loadSymbols, submitEdit: sCtx.submitEdit,
-      openUpdate: sCtx.openUpdate,
-      onToggleActive: sCtx.onToggleActive, onDelete: sCtx.onDelete,
-      onManualTrigger: sCtx.onManualTrigger, loadScheduleHealth: sCtx.loadScheduleHealth,
-      healthOpen: sCtx.healthOpen, setHealthOpen: sCtx.setHealthOpen,
-      healthLoading: sCtx.healthLoading, healthTarget: sCtx.healthTarget, setHealthTarget: sCtx.setHealthTarget,
-      healthSummary: sCtx.healthSummary, setHealthSummary: sCtx.setHealthSummary,
-      triggering: sCtx.triggering, openTrigger: sCtx.openTrigger, setOpenTrigger: sCtx.setOpenTrigger,
-      triggerResult: sCtx.triggerResult, triggerContext: sCtx.triggerContext,
-      setTriggerContext: sCtx.setTriggerContext, setTriggerResult: sCtx.setTriggerResult,
-      doOrderSend: sCtx.doOrderSend, openCreate: sCtx.openCreate,
-    },
-    backtestProps: {
-      runs: rCtx.runs, loading: rCtx.loading, error: rCtx.error,
-      page: rCtx.page, pageSize: rCtx.pageSize, total: rCtx.total,
-      deleting: rCtx.deleting, drawerOpen: rCtx.drawerOpen, selectedRunId: rCtx.selectedRunId,
-      onPageChange: rCtx.onPageChange, onViewRun: rCtx.onViewRun,
-      onDeleteRun: rCtx.onDeleteRun, onBatchDelete: rCtx.onBatchDelete,
-      onRefresh: () => rCtx.fetchRuns(rCtx.page, rCtx.pageSize),
-      setDrawerOpen: rCtx.setDrawerOpen,
-    },
   };
 
+  const schedulesValue = {
+    schedules: sCtx.filteredSchedules, allSchedules: sCtx.allSchedules,
+    loading: sCtx.loading, error: sCtx.error,
+    templates: sCtx.templates, accounts: sCtx.accounts,
+    symbols: sCtx.symbols, symbolsLoading: sCtx.symbolsLoading,
+    formatTime: sCtx.formatTime,
+    openEdit: sCtx.openEdit, setOpenEdit: sCtx.setOpenEdit,
+    editing: sCtx.editing, setEditing: sCtx.setEditing,
+    form: sCtx.form, accountIdWatch: sCtx.accountIdWatch,
+    loadSymbols: sCtx.loadSymbols, submitEdit: sCtx.submitEdit,
+    openUpdate: sCtx.openUpdate,
+    onToggleActive: sCtx.onToggleActive, onDelete: sCtx.onDelete,
+    onManualTrigger: sCtx.onManualTrigger, loadScheduleHealth: sCtx.loadScheduleHealth,
+    healthOpen: sCtx.healthOpen, setHealthOpen: sCtx.setHealthOpen,
+    healthLoading: sCtx.healthLoading, healthTarget: sCtx.healthTarget, setHealthTarget: sCtx.setHealthTarget,
+    healthSummary: sCtx.healthSummary, setHealthSummary: sCtx.setHealthSummary,
+    triggering: sCtx.triggering, openTrigger: sCtx.openTrigger, setOpenTrigger: sCtx.setOpenTrigger,
+    triggerResult: sCtx.triggerResult, triggerContext: sCtx.triggerContext,
+    setTriggerContext: sCtx.setTriggerContext, setTriggerResult: sCtx.setTriggerResult,
+    doOrderSend: sCtx.doOrderSend, openCreate: sCtx.openCreate,
+  };
+
+  const runsValue = {
+    runs: rCtx.runs, loading: rCtx.loading, error: rCtx.error,
+    page: rCtx.page, pageSize: rCtx.pageSize, total: rCtx.total,
+    deleting: rCtx.deleting, drawerOpen: rCtx.drawerOpen, selectedRunId: rCtx.selectedRunId,
+    onPageChange: rCtx.onPageChange, onViewRun: rCtx.onViewRun,
+    onDeleteRun: rCtx.onDeleteRun, onBatchDelete: rCtx.onBatchDelete,
+    onRefresh: () => rCtx.fetchRuns(rCtx.page, rCtx.pageSize),
+    setDrawerOpen: rCtx.setDrawerOpen,
+  };
+
+  const libraryValue = { activeTab: lib.activeTab, setActiveTab: lib.setActiveTab, codeViewOpen: lib.codeViewOpen, setCodeViewOpen: lib.setCodeViewOpen, viewingCode: lib.viewingCode, setViewingCode: lib.setViewingCode };
+
   return (
-    <LibraryProvider value={ctxValue}>
+    <LibraryProvider value={libraryValue}>
+    <TemplatesProvider value={templatesValue}>
+    <SchedulesProvider value={schedulesValue}>
+    <RunsProvider value={runsValue}>
       <div style={{ display: 'flex', height: 'calc(100vh - 112px)', background: '#fff' }}>
         <WorkspaceErrorBoundary fallback={<div style={{ width: 340, padding: 20, color: '#8c8c8c' }}>{t('common.loadingFailed')}</div>}>
           <LibraryLeftPanel />
@@ -100,8 +104,8 @@ function LibraryUI() {
             codeValidating={tCtx.codeValidating} lastValidatedCode={tCtx.lastValidatedCode}
             validationResult={tCtx.validationResult}
             onCancel={() => { tCtx.setEditOpen(false); editForm.resetFields(); }}
-            onValidate={(code: string) => { tCtx.handleValidate(code); }}
-            onSubmit={ctxValue.handleSave} />
+            onValidate={tCtx.handleValidate}
+            onSubmit={async (values: Record<string, unknown>) => { await tCtx.handleSave(values); editForm.resetFields(); }} />
         )}
       </Suspense>
 
@@ -129,6 +133,9 @@ function LibraryUI() {
         onClose={tCtx.closePublishModal}
         onPublished={() => { tCtx.fetchTemplates(); }}
       />
+    </RunsProvider>
+    </SchedulesProvider>
+    </TemplatesProvider>
     </LibraryProvider>
   );
 }

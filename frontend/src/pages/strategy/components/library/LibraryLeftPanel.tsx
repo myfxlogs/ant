@@ -6,7 +6,7 @@ import { EMPTY_KEY } from '@/gen/ant/v1/i18n/strategy_asset_keys';
 import { CREATE_KEY, FILTER_MINE_KEY, FILTER_SYSTEM_KEY, MY_STRATEGIES_KEY, NO_SCHEDULES_KEY, PRIVATE_KEY, SEARCH_PLACEHOLDER_KEY, SHARED_KEY, SHARE_KEY, SYSTEM_KEY, UNPUBLISH_SHORT_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
 
 ;
-import { useLibraryCtx } from '../../LibraryContext';
+import { useTemplatesCtx } from '../../LibraryContext';
 import { isSystemTemplate, isPublicTemplate } from '../../hooks/libraryTypes';
 import type { StrategyTemplate } from '@/client/strategy';
 
@@ -14,7 +14,7 @@ const { Text } = Typography;
 
 export default function LibraryLeftPanel() {
   const { t } = useTranslation();
-  const lib = useLibraryCtx();
+  const lib = useTemplatesCtx();
 
   return (
     <div style={{

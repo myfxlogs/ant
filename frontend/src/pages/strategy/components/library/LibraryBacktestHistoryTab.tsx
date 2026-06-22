@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { BACKTEST_RUNS_ACTIONS_VIEW_KEY, BACKTEST_RUNS_BATCH_DELETE_CONFIRM_KEY, BACKTEST_RUNS_DELETE_CONFIRM_KEY, BACKTEST_RUNS_EMPTY_KEY, BACKTEST_RUNS_STATUS_CANCELED_KEY, BACKTEST_RUNS_STATUS_CANCELING_KEY, BACKTEST_RUNS_STATUS_COMPLETED_KEY, BACKTEST_RUNS_STATUS_FAILED_KEY, BACKTEST_RUNS_STATUS_QUEUED_KEY, BACKTEST_RUNS_STATUS_RUNNING_KEY, BACKTEST_RUNS_TABLE_ACTIONS_KEY, BACKTEST_RUNS_TABLE_CREATED_AT_KEY, BACKTEST_RUNS_TABLE_STATUS_KEY, BACKTEST_RUNS_TABLE_SYMBOL_KEY, BACKTEST_RUNS_TABLE_TIMEFRAME_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
 
 ;
-import { useLibraryCtx } from '../../LibraryContext';
+import { useRunsCtx } from '../../LibraryContext';
 import { StatusResult } from '@/components/common/StatusResult';
 import type { BacktestRunRow } from '../../hooks/libraryTypes';
 
@@ -27,8 +27,8 @@ function statusLabel(s: unknown, t: (key: string) => string): string {
 
 export default function LibraryBacktestHistoryTab() {
   const { t } = useTranslation();
-  const lib = useLibraryCtx();
-  const b = lib.backtestProps;
+  const lib = useRunsCtx();
+  const b = lib;
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const rowSelection: TableRowSelection<BacktestRunRow> = {

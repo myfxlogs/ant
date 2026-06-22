@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { BACKTEST_HISTORY_KEY, OVERVIEW_KEY, SCHEDULES_KEY, SELECT_HINT_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
 
 ;
-import { useLibraryCtx } from '../../LibraryContext';
+import { useLibraryCtx, useTemplatesCtx, useSchedulesCtx } from '../../LibraryContext';
 import { isSystemTemplate } from '../../hooks/libraryTypes';
 import LibraryOverviewTab from './LibraryOverviewTab';
 import LibraryScheduleTab from './LibraryScheduleTab';
@@ -18,9 +18,11 @@ import ScheduleHealthModal from '../ScheduleHealthModal';
 
 export default function LibraryRightPanel() {
   const { t } = useTranslation();
+  const tplCtx = useTemplatesCtx();
+  const schCtx = useSchedulesCtx();
   const lib = useLibraryCtx();
 
-  if (!lib.selected) {
+  if (!tplCtx.selected) {
     return (
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8c8c8c', flexDirection: 'column', gap: 8 }}>
         <Empty description={t(SELECT_HINT_KEY)} />
@@ -28,7 +30,7 @@ export default function LibraryRightPanel() {
     );
   }
 
-  const sys = isSystemTemplate(lib.selected);
+  const sys = isSystemTemplate(tplCtx.selected);
 
   const tabItems = [
     {
@@ -39,7 +41,7 @@ export default function LibraryRightPanel() {
     {
       key: 'schedules' as LibraryTab,
       label: t(SCHEDULES_KEY),
-      children: <LibraryScheduleTab {...lib.scheduleProps} />,
+      children: <LibraryScheduleTab {...schCtx} />,
     },
     {
       key: 'backtest' as LibraryTab,
@@ -52,8 +54,8 @@ export default function LibraryRightPanel() {
     <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px', minWidth: 0 }}>
       <div style={{ padding: '16px 0 8px', borderBottom: '1px solid #f0f0f0', marginBottom: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Title level={5} style={{ margin: 0 }}>{String(lib.selected.name || '')}</Title>
-          <Text type="secondary" style={{ fontSize: 12 }}>{String(lib.selected.id || '')}</Text>
+          <Title level={5} style={{ margin: 0 }}>{String(tplCtx.selected.name || '')}</Title>
+          <Text type="secondary" style={{ fontSize: 12 }}>{String(tplCtx.selected.id || '')}</Text>
         </div>
       </div>
       <Tabs activeKey={lib.activeTab} onChange={key => lib.setActiveTab(key as LibraryTab)}
@@ -61,32 +63,32 @@ export default function LibraryRightPanel() {
 
       {/* Schedule modals rendered outside Tabs so they work from any tab */}
       <EditScheduleModal
-        editing={lib.scheduleProps.editing}
-        open={lib.scheduleProps.openEdit}
-        loading={lib.scheduleProps.loading}
-        form={lib.scheduleProps.form}
-        templates={lib.scheduleProps.templates}
-        accounts={lib.scheduleProps.accounts}
-        symbols={lib.scheduleProps.symbols}
-        symbolsLoading={lib.scheduleProps.symbolsLoading}
-        accountIdWatch={lib.scheduleProps.accountIdWatch}
-        onCancel={() => { lib.scheduleProps.setOpenEdit(false); lib.scheduleProps.setEditing(null); lib.scheduleProps.form.resetFields(); }}
-        onOk={lib.scheduleProps.submitEdit}
+        editing={schCtx.editing}
+        open={schCtx.openEdit}
+        loading={schCtx.loading}
+        form={schCtx.form}
+        templates={schCtx.templates}
+        accounts={schCtx.accounts}
+        symbols={schCtx.symbols}
+        symbolsLoading={schCtx.symbolsLoading}
+        accountIdWatch={schCtx.accountIdWatch}
+        onCancel={() => { schCtx.setOpenEdit(false); schCtx.setEditing(null); schCtx.form.resetFields(); }}
+        onOk={schCtx.submitEdit}
       />
       <TriggerModal
-        open={lib.scheduleProps.openTrigger}
-        triggering={lib.scheduleProps.triggering}
-        result={lib.scheduleProps.triggerResult}
-        context={lib.scheduleProps.triggerContext}
-        onCancel={() => { lib.scheduleProps.setOpenTrigger(false); lib.scheduleProps.setTriggerContext(null); lib.scheduleProps.setTriggerResult(null); }}
-        onOrderSend={lib.scheduleProps.doOrderSend}
+        open={schCtx.openTrigger}
+        triggering={schCtx.triggering}
+        result={schCtx.triggerResult}
+        context={schCtx.triggerContext}
+        onCancel={() => { schCtx.setOpenTrigger(false); schCtx.setTriggerContext(null); schCtx.setTriggerResult(null); }}
+        onOrderSend={schCtx.doOrderSend}
       />
       <ScheduleHealthModal
-        open={lib.scheduleProps.healthOpen}
-        loading={lib.scheduleProps.healthLoading}
-        target={lib.scheduleProps.healthTarget}
-        summary={lib.scheduleProps.healthSummary}
-        onClose={() => { lib.scheduleProps.setHealthOpen(false); lib.scheduleProps.setHealthTarget(null); lib.scheduleProps.setHealthSummary(null); }}
+        open={schCtx.healthOpen}
+        loading={schCtx.healthLoading}
+        target={schCtx.healthTarget}
+        summary={schCtx.healthSummary}
+        onClose={() => { schCtx.setHealthOpen(false); schCtx.setHealthTarget(null); schCtx.setHealthSummary(null); }}
       />
     </div>
   );
