@@ -34,12 +34,10 @@ export default function CodeEditorPanel({ form, code }: Props) {
         const resp = await codeAssistClient.transformCode({ sourceCode: eaCode, sourceLang: 'auto', targetLang: 'python' });
         setEaResult(resp.targetCode || '');
       } catch (err: any) {
-        const msg = String(err?.rawMessage || err?.message || '');
-        // Balance errors are handled globally by the transport interceptor (Modal).
-        if (msg.includes('InsufficientBalance') || msg.includes('insufficient_balance')) {
-          // Modal already shown — no duplicate message.
-        } else {
-          message.error(msg || t('strategy.importEA.translateFailed', { defaultValue: 'Translation failed. Please try again.' }));
+        // All error messages are handled by the transport interceptor (Modal).
+        // Only show message.error for non-ConnectRPC errors (network issues, etc.).
+        if (err?.code == null) {
+          message.error(t('strategy.importEA.translateFailed', { defaultValue: 'Translation failed. Please try again.' }));
         }
       }
       finally { setEaTranslating(false); }
