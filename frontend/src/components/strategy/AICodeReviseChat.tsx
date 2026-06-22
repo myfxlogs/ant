@@ -66,7 +66,10 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
           setLoading(false);
           streamingRef.current = '';
           setStreamingText('');
-          message.error(String((e as Error)?.message || e || 'failed'));
+          const msg = String((e as Error)?.message || e || 'failed');
+          if (!msg.includes('InsufficientBalance') && !msg.includes('insufficient_balance')) {
+            message.error(msg);
+          }
         },
       },
     );

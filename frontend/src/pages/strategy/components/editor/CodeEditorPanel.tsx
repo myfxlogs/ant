@@ -35,8 +35,9 @@ export default function CodeEditorPanel({ form, code }: Props) {
         setEaResult(resp.targetCode || '');
       } catch (err: any) {
         const msg = String(err?.rawMessage || err?.message || '');
-        if (msg.includes('insufficient') || msg.includes('balance') || msg.includes('InsufficientBalance')) {
-          message.error(t('strategy.importEA.insufficientBalance', { defaultValue: 'AI balance insufficient. Please top up in AI Gateway settings.' }));
+        // Balance errors are handled globally by the transport interceptor (Modal).
+        if (msg.includes('InsufficientBalance') || msg.includes('insufficient_balance')) {
+          // Modal already shown — no duplicate message.
         } else {
           message.error(msg || t('strategy.importEA.translateFailed', { defaultValue: 'Translation failed. Please try again.' }));
         }
