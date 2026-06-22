@@ -23,12 +23,13 @@ export type StrategyTemplateEditModalProps = {
   lastValidatedCode?: string;
   onCancel: () => void;
   onValidate: (code: string) => void;
+  onClearValidation: () => void;
   onSubmit: (values: Record<string, unknown>) => void;
 };
 
 export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps> = ({
   open, editingTemplate, form, codeValidating, lastValidatedCode = '', validationResult,
-  onCancel, onValidate, onSubmit,
+  onCancel, onValidate, onClearValidation, onSubmit,
 }) => {
   const { t } = useTranslation();
   const watchedCode = Form.useWatch<string | undefined>('code', form) ?? '';
@@ -43,16 +44,18 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 
   const applyAICode = useCallback((newCode: string) => {
     form.setFieldsValue({ code: newCode });
+    onClearValidation(); // old results invalid after code change
     setAiTab('validate');
-  }, [form]);
+  }, [form, onClearValidation]);
   const handleFixWithAI = useCallback(() => {
     if (!validationResult) return;
     const parts: string[] = [];
     if (validationResult.errors?.length) parts.push('Fix these validation errors:\n' + validationResult.errors.map((e: string) => `- ${e}`).join('\n'));
     if (validationResult.warnings?.length) parts.push('Also address these warnings:\n' + validationResult.warnings.map((w: string) => `- ${w}`).join('\n'));
     setFixInstruction(parts.join('\n\n'));
+    onClearValidation(); // clear old results before sending to AI
     setAiTab('revise');
-  }, [validationResult]);
+  }, [validationResult, onClearValidation]);
 
   return (
     <Modal

@@ -180,7 +180,7 @@ export function useLibraryTemplates() {
     loading, error, filter, setFilter, search, setSearch,
     selectedId, setSelectedId, selected,
     editOpen, setEditOpen, editing, setEditing,
-    codeValidating, lastValidatedCode, setLastValidatedCode, validationResult,
+    codeValidating, lastValidatedCode, setLastValidatedCode, validationResult, setValidationResult,
     publishing, fetchTemplates, openCreate, openEdit, handleSaveAsMine, handleValidate, handleSave, handleDelete,
     handlePublish, handleUnpublish,
     // Marketplace publish modal

@@ -47,7 +47,7 @@ function LibraryUI() {
     editOpen: tCtx.editOpen, setEditOpen: tCtx.setEditOpen,
     editing: tCtx.editing, setEditing: tCtx.setEditing,
     codeValidating: tCtx.codeValidating, lastValidatedCode: tCtx.lastValidatedCode, setLastValidatedCode: tCtx.setLastValidatedCode,
-    validationResult: tCtx.validationResult,
+    validationResult: tCtx.validationResult, setValidationResult: tCtx.setValidationResult,
   };
 
   const schedulesValue = {
@@ -105,6 +105,7 @@ function LibraryUI() {
             validationResult={tCtx.validationResult}
             onCancel={() => { tCtx.setEditOpen(false); editForm.resetFields(); }}
             onValidate={tCtx.handleValidate}
+            onClearValidation={() => { tCtx.setValidationResult(null); tCtx.setLastValidatedCode(''); }}
             onSubmit={async (values: Record<string, unknown>) => { await tCtx.handleSave(values); editForm.resetFields(); }} />
         )}
       </Suspense>
