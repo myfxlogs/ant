@@ -262,7 +262,8 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit, offs
 	}
 	if keyword != "" {
 		kw := "%" + keyword + "%"
-		query += fmt.Sprintf(" AND (ms.title ILIKE $%d OR ms.description ILIKE $%d OR ms.tags::text ILIKE $%d)", next(), next(), next())
+		n := next()
+		query += fmt.Sprintf(" AND (ms.title ILIKE $%d OR ms.description ILIKE $%d OR ms.tags::text ILIKE $%d)", n, n, n)
 		args = append(args, kw)
 	}
 	switch sortBy {
