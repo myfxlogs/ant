@@ -286,46 +286,52 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	if len(code) > maxCodeLen {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too large: %d bytes", len(code)))
 	}
-	uid, err := userIDFromCtx(ctx)
-	if err != nil {
-		return nil, err
+
+	// ── Fast path: compliance scan + Python AST (no AI call) ──
+	// Catches sandbox-blocking errors deterministically in <1s.
+	scanner := ai.NewCodeComplianceScanner()
+	blocks, warns := scanner.Scan(code)
+	_, missingSigs := scanner.HasRequiredSignature(code)
+	structWarns := scanner.StructuralWarnings(code)
+
+	var errors []string
+	var warnings []string
+
+	// Blocking issues → errors
+	for _, b := range blocks {
+		errors = append(errors, fmt.Sprintf("[%s] line %d: %s", b.RuleName, b.Line, b.Message))
 	}
-
-	messages := systemai.BuildChatMessages(buildValidationPrompt(), fmt.Sprintf("Validate this trading strategy:\n```python\n%s\n```", code), nil)
-	result, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
-	if err != nil {
-		s.log.Warn("CodeAssist: ValidateStrategyExtended LLM call failed, falling back to basic check", zap.Error(err))
-		return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
-			Valid: true, Warnings: []string{"AI validation unavailable — basic syntax check only. Run backtest to verify logic."},
-		}), nil
+	// Missing signature is always an error
+	for _, m := range missingSigs {
+		errors = append(errors, m)
 	}
+	// Non-blocking rule warnings
+	for _, w := range warns {
+		warnings = append(warnings, fmt.Sprintf("[%s] line %d: %s", w.RuleName, w.Line, w.Message))
+	}
+	// Structural warnings
+	warnings = append(warnings, structWarns...)
 
-	resp, _ := parseValidationResult(result, s.log)
-
-	// Merge Python quality hints, sweep dimensions, strategy
-	// directives, errors, and warnings from the Python backend.
-	// Python's ast.parse() is authoritative for syntax errors;
-	// LLM only checks business logic.
-	if s.pythonStrategyClient != nil && resp != nil {
+	// Run Python ast.parse() for authoritative syntax errors
+	if s.pythonStrategyClient != nil {
 		pyResp, pyErr := s.pythonStrategyClient.Validate(ctx, connect.NewRequest(&antv1.ValidateStrategyRequest{Code: code}))
-		if pyErr == nil && pyResp != nil {
-			// Merge Python's authoritative errors/warnings (incl. SyntaxError from ast.parse).
-			// Python errors are prepended — they are deterministic (ast.parse) and
-			// must be fixed before LLM's business-logic suggestions are relevant.
+		if pyErr == nil && pyResp != nil && pyResp.Msg != nil {
 			if len(pyResp.Msg.Errors) > 0 {
-				resp.Msg.Errors = append(pyResp.Msg.Errors, resp.Msg.Errors...)
-				resp.Msg.Valid = false // Python syntax/security errors override LLM
+				errors = append(pyResp.Msg.Errors, errors...)
 			}
 			if len(pyResp.Msg.Warnings) > 0 {
-				resp.Msg.Warnings = append(resp.Msg.Warnings, pyResp.Msg.Warnings...)
+				warnings = append(warnings, pyResp.Msg.Warnings...)
 			}
-			resp.Msg.QualityHints = pyResp.Msg.QualityHints
-			resp.Msg.SweepDimensions = pyResp.Msg.SweepDimensions
-			resp.Msg.StrategyDirectives = pyResp.Msg.StrategyDirectives
 		}
 	}
 
-	return resp, nil
+	valid := len(errors) == 0
+
+	return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
+		Valid:    valid,
+		Errors:   errors,
+		Warnings: warnings,
+	}), nil
 }
 
 func buildValidationPrompt() string {
