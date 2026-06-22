@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
-import { Input, Switch, Row, Col, Form, Typography, Tag, Button, Tooltip } from 'antd';
+import { Input, Switch, Row, Col, Form, Typography, Button, Tooltip } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { EDIT_TEMPLATE_MODAL_FIELDS_DESCRIPTION_KEY, EDIT_TEMPLATE_MODAL_FIELDS_NAME_KEY, EDIT_TEMPLATE_MODAL_FIELDS_PUBLIC_SHARE_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_DESCRIPTION_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_NAME_KEY, EDIT_TEMPLATE_MODAL_VALIDATION_NAME_REQUIRED_KEY, VISIBILITY_PRIVATE_KEY, VISIBILITY_PUBLIC_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
@@ -37,17 +37,14 @@ export default function MetadataHeader({ aiModel }: Props) {
           </Form.Item>
         </Col>
         <Col span={4}>
-          <div style={{ paddingBottom: 0 }}>
-            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-              {t('strategy.ai.modelLabel', { defaultValue: 'AI Model' })}
-            </Text>
+          <Form.Item label={<Text strong>{t('strategy.ai.modelLabel', { defaultValue: 'AI Model' })}</Text>} style={{ marginBottom: 0 }}>
             <Tooltip title={t('strategy.ai.settingsHint', { defaultValue: 'Configure AI provider and model' })}>
-              <Button type="default" size="small" icon={<SettingOutlined />} onClick={() => setSettingsOpen(true)}
-                style={{ fontSize: 12, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 4 }}>
-                {aiModel ? <Tag color="blue" style={{ margin: 0, fontSize: 10 }}>{aiModel}</Tag> : 'AI'}
+              <Button icon={<SettingOutlined />} onClick={() => setSettingsOpen(true)}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 6 }}>
+                {aiModel || 'AI'}
               </Button>
             </Tooltip>
-          </div>
+          </Form.Item>
         </Col>
       </Row>
       <Suspense fallback={null}>
