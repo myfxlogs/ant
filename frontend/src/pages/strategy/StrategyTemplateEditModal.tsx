@@ -299,7 +299,7 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 									},
 									{
 										key: 'validate',
-										label: <span><CheckCircleOutlined /> {t('strategy.validate.tab', { defaultValue: 'Validate' })}</span>,
+										label: <span><CheckCircleOutlined /> {t('strategy.validate.tab', )}</span>,
 										children: (
 											<div style={{ height: 416, overflow: 'auto', padding: '12px' }}>
 												{codeValidating ? (
@@ -323,8 +323,8 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 															}
 															<Text strong style={{ color: validationResult.valid ? '#52c41a' : '#ff4d4f' }}>
 																{validationResult.valid
-																	? t('strategy.validate.passed', { defaultValue: 'Validation Passed' })
-																	: t('strategy.validate.failed', { defaultValue: 'Validation Failed' })}
+																	? t('strategy.validate.passed', )
+																	: t('strategy.validate.failed', )}
 															</Text>
 														</div>
 														{validationResult.errors?.length > 0 && (
