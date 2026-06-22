@@ -569,7 +569,7 @@ const Base = {
       "parameters": "parameters",
       "passed": "Validation Passed",
       "running": "Running validation...",
-      "tab": "Validate",
+      "tab": "Validation Results",
       "warnings": "Warnings",
       "fixWithAI": "Send errors to AI Revise",
     },

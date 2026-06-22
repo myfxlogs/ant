@@ -115,15 +115,19 @@ export function useLibraryTemplates() {
     try {
       setCodeValidating(true);
       const code = String(values.code || '');
-      const ext = await codeAssistApi.validateExtended(code);
-      if (!ext.valid) { message.error(ext.errors?.[0] || ext.warnings?.[0] || t(MESSAGES_CODE_VALIDATION_NOT_PASSED_KEY)); return; }
+      // Skip re-validation if code was already validated and unchanged.
+      if (code !== lastValidatedCode) {
+        const ext = await codeAssistApi.validateExtended(code);
+        if (!ext.valid) { message.error(ext.errors?.[0] || ext.warnings?.[0] || t(MESSAGES_CODE_VALIDATION_NOT_PASSED_KEY)); return; }
+        setLastValidatedCode(code);
+      }
       const data: CreateTemplateRequest = { name: String(values.name || ''), description: String(values.description || ''), code, parameters: [], isPublic: Boolean(values.isPublic) || false, tags: [] };
       if (editing) { await strategyTemplateApi.update({ id: editing.id, ...data }); message.success(t(MESSAGES_TEMPLATE_UPDATED_KEY)); }
       else { await strategyTemplateApi.create(data); message.success(t(MESSAGES_TEMPLATE_CREATED_KEY)); setFilter('user'); }
       setEditOpen(false); fetchTemplates();
     } catch { message.error(t('common.saveFailed')); }
     finally { setCodeValidating(false); }
-  }, [editing, fetchTemplates, t]);
+  }, [editing, fetchTemplates, t, lastValidatedCode]);
 
   const handleDelete = useCallback(async (id: string) => {
     try {
