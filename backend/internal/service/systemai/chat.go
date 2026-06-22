@@ -148,7 +148,13 @@ func (s *Service) ChatCompletionWithUsage(
 	for _, p := range providers {
 		result, usage, err := s.tryChatCompletion(ctx, p, messages)
 		if err == nil {
-			return &ChatResult{Content: result, Usage: usage}, nil
+				// Bill before returning — user must pay to receive the result.
+				if s.postCallBiller != nil && usage != nil {
+					if billErr := s.postCallBiller(ctx, userID, p.providerID, p.model, usage.PromptTokens, usage.CompletionTokens); billErr != nil {
+						return nil, billErr
+					}
+				}
+				return &ChatResult{Content: result, Usage: usage}, nil
 		}
 		lastErr = err
 		if !isFailoverErr(err) {

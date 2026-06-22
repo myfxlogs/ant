@@ -70,6 +70,10 @@ type TokenRecord struct {
 // TokenRecorder is called after each successful ChatCompletion / ChatCompletionStream.
 type TokenRecorder func(ctx context.Context, r TokenRecord)
 
+// PostCallBiller is called after a successful AI call, before returning the result.
+// If it returns an error, the result is discarded — ensuring users cannot use AI without paying.
+type PostCallBiller func(ctx context.Context, userID uuid.UUID, providerID, modelName string, inputTokens, outputTokens int) error
+
 // Service exposes high-level operations consumed by the connect handler.
 type Service struct {
 	repo                *repository.SystemAIConfigRepository
@@ -77,6 +81,7 @@ type Service struct {
 	box                 *secretbox.Box
 	secretCache         sync.Map
 	tokenRecorder       TokenRecorder
+	postCallBiller      PostCallBiller
 	walletChecker       func(ctx context.Context, userID uuid.UUID) error // pre-check before API call
 	gatewayProviderRepo *repository.SystemAIProviderRepository // optional: fallback for AI Gateway
 	cbDB                cbExecutor                             // optional: PG pool for persistent circuit breaker
@@ -106,6 +111,12 @@ func (s *Service) SetTokenRecorder(fn TokenRecorder) {
 // If it returns an error, the API call is aborted before any tokens are consumed.
 func (s *Service) SetWalletChecker(fn func(ctx context.Context, userID uuid.UUID) error) {
 	s.walletChecker = fn
+}
+
+// SetPostCallBiller sets a billing hook called after each successful AI call.
+// If it returns an error, the AI result is discarded.
+func (s *Service) SetPostCallBiller(fn PostCallBiller) {
+	s.postCallBiller = fn
 }
 
 // SetGatewayProviderRepo sets an optional fallback provider repo for AI Gateway.
