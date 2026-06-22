@@ -1,11 +1,13 @@
-import { Tabs, Typography, Spin } from 'antd';
-import { CodeOutlined, BulbOutlined, CheckCircleOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { useState, lazy, Suspense } from 'react';
+import { Tabs, Typography, Spin, Tag, Button, Tooltip } from 'antd';
+import { CodeOutlined, BulbOutlined, CheckCircleOutlined, ThunderboltOutlined, SettingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { TAB_A_I_KEY, TAB_EXPLAIN_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
 import { AICodeReviseChat, CodeExplainPanel } from '@/components/strategy/CodeAssist';
 import ValidationResults from './ValidationResults';
 
 const { Text } = Typography;
+const AISettingsModal = lazy(() => import('@/pages/strategy/components/workspace/AISettingsModal'));
 
 interface Props {
   activeTab: string;
@@ -14,17 +16,26 @@ interface Props {
   codeValidating: boolean;
   validationResult: { valid?: boolean; errors?: string[]; warnings?: string[]; parameters?: { key: string; defaultValue?: string }[]; qualityHints?: { message?: string; description?: string }[] } | null;
   fixInstruction: string;
+  aiModel?: string;
   onApplyCode: (newCode: string) => void;
   onFixWithAI: () => void;
 }
 
-export default function AIPanel({ activeTab, onTabChange, code, codeValidating, validationResult, fixInstruction, onApplyCode, onFixWithAI }: Props) {
+export default function AIPanel({ activeTab, onTabChange, code, codeValidating, validationResult, fixInstruction, aiModel, onApplyCode, onFixWithAI }: Props) {
   const { t } = useTranslation();
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const hasCode = !!code.trim();
 
   return (
     <div style={{ border: '1px solid var(--color-border)', borderRadius: 10, overflow: 'hidden', height: 466, display: 'flex', flexDirection: 'column' }}>
       <Tabs activeKey={activeTab} onChange={onTabChange} size="small" style={{ flex: 'none', padding: '0 12px' }} tabBarStyle={{ marginBottom: 0 }}
+        tabBarExtraContent={
+          <Tooltip title={t('strategy.ai.settingsHint', { defaultValue: 'Configure AI model and provider' })}>
+            <Button type="text" size="small" icon={<SettingOutlined />} onClick={() => setSettingsOpen(true)} style={{ fontSize: 11, padding: '0 4px' }}>
+              {aiModel ? <Tag color="blue" style={{ margin: 0, fontSize: 10 }}>{aiModel}</Tag> : 'AI'}
+            </Button>
+          </Tooltip>
+        }
         items={[
           {
             key: 'revise',
@@ -77,6 +88,9 @@ export default function AIPanel({ activeTab, onTabChange, code, codeValidating, 
           },
         ]}
       />
+      <Suspense fallback={null}>
+        {settingsOpen && <AISettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />}
+      </Suspense>
     </div>
   );
 }

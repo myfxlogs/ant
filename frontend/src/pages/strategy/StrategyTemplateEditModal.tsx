@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Modal, Button, Form, Row, Col, Space, Tag, Typography } from 'antd';
 import { CopyOutlined, CodeOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
@@ -7,6 +7,7 @@ import { SAVE_BLOCKED_NOT_VALIDATED_KEY } from '@/gen/ant/v1/i18n/strategy_code_
 import type { FormInstance } from 'antd';
 import type { StrategyTemplate } from '@/client/strategy';
 import { CodeExplainPanel } from '@/components/strategy/CodeAssist';
+import { aiPrimaryClient } from '@/client/connect';
 import MetadataHeader from './components/editor/MetadataHeader';
 import CodeEditorPanel from './components/editor/CodeEditorPanel';
 import AIPanel from './components/editor/AIPanel';
@@ -34,6 +35,11 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
   const code = watchedCode || (form.getFieldValue('code') as string) || '';
   const [aiTab, setAiTab] = useState<string>('revise');
   const [fixInstruction, setFixInstruction] = useState('');
+  const [aiModel, setAiModel] = useState('');
+
+  useEffect(() => {
+    if (open) { aiPrimaryClient.getAiPrimary({}).then(r => setAiModel(r.model || '')).catch(() => {}); }
+  }, [open]);
 
   const applyAICode = useCallback((newCode: string) => { form.setFieldsValue({ code: newCode }); setAiTab('explain'); }, [form]);
   const handleFixWithAI = useCallback(() => {
@@ -68,7 +74,7 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
           <Col span={9}>
             <AIPanel activeTab={aiTab} onTabChange={setAiTab} code={code} codeValidating={codeValidating}
               validationResult={validationResult} fixInstruction={fixInstruction}
-              onApplyCode={applyAICode} onFixWithAI={handleFixWithAI} />
+              aiModel={aiModel} onApplyCode={applyAICode} onFixWithAI={handleFixWithAI} />
           </Col>
         </Row>
       </Form>
