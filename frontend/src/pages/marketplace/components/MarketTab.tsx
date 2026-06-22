@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Input, Select, Row, Col, Pagination } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { StatusResult } from '@/components/common/StatusResult';
@@ -9,21 +8,14 @@ import type { PriceFilter, SortBy } from '../hooks/useMarketplace';
 export default function MarketTab() {
   const { t } = useTranslation();
   const m = useMarketplaceCtx();
-  const [searchFocused, setSearchFocused] = useState(false);
 
   return (
     <div>
       {/* Toolbar */}
       <Row gutter={[8, 8]} style={{ marginBottom: 16 }}>
         <Col xs={24} sm={8}>
-          <div style={{
-            border: `1px solid ${searchFocused ? '#1677ff' : '#d9d9d9'}`,
-            borderRadius: 6, transition: 'border-color 0.2s', background: '#fff',
-          }}>
-            <Input placeholder={t('marketplace.searchPlaceholder')} allowClear variant="borderless"
-              value={m.searchText} onChange={e => m.setSearchText(e.target.value)}
-              onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} />
-          </div>
+          <Input placeholder={t('marketplace.searchPlaceholder')} allowClear variant="borderless"
+            value={m.searchText} onChange={e => m.setSearchText(e.target.value)} />
         </Col>
         <Col xs={12} sm={4}>
           <Select value={m.priceFilter} onChange={v => m.setPriceFilter(v as PriceFilter)} style={{ width: '100%' }}
