@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAccount } from '@/hooks/useAccount';
 import { marketApi } from '@/client/market';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
@@ -42,7 +43,14 @@ export function useStrategyWorkspaceState() {
       if (result.strategyDirectives.length > 0) btCtx.updateStrategyDirectivesFromCode(result.strategyDirectives);
     },
   });
+  const [searchParams] = useSearchParams();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+
+  // Load template from URL on mount (e.g. from Library "Open in Workspace").
+  useEffect(() => {
+    const tid = searchParams.get('templateId');
+    if (tid) handleSelectTemplate(tid);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSelectTemplate = useCallback(async (templateId: string | null) => {
     if (!templateId) {

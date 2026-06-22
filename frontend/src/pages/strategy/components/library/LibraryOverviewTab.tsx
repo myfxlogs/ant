@@ -2,7 +2,7 @@ import { Button, Descriptions, Space, Tag, Typography, Popconfirm, message } fro
 import { EditOutlined, DeleteOutlined, CodeOutlined, ExportOutlined, BankOutlined, GlobalOutlined, LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { ACTIONS_COPY_KEY, ACTIONS_VIEW_CODE_KEY, DELETE_CONFIRM_KEY, MESSAGES_CODE_COPIED_KEY, MESSAGES_COPY_FAILED_KEY, TABLE_CREATED_AT_KEY, TABLE_DESCRIPTION_KEY, TABLE_NAME_KEY, TABLE_USE_COUNT_KEY, TABLE_VISIBILITY_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
-import { CODE_PREVIEW_KEY, CREATE_SCHEDULE_KEY, NO_SCHEDULES_KEY, OPEN_IN_WORKSPACE_KEY, PRIVATE_KEY, SAVE_AS_MINE_KEY, SCHEDULE_COUNT_KEY, SHARED_KEY, SHARE_KEY, SYSTEM_KEY, UNPUBLISH_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
+import { CODE_PREVIEW_KEY, CREATE_SCHEDULE_KEY, NO_SCHEDULES_KEY, OPEN_IN_WORKSPACE_KEY, PRIVATE_KEY, SAVE_AS_MINE_KEY, SCHEDULE_COUNT_KEY, SHARED_KEY, PUBLISH_KEY, SYSTEM_KEY, UNPUBLISH_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
 ;
 import { useNavigate } from 'react-router-dom';
 import { formatDateTime } from '@/utils/date';
@@ -56,7 +56,7 @@ export default function LibraryOverviewTab() {
             {public_ ? (
               <Button onClick={() => lib.handleUnpublish(id)} loading={lib.publishing}>{t(UNPUBLISH_KEY)}</Button>
             ) : (
-              <Button type="primary" icon={<GlobalOutlined />} onClick={() => lib.handlePublish(id)} loading={lib.publishing}>{t(SHARE_KEY)}</Button>
+              <Button type="primary" icon={<GlobalOutlined />} onClick={() => lib.handlePublish(id)} loading={lib.publishing}>{t(PUBLISH_KEY)}</Button>
             )}
             <Popconfirm title={t(DELETE_CONFIRM_KEY)} onConfirm={() => lib.handleDelete(id)}>
               <Button danger icon={<DeleteOutlined />}>{t('common.delete')}</Button>
