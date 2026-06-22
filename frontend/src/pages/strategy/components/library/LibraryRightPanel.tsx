@@ -53,6 +53,7 @@ export default function LibraryRightPanel() {
         </div>
       </div>
       <Tabs activeKey={lib.activeTab} onChange={key => lib.setActiveTab(key as LibraryTab)}
+        destroyInactiveTabPane={false}
         items={tabItems.map(item => ({ key: item.key, label: item.label, children: item.children }))} />
     </div>
   );
