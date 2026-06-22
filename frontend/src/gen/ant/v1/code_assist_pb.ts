@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file code_assist.proto.
  */
 export const file_code_assist: GenFile = /*@__PURE__*/
-  fileDesc("ChFjb2RlX2Fzc2lzdC5wcm90bxIGYW50LnYxIjAKD0NvZGVDaGF0TWVzc2FnZRIMCgRyb2xlGAEgASgJEg8KB2NvbnRlbnQYAiABKAkihAEKEVJldmlzZUNvZGVSZXF1ZXN0EgwKBGNvZGUYASABKAkSEwoLaW5zdHJ1Y3Rpb24YAiABKAkSKAoHaGlzdG9yeRgDIAMoCzIXLmFudC52MS5Db2RlQ2hhdE1lc3NhZ2USDgoGbG9jYWxlGAQgASgJEhIKCnNlc3Npb25faWQYBSABKAkiMgoSUmV2aXNlQ29kZVJlc3BvbnNlEgwKBHRleHQYASABKAkSDgoGcHl0aG9uGAIgASgJIkQKFVJldmlzZUNvZGVTdHJlYW1DaHVuaxINCgVkZWx0YRgBIAEoCRIOCgZweXRob24YAiABKAkSDAoEZG9uZRgDIAEoCCIyChJFeHBsYWluQ29kZVJlcXVlc3QSDAoEY29kZRgBIAEoCRIOCgZsb2NhbGUYAiABKAkiKgoTRXhwbGFpbkNvZGVSZXNwb25zZRITCgtleHBsYW5hdGlvbhgBIAEoCSIvCh9WYWxpZGF0ZVN0cmF0ZWd5RXh0ZW5kZWRSZXF1ZXN0EgwKBGNvZGUYASABKAkinAIKIFZhbGlkYXRlU3RyYXRlZ3lFeHRlbmRlZFJlc3BvbnNlEg0KBXZhbGlkGAEgASgIEg4KBmVycm9ycxgCIAMoCRIQCgh3YXJuaW5ncxgDIAMoCRItCgpwYXJhbWV0ZXJzGAQgAygLMhkuYW50LnYxLlJlcXVpcmVkUGFyYW1TcGVjEi4KDXF1YWxpdHlfaGludHMYBSADKAsyFy5hbnQudjEuQ29kZVF1YWxpdHlIaW50EjAKEHN3ZWVwX2RpbWVuc2lvbnMYBiADKAsyFi5hbnQudjEuU3dlZXBEaW1lbnNpb24SNgoTc3RyYXRlZ3lfZGlyZWN0aXZlcxgHIAMoCzIZLmFudC52MS5TdHJhdGVneURpcmVjdGl2ZSJwChFSZXF1aXJlZFBhcmFtU3BlYxILCgNrZXkYASABKAkSEAoIcmVxdWlyZWQYAiABKAgSFQoNZGVmYXVsdF92YWx1ZRgDIAEoCRIMCgR0eXBlGAQgASgJEhcKD3N1Z2dlc3RlZF92YWx1ZRgFIAEoCTLfAgoRQ29kZUFzc2lzdFNlcnZpY2USQwoKUmV2aXNlQ29kZRIZLmFudC52MS5SZXZpc2VDb2RlUmVxdWVzdBoaLmFudC52MS5SZXZpc2VDb2RlUmVzcG9uc2USTgoQUmV2aXNlQ29kZVN0cmVhbRIZLmFudC52MS5SZXZpc2VDb2RlUmVxdWVzdBodLmFudC52MS5SZXZpc2VDb2RlU3RyZWFtQ2h1bmswARJGCgtFeHBsYWluQ29kZRIaLmFudC52MS5FeHBsYWluQ29kZVJlcXVlc3QaGy5hbnQudjEuRXhwbGFpbkNvZGVSZXNwb25zZRJtChhWYWxpZGF0ZVN0cmF0ZWd5RXh0ZW5kZWQSJy5hbnQudjEuVmFsaWRhdGVTdHJhdGVneUV4dGVuZGVkUmVxdWVzdBooLmFudC52MS5WYWxpZGF0ZVN0cmF0ZWd5RXh0ZW5kZWRSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_python_strategy]);
+  fileDesc("ChFjb2RlX2Fzc2lzdC5wcm90bxIGYW50LnYxIjAKD0NvZGVDaGF0TWVzc2FnZRIMCgRyb2xlGAEgASgJEg8KB2NvbnRlbnQYAiABKAkihAEKEVJldmlzZUNvZGVSZXF1ZXN0EgwKBGNvZGUYASABKAkSEwoLaW5zdHJ1Y3Rpb24YAiABKAkSKAoHaGlzdG9yeRgDIAMoCzIXLmFudC52MS5Db2RlQ2hhdE1lc3NhZ2USDgoGbG9jYWxlGAQgASgJEhIKCnNlc3Npb25faWQYBSABKAkiMgoSUmV2aXNlQ29kZVJlc3BvbnNlEgwKBHRleHQYASABKAkSDgoGcHl0aG9uGAIgASgJIkQKFVJldmlzZUNvZGVTdHJlYW1DaHVuaxINCgVkZWx0YRgBIAEoCRIOCgZweXRob24YAiABKAkSDAoEZG9uZRgDIAEoCCIyChJFeHBsYWluQ29kZVJlcXVlc3QSDAoEY29kZRgBIAEoCRIOCgZsb2NhbGUYAiABKAkiKgoTRXhwbGFpbkNvZGVSZXNwb25zZRITCgtleHBsYW5hdGlvbhgBIAEoCSIvCh9WYWxpZGF0ZVN0cmF0ZWd5RXh0ZW5kZWRSZXF1ZXN0EgwKBGNvZGUYASABKAkinAIKIFZhbGlkYXRlU3RyYXRlZ3lFeHRlbmRlZFJlc3BvbnNlEg0KBXZhbGlkGAEgASgIEg4KBmVycm9ycxgCIAMoCRIQCgh3YXJuaW5ncxgDIAMoCRItCgpwYXJhbWV0ZXJzGAQgAygLMhkuYW50LnYxLlJlcXVpcmVkUGFyYW1TcGVjEi4KDXF1YWxpdHlfaGludHMYBSADKAsyFy5hbnQudjEuQ29kZVF1YWxpdHlIaW50EjAKEHN3ZWVwX2RpbWVuc2lvbnMYBiADKAsyFi5hbnQudjEuU3dlZXBEaW1lbnNpb24SNgoTc3RyYXRlZ3lfZGlyZWN0aXZlcxgHIAMoCzIZLmFudC52MS5TdHJhdGVneURpcmVjdGl2ZSJwChFSZXF1aXJlZFBhcmFtU3BlYxILCgNrZXkYASABKAkSEAoIcmVxdWlyZWQYAiABKAgSFQoNZGVmYXVsdF92YWx1ZRgDIAEoCRIMCgR0eXBlGAQgASgJEhcKD3N1Z2dlc3RlZF92YWx1ZRgFIAEoCSJVChRUcmFuc2Zvcm1Db2RlUmVxdWVzdBITCgtzb3VyY2VfY29kZRgBIAEoCRITCgtzb3VyY2VfbGFuZxgCIAEoCRITCgt0YXJnZXRfbGFuZxgDIAEoCSJYChVUcmFuc2Zvcm1Db2RlUmVzcG9uc2USEwoLdGFyZ2V0X2NvZGUYASABKAkSEwoLZXhwbGFuYXRpb24YAiABKAkSFQoNZGV0ZWN0ZWRfbGFuZxgDIAEoCTKtAwoRQ29kZUFzc2lzdFNlcnZpY2USQwoKUmV2aXNlQ29kZRIZLmFudC52MS5SZXZpc2VDb2RlUmVxdWVzdBoaLmFudC52MS5SZXZpc2VDb2RlUmVzcG9uc2USTgoQUmV2aXNlQ29kZVN0cmVhbRIZLmFudC52MS5SZXZpc2VDb2RlUmVxdWVzdBodLmFudC52MS5SZXZpc2VDb2RlU3RyZWFtQ2h1bmswARJGCgtFeHBsYWluQ29kZRIaLmFudC52MS5FeHBsYWluQ29kZVJlcXVlc3QaGy5hbnQudjEuRXhwbGFpbkNvZGVSZXNwb25zZRJtChhWYWxpZGF0ZVN0cmF0ZWd5RXh0ZW5kZWQSJy5hbnQudjEuVmFsaWRhdGVTdHJhdGVneUV4dGVuZGVkUmVxdWVzdBooLmFudC52MS5WYWxpZGF0ZVN0cmF0ZWd5RXh0ZW5kZWRSZXNwb25zZRJMCg1UcmFuc2Zvcm1Db2RlEhwuYW50LnYxLlRyYW5zZm9ybUNvZGVSZXF1ZXN0Gh0uYW50LnYxLlRyYW5zZm9ybUNvZGVSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_python_strategy]);
 
 /**
  * @generated from message ant.v1.CodeChatMessage
@@ -275,6 +275,72 @@ export const RequiredParamSpecSchema: GenMessage<RequiredParamSpec> = /*@__PURE_
   messageDesc(file_code_assist, 8);
 
 /**
+ * @generated from message ant.v1.TransformCodeRequest
+ */
+export type TransformCodeRequest = Message<"ant.v1.TransformCodeRequest"> & {
+  /**
+   * MQL4/MQL5 EA or indicator code
+   *
+   * @generated from field: string source_code = 1;
+   */
+  sourceCode: string;
+
+  /**
+   * "mql4", "mql5", or "auto" (auto-detect)
+   *
+   * @generated from field: string source_lang = 2;
+   */
+  sourceLang: string;
+
+  /**
+   * "python" (target language)
+   *
+   * @generated from field: string target_lang = 3;
+   */
+  targetLang: string;
+};
+
+/**
+ * Describes the message ant.v1.TransformCodeRequest.
+ * Use `create(TransformCodeRequestSchema)` to create a new message.
+ */
+export const TransformCodeRequestSchema: GenMessage<TransformCodeRequest> = /*@__PURE__*/
+  messageDesc(file_code_assist, 9);
+
+/**
+ * @generated from message ant.v1.TransformCodeResponse
+ */
+export type TransformCodeResponse = Message<"ant.v1.TransformCodeResponse"> & {
+  /**
+   * translated Python strategy code
+   *
+   * @generated from field: string target_code = 1;
+   */
+  targetCode: string;
+
+  /**
+   * summary of what was translated and key mappings
+   *
+   * @generated from field: string explanation = 2;
+   */
+  explanation: string;
+
+  /**
+   * detected source language if source_lang was "auto"
+   *
+   * @generated from field: string detected_lang = 3;
+   */
+  detectedLang: string;
+};
+
+/**
+ * Describes the message ant.v1.TransformCodeResponse.
+ * Use `create(TransformCodeResponseSchema)` to create a new message.
+ */
+export const TransformCodeResponseSchema: GenMessage<TransformCodeResponse> = /*@__PURE__*/
+  messageDesc(file_code_assist, 10);
+
+/**
  * @generated from service ant.v1.CodeAssistService
  */
 export const CodeAssistService: GenService<{
@@ -309,6 +375,16 @@ export const CodeAssistService: GenService<{
     methodKind: "unary";
     input: typeof ValidateStrategyExtendedRequestSchema;
     output: typeof ValidateStrategyExtendedResponseSchema;
+  },
+  /**
+   * TransformCode translates EA/indicator code (MQL4/MQL5) to Python strategy code.
+   *
+   * @generated from rpc ant.v1.CodeAssistService.TransformCode
+   */
+  transformCode: {
+    methodKind: "unary";
+    input: typeof TransformCodeRequestSchema;
+    output: typeof TransformCodeResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_code_assist, 0);

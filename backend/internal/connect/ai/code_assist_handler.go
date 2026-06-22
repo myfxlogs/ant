@@ -172,6 +172,113 @@ func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request
 	return connect.NewResponse(&antv1.ExplainCodeResponse{Explanation: explanation}), nil
 }
 
+const maxTransformCodeLen = 65536
+
+func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Request[antv1.TransformCodeRequest]) (*connect.Response[antv1.TransformCodeResponse], error) {
+	code := req.Msg.SourceCode
+	sourceLang := req.Msg.SourceLang
+
+	if len(code) > maxTransformCodeLen {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too large: %d bytes", len(code)))
+	}
+	if len(code) < 20 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too short — please paste complete EA/indicator source"))
+	}
+
+	uid, err := userIDFromCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Detect language if "auto"
+	langHint := ""
+	detectedLang := sourceLang
+	if sourceLang == "" || sourceLang == "auto" {
+		langHint = "Detect whether this is MQL4 or MQL5 code. "
+	}
+
+	sysPrompt := "You are an expert trading strategy translator. " +
+		langHint +
+		"Translate the following MetaTrader EA/indicator code (MQL4 or MQL5) into a " +
+		"Python strategy for the AntTrader platform.\n\n" +
+		"AntTrader Python API reference:\n" +
+		"- Use `self.on_bar(bar)` as the main entry point (replaces start()/OnTick())\n" +
+		"- Indicators: `self.sma(price, period)`, `self.ema(price, period)`, `self.rsi(price, period)`,\n" +
+		"  `self.bollinger(price, period, stddev)`, `self.macd(price)`, `self.atr(period)`\n" +
+		"- Order: `self.buy(volume, sl, tp)`, `self.sell(volume, sl, tp)`, `self.close_all()`\n" +
+		"- Position: `self.has_position()`, `self.position_side`, `self.position_profit`\n" +
+		"- Prices: `bar.close`, `bar.open`, `bar.high`, `bar.low`, `bar.volume`\n" +
+		"- Risk: use `@param` decorators for configurable parameters (replaces extern/input)\n" +
+		"- Magic number / order comment: replace with `self.order_comment` or @param\n" +
+		"- Remove all MT-specific functions (OrderSelect, OrderModify, etc.)\n\n" +
+		"Rules:\n" +
+		"1. Map MQL entry/exit logic faithfully to Python\n" +
+		"2. Use @param for all configurable values (lot size, SL/TP pips, MA periods, etc.)\n" +
+		"3. Handle both MQL4 (start/init/deinit) and MQL5 (OnInit/OnTick/OnDeinit) patterns\n" +
+		"4. Return ONLY the Python code, no markdown fences, no explanations in the code section\n" +
+		"5. If the code contains external DLL calls or MT-specific GUI, add a comment noting the limitation"
+
+	userMsg := fmt.Sprintf("Translate this trading EA/indicator to Python:\n```\n%s\n```", code)
+	messages := systemai.BuildChatMessages(sysPrompt, userMsg, nil)
+
+	result, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
+	if err != nil {
+		s.log.Warn("CodeAssist: TransformCode LLM call failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal,
+			fmt.Errorf("translation failed — AI service error. Please try again."))
+	}
+
+	// Extract Python code from response (strip markdown fences if present).
+	python := extractCodeBlock(result)
+	if python == "" {
+		python = result
+	}
+
+	return connect.NewResponse(&antv1.TransformCodeResponse{
+		TargetCode:    python,
+		Explanation:   result[:min(len(result), 200)] + "...",
+		DetectedLang:  detectedLang,
+	}), nil
+}
+
+func extractCodeBlock(s string) string {
+	// Find ```python ... ``` block
+	start := 0
+	for {
+		i := -1
+		for j := start; j < len(s)-6; j++ {
+			if s[j] == '`' && s[j+1] == '`' && s[j+2] == '`' {
+				i = j
+				break
+			}
+		}
+		if i < 0 {
+			return ""
+		}
+		end := i + 3
+		for end < len(s)-2 && !(s[end] == '`' && s[end+1] == '`' && s[end+2] == '`') {
+			end++
+		}
+		if end+3 <= len(s) {
+			code := s[i+3 : end]
+			// Skip language tag if present
+			for len(code) > 0 && (code[0] == 'p' || code[0] == 'P') {
+				nl := 0
+				for nl < len(code) && code[nl] != '\n' {
+					nl++
+				}
+				if nl < len(code) && nl < 20 {
+					code = code[nl+1:]
+				} else {
+					break
+				}
+			}
+			return strings.TrimSpace(code)
+		}
+		start = end + 3
+	}
+}
+
 func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *connect.Request[antv1.ValidateStrategyExtendedRequest]) (*connect.Response[antv1.ValidateStrategyExtendedResponse], error) {
 	code := req.Msg.Code
 	if len(code) > maxCodeLen {

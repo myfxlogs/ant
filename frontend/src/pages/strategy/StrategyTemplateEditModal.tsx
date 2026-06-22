@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { Modal, Button, Form, Input, Switch, Row, Col, Typography, Tabs, Space, Tag } from 'antd';
-import { CopyOutlined, CodeOutlined, BulbOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { Modal, Button, Form, Input, Switch, Row, Col, Typography, Tabs, Space, Tag, Segmented, message, Spin } from 'antd';
+import { CopyOutlined, CodeOutlined, BulbOutlined, ThunderboltOutlined, ImportOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { CODE_MODAL_ACTIONS_COPY_KEY, CODE_MODAL_TITLE_KEY, EDIT_TEMPLATE_MODAL_ACTIONS_VALIDATE_CODE_KEY, EDIT_TEMPLATE_MODAL_FIELDS_CODE_KEY, EDIT_TEMPLATE_MODAL_FIELDS_DESCRIPTION_KEY, EDIT_TEMPLATE_MODAL_FIELDS_NAME_KEY, EDIT_TEMPLATE_MODAL_FIELDS_PUBLIC_SHARE_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_CODE_SAMPLE_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_DESCRIPTION_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_NAME_KEY, EDIT_TEMPLATE_MODAL_TITLE_CREATE_KEY, EDIT_TEMPLATE_MODAL_TITLE_EDIT_KEY, EDIT_TEMPLATE_MODAL_VALIDATION_CODE_REQUIRED_KEY, EDIT_TEMPLATE_MODAL_VALIDATION_NAME_REQUIRED_KEY, VISIBILITY_PRIVATE_KEY, VISIBILITY_PUBLIC_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
 import { SAVE_BLOCKED_NOT_VALIDATED_KEY, TAB_A_I_KEY, TAB_EXPLAIN_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
@@ -9,6 +9,7 @@ import { SAVE_BLOCKED_NOT_VALIDATED_KEY, TAB_A_I_KEY, TAB_EXPLAIN_KEY } from '@/
 import type { FormInstance } from 'antd';
 import type { StrategyTemplate } from '@/client/strategy';
 import { AICodeReviseChat, CodeExplainPanel } from '@/components/strategy/CodeAssist';
+import { codeAssistClient } from '@/client/connect';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -45,9 +46,43 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 	const [aiTab, setAiTab] = useState<string>('revise');
 	const applyAICode = useCallback((newCode: string) => {
 		form.setFieldsValue({ code: newCode });
-		// After applying revised code, switch to Explain tab so user can review.
 		setAiTab('explain');
 	}, [form]);
+
+	// ── Import EA state ──
+	const [mode, setMode] = useState<string>('write');
+	const [eaCode, setEaCode] = useState('');
+	const [eaTranslating, setEaTranslating] = useState(false);
+	const [eaResult, setEaResult] = useState('');
+
+	const handleImportEA = useCallback(async () => {
+		if (!eaCode.trim() || eaCode.trim().length < 20) {
+			message.warning(t('strategy.importEA.codeTooShort', { defaultValue: 'Please paste complete EA/indicator source code.' }));
+			return;
+		}
+		setEaTranslating(true);
+		setEaResult('');
+		try {
+			const resp = await codeAssistClient.transformCode({
+				sourceCode: eaCode,
+				sourceLang: 'auto',
+				targetLang: 'python',
+			});
+			setEaResult(resp.targetCode || '');
+		} catch {
+			message.error(t('strategy.importEA.translateFailed', { defaultValue: 'Translation failed. Please try again.' }));
+		} finally {
+			setEaTranslating(false);
+		}
+	}, [eaCode, t]);
+
+	const applyEaResult = useCallback(() => {
+		if (eaResult) {
+			form.setFieldsValue({ code: eaResult });
+			setMode('write');
+			message.success(t('strategy.importEA.applied', { defaultValue: 'EA code translated and applied to editor.' }));
+		}
+	}, [eaResult, form, t]);
 
 	return (
 		<Modal
@@ -119,41 +154,102 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 					</Row>
 				</div>
 
-				{/* ── Step 2+3: Code editor + AI assistant (workflow panels) ── */}
+				{/* ── Step 2+3: Code editor / Import EA + AI assistant ── */}
 				<Row gutter={16}>
-					{/* Left: Code editor — the main workspace */}
+					{/* Left: Code editor / Import EA — the main workspace */}
 					<Col span={15}>
 						<div style={{
 							border: '1px solid var(--color-border)',
 							borderRadius: 10, overflow: 'hidden',
+							display: 'flex', flexDirection: 'column',
 						}}>
 							<div style={{
-								padding: '6px 14px', background: 'var(--color-bg-tertiary)',
+								padding: '4px 14px', background: 'var(--color-bg-tertiary)',
 								borderBottom: '1px solid var(--color-border)',
 								display: 'flex', alignItems: 'center', gap: 6,
 							}}>
 								<CodeOutlined />
 								<Text strong style={{ fontSize: 13 }}>{t(EDIT_TEMPLATE_MODAL_FIELDS_CODE_KEY)}</Text>
-								{code.trim() && (
+								<Segmented size="small" style={{ marginLeft: 12 }}
+									value={mode} onChange={v => setMode(v as string)}
+									options={[
+										{ value: 'write', label: t('strategy.importEA.writeTab', { defaultValue: 'Write' }) },
+										{ value: 'import', icon: <ImportOutlined />, label: t('strategy.importEA.importTab', { defaultValue: 'Import EA' }) },
+									]}
+								/>
+								{mode === 'write' && code.trim() && (
 									<Tag style={{ marginLeft: 'auto' }}>{code.split('\n').length} lines</Tag>
 								)}
 							</div>
-							<Form.Item
-								name="code"
-								rules={[{ required: true, message: t(EDIT_TEMPLATE_MODAL_VALIDATION_CODE_REQUIRED_KEY) }]}
-								style={{ marginBottom: 0 }}
-							>
-								<TextArea
-									rows={18}
-									placeholder={t(EDIT_TEMPLATE_MODAL_PLACEHOLDERS_CODE_SAMPLE_KEY)}
-									style={{
-										fontFamily: '"Fira Code", "Cascadia Code", "JetBrains Mono", monospace',
-										fontSize: 13, lineHeight: 1.6,
-										border: 'none', borderRadius: 0, resize: 'none',
-										height: 420,
-									}}
-								/>
-							</Form.Item>
+
+							{mode === 'write' ? (
+								<Form.Item
+									name="code"
+									rules={[{ required: true, message: t(EDIT_TEMPLATE_MODAL_VALIDATION_CODE_REQUIRED_KEY) }]}
+									style={{ marginBottom: 0 }}
+								>
+									<TextArea
+										rows={18}
+										placeholder={t(EDIT_TEMPLATE_MODAL_PLACEHOLDERS_CODE_SAMPLE_KEY)}
+										style={{
+											fontFamily: '"Fira Code", "Cascadia Code", "JetBrains Mono", monospace',
+											fontSize: 13, lineHeight: 1.6,
+											border: 'none', borderRadius: 0, resize: 'none',
+											height: 420,
+										}}
+									/>
+								</Form.Item>
+							) : (
+								<div style={{ display: 'flex', flexDirection: 'column', height: 420 }}>
+									<TextArea
+										value={eaCode}
+										onChange={e => setEaCode(e.target.value)}
+										rows={10}
+										placeholder={t('strategy.importEA.pastePlaceholder', { defaultValue: 'Paste MQL4/MQL5 EA or indicator source code here...' })}
+										style={{
+											fontFamily: '"Fira Code", "Cascadia Code", "JetBrains Mono", monospace',
+											fontSize: 13, lineHeight: 1.6,
+											border: 'none', borderRadius: 0, resize: 'none',
+											flex: 'none',
+										}}
+									/>
+									<div style={{
+										padding: '6px 14px', borderTop: '1px solid var(--color-border)',
+										borderBottom: '1px solid var(--color-border)',
+										display: 'flex', gap: 8, alignItems: 'center',
+									}}>
+										<Button type="primary" size="small" icon={<RobotOutlined />}
+											onClick={handleImportEA} loading={eaTranslating}>
+											{t('strategy.importEA.translate', { defaultValue: 'Translate to Python' })}
+										</Button>
+										{eaResult && (
+											<Button size="small" onClick={applyEaResult}>
+												{t('strategy.importEA.apply', { defaultValue: 'Apply to Editor' })}
+											</Button>
+										)}
+									</div>
+									{eaResult ? (
+										<pre style={{
+											flex: 1, overflow: 'auto', margin: 0, padding: '10px 14px',
+											fontFamily: '"Fira Code", "Cascadia Code", "JetBrains Mono", monospace',
+											fontSize: 12, lineHeight: 1.5, background: '#f9fafb',
+											color: 'var(--color-text)', whiteSpace: 'pre-wrap',
+										}}>
+											{eaResult}
+										</pre>
+									) : (
+										<div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+											{eaTranslating ? (
+												<Spin tip={t('strategy.importEA.translating', { defaultValue: 'AI translating...' })} />
+											) : (
+												<Text type="secondary">
+													{t('strategy.importEA.hint', { defaultValue: 'Paste MQL4/MQL5 code and click "Translate to Python"' })}
+												</Text>
+											)}
+										</div>
+									)}
+								</div>
+							)}
 						</div>
 					</Col>
 

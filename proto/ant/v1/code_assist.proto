@@ -11,6 +11,8 @@ service CodeAssistService {
   rpc ReviseCodeStream(ReviseCodeRequest) returns (stream ReviseCodeStreamChunk);
   rpc ExplainCode(ExplainCodeRequest) returns (ExplainCodeResponse);
   rpc ValidateStrategyExtended(ValidateStrategyExtendedRequest) returns (ValidateStrategyExtendedResponse);
+  // TransformCode translates EA/indicator code (MQL4/MQL5) to Python strategy code.
+  rpc TransformCode(TransformCodeRequest) returns (TransformCodeResponse);
 }
 
 message CodeChatMessage {
@@ -69,4 +71,16 @@ message RequiredParamSpec {
   string default_value = 3;
   string type = 4;
   string suggested_value = 5;
+}
+
+message TransformCodeRequest {
+  string source_code = 1;   // MQL4/MQL5 EA or indicator code
+  string source_lang = 2;   // "mql4", "mql5", or "auto" (auto-detect)
+  string target_lang = 3;   // "python" (target language)
+}
+
+message TransformCodeResponse {
+  string target_code = 1;    // translated Python strategy code
+  string explanation = 2;    // summary of what was translated and key mappings
+  string detected_lang = 3;  // detected source language if source_lang was "auto"
 }
