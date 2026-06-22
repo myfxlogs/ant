@@ -41,7 +41,7 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
     if (open) { aiPrimaryClient.getAIPrimary({}).then(r => setAiModel(r.model || '')).catch(() => {}); }
   }, [open]);
 
-  const applyAICode = useCallback((newCode: string) => { form.setFieldsValue({ code: newCode }); setAiTab('explain'); }, [form]);
+  const applyAICode = useCallback((newCode: string) => { form.setFieldsValue({ code: newCode }); setAiTab('validate'); }, [form]);
   const handleFixWithAI = useCallback(() => {
     if (!validationResult) return;
     const parts: string[] = [];
