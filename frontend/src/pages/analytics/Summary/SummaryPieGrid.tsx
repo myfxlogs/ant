@@ -40,7 +40,7 @@ function SummaryPieGrid({ symbolStats, symbolPieData, directionPieData, profitPi
         <Card title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t(SUMMARY_CARDS_SYMBOL_TRADE_SHARE_KEY)}</span>} className="glass-card">
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={symbolPieData} cx="50%" cy="50%" innerRadius={30} outerRadius={52} paddingAngle={2} dataKey="value" label={({ name, value }) => `${name} (${value}%)`}>
+              <Pie data={symbolPieData} cx="50%" cy="50%" innerRadius={18} outerRadius={34} paddingAngle={2} dataKey="value" label={({ name, value }) => `${name} (${value}%)`}>
                 {symbolPieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
               </Pie>
               <Tooltip /><Legend />
@@ -52,7 +52,7 @@ function SummaryPieGrid({ symbolStats, symbolPieData, directionPieData, profitPi
         <Card title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t(SUMMARY_CARDS_DIRECTION_SHARE_KEY)}</span>} className="glass-card">
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={directionPieData} cx="50%" cy="50%" innerRadius={30} outerRadius={52} paddingAngle={2} dataKey="value" label={({ name, value }) => `${name} (${value})`}>
+              <Pie data={directionPieData} cx="50%" cy="50%" innerRadius={18} outerRadius={34} paddingAngle={2} dataKey="value" label={({ name, value }) => `${name} (${value})`}>
                 {directionPieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
               </Pie>
               <Tooltip /><Legend />
@@ -64,7 +64,7 @@ function SummaryPieGrid({ symbolStats, symbolPieData, directionPieData, profitPi
         <Card title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t(SUMMARY_CARDS_PNL_SHARE_KEY)}</span>} className="glass-card">
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={profitPieData} cx="50%" cy="50%" innerRadius={30} outerRadius={52} paddingAngle={2} dataKey="value" label={({ name, value }) => `${name} (${value})`}>
+              <Pie data={profitPieData} cx="50%" cy="50%" innerRadius={18} outerRadius={34} paddingAngle={2} dataKey="value" label={({ name, value }) => `${name} (${value})`}>
                 {profitPieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
               </Pie>
               <Tooltip /><Legend />
