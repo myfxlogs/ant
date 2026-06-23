@@ -447,8 +447,13 @@ func (s *PythonStrategyServer) submitOrder(ctx context.Context, cfg LiveStrategy
 		return // non-bypassable: denied order never reaches mthub
 	}
 
+	// Pass user ID in context for mthub capability check.
+	placeCtx := context.Background()
+	if cfg.UserID != "" {
+		placeCtx = context.WithValue(context.Background(), interceptor.UserIDKey, cfg.UserID)
+	}
 	go func() {
-		record, err := s.mtHub.PlaceOrder(context.Background(), req)
+		record, err := s.mtHub.PlaceOrder(placeCtx, req)
 		if err != nil {
 			s.log.Error("LiveStrategyRunner: order submission failed",
 				zap.String("symbol", cfg.Symbol),

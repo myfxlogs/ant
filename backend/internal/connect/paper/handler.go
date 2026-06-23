@@ -149,13 +149,21 @@ func (h *Handler) StartPaperStrategy(ctx context.Context, req *connect.Request[a
 		Symbol:    req.Msg.Symbol,
 		Timeframe: req.Msg.Timeframe,
 		Code:      req.Msg.StrategyCode,
-		Mode:      "paper",
+		Mode:      modeOverride(req.Msg.Params),
 		Params:    req.Msg.Params,
 	}
 		cfg.UserID = uid
-		// Paper mode: use linked MT4 account for bar data subscription.
-		if mt4ID := h.accountLookup(ctx, uid); mt4ID != "" {
-			cfg.DataSourceAccountID = mt4ID
+		// Live mode: use MT4 account ID for order routing.
+		if cfg.Mode == "live" {
+			if mt4ID := h.accountLookup(ctx, uid); mt4ID != "" {
+				cfg.DataSourceAccountID = mt4ID
+				cfg.AccountID = mt4ID // route orders to real MT4 account
+			}
+		} else {
+			// Paper mode: use linked MT4 account for bar data subscription only.
+			if mt4ID := h.accountLookup(ctx, uid); mt4ID != "" {
+				cfg.DataSourceAccountID = mt4ID
+			}
 		}
 
 	h.mu.Lock()
@@ -268,4 +276,13 @@ func paperAccountToProto(a *repository.PaperAccount) *antv1.PaperAccount {
 		CreatedAtUnixMs:  a.CreatedAt.UnixMilli(),
 		Archived:         a.Archived,
 	}
+}
+
+// modeOverride extracts the mode from params, defaulting to "paper".
+// Set params["mode"] = "live" to run against a real MT account.
+func modeOverride(params map[string]string) string {
+	if params != nil && params["mode"] == "live" {
+		return "live"
+	}
+	return "paper"
 }

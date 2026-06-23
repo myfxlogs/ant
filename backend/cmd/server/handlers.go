@@ -262,7 +262,7 @@ func registerHandlers(
 	notifRepo := repository.NewNotificationRepository(pool)
 	notifSender := notifpubsub.NewSender(notifRepo, notifSub, log)
 
-	pythonStrategyServer := configurePythonStrategy(backtestRunRepo, marketDataRepo, mthubSvc,
+	pythonStrategyServer := configurePythonStrategy(backtestRunRepo, marketDataRepo, mthubSvc, hub,
 		paperEngine, notifSender, aiSvc, pgListen, cfg, log)
 	if cfg.StrategyServiceURL != "" {
 		backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
@@ -422,6 +422,7 @@ func configurePythonStrategy(
 	backtestRunRepo *repository.BacktestRunRepository,
 	marketDataRepo repository.MarketDataStore,
 	mthubSvc *mthub.MtHubService,
+		hub *mthub.Hub,
 	paperEngine *papereng.PaperEngine,
 	notifSender *notifpubsub.Sender,
 	aiSvc *systemai.Service,
@@ -449,7 +450,10 @@ func configurePythonStrategy(
 		gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
 		gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
 		srv.SetGate(gate)
-		log.Info("D6-A: risk.Gate injected into PythonStrategyServer")
+		// T3.2b: Inject AccountStateProvider for live trading.
+		// Uses the MT4 gateway's FetchOpenedOrders to derive equity/balance/margin.
+		srv.SetAccountProvider(strategy.NewMTAccountStateProvider(hub, log))
+		log.Info("D6-A: risk.Gate + AccountStateProvider injected into PythonStrategyServer")
 
 
 	// Auto-gate: runs gate evaluation after every backtest completion.

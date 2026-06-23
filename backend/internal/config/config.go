@@ -132,6 +132,10 @@ func Load() *Config {
 		SMTPFrom:     getenv("SMTP_FROM", "ant@localhost"),
 		SMTPTo:       getenv("SMTP_TO", ""),
 
+		RiskGateEnabled:          getenvBool("ANTRADER_RISK_GATE_ENABLED", true),
+		RiskGateKillSwitch:       getenvBool("ANTRADER_RISK_GATE_KILLSWITCH_DEFAULT", false),
+		RiskGateAutotradeEnabled: getenvBool("ANTRADER_RISK_GATE_AUTOTRADE_DEFAULT", true),
+
 		RateLimitLoginPerMinute: getenvInt("RATE_LIMIT_LOGIN_PER_MINUTE", 10),
 		RateLimitEnabled:        getenvBool("RATE_LIMIT_ENABLED", true),
 	}
