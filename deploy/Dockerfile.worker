@@ -25,23 +25,22 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libstdc++6 procps && \
     rm -rf /var/lib/apt/lists/* && \
-    # 创建非 root 用户
-    groupadd -g 65534 nobody && \
-    useradd -u 65534 -g 65534 -d /app -s /bin/false nobody && \
     mkdir -p /tmp && chmod 1777 /tmp
 
 # 从 builder 复制 Python 包
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 
-# 复制策略服务代码
+# 复制策略服务代码 (paths relative to repo root)
 COPY strategy-service/app /app/app
 COPY strategy-service/tests /app/tests
-COPY strategy-service/main.py /app/main.py
 
 # 应用 seccomp profile（Python 模块在启动时通过 sandbox_os.apply_seccomp() 应用）
 COPY deploy/sandbox/seccomp_profile.json /app/seccomp_profile.json
 
-# 切换到非 root
+# 注意: 构建上下文为 repo root (context: .)，
+# 因此 COPY 路径相对于 /opt/ant/ 根目录
+
+# 切换到非 root (nobody 用户预装于 python:3.12-slim)
 USER nobody
 
 ENV PYTHONUNBUFFERED=1

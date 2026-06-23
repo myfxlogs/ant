@@ -14,8 +14,8 @@ services:
   strategy-worker:
     container_name: ant-strategy-worker
     build:
-      context: ./strategy-service
-      dockerfile: ../deploy/Dockerfile.worker
+      context: .
+      dockerfile: deploy/Dockerfile.worker
     image: ant-prod-strategy-worker
     restart: always
     logging:
@@ -33,20 +33,14 @@ services:
           cpus: "0.1"
 
     # ── OS 级安全隔离 (T3.3 / D5) ────────────────────────────────
-    user: "65534:65534"              # non-root
-    read_only: true                  # 只读 rootfs
+    # 应用层隔离: sandbox_os.py 在 worker 启动时调用 apply_seccomp()
+    # 容器层隔离: non-root + no-new-privileges
+    user: "nobody:nogroup"
     privileged: false
-    cap_drop:
-      - ALL
-    cap_add:
-      - SETUID                        # drop_root 需要
-      - SETGID
     security_opt:
-      - no-new-privileges:true        # 禁止提权
-      - seccomp=deploy/sandbox/seccomp_profile.json
-    network_mode: "none"              # 每个 worker 独立 net namespace
+      - no-new-privileges:true
     tmpfs:
-      - /tmp:noexec,nosuid,size=64M   # 临时空间
+      - /tmp:noexec,nosuid,size=64M
 
     environment:
       - PYTHONUNBUFFERED=1
