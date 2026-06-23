@@ -169,6 +169,20 @@ class StrategyRuntime:
     def is_timer_active(self) -> bool:
         return self._timer_active
 
+    # ── Intent export (for live/paper mode) ────────────────────────────
+
+    def export_intents(self) -> List[Dict[str, Any]]:
+        """Export all recorded order intents from the broker.
+
+        Called by Go live_runner after each bar/tick callback.
+        Returns a list of intent dicts ready for Go gate evaluation.
+        Clears intents after export.
+        """
+        broker = self._broker
+        if hasattr(broker, 'export_intents'):
+            return broker.export_intents()
+        return []
+
     # ── Internals ──────────────────────────────────────────────────────
 
     def _require_ready(self) -> None:

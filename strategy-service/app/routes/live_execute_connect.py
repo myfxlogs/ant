@@ -176,6 +176,11 @@ async def execute_live(request: Request):
 
     code_hash = _strategy_hash(req.strategy_code)
 
+    # ── SDK strategy path (ADR-0020, pure StrategyRuntime) ──
+    if _is_sdk_strategy_code(req.strategy_code):
+        return await _execute_sdk(req, request)
+
+    # ── Legacy signal-dict path ──
     try:
         # Validate code before compiling (only on first use for this hash).
         if code_hash not in _worker_pool:
@@ -260,3 +265,84 @@ async def execute_live(request: Request):
             ExecuteLiveResponse(success=False, error=f"live execution error: {e}", strategy_hash=code_hash),
             request,
         )
+
+
+# ── SDK strategy path (ADR-0020) ──────────────────────────────────────
+
+def _is_sdk_strategy_code(code: str) -> bool:
+    """Detect SDK-format strategies: class X(StrategyBase)."""
+    return "StrategyBase" in code and "class " in code
+
+
+async def _execute_sdk(req, request: Request) -> Response:
+    """Execute an SDK strategy via StrategyRuntime → LiveBroker → intents."""
+    import time as _time
+    from app.engine.sdk_worker import process_bar, reset_runtime
+
+    t0 = _time.time()
+    code_hash = _strategy_hash(req.strategy_code)
+
+    try:
+        context = _proto_context_to_dict(req.context) if req.HasField("context") else {}
+        result = process_bar(req.strategy_code, context)
+
+        if result.get("error"):
+            return _respond(
+                ExecuteLiveResponse(success=False, error=result["error"], strategy_hash=code_hash),
+                request,
+            )
+
+        intents = result.get("intents", [])
+        if not intents:
+            return _respond(
+                ExecuteLiveResponse(success=True, strategy_hash=code_hash,
+                    signal=_build_signal_from_intents([])),
+                request,
+            )
+
+        sig = _build_signal_from_intents(intents)
+        elapsed = (_time.time() - t0) * 1000
+        if elapsed > 200:
+            logger.warning("ExecuteLive(SDK): slow %.0fms hash=%s intents=%d", elapsed, code_hash, len(intents))
+
+        return _respond(
+            ExecuteLiveResponse(success=True, signal=sig, strategy_hash=code_hash),
+            request,
+        )
+
+    except Exception as e:
+        logger.exception("ExecuteLive(SDK): error hash=%s", code_hash)
+        return _respond(
+            ExecuteLiveResponse(success=False, error=str(e), strategy_hash=code_hash),
+            request,
+        )
+
+
+def _build_signal_from_intents(intents: list):
+    """Convert SDK intents list to a StrategySignal proto.
+
+    The first intent becomes the primary signal; additional intents
+    are logged but only one signal is returned per bar (Go dispatches it).
+    For multi-intent bars, intents after the first are queued for next bar.
+    """
+    from app.python_strategy_pb2 import StrategySignal
+
+    if not intents:
+        return StrategySignal(signal_type="hold")
+
+    first = intents[0]
+    action = first.get("action", "hold")
+    volume = float(first.get("volume", 0))
+    sl = float(first.get("sl", 0))
+    tp = float(first.get("tp", 0))
+    price = float(first.get("price", 0))
+    ticket = int(first.get("ticket", 0)) if first.get("ticket", "").lstrip("-").isdigit() else 0
+
+    return StrategySignal(
+        signal_type=action,
+        volume=volume,
+        stop_loss=sl,
+        take_profit=tp,
+        price=price,
+        executed_ticket=ticket,
+    )

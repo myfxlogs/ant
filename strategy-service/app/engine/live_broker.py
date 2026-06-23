@@ -228,6 +228,24 @@ class LiveBroker(Broker):
     def delete_intents(self) -> List[int]:
         return list(self._delete_intents)
 
+    def export_intents(self) -> List[dict]:
+        """Export all intents as serializable dicts, then clear.
+
+        Called by StrategyRuntime.export_intents() after each bar/tick.
+        Returns a flat list of intent dicts ready for Go gate evaluation.
+        """
+        result: List[dict] = []
+        for intent in self._intents:
+            result.append(intent.to_signal_dict())
+        for intent in self._close_intents:
+            result.append(intent.to_signal_dict())
+        for intent in self._modify_intents:
+            result.append(intent.to_signal_dict())
+        for ticket in self._delete_intents:
+            result.append({"action": "cancel", "ticket": str(ticket)})
+        self.clear_intents()
+        return result
+
 
 # ── Intent data classes ─────────────────────────────────────────────────
 
