@@ -18,6 +18,7 @@ from typing import Any, Dict, List, Optional
 
 from app.engine.live_broker import LiveBroker, build_live_broker_from_proto
 from app.sdk import StrategyBase
+from app.sdk.account import AccountInfo, AccountMode
 from app.sdk.runtime import RuntimeContext, StrategyRuntime
 from app.sdk.series import Bars, Series
 
@@ -169,21 +170,38 @@ def process_bar(code: str, bar_context: dict) -> Dict[str, Any]:
 
         # Update broker state from latest bar context.
         if hasattr(_runtime._broker, 'update_state'):
-            acct = bar_context.get("account")
-            if acct:
-                from app.sdk.account import AccountInfo, AccountMode
-                _runtime._broker.update_state(
-                    account=AccountInfo(
-                        balance=Decimal(str(acct.get("balance", 0))),
-                        equity=Decimal(str(acct.get("equity", 0))),
-                        margin=Decimal(str(acct.get("margin", 0))),
-                        free_margin=Decimal(str(acct.get("free_margin", 0))),
-                        margin_level=Decimal(str(acct.get("margin_level", 0))),
-                        leverage=acct.get("leverage", 100),
-                        currency=acct.get("currency", "USD"),
-                        mode=AccountMode.HEDGING,
-                    ),
-                )
+            # Account state.
+            equity = bar_context.get("equity", 0)
+            balance = bar_context.get("balance", 0)
+            _runtime._broker.update_state(
+                account=AccountInfo(
+                    balance=Decimal(str(balance)),
+                    equity=Decimal(str(equity)),
+                    margin=Decimal("0"),
+                    free_margin=Decimal("0"),
+                    margin_level=Decimal("0"),
+                    leverage=100, currency="USD", mode=AccountMode.HEDGING,
+                ),
+            )
+            # Positions from MT4 backfill.
+            positions_raw = bar_context.get("positions", [])
+            if positions_raw:
+                from app.sdk.types import Position, PositionSide
+                positions = []
+                for lp in positions_raw:
+                    positions.append(Position(
+                        ticket=int(lp.get("ticket", 0)),
+                        symbol=bar_context.get("symbol", ""),
+                        side=PositionSide.BUY if lp.get("side", "buy") == "buy" else PositionSide.SELL,
+                        volume=Decimal(str(lp.get("volume", 0))),
+                        open_price=Decimal(str(lp.get("openPrice", lp.get("open_price", 0)))),
+                        sl=Decimal(str(lp.get("sl", 0))) if lp.get("sl", 0) else None,
+                        tp=Decimal(str(lp.get("tp", 0))) if lp.get("tp", 0) else None,
+                        profit=Decimal("0"),
+                        swap=Decimal("0"),
+                        open_time_ms=0,
+                    ))
+                _runtime._broker.update_state(positions=positions)
 
         # Drive strategy.
         _runtime.on_bar(bar_context.get("timeframe", ""))

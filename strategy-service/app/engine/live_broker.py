@@ -288,7 +288,7 @@ class CloseIntent:
         return {
             "action": "close",
             "ticket": str(self.ticket),
-            "volume": str(self.volume) if self.volume else "",
+            "volume": str(self.volume) if self.volume else "0",
         }
 
 

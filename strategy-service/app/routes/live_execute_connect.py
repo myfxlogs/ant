@@ -40,17 +40,28 @@ def _proto_context_to_dict(ctx) -> dict:
 
 
 def _build_signal_from_intents(intents: list) -> StrategySignal:
-    """Pack SDK intents into a StrategySignal for Go dispatch."""
+    """Pack SDK intents into a StrategySignal for Go dispatch.
+
+    Prioritizes close/modify/cancel intents over order intents.
+    """
     if not intents:
         return StrategySignal(signal_type="hold")
+    # Prioritize: close > modify > cancel > order
     first = intents[0]
+    for intent in intents:
+        if intent.get("action") in ("close", "modify", "cancel"):
+            first = intent
+            break
     action = first.get("action", "hold")
     volume = float(first.get("volume", 0))
     sl = float(first.get("sl", 0))
     tp = float(first.get("tp", 0))
     price = float(first.get("price", 0))
-    ticket_str = first.get("ticket", "0")
-    ticket = int(ticket_str) if ticket_str.lstrip("-").isdigit() else 0
+    ticket_str = str(first.get("ticket", "0")).strip()
+    try:
+        ticket = int(ticket_str) if ticket_str else 0
+    except ValueError:
+        ticket = 0
     return StrategySignal(
         signal_type=action,
         volume=volume,

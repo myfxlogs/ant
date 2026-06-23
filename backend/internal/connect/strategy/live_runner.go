@@ -191,6 +191,8 @@ func (s *PythonStrategyServer) buildLiveContext(cfg LiveStrategyConfig, bars []l
 	// T3.1: Backfill live account/position state (hard injury ①).
 	if s.mtHub != nil {
 		s.backfillLiveState(context.Background(), cfg.AccountID, lctx)
+	} else {
+		s.log.Debug("buildLiveContext: mtHub is nil, skipping position backfill")
 	}
 
 	return lctx
@@ -229,6 +231,32 @@ func (s *PythonStrategyServer) backfillLiveState(ctx context.Context, accountID 
 	balance, _ := state.Balance.Float64()
 	lctx.Equity = equity
 	lctx.Balance = balance
+
+	// Backfill live positions from MT4 gateway so SDK strategies can
+	// query self.broker.positions() and close/modify positions.
+	if s.mtHub != nil {
+		orders, err := s.mtHub.OpenedOrders(ctx, accountID)
+		if err != nil {
+			s.log.Warn("backfillLiveState: OpenedOrders failed", zap.String("account", accountID), zap.Error(err))
+		} else {
+			positions := make([]*antv1.LivePosition, 0, len(orders))
+			for _, o := range orders {
+				side := "buy"
+				if o.Side == mthub.SideSell {
+					side = "sell"
+				}
+				lp := &antv1.LivePosition{
+					Ticket:    o.Ticket,
+					Side:      side,
+					Volume:    o.Volume.InexactFloat64(),
+					OpenPrice: o.OpenPrice.InexactFloat64(),
+				}
+				positions = append(positions, lp)
+			}
+			s.log.Info("backfillLiveState: positions backfilled", zap.String("account", accountID), zap.Int("count", len(positions)))
+			lctx.Positions = positions
+		}
+	}
 }
 
 // buildLiveParams converts a string map to repeated LiveParam.
