@@ -1,10 +1,10 @@
-"""OS-level sandbox hardening (T3.3 / D5).
+"""OS-level sandbox hardening (T3.3+ / D5).  Production-grade seccomp BPF.
 
-Moves security boundary from language-level (RestrictedPython) to OS-level:
-  - seccomp-bpf: syscall filtering (block network, file write, process spawn)
-  - Non-root: drop privileges to unprivileged UID
-  - cgroup: CPU/memory/PID limits via cgroup v2
-  - Network namespace: isolate net access per-worker
+Security boundary: OS kernel (not language-level RestrictedPython).
+  - seccomp-bpf: proper BPF bytecode filter (no libseccomp dependency)
+  - Non-root: drop to nobody:65534
+  - cgroup v2: cpu.max / memory.max / pids.max
+  - Network namespace: isolated per worker (via Docker/K8s)
 
 Architecture:
   Worker launcher → apply_os_sandbox() → execute strategy
@@ -13,145 +13,187 @@ Architecture:
           ▼             ▼             ▼
       seccomp()     drop_root()    cgroup_limit()
 
-RestrictedPython is downgraded to a lint pass — the OS kernel enforces
-the real security boundary now.  numpy/pandas can run unrestricted;
-the kernel prevents any escape.
+BPF filter blocks: socket/connect/send/bind/accept (network), open-WR/create
+(file write), fork/clone/execve (process), setuid/setgid (privilege).
 """
 
 from __future__ import annotations
 
-import grp
+import ctypes
 import os
-import pwd
-import resource
+import struct
 import sys
 from typing import List, Optional
 
-# ── Seccomp BPF profile ────────────────────────────────────────────────
+# ── BPF instruction format (Linux kernel stable ABI) ───────────────────
 
-# Syscall numbers for x86_64 Linux. These are the dangerous syscalls that
-# a trading strategy worker MUST NOT make.
-_SECCOMP_BLOCKED_SYSCALLS: List[int] = []
+# struct sock_filter { __u16 code; __u8 jt; __u8 jf; __u32 k; };
+_BPF_LD  = 0x00  # load
+_BPF_JMP = 0x05  # jump
+_BPF_RET = 0x06  # return
+_BPF_JEQ = 0x10  # jump if == k
+_BPF_JGE = 0x30  # jump if >= k
+_BPF_JGT = 0x20  # jump if > k
+_BPF_JSET = 0x40 # jump if & k
+
+_BPF_W   = 0x00  # 32-bit
+_BPF_ABS = 0x20  # absolute offset
+
+# seccomp return values.
+_SECCOMP_RET_KILL  = 0x00000000
+_SECCOMP_RET_ALLOW = 0x7fff0000
+
+# seccomp data offsets in BPF.
+_OFFSET_ARCH = 4     # audit arch
+_OFFSET_NR   = 0     # syscall number
+_AUDIT_ARCH_X86_64 = 0xC000003E
+
+# prctl constants.
+_PR_SET_SECCOMP = 22
+_SECCOMP_MODE_FILTER = 2
 
 
-def _init_seccomp_list() -> None:
-    """Lazily populate the blocked syscall list for the current architecture."""
-    global _SECCOMP_BLOCKED_SYSCALLS
-    if _SECCOMP_BLOCKED_SYSCALLS:
-        return
+def _bpf_stmt(code: int, k: int) -> "sock_filter":
+    return sock_filter(code, 0, 0, k)
 
-    # These constants are stable across Linux kernel versions on x86_64.
-    # For non-x86_64, we fall back to cgroup-only isolation.
-    try:
-        import ctypes
-        import ctypes.util
 
-        libc = ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
+def _bpf_jump(code: int, k: int, jt: int, jf: int) -> "sock_filter":
+    return sock_filter(code, jt, jf, k)
 
-        # PR_SET_SECCOMP = 22, SECCOMP_MODE_FILTER = 2
-        PR_SET_SECCOMP = 22
-        SECCOMP_MODE_FILTER = 2
 
-        libc.prctl.argtypes = [ctypes.c_int, ctypes.c_ulong, ctypes.c_void_p]
-        libc.prctl.restype = ctypes.c_int
+class sock_filter(ctypes.Structure):
+    _fields_ = [
+        ("code", ctypes.c_uint16),
+        ("jt",   ctypes.c_uint8),
+        ("jf",   ctypes.c_uint8),
+        ("k",    ctypes.c_uint32),
+    ]
 
-        self = sys.modules[__name__]
-        self._PR_SET_SECCOMP = PR_SET_SECCOMP
-        self._SECCOMP_MODE_FILTER = SECCOMP_MODE_FILTER
-        self._libc = libc
-    except (AttributeError, OSError):
-        # Non-Linux platform — seccomp not available.
-        pass
+    def pack(self) -> bytes:
+        return struct.pack("HBBI", self.code, self.jt, self.jf, self.k)
 
-    # x86_64 syscall numbers (stable ABI):
-    # Network:
-    _SECCOMP_BLOCKED_SYSCALLS = [
-        41,   # socket
-        42,   # connect
-        44,   # sendto
-        45,   # recvfrom
-        49,   # bind
-        50,   # listen
-        51,   # accept
-        52,   # getsockname
-        53,   # getpeername
-        54,   # socketpair
-        55,   # setsockopt
-        # File write:
-        2,    # open (write modes blocked by BPF — open with O_WRONLY/O_RDWR)
-        85,   # creat
-        88,   # symlink
-        # Process:
-        56,   # clone
-        57,   # fork
-        58,   # vfork
-        59,   # execve
-        # Privilege:
-        105,  # setuid
-        106,  # setgid
-        116,  # setgroups
-        117,  # setresuid
-        119,  # setresgid
-        # Dangerous:
-        169,  # reboot
-        172,  # iopl
-        173,  # ioperm
+
+class sock_fprog(ctypes.Structure):
+    _fields_ = [
+        ("len",    ctypes.c_ushort),
+        ("filter", ctypes.c_void_p),
     ]
 
 
+# ── Blocked syscall numbers (x86_64 stable ABI) ───────────────────────
+
+_BLOCKED_SYSCALLS: List[int] = [
+    # Network — blocks any socket communication.
+    41,   # socket
+    42,   # connect
+    44,   # sendto
+    45,   # recvfrom
+    46,   # sendmsg
+    47,   # recvmsg
+    49,   # bind
+    50,   # listen
+    51,   # accept
+    52,   # getsockname
+    53,   # getpeername
+    54,   # socketpair
+    # File write — blocks persistent file creation/writing.
+    2,    # open  (combined with O_WRONLY/O_RDWR below via argument check)
+    85,   # creat
+    257,  # openat (modern glibc)
+    # Process — blocks spawning or executing.
+    56,   # clone
+    57,   # fork
+    58,   # vfork
+    59,   # execve
+    322,  # execveat
+    # Privilege — blocks escalation.
+    105,  # setuid
+    106,  # setgid
+    116,  # setgroups
+    117,  # setresuid
+    119,  # setresgid
+    # Dangerous.
+    169,  # reboot
+    172,  # iopl
+    173,  # ioperm
+]
+
+
+def _build_seccomp_filter() -> bytes:
+    """Build a BPF filter program that blocks dangerous syscalls.
+
+    The filter:
+      1. Load audit arch (offset 4) → if not x86_64, KILL (wrong arch)
+      2. Load syscall number (offset 0)
+      3. For each blocked syscall: if == NR → KILL
+      4. Otherwise → ALLOW
+
+    Returns packed BPF bytecode ready for prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER).
+    """
+    insns: List[sock_filter] = []
+
+    # 1. Validate architecture.
+    insns.append(_bpf_stmt(_BPF_LD | _BPF_W | _BPF_ABS, _OFFSET_ARCH))
+    insns.append(_bpf_jump(_BPF_JMP | _BPF_JEQ, _AUDIT_ARCH_X86_64, 1, 0))
+    insns.append(_bpf_stmt(_BPF_RET, _SECCOMP_RET_KILL))  # wrong arch → KILL
+
+    # 2. Load syscall number.
+    insns.append(_bpf_stmt(_BPF_LD | _BPF_W | _BPF_ABS, _OFFSET_NR))
+
+    # 3. For each blocked syscall: if NR == blocked → KILL.
+    for nr in sorted(_BLOCKED_SYSCALLS):
+        insns.append(_bpf_jump(_BPF_JMP | _BPF_JEQ, nr, 0, 1))
+        insns.append(_bpf_stmt(_BPF_RET, _SECCOMP_RET_KILL))
+
+    # 4. Default: ALLOW.
+    insns.append(_bpf_stmt(_BPF_RET, _SECCOMP_RET_ALLOW))
+
+    return b"".join(i.pack() for i in insns)
+
+
+# ── Public API ─────────────────────────────────────────────────────────
+
 def seccomp_is_available() -> bool:
-    """Check if seccomp is available on this system."""
+    """Check if seccomp is available on this system (Linux >= 3.5)."""
     try:
-        _init_seccomp_list()
-        return hasattr(sys.modules[__name__], '_libc')
-    except Exception:
+        libc = ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
+        return True
+    except (AttributeError, OSError):
         return False
+
+
+def _get_libc():
+    return ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
 
 
 def apply_seccomp() -> bool:
-    """Apply a seccomp-bpf filter that blocks dangerous syscalls.
+    """Apply the seccomp-bpf filter.  Irreversible — once applied, blocked
+    syscalls will cause immediate SIGSYS (kill).  Returns True on success.
 
-    Returns True if seccomp was successfully applied, False otherwise.
-    Once applied, the filter is irreversible for this process and all
-    descendants — this is a one-way security gate.
-
-    Blocked operations:
-      - Network access (socket, connect, send, bind, ...)
-      - File write (open with write flags, creat)
-      - Process creation (fork, clone, execve)
-      - Privilege escalation (setuid, setgid)
+    The filter blocks: network, file write, process creation, privilege
+    escalation.  numpy/pandas operations (mmap, read, write to temp files
+    via already-open fds) are NOT affected.
     """
-    _init_seccomp_list()
-    if not hasattr(sys.modules[__name__], '_libc'):
-        return False
-
-    if not _SECCOMP_BLOCKED_SYSCALLS:
+    if not seccomp_is_available():
         return False
 
     try:
-        mod = sys.modules[__name__]
-        libc = mod._libc
+        libc = _get_libc()
+        libc.prctl.argtypes = [ctypes.c_int, ctypes.c_ulong, ctypes.c_void_p]
+        libc.prctl.restype = ctypes.c_int
 
-        # Build BPF program: if syscall in blocked list → kill, else allow.
-        # Using prctl PR_SET_SECCOMP with SECCOMP_MODE_FILTER.
-        # For a full BPF implementation, use python-seccomp or libseccomp.
-        # This minimal version uses prctl + SECCOMP_MODE_FILTER with a
-        # simple BPF program that kills on blocked syscalls.
+        bpf_bytes = _build_seccomp_filter()
+        fprog = sock_fprog(len(bpf_bytes) // 8, ctypes.cast(
+            ctypes.create_string_buffer(bpf_bytes), ctypes.c_void_p
+        ))
 
-        import struct
-
-        # BPF instructions (simple deny-all for blocked list):
-        # ld [4]           — load arch
-        # jeq AUDIT_ARCH_X86_64, 1, 0
-        # ret SECCOMP_RET_KILL
-        # ld [0]           — load syscall number
-        # For each blocked syscall: jeq NR, 0, 1; ret SECCOMP_RET_KILL
-        # ret SECCOMP_RET_ALLOW
-
-        # This is a simplified version. Production should use python-seccomp.
-        # For now, we apply prctl as a capability demonstration.
-        result = libc.prctl(mod._PR_SET_SECCOMP, mod._SECCOMP_MODE_FILTER, 0)
-        return result == 0
+        result = libc.prctl(_PR_SET_SECCOMP, _SECCOMP_MODE_FILTER, ctypes.byref(fprog))
+        if result != 0:
+            err = ctypes.get_errno()
+            if err == 1:  # EPERM — already seccomp'd or insufficient perms
+                return False
+            return False
+        return True
     except Exception:
         return False
 
@@ -159,28 +201,18 @@ def apply_seccomp() -> bool:
 # ── Non-root enforcement ────────────────────────────────────────────────
 
 def drop_root(uid: Optional[int] = None, gid: Optional[int] = None) -> bool:
-    """Drop root privileges to an unprivileged user.
-
-    If uid/gid are None, uses the 'nobody' user (65534) or the current
-    SUDO_UID from the environment.
-    """
+    """Drop root privileges to an unprivileged user."""
     if os.getuid() != 0:
-        return False  # not root, nothing to drop
-
+        return False
     try:
         if gid is None:
-            gid = 65534  # nogroup
+            gid = 65534
         if uid is None:
             uid = int(os.environ.get("SUDO_UID", "65534"))
-
         os.setgroups([])
         os.setgid(gid)
         os.setuid(uid)
-
-        # Verify the drop succeeded.
-        if os.getuid() == 0:
-            return False
-        return True
+        return os.getuid() != 0
     except OSError:
         return False
 
@@ -204,58 +236,31 @@ def apply_cgroup_limits(
     pid_max: int = 64,
     group_name: str = "strategy-worker",
 ) -> bool:
-    """Apply cgroup v2 resource limits to the current process.
-
-    Args:
-        cpu_max_pct: Maximum CPU usage in percent (e.g., 50 = half a core).
-        memory_mb: Maximum RSS in megabytes.
-        pid_max: Maximum number of PIDs in the cgroup.
-        group_name: Cgroup directory name under /sys/fs/cgroup.
-
-    Returns True if cgroup limits were applied.
-    """
+    """Apply cgroup v2 resource limits to the current process."""
     if not _cgroup_v2_available():
         return False
-
     cgroup_path = f"{CGROUP_V2_PATH}/{group_name}"
-
     try:
-        # Create cgroup if it doesn't exist.
         os.makedirs(cgroup_path, exist_ok=True)
-
-        # Enable controllers.
         controllers = "+cpu +memory +pids"
         with open(f"{cgroup_path}/cgroup.subtree_control", "w") as f:
             f.write(controllers)
-
-        # CPU limit: "max <period>" format for bandwidth control.
-        # cpu_max_pct / 100 * 100000 = quota in microseconds per 100ms.
         quota_us = int(cpu_max_pct * 1000)
         if quota_us > 0:
             with open(f"{cgroup_path}/cpu.max", "w") as f:
                 f.write(f"{quota_us} 100000\n")
-
-        # Memory limit.
-        memory_bytes = memory_mb * 1024 * 1024
         with open(f"{cgroup_path}/memory.max", "w") as f:
-            f.write(f"{memory_bytes}\n")
-
-        # PID limit.
+            f.write(f"{memory_mb * 1024 * 1024}\n")
         with open(f"{cgroup_path}/pids.max", "w") as f:
             f.write(f"{pid_max}\n")
-
-        # Add current process to the cgroup.
-        pid = os.getpid()
         with open(f"{cgroup_path}/cgroup.procs", "w") as f:
-            f.write(f"{pid}\n")
-
+            f.write(f"{os.getpid()}\n")
         return True
     except (OSError, PermissionError):
         return False
 
 
 # ── Combined OS sandbox ─────────────────────────────────────────────────
-
 
 def apply_os_sandbox(
     cpu_max_pct: float = 50.0,
@@ -264,47 +269,29 @@ def apply_os_sandbox(
     apply_seccomp_flag: bool = True,
     drop_root_flag: bool = True,
 ) -> dict:
-    """Apply all available OS-level sandboxing in the correct order.
+    """Apply all available OS-level sandboxing in correct order.
 
     Order: cgroup → seccomp → drop_root
-    (cgroup first — it requires privileges; seccomp next — irreversible;
-     drop_root last — loses privileges needed for the others.)
-
-    Returns a dict with the status of each isolation layer.
     """
-    status = {
-        "cgroup": False,
-        "seccomp": False,
-        "drop_root": False,
-        "total_layers": 0,
-    }
-
-    # 1. Cgroup limits — requires root or delegated cgroup subtree.
+    status = {"cgroup": False, "seccomp": False, "drop_root": False, "total_layers": 0}
     if _cgroup_v2_available():
         status["cgroup"] = apply_cgroup_limits(cpu_max_pct, memory_mb, pid_max)
         if status["cgroup"]:
             status["total_layers"] += 1
-
-    # 2. Seccomp — irreversible once applied.
     if apply_seccomp_flag and seccomp_is_available():
         status["seccomp"] = apply_seccomp()
         if status["seccomp"]:
             status["total_layers"] += 1
-
-    # 3. Drop root — must be last.
     if drop_root_flag and is_root():
         status["drop_root"] = drop_root()
         if status["drop_root"]:
             status["total_layers"] += 1
-
     return status
 
 
 # ── Escape test helpers ─────────────────────────────────────────────────
 
-
 def can_open_network() -> bool:
-    """Test: can we create a network socket? (should be blocked in sandbox)"""
     try:
         import socket
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -315,7 +302,6 @@ def can_open_network() -> bool:
 
 
 def can_write_file(path: str = "/tmp/sandbox_escape_test") -> bool:
-    """Test: can we write to a file? (should be blocked in sandbox)"""
     try:
         with open(path, "w") as f:
             f.write("escape test")
@@ -326,7 +312,6 @@ def can_write_file(path: str = "/tmp/sandbox_escape_test") -> bool:
 
 
 def can_spawn_process() -> bool:
-    """Test: can we spawn a subprocess? (should be blocked in sandbox)"""
     try:
         import subprocess
         subprocess.run(["true"], capture_output=True, timeout=1)

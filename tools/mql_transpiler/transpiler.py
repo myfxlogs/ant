@@ -763,8 +763,17 @@ class MQLTranspiler:
         return True
 
     def _mql_to_py_condition(self, condition: str) -> str:
-        result = condition.strip()
-        # Convert MQL OHLCV array access: Close[0] → bars.close[0]
+        """Convert MQL condition expression to Python, including indicator calls."""
+        return self._translate_expression(condition.strip())
+
+    def _translate_expression(self, expr: str) -> str:
+        """Recursively translate an MQL expression to Python.
+
+        Handles indicator calls, OHLCV arrays, builtins, constants, operators.
+        """
+        result = expr.strip()
+
+        # 1. OHLCV array access: Close[0] → bars.close[0]
         for mql_name in ("Open", "High", "Low", "Close", "Volume", "Time"):
             py_name = mql_name.lower()
             result = re.sub(
@@ -772,10 +781,58 @@ class MQLTranspiler:
                 f"bars.{py_name}[",
                 result,
             )
+
+        # 2. Indicator calls in expressions: iMA(...) → self.indicators.ma(...)
+        for mql_fn, sdk_fn in [("iMA", "ma"), ("iRSI", "rsi"), ("iATR", "atr"),
+                                ("iCCI", "cci"), ("iBands", "bands"), ("iMACD", "macd"),
+                                ("iStochastic", "stochastic"), ("iCustom", "i_custom")]:
+            prefix = mql_fn + "("
+            while prefix in result:
+                idx = result.index(prefix)
+                args_str = self._extract_parens(result, idx + len(prefix))
+                args = [a.strip() for a in args_str.split(",")]
+                if mql_fn == "iMA":
+                    period = args[2].strip() if len(args) > 2 else "14"
+                    shift = args[3].strip() if len(args) > 3 else "0"
+                    method = method_name(args[4].strip()) if len(args) > 4 else "sma"
+                    replacement = f"self.indicators.{sdk_fn}(period={period}, shift={shift}, method='{method}')"
+                elif mql_fn == "iRSI":
+                    period = args[2].strip() if len(args) > 2 else "14"
+                    shift = args[4].strip() if len(args) > 4 else "0"
+                    replacement = f"self.indicators.{sdk_fn}(period={period}, shift={shift})"
+                elif mql_fn == "iATR":
+                    period = args[2].strip() if len(args) > 2 else "14"
+                    shift = args[3].strip() if len(args) > 3 else "0"
+                    replacement = f"self.indicators.{sdk_fn}(period={period}, shift={shift})"
+                elif mql_fn == "iCCI":
+                    period = args[2].strip() if len(args) > 2 else "14"
+                    shift = args[4].strip() if len(args) > 4 else "0"
+                    replacement = f"self.indicators.{sdk_fn}(period={period}, shift={shift})"
+                elif mql_fn == "iCustom":
+                    name = args[2].strip().strip('"') if len(args) > 2 else "unknown"
+                    buffer = args[-2].strip() if len(args) > 2 else "0"
+                    shift = args[-1].strip() if len(args) > 2 else "0"
+                    replacement = f"self.indicators.{sdk_fn}(name='{name}', params=[], buffer={buffer}, shift={shift})"
+                else:
+                    replacement = f"self.indicators.{sdk_fn}({', '.join(args[2:5]) if len(args) > 2 else ''})"
+                result = result[:idx] + replacement + result[idx + len(prefix) + len(args_str) + 1:]
+                break
+
+        # 3. Common function replacements.
+        for mql_fn, py_fn in COMMON_FUNC_MAP.items():
+            if py_fn.startswith("TRANSPILER-GAP") or py_fn.startswith("lambda"):
+                continue
+            if mql_fn + "(" in result:
+                result = result.replace(mql_fn + "(", py_fn + "(")
+
+        # 4. Constants.
         for mql_c, py_c in _MQL_CONSTANTS.items():
             result = re.sub(rf"\b{re.escape(mql_c)}\b", py_c, result)
+
+        # 5. Operators.
         for mql_op, py_op in _MQL_COMPARE.items():
             result = result.replace(mql_op, py_op)
+
         return result
 
     @staticmethod
