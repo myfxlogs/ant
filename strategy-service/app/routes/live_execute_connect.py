@@ -39,25 +39,44 @@ def _proto_context_to_dict(ctx) -> dict:
     return d
 
 
-def _build_signal_from_intents(intents: list) -> StrategySignal:
-    """Pack SDK intents into a StrategySignal for Go dispatch.
+# ── Multi-intent queue (one signal per bar, remaining queued) ────────
+# SDK strategies may generate multiple intents per bar (e.g. close 5 positions).
+# Since the proto carries only one StrategySignal, we queue excess intents
+# and drain them on subsequent bars.
+_intent_queue: list[dict] = []
 
-    Prioritizes close/modify/cancel intents over order intents.
-    """
-    if not intents:
+
+def _build_signal_from_intents(intents: list) -> StrategySignal:
+    """Pack SDK intents into a StrategySignal, queuing excess for next bars."""
+    global _intent_queue
+
+    # Drain queue first (from previous bar's excess intents).
+    while _intent_queue:
+        intent = _intent_queue.pop(0)
+        sig = _intent_to_signal(intent)
+        if sig.signal_type != "hold":
+            return sig
+
+    # Add new intents to queue.
+    if intents:
+        _intent_queue.extend(intents)
+
+    # Pop first from queue.
+    if _intent_queue:
+        return _intent_to_signal(_intent_queue.pop(0))
+    return StrategySignal(signal_type="hold")
+
+
+def _intent_to_signal(intent: dict) -> StrategySignal:
+    """Convert a single intent dict to StrategySignal."""
+    action = intent.get("action", "hold")
+    if not action or action == "hold":
         return StrategySignal(signal_type="hold")
-    # Prioritize: close > modify > cancel > order
-    first = intents[0]
-    for intent in intents:
-        if intent.get("action") in ("close", "modify", "cancel"):
-            first = intent
-            break
-    action = first.get("action", "hold")
-    volume = float(first.get("volume", 0))
-    sl = float(first.get("sl", 0))
-    tp = float(first.get("tp", 0))
-    price = float(first.get("price", 0))
-    ticket_str = str(first.get("ticket", "0")).strip()
+    volume = float(intent.get("volume", 0))
+    sl = float(intent.get("sl", 0))
+    tp = float(intent.get("tp", 0))
+    price = float(intent.get("price", 0))
+    ticket_str = str(intent.get("ticket", "0")).strip()
     try:
         ticket = int(ticket_str) if ticket_str else 0
     except ValueError:
