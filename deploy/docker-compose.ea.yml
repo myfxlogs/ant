@@ -1,0 +1,83 @@
+# EA 完全替代 — 策略执行 Worker 服务 (ADR-0020, T4.2)
+#
+# 配合 docker-compose.yml 使用:
+#   docker compose -f docker-compose.yml -f deploy/docker-compose.ea.yml up -d
+#
+# 安全隔离:
+#   L1: seccomp-bpf (syscall filter — 禁止 socket/fork/execve/open-write)
+#   L2: non-root (uid 65534)
+#   L3: cgroup v2 (cpu.max=50%, memory.max=512M, pids.max=64)
+#   L4: network_mode "none" (per-worker net namespace)
+#   L5: gVisor runtime (可选 — 见 deploy/sandbox/worker_isolation.md)
+
+services:
+  strategy-worker:
+    container_name: ant-strategy-worker
+    build:
+      context: ./strategy-service
+      dockerfile: ../deploy/Dockerfile.worker
+    image: ant-prod-strategy-worker
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 128M
+          cpus: "0.1"
+
+    # ── OS 级安全隔离 (T3.3 / D5) ────────────────────────────────
+    user: "65534:65534"              # non-root
+    read_only: true                  # 只读 rootfs
+    privileged: false
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID                        # drop_root 需要
+      - SETGID
+    security_opt:
+      - no-new-privileges:true        # 禁止提权
+      - seccomp=deploy/sandbox/seccomp_profile.json
+    network_mode: "none"              # 每个 worker 独立 net namespace
+    tmpfs:
+      - /tmp:noexec,nosuid,size=64M   # 临时空间
+
+    environment:
+      - PYTHONUNBUFFERED=1
+      - STRATEGY_BACKEND_URL=http://backend:8080
+      - WORKER_POOL_SIZE=4
+      - WORKER_MAX_RSS_MB=512
+      - WORKER_MAX_CALLS=500
+
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'from app.main import app; print(\"ok\")' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    networks:
+      - ant-network
+
+  # ── 后端增加 EA 风控门配置 ───────────────────────────────────
+  backend:
+    environment:
+      # D6-A: Gate 强制注入 — live_runner.go 启动时检查
+      - ANTRADER_RISK_GATE_ENABLED=true
+      - ANTRADER_RISK_GATE_KILLSWITCH_DEFAULT=false
+      - ANTRADER_RISK_GATE_AUTOTRADE_DEFAULT=true
+      # Canary rollout defaults
+      - ANTRADER_CANARY_INITIAL_LOTS=0.01
+      - ANTRADER_CANARY_MAX_LOTS=10.0
+      - ANTRADER_CANARY_TRADES_PER_STEP=10
+      - ANTRADER_CANARY_MIN_HOURS=24

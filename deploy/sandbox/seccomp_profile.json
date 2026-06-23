@@ -1,0 +1,49 @@
+{
+  "defaultAction": "SCMP_ACT_ALLOW",
+  "architectures": ["SCMP_ARCH_X86_64"],
+  "syscalls": [
+    {
+      "names": [
+        "socket", "connect", "sendto", "recvfrom", "sendmsg", "recvmsg",
+        "bind", "listen", "accept", "accept4", "getsockname", "getpeername",
+        "socketpair", "setsockopt", "getsockopt", "shutdown"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "args": [],
+      "comment": "Block all network socket operations"
+    },
+    {
+      "names": ["fork", "vfork", "clone", "clone3", "execve", "execveat"],
+      "action": "SCMP_ACT_ERRNO",
+      "args": [],
+      "comment": "Block process creation"
+    },
+    {
+      "names": ["setuid", "setgid", "setgroups", "setresuid", "setresgid"],
+      "action": "SCMP_ACT_ERRNO",
+      "args": [],
+      "comment": "Block privilege escalation"
+    },
+    {
+      "names": ["creat"],
+      "action": "SCMP_ACT_ERRNO",
+      "args": [],
+      "comment": "Block file creation"
+    },
+    {
+      "names": ["open", "openat"],
+      "action": "SCMP_ACT_ERRNO",
+      "args": [
+        {"index": 1, "value": 1, "op": "SCMP_CMP_MASKED_EQ"},
+        {"index": 1, "value": 66, "op": "SCMP_CMP_MASKED_EQ"}
+      ],
+      "comment": "Block file open with O_WRONLY (1) or O_RDWR|O_CREAT (66) flags"
+    },
+    {
+      "names": ["reboot", "iopl", "ioperm", "kexec_load", "kexec_file_load"],
+      "action": "SCMP_ACT_ERRNO",
+      "args": [],
+      "comment": "Block dangerous syscalls"
+    }
+  ]
+}
