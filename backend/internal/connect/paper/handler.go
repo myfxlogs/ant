@@ -152,6 +152,7 @@ func (h *Handler) StartPaperStrategy(ctx context.Context, req *connect.Request[a
 		Mode:      "paper",
 		Params:    req.Msg.Params,
 	}
+		cfg.UserID = uid
 		// Paper mode: use linked MT4 account for bar data subscription.
 		if mt4ID := h.accountLookup(ctx, uid); mt4ID != "" {
 			cfg.DataSourceAccountID = mt4ID

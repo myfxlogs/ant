@@ -75,6 +75,9 @@ func startMdGatewayPipeline(
 	}()
 
 	log.Info("mdgateway pipeline starting", zap.String("spill_dir", spillDir))
+	// Wire bar broker so live_runner subscriptions receive bar events (D6-A / paper canary).
+	mthubSvc.SetBarBroker(barBroker)
+
 	if err := mdgateway.Run(pipelineCtx, mdgateway.RunnerDeps{
 		Log:      log,
 		PG:       pool,

@@ -20,6 +20,7 @@ import (
 	"connectrpc.com/connect"
 
 	antv1 "anttrader/gen/proto/ant/v1"
+	"anttrader/internal/interceptor"
 	"anttrader/internal/mthub"
 	"anttrader/internal/risk"
 )
@@ -38,13 +39,14 @@ type liveBar struct {
 
 // LiveStrategyConfig holds the parameters for running a strategy in live/paper mode.
 type LiveStrategyConfig struct {
-	AccountID          string            // trading account (live MT4 ID or paper account ID)
-	DataSourceAccountID string           // bar data source account (optional; defaults to AccountID)
-	Symbol             string
-	Timeframe          string
-	Code               string
-	Mode               string            // "live" | "paper"
-	Params             map[string]string
+	AccountID           string            // trading account (live MT4 ID or paper account ID)
+	DataSourceAccountID string            // bar data source account (optional; defaults to AccountID)
+	UserID              string            // user ID for auth context (paper mode requires this)
+	Symbol              string
+	Timeframe           string
+	Code                string
+	Mode                string            // "live" | "paper"
+	Params              map[string]string
 }
 
 // RunLiveStrategy subscribes to real-time bar updates for the given account/symbol/timeframe,
@@ -121,8 +123,13 @@ func (s *PythonStrategyServer) RunLiveStrategy(ctx context.Context, cfg LiveStra
 			lctx := s.buildLiveContext(cfg, bars)
 
 			// Call Python strategy via ConnectRPC.
+			// Inject user ID for paper/internal mode (auth context required).
+			callCtx := ctx
+			if cfg.UserID != "" {
+				callCtx = context.WithValue(ctx, interceptor.UserIDKey, cfg.UserID)
+			}
 			req := &antv1.ExecuteLiveRequest{StrategyCode: cfg.Code, Context: lctx}
-			resp, err := s.ExecuteLive(ctx, connect.NewRequest(req))
+			resp, err := s.ExecuteLive(callCtx, connect.NewRequest(req))
 			if err != nil {
 				s.log.Warn("LiveStrategyRunner: ExecuteLive failed", zap.Error(err))
 				continue
