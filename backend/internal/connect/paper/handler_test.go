@@ -109,7 +109,7 @@ func testHandlerLogger() *zap.Logger { return zap.NewNop() }
 func newTestHandler(runner StrategyRunner) *Handler {
 	repo := newHandlerStubRepo()
 	eng := papereng.New(repo, nil, testHandlerLogger())
-	return NewHandler(repo, eng, runner, testHandlerLogger())
+	return NewHandler(repo, eng, runner, testHandlerLogger(), nil)
 }
 
 // ── Tests ──

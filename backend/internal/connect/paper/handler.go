@@ -27,11 +27,13 @@ type StrategyRunner interface {
 }
 
 // paperRepo is the local interface for paper account persistence.
-// Defined on the consumer side — repository package need not know about it.
 type paperRepo interface {
 	CreateAccount(ctx context.Context, userID, name string, initialBalance decimal.Decimal) (*repository.PaperAccount, error)
 	ListAccounts(ctx context.Context, userID string) ([]*repository.PaperAccount, error)
 }
+
+// AccountLookup provides the MT account ID for bar data subscription.
+type AccountLookup func(ctx context.Context, userID string) string // returns MT4 account ID or ""
 
 // Handler implements ant.v1.PaperTradingServiceHandler.
 type Handler struct {
@@ -41,18 +43,24 @@ type Handler struct {
 	activeStrategies map[string]context.CancelFunc // paperAccountID → cancel
 	mu               sync.Mutex
 	log              *zap.Logger
+	accountLookup    AccountLookup // provides MT4 account ID for bar data in paper mode
 }
 
 var _ antv1c.PaperTradingServiceHandler = (*Handler)(nil)
 
 // NewHandler creates a paper trading ConnectRPC handler.
-func NewHandler(repo paperRepo, engine *papereng.PaperEngine, runner StrategyRunner, log *zap.Logger) *Handler {
+// accountLookup provides the MT4 account ID for bar data subscription in paper mode.
+func NewHandler(repo paperRepo, engine *papereng.PaperEngine, runner StrategyRunner, log *zap.Logger, accountLookup AccountLookup) *Handler {
+	if accountLookup == nil {
+		accountLookup = func(ctx context.Context, userID string) string { return "" }
+	}
 	return &Handler{
 		repo:             repo,
 		engine:           engine,
 		strategyRunner:   runner,
 		activeStrategies: make(map[string]context.CancelFunc),
 		log:              log,
+		accountLookup:    accountLookup,
 	}
 }
 
@@ -144,6 +152,10 @@ func (h *Handler) StartPaperStrategy(ctx context.Context, req *connect.Request[a
 		Mode:      "paper",
 		Params:    req.Msg.Params,
 	}
+		// Paper mode: use linked MT4 account for bar data subscription.
+		if mt4ID := h.accountLookup(ctx, uid); mt4ID != "" {
+			cfg.DataSourceAccountID = mt4ID
+		}
 
 	h.mu.Lock()
 	h.activeStrategies[accountID] = cancel

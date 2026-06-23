@@ -38,12 +38,13 @@ type liveBar struct {
 
 // LiveStrategyConfig holds the parameters for running a strategy in live/paper mode.
 type LiveStrategyConfig struct {
-	AccountID string
-	Symbol    string
-	Timeframe string
-	Code      string
-	Mode      string // "live" | "paper"
-	Params    map[string]string
+	AccountID          string            // trading account (live MT4 ID or paper account ID)
+	DataSourceAccountID string           // bar data source account (optional; defaults to AccountID)
+	Symbol             string
+	Timeframe          string
+	Code               string
+	Mode               string            // "live" | "paper"
+	Params             map[string]string
 }
 
 // RunLiveStrategy subscribes to real-time bar updates for the given account/symbol/timeframe,
@@ -66,7 +67,20 @@ func (s *PythonStrategyServer) RunLiveStrategy(ctx context.Context, cfg LiveStra
 		return fmt.Errorf("live strategy runner: BarSource does not support streaming (got %s)", s.barSource.Name())
 	}
 
-	barCh, cancel := source.Subscribe(cfg.AccountID)
+	// Use DataSourceAccountID for bar subscription if set (paper mode uses real MT account for data).
+	barAccountID := cfg.AccountID
+	if cfg.DataSourceAccountID != "" {
+		barAccountID = cfg.DataSourceAccountID
+	}
+
+	s.log.Info("LiveStrategyRunner: subscribing to bars",
+		zap.String("trading_account", cfg.AccountID),
+		zap.String("bar_source_account", barAccountID),
+		zap.String("symbol", cfg.Symbol),
+		zap.String("timeframe", cfg.Timeframe),
+	)
+
+	barCh, cancel := source.Subscribe(barAccountID)
 	defer cancel()
 
 	s.log.Info("LiveStrategyRunner: started",

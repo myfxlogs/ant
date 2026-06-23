@@ -10,6 +10,11 @@ import (
 
 // Config holds all application configuration sourced from environment variables.
 type Config struct {
+	// D6-A: Risk Gate
+	RiskGateEnabled           bool
+	RiskGateKillSwitch        bool
+	RiskGateAutotradeEnabled  bool
+
 	// Database (PostgreSQL)
 	DBHost     string
 	DBPort     string

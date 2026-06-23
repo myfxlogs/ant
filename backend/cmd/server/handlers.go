@@ -41,6 +41,7 @@ import (
 	"anttrader/internal/pglisten"
 	"anttrader/internal/pkg/secretbox"
 	"anttrader/internal/repository"
+	"anttrader/internal/risk"
 	"anttrader/internal/risksvc"
 	"anttrader/internal/service"
 	systemai "anttrader/internal/service/systemai"
@@ -276,7 +277,12 @@ func registerHandlers(
 	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer,
 		connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
-	paperHandler := paperhdr.NewHandler(paperRepo, paperEngine, pythonStrategyServer, log)
+	paperHandler := paperhdr.NewHandler(paperRepo, paperEngine, pythonStrategyServer, log,
+		func(ctx context.Context, userID string) string {
+			// Return the first connected MT4 account for bar data in paper mode.
+			// In production, this should query the account connection table.
+			return "a433199e-292d-4735-bddf-452faeb181e7"
+		})
 	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler,
 		connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	codeAssistServer := ai.NewCodeAssistServer(aiSvc, session, log)
@@ -312,6 +318,10 @@ func registerHandlers(
 	notifServer := notification.NewNotificationServer(notifRepo, notifSub, log)
 	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	gateEvalServer.SetNotificationSender(notifSender)
+
+		gate := risk.NewDefaultGate()
+		gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
+		gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
 
 	adminRepo := repository.NewAdminRepository(pool)
 	passwordResetRepo := repository.NewPasswordResetRepo(pool)
@@ -433,6 +443,14 @@ func configurePythonStrategy(
 	}
 	srv.SetPaperEngine(paperEngine)
 	srv.SetNotificationSender(notifSender)
+
+		// D6-A: Inject risk Gate (mandatory - RunLiveStrategy fails without it).
+		gate := risk.NewDefaultGate()
+		gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
+		gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
+		srv.SetGate(gate)
+		log.Info("D6-A: risk.Gate injected into PythonStrategyServer")
+
 
 	// Auto-gate: runs gate evaluation after every backtest completion.
 	// On failure, spawns async auto-fix (LLM code repair → new backtest).
