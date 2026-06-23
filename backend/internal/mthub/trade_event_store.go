@@ -9,17 +9,29 @@
 package mthub
 
 import (
-	"github.com/shopspring/decimal"
 	"context"
-	antv1 "anttrader/gen/proto/ant/v1"
-	"google.golang.org/protobuf/proto"
 	"fmt"
+	"strings"
 	"time"
+	"unicode/utf8"
 
+	"github.com/shopspring/decimal"
 	natsgo "github.com/nats-io/nats.go"
+	"google.golang.org/protobuf/proto"
 
+	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/interceptor"
 )
+
+// sanitizeUTF8 replaces invalid UTF-8 bytes with the replacement character.
+// Proto3 requires all string fields to be valid UTF-8; MT4 gateways
+// occasionally emit non-UTF-8 bytes (e.g. Windows-1252 in comments).
+func sanitizeUTF8(s string) string {
+	if utf8.ValidString(s) {
+		return s
+	}
+	return strings.ToValidUTF8(s, "�")
+}
 
 // TradeEventType enumerates the kinds of order lifecycle events.
 type TradeEventType string
@@ -89,7 +101,17 @@ func (s *TradeEventStore) Publish(ctx context.Context, ev *TradeEvent) error {
 
 	payload, err := proto.Marshal(eventToPayload(ev))
 	if err != nil {
-		return fmt.Errorf("trade_event_store: marshal: %w", err)
+		// Proto3 requires valid UTF-8 in all string fields. MT4 gateways
+		// occasionally emit non-UTF-8 bytes in broker fields (comments,
+		// raw symbol names, etc.). Sanitize and retry once.
+		ev.Canonical = sanitizeUTF8(ev.Canonical)
+		ev.Broker = sanitizeUTF8(ev.Broker)
+		ev.ClientID = sanitizeUTF8(ev.ClientID)
+		ev.CostBreakdownJSON = sanitizeUTF8(ev.CostBreakdownJSON)
+		payload, err = proto.Marshal(eventToPayload(ev))
+		if err != nil {
+			return fmt.Errorf("trade_event_store: marshal: %w", err)
+		}
 	}
 
 	subject := fmt.Sprintf("oms.order.%s", ev.AccountID)

@@ -285,6 +285,8 @@ func (s *PythonStrategyServer) dispatchLiveSignal(ctx context.Context, cfg LiveS
 		s.dispatchPendingOrder(ctx, cfg, sig)
 	case "close":
 		s.dispatchCloseOrder(ctx, cfg, sig)
+	case "close_all":
+		s.dispatchCloseAll(ctx, cfg)
 	case "modify":
 		s.dispatchModifyOrder(ctx, cfg, sig)
 	case "cancel":
@@ -321,6 +323,36 @@ func (s *PythonStrategyServer) dispatchPendingOrder(ctx context.Context, cfg Liv
 		orderType = mthub.OrderLimit
 	}
 	s.submitOrder(ctx, cfg, side, orderType, sig)
+}
+
+// dispatchCloseAll closes all open positions for the account.
+func (s *PythonStrategyServer) dispatchCloseAll(ctx context.Context, cfg LiveStrategyConfig) {
+	if s.mtHub == nil {
+		s.log.Warn("LiveStrategyRunner: dispatchCloseAll: no MtHubService")
+		return
+	}
+	go func() {
+		orders, err := s.mtHub.OpenedOrders(context.Background(), cfg.AccountID)
+		if err != nil {
+			s.log.Error("LiveStrategyRunner: dispatchCloseAll: OpenedOrders failed",
+				zap.String("account", cfg.AccountID), zap.Error(err))
+			return
+		}
+		closed := 0
+		for _, o := range orders {
+			if err := s.mtHub.CloseOrder(context.Background(), cfg.AccountID, o.Ticket, o.Volume); err != nil {
+				s.log.Warn("LiveStrategyRunner: dispatchCloseAll: CloseOrder failed",
+					zap.Int64("ticket", o.Ticket), zap.Error(err))
+				continue
+			}
+			closed++
+		}
+		s.log.Info("LiveStrategyRunner: dispatchCloseAll complete",
+			zap.String("account", cfg.AccountID),
+			zap.Int("closed", closed),
+			zap.Int("total", len(orders)),
+		)
+	}()
 }
 
 func (s *PythonStrategyServer) dispatchCloseOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
@@ -394,10 +426,10 @@ func (s *PythonStrategyServer) dispatchPaperSignal(ctx context.Context, cfg Live
 
 	action := sig.GetSignalType()
 
-	// Close/modify/cancel actions bypass paper engine (not yet supported for paper).
+		// Close/modify/cancel/close_all: log and return (paper engine doesn't support these yet).
 	switch action {
-	case "close", "modify", "cancel":
-		s.log.Debug("LiveStrategyRunner: paper close/modify/cancel not yet implemented",
+	case "close", "close_all", "modify", "cancel":
+		s.log.Debug("LiveStrategyRunner: paper close/modify/cancel — logged",
 			zap.String("action", action))
 		return
 	}
