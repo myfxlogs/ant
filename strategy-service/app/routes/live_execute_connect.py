@@ -325,7 +325,7 @@ def _build_signal_from_intents(intents: list):
     are logged but only one signal is returned per bar (Go dispatches it).
     For multi-intent bars, intents after the first are queued for next bar.
     """
-    from app.python_strategy_pb2 import StrategySignal
+    from app.strategy_signal_messages_pb2 import StrategySignal
 
     if not intents:
         return StrategySignal(signal_type="hold")
