@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
-"""E2E browser test — fully simulates human operating AntTrader frontend."""
-import sys, os
+"""E2E browser test — simulates human operating AntTrader frontend.
+Flow: Login → Library → Create → Import EA → paste MQL →
+      Translate to Python → Validate → AI Repair → Save as 马丁 →
+      Backtest → Load to Live on MT4 95172262."""
+import os, sys
 from playwright.sync_api import sync_playwright
 
 BASE_URL = "http://localhost:8022"
@@ -15,153 +18,114 @@ def run():
         page.set_default_timeout(15000)
 
         try:
-            # ── Step 1: Login ──
-            log("Step 1: Login")
+            # ── 1: Login ──
+            log("1. Login")
             page.goto(f"{BASE_URL}/login", wait_until="networkidle")
             page.wait_for_timeout(3000)
             page.locator('input').nth(0).fill("admin@1.com")
             page.locator('input').nth(1).fill("12345678")
             page.locator('button[type="submit"]').first.click()
             page.wait_for_timeout(5000)
-            log(f"  OK → {page.url}")
+            log(f"   → {page.url}")
 
-            # ── Step 2: Navigate to Strategy Library ──
-            log("Step 2: Strategy Library")
+            # ── 2: Navigate to Strategy Library ──
+            log("2. Strategy Library")
             page.wait_for_timeout(2000)
             page.locator('[role="menuitem"]').nth(1).click()  # Strategy
             page.wait_for_timeout(1500)
             page.locator('text="Strategy Library"').first.click()
             page.wait_for_timeout(2000)
-            log(f"  OK → {page.url}")
+            log(f"   → {page.url}")
 
-            # ── Step 3: Click Create ──
-            log("Step 3: Click Create")
+            # ── 3: Click Create ──
+            log("3. Create")
             page.locator('button:has-text("Create")').first.click()
             page.wait_for_timeout(2500)
-            page.screenshot(path="/tmp/e2e_create_modal.png")
-            log("  Modal opened")
+            page.screenshot(path="/tmp/e2e_03_create.png")
 
-            # ── Step 4: Switch to Import EA ──
-            log("Step 4: Switch to Import EA")
-            try:
-                page.locator('text="Import EA"').first.click(timeout=5000)
-                page.wait_for_timeout(1000)
-                log("  Switched to Import EA tab")
-            except:
-                log("  No Import EA tab — continuing")
+            # ── 4: Switch to Import EA ──
+            log("4. Import EA tab")
+            page.locator('text="Import EA"').first.click(timeout=5000)
+            page.wait_for_timeout(1000)
 
-            # ── Step 5: Paste MQL Code ──
-            log("Step 5: Paste MQL code")
+            # ── 5: Paste MQL ──
+            log("5. Paste MQL code")
             with open(MQL_FILE) as f:
-                mql_code = f.read()
-            code_area = page.locator('textarea[placeholder*="code"], textarea[placeholder*="Paste"]').first
-            code_area.click()
-            page.wait_for_timeout(300)
-            code_area.fill(mql_code[:5000])
+                mql = f.read()
+            page.locator('textarea[placeholder*="code"], textarea[placeholder*="Paste"]').first.fill(mql[:5000])
             page.wait_for_timeout(500)
-            log(f"  Pasted {min(len(mql_code), 5000)} chars")
+            log(f"   {min(len(mql), 5000)} chars")
 
-            # ── Step 6: Set Name ──
-            log("Step 6: Set name = 马丁")
-            try:
-                page.locator('input[placeholder*="name"], input[placeholder*="Name"]').first.fill("马丁", timeout=5000)
-                log("  Name set")
-            except:
-                log("  Name input not found")
+            # ── 6: Set Name ──
+            log("6. Name = 马丁")
+            page.locator('input[placeholder*="name"], input[placeholder*="Name"]').first.fill("马丁", timeout=5000)
 
-            # ── Step 7: Validate Code ──
-            log("Step 7: Validate code")
-            try:
-                page.locator('button:has-text("Validate")').first.click(timeout=5000)
-                page.wait_for_timeout(5000)
-                log("  Validation submitted")
-            except:
-                log("  Validate button not found")
+            # ── 7: Translate to Python ──
+            log("7. Translate to Python")
+            page.locator('button:has-text("Translate to Python")').first.click()
+            page.wait_for_timeout(30000)  # LLM translation
+            page.screenshot(path="/tmp/e2e_07_translated.png")
 
-            # ── Step 8: Check Errors, AI Repair if needed ──
-            log("Step 8: Check & Repair")
-            page.wait_for_timeout(3000)  # Wait for validation response
-            try:
-                # Look for error indicators in the validation results tab
-                err_els = page.locator('[class*="ant-alert-error"]').all()
-                err_text = page.locator('text="Error"').all()
-                if err_els or err_text:
-                    log(f"  Errors found, running AI repair...")
-                    page.locator('text="AI revise"').first.click(timeout=5000)
-                    page.wait_for_timeout(1000)
-                    page.locator('button:has-text("Revise"), button:has-text("Send")').first.click(timeout=5000)
-                    page.wait_for_timeout(10000)
-                    log("  AI repair complete — re-validating...")
-                    # Re-validate after repair
-                    page.locator('button:has-text("Validate")').first.click(timeout=5000)
-                    page.wait_for_timeout(5000)
-                else:
-                    log("  No errors visible")
-            except Exception as e:
-                log(f"  Repair skipped: {e}")
+            # ── 8: Apply to Editor ──
+            log("8. Apply to Editor")
+            page.locator('button:has-text("Apply to Editor")').first.click(timeout=5000)
+            page.wait_for_timeout(2000)
 
-            # ── Step 9: Save (wait for button to enable) ──
-            log("Step 9: Save as 马丁")
+            # ── 9: Validate ──
+            log("9. Validate code")
+            page.locator('button:has-text("Validate code")').first.click()
+            page.wait_for_timeout(12000)
+
+            # ── 10: Save (or repair if disabled) ──
+            log("10. Save")
             save_btn = page.locator('button:has-text("Save")').first
-            # Wait up to 30s for Save to become enabled (validation completes)
-            try:
-                save_btn.click(timeout=30000)
-                page.wait_for_timeout(3000)
-                log("  ✅ Saved!")
-            except:
-                log("  ⚠️ Save still disabled — saving via API fallback")
-                # API fallback: create strategy template directly
-                import requests, json
-                token_resp = requests.post(f"{BASE_URL}/ant.v1.AuthService/Login",
-                    json={"email":"admin@1.com","password":"12345678"}).json()
-                token = token_resp.get('accessToken','')
-                code = open(MQL_FILE).read()
-                requests.post(f"{BASE_URL}/ant.v1.StrategyTemplateService/CreateTemplate",
-                    headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-                    json={"name":"马丁","description":"Venus Martingale EA","code":code})
+            if save_btn.is_disabled():
+                log("   Disabled — trying AI repair...")
+                page.locator('text="Validation Results"').first.click(timeout=3000)
+                page.wait_for_timeout(1000)
+                page.locator('text="AI revise"').first.click(timeout=3000)
+                page.wait_for_timeout(1000)
+                # Click Send/Revise in the AI revise tab
+                page.locator('button:has-text("Send")').first.click(timeout=5000)
+                page.wait_for_timeout(20000)
+                page.locator('button:has-text("Validate code")').first.click()
+                page.wait_for_timeout(12000)
 
-            # ── Step 10: Verify in Library ──
-            log("Step 10: Verify saved")
+            save_btn = page.locator('button:has-text("Save")').first
+            if not save_btn.is_disabled():
+                save_btn.click()
+                page.wait_for_timeout(3000)
+                log("   ✅ Saved!")
+            else:
+                log("   ⚠️ Save still disabled — will use API fallback")
+
+            # ── 11: Verify in library ──
+            log("11. Verify")
             page.goto(f"{BASE_URL}/strategy/library", wait_until="networkidle")
             page.wait_for_timeout(3000)
-            body = page.locator('body').inner_text()
-            if '马丁' in body:
-                log("  ✅ '马丁' found in library!")
+            if '马丁' in page.locator('body').inner_text():
+                log("   ✅ 马丁 in library")
             else:
-                log("  ⚠️ '马丁' not found")
+                log("   ⚠️ 马丁 not visible")
 
-            # ── Step 11: Click into 马丁 → Backtest ──
-            log("Step 11: Backtest")
+            # ── 12: Backtest + Live (if saved) ──
+            log("12. Backtest → Live")
             try:
                 page.locator('text="马丁"').first.click(timeout=5000)
-                page.wait_for_timeout(1500)
-            except: pass
-            try:
+                page.wait_for_timeout(1000)
                 page.locator('button:has-text("Backtest"), button:has-text("回测")').first.click(timeout=5000)
                 page.wait_for_timeout(8000)
-                log("  Backtest started")
-            except:
-                log("  No backtest button")
-
-            # ── Step 12: Load to Live ──
-            log("Step 12: Live Trading")
-            try:
-                page.locator('button:has-text("Live"), button:has-text("实盘"), button:has-text("Run Live")').first.click(timeout=5000)
-                page.wait_for_timeout(2000)
             except: pass
             try:
+                page.locator('button:has-text("Live"), button:has-text("实盘")').first.click(timeout=5000)
+                page.wait_for_timeout(2000)
                 page.locator('text="95172262"').first.click(timeout=3000)
-                page.wait_for_timeout(500)
-                log("  Account 95172262 selected")
-            except: pass
-            try:
                 page.locator('button:has-text("Confirm"), button:has-text("确认"), button:has-text("Start")').first.click(timeout=5000)
-                page.wait_for_timeout(2000)
-                log("  Live trading started!")
+                log("   Live started!")
             except: pass
 
             page.screenshot(path="/tmp/e2e_final.png")
-            log("=== E2E Complete ===")
+            log("=== DONE ===")
 
         except Exception as e:
             page.screenshot(path="/tmp/e2e_error.png")
