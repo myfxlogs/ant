@@ -16,7 +16,7 @@ import backtest_run_pb2 as backtest__run__pb2
 import backtest_execution_config_pb2 as backtest__execution__config__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x18\x62\x61\x63ktest_run_query.proto\x12\x06\x61nt.v1\x1a\x0c\x63ommon.proto\x1a\x12\x62\x61\x63ktest_run.proto\x1a\x1f\x62\x61\x63ktest_execution_config.proto\"\'\n\x15GetBacktestRunRequest\x12\x0e\n\x06run_id\x18\x01 \x01(\t\"\x83\x02\n\x16GetBacktestRunResponse\x12 \n\x03run\x18\x01 \x01(\x0b\x32\x13.ant.v1.BacktestRun\x12(\n\x07metrics\x18\x02 \x01(\x0b\x32\x17.ant.v1.BacktestMetrics\x12\x14\n\x0c\x65quity_curve\x18\x03 \x03(\x01\x12\x17\n\ndataset_id\x18\x04 \x01(\tH\x00\x88\x01\x01\x12\"\n\x04risk\x18\x05 \x01(\x0b\x32\x14.ant.v1.BacktestRisk\x12;\n\x15\x65xecution_assumptions\x18\x06 \x01(\x0b\x32\x1c.ant.v1.ExecutionAssumptionsB\r\n\x0b_dataset_id\")\n\x17WatchBacktestRunRequest\x12\x0e\n\x06run_id\x18\x01 \x01(\t\"\xd6\x01\n\x11\x42\x61\x63ktestRunUpdate\x12 \n\x03run\x18\x01 \x01(\x0b\x32\x13.ant.v1.BacktestRun\x12(\n\x07metrics\x18\x02 \x01(\x0b\x32\x17.ant.v1.BacktestMetrics\x12\x14\n\x0c\x65quity_curve\x18\x03 \x03(\x01\x12\"\n\x04risk\x18\x04 \x01(\x0b\x32\x14.ant.v1.BacktestRisk\x12;\n\x15\x65xecution_assumptions\x18\x05 \x01(\x0b\x32\x1c.ant.v1.ExecutionAssumptions\"`\n\x17ListBacktestRunsRequest\x12\x17\n\naccount_id\x18\x01 \x01(\tH\x00\x88\x01\x01\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x0e\n\x06offset\x18\x03 \x01(\x05\x42\r\n\x0b_account_id\"=\n\x18ListBacktestRunsResponse\x12!\n\x04runs\x18\x01 \x03(\x0b\x32\x13.ant.v1.BacktestRunB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x18\x62\x61\x63ktest_run_query.proto\x12\x06\x61nt.v1\x1a\x0c\x63ommon.proto\x1a\x12\x62\x61\x63ktest_run.proto\x1a\x1f\x62\x61\x63ktest_execution_config.proto\"\'\n\x15GetBacktestRunRequest\x12\x0e\n\x06run_id\x18\x01 \x01(\t\"\x83\x02\n\x16GetBacktestRunResponse\x12 \n\x03run\x18\x01 \x01(\x0b\x32\x13.ant.v1.BacktestRun\x12(\n\x07metrics\x18\x02 \x01(\x0b\x32\x17.ant.v1.BacktestMetrics\x12\x14\n\x0c\x65quity_curve\x18\x03 \x03(\x01\x12\x17\n\ndataset_id\x18\x04 \x01(\tH\x00\x88\x01\x01\x12\"\n\x04risk\x18\x05 \x01(\x0b\x32\x14.ant.v1.BacktestRisk\x12;\n\x15\x65xecution_assumptions\x18\x06 \x01(\x0b\x32\x1c.ant.v1.ExecutionAssumptionsB\r\n\x0b_dataset_id\")\n\x17WatchBacktestRunRequest\x12\x0e\n\x06run_id\x18\x01 \x01(\t\"\xd6\x01\n\x11\x42\x61\x63ktestRunUpdate\x12 \n\x03run\x18\x01 \x01(\x0b\x32\x13.ant.v1.BacktestRun\x12(\n\x07metrics\x18\x02 \x01(\x0b\x32\x17.ant.v1.BacktestMetrics\x12\x14\n\x0c\x65quity_curve\x18\x03 \x03(\x01\x12\"\n\x04risk\x18\x04 \x01(\x0b\x32\x14.ant.v1.BacktestRisk\x12;\n\x15\x65xecution_assumptions\x18\x05 \x01(\x0b\x32\x1c.ant.v1.ExecutionAssumptions\"\x8a\x01\n\x17ListBacktestRunsRequest\x12\x17\n\naccount_id\x18\x01 \x01(\tH\x00\x88\x01\x01\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x0e\n\x06offset\x18\x03 \x01(\x05\x12\x18\n\x0btemplate_id\x18\x04 \x01(\tH\x01\x88\x01\x01\x42\r\n\x0b_account_idB\x0e\n\x0c_template_id\"=\n\x18ListBacktestRunsResponse\x12!\n\x04runs\x18\x01 \x03(\x0b\x32\x13.ant.v1.BacktestRunB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'backtest_run_query_pb2', globals())
@@ -32,8 +32,8 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _WATCHBACKTESTRUNREQUEST._serialized_end=447
   _BACKTESTRUNUPDATE._serialized_start=450
   _BACKTESTRUNUPDATE._serialized_end=664
-  _LISTBACKTESTRUNSREQUEST._serialized_start=666
-  _LISTBACKTESTRUNSREQUEST._serialized_end=762
-  _LISTBACKTESTRUNSRESPONSE._serialized_start=764
-  _LISTBACKTESTRUNSRESPONSE._serialized_end=825
+  _LISTBACKTESTRUNSREQUEST._serialized_start=667
+  _LISTBACKTESTRUNSREQUEST._serialized_end=805
+  _LISTBACKTESTRUNSRESPONSE._serialized_start=807
+  _LISTBACKTESTRUNSRESPONSE._serialized_end=868
 # @@protoc_insertion_point(module_scope)

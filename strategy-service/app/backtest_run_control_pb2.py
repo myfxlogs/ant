@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 import backtest_run_pb2 as backtest__run__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1a\x62\x61\x63ktest_run_control.proto\x12\x06\x61nt.v1\x1a\x12\x62\x61\x63ktest_run.proto\"*\n\x18\x43\x61ncelBacktestRunRequest\x12\x0e\n\x06run_id\x18\x01 \x01(\t\"=\n\x19\x43\x61ncelBacktestRunResponse\x12 \n\x03run\x18\x01 \x01(\x0b\x32\x13.ant.v1.BacktestRun\"*\n\x18\x44\x65leteBacktestRunRequest\x12\x0e\n\x06run_id\x18\x01 \x01(\t\",\n\x19\x44\x65leteBacktestRunResponse\x12\x0f\n\x07\x64\x65leted\x18\x01 \x01(\x08\x42\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1a\x62\x61\x63ktest_run_control.proto\x12\x06\x61nt.v1\x1a\x12\x62\x61\x63ktest_run.proto\"*\n\x18\x43\x61ncelBacktestRunRequest\x12\x0e\n\x06run_id\x18\x01 \x01(\t\"=\n\x19\x43\x61ncelBacktestRunResponse\x12 \n\x03run\x18\x01 \x01(\x0b\x32\x13.ant.v1.BacktestRun\"*\n\x18\x44\x65leteBacktestRunRequest\x12\x0e\n\x06run_id\x18\x01 \x01(\t\",\n\x19\x44\x65leteBacktestRunResponse\x12\x0f\n\x07\x64\x65leted\x18\x01 \x01(\x08\",\n\x19\x44\x65leteBacktestRunsRequest\x12\x0f\n\x07run_ids\x18\x01 \x03(\t\"I\n\x1a\x44\x65leteBacktestRunsResponse\x12\x15\n\rdeleted_count\x18\x01 \x01(\x05\x12\x14\n\x0c\x66\x61iled_count\x18\x02 \x01(\x05\x42\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'backtest_run_control_pb2', globals())
@@ -30,4 +30,8 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _DELETEBACKTESTRUNREQUEST._serialized_end=207
   _DELETEBACKTESTRUNRESPONSE._serialized_start=209
   _DELETEBACKTESTRUNRESPONSE._serialized_end=253
+  _DELETEBACKTESTRUNSREQUEST._serialized_start=255
+  _DELETEBACKTESTRUNSREQUEST._serialized_end=299
+  _DELETEBACKTESTRUNSRESPONSE._serialized_start=301
+  _DELETEBACKTESTRUNSRESPONSE._serialized_end=374
 # @@protoc_insertion_point(module_scope)

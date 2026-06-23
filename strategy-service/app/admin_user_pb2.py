@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x61\x64min_user.proto\x12\x06\x61nt.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc3\x01\n\x0e\x44\x61shboardStats\x12\x13\n\x0btotal_users\x18\x01 \x01(\x03\x12\x14\n\x0c\x61\x63tive_users\x18\x02 \x01(\x03\x12\x16\n\x0etotal_accounts\x18\x03 \x01(\x03\x12\x17\n\x0fonline_accounts\x18\x04 \x01(\x03\x12\x14\n\x0ctoday_trades\x18\x05 \x01(\x03\x12\x14\n\x0ctoday_volume\x18\x06 \x01(\x01\x12\x14\n\x0ctoday_profit\x18\x07 \x01(\x01\x12\x13\n\x0bsystem_load\x18\x08 \x01(\x01\"\x15\n\x13GetDashboardRequest\"=\n\x14GetDashboardResponse\x12%\n\x05stats\x18\x01 \x01(\x0b\x32\x16.ant.v1.DashboardStats\"p\n\x12UserAccountSummary\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05login\x18\x02 \x01(\t\x12\x0f\n\x07mt_type\x18\x03 \x01(\t\x12\x16\n\x0e\x62roker_company\x18\x04 \x01(\t\x12\x16\n\x0e\x61\x63\x63ount_status\x18\x05 \x01(\t\"\xc8\x02\n\x10UserWithAccounts\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08username\x18\x02 \x01(\t\x12\r\n\x05\x65mail\x18\x03 \x01(\t\x12\x10\n\x08nickname\x18\x04 \x01(\t\x12\x0c\n\x04role\x18\x05 \x01(\t\x12\x0e\n\x06status\x18\x06 \x01(\t\x12\x16\n\x0e\x65mail_verified\x18\x07 \x01(\x08\x12.\n\ncreated_at\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\t \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x31\n\rlast_login_at\x18\n \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x08\x61\x63\x63ounts\x18\x0b \x03(\x0b\x32\x1a.ant.v1.UserAccountSummary\"a\n\x10ListUsersRequest\x12\x0c\n\x04page\x18\x01 \x01(\x05\x12\x11\n\tpage_size\x18\x02 \x01(\x05\x12\x0e\n\x06search\x18\x03 \x01(\t\x12\x0e\n\x06status\x18\x04 \x01(\t\x12\x0c\n\x04role\x18\x05 \x01(\t\"K\n\x11ListUsersResponse\x12\'\n\x05users\x18\x01 \x03(\x0b\x32\x18.ant.v1.UserWithAccounts\x12\r\n\x05total\x18\x02 \x01(\x03\"T\n\x11\x43reateUserRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x10\n\x08password\x18\x03 \x01(\t\x12\x0c\n\x04role\x18\x04 \x01(\t\" \n\x12\x43reateUserResponse\x12\n\n\x02id\x18\x01 \x01(\t\"p\n\x11UpdateUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08username\x18\x02 \x01(\t\x12\r\n\x05\x65mail\x18\x03 \x01(\t\x12\x0c\n\x04role\x18\x04 \x01(\t\x12\x0e\n\x06status\x18\x05 \x01(\t\x12\x10\n\x08nickname\x18\x06 \x01(\t\"\x14\n\x12UpdateUserResponse\"\x1f\n\x11\x44\x65leteUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x14\n\x12\x44\x65leteUserResponse\" \n\x12\x44isableUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x15\n\x13\x44isableUserResponse\"\x1f\n\x11\x45nableUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x14\n\x12\x45nableUserResponse\"&\n\x18ResetUserPasswordRequest\x12\n\n\x02id\x18\x01 \x01(\t\"1\n\x19ResetUserPasswordResponse\x12\x14\n\x0cnew_password\x18\x01 \x01(\t2\xd5\x04\n\x10\x41\x64minUserService\x12I\n\x0cGetDashboard\x12\x1b.ant.v1.GetDashboardRequest\x1a\x1c.ant.v1.GetDashboardResponse\x12@\n\tListUsers\x12\x18.ant.v1.ListUsersRequest\x1a\x19.ant.v1.ListUsersResponse\x12\x43\n\nCreateUser\x12\x19.ant.v1.CreateUserRequest\x1a\x1a.ant.v1.CreateUserResponse\x12\x43\n\nUpdateUser\x12\x19.ant.v1.UpdateUserRequest\x1a\x1a.ant.v1.UpdateUserResponse\x12\x43\n\nDeleteUser\x12\x19.ant.v1.DeleteUserRequest\x1a\x1a.ant.v1.DeleteUserResponse\x12\x46\n\x0b\x44isableUser\x12\x1a.ant.v1.DisableUserRequest\x1a\x1b.ant.v1.DisableUserResponse\x12\x43\n\nEnableUser\x12\x19.ant.v1.EnableUserRequest\x1a\x1a.ant.v1.EnableUserResponse\x12X\n\x11ResetUserPassword\x12 .ant.v1.ResetUserPasswordRequest\x1a!.ant.v1.ResetUserPasswordResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x61\x64min_user.proto\x12\x06\x61nt.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc3\x01\n\x0e\x44\x61shboardStats\x12\x13\n\x0btotal_users\x18\x01 \x01(\x03\x12\x14\n\x0c\x61\x63tive_users\x18\x02 \x01(\x03\x12\x16\n\x0etotal_accounts\x18\x03 \x01(\x03\x12\x17\n\x0fonline_accounts\x18\x04 \x01(\x03\x12\x14\n\x0ctoday_trades\x18\x05 \x01(\x03\x12\x14\n\x0ctoday_volume\x18\x06 \x01(\x01\x12\x14\n\x0ctoday_profit\x18\x07 \x01(\x01\x12\x13\n\x0bsystem_load\x18\x08 \x01(\x01\"\x15\n\x13GetDashboardRequest\"=\n\x14GetDashboardResponse\x12%\n\x05stats\x18\x01 \x01(\x0b\x32\x16.ant.v1.DashboardStats\"p\n\x12UserAccountSummary\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05login\x18\x02 \x01(\t\x12\x0f\n\x07mt_type\x18\x03 \x01(\t\x12\x16\n\x0e\x62roker_company\x18\x04 \x01(\t\x12\x16\n\x0e\x61\x63\x63ount_status\x18\x05 \x01(\t\"\x90\x03\n\x10UserWithAccounts\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08username\x18\x02 \x01(\t\x12\r\n\x05\x65mail\x18\x03 \x01(\t\x12\x10\n\x08nickname\x18\x04 \x01(\t\x12\x0c\n\x04role\x18\x05 \x01(\t\x12\x0e\n\x06status\x18\x06 \x01(\t\x12\x16\n\x0e\x65mail_verified\x18\x07 \x01(\x08\x12.\n\ncreated_at\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\t \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x31\n\rlast_login_at\x18\n \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x08\x61\x63\x63ounts\x18\x0b \x03(\x0b\x32\x1a.ant.v1.UserAccountSummary\x12\x16\n\x0e\x61\x63\x63ount_number\x18\x0c \x01(\t\x12.\n\ndeleted_at\x18\r \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"y\n\x10ListUsersRequest\x12\x0c\n\x04page\x18\x01 \x01(\x05\x12\x11\n\tpage_size\x18\x02 \x01(\x05\x12\x0e\n\x06search\x18\x03 \x01(\t\x12\x0e\n\x06status\x18\x04 \x01(\t\x12\x0c\n\x04role\x18\x05 \x01(\t\x12\x16\n\x0e\x64\x65leted_filter\x18\x06 \x01(\t\"K\n\x11ListUsersResponse\x12\'\n\x05users\x18\x01 \x03(\x0b\x32\x18.ant.v1.UserWithAccounts\x12\r\n\x05total\x18\x02 \x01(\x03\"l\n\x11\x43reateUserRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x10\n\x08password\x18\x03 \x01(\t\x12\x0c\n\x04role\x18\x04 \x01(\t\x12\x16\n\x0e\x61\x63\x63ount_number\x18\x05 \x01(\t\" \n\x12\x43reateUserResponse\x12\n\n\x02id\x18\x01 \x01(\t\"\x88\x01\n\x11UpdateUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08username\x18\x02 \x01(\t\x12\r\n\x05\x65mail\x18\x03 \x01(\t\x12\x0c\n\x04role\x18\x04 \x01(\t\x12\x0e\n\x06status\x18\x05 \x01(\t\x12\x10\n\x08nickname\x18\x06 \x01(\t\x12\x16\n\x0e\x61\x63\x63ount_number\x18\x07 \x01(\t\"\x14\n\x12UpdateUserResponse\"\x1f\n\x11\x44\x65leteUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x14\n\x12\x44\x65leteUserResponse\"!\n\x12\x44\x65leteUsersRequest\x12\x0b\n\x03ids\x18\x01 \x03(\t\"R\n\x13\x44\x65leteUsersResponse\x12\x15\n\rdeleted_count\x18\x01 \x01(\x05\x12\x14\n\x0c\x66\x61iled_count\x18\x02 \x01(\x05\x12\x0e\n\x06\x65rrors\x18\x03 \x03(\t\" \n\x12\x44isableUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x15\n\x13\x44isableUserResponse\"\x1f\n\x11\x45nableUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x14\n\x12\x45nableUserResponse\"&\n\x18ResetUserPasswordRequest\x12\n\n\x02id\x18\x01 \x01(\t\"1\n\x19ResetUserPasswordResponse\x12\x14\n\x0cnew_password\x18\x01 \x01(\t\" \n\x12RestoreUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x15\n\x13RestoreUserResponse2\xe5\x05\n\x10\x41\x64minUserService\x12I\n\x0cGetDashboard\x12\x1b.ant.v1.GetDashboardRequest\x1a\x1c.ant.v1.GetDashboardResponse\x12@\n\tListUsers\x12\x18.ant.v1.ListUsersRequest\x1a\x19.ant.v1.ListUsersResponse\x12\x43\n\nCreateUser\x12\x19.ant.v1.CreateUserRequest\x1a\x1a.ant.v1.CreateUserResponse\x12\x43\n\nUpdateUser\x12\x19.ant.v1.UpdateUserRequest\x1a\x1a.ant.v1.UpdateUserResponse\x12\x43\n\nDeleteUser\x12\x19.ant.v1.DeleteUserRequest\x1a\x1a.ant.v1.DeleteUserResponse\x12\x46\n\x0b\x44\x65leteUsers\x12\x1a.ant.v1.DeleteUsersRequest\x1a\x1b.ant.v1.DeleteUsersResponse\x12\x46\n\x0b\x44isableUser\x12\x1a.ant.v1.DisableUserRequest\x1a\x1b.ant.v1.DisableUserResponse\x12\x43\n\nEnableUser\x12\x19.ant.v1.EnableUserRequest\x1a\x1a.ant.v1.EnableUserResponse\x12X\n\x11ResetUserPassword\x12 .ant.v1.ResetUserPasswordRequest\x1a!.ant.v1.ResetUserPasswordResponse\x12\x46\n\x0bRestoreUser\x12\x1a.ant.v1.RestoreUserRequest\x1a\x1b.ant.v1.RestoreUserResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'admin_user_pb2', globals())
@@ -31,35 +31,43 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _USERACCOUNTSUMMARY._serialized_start=345
   _USERACCOUNTSUMMARY._serialized_end=457
   _USERWITHACCOUNTS._serialized_start=460
-  _USERWITHACCOUNTS._serialized_end=788
-  _LISTUSERSREQUEST._serialized_start=790
-  _LISTUSERSREQUEST._serialized_end=887
-  _LISTUSERSRESPONSE._serialized_start=889
-  _LISTUSERSRESPONSE._serialized_end=964
-  _CREATEUSERREQUEST._serialized_start=966
-  _CREATEUSERREQUEST._serialized_end=1050
-  _CREATEUSERRESPONSE._serialized_start=1052
-  _CREATEUSERRESPONSE._serialized_end=1084
-  _UPDATEUSERREQUEST._serialized_start=1086
-  _UPDATEUSERREQUEST._serialized_end=1198
-  _UPDATEUSERRESPONSE._serialized_start=1200
-  _UPDATEUSERRESPONSE._serialized_end=1220
-  _DELETEUSERREQUEST._serialized_start=1222
-  _DELETEUSERREQUEST._serialized_end=1253
-  _DELETEUSERRESPONSE._serialized_start=1255
-  _DELETEUSERRESPONSE._serialized_end=1275
-  _DISABLEUSERREQUEST._serialized_start=1277
-  _DISABLEUSERREQUEST._serialized_end=1309
-  _DISABLEUSERRESPONSE._serialized_start=1311
-  _DISABLEUSERRESPONSE._serialized_end=1332
-  _ENABLEUSERREQUEST._serialized_start=1334
-  _ENABLEUSERREQUEST._serialized_end=1365
-  _ENABLEUSERRESPONSE._serialized_start=1367
-  _ENABLEUSERRESPONSE._serialized_end=1387
-  _RESETUSERPASSWORDREQUEST._serialized_start=1389
-  _RESETUSERPASSWORDREQUEST._serialized_end=1427
-  _RESETUSERPASSWORDRESPONSE._serialized_start=1429
-  _RESETUSERPASSWORDRESPONSE._serialized_end=1478
-  _ADMINUSERSERVICE._serialized_start=1481
-  _ADMINUSERSERVICE._serialized_end=2078
+  _USERWITHACCOUNTS._serialized_end=860
+  _LISTUSERSREQUEST._serialized_start=862
+  _LISTUSERSREQUEST._serialized_end=983
+  _LISTUSERSRESPONSE._serialized_start=985
+  _LISTUSERSRESPONSE._serialized_end=1060
+  _CREATEUSERREQUEST._serialized_start=1062
+  _CREATEUSERREQUEST._serialized_end=1170
+  _CREATEUSERRESPONSE._serialized_start=1172
+  _CREATEUSERRESPONSE._serialized_end=1204
+  _UPDATEUSERREQUEST._serialized_start=1207
+  _UPDATEUSERREQUEST._serialized_end=1343
+  _UPDATEUSERRESPONSE._serialized_start=1345
+  _UPDATEUSERRESPONSE._serialized_end=1365
+  _DELETEUSERREQUEST._serialized_start=1367
+  _DELETEUSERREQUEST._serialized_end=1398
+  _DELETEUSERRESPONSE._serialized_start=1400
+  _DELETEUSERRESPONSE._serialized_end=1420
+  _DELETEUSERSREQUEST._serialized_start=1422
+  _DELETEUSERSREQUEST._serialized_end=1455
+  _DELETEUSERSRESPONSE._serialized_start=1457
+  _DELETEUSERSRESPONSE._serialized_end=1539
+  _DISABLEUSERREQUEST._serialized_start=1541
+  _DISABLEUSERREQUEST._serialized_end=1573
+  _DISABLEUSERRESPONSE._serialized_start=1575
+  _DISABLEUSERRESPONSE._serialized_end=1596
+  _ENABLEUSERREQUEST._serialized_start=1598
+  _ENABLEUSERREQUEST._serialized_end=1629
+  _ENABLEUSERRESPONSE._serialized_start=1631
+  _ENABLEUSERRESPONSE._serialized_end=1651
+  _RESETUSERPASSWORDREQUEST._serialized_start=1653
+  _RESETUSERPASSWORDREQUEST._serialized_end=1691
+  _RESETUSERPASSWORDRESPONSE._serialized_start=1693
+  _RESETUSERPASSWORDRESPONSE._serialized_end=1742
+  _RESTOREUSERREQUEST._serialized_start=1744
+  _RESTOREUSERREQUEST._serialized_end=1776
+  _RESTOREUSERRESPONSE._serialized_start=1778
+  _RESTOREUSERRESPONSE._serialized_end=1799
+  _ADMINUSERSERVICE._serialized_start=1802
+  _ADMINUSERSERVICE._serialized_end=2543
 # @@protoc_insertion_point(module_scope)

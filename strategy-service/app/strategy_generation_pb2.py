@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x19strategy_generation.proto\x12\x06\x61nt.v1\"\xe8\x01\n\x17GenerateStrategyRequest\x12\x17\n\x0f\x63onversation_id\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x0e\n\x06symbol\x18\x03 \x01(\t\x12\x11\n\ttimeframe\x18\x04 \x01(\t\x12\x13\n\x0btemplate_id\x18\x05 \x01(\t\x12\x1b\n\x13\x63larification_round\x18\x06 \x01(\x05\x12\x15\n\rprevious_code\x18\t \x01(\t\x12\x1d\n\x15\x62\x61\x63ktest_metrics_json\x18\n \x01(\t\x12\x18\n\x10\x66\x65\x65\x64\x62\x61\x63k_message\x18\x0b \x01(\t\"\xd2\x01\n\x15GenerateStrategyChunk\x12\r\n\x05phase\x18\x01 \x01(\t\x12\r\n\x05\x64\x65lta\x18\x02 \x01(\t\x12\x11\n\tquestions\x18\x03 \x03(\t\x12\x0c\n\x04\x63ode\x18\x04 \x01(\t\x12\x19\n\x11\x63ompliance_issues\x18\x05 \x03(\t\x12\x17\n\x0f\x62\x61\x63ktest_run_id\x18\x06 \x01(\t\x12\x15\n\rtemplate_name\x18\x07 \x01(\t\x12\r\n\x05\x65rror\x18\x08 \x01(\t\x12\x10\n\x08\x61nalysis\x18\t \x01(\t\x12\x0e\n\x06\x61\x64vice\x18\n \x01(\t2q\n\x19StrategyGenerationService\x12T\n\x10GenerateStrategy\x12\x1f.ant.v1.GenerateStrategyRequest\x1a\x1d.ant.v1.GenerateStrategyChunk0\x01\x42\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x19strategy_generation.proto\x12\x06\x61nt.v1\"\xe8\x01\n\x17GenerateStrategyRequest\x12\x17\n\x0f\x63onversation_id\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x0e\n\x06symbol\x18\x03 \x01(\t\x12\x11\n\ttimeframe\x18\x04 \x01(\t\x12\x13\n\x0btemplate_id\x18\x05 \x01(\t\x12\x1b\n\x13\x63larification_round\x18\x06 \x01(\x05\x12\x15\n\rprevious_code\x18\t \x01(\t\x12\x1d\n\x15\x62\x61\x63ktest_metrics_json\x18\n \x01(\t\x12\x18\n\x10\x66\x65\x65\x64\x62\x61\x63k_message\x18\x0b \x01(\t\"\xf7\x01\n\x15GenerateStrategyChunk\x12\r\n\x05phase\x18\x01 \x01(\t\x12\r\n\x05\x64\x65lta\x18\x02 \x01(\t\x12\x11\n\tquestions\x18\x03 \x03(\t\x12\x0c\n\x04\x63ode\x18\x04 \x01(\t\x12\x19\n\x11\x63ompliance_issues\x18\x05 \x03(\t\x12\x17\n\x0f\x62\x61\x63ktest_run_id\x18\x06 \x01(\t\x12\x15\n\rtemplate_name\x18\x07 \x01(\t\x12\r\n\x05\x65rror\x18\x08 \x01(\t\x12\x10\n\x08\x61nalysis\x18\t \x01(\t\x12\x0e\n\x06\x61\x64vice\x18\n \x01(\t\x12\x0c\n\x04plan\x18\x0b \x01(\t\x12\x15\n\rprevious_code\x18\x0c \x01(\t2q\n\x19StrategyGenerationService\x12T\n\x10GenerateStrategy\x12\x1f.ant.v1.GenerateStrategyRequest\x1a\x1d.ant.v1.GenerateStrategyChunk0\x01\x42\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'strategy_generation_pb2', globals())
@@ -24,7 +24,7 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _GENERATESTRATEGYREQUEST._serialized_start=38
   _GENERATESTRATEGYREQUEST._serialized_end=270
   _GENERATESTRATEGYCHUNK._serialized_start=273
-  _GENERATESTRATEGYCHUNK._serialized_end=483
-  _STRATEGYGENERATIONSERVICE._serialized_start=485
-  _STRATEGYGENERATIONSERVICE._serialized_end=598
+  _GENERATESTRATEGYCHUNK._serialized_end=520
+  _STRATEGYGENERATIONSERVICE._serialized_start=522
+  _STRATEGYGENERATIONSERVICE._serialized_end=635
 # @@protoc_insertion_point(module_scope)
