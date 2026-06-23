@@ -18,6 +18,7 @@ import (
 	"anttrader/internal/notification"
 	"anttrader/internal/repository"
 	"anttrader/internal/pglisten"
+	"anttrader/internal/risk"
 )
 
 // PythonStrategyServer implements ant.v1.PythonStrategyServiceHandler.
@@ -33,6 +34,20 @@ type PythonStrategyServer struct {
 	pgListen            *pglisten.Listener
 	notifSender         *notification.Sender
 	onBacktestComplete  func(ctx context.Context, run *repository.BacktestRun) // auto-gate hook
+
+	// D6-A: Gate is the single authoritative risk evaluator.  Injected at
+	// construction — if nil, live order dispatch panics (fail-stop, non-bypassable).
+	gate *risk.Gate
+
+	// D6-A / T3.2b: AccountStateProvider feeds real account data.
+	// Before connected, equity-dependent gate rules fail-closed.
+	accountProvider AccountStateProvider
+}
+
+// AccountStateProvider supplies live account state for gate evaluation (T3.2b).
+// Implemented by the MT gateway account status subscription.
+type AccountStateProvider interface {
+	GetAccountState(ctx context.Context, accountID string) (*risk.AccountState, error)
 }
 
 func (s *PythonStrategyServer) SetMarketDataRepo(r repository.MarketDataStore) {
@@ -49,6 +64,13 @@ type PaperOrderExecutor interface {
 func (s *PythonStrategyServer) SetBarSource(bs BarSource)                 { s.barSource = bs }
 func (s *PythonStrategyServer) SetMtHub(h *mthub.MtHubService)            { s.mtHub = h }
 func (s *PythonStrategyServer) SetPaperEngine(pe PaperOrderExecutor)      { s.paperEngine = pe }
+
+// SetGate injects the risk gate (D6-A: mandatory, non-optional).
+// Must be called before RunLiveStrategy.
+func (s *PythonStrategyServer) SetGate(g *risk.Gate) { s.gate = g }
+
+// SetAccountProvider injects the live account state provider (T3.2b).
+func (s *PythonStrategyServer) SetAccountProvider(p AccountStateProvider) { s.accountProvider = p }
 
 var _ antv1c.PythonStrategyServiceHandler = (*PythonStrategyServer)(nil)
 

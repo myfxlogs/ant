@@ -24,6 +24,7 @@
 | 0017 | AI 会话记忆 + 意图澄清 + 回测反馈 | Accepted |
 | 0018 | 信号→执行延迟 SLO | Accepted |
 | 0019 | M11 前端架构（增量重构，React/Zustand/TanStack Query） | Accepted |
+| 0020 | EA 完全替代：统一 Strategy SDK + 双实现 Broker | Proposed |
 
 ## 编号规则
 

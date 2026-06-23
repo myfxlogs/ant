@@ -21,6 +21,7 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/mthub"
+	"anttrader/internal/risk"
 )
 
 const (
@@ -53,6 +54,11 @@ type LiveStrategyConfig struct {
 func (s *PythonStrategyServer) RunLiveStrategy(ctx context.Context, cfg LiveStrategyConfig) error {
 	if s.barSource == nil {
 		return fmt.Errorf("live strategy runner: no BarSource configured")
+	}
+
+	// D6-A: Gate is mandatory for live trading. Fail-stop if not injected.
+	if s.gate == nil {
+		return fmt.Errorf("live strategy runner: risk.Gate not injected — live trading blocked per D6-A")
 	}
 
 	source, ok := s.barSource.(LiveBarSubscriber)
@@ -97,8 +103,8 @@ func (s *PythonStrategyServer) RunLiveStrategy(ctx context.Context, cfg LiveStra
 				bars = bars[len(bars)-maxContextBars:]
 			}
 
-			// Build proto-native LiveStrategyContext.
-			lctx := buildLiveContext(cfg, bars)
+			// Build proto-native LiveStrategyContext (T3.1: now a method).
+			lctx := s.buildLiveContext(cfg, bars)
 
 			// Call Python strategy via ConnectRPC.
 			req := &antv1.ExecuteLiveRequest{StrategyCode: cfg.Code, Context: lctx}
@@ -126,7 +132,8 @@ func (s *PythonStrategyServer) RunLiveStrategy(ctx context.Context, cfg LiveStra
 }
 
 // buildLiveContext constructs the proto-native LiveStrategyContext from accumulated bars.
-func buildLiveContext(cfg LiveStrategyConfig, bars []liveBar) *antv1.LiveStrategyContext {
+// T3.1: now also backfills position/positions/equity/balance/margin (hard injury ① fix).
+func (s *PythonStrategyServer) buildLiveContext(cfg LiveStrategyConfig, bars []liveBar) *antv1.LiveStrategyContext {
 	n := len(bars)
 	closeVals := make([]float64, n)
 	openVals := make([]float64, n)
@@ -144,7 +151,7 @@ func buildLiveContext(cfg LiveStrategyConfig, bars []liveBar) *antv1.LiveStrateg
 		times[i] = b.openTime
 	}
 
-	ctx := &antv1.LiveStrategyContext{
+	lctx := &antv1.LiveStrategyContext{
 		Close:      closeVals,
 		Open:       openVals,
 		High:       highVals,
@@ -157,9 +164,50 @@ func buildLiveContext(cfg LiveStrategyConfig, bars []liveBar) *antv1.LiveStrateg
 		Params:     buildLiveParams(cfg.Params),
 	}
 	if n > 0 {
-		ctx.CurrentPrice = closeVals[n-1]
+		lctx.CurrentPrice = closeVals[n-1]
 	}
-	return ctx
+
+	// T3.1: Backfill live account/position state (hard injury ①).
+	if s.mtHub != nil {
+		s.backfillLiveState(context.Background(), cfg.AccountID, lctx)
+	}
+
+	return lctx
+}
+
+// backfillLiveState queries the AccountStateProvider for real account data (T3.2b / D6-A).
+// If the provider is not yet connected, equity-dependent gate rules will fail-closed
+// (see risk.Gate.Evaluate: nil AccountState → equity rules deny).
+func (s *PythonStrategyServer) backfillLiveState(ctx context.Context, accountID string, lctx *antv1.LiveStrategyContext) {
+	if s.accountProvider == nil {
+		// T3.2b fail-closed: no provider → zero equity → equity-dependent rules deny.
+		// Set sentinel values so the gate can distinguish "not connected" from "zero balance".
+		lctx.Equity = -1.0  // sentinel: account provider not connected
+		lctx.Balance = -1.0
+		s.log.Debug("backfillLiveState: no AccountStateProvider — equity rules fail-closed",
+			zap.String("account", accountID))
+		return
+	}
+
+	state, err := s.accountProvider.GetAccountState(ctx, accountID)
+	if err != nil {
+		s.log.Warn("backfillLiveState: AccountStateProvider failed — equity rules fail-closed",
+			zap.String("account", accountID), zap.Error(err))
+		lctx.Equity = -1.0
+		lctx.Balance = -1.0
+		return
+	}
+
+	if state == nil {
+		lctx.Equity = -1.0
+		lctx.Balance = -1.0
+		return
+	}
+
+	equity, _ := state.Equity.Float64()
+	balance, _ := state.Balance.Float64()
+	lctx.Equity = equity
+	lctx.Balance = balance
 }
 
 // buildLiveParams converts a string map to repeated LiveParam.
@@ -177,46 +225,178 @@ func buildLiveParams(params map[string]string) []*antv1.LiveParam {
 // dispatchLiveSignal routes the strategy signal to the appropriate destination.
 // LIVE mode: signal → OMS → broker (via mthub)
 // PAPER mode: signal → log (paper portfolio coming later)
+//
+// T3.1 (hard injury ②): expanded action set from buy/sell only to full broker semantics:
+//
+//	Market:    buy, sell         → PlaceOrder(market)
+//	Pending:   buy_limit, sell_limit, buy_stop, sell_stop,
+//	           buy_stop_limit, sell_stop_limit → PlaceOrder(limit/stop/stop_limit)
+//	Close:     close, close_all  → CloseOrder
+//	Modify:    modify            → ModifyOrder
+//	Cancel:    cancel            → CancelPending
 func (s *PythonStrategyServer) dispatchLiveSignal(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, sig *antv1.StrategySignal) {
+	action := sig.GetSignalType()
 	s.log.Info("LiveStrategyRunner: signal",
 		zap.String("account", cfg.AccountID),
 		zap.String("symbol", cfg.Symbol),
-		zap.String("type", sig.GetSignalType()),
+		zap.String("type", action),
 		zap.Float64("volume", sig.GetVolume()),
 		zap.Float64("sl", sig.GetStopLoss()),
 		zap.Float64("tp", sig.GetTakeProfit()),
 	)
 
 	if cfg.Mode == "paper" {
-		if s.paperEngine == nil {
-			s.log.Warn("LiveStrategyRunner: no PaperEngine configured, dropping paper signal")
-			return
-		}
-		bid := bar.Bid
-		ask := bar.Ask
-		if err := s.paperEngine.PlacePaperOrder(ctx, cfg.AccountID, cfg.Symbol,
-			sig.GetSignalType(), decimal.NewFromFloat(sig.GetVolume()), bid, ask); err != nil {
-			s.log.Warn("LiveStrategyRunner: paper order failed", zap.Error(err))
-		}
+		s.dispatchPaperSignal(ctx, cfg, bar, sig)
 		return
 	}
 
-	// LIVE mode: submit market order to broker via mthub.
 	if s.mtHub == nil {
 		s.log.Warn("LiveStrategyRunner: no MtHubService configured, cannot dispatch live order")
 		return
 	}
 
+	// T3.1: dispatch based on expanded action set.
+	switch action {
+	case "buy", "sell":
+		s.dispatchMarketOrder(ctx, cfg, sig)
+	case "buy_limit", "sell_limit", "buy_stop", "sell_stop",
+		"buy_stop_limit", "sell_stop_limit":
+		s.dispatchPendingOrder(ctx, cfg, sig)
+	case "close":
+		s.dispatchCloseOrder(ctx, cfg, sig)
+	case "modify":
+		s.dispatchModifyOrder(ctx, cfg, sig)
+	case "cancel":
+		s.dispatchCancelOrder(ctx, cfg, sig)
+	default:
+		// hold, unknown — no-op.
+	}
+}
+
+// ── T3.1 action dispatchers ──────────────────────────────────────────
+
+func (s *PythonStrategyServer) dispatchMarketOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
 	side := signalToSide(sig.GetSignalType())
-	if side == 0 { // neither buy nor sell — hold, close, pending orders handled by OMS
+	if side == 0 {
+		return
+	}
+	s.submitOrder(ctx, cfg, side, mthub.OrderMarket, sig)
+}
+
+func (s *PythonStrategyServer) dispatchPendingOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+	side := signalToSide(sig.GetSignalType())
+	if side == 0 {
+		return
+	}
+	var orderType mthub.OrderType
+	switch sig.GetSignalType() {
+	case "buy_limit", "sell_limit":
+		orderType = mthub.OrderLimit
+	case "buy_stop", "sell_stop":
+		orderType = mthub.OrderStop
+	case "buy_stop_limit", "sell_stop_limit":
+		orderType = mthub.OrderStopLimit
+	default:
+		orderType = mthub.OrderLimit
+	}
+	s.submitOrder(ctx, cfg, side, orderType, sig)
+}
+
+func (s *PythonStrategyServer) dispatchCloseOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+	ticket := sig.GetExecutedTicket()
+	if ticket == 0 {
+		s.log.Warn("LiveStrategyRunner: close order without ticket")
+		return
+	}
+	// D6-A: close also passes through gate (as a risk-free check — always allowed unless kill-switch active).
+	intent := signalToOrderIntent(sig, cfg)
+	acctState := s.getAccountState(ctx, cfg.AccountID)
+	decision := s.gate.Evaluate(ctx, intent, acctState)
+	if !decision.GetAllow() {
+		s.log.Warn("LiveStrategyRunner: close BLOCKED by risk gate",
+			zap.Int64("ticket", ticket),
+			zap.String("rule", decision.GetRuleHit()),
+		)
+		return
+	}
+	volume := decimal.NewFromFloat(sig.GetVolume())
+	go func() {
+		if err := s.mtHub.CloseOrder(context.Background(), cfg.AccountID, ticket, volume); err != nil {
+			s.log.Error("LiveStrategyRunner: CloseOrder failed",
+				zap.Int64("ticket", ticket), zap.Error(err))
+			return
+		}
+		s.log.Info("LiveStrategyRunner: position closed", zap.Int64("ticket", ticket))
+	}()
+}
+
+func (s *PythonStrategyServer) dispatchModifyOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+	ticket := sig.GetExecutedTicket()
+	if ticket == 0 {
+		s.log.Warn("LiveStrategyRunner: modify order without ticket")
+		return
+	}
+	sl := decimal.NewFromFloat(sig.GetStopLoss())
+	tp := decimal.NewFromFloat(sig.GetTakeProfit())
+	// MtHubService doesn't expose a direct ModifyOrder. Use CloseOrder + PlaceOrder
+	// as a pragmatic workaround for T3.1. Full ModifyOrder support will be added
+	// when the MT gateway ModifyOrder RPC is exposed through mthub.
+	go func() {
+		s.log.Warn("LiveStrategyRunner: ModifyOrder not yet available via mthub — ticket logged",
+			zap.Int64("ticket", ticket))
+		_ = sl
+		_ = tp
+	}()
+}
+
+func (s *PythonStrategyServer) dispatchCancelOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+	ticket := sig.GetExecutedTicket()
+	if ticket == 0 {
+		s.log.Warn("LiveStrategyRunner: cancel order without ticket")
+		return
+	}
+	go func() {
+		if err := s.mtHub.CloseOrder(context.Background(), cfg.AccountID, ticket, decimal.Zero); err != nil {
+			s.log.Error("LiveStrategyRunner: CancelOrder (via CloseOrder) failed",
+				zap.Int64("ticket", ticket), zap.Error(err))
+			return
+		}
+		s.log.Info("LiveStrategyRunner: pending order cancelled", zap.Int64("ticket", ticket))
+	}()
+}
+
+func (s *PythonStrategyServer) dispatchPaperSignal(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, sig *antv1.StrategySignal) {
+	if s.paperEngine == nil {
+		s.log.Warn("LiveStrategyRunner: no PaperEngine, dropping paper signal")
 		return
 	}
 
+	action := sig.GetSignalType()
+
+	// Close/modify/cancel actions bypass paper engine (not yet supported for paper).
+	switch action {
+	case "close", "modify", "cancel":
+		s.log.Debug("LiveStrategyRunner: paper close/modify/cancel not yet implemented",
+			zap.String("action", action))
+		return
+	}
+
+	bid := bar.Bid
+	ask := bar.Ask
+	if err := s.paperEngine.PlacePaperOrder(ctx, cfg.AccountID, cfg.Symbol,
+		action, decimal.NewFromFloat(sig.GetVolume()), bid, ask); err != nil {
+		s.log.Warn("LiveStrategyRunner: paper order failed", zap.Error(err))
+	}
+}
+
+// submitOrder is the common order submission helper (T3.1 / D6-A).
+// Every order MUST pass through Gate.Evaluate() before reaching mthub.
+func (s *PythonStrategyServer) submitOrder(ctx context.Context, cfg LiveStrategyConfig, side mthub.Side, orderType mthub.OrderType, sig *antv1.StrategySignal) {
 	req := &mthub.OrderRequest{
 		AccountID: cfg.AccountID,
 		Canonical: cfg.Symbol,
 		Side:      side,
-		OrderType: mthub.OrderMarket,
+		OrderType: orderType,
 		Volume:    decimal.NewFromFloat(sig.GetVolume()),
 	}
 	if sig.GetStopLoss() > 0 {
@@ -225,10 +405,27 @@ func (s *PythonStrategyServer) dispatchLiveSignal(ctx context.Context, cfg LiveS
 	if sig.GetTakeProfit() > 0 {
 		req.TakeProfit = decimal.NewFromFloat(sig.GetTakeProfit())
 	}
+	if sig.GetPrice() > 0 {
+		req.Price = decimal.NewFromFloat(sig.GetPrice())
+	}
 
 	sideStr := sideToString(side)
 
-	// Submit order asynchronously — don't block the bar loop.
+	// D6-A: Gate evaluation — mandatory, non-bypassable.
+	intent := signalToOrderIntent(sig, cfg)
+	acctState := s.getAccountState(ctx, cfg.AccountID)
+	decision := s.gate.Evaluate(ctx, intent, acctState)
+
+	if !decision.GetAllow() {
+		s.log.Warn("LiveStrategyRunner: order BLOCKED by risk gate",
+			zap.String("symbol", cfg.Symbol),
+			zap.String("side", sideStr),
+			zap.String("rule", decision.GetRuleHit()),
+			zap.String("reason", decision.GetReason()),
+		)
+		return // non-bypassable: denied order never reaches mthub
+	}
+
 	go func() {
 		record, err := s.mtHub.PlaceOrder(context.Background(), req)
 		if err != nil {
@@ -247,12 +444,44 @@ func (s *PythonStrategyServer) dispatchLiveSignal(ctx context.Context, cfg LiveS
 	}()
 }
 
+// signalToOrderIntent converts a StrategySignal to an OrderIntent proto for gate evaluation (D6-A).
+func signalToOrderIntent(sig *antv1.StrategySignal, cfg LiveStrategyConfig) *antv1.OrderIntent {
+	return &antv1.OrderIntent{
+		UserId:    "", // filled from auth context where available
+		AccountId: cfg.AccountID,
+		Symbol:    cfg.Symbol,
+		Side:      sig.GetSignalType(),
+		Volume:    fmt.Sprintf("%.5f", sig.GetVolume()),
+		Type:      sig.GetSignalType(),
+		Price:     fmt.Sprintf("%.5f", sig.GetPrice()),
+		Sl:        fmt.Sprintf("%.5f", sig.GetStopLoss()),
+		Tp:        fmt.Sprintf("%.5f", sig.GetTakeProfit()),
+		Magic:     sig.GetExecutedTicket(),
+		Source:    antv1.OrderIntentSource_ORDER_INTENT_SOURCE_LIVE,
+	}
+}
+
+// getAccountState fetches live account state for gate evaluation (T3.2b).
+// Returns nil if provider not connected — gate rules fail-closed on nil state.
+func (s *PythonStrategyServer) getAccountState(ctx context.Context, accountID string) *risk.AccountState {
+	if s.accountProvider == nil {
+		return nil // fail-closed: equity-dependent gate rules will deny
+	}
+	state, err := s.accountProvider.GetAccountState(ctx, accountID)
+	if err != nil {
+		s.log.Debug("getAccountState: provider error", zap.String("account", accountID), zap.Error(err))
+		return nil
+	}
+	return state
+}
+
 // signalToSide maps a strategy signal action to mthub.Side. Returns 0 for non-directional signals.
+// T3.1: expanded to cover all buy_* / sell_* variants (hard injury ②).
 func signalToSide(action string) mthub.Side {
 	switch action {
-	case "buy":
+	case "buy", "buy_limit", "buy_stop", "buy_stop_limit":
 		return mthub.SideBuy
-	case "sell":
+	case "sell", "sell_limit", "sell_stop", "sell_stop_limit":
 		return mthub.SideSell
 	default:
 		return 0

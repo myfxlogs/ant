@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// ── Risk Gate Protocol (ADR-0020, spec/31) ─────────────────────────────
+// All monetary and quantity fields use decimal strings — no float.
+// The risk gate intercepts every OrderIntent before it reaches any broker
+// (SimBroker or LiveBroker). It is the single money-safety boundary.
+
+// OrderIntentSource identifies whether an order originates from
+// simulation (backtest/paper) or live trading.
+enum OrderIntentSource {
+  ORDER_INTENT_SOURCE_UNSPECIFIED = 0;
+  ORDER_INTENT_SOURCE_SIM = 1;
+  ORDER_INTENT_SOURCE_LIVE = 2;
+}
+
+// OrderIntent is the canonical order request emitted by a strategy
+// and intercepted by the risk gate.
+message OrderIntent {
+  string user_id = 1;
+  string account_id = 2;
+  string symbol = 3;
+  string side = 4;                    // "buy" | "sell"
+  string volume = 5;                  // decimal string, e.g. "0.10"
+  string type = 6;                    // "market" | "limit" | "stop" | "stop_limit"
+  string price = 7;                   // decimal string; "0" for market orders
+  string sl = 8;                      // stop-loss price, decimal string; "0" = none
+  string tp = 9;                      // take-profit price, decimal string; "0" = none
+  int64 magic = 10;                   // EA magic number for position identification
+  OrderIntentSource source = 11;
+  string comment = 12;                // user-defined order comment
+  int64 created_at_unix_ms = 13;
+}
+
+// RiskDecision is the gate's ruling on an OrderIntent.
+message RiskDecision {
+  bool allow = 1;
+  string reason = 2;                  // human-readable explanation
+  optional string adjusted_volume = 3; // gate-proposed volume (only when allow=false and reduction may help)
+  string rule_hit = 4;                // name of the blocking rule; empty when allowed
+}
+
+// OrderIntentResult pairs an intent with its decision for audit trailing.
+message OrderIntentResult {
+  OrderIntent intent = 1;
+  RiskDecision decision = 2;
+  int64 evaluated_at_unix_ms = 3;
+}

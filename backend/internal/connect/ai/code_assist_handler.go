@@ -201,22 +201,76 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 		langHint +
 		"Translate the following MetaTrader EA/indicator code (MQL4 or MQL5) into a " +
 		"Python strategy for the AntTrader platform.\n\n" +
-		"AntTrader Python API reference:\n" +
-		"- Use `self.on_bar(bar)` as the main entry point (replaces start()/OnTick())\n" +
-		"- Indicators: `self.sma(price, period)`, `self.ema(price, period)`, `self.rsi(price, period)`,\n" +
-		"  `self.bollinger(price, period, stddev)`, `self.macd(price)`, `self.atr(period)`\n" +
-		"- Order: `self.buy(volume, sl, tp)`, `self.sell(volume, sl, tp)`, `self.close_all()`\n" +
-		"- Position: `self.has_position()`, `self.position_side`, `self.position_profit`\n" +
-		"- Prices: `bar.close`, `bar.open`, `bar.high`, `bar.low`, `bar.volume`\n" +
-		"- Risk: use `@param` decorators for configurable parameters (replaces extern/input)\n" +
-		"- Magic number / order comment: replace with `self.order_comment` or @param\n" +
-		"- Remove all MT-specific functions (OrderSelect, OrderModify, etc.)\n\n" +
-		"Rules:\n" +
-		"1. Map MQL entry/exit logic faithfully to Python\n" +
-		"2. Use @param for all configurable values (lot size, SL/TP pips, MA periods, etc.)\n" +
-		"3. Handle both MQL4 (start/init/deinit) and MQL5 (OnInit/OnTick/OnDeinit) patterns\n" +
-		"4. Return ONLY the Python code, no markdown fences, no explanations in the code section\n" +
-		"5. If the code contains external DLL calls or MT-specific GUI, add a comment noting the limitation"
+		"AntTrader Strategy SDK API (the ONLY valid API — use EXACTLY these signatures):\n\n" +
+		"## Lifecycle (inherit from StrategyBase)\n" +
+		"- `def on_init(self) -> None:` — replaces OnInit(). Register params, set timer.\n" +
+		"- `def on_tick(self) -> None:` — replaces OnTick(). Primary entry for tick-driven EAs.\n" +
+		"- `def on_bar(self, timeframe: str) -> None:` — replaces OnCalculate(). New bar closed.\n" +
+		"- `def on_timer(self) -> None:` — replaces OnTimer(). Requires ctx.set_timer(seconds).\n" +
+		"- `def on_trade(self) -> None:` — replaces OnTrade(). After any trade event.\n" +
+		"- `def on_deinit(self, reason: str) -> None:` — replaces OnDeinit(). Cleanup.\n\n" +
+		"## Order Entry (via self.broker)\n" +
+		"- `self.broker.order_send(OrderRequest(symbol=..., type=OrderType.BUY, volume=Decimal(str(lot)), ...))`\n" +
+		"  OrderType values: BUY, SELL, BUY_LIMIT, SELL_LIMIT, BUY_STOP, SELL_STOP,\n" +
+		"  BUY_STOP_LIMIT, SELL_STOP_LIMIT.\n" +
+		"  Optional fields: price (Decimal, omit for market orders), sl, tp (Decimal or None),\n" +
+		"  deviation (int, slippage in points), magic (int), comment (str),\n" +
+		"  type_filling (TypeFilling.FOK/IOC/RETURN), stop_limit_price (Decimal, only for *_STOP_LIMIT).\n" +
+		"  Returns OrderResult with retcode, ticket, price, volume.\n" +
+		"- `self.broker.position_close(ticket, volume=None)` — close position (None=full, Decimal=partial).\n" +
+		"- `self.broker.position_modify(ticket, sl=None, tp=None)` — modify SL/TP (Decimal or None).\n" +
+		"- `self.broker.order_delete(ticket)` — cancel a pending order.\n\n" +
+		"## Position & Order Query (via self.broker)\n" +
+		"- `self.broker.positions(symbol=None, magic=None) -> list[Position]` — open positions.\n" +
+		"  Position fields: ticket, symbol, side (PositionSide.BUY/SELL), volume (Decimal),\n" +
+		"  open_price (Decimal), sl, tp, profit, swap, magic, comment, open_time_ms.\n" +
+		"- `self.broker.orders(symbol=None, magic=None) -> list[PendingOrder]` — pending orders.\n" +
+		"  PendingOrder fields: ticket, symbol, type (OrderType), volume, price, sl, tp, magic.\n" +
+		"- `self.broker.account() -> AccountInfo` — balance, equity, margin, free_margin, margin_level,\n" +
+		"  leverage, currency, mode (AccountMode.NETTING/HEDGING). All amounts are Decimal.\n" +
+		"- `self.broker.symbol_info(symbol) -> SymbolInfo` — digits, point, tick_size, tick_value,\n" +
+		"  contract_size, volume_min/max/step, stops_level, freeze_level, swap_long/short, margin_rate.\n" +
+		"- `self.broker.server_time() -> int` — unix_ms.\n\n" +
+		"## Price Data (via self.ctx, MQL reverse indexing: [0]=current, [1]=previous)\n" +
+		"- `bars = self.ctx.bars(timeframe=None)` — returns Bars. None = primary timeframe.\n" +
+		"- `bars.close[0]`, `bars.open[0]`, `bars.high[0]`, `bars.low[0]`, `bars.volume[0]`, `bars.time[0]`.\n" +
+		"- `bars.total()` — number of available bars.\n\n" +
+		"## Indicators (via self.indicators, shift=0 = current bar, all return float)\n" +
+		"- `self.indicators.ma(period=14, shift=0, method='sma')` — methods: sma/ema/smma/lwma.\n" +
+		"- `self.indicators.ema(period=14, shift=0)`\n" +
+		"- `self.indicators.rsi(period=14, shift=0)`\n" +
+		"- `self.indicators.bands(period=20, deviation=2.0, shift=0) -> (upper, middle, lower)`\n" +
+		"- `self.indicators.macd(fast=12, slow=26, signal=9, shift=0) -> (macd, signal, histogram)`\n" +
+		"- `self.indicators.atr(period=14, shift=0)`\n" +
+		"- `self.indicators.stochastic(k_period=5, d_period=3, shift=0) -> (k, d)`\n" +
+		"- `self.indicators.cci(period=14, shift=0)`\n" +
+		"- `self.indicators.i_custom(name, params=[], buffer=0, shift=0)` — custom indicator.\n\n" +
+		"## Parameters & Timer (via self.ctx)\n" +
+		"- `self.ctx.param(name, default=None)` — read extern/input parameter (type: object, cast as needed).\n" +
+		"- `self.ctx.set_timer(seconds)` — enable periodic on_timer callback (min 1s).\n" +
+		"- `self.ctx.kill_timer()` — disable timer.\n\n" +
+		"## Critical Rules\n" +
+		"1. ALL monetary values (prices, volumes, balances) MUST use Decimal(str(x)), NEVER float.\n" +
+		"2. Import from app.sdk: StrategyBase, OrderRequest, OrderType, OrderResult, Position,\n" +
+		"   PendingOrder, PositionSide, Retcode, AccountMode, TypeFilling, Decimal.\n" +
+		"3. Replace extern/input with self.ctx.param() calls in on_init().\n" +
+		"4. MQL OrderSelect loop → `for order in self.broker.orders():` or `for pos in self.broker.positions():`.\n" +
+		"5. MQL Close[i] → bars.close[i]; MQL iMA() → self.indicators.ma().\n" +
+		"6. NEVER use self.buy(), self.sell(), self.close_all(), self.sma() — these DO NOT EXIST.\n" +
+		"7. Return ONLY the Python code inside ```python ... ``` fence.\n" +
+		"8. Mark untranslatable MQL (DLL, WebRequest, GUI, FileIO) with `# TRANSPILER-GAP: <reason>`.\n\n" +
+		"## Few-Shot Example\n" +
+		"MQL: `int OnInit() { EventSetTimer(60); return INIT_SUCCEEDED; }`\n" +
+		"SDK:\n```python\n" +
+		"def on_init(self) -> None:\n" +
+		"    self.ctx.set_timer(60)\n" +
+		"```\n\n" +
+		"MQL: `OrderSend(Symbol(), OP_BUY, 0.1, Ask, 3, 0, 0, \"entry\", 12345, 0, clrNONE);`\n" +
+		"SDK:\n```python\n" +
+		"req = OrderRequest(symbol=self.ctx.symbol, type=OrderType.BUY,\n" +
+		"                   volume=Decimal('0.10'), magic=12345, comment='entry')\n" +
+		"result = self.broker.order_send(req)\n" +
+		"```"
 
 	userMsg := fmt.Sprintf("Translate this trading EA/indicator to Python:\n```\n%s\n```", code)
 	messages := systemai.BuildChatMessages(sysPrompt, userMsg, nil)
@@ -337,12 +391,19 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 func buildValidationPrompt() string {
 	return "You are a trading strategy code validator. " +
 		"Review the following Python strategy code and identify issues. " +
+		"The code uses the AntTrader Strategy SDK (docs/spec/30-strategy-sdk.md):\n" +
+		"- Class inherits from StrategyBase with on_init/on_tick/on_bar/on_deinit hooks.\n" +
+		"- Orders via self.broker.order_send(OrderRequest(...)).\n" +
+		"- Prices via self.ctx.bars().close[0] (MQL reverse indexing).\n" +
+		"- Indicators via self.indicators.ma/rsi/ema/atr/bands/macd.\n" +
+		"- Parameters via self.ctx.param(name, default).\n" +
+		"- All monetary values use Decimal(str(x)), never float.\n\n" +
 		"Return a JSON object with fields: valid (bool), errors (string array), warnings (string array), " +
 		"parameters (array of objects with keys: key (str), required (bool), type (str: int|float|str|bool), " +
 		"default_value (str, optional), suggested_value (str, optional)). " +
-		"Extract all @param annotations from the code into the parameters array. " +
+		"Extract all self.ctx.param() calls from on_init() into the parameters array. " +
 		"Check for: missing stop-loss, missing take-profit, position sizing, error handling, " +
-		"indicator usage correctness, and data boundary handling. " +
+		"indicator usage correctness, Decimal usage for prices, and data boundary handling. " +
 		"Respond with ONLY valid JSON, no markdown fences."
 }
 

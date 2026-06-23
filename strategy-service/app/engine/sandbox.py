@@ -1,19 +1,21 @@
 """Strategy sandbox.
 
 契约：docs/domains/backtest-system.md §7.4.3 · sandbox.py
-ADR: ADR-0016 沙箱降级
+ADR: ADR-0020 · T3.3 OS 沙箱硬化
 
-M7.7: 沙箱降级为研究专用。生产模式下直接拒绝，仅 research_mode 可用。
-生产路径使用 DSL + ONNX，不再执行任意 Python 代码。
+T3.3: RestrictedPython downgraded to lint-only.  Real security boundary moved
+to OS/VM level (seccomp + non-root + cgroup + net namespace; gVisor/Firecracker).
+See sandbox_os.py for OS-level isolation.
 
-Layered defence for running untrusted user code (research mode only):
+Layered defence:
 
-1. **AST whitelist** — forbids ``import``, dunder access, dangerous builtins,
-   validates ``run(context)`` signature (see :py:func:`validate_strategy_code`).
-2. **RestrictedPython compile** — blocks a second class of attacks at bytecode
-   level (attribute escapes, private names, etc.).
-3. **Curated globals** — only safe builtins, numpy, math and the engine's
-   indicators/helpers are exposed.
+1. **Static scan (lint)** — AST whitelist + banned module/builtin scan
+   (merged from sandbox_scan.py).  Catches obvious attacks early.
+2. **RestrictedPython compile (optional lint)** — runs if available, but
+   strategy execution does NOT depend on it.  Security boundary is OS-level.
+3. **OS isolation** — seccomp-bpf, non-root, cgroup limits, net namespace.
+   The kernel blocks dangerous syscalls; numpy/pandas can run unrestricted.
+4. **Curated globals** — safe builtins + engine indicators pre-injected.
 
 Timeouts are enforced by the outer process (see :py:mod:`app.engine.runner`'s
 deadline). This keeps the sandbox itself side-effect-free and composable.
@@ -34,6 +36,113 @@ from app.engine import indicators
 from app.engine.code_quality import analyze_code_quality
 from app.engine.sandbox_base import BaseSandbox
 from app.engine.types import StrategyCompileError, StrategyRuntimeError
+
+# ── T3.3: Merged from sandbox_scan.py (static security scan) ──────────
+
+BANNED_MODULES: set[str] = {
+    "os", "subprocess", "shutil", "sys", "ctypes", "multiprocessing",
+    "socket", "http", "urllib", "requests", "ftplib", "smtplib",
+    "pickle", "marshal", "code", "codeop", "compileall",
+    "importlib", "pkgutil", "runpy",
+    "ptrace", "resource", "signal",
+}
+
+BANNED_BUILTINS: set[str] = {
+    "eval", "exec", "compile", "__import__", "open",
+    "globals", "locals", "vars", "getattr", "setattr", "delattr",
+    "breakpoint",
+}
+
+MAX_CODE_LENGTH = 65536  # T2.2: aligned with maxTransformCodeLen
+
+
+@dataclass
+class SecurityScanResult:
+    passed: bool = True
+    violations: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+
+
+class _SecurityVisitor(ast.NodeVisitor):
+    """AST visitor for banned module/builtin detection."""
+
+    def __init__(self, result: SecurityScanResult):
+        self.result = result
+
+    def visit_Import(self, node):
+        for alias in node.names:
+            name = alias.name.split(".")[0]
+            if name in BANNED_MODULES:
+                self.result.violations.append(
+                    f"banned import: {alias.name} (line {node.lineno})"
+                )
+        self.generic_visit(node)
+
+    def visit_ImportFrom(self, node):
+        if node.module:
+            name = node.module.split(".")[0]
+            if name in BANNED_MODULES:
+                self.result.violations.append(
+                    f"banned from-import: {node.module} (line {node.lineno})"
+                )
+        self.generic_visit(node)
+
+    def visit_Call(self, node):
+        if isinstance(node.func, ast.Name) and node.func.id in BANNED_BUILTINS:
+            self.result.violations.append(
+                f"banned builtin: {node.func.id}() (line {node.lineno})"
+            )
+        self.generic_visit(node)
+
+
+def _scan_strings_for_danger(code: str, result: SecurityScanResult) -> None:
+    """String-based scan for dynamic code execution patterns."""
+    patterns = [
+        ("__import__(", "dynamic import"),
+        ("eval(", "eval() call"),
+        ("exec(", "exec() call"),
+        ("compile(", "compile() call"),
+        ("subprocess", "subprocess reference"),
+        ("socket.", "socket usage"),
+        ("requests.", "HTTP request"),
+        ("urllib", "URL library"),
+    ]
+    for pattern, desc in patterns:
+        if pattern in code:
+            result.warnings.append(f"potential {desc} in code")
+
+
+def scan_security(code: str) -> SecurityScanResult:
+    """Static security scan for user-generated strategy code (T3.3: merged from sandbox_scan.py).
+
+    This is a LINT pass — security is enforced at OS level.
+    Catches banned imports, dangerous builtins, and dynamic code patterns.
+    """
+    result = SecurityScanResult()
+
+    if len(code) > MAX_CODE_LENGTH:
+        result.violations.append(f"code too long ({len(code)} > {MAX_CODE_LENGTH} chars)")
+        result.passed = False
+        return result
+
+    try:
+        tree = ast.parse(code)
+    except SyntaxError as e:
+        result.violations.append(f"syntax error: {e}")
+        result.passed = False
+        return result
+
+    visitor = _SecurityVisitor(result)
+    visitor.visit(tree)
+    _scan_strings_for_danger(code, result)
+
+    if result.violations:
+        result.passed = False
+    return result
+
+
+# Legacy compatibility: re-export scan_code for sandbox_scan.py consumers.
+scan_code = scan_security
 
 _FORBIDDEN_CALLS = frozenset(
     {"open", "eval", "exec", "compile", "__import__",
@@ -291,7 +400,7 @@ def compile_and_serialize(source: str) -> bytes:
     Performs static security scan before compilation to reject banned imports
     and dangerous patterns at the earliest possible point.
     """
-    from app.sandbox_scan import scan_code
+    # T3.3: using local scan_security (merged from sandbox_scan.py)
     scan_result = scan_code(source)
     if scan_result.violations:
         msg = "; ".join(scan_result.violations)
