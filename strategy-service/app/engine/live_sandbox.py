@@ -6,7 +6,7 @@ spawn overhead for live trading where the same strategy processes every
 incoming bar.
 
 B-3.5: Bytecode is pre-compiled once in the parent and sent to the worker
-on spawn, eliminating RestrictedPython compilation in the child.
+on spawn, eliminating Python compilation in the child.
 
 Architecture::
 

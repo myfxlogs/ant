@@ -6,9 +6,8 @@ waits with a hard deadline, and terminates the child on timeout.  This fixes
 V3-R-8: ``threading.Timer`` + ``PyThreadState_SetAsyncExc`` cannot interrupt C
 extensions or blocking syscalls; ``Process.terminate()`` always works.
 
-B-3.5: Bytecode is pre-compiled once in the parent via RestrictedPython and
-serialized to the child, avoiding redundant compilation in every spawned
-process.
+B-3.5: Bytecode is pre-compiled once in the parent and serialized to the
+child, avoiding redundant compilation in every spawned process.
 
 Architecture::
 
@@ -138,7 +137,7 @@ def _backtest_worker(conn, serialized_code: bytes) -> None:
     """Execute the strategy in a spawn child process and send the result back.
 
     Bytecode is pre-compiled in the parent and deserialized here, avoiding
-    redundant RestrictedPython compilation.
+    redundant Python compilation.
     """
     # Q7: spawn gives us a clean interpreter, but we defensively rebuild the
     # event loop in case code evolves to use asyncio inside the sandbox.
@@ -173,7 +172,7 @@ _MAX_CPU_SECONDS = 300  # 5 minutes CPU time (backed by parent's deadline as wel
 def _apply_resource_limits() -> None:
     """Apply OS-enforced resource limits in the child process.
 
-    This is the last-resort defense: even if RestrictedPython and static scanning
+    This is the last-resort defense: even if Python and static scanning
     miss a violation, the kernel will terminate the process when limits are exceeded.
     Aligned with live_sandbox.py:164-170.
     """

@@ -28,8 +28,7 @@ import pandas as pd
 
 from app.engine.sandbox import (
     StrategyValidationResult,
-    _RestrictedEnv,
-    _get_bytecode,
+    _compile_source,
     build_sandbox_globals,
     code_sha256,
 )
@@ -116,11 +115,10 @@ class DataFrameStrategyRunner(BaseSandbox):
 
         self._source = source
         self._timeout_ms = timeout_ms
-        self._env = _RestrictedEnv.get()
         try:
-            self._bytecode = _get_bytecode(self._env, source)
-        except Exception as e:
-            raise StrategyCompileError(f"RestrictedPython 编译失败: {e}") from e
+            self._bytecode = _compile_source(source)
+        except SyntaxError as e:
+            raise StrategyCompileError(f"Python 编译失败: {e}") from e
 
     @property
     def source_sha256(self) -> str:

@@ -3,19 +3,20 @@
 契约：docs/domains/backtest-system.md §7.4.3 · sandbox.py
 ADR: ADR-0020 · T3.3 OS 沙箱硬化
 
-T3.3: RestrictedPython downgraded to lint-only.  Real security boundary moved
-to OS/VM level (seccomp + non-root + cgroup + net namespace; gVisor/Firecracker).
-See sandbox_os.py for OS-level isolation.
+Security model — OS-kernel isolation, not language-level restrictions::
 
-Layered defence:
+    1. **Static scan (lint)** — AST whitelist + banned module/builtin scan.
+       Catches obvious attacks early.
+    2. **SDK-only validation** — all strategies must be class-based (StrategyBase).
+    3. **OS isolation** — seccomp-bpf, non-root, cgroup limits, net namespace.
+       The kernel blocks dangerous syscalls; numpy/pandas run unrestricted.
+    4. **Full Python runtime** — no RestrictedPython, no language-level sandboxing.
+       Strategies can use any Python feature including ``_``-prefixed helpers,
+       generators, decorators, etc.
 
-1. **Static scan (lint)** — AST whitelist + banned module/builtin scan
-   (merged from sandbox_scan.py).  Catches obvious attacks early.
-2. **RestrictedPython compile (optional lint)** — runs if available, but
-   strategy execution does NOT depend on it.  Security boundary is OS-level.
-3. **OS isolation** — seccomp-bpf, non-root, cgroup limits, net namespace.
-   The kernel blocks dangerous syscalls; numpy/pandas can run unrestricted.
-4. **Curated globals** — safe builtins + engine indicators pre-injected.
+Execution uses standard ``compile()`` (not ``compile_restricted()``).
+The OS sandbox provides the real security boundary — see
+:py:mod:`app.engine.sandbox_os` for OS-level isolation details.
 
 Timeouts are enforced by the outer process (see :py:mod:`app.engine.runner`'s
 deadline). This keeps the sandbox itself side-effect-free and composable.
@@ -37,7 +38,7 @@ from app.engine.code_quality import analyze_code_quality
 from app.engine.sandbox_base import BaseSandbox
 from app.engine.types import StrategyCompileError, StrategyRuntimeError
 
-# ── T3.3: Merged from sandbox_scan.py (static security scan) ──────────
+# ── T3.3: Static security scan (lint) ────────────────────────────────────
 
 # SDK strategies may import from app.sdk, decimal, typing.
 SDK_ALLOWED_MODULES: set[str] = {"app", "decimal", "typing"}
@@ -76,7 +77,7 @@ class _SecurityVisitor(ast.NodeVisitor):
         for alias in node.names:
             name = alias.name.split(".")[0]
             if name in SDK_ALLOWED_MODULES:
-                pass  # SDK strategies may import app.sdk, decimal, typing
+                pass
             elif name in BANNED_MODULES:
                 self.result.violations.append(
                     f"banned import: {alias.name} (line {node.lineno})"
@@ -87,7 +88,7 @@ class _SecurityVisitor(ast.NodeVisitor):
         if node.module:
             name = node.module.split(".")[0]
             if name in SDK_ALLOWED_MODULES:
-                pass  # SDK strategies may import from app.sdk, decimal, typing
+                pass
             elif name in BANNED_MODULES:
                 self.result.violations.append(
                     f"banned from-import: {node.module} (line {node.lineno})"
@@ -120,7 +121,7 @@ def _scan_strings_for_danger(code: str, result: SecurityScanResult) -> None:
 
 
 def scan_security(code: str) -> SecurityScanResult:
-    """Static security scan for user-generated strategy code (T3.3: merged from sandbox_scan.py).
+    """Static security scan for user-generated strategy code.
 
     This is a LINT pass — security is enforced at OS level.
     Catches banned imports, dangerous builtins, and dynamic code patterns.
@@ -151,13 +152,7 @@ def scan_security(code: str) -> SecurityScanResult:
 # Legacy compatibility: re-export scan_code for sandbox_scan.py consumers.
 scan_code = scan_security
 
-_FORBIDDEN_CALLS = frozenset(
-    {"open", "eval", "exec", "compile", "__import__",
-     "input", "globals", "locals", "vars", "dir"}
-)
-
-
-# --- AST validation ------------------------------------------------------
+# --- AST validation (SDK-only) --------------------------------------------
 
 
 @dataclass(frozen=True)
@@ -180,13 +175,17 @@ def _is_sdk_strategy(tree) -> bool:
     return False
 
 
-def _validate_sdk_strategy(code: str, tree, errors: list, warnings: list) -> StrategyValidationResult:
+def _validate_sdk_strategy(
+    code: str, tree, errors: list, warnings: list,
+    quality_hints: list | None = None,
+) -> StrategyValidationResult:
     """Validate an SDK-format strategy (ADR-0020)."""
     class_def = None
     for node in ast.walk(tree):
         if isinstance(node, ast.ClassDef):
             for base in node.bases:
-                if (isinstance(base, ast.Name) and base.id == "StrategyBase") or                    (isinstance(base, ast.Attribute) and base.attr == "StrategyBase"):
+                if (isinstance(base, ast.Name) and base.id == "StrategyBase") or \
+                   (isinstance(base, ast.Attribute) and base.attr == "StrategyBase"):
                     class_def = node
                     break
     if class_def is None:
@@ -198,17 +197,26 @@ def _validate_sdk_strategy(code: str, tree, errors: list, warnings: list) -> Str
         errors.append(f"SDK策略类 {class_def.name} 至少需要一个生命周期方法")
     if "self.broker" not in code:
         warnings.append("策略未引用 self.broker")
+
     seen = set()
     deduped = []
     for e in errors:
         if e not in seen:
             seen.add(e)
             deduped.append(e)
-    return StrategyValidationResult(valid=len(deduped) == 0, errors=deduped, warnings=warnings)
+    return StrategyValidationResult(
+        valid=len(deduped) == 0, errors=deduped, warnings=warnings,
+        quality_hints=quality_hints or [],
+    )
 
 
 def validate_strategy_code(code: str) -> StrategyValidationResult:
-    """Static check that mirrors legacy ``executor.validate_strategy_code``."""
+    """Validate a strategy — SDK-only (ADR-0020).
+
+    Non-SDK legacy patterns (``def run(context)``, ``signal = ...``) are
+    rejected.  Every strategy must define a class that inherits from
+    ``StrategyBase`` and implements at least one lifecycle hook.
+    """
     errors: List[str] = []
     warnings: List[str] = []
 
@@ -218,195 +226,27 @@ def validate_strategy_code(code: str) -> StrategyValidationResult:
         errors.append(f"语法错误: {e}")
         return StrategyValidationResult(valid=False, errors=errors, warnings=warnings)
 
-    # ── SDK strategy path (ADR-0020) ──
-    if _is_sdk_strategy(tree):
-        return _validate_sdk_strategy(code, tree, errors, warnings)
-
-    # Indicators in ``app/engine/indicators.py`` that return a SCALAR float.
-    # Subscripting their result (``iMA(...)[-1]``) is always a bug and would
-    # raise ``'float' object is not subscriptable`` at runtime. Catching it
-    # statically gives the user a clear error before the backtest starts.
-    _SCALAR_INDICATORS = {
-        "iMA", "iRSI", "iATR", "iCCI", "iMomentum", "iWPR",
-        "AccountBalance", "AccountEquity", "OrdersTotal",
-    }
-
-    # Track simple ``x = iMA(...)`` style aliases so we can flag ``x[-1]`` or
-    # ``len(x)`` later in the same pass even when the user binds the call
-    # result to a variable first (the most common pattern in AI-generated
-    # code). Keep it intentionally shallow — no flow analysis, just last
-    # assignment wins.
-    scalar_aliases: dict = {}
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
-            value = node.value
-            if isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id in _SCALAR_INDICATORS:
-                scalar_aliases[node.targets[0].id] = value.func.id
-
-    def _scalar_origin(expr: ast.AST) -> str:
-        if isinstance(expr, ast.Call) and isinstance(expr.func, ast.Name) and expr.func.id in _SCALAR_INDICATORS:
-            return expr.func.id
-        if isinstance(expr, ast.Name) and expr.id in scalar_aliases:
-            return scalar_aliases[expr.id]
-        return ""
-
-    run_defs: List[ast.FunctionDef] = []
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                name = alias.name.split('.')[0]
-                if name not in ("math", "numpy"):
-                    errors.append(f"禁止 import {name}（沙箱只允许 import math/numpy，且它们已预注入可直接使用）")
-        if isinstance(node, ast.ImportFrom):
-            module = node.module or ""
-            name = module.split(".")[0]
-            if name not in ("math", "numpy"):
-                errors.append(f"禁止 from {module} import ...（沙箱只允许 import math/numpy，且它们已预注入可直接使用）")
-        if isinstance(node, (ast.Global, ast.Nonlocal)):
-            errors.append("禁止 global/nonlocal")
-        if isinstance(node, ast.Attribute) and node.attr.startswith("__"):
-            errors.append("禁止访问 dunder 属性")
-        if isinstance(node, ast.Name) and node.id.startswith("__"):
-            errors.append("禁止使用 dunder 名称")
-        if isinstance(node, ast.Call):
-            fn = node.func
-            if isinstance(fn, ast.Name) and fn.id in _FORBIDDEN_CALLS:
-                errors.append(f"禁止调用: {fn.id}()")
-        if isinstance(node, ast.Subscript):
-            origin = _scalar_origin(node.value)
-            if origin:
-                errors.append(
-                    f"{origin}() 返回标量(单个数值)，不能用下标访问。"
-                    f"例如 x = {origin}(...) 后写 x[-1] 会在运行时抛 'float' object is not subscriptable。"
-                    f"请直接把 {origin}(...) 当数值用。"
-                )
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "len":
-            if node.args:
-                origin = _scalar_origin(node.args[0])
-                if origin:
-                    errors.append(
-                        f"{origin}() 返回标量，不能对它的结果调用 len()。"
-                    )
-        if isinstance(node, ast.FunctionDef) and node.name == "run":
-            run_defs.append(node)
-
-    if len(run_defs) > 1:
-        errors.append("只允许定义一个 run(context) 函数")
-    elif len(run_defs) == 1:
-        run_def = run_defs[0]
-        if run_def.args.vararg is not None or run_def.args.kwarg is not None:
-            errors.append("run(context) 禁止使用 *args/**kwargs")
-        if len(run_def.args.args) != 1:
-            errors.append("run(context) 必须且只能接收一个参数: context")
-
-    if not errors and "signal" not in code and "def run" not in code:
-        errors.append("必须定义 signal 变量、run(context) 或 run_dataframe(df, params) 函数")
-
-    # Deduplicate while preserving order so the frontend message stays stable.
-    seen = set()
-    deduped: List[str] = []
-    for e in errors:
-        if e not in seen:
-            seen.add(e)
-            deduped.append(e)
+    if not _is_sdk_strategy(tree):
+        errors.append(
+            "只支持 SDK 策略（继承 StrategyBase 的类定义）。"
+            "请使用类定义 + 生命周期方法（on_init/on_bar/on_tick 等）来编写策略代码。"
+        )
+        return StrategyValidationResult(valid=False, errors=errors, warnings=warnings)
 
     quality_hints = analyze_code_quality(code)
-
-    return StrategyValidationResult(
-        valid=len(deduped) == 0, errors=deduped, warnings=warnings,
-        quality_hints=quality_hints,
-    )
+    return _validate_sdk_strategy(code, tree, errors, warnings, quality_hints)
 
 
-# --- RestrictedPython adapter -------------------------------------------
-
-
-class _RestrictedEnv:
-    """Lazy-imported RestrictedPython bindings shared across runners."""
-
-    _instance: Optional["_RestrictedEnv"] = None
-
-    def __init__(self) -> None:
-        from RestrictedPython import compile_restricted
-        from RestrictedPython.Eval import (
-            default_guarded_getattr,
-            default_guarded_getitem,
-            default_guarded_getiter,
-        )
-        from RestrictedPython.Guards import full_write_guard, safe_builtins
-        global _guarded_unpack_sequence, _guarded_iter_unpack_sequence
-        from RestrictedPython.Guards import guarded_unpack_sequence as _guarded_unpack_sequence, guarded_iter_unpack_sequence as _guarded_iter_unpack_sequence
-        from RestrictedPython.PrintCollector import PrintCollector
-
-        self.compile_restricted = compile_restricted
-        self.safe_builtins = dict(safe_builtins)
-        self.safe_builtins.update(
-            {
-                # numeric / basic
-                "sum": sum, "round": round, "min": min, "max": max,
-                "len": len, "abs": abs, "pow": pow, "divmod": divmod,
-                # type ctors (needed by system presets & LLM-generated strategies)
-                "int": int, "float": float, "bool": bool, "str": str,
-                "dict": dict, "list": list, "tuple": tuple, "set": set,
-                "frozenset": frozenset, "bytes": bytes,
-                # introspection / iteration
-                "isinstance": isinstance, "issubclass": issubclass,
-                "range": range, "enumerate": enumerate, "zip": zip,
-                "reversed": reversed, "sorted": sorted, "filter": filter,
-                "map": map, "any": any, "all": all,
-                # misc
-                "print": print,
-            }
-        )
-        # Whitelisted __import__: required because numpy's bound methods
-        # (e.g. ndarray.mean, ndarray.std) lazily import submodules the first
-        # time they are called. User-level `import` / `__import__` calls are
-        # already forbidden by validate_strategy_code's AST check, so this
-        # only serves C-extension / stdlib internal needs.
-        _real_import = __import__
-        _import_whitelist = (
-            "numpy", "numpy.", "math", "math.",
-            "_ast", "_collections_abc", "collections", "collections.",
-            "itertools", "functools", "operator", "copyreg",
-            "array", "_operator", "warnings",
-        )
-
-        def _guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
-            if not isinstance(name, str) or name == "":
-                raise ImportError("import blocked by sandbox")
-            allowed = any(
-                name == w or (w.endswith(".") and name.startswith(w))
-                for w in _import_whitelist
-            )
-            if not allowed:
-                raise ImportError(f"import blocked by sandbox: {name!r}")
-            return _real_import(name, globals, locals, fromlist, level)
-
-        self.safe_builtins["__import__"] = _guarded_import
-        self.guarded_getattr = default_guarded_getattr
-        self.guarded_getitem = default_guarded_getitem
-        self.guarded_getiter = default_guarded_getiter
-        # Required by RestrictedPython-generated bytecode for guarded writes.
-        self.guarded_write = full_write_guard
-        self.print_collector = PrintCollector
-
-    @classmethod
-    def get(cls) -> "_RestrictedEnv":
-        if cls._instance is None:
-            cls._instance = _RestrictedEnv()
-        return cls._instance
-
-
-# --- Bytecode cache (process-level, keyed by sha256) --------------------
-
+# --- Bytecode compilation (standard Python compile) -----------------------
 
 _bytecode_cache: Dict[str, Any] = {}
 
 
-def _get_bytecode(env: _RestrictedEnv, source: str) -> Any:
+def _compile_source(source: str) -> Any:
+    """Compile strategy source to a code object (cached by sha256)."""
     key = hashlib.sha256(source.encode()).hexdigest()
     if key not in _bytecode_cache:
-        _bytecode_cache[key] = env.compile_restricted(source, "<strategy>", "exec")
+        _bytecode_cache[key] = compile(source, "<strategy>", "exec")
     return _bytecode_cache[key]
 
 
@@ -415,23 +255,14 @@ def code_sha256(source: str) -> str:
 
 
 def build_sandbox_globals() -> dict:
-    """Construct the restricted globals dict for sandbox execution.
+    """Construct the globals dict for sandbox execution.
 
-    Extracted from StrategyRunner._build_globals so that child-process
-    entry points (backtest_worker, live_worker_main) can build the same
-    environment without instantiating StrategyRunner.
+    Injects numpy, math, and engine indicators.  Uses standard Python
+    builtins — security is enforced at the OS level (seccomp/cgroup).
     """
-    env = _RestrictedEnv.get()
-    import numpy as np  # local import keeps top-level import cheap
+    import numpy as np
     g: Dict[str, Any] = {
-        "__builtins__": env.safe_builtins,
-        "_getattr_": env.guarded_getattr,
-        "_getitem_": env.guarded_getitem,
-        "_getiter_": env.guarded_getiter,
-        "_unpack_sequence_": _guarded_unpack_sequence,
-        "_iter_unpack_sequence_": _guarded_iter_unpack_sequence,
-        "_write_": env.guarded_write,
-        "_print_": env.print_collector,
+        "__builtins__": __builtins__,
         "np": np,
         "math": math,
     }
@@ -442,22 +273,19 @@ def build_sandbox_globals() -> dict:
 
 
 def compile_and_serialize(source: str) -> bytes:
-    """Pre-compile strategy source via RestrictedPython and return marshalled bytecode.
+    """Pre-compile strategy source and return marshalled bytecode.
 
     The resulting bytes can be passed to :func:`exec_serialized` in a child
-    process, avoiding redundant RestrictedPython compilation.
+    process, avoiding redundant compilation.
 
-    Performs static security scan before compilation to reject banned imports
-    and dangerous patterns at the earliest possible point.
+    Performs static security scan before compilation.
     """
-    # T3.3: using local scan_security (merged from sandbox_scan.py)
     scan_result = scan_code(source)
     if scan_result.violations:
         msg = "; ".join(scan_result.violations)
         raise ValueError(f"code rejected by security scan: {msg}")
 
-    env = _RestrictedEnv.get()
-    code = env.compile_restricted(source, "<strategy>", "exec")
+    code = compile(source, "<strategy>", "exec")
     return marshal.dumps(code)
 
 
@@ -467,7 +295,7 @@ def exec_serialized(data: bytes, globals_dict: dict, locals_dict: dict) -> None:
     exec(code, globals_dict, locals_dict)
 
 
-# --- StrategyRunner ------------------------------------------------------
+# --- StrategyRunner (in-process, thread-based; deprecated) ----------------
 
 
 _production_mode: bool = False
@@ -534,11 +362,10 @@ class StrategyRunner(BaseSandbox):
             raise StrategyCompileError("; ".join(validation.errors))
         self._source = source
         self._timeout_ms = timeout_ms
-        self._env = _RestrictedEnv.get()
         try:
-            self._bytecode = _get_bytecode(self._env, source)
-        except Exception as e:  # pragma: no cover - RestrictedPython edge case
-            raise StrategyCompileError(f"RestrictedPython 编译失败: {e}") from e
+            self._bytecode = _compile_source(source)
+        except SyntaxError as e:
+            raise StrategyCompileError(f"Python 编译失败: {e}") from e
 
     @property
     def source_sha256(self) -> str:
@@ -581,7 +408,6 @@ class StrategyRunner(BaseSandbox):
 
         # Use the same dict for both globals and locals so that module-level
         # definitions (e.g. helper functions) are visible inside run().
-        # ctx values are copied in at call time to avoid polluting the module scope.
         exec_scope = dict(globals_dict)
         try:
             exec(self._bytecode, exec_scope, exec_scope)
