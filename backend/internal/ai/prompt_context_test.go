@@ -42,10 +42,10 @@ func TestRepairPrompt_CodeOnlyConstraints(t *testing.T) {
 	}
 
 	mustContain := []string{
-		"CODE REPAIR TOOL",
-		"STRICT OUTPUT RULES",
-		"Do NOT include ANY explanatory text",
-		"Do NOT wrap code in markdown",
+		"CODE REPAIR EXPERT",
+		"CRITICAL RULES",
+		"NO markdown, NO explanations",
+		"Start directly with import/def/class/#",
 		"FIXME",
 		"missing stop_loss",
 	}
