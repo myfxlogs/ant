@@ -132,9 +132,10 @@ message ExecuteLiveRequest {
 
 message ExecuteLiveResponse {
   bool success = 1;
-  StrategySignal signal = 2;
+  StrategySignal signal = 2;            // deprecated — first signal only
   string error = 3;
-  string strategy_hash = 4;  // cached worker identifier for debugging
+  string strategy_hash = 4;             // cached worker identifier for debugging
+  repeated StrategySignal signals = 5;  // all signals (multi-intent per bar)
 }
 
 // LiveStrategyContext is the execution context passed to run(context) in live/paper mode.

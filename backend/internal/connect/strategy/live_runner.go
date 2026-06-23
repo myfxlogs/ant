@@ -141,13 +141,20 @@ func (s *PythonStrategyServer) RunLiveStrategy(ctx context.Context, cfg LiveStra
 				continue
 			}
 
-			sig := resp.Msg.GetSignal()
-			if sig == nil || sig.GetSignalType() == "hold" || sig.GetSignalType() == "" {
-				continue
+			// Dispatch all signals (multi-intent per bar).
+			signals := resp.Msg.GetSignals()
+			if len(signals) == 0 {
+				sig := resp.Msg.GetSignal()
+				if sig != nil && sig.GetSignalType() != "" && sig.GetSignalType() != "hold" {
+					signals = []*antv1.StrategySignal{sig}
+				}
 			}
-
-			// Dispatch signal.
-			s.dispatchLiveSignal(ctx, cfg, bar, sig)
+			for _, sig := range signals {
+				if sig.GetSignalType() == "hold" || sig.GetSignalType() == "" {
+					continue
+				}
+				s.dispatchLiveSignal(ctx, cfg, bar, sig)
+			}
 		}
 	}
 }

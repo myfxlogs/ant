@@ -39,56 +39,31 @@ def _proto_context_to_dict(ctx) -> dict:
     return d
 
 
-# ── Multi-intent queue (one signal per bar, remaining queued) ────────
-# SDK strategies may generate multiple intents per bar (e.g. close 5 positions).
-# Since the proto carries only one StrategySignal, we queue excess intents
-# and drain them on subsequent bars.
-_intent_queue: list[dict] = []
-
-
-def _build_signal_from_intents(intents: list) -> StrategySignal:
-    """Pack SDK intents into a StrategySignal, queuing excess for next bars."""
-    global _intent_queue
-
-    # Drain queue first (from previous bar's excess intents).
-    while _intent_queue:
-        intent = _intent_queue.pop(0)
-        sig = _intent_to_signal(intent)
-        if sig.signal_type != "hold":
-            return sig
-
-    # Add new intents to queue.
-    if intents:
-        _intent_queue.extend(intents)
-
-    # Pop first from queue.
-    if _intent_queue:
-        return _intent_to_signal(_intent_queue.pop(0))
-    return StrategySignal(signal_type="hold")
-
-
-def _intent_to_signal(intent: dict) -> StrategySignal:
-    """Convert a single intent dict to StrategySignal."""
-    action = intent.get("action", "hold")
-    if not action or action == "hold":
-        return StrategySignal(signal_type="hold")
-    volume = float(intent.get("volume", 0))
-    sl = float(intent.get("sl", 0))
-    tp = float(intent.get("tp", 0))
-    price = float(intent.get("price", 0))
-    ticket_str = str(intent.get("ticket", "0")).strip()
-    try:
-        ticket = int(ticket_str) if ticket_str else 0
-    except ValueError:
-        ticket = 0
-    return StrategySignal(
-        signal_type=action,
-        volume=volume,
-        stop_loss=sl,
-        take_profit=tp,
-        price=price,
-        executed_ticket=ticket,
-    )
+def _build_signals_from_intents(intents: list) -> list:
+    """Convert all SDK intents to StrategySignals."""
+    signals = []
+    for intent in intents:
+        action = intent.get("action", "hold")
+        if not action or action == "hold":
+            continue
+        volume = float(intent.get("volume", 0))
+        sl = float(intent.get("sl", 0))
+        tp = float(intent.get("tp", 0))
+        price = float(intent.get("price", 0))
+        ticket_str = str(intent.get("ticket", "0")).strip()
+        try:
+            ticket = int(ticket_str) if ticket_str else 0
+        except ValueError:
+            ticket = 0
+        signals.append(StrategySignal(
+            signal_type=action,
+            volume=volume,
+            stop_loss=sl,
+            take_profit=tp,
+            price=price,
+            executed_ticket=ticket,
+        ))
+    return signals
 
 
 @router.post("/ant.v1.PythonStrategyService/ExecuteLive")
@@ -113,13 +88,17 @@ async def execute_live(request: Request):
                 ExecuteLiveResponse(success=False, error=result["error"], strategy_hash=code_hash))
 
         intents = result.get("intents", [])
-        sig = _build_signal_from_intents(intents)
+        signals = _build_signals_from_intents(intents)
 
         elapsed = (time.time() - t0) * 1000
         if elapsed > 200:
             logger.warning("ExecuteLive: slow %.0fms hash=%s intents=%d", elapsed, code_hash, len(intents))
 
-        return _respond(ExecuteLiveResponse(success=True, signal=sig, strategy_hash=code_hash))
+        # Set first signal for backward compat, repeated for multi-intent
+        first_sig = signals[0] if signals else StrategySignal(signal_type="hold")
+        return _respond(ExecuteLiveResponse(
+            success=True, signal=first_sig, strategy_hash=code_hash,
+            signals=signals))
 
     except Exception as e:
         logger.exception("ExecuteLive: error hash=%s", code_hash)
