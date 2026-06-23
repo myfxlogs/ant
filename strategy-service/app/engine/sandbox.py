@@ -39,6 +39,9 @@ from app.engine.types import StrategyCompileError, StrategyRuntimeError
 
 # ── T3.3: Merged from sandbox_scan.py (static security scan) ──────────
 
+# SDK strategies may import from app.sdk, decimal, typing.
+SDK_ALLOWED_MODULES: set[str] = {"app", "decimal", "typing"}
+
 BANNED_MODULES: set[str] = {
     "os", "subprocess", "shutil", "sys", "ctypes", "multiprocessing",
     "socket", "http", "urllib", "requests", "ftplib", "smtplib",
@@ -72,7 +75,9 @@ class _SecurityVisitor(ast.NodeVisitor):
     def visit_Import(self, node):
         for alias in node.names:
             name = alias.name.split(".")[0]
-            if name in BANNED_MODULES:
+            if name in SDK_ALLOWED_MODULES:
+                pass  # SDK strategies may import app.sdk, decimal, typing
+            elif name in BANNED_MODULES:
                 self.result.violations.append(
                     f"banned import: {alias.name} (line {node.lineno})"
                 )
@@ -81,7 +86,9 @@ class _SecurityVisitor(ast.NodeVisitor):
     def visit_ImportFrom(self, node):
         if node.module:
             name = node.module.split(".")[0]
-            if name in BANNED_MODULES:
+            if name in SDK_ALLOWED_MODULES:
+                pass  # SDK strategies may import from app.sdk, decimal, typing
+            elif name in BANNED_MODULES:
                 self.result.violations.append(
                     f"banned from-import: {node.module} (line {node.lineno})"
                 )
@@ -161,6 +168,45 @@ class StrategyValidationResult:
     quality_hints: List[Any] = field(default_factory=list)
 
 
+def _is_sdk_strategy(tree) -> bool:
+    """Detect SDK-format strategies (class X(StrategyBase))."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            for base in node.bases:
+                if isinstance(base, ast.Name) and base.id == "StrategyBase":
+                    return True
+                if isinstance(base, ast.Attribute) and base.attr == "StrategyBase":
+                    return True
+    return False
+
+
+def _validate_sdk_strategy(code: str, tree, errors: list, warnings: list) -> StrategyValidationResult:
+    """Validate an SDK-format strategy (ADR-0020)."""
+    class_def = None
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            for base in node.bases:
+                if (isinstance(base, ast.Name) and base.id == "StrategyBase") or                    (isinstance(base, ast.Attribute) and base.attr == "StrategyBase"):
+                    class_def = node
+                    break
+    if class_def is None:
+        errors.append("SDK策略必须定义一个继承 StrategyBase 的类")
+        return StrategyValidationResult(valid=False, errors=errors, warnings=warnings)
+    method_names = {n.name for n in ast.walk(class_def) if isinstance(n, ast.FunctionDef)}
+    hooks = {"on_init", "on_tick", "on_bar", "on_timer", "on_trade", "on_deinit"}
+    if not (method_names & hooks):
+        errors.append(f"SDK策略类 {class_def.name} 至少需要一个生命周期方法")
+    if "self.broker" not in code:
+        warnings.append("策略未引用 self.broker")
+    seen = set()
+    deduped = []
+    for e in errors:
+        if e not in seen:
+            seen.add(e)
+            deduped.append(e)
+    return StrategyValidationResult(valid=len(deduped) == 0, errors=deduped, warnings=warnings)
+
+
 def validate_strategy_code(code: str) -> StrategyValidationResult:
     """Static check that mirrors legacy ``executor.validate_strategy_code``."""
     errors: List[str] = []
@@ -171,6 +217,10 @@ def validate_strategy_code(code: str) -> StrategyValidationResult:
     except SyntaxError as e:
         errors.append(f"语法错误: {e}")
         return StrategyValidationResult(valid=False, errors=errors, warnings=warnings)
+
+    # ── SDK strategy path (ADR-0020) ──
+    if _is_sdk_strategy(tree):
+        return _validate_sdk_strategy(code, tree, errors, warnings)
 
     # Indicators in ``app/engine/indicators.py`` that return a SCALAR float.
     # Subscripting their result (``iMA(...)[-1]``) is always a bug and would
