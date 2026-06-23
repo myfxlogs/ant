@@ -158,11 +158,14 @@ func (s *CodeComplianceScanner) Scan(code string) (blocks []ComplianceIssue, war
 	return blocks, warns
 }
 
-// HasRequiredSignature checks that the code defines run(context) — the engine contract.
+// HasRequiredSignature checks that the code defines a valid entry point.
+// Accepts both legacy signal-dict (def run(context)) and SDK (class X(StrategyBase)).
 func (s *CodeComplianceScanner) HasRequiredSignature(code string) (bool, []string) {
 	var missing []string
-	if !regexp.MustCompile(`def\s+run\s*\(`).MatchString(code) {
-		missing = append(missing, "缺少 run(context) 函数")
+	hasRun := regexp.MustCompile(`def\s+run\s*\(`).MatchString(code)
+	hasSDK := regexp.MustCompile(`class\s+\w+\s*\(.*StrategyBase\s*\)`).MatchString(code)
+	if !hasRun && !hasSDK {
+		missing = append(missing, "缺少 run(context) 函数或 SDK 策略类 (class X(StrategyBase))")
 	}
 	return len(missing) == 0, missing
 }

@@ -275,19 +275,33 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 	userMsg := fmt.Sprintf("Translate this trading EA/indicator to Python:\n```\n%s\n```", code)
 	messages := systemai.BuildChatMessages(sysPrompt, userMsg, nil)
 
-	result, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
-	if err != nil {
-		s.log.Warn("CodeAssist: TransformCode LLM call failed", zap.Error(err))
-		if errors.Is(err, systemai.ErrInsufficientBalance) {
-			return nil, systemai.WrapAIError(err)
+	// Retry up to 2 times for transient LLM failures (DeepSeek JSON truncation).
+	var result string
+	var lastErr error
+	for attempt := 0; attempt < 3; attempt++ {
+		result, lastErr = s.systemSvc.ChatCompletion(ctx, uid, messages)
+		if lastErr == nil {
+			break
 		}
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
+		s.log.Warn("CodeAssist: TransformCode LLM call failed, retrying",
+			zap.Int("attempt", attempt+1), zap.Error(lastErr))
+	}
+	if lastErr != nil {
+		s.log.Warn("CodeAssist: TransformCode LLM call failed after retries", zap.Error(lastErr))
+		if errors.Is(lastErr, systemai.ErrInsufficientBalance) {
+			return nil, systemai.WrapAIError(lastErr)
+		}
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(lastErr)))
 	}
 
 	// Extract Python code from response (strip markdown fences if present).
 	python := extractCodeBlock(result)
 	if python == "" {
 		python = result
+	}
+	// If still empty, return an error instead of an empty response.
+	if python == "" {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("LLM returned empty response"))
 	}
 
 	return connect.NewResponse(&antv1.TransformCodeResponse{
