@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { Card, Row, Col } from 'antd';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useTranslation } from 'react-i18next'
@@ -18,6 +18,14 @@ interface Props {
 
 function SummaryPieGrid({ symbolStats, symbolPieData, directionPieData, profitPieData }: Props) {
   const { t } = useTranslation();
+
+  // Adaptive pie dimensions — scales with container height so labels always fit.
+  const pieHeight = 200;
+  const { innerR, outerR } = useMemo(() => {
+    const or = Math.round(pieHeight * 0.28);
+    const ir = Math.round(or * 0.58);
+    return { innerR: ir, outerR: or };
+  }, []);
   return (
     <Row gutter={[16, 16]} className="mt-6">
       <Col xs={24} lg={12}>
@@ -40,7 +48,7 @@ function SummaryPieGrid({ symbolStats, symbolPieData, directionPieData, profitPi
         <Card title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t(SUMMARY_CARDS_SYMBOL_TRADE_SHARE_KEY)}</span>} className="glass-card">
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={symbolPieData} cx="50%" cy="50%" innerRadius={18} outerRadius={34} paddingAngle={2} dataKey="value" label={({ name, value }) => `${name} (${value}%)`}>
+              <Pie data={symbolPieData} cx="50%" cy="50%" innerRadius={innerR} outerRadius={outerR} paddingAngle={2} dataKey="value" label={({ name, value }) => `${name} (${value}%)`}>
                 {symbolPieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
               </Pie>
               <Tooltip /><Legend />
@@ -52,7 +60,7 @@ function SummaryPieGrid({ symbolStats, symbolPieData, directionPieData, profitPi
         <Card title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t(SUMMARY_CARDS_DIRECTION_SHARE_KEY)}</span>} className="glass-card">
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={directionPieData} cx="50%" cy="50%" innerRadius={18} outerRadius={34} paddingAngle={2} dataKey="value" label={({ name, value }) => `${name} (${value})`}>
+              <Pie data={directionPieData} cx="50%" cy="50%" innerRadius={innerR} outerRadius={outerR} paddingAngle={2} dataKey="value" label={({ name, value }) => `${name} (${value})`}>
                 {directionPieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
               </Pie>
               <Tooltip /><Legend />
@@ -64,7 +72,7 @@ function SummaryPieGrid({ symbolStats, symbolPieData, directionPieData, profitPi
         <Card title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t(SUMMARY_CARDS_PNL_SHARE_KEY)}</span>} className="glass-card">
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={profitPieData} cx="50%" cy="50%" innerRadius={18} outerRadius={34} paddingAngle={2} dataKey="value" label={({ name, value }) => `${name} (${value})`}>
+              <Pie data={profitPieData} cx="50%" cy="50%" innerRadius={innerR} outerRadius={outerR} paddingAngle={2} dataKey="value" label={({ name, value }) => `${name} (${value})`}>
                 {profitPieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
               </Pie>
               <Tooltip /><Legend />
