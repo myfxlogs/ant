@@ -6,10 +6,9 @@ import { BACKTEST_RESULTS_LABEL_KEY, CHART_ERROR_KEY, CODE_KEY, COMPLETED_STATUS
 ;
 import { useStrategyWorkspaceState, DATE_PRESETS } from './hooks/useStrategyWorkspaceState';
 import WorkspaceCodePanel from './components/workspace/WorkspaceCodePanel';
-import WorkspaceBacktestPanel from './components/workspace/WorkspaceBacktestPanel';
+import BacktestPanel from '@/components/backtest/BacktestPanel';
 import WorkspaceTemplateManager from './components/workspace/WorkspaceTemplateManager';
 import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
-import BacktestParamsCard from './components/workspace/BacktestParamsCard';
 import MiniPositionsTable from './components/workspace/MiniPositionsTable';
 import AICodePanel from '@/components/strategy/AICodePanel';
 import { useAuthStore } from '@/stores/authStore';
@@ -156,72 +155,18 @@ export default function StrategyWorkspacePage() {
             )}
           </div>
 
-          <div style={{ flexShrink: 0, borderTop: '1px solid #e8e8e8', overflowY: 'auto' }}>
-            <div style={{ display: 'flex' }}>
-              {/* Left: Backtest Params */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <BacktestParamsCard
-                  templates={ws.templates}
-                  initialCapital={ws.backtest.initialCapital} onInitialCapitalChange={ws.backtest.setInitialCapital}
-                  leverage={ws.backtest.leverage} onLeverageChange={ws.backtest.setLeverage}
-                  commission={ws.backtest.commission} onCommissionChange={ws.backtest.setCommission}
-                  slippage={ws.backtest.slippage} onSlippageChange={ws.backtest.setSlippage}
-                  startDate={ws.backtest.startDate} onStartDateChange={ws.backtest.setStartDate}
-                  endDate={ws.backtest.endDate} onEndDateChange={ws.backtest.setEndDate}
-                  tradeDirection={ws.backtest.tradeDirection} onTradeDirectionChange={ws.backtest.setTradeDirection}
-                  strictMode={ws.backtest.strictMode} onStrictModeChange={ws.backtest.setStrictMode}
-                  canRun={Boolean(ws.code.code && ws.account.symbol)}
-                  running={ws.backtest.submitting} onRunBacktest={ws.backtest.run}
-                  datePresets={DATE_PRESETS} datePresetKey={ws.backtest.datePreset}
-                  onApplyDatePreset={ws.backtest.applyDatePreset}
-                  expanded={ws.backtest.paramsExpanded} onExpandedChange={ws.backtest.setParamsExpanded}
-                  strategyDirectives={ws.backtest.strategyDirectives}
-                  onApplyPreset={ws.backtest.applyPreset}
-                  timeframeWarning={ws.backtest.getTimeframeWarning(ws.account.timeframe, DATE_PRESETS.find(p => p.key === ws.backtest.datePreset)?.months ?? 3)}
-                  onApplyDefaults={ws.backtest.applyDefaults}
-                  onOpenHistory={ws.history.open}
-                />
-              </div>
-
-              {/* Right: Backtest Results */}
-              <div style={{ flex: 1, minWidth: 0, borderLeft: '1px solid #e8e8e8', background: '#fafbfc', overflowY: 'auto' }}>
-                <div onClick={() => ws.backtest.setResultsExpanded(!ws.backtest.resultsExpanded)} role="button" tabIndex={0}
-                  onKeyUp={e => e.key === 'Enter' && ws.backtest.setResultsExpanded(!ws.backtest.resultsExpanded)}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '8px 14px', cursor: 'pointer', userSelect: 'none',
-                    background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
-                  }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#262626' }}>
-                    {ws.tuning.subTab === 'tuning' ? t(SMART_TUNING_KEY) : t(BACKTEST_RESULTS_LABEL_KEY)}
-                    {ws.backtest.status === 'running' && <span style={{ color: '#1890ff', marginLeft: 8, fontSize: 11 }}>{t(RUNNING_STATUS_KEY)}</span>}
-                    {ws.backtest.status === 'completed' && <span style={{ color: '#26a69a', marginLeft: 8, fontSize: 11 }}>{t(COMPLETED_STATUS_KEY)}</span>}
-                  </span>
-                  <span style={{ fontSize: 10, color: C.muted }}>{ws.backtest.resultsExpanded ? '▲' : '▼'}</span>
-                </div>
-                {ws.backtest.resultsExpanded && (
-                  <div style={{ padding: '8px 14px' }}>
-                    <WorkspaceBacktestPanel
-                      status={ws.backtest.status} metrics={ws.backtest.metrics}
-                      executionAssumptions={ws.backtest.executionAssumptions}
-                      errorMessage={ws.backtest.error}
-                      onAIOptimize={ws.ai.optimize}
-                      code={ws.code.code} onApplyTunedParams={ws.ai.applyTunedParams}
-                      subTab={ws.tuning.subTab} onSubTabChange={ws.tuning.setSubTab}
-                      tuneMethod={ws.tuning.method} onTuneMethodChange={ws.tuning.setMethod}
-                      sweepDimensions={ws.tuning.sweepDimensions} onToggleDimension={ws.tuning.toggleDimension}
-                      enabledSweepDims={ws.tuning.enabledDims} cartesianSize={ws.tuning.cartesianSize}
-                      tuningRunning={ws.tuning.running} canRunTuning={Boolean(ws.code.code && ws.account.symbol)}
-                      onRunTuning={ws.tuning.run}
-                      gateLoading={ws.gate.loading} gateGates={ws.gate.gates}
-                      gateSummary={ws.gate.summary} gateError={ws.gate.error}
-                      onRunGate={ws.gate.run}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <BacktestPanel
+            runner={ws.backtest.runner}
+            inputs={{ strategyCode: ws.code.code, accountId: ws.account.accountId, symbol: ws.account.symbol, timeframe: ws.account.timeframe, templateId: ws.templates.selectedId || undefined }}
+            templates={ws.templates}
+            accountId={ws.account.accountId} onAccountChange={ws.account.handleAccountChange}
+            accounts={ws.account.activeAccounts.map((a: any) => ({ id: a.id, name: a.brokerCompany || a.name || '', login: a.login || a.accountNumber }))}
+            symbol={ws.account.symbol} onSymbolChange={ws.account.setSymbol}
+            timeframe={ws.account.timeframe} onTimeframeChange={ws.account.setTimeframe}
+            collapsed={ws.backtest.btCollapsed ?? false}
+            onToggleCollapsed={() => ws.backtest.setBtCollapsed?.(!ws.backtest.btCollapsed)}
+            onOpenHistory={ws.history.open}
+          />
         </div>
 
         <QuickTradeSection visible={ws.layout.quickTradeVisible} ws={ws} />

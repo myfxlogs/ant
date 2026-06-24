@@ -25,6 +25,7 @@ interface Props {
   leverage: number; onLeverageChange: (v: number | null) => void;
   commission: number; onCommissionChange: (v: number | null) => void;
   slippage: number; onSlippageChange: (v: number | null) => void;
+  lotSize: number; onLotSizeChange: (v: number | null) => void;
   startDate: string; onStartDateChange: (v: string) => void;
   endDate: string; onEndDateChange: (v: string) => void;
   tradeDirection: string; onTradeDirectionChange: (d: string) => void;
@@ -34,6 +35,9 @@ interface Props {
   datePresetKey: string; onApplyDatePreset: (p: { key: string; months: number }) => void;
   expanded: boolean; onExpandedChange: (v: boolean) => void;
   strategyDirectives: StrategyDirective[];
+  strategyParams: Array<{ name: string; type: string; default: string; label: string }>;
+  strategyParamValues: Record<string, string>;
+  onStrategyParamChange: (name: string, value: string) => void;
   onApplyPreset: (key: 'live_aligned' | 'exploration') => void;
   timeframeWarning: string | null;
   onOpenHistory?: () => void;
@@ -52,10 +56,12 @@ export default function BacktestParamsCard(props: Props) {
     templates,
     initialCapital, onInitialCapitalChange, leverage, onLeverageChange,
     commission, onCommissionChange, slippage, onSlippageChange,
+    lotSize, onLotSizeChange,
     startDate, onStartDateChange, endDate, onEndDateChange,
     tradeDirection, onTradeDirectionChange, strictMode, onStrictModeChange,
     canRun, running, onRunBacktest, datePresets = [], datePresetKey, onApplyDatePreset,
     expanded, onExpandedChange, strategyDirectives = [],
+    strategyParams = [], strategyParamValues = {}, onStrategyParamChange,
     onApplyPreset, timeframeWarning,
     onOpenHistory, onApplyDefaults,
   } = props;
@@ -182,7 +188,12 @@ export default function BacktestParamsCard(props: Props) {
                     formatter={v => `${v}x`} parser={v => v!.replace('x', '') as unknown as number} />
                 </Col>
               </Row>
-              <Row gutter={8} style={{ marginBottom: 6 }}>
+              <Row gutter={8} style={{ marginBottom: 8 }}>
+                <Col span={12}>
+                  <div style={fieldLabel}>Lot Size</div>
+                  <InputNumber size="small" style={narrow} min={0.01} max={100} step={0.01}
+                    value={lotSize} onChange={onLotSizeChange} />
+                </Col>
                 <Col span={12}>
                   <div style={fieldLabel}>
                     {t(COMMISSION_KEY)}
@@ -192,6 +203,8 @@ export default function BacktestParamsCard(props: Props) {
                     value={commission} onChange={onCommissionChange}
                     formatter={v => `${v}%`} parser={v => v!.replace('%', '') as unknown as number} />
                 </Col>
+              </Row>
+              <Row gutter={8} style={{ marginBottom: 6 }}>
                 <Col span={12}>
                   <div style={fieldLabel}>
                     {t(SLIPPAGE_KEY)}
@@ -202,6 +215,7 @@ export default function BacktestParamsCard(props: Props) {
                   <InputNumber size="small" style={narrow} min={0} max={10} step={0.0001} precision={4}
                     value={slippage} onChange={onSlippageChange} />
                 </Col>
+                <Col span={12} />
               </Row>
               <div style={{ display: 'flex', gap: 4 }}>
                 {Object.entries(PRESETS).map(([key]) => (
@@ -247,6 +261,42 @@ export default function BacktestParamsCard(props: Props) {
           {strategyDirectives.length > 0 && (
             <div style={{ marginTop: 12 }}>
               <StrategyDirectivesCard directives={strategyDirectives} />
+            </div>
+          )}
+
+          {strategyParams.length > 0 && (
+            <div style={{ marginTop: 12, borderTop: '1px solid #f0f0f0', paddingTop: 12 }}>
+              <div style={sectionLabel}>Strategy Parameters</div>
+              <Row gutter={8}>
+                {strategyParams.map((p) => {
+                  const value = strategyParamValues[p.name] ?? p.default;
+                  if (p.type === 'bool') {
+                    return (
+                      <Col span={8} key={p.name} style={{ marginBottom: 6 }}>
+                        <div style={fieldLabel}>{p.label || p.name}</div>
+                        <Switch size="small" checked={value === 'True' || value === 'true'}
+                          onChange={(v) => onStrategyParamChange(p.name, v ? 'True' : 'False')} />
+                      </Col>
+                    );
+                  }
+                  if (p.type === 'int') {
+                    return (
+                      <Col span={8} key={p.name} style={{ marginBottom: 6 }}>
+                        <div style={fieldLabel}>{p.label || p.name}</div>
+                        <InputNumber size="small" style={narrow} step={1}
+                          value={Number(value)} onChange={(v) => onStrategyParamChange(p.name, String(v ?? p.default))} />
+                      </Col>
+                    );
+                  }
+                  return (
+                    <Col span={8} key={p.name} style={{ marginBottom: 6 }}>
+                      <div style={fieldLabel}>{p.label || p.name}</div>
+                      <InputNumber size="small" style={narrow} step={p.type === 'float' ? 0.01 : 1}
+                        value={Number(value)} onChange={(v) => onStrategyParamChange(p.name, String(v ?? p.default))} />
+                    </Col>
+                  );
+                })}
+              </Row>
             </div>
           )}
         </div>

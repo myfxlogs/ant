@@ -4,8 +4,8 @@ import { useAccount } from '@/hooks/useAccount';
 import { marketApi } from '@/client/market';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useStrategyCode } from './useStrategyCode';
-import { useBacktestParams, DATE_PRESETS } from './useBacktestParams';
-import type { SweepDimension, BacktestMetrics, StrategyDirective, PresetKey, BacktestSubTab } from './useBacktestParams';
+import { useBacktestRunner, DATE_PRESETS } from '@/components/backtest/useBacktestRunner';
+import type { SweepDimension, BacktestMetrics, StrategyDirective, PresetKey, ExtractedParam, BacktestSubTab } from '@/components/backtest/useBacktestRunner';
 import { useQuickTradeData } from './useQuickTradeData';
 import type { QuickTradePosition, RecentTrade } from './useQuickTradeData';
 import { useAIWorkflow } from './useAIWorkflow';
@@ -34,13 +34,12 @@ export function useStrategyWorkspaceState() {
   }, [setAccountId, setSymbol]);
 
   // Backtest + Smart Tuning (must precede useStrategyCode for onValidateResult wiring)
-  const btCtx = useBacktestParams();
+  const btCtx = useBacktestRunner();
 
   // Code + Templates + Save
   const codeCtx = useStrategyCode({
     onValidateResult: (result) => {
-      if (result.sweepDimensions.length > 0) btCtx.tuning.updateSweepFromCode(result.sweepDimensions);
-      if (result.strategyDirectives.length > 0) btCtx.updateStrategyDirectivesFromCode(result.strategyDirectives);
+      btCtx.handleValidationResult(result);
     },
   });
   const [searchParams] = useSearchParams();
@@ -63,11 +62,11 @@ export function useStrategyWorkspaceState() {
   }, [searchParams, handleSelectTemplate]);
 
   const handleRunBacktest = useCallback(() => {
-    btCtx.runBacktest({
-      code: codeCtx.code, symbol, accountId, timeframe,
+    btCtx.run({
+      strategyCode: codeCtx.code, symbol, accountId, timeframe,
       templateId: selectedTemplateId || undefined,
     });
-  }, [codeCtx.code, symbol, accountId, timeframe, selectedTemplateId, btCtx.runBacktest]);
+  }, [codeCtx.code, symbol, accountId, timeframe, selectedTemplateId, btCtx.run]);
 
   const handleRunTuning = useCallback(async (): Promise<string> => {
     return btCtx.tuning.run({
@@ -84,6 +83,9 @@ export function useStrategyWorkspaceState() {
   const codePanelVisible = wsStore.codePanelVisible; const setCodePanelVisible = wsStore.setCodePanelVisible;
   const quickTradeVisible = wsStore.quickTradeVisible; const setQuickTradeVisible = wsStore.setQuickTradeVisible;
   const positionsPanelVisible = wsStore.positionsPanelVisible; const setPositionsPanelVisible = wsStore.setPositionsPanelVisible;
+
+  // Backtest panel collapse state
+  const [btCollapsed, setBtCollapsed] = useState(false);
 
   // History
   const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
@@ -194,6 +196,7 @@ export function useStrategyWorkspaceState() {
     code: codeCtx,
     templates: { list: codeCtx.templates, loading: codeCtx.templatesLoading, selectedId: selectedTemplateId, onSelect: handleSelectTemplate },
     backtest: {
+      runner: btCtx,
       submitting: btCtx.submitting, status: btCtx.status, metrics: btCtx.metrics,
       executionAssumptions: btCtx.executionAssumptions, error: btCtx.errorMsg,
       initialCapital: btCtx.initialCapital, setInitialCapital: btCtx.setInitialCapital,
@@ -209,7 +212,10 @@ export function useStrategyWorkspaceState() {
       strategyDirectives: btCtx.strategyDirectives,
       applyDatePreset: btCtx.applyDatePreset, applyPreset: btCtx.applyPreset,
       applyDefaults: btCtx.applyDefaults, getTimeframeWarning: btCtx.getTimeframeWarning,
-      runId: btCtx.backtestRunId, chartTrades: btCtx.chartTrades, run: handleRunBacktest,
+      runId: btCtx.runId, chartTrades: btCtx.chartTrades, run: handleRunBacktest,
+      btCollapsed, setBtCollapsed,
+      activeTab: btCtx.activeTab, setActiveTab: btCtx.setActiveTab,
+      panelHeight: btCtx.panelHeight, setPanelHeight: btCtx.setPanelHeight,
     },
     tuning: {
       subTab: btCtx.tuning.subTab, setSubTab: btCtx.tuning.setSubTab,
