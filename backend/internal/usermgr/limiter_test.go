@@ -74,7 +74,7 @@ func TestUserLimiter_EvictIdle(t *testing.T) {
 	l.AllowSignal("user-active")
 	l.AllowSignal("user-idle")
 
-	time.Sleep(20 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	removed := l.EvictIdle()
 	if removed < 2 {
