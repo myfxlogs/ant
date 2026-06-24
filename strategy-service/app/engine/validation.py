@@ -206,6 +206,23 @@ def _validate_sdk_strategy(
                             f"或 `self.ctx.param('timeframe', '1h')`（用户可选）。"
                         )
 
+        # Detect hardcoded magic numbers in OrderRequest/order_send.
+        if isinstance(node, ast.Call):
+            fn = node.func
+            fn_name = ""
+            if isinstance(fn, ast.Name): fn_name = fn.id
+            elif isinstance(fn, ast.Attribute): fn_name = fn.attr
+            if fn_name in ("order_send", "OrderRequest"):
+                for kw in node.keywords:
+                    if kw.arg == "magic" and isinstance(kw.value, ast.Constant):
+                        if isinstance(kw.value.value, int) and kw.value.value != 0:
+                            warnings.append(
+                                f"建议将 magic={kw.value.value} 改为 param 读取，避免多策略实例冲突。"
+                            )
+        # Detect float() for prices (should use Decimal).
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "float":
+            warnings.append("价格/手数计算中使用了 float()，建议改用 Decimal(str(x)) 避免精度丢失。")
+
     seen = set()
     deduped = []
     for e in errors:
