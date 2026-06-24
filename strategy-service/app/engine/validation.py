@@ -195,6 +195,16 @@ def _validate_sdk_strategy(
                 for alias in node.names:
                     if alias.name not in _VALID_SDK_EXPORTS:
                         errors.append(f"`{alias.name}` 不是有效的 SDK 导出")
+        # Detect hardcoded timeframe in bars() calls.
+        if isinstance(node, ast.Call):
+            for kw in node.keywords:
+                if kw.arg == "timeframe" and isinstance(kw.value, ast.Constant):
+                    if isinstance(kw.value.value, str) and kw.value.value.strip():
+                        errors.append(
+                            f"禁止硬编码周期 `timeframe='{kw.value.value}'`。"
+                            f"请使用 `timeframe=None`（跟随回测配置）"
+                            f"或 `self.ctx.param('timeframe', '1h')`（用户可选）。"
+                        )
 
     seen = set()
     deduped = []
@@ -249,6 +259,13 @@ def validate_strategy_code(code: str) -> StrategyValidationResult:
             for name in imports:
                 if name and name not in _VALID_SDK_EXPORTS:
                     errors.append(f"`{name}` 不是有效的 SDK 导出")
+        # Detect hardcoded timeframe.
+        for m in re.finditer(r'timeframe\s*=\s*["\']([^"\']+)["\']', code):
+            if m.group(1) != 'None':
+                errors.append(
+                    f"禁止硬编码周期 `timeframe='{m.group(1)}'`。"
+                    f"请使用 `timeframe=None`（跟随回测配置）。"
+                )
         # Check lifecycle hooks.
         hooks_found = any(
             re.search(rf'def\s+{h}\s*\(', code)
