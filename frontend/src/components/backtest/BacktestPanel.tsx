@@ -195,25 +195,23 @@ export default function BacktestPanel(props: Props) {
         {/* ── Params Tab ──────────────────────────────────────────────── */}
         {runner.activeTab === 'params' && (
           <div>
-            {/* Strategy selector */}
-            <div style={{ marginBottom: 10 }}>
-              <div style={S.fieldLabel}>Strategy</div>
-              <Select size="small" style={{ width: 260 }}
-                loading={templates.loading}
-                value={templates.selectedId || '__draft__'}
-                options={strategyOptions}
-                onChange={(val) => {
-                  if (val === '__draft__') templates.onSelect(null);
-                  else if (val !== '__sep__') templates.onSelect(val);
-                }}
-              />
-            </div>
-
-            {/* Date range + Strict Mode + Presets — single compact row */}
+            {/* Strategy + Date + Strict + Presets — single row */}
             <div style={{ marginBottom: 8, display: 'flex', alignItems: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
               <div>
+                <div style={S.fieldLabel}>Strategy</div>
+                <Select size="small" style={{ width: 180 }}
+                  loading={templates.loading}
+                  value={templates.selectedId || '__draft__'}
+                  options={strategyOptions}
+                  onChange={(val) => {
+                    if (val === '__draft__') templates.onSelect(null);
+                    else if (val !== '__sep__') templates.onSelect(val);
+                  }}
+                />
+              </div>
+              <div style={{ borderLeft: '1px solid #e8e8e8', paddingLeft: 8 }}>
                 <div style={S.fieldLabel}>{t(DATE_RANGE_KEY)}</div>
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ display: 'flex', gap: 4 }}>
                   <Segmented size="small" value={runner.datePreset}
                     onChange={(v) => {
                       const p = DATE_PRESETS.find(d => d.key === v);
@@ -221,11 +219,11 @@ export default function BacktestPanel(props: Props) {
                     }}
                     options={DATE_PRESETS.map(p => ({ value: p.key, label: p.label }))}
                   />
-                  <DatePicker size="small" style={{ width: 120 }}
+                  <DatePicker size="small" style={{ width: 110 }}
                     value={runner.startDate ? dayjs(runner.startDate) : null}
                     onChange={(d) => d && runner.setStartDate(d.format('YYYY-MM-DD'))}
                     placeholder={t(START_DATE_KEY)} />
-                  <DatePicker size="small" style={{ width: 120 }}
+                  <DatePicker size="small" style={{ width: 110 }}
                     value={runner.endDate ? dayjs(runner.endDate) : null}
                     onChange={(d) => d && runner.setEndDate(d.format('YYYY-MM-DD'))}
                     placeholder={t(END_DATE_KEY)} />
