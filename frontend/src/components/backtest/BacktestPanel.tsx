@@ -262,7 +262,7 @@ export default function BacktestPanel(props: Props) {
                   formatter={v => `${v}x`} parser={v => v!.replace('x', '') as unknown as number} />
               </Col>
               <Col span={3}>
-                <div style={S.fieldLabel}>Lot Size</div>
+                <div style={S.fieldLabel}>{t('strategy.backtestParams.lotSize', 'Lot Size')}</div>
                 <InputNumber size="small" style={S.narrow} min={0.01} max={100} step={0.01}
                   value={runner.lotSize} onChange={(v) => runner.setLotSize(v ?? 0.01)} />
               </Col>
@@ -294,7 +294,7 @@ export default function BacktestPanel(props: Props) {
             {/* Strategy-specific params */}
             {runner.extractedParams.length > 0 && (
               <div style={{ marginTop: 10, borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
-                <div style={S.sectionLabel}>Strategy Parameters ({runner.extractedParams.length})</div>
+                <div style={S.sectionLabel}>{t('strategy.backtestParams.strategyParams', 'Strategy Parameters')} ({runner.extractedParams.length})</div>
                 <Row gutter={8}>
                   {runner.extractedParams.map((p) => {
                     const value = runner.strategyParamValues[p.name] ?? p.default;
