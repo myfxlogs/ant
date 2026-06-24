@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from decimal import Decimal  # re-export for strategy code convenience
+
 from app.sdk.account import AccountInfo
 from app.sdk.broker import Broker
 from app.sdk.context import Context
@@ -40,6 +42,7 @@ from app.sdk.types import (
 __all__ = [
     "AccountInfo",
     "AccountMode",
+    "Decimal",
     "Broker",
     "Context",
     "DealType",
