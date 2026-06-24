@@ -52,14 +52,14 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
     finally { setTemplatesLoading(false); }
   }, []);
 
-  const handleLoadTemplate = useCallback(async (id: string): Promise<boolean> => {
+  const handleLoadTemplate = useCallback(async (id: string): Promise<StrategyTemplate | null> => {
     try {
       const tpl = await strategyApi.getTemplate(id);
       if (tpl?.code) setCode(tpl.code);
       if (tpl?.name) setLoadedTemplate(tpl);
       setLastValidatedCode(''); setValidationResult(null);
-      return true;
-    } catch (e: unknown) { message.error((e as Error)?.message || 'Failed to load template'); return false; }
+      return tpl;
+    } catch (e: unknown) { message.error((e as Error)?.message || 'Failed to load template'); return null; }
   }, []);
 
   const [saveModalOpen, setSaveModalOpen] = useState(false);

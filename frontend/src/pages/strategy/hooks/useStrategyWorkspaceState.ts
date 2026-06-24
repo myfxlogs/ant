@@ -48,12 +48,21 @@ export function useStrategyWorkspaceState() {
   const handleSelectTemplate = useCallback(async (templateId: string | null) => {
     if (!templateId) {
       setSelectedTemplateId('');
+      btCtx.updateExtractedParams(null);
       return;
     }
     setSelectedTemplateId(templateId);
-    const ok = await codeCtx.handleLoadTemplate(templateId);
-    if (!ok) setSelectedTemplateId('');
-  }, [codeCtx.handleLoadTemplate]);
+    const tpl = await codeCtx.handleLoadTemplate(templateId);
+    if (!tpl) { setSelectedTemplateId(''); return; }
+    // Populate strategy params from stored template metadata.
+    if (tpl.parameters?.length) {
+      const params = tpl.parameters.map((p: any) => ({
+        name: p.name || '', type: p.type || 'string',
+        default: p.default || '', label: p.label || p.name || '',
+      }));
+      btCtx.updateExtractedParams(params);
+    }
+  }, [codeCtx.handleLoadTemplate, btCtx.updateExtractedParams]);
 
   // Load template from URL on mount (e.g. from Library "Open in Workspace").
   useEffect(() => {
