@@ -51,6 +51,16 @@ func (s *stubPaperRepo) GetAccount(_ context.Context, id string) (*repository.Pa
 	return nil, nil
 }
 
+func (s *stubPaperRepo) GetOrder(_ context.Context, _ string) (*repository.PaperOrder, error) {
+	return nil, nil
+}
+func (s *stubPaperRepo) UpdateOrder(_ context.Context, _ *repository.PaperOrder) error {
+	return nil
+}
+func (s *stubPaperRepo) FindOpenOrder(_ context.Context, _, _ string) (*repository.PaperOrder, error) {
+	return nil, nil
+}
+
 func (s *stubPaperRepo) UpdateAccountBalance(_ context.Context, accountID string, balance, equity decimal.Decimal) error {
 	if s.updateErr != nil {
 		return s.updateErr

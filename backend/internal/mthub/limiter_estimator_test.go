@@ -3,6 +3,7 @@ package mthub
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/shopspring/decimal"
 
@@ -91,3 +92,20 @@ func TestUserLimiter_RateLimitKicksIn(t *testing.T) {
 		t.Error("expected 4th order to be rate-limited")
 	}
 }
+
+// mockExecutor is a minimal OrderExecutor stub for unit tests.
+type mockExecutor struct{}
+
+func (m *mockExecutor) Platform() string                        { return "mock" }
+func (m *mockExecutor) PlaceOrder(_ context.Context, _ *OrderRequest) (int64, error) { return 99999, nil }
+func (m *mockExecutor) CloseOrder(_ context.Context, _ int64, _ decimal.Decimal) error { return nil }
+func (m *mockExecutor) ModifyOrder(_ context.Context, _ int64, _, _, _ decimal.Decimal) error { return nil }
+func (m *mockExecutor) FetchOpenedOrders(_ context.Context) ([]*OrderRecord, error)  { return nil, nil }
+func (m *mockExecutor) FetchOrderHistory(_ context.Context, _, _ time.Time) ([]*OrderRecord, error) { return nil, nil }
+func (m *mockExecutor) FetchSymbolParams(_ context.Context, _ []string) ([]*SymbolParam, error) { return nil, nil }
+func (m *mockExecutor) FetchAllSymbols(_ context.Context) ([]string, error)               { return nil, nil }
+func (m *mockExecutor) FetchPriceHistory(_ context.Context, _, _ string, _, _ int64, _ int) ([]*Bar, error) {
+	return nil, nil
+}
+func (m *mockExecutor) AddSymbols(_ context.Context, _ []string) error                  { return nil }
+func (m *mockExecutor) SubscribeOrderEvents(_ context.Context, _ OrderEventHandler) error { return nil }

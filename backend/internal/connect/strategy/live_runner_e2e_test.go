@@ -39,6 +39,7 @@ func (m *mockMtHub) CloseOrder(ctx context.Context, ticket int64, lots decimal.D
 
 func TestE2EGateAllowsSmallOrder(t *testing.T) {
 	gate := risk.NewDefaultGate()
+	gate.AddRule(&risk.MaxLotSize{MaxLots: decimal.NewFromInt(10)})
 	mock := &mockMtHub{}
 
 	// Build a valid intent — 0.01 lots, well within limits.
@@ -90,6 +91,7 @@ func TestE2EGateAllowsSmallOrder(t *testing.T) {
 
 func TestE2EGateBlocksOversizedOrder(t *testing.T) {
 	gate := risk.NewDefaultGate()
+	gate.AddRule(&risk.MaxLotSize{MaxLots: decimal.NewFromInt(10)})
 	mock := &mockMtHub{}
 
 	intent := &antv1.OrderIntent{
@@ -120,6 +122,7 @@ func TestE2EGateBlocksOversizedOrder(t *testing.T) {
 
 func TestE2EGateFailClosedNilState(t *testing.T) {
 	gate := risk.NewDefaultGate()
+	gate.AddRule(&risk.MaxLotSize{MaxLots: decimal.NewFromInt(10)})
 
 	intent := &antv1.OrderIntent{
 		UserId:    "user-1", AccountId: "acct-1", Symbol: "EURUSD",
@@ -140,6 +143,7 @@ func TestE2EGateFailClosedNilState(t *testing.T) {
 
 func TestE2EKillSwitchCycle(t *testing.T) {
 	gate := risk.NewDefaultGate()
+	gate.AddRule(&risk.MaxLotSize{MaxLots: decimal.NewFromInt(10)})
 	var ks atomic.Bool
 
 	gate.SetKillSwitch(func() bool { return ks.Load() })
@@ -181,6 +185,7 @@ func TestE2EKillSwitchCycle(t *testing.T) {
 
 func TestE2EConcurrentGateEvaluation(t *testing.T) {
 	gate := risk.NewDefaultGate()
+	gate.AddRule(&risk.MaxLotSize{MaxLots: decimal.NewFromInt(10)})
 	state := &risk.AccountState{
 		Balance: decimal.NewFromInt(100000), Equity: decimal.NewFromInt(100000),
 		SymbolLeverage: 100,
