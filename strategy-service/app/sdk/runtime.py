@@ -65,6 +65,7 @@ class StrategyRuntime:
         symbol: str,
         timeframe: str,
         params: Optional[Dict[str, Any]] = None,
+        backtest_config: Optional[Dict[str, Any]] = None,
     ) -> None:
         if not issubclass(strategy_class, StrategyBase):
             raise TypeError(
@@ -78,6 +79,7 @@ class StrategyRuntime:
         self._symbol = symbol
         self._timeframe = timeframe
         self._params = dict(params or {})
+        self._backtest_config = backtest_config or {}
 
         self._strategy: Optional[StrategyBase] = None
         self._ctx: Optional[RuntimeContext] = None
@@ -104,6 +106,7 @@ class StrategyRuntime:
             params=self._params,
             timer_setter=self._register_timer,
             timer_killer=self._unregister_timer,
+            backtest_config=self._backtest_config,
         )
 
         # Inject.
@@ -246,6 +249,7 @@ class RuntimeContext(Context):
         params: Dict[str, Any],
         timer_setter: Callable[[int], None],
         timer_killer: Callable[[], None],
+        backtest_config: Optional[Dict[str, Any]] = None,
     ) -> None:
         self.symbol = symbol
         self.timeframe = timeframe
@@ -253,6 +257,7 @@ class RuntimeContext(Context):
         self._params = params
         self._timer_setter = timer_setter
         self._timer_killer = timer_killer
+        self._backtest_config = backtest_config or {}
 
     def bars(self, timeframe: Optional[str] = None) -> Bars:
         """Return Bars for the requested (or primary) timeframe."""
@@ -269,3 +274,8 @@ class RuntimeContext(Context):
     def kill_timer(self) -> None:
         """Unregister the timer."""
         self._timer_killer()
+
+    @property
+    def backtest_config(self) -> dict:
+        """Standard backtest parameters from the engine."""
+        return self._backtest_config

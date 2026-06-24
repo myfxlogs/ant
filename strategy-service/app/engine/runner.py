@@ -327,12 +327,21 @@ class BacktestRunner:
             primary_timeframe=req.timeframe,
         )
 
+        backtest_config = {
+            "initial_capital": req.initial_cash,
+            "leverage": req.leverage,
+            "commission": req.cost_profile.commission_per_lot,
+            "slippage": req.cost_profile.slippage_rate,
+            "trade_direction": req.trade_direction,
+            "strict_mode": req.strict_mode,
+        }
         self._runtime = StrategyRuntime(
             strategy_class=strategy_cls, broker=self._broker,
             bars_provider=bars_provider,
             indicators=SDKIndicators(bars_provider),
             symbol=req.symbol, timeframe=req.timeframe,
             params=dict(req.strategy_params or {}),
+            backtest_config=backtest_config,
         )
         self._runtime.init()
         self._current_tick: Optional[Tick] = None

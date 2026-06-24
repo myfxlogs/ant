@@ -34,3 +34,13 @@ class Context:
     def kill_timer(self) -> None:
         """注销定时器（等价 MQL EventKillTimer）。"""
         raise NotImplementedError
+
+    @property
+    def backtest_config(self) -> dict:
+        """Standard backtest parameters (capital, leverage, commission, etc.).
+
+        Provided by the engine from BacktestRequest fields.  Strategies
+        should read these instead of hardcoding or using self.ctx.param()
+        for standard parameters.
+        """
+        return {}
