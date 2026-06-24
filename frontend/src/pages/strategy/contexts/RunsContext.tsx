@@ -5,6 +5,7 @@ export interface RunsCtx {
   runs: BacktestRunRow[]; loading: boolean; error: string | null;
   page: number; pageSize: number; total: number;
   deleting: boolean; drawerOpen: boolean; selectedRunId: string;
+  selectedKeys: string[]; setSelectedKeys: (keys: string[]) => void;
   onPageChange: (p: number, ps: number) => void;
   onViewRun: (id: string) => void;
   onDeleteRun: (id: string) => void;

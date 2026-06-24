@@ -76,6 +76,7 @@ function LibraryUI() {
     runs: rCtx.runs, loading: rCtx.loading, error: rCtx.error,
     page: rCtx.page, pageSize: rCtx.pageSize, total: rCtx.total,
     deleting: rCtx.deleting, drawerOpen: rCtx.drawerOpen, selectedRunId: rCtx.selectedRunId,
+    selectedKeys: rCtx.selectedKeys as string[], setSelectedKeys: rCtx.setSelectedKeys,
     onPageChange: rCtx.onPageChange, onViewRun: rCtx.onViewRun,
     onDeleteRun: rCtx.onDeleteRun, onBatchDelete: rCtx.onBatchDelete,
     onRefresh: () => rCtx.fetchRuns(rCtx.page, rCtx.pageSize),
