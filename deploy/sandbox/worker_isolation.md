@@ -69,15 +69,15 @@ spec:
         memory: "512Mi"
 ```
 
-## RestrictedPython Status
+## Security Model
 
-RestrictedPython is now a **lint-only** pass.  It runs if available but does
-NOT block strategy execution.  The real security boundary is at OS level.
+RestrictedPython has been **removed entirely**.  Strategy code runs on full
+Python runtime via standard `compile()`.  All security is at OS level.
 
-- `validate_strategy_code()` — AST whitelist (still useful for early feedback)
-- `scan_security()` — merged from sandbox_scan.py (banned modules/builtins)
-- `_RestrictedEnv` — still compiles if RestrictedPython is installed, but
-  strategy execution proceeds regardless of compile success
+- `validate_strategy_code()` — SDK class structure + lifecycle hook checks
+- `scan_security()` — AST-based banned imports/builtins scan (lint only)
+- `apply_os_sandbox()` — cgroup v2 + seccomp-bpf + drop_root (kernel enforces)
+- `_apply_resource_limits()` — RLIMIT_AS/CPU/NOFILE (kernel enforces)
 
 ## Verification
 

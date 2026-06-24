@@ -276,7 +276,7 @@ class EngineError(Exception):
 
 
 class StrategyCompileError(EngineError):
-    """AST whitelist or RestrictedPython compilation rejected the code."""
+    """AST validation or Python compilation rejected the code."""
 
 
 class StrategyRuntimeError(EngineError):

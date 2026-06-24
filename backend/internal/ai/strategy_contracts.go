@@ -113,13 +113,10 @@ func contextContractText() string {
 	sb.WriteString("    }\n")
 	sb.WriteString("```\n\n")
 
-	sb.WriteString("### 铁律 6：沙箱限制（RestrictedPython）\n")
+	sb.WriteString("### 铁律 6：安全限制\n")
 	sb.WriteString("- np, math 已预注入 → 禁止 import 语句\n")
 	sb.WriteString("- 禁止 eval/exec/open/globals/locals/dunder/global\n")
-	sb.WriteString("- **禁止** `obj.attr += x` / `obj.attr -= x` 等增强赋值属性 ← 会编译失败！\n")
-	sb.WriteString("  ✅ 改为：`obj.attr = obj.attr + x`\n")
-	sb.WriteString("- **禁止** `list[index] += x` 增强赋值（RestrictedPython 可能拒绝）\n")
-	sb.WriteString("  ✅ 改为：`lst[index] = lst[index] + x`\n\n")
+	sb.WriteString("- 完整 Python 运行时（无 RestrictedPython），支持增强赋值 `obj.attr += x`\n\n")
 	return sb.String()
 }
 

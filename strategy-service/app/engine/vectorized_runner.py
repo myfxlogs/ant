@@ -26,13 +26,9 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
-from app.engine.sandbox import (
-    StrategyValidationResult,
-    _compile_source,
-    build_sandbox_globals,
-    code_sha256,
-)
+from app.engine.compilation import _compile_source, build_sandbox_globals, code_sha256
 from app.engine.types import StrategyCompileError, StrategyRuntimeError
+from app.engine.validation import StrategyValidationResult
 
 # ── validation ───────────────────────────────────────────────────────────────
 

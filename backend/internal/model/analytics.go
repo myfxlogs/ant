@@ -187,7 +187,7 @@ type AccountAnalytics struct {
 // MonthlyDetailMetrics holds aggregated metrics for a single month.
 type MonthlyDetailMetrics struct {
 	NetReturn     decimal.Decimal `json:"net_return"`
-	ReturnPercent float64         `json:"return_percent"` // TODO: requires starting-balance join; always 0 until funded
+	ReturnPercent float64         `json:"return_percent"` // TODO(M12-TRACK): requires starting-balance join; always 0 until analytics repo is funded
 	TotalTrades   int             `json:"total_trades"`
 	WinRate       float64         `json:"win_rate"`
 	ProfitFactor  float64         `json:"profit_factor"`
