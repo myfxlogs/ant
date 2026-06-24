@@ -86,7 +86,7 @@ export default function BacktestPanel(props: Props) {
 
   const tplList = templates?.list || [];
   const strategyOptions = [
-    { value: '__draft__', label: 'Current Draft' },
+    { value: '__draft__', label: t('strategy.workspace.currentDraft', 'Current Draft') },
     ...(tplList.length > 0 ? [{ value: '__sep__', label: '──────────────', disabled: true }] : []),
     ...tplList.map((tpl: StrategyTemplate) => ({ value: tpl.id, label: tpl.name })),
   ];
@@ -164,7 +164,7 @@ export default function BacktestPanel(props: Props) {
               { key: 'results', label: t(BACKTEST_TAB_KEY, 'Results') },
               { key: 'tuning', label: t(TUNING_TAB_KEY, 'Tuning') },
               { key: 'gate', label: t(GATE_TAB_KEY, 'Gate') },
-              { key: 'trades', label: `Trades${runner.metrics?.totalTrades ? ` (${runner.metrics.totalTrades})` : ''}` },
+              { key: 'trades', label: `${t(TRADE_LOG_KEY, 'Trades')}${runner.metrics?.totalTrades ? ` (${runner.metrics.totalTrades})` : ''}` },
             ]}
           />
         </div>
