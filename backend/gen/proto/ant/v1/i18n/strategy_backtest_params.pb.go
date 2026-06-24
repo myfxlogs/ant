@@ -63,6 +63,8 @@ type BacktestParamsI18N struct {
 	Title                string                 `protobuf:"bytes,35,opt,name=title,proto3" json:"title,omitempty"`                                                               // Backtest
 	Trade                string                 `protobuf:"bytes,36,opt,name=trade,proto3" json:"trade,omitempty"`                                                               // Trade
 	VectorizedMode       string                 `protobuf:"bytes,37,opt,name=vectorized_mode,json=vectorizedMode,proto3" json:"vectorized_mode,omitempty"`                       // Vectorized
+	ClosePrice           string                 `protobuf:"bytes,49,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"`                                   // Close price
+	Pnl                  string                 `protobuf:"bytes,50,opt,name=pnl,proto3" json:"pnl,omitempty"`                                                                   // PnL
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -377,11 +379,25 @@ func (x *BacktestParamsI18N) GetVectorizedMode() string {
 	return ""
 }
 
+func (x *BacktestParamsI18N) GetClosePrice() string {
+	if x != nil {
+		return x.ClosePrice
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetPnl() string {
+	if x != nil {
+		return x.Pnl
+	}
+	return ""
+}
+
 var File_i18n_strategy_backtest_params_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_backtest_params_proto_rawDesc = "" +
 	"\n" +
-	"#i18n/strategy_backtest_params.proto\x12\vant.v1.i18n\"\x90\v\n" +
+	"#i18n/strategy_backtest_params.proto\x12\vant.v1.i18n\"\xc3\v\n" +
 	"\x12BacktestParamsI18n\x12'\n" +
 	"\x0fbacktest_failed\x18\x01 \x01(\tR\x0ebacktestFailed\x12\x12\n" +
 	"\x04both\x18\x02 \x01(\tR\x04both\x12\x18\n" +
@@ -428,7 +444,10 @@ const file_i18n_strategy_backtest_params_proto_rawDesc = "" +
 	"\x16strict_mode_on_tooltip\x18\" \x01(\tR\x13strictModeOnTooltip\x12\x14\n" +
 	"\x05title\x18# \x01(\tR\x05title\x12\x14\n" +
 	"\x05trade\x18$ \x01(\tR\x05trade\x12'\n" +
-	"\x0fvectorized_mode\x18% \x01(\tR\x0evectorizedModeB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x0fvectorized_mode\x18% \x01(\tR\x0evectorizedMode\x12\x1f\n" +
+	"\vclose_price\x181 \x01(\tR\n" +
+	"closePrice\x12\x10\n" +
+	"\x03pnl\x182 \x01(\tR\x03pnlB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_backtest_params_proto_rawDescOnce sync.Once

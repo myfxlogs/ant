@@ -121,6 +121,12 @@ export const TRADE_KEY = 'strategy.backtestParams.trade' as const;
 /** vectorizedMode */
 export const VECTORIZED_MODE_KEY = 'strategy.backtestParams.vectorizedMode' as const;
 
+/** closePrice */
+export const CLOSE_PRICE_KEY = 'strategy.backtestParams.closePrice' as const;
+
+/** pnl */
+export const PNL_KEY = 'strategy.backtestParams.pnl' as const;
+
 export const STRATEGYBACKTESTPARAMS_KEYS = {
   backtest_failed: 'strategy.backtestParams.backtestFailed',
   both: 'strategy.backtestParams.both',
@@ -162,6 +168,8 @@ export const STRATEGYBACKTESTPARAMS_KEYS = {
   title: 'strategy.backtestParams.title',
   trade: 'strategy.backtestParams.trade',
   vectorized_mode: 'strategy.backtestParams.vectorizedMode',
+  close_price: 'strategy.backtestParams.closePrice',
+  pnl: 'strategy.backtestParams.pnl',
 } as const;
 
 export type StrategyBacktestParamsKey = typeof STRATEGYBACKTESTPARAMS_KEYS[keyof typeof STRATEGYBACKTESTPARAMS_KEYS];

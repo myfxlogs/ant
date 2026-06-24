@@ -40,6 +40,8 @@
 		"strict_mode_on_tooltip": "strictModeOnTooltip",
 		"title": "title",
 		"trade": "trade",
-		"vectorized_mode": "vectorizedMode"
+		"vectorized_mode": "vectorizedMode",
+		"close_price": "closePrice",
+		"pnl": "pnl"
 	}
 }

@@ -44,7 +44,9 @@ const StrategyBacktestParams = {
       "strictModeOnTooltip": "开启: 信号在K线收盘确认，次根开盘执行",
       "title": "回测",
       "trade": "交易",
-      "vectorizedMode": "向量化"
+      "vectorizedMode": "向量化",
+      "closePrice": "平仓价",
+      "pnl": "盈亏"
     }
   }
 } as const;

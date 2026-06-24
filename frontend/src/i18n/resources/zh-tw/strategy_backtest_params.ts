@@ -44,7 +44,9 @@ const StrategyBacktestParams = {
       "strictModeOnTooltip": "開啟: 訊號在K線收盤確認，次根開盤執行",
       "title": "回測",
       "trade": "交易",
-      "vectorizedMode": "向量化"
+      "vectorizedMode": "向量化",
+      "closePrice": "平倉價",
+      "pnl": "盈虧"
     }
   }
 } as const;

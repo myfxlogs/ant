@@ -8,9 +8,9 @@ import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import {
-  BOTH_KEY, CAPITAL_KEY, COMMISSION_KEY, CURRENT_DRAFT_KEY, DATE_RANGE_KEY, DIRECTION_KEY,
+  BOTH_KEY, CAPITAL_KEY, CLOSE_PRICE_KEY, COMMISSION_KEY, CURRENT_DRAFT_KEY, DATE_RANGE_KEY, DIRECTION_KEY,
   END_DATE_KEY, EXECUTION_KEY, HISTORY_KEY, LEVERAGE_KEY, LONG_KEY, LOT_SIZE_KEY,
-  RUN_KEY, SHORT_KEY, SLIPPAGE_KEY, START_DATE_KEY, STRATEGY_KEY, STRATEGY_PARAMS_KEY, STRICT_MODE_KEY,
+  PNL_KEY, RUN_KEY, SHORT_KEY, SLIPPAGE_KEY, START_DATE_KEY, STRATEGY_KEY, STRATEGY_PARAMS_KEY, STRICT_MODE_KEY,
   STRICT_MODE_OFF_DESC_KEY, STRICT_MODE_OFF_KEY, STRICT_MODE_OFF_TOOLTIP_KEY,
   STRICT_MODE_ON_DESC_KEY, STRICT_MODE_ON_KEY, STRICT_MODE_ON_TOOLTIP_KEY,
   TITLE_KEY, TRADE_KEY,
@@ -479,9 +479,9 @@ export default function BacktestPanel(props: Props) {
                     render: (v: number) => v?.toFixed(2) },
                   { title: t(TRADE_PRICE_KEY, 'Price'), dataIndex: 'openPrice', width: 80,
                     render: (v: number) => v?.toFixed(2) },
-                  { title: t('strategy.backtest.closePrice', 'Close'), dataIndex: 'closePrice', width: 80,
+                  { title: t(CLOSE_PRICE_KEY), dataIndex: 'closePrice', width: 80,
                     render: (v: number) => v?.toFixed(2) ?? '—' },
-                  { title: t('strategy.backtest.pnl', 'PnL'), dataIndex: 'pnl', width: 80,
+                  { title: t(PNL_KEY), dataIndex: 'pnl', width: 80,
                     render: (v: number) => v != null ? (
                       <span style={{ color: v >= 0 ? '#26a69a' : '#ef5350' }}>{v >= 0 ? '+' : ''}{v.toFixed(2)}</span>
                     ) : '-' },

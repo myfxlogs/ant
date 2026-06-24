@@ -47,4 +47,6 @@ message BacktestParamsI18n {
   string title = 35;  // Backtest
   string trade = 36;  // Trade
   string vectorized_mode = 37;  // Vectorized
+  string close_price = 49;  // Close price
+  string pnl = 50;  // PnL
 }
