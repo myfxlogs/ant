@@ -251,8 +251,9 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 		"- `self.ctx.kill_timer()` — disable timer.\n\n" +
 		"## Critical Rules\n" +
 		"1. ALL monetary values (prices, volumes, balances) MUST use Decimal(str(x)), NEVER float.\n" +
-		"2. Import from app.sdk: StrategyBase, OrderRequest, OrderType, OrderResult, Position,\n" +
-		"   PendingOrder, PositionSide, Retcode, AccountMode, TypeFilling, Decimal.\n" +
+		"2. Import SDK types from app.sdk: StrategyBase, OrderRequest, OrderType, OrderResult,\n" +
+		"   Position, PendingOrder, PositionSide, Retcode, AccountMode, TypeFilling.\n" +
+		"   Import Decimal from Python stdlib: `from decimal import Decimal`.\n" +
 		"3. Replace extern/input with self.ctx.param() calls in on_init().\n" +
 		"4. MQL OrderSelect loop → `for order in self.broker.orders():` or `for pos in self.broker.positions():`.\n" +
 		"5. MQL Close[i] → bars.close[i]; MQL iMA() → self.indicators.ma().\n" +

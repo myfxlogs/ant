@@ -121,7 +121,8 @@ All strategies MUST use the SDK class-based format (StrategyBase).
 
 ### Rule 1: MUST use SDK class format with @param/@strategy annotations
 ` + "```python" + `
-from app.sdk import StrategyBase, OrderRequest, OrderType, Decimal
+from app.sdk import StrategyBase, OrderRequest, OrderType
+from decimal import Decimal
 
 # @param fast_period 20 range=10:50:10
 # @param slow_period 50 range=30:80:10
