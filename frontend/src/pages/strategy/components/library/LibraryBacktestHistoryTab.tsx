@@ -62,11 +62,11 @@ export default function LibraryBacktestHistoryTab() {
         <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between' }}>
           <Space>
             <Button icon={<SyncOutlined />} onClick={b.onRefresh} loading={b.loading}>{t('common.refresh')}</Button>
-            {selectedRowKeys.length > 0 && (
-              <Popconfirm title={t(BACKTEST_RUNS_BATCH_DELETE_CONFIRM_KEY, { count: selectedRowKeys.length })}
+            {b.selectedKeys.length > 0 && (
+              <Popconfirm title={t(BACKTEST_RUNS_BATCH_DELETE_CONFIRM_KEY, { count: b.selectedKeys.length })}
                 onConfirm={b.onBatchDelete}>
                 <Button danger loading={b.deleting}>
-                  {t('strategy.templates.backtestRuns.batchDelete', '删除 {{count}} 条', { count: selectedRowKeys.length })}
+                  {t('strategy.templates.backtestRuns.batchDelete', '删除 {{count}} 条', { count: b.selectedKeys.length })}
                 </Button>
               </Popconfirm>
             )}
