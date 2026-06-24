@@ -164,7 +164,11 @@ export function useBacktestRunner() {
   const handleValidationResult = useCallback((result: any) => {
     if (result.sweepDimensions?.length > 0) tuning.updateSweepFromCode(result.sweepDimensions);
     if (result.strategyDirectives?.length > 0) updateDirectivesFromCode(result.strategyDirectives);
-    updateExtractedParams((result as any).parametersJson || (result as any).parameters_json);
+    // Read extracted params from either the new ValidateExtendedResult.parametersJson
+    // or the raw proto response field.
+    updateExtractedParams(
+      result.parametersJson || result.parameters_json || (result as any).parameters || null
+    );
   }, [tuning, updateDirectivesFromCode, updateExtractedParams]);
 
   const setParam = useCallback((name: string, value: string) => {

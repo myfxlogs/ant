@@ -62,6 +62,7 @@ export interface ValidateExtendedResult {
   errors: string[];
   warnings: string[];
   parameters: RequiredParamSpec[];
+  parametersJson: string;  // JSON array of {name, type, default, label} from self.ctx.param()
   qualityHints: CodeQualityHint[];
   sweepDimensions: BackendSweepDim[];
   strategyDirectives: { key: string; value: string }[];
@@ -167,6 +168,7 @@ export const codeAssistApi = {
         value: d.value,
       })),
       strategyType: (data as Record<string, unknown>).strategyType as string || 'run_context',
+      parametersJson: (data as Record<string, unknown>).parametersJson as string || (data as Record<string, unknown>).parameters_json as string || '[]',
       parameters: (data.parameters || []).map((p) => ({
         key: p.key,
         required: p.required,
