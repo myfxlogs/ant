@@ -170,14 +170,6 @@ func (r *PaperRepo) FindOpenOrder(ctx context.Context, paperAccountID, symbol st
 	return o, nil
 }
 
-// UpdateOrderState updates the state, close price, and PnL of a paper order.
-func (r *PaperRepo) UpdateOrderState(ctx context.Context, orderID string, state string, closePrice, pnl decimal.Decimal, closedAt time.Time) error {
-	_, err := r.pg.Exec(ctx, `
-		UPDATE paper_orders SET state = $2, close_price = $3, pnl = $4, closed_at = $5
-		WHERE id = $1
-	`, orderID, state, closePrice, pnl, closedAt)
-	return err
-}
 
 // UpdateAccountBalance updates the current balance and equity of a paper account.
 func (r *PaperRepo) UpdateAccountBalance(ctx context.Context, accountID string, balance, equity decimal.Decimal) error {
