@@ -555,101 +555,30 @@ const Base = {
     "translate_failed": "翻译失败",
     "user_not_found": "用户不存在"
   },
-  "strategy": {
-    "ai": {
-      "reviseHint": "请先编写代码，然后让 AI 进行优化。",
-      "explainHint": "编写代码后即可查看 AI 解释。",
-      "modelLabel": "AI 模型",
-    },
-    "validate": {
-      "stale": "代码已修改 — 请重新验证。",
-      "staleHint": "下方是旧版代码的验证结果。",
-      "allClear": "全部检查通过，未发现问题。",
-      "errors": "错误",
-      "failed": "验证失败",
-      "hint": "点击「验证代码」检查语法、导入和策略结构。",
-      "hints": "建议",
-      "parameters": "个参数",
-      "passed": "验证通过",
-      "running": "正在验证...",
-      "tab": "验证结果",
-      "warnings": "警告",
-      "fixWithAI": "发送错误给 AI 修复",
-    },
-    "importEA": {
-      "apply": "应用到编辑器",
-      "applied": "EA 代码已翻译并应用到编辑器。",
-      "codeTooShort": "请粘贴完整的 EA/指标源代码。",
-      "hint": "粘贴 MQL4/MQL5 代码并点击「翻译为 Python」",
-      "importTab": "导入 EA",
-      "insufficientBalance": "AI 余额不足，请在 AI 网关设置中充值。",
-      "pastePlaceholder": "在此粘贴 MQL4/MQL5 EA 或指标源代码...",
-      "translate": "翻译为 Python",
-      "translateFailed": "翻译失败，请重试。",
-      "translating": "AI 翻译中...",
-      "writeTab": "策略代码"
-    },
-    "library": {
-      "scheduleCount": "{{count}} 个运行中"
-    }
-  },
   "marketplace": {
     "author": {
       "avgRating": "平均评分",
       "empty": "暂无已发布策略。前往策略库发布一个。",
-      "goToLibrary": "前往策略库",
-      "monthlyRevenue": "月收入",
-      "myStrategies": "我发布的策略",
-      "noPublished": "暂无已发布策略",
-      "publishNew": "发布新策略",
-      "published": "已发布",
-      "subscribers": "订阅者",
-      "totalRevenue": "总收入"
-    },
-    "backtest": {
-      "idle": "点击「运行回测」开始",
-      "protected": "回测结果受保护。请购买或订阅后自行运行。",
-      "run": "运行回测",
-      "title": "策略回测"
+      "published": "已发布"
     },
     "card": {
-      "buy": "¥{{amount}}",
       "by": "by",
       "free": "免费",
-      "owned": "已购买",
-      "pnl": "盈亏",
-      "rent": "¥{{amount}}/月",
+      "owned": "购买日期",
       "subscribers": "订阅者",
-      "users": "用户",
-      "winRate": "胜率",
-      "yourStrategy": "我的策略"
+      "winRate": "胜率"
     },
     "detail": {
       "assetClass": "资产类别",
       "author": "作者",
-      "avgRating": "平均评分",
-      "buyNow": "立即购买",
-      "buyPrice": "¥{{amount}} 一次性买断",
       "commentPlaceholder": "写评论...",
       "comments": "评论",
       "description": "描述",
       "getFree": "免费获取",
-      "noComments": "暂无评论",
-      "price": "价格",
       "rentPrice": "¥{{amount}} / 月",
-      "riskLevel": "风险等级",
-      "runBacktest": "运行回测",
       "subscribers": "订阅者",
-      "tags": "标签",
       "yourRating": "我的评分"
     },
-    "empty": "暂无已发布策略",
-    "filter": {
-      "all": "全部",
-      "free": "免费",
-      "paid": "付费"
-    },
-    "filterByClass": "按资产类别筛选",
     "messages": {
       "commentFailed": "评论失败",
       "commentPosted": "评论已发布",
@@ -660,7 +589,6 @@ const Base = {
       "subscribeFailed": "失败",
       "subscribed": "已添加到您的购买"
     },
-    "noSubscriptions": "暂无订阅",
     "payment": {
       "alreadyPurchased": "您已拥有此策略。",
       "balanceAfter": "购买后余额",
@@ -678,28 +606,11 @@ const Base = {
       "title": "确认购买",
       "walletBalance": "我的余额"
     },
-    "publish": {
-      "assetClass": {
-        "crypto": "加密货币",
-        "commodity": "大宗商品",
-        "forex": "外汇",
-        "index": "指数"
-      },
-      "riskLevel": {
-        "high": "高",
-        "low": "低",
-        "medium": "中"
-      }
-    },
     "purchases": {
-      "actions": "操作",
-      "date": "日期",
       "empty": "暂无购买记录。前往市场发现策略。",
-      "runBacktest": "运行回测",
       "status": "状态",
       "strategy": "策略"
     },
-    "searchPlaceholder": "搜索策略...",
     "sort": {
       "newest": "最新",
       "performance": "最佳表现",
@@ -709,13 +620,18 @@ const Base = {
       "rating": "最高评分",
       "score": "综合评分"
     },
-    "subtitle": "发现、购买和使用社区策略",
     "tabs": {
       "author": "作者中心",
       "marketplace": "策略市场",
       "purchases": "我的购买",
       "subscriptions": "我的订阅"
     },
+    "empty": "暂无已发布策略",
+    "filterByClass": "按资产类别筛选",
+    "noSubscriptions": "暂无订阅",
+    "publish": "发布策略",
+    "searchPlaceholder": "搜索策略...",
+    "subtitle": "发现、购买和使用社区策略",
     "title": "策略市场"
   },
   "symbolDetection": {

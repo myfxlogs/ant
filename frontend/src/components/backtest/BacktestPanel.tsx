@@ -8,9 +8,9 @@ import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import {
-  BOTH_KEY, CAPITAL_KEY, COMMISSION_KEY, DATE_RANGE_KEY, DIRECTION_KEY,
-  END_DATE_KEY, EXECUTION_KEY, HISTORY_KEY, LEVERAGE_KEY, LONG_KEY,
-  RUN_KEY, SHORT_KEY, SLIPPAGE_KEY, START_DATE_KEY, STRICT_MODE_KEY,
+  BOTH_KEY, CAPITAL_KEY, COMMISSION_KEY, CURRENT_DRAFT_KEY, DATE_RANGE_KEY, DIRECTION_KEY,
+  END_DATE_KEY, EXECUTION_KEY, HISTORY_KEY, LEVERAGE_KEY, LONG_KEY, LOT_SIZE_KEY,
+  RUN_KEY, SHORT_KEY, SLIPPAGE_KEY, START_DATE_KEY, STRATEGY_KEY, STRATEGY_PARAMS_KEY, STRICT_MODE_KEY,
   STRICT_MODE_OFF_DESC_KEY, STRICT_MODE_OFF_KEY, STRICT_MODE_OFF_TOOLTIP_KEY,
   STRICT_MODE_ON_DESC_KEY, STRICT_MODE_ON_KEY, STRICT_MODE_ON_TOOLTIP_KEY,
   TITLE_KEY, TRADE_KEY,
@@ -193,12 +193,12 @@ export default function BacktestPanel(props: Props) {
             {/* Strategy + Date + Strict + Presets — single row */}
             <div style={{ marginBottom: 8, display: 'flex', alignItems: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
               <div>
-                <div style={S.fieldLabel}>{t('strategy.backtestParams.strategy', 'Strategy')}</div>
+                <div style={S.fieldLabel}>{t(STRATEGY_KEY)}</div>
                 <Select size="small" style={{ width: 180 }}
                   loading={templates.loading}
                   value={templates.selectedId || '__draft__'}
                   options={[
-                    { value: '__draft__', label: t('strategy.workspace.currentDraft', 'Current Draft') },
+                    { value: '__draft__', label: t(CURRENT_DRAFT_KEY) },
                     ...(tplList.length > 0 ? [{ value: '__sep__', label: '──────────────', disabled: true }] : []),
                     ...tplList.map((tpl: StrategyTemplate) => ({ value: tpl.id, label: tpl.name })),
                   ]}
@@ -261,7 +261,7 @@ export default function BacktestPanel(props: Props) {
                   formatter={v => `${v}x`} parser={v => v!.replace('x', '') as unknown as number} />
               </Col>
               <Col span={3}>
-                <div style={S.fieldLabel}>{t('strategy.backtestParams.lotSize', 'Lot Size')}</div>
+                <div style={S.fieldLabel}>{t(LOT_SIZE_KEY)}</div>
                 <InputNumber size="small" style={S.narrow} min={0.01} max={100} step={0.01}
                   value={runner.lotSize} onChange={(v) => runner.setLotSize(v ?? 0.01)} />
               </Col>
@@ -293,7 +293,7 @@ export default function BacktestPanel(props: Props) {
             {/* Strategy-specific params */}
             {runner.extractedParams.length > 0 && (
               <div style={{ marginTop: 10, borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
-                <div style={S.sectionLabel}>{t('strategy.backtestParams.strategyParams', 'Strategy Parameters')} ({runner.extractedParams.length})</div>
+                <div style={S.sectionLabel}>{t(STRATEGY_PARAMS_KEY)} ({runner.extractedParams.length})</div>
                 <Row gutter={8}>
                   {runner.extractedParams.map((p) => {
                     const value = runner.strategyParamValues[p.name] ?? p.default;

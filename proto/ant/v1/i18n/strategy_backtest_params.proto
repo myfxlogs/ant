@@ -23,6 +23,7 @@ message BacktestParamsI18n {
   string execution = 14;  // Execution
   string history = 15;  // Backtest History
   string leverage = 16;  // Leverage
+  string lot_size = 38;  // Lot Size
   string long = 17;  // ↑ Long
   string presets_exploration = 18;  // Exploration
   string presets_live_aligned = 19;  // Live Aligned
@@ -32,6 +33,8 @@ message BacktestParamsI18n {
   string settings_reset = 23;  // Reset to Factory
   string settings_save = 24;  // Save as My Defaults
   string short = 25;  // ↓ Short
+  string strategy = 39;  // Strategy
+  string strategy_params = 40;  // Strategy Parameters
   string slippage = 26;  // Slippage
   string start_date = 27;  // Start
   string strict_mode = 28;  // Strict Mode

@@ -52,6 +52,9 @@ export const LEVERAGE_KEY = 'strategy.backtestParams.leverage' as const;
 /** long */
 export const LONG_KEY = 'strategy.backtestParams.long' as const;
 
+/** lotSize */
+export const LOT_SIZE_KEY = 'strategy.backtestParams.lotSize' as const;
+
 /** presets.exploration */
 export const PRESETS_EXPLORATION_KEY = 'strategy.backtestParams.presets.exploration' as const;
 
@@ -75,6 +78,12 @@ export const SETTINGS_SAVE_KEY = 'strategy.backtestParams.settingsSave' as const
 
 /** short */
 export const SHORT_KEY = 'strategy.backtestParams.short' as const;
+
+/** strategy */
+export const STRATEGY_KEY = 'strategy.backtestParams.strategy' as const;
+
+/** strategyParams */
+export const STRATEGY_PARAMS_KEY = 'strategy.backtestParams.strategyParams' as const;
 
 /** slippage */
 export const SLIPPAGE_KEY = 'strategy.backtestParams.slippage' as const;
@@ -130,6 +139,7 @@ export const STRATEGYBACKTESTPARAMS_KEYS = {
   history: 'strategy.backtestParams.history',
   leverage: 'strategy.backtestParams.leverage',
   long: 'strategy.backtestParams.long',
+  lot_size: 'strategy.backtestParams.lotSize',
   presets_exploration: 'strategy.backtestParams.presets.exploration',
   presets_live_aligned: 'strategy.backtestParams.presets.liveAligned',
   run: 'strategy.backtestParams.run',
@@ -138,6 +148,8 @@ export const STRATEGYBACKTESTPARAMS_KEYS = {
   settings_reset: 'strategy.backtestParams.settingsReset',
   settings_save: 'strategy.backtestParams.settingsSave',
   short: 'strategy.backtestParams.short',
+  strategy: 'strategy.backtestParams.strategy',
+  strategy_params: 'strategy.backtestParams.strategyParams',
   slippage: 'strategy.backtestParams.slippage',
   start_date: 'strategy.backtestParams.startDate',
   strict_mode: 'strategy.backtestParams.strictMode',

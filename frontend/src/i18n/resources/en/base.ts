@@ -526,8 +526,6 @@ const Base = {
       "config_valid": "AI config is valid",
       "failed_to_create_request": "Failed to create request",
       "forbidden_quota": "Quota exceeded",
-      "insufficient_balance": "AI balance insufficient. Please top up in AI Settings before using AI features.",
-      "insufficient_balance_title": "Insufficient Balance",
       "free_tier_exhausted": "Free tier exhausted",
       "invalid_base_url": "Invalid Base URL",
       "invalid_provider": "Invalid provider",
@@ -557,101 +555,30 @@ const Base = {
     "translate_failed": "Translation failed",
     "user_not_found": "User not found"
   },
-  "strategy": {
-    "ai": {
-      "reviseHint": "Write code first, then ask AI to improve it.",
-      "explainHint": "Write code to see AI explanation.",
-      "modelLabel": "AI Model",
-    },
-    "validate": {
-      "stale": "Code was modified — re-validate to check.",
-      "staleHint": "The results below are from the previous code version.",
-      "allClear": "All checks passed — no issues found.",
-      "errors": "Errors",
-      "failed": "Validation Failed",
-      "hint": "Click \"Validate Code\" to check syntax, imports, and strategy structure.",
-      "hints": "Suggestions",
-      "parameters": "parameters",
-      "passed": "Validation Passed",
-      "running": "Running validation...",
-      "tab": "Validation Results",
-      "warnings": "Warnings",
-      "fixWithAI": "Send errors to AI Revise",
-    },
-    "importEA": {
-      "apply": "Apply to Editor",
-      "applied": "EA code translated and applied to editor.",
-      "codeTooShort": "Please paste complete EA/indicator source code.",
-      "hint": "Paste MQL4/MQL5 code and click \"Translate to Python\"",
-      "importTab": "Import EA",
-      "insufficientBalance": "AI balance insufficient. Please top up in AI Gateway settings.",
-      "pastePlaceholder": "Paste MQL4/MQL5 EA or indicator source code here...",
-      "translate": "Translate to Python",
-      "translateFailed": "Translation failed. Please try again.",
-      "translating": "AI translating...",
-      "writeTab": "Strategy Code"
-    },
-    "library": {
-      "scheduleCount": "{{count}} active"
-    }
-  },
   "marketplace": {
     "author": {
       "avgRating": "Avg Rating",
       "empty": "No strategies published yet. Go to Strategy Library to publish one.",
-      "goToLibrary": "Go to Strategy Library",
-      "monthlyRevenue": "Monthly Revenue",
-      "myStrategies": "My Published Strategies",
-      "noPublished": "No published strategies",
-      "publishNew": "Publish New Strategy",
-      "published": "Published",
-      "subscribers": "Subscribers",
-      "totalRevenue": "Total Revenue"
-    },
-    "backtest": {
-      "idle": "Click \"Run Backtest\" to start",
-      "protected": "Backtest results are protected. Purchase or subscribe to run your own.",
-      "run": "Run Backtest",
-      "title": "Strategy Backtest"
+      "published": "Published"
     },
     "card": {
-      "buy": "¥{{amount}}",
       "by": "by",
       "free": "Free",
       "owned": "Purchased",
-      "pnl": "PnL",
-      "rent": "¥{{amount}}/mo",
       "subscribers": "Subscribers",
-      "users": "Users",
-      "winRate": "Win Rate",
-      "yourStrategy": "Your Strategy"
+      "winRate": "Win Rate"
     },
     "detail": {
       "assetClass": "Asset Class",
       "author": "Author",
-      "avgRating": "Avg Rating",
-      "buyNow": "Buy Now",
-      "buyPrice": "¥{{amount}} one-time",
       "commentPlaceholder": "Write a comment...",
       "comments": "Comments",
       "description": "Description",
       "getFree": "Get Free",
-      "noComments": "No comments yet",
-      "price": "Price",
       "rentPrice": "¥{{amount}} / month",
-      "riskLevel": "Risk Level",
-      "runBacktest": "Run Backtest",
       "subscribers": "Subscribers",
-      "tags": "Tags",
       "yourRating": "Your Rating"
     },
-    "empty": "No strategies published yet",
-    "filter": {
-      "all": "All",
-      "free": "Free",
-      "paid": "Paid"
-    },
-    "filterByClass": "Filter by asset class",
     "messages": {
       "commentFailed": "Comment failed",
       "commentPosted": "Comment posted",
@@ -662,7 +589,6 @@ const Base = {
       "subscribeFailed": "Failed",
       "subscribed": "Added to your purchases"
     },
-    "noSubscriptions": "No subscriptions yet",
     "payment": {
       "alreadyPurchased": "You already own this strategy.",
       "balanceAfter": "Balance after purchase",
@@ -680,28 +606,11 @@ const Base = {
       "title": "Confirm Purchase",
       "walletBalance": "Your Balance"
     },
-    "publish": {
-      "assetClass": {
-        "crypto": "Crypto",
-        "commodity": "Commodity",
-        "forex": "Forex",
-        "index": "Index"
-      },
-      "riskLevel": {
-        "high": "High",
-        "low": "Low",
-        "medium": "Medium"
-      }
-    },
     "purchases": {
-      "actions": "Actions",
-      "date": "Date",
       "empty": "No purchases yet. Browse the market to find strategies.",
-      "runBacktest": "Run Backtest",
       "status": "Status",
       "strategy": "Strategy"
     },
-    "searchPlaceholder": "Search strategies...",
     "sort": {
       "newest": "Newest",
       "performance": "Best Performance",
@@ -711,13 +620,18 @@ const Base = {
       "rating": "Highest Rated",
       "score": "Composite Score"
     },
-    "subtitle": "Discover, buy, and use community strategies",
     "tabs": {
       "author": "Author Center",
       "marketplace": "Market",
       "purchases": "My Purchases",
       "subscriptions": "My Subscriptions"
     },
+    "empty": "No strategies published yet",
+    "filterByClass": "Filter by asset class",
+    "noSubscriptions": "No subscriptions yet",
+    "publish": "Publish Strategy",
+    "searchPlaceholder": "Search strategies...",
+    "subtitle": "Discover, buy, and use community strategies",
     "title": "Strategy Marketplace"
   },
   "symbolDetection": {
