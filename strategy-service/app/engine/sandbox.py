@@ -54,7 +54,7 @@ BANNED_MODULES: set[str] = {
 BANNED_BUILTINS: set[str] = {
     "eval", "exec", "compile", "__import__", "open",
     "globals", "locals", "vars", "getattr", "setattr", "delattr",
-    "breakpoint",
+    "breakpoint", "__builtins__",
 }
 
 MAX_CODE_LENGTH = 65536  # T2.2: aligned with maxTransformCodeLen
@@ -233,8 +233,104 @@ def validate_strategy_code(code: str) -> StrategyValidationResult:
         )
         return StrategyValidationResult(valid=False, errors=errors, warnings=warnings)
 
+    # Security scan: banned imports, dangerous builtins, dynamic code patterns.
+    # Single source of truth — Go code_compliance.go should not duplicate.
+    security = scan_security(code)
+    if security.violations:
+        errors.extend(security.violations)
+    warnings.extend(security.warnings)
+
     quality_hints = analyze_code_quality(code)
     return _validate_sdk_strategy(code, tree, errors, warnings, quality_hints)
+
+
+# --- Programmatic code repair ---------------------------------------------
+# Applied BEFORE LLM-based repair for deterministic, zero-cost fixes.
+# Mechanical issues (_-prefix renaming, missing imports) are AST-fixed here.
+# Only remaining errors that require reasoning go to the LLM.
+
+_SAFE_PREFIX = "user_"
+
+
+def _transform_underscore_names(source: str) -> str:
+    """Rename ``_``-prefixed identifiers to avoid RestrictedPython's name policy.
+
+    (Kept for use by AI repair pipeline — not used during sandbox execution.)
+    Dunder (``__xxx__``) and bare ``_`` are left unchanged.
+    """
+
+    class _UnderscoreRenamer(ast.NodeTransformer):
+        @staticmethod
+        def _safe(name: str) -> str:
+            if name.startswith("_") and not name.startswith("__") and name != "_":
+                return _SAFE_PREFIX + name[1:]
+            return name
+
+        def visit_FunctionDef(self, node):
+            node.name = self._safe(node.name)
+            return self.generic_visit(node)
+
+        def visit_Name(self, node):
+            node.id = self._safe(node.id)
+            return node
+
+        def visit_Attribute(self, node):
+            node.attr = self._safe(node.attr)
+            return self.generic_visit(node)
+
+        def visit_arg(self, node):
+            node.arg = self._safe(node.arg)
+            return node
+
+    tree = ast.parse(source)
+    transformed = _UnderscoreRenamer().visit(tree)
+    ast.fix_missing_locations(transformed)
+    return ast.unparse(transformed)
+
+
+def repair_code_programmatic(code: str) -> tuple[str, list[str]]:
+    """Apply deterministic, zero-cost fixes to strategy code.
+
+    Returns ``(fixed_code, fixes_applied)``.  These fixes handle mechanical
+    issues that don't require AI reasoning — they run BEFORE LLM repair to
+    save tokens and latency.
+    """
+    fixes: list[str] = []
+    result = code
+
+    # Fix 1: rename _-prefixed identifiers
+    underscored = _collect_underscore_identifiers(result)
+    if underscored:
+        result = _transform_underscore_names(result)
+        fixes.append(
+            f"重命名 _-prefix 标识符: {', '.join(underscored)} → "
+            f"{', '.join(_SAFE_PREFIX + n[1:] for n in underscored)}"
+        )
+
+    return result, fixes
+
+
+def _collect_underscore_identifiers(source: str) -> list[str]:
+    """Collect ``_``-prefixed identifiers (not dunder, not bare ``_``)."""
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return []
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef):
+            if node.name.startswith("_") and not node.name.startswith("__") and node.name != "_":
+                names.add(node.name)
+        if isinstance(node, ast.Attribute):
+            if node.attr.startswith("_") and not node.attr.startswith("__") and node.attr != "_":
+                names.add(node.attr)
+        if isinstance(node, ast.Name):
+            if node.id.startswith("_") and not node.id.startswith("__") and node.id != "_":
+                names.add(node.id)
+        if isinstance(node, ast.arg):
+            if node.arg.startswith("_") and not node.arg.startswith("__") and node.arg != "_":
+                names.add(node.arg)
+    return sorted(names)
 
 
 # --- Bytecode compilation (standard Python compile) -----------------------

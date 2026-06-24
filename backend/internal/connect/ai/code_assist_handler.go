@@ -357,29 +357,20 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too large: %d bytes", len(code)))
 	}
 
-	// ── Fast path: compliance scan + Python AST (no AI call) ──
-	// Catches sandbox-blocking errors deterministically in <1s.
-	scanner := ai.NewCodeComplianceScanner()
-	blocks, warns := scanner.Scan(code)
-	_, missingSigs := scanner.HasRequiredSignature(code)
-	structWarns := scanner.StructuralWarnings(code)
+	// ── Fast path: structural checks + Python AST (no AI call) ──
+	// Security scanning (banned imports, dangerous builtins) is done by
+	// Python scan_security() — the single source of truth.
+	_, missingSigs := ai.HasRequiredSignature(code)
+	structWarns := ai.StructuralWarnings(code)
 
 	var errors []string
 	var warnings []string
 
-	// Blocking issues → errors
-	for _, b := range blocks {
-		errors = append(errors, fmt.Sprintf("[%s] line %d: %s", b.RuleName, b.Line, b.Message))
-	}
 	// Missing signature is always an error
 	for _, m := range missingSigs {
 		errors = append(errors, m)
 	}
-	// Non-blocking rule warnings
-	for _, w := range warns {
-		warnings = append(warnings, fmt.Sprintf("[%s] line %d: %s", w.RuleName, w.Line, w.Message))
-	}
-	// Structural warnings
+	// Structural quality warnings
 	warnings = append(warnings, structWarns...)
 
 	// Run Python ast.parse() for authoritative syntax errors

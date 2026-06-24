@@ -188,12 +188,10 @@ func (s *StrategyGenServer) streamLLMCode(ctx context.Context, userID uuid.UUID,
 }
 
 func (s *StrategyGenServer) runComplianceCheck(code string) []string {
-	scanner := ai.NewCodeComplianceScanner()
-	blocks, _ := scanner.Scan(code)
-	_, missingSigs := scanner.HasRequiredSignature(code)
-	issues := s.collectComplianceIssues(blocks, missingSigs)
+	_, missingSigs := ai.HasRequiredSignature(code)
+	issues := s.collectComplianceIssues(nil, missingSigs)
 	// Append structural warnings (undefined vars, hardcoded params, etc.)
-	structWarns := scanner.StructuralWarnings(code)
+	structWarns := ai.StructuralWarnings(code)
 	issues = append(issues, structWarns...)
 	return issues
 }

@@ -169,6 +169,14 @@ def _live_worker_main(serialized_code: bytes, send_pipe, recv_pipe) -> None:
     except Exception:
         pass
 
+    # T3.3: apply OS-level sandbox (cgroup + seccomp-bpf + drop_root).
+    # Must run AFTER imports but BEFORE executing any user-supplied code.
+    try:
+        from app.engine.sandbox_os import apply_os_sandbox
+        apply_os_sandbox(cpu_max_pct=50.0, memory_mb=512, pid_max=32)
+    except Exception:
+        pass
+
     from app.engine.sandbox import (
         build_sandbox_globals,
         exec_serialized,

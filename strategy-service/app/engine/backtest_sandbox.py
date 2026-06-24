@@ -150,6 +150,12 @@ def _backtest_worker(conn, serialized_code: bytes) -> None:
     # M5-2: resource limits — prevent user code from exhausting system memory/CPU.
     _apply_resource_limits()
 
+    # T3.3: apply OS-level sandbox (cgroup + seccomp-bpf + drop_root).
+    # Must run AFTER imports/resource-limits but BEFORE executing user code.
+    # seccomp is irreversible — once installed, dangerous syscalls are blocked
+    # by the kernel regardless of what the Python runtime tries to do.
+    _apply_os_isolation()
+
     result = None
     try:
         ctx = conn.recv()  # blocking wait for parent's context
@@ -164,10 +170,26 @@ def _backtest_worker(conn, serialized_code: bytes) -> None:
         conn.close()
 
 
-# -- Resource limits -----------------------------------------------------------
+# -- OS isolation & resource limits -------------------------------------------
+
+
+def _apply_os_isolation() -> None:
+    """Apply OS-level sandbox (cgroup + seccomp + drop_root) in child process.
+
+    After this call, dangerous syscalls are blocked by the kernel.
+    Must run AFTER imports but BEFORE executing any user-supplied code.
+    """
+    try:
+        from app.engine.sandbox_os import apply_os_sandbox
+        apply_os_sandbox(cpu_max_pct=50.0, memory_mb=1024, pid_max=64)
+    except Exception:
+        # OS sandbox is defense-in-depth; don't crash if unavailable.
+        pass
+
 
 _MAX_MEMORY_MB = 2048  # 2 GB address space limit per backtest child process.
 _MAX_CPU_SECONDS = 300  # 5 minutes CPU time (backed by parent's deadline as well).
+
 
 def _apply_resource_limits() -> None:
     """Apply OS-enforced resource limits in the child process.
