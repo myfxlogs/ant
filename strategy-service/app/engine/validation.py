@@ -222,6 +222,14 @@ def _validate_sdk_strategy(
         # Detect float() for prices (should use Decimal).
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "float":
             warnings.append("价格/手数计算中使用了 float()，建议改用 Decimal(str(x)) 避免精度丢失。")
+        # Detect underscore-prefixed method names (against SDK convention).
+        if isinstance(node, ast.FunctionDef) and node.name.startswith("_") and not node.name.startswith("__"):
+            warnings.append(f"方法 `{node.name}` 使用了 _ 前缀，建议改为无前缀命名。")
+        # Detect unnecessary imports of pre-injected modules.
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name in ("math", "numpy") and alias.asname is None:
+                    warnings.append(f"`import {alias.name}` 多余——{alias.name} 已被沙箱预注入，可直接使用。")
 
     seen = set()
     deduped = []
