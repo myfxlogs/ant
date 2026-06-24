@@ -45,7 +45,7 @@ func TestRepairPrompt_CodeOnlyConstraints(t *testing.T) {
 		"CODE REPAIR EXPERT",
 		"CRITICAL RULES",
 		"NO markdown, NO explanations",
-		"Start directly with import/def/class/#",
+		"Start directly with import/class/#",
 		"FIXME",
 		"missing stop_loss",
 	}
