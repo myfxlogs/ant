@@ -276,6 +276,10 @@ class BacktestRunner:
             if use_sdk:
                 self._current_tick = tick
 
+            # 0. SDK tick callback (MQL OnTick equivalent).
+            if use_sdk:
+                self._runtime.on_tick()
+
             # 1. Pending-order queue.
             for fill, order in self._fill.process_on_tick(tick):
                 pos = self._portfolio.apply_fill(fill, order, tick)
