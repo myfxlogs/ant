@@ -48,9 +48,7 @@ const StrategyBacktestParams = {
       "mtLive": "MT 即時",
       "mtDataset": "資料集",
       "nextBarOpen": "次根K線開盤",
-      "sameBarClose": "同根K線收盤",
-      "execMarket": "市價",
-      "execLimit": "限價"
+      "sameBarClose": "同根K線收盤"
     }
   }
 } as const;

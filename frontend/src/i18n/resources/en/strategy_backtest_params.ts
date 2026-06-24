@@ -48,9 +48,7 @@ const StrategyBacktestParams = {
       "mtLive": "MT Live",
       "mtDataset": "Dataset",
       "nextBarOpen": "Next Bar Open",
-      "sameBarClose": "Same Bar Close",
-      "execMarket": "Market",
-      "execLimit": "Limit"
+      "sameBarClose": "Same Bar Close"
     }
   }
 } as const;

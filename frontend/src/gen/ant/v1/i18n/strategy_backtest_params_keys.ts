@@ -133,12 +133,6 @@ export const NEXT_BAR_OPEN_KEY = 'strategy.backtestParams.nextBarOpen' as const;
 /** sameBarClose */
 export const SAME_BAR_CLOSE_KEY = 'strategy.backtestParams.sameBarClose' as const;
 
-/** execMarket */
-export const EXEC_MARKET_KEY = 'strategy.backtestParams.execMarket' as const;
-
-/** execLimit */
-export const EXEC_LIMIT_KEY = 'strategy.backtestParams.execLimit' as const;
-
 export const STRATEGYBACKTESTPARAMS_KEYS = {
   backtest_failed: 'strategy.backtestParams.backtestFailed',
   both: 'strategy.backtestParams.both',
@@ -184,8 +178,6 @@ export const STRATEGYBACKTESTPARAMS_KEYS = {
   mt_dataset: 'strategy.backtestParams.mtDataset',
   next_bar_open: 'strategy.backtestParams.nextBarOpen',
   same_bar_close: 'strategy.backtestParams.sameBarClose',
-  exec_market: 'strategy.backtestParams.execMarket',
-  exec_limit: 'strategy.backtestParams.execLimit',
 } as const;
 
 export type StrategyBacktestParamsKey = typeof STRATEGYBACKTESTPARAMS_KEYS[keyof typeof STRATEGYBACKTESTPARAMS_KEYS];

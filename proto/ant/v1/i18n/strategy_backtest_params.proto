@@ -51,6 +51,4 @@ message BacktestParamsI18n {
   string mt_dataset = 44;  // Dataset
   string next_bar_open = 45;  // Next Bar Open
   string same_bar_close = 46;  // Same Bar Close
-  string exec_market = 47;  // Market (execution assumption)
-  string exec_limit = 48;  // Limit (execution assumption)
 }
