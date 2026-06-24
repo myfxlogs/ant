@@ -447,9 +447,13 @@ func (s *PythonStrategyServer) dispatchCancelOrder(ctx context.Context, cfg Live
 		s.log.Warn("LiveStrategyRunner: cancel order without ticket")
 		return
 	}
+	// MT5 OrderClose handles both market positions AND pending orders.
+	// With lots=decimal.Zero (no volume), the gateway cancels the pending
+	// order instead of closing a position. See mt5.proto OrderClose docs.
+	bgCtx := context.WithoutCancel(ctx)
 	go func() {
-		if err := s.mtHub.CloseOrder(context.Background(), cfg.AccountID, ticket, decimal.Zero); err != nil {
-			s.log.Error("LiveStrategyRunner: CancelOrder (via CloseOrder) failed",
+		if err := s.mtHub.CloseOrder(bgCtx, cfg.AccountID, ticket, decimal.Zero); err != nil {
+			s.log.Error("LiveStrategyRunner: CancelOrder failed",
 				zap.Int64("ticket", ticket), zap.Error(err))
 			return
 		}
