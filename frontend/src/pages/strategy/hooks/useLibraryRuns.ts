@@ -82,7 +82,8 @@ export function useLibraryRuns(templateId: string | undefined) {
   const onDeleteRun = useCallback(async (runId: string) => {
     setDeleting(true);
     try {
-      await pythonStrategyApi.deleteBacktestRun(runId);
+      const resp: any = await pythonStrategyApi.deleteBacktestRun(runId);
+      if (!resp?.deleted) { message.error(t('common.deleteFailed')); return; }
       message.success(t(MESSAGES_BACKTEST_REPORT_DELETED_KEY));
       const newPage = runs.length <= 1 && page > 1 ? page - 1 : page;
       setPage(newPage); fetchRuns(newPage, pageSize);
@@ -94,7 +95,9 @@ export function useLibraryRuns(templateId: string | undefined) {
     if (!selectedKeys.length) return;
     setDeleting(true);
     try {
-      await pythonStrategyApi.deleteBacktestRuns(selectedKeys.map(String));
+      const resp: any = await pythonStrategyApi.deleteBacktestRuns(selectedKeys.map(String));
+      if (!resp?.deletedCount && resp?.deletedCount !== 0) { message.error(t('common.deleteFailed')); return; }
+      message.success(t('strategy.templates.backtestRuns.batchDeleteSuccess', { count: resp.deletedCount }));
       setSelectedKeys([]);
       const newPage = runs.length <= selectedKeys.length && page > 1 ? page - 1 : page;
       setPage(newPage); fetchRuns(newPage, pageSize);
