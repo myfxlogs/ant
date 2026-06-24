@@ -59,6 +59,9 @@ func (s *PythonStrategyServer) SetMarketDataRepo(r repository.MarketDataStore) {
 type PaperOrderExecutor interface {
 	PlacePaperOrder(ctx context.Context, accountID, symbol, side string,
 		volume decimal.Decimal, bid, ask float64) error
+	ClosePaperOrder(ctx context.Context, accountID, symbol string) error
+	ModifyPaperOrder(ctx context.Context, accountID, symbol string, sl, tp decimal.Decimal) error
+	CancelPaperOrder(ctx context.Context, accountID, symbol string) error
 }
 
 func (s *PythonStrategyServer) SetBarSource(bs BarSource)                 { s.barSource = bs }

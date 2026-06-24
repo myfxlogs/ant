@@ -12,6 +12,7 @@ package paper
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -23,12 +24,14 @@ import (
 )
 
 // paperRepository is the local interface for paper account persistence.
-// Defined on the consumer side per Go convention — repository package need not know about it.
 type paperRepository interface {
 	CreateOrder(ctx context.Context, o *repository.PaperOrder) error
 	GetAccount(ctx context.Context, accountID string) (*repository.PaperAccount, error)
 	ListAccounts(ctx context.Context, userID string) ([]*repository.PaperAccount, error)
 	UpdateAccountBalance(ctx context.Context, accountID string, balance, equity decimal.Decimal) error
+	GetOrder(ctx context.Context, orderID string) (*repository.PaperOrder, error)
+	UpdateOrder(ctx context.Context, o *repository.PaperOrder) error
+	FindOpenOrder(ctx context.Context, paperAccountID, symbol string) (*repository.PaperOrder, error)
 }
 
 // PaperEngine manages virtual paper trading accounts, simulated order fills, and SSE subscribers.
@@ -111,6 +114,66 @@ func (e *PaperEngine) PlacePaperOrder(ctx context.Context, accountID, symbol, si
 		zap.String("fillPrice", fillPrice.String()),
 	)
 
+	return nil
+}
+
+// ClosePaperOrder finds and closes an open paper position by symbol.
+func (e *PaperEngine) ClosePaperOrder(ctx context.Context, accountID, symbol string) error {
+	order, err := e.repo.FindOpenOrder(ctx, accountID, symbol)
+	if err != nil {
+		return fmt.Errorf("find open order: %w", err)
+	}
+	if order == nil {
+		return fmt.Errorf("no open position for %s on account %s", symbol, accountID)
+	}
+	now := time.Now()
+	order.State = "closed"
+	order.ClosedAt = &now
+	if err := e.repo.UpdateOrder(ctx, order); err != nil {
+		return fmt.Errorf("close order: %w", err)
+	}
+	e.log.Info("PaperEngine: position closed",
+		zap.String("accountID", accountID), zap.String("symbol", symbol),
+		zap.String("orderID", order.ID))
+	e.broadcast(ctx, accountID)
+	return nil
+}
+
+// ModifyPaperOrder updates SL/TP on an open paper position by symbol.
+func (e *PaperEngine) ModifyPaperOrder(ctx context.Context, accountID, symbol string, sl, tp decimal.Decimal) error {
+	order, err := e.repo.FindOpenOrder(ctx, accountID, symbol)
+	if err != nil {
+		return fmt.Errorf("find open order: %w", err)
+	}
+	if order == nil {
+		return fmt.Errorf("no open position for %s on account %s", symbol, accountID)
+	}
+	order.StopLoss = sl
+	order.TakeProfit = tp
+	if err := e.repo.UpdateOrder(ctx, order); err != nil {
+		return fmt.Errorf("modify order: %w", err)
+	}
+	e.log.Info("PaperEngine: position modified",
+		zap.String("accountID", accountID), zap.String("symbol", symbol),
+		zap.String("sl", sl.String()), zap.String("tp", tp.String()))
+	return nil
+}
+
+// CancelPaperOrder cancels a pending paper order by symbol.
+func (e *PaperEngine) CancelPaperOrder(ctx context.Context, accountID, symbol string) error {
+	order, err := e.repo.FindOpenOrder(ctx, accountID, symbol)
+	if err != nil {
+		return fmt.Errorf("find open order: %w", err)
+	}
+	if order == nil {
+		return nil // nothing to cancel
+	}
+	order.State = "cancelled"
+	if err := e.repo.UpdateOrder(ctx, order); err != nil {
+		return fmt.Errorf("cancel order: %w", err)
+	}
+	e.log.Info("PaperEngine: order cancelled",
+		zap.String("accountID", accountID), zap.String("symbol", symbol))
 	return nil
 }
 

@@ -459,13 +459,23 @@ func (s *PythonStrategyServer) dispatchPaperSignal(ctx context.Context, cfg Live
 
 	action := sig.GetSignalType()
 
-		// Close/modify/cancel/close_all: paper engine needs PaperOrder.StopLoss/TakeProfit
-	// fields + repo.GetOrder/UpdateOrder methods before these can be implemented.
-	// TODO(M12-PAPER): add close/modify/cancel to paper engine.
-	switch action {
-	case "close", "close_all", "modify", "cancel":
-		s.log.Debug("LiveStrategyRunner: paper close/modify/cancel — logged",
-			zap.String("action", action))
+		switch action {
+	case "close", "close_all":
+		if err := s.paperEngine.ClosePaperOrder(ctx, cfg.AccountID, cfg.Symbol); err != nil {
+			s.log.Warn("LiveStrategyRunner: paper close failed", zap.Error(err))
+		}
+		return
+	case "modify":
+		sl := decimal.NewFromFloat(sig.GetStopLoss())
+		tp := decimal.NewFromFloat(sig.GetTakeProfit())
+		if err := s.paperEngine.ModifyPaperOrder(ctx, cfg.AccountID, cfg.Symbol, sl, tp); err != nil {
+			s.log.Warn("LiveStrategyRunner: paper modify failed", zap.Error(err))
+		}
+		return
+	case "cancel":
+		if err := s.paperEngine.CancelPaperOrder(ctx, cfg.AccountID, cfg.Symbol); err != nil {
+			s.log.Warn("LiveStrategyRunner: paper cancel failed", zap.Error(err))
+		}
 		return
 	}
 

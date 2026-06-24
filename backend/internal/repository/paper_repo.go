@@ -34,6 +34,8 @@ type PaperOrder struct {
 	Side           string
 	Volume         decimal.Decimal
 	FillPrice      decimal.Decimal
+	StopLoss       decimal.Decimal
+	TakeProfit     decimal.Decimal
 	SlippageBps    int32
 	PnL            decimal.Decimal
 	State          string
@@ -114,13 +116,58 @@ func (r *PaperRepo) ListAccounts(ctx context.Context, userID string) ([]*PaperAc
 // CreateOrder inserts a paper order.
 func (r *PaperRepo) CreateOrder(ctx context.Context, o *PaperOrder) error {
 	_, err := r.pg.Exec(ctx, `
-		INSERT INTO paper_orders (paper_account_id, strategy_id, symbol, side, volume, fill_price, slippage_bps, state, pnl)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-	`, o.PaperAccountID, o.StrategyID, o.Symbol, o.Side, o.Volume, o.FillPrice, o.SlippageBps, o.State, o.PnL)
+		INSERT INTO paper_orders (paper_account_id, strategy_id, symbol, side, volume, fill_price, stop_loss, take_profit, slippage_bps, state, pnl)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+	`, o.PaperAccountID, o.StrategyID, o.Symbol, o.Side, o.Volume, o.FillPrice, o.StopLoss, o.TakeProfit, o.SlippageBps, o.State, o.PnL)
 	if err != nil {
 		return fmt.Errorf("create paper order: %w", err)
 	}
 	return nil
+}
+
+// GetOrder returns a paper order by ID.
+func (r *PaperRepo) GetOrder(ctx context.Context, orderID string) (*PaperOrder, error) {
+	o := &PaperOrder{}
+	err := r.pg.QueryRow(ctx, `
+		SELECT id, paper_account_id, strategy_id, symbol, side, volume, fill_price,
+		       COALESCE(stop_loss, 0), COALESCE(take_profit, 0),
+		       slippage_bps, state, pnl, created_at, closed_at
+		FROM paper_orders WHERE id = $1
+	`, orderID).Scan(&o.ID, &o.PaperAccountID, &o.StrategyID, &o.Symbol, &o.Side,
+		&o.Volume, &o.FillPrice, &o.StopLoss, &o.TakeProfit,
+		&o.SlippageBps, &o.State, &o.PnL, &o.CreatedAt, &o.ClosedAt)
+	if err != nil {
+		return nil, fmt.Errorf("get paper order: %w", err)
+	}
+	return o, nil
+}
+
+// UpdateOrder updates stop_loss, take_profit, and state of a paper order.
+func (r *PaperRepo) UpdateOrder(ctx context.Context, o *PaperOrder) error {
+	_, err := r.pg.Exec(ctx, `
+		UPDATE paper_orders SET stop_loss = $2, take_profit = $3, state = $4, closed_at = $5
+		WHERE id = $1
+	`, o.ID, o.StopLoss, o.TakeProfit, o.State, o.ClosedAt)
+	return err
+}
+
+// FindOpenOrder returns the most recent open order for a paper account by symbol.
+func (r *PaperRepo) FindOpenOrder(ctx context.Context, paperAccountID, symbol string) (*PaperOrder, error) {
+	o := &PaperOrder{}
+	err := r.pg.QueryRow(ctx, `
+		SELECT id, paper_account_id, strategy_id, symbol, side, volume, fill_price,
+		       COALESCE(stop_loss, 0), COALESCE(take_profit, 0),
+		       slippage_bps, state, pnl, created_at, closed_at
+		FROM paper_orders
+		WHERE paper_account_id = $1 AND symbol = $2 AND state = 'open'
+		ORDER BY created_at DESC LIMIT 1
+	`, paperAccountID, symbol).Scan(&o.ID, &o.PaperAccountID, &o.StrategyID, &o.Symbol, &o.Side,
+		&o.Volume, &o.FillPrice, &o.StopLoss, &o.TakeProfit,
+		&o.SlippageBps, &o.State, &o.PnL, &o.CreatedAt, &o.ClosedAt)
+	if err != nil {
+		return nil, fmt.Errorf("find open paper order: %w", err)
+	}
+	return o, nil
 }
 
 // UpdateOrderState updates the state, close price, and PnL of a paper order.
