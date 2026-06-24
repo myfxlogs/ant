@@ -1,8 +1,7 @@
-# T3.3: sandbox_scan.py merged into app/engine/sandbox.py.
-# This file re-exports for backward compatibility.
+# Re-exports for backward compatibility.
 # Security boundary is now at OS level (see app/engine/sandbox_os.py).
 
-from app.engine.sandbox import (
+from app.engine.validation import (
     BANNED_BUILTINS,
     BANNED_MODULES,
     MAX_CODE_LENGTH,
