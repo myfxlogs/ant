@@ -220,11 +220,11 @@ func repairPrompt(errors []string) string {
 	7. If an error is unclear, add # FIXME: <reason> at that line — do NOT guess
 
 ## VERIFY BEFORE OUTPUT
-- Does the fix address the exact error listed?
+- Did I fix EVERY error in the list above?
 - Did I preserve the original strategy logic unchanged?
 - Did I introduce any new undefined variables or syntax errors?
 
-## Errors to Fix (one by one)
+## Errors to Fix (fix ALL at once)
 ` + errList + `
 
 ## OUTPUT ONLY THE COMPLETE CORRECTED CODE NOW`
