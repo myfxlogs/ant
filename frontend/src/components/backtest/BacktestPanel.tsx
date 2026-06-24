@@ -26,7 +26,7 @@ import {
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import {
   ANNUAL_RETURN_KEY, BACKTEST_RECORDS_KEY, EQUITY_CURVE_KEY, MAX_DRAWDOWN_KEY, SHARPE_KEY,
-  TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, TRADE_LOG_KEY, TRADE_PRICE_KEY,
+  TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, PROFIT_FACTOR_KEY, TRADE_LOG_KEY, TRADE_PRICE_KEY,
   TRADE_SIDE_KEY, TRADE_TIME_KEY, TRADE_VOLUME_KEY, WIN_RATE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import SmartTuningPanel from '@/pages/strategy/components/workspace/SmartTuningPanel';
@@ -87,7 +87,7 @@ function MetricsRow({ m, t }: { m: any; t: any }) {
       <span>{t(TOTAL_RETURN_KEY)} <b style={{ color: (m.totalReturn ?? 0) >= 0 ? '#26a69a' : '#e57373' }}>{(m.totalReturn ?? 0).toFixed(2)}%</b></span>
       <span>{t(TOTAL_TRADES_KEY)} <b>{m.totalTrades ?? 0}</b></span>
       <span>{t(WIN_RATE_KEY)} <b>{((m.winRate ?? 0) * 100).toFixed(1)}%</b></span>
-      <span>PF: <b>{m.profitFactor?.toFixed(2) ?? '—'}</b></span>
+      <span>{t(PROFIT_FACTOR_KEY)}: <b>{m.profitFactor?.toFixed(2) ?? '—'}</b></span>
       <span>{t(SHARPE_KEY)} <b>{m.sharpeRatio?.toFixed(2) ?? '—'}</b></span>
       <span>{t(MAX_DRAWDOWN_KEY)} <b style={{ color: '#e57373' }}>{(m.maxDrawdown ?? 0).toFixed(2)}%</b></span>
     </div>

@@ -15,7 +15,8 @@ const StrategyBacktest = {
       "tradeTime": "时间",
       "tradeVolume": "手数",
       "winRate": "胜率",
-      "backtestRecords": "回测记录"
+      "backtestRecords": "回测记录",
+      "profitFactor": "盈亏比"
     }
   }
 } as const;

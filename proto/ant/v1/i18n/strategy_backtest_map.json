@@ -13,6 +13,7 @@
 		"trade_time": "tradeTime",
 		"trade_volume": "tradeVolume",
 		"win_rate": "winRate",
-		"backtest_records": "backtestRecords"
+		"backtest_records": "backtestRecords",
+		"profit_factor": "profitFactor"
 	}
 }

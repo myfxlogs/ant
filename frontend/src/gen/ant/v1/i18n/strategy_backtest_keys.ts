@@ -40,6 +40,9 @@ export const WIN_RATE_KEY = 'strategy.backtest.winRate' as const;
 /** backtestRecords */
 export const BACKTEST_RECORDS_KEY = 'strategy.backtest.backtestRecords' as const;
 
+/** profitFactor */
+export const PROFIT_FACTOR_KEY = 'strategy.backtest.profitFactor' as const;
+
 export const STRATEGYBACKTEST_KEYS = {
   annual_return: 'strategy.backtest.annualReturn',
   equity_curve: 'strategy.backtest.equityCurve',
@@ -54,6 +57,7 @@ export const STRATEGYBACKTEST_KEYS = {
   trade_volume: 'strategy.backtest.tradeVolume',
   win_rate: 'strategy.backtest.winRate',
   backtest_records: 'strategy.backtest.backtestRecords',
+  profit_factor: 'strategy.backtest.profitFactor',
 } as const;
 
 export type StrategyBacktestKey = typeof STRATEGYBACKTEST_KEYS[keyof typeof STRATEGYBACKTEST_KEYS];

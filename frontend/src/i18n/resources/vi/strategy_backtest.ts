@@ -15,7 +15,8 @@ const StrategyBacktest = {
       "tradeTime": "Thời gian",
       "tradeVolume": "Khối Lượng",
       "winRate": "Tỷ Lệ Thắng",
-      "backtestRecords": "Hồ sơ backtest"
+      "backtestRecords": "Hồ sơ backtest",
+      "profitFactor": "PF"
     }
   }
 } as const;

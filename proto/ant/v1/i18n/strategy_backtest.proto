@@ -20,4 +20,5 @@ message BacktestI18n {
   string trade_volume = 11;  // Volume
   string win_rate = 12;  // Win Rate
   string backtest_records = 40;  // Backtest Records
+  string profit_factor = 41;  // Profit Factor
 }

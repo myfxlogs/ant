@@ -36,6 +36,7 @@ type BacktestI18N struct {
 	TradeVolume     string                 `protobuf:"bytes,11,opt,name=trade_volume,json=tradeVolume,proto3" json:"trade_volume,omitempty"`             // Volume
 	WinRate         string                 `protobuf:"bytes,12,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`                         // Win Rate
 	BacktestRecords string                 `protobuf:"bytes,40,opt,name=backtest_records,json=backtestRecords,proto3" json:"backtest_records,omitempty"` // Backtest Records
+	ProfitFactor    string                 `protobuf:"bytes,41,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`          // Profit Factor
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -161,11 +162,18 @@ func (x *BacktestI18N) GetBacktestRecords() string {
 	return ""
 }
 
+func (x *BacktestI18N) GetProfitFactor() string {
+	if x != nil {
+		return x.ProfitFactor
+	}
+	return ""
+}
+
 var File_i18n_strategy_backtest_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_backtest_proto_rawDesc = "" +
 	"\n" +
-	"\x1ci18n/strategy_backtest.proto\x12\vant.v1.i18n\"\xbc\x03\n" +
+	"\x1ci18n/strategy_backtest.proto\x12\vant.v1.i18n\"\xe1\x03\n" +
 	"\fBacktestI18n\x12#\n" +
 	"\rannual_return\x18\x01 \x01(\tR\fannualReturn\x12!\n" +
 	"\fequity_curve\x18\x02 \x01(\tR\vequityCurve\x12!\n" +
@@ -183,7 +191,8 @@ const file_i18n_strategy_backtest_proto_rawDesc = "" +
 	" \x01(\tR\ttradeTime\x12!\n" +
 	"\ftrade_volume\x18\v \x01(\tR\vtradeVolume\x12\x19\n" +
 	"\bwin_rate\x18\f \x01(\tR\awinRate\x12)\n" +
-	"\x10backtest_records\x18( \x01(\tR\x0fbacktestRecordsB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x10backtest_records\x18( \x01(\tR\x0fbacktestRecords\x12#\n" +
+	"\rprofit_factor\x18) \x01(\tR\fprofitFactorB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_backtest_proto_rawDescOnce sync.Once
