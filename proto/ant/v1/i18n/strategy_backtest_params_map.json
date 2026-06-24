@@ -40,6 +40,12 @@
     "strict_mode_on_tooltip": "strictModeOnTooltip",
     "title": "title",
     "trade": "trade",
-    "vectorized_mode": "vectorizedMode"
+    "vectorized_mode": "vectorizedMode",
+    "mt_live": "mtLive",
+    "mt_dataset": "mtDataset",
+    "next_bar_open": "nextBarOpen",
+    "same_bar_close": "sameBarClose",
+    "market": "market",
+    "limit": "limit"
   }
 }

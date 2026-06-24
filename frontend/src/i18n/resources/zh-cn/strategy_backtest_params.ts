@@ -44,7 +44,13 @@ const StrategyBacktestParams = {
       "strictModeOnTooltip": "开启: 信号在K线收盘确认，次根开盘执行",
       "title": "回测",
       "trade": "交易",
-      "vectorizedMode": "向量化"
+      "vectorizedMode": "向量化",
+      "mtLive": "MT 实时",
+      "mtDataset": "数据集",
+      "nextBarOpen": "次根K线开盘",
+      "sameBarClose": "同根K线收盘",
+      "market": "市价",
+      "limit": "限价"
     }
   }
 } as const;

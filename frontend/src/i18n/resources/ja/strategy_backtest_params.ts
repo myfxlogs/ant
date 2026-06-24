@@ -44,7 +44,13 @@ const StrategyBacktestParams = {
       "strictModeOnTooltip": "ON: バークローズでシグナル確認、次バーオープンで実行",
       "title": "バックテスト",
       "trade": "取引",
-      "vectorizedMode": "ベクトル化"
+      "vectorizedMode": "ベクトル化",
+      "mtLive": "MT ライブ",
+      "mtDataset": "データセット",
+      "nextBarOpen": "次足始値",
+      "sameBarClose": "同足終値",
+      "market": "成行",
+      "limit": "指値"
     }
   }
 } as const;

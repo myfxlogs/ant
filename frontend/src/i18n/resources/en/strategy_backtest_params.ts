@@ -44,7 +44,13 @@ const StrategyBacktestParams = {
       "strictModeOnTooltip": "ON: signals confirmed at bar close, executed next bar open",
       "title": "Backtest",
       "trade": "Trade",
-      "vectorizedMode": "Vectorized"
+      "vectorizedMode": "Vectorized",
+      "mtLive": "MT Live",
+      "mtDataset": "Dataset",
+      "nextBarOpen": "Next Bar Open",
+      "sameBarClose": "Same Bar Close",
+      "market": "Market",
+      "limit": "Limit"
     }
   }
 } as const;

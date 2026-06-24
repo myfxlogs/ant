@@ -121,6 +121,24 @@ export const TRADE_KEY = 'strategy.backtestParams.trade' as const;
 /** vectorizedMode */
 export const VECTORIZED_MODE_KEY = 'strategy.backtestParams.vectorizedMode' as const;
 
+/** mtLive */
+export const MT_LIVE_KEY = 'strategy.backtestParams.mtLive' as const;
+
+/** mtDataset */
+export const MT_DATASET_KEY = 'strategy.backtestParams.mtDataset' as const;
+
+/** nextBarOpen */
+export const NEXT_BAR_OPEN_KEY = 'strategy.backtestParams.nextBarOpen' as const;
+
+/** sameBarClose */
+export const SAME_BAR_CLOSE_KEY = 'strategy.backtestParams.sameBarClose' as const;
+
+/** market */
+export const MARKET_KEY = 'strategy.backtestParams.market' as const;
+
+/** limit */
+export const LIMIT_KEY = 'strategy.backtestParams.limit' as const;
+
 export const STRATEGYBACKTESTPARAMS_KEYS = {
   backtest_failed: 'strategy.backtestParams.backtestFailed',
   both: 'strategy.backtestParams.both',
@@ -162,6 +180,12 @@ export const STRATEGYBACKTESTPARAMS_KEYS = {
   title: 'strategy.backtestParams.title',
   trade: 'strategy.backtestParams.trade',
   vectorized_mode: 'strategy.backtestParams.vectorizedMode',
+  mt_live: 'strategy.backtestParams.mtLive',
+  mt_dataset: 'strategy.backtestParams.mtDataset',
+  next_bar_open: 'strategy.backtestParams.nextBarOpen',
+  same_bar_close: 'strategy.backtestParams.sameBarClose',
+  market: 'strategy.backtestParams.market',
+  limit: 'strategy.backtestParams.limit',
 } as const;
 
 export type StrategyBacktestParamsKey = typeof STRATEGYBACKTESTPARAMS_KEYS[keyof typeof STRATEGYBACKTESTPARAMS_KEYS];

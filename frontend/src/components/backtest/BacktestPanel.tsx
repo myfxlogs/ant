@@ -45,6 +45,23 @@ const S = {
 function pct(v: number | undefined): string { if (v == null) return '-'; return (v * 100).toFixed(2) + '%'; }
 function num(v: number | undefined, d = 2): string { if (v == null) return '-'; return v.toFixed(d); }
 
+const _ASSUMPTION_MAP: Record<string, string> = {
+  MT_LIVE: 'strategy.backtest.assumptions.mtLive',
+  MT_DATASET: 'strategy.backtest.assumptions.mtDataset',
+  next_bar_open: 'strategy.backtest.assumptions.nextBarOpen',
+  same_bar_close: 'strategy.backtest.assumptions.sameBarClose',
+  market: 'strategy.backtest.assumptions.market',
+  limit: 'strategy.backtest.assumptions.limit',
+  both: 'strategy.backtestParams.both',
+  long: 'strategy.backtestParams.long',
+  short: 'strategy.backtestParams.short',
+};
+function assumeVal(t: any, v: string | undefined): string {
+  if (!v) return '-';
+  const key = _ASSUMPTION_MAP[v];
+  return key ? t(key, v) : v;
+}
+
 interface TemplatesProp {
   list: StrategyTemplate[];
   loading: boolean;
@@ -353,15 +370,15 @@ export default function BacktestPanel(props: Props) {
               }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>{t(EXEC_ASSUMPTIONS_KEY)}</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '4px 12px', fontSize: 12 }}>
-                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)}:</span> <strong>{runner.executionAssumptions.simulationMode || '-'}</strong></div>
-                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)}:</span> <strong>{runner.executionAssumptions.signalTiming || '-'}</strong></div>
-                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)}:</span> <strong>{runner.executionAssumptions.fillRule || '-'}</strong></div>
-                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY)}:</span> <strong>{runner.executionAssumptions.tradeDirection || '-'}</strong></div>
+                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)}:</span> <strong>{assumeVal(t, runner.executionAssumptions.simulationMode)}</strong></div>
+                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)}:</span> <strong>{assumeVal(t, runner.executionAssumptions.signalTiming)}</strong></div>
+                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)}:</span> <strong>{assumeVal(t, runner.executionAssumptions.fillRule)}</strong></div>
+                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY)}:</span> <strong>{assumeVal(t, runner.executionAssumptions.tradeDirection)}</strong></div>
                   <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY)}:</span> <strong>{runner.executionAssumptions.actualCommission != null ? (runner.executionAssumptions.actualCommission * 100).toFixed(4) + '%' : '-'}</strong></div>
                   <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY)}:</span> <strong>{runner.executionAssumptions.actualSlippage != null ? (runner.executionAssumptions.actualSlippage * 100).toFixed(4) + '%' : '-'}</strong></div>
                   <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY)}:</span> <strong>{runner.executionAssumptions.actualLeverage || '-'}x</strong></div>
                   {runner.executionAssumptions.mtfFallbackReason && (
-                    <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY)}:</span> <strong>{runner.executionAssumptions.mtfFallbackReason}</strong></div>
+                    <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY)}:</span> <strong>{assumeVal(t, runner.executionAssumptions.mtfFallbackReason)}</strong></div>
                   )}
                 </div>
               </div>
