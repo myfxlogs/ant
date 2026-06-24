@@ -36,10 +36,10 @@ import { DATE_PRESETS, PRESETS } from '@/pages/strategy/hooks/backtestParamHelpe
 import type { StrategyTemplate } from '@/client/strategy';
 
 const S = {
-  sectionLabel: { fontSize: 10, fontWeight: 700, color: '#8c8c8c', textTransform: 'uppercase' as const, marginBottom: 6 },
-  fieldLabel: { fontSize: 9, fontWeight: 600, color: '#8c8c8c', textTransform: 'uppercase' as const, marginBottom: 2 },
+  sectionLabel: { fontSize: 11, fontWeight: 700, color: '#595959', marginBottom: 6 },
+  fieldLabel: { fontSize: 11, fontWeight: 500, color: '#8c8c8c', marginBottom: 2 },
   narrow: { width: '100%' },
-  metricStyle: { fontSize: 16, fontFamily: 'monospace' as const },
+  metricStyle: { fontSize: 14, fontFamily: 'monospace' as const },
 };
 
 function pct(v: number | undefined): string { if (v == null) return '-'; return (v * 100).toFixed(2) + '%'; }
@@ -85,11 +85,6 @@ export default function BacktestPanel(props: Props) {
   const { t } = useTranslation();
 
   const tplList = templates?.list || [];
-  const strategyOptions = [
-    { value: '__draft__', label: t('strategy.workspace.currentDraft', 'Current Draft') },
-    ...(tplList.length > 0 ? [{ value: '__sep__', label: '──────────────', disabled: true }] : []),
-    ...tplList.map((tpl: StrategyTemplate) => ({ value: tpl.id, label: tpl.name })),
-  ];
 
   const handleRun = () => runner.run(inputs);
   const canRun = Boolean(inputs.strategyCode && inputs.symbol) && !runner.submitting;
@@ -198,11 +193,15 @@ export default function BacktestPanel(props: Props) {
             {/* Strategy + Date + Strict + Presets — single row */}
             <div style={{ marginBottom: 8, display: 'flex', alignItems: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
               <div>
-                <div style={S.fieldLabel}>Strategy</div>
+                <div style={S.fieldLabel}>{t('strategy.backtestParams.strategy', 'Strategy')}</div>
                 <Select size="small" style={{ width: 180 }}
                   loading={templates.loading}
                   value={templates.selectedId || '__draft__'}
-                  options={strategyOptions}
+                  options={[
+                    { value: '__draft__', label: t('strategy.workspace.currentDraft', 'Current Draft') },
+                    ...(tplList.length > 0 ? [{ value: '__sep__', label: '──────────────', disabled: true }] : []),
+                    ...tplList.map((tpl: StrategyTemplate) => ({ value: tpl.id, label: tpl.name })),
+                  ]}
                   onChange={(val) => {
                     if (val === '__draft__') templates.onSelect(null);
                     else if (val !== '__sep__') templates.onSelect(val);
