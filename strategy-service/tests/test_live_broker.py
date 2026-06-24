@@ -220,7 +220,7 @@ class TestIntentToSignalDict(unittest.TestCase):
     def test_close_all_intent(self):
         intent = CloseIntent(ticket=700, volume=None)
         d = intent.to_signal_dict()
-        self.assertEqual(d["volume"], "0")  # "0" = close full position
+        self.assertEqual(d["volume"], "full")  # "full" = close entire position
 
 
 class TestAllOrderTypes(unittest.TestCase):
