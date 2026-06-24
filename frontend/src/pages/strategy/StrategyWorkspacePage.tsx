@@ -159,13 +159,12 @@ export default function StrategyWorkspacePage() {
             runner={ws.backtest.runner}
             inputs={{ strategyCode: ws.code.code, accountId: ws.account.accountId, symbol: ws.account.symbol, timeframe: ws.account.timeframe, templateId: ws.templates.selectedId || undefined }}
             templates={ws.templates}
-            accountId={ws.account.accountId} onAccountChange={ws.account.handleAccountChange}
-            accounts={ws.account.activeAccounts.map((a: any) => ({ id: a.id, name: a.brokerCompany || a.name || '', login: a.login || a.accountNumber }))}
-            symbol={ws.account.symbol} onSymbolChange={ws.account.setSymbol}
-            timeframe={ws.account.timeframe} onTimeframeChange={ws.account.setTimeframe}
             collapsed={ws.backtest.btCollapsed ?? false}
             onToggleCollapsed={() => ws.backtest.setBtCollapsed?.(!ws.backtest.btCollapsed)}
             onOpenHistory={ws.history.open}
+            onAIOptimize={ws.ai.optimize}
+            code={ws.code.code}
+            onApplyTunedParams={(code: string) => { ws.code.setCode(code); }}
           />
         </div>
 

@@ -1,11 +1,12 @@
-import { useCallback, useRef, useEffect } from 'react';
-import { Button, Tabs, InputNumber, Row, Col, Segmented, DatePicker, Radio, Switch, Tag, Tooltip, Dropdown, Select } from 'antd';
+import { useCallback, useRef } from 'react';
+import { Button, Tabs, InputNumber, Row, Col, Segmented, DatePicker, Radio, Switch, Tag, Tooltip, Dropdown, Select, Card, Statistic, Table, Empty, Spin } from 'antd';
 import {
-  PlayCircleOutlined, SettingOutlined, CaretUpOutlined, CaretDownOutlined,
-  HistoryOutlined, DoubleRightOutlined,
+  PlayCircleOutlined, SettingOutlined, CaretDownOutlined,
+  HistoryOutlined, DoubleRightOutlined, RiseOutlined, FallOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import {
   BOTH_KEY, CAPITAL_KEY, COMMISSION_KEY, DATE_RANGE_KEY, DIRECTION_KEY,
   END_DATE_KEY, EXECUTION_KEY, HISTORY_KEY, LEVERAGE_KEY, LONG_KEY,
@@ -15,17 +16,34 @@ import {
   TITLE_KEY, TRADE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import { RUN_DISABLED_HINT_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
-import { BACKTEST_RESULTS_LABEL_KEY, COMPLETED_STATUS_KEY, RUNNING_STATUS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import {
+  BACKTEST_COMPLETED_KEY, BACKTEST_EMPTY_KEY, BACKTEST_ERROR_KEY, BACKTEST_RUNNING_KEY,
+  BACKTEST_TAB_KEY, EXEC_ASSUMPTIONS_KEY, EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY,
+  EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY, EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY,
+  EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY, EXEC_ASSUMPTIONS_FIELDS_MODE_KEY,
+  EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY, EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY,
+  EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY, GATE_TAB_KEY, TUNING_TAB_KEY,
+} from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import {
+  ANNUAL_RETURN_KEY, EQUITY_CURVE_KEY, MAX_DRAWDOWN_KEY, SHARPE_KEY,
+  TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, TRADE_LOG_KEY, TRADE_PRICE_KEY,
+  TRADE_SIDE_KEY, TRADE_TIME_KEY, TRADE_VOLUME_KEY, WIN_RATE_KEY,
+} from '@/gen/ant/v1/i18n/strategy_backtest_keys';
+import SmartTuningPanel from '@/pages/strategy/components/workspace/SmartTuningPanel';
+import GatePanel from '@/pages/strategy/components/workspace/GatePanel';
 import type { useBacktestRunner, BacktestRunnerInputs } from './useBacktestRunner';
-import { DATE_PRESETS, PRESETS } from '@/pages/strategy/hooks/backtestParamHelpers';
+import { DATE_PRESETS } from '@/pages/strategy/hooks/backtestParamHelpers';
 import type { StrategyTemplate } from '@/client/strategy';
-import type { BacktestMetrics } from './useBacktestRunner';
 
 const S = {
   sectionLabel: { fontSize: 10, fontWeight: 700, color: '#8c8c8c', textTransform: 'uppercase' as const, marginBottom: 6 },
   fieldLabel: { fontSize: 9, fontWeight: 600, color: '#8c8c8c', textTransform: 'uppercase' as const, marginBottom: 2 },
   narrow: { width: '100%' },
+  metricStyle: { fontSize: 16, fontFamily: 'monospace' as const },
 };
+
+function pct(v: number | undefined): string { if (v == null) return '-'; return (v * 100).toFixed(2) + '%'; }
+function num(v: number | undefined, d = 2): string { if (v == null) return '-'; return v.toFixed(d); }
 
 interface TemplatesProp {
   list: StrategyTemplate[];
@@ -38,15 +56,14 @@ interface Props {
   runner: ReturnType<typeof useBacktestRunner>;
   inputs: BacktestRunnerInputs;
   templates: TemplatesProp;
-  accountId: string; onAccountChange: (v: string) => void;
-  accounts: Array<{ id: string; name: string; login?: string }>;
-  symbol: string; onSymbolChange: (v: string) => void;
-  timeframe: string; onTimeframeChange: (v: string) => void;
   collapsed: boolean; onToggleCollapsed: () => void;
   onOpenHistory?: () => void;
+  onAIOptimize?: () => void;
+  code?: string;
+  onApplyTunedParams?: (code: string) => void;
 }
 
-function MetricsRow({ m }: { m: BacktestMetrics | null }) {
+function MetricsRow({ m }: { m: any }) {
   if (!m) return null;
   return (
     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 11, color: '#595959' }}>
@@ -62,9 +79,8 @@ function MetricsRow({ m }: { m: BacktestMetrics | null }) {
 
 export default function BacktestPanel(props: Props) {
   const {
-    runner, inputs, templates,
-    accountId, onAccountChange, accounts, symbol, onSymbolChange, timeframe, onTimeframeChange,
-    collapsed, onToggleCollapsed, onOpenHistory,
+    runner, inputs, templates, collapsed, onToggleCollapsed,
+    onOpenHistory, onAIOptimize, code, onApplyTunedParams,
   } = props;
   const { t } = useTranslation();
 
@@ -73,10 +89,6 @@ export default function BacktestPanel(props: Props) {
     ...(templates.list.length > 0 ? [{ value: '__sep__', label: '──────────────', disabled: true }] : []),
     ...templates.list.map((tpl: StrategyTemplate) => ({ value: tpl.id, label: tpl.name })),
   ];
-
-  const accountsForSelect = accounts.map(a => ({
-    value: a.id, label: a.login || a.name || a.id.slice(0, 8),
-  }));
 
   const handleRun = () => runner.run(inputs);
   const canRun = Boolean(inputs.strategyCode && inputs.symbol) && !runner.submitting;
@@ -132,8 +144,7 @@ export default function BacktestPanel(props: Props) {
     }}>
       {/* Resize handle */}
       <div ref={resizeRef} onMouseDown={handleMouseDown} style={{
-        height: 5, cursor: 'row-resize', background: runner.dragging ? '#1890ff' : 'transparent',
-        flexShrink: 0,
+        height: 5, cursor: 'row-resize', background: runner.dragging ? '#1890ff' : 'transparent', flexShrink: 0,
       }} />
 
       {/* Tab bar */}
@@ -148,8 +159,10 @@ export default function BacktestPanel(props: Props) {
           <Tabs size="small" activeKey={runner.activeTab} onChange={runner.setActiveTab}
             tabBarStyle={{ marginBottom: 0, borderBottom: 'none' }}
             items={[
-              { key: 'params', label: 'Params' },
-              { key: 'results', label: 'Results' },
+              { key: 'params', label: t('strategy.backtestParams.title', 'Params') },
+              { key: 'results', label: t(BACKTEST_TAB_KEY, 'Results') },
+              { key: 'tuning', label: t(TUNING_TAB_KEY, 'Tuning') },
+              { key: 'gate', label: t(GATE_TAB_KEY, 'Gate') },
               { key: 'trades', label: `Trades${runner.metrics?.totalTrades ? ` (${runner.metrics.totalTrades})` : ''}` },
             ]}
           />
@@ -181,44 +194,19 @@ export default function BacktestPanel(props: Props) {
         {/* ── Params Tab ──────────────────────────────────────────────── */}
         {runner.activeTab === 'params' && (
           <div>
-            {/* Selectors */}
-            <Row gutter={8} style={{ marginBottom: 10 }}>
-              <Col span={6}>
-                <div style={S.fieldLabel}>Strategy</div>
-                <Select size="small" style={{ width: '100%' }}
-                  loading={templates.loading}
-                  value={templates.selectedId || '__draft__'}
-                  options={strategyOptions}
-                  onChange={(val) => {
-                    if (val === '__draft__') templates.onSelect(null);
-                    else if (val !== '__sep__') templates.onSelect(val);
-                  }}
-                />
-              </Col>
-              <Col span={6}>
-                <div style={S.fieldLabel}>Account</div>
-                <Select size="small" style={{ width: '100%' }}
-                  value={accountId} options={accountsForSelect}
-                  onChange={onAccountChange}
-                />
-              </Col>
-              <Col span={6}>
-                <div style={S.fieldLabel}>Symbol</div>
-                <Select size="small" style={{ width: '100%' }}
-                  value={symbol} onChange={onSymbolChange}
-                  mode="tags" maxCount={1} options={[]}
-                  tokenSeparators={[',', ' ']}
-                />
-              </Col>
-              <Col span={6}>
-                <div style={S.fieldLabel}>Timeframe</div>
-                <Segmented size="small" value={timeframe}
-                  onChange={(v) => onTimeframeChange(v as string)}
-                  options={['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1', 'W1']}
-                  style={{ width: '100%' }}
-                />
-              </Col>
-            </Row>
+            {/* Strategy selector */}
+            <div style={{ marginBottom: 10 }}>
+              <div style={S.fieldLabel}>Strategy</div>
+              <Select size="small" style={{ width: 260 }}
+                loading={templates.loading}
+                value={templates.selectedId || '__draft__'}
+                options={strategyOptions}
+                onChange={(val) => {
+                  if (val === '__draft__') templates.onSelect(null);
+                  else if (val !== '__sep__') templates.onSelect(val);
+                }}
+              />
+            </div>
 
             {/* Date range */}
             <div style={{ marginBottom: 10 }}>
@@ -248,20 +236,20 @@ export default function BacktestPanel(props: Props) {
               <Col span={8}>
                 <div style={S.fieldLabel}>{t(CAPITAL_KEY)}</div>
                 <InputNumber size="small" style={S.narrow} min={100} step={1000}
-                  value={runner.initialCapital} onChange={(v) => runner.setInitialCapital(v ?? FACTORY_DEFAULTS.initialCapital)}
+                  value={runner.initialCapital} onChange={(v) => runner.setInitialCapital(v ?? 10000)}
                   formatter={v => `$ ${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={v => v!.replace(/\$\s?|(,*)/g, '') as unknown as number} />
               </Col>
               <Col span={8}>
                 <div style={S.fieldLabel}>{t(LEVERAGE_KEY)}</div>
                 <InputNumber size="small" style={S.narrow} min={1} step={1}
-                  value={runner.leverage} onChange={(v) => runner.setLeverage(v ?? FACTORY_DEFAULTS.leverage)}
+                  value={runner.leverage} onChange={(v) => runner.setLeverage(v ?? 1)}
                   formatter={v => `${v}x`} parser={v => v!.replace('x', '') as unknown as number} />
               </Col>
               <Col span={8}>
                 <div style={S.fieldLabel}>Lot Size</div>
                 <InputNumber size="small" style={S.narrow} min={0.01} max={100} step={0.01}
-                  value={runner.lotSize} onChange={(v) => runner.setLotSize(v ?? FACTORY_DEFAULTS.lotSize)} />
+                  value={runner.lotSize} onChange={(v) => runner.setLotSize(v ?? 0.01)} />
               </Col>
             </Row>
             <Row gutter={8} style={{ marginBottom: 6 }}>
@@ -270,7 +258,7 @@ export default function BacktestPanel(props: Props) {
                   <span style={{ fontSize: 8, color: '#bfbfbf', fontWeight: 400, marginLeft: 3 }}>%</span>
                 </div>
                 <InputNumber size="small" style={S.narrow} min={0} max={10} step={0.01} precision={4}
-                  value={runner.commission} onChange={(v) => runner.setCommission(v ?? FACTORY_DEFAULTS.commission)}
+                  value={runner.commission} onChange={(v) => runner.setCommission(v ?? 0.001)}
                   formatter={v => `${v}%`} parser={v => v!.replace('%', '') as unknown as number} />
               </Col>
               <Col span={8}>
@@ -278,7 +266,7 @@ export default function BacktestPanel(props: Props) {
                   <span style={{ fontSize: 8, color: '#bfbfbf', fontWeight: 400, marginLeft: 3 }}>{slippagePct}%</span>
                 </div>
                 <InputNumber size="small" style={S.narrow} min={0} max={10} step={0.0001} precision={4}
-                  value={runner.slippage} onChange={(v) => runner.setSlippage(v ?? FACTORY_DEFAULTS.slippage)} />
+                  value={runner.slippage} onChange={(v) => runner.setSlippage(v ?? 0)} />
               </Col>
               <Col span={8}>
                 <div style={S.fieldLabel}>{t(DIRECTION_KEY)}</div>
@@ -307,6 +295,35 @@ export default function BacktestPanel(props: Props) {
                 </div>
               </Col>
             </Row>
+
+            {/* Strategy-specific params */}
+            {runner.extractedParams.length > 0 && (
+              <div style={{ marginTop: 10, borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
+                <div style={S.sectionLabel}>Strategy Parameters ({runner.extractedParams.length})</div>
+                <Row gutter={8}>
+                  {runner.extractedParams.map((p) => {
+                    const value = runner.strategyParamValues[p.name] ?? p.default;
+                    if (p.type === 'bool') {
+                      return (
+                        <Col span={8} key={p.name} style={{ marginBottom: 6 }}>
+                          <div style={S.fieldLabel}>{p.label || p.name}</div>
+                          <Switch size="small" checked={value === 'True' || value === 'true'}
+                            onChange={(v) => runner.setParam(p.name, v ? 'True' : 'False')} />
+                        </Col>
+                      );
+                    }
+                    const step = p.type === 'float' ? 0.01 : 1;
+                    return (
+                      <Col span={8} key={p.name} style={{ marginBottom: 6 }}>
+                        <div style={S.fieldLabel}>{p.label || p.name}</div>
+                        <InputNumber size="small" style={S.narrow} step={step}
+                          value={Number(value)} onChange={(v) => runner.setParam(p.name, String(v ?? p.default))} />
+                      </Col>
+                    );
+                  })}
+                </Row>
+              </div>
+            )}
           </div>
         )}
 
@@ -314,81 +331,149 @@ export default function BacktestPanel(props: Props) {
         {runner.activeTab === 'results' && (
           <div>
             {runner.status === 'idle' && (
-              <div style={{ textAlign: 'center', padding: 40, color: '#8c8c8c' }}>
-                Press "{t(RUN_KEY)}" to start backtest
+              <Empty description={t(BACKTEST_EMPTY_KEY, 'Run a backtest to see results')} style={{ padding: 24 }} />
+            )}
+
+            <div style={{ marginBottom: 8 }}>
+              {runner.status === 'running' && (
+                <Tag color="processing" icon={<Spin size="small" />}>{t(BACKTEST_RUNNING_KEY)}</Tag>
+              )}
+              {runner.status === 'completed' && (
+                <Tag color="success">{t(BACKTEST_COMPLETED_KEY)}</Tag>
+              )}
+              {runner.status === 'completed' && onAIOptimize && runner.metrics && (
+                <Button size="small" type="dashed" onClick={onAIOptimize} style={{ marginLeft: 8, fontSize: 11 }}>
+                  🤖 AI Optimize
+                </Button>
+              )}
+              {runner.status === 'error' && (
+                <Tag color="error">{runner.errorMsg || t(BACKTEST_ERROR_KEY, 'Backtest failed')}</Tag>
+              )}
+            </div>
+
+            {/* Execution Assumptions */}
+            {runner.executionAssumptions && runner.status === 'completed' && (
+              <div style={{
+                marginBottom: 12, padding: '8px 12px', border: '1px solid #e6f4ff', borderRadius: 8,
+                background: 'linear-gradient(180deg, #f8fbff 0%, #f4f9ff 100%)',
+              }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>{t(EXEC_ASSUMPTIONS_KEY)}</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '4px 12px', fontSize: 11 }}>
+                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)}:</span> <strong>{runner.executionAssumptions.simulationMode || '-'}</strong></div>
+                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)}:</span> <strong>{runner.executionAssumptions.signalTiming || '-'}</strong></div>
+                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)}:</span> <strong>{runner.executionAssumptions.fillRule || '-'}</strong></div>
+                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY)}:</span> <strong>{runner.executionAssumptions.tradeDirection || '-'}</strong></div>
+                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY)}:</span> <strong>{runner.executionAssumptions.actualCommission != null ? (runner.executionAssumptions.actualCommission * 100).toFixed(4) + '%' : '-'}</strong></div>
+                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY)}:</span> <strong>{runner.executionAssumptions.actualSlippage != null ? (runner.executionAssumptions.actualSlippage * 100).toFixed(4) + '%' : '-'}</strong></div>
+                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY)}:</span> <strong>{runner.executionAssumptions.actualLeverage || '-'}x</strong></div>
+                  {runner.executionAssumptions.mtfFallbackReason && (
+                    <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY)}:</span> <strong>{runner.executionAssumptions.mtfFallbackReason}</strong></div>
+                  )}
+                </div>
               </div>
             )}
-            {runner.status === 'running' && (
-              <div style={{ textAlign: 'center', padding: 40, color: '#1890ff' }}>
-                Running backtest...
-              </div>
-            )}
-            {runner.status === 'error' && (
-              <div style={{ textAlign: 'center', padding: 40, color: '#e57373' }}>
-                Backtest failed: {runner.errorMsg}
-              </div>
-            )}
-            {runner.status === 'completed' && runner.metrics && (
-              <div>
-                <MetricsRow m={runner.metrics} />
-                {runner.executionAssumptions && (
-                  <div style={{ marginTop: 12 }}>
-                    <div style={S.fieldLabel}>Execution Assumptions</div>
-                    <div style={{ fontSize: 10, color: '#8c8c8c', maxHeight: 120, overflowY: 'auto' }}>
-                      <pre style={{ margin: 0, fontSize: 10 }}>
-                        {JSON.stringify(runner.executionAssumptions, null, 2)}
-                      </pre>
-                    </div>
-                  </div>
+
+            {runner.metrics && (
+              <>
+                <Row gutter={[12, 12]}>
+                  <Col span={8}>
+                    <Card size="small">
+                      <Statistic title={t(TOTAL_RETURN_KEY, 'Total Return')} value={pct(runner.metrics.totalReturn)}
+                        prefix={runner.metrics.totalReturn != null && runner.metrics.totalReturn >= 0
+                          ? <RiseOutlined style={{ color: '#26a69a' }} /> : <FallOutlined style={{ color: '#ef5350' }} />}
+                        valueStyle={S.metricStyle} />
+                    </Card>
+                  </Col>
+                  <Col span={8}>
+                    <Card size="small">
+                      <Statistic title={t(ANNUAL_RETURN_KEY, 'Annual Return')} value={pct(runner.metrics.annualReturn)} valueStyle={S.metricStyle} />
+                    </Card>
+                  </Col>
+                  <Col span={8}>
+                    <Card size="small">
+                      <Statistic title={t(MAX_DRAWDOWN_KEY, 'Max Drawdown')} value={pct(runner.metrics.maxDrawdown)} valueStyle={{ ...S.metricStyle, color: '#ef5350' }} />
+                    </Card>
+                  </Col>
+                  <Col span={8}>
+                    <Card size="small">
+                      <Statistic title={t(SHARPE_KEY, 'Sharpe')} value={num(runner.metrics.sharpeRatio)} valueStyle={S.metricStyle} />
+                    </Card>
+                  </Col>
+                  <Col span={8}>
+                    <Card size="small">
+                      <Statistic title={t(WIN_RATE_KEY, 'Win Rate')} value={pct(runner.metrics.winRate)} valueStyle={S.metricStyle} />
+                    </Card>
+                  </Col>
+                  <Col span={8}>
+                    <Card size="small">
+                      <Statistic title={t(TOTAL_TRADES_KEY, 'Total Trades')} value={runner.metrics.totalTrades ?? '-'} valueStyle={S.metricStyle} />
+                    </Card>
+                  </Col>
+                </Row>
+
+                {runner.metrics.equityCurve && runner.metrics.equityCurve.length > 0 && (
+                  <Card size="small" title={t(EQUITY_CURVE_KEY, 'Equity Curve')} style={{ marginTop: 12 }}>
+                    <ResponsiveContainer width="100%" height={150}>
+                      <LineChart data={runner.metrics.equityCurve}>
+                        <XAxis dataKey="time" hide />
+                        <YAxis width={60} tick={{ fontSize: 11 }} />
+                        <RechartsTooltip />
+                        <Line type="monotone" dataKey="equity" stroke="#1890ff" dot={false} strokeWidth={1.5} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </Card>
                 )}
-              </div>
+              </>
             )}
           </div>
+        )}
+
+        {/* ── Tuning Tab ──────────────────────────────────────────────── */}
+        {runner.activeTab === 'tuning' && (
+          <SmartTuningPanel
+            tuneMethod={runner.tuning.method} onTuneMethodChange={runner.tuning.setMethod}
+            sweepDimensions={runner.tuning.sweepDimensions} onToggleDimension={runner.tuning.toggleDimension}
+            enabledSweepDims={runner.tuning.enabledDims} cartesianSize={runner.tuning.cartesianSize}
+            tuningRunning={runner.tuning.running} canRun={Boolean(inputs.strategyCode && inputs.symbol)}
+            onRunTuning={() => runner.tuning.run({
+              code: inputs.strategyCode, symbol: inputs.symbol, timeframe: inputs.timeframe,
+              startDate: runner.startDate, endDate: runner.endDate,
+              templateId: inputs.templateId,
+            })}
+            code={code} onApplyToCode={onApplyTunedParams}
+          />
+        )}
+
+        {/* ── Gate Tab ────────────────────────────────────────────────── */}
+        {runner.activeTab === 'gate' && (
+          <GatePanel
+            loading={runner.gate.loading} gates={runner.gate.gates} summary={runner.gate.summary}
+            error={runner.gate.error} status={runner.status} canRun={runner.status === 'completed'}
+            onRun={runner.gate.run}
+          />
         )}
 
         {/* ── Trades Tab ──────────────────────────────────────────────── */}
         {runner.activeTab === 'trades' && (
           <div>
             {runner.chartTrades.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 40, color: '#8c8c8c' }}>
-                Run a backtest to see trades
-              </div>
+              <Empty description="Run a backtest to see trades" style={{ padding: 24 }} />
             ) : (
-              <div style={{ maxHeight: runner.panelHeight - 100, overflowY: 'auto' }}>
-                <table style={{ width: '100%', fontSize: 10, borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid #e8e8e8', textAlign: 'left' }}>
-                      <th style={{ padding: '4px 8px' }}>#</th>
-                      <th style={{ padding: '4px 8px' }}>Side</th>
-                      <th style={{ padding: '4px 8px', textAlign: 'right' }}>Open</th>
-                      <th style={{ padding: '4px 8px', textAlign: 'right' }}>Close</th>
-                      <th style={{ padding: '4px 8px', textAlign: 'right' }}>PnL</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {runner.chartTrades.map((t, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <td style={{ padding: '3px 8px' }}>{i + 1}</td>
-                        <td style={{ padding: '3px 8px', color: t.side === 'buy' ? '#26a69a' : '#e57373' }}>
-                          {t.side?.toUpperCase()}
-                        </td>
-                        <td style={{ padding: '3px 8px', textAlign: 'right' }}>
-                          {t.openPrice?.toFixed(2)}
-                        </td>
-                        <td style={{ padding: '3px 8px', textAlign: 'right' }}>
-                          {t.closePrice?.toFixed(2) ?? '—'}
-                        </td>
-                        <td style={{
-                          padding: '3px 8px', textAlign: 'right',
-                          color: (t.pnl ?? 0) >= 0 ? '#26a69a' : '#e57373',
-                        }}>
-                          {t.pnl?.toFixed(2) ?? '—'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <Table dataSource={runner.chartTrades.map((t, i) => ({ ...t, key: i }))} size="small"
+                pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: runner.panelHeight - 140 }}
+                columns={[
+                  { title: '#', dataIndex: 'key', width: 40 },
+                  { title: t(TRADE_SIDE_KEY, 'Side'), dataIndex: 'side', width: 60,
+                    render: (v: string) => <span style={{ color: v === 'buy' ? '#26a69a' : '#e57373' }}>{v?.toUpperCase()}</span> },
+                  { title: t(TRADE_PRICE_KEY, 'Price'), dataIndex: 'openPrice', width: 80,
+                    render: (v: number) => v?.toFixed(2) },
+                  { title: 'Close', dataIndex: 'closePrice', width: 80,
+                    render: (v: number) => v?.toFixed(2) ?? '—' },
+                  { title: 'PnL', dataIndex: 'pnl', width: 80,
+                    render: (v: number) => v != null ? (
+                      <span style={{ color: v >= 0 ? '#26a69a' : '#ef5350' }}>{v >= 0 ? '+' : ''}{v.toFixed(2)}</span>
+                    ) : '-' },
+                ]} />
             )}
           </div>
         )}
@@ -396,5 +481,3 @@ export default function BacktestPanel(props: Props) {
     </div>
   );
 }
-
-const FACTORY_DEFAULTS = { initialCapital: 10000, leverage: 1, lotSize: 0.01, commission: 0.001, slippage: 0.0 };
