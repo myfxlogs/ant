@@ -42,6 +42,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 - ❌ Cross-scope changes (one task = one scope)
 - ❌ Hardcoded secrets / `.env` in repo
 - ❌ `//nolint`, `# noqa`, `// @ts-ignore`
+- ❌ 因困难而妥协最优解。遇到阻碍时禁止退而求其次——必须回到根因，找到正确的修复方式，哪怕需要推翻旧架构、完全重构。快捷方式（回退代替重新生成、标记 legacy 代替移除、沉默代替修复）视为违规。
 
 ## Platform Protocol
 
