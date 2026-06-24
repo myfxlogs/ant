@@ -237,8 +237,8 @@ export default function BacktestPanel(props: Props) {
               </div>
               <div style={{ borderLeft: '1px solid #e8e8e8', paddingLeft: 8 }}>
                 {(Object.keys(PRESETS) as Array<keyof typeof PRESETS>).map((key) => (
-                  <Button key={key} size="small" type="link" onClick={() => runner.applyPreset(key)}
-                    style={{ fontSize: 10, padding: '0 4px', height: 22 }}>
+                  <Button key={key} size="small" onClick={() => runner.applyPreset(key)}
+                    style={{ fontSize: 10, padding: '0 6px', height: 22 }}>
                     {t(`strategy.backtestParams.presets.${key === 'live_aligned' ? 'liveAligned' : 'exploration'}`)}
                   </Button>
                 ))}
