@@ -84,10 +84,11 @@ export default function BacktestPanel(props: Props) {
   } = props;
   const { t } = useTranslation();
 
+  const tplList = templates?.list || [];
   const strategyOptions = [
     { value: '__draft__', label: 'Current Draft' },
-    ...(templates.list.length > 0 ? [{ value: '__sep__', label: '──────────────', disabled: true }] : []),
-    ...templates.list.map((tpl: StrategyTemplate) => ({ value: tpl.id, label: tpl.name })),
+    ...(tplList.length > 0 ? [{ value: '__sep__', label: '──────────────', disabled: true }] : []),
+    ...tplList.map((tpl: StrategyTemplate) => ({ value: tpl.id, label: tpl.name })),
   ];
 
   const handleRun = () => runner.run(inputs);
