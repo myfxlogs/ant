@@ -36,8 +36,8 @@ import { DATE_PRESETS, PRESETS } from '@/pages/strategy/hooks/backtestParamHelpe
 import type { StrategyTemplate } from '@/client/strategy';
 
 const S = {
-  sectionLabel: { fontSize: 11, fontWeight: 700, color: '#595959', marginBottom: 6 },
-  fieldLabel: { fontSize: 11, fontWeight: 500, color: '#8c8c8c', marginBottom: 2 },
+  sectionLabel: { fontSize: 12, fontWeight: 700, color: '#595959', marginBottom: 6 },
+  fieldLabel: { fontSize: 12, fontWeight: 500, color: '#8c8c8c', marginBottom: 2 },
   narrow: { width: '100%' },
   metricStyle: { fontSize: 14, fontFamily: 'monospace' as const },
 };
