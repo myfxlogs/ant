@@ -314,7 +314,7 @@ class BacktestRunner:
                 self._portfolio.set_cash(new_equity)
 
         if use_sdk:
-            self._runtime.on_deinit("end_of_test")
+            self._runtime.deinit("end_of_test")
 
         if last_tick is not None and self._portfolio.has_open() and not self._margin_called:
             if not req.legacy_pnl:
