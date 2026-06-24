@@ -62,10 +62,9 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		}
 	}
 
-	// Pre-trade risk pipeline (S1.1 — legacy, migrating to Gate D6-A).
-	if err := s.runPreTradeRisk(ctx, req, orderID); err != nil {
-		return nil, err
-	}
+	// OMS: advance state before gate evaluation.
+	s.omsTransition(ctx, orderID, req.AccountID, OMSStateNew, OMSStateValidated)
+	s.omsTransition(ctx, orderID, req.AccountID, OMSStateValidated, OMSStateRiskApproved)
 
 	// D6-A: single-chokepoint risk gate evaluated for every order path.
 	if s.gate != nil && s.accountStateProvider != nil {
@@ -219,6 +218,21 @@ func (s *MtHubService) publishOrderCreatedEvent(ctx context.Context, req *OrderR
 
 // lossyFloat64 converts a decimal to float64 for MT API proto boundaries.
 // Precision loss is detected but not rejected — the MT proto requires float64.
+func (s *MtHubService) omsTransition(ctx context.Context, orderID, accountID string, from, to OMSState) {
+	if s.omsWriter == nil || orderID == "" {
+		return
+	}
+	if err := s.omsWriter.Transition(ctx, orderID, accountID, from, to); err != nil {
+		if s.logger != nil {
+			s.logger.Error("oms transition failed",
+				zap.Error(err),
+				zap.String("orderID", orderID),
+				zap.String("from", string(from)),
+				zap.String("to", string(to)))
+		}
+	}
+}
+
 // lossyFloat64 converts a decimal to float64 for MT API proto boundaries.
 // Precision loss is detected but not rejected — the MT proto requires float64.
 func costToProto(est *costsvc.CostBreakdown) *antv1.CostEstimate {

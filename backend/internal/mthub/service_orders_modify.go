@@ -48,12 +48,7 @@ func (s *MtHubService) ModifyOrder(ctx context.Context, accountID string, ticket
 	// Gate rules (MaxLotSize, MaxPositionCount, MaxExposure, etc.) are
 	// designed for position OPENING — they evaluate exposure, margin,
 	// and concentration risk.  SL/TP modification does not change any
-	// of these.  Tightening a stop-loss REDUCES risk; widening or
-	// removing it INCREASES risk — but this is a per-position decision
-	// the strategy author makes, not a gate concern.
-	//
-	// The risksvc pipeline (runPreTradeRisk) remains active for all
-	// ModifyOrder calls as a secondary defense if configured.
+	// of these.
 
 	exec := s.hub.Get(accountID)
 	if exec == nil {

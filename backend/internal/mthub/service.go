@@ -9,7 +9,6 @@ import (
 
 	"anttrader/internal/costsvc"
 	"anttrader/internal/risk"
-	"anttrader/internal/risksvc"
 	"anttrader/internal/usermgr"
 )
 
@@ -53,8 +52,6 @@ type MtHubService struct {
 	costEstimator  costsvc.CostEstimator // M10-BASE-D2: pre-trade cost estimation
 	killSwitch     KillSwitchGate        // V3-R-5: global kill switch
 
-	// S1.1: pre-trade risk pipeline (capability to hardlimit to platform to engine to sizer)
-	riskPipeline          RiskPipeline
 	accountStateProvider  AccountStateProvider
 	accountOwnerVerifier  AccountOwnerVerifier
 
@@ -79,14 +76,6 @@ func (s *MtHubService) SetUserLimiter(l *usermgr.UserLimiter) { s.userLimiter = 
 
 // SetCostEstimator injects the pre-trade cost estimator (M10-BASE-D2).
 func (s *MtHubService) SetCostEstimator(e costsvc.CostEstimator) { s.costEstimator = e }
-
-// RiskPipeline is the pre-trade risk and sizing pipeline (M10-BASE-C6, S1.1).
-type RiskPipeline interface {
-	Process(ctx context.Context, req *risksvc.SignalRequest) *risksvc.SignalResult
-}
-
-// SetRiskPipeline injects the risk pipeline for pre-trade checks.
-func (s *MtHubService) SetRiskPipeline(p RiskPipeline) { s.riskPipeline = p }
 
 // AccountStateProvider fetches account state for risk evaluation.
 // Returns risk.AccountState (single source of truth, shared with Gate).
