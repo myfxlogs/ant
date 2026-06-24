@@ -481,8 +481,8 @@ export default function BacktestPanel(props: Props) {
                   const sellVol = sells.reduce((s: number, t: any) => s + (t.volume || 0), 0);
                   return (
                     <div style={{ display: 'flex', gap: 12, marginBottom: 10, fontSize: 12 }}>
-                      <span>🟢 {t(LONG_KEY)}: <b>{buys.length}</b> Vol <b>{buyVol.toFixed(2)}</b> PnL <b style={{ color: buyPnl >= 0 ? '#26a69a' : '#e57373' }}>{buyPnl >= 0 ? '+' : ''}{buyPnl.toFixed(2)}</b></span>
-                      <span>🔴 {t(SHORT_KEY)}: <b>{sells.length}</b> Vol <b>{sellVol.toFixed(2)}</b> PnL <b style={{ color: sellPnl >= 0 ? '#26a69a' : '#e57373' }}>{sellPnl >= 0 ? '+' : ''}{sellPnl.toFixed(2)}</b></span>
+                      <span>🟢 {t(LONG_KEY)}: <b>{buys.length}</b> {t(TRADE_VOLUME_KEY)} <b>{buyVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: buyPnl >= 0 ? '#26a69a' : '#e57373' }}>{buyPnl >= 0 ? '+' : ''}{buyPnl.toFixed(2)}</b></span>
+                      <span>🔴 {t(SHORT_KEY)}: <b>{sells.length}</b> {t(TRADE_VOLUME_KEY)} <b>{sellVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: sellPnl >= 0 ? '#26a69a' : '#e57373' }}>{sellPnl >= 0 ? '+' : ''}{sellPnl.toFixed(2)}</b></span>
                     </div>
                   );
                 })()}
