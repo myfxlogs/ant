@@ -208,34 +208,6 @@ def _validate_sdk_strategy(
     )
 
 
-def _parse_with_recovery(code: str) -> tuple[Optional[ast.Module], list[str]]:
-    """Parse code, collecting ALL syntax errors (not just the first).
-
-    When ``ast.parse()`` fails, it stops at the first error.  This function
-    iterates — skipping the offending line — to catch all syntax errors
-    in one pass.  The final parse result (if any) may be incomplete.
-    """
-    errors: list[str] = []
-    remaining = code
-    for _ in range(20):  # max 20 passes to avoid infinite loop
-        try:
-            tree = ast.parse(remaining)
-            return tree, errors
-        except SyntaxError as e:
-            errors.append(f"语法错误: {e}")
-            # Replace offending line with 'pass' to preserve indentation
-            # and line numbering, then try again.
-            lines = remaining.split("\n")
-            lineno = e.lineno or 1
-            if lineno < 1 or lineno > len(lines):
-                break
-            # Preserve leading whitespace to keep indentation valid.
-            indent = len(lines[lineno - 1]) - len(lines[lineno - 1].lstrip())
-            lines[lineno - 1] = " " * indent + "pass"
-            remaining = "\n".join(lines)
-    return None, errors
-
-
 def validate_strategy_code(code: str) -> StrategyValidationResult:
     """Validate a strategy — SDK-only (ADR-0020).
 
@@ -245,18 +217,58 @@ def validate_strategy_code(code: str) -> StrategyValidationResult:
 
     Security scanning (banned imports/dangerous builtins) is included —
     this is the single source of truth for all strategy validation.
+
+    Structural checks (SDK imports, lifecycle hooks) run even when
+    the code has syntax errors — they use string matching on the
+    original source, not the AST.
     """
     errors: List[str] = []
     warnings: List[str] = []
 
-    tree, syntax_errors = _parse_with_recovery(code)
-    seen = set()
-    for e in syntax_errors:
-        if e not in seen:
-            seen.add(e)
-            errors.append(e)
+    tree = None
+    try:
+        tree = ast.parse(code)
+    except SyntaxError as e:
+        errors.append(f"语法错误: {e}")
+        # Syntax is broken, but we can still run string-based checks.
+        # Structural errors (invalid SDK imports, missing hooks) are
+        # detectable without a valid AST.
+
+    # String-based checks run even when AST parse failed.
     if tree is None:
-        return StrategyValidationResult(valid=False, errors=errors, warnings=warnings)
+        # Check SDK class presence via regex (no AST needed).
+        import re
+        if not re.search(r'class\s+\w+\s*\(.*StrategyBase', code):
+            errors.append(
+                "只支持 SDK 策略（继承 StrategyBase 的类定义）。"
+                "请使用类定义 + 生命周期方法（on_init/on_bar/on_tick 等）来编写策略代码。"
+            )
+        # Check SDK import validity via regex.
+        for m in re.finditer(r'from\s+app\.sdk\s+import\s+(.+?)(?:\n|$)', code):
+            imports = [x.strip() for x in m.group(1).split(',')]
+            for name in imports:
+                if name and name not in _VALID_SDK_EXPORTS:
+                    errors.append(f"`{name}` 不是有效的 SDK 导出")
+        # Check lifecycle hooks.
+        hooks_found = any(
+            re.search(rf'def\s+{h}\s*\(', code)
+            for h in ("on_init", "on_tick", "on_bar", "on_timer", "on_trade", "on_deinit")
+        )
+        if not hooks_found:
+            warnings.append("策略未实现任何 SDK 生命周期方法")
+        # Security scan on original code.
+        security = scan_security(code)
+        if security.violations:
+            errors.extend(security.violations)
+        warnings.extend(security.warnings)
+        # Deduplicate.
+        seen = set()
+        deduped = []
+        for e in errors:
+            if e not in seen:
+                seen.add(e)
+                deduped.append(e)
+        return StrategyValidationResult(valid=False, errors=deduped, warnings=warnings)
 
     if not _is_sdk_strategy(tree):
         errors.append(
