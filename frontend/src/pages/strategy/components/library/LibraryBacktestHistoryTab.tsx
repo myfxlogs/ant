@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Button, Popconfirm, Space, Table, Tag, Typography } from 'antd';
 import type { ColumnsType, TableRowSelection } from 'antd/es/table';
 import { DeleteOutlined, SyncOutlined } from '@ant-design/icons';
@@ -29,11 +28,10 @@ export default function LibraryBacktestHistoryTab() {
   const { t } = useTranslation();
   const lib = useRunsCtx();
   const b = lib;
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const rowSelection: TableRowSelection<BacktestRunRow> = {
-    selectedRowKeys,
-    onChange: (keys) => setSelectedRowKeys(keys),
+    selectedRowKeys: b.selectedKeys,
+    onChange: (keys) => b.setSelectedKeys(keys as string[]),
     selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT, Table.SELECTION_NONE],
   };
 
