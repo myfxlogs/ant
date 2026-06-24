@@ -27,10 +27,34 @@ from app.python_strategy_pb2 import (
 # (imported by python_strategy.proto via strategy_messages.proto)
 from app.strategy_signal_messages_pb2 import StrategySignal
 from app.engine.params_extractor import extract_required_params
-from app.engine.sandbox import StrategyRunner as _LegacyStrategyRunner, StrategyRuntimeError, validate_strategy_code
+from app.engine.sandbox import validate_strategy_code, build_sandbox_globals
+from app.engine.types import StrategyRuntimeError
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+
+def _execute_inline(code: str, context: dict) -> Optional[dict]:
+    """Compile and execute strategy code in-process (replaces old StrategyRunner)."""
+    if not code or not code.strip():
+        raise StrategyRuntimeError("策略代码为空")
+    try:
+        exec_scope = build_sandbox_globals()
+        exec(compile(code, "<strategy>", "exec"), exec_scope, exec_scope)
+    except SyntaxError as e:
+        raise StrategyRuntimeError(f"Python 编译失败: {e}") from e
+    except Exception as e:
+        raise StrategyRuntimeError(f"策略代码执行错误: {e}") from e
+
+    run_fn = exec_scope.get("run")
+    if callable(run_fn):
+        result = run_fn(dict(context))
+        return result if isinstance(result, dict) else None
+
+    if "signal" in exec_scope:
+        return exec_scope["signal"] if isinstance(exec_scope["signal"], dict) else {"signal": str(exec_scope["signal"])}
+
+    raise StrategyRuntimeError("策略代码必须定义 signal 变量或 run(context) 函数")
 
 
 async def _parse_request(request: Request, req_cls):
@@ -186,11 +210,9 @@ async def execute_strategy_connect(request: Request):
         }
 
         timeout_seconds = int(os.getenv("BACKTEST_TIMEOUT", "120"))
-        # TODO(D10): replace _LegacyStrategyRunner with proper SDK execution.
-        runner = _LegacyStrategyRunner(req.code or "", timeout_ms=timeout_seconds * 1000)
         loop = asyncio.get_event_loop()
         signal_data = await asyncio.wait_for(
-            loop.run_in_executor(None, runner.call, context),
+            loop.run_in_executor(None, _execute_inline, req.code or "", context),
             timeout=timeout_seconds + 5,
         )
         elapsed = (time.time() - start_time) * 1000

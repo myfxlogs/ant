@@ -32,7 +32,6 @@ from app.engine.sandbox import (
     build_sandbox_globals,
     code_sha256,
 )
-from app.engine.sandbox_base import BaseSandbox
 from app.engine.types import StrategyCompileError, StrategyRuntimeError
 
 # ── validation ───────────────────────────────────────────────────────────────
@@ -96,7 +95,7 @@ def validate_dataframe_code(code: str) -> DataFrameValidationResult:
 # ── runner ───────────────────────────────────────────────────────────────────
 
 
-class DataFrameStrategyRunner(BaseSandbox):
+class DataFrameStrategyRunner:
     """Compile once, execute on the full DataFrame.
 
     Unlike ``StrategyRunner`` which is called per-bar via ``call(ctx)``,

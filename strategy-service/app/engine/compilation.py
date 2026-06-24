@@ -8,7 +8,6 @@ LiveWorker).
 from __future__ import annotations
 
 import hashlib
-import marshal
 import math
 from typing import Any, Dict
 
@@ -52,25 +51,3 @@ def build_sandbox_globals() -> dict:
     return g
 
 
-# --- Serialization (cross-process transport) ------------------------------
-
-
-def compile_and_serialize(source: str) -> bytes:
-    """Pre-compile strategy source and return marshalled bytecode.
-
-    Performs security scan before compilation.
-    """
-    from app.engine.validation import scan_security
-    scan_result = scan_security(source)
-    if scan_result.violations:
-        msg = "; ".join(scan_result.violations)
-        raise ValueError(f"code rejected by security scan: {msg}")
-
-    code = compile(source, "<strategy>", "exec")
-    return marshal.dumps(code)
-
-
-def exec_serialized(data: bytes, globals_dict: dict, locals_dict: dict) -> None:
-    """Deserialize pre-compiled bytecode and execute it in the given namespace."""
-    code = marshal.loads(data)
-    exec(code, globals_dict, locals_dict)

@@ -1,15 +1,11 @@
 """Backtest runner: the tick-driven main loop (D10 — SDK-native execution).
 
-契约：docs/domains/backtest-system.md §7.4.3 · runner.py
+Two execution paths share the same tick-driven loop:
 
-Orchestrates every engine module to produce a :py:class:`BacktestResult`.
-Keeps all cross-module wiring here so individual modules stay decoupled.
+1. **SDK-native**: Strategy calls ``self.broker.order_send()`` → SimBroker
+2. **Vectorized**: ``run_dataframe`` pre-computed signal DataFrame
 
-Execution model (D10):
-    SDK strategies interact with the engine through SimBroker directly.
-    Legacy def run(context) strategies go through _LegacyStrategyRunner.
-    Vectorized run_dataframe strategies use a pre-computed signal DataFrame.
-    All three paths share the same tick-driven main loop.
+Legacy ``def run(context)`` / ``signal = {...}`` is no longer supported.
 """
 
 from __future__ import annotations
@@ -27,7 +23,7 @@ from app.engine.margin import MarginModel
 from app.engine.market import MarketSimulator, MultiSymbolMarket, TickSimulator
 from app.engine.metrics import build_metrics
 from app.engine.portfolio import Portfolio
-from app.engine.sandbox import StrategyRunner as _LegacyStrategyRunner, code_sha256
+from app.engine.sandbox import code_sha256
 from app.engine.sim_broker import SimBroker
 from app.engine.types import (
     BacktestRequest,
@@ -39,7 +35,6 @@ from app.engine.types import (
     Order,
     OrderType,
     Position,
-    RunMode,
     RunSnapshot,
     Side,
     StrategyCompileError,
@@ -56,7 +51,7 @@ from app.sdk.runtime import StrategyRuntime
 from app.sdk.series import Bars, Series
 from app.sdk.strategy_base import StrategyBase
 
-# ── Legacy signal-dispatch constants ─────────────────────────────────────
+# ── Signal-dispatch constants (vectorized path only) ─────────────────────
 
 _PENDING_TYPES = {
     "buy_limit": OrderType.BUY_LIMIT,
@@ -69,11 +64,6 @@ _PENDING_TYPES = {
 
 _BUY_ACTIONS = frozenset({"buy", "buy_limit", "buy_stop", "buy_stop_limit"})
 _SELL_ACTIONS = frozenset({"sell", "sell_limit", "sell_stop", "sell_stop_limit"})
-
-
-def _tick_side_for_close(pos: Position, tick: Tick) -> float:
-    """Mark price used when forcibly closing ``pos`` at ``tick``."""
-    return tick.bid if pos.side is Side.BUY else tick.ask
 
 
 def _parse_expiration(raw: Any) -> Optional[int]:
@@ -96,8 +86,6 @@ def _parse_expiration(raw: Any) -> Optional[int]:
 
 
 class _EngineSeries(Series):
-    """Series backed by a numpy array from MarketSimulator."""
-
     def __init__(self, data: np.ndarray):
         self._data = data
 
@@ -115,8 +103,6 @@ class _EngineSeries(Series):
 
 
 class _EngineBars(Bars):
-    """Bars backed by MarketSimulator numpy arrays."""
-
     def __init__(self, market: MarketSimulator, timeframe: str = ""):
         self.timeframe = timeframe
         self.open = _EngineSeries(market._open)
@@ -131,8 +117,6 @@ class _EngineBars(Bars):
 
 
 class _EngineIndicators:
-    """Indicators backed by engine data, matching SDK Indicators interface."""
-
     def __init__(self, bars_provider):
         self._bars_provider = bars_provider
 
@@ -142,60 +126,39 @@ class _EngineIndicators:
 
     def ma(self, period=14, shift=0, method="sma"):
         data = self._get_close()
-        if len(data) < period + shift:
-            return 0.0
+        if len(data) < period + shift: return 0.0
         window = data[:len(data) - shift] if shift > 0 else data
         if method in ("ema", "exponential"):
             alpha = 2.0 / (period + 1)
             result = float(window[-period])
-            for v in window[-period + 1:]:
-                result = alpha * v + (1 - alpha) * result
+            for v in window[-period + 1:]: result = alpha * v + (1 - alpha) * result
             return result
         return float(np.mean(window[-period:]))
 
-    def ema(self, period=14, shift=0):
-        return self.ma(period, shift, "ema")
-
+    def ema(self, period=14, shift=0): return self.ma(period, shift, "ema")
     def rsi(self, period=14, shift=0):
         data = self._get_close()
-        if len(data) < period + shift + 1:
-            return 50.0
+        if len(data) < period + shift + 1: return 50.0
         window = data[:len(data) - shift] if shift > 0 else data
         deltas = np.diff(window[-period - 1:])
-        gains = np.sum(deltas[deltas > 0])
-        losses = -np.sum(deltas[deltas < 0])
-        if losses == 0:
-            return 100.0 if gains > 0 else 50.0
-        rs = gains / losses
-        return float(100.0 - 100.0 / (1.0 + rs))
-
+        gains, losses = np.sum(deltas[deltas > 0]), -np.sum(deltas[deltas < 0])
+        if losses == 0: return 100.0 if gains > 0 else 50.0
+        return float(100.0 - 100.0 / (1.0 + gains / losses))
     def bands(self, period=20, deviation=2.0, shift=0):
         data = self._get_close()
-        if len(data) < period:
-            return (0.0, 0.0, 0.0)
+        if len(data) < period: return (0.0, 0.0, 0.0)
         middle = self.ma(period, shift, "sma")
         window = data[:len(data) - shift] if shift > 0 else data
         std = float(np.std(window[-period:]))
         return (middle + deviation * std, middle, middle - deviation * std)
-
-    def macd(self, fast=12, slow=26, signal=9, shift=0):
-        return (0.0, 0.0, 0.0)
-
-    def atr(self, period=14, shift=0):
-        return 0.001
-
-    def stochastic(self, k_period=5, d_period=3, shift=0):
-        return (50.0, 50.0)
-
-    def cci(self, period=14, shift=0):
-        return 0.0
-
-    def i_custom(self, name, params=(), buffer=0, shift=0):
-        return 0.0
+    def macd(self, fast=12, slow=26, signal=9, shift=0): return (0.0, 0.0, 0.0)
+    def atr(self, period=14, shift=0): return 0.001
+    def stochastic(self, k_period=5, d_period=3, shift=0): return (50.0, 50.0)
+    def cci(self, period=14, shift=0): return 0.0
+    def i_custom(self, name, params=(), buffer=0, shift=0): return 0.0
 
 
 def _is_sdk_strategy(code: str) -> bool:
-    """Check whether strategy code uses the SDK class-based format."""
     try:
         tree = ast.parse(code)
     except SyntaxError:
@@ -214,19 +177,12 @@ def _is_sdk_strategy(code: str) -> bool:
 
 
 class BacktestRunner:
-    """Encapsulates one backtest request's execution state.
+    """SDK-native backtest execution (D10).
 
-    D10: Three execution paths sharing one tick-driven loop:
+    Two paths sharing one tick-driven loop:
 
-    1. **SDK-native** (``_use_sdk_path=True``): Strategy calls
-       ``self.broker.order_send()`` → SimBroker → FillModel/Portfolio.
-       No signal dict, no sandbox.call().
-
-    2. **Legacy** (``_sandbox``): Old ``def run(context)`` / ``signal={}``
-       patterns via ``_LegacyStrategyRunner.call(ctx)`` + ``_dispatch_signal()``.
-
-    3. **Vectorized** (``_signal_df``): ``run_dataframe`` pre-computed
-       signal DataFrame consumed bar-by-bar.
+    1. **SDK-native**: Strategy calls ``self.broker.order_send()`` → SimBroker
+    2. **Vectorized**: Pre-computed ``run_dataframe`` signal DataFrame
     """
 
     def __init__(self, req: BacktestRequest, sandbox=None) -> None:
@@ -250,20 +206,17 @@ class BacktestRunner:
             else req.cost_profile.contract_size
         )
         self._portfolio = Portfolio(
-            initial_cash=req.initial_cash,
-            legacy_pnl=req.legacy_pnl,
+            initial_cash=req.initial_cash, legacy_pnl=req.legacy_pnl,
             contract_size=contract_size,
         )
         self._margin = MarginModel(req.leverage, contract_size)
 
-        # ── Strategy format detection ─────────────────────────────────────
         strategy_is_sdk = _is_sdk_strategy(req.strategy_code)
-
         self._signal_df = None
         self._use_sdk_path = False
-        self._sandbox = None
 
         if sandbox is not None:
+            # Caller-provided sandbox (test hooks).
             self._sandbox = sandbox
         elif strategy_is_sdk:
             self._init_sdk_path(req)
@@ -271,19 +224,20 @@ class BacktestRunner:
         elif detect_strategy_type(req.strategy_code) == "run_dataframe":
             import pandas as pd
             df_runner = DataFrameStrategyRunner(req.strategy_code, timeout_ms=req.deadline_ms)
-            ohlc_df = pd.DataFrame({
-                "open":   [b.open for b in self._primary_bars],
-                "high":   [b.high for b in self._primary_bars],
-                "low":    [b.low for b in self._primary_bars],
-                "close":  [b.close for b in self._primary_bars],
+            self._signal_df = df_runner.call_dataframe(pd.DataFrame({
+                "open": [b.open for b in self._primary_bars],
+                "high": [b.high for b in self._primary_bars],
+                "low": [b.low for b in self._primary_bars],
+                "close": [b.close for b in self._primary_bars],
                 "volume": [b.tick_volume for b in self._primary_bars],
-                "time":   [b.time for b in self._primary_bars],
-            })
-            self._signal_df = df_runner.call_dataframe(ohlc_df, req.strategy_params or {})
+                "time": [b.time for b in self._primary_bars],
+            }), req.strategy_params or {})
         else:
-            self._sandbox = _LegacyStrategyRunner(req.strategy_code, timeout_ms=req.deadline_ms)
+            raise StrategyCompileError(
+                "只支持 SDK 策略或 run_dataframe 策略。"
+                "请使用继承 StrategyBase 的类定义来编写策略。"
+            )
 
-        self._strategy_runtime_kv: dict = {}
         self._equity_curve: List[float] = [req.initial_cash]
         self._events: List[dict] = []
         self._last_bar_idx = -1
@@ -308,17 +262,14 @@ class BacktestRunner:
             raise StrategyCompileError("SDK策略未找到继承 StrategyBase 的类")
 
         self._broker = SimBroker(
-            portfolio=self._portfolio,
-            fill_model=self._fill,
-            cost_model=self._cost,
-            margin_model=self._margin,
+            portfolio=self._portfolio, fill_model=self._fill,
+            cost_model=self._cost, margin_model=self._margin,
             market=self._market,
             tick_source=lambda: getattr(self, "_current_tick", None),
             account_mode=AccountMode.HEDGING,
             initial_balance=Decimal(str(req.initial_cash)),
         )
 
-        # Bars provider: use primary market for MultiSymbolMarket.
         _primary_market = (
             self._market.primary_market() if isinstance(self._market, MultiSymbolMarket)
             else self._market
@@ -328,12 +279,10 @@ class BacktestRunner:
             return _EngineBars(_primary_market, timeframe or req.timeframe)
 
         self._runtime = StrategyRuntime(
-            strategy_class=strategy_cls,
-            broker=self._broker,
+            strategy_class=strategy_cls, broker=self._broker,
             bars_provider=bars_provider,
             indicators=_EngineIndicators(bars_provider),
-            symbol=req.symbol,
-            timeframe=req.timeframe,
+            symbol=req.symbol, timeframe=req.timeframe,
             params=dict(req.strategy_params or {}),
         )
         self._runtime.init()
@@ -354,28 +303,21 @@ class BacktestRunner:
             error = f"engine error: {e}"
 
         metrics, risk = build_metrics(
-            self._equity_curve,
-            self._portfolio.closed_trades,
-            self._primary_bars,
+            self._equity_curve, self._portfolio.closed_trades, self._primary_bars,
         )
         return BacktestResult(
-            run_id=self._req.run_id,
-            success=success,
-            equity_curve=list(self._equity_curve),
-            events=list(self._events),
-            metrics=metrics,
-            risk_assessment=risk,
+            run_id=self._req.run_id, success=success,
+            equity_curve=list(self._equity_curve), events=list(self._events),
+            metrics=metrics, risk_assessment=risk,
             trades=list(self._portfolio.closed_trades),
             snapshot=self._build_snapshot(),
             execution_assumptions=self._build_execution_assumptions(),
             error=error,
         )
 
-    # ── main loop (unified) ───────────────────────────────────────────────
+    # ── main loop ─────────────────────────────────────────────────────────
 
     def _run_loop(self) -> None:
-        from app.engine.context import build_context
-
         req = self._req
         last_tick: Optional[Tick] = None
         use_sdk = self._use_sdk_path
@@ -412,15 +354,6 @@ class BacktestRunner:
                 elif self._signal_df is not None:
                     signal = extract_signal_at(self._signal_df, self._last_bar_idx, req.strategy_params)
                     self._dispatch_signal(signal, tick)
-                else:
-                    ctx = build_context(
-                        RunMode.BACKTEST, req.symbol, req.timeframe,
-                        self._market, self._last_bar_idx, self._portfolio,
-                        req.strategy_params, tick,
-                    )
-                    ctx["runtime"] = self._strategy_runtime_kv
-                    signal = self._sandbox.call(ctx)
-                    self._dispatch_signal(signal, tick)
 
                 self._equity_curve.append(self._portfolio.cash)
 
@@ -431,7 +364,6 @@ class BacktestRunner:
                 )
                 self._portfolio.set_cash(new_equity)
 
-        # End of data.
         if use_sdk:
             self._runtime.on_deinit("end_of_test")
 
@@ -441,7 +373,7 @@ class BacktestRunner:
                     self._events.append(self._close_event(trade))
                 self._equity_curve.append(self._portfolio.cash)
 
-    # ── signal dispatch (legacy only) ─────────────────────────────────────
+    # ── signal dispatch (vectorized path) ─────────────────────────────────
 
     def _dispatch_signal(self, signal, tick: Tick) -> None:
         if not signal or not isinstance(signal, dict):
@@ -450,10 +382,8 @@ class BacktestRunner:
         if action in ("hold", ""):
             return
         td = self._req.trade_direction
-        if td == "long" and action in _SELL_ACTIONS:
-            return
-        if td == "short" and action in _BUY_ACTIONS:
-            return
+        if td == "long" and action in _SELL_ACTIONS: return
+        if td == "short" and action in _BUY_ACTIONS: return
         if action == "cancel_pending":
             self._fill.cancel_all()
             return
@@ -490,8 +420,7 @@ class BacktestRunner:
             order = Order(id=0, type=OrderType.BUY if action == "buy" else OrderType.SELL,
                           volume=volume, sl=sl, tp=tp, created_at_ts=tick.ts)
             result = self._fill.process_market_order(order, tick)
-            if result is None:
-                return
+            if result is None: return
             fill, filled_order = result
             pos = self._portfolio.apply_fill(fill, filled_order, tick)
             self._events.append(self._open_event(pos, fill))
@@ -499,11 +428,11 @@ class BacktestRunner:
 
         if action in _PENDING_TYPES:
             price = float(signal.get("price") or 0.0)
-            if price <= 0:
-                return
-            stop_limit_price = float(signal.get("stop_limit_price") or signal.get("limit_price") or 0.0)
-            order = Order(id=0, type=_PENDING_TYPES[action], volume=volume, price=price,
-                          sl=sl, tp=tp, stop_limit_price=stop_limit_price,
+            if price <= 0: return
+            stop_limit_price = float(
+                signal.get("stop_limit_price") or signal.get("limit_price") or 0.0)
+            order = Order(id=0, type=_PENDING_TYPES[action], volume=volume,
+                          price=price, sl=sl, tp=tp, stop_limit_price=stop_limit_price,
                           expiration=_parse_expiration(signal.get("expiration")),
                           created_at_ts=tick.ts)
             self._fill.enqueue(order, replace_same_type=bool(signal.get("replace")))
@@ -528,7 +457,7 @@ class BacktestRunner:
             "pnl": trade.pnl, "commission": trade.commission,
         }
 
-    def _build_snapshot(self) -> RunSnapshot:
+    def _build_snapshot(self):
         req = self._req
         return RunSnapshot(
             code_sha256=code_sha256(req.strategy_code),
@@ -539,17 +468,15 @@ class BacktestRunner:
             ticks_count=len(self._ticks),
         )
 
-    def _build_execution_assumptions(self) -> ExecutionAssumptions:
+    def _build_execution_assumptions(self):
         req = self._req
-        signal_timing = "next_bar_open" if req.strict_mode else "same_bar_close"
-        cp = req.cost_profile
         return ExecutionAssumptions(
             simulation_mode=req.source,
-            signal_timing=signal_timing,
-            fill_rule=signal_timing,
+            signal_timing="next_bar_open" if req.strict_mode else "same_bar_close",
+            fill_rule="next_bar_open" if req.strict_mode else "same_bar_close",
             mtf_fallback_reason="",
-            actual_commission=cp.commission_per_lot,
-            actual_slippage=cp.slippage_rate,
+            actual_commission=req.cost_profile.commission_per_lot,
+            actual_slippage=req.cost_profile.slippage_rate,
             actual_leverage=req.leverage if req.leverage > 0 else 1.0,
             trade_direction=req.trade_direction,
         )
@@ -561,8 +488,7 @@ def run_backtest(req: BacktestRequest) -> BacktestResult:
         return BacktestRunner(req).run()
     except Exception as e:
         import traceback
-        tb = traceback.format_exc()
         return BacktestResult(
             run_id=req.run_id, success=False,
-            error=f"策略执行错误: {e}\n{tb}",
+            error=f"策略执行错误: {e}\n{traceback.format_exc()}",
         )
