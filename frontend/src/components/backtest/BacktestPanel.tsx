@@ -209,25 +209,41 @@ export default function BacktestPanel(props: Props) {
               />
             </div>
 
-            {/* Date range */}
-            <div style={{ marginBottom: 10 }}>
-              <div style={S.fieldLabel}>{t(DATE_RANGE_KEY)}</div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <Segmented size="small" value={runner.datePreset}
-                  onChange={(v) => {
-                    const p = DATE_PRESETS.find(d => d.key === v);
-                    if (p) runner.applyDatePreset(p);
-                  }}
-                  options={DATE_PRESETS.map(p => ({ value: p.key, label: p.label }))}
-                />
-                <DatePicker size="small" style={{ width: 130 }}
-                  value={runner.startDate ? dayjs(runner.startDate) : null}
-                  onChange={(d) => d && runner.setStartDate(d.format('YYYY-MM-DD'))}
-                  placeholder={t(START_DATE_KEY)} />
-                <DatePicker size="small" style={{ width: 130 }}
-                  value={runner.endDate ? dayjs(runner.endDate) : null}
-                  onChange={(d) => d && runner.setEndDate(d.format('YYYY-MM-DD'))}
-                  placeholder={t(END_DATE_KEY)} />
+            {/* Date range + Strict Mode + Presets — single compact row */}
+            <div style={{ marginBottom: 8, display: 'flex', alignItems: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+              <div>
+                <div style={S.fieldLabel}>{t(DATE_RANGE_KEY)}</div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <Segmented size="small" value={runner.datePreset}
+                    onChange={(v) => {
+                      const p = DATE_PRESETS.find(d => d.key === v);
+                      if (p) runner.applyDatePreset(p);
+                    }}
+                    options={DATE_PRESETS.map(p => ({ value: p.key, label: p.label }))}
+                  />
+                  <DatePicker size="small" style={{ width: 120 }}
+                    value={runner.startDate ? dayjs(runner.startDate) : null}
+                    onChange={(d) => d && runner.setStartDate(d.format('YYYY-MM-DD'))}
+                    placeholder={t(START_DATE_KEY)} />
+                  <DatePicker size="small" style={{ width: 120 }}
+                    value={runner.endDate ? dayjs(runner.endDate) : null}
+                    onChange={(d) => d && runner.setEndDate(d.format('YYYY-MM-DD'))}
+                    placeholder={t(END_DATE_KEY)} />
+                </div>
+              </div>
+              <div style={{ borderLeft: '1px solid #e8e8e8', paddingLeft: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={S.fieldLabel}>{t(STRICT_MODE_KEY)}</span>
+                  <Switch size="small" checked={runner.strictMode} onChange={runner.setStrictMode} />
+                </div>
+              </div>
+              <div style={{ borderLeft: '1px solid #e8e8e8', paddingLeft: 8 }}>
+                {(Object.keys(PRESETS) as Array<keyof typeof PRESETS>).map((key) => (
+                  <Button key={key} size="small" type="link" onClick={() => runner.applyPreset(key)}
+                    style={{ fontSize: 10, padding: '0 4px', height: 22 }}>
+                    {t(`strategy.backtestParams.presets.${key === 'live_aligned' ? 'liveAligned' : 'exploration'}`)}
+                  </Button>
+                ))}
               </div>
             </div>
 
@@ -277,31 +293,6 @@ export default function BacktestPanel(props: Props) {
                 </Radio.Group>
               </Col>
             </Row>
-            <Row gutter={8} style={{ marginBottom: 4 }}>
-              <Col span={12}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={S.fieldLabel}>{t(STRICT_MODE_KEY)}</span>
-                  <Switch size="small" checked={runner.strictMode} onChange={runner.setStrictMode} />
-                  <Tooltip title={runner.strictMode ? t(STRICT_MODE_ON_TOOLTIP_KEY) : t(STRICT_MODE_OFF_TOOLTIP_KEY)}>
-                    <Tag color={runner.strictMode ? 'blue' : 'orange'}
-                      style={{ fontSize: 8, margin: 0, lineHeight: '14px', cursor: 'help' }}>
-                      {runner.strictMode ? t(STRICT_MODE_ON_KEY) : t(STRICT_MODE_OFF_KEY)}
-                    </Tag>
-                  </Tooltip>
-                </div>
-              </Col>
-            </Row>
-
-            {/* Preset buttons */}
-            <div style={{ marginTop: 8, display: 'flex', gap: 4 }}>
-              {(Object.keys(PRESETS) as Array<keyof typeof PRESETS>).map((key) => (
-                <Button key={key} size="small" onClick={() => runner.applyPreset(key)}
-                  style={{ fontSize: 9, padding: '0 8px', height: 22 }}>
-                  {t(`strategy.backtestParams.presets.${key === 'live_aligned' ? 'liveAligned' : 'exploration'}`)}
-                </Button>
-              ))}
-            </div>
-
             {/* Strategy-specific params */}
             {runner.extractedParams.length > 0 && (
               <div style={{ marginTop: 10, borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
