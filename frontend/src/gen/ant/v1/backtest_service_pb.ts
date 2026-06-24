@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file backtest_service.proto.
  */
 export const file_backtest_service: GenFile = /*@__PURE__*/
-  fileDesc("ChZiYWNrdGVzdF9zZXJ2aWNlLnByb3RvEgZhbnQudjEiLgoVRW5naW5lVmFsaWRhdGVSZXF1ZXN0EhUKDXN0cmF0ZWd5X2NvZGUYASABKAkiSQoWRW5naW5lVmFsaWRhdGVSZXNwb25zZRINCgV2YWxpZBgBIAEoCBIOCgZlcnJvcnMYAiADKAkSEAoId2FybmluZ3MYAyADKAkikgEKGEVuZ2luZVJ1blN0cmF0ZWd5UmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCRIVCg1zdHJhdGVneV9jb2RlGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSJwoGa2xpbmVzGAUgAygLMhcuYW50LnYxLkV4ZWN1dGVLbGluZUJhciJmChlFbmdpbmVSdW5TdHJhdGVneVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSKQoGc2lnbmFsGAIgASgLMhkuYW50LnYxLkVuZ2luZVRyYWRlU2lnbmFsEg0KBWVycm9yGAMgASgJIp4BChFFbmdpbmVUcmFkZVNpZ25hbBIOCgZzaWduYWwYASABKAkSDgoGc3ltYm9sGAIgASgJEg0KBXByaWNlGAMgASgBEg4KBnZvbHVtZRgEIAEoARIRCglzdG9wX2xvc3MYBSABKAESEwoLdGFrZV9wcm9maXQYBiABKAESEgoKY29uZmlkZW5jZRgHIAEoARIOCgZyZWFzb24YCCABKAkihgEKD0V4ZWN1dGVLbGluZUJhchIUCgxvcGVuX3RpbWVfbXMYASABKAMSFQoNY2xvc2VfdGltZV9tcxgCIAEoAxIMCgRvcGVuGAMgASgBEgwKBGhpZ2gYBCABKAESCwoDbG93GAUgASgBEg0KBWNsb3NlGAYgASgBEg4KBnZvbHVtZRgHIAEoASLcBAoWRXhlY3V0ZUJhY2t0ZXN0UmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCRIVCg1zdHJhdGVneV9jb2RlGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFQoNc3RhcnRfZGF0ZV9tcxgFIAEoAxITCgtlbmRfZGF0ZV9tcxgGIAEoAxIXCg9pbml0aWFsX2NhcGl0YWwYByABKAESEgoKY29tbWlzc2lvbhgIIAEoARIOCgZzcHJlYWQYCSABKAESEQoJc3dhcF9yYXRlGAogASgBEhcKD3NlcnZlcl90aW1lem9uZRgLIAEoCRIVCg1yb2xsb3Zlcl9ob3VyGAwgASgFEhsKE3RyaXBsZV9zd2FwX3dlZWtkYXkYDSABKAUSFQoNc2xpcHBhZ2VfbW9kZRgOIAEoCRIVCg1zbGlwcGFnZV9yYXRlGA8gASgBEhUKDXNsaXBwYWdlX3NlZWQYECABKAUSJwoGa2xpbmVzGBEgAygLMhcuYW50LnYxLkV4ZWN1dGVLbGluZUJhchIVCg1leHRyYV9zeW1ib2xzGBIgAygJEhwKFHN0cmF0ZWd5X3BhcmFtc19qc29uGBMgASgJEhAKCGxldmVyYWdlGBQgASgBEi8KD3RyYWRlX2RpcmVjdGlvbhgVIAEoDjIWLmFudC52MS5UcmFkZURpcmVjdGlvbhITCgtzdHJpY3RfbW9kZRgWIAEoCBIvCg9zdHJhdGVneV9jb25maWcYFyABKAsyFi5hbnQudjEuU3RyYXRlZ3lDb25maWcixwEKFEV4ZWN1dGVCYWNrdGVzdFRyYWRlEg4KBnRpY2tldBgBIAEoAxIMCgRzaWRlGAIgASgJEg4KBnZvbHVtZRgDIAEoARISCgpvcGVuX3RzX21zGAQgASgDEhIKCm9wZW5fcHJpY2UYBSABKAESEwoLY2xvc2VfdHNfbXMYBiABKAMSEwoLY2xvc2VfcHJpY2UYByABKAESCwoDcG5sGAggASgBEhIKCmNvbW1pc3Npb24YCSABKAESDgoGcmVhc29uGAogASgJIpgCChdFeGVjdXRlQmFja3Rlc3RSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEi8KB21ldHJpY3MYAiABKAsyHi5hbnQudjEuRXhlY3V0ZUJhY2t0ZXN0TWV0cmljcxIrCgRyaXNrGAMgASgLMh0uYW50LnYxLkV4ZWN1dGVSaXNrQXNzZXNzbWVudBIUCgxlcXVpdHlfY3VydmUYBCADKAESLAoGdHJhZGVzGAUgAygLMhwuYW50LnYxLkV4ZWN1dGVCYWNrdGVzdFRyYWRlEg0KBWVycm9yGAYgASgJEjsKFWV4ZWN1dGlvbl9hc3N1bXB0aW9ucxgHIAEoCzIcLmFudC52MS5FeGVjdXRpb25Bc3N1bXB0aW9ucyKpAgoWRXhlY3V0ZUJhY2t0ZXN0TWV0cmljcxIUCgx0b3RhbF9yZXR1cm4YASABKAESFQoNYW5udWFsX3JldHVybhgCIAEoARIUCgxtYXhfZHJhd2Rvd24YAyABKAESFAoMc2hhcnBlX3JhdGlvGAQgASgBEhAKCHdpbl9yYXRlGAUgASgBEhUKDXByb2ZpdF9mYWN0b3IYBiABKAESFAoMdG90YWxfdHJhZGVzGAcgASgFEhYKDndpbm5pbmdfdHJhZGVzGAggASgFEhUKDWxvc2luZ190cmFkZXMYCSABKAUSFgoOYXZlcmFnZV9wcm9maXQYCiABKAESFAoMYXZlcmFnZV9sb3NzGAsgASgBEhoKEnRvdGFsX3BubF9hYnNvbHV0ZRgMIAEoASJtChVFeGVjdXRlUmlza0Fzc2Vzc21lbnQSDQoFc2NvcmUYASABKAUSDQoFbGV2ZWwYAiABKAkSDwoHcmVhc29ucxgDIAMoCRIQCgh3YXJuaW5ncxgEIAMoCRITCgtpc19yZWxpYWJsZRgFIAEoCDKIAgoPQmFja3Rlc3RTZXJ2aWNlEk4KC1J1bkJhY2t0ZXN0Eh4uYW50LnYxLkV4ZWN1dGVCYWNrdGVzdFJlcXVlc3QaHy5hbnQudjEuRXhlY3V0ZUJhY2t0ZXN0UmVzcG9uc2USUQoQVmFsaWRhdGVTdHJhdGVneRIdLmFudC52MS5FbmdpbmVWYWxpZGF0ZVJlcXVlc3QaHi5hbnQudjEuRW5naW5lVmFsaWRhdGVSZXNwb25zZRJSCgtSdW5TdHJhdGVneRIgLmFudC52MS5FbmdpbmVSdW5TdHJhdGVneVJlcXVlc3QaIS5hbnQudjEuRW5naW5lUnVuU3RyYXRlZ3lSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_backtest_execution_config]);
+  fileDesc("ChZiYWNrdGVzdF9zZXJ2aWNlLnByb3RvEgZhbnQudjEiLgoVRW5naW5lVmFsaWRhdGVSZXF1ZXN0EhUKDXN0cmF0ZWd5X2NvZGUYASABKAkiSQoWRW5naW5lVmFsaWRhdGVSZXNwb25zZRINCgV2YWxpZBgBIAEoCBIOCgZlcnJvcnMYAiADKAkSEAoId2FybmluZ3MYAyADKAkikgEKGEVuZ2luZVJ1blN0cmF0ZWd5UmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCRIVCg1zdHJhdGVneV9jb2RlGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSJwoGa2xpbmVzGAUgAygLMhcuYW50LnYxLkV4ZWN1dGVLbGluZUJhciJmChlFbmdpbmVSdW5TdHJhdGVneVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSKQoGc2lnbmFsGAIgASgLMhkuYW50LnYxLkVuZ2luZVRyYWRlU2lnbmFsEg0KBWVycm9yGAMgASgJIp4BChFFbmdpbmVUcmFkZVNpZ25hbBIOCgZzaWduYWwYASABKAkSDgoGc3ltYm9sGAIgASgJEg0KBXByaWNlGAMgASgBEg4KBnZvbHVtZRgEIAEoARIRCglzdG9wX2xvc3MYBSABKAESEwoLdGFrZV9wcm9maXQYBiABKAESEgoKY29uZmlkZW5jZRgHIAEoARIOCgZyZWFzb24YCCABKAkihgEKD0V4ZWN1dGVLbGluZUJhchIUCgxvcGVuX3RpbWVfbXMYASABKAMSFQoNY2xvc2VfdGltZV9tcxgCIAEoAxIMCgRvcGVuGAMgASgBEgwKBGhpZ2gYBCABKAESCwoDbG93GAUgASgBEg0KBWNsb3NlGAYgASgBEg4KBnZvbHVtZRgHIAEoASKFBQoWRXhlY3V0ZUJhY2t0ZXN0UmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCRIVCg1zdHJhdGVneV9jb2RlGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFQoNc3RhcnRfZGF0ZV9tcxgFIAEoAxITCgtlbmRfZGF0ZV9tcxgGIAEoAxIXCg9pbml0aWFsX2NhcGl0YWwYByABKAESEgoKY29tbWlzc2lvbhgIIAEoARIOCgZzcHJlYWQYCSABKAESEQoJc3dhcF9yYXRlGAogASgBEhcKD3NlcnZlcl90aW1lem9uZRgLIAEoCRIVCg1yb2xsb3Zlcl9ob3VyGAwgASgFEhsKE3RyaXBsZV9zd2FwX3dlZWtkYXkYDSABKAUSFQoNc2xpcHBhZ2VfbW9kZRgOIAEoCRIVCg1zbGlwcGFnZV9yYXRlGA8gASgBEhUKDXNsaXBwYWdlX3NlZWQYECABKAUSJwoGa2xpbmVzGBEgAygLMhcuYW50LnYxLkV4ZWN1dGVLbGluZUJhchIVCg1leHRyYV9zeW1ib2xzGBIgAygJEhwKFHN0cmF0ZWd5X3BhcmFtc19qc29uGBMgASgJEhAKCGxldmVyYWdlGBQgASgBEi8KD3RyYWRlX2RpcmVjdGlvbhgVIAEoDjIWLmFudC52MS5UcmFkZURpcmVjdGlvbhITCgtzdHJpY3RfbW9kZRgWIAEoCBIvCg9zdHJhdGVneV9jb25maWcYFyABKAsyFi5hbnQudjEuU3RyYXRlZ3lDb25maWcSJwoLc3ltYm9sX2luZm8YGCABKAsyEi5hbnQudjEuU3ltYm9sSW5mbyKNAgoKU3ltYm9sSW5mbxIOCgZkaWdpdHMYASABKAUSDQoFcG9pbnQYAiABKAESEQoJdGlja19zaXplGAMgASgBEhIKCnRpY2tfdmFsdWUYBCABKAESFQoNY29udHJhY3Rfc2l6ZRgFIAEoARISCgp2b2x1bWVfbWluGAYgASgBEhIKCnZvbHVtZV9tYXgYByABKAESEwoLdm9sdW1lX3N0ZXAYCCABKAESEwoLc3RvcHNfbGV2ZWwYCSABKAUSFAoMZnJlZXplX2xldmVsGAogASgFEhEKCXN3YXBfbG9uZxgLIAEoARISCgpzd2FwX3Nob3J0GAwgASgBEhMKC21hcmdpbl9yYXRlGA0gASgBIscBChRFeGVjdXRlQmFja3Rlc3RUcmFkZRIOCgZ0aWNrZXQYASABKAMSDAoEc2lkZRgCIAEoCRIOCgZ2b2x1bWUYAyABKAESEgoKb3Blbl90c19tcxgEIAEoAxISCgpvcGVuX3ByaWNlGAUgASgBEhMKC2Nsb3NlX3RzX21zGAYgASgDEhMKC2Nsb3NlX3ByaWNlGAcgASgBEgsKA3BubBgIIAEoARISCgpjb21taXNzaW9uGAkgASgBEg4KBnJlYXNvbhgKIAEoCSKYAgoXRXhlY3V0ZUJhY2t0ZXN0UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIvCgdtZXRyaWNzGAIgASgLMh4uYW50LnYxLkV4ZWN1dGVCYWNrdGVzdE1ldHJpY3MSKwoEcmlzaxgDIAEoCzIdLmFudC52MS5FeGVjdXRlUmlza0Fzc2Vzc21lbnQSFAoMZXF1aXR5X2N1cnZlGAQgAygBEiwKBnRyYWRlcxgFIAMoCzIcLmFudC52MS5FeGVjdXRlQmFja3Rlc3RUcmFkZRINCgVlcnJvchgGIAEoCRI7ChVleGVjdXRpb25fYXNzdW1wdGlvbnMYByABKAsyHC5hbnQudjEuRXhlY3V0aW9uQXNzdW1wdGlvbnMiqQIKFkV4ZWN1dGVCYWNrdGVzdE1ldHJpY3MSFAoMdG90YWxfcmV0dXJuGAEgASgBEhUKDWFubnVhbF9yZXR1cm4YAiABKAESFAoMbWF4X2RyYXdkb3duGAMgASgBEhQKDHNoYXJwZV9yYXRpbxgEIAEoARIQCgh3aW5fcmF0ZRgFIAEoARIVCg1wcm9maXRfZmFjdG9yGAYgASgBEhQKDHRvdGFsX3RyYWRlcxgHIAEoBRIWCg53aW5uaW5nX3RyYWRlcxgIIAEoBRIVCg1sb3NpbmdfdHJhZGVzGAkgASgFEhYKDmF2ZXJhZ2VfcHJvZml0GAogASgBEhQKDGF2ZXJhZ2VfbG9zcxgLIAEoARIaChJ0b3RhbF9wbmxfYWJzb2x1dGUYDCABKAEibQoVRXhlY3V0ZVJpc2tBc3Nlc3NtZW50Eg0KBXNjb3JlGAEgASgFEg0KBWxldmVsGAIgASgJEg8KB3JlYXNvbnMYAyADKAkSEAoId2FybmluZ3MYBCADKAkSEwoLaXNfcmVsaWFibGUYBSABKAgyiAIKD0JhY2t0ZXN0U2VydmljZRJOCgtSdW5CYWNrdGVzdBIeLmFudC52MS5FeGVjdXRlQmFja3Rlc3RSZXF1ZXN0Gh8uYW50LnYxLkV4ZWN1dGVCYWNrdGVzdFJlc3BvbnNlElEKEFZhbGlkYXRlU3RyYXRlZ3kSHS5hbnQudjEuRW5naW5lVmFsaWRhdGVSZXF1ZXN0Gh4uYW50LnYxLkVuZ2luZVZhbGlkYXRlUmVzcG9uc2USUgoLUnVuU3RyYXRlZ3kSIC5hbnQudjEuRW5naW5lUnVuU3RyYXRlZ3lSZXF1ZXN0GiEuYW50LnYxLkVuZ2luZVJ1blN0cmF0ZWd5UmVzcG9uc2VCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_backtest_execution_config]);
 
 /**
  * @generated from message ant.v1.EngineValidateRequest
@@ -359,6 +359,13 @@ export type ExecuteBacktestRequest = Message<"ant.v1.ExecuteBacktestRequest"> & 
    * @generated from field: ant.v1.StrategyConfig strategy_config = 23;
    */
   strategyConfig?: StrategyConfig | undefined;
+
+  /**
+   * broker-provided contract metadata
+   *
+   * @generated from field: ant.v1.SymbolInfo symbol_info = 24;
+   */
+  symbolInfo?: SymbolInfo | undefined;
 };
 
 /**
@@ -367,6 +374,112 @@ export type ExecuteBacktestRequest = Message<"ant.v1.ExecuteBacktestRequest"> & 
  */
 export const ExecuteBacktestRequestSchema: GenMessage<ExecuteBacktestRequest> = /*@__PURE__*/
   messageDesc(file_backtest_service, 6);
+
+/**
+ * SymbolInfo carries contract metadata queried from the MT4/MT5 broker.
+ * This is the authoritative source — no hardcoded guesses.
+ *
+ * @generated from message ant.v1.SymbolInfo
+ */
+export type SymbolInfo = Message<"ant.v1.SymbolInfo"> & {
+  /**
+   * decimal places in price quotes
+   *
+   * @generated from field: int32 digits = 1;
+   */
+  digits: number;
+
+  /**
+   * minimum price increment (10^-digits)
+   *
+   * @generated from field: double point = 2;
+   */
+  point: number;
+
+  /**
+   * minimum tick size
+   *
+   * @generated from field: double tick_size = 3;
+   */
+  tickSize: number;
+
+  /**
+   * value of one tick in account currency
+   *
+   * @generated from field: double tick_value = 4;
+   */
+  tickValue: number;
+
+  /**
+   * base units per lot
+   *
+   * @generated from field: double contract_size = 5;
+   */
+  contractSize: number;
+
+  /**
+   * minimum order volume (lots)
+   *
+   * @generated from field: double volume_min = 6;
+   */
+  volumeMin: number;
+
+  /**
+   * maximum order volume (lots)
+   *
+   * @generated from field: double volume_max = 7;
+   */
+  volumeMax: number;
+
+  /**
+   * lot increment step
+   *
+   * @generated from field: double volume_step = 8;
+   */
+  volumeStep: number;
+
+  /**
+   * SL/TP minimum distance in points
+   *
+   * @generated from field: int32 stops_level = 9;
+   */
+  stopsLevel: number;
+
+  /**
+   * order freeze distance in points
+   *
+   * @generated from field: int32 freeze_level = 10;
+   */
+  freezeLevel: number;
+
+  /**
+   * long swap rate
+   *
+   * @generated from field: double swap_long = 11;
+   */
+  swapLong: number;
+
+  /**
+   * short swap rate
+   *
+   * @generated from field: double swap_short = 12;
+   */
+  swapShort: number;
+
+  /**
+   * initial margin rate
+   *
+   * @generated from field: double margin_rate = 13;
+   */
+  marginRate: number;
+};
+
+/**
+ * Describes the message ant.v1.SymbolInfo.
+ * Use `create(SymbolInfoSchema)` to create a new message.
+ */
+export const SymbolInfoSchema: GenMessage<SymbolInfo> = /*@__PURE__*/
+  messageDesc(file_backtest_service, 7);
 
 /**
  * @generated from message ant.v1.ExecuteBacktestTrade
@@ -428,7 +541,7 @@ export type ExecuteBacktestTrade = Message<"ant.v1.ExecuteBacktestTrade"> & {
  * Use `create(ExecuteBacktestTradeSchema)` to create a new message.
  */
 export const ExecuteBacktestTradeSchema: GenMessage<ExecuteBacktestTrade> = /*@__PURE__*/
-  messageDesc(file_backtest_service, 7);
+  messageDesc(file_backtest_service, 8);
 
 /**
  * @generated from message ant.v1.ExecuteBacktestResponse
@@ -475,7 +588,7 @@ export type ExecuteBacktestResponse = Message<"ant.v1.ExecuteBacktestResponse"> 
  * Use `create(ExecuteBacktestResponseSchema)` to create a new message.
  */
 export const ExecuteBacktestResponseSchema: GenMessage<ExecuteBacktestResponse> = /*@__PURE__*/
-  messageDesc(file_backtest_service, 8);
+  messageDesc(file_backtest_service, 9);
 
 /**
  * @generated from message ant.v1.ExecuteBacktestMetrics
@@ -549,7 +662,7 @@ export type ExecuteBacktestMetrics = Message<"ant.v1.ExecuteBacktestMetrics"> & 
  * Use `create(ExecuteBacktestMetricsSchema)` to create a new message.
  */
 export const ExecuteBacktestMetricsSchema: GenMessage<ExecuteBacktestMetrics> = /*@__PURE__*/
-  messageDesc(file_backtest_service, 9);
+  messageDesc(file_backtest_service, 10);
 
 /**
  * @generated from message ant.v1.ExecuteRiskAssessment
@@ -586,7 +699,7 @@ export type ExecuteRiskAssessment = Message<"ant.v1.ExecuteRiskAssessment"> & {
  * Use `create(ExecuteRiskAssessmentSchema)` to create a new message.
  */
 export const ExecuteRiskAssessmentSchema: GenMessage<ExecuteRiskAssessment> = /*@__PURE__*/
-  messageDesc(file_backtest_service, 10);
+  messageDesc(file_backtest_service, 11);
 
 /**
  * BacktestService runs strategy backtests via the Python engine.

@@ -153,6 +153,11 @@ def _build_engine_request(req: ExecuteBacktestRequest) -> EngineBacktestRequest:
     if req.HasField("strategy_config"):
         strategy_cfg = MessageToDict(req.strategy_config, preserving_proto_field_name=True)
 
+    # Extract broker-provided symbol info if present.
+    symbol_info = None
+    if req.HasField("symbol_info"):
+        symbol_info = MessageToDict(req.symbol_info, preserving_proto_field_name=True)
+
     # Build cost profile from proto request fields (commission, slippage).
     from app.engine.types import CostProfile, SlippageMode
     cost = CostProfile(
@@ -179,6 +184,7 @@ def _build_engine_request(req: ExecuteBacktestRequest) -> EngineBacktestRequest:
         cost_profile=cost,
         bars=bars,
         bars_by_symbol={s: bars for s in req.extra_symbols} if req.extra_symbols else {},
+        symbol_info=symbol_info,
     )
 
 # --- ValidateStrategy ---

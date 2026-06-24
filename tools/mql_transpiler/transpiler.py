@@ -77,6 +77,47 @@ _FUNC_DEF_RE = re.compile(
 # Match for/while/if blocks — balanced-paren extraction helpers.
 
 
+def _mql_default_to_py(value: str, mql_type: str = "") -> str:
+    """Convert an MQL default value literal to a Python expression.
+
+    >>> _mql_default_to_py("0.01", "double")
+    '0.01'
+    >>> _mql_default_to_py("true", "bool")
+    'True'
+    >>> _mql_default_to_py('"Venus"', "string")
+    '"Venus"'
+    """
+    v = value.strip().rstrip(";")
+    # MQL boolean / null constants.
+    if v.lower() == "true":
+        return "True"
+    if v.lower() == "false":
+        return "False"
+    if v.lower() == "null":
+        return "None"
+    # Already a quoted string.
+    if (v.startswith('"') and v.endswith('"')) or (v.startswith("'") and v.endswith("'")):
+        return v
+    # Enum value (not a number) → wrap in quotes.
+    if mql_type.lower() in ("int", "uint", "long", "ulong", "short", "ushort"):
+        try:
+            int(v)
+            return v
+        except ValueError:
+            return f"'{v}'  # enum"
+    if mql_type.lower() in ("double", "float"):
+        try:
+            float(v)
+            return v
+        except ValueError:
+            return f"'{v}'  # enum"
+    # String type but not quoted → quote it.
+    if mql_type.lower() in ("string", "color"):
+        return f'"{v}"'
+    # Default: pass through as-is (could be expression).
+    return v
+
+
 def _extract_parens(text: str, start_pos: int) -> str:
     """Extract content inside balanced parentheses starting at start_pos."""
     depth = 1
@@ -88,6 +129,26 @@ def _extract_parens(text: str, start_pos: int) -> str:
             depth -= 1
         i += 1
     return text[start_pos:i - 1]
+
+
+# MQL type keywords that can prefix variable declarations inside function bodies.
+_MQL_TYPE_KEYWORDS: set[str] = {
+    "int", "double", "bool", "string", "datetime", "color",
+    "void", "uint", "long", "ulong", "float", "short", "ushort",
+    "char", "uchar",
+}
+
+
+def _strip_mql_type_prefix(stripped: str) -> str:
+    """Remove a leading MQL type keyword from a statement.
+
+    ``"int ticket = OrderSend(...)"`` → ``"ticket = OrderSend(...)"``
+    ``"double volume = 0.01;"`` → ``"volume = 0.01"``
+    """
+    for kw in sorted(_MQL_TYPE_KEYWORDS, key=len, reverse=True):
+        if stripped.startswith(kw + " "):
+            return stripped[len(kw) + 1 :]
+    return stripped
 
 
 def _match_control_flow(line: str, keyword: str) -> Optional[str]:
@@ -173,6 +234,7 @@ class MQLTranspiler:
         self._inside_function = False
         self._params_found = []
         self._extern_found = []
+        self._has_on_init_func = False  # True if MQL source has OnInit()
 
         raw_lines = source.split("\n")
 
@@ -181,12 +243,24 @@ class MQLTranspiler:
 
         self._stats.lines_in = len(raw_lines)
 
-        # Phase 1: discover extern/input declarations.
+        # Phase 1: discover extern/input declarations AND check for OnInit.
         for line in lines:
             self._discover_params(line)
+            if not self._has_on_init_func:
+                m = _FUNC_DEF_RE.match(line.strip())
+                if m and m.group("name") == "OnInit":
+                    self._has_on_init_func = True
 
         # Phase 2: emit header.
         self._emit_header(filename)
+
+        # Phase 2.5: if params exist, emit _init_params() helper.
+        # When no MQL OnInit exists, also emit on_init() calling it.
+        all_params = self._extern_found + self._params_found
+        if all_params:
+            self._emit_init_params(all_params)
+            if not self._has_on_init_func:
+                self._emit_on_init_stub()
 
         # Phase 3: process each line.
         i = 0
@@ -230,13 +304,9 @@ class MQLTranspiler:
                 i += 1
                 continue
 
-            # Global declarations.
-            if stripped.startswith("extern "):
-                self._emit_extern_comment(line)
-                i += 1
-                continue
-            if stripped.startswith("input "):
-                self._emit_input_comment(line)
+            # Global declarations (extern/input handled in on_init).
+            if stripped.startswith("extern ") or stripped.startswith("input "):
+                self._emit(f"# {stripped}")
                 i += 1
                 continue
 
@@ -298,6 +368,27 @@ class MQLTranspiler:
     def _emit_footer(self) -> None:
         self._indent = 0
 
+    def _emit_init_params(self, all_params: list) -> None:
+        """Emit ``_init_params()`` helper with all extern/input param reads."""
+        self._emit()
+        self._emit("# ——— Auto-generated: read extern/input parameters ———")
+        self._emit("def _init_params(self) -> None:")
+        self._indent += 1
+        for pname, ptype, pvalue in all_params:
+            py_val = _mql_default_to_py(pvalue, ptype)
+            self._emit(f"self.{pname} = self.ctx.param('{pname}', {py_val})")
+        self._indent -= 1
+        self._emit()  # blank line after method
+
+    def _emit_on_init_stub(self) -> None:
+        """Emit ``on_init()`` that delegates to ``_init_params()``.
+        Used when the MQL source has no OnInit function."""
+        self._emit("def on_init(self) -> None:")
+        self._indent += 1
+        self._emit("self._init_params()")
+        self._indent -= 1
+        self._emit()
+
     def _emit_function_def(
         self, name: str, match, line: str, lines: List[str], line_idx: int
     ) -> None:
@@ -309,11 +400,18 @@ class MQLTranspiler:
                 self._emit(f"def {sdk_name}(self, reason: str = 'user_stop') -> None:")
             else:
                 self._emit(f"def {sdk_name}(self) -> None:")
+            self._indent += 1  # function body indent
             self._inside_function = True
             self._stats.patterns_matched += 1
+
+            # For on_init: call _init_params() first, then user's OnInit body.
+            all_params = self._extern_found + self._params_found
+            if sdk_name == "on_init" and all_params:
+                self._emit("self._init_params()")
         else:
             self._emit_gap(f"Unknown function: {name}", line)
             self._emit(f"def {name.lower()}(self) -> None:")
+            self._indent += 1  # function body indent
             self._inside_function = True
 
     def _emit_variable(self, match) -> None:
@@ -343,6 +441,9 @@ class MQLTranspiler:
 
     def _emit_statement(self, stripped: str) -> None:
         """Process a single MQL statement into Python."""
+        # Strip MQL type prefix (e.g. "int ticket = OrderSend(...)")
+        # so downstream handlers see clean Python-compatible code.
+        stripped = _strip_mql_type_prefix(stripped)
         if self._try_control_flow(stripped):
             return
         if self._try_order_operations(stripped):

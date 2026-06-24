@@ -13,7 +13,7 @@ from __future__ import annotations
 import ast
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
 
@@ -24,7 +24,7 @@ from app.engine.market import MarketSimulator, MultiSymbolMarket, TickSimulator
 from app.engine.metrics import build_metrics
 from app.engine.portfolio import Portfolio
 from app.engine.sandbox import code_sha256
-from app.engine.sim_broker import SimBroker
+from app.engine.sim_broker import SimBroker, _derive_symbol_info_from_bars
 from app.engine.types import (
     BacktestRequest,
     BacktestResult,
@@ -51,6 +51,7 @@ from app.engine.sdk_loader import load_sdk_strategy
 from app.sdk.account import AccountMode
 from app.sdk.runtime import StrategyRuntime
 from app.sdk.series import Bars, Series
+from app.sdk.symbol import SymbolInfo
 
 # ── Signal-dispatch constants (vectorized path only) ─────────────────────
 
@@ -104,19 +105,111 @@ class _EngineSeries(Series):
 
 
 class _EngineBars(Bars):
-    def __init__(self, market: MarketSimulator, timeframe: str = ""):
+    def __init__(
+        self,
+        market: MarketSimulator,
+        timeframe: str = "",
+        slice_end: int | None = None,
+    ):
+        """Wrap market data as SDK Bars.
+
+        If *slice_end* is given, only bars ``[0..slice_end]`` (inclusive) are
+        visible — this prevents look-ahead bias during tick-by-tick backtesting.
+        When *slice_end* is ``None`` (the default), all bars in the market are
+        visible (suitable for live trading where data is naturally bounded).
+        """
         self.timeframe = timeframe
-        self.open = _EngineSeries(market._open)
-        self.high = _EngineSeries(market._high)
-        self.low = _EngineSeries(market._low)
-        self.close = _EngineSeries(market._close)
-        self.volume = _EngineSeries(market._volume)
-        self.time = _EngineSeries(market._close_times)
+        if slice_end is not None:
+            end = slice_end + 1
+            self.open = _EngineSeries(market._open[:end])
+            self.high = _EngineSeries(market._high[:end])
+            self.low = _EngineSeries(market._low[:end])
+            self.close = _EngineSeries(market._close[:end])
+            self.volume = _EngineSeries(market._volume[:end])
+            self.time = _EngineSeries(market._close_times[:end])
+        else:
+            self.open = _EngineSeries(market._open)
+            self.high = _EngineSeries(market._high)
+            self.low = _EngineSeries(market._low)
+            self.close = _EngineSeries(market._close)
+            self.volume = _EngineSeries(market._volume)
+            self.time = _EngineSeries(market._close_times)
 
     def total(self) -> int:
         return len(self.close)
 
 
+class _BarsProvider:
+    """Time-sliced Bars provider for SDK strategy backtesting.
+
+    Created once per backtest run and called by the strategy via
+    ``ctx.bars(timeframe)`` on each tick.  Slices the underlying market
+    data to the current bar index so that the strategy sees exactly the
+    bars that have completed — no look-ahead bias.
+
+    Design::
+
+        provider = _BarsProvider(market, get_bar_idx, primary_tf)
+        bars = provider(timeframe="H1")  # sliced view
+
+    The *get_bar_idx* callback returns the current bar index (updated
+    by the runner loop).  We inject a callback rather than capturing
+    ``BacktestRunner`` so the provider is independently testable.
+    """
+
+    def __init__(
+        self,
+        market: MarketSimulator | MultiSymbolMarket,
+        get_bar_idx: Callable[[], int],
+        primary_timeframe: str,
+    ) -> None:
+        self._get_bar_idx = get_bar_idx
+        self._primary_timeframe = primary_timeframe
+        # Resolve the primary MarketSimulator once; secondary-symbol
+        # bars would need a separate provider keyed by symbol (Phase B2).
+        if isinstance(market, MultiSymbolMarket):
+            self._primary = market.primary_market()
+        else:
+            self._primary = market
+
+    def __call__(self, timeframe: str | None = None) -> _EngineBars:
+        end = self._get_bar_idx() + 1
+        return _EngineBars(
+            self._primary,
+            timeframe or self._primary_timeframe,
+            slice_end=end,
+        )
+
+
+def _symbol_info_from_dict(symbol: str, d: dict) -> SymbolInfo:
+    """Convert a proto SymbolInfo dict (via MessageToDict) to SDK SymbolInfo.
+
+    Zero values from the broker are treated as "not provided" and replaced
+    with sensible defaults — MT4 connections may not supply volume limits.
+    """
+    def _decimal(key: str, fallback: str) -> Decimal:
+        v = d.get(key)
+        if v is None:
+            return Decimal(fallback)
+        dv = Decimal(str(v))
+        return dv if dv > 0 else Decimal(fallback)
+
+    return SymbolInfo(
+        name=symbol,
+        digits=int(d.get("digits", 5)),
+        point=_decimal("point", "0.00001"),
+        tick_size=_decimal("tick_size", "0.00001"),
+        tick_value=_decimal("tick_value", "1.0"),
+        contract_size=_decimal("contract_size", "1"),
+        volume_min=_decimal("volume_min", "0.01"),
+        volume_max=_decimal("volume_max", "100"),
+        volume_step=_decimal("volume_step", "0.01"),
+        stops_level=int(d.get("stops_level", 0)),
+        freeze_level=int(d.get("freeze_level", 0)),
+        swap_long=_decimal("swap_long", "0"),
+        swap_short=_decimal("swap_short", "0"),
+        margin_rate=_decimal("margin_rate", "0.01"),
+    )
 
 
 def _is_sdk_strategy(code: str) -> bool:
@@ -210,22 +303,29 @@ class BacktestRunner:
     def _init_sdk_path(self, req: BacktestRequest) -> None:
         strategy_cls = load_sdk_strategy(req.strategy_code)
 
+        # Broker-provided SymbolInfo takes priority; fall back to data-driven
+        # derivation from K-line prices when no MT gateway data is available.
+        if req.symbol_info:
+            symbol_info = _symbol_info_from_dict(req.symbol, req.symbol_info)
+        else:
+            symbol_info = _derive_symbol_info_from_bars(req.symbol, self._primary_bars)
+        symbol_info_map = {req.symbol: symbol_info}
+
         self._broker = SimBroker(
             portfolio=self._portfolio, fill_model=self._fill,
             cost_model=self._cost, margin_model=self._margin,
             market=self._market,
             tick_source=lambda: getattr(self, "_current_tick", None),
             account_mode=AccountMode.HEDGING,
+            symbol_info_map=symbol_info_map,
             initial_balance=Decimal(str(req.initial_cash)),
         )
 
-        _primary_market = (
-            self._market.primary_market() if isinstance(self._market, MultiSymbolMarket)
-            else self._market
+        bars_provider = _BarsProvider(
+            market=self._market,
+            get_bar_idx=lambda: self._last_bar_idx,
+            primary_timeframe=req.timeframe,
         )
-
-        def bars_provider(timeframe=None):
-            return _EngineBars(_primary_market, timeframe or req.timeframe)
 
         self._runtime = StrategyRuntime(
             strategy_class=strategy_cls, broker=self._broker,

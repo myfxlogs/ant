@@ -165,11 +165,187 @@ def _is_sdk_strategy(tree) -> bool:
     return False
 
 
+# ── SDK AST validation rules ─────────────────────────────────────────────
+#
+# Each rule is a free function with signature:
+#     (code: str, tree: ast.Module, errors: list[str], warnings: list[str]) -> None
+#
+# Rules are registered in _SDK_RULES and executed in order.  To add a new
+# check, write a function and append it to the list — no other changes needed.
+
+_SDK_RULES: list = []
+
+
+def _register(rule):
+    """Decorator that appends *rule* to the SDK rule registry."""
+    _SDK_RULES.append(rule)
+    return rule
+
+
+# ── Individual rules ───────────────────────────────────────────────────
+
+
+@_register
+def _rule_invalid_sdk_imports(
+    _code: str, tree, errors: list, warnings: list,
+) -> None:
+    """Reject imports from app.sdk that are not in the documented export list."""
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ImportFrom):
+            continue
+        if node.module == "app.sdk" or (node.module or "").startswith("app.sdk."):
+            for alias in node.names:
+                if alias.name not in _VALID_SDK_EXPORTS:
+                    errors.append(f"`{alias.name}` 不是有效的 SDK 导出")
+
+
+@_register
+def _rule_hardcoded_timeframe(
+    _code: str, tree, errors: list, warnings: list,
+) -> None:
+    """Reject hardcoded timeframe strings in bars() calls."""
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        for kw in node.keywords:
+            if kw.arg == "timeframe" and isinstance(kw.value, ast.Constant):
+                if isinstance(kw.value.value, str) and kw.value.value.strip():
+                    errors.append(
+                        f"禁止硬编码周期 `timeframe='{kw.value.value}'`。"
+                        f"请使用 `timeframe=None`（跟随回测配置）"
+                        f"或 `self.ctx.param('timeframe', '1h')`（用户可选）。"
+                    )
+
+
+@_register
+def _rule_hardcoded_magic(
+    _code: str, tree, errors: list, warnings: list,
+) -> None:
+    """Warn about hardcoded magic numbers in OrderRequest/order_send."""
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        fn = node.func
+        fn_name = ""
+        if isinstance(fn, ast.Name): fn_name = fn.id
+        elif isinstance(fn, ast.Attribute): fn_name = fn.attr
+        if fn_name in ("order_send", "OrderRequest"):
+            for kw in node.keywords:
+                if kw.arg == "magic" and isinstance(kw.value, ast.Constant):
+                    if isinstance(kw.value.value, int) and kw.value.value != 0:
+                        warnings.append(
+                            f"建议将 magic={kw.value.value} 改为 param 读取，避免多策略实例冲突。"
+                        )
+
+
+@_register
+def _rule_float_for_prices(
+    _code: str, tree, errors: list, warnings: list,
+) -> None:
+    """Warn about float() usage for price/volume calculations."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "float":
+            warnings.append("价格/手数计算中使用了 float()，建议改用 Decimal(str(x)) 避免精度丢失。")
+
+
+@_register
+def _rule_order_send_ignored(
+    _code: str, tree, errors: list, warnings: list,
+) -> None:
+    """Warn when broker mutation methods are called without capturing the result."""
+    _BROKER_MUTATIONS = frozenset({
+        "order_send", "position_close", "position_modify", "order_delete",
+    })
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Expr) or not isinstance(node.value, ast.Call):
+            continue
+        call = node.value
+        if not isinstance(call.func, ast.Attribute):
+            continue
+        if call.func.attr not in _BROKER_MUTATIONS:
+            continue
+        if isinstance(call.func.value, ast.Attribute) and call.func.value.attr == "broker":
+            warnings.append(
+                f"`self.broker.{call.func.attr}()` 的返回值被忽略。"
+                f"建议检查返回的 OrderResult.retcode 确认订单是否成交。"
+            )
+
+
+@_register
+def _rule_hardcoded_lot_quantize(
+    _code: str, tree, errors: list, warnings: list,
+) -> None:
+    """Warn about hardcoded lot precision like lot.quantize(Decimal('0.01'))."""
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
+            continue
+        if node.func.attr != "quantize":
+            continue
+        for arg in node.args:
+            if not isinstance(arg, ast.Call):
+                continue
+            if isinstance(arg.func, ast.Name) and arg.func.id == "Decimal":
+                if len(arg.args) == 1 and isinstance(arg.args[0], ast.Constant):
+                    val = arg.args[0].value
+                    if isinstance(val, str):
+                        warnings.append(
+                            f"手数精度使用了硬编码 `Decimal('{val}')`，"
+                            f"建议改用 `sym_info.volume_step` 或 `self.lot_digits` 避免品种不兼容。"
+                        )
+
+
+@_register
+def _rule_hardcoded_divisor(
+    _code: str, tree, errors: list, warnings: list,
+) -> None:
+    """Warn about hardcoded account-size divisors (e.g. / 20000)."""
+    _COMMON_DIVISORS = frozenset({10000, 20000, 100000})
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.BinOp) or not isinstance(node.op, ast.Div):
+            continue
+        if isinstance(node.right, ast.Constant) and isinstance(node.right.value, (int, float)):
+            if node.right.value in _COMMON_DIVISORS:
+                warnings.append(
+                    f"检测到硬编码除数 `{node.right.value}`，可能是账户资金基准。"
+                    f"建议改为 param 参数以适应不同账户规模。"
+                )
+
+
+@_register
+def _rule_underscore_methods(
+    _code: str, tree, errors: list, warnings: list,
+) -> None:
+    """Warn about _-prefixed method names (against SDK convention)."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name.startswith("_") and not node.name.startswith("__"):
+            warnings.append(f"方法 `{node.name}` 使用了 _ 前缀，建议改为无前缀命名。")
+
+
+@_register
+def _rule_unnecessary_pre_injected_imports(
+    _code: str, tree, errors: list, warnings: list,
+) -> None:
+    """Warn about imports of modules that the sandbox pre-injects."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name in ("math", "numpy") and alias.asname is None:
+                    warnings.append(f"`import {alias.name}` 多余——{alias.name} 已被沙箱预注入，可直接使用。")
+
+
+# ── Orchestrator ────────────────────────────────────────────────────────
+
+
 def _validate_sdk_strategy(
     code: str, tree, errors: list, warnings: list,
     quality_hints: list | None = None,
 ) -> StrategyValidationResult:
-    """Validate an SDK-format strategy (ADR-0020)."""
+    """Validate an SDK-format strategy (ADR-0020).
+
+    Structural checks (class inheritance, lifecycle hooks) run first,
+    then each registered rule in :data:`_SDK_RULES` is executed in order.
+    """
+    # ── Structural checks ──────────────────────────────────────────────
     class_def = None
     for node in ast.walk(tree):
         if isinstance(node, ast.ClassDef):
@@ -181,6 +357,7 @@ def _validate_sdk_strategy(
     if class_def is None:
         errors.append("SDK策略必须定义一个继承 StrategyBase 的类")
         return StrategyValidationResult(valid=False, errors=errors, warnings=warnings)
+
     method_names = {n.name for n in ast.walk(class_def) if isinstance(n, ast.FunctionDef)}
     hooks = {"on_init", "on_tick", "on_bar", "on_timer", "on_trade", "on_deinit"}
     if not (method_names & hooks):
@@ -188,49 +365,11 @@ def _validate_sdk_strategy(
     if "self.broker" not in code:
         warnings.append("策略未引用 self.broker")
 
-    # Validate SDK imports — only allow documented SDK exports.
-    for node in ast.walk(tree):
-        if isinstance(node, ast.ImportFrom):
-            if node.module == "app.sdk" or (node.module or "").startswith("app.sdk."):
-                for alias in node.names:
-                    if alias.name not in _VALID_SDK_EXPORTS:
-                        errors.append(f"`{alias.name}` 不是有效的 SDK 导出")
-        # Detect hardcoded timeframe in bars() calls.
-        if isinstance(node, ast.Call):
-            for kw in node.keywords:
-                if kw.arg == "timeframe" and isinstance(kw.value, ast.Constant):
-                    if isinstance(kw.value.value, str) and kw.value.value.strip():
-                        errors.append(
-                            f"禁止硬编码周期 `timeframe='{kw.value.value}'`。"
-                            f"请使用 `timeframe=None`（跟随回测配置）"
-                            f"或 `self.ctx.param('timeframe', '1h')`（用户可选）。"
-                        )
+    # ── Execute all registered rules ───────────────────────────────────
+    for rule in _SDK_RULES:
+        rule(code, tree, errors, warnings)
 
-        # Detect hardcoded magic numbers in OrderRequest/order_send.
-        if isinstance(node, ast.Call):
-            fn = node.func
-            fn_name = ""
-            if isinstance(fn, ast.Name): fn_name = fn.id
-            elif isinstance(fn, ast.Attribute): fn_name = fn.attr
-            if fn_name in ("order_send", "OrderRequest"):
-                for kw in node.keywords:
-                    if kw.arg == "magic" and isinstance(kw.value, ast.Constant):
-                        if isinstance(kw.value.value, int) and kw.value.value != 0:
-                            warnings.append(
-                                f"建议将 magic={kw.value.value} 改为 param 读取，避免多策略实例冲突。"
-                            )
-        # Detect float() for prices (should use Decimal).
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "float":
-            warnings.append("价格/手数计算中使用了 float()，建议改用 Decimal(str(x)) 避免精度丢失。")
-        # Detect underscore-prefixed method names (against SDK convention).
-        if isinstance(node, ast.FunctionDef) and node.name.startswith("_") and not node.name.startswith("__"):
-            warnings.append(f"方法 `{node.name}` 使用了 _ 前缀，建议改为无前缀命名。")
-        # Detect unnecessary imports of pre-injected modules.
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                if alias.name in ("math", "numpy") and alias.asname is None:
-                    warnings.append(f"`import {alias.name}` 多余——{alias.name} 已被沙箱预注入，可直接使用。")
-
+    # ── Deduplicate and return ─────────────────────────────────────────
     seen = set()
     deduped = []
     for e in errors:

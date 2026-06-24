@@ -478,6 +478,7 @@ type ExecuteBacktestRequest struct {
 	TradeDirection     TradeDirection         `protobuf:"varint,21,opt,name=trade_direction,json=tradeDirection,proto3,enum=ant.v1.TradeDirection" json:"trade_direction,omitempty"` // long / short / both
 	StrictMode         bool                   `protobuf:"varint,22,opt,name=strict_mode,json=strictMode,proto3" json:"strict_mode,omitempty"`                                        // true = next-bar-open, false = same-bar-close + MTF
 	StrategyConfig     *StrategyConfig        `protobuf:"bytes,23,opt,name=strategy_config,json=strategyConfig,proto3" json:"strategy_config,omitempty"`                             // parsed from @strategy annotations
+	SymbolInfo         *SymbolInfo            `protobuf:"bytes,24,opt,name=symbol_info,json=symbolInfo,proto3" json:"symbol_info,omitempty"`                                         // broker-provided contract metadata
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -673,6 +674,155 @@ func (x *ExecuteBacktestRequest) GetStrategyConfig() *StrategyConfig {
 	return nil
 }
 
+func (x *ExecuteBacktestRequest) GetSymbolInfo() *SymbolInfo {
+	if x != nil {
+		return x.SymbolInfo
+	}
+	return nil
+}
+
+// SymbolInfo carries contract metadata queried from the MT4/MT5 broker.
+// This is the authoritative source — no hardcoded guesses.
+type SymbolInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Digits        int32                  `protobuf:"varint,1,opt,name=digits,proto3" json:"digits,omitempty"`                                  // decimal places in price quotes
+	Point         float64                `protobuf:"fixed64,2,opt,name=point,proto3" json:"point,omitempty"`                                   // minimum price increment (10^-digits)
+	TickSize      float64                `protobuf:"fixed64,3,opt,name=tick_size,json=tickSize,proto3" json:"tick_size,omitempty"`             // minimum tick size
+	TickValue     float64                `protobuf:"fixed64,4,opt,name=tick_value,json=tickValue,proto3" json:"tick_value,omitempty"`          // value of one tick in account currency
+	ContractSize  float64                `protobuf:"fixed64,5,opt,name=contract_size,json=contractSize,proto3" json:"contract_size,omitempty"` // base units per lot
+	VolumeMin     float64                `protobuf:"fixed64,6,opt,name=volume_min,json=volumeMin,proto3" json:"volume_min,omitempty"`          // minimum order volume (lots)
+	VolumeMax     float64                `protobuf:"fixed64,7,opt,name=volume_max,json=volumeMax,proto3" json:"volume_max,omitempty"`          // maximum order volume (lots)
+	VolumeStep    float64                `protobuf:"fixed64,8,opt,name=volume_step,json=volumeStep,proto3" json:"volume_step,omitempty"`       // lot increment step
+	StopsLevel    int32                  `protobuf:"varint,9,opt,name=stops_level,json=stopsLevel,proto3" json:"stops_level,omitempty"`        // SL/TP minimum distance in points
+	FreezeLevel   int32                  `protobuf:"varint,10,opt,name=freeze_level,json=freezeLevel,proto3" json:"freeze_level,omitempty"`    // order freeze distance in points
+	SwapLong      float64                `protobuf:"fixed64,11,opt,name=swap_long,json=swapLong,proto3" json:"swap_long,omitempty"`            // long swap rate
+	SwapShort     float64                `protobuf:"fixed64,12,opt,name=swap_short,json=swapShort,proto3" json:"swap_short,omitempty"`         // short swap rate
+	MarginRate    float64                `protobuf:"fixed64,13,opt,name=margin_rate,json=marginRate,proto3" json:"margin_rate,omitempty"`      // initial margin rate
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SymbolInfo) Reset() {
+	*x = SymbolInfo{}
+	mi := &file_backtest_service_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SymbolInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SymbolInfo) ProtoMessage() {}
+
+func (x *SymbolInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_backtest_service_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SymbolInfo.ProtoReflect.Descriptor instead.
+func (*SymbolInfo) Descriptor() ([]byte, []int) {
+	return file_backtest_service_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *SymbolInfo) GetDigits() int32 {
+	if x != nil {
+		return x.Digits
+	}
+	return 0
+}
+
+func (x *SymbolInfo) GetPoint() float64 {
+	if x != nil {
+		return x.Point
+	}
+	return 0
+}
+
+func (x *SymbolInfo) GetTickSize() float64 {
+	if x != nil {
+		return x.TickSize
+	}
+	return 0
+}
+
+func (x *SymbolInfo) GetTickValue() float64 {
+	if x != nil {
+		return x.TickValue
+	}
+	return 0
+}
+
+func (x *SymbolInfo) GetContractSize() float64 {
+	if x != nil {
+		return x.ContractSize
+	}
+	return 0
+}
+
+func (x *SymbolInfo) GetVolumeMin() float64 {
+	if x != nil {
+		return x.VolumeMin
+	}
+	return 0
+}
+
+func (x *SymbolInfo) GetVolumeMax() float64 {
+	if x != nil {
+		return x.VolumeMax
+	}
+	return 0
+}
+
+func (x *SymbolInfo) GetVolumeStep() float64 {
+	if x != nil {
+		return x.VolumeStep
+	}
+	return 0
+}
+
+func (x *SymbolInfo) GetStopsLevel() int32 {
+	if x != nil {
+		return x.StopsLevel
+	}
+	return 0
+}
+
+func (x *SymbolInfo) GetFreezeLevel() int32 {
+	if x != nil {
+		return x.FreezeLevel
+	}
+	return 0
+}
+
+func (x *SymbolInfo) GetSwapLong() float64 {
+	if x != nil {
+		return x.SwapLong
+	}
+	return 0
+}
+
+func (x *SymbolInfo) GetSwapShort() float64 {
+	if x != nil {
+		return x.SwapShort
+	}
+	return 0
+}
+
+func (x *SymbolInfo) GetMarginRate() float64 {
+	if x != nil {
+		return x.MarginRate
+	}
+	return 0
+}
+
 type ExecuteBacktestTrade struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Ticket        int64                  `protobuf:"varint,1,opt,name=ticket,proto3" json:"ticket,omitempty"`
@@ -691,7 +841,7 @@ type ExecuteBacktestTrade struct {
 
 func (x *ExecuteBacktestTrade) Reset() {
 	*x = ExecuteBacktestTrade{}
-	mi := &file_backtest_service_proto_msgTypes[7]
+	mi := &file_backtest_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -703,7 +853,7 @@ func (x *ExecuteBacktestTrade) String() string {
 func (*ExecuteBacktestTrade) ProtoMessage() {}
 
 func (x *ExecuteBacktestTrade) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_service_proto_msgTypes[7]
+	mi := &file_backtest_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -716,7 +866,7 @@ func (x *ExecuteBacktestTrade) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteBacktestTrade.ProtoReflect.Descriptor instead.
 func (*ExecuteBacktestTrade) Descriptor() ([]byte, []int) {
-	return file_backtest_service_proto_rawDescGZIP(), []int{7}
+	return file_backtest_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ExecuteBacktestTrade) GetTicket() int64 {
@@ -804,7 +954,7 @@ type ExecuteBacktestResponse struct {
 
 func (x *ExecuteBacktestResponse) Reset() {
 	*x = ExecuteBacktestResponse{}
-	mi := &file_backtest_service_proto_msgTypes[8]
+	mi := &file_backtest_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -816,7 +966,7 @@ func (x *ExecuteBacktestResponse) String() string {
 func (*ExecuteBacktestResponse) ProtoMessage() {}
 
 func (x *ExecuteBacktestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_service_proto_msgTypes[8]
+	mi := &file_backtest_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -829,7 +979,7 @@ func (x *ExecuteBacktestResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteBacktestResponse.ProtoReflect.Descriptor instead.
 func (*ExecuteBacktestResponse) Descriptor() ([]byte, []int) {
-	return file_backtest_service_proto_rawDescGZIP(), []int{8}
+	return file_backtest_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ExecuteBacktestResponse) GetSuccess() bool {
@@ -901,7 +1051,7 @@ type ExecuteBacktestMetrics struct {
 
 func (x *ExecuteBacktestMetrics) Reset() {
 	*x = ExecuteBacktestMetrics{}
-	mi := &file_backtest_service_proto_msgTypes[9]
+	mi := &file_backtest_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -913,7 +1063,7 @@ func (x *ExecuteBacktestMetrics) String() string {
 func (*ExecuteBacktestMetrics) ProtoMessage() {}
 
 func (x *ExecuteBacktestMetrics) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_service_proto_msgTypes[9]
+	mi := &file_backtest_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -926,7 +1076,7 @@ func (x *ExecuteBacktestMetrics) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteBacktestMetrics.ProtoReflect.Descriptor instead.
 func (*ExecuteBacktestMetrics) Descriptor() ([]byte, []int) {
-	return file_backtest_service_proto_rawDescGZIP(), []int{9}
+	return file_backtest_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ExecuteBacktestMetrics) GetTotalReturn() float64 {
@@ -1026,7 +1176,7 @@ type ExecuteRiskAssessment struct {
 
 func (x *ExecuteRiskAssessment) Reset() {
 	*x = ExecuteRiskAssessment{}
-	mi := &file_backtest_service_proto_msgTypes[10]
+	mi := &file_backtest_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1038,7 +1188,7 @@ func (x *ExecuteRiskAssessment) String() string {
 func (*ExecuteRiskAssessment) ProtoMessage() {}
 
 func (x *ExecuteRiskAssessment) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_service_proto_msgTypes[10]
+	mi := &file_backtest_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1051,7 +1201,7 @@ func (x *ExecuteRiskAssessment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteRiskAssessment.ProtoReflect.Descriptor instead.
 func (*ExecuteRiskAssessment) Descriptor() ([]byte, []int) {
-	return file_backtest_service_proto_rawDescGZIP(), []int{10}
+	return file_backtest_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ExecuteRiskAssessment) GetScore() int32 {
@@ -1131,7 +1281,7 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\x04high\x18\x04 \x01(\x01R\x04high\x12\x10\n" +
 	"\x03low\x18\x05 \x01(\x01R\x03low\x12\x14\n" +
 	"\x05close\x18\x06 \x01(\x01R\x05close\x12\x16\n" +
-	"\x06volume\x18\a \x01(\x01R\x06volume\"\x8a\a\n" +
+	"\x06volume\x18\a \x01(\x01R\x06volume\"\xbf\a\n" +
 	"\x16ExecuteBacktestRequest\x12\x1f\n" +
 	"\vstrategy_id\x18\x01 \x01(\tR\n" +
 	"strategyId\x12#\n" +
@@ -1160,7 +1310,32 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\x0ftrade_direction\x18\x15 \x01(\x0e2\x16.ant.v1.TradeDirectionR\x0etradeDirection\x12\x1f\n" +
 	"\vstrict_mode\x18\x16 \x01(\bR\n" +
 	"strictMode\x12?\n" +
-	"\x0fstrategy_config\x18\x17 \x01(\v2\x16.ant.v1.StrategyConfigR\x0estrategyConfig\"\xa2\x02\n" +
+	"\x0fstrategy_config\x18\x17 \x01(\v2\x16.ant.v1.StrategyConfigR\x0estrategyConfig\x123\n" +
+	"\vsymbol_info\x18\x18 \x01(\v2\x12.ant.v1.SymbolInfoR\n" +
+	"symbolInfo\"\x9b\x03\n" +
+	"\n" +
+	"SymbolInfo\x12\x16\n" +
+	"\x06digits\x18\x01 \x01(\x05R\x06digits\x12\x14\n" +
+	"\x05point\x18\x02 \x01(\x01R\x05point\x12\x1b\n" +
+	"\ttick_size\x18\x03 \x01(\x01R\btickSize\x12\x1d\n" +
+	"\n" +
+	"tick_value\x18\x04 \x01(\x01R\ttickValue\x12#\n" +
+	"\rcontract_size\x18\x05 \x01(\x01R\fcontractSize\x12\x1d\n" +
+	"\n" +
+	"volume_min\x18\x06 \x01(\x01R\tvolumeMin\x12\x1d\n" +
+	"\n" +
+	"volume_max\x18\a \x01(\x01R\tvolumeMax\x12\x1f\n" +
+	"\vvolume_step\x18\b \x01(\x01R\n" +
+	"volumeStep\x12\x1f\n" +
+	"\vstops_level\x18\t \x01(\x05R\n" +
+	"stopsLevel\x12!\n" +
+	"\ffreeze_level\x18\n" +
+	" \x01(\x05R\vfreezeLevel\x12\x1b\n" +
+	"\tswap_long\x18\v \x01(\x01R\bswapLong\x12\x1d\n" +
+	"\n" +
+	"swap_short\x18\f \x01(\x01R\tswapShort\x12\x1f\n" +
+	"\vmargin_rate\x18\r \x01(\x01R\n" +
+	"marginRate\"\xa2\x02\n" +
 	"\x14ExecuteBacktestTrade\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +
@@ -1224,7 +1399,7 @@ func file_backtest_service_proto_rawDescGZIP() []byte {
 	return file_backtest_service_proto_rawDescData
 }
 
-var file_backtest_service_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_backtest_service_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_backtest_service_proto_goTypes = []any{
 	(*EngineValidateRequest)(nil),     // 0: ant.v1.EngineValidateRequest
 	(*EngineValidateResponse)(nil),    // 1: ant.v1.EngineValidateResponse
@@ -1233,35 +1408,37 @@ var file_backtest_service_proto_goTypes = []any{
 	(*EngineTradeSignal)(nil),         // 4: ant.v1.EngineTradeSignal
 	(*ExecuteKlineBar)(nil),           // 5: ant.v1.ExecuteKlineBar
 	(*ExecuteBacktestRequest)(nil),    // 6: ant.v1.ExecuteBacktestRequest
-	(*ExecuteBacktestTrade)(nil),      // 7: ant.v1.ExecuteBacktestTrade
-	(*ExecuteBacktestResponse)(nil),   // 8: ant.v1.ExecuteBacktestResponse
-	(*ExecuteBacktestMetrics)(nil),    // 9: ant.v1.ExecuteBacktestMetrics
-	(*ExecuteRiskAssessment)(nil),     // 10: ant.v1.ExecuteRiskAssessment
-	(TradeDirection)(0),               // 11: ant.v1.TradeDirection
-	(*StrategyConfig)(nil),            // 12: ant.v1.StrategyConfig
-	(*ExecutionAssumptions)(nil),      // 13: ant.v1.ExecutionAssumptions
+	(*SymbolInfo)(nil),                // 7: ant.v1.SymbolInfo
+	(*ExecuteBacktestTrade)(nil),      // 8: ant.v1.ExecuteBacktestTrade
+	(*ExecuteBacktestResponse)(nil),   // 9: ant.v1.ExecuteBacktestResponse
+	(*ExecuteBacktestMetrics)(nil),    // 10: ant.v1.ExecuteBacktestMetrics
+	(*ExecuteRiskAssessment)(nil),     // 11: ant.v1.ExecuteRiskAssessment
+	(TradeDirection)(0),               // 12: ant.v1.TradeDirection
+	(*StrategyConfig)(nil),            // 13: ant.v1.StrategyConfig
+	(*ExecutionAssumptions)(nil),      // 14: ant.v1.ExecutionAssumptions
 }
 var file_backtest_service_proto_depIdxs = []int32{
 	5,  // 0: ant.v1.EngineRunStrategyRequest.klines:type_name -> ant.v1.ExecuteKlineBar
 	4,  // 1: ant.v1.EngineRunStrategyResponse.signal:type_name -> ant.v1.EngineTradeSignal
 	5,  // 2: ant.v1.ExecuteBacktestRequest.klines:type_name -> ant.v1.ExecuteKlineBar
-	11, // 3: ant.v1.ExecuteBacktestRequest.trade_direction:type_name -> ant.v1.TradeDirection
-	12, // 4: ant.v1.ExecuteBacktestRequest.strategy_config:type_name -> ant.v1.StrategyConfig
-	9,  // 5: ant.v1.ExecuteBacktestResponse.metrics:type_name -> ant.v1.ExecuteBacktestMetrics
-	10, // 6: ant.v1.ExecuteBacktestResponse.risk:type_name -> ant.v1.ExecuteRiskAssessment
-	7,  // 7: ant.v1.ExecuteBacktestResponse.trades:type_name -> ant.v1.ExecuteBacktestTrade
-	13, // 8: ant.v1.ExecuteBacktestResponse.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
-	6,  // 9: ant.v1.BacktestService.RunBacktest:input_type -> ant.v1.ExecuteBacktestRequest
-	0,  // 10: ant.v1.BacktestService.ValidateStrategy:input_type -> ant.v1.EngineValidateRequest
-	2,  // 11: ant.v1.BacktestService.RunStrategy:input_type -> ant.v1.EngineRunStrategyRequest
-	8,  // 12: ant.v1.BacktestService.RunBacktest:output_type -> ant.v1.ExecuteBacktestResponse
-	1,  // 13: ant.v1.BacktestService.ValidateStrategy:output_type -> ant.v1.EngineValidateResponse
-	3,  // 14: ant.v1.BacktestService.RunStrategy:output_type -> ant.v1.EngineRunStrategyResponse
-	12, // [12:15] is the sub-list for method output_type
-	9,  // [9:12] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	12, // 3: ant.v1.ExecuteBacktestRequest.trade_direction:type_name -> ant.v1.TradeDirection
+	13, // 4: ant.v1.ExecuteBacktestRequest.strategy_config:type_name -> ant.v1.StrategyConfig
+	7,  // 5: ant.v1.ExecuteBacktestRequest.symbol_info:type_name -> ant.v1.SymbolInfo
+	10, // 6: ant.v1.ExecuteBacktestResponse.metrics:type_name -> ant.v1.ExecuteBacktestMetrics
+	11, // 7: ant.v1.ExecuteBacktestResponse.risk:type_name -> ant.v1.ExecuteRiskAssessment
+	8,  // 8: ant.v1.ExecuteBacktestResponse.trades:type_name -> ant.v1.ExecuteBacktestTrade
+	14, // 9: ant.v1.ExecuteBacktestResponse.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
+	6,  // 10: ant.v1.BacktestService.RunBacktest:input_type -> ant.v1.ExecuteBacktestRequest
+	0,  // 11: ant.v1.BacktestService.ValidateStrategy:input_type -> ant.v1.EngineValidateRequest
+	2,  // 12: ant.v1.BacktestService.RunStrategy:input_type -> ant.v1.EngineRunStrategyRequest
+	9,  // 13: ant.v1.BacktestService.RunBacktest:output_type -> ant.v1.ExecuteBacktestResponse
+	1,  // 14: ant.v1.BacktestService.ValidateStrategy:output_type -> ant.v1.EngineValidateResponse
+	3,  // 15: ant.v1.BacktestService.RunStrategy:output_type -> ant.v1.EngineRunStrategyResponse
+	13, // [13:16] is the sub-list for method output_type
+	10, // [10:13] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_backtest_service_proto_init() }
@@ -1276,7 +1453,7 @@ func file_backtest_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_backtest_service_proto_rawDesc), len(file_backtest_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

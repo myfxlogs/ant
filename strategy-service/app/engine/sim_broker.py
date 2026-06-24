@@ -108,6 +108,104 @@ def _is_pending_order(ot: SDKOrderType) -> bool:
     return not _is_market_order(ot)
 
 
+# ── Symbol-info derivation ──────────────────────────────────────────────
+#
+# 原则：digits 从 K 线价格数据推导（不硬编码品种名）；contract_size
+# 无法从价格数据推导，必须由经纪商提供。默认值 1 匹配 synthetic 回测模式
+# 的 PnL 计算。真实经纪商数据应通过 SimBroker 的 symbol_info_map 传入。
+#
+# 参见 runner.py:_init_sdk_path — 从 _primary_bars 推导并传入 symbol_info_map。
+
+_DEFAULT_CONTRACT_SIZE = 1       # 匹配 synthetic 回测模式
+_DEFAULT_DIGITS_FALLBACK = 5     # 无 K 线数据时的回退值
+
+
+def _count_decimal_places(value: float) -> int:
+    """Count meaningful decimal places from a price float.
+
+    Uses ``Decimal(str(value))`` which employs Python's shortest
+    round-tripping representation — this naturally avoids both
+    trailing-zero loss (``61234.50`` → 1 place) and IEEE-754 noise
+    (``61000.27`` → 12 places under ``.12f``).
+
+    >>> _count_decimal_places(1.12345)
+    5
+    >>> _count_decimal_places(61000.27)
+    2
+    >>> _count_decimal_places(100.0)
+    0
+    """
+    d = Decimal(str(value))
+    t = d.as_tuple()
+    if t.exponent >= 0:
+        return 0
+    return -t.exponent
+
+
+def _derive_symbol_info_from_bars(
+    symbol: str,
+    bars,
+) -> SymbolInfo:
+    """Derive SymbolInfo from K-line price data — no hardcoded symbol names.
+
+    *digits* is inferred from the maximum decimal places observed in
+    OHLC prices (sample of up to 500 bars).
+
+    *contract_size* defaults to 1 (matching synthetic-backtest PnL mode).
+    Real broker data should be passed via ``symbol_info_map`` when the
+    MT4/MT5 connection is available.
+
+    When *bars* is empty, falls back to conservative defaults.
+    """
+    if not bars:
+        return _make_symbol_info(
+            symbol, digits=_DEFAULT_DIGITS_FALLBACK,
+            contract_size=_DEFAULT_CONTRACT_SIZE,
+        )
+
+    # ── digits from price data ─────────────────────────────────────────
+    max_decimals = 2  # floor: sub-pip pricing is universal
+    sample = bars[:500]
+    for b in sample:
+        for price in (b.open, b.high, b.low, b.close):
+            d = _count_decimal_places(price)
+            if d > max_decimals:
+                max_decimals = d
+    digits = min(max_decimals, 8)  # ceiling
+
+    return _make_symbol_info(
+        symbol, digits=digits, contract_size=_DEFAULT_CONTRACT_SIZE,
+    )
+
+
+# ── Shared builder ─────────────────────────────────────────────────────
+
+
+def _make_symbol_info(
+    symbol: str,
+    digits: int,
+    contract_size: int,
+) -> SymbolInfo:
+    """Build a SymbolInfo with consistent point/tick_size derived from digits."""
+    point = Decimal("1") / Decimal(str(10**digits))
+    return SymbolInfo(
+        name=symbol,
+        digits=digits,
+        point=point,
+        tick_size=point,
+        tick_value=point,
+        contract_size=Decimal(str(contract_size)),
+        volume_min=Decimal("0.01"),
+        volume_max=Decimal("100"),
+        volume_step=Decimal("0.01"),
+        stops_level=0,
+        freeze_level=0,
+        swap_long=Decimal("0"),
+        swap_short=Decimal("0"),
+        margin_rate=Decimal("0.01"),
+    )
+
+
 # ── Position metadata (engine types lack magic/comment/symbol) ─────────
 
 
@@ -379,22 +477,11 @@ class SimBroker(Broker):
         """Return symbol metadata; raises KeyError if unknown."""
         if symbol in self._symbols:
             return self._symbols[symbol]
-        # Fallback: build a default SymbolInfo.
-        return SymbolInfo(
-            name=symbol,
-            digits=5,
-            point=Decimal("0.00001"),
-            tick_size=Decimal("0.00001"),
-            tick_value=Decimal("1.0"),
-            contract_size=Decimal("100000"),  # default; can be overridden via symbol_info_map
-            volume_min=Decimal("0.01"),
-            volume_max=Decimal("100"),
-            volume_step=Decimal("0.01"),
-            stops_level=0,
-            freeze_level=0,
-            swap_long=Decimal("0"),
-            swap_short=Decimal("0"),
-            margin_rate=Decimal("0.01"),
+        # Fallback: conservative defaults (no K-line data available).
+        # In production the runner passes symbol_info_map derived from bars.
+        return _make_symbol_info(
+            symbol, digits=_DEFAULT_DIGITS_FALLBACK,
+            contract_size=_DEFAULT_CONTRACT_SIZE,
         )
 
     def server_time(self) -> int:

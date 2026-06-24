@@ -252,6 +252,7 @@ class BacktestRequest:
     legacy_pnl: bool = True
     max_fill_volume: float = 0.0
     deadline_ms: int = 120_000
+    symbol_info: Optional[dict] = None  # broker SymbolInfo from MT gateway (proto → dict)
 
 
 @dataclass

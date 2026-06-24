@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,6 +13,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	antv1 "anttrader/gen/proto/ant/v1"
+	"anttrader/internal/mthub"
 	"anttrader/internal/repository"
 )
 
@@ -197,7 +199,10 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 	execCtx := s.startBacktestWatchers(ctx, run, leaseFor)
 	defer func() { _ = execCtx }()
 
-	req := buildBacktestRequest(run, params, s.fetchBars(ctx, run))
+	klines := s.fetchBars(ctx, run)
+	symbolInfo := s.fetchSymbolInfo(ctx, run)
+
+	req := buildBacktestRequest(run, params, klines, symbolInfo)
 	resp, err := s.backtestClient.RunBacktest(execCtx, connect.NewRequest(req))
 	if err != nil {
 		s.handleBacktestError(ctx, run, execCtx, err)
@@ -206,7 +211,49 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 	s.saveBacktestResult(ctx, run, resp.Msg)
 }
 
-func buildBacktestRequest(run *repository.BacktestRun, params backtestParams, klines []*antv1.ExecuteKlineBar) *antv1.ExecuteBacktestRequest {
+// fetchSymbolInfo queries the MT gateway for live contract metadata.
+// Returns nil when no MT session is connected — the Python engine will
+// fall back to K-line data derivation.
+func (s *PythonStrategyServer) fetchSymbolInfo(ctx context.Context, run *repository.BacktestRun) *antv1.SymbolInfo {
+	if s.mtHub == nil {
+		return nil
+	}
+	params, err := s.mtHub.SymbolParams(ctx, run.AccountID.String(), []string{run.Symbol})
+	if err != nil || len(params) == 0 {
+		s.log.Info("symbol info not available from MT gateway — will derive from K-lines",
+			zap.String("symbol", run.Symbol), zap.Error(err))
+		return nil
+	}
+	p := params[0]
+	point := math.Pow(10, -float64(p.Digits))
+	lotMin, _ := p.LotMin.Float64()
+	lotMax, _ := p.LotMax.Float64()
+	lotStep, _ := p.LotStep.Float64()
+	lotSize, _ := p.LotSize.Float64()
+	tickValue, _ := p.PointValue.Float64()
+
+	info := &antv1.SymbolInfo{
+		Digits:       int32(p.Digits),
+		Point:        point,
+		ContractSize: lotSize,
+		StopsLevel:   p.StopLevel,
+		TickValue:    tickValue,
+	}
+	// Only set volume fields when the broker provides non-zero values
+	// (MT4 may not have these; Python will use sensible defaults).
+	if lotMin > 0 {
+		info.VolumeMin = lotMin
+	}
+	if lotMax > 0 {
+		info.VolumeMax = lotMax
+	}
+	if lotStep > 0 {
+		info.VolumeStep = lotStep
+	}
+	return info
+}
+
+func buildBacktestRequest(run *repository.BacktestRun, params backtestParams, klines []*antv1.ExecuteKlineBar, symbolInfo *antv1.SymbolInfo) *antv1.ExecuteBacktestRequest {
 	fromMs, toMs := int64(0), int64(0)
 	if run.FromTs != nil { fromMs = run.FromTs.UnixMilli() }
 	if run.ToTs != nil { toMs = run.ToTs.UnixMilli() }
@@ -219,6 +266,7 @@ func buildBacktestRequest(run *repository.BacktestRun, params backtestParams, kl
 		Leverage: params.leverage, TradeDirection: params.tradeDir,
 		StrictMode: params.strictMode, StrategyConfig: params.strategyCfg,
 		Klines: klines, StrategyParamsJson: paramsProtoToJSON(run.ParameterOverrides),
+		SymbolInfo: symbolInfo,
 	}
 }
 
