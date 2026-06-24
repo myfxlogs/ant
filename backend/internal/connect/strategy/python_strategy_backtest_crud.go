@@ -212,7 +212,9 @@ func (s *PythonStrategyServer) CancelBacktestRun(ctx context.Context, req *conne
 }
 
 func (s *PythonStrategyServer) DeleteBacktestRun(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunRequest]) (*connect.Response[antv1.DeleteBacktestRunResponse], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	uid := interceptor.GetUserID(ctx)
+	s.log.Info("DeleteBacktestRun called", zap.String("raw_user_id", uid), zap.String("run_id", req.Msg.RunId))
+	userID, _ := uuid.Parse(uid)
 	runID, err := uuid.Parse(req.Msg.RunId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -222,6 +224,7 @@ func (s *PythonStrategyServer) DeleteBacktestRun(ctx context.Context, req *conne
 		s.log.Error("DeleteBacktestRun", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	s.log.Info("DeleteBacktestRun result", zap.Bool("deleted", deleted), zap.String("user_id", userID.String()), zap.String("run_id", runID.String()))
 	return connect.NewResponse(&antv1.DeleteBacktestRunResponse{Deleted: deleted}), nil
 }
 
