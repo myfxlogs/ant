@@ -44,11 +44,7 @@ const StrategyBacktestParams = {
       "strictModeOnTooltip": "BẬT: tín hiệu xác nhận khi đóng nến, thực thi khi mở nến tiếp theo",
       "title": "Kiểm thử lùi",
       "trade": "Giao dịch",
-      "vectorizedMode": "Vector Hóa",
-      "mtLive": "MT Trực tiếp",
-      "mtDataset": "Tập dữ liệu",
-      "nextBarOpen": "Mở nến tiếp theo",
-      "sameBarClose": "Đóng cùng nến"
+      "vectorizedMode": "Vector Hóa"
     }
   }
 } as const;

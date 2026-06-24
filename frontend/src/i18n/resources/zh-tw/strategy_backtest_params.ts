@@ -44,11 +44,7 @@ const StrategyBacktestParams = {
       "strictModeOnTooltip": "開啟: 訊號在K線收盤確認，次根開盤執行",
       "title": "回測",
       "trade": "交易",
-      "vectorizedMode": "向量化",
-      "mtLive": "MT 即時",
-      "mtDataset": "資料集",
-      "nextBarOpen": "次根K線開盤",
-      "sameBarClose": "同根K線收盤"
+      "vectorizedMode": "向量化"
     }
   }
 } as const;
