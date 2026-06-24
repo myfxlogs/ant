@@ -66,12 +66,13 @@ func (x *EngineValidateRequest) GetStrategyCode() string {
 }
 
 type EngineValidateResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Valid         bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
-	Errors        []string               `protobuf:"bytes,2,rep,name=errors,proto3" json:"errors,omitempty"`
-	Warnings      []string               `protobuf:"bytes,3,rep,name=warnings,proto3" json:"warnings,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Valid          bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
+	Errors         []string               `protobuf:"bytes,2,rep,name=errors,proto3" json:"errors,omitempty"`
+	Warnings       []string               `protobuf:"bytes,3,rep,name=warnings,proto3" json:"warnings,omitempty"`
+	ParametersJson string                 `protobuf:"bytes,4,opt,name=parameters_json,json=parametersJson,proto3" json:"parameters_json,omitempty"` // JSON array of {name, type, default, label}
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *EngineValidateResponse) Reset() {
@@ -123,6 +124,13 @@ func (x *EngineValidateResponse) GetWarnings() []string {
 		return x.Warnings
 	}
 	return nil
+}
+
+func (x *EngineValidateResponse) GetParametersJson() string {
+	if x != nil {
+		return x.ParametersJson
+	}
+	return ""
 }
 
 type EngineRunStrategyRequest struct {
@@ -1245,11 +1253,12 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\n" +
 	"\x16backtest_service.proto\x12\x06ant.v1\x1a\x1fbacktest_execution_config.proto\"<\n" +
 	"\x15EngineValidateRequest\x12#\n" +
-	"\rstrategy_code\x18\x01 \x01(\tR\fstrategyCode\"b\n" +
+	"\rstrategy_code\x18\x01 \x01(\tR\fstrategyCode\"\x8b\x01\n" +
 	"\x16EngineValidateResponse\x12\x14\n" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x16\n" +
 	"\x06errors\x18\x02 \x03(\tR\x06errors\x12\x1a\n" +
-	"\bwarnings\x18\x03 \x03(\tR\bwarnings\"\xc7\x01\n" +
+	"\bwarnings\x18\x03 \x03(\tR\bwarnings\x12'\n" +
+	"\x0fparameters_json\x18\x04 \x01(\tR\x0eparametersJson\"\xc7\x01\n" +
 	"\x18EngineRunStrategyRequest\x12\x1f\n" +
 	"\vstrategy_id\x18\x01 \x01(\tR\n" +
 	"strategyId\x12#\n" +

@@ -151,6 +151,7 @@ class StrategyValidationResult:
     errors: List[str]
     warnings: List[str]
     quality_hints: List[Any] = field(default_factory=list)
+    parameters: List[dict] = field(default_factory=list)  # extracted from self.ctx.param()
 
 
 def _is_sdk_strategy(tree) -> bool:
@@ -163,6 +164,94 @@ def _is_sdk_strategy(tree) -> bool:
                 if isinstance(base, ast.Attribute) and base.attr == "StrategyBase":
                     return True
     return False
+
+
+# ── Parameter extraction ─────────────────────────────────────────────────
+#
+# Parses ``self.ctx.param("name", default)`` calls from strategy code and
+# returns structured TemplateParameter dicts for the frontend backtest card.
+
+# Standard backtest parameters that should come from the UI, NOT from
+# strategy code.  Strategy authors should read them via ctx.backtest_config
+# or the dedicated proto fields rather than self.ctx.param().
+_STANDARD_PARAM_NAMES: set[str] = {
+    "起始下单量", "初始手数", "lot_size", "initial_lot",
+    "初始资金", "本金", "initial_capital",
+    "杠杆", "leverage",
+    "手续费", "commission",
+    "滑点", "slippage",
+    "多空方向", "trade_direction",
+}
+
+
+def _guess_param_type(default_value: object) -> str:
+    """Map a Python literal AST node to a frontend type string."""
+    if isinstance(default_value, ast.Constant):
+        v = default_value.value
+        if isinstance(v, bool): return "bool"
+        if isinstance(v, int): return "int"
+        if isinstance(v, float): return "float"
+        if isinstance(v, str): return "string"
+    if isinstance(default_value, ast.Call):
+        fn = default_value.func
+        fn_name = ""
+        if isinstance(fn, ast.Name): fn_name = fn.id
+        elif isinstance(fn, ast.Attribute): fn_name = fn.attr
+        if fn_name == "Decimal":
+            return "float"
+    return "string"
+
+
+def _extract_params(tree) -> list[dict]:
+    """Extract ``self.ctx.param("name", default)`` calls from an AST.
+
+    Returns a list of dicts with keys matching TemplateParameter proto:
+    name, type, default, label.
+    """
+    params: list[dict] = []
+    seen: set[str] = set()
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        # Match: self.ctx.param("name", default)
+        if not isinstance(node.func, ast.Attribute):
+            continue
+        if node.func.attr != "param":
+            continue
+        if not isinstance(node.func.value, ast.Attribute):
+            continue
+        if node.func.value.attr != "ctx":
+            continue
+        if not isinstance(node.func.value.value, ast.Name):
+            continue
+        if node.func.value.value.id != "self":
+            continue
+        if len(node.args) < 1:
+            continue
+
+        arg0 = node.args[0]
+        if not isinstance(arg0, ast.Constant) or not isinstance(arg0.value, str):
+            continue
+        name = arg0.value
+        if name in seen:
+            continue
+        seen.add(name)
+
+        default_val = ""
+        param_type = "string"
+        if len(node.args) >= 2:
+            default_val = ast.unparse(node.args[1]) if hasattr(ast, "unparse") else ""
+            param_type = _guess_param_type(node.args[1])
+
+        params.append({
+            "name": name,
+            "type": param_type,
+            "default": default_val,
+            "label": name,
+        })
+
+    return params
 
 
 # ── SDK AST validation rules ─────────────────────────────────────────────
@@ -333,6 +422,35 @@ def _rule_unnecessary_pre_injected_imports(
                     warnings.append(f"`import {alias.name}` 多余——{alias.name} 已被沙箱预注入，可直接使用。")
 
 
+@_register
+def _rule_standard_param_in_code(
+    _code: str, tree, errors: list, warnings: list,
+) -> None:
+    """Warn when standard backtest params are hardcoded in strategy code.
+
+    Standard params (手数, 本金, 杠杆, 手续费, 滑点, 多空方向) should be
+    set by the user in the backtest card UI, not hardcoded in strategy code.
+    """
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        if not isinstance(node.func, ast.Attribute):
+            continue
+        if node.func.attr != "param":
+            continue
+        if len(node.args) < 1:
+            continue
+        arg0 = node.args[0]
+        if not isinstance(arg0, ast.Constant) or not isinstance(arg0.value, str):
+            continue
+        name = arg0.value
+        if name in _STANDARD_PARAM_NAMES:
+            warnings.append(
+                f"`{name}` 是标准回测参数，应由用户在回测面板中设置，"
+                f"而非硬编码在策略代码中。请改用 ctx.backtest_config 读取。"
+            )
+
+
 # ── Orchestrator ────────────────────────────────────────────────────────
 
 
@@ -365,6 +483,9 @@ def _validate_sdk_strategy(
     if "self.broker" not in code:
         warnings.append("策略未引用 self.broker")
 
+    # ── Extract parameters for frontend backtest card ──────────────────
+    parameters = _extract_params(tree)
+
     # ── Execute all registered rules ───────────────────────────────────
     for rule in _SDK_RULES:
         rule(code, tree, errors, warnings)
@@ -379,6 +500,7 @@ def _validate_sdk_strategy(
     return StrategyValidationResult(
         valid=len(deduped) == 0, errors=deduped, warnings=warnings,
         quality_hints=quality_hints or [],
+        parameters=parameters,
     )
 
 

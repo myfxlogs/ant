@@ -202,11 +202,13 @@ async def validate_strategy_connect(request: Request):
         body = await request.json()
         Parse(json.dumps(body), req, ignore_unknown_fields=True)
 
+    import json as _json
     result = validate_strategy_code(req.strategy_code or "")
     resp = EngineValidateResponse(
         valid=result.valid,
         errors=result.errors or [],
         warnings=result.warnings or [],
+        parameters_json=_json.dumps(result.parameters or [], ensure_ascii=False),
     )
     return JSONResponse(content=MessageToDict(resp, preserving_proto_field_name=True))
 

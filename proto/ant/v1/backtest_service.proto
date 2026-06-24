@@ -15,7 +15,12 @@ service BacktestService {
 }
 
 message EngineValidateRequest { string strategy_code = 1; }
-message EngineValidateResponse { bool valid = 1; repeated string errors = 2; repeated string warnings = 3; }
+message EngineValidateResponse {
+  bool valid = 1;
+  repeated string errors = 2;
+  repeated string warnings = 3;
+  string parameters_json = 4;  // JSON array of {name, type, default, label}
+}
 
 message EngineRunStrategyRequest {
   string strategy_id = 1; string strategy_code = 2;

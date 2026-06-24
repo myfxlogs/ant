@@ -57,6 +57,9 @@ message ValidateStrategyResponse {
   // Auto-detected strategy type from code analysis.
   // "run_context" = event-driven run(context) | "run_dataframe" = vectorized run_dataframe(df, params)
   string strategy_type = 7;
+  // Extracted self.ctx.param() calls as JSON array of {name, type, default, label}.
+  // Frontend uses this to render parameter input fields in the backtest card.
+  string parameters_json = 8;
 }
 
 // CodeQualityHint reports a single code quality issue found by static analysis.

@@ -212,9 +212,12 @@ type ValidateStrategyResponse struct {
 	StrategyDirectives []*StrategyDirective   `protobuf:"bytes,6,rep,name=strategy_directives,json=strategyDirectives,proto3" json:"strategy_directives,omitempty"`
 	// Auto-detected strategy type from code analysis.
 	// "run_context" = event-driven run(context) | "run_dataframe" = vectorized run_dataframe(df, params)
-	StrategyType  string `protobuf:"bytes,7,opt,name=strategy_type,json=strategyType,proto3" json:"strategy_type,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	StrategyType string `protobuf:"bytes,7,opt,name=strategy_type,json=strategyType,proto3" json:"strategy_type,omitempty"`
+	// Extracted self.ctx.param() calls as JSON array of {name, type, default, label}.
+	// Frontend uses this to render parameter input fields in the backtest card.
+	ParametersJson string `protobuf:"bytes,8,opt,name=parameters_json,json=parametersJson,proto3" json:"parameters_json,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *ValidateStrategyResponse) Reset() {
@@ -292,6 +295,13 @@ func (x *ValidateStrategyResponse) GetStrategyDirectives() []*StrategyDirective 
 func (x *ValidateStrategyResponse) GetStrategyType() string {
 	if x != nil {
 		return x.StrategyType
+	}
+	return ""
+}
+
+func (x *ValidateStrategyResponse) GetParametersJson() string {
+	if x != nil {
+		return x.ParametersJson
 	}
 	return ""
 }
@@ -1356,7 +1366,7 @@ const file_python_strategy_proto_rawDesc = "" +
 	"\x04logs\x18\x03 \x03(\tR\x04logs\x12\x14\n" +
 	"\x05error\x18\x04 \x01(\tR\x05error\"-\n" +
 	"\x17ValidateStrategyRequest\x12\x12\n" +
-	"\x04code\x18\x01 \x01(\tR\x04code\"\xd6\x02\n" +
+	"\x04code\x18\x01 \x01(\tR\x04code\"\xff\x02\n" +
 	"\x18ValidateStrategyResponse\x12\x14\n" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x16\n" +
 	"\x06errors\x18\x02 \x03(\tR\x06errors\x12\x1a\n" +
@@ -1364,7 +1374,8 @@ const file_python_strategy_proto_rawDesc = "" +
 	"\rquality_hints\x18\x04 \x03(\v2\x17.ant.v1.CodeQualityHintR\fqualityHints\x12A\n" +
 	"\x10sweep_dimensions\x18\x05 \x03(\v2\x16.ant.v1.SweepDimensionR\x0fsweepDimensions\x12J\n" +
 	"\x13strategy_directives\x18\x06 \x03(\v2\x19.ant.v1.StrategyDirectiveR\x12strategyDirectives\x12#\n" +
-	"\rstrategy_type\x18\a \x01(\tR\fstrategyType\"\x91\x01\n" +
+	"\rstrategy_type\x18\a \x01(\tR\fstrategyType\x12'\n" +
+	"\x0fparameters_json\x18\b \x01(\tR\x0eparametersJson\"\x91\x01\n" +
 	"\x0fCodeQualityHint\x12\x1a\n" +
 	"\bcategory\x18\x01 \x01(\tR\bcategory\x12\x1a\n" +
 	"\bseverity\x18\x02 \x01(\tR\bseverity\x12\x18\n" +

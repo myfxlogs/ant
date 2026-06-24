@@ -183,6 +183,7 @@ async def validate_strategy_connect(request: Request):
         from app.engine.vectorized_runner import detect_strategy_type
         strategy_type = detect_strategy_type(req.code or "")
 
+        import json as _json
         resp = ValidateStrategyResponse(
             valid=result.valid,
             errors=list(result.errors),
@@ -191,6 +192,7 @@ async def validate_strategy_connect(request: Request):
             sweep_dimensions=sweep_dims,
             strategy_directives=strategy_dirs,
             strategy_type=strategy_type,
+            parameters_json=_json.dumps(result.parameters or [], ensure_ascii=False),
         )
     except Exception as e:
         resp = ValidateStrategyResponse(valid=False, errors=[f"验证错误: {e}"])
