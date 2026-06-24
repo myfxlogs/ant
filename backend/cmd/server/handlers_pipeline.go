@@ -22,7 +22,7 @@ import (
 // OMS writer/rate limiter on mthubSvc.
 func initRiskPipeline(
 	pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHubService,
-	eventStore *mthub.TradeEventStore, cfg *config.Config,
+	hub *mthub.Hub, eventStore *mthub.TradeEventStore, cfg *config.Config,
 ) (*risksvc.SignalPipeline, *risksvc.PlatformAggregator) {
 	jurisGate := buildJurisdictionGate(pool, cfg)
 	capStore := loadCapabilityStore(pool, log)
@@ -37,7 +37,7 @@ func initRiskPipeline(
 		Sizer: &risksvc.VolTargetSizer{RiskBudgetPct: 0.01}, Allocator: &risksvc.ProRataAllocator{},
 	})
 	mthubSvc.SetRiskPipeline(pipeline)
-	wireMthubServices(pool, log, mthubSvc, eventStore)
+	wireMthubServices(pool, log, mthubSvc, hub, eventStore)
 	return pipeline, platformAgg
 }
 
@@ -68,7 +68,7 @@ func loadCapabilityStore(pool *pgxpool.Pool, log *zap.Logger) *risksvc.Capabilit
 	return capStore
 }
 
-func wireMthubServices(pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHubService, eventStore *mthub.TradeEventStore) {
+func wireMthubServices(pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHubService, hub *mthub.Hub, eventStore *mthub.TradeEventStore) {
 	mthubSvc.SetAccountStateProvider(func(ctx context.Context, accountID string) (*risk.AccountState, error) {
 		var balance, equity, freeMargin, margin, positions float64
 		err := pool.QueryRow(ctx,
@@ -88,12 +88,8 @@ func wireMthubServices(pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHu
 		}, nil
 	})
 	mthubSvc.SetUserLimiter(usermgr.NewUserLimiter(usermgr.DefaultConfig()))
-	// TODO(M10-BASE-D2): replace StaticEstimator with MultiModelEstimator populated
-	// from MT gateway SymbolParams (pip size, tick value, spread per symbol per broker).
-	// Hardcoded EURUSD values are incorrect for a multi-broker platform where symbol
-	// names, spreads, and pip values vary by broker and account type.
-	mthubSvc.SetCostEstimator(&costsvc.StaticEstimator{Model: &costsvc.CostModel{
-		Symbol: "EURUSD", SpreadPips: 1.0, PipSize: 0.0001, PipValue: 10.0, CommissionPerLot: 7.0,
-	}})
+	mthubSvc.SetCostEstimator(mthub.NewHubCostEstimator(hub, &costsvc.CostModel{
+		Symbol: "DEFAULT", SpreadPips: 1.0, PipSize: 0.00001, PipValue: 1.0, CommissionPerLot: 0,
+	}, log))
 	mthubSvc.SetOmsWriter(mthub.NewOmsWriter(pool, eventStore))
 }

@@ -342,7 +342,7 @@ func registerHandlers(
 		mux.Handle(antv1c.NewAdminStrategyServiceHandler(adminStrategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
 
 	// S1.1-S1.3: Wire SignalPipeline, rate limiter, cost estimator, OMS writer.
-	pipeline, platformAgg := initRiskPipeline(pool, log, mthubSvc, eventStore, cfg)
+	pipeline, platformAgg := initRiskPipeline(pool, log, mthubSvc, hub, eventStore, cfg)
 
 	// AutoTradingService handler — leverages existing pipeline + repositories.
 	autoTradingRepo := repository.NewAutoTradingRepository(pool)
