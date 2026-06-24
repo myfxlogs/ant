@@ -249,7 +249,7 @@ class BacktestRequest:
     bars_by_symbol: Dict[str, List[Bar]] = field(default_factory=dict)
     primary_symbol: Optional[str] = None
     single_position_only: bool = True
-    legacy_pnl: bool = True
+    legacy_pnl: bool = False  # SDK-native: force liquidation at end-of-test
     max_fill_volume: float = 0.0
     deadline_ms: int = 120_000
     symbol_info: Optional[dict] = None  # broker SymbolInfo from MT gateway (proto → dict)
