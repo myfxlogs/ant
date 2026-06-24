@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react';
 import { Button, Input, Tag, Typography, Select, Segmented, Popconfirm } from 'antd';
-import { SendOutlined, LoadingOutlined, SettingOutlined, HistoryOutlined, FileTextOutlined, EditOutlined, CheckOutlined, CloseOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SendOutlined, LoadingOutlined, SettingOutlined, HistoryOutlined, EditOutlined, CheckOutlined, CloseOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { conversate, type ConversateCallbacks } from '@/client/strategyPlan';
 import { pythonStrategyApi } from '@/client/pythonStrategy';

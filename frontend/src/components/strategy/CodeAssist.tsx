@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Button, Form, Input, InputNumber, Space, Spin, Switch, Tag, message } from 'antd';
-import { BulbOutlined, RobotOutlined, SendOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { BulbOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { APPLY_ALL_SUGGESTIONS_KEY, DEFAULT_LABEL_KEY, EXPLAIN_KEY, OPTIONAL_PARAMS_DESC_KEY, OPTIONAL_PARAMS_TITLE_KEY, REQUIRED_KEY, REQUIRED_PARAMS_DESC_KEY, REQUIRED_PARAMS_TITLE_KEY, SUGGESTED_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
 
