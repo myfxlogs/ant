@@ -1,6 +1,7 @@
 package mthub
 
 import (
+	"log"
 	"sync"
 	"time"
 )
@@ -113,10 +114,14 @@ type BarUpdate struct {
 type BarBroker struct {
 	mu          sync.RWMutex
 	subscribers map[string][]chan *BarUpdate
+	drops       map[string]int64 // accountID → dropped bar count
 }
 
 func NewBarBroker() *BarBroker {
-	return &BarBroker{subscribers: map[string][]chan *BarUpdate{}}
+	return &BarBroker{
+		subscribers: map[string][]chan *BarUpdate{},
+		drops:       map[string]int64{},
+	}
 }
 func (b *BarBroker) Publish(ev *BarUpdate) {
 	b.mu.RLock()
@@ -124,12 +129,31 @@ func (b *BarBroker) Publish(ev *BarUpdate) {
 	b.mu.RUnlock()
 	chs := make([]chan *BarUpdate, len(src))
 	copy(chs, src)
+	dropped := false
 	for _, ch := range chs {
 		select {
 		case ch <- ev:
 		default:
+			dropped = true
 		}
 	}
+	if dropped {
+		b.mu.Lock()
+		b.drops[ev.AccountID]++
+		total := b.drops[ev.AccountID]
+		b.mu.Unlock()
+		// Log every 100th drop to avoid spam.
+		if total%100 == 1 {
+			log.Printf("WARNING: BarBroker dropped bars for account %s (total drops: %d, buffer: 64). Strategy is too slow or timeframe is too short.", ev.AccountID, total)
+		}
+	}
+}
+
+// DroppedBars returns the count of dropped bars for an account.
+func (b *BarBroker) DroppedBars(accountID string) int64 {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	return b.drops[accountID]
 }
 func (b *BarBroker) Subscribe(accountID string) (<-chan *BarUpdate, func()) {
 	ch := make(chan *BarUpdate, 64)

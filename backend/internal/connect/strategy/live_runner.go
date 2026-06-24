@@ -262,6 +262,9 @@ func (s *PythonStrategyServer) backfillLiveState(ctx context.Context, accountID 
 			}
 			s.log.Info("backfillLiveState: positions backfilled", zap.String("account", accountID), zap.Int("count", len(positions)))
 			lctx.Positions = positions
+			if len(positions) > 0 {
+				lctx.Position = positions[0]
+			}
 		}
 	}
 }
@@ -366,8 +369,10 @@ func (s *PythonStrategyServer) dispatchCloseAll(ctx context.Context, cfg LiveStr
 		s.log.Warn("LiveStrategyRunner: dispatchCloseAll: no MtHubService")
 		return
 	}
+	// Detach from parent cancellation but preserve values (userID, auth).
+	bgCtx := context.WithoutCancel(ctx)
 	go func() {
-		orders, err := s.mtHub.OpenedOrders(context.Background(), cfg.AccountID)
+		orders, err := s.mtHub.OpenedOrders(bgCtx, cfg.AccountID)
 		if err != nil {
 			s.log.Error("LiveStrategyRunner: dispatchCloseAll: OpenedOrders failed",
 				zap.String("account", cfg.AccountID), zap.Error(err))
@@ -375,7 +380,7 @@ func (s *PythonStrategyServer) dispatchCloseAll(ctx context.Context, cfg LiveStr
 		}
 		closed := 0
 		for _, o := range orders {
-			if err := s.mtHub.CloseOrder(context.Background(), cfg.AccountID, o.Ticket, o.Volume); err != nil {
+			if err := s.mtHub.CloseOrder(bgCtx, cfg.AccountID, o.Ticket, o.Volume); err != nil {
 				s.log.Warn("LiveStrategyRunner: dispatchCloseAll: CloseOrder failed",
 					zap.Int64("ticket", o.Ticket), zap.Error(err))
 				continue

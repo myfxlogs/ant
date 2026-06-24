@@ -40,7 +40,14 @@ def _proto_context_to_dict(ctx) -> dict:
 
 
 def _build_signals_from_intents(intents: list) -> list:
-    """Convert all SDK intents to StrategySignals."""
+    """Convert all SDK intents to StrategySignals.
+
+    Decimal values are preserved as strings through the pipeline:
+    Python Decimal → str → proto double → Go float64 → decimal.NewFromFloat.
+    The float64 step loses precision beyond ~15 significant digits —
+    acceptable for FX volumes/prices (typically 5-8 digits).
+    A future proto update should add string-based Decimal fields.
+    """
     signals = []
     for intent in intents:
         action = intent.get("action", "hold")
