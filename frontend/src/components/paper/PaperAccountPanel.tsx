@@ -280,7 +280,7 @@ export default function PaperAccountPanel() {
               rows={6}
               value={startCode}
               onChange={e => setStartCode(e.target.value)}
-              placeholder="def run(context):&#10;    ..."
+              placeholder="class MyStrategy(StrategyBase):&#10;    def on_bar(self):&#10;        ..."
               style={{ fontFamily: 'monospace', fontSize: 12 }}
             />
           </Form.Item>

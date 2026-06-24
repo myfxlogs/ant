@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, Tabs, Table } from 'antd';
 import { useParams } from 'react-router-dom';
 import { Typography } from 'antd';
-import { scheduleHealthApi } from '@/client/scheduleHealth';
+import { logApi } from '@/client/log';
 import { StatusResult } from '@/components/common/StatusResult';
 import { useTranslation } from 'react-i18next'
 import { TABS_EXEC_LOGS_KEY, TABS_ORDER_LOGS_KEY, TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_schedule_logs_keys';
@@ -27,7 +27,7 @@ export default function StrategyScheduleLogsPage() {
   const refreshExec = useCallback(async () => {
     if (!scheduleId) return;
     try {
-      const resp = await scheduleHealthApi.getScheduleRunLogs({ scheduleId, page: 1, pageSize: 200 });
+      const resp = await logApi.getScheduleRunLogs({ scheduleId, page: 1, pageSize: 200 });
       setExecLogs((resp?.logs || []) as ScheduleRunLog[]);
     } catch (e: unknown) {
       setError(String((e as { message?: string })?.message || e));
@@ -37,7 +37,7 @@ export default function StrategyScheduleLogsPage() {
   const refreshOrders = useCallback(async () => {
     if (!scheduleId) return;
     try {
-      const resp = await scheduleHealthApi.getScheduleOrders({ scheduleId, page: 1, pageSize: 200 });
+      const resp = await logApi.getOrderLogHistory({ scheduleId, page: 1, pageSize: 200 });
       setOrderLogs((resp?.orders || []) as OrderHistoryRecord[]);
     } catch (err) {
       console.error('refreshOrders failed', err);

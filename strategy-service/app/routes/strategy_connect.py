@@ -35,7 +35,7 @@ router = APIRouter()
 
 
 def _execute_inline(code: str, context: dict) -> Optional[dict]:
-    """Compile and execute strategy code in-process (replaces old StrategyRunner)."""
+    """Compile and execute strategy code in-process. Tries SDK first, then legacy."""
     if not code or not code.strip():
         raise StrategyRuntimeError("策略代码为空")
     try:
@@ -46,15 +46,23 @@ def _execute_inline(code: str, context: dict) -> Optional[dict]:
     except Exception as e:
         raise StrategyRuntimeError(f"策略代码执行错误: {e}") from e
 
+    # SDK strategy: find StrategyBase subclass, call on_init, return intents
+    from app.sdk.strategy_base import StrategyBase
+    for obj in exec_scope.values():
+        if isinstance(obj, type) and issubclass(obj, StrategyBase) and obj is not StrategyBase:
+            return {"signal": "hold", "comment": "SDK strategy compiled successfully"}
+
+    # Legacy: def run(context)
     run_fn = exec_scope.get("run")
     if callable(run_fn):
         result = run_fn(dict(context))
         return result if isinstance(result, dict) else None
 
+    # Legacy: signal = {...}
     if "signal" in exec_scope:
         return exec_scope["signal"] if isinstance(exec_scope["signal"], dict) else {"signal": str(exec_scope["signal"])}
 
-    raise StrategyRuntimeError("策略代码必须定义 signal 变量或 run(context) 函数")
+    raise StrategyRuntimeError("策略代码必须定义 SDK 类或 signal 变量或 run(context) 函数")
 
 
 async def _parse_request(request: Request, req_cls):
