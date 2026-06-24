@@ -14,7 +14,7 @@ import (
 // ── D6-A: Fail-closed on nil state ────────────────────────────────────
 
 func TestGateFailClosedNilState(t *testing.T) {
-	g := NewDefaultGate()
+	g := newTestGate()
 
 	intent := &antv1.OrderIntent{
 		UserId:    "user-1",
@@ -37,7 +37,7 @@ func TestGateFailClosedNilState(t *testing.T) {
 }
 
 func TestGateFailClosedNegativeEquity(t *testing.T) {
-	g := NewDefaultGate()
+	g := newTestGate()
 
 	intent := &antv1.OrderIntent{
 		UserId:    "user-1",
@@ -60,7 +60,7 @@ func TestGateFailClosedNegativeEquity(t *testing.T) {
 }
 
 func TestGateAllowsSimWithNilState(t *testing.T) {
-	g := NewDefaultGate()
+	g := newTestGate()
 
 	intent := &antv1.OrderIntent{
 		UserId:    "user-1",
@@ -82,7 +82,7 @@ func TestGateAllowsSimWithNilState(t *testing.T) {
 // ── D6-A: Gate blocks oversized orders ────────────────────────────────
 
 func TestGateIntegrationBlocksOversized(t *testing.T) {
-	g := NewDefaultGate()
+	g := newTestGate()
 
 	state := &AccountState{
 		Balance:        decimal.NewFromInt(100000),
@@ -116,7 +116,7 @@ func TestGateIntegrationBlocksOversized(t *testing.T) {
 // ── D6-A: Kill-switch blocks everything live ──────────────────────────
 
 func TestGateIntegrationKillSwitchLiveOnly(t *testing.T) {
-	g := NewDefaultGate()
+	g := newTestGate()
 	var ks atomic.Bool
 	ks.Store(true)
 	g.SetKillSwitch(func() bool { return ks.Load() })
@@ -152,7 +152,7 @@ func TestGateIntegrationKillSwitchLiveOnly(t *testing.T) {
 // ── D6-A: Audit trail for all decisions ───────────────────────────────
 
 func TestGateAuditTrail(t *testing.T) {
-	g := NewDefaultGate()
+	g := newTestGate()
 	state := &AccountState{
 		Balance:        decimal.NewFromInt(100000),
 		Equity:         decimal.NewFromInt(100000),
@@ -190,7 +190,7 @@ func TestGateAuditTrail(t *testing.T) {
 // ── D6-A: SimBroker offline gate batch pre-check ──────────────────────
 
 func TestGateOfflineBatchPreCheck(t *testing.T) {
-	g := NewDefaultGate()
+	g := newTestGate()
 	state := &AccountState{
 		Balance:        decimal.NewFromInt(100000),
 		Equity:         decimal.NewFromInt(100000),
@@ -239,7 +239,7 @@ func TestGateOfflineBatchPreCheck(t *testing.T) {
 // ── D6-A: All 11 rule names ───────────────────────────────────────────
 
 func TestGateAllRuleNames(t *testing.T) {
-	g := NewDefaultGate()
+	g := newTestGate()
 	names := g.Rules()
 
 	expected := []string{
@@ -283,7 +283,7 @@ func TestOrderIntentFieldMapping(t *testing.T) {
 		Source:    antv1.OrderIntentSource_ORDER_INTENT_SOURCE_LIVE,
 	}
 
-	g := NewDefaultGate()
+	g := newTestGate()
 	state := &AccountState{
 		Balance:        decimal.NewFromInt(100000),
 		Equity:         decimal.NewFromInt(100000),
@@ -311,7 +311,7 @@ func contains(s, substr string) bool {
 // ── D6-A: Concurrent gate evaluation does not deadlock ─────────────────
 
 func TestGateIntegrationConcurrentBatch(t *testing.T) {
-	g := NewDefaultGate()
+	g := newTestGate()
 	state := &AccountState{
 		Balance:        decimal.NewFromInt(100000),
 		Equity:         decimal.NewFromInt(100000),

@@ -195,21 +195,23 @@ func (g *Gate) Rules() []string {
 
 // ── Default gate factory ───────────────────────────────────────────────
 
-// NewDefaultGate creates a Gate with all 11 rules from spec/31, using
-// sensible defaults.  Callers can override thresholds via SetKillSwitch and
-// SetAutotradeEnabled.
+// NewDefaultGate creates an empty Gate — the system does not impose
+// trading constraints by default.  All rules are opt-in:
+//
+//   - System rules (KillSwitch, DuplicateProtection) are injected
+//     via SetKillSwitch / AddRule by the server wiring.
+//   - User rules (MaxLotSize, DrawdownBreaker, etc.) are added
+//     when the user configures them in their trading settings.
 func NewDefaultGate() *Gate {
+	return NewGate()
+}
+
+// NewGateWithSystemRules creates a Gate with only system-critical rules:
+// DuplicateProtection (prevents double-ordering) and the kill-switch
+// placeholder.  KYC/Jurisdiction is wired separately when available.
+func NewGateWithSystemRules() *Gate {
 	return NewGate(
-		&MaxLotSize{MaxLots: decimal.NewFromInt(10)},
-		&MaxPositionCount{Max: 20},
-		&MaxExposure{MaxRatio: decimal.NewFromFloat(0.5)}, // 50% of balance
-		&DailyLossBreaker{MaxDailyLoss: decimal.Zero},       // disabled by default
-		&DrawdownBreaker{MaxDrawdownPct: decimal.NewFromFloat(0.30)},
-		&SymbolWhitelist{Whitelist: nil},                    // all allowed
-		&LeverageCap{MaxLeverage: 500},
-		&OrderFrequencyLimit{MaxOrders: 60, Window: time.Minute},
 		&DuplicateProtection{DedupWindow: 5 * time.Second},
-		&MarginPreCheck{MaxMarginRatio: decimal.NewFromFloat(0.80)},
 	)
 }
 

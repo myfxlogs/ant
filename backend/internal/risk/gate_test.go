@@ -13,6 +13,22 @@ import (
 
 // ── Test helpers ───────────────────────────────────────────────────────
 
+// newTestGate creates a Gate with all 10 user-configurable rules for testing.
+func newTestGate() *Gate {
+	return NewGate(
+		&MaxLotSize{MaxLots: decimal.NewFromInt(10)},
+		&MaxPositionCount{Max: 20},
+		&MaxExposure{MaxRatio: decimal.NewFromFloat(0.5)},
+		&DailyLossBreaker{MaxDailyLoss: decimal.Zero},
+		&DrawdownBreaker{MaxDrawdownPct: decimal.NewFromFloat(0.30)},
+		&SymbolWhitelist{Whitelist: nil},
+		&LeverageCap{MaxLeverage: 500},
+		&OrderFrequencyLimit{MaxOrders: 60, Window: time.Minute},
+		&DuplicateProtection{DedupWindow: 5 * time.Second},
+		&MarginPreCheck{MaxMarginRatio: decimal.NewFromFloat(0.80)},
+	)
+}
+
 func intentBuy(vol string) *antv1.OrderIntent {
 	return &antv1.OrderIntent{
 		UserId:    "user-1",
@@ -359,7 +375,7 @@ func TestGateAutotrade_AllowsSim(t *testing.T) {
 // ── Gate: Full Pipeline ───────────────────────────────────────────────
 
 func TestGateAllRulesPass(t *testing.T) {
-	g := NewDefaultGate()
+	g := newTestGate()
 	// 0.01 lots: small enough to pass all rules (max lot=10, max exposure=50%, margin OK, etc.)
 	i := intentBuy("0.01")
 	decision := g.Evaluate(context.Background(), i, defaultState())
@@ -370,7 +386,7 @@ func TestGateAllRulesPass(t *testing.T) {
 
 func TestGateFirstRuleBlocks(t *testing.T) {
 	// Max lot size = 10 → block 100 lots.
-	g := NewDefaultGate()
+	g := newTestGate()
 	decision := g.Evaluate(context.Background(), intentBuy("100.0"), defaultState())
 	if decision.GetAllow() {
 		t.Error("expected blocked by max_lot_size")
@@ -381,7 +397,7 @@ func TestGateFirstRuleBlocks(t *testing.T) {
 }
 
 func TestGateRulesInOrder(t *testing.T) {
-	g := NewDefaultGate()
+	g := newTestGate()
 	names := g.Rules()
 	if len(names) != 10 {
 		t.Errorf("expected 10 rules (R1-R9 + R4a/R4b as two), got %d: %v", len(names), names)
@@ -435,7 +451,7 @@ func TestAuditEntryDeny(t *testing.T) {
 // ── Concurrency ─────────────────────────────────────────────────────────
 
 func TestGateConcurrent(t *testing.T) {
-	g := NewDefaultGate()
+	g := newTestGate()
 	done := make(chan bool)
 	for i := 0; i < 10; i++ {
 		go func() {
