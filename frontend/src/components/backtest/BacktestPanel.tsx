@@ -430,13 +430,13 @@ export default function BacktestPanel(props: Props) {
         )}
 
         {/* ── Tuning Tab ──────────────────────────────────────────────── */}
-        {runner.activeTab === 'tuning' && (
+        {runner.activeTab === 'tuning' && runner.tuning && (
           <SmartTuningPanel
-            tuneMethod={runner.tuning.method} onTuneMethodChange={runner.tuning.setMethod}
-            sweepDimensions={runner.tuning.sweepDimensions} onToggleDimension={runner.tuning.toggleDimension}
-            enabledSweepDims={runner.tuning.enabledDims} cartesianSize={runner.tuning.cartesianSize}
-            tuningRunning={runner.tuning.running} canRun={Boolean(inputs.strategyCode && inputs.symbol)}
-            onRunTuning={() => runner.tuning.run({
+            tuneMethod={runner.tuning.method || 'grid'} onTuneMethodChange={runner.tuning.setMethod || (() => {})}
+            sweepDimensions={runner.tuning.sweepDimensions || []} onToggleDimension={runner.tuning.toggleDimension || (() => {})}
+            enabledSweepDims={runner.tuning.enabledDims || []} cartesianSize={runner.tuning.cartesianSize || 0}
+            tuningRunning={runner.tuning.running || false} canRun={Boolean(inputs.strategyCode && inputs.symbol)}
+            onRunTuning={() => runner.tuning.run?.({
               code: inputs.strategyCode, symbol: inputs.symbol, timeframe: inputs.timeframe,
               startDate: runner.startDate, endDate: runner.endDate,
               templateId: inputs.templateId,
@@ -446,11 +446,11 @@ export default function BacktestPanel(props: Props) {
         )}
 
         {/* ── Gate Tab ────────────────────────────────────────────────── */}
-        {runner.activeTab === 'gate' && (
+        {runner.activeTab === 'gate' && runner.gate && (
           <GatePanel
-            loading={runner.gate.loading} gates={runner.gate.gates} summary={runner.gate.summary}
-            error={runner.gate.error} status={runner.status} canRun={runner.status === 'completed'}
-            onRun={runner.gate.run}
+            loading={runner.gate.loading || false} gates={runner.gate.gates || []} summary={runner.gate.summary || null}
+            error={runner.gate.error || ''} status={runner.status} canRun={runner.status === 'completed'}
+            onRun={runner.gate.run || (() => {})}
           />
         )}
 

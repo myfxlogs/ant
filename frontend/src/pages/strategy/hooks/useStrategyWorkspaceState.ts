@@ -74,7 +74,7 @@ export function useStrategyWorkspaceState() {
       startDate: btCtx.startDate, endDate: btCtx.endDate,
       templateId: selectedTemplateId || undefined,
     });
-  }, [codeCtx.code, symbol, timeframe, btCtx.startDate, btCtx.endDate, selectedTemplateId, btCtx.runTuning]);
+  }, [codeCtx.code, symbol, timeframe, btCtx.startDate, btCtx.endDate, selectedTemplateId, btCtx.tuning]);
 
   // Quick Trade data
   const qt = useQuickTradeData(accountId, symbol);
