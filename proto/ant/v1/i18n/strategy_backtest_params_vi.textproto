@@ -35,3 +35,6 @@ strict_mode_on_tooltip: 'BẬT: tín hiệu xác nhận khi đóng nến, thực
 title: 'Kiểm thử lùi'
 trade: 'Giao dịch'
 vectorized_mode: 'Vector Hóa'
+lot_size: 'Kích thước lô'
+strategy: 'Chiến lược'
+strategy_params: 'Tham số chiến lược'

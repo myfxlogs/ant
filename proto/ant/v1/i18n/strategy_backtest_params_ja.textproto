@@ -35,3 +35,6 @@ strict_mode_on_tooltip: 'ON: バークローズでシグナル確認、次バー
 title: 'バックテスト'
 trade: '取引'
 vectorized_mode: 'ベクトル化'
+lot_size: 'ロットサイズ'
+strategy: 'ストラテジー'
+strategy_params: 'ストラテジーパラメータ'
