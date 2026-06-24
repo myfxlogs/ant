@@ -22,21 +22,22 @@ const (
 )
 
 type BacktestI18N struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AnnualReturn  string                 `protobuf:"bytes,1,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"` // Annual Return
-	EquityCurve   string                 `protobuf:"bytes,2,opt,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`    // Equity Curve
-	MaxDrawdown   string                 `protobuf:"bytes,3,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`    // Max Drawdown
-	Sharpe        string                 `protobuf:"bytes,4,opt,name=sharpe,proto3" json:"sharpe,omitempty"`                                 // Sharpe
-	TotalReturn   string                 `protobuf:"bytes,5,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`    // Total Return
-	TotalTrades   string                 `protobuf:"bytes,6,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`    // Total Trades
-	TradeLog      string                 `protobuf:"bytes,7,opt,name=trade_log,json=tradeLog,proto3" json:"trade_log,omitempty"`             // Trade Log
-	TradePrice    string                 `protobuf:"bytes,8,opt,name=trade_price,json=tradePrice,proto3" json:"trade_price,omitempty"`       // Price
-	TradeSide     string                 `protobuf:"bytes,9,opt,name=trade_side,json=tradeSide,proto3" json:"trade_side,omitempty"`          // Side
-	TradeTime     string                 `protobuf:"bytes,10,opt,name=trade_time,json=tradeTime,proto3" json:"trade_time,omitempty"`         // Time
-	TradeVolume   string                 `protobuf:"bytes,11,opt,name=trade_volume,json=tradeVolume,proto3" json:"trade_volume,omitempty"`   // Volume
-	WinRate       string                 `protobuf:"bytes,12,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`               // Win Rate
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	AnnualReturn    string                 `protobuf:"bytes,1,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"`           // Annual Return
+	EquityCurve     string                 `protobuf:"bytes,2,opt,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`              // Equity Curve
+	MaxDrawdown     string                 `protobuf:"bytes,3,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`              // Max Drawdown
+	Sharpe          string                 `protobuf:"bytes,4,opt,name=sharpe,proto3" json:"sharpe,omitempty"`                                           // Sharpe
+	TotalReturn     string                 `protobuf:"bytes,5,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`              // Total Return
+	TotalTrades     string                 `protobuf:"bytes,6,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`              // Total Trades
+	TradeLog        string                 `protobuf:"bytes,7,opt,name=trade_log,json=tradeLog,proto3" json:"trade_log,omitempty"`                       // Trade Log
+	TradePrice      string                 `protobuf:"bytes,8,opt,name=trade_price,json=tradePrice,proto3" json:"trade_price,omitempty"`                 // Price
+	TradeSide       string                 `protobuf:"bytes,9,opt,name=trade_side,json=tradeSide,proto3" json:"trade_side,omitempty"`                    // Side
+	TradeTime       string                 `protobuf:"bytes,10,opt,name=trade_time,json=tradeTime,proto3" json:"trade_time,omitempty"`                   // Time
+	TradeVolume     string                 `protobuf:"bytes,11,opt,name=trade_volume,json=tradeVolume,proto3" json:"trade_volume,omitempty"`             // Volume
+	WinRate         string                 `protobuf:"bytes,12,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`                         // Win Rate
+	BacktestRecords string                 `protobuf:"bytes,40,opt,name=backtest_records,json=backtestRecords,proto3" json:"backtest_records,omitempty"` // Backtest Records
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *BacktestI18N) Reset() {
@@ -153,11 +154,18 @@ func (x *BacktestI18N) GetWinRate() string {
 	return ""
 }
 
+func (x *BacktestI18N) GetBacktestRecords() string {
+	if x != nil {
+		return x.BacktestRecords
+	}
+	return ""
+}
+
 var File_i18n_strategy_backtest_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_backtest_proto_rawDesc = "" +
 	"\n" +
-	"\x1ci18n/strategy_backtest.proto\x12\vant.v1.i18n\"\x91\x03\n" +
+	"\x1ci18n/strategy_backtest.proto\x12\vant.v1.i18n\"\xbc\x03\n" +
 	"\fBacktestI18n\x12#\n" +
 	"\rannual_return\x18\x01 \x01(\tR\fannualReturn\x12!\n" +
 	"\fequity_curve\x18\x02 \x01(\tR\vequityCurve\x12!\n" +
@@ -174,7 +182,8 @@ const file_i18n_strategy_backtest_proto_rawDesc = "" +
 	"trade_time\x18\n" +
 	" \x01(\tR\ttradeTime\x12!\n" +
 	"\ftrade_volume\x18\v \x01(\tR\vtradeVolume\x12\x19\n" +
-	"\bwin_rate\x18\f \x01(\tR\awinRateB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\bwin_rate\x18\f \x01(\tR\awinRate\x12)\n" +
+	"\x10backtest_records\x18( \x01(\tR\x0fbacktestRecordsB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_backtest_proto_rawDescOnce sync.Once

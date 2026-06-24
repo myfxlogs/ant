@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file i18n/strategy_backtest.proto.
  */
 export const file_i18n_strategy_backtest: GenFile = /*@__PURE__*/
-  fileDesc("ChxpMThuL3N0cmF0ZWd5X2JhY2t0ZXN0LnByb3RvEgthbnQudjEuaTE4biKFAgoMQmFja3Rlc3RJMThuEhUKDWFubnVhbF9yZXR1cm4YASABKAkSFAoMZXF1aXR5X2N1cnZlGAIgASgJEhQKDG1heF9kcmF3ZG93bhgDIAEoCRIOCgZzaGFycGUYBCABKAkSFAoMdG90YWxfcmV0dXJuGAUgASgJEhQKDHRvdGFsX3RyYWRlcxgGIAEoCRIRCgl0cmFkZV9sb2cYByABKAkSEwoLdHJhZGVfcHJpY2UYCCABKAkSEgoKdHJhZGVfc2lkZRgJIAEoCRISCgp0cmFkZV90aW1lGAogASgJEhQKDHRyYWRlX3ZvbHVtZRgLIAEoCRIQCgh3aW5fcmF0ZRgMIAEoCUIhWh9hbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MS9pMThuYgZwcm90bzM");
+  fileDesc("ChxpMThuL3N0cmF0ZWd5X2JhY2t0ZXN0LnByb3RvEgthbnQudjEuaTE4biKfAgoMQmFja3Rlc3RJMThuEhUKDWFubnVhbF9yZXR1cm4YASABKAkSFAoMZXF1aXR5X2N1cnZlGAIgASgJEhQKDG1heF9kcmF3ZG93bhgDIAEoCRIOCgZzaGFycGUYBCABKAkSFAoMdG90YWxfcmV0dXJuGAUgASgJEhQKDHRvdGFsX3RyYWRlcxgGIAEoCRIRCgl0cmFkZV9sb2cYByABKAkSEwoLdHJhZGVfcHJpY2UYCCABKAkSEgoKdHJhZGVfc2lkZRgJIAEoCRISCgp0cmFkZV90aW1lGAogASgJEhQKDHRyYWRlX3ZvbHVtZRgLIAEoCRIQCgh3aW5fcmF0ZRgMIAEoCRIYChBiYWNrdGVzdF9yZWNvcmRzGCggASgJQiFaH2FudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxL2kxOG5iBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.i18n.BacktestI18n
@@ -99,6 +99,13 @@ export type BacktestI18n = Message<"ant.v1.i18n.BacktestI18n"> & {
    * @generated from field: string win_rate = 12;
    */
   winRate: string;
+
+  /**
+   * Backtest Records
+   *
+   * @generated from field: string backtest_records = 40;
+   */
+  backtestRecords: string;
 };
 
 /**
