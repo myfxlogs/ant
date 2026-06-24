@@ -29,8 +29,11 @@ func (s *MtHubService) runPreTradeRisk(ctx context.Context, req *OrderRequest, o
 			return fmt.Errorf("account state fetch: %w", err)
 		}
 		if state != nil {
-			balance, equity, freeMargin, margin = state.Balance, state.Equity, state.FreeMargin, state.Margin
-			positions = state.Positions
+			balance, _ = state.Balance.Float64()
+			equity, _ = state.Equity.Float64()
+			freeMargin, _ = state.FreeMargin.Float64()
+			margin, _ = state.UsedMargin.Float64()
+			positions = state.OpenPositions
 		}
 	}
 

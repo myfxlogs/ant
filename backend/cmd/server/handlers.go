@@ -449,7 +449,8 @@ func configurePythonStrategy(
 		gate := risk.NewDefaultGate()
 		gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
 		gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
-		srv.SetGate(gate)
+		srv.SetGate(gate)       // live_runner startup guard only (gate runs in mthub now)
+		mthubSvc.SetGate(gate)   // D6-A single chokepoint: all orders through mthub
 		// T3.2b: Inject AccountStateProvider for live trading.
 		// Uses the MT4 gateway's FetchOpenedOrders to derive equity/balance/margin.
 		srv.SetAccountProvider(strategy.NewMTAccountStateProvider(hub, log))

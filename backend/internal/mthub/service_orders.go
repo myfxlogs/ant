@@ -62,9 +62,24 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		}
 	}
 
-	// Pre-trade risk pipeline (S1.1).
+	// Pre-trade risk pipeline (S1.1 — legacy, migrating to Gate D6-A).
 	if err := s.runPreTradeRisk(ctx, req, orderID); err != nil {
 		return nil, err
+	}
+
+	// D6-A: single-chokepoint risk gate evaluated for every order path.
+	if s.gate != nil && s.accountStateProvider != nil {
+		intent := orderRequestToIntent(req)
+		state, stateErr := s.accountStateProvider(ctx, req.AccountID)
+		if stateErr != nil {
+			s.logger.Warn("gate: account state fetch failed — fail-closed",
+				zap.String("accountID", req.AccountID), zap.Error(stateErr))
+		}
+		decision := s.gate.Evaluate(ctx, intent, state)
+		if !decision.GetAllow() {
+			s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)
+			return nil, fmt.Errorf("gate rejected: %s", decision.GetReason())
+		}
 	}
 
 	// Pre-trade cost estimation (M10-BASE-D2).
@@ -110,6 +125,48 @@ func (s *MtHubService) submitToBroker(ctx context.Context, req *OrderRequest, or
 	}
 	s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateSubmitted)
 	return ticket, nil
+}
+
+// orderRequestToIntent converts an mthub OrderRequest into an antv1.OrderIntent
+// for Gate.Evaluate(). Prices are kept as decimal strings for precision.
+func orderRequestToIntent(req *OrderRequest) *antv1.OrderIntent {
+	return &antv1.OrderIntent{
+		AccountId: req.AccountID,
+		Symbol:    req.Canonical,
+		Side:      sideToString(req.Side),
+		Volume:    req.Volume.String(),
+		Type:      orderTypeToString(req.OrderType),
+		Price:     req.Price.String(),
+		Sl:        req.StopLoss.String(),
+		Tp:        req.TakeProfit.String(),
+		Magic:     int64(req.Magic),
+	}
+}
+
+func sideToString(s Side) string {
+	switch s {
+	case SideBuy:
+		return "buy"
+	case SideSell:
+		return "sell"
+	default:
+		return "unknown"
+	}
+}
+
+func orderTypeToString(ot OrderType) string {
+	switch ot {
+	case OrderMarket:
+		return "market"
+	case OrderLimit:
+		return "limit"
+	case OrderStop:
+		return "stop"
+	case OrderStopLimit:
+		return "stop_limit"
+	default:
+		return "unknown"
+	}
 }
 
 // estimateOrderCost runs pre-trade cost estimation and returns a JSON representation.
@@ -160,34 +217,8 @@ func (s *MtHubService) publishOrderCreatedEvent(ctx context.Context, req *OrderR
 	}
 }
 
-// --- Helpers ---
-
-func sideToString(s Side) string {
-	switch s {
-	case SideBuy:
-		return "BUY"
-	case SideSell:
-		return "SELL"
-	default:
-		return "UNKNOWN"
-	}
-}
-
-func orderTypeToString(ot OrderType) string {
-	switch ot {
-	case OrderMarket:
-		return "MARKET"
-	case OrderLimit:
-		return "LIMIT"
-	case OrderStop:
-		return "STOP"
-	case OrderStopLimit:
-		return "STOP_LIMIT"
-	default:
-		return "UNKNOWN"
-	}
-}
-
+// lossyFloat64 converts a decimal to float64 for MT API proto boundaries.
+// Precision loss is detected but not rejected — the MT proto requires float64.
 // lossyFloat64 converts a decimal to float64 for MT API proto boundaries.
 // Precision loss is detected but not rejected — the MT proto requires float64.
 func costToProto(est *costsvc.CostBreakdown) *antv1.CostEstimate {

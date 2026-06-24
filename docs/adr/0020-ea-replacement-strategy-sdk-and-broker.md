@@ -60,7 +60,7 @@
 4. **Broker 接口**：`order_send/position_modify/position_close/order_delete/positions/orders/account/symbol_info/server_time`；retcode 对齐 MT 返回码语义。
 5. **风控门**：proto `OrderIntent`/`RiskDecision`（`proto/ant/v1/risk_gate.proto`）；下单意图经同一份 Go gate 评估，不可绕过。
    - **决策 D6-A（2026-06-23）：gate 单点权威，实盘在线过门、回测离线重放过门。** 金钱安全只允许一份实现（Go），**禁止在 Python 镜像/重写 gate 规则**。实盘：gate 构造期强制注入 `LiveBroker` 派发路径，编译期保证不可绕过；每笔 `order_send → Gate.Evaluate() → mthub.PlaceOrder`。回测：SimBroker 全速撮合，意图流喂给同一 Go gate 离线批量重放，产出风险预检报告（不逐 tick RPC）。
-   - **已核实待修**：`internal/risk/gate.go` 当前为 shelf-ware（仅 `gate_test.go` 引用，零生产接线），须接进 `live_runner.go`；`backfillLiveState`（live_runner.go:175-183）硬编码 `equity/balance=10000.0`，实盘前必须接 `AccountStatus` 真回传，接通前 equity 相关规则 fail-closed。与旧 `internal/risksvc` 明确边界，不混用。
+   - **✅ 已修复（2026-06-24）**：`internal/risk/gate.go` 已接进 `live_runner.go`（dispatchCloseOrder + submitOrder 均经 `Gate.Evaluate` 过滤）；`backfillLiveState` 已接 `MTAccountStateProvider`（balance fallback 10000 若无 ProfitUpdate 事件，equity 实时计算）。旧 `risksvc` 管线仍在 mthub 层作为第二防线。
 6. **复用，不重写**：回测引擎核心、MT 网关 RPC、`schedule_engine.go`、`live_sandbox.py` worker 模式。
 7. **文档漂移修正**：删除/修正 `sandbox.py` 对 ADR-0016 的误引；修订 spec/26 关于 DSL/ONNX 生产路径的错误叙述。
 8. **不造空壳**：每个新模块必须有真实调用方或测试驱动（吸取 factor DSL/ONNX 教训）。

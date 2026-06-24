@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	antv1 "anttrader/gen/proto/ant/v1"
+
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
@@ -48,6 +50,25 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 		uid := usermgr.GetUserID(ctx)
 		if uid != "" && !s.userLimiter.AllowOrder(uid) {
 			return ErrRateLimited
+		}
+	}
+
+	// D6-A: single-chokepoint risk gate for close orders.
+	if s.gate != nil && s.accountStateProvider != nil {
+		closeIntent := &antv1.OrderIntent{
+			AccountId: accountID,
+			Type:      "close",
+			Volume:    lots.String(),
+			Magic:     ticket,
+		}
+		state, stateErr := s.accountStateProvider(ctx, accountID)
+		if stateErr != nil && s.logger != nil {
+			s.logger.Warn("gate: account state fetch failed for close — fail-closed",
+				zap.String("accountID", accountID), zap.Error(stateErr))
+		}
+		decision := s.gate.Evaluate(ctx, closeIntent, state)
+		if !decision.GetAllow() {
+			return fmt.Errorf("gate rejected close: %s", decision.GetReason())
 		}
 	}
 

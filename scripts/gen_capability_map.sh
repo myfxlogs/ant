@@ -32,6 +32,35 @@ gen() {
   emit "_最后生成：$(date -u '+%Y-%m-%d %H:%M UTC')。运行 \`bash scripts/gen_capability_map.sh\` 刷新。_"
   emit ""
 
+  emit "## 符号索引（扁平 symbol → file:line，grep 友好）"
+  emit ""
+  emit "> 查询方式：\`bash scripts/cap.sh <动词/别名/符号>\`（只返回命中行，token 有上界）。**禁止整篇 Read 本文件。**"
+  emit ""
+  emit '```'
+  {
+    # proto rpc（公开 + 网关）
+    grep -rEn "rpc [A-Za-z0-9_]+ ?\(" \
+      "$ROOT/proto/ant/v1" "$ROOT/reference/grpc/mt4.proto" "$ROOT/reference/grpc/mt5.proto" 2>/dev/null \
+      | sed -E "s#^$ROOT/##" \
+      | sed -E 's#^([^:]+):([0-9]+):[[:space:]]*rpc ([A-Za-z0-9_]+).*#\3\t\1:\2#' || true
+    # Go 服务方法
+    for d in "${GO_DIRS[@]}"; do
+      [ -d "$ROOT/$d" ] && grep -rEn "func \([a-z]+ \*[A-Za-z0-9_]+\) [A-Z][A-Za-z0-9_]*\(" \
+        "$ROOT/$d" --include='*.go' 2>/dev/null | grep -v '_test.go' \
+        | sed -E "s#^$ROOT/##" \
+        | sed -E 's#^([^:]+):([0-9]+):.*\) ([A-Z][A-Za-z0-9_]*)\(.*#\3\t\1:\2#' || true
+    done
+    # Python SDK / 引擎
+    for d in "${PY_DIRS[@]}"; do
+      [ -d "$ROOT/$d" ] && grep -rEn "^[[:space:]]*(def|class) [A-Za-z_]" \
+        "$ROOT/$d" --include='*.py' 2>/dev/null | grep -v '__pycache__' \
+        | sed -E "s#^$ROOT/##" \
+        | sed -E 's#^([^:]+):([0-9]+):[[:space:]]*(def|class) ([A-Za-z_][A-Za-z0-9_]*).*#\4\t\1:\2#' || true
+    done
+  } | sort -f -u || true
+  emit '```'
+  emit ""
+
   emit "## 公开 ConnectRPC（前端/跨服务可直接调用）"
   emit ""
   emit '```'

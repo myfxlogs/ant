@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 
 	"anttrader/internal/costsvc"
+	"anttrader/internal/risk"
 	"anttrader/internal/risksvc"
 	"anttrader/internal/usermgr"
 )
@@ -57,6 +58,9 @@ type MtHubService struct {
 	accountStateProvider  AccountStateProvider
 	accountOwnerVerifier  AccountOwnerVerifier
 
+	// D6-A: single-chokepoint risk gate evaluated before every order (Place/Close/Modify).
+	gate *risk.Gate
+
 	// S1.2: OMS 16-state state machine writer (NEW to VALIDATED to RISK_APPROVED to SUBMITTED).
 	omsWriter      *OmsWriter
 	brokerRegistry BrokerRegistry // M12-C2: multi-broker registry (optional)
@@ -84,17 +88,15 @@ type RiskPipeline interface {
 // SetRiskPipeline injects the risk pipeline for pre-trade checks.
 func (s *MtHubService) SetRiskPipeline(p RiskPipeline) { s.riskPipeline = p }
 
-// AccountState holds snapshot data needed for risk evaluation.
-type AccountState struct {
-	Balance, Equity, FreeMargin, Margin float64
-	Positions                            int
-}
-
 // AccountStateProvider fetches account state for risk evaluation.
-type AccountStateProvider func(ctx context.Context, accountID string) (*AccountState, error)
+// Returns risk.AccountState (single source of truth, shared with Gate).
+type AccountStateProvider func(ctx context.Context, accountID string) (*risk.AccountState, error)
 
 // SetAccountStateProvider injects the account state fetcher for risk evaluation.
 func (s *MtHubService) SetAccountStateProvider(p AccountStateProvider) { s.accountStateProvider = p }
+
+// SetGate injects the risk gate for pre-trade evaluation (D6-A single chokepoint).
+func (s *MtHubService) SetGate(g *risk.Gate) { s.gate = g }
 
 // SetOmsWriter injects the OMS state writer for order lifecycle tracking (S1.2).
 func (s *MtHubService) SetOmsWriter(w *OmsWriter) { s.omsWriter = w }

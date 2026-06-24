@@ -401,17 +401,7 @@ func (s *PythonStrategyServer) dispatchCloseOrder(ctx context.Context, cfg LiveS
 		s.log.Warn("LiveStrategyRunner: close order without ticket")
 		return
 	}
-	// D6-A: close also passes through gate (as a risk-free check — always allowed unless kill-switch active).
-	intent := signalToOrderIntent(sig, cfg)
-	acctState := s.getAccountState(ctx, cfg.AccountID)
-	decision := s.gate.Evaluate(ctx, intent, acctState)
-	if !decision.GetAllow() {
-		s.log.Warn("LiveStrategyRunner: close BLOCKED by risk gate",
-			zap.Int64("ticket", ticket),
-			zap.String("rule", decision.GetRuleHit()),
-		)
-		return
-	}
+	// D6-A: gate moved to MtHubService.CloseOrder (single chokepoint).
 	volume := decimal.NewFromFloat(sig.GetVolume())
 	go func() {
 		if err := s.mtHub.CloseOrder(context.Background(), cfg.AccountID, ticket, volume); err != nil {
@@ -507,23 +497,9 @@ func (s *PythonStrategyServer) submitOrder(ctx context.Context, cfg LiveStrategy
 
 	sideStr := sideToString(side)
 
-	// D6-A: Gate evaluation — mandatory, non-bypassable.
-	intent := signalToOrderIntent(sig, cfg)
-	acctState := s.getAccountState(ctx, cfg.AccountID)
-	decision := s.gate.Evaluate(ctx, intent, acctState)
-
-	if !decision.GetAllow() {
-		s.log.Warn("LiveStrategyRunner: order BLOCKED by risk gate",
-			zap.String("symbol", cfg.Symbol),
-			zap.String("side", sideStr),
-			zap.String("rule", decision.GetRuleHit()),
-			zap.String("reason", decision.GetReason()),
-		)
-		return // non-bypassable: denied order never reaches mthub
-	}
-
+	// D6-A: gate moved to MtHubService.PlaceOrder (single chokepoint).
 	// Pass user ID in context for mthub capability check.
-	placeCtx := context.Background()
+	placeCtx := context.WithoutCancel(ctx)
 	if cfg.UserID != "" {
 		placeCtx = context.WithValue(context.Background(), interceptor.UserIDKey, cfg.UserID)
 	}

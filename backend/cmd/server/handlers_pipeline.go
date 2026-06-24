@@ -2,14 +2,17 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	"anttrader/internal/config"
 	"anttrader/internal/costsvc"
 	"anttrader/internal/mthub"
+	"anttrader/internal/risk"
 	"anttrader/internal/risksvc"
 	"anttrader/internal/usermgr"
 )
@@ -66,17 +69,23 @@ func loadCapabilityStore(pool *pgxpool.Pool, log *zap.Logger) *risksvc.Capabilit
 }
 
 func wireMthubServices(pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHubService, eventStore *mthub.TradeEventStore) {
-	mthubSvc.SetAccountStateProvider(func(ctx context.Context, accountID string) (*mthub.AccountState, error) {
-		var state mthub.AccountState
-		var positions int64
+	mthubSvc.SetAccountStateProvider(func(ctx context.Context, accountID string) (*risk.AccountState, error) {
+		var balance, equity, freeMargin, margin, positions float64
 		err := pool.QueryRow(ctx,
 			`SELECT balance, equity, free_margin, COALESCE(margin,0)::float8,
 			        COALESCE((SELECT count(*) FROM positions WHERE mt_account_id=$1),0)::int
-			 FROM mt_accounts WHERE id=$1::uuid`, accountID,
-		).Scan(&state.Balance, &state.Equity, &state.FreeMargin, &state.Margin, &positions)
-		if err != nil { return nil, err }
-		state.Positions = int(positions)
-		return &state, nil
+			 FROM accounts WHERE id=$2`, accountID, accountID).
+			Scan(&balance, &equity, &freeMargin, &margin, &positions)
+		if err != nil {
+			return nil, fmt.Errorf("account state query: %w", err)
+		}
+		return &risk.AccountState{
+			Balance:       decimal.NewFromFloat(balance),
+			Equity:        decimal.NewFromFloat(equity),
+			FreeMargin:    decimal.NewFromFloat(freeMargin),
+			UsedMargin:    decimal.NewFromFloat(margin),
+			OpenPositions: int(positions),
+		}, nil
 	})
 	mthubSvc.SetUserLimiter(usermgr.NewUserLimiter(usermgr.DefaultConfig()))
 	mthubSvc.SetCostEstimator(&costsvc.StaticEstimator{Model: &costsvc.CostModel{
