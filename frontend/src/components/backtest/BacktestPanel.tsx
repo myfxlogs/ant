@@ -63,16 +63,16 @@ interface Props {
   onApplyTunedParams?: (code: string) => void;
 }
 
-function MetricsRow({ m }: { m: any }) {
+function MetricsRow({ m, t }: { m: any; t: any }) {
   if (!m) return null;
   return (
     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12, color: '#595959' }}>
-      <span>Return: <b style={{ color: (m.totalReturn ?? 0) >= 0 ? '#26a69a' : '#e57373' }}>{(m.totalReturn ?? 0).toFixed(2)}%</b></span>
-      <span>Trades: <b>{m.totalTrades ?? 0}</b></span>
-      <span>Win: <b>{((m.winRate ?? 0) * 100).toFixed(1)}%</b></span>
+      <span>{t(TOTAL_RETURN_KEY)} <b style={{ color: (m.totalReturn ?? 0) >= 0 ? '#26a69a' : '#e57373' }}>{(m.totalReturn ?? 0).toFixed(2)}%</b></span>
+      <span>{t(TOTAL_TRADES_KEY)} <b>{m.totalTrades ?? 0}</b></span>
+      <span>{t(WIN_RATE_KEY)} <b>{((m.winRate ?? 0) * 100).toFixed(1)}%</b></span>
       <span>PF: <b>{m.profitFactor?.toFixed(2) ?? '—'}</b></span>
-      <span>Sharpe: <b>{m.sharpeRatio?.toFixed(2) ?? '—'}</b></span>
-      <span>MaxDD: <b style={{ color: '#e57373' }}>{(m.maxDrawdown ?? 0).toFixed(2)}%</b></span>
+      <span>{t(SHARPE_KEY)} <b>{m.sharpeRatio?.toFixed(2) ?? '—'}</b></span>
+      <span>{t(MAX_DRAWDOWN_KEY)} <b style={{ color: '#e57373' }}>{(m.maxDrawdown ?? 0).toFixed(2)}%</b></span>
     </div>
   );
 }
@@ -121,7 +121,7 @@ export default function BacktestPanel(props: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <DoubleRightOutlined style={{ fontSize: 12, color: '#1890ff', transform: 'rotate(-90deg)' }} />
           <span style={{ fontSize: 12, fontWeight: 700, color: '#262626' }}>{t(TITLE_KEY)}</span>
-          <MetricsRow m={runner.metrics} />
+          <MetricsRow m={runner.metrics} t={t} />
         </div>
         <Button size="small" type="primary" loading={runner.submitting}
           disabled={!canRun} onClick={(e) => { e.stopPropagation(); handleRun(); }}
@@ -462,9 +462,9 @@ export default function BacktestPanel(props: Props) {
                     render: (v: number) => v?.toFixed(2) },
                   { title: t(TRADE_PRICE_KEY, 'Price'), dataIndex: 'openPrice', width: 80,
                     render: (v: number) => v?.toFixed(2) },
-                  { title: 'Close', dataIndex: 'closePrice', width: 80,
+                  { title: t('strategy.backtest.closePrice', 'Close'), dataIndex: 'closePrice', width: 80,
                     render: (v: number) => v?.toFixed(2) ?? '—' },
-                  { title: 'PnL', dataIndex: 'pnl', width: 80,
+                  { title: t('strategy.backtest.pnl', 'PnL'), dataIndex: 'pnl', width: 80,
                     render: (v: number) => v != null ? (
                       <span style={{ color: v >= 0 ? '#26a69a' : '#ef5350' }}>{v >= 0 ? '+' : ''}{v.toFixed(2)}</span>
                     ) : '-' },
