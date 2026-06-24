@@ -14,7 +14,8 @@ const StrategyBacktest = {
       "tradeSide": "Side",
       "tradeTime": "Time",
       "tradeVolume": "Volume",
-      "winRate": "Win Rate"
+      "winRate": "Win Rate",
+      "backtestRecords": "Backtest Records"
     }
   }
 } as const;

@@ -14,7 +14,8 @@ const StrategyBacktest = {
       "tradeSide": "方向",
       "tradeTime": "時間",
       "tradeVolume": "数量",
-      "winRate": "勝率"
+      "winRate": "勝率",
+      "backtestRecords": "バックテスト記録"
     }
   }
 } as const;

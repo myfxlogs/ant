@@ -25,7 +25,7 @@ import {
   EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY, GATE_TAB_KEY, TUNING_TAB_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import {
-  ANNUAL_RETURN_KEY, EQUITY_CURVE_KEY, MAX_DRAWDOWN_KEY, SHARPE_KEY,
+  ANNUAL_RETURN_KEY, BACKTEST_RECORDS_KEY, EQUITY_CURVE_KEY, MAX_DRAWDOWN_KEY, SHARPE_KEY,
   TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, TRADE_LOG_KEY, TRADE_PRICE_KEY,
   TRADE_SIDE_KEY, TRADE_TIME_KEY, TRADE_VOLUME_KEY, WIN_RATE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
@@ -176,7 +176,7 @@ export default function BacktestPanel(props: Props) {
               { key: 'results', label: t(BACKTEST_TAB_KEY, 'Results') },
               { key: 'tuning', label: t(TUNING_TAB_KEY, 'Tuning') },
               { key: 'gate', label: t(GATE_TAB_KEY, 'Gate') },
-              { key: 'trades', label: `${t(TRADE_LOG_KEY, 'Trades')}${runner.metrics?.totalTrades ? ` (${runner.metrics.totalTrades})` : ''}` },
+              { key: 'trades', label: `${t(BACKTEST_RECORDS_KEY, 'Records')}${runner.metrics?.totalTrades ? ` (${runner.metrics.totalTrades})` : ''}` },
             ]}
           />
         </div>
@@ -470,22 +470,39 @@ export default function BacktestPanel(props: Props) {
             {runner.chartTrades.length === 0 ? (
               <Empty description={t(BACKTEST_EMPTY_KEY, 'Run a backtest to see trades')} style={{ padding: 24 }} />
             ) : (
-              <Table dataSource={runner.chartTrades.map((t, i) => ({ ...t, key: i }))}                pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: runner.panelHeight - 140 }}
-                columns={[
-                  { title: '#', dataIndex: 'key', width: 40 },
-                  { title: t(TRADE_SIDE_KEY, 'Side'), dataIndex: 'side', width: 60,
-                    render: (v: string) => <span style={{ color: v === 'buy' ? '#26a69a' : '#e57373' }}>{v?.toUpperCase()}</span> },
-                  { title: t(TRADE_VOLUME_KEY, 'Volume'), dataIndex: 'volume', width: 70,
-                    render: (v: number) => v?.toFixed(2) },
-                  { title: t(TRADE_PRICE_KEY, 'Price'), dataIndex: 'openPrice', width: 80,
-                    render: (v: number) => v?.toFixed(2) },
-                  { title: t(CLOSE_PRICE_KEY), dataIndex: 'closePrice', width: 80,
-                    render: (v: number) => v?.toFixed(2) ?? '—' },
-                  { title: t(PNL_KEY), dataIndex: 'pnl', width: 80,
-                    render: (v: number) => v != null ? (
-                      <span style={{ color: v >= 0 ? '#26a69a' : '#ef5350' }}>{v >= 0 ? '+' : ''}{v.toFixed(2)}</span>
-                    ) : '-' },
-                ]} />
+              <>
+                {/* Position summary */}
+                {(() => {
+                  const buys = runner.chartTrades.filter((t: any) => t.side === 'buy');
+                  const sells = runner.chartTrades.filter((t: any) => t.side === 'sell');
+                  const buyPnl = buys.reduce((s: number, t: any) => s + (t.pnl || 0), 0);
+                  const sellPnl = sells.reduce((s: number, t: any) => s + (t.pnl || 0), 0);
+                  const buyVol = buys.reduce((s: number, t: any) => s + (t.volume || 0), 0);
+                  const sellVol = sells.reduce((s: number, t: any) => s + (t.volume || 0), 0);
+                  return (
+                    <div style={{ display: 'flex', gap: 12, marginBottom: 10, fontSize: 12 }}>
+                      <span>🟢 {t(LONG_KEY)}: <b>{buys.length}</b> Vol <b>{buyVol.toFixed(2)}</b> PnL <b style={{ color: buyPnl >= 0 ? '#26a69a' : '#e57373' }}>{buyPnl >= 0 ? '+' : ''}{buyPnl.toFixed(2)}</b></span>
+                      <span>🔴 {t(SHORT_KEY)}: <b>{sells.length}</b> Vol <b>{sellVol.toFixed(2)}</b> PnL <b style={{ color: sellPnl >= 0 ? '#26a69a' : '#e57373' }}>{sellPnl >= 0 ? '+' : ''}{sellPnl.toFixed(2)}</b></span>
+                    </div>
+                  );
+                })()}
+                <Table dataSource={runner.chartTrades.map((t, i) => ({ ...t, key: i }))}                pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: runner.panelHeight - 180 }}
+                  columns={[
+                    { title: '#', dataIndex: 'key', width: 40 },
+                    { title: t(TRADE_SIDE_KEY, 'Side'), dataIndex: 'side', width: 60,
+                      render: (v: string) => <span style={{ color: v === 'buy' ? '#26a69a' : '#e57373' }}>{v?.toUpperCase()}</span> },
+                    { title: t(TRADE_VOLUME_KEY, 'Volume'), dataIndex: 'volume', width: 70,
+                      render: (v: number) => v?.toFixed(2) },
+                    { title: t(TRADE_PRICE_KEY, 'Price'), dataIndex: 'openPrice', width: 80,
+                      render: (v: number) => v?.toFixed(2) },
+                    { title: t(CLOSE_PRICE_KEY), dataIndex: 'closePrice', width: 80,
+                      render: (v: number) => v?.toFixed(2) ?? '—' },
+                    { title: t(PNL_KEY), dataIndex: 'pnl', width: 80,
+                      render: (v: number) => v != null ? (
+                        <span style={{ color: v >= 0 ? '#26a69a' : '#ef5350' }}>{v >= 0 ? '+' : ''}{v.toFixed(2)}</span>
+                      ) : '-' },
+                  ]} />
+              </>
             )}
           </div>
         )}

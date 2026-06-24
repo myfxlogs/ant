@@ -14,7 +14,8 @@ const StrategyBacktest = {
       "tradeSide": "Hướng",
       "tradeTime": "Thời gian",
       "tradeVolume": "Khối Lượng",
-      "winRate": "Tỷ Lệ Thắng"
+      "winRate": "Tỷ Lệ Thắng",
+      "backtestRecords": "Hồ sơ backtest"
     }
   }
 } as const;
