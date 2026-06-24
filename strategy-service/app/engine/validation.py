@@ -132,6 +132,16 @@ def scan_security(code: str) -> SecurityScanResult:
     return result
 
 
+# ── Valid SDK exports (must match app/sdk/__init__.py __all__) ───────────
+
+_VALID_SDK_EXPORTS: set[str] = {
+    "AccountInfo", "AccountMode", "Broker", "Context", "DealType",
+    "Indicators", "OrderRequest", "OrderResult", "OrderType",
+    "PendingOrder", "Position", "PositionSide", "Retcode",
+    "RuntimeContext", "Series", "StrategyBase", "StrategyRuntime",
+    "SymbolInfo", "TypeFilling",
+}
+
 # ── Strategy validation (SDK-only) ───────────────────────────────────────
 
 
@@ -177,6 +187,17 @@ def _validate_sdk_strategy(
         errors.append(f"SDK策略类 {class_def.name} 至少需要一个生命周期方法")
     if "self.broker" not in code:
         warnings.append("策略未引用 self.broker")
+
+    # Validate SDK imports — only allow documented SDK exports.
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom):
+            if node.module == "app.sdk" or (node.module or "").startswith("app.sdk."):
+                for alias in node.names:
+                    if alias.name not in _VALID_SDK_EXPORTS:
+                        errors.append(
+                            f"无效的 SDK 导入: `from app.sdk import {alias.name}`。"
+                            f"`{alias.name}` 不是 app.sdk 的有效导出。"
+                        )
 
     seen = set()
     deduped = []
