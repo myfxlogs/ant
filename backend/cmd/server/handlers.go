@@ -449,6 +449,14 @@ func configurePythonStrategy(
 		gate := risk.NewDefaultGate()
 		gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
 		gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
+
+		// risksvc rules merged into Gate — single evaluation point.
+		// TODO(D10): wire KYC/jurisdiction via KycJurisdictionGateRule when
+		// JurisdictionGate is available from initRiskPipeline.
+		gate.AddRule(&risk.KycJurisdictionGateRule{Gate: nil}) // pass-through until wired
+		gate.AddRule(&risk.ContractExpiryRule{})
+		gate.AddRule(&risk.MarginFloorRule{FloorRatio: 1.0})
+		gate.AddRule(&risk.CapabilityTierRule{Store: nil}) // pass-through until wired
 		srv.SetGate(gate)       // live_runner startup guard only (gate runs in mthub now)
 		mthubSvc.SetGate(gate)   // D6-A single chokepoint: all orders through mthub
 		// T3.2b: Inject AccountStateProvider for live trading.

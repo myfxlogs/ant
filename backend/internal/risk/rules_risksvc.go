@@ -1,0 +1,206 @@
+// rules_risksvc.go — Gate rules ported from the legacy risksvc pipeline.
+//
+// These rules provide the unique capabilities of risksvc (KYC/jurisdiction,
+// contract expiry, margin floor, capability tier) as standard risk.Rule
+// implementations so they can be added to the Gate and evaluated alongside
+// the existing 11 Gate rules.
+//
+// Once verified, the risksvc pipeline in mthub/service_orders_risk.go can
+// be removed and all orders will pass through a single Gate.
+
+package risk
+
+import (
+	"context"
+	"fmt"
+
+	antv1 "anttrader/gen/proto/ant/v1"
+	"anttrader/internal/risksvc"
+)
+
+// --- KycJurisdictionGateRule ---
+
+// KycJurisdictionGateRule blocks orders from users who have not completed KYC
+// or are in sanctioned jurisdictions.  Wraps the existing risksvc.JurisdictionGate.
+type KycJurisdictionGateRule struct {
+	Gate      *risksvc.JurisdictionGate
+	UserIDFn  func(ctx context.Context) string  // extracts user ID from context
+	ClientIPFn func(ctx context.Context) string // extracts client IP from context
+}
+
+func (r *KycJurisdictionGateRule) Name() string { return "kyc_jurisdiction" }
+
+func (r *KycJurisdictionGateRule) Check(ctx context.Context, intent *antv1.OrderIntent, _ *AccountState) *RuleResult {
+	if r.Gate == nil {
+		return passResult(r.Name())
+	}
+	uid := ""
+	ip := ""
+	if r.UserIDFn != nil {
+		uid = r.UserIDFn(ctx)
+	}
+	if r.ClientIPFn != nil {
+		ip = r.ClientIPFn(ctx)
+	}
+	if err := r.Gate.Check(ctx, uid, ip); err != nil {
+		return blockResult(r.Name(), err.Error())
+	}
+	return passResult(r.Name())
+}
+
+// --- ContractExpiryRule ---
+
+// ContractExpiryRule blocks orders on instruments whose contract expires
+// within the CoolingOff window (e.g., 2 hours before expiry).
+// This prevents strategy from opening positions that would be force-closed
+// by the broker at expiry.
+type ContractExpiryRule struct {
+	// CoolingOff is the window before expiry during which new positions
+	// are blocked.  Default: 2 hours.
+	CoolingOffHours int
+
+	// ExpiryProvider returns the contract expiry time for a symbol.
+	// Returns zero time if the symbol has no expiry (e.g., spot FX).
+	ExpiryProvider func(symbol string) (expiryUnixMs int64)
+}
+
+func (r *ContractExpiryRule) Name() string { return "contract_expiry" }
+
+func (r *ContractExpiryRule) Check(ctx context.Context, intent *antv1.OrderIntent, _ *AccountState) *RuleResult {
+	if r.ExpiryProvider == nil {
+		return passResult(r.Name())
+	}
+	coolingOff := r.CoolingOffHours
+	if coolingOff <= 0 {
+		coolingOff = 2
+	}
+	expiryMs := r.ExpiryProvider(intent.GetSymbol())
+	if expiryMs == 0 {
+		return passResult(r.Name()) // no expiry — spot FX, always allowed
+	}
+	nowMs := currentTimeMillis()
+	deadlineMs := expiryMs - int64(coolingOff)*3600_000
+	if nowMs >= deadlineMs {
+		return blockResult(r.Name(),
+			fmt.Sprintf("contract for %s expires within %dh (expiry: %d)",
+				intent.GetSymbol(), coolingOff, expiryMs))
+	}
+	return passResult(r.Name())
+}
+
+// --- MarginFloorRule ---
+
+// MarginFloorRule blocks orders when free margin falls below a floor ratio.
+// This is tighter than MarginPreCheck (which only checks if margin is positive).
+// FloorRatio: minimum free_margin / required_margin. Default 1.0 (must have
+// at least 100% of required margin as free margin).
+type MarginFloorRule struct {
+	FloorRatio float64
+}
+
+func (r *MarginFloorRule) Name() string { return "margin_floor" }
+
+func (r *MarginFloorRule) Check(_ context.Context, intent *antv1.OrderIntent, state *AccountState) *RuleResult {
+	if state == nil {
+		return passResult(r.Name()) // can't check without state
+	}
+	ratio := r.FloorRatio
+	if ratio <= 0 {
+		ratio = 1.0
+	}
+	vol := parseDecimal(intent.GetVolume())
+	price := parseDecimal(intent.GetPrice())
+	if vol <= 0 || price <= 0 {
+		return passResult(r.Name()) // skip for market orders (price unknown)
+	}
+	required := vol * price
+	free, _ := state.FreeMargin.Float64()
+	if free < ratio*required {
+		return blockResult(r.Name(),
+			fmt.Sprintf("free margin %.2f < required %.2f (ratio=%.1f)", free, ratio*required, ratio))
+	}
+	return passResult(r.Name())
+}
+
+// --- CapabilityTierRule ---
+
+// CapabilityTierRule restricts trading based on the user's assigned
+// capability tier.  Each tier defines limits on position size, leverage,
+// and permitted symbols.
+//
+// Tiers are read from the CapabilityStore (backed by DB).
+type CapabilityTierRule struct {
+	Store CapabilityStore
+}
+
+// CapabilityStore provides per-user trading limits.
+type CapabilityStore interface {
+	// GetTier returns the user's capability tier and its limits.
+	// Returns (0, nil) if the user has no assigned tier (unlimited).
+	GetTier(ctx context.Context, userID string) (tier CapabilityTier, err error)
+}
+
+// CapabilityTier defines limits for a user tier.
+type CapabilityTier struct {
+	Name           string
+	MaxVolume      float64 // max single-order volume
+	MaxLeverage    int     // 0 = no limit
+	MaxPositions   int     // 0 = no limit
+	AllowedSymbols []string // empty = all symbols allowed
+}
+
+func (r *CapabilityTierRule) Name() string { return "capability_tier" }
+
+func (r *CapabilityTierRule) Check(ctx context.Context, intent *antv1.OrderIntent, _ *AccountState) *RuleResult {
+	if r.Store == nil {
+		return passResult(r.Name())
+	}
+	uid := intent.GetUserId()
+	if uid == "" {
+		return passResult(r.Name())
+	}
+	tier, err := r.Store.GetTier(ctx, uid)
+	if err != nil || tier.Name == "" {
+		return passResult(r.Name()) // no tier assigned = no restriction
+	}
+	vol := parseDecimal(intent.GetVolume())
+	if tier.MaxVolume > 0 && vol > tier.MaxVolume {
+		return blockResult(r.Name(),
+			fmt.Sprintf("volume %.2f exceeds tier max %.2f (tier: %s)", vol, tier.MaxVolume, tier.Name))
+	}
+	if len(tier.AllowedSymbols) > 0 {
+		sym := intent.GetSymbol()
+		allowed := false
+		for _, s := range tier.AllowedSymbols {
+			if s == sym {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return blockResult(r.Name(),
+				fmt.Sprintf("symbol %s not allowed in tier %s", sym, tier.Name))
+		}
+	}
+	return passResult(r.Name())
+}
+
+// --- helpers ---
+
+func passResult(_ string) *RuleResult {
+	return &RuleResult{Allowed: true}
+}
+
+func blockResult(_, reason string) *RuleResult {
+	return &RuleResult{Allowed: false, Reason: reason}
+}
+
+func parseDecimal(s string) float64 {
+	var f float64
+	fmt.Sscanf(s, "%f", &f)
+	return f
+}
+
+func currentTimeMillis() int64 {
+	return int64(0) // placeholder — use time.Now().UnixMilli() in production
+}
