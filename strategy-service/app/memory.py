@@ -153,15 +153,7 @@ class StrategyMemory:
 # 全局单例（strategy_memory & backtest_memory 分开管理）
 # ------------------------------------------------------------------
 
-_strategy_memory: Optional[StrategyMemory] = None
 _backtest_memory: Optional[StrategyMemory] = None
-
-
-def get_strategy_memory() -> StrategyMemory:
-    global _strategy_memory
-    if _strategy_memory is None:
-        _strategy_memory = StrategyMemory("strategy_memory")
-    return _strategy_memory
 
 
 def get_backtest_memory() -> StrategyMemory:
@@ -169,77 +161,3 @@ def get_backtest_memory() -> StrategyMemory:
     if _backtest_memory is None:
         _backtest_memory = StrategyMemory("backtest_memory")
     return _backtest_memory
-
-
-def build_situation_key(
-    symbol: str,
-    timeframe: str,
-    strategy_code: str,
-    metrics: Optional[dict] = None,
-) -> str:
-    """
-    从回测输入构建「市场情境」文本，用于 BM25 索引。
-    只保留「结构特征」：symbol、timeframe、指标名、period 参数。
-    metrics 不参与 key（查询时没有 metrics，避免 token 不对齐）。
-    """
-    parts = [f"symbol {symbol}", f"timeframe {timeframe}"]
-
-    # 从策略代码提取关键词（函数名、指标名）
-    indicators = re.findall(
-        r'\b(iMA|iRSI|iBands|iMACD|iStochastic|iATR|iCCI|iMomentum|iWPR)\b',
-        strategy_code,
-    )
-    if indicators:
-        parts.append("indicators " + " ".join(sorted(set(indicators))))
-
-    # 从策略代码提取 period 数值
-    periods = re.findall(r'period\s*=\s*(\d+)', strategy_code)
-    if periods:
-        parts.append("periods " + " ".join(periods))
-
-    # 提取策略关键逻辑词（buy/sell/hold/crossover 等）
-    logic_words = re.findall(r'\b(buy|sell|hold|crossover|cross|breakout|signal)\b', strategy_code.lower())
-    if logic_words:
-        parts.append("logic " + " ".join(sorted(set(logic_words))))
-
-    return " ".join(parts)
-
-
-def build_advice_text(metrics: dict, strategy_code: str) -> str:
-    """
-    将回测结果转化为可读的「建议文本」，写入 BM25 记忆。
-    """
-    total_return = metrics.get("total_return", 0)
-    win_rate = metrics.get("win_rate", 0)
-    max_dd = metrics.get("max_drawdown", 0)
-    sharpe = metrics.get("sharpe_ratio", 0)
-    total_trades = metrics.get("total_trades", 0)
-    profit_factor = metrics.get("profit_factor", 0)
-
-    lines = [
-        f"回测结果：总收益 {total_return:.2f}%，胜率 {win_rate:.1f}%，"
-        f"最大回撤 {max_dd:.2f}%，夏普 {sharpe:.2f}，交易次数 {total_trades}，"
-        f"盈亏比 {profit_factor:.2f}。",
-    ]
-
-    # 生成改进建议
-    suggestions = []
-    if win_rate < 45:
-        suggestions.append("胜率偏低，考虑加强入场过滤条件（如增加趋势确认）")
-    if max_dd > 20:
-        suggestions.append("最大回撤过大，建议缩小仓位或收紧止损")
-    if total_trades < 10:
-        suggestions.append("交易次数过少，策略可能过度过滤信号，可适当放宽条件")
-    if profit_factor < 1.2 and profit_factor > 0:
-        suggestions.append("盈亏比偏低，建议优化止盈止损比例（目标 ≥ 1.5）")
-    if sharpe < 0.5 and sharpe != 0:
-        suggestions.append("夏普比率偏低，策略收益波动过大")
-    if total_return > 0 and win_rate > 55 and max_dd < 10:
-        suggestions.append("策略表现良好，可考虑在相同品种/周期扩大使用")
-
-    if suggestions:
-        lines.append("改进建议：" + "；".join(suggestions) + "。")
-    else:
-        lines.append("策略表现合理，无特别改进建议。")
-
-    return "\n".join(lines)

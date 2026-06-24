@@ -16,7 +16,6 @@ from app.backtest_service_pb2 import (
     ExecuteBacktestRequest, ExecuteBacktestResponse,
     ExecuteBacktestMetrics, ExecuteBacktestTrade, ExecuteRiskAssessment,
     EngineValidateRequest, EngineValidateResponse,
-    EngineRunStrategyRequest, EngineRunStrategyResponse, EngineTradeSignal,
 )
 from app.backtest_execution_config_pb2 import (
     TradeDirection, ExecutionAssumptions as ProtoExecutionAssumptions,
@@ -206,61 +205,3 @@ async def validate_strategy_connect(request: Request):
     return JSONResponse(content=MessageToDict(resp, preserving_proto_field_name=True))
 
 
-# --- RunStrategy (live/paper execution) ---
-
-@router.post("/ant.v1.BacktestService/RunStrategy")
-async def run_strategy_connect(request: Request):
-    """Execute strategy on live/paper market data."""
-    from app.engine import (
-        Bar as EngineBar,
-        run_strategy as engine_run_strategy,
-    )
-
-    req = EngineRunStrategyRequest()
-    ct = request.headers.get("content-type", "")
-    if "application/proto" in ct:
-        req.ParseFromString(await request.body())
-    else:
-        body = await request.json()
-        Parse(json.dumps(body), req, ignore_unknown_fields=True)
-
-    bars = [
-        EngineBar(open_time=k.open_time_ms, close_time=k.close_time_ms,
-                  open=k.open, high=k.high, low=k.low, close=k.close, volume=k.volume)
-        for k in req.klines
-    ]
-
-    engine_req = EngineBacktestRequest(
-        run_id=req.strategy_id or "",
-        user_id=0, account_id=0,
-        symbol=req.symbol or "XAUUSDm",
-        timeframe=req.timeframe or "1h",
-        start=datetime(2024, 1, 1, tzinfo=timezone.utc),
-        end=datetime.now(timezone.utc),
-        initial_cash=10000.0,
-        strategy_code=req.strategy_code or "",
-        bars=bars,
-    )
-
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-    result = await loop.run_in_executor(None, engine_run_strategy, engine_req)
-
-    resp = EngineRunStrategyResponse(success=result.success)
-    if result.signal:
-        resp.signal.CopyFrom(EngineTradeSignal(
-            signal=result.signal.get("signal", "hold"),
-            symbol=result.signal.get("symbol", ""),
-            price=result.signal.get("price", 0.0),
-            volume=result.signal.get("volume", 1.0),
-            stop_loss=result.signal.get("stop_loss", 0.0),
-            take_profit=result.signal.get("take_profit", 0.0),
-            confidence=result.signal.get("confidence", 0.0),
-            reason=result.signal.get("reason", ""),
-        ))
-    if result.error:
-        resp.error = result.error
-
-    return JSONResponse(content=MessageToDict(resp, preserving_proto_field_name=True))
