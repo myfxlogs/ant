@@ -175,12 +175,22 @@ def _is_sdk_strategy(tree) -> bool:
 # strategy code.  Strategy authors should read them via ctx.backtest_config
 # or the dedicated proto fields rather than self.ctx.param().
 _STANDARD_PARAM_NAMES: set[str] = {
-    "起始下单量", "初始手数", "lot_size", "initial_lot",
-    "初始资金", "本金", "initial_capital",
+    # 手数
+    "起始下单量", "初始手数", "手数", "lot_size", "initial_lot", "lots",
+    # 本金
+    "初始资金", "本金", "initial_capital", "capital", "balance",
+    # 杠杆
     "杠杆", "leverage",
+    # 手续费
     "手续费", "commission",
+    # 滑点
     "滑点", "slippage",
-    "多空方向", "trade_direction",
+    # 方向
+    "多空方向", "trade_direction", "direction",
+    # 止损/止盈
+    "止损", "止盈", "stop_loss", "take_profit",
+    # 品种/周期（应来自 toolbar 而非代码硬编码）
+    "symbol", "timeframe", "品种", "周期",
 }
 
 
@@ -235,6 +245,9 @@ def _extract_params(tree) -> list[dict]:
             continue
         name = arg0.value
         if name in seen:
+            continue
+        # Skip standard params — they belong in the backtest card, not strategy params.
+        if name in _STANDARD_PARAM_NAMES:
             continue
         seen.add(name)
 
