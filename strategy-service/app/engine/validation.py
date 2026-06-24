@@ -208,6 +208,34 @@ def _validate_sdk_strategy(
     )
 
 
+def _parse_with_recovery(code: str) -> tuple[Optional[ast.Module], list[str]]:
+    """Parse code, collecting ALL syntax errors (not just the first).
+
+    When ``ast.parse()`` fails, it stops at the first error.  This function
+    iterates — skipping the offending line — to catch all syntax errors
+    in one pass.  The final parse result (if any) may be incomplete.
+    """
+    errors: list[str] = []
+    remaining = code
+    for _ in range(20):  # max 20 passes to avoid infinite loop
+        try:
+            tree = ast.parse(remaining)
+            return tree, errors
+        except SyntaxError as e:
+            errors.append(f"语法错误: {e}")
+            # Replace offending line with 'pass' to preserve indentation
+            # and line numbering, then try again.
+            lines = remaining.split("\n")
+            lineno = e.lineno or 1
+            if lineno < 1 or lineno > len(lines):
+                break
+            # Preserve leading whitespace to keep indentation valid.
+            indent = len(lines[lineno - 1]) - len(lines[lineno - 1].lstrip())
+            lines[lineno - 1] = " " * indent + "pass"
+            remaining = "\n".join(lines)
+    return None, errors
+
+
 def validate_strategy_code(code: str) -> StrategyValidationResult:
     """Validate a strategy — SDK-only (ADR-0020).
 
@@ -221,10 +249,9 @@ def validate_strategy_code(code: str) -> StrategyValidationResult:
     errors: List[str] = []
     warnings: List[str] = []
 
-    try:
-        tree = ast.parse(code)
-    except SyntaxError as e:
-        errors.append(f"语法错误: {e}")
+    tree, syntax_errors = _parse_with_recovery(code)
+    errors.extend(syntax_errors)
+    if tree is None:
         return StrategyValidationResult(valid=False, errors=errors, warnings=warnings)
 
     if not _is_sdk_strategy(tree):
