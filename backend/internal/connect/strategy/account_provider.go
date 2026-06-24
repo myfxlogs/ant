@@ -28,21 +28,23 @@ type MTAccountStateProvider struct {
 	hub *mthub.Hub
 	log *zap.Logger
 
-	mu         sync.RWMutex
-	peakEquity map[string]decimal.Decimal // accountID → peak equity
+	mu           sync.RWMutex
+	peakEquity   map[string]decimal.Decimal // accountID → peak equity
+	balanceCache map[string]float64         // accountID → balance from ProfitUpdate
+	equityCache  map[string]float64         // accountID → equity from ProfitUpdate
 }
 
 // NewMTAccountStateProvider creates a provider backed by the MT gateway Hub.
-// The Hub must have executor sessions registered (via mthub.Hub.Register)
-// before GetAccountState is called.  If log is nil, a no-op logger is used.
 func NewMTAccountStateProvider(hub *mthub.Hub, log *zap.Logger) *MTAccountStateProvider {
 	if log == nil {
 		log = zap.NewNop()
 	}
 	return &MTAccountStateProvider{
-		hub:        hub,
-		log:        log,
-		peakEquity: make(map[string]decimal.Decimal),
+		hub:          hub,
+		log:          log,
+		peakEquity:   make(map[string]decimal.Decimal),
+		balanceCache: make(map[string]float64),
+		equityCache:  make(map[string]float64),
 	}
 }
 
@@ -98,7 +100,16 @@ func (p *MTAccountStateProvider) buildStateFromOrders(accountID string, orders [
 		totalMargin += notional / 100.0 // 1:100 leverage default
 	}
 
+	// Use cached balance from ProfitUpdate events when available.
+	// Falls back to 10000 if no real balance has been received yet.
+	p.mu.RLock()
+	cachedBalance, hasBalance := p.balanceCache[accountID]
+	p.mu.RUnlock()
+
 	balance := 10000.0
+	if hasBalance {
+		balance = cachedBalance
+	}
 	equity := balance + totalProfit
 	freeMargin := equity - totalMargin
 	if freeMargin < 0 {
@@ -144,17 +155,12 @@ func (p *MTAccountStateProvider) ResetPeakEquity(accountID string) {
 }
 
 // UpdateBalanceFromProfitEvent updates the cached balance from a real
-// MT ProfitUpdate event.  Wire this into the AccountProfitBroker
-// subscription for accurate live balance tracking.
+// MT ProfitUpdate event.
 func (p *MTAccountStateProvider) UpdateBalanceFromProfitEvent(accountID string, balance, equity, margin, freeMargin float64) {
-	// For now, peak equity tracking uses the equity from position PnL.
-	// When ProfitUpdate subscription is active, this method can be called
-	// to override the default balance.
-	_ = accountID
-	_ = balance
-	_ = equity
-	_ = margin
-	_ = freeMargin
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.balanceCache[accountID] = balance
+	p.equityCache[accountID] = equity
 }
 
 // ── Error handling ─────────────────────────────────────────────────────

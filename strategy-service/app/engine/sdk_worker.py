@@ -11,8 +11,10 @@ Clean SDK-only execution.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
+import threading
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
@@ -24,10 +26,40 @@ from app.sdk.runtime import RuntimeContext, StrategyRuntime
 from app.sdk.series import Bars, Series
 
 
-# ── Cached runtime (persists across bars) ──────────────────────────────
+# ── Cached runtime pool (per-strategy, thread-safe) ─────────────────────
 
-_runtime: Optional[StrategyRuntime] = None
-_runtime_hash: str = ""
+_runtimes: Dict[str, StrategyRuntime] = {}
+_lock = threading.Lock()
+
+
+def _get_or_create_runtime(code: str, bar_context: dict) -> StrategyRuntime:
+    """Get or create a StrategyRuntime for the given code hash (thread-safe)."""
+    import hashlib
+    code_hash = hashlib.sha256(code.encode()).hexdigest()
+
+    with _lock:
+        runtime = _runtimes.get(code_hash)
+        if runtime is not None:
+            return runtime
+
+        # Create new runtime under lock
+        strategy_cls = load_sdk_strategy(code)
+        broker = build_live_broker_from_proto(bar_context)
+        bars_fn = _build_bars_provider(bar_context)
+        indicators = SDKIndicators(bars_fn)
+
+        runtime = StrategyRuntime(
+            strategy_class=strategy_cls,
+            broker=broker,
+            bars_provider=bars_fn,
+            indicators=indicators,
+            symbol=bar_context.get("symbol", ""),
+            timeframe=bar_context.get("timeframe", "1h"),
+            params=bar_context.get("params", {}),
+        )
+        runtime.init()
+        _runtimes[code_hash] = runtime
+        return runtime
 
 
 def _build_bars_provider(bar_context: dict) -> callable:
@@ -73,35 +105,19 @@ def process_bar(code: str, bar_context: dict) -> Dict[str, Any]:
     Called by Go live_runner for each new bar.
     Returns {"intents": [...], "error": ""} or {"intents": [], "error": "..."}.
     """
-    global _runtime, _runtime_hash
-
-    code_hash = str(hash(code))
     try:
-        # Initialize or reuse runtime.
-        if _runtime is None or _runtime_hash != code_hash:
-            strategy_cls = load_sdk_strategy(code)
-            broker = build_live_broker_from_proto(bar_context)
-            bars_fn = _build_bars_provider(bar_context)
-            indicators = SDKIndicators(bars_fn)
-
-            _runtime = StrategyRuntime(
-                strategy_class=strategy_cls,
-                broker=broker,
-                bars_provider=bars_fn,
-                indicators=indicators,
-                symbol=bar_context.get("symbol", ""),
-                timeframe=bar_context.get("timeframe", ""),
-                params={p.get("key"): p.get("value") for p in bar_context.get("params", [])},
-            )
-            _runtime.init()
-            _runtime_hash = code_hash
+        runtime = _get_or_create_runtime(code, bar_context)
 
         # Update broker state from latest bar context.
-        if hasattr(_runtime._broker, 'update_state'):
-            # Account state.
+        if hasattr(runtime._broker, 'update_state'):
+            # Account state — check for sentinel values (account disconnected).
             equity = bar_context.get("equity", 0)
             balance = bar_context.get("balance", 0)
-            _runtime._broker.update_state(
+            if equity == -1.0:
+                equity = 0
+            if balance == -1.0:
+                balance = 0
+            runtime._broker.update_state(
                 account=AccountInfo(
                     balance=Decimal(str(balance)),
                     equity=Decimal(str(equity)),
@@ -129,13 +145,13 @@ def process_bar(code: str, bar_context: dict) -> Dict[str, Any]:
                         swap=Decimal("0"),
                         open_time_ms=0,
                     ))
-                _runtime._broker.update_state(positions=positions)
+                runtime._broker.update_state(positions=positions)
 
         # Drive strategy.
-        _runtime.on_bar(bar_context.get("timeframe", ""))
+        runtime.on_bar(bar_context.get("timeframe", ""))
 
         # Export intents.
-        intents = _runtime.export_intents()
+        intents = runtime.export_intents()
         return {"intents": intents, "error": ""}
 
     except Exception as e:
