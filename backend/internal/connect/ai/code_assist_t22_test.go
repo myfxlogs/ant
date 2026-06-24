@@ -275,6 +275,11 @@ func TestBuildValidationPromptReferencesSDK(t *testing.T) {
 			t.Errorf("buildValidationPrompt contains OLD signal-dict API reference: %q", ref)
 		}
 	}
+
+	// Must warn against underscore-prefixed helper methods.
+	if !strings.Contains(prompt, "underscore") {
+		t.Error("buildValidationPrompt should mention underscore-prefixed helpers are rejected")
+	}
 }
 
 func TestSandboxScanLengthAligned(t *testing.T) {

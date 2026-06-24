@@ -171,19 +171,9 @@ if position is not None:
 ` + "```" + `
 
 ### Rule 5: ALL variables must be defined at function start, before any return
-### Rule 6: RestrictedPython sandbox — NEVER use augmented assignment on attributes
-` + "```python" + `
-# ❌ RestrictedPython REJECTS these:
-#     self.attr += 1
-#     obj.x -= value
-#     lst[i] += delta
-# ✅ Replace with:
-#     self.attr = self.attr + 1
-#     obj.x = obj.x - value
-#     lst[i] = lst[i] + delta
-` + "```" + `
+### Rule 6: Use descriptive method names — underscore-prefixed helpers (_count_orders etc) are REJECTED
 ### Rule 7: np and math are pre-injected — do NOT import them
-### Rule 8: Function signature: def run(context): return {'signal':..., 'volume':..., 'stop_loss':..., 'take_profit':...}
+### Rule 8: MUST use SDK class format. Inherit from StrategyBase. At least one lifecycle hook (on_init/on_bar/on_tick etc). def run(context) is REJECTED.
 
 ## Output: ONLY Python code. No markdown fences. No explanations.`
 }
@@ -191,15 +181,15 @@ if position is not None:
 func revisePrompt() string {
 	return `You are a trading strategy engineer. Revise the Python code per the user's instruction.
 
-## RULES — follow exactly
-1. Make ONLY the changes the user asked for — preserve everything else untouched
-2. Output ONLY the complete Python code — NO markdown, NO explanations, NO "here is the revised code"
-3. Every @param value in code MUST use context.get(param_name) — never hardcode parameter values
-4. stop_loss/take_profit MUST NOT be 0.0 when holding a position
-5. Position size MUST use context.get('initial_balance', 10000.0), NOT context.get('balance')
+	## RULES — follow exactly
+	1. Make ONLY the changes the user asked for — preserve everything else untouched
+	2. Output ONLY the complete Python code — NO markdown, NO explanations
+	3. Code MUST use SDK class format (class X(StrategyBase)) — NOT def run(context)
+	4. Use descriptive method names — avoid underscore-prefixed helpers (_helper)
+	5. ALL monetary values MUST use Decimal(str(x)), NEVER float
 
-## OUTPUT: The complete revised code, starting with import/def/class/# — nothing else.`
-}
+	## OUTPUT: The complete revised code, starting with import/class/# — nothing else.`
+	}
 
 func repairPrompt(errors []string) string {
 	errList := ""
@@ -212,11 +202,13 @@ func repairPrompt(errors []string) string {
 	return `You are a trading strategy CODE REPAIR EXPERT. Fix ONLY the listed errors — do NOT change anything else.
 
 ## ⛔ CRITICAL RULES
-1. Output ONLY the complete corrected Python code — NO markdown, NO explanations
-2. Start directly with import/def/class/# — your output IS the strategy file
-3. Preserve ALL existing logic, parameters, and comments — only fix the errors
-4. Do NOT rename variables, restructure code, or "improve" anything not in the error list
-5. If an error is unclear, add # FIXME: <reason> at that line — do NOT guess
+	1. Output ONLY the complete corrected Python code — NO markdown, NO explanations
+	2. Start directly with import/class/# — your output IS the strategy file
+	3. Preserve ALL existing logic, parameters, and comments — only fix the errors
+	4. Do NOT rename variables, restructure code, or "improve" anything not in the error list
+	5. Code MUST use SDK class format (class X(StrategyBase)) — NOT def run(context)
+	6. Avoid underscore-prefixed method names (_helper) — use descriptive names instead
+	7. If an error is unclear, add # FIXME: <reason> at that line — do NOT guess
 
 ## VERIFY BEFORE OUTPUT
 - Does the fix address the exact error listed?

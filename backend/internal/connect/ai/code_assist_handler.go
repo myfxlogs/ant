@@ -258,7 +258,9 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 		"5. MQL Close[i] → bars.close[i]; MQL iMA() → self.indicators.ma().\n" +
 		"6. NEVER use self.buy(), self.sell(), self.close_all(), self.sma() — these DO NOT EXIST.\n" +
 		"7. Return ONLY the Python code inside ```python ... ``` fence.\n" +
-		"8. Mark untranslatable MQL (DLL, WebRequest, GUI, FileIO) with `# TRANSPILER-GAP: <reason>`.\n\n" +
+		"8. Mark untranslatable MQL (DLL, WebRequest, GUI, FileIO) with `# TRANSPILER-GAP: <reason>`.\n" +
+			"9. Use descriptive method names — underscore-prefixed private helpers (_count_orders,\n" +
+			"   _send_order) are REJECTED. Use count_orders, send_order instead.\n\n" +
 		"## Few-Shot Example\n" +
 		"MQL: `int OnInit() { EventSetTimer(60); return INIT_SUCCEEDED; }`\n" +
 		"SDK:\n```python\n" +
@@ -405,19 +407,24 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 func buildValidationPrompt() string {
 	return "You are a trading strategy code validator. " +
 		"Review the following Python strategy code and identify issues. " +
-		"The code uses the AntTrader Strategy SDK (docs/spec/30-strategy-sdk.md):\n" +
+		"The code MUST use the AntTrader Strategy SDK (docs/spec/30-strategy-sdk.md):\n" +
 		"- Class inherits from StrategyBase with on_init/on_tick/on_bar/on_deinit hooks.\n" +
 		"- Orders via self.broker.order_send(OrderRequest(...)).\n" +
 		"- Prices via self.ctx.bars().close[0] (MQL reverse indexing).\n" +
 		"- Indicators via self.indicators.ma/rsi/ema/atr/bands/macd.\n" +
 		"- Parameters via self.ctx.param(name, default).\n" +
 		"- All monetary values use Decimal(str(x)), never float.\n\n" +
+		"STRICT RULES that make code INVALID:\n" +
+		"- Non-SDK format (def run(context), signal={...}) — MUST be class-based.\n" +
+		"- Underscore-prefixed method names (_helper, _count_orders) — REJECTED.\n" +
+		"- Missing lifecycle hook (on_init/on_bar/on_tick etc).\n\n" +
 		"Return a JSON object with fields: valid (bool), errors (string array), warnings (string array), " +
 		"parameters (array of objects with keys: key (str), required (bool), type (str: int|float|str|bool), " +
 		"default_value (str, optional), suggested_value (str, optional)). " +
 		"Extract all self.ctx.param() calls from on_init() into the parameters array. " +
-		"Check for: missing stop-loss, missing take-profit, position sizing, error handling, " +
-		"indicator usage correctness, Decimal usage for prices, and data boundary handling. " +
+		"Check for: non-SDK format, underscore-prefixed helpers, missing stop-loss, missing take-profit, " +
+		"position sizing, error handling, indicator usage correctness, " +
+		"Decimal usage for prices, and data boundary handling. " +
 		"Respond with ONLY valid JSON, no markdown fences."
 }
 
