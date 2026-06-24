@@ -250,7 +250,11 @@ def validate_strategy_code(code: str) -> StrategyValidationResult:
     warnings: List[str] = []
 
     tree, syntax_errors = _parse_with_recovery(code)
-    errors.extend(syntax_errors)
+    seen = set()
+    for e in syntax_errors:
+        if e not in seen:
+            seen.add(e)
+            errors.append(e)
     if tree is None:
         return StrategyValidationResult(valid=False, errors=errors, warnings=warnings)
 
