@@ -195,8 +195,9 @@ def _validate_sdk_strategy(
                 for alias in node.names:
                     if alias.name not in _VALID_SDK_EXPORTS:
                         errors.append(
-                            f"无效的 SDK 导入: `from app.sdk import {alias.name}`。"
-                            f"`{alias.name}` 不是 app.sdk 的有效导出。"
+                            f"`{alias.name}` 不是 SDK 类型，请使用 `from decimal import Decimal`"
+                            if alias.name == "Decimal"
+                            else f"`{alias.name}` 不是有效的 SDK 导出"
                         )
 
     seen = set()
