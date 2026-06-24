@@ -261,7 +261,11 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 		"7. Return ONLY the Python code inside ```python ... ``` fence.\n" +
 		"8. Mark untranslatable MQL (DLL, WebRequest, GUI, FileIO) with `# TRANSPILER-GAP: <reason>`.\n" +
 			"9. Use descriptive method names — underscore-prefixed private helpers (_count_orders,\n" +
-			"   _send_order) are REJECTED. Use count_orders, send_order instead.\n\n" +
+			"   _send_order) are REJECTED. Use count_orders, send_order instead.\n" +
+			"10. Use `bars = self.ctx.bars(timeframe=None)` for primary timeframe (matches\n" +
+			"   backtest config).  Do NOT hardcode a specific timeframe like 'M15' or '1h'\n" +
+			"   in the on_bar signature or bars() call.  If the EA has a configurable\n" +
+			"   timeframe, expose it as a param: `tf = self.ctx.param('timeframe', '1h')`.\n\n" +
 		"## Few-Shot Example\n" +
 		"MQL: `int OnInit() { EventSetTimer(60); return INIT_SUCCEEDED; }`\n" +
 		"SDK:\n```python\n" +
