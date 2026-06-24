@@ -207,8 +207,8 @@ func NewDefaultGate() *Gate {
 }
 
 // NewGateWithSystemRules creates a Gate with only system-critical rules:
-// DuplicateProtection (prevents double-ordering) and the kill-switch
-// placeholder.  KYC/Jurisdiction is wired separately when available.
+// DuplicateProtection (prevents double-ordering).  Kill-switch, KYC,
+// and capability tier are wired separately via SetKillSwitch/AddRule.
 func NewGateWithSystemRules() *Gate {
 	return NewGate(
 		&DuplicateProtection{DedupWindow: 5 * time.Second},

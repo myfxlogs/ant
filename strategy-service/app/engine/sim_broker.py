@@ -143,7 +143,6 @@ class SimBroker(Broker):
             broker.advance_tick(tick)
             # strategy.on_tick() → calls self.broker.order_send(...)
             # ...
-            broker.sync_account_state()
     """
 
     def __init__(
@@ -429,7 +428,6 @@ class SimBroker(Broker):
 
         return fills
 
-    def sync_account_state(self) -> None:
         """Called after strategy callback to sync any state changes."""
         pass  # placeholder for future swap/rollover logic
 

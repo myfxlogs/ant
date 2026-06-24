@@ -14,7 +14,6 @@
 package mthub
 
 import (
-	"math"
 	"sync"
 	"time"
 )
@@ -167,10 +166,31 @@ func (dc *DerivedComputer) recalculate() {
 		totalNet += ads.NetPnL
 	}
 
-	// VaR: simplified historical simulation — 2.33 * sqrt(exposure) * daily_vol.
-	// This is a placeholder; full VaR requires historical return series (M10-BASE-D7).
-	dailyVol := 0.01 // 1% daily vol placeholder
-	var95 := 2.33 * math.Sqrt(totalExposure) * dailyVol
+	// Parametric VaR (95% confidence, 1-day horizon).
+	// z=1.645 for 95%, z=2.33 for 99%.
+	// Volatility estimate: 1% daily for FX, scaled by concentration factor.
+	// Concentration factor: √(1 + max(0, largestPositionRatio - 0.5))
+	// — rewards diversification, penalizes single-position concentration.
+	// Full historical VaR requires return series (M10-BASE-D7) — this is a
+	// reasonable parametric estimate for real-time risk monitoring.
+	zScore := 1.645 // 95% confidence
+	dailyVol := 0.01 // 1% daily vol for major FX
+	concentration := 1.0
+	if len(accountSet) > 0 {
+		largestExp := 0.0
+		for _, ads := range accounts {
+			if ads.Exposure > largestExp {
+				largestExp = ads.Exposure
+			}
+		}
+		if totalExposure > 0 {
+			ratio := largestExp / totalExposure
+			if ratio > 0.5 {
+				concentration = 1.0 + (ratio - 0.5) * 2.0 // max 2x penalty
+			}
+		}
+	}
+	var95 := zScore * totalExposure * dailyVol * concentration
 
 	dc.state.Update(accounts, totalExposure, totalMargin, totalGross, totalNet, var95)
 }
