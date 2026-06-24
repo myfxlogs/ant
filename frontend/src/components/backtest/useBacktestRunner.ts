@@ -32,6 +32,7 @@ export interface ChartTrade {
   closeTime?: number;
   closePrice?: number;
   pnl?: number;
+  volume?: number;
 }
 
 export interface BacktestMetrics {
@@ -261,7 +262,7 @@ export function useBacktestRunner() {
                 side: t.side,
                 openTime: t.open_ts, openPrice: t.open_price,
                 closeTime: t.close_ts, closePrice: t.close_price,
-                pnl: t.pnl,
+                pnl: t.pnl, volume: t.volume,
               })));
             }).catch(() => setChartTrades([]));
           } else { setChartTrades([]); }

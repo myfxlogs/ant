@@ -32,7 +32,7 @@ import {
 import SmartTuningPanel from '@/pages/strategy/components/workspace/SmartTuningPanel';
 import GatePanel from '@/pages/strategy/components/workspace/GatePanel';
 import type { useBacktestRunner, BacktestRunnerInputs } from './useBacktestRunner';
-import { DATE_PRESETS } from '@/pages/strategy/hooks/backtestParamHelpers';
+import { DATE_PRESETS, PRESETS } from '@/pages/strategy/hooks/backtestParamHelpers';
 import type { StrategyTemplate } from '@/client/strategy';
 
 const S = {
@@ -297,6 +297,16 @@ export default function BacktestPanel(props: Props) {
               </Col>
             </Row>
 
+            {/* Preset buttons */}
+            <div style={{ marginTop: 8, display: 'flex', gap: 4 }}>
+              {Object.entries(PRESETS).map(([key, p]) => (
+                <Button key={key} size="small" onClick={() => runner.applyPreset(key as 'live_aligned' | 'exploration')}
+                  style={{ fontSize: 9, padding: '0 8px', height: 22 }}>
+                  {p.label}
+                </Button>
+              ))}
+            </div>
+
             {/* Strategy-specific params */}
             {runner.extractedParams.length > 0 && (
               <div style={{ marginTop: 10, borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
@@ -458,7 +468,7 @@ export default function BacktestPanel(props: Props) {
         {runner.activeTab === 'trades' && (
           <div>
             {runner.chartTrades.length === 0 ? (
-              <Empty description="Run a backtest to see trades" style={{ padding: 24 }} />
+              <Empty description={t(BACKTEST_EMPTY_KEY, 'Run a backtest to see trades')} style={{ padding: 24 }} />
             ) : (
               <Table dataSource={runner.chartTrades.map((t, i) => ({ ...t, key: i }))} size="small"
                 pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: runner.panelHeight - 140 }}
@@ -466,6 +476,8 @@ export default function BacktestPanel(props: Props) {
                   { title: '#', dataIndex: 'key', width: 40 },
                   { title: t(TRADE_SIDE_KEY, 'Side'), dataIndex: 'side', width: 60,
                     render: (v: string) => <span style={{ color: v === 'buy' ? '#26a69a' : '#e57373' }}>{v?.toUpperCase()}</span> },
+                  { title: t(TRADE_VOLUME_KEY, 'Volume'), dataIndex: 'volume', width: 70,
+                    render: (v: number) => v?.toFixed(2) },
                   { title: t(TRADE_PRICE_KEY, 'Price'), dataIndex: 'openPrice', width: 80,
                     render: (v: number) => v?.toFixed(2) },
                   { title: 'Close', dataIndex: 'closePrice', width: 80,
