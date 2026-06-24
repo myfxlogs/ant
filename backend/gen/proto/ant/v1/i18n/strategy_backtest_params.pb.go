@@ -39,6 +39,7 @@ type BacktestParamsI18N struct {
 	Execution            string                 `protobuf:"bytes,14,opt,name=execution,proto3" json:"execution,omitempty"`                                                       // Execution
 	History              string                 `protobuf:"bytes,15,opt,name=history,proto3" json:"history,omitempty"`                                                           // Backtest History
 	Leverage             string                 `protobuf:"bytes,16,opt,name=leverage,proto3" json:"leverage,omitempty"`                                                         // Leverage
+	LotSize              string                 `protobuf:"bytes,38,opt,name=lot_size,json=lotSize,proto3" json:"lot_size,omitempty"`                                            // Lot Size
 	Long                 string                 `protobuf:"bytes,17,opt,name=long,proto3" json:"long,omitempty"`                                                                 // ↑ Long
 	PresetsExploration   string                 `protobuf:"bytes,18,opt,name=presets_exploration,json=presetsExploration,proto3" json:"presets_exploration,omitempty"`           // Exploration
 	PresetsLiveAligned   string                 `protobuf:"bytes,19,opt,name=presets_live_aligned,json=presetsLiveAligned,proto3" json:"presets_live_aligned,omitempty"`         // Live Aligned
@@ -48,6 +49,8 @@ type BacktestParamsI18N struct {
 	SettingsReset        string                 `protobuf:"bytes,23,opt,name=settings_reset,json=settingsReset,proto3" json:"settings_reset,omitempty"`                          // Reset to Factory
 	SettingsSave         string                 `protobuf:"bytes,24,opt,name=settings_save,json=settingsSave,proto3" json:"settings_save,omitempty"`                             // Save as My Defaults
 	Short                string                 `protobuf:"bytes,25,opt,name=short,proto3" json:"short,omitempty"`                                                               // ↓ Short
+	Strategy             string                 `protobuf:"bytes,41,opt,name=strategy,proto3" json:"strategy,omitempty"`                                                         // Strategy
+	StrategyParams       string                 `protobuf:"bytes,42,opt,name=strategy_params,json=strategyParams,proto3" json:"strategy_params,omitempty"`                       // Strategy Parameters
 	Slippage             string                 `protobuf:"bytes,26,opt,name=slippage,proto3" json:"slippage,omitempty"`                                                         // Slippage
 	StartDate            string                 `protobuf:"bytes,27,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`                                      // Start
 	StrictMode           string                 `protobuf:"bytes,28,opt,name=strict_mode,json=strictMode,proto3" json:"strict_mode,omitempty"`                                   // Strict Mode
@@ -206,6 +209,13 @@ func (x *BacktestParamsI18N) GetLeverage() string {
 	return ""
 }
 
+func (x *BacktestParamsI18N) GetLotSize() string {
+	if x != nil {
+		return x.LotSize
+	}
+	return ""
+}
+
 func (x *BacktestParamsI18N) GetLong() string {
 	if x != nil {
 		return x.Long
@@ -265,6 +275,20 @@ func (x *BacktestParamsI18N) GetSettingsSave() string {
 func (x *BacktestParamsI18N) GetShort() string {
 	if x != nil {
 		return x.Short
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetStrategy() string {
+	if x != nil {
+		return x.Strategy
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetStrategyParams() string {
+	if x != nil {
+		return x.StrategyParams
 	}
 	return ""
 }
@@ -357,8 +381,7 @@ var File_i18n_strategy_backtest_params_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_backtest_params_proto_rawDesc = "" +
 	"\n" +
-	"#i18n/strategy_backtest_params.proto\x12\vant.v1.i18n\"\xb0\n" +
-	"\n" +
+	"#i18n/strategy_backtest_params.proto\x12\vant.v1.i18n\"\x90\v\n" +
 	"\x12BacktestParamsI18n\x12'\n" +
 	"\x0fbacktest_failed\x18\x01 \x01(\tR\x0ebacktestFailed\x12\x12\n" +
 	"\x04both\x18\x02 \x01(\tR\x04both\x12\x18\n" +
@@ -379,7 +402,8 @@ const file_i18n_strategy_backtest_params_proto_rawDesc = "" +
 	"\x11event_driven_mode\x18\r \x01(\tR\x0feventDrivenMode\x12\x1c\n" +
 	"\texecution\x18\x0e \x01(\tR\texecution\x12\x18\n" +
 	"\ahistory\x18\x0f \x01(\tR\ahistory\x12\x1a\n" +
-	"\bleverage\x18\x10 \x01(\tR\bleverage\x12\x12\n" +
+	"\bleverage\x18\x10 \x01(\tR\bleverage\x12\x19\n" +
+	"\blot_size\x18& \x01(\tR\alotSize\x12\x12\n" +
 	"\x04long\x18\x11 \x01(\tR\x04long\x12/\n" +
 	"\x13presets_exploration\x18\x12 \x01(\tR\x12presetsExploration\x120\n" +
 	"\x14presets_live_aligned\x18\x13 \x01(\tR\x12presetsLiveAligned\x12\x10\n" +
@@ -389,6 +413,8 @@ const file_i18n_strategy_backtest_params_proto_rawDesc = "" +
 	"\x0esettings_reset\x18\x17 \x01(\tR\rsettingsReset\x12#\n" +
 	"\rsettings_save\x18\x18 \x01(\tR\fsettingsSave\x12\x14\n" +
 	"\x05short\x18\x19 \x01(\tR\x05short\x12\x1a\n" +
+	"\bstrategy\x18) \x01(\tR\bstrategy\x12'\n" +
+	"\x0fstrategy_params\x18* \x01(\tR\x0estrategyParams\x12\x1a\n" +
 	"\bslippage\x18\x1a \x01(\tR\bslippage\x12\x1d\n" +
 	"\n" +
 	"start_date\x18\x1b \x01(\tR\tstartDate\x12\x1f\n" +

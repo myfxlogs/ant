@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file i18n/strategy_backtest_params.proto.
  */
 export const file_i18n_strategy_backtest_params: GenFile = /*@__PURE__*/
-  fileDesc("CiNpMThuL3N0cmF0ZWd5X2JhY2t0ZXN0X3BhcmFtcy5wcm90bxILYW50LnYxLmkxOG4iyQYKEkJhY2t0ZXN0UGFyYW1zSTE4bhIXCg9iYWNrdGVzdF9mYWlsZWQYASABKAkSDAoEYm90aBgCIAEoCRIPCgdjYXBpdGFsGAMgASgJEhIKCmNvbW1pc3Npb24YBCABKAkSFQoNY3VycmVudF9kcmFmdBgFIAEoCRISCgpkYXRlX3JhbmdlGAYgASgJEhcKD2RlZmF1bHRzX2xvYWRlZBgHIAEoCRIWCg5kZWZhdWx0c19yZXNldBgIIAEoCRIWCg5kZWZhdWx0c19zYXZlZBgJIAEoCRIRCglkaXJlY3Rpb24YCiABKAkSEAoIZW5kX2RhdGUYCyABKAkSHQoVZW50ZXJfY29kZV9hbmRfc3ltYm9sGAwgASgJEhkKEWV2ZW50X2RyaXZlbl9tb2RlGA0gASgJEhEKCWV4ZWN1dGlvbhgOIAEoCRIPCgdoaXN0b3J5GA8gASgJEhAKCGxldmVyYWdlGBAgASgJEgwKBGxvbmcYESABKAkSGwoTcHJlc2V0c19leHBsb3JhdGlvbhgSIAEoCRIcChRwcmVzZXRzX2xpdmVfYWxpZ25lZBgTIAEoCRILCgNydW4YFCABKAkSFAoMcnVudGltZV9tb2RlGBUgASgJEhUKDXNldHRpbmdzX2xvYWQYFiABKAkSFgoOc2V0dGluZ3NfcmVzZXQYFyABKAkSFQoNc2V0dGluZ3Nfc2F2ZRgYIAEoCRINCgVzaG9ydBgZIAEoCRIQCghzbGlwcGFnZRgaIAEoCRISCgpzdGFydF9kYXRlGBsgASgJEhMKC3N0cmljdF9tb2RlGBwgASgJEhcKD3N0cmljdF9tb2RlX29mZhgdIAEoCRIcChRzdHJpY3RfbW9kZV9vZmZfZGVzYxgeIAEoCRIfChdzdHJpY3RfbW9kZV9vZmZfdG9vbHRpcBgfIAEoCRIWCg5zdHJpY3RfbW9kZV9vbhggIAEoCRIbChNzdHJpY3RfbW9kZV9vbl9kZXNjGCEgASgJEh4KFnN0cmljdF9tb2RlX29uX3Rvb2x0aXAYIiABKAkSDQoFdGl0bGUYIyABKAkSDQoFdHJhZGUYJCABKAkSFwoPdmVjdG9yaXplZF9tb2RlGCUgASgJQiFaH2FudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxL2kxOG5iBnByb3RvMw");
+  fileDesc("CiNpMThuL3N0cmF0ZWd5X2JhY2t0ZXN0X3BhcmFtcy5wcm90bxILYW50LnYxLmkxOG4ihgcKEkJhY2t0ZXN0UGFyYW1zSTE4bhIXCg9iYWNrdGVzdF9mYWlsZWQYASABKAkSDAoEYm90aBgCIAEoCRIPCgdjYXBpdGFsGAMgASgJEhIKCmNvbW1pc3Npb24YBCABKAkSFQoNY3VycmVudF9kcmFmdBgFIAEoCRISCgpkYXRlX3JhbmdlGAYgASgJEhcKD2RlZmF1bHRzX2xvYWRlZBgHIAEoCRIWCg5kZWZhdWx0c19yZXNldBgIIAEoCRIWCg5kZWZhdWx0c19zYXZlZBgJIAEoCRIRCglkaXJlY3Rpb24YCiABKAkSEAoIZW5kX2RhdGUYCyABKAkSHQoVZW50ZXJfY29kZV9hbmRfc3ltYm9sGAwgASgJEhkKEWV2ZW50X2RyaXZlbl9tb2RlGA0gASgJEhEKCWV4ZWN1dGlvbhgOIAEoCRIPCgdoaXN0b3J5GA8gASgJEhAKCGxldmVyYWdlGBAgASgJEhAKCGxvdF9zaXplGCYgASgJEgwKBGxvbmcYESABKAkSGwoTcHJlc2V0c19leHBsb3JhdGlvbhgSIAEoCRIcChRwcmVzZXRzX2xpdmVfYWxpZ25lZBgTIAEoCRILCgNydW4YFCABKAkSFAoMcnVudGltZV9tb2RlGBUgASgJEhUKDXNldHRpbmdzX2xvYWQYFiABKAkSFgoOc2V0dGluZ3NfcmVzZXQYFyABKAkSFQoNc2V0dGluZ3Nfc2F2ZRgYIAEoCRINCgVzaG9ydBgZIAEoCRIQCghzdHJhdGVneRgpIAEoCRIXCg9zdHJhdGVneV9wYXJhbXMYKiABKAkSEAoIc2xpcHBhZ2UYGiABKAkSEgoKc3RhcnRfZGF0ZRgbIAEoCRITCgtzdHJpY3RfbW9kZRgcIAEoCRIXCg9zdHJpY3RfbW9kZV9vZmYYHSABKAkSHAoUc3RyaWN0X21vZGVfb2ZmX2Rlc2MYHiABKAkSHwoXc3RyaWN0X21vZGVfb2ZmX3Rvb2x0aXAYHyABKAkSFgoOc3RyaWN0X21vZGVfb24YICABKAkSGwoTc3RyaWN0X21vZGVfb25fZGVzYxghIAEoCRIeChZzdHJpY3RfbW9kZV9vbl90b29sdGlwGCIgASgJEg0KBXRpdGxlGCMgASgJEg0KBXRyYWRlGCQgASgJEhcKD3ZlY3Rvcml6ZWRfbW9kZRglIAEoCUIhWh9hbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MS9pMThuYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.i18n.BacktestParamsI18n
@@ -129,6 +129,13 @@ export type BacktestParamsI18n = Message<"ant.v1.i18n.BacktestParamsI18n"> & {
   leverage: string;
 
   /**
+   * Lot Size
+   *
+   * @generated from field: string lot_size = 38;
+   */
+  lotSize: string;
+
+  /**
    * ↑ Long
    *
    * @generated from field: string long = 17;
@@ -190,6 +197,20 @@ export type BacktestParamsI18n = Message<"ant.v1.i18n.BacktestParamsI18n"> & {
    * @generated from field: string short = 25;
    */
   short: string;
+
+  /**
+   * Strategy
+   *
+   * @generated from field: string strategy = 41;
+   */
+  strategy: string;
+
+  /**
+   * Strategy Parameters
+   *
+   * @generated from field: string strategy_params = 42;
+   */
+  strategyParams: string;
 
   /**
    * Slippage
