@@ -26,6 +26,7 @@ import (
 	mktplace "anttrader/internal/connect/marketplace"
 	"anttrader/internal/connect/notification"
 	"anttrader/internal/connect/strategy"
+	"anttrader/internal/usermgr"
 	"anttrader/internal/connect/system"
 	"anttrader/internal/connect/user"
 	paperhdr "anttrader/internal/connect/paper"
@@ -262,8 +263,9 @@ func registerHandlers(
 	notifRepo := repository.NewNotificationRepository(pool)
 	notifSender := notifpubsub.NewSender(notifRepo, notifSub, log)
 
+	jurisGate, capStore, platformAgg := initRiskPipeline(pool, log, mthubSvc, hub, eventStore, cfg)
 	pythonStrategyServer := configurePythonStrategy(backtestRunRepo, marketDataRepo, mthubSvc, hub,
-		paperEngine, notifSender, aiSvc, pgListen, cfg, log)
+		paperEngine, notifSender, aiSvc, pgListen, jurisGate, capStore, cfg, log)
 	if cfg.StrategyServiceURL != "" {
 		backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
 		strategyServer.SetBacktestClient(backtestClient)
@@ -342,11 +344,10 @@ func registerHandlers(
 		mux.Handle(antv1c.NewAdminStrategyServiceHandler(adminStrategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
 
 	// S1.1-S1.3: Wire SignalPipeline, rate limiter, cost estimator, OMS writer.
-	pipeline, platformAgg := initRiskPipeline(pool, log, mthubSvc, hub, eventStore, cfg)
 
 	// AutoTradingService handler — leverages existing pipeline + repositories.
 	autoTradingRepo := repository.NewAutoTradingRepository(pool)
-	autoTradingServer := autotrading.NewAutoTradingServer(autoTradingRepo, pipeline, log)
+	autoTradingServer := autotrading.NewAutoTradingServer(autoTradingRepo, nil, log)
 	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
 		connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
@@ -422,11 +423,13 @@ func configurePythonStrategy(
 	backtestRunRepo *repository.BacktestRunRepository,
 	marketDataRepo repository.MarketDataStore,
 	mthubSvc *mthub.MtHubService,
-		hub *mthub.Hub,
+	hub *mthub.Hub,
 	paperEngine *papereng.PaperEngine,
 	notifSender *notifpubsub.Sender,
 	aiSvc *systemai.Service,
 	pgListen *pglisten.Listener,
+	jurisGate *risksvc.JurisdictionGate,
+	capStore *risksvc.CapabilityStore,
 	cfg *config.Config,
 	log *zap.Logger,
 ) *strategy.PythonStrategyServer {
@@ -449,6 +452,19 @@ func configurePythonStrategy(
 		gate := risk.NewGateWithSystemRules()
 		gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
 		gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
+
+		// Wire KYC/Jurisdiction (legal compliance — non-optional when configured).
+		if jurisGate != nil {
+			gate.AddRule(&risk.KycJurisdictionGateRule{
+				Gate:      jurisGate,
+				UserIDFn:  usermgr.GetUserID,
+				ClientIPFn: func(ctx context.Context) string { return "" },
+			})
+		}
+		// Wire capability tier (per-user trading limits from DB).
+		if capStore != nil {
+			gate.AddRule(risk.NewCapabilityTierRule(capStore))
+		}
 		srv.SetGate(gate)       // live_runner startup guard only (gate runs in mthub now)
 		mthubSvc.SetGate(gate)   // D6-A single chokepoint: all orders through mthub
 		// T3.2b: Inject AccountStateProvider for live trading.

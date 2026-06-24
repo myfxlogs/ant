@@ -23,18 +23,15 @@ import (
 func initRiskPipeline(
 	pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHubService,
 	hub *mthub.Hub, eventStore *mthub.TradeEventStore, cfg *config.Config,
-) (*risksvc.SignalPipeline, *risksvc.PlatformAggregator) {
+) (*risksvc.JurisdictionGate, *risksvc.CapabilityStore, *risksvc.PlatformAggregator) {
 	jurisGate := buildJurisdictionGate(pool, cfg)
 	capStore := loadCapabilityStore(pool, log)
-	_ = jurisGate // TODO(D10): wire into risk.KycJurisdictionGateRule
-	_ = capStore   // TODO(D10): wire into risk.CapabilityTierRule
 	platformAgg := risksvc.NewPlatformAggregator()
 	platformAgg.StartRefreshLoop(5 * time.Second)
 
 	// D6-A: risksvc pipeline replaced by risk.Gate (single chokepoint).
-	// All rules are now in risk/rules_risksvc.go.
 	wireMthubServices(pool, log, mthubSvc, hub, eventStore)
-	return nil, platformAgg
+	return jurisGate, capStore, platformAgg
 }
 
 func buildJurisdictionGate(pool *pgxpool.Pool, cfg *config.Config) *risksvc.JurisdictionGate {

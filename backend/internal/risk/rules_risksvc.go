@@ -127,27 +127,46 @@ func (r *MarginFloorRule) Check(_ context.Context, intent *antv1.OrderIntent, st
 
 // CapabilityTierRule restricts trading based on the user's assigned
 // capability tier.  Each tier defines limits on position size, leverage,
-// and permitted symbols.
-//
-// Tiers are read from the CapabilityStore (backed by DB).
+// and permitted symbols.  Wraps risksvc.CapabilityStore.
 type CapabilityTierRule struct {
 	Store CapabilityStore
 }
 
 // CapabilityStore provides per-user trading limits.
 type CapabilityStore interface {
-	// GetTier returns the user's capability tier and its limits.
-	// Returns (0, nil) if the user has no assigned tier (unlimited).
-	GetTier(ctx context.Context, userID string) (tier CapabilityTier, err error)
+	GetTier(ctx context.Context, userID string) (CapabilityTier, error)
 }
 
 // CapabilityTier defines limits for a user tier.
 type CapabilityTier struct {
 	Name           string
-	MaxVolume      float64 // max single-order volume
-	MaxLeverage    int     // 0 = no limit
-	MaxPositions   int     // 0 = no limit
-	AllowedSymbols []string // empty = all symbols allowed
+	MaxVolume      float64
+	MaxLeverage    int
+	MaxPositions   int
+	AllowedSymbols []string
+}
+
+// NewCapabilityTierRule creates a rule backed by a risksvc.CapabilityStore.
+func NewCapabilityTierRule(store *risksvc.CapabilityStore) *CapabilityTierRule {
+	return &CapabilityTierRule{Store: &risksvcCapStoreAdapter{store}}
+}
+
+// risksvcCapStoreAdapter adapts *risksvc.CapabilityStore to risk.CapabilityStore.
+type risksvcCapStoreAdapter struct {
+	store *risksvc.CapabilityStore
+}
+
+func (a *risksvcCapStoreAdapter) GetTier(_ context.Context, userID string) (CapabilityTier, error) {
+	cap := a.store.Get(userID)
+	if cap == nil {
+		return CapabilityTier{}, nil
+	}
+	return CapabilityTier{
+		Name:           cap.Tier.String(),
+		MaxVolume:      cap.LotPerOrderMax,
+		MaxLeverage:    int(cap.LeverageMax),
+		AllowedSymbols: cap.SymbolWhitelist,
+	}, nil
 }
 
 func (r *CapabilityTierRule) Name() string { return "capability_tier" }
