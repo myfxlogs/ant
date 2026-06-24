@@ -88,6 +88,10 @@ func wireMthubServices(pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHu
 		}, nil
 	})
 	mthubSvc.SetUserLimiter(usermgr.NewUserLimiter(usermgr.DefaultConfig()))
+	// TODO(M10-BASE-D2): replace StaticEstimator with MultiModelEstimator populated
+	// from MT gateway SymbolParams (pip size, tick value, spread per symbol per broker).
+	// Hardcoded EURUSD values are incorrect for a multi-broker platform where symbol
+	// names, spreads, and pip values vary by broker and account type.
 	mthubSvc.SetCostEstimator(&costsvc.StaticEstimator{Model: &costsvc.CostModel{
 		Symbol: "EURUSD", SpreadPips: 1.0, PipSize: 0.0001, PipValue: 10.0, CommissionPerLot: 7.0,
 	}})

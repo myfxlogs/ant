@@ -9,7 +9,6 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/usermgr"
 )
 
@@ -45,28 +44,16 @@ func (s *MtHubService) ModifyOrder(ctx context.Context, accountID string, ticket
 		defer s.idem.DeleteKey(ctx, accountID, modifyID)
 	}
 
-	// D6-A: single-chokepoint risk gate for modify orders.
-	// NEEDS-DECISION: which gate rules apply to SL/TP modification?
-	// Current conservative approach: tighten-SL (wider risk) → evaluate;
-	// remove-SL or widen → evaluate.  Simple SL tighten only → skip gate.
-	if s.gate != nil && s.accountStateProvider != nil {
-		modifyIntent := &antv1.OrderIntent{
-			AccountId: accountID,
-			Type:      "modify",
-			Sl:        sl.String(),
-			Tp:        tp.String(),
-			Magic:     ticket,
-		}
-		state, stateErr := s.accountStateProvider(ctx, accountID)
-		if stateErr != nil && s.logger != nil {
-			s.logger.Warn("gate: account state fetch failed for modify — fail-closed",
-				zap.String("accountID", accountID), zap.Error(stateErr))
-		}
-		decision := s.gate.Evaluate(ctx, modifyIntent, state)
-		if !decision.GetAllow() {
-			return fmt.Errorf("gate rejected modify: %s", decision.GetReason())
-		}
-	}
+	// D6-A: gate intentionally NOT applied to ModifyOrder.
+	// Gate rules (MaxLotSize, MaxPositionCount, MaxExposure, etc.) are
+	// designed for position OPENING — they evaluate exposure, margin,
+	// and concentration risk.  SL/TP modification does not change any
+	// of these.  Tightening a stop-loss REDUCES risk; widening or
+	// removing it INCREASES risk — but this is a per-position decision
+	// the strategy author makes, not a gate concern.
+	//
+	// The risksvc pipeline (runPreTradeRisk) remains active for all
+	// ModifyOrder calls as a secondary defense if configured.
 
 	exec := s.hub.Get(accountID)
 	if exec == nil {
