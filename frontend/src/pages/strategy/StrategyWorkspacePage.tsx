@@ -4,7 +4,7 @@ import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { BACKTEST_RESULTS_LABEL_KEY, CHART_ERROR_KEY, CODE_KEY, COMPLETED_STATUS_KEY, NO_OPEN_POSITIONS_KEY, OPEN_POSITIONS_KEY, RUNNING_STATUS_KEY, SELECT_SYMBOL_HINT_KEY, SMART_TUNING_KEY, TEMPLATE_TITLE_KEY, TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 ;
-import { useStrategyWorkspaceState, DATE_PRESETS } from './hooks/useStrategyWorkspaceState';
+import { useStrategyWorkspaceState } from './hooks/useStrategyWorkspaceState';
 import WorkspaceCodePanel from './components/workspace/WorkspaceCodePanel';
 import BacktestPanel from '@/components/backtest/BacktestPanel';
 import WorkspaceTemplateManager from './components/workspace/WorkspaceTemplateManager';
