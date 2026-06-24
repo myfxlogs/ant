@@ -203,19 +203,6 @@ class TestRestrictedPythonDowngrade(unittest.TestCase):
         result = scan_security("eval('1+1')")
         self.assertFalse(result.passed, "Banned builtin not caught")
 
-    def test_sandbox_scan_backward_compat(self):
-        """sandbox_scan.py must still work for backward compatibility."""
-        from app.sandbox_scan import scan_code, ScanResult, BANNED_MODULES
-        self.assertIn("os", BANNED_MODULES)
-        result = scan_code("x = 1 + 2")
-        self.assertTrue(result.passed)
-
-    def test_duplicate_rules_merged(self):
-        """The duplicate rules between old sandbox.py and sandbox_scan.py are merged."""
-        from app.engine.sandbox import BANNED_MODULES as eng_banned
-        from app.sandbox_scan import BANNED_MODULES as scan_banned
-        # Both must be identical after merge.
-        self.assertEqual(eng_banned, scan_banned)
 
 
 if __name__ == "__main__":

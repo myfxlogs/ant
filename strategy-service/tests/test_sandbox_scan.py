@@ -1,6 +1,6 @@
 # M5-4: strategy-service sandbox unit tests.
 import pytest
-from app.sandbox_scan import scan_code, ScanResult
+from app.engine.validation import scan_security as scan_code, SecurityScanResult as ScanResult
 
 
 class TestSandboxScan:

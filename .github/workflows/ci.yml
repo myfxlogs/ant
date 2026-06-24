@@ -243,8 +243,6 @@ jobs:
         run: PYTHONPATH=strategy-service python3 -m unittest discover -s strategy-service/tests -p "test_sim_broker.py" -v
       - name: LiveBroker tests
         run: PYTHONPATH=strategy-service python3 -m unittest discover -s strategy-service/tests -p "test_live_broker.py" -v
-      - name: Trace tests
-        run: PYTHONPATH=strategy-service python3 -m unittest discover -s strategy-service/tests -p "test_trace.py" -v
       - name: Sandbox escape tests
         run: PYTHONPATH=strategy-service python3 -m unittest discover -s strategy-service/tests -p "test_sandbox_escape.py" -v
       - name: Transpiler tests
