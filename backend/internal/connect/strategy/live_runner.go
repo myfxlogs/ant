@@ -426,14 +426,13 @@ func (s *PythonStrategyServer) dispatchModifyOrder(ctx context.Context, cfg Live
 	}
 	sl := decimal.NewFromFloat(sig.GetStopLoss())
 	tp := decimal.NewFromFloat(sig.GetTakeProfit())
-	// MtHubService doesn't expose a direct ModifyOrder. Use CloseOrder + PlaceOrder
-	// as a pragmatic workaround for T3.1. Full ModifyOrder support will be added
-	// when the MT gateway ModifyOrder RPC is exposed through mthub.
+	price := decimal.NewFromFloat(sig.GetPrice())
+
 	go func() {
-		s.log.Warn("LiveStrategyRunner: ModifyOrder not yet available via mthub — ticket logged",
-			zap.Int64("ticket", ticket))
-		_ = sl
-		_ = tp
+		if err := s.mtHub.ModifyOrder(ctx, cfg.AccountID, ticket, sl, tp, price); err != nil {
+			s.log.Error("LiveStrategyRunner: ModifyOrder failed",
+				zap.Int64("ticket", ticket), zap.Error(err))
+		}
 	}()
 }
 
