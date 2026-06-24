@@ -348,6 +348,37 @@ func registerHandlers(
 	// AutoTradingService handler — leverages existing pipeline + repositories.
 	autoTradingRepo := repository.NewAutoTradingRepository(pool)
 	autoTradingServer := autotrading.NewAutoTradingServer(autoTradingRepo, nil, log)
+
+	// Wire per-user risk config into the Gate (frontend settings → Gate evaluation).
+	// Tries RiskConfig (account-level) first, falls back to GlobalSettings (user-level).
+	pythonStrategyServer.AddGateRule(&risk.UserRiskConfigRule{Store: func(ctx context.Context, accountID string) (*risk.UserRiskConfig, error) {
+		aid, err := uuid.Parse(accountID)
+		if err != nil {
+			return nil, nil
+		}
+		// 1. Try account-level RiskConfig.
+		if rc, err := autoTradingRepo.GetRiskConfigByAccountID(ctx, aid); err == nil && rc != nil {
+			return &risk.UserRiskConfig{
+				MaxLotSize: rc.MaxLotSize, MaxPositions: rc.MaxPositions,
+				MaxDailyLoss: rc.MaxDailyLoss.InexactFloat64(),
+				MaxDrawdownPercent: rc.MaxDrawdownPercent,
+				MaxRiskPercent: rc.MaxRiskPercent,
+			}, nil
+		}
+		// 2. Fall back to user-level GlobalSettings.
+		uid, _ := uuid.Parse(usermgr.GetUserID(ctx))
+		if uid != uuid.Nil {
+			if gs, err := autoTradingRepo.GetGlobalSettingsByUserID(ctx, uid); err == nil && gs != nil {
+				return &risk.UserRiskConfig{
+					MaxLotSize: gs.MaxLotSize, MaxPositions: int(gs.MaxPositions),
+					MaxDailyLoss: gs.MaxDailyLoss.InexactFloat64(),
+					MaxDrawdownPercent: gs.MaxDrawdownPercent,
+					MaxRiskPercent: gs.MaxRiskPercent,
+				}, nil
+			}
+		}
+		return nil, nil // no config = no restriction
+	}})
 	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
 		connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 

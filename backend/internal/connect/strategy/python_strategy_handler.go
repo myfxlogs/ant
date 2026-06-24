@@ -72,6 +72,13 @@ func (s *PythonStrategyServer) SetPaperEngine(pe PaperOrderExecutor)      { s.pa
 // Must be called before RunLiveStrategy.
 func (s *PythonStrategyServer) SetGate(g *risk.Gate) { s.gate = g }
 
+// AddGateRule adds a rule to the Gate after initialization.
+func (s *PythonStrategyServer) AddGateRule(r risk.Rule) {
+	if s.gate != nil {
+		s.gate.AddRule(r)
+	}
+}
+
 // SetAccountProvider injects the live account state provider (T3.2b).
 func (s *PythonStrategyServer) SetAccountProvider(p AccountStateProvider) { s.accountProvider = p }
 
