@@ -96,7 +96,7 @@ export function useLibraryRuns(templateId: string | undefined) {
     setDeleting(true);
     try {
       const resp: any = await pythonStrategyApi.deleteBacktestRuns(selectedKeys.map(String));
-      if (!resp?.deletedCount && resp?.deletedCount !== 0) { message.error(t('common.deleteFailed')); return; }
+      if (!resp || resp.deletedCount === undefined || resp.deletedCount === null) { message.error(t('common.deleteFailed')); return; }
       message.success(t('strategy.templates.backtestRuns.batchDeleteSuccess', { count: resp.deletedCount }));
       setSelectedKeys([]);
       const newPage = runs.length <= selectedKeys.length && page > 1 ? page - 1 : page;
