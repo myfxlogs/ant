@@ -428,9 +428,6 @@ class SimBroker(Broker):
 
         return fills
 
-        """Called after strategy callback to sync any state changes."""
-        pass  # placeholder for future swap/rollover logic
-
     # ── Internals ───────────────────────────────────────────────────────
 
     def _execute_market(self, order: Order, tick: Tick) -> OrderResult:
