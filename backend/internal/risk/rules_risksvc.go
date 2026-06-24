@@ -13,6 +13,7 @@ package risk
 import (
 	"context"
 	"fmt"
+	"time"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/risksvc"
@@ -202,5 +203,5 @@ func parseDecimal(s string) float64 {
 }
 
 func currentTimeMillis() int64 {
-	return int64(0) // placeholder — use time.Now().UnixMilli() in production
+	return time.Now().UnixMilli()
 }
