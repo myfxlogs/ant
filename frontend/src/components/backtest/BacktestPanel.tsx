@@ -231,30 +231,28 @@ export default function BacktestPanel(props: Props) {
               </div>
             </div>
 
-            {/* Standard params */}
+            {/* Standard params — compact single row */}
             <div style={S.sectionLabel}>{t(EXECUTION_KEY)}</div>
-            <Row gutter={8} style={{ marginBottom: 8 }}>
-              <Col span={8}>
+            <Row gutter={6} style={{ marginBottom: 6 }}>
+              <Col span={4}>
                 <div style={S.fieldLabel}>{t(CAPITAL_KEY)}</div>
                 <InputNumber size="small" style={S.narrow} min={100} step={1000}
                   value={runner.initialCapital} onChange={(v) => runner.setInitialCapital(v ?? 10000)}
                   formatter={v => `$ ${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={v => v!.replace(/\$\s?|(,*)/g, '') as unknown as number} />
               </Col>
-              <Col span={8}>
+              <Col span={3}>
                 <div style={S.fieldLabel}>{t(LEVERAGE_KEY)}</div>
                 <InputNumber size="small" style={S.narrow} min={1} step={1}
                   value={runner.leverage} onChange={(v) => runner.setLeverage(v ?? 1)}
                   formatter={v => `${v}x`} parser={v => v!.replace('x', '') as unknown as number} />
               </Col>
-              <Col span={8}>
+              <Col span={3}>
                 <div style={S.fieldLabel}>Lot Size</div>
                 <InputNumber size="small" style={S.narrow} min={0.01} max={100} step={0.01}
                   value={runner.lotSize} onChange={(v) => runner.setLotSize(v ?? 0.01)} />
               </Col>
-            </Row>
-            <Row gutter={8} style={{ marginBottom: 6 }}>
-              <Col span={8}>
+              <Col span={5}>
                 <div style={S.fieldLabel}>{t(COMMISSION_KEY)}
                   <span style={{ fontSize: 8, color: '#bfbfbf', fontWeight: 400, marginLeft: 3 }}>%</span>
                 </div>
@@ -262,27 +260,27 @@ export default function BacktestPanel(props: Props) {
                   value={runner.commission} onChange={(v) => runner.setCommission(v ?? 0.001)}
                   formatter={v => `${v}%`} parser={v => v!.replace('%', '') as unknown as number} />
               </Col>
-              <Col span={8}>
+              <Col span={5}>
                 <div style={S.fieldLabel}>{t(SLIPPAGE_KEY)}
                   <span style={{ fontSize: 8, color: '#bfbfbf', fontWeight: 400, marginLeft: 3 }}>{slippagePct}%</span>
                 </div>
                 <InputNumber size="small" style={S.narrow} min={0} max={10} step={0.0001} precision={4}
                   value={runner.slippage} onChange={(v) => runner.setSlippage(v ?? 0)} />
               </Col>
-              <Col span={8}>
+              <Col span={4}>
                 <div style={S.fieldLabel}>{t(DIRECTION_KEY)}</div>
                 <Radio.Group value={runner.tradeDirection} onChange={e => runner.setTradeDirection(e.target.value)}
                   size="small" buttonStyle="solid" style={{ display: 'flex' }}>
-                  <Radio.Button value="long" style={{ flex: 1, textAlign: 'center', fontSize: 10 }}>{t(LONG_KEY)}</Radio.Button>
-                  <Radio.Button value="short" style={{ flex: 1, textAlign: 'center', fontSize: 10 }}>{t(SHORT_KEY)}</Radio.Button>
-                  <Radio.Button value="both" style={{ flex: 1, textAlign: 'center', fontSize: 10 }}>{t(BOTH_KEY)}</Radio.Button>
+                  <Radio.Button value="long" style={{ flex: 1, textAlign: 'center', fontSize: 9 }}>{t(LONG_KEY)}</Radio.Button>
+                  <Radio.Button value="short" style={{ flex: 1, textAlign: 'center', fontSize: 9 }}>{t(SHORT_KEY)}</Radio.Button>
+                  <Radio.Button value="both" style={{ flex: 1, textAlign: 'center', fontSize: 9 }}>{t(BOTH_KEY)}</Radio.Button>
                 </Radio.Group>
               </Col>
             </Row>
-            <Row gutter={8}>
+            <Row gutter={8} style={{ marginBottom: 4 }}>
               <Col span={12}>
-                <div style={S.fieldLabel}>{t(STRICT_MODE_KEY)}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={S.fieldLabel}>{t(STRICT_MODE_KEY)}</span>
                   <Switch size="small" checked={runner.strictMode} onChange={runner.setStrictMode} />
                   <Tooltip title={runner.strictMode ? t(STRICT_MODE_ON_TOOLTIP_KEY) : t(STRICT_MODE_OFF_TOOLTIP_KEY)}>
                     <Tag color={runner.strictMode ? 'blue' : 'orange'}
@@ -290,9 +288,6 @@ export default function BacktestPanel(props: Props) {
                       {runner.strictMode ? t(STRICT_MODE_ON_KEY) : t(STRICT_MODE_OFF_KEY)}
                     </Tag>
                   </Tooltip>
-                </div>
-                <div style={{ fontSize: 8, color: '#8c8c8c', marginTop: 2 }}>
-                  {runner.strictMode ? t(STRICT_MODE_ON_DESC_KEY) : t(STRICT_MODE_OFF_DESC_KEY)}
                 </div>
               </Col>
             </Row>
