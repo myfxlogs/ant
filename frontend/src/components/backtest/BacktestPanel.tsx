@@ -37,7 +37,7 @@ import type { StrategyTemplate } from '@/client/strategy';
 
 const S = {
   sectionLabel: { fontSize: 12, fontWeight: 700, color: '#595959', marginBottom: 6 },
-  fieldLabel: { fontSize: 12, fontWeight: 500, color: '#8c8c8c', marginBottom: 2 },
+  fieldLabel: { fontSize: 12, fontWeight: 500, color: '#8c8c8c', marginBottom: 4 },
   narrow: { width: '100%' },
   metricStyle: { fontSize: 14, fontFamily: 'monospace' as const },
 };
@@ -66,7 +66,7 @@ interface Props {
 function MetricsRow({ m }: { m: any }) {
   if (!m) return null;
   return (
-    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 11, color: '#595959' }}>
+    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12, color: '#595959' }}>
       <span>Return: <b style={{ color: (m.totalReturn ?? 0) >= 0 ? '#26a69a' : '#e57373' }}>{(m.totalReturn ?? 0).toFixed(2)}%</b></span>
       <span>Trades: <b>{m.totalTrades ?? 0}</b></span>
       <span>Win: <b>{((m.winRate ?? 0) * 100).toFixed(1)}%</b></span>
@@ -179,7 +179,7 @@ export default function BacktestPanel(props: Props) {
             </Button>
           </Tooltip>
           <span onClick={(e) => { e.stopPropagation(); onToggleCollapsed(); }}
-            style={{ fontSize: 9, color: '#8c8c8c', cursor: 'pointer' }}>
+            style={{ fontSize: 12, color: '#8c8c8c', cursor: 'pointer' }}>
             <CaretDownOutlined />
           </span>
         </div>
@@ -237,7 +237,7 @@ export default function BacktestPanel(props: Props) {
               <div style={{ borderLeft: '1px solid #e8e8e8', paddingLeft: 8 }}>
                 {(Object.keys(PRESETS) as Array<keyof typeof PRESETS>).map((key) => (
                   <Button key={key} size="small" onClick={() => runner.applyPreset(key)}
-                    style={{ fontSize: 10, padding: '0 6px', height: 22 }}>
+                    style={{ fontSize: 12, padding: '0 8px', height: 26 }}>
                     {t(`strategy.backtestParams.presets.${key === 'live_aligned' ? 'liveAligned' : 'exploration'}`)}
                   </Button>
                 ))}
@@ -267,7 +267,7 @@ export default function BacktestPanel(props: Props) {
               </Col>
               <Col span={5}>
                 <div style={S.fieldLabel}>{t(COMMISSION_KEY)}
-                  <span style={{ fontSize: 8, color: '#bfbfbf', fontWeight: 400, marginLeft: 3 }}>%</span>
+                  <span style={{ fontSize: 12, color: '#bfbfbf', fontWeight: 400, marginLeft: 3 }}>%</span>
                 </div>
                 <InputNumber size="small" style={S.narrow} min={0} max={10} step={0.01} precision={4}
                   value={runner.commission} onChange={(v) => runner.setCommission(v ?? 0.001)}
@@ -275,7 +275,7 @@ export default function BacktestPanel(props: Props) {
               </Col>
               <Col span={5}>
                 <div style={S.fieldLabel}>{t(SLIPPAGE_KEY)}
-                  <span style={{ fontSize: 8, color: '#bfbfbf', fontWeight: 400, marginLeft: 3 }}>{slippagePct}%</span>
+                  <span style={{ fontSize: 12, color: '#bfbfbf', fontWeight: 400, marginLeft: 3 }}>{slippagePct}%</span>
                 </div>
                 <InputNumber size="small" style={S.narrow} min={0} max={10} step={0.0001} precision={4}
                   value={runner.slippage} onChange={(v) => runner.setSlippage(v ?? 0)} />
@@ -284,9 +284,9 @@ export default function BacktestPanel(props: Props) {
                 <div style={S.fieldLabel}>{t(DIRECTION_KEY)}</div>
                 <Radio.Group value={runner.tradeDirection} onChange={e => runner.setTradeDirection(e.target.value)}
                   size="small" buttonStyle="solid" style={{ display: 'flex' }}>
-                  <Radio.Button value="long" style={{ flex: 1, textAlign: 'center', fontSize: 9 }}>{t(LONG_KEY)}</Radio.Button>
-                  <Radio.Button value="short" style={{ flex: 1, textAlign: 'center', fontSize: 9 }}>{t(SHORT_KEY)}</Radio.Button>
-                  <Radio.Button value="both" style={{ flex: 1, textAlign: 'center', fontSize: 9 }}>{t(BOTH_KEY)}</Radio.Button>
+                  <Radio.Button value="long" style={{ flex: 1, textAlign: 'center', fontSize: 12 }}>{t(LONG_KEY)}</Radio.Button>
+                  <Radio.Button value="short" style={{ flex: 1, textAlign: 'center', fontSize: 12 }}>{t(SHORT_KEY)}</Radio.Button>
+                  <Radio.Button value="both" style={{ flex: 1, textAlign: 'center', fontSize: 12 }}>{t(BOTH_KEY)}</Radio.Button>
                 </Radio.Group>
               </Col>
             </Row>
@@ -351,8 +351,8 @@ export default function BacktestPanel(props: Props) {
                 marginBottom: 12, padding: '8px 12px', border: '1px solid #e6f4ff', borderRadius: 8,
                 background: 'linear-gradient(180deg, #f8fbff 0%, #f4f9ff 100%)',
               }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>{t(EXEC_ASSUMPTIONS_KEY)}</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '4px 12px', fontSize: 11 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>{t(EXEC_ASSUMPTIONS_KEY)}</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '4px 12px', fontSize: 12 }}>
                   <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)}:</span> <strong>{runner.executionAssumptions.simulationMode || '-'}</strong></div>
                   <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)}:</span> <strong>{runner.executionAssumptions.signalTiming || '-'}</strong></div>
                   <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)}:</span> <strong>{runner.executionAssumptions.fillRule || '-'}</strong></div>
@@ -453,8 +453,7 @@ export default function BacktestPanel(props: Props) {
             {runner.chartTrades.length === 0 ? (
               <Empty description={t(BACKTEST_EMPTY_KEY, 'Run a backtest to see trades')} style={{ padding: 24 }} />
             ) : (
-              <Table dataSource={runner.chartTrades.map((t, i) => ({ ...t, key: i }))} size="small"
-                pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: runner.panelHeight - 140 }}
+              <Table dataSource={runner.chartTrades.map((t, i) => ({ ...t, key: i }))}                pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: runner.panelHeight - 140 }}
                 columns={[
                   { title: '#', dataIndex: 'key', width: 40 },
                   { title: t(TRADE_SIDE_KEY, 'Side'), dataIndex: 'side', width: 60,
