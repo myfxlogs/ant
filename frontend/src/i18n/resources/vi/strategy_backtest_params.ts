@@ -49,8 +49,8 @@ const StrategyBacktestParams = {
       "mtDataset": "Tập dữ liệu",
       "nextBarOpen": "Mở nến tiếp theo",
       "sameBarClose": "Đóng cùng nến",
-      "market": "Thị trường",
-      "limit": "Giới hạn"
+      "execMarket": "Thị trường",
+      "execLimit": "Giới hạn"
     }
   }
 } as const;

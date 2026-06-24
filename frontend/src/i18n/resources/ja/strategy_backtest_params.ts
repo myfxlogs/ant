@@ -49,8 +49,8 @@ const StrategyBacktestParams = {
       "mtDataset": "データセット",
       "nextBarOpen": "次足始値",
       "sameBarClose": "同足終値",
-      "market": "成行",
-      "limit": "指値"
+      "execMarket": "成行",
+      "execLimit": "指値"
     }
   }
 } as const;

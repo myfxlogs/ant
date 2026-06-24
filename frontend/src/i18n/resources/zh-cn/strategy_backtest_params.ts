@@ -49,8 +49,8 @@ const StrategyBacktestParams = {
       "mtDataset": "数据集",
       "nextBarOpen": "次根K线开盘",
       "sameBarClose": "同根K线收盘",
-      "market": "市价",
-      "limit": "限价"
+      "execMarket": "市价",
+      "execLimit": "限价"
     }
   }
 } as const;

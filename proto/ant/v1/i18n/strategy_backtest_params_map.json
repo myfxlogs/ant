@@ -45,7 +45,7 @@
     "mt_dataset": "mtDataset",
     "next_bar_open": "nextBarOpen",
     "same_bar_close": "sameBarClose",
-    "market": "market",
-    "limit": "limit"
+    "exec_market": "execMarket",
+    "exec_limit": "execLimit"
   }
 }
