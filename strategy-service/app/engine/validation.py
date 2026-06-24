@@ -256,10 +256,11 @@ def validate_strategy_code(code: str) -> StrategyValidationResult:
         )
         if not hooks_found:
             warnings.append("策略未实现任何 SDK 生命周期方法")
-        # Security scan on original code.
+        # Security scan on original code (skip syntax errors — already reported).
         security = scan_security(code)
-        if security.violations:
-            errors.extend(security.violations)
+        for v in security.violations:
+            if not v.startswith("syntax error"):
+                errors.append(v)
         warnings.extend(security.warnings)
         # Deduplicate.
         seen = set()
