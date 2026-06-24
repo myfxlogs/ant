@@ -459,7 +459,9 @@ func (s *PythonStrategyServer) dispatchPaperSignal(ctx context.Context, cfg Live
 
 	action := sig.GetSignalType()
 
-		// Close/modify/cancel/close_all: log and return (paper engine doesn't support these yet).
+		// Close/modify/cancel/close_all: paper engine needs PaperOrder.StopLoss/TakeProfit
+	// fields + repo.GetOrder/UpdateOrder methods before these can be implemented.
+	// TODO(M12-PAPER): add close/modify/cancel to paper engine.
 	switch action {
 	case "close", "close_all", "modify", "cancel":
 		s.log.Debug("LiveStrategyRunner: paper close/modify/cancel — logged",
