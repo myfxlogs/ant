@@ -46,10 +46,11 @@ from app.engine.vectorized_runner import (
     extract_signal_at,
     detect_strategy_type,
 )
+from app.engine.sdk_indicators import SDKIndicators
+from app.engine.sdk_loader import load_sdk_strategy
 from app.sdk.account import AccountMode
 from app.sdk.runtime import StrategyRuntime
 from app.sdk.series import Bars, Series
-from app.sdk.strategy_base import StrategyBase
 
 # ── Signal-dispatch constants (vectorized path only) ─────────────────────
 
@@ -116,46 +117,6 @@ class _EngineBars(Bars):
         return len(self.close)
 
 
-class _EngineIndicators:
-    def __init__(self, bars_provider):
-        self._bars_provider = bars_provider
-
-    def _get_close(self) -> np.ndarray:
-        bars = self._bars_provider()
-        return np.array([bars.close[i] for i in range(len(bars.close) - 1, -1, -1)])
-
-    def ma(self, period=14, shift=0, method="sma"):
-        data = self._get_close()
-        if len(data) < period + shift: return 0.0
-        window = data[:len(data) - shift] if shift > 0 else data
-        if method in ("ema", "exponential"):
-            alpha = 2.0 / (period + 1)
-            result = float(window[-period])
-            for v in window[-period + 1:]: result = alpha * v + (1 - alpha) * result
-            return result
-        return float(np.mean(window[-period:]))
-
-    def ema(self, period=14, shift=0): return self.ma(period, shift, "ema")
-    def rsi(self, period=14, shift=0):
-        data = self._get_close()
-        if len(data) < period + shift + 1: return 50.0
-        window = data[:len(data) - shift] if shift > 0 else data
-        deltas = np.diff(window[-period - 1:])
-        gains, losses = np.sum(deltas[deltas > 0]), -np.sum(deltas[deltas < 0])
-        if losses == 0: return 100.0 if gains > 0 else 50.0
-        return float(100.0 - 100.0 / (1.0 + gains / losses))
-    def bands(self, period=20, deviation=2.0, shift=0):
-        data = self._get_close()
-        if len(data) < period: return (0.0, 0.0, 0.0)
-        middle = self.ma(period, shift, "sma")
-        window = data[:len(data) - shift] if shift > 0 else data
-        std = float(np.std(window[-period:]))
-        return (middle + deviation * std, middle, middle - deviation * std)
-    def macd(self, fast=12, slow=26, signal=9, shift=0): return (0.0, 0.0, 0.0)
-    def atr(self, period=14, shift=0): return 0.001
-    def stochastic(self, k_period=5, d_period=3, shift=0): return (50.0, 50.0)
-    def cci(self, period=14, shift=0): return 0.0
-    def i_custom(self, name, params=(), buffer=0, shift=0): return 0.0
 
 
 def _is_sdk_strategy(code: str) -> bool:
@@ -247,19 +208,7 @@ class BacktestRunner:
     # ── SDK path init ─────────────────────────────────────────────────────
 
     def _init_sdk_path(self, req: BacktestRequest) -> None:
-        from app.engine.sandbox import build_sandbox_globals
-
-        exec_scope = build_sandbox_globals()
-        exec_scope["StrategyBase"] = StrategyBase
-        exec(compile(req.strategy_code, "<strategy>", "exec"), exec_scope)
-
-        strategy_cls = None
-        for obj in exec_scope.values():
-            if isinstance(obj, type) and issubclass(obj, StrategyBase) and obj is not StrategyBase:
-                strategy_cls = obj
-                break
-        if strategy_cls is None:
-            raise StrategyCompileError("SDK策略未找到继承 StrategyBase 的类")
+        strategy_cls = load_sdk_strategy(req.strategy_code)
 
         self._broker = SimBroker(
             portfolio=self._portfolio, fill_model=self._fill,
@@ -281,7 +230,7 @@ class BacktestRunner:
         self._runtime = StrategyRuntime(
             strategy_class=strategy_cls, broker=self._broker,
             bars_provider=bars_provider,
-            indicators=_EngineIndicators(bars_provider),
+            indicators=SDKIndicators(bars_provider),
             symbol=req.symbol, timeframe=req.timeframe,
             params=dict(req.strategy_params or {}),
         )

@@ -17,7 +17,8 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from app.engine.live_broker import LiveBroker, build_live_broker_from_proto
-from app.sdk import StrategyBase
+from app.engine.sdk_indicators import SDKIndicators
+from app.engine.sdk_loader import load_sdk_strategy
 from app.sdk.account import AccountInfo, AccountMode
 from app.sdk.runtime import RuntimeContext, StrategyRuntime
 from app.sdk.series import Bars, Series
@@ -27,16 +28,6 @@ from app.sdk.series import Bars, Series
 
 _runtime: Optional[StrategyRuntime] = None
 _runtime_hash: str = ""
-
-
-def _load_strategy(code: str) -> type[StrategyBase]:
-    """Compile and load a StrategyBase subclass from source code."""
-    namespace: Dict[str, Any] = {}
-    exec(code, namespace)
-    for obj in namespace.values():
-        if isinstance(obj, type) and issubclass(obj, StrategyBase) and obj is not StrategyBase:
-            return obj
-    raise ValueError("No StrategyBase subclass found in code")
 
 
 def _build_bars_provider(bar_context: dict) -> callable:
@@ -76,69 +67,6 @@ def _build_bars_provider(bar_context: dict) -> callable:
     return provider
 
 
-def _build_indicators(bars_provider: callable) -> object:
-    """Build a simple indicators implementation backed by the bars provider."""
-    import numpy as np
-    from app.sdk.indicators import Indicators
-
-    class LiveIndicators(Indicators):
-        def _get_close(self):
-            bars = bars_provider()
-            return np.array([bars.close[i] for i in range(len(bars.close)-1, -1, -1)])
-
-        def ma(self, period=14, shift=0, method="sma"):
-            data = self._get_close()
-            if len(data) < period + shift: return 0.0
-            window = data[:len(data)-shift] if shift > 0 else data
-            if method in ("sma", "simple"):
-                return float(np.mean(window[-period:]))
-            if method in ("ema", "exponential"):
-                alpha = 2.0 / (period + 1)
-                result = window[0]
-                for v in window[1:]: result = alpha * v + (1 - alpha) * result
-                return float(result)
-            return float(np.mean(window[-period:]))
-
-        def ema(self, period=14, shift=0):
-            return self.ma(period, shift, "ema")
-
-        def rsi(self, period=14, shift=0):
-            data = self._get_close()
-            if len(data) < period + shift + 1: return 50.0
-            window = data[:len(data)-shift] if shift > 0 else data
-            deltas = np.diff(window[-period-1:])
-            gains = np.sum(deltas[deltas > 0])
-            losses = -np.sum(deltas[deltas < 0])
-            if losses == 0: return 100.0 if gains > 0 else 50.0
-            rs = gains / losses
-            return float(100.0 - 100.0 / (1.0 + rs))
-
-        def bands(self, period=20, deviation=2.0, shift=0):
-            data = self._get_close()
-            if len(data) < period: return (0.0, 0.0, 0.0)
-            middle = self.ma(period, shift, "sma")
-            window = data[:len(data)-shift] if shift > 0 else data
-            std = float(np.std(window[-period:]))
-            return (middle + deviation * std, middle, middle - deviation * std)
-
-        def macd(self, fast=12, slow=26, signal=9, shift=0):
-            return (0.0, 0.0, 0.0)
-
-        def atr(self, period=14, shift=0):
-            return 0.001
-
-        def stochastic(self, k_period=5, d_period=3, shift=0):
-            return (50.0, 50.0)
-
-        def cci(self, period=14, shift=0):
-            return 0.0
-
-        def i_custom(self, name, params=(), buffer=0, shift=0):
-            return 0.0
-
-    return LiveIndicators()
-
-
 def process_bar(code: str, bar_context: dict) -> Dict[str, Any]:
     """Process one bar event through the SDK strategy.
 
@@ -151,10 +79,10 @@ def process_bar(code: str, bar_context: dict) -> Dict[str, Any]:
     try:
         # Initialize or reuse runtime.
         if _runtime is None or _runtime_hash != code_hash:
-            strategy_cls = _load_strategy(code)
+            strategy_cls = load_sdk_strategy(code)
             broker = build_live_broker_from_proto(bar_context)
             bars_fn = _build_bars_provider(bar_context)
-            indicators = _build_indicators(bars_fn)
+            indicators = SDKIndicators(bars_fn)
 
             _runtime = StrategyRuntime(
                 strategy_class=strategy_cls,
