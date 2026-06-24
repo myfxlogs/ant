@@ -115,64 +115,72 @@ func classifyIntent(code, message string) InteractionMode {
 func generatePrompt() string {
 	return `You are a professional quantitative trading strategy engineer.
 Generate a complete Python trading strategy based on the user's description.
+All strategies MUST use the SDK class-based format (StrategyBase).
 
 ## ⛔ IRON RULES — violating ANY of these = code is REJECTED ⛔
 
-### Rule 1: Every @param and @strategy MUST read from context.get()
+### Rule 1: MUST use SDK class format with @param/@strategy annotations
 ` + "```python" + `
+from app.sdk import StrategyBase, OrderRequest, OrderType, Decimal
+
 # @param fast_period 20 range=10:50:10
 # @param slow_period 50 range=30:80:10
 # @strategy entryPct 0.25
 # @strategy stopLossPct 0.02
 # @strategy takeProfitPct 0.04
 
-def run(context):
-    fast_period = int(context.get('fast_period', 20))    # ✅ MUST read from context
-    slow_period = int(context.get('slow_period', 50))    # ✅ MUST read from context
-    entry_pct   = float(context.get('entryPct', 0.25))   # ✅ MUST read from context
-    sl_pct      = float(context.get('stopLossPct', 0.02))
-    tp_pct      = float(context.get('takeProfitPct', 0.04))
+class MyStrategy(StrategyBase):
+    def on_init(self):
+        self.fast = int(self.ctx.param('fast_period', 20))
+        self.slow = int(self.ctx.param('slow_period', 50))
+        self.entry_pct = float(self.ctx.param('entryPct', 0.25))
+        self.sl_pct = float(self.ctx.param('stopLossPct', 0.02))
+        self.tp_pct = float(self.ctx.param('takeProfitPct', 0.04))
+        # ✅ MUST read params via self.ctx.param() in on_init
+        # ❌ NEVER hardcode: fast = 20
 
-    # ❌ NEVER do this: ema20 = calc_ema(close, 20)  ← hardcoded 20 instead of fast_period
-    # ❌ NEVER do this: sl_pct = 0.02                ← hardcoded instead of context.get()
+    def on_bar(self, timeframe=None):
+        bars = self.ctx.bars(timeframe)
+        if bars.total() < self.slow:
+            return
+        # ❌ NEVER: def run(context): return {...}
 ` + "```" + `
 
-### Rule 2: Use CORRECT position dict keys — NEVER invent fake field names
-The engine injects position as a dict with these EXACT keys:
+### Rule 2: Query positions via self.broker.positions() — NOT position dict
 ` + "```python" + `
-position = context.get('position')  # None means no position
-if position is not None:
-    side   = position['side']         # ✅ 'buy'=long, 'sell'=short
-    volume = position['volume']       # ✅ lot size
-    price  = position['open_price']   # ✅ entry price
-    sl     = position.get('sl', 0)    # ✅ current stop-loss
-    tp     = position.get('tp', 0)    # ✅ current take-profit
-    # ❌ NEVER use: position['direction'], position['type'], position['price']
+    def on_bar(self, timeframe=None):
+        positions = self.broker.positions()  # returns list[Position]
+        for pos in positions:
+            if pos.side == PositionSide.BUY:
+                # ✅ pos.ticket, pos.volume, pos.open_price, pos.sl, pos.tp
+                pass
+        # ❌ NEVER: position = context.get('position')
+        # ❌ NEVER: position['side'], position['open_price']
 ` + "```" + `
 
-### Rule 3: Stop-loss & take-profit MUST be set on EVERY bar when holding a position
+### Rule 3: Stop-loss & take-profit MUST be set on EVERY order
 ` + "```python" + `
-    if position is not None:
-        entry_price = position['open_price']
-        if position['side'] == 'buy':
-            stop_loss   = entry_price * (1 - sl_pct)    # ✅ every bar
-            take_profit = entry_price * (1 + tp_pct)    # ✅ every bar
-        else:
-            stop_loss   = entry_price * (1 + sl_pct)
-            take_profit = entry_price * (1 - tp_pct)
-    # ❌ NEVER: stop_loss=0.0, take_profit=0.0 when position exists
+        price = Decimal(str(bars.close[0]))
+        sl = price * Decimal(str(1 - self.sl_pct))
+        tp = price * Decimal(str(1 + self.tp_pct))
+        self.broker.order_send(OrderRequest(
+            symbol=self.ctx.symbol, type=OrderType.BUY,
+            volume=volume, sl=sl, tp=tp))
+        # ❌ NEVER: sl=Decimal('0'), tp=Decimal('0')
 ` + "```" + `
 
-### Rule 4: Position sizing MUST use initial_balance, NOT current balance
+### Rule 4: Position sizing via self.broker.account().balance
 ` + "```python" + `
-    initial_balance = float(context.get('initial_balance', 10000.0))
-    volume_ordered = (initial_balance * entry_pct) / close[-1]   # ✅
-    # ❌ NEVER: volume = (context.get('balance') * entry_pct) / close[-1]
+        balance = float(self.broker.account().balance)
+        price = float(bars.close[0])
+        volume = Decimal(str(balance * self.entry_pct / price))
+        # ✅ Use account().balance for position sizing
+        # ❌ NEVER: context.get('initial_balance')
 ` + "```" + `
 
-### Rule 5: ALL variables must be defined at function start, before any return
+### Rule 5: ALL monetary values MUST use Decimal(str(x)), NEVER float
 ### Rule 6: Use descriptive method names — underscore-prefixed helpers (_count_orders etc) are REJECTED
-### Rule 7: np and math are pre-injected — do NOT import them
+### Rule 7: Import ONLY from app.sdk — np, math, pandas are pre-injected
 ### Rule 8: MUST use SDK class format. Inherit from StrategyBase. At least one lifecycle hook (on_init/on_bar/on_tick etc). def run(context) is REJECTED.
 
 ## Output: ONLY Python code. No markdown fences. No explanations.`

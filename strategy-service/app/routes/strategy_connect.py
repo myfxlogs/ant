@@ -27,7 +27,7 @@ from app.python_strategy_pb2 import (
 # (imported by python_strategy.proto via strategy_messages.proto)
 from app.strategy_signal_messages_pb2 import StrategySignal
 from app.engine.params_extractor import extract_required_params
-from app.engine.sandbox import StrategyRunner, StrategyRuntimeError, validate_strategy_code
+from app.engine.sandbox import StrategyRunner as _LegacyStrategyRunner, StrategyRuntimeError, validate_strategy_code
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -186,7 +186,8 @@ async def execute_strategy_connect(request: Request):
         }
 
         timeout_seconds = int(os.getenv("BACKTEST_TIMEOUT", "120"))
-        runner = StrategyRunner(req.code or "", timeout_ms=timeout_seconds * 1000)
+        # TODO(D10): replace _LegacyStrategyRunner with proper SDK execution.
+        runner = _LegacyStrategyRunner(req.code or "", timeout_ms=timeout_seconds * 1000)
         loop = asyncio.get_event_loop()
         signal_data = await asyncio.wait_for(
             loop.run_in_executor(None, runner.call, context),

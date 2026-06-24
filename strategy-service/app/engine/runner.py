@@ -28,7 +28,7 @@ from app.engine.margin import MarginModel
 from app.engine.market import MarketSimulator, MultiSymbolMarket, TickSimulator
 from app.engine.metrics import build_metrics
 from app.engine.portfolio import Portfolio
-from app.engine.sandbox import StrategyRunner, code_sha256
+from app.engine.sandbox import StrategyRunner as _LegacyStrategyRunner, code_sha256
 from app.engine.sandbox_base import BaseSandbox
 from app.engine.vectorized_runner import (
     DataFrameStrategyRunner,
@@ -124,7 +124,10 @@ class BacktestRunner:
             contract_size=contract_size,
         )
         self._margin = MarginModel(req.leverage, contract_size)
-        self._sandbox = sandbox if sandbox is not None else StrategyRunner(req.strategy_code, timeout_ms=req.deadline_ms)
+        # TODO(D10): replace _LegacyStrategyRunner with per-run BacktestSandbox.
+        # The current per-bar sandbox.call(ctx) model needs restructuring to
+        # use SDK-native SimBroker + StrategyRuntime directly in the runner loop.
+        self._sandbox = sandbox if sandbox is not None else _LegacyStrategyRunner(req.strategy_code, timeout_ms=req.deadline_ms)
 
         # Vectorized mode: if the strategy defines run_dataframe, pre-compute
         # the signal DataFrame once before the main loop starts.

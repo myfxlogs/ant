@@ -336,18 +336,25 @@ def _raise_async(thread_id: int, exc_class: type) -> int:
 
 
 class StrategyRunner(BaseSandbox):
-    """Compile once, execute per bar.
+    """In-process sandbox — compiles once, executes per bar.
 
     M7.7: In production mode, the sandbox is blocked entirely.
     Production paths use DSL + ONNX; Python execution is research-only.
 
-    .. deprecated::
-        The ``threading.Timer`` + ``PyThreadState_SetAsyncExc`` timeout
-        mechanism is preserved for backward compatibility but is ineffective
-        against C extensions and blocking syscalls (V3-R-8).
-        Prefer :class:`app.engine.backtest_sandbox.BacktestSandbox` or
-        :class:`app.engine.live_sandbox.LiveWorker` for process-level
-        isolation via ``multiprocessing.spawn``.
+    .. warning::
+       **Legacy.**  This runner predates the SDK-only migration (ADR-0020).
+       It uses ``threading.Timer`` + ``PyThreadState_SetAsyncExc`` which
+       cannot interrupt C extensions or blocking syscalls.
+
+       The current backtest execution path in ``runner.py`` still uses this
+       as the default sandbox via per-bar ``call(ctx)``.  A future refactor
+       (D10) will restructure the runner loop to use SDK-native
+       ``SimBroker`` + ``StrategyRuntime`` directly, eliminating the need
+       for this class entirely.
+
+       For process-level isolation use:
+       - :class:`app.engine.backtest_sandbox.BacktestSandbox`
+       - :class:`app.engine.live_sandbox.LiveWorker`
     """
 
     def __init__(self, source: str, timeout_ms: int = 30_000) -> None:
