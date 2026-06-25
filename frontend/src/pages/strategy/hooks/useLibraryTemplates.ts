@@ -9,6 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { StrategyTemplate } from '@/client/strategy';
 import { strategyTemplateApi, type CreateTemplateRequest } from '@/client/strategy-schedules';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
+import { buildParamI18n } from '@/utils/paramLabel';
 import { useAuthStore } from '@/stores/authStore';
 import { isSystemTemplate } from './libraryTypes';
 
@@ -125,23 +126,8 @@ export function useLibraryTemplates() {
       } else if (validationResult?.parametersJson) {
         try { params = JSON.parse(validationResult.parametersJson); } catch { /* ignore */ }
       }
-      // Build i18n from extracted params.
-      let i18n = '';
-      try {
-        if (params.length > 0) {
-          const names = params.map((p: any) => p.name || '');
-          const translations = await codeAssistApi.translateParamLabels(names);
-          const i18nObj: any = { params: {} };
-          for (const p of params) {
-            const labels: Record<string, string> = {};
-            for (const locale of ['en', 'zh-cn', 'zh-tw', 'ja', 'vi'] as const) {
-              labels[locale] = (translations as any)[locale]?.[p.name] || p.name;
-            }
-            i18nObj.params[p.name] = { label: labels };
-          }
-          i18n = JSON.stringify(i18nObj);
-        }
-      } catch { /* i18n is optional */ }
+      // Build i18n from extracted params (best-effort, never blocks save).
+      const i18n = params.length > 0 ? await buildParamI18n(validationResult?.parametersJson || '') : '';
 
       const data: CreateTemplateRequest = { name: String(values.name || ''), description: String(values.description || ''), code, parameters: params as any[], isPublic: Boolean(values.isPublic) || false, tags: [], i18n };
       if (editing) { await strategyTemplateApi.update({ id: editing.id, ...data }); message.success(t(MESSAGES_TEMPLATE_UPDATED_KEY)); }

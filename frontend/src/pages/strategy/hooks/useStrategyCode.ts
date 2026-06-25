@@ -6,6 +6,7 @@ import { COPY_FAILED_KEY, COPY_SUCCESS_KEY, SAVE_SUCCESS_KEY, VALIDATE_BEFORE_SA
 ;
 import { strategyApi, type StrategyTemplate } from '@/client/strategy';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
+import { buildParamI18n } from '@/utils/paramLabel';
 import type { TemplateParameter } from '@/gen/ant/v1/strategy_template_entity_pb';
 
 export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExtendedResult) => void }) {
@@ -76,28 +77,6 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
     } catch (e: unknown) { message.error((e as Error)?.message || 'Failed to load template'); return null; }
   }, []);
 
-  // Translate param labels and build TemplateI18n JSON for storage.
-  const _buildI18n = useCallback(async (): Promise<string> => {
-    if (!validationResult?.parametersJson) return '';
-    try {
-      const params: { name: string }[] = JSON.parse(validationResult.parametersJson);
-      const names = params.map(p => p.name);
-      if (names.length === 0) return '';
-      const translations = await codeAssistApi.translateParamLabels(names);
-      const i18n = {
-        params: {} as Record<string, { label: Record<string, string> }>,
-      };
-      for (const { name } of params) {
-        const labels: Record<string, string> = {};
-        for (const locale of ['en', 'zh-cn', 'zh-tw', 'ja', 'vi'] as const) {
-          labels[locale] = translations[locale]?.[name] || name;
-        }
-        i18n.params[name] = { label: labels };
-      }
-      return JSON.stringify(i18n);
-    } catch { return ''; }
-  }, [validationResult]);
-
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveForm] = Form.useForm();
@@ -109,7 +88,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
     if (loadedTemplate) {
       setSaveLoading(true);
       try {
-        const i18n = await _buildI18n();
+        const i18n = await buildParamI18n(validationResult?.parametersJson || '');
         await strategyApi.updateTemplate({
           id: loadedTemplate.id, code,
           parameters: _validatedParams(),
@@ -119,13 +98,13 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
       } catch (e: unknown) { message.error((e as Error)?.message || 'Save failed'); }
       finally { setSaveLoading(false); }
     } else { setSaveModalOpen(true); }
-  }, [code, canSave, loadedTemplate, t, loadTemplates, _validatedParams, _buildI18n]);
+  }, [code, canSave, loadedTemplate, t, loadTemplates, _validatedParams, validationResult]);
 
   const handleSaveAs = useCallback(() => { saveForm.resetFields(); setSaveModalOpen(true); }, [saveForm]);
   const handleSaveModalOk = useCallback(async () => {
     try {
       const values = await saveForm.validateFields(); setSaveLoading(true);
-      const i18n = await _buildI18n();
+      const i18n = await buildParamI18n(validationResult?.parametersJson || '');
       const tpl = await strategyApi.createTemplate({
         name: values.name, description: values.description || '', code,
         parameters: _validatedParams(),
@@ -139,7 +118,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
       if (err?.message) message.error(err.message);
     }
     finally { setSaveLoading(false); }
-  }, [code, saveForm, t, loadTemplates, _validatedParams, _buildI18n]);
+  }, [code, saveForm, t, loadTemplates, _validatedParams, validationResult]);
 
   const handleCopy = useCallback(() => {
     if (!code) return;
