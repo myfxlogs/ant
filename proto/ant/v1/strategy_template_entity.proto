@@ -20,6 +20,8 @@ message StrategyTemplate {
   google.protobuf.Timestamp created_at = 10;
   google.protobuf.Timestamp updated_at = 11;
   bool is_system = 13;
+  // I18n data for parameter labels (JSON-encoded TemplateI18n).
+  string i18n = 14;
 }
 
 message TemplateParameter {

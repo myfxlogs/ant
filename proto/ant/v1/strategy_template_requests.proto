@@ -23,6 +23,8 @@ message CreateTemplateRequest {
   repeated TemplateParameter parameters = 4;
   bool is_public = 5;
   repeated string tags = 6;
+  // I18n data for parameter labels (JSON-encoded TemplateI18n).
+  string i18n = 7;
 }
 
 message CreateTemplateDraftRequest {
@@ -54,6 +56,8 @@ message UpdateTemplateRequest {
   repeated TemplateParameter parameters = 5;
   optional bool is_public = 6;
   repeated string tags = 7;
+  // I18n data for parameter labels (JSON-encoded TemplateI18n).
+  optional string i18n = 8;
 }
 
 message DeleteTemplateRequest {

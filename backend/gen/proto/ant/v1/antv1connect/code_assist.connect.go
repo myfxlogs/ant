@@ -48,6 +48,9 @@ const (
 	// CodeAssistServiceTransformCodeProcedure is the fully-qualified name of the CodeAssistService's
 	// TransformCode RPC.
 	CodeAssistServiceTransformCodeProcedure = "/ant.v1.CodeAssistService/TransformCode"
+	// CodeAssistServiceTranslateParamLabelsProcedure is the fully-qualified name of the
+	// CodeAssistService's TranslateParamLabels RPC.
+	CodeAssistServiceTranslateParamLabelsProcedure = "/ant.v1.CodeAssistService/TranslateParamLabels"
 )
 
 // CodeAssistServiceClient is a client for the ant.v1.CodeAssistService service.
@@ -58,6 +61,8 @@ type CodeAssistServiceClient interface {
 	ValidateStrategyExtended(context.Context, *connect.Request[v1.ValidateStrategyExtendedRequest]) (*connect.Response[v1.ValidateStrategyExtendedResponse], error)
 	// TransformCode translates EA/indicator code (MQL4/MQL5) to Python strategy code.
 	TransformCode(context.Context, *connect.Request[v1.TransformCodeRequest]) (*connect.Response[v1.TransformCodeResponse], error)
+	// TranslateParamLabels translates strategy parameter labels to all supported locales.
+	TranslateParamLabels(context.Context, *connect.Request[v1.TranslateParamLabelsRequest]) (*connect.Response[v1.TranslateParamLabelsResponse], error)
 }
 
 // NewCodeAssistServiceClient constructs a client for the ant.v1.CodeAssistService service. By
@@ -101,6 +106,12 @@ func NewCodeAssistServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(codeAssistServiceMethods.ByName("TransformCode")),
 			connect.WithClientOptions(opts...),
 		),
+		translateParamLabels: connect.NewClient[v1.TranslateParamLabelsRequest, v1.TranslateParamLabelsResponse](
+			httpClient,
+			baseURL+CodeAssistServiceTranslateParamLabelsProcedure,
+			connect.WithSchema(codeAssistServiceMethods.ByName("TranslateParamLabels")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -111,6 +122,7 @@ type codeAssistServiceClient struct {
 	explainCode              *connect.Client[v1.ExplainCodeRequest, v1.ExplainCodeResponse]
 	validateStrategyExtended *connect.Client[v1.ValidateStrategyExtendedRequest, v1.ValidateStrategyExtendedResponse]
 	transformCode            *connect.Client[v1.TransformCodeRequest, v1.TransformCodeResponse]
+	translateParamLabels     *connect.Client[v1.TranslateParamLabelsRequest, v1.TranslateParamLabelsResponse]
 }
 
 // ReviseCode calls ant.v1.CodeAssistService.ReviseCode.
@@ -138,6 +150,11 @@ func (c *codeAssistServiceClient) TransformCode(ctx context.Context, req *connec
 	return c.transformCode.CallUnary(ctx, req)
 }
 
+// TranslateParamLabels calls ant.v1.CodeAssistService.TranslateParamLabels.
+func (c *codeAssistServiceClient) TranslateParamLabels(ctx context.Context, req *connect.Request[v1.TranslateParamLabelsRequest]) (*connect.Response[v1.TranslateParamLabelsResponse], error) {
+	return c.translateParamLabels.CallUnary(ctx, req)
+}
+
 // CodeAssistServiceHandler is an implementation of the ant.v1.CodeAssistService service.
 type CodeAssistServiceHandler interface {
 	ReviseCode(context.Context, *connect.Request[v1.ReviseCodeRequest]) (*connect.Response[v1.ReviseCodeResponse], error)
@@ -146,6 +163,8 @@ type CodeAssistServiceHandler interface {
 	ValidateStrategyExtended(context.Context, *connect.Request[v1.ValidateStrategyExtendedRequest]) (*connect.Response[v1.ValidateStrategyExtendedResponse], error)
 	// TransformCode translates EA/indicator code (MQL4/MQL5) to Python strategy code.
 	TransformCode(context.Context, *connect.Request[v1.TransformCodeRequest]) (*connect.Response[v1.TransformCodeResponse], error)
+	// TranslateParamLabels translates strategy parameter labels to all supported locales.
+	TranslateParamLabels(context.Context, *connect.Request[v1.TranslateParamLabelsRequest]) (*connect.Response[v1.TranslateParamLabelsResponse], error)
 }
 
 // NewCodeAssistServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -185,6 +204,12 @@ func NewCodeAssistServiceHandler(svc CodeAssistServiceHandler, opts ...connect.H
 		connect.WithSchema(codeAssistServiceMethods.ByName("TransformCode")),
 		connect.WithHandlerOptions(opts...),
 	)
+	codeAssistServiceTranslateParamLabelsHandler := connect.NewUnaryHandler(
+		CodeAssistServiceTranslateParamLabelsProcedure,
+		svc.TranslateParamLabels,
+		connect.WithSchema(codeAssistServiceMethods.ByName("TranslateParamLabels")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.CodeAssistService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case CodeAssistServiceReviseCodeProcedure:
@@ -197,6 +222,8 @@ func NewCodeAssistServiceHandler(svc CodeAssistServiceHandler, opts ...connect.H
 			codeAssistServiceValidateStrategyExtendedHandler.ServeHTTP(w, r)
 		case CodeAssistServiceTransformCodeProcedure:
 			codeAssistServiceTransformCodeHandler.ServeHTTP(w, r)
+		case CodeAssistServiceTranslateParamLabelsProcedure:
+			codeAssistServiceTranslateParamLabelsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -224,4 +251,8 @@ func (UnimplementedCodeAssistServiceHandler) ValidateStrategyExtended(context.Co
 
 func (UnimplementedCodeAssistServiceHandler) TransformCode(context.Context, *connect.Request[v1.TransformCodeRequest]) (*connect.Response[v1.TransformCodeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.CodeAssistService.TransformCode is not implemented"))
+}
+
+func (UnimplementedCodeAssistServiceHandler) TranslateParamLabels(context.Context, *connect.Request[v1.TranslateParamLabelsRequest]) (*connect.Response[v1.TranslateParamLabelsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.CodeAssistService.TranslateParamLabels is not implemented"))
 }

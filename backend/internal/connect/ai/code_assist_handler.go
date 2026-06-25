@@ -411,6 +411,57 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	}), nil
 }
 
+func (s *CodeAssistServer) TranslateParamLabels(ctx context.Context, req *connect.Request[antv1.TranslateParamLabelsRequest]) (*connect.Response[antv1.TranslateParamLabelsResponse], error) {
+	names := req.Msg.ParamNames
+	if len(names) == 0 {
+		return connect.NewResponse(&antv1.TranslateParamLabelsResponse{}), nil
+	}
+
+	uid, err := userIDFromCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	namesJSON, _ := json.Marshal(names)
+	prompt := fmt.Sprintf(translateParamLabelsPrompt, string(namesJSON))
+	messages := systemai.BuildChatMessages("You are a financial translator. Respond with ONLY valid JSON, no markdown fences.", prompt, nil)
+	result, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
+	if err != nil {
+		s.log.Warn("CodeAssist: TranslateParamLabels failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("translation failed: %w", err))
+	}
+
+	// Parse AI JSON response into translation map.
+	var parsed map[string]map[string]string // locale → param_name → translation
+	if err := json.Unmarshal([]byte(strings.TrimSpace(result)), &parsed); err != nil {
+		s.log.Warn("CodeAssist: TranslateParamLabels JSON parse failed", zap.Error(err), zap.String("raw", result))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("translation parse failed"))
+	}
+
+	// Convert to proto type.
+	translations := make(map[string]*antv1.ParamLabelMap)
+	for locale, labels := range parsed {
+		translations[locale] = &antv1.ParamLabelMap{Labels: labels}
+	}
+	return connect.NewResponse(&antv1.TranslateParamLabelsResponse{Translations: translations}), nil
+}
+
+const translateParamLabelsPrompt = `Translate these trading strategy parameter names into 5 languages.
+Parameters: %s
+
+Return a JSON object keyed by locale code. Each locale contains a map from the original parameter name to the translated label.
+
+Supported locales: "en", "zh-cn", "zh-tw", "ja", "vi"
+
+Rules:
+- Preserve financial/quant terminology precision
+- Keep translations short (1-4 words)
+- "en" labels should use standard trading vocabulary (e.g. "Lot Size", not "Hand Count")
+- If a name is already in the target language, keep it unchanged
+- Do NOT translate proper nouns or magic numbers
+
+Example: For parameter "翻倍", return {"en": "Multiplier", "zh-tw": "翻倍", "ja": "倍率", "vi": "Hệ số nhân"}`
+
 func buildValidationPrompt() string {
 	return "You are a trading strategy code validator. " +
 		"Review the following Python strategy code and identify issues. " +

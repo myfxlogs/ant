@@ -21,6 +21,141 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type TranslateParamLabelsRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Parameter names to translate (the raw names from self.ctx.param() calls).
+	ParamNames    []string `protobuf:"bytes,1,rep,name=param_names,json=paramNames,proto3" json:"param_names,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TranslateParamLabelsRequest) Reset() {
+	*x = TranslateParamLabelsRequest{}
+	mi := &file_code_assist_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TranslateParamLabelsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TranslateParamLabelsRequest) ProtoMessage() {}
+
+func (x *TranslateParamLabelsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_code_assist_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TranslateParamLabelsRequest.ProtoReflect.Descriptor instead.
+func (*TranslateParamLabelsRequest) Descriptor() ([]byte, []int) {
+	return file_code_assist_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *TranslateParamLabelsRequest) GetParamNames() []string {
+	if x != nil {
+		return x.ParamNames
+	}
+	return nil
+}
+
+type TranslateParamLabelsResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// translations[locale][param_name] = translated_label
+	// Top-level keys are locale codes: "en", "zh-cn", "zh-tw", "ja", "vi"
+	Translations  map[string]*ParamLabelMap `protobuf:"bytes,1,rep,name=translations,proto3" json:"translations,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TranslateParamLabelsResponse) Reset() {
+	*x = TranslateParamLabelsResponse{}
+	mi := &file_code_assist_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TranslateParamLabelsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TranslateParamLabelsResponse) ProtoMessage() {}
+
+func (x *TranslateParamLabelsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_code_assist_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TranslateParamLabelsResponse.ProtoReflect.Descriptor instead.
+func (*TranslateParamLabelsResponse) Descriptor() ([]byte, []int) {
+	return file_code_assist_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *TranslateParamLabelsResponse) GetTranslations() map[string]*ParamLabelMap {
+	if x != nil {
+		return x.Translations
+	}
+	return nil
+}
+
+type ParamLabelMap struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Labels        map[string]string      `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ParamLabelMap) Reset() {
+	*x = ParamLabelMap{}
+	mi := &file_code_assist_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ParamLabelMap) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ParamLabelMap) ProtoMessage() {}
+
+func (x *ParamLabelMap) ProtoReflect() protoreflect.Message {
+	mi := &file_code_assist_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ParamLabelMap.ProtoReflect.Descriptor instead.
+func (*ParamLabelMap) Descriptor() ([]byte, []int) {
+	return file_code_assist_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ParamLabelMap) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
 type CodeChatMessage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Role          string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
@@ -31,7 +166,7 @@ type CodeChatMessage struct {
 
 func (x *CodeChatMessage) Reset() {
 	*x = CodeChatMessage{}
-	mi := &file_code_assist_proto_msgTypes[0]
+	mi := &file_code_assist_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -43,7 +178,7 @@ func (x *CodeChatMessage) String() string {
 func (*CodeChatMessage) ProtoMessage() {}
 
 func (x *CodeChatMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[0]
+	mi := &file_code_assist_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56,7 +191,7 @@ func (x *CodeChatMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CodeChatMessage.ProtoReflect.Descriptor instead.
 func (*CodeChatMessage) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{0}
+	return file_code_assist_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *CodeChatMessage) GetRole() string {
@@ -86,7 +221,7 @@ type ReviseCodeRequest struct {
 
 func (x *ReviseCodeRequest) Reset() {
 	*x = ReviseCodeRequest{}
-	mi := &file_code_assist_proto_msgTypes[1]
+	mi := &file_code_assist_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -98,7 +233,7 @@ func (x *ReviseCodeRequest) String() string {
 func (*ReviseCodeRequest) ProtoMessage() {}
 
 func (x *ReviseCodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[1]
+	mi := &file_code_assist_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -111,7 +246,7 @@ func (x *ReviseCodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReviseCodeRequest.ProtoReflect.Descriptor instead.
 func (*ReviseCodeRequest) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{1}
+	return file_code_assist_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ReviseCodeRequest) GetCode() string {
@@ -159,7 +294,7 @@ type ReviseCodeResponse struct {
 
 func (x *ReviseCodeResponse) Reset() {
 	*x = ReviseCodeResponse{}
-	mi := &file_code_assist_proto_msgTypes[2]
+	mi := &file_code_assist_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -171,7 +306,7 @@ func (x *ReviseCodeResponse) String() string {
 func (*ReviseCodeResponse) ProtoMessage() {}
 
 func (x *ReviseCodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[2]
+	mi := &file_code_assist_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -184,7 +319,7 @@ func (x *ReviseCodeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReviseCodeResponse.ProtoReflect.Descriptor instead.
 func (*ReviseCodeResponse) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{2}
+	return file_code_assist_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ReviseCodeResponse) GetText() string {
@@ -212,7 +347,7 @@ type ReviseCodeStreamChunk struct {
 
 func (x *ReviseCodeStreamChunk) Reset() {
 	*x = ReviseCodeStreamChunk{}
-	mi := &file_code_assist_proto_msgTypes[3]
+	mi := &file_code_assist_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -224,7 +359,7 @@ func (x *ReviseCodeStreamChunk) String() string {
 func (*ReviseCodeStreamChunk) ProtoMessage() {}
 
 func (x *ReviseCodeStreamChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[3]
+	mi := &file_code_assist_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -237,7 +372,7 @@ func (x *ReviseCodeStreamChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReviseCodeStreamChunk.ProtoReflect.Descriptor instead.
 func (*ReviseCodeStreamChunk) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{3}
+	return file_code_assist_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ReviseCodeStreamChunk) GetDelta() string {
@@ -271,7 +406,7 @@ type ExplainCodeRequest struct {
 
 func (x *ExplainCodeRequest) Reset() {
 	*x = ExplainCodeRequest{}
-	mi := &file_code_assist_proto_msgTypes[4]
+	mi := &file_code_assist_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -283,7 +418,7 @@ func (x *ExplainCodeRequest) String() string {
 func (*ExplainCodeRequest) ProtoMessage() {}
 
 func (x *ExplainCodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[4]
+	mi := &file_code_assist_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -296,7 +431,7 @@ func (x *ExplainCodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExplainCodeRequest.ProtoReflect.Descriptor instead.
 func (*ExplainCodeRequest) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{4}
+	return file_code_assist_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ExplainCodeRequest) GetCode() string {
@@ -322,7 +457,7 @@ type ExplainCodeResponse struct {
 
 func (x *ExplainCodeResponse) Reset() {
 	*x = ExplainCodeResponse{}
-	mi := &file_code_assist_proto_msgTypes[5]
+	mi := &file_code_assist_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -334,7 +469,7 @@ func (x *ExplainCodeResponse) String() string {
 func (*ExplainCodeResponse) ProtoMessage() {}
 
 func (x *ExplainCodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[5]
+	mi := &file_code_assist_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -347,7 +482,7 @@ func (x *ExplainCodeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExplainCodeResponse.ProtoReflect.Descriptor instead.
 func (*ExplainCodeResponse) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{5}
+	return file_code_assist_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ExplainCodeResponse) GetExplanation() string {
@@ -366,7 +501,7 @@ type ValidateStrategyExtendedRequest struct {
 
 func (x *ValidateStrategyExtendedRequest) Reset() {
 	*x = ValidateStrategyExtendedRequest{}
-	mi := &file_code_assist_proto_msgTypes[6]
+	mi := &file_code_assist_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -378,7 +513,7 @@ func (x *ValidateStrategyExtendedRequest) String() string {
 func (*ValidateStrategyExtendedRequest) ProtoMessage() {}
 
 func (x *ValidateStrategyExtendedRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[6]
+	mi := &file_code_assist_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -391,7 +526,7 @@ func (x *ValidateStrategyExtendedRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateStrategyExtendedRequest.ProtoReflect.Descriptor instead.
 func (*ValidateStrategyExtendedRequest) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{6}
+	return file_code_assist_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ValidateStrategyExtendedRequest) GetCode() string {
@@ -421,7 +556,7 @@ type ValidateStrategyExtendedResponse struct {
 
 func (x *ValidateStrategyExtendedResponse) Reset() {
 	*x = ValidateStrategyExtendedResponse{}
-	mi := &file_code_assist_proto_msgTypes[7]
+	mi := &file_code_assist_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -433,7 +568,7 @@ func (x *ValidateStrategyExtendedResponse) String() string {
 func (*ValidateStrategyExtendedResponse) ProtoMessage() {}
 
 func (x *ValidateStrategyExtendedResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[7]
+	mi := &file_code_assist_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -446,7 +581,7 @@ func (x *ValidateStrategyExtendedResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateStrategyExtendedResponse.ProtoReflect.Descriptor instead.
 func (*ValidateStrategyExtendedResponse) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{7}
+	return file_code_assist_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ValidateStrategyExtendedResponse) GetValid() bool {
@@ -518,7 +653,7 @@ type RequiredParamSpec struct {
 
 func (x *RequiredParamSpec) Reset() {
 	*x = RequiredParamSpec{}
-	mi := &file_code_assist_proto_msgTypes[8]
+	mi := &file_code_assist_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -530,7 +665,7 @@ func (x *RequiredParamSpec) String() string {
 func (*RequiredParamSpec) ProtoMessage() {}
 
 func (x *RequiredParamSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[8]
+	mi := &file_code_assist_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -543,7 +678,7 @@ func (x *RequiredParamSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequiredParamSpec.ProtoReflect.Descriptor instead.
 func (*RequiredParamSpec) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{8}
+	return file_code_assist_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *RequiredParamSpec) GetKey() string {
@@ -592,7 +727,7 @@ type TransformCodeRequest struct {
 
 func (x *TransformCodeRequest) Reset() {
 	*x = TransformCodeRequest{}
-	mi := &file_code_assist_proto_msgTypes[9]
+	mi := &file_code_assist_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -604,7 +739,7 @@ func (x *TransformCodeRequest) String() string {
 func (*TransformCodeRequest) ProtoMessage() {}
 
 func (x *TransformCodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[9]
+	mi := &file_code_assist_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -617,7 +752,7 @@ func (x *TransformCodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransformCodeRequest.ProtoReflect.Descriptor instead.
 func (*TransformCodeRequest) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{9}
+	return file_code_assist_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *TransformCodeRequest) GetSourceCode() string {
@@ -652,7 +787,7 @@ type TransformCodeResponse struct {
 
 func (x *TransformCodeResponse) Reset() {
 	*x = TransformCodeResponse{}
-	mi := &file_code_assist_proto_msgTypes[10]
+	mi := &file_code_assist_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -664,7 +799,7 @@ func (x *TransformCodeResponse) String() string {
 func (*TransformCodeResponse) ProtoMessage() {}
 
 func (x *TransformCodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[10]
+	mi := &file_code_assist_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -677,7 +812,7 @@ func (x *TransformCodeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransformCodeResponse.ProtoReflect.Descriptor instead.
 func (*TransformCodeResponse) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{10}
+	return file_code_assist_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *TransformCodeResponse) GetTargetCode() string {
@@ -705,7 +840,20 @@ var File_code_assist_proto protoreflect.FileDescriptor
 
 const file_code_assist_proto_rawDesc = "" +
 	"\n" +
-	"\x11code_assist.proto\x12\x06ant.v1\x1a\x15python_strategy.proto\"?\n" +
+	"\x11code_assist.proto\x12\x06ant.v1\x1a\x15python_strategy.proto\">\n" +
+	"\x1bTranslateParamLabelsRequest\x12\x1f\n" +
+	"\vparam_names\x18\x01 \x03(\tR\n" +
+	"paramNames\"\xd2\x01\n" +
+	"\x1cTranslateParamLabelsResponse\x12Z\n" +
+	"\ftranslations\x18\x01 \x03(\v26.ant.v1.TranslateParamLabelsResponse.TranslationsEntryR\ftranslations\x1aV\n" +
+	"\x11TranslationsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12+\n" +
+	"\x05value\x18\x02 \x01(\v2\x15.ant.v1.ParamLabelMapR\x05value:\x028\x01\"\x85\x01\n" +
+	"\rParamLabelMap\x129\n" +
+	"\x06labels\x18\x01 \x03(\v2!.ant.v1.ParamLabelMap.LabelsEntryR\x06labels\x1a9\n" +
+	"\vLabelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"?\n" +
 	"\x0fCodeChatMessage\x12\x12\n" +
 	"\x04role\x18\x01 \x01(\tR\x04role\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\"\xb3\x01\n" +
@@ -758,14 +906,15 @@ const file_code_assist_proto_rawDesc = "" +
 	"\vtarget_code\x18\x01 \x01(\tR\n" +
 	"targetCode\x12 \n" +
 	"\vexplanation\x18\x02 \x01(\tR\vexplanation\x12#\n" +
-	"\rdetected_lang\x18\x03 \x01(\tR\fdetectedLang2\xad\x03\n" +
+	"\rdetected_lang\x18\x03 \x01(\tR\fdetectedLang2\x90\x04\n" +
 	"\x11CodeAssistService\x12C\n" +
 	"\n" +
 	"ReviseCode\x12\x19.ant.v1.ReviseCodeRequest\x1a\x1a.ant.v1.ReviseCodeResponse\x12N\n" +
 	"\x10ReviseCodeStream\x12\x19.ant.v1.ReviseCodeRequest\x1a\x1d.ant.v1.ReviseCodeStreamChunk0\x01\x12F\n" +
 	"\vExplainCode\x12\x1a.ant.v1.ExplainCodeRequest\x1a\x1b.ant.v1.ExplainCodeResponse\x12m\n" +
 	"\x18ValidateStrategyExtended\x12'.ant.v1.ValidateStrategyExtendedRequest\x1a(.ant.v1.ValidateStrategyExtendedResponse\x12L\n" +
-	"\rTransformCode\x12\x1c.ant.v1.TransformCodeRequest\x1a\x1d.ant.v1.TransformCodeResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\rTransformCode\x12\x1c.ant.v1.TransformCodeRequest\x1a\x1d.ant.v1.TransformCodeResponse\x12a\n" +
+	"\x14TranslateParamLabels\x12#.ant.v1.TranslateParamLabelsRequest\x1a$.ant.v1.TranslateParamLabelsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_code_assist_proto_rawDescOnce sync.Once
@@ -779,44 +928,54 @@ func file_code_assist_proto_rawDescGZIP() []byte {
 	return file_code_assist_proto_rawDescData
 }
 
-var file_code_assist_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_code_assist_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_code_assist_proto_goTypes = []any{
-	(*CodeChatMessage)(nil),                  // 0: ant.v1.CodeChatMessage
-	(*ReviseCodeRequest)(nil),                // 1: ant.v1.ReviseCodeRequest
-	(*ReviseCodeResponse)(nil),               // 2: ant.v1.ReviseCodeResponse
-	(*ReviseCodeStreamChunk)(nil),            // 3: ant.v1.ReviseCodeStreamChunk
-	(*ExplainCodeRequest)(nil),               // 4: ant.v1.ExplainCodeRequest
-	(*ExplainCodeResponse)(nil),              // 5: ant.v1.ExplainCodeResponse
-	(*ValidateStrategyExtendedRequest)(nil),  // 6: ant.v1.ValidateStrategyExtendedRequest
-	(*ValidateStrategyExtendedResponse)(nil), // 7: ant.v1.ValidateStrategyExtendedResponse
-	(*RequiredParamSpec)(nil),                // 8: ant.v1.RequiredParamSpec
-	(*TransformCodeRequest)(nil),             // 9: ant.v1.TransformCodeRequest
-	(*TransformCodeResponse)(nil),            // 10: ant.v1.TransformCodeResponse
-	(*CodeQualityHint)(nil),                  // 11: ant.v1.CodeQualityHint
-	(*SweepDimension)(nil),                   // 12: ant.v1.SweepDimension
-	(*StrategyDirective)(nil),                // 13: ant.v1.StrategyDirective
+	(*TranslateParamLabelsRequest)(nil),      // 0: ant.v1.TranslateParamLabelsRequest
+	(*TranslateParamLabelsResponse)(nil),     // 1: ant.v1.TranslateParamLabelsResponse
+	(*ParamLabelMap)(nil),                    // 2: ant.v1.ParamLabelMap
+	(*CodeChatMessage)(nil),                  // 3: ant.v1.CodeChatMessage
+	(*ReviseCodeRequest)(nil),                // 4: ant.v1.ReviseCodeRequest
+	(*ReviseCodeResponse)(nil),               // 5: ant.v1.ReviseCodeResponse
+	(*ReviseCodeStreamChunk)(nil),            // 6: ant.v1.ReviseCodeStreamChunk
+	(*ExplainCodeRequest)(nil),               // 7: ant.v1.ExplainCodeRequest
+	(*ExplainCodeResponse)(nil),              // 8: ant.v1.ExplainCodeResponse
+	(*ValidateStrategyExtendedRequest)(nil),  // 9: ant.v1.ValidateStrategyExtendedRequest
+	(*ValidateStrategyExtendedResponse)(nil), // 10: ant.v1.ValidateStrategyExtendedResponse
+	(*RequiredParamSpec)(nil),                // 11: ant.v1.RequiredParamSpec
+	(*TransformCodeRequest)(nil),             // 12: ant.v1.TransformCodeRequest
+	(*TransformCodeResponse)(nil),            // 13: ant.v1.TransformCodeResponse
+	nil,                                      // 14: ant.v1.TranslateParamLabelsResponse.TranslationsEntry
+	nil,                                      // 15: ant.v1.ParamLabelMap.LabelsEntry
+	(*CodeQualityHint)(nil),                  // 16: ant.v1.CodeQualityHint
+	(*SweepDimension)(nil),                   // 17: ant.v1.SweepDimension
+	(*StrategyDirective)(nil),                // 18: ant.v1.StrategyDirective
 }
 var file_code_assist_proto_depIdxs = []int32{
-	0,  // 0: ant.v1.ReviseCodeRequest.history:type_name -> ant.v1.CodeChatMessage
-	8,  // 1: ant.v1.ValidateStrategyExtendedResponse.parameters:type_name -> ant.v1.RequiredParamSpec
-	11, // 2: ant.v1.ValidateStrategyExtendedResponse.quality_hints:type_name -> ant.v1.CodeQualityHint
-	12, // 3: ant.v1.ValidateStrategyExtendedResponse.sweep_dimensions:type_name -> ant.v1.SweepDimension
-	13, // 4: ant.v1.ValidateStrategyExtendedResponse.strategy_directives:type_name -> ant.v1.StrategyDirective
-	1,  // 5: ant.v1.CodeAssistService.ReviseCode:input_type -> ant.v1.ReviseCodeRequest
-	1,  // 6: ant.v1.CodeAssistService.ReviseCodeStream:input_type -> ant.v1.ReviseCodeRequest
-	4,  // 7: ant.v1.CodeAssistService.ExplainCode:input_type -> ant.v1.ExplainCodeRequest
-	6,  // 8: ant.v1.CodeAssistService.ValidateStrategyExtended:input_type -> ant.v1.ValidateStrategyExtendedRequest
-	9,  // 9: ant.v1.CodeAssistService.TransformCode:input_type -> ant.v1.TransformCodeRequest
-	2,  // 10: ant.v1.CodeAssistService.ReviseCode:output_type -> ant.v1.ReviseCodeResponse
-	3,  // 11: ant.v1.CodeAssistService.ReviseCodeStream:output_type -> ant.v1.ReviseCodeStreamChunk
-	5,  // 12: ant.v1.CodeAssistService.ExplainCode:output_type -> ant.v1.ExplainCodeResponse
-	7,  // 13: ant.v1.CodeAssistService.ValidateStrategyExtended:output_type -> ant.v1.ValidateStrategyExtendedResponse
-	10, // 14: ant.v1.CodeAssistService.TransformCode:output_type -> ant.v1.TransformCodeResponse
-	10, // [10:15] is the sub-list for method output_type
-	5,  // [5:10] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	14, // 0: ant.v1.TranslateParamLabelsResponse.translations:type_name -> ant.v1.TranslateParamLabelsResponse.TranslationsEntry
+	15, // 1: ant.v1.ParamLabelMap.labels:type_name -> ant.v1.ParamLabelMap.LabelsEntry
+	3,  // 2: ant.v1.ReviseCodeRequest.history:type_name -> ant.v1.CodeChatMessage
+	11, // 3: ant.v1.ValidateStrategyExtendedResponse.parameters:type_name -> ant.v1.RequiredParamSpec
+	16, // 4: ant.v1.ValidateStrategyExtendedResponse.quality_hints:type_name -> ant.v1.CodeQualityHint
+	17, // 5: ant.v1.ValidateStrategyExtendedResponse.sweep_dimensions:type_name -> ant.v1.SweepDimension
+	18, // 6: ant.v1.ValidateStrategyExtendedResponse.strategy_directives:type_name -> ant.v1.StrategyDirective
+	2,  // 7: ant.v1.TranslateParamLabelsResponse.TranslationsEntry.value:type_name -> ant.v1.ParamLabelMap
+	4,  // 8: ant.v1.CodeAssistService.ReviseCode:input_type -> ant.v1.ReviseCodeRequest
+	4,  // 9: ant.v1.CodeAssistService.ReviseCodeStream:input_type -> ant.v1.ReviseCodeRequest
+	7,  // 10: ant.v1.CodeAssistService.ExplainCode:input_type -> ant.v1.ExplainCodeRequest
+	9,  // 11: ant.v1.CodeAssistService.ValidateStrategyExtended:input_type -> ant.v1.ValidateStrategyExtendedRequest
+	12, // 12: ant.v1.CodeAssistService.TransformCode:input_type -> ant.v1.TransformCodeRequest
+	0,  // 13: ant.v1.CodeAssistService.TranslateParamLabels:input_type -> ant.v1.TranslateParamLabelsRequest
+	5,  // 14: ant.v1.CodeAssistService.ReviseCode:output_type -> ant.v1.ReviseCodeResponse
+	6,  // 15: ant.v1.CodeAssistService.ReviseCodeStream:output_type -> ant.v1.ReviseCodeStreamChunk
+	8,  // 16: ant.v1.CodeAssistService.ExplainCode:output_type -> ant.v1.ExplainCodeResponse
+	10, // 17: ant.v1.CodeAssistService.ValidateStrategyExtended:output_type -> ant.v1.ValidateStrategyExtendedResponse
+	13, // 18: ant.v1.CodeAssistService.TransformCode:output_type -> ant.v1.TransformCodeResponse
+	1,  // 19: ant.v1.CodeAssistService.TranslateParamLabels:output_type -> ant.v1.TranslateParamLabelsResponse
+	14, // [14:20] is the sub-list for method output_type
+	8,  // [8:14] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_code_assist_proto_init() }
@@ -831,7 +990,7 @@ func file_code_assist_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_code_assist_proto_rawDesc), len(file_code_assist_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

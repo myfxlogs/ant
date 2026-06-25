@@ -13,6 +13,23 @@ service CodeAssistService {
   rpc ValidateStrategyExtended(ValidateStrategyExtendedRequest) returns (ValidateStrategyExtendedResponse);
   // TransformCode translates EA/indicator code (MQL4/MQL5) to Python strategy code.
   rpc TransformCode(TransformCodeRequest) returns (TransformCodeResponse);
+  // TranslateParamLabels translates strategy parameter labels to all supported locales.
+  rpc TranslateParamLabels(TranslateParamLabelsRequest) returns (TranslateParamLabelsResponse);
+}
+
+message TranslateParamLabelsRequest {
+  // Parameter names to translate (the raw names from self.ctx.param() calls).
+  repeated string param_names = 1;
+}
+
+message TranslateParamLabelsResponse {
+  // translations[locale][param_name] = translated_label
+  // Top-level keys are locale codes: "en", "zh-cn", "zh-tw", "ja", "vi"
+  map<string, ParamLabelMap> translations = 1;
+}
+
+message ParamLabelMap {
+  map<string, string> labels = 1;
 }
 
 message CodeChatMessage {

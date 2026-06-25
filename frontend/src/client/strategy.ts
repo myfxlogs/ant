@@ -47,6 +47,7 @@ export const strategyApi = {
     parameters?: PartialMessage<TemplateParameter>[];
     isPublic?: boolean;
     tags?: string[];
+    i18n?: string;
   }) => {
     return await strategyClient.createTemplate({
       name: params.name,
@@ -55,6 +56,7 @@ export const strategyApi = {
       parameters: params.parameters || [],
       isPublic: params.isPublic || false,
       tags: params.tags || [],
+      i18n: params.i18n || '',
     });
   },
 
@@ -66,6 +68,7 @@ export const strategyApi = {
     parameters?: PartialMessage<TemplateParameter>[];
     isPublic?: boolean;
     tags?: string[];
+    i18n?: string;
   }) => {
     return await strategyClient.updateTemplate({
       id: params.id,
@@ -75,6 +78,7 @@ export const strategyApi = {
       parameters: params.parameters,
       isPublic: params.isPublic,
       tags: params.tags,
+      i18n: params.i18n,
     });
   },
 

@@ -76,6 +76,28 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
     } catch (e: unknown) { message.error((e as Error)?.message || 'Failed to load template'); return null; }
   }, []);
 
+  // Translate param labels and build TemplateI18n JSON for storage.
+  const _buildI18n = useCallback(async (): Promise<string> => {
+    if (!validationResult?.parametersJson) return '';
+    try {
+      const params: { name: string }[] = JSON.parse(validationResult.parametersJson);
+      const names = params.map(p => p.name);
+      if (names.length === 0) return '';
+      const translations = await codeAssistApi.translateParamLabels(names);
+      const i18n = {
+        params: {} as Record<string, { label: Record<string, string> }>,
+      };
+      for (const { name } of params) {
+        const labels: Record<string, string> = {};
+        for (const locale of ['en', 'zh-cn', 'zh-tw', 'ja', 'vi'] as const) {
+          labels[locale] = translations[locale]?.[name] || name;
+        }
+        i18n.params[name] = { label: labels };
+      }
+      return JSON.stringify(i18n);
+    } catch { return ''; }
+  }, [validationResult]);
+
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveForm] = Form.useForm();
@@ -87,34 +109,37 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
     if (loadedTemplate) {
       setSaveLoading(true);
       try {
+        const i18n = await _buildI18n();
         await strategyApi.updateTemplate({
           id: loadedTemplate.id, code,
           parameters: _validatedParams(),
+          i18n: i18n || undefined,
         });
         message.success(t(SAVE_SUCCESS_KEY)); loadTemplates();
       } catch (e: unknown) { message.error((e as Error)?.message || 'Save failed'); }
       finally { setSaveLoading(false); }
     } else { setSaveModalOpen(true); }
-  }, [code, canSave, loadedTemplate, t, loadTemplates, _validatedParams]);
+  }, [code, canSave, loadedTemplate, t, loadTemplates, _validatedParams, _buildI18n]);
 
   const handleSaveAs = useCallback(() => { saveForm.resetFields(); setSaveModalOpen(true); }, [saveForm]);
   const handleSaveModalOk = useCallback(async () => {
     try {
       const values = await saveForm.validateFields(); setSaveLoading(true);
+      const i18n = await _buildI18n();
       const tpl = await strategyApi.createTemplate({
         name: values.name, description: values.description || '', code,
         parameters: _validatedParams(),
+        i18n: i18n || undefined,
       });
       if (tpl?.id) setLastSavedId(tpl.id);
       message.success(t(SAVE_SUCCESS_KEY)); setSaveModalOpen(false); loadTemplates();
     } catch (e: unknown) {
-      // Ant Design validateFields rejects with errorFields, not message.
       const err = e as { message?: string; errorFields?: unknown[] };
-      if (err?.errorFields?.length) return; // form validation failure — Ant Design shows inline errors
+      if (err?.errorFields?.length) return;
       if (err?.message) message.error(err.message);
     }
     finally { setSaveLoading(false); }
-  }, [code, saveForm, t, loadTemplates, _validatedParams]);
+  }, [code, saveForm, t, loadTemplates, _validatedParams, _buildI18n]);
 
   const handleCopy = useCallback(() => {
     if (!code) return;

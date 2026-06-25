@@ -129,6 +129,16 @@ export const codeAssistApi = {
     return () => abortController.abort();
   },
 
+  /** Translate strategy parameter names to all supported locales. */
+  translateParamLabels: async (paramNames: string[]): Promise<Record<string, Record<string, string>>> => {
+    const data = await codeAssistClient.translateParamLabels({ paramNames });
+    const result: Record<string, Record<string, string>> = {};
+    for (const [locale, map] of Object.entries(data.translations || {})) {
+      result[locale] = { ...map.labels };
+    }
+    return result;
+  },
+
   explain: async (input: ExplainCodeInput): Promise<string> => {
     const data = await codeAssistClient.explainCode({
       code: input.code,

@@ -86,7 +86,7 @@ func (s *StrategySvc) CreateSystemStrategy(ctx context.Context, name, descriptio
 		UpdatedAt:   now,
 	}
 	_, err := s.pg.Exec(ctx,
-		`INSERT INTO strategy_templates (id, user_id, name, description, code, status, parameters, is_public, is_system, tags, use_count, created_at, updated_at)
+		`INSERT INTO strategy_templates (id, user_id, name, description, code, status, parameters, i18n, is_public, is_system, tags, use_count, created_at, updated_at)
 		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
 		t.ID, t.UserID, t.Name, t.Description, t.Code, t.Status, []byte("[]"), t.IsPublic, t.IsSystem, t.Tags, t.UseCount, t.CreatedAt, t.UpdatedAt)
 	if err != nil {
@@ -99,9 +99,9 @@ func (s *StrategySvc) UpdateSystemStrategy(ctx context.Context, id uuid.UUID, na
 	// Fetch existing
 	var t TemplateRow
 	err := s.pg.QueryRow(ctx,
-		`SELECT id, user_id, name, description, code, status, parameters, is_public, is_system, tags, use_count, flag, flag_reason, flagged_by, flagged_at, created_at, updated_at
+		`SELECT id, user_id, name, description, code, status, parameters, i18n, is_public, is_system, tags, use_count, flag, flag_reason, flagged_by, flagged_at, created_at, updated_at
 		 FROM strategy_templates WHERE id = $1 AND is_system = true`, id,
-	).Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.Status, &t.Parameters, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt)
+	).Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.Status, &t.I18n, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrTemplateNotFound

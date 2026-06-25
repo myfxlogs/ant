@@ -146,13 +146,15 @@ func (x *GetTemplateRequest) GetId() string {
 }
 
 type CreateTemplateRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	Code          string                 `protobuf:"bytes,3,opt,name=code,proto3" json:"code,omitempty"`
-	Parameters    []*TemplateParameter   `protobuf:"bytes,4,rep,name=parameters,proto3" json:"parameters,omitempty"`
-	IsPublic      bool                   `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
-	Tags          []string               `protobuf:"bytes,6,rep,name=tags,proto3" json:"tags,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Name        string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Description string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	Code        string                 `protobuf:"bytes,3,opt,name=code,proto3" json:"code,omitempty"`
+	Parameters  []*TemplateParameter   `protobuf:"bytes,4,rep,name=parameters,proto3" json:"parameters,omitempty"`
+	IsPublic    bool                   `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
+	Tags        []string               `protobuf:"bytes,6,rep,name=tags,proto3" json:"tags,omitempty"`
+	// I18n data for parameter labels (JSON-encoded TemplateI18n).
+	I18N          string `protobuf:"bytes,7,opt,name=i18n,proto3" json:"i18n,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -227,6 +229,13 @@ func (x *CreateTemplateRequest) GetTags() []string {
 		return x.Tags
 	}
 	return nil
+}
+
+func (x *CreateTemplateRequest) GetI18N() string {
+	if x != nil {
+		return x.I18N
+	}
+	return ""
 }
 
 type CreateTemplateDraftRequest struct {
@@ -446,14 +455,16 @@ func (x *CancelTemplateDraftRequest) GetId() string {
 }
 
 type UpdateTemplateRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	Code          *string                `protobuf:"bytes,4,opt,name=code,proto3,oneof" json:"code,omitempty"`
-	Parameters    []*TemplateParameter   `protobuf:"bytes,5,rep,name=parameters,proto3" json:"parameters,omitempty"`
-	IsPublic      *bool                  `protobuf:"varint,6,opt,name=is_public,json=isPublic,proto3,oneof" json:"is_public,omitempty"`
-	Tags          []string               `protobuf:"bytes,7,rep,name=tags,proto3" json:"tags,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name        *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	Description *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	Code        *string                `protobuf:"bytes,4,opt,name=code,proto3,oneof" json:"code,omitempty"`
+	Parameters  []*TemplateParameter   `protobuf:"bytes,5,rep,name=parameters,proto3" json:"parameters,omitempty"`
+	IsPublic    *bool                  `protobuf:"varint,6,opt,name=is_public,json=isPublic,proto3,oneof" json:"is_public,omitempty"`
+	Tags        []string               `protobuf:"bytes,7,rep,name=tags,proto3" json:"tags,omitempty"`
+	// I18n data for parameter labels (JSON-encoded TemplateI18n).
+	I18N          *string `protobuf:"bytes,8,opt,name=i18n,proto3,oneof" json:"i18n,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -537,6 +548,13 @@ func (x *UpdateTemplateRequest) GetTags() []string {
 	return nil
 }
 
+func (x *UpdateTemplateRequest) GetI18N() string {
+	if x != nil && x.I18N != nil {
+		return *x.I18N
+	}
+	return ""
+}
+
 type DeleteTemplateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -590,7 +608,7 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"\x15ListTemplatesResponse\x126\n" +
 	"\ttemplates\x18\x01 \x03(\v2\x18.ant.v1.StrategyTemplateR\ttemplates\"$\n" +
 	"\x12GetTemplateRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xcd\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xe1\x01\n" +
 	"\x15CreateTemplateRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x12\n" +
@@ -599,7 +617,8 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"parameters\x18\x04 \x03(\v2\x19.ant.v1.TemplateParameterR\n" +
 	"parameters\x12\x1b\n" +
 	"\tis_public\x18\x05 \x01(\bR\bisPublic\x12\x12\n" +
-	"\x04tags\x18\x06 \x03(\tR\x04tags\"0\n" +
+	"\x04tags\x18\x06 \x03(\tR\x04tags\x12\x12\n" +
+	"\x04i18n\x18\a \x01(\tR\x04i18n\"0\n" +
 	"\x1aCreateTemplateDraftRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"\xf6\x01\n" +
 	"\x1aUpdateTemplateDraftRequest\x12\x0e\n" +
@@ -617,7 +636,7 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"\x1bPublishTemplateDraftRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\",\n" +
 	"\x1aCancelTemplateDraftRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xa1\x02\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xc3\x02\n" +
 	"\x15UpdateTemplateRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12%\n" +
@@ -627,12 +646,14 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"parameters\x18\x05 \x03(\v2\x19.ant.v1.TemplateParameterR\n" +
 	"parameters\x12 \n" +
 	"\tis_public\x18\x06 \x01(\bH\x03R\bisPublic\x88\x01\x01\x12\x12\n" +
-	"\x04tags\x18\a \x03(\tR\x04tagsB\a\n" +
+	"\x04tags\x18\a \x03(\tR\x04tags\x12\x17\n" +
+	"\x04i18n\x18\b \x01(\tH\x04R\x04i18n\x88\x01\x01B\a\n" +
 	"\x05_nameB\x0e\n" +
 	"\f_descriptionB\a\n" +
 	"\x05_codeB\f\n" +
 	"\n" +
-	"_is_public\"'\n" +
+	"_is_publicB\a\n" +
+	"\x05_i18n\"'\n" +
 	"\x15DeleteTemplateRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02idB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 

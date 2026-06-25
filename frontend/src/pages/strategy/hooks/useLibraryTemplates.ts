@@ -125,7 +125,25 @@ export function useLibraryTemplates() {
       } else if (validationResult?.parametersJson) {
         try { params = JSON.parse(validationResult.parametersJson); } catch { /* ignore */ }
       }
-      const data: CreateTemplateRequest = { name: String(values.name || ''), description: String(values.description || ''), code, parameters: params as any[], isPublic: Boolean(values.isPublic) || false, tags: [] };
+      // Build i18n from extracted params.
+      let i18n = '';
+      try {
+        if (params.length > 0) {
+          const names = params.map((p: any) => p.name || '');
+          const translations = await codeAssistApi.translateParamLabels(names);
+          const i18nObj: any = { params: {} };
+          for (const p of params) {
+            const labels: Record<string, string> = {};
+            for (const locale of ['en', 'zh-cn', 'zh-tw', 'ja', 'vi'] as const) {
+              labels[locale] = (translations as any)[locale]?.[p.name] || p.name;
+            }
+            i18nObj.params[p.name] = { label: labels };
+          }
+          i18n = JSON.stringify(i18nObj);
+        }
+      } catch { /* i18n is optional */ }
+
+      const data: CreateTemplateRequest = { name: String(values.name || ''), description: String(values.description || ''), code, parameters: params as any[], isPublic: Boolean(values.isPublic) || false, tags: [], i18n };
       if (editing) { await strategyTemplateApi.update({ id: editing.id, ...data }); message.success(t(MESSAGES_TEMPLATE_UPDATED_KEY)); }
       else { await strategyTemplateApi.create(data); message.success(t(MESSAGES_TEMPLATE_CREATED_KEY)); setFilter('user'); }
       setEditOpen(false); fetchTemplates();

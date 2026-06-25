@@ -59,6 +59,7 @@ func (s *StrategyServer) CreateTemplate(ctx context.Context, req *connect.Reques
 		Code:        m.Code,
 		Status:      "published",
 		Parameters:  templateParamsToProto(m.Parameters),
+		I18n:        []byte(m.I18N),
 		IsPublic:    m.IsPublic,
 		Tags:        m.Tags,
 	}
@@ -89,6 +90,9 @@ func (s *StrategyServer) UpdateTemplate(ctx context.Context, req *connect.Reques
 	}
 	if len(m.Parameters) > 0 {
 		existing.Parameters = templateParamsToProto(m.Parameters)
+	}
+	if m.I18N != nil {
+		existing.I18n = []byte(*m.I18N)
 	}
 	if m.IsPublic != nil {
 		existing.IsPublic = *m.IsPublic

@@ -40,6 +40,7 @@ func templateRowToProto(r *service.TemplateRow) *antv1.StrategyTemplate {
 		Code:        r.Code,
 		Status:      r.Status,
 		Parameters:  params,
+		I18N:        string(r.I18n),
 		IsPublic:    r.IsPublic,
 		IsSystem:    r.IsSystem,
 		Tags:        r.Tags,

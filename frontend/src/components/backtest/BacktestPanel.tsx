@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { Button, Tabs, InputNumber, Row, Col, Segmented, DatePicker, Radio, Switch, Tag, Tooltip, Dropdown, Select } from 'antd';
 import {
   PlayCircleOutlined, SettingOutlined, CaretDownOutlined,
@@ -26,6 +26,7 @@ import SmartTuningPanel from '@/pages/strategy/components/workspace/SmartTuningP
 import GatePanel from '@/pages/strategy/components/workspace/GatePanel';
 import StrategyParamsModal from './StrategyParamsModal';
 import BacktestResultsTab from './BacktestResultsTab';
+import { paramLabel } from '@/utils/paramLabel';
 import BacktestTradesTab from './BacktestTradesTab';
 import type { useBacktestRunner, BacktestRunnerInputs } from './useBacktestRunner';
 import { DATE_PRESETS, PRESETS } from '@/pages/strategy/hooks/backtestParamHelpers';
@@ -74,9 +75,15 @@ export default function BacktestPanel(props: Props) {
     runner, inputs, templates, collapsed, onToggleCollapsed,
     onOpenHistory, onAIOptimize, code, onApplyTunedParams,
   } = props;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const loc = i18n.language;
 
   const tplList = templates?.list || [];
+  const selectedTpl = tplList.find((t: StrategyTemplate) => t.id === templates?.selectedId);
+  const i18nData = useMemo(() => {
+    if (!selectedTpl?.i18n) return null;
+    try { return JSON.parse(selectedTpl.i18n as string); } catch { return null; }
+  }, [selectedTpl?.i18n]);
 
   const handleRun = () => runner.run(inputs);
   const canRun = Boolean(inputs.strategyCode && inputs.symbol) && !runner.submitting;
@@ -295,9 +302,10 @@ export default function BacktestPanel(props: Props) {
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 12px' }}>
                     {runner.extractedParams.slice(0, 8).map((p) => {
                       const v = runner.strategyParamValues[p.name] ?? p.default;
+                      const label = paramLabel(p.name, loc, i18nData) || p.label || p.name;
                       return (
                         <span key={p.name} style={{ fontSize: 11, color: '#595959', whiteSpace: 'nowrap' }}>
-                          <span style={{ color: '#8c8c8c' }}>{p.label || p.name}</span>
+                          <span style={{ color: '#8c8c8c' }}>{label}</span>
                           <span style={{ fontWeight: 500 }}>={v}</span>
                         </span>
                       );
@@ -319,6 +327,7 @@ export default function BacktestPanel(props: Props) {
               open={runner.strategyParamsModalOpen}
               params={runner.extractedParams}
               values={runner.strategyParamValues}
+              i18nData={i18nData}
               onClose={() => runner.setStrategyParamsModalOpen(false)}
               onChange={runner.setParam}
             />

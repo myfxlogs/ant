@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file strategy_template_entity.proto.
  */
 export const file_strategy_template_entity: GenFile = /*@__PURE__*/
-  fileDesc("Ch5zdHJhdGVneV90ZW1wbGF0ZV9lbnRpdHkucHJvdG8SBmFudC52MSLGAgoQU3RyYXRlZ3lUZW1wbGF0ZRIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEgwKBG5hbWUYAyABKAkSEwoLZGVzY3JpcHRpb24YBCABKAkSDAoEY29kZRgFIAEoCRItCgpwYXJhbWV0ZXJzGAYgAygLMhkuYW50LnYxLlRlbXBsYXRlUGFyYW1ldGVyEhEKCWlzX3B1YmxpYxgHIAEoCBIMCgR0YWdzGAggAygJEhEKCXVzZV9jb3VudBgJIAEoBRIOCgZzdGF0dXMYDCABKAkSLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEQoJaXNfc3lzdGVtGA0gASgIIp0BChFUZW1wbGF0ZVBhcmFtZXRlchIMCgRuYW1lGAEgASgJEgwKBHR5cGUYAiABKAkSDwoHZGVmYXVsdBgDIAEoCRILCgNtaW4YBCABKAkSCwoDbWF4GAUgASgJEgwKBHN0ZXAYBiABKAkSDQoFbGFiZWwYByABKAkSEwoLZGVzY3JpcHRpb24YCCABKAkSDwoHb3B0aW9ucxgJIAMoCUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("Ch5zdHJhdGVneV90ZW1wbGF0ZV9lbnRpdHkucHJvdG8SBmFudC52MSLUAgoQU3RyYXRlZ3lUZW1wbGF0ZRIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEgwKBG5hbWUYAyABKAkSEwoLZGVzY3JpcHRpb24YBCABKAkSDAoEY29kZRgFIAEoCRItCgpwYXJhbWV0ZXJzGAYgAygLMhkuYW50LnYxLlRlbXBsYXRlUGFyYW1ldGVyEhEKCWlzX3B1YmxpYxgHIAEoCBIMCgR0YWdzGAggAygJEhEKCXVzZV9jb3VudBgJIAEoBRIOCgZzdGF0dXMYDCABKAkSLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEQoJaXNfc3lzdGVtGA0gASgIEgwKBGkxOG4YDiABKAkinQEKEVRlbXBsYXRlUGFyYW1ldGVyEgwKBG5hbWUYASABKAkSDAoEdHlwZRgCIAEoCRIPCgdkZWZhdWx0GAMgASgJEgsKA21pbhgEIAEoCRILCgNtYXgYBSABKAkSDAoEc3RlcBgGIAEoCRINCgVsYWJlbBgHIAEoCRITCgtkZXNjcmlwdGlvbhgIIAEoCRIPCgdvcHRpb25zGAkgAygJQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.StrategyTemplate
@@ -82,6 +82,13 @@ export type StrategyTemplate = Message<"ant.v1.StrategyTemplate"> & {
    * @generated from field: bool is_system = 13;
    */
   isSystem: boolean;
+
+  /**
+   * I18n data for parameter labels (JSON-encoded TemplateI18n).
+   *
+   * @generated from field: string i18n = 14;
+   */
+  i18n: string;
 };
 
 /**
