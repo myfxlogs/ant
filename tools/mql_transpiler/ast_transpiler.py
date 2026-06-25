@@ -13,6 +13,7 @@ by the AST walker.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -61,11 +62,18 @@ from tools.mql_transpiler.mappings import (
     MQL_TYPE_MAP,
 )
 
-# Lazy import for hybrid mode.
-try:
-    from tools.mql_transpiler.transpiler import MQLTranspiler as _LineTranspiler
-except ImportError:
-    _LineTranspiler = None
+# Lazy import for hybrid mode — line-by-line transpiler as fallback.
+_LINE_TRANSPILER = None
+
+def _get_line_transpiler():
+    global _LINE_TRANSPILER
+    if _LINE_TRANSPILER is None:
+        try:
+            from tools.mql_transpiler.transpiler import MQLTranspiler
+            _LINE_TRANSPILER = MQLTranspiler("_hybrid")
+        except ImportError:
+            pass
+    return _LINE_TRANSPILER
 
 # MQL constants → Python
 _MQL_CONSTANTS = {
@@ -285,7 +293,28 @@ class ASTTranspiler:
             self._transpile_stmt(stmt.body)
             self._indent -= 1
         else:
-            self._emit(f"# TRANSPILER-GAP: for loop — manual conversion needed")
+            # Generic for-loop: for (int i = 1; i <= N; i++) → for i in range(1, N+1)
+            init_str = self._expr_to_mql_text(stmt.init) if stmt.init else ""
+            cond_str = self._expr_to_mql_text(stmt.condition) if stmt.condition else ""
+            # Extract variable name and start value from init: "int i = 1" or "i = 1"
+            var_match = re.match(r"(?:\w+\s+)?(\w+)\s*=\s*(.+)", init_str)
+            if var_match:
+                var_name = var_match.group(1)
+                start_val = var_match.group(2).strip()
+                # Extract end value from condition: "i <= N" or "i < N"
+                if "<=" in cond_str:
+                    end_val = cond_str.split("<=")[-1].strip() + " + 1"
+                elif "<" in cond_str:
+                    end_val = cond_str.split("<")[-1].strip()
+                else:
+                    end_val = "10"
+                self._emit(f"for self.{var_name} in range({start_val}, {end_val}):")
+                self._indent += 1
+                self._transpile_stmt(stmt.body)
+                self._indent -= 1
+                self._known_vars.add(var_name)
+            else:
+                self._emit(f"# TRANSPILER-GAP: for loop — manual conversion needed")
 
     def _transpile_switch(self, stmt: SwitchStmt) -> None:
         """Translate MQL switch → Python if/elif/else."""
@@ -326,7 +355,53 @@ class ASTTranspiler:
         if stmt.expr is None:
             return
         py = self._expr_to_py(stmt.expr)
+        # If output looks incomplete (contains raw MQL function names), try line-by-line.
+        if self._needs_line_fallback(py):
+            mql_text = self._expr_to_mql_text(stmt.expr)
+            if mql_text:
+                lb = _get_line_transpiler()
+                if lb:
+                    try:
+                        # Run line-by-line on this single statement, capture output.
+                        lb_result = lb.transpile(f"void _dummy() {{ {mql_text} }}", "_hybrid.mq4")
+                        # Extract the statement line from the output.
+                        for line in lb_result.output.split("\n"):
+                            stripped = line.strip()
+                            if stripped and not stripped.startswith(("class", "def", "from", "import", '"""', "#")):
+                                if "TRANSPILER-GAP" not in stripped:
+                                    self._emit(stripped)
+                                    return
+                    except Exception:
+                        pass
         self._emit(py)
+
+    def _needs_line_fallback(self, py: str) -> bool:
+        """Check if the Python output still contains untranslated MQL artifacts."""
+        return bool(py) and ("self." not in py or "(" in py) and not py.startswith("self.broker")
+
+    def _expr_to_mql_text(self, expr) -> str:
+        """Serialize an AST expression back to MQL-like text for line-by-line fallback."""
+        if isinstance(expr, CallExpr):
+            args = ", ".join(self._expr_to_mql_text(a) for a in expr.args)
+            return f"{expr.name}({args})"
+        if isinstance(expr, AssignmentExpr):
+            rhs = self._expr_to_mql_text(expr.rhs) if expr.rhs else ""
+            return f"{expr.lhs} = {rhs}"
+        if isinstance(expr, Identifier):
+            name = expr.name
+            return name[7:] if name.startswith("__raw__") else name  # strip __raw__ prefix
+        if isinstance(expr, NumberLiteral):
+            return expr.value
+        if isinstance(expr, StringLiteral):
+            return f'"{expr.value}"'
+        if isinstance(expr, BinaryOp):
+            left = self._expr_to_mql_text(expr.left) if expr.left else ""
+            right = self._expr_to_mql_text(expr.right) if expr.right else ""
+            return f"{left} {expr.op} {right}"
+        if isinstance(expr, SubscriptExpr):
+            idx = self._expr_to_mql_text(expr.index) if expr.index else "0"
+            return f"{expr.name}[{idx}]"
+        return ""
 
     # ── Expression → Python ──────────────────────────────────────────
 
