@@ -206,7 +206,7 @@ def _build_endpoints(_svc) -> dict:
 class _App(ConnectASGIApplication):
     @property
     def path(self) -> str:
-        return "/ant.v1.PythonStrategyService/"
+        return "/"
 
 
 def create_app():

@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
-"""AntTrader Strategy Service — ConnectRPC + protobuf only. Zero JSON, zero FastAPI."""
+"""AntTrader Strategy Service — ConnectRPC + protobuf only."""
 
 import os
-from datetime import datetime
-
 from dotenv import load_dotenv
-from starlette.applications import Starlette
-from starlette.responses import Response as StarletteResponse
-from starlette.routing import Route
-
 from app.connectrpc_server import create_app
 from app.memory import get_backtest_memory
 
@@ -18,33 +12,30 @@ HOST = os.getenv('HOST', '0.0.0.0')
 PORT = int(os.getenv('PORT', '8081'))
 DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
 
-connectrpc_app = create_app()
+_connectrpc = create_app()
 
 
-async def health_check(_request):
-    return StarletteResponse(
-        content='{"status":"healthy"}',
-        media_type="application/json",
-    )
+class _HealthWrapper:
+    """ASGI3 app that handles /health and delegates everything else to ConnectRPC."""
+
+    def __init__(self, connectrpc_app):
+        self._connectrpc = connectrpc_app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and scope["path"] in ("/health", "/healthz"):
+            await send({
+                "type": "http.response.start",
+                "status": 200,
+                "headers": [(b"content-type", b"application/json")],
+            })
+            await send({"type": "http.response.body", "body": b'{"status":"healthy"}'})
+            return
+        await self._connectrpc(scope, receive, send)
 
 
-async def startup():
-    get_backtest_memory()
+app = _HealthWrapper(_connectrpc)
 
-
-app = Starlette(
-    debug=DEBUG,
-    routes=[
-        Route("/health", health_check, methods=["GET"]),
-        Route("/healthz", health_check, methods=["GET"]),
-    ],
-    on_startup=[startup],
-    middleware=[],
-)
-
-# Mount the ConnectRPC ASGI app directly onto the Starlette app.
-# ConnectASGIApplication is an ASGI3 app, so it works as middleware.
-app.mount("/", connectrpc_app)
+get_backtest_memory()
 
 if __name__ == "__main__":
     import uvicorn
