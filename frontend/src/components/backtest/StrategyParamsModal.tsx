@@ -1,6 +1,7 @@
 import { Modal, Row, Col, InputNumber, Switch } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { STRATEGY_PARAMS_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
+import { paramLabel } from '@/utils/paramLabels';
 import type { ExtractedParam } from './useBacktestRunner';
 
 const S = {
@@ -17,7 +18,8 @@ interface Props {
 }
 
 export default function StrategyParamsModal({ open, params, values, onClose, onChange }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language;
   if (params.length === 0) return null;
 
   return (
@@ -32,11 +34,12 @@ export default function StrategyParamsModal({ open, params, values, onClose, onC
       <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 4 }}>
         <Row gutter={[12, 8]}>
           {params.map((p) => {
+            const label = paramLabel(p.name, locale, p.label || p.name);
             const value = values[p.name] ?? p.default;
             if (p.type === 'bool') {
               return (
                 <Col span={8} key={p.name}>
-                  <div style={S.fieldLabel}>{p.label || p.name}</div>
+                  <div style={S.fieldLabel}>{label}</div>
                   <Switch size="small" checked={value === 'True' || value === 'true'}
                     onChange={(v) => onChange(p.name, v ? 'True' : 'False')} />
                 </Col>
@@ -45,7 +48,7 @@ export default function StrategyParamsModal({ open, params, values, onClose, onC
             const step = p.type === 'float' ? 0.01 : 1;
             return (
               <Col span={8} key={p.name}>
-                <div style={S.fieldLabel}>{p.label || p.name}</div>
+                <div style={S.fieldLabel}>{label}</div>
                 <InputNumber size="small" style={S.narrow} step={step}
                   value={Number(value)} onChange={(v) => onChange(p.name, String(v ?? p.default))} />
               </Col>
