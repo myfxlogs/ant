@@ -11,8 +11,7 @@ import time
 
 import numpy as np
 from fastapi import APIRouter, Request, Response
-from fastapi.responses import JSONResponse
-from google.protobuf.json_format import MessageToDict, Parse
+from google.protobuf.json_format import Parse
 
 from app.python_strategy_pb2 import (
     CodeQualityHint,
@@ -66,26 +65,15 @@ def _execute_inline(code: str, context: dict) -> Optional[dict]:
 
 
 async def _parse_request(request: Request, req_cls):
-    """Parse request body as proto binary or JSON based on Content-Type."""
-    ct = request.headers.get("content-type", "")
-    if "application/proto" in ct or "application/grpc" in ct:
-        return req_cls.FromString(await request.body())
-    body = await request.json()
-    return Parse(json.dumps(body), req_cls(), ignore_unknown_fields=True)
+    """Parse request body as protobuf binary (ConnectRPC protocol)."""
+    return req_cls.FromString(await request.body())
 
 
-def _respond(proto_resp, request: Request) -> Response:
-    """Return ConnectRPC-compatible response (proto binary preferred)."""
-    accept = request.headers.get("accept", "")
-    if "application/proto" in accept or "application/grpc" in accept:
-        return Response(
-            content=proto_resp.SerializeToString(),
-            media_type="application/proto",
-            headers={"Connect-Protocol-Version": "1"},
-        )
-    # JSON fallback — camelCase for ConnectRPC compatibility.
-    return JSONResponse(
-        content=MessageToDict(proto_resp, preserving_proto_field_name=False),
+def _respond(proto_resp, _request: Request) -> Response:
+    """Return protobuf binary response (ConnectRPC protocol)."""
+    return Response(
+        content=proto_resp.SerializeToString(),
+        media_type="application/proto",
         headers={"Connect-Protocol-Version": "1"},
     )
 
@@ -321,3 +309,54 @@ async def handle_transpile(request: Request) -> Response:
             is_deterministic=False,
             gap_samples=[str(e)],
         ), request)
+
+
+# ── ConnectRPC pure-protobuf handlers ────────────────────────────────
+
+async def _transpile_code(req) -> TranspileCodeResponse:
+    """Transpile MQL4/MQL5 to Python via deterministic transpiler."""
+    source = req.source_code or ""
+    class_name = req.class_name or "TranslatedStrategy"
+
+    if not source:
+        return TranspileCodeResponse(is_deterministic=False)
+
+    # Try AST transpiler first.
+    try:
+        from tools.mql_transpiler.ast_transpiler import transpile_ast
+        result = transpile_ast(source, class_name)
+        conf = result.stats.get("confidence", 0.0)
+        gaps = result.stats.get("gaps", 0)
+        matched = result.stats.get("matched", 0)
+        return TranspileCodeResponse(
+            target_code=result.output,
+            confidence=conf,
+            total_patterns=matched + gaps,
+            gaps=gaps,
+            gap_samples=result.stats.get("gap_samples", [])[:10],
+            is_deterministic=True,
+        )
+    except Exception:
+        pass
+
+    # Fallback: line-by-line transpiler.
+    try:
+        from tools.mql_transpiler.transpiler import MQLTranspiler
+        tp = MQLTranspiler(class_name or "TranslatedStrategy")
+        result = tp.transpile(source, "_transpile_.mq4")
+        conf = tp.get_confidence()
+        return TranspileCodeResponse(
+            target_code=result.output,
+            confidence=conf,
+            total_patterns=result.stats.patterns_matched + result.stats.gaps,
+            gaps=result.stats.gaps,
+            gap_samples=list(result.stats.gap_reasons.keys())[:10],
+            is_deterministic=True,
+        )
+    except Exception:
+        pass
+
+    return TranspileCodeResponse(
+        is_deterministic=False,
+        gap_samples=["transpiler unavailable"],
+    )
