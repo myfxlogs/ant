@@ -394,6 +394,9 @@ class TestBrokerABC(unittest.TestCase):
             def orders(self, s=None, m=None):
                 return []
 
+            def deals(self, s=None, m=None, f=None, t=None):
+                return []
+
             def account(self):
                 return _sample_account_info()
 
@@ -436,7 +439,7 @@ class TestPublicAPI(unittest.TestCase):
     """Section 2: All types must be re-exported from app.sdk."""
 
     EXPECTED = [
-        "AccountInfo", "AccountMode", "Broker", "Context", "DealType",
+        "AccountInfo", "AccountMode", "Broker", "Context", "Deal", "DealType",
         "Indicators", "OrderRequest", "OrderResult", "OrderType",
         "PendingOrder", "Position", "PositionSide", "Retcode",
         "RuntimeContext", "Series", "StrategyBase", "StrategyRuntime",
