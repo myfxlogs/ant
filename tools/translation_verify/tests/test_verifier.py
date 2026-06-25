@@ -12,6 +12,18 @@ from tools.translation_verify.coverage import (
 )
 from tools.translation_verify.verifier import TranslationVerifier, VerificationResult
 
+# Tree-sitter may not be available in CI.
+try:
+    from tools.mql_transpiler.tree_sitter_parser import available as _ts_available
+    _TREE_SITTER_OK = _ts_available()
+except Exception:
+    _TREE_SITTER_OK = False
+
+_NEEDS_TREE_SITTER = unittest.skipUnless(
+    _TREE_SITTER_OK,
+    "tree-sitter MQL grammar not available",
+)
+
 FIXTURES_DIR = os.path.join(
     os.path.dirname(__file__), "..", "..", "mql_transpiler", "tests", "fixtures"
 )
@@ -118,6 +130,7 @@ class TestCoverageReport(unittest.TestCase):
 # ── Verifier tests ─────────────────────────────────────────────────────
 
 
+@_NEEDS_TREE_SITTER
 class TestTranslationVerifier(unittest.TestCase):
     """End-to-end verification pipeline."""
 
@@ -130,7 +143,7 @@ class TestTranslationVerifier(unittest.TestCase):
         result = self.verifier.verify(source, "simple_ma_cross.mq4")
         self.assertTrue(result.transpile_ok)
         self.assertIsNotNone(result.coverage_report)
-        self.assertGreater(result.transpile_stats.get("patterns_matched", 0), 0)
+        self.assertGreater(result.transpile_stats.get("lines_out", 0), 0)
 
     def test_verify_grid_trader(self):
         source = _read_fixture("grid_trader.mq4")

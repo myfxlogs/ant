@@ -16,6 +16,13 @@ import os
 import re
 import unittest
 
+# Tree-sitter may not be available in CI.
+try:
+    from tools.mql_transpiler.tree_sitter_parser import available as _ts_available
+    _TREE_SITTER_OK = _ts_available()
+except Exception:
+    _TREE_SITTER_OK = False
+
 from tools.mql_transpiler.quality_gate import (
     GateFailure,
     QualityGate,
@@ -215,6 +222,7 @@ class TestAllReferenceSamplesPass(unittest.TestCase):
 
 # ── Regression: current transpiler output is caught ──────────────────────
 
+@unittest.skipUnless(_TREE_SITTER_OK, "tree-sitter MQL grammar not available")
 class TestCurrentTranspilerOutputValidated(unittest.TestCase):
     """The current (fixed) transpiler output should pass quality gates.
 
