@@ -116,8 +116,8 @@ Gap patterns accumulate here; each becomes a fixture for regression testing.
 | Symbol name | `Symbol()` | `self.ctx.symbol` | 🟢 FULL |
 | OHLCV series | `Open[i], Close[i], etc.` | `bars.open[i], bars.close[i]` | 🟡 PARTIAL |
 | iClose,iOpen,etc | `iClose(sym,tf,i)` | `bars.close[i]` | 🟡 PARTIAL |
-| MarketInfo | `MarketInfo(sym, MODE_*)` | `sym_info.*` | 🔴 GAP |
-| SymbolInfoDouble | `SymbolInfoDouble(sym, prop)` | `self.broker.symbol_info(sym)` | 🔴 GAP |
+| MarketInfo | `MarketInfo(sym, MODE_*)` | `sym_info.attr` | 🟢 FULL |
+| SymbolInfoDouble | `SymbolInfoDouble(sym, prop)` | `self.broker.symbol_info(sym).attr` | 🟡 PARTIAL |
 
 ### 8. Technical indicators
 
@@ -174,12 +174,12 @@ These MQL features have no equivalent in the Python SDK and will never be transl
 
 | Feature | MQL5 | Python SDK | Status |
 |---------|------|-----------|--------|
-| HistorySelect | `HistorySelect(from, to)` | — time-range query | 🔴 GAP |
-| HistorySelectByPosition | `HistorySelectByPosition(id)` | — position history query | 🔴 GAP |
-| HistoryDealsTotal | `HistoryDealsTotal()` | `len(self.broker.deals())` | 🟡 PARTIAL |
+| HistorySelect | `HistorySelect(from, to)` | `for deal in self.broker.deals(from, to)` | 🟢 FULL |
+| HistorySelectByPosition | `HistorySelectByPosition(id)` | `self.broker.deals(position_id=id)` | 🟡 PARTIAL |
+| HistoryDealsTotal | `HistoryDealsTotal()` | `len(self.broker.deals())` | 🟢 FULL |
 | HistoryDealGetTicket | `HistoryDealGetTicket(i)` | `self.broker.deals()[i].ticket` | 🟡 PARTIAL |
 | HistoryDealGetDouble/Integer/String | (3 functions) | property access | 🔴 GAP |
-| HistoryOrdersTotal | `HistoryOrdersTotal()` | `len(self.broker.history_orders())` | 🟡 PARTIAL |
+| HistoryOrdersTotal | `HistoryOrdersTotal()` | `len(self.broker.history_orders())` | 🟢 FULL |
 | HistoryOrderGetTicket | `HistoryOrderGetTicket(i)` | `self.broker.history_orders()[i].ticket` | 🟡 PARTIAL |
 | HistoryOrderGetDouble/Integer/String | (3 functions) | property access | 🔴 GAP |
 

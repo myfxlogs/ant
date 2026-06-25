@@ -338,13 +338,18 @@ class ASTTranspiler:
             self._transpile_stmt(stmt)
 
     def _transpile_for(self, stmt: ForStmt) -> None:
-        # Detect OrdersTotal / PositionsTotal loop patterns.
-        # Check the init expression AST for OrdersTotal/PositionsTotal calls
+        # Detect order/position/history loop patterns.
+        # Check the init expression AST for function calls
         # (can't use translated text — the mapping replaces the function name).
         has_orders_total = self._ast_contains_call(stmt.init, "OrdersTotal") or \
                            self._ast_contains_call(stmt.condition, "OrdersTotal")
         has_positions_total = self._ast_contains_call(stmt.init, "PositionsTotal") or \
                               self._ast_contains_call(stmt.condition, "PositionsTotal")
+        has_history_deals = self._ast_contains_call(stmt.init, "HistoryDealsTotal") or \
+                            self._ast_contains_call(stmt.condition, "HistoryDealsTotal")
+        has_history_orders = self._ast_contains_call(stmt.init, "HistoryOrdersTotal") or \
+                             self._ast_contains_call(stmt.condition, "HistoryOrdersTotal")
+
         if has_orders_total:
             self._emit("# OrderSelect loop → Python iteration")
             self._emit("for order in self.broker.orders():")
@@ -357,6 +362,21 @@ class ASTTranspiler:
         elif has_positions_total:
             self._emit("# PositionSelect loop → Python iteration")
             self._emit("for pos in self.broker.positions():")
+            self._inside_orderselect_loop = True
+            self._order_loop_var = "pos"
+            self._indent += 1
+            self._transpile_branch(stmt.body)
+            self._indent -= 1
+            self._inside_orderselect_loop = False
+        elif has_history_deals:
+            self._emit("# HistorySelect loop → Python iteration")
+            self._emit("for deal in self.broker.deals():")
+            self._indent += 1
+            self._transpile_branch(stmt.body)
+            self._indent -= 1
+        elif has_history_orders:
+            self._emit("# HistoryOrderSelect loop → Python iteration")
+            self._emit("for order in self.broker.history_orders():")
             self._indent += 1
             self._transpile_branch(stmt.body)
             self._indent -= 1
