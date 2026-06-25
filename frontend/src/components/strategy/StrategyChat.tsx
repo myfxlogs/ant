@@ -17,7 +17,9 @@ import { AI_GATEWAY_SETTINGS_KEY, BACKTEST_LABEL_KEY, CANCEL_KEY, CHAT_TAB_KEY, 
 
 const { TextArea } = Input;
 type TabKey = 'chat' | 'history' | 'strategies';
-interface Props { symbol?: string; timeframe?: string; sessionId?: string; accountId?: string; onApplyCode: (code: string) => void; }
+import type { ValidateExtendedResult } from '@/client/codeAssist';
+
+interface Props { symbol?: string; timeframe?: string; sessionId?: string; accountId?: string; onApplyCode: (code: string) => void; onValidateResult?: (result: ValidateExtendedResult) => void; }
 
 /** Ask the LLM to generate a short conversation title from the first user message. */
 async function generateTitle(firstMsg: string): Promise<string> {
@@ -30,7 +32,7 @@ async function generateTitle(firstMsg: string): Promise<string> {
     return firstMsg.slice(0, 20);
   }
 }
-export default function StrategyChat({ symbol, timeframe, sessionId, accountId, onApplyCode }: Props) {
+export default function StrategyChat({ symbol, timeframe, sessionId, accountId, onApplyCode, onValidateResult }: Props) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
@@ -297,6 +299,7 @@ const isFirst = messages.length === 0 && !titleGeneratedRef.current;
               codeRef={codeRef} busy={busy} hasSymbol={hasSymbol} accountId={accountId}
               symbol={symbol} timeframe={timeframe} templates={templates} codeGenKey={codeGenKey}
               addMsg={addMsg} setMetrics={setMetrics} fetchTemplates={fetchTemplates}
+              onValidateResult={onValidateResult}
             />
           </div>
         </>)}

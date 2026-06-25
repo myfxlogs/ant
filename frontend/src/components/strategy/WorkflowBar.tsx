@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Modal, Input, Tooltip } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, ThunderboltOutlined, SafetyOutlined, SaveOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
-import { codeAssistApi } from '@/client/codeAssist';
+import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
 import type { BacktestMetricsMsg } from '@/gen/ant/v1/strategy_execution_pb';
 
 type StepKey = 'check' | 'backtest' | 'save';
@@ -22,11 +22,12 @@ interface Props {
   addMsg: (role: 'ai', extra: { text: string }) => void;
   setMetrics: (m: BacktestMetricsMsg | null) => void;
   fetchTemplates: () => void;
+  onValidateResult?: (result: ValidateExtendedResult) => void;
 }
 
 const iconStyle = { fontSize: 11 };
 
-export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbol, timeframe, templates, codeGenKey, addMsg, setMetrics, fetchTemplates }: Props) {
+export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbol, timeframe, templates, codeGenKey, addMsg, setMetrics, fetchTemplates, onValidateResult }: Props) {
   const [status, setStatus] = useState<Record<StepKey, StepStatus>>({ check: 'idle', backtest: 'idle', save: 'idle' });
 
   // Reset workflow when code changes (agent regenerated after failed check)
@@ -57,6 +58,8 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
         addMsg('ai', { text: parts.join('\n') });
         return;
       }
+      // Forward extracted params to BacktestPanel.
+      if (onValidateResult) onValidateResult(r);
       if (r.parameters.length > 0) parts.push(`📐 可调参数: ${r.parameters.map(p => `${p.key}${p.required ? '*' : ''}`).join(', ')}`);
       if (r.strategyDirectives.length > 0) parts.push(`⚙ 策略指令: ${r.strategyDirectives.map(d => `${d.key}=${d.value}`).join(', ')}`);
       if (r.sweepDimensions.length > 0) parts.push(`🔀 扫参维度: ${r.sweepDimensions.length} 维`);

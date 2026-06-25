@@ -139,6 +139,10 @@ export const codeAssistApi = {
 
   validateExtended: async (code: string): Promise<ValidateExtendedResult> => {
     const data = await codeAssistClient.validateStrategyExtended({ code });
+    console.log('[validateExtended] raw data keys:', Object.keys(data));
+    console.log('[validateExtended] parametersJson:', (data as any).parametersJson);
+    console.log('[validateExtended] parameters_json:', (data as any).parameters_json);
+    console.log('[validateExtended] parameters:', (data as any).parameters);
 
     // Read structured proto fields directly (Python backend — zero-trust).
     // quality_hints, sweep_dimensions, and strategy_directives are now

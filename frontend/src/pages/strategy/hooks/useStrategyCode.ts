@@ -37,6 +37,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
       const result = await codeAssistApi.validateExtended(codeToValidate);
       setValidationResult(result);
       if (result.valid) setLastValidatedCode(codeToValidate);
+      console.log('[_validate] onValidateResult is', typeof onValidateResult, 'result has params:', result.parametersJson?.length);
       if (onValidateResult) onValidateResult(result);
     } catch (e: unknown) { message.error((e as Error)?.message || 'Validation failed'); }
     finally { setValidating(false); }
