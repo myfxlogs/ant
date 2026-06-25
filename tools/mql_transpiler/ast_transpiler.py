@@ -233,9 +233,13 @@ class ASTTranspiler:
             self._transpile_compound(func.body)
             self._indent -= 1
         else:
-            # Non-lifecycle function → skip or emit as comment.
+            # Non-lifecycle user function → strip _ prefix, emit as Python method.
+            py_name = func.name.lstrip("_")
             self._emit()
-            self._emit(f"# User function: {func.name}() — manual translation needed")
+            self._emit(f"def {py_name}(self) -> None:")
+            self._indent += 1
+            self._transpile_compound(func.body)
+            self._indent -= 1
 
     def _transpile_compound(self, body: CompoundStmt) -> None:
         for stmt in body.statements:
@@ -443,6 +447,13 @@ class ASTTranspiler:
             left = self._expr_to_py(expr.left)
             right = self._expr_to_py(expr.right)
             op = expr.op.replace("&&", "and").replace("||", "or")
+            # Wrap division operands in Decimal to avoid float() validation errors.
+            if op == "/":
+                # Don't double-wrap if already Decimal
+                if "Decimal(" not in left:
+                    left = f"Decimal(str({left}))"
+                if "Decimal(" not in right:
+                    right = f"Decimal(str({right}))"
             return f"{left} {op} {right}"
         if isinstance(expr, AssignmentExpr):
             rhs = self._expr_to_py(expr.rhs)
@@ -533,13 +544,20 @@ class ASTTranspiler:
         if name == "OrderSelect":
             return "True  # OrderSelect"
 
-        # Indicator calls
+        # Indicator calls — translate 0 (NULL timeframe) to None.
         if name in ("iMA", "iRSI", "iBands", "iMACD", "iATR", "iStochastic", "iCCI", "iCustom",
                      "iADX", "iMomentum", "iMFI", "iOBV", "iSAR", "iStdDev", "iWPR",
                      "iEnvelopes", "iForce", "iDeMarker", "iOsMA"):
-            # Map to SDK indicator method
-            sdk_method = name[1:].lower()  # iMA → ma
-            return f"self.indicators.{sdk_method}({args_str})"
+            sdk_method = name[1:].lower()
+            # Replace 0 (MQL NULL timeframe) with None
+            clean_args = []
+            for a in call.args:
+                s = str(self._expr_to_py(a))
+                if s == "0" and len(clean_args) <= 1:  # first 2 args are symbol/tf
+                    clean_args.append("None")
+                else:
+                    clean_args.append(s)
+            return f"self.indicators.{sdk_method}({', '.join(clean_args)})"
 
         # Common functions
         if name in COMMON_FUNC_MAP:
