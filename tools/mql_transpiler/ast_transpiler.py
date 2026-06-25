@@ -185,12 +185,31 @@ class ASTTranspiler:
                 self._transpile_function(decl)
 
         self._indent -= 1
+        # Compute confidence from AST transpilation quality.
+        output = "\n".join(self._lines)
+        gap_count = output.count("# TRANSPILER-GAP")
+        pattern_count = sum(1 for l in self._lines if self._is_translated_line(l))
+        total = gap_count + pattern_count
+        conf = pattern_count / max(total, 1)
         return ASTTranspileResult(
-            output="\n".join(self._lines),
+            output=output,
             externs=self._extern_params,
             globals_=self._global_vars,
-            stats={"externs": len(self._extern_params), "globals": len(self._global_vars)},
+            stats={
+                "externs": len(self._extern_params),
+                "globals": len(self._global_vars),
+                "confidence": conf,
+                "matched": pattern_count,
+                "gaps": gap_count,
+                "gap_samples": [l.strip()[len("# TRANSPILER-GAP: "):] for l in self._lines if "# TRANSPILER-GAP:" in l][:10],
+            },
         )
+
+    @staticmethod
+    def _is_translated_line(line: str) -> bool:
+        """Check if a line is an actual translated statement (not a comment or blank)."""
+        s = line.strip()
+        return bool(s) and not s.startswith("#") and not s.startswith('"""') and not s.startswith("class ") and not s.startswith("from ") and not s.startswith("import ") and s != ")"
 
     def _transpile_function(self, func: FuncDef) -> None:
         sdk_name = LIFECYCLE_MAP.get(func.name, func.name.lower())

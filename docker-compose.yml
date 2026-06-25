@@ -95,8 +95,8 @@ services:
   strategy-service:
     container_name: ant-strategy-service
     build:
-      context: ./strategy-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./strategy-service/Dockerfile
     image: ant-prod-strategy-service
     restart: always
     logging:

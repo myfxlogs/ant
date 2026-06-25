@@ -190,6 +190,32 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 		return nil, err
 	}
 
+	// ── Fast path: deterministic transpiler ──
+	if s.pythonStrategyClient != nil {
+		pyResp, pyErr := s.pythonStrategyClient.TranspileCode(ctx, connect.NewRequest(&antv1.TranspileCodeRequest{
+			SourceCode: code,
+			SourceLang: sourceLang,
+			ClassName:  "TranslatedStrategy",
+		}))
+		if pyErr == nil && pyResp != nil && pyResp.Msg != nil && pyResp.Msg.IsDeterministic {
+			detectedLang := sourceLang
+			if detectedLang == "" || detectedLang == "auto" {
+				detectedLang = "mql4" // default
+			}
+			return connect.NewResponse(&antv1.TransformCodeResponse{
+				TargetCode:    pyResp.Msg.TargetCode,
+				DetectedLang:  detectedLang,
+				Explanation: fmt.Sprintf("Deterministic transpiler: %.0f%% confidence, %d/%d patterns matched",
+					pyResp.Msg.Confidence*100, pyResp.Msg.TotalPatterns-pyResp.Msg.Gaps, pyResp.Msg.TotalPatterns),
+				Confidence:    pyResp.Msg.Confidence,
+				TotalPatterns: pyResp.Msg.TotalPatterns,
+				Gaps:          pyResp.Msg.Gaps,
+				GapSamples:    pyResp.Msg.GapSamples,
+			}), nil
+		}
+		// Fall through to AI if deterministic transpiler failed or returned low confidence.
+	}
+
 	// Detect language if "auto"
 	langHint := ""
 	detectedLang := sourceLang

@@ -223,4 +223,12 @@ func (s *PythonStrategyServer) ExecuteLive(ctx context.Context, req *connect.Req
 	return connect.NewResponse(&antv1.ExecuteLiveResponse{Success: false, Error: "Python service not configured"}), nil
 }
 
+func (s *PythonStrategyServer) TranspileCode(ctx context.Context, req *connect.Request[antv1.TranspileCodeRequest]) (*connect.Response[antv1.TranspileCodeResponse], error) {
+	// Proxy to Python strategy service which has the deterministic transpiler.
+	if s.connectClient != nil {
+		return s.connectClient.TranspileCode(ctx, req)
+	}
+	return connect.NewResponse(&antv1.TranspileCodeResponse{IsDeterministic: false}), nil
+}
+
 func (s *PythonStrategyServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }

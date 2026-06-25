@@ -27,6 +27,24 @@ service PythonStrategyService {
   // Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
   // Python maintains a LiveWorker pool — pre-compiled, per-bar calls < 100ms.
   rpc ExecuteLive(ExecuteLiveRequest) returns (ExecuteLiveResponse);
+  // TranspileCode translates MQL4/MQL5 code to Python using the deterministic transpiler.
+  // Returns confidence score and gap report; AI fallback handled by Go layer.
+  rpc TranspileCode(TranspileCodeRequest) returns (TranspileCodeResponse);
+}
+
+message TranspileCodeRequest {
+  string source_code = 1;  // MQL4 or MQL5 source
+  string source_lang = 2;  // "mql4", "mql5", or "auto"
+  string class_name = 3;   // desired Python class name
+}
+
+message TranspileCodeResponse {
+  string target_code = 1;       // translated Python code
+  float confidence = 2;        // 0.0–1.0
+  int32 total_patterns = 3;    // matched + gaps
+  int32 gaps = 4;              // untranslated patterns
+  repeated string gap_samples = 5;  // gap reasons (max 10)
+  bool is_deterministic = 6;   // true if no AI was used
 }
 
 message ExecuteStrategyRequest {

@@ -15,15 +15,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN groupadd -g 10001 app && useradd -m -u 10001 -g 10001 -s /usr/sbin/nologin app
 
 # 复制依赖文件
-COPY requirements.txt .
+COPY strategy-service/requirements.txt .
 
 # 安装Python依赖
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制应用代码
-COPY app/ app/
+COPY strategy-service/app/ /app/app/
+COPY tools/mql_transpiler/ /app/tools/mql_transpiler/
 
-COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY strategy-service/docker-entrypoint.sh /docker-entrypoint.sh
 
 RUN chmod +x /docker-entrypoint.sh
 
@@ -39,7 +40,7 @@ ENV MAX_BACKTEST_WORKERS=2
 ENV BACKTEST_TIMEOUT=120
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app/app
+ENV PYTHONPATH=/app/app:/app
 ENV HOME=/tmp
 ENV XDG_CACHE_HOME=/tmp/.cache
 

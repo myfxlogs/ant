@@ -70,6 +70,9 @@ const (
 	// PythonStrategyServiceExecuteLiveProcedure is the fully-qualified name of the
 	// PythonStrategyService's ExecuteLive RPC.
 	PythonStrategyServiceExecuteLiveProcedure = "/ant.v1.PythonStrategyService/ExecuteLive"
+	// PythonStrategyServiceTranspileCodeProcedure is the fully-qualified name of the
+	// PythonStrategyService's TranspileCode RPC.
+	PythonStrategyServiceTranspileCodeProcedure = "/ant.v1.PythonStrategyService/TranspileCode"
 )
 
 // PythonStrategyServiceClient is a client for the ant.v1.PythonStrategyService service.
@@ -89,6 +92,9 @@ type PythonStrategyServiceClient interface {
 	// Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
 	// Python maintains a LiveWorker pool — pre-compiled, per-bar calls < 100ms.
 	ExecuteLive(context.Context, *connect.Request[v1.ExecuteLiveRequest]) (*connect.Response[v1.ExecuteLiveResponse], error)
+	// TranspileCode translates MQL4/MQL5 code to Python using the deterministic transpiler.
+	// Returns confidence score and gap report; AI fallback handled by Go layer.
+	TranspileCode(context.Context, *connect.Request[v1.TranspileCodeRequest]) (*connect.Response[v1.TranspileCodeResponse], error)
 }
 
 // NewPythonStrategyServiceClient constructs a client for the ant.v1.PythonStrategyService service.
@@ -174,6 +180,12 @@ func NewPythonStrategyServiceClient(httpClient connect.HTTPClient, baseURL strin
 			connect.WithSchema(pythonStrategyServiceMethods.ByName("ExecuteLive")),
 			connect.WithClientOptions(opts...),
 		),
+		transpileCode: connect.NewClient[v1.TranspileCodeRequest, v1.TranspileCodeResponse](
+			httpClient,
+			baseURL+PythonStrategyServiceTranspileCodeProcedure,
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("TranspileCode")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -191,6 +203,7 @@ type pythonStrategyServiceClient struct {
 	deleteBacktestRuns *connect.Client[v1.DeleteBacktestRunsRequest, v1.DeleteBacktestRunsResponse]
 	getTemplates       *connect.Client[emptypb.Empty, v1.GetPythonTemplatesResponse]
 	executeLive        *connect.Client[v1.ExecuteLiveRequest, v1.ExecuteLiveResponse]
+	transpileCode      *connect.Client[v1.TranspileCodeRequest, v1.TranspileCodeResponse]
 }
 
 // Execute calls ant.v1.PythonStrategyService.Execute.
@@ -253,6 +266,11 @@ func (c *pythonStrategyServiceClient) ExecuteLive(ctx context.Context, req *conn
 	return c.executeLive.CallUnary(ctx, req)
 }
 
+// TranspileCode calls ant.v1.PythonStrategyService.TranspileCode.
+func (c *pythonStrategyServiceClient) TranspileCode(ctx context.Context, req *connect.Request[v1.TranspileCodeRequest]) (*connect.Response[v1.TranspileCodeResponse], error) {
+	return c.transpileCode.CallUnary(ctx, req)
+}
+
 // PythonStrategyServiceHandler is an implementation of the ant.v1.PythonStrategyService service.
 type PythonStrategyServiceHandler interface {
 	Execute(context.Context, *connect.Request[v1.ExecuteStrategyRequest]) (*connect.Response[v1.ExecuteStrategyResponse], error)
@@ -270,6 +288,9 @@ type PythonStrategyServiceHandler interface {
 	// Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
 	// Python maintains a LiveWorker pool — pre-compiled, per-bar calls < 100ms.
 	ExecuteLive(context.Context, *connect.Request[v1.ExecuteLiveRequest]) (*connect.Response[v1.ExecuteLiveResponse], error)
+	// TranspileCode translates MQL4/MQL5 code to Python using the deterministic transpiler.
+	// Returns confidence score and gap report; AI fallback handled by Go layer.
+	TranspileCode(context.Context, *connect.Request[v1.TranspileCodeRequest]) (*connect.Response[v1.TranspileCodeResponse], error)
 }
 
 // NewPythonStrategyServiceHandler builds an HTTP handler from the service implementation. It
@@ -351,6 +372,12 @@ func NewPythonStrategyServiceHandler(svc PythonStrategyServiceHandler, opts ...c
 		connect.WithSchema(pythonStrategyServiceMethods.ByName("ExecuteLive")),
 		connect.WithHandlerOptions(opts...),
 	)
+	pythonStrategyServiceTranspileCodeHandler := connect.NewUnaryHandler(
+		PythonStrategyServiceTranspileCodeProcedure,
+		svc.TranspileCode,
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("TranspileCode")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.PythonStrategyService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case PythonStrategyServiceExecuteProcedure:
@@ -377,6 +404,8 @@ func NewPythonStrategyServiceHandler(svc PythonStrategyServiceHandler, opts ...c
 			pythonStrategyServiceGetTemplatesHandler.ServeHTTP(w, r)
 		case PythonStrategyServiceExecuteLiveProcedure:
 			pythonStrategyServiceExecuteLiveHandler.ServeHTTP(w, r)
+		case PythonStrategyServiceTranspileCodeProcedure:
+			pythonStrategyServiceTranspileCodeHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -432,4 +461,8 @@ func (UnimplementedPythonStrategyServiceHandler) GetTemplates(context.Context, *
 
 func (UnimplementedPythonStrategyServiceHandler) ExecuteLive(context.Context, *connect.Request[v1.ExecuteLiveRequest]) (*connect.Response[v1.ExecuteLiveResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.PythonStrategyService.ExecuteLive is not implemented"))
+}
+
+func (UnimplementedPythonStrategyServiceHandler) TranspileCode(context.Context, *connect.Request[v1.TranspileCodeRequest]) (*connect.Response[v1.TranspileCodeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.PythonStrategyService.TranspileCode is not implemented"))
 }

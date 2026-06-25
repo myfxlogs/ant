@@ -254,3 +254,63 @@ async def execute_strategy_connect(request: Request):
         resp = ExecuteStrategyResponse(success=False, error=f"服务器错误: {e}")
 
     return _respond(resp, request)
+
+# ── TranspileCode ────────────────────────────────────────────────────
+
+try:
+    from tools.mql_transpiler.ast_transpiler import transpile_ast
+    _TRANSPILER_AVAILABLE = True
+except ImportError:
+    _TRANSPILER_AVAILABLE = False
+
+
+@router.post("/ant.v1.PythonStrategyService/TranspileCode")
+async def handle_transpile(request: Request) -> Response:
+    """Transpile MQL4/MQL5 code to Python using the deterministic transpiler."""
+    try:
+        body = await request.json()
+        source = body.get("sourceCode", body.get("source_code", ""))
+        lang = body.get("sourceLang", body.get("source_lang", "auto"))
+        class_name = body.get("className", body.get("class_name", "TranslatedStrategy"))
+
+        if not _TRANSPILER_AVAILABLE:
+            return _respond_json({
+                "targetCode": "",
+                "confidence": 0.0,
+                "totalPatterns": 0,
+                "gaps": 0,
+                "gapSamples": ["transpiler not available"],
+                "isDeterministic": False,
+            }, request)
+
+        result = transpile_ast(source, class_name)
+        conf = result.stats.get("confidence", 0.0)
+        gaps = result.stats.get("gaps", 0)
+        matched = result.stats.get("matched", 0)
+
+        return _respond_json({
+            "targetCode": result.output,
+            "confidence": conf,
+            "totalPatterns": matched + gaps,
+            "gaps": gaps,
+            "gapSamples": result.stats.get("gap_samples", []),
+            "isDeterministic": True,
+        }, request)
+    except Exception as e:
+        return _respond_json({
+            "targetCode": "",
+            "confidence": 0.0,
+            "totalPatterns": 0,
+            "gaps": 0,
+            "gapSamples": [str(e)],
+            "isDeterministic": False,
+        }, request)
+
+
+def _respond_json(data: dict, request: Request) -> Response:
+    """Return JSON response with ConnectRPC headers."""
+    return Response(
+        content=json.dumps(data),
+        media_type="application/json",
+        headers={"Connect-Protocol-Version": "1"},
+    )

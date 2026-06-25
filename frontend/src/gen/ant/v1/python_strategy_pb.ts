@@ -22,7 +22,94 @@ import type { StrategySignal } from "./strategy_signal_messages_pb";
  * Describes the file python_strategy.proto.
  */
 export const file_python_strategy: GenFile = /*@__PURE__*/
-  fileDesc("ChVweXRob25fc3RyYXRlZ3kucHJvdG8SBmFudC52MSJdChZFeGVjdXRlU3RyYXRlZ3lSZXF1ZXN0EgwKBGNvZGUYASABKAkSEgoKYWNjb3VudF9pZBgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJIm8KF0V4ZWN1dGVTdHJhdGVneVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSJgoGc2lnbmFsGAIgASgLMhYuYW50LnYxLlN0cmF0ZWd5U2lnbmFsEgwKBGxvZ3MYAyADKAkSDQoFZXJyb3IYBCABKAkiJwoXVmFsaWRhdGVTdHJhdGVneVJlcXVlc3QSDAoEY29kZRgBIAEoCSKVAgoYVmFsaWRhdGVTdHJhdGVneVJlc3BvbnNlEg0KBXZhbGlkGAEgASgIEg4KBmVycm9ycxgCIAMoCRIQCgh3YXJuaW5ncxgDIAMoCRIuCg1xdWFsaXR5X2hpbnRzGAQgAygLMhcuYW50LnYxLkNvZGVRdWFsaXR5SGludBIwChBzd2VlcF9kaW1lbnNpb25zGAUgAygLMhYuYW50LnYxLlN3ZWVwRGltZW5zaW9uEjYKE3N0cmF0ZWd5X2RpcmVjdGl2ZXMYBiADKAsyGS5hbnQudjEuU3RyYXRlZ3lEaXJlY3RpdmUSFQoNc3RyYXRlZ3lfdHlwZRgHIAEoCRIXCg9wYXJhbWV0ZXJzX2pzb24YCCABKAkiZQoPQ29kZVF1YWxpdHlIaW50EhAKCGNhdGVnb3J5GAEgASgJEhAKCHNldmVyaXR5GAIgASgJEg8KB21lc3NhZ2UYAyABKAkSDAoEbGluZRgEIAEoBRIPCgdzbmlwcGV0GAUgASgJIncKDlN3ZWVwRGltZW5zaW9uEgsKA2tleRgBIAEoCRIMCgR0eXBlGAIgASgJEg8KB2RlZmF1bHQYAyABKAESCwoDbWluGAQgASgBEgsKA21heBgFIAEoARIMCgRzdGVwGAYgASgBEhEKCWhhc19yYW5nZRgHIAEoCCIvChFTdHJhdGVneURpcmVjdGl2ZRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAkinwEKF0JhY2t0ZXN0U3RyYXRlZ3lSZXF1ZXN0EgwKBGNvZGUYASABKAkSEgoKYWNjb3VudF9pZBgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJEhcKD2luaXRpYWxfY2FwaXRhbBgFIAEoARIXCgpkYXRhc2V0X2lkGAYgASgJSACIAQFCDQoLX2RhdGFzZXRfaWQiogEKGEJhY2t0ZXN0U3RyYXRlZ3lSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEigKB21ldHJpY3MYAiABKAsyFy5hbnQudjEuQmFja3Rlc3RNZXRyaWNzEhQKDGVxdWl0eV9jdXJ2ZRgDIAMoARINCgVlcnJvchgEIAEoCRIXCgpkYXRhc2V0X2lkGAUgASgJSACIAQFCDQoLX2RhdGFzZXRfaWQiRwoaR2V0UHl0aG9uVGVtcGxhdGVzUmVzcG9uc2USKQoJdGVtcGxhdGVzGAEgAygLMhYuYW50LnYxLlB5dGhvblRlbXBsYXRlIkEKDlB5dGhvblRlbXBsYXRlEgwKBG5hbWUYASABKAkSEwoLZGVzY3JpcHRpb24YAiABKAkSDAoEY29kZRgDIAEoCSJZChJFeGVjdXRlTGl2ZVJlcXVlc3QSFQoNc3RyYXRlZ3lfY29kZRgBIAEoCRIsCgdjb250ZXh0GAIgASgLMhsuYW50LnYxLkxpdmVTdHJhdGVneUNvbnRleHQinQEKE0V4ZWN1dGVMaXZlUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBImCgZzaWduYWwYAiABKAsyFi5hbnQudjEuU3RyYXRlZ3lTaWduYWwSDQoFZXJyb3IYAyABKAkSFQoNc3RyYXRlZ3lfaGFzaBgEIAEoCRInCgdzaWduYWxzGAUgAygLMhYuYW50LnYxLlN0cmF0ZWd5U2lnbmFsIpMDChNMaXZlU3RyYXRlZ3lDb250ZXh0Eg0KBWNsb3NlGAEgAygBEgwKBG9wZW4YAiADKAESDAoEaGlnaBgDIAMoARILCgNsb3cYBCADKAESDgoGdm9sdW1lGAUgAygBEhQKDGJhcl90aW1lc19tcxgGIAMoAxIOCgZlcXVpdHkYByABKAESDwoHYmFsYW5jZRgIIAEoARImCghwb3NpdGlvbhgJIAEoCzIULmFudC52MS5MaXZlUG9zaXRpb24SJwoJcG9zaXRpb25zGAogAygLMhQuYW50LnYxLkxpdmVQb3NpdGlvbhIOCgZzeW1ib2wYCyABKAkSEQoJdGltZWZyYW1lGAwgASgJEgwKBG1vZGUYDSABKAkSIQoGcGFyYW1zGA4gAygLMhEuYW50LnYxLkxpdmVQYXJhbRIpCgdzeW1ib2xzGA8gAygLMhguYW50LnYxLkxpdmVTeW1ib2xTZXJpZXMSFgoOcHJpbWFyeV9zeW1ib2wYECABKAkSFQoNY3VycmVudF9wcmljZRgRIAEoASKKAQoMTGl2ZVBvc2l0aW9uEg4KBnRpY2tldBgBIAEoAxIMCgRzaWRlGAIgASgJEg4KBnZvbHVtZRgDIAEoARISCgpvcGVuX3ByaWNlGAQgASgBEgoKAnNsGAUgASgBEgoKAnRwGAYgASgBEgwKBHN3YXAYByABKAESEgoKY29tbWlzc2lvbhgIIAEoASInCglMaXZlUGFyYW0SCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJImoKEExpdmVTeW1ib2xTZXJpZXMSDgoGc3ltYm9sGAEgASgJEg0KBWNsb3NlGAIgAygBEgwKBG9wZW4YAyADKAESDAoEaGlnaBgEIAMoARILCgNsb3cYBSADKAESDgoGdm9sdW1lGAYgAygBMvcHChVQeXRob25TdHJhdGVneVNlcnZpY2USSgoHRXhlY3V0ZRIeLmFudC52MS5FeGVjdXRlU3RyYXRlZ3lSZXF1ZXN0Gh8uYW50LnYxLkV4ZWN1dGVTdHJhdGVneVJlc3BvbnNlEk0KCFZhbGlkYXRlEh8uYW50LnYxLlZhbGlkYXRlU3RyYXRlZ3lSZXF1ZXN0GiAuYW50LnYxLlZhbGlkYXRlU3RyYXRlZ3lSZXNwb25zZRJNCghCYWNrdGVzdBIfLmFudC52MS5CYWNrdGVzdFN0cmF0ZWd5UmVxdWVzdBogLmFudC52MS5CYWNrdGVzdFN0cmF0ZWd5UmVzcG9uc2USVQoQU3RhcnRCYWNrdGVzdFJ1bhIfLmFudC52MS5TdGFydEJhY2t0ZXN0UnVuUmVxdWVzdBogLmFudC52MS5TdGFydEJhY2t0ZXN0UnVuUmVzcG9uc2USTwoOR2V0QmFja3Rlc3RSdW4SHS5hbnQudjEuR2V0QmFja3Rlc3RSdW5SZXF1ZXN0Gh4uYW50LnYxLkdldEJhY2t0ZXN0UnVuUmVzcG9uc2USVQoQTGlzdEJhY2t0ZXN0UnVucxIfLmFudC52MS5MaXN0QmFja3Rlc3RSdW5zUmVxdWVzdBogLmFudC52MS5MaXN0QmFja3Rlc3RSdW5zUmVzcG9uc2USUAoQV2F0Y2hCYWNrdGVzdFJ1bhIfLmFudC52MS5XYXRjaEJhY2t0ZXN0UnVuUmVxdWVzdBoZLmFudC52MS5CYWNrdGVzdFJ1blVwZGF0ZTABElgKEUNhbmNlbEJhY2t0ZXN0UnVuEiAuYW50LnYxLkNhbmNlbEJhY2t0ZXN0UnVuUmVxdWVzdBohLmFudC52MS5DYW5jZWxCYWNrdGVzdFJ1blJlc3BvbnNlElgKEURlbGV0ZUJhY2t0ZXN0UnVuEiAuYW50LnYxLkRlbGV0ZUJhY2t0ZXN0UnVuUmVxdWVzdBohLmFudC52MS5EZWxldGVCYWNrdGVzdFJ1blJlc3BvbnNlElsKEkRlbGV0ZUJhY2t0ZXN0UnVucxIhLmFudC52MS5EZWxldGVCYWNrdGVzdFJ1bnNSZXF1ZXN0GiIuYW50LnYxLkRlbGV0ZUJhY2t0ZXN0UnVuc1Jlc3BvbnNlEkoKDEdldFRlbXBsYXRlcxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoiLmFudC52MS5HZXRQeXRob25UZW1wbGF0ZXNSZXNwb25zZRJGCgtFeGVjdXRlTGl2ZRIaLmFudC52MS5FeGVjdXRlTGl2ZVJlcXVlc3QaGy5hbnQudjEuRXhlY3V0ZUxpdmVSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_empty, file_common, file_strategy_messages, file_backtest_run_start, file_backtest_run_query, file_backtest_run_control]);
+  fileDesc("ChVweXRob25fc3RyYXRlZ3kucHJvdG8SBmFudC52MSJUChRUcmFuc3BpbGVDb2RlUmVxdWVzdBITCgtzb3VyY2VfY29kZRgBIAEoCRITCgtzb3VyY2VfbGFuZxgCIAEoCRISCgpjbGFzc19uYW1lGAMgASgJIpUBChVUcmFuc3BpbGVDb2RlUmVzcG9uc2USEwoLdGFyZ2V0X2NvZGUYASABKAkSEgoKY29uZmlkZW5jZRgCIAEoAhIWCg50b3RhbF9wYXR0ZXJucxgDIAEoBRIMCgRnYXBzGAQgASgFEhMKC2dhcF9zYW1wbGVzGAUgAygJEhgKEGlzX2RldGVybWluaXN0aWMYBiABKAgiXQoWRXhlY3V0ZVN0cmF0ZWd5UmVxdWVzdBIMCgRjb2RlGAEgASgJEhIKCmFjY291bnRfaWQYAiABKAkSDgoGc3ltYm9sGAMgASgJEhEKCXRpbWVmcmFtZRgEIAEoCSJvChdFeGVjdXRlU3RyYXRlZ3lSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEiYKBnNpZ25hbBgCIAEoCzIWLmFudC52MS5TdHJhdGVneVNpZ25hbBIMCgRsb2dzGAMgAygJEg0KBWVycm9yGAQgASgJIicKF1ZhbGlkYXRlU3RyYXRlZ3lSZXF1ZXN0EgwKBGNvZGUYASABKAkilQIKGFZhbGlkYXRlU3RyYXRlZ3lSZXNwb25zZRINCgV2YWxpZBgBIAEoCBIOCgZlcnJvcnMYAiADKAkSEAoId2FybmluZ3MYAyADKAkSLgoNcXVhbGl0eV9oaW50cxgEIAMoCzIXLmFudC52MS5Db2RlUXVhbGl0eUhpbnQSMAoQc3dlZXBfZGltZW5zaW9ucxgFIAMoCzIWLmFudC52MS5Td2VlcERpbWVuc2lvbhI2ChNzdHJhdGVneV9kaXJlY3RpdmVzGAYgAygLMhkuYW50LnYxLlN0cmF0ZWd5RGlyZWN0aXZlEhUKDXN0cmF0ZWd5X3R5cGUYByABKAkSFwoPcGFyYW1ldGVyc19qc29uGAggASgJImUKD0NvZGVRdWFsaXR5SGludBIQCghjYXRlZ29yeRgBIAEoCRIQCghzZXZlcml0eRgCIAEoCRIPCgdtZXNzYWdlGAMgASgJEgwKBGxpbmUYBCABKAUSDwoHc25pcHBldBgFIAEoCSJ3Cg5Td2VlcERpbWVuc2lvbhILCgNrZXkYASABKAkSDAoEdHlwZRgCIAEoCRIPCgdkZWZhdWx0GAMgASgBEgsKA21pbhgEIAEoARILCgNtYXgYBSABKAESDAoEc3RlcBgGIAEoARIRCgloYXNfcmFuZ2UYByABKAgiLwoRU3RyYXRlZ3lEaXJlY3RpdmUSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJIp8BChdCYWNrdGVzdFN0cmF0ZWd5UmVxdWVzdBIMCgRjb2RlGAEgASgJEhIKCmFjY291bnRfaWQYAiABKAkSDgoGc3ltYm9sGAMgASgJEhEKCXRpbWVmcmFtZRgEIAEoCRIXCg9pbml0aWFsX2NhcGl0YWwYBSABKAESFwoKZGF0YXNldF9pZBgGIAEoCUgAiAEBQg0KC19kYXRhc2V0X2lkIqIBChhCYWNrdGVzdFN0cmF0ZWd5UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIoCgdtZXRyaWNzGAIgASgLMhcuYW50LnYxLkJhY2t0ZXN0TWV0cmljcxIUCgxlcXVpdHlfY3VydmUYAyADKAESDQoFZXJyb3IYBCABKAkSFwoKZGF0YXNldF9pZBgFIAEoCUgAiAEBQg0KC19kYXRhc2V0X2lkIkcKGkdldFB5dGhvblRlbXBsYXRlc1Jlc3BvbnNlEikKCXRlbXBsYXRlcxgBIAMoCzIWLmFudC52MS5QeXRob25UZW1wbGF0ZSJBCg5QeXRob25UZW1wbGF0ZRIMCgRuYW1lGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJEgwKBGNvZGUYAyABKAkiWQoSRXhlY3V0ZUxpdmVSZXF1ZXN0EhUKDXN0cmF0ZWd5X2NvZGUYASABKAkSLAoHY29udGV4dBgCIAEoCzIbLmFudC52MS5MaXZlU3RyYXRlZ3lDb250ZXh0Ip0BChNFeGVjdXRlTGl2ZVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSJgoGc2lnbmFsGAIgASgLMhYuYW50LnYxLlN0cmF0ZWd5U2lnbmFsEg0KBWVycm9yGAMgASgJEhUKDXN0cmF0ZWd5X2hhc2gYBCABKAkSJwoHc2lnbmFscxgFIAMoCzIWLmFudC52MS5TdHJhdGVneVNpZ25hbCKTAwoTTGl2ZVN0cmF0ZWd5Q29udGV4dBINCgVjbG9zZRgBIAMoARIMCgRvcGVuGAIgAygBEgwKBGhpZ2gYAyADKAESCwoDbG93GAQgAygBEg4KBnZvbHVtZRgFIAMoARIUCgxiYXJfdGltZXNfbXMYBiADKAMSDgoGZXF1aXR5GAcgASgBEg8KB2JhbGFuY2UYCCABKAESJgoIcG9zaXRpb24YCSABKAsyFC5hbnQudjEuTGl2ZVBvc2l0aW9uEicKCXBvc2l0aW9ucxgKIAMoCzIULmFudC52MS5MaXZlUG9zaXRpb24SDgoGc3ltYm9sGAsgASgJEhEKCXRpbWVmcmFtZRgMIAEoCRIMCgRtb2RlGA0gASgJEiEKBnBhcmFtcxgOIAMoCzIRLmFudC52MS5MaXZlUGFyYW0SKQoHc3ltYm9scxgPIAMoCzIYLmFudC52MS5MaXZlU3ltYm9sU2VyaWVzEhYKDnByaW1hcnlfc3ltYm9sGBAgASgJEhUKDWN1cnJlbnRfcHJpY2UYESABKAEiigEKDExpdmVQb3NpdGlvbhIOCgZ0aWNrZXQYASABKAMSDAoEc2lkZRgCIAEoCRIOCgZ2b2x1bWUYAyABKAESEgoKb3Blbl9wcmljZRgEIAEoARIKCgJzbBgFIAEoARIKCgJ0cBgGIAEoARIMCgRzd2FwGAcgASgBEhIKCmNvbW1pc3Npb24YCCABKAEiJwoJTGl2ZVBhcmFtEgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCSJqChBMaXZlU3ltYm9sU2VyaWVzEg4KBnN5bWJvbBgBIAEoCRINCgVjbG9zZRgCIAMoARIMCgRvcGVuGAMgAygBEgwKBGhpZ2gYBCADKAESCwoDbG93GAUgAygBEg4KBnZvbHVtZRgGIAMoATLFCAoVUHl0aG9uU3RyYXRlZ3lTZXJ2aWNlEkoKB0V4ZWN1dGUSHi5hbnQudjEuRXhlY3V0ZVN0cmF0ZWd5UmVxdWVzdBofLmFudC52MS5FeGVjdXRlU3RyYXRlZ3lSZXNwb25zZRJNCghWYWxpZGF0ZRIfLmFudC52MS5WYWxpZGF0ZVN0cmF0ZWd5UmVxdWVzdBogLmFudC52MS5WYWxpZGF0ZVN0cmF0ZWd5UmVzcG9uc2USTQoIQmFja3Rlc3QSHy5hbnQudjEuQmFja3Rlc3RTdHJhdGVneVJlcXVlc3QaIC5hbnQudjEuQmFja3Rlc3RTdHJhdGVneVJlc3BvbnNlElUKEFN0YXJ0QmFja3Rlc3RSdW4SHy5hbnQudjEuU3RhcnRCYWNrdGVzdFJ1blJlcXVlc3QaIC5hbnQudjEuU3RhcnRCYWNrdGVzdFJ1blJlc3BvbnNlEk8KDkdldEJhY2t0ZXN0UnVuEh0uYW50LnYxLkdldEJhY2t0ZXN0UnVuUmVxdWVzdBoeLmFudC52MS5HZXRCYWNrdGVzdFJ1blJlc3BvbnNlElUKEExpc3RCYWNrdGVzdFJ1bnMSHy5hbnQudjEuTGlzdEJhY2t0ZXN0UnVuc1JlcXVlc3QaIC5hbnQudjEuTGlzdEJhY2t0ZXN0UnVuc1Jlc3BvbnNlElAKEFdhdGNoQmFja3Rlc3RSdW4SHy5hbnQudjEuV2F0Y2hCYWNrdGVzdFJ1blJlcXVlc3QaGS5hbnQudjEuQmFja3Rlc3RSdW5VcGRhdGUwARJYChFDYW5jZWxCYWNrdGVzdFJ1bhIgLmFudC52MS5DYW5jZWxCYWNrdGVzdFJ1blJlcXVlc3QaIS5hbnQudjEuQ2FuY2VsQmFja3Rlc3RSdW5SZXNwb25zZRJYChFEZWxldGVCYWNrdGVzdFJ1bhIgLmFudC52MS5EZWxldGVCYWNrdGVzdFJ1blJlcXVlc3QaIS5hbnQudjEuRGVsZXRlQmFja3Rlc3RSdW5SZXNwb25zZRJbChJEZWxldGVCYWNrdGVzdFJ1bnMSIS5hbnQudjEuRGVsZXRlQmFja3Rlc3RSdW5zUmVxdWVzdBoiLmFudC52MS5EZWxldGVCYWNrdGVzdFJ1bnNSZXNwb25zZRJKCgxHZXRUZW1wbGF0ZXMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaIi5hbnQudjEuR2V0UHl0aG9uVGVtcGxhdGVzUmVzcG9uc2USRgoLRXhlY3V0ZUxpdmUSGi5hbnQudjEuRXhlY3V0ZUxpdmVSZXF1ZXN0GhsuYW50LnYxLkV4ZWN1dGVMaXZlUmVzcG9uc2USTAoNVHJhbnNwaWxlQ29kZRIcLmFudC52MS5UcmFuc3BpbGVDb2RlUmVxdWVzdBodLmFudC52MS5UcmFuc3BpbGVDb2RlUmVzcG9uc2VCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_empty, file_common, file_strategy_messages, file_backtest_run_start, file_backtest_run_query, file_backtest_run_control]);
+
+/**
+ * @generated from message ant.v1.TranspileCodeRequest
+ */
+export type TranspileCodeRequest = Message<"ant.v1.TranspileCodeRequest"> & {
+  /**
+   * MQL4 or MQL5 source
+   *
+   * @generated from field: string source_code = 1;
+   */
+  sourceCode: string;
+
+  /**
+   * "mql4", "mql5", or "auto"
+   *
+   * @generated from field: string source_lang = 2;
+   */
+  sourceLang: string;
+
+  /**
+   * desired Python class name
+   *
+   * @generated from field: string class_name = 3;
+   */
+  className: string;
+};
+
+/**
+ * Describes the message ant.v1.TranspileCodeRequest.
+ * Use `create(TranspileCodeRequestSchema)` to create a new message.
+ */
+export const TranspileCodeRequestSchema: GenMessage<TranspileCodeRequest> = /*@__PURE__*/
+  messageDesc(file_python_strategy, 0);
+
+/**
+ * @generated from message ant.v1.TranspileCodeResponse
+ */
+export type TranspileCodeResponse = Message<"ant.v1.TranspileCodeResponse"> & {
+  /**
+   * translated Python code
+   *
+   * @generated from field: string target_code = 1;
+   */
+  targetCode: string;
+
+  /**
+   * 0.0–1.0
+   *
+   * @generated from field: float confidence = 2;
+   */
+  confidence: number;
+
+  /**
+   * matched + gaps
+   *
+   * @generated from field: int32 total_patterns = 3;
+   */
+  totalPatterns: number;
+
+  /**
+   * untranslated patterns
+   *
+   * @generated from field: int32 gaps = 4;
+   */
+  gaps: number;
+
+  /**
+   * gap reasons (max 10)
+   *
+   * @generated from field: repeated string gap_samples = 5;
+   */
+  gapSamples: string[];
+
+  /**
+   * true if no AI was used
+   *
+   * @generated from field: bool is_deterministic = 6;
+   */
+  isDeterministic: boolean;
+};
+
+/**
+ * Describes the message ant.v1.TranspileCodeResponse.
+ * Use `create(TranspileCodeResponseSchema)` to create a new message.
+ */
+export const TranspileCodeResponseSchema: GenMessage<TranspileCodeResponse> = /*@__PURE__*/
+  messageDesc(file_python_strategy, 1);
 
 /**
  * @generated from message ant.v1.ExecuteStrategyRequest
@@ -54,7 +141,7 @@ export type ExecuteStrategyRequest = Message<"ant.v1.ExecuteStrategyRequest"> & 
  * Use `create(ExecuteStrategyRequestSchema)` to create a new message.
  */
 export const ExecuteStrategyRequestSchema: GenMessage<ExecuteStrategyRequest> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 0);
+  messageDesc(file_python_strategy, 2);
 
 /**
  * @generated from message ant.v1.ExecuteStrategyResponse
@@ -86,7 +173,7 @@ export type ExecuteStrategyResponse = Message<"ant.v1.ExecuteStrategyResponse"> 
  * Use `create(ExecuteStrategyResponseSchema)` to create a new message.
  */
 export const ExecuteStrategyResponseSchema: GenMessage<ExecuteStrategyResponse> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 1);
+  messageDesc(file_python_strategy, 3);
 
 /**
  * @generated from message ant.v1.ValidateStrategyRequest
@@ -103,7 +190,7 @@ export type ValidateStrategyRequest = Message<"ant.v1.ValidateStrategyRequest"> 
  * Use `create(ValidateStrategyRequestSchema)` to create a new message.
  */
 export const ValidateStrategyRequestSchema: GenMessage<ValidateStrategyRequest> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 2);
+  messageDesc(file_python_strategy, 4);
 
 /**
  * @generated from message ant.v1.ValidateStrategyResponse
@@ -161,7 +248,7 @@ export type ValidateStrategyResponse = Message<"ant.v1.ValidateStrategyResponse"
  * Use `create(ValidateStrategyResponseSchema)` to create a new message.
  */
 export const ValidateStrategyResponseSchema: GenMessage<ValidateStrategyResponse> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 3);
+  messageDesc(file_python_strategy, 5);
 
 /**
  * CodeQualityHint reports a single code quality issue found by static analysis.
@@ -210,7 +297,7 @@ export type CodeQualityHint = Message<"ant.v1.CodeQualityHint"> & {
  * Use `create(CodeQualityHintSchema)` to create a new message.
  */
 export const CodeQualityHintSchema: GenMessage<CodeQualityHint> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 4);
+  messageDesc(file_python_strategy, 6);
 
 /**
  * SweepDimension describes a single parameter dimension for Smart Tuning.
@@ -262,7 +349,7 @@ export type SweepDimension = Message<"ant.v1.SweepDimension"> & {
  * Use `create(SweepDimensionSchema)` to create a new message.
  */
 export const SweepDimensionSchema: GenMessage<SweepDimension> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 5);
+  messageDesc(file_python_strategy, 7);
 
 /**
  * StrategyDirective is a key-value directive from @strategy annotations.
@@ -287,7 +374,7 @@ export type StrategyDirective = Message<"ant.v1.StrategyDirective"> & {
  * Use `create(StrategyDirectiveSchema)` to create a new message.
  */
 export const StrategyDirectiveSchema: GenMessage<StrategyDirective> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 6);
+  messageDesc(file_python_strategy, 8);
 
 /**
  * @generated from message ant.v1.BacktestStrategyRequest
@@ -329,7 +416,7 @@ export type BacktestStrategyRequest = Message<"ant.v1.BacktestStrategyRequest"> 
  * Use `create(BacktestStrategyRequestSchema)` to create a new message.
  */
 export const BacktestStrategyRequestSchema: GenMessage<BacktestStrategyRequest> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 7);
+  messageDesc(file_python_strategy, 9);
 
 /**
  * @generated from message ant.v1.BacktestStrategyResponse
@@ -366,7 +453,7 @@ export type BacktestStrategyResponse = Message<"ant.v1.BacktestStrategyResponse"
  * Use `create(BacktestStrategyResponseSchema)` to create a new message.
  */
 export const BacktestStrategyResponseSchema: GenMessage<BacktestStrategyResponse> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 8);
+  messageDesc(file_python_strategy, 10);
 
 /**
  * @generated from message ant.v1.GetPythonTemplatesResponse
@@ -383,7 +470,7 @@ export type GetPythonTemplatesResponse = Message<"ant.v1.GetPythonTemplatesRespo
  * Use `create(GetPythonTemplatesResponseSchema)` to create a new message.
  */
 export const GetPythonTemplatesResponseSchema: GenMessage<GetPythonTemplatesResponse> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 9);
+  messageDesc(file_python_strategy, 11);
 
 /**
  * @generated from message ant.v1.PythonTemplate
@@ -410,7 +497,7 @@ export type PythonTemplate = Message<"ant.v1.PythonTemplate"> & {
  * Use `create(PythonTemplateSchema)` to create a new message.
  */
 export const PythonTemplateSchema: GenMessage<PythonTemplate> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 10);
+  messageDesc(file_python_strategy, 12);
 
 /**
  * ExecuteLiveRequest sends strategy code with a proto-native context message.
@@ -438,7 +525,7 @@ export type ExecuteLiveRequest = Message<"ant.v1.ExecuteLiveRequest"> & {
  * Use `create(ExecuteLiveRequestSchema)` to create a new message.
  */
 export const ExecuteLiveRequestSchema: GenMessage<ExecuteLiveRequest> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 11);
+  messageDesc(file_python_strategy, 13);
 
 /**
  * @generated from message ant.v1.ExecuteLiveResponse
@@ -481,7 +568,7 @@ export type ExecuteLiveResponse = Message<"ant.v1.ExecuteLiveResponse"> & {
  * Use `create(ExecuteLiveResponseSchema)` to create a new message.
  */
 export const ExecuteLiveResponseSchema: GenMessage<ExecuteLiveResponse> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 12);
+  messageDesc(file_python_strategy, 14);
 
 /**
  * LiveStrategyContext is the execution context passed to run(context) in live/paper mode.
@@ -597,7 +684,7 @@ export type LiveStrategyContext = Message<"ant.v1.LiveStrategyContext"> & {
  * Use `create(LiveStrategyContextSchema)` to create a new message.
  */
 export const LiveStrategyContextSchema: GenMessage<LiveStrategyContext> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 13);
+  messageDesc(file_python_strategy, 15);
 
 /**
  * LivePosition mirrors the engine Position for live context.
@@ -653,7 +740,7 @@ export type LivePosition = Message<"ant.v1.LivePosition"> & {
  * Use `create(LivePositionSchema)` to create a new message.
  */
 export const LivePositionSchema: GenMessage<LivePosition> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 14);
+  messageDesc(file_python_strategy, 16);
 
 /**
  * LiveParam is a key-value strategy parameter.
@@ -679,7 +766,7 @@ export type LiveParam = Message<"ant.v1.LiveParam"> & {
  * Use `create(LiveParamSchema)` to create a new message.
  */
 export const LiveParamSchema: GenMessage<LiveParam> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 15);
+  messageDesc(file_python_strategy, 17);
 
 /**
  * LiveSymbolSeries holds OHLCV for one symbol in multi-symbol mode.
@@ -723,7 +810,7 @@ export type LiveSymbolSeries = Message<"ant.v1.LiveSymbolSeries"> & {
  * Use `create(LiveSymbolSeriesSchema)` to create a new message.
  */
 export const LiveSymbolSeriesSchema: GenMessage<LiveSymbolSeries> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 16);
+  messageDesc(file_python_strategy, 18);
 
 /**
  * @generated from service ant.v1.PythonStrategyService
@@ -828,6 +915,17 @@ export const PythonStrategyService: GenService<{
     methodKind: "unary";
     input: typeof ExecuteLiveRequestSchema;
     output: typeof ExecuteLiveResponseSchema;
+  },
+  /**
+   * TranspileCode translates MQL4/MQL5 code to Python using the deterministic transpiler.
+   * Returns confidence score and gap report; AI fallback handled by Go layer.
+   *
+   * @generated from rpc ant.v1.PythonStrategyService.TranspileCode
+   */
+  transpileCode: {
+    methodKind: "unary";
+    input: typeof TranspileCodeRequestSchema;
+    output: typeof TranspileCodeResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_python_strategy, 0);
