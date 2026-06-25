@@ -13,7 +13,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
-KB_PATH = os.path.join(os.path.dirname(__file__), "gap_patterns.json")
+KB_PATH = os.path.join(os.path.dirname(__file__), "kb", "gap_patterns.json")
 
 
 @dataclass
