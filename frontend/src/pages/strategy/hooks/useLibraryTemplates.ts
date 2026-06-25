@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { MESSAGES_CODE_VALIDATION_NOT_PASSED_KEY, MESSAGES_FETCH_TEMPLATE_LIST_FAILED_KEY, MESSAGES_SYSTEM_TEMPLATE_READ_ONLY_KEY, MESSAGES_TEMPLATE_CREATED_KEY, MESSAGES_TEMPLATE_DELETED_KEY, MESSAGES_TEMPLATE_UPDATED_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
 import { MY_COPY_KEY, SAVE_AS_MINE_SUCCESS_KEY, UNPUBLISH_SUCCESS_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
 
-;
 import { useQueryClient } from '@tanstack/react-query';
 import type { StrategyTemplate } from '@/client/strategy';
 import { strategyTemplateApi, type CreateTemplateRequest } from '@/client/strategy-schedules';
@@ -118,16 +117,17 @@ export function useLibraryTemplates() {
       const code = String(values.code || '');
       // Re-validate if code changed; otherwise reuse stored validation result.
       let params: Record<string, unknown>[] = [];
+      let validatedJson = validationResult?.parametersJson || '';
       if (code !== lastValidatedCode) {
         const ext = await codeAssistApi.validateExtended(code);
         if (!ext.valid) { message.error(ext.errors?.[0] || ext.warnings?.[0] || t(MESSAGES_CODE_VALIDATION_NOT_PASSED_KEY)); return; }
         setLastValidatedCode(code);
-        if (ext.parametersJson) try { params = JSON.parse(ext.parametersJson); } catch { /* ignore */ }
+        if (ext.parametersJson) { validatedJson = ext.parametersJson; try { params = JSON.parse(ext.parametersJson); } catch { /* ignore */ } }
       } else if (validationResult?.parametersJson) {
         try { params = JSON.parse(validationResult.parametersJson); } catch { /* ignore */ }
       }
       // Build i18n from extracted params (best-effort, never blocks save).
-      const i18n = params.length > 0 ? await buildParamI18n(validationResult?.parametersJson || '') : '';
+      const i18n = params.length > 0 ? await buildParamI18n(validatedJson) : '';
 
       const data: CreateTemplateRequest = { name: String(values.name || ''), description: String(values.description || ''), code, parameters: params as any[], isPublic: Boolean(values.isPublic) || false, tags: [], i18n };
       if (editing) { await strategyTemplateApi.update({ id: editing.id, ...data }); message.success(t(MESSAGES_TEMPLATE_UPDATED_KEY)); }

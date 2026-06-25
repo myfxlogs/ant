@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef } from 'react';
-import { Button, Tabs, InputNumber, Row, Col, Segmented, DatePicker, Radio, Switch, Tag, Tooltip, Dropdown, Select } from 'antd';
+import { Button, Tabs, InputNumber, Row, Col, Segmented, DatePicker, Radio, Switch, Tooltip, Dropdown, Select } from 'antd';
 import {
   PlayCircleOutlined, SettingOutlined, CaretDownOutlined,
   HistoryOutlined, DoubleRightOutlined,
@@ -9,18 +9,17 @@ import dayjs from 'dayjs';
 import {
   BOTH_KEY, CAPITAL_KEY, COMMISSION_KEY, CURRENT_DRAFT_KEY, DATE_RANGE_KEY, DIRECTION_KEY,
   END_DATE_KEY, EXECUTION_KEY, HISTORY_KEY, LEVERAGE_KEY, LONG_KEY, LOT_SIZE_KEY,
-  MORE_KEY, PNL_KEY, RUN_KEY, SHORT_KEY, SLIPPAGE_KEY, START_DATE_KEY, STRATEGY_KEY, STRATEGY_PARAMS_KEY, STRICT_MODE_KEY,
-  STRICT_MODE_OFF_DESC_KEY, STRICT_MODE_OFF_KEY, STRICT_MODE_OFF_TOOLTIP_KEY,
-  STRICT_MODE_ON_DESC_KEY, STRICT_MODE_ON_KEY, STRICT_MODE_ON_TOOLTIP_KEY,
-  TITLE_KEY, TRADE_KEY,
+  MORE_KEY, RUN_KEY, SHORT_KEY, SLIPPAGE_KEY, START_DATE_KEY, STRATEGY_KEY, STRATEGY_PARAMS_KEY, STRICT_MODE_KEY,
+  TITLE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import { RUN_DISABLED_HINT_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { VALIDATE_TO_SEE_PARAMS_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
 import {
-  BACKTEST_COMPLETED_KEY, BACKTEST_TAB_KEY, GATE_TAB_KEY, TUNING_TAB_KEY,
+  BACKTEST_TAB_KEY, GATE_TAB_KEY, TUNING_TAB_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import {
-  BACKTEST_RECORDS_KEY, TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, PROFIT_FACTOR_KEY, WIN_RATE_KEY,
+  BACKTEST_RECORDS_KEY, MAX_DRAWDOWN_KEY, PROFIT_FACTOR_KEY, SHARPE_KEY,
+  TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, WIN_RATE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import SmartTuningPanel from '@/pages/strategy/components/workspace/SmartTuningPanel';
 import GatePanel from '@/pages/strategy/components/workspace/GatePanel';
