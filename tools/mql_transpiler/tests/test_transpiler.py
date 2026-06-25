@@ -16,10 +16,24 @@ import os
 import unittest
 from pathlib import Path
 
-# New pipeline: tree-sitter + AST transpiler + quality gates.
-from tools.mql_transpiler.ast_bridge import parse_mql
 from tools.mql_transpiler.ast_transpiler import ASTTranspiler
 from tools.mql_transpiler.quality_gate import QualityGate, QualityVerdict
+
+# Tree-sitter may not be available in all environments (e.g. CI without
+# the grammar .so compiled for the target architecture).
+try:
+    from tools.mql_transpiler.tree_sitter_parser import available as _ts_available
+    _TREE_SITTER_OK = _ts_available()
+except Exception:
+    _TREE_SITTER_OK = False
+
+_NEEDS_TREE_SITTER = unittest.skipUnless(
+    _TREE_SITTER_OK,
+    "tree-sitter MQL grammar not available — build with: "
+    "cd tools/mql_transpiler/grammar/mql && "
+    "npx tree-sitter generate && "
+    "gcc -shared -fPIC -o mql.so src/parser.c -I src",
+)
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -35,6 +49,7 @@ FIXTURES = [
 
 def _transpile(fixture_name: str) -> ASTTranspiler:
     """Transpile a fixture and return the ASTTranspiler for inspection."""
+    from tools.mql_transpiler.ast_bridge import parse_mql
     source = (FIXTURES_DIR / fixture_name).read_text()
     class_name = fixture_name.replace(".mq4", "").replace("_", " ").title().replace(" ", "")
     ast_root = parse_mql(source)
@@ -51,6 +66,7 @@ def _transpile_output(fixture_name: str) -> str:
 
 # ── Core: compile + gate tests ───────────────────────────────────────────
 
+@_NEEDS_TREE_SITTER
 class TestAllFixturesCompile(unittest.TestCase):
     """DoD: every fixture produces syntactically valid Python."""
 
@@ -71,6 +87,7 @@ class TestAllFixturesCompile(unittest.TestCase):
                     )
 
 
+@_NEEDS_TREE_SITTER
 class TestAllFixturesPassQualityGates(unittest.TestCase):
     """DoD: every fixture passes all 3 quality gates (compile + SDK import + lint)."""
 
@@ -89,6 +106,7 @@ class TestAllFixturesPassQualityGates(unittest.TestCase):
                 )
 
 
+@_NEEDS_TREE_SITTER
 class TestAllFixturesZeroGaps(unittest.TestCase):
     """DoD: all mechanical constructs covered — 0 TRANSPILER-GAP markers."""
 
@@ -106,6 +124,7 @@ class TestAllFixturesZeroGaps(unittest.TestCase):
 
 # ── Output structure ─────────────────────────────────────────────────────
 
+@_NEEDS_TREE_SITTER
 class TestOutputStructure(unittest.TestCase):
     """Translated output must have the correct Python SDK skeleton."""
 
@@ -155,6 +174,7 @@ class TestOutputStructure(unittest.TestCase):
 
 # ── No MQL artifacts ─────────────────────────────────────────────────────
 
+@_NEEDS_TREE_SITTER
 class TestNoMQLArtifacts(unittest.TestCase):
     """Python output must not contain raw MQL function calls or comments."""
 
@@ -192,6 +212,7 @@ class TestNoMQLArtifacts(unittest.TestCase):
 
 # ── Idempotence ──────────────────────────────────────────────────────────
 
+@_NEEDS_TREE_SITTER
 class TestTranspilerIdempotence(unittest.TestCase):
     """Same input twice → identical output twice."""
 
@@ -205,6 +226,7 @@ class TestTranspilerIdempotence(unittest.TestCase):
 
 # ── Behavioral alignment (structure-level) ────────────────────────────────
 
+@_NEEDS_TREE_SITTER
 class TestBehavioralStructure(unittest.TestCase):
     """Translated strategies must match reference strategy structure.
 
