@@ -281,24 +281,33 @@ export default function BacktestPanel(props: Props) {
                 </Radio.Group>
               </Col>
             </Row>
-            {/* Strategy-specific params — always visible (TradingView Settings pattern) */}
+            {/* Strategy params — title row + tag preview (TradingView Settings style) */}
             <div style={{ marginTop: 10, borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
               {runner.extractedParams.length > 0 ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 12, color: '#595959' }}>
-                    {t(STRATEGY_PARAMS_KEY)} ({runner.extractedParams.length})
-                    <span style={{ color: '#bfbfbf', marginLeft: 8 }}>
-                      {runner.extractedParams.slice(0, 4).map((p) => {
-                        const v = runner.strategyParamValues[p.name] ?? p.default;
-                        return `${p.label || p.name}=${v}`;
-                      }).join(' · ')}
-                      {runner.extractedParams.length > 4 && ' …'}
-                    </span>
-                  </span>
-                  <Button size="small" onClick={() => runner.setStrategyParamsModalOpen(true)}>
-                    {t('common.edit')}
-                  </Button>
-                </div>
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span style={S.sectionLabel}>{t(STRATEGY_PARAMS_KEY)} ({runner.extractedParams.length})</span>
+                    <Button size="small" onClick={() => runner.setStrategyParamsModalOpen(true)}>
+                      {t('common.edit')}
+                    </Button>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 12px' }}>
+                    {runner.extractedParams.slice(0, 8).map((p) => {
+                      const v = runner.strategyParamValues[p.name] ?? p.default;
+                      return (
+                        <span key={p.name} style={{ fontSize: 11, color: '#595959', whiteSpace: 'nowrap' }}>
+                          <span style={{ color: '#8c8c8c' }}>{p.label || p.name}</span>
+                          <span style={{ fontWeight: 500 }}>={v}</span>
+                        </span>
+                      );
+                    })}
+                    {runner.extractedParams.length > 8 && (
+                      <span style={{ fontSize: 11, color: '#bfbfbf' }}>
+                        +{runner.extractedParams.length - 8} {t('strategy.backtestParams.more', 'more')}
+                      </span>
+                    )}
+                  </div>
+                </>
               ) : (
                 <span style={{ fontSize: 11, color: '#bfbfbf' }}>
                   {t('strategy.codeAssist.validateToSeeParams', 'Validate code to see strategy parameters')}

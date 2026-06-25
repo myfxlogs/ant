@@ -163,9 +163,6 @@ export function useBacktestRunner() {
   }, []);
 
   const handleValidationResult = useCallback((result: any) => {
-    console.log('[handleValidationResult] result keys:', Object.keys(result));
-    console.log('[handleValidationResult] parametersJson:', result.parametersJson);
-    console.log('[handleValidationResult] parameters_json:', result.parameters_json);
     if (result.sweepDimensions?.length > 0) tuning.updateSweepFromCode(result.sweepDimensions);
     if (result.strategyDirectives?.length > 0) updateDirectivesFromCode(result.strategyDirectives);
     updateExtractedParams(
