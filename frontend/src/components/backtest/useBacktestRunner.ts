@@ -124,6 +124,7 @@ export function useBacktestRunner() {
   const [activeTab, setActiveTab] = useState<string>('params');
   const [panelHeight, setPanelHeight] = useState(280);
   const [dragging, setDragging] = useState(false);
+  const [strategyParamsModalOpen, setStrategyParamsModalOpen] = useState(false);
 
   // ── Internal ──────────────────────────────────────────────────────────
   const [runId, setRunId] = useState('');
@@ -300,6 +301,7 @@ export function useBacktestRunner() {
     strategyDirectives,
     // UI
     activeTab, setActiveTab, panelHeight, setPanelHeight, dragging, setDragging,
+    strategyParamsModalOpen, setStrategyParamsModalOpen,
     // Settings
     settingsItems,
     // Delegated

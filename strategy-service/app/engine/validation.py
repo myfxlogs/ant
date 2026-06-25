@@ -464,6 +464,45 @@ def _rule_standard_param_in_code(
             )
 
 
+@_register
+def _rule_param_missing_default(
+    _code: str, tree, errors: list, warnings: list,
+) -> None:
+    """Error when self.ctx.param() is called without a default value.
+
+    Every self.ctx.param('name', default) MUST include the 2nd argument
+    so the BacktestPanel can pre-fill a sensible value and the strategy
+    is self-contained (runs without external config).
+    """
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        if not isinstance(node.func, ast.Attribute):
+            continue
+        if node.func.attr != "param":
+            continue
+        if not isinstance(node.func.value, ast.Attribute):
+            continue
+        if node.func.value.attr != "ctx":
+            continue
+        if not isinstance(node.func.value.value, ast.Name):
+            continue
+        if node.func.value.value.id != "self":
+            continue
+        if len(node.args) < 1:
+            continue
+        arg0 = node.args[0]
+        if not isinstance(arg0, ast.Constant) or not isinstance(arg0.value, str):
+            continue
+        name = arg0.value
+        if len(node.args) < 2:
+            errors.append(
+                f"`self.ctx.param('{name}')` 缺少默认值。"
+                f"每个参数必须有默认值，如 self.ctx.param('{name}', 默认值)。"
+                f"有默认值的策略可以开箱即用，用户也可在回测面板中覆盖。"
+            )
+
+
 # ── Orchestrator ────────────────────────────────────────────────────────
 
 

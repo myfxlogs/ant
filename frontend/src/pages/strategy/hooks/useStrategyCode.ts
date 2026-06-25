@@ -6,6 +6,7 @@ import { COPY_FAILED_KEY, COPY_SUCCESS_KEY, SAVE_SUCCESS_KEY, VALIDATE_BEFORE_SA
 ;
 import { strategyApi, type StrategyTemplate } from '@/client/strategy';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
+import type { TemplateParameter } from '@/gen/ant/v1/strategy_template_entity_pb';
 
 export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExtendedResult) => void }) {
   const onValidateResult = opts?.onValidateResult;
@@ -27,19 +28,32 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
     }
   }, [code]);
 
-  const handleValidate = useCallback(async () => {
-    if (!code.trim()) return;
+  // Core validation — explicit code param so callers can bypass React state
+  // batching (template load needs immediate parameter extraction).
+  const _validate = useCallback(async (codeToValidate: string) => {
+    if (!codeToValidate.trim()) return;
     setValidating(true);
     try {
-      const result = await codeAssistApi.validateExtended(code);
+      const result = await codeAssistApi.validateExtended(codeToValidate);
       setValidationResult(result);
-      if (result.valid) setLastValidatedCode(code);
-      // Backend zero-trust: push sweep dimensions + strategy directives
-      // from Python backend to the tuning panel.
+      if (result.valid) setLastValidatedCode(codeToValidate);
       if (onValidateResult) onValidateResult(result);
     } catch (e: unknown) { message.error((e as Error)?.message || 'Validation failed'); }
     finally { setValidating(false); }
-  }, [code, onValidateResult]);
+  }, [onValidateResult]);
+
+  const handleValidate = useCallback(async () => {
+    await _validate(code);
+  }, [code, _validate]);
+
+  // Parse extracted parameters from the last validation result into the format
+  // accepted by createTemplate / updateTemplate (TemplateParameter proto).
+  const _validatedParams = useCallback((): TemplateParameter[] => {
+    if (!validationResult?.parametersJson) return [];
+    try {
+      return JSON.parse(validationResult.parametersJson) as TemplateParameter[];
+    } catch { return []; }
+  }, [validationResult]);
 
   const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
@@ -73,18 +87,24 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
     if (loadedTemplate) {
       setSaveLoading(true);
       try {
-        await strategyApi.updateTemplate({ id: loadedTemplate.id, code });
+        await strategyApi.updateTemplate({
+          id: loadedTemplate.id, code,
+          parameters: _validatedParams(),
+        });
         message.success(t(SAVE_SUCCESS_KEY)); loadTemplates();
       } catch (e: unknown) { message.error((e as Error)?.message || 'Save failed'); }
       finally { setSaveLoading(false); }
     } else { setSaveModalOpen(true); }
-  }, [code, canSave, loadedTemplate, t, loadTemplates]);
+  }, [code, canSave, loadedTemplate, t, loadTemplates, _validatedParams]);
 
   const handleSaveAs = useCallback(() => { saveForm.resetFields(); setSaveModalOpen(true); }, [saveForm]);
   const handleSaveModalOk = useCallback(async () => {
     try {
       const values = await saveForm.validateFields(); setSaveLoading(true);
-      const tpl = await strategyApi.createTemplate({ name: values.name, description: values.description || '', code });
+      const tpl = await strategyApi.createTemplate({
+        name: values.name, description: values.description || '', code,
+        parameters: _validatedParams(),
+      });
       if (tpl?.id) setLastSavedId(tpl.id);
       message.success(t(SAVE_SUCCESS_KEY)); setSaveModalOpen(false); loadTemplates();
     } catch (e: unknown) {
@@ -94,7 +114,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
       if (err?.message) message.error(err.message);
     }
     finally { setSaveLoading(false); }
-  }, [code, saveForm, t, loadTemplates]);
+  }, [code, saveForm, t, loadTemplates, _validatedParams]);
 
   const handleCopy = useCallback(() => {
     if (!code) return;

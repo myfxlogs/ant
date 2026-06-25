@@ -119,33 +119,38 @@ All strategies MUST use the SDK class-based format (StrategyBase).
 
 ## ⛔ IRON RULES — violating ANY of these = code is REJECTED ⛔
 
-### Rule 1: MUST use SDK class format with @param/@strategy annotations
+### Rule 1: EVERY configurable value MUST be declared via self.ctx.param() in on_init
 ` + "```python" + `
 from app.sdk import StrategyBase, OrderRequest, OrderType
 from decimal import Decimal
 
-# @param fast_period 20 range=10:50:10
-# @param slow_period 50 range=30:80:10
-# @strategy entryPct 0.25
-# @strategy stopLossPct 0.02
-# @strategy takeProfitPct 0.04
-
 class MyStrategy(StrategyBase):
     def on_init(self):
+        # ✅ EVERY parameter MUST have a default value (2nd argument to ctx.param)
         self.fast = int(self.ctx.param('fast_period', 20))
         self.slow = int(self.ctx.param('slow_period', 50))
         self.entry_pct = float(self.ctx.param('entryPct', 0.25))
         self.sl_pct = float(self.ctx.param('stopLossPct', 0.02))
         self.tp_pct = float(self.ctx.param('takeProfitPct', 0.04))
-        # ✅ MUST read params via self.ctx.param() in on_init
-        # ❌ NEVER hardcode: fast = 20
+        self.lot_size = Decimal(str(self.ctx.param('lot_size', 0.01)))
 
-    def on_bar(self, timeframe=None):
-        bars = self.ctx.bars(timeframe)
-        if bars.total() < self.slow:
-            return
-        # ❌ NEVER: def run(context): return {...}
+        # ❌ NEVER hardcode: fast = 20
+        # ❌ NEVER omit default: self.x = self.ctx.param('x')  ← MISSING DEFAULT
 ` + "```" + `
+
+### Rule 1b: Standard engine params use ctx.backtest_config, NOT self.ctx.param()
+` + "```python" + `
+    def on_init(self):
+        # ✅ Standard params from backtest card (not self.ctx.param!)
+        bt = self.ctx.backtest_config
+        self.direction = bt.get('trade_direction', 'both')
+        self.slippage = int(bt.get('slippage', 3))
+
+        # ✅ Strategy-specific params use self.ctx.param() with defaults
+        self.fast = int(self.ctx.param('fast_period', 20))
+` + "```" + `
+Standard params: trade_direction, slippage, commission, leverage, initial_capital.
+These belong in the backtest card UI — do NOT declare them via self.ctx.param().
 
 ### Rule 2: Query positions via self.broker.positions() — NOT position dict
 ` + "```python" + `
@@ -176,13 +181,29 @@ class MyStrategy(StrategyBase):
         price = float(bars.close[0])
         volume = Decimal(str(balance * self.entry_pct / price))
         # ✅ Use account().balance for position sizing
-        # ❌ NEVER: context.get('initial_balance')
 ` + "```" + `
 
 ### Rule 5: ALL monetary values MUST use Decimal(str(x)), NEVER float
-### Rule 6: Use descriptive method names — underscore-prefixed helpers (_count_orders etc) are REJECTED
+### Rule 6: Use descriptive method names — underscore-prefixed helpers are OK for internal use
 ### Rule 7: Import ONLY from app.sdk — np, math, pandas are pre-injected
 ### Rule 8: MUST use SDK class format. Inherit from StrategyBase. At least one lifecycle hook (on_init/on_bar/on_tick etc). def run(context) is REJECTED.
+
+## Complete minimal strategy skeleton
+` + "```python" + `
+from app.sdk import StrategyBase, OrderRequest, OrderType, PositionSide
+from decimal import Decimal
+
+class MyStrategy(StrategyBase):
+    def on_init(self):
+        self.fast = int(self.ctx.param('fast_period', 20))
+        self.slow = int(self.ctx.param('slow_period', 50))
+
+    def on_bar(self, timeframe=None):
+        bars = self.ctx.bars(timeframe)
+        if bars.total() < self.slow:
+            return
+        # ... strategy logic ...
+` + "```" + `
 
 ## Output: ONLY Python code. No markdown fences. No explanations.`
 }

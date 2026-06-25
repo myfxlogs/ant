@@ -1,14 +1,13 @@
 import { useCallback, useRef } from 'react';
-import { Button, Tabs, InputNumber, Row, Col, Segmented, DatePicker, Radio, Switch, Tag, Tooltip, Dropdown, Select, Card, Statistic, Table, Empty, Spin } from 'antd';
+import { Button, Tabs, InputNumber, Row, Col, Segmented, DatePicker, Radio, Switch, Tag, Tooltip, Dropdown, Select } from 'antd';
 import {
   PlayCircleOutlined, SettingOutlined, CaretDownOutlined,
-  HistoryOutlined, DoubleRightOutlined, RiseOutlined, FallOutlined,
+  HistoryOutlined, DoubleRightOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import {
-  BOTH_KEY, CAPITAL_KEY, CLOSE_PRICE_KEY, COMMISSION_KEY, CURRENT_DRAFT_KEY, DATE_RANGE_KEY, DIRECTION_KEY,
+  BOTH_KEY, CAPITAL_KEY, COMMISSION_KEY, CURRENT_DRAFT_KEY, DATE_RANGE_KEY, DIRECTION_KEY,
   END_DATE_KEY, EXECUTION_KEY, HISTORY_KEY, LEVERAGE_KEY, LONG_KEY, LOT_SIZE_KEY,
   PNL_KEY, RUN_KEY, SHORT_KEY, SLIPPAGE_KEY, START_DATE_KEY, STRATEGY_KEY, STRATEGY_PARAMS_KEY, STRICT_MODE_KEY,
   STRICT_MODE_OFF_DESC_KEY, STRICT_MODE_OFF_KEY, STRICT_MODE_OFF_TOOLTIP_KEY,
@@ -17,20 +16,16 @@ import {
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import { RUN_DISABLED_HINT_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import {
-  BACKTEST_COMPLETED_KEY, BACKTEST_EMPTY_KEY, BACKTEST_ERROR_KEY, BACKTEST_RUNNING_KEY,
-  BACKTEST_TAB_KEY, EXEC_ASSUMPTIONS_KEY, EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY,
-  EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY, EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY,
-  EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY, EXEC_ASSUMPTIONS_FIELDS_MODE_KEY,
-  EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY, EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY,
-  EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY, GATE_TAB_KEY, TUNING_TAB_KEY,
+  BACKTEST_COMPLETED_KEY, BACKTEST_TAB_KEY, GATE_TAB_KEY, TUNING_TAB_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import {
-  ANNUAL_RETURN_KEY, BACKTEST_RECORDS_KEY, EQUITY_CURVE_KEY, MAX_DRAWDOWN_KEY, SHARPE_KEY,
-  TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, PROFIT_FACTOR_KEY, TRADE_LOG_KEY, TRADE_PRICE_KEY,
-  TRADE_SIDE_KEY, TRADE_TIME_KEY, TRADE_VOLUME_KEY, WIN_RATE_KEY,
+  BACKTEST_RECORDS_KEY, TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, PROFIT_FACTOR_KEY, WIN_RATE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import SmartTuningPanel from '@/pages/strategy/components/workspace/SmartTuningPanel';
 import GatePanel from '@/pages/strategy/components/workspace/GatePanel';
+import StrategyParamsModal from './StrategyParamsModal';
+import BacktestResultsTab from './BacktestResultsTab';
+import BacktestTradesTab from './BacktestTradesTab';
 import type { useBacktestRunner, BacktestRunnerInputs } from './useBacktestRunner';
 import { DATE_PRESETS, PRESETS } from '@/pages/strategy/hooks/backtestParamHelpers';
 import type { StrategyTemplate } from '@/client/strategy';
@@ -39,28 +34,7 @@ const S = {
   sectionLabel: { fontSize: 12, fontWeight: 700, color: '#595959', marginBottom: 6 },
   fieldLabel: { fontSize: 12, fontWeight: 500, color: '#8c8c8c', marginBottom: 4 },
   narrow: { width: '100%' },
-  metricStyle: { fontSize: 14, fontFamily: 'monospace' as const },
 };
-
-function pct(v: number | undefined): string { if (v == null) return '-'; return (v * 100).toFixed(2) + '%'; }
-function num(v: number | undefined, d = 2): string { if (v == null) return '-'; return v.toFixed(d); }
-
-const _ASSUMPTION_MAP: Record<string, string> = {
-  MT_LIVE: 'strategy.backtest.assumptions.mtLive',
-  MT_DATASET: 'strategy.backtest.assumptions.mtDataset',
-  next_bar_open: 'strategy.backtest.assumptions.nextBarOpen',
-  same_bar_close: 'strategy.backtest.assumptions.sameBarClose',
-  market: 'strategy.backtestParams.market',
-  limit: 'strategy.backtestParams.limit',
-  both: 'strategy.backtestParams.both',
-  long: 'strategy.backtestParams.long',
-  short: 'strategy.backtestParams.short',
-};
-function assumeVal(t: any, v: string | undefined): string {
-  if (!v) return '-';
-  const key = _ASSUMPTION_MAP[v];
-  return key ? t(key, v) : v;
-}
 
 interface TemplatesProp {
   list: StrategyTemplate[];
@@ -307,136 +281,44 @@ export default function BacktestPanel(props: Props) {
                 </Radio.Group>
               </Col>
             </Row>
-            {/* Strategy-specific params */}
+            {/* Strategy-specific params — summary row + Modal (TradingView Settings pattern) */}
             {runner.extractedParams.length > 0 && (
               <div style={{ marginTop: 10, borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
-                <div style={S.sectionLabel}>{t(STRATEGY_PARAMS_KEY)} ({runner.extractedParams.length})</div>
-                <Row gutter={8}>
-                  {runner.extractedParams.map((p) => {
-                    const value = runner.strategyParamValues[p.name] ?? p.default;
-                    if (p.type === 'bool') {
-                      return (
-                        <Col span={8} key={p.name} style={{ marginBottom: 6 }}>
-                          <div style={S.fieldLabel}>{p.label || p.name}</div>
-                          <Switch size="small" checked={value === 'True' || value === 'true'}
-                            onChange={(v) => runner.setParam(p.name, v ? 'True' : 'False')} />
-                        </Col>
-                      );
-                    }
-                    const step = p.type === 'float' ? 0.01 : 1;
-                    return (
-                      <Col span={8} key={p.name} style={{ marginBottom: 6 }}>
-                        <div style={S.fieldLabel}>{p.label || p.name}</div>
-                        <InputNumber size="small" style={S.narrow} step={step}
-                          value={Number(value)} onChange={(v) => runner.setParam(p.name, String(v ?? p.default))} />
-                      </Col>
-                    );
-                  })}
-                </Row>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, color: '#595959' }}>
+                    {t(STRATEGY_PARAMS_KEY)} ({runner.extractedParams.length})
+                    <span style={{ color: '#bfbfbf', marginLeft: 8 }}>
+                      {runner.extractedParams.slice(0, 4).map((p) => {
+                        const v = runner.strategyParamValues[p.name] ?? p.default;
+                        return `${p.label || p.name}=${v}`;
+                      }).join(' · ')}
+                      {runner.extractedParams.length > 4 && ' …'}
+                    </span>
+                  </span>
+                  <Button size="small" onClick={() => runner.setStrategyParamsModalOpen(true)}>
+                    {t('common.edit')}
+                  </Button>
+                </div>
               </div>
             )}
-          </div>
+            <StrategyParamsModal
+              open={runner.strategyParamsModalOpen}
+              params={runner.extractedParams}
+              values={runner.strategyParamValues}
+              onClose={() => runner.setStrategyParamsModalOpen(false)}
+              onChange={runner.setParam}
+            />
         )}
 
         {/* ── Results Tab ─────────────────────────────────────────────── */}
         {runner.activeTab === 'results' && (
-          <div>
-            {runner.status === 'idle' && (
-              <Empty description={t(BACKTEST_EMPTY_KEY, 'Run a backtest to see results')} style={{ padding: 24 }} />
-            )}
-
-            <div style={{ marginBottom: 8 }}>
-              {runner.status === 'running' && (
-                <Tag color="processing" icon={<Spin size="small" />}>{t(BACKTEST_RUNNING_KEY)}</Tag>
-              )}
-              {runner.status === 'completed' && (
-                <Tag color="success">{t(BACKTEST_COMPLETED_KEY)}</Tag>
-              )}
-              {runner.status === 'completed' && onAIOptimize && runner.metrics && (
-                <Button size="small" type="dashed" onClick={onAIOptimize} style={{ marginLeft: 8, fontSize: 11 }}>
-                  🤖 AI Optimize
-                </Button>
-              )}
-              {runner.status === 'error' && (
-                <Tag color="error">{runner.errorMsg || t(BACKTEST_ERROR_KEY, 'Backtest failed')}</Tag>
-              )}
-            </div>
-
-            {/* Execution Assumptions */}
-            {runner.executionAssumptions && runner.status === 'completed' && (
-              <div style={{
-                marginBottom: 12, padding: '8px 12px', border: '1px solid #e6f4ff', borderRadius: 8,
-                background: 'linear-gradient(180deg, #f8fbff 0%, #f4f9ff 100%)',
-              }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>{t(EXEC_ASSUMPTIONS_KEY)}</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '4px 12px', fontSize: 12 }}>
-                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)}:</span> <strong>{assumeVal(t, runner.executionAssumptions.simulationMode)}</strong></div>
-                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)}:</span> <strong>{assumeVal(t, runner.executionAssumptions.signalTiming)}</strong></div>
-                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)}:</span> <strong>{assumeVal(t, runner.executionAssumptions.fillRule)}</strong></div>
-                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY)}:</span> <strong>{assumeVal(t, runner.executionAssumptions.tradeDirection)}</strong></div>
-                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY)}:</span> <strong>{runner.executionAssumptions.actualCommission != null ? (runner.executionAssumptions.actualCommission * 100).toFixed(4) + '%' : '-'}</strong></div>
-                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY)}:</span> <strong>{runner.executionAssumptions.actualSlippage != null ? (runner.executionAssumptions.actualSlippage * 100).toFixed(4) + '%' : '-'}</strong></div>
-                  <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY)}:</span> <strong>{runner.executionAssumptions.actualLeverage || '-'}x</strong></div>
-                  {runner.executionAssumptions.mtfFallbackReason && (
-                    <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY)}:</span> <strong>{assumeVal(t, runner.executionAssumptions.mtfFallbackReason)}</strong></div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {runner.metrics && (
-              <>
-                <Row gutter={[12, 12]}>
-                  <Col span={8}>
-                    <Card size="small">
-                      <Statistic title={t(TOTAL_RETURN_KEY, 'Total Return')} value={pct(runner.metrics.totalReturn)}
-                        prefix={runner.metrics.totalReturn != null && runner.metrics.totalReturn >= 0
-                          ? <RiseOutlined style={{ color: '#26a69a' }} /> : <FallOutlined style={{ color: '#ef5350' }} />}
-                        valueStyle={S.metricStyle} />
-                    </Card>
-                  </Col>
-                  <Col span={8}>
-                    <Card size="small">
-                      <Statistic title={t(ANNUAL_RETURN_KEY, 'Annual Return')} value={pct(runner.metrics.annualReturn)} valueStyle={S.metricStyle} />
-                    </Card>
-                  </Col>
-                  <Col span={8}>
-                    <Card size="small">
-                      <Statistic title={t(MAX_DRAWDOWN_KEY, 'Max Drawdown')} value={pct(runner.metrics.maxDrawdown)} valueStyle={{ ...S.metricStyle, color: '#ef5350' }} />
-                    </Card>
-                  </Col>
-                  <Col span={8}>
-                    <Card size="small">
-                      <Statistic title={t(SHARPE_KEY, 'Sharpe')} value={num(runner.metrics.sharpeRatio)} valueStyle={S.metricStyle} />
-                    </Card>
-                  </Col>
-                  <Col span={8}>
-                    <Card size="small">
-                      <Statistic title={t(WIN_RATE_KEY, 'Win Rate')} value={pct(runner.metrics.winRate)} valueStyle={S.metricStyle} />
-                    </Card>
-                  </Col>
-                  <Col span={8}>
-                    <Card size="small">
-                      <Statistic title={t(TOTAL_TRADES_KEY, 'Total Trades')} value={runner.metrics.totalTrades ?? '-'} valueStyle={S.metricStyle} />
-                    </Card>
-                  </Col>
-                </Row>
-
-                {runner.metrics.equityCurve && runner.metrics.equityCurve.length > 0 && (
-                  <Card size="small" title={t(EQUITY_CURVE_KEY, 'Equity Curve')} style={{ marginTop: 12 }}>
-                    <ResponsiveContainer width="100%" height={150}>
-                      <LineChart data={runner.metrics.equityCurve}>
-                        <XAxis dataKey="time" hide />
-                        <YAxis width={60} tick={{ fontSize: 11 }} />
-                        <RechartsTooltip />
-                        <Line type="monotone" dataKey="equity" stroke="#1890ff" dot={false} strokeWidth={1.5} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </Card>
-                )}
-              </>
-            )}
-          </div>
+          <BacktestResultsTab
+            status={runner.status}
+            metrics={runner.metrics}
+            executionAssumptions={runner.executionAssumptions}
+            errorMsg={runner.errorMsg}
+            onAIOptimize={onAIOptimize}
+          />
         )}
 
         {/* ── Tuning Tab ──────────────────────────────────────────────── */}
@@ -466,45 +348,7 @@ export default function BacktestPanel(props: Props) {
 
         {/* ── Trades Tab ──────────────────────────────────────────────── */}
         {runner.activeTab === 'trades' && (
-          <div>
-            {runner.chartTrades.length === 0 ? (
-              <Empty description={t(BACKTEST_EMPTY_KEY, 'Run a backtest to see trades')} style={{ padding: 24 }} />
-            ) : (
-              <>
-                {/* Position summary */}
-                {(() => {
-                  const buys = runner.chartTrades.filter((t: any) => t.side === 'buy');
-                  const sells = runner.chartTrades.filter((t: any) => t.side === 'sell');
-                  const buyPnl = buys.reduce((s: number, t: any) => s + (t.pnl || 0), 0);
-                  const sellPnl = sells.reduce((s: number, t: any) => s + (t.pnl || 0), 0);
-                  const buyVol = buys.reduce((s: number, t: any) => s + (t.volume || 0), 0);
-                  const sellVol = sells.reduce((s: number, t: any) => s + (t.volume || 0), 0);
-                  return (
-                    <div style={{ display: 'flex', gap: 12, marginBottom: 10, fontSize: 12 }}>
-                      <span>🟢 {t(LONG_KEY)}: <b>{buys.length}</b> {t(TRADE_VOLUME_KEY)} <b>{buyVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: buyPnl >= 0 ? '#26a69a' : '#e57373' }}>{buyPnl >= 0 ? '+' : ''}{buyPnl.toFixed(2)}</b></span>
-                      <span>🔴 {t(SHORT_KEY)}: <b>{sells.length}</b> {t(TRADE_VOLUME_KEY)} <b>{sellVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: sellPnl >= 0 ? '#26a69a' : '#e57373' }}>{sellPnl >= 0 ? '+' : ''}{sellPnl.toFixed(2)}</b></span>
-                    </div>
-                  );
-                })()}
-                <Table dataSource={runner.chartTrades.map((t, i) => ({ ...t, key: i }))}                pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: runner.panelHeight - 180 }}
-                  columns={[
-                    { title: '#', dataIndex: 'key', width: 40 },
-                    { title: t(TRADE_SIDE_KEY, 'Side'), dataIndex: 'side', width: 60,
-                      render: (v: string) => <span style={{ color: v === 'buy' ? '#26a69a' : '#e57373' }}>{v?.toUpperCase()}</span> },
-                    { title: t(TRADE_VOLUME_KEY, 'Volume'), dataIndex: 'volume', width: 70,
-                      render: (v: number) => v?.toFixed(2) },
-                    { title: t(TRADE_PRICE_KEY, 'Price'), dataIndex: 'openPrice', width: 80,
-                      render: (v: number) => v?.toFixed(2) },
-                    { title: t(CLOSE_PRICE_KEY), dataIndex: 'closePrice', width: 80,
-                      render: (v: number) => v?.toFixed(2) ?? '—' },
-                    { title: t(PNL_KEY), dataIndex: 'pnl', width: 80,
-                      render: (v: number) => v != null ? (
-                        <span style={{ color: v >= 0 ? '#26a69a' : '#ef5350' }}>{v >= 0 ? '+' : ''}{v.toFixed(2)}</span>
-                      ) : '-' },
-                  ]} />
-              </>
-            )}
-          </div>
+          <BacktestTradesTab trades={runner.chartTrades} panelHeight={runner.panelHeight} />
         )}
       </div>
     </div>
