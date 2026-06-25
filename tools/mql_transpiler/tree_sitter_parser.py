@@ -1,234 +1,62 @@
-"""Tree-sitter MQL4/5 grammar for transpiler upgrade path (T2.1+).
+"""Tree-sitter MQL parser — single .so loader + parse → raw Tree.
 
-Provides a proper AST-based parser using tree-sitter when available,
-falling back to the statement-level transpiler when tree-sitter is
-not installed.
+ADR-0020 D8: this is the ONE AND ONLY MQL parser.  The grammar is compiled
+from ``grammar/mql/grammar.js`` (fork of tree-sitter-c) into ``mql.so``.
 
-Usage:
-    from tools.mql_transpiler.tree_sitter_parser import parse_mql
-    tree = parse_mql(source)  # returns tree-sitter Tree or None
+For the CST→internal-AST bridge that produces ``ast_nodes`` types, use
+``ast_bridge.parse_mql()`` instead.
 """
 
 from __future__ import annotations
 
-from typing import Optional
+import ctypes
+from pathlib import Path
 
-# MQL4/5 grammar in tree-sitter JSON format.
-# This grammar covers the subset needed for EA translation:
-#   - Function definitions (OnInit, OnTick, etc.)
-#   - Trade functions (OrderSend, OrderClose, etc.)
-#   - Indicator calls (iMA, iRSI, etc.)
-#   - Control flow (if, for, while)
-#   - Variable declarations and expressions
-#
-# Full MQL4/5 grammar is ~2000 lines. This subset covers the ~80%
-# needed for mechanical translation. The remaining ~20% is handled
-# by the statement-level transpiler fallback.
-
-MQL_GRAMMAR_JSON = r"""
-{
-  "name": "mql",
-  "rules": {
-    "source_file": {
-      "type": "REPEAT",
-      "content": {
-        "type": "CHOICE",
-        "members": [
-          {"type": "SYMBOL", "name": "function_definition"},
-          {"type": "SYMBOL", "name": "extern_declaration"},
-          {"type": "SYMBOL", "name": "variable_declaration"},
-          {"type": "SYMBOL", "name": "preprocessor_directive"},
-          {"type": "SYMBOL", "name": "comment"}
-        ]
-      }
-    },
-    "function_definition": {
-      "type": "SEQ",
-      "members": [
-        {"type": "SYMBOL", "name": "type_identifier"},
-        {"type": "SYMBOL", "name": "identifier"},
-        {"type": "STRING", "value": "("},
-        {"type": "SYMBOL", "name": "parameter_list"},
-        {"type": "STRING", "value": ")"},
-        {"type": "SYMBOL", "name": "compound_statement"}
-      ]
-    },
-    "extern_declaration": {
-      "type": "SEQ",
-      "members": [
-        {"type": "CHOICE", "members": [
-          {"type": "STRING", "value": "extern"},
-          {"type": "STRING", "value": "input"}
-        ]},
-        {"type": "SYMBOL", "name": "variable_declaration"}
-      ]
-    },
-    "compound_statement": {
-      "type": "SEQ",
-      "members": [
-        {"type": "STRING", "value": "{"},
-        {"type": "REPEAT", "content": {"type": "SYMBOL", "name": "statement"}},
-        {"type": "STRING", "value": "}"}
-      ]
-    },
-    "statement": {
-      "type": "CHOICE",
-      "members": [
-        {"type": "SYMBOL", "name": "expression_statement"},
-        {"type": "SYMBOL", "name": "if_statement"},
-        {"type": "SYMBOL", "name": "for_statement"},
-        {"type": "SYMBOL", "name": "while_statement"},
-        {"type": "SYMBOL", "name": "return_statement"},
-        {"type": "SYMBOL", "name": "variable_declaration"},
-        {"type": "SYMBOL", "name": "compound_statement"}
-      ]
-    },
-    "if_statement": {
-      "type": "SEQ",
-      "members": [
-        {"type": "STRING", "value": "if"},
-        {"type": "STRING", "value": "("},
-        {"type": "SYMBOL", "name": "expression"},
-        {"type": "STRING", "value": ")"},
-        {"type": "SYMBOL", "name": "statement"},
-        {"type": "CHOICE", "members": [
-          {"type": "SEQ", "members": [
-            {"type": "STRING", "value": "else"},
-            {"type": "SYMBOL", "name": "statement"}
-          ]},
-          {"type": "BLANK"}
-        ]}
-      ]
-    },
-    "for_statement": {
-      "type": "SEQ",
-      "members": [
-        {"type": "STRING", "value": "for"},
-        {"type": "STRING", "value": "("},
-        {"type": "SYMBOL", "name": "expression_statement"},
-        {"type": "SYMBOL", "name": "expression"},
-        {"type": "STRING", "value": ";"},
-        {"type": "SYMBOL", "name": "expression"},
-        {"type": "STRING", "value": ")"},
-        {"type": "SYMBOL", "name": "statement"}
-      ]
-    },
-    "return_statement": {
-      "type": "SEQ",
-      "members": [
-        {"type": "STRING", "value": "return"},
-        {"type": "CHOICE", "members": [
-          {"type": "SYMBOL", "name": "expression"},
-          {"type": "BLANK"}
-        ]},
-        {"type": "STRING", "value": ";"}
-      ]
-    },
-    "expression_statement": {
-      "type": "SEQ",
-      "members": [
-        {"type": "CHOICE", "members": [
-          {"type": "SYMBOL", "name": "expression"},
-          {"type": "BLANK"}
-        ]},
-        {"type": "STRING", "value": ";"}
-      ]
-    },
-    "variable_declaration": {
-      "type": "SEQ",
-      "members": [
-        {"type": "SYMBOL", "name": "type_identifier"},
-        {"type": "SYMBOL", "name": "identifier"},
-        {"type": "CHOICE", "members": [
-          {"type": "SEQ", "members": [
-            {"type": "STRING", "value": "="},
-            {"type": "SYMBOL", "name": "expression"}
-          ]},
-          {"type": "BLANK"}
-        ]},
-        {"type": "STRING", "value": ";"}
-      ]
-    },
-    "expression": {
-      "type": "CHOICE",
-      "members": [
-        {"type": "SYMBOL", "name": "call_expression"},
-        {"type": "SYMBOL", "name": "binary_expression"},
-        {"type": "SYMBOL", "name": "unary_expression"},
-        {"type": "SYMBOL", "name": "subscript_expression"},
-        {"type": "SYMBOL", "name": "identifier"},
-        {"type": "SYMBOL", "name": "number"},
-        {"type": "SYMBOL", "name": "string"}
-      ]
-    },
-    "call_expression": {
-      "type": "SEQ",
-      "members": [
-        {"type": "SYMBOL", "name": "identifier"},
-        {"type": "STRING", "value": "("},
-        {"type": "SYMBOL", "name": "argument_list"},
-        {"type": "STRING", "value": ")"}
-      ]
-    },
-    "subscript_expression": {
-      "type": "SEQ",
-      "members": [
-        {"type": "SYMBOL", "name": "identifier"},
-        {"type": "STRING", "value": "["},
-        {"type": "SYMBOL", "name": "expression"},
-        {"type": "STRING", "value": "]"}
-      ]
-    },
-    "binary_expression": {
-      "type": "SEQ",
-      "members": [
-        {"type": "SYMBOL", "name": "expression"},
-        {"type": "SYMBOL", "name": "binary_operator"},
-        {"type": "SYMBOL", "name": "expression"}
-      ]
-    },
-    "argument_list": {
-      "type": "SEQ",
-      "members": [
-        {"type": "SYMBOL", "name": "expression"},
-        {"type": "REPEAT", "content": {
-          "type": "SEQ",
-          "members": [
-            {"type": "STRING", "value": ","},
-            {"type": "SYMBOL", "name": "expression"}
-          ]
-        }}
-      ]
-    }
-  }
-}
-"""
+_TS_LANG = None
+_TS_PARSER = None
 
 
-def tree_sitter_available() -> bool:
-    """Check if tree-sitter is installed."""
+def _init():
+    """Lazy-init tree-sitter parser for MQL."""
+    global _TS_LANG, _TS_PARSER
+    if _TS_PARSER is not None:
+        return
+
     try:
-        import tree_sitter
-        return True
+        import tree_sitter as ts
     except ImportError:
-        return False
+        return
+
+    so_path = Path(__file__).parent / "grammar" / "mql" / "mql.so"
+    if not so_path.exists():
+        return
+
+    lib = ctypes.CDLL(str(so_path))
+    lang_fn = lib.tree_sitter_mql
+    lang_fn.restype = ctypes.c_void_p
+    ptr = lang_fn()
+
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        _TS_LANG = ts.Language(ptr)
+
+    _TS_PARSER = ts.Parser(_TS_LANG)
 
 
-def parse_mql(source: str) -> Optional[object]:
-    """Parse MQL source using tree-sitter. Returns Tree or None if unavailable."""
-    if not tree_sitter_available():
+def available() -> bool:
+    """Check if the tree-sitter MQL grammar is loadable."""
+    _init()
+    return _TS_PARSER is not None
+
+
+def parse(source: str):
+    """Parse MQL source and return a raw ``tree_sitter.Tree``.
+
+    Returns None if tree-sitter is not available.
+    For internal AST nodes, use ``ast_bridge.parse_mql()``.
+    """
+    _init()
+    if _TS_PARSER is None:
         return None
-
-    try:
-        import tree_sitter
-        # tree-sitter MQL grammar would be loaded from a compiled .so
-        # For now, return None to fall back to statement-level transpiler.
-        # When the grammar is compiled and installed, this path activates.
-        return None
-    except Exception:
-        return None
-
-
-# When tree-sitter is not available, the statement-level transpiler
-# (transpiler.py) handles all parsing. This module provides the
-# upgrade path when the grammar is compiled.
+    return _TS_PARSER.parse(source.encode("utf-8"))

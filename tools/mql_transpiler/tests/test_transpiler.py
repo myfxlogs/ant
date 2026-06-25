@@ -1,341 +1,302 @@
-"""T2.1 transpiler tests.
+"""T5 transpiler tests — compile-gate + behavioral alignment.
+
+ADR-0020 D8, C2: correctness is measured by ``ast.parse()`` pass/fail and
+behavioral alignment, NOT by substring assertions (``assertIn``).
 
 Validates:
-  - All 5 MQL fixtures transpile to compilable Python SDK skeletons.
-  - Key mapping constructs are correctly translated.
-  - Unmappable constructs are marked with TRANSPILER-GAP.
-  - Transpiler stats are tracked correctly.
-  - Output imports and has correct class structure.
+  - All 5 MQL fixtures produce compilable, gate-passing Python SDK code.
+  - Deterministic (idempotent) output.
+  - No MQL artifacts leak into Python output.
+  - Translated code has correct class structure and lifecycle hooks.
+  - GAPs are tracked and auditable.
 """
 
+import ast as py_ast
 import os
 import unittest
+from pathlib import Path
 
-from tools.mql_transpiler.transpiler import MQLTranspiler, TranspileResult
+# New pipeline: tree-sitter + AST transpiler + quality gates.
+from tools.mql_transpiler.ast_bridge import parse_mql
+from tools.mql_transpiler.ast_transpiler import ASTTranspiler
+from tools.mql_transpiler.quality_gate import QualityGate, QualityVerdict
 
-FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
-
-def _read_fixture(name: str) -> str:
-    with open(os.path.join(FIXTURES_DIR, name)) as f:
-        return f.read()
-
-
-def _transpile_fixture(name: str, class_name: str = "TranslatedStrategy") -> TranspileResult:
-    source = _read_fixture(name)
-    tp = MQLTranspiler(class_name=class_name)
-    return tp.transpile(source, filename=name)
-
-
-# ── Core transpiler tests ──────────────────────────────────────────────
-
-
-class TestTranspilerBasic(unittest.TestCase):
-    """Basic transpiler functionality."""
-
-    def test_empty_source(self):
-        result = _transpile_fixture("simple_ma_cross.mq4")  # any fixture
-        tp = MQLTranspiler()
-        result = tp.transpile("", "empty.mq4")
-        self.assertIn("class TranslatedStrategy", result.output)
-        self.assertIn("StrategyBase", result.output)
-
-    def test_header_contains_imports(self):
-        result = _transpile_fixture("simple_ma_cross.mq4", "MACross")
-        self.assertIn("from decimal import Decimal", result.output)
-        self.assertIn("from app.sdk import", result.output)
-        self.assertIn("class MACross(StrategyBase):", result.output)
-
-    def test_stats_tracked(self):
-        result = _transpile_fixture("simple_ma_cross.mq4")
-        self.assertGreater(result.stats.lines_in, 0)
-        self.assertGreater(result.stats.lines_out, 0)
-        self.assertGreater(result.stats.patterns_matched, 0)
+# All 5 MQL fixtures that must translate correctly.
+FIXTURES = [
+    "simple_ma_cross.mq4",
+    "grid_trader.mq4",
+    "martingale.mq4",
+    "hedge_twins.mq4",
+    "custom_signal.mq4",
+]
 
 
-class TestLifecycleMapping(unittest.TestCase):
-    """MQL lifecycle functions → SDK hooks."""
-
-    def test_oninit_mapped(self):
-        result = _transpile_fixture("simple_ma_cross.mq4")
-        self.assertIn("def on_init(self)", result.output)
-
-    def test_ontick_mapped(self):
-        result = _transpile_fixture("simple_ma_cross.mq4")
-        self.assertIn("def on_tick(self)", result.output)
-
-    def test_ondeinit_mapped(self):
-        result = _transpile_fixture("simple_ma_cross.mq4")
-        self.assertIn("def on_deinit(self, reason: str = 'user_stop')", result.output)
-
-    def test_ontimer_mapped(self):
-        result = _transpile_fixture("custom_signal.mq4")
-        self.assertIn("def on_timer(self)", result.output)
+def _transpile(fixture_name: str) -> ASTTranspiler:
+    """Transpile a fixture and return the ASTTranspiler for inspection."""
+    source = (FIXTURES_DIR / fixture_name).read_text()
+    class_name = fixture_name.replace(".mq4", "").replace("_", " ").title().replace(" ", "")
+    ast_root = parse_mql(source)
+    tp = ASTTranspiler(class_name)
+    tp._transpile_ast(ast_root)
+    return tp
 
 
-class TestTradeFunctionMapping(unittest.TestCase):
-    """MQL trade functions → broker methods."""
-
-    def test_ordersend_buy_mapped(self):
-        result = _transpile_fixture("simple_ma_cross.mq4")
-        self.assertIn("self.broker.order_send(OrderRequest(", result.output)
-        self.assertIn("OrderType.BUY", result.output)
-        self.assertIn("Decimal(str(", result.output)
-
-    def test_ordersend_sell_mapped(self):
-        result = _transpile_fixture("simple_ma_cross.mq4")
-        self.assertIn("OrderType.SELL", result.output)
-
-    def test_orderclose_mapped(self):
-        result = _transpile_fixture("simple_ma_cross.mq4")
-        self.assertIn("self.broker.position_close(", result.output)
-
-    def test_orderdelete_mapped(self):
-        result = _transpile_fixture("grid_trader.mq4")
-        self.assertIn("self.broker.order_delete(", result.output)
-
-    def test_pending_order_types(self):
-        result = _transpile_fixture("grid_trader.mq4")
-        self.assertIn("OrderType.BUY_LIMIT", result.output)
-        self.assertIn("OrderType.SELL_LIMIT", result.output)
+def _transpile_output(fixture_name: str) -> str:
+    """Transpile a fixture and return the Python output string."""
+    tp = _transpile(fixture_name)
+    return "\n".join(tp._lines)
 
 
-class TestIndicatorMapping(unittest.TestCase):
-    """MQL indicator functions → SDK indicators."""
+# ── Core: compile + gate tests ───────────────────────────────────────────
 
-    def test_ima_mapped(self):
-        result = _transpile_fixture("simple_ma_cross.mq4")
-        self.assertIn("self.indicators.ma(", result.output)
-        self.assertIn("period=", result.output)
+class TestAllFixturesCompile(unittest.TestCase):
+    """DoD: every fixture produces syntactically valid Python."""
 
-    def test_irsi_mapped(self):
-        result = _transpile_fixture("martingale.mq4")
-        self.assertIn("self.indicators.rsi(", result.output)
-
-    def test_icustom_mapped(self):
-        result = _transpile_fixture("custom_signal.mq4")
-        self.assertIn("self.indicators.i_custom(", result.output)
-        self.assertIn("name=", result.output)
-
-    def test_ema_method_name_converted(self):
-        result = _transpile_fixture("simple_ma_cross.mq4")
-        self.assertIn("method='ema'", result.output)
-
-
-class TestOrderSelectLoopMapping(unittest.TestCase):
-    """OrderSelect loops → broker.orders() / broker.positions() iteration."""
-
-    def test_orderstotal_loop_detected(self):
-        result = _transpile_fixture("simple_ma_cross.mq4")
-        self.assertIn("for order in self.broker.orders():", result.output)
-
-    def test_positionstotal_loop_detected(self):
-        result = _transpile_fixture("grid_trader.mq4")
-        # Grid trader uses OrdersTotal too.
-        self.assertIn("for order in self.broker.orders():", result.output)
+    def test_each_fixture_compiles(self):
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                try:
+                    py_ast.parse(output)
+                except SyntaxError as e:
+                    lines = output.split("\n")
+                    ctx = ""
+                    if e.lineno and 1 <= e.lineno <= len(lines):
+                        ctx = lines[e.lineno - 1][:120]
+                    self.fail(
+                        f"{name}: SyntaxError at line {e.lineno}: {e.msg}\n"
+                        f"  {ctx}"
+                    )
 
 
-class TestExternInputMapping(unittest.TestCase):
-    """extern / input → @param comments."""
+class TestAllFixturesPassQualityGates(unittest.TestCase):
+    """DoD: every fixture passes all 3 quality gates (compile + SDK import + lint)."""
 
-    def test_extern_recognized(self):
-        result = _transpile_fixture("simple_ma_cross.mq4")
-        self.assertIn("ctx.param(", result.output)
-        self.assertIn("FastMAPeriod", result.output)
-
-    def test_input_recognized(self):
-        result = _transpile_fixture("simple_ma_cross.mq4")
-        self.assertIn("LotSize", result.output)
-
-
-class TestTranspilerGapMarking(unittest.TestCase):
-    """Unmappable constructs must be marked, not silently dropped."""
-
-    def test_array_initialize_marked(self):
-        source = """
-        int OnInit() {
-            double arr[10];
-            ArrayInitialize(arr, 0.0);
-            return INIT_SUCCEEDED;
-        }
-        """
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertIn("TRANSPILER-GAP", result.output)
-
-    def test_file_operations_marked(self):
-        source = """
-        void OnTick() {
-            int handle = FileOpen("test.txt", FILE_WRITE);
-            FileWrite(handle, "data");
-            FileClose(handle);
-        }
-        """
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertIn("TRANSPILER-GAP: FileIO", result.output)
-
-    def test_webrequest_marked(self):
-        source = """
-        void OnTick() {
-            string resp;
-            WebRequest("GET", "https://example.com", NULL, 0, resp);
-        }
-        """
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertIn("TRANSPILER-GAP: WebRequest", result.output)
-
-    def test_gui_marked(self):
-        source = """
-        void OnTick() {
-            ObjectCreate(0, "label", OBJ_LABEL, 0, 0, 0);
-            ObjectSetString(0, "label", OBJPROP_TEXT, "Hello");
-        }
-        """
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertIn("TRANSPILER-GAP: GUI", result.output)
-
-    def test_variable_declaration_mapped_to_self(self):
-        source = "double myVar = 1.5;"
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertIn("self.myVar = 1.5", result.output)
-
-    def test_gap_stats_tracked(self):
-        source = "double myVar = 1.5;\nFileOpen(\"x.txt\", FILE_WRITE);"
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertGreaterEqual(result.stats.gaps, 1)
+    def test_each_fixture_passes_all_gates(self):
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                report = QualityGate.assess(output)
+                self.assertEqual(
+                    report.verdict, QualityVerdict.HIGH,
+                    f"{name}: expected HIGH verdict\n"
+                    f"  Compile: {report.compile_ok}\n"
+                    f"  SDK: {report.sdk_import_ok}\n"
+                    f"  Lint: {report.lint_ok}\n"
+                    f"  Failures: {[f.message for f in report.failures]}",
+                )
 
 
-class TestAllFixturesTranspile(unittest.TestCase):
-    """All 5 T0.4 MQL fixtures must produce valid Python SDK skeletons."""
+class TestAllFixturesZeroGaps(unittest.TestCase):
+    """DoD: all mechanical constructs covered — 0 TRANSPILER-GAP markers."""
 
-    FIXTURES = [
-        "simple_ma_cross.mq4",
-        "grid_trader.mq4",
-        "martingale.mq4",
-        "hedge_twins.mq4",
-        "custom_signal.mq4",
+    def test_each_fixture_has_zero_gaps(self):
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                gap_count = output.count("# TRANSPILER-GAP:")
+                self.assertEqual(
+                    gap_count, 0,
+                    f"{name}: has {gap_count} TRANSPILER-GAP markers\n"
+                    f"  GAP lines: {[l.strip()[:80] for l in output.split(chr(10)) if 'TRANSPILER-GAP' in l]}",
+                )
+
+
+# ── Output structure ─────────────────────────────────────────────────────
+
+class TestOutputStructure(unittest.TestCase):
+    """Translated output must have the correct Python SDK skeleton."""
+
+    def test_imports_present(self):
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                self.assertIn("from decimal import Decimal", output)
+                self.assertIn("from app.sdk import", output)
+                self.assertIn("StrategyBase", output)
+
+    def test_class_definition(self):
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                self.assertIn("class ", output)
+                self.assertIn("(StrategyBase):", output)
+
+    def test_lifecycle_hooks_present(self):
+        """At minimum, each output should have at least one lifecycle method."""
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                has_hook = any(
+                    hook in output
+                    for hook in ["def on_init", "def on_tick", "def on_bar",
+                                  "def on_timer", "def on_deinit"]
+                )
+                self.assertTrue(has_hook, f"{name}: no lifecycle hook found")
+
+    def test_init_params_method(self):
+        """Every fixture with extern/input should have _init_params."""
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                # All 5 fixtures have extern/input params.
+                self.assertIn("_init_params", output)
+
+    def test_decimal_used_for_prices(self):
+        """Prices and volumes must use Decimal, not raw float."""
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                self.assertIn("Decimal(", output,
+                              f"{name}: no Decimal usage found — float precision risk")
+
+
+# ── No MQL artifacts ─────────────────────────────────────────────────────
+
+class TestNoMQLArtifacts(unittest.TestCase):
+    """Python output must not contain raw MQL function calls or comments."""
+
+    _BANNED_MQL_FUNCTIONS = [
+        "OrderSend(", "OrderClose(", "OrderModify(", "OrderDelete(",
+        "OrderSelect(", "OrdersTotal()", "PositionsTotal()",
+        "iMA(", "iRSI(", "iATR(", "iBands(", "iMACD(", "iStochastic(",
+        "iCCI(", "iCustom(", "iADX(", "iMomentum(",
+        "iOpen(", "iHigh(", "iLow(", "iClose(", "iVolume(", "iTime(",
     ]
 
-    def _check_fixture(self, name: str):
-        result = _transpile_fixture(name)
-        output = result.output
+    def test_no_bare_mql_functions(self):
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                for mql_fn in self._BANNED_MQL_FUNCTIONS:
+                    self.assertNotIn(
+                        mql_fn, output,
+                        f"{name}: raw MQL function '{mql_fn}' in output",
+                    )
 
-        # Must contain class definition inheriting StrategyBase.
-        self.assertIn("StrategyBase", output, f"{name}: missing StrategyBase import")
-        self.assertIn("class ", output, f"{name}: missing class definition")
+    def test_no_mql_comments(self):
+        """MQL // comments must not appear in Python output."""
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                # Lines starting with // are MQL comments
+                for i, line in enumerate(output.split("\n"), 1):
+                    stripped = line.strip()
+                    if stripped.startswith("//"):
+                        self.fail(
+                            f"{name}: MQL // comment at line {i}: {stripped[:80]}"
+                        )
 
-        # Must import from app.sdk.
-        self.assertIn("from app.sdk import", output, f"{name}: missing SDK import")
 
-        # Must have at least one lifecycle hook.
-        lifecycle_present = any(
-            hook in output
-            for hook in ["def on_init", "def on_tick", "def on_bar", "def on_timer", "def on_deinit"]
-        )
-        self.assertTrue(lifecycle_present, f"{name}: no lifecycle hook found")
-
-        # TRANSPILER-GAP comments must be properly formatted.
-        gap_lines = [l for l in output.split("\n") if "TRANSPILER-GAP" in l]
-        for line in gap_lines:
-            self.assertTrue(
-                line.strip().startswith("# TRANSPILER-GAP:"),
-                f"{name}: malformed gap comment: {line.strip()[:60]}",
-            )
-
-        # Must not have raw MQL syntax (no bare OrderSend, iMA, etc.)
-        for mql_fn in ["OrderSend(", "iMA(", "OrderClose("]:
-            self.assertNotIn(
-                mql_fn, output,
-                f"{name}: untranslated MQL function '{mql_fn}' found in output",
-            )
-
-    def test_simple_ma_cross(self):
-        self._check_fixture("simple_ma_cross.mq4")
-
-    def test_grid_trader(self):
-        self._check_fixture("grid_trader.mq4")
-
-    def test_martingale(self):
-        self._check_fixture("martingale.mq4")
-
-    def test_hedge_twins(self):
-        self._check_fixture("hedge_twins.mq4")
-
-    def test_custom_signal(self):
-        self._check_fixture("custom_signal.mq4")
-
+# ── Idempotence ──────────────────────────────────────────────────────────
 
 class TestTranspilerIdempotence(unittest.TestCase):
-    """Transpiling the same source twice produces identical output."""
+    """Same input twice → identical output twice."""
 
     def test_idempotent(self):
-        source = _read_fixture("simple_ma_cross.mq4")
-        tp1 = MQLTranspiler("TestEA")
-        r1 = tp1.transpile(source, "test.mq4")
-        tp2 = MQLTranspiler("TestEA")
-        r2 = tp2.transpile(source, "test.mq4")
-        self.assertEqual(r1.output, r2.output)
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                o1 = _transpile_output(name)
+                o2 = _transpile_output(name)
+                self.assertEqual(o1, o2, f"{name}: output differs between runs")
 
 
-class TestCommonFunctionMapping(unittest.TestCase):
-    """Common MQL built-in functions map to Python equivalents."""
+# ── Behavioral alignment (structure-level) ────────────────────────────────
 
-    def test_print_mapped(self):
-        source = 'void OnTick() { Print("hello"); }'
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertIn("print(", result.output.lower())
+class TestBehavioralStructure(unittest.TestCase):
+    """Translated strategies must match reference strategy structure.
 
-    def test_mathabs_mapped(self):
-        source = "void OnTick() { double x = MathAbs(-1.0); }"
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertIn("abs(", result.output)
+    Full signal-level behavioral comparison requires a working SimBroker
+    runtime (T3.1).  This test validates structural equivalence:
+    same methods, same param reads, same broker call patterns.
+    """
 
-    def test_account_balance_mapped(self):
-        source = "void OnTick() { double bal = AccountBalance(); }"
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertIn("self.broker.account().balance", result.output)
+    def test_each_has_order_send(self):
+        """Every fixture except custom_signal uses order_send."""
+        order_send_fixtures = {
+            "simple_ma_cross.mq4", "grid_trader.mq4",
+            "martingale.mq4", "hedge_twins.mq4",
+        }
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                if name in order_send_fixtures:
+                    self.assertIn("self.broker.order_send(", output,
+                                  f"{name}: missing broker.order_send")
 
-    def test_set_timer_mapped(self):
-        source = "void OnInit() { EventSetTimer(300); return INIT_SUCCEEDED; }"
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertIn("self.ctx.set_timer", result.output)
+    def test_each_has_position_close_or_order_delete(self):
+        """Every fixture should have close/delete logic."""
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                has_close = "self.broker.position_close(" in output
+                has_delete = "self.broker.order_delete(" in output
+                self.assertTrue(
+                    has_close or has_delete,
+                    f"{name}: no position_close or order_delete found",
+                )
 
-    def test_kill_timer_mapped(self):
-        source = "void OnDeinit(const int reason) { EventKillTimer(); }"
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertIn("self.ctx.kill_timer", result.output)
+    def test_indicators_used_where_expected(self):
+        """Fixtures that use MQL indicators should produce SDK indicator calls."""
+        indicator_fixtures = {
+            "simple_ma_cross.mq4", "martingale.mq4",
+            "hedge_twins.mq4", "custom_signal.mq4",
+        }
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                if name in indicator_fixtures:
+                    self.assertIn("self.indicators.", output,
+                                  f"{name}: missing indicators usage")
+
+    def test_for_loop_orders_pattern(self):
+        """Fixtures with OrderSelect loops should produce broker.orders() iteration."""
+        order_loop_fixtures = {
+            "simple_ma_cross.mq4", "grid_trader.mq4",
+            "martingale.mq4", "hedge_twins.mq4",
+        }
+        for name in FIXTURES:
+            with self.subTest(fixture=name):
+                output = _transpile_output(name)
+                if name in order_loop_fixtures:
+                    self.assertIn("self.broker.orders():", output,
+                                  f"{name}: missing broker.orders() iteration")
 
 
-class TestControlFlowMapping(unittest.TestCase):
-    """MQL control flow → Python."""
+# ── Regression: confidence gate catches illegal code ─────────────────────
 
-    def test_if_mapped(self):
-        source = "void OnTick() { if (Close[0] > Open[0]) { Print(\"up\"); } }"
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertIn("if ", result.output)
+class TestConfidenceGateCatchesIllegalCode(unittest.TestCase):
+    """The quality gate must correctly identify broken code as LOW."""
 
-    def test_while_mapped(self):
-        source = "void OnTick() { while (true) { break; } }"
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertIn("while True:", result.output)
+    def test_empty_output_is_low(self):
+        from tools.mql_transpiler.quality_gate import confidence_from_output
+        self.assertEqual(confidence_from_output(""), QualityVerdict.LOW)
 
-    def test_return_mapped(self):
-        source = "void OnTick() { return; }"
-        tp = MQLTranspiler()
-        result = tp.transpile(source, "test.mq4")
-        self.assertIn("return", result.output)
+    def test_syntax_error_is_low(self):
+        from tools.mql_transpiler.quality_gate import confidence_from_output
+        self.assertEqual(
+            confidence_from_output("def broken(:\n    pass\n"),
+            QualityVerdict.LOW,
+        )
+
+    def test_missing_imports_is_low(self):
+        from tools.mql_transpiler.quality_gate import confidence_from_output
+        code = "class Test:\n    def on_init(self):\n        pass\n"
+        self.assertEqual(confidence_from_output(code), QualityVerdict.LOW)
+
+    def test_valid_reference_is_high(self):
+        """The 5 hand-written SDK reference strategies must pass gates."""
+        from tools.mql_transpiler.quality_gate import confidence_from_output
+        sdk_dir = Path(__file__).parent.parent.parent.parent / "strategy-service" / "tests" / "sdk_samples"
+        for sample in ["single_ma_cross.py", "grid_trader.py", "martingale.py",
+                        "hedge_twins.py", "custom_signal.py"]:
+            code = (sdk_dir / sample).read_text()
+            self.assertEqual(
+                confidence_from_output(code), QualityVerdict.HIGH,
+                f"{sample}: reference strategy should be HIGH",
+            )
 
 
 if __name__ == "__main__":

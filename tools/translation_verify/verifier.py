@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from tools.mql_transpiler.transpiler import MQLTranspiler
+from tools.mql_transpiler.ast_transpiler import ASTTranspiler
 
 # Engine imports (lazy to avoid numpy/pandas issues at import time).
 # These are loaded when verify() is called.
@@ -75,16 +75,14 @@ class TranslationVerifier:
         """Run the full verification pipeline."""
         result = VerificationResult(mql_file=mql_file)
 
-        # Step 1: Transpile.
-        tp = MQLTranspiler()
-        tp_result = tp.transpile(mql_source, filename=mql_file)
+        # Step 1: Transpile with tree-sitter pipeline.
+        tp = ASTTranspiler()
+        tp_result = tp.transpile(mql_source)
         sdk_code = tp_result.output
         result.transpile_ok = True
         result.transpile_stats = {
-            "lines_in": tp_result.stats.lines_in,
-            "lines_out": tp_result.stats.lines_out,
-            "patterns_matched": tp_result.stats.patterns_matched,
-            "gaps": tp_result.stats.gaps,
+            "lines_out": len(sdk_code.splitlines()),
+            "gaps": tp_result.stats.get("gaps", 0),
         }
 
         # Check for critical transpile failures.

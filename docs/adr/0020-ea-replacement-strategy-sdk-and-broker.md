@@ -62,6 +62,9 @@
    - **决策 D6-A（2026-06-23）：gate 单点权威，实盘在线过门、回测离线重放过门。** 金钱安全只允许一份实现（Go），**禁止在 Python 镜像/重写 gate 规则**。实盘：gate 构造期强制注入 `LiveBroker` 派发路径，编译期保证不可绕过；每笔 `order_send → Gate.Evaluate() → mthub.PlaceOrder`。回测：SimBroker 全速撮合，意图流喂给同一 Go gate 离线批量重放，产出风险预检报告（不逐 tick RPC）。
    - **✅ 已修复（2026-06-24）**：`internal/risk/gate.go` 已接进 `live_runner.go`（dispatchCloseOrder + submitOrder 均经 `Gate.Evaluate` 过滤）；`backfillLiveState` 已接 `MTAccountStateProvider`（balance fallback 10000 若无 ProfitUpdate 事件，equity 实时计算）。旧 `risksvc` 管线仍在 mthub 层作为第二防线。
 6. **复用，不重写**：回测引擎核心、MT 网关 RPC、`schedule_engine.go`、`live_sandbox.py` worker 模式。
+   - **决策 D8（2026-06-25）：MQL→Python 翻译器收敛到单一 parser + parser 无关的正确性门。** 翻译器的唯一可信度量 = **编译通过 + 行为对齐**，而非"模式命中率"。强制门：① `ast.parse(output)` ② SDK import 冒烟 ③ 行为对齐 harness（对 5 个手写 SDK 参考策略逐 bar 信号 diff）。`confidence` 重定义为两门皆过=HIGH，否则 LOW；删除 `matched/total` 虚荣指标。
+   - **parser 路线**：RD-first，但受**四条不可退让条件**约束——C1 立即无条件删除正则 fallback（RD 必须独立，解析不了即硬 GAP→LLM 过门）；C2 质量门 + 行为 harness 先行；C3 预先写死可量化的 tree-sitter 切换触发器（真实 corpus clean-parse 率 <90% / 优先级测试不达标 / 回归 >3 次 / 单缺口补丁 >200 行）；C4 先评估 fork `tree-sitter-cpp`（MQL4≈C/MQL5≈C++）。因正确性由外部 gate 强制，RD-first 不构成"妥协最优解"。
+   - **已核实待修（2026-06-25）**：line-by-line 正则路径产物 5/5 不编译却报 conf 0.85–1.00；AST 路径 4/5 崩溃（`UnaryOp` 未导入）；所谓 RD parser 实际把表达式甩回正则 fallback。详见 `docs/plan/2026-06-25-翻译器重构-实施说明书(DeepSeek).md`。
 7. **文档漂移修正**：删除/修正 `sandbox.py` 对 ADR-0016 的误引；修订 spec/26 关于 DSL/ONNX 生产路径的错误叙述。
 8. **不造空壳**：每个新模块必须有真实调用方或测试驱动（吸取 factor DSL/ONNX 教训）。
 

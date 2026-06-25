@@ -34,43 +34,53 @@ _SVC = _pb.DESCRIPTOR.services_by_name["PythonStrategyService"]
 # ── Transpile handler ────────────────────────────────────────────────
 
 async def _transpile(req: TranspileCodeRequest, _ctx) -> TranspileCodeResponse:
+    """Transpile MQL → Python using the deterministic AST transpiler.
+
+    C1 (ADR-0020 D8): NO line-by-line regex fallback.  If the AST parser
+    cannot parse a construct, it produces a hard GAP node → LLM fills it
+    (passing through the same quality gates).  The regex transpiler is
+    RETIRED — not kept as backup.
+
+    Confidence is REDEFINED (C2): HIGH (all gates pass) = 1.0,
+    LOW (any gate fails) = 0.0.  No more ``matched/(matched+gaps)``.
+    """
     source = req.source_code or ""
     class_name = req.class_name or "TranslatedStrategy"
     if not source:
         return TranspileCodeResponse(is_deterministic=False)
 
-    # AST transpiler first.
+    # ── AST transpiler (ONLY path) ──────────────────────────────────
     try:
         from tools.mql_transpiler.ast_transpiler import transpile_ast
         r = transpile_ast(source, class_name)
+
+        # Gate-based confidence (C2): compiles + SDK imports + lint.
+        from tools.mql_transpiler.quality_gate import QualityGate, QualityVerdict
+        gate_report = QualityGate.assess(r.output)
+        confidence = 1.0 if gate_report.verdict == QualityVerdict.HIGH else 0.0
+
+        # Collect gap info for LLM fill (T4).
+        gap_count = r.stats.get("gaps", 0)
+        gap_samples = r.stats.get("gap_samples", [])[:10]
+        # Also include gate failures as gap info.
+        if gate_report.failures:
+            for f in gate_report.failures[:5]:
+                gap_samples.append(f"GATE:{f.gate}: {f.message}")
+
         return TranspileCodeResponse(
             target_code=r.output,
-            confidence=r.stats.get("confidence", 0),
-            total_patterns=r.stats.get("matched", 0) + r.stats.get("gaps", 0),
-            gaps=r.stats.get("gaps", 0),
-            gap_samples=r.stats.get("gap_samples", [])[:10],
+            confidence=confidence,
+            total_patterns=len(r.output.split("\n")),
+            gaps=gap_count + len(gate_report.failures),
+            gap_samples=gap_samples,
             is_deterministic=True,
         )
-    except Exception:
-        pass
-
-    # Line-by-line fallback.
-    try:
-        from tools.mql_transpiler.transpiler import MQLTranspiler
-        tp = MQLTranspiler(class_name or "TranslatedStrategy")
-        r = tp.transpile(source, "_t.mq4")
+    except Exception as e:
+        _log.warning("AST transpiler failed: %s", e)
         return TranspileCodeResponse(
-            target_code=r.output,
-            confidence=tp.get_confidence(),
-            total_patterns=r.stats.patterns_matched + r.stats.gaps,
-            gaps=r.stats.gaps,
-            gap_samples=list(r.stats.gap_reasons.keys())[:10],
-            is_deterministic=True,
+            is_deterministic=False,
+            gap_samples=[f"transpiler error: {e}"],
         )
-    except Exception:
-        pass
-
-    return TranspileCodeResponse(is_deterministic=False, gap_samples=["unavailable"])
 
 
 # ── Validate handler ──────────────────────────────────────────────────

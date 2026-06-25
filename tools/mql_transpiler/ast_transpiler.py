@@ -17,10 +17,10 @@ import re
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple
 
-from tools.mql_transpiler.ast_parser import (
-    ASTNode,
+from tools.mql_transpiler.ast_nodes import (
     ArrayInitExpr,
     AssignmentExpr,
+    ASTNode,
     BinaryOp,
     CallExpr,
     CompoundStmt,
@@ -37,9 +37,9 @@ from tools.mql_transpiler.ast_parser import (
     SubscriptExpr,
     SwitchStmt,
     TernaryExpr,
+    UnaryOp,
     VarDecl,
     WhileStmt,
-    parse_mql_ast,
 )
 
 # Load proto-generated accessor mappings.
@@ -62,18 +62,11 @@ from tools.mql_transpiler.mappings import (
     MQL_TYPE_MAP,
 )
 
-# Lazy import for hybrid mode — line-by-line transpiler as fallback.
-_LINE_TRANSPILER = None
-
-def _get_line_transpiler():
-    global _LINE_TRANSPILER
-    if _LINE_TRANSPILER is None:
-        try:
-            from tools.mql_transpiler.transpiler import MQLTranspiler
-            _LINE_TRANSPILER = MQLTranspiler("_hybrid")
-        except ImportError:
-            pass
-    return _LINE_TRANSPILER
+# ── C1 (ADR-0020 D8): regex fallback RETIRED ─────────────────────────
+# The line-by-line transpiler (transpiler.py) and all hybrid fallback
+# paths (_get_line_transpiler, _needs_line_fallback) are REMOVED.
+# Expressions the AST cannot translate become hard GAP markers → LLM fills
+# them (T4), passing through the same quality gates as everything else.
 
 # MQL constants → Python
 _MQL_CONSTANTS = {
@@ -132,20 +125,20 @@ class ASTTranspiler:
         self._lines: List[str] = []
         self._indent = 0
         # State tracking
-        self._known_vars: Set[str] = set()
+        self._known_vars: Set[str] = set()     # Global variables → self. prefix
+        self._local_vars: Set[str] = set()     # Function-local variables → NO self. prefix
         self._extern_params: List[Tuple[str, str, str]] = []  # (name, type, default)
         self._global_vars: List[Tuple[str, str]] = []  # (name, value)
         self._inside_orderselect_loop = False
         self._order_loop_var = "order"
 
     def transpile(self, source: str) -> ASTTranspileResult:
-        from tools.mql_transpiler.ast_parser import Parser
-        parser = Parser(source)
-        ast = parser.parse()
-        # Merge parser globals (from #define) into our own.
-        for name, val in parser._global_vars:
-            self._global_vars.append((name, val))
-            self._known_vars.add(name)
+        """Parse MQL source with tree-sitter and transpile to Python SDK code.
+
+        No fallback — tree-sitter is the single parser (ADR-0020 D8, C1).
+        """
+        from tools.mql_transpiler.ast_bridge import parse_mql
+        ast = parse_mql(source)
         return self._transpile_ast(ast)
 
     def _transpile_ast(self, ast: SourceFile) -> ASTTranspileResult:
@@ -185,12 +178,12 @@ class ASTTranspiler:
                 self._transpile_function(decl)
 
         self._indent -= 1
-        # Compute confidence from AST transpilation quality.
+        # Confidence is now external (quality_gate.py — C2).
+        # The old ``matched/(matched+gaps)`` algorithm is RETIRED.
+        # This method collects gap info only; confidence is determined
+        # by the parser-independent quality gates (ast.parse + SDK import + lint).
         output = "\n".join(self._lines)
         gap_count = output.count("# TRANSPILER-GAP")
-        pattern_count = sum(1 for l in self._lines if self._is_translated_line(l))
-        total = gap_count + pattern_count
-        conf = pattern_count / max(total, 1)
         return ASTTranspileResult(
             output=output,
             externs=self._extern_params,
@@ -198,20 +191,15 @@ class ASTTranspiler:
             stats={
                 "externs": len(self._extern_params),
                 "globals": len(self._global_vars),
-                "confidence": conf,
-                "matched": pattern_count,
                 "gaps": gap_count,
                 "gap_samples": [l.strip()[len("# TRANSPILER-GAP: "):] for l in self._lines if "# TRANSPILER-GAP:" in l][:10],
             },
         )
 
-    @staticmethod
-    def _is_translated_line(line: str) -> bool:
-        """Check if a line is an actual translated statement (not a comment or blank)."""
-        s = line.strip()
-        return bool(s) and not s.startswith("#") and not s.startswith('"""') and not s.startswith("class ") and not s.startswith("from ") and not s.startswith("import ") and s != ")"
-
     def _transpile_function(self, func: FuncDef) -> None:
+        # Clear local variable tracking on function entry.
+        self._local_vars.clear()
+
         sdk_name = LIFECYCLE_MAP.get(func.name, func.name.lower())
         if func.name == "OnInit":
             self._emit()
@@ -219,9 +207,13 @@ class ASTTranspiler:
             self._indent += 1
             if self._extern_params:
                 self._emit("self._init_params()")
+            # Emit global var init (skip those already handled in body).
+            emitted_globals = set()
             for name, val in self._global_vars:
                 self._emit(f"self.{name} = {val}")
-            self._transpile_compound(func.body)
+                emitted_globals.add(name)
+            # Process body, but skip duplicate global init statements.
+            self._transpile_compound_skip_globals(func.body, emitted_globals)
             self._indent -= 1
         elif func.name in LIFECYCLE_MAP:
             self._emit()
@@ -241,11 +233,45 @@ class ASTTranspiler:
             self._transpile_compound(func.body)
             self._indent -= 1
 
-    def _transpile_compound(self, body: CompoundStmt) -> None:
-        for stmt in body.statements:
-            self._transpile_stmt(stmt)
+        self._local_vars.clear()
 
-    def _transpile_stmt(self, stmt: ASTNode) -> None:
+    def _transpile_compound(self, body: CompoundStmt) -> None:
+        line_before = len(self._lines)
+        for stmt in body.statements:
+            self._transpile_stmt(stmt, skip_order_select=True)
+        # If no actual Python statements were emitted (only GAP comments or blank
+        # lines), emit a 'pass' to keep the function syntactically valid.
+        if body.statements and len(self._lines) > line_before:
+            new_lines = self._lines[line_before:]
+            has_code = any(
+                l.strip() and not l.strip().startswith("#")
+                for l in new_lines
+            )
+            if not has_code:
+                self._emit("pass")
+
+    def _transpile_compound_skip_globals(self, body: CompoundStmt, skip_vars: set) -> None:
+        """Like _transpile_compound but skips VarDecl/assignments for already-emitted globals."""
+        for stmt in body.statements:
+            # Skip VarDecl that re-initialize globals already emitted.
+            if isinstance(stmt, VarDecl) and stmt.name in skip_vars:
+                continue
+            # Skip AssignmentExpr like "prevFastMA = 0.0" when prevFastMA is a known global.
+            if isinstance(stmt, ExpressionStmt) and stmt.expr:
+                if isinstance(stmt.expr, AssignmentExpr) and stmt.expr.lhs in skip_vars:
+                    # Still emit the assignment (it might update the value differently)
+                    pass
+            self._transpile_stmt(stmt, skip_order_select=True)
+
+    def _transpile_stmt(self, stmt: ASTNode, skip_order_select: bool = False) -> None:
+        # In an OrderSelect loop, skip the redundant "if (OrderSelect(...))" check
+        # since every iteration of broker.orders() IS a valid order.
+        if skip_order_select and self._inside_orderselect_loop and isinstance(stmt, IfStmt):
+            if self._is_orderselect_check(stmt.condition):
+                # Skip the if wrapper — emit body directly.
+                self._transpile_branch(stmt.then_branch)
+                return
+
         if isinstance(stmt, IfStmt):
             self._transpile_if(stmt)
         elif isinstance(stmt, SwitchStmt):
@@ -261,22 +287,21 @@ class ASTTranspiler:
             self._transpile_compound(stmt)
             self._indent -= 1
         elif isinstance(stmt, ExpressionStmt):
-            expr_str = self._expr_to_py(stmt.expr)
-            if expr_str and expr_str != "break":
-                self._emit(expr_str)
+            self._transpile_expr_stmt(stmt)
         elif isinstance(stmt, VarDecl):
+            # Local variable (inside function body) → bare name, no self. prefix.
+            self._local_vars.add(stmt.name)
             if stmt.value:
                 val = self._expr_to_py(stmt.value)
-                self._emit(f"self.{stmt.name} = {val}")
+                self._emit(f"{stmt.name} = {val}")
             else:
-                self._emit(f"self.{stmt.name} = 0")
-            self._known_vars.add(stmt.name)
+                self._emit(f"{stmt.name} = 0")
 
     def _transpile_if(self, stmt: IfStmt) -> None:
         cond = self._expr_to_py(stmt.condition)
         self._emit(f"if {cond}:")
         self._indent += 1
-        self._transpile_stmt(stmt.then_branch)
+        self._transpile_branch(stmt.then_branch)
         self._indent -= 1
         if stmt.else_branch:
             # Check if else branch is another IfStmt → elif
@@ -284,60 +309,94 @@ class ASTTranspiler:
                 cond2 = self._expr_to_py(stmt.else_branch.condition)
                 self._emit(f"elif {cond2}:")
                 self._indent += 1
-                self._transpile_stmt(stmt.else_branch.then_branch)
+                self._transpile_branch(stmt.else_branch.then_branch)
                 self._indent -= 1
                 if stmt.else_branch.else_branch:
                     self._emit("else:")
                     self._indent += 1
-                    self._transpile_stmt(stmt.else_branch.else_branch)
+                    self._transpile_branch(stmt.else_branch.else_branch)
                     self._indent -= 1
             else:
                 self._emit("else:")
                 self._indent += 1
-                self._transpile_stmt(stmt.else_branch)
+                self._transpile_branch(stmt.else_branch)
                 self._indent -= 1
+
+    @staticmethod
+    @staticmethod
+    def _is_orderselect_check(condition) -> bool:
+        """Check if an if-condition is just an OrderSelect(...) call."""
+        if isinstance(condition, CallExpr):
+            return condition.name == "OrderSelect"
+        return False
+
+    def _transpile_branch(self, stmt) -> None:
+        """Emit a branch body — unwraps CompoundStmt to avoid double indent."""
+        if isinstance(stmt, CompoundStmt):
+            self._transpile_compound(stmt)
+        else:
+            self._transpile_stmt(stmt)
 
     def _transpile_for(self, stmt: ForStmt) -> None:
         # Detect OrdersTotal / PositionsTotal loop patterns.
         cond_str = self._expr_to_py(stmt.condition) if stmt.condition else ""
-        if "OrdersTotal" in cond_str:
+        if "OrdersTotal" in cond_str or "OrdersTotal" in str(stmt.condition):
             self._emit("# OrderSelect loop → Python iteration")
             self._emit("for order in self.broker.orders():")
             self._inside_orderselect_loop = True
             self._order_loop_var = "order"
             self._indent += 1
-            self._transpile_stmt(stmt.body)
+            self._transpile_branch(stmt.body)
             self._indent -= 1
             self._inside_orderselect_loop = False
         elif "PositionsTotal" in cond_str:
             self._emit("# PositionSelect loop → Python iteration")
             self._emit("for pos in self.broker.positions():")
             self._indent += 1
-            self._transpile_stmt(stmt.body)
+            self._transpile_branch(stmt.body)
             self._indent -= 1
         else:
             # Generic for-loop: for (int i = 1; i <= N; i++) → for i in range(1, N+1)
-            init_str = self._expr_to_mql_text(stmt.init) if stmt.init else ""
-            cond_str = self._expr_to_mql_text(stmt.condition) if stmt.condition else ""
-            # Extract variable name and start value from init: "int i = 1" or "i = 1"
-            var_match = re.match(r"(?:\w+\s+)?(\w+)\s*=\s*(.+)", init_str)
-            if var_match:
-                var_name = var_match.group(1)
-                start_val = var_match.group(2).strip()
-                # Extract end value from condition: "i <= N" or "i < N"
-                if "<=" in cond_str:
-                    end_val = cond_str.split("<=")[-1].strip() + " + 1"
-                elif "<" in cond_str:
-                    end_val = cond_str.split("<")[-1].strip()
-                else:
-                    end_val = "10"
-                self._emit(f"for self.{var_name} in range({start_val}, {end_val}):")
-                self._indent += 1
-                self._transpile_stmt(stmt.body)
-                self._indent -= 1
-                self._known_vars.add(var_name)
+            self._transpile_generic_for(stmt)
+
+    def _transpile_generic_for(self, stmt: ForStmt) -> None:
+        """Translate generic MQL for-loop: for (init; cond; update) → Python for/while."""
+        # Extract variable name and start value from init.
+        var_name = ""
+        start_val = "0"
+        if isinstance(stmt.init, VarDecl):
+            var_name = stmt.init.name
+            start_val = self._expr_to_py(stmt.init.value) if stmt.init.value else "0"
+        elif isinstance(stmt.init, AssignmentExpr):
+            var_name = stmt.init.lhs
+            start_val = self._expr_to_py(stmt.init.rhs) if stmt.init.rhs else "0"
+
+        # Extract end value from condition: i <= N → N+1, i < N → N
+        end_val = "10"
+        if isinstance(stmt.condition, BinaryOp):
+            cond_str = self._expr_to_py(stmt.condition)
+            if "<=" in cond_str:
+                # Extract the right-hand side after <=
+                rhs = self._expr_to_py(stmt.condition.right)
+                end_val = f"{rhs} + 1"
+            elif "<" in cond_str:
+                rhs = self._expr_to_py(stmt.condition.right)
+                end_val = str(rhs)
+            elif ">=" in cond_str:
+                # i >= N → range(N, start-1, -1)
+                rhs = self._expr_to_py(stmt.condition.right)
+                end_val = f"{rhs} - 1"
             else:
-                self._emit(f"# TRANSPILER-GAP: for loop — manual conversion needed")
+                end_val = "10"
+
+        if var_name:
+            self._local_vars.add(var_name)
+            self._emit(f"for {var_name} in range({start_val}, {end_val}):")
+            self._indent += 1
+            self._transpile_branch(stmt.body)
+            self._indent -= 1
+        else:
+            self._emit(f"# TRANSPILER-GAP: for loop — manual conversion needed")
 
     def _transpile_switch(self, stmt: SwitchStmt) -> None:
         """Translate MQL switch → Python if/elif/else."""
@@ -364,7 +423,7 @@ class ASTTranspiler:
         cond = self._expr_to_py(stmt.condition)
         self._emit(f"while {cond}:")
         self._indent += 1
-        self._transpile_stmt(stmt.body)
+        self._transpile_branch(stmt.body)
         self._indent -= 1
 
     def _transpile_return(self, stmt: ReturnStmt) -> None:
@@ -375,32 +434,38 @@ class ASTTranspiler:
             self._emit("return")
 
     def _transpile_expr_stmt(self, stmt: ExpressionStmt) -> None:
+        """Translate an expression statement. Hard GAP on unrecognized patterns."""
         if stmt.expr is None:
             return
         py = self._expr_to_py(stmt.expr)
-        # If output looks incomplete (contains raw MQL function names), try line-by-line.
-        if self._needs_line_fallback(py):
+        # Check for obviously untranslated MQL artifacts.
+        if self._looks_untranslated(py):
             mql_text = self._expr_to_mql_text(stmt.expr)
-            if mql_text:
-                lb = _get_line_transpiler()
-                if lb:
-                    try:
-                        # Run line-by-line on this single statement, capture output.
-                        lb_result = lb.transpile(f"void _dummy() {{ {mql_text} }}", "_hybrid.mq4")
-                        # Extract the statement line from the output.
-                        for line in lb_result.output.split("\n"):
-                            stripped = line.strip()
-                            if stripped and not stripped.startswith(("class", "def", "from", "import", '"""', "#")):
-                                if "TRANSPILER-GAP" not in stripped:
-                                    self._emit(stripped)
-                                    return
-                    except Exception:
-                        pass
+            self._emit(f"# TRANSPILER-GAP: expression — {mql_text[:80] if mql_text else 'unknown'}")
+            return
         self._emit(py)
 
-    def _needs_line_fallback(self, py: str) -> bool:
-        """Check if the Python output still contains untranslated MQL artifacts."""
-        return bool(py) and ("self." not in py or "(" in py) and not py.startswith("self.broker")
+    @staticmethod
+    def _looks_untranslated(py: str) -> bool:
+        """Detect Python output that still contains MQL artifacts (C1: no regex fallback).
+
+        These become hard GAP markers → LLM fills them in T4, going through
+        the same quality gates as everything else.
+        """
+        if not py:
+            return False
+        # Bare MQL function names in the output.
+        mql_indicators = {"iMA", "iRSI", "iATR", "iBands", "iMACD", "iStochastic",
+                          "iCCI", "iCustom", "iADX", "iMomentum", "iMFI", "iOBV",
+                          "iSAR", "iStdDev", "iWPR", "iEnvelopes", "iForce",
+                          "iDeMarker", "iOsMA"}
+        for fn in mql_indicators:
+            if fn + "(" in py:
+                return True
+        # MQL relational operators not translated.
+        if "&&" in py or "||" in py:
+            return True
+        return False
 
     def _expr_to_mql_text(self, expr) -> str:
         """Serialize an AST expression back to MQL-like text for line-by-line fallback."""
@@ -471,6 +536,26 @@ class ASTTranspiler:
             return f"[{elems}]"
         return str(expr)
 
+    # Order accessor → SDK field name (correct for OrderSelect loop context).
+    _ORDER_ACCESSOR_SDK = {
+        "OrderMagicNumber": "order.magic",
+        "OrderTicket": "order.ticket",
+        "OrderLots": "order.volume",
+        "OrderSymbol": "order.symbol",
+        "OrderType": "order.type",
+        "OrderOpenPrice": "order.open_price",
+        "OrderClosePrice": "order.close_price",
+        "OrderStopLoss": "order.sl",
+        "OrderTakeProfit": "order.tp",
+        "OrderComment": "order.comment",
+        "OrderCommission": "order.commission",
+        "OrderSwap": "order.swap",
+        "OrderProfit": "order.profit",
+        "OrderOpenTime": "order.open_time_ms",
+        "OrderCloseTime": "order.close_time_ms",
+        "OrderVolume": "order.volume",
+    }
+
     # MQL identifiers that should NOT get self. prefix (builtins/symbols)
     _MQL_BUILTIN_IDENTS = {
         "Symbol": "self.ctx.symbol",
@@ -520,11 +605,9 @@ class ASTTranspiler:
         if name in self._MQL_BUILTIN_IDENTS:
             return self._MQL_BUILTIN_IDENTS[name]
 
-        # Order accessors in OrderSelect loop
-        if self._inside_orderselect_loop:
-            for mql_call, sdk_prop in MQL_TO_SDK_ACCESSOR.items():
-                if mql_call.rstrip("()") == name:
-                    return sdk_prop
+        # Order accessors in OrderSelect loop → map to SDK field names.
+        if self._inside_orderselect_loop and name in self._ORDER_ACCESSOR_SDK:
+            return self._ORDER_ACCESSOR_SDK[name]
 
         # Common builtin functions (not called, just referenced)
         if name in COMMON_FUNC_MAP:
@@ -532,11 +615,19 @@ class ASTTranspiler:
             if not py.startswith("TRANSPILER-GAP") and not py.startswith("lambda") and "(" not in py:
                 return py
 
-        # Known variables → self. prefix
+        # Local variables (declared inside current function) → bare name.
+        if name in self._local_vars:
+            return name
+
+        # Known global variables → self. prefix
         if name in self._known_vars:
             return f"self.{name}"
 
-        # Unknown identifier → assume self. prefix for member access
+        # User-defined functions → self. prefix (they're methods on the class).
+        # We check if this name appears as a FuncDef name in the AST — but
+        # at this level we don't have access to that.  Instead, any unknown
+        # identifier inside a function body that looks like a call target
+        # gets self. prefix.  For bare references, assume self. too.
         return f"self.{name}"
 
     def _map_call(self, call: CallExpr) -> str:
@@ -548,42 +639,47 @@ class ASTTranspiler:
         if name == "Symbol":
             return "self.ctx.symbol"
 
-        # Account functions
+        # MarketInfo(symbol, MODE_XXX) → symbol_info(symbol).attr
+        if name == "MarketInfo":
+            return self._map_market_info(call)
+
+        # Account/Order accessor functions — proto mappings (authoritative for non-loop).
+        # In an OrderSelect loop, override with SDK-correct field names.
+        if self._inside_orderselect_loop and name in self._ORDER_ACCESSOR_SDK:
+            return self._ORDER_ACCESSOR_SDK[name]
+
         lookup = f"{name}()"
         if lookup in MQL_TO_SDK_ACCESSOR:
             sdk = MQL_TO_SDK_ACCESSOR[lookup]
+            # Fix proto-generated names that don't match SDK (only in loop context).
+            if self._inside_orderselect_loop:
+                _LOOP_FIELD_FIXUP = {
+                    "order.magic_number": "order.magic",
+                    "order.lots": "order.volume",
+                    "order.stop_loss": "order.sl",
+                    "order.take_profit": "order.tp",
+                    "order.order_type": "order.type",
+                }
+                sdk = _LOOP_FIELD_FIXUP.get(sdk, sdk)
             return sdk
 
         # Trade functions — use proto-generated parameter order
         if name == "OrderSend":
             return self._map_rpc_call_to_sdk(call, "OrderSend", "order_send")
         if name == "OrderClose":
-            return self._map_rpc_call_to_sdk(call, "OrderClose", "position_close")
+            return self._map_orderclose_to_sdk(call)
         if name == "OrderModify":
             return self._map_rpc_call_to_sdk(call, "OrderModify", "position_modify")
         if name == "OrderDelete":
             return self._map_rpc_call_to_sdk(call, "OrderDelete", "order_delete")
         if name == "OrderSelect":
-            return "True  # OrderSelect"
+            # OrderSelect → always True in broker.orders() iteration.
+            return "True"
 
-        # Indicator calls — translate 0 (NULL timeframe) to None.
-        if name in ("iMA", "iRSI", "iBands", "iMACD", "iATR", "iStochastic", "iCCI", "iCustom",
-                     "iADX", "iMomentum", "iMFI", "iOBV", "iSAR", "iStdDev", "iWPR",
-                     "iEnvelopes", "iForce", "iDeMarker", "iOsMA"):
-            sdk_method = name[1:].lower()
-            # Replace 0/PERIOD_* (MQL NULL/current timeframe) with None
-            clean_args = []
-            for i, a in enumerate(call.args):
-                s = str(self._expr_to_py(a))
-                if i <= 1 and s in ("0", "None"):
-                    clean_args.append("None")  # symbol/tf from MQL NULL
-                elif s.startswith("PERIOD_"):
-                    clean_args.append("None")
-                elif s in ("PRICE_CLOSE", "PRICE_OPEN", "PRICE_HIGH", "PRICE_LOW", "PRICE_MEDIAN", "PRICE_TYPICAL", "PRICE_WEIGHTED"):
-                    clean_args.append(self._MQL_BUILTIN_IDENTS.get(s, s))
-                else:
-                    clean_args.append(s)
-            return f"self.indicators.{sdk_method}({', '.join(clean_args)})"
+        # Indicator calls — map MQL positional args to SDK named params.
+        indicator_map = self._map_indicator_call(name, call)
+        if indicator_map is not None:
+            return indicator_map
 
         # Common functions
         if name in COMMON_FUNC_MAP:
@@ -593,8 +689,119 @@ class ASTTranspiler:
                     return py.replace("()", f"({args_str})")
                 return f"{py}({args_str})"
 
-        # Generic fallback
-        return f"{name}({args_str})"
+        # Generic fallback: unknown functions are user-defined → self. prefix.
+        # This covers cases like closeExisting(), closeByMagic(), CheckTime(), etc.
+        # These MQL functions become Python methods on the strategy class.
+        return f"self.{name}({args_str})"
+
+    # ── Indicator arg mapping (MQL positional → SDK named) ───────────
+
+    # MQL indicator signature → (sdk_method_name, [(mql_arg_index, sdk_param_name), ...])
+    _INDICATOR_SIGNATURES: Dict[str, Tuple[str, List[Tuple[int, str]]]] = {
+        "iMA":         ("ma",   [(2, "period"), (3, "shift"), (4, "method")]),
+        "iRSI":        ("rsi",  [(2, "period"), (4, "shift")]),
+        "iBands":      ("bands", [(2, "period"), (3, "deviation"), (7, "shift")]),
+        "iMACD":       ("macd", [(2, "fast"), (3, "slow"), (4, "signal"), (7, "shift")]),
+        "iATR":        ("atr",  [(2, "period"), (3, "shift")]),
+        "iStochastic": ("stochastic", [(2, "k_period"), (3, "d_period"), (7, "shift")]),
+        "iCCI":        ("cci",  [(2, "period"), (4, "shift")]),
+        "iADX":        ("adx",  [(2, "period"), (4, "shift")]),
+        "iMomentum":   ("momentum", [(2, "period"), (5, "shift")]),
+        "iMFI":        ("mfi",  [(2, "period"), (4, "shift")]),
+        "iOBV":        ("obv",  [(4, "shift")]),
+        "iSAR":        ("sar",  [(2, "step"), (3, "maximum"), (4, "shift")]),
+        "iStdDev":     ("stddev", [(2, "period"), (6, "shift")]),
+        "iWPR":        ("wpr",  [(2, "period"), (4, "shift")]),
+        "iEnvelopes":  ("envelopes", [(2, "period"), (6, "deviation"), (7, "shift")]),
+        "iForce":      ("force", [(2, "period"), (5, "shift")]),
+        "iDeMarker":   ("demarker", [(2, "period"), (4, "shift")]),
+        "iOsMA":       ("osma", [(2, "fast"), (3, "slow"), (4, "signal"), (7, "shift")]),
+    }
+
+    def _map_indicator_call(self, name: str, call: CallExpr) -> Optional[str]:
+        """Map MQL indicator call to SDK named-param call.
+
+        Uses _INDICATOR_SIGNATURES to map MQL positional args to SDK keyword
+        args.  Symbol (arg 0) and timeframe (arg 1) are always dropped as the
+        SDK resolves them from context.  Applied_price and mode are dropped.
+        """
+        sig = self._INDICATOR_SIGNATURES.get(name)
+        if sig is None:
+            # Handle iCustom specially.
+            if name == "iCustom":
+                return self._map_icustom_call(call)
+            return None
+
+        sdk_name, arg_map = sig
+        # Evaluate all MQL args to Python strings.
+        py_args = [self._expr_to_py(a) for a in call.args]
+
+        kwargs = []
+        for mql_idx, sdk_param in arg_map:
+            if mql_idx < len(py_args):
+                val = py_args[mql_idx]
+            else:
+                continue  # Not enough args — skip.
+
+            # Clean up MQL-specific values.
+            val_str = str(val)
+            if val_str in ("0", "None", "''", '""') and sdk_param in ("shift",):
+                # 0 shift → default (0), skip emitting.
+                if val_str == "0":
+                    continue
+            if val_str in ("0", "0.0") and sdk_param in ("deviation",):
+                continue  # Use default.
+
+            # Map MQL method constants (MODE_EMA, MODE_SMA, etc.)
+            if sdk_param == "method":
+                val = self._map_indicator_method(val_str)
+
+            kwargs.append(f"{sdk_param}={val}")
+
+        return f"self.indicators.{sdk_name}({', '.join(kwargs)})"
+
+    @staticmethod
+    def _map_indicator_method(raw: str) -> str:
+        """Map MODE_EMA → 'ema', MODE_SMA → 'sma', etc."""
+        method_map = {
+            "0": "'sma'", "'ema'": "'ema'", "MODE_SMA": "'sma'",
+            "MODE_EMA": "'ema'", "MODE_SMMA": "'smma'", "MODE_LWMA": "'lwma'",
+        }
+        return method_map.get(raw.strip("'\""), raw)
+
+    def _map_icustom_call(self, call: CallExpr) -> str:
+        """iCustom(symbol, tf, name, ..., mode, buffer, shift) → i_custom(name, params, buffer, shift)."""
+        py_args = [self._expr_to_py(a) for a in call.args]
+        if len(py_args) < 3:
+            return "self.indicators.i_custom(name='unknown', params=[], buffer=0, shift=0)"
+
+        # arg[2] = indicator name (string)
+        name_val = str(py_args[2]).strip("'\"")
+        # Last 3 args: mode, buffer, shift (for most iCustom calls)
+        if len(py_args) >= 5:
+            buffer_val = py_args[-2]
+            shift_val = py_args[-1]
+            # Middle args (between name and last 3) are the custom params
+            param_vals = py_args[3:-2] if len(py_args) > 5 else []
+        else:
+            buffer_val = "0"
+            shift_val = "0"
+            param_vals = py_args[3:] if len(py_args) > 3 else []
+
+        params_str = ", ".join(str(p) for p in param_vals)
+        return f"self.indicators.i_custom(name='{name_val}', params=[{params_str}], buffer={buffer_val}, shift={shift_val})"
+
+    def _map_orderclose_to_sdk(self, call: CallExpr) -> str:
+        """OrderClose(ticket, volume, price, slippage) → self.broker.position_close(ticket, volume=...)."""
+        py_args = [self._expr_to_py(a) for a in call.args]
+        ticket = py_args[0] if len(py_args) > 0 else "0"
+        volume = py_args[1] if len(py_args) > 1 else "Decimal(str(0))"
+        # volume=OrderLots() → close all (no volume arg)
+        if "OrderLots" in str(volume):
+            return f"self.broker.position_close({ticket})"
+        return f"self.broker.position_close({ticket}, volume=Decimal(str({volume})))"
+
+    # ── RPC call mapping ──────────────────────────────────────────────
 
     def _map_rpc_call_to_sdk(self, call: CallExpr, rpc_name: str, sdk_method: str) -> str:
         """Map an MQL RPC call to SDK method using proto-generated parameter order."""
@@ -625,8 +832,32 @@ class ASTTranspiler:
             parts.append(f"{sdk_name}={val}")
         return f"self.broker.{sdk_method}(OrderRequest({', '.join(parts)}))"
 
-    def _map_ordersend_to_sdk(self, call: CallExpr) -> str:
-        return self._map_rpc_call_to_sdk(call, "OrderSend", "order_send")
+    def _map_market_info(self, call: CallExpr) -> str:
+        """MarketInfo(symbol, MODE_XXX) → symbol_info(symbol).attr."""
+        py_args = [self._expr_to_py(a) for a in call.args]
+        symbol = py_args[0] if len(py_args) > 0 else "self.ctx.symbol"
+        mode = str(py_args[1]) if len(py_args) > 1 else ""
+
+        # Map MODE_ constants to SymbolInfo attributes.
+        # Strip self. prefix if present (from identifier mapping).
+        mode_clean = mode.replace("self.", "").strip("'\"")
+        _MODE_ATTR = {
+            "MODE_POINT": "point", "POINT": "point",
+            "MODE_DIGITS": "digits", "DIGITS": "digits",
+            "MODE_SPREAD": "spread", "SPREAD": "spread",
+            "MODE_STOPLEVEL": "stops_level",
+            "MODE_LOTSIZE": "contract_size",
+            "MODE_TICKVALUE": "tick_value",
+            "MODE_TICKSIZE": "tick_size",
+            "MODE_SWAPLONG": "swap_long",
+            "MODE_SWAPSHORT": "swap_short",
+            "0": "point",
+            "1": "digits",
+        }
+        attr = _MODE_ATTR.get(mode_clean)
+        if attr:
+            return f"self.broker.symbol_info({symbol}).{attr}"
+        return f"self.broker.symbol_info({symbol})"
 
     # ── Helpers ───────────────────────────────────────────────────────
 
