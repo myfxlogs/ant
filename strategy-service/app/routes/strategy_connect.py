@@ -259,6 +259,7 @@ async def execute_strategy_connect(request: Request):
 
 try:
     from tools.mql_transpiler.ast_transpiler import transpile_ast
+    from app.python_strategy_pb2 import TranspileCodeRequest, TranspileCodeResponse
     _TRANSPILER_AVAILABLE = True
 except ImportError:
     _TRANSPILER_AVAILABLE = False
@@ -267,50 +268,29 @@ except ImportError:
 @router.post("/ant.v1.PythonStrategyService/TranspileCode")
 async def handle_transpile(request: Request) -> Response:
     """Transpile MQL4/MQL5 code to Python using the deterministic transpiler."""
+    req = await _parse_request(request, TranspileCodeRequest)
+    source = req.source_code or ""
+    class_name = req.class_name or "TranslatedStrategy"
+
+    if not _TRANSPILER_AVAILABLE or not source:
+        return _respond(TranspileCodeResponse(is_deterministic=False), request)
+
     try:
-        body = await request.json()
-        source = body.get("sourceCode", body.get("source_code", ""))
-        lang = body.get("sourceLang", body.get("source_lang", "auto"))
-        class_name = body.get("className", body.get("class_name", "TranslatedStrategy"))
-
-        if not _TRANSPILER_AVAILABLE:
-            return _respond_json({
-                "targetCode": "",
-                "confidence": 0.0,
-                "totalPatterns": 0,
-                "gaps": 0,
-                "gapSamples": ["transpiler not available"],
-                "isDeterministic": False,
-            }, request)
-
         result = transpile_ast(source, class_name)
         conf = result.stats.get("confidence", 0.0)
         gaps = result.stats.get("gaps", 0)
         matched = result.stats.get("matched", 0)
-
-        return _respond_json({
-            "targetCode": result.output,
-            "confidence": conf,
-            "totalPatterns": matched + gaps,
-            "gaps": gaps,
-            "gapSamples": result.stats.get("gap_samples", []),
-            "isDeterministic": True,
-        }, request)
+        resp = TranspileCodeResponse(
+            target_code=result.output,
+            confidence=conf,
+            total_patterns=matched + gaps,
+            gaps=gaps,
+            gap_samples=result.stats.get("gap_samples", [])[:10],
+            is_deterministic=True,
+        )
+        return _respond(resp, request)
     except Exception as e:
-        return _respond_json({
-            "targetCode": "",
-            "confidence": 0.0,
-            "totalPatterns": 0,
-            "gaps": 0,
-            "gapSamples": [str(e)],
-            "isDeterministic": False,
-        }, request)
-
-
-def _respond_json(data: dict, request: Request) -> Response:
-    """Return JSON response with ConnectRPC headers."""
-    return Response(
-        content=json.dumps(data),
-        media_type="application/json",
-        headers={"Connect-Protocol-Version": "1"},
-    )
+        return _respond(TranspileCodeResponse(
+            is_deterministic=False,
+            gap_samples=[str(e)],
+        ), request)

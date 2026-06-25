@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/google/uuid"
@@ -190,37 +191,60 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 		return nil, err
 	}
 
-	// ── Fast path: deterministic transpiler ──
+	// ── Fast path: deterministic transpiler via strategy-service ──
 	if s.pythonStrategyClient != nil {
+		// Try the proto RPC first.
 		pyResp, pyErr := s.pythonStrategyClient.TranspileCode(ctx, connect.NewRequest(&antv1.TranspileCodeRequest{
 			SourceCode: code,
 			SourceLang: sourceLang,
 			ClassName:  "TranslatedStrategy",
 		}))
-		if pyErr != nil {
-			s.log.Warn("CodeAssist: deterministic transpiler failed, falling back to AI", zap.Error(pyErr))
-		} else if pyResp == nil || pyResp.Msg == nil {
-			s.log.Warn("CodeAssist: deterministic transpiler returned nil response")
-		} else if !pyResp.Msg.IsDeterministic {
-			s.log.Warn("CodeAssist: deterministic transpiler returned non-deterministic result",
-				zap.Float64("confidence", float64(pyResp.Msg.Confidence)))
-		} else {
-			detectedLang := sourceLang
-			if detectedLang == "" || detectedLang == "auto" {
-				detectedLang = "mql4" // default
+		if pyErr == nil && pyResp != nil && pyResp.Msg != nil && pyResp.Msg.IsDeterministic {
+			detLang := sourceLang
+			if detLang == "" || detLang == "auto" {
+				detLang = "mql4"
 			}
 			return connect.NewResponse(&antv1.TransformCodeResponse{
 				TargetCode:    pyResp.Msg.TargetCode,
-				DetectedLang:  detectedLang,
-				Explanation: fmt.Sprintf("Deterministic transpiler: %.0f%% confidence, %d/%d patterns matched",
-					pyResp.Msg.Confidence*100, pyResp.Msg.TotalPatterns-pyResp.Msg.Gaps, pyResp.Msg.TotalPatterns),
+				DetectedLang:  detLang,
+				Explanation:   fmt.Sprintf("Deterministic transpiler: %.0f%% confidence", pyResp.Msg.Confidence*100),
 				Confidence:    pyResp.Msg.Confidence,
 				TotalPatterns: pyResp.Msg.TotalPatterns,
 				Gaps:          pyResp.Msg.Gaps,
 				GapSamples:    pyResp.Msg.GapSamples,
 			}), nil
 		}
-		// Fall through to AI if deterministic transpiler failed or returned low confidence.
+		if pyErr != nil {
+			s.log.Warn("CodeAssist: proto transpiler failed, trying JSON fallback", zap.Error(pyErr))
+		}
+		// JSON fallback — bypasses ConnectRPC serialization issues.
+		payload := fmt.Sprintf(`{"source_code":%q,"source_lang":%q,"class_name":"TranslatedStrategy"}`,
+			code, sourceLang)
+		resp, err := http.Post("http://strategy-service:8081/ant.v1.PythonStrategyService/TranspileCode",
+			"application/json", strings.NewReader(payload))
+		if err == nil && resp != nil && resp.StatusCode == 200 {
+			defer resp.Body.Close()
+			var result struct {
+				TargetCode      string   `json:"target_code"`
+				Confidence      float64  `json:"confidence"`
+				TotalPatterns   int32    `json:"total_patterns"`
+				Gaps            int32    `json:"gaps"`
+				GapSamples      []string `json:"gap_samples"`
+				IsDeterministic bool     `json:"is_deterministic"`
+			}
+			if json.NewDecoder(resp.Body).Decode(&result) == nil && result.IsDeterministic {
+				return connect.NewResponse(&antv1.TransformCodeResponse{
+					TargetCode:    result.TargetCode,
+					DetectedLang:  sourceLang,
+					Explanation:   fmt.Sprintf("Deterministic transpiler: %.0f%% confidence", result.Confidence*100),
+					Confidence:    float32(result.Confidence),
+					TotalPatterns: result.TotalPatterns,
+					Gaps:          result.Gaps,
+					GapSamples:    result.GapSamples,
+				}), nil
+			}
+		}
+		// Fall through to AI.
 	}
 
 	// Detect language if "auto"
