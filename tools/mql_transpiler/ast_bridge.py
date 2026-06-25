@@ -14,9 +14,10 @@ Architecture:
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 
-import tree_sitter as ts
+if TYPE_CHECKING:
+    import tree_sitter as ts
 
 from tools.mql_transpiler.ast_nodes import (
     ArrayInitExpr,
