@@ -482,6 +482,25 @@ class ASTTranspiler:
         "Low": "bars.low",
         "Volume": "bars.volume",
         "Time": "bars.time",
+        # MQL timeframe constants → None (follow backtest config)
+        "PERIOD_M1": "None",
+        "PERIOD_M5": "None",
+        "PERIOD_M15": "None",
+        "PERIOD_M30": "None",
+        "PERIOD_H1": "None",
+        "PERIOD_H4": "None",
+        "PERIOD_D1": "None",
+        "PERIOD_W1": "None",
+        "PERIOD_MN1": "None",
+        "PERIOD_CURRENT": "None",
+        # MQL price constants → proper Python values
+        "PRICE_CLOSE": "1",
+        "PRICE_OPEN": "2",
+        "PRICE_HIGH": "3",
+        "PRICE_LOW": "4",
+        "PRICE_MEDIAN": "5",
+        "PRICE_TYPICAL": "6",
+        "PRICE_WEIGHTED": "7",
     }
 
     def _map_ident(self, name: str) -> str:
@@ -549,12 +568,16 @@ class ASTTranspiler:
                      "iADX", "iMomentum", "iMFI", "iOBV", "iSAR", "iStdDev", "iWPR",
                      "iEnvelopes", "iForce", "iDeMarker", "iOsMA"):
             sdk_method = name[1:].lower()
-            # Replace 0 (MQL NULL timeframe) with None
+            # Replace 0/PERIOD_* (MQL NULL/current timeframe) with None
             clean_args = []
-            for a in call.args:
+            for i, a in enumerate(call.args):
                 s = str(self._expr_to_py(a))
-                if s == "0" and len(clean_args) <= 1:  # first 2 args are symbol/tf
+                if i <= 1 and s in ("0", "None"):
+                    clean_args.append("None")  # symbol/tf from MQL NULL
+                elif s.startswith("PERIOD_"):
                     clean_args.append("None")
+                elif s in ("PRICE_CLOSE", "PRICE_OPEN", "PRICE_HIGH", "PRICE_LOW", "PRICE_MEDIAN", "PRICE_TYPICAL", "PRICE_WEIGHTED"):
+                    clean_args.append(self._MQL_BUILTIN_IDENTS.get(s, s))
                 else:
                     clean_args.append(s)
             return f"self.indicators.{sdk_method}({', '.join(clean_args)})"
