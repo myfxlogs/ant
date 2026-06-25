@@ -223,26 +223,44 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 			code, sourceLang)
 		resp, err := http.Post("http://strategy-service:8081/ant.v1.PythonStrategyService/TranspileCode",
 			"application/json", strings.NewReader(payload))
-		if err == nil && resp != nil && resp.StatusCode == 200 {
+		if err != nil {
+			s.log.Warn("CodeAssist: JSON fallback HTTP error", zap.Error(err))
+		} else if resp == nil {
+			s.log.Warn("CodeAssist: JSON fallback nil response")
+		} else {
 			defer resp.Body.Close()
-			var result struct {
-				TargetCode      string   `json:"target_code"`
-				Confidence      float64  `json:"confidence"`
-				TotalPatterns   int32    `json:"total_patterns"`
-				Gaps            int32    `json:"gaps"`
-				GapSamples      []string `json:"gap_samples"`
-				IsDeterministic bool     `json:"is_deterministic"`
-			}
-			if json.NewDecoder(resp.Body).Decode(&result) == nil && result.IsDeterministic {
-				return connect.NewResponse(&antv1.TransformCodeResponse{
-					TargetCode:    result.TargetCode,
-					DetectedLang:  sourceLang,
-					Explanation:   fmt.Sprintf("Deterministic transpiler: %.0f%% confidence", result.Confidence*100),
-					Confidence:    float32(result.Confidence),
-					TotalPatterns: result.TotalPatterns,
-					Gaps:          result.Gaps,
-					GapSamples:    result.GapSamples,
-				}), nil
+			if resp.StatusCode != 200 {
+				s.log.Warn("CodeAssist: JSON fallback non-200", zap.Int("status", resp.StatusCode))
+			} else {
+				var result struct {
+					TargetCode      string   `json:"target_code"`
+					Confidence      float64  `json:"confidence"`
+					TotalPatterns   int32    `json:"total_patterns"`
+					Gaps            int32    `json:"gaps"`
+					GapSamples      []string `json:"gap_samples"`
+					IsDeterministic bool     `json:"is_deterministic"`
+				}
+				decodeErr := json.NewDecoder(resp.Body).Decode(&result)
+				s.log.Info("CodeAssist: JSON fallback decoded",
+					zap.Bool("deterministic", result.IsDeterministic),
+					zap.Float64("confidence", result.Confidence),
+					zap.Error(decodeErr),
+				)
+				if decodeErr == nil && result.IsDeterministic {
+					detLang := sourceLang
+					if detLang == "" || detLang == "auto" {
+						detLang = "mql4"
+					}
+					return connect.NewResponse(&antv1.TransformCodeResponse{
+						TargetCode:    result.TargetCode,
+						DetectedLang:  detLang,
+						Explanation:   fmt.Sprintf("Deterministic transpiler: %.0f%% confidence", result.Confidence*100),
+						Confidence:    float32(result.Confidence),
+						TotalPatterns: result.TotalPatterns,
+						Gaps:          result.Gaps,
+						GapSamples:    result.GapSamples,
+					}), nil
+				}
 			}
 		}
 		// Fall through to AI.
