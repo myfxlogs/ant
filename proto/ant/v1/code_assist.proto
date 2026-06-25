@@ -102,4 +102,8 @@ message TransformCodeResponse {
   string target_code = 1;    // translated Python strategy code
   string explanation = 2;    // summary of what was translated and key mappings
   string detected_lang = 3;  // detected source language if source_lang was "auto"
+  float confidence = 4;      // 0.0–1.0 translation confidence score
+  int32 total_patterns = 5;  // matched + gaps
+  int32 gaps = 6;            // number of untranslated patterns
+  repeated string gap_samples = 7; // unique gap reasons (max 10) for display
 }

@@ -365,6 +365,16 @@ class MQLTranspiler:
         self._emit(f"class {self._class_name}(StrategyBase):")
         self._indent = 1
 
+    def get_confidence(self) -> float:
+        """Return 0.0–1.0 confidence score based on matched vs total patterns."""
+        total = self._stats.patterns_matched + self._stats.gaps
+        if total == 0: return 1.0  # empty source = no patterns needed
+        return self._stats.patterns_matched / total
+
+    def get_gap_samples(self, max_samples: int = 10) -> list:
+        """Return unique gap reasons for display."""
+        return list(self._stats.gap_reasons.keys())[:max_samples]
+
     def _emit_footer(self) -> None:
         self._indent = 0
 

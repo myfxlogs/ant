@@ -778,9 +778,13 @@ func (x *TransformCodeRequest) GetTargetLang() string {
 
 type TransformCodeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TargetCode    string                 `protobuf:"bytes,1,opt,name=target_code,json=targetCode,proto3" json:"target_code,omitempty"`       // translated Python strategy code
-	Explanation   string                 `protobuf:"bytes,2,opt,name=explanation,proto3" json:"explanation,omitempty"`                       // summary of what was translated and key mappings
-	DetectedLang  string                 `protobuf:"bytes,3,opt,name=detected_lang,json=detectedLang,proto3" json:"detected_lang,omitempty"` // detected source language if source_lang was "auto"
+	TargetCode    string                 `protobuf:"bytes,1,opt,name=target_code,json=targetCode,proto3" json:"target_code,omitempty"`           // translated Python strategy code
+	Explanation   string                 `protobuf:"bytes,2,opt,name=explanation,proto3" json:"explanation,omitempty"`                           // summary of what was translated and key mappings
+	DetectedLang  string                 `protobuf:"bytes,3,opt,name=detected_lang,json=detectedLang,proto3" json:"detected_lang,omitempty"`     // detected source language if source_lang was "auto"
+	Confidence    float32                `protobuf:"fixed32,4,opt,name=confidence,proto3" json:"confidence,omitempty"`                           // 0.0–1.0 translation confidence score
+	TotalPatterns int32                  `protobuf:"varint,5,opt,name=total_patterns,json=totalPatterns,proto3" json:"total_patterns,omitempty"` // matched + gaps
+	Gaps          int32                  `protobuf:"varint,6,opt,name=gaps,proto3" json:"gaps,omitempty"`                                        // number of untranslated patterns
+	GapSamples    []string               `protobuf:"bytes,7,rep,name=gap_samples,json=gapSamples,proto3" json:"gap_samples,omitempty"`           // unique gap reasons (max 10) for display
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -834,6 +838,34 @@ func (x *TransformCodeResponse) GetDetectedLang() string {
 		return x.DetectedLang
 	}
 	return ""
+}
+
+func (x *TransformCodeResponse) GetConfidence() float32 {
+	if x != nil {
+		return x.Confidence
+	}
+	return 0
+}
+
+func (x *TransformCodeResponse) GetTotalPatterns() int32 {
+	if x != nil {
+		return x.TotalPatterns
+	}
+	return 0
+}
+
+func (x *TransformCodeResponse) GetGaps() int32 {
+	if x != nil {
+		return x.Gaps
+	}
+	return 0
+}
+
+func (x *TransformCodeResponse) GetGapSamples() []string {
+	if x != nil {
+		return x.GapSamples
+	}
+	return nil
 }
 
 var File_code_assist_proto protoreflect.FileDescriptor
@@ -901,12 +933,19 @@ const file_code_assist_proto_rawDesc = "" +
 	"\vsource_lang\x18\x02 \x01(\tR\n" +
 	"sourceLang\x12\x1f\n" +
 	"\vtarget_lang\x18\x03 \x01(\tR\n" +
-	"targetLang\"\x7f\n" +
+	"targetLang\"\xfb\x01\n" +
 	"\x15TransformCodeResponse\x12\x1f\n" +
 	"\vtarget_code\x18\x01 \x01(\tR\n" +
 	"targetCode\x12 \n" +
 	"\vexplanation\x18\x02 \x01(\tR\vexplanation\x12#\n" +
-	"\rdetected_lang\x18\x03 \x01(\tR\fdetectedLang2\x90\x04\n" +
+	"\rdetected_lang\x18\x03 \x01(\tR\fdetectedLang\x12\x1e\n" +
+	"\n" +
+	"confidence\x18\x04 \x01(\x02R\n" +
+	"confidence\x12%\n" +
+	"\x0etotal_patterns\x18\x05 \x01(\x05R\rtotalPatterns\x12\x12\n" +
+	"\x04gaps\x18\x06 \x01(\x05R\x04gaps\x12\x1f\n" +
+	"\vgap_samples\x18\a \x03(\tR\n" +
+	"gapSamples2\x90\x04\n" +
 	"\x11CodeAssistService\x12C\n" +
 	"\n" +
 	"ReviseCode\x12\x19.ant.v1.ReviseCodeRequest\x1a\x1a.ant.v1.ReviseCodeResponse\x12N\n" +

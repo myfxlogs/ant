@@ -12,6 +12,16 @@ import argparse
 import sys
 
 from tools.mql_transpiler.transpiler import MQLTranspiler
+from tools.mql_transpiler.gap_kb import record_gaps
+
+CONFIDENCE_HIGH = 0.95
+CONFIDENCE_MEDIUM = 0.85
+
+
+def confidence_label(score: float) -> str:
+    if score >= CONFIDENCE_HIGH: return "HIGH"
+    if score >= CONFIDENCE_MEDIUM: return "MEDIUM"
+    return "LOW"
 
 
 def main() -> None:
@@ -36,6 +46,13 @@ def main() -> None:
     transpiler = MQLTranspiler(class_name=args.class_name)
     result = transpiler.transpile(source, filename=args.input)
 
+    confidence = transpiler.get_confidence()
+    total_patterns = result.stats.patterns_matched + result.stats.gaps
+    gap_samples = transpiler.get_gap_samples(10)
+
+    # Record gaps to knowledge base for learning.
+    kb_summary = record_gaps(result.stats.gap_reasons)
+
     if args.output:
         with open(args.output, "w") as f:
             f.write(result.output)
@@ -43,16 +60,16 @@ def main() -> None:
     else:
         print(result.output)
 
-    if args.stats:
-        print(f"\n--- Transpiler Stats ---", file=sys.stderr)
-        print(f"  Lines in:  {result.stats.lines_in}", file=sys.stderr)
-        print(f"  Lines out: {result.stats.lines_out}", file=sys.stderr)
-        print(f"  Patterns:  {result.stats.patterns_matched}", file=sys.stderr)
-        print(f"  Gaps:      {result.stats.gaps}", file=sys.stderr)
-        if result.stats.gap_reasons:
-            print(f"  Gap reasons:", file=sys.stderr)
-            for reason, count in sorted(result.stats.gap_reasons.items(), key=lambda x: -x[1]):
-                print(f"    {count:3d}  {reason}", file=sys.stderr)
+    if args.stats or True:  # Always show confidence in stderr
+        print(f"\n--- Transpiler Report ---", file=sys.stderr)
+        print(f"  Confidence: {confidence:.0%} ({confidence_label(confidence)})", file=sys.stderr)
+        print(f"  Patterns:   {result.stats.patterns_matched} matched + {result.stats.gaps} gaps = {total_patterns} total", file=sys.stderr)
+        if gap_samples:
+            print(f"  Gap samples:", file=sys.stderr)
+            for reason in gap_samples:
+                count = result.stats.gap_reasons[reason]
+                status = kb_summary.get(reason, "")
+                print(f"    {count}x  {reason}  [{status}]", file=sys.stderr)
 
 
 if __name__ == "__main__":
