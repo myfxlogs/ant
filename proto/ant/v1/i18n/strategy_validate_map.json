@@ -1,0 +1,16 @@
+{
+  "prefix": "strategy.validate",
+  "fields": {
+    "tab": "tab",
+    "passed": "passed",
+    "failed": "failed",
+    "errors": "errors",
+    "warnings": "warnings",
+    "fix_with_a_i": "fixWithAI",
+    "parameters": "parameters",
+    "hints": "hints",
+    "all_clear": "allClear",
+    "running": "running",
+    "hint": "hint"
+  }
+}

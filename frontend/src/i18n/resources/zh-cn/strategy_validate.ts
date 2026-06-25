@@ -1,0 +1,20 @@
+// Auto-generated from proto/ant/v1/i18n/strategy_validate_zh-cn.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const StrategyValidate = {
+  "strategy": {
+    "validate": {
+      "tab": "验证",
+      "passed": "验证通过 — 保存已解锁。",
+      "failed": "验证失败",
+      "errors": "错误",
+      "warnings": "警告",
+      "fixWithAI": "将错误发送给AI修复",
+      "parameters": "个参数",
+      "hints": "建议",
+      "allClear": "所有检查已通过 — 未发现问题。",
+      "running": "正在验证...",
+      "hint": "点击\"验证代码\"以检查语法、导入和策略结构。"
+    }
+  }
+} as const;
+export default StrategyValidate;

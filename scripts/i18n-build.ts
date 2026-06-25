@@ -29,6 +29,7 @@ const SECTIONS = [
   'strategy_ai',
   'strategy_backtest',
   'strategy_code_assist',
+  'strategy_validate',
   'strategy_code_quality',
   'strategy_code_editor',
   'strategy_chart_tools',
