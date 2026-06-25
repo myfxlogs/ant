@@ -26,6 +26,7 @@ from app.sdk.strategy_base import StrategyBase
 from app.sdk.symbol import SymbolInfo
 from app.sdk.types import (
     AccountMode,
+    Deal,
     DealType,
     OrderRequest,
     OrderResult,
@@ -42,6 +43,7 @@ __all__ = [
     "AccountMode",
     "Broker",
     "Context",
+    "Deal",
     "DealType",
     "Indicators",
     "OrderRequest",

@@ -42,6 +42,7 @@ from app.sdk.account import AccountInfo, AccountMode
 from app.sdk.broker import Broker
 from app.sdk.symbol import SymbolInfo
 from app.sdk.types import (
+    Deal,
     OrderRequest,
     OrderResult,
     OrderType as SDKOrderType,
@@ -276,6 +277,7 @@ class SimBroker(Broker):
         # Current tick (updated by advance_tick).
         self._current_tick: Optional[Tick] = None
         self._current_bar_idx: int = -1
+        self._deals: List[Deal] = []  # closed deal history (MQL5 HistorySelect equivalent)
 
     # ── Broker interface ────────────────────────────────────────────────
 
@@ -357,6 +359,12 @@ class SimBroker(Broker):
             trade = self._portfolio.close_position(
                 ticket, mark, tick.ts, CloseReason.SIGNAL
             )
+            meta = self._pos_meta.get(ticket)
+            if meta is not None:
+                self._record_deal(ticket, mark, close_vol,
+                                  getattr(trade, 'pnl', 0), meta.symbol,
+                                  meta.comment or "",
+                                  getattr(trade, 'open_price', mark), tick.ts)
             self._pos_meta.pop(ticket, None)
             return OrderResult(
                 retcode=Retcode.DONE,
@@ -444,6 +452,36 @@ class SimBroker(Broker):
                 )
             )
         return result
+
+    def deals(
+        self, symbol: Optional[str] = None, magic: Optional[int] = None,
+        from_ms: Optional[int] = None, to_ms: Optional[int] = None,
+    ) -> List[Deal]:
+        """Return closed deal history with optional filtering (MQL5 HistorySelect)."""
+        result = self._deals
+        if symbol is not None:
+            result = [d for d in result if d.symbol == symbol]
+        if magic is not None:
+            result = [d for d in result if d.order_ticket >= 0]
+        if from_ms is not None:
+            result = [d for d in result if d.open_time_ms >= from_ms]
+        if to_ms is not None:
+            result = [d for d in result if d.open_time_ms <= to_ms]
+        return result
+
+    def _record_deal(self, ticket: int, close_price: float, close_vol: float,
+                     pnl: float, symbol: str, comment: str, open_price: float, ts: int) -> None:
+        """Record a closed position as a Deal for history queries (MQL5 HistorySelect)."""
+        self._deals.append(Deal(
+            ticket=ticket, order_ticket=ticket, position_ticket=ticket,
+            symbol=symbol,
+            volume=Decimal(str(close_vol)),
+            open_price=Decimal(str(open_price)),
+            price=Decimal(str(close_price)),
+            open_time_ms=ts, history_time_ms=ts,
+            profit=Decimal(str(pnl)),
+            comment=comment,
+        ))
 
     def account(self) -> AccountInfo:
         """Current account state snapshot."""

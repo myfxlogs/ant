@@ -36,6 +36,12 @@ from tools.mql_transpiler.mappings import (
     method_name,
 )
 
+# Load auto-generated proto→MQL accessor mappings (120 entries).
+try:
+    from tools.mql_transpiler.mappings_generated import MQL_TO_SDK_ACCESSOR  # noqa: F811
+except ImportError:
+    MQL_TO_SDK_ACCESSOR = {}
+
 # ── Data types ──────────────────────────────────────────────────────────
 
 
@@ -617,7 +623,16 @@ class MQLTranspiler:
         return False
 
     def _try_common_function(self, line: str) -> bool:
-        """Match common MQL built-in functions."""
+        """Match common MQL built-in functions (proto-generated + manual)."""
+        # Phase 1: proto-generated accessor mappings (120 entries, authoritative).
+        for mql_fn, sdk_prop in MQL_TO_SDK_ACCESSOR.items():
+            if mql_fn in line:
+                line = line.replace(mql_fn, sdk_prop)
+                self._emit(line)
+                self._stats.patterns_matched += 1
+                return True
+
+        # Phase 2: manual COMMON_FUNC_MAP.
         for mql_fn, py_fn in COMMON_FUNC_MAP.items():
             if py_fn.startswith("TRANSPILER-GAP"):
                 if mql_fn + "(" in line:

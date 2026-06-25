@@ -16,7 +16,7 @@ from typing import List, Optional
 
 from app.sdk.account import AccountInfo
 from app.sdk.symbol import SymbolInfo
-from app.sdk.types import OrderRequest, OrderResult, PendingOrder, Position
+from app.sdk.types import Deal, OrderRequest, OrderResult, PendingOrder, Position
 
 
 class Broker(ABC):
@@ -52,6 +52,15 @@ class Broker(ABC):
     @abstractmethod
     def orders(self, symbol: Optional[str] = None, magic: Optional[int] = None) -> List[PendingOrder]:
         """查询挂单。"""
+        raise NotImplementedError
+
+    @abstractmethod
+    def deals(self, symbol: Optional[str] = None, magic: Optional[int] = None,
+              from_ms: Optional[int] = None, to_ms: Optional[int] = None) -> List[Deal]:
+        """查询成交历史 (MQL5 HistorySelect + HistoryDealsTotal + HistoryDealGet*)。
+
+        Proto source: reference/grpc/mt5.proto → DealInternal (32 fields).
+        """
         raise NotImplementedError
 
     @abstractmethod

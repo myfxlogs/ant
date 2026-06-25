@@ -134,3 +134,34 @@ class PendingOrder:
     magic: int = 0
     comment: str = ""
     placed_time_ms: int = 0
+
+
+@dataclass
+class Deal:
+    """Deal (成交记录) — MQL5 HistoryDealGet* 等价物。
+
+    Proto source: reference/grpc/mt5.proto → DealInternal (32 fields).
+    """
+
+    ticket: int
+    order_ticket: int = 0
+    position_ticket: int = 0
+    symbol: str = ""
+    type: int = 0          # DealType enum
+    direction: int = 0     # 0=Buy, 1=Sell
+    volume: Decimal = Decimal("0")
+    open_price: Decimal = Decimal("0")
+    price: Decimal = Decimal("0")
+    open_time_ms: int = 0
+    history_time_ms: int = 0
+    profit: Decimal = Decimal("0")
+    swap: Decimal = Decimal("0")
+    commission: Decimal = Decimal("0")
+    fee: Decimal = Decimal("0")
+    sl: Decimal = Decimal("0")
+    tp: Decimal = Decimal("0")
+    comment: str = ""
+    contract_size: Decimal = Decimal("0")
+    digits: int = 0
+    login: int = 0
+    expert_id: int = 0
