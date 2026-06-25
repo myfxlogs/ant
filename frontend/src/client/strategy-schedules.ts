@@ -144,4 +144,5 @@ export interface CreateTemplateRequest {
   parameters?: PartialMessage<TemplateParameter>[];
   isPublic?: boolean;
   tags?: string[];
+  i18n?: string;
 }
