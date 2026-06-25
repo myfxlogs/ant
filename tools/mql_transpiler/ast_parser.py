@@ -22,9 +22,11 @@ from typing import List, Optional
 
 # ── AST node types ───────────────────────────────────────────────────
 
-@dataclass
 class ASTNode:
     """Base AST node."""
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
 
 @dataclass
@@ -81,6 +83,12 @@ class WhileStmt(ASTNode):
 
 
 @dataclass
+class SwitchStmt(ASTNode):
+    expr: Expression = None
+    cases: list = field(default_factory=list)  # [(value, body)]
+    default: Optional[ASTNode] = None
+
+
 class ReturnStmt(ASTNode):
     value: Optional[Expression] = None
 
@@ -142,7 +150,7 @@ _TOKEN_RE = re.compile(r"""
     \s*(?:
         (//[^\n]*|/\*.*?\*/)          |  # comments
         (\+\+|--|==|!=|<=|>=|&&|\|\||[+\-*/<>=!%]) |  # operators (++ and -- first for longest match)
-        ([{}()\[\];,])                 |  # punctuation
+        ([{}()\[\];,:])                |  # punctuation
         (\d+\.?\d*)                    |  # numbers
         ("[^"]*"|'[^']*')             |  # strings
         ([a-zA-Z_]\w*)                   # identifiers
@@ -337,6 +345,8 @@ class Parser:
             return self._parse_return()
         if t[1] == "{":
             return self._parse_compound()
+        if t[1] == "switch":
+            return self._parse_switch()
         if t[1] == "}":
             return None
         if t[1] in self._type_keywords:
@@ -401,6 +411,43 @@ class Parser:
         body = self._parse_statement()
         return WhileStmt(condition=cond, body=body)
 
+    def _parse_switch(self) -> SwitchStmt:
+        self.advance()  # switch
+        self.expect("(")
+        expr = self._parse_expression()
+        self.expect(")")
+        self.expect("{")
+        cases = []
+        default = None
+        while not self.match(value="}") and self._iters < self._max_iter:
+            self._iters += 1
+            if self.match(value="case"):
+                self.advance()
+                val = self._parse_expression()
+                self.expect(":")
+                stmts = []
+                while self.peek() and self.peek()[1] not in ("case", "default", "}"):
+                    s = self._parse_statement()
+                    if s: stmts.append(s)
+                cases.append((val, stmts))
+            elif self.match(value="default"):
+                self.advance()
+                self.expect(":")
+                stmts = []
+                while self.peek() and self.peek()[1] not in ("case", "default", "}"):
+                    s = self._parse_statement()
+                    if s: stmts.append(s)
+                default = stmts
+            elif self.peek() and self.peek()[1] == "break":
+                self.advance()
+                if self.match(value=";"):
+                    self.advance()
+            else:
+                self.advance()
+        if self.match(value="}"):
+            self.advance()
+        return SwitchStmt(expr=expr, cases=cases, default=default)
+
     def _parse_return(self) -> ReturnStmt:
         self.advance()
         value = None
@@ -419,7 +466,7 @@ class Parser:
     # ── Expressions ───────────────────────────────────────────────────
 
     def _parse_expression(self) -> Optional[Expression]:
-        """Parse a binary expression (lowest precedence first). Stops at ; ) ] ,"""
+        """Parse a binary expression (lowest precedence first). Stops at ; ) ] , :"""
         self._parse_depth += 1
         if self._parse_depth > 200:
             self._parse_depth -= 1
@@ -427,9 +474,9 @@ class Parser:
         left = self._parse_primary()
         if left is None:
             return None
-        while self.match("OP"):
+        while self.match("OP") or self.match(value=":"):
             op_tok = self.peek()
-            if op_tok[1] in (";", ")", "]", ",", "{"):
+            if op_tok and op_tok[1] in (";", ")", "]", ",", "{", ":"):
                 break
             op = self.advance()[1]
             if op == "=":

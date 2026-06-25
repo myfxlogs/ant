@@ -33,6 +33,7 @@ from tools.mql_transpiler.ast_parser import (
     SourceFile,
     StringLiteral,
     SubscriptExpr,
+    SwitchStmt,
     VarDecl,
     WhileStmt,
     parse_mql_ast,
@@ -51,6 +52,12 @@ from tools.mql_transpiler.mappings import (
     LIFECYCLE_MAP,
     MQL_TYPE_MAP,
 )
+
+# Lazy import for hybrid mode.
+try:
+    from tools.mql_transpiler.transpiler import MQLTranspiler as _LineTranspiler
+except ImportError:
+    _LineTranspiler = None
 
 # MQL constants → Python
 _MQL_CONSTANTS = {
@@ -196,6 +203,8 @@ class ASTTranspiler:
     def _transpile_stmt(self, stmt: ASTNode) -> None:
         if isinstance(stmt, IfStmt):
             self._transpile_if(stmt)
+        elif isinstance(stmt, SwitchStmt):
+            self._transpile_switch(stmt)
         elif isinstance(stmt, ForStmt):
             self._transpile_for(stmt)
         elif isinstance(stmt, WhileStmt):
@@ -207,7 +216,9 @@ class ASTTranspiler:
             self._transpile_compound(stmt)
             self._indent -= 1
         elif isinstance(stmt, ExpressionStmt):
-            self._transpile_expr_stmt(stmt)
+            expr_str = self._expr_to_py(stmt.expr)
+            if expr_str and expr_str != "break":
+                self._emit(expr_str)
         elif isinstance(stmt, VarDecl):
             if stmt.value:
                 val = self._expr_to_py(stmt.value)
@@ -261,6 +272,27 @@ class ASTTranspiler:
             self._indent -= 1
         else:
             self._emit(f"# TRANSPILER-GAP: for loop — manual conversion needed")
+
+    def _transpile_switch(self, stmt: SwitchStmt) -> None:
+        """Translate MQL switch → Python if/elif/else."""
+        sw_expr = self._expr_to_py(stmt.expr)
+        for i, (val, body) in enumerate(stmt.cases):
+            val_py = self._expr_to_py(val)
+            if i == 0:
+                self._emit(f"if {sw_expr} == {val_py}:")
+            else:
+                self._emit(f"elif {sw_expr} == {val_py}:")
+            self._indent += 1
+            for s in body:
+                self._transpile_stmt(s)
+            self._indent -= 1
+        if stmt.default:
+            if isinstance(stmt.default, list):
+                self._emit("else:")
+                self._indent += 1
+                for s in stmt.default:
+                    self._transpile_stmt(s)
+                self._indent -= 1
 
     def _transpile_while(self, stmt: WhileStmt) -> None:
         cond = self._expr_to_py(stmt.condition)
