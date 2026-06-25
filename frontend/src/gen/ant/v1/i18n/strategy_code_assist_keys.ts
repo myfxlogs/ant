@@ -112,6 +112,90 @@ export const VALIDATE_TO_SEE_PARAMS_KEY = 'strategy.codeAssist.validateToSeePara
 /** tabExplain */
 export const TAB_EXPLAIN_KEY = 'strategy.codeAssist.tabExplain' as const;
 
+/** workflow.review */
+export const WORKFLOW_REVIEW_KEY = 'strategy.codeAssist.workflow.review' as const;
+
+/** workflow.backtest */
+export const WORKFLOW_BACKTEST_KEY = 'strategy.codeAssist.workflow.backtest' as const;
+
+/** workflow.save */
+export const WORKFLOW_SAVE_KEY = 'strategy.codeAssist.workflow.save' as const;
+
+/** workflow.reviewHintNeedCode */
+export const WORKFLOW_REVIEW_HINT_NEED_CODE_KEY = 'strategy.codeAssist.workflow.reviewHintNeedCode' as const;
+
+/** workflow.reviewHintDone */
+export const WORKFLOW_REVIEW_HINT_DONE_KEY = 'strategy.codeAssist.workflow.reviewHintDone' as const;
+
+/** workflow.backtestHintNeedReview */
+export const WORKFLOW_BACKTEST_HINT_NEED_REVIEW_KEY = 'strategy.codeAssist.workflow.backtestHintNeedReview' as const;
+
+/** workflow.backtestHintNeedSymbol */
+export const WORKFLOW_BACKTEST_HINT_NEED_SYMBOL_KEY = 'strategy.codeAssist.workflow.backtestHintNeedSymbol' as const;
+
+/** workflow.backtestHintNeedAccount */
+export const WORKFLOW_BACKTEST_HINT_NEED_ACCOUNT_KEY = 'strategy.codeAssist.workflow.backtestHintNeedAccount' as const;
+
+/** workflow.backtestHintDone */
+export const WORKFLOW_BACKTEST_HINT_DONE_KEY = 'strategy.codeAssist.workflow.backtestHintDone' as const;
+
+/** workflow.saveHintNeedBacktest */
+export const WORKFLOW_SAVE_HINT_NEED_BACKTEST_KEY = 'strategy.codeAssist.workflow.saveHintNeedBacktest' as const;
+
+/** workflow.saveHintDone */
+export const WORKFLOW_SAVE_HINT_DONE_KEY = 'strategy.codeAssist.workflow.saveHintDone' as const;
+
+/** workflow.reviewing */
+export const WORKFLOW_REVIEWING_KEY = 'strategy.codeAssist.workflow.reviewing' as const;
+
+/** workflow.securityPass */
+export const WORKFLOW_SECURITY_PASS_KEY = 'strategy.codeAssist.workflow.securityPass' as const;
+
+/** workflow.securityFail */
+export const WORKFLOW_SECURITY_FAIL_KEY = 'strategy.codeAssist.workflow.securityFail' as const;
+
+/** workflow.paramsLabel */
+export const WORKFLOW_PARAMS_LABEL_KEY = 'strategy.codeAssist.workflow.paramsLabel' as const;
+
+/** workflow.directivesLabel */
+export const WORKFLOW_DIRECTIVES_LABEL_KEY = 'strategy.codeAssist.workflow.directivesLabel' as const;
+
+/** workflow.sweepLabel */
+export const WORKFLOW_SWEEP_LABEL_KEY = 'strategy.codeAssist.workflow.sweepLabel' as const;
+
+/** workflow.suggestionLabel */
+export const WORKFLOW_SUGGESTION_LABEL_KEY = 'strategy.codeAssist.workflow.suggestionLabel' as const;
+
+/** workflow.reviewError */
+export const WORKFLOW_REVIEW_ERROR_KEY = 'strategy.codeAssist.workflow.reviewError' as const;
+
+/** workflow.backtesting */
+export const WORKFLOW_BACKTESTING_KEY = 'strategy.codeAssist.workflow.backtesting' as const;
+
+/** workflow.backtestDone */
+export const WORKFLOW_BACKTEST_DONE_KEY = 'strategy.codeAssist.workflow.backtestDone' as const;
+
+/** workflow.backtestFail */
+export const WORKFLOW_BACKTEST_FAIL_KEY = 'strategy.codeAssist.workflow.backtestFail' as const;
+
+/** workflow.backtestError */
+export const WORKFLOW_BACKTEST_ERROR_KEY = 'strategy.codeAssist.workflow.backtestError' as const;
+
+/** workflow.saved */
+export const WORKFLOW_SAVED_KEY = 'strategy.codeAssist.workflow.saved' as const;
+
+/** workflow.saveFail */
+export const WORKFLOW_SAVE_FAIL_KEY = 'strategy.codeAssist.workflow.saveFail' as const;
+
+/** workflow.saveTitle */
+export const WORKFLOW_SAVE_TITLE_KEY = 'strategy.codeAssist.workflow.saveTitle' as const;
+
+/** workflow.saveNamePlaceholder */
+export const WORKFLOW_SAVE_NAME_PLACEHOLDER_KEY = 'strategy.codeAssist.workflow.saveNamePlaceholder' as const;
+
+/** workflow.saveBtn */
+export const WORKFLOW_SAVE_BTN_KEY = 'strategy.codeAssist.workflow.saveBtn' as const;
+
 export const STRATEGYCODEASSIST_KEYS = {
   ai_revise_title: 'strategy.codeAssist.aiReviseTitle',
   apply_all_suggestions: 'strategy.codeAssist.applyAllSuggestions',
@@ -150,6 +234,34 @@ export const STRATEGYCODEASSIST_KEYS = {
   tab_a_i: 'strategy.codeAssist.tabAI',
   validate_to_see_params: 'strategy.codeAssist.validateToSeeParams',
   tab_explain: 'strategy.codeAssist.tabExplain',
+  workflow_review: 'strategy.codeAssist.workflow.review',
+  workflow_backtest: 'strategy.codeAssist.workflow.backtest',
+  workflow_save: 'strategy.codeAssist.workflow.save',
+  workflow_review_hint_need_code: 'strategy.codeAssist.workflow.reviewHintNeedCode',
+  workflow_review_hint_done: 'strategy.codeAssist.workflow.reviewHintDone',
+  workflow_backtest_hint_need_review: 'strategy.codeAssist.workflow.backtestHintNeedReview',
+  workflow_backtest_hint_need_symbol: 'strategy.codeAssist.workflow.backtestHintNeedSymbol',
+  workflow_backtest_hint_need_account: 'strategy.codeAssist.workflow.backtestHintNeedAccount',
+  workflow_backtest_hint_done: 'strategy.codeAssist.workflow.backtestHintDone',
+  workflow_save_hint_need_backtest: 'strategy.codeAssist.workflow.saveHintNeedBacktest',
+  workflow_save_hint_done: 'strategy.codeAssist.workflow.saveHintDone',
+  workflow_reviewing: 'strategy.codeAssist.workflow.reviewing',
+  workflow_security_pass: 'strategy.codeAssist.workflow.securityPass',
+  workflow_security_fail: 'strategy.codeAssist.workflow.securityFail',
+  workflow_params_label: 'strategy.codeAssist.workflow.paramsLabel',
+  workflow_directives_label: 'strategy.codeAssist.workflow.directivesLabel',
+  workflow_sweep_label: 'strategy.codeAssist.workflow.sweepLabel',
+  workflow_suggestion_label: 'strategy.codeAssist.workflow.suggestionLabel',
+  workflow_review_error: 'strategy.codeAssist.workflow.reviewError',
+  workflow_backtesting: 'strategy.codeAssist.workflow.backtesting',
+  workflow_backtest_done: 'strategy.codeAssist.workflow.backtestDone',
+  workflow_backtest_fail: 'strategy.codeAssist.workflow.backtestFail',
+  workflow_backtest_error: 'strategy.codeAssist.workflow.backtestError',
+  workflow_saved: 'strategy.codeAssist.workflow.saved',
+  workflow_save_fail: 'strategy.codeAssist.workflow.saveFail',
+  workflow_save_title: 'strategy.codeAssist.workflow.saveTitle',
+  workflow_save_name_placeholder: 'strategy.codeAssist.workflow.saveNamePlaceholder',
+  workflow_save_btn: 'strategy.codeAssist.workflow.saveBtn',
 } as const;
 
 export type StrategyCodeAssistKey = typeof STRATEGYCODEASSIST_KEYS[keyof typeof STRATEGYCODEASSIST_KEYS];

@@ -1,9 +1,22 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Modal, Input, Tooltip } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, ThunderboltOutlined, SafetyOutlined, SaveOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
 import type { BacktestMetricsMsg } from '@/gen/ant/v1/strategy_execution_pb';
+import {
+  WORKFLOW_BACKTEST_DONE_KEY, WORKFLOW_BACKTEST_FAIL_KEY, WORKFLOW_BACKTEST_HINT_DONE_KEY,
+  WORKFLOW_BACKTEST_HINT_NEED_ACCOUNT_KEY, WORKFLOW_BACKTEST_HINT_NEED_REVIEW_KEY,
+  WORKFLOW_BACKTEST_HINT_NEED_SYMBOL_KEY, WORKFLOW_BACKTEST_KEY, WORKFLOW_BACKTESTING_KEY,
+  WORKFLOW_BACKTEST_ERROR_KEY, WORKFLOW_DIRECTIVES_LABEL_KEY,
+  WORKFLOW_PARAMS_LABEL_KEY, WORKFLOW_REVIEW_ERROR_KEY, WORKFLOW_REVIEW_HINT_DONE_KEY,
+  WORKFLOW_REVIEW_HINT_NEED_CODE_KEY, WORKFLOW_REVIEW_KEY, WORKFLOW_REVIEWING_KEY,
+  WORKFLOW_SAVE_BTN_KEY, WORKFLOW_SAVE_FAIL_KEY, WORKFLOW_SAVE_HINT_DONE_KEY,
+  WORKFLOW_SAVE_HINT_NEED_BACKTEST_KEY, WORKFLOW_SAVE_KEY, WORKFLOW_SAVE_NAME_PLACEHOLDER_KEY,
+  WORKFLOW_SAVE_TITLE_KEY, WORKFLOW_SAVED_KEY, WORKFLOW_SECURITY_FAIL_KEY,
+  WORKFLOW_SECURITY_PASS_KEY, WORKFLOW_SUGGESTION_LABEL_KEY, WORKFLOW_SWEEP_LABEL_KEY,
+} from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
 
 type StepKey = 'check' | 'backtest' | 'save';
 type StepStatus = 'idle' | 'running' | 'done' | 'failed';
@@ -28,9 +41,9 @@ interface Props {
 const iconStyle = { fontSize: 11 };
 
 export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbol, timeframe, templates, codeGenKey, addMsg, setMetrics, fetchTemplates, onValidateResult }: Props) {
+  const { t } = useTranslation();
   const [status, setStatus] = useState<Record<StepKey, StepStatus>>({ check: 'idle', backtest: 'idle', save: 'idle' });
 
-  // Reset workflow when code changes (agent regenerated after failed check)
   useEffect(() => {
     setStatus({ check: 'idle', backtest: 'idle', save: 'idle' });
   }, [codeGenKey]);
@@ -44,48 +57,46 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
 
   const runCheck = useCallback(async () => {
     const code = getCode(); if (!code) return;
-    setStep('check', 'running'); addMsg('ai', { text: '🔍 策略审查中...' });
+    setStep('check', 'running'); addMsg('ai', { text: t(WORKFLOW_REVIEWING_KEY) });
     try {
       const r = await codeAssistApi.validateExtended(code);
       const parts: string[] = [];
       if (r.valid && r.errors.length === 0) {
-        parts.push('✅ 安全检测通过');
+        parts.push(t(WORKFLOW_SECURITY_PASS_KEY));
       } else {
         setStep('check', 'failed');
-        parts.push('❌ 安全检测未通过:');
+        parts.push(t(WORKFLOW_SECURITY_FAIL_KEY));
         r.errors.forEach(e => parts.push(`  • ${e}`));
         r.warnings.forEach(w => parts.push(`  ⚠ ${w}`));
         addMsg('ai', { text: parts.join('\n') });
         return;
       }
-      // Forward extracted params to BacktestPanel.
       if (onValidateResult) onValidateResult(r);
-      if (r.parameters.length > 0) parts.push(`📐 可调参数: ${r.parameters.map(p => `${p.key}${p.required ? '*' : ''}`).join(', ')}`);
-      if (r.strategyDirectives.length > 0) parts.push(`⚙ 策略指令: ${r.strategyDirectives.map(d => `${d.key}=${d.value}`).join(', ')}`);
-      if (r.sweepDimensions.length > 0) parts.push(`🔀 扫参维度: ${r.sweepDimensions.length} 维`);
+      if (r.parameters.length > 0) parts.push(`${t(WORKFLOW_PARAMS_LABEL_KEY)} ${r.parameters.map(p => `${p.key}${p.required ? '*' : ''}`).join(', ')}`);
+      if (r.strategyDirectives.length > 0) parts.push(`${t(WORKFLOW_DIRECTIVES_LABEL_KEY)} ${r.strategyDirectives.map(d => `${d.key}=${d.value}`).join(', ')}`);
+      if (r.sweepDimensions.length > 0) parts.push(`${t(WORKFLOW_SWEEP_LABEL_KEY)} ${r.sweepDimensions.length}`);
       if (r.qualityHints.length > 0) {
         const warns = r.qualityHints.filter(h => h.severity === 'warn');
-        if (warns.length > 0) parts.push(`💡 建议: ${warns.map(h => h.message).join('; ')}`);
+        if (warns.length > 0) parts.push(`${t(WORKFLOW_SUGGESTION_LABEL_KEY)} ${warns.map(h => h.message).join('; ')}`);
       }
       setStep('check', 'done'); setStep('backtest', 'idle');
       addMsg('ai', { text: parts.join('\n') });
-    } catch (e: any) { setStep('check', 'failed'); addMsg('ai', { text: `❌ 审查异常: ${e?.message || e}` }); }
-  }, [addMsg]);
+    } catch (e: any) { setStep('check', 'failed'); addMsg('ai', { text: `${t(WORKFLOW_REVIEW_ERROR_KEY)} ${e?.message || e}` }); }
+  }, [addMsg, t, onValidateResult]);
 
   const runBacktest = useCallback(async () => {
     const code = getCode(); if (!code || !accountId || !hasSymbol) return;
-    setStep('backtest', 'running'); addMsg('ai', { text: '⚡ 正在启动回测...' });
+    setStep('backtest', 'running'); addMsg('ai', { text: t(WORKFLOW_BACKTESTING_KEY) });
     try {
       const r = await pythonStrategyApi.backtest({ code, accountId, symbol: symbol!, timeframe: timeframe!, initialCapital: 10000 });
       if (r.success && r.metrics) {
         setMetrics({ totalReturn: r.metrics.totalReturn, sharpeRatio: r.metrics.sharpeRatio, maxDrawdown: r.metrics.maxDrawdown, winRate: r.metrics.winRate, totalTrades: r.metrics.totalTrades, profitFactor: r.metrics.profitFactor });
         setStep('backtest', 'done'); setStep('save', 'idle');
-        addMsg('ai', { text: `✅ 回测完成 | Sharpe: ${r.metrics.sharpeRatio?.toFixed(2)??'-'} | 回撤: ${((r.metrics.maxDrawdown??0)*100).toFixed(1)}% | 胜率: ${((r.metrics.winRate??0)*100).toFixed(0)}% | 交易: ${r.metrics.totalTrades??0}次` });
-      } else { setStep('backtest', 'failed'); addMsg('ai', { text: `❌ 回测失败: ${r.error || '未知错误'}` }); }
-    } catch (e: any) { setStep('backtest', 'failed'); addMsg('ai', { text: `❌ 回测异常: ${e?.message || e}` }); }
-  }, [accountId, hasSymbol, symbol, timeframe, addMsg, setMetrics]);
+        addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_DONE_KEY)} ${r.metrics.sharpeRatio?.toFixed(2)??'-'} | DD: ${((r.metrics.maxDrawdown??0)*100).toFixed(1)}% | WR: ${((r.metrics.winRate??0)*100).toFixed(0)}% | Trades: ${r.metrics.totalTrades??0}` });
+      } else { setStep('backtest', 'failed'); addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_FAIL_KEY)} ${r.error || ''}` }); }
+    } catch (e: any) { setStep('backtest', 'failed'); addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_ERROR_KEY)} ${e?.message || e}` }); }
+  }, [accountId, hasSymbol, symbol, timeframe, addMsg, setMetrics, t]);
 
-  // Open save modal — validate name uniqueness
   const openSave = useCallback(() => {
     setSaveName(''); setSaveDup(false); setSaveOpen(true);
   }, []);
@@ -104,9 +115,9 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
       await strategyTemplateApi.create({ name, code: getCode() });
       setStep('save', 'done');
       await fetchTemplates();
-      addMsg('ai', { text: `✅ 已保存策略: ${name}` });
-    } catch { setStep('save', 'failed'); addMsg('ai', { text: '❌ 保存失败' }); }
-  }, [saveName, saveDup, addMsg, fetchTemplates]);
+      addMsg('ai', { text: `${t(WORKFLOW_SAVED_KEY)} ${name}` });
+    } catch { setStep('save', 'failed'); addMsg('ai', { text: t(WORKFLOW_SAVE_FAIL_KEY) }); }
+  }, [saveName, saveDup, addMsg, fetchTemplates, t]);
 
   const disabled = busy || !getCode();
   const canBacktest = status.check === 'done' && !disabled && hasSymbol && !!accountId;
@@ -119,15 +130,15 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
     return <span style={{ color: '#d9d9d9', fontSize: 11 }}>○</span>;
   };
   const stepConfig = [
-    { key: 'check' as StepKey, label: '策略审查', icon: <SafetyOutlined />, canRun: !disabled && status.check !== 'done', action: runCheck,
-      hint: disabled ? '需要代码' : status.check === 'done' ? '已完成' : '' },
-    { key: 'backtest' as StepKey, label: '运行回测', icon: <ThunderboltOutlined />, canRun: canBacktest && status.backtest !== 'done', action: runBacktest,
-      hint: status.check !== 'done' ? '请先完成策略审查'
-        : !hasSymbol ? '请选择交易品种和周期'
-        : !accountId ? '请选择交易账户'
-        : status.backtest === 'done' ? '已完成' : '' },
-    { key: 'save' as StepKey, label: '保存策略', icon: <SaveOutlined />, canRun: canSave && status.save !== 'done', action: openSave,
-      hint: status.backtest !== 'done' ? '请先完成回测' : status.save === 'done' ? '已保存' : '' },
+    { key: 'check' as StepKey, label: t(WORKFLOW_REVIEW_KEY), icon: <SafetyOutlined />, canRun: !disabled && status.check !== 'done', action: runCheck,
+      hint: disabled ? t(WORKFLOW_REVIEW_HINT_NEED_CODE_KEY) : status.check === 'done' ? t(WORKFLOW_REVIEW_HINT_DONE_KEY) : '' },
+    { key: 'backtest' as StepKey, label: t(WORKFLOW_BACKTEST_KEY), icon: <ThunderboltOutlined />, canRun: canBacktest && status.backtest !== 'done', action: runBacktest,
+      hint: status.check !== 'done' ? t(WORKFLOW_BACKTEST_HINT_NEED_REVIEW_KEY)
+        : !hasSymbol ? t(WORKFLOW_BACKTEST_HINT_NEED_SYMBOL_KEY)
+        : !accountId ? t(WORKFLOW_BACKTEST_HINT_NEED_ACCOUNT_KEY)
+        : status.backtest === 'done' ? t(WORKFLOW_BACKTEST_HINT_DONE_KEY) : '' },
+    { key: 'save' as StepKey, label: t(WORKFLOW_SAVE_KEY), icon: <SaveOutlined />, canRun: canSave && status.save !== 'done', action: openSave,
+      hint: status.backtest !== 'done' ? t(WORKFLOW_SAVE_HINT_NEED_BACKTEST_KEY) : status.save === 'done' ? t(WORKFLOW_SAVE_HINT_DONE_KEY) : '' },
   ];
 
   return (
@@ -150,18 +161,14 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
           </Tooltip>
         ))}
       </div>
-      <Modal title="保存策略" open={saveOpen} onOk={handleSaveConfirm} onCancel={() => setSaveOpen(false)}
-        centered okText="保存" cancelText="取消"
+      <Modal title={t(WORKFLOW_SAVE_TITLE_KEY)} open={saveOpen} onOk={handleSaveConfirm} onCancel={() => setSaveOpen(false)}
+        centered okText={t(WORKFLOW_SAVE_BTN_KEY)} cancelText={t('common.cancel')}
         okButtonProps={{ disabled: !saveName.trim() || saveDup }}>
         <div style={{ marginBottom: 8 }}>
-          <Input placeholder="输入策略名称" value={saveName} onChange={e => handleSaveNameChange(e.target.value)}
+          <Input placeholder={t(WORKFLOW_SAVE_NAME_PLACEHOLDER_KEY)} value={saveName} onChange={e => handleSaveNameChange(e.target.value)}
             onPressEnter={handleSaveConfirm} autoFocus style={{ fontSize: 13 }} />
         </div>
-        {saveDup && (
-          <div style={{ color: '#ff4d4f', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
-            <ExclamationCircleOutlined /> 名称已存在，请换个名字
-          </div>
-        )}
+        {saveDup && <span style={{ color: '#ff4d4f', fontSize: 12 }}>⚠ {t('common.duplicateName', 'Name already exists')}</span>}
       </Modal>
     </>
   );
