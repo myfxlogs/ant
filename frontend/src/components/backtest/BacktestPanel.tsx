@@ -146,7 +146,7 @@ export default function BacktestPanel(props: Props) {
           <Tabs size="small" activeKey={runner.activeTab} onChange={runner.setActiveTab}
             tabBarStyle={{ marginBottom: 0, borderBottom: 'none' }}
             items={[
-              { key: 'params', label: t('strategy.backtestParams.title', 'Params') },
+              { key: 'params', label: t(EXECUTION_KEY) },
               { key: 'results', label: t(BACKTEST_TAB_KEY, 'Results') },
               { key: 'tuning', label: t(TUNING_TAB_KEY, 'Tuning') },
               { key: 'gate', label: t(GATE_TAB_KEY, 'Gate') },
