@@ -339,8 +339,13 @@ class ASTTranspiler:
 
     def _transpile_for(self, stmt: ForStmt) -> None:
         # Detect OrdersTotal / PositionsTotal loop patterns.
-        cond_str = self._expr_to_py(stmt.condition) if stmt.condition else ""
-        if "OrdersTotal" in cond_str or "OrdersTotal" in str(stmt.condition):
+        # Check the init expression AST for OrdersTotal/PositionsTotal calls
+        # (can't use translated text — the mapping replaces the function name).
+        has_orders_total = self._ast_contains_call(stmt.init, "OrdersTotal") or \
+                           self._ast_contains_call(stmt.condition, "OrdersTotal")
+        has_positions_total = self._ast_contains_call(stmt.init, "PositionsTotal") or \
+                              self._ast_contains_call(stmt.condition, "PositionsTotal")
+        if has_orders_total:
             self._emit("# OrderSelect loop → Python iteration")
             self._emit("for order in self.broker.orders():")
             self._inside_orderselect_loop = True
@@ -349,7 +354,7 @@ class ASTTranspiler:
             self._transpile_branch(stmt.body)
             self._indent -= 1
             self._inside_orderselect_loop = False
-        elif "PositionsTotal" in cond_str:
+        elif has_positions_total:
             self._emit("# PositionSelect loop → Python iteration")
             self._emit("for pos in self.broker.positions():")
             self._indent += 1
@@ -358,6 +363,24 @@ class ASTTranspiler:
         else:
             # Generic for-loop: for (int i = 1; i <= N; i++) → for i in range(1, N+1)
             self._transpile_generic_for(stmt)
+
+    @staticmethod
+    def _ast_contains_call(node, func_name: str) -> bool:
+        """Check if an AST node tree contains a CallExpr with the given name."""
+        if node is None:
+            return False
+        if isinstance(node, CallExpr) and node.name == func_name:
+            return True
+        if isinstance(node, BinaryOp):
+            return (ASTTranspiler._ast_contains_call(node.left, func_name) or
+                    ASTTranspiler._ast_contains_call(node.right, func_name))
+        if isinstance(node, UnaryOp):
+            return ASTTranspiler._ast_contains_call(node.operand, func_name)
+        if isinstance(node, VarDecl):
+            return ASTTranspiler._ast_contains_call(node.value, func_name)
+        if isinstance(node, AssignmentExpr):
+            return ASTTranspiler._ast_contains_call(node.rhs, func_name)
+        return False
 
     def _transpile_generic_for(self, stmt: ForStmt) -> None:
         """Translate generic MQL for-loop: for (init; cond; update) → Python for/while."""
@@ -522,7 +545,11 @@ class ASTTranspiler:
             return f"{left} {op} {right}"
         if isinstance(expr, UnaryOp):
             operand = self._expr_to_py(expr.operand)
-            return f"{expr.op}{operand}"
+            op = expr.op
+            # MQL '!' → Python 'not '
+            if op == "!":
+                return f"not {operand}"
+            return f"{op}{operand}"
         if isinstance(expr, AssignmentExpr):
             rhs = self._expr_to_py(expr.rhs)
             return f"self.{expr.lhs} = {rhs}"
@@ -681,12 +708,36 @@ class ASTTranspiler:
         if indicator_map is not None:
             return indicator_map
 
-        # Common functions
+        # MQL time functions (no-arg calls).
+        _TIME_FUNCTIONS = {
+            "Day": "__import__('datetime').datetime.now().day",
+            "Month": "__import__('datetime').datetime.now().month",
+            "Year": "__import__('datetime').datetime.now().year",
+            "Hour": "__import__('datetime').datetime.now().hour",
+            "Minute": "__import__('datetime').datetime.now().minute",
+            "Seconds": "__import__('datetime').datetime.now().second",
+        }
+        if name in _TIME_FUNCTIONS:
+            return _TIME_FUNCTIONS[name]
+
+        # Common functions (manual + proto-generated mappings)
         if name in COMMON_FUNC_MAP:
             py = COMMON_FUNC_MAP[name]
-            if not py.startswith("TRANSPILER-GAP") and not py.startswith("lambda"):
-                if "(" in py and py.endswith(")"):
-                    return py.replace("()", f"({args_str})")
+            if py.startswith("TRANSPILER-GAP") or py == "":
+                return f"# TRANSPILER-GAP: {py[len('TRANSPILER-GAP: '):] if py.startswith('TRANSPILER-GAP: ') else name}"
+
+            # Lambdas: StringToDouble → float, NormalizeDouble → round
+            if py.startswith("lambda"):
+                # Simple cases: lambda x: x.method() → don't wrap in extra parens
+                # For now, skip lambdas — they need manual argument handling
+                pass
+
+            # Direct replacement: MathAbs → abs, StringLen → len
+            elif "(" in py and py.endswith(")"):
+                return py.replace("()", f"({args_str})")
+            elif py.endswith(")"):
+                return f"{py[:-1]}{args_str})"
+            else:
                 return f"{py}({args_str})"
 
         # Generic fallback: unknown functions are user-defined → self. prefix.

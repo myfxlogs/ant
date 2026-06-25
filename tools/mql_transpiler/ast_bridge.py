@@ -154,7 +154,7 @@ class CSTBridge:
     # ── Declarations ──────────────────────────────────────────────────
 
     def _translate_declaration(self, node: ts.Node) -> VarDecl:
-        """Translate a declaration (variable or extern/input)."""
+        """Translate a declaration (variable, array, or extern/input)."""
         var_type = ""
         name = ""
         value = None
@@ -182,8 +182,13 @@ class CSTBridge:
                 # Contains: declarator (identifier) + optional value
                 name, value = self._translate_init_declarator(child)
 
+            elif ct == "array_declarator":
+                # e.g. double arr[30] — extract name, no value
+                name = self._find_declarator_name(child)
+
             elif ct == "identifier":
-                name = text
+                if not name:  # Don't overwrite name from init_declarator
+                    name = text
 
         self._known_vars[name] = var_type
         return VarDecl(name=name, var_type=var_type, value=value,

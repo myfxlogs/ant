@@ -62,6 +62,16 @@ async def _transpile(req: TranspileCodeRequest, _ctx) -> TranspileCodeResponse:
         # Collect gap info for LLM fill (T4).
         gap_count = r.stats.get("gaps", 0)
         gap_samples = r.stats.get("gap_samples", [])[:10]
+
+        # Scan for unmapped MQL symbols → update knowledge base.
+        from tools.mql_transpiler.gap_kb import scan_unmapped, record_gaps
+        unmapped = scan_unmapped(r.output)
+        if unmapped:
+            record_gaps(unmapped, source_mql=source[:200])
+            gap_count += len(unmapped)
+            for u in unmapped[:5]:
+                gap_samples.append(f"UNMAPPED:{u.category}:{u.symbol}")
+
         # Also include gate failures as gap info.
         if gate_report.failures:
             for f in gate_report.failures[:5]:
