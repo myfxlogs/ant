@@ -18,6 +18,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from tools.mql_transpiler.ast_parser import (
     ASTNode,
+    ArrayInitExpr,
     AssignmentExpr,
     BinaryOp,
     CallExpr,
@@ -34,6 +35,7 @@ from tools.mql_transpiler.ast_parser import (
     StringLiteral,
     SubscriptExpr,
     SwitchStmt,
+    TernaryExpr,
     VarDecl,
     WhileStmt,
     parse_mql_ast,
@@ -123,7 +125,13 @@ class ASTTranspiler:
         self._order_loop_var = "order"
 
     def transpile(self, source: str) -> ASTTranspileResult:
-        ast = parse_mql_ast(source)
+        from tools.mql_transpiler.ast_parser import Parser
+        parser = Parser(source)
+        ast = parser.parse()
+        # Merge parser globals (from #define) into our own.
+        for name, val in parser._global_vars:
+            self._global_vars.append((name, val))
+            self._known_vars.add(name)
         return self._transpile_ast(ast)
 
     def _transpile_ast(self, ast: SourceFile) -> ASTTranspileResult:
@@ -339,6 +347,14 @@ class ASTTranspiler:
         if isinstance(expr, AssignmentExpr):
             rhs = self._expr_to_py(expr.rhs)
             return f"self.{expr.lhs} = {rhs}"
+        if isinstance(expr, TernaryExpr):
+            cond = self._expr_to_py(expr.condition)
+            true_v = self._expr_to_py(expr.true_val)
+            false_v = self._expr_to_py(expr.false_val)
+            return f"{true_v} if {cond} else {false_v}"
+        if isinstance(expr, ArrayInitExpr):
+            elems = ", ".join(self._expr_to_py(e) for e in expr.elements)
+            return f"[{elems}]"
         return str(expr)
 
     # MQL identifiers that should NOT get self. prefix (builtins/symbols)

@@ -16,7 +16,6 @@ Coverage targets (what line-by-line can't handle):
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
 from typing import List, Optional
 
 
@@ -24,124 +23,135 @@ from typing import List, Optional
 
 class ASTNode:
     """Base AST node."""
-    def __init__(self, **kwargs):
-        for k, v in kwargs.items():
-            setattr(self, k, v)
 
 
-@dataclass
 class SourceFile(ASTNode):
-    declarations: list = field(default_factory=list)
+    def __init__(self, declarations=None):
+        self.declarations = declarations
 
 
-@dataclass
 class VarDecl(ASTNode):
-    name: str = ""
-    var_type: str = ""
-    value: Optional[Expression] = None
-    is_extern: bool = False
-    is_input: bool = False
+    def __init__(self, name="", var_type="", value=None, is_extern=False, is_input=False):
+        self.name = name
+        self.var_type = var_type
+        self.value = value
+        self.is_extern = is_extern
+        self.is_input = is_input
 
 
-@dataclass
 class FuncDef(ASTNode):
-    name: str = ""
-    return_type: str = "void"
-    params: list = field(default_factory=list)
-    body: CompoundStmt = None
+    def __init__(self, name="", return_type="void", params=None, body=None):
+        self.name = name
+        self.return_type = return_type
+        self.params = params
+        self.body = body
 
 
-@dataclass
 class CompoundStmt(ASTNode):
-    statements: list = field(default_factory=list)
+    def __init__(self, statements=None):
+        self.statements = statements
 
 
-@dataclass
 class ExpressionStmt(ASTNode):
-    expr: Expression = None
+    def __init__(self, expr=None):
+        self.expr = expr
 
 
-@dataclass
 class IfStmt(ASTNode):
-    condition: Expression = None
-    then_branch: ASTNode = None
-    else_branch: Optional[ASTNode] = None
+    def __init__(self, condition=None, then_branch=None, else_branch=None):
+        self.condition = condition
+        self.then_branch = then_branch
+        self.else_branch = else_branch
 
 
-@dataclass
 class ForStmt(ASTNode):
-    init: Expression = None
-    condition: Expression = None
-    update: Expression = None
-    body: ASTNode = None
+    def __init__(self, init=None, condition=None, update=None, body=None):
+        self.init = init
+        self.condition = condition
+        self.update = update
+        self.body = body
 
 
-@dataclass
 class WhileStmt(ASTNode):
-    condition: Expression = None
-    body: ASTNode = None
+    def __init__(self, condition=None, body=None):
+        self.condition = condition
+        self.body = body
 
 
-@dataclass
 class SwitchStmt(ASTNode):
-    expr: Expression = None
-    cases: list = field(default_factory=list)  # [(value, body)]
-    default: Optional[ASTNode] = None
+    def __init__(self, expr=None, cases=None, default=None):
+        self.expr = expr
+        self.cases = cases or []
+        self.default = default
 
 
 class ReturnStmt(ASTNode):
-    value: Optional[Expression] = None
+    def __init__(self, value=None):
+        self.value = value
 
 
-@dataclass
 class Expression(ASTNode):
     """Base expression node."""
 
 
-@dataclass
+class TernaryExpr(Expression):
+    """condition ? true_val : false_val"""
+    def __init__(self, condition=None, true_val=None, false_val=None):
+        self.condition = condition
+        self.true_val = true_val
+        self.false_val = false_val
+
+
+class ArrayInitExpr(Expression):
+    """{1.0, 2.0, 3.0} or array literal"""
+    def __init__(self, elements=None):
+        self.elements = elements or []
+
+
 class BinaryOp(Expression):
-    left: Expression = None
-    op: str = ""
-    right: Expression = None
+    def __init__(self, left=None, op="", right=None):
+        self.left = left
+        self.op = op
+        self.right = right
 
 
-@dataclass
 class UnaryOp(Expression):
-    op: str = ""
-    operand: Expression = None
+    def __init__(self, op="", operand=None):
+        self.op = op
+        self.operand = operand
 
 
-@dataclass
 class CallExpr(Expression):
-    name: str = ""
-    args: list = field(default_factory=list)
+    def __init__(self, name="", args=None):
+        self.name = name
+        self.args = args
 
 
-@dataclass
 class SubscriptExpr(Expression):
-    name: str = ""
-    index: Expression = None
+    def __init__(self, name="", index=None):
+        self.name = name
+        self.index = index
 
 
-@dataclass
 class Identifier(Expression):
-    name: str = ""
+    def __init__(self, name=""):
+        self.name = name
 
 
-@dataclass
 class NumberLiteral(Expression):
-    value: str = ""
+    def __init__(self, value=""):
+        self.value = value
 
 
-@dataclass
 class StringLiteral(Expression):
-    value: str = ""
+    def __init__(self, value=""):
+        self.value = value
 
 
-@dataclass
 class AssignmentExpr(Expression):
-    lhs: str = ""
-    rhs: Expression = None
+    def __init__(self, lhs="", rhs=None):
+        self.lhs = lhs
+        self.rhs = rhs
 
 
 # ── Tokenizer ────────────────────────────────────────────────────────
@@ -149,8 +159,9 @@ class AssignmentExpr(Expression):
 _TOKEN_RE = re.compile(r"""
     \s*(?:
         (//[^\n]*|/\*.*?\*/)          |  # comments
-        (\+\+|--|==|!=|<=|>=|&&|\|\||[+\-*/<>=!%]) |  # operators (++ and -- first for longest match)
-        ([{}()\[\];,:])                |  # punctuation
+        (\#\w+)                        |  # preprocessor (#define, #property...)
+        (\+\+|--|==|!=|<=|>=|&&|\|\||[+\-*/<>=!%]) |  # operators
+        ([{}()\[\];,:?])               |  # punctuation
         (\d+\.?\d*)                    |  # numbers
         ("[^"]*"|'[^']*')             |  # strings
         ([a-zA-Z_]\w*)                   # identifiers
@@ -164,16 +175,18 @@ def tokenize(source: str) -> list[tuple[str, str]]:
     for m in _TOKEN_RE.finditer(source):
         if m.group(1):  # comment
             continue
-        elif m.group(2):  # operator
-            tokens.append(("OP", m.group(2)))
-        elif m.group(3):  # punctuation
-            tokens.append((m.group(3), m.group(3)))
-        elif m.group(4):  # number
-            tokens.append(("NUM", m.group(4)))
-        elif m.group(5):  # string
-            tokens.append(("STR", m.group(5)[1:-1]))
-        elif m.group(6):  # identifier
-            tokens.append(("ID", m.group(6)))
+        elif m.group(2):  # preprocessor
+            tokens.append(("PP", m.group(2)))
+        elif m.group(3):  # operator
+            tokens.append(("OP", m.group(3)))
+        elif m.group(4):  # punctuation
+            tokens.append((m.group(4), m.group(4)))
+        elif m.group(5):  # number
+            tokens.append(("NUM", m.group(5)))
+        elif m.group(6):  # string
+            tokens.append(("STR", m.group(6)[1:-1]))
+        elif m.group(7):  # identifier
+            tokens.append(("ID", m.group(7)))
     return tokens
 
 
@@ -192,6 +205,8 @@ class Parser:
             "int", "double", "bool", "string", "color", "datetime",
             "uint", "long", "ulong", "float", "short", "ushort", "void", "char",
         }
+        self._global_vars: list = []  # from #define macros
+        self._known_vars: set = set()  # known variable names
 
     def peek(self) -> Optional[tuple[str, str]]:
         if self.pos < len(self.tokens):
@@ -237,9 +252,9 @@ class Parser:
         """Parse a top-level declaration: extern, function, or variable."""
         if self.match(value="extern") or self.match(value="input"):
             return self._parse_extern()
-        if self.match(value="#"):
-            self._skip_line()
-            return None
+        if self.match("PP"):
+            self._parse_preprocessor()
+            return ASTNode()  # marker — prevents double-advance
         if self.match(value="//"):
             self._skip_line()
             return None
@@ -489,6 +504,14 @@ class Parser:
             if right is None:
                 break
             left = BinaryOp(left=left, op=op, right=right)
+        # Check for ternary: condition ? true_val : false_val
+        if self.match(value="?"):
+            self.advance()
+            true_val = self._parse_expression()
+            if self.match(value=":"):
+                self.advance()
+                false_val = self._parse_expression()
+                left = TernaryExpr(condition=left, true_val=true_val, false_val=false_val)
         self._parse_depth -= 1
         return left
 
@@ -521,7 +544,25 @@ class Parser:
             if self.match(value=")"):
                 self.advance()
             return expr
+        if t[1] == "{":
+            return self._parse_array_init()
         return None
+
+    def _parse_array_init(self) -> ArrayInitExpr:
+        self.advance()  # {
+        elements = []
+        while self.peek() and self.peek()[1] != "}":
+            self._iters += 1
+            elem = self._parse_expression()
+            if elem:
+                elements.append(elem)
+            if self.match(value=","):
+                self.advance()
+            elif self.peek()[1] == "}":
+                break
+        if self.match(value="}"):
+            self.advance()
+        return ArrayInitExpr(elements=elements)
 
     def _parse_call(self, name: str) -> CallExpr:
         self.expect("(")
@@ -533,6 +574,25 @@ class Parser:
                 args.append(self._parse_expression())
         self.expect(")")
         return CallExpr(name=name, args=args)
+
+    def _parse_preprocessor(self) -> None:
+        """Handle #define, #property, #include — store macros as globals."""
+        pp = self.advance()[1]  # e.g. "#define"
+        if pp == "#define" and self.match("ID"):
+            name = self.advance()[1]
+            value_parts = []
+            while self.peek() and self.peek()[1] not in (";", "{", "}", "#") and self.peek()[0] != "PP":
+                # Stop before the next type keyword or function def
+                if self.peek()[0] == "ID" and self.peek()[1] in self._type_keywords:
+                    break
+                value_parts.append(self.advance()[1])
+            value = " ".join(value_parts).strip()
+            if value:
+                self._global_vars.append((name, value))
+                self._known_vars.add(name)
+        else:
+            while self.peek() and self.peek()[1] not in (";", "{", "}", "#"):
+                self.advance()
 
     def _skip_line(self) -> None:
         while self.peek() and self.peek()[1] not in (";", "{", "}"):
