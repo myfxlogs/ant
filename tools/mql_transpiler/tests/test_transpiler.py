@@ -274,17 +274,27 @@ class TestBehavioralStructure(unittest.TestCase):
                                   f"{name}: missing indicators usage")
 
     def test_for_loop_orders_pattern(self):
-        """Fixtures with OrderSelect loops should produce broker.orders() iteration."""
-        order_loop_fixtures = {
-            "simple_ma_cross.mq4", "grid_trader.mq4",
-            "martingale.mq4", "hedge_twins.mq4",
+        """Fixtures with OrderSelect loops should produce broker iteration.
+
+        OrderClose loops → broker.positions() (close market positions).
+        OrderDelete loops → broker.orders() (cancel pending orders).
+        """
+        # Fixtures that use OrderClose in their loop → positions().
+        close_loop_fixtures = {
+            "simple_ma_cross.mq4", "martingale.mq4",
+            "hedge_twins.mq4", "custom_signal.mq4",
         }
+        # Fixtures that use OrderDelete in their loop → orders().
+        delete_loop_fixtures = {"grid_trader.mq4"}
         for name in FIXTURES:
             with self.subTest(fixture=name):
                 output = _transpile_output(name)
-                if name in order_loop_fixtures:
+                if name in close_loop_fixtures:
+                    self.assertIn("self.broker.positions():", output,
+                                  f"{name}: OrderClose loop should emit broker.positions()")
+                elif name in delete_loop_fixtures:
                     self.assertIn("self.broker.orders():", output,
-                                  f"{name}: missing broker.orders() iteration")
+                                  f"{name}: OrderDelete loop should emit broker.orders()")
 
 
 # ── Regression: confidence gate catches illegal code ─────────────────────

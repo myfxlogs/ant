@@ -821,12 +821,6 @@ class CSTBridge:
 
     # ── Metadata access ────────────────────────────────────────────────
 
-    @property
-    def global_vars(self) -> List[Tuple[str, str]]:
-        """Return known #define macros as (name, value) pairs."""
-        return [(k, v or "1") for k, v in self._known_vars.items()]
-
-
 def parse_mql(source: str) -> SourceFile:
     """Parse MQL source and return internal AST.
 

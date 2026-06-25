@@ -1,19 +1,12 @@
-"""AST-level MQL → Python transpiler (T3).
+"""AST-level MQL → Python codegen.
 
-Walks the AST produced by ast_parser.py and generates Python SDK code.
-Handles patterns the line-by-line transpiler cannot:
-  - Stateful PositionSelect tracking
-  - Switch statements (via if/elif)
-  - Compound MQL function calls in expressions
-  - Variable scope awareness
+Walks ``ast_nodes`` types produced by ``ast_bridge`` (tree-sitter CST→AST)
+and generates Python SDK code.  Single parser, single codegen — no fallback.
 
-Falls back to the line-by-line transpiler for statements not handled
-by the AST walker.
+Supports MQL4 (procedural) and MQL5 (class-based, flattened).
 """
 
 from __future__ import annotations
-
-import re
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -152,7 +145,10 @@ class ASTTranspiler:
                     val = self._expr_to_py(decl.value) if decl.value else "''"
                     self._extern_params.append((decl.name, decl.var_type, val))
                 else:
-                    val = self._expr_to_py(decl.value) if decl.value else "0"
+                    if decl.var_type == "bool":
+                        val = self._expr_to_py(decl.value) if decl.value else "False"
+                    else:
+                        val = self._expr_to_py(decl.value) if decl.value else "0"
                     self._global_vars.append((decl.name, val))
                     self._known_vars.add(decl.name)
             elif isinstance(decl, ClassDef):
@@ -165,13 +161,19 @@ class ASTTranspiler:
                 # Flatten class body: collect member fields + methods.
                 for member in (decl.body or []):
                     if isinstance(member, FieldDecl):
-                        val = self._expr_to_py(member.value) if member.value else "0"
+                        if member.var_type == "bool":
+                            val = self._expr_to_py(member.value) if member.value else "False"
+                        else:
+                            val = self._expr_to_py(member.value) if member.value else "0"
                         self._global_vars.append((member.name, val))
                         self._known_vars.add(member.name)
                     elif isinstance(member, FuncDef):
                         declarations.append(member)
                     elif isinstance(member, VarDecl):
-                        val = self._expr_to_py(member.value) if member.value else "0"
+                        if member.var_type == "bool":
+                            val = self._expr_to_py(member.value) if member.value else "False"
+                        else:
+                            val = self._expr_to_py(member.value) if member.value else "0"
                         self._global_vars.append((member.name, val))
                         self._known_vars.add(member.name)
 
@@ -223,6 +225,11 @@ class ASTTranspiler:
         # Clear local variable tracking on function entry.
         self._local_vars.clear()
 
+        # Track function parameters as local variables.
+        if func.params:
+            for p in func.params:
+                self._local_vars.add(p)
+
         sdk_name = LIFECYCLE_MAP.get(func.name, func.name.lower())
         if func.name == "OnInit":
             self._emit()
@@ -250,8 +257,15 @@ class ASTTranspiler:
         else:
             # Non-lifecycle user function → strip _ prefix, emit as Python method.
             py_name = func.name.lstrip("_")
+            # Preserve MQL parameters (func.params is List[str] of param names).
+            param_strs = []
+            if func.params:
+                for p in func.params:
+                    param_strs.append(f"{p}")
+                    self._local_vars.add(p)  # So references don't get self. prefix
+            params_sig = ", " + ", ".join(param_strs) if param_strs else ""
             self._emit()
-            self._emit(f"def {py_name}(self) -> None:")
+            self._emit(f"def {py_name}(self{params_sig}) -> None:")
             self._indent += 1
             self._transpile_compound(func.body)
             self._indent -= 1
@@ -274,16 +288,20 @@ class ASTTranspiler:
                 self._emit("pass")
 
     def _transpile_compound_skip_globals(self, body: CompoundStmt, skip_vars: set) -> None:
-        """Like _transpile_compound but skips VarDecl/assignments for already-emitted globals."""
+        """Like _transpile_compound but skips VarDecl/assignments for already-emitted globals
+        only when the value is a trivial re-init (0, 0.0, False) matching the global default."""
+        _TRIVIAL_INITS = {"0", "0.0", "False", "0.00", "''", '""'}
         for stmt in body.statements:
             # Skip VarDecl that re-initialize globals already emitted.
             if isinstance(stmt, VarDecl) and stmt.name in skip_vars:
                 continue
-            # Skip AssignmentExpr like "prevFastMA = 0.0" when prevFastMA is a known global.
+            # Skip AssignmentExpr only if it sets the same trivial value as global default.
             if isinstance(stmt, ExpressionStmt) and stmt.expr:
                 if isinstance(stmt.expr, AssignmentExpr) and stmt.expr.lhs in skip_vars:
-                    # Still emit the assignment (it might update the value differently)
-                    pass
+                    rhs_val = self._expr_to_py(stmt.expr.rhs) if stmt.expr.rhs else ""
+                    if rhs_val in _TRIVIAL_INITS:
+                        continue  # skip trivial re-init (already emitted)
+                    # Non-trivial value → emit (it overrides the global default).
             self._transpile_stmt(stmt, skip_order_select=True)
 
     def _transpile_stmt(self, stmt: ASTNode, skip_order_select: bool = False) -> None:
@@ -317,6 +335,8 @@ class ASTTranspiler:
             if stmt.value:
                 val = self._expr_to_py(stmt.value)
                 self._emit(f"{stmt.name} = {val}")
+            elif stmt.var_type == "bool":
+                self._emit(f"{stmt.name} = False")
             else:
                 self._emit(f"{stmt.name} = 0")
 
@@ -346,7 +366,6 @@ class ASTTranspiler:
                 self._indent -= 1
 
     @staticmethod
-    @staticmethod
     def _is_orderselect_check(condition) -> bool:
         """Check if an if-condition is just an OrderSelect(...) call."""
         if isinstance(condition, CallExpr):
@@ -374,10 +393,19 @@ class ASTTranspiler:
                              self._ast_contains_call(stmt.condition, "HistoryOrdersTotal")
 
         if has_orders_total:
-            self._emit("# OrderSelect loop → Python iteration")
-            self._emit("for order in self.broker.orders():")
-            self._inside_orderselect_loop = True
-            self._order_loop_var = "order"
+            # Detect intent: OrderClose → positions(), OrderDelete → orders().
+            body_has_close = self._ast_contains_call(stmt.body, "OrderClose")
+            body_has_delete = self._ast_contains_call(stmt.body, "OrderDelete")
+            if body_has_close and not body_has_delete:
+                self._emit("# OrderSelect loop → Python iteration")
+                self._emit("for pos in self.broker.positions():")
+                self._inside_orderselect_loop = True
+                self._order_loop_var = "pos"
+            else:
+                self._emit("# OrderSelect loop → Python iteration")
+                self._emit("for order in self.broker.orders():")
+                self._inside_orderselect_loop = True
+                self._order_loop_var = "order"
             self._indent += 1
             self._transpile_branch(stmt.body)
             self._indent -= 1
@@ -423,6 +451,19 @@ class ASTTranspiler:
             return ASTTranspiler._ast_contains_call(node.value, func_name)
         if isinstance(node, AssignmentExpr):
             return ASTTranspiler._ast_contains_call(node.rhs, func_name)
+        if isinstance(node, CompoundStmt):
+            for stmt in (node.statements or []):
+                if ASTTranspiler._ast_contains_call(stmt, func_name):
+                    return True
+            return False
+        if isinstance(node, IfStmt):
+            return (ASTTranspiler._ast_contains_call(node.condition, func_name) or
+                    ASTTranspiler._ast_contains_call(node.then_branch, func_name) or
+                    ASTTranspiler._ast_contains_call(node.else_branch, func_name))
+        if isinstance(node, ExpressionStmt):
+            return ASTTranspiler._ast_contains_call(node.expr, func_name)
+        if isinstance(node, ForStmt):
+            return ASTTranspiler._ast_contains_call(node.body, func_name)
         return False
 
     def _transpile_generic_for(self, stmt: ForStmt) -> None:
@@ -439,6 +480,7 @@ class ASTTranspiler:
 
         # Extract end value from condition: i <= N → N+1, i < N → N
         end_val = "10"
+        step_val = None  # Only set for descending loops
         if isinstance(stmt.condition, BinaryOp):
             cond_str = self._expr_to_py(stmt.condition)
             if "<=" in cond_str:
@@ -449,15 +491,19 @@ class ASTTranspiler:
                 rhs = self._expr_to_py(stmt.condition.right)
                 end_val = str(rhs)
             elif ">=" in cond_str:
-                # i >= N → range(N, start-1, -1)
+                # i >= N → range(start, N-1, -1)
                 rhs = self._expr_to_py(stmt.condition.right)
                 end_val = f"{rhs} - 1"
+                step_val = "-1"
             else:
                 end_val = "10"
 
         if var_name:
             self._local_vars.add(var_name)
-            self._emit(f"for {var_name} in range({start_val}, {end_val}):")
+            range_args = f"{start_val}, {end_val}"
+            if step_val:
+                range_args += f", {step_val}"
+            self._emit(f"for {var_name} in range({range_args}):")
             self._indent += 1
             self._transpile_branch(stmt.body)
             self._indent -= 1
@@ -573,7 +619,9 @@ class ASTTranspiler:
         if isinstance(expr, SubscriptExpr):
             base = self._map_ident(expr.name)
             idx = self._expr_to_py(expr.index) if expr.index else "0"
-            return f"bars.{base}[{idx}]" if base in ("open", "high", "low", "close", "volume") else f"{base}[{idx}]"
+            if base in ("open", "high", "low", "close", "volume", "time"):
+                return f"self.ctx.bars().{base}[{idx}]"
+            return f"{base}[{idx}]"
         if isinstance(expr, BinaryOp):
             left = self._expr_to_py(expr.left)
             right = self._expr_to_py(expr.right)
@@ -600,7 +648,7 @@ class ASTTranspiler:
             cond = self._expr_to_py(expr.condition)
             true_v = self._expr_to_py(expr.true_val)
             false_v = self._expr_to_py(expr.false_val)
-            return f"{true_v} if {cond} else {false_v}"
+            return f"({true_v} if {cond} else {false_v})"
         if isinstance(expr, ArrayInitExpr):
             elems = ", ".join(self._expr_to_py(e) for e in expr.elements)
             return f"[{elems}]"
@@ -632,14 +680,14 @@ class ASTTranspiler:
         "Ask": "self.ctx.ask",
         "Bid": "self.ctx.bid",
         "Point": "self.ctx.point",
-        "Digits": "self.sym_info.digits",
-        "Bars": "bars",
-        "Close": "bars.close",
-        "Open": "bars.open",
-        "High": "bars.high",
-        "Low": "bars.low",
-        "Volume": "bars.volume",
-        "Time": "bars.time",
+        "Digits": "self.broker.symbol_info(self.ctx.symbol).digits",
+        "Bars": "self.ctx.bars().total()",
+        "Close": "close",
+        "Open": "open",
+        "High": "high",
+        "Low": "low",
+        "Volume": "volume",
+        "Time": "time",
         # MQL timeframe constants → None (follow backtest config)
         "PERIOD_M1": "None",
         "PERIOD_M5": "None",
@@ -675,9 +723,15 @@ class ASTTranspiler:
         if name in self._MQL_BUILTIN_IDENTS:
             return self._MQL_BUILTIN_IDENTS[name]
 
-        # Order accessors in OrderSelect loop → map to SDK field names.
+        # Order accessors in OrderSelect loop → map to SDK field names,
+        # using the current loop variable (order / pos / deal).
         if self._inside_orderselect_loop and name in self._ORDER_ACCESSOR_SDK:
-            return self._ORDER_ACCESSOR_SDK[name]
+            sdk = self._ORDER_ACCESSOR_SDK[name]
+            # Replace "order." prefix with the current loop variable.
+            lv = self._order_loop_var
+            if sdk.startswith("order."):
+                return sdk.replace("order.", f"{lv}.", 1)
+            return sdk
 
         # Common builtin functions (not called, just referenced)
         if name in COMMON_FUNC_MAP:
@@ -716,7 +770,11 @@ class ASTTranspiler:
         # Account/Order accessor functions — proto mappings (authoritative for non-loop).
         # In an OrderSelect loop, override with SDK-correct field names.
         if self._inside_orderselect_loop and name in self._ORDER_ACCESSOR_SDK:
-            return self._ORDER_ACCESSOR_SDK[name]
+            sdk = self._ORDER_ACCESSOR_SDK[name]
+            lv = self._order_loop_var
+            if sdk.startswith("order."):
+                return sdk.replace("order.", f"{lv}.", 1)
+            return sdk
 
         lookup = f"{name}()"
         if lookup in MQL_TO_SDK_ACCESSOR:
@@ -731,6 +789,9 @@ class ASTTranspiler:
                     "order.order_type": "order.type",
                 }
                 sdk = _LOOP_FIELD_FIXUP.get(sdk, sdk)
+                lv = self._order_loop_var
+                if sdk.startswith("order."):
+                    sdk = sdk.replace("order.", f"{lv}.", 1)
             return sdk
 
         # Trade functions — use proto-generated parameter order
@@ -769,14 +830,12 @@ class ASTTranspiler:
             if py.startswith("TRANSPILER-GAP") or py == "":
                 return f"# TRANSPILER-GAP: {py[len('TRANSPILER-GAP: '):] if py.startswith('TRANSPILER-GAP: ') else name}"
 
-            # Lambdas: StringToDouble → float, NormalizeDouble → round
+            # Lambda entries: lambda a,b: expr → substitute args into expr.
             if py.startswith("lambda"):
-                # Simple cases: lambda x: x.method() → don't wrap in extra parens
-                # For now, skip lambdas — they need manual argument handling
-                pass
+                return _expand_lambda(py, args_str)
 
             # Direct replacement: MathAbs → abs, StringLen → len
-            elif "(" in py and py.endswith(")"):
+            if "(" in py and py.endswith(")"):
                 return py.replace("()", f"({args_str})")
             elif py.endswith(")"):
                 return f"{py[:-1]}{args_str})"
@@ -869,8 +928,16 @@ class ASTTranspiler:
         if len(py_args) < 3:
             return "self.indicators.i_custom(name='unknown', params=[], buffer=0, shift=0)"
 
-        # arg[2] = indicator name (string)
-        name_val = str(py_args[2]).strip("'\"")
+        # arg[2] = indicator name (may be string literal or variable ref).
+        name_raw = str(py_args[2])
+        if name_raw.startswith("'") and name_raw.endswith("'"):
+            # String literal → strip quotes, re-quote cleanly.
+            name_expr = f"'{name_raw[1:-1]}'"
+        elif name_raw.startswith('"') and name_raw.endswith('"'):
+            name_expr = f"'{name_raw[1:-1]}'"
+        else:
+            # Variable reference (e.g. self.CustomName) → pass directly.
+            name_expr = name_raw
         # Last 3 args: mode, buffer, shift (for most iCustom calls)
         if len(py_args) >= 5:
             buffer_val = py_args[-2]
@@ -883,7 +950,7 @@ class ASTTranspiler:
             param_vals = py_args[3:] if len(py_args) > 3 else []
 
         params_str = ", ".join(str(p) for p in param_vals)
-        return f"self.indicators.i_custom(name='{name_val}', params=[{params_str}], buffer={buffer_val}, shift={shift_val})"
+        return f"self.indicators.i_custom(name={name_expr}, params=[{params_str}], buffer={buffer_val}, shift={shift_val})"
 
     def _map_orderclose_to_sdk(self, call: CallExpr) -> str:
         """OrderClose(ticket, volume, price, slippage) → self.broker.position_close(ticket, volume=...)."""
@@ -924,6 +991,10 @@ class ASTTranspiler:
                 if val in ("''", '""', ""):
                     continue  # skip empty comment
             parts.append(f"{sdk_name}={val}")
+        # order_delete takes bare ticket (int), not OrderRequest.
+        if sdk_method == "order_delete":
+            ticket_val = parts[0].split("=", 1)[1] if parts else "0"
+            return f"self.broker.{sdk_method}({ticket_val})"
         return f"self.broker.{sdk_method}(OrderRequest({', '.join(parts)}))"
 
     def _map_market_info(self, call: CallExpr) -> str:
@@ -978,6 +1049,45 @@ class ASTTranspiler:
                 return value
             return f"'{value}'"
         return value
+
+
+def _expand_lambda(lambda_expr: str, args_str: str) -> str:
+    """Expand a lambda mapping with the given argument string.
+
+    Examples:
+        lambda x: __import__('math').sin(x)  with args "0.5" → __import__('math').sin(0.5)
+        lambda a,b: a % b                    with args "x, y" → x % y
+        lambda: randint(0, 32767)            with args ""    → randint(0, 32767)
+        lambda s, start, length: s[start:start+length] with args "s, 0, 5" → s[0:0+5]
+    """
+    import re
+
+    # Parse: "lambda [params]: body"
+    m = re.match(r'lambda\s*([^:]*?)\s*:\s*(.*)', lambda_expr, re.DOTALL)
+    if not m:
+        return lambda_expr  # Fallback — shouldn't happen.
+    params_part = m.group(1).strip()
+    body = m.group(2).strip()
+
+    if not params_part:
+        # No-arg lambda → body as-is.
+        return body
+
+    param_names = [p.strip() for p in params_part.split(",")]
+
+    # Split args_str naively by comma (args are simple expressions, not nested).
+    arg_values = [a.strip() for a in args_str.split(",")] if args_str else []
+
+    # Substitute each param with its argument value.
+    result = body
+    for i, pname in enumerate(param_names):
+        if i < len(arg_values):
+            val = arg_values[i]
+        else:
+            val = "None"  # Under-apply → None
+        # Replace the parameter name as a word.
+        result = re.sub(rf'\b{re.escape(pname)}\b', val, result)
+    return result
 
 
 def transpile_ast(source: str, class_name: str = "TranslatedStrategy") -> ASTTranspileResult:
