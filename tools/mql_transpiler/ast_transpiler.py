@@ -47,6 +47,12 @@ try:
 except ImportError:
     MQL_TO_SDK_ACCESSOR = {}
 
+# Load proto-generated RPC parameter order mappings.
+try:
+    from tools.mql_transpiler.rpc_params_generated import RPC_PARAM_ORDER
+except ImportError:
+    RPC_PARAM_ORDER = {}
+
 # Manual mappings for functions not in proto (indicators, common).
 from tools.mql_transpiler.mappings import (
     COMMON_FUNC_MAP,
@@ -421,15 +427,15 @@ class ASTTranspiler:
             sdk = MQL_TO_SDK_ACCESSOR[lookup]
             return sdk
 
-        # Trade functions
+        # Trade functions — use proto-generated parameter order
         if name == "OrderSend":
-            return self._map_ordersend_to_sdk(call)
+            return self._map_rpc_call_to_sdk(call, "OrderSend", "order_send")
         if name == "OrderClose":
-            return f"self.broker.position_close({args_str})"
+            return self._map_rpc_call_to_sdk(call, "OrderClose", "position_close")
         if name == "OrderModify":
-            return f"self.broker.position_modify({args_str})"
+            return self._map_rpc_call_to_sdk(call, "OrderModify", "position_modify")
         if name == "OrderDelete":
-            return f"self.broker.order_delete({args_str})"
+            return self._map_rpc_call_to_sdk(call, "OrderDelete", "order_delete")
         if name == "OrderSelect":
             return "True  # OrderSelect"
 
@@ -452,28 +458,37 @@ class ASTTranspiler:
         # Generic fallback
         return f"{name}({args_str})"
 
-    def _map_ordersend_to_sdk(self, call: CallExpr) -> str:
-        """Map OrderSend call to SDK OrderRequest."""
+    def _map_rpc_call_to_sdk(self, call: CallExpr, rpc_name: str, sdk_method: str) -> str:
+        """Map an MQL RPC call to SDK method using proto-generated parameter order."""
         args = call.args
-        # Positional: OrderSend(symbol, cmd, volume, price, slippage, sl, tp, comment, magic, expiration, color)
-        symbol = self._expr_to_py(args[0]) if len(args) > 0 else "self.ctx.symbol"
-        cmd = self._expr_to_py(args[1]) if len(args) > 1 else "OrderType.BUY"
-        volume = self._expr_to_py(args[2]) if len(args) > 2 else "Decimal('0.01')"
-        price = self._expr_to_py(args[3]) if len(args) > 3 else "None"
-        sl = self._expr_to_py(args[5]) if len(args) > 5 else "None"
-        tp = self._expr_to_py(args[6]) if len(args) > 6 else "None"
-        comment = self._expr_to_py(args[7]) if len(args) > 7 else "''"
-        magic = self._expr_to_py(args[8]) if len(args) > 8 else "0"
+        params = RPC_PARAM_ORDER.get(rpc_name, [])
+        parts = []
+        for i, (sdk_name, _proto_field, _fnum) in enumerate(params):
+            if i >= len(args):
+                break
+            val_raw = self._expr_to_py(args[i])
+            val = val_raw
+            # Handle zero/empty → None for optional fields
+            if val in ("0", "0.0", "None", "''", '""') and sdk_name in ("sl", "tp", "price", "expiration"):
+                continue  # skip optional zero-valued fields
+            if sdk_name in ("volume", "price") and val not in ("None", "0", "0.0", ""):
+                val = f"Decimal(str({val}))"
+            if sdk_name in ("sl", "tp") and val not in ("None", "0", "0.0"):
+                val = f"Decimal(str({val}))"
+            if sdk_name == "magic":
+                if val in ("0", "None", "0.0", ""):
+                    continue  # skip if zero
+                val = f"int({val})"
+            if sdk_name == "deviation":
+                val = f"int({val})" if val not in ("0", "None", "") else "3"
+            if sdk_name == "comment":
+                if val in ("''", '""', ""):
+                    continue  # skip empty comment
+            parts.append(f"{sdk_name}={val}")
+        return f"self.broker.{sdk_method}(OrderRequest({', '.join(parts)}))"
 
-        parts = [f"symbol={symbol}", f"type={cmd}", f"volume=Decimal(str({volume}))"]
-        if price != "None":
-            parts.append(f"price=Decimal(str({price}))")
-        parts.append(f"sl=None" if sl in ("0", "0.0") else f"sl=Decimal(str({sl}))")
-        parts.append(f"tp=None" if tp in ("0", "0.0") else f"tp=Decimal(str({tp}))")
-        parts.append(f"comment={comment}")
-        parts.append(f"magic=int({magic})")
-
-        return f"self.broker.order_send(OrderRequest({', '.join(parts)}))"
+    def _map_ordersend_to_sdk(self, call: CallExpr) -> str:
+        return self._map_rpc_call_to_sdk(call, "OrderSend", "order_send")
 
     # ── Helpers ───────────────────────────────────────────────────────
 
