@@ -193,6 +193,7 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 
 	// ── Fast path: deterministic transpiler via strategy-service ──
 	if s.pythonStrategyClient != nil {
+		s.log.Info("CodeAssist: trying deterministic transpiler")
 		// Try the proto RPC first.
 		pyResp, pyErr := s.pythonStrategyClient.TranspileCode(ctx, connect.NewRequest(&antv1.TranspileCodeRequest{
 			SourceCode: code,
@@ -245,6 +246,8 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 			}
 		}
 		// Fall through to AI.
+	} else {
+		s.log.Warn("CodeAssist: pythonStrategyClient is nil, skipping deterministic transpiler")
 	}
 
 	// Detect language if "auto"
