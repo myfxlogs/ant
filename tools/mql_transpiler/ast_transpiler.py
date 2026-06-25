@@ -309,44 +309,69 @@ class ASTTranspiler:
             return f"self.{expr.lhs} = {rhs}"
         return str(expr)
 
+    # MQL identifiers that should NOT get self. prefix (builtins/symbols)
+    _MQL_BUILTIN_IDENTS = {
+        "Symbol": "self.ctx.symbol",
+        "Ask": "self.ctx.ask",
+        "Bid": "self.ctx.bid",
+        "Point": "self.ctx.point",
+        "Digits": "self.sym_info.digits",
+        "Bars": "bars",
+        "Close": "bars.close",
+        "Open": "bars.open",
+        "High": "bars.high",
+        "Low": "bars.low",
+        "Volume": "bars.volume",
+        "Time": "bars.time",
+    }
+
     def _map_ident(self, name: str) -> str:
         """Map MQL identifier to Python/SDK equivalent."""
         # Raw IDs from for-loop clauses
         if name.startswith("__raw__"):
-            return name[7:]  # return raw text for line-by-line fallback
+            return name[7:]
 
         # MQL constants
         if name in _MQL_CONSTANTS:
             return _MQL_CONSTANTS[name]
 
-        # Order accessors in OrderSelect loop context
+        # Builtin identifiers (Symbol, Ask, Bid, etc.)
+        if name in self._MQL_BUILTIN_IDENTS:
+            return self._MQL_BUILTIN_IDENTS[name]
+
+        # Order accessors in OrderSelect loop
         if self._inside_orderselect_loop:
             for mql_call, sdk_prop in MQL_TO_SDK_ACCESSOR.items():
                 if mql_call.rstrip("()") == name:
                     return sdk_prop
 
-        # Common builtins
+        # Common builtin functions (not called, just referenced)
         if name in COMMON_FUNC_MAP:
             py = COMMON_FUNC_MAP[name]
-            if not py.startswith("TRANSPILER-GAP") and not py.startswith("lambda"):
+            if not py.startswith("TRANSPILER-GAP") and not py.startswith("lambda") and "(" not in py:
                 return py
 
         # Known variables → self. prefix
         if name in self._known_vars:
             return f"self.{name}"
 
-        return name
+        # Unknown identifier → assume self. prefix for member access
+        return f"self.{name}"
 
     def _map_call(self, call: CallExpr) -> str:
         """Map MQL function call to Python/SDK."""
         name = call.name
         args_str = ", ".join(self._expr_to_py(a) for a in call.args)
 
+        # Symbol() → self.ctx.symbol (bare getter, not a call)
+        if name == "Symbol":
+            return "self.ctx.symbol"
+
         # Account functions
         lookup = f"{name}()"
         if lookup in MQL_TO_SDK_ACCESSOR:
             sdk = MQL_TO_SDK_ACCESSOR[lookup]
-            return sdk  # already has full path for account functions
+            return sdk
 
         # Trade functions
         if name == "OrderSend":

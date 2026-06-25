@@ -271,17 +271,28 @@ class Parser:
         params = []
         if self.match(value=")"):
             return params
-        if self.match("ID") and self.tokens[self.pos + 1][1] not in ("=", ",", ")"):
-            self.advance()  # type
+        # Skip type qualifiers (const, &, [], type keywords)
+        self._skip_type_qualifiers()
         if self.match("ID"):
             params.append(self.advance()[1])
         while self.match(value=","):
             self.advance()
-            if self.match("ID") and self.pos + 1 < len(self.tokens) and self.tokens[self.pos + 1][1] not in (",", ")"):
-                self.advance()
+            self._skip_type_qualifiers()
             if self.match("ID"):
                 params.append(self.advance()[1])
         return params
+
+    def _skip_type_qualifiers(self) -> None:
+        """Skip type keywords, const, &, [] before a parameter name."""
+        while self.match("ID") and self.pos + 1 < len(self.tokens):
+            if self.tokens[self.pos][1] in ("const", "int", "double", "bool", "string", "long",
+                                              "uint", "ulong", "float", "short", "ushort", "char",
+                                              "datetime", "color", "void"):
+                self.advance()
+            else:
+                break
+        while self.match("OP") and self.peek()[1] == "&":
+            self.advance()
 
     def _parse_var_decl(self) -> VarDecl:
         vtype = self.advance()[1]
