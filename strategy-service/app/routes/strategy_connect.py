@@ -268,16 +268,24 @@ except ImportError:
 @router.post("/ant.v1.PythonStrategyService/TranspileCode")
 async def handle_transpile(request: Request) -> Response:
     """Transpile MQL4/MQL5 code to Python using the deterministic transpiler."""
+    import logging
+    _log = logging.getLogger("TranspileCode")
+    _log.info("TranspileCode called, content-type=%s", request.headers.get("content-type", ""))
+
     req = await _parse_request(request, TranspileCodeRequest)
     source = req.source_code or ""
     class_name = req.class_name or "TranslatedStrategy"
+    _log.info("source_code=%s, class_name=%s, available=%s",
+              source[:60] if source else "EMPTY", class_name, _TRANSPILER_AVAILABLE)
 
     if not _TRANSPILER_AVAILABLE or not source:
         return _respond(TranspileCodeResponse(is_deterministic=False), request)
 
     try:
+        _log.info("AST transpiler starting...")
         result = transpile_ast(source, class_name)
         conf = result.stats.get("confidence", 0.0)
+        _log.info("AST transpiler done: conf=%.2f, lines=%d", conf, len(result.output))
         gaps = result.stats.get("gaps", 0)
         matched = result.stats.get("matched", 0)
         resp = TranspileCodeResponse(
@@ -289,8 +297,8 @@ async def handle_transpile(request: Request) -> Response:
             is_deterministic=True,
         )
         return _respond(resp, request)
-    except Exception:
-        pass  # AST failed, try line-by-line
+    except Exception as e:
+        _log.warning("AST transpiler failed: %s", e)
 
     # Fallback: line-by-line transpiler (handles complex MQL patterns).
     try:
