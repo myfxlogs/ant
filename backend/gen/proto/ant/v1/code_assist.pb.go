@@ -413,8 +413,10 @@ type ValidateStrategyExtendedResponse struct {
 	SweepDimensions []*SweepDimension `protobuf:"bytes,6,rep,name=sweep_dimensions,json=sweepDimensions,proto3" json:"sweep_dimensions,omitempty"`
 	// Strategy directives from @strategy annotations (zero-trust).
 	StrategyDirectives []*StrategyDirective `protobuf:"bytes,7,rep,name=strategy_directives,json=strategyDirectives,proto3" json:"strategy_directives,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	// Extracted self.ctx.param() calls as JSON array of {name, type, default, label}.
+	ParametersJson string `protobuf:"bytes,8,opt,name=parameters_json,json=parametersJson,proto3" json:"parameters_json,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *ValidateStrategyExtendedResponse) Reset() {
@@ -494,6 +496,13 @@ func (x *ValidateStrategyExtendedResponse) GetStrategyDirectives() []*StrategyDi
 		return x.StrategyDirectives
 	}
 	return nil
+}
+
+func (x *ValidateStrategyExtendedResponse) GetParametersJson() string {
+	if x != nil {
+		return x.ParametersJson
+	}
+	return ""
 }
 
 type RequiredParamSpec struct {
@@ -720,7 +729,7 @@ const file_code_assist_proto_rawDesc = "" +
 	"\x13ExplainCodeResponse\x12 \n" +
 	"\vexplanation\x18\x01 \x01(\tR\vexplanation\"5\n" +
 	"\x1fValidateStrategyExtendedRequest\x12\x12\n" +
-	"\x04code\x18\x01 \x01(\tR\x04code\"\xf4\x02\n" +
+	"\x04code\x18\x01 \x01(\tR\x04code\"\x9d\x03\n" +
 	" ValidateStrategyExtendedResponse\x12\x14\n" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x16\n" +
 	"\x06errors\x18\x02 \x03(\tR\x06errors\x12\x1a\n" +
@@ -730,7 +739,8 @@ const file_code_assist_proto_rawDesc = "" +
 	"parameters\x12<\n" +
 	"\rquality_hints\x18\x05 \x03(\v2\x17.ant.v1.CodeQualityHintR\fqualityHints\x12A\n" +
 	"\x10sweep_dimensions\x18\x06 \x03(\v2\x16.ant.v1.SweepDimensionR\x0fsweepDimensions\x12J\n" +
-	"\x13strategy_directives\x18\a \x03(\v2\x19.ant.v1.StrategyDirectiveR\x12strategyDirectives\"\xa3\x01\n" +
+	"\x13strategy_directives\x18\a \x03(\v2\x19.ant.v1.StrategyDirectiveR\x12strategyDirectives\x12'\n" +
+	"\x0fparameters_json\x18\b \x01(\tR\x0eparametersJson\"\xa3\x01\n" +
 	"\x11RequiredParamSpec\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x1a\n" +
 	"\brequired\x18\x02 \x01(\bR\brequired\x12#\n" +

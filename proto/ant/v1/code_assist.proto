@@ -63,6 +63,8 @@ message ValidateStrategyExtendedResponse {
   repeated SweepDimension sweep_dimensions = 6;
   // Strategy directives from @strategy annotations (zero-trust).
   repeated StrategyDirective strategy_directives = 7;
+  // Extracted self.ctx.param() calls as JSON array of {name, type, default, label}.
+  string parameters_json = 8;
 }
 
 message RequiredParamSpec {

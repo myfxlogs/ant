@@ -383,7 +383,8 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	// Structural quality warnings
 	warnings = append(warnings, structWarns...)
 
-	// Run Python ast.parse() for authoritative syntax errors
+	// Run Python ast.parse() for authoritative syntax errors + parameter extraction
+	var parametersJson string
 	if s.pythonStrategyClient != nil {
 		pyResp, pyErr := s.pythonStrategyClient.Validate(ctx, connect.NewRequest(&antv1.ValidateStrategyRequest{Code: code}))
 		if pyErr == nil && pyResp != nil && pyResp.Msg != nil {
@@ -393,15 +394,20 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 			if len(pyResp.Msg.Warnings) > 0 {
 				warnings = append(warnings, pyResp.Msg.Warnings...)
 			}
+			// Forward extracted strategy parameters to BacktestPanel.
+			if pyResp.Msg.ParametersJson != "" {
+				parametersJson = pyResp.Msg.ParametersJson
+			}
 		}
 	}
 
 	valid := len(errors) == 0
 
 	return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
-		Valid:    valid,
-		Errors:   errors,
-		Warnings: warnings,
+		Valid:          valid,
+		Errors:         errors,
+		Warnings:       warnings,
+		ParametersJson: parametersJson,
 	}), nil
 }
 
