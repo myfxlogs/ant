@@ -386,8 +386,17 @@ class MQLTranspiler:
         self._emit("def on_init(self) -> None:")
         self._indent += 1
         self._emit("self._init_params()")
+        self._emit_init_globals()
         self._indent -= 1
         self._emit()
+
+    def _emit_init_globals(self) -> None:
+        """Emit global variable assignments inside on_init."""
+        if not hasattr(self, '_global_vars') or not self._global_vars:
+            return
+        for vname, py_value in self._global_vars:
+            self._emit(f"self.{vname} = {py_value}")
+        self._global_vars = []  # clear for next translation
 
     def _emit_function_def(
         self, name: str, match, line: str, lines: List[str], line_idx: int
@@ -418,10 +427,14 @@ class MQLTranspiler:
         vtype = match.group("type")
         vname = match.group("name")
         vvalue = match.group("value").strip().rstrip(";")
-        pytype = MQL_TYPE_MAP.get(vtype, "object")
-        self._emit(f"# TRANSPILER-GAP: variable declaration type={vtype}")
-        self._emit(f"{vname}: {pytype} = {vvalue}")
-        self._stats.record_gap(f"Variable: {vtype} {vname}")
+        py_value = _mql_default_to_py(vvalue, vtype)
+        # Global MQL variables → self. attributes (not class attributes).
+        # Deferred to a _init_globals() method called from on_init.
+        if not hasattr(self, '_global_vars'):
+            self._global_vars = []
+        self._global_vars.append((vname, py_value))
+        # Emit as comment for audit trail.
+        self._emit(f"# global {vtype} {vname} → self.{vname} = {py_value}")
 
     def _emit_extern_comment(self, line: str) -> None:
         m = EXTERN_RE.match(line.strip())
@@ -456,7 +469,41 @@ class MQLTranspiler:
             return
         if self._try_return_statement(stripped):
             return
+        if self._try_simple_assignment(stripped):
+            return
         self._emit_gap("Unrecognized statement", stripped)
+
+    # MQL built-in function translations for variable references.
+    _MQL_BUILTIN_REFS = {
+        "Symbol()": "self.ctx.symbol",
+        "Ask": "self.ctx.ask", "Bid": "self.ctx.bid",
+        "Point": "self.ctx.point",
+        "Digits": "self.sym_info.digits",
+        "AccountBalance()": "self.broker.account().balance",
+        "AccountEquity()": "self.broker.account().equity",
+        "AccountFreeMargin()": "self.broker.account().free_margin",
+        "OP_BUY": "OrderType.BUY", "OP_SELL": "OrderType.SELL",
+        "OP_BUYLIMIT": "OrderType.BUY_LIMIT", "OP_SELLLIMIT": "OrderType.SELL_LIMIT",
+        "OP_BUYSTOP": "OrderType.BUY_STOP", "OP_SELLSTOP": "OrderType.SELL_STOP",
+        "SELECT_BY_POS": "", "SELECT_BY_TICKET": "",
+        "MODE_TRADES": "", "MODE_HISTORY": "",
+        "INIT_SUCCEEDED": "0", "clrNONE": "None",
+    }
+
+    def _try_simple_assignment(self, line: str) -> bool:
+        """Match simple MQL assignment: var = expr;"""
+        m = re.match(r"(\w[\w.]*)\s*=\s*(.+)", line)
+        if not m: return False
+        lhs, rhs = m.group(1), m.group(2)
+        # Translate RHS builtin references.
+        py_rhs = rhs
+        for mql_ref, py_ref in self._MQL_BUILTIN_REFS.items():
+            if py_ref == "": continue  # skip empty mappings
+            py_rhs = py_rhs.replace(mql_ref, py_ref)
+        # Self-reference: if lhs is a known variable, prefix with self.
+        self._emit(f"self.{lhs} = {py_rhs}")
+        self._stats.patterns_matched += 1
+        return True
 
     def _try_order_operations(self, line: str) -> bool:
         """Match OrderSend, OrderClose, OrderModify, OrderDelete."""

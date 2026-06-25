@@ -197,14 +197,14 @@ class TestTranspilerGapMarking(unittest.TestCase):
         result = tp.transpile(source, "test.mq4")
         self.assertIn("TRANSPILER-GAP: GUI", result.output)
 
-    def test_variable_declaration_marked(self):
+    def test_variable_declaration_mapped_to_self(self):
         source = "double myVar = 1.5;"
         tp = MQLTranspiler()
         result = tp.transpile(source, "test.mq4")
-        self.assertIn("TRANSPILER-GAP: variable declaration", result.output)
+        self.assertIn("self.myVar = 1.5", result.output)
 
     def test_gap_stats_tracked(self):
-        source = "double myVar = 1.5;\nint x = 42;"
+        source = "double myVar = 1.5;\nFileOpen(\"x.txt\", FILE_WRITE);"
         tp = MQLTranspiler()
         result = tp.transpile(source, "test.mq4")
         self.assertGreaterEqual(result.stats.gaps, 1)
