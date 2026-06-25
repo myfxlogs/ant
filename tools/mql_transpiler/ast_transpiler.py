@@ -23,9 +23,11 @@ from tools.mql_transpiler.ast_nodes import (
     ASTNode,
     BinaryOp,
     CallExpr,
+    ClassDef,
     CompoundStmt,
     Expression,
     ExpressionStmt,
+    FieldDecl,
     ForStmt,
     FuncDef,
     Identifier,
@@ -142,8 +144,9 @@ class ASTTranspiler:
         return self._transpile_ast(ast)
 
     def _transpile_ast(self, ast: SourceFile) -> ASTTranspileResult:
-        # Collect externs and globals.
-        for decl in ast.declarations:
+        # Collect externs and globals — flatten ClassDef bodies too.
+        declarations = list(ast.declarations) if ast.declarations else []
+        for decl in ast.declarations or []:
             if isinstance(decl, VarDecl):
                 if decl.is_extern or decl.is_input:
                     val = self._expr_to_py(decl.value) if decl.value else "''"
@@ -152,6 +155,25 @@ class ASTTranspiler:
                     val = self._expr_to_py(decl.value) if decl.value else "0"
                     self._global_vars.append((decl.name, val))
                     self._known_vars.add(decl.name)
+            elif isinstance(decl, ClassDef):
+                # Use class name if no explicit class_name set.
+                if self._class_name == "TranslatedStrategy" and decl.name:
+                    self._class_name = decl.name
+                # Optional base class.
+                if decl.base_class:
+                    self._class_name += f"({decl.base_class})"
+                # Flatten class body: collect member fields + methods.
+                for member in (decl.body or []):
+                    if isinstance(member, FieldDecl):
+                        val = self._expr_to_py(member.value) if member.value else "0"
+                        self._global_vars.append((member.name, val))
+                        self._known_vars.add(member.name)
+                    elif isinstance(member, FuncDef):
+                        declarations.append(member)
+                    elif isinstance(member, VarDecl):
+                        val = self._expr_to_py(member.value) if member.value else "0"
+                        self._global_vars.append((member.name, val))
+                        self._known_vars.add(member.name)
 
         # Emit header.
         self._emit(f'"""Translated from MQL by AST transpiler (T3)."""')
@@ -159,7 +181,8 @@ class ASTTranspiler:
         for line in _SDK_IMPORTS.strip().split("\n"):
             self._emit(line)
         self._emit()
-        self._emit(f"class {self._class_name}(StrategyBase):")
+        base = self._class_name if "(" in self._class_name else f"{self._class_name}(StrategyBase)"
+        self._emit(f"class {base}:")
         self._indent += 1
 
         # Emit _init_params.
@@ -173,7 +196,7 @@ class ASTTranspiler:
             self._indent -= 1
 
         # Emit functions.
-        for decl in ast.declarations:
+        for decl in declarations:
             if isinstance(decl, FuncDef):
                 self._transpile_function(decl)
 

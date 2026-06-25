@@ -141,3 +141,21 @@ class AssignmentExpr(Expression):
     def __init__(self, lhs="", rhs=None):
         self.lhs = lhs
         self.rhs = rhs
+
+
+# ── MQL5 class/OOP nodes ──────────────────────────────────────────────
+
+class ClassDef(ASTNode):
+    """MQL5 class definition."""
+    def __init__(self, name="", base_class="", body=None):
+        self.name = name
+        self.base_class = base_class
+        self.body = body  # list of declarations (FuncDef, VarDecl)
+
+
+class FieldDecl(ASTNode):
+    """MQL5 class member variable."""
+    def __init__(self, name="", var_type="", value=None):
+        self.name = name
+        self.var_type = var_type
+        self.value = value

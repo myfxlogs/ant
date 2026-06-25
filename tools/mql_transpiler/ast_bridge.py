@@ -22,6 +22,8 @@ if TYPE_CHECKING:
 from tools.mql_transpiler.ast_nodes import (
     ArrayInitExpr,
     AssignmentExpr,
+    ClassDef,
+    FieldDecl,
     BinaryOp,
     CallExpr,
     CompoundStmt,
@@ -62,7 +64,12 @@ class CSTBridge:
         for i in range(root.named_child_count):
             child = root.named_child(i)
             decl = self._translate_top_level(child)
-            if decl is not None:
+            if decl is None:
+                continue
+            # Flatten lists (from namespace/template flattening).
+            if isinstance(decl, list):
+                declarations.extend(decl)
+            else:
                 declarations.append(decl)
         return SourceFile(declarations=declarations)
 
@@ -73,6 +80,12 @@ class CSTBridge:
             return self._translate_function(node)
         if t == "declaration":
             return self._translate_declaration(node)
+        if t == "class_specifier":
+            return self._translate_class(node)
+        if t == "namespace_definition":
+            return self._translate_namespace(node)
+        if t == "template_declaration":
+            return self._translate_template(node)
         if t == "preproc_def":
             return self._translate_preproc_def(node)
         if t == "comment":
@@ -281,11 +294,16 @@ class CSTBridge:
                 if child.named_child_count > 0:
                     condition = self._translate_expression(child.named_child(0))
             elif ct == "condition_clause":
-                # Alternative structure (some C grammars)
+                # C++ grammar: condition is directly inside (no parenthesized_expression wrapper)
+                # C grammar: condition inside parenthesized_expression
                 for j in range(child.named_child_count):
                     gc = child.named_child(j)
                     if gc.type == "parenthesized_expression" and gc.named_child_count > 0:
                         condition = self._translate_expression(gc.named_child(0))
+                    elif gc.type in ("binary_expression", "unary_expression", "call_expression",
+                                      "identifier", "number_literal", "subscript_expression",
+                                      "field_expression", "update_expression", "conditional_expression"):
+                        condition = self._translate_expression(gc)
             elif ct == "else_clause":
                 # else_clause wraps: else + statement
                 for j in range(child.named_child_count):
@@ -388,6 +406,10 @@ class CSTBridge:
                     gc = child.named_child(j)
                     if gc.type == "parenthesized_expression" and gc.named_child_count > 0:
                         condition = self._translate_expression(gc.named_child(0))
+                    elif gc.type in ("binary_expression", "unary_expression", "call_expression",
+                                      "identifier", "number_literal", "subscript_expression",
+                                      "field_expression", "update_expression", "conditional_expression"):
+                        condition = self._translate_expression(gc)
             elif ct in ("compound_statement", "expression_statement"):
                 body = self._translate_statement(child)
         return WhileStmt(condition=condition, body=body)
@@ -606,7 +628,15 @@ class CSTBridge:
             ct = child.type
             if ct in ("identifier", "field_identifier"):
                 name = self.source_text(child)
-            elif ct != "[" and ct != "]":
+            elif ct == "subscript_argument_list":
+                # C++ grammar wraps the index in subscript_argument_list.
+                # Extract the actual expression from inside.
+                for j in range(child.named_child_count):
+                    gc = child.named_child(j)
+                    if gc.type not in ("[", "]"):
+                        index = self._translate_expression(gc)
+                        break
+            elif ct not in ("[", "]"):
                 index = self._translate_expression(child)
         return SubscriptExpr(name=name, index=index)
 
@@ -669,6 +699,109 @@ class CSTBridge:
             elif child.type == "call_expression":
                 parts.append(self.source_text(child))
         return Identifier(name=".".join(parts) if parts else self.source_text(node))
+
+    # ── MQL5 class/OOP ────────────────────────────────────────────────
+
+    def _translate_class(self, node: ts.Node) -> ClassDef:
+        """Translate a class_specifier node → ClassDef."""
+        name = ""
+        base_class = ""
+        body = []
+
+        for i in range(node.named_child_count):
+            child = node.named_child(i)
+            ct = child.type
+            if ct in ("type_identifier", "identifier"):
+                name = self.source_text(child)
+            elif ct == "base_class_clause":
+                # Extract base class name from ": public BaseClass"
+                for j in range(child.named_child_count):
+                    gc = child.named_child(j)
+                    if gc.type in ("type_identifier", "identifier"):
+                        base_class = self.source_text(gc)
+            elif ct == "field_declaration_list":
+                # Process class body declarations.
+                for j in range(child.named_child_count):
+                    gc = child.named_child(j)
+                    gct = gc.type
+                    if gct == "function_definition":
+                        func = self._translate_function(gc)
+                        if func:
+                            body.append(func)
+                    elif gct == "field_declaration":
+                        fd = self._translate_field_declaration(gc)
+                        if fd:
+                            body.append(fd)
+                    elif gct == "declaration":
+                        decl = self._translate_declaration(gc)
+                        if decl:
+                            body.append(decl)
+                    elif gct in ("access_specifier", ":", "{", "}"):
+                        pass  # Skip access modifiers and braces
+                    elif gct == "preproc_if":
+                        pass  # Skip preprocessor in class
+                    elif gct == "comment":
+                        pass
+                    elif gct == "template_declaration":
+                        pass  # Nested templates are rare in MQL5
+                    else:
+                        # Try to translate as statement or declaration.
+                        stmt = self._translate_statement(gc)
+                        if stmt:
+                            body.append(stmt)
+
+        return ClassDef(name=name, base_class=base_class, body=body)
+
+    def _translate_field_declaration(self, node: ts.Node):
+        """Translate a field_declaration → VarDecl or FieldDecl."""
+        var_type = ""
+        name = ""
+        value = None
+        for i in range(node.named_child_count):
+            child = node.named_child(i)
+            ct = child.type
+            if ct in ("primitive_type", "type_identifier", "sized_type_specifier"):
+                var_type = self.source_text(child)
+            elif ct in ("field_identifier", "identifier"):
+                name = self.source_text(child)
+            elif ct in ("number_literal", "string_literal"):
+                value = self._translate_expression(child)
+            elif ct == "init_declarator":
+                name, value = self._translate_init_declarator(child)
+        return FieldDecl(name=name, var_type=var_type, value=value)
+
+    def _translate_namespace(self, node: ts.Node):
+        """Translate namespace_definition → flatten into SourceFile declarations."""
+        # MQL5 namespaces are organizational — we flatten them.
+        # The body is a declaration_list containing the actual declarations.
+        body = []
+        for i in range(node.named_child_count):
+            child = node.named_child(i)
+            ct = child.type
+            if ct == "declaration_list":
+                for j in range(child.named_child_count):
+                    gc = child.named_child(j)
+                    decl = self._translate_top_level(gc)
+                    if decl:
+                        body.append(decl)
+            elif ct in ("namespace_identifier", "identifier"):
+                pass  # Namespace name — ignore
+        return body  # Return list to be flattened by translate()
+
+    def _translate_template(self, node: ts.Node):
+        """Translate template_declaration → flatten, ignoring template params."""
+        # MQL5 templates like template<typename T> class Array { ... }
+        # We ignore the template parameters and just translate the body.
+        for i in range(node.named_child_count):
+            child = node.named_child(i)
+            ct = child.type
+            if ct == "class_specifier":
+                return self._translate_class(child)
+            if ct == "function_definition":
+                return self._translate_function(child)
+            if ct == "declaration":
+                return self._translate_declaration(child)
+        return None
 
     # ── Preprocessor ───────────────────────────────────────────────────
 
