@@ -8,9 +8,11 @@ interface Props {
   accountId?: string;
   onApply: (code: string, previousCode?: string) => void;
   onValidateResult?: (result: ValidateExtendedResult) => void;
+  onRunBacktest?: () => void;
+  backtestStatus?: string;
 }
 
-export default function AICodePanel({ symbol, timeframe, sessionId, accountId, onApply, onValidateResult }: Props) {
+export default function AICodePanel({ symbol, timeframe, sessionId, accountId, onApply, onValidateResult, onRunBacktest, backtestStatus }: Props) {
   return (
     <StrategyChat
       symbol={symbol}
@@ -19,6 +21,8 @@ export default function AICodePanel({ symbol, timeframe, sessionId, accountId, o
       accountId={accountId}
       onApplyCode={(code) => onApply(code)}
       onValidateResult={onValidateResult}
+      onRunBacktest={onRunBacktest}
+      backtestStatus={backtestStatus}
     />
   );
 }

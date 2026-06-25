@@ -19,7 +19,7 @@ const { TextArea } = Input;
 type TabKey = 'chat' | 'history' | 'strategies';
 import type { ValidateExtendedResult } from '@/client/codeAssist';
 
-interface Props { symbol?: string; timeframe?: string; sessionId?: string; accountId?: string; onApplyCode: (code: string) => void; onValidateResult?: (result: ValidateExtendedResult) => void; }
+interface Props { symbol?: string; timeframe?: string; sessionId?: string; accountId?: string; onApplyCode: (code: string) => void; onValidateResult?: (result: ValidateExtendedResult) => void; onRunBacktest?: () => void; backtestStatus?: string; }
 
 /** Ask the LLM to generate a short conversation title from the first user message. */
 async function generateTitle(firstMsg: string): Promise<string> {
@@ -32,7 +32,7 @@ async function generateTitle(firstMsg: string): Promise<string> {
     return firstMsg.slice(0, 20);
   }
 }
-export default function StrategyChat({ symbol, timeframe, sessionId, accountId, onApplyCode, onValidateResult }: Props) {
+export default function StrategyChat({ symbol, timeframe, sessionId, accountId, onApplyCode, onValidateResult, onRunBacktest, backtestStatus }: Props) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
@@ -298,8 +298,10 @@ const isFirst = messages.length === 0 && !titleGeneratedRef.current;
             <WorkflowBar
               codeRef={codeRef} busy={busy} hasSymbol={hasSymbol} accountId={accountId}
               symbol={symbol} timeframe={timeframe} templates={templates} codeGenKey={codeGenKey}
-              addMsg={addMsg} setMetrics={setMetrics} fetchTemplates={fetchTemplates}
+              addMsg={addMsg} fetchTemplates={fetchTemplates}
               onValidateResult={onValidateResult}
+              onRunBacktest={onRunBacktest}
+              backtestStatus={backtestStatus}
             />
           </div>
         </>)}

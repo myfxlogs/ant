@@ -4,7 +4,6 @@ import { CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, ThunderboltO
 import { useTranslation } from 'react-i18next';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
-import type { BacktestMetricsMsg } from '@/gen/ant/v1/strategy_execution_pb';
 import {
   WORKFLOW_BACKTEST_DONE_KEY, WORKFLOW_BACKTEST_FAIL_KEY, WORKFLOW_BACKTEST_HINT_DONE_KEY,
   WORKFLOW_BACKTEST_HINT_NEED_ACCOUNT_KEY, WORKFLOW_BACKTEST_HINT_NEED_REVIEW_KEY,
@@ -33,14 +32,15 @@ interface Props {
   templates: TemplateInfo[];
   codeGenKey: number;
   addMsg: (role: 'ai', extra: { text: string }) => void;
-  setMetrics: (m: BacktestMetricsMsg | null) => void;
   fetchTemplates: () => void;
   onValidateResult?: (result: ValidateExtendedResult) => void;
+  onRunBacktest?: () => void;
+  backtestStatus?: string;
 }
 
 const iconStyle = { fontSize: 11 };
 
-export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbol, timeframe, templates, codeGenKey, addMsg, setMetrics, fetchTemplates, onValidateResult }: Props) {
+export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbol, timeframe, templates, codeGenKey, addMsg, fetchTemplates, onValidateResult, onRunBacktest, backtestStatus }: Props) {
   const { t } = useTranslation();
   const [status, setStatus] = useState<Record<StepKey, StepStatus>>({ check: 'idle', backtest: 'idle', save: 'idle' });
 
@@ -87,15 +87,26 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
   const runBacktest = useCallback(async () => {
     const code = getCode(); if (!code || !accountId || !hasSymbol) return;
     setStep('backtest', 'running'); addMsg('ai', { text: t(WORKFLOW_BACKTESTING_KEY) });
+    if (onRunBacktest) { onRunBacktest(); return; }
+    // Fallback: direct backtest if not wired to BacktestPanel.
     try {
       const r = await pythonStrategyApi.backtest({ code, accountId, symbol: symbol!, timeframe: timeframe!, initialCapital: 10000 });
       if (r.success && r.metrics) {
-        setMetrics({ totalReturn: r.metrics.totalReturn, sharpeRatio: r.metrics.sharpeRatio, maxDrawdown: r.metrics.maxDrawdown, winRate: r.metrics.winRate, totalTrades: r.metrics.totalTrades, profitFactor: r.metrics.profitFactor });
         setStep('backtest', 'done'); setStep('save', 'idle');
         addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_DONE_KEY)} ${r.metrics.sharpeRatio?.toFixed(2)??'-'} | DD: ${((r.metrics.maxDrawdown??0)*100).toFixed(1)}% | WR: ${((r.metrics.winRate??0)*100).toFixed(0)}% | Trades: ${r.metrics.totalTrades??0}` });
       } else { setStep('backtest', 'failed'); addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_FAIL_KEY)} ${r.error || ''}` }); }
     } catch (e: any) { setStep('backtest', 'failed'); addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_ERROR_KEY)} ${e?.message || e}` }); }
-  }, [accountId, hasSymbol, symbol, timeframe, addMsg, setMetrics, t]);
+  }, [accountId, hasSymbol, symbol, timeframe, addMsg, t, onRunBacktest]);
+
+  // Watch BacktestPanel runner status to advance workflow state.
+  useEffect(() => {
+    if (backtestStatus === 'completed' && status.backtest === 'running') {
+      setStep('backtest', 'done'); setStep('save', 'idle');
+      addMsg('ai', { text: t(WORKFLOW_BACKTEST_DONE_KEY) });
+    } else if (backtestStatus === 'error' && status.backtest === 'running') {
+      setStep('backtest', 'failed');
+    }
+  }, [backtestStatus, status.backtest, addMsg, t]);
 
   const openSave = useCallback(() => {
     setSaveName(''); setSaveDup(false); setSaveOpen(true);
