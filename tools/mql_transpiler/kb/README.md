@@ -206,6 +206,38 @@ MQL5 adds these indicators not present in MQL4:
 
 ---
 
+## SDK-dependent GAPs (15 features)
+
+These require new SDK runtime APIs before the transpiler can emit correct code.
+
+### Group A: History API (8 features) — recommended fix
+
+| Feature | What it needs | Impact |
+|---------|-------------|--------|
+| HistorySelect | `self.broker.select_deals(from_ms, to_ms)` | Unlocks 8 MQL5 history functions |
+| HistoryDealsTotal | `len(self.broker.deals)` | Line count |
+| HistoryDealGet* | `deal.ticket`, `deal.price`, `deal.volume`, etc. | Property access |
+
+**Optimal fix**: Add `self.broker.deals(symbol?, magic?, from_ms?, to_ms?)` to the SDK.
+This one API addition unlocks 8 MQL5 history functions with trivial mapping.
+
+### Group B: Position getters (4 features) — no fix needed
+
+| Feature | Reason |
+|---------|--------|
+| PositionGetDouble/Integer/String | MQL5's stateful PositionSelect pattern has no direct Python equivalent. The SDK already provides `self.broker.positions()` with all fields. Mark as GAP, document the manual translation: `PositionSelect(sym)` → `positions = self.broker.positions(symbol=sym)` |
+
+### Group C: Broker calculations (3 features) — not worth implementing
+
+| Feature | Reason |
+|---------|--------|
+| OrderCalcMargin | Requires live broker margin model. Used in < 1% of EAs. |
+| OrderCalcProfit | Same — broker-dependent calculation. |
+| OrderCheck | Pre-trade validation. SDK `order_send` returns `retcode` for post-trade check. |
+| OrderSendAsync | Python's blocking `order_send` is adequate for backtesting. |
+
+---
+
 ## How to add a new pattern
 
 1. Find the MQL source snippet that produces a TRANSPILER-GAP
