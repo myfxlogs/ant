@@ -308,6 +308,7 @@ export default function BacktestPanel(props: Props) {
               onClose={() => runner.setStrategyParamsModalOpen(false)}
               onChange={runner.setParam}
             />
+          </div>
         )}
 
         {/* ── Results Tab ─────────────────────────────────────────────── */}

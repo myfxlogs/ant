@@ -2,11 +2,10 @@ import { Table, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
   CLOSE_PRICE_KEY, LONG_KEY, PNL_KEY, SHORT_KEY,
-  TRADE_VOLUME_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import { BACKTEST_EMPTY_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import {
-  BACKTEST_RECORDS_KEY, TRADE_PRICE_KEY, TRADE_SIDE_KEY,
+  BACKTEST_RECORDS_KEY, TRADE_PRICE_KEY, TRADE_SIDE_KEY, TRADE_VOLUME_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import type { ChartTrade } from './useBacktestRunner';
 
