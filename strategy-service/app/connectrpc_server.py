@@ -33,7 +33,7 @@ _SVC = _pb.DESCRIPTOR.services_by_name["PythonStrategyService"]
 
 # ── Transpile handler ────────────────────────────────────────────────
 
-async def _transpile(req: TranspileCodeRequest) -> TranspileCodeResponse:
+async def _transpile(req: TranspileCodeRequest, _ctx) -> TranspileCodeResponse:
     source = req.source_code or ""
     class_name = req.class_name or "TranslatedStrategy"
     if not source:
@@ -75,7 +75,7 @@ async def _transpile(req: TranspileCodeRequest) -> TranspileCodeResponse:
 
 # ── Validate handler ──────────────────────────────────────────────────
 
-async def _validate(req: ValidateStrategyRequest) -> ValidateStrategyResponse:
+async def _validate(req: ValidateStrategyRequest, _ctx) -> ValidateStrategyResponse:
     import json as _json
     from app.engine.sandbox import validate_strategy_code
     from app.engine.params_extractor import extract_required_params
@@ -105,7 +105,7 @@ async def _validate(req: ValidateStrategyRequest) -> ValidateStrategyResponse:
 
 # ── Execute handler ───────────────────────────────────────────────────
 
-async def _execute(req: ExecuteStrategyRequest) -> ExecuteStrategyResponse:
+async def _execute(req: ExecuteStrategyRequest, _ctx) -> ExecuteStrategyResponse:
     from app.routes.strategy_connect import _execute_inline
     from app.engine.types import StrategyRuntimeError
     context = {"symbol": req.symbol or "", "timeframe": req.timeframe or "1h"}
@@ -129,42 +129,42 @@ async def _execute(req: ExecuteStrategyRequest) -> ExecuteStrategyResponse:
 
 # ── Backtest handlers ─────────────────────────────────────────────────
 
-async def _backtest(req: BacktestStrategyRequest) -> BacktestStrategyResponse:
+async def _backtest(req: BacktestStrategyRequest, _ctx) -> BacktestStrategyResponse:
     from app.routes.backtest_connect import _run_backtest
     return await _run_backtest(req)
 
 
-async def _start_backtest(req: StartBacktestRunRequest) -> StartBacktestRunResponse:
+async def _start_backtest(req: StartBacktestRunRequest, _ctx) -> StartBacktestRunResponse:
     from app.routes.backtest_connect import _handle_start
     return await _handle_start(req)
 
 
-async def _get_backtest(req: GetBacktestRunRequest) -> GetBacktestRunResponse:
+async def _get_backtest(req: GetBacktestRunRequest, _ctx) -> GetBacktestRunResponse:
     from app.routes.backtest_connect import _handle_get
     return await _handle_get(req)
 
 
-async def _list_backtests(req: ListBacktestRunsRequest) -> ListBacktestRunsResponse:
+async def _list_backtests(req: ListBacktestRunsRequest, _ctx) -> ListBacktestRunsResponse:
     from app.routes.backtest_connect import _handle_list
     return await _handle_list(req)
 
 
-async def _delete_backtest(req: DeleteBacktestRunRequest) -> DeleteBacktestRunResponse:
+async def _delete_backtest(req: DeleteBacktestRunRequest, _ctx) -> DeleteBacktestRunResponse:
     from app.routes.backtest_connect import _handle_delete
     return await _handle_delete(req)
 
 
-async def _delete_backtests(req: DeleteBacktestRunsRequest) -> DeleteBacktestRunsResponse:
+async def _delete_backtests(req: DeleteBacktestRunsRequest, _ctx) -> DeleteBacktestRunsResponse:
     from app.routes.backtest_connect import _handle_delete_many
     return await _handle_delete_many(req)
 
 
-async def _get_templates(_req: Empty) -> GetPythonTemplatesResponse:
+async def _get_templates(_req: Empty, _ctx) -> GetPythonTemplatesResponse:
     from app.routes.strategy_connect import _list_templates
     return await _list_templates()
 
 
-async def _execute_live(req: ExecuteLiveRequest) -> ExecuteLiveResponse:
+async def _execute_live(req: ExecuteLiveRequest, _ctx) -> ExecuteLiveResponse:
     from app.routes.live_execute_connect import _run_live
     return await _run_live(req)
 
