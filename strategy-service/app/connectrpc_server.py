@@ -199,7 +199,8 @@ def _build_endpoints(_svc) -> dict:
             output=out,
             idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
         )
-        endpoints[name] = Endpoint.unary(mi, fn)
+        path = f"/ant.v1.PythonStrategyService/{name}"
+        endpoints[path] = Endpoint.unary(mi, fn)
     return endpoints
 
 
