@@ -40,6 +40,7 @@ const StrategyCodeAssist = {
       "saveBlockedNotValidated": "Please click \"Validate code\" first. Save is disabled until validation passes.",
       "suggested": "suggested",
       "tabAI": "AI revise",
+      "validateToSeeParams": "Validate code to see strategy parameters",
       "tabExplain": "Explain code"
     }
   }

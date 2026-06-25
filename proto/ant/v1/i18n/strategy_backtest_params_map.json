@@ -42,6 +42,7 @@
 		"trade": "trade",
 		"vectorized_mode": "vectorizedMode",
 		"close_price": "closePrice",
-		"pnl": "pnl"
+		"pnl": "pnl",
+		"more": "more"
 	}
 }

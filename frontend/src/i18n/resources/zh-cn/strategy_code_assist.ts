@@ -40,6 +40,7 @@ const StrategyCodeAssist = {
       "saveBlockedNotValidated": "请先点击\"验证代码\"。验证通过后才能保存。",
       "suggested": "建议",
       "tabAI": "AI 修改",
+      "validateToSeeParams": "验证代码以查看策略参数",
       "tabExplain": "解释代码"
     }
   }

@@ -106,6 +106,9 @@ export const SUGGESTED_KEY = 'strategy.codeAssist.suggested' as const;
 /** tabAI */
 export const TAB_A_I_KEY = 'strategy.codeAssist.tabAI' as const;
 
+/** validateToSeeParams */
+export const VALIDATE_TO_SEE_PARAMS_KEY = 'strategy.codeAssist.validateToSeeParams' as const;
+
 /** tabExplain */
 export const TAB_EXPLAIN_KEY = 'strategy.codeAssist.tabExplain' as const;
 
@@ -145,6 +148,7 @@ export const STRATEGYCODEASSIST_KEYS = {
   save_blocked_not_validated: 'strategy.codeAssist.saveBlockedNotValidated',
   suggested: 'strategy.codeAssist.suggested',
   tab_a_i: 'strategy.codeAssist.tabAI',
+  validate_to_see_params: 'strategy.codeAssist.validateToSeeParams',
   tab_explain: 'strategy.codeAssist.tabExplain',
 } as const;
 

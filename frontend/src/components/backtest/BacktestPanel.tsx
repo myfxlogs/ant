@@ -9,12 +9,13 @@ import dayjs from 'dayjs';
 import {
   BOTH_KEY, CAPITAL_KEY, COMMISSION_KEY, CURRENT_DRAFT_KEY, DATE_RANGE_KEY, DIRECTION_KEY,
   END_DATE_KEY, EXECUTION_KEY, HISTORY_KEY, LEVERAGE_KEY, LONG_KEY, LOT_SIZE_KEY,
-  PNL_KEY, RUN_KEY, SHORT_KEY, SLIPPAGE_KEY, START_DATE_KEY, STRATEGY_KEY, STRATEGY_PARAMS_KEY, STRICT_MODE_KEY,
+  MORE_KEY, PNL_KEY, RUN_KEY, SHORT_KEY, SLIPPAGE_KEY, START_DATE_KEY, STRATEGY_KEY, STRATEGY_PARAMS_KEY, STRICT_MODE_KEY,
   STRICT_MODE_OFF_DESC_KEY, STRICT_MODE_OFF_KEY, STRICT_MODE_OFF_TOOLTIP_KEY,
   STRICT_MODE_ON_DESC_KEY, STRICT_MODE_ON_KEY, STRICT_MODE_ON_TOOLTIP_KEY,
   TITLE_KEY, TRADE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import { RUN_DISABLED_HINT_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import { VALIDATE_TO_SEE_PARAMS_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
 import {
   BACKTEST_COMPLETED_KEY, BACKTEST_TAB_KEY, GATE_TAB_KEY, TUNING_TAB_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
@@ -303,14 +304,14 @@ export default function BacktestPanel(props: Props) {
                     })}
                     {runner.extractedParams.length > 8 && (
                       <span style={{ fontSize: 11, color: '#bfbfbf' }}>
-                        +{runner.extractedParams.length - 8} {t('strategy.backtestParams.more', 'more')}
+                        +{runner.extractedParams.length - 8} {t(MORE_KEY)}
                       </span>
                     )}
                   </div>
                 </>
               ) : (
                 <span style={{ fontSize: 11, color: '#bfbfbf' }}>
-                  {t('strategy.codeAssist.validateToSeeParams', 'Validate code to see strategy parameters')}
+                  {t(VALIDATE_TO_SEE_PARAMS_KEY)}
                 </span>
               )}
             </div>

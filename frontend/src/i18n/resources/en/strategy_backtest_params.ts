@@ -46,7 +46,8 @@ const StrategyBacktestParams = {
       "trade": "Trade",
       "vectorizedMode": "Vectorized",
       "closePrice": "Close",
-      "pnl": "PnL"
+      "pnl": "PnL",
+      "more": "more"
     }
   }
 } as const;

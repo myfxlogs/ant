@@ -34,3 +34,4 @@ save_blocked_not_validated: 'Please click "Validate code" first. Save is disable
 suggested: 'suggested'
 tab_a_i: 'AI revise'
 tab_explain: 'Explain code'
+validate_to_see_params: 'Validate code to see strategy parameters'

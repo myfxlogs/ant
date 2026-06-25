@@ -34,3 +34,4 @@ save_blocked_not_validated: '请先点击"验证代码"。验证通过后才能�
 suggested: '建议'
 tab_a_i: 'AI 修改'
 tab_explain: '解释代码'
+validate_to_see_params: '验证代码以查看策略参数'
