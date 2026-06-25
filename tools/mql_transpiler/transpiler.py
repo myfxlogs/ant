@@ -488,6 +488,20 @@ class MQLTranspiler:
         "SELECT_BY_POS": "", "SELECT_BY_TICKET": "",
         "MODE_TRADES": "", "MODE_HISTORY": "",
         "INIT_SUCCEEDED": "0", "clrNONE": "None",
+        # OrderSelect accessors → order attribute
+        "OrderMagicNumber()": "order.magic",
+        "OrderTicket()": "order.ticket",
+        "OrderLots()": "order.volume",
+        "OrderProfit()": "order.profit",
+        "OrderSymbol()": "order.symbol",
+        "OrderType()": "order.type",
+        "OrderOpenPrice()": "order.open_price",
+        "OrderClosePrice()": "order.close_price",
+        "OrderStopLoss()": "order.sl",
+        "OrderTakeProfit()": "order.tp",
+        "OrderComment()": "order.comment",
+        "OrderCommission()": "order.commission",
+        "OrderSwap()": "order.swap",
     }
 
     def _try_simple_assignment(self, line: str) -> bool:
@@ -562,11 +576,13 @@ class MQLTranspiler:
                     continue
                 kwargs.append(f"{param_name}={val}")
 
-            if sdk_name == "stochastic":
-                # stochastic args need remapping
-                self._emit(f"self.indicators.{sdk_name}({', '.join(kwargs)})")
+            call_expr = f"self.indicators.{sdk_name}({', '.join(kwargs)})"
+            # Capture result if there's a left-hand side assignment.
+            lhs_match = re.match(r"(\w[\w.]*)\s*=\s*", line)
+            if lhs_match:
+                self._emit(f"self.{lhs_match.group(1)} = {call_expr}")
             else:
-                self._emit(f"self.indicators.{sdk_name}({', '.join(kwargs)})")
+                self._emit(call_expr)
             self._stats.patterns_matched += 1
             return True
 
@@ -704,6 +720,14 @@ class MQLTranspiler:
                 self._indent += 1
                 self._stats.patterns_matched += 1
                 return True
+
+        # else if → elif
+        m_elif = re.match(r"else\s+if\s*\((.+)\)", stripped)
+        if m_elif:
+            py_cond = self._mql_to_py_condition(m_elif.group(1))
+            self._emit(f"elif {py_cond}:")
+            self._stats.patterns_matched += 1
+            return True
 
         # else
         if stripped == "else" or stripped.startswith("else "):
@@ -1075,8 +1099,10 @@ class MQLTranspiler:
             if has_open:
                 depth += stripped.count("{")
                 before = stripped.split("{", 1)[0].strip()
-                if before:
-                    self._emit_statement(before)
+                # Strip leading closing brace from compound } else if / } else patterns
+                before_clean = before.lstrip("}").strip()
+                if before_clean:
+                    self._emit_statement(before_clean)
                 self._indent += 1
                 after = stripped.split("{", 1)[1]
                 if after.strip():
