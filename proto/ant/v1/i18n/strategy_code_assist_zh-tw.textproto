@@ -34,3 +34,4 @@ save_blocked_not_validated: '請先點選「驗證程式碼」。驗證通過後
 suggested: '建議'
 tab_a_i: 'AI 修改'
 tab_explain: '解釋程式碼'
+validate_to_see_params: '驗證代碼以查看策略參數'

@@ -34,3 +34,4 @@ save_blocked_not_validated: 'Vui lòng nhấn "Xác thực code" trước. Lưu 
 suggested: 'đề xuất'
 tab_a_i: 'AI Sửa'
 tab_explain: 'Giải Thích Code'
+validate_to_see_params: 'Xác thực mã để xem tham số chiến lược'

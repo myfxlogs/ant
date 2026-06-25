@@ -46,7 +46,8 @@ const StrategyBacktestParams = {
       "trade": "Giao dịch",
       "vectorizedMode": "Vector Hóa",
       "closePrice": "Giá đóng",
-      "pnl": "Lãi/Lỗ"
+      "pnl": "Lãi/Lỗ",
+      "more": "thêm"
     }
   }
 } as const;

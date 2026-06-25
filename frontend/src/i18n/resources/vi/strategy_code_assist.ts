@@ -40,6 +40,7 @@ const StrategyCodeAssist = {
       "saveBlockedNotValidated": "Vui lòng nhấn \"Xác thực code\" trước. Lưu bị vô hiệu hóa cho đến khi xác thực qua.",
       "suggested": "đề xuất",
       "tabAI": "AI Sửa",
+      "validateToSeeParams": "Xác thực mã để xem tham số chiến lược",
       "tabExplain": "Giải Thích Code"
     }
   }

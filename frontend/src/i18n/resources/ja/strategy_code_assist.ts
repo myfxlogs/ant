@@ -40,6 +40,7 @@ const StrategyCodeAssist = {
       "saveBlockedNotValidated": "最初に「コード検証」をクリックしてください。検証通過まで保存無効。",
       "suggested": "推奨",
       "tabAI": "AI修正",
+      "validateToSeeParams": "コードを検証して戦略パラメータを表示",
       "tabExplain": "コード説明"
     }
   }

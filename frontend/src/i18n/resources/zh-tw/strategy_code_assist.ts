@@ -40,6 +40,7 @@ const StrategyCodeAssist = {
       "saveBlockedNotValidated": "請先點選「驗證程式碼」。驗證通過後才能儲存。",
       "suggested": "建議",
       "tabAI": "AI 修改",
+      "validateToSeeParams": "驗證代碼以查看策略參數",
       "tabExplain": "解釋程式碼"
     }
   }

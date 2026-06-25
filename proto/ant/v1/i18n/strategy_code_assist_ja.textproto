@@ -34,3 +34,4 @@ save_blocked_not_validated: '最初に「コード検証」をクリックして
 suggested: '推奨'
 tab_a_i: 'AI修正'
 tab_explain: 'コード説明'
+validate_to_see_params: 'コードを検証して戦略パラメータを表示'

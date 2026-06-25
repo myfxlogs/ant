@@ -46,7 +46,8 @@ const StrategyBacktestParams = {
       "trade": "交易",
       "vectorizedMode": "向量化",
       "closePrice": "平倉價",
-      "pnl": "盈虧"
+      "pnl": "盈虧",
+      "more": "更多"
     }
   }
 } as const;

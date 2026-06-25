@@ -46,7 +46,8 @@ const StrategyBacktestParams = {
       "trade": "取引",
       "vectorizedMode": "ベクトル化",
       "closePrice": "決済価格",
-      "pnl": "損益"
+      "pnl": "損益",
+      "more": "その他"
     }
   }
 } as const;
