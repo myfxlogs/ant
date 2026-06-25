@@ -187,6 +187,13 @@ class LiveBroker(Broker):
             result = [o for o in result if o.magic == magic]
         return list(result)
 
+    def deals(
+        self, symbol: Optional[str] = None, magic: Optional[int] = None,
+        from_ms: Optional[int] = None, to_ms: Optional[int] = None,
+    ):
+        """Live broker returns empty deals — history is handled by Go backend."""
+        return []
+
     def account(self) -> AccountInfo:
         """Return cached account state."""
         return self._account

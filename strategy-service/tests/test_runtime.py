@@ -128,6 +128,9 @@ class _FakeBroker(Broker):
             result = [o for o in result if o.magic == magic]
         return result
 
+    def deals(self, symbol=None, magic=None, from_ms=None, to_ms=None):
+        return []  # not tested in runtime suite
+
     def account(self) -> AccountInfo:
         return self._account
 
