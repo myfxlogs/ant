@@ -365,8 +365,8 @@ class TestBrokerABC(unittest.TestCase):
             n for n, v in vars(Broker).items()
             if hasattr(v, "__isabstractmethod__") and v.__isabstractmethod__
         ]
-        self.assertEqual(len(abstract), 9,
-                         f"expected 9 abstract methods, got {len(abstract)}: {abstract}")
+        self.assertEqual(len(abstract), 10,
+                         f"expected 10 abstract methods, got {len(abstract)}: {abstract}")
 
     def test_empty_subclass_blocked(self):
         class EmptyBroker(Broker):
