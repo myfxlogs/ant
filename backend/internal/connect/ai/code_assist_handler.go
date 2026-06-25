@@ -194,7 +194,38 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 	// ── Fast path: deterministic transpiler via strategy-service ──
 	if s.pythonStrategyClient != nil {
 		s.log.Info("CodeAssist: trying deterministic transpiler")
-		// Try the proto RPC first.
+		// JSON path first — bypasses ConnectRPC serialization.
+		payload := fmt.Sprintf(`{"source_code":%q,"source_lang":%q,"class_name":"TranslatedStrategy"}`,
+			code, sourceLang)
+		resp, err := http.Post("http://strategy-service:8081/ant.v1.PythonStrategyService/TranspileCode",
+			"application/json", strings.NewReader(payload))
+		if err == nil && resp != nil && resp.StatusCode == 200 {
+			defer resp.Body.Close()
+			var result struct {
+				TargetCode      string   `json:"target_code"`
+				Confidence      float64  `json:"confidence"`
+				TotalPatterns   int32    `json:"total_patterns"`
+				Gaps            int32    `json:"gaps"`
+				GapSamples      []string `json:"gap_samples"`
+				IsDeterministic bool     `json:"is_deterministic"`
+			}
+			if json.NewDecoder(resp.Body).Decode(&result) == nil && result.IsDeterministic {
+				detLang := sourceLang
+				if detLang == "" || detLang == "auto" {
+					detLang = "mql4"
+				}
+				return connect.NewResponse(&antv1.TransformCodeResponse{
+					TargetCode:    result.TargetCode,
+					DetectedLang:  detLang,
+					Explanation:   fmt.Sprintf("Deterministic transpiler: %.0f%% confidence", result.Confidence*100),
+					Confidence:    float32(result.Confidence),
+					TotalPatterns: result.TotalPatterns,
+					Gaps:          result.Gaps,
+					GapSamples:    result.GapSamples,
+				}), nil
+			}
+		}
+		// Proto RPC fallback.
 		pyResp, pyErr := s.pythonStrategyClient.TranspileCode(ctx, connect.NewRequest(&antv1.TranspileCodeRequest{
 			SourceCode: code,
 			SourceLang: sourceLang,
@@ -216,52 +247,7 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 			}), nil
 		}
 		if pyErr != nil {
-			s.log.Warn("CodeAssist: proto transpiler failed, trying JSON fallback", zap.Error(pyErr))
-		}
-		// JSON fallback — bypasses ConnectRPC serialization issues.
-		payload := fmt.Sprintf(`{"source_code":%q,"source_lang":%q,"class_name":"TranslatedStrategy"}`,
-			code, sourceLang)
-		resp, err := http.Post("http://strategy-service:8081/ant.v1.PythonStrategyService/TranspileCode",
-			"application/json", strings.NewReader(payload))
-		if err != nil {
-			s.log.Warn("CodeAssist: JSON fallback HTTP error", zap.Error(err))
-		} else if resp == nil {
-			s.log.Warn("CodeAssist: JSON fallback nil response")
-		} else {
-			defer resp.Body.Close()
-			if resp.StatusCode != 200 {
-				s.log.Warn("CodeAssist: JSON fallback non-200", zap.Int("status", resp.StatusCode))
-			} else {
-				var result struct {
-					TargetCode      string   `json:"target_code"`
-					Confidence      float64  `json:"confidence"`
-					TotalPatterns   int32    `json:"total_patterns"`
-					Gaps            int32    `json:"gaps"`
-					GapSamples      []string `json:"gap_samples"`
-					IsDeterministic bool     `json:"is_deterministic"`
-				}
-				decodeErr := json.NewDecoder(resp.Body).Decode(&result)
-				s.log.Info("CodeAssist: JSON fallback decoded",
-					zap.Bool("deterministic", result.IsDeterministic),
-					zap.Float64("confidence", result.Confidence),
-					zap.Error(decodeErr),
-				)
-				if decodeErr == nil && result.IsDeterministic {
-					detLang := sourceLang
-					if detLang == "" || detLang == "auto" {
-						detLang = "mql4"
-					}
-					return connect.NewResponse(&antv1.TransformCodeResponse{
-						TargetCode:    result.TargetCode,
-						DetectedLang:  detLang,
-						Explanation:   fmt.Sprintf("Deterministic transpiler: %.0f%% confidence", result.Confidence*100),
-						Confidence:    float32(result.Confidence),
-						TotalPatterns: result.TotalPatterns,
-						Gaps:          result.Gaps,
-						GapSamples:    result.GapSamples,
-					}), nil
-				}
-			}
+			s.log.Warn("CodeAssist: proto transpiler failed", zap.Error(pyErr))
 		}
 		// Fall through to AI.
 	} else {
