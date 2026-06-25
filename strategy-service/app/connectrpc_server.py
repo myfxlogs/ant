@@ -2,7 +2,7 @@
 
 import logging
 from connectrpc.server import ConnectASGIApplication, Endpoint
-import connectrpc.method
+from connectrpc.method import MethodInfo, IdempotencyLevel
 
 from app import python_strategy_pb2 as _pb
 from app.python_strategy_pb2 import (
@@ -192,11 +192,12 @@ def _build_endpoints(_svc) -> dict:
         method_desc = _SVC.methods_by_name.get(name)
         if method_desc is None:
             continue
-        mi = connectrpc.method.MethodInfo(
+        mi = MethodInfo(
             name=name,
             service_name="ant.v1.PythonStrategyService",
             input=inp,
             output=out,
+            idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
         )
         endpoints[name] = Endpoint(method=mi)(fn)
     return endpoints
