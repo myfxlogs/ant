@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/google/uuid"
@@ -191,41 +190,8 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 		return nil, err
 	}
 
-	// ── Fast path: deterministic transpiler via strategy-service ──
+	// ── Fast path: deterministic transpiler via ConnectRPC ──
 	if s.pythonStrategyClient != nil {
-		s.log.Info("CodeAssist: trying deterministic transpiler")
-		// JSON path first — bypasses ConnectRPC serialization.
-		payload := fmt.Sprintf(`{"source_code":%q,"source_lang":%q,"class_name":"TranslatedStrategy"}`,
-			code, sourceLang)
-		resp, err := http.Post("http://strategy-service:8081/ant.v1.PythonStrategyService/TranspileCode",
-			"application/json", strings.NewReader(payload))
-		if err == nil && resp != nil && resp.StatusCode == 200 {
-			defer resp.Body.Close()
-			var result struct {
-				TargetCode      string   `json:"target_code"`
-				Confidence      float64  `json:"confidence"`
-				TotalPatterns   int32    `json:"total_patterns"`
-				Gaps            int32    `json:"gaps"`
-				GapSamples      []string `json:"gap_samples"`
-				IsDeterministic bool     `json:"is_deterministic"`
-			}
-			if json.NewDecoder(resp.Body).Decode(&result) == nil && result.IsDeterministic {
-				detLang := sourceLang
-				if detLang == "" || detLang == "auto" {
-					detLang = "mql4"
-				}
-				return connect.NewResponse(&antv1.TransformCodeResponse{
-					TargetCode:    result.TargetCode,
-					DetectedLang:  detLang,
-					Explanation:   fmt.Sprintf("Deterministic transpiler: %.0f%% confidence", result.Confidence*100),
-					Confidence:    float32(result.Confidence),
-					TotalPatterns: result.TotalPatterns,
-					Gaps:          result.Gaps,
-					GapSamples:    result.GapSamples,
-				}), nil
-			}
-		}
-		// Proto RPC fallback.
 		pyResp, pyErr := s.pythonStrategyClient.TranspileCode(ctx, connect.NewRequest(&antv1.TranspileCodeRequest{
 			SourceCode: code,
 			SourceLang: sourceLang,
@@ -247,9 +213,9 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 			}), nil
 		}
 		if pyErr != nil {
-			s.log.Warn("CodeAssist: proto transpiler failed", zap.Error(pyErr))
+			s.log.Warn("CodeAssist: deterministic transpiler failed, falling back to AI", zap.Error(pyErr))
 		}
-		// Fall through to AI.
+		// Fall through to AI if deterministic transpiler failed.
 	} else {
 		s.log.Warn("CodeAssist: pythonStrategyClient is nil, skipping deterministic transpiler")
 	}

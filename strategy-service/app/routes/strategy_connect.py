@@ -75,16 +75,17 @@ async def _parse_request(request: Request, req_cls):
 
 
 def _respond(proto_resp, request: Request) -> Response:
-    """Return proto binary with ConnectRPC headers."""
-    ct = request.headers.get("content-type", "")
-    if "application/proto" in ct or "application/grpc" in ct:
+    """Return ConnectRPC-compatible response (proto binary preferred)."""
+    accept = request.headers.get("accept", "")
+    if "application/proto" in accept or "application/grpc" in accept:
         return Response(
             content=proto_resp.SerializeToString(),
             media_type="application/proto",
             headers={"Connect-Protocol-Version": "1"},
         )
+    # JSON fallback — camelCase for ConnectRPC compatibility.
     return JSONResponse(
-        content=MessageToDict(proto_resp, preserving_proto_field_name=True),
+        content=MessageToDict(proto_resp, preserving_proto_field_name=False),
         headers={"Connect-Protocol-Version": "1"},
     )
 
