@@ -199,7 +199,8 @@ def _build_endpoints(_svc) -> dict:
             output=out,
             idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
         )
-        endpoints[name] = Endpoint(method=mi)(fn)
+        ep = Endpoint(method=mi)
+        endpoints[name] = ep.unary(fn)
     return endpoints
 
 
