@@ -47,7 +47,7 @@ func (s *StrategySvc) GetTemplate(ctx context.Context, id, userID uuid.UUID) (*T
 	err := s.pg.QueryRow(ctx,
 		`SELECT id, user_id, name, description, code, status, parameters, i18n, is_public, is_system, tags, use_count, flag, flag_reason, flagged_by, flagged_at, created_at, updated_at
 		 FROM strategy_templates WHERE id = $1 AND (user_id = $2 OR is_public = true OR is_system = true)`, id, userID,
-	).Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.Status, &t.Parameters, &t.Parameters, &t.I18n, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt)
+	).Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.Status, &t.Parameters, &t.I18n, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrTemplateNotFound
@@ -114,7 +114,7 @@ func scanTemplateRows(rows pgx.Rows) ([]TemplateRow, error) {
 	var out []TemplateRow
 	for rows.Next() {
 		var t TemplateRow
-		err := rows.Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.Status, &t.Parameters, &t.Parameters, &t.I18n, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt)
+		err := rows.Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.Status, &t.Parameters, &t.I18n, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("scan template row: %w", err)
 		}
