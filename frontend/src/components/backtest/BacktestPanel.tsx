@@ -281,9 +281,9 @@ export default function BacktestPanel(props: Props) {
                 </Radio.Group>
               </Col>
             </Row>
-            {/* Strategy-specific params — summary row + Modal (TradingView Settings pattern) */}
-            {runner.extractedParams.length > 0 && (
-              <div style={{ marginTop: 10, borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
+            {/* Strategy-specific params — always visible (TradingView Settings pattern) */}
+            <div style={{ marginTop: 10, borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
+              {runner.extractedParams.length > 0 ? (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 12, color: '#595959' }}>
                     {t(STRATEGY_PARAMS_KEY)} ({runner.extractedParams.length})
@@ -299,8 +299,12 @@ export default function BacktestPanel(props: Props) {
                     {t('common.edit')}
                   </Button>
                 </div>
-              </div>
-            )}
+              ) : (
+                <span style={{ fontSize: 11, color: '#bfbfbf' }}>
+                  {t('strategy.codeAssist.validateToSeeParams', 'Validate code to see strategy parameters')}
+                </span>
+              )}
+            </div>
             <StrategyParamsModal
               open={runner.strategyParamsModalOpen}
               params={runner.extractedParams}
