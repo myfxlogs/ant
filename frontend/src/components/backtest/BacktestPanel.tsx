@@ -26,7 +26,6 @@ import SmartTuningPanel from '@/pages/strategy/components/workspace/SmartTuningP
 import GatePanel from '@/pages/strategy/components/workspace/GatePanel';
 import StrategyParamsModal from './StrategyParamsModal';
 import BacktestResultsTab from './BacktestResultsTab';
-import { paramLabel } from '@/utils/paramLabels';
 import BacktestTradesTab from './BacktestTradesTab';
 import type { useBacktestRunner, BacktestRunnerInputs } from './useBacktestRunner';
 import { DATE_PRESETS, PRESETS } from '@/pages/strategy/hooks/backtestParamHelpers';
@@ -75,8 +74,7 @@ export default function BacktestPanel(props: Props) {
     runner, inputs, templates, collapsed, onToggleCollapsed,
     onOpenHistory, onAIOptimize, code, onApplyTunedParams,
   } = props;
-  const { t, i18n } = useTranslation();
-  const loc = i18n.language;
+  const { t } = useTranslation();
 
   const tplList = templates?.list || [];
 
@@ -297,10 +295,9 @@ export default function BacktestPanel(props: Props) {
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 12px' }}>
                     {runner.extractedParams.slice(0, 8).map((p) => {
                       const v = runner.strategyParamValues[p.name] ?? p.default;
-                      const label = paramLabel(p.name, loc, p.label || p.name);
                       return (
                         <span key={p.name} style={{ fontSize: 11, color: '#595959', whiteSpace: 'nowrap' }}>
-                          <span style={{ color: '#8c8c8c' }}>{label}</span>
+                          <span style={{ color: '#8c8c8c' }}>{p.label || p.name}</span>
                           <span style={{ fontWeight: 500 }}>={v}</span>
                         </span>
                       );

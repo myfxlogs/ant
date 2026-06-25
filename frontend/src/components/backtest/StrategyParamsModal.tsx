@@ -1,7 +1,6 @@
 import { Modal, Row, Col, InputNumber, Switch } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { STRATEGY_PARAMS_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
-import { paramLabel } from '@/utils/paramLabels';
 import type { ExtractedParam } from './useBacktestRunner';
 
 const S = {
@@ -18,8 +17,7 @@ interface Props {
 }
 
 export default function StrategyParamsModal({ open, params, values, onClose, onChange }: Props) {
-  const { t, i18n } = useTranslation();
-  const locale = i18n.language;
+  const { t } = useTranslation();
   if (params.length === 0) return null;
 
   return (
@@ -34,7 +32,7 @@ export default function StrategyParamsModal({ open, params, values, onClose, onC
       <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 4 }}>
         <Row gutter={[12, 8]}>
           {params.map((p) => {
-            const label = paramLabel(p.name, locale, p.label || p.name);
+            const label = p.label || p.name;
             const value = values[p.name] ?? p.default;
             if (p.type === 'bool') {
               return (
