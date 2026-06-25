@@ -65,6 +65,8 @@
     "workflow_save_fail": "workflow.saveFail",
     "workflow_save_title": "workflow.saveTitle",
     "workflow_save_name_placeholder": "workflow.saveNamePlaceholder",
-    "workflow_save_btn": "workflow.saveBtn"
+    "workflow_save_btn": "workflow.saveBtn",
+    "fix_validation_errors": "fixValidationErrors",
+    "fix_address_warnings": "fixAddressWarnings"
   }
 }

@@ -196,6 +196,12 @@ export const WORKFLOW_SAVE_NAME_PLACEHOLDER_KEY = 'strategy.codeAssist.workflow.
 /** workflow.saveBtn */
 export const WORKFLOW_SAVE_BTN_KEY = 'strategy.codeAssist.workflow.saveBtn' as const;
 
+/** fixValidationErrors */
+export const FIX_VALIDATION_ERRORS_KEY = 'strategy.codeAssist.fixValidationErrors' as const;
+
+/** fixAddressWarnings */
+export const FIX_ADDRESS_WARNINGS_KEY = 'strategy.codeAssist.fixAddressWarnings' as const;
+
 export const STRATEGYCODEASSIST_KEYS = {
   ai_revise_title: 'strategy.codeAssist.aiReviseTitle',
   apply_all_suggestions: 'strategy.codeAssist.applyAllSuggestions',
@@ -262,6 +268,8 @@ export const STRATEGYCODEASSIST_KEYS = {
   workflow_save_title: 'strategy.codeAssist.workflow.saveTitle',
   workflow_save_name_placeholder: 'strategy.codeAssist.workflow.saveNamePlaceholder',
   workflow_save_btn: 'strategy.codeAssist.workflow.saveBtn',
+  fix_validation_errors: 'strategy.codeAssist.fixValidationErrors',
+  fix_address_warnings: 'strategy.codeAssist.fixAddressWarnings',
 } as const;
 
 export type StrategyCodeAssistKey = typeof STRATEGYCODEASSIST_KEYS[keyof typeof STRATEGYCODEASSIST_KEYS];

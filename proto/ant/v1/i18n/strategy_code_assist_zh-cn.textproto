@@ -63,3 +63,5 @@ workflow.saveFail: '❌ 保存失败'
 workflow.saveTitle: '保存策略'
 workflow.saveNamePlaceholder: '输入策略名称'
 workflow.saveBtn: '保存'
+fix_validation_errors: "修复以下验证错误："
+fix_address_warnings: "同时处理以下警告："

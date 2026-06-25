@@ -3,7 +3,7 @@ import { Modal, Button, Form, Row, Col, Space, Tag, Typography } from 'antd';
 import { CopyOutlined, CodeOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { CODE_MODAL_ACTIONS_COPY_KEY, CODE_MODAL_TITLE_KEY, EDIT_TEMPLATE_MODAL_ACTIONS_VALIDATE_CODE_KEY, EDIT_TEMPLATE_MODAL_TITLE_CREATE_KEY, EDIT_TEMPLATE_MODAL_TITLE_EDIT_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
-import { SAVE_BLOCKED_NOT_VALIDATED_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
+import { SAVE_BLOCKED_NOT_VALIDATED_KEY, FIX_VALIDATION_ERRORS_KEY, FIX_ADDRESS_WARNINGS_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
 import type { FormInstance } from 'antd';
 import type { StrategyTemplate } from '@/client/strategy';
 import { CodeExplainPanel } from '@/components/strategy/CodeAssist';
@@ -49,8 +49,8 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
   const handleFixWithAI = useCallback(() => {
     if (!validationResult) return;
     const parts: string[] = [];
-    if (validationResult.errors?.length) parts.push('Fix these validation errors:\n' + validationResult.errors.map((e: string) => `- ${e}`).join('\n'));
-    if (validationResult.warnings?.length) parts.push('Also address these warnings:\n' + validationResult.warnings.map((w: string) => `- ${w}`).join('\n'));
+    if (validationResult.errors?.length) parts.push(t(FIX_VALIDATION_ERRORS_KEY) + '\n' + validationResult.errors.map((e: string) => `- ${e}`).join('\n'));
+    if (validationResult.warnings?.length) parts.push(t(FIX_ADDRESS_WARNINGS_KEY) + '\n' + validationResult.warnings.map((w: string) => `- ${w}`).join('\n'));
     setFixInstruction(parts.join('\n\n'));
     onClearValidation(); // clear old results before sending to AI
     setAiTab('revise');

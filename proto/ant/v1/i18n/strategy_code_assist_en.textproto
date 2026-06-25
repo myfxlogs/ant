@@ -63,3 +63,5 @@ workflow.saveFail: '❌ Save failed'
 workflow.saveTitle: 'Save Strategy'
 workflow.saveNamePlaceholder: 'Enter strategy name'
 workflow.saveBtn: 'Save'
+fix_validation_errors: "Fix these validation errors:"
+fix_address_warnings: "Also address these warnings:"

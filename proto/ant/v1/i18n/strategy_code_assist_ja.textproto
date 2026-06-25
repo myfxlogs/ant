@@ -63,3 +63,5 @@ workflow.saveFail: '❌ 保存失敗'
 workflow.saveTitle: '戦略を保存'
 workflow.saveNamePlaceholder: '戦略名を入力'
 workflow.saveBtn: '保存'
+fix_validation_errors: "これらの検証エラーを修正："
+fix_address_warnings: "これらの警告にも対応："

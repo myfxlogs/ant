@@ -63,3 +63,5 @@ workflow.saveFail: '❌ Lưu thất bại'
 workflow.saveTitle: 'Lưu Chiến lược'
 workflow.saveNamePlaceholder: 'Nhập tên chiến lược'
 workflow.saveBtn: 'Lưu'
+fix_validation_errors: "Sửa các lỗi xác thực sau:"
+fix_address_warnings: "Cũng xử lý các cảnh báo sau:"

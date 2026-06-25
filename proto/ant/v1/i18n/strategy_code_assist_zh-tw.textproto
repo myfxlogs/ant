@@ -63,3 +63,5 @@ workflow.saveFail: '❌ 儲存失敗'
 workflow.saveTitle: '儲存策略'
 workflow.saveNamePlaceholder: '輸入策略名稱'
 workflow.saveBtn: '儲存'
+fix_validation_errors: "修復以下驗證錯誤："
+fix_address_warnings: "同時處理以下警告："
