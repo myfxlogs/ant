@@ -115,19 +115,23 @@ export function useLibraryTemplates() {
     try {
       setCodeValidating(true);
       const code = String(values.code || '');
-      // Skip re-validation if code was already validated and unchanged.
+      // Re-validate if code changed; otherwise reuse stored validation result.
+      let params: Record<string, unknown>[] = [];
       if (code !== lastValidatedCode) {
         const ext = await codeAssistApi.validateExtended(code);
         if (!ext.valid) { message.error(ext.errors?.[0] || ext.warnings?.[0] || t(MESSAGES_CODE_VALIDATION_NOT_PASSED_KEY)); return; }
         setLastValidatedCode(code);
+        if (ext.parametersJson) try { params = JSON.parse(ext.parametersJson); } catch { /* ignore */ }
+      } else if (validationResult?.parametersJson) {
+        try { params = JSON.parse(validationResult.parametersJson); } catch { /* ignore */ }
       }
-      const data: CreateTemplateRequest = { name: String(values.name || ''), description: String(values.description || ''), code, parameters: [], isPublic: Boolean(values.isPublic) || false, tags: [] };
+      const data: CreateTemplateRequest = { name: String(values.name || ''), description: String(values.description || ''), code, parameters: params as any[], isPublic: Boolean(values.isPublic) || false, tags: [] };
       if (editing) { await strategyTemplateApi.update({ id: editing.id, ...data }); message.success(t(MESSAGES_TEMPLATE_UPDATED_KEY)); }
       else { await strategyTemplateApi.create(data); message.success(t(MESSAGES_TEMPLATE_CREATED_KEY)); setFilter('user'); }
       setEditOpen(false); fetchTemplates();
     } catch { message.error(t('common.saveFailed')); }
     finally { setCodeValidating(false); }
-  }, [editing, fetchTemplates, t, lastValidatedCode]);
+  }, [editing, fetchTemplates, t, lastValidatedCode, validationResult]);
 
   const handleDelete = useCallback(async (id: string) => {
     try {
