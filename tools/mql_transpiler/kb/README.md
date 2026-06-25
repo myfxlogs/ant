@@ -157,6 +157,53 @@ These MQL features have no equivalent in the Python SDK and will never be transl
 - **DLL/External**: `#import`, `#resource`, DLL calls, `IndicatorCreate`
 - **Custom events**: `EventChartCustom`, `OnChartEvent`
 
+### 11. MQL5-only: Position functions
+
+| Feature | MQL5 | Python SDK | Status |
+|---------|------|-----------|--------|
+| PositionSelect | `PositionSelect(sym)` | `self.broker.positions(symbol=sym)` | 🟡 PARTIAL |
+| PositionSelectByTicket | `PositionSelectByTicket(ticket)` | direct access | 🟡 PARTIAL |
+| PositionsTotal | `PositionsTotal()` | `len(self.broker.positions())` | 🟢 FULL |
+| PositionGetSymbol | `PositionGetSymbol(i)` | `self.broker.positions()[i].symbol` | 🟡 PARTIAL |
+| PositionGetTicket | `PositionGetTicket(i)` | `self.broker.positions()[i].ticket` | 🟡 PARTIAL |
+| PositionGetDouble | `PositionGetDouble(prop)` | `getattr(pos, prop)` | 🔴 GAP |
+| PositionGetInteger | `PositionGetInteger(prop)` | `getattr(pos, prop)` | 🔴 GAP |
+| PositionGetString | `PositionGetString(prop)` | `getattr(pos, prop)` | 🔴 GAP |
+
+### 12. MQL5-only: History functions
+
+| Feature | MQL5 | Python SDK | Status |
+|---------|------|-----------|--------|
+| HistorySelect | `HistorySelect(from, to)` | — time-range query | 🔴 GAP |
+| HistorySelectByPosition | `HistorySelectByPosition(id)` | — position history query | 🔴 GAP |
+| HistoryDealsTotal | `HistoryDealsTotal()` | `len(self.broker.deals())` | 🟡 PARTIAL |
+| HistoryDealGetTicket | `HistoryDealGetTicket(i)` | `self.broker.deals()[i].ticket` | 🟡 PARTIAL |
+| HistoryDealGetDouble/Integer/String | (3 functions) | property access | 🔴 GAP |
+| HistoryOrdersTotal | `HistoryOrdersTotal()` | `len(self.broker.history_orders())` | 🟡 PARTIAL |
+| HistoryOrderGetTicket | `HistoryOrderGetTicket(i)` | `self.broker.history_orders()[i].ticket` | 🟡 PARTIAL |
+| HistoryOrderGetDouble/Integer/String | (3 functions) | property access | 🔴 GAP |
+
+### 13. MQL5-only: Trade support
+
+| Feature | MQL5 | Python SDK | Status |
+|---------|------|-----------|--------|
+| OrderSendAsync | `OrderSendAsync(req)` | — not async in Python | 🔴 GAP |
+| OrderCalcMargin | `OrderCalcMargin(type, ...)` | — broker-dependent | 🔴 GAP |
+| OrderCalcProfit | `OrderCalcProfit(type, ...)` | — broker-dependent | 🔴 GAP |
+| OrderCheck | `OrderCheck(req, check)` | — broker-dependent | 🔴 GAP |
+| OrderGetDouble/Integer/String | (3 functions) | — see OrderSelect accessors | 🟡 PARTIAL |
+
+### 14. MQL5-only: Indicators (additional)
+
+MQL5 adds these indicators not present in MQL4:
+
+| Indicator | Python SDK | Status |
+|-----------|-----------|--------|
+| iMAOnArray | `self.indicators.ma(...)` (use numpy) | 🟡 PARTIAL |
+| iRSIOnArray | `self.indicators.rsi(...)` (use numpy) | 🟡 PARTIAL |
+| iFractals | `self.indicators.fractals(...)` | 🔴 GAP |
+| iBWMFI | `self.indicators.bw_mfi(...)` | 🟢 FULL |
+
 ---
 
 ## How to add a new pattern
