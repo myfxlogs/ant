@@ -519,6 +519,13 @@ class Parser:
         t = self.peek()
         if t is None:
             return None
+        # Unary minus/plus
+        if t[0] == "OP" and t[1] in ("-", "+"):
+            op = self.advance()[1]
+            operand = self._parse_primary()
+            if operand is None:
+                return None
+            return UnaryOp(op=op, operand=operand)
         if t[0] == "NUM":
             self.advance()
             return NumberLiteral(value=t[1])

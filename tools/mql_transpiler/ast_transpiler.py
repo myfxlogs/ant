@@ -455,6 +455,9 @@ class ASTTranspiler:
                 if "Decimal(" not in right:
                     right = f"Decimal(str({right}))"
             return f"{left} {op} {right}"
+        if isinstance(expr, UnaryOp):
+            operand = self._expr_to_py(expr.operand)
+            return f"{expr.op}{operand}"
         if isinstance(expr, AssignmentExpr):
             rhs = self._expr_to_py(expr.rhs)
             return f"self.{expr.lhs} = {rhs}"

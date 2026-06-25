@@ -197,7 +197,14 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 			SourceLang: sourceLang,
 			ClassName:  "TranslatedStrategy",
 		}))
-		if pyErr == nil && pyResp != nil && pyResp.Msg != nil && pyResp.Msg.IsDeterministic {
+		if pyErr != nil {
+			s.log.Warn("CodeAssist: deterministic transpiler failed, falling back to AI", zap.Error(pyErr))
+		} else if pyResp == nil || pyResp.Msg == nil {
+			s.log.Warn("CodeAssist: deterministic transpiler returned nil response")
+		} else if !pyResp.Msg.IsDeterministic {
+			s.log.Warn("CodeAssist: deterministic transpiler returned non-deterministic result",
+				zap.Float64("confidence", float64(pyResp.Msg.Confidence)))
+		} else {
 			detectedLang := sourceLang
 			if detectedLang == "" || detectedLang == "auto" {
 				detectedLang = "mql4" // default
