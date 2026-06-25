@@ -289,6 +289,24 @@ async def handle_transpile(request: Request) -> Response:
             is_deterministic=True,
         )
         return _respond(resp, request)
+    except Exception:
+        pass  # AST failed, try line-by-line
+
+    # Fallback: line-by-line transpiler (handles complex MQL patterns).
+    try:
+        from tools.mql_transpiler.transpiler import MQLTranspiler
+        tp = MQLTranspiler(class_name or "TranslatedStrategy")
+        result = tp.transpile(source, "_transpile_.mq4")
+        conf = tp.get_confidence()
+        resp = TranspileCodeResponse(
+            target_code=result.output,
+            confidence=conf,
+            total_patterns=result.stats.patterns_matched + result.stats.gaps,
+            gaps=result.stats.gaps,
+            gap_samples=list(result.stats.gap_reasons.keys())[:10],
+            is_deterministic=True,
+        )
+        return _respond(resp, request)
     except Exception as e:
         return _respond(TranspileCodeResponse(
             is_deterministic=False,
