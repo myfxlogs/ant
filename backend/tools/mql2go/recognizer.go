@@ -1,283 +1,460 @@
 package mql2go
 
-import "strings"
+import (
+	"strings"
 
-// Recognizer extracts trading intent from a parsed MQL AST.
-type Recognizer struct {
-	globalVars map[string]bool // names of global variables
-	externs    map[string]bool
+	sitter "github.com/smacker/go-tree-sitter"
+)
+
+// ── CST helpers ──────────────────────────────────────────────────────
+
+func nodeType(n *sitter.Node) string {
+	if n == nil {
+		return ""
+	}
+	return n.Type()
 }
 
-// NewRecognizer creates a Recognizer from a SourceFile.
-func NewRecognizer(ast *SourceFile) *Recognizer {
-	r := &Recognizer{
-		globalVars: make(map[string]bool),
-		externs:    make(map[string]bool),
+func nodeText(source string, n *sitter.Node) string {
+	if n == nil {
+		return ""
 	}
-	if ast != nil {
-		for _, decl := range ast.Declarations {
-			if vd, ok := decl.(*VarDecl); ok {
-				if vd.IsExtern || vd.IsInput {
-					r.externs[vd.Name] = true
-				} else {
-					r.globalVars[vd.Name] = true
-				}
+	return source[n.StartByte():n.EndByte()]
+}
+
+func childByType(source string, n *sitter.Node, kind string) *sitter.Node {
+	for i := 0; i < int(n.ChildCount()); i++ {
+		c := n.Child(i)
+		if c.Type() == kind {
+			return c
+		}
+	}
+	return nil
+}
+
+func childrenByType(n *sitter.Node, kind string) []*sitter.Node {
+	var out []*sitter.Node
+	for i := 0; i < int(n.ChildCount()); i++ {
+		c := n.Child(i)
+		if c.Type() == kind {
+			out = append(out, c)
+		}
+	}
+	return out
+}
+
+func findChild(source string, n *sitter.Node, kinds ...string) *sitter.Node {
+	for i := 0; i < int(n.ChildCount()); i++ {
+		c := n.Child(i)
+		for _, k := range kinds {
+			if c.Type() == k {
+				return c
 			}
 		}
 	}
-	return r
+	return nil
 }
 
-// ── Parameters ─────────────────────────────────────────────────────
-
-func (r *Recognizer) ExtractParams(ast *SourceFile) []ParamSpec {
-	var params []ParamSpec
-	if ast == nil {
-		return params
-	}
-	for _, decl := range ast.Declarations {
-		vd, ok := decl.(*VarDecl)
-		if !ok || (!vd.IsExtern && !vd.IsInput) {
-			continue
+func findNamedChild(n *sitter.Node, kinds ...string) *sitter.Node {
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		c := n.NamedChild(i)
+		for _, k := range kinds {
+			if c.Type() == k {
+				return c
+			}
 		}
-		if isNoiseParam(vd.Name, vd.Value) {
-			continue
+	}
+	return nil
+}
+
+// walkCST recursively walks CST nodes, calling visitor on every node.
+func walkCST(n *sitter.Node, visitor func(*sitter.Node) bool) {
+	if n == nil {
+		return
+	}
+	if !visitor(n) {
+		return
+	}
+	for i := 0; i < int(n.ChildCount()); i++ {
+		walkCST(n.Child(i), visitor)
+	}
+}
+
+// findCall recursively searches for a call expression with the given name.
+func findCall(n *sitter.Node, name string) *sitter.Node {
+	var found *sitter.Node
+	walkCST(n, func(n *sitter.Node) bool {
+		if found != nil {
+			return false
+		}
+		if n.Type() == "call_expression" {
+			if id := childByType("", n, "identifier"); id != nil && nodeText("", id) == name {
+				found = n
+				return false
+			}
+			if id := childByType("", n, "field_identifier"); id != nil && nodeText("", id) == name {
+				found = n
+				return false
+			}
+		}
+		return true
+	})
+	return found
+}
+
+// findOrderSendCST finds an OrderSend call in a subtree, recursing into if/else/compound.
+func findOrderSendCST(n *sitter.Node) *sitter.Node {
+	if n == nil {
+		return nil
+	}
+	switch n.Type() {
+	case "expression_statement":
+		if call := childByType("", n, "call_expression"); call != nil {
+			id := childByType("", call, "identifier")
+			if id == nil {
+				id = childByType("", call, "field_identifier")
+			}
+			if id != nil && nodeText("", id) == "OrderSend" {
+				return call
+			}
+		}
+	case "compound_statement":
+		for i := 0; i < int(n.ChildCount()); i++ {
+			if result := findOrderSendCST(n.Child(i)); result != nil {
+				return result
+			}
+		}
+	case "if_statement":
+		// Check then-branch
+		if result := findOrderSendCST(findNamedChild(n, "compound_statement")); result != nil {
+			return result
+		}
+		// Walk all children for else branch
+		for i := 0; i < int(n.ChildCount()); i++ {
+			c := n.Child(i)
+			if c.Type() == "else_clause" {
+				if result := findOrderSendCST(c); result != nil {
+					return result
+				}
+			}
+		}
+	case "else_clause":
+		for i := 0; i < int(n.ChildCount()); i++ {
+			if result := findOrderSendCST(n.Child(i)); result != nil {
+				return result
+			}
+		}
+	case "for_statement":
+		body := childByType("", n, "compound_statement")
+		if result := findOrderSendCST(body); result != nil {
+			return result
+		}
+	}
+	return nil
+}
+
+func callArg(n *sitter.Node, idx int) string {
+	args := childByType("", n, "argument_list")
+	if args == nil {
+		return ""
+	}
+	named := getNamedChildren(args)
+	if idx < len(named) {
+		c := named[idx]
+		return nodeText("", c)
+	}
+	return ""
+}
+
+func callFuncName(n *sitter.Node) string {
+	id := childByType("", n, "identifier")
+	if id == nil {
+		id = childByType("", n, "field_identifier")
+	}
+	if id == nil {
+		id = childByType("", n, "statement_identifier")
+	}
+	return nodeText("", id)
+}
+
+func callArgID(n *sitter.Node, idx int) string {
+	args := childByType("", n, "argument_list")
+	if args == nil {
+		return ""
+	}
+	named := getNamedChildren(args)
+	if idx < len(named) {
+		c := named[idx]
+		// if the arg is itself an identifier, return its name
+		if id := childByType("", c, "identifier"); id != nil {
+			return nodeText("", id)
+		}
+		if id := childByType("", c, "field_identifier"); id != nil {
+			return nodeText("", id)
+		}
+		return nodeText("", c)
+	}
+	return ""
+}
+
+// ── Function extraction ─────────────────────────────────────────────
+
+func findFunctions(root *sitter.Node) []*sitter.Node {
+	var fns []*sitter.Node
+	walkCST(root, func(n *sitter.Node) bool {
+		if n.Type() == "function_definition" {
+			fns = append(fns, n)
+		}
+		return true
+	})
+	return fns
+}
+
+func funcName(n *sitter.Node) string {
+	decl := childByType("", n, "function_declarator")
+	if decl != nil {
+		id := childByType("", decl, "identifier")
+		if id == nil {
+			id = childByType("", decl, "field_identifier")
+		}
+		if id == nil {
+			id = childByType("", decl, "statement_identifier")
+		}
+		return nodeText("", id)
+	}
+	// fallback: direct identifier child
+	id := childByType("", n, "identifier")
+	if id == nil {
+		id = childByType("", n, "field_identifier")
+	}
+	if id == nil {
+		id = childByType("", n, "statement_identifier")
+	}
+	return nodeText("", id)
+}
+
+func funcBody(n *sitter.Node) *sitter.Node {
+	for i := 0; i < int(n.ChildCount()); i++ {
+		c := n.Child(i)
+		if c.Type() == "compound_statement" {
+			return c
+		}
+	}
+	return nil
+}
+
+// ── Parameter extraction ────────────────────────────────────────────
+
+func extractParamsCST(source string, root *sitter.Node) []ParamSpec {
+	var params []ParamSpec
+	walkCST(root, func(n *sitter.Node) bool {
+		if n.Type() != "declaration" && n.Type() != "field_declaration" {
+			return true
+		}
+		text := nodeText(source, n)
+		if !strings.Contains(text, "extern ") && !strings.Contains(text, "input ") {
+			return true
+		}
+		// Extract type, name, value
+		var vt, name string
+		var value string
+		for i := 0; i < int(n.ChildCount()); i++ {
+			c := n.Child(i)
+			switch c.Type() {
+			case "primitive_type", "type_identifier", "sized_type_specifier", "macro_type_specifier":
+				vt = nodeText(source, c)
+			case "identifier", "field_identifier", "statement_identifier":
+				if name == "" {
+					name = nodeText(source, c)
+				}
+			case "number_literal":
+				value = nodeText(source, c)
+			case "string_literal", "system_lib_string":
+				value = nodeText(source, c)
+				if len(value) >= 2 {
+					value = value[1 : len(value)-1]
+				}
+			}
+		}
+		if name == "" || isNoiseCST(name, value) {
+			return true
 		}
 		params = append(params, ParamSpec{
-			Name:    vd.Name,
-			Label:   vd.Name,
-			Type:    paramType(vd.VarType),
-			Default: extractDefault(vd.Value),
-			Group:   guessGroup(vd.Name),
+			Name:    name,
+			Label:   name,
+			Type:    mapMQLType(vt),
+			Default: value,
+			Group:   guessGroupCST(name),
 		})
-	}
+		return true
+	})
 	return params
 }
 
-func (r *Recognizer) ExtractState(ast *SourceFile) []StateVar {
-	var state []StateVar
-	if ast == nil {
-		return state
+func isNoiseCST(name, value string) bool {
+	if strings.Contains(name, "说明") || strings.Contains(name, "选择") || strings.Contains(name, "提示") {
+		return true
 	}
-	for _, decl := range ast.Declarations {
-		vd, ok := decl.(*VarDecl)
-		if !ok || vd.IsExtern || vd.IsInput {
-			continue
-		}
-		state = append(state, StateVar{
-			Name:    vd.Name,
-			GoType:  vd.VarType,
-			Initial: extractDefault(vd.Value),
-		})
+	if strings.Contains(value, "====") {
+		return true
 	}
-	return state
+	if len(value) > 20 && containsNonASCII(value) {
+		return true
+	}
+	return false
 }
 
-// ── Entry recognition ──────────────────────────────────────────────
+func mapMQLType(t string) ParamType {
+	switch t {
+	case "int", "long", "uint", "ulong":
+		return ParamInt
+	case "double", "float":
+		return ParamDouble
+	case "string":
+		return ParamString
+	case "bool":
+		return ParamBool
+	}
+	return ParamString
+}
 
-func (r *Recognizer) ExtractEntries(ast *SourceFile) []EntryRule {
+func guessGroupCST(name string) ParamGroup {
+	lower := strings.ToLower(name)
+	if strings.Contains(lower, "lot") || strings.Contains(lower, "volume") {
+		return GroupSizing
+	}
+	if strings.Contains(lower, "magic") || strings.Contains(lower, "comment") {
+		return GroupSystem
+	}
+	if strings.Contains(lower, "sl") || strings.Contains(lower, "tp") ||
+		strings.Contains(lower, "stop") || strings.Contains(lower, "take") {
+		return GroupExit
+	}
+	return GroupEntry
+}
+
+// ── Entry recognition ───────────────────────────────────────────────
+
+func extractEntriesCST(root *sitter.Node) []EntryRule {
 	var entries []EntryRule
-	r.walkFunctions(ast, func(fn *FuncDef) {
-		if fn.Body == nil {
-			return
+	for _, fn := range findFunctions(root) {
+		body := funcBody(fn)
+		if body == nil {
+			continue
 		}
-		// Extract local variables
-		locals := extractLocalVars(fn.Body)
-		_ = locals
-		// Scan for if→OrderSend patterns
-		r.scanForEntries(fn.Body, &entries)
-	})
+		scanForEntriesCST(body, &entries)
+	}
 	return entries
 }
 
-func (r *Recognizer) scanForEntries(body Node, entries *[]EntryRule) {
-	cs, ok := body.(*CompoundStmt)
-	if !ok {
-		return
-	}
-	for _, stmt := range cs.Statements {
-		if ifStmt, ok := stmt.(*IfStmt); ok {
-			r.matchIfEntry(ifStmt, entries)
-		}
-		if cs2, ok := stmt.(*CompoundStmt); ok {
-			r.scanForEntries(cs2, entries)
+func scanForEntriesCST(body *sitter.Node, entries *[]EntryRule) {
+	for i := 0; i < int(body.ChildCount()); i++ {
+		c := body.Child(i)
+		switch c.Type() {
+		case "if_statement":
+			if os := findOrderSendCST(c); os != nil {
+				entry := entryFromOrderSend(os)
+				if entry.Action != "" {
+					*entries = append(*entries, entry)
+				}
+			}
+		case "compound_statement":
+			scanForEntriesCST(c, entries)
 		}
 	}
 }
 
-func (r *Recognizer) matchIfEntry(ifStmt *IfStmt, entries *[]EntryRule) {
-	os := findOrderSend(ifStmt.ThenBranch)
-	if os == nil {
-		return
+func entryFromOrderSend(os *sitter.Node) EntryRule {
+	e := EntryRule{}
+	// arg[1] is order type
+	typeArg := callArgID(os, 1)
+	switch typeArg {
+	case "OP_BUY":
+		e.Action = ActionMarketBuy
+	case "OP_SELL":
+		e.Action = ActionMarketSell
+	case "OP_BUYLIMIT":
+		e.Action = ActionBuyLimit
+	case "OP_SELLLIMIT":
+		e.Action = ActionSellLimit
+	case "OP_BUYSTOP":
+		e.Action = ActionBuyStop
+	case "OP_SELLSTOP":
+		e.Action = ActionSellStop
 	}
-	action := orderSendAction(os)
-	if action == "" {
-		return
+	// Extract other args
+	args := childByType("", os, "argument_list")
+	if args != nil {
+		named := getNamedChildren(args)
+		if len(named) > 2 {
+			e.Volume = nodeText("", named[2])
+		}
+		if len(named) > 3 {
+			e.Price = nodeText("", named[3])
+		}
+		if len(named) > 5 {
+			e.StopLoss = nodeText("", named[5])
+		}
+		if len(named) > 6 {
+			e.TakeProfit = nodeText("", named[6])
+		}
+		if len(named) > 7 {
+			e.Comment = nodeText("", named[7])
+		}
+		if len(named) > 8 {
+			e.Magic = nodeText("", named[8])
+		}
 	}
-	entry := EntryRule{
-		Action: action,
-		Volume: orderSendArg(os, 2),
-		Price:  orderSendArg(os, 3),
-		Magic:  orderSendArg(os, 8),
-	}
-	if c := orderSendArg(os, 5); c != "" && c != "0" {
-		entry.StopLoss = c
-	}
-	if c := orderSendArg(os, 6); c != "" && c != "0" {
-		entry.TakeProfit = c
-	}
-	if c := orderSendArg(os, 7); c != "" {
-		entry.Comment = c
-	}
-	*entries = append(*entries, entry)
+	return e
 }
 
-// ── Exit recognition ───────────────────────────────────────────────
+// ── Exit recognition ────────────────────────────────────────────────
 
-func (r *Recognizer) ExtractExits(ast *SourceFile) []ExitRule {
+func extractExitsCST(root *sitter.Node) []ExitRule {
 	var exits []ExitRule
-	r.walkFunctions(ast, func(fn *FuncDef) {
-		if fn.Body == nil {
-			return
+	hasClose := false
+	hasDelete := false
+	walkCST(root, func(n *sitter.Node) bool {
+		if n.Type() == "call_expression" {
+			name := callFuncName(n)
+			if name == "OrderClose" {
+				hasClose = true
+			}
+			if name == "OrderDelete" {
+				hasDelete = true
+			}
 		}
-		if hasCall(fn.Body, "OrderClose") {
-			exits = append(exits, ExitRule{
-				Trigger:  TriggerMagic,
-				Action:   "position_close",
-				MagicVal: "s.magic",
-			})
-		}
-		if hasCall(fn.Body, "OrderDelete") {
-			exits = append(exits, ExitRule{
-				Trigger:  TriggerDelete,
-				Action:   "order_delete",
-				MagicVal: "s.magic",
-			})
-		}
+		return true
 	})
+	if hasClose {
+		exits = append(exits, ExitRule{Trigger: TriggerMagic, Action: "position_close", MagicVal: "s.magic"})
+	}
+	if hasDelete {
+		exits = append(exits, ExitRule{Trigger: TriggerDelete, Action: "order_delete", MagicVal: "s.magic"})
+	}
 	return exits
 }
 
-// ── Execution model ────────────────────────────────────────────────
+// ── Execution model ─────────────────────────────────────────────────
 
-func (r *Recognizer) DetectExecution(ast *SourceFile) ExecutionModel {
-	hasGrid := false
-	r.walkFunctions(ast, func(fn *FuncDef) {
-		if fn.Body != nil && hasCall(fn.Body, "OrderSend") {
-			// Check for gridPlaced flag pattern
-			if fn.Body != nil {
-				r.walkNodes(fn.Body, func(n Node) bool {
-					if id, ok := n.(*Identifier); ok {
-						if id.Name == "gridPlaced" {
-							hasGrid = true
-							return false
-						}
-					}
-					return true
-				})
-			}
+func detectExecCST(root *sitter.Node) ExecutionModel {
+	for _, fn := range findFunctions(root) {
+		body := funcBody(fn)
+		if body == nil {
+			continue
 		}
-	})
-	if hasGrid {
-		return ExecutionModel{Kind: ExecOnInitGrid}
+		if hasGridFlagCST(body) {
+			return ExecutionModel{Kind: ExecOnInitGrid}
+		}
 	}
+	// Check for market orders → on_bar
 	return ExecutionModel{Kind: ExecOnBar}
 }
 
-// ── Sizing ─────────────────────────────────────────────────────────
-
-func (r *Recognizer) DetectSizing(intent *StrategyIntent) *SizingRule {
-	// Check for martingale pattern
-	for _, entry := range intent.Entry {
-		if strings.Contains(entry.Volume, "MathPow") || strings.Contains(entry.Volume, "*") {
-			return &SizingRule{
-				Kind:       SizingMartingale,
-				Expression: "s.baseLot",
-			}
-		}
-	}
-	return &SizingRule{
-		Kind:       SizingFixed,
-		Expression: "s.lotSize",
-	}
-}
-
-// ── Timer ──────────────────────────────────────────────────────────
-
-func (r *Recognizer) DetectTimer(ast *SourceFile) *TimerRule {
-	var timer *TimerRule
-	r.walkFunctions(ast, func(fn *FuncDef) {
-		if fn.Body != nil && hasCall(fn.Body, "EventSetTimer") {
-			// Extract timer interval
-			r.walkNodes(fn.Body, func(n Node) bool {
-				if call, ok := n.(*CallExpr); ok && call.Name == "EventSetTimer" {
-					if len(call.Args) > 0 {
-						if nl, ok := call.Args[0].(*NumberLiteral); ok {
-							timer = &TimerRule{IntervalSeconds: parseInt(nl.Value)}
-						}
-					}
-					return false
-				}
-				return true
-			})
-		}
-	})
-	if timer == nil {
-		// Check for EventSetMillisecondTimer
-		r.walkFunctions(ast, func(fn *FuncDef) {
-			if fn.Body != nil && hasCall(fn.Body, "EventSetMillisecondTimer") {
-				timer = &TimerRule{IntervalSeconds: 5} // default
-			}
-		})
-	}
-	return timer
-}
-
-// ── AST traversal helpers ──────────────────────────────────────────
-
-func (r *Recognizer) walkFunctions(ast *SourceFile, fn func(*FuncDef)) {
-	if ast == nil {
-		return
-	}
-	for _, decl := range ast.Declarations {
-		if fd, ok := decl.(*FuncDef); ok {
-			fn(fd)
-		}
-	}
-}
-
-func (r *Recognizer) walkNodes(node Node, visit func(Node) bool) {
-	if node == nil || !visit(node) {
-		return
-	}
-	switch n := node.(type) {
-	case *CompoundStmt:
-		for _, s := range n.Statements {
-			r.walkNodes(s, visit)
-		}
-	case *IfStmt:
-		r.walkNodes(n.Condition, visit)
-		r.walkNodes(n.ThenBranch, visit)
-		r.walkNodes(n.ElseBranch, visit)
-	case *ForStmt:
-		r.walkNodes(n.Body, visit)
-	case *ExpressionStmt:
-		r.walkNodes(n.Expr, visit)
-	case *BinaryOp:
-		r.walkNodes(n.Left, visit)
-		r.walkNodes(n.Right, visit)
-	case *CallExpr:
-		for _, a := range n.Args {
-			r.walkNodes(a, visit)
-		}
-	}
-}
-
-func hasCall(node Node, name string) bool {
+func hasGridFlagCST(body *sitter.Node) bool {
 	found := false
-	r := &Recognizer{}
-	r.walkNodes(node, func(n Node) bool {
-		if call, ok := n.(*CallExpr); ok && call.Name == name {
+	walkCST(body, func(n *sitter.Node) bool {
+		if n.Type() == "identifier" && nodeText("", n) == "gridPlaced" {
 			found = true
 			return false
 		}
@@ -286,132 +463,226 @@ func hasCall(node Node, name string) bool {
 	return found
 }
 
-func findOrderSend(node Node) *CallExpr {
-	if node == nil {
-		return nil
-	}
-	if es, ok := node.(*ExpressionStmt); ok {
-		if call, ok := es.Expr.(*CallExpr); ok && call.Name == "OrderSend" {
-			return call
+// ── State variables ─────────────────────────────────────────────────
+
+func extractStateCST(source string, root *sitter.Node) []StateVar {
+	var state []StateVar
+	walkCST(root, func(n *sitter.Node) bool {
+		if n.Type() != "declaration" && n.Type() != "field_declaration" {
+			return true
 		}
-	}
-	if cs, ok := node.(*CompoundStmt); ok {
-		for _, s := range cs.Statements {
-			if result := findOrderSend(s); result != nil {
-				return result
+		text := nodeText(source, n)
+		if strings.Contains(text, "extern ") || strings.Contains(text, "input ") {
+			return true
+		}
+		// Extract name and type
+		var name, vt string
+		for i := 0; i < int(n.ChildCount()); i++ {
+			c := n.Child(i)
+			switch c.Type() {
+			case "primitive_type", "type_identifier", "sized_type_specifier", "macro_type_specifier":
+				vt = nodeText(source, c)
+			case "identifier", "field_identifier", "statement_identifier":
+				if name == "" {
+					name = nodeText(source, c)
+				}
+			case "number_literal":
+				if vt == "bool" {
+					vt = "bool"
+				}
 			}
 		}
-	}
-	if ifStmt, ok := node.(*IfStmt); ok {
-		// Check then-branch
-		if result := findOrderSend(ifStmt.ThenBranch); result != nil {
-			return result
+		if name == "" {
+			return true
 		}
-		// Check else-branch
-		if result := findOrderSend(ifStmt.ElseBranch); result != nil {
-			return result
+		state = append(state, StateVar{
+			Name:   name,
+			GoType: vt,
+		})
+		return true
+	})
+	return state
+}
+
+// ── Sizing ──────────────────────────────────────────────────────────
+
+func detectSizingCST(entries []EntryRule) *SizingRule {
+	k := SizingFixed
+	expr := "s.lotSize"
+	for _, e := range entries {
+		if strings.Contains(e.Volume, "MathPow") || strings.Contains(e.Volume, "*") {
+			k = SizingMartingale
+			expr = "s.baseLot"
+			break
 		}
 	}
-	return nil
+	return &SizingRule{Kind: k, Expression: expr}
 }
 
-func orderSendAction(call *CallExpr) OrderAction {
-	if len(call.Args) < 2 {
-		return ""
-	}
-	id, ok := call.Args[1].(*Identifier)
-	if !ok {
-		return ""
-	}
-	switch id.Name {
-	case "OP_BUY":
-		return ActionMarketBuy
-	case "OP_SELL":
-		return ActionMarketSell
-	case "OP_BUYLIMIT":
-		return ActionBuyLimit
-	case "OP_SELLLIMIT":
-		return ActionSellLimit
-	case "OP_BUYSTOP":
-		return ActionBuyStop
-	case "OP_SELLSTOP":
-		return ActionSellStop
-	}
-	return ""
-}
+// ── Timer ──────────────────────────────────────────────────────────
 
-func orderSendArg(call *CallExpr, idx int) string {
-	if idx >= len(call.Args) {
-		return ""
-	}
-	return nodeToString(call.Args[idx])
-}
-
-func nodeToString(n Node) string {
-	switch v := n.(type) {
-	case *Identifier:
-		return v.Name
-	case *NumberLiteral:
-		return v.Value
-	case *StringLiteral:
-		return `"` + v.Value + `"`
-	case *CallExpr:
-		return v.Name + "(...)"
-	case *BinaryOp:
-		return nodeToString(v.Left) + " " + v.Op + " " + nodeToString(v.Right)
-	default:
-		return ""
-	}
-}
-
-func extractLocalVars(body *CompoundStmt) map[string]bool {
-	locals := make(map[string]bool)
-	r := &Recognizer{}
-	r.walkNodes(body, func(n Node) bool {
-		if vd, ok := n.(*VarDecl); ok {
-			locals[vd.Name] = true
+func detectTimerCST(root *sitter.Node) *TimerRule {
+	var timer *TimerRule
+	walkCST(root, func(n *sitter.Node) bool {
+		if n.Type() != "call_expression" {
+			return true
+		}
+		name := callFuncName(n)
+		if name == "EventSetTimer" || name == "EventSetMillisecondTimer" {
+			secs := 300
+			if name == "EventSetMillisecondTimer" {
+				secs = 5
+			}
+			// Extract interval arg
+			if name == "EventSetTimer" {
+				args := childByType("", n, "argument_list")
+				if args != nil {
+					named := getNamedChildren(args)
+					if len(named) > 0 {
+						if nl := childByType("", named[0], "number_literal"); nl != nil {
+							secs = parseInt(nodeText("", nl))
+						}
+					}
+				}
+			}
+			timer = &TimerRule{IntervalSeconds: secs}
+			return false
 		}
 		return true
 	})
-	return locals
+	return timer
 }
 
-func extractDefault(value Node) string {
-	if value == nil {
-		return ""
-	}
-	switch v := value.(type) {
-	case *NumberLiteral:
-		return v.Value
-	case *StringLiteral:
-		return v.Value
-	case *Identifier:
-		switch v.Name {
-		case "true":
-			return "true"
-		case "false":
-			return "false"
-		default:
-			return v.Name
+// ── Indicators ──────────────────────────────────────────────────────
+
+func extractIndicatorsCST(root *sitter.Node) []IndicatorSpec {
+	var specs []IndicatorSpec
+	seen := make(map[string]bool)
+	walkCST(root, func(n *sitter.Node) bool {
+		if n.Type() != "call_expression" {
+			return true
+		}
+		name := callFuncName(n)
+		method := indicatorMethodCST(name)
+		if method == "" {
+			return true
+		}
+		// Deduplicate
+		key := name + ":" + nodeText("", n)
+		if seen[key] {
+			return true
+		}
+		seen[key] = true
+
+		params := make(map[string]string)
+		spec := IndicatorSpec{SDKMethod: method, Params: params}
+		// Extract common indicator args
+		args := childByType("", n, "argument_list")
+		if args != nil {
+			named := getNamedChildren(args)
+			switch name {
+			case "iMA":
+				if len(named) > 2 {
+					params["period"] = nodeText("", named[2])
+				}
+				if len(named) > 3 {
+					params["shift"] = nodeText("", named[3])
+				}
+			case "iRSI":
+				if len(named) > 2 {
+					params["period"] = nodeText("", named[2])
+				}
+				if len(named) > 4 {
+					params["shift"] = nodeText("", named[4])
+				}
+			case "iATR":
+				if len(named) > 2 {
+					params["period"] = nodeText("", named[2])
+				}
+				if len(named) > 3 {
+					params["shift"] = nodeText("", named[3])
+				}
+			case "iMACD":
+				if len(named) > 2 {
+					params["fast"] = nodeText("", named[2])
+				}
+				if len(named) > 3 {
+					params["slow"] = nodeText("", named[3])
+				}
+			}
+		}
+		// Try to find result variable
+		spec.ResultVar = findResultVar(root, name)
+		specs = append(specs, spec)
+		return true
+	})
+	return specs
+}
+
+func findResultVar(root *sitter.Node, indicatorName string) string {
+	for _, fn := range findFunctions(root) {
+		body := funcBody(fn)
+		if body == nil {
+			continue
+		}
+		for i := 0; i < int(body.ChildCount()); i++ {
+			c := body.Child(i)
+			if c.Type() != "declaration" {
+				continue
+			}
+			if call := findChild("", c, "call_expression"); call != nil {
+				if callFuncName(call) == indicatorName {
+					id := childByType("", c, "identifier")
+					if id == nil {
+						id = childByType("", c, "field_identifier")
+					}
+					if id == nil {
+						id = childByType("", c, "statement_identifier")
+					}
+					return nodeText("", id)
+				}
+			}
 		}
 	}
 	return ""
 }
 
-func isNoiseParam(name string, value Node) bool {
-	if strings.Contains(name, "说明") || strings.Contains(name, "选择") ||
-		strings.Contains(name, "提示") {
-		return true
+func indicatorMethodCST(name string) string {
+	switch name {
+	case "iMA":
+		return "ema"
+	case "iRSI":
+		return "rsi"
+	case "iATR":
+		return "atr"
+	case "iBands":
+		return "bands"
+	case "iMACD":
+		return "macd"
+	case "iStochastic":
+		return "stochastic"
+	case "iCCI":
+		return "cci"
+	case "iCustom":
+		return "i_custom"
 	}
-	if sv, ok := value.(*StringLiteral); ok {
-		val := sv.Value
-		if strings.Contains(val, "====") {
-			return true
-		}
-		if strings.HasPrefix(val, "http://") || strings.HasPrefix(val, "https://") {
-			return true
-		}
-		if len(val) > 20 && containsNonASCII(val) {
+	return ""
+}
+
+func getNamedChildren(n *sitter.Node) []*sitter.Node {
+	var out []*sitter.Node
+	if n == nil {
+		return out
+	}
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		out = append(out, n.NamedChild(i))
+	}
+	return out
+}
+
+func containsNonASCII(s string) bool {
+	for _, r := range s {
+		if r > 127 {
 			return true
 		}
 	}
@@ -426,45 +697,4 @@ func parseInt(s string) int {
 		}
 	}
 	return n
-}
-
-func paramType(mqlType string) ParamType {
-	switch mqlType {
-	case "int", "long", "uint", "ulong":
-		return ParamInt
-	case "double", "float":
-		return ParamDouble
-	case "string":
-		return ParamString
-	case "bool":
-		return ParamBool
-	}
-	return ParamString
-}
-
-func guessGroup(name string) ParamGroup {
-	lower := strings.ToLower(name)
-	if strings.Contains(lower, "lot") || strings.Contains(lower, "volume") {
-		return GroupSizing
-	}
-	if strings.Contains(lower, "magic") || strings.Contains(lower, "comment") {
-		return GroupSystem
-	}
-	if strings.Contains(lower, "sl") || strings.Contains(lower, "tp") ||
-		strings.Contains(lower, "stop") || strings.Contains(lower, "take") {
-		return GroupExit
-	}
-	if strings.Contains(lower, "risk") || strings.Contains(lower, "margin") {
-		return GroupRisk
-	}
-	return GroupEntry
-}
-
-func containsNonASCII(s string) bool {
-	for _, r := range s {
-		if r > 127 {
-			return true
-		}
-	}
-	return false
 }

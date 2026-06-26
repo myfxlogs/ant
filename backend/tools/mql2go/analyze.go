@@ -1,117 +1,61 @@
 package mql2go
 
-import "strings"
+import (
+	"context"
+	"strings"
 
-// Analyze parses MQL source with tree-sitter and extracts a full StrategyIntent.
+	sitter "github.com/smacker/go-tree-sitter"
+)
+
+// ParseMQL parses MQL source into a tree-sitter CST.
+func ParseMQL(source string) (*sitter.Node, error) {
+	lang, err := Language()
+	if err != nil {
+		return nil, err
+	}
+	parser := sitter.NewParser()
+	defer parser.Close()
+	parser.SetLanguage(lang)
+
+	tree, err := parser.ParseCtx(context.Background(), nil, []byte(source))
+	if err != nil {
+		return nil, err
+	}
+	// Keep tree alive — root node references tree memory.
+	// In a CLI tool, the process exits after generating code.
+	// For a long-running server, use a pool of trees.
+	_ = tree
+	return tree.RootNode(), nil
+}
+
+// Analyze parses MQL source and extracts a full StrategyIntent.
 func Analyze(source string) (*StrategyIntent, error) {
-	ast, err := ParseMQL(source)
+	root, err := ParseMQL(source)
 	if err != nil {
 		return analyzeFallback(source), nil
 	}
-
-	rec := NewRecognizer(ast)
 
 	intent := &StrategyIntent{
 		Meta: StrategyMeta{
 			MQLVersion: detectMQLVersion(source),
 		},
-		Params:    rec.ExtractParams(ast),
-		State:     rec.ExtractState(ast),
-		Entry:     rec.ExtractEntries(ast),
-		Exit:      rec.ExtractExits(ast),
-		Execution: rec.DetectExecution(ast),
-		Timer:     rec.DetectTimer(ast),
+		Params:     extractParamsCST(source, root),
+		State:      extractStateCST(source, root),
+		Entry:      extractEntriesCST(root),
+		Exit:       extractExitsCST(root),
+		Indicators: extractIndicatorsCST(root),
+		Execution:  detectExecCST(root),
+		Timer:      detectTimerCST(root),
 	}
-	intent.Sizing = rec.DetectSizing(intent)
-	intent.Indicators = extractIndicators(ast)
+	intent.Sizing = detectSizingCST(intent.Entry)
 	return intent, nil
 }
-
 
 func analyzeFallback(source string) *StrategyIntent {
 	return &StrategyIntent{
 		Meta:      StrategyMeta{MQLVersion: detectMQLVersion(source)},
 		Execution: ExecutionModel{Kind: ExecOnBar},
-		Params:    extractParams(source),
-		Entry:     detectEntries(source),
-		Exit:      detectExits(source),
 	}
-}
-
-func extractIndicators(ast *SourceFile) []IndicatorSpec {
-	var specs []IndicatorSpec
-	rec := &Recognizer{}
-	rec.walkFunctions(ast, func(fn *FuncDef) {
-		if fn.Body == nil {
-			return
-		}
-		rec.walkNodes(fn.Body, func(n Node) bool {
-			call, ok := n.(*CallExpr)
-			if !ok {
-				return true
-			}
-			method := indicatorMethod(call.Name)
-			if method == "" {
-				return true
-			}
-			resultVar := ""
-			if fn.Body != nil {
-				for _, stmt := range fn.Body.Statements {
-					if vd, ok := stmt.(*VarDecl); ok && vd.Value == call {
-						resultVar = vd.Name
-						break
-					}
-				}
-			}
-			params := make(map[string]string)
-			switch call.Name {
-			case "iMA":
-				if len(call.Args) > 2 {
-					params["period"] = nodeToString(call.Args[2])
-				}
-				if len(call.Args) > 3 {
-					params["shift"] = nodeToString(call.Args[3])
-				}
-			case "iRSI":
-				if len(call.Args) > 2 {
-					params["period"] = nodeToString(call.Args[2])
-				}
-				if len(call.Args) > 4 {
-					params["shift"] = nodeToString(call.Args[4])
-				}
-			case "iATR":
-				if len(call.Args) > 2 {
-					params["period"] = nodeToString(call.Args[2])
-				}
-				if len(call.Args) > 3 {
-					params["shift"] = nodeToString(call.Args[3])
-				}
-			}
-			specs = append(specs, IndicatorSpec{
-				SDKMethod: method,
-				ResultVar: resultVar,
-				Params:    params,
-			})
-			return true
-		})
-	})
-	return specs
-}
-
-func indicatorMethod(mqlName string) string {
-	switch mqlName {
-	case "iMA":
-		return "ema"
-	case "iRSI":
-		return "rsi"
-	case "iATR":
-		return "atr"
-	case "iBands":
-		return "bands"
-	case "iMACD":
-		return "macd"
-	}
-	return ""
 }
 
 func detectMQLVersion(source string) string {
@@ -120,7 +64,3 @@ func detectMQLVersion(source string) string {
 	}
 	return "mql4"
 }
-
-func extractParams(source string) []ParamSpec { return nil }
-func detectEntries(source string) []EntryRule { return nil }
-func detectExits(source string) []ExitRule    { return nil }
