@@ -22,8 +22,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制应用代码
 COPY strategy-service/app/ /app/app/
-COPY tools/mql_transpiler/ /app/tools/mql_transpiler/
-COPY tools/mql_migration/ /app/tools/mql_migration/
+# Python tools deleted — MQL→Go migration via backend/tools/mql2go
 
 COPY strategy-service/docker-entrypoint.sh /docker-entrypoint.sh
 
