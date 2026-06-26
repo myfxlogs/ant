@@ -25,7 +25,8 @@ type IndicatorSet interface {
 
 	// Bollinger returns Bollinger Band values.
 	// upper, middle, lower at the given shift.
-	Bollinger(period, deviation, shift int) (upper, middle, lower float64)
+	// deviation is the number of standard deviations (typically 2.0).
+	Bollinger(period int, deviation float64, shift int) (upper, middle, lower float64)
 
 	// Stochastic returns Stochastic oscillator values.
 	// k, d values at the given shift.
