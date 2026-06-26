@@ -27,10 +27,6 @@ func Analyze(source string) (*StrategyIntent, error) {
 	return intent, nil
 }
 
-// Stub for tree-sitter parsing — will be implemented when grammar is compiled to Go.
-func ParseMQL(source string) (*SourceFile, error) {
-	return nil, nil
-}
 
 func analyzeFallback(source string) *StrategyIntent {
 	return &StrategyIntent{
