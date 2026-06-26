@@ -87,7 +87,6 @@ func (g *generator) genOnInit() {
 	}
 
 	g.emit("s.hedging = ctx.Mode() == sdk.ModeHedging")
-	g.emit("s.lotSize = s._lotSize")
 	g.emit("return nil")
 	g.indent--
 	g.emit("}")
@@ -144,12 +143,12 @@ func (g *generator) emitEntry(e EntryRule) {
 	}
 
 	action := goSignalAction(e.Action)
-	volume := pyToGoExpr(e.Volume)
-	magic := pyToGoExpr(e.Magic)
-	if volume == "" {
+	volume := prefixRef(pyToGoExpr(e.Volume))
+	magic := prefixRef(pyToGoExpr(e.Magic))
+	if volume == "" || volume == "s." {
 		volume = "s.lotSize"
 	}
-	if magic == "" {
+	if magic == "" || magic == "s." {
 		magic = "s.magic"
 	}
 	fill := goFillPolicy(e.Action)
@@ -412,6 +411,17 @@ func goFillPolicy(a OrderAction) string {
 		return "sdk.FillIOC"
 	}
 	return "sdk.FillReturn"
+}
+
+func prefixRef(expr string) string {
+	// If a bare identifier (no prefix), add "s."
+	if expr == "" || strings.HasPrefix(expr, "s.") || strings.HasPrefix(expr, "ctx.") {
+		return expr
+	}
+	if strings.Contains(expr, ".") || strings.Contains(expr, "(") || strings.Contains(expr, "\"") {
+		return expr // already qualified or literal
+	}
+	return "s." + expr
 }
 
 func pyToGoExpr(expr string) string {

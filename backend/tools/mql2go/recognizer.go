@@ -362,10 +362,21 @@ func scanForEntriesCST(body *sitter.Node, entries *[]EntryRule) {
 		c := body.Child(i)
 		switch c.Type() {
 		case "if_statement":
-			if os := findOrderSendCST(c); os != nil {
-				entry := entryFromOrderSend(os)
-				if entry.Action != "" {
-					*entries = append(*entries, entry)
+			// Walk the entire if/else-if chain
+			current := c
+			for current != nil {
+				if os := findOrderSendCST(current); os != nil {
+					entry := entryFromOrderSend(os)
+					if entry.Action != "" {
+						*entries = append(*entries, entry)
+					}
+				}
+				// Advance to else-if
+				ec := childByType("", current, "else_clause")
+				if ec != nil {
+					current = childByType("", ec, "if_statement")
+				} else {
+					current = nil
 				}
 			}
 		case "compound_statement":
