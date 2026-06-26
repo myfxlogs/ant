@@ -141,8 +141,19 @@ export default function CodeEditorPanel({ form, code }: Props) {
                     {t('strategy.importEA.analyze', { defaultValue: '分析策略结构' })}</Button>
                 )}
                 {analysis && !eaResult && (
-                  <Button type="primary" size="small" icon={<ImportOutlined />} onClick={handleConfirmImport} loading={eaTranslating}>
-                    {t('strategy.importEA.confirmImport', { defaultValue: '确认导入' })}</Button>
+                  <>
+                    <Button type="primary" size="small" icon={<ImportOutlined />} onClick={handleConfirmImport} loading={eaTranslating}>
+                      {t('strategy.importEA.confirmImport', { defaultValue: '确认导入' })}</Button>
+                    {/* When coverage is low and has real gaps, suggest AI translate */}
+                    {analysis.coverageScore < 0.7 && analysis.blindSpots?.some((b: any) =>
+                      b.category !== '不支持的API调用' || (
+                        !b.description?.includes('ObjectCreate') && !b.description?.includes('ObjectDelete')
+                      )
+                    ) && (
+                      <Button size="small" onClick={() => { setImportMethod('ai'); handleImportEA(); }}>
+                        <RobotOutlined /> {t('strategy.importEA.tryAI', { defaultValue: 'AI 翻译补充' })}</Button>
+                    )}
+                  </>
                 )}
                 {eaResult && <Button size="small" onClick={applyEaResult}>{t('strategy.importEA.apply', { defaultValue: 'Apply to Editor' })}</Button>}
               </div>

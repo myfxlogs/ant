@@ -71,15 +71,52 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
   const warningBlindSpots = analysis.blindSpots.filter(b => b.severity === '警告');
   const infoBlindSpots = analysis.blindSpots.filter(b => b.severity === '信息');
 
+  // Triage: distinguish trading logic vs GUI/display noise
+  const guiBlindSpots = analysis.blindSpots.filter(b =>
+    b.category === '不支持的API调用' &&
+    (b.description?.includes('ObjectCreate') || b.description?.includes('ObjectDelete') ||
+     b.description?.includes('ObjectSet') || b.description?.includes('ObjectGet') ||
+     b.description?.includes('Chart') || b.description?.includes('Comment')));
+  const realBlindSpots = analysis.blindSpots.filter(b => !guiBlindSpots.includes(b));
+  const isPureGuiNoise = guiBlindSpots.length > 0 && realBlindSpots.length === 0;
+  const hasRealGaps = realBlindSpots.length > 0;
+  const triageLevel = coverage >= 70 ? 'pass' : coverage >= 40 ? 'warn' : 'block';
+
   return (
     <div style={{ padding: '12px 0' }}>
+      {/* ── Triage Verdict ── */}
+      {isPureGuiNoise && (
+        <Alert type="success" showIcon icon={<CheckCircleOutlined />}
+          message="交易逻辑已完整识别"
+          description="以下盲区均为图表显示/按钮功能，服务端自动运行时会跳过，不影响交易结果。可以确认导入。"
+          style={{ marginBottom: 12 }} />
+      )}
+      {hasRealGaps && triageLevel === 'block' && (
+        <Alert type="error" showIcon icon={<CloseCircleOutlined />}
+          message="无法自动导入"
+          description={`核心交易逻辑仅识别 ${coverage}%，未识别部分包含入场/出场/风控等关键逻辑。建议使用 AI 翻译重试，或简化 EA 后重新提交。`}
+          style={{ marginBottom: 12 }} />
+      )}
+      {hasRealGaps && triageLevel === 'warn' && (
+        <Alert type="warning" showIcon icon={<WarningOutlined />}
+          message="交易逻辑覆盖不完整"
+          description={`已识别 ${coverage}% 代码逻辑（不含 GUI 显示功能）。未识别部分可能影响交易行为，建议 AI 翻译补充或人工审查。`}
+          style={{ marginBottom: 12 }} />
+      )}
+      {!hasRealGaps && !isPureGuiNoise && triageLevel === 'pass' && (
+        <Alert type="success" showIcon icon={<CheckCircleOutlined />}
+          message="导入完整度良好"
+          description="策略已识别主要逻辑，可确认导入。建议检查参数列表后使用。"
+          style={{ marginBottom: 12 }} />
+      )}
+
       {/* ── Coverage ── */}
       <Card size="small" style={{ marginBottom: 12 }}>
         <Space direction="vertical" style={{ width: '100%' }} size="small">
           <Text strong>导入完整度</Text>
           <Progress
             percent={coverage}
-            status={coverage >= 80 ? 'success' : coverage >= 60 ? 'active' : 'exception'}
+            status={coverage >= 70 ? 'success' : coverage >= 40 ? 'active' : 'exception'}
             format={(p) => `已识别 ${p}% 策略逻辑`}
           />
           <Text type="secondary">
