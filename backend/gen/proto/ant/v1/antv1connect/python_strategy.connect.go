@@ -84,27 +84,6 @@ const (
 	PythonStrategyServiceImportStrategyProcedure = "/ant.v1.PythonStrategyService/ImportStrategy"
 )
 
-// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
-var (
-	pythonStrategyServiceServiceDescriptor                  = v1.File_python_strategy_proto.Services().ByName("PythonStrategyService")
-	pythonStrategyServiceExecuteMethodDescriptor            = pythonStrategyServiceServiceDescriptor.Methods().ByName("Execute")
-	pythonStrategyServiceValidateMethodDescriptor           = pythonStrategyServiceServiceDescriptor.Methods().ByName("Validate")
-	pythonStrategyServiceBacktestMethodDescriptor           = pythonStrategyServiceServiceDescriptor.Methods().ByName("Backtest")
-	pythonStrategyServiceStartBacktestRunMethodDescriptor   = pythonStrategyServiceServiceDescriptor.Methods().ByName("StartBacktestRun")
-	pythonStrategyServiceGetBacktestRunMethodDescriptor     = pythonStrategyServiceServiceDescriptor.Methods().ByName("GetBacktestRun")
-	pythonStrategyServiceListBacktestRunsMethodDescriptor   = pythonStrategyServiceServiceDescriptor.Methods().ByName("ListBacktestRuns")
-	pythonStrategyServiceWatchBacktestRunMethodDescriptor   = pythonStrategyServiceServiceDescriptor.Methods().ByName("WatchBacktestRun")
-	pythonStrategyServiceCancelBacktestRunMethodDescriptor  = pythonStrategyServiceServiceDescriptor.Methods().ByName("CancelBacktestRun")
-	pythonStrategyServiceDeleteBacktestRunMethodDescriptor  = pythonStrategyServiceServiceDescriptor.Methods().ByName("DeleteBacktestRun")
-	pythonStrategyServiceDeleteBacktestRunsMethodDescriptor = pythonStrategyServiceServiceDescriptor.Methods().ByName("DeleteBacktestRuns")
-	pythonStrategyServiceGetTemplatesMethodDescriptor       = pythonStrategyServiceServiceDescriptor.Methods().ByName("GetTemplates")
-	pythonStrategyServiceExecuteLiveMethodDescriptor        = pythonStrategyServiceServiceDescriptor.Methods().ByName("ExecuteLive")
-	pythonStrategyServiceTranspileCodeMethodDescriptor      = pythonStrategyServiceServiceDescriptor.Methods().ByName("TranspileCode")
-	pythonStrategyServiceAnalyzeImportCodeMethodDescriptor  = pythonStrategyServiceServiceDescriptor.Methods().ByName("AnalyzeImportCode")
-	pythonStrategyServiceGenerateImportCodeMethodDescriptor = pythonStrategyServiceServiceDescriptor.Methods().ByName("GenerateImportCode")
-	pythonStrategyServiceImportStrategyMethodDescriptor     = pythonStrategyServiceServiceDescriptor.Methods().ByName("ImportStrategy")
-)
-
 // PythonStrategyServiceClient is a client for the ant.v1.PythonStrategyService service.
 type PythonStrategyServiceClient interface {
 	Execute(context.Context, *connect.Request[v1.ExecuteStrategyRequest]) (*connect.Response[v1.ExecuteStrategyResponse], error)
@@ -142,101 +121,102 @@ type PythonStrategyServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewPythonStrategyServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) PythonStrategyServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	pythonStrategyServiceMethods := v1.File_python_strategy_proto.Services().ByName("PythonStrategyService").Methods()
 	return &pythonStrategyServiceClient{
 		execute: connect.NewClient[v1.ExecuteStrategyRequest, v1.ExecuteStrategyResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceExecuteProcedure,
-			connect.WithSchema(pythonStrategyServiceExecuteMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("Execute")),
 			connect.WithClientOptions(opts...),
 		),
 		validate: connect.NewClient[v1.ValidateStrategyRequest, v1.ValidateStrategyResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceValidateProcedure,
-			connect.WithSchema(pythonStrategyServiceValidateMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("Validate")),
 			connect.WithClientOptions(opts...),
 		),
 		backtest: connect.NewClient[v1.BacktestStrategyRequest, v1.BacktestStrategyResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceBacktestProcedure,
-			connect.WithSchema(pythonStrategyServiceBacktestMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("Backtest")),
 			connect.WithClientOptions(opts...),
 		),
 		startBacktestRun: connect.NewClient[v1.StartBacktestRunRequest, v1.StartBacktestRunResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceStartBacktestRunProcedure,
-			connect.WithSchema(pythonStrategyServiceStartBacktestRunMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("StartBacktestRun")),
 			connect.WithClientOptions(opts...),
 		),
 		getBacktestRun: connect.NewClient[v1.GetBacktestRunRequest, v1.GetBacktestRunResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceGetBacktestRunProcedure,
-			connect.WithSchema(pythonStrategyServiceGetBacktestRunMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("GetBacktestRun")),
 			connect.WithClientOptions(opts...),
 		),
 		listBacktestRuns: connect.NewClient[v1.ListBacktestRunsRequest, v1.ListBacktestRunsResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceListBacktestRunsProcedure,
-			connect.WithSchema(pythonStrategyServiceListBacktestRunsMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("ListBacktestRuns")),
 			connect.WithClientOptions(opts...),
 		),
 		watchBacktestRun: connect.NewClient[v1.WatchBacktestRunRequest, v1.BacktestRunUpdate](
 			httpClient,
 			baseURL+PythonStrategyServiceWatchBacktestRunProcedure,
-			connect.WithSchema(pythonStrategyServiceWatchBacktestRunMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("WatchBacktestRun")),
 			connect.WithClientOptions(opts...),
 		),
 		cancelBacktestRun: connect.NewClient[v1.CancelBacktestRunRequest, v1.CancelBacktestRunResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceCancelBacktestRunProcedure,
-			connect.WithSchema(pythonStrategyServiceCancelBacktestRunMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("CancelBacktestRun")),
 			connect.WithClientOptions(opts...),
 		),
 		deleteBacktestRun: connect.NewClient[v1.DeleteBacktestRunRequest, v1.DeleteBacktestRunResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceDeleteBacktestRunProcedure,
-			connect.WithSchema(pythonStrategyServiceDeleteBacktestRunMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("DeleteBacktestRun")),
 			connect.WithClientOptions(opts...),
 		),
 		deleteBacktestRuns: connect.NewClient[v1.DeleteBacktestRunsRequest, v1.DeleteBacktestRunsResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceDeleteBacktestRunsProcedure,
-			connect.WithSchema(pythonStrategyServiceDeleteBacktestRunsMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("DeleteBacktestRuns")),
 			connect.WithClientOptions(opts...),
 		),
 		getTemplates: connect.NewClient[emptypb.Empty, v1.GetPythonTemplatesResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceGetTemplatesProcedure,
-			connect.WithSchema(pythonStrategyServiceGetTemplatesMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("GetTemplates")),
 			connect.WithClientOptions(opts...),
 		),
 		executeLive: connect.NewClient[v1.ExecuteLiveRequest, v1.ExecuteLiveResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceExecuteLiveProcedure,
-			connect.WithSchema(pythonStrategyServiceExecuteLiveMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("ExecuteLive")),
 			connect.WithClientOptions(opts...),
 		),
 		transpileCode: connect.NewClient[v1.TranspileCodeRequest, v1.TranspileCodeResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceTranspileCodeProcedure,
-			connect.WithSchema(pythonStrategyServiceTranspileCodeMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("TranspileCode")),
 			connect.WithClientOptions(opts...),
 		),
 		analyzeImportCode: connect.NewClient[v1.AnalyzeImportCodeRequest, v1.AnalyzeImportCodeResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceAnalyzeImportCodeProcedure,
-			connect.WithSchema(pythonStrategyServiceAnalyzeImportCodeMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("AnalyzeImportCode")),
 			connect.WithClientOptions(opts...),
 		),
 		generateImportCode: connect.NewClient[v1.GenerateImportCodeRequest, v1.GenerateImportCodeResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceGenerateImportCodeProcedure,
-			connect.WithSchema(pythonStrategyServiceGenerateImportCodeMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("GenerateImportCode")),
 			connect.WithClientOptions(opts...),
 		),
 		importStrategy: connect.NewClient[v1.ImportStrategyRequest, v1.ImportStrategyResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceImportStrategyProcedure,
-			connect.WithSchema(pythonStrategyServiceImportStrategyMethodDescriptor),
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("ImportStrategy")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -376,100 +356,101 @@ type PythonStrategyServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewPythonStrategyServiceHandler(svc PythonStrategyServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	pythonStrategyServiceMethods := v1.File_python_strategy_proto.Services().ByName("PythonStrategyService").Methods()
 	pythonStrategyServiceExecuteHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceExecuteProcedure,
 		svc.Execute,
-		connect.WithSchema(pythonStrategyServiceExecuteMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("Execute")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceValidateHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceValidateProcedure,
 		svc.Validate,
-		connect.WithSchema(pythonStrategyServiceValidateMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("Validate")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceBacktestHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceBacktestProcedure,
 		svc.Backtest,
-		connect.WithSchema(pythonStrategyServiceBacktestMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("Backtest")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceStartBacktestRunHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceStartBacktestRunProcedure,
 		svc.StartBacktestRun,
-		connect.WithSchema(pythonStrategyServiceStartBacktestRunMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("StartBacktestRun")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceGetBacktestRunHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceGetBacktestRunProcedure,
 		svc.GetBacktestRun,
-		connect.WithSchema(pythonStrategyServiceGetBacktestRunMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("GetBacktestRun")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceListBacktestRunsHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceListBacktestRunsProcedure,
 		svc.ListBacktestRuns,
-		connect.WithSchema(pythonStrategyServiceListBacktestRunsMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("ListBacktestRuns")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceWatchBacktestRunHandler := connect.NewServerStreamHandler(
 		PythonStrategyServiceWatchBacktestRunProcedure,
 		svc.WatchBacktestRun,
-		connect.WithSchema(pythonStrategyServiceWatchBacktestRunMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("WatchBacktestRun")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceCancelBacktestRunHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceCancelBacktestRunProcedure,
 		svc.CancelBacktestRun,
-		connect.WithSchema(pythonStrategyServiceCancelBacktestRunMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("CancelBacktestRun")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceDeleteBacktestRunHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceDeleteBacktestRunProcedure,
 		svc.DeleteBacktestRun,
-		connect.WithSchema(pythonStrategyServiceDeleteBacktestRunMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("DeleteBacktestRun")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceDeleteBacktestRunsHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceDeleteBacktestRunsProcedure,
 		svc.DeleteBacktestRuns,
-		connect.WithSchema(pythonStrategyServiceDeleteBacktestRunsMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("DeleteBacktestRuns")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceGetTemplatesHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceGetTemplatesProcedure,
 		svc.GetTemplates,
-		connect.WithSchema(pythonStrategyServiceGetTemplatesMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("GetTemplates")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceExecuteLiveHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceExecuteLiveProcedure,
 		svc.ExecuteLive,
-		connect.WithSchema(pythonStrategyServiceExecuteLiveMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("ExecuteLive")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceTranspileCodeHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceTranspileCodeProcedure,
 		svc.TranspileCode,
-		connect.WithSchema(pythonStrategyServiceTranspileCodeMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("TranspileCode")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceAnalyzeImportCodeHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceAnalyzeImportCodeProcedure,
 		svc.AnalyzeImportCode,
-		connect.WithSchema(pythonStrategyServiceAnalyzeImportCodeMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("AnalyzeImportCode")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceGenerateImportCodeHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceGenerateImportCodeProcedure,
 		svc.GenerateImportCode,
-		connect.WithSchema(pythonStrategyServiceGenerateImportCodeMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("GenerateImportCode")),
 		connect.WithHandlerOptions(opts...),
 	)
 	pythonStrategyServiceImportStrategyHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceImportStrategyProcedure,
 		svc.ImportStrategy,
-		connect.WithSchema(pythonStrategyServiceImportStrategyMethodDescriptor),
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("ImportStrategy")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/ant.v1.PythonStrategyService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
