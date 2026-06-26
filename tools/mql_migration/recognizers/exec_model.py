@@ -62,24 +62,28 @@ def recognize_meta(ast: SourceFile, source_name: str = "") -> StrategyMeta:
 
 
 def recognize_params(ast: SourceFile) -> List[ParamSpec]:
-    """提取 extern/input 参数声明。"""
+    """提取 extern/input 参数声明，过滤纯提示性 noise 参数。"""
     params: List[ParamSpec] = []
 
     for decl in (ast.declarations or []):
-        if isinstance(decl, VarDecl) and (decl.is_extern or decl.is_input):
-            param_type = _map_mql_type(decl.var_type)
-            default = _extract_default_value(decl)
+        if not isinstance(decl, VarDecl) or not (decl.is_extern or decl.is_input):
+            continue
 
-            # Guess parameter group from name
-            group = _guess_param_group(decl.name)
+        # Filter noise: display-only strings that aren't real parameters.
+        if _is_noise_param(decl):
+            continue
 
-            params.append(ParamSpec(
-                name=decl.name,
-                label=decl.name,  # Can be enhanced with i18n
-                param_type=param_type,
-                default=default,
-                group=group,
-            ))
+        param_type = _map_mql_type(decl.var_type)
+        default = _extract_default_value(decl)
+        group = _guess_param_group(decl.name)
+
+        params.append(ParamSpec(
+            name=decl.name,
+            label=decl.name,
+            param_type=param_type,
+            default=default,
+            group=group,
+        ))
 
     return params
 
@@ -201,6 +205,41 @@ def recognize_timer(ast: SourceFile) -> TimerRule | None:
 
 
 # ── Helpers ─────────────────────────────────────────────────────
+
+
+def _is_noise_param(decl: VarDecl) -> bool:
+    """Check if an extern/input param is display-only noise, not a trading param.
+
+    Noise patterns:
+      - extern string with long Chinese display text (> 20 chars, contains CJK)
+      - Name contains noise keywords: 说明, 选择, 参数, 提示, hint, note
+      - Value looks like a section header (contains ==== or similar)
+      - extern string whose value is a URL
+    """
+    name = decl.name or ""
+    value = decl.value
+    val_str = str(getattr(value, 'value', '')) if value else ""
+
+    # Keywords that indicate display-only intent.
+    noise_keywords = ["说明", "选择", "提示", "参数说明", "hint", "note", "message", "warning"]
+    if any(kw in name for kw in noise_keywords):
+        return True
+
+    # String type with long display text.
+    if decl.var_type == "string":
+        # Section headers like "====电脑时间参数===="
+        if "====" in val_str:
+            return True
+        # URLs
+        if val_str.startswith("http://") or val_str.startswith("https://"):
+            return True
+        # Long Chinese text (> 20 chars)
+        if len(val_str) > 20:
+            import re
+            if re.search(r'[一-鿿]', val_str):
+                return True
+
+    return False
 
 
 def _map_mql_type(mql_type: str) -> ParamType:
