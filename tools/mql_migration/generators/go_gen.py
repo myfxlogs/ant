@@ -144,16 +144,16 @@ class GoCodeGenerator:
     # ── Entry ────────────────────────────────────────────────────
 
     def _gen_entry(self, entry: EntryRule, intent: StrategyIntent) -> None:
-        cond_parts = [c.expr for c in entry.conditions if c.expr]
+        cond_parts = [_py_to_go_expr(c.expr) for c in entry.conditions if c.expr]
         if cond_parts:
             cond = " && ".join(cond_parts)
             self._emit(f"if {cond} {{")
             self._indent += 1
 
         sig_type = _go_signal_action(entry.action)
-        volume = entry.order_params.volume or "s.lotSize"
-        magic = entry.order_params.magic or "s.magic"
-        fill := _go_fill_policy(entry.action)
+        volume = _py_to_go_expr(entry.order_params.volume) or "s.lotSize"
+        magic = _py_to_go_expr(entry.order_params.magic) or "s.magic"
+        fill_policy = _go_fill_policy(entry.action)
 
         self._emit(f"sig := &sdk.Signal{{")
         self._emit(f"    Action: {sig_type},")
@@ -163,9 +163,13 @@ class GoCodeGenerator:
         if entry.order_params.tp and entry.order_params.tp not in ("0", "0.0", ""):
             self._emit(f"    TakeProfit: {entry.order_params.tp},")
         if entry.order_params.comment:
-            self._emit(f"    Comment: \"{entry.order_params.comment}\",")
+            comment = entry.order_params.comment
+            if comment and comment.startswith("'") and comment.endswith("'"):
+                comment = comment[1:-1]
+            if comment:
+                self._emit(f"    Comment: \"{comment}\",")
         self._emit(f"    Magic: {magic},")
-        self._emit(f"    FillPolicy: {fill},")
+        self._emit(f"    FillPolicy: {fill_policy},")
         self._emit("}")
         self._emit("return sig, nil")
 
@@ -177,19 +181,19 @@ class GoCodeGenerator:
 
     def _gen_exit(self, exit_rule: ExitRule) -> None:
         if exit_rule.trigger == ExitTrigger.MAGIC_CLOSE:
-            cond = " && ".join(c.expr for c in exit_rule.conditions) if exit_rule.conditions else ""
+            cond = " && ".join(_py_to_go_expr(c.expr) for c in exit_rule.conditions) if exit_rule.conditions else ""
             if cond:
                 self._emit(f"if {cond} {{")
                 self._indent += 1
-            magic = exit_rule.target.magic_value or "s.magic"
-            self._emit(f"for _, pos := range ctx.Broker().Positions({magic}) {{")
+            magic_val = exit_rule.target.magic_value or "s.magic"
+            self._emit(f"for _, pos := range ctx.Broker().Positions({magic_val}) {{")
             self._emit("    ctx.Broker().PositionClose(pos.Ticket, decimal.Zero)")
             self._emit("}")
             if cond:
                 self._indent -= 1
                 self._emit("}")
         elif exit_rule.trigger == ExitTrigger.MAGIC_DELETE:
-            magic := exit_rule.target.magic_value or "s.magic"
+            magic = exit_rule.target.magic_value or "s.magic"
             self._emit(f"for _, ord := range ctx.Broker().Orders({magic}) {{")
             self._emit("    ctx.Broker().OrderDelete(ord.Ticket)")
             self._emit("}")
@@ -273,7 +277,7 @@ class GoCodeGenerator:
     def _emit_indicator(self, spec: IndicatorSpec, intent: StrategyIntent) -> None:
         if not spec.result_var:
             return
-        var_name = _go_var_name(spec.result_var)
+        var_name = _py_to_go_expr(_go_var_name(spec.result_var))
         params = spec.params or {}
 
         period = params.get("period", "14")
@@ -282,23 +286,26 @@ class GoCodeGenerator:
 
         method = spec.sdk_method
         if method in ("ma", "ema"):
-            self._emit(f"{var_name} := ctx.Indicators().EMA({period}, {shift})")
+            # Apply expression converter to period/shift params
+        period_expr = _py_to_go_expr(str(period))
+        shift_expr = _py_to_go_expr(str(shift))
+        self._emit(f"{var_name} := ctx.Indicators().EMA({period_expr}, {shift_expr})")
         elif method == "rsi":
-            self._emit(f"{var_name} := ctx.Indicators().RSI({period}, {shift})")
+            self._emit(f"{var_name} := ctx.Indicators().RSI({period_expr}, {shift_expr})")
         elif method == "atr":
-            self._emit(f"{var_name} := ctx.Indicators().ATR({period}, {shift})")
+            self._emit(f"{var_name} := ctx.Indicators().ATR({period_expr}, {shift_expr})")
         elif method == "macd":
-            fast = params.get("fast", "12")
-            slow = params.get("slow", "26")
-            sig = params.get("signal", "9")
-            self._emit(f"{var_name} := ctx.Indicators().MACD({fast}, {slow}, {sig}, {shift})")
+            fast = _py_to_go_expr(str(params.get("fast", "12")))
+            slow = _py_to_go_expr(str(params.get("slow", "26")))
+            sig = _py_to_go_expr(str(params.get("signal", "9")))
+            self._emit(f"{var_name} := ctx.Indicators().MACD({fast}, {slow}, {sig}, {shift_expr})")
         elif method == "i_custom":
             name_val = spec.comment or "CustomIndicator"
-            self._emit(f"{var_name} := ctx.Indicators().ICustom(\"{name_val}\", nil, 0, {shift})")
+            self._emit(f"{var_name} := ctx.Indicators().ICustom(\"{name_val}\", nil, 0, {shift_expr})")
         elif method == "bands":
-            dev = params.get("deviation", "2")
+            dev = _py_to_go_expr(str(params.get("deviation", "2")))
             self._emit(f"{var_name}Upper, {var_name}Mid, {var_name}Lower := "
-                       f"ctx.Indicators().Bollinger({period}, {dev}, {shift})")
+                       f"ctx.Indicators().Bollinger({period_expr}, {dev}, {shift_expr})")
 
     # ── Output ───────────────────────────────────────────────────
 
@@ -307,6 +314,39 @@ class GoCodeGenerator:
             self._lines.append("\t" * self._indent + line)
         else:
             self._lines.append("")
+
+
+# ── Python→Go expression converter ─────────────────────────────────
+
+
+def _py_to_go_expr(expr: str) -> str:
+    """Convert a Python expression string to Go syntax.
+
+    Handles common patterns:
+      self.xxx → s.xxx
+      and → &&
+      or → ||
+      not → !
+      Decimal(str(x)) → x
+      'string' → \"string\"
+      0.0 → 0.0 (no change needed)
+    """
+    if not expr:
+        return expr
+    import re
+    # Replace self. → s.
+    expr = re.sub(r'\bself\.', 's.', expr)
+    # Replace Python boolean operators
+    expr = re.sub(r'\band\b', '&&', expr)
+    expr = re.sub(r'\bor\b', '||', expr)
+    expr = re.sub(r'\bnot\b', '!', expr)
+    # Remove Decimal(str(...)) wrapper
+    expr = re.sub(r'Decimal\(str\(([^)]+)\)\)', r'\1', expr)
+    # Fix Python quotes to Go
+    expr = expr.replace("'", '"')
+    # Remove extra self.ctx scoping that Go doesn't use
+    expr = re.sub(r's\.ctx\.', 'ctx.', expr)
+    return expr
 
 
 # ── Helpers ─────────────────────────────────────────────────────────
