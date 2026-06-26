@@ -643,12 +643,45 @@ func extractIndicatorsCST(root *sitter.Node) []IndicatorSpec {
 				}
 			}
 		}
-		// Try to find result variable
-		spec.ResultVar = findResultVar(root, name)
+		// Try to find result variable from the enclosing declaration
+		spec.ResultVar = findResultVarForNode(root, n)
 		specs = append(specs, spec)
 		return true
 	})
 	return specs
+}
+
+func findResultVarForNode(root *sitter.Node, callNode *sitter.Node) string {
+	// Walk function bodies and find the init_declarator containing this call.
+	callStart := callNode.StartByte()
+	for _, fn := range findFunctions(root) {
+		body := funcBody(fn)
+		if body == nil {
+			continue
+		}
+		for i := 0; i < int(body.ChildCount()); i++ {
+			c := body.Child(i)
+			if c.Type() != "declaration" {
+				continue
+			}
+			init := childByType("", c, "init_declarator")
+			if init == nil {
+				continue
+			}
+			call := childByType("", init, "call_expression")
+			if call == nil {
+				continue
+			}
+			// Match by position
+			if call.StartByte() == callStart {
+				id := childByType("", init, "identifier")
+				if id != nil {
+					return nodeText("", id)
+				}
+			}
+		}
+	}
+	return ""
 }
 
 func findResultVar(root *sitter.Node, indicatorName string) string {
@@ -662,15 +695,18 @@ func findResultVar(root *sitter.Node, indicatorName string) string {
 			if c.Type() != "declaration" {
 				continue
 			}
-			if call := findChild("", c, "call_expression"); call != nil {
-				if callFuncName(call) == indicatorName {
-					id := childByType("", c, "identifier")
-					if id == nil {
-						id = childByType("", c, "field_identifier")
-					}
-					if id == nil {
-						id = childByType("", c, "statement_identifier")
-					}
+			// Result var is in init_declarator > identifier
+			init := childByType("", c, "init_declarator")
+			if init == nil {
+				continue
+			}
+			call := childByType("", init, "call_expression")
+			if call == nil {
+				continue
+			}
+			if callFuncName(call) == indicatorName {
+				id := childByType("", init, "identifier")
+				if id != nil {
 					return nodeText("", id)
 				}
 			}

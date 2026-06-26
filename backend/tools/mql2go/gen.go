@@ -290,11 +290,11 @@ func (g *generator) emitIndicator(spec IndicatorSpec) {
 		period = "14"
 	}
 	shift := spec.Params["shift"]
-	if shift == "" {
-		shift = "1"
+	if shift == "" || shift == "0" {
+		shift = "1" // default: most recent completed bar
 	}
-	period = pyToGoExpr(period)
-	shift = pyToGoExpr(shift)
+	period = prefixRef(pyToGoExpr(period))
+	shift = pyToGoExpr(shift) // just the number, no prefix needed
 
 	switch spec.SDKMethod {
 	case "ma", "ema":
