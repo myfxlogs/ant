@@ -549,7 +549,20 @@ def _type_filling(action: OrderAction) -> str:
 
 
 def _py_default(param: ParamSpec) -> str:
-    """Convert ParamSpec default to Python literal."""
-    from tools.mql_transpiler.ast_transpiler import ASTTranspiler
+    """Convert ParamSpec default to Python literal (self-contained, no L1 dep)."""
     val = str(param.default) if param.default is not None else "0"
-    return ASTTranspiler._mql_default_to_py(val, param.param_type.value)
+    val = val.strip().rstrip(";")
+    pt = param.param_type.value
+    if pt in ("int", "double", "float", "long", "uint", "ulong"):
+        try:
+            float(val)
+            return val
+        except ValueError:
+            return f"'{val}'"
+    if pt == "bool":
+        return "True" if val.lower() in ("true", "1") else "False"
+    if pt == "string":
+        if val.startswith('"') or val.startswith("'"):
+            return val
+        return f"'{val}'"
+    return val

@@ -72,12 +72,8 @@ def recognize_pending_entries(ast: SourceFile,
         if not func.body:
             continue
         local_vars = extract_local_vars(func)
-        prev_locals = set(expr_gen._local_vars)
-        expr_gen._local_vars |= local_vars
-
-        _scan_function_body(func.body, entries, expr_gen, func.name)
-
-        expr_gen._local_vars = prev_locals
+        with expr_gen.local_scope(local_vars):
+            _scan_function_body(func.body, entries, expr_gen, func.name)
 
     return entries
 

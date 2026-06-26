@@ -46,12 +46,8 @@ def recognize_margin_checks(ast: SourceFile,
             continue
 
         local_vars = extract_local_vars(func)
-        prev_locals = set(expr_gen._local_vars)
-        expr_gen._local_vars |= local_vars
-
-        _scan_for_margin_checks(func.body, checks, expr_gen)
-
-        expr_gen._local_vars = prev_locals
+        with expr_gen.local_scope(local_vars):
+            _scan_for_margin_checks(func.body, checks, expr_gen)
 
     return checks
 

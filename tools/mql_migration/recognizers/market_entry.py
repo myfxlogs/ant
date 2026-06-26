@@ -64,15 +64,9 @@ def recognize_market_entries(ast: SourceFile,
     for func in find_functions(ast):
         if not func.body:
             continue
-        # Register local variables so conditions don't get self. prefix.
         local_vars = extract_local_vars(func)
-        prev_locals = set(expr_gen._local_vars)
-        expr_gen._local_vars |= local_vars
-
-        _scan_statements(func.body, entries, expr_gen, func.name)
-
-        # Restore previous local vars.
-        expr_gen._local_vars = prev_locals
+        with expr_gen.local_scope(local_vars):
+            _scan_statements(func.body, entries, expr_gen, func.name)
 
     return entries
 

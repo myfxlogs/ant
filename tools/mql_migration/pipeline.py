@@ -296,13 +296,10 @@ class MigrationPipeline:
                         cond = stmt.condition
                         if (ast_contains_call(cond, "AccountFreeMargin") or
                             ast_contains_call(cond, "AccountBalance")):
-                            # Register local vars for this function
                             from tools.mql_migration.recognizers.base import extract_local_vars
                             locals_ = extract_local_vars(func)
-                            prev = set(self._expr_gen._local_vars)
-                            self._expr_gen._local_vars |= locals_
-                            condition_expr = self._expr_gen.translate(cond)
-                            self._expr_gen._local_vars = prev
+                            with self._expr_gen.local_scope(locals_):
+                                condition_expr = self._expr_gen.translate(cond)
                             break
 
             # Replace hardcoded numeric ratio with ctx.param if present

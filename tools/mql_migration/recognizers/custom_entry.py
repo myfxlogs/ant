@@ -74,20 +74,15 @@ def recognize_custom_entries(ast: SourceFile,
             continue
 
         local_vars = extract_local_vars(func)
-        prev_locals = set(expr_gen._local_vars)
-        expr_gen._local_vars |= local_vars
+        with expr_gen.local_scope(local_vars):
+            # Find all iCustom calls in this function
+            icustom_calls = find_calls(func.body, "iCustom")
+            if not icustom_calls:
+                continue
 
-        # Find all iCustom calls in this function
-        icustom_calls = find_calls(func.body, "iCustom")
-        if not icustom_calls:
-            expr_gen._local_vars = prev_locals
-            continue
-
-        # Scan if-statements whose condition references iCustom results
-        _scan_icustom_entries(func.body, entries, expr_gen,
-                              func.name, icustom_calls)
-
-        expr_gen._local_vars = prev_locals
+            # Scan if-statements whose condition references iCustom results
+            _scan_icustom_entries(func.body, entries, expr_gen,
+                                  func.name, icustom_calls)
 
     return entries
 
