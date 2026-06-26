@@ -7,6 +7,10 @@ import (
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
+// parseSource holds the MQL source being analyzed — set by Analyze(),
+// used by CST helpers for text extraction.
+var parseSource string
+
 // ParseMQL parses MQL source into a tree-sitter CST.
 func ParseMQL(source string) (*sitter.Node, error) {
 	lang, err := Language()
@@ -30,6 +34,7 @@ func ParseMQL(source string) (*sitter.Node, error) {
 
 // Analyze parses MQL source and extracts a full StrategyIntent.
 func Analyze(source string) (*StrategyIntent, error) {
+	parseSource = source // store for CST text extraction
 	root, err := ParseMQL(source)
 	if err != nil {
 		return analyzeFallback(source), nil

@@ -19,6 +19,7 @@ func nodeText(source string, n *sitter.Node) string {
 	if n == nil {
 		return ""
 	}
+	if source == "" { source = parseSource }
 	return source[n.StartByte():n.EndByte()]
 }
 
