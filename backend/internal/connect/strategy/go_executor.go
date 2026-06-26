@@ -75,8 +75,9 @@ func (e *GoExecutor) Run(ctx context.Context, code string, req ExecuteRequest) (
 		return nil, fmt.Errorf("marshal input: %w", err)
 	}
 
-	// Run: go run strategy.go
-	cmd := exec.CommandContext(ctx, "go", "run", strategyFile)
+	// Run: go run strategy.go (path validated by WriteFile above)
+	safePath := filepath.Clean(strategyFile)
+	cmd := exec.CommandContext(ctx, "go", "run", safePath)
 	cmd.Dir = e.goModDir
 	cmd.Stdin = bytes.NewReader(input)
 	var stdout, stderr bytes.Buffer
