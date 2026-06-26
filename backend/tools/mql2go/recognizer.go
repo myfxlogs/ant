@@ -362,16 +362,18 @@ func scanForEntriesCST(body *sitter.Node, entries *[]EntryRule) {
 		c := body.Child(i)
 		switch c.Type() {
 		case "if_statement":
-			// Walk the entire if/else-if chain
 			current := c
 			for current != nil {
 				if os := findOrderSendCST(current); os != nil {
 					entry := entryFromOrderSend(os)
 					if entry.Action != "" {
+						// Extract if-condition text
+						if cond := extractIfCondition(current); cond != "" {
+							entry.Conditions = []string{cond}
+						}
 						*entries = append(*entries, entry)
 					}
 				}
-				// Advance to else-if
 				ec := childByType("", current, "else_clause")
 				if ec != nil {
 					current = childByType("", ec, "if_statement")
@@ -383,6 +385,20 @@ func scanForEntriesCST(body *sitter.Node, entries *[]EntryRule) {
 			scanForEntriesCST(c, entries)
 		}
 	}
+}
+
+func extractIfCondition(ifNode *sitter.Node) string {
+	paren := childByType("", ifNode, "parenthesized_expression")
+	if paren == nil {
+		return ""
+	}
+	// Get text between the parens (skip the '(' and ')')
+	start := paren.StartByte() + 1
+	end := paren.EndByte() - 1
+	if start < end && int(end) <= len(parseSource) {
+		return parseSource[start:end]
+	}
+	return ""
 }
 
 func entryFromOrderSend(os *sitter.Node) EntryRule {
