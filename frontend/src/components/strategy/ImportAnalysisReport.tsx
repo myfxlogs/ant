@@ -71,16 +71,12 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
   const warningBlindSpots = analysis.blindSpots.filter(b => b.severity === '警告');
   const infoBlindSpots = analysis.blindSpots.filter(b => b.severity === '信息');
 
-  // Triage: distinguish trading logic vs GUI/display noise
-  const guiBlindSpots = analysis.blindSpots.filter(b =>
-    b.category === '不支持的API调用' &&
-    (b.description?.includes('ObjectCreate') || b.description?.includes('ObjectDelete') ||
-     b.description?.includes('ObjectSet') || b.description?.includes('ObjectGet') ||
-     b.description?.includes('Chart') || b.description?.includes('Comment')));
-  const realBlindSpots = analysis.blindSpots.filter(b => !guiBlindSpots.includes(b));
-  const isPureGuiNoise = guiBlindSpots.length > 0 && realBlindSpots.length === 0;
+  // Triage: backend marks GUI noise as severity=信息, real gaps as 警告/致命.
+  const guiNoiseSpots = analysis.blindSpots.filter(b => b.severity === '信息');
+  const realBlindSpots = analysis.blindSpots.filter(b => b.severity !== '信息');
+  const isPureGuiNoise = realBlindSpots.length === 0 && guiNoiseSpots.length > 0;
   const hasRealGaps = realBlindSpots.length > 0;
-  const triageLevel = coverage >= 70 ? 'pass' : coverage >= 40 ? 'warn' : 'block';
+  const triageLevel = hasRealGaps ? (coverage >= 70 ? 'pass' : coverage >= 40 ? 'warn' : 'block') : 'pass';
 
   return (
     <div style={{ padding: '12px 0' }}>
@@ -171,19 +167,19 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
         </Card>
       )}
 
-      {/* ── Blind Spots ── */}
-      {analysis.blindSpots.length > 0 && (
+      {/* ── Blind Spots (real gaps only, not GUI noise) ── */}
+      {realBlindSpots.length > 0 && (
         <Card
           size="small"
           title={
             <Space>
               <WarningOutlined />
-              <span>以下逻辑需要确认 ({analysis.blindSpots.length})</span>
+              <span>以下逻辑需要确认 ({realBlindSpots.length})</span>
             </Space>
           }
           style={{ marginBottom: 12, borderColor: criticalBlindSpots.length > 0 ? '#ff4d4f' : '#faad14' }}
         >
-          {criticalBlindSpots.map((b: BlindSpotItem) => (
+          {criticalBlindSpots.filter(b => b.severity !== '信息').map((b: BlindSpotItem) => (
             <Alert
               key={b.id || b.description}
               type="error"
@@ -202,7 +198,7 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
               style={{ marginBottom: 8 }}
             />
           ))}
-          {warningBlindSpots.map((b: BlindSpotItem) => (
+          {warningBlindSpots.filter(b => b.severity !== '信息').map((b: BlindSpotItem) => (
             <Alert
               key={b.id || b.description}
               type="warning"
