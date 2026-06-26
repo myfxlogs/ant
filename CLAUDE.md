@@ -38,6 +38,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 
 - ❌ REST endpoints (except healthz/readyz/livez/metrics)
 - ❌ WebSocket
+- ❌ JSON 作为数据序列化/持久化/交换格式（包括 `json.load`/`json.dump`/`json.Marshal`/`json.Unmarshal`/`encoding/json`/`import json`）。所有跨进程数据交换用 proto，本地持久化用 PostgreSQL。豁免：自动生成产物（`gen/`、tree-sitter `grammar.json`/`node-types.json`）和 PG `JSONB` 列（由 DB 管理，不在应用层做 `json.Marshal`）
 - ❌ float64 in price calculations (use `decimal.Decimal` in Go)
 - ❌ Cross-scope changes (one task = one scope)
 - ❌ Hardcoded secrets / `.env` in repo

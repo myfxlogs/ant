@@ -30,6 +30,12 @@ service PythonStrategyService {
   // TranspileCode translates MQL4/MQL5 code to Python using the deterministic transpiler.
   // Returns confidence score and gap report; AI fallback handled by Go layer.
   rpc TranspileCode(TranspileCodeRequest) returns (TranspileCodeResponse);
+  // AnalyzeCode analyzes MQL source and returns strategy intent summary + param panel + blind spots.
+  rpc AnalyzeImportCode(AnalyzeImportCodeRequest) returns (AnalyzeImportCodeResponse);
+  // GenerateImportCode generates Python SDK code from analyzed MQL source.
+  rpc GenerateImportCode(GenerateImportCodeRequest) returns (GenerateImportCodeResponse);
+  // ImportStrategy runs the full import pipeline: analyze → generate → return code.
+  rpc ImportStrategy(ImportStrategyRequest) returns (ImportStrategyResponse);
 }
 
 message TranspileCodeRequest {
@@ -214,4 +220,61 @@ message LiveSymbolSeries {
   repeated double high = 4;
   repeated double low = 5;
   repeated double volume = 6;
+}
+
+// ── Strategy Import (migration engine) ──────────────────────────────
+
+message AnalyzeImportCodeRequest {
+  string source_code = 1;
+  string source_name = 2;
+  string source_lang = 3;
+}
+
+message AnalyzeImportCodeResponse {
+  string strategy_name = 1;
+  string mql_version = 2;
+  double coverage_score = 10;
+  int32 total_blocks = 11;
+  int32 recognized_blocks = 12;
+  string execution_kind = 30;
+  int32 entry_rules_count = 50;
+  int32 exit_rules_count = 51;
+  string sizing_kind = 52;
+  int32 risk_checks_count = 53;
+  // Param panel schema (JSON-serialized for frontend convenience — frontend
+  // uses this to render the parameter form; proto-native in a future cleanup).
+  string params_json = 60;
+  string groups_json = 61;
+  // Blind spot report (JSON-serialized; same rationale as above).
+  string blind_spots_json = 70;
+  repeated string indicator_names = 80;
+}
+
+message GenerateImportCodeRequest {
+  string source_code = 1;
+  string source_name = 2;
+  string source_lang = 3;
+}
+
+message GenerateImportCodeResponse {
+  string python_code = 1;
+  int32 code_lines = 2;
+  bool compiles = 3;
+  repeated string quality_gate_failures = 10;
+}
+
+message ImportStrategyRequest {
+  string source_code = 1;
+  string source_name = 2;
+  string source_lang = 3;
+  optional string workspace_id = 20;
+}
+
+message ImportStrategyResponse {
+  string strategy_id = 1;
+  string strategy_name = 2;
+  string python_code = 3;
+  double coverage_score = 4;
+  // JSON-serialized blind spots (same rationale as above).
+  string blind_spots_json = 10;
 }

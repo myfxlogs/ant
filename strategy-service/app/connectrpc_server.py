@@ -188,8 +188,20 @@ async def _execute_live(req: ExecuteLiveRequest, _ctx) -> ExecuteLiveResponse:
     from app.routes.live_execute_connect import _run_live
     return await _run_live(req)
 
+async def _analyze_import_code(req, _ctx):
+    from app.routes.strategy_import_connect import _analyze_code
+    return await _analyze_code(req, _ctx)
 
-# ── StrategyImportService handlers ──────────────────────────────────────
+async def _generate_import_code(req, _ctx):
+    from app.routes.strategy_import_connect import _generate_code
+    return await _generate_code(req, _ctx)
+
+async def _import_strategy(req, _ctx):
+    from app.routes.strategy_import_connect import _import_strategy
+    return await _import_strategy(req, _ctx)
+
+
+# ── StrategyImportService handler availability ──────────────────────────
 
 try:
     from app.routes.strategy_import_connect import (
@@ -215,10 +227,10 @@ _HANDLERS = {
     "GetTemplates": (_get_templates, Empty, GetPythonTemplatesResponse),
     "ExecuteLive": (_execute_live, ExecuteLiveRequest, ExecuteLiveResponse),
     "TranspileCode": (_transpile, TranspileCodeRequest, TranspileCodeResponse),
+    "AnalyzeImportCode": (_analyze_import_code, _pb.AnalyzeImportCodeRequest, _pb.AnalyzeImportCodeResponse),
+    "GenerateImportCode": (_generate_import_code, _pb.GenerateImportCodeRequest, _pb.GenerateImportCodeResponse),
+    "ImportStrategy": (_import_strategy, _pb.ImportStrategyRequest, _pb.ImportStrategyResponse),
 }
-
-# StrategyImportService — uses raw HTTP (not ConnectRPC) because proto not compiled.
-# Registered as ASGI routes in main.py's _HealthWrapper.
 
 
 def _build_endpoints(_svc) -> dict:

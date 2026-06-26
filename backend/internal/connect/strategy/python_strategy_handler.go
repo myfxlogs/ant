@@ -231,4 +231,25 @@ func (s *PythonStrategyServer) TranspileCode(ctx context.Context, req *connect.R
 	return connect.NewResponse(&antv1.TranspileCodeResponse{IsDeterministic: false}), nil
 }
 
+func (s *PythonStrategyServer) AnalyzeImportCode(ctx context.Context, req *connect.Request[antv1.AnalyzeImportCodeRequest]) (*connect.Response[antv1.AnalyzeImportCodeResponse], error) {
+	if s.connectClient != nil {
+		return s.connectClient.AnalyzeImportCode(ctx, req)
+	}
+	return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{}), nil
+}
+
+func (s *PythonStrategyServer) GenerateImportCode(ctx context.Context, req *connect.Request[antv1.GenerateImportCodeRequest]) (*connect.Response[antv1.GenerateImportCodeResponse], error) {
+	if s.connectClient != nil {
+		return s.connectClient.GenerateImportCode(ctx, req)
+	}
+	return connect.NewResponse(&antv1.GenerateImportCodeResponse{}), nil
+}
+
+func (s *PythonStrategyServer) ImportStrategy(ctx context.Context, req *connect.Request[antv1.ImportStrategyRequest]) (*connect.Response[antv1.ImportStrategyResponse], error) {
+	if s.connectClient != nil {
+		return s.connectClient.ImportStrategy(ctx, req)
+	}
+	return connect.NewResponse(&antv1.ImportStrategyResponse{}), nil
+}
+
 func (s *PythonStrategyServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
