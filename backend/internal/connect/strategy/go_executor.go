@@ -75,8 +75,12 @@ func (e *GoExecutor) Run(ctx context.Context, code string, req ExecuteRequest) (
 		return nil, fmt.Errorf("marshal input: %w", err)
 	}
 
-	// Run: go run strategy.go (path validated by WriteFile above)
+	// Run: go run strategy.go
+	// Path is created by os.WriteFile in our controlled temp directory.
 	safePath := filepath.Clean(strategyFile)
+	if !filepath.HasPrefix(safePath, e.tmpDir) {
+		return nil, fmt.Errorf("strategy file outside temp dir: %s", safePath)
+	}
 	cmd := exec.CommandContext(ctx, "go", "run", safePath)
 	cmd.Dir = e.goModDir
 	cmd.Stdin = bytes.NewReader(input)
