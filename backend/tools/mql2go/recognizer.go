@@ -248,48 +248,57 @@ func funcBody(n *sitter.Node) *sitter.Node {
 
 func extractParamsCST(source string, root *sitter.Node) []ParamSpec {
 	var params []ParamSpec
-	walkCST(root, func(n *sitter.Node) bool {
+	// Only process top-level declarations (direct children of translation_unit),
+	// not declarations inside function bodies.
+	for i := 0; i < int(root.ChildCount()); i++ {
+		n := root.Child(i)
 		if n.Type() != "declaration" && n.Type() != "field_declaration" {
-			return true
+			continue
 		}
-		text := nodeText(source, n)
+		text := source[n.StartByte():n.EndByte()]
 		if !strings.Contains(text, "extern ") && !strings.Contains(text, "input ") {
-			return true
+			continue
 		}
-		// Extract type, name, value
-		var vt, name string
+		var vt string
+		if pt := childByType(source, n, "primitive_type"); pt != nil {
+			vt = nodeText(source, pt)
+		}
+		init := childByType(source, n, "init_declarator")
+		if init == nil {
+			continue
+		}
+		name := ""
+		if id := childByType(source, init, "identifier"); id != nil {
+			name = nodeText(source, id)
+		}
 		var value string
-		for i := 0; i < int(n.ChildCount()); i++ {
-			c := n.Child(i)
-			switch c.Type() {
-			case "primitive_type", "type_identifier", "sized_type_specifier", "macro_type_specifier":
-				vt = nodeText(source, c)
-			case "identifier", "field_identifier", "statement_identifier":
-				if name == "" {
-					name = nodeText(source, c)
-				}
-			case "number_literal":
-				value = nodeText(source, c)
-			case "string_literal", "system_lib_string":
-				value = nodeText(source, c)
-				if len(value) >= 2 {
-					value = value[1 : len(value)-1]
-				}
+		if nl := childByType(source, init, "number_literal"); nl != nil {
+			value = nodeText(source, nl)
+		} else if sl := childByType(source, init, "string_literal"); sl != nil {
+			value = nodeText(source, sl)
+			if len(value) >= 2 {
+				value = value[1 : len(value)-1]
 			}
+		} else if fl := childByType(source, init, "false"); fl != nil {
+			value = "false"
+		} else if tr := childByType(source, init, "true"); tr != nil {
+			value = "true"
 		}
 		if name == "" || isNoiseCST(name, value) {
-			return true
+			continue
 		}
 		params = append(params, ParamSpec{
-			Name:    name,
-			Label:   name,
-			Type:    mapMQLType(vt),
-			Default: value,
-			Group:   guessGroupCST(name),
+			Name: name, Label: name, Type: mapMQLType(vt),
+			Default: value, Group: guessGroupCST(name),
 		})
-		return true
-	})
+	}
 	return params
+}
+
+func isInsideFunction(n *sitter.Node) bool {
+	// Walk up the parent chain to see if we're inside a function_definition
+	// tree-sitter Go binding doesn't expose parent — use node position heuristic
+	return false // TODO: implement when tree-sitter parent access is available
 }
 
 func isNoiseCST(name, value string) bool {
@@ -468,40 +477,35 @@ func hasGridFlagCST(body *sitter.Node) bool {
 
 func extractStateCST(source string, root *sitter.Node) []StateVar {
 	var state []StateVar
-	walkCST(root, func(n *sitter.Node) bool {
+	for i := 0; i < int(root.ChildCount()); i++ {
+		n := root.Child(i)
 		if n.Type() != "declaration" && n.Type() != "field_declaration" {
-			return true
+			continue
 		}
-		text := nodeText(source, n)
+		text := source[n.StartByte():n.EndByte()]
 		if strings.Contains(text, "extern ") || strings.Contains(text, "input ") {
-			return true
+			continue
 		}
-		// Extract name and type
-		var name, vt string
-		for i := 0; i < int(n.ChildCount()); i++ {
-			c := n.Child(i)
-			switch c.Type() {
-			case "primitive_type", "type_identifier", "sized_type_specifier", "macro_type_specifier":
-				vt = nodeText(source, c)
-			case "identifier", "field_identifier", "statement_identifier":
-				if name == "" {
-					name = nodeText(source, c)
-				}
-			case "number_literal":
-				if vt == "bool" {
-					vt = "bool"
-				}
-			}
+		if childByType(source, n, "function_declarator") != nil {
+			continue
+		}
+		var vt string
+		if pt := childByType(source, n, "primitive_type"); pt != nil {
+			vt = nodeText(source, pt)
+		}
+		init := childByType(source, n, "init_declarator")
+		if init == nil {
+			continue
+		}
+		name := ""
+		if id := childByType(source, init, "identifier"); id != nil {
+			name = nodeText(source, id)
 		}
 		if name == "" {
-			return true
+			continue
 		}
-		state = append(state, StateVar{
-			Name:   name,
-			GoType: vt,
-		})
-		return true
-	})
+		state = append(state, StateVar{Name: name, GoType: vt})
+	}
 	return state
 }
 
