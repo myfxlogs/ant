@@ -245,7 +245,4 @@ jobs:
         run: PYTHONPATH=strategy-service python3 -m unittest discover -s strategy-service/tests -p "test_live_broker.py" -v
       - name: Sandbox escape tests
         run: PYTHONPATH=strategy-service python3 -m unittest discover -s strategy-service/tests -p "test_sandbox_escape.py" -v
-      - name: Transpiler tests
-        run: PYTHONPATH=. python3 -m unittest discover -s tools/mql_transpiler/tests -p "test_transpiler.py" -v
-      - name: Translation verifier tests
-        run: PYTHONPATH=.:strategy-service python3 -m unittest discover -s tools/translation_verify/tests -p "test_verifier.py" -v
+      # Python transpiler removed — replaced by backend/tools/mql2go (Go-native)
