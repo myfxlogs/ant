@@ -217,20 +217,8 @@ _HANDLERS = {
     "TranspileCode": (_transpile, TranspileCodeRequest, TranspileCodeResponse),
 }
 
-# StrategyImportService handlers — registered when proto is compiled.
-_IMPORT_HANDLERS = {}
-if _IMPORT_HANDLERS_LOADED:
-    try:
-        from app import strategy_import_pb2 as _import_pb
-        _IMPORT_SVC = _import_pb.DESCRIPTOR.services_by_name["StrategyImportService"]
-        _IMPORT_HANDLERS = {
-            "AnalyzeCode": (_analyze_code, _import_pb.AnalyzeCodeRequest, _import_pb.AnalyzeCodeResponse),
-            "GenerateCode": (_generate_code, _import_pb.GenerateCodeRequest, _import_pb.GenerateCodeResponse),
-            "ImportStrategy": (_import_strategy, _import_pb.ImportStrategyRequest, _import_pb.ImportStrategyResponse),
-        }
-        _log.info("StrategyImportService registered: 3 RPCs")
-    except (ImportError, KeyError) as e:
-        _log.info("StrategyImportService proto not yet compiled: %s", e)
+# StrategyImportService — uses raw HTTP (not ConnectRPC) because proto not compiled.
+# Registered as ASGI routes in main.py's _HealthWrapper.
 
 
 def _build_endpoints(_svc) -> dict:
@@ -249,18 +237,6 @@ def _build_endpoints(_svc) -> dict:
             idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
         )
         path = f"/ant.v1.PythonStrategyService/{name}"
-        endpoints[path] = Endpoint.unary(mi, fn)
-
-    # StrategyImportService handlers (if proto compiled)
-    for name, (fn, inp, out) in _IMPORT_HANDLERS.items():
-        mi = MethodInfo(
-            name=name,
-            service_name="ant.v1.StrategyImportService",
-            input=inp,
-            output=out,
-            idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
-        )
-        path = f"/ant.v1.StrategyImportService/{name}"
         endpoints[path] = Endpoint.unary(mi, fn)
 
     return endpoints

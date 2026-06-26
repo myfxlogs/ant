@@ -159,17 +159,24 @@ export const strategyApi = {
 import { strategyImportClient } from './connect';
 
 export const strategyImportApi = {
+  _baseUrl: '/api/strategy/import',
+
   analyzeCode: async (params: {
     sourceCode: string;
     sourceName: string;
     sourceLang?: string;
   }) => {
-    const response = await strategyImportClient.analyzeCode({
-      sourceCode: params.sourceCode,
-      sourceName: params.sourceName,
-      sourceLang: params.sourceLang || 'mql4',
+    const resp = await fetch(`${strategyImportApi._baseUrl}/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sourceCode: params.sourceCode,
+        sourceName: params.sourceName,
+        sourceLang: params.sourceLang || 'mql4',
+      }),
     });
-    return response;
+    if (!resp.ok) throw new Error(`Analyze failed: ${resp.status}`);
+    return resp.json();
   },
 
   generateCode: async (params: {
@@ -177,13 +184,17 @@ export const strategyImportApi = {
     sourceName: string;
     sourceLang?: string;
   }) => {
-    const response = await strategyImportClient.generateCode({
-      sourceCode: params.sourceCode,
-      sourceName: params.sourceName,
-      sourceLang: params.sourceLang || 'mql4',
-      paramOverrides: {},
+    const resp = await fetch(`${strategyImportApi._baseUrl}/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sourceCode: params.sourceCode,
+        sourceName: params.sourceName,
+        sourceLang: params.sourceLang || 'mql4',
+      }),
     });
-    return response;
+    if (!resp.ok) throw new Error(`Generate failed: ${resp.status}`);
+    return resp.json();
   },
 
   importStrategy: async (params: {
@@ -192,13 +203,17 @@ export const strategyImportApi = {
     sourceLang?: string;
     workspaceId?: string;
   }) => {
-    const response = await strategyImportClient.importStrategy({
-      sourceCode: params.sourceCode,
-      sourceName: params.sourceName,
-      sourceLang: params.sourceLang || 'mql4',
-      paramOverrides: {},
-      workspaceId: params.workspaceId,
+    const resp = await fetch(`${strategyImportApi._baseUrl}/import`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sourceCode: params.sourceCode,
+        sourceName: params.sourceName,
+        sourceLang: params.sourceLang || 'mql4',
+        workspaceId: params.workspaceId,
+      }),
     });
-    return response;
+    if (!resp.ok) throw new Error(`Import failed: ${resp.status}`);
+    return resp.json();
   },
 };
