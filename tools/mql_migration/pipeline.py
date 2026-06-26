@@ -37,6 +37,44 @@ class PipelineResult:
     warnings: List[str] = field(default_factory=list)
 
 
+def _extract_indicator_params(mql_name: str, args: list, expr_gen) -> dict:
+    """Extract indicator SDK params from MQL call args (for IndicatorSpec)."""
+    sig_map = {
+        "iMA": [(2, "period"), (3, "shift"), (4, "method")],
+        "iRSI": [(2, "period"), (4, "shift")],
+        "iATR": [(2, "period"), (3, "shift")],
+        "iMACD": [(2, "fast"), (3, "slow"), (4, "signal"), (7, "shift")],
+        "iBands": [(2, "period"), (3, "deviation"), (7, "shift")],
+        "iStochastic": [(2, "k_period"), (3, "d_period"), (7, "shift")],
+        "iCCI": [(2, "period"), (4, "shift")],
+        "iADX": [(2, "period"), (4, "shift")],
+        "iMomentum": [(2, "period"), (5, "shift")],
+        "iMFI": [(2, "period"), (4, "shift")],
+        "iOBV": [(4, "shift")],
+        "iSAR": [(2, "step"), (3, "maximum"), (4, "shift")],
+        "iStdDev": [(2, "period"), (6, "shift")],
+        "iWPR": [(2, "period"), (4, "shift")],
+        "iEnvelopes": [(2, "period"), (6, "deviation"), (7, "shift")],
+        "iForce": [(2, "period"), (5, "shift")],
+        "iDeMarker": [(2, "period"), (4, "shift")],
+        "iOsMA": [(2, "fast"), (3, "slow"), (4, "signal"), (7, "shift")],
+    }
+    arg_map = sig_map.get(mql_name)
+    if not arg_map:
+        return {}
+    params = {}
+    for mql_idx, sdk_name in arg_map:
+        if mql_idx < len(args):
+            val = expr_gen.translate(args[mql_idx])
+            if val in ("0", "None", "''", '""'):
+                continue
+            if sdk_name == "method":
+                val = {"0": "'sma'", "'ema'": "'ema'", "MODE_EMA": "'ema'",
+                       "MODE_SMA": "'sma'", "MODE_SMMA": "'smma'"}.get(val.strip("'\""), val)
+            params[sdk_name] = val
+    return params
+
+
 class MigrationPipeline:
     """完整的 MQL → Python 迁移流水线。"""
 
@@ -247,7 +285,7 @@ class MigrationPipeline:
                                 result_var = stmt.expr.lhs
                                 break
 
-                # Map to SDK method
+                # Map to SDK method + extract actual params from MQL args
                 method_map = {
                     "iMA": "ma", "iRSI": "rsi", "iATR": "atr", "iBands": "bands",
                     "iMACD": "macd", "iStochastic": "stochastic", "iCCI": "cci",
@@ -258,8 +296,13 @@ class MigrationPipeline:
                 }
                 sdk_method = method_map.get(call.name, call.name.lower())
 
+                # Extract actual parameter values from MQL call args
+                params = _extract_indicator_params(call.name, call.args or [],
+                                                   self._expr_gen)
+
                 specs.append(IndicatorSpec(
                     sdk_method=sdk_method,
+                    params=params,
                     result_var=result_var,
                     comment=f"{call.name}(...) in {func.name}",
                 ))

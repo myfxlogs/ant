@@ -5,12 +5,16 @@ Gap patterns accumulate here; each becomes a fixture for regression testing.
 
 ## Confidence levels
 
-| Level | Threshold | Meaning |
-|-------|-----------|---------|
-| 🟢 FULL | `>= 95%` | Fully handled — no gaps expected |
-| 🟡 PARTIAL | `85% – 95%` | Core patterns work, edge cases may gap |
-| 🔴 GAP | `< 85%` | Known gaps — manual review required |
-| ⚫ UNSUPPORTED | N/A | Not a target (GUI, File I/O, Network, DLL) |
+Confidence is REDEFINED per ADR-0020 C2: binary HIGH/LOW via quality gates.
+
+| Level | Meaning |
+|-------|---------|
+| 🟢 HIGH | Compiles (`ast.parse`) + SDK imports present + lint clean. Candidate for behavioral testing. |
+| 🔴 LOW | Any gate failed. Must not be presented as valid. Needs LLM fill or manual fix. |
+| 🔴 GAP | Deterministic codegen cannot cover. Requires LLM. |
+| ⚫ UNSUPPORTED | Not a target (GUI, File I/O, Network, DLL). |
+
+The old percentage-based system (FULL ≥95%, PARTIAL 85-95%, GAP <85%) is RETIRED.
 
 ## Feature coverage matrix
 
