@@ -1,5 +1,6 @@
-"""意图 IR — 从 MQL 源码提取的策略意图，语言无关。
+"""意图 IR — 从 MQL 源码提取的策略意图。
 
+当前阶段: Python 优先（识别器预翻译 expr 字段），ast_node 字段为未来 Go 目标保留。
 这些数据结构是积木识别器（Layer 2）的输出，也是代码生成器（Layer 3）的输入。
 """
 
@@ -123,31 +124,36 @@ class CloseAction(Enum):
 
 @dataclass
 class Condition:
-    """条件表达式 — 语言无关的 AST 节点 + 缓存的目标语言字符串。
+    """条件表达式 — MQL AST 节点 + Python 表达式缓存。
 
-    ``ast_node`` 是 MQL AST 表达式（语言无关），代码生成器调用
-    ExpressionGen.translate(ast_node) 转为目标语言代码。
+    ``ast_node`` 是规范表示（MQL AST Expression），供非 Python 生成器使用。
+    ``expr`` 是 Python 表达式字符串（识别器预翻译，Python 生成器直接消费）。
 
-    ``expr`` 是 Python 字符串缓存（向后兼容，由生成器填充）。
+    当前阶段 Python 生成器优先使用 ``expr``。Go/其他生成器使用
+    ``ast_node`` + 对应的 ExpressionGen。
     """
-    ast_node: Any = None                # MQL AST Expression 节点（语言无关）
-    expr: str = ""                      # Python 表达式缓存（生成器时填充）
+    ast_node: Any = None                # MQL AST Expression（规范表示）
+    expr: str = ""                      # Python 表达式（识别器预翻译）
     comment: str = ""                   # 人类可读说明
 
 
 @dataclass
 class OrderParams:
-    """订单参数 — expr 字段是 Python 缓存（生成器时填充）。"""
+    """订单参数 — str 字段是 Python 缓存，_ast 字段是规范 AST。
+
+    Python 生成器使用 volume/price/sl/tp 字符串缓存。
+    Go/其他生成器使用 volume_ast/price_ast/sl_ast/tp_ast。
+    """
     symbol: str = "self.ctx.symbol"
     order_type: OrderAction = OrderAction.MARKET_BUY
-    volume: str = ""                    # 手数表达式 (Python)
-    volume_ast: Any = None              # 手数 AST 节点（语言无关）
-    price: str = ""                     # 价格表达式 (Python)
-    price_ast: Any = None               # 价格 AST 节点（语言无关）
-    sl: str = ""
-    sl_ast: Any = None
-    tp: str = ""
-    tp_ast: Any = None
+    volume: str = ""                    # Python: 手数表达式
+    volume_ast: Any = None              # AST: 手数（规范表示）
+    price: str = ""                     # Python: 价格表达式
+    price_ast: Any = None               # AST: 价格
+    sl: str = ""                        # Python: 止损
+    sl_ast: Any = None                  # AST: 止损
+    tp: str = ""                        # Python: 止盈
+    tp_ast: Any = None                  # AST: 止盈
     deviation: str = "3"
     magic: str = ""
     comment: str = ""
@@ -201,7 +207,7 @@ class SizingRule:
 class IndicatorSpec:
     """策略需要的指标规格 — 代码生成器据此 emit 指标调用。
 
-    语言无关：名称和参数是 SDK 方法名和参数名（Python/Go 通用）。
+    SDK 方法名和参数名与目标语言无关（Python/Go 共用相同的方法名约定）。
     """
     sdk_method: str                     # "ema", "rsi", "i_custom", "atr"
     params: Dict[str, Any] = field(default_factory=dict)  # {"period": 14, "shift": 1}
@@ -275,7 +281,7 @@ class BlindSpot:
 
 @dataclass
 class StrategyIntent:
-    """从 MQL 源码提取的完整策略意图 — 语言无关。"""
+    """从 MQL 源码提取的完整策略意图。Python 优先，ast_node 保留多语言扩展点。"""
     meta: StrategyMeta = field(default_factory=StrategyMeta)
     params: List[ParamSpec] = field(default_factory=list)
     state: List[StateVar] = field(default_factory=list)
