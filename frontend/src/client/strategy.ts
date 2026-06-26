@@ -153,3 +153,52 @@ export const strategyApi = {
     await strategyClient.cancelSignal({ signalId });
   },
 };
+
+// ── StrategyImportService ────────────────────────────────────────
+
+import { strategyImportClient } from './connect';
+
+export const strategyImportApi = {
+  analyzeCode: async (params: {
+    sourceCode: string;
+    sourceName: string;
+    sourceLang?: string;
+  }) => {
+    const response = await strategyImportClient.analyzeCode({
+      sourceCode: params.sourceCode,
+      sourceName: params.sourceName,
+      sourceLang: params.sourceLang || 'mql4',
+    });
+    return response;
+  },
+
+  generateCode: async (params: {
+    sourceCode: string;
+    sourceName: string;
+    sourceLang?: string;
+  }) => {
+    const response = await strategyImportClient.generateCode({
+      sourceCode: params.sourceCode,
+      sourceName: params.sourceName,
+      sourceLang: params.sourceLang || 'mql4',
+      paramOverrides: {},
+    });
+    return response;
+  },
+
+  importStrategy: async (params: {
+    sourceCode: string;
+    sourceName: string;
+    sourceLang?: string;
+    workspaceId?: string;
+  }) => {
+    const response = await strategyImportClient.importStrategy({
+      sourceCode: params.sourceCode,
+      sourceName: params.sourceName,
+      sourceLang: params.sourceLang || 'mql4',
+      paramOverrides: {},
+      workspaceId: params.workspaceId,
+    });
+    return response;
+  },
+};

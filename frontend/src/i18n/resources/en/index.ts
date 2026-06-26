@@ -34,6 +34,7 @@ import StrategyScheduleLogs from './strategy_schedule_logs';
 import StrategyGen from './strategy_gen';
 import StrategyAiChat from './strategy_ai_chat';
 import StrategyPaper from './strategy_paper';
+import strategyImport from './strategy_import';
 import StrategyDefaultTemplates from './strategy_default_templates';
 import Accounts from './accounts';
 import AiCore from './ai_core';
@@ -62,6 +63,7 @@ const en = mergeResources(
   analytics,
   logs,
   strategy,
+  strategyImport,
   StrategyDefaultTemplates,
   StrategyPaper,
   StrategyAiChat,
