@@ -44,7 +44,7 @@ const StrategyTemplates = {
           "create": "创建调度",
           "createAndEnable": "创建并启用",
           "createScheduleNoEnable": "新建调度任务",
-          "publishTemplate": "发布模板",
+          "publishTemplate": "发布策略",
           "updateTradingPassword": "更新交易密码"
         },
         "metrics": {
@@ -162,8 +162,8 @@ const StrategyTemplates = {
           "name": "例如：均线交叉策略"
         },
         "title": {
-          "create": "新建模板",
-          "edit": "编辑模板"
+          "create": "新建策略",
+          "edit": "编辑策略"
         },
         "validation": {
           "codeRequired": "代码不能为空",
@@ -173,8 +173,8 @@ const StrategyTemplates = {
       "actions": {
         "backtest": "回测",
         "copy": "复制",
-        "create": "新建模板",
-        "createTemplate": "新建模板",
+        "create": "新建策略",
+        "createTemplate": "新建策略",
         "delete": "删除",
         "edit": "编辑",
         "launchSchedule": "上线调度",
@@ -189,7 +189,7 @@ const StrategyTemplates = {
         "backtestRangeInvalid": "回测日期范围无效",
         "backtestReportDeleted": "回测报告已删除",
         "backtestReportNotFound": "未找到回测报告",
-        "backtestRunNoPublishedTemplate": "回测运行没有已发布模板",
+        "backtestRunNoPublishedTemplate": "回测运行没有已发布策略",
         "backtestRunningCannotPublish": "回测正在运行，无法发布。",
         "backtestSubmitFailed": "提交回测失败",
         "backtestSubmitted": "回测已提交",
@@ -200,30 +200,30 @@ const StrategyTemplates = {
         "codeValidationPassed": "代码验证通过",
         "copyFailed": "复制失败，请手动复制",
         "createScheduleFailed": "创建调度失败",
-        "deepLinkNavigate": "已从外部链接打开模板及最新运行详情",
+        "deepLinkNavigate": "已从外部链接打开策略及最新运行详情",
         "enterStrategyCode": "请输入策略代码",
-        "fetchTemplateListFailed": "加载模板列表失败",
+        "fetchTemplateListFailed": "加载策略列表失败",
         "missingDraftIdCannotPublish": "缺少草稿 ID，无法发布。",
         "missingScheduleInfo": "缺少调度信息",
         "publishFailed": "发布失败",
-        "publishedButNoTemplateId": "已发布，但缺少模板 ID。",
+        "publishedButNoTemplateId": "已发布，但缺少策略 ID。",
         "readStrategyCodeFailed": "读取策略代码失败",
-        "readTemplateStatusFailed": "读取模板状态失败",
-        "republishedButNoTemplateId": "已重新发布，但缺少模板 ID。",
+        "readTemplateStatusFailed": "读取策略状态失败",
+        "republishedButNoTemplateId": "已重新发布，但缺少策略 ID。",
         "scheduleCreated": "调度已创建",
         "scheduleCreatedAndEnabled": "调度已创建并启用",
         "selectBacktestRange": "请选择回测日期范围",
         "strategyCodeEmptyCannotBacktest": "策略代码为空，无法回测。",
         "strategyCodeEmptyCannotPublish": "策略代码为空，请先保存代码再发布。",
-        "systemTemplateReadOnly": "系统模板为只读，请克隆后编辑。",
-        "templateAlreadyPublished": "模板已发布",
-        "templateCreated": "模板已创建",
-        "templateDeleted": "模板已删除",
-        "templateNotDraftUnknownPublishStatus": "模板非草稿，发布状态未知。",
-        "templateNotPublishedCannotCreateSchedule": "模板未发布，无法创建调度。",
-        "templatePublished": "模板已发布",
-        "templateRepublished": "模板已重新发布",
-        "templateUpdated": "模板已更新"
+        "systemTemplateReadOnly": "系统策略为只读，请克隆后编辑。",
+        "templateAlreadyPublished": "策略已发布",
+        "templateCreated": "策略已创建",
+        "templateDeleted": "策略已删除",
+        "templateNotDraftUnknownPublishStatus": "策略非草稿，发布状态未知。",
+        "templateNotPublishedCannotCreateSchedule": "策略未发布，无法创建调度。",
+        "templatePublished": "策略已发布",
+        "templateRepublished": "策略已重新发布",
+        "templateUpdated": "策略已更新"
       },
       "status": {
         "draft": "草稿",
@@ -234,8 +234,8 @@ const StrategyTemplates = {
         "createdAt": "创建时间",
         "defaultHint": "默认值",
         "description": "描述",
-        "emptyUser": "暂无用户模板，点击上方“新建模板”开始。",
-        "loadingDefault": "正在加载默认模板...",
+        "emptyUser": "暂无用户策略，点击上方“新建策略”开始。",
+        "loadingDefault": "正在加载默认策略...",
         "name": "名称",
         "status": "状态",
         "tags": "标签",
@@ -244,18 +244,18 @@ const StrategyTemplates = {
         "visibility": "可见性"
       },
       "tabs": {
-        "system": "系统模板",
-        "user": "用户模板"
+        "system": "系统策略",
+        "user": "用户策略"
       },
       "visibility": {
         "private": "私有",
         "public": "公开"
       },
       "copySuffix": " (副本)",
-      "defaultDraftName": "草稿模板",
-      "deleteConfirm": "删除此模板？",
+      "defaultDraftName": "草稿策略",
+      "deleteConfirm": "删除此策略？",
       "scheduleName": "{{symbol}} {{timeframe}} {{name}}",
-      "title": "策略模板"
+      "title": "策略导入"
     }
   }
 } as const;
