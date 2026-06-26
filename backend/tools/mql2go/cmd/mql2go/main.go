@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"anttrader/tools/mql2go"
 )
@@ -23,7 +24,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	input := flag.Arg(0)
+	input := filepath.Clean(flag.Arg(0))
 	source, err := os.ReadFile(input)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading %s: %v\n", input, err)
@@ -45,11 +46,12 @@ func main() {
 	code := mql2go.Generate(intent)
 
 	if *output != "" {
-		if err := os.WriteFile(*output, []byte(code), 0644); err != nil {
-			fmt.Fprintf(os.Stderr, "Error writing %s: %v\n", *output, err)
+		outPath := filepath.Clean(*output)
+		if err := os.WriteFile(outPath, []byte(code), 0600); err != nil {
+			fmt.Fprintf(os.Stderr, "Error writing %s: %v\n", outPath, err)
 			os.Exit(4)
 		}
-		fmt.Fprintf(os.Stderr, "Wrote %d lines to %s\n", countLines(code), *output)
+		fmt.Fprintf(os.Stderr, "Wrote %d lines to %s\n", countLines(code), outPath)
 	} else {
 		fmt.Print(code)
 	}
