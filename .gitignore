@@ -73,3 +73,5 @@ ssh/
 bin/antrader
 bin/
 e2e/shots/*
+backend/gen/proto/ant/v1/strategy_import.pb.go
+backend/gen/proto/ant/v1/antv1connect/strategy_import.connect.go
