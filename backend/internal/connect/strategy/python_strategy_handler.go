@@ -42,6 +42,9 @@ type PythonStrategyServer struct {
 	// D6-A / T3.2b: AccountStateProvider feeds real account data.
 	// Before connected, equity-dependent gate rules fail-closed.
 	accountProvider AccountStateProvider
+
+	// Go-native strategy executor — replaces Python for generated Go strategies.
+	goExecutor *GoExecutor
 }
 
 // AccountStateProvider supplies live account state for gate evaluation (T3.2b).
@@ -107,7 +110,24 @@ func (s *PythonStrategyServer) Execute(ctx context.Context, req *connect.Request
 	if err != nil {
 		return nil, err
 	}
-	_ = uid // authorization verified; downstream uses AccountId directly
+	_ = uid
+
+	// Go-native path: execute generated Go strategies directly.
+	if s.goExecutor != nil && isGoStrategy(req.Msg.Code) {
+		execReq := ExecuteRequest{
+			Symbol:    req.Msg.Symbol,
+			Timeframe: req.Msg.Timeframe,
+		}
+		resp, err := s.goExecutor.Run(ctx, req.Msg.Code, execReq)
+		if err != nil {
+			s.log.Warn("go executor failed, falling back to python", zap.Error(err))
+		} else {
+			return connect.NewResponse(&antv1.ExecuteStrategyResponse{
+				Success: true,
+				Signal:  toProtoSignal(resp),
+			}), nil
+		}
+	}
 
 	if s.connectClient != nil {
 		resp, err := s.connectClient.Execute(ctx, connect.NewRequest(&antv1.ExecuteStrategyRequest{
@@ -255,3 +275,27 @@ func (s *PythonStrategyServer) ImportStrategy(ctx context.Context, req *connect.
 }
 
 func (s *PythonStrategyServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
+
+func isGoStrategy(code string) bool {
+	return len(code) > 0 && (contains(code, "anttrader/strategy/sdk") || contains(code, "package "))
+}
+
+func contains(s, sub string) bool {
+	for i := 0; i <= len(s)-len(sub); i++ {
+		if s[i:i+len(sub)] == sub {
+			return true
+		}
+	}
+	return false
+}
+
+func toProtoSignal(resp *ExecuteResponse) *antv1.StrategySignal {
+	return &antv1.StrategySignal{
+		SignalType: resp.Signal,
+		Volume:     resp.Volume,
+		Price:      resp.Price,
+		StopLoss:   resp.StopLoss,
+		TakeProfit: resp.TakeProfit,
+		Reason:     resp.Comment,
+	}
+}
