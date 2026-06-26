@@ -106,5 +106,7 @@ import { ShareService } from "../gen/ant/v1/share_pb";
 import { createConnectTransport } from "@connectrpc/connect-web";
 const publicTransport = createConnectTransport({ baseUrl: (import.meta as any).env?.VITE_API_URL || (typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:8080") });
 export const shareClient = createClient(ShareService, publicTransport);
-import { StrategyImportService } from "../gen/ant/v1/strategy_import_pb";
+import { StrategyImportService, AnalyzeCodeRequestSchema, AnalyzeCodeResponseSchema, GenerateCodeRequestSchema, GenerateCodeResponseSchema, ImportStrategyRequestSchema, ImportStrategyResponseSchema } from "../gen/ant/v1/strategy_import_pb";
+// Ensure schemas are registered at runtime (tree-shaking guard)
+void [AnalyzeCodeRequestSchema, AnalyzeCodeResponseSchema, GenerateCodeRequestSchema, GenerateCodeResponseSchema, ImportStrategyRequestSchema, ImportStrategyResponseSchema];
 export const strategyImportClient = createClient(StrategyImportService, transport);
