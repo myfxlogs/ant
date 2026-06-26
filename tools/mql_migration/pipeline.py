@@ -90,8 +90,12 @@ class MigrationPipeline:
         )
 
     def _analyze_ast(self, ast: SourceFile, source_name: str = "") -> StrategyIntent:
-        """从 AST 提取完整策略意图。"""
+        """从 AST 提取完整策略意图。
+
+        Uses RecognizerRegistry for all recognition — single source of truth.
+        """
         from tools.mql_migration.intent_ir import ParamSpec, ParamType, ParamGroup, SizingKind
+        from tools.mql_migration.recognizers.registry import RecognizerRegistry
         from tools.mql_migration.recognizers.exec_model import (
             recognize_execution_model,
             recognize_meta,
@@ -100,88 +104,82 @@ class MigrationPipeline:
             recognize_state_vars,
             recognize_timer,
         )
-        from tools.mql_migration.recognizers.market_entry import recognize_market_entries
-        from tools.mql_migration.recognizers.magic_exit import recognize_exit_rules
-        from tools.mql_migration.recognizers.pending_entry import recognize_pending_entries
-        from tools.mql_migration.recognizers.custom_entry import recognize_custom_entries
-        from tools.mql_migration.recognizers.margin_check import recognize_margin_checks
 
-        # ---- Actual recognition tracking (only count real hits) ----
-        recognized = 0
-        total = 0
-        blocks: dict[str, int] = {}  # block_name → count of items found
-
+        # ── Structural metadata (always present, not coverage-scored) ──
         meta = recognize_meta(ast, source_name)
-        blocks["meta"] = 1
+        execution = recognize_execution_model(ast)
+        sizing = recognize_sizing(ast)
+        timer = recognize_timer(ast)
 
         params = recognize_params(ast)
         state = recognize_state_vars(ast)
+
+        # Ensure LotSize param exists
         has_lot = any("lot" in p.name.lower() for p in params)
         if not has_lot:
             params.insert(0, ParamSpec("LotSize", "交易手数", ParamType.DOUBLE, 0.10,
                           group=ParamGroup.SIZING))
-        blocks["params"] = len(params)
-        blocks["state"] = len(state)
 
-        execution = recognize_execution_model(ast)
-        blocks["execution"] = 1
-
-        sizing = recognize_sizing(ast)
-        blocks["sizing"] = 1
-
+        # Martingale params
         if sizing and sizing.kind == SizingKind.MARTINGALE:
-            martingale_params = [
+            for mp in [
                 ParamSpec("MartingaleMultiplier", "马丁倍数", ParamType.DOUBLE, 2.0,
                           group=ParamGroup.SIZING),
                 ParamSpec("MaxLot", "最大手数", ParamType.DOUBLE, 5.0,
                           group=ParamGroup.SIZING),
-            ]
-            existing_names = {p.name for p in params}
-            for mp in martingale_params:
-                if mp.name not in existing_names:
+            ]:
+                if mp.name not in {p.name for p in params}:
                     params.append(mp)
 
-        timer = recognize_timer(ast)
-        blocks["timer"] = 1 if timer else 0
+        # ── Registry-driven recognition ──────────────────────────────
+        registry = RecognizerRegistry.create_default()
+        agg = registry.run_all(ast, self._expr_gen)
 
-        indicators = self._extract_indicators(ast)
-        blocks["indicators"] = len(indicators)
+        # Collect entry rules from all entry recognizers
+        all_entries = []
+        for name in ["market_entry", "pending_entry", "custom_entry"]:
+            if name in agg.results:
+                all_entries.extend(agg.results[name].items)
 
-        market_entries = recognize_market_entries(ast, self._expr_gen)
-        pending_entries = recognize_pending_entries(ast, self._expr_gen)
-        custom_entries = recognize_custom_entries(ast, self._expr_gen)
-        all_entries = market_entries + pending_entries + custom_entries
-        blocks["entries"] = len(all_entries)
+        # Collect exit rules
+        exit_rules = []
+        if "magic_exit" in agg.results:
+            exit_rules = agg.results["magic_exit"].items
 
-        exit_rules = recognize_exit_rules(ast, self._expr_gen)
-        blocks["exits"] = len(exit_rules)
-
-        risk = recognize_margin_checks(ast, self._expr_gen) or self._recognize_risk(ast)
-        blocks["risk"] = len(risk)
+        # Collect risk checks
+        risk = []
+        if "margin_check" in agg.results:
+            risk = agg.results["margin_check"].items
+        if not risk:
+            risk = self._recognize_risk(ast)
 
         if risk:
-            risk_params = [
-                ParamSpec("MarginThreshold", "保证金水平阈值(%)", ParamType.DOUBLE, 50.0,
-                          group=ParamGroup.RISK),
-            ]
-            existing_names = {p.name for p in params}
-            for rp in risk_params:
-                if rp.name not in existing_names:
+            for rp in [ParamSpec("MarginThreshold", "保证金水平阈值(%)", ParamType.DOUBLE, 50.0,
+                                 group=ParamGroup.RISK)]:
+                if rp.name not in {p.name for p in params}:
                     params.append(rp)
 
-        blind_spots = self._detect_blind_spots(ast, all_entries, exit_rules)
+        # Indicators
+        indicators = self._extract_indicators(ast)
 
-        # Coverage: only count TRADING categories. GUI noise is excluded.
+        # Blind spots (from registry + pipeline)
+        blind_spots = list(agg.all_blind_spots)
+        blind_spots.extend(self._detect_blind_spots(ast, all_entries, exit_rules))
+
+        # Coverage: only count detected TRADING logic. Structural metadata
+        # (meta, execution model, sizing kind) are always present and don't
+        # indicate actual recognition quality.
         gui_noise_count = sum(1 for bs in blind_spots if bs.severity == Severity.INFO)
-        real_blind_count = len(blind_spots) - gui_noise_count
 
-        category_weights = {"meta": 1, "params": 1, "state": 1, "execution": 1,
-                          "sizing": 1, "timer": 1, "entries": 2, "exits": 2,
-                          "risk": 1, "indicators": 1}
-        for cat, weight in category_weights.items():
-            total += weight
-            if blocks.get(cat, 0) > 0:
-                recognized += weight
+        trading_blocks = {
+            "entries": len(all_entries),
+            "exits": len(exit_rules),
+            "indicators": len(indicators),
+            "risk": len(risk),
+            "params": len([p for p in params if p.group.value != "系统参数"]),
+        }
+        total = sum(max(1, v) for v in trading_blocks.values())
+        recognized = sum(v for v in trading_blocks.values())
         coverage = recognized / max(total, 1)
 
         return StrategyIntent(

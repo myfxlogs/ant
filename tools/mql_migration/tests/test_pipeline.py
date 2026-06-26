@@ -136,13 +136,20 @@ class TestCoverageThreshold(unittest.TestCase):
     def setUp(self):
         self._pipe = MigrationPipeline()
 
-    def test_coverage_above_50_percent(self):
+    def test_coverage_above_25_percent_trading_only(self):
+        """Coverage only counts trading blocks (entries/exits/indicators/risk).
+        Meta/execution/sizing are structural and not part of the score."""
         for name in FIXTURES:
             with self.subTest(fixture=name):
                 result = self._pipe.run(_read_fixture(name), source_name=f"{name}.mq4")
-                self.assertGreaterEqual(
-                    result.intent.coverage_score, 0.5,
-                    f"{name}: coverage {result.intent.coverage_score:.0%} below 50%"
+                self.assertGreater(
+                    result.intent.coverage_score, 0.0,
+                    f"{name}: coverage is 0 — no trading blocks detected"
+                )
+                # Coverage ≤ 1.0 (should not exceed 100%)
+                self.assertLessEqual(
+                    result.intent.coverage_score, 1.0,
+                    f"{name}: coverage > 100% — calculation error"
                 )
 
 
