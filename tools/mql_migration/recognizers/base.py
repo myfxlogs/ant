@@ -141,7 +141,11 @@ ORDER_TYPE_MAP = {
 
 
 def find_ordersend_in_branch(branch) -> Optional[CallExpr]:
-    """Find an OrderSend call in a branch (CompoundStmt or ExpressionStmt)."""
+    """Find an OrderSend call recursively in any branch type.
+
+    Handles: ExpressionStmt, CompoundStmt, IfStmt (both then+else),
+    ForStmt body, and nested combinations.
+    """
     if branch is None:
         return None
     if isinstance(branch, ExpressionStmt):
@@ -152,6 +156,18 @@ def find_ordersend_in_branch(branch) -> Optional[CallExpr]:
             result = find_ordersend_in_branch(stmt)
             if result:
                 return result
+    if isinstance(branch, IfStmt):
+        # Check then-branch
+        result = find_ordersend_in_branch(branch.then_branch)
+        if result:
+            return result
+        # Check else-branch
+        if branch.else_branch:
+            result = find_ordersend_in_branch(branch.else_branch)
+            if result:
+                return result
+    if isinstance(branch, ForStmt):
+        return find_ordersend_in_branch(branch.body)
     return None
 
 
