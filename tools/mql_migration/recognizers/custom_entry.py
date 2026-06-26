@@ -38,19 +38,8 @@ from tools.mql_migration.recognizers.base import (
     ast_contains_call,
     find_ordersend_in_branch,
     ORDER_TYPE_MAP,
+    str_to_order_action,
 )
-
-
-def _str_to_order_action(name: str) -> OrderAction:
-    action_map = {
-        "market_buy": OrderAction.MARKET_BUY,
-        "market_sell": OrderAction.MARKET_SELL,
-        "buy_limit": OrderAction.BUY_LIMIT,
-        "sell_limit": OrderAction.SELL_LIMIT,
-        "buy_stop": OrderAction.BUY_STOP,
-        "sell_stop": OrderAction.SELL_STOP,
-    }
-    return action_map.get(name, OrderAction.BUY_STOP)
 
 
 def recognize_custom_entries(ast: SourceFile,
@@ -187,7 +176,7 @@ def _match_icustom_entry(if_stmt: IfStmt,
     type_str = _extract_order_type_str(order_send)
     if type_str is None:
         return None
-    order_type = _str_to_order_action(type_str)
+    order_type = str_to_order_action(type_str)
 
     cond_expr = expr_gen.translate(if_stmt.condition)
 

@@ -69,40 +69,49 @@ def walk_statements(body, *target_types):
             yield from walk_statements(stmt, *target_types)
 
 
+def _walk_ast_nodes(node, visitor):
+    """Generic AST walker — calls visitor(node) for every node in the tree.
+
+    Handles: CompoundStmt, IfStmt, ForStmt, ExpressionStmt, BinaryOp, UnaryOp,
+    VarDecl, AssignmentExpr, CallExpr.
+    """
+    if node is None:
+        return
+    visitor(node)
+    if isinstance(node, CompoundStmt):
+        for s in (node.statements or []):
+            _walk_ast_nodes(s, visitor)
+    elif isinstance(node, IfStmt):
+        _walk_ast_nodes(node.condition, visitor)
+        _walk_ast_nodes(node.then_branch, visitor)
+        _walk_ast_nodes(node.else_branch, visitor)
+    elif isinstance(node, ForStmt):
+        _walk_ast_nodes(node.init, visitor)
+        _walk_ast_nodes(node.condition, visitor)
+        _walk_ast_nodes(node.update, visitor)
+        _walk_ast_nodes(node.body, visitor)
+    elif isinstance(node, ExpressionStmt):
+        _walk_ast_nodes(node.expr, visitor)
+    elif isinstance(node, BinaryOp):
+        _walk_ast_nodes(node.left, visitor)
+        _walk_ast_nodes(node.right, visitor)
+    elif isinstance(node, UnaryOp):
+        _walk_ast_nodes(node.operand, visitor)
+    elif isinstance(node, VarDecl):
+        _walk_ast_nodes(node.value, visitor)
+    elif isinstance(node, AssignmentExpr):
+        _walk_ast_nodes(node.rhs, visitor)
+    elif isinstance(node, CallExpr):
+        for a in (node.args or []):
+            _walk_ast_nodes(a, visitor)
+
+
 def find_calls(body, *call_names: str) -> List[CallExpr]:
     """Find all CallExpr nodes with matching names in a subtree."""
     found = []
-
-    def _walk(node):
-        if node is None:
-            return
-        if isinstance(node, CallExpr) and (not call_names or node.name in call_names):
-            found.append(node)
-        if isinstance(node, CompoundStmt):
-            for s in (node.statements or []):
-                _walk(s)
-        elif isinstance(node, IfStmt):
-            _walk(node.condition)
-            _walk(node.then_branch)
-            _walk(node.else_branch)
-        elif isinstance(node, ForStmt):
-            _walk(node.init)
-            _walk(node.condition)
-            _walk(node.update)
-            _walk(node.body)
-        elif isinstance(node, ExpressionStmt):
-            _walk(node.expr)
-        elif isinstance(node, BinaryOp):
-            _walk(node.left)
-            _walk(node.right)
-        elif isinstance(node, UnaryOp):
-            _walk(node.operand)
-        elif isinstance(node, VarDecl):
-            _walk(node.value)
-        elif isinstance(node, AssignmentExpr):
-            _walk(node.rhs)
-
-    _walk(body)
+    _walk_ast_nodes(body, lambda n: (
+        found.append(n) if isinstance(n, CallExpr) and (not call_names or n.name in call_names) else None
+    ))
     return found
 
 
@@ -138,6 +147,25 @@ ORDER_TYPE_MAP = {
     "OP_BUYSTOP": "buy_stop",
     "OP_SELLSTOP": "sell_stop",
 }
+
+
+def str_to_order_action(name: str, default=None):
+    """Convert MQL order action string to OrderAction enum.
+
+    Single source of truth — used by market_entry, pending_entry, custom_entry.
+    """
+    from tools.mql_migration.intent_ir import OrderAction
+    _MAP = {
+        "market_buy": OrderAction.MARKET_BUY,
+        "market_sell": OrderAction.MARKET_SELL,
+        "buy_limit": OrderAction.BUY_LIMIT,
+        "sell_limit": OrderAction.SELL_LIMIT,
+        "buy_stop": OrderAction.BUY_STOP,
+        "sell_stop": OrderAction.SELL_STOP,
+    }
+    if default:
+        return _MAP.get(name, default)
+    return _MAP.get(name, OrderAction.MARKET_BUY)
 
 
 def find_ordersend_in_branch(branch) -> Optional[CallExpr]:

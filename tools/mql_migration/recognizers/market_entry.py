@@ -32,20 +32,8 @@ from tools.mql_migration.recognizers.base import (
     find_functions,
     find_ordersend_in_branch,
     ORDER_TYPE_MAP,
+    str_to_order_action,
 )
-
-
-def _order_action_from_str(name: str) -> OrderAction:
-    """Convert MQL order type name to OrderAction enum."""
-    action_map = {
-        "market_buy": OrderAction.MARKET_BUY,
-        "market_sell": OrderAction.MARKET_SELL,
-        "buy_limit": OrderAction.BUY_LIMIT,
-        "sell_limit": OrderAction.SELL_LIMIT,
-        "buy_stop": OrderAction.BUY_STOP,
-        "sell_stop": OrderAction.SELL_STOP,
-    }
-    return action_map.get(name, OrderAction.MARKET_BUY)
 
 
 def recognize_market_entries(ast: SourceFile,
@@ -114,7 +102,7 @@ def _match_if_ordersend(if_stmt: IfStmt,
     order_type = _extract_order_type_str(order_send)
     if order_type is None:
         return None
-    order_type = _order_action_from_str(order_type)
+    order_type = str_to_order_action(order_type)
     if order_type is None:
         return None
 

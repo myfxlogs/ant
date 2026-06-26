@@ -508,27 +508,6 @@ class PythonCodeGenerator:
 # ── Helpers ────────────────────────────────────────────────────────────
 
 
-def _extract_refs(expr: str) -> list[str]:
-    """Extract variable names from a Python expression string."""
-    import re
-    # Match identifiers that aren't keywords, attributes, or function calls
-    names = re.findall(r'\b([a-zA-Z_][a-zA-Z0-9_]*)\b', expr)
-    keywords = {'and', 'or', 'not', 'if', 'else', 'True', 'False', 'None',
-                'self', 'Decimal', 'int', 'float', 'str', 'len', 'abs',
-                'min', 'max', 'round', 'pow', 'type'}
-    # Filter out dotted refs and keywords
-    result = []
-    for n in names:
-        if n not in keywords and not n.startswith('_'):
-            # Check it's not part of a dotted reference like self.xxx or bars.xxx
-            parts = expr.split()
-            for part in parts:
-                if n in part and '.' not in part.split(n)[0][-1:] if len(part.split(n)) > 1 else True:
-                    result.append(n)
-                    break
-    return list(set(result))
-
-
 def _order_type_enum(action: OrderAction) -> str:
     """OrderAction → OrderType enum string."""
     return {

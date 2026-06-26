@@ -33,22 +33,11 @@ from tools.mql_migration.recognizers.base import (
     find_functions,
     find_ordersend_in_branch,
     ORDER_TYPE_MAP,
+    str_to_order_action,
 )
 
 # Pending order types (not market) — MQL names
 _PENDING_TYPES = {"OP_BUYLIMIT", "OP_SELLLIMIT", "OP_BUYSTOP", "OP_SELLSTOP"}
-
-
-def _str_to_order_action(name: str) -> OrderAction:
-    action_map = {
-        "market_buy": OrderAction.MARKET_BUY,
-        "market_sell": OrderAction.MARKET_SELL,
-        "buy_limit": OrderAction.BUY_LIMIT,
-        "sell_limit": OrderAction.SELL_LIMIT,
-        "buy_stop": OrderAction.BUY_STOP,
-        "sell_stop": OrderAction.SELL_STOP,
-    }
-    return action_map.get(name, OrderAction.BUY_LIMIT)
 
 
 def recognize_pending_entries(ast: SourceFile,
@@ -163,7 +152,7 @@ def _extract_pending_type(call: CallExpr) -> Optional[OrderAction]:
     if mql_name and mql_name in _PENDING_TYPES:
         action_str = ORDER_TYPE_MAP.get(mql_name)
         if action_str:
-            return _str_to_order_action(action_str)
+            return str_to_order_action(action_str, default=OrderAction.BUY_LIMIT)
     return None
 
 
