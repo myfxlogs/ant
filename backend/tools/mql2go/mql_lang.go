@@ -1,10 +1,10 @@
+
 package mql2go
 
 /*
-#cgo LDFLAGS: -L/opt/ant/tools/mql_transpiler/grammar/mql -l:mql.so -Wl,-rpath,/opt/ant/tools/mql_transpiler/grammar/mql
+#cgo LDFLAGS: ${SRCDIR}/mql.so
 #include <stdlib.h>
 
-// tree_sitter_mql is exported by mql.so
 extern void *tree_sitter_mql();
 */
 import "C"
