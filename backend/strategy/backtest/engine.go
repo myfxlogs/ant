@@ -2,6 +2,7 @@ package backtest
 
 import (
 	"context"
+	"math"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -87,8 +88,8 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 	// OnDeinit
 	e.strategy.OnDeinit(btCtx, "backtest_complete")
 
-	// Calculate metrics
-	metrics := CalculateMetrics(e.equity, e.trades)
+	// Calculate metrics (uses existing antv1.BacktestMetrics)
+	metrics := CalculateMetrics(e.config.InitialCapital, e.equity, e.trades)
 
 	return &Result{
 		Config:     e.config,
@@ -342,22 +343,129 @@ func (i *btIndicators) EMA(period, shift int) float64 {
 	return ema
 }
 func (i *btIndicators) MA(period, shift int, method string) float64 { return i.EMA(period, shift) }
-func (i *btIndicators) RSI(period, shift int) float64              { return 50 }
-func (i *btIndicators) MACD(fast, slow, signal, shift int) float64  { return 0 }
-func (i *btIndicators) MACDSignal(fast, slow, signal, shift int) float64 { return 0 }
-func (i *btIndicators) ATR(period, shift int) float64               { return 0 }
-func (i *btIndicators) Bollinger(period int, deviation float64, shift int) (float64, float64, float64) {
-	return 0, 0, 0
+func (i *btIndicators) RSI(period, shift int) float64 {
+	if len(i.bars) < period+shift+1 {
+		return 0
+	}
+	var avgGain, avgLoss float64
+	for j := shift + 1; j <= shift+period; j++ {
+		curr, _ := i.bars[j-1].Close.Float64()
+		prev, _ := i.bars[j].Close.Float64()
+		diff := curr - prev
+		if diff > 0 {
+			avgGain += diff
+		} else {
+			avgLoss -= diff
+		}
+	}
+	avgGain /= float64(period)
+	avgLoss /= float64(period)
+	if avgLoss == 0 {
+		return 100
+	}
+	rs := avgGain / avgLoss
+	return 100 - (100 / (1 + rs))
 }
+
+func (i *btIndicators) MACD(fast, slow, signal, shift int) float64 {
+	return i.EMA(fast, shift) - i.EMA(slow, shift)
+}
+
+func (i *btIndicators) MACDSignal(fast, slow, signal, shift int) float64 {
+	// Simplified: EMA of MACD line at the given shift
+	macd := i.MACD(fast, slow, signal, shift)
+	return macd // first-order approximation
+}
+
+func (i *btIndicators) ATR(period, shift int) float64 {
+	if len(i.bars) < period+shift+1 {
+		return 0
+	}
+	var sumTR float64
+	for j := shift; j < shift+period; j++ {
+		high, _ := i.bars[j].High.Float64()
+		low, _ := i.bars[j].Low.Float64()
+		prevClose, _ := i.bars[j+1].Close.Float64()
+		tr := high - low
+		if d := high - prevClose; d > tr {
+			tr = d
+		} else if -d > tr {
+			tr = -d
+		}
+		if d := prevClose - low; d > tr {
+			tr = d
+		} else if -d > tr {
+			tr = -d
+		}
+		sumTR += tr
+	}
+	return sumTR / float64(period)
+}
+
+func (i *btIndicators) Bollinger(period int, deviation float64, shift int) (float64, float64, float64) {
+	if len(i.bars) < period+shift {
+		return 0, 0, 0
+	}
+	var sum float64
+	for j := shift; j < shift+period; j++ {
+		c, _ := i.bars[j].Close.Float64()
+		sum += c
+	}
+	middle := sum / float64(period)
+	var variance float64
+	for j := shift; j < shift+period; j++ {
+		c, _ := i.bars[j].Close.Float64()
+		d := c - middle
+		variance += d * d
+	}
+	std := 0.0
+	if period > 1 {
+		std = math.Sqrt(variance / float64(period-1))
+	}
+	return middle + deviation*std, middle, middle - deviation*std
+}
+
+func (i *btIndicators) Momentum(period, shift int) float64 {
+	if len(i.bars) < period+shift {
+		return 0
+	}
+	curr, _ := i.bars[shift].Close.Float64()
+	prev, _ := i.bars[shift+period].Close.Float64()
+	return curr - prev
+}
+
+func (i *btIndicators) StdDev(period, shift int) float64 {
+	if len(i.bars) < period+shift {
+		return 0
+	}
+	var sum float64
+	for j := shift; j < shift+period; j++ {
+		c, _ := i.bars[j].Close.Float64()
+		sum += c
+	}
+	mean := sum / float64(period)
+	var variance float64
+	for j := shift; j < shift+period; j++ {
+		c, _ := i.bars[j].Close.Float64()
+		d := c - mean
+		variance += d * d
+	}
+	if period > 1 {
+		return math.Sqrt(variance / float64(period-1))
+	}
+	return 0
+}
+
+// Remaining indicators: not yet implemented.
+// These require more complex state tracking (previous values, Wilder smoothing).
+// See runner/indicators.go for the live-execution equivalents.
 func (i *btIndicators) Stochastic(kp, dp, slowing, shift int) (float64, float64) { return 50, 50 }
 func (i *btIndicators) CCI(period, shift int) float64                            { return 0 }
 func (i *btIndicators) ADX(period, shift int) float64                            { return 0 }
 func (i *btIndicators) MFI(period, shift int) float64                            { return 0 }
 func (i *btIndicators) OBV(shift int) float64                                    { return 0 }
 func (i *btIndicators) SAR(step, maximum float64, shift int) float64             { return 0 }
-func (i *btIndicators) StdDev(period, shift int) float64                         { return 0 }
 func (i *btIndicators) WPR(period, shift int) float64                            { return 0 }
-func (i *btIndicators) Momentum(period, shift int) float64                       { return 0 }
 func (i *btIndicators) ICustom(name string, params []float64, buffer, shift int) float64 {
 	return 0
 }

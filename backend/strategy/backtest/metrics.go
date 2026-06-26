@@ -4,56 +4,56 @@ import (
 	"math"
 
 	"github.com/shopspring/decimal"
+
+	antv1 "anttrader/gen/proto/ant/v1"
 )
 
-// CalculateMetrics computes performance statistics from equity curve and trades.
-func CalculateMetrics(equity []EquityPoint, trades []Trade) Metrics {
-	m := Metrics{TotalTrades: len(trades)}
+// CalculateMetrics produces antv1.BacktestMetrics from equity curve and trades.
+// Reuses the existing proto type defined in python_strategy.proto.
+func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trades []Trade) *antv1.BacktestMetrics {
+	m := &antv1.BacktestMetrics{
+		TotalTrades: int32(len(trades)),
+	}
 
-	if len(equity) < 2 {
+	if len(equity) < 2 || !initialCapital.IsPositive() {
 		return m
 	}
 
 	initial := equity[0].Equity
 	final := equity[len(equity)-1].Equity
 
+	// Total return
 	if initial.IsPositive() {
-		m.TotalReturn = final.Sub(initial).Div(initial)
+		tr, _ := final.Sub(initial).Div(initial).Float64()
+		m.TotalReturn = tr
+		m.AnnualReturn = tr // simplified; real calc needs date range
 	}
 
 	// Max drawdown
 	peak := initial
+	var maxDD decimal.Decimal
 	for _, e := range equity {
 		if e.Equity.GreaterThan(peak) {
 			peak = e.Equity
 		}
 		dd := peak.Sub(e.Equity)
-		if dd.GreaterThan(m.MaxDrawdown) {
-			m.MaxDrawdown = dd
+		if dd.GreaterThan(maxDD) {
+			maxDD = dd
 		}
 	}
 	if peak.IsPositive() {
-		m.MaxDrawdownPct = m.MaxDrawdown.Div(peak)
+		m.MaxDrawdown, _ = maxDD.Div(peak).Float64()
 	}
 
 	// Trade analysis
 	var totalProfit, totalLoss decimal.Decimal
-	var sumWin, sumLoss decimal.Decimal
 	for _, t := range trades {
 		if t.Profit.IsPositive() {
 			m.WinningTrades++
 			totalProfit = totalProfit.Add(t.Profit)
-			sumWin = sumWin.Add(t.Profit)
 		} else {
 			m.LosingTrades++
 			totalLoss = totalLoss.Add(t.Profit.Neg())
-			sumLoss = sumLoss.Add(t.Profit.Neg())
-		}
-		if t.Profit.GreaterThan(m.BestTrade) {
-			m.BestTrade = t.Profit
-		}
-		if t.Profit.LessThan(m.WorstTrade) {
-			m.WorstTrade = t.Profit
 		}
 	}
 
@@ -61,26 +61,15 @@ func CalculateMetrics(equity []EquityPoint, trades []Trade) Metrics {
 		m.WinRate = float64(m.WinningTrades) / float64(m.TotalTrades)
 	}
 
-	if m.WinningTrades > 0 {
-		m.AvgWin = sumWin.Div(decimal.NewFromInt(int64(m.WinningTrades)))
-	}
-	if m.LosingTrades > 0 {
-		m.AvgLoss = sumLoss.Div(decimal.NewFromInt(int64(m.LosingTrades)))
-	}
-
 	// Profit factor
 	if totalLoss.IsPositive() {
-		pf, exact := totalProfit.Div(totalLoss).Float64()
-		if exact {
-			m.ProfitFactor = pf
-		}
-		m.ProfitFactor = pf
+		m.ProfitFactor, _ = totalProfit.Div(totalLoss).Float64()
 	} else if totalProfit.IsPositive() {
 		m.ProfitFactor = math.Inf(1)
 	}
 
 	// Sharpe ratio (simplified: based on trade returns)
-	if m.TotalTrades > 1 {
+	if len(trades) > 1 {
 		returns := make([]float64, len(trades))
 		for i, t := range trades {
 			returns[i] = t.ProfitPct
@@ -88,7 +77,7 @@ func CalculateMetrics(equity []EquityPoint, trades []Trade) Metrics {
 		mean := meanFloat(returns)
 		std := stdFloat(returns, mean)
 		if std > 0 {
-			m.SharpeRatio = mean / std * math.Sqrt(float64(m.TotalTrades))
+			m.SharpeRatio = mean / std * math.Sqrt(float64(len(trades)))
 		}
 	}
 

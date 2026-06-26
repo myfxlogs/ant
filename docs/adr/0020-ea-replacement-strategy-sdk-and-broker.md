@@ -1,7 +1,7 @@
 # ADR-0020 · EA 完全替代：统一 Strategy SDK + 双实现 Broker
 
-- **状态**：Proposed
-- **日期**：2026-06-23
+- **状态**：Superseded by ADR-0021 (Python→Go 迁移)
+- **日期**：2026-06-23（初版）· 2026-06-26 修订（Go 迁移）
 - **决策者**：架构组 + 人类负责人
 - **关联 spec**：`docs/spec/30-strategy-sdk.md`（T0.1 已冻结）、`docs/spec/31-risk-gate.md`（T0.3 已冻结）、`docs/spec/26-ai-strategy-generation.md`（需修订漂移）
 - **关联 ADR**：ADR-0012（统一回测/实盘路径，本 ADR 是其在 EA 场景的具体落地）、ADR-0014（持仓级风控）、ADR-0015（仿真交易）
@@ -29,10 +29,10 @@
 
 | # | 决策 |
 |---|---|
-| D1 | **目标语言 = Python Strategy SDK**（产物可读可改、LLM 友好）；自研 MQL→IR VM 列为后手，本期不做。 |
+| D1 | **~~目标语言 = Python Strategy SDK~~** → **目标语言 = Go Strategy SDK**（2026-06-26 修订，见 ADR-0021）。Python 路线放弃原因：Python worker 进程隔离复杂、RestrictedPython 可绕过、跨语言 IPC 开销大、Decimal/float 精度管理困难。Go 路线优势：编译期类型安全、原生并发、与现有 Go 后端无缝集成、无 RCE 风险、tree-sitter cgo 直接调用。`backend/strategy/sdk/` Go SDK 已落地。 |
 | D2 | **建模对象 = 「券商 + 事件模型」**，而非"语言"。SDK 忠实镜像 MQL 生命周期与交易服务器语义。 |
 | D3 | **回测/实盘共用同一份策略代码**，差异仅在注入的 Broker 实现（SimBroker / LiveBroker）。 |
-| D4 | **引擎编排用 Go，策略运行在 Python worker**（沿用现状分工）。 |
+| D4 | **~~引擎编排用 Go，策略运行在 Python worker~~** → **全 Go 实现**（2026-06-26 修订）。策略编译为 Go 代码，与后端同进程或同二进制执行。`strategy-service/` Python 服务退役。 |
 | D5 | **安全边界下移到 OS/VM 级**（seccomp + 断网 + 只读 FS + 非 root + cgroup；强档 gVisor/microVM）；RestrictedPython 降级为 lint。 |
 | D6 | **所有下单意图（sim 和 live）必经 Go 风控门**；金钱安全与策略对错解耦。 |
 | D7 | **退役 signal-dict 实盘路径**；factor DSL/ONNX 不用于 EA。 |
@@ -69,6 +69,8 @@
 8. **不造空壳**：每个新模块必须有真实调用方或测试驱动（吸取 factor DSL/ONNX 教训）。
 
 详细任务拆解见 `docs/plan/2026-06-23-EA完全替代-实施说明书(DeepSeek).md`（T0.1 ~ T4.2）。
+
+> **2026-06-26 重大变更**：本 ADR 的 D1/D4/D5/D7 均被 ADR-0021 覆盖。项目放弃 Python 策略运行时，全面转为 Go。Go Strategy SDK 已落地于 `backend/strategy/sdk/`；Go 回测引擎落地于 `backend/strategy/backtest/`；Go 实盘 Runner 落地于 `backend/strategy/runner/`；MQL→Go 转译器落地于 `backend/tools/mql2go/`。Python `strategy-service/` 及 `tools/mql_transpiler/`、`tools/mql_migration/` 进入退役周期。D5（OS 级沙箱）不再需要——Go 编译产物无 RCE 风险。D7（signal-dict 退役）已由 Go SDK 的 `Strategy` 接口天然实现。
 
 ## 6. 验证方式
 

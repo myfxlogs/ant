@@ -1,7 +1,7 @@
 # ADR 索引（v2）
 
 > v1 ADR 已归档至 `docs.old/adr/`。
-> v2 维护：MT 重写（0001–0005）+ C2C 归属（0006）+ M7 复盘（0007）+ M10 硬化（0008–0011）。
+> v2 维护：MT 重写（0001–0005）+ C2C 归属（0006）+ M7 复盘（0007）+ M10 硬化（0008–0011）+ EA 替代（0020–0021）。
 
 | ID | 标题 | 状态 |
 |---|---|---|
@@ -24,7 +24,8 @@
 | 0017 | AI 会话记忆 + 意图澄清 + 回测反馈 | Accepted |
 | 0018 | 信号→执行延迟 SLO | Accepted |
 | 0019 | M11 前端架构（增量重构，React/Zustand/TanStack Query） | Accepted |
-| 0020 | EA 完全替代：统一 Strategy SDK + 双实现 Broker | Proposed |
+| 0020 | EA 完全替代：统一 Strategy SDK + 双实现 Broker | Superseded by 0021 |
+| 0021 | 策略运行时从 Python 迁移到 Go | Accepted |
 
 ## 编号规则
 

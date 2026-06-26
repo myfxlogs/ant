@@ -57,10 +57,24 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 		Magic:      req.Magic,
 	}
 
-	// Apply commission
-	commission := req.Volume.Mul(b.config.Commission)
-	rec.Commission = commission
-	b.equity = b.equity.Sub(commission)
+	// Apply commission (basis points of volume)
+	b.applyCommission(rec)
+
+	// Apply slippage for market orders
+	if req.Type == sdk.OrderMarket {
+		slip := b.config.Slippage.Mul(decimal.NewFromInt(10)) // pips to points
+		if req.Side == sdk.SideBuy {
+			rec.Price = rec.Price.Add(slip)
+		} else {
+			rec.Price = rec.Price.Sub(slip)
+		}
+	}
+
+	// Check margin before opening
+	margin := req.Volume.Mul(rec.Price).Div(decimal.NewFromInt(int64(b.config.Leverage)))
+	if b.equity.LessThan(margin) {
+		return sdk.OrderResult{RetCode: sdk.RetNoMoney}, fmt.Errorf("insufficient margin")
+	}
 
 	// Market orders fill immediately at current price
 	if req.Type == sdk.OrderMarket {
@@ -170,6 +184,39 @@ func (b *SimBroker) HistoryOrders(from, to int64) []sdk.Position { return nil }
 func (b *SimBroker) Deals(from, to int64, magic int32) []sdk.Deal { return nil }
 func (b *SimBroker) SymbolInfo(symbol string) (sdk.SymbolInfo, error) {
 	return sdk.SymbolInfo{Name: symbol, Digits: 5, Point: decimal.NewFromFloat(0.00001)}, nil
+}
+
+// applyCommission deducts commission from equity and records it.
+func (b *SimBroker) applyCommission(rec *OrderRecord) {
+	if b.config.Commission.IsZero() {
+		return
+	}
+	// Commission as percentage of notional value
+	notional := rec.Volume.Mul(rec.Price)
+	commission := notional.Mul(b.config.Commission)
+	rec.Commission = commission
+	b.equity = b.equity.Sub(commission)
+}
+
+// applySwap calculates overnight swap for a position.
+func (b *SimBroker) applySwap(rec *OrderRecord, days int) {
+	// Simplified: swap = volume * point_value * swap_rate * days
+	swapRate := decimal.NewFromFloat(0.00001) // placeholder
+	swap := rec.Volume.Mul(swapRate).Mul(decimal.NewFromInt(int64(days)))
+	rec.Swap = rec.Swap.Add(swap)
+	b.equity = b.equity.Sub(swap)
+}
+
+// expirePending removes pending orders beyond their time window.
+func (b *SimBroker) expirePending(currentBar int, maxBarAge int) {
+	for i := 0; i < len(b.pending); i++ {
+		if int64(b.currentBar)-b.pending[i].Ticket > int64(maxBarAge) {
+			b.pending[i].State = OrderCancelled
+			b.history = append(b.history, b.pending[i])
+			b.pending = append(b.pending[:i], b.pending[i+1:]...)
+			i--
+		}
+	}
 }
 
 func (b *SimBroker) Account() sdk.AccountInfo {

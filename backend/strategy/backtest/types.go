@@ -5,6 +5,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
+	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/strategy/sdk"
 )
 
@@ -24,30 +25,12 @@ type Config struct {
 // Result holds the complete backtest output.
 type Result struct {
 	Config     Config
-	Metrics    Metrics
+	Metrics    *antv1.BacktestMetrics // reuses existing proto type
 	Equity     []EquityPoint
 	Trades     []Trade
 	Signals    []sdk.Signal
 	StartedAt  time.Time
 	FinishedAt time.Time
-}
-
-// Metrics holds computed performance statistics.
-type Metrics struct {
-	TotalReturn    decimal.Decimal
-	AnnualReturn   decimal.Decimal
-	MaxDrawdown    decimal.Decimal
-	MaxDrawdownPct decimal.Decimal
-	SharpeRatio    float64
-	WinRate        float64
-	TotalTrades    int
-	WinningTrades  int
-	LosingTrades   int
-	ProfitFactor   float64
-	AvgWin         decimal.Decimal
-	AvgLoss        decimal.Decimal
-	BestTrade      decimal.Decimal
-	WorstTrade     decimal.Decimal
 }
 
 // EquityPoint is a single point on the equity curve.
