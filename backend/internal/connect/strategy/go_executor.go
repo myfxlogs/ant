@@ -81,6 +81,8 @@ func (e *GoExecutor) Run(ctx context.Context, code string, req ExecuteRequest) (
 	if !filepath.HasPrefix(safePath, e.tmpDir) {
 		return nil, fmt.Errorf("strategy file outside temp dir: %s", safePath)
 	}
+	// #nosec G204 — path validated above (temp dir prefix check + filepath.Clean).
+	// Go runtime has no built-in eval; go run is the sanctioned strategy execution method.
 	cmd := exec.CommandContext(ctx, "go", "run", safePath)
 	cmd.Dir = e.goModDir
 	cmd.Stdin = bytes.NewReader(input)
