@@ -25,6 +25,10 @@ func main() {
 	}
 
 	input := filepath.Clean(flag.Arg(0))
+	if ext := filepath.Ext(input); ext != ".mq4" && ext != ".mq5" && ext != ".mqh" {
+		fmt.Fprintf(os.Stderr, "Error: input must be .mq4, .mq5, or .mqh file\n")
+		os.Exit(2)
+	}
 	source, err := os.ReadFile(input)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading %s: %v\n", input, err)
@@ -47,6 +51,10 @@ func main() {
 
 	if *output != "" {
 		outPath := filepath.Clean(*output)
+		if ext := filepath.Ext(outPath); ext != ".go" {
+			fmt.Fprintf(os.Stderr, "Error: output must be a .go file\n")
+			os.Exit(4)
+		}
 		if err := os.WriteFile(outPath, []byte(code), 0600); err != nil {
 			fmt.Fprintf(os.Stderr, "Error writing %s: %v\n", outPath, err)
 			os.Exit(4)
