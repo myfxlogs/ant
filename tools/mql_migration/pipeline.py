@@ -171,7 +171,10 @@ class MigrationPipeline:
 
         blind_spots = self._detect_blind_spots(ast, all_entries, exit_rules)
 
-        # Coverage: only count categories where we actually found something
+        # Coverage: only count TRADING categories. GUI noise is excluded.
+        gui_noise_count = sum(1 for bs in blind_spots if bs.severity == Severity.INFO)
+        real_blind_count = len(blind_spots) - gui_noise_count
+
         category_weights = {"meta": 1, "params": 1, "state": 1, "execution": 1,
                           "sizing": 1, "timer": 1, "entries": 2, "exits": 2,
                           "risk": 1, "indicators": 1}
@@ -339,11 +342,31 @@ class MigrationPipeline:
 
         spots = []
 
-        # Check for unsupported API calls
-        unsupported = {"ObjectCreate", "ObjectDelete", "FileOpen", "FileWrite",
-                       "WebRequest", "SendFTP", "SendMail", "SendNotification"}
+        # ── GUI noise — silently skipped, not counted as blind spots ──
+        _GUI_NOISE = {"ObjectCreate", "ObjectDelete", "ObjectSetDouble", "ObjectSetInteger",
+                      "ObjectSetString", "ObjectGetDouble", "ObjectGetInteger", "ObjectGetString",
+                      "ObjectsDeleteAll", "ObjectFind", "ObjectSet", "ObjectSetText",
+                      "ObjectGet", "ObjectSetInteger", "ObjectsTotal", "ObjectName",
+                      "ChartSetInteger", "ChartOpen", "ChartClose", "Comment",
+                      "ButtonCreate", "RectLabelCreate"}
         for func in find_functions(ast):
-            for call in find_calls(func.body if func.body else [], *unsupported):
+            for call in find_calls(func.body if func.body else [], *_GUI_NOISE):
+                fp = compute_fingerprint(call, {call.name}, "gui_noise")
+                spots.append(BlindSpot(
+                    id=fp.pattern_signature,
+                    location=f"{func.name}",
+                    category=BlindSpotCategory.UNSUPPORTED_API,
+                    severity=Severity.INFO,
+                    description=f"已跳过（图表显示功能）: {call.name}",
+                    handling=HandlingStrategy.SKIP_WITH_COMMENT,
+                    user_action_required=False,
+                ))
+
+        # ── Genuinely unsupported — hard boundary ──
+        _HARD_UNSUPPORTED = {"FileOpen", "FileWrite", "WebRequest",
+                             "SendFTP", "SendMail", "SendNotification"}
+        for func in find_functions(ast):
+            for call in find_calls(func.body if func.body else [], *_HARD_UNSUPPORTED):
                 fp = compute_fingerprint(call, {call.name}, "unsupported_api")
                 spots.append(BlindSpot(
                     id=fp.pattern_signature,
@@ -351,8 +374,8 @@ class MigrationPipeline:
                     category=BlindSpotCategory.UNSUPPORTED_API,
                     severity=Severity.WARNING,
                     description=f"不支持的API调用: {call.name}",
-                    handling=HandlingStrategy.SKIP_WITH_COMMENT,
-                    user_action_required=False,
+                    handling=HandlingStrategy.HARD_BLOCK,
+                    user_action_required=True,
                 ))
 
         # Check if any lifecycle function body is empty

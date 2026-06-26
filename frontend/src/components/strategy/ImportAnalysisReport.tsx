@@ -116,8 +116,8 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
           <Text strong>导入完整度</Text>
           <Progress
             percent={coverage}
-            status={coverage >= 70 ? 'success' : coverage >= 40 ? 'active' : 'exception'}
-            format={(p) => `已识别 ${p}% 策略逻辑`}
+            status={coverage >= 70 || isPureGuiNoise ? 'success' : coverage >= 40 ? 'active' : 'exception'}
+            format={(p) => isPureGuiNoise ? `交易逻辑已完整识别` : `已识别 ${p}% 策略逻辑`}
           />
           <Text type="secondary">
             共 {analysis.totalBlocks} 个逻辑块，{analysis.recognizedBlocks} 个已识别
