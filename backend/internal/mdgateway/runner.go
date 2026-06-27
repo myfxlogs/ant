@@ -37,6 +37,7 @@ type RunnerDeps struct {
 	OnAccountStatus     func(accountID, userID, status, message string)                      // called when gateway connection state changes (connected/reconnecting/disconnected)
 	Hub                 *mthub.Hub
 	BrokerRegistry      *adapter.BrokerRegistry // M12-C2: multi-broker registry; gateways registered on start
+	FactorPusher        func(bar *mdtick.Bar)   // M10-BASE-B6: push finalized bars to factor subscriber
 }
 
 // Run assembles and starts the full mdgateway pipeline. Blocks until ctx.Done.
@@ -92,6 +93,18 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	invalidator.Start(ctx, newPGListener(ctx, deps.PG, log))
 
 	// --- Manager (wires HandleTick pipeline) ---
+	// Wrap OnBar to also push finalized bars to factor subscriber.
+	onBar := deps.OnBar
+	if deps.FactorPusher != nil {
+		fp := deps.FactorPusher
+		orig := onBar
+		onBar = func(bar *mdtick.Bar) {
+			if orig != nil {
+				orig(bar)
+			}
+			fp(bar)
+		}
+	}
 	mgr := NewManager(ManagerDeps{
 		Normalizer:  normalizer,
 		Quality:     quality,
@@ -99,7 +112,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 		Aggregator:  aggregator,
 		Publisher:   publisher,
 		PgWriter:    pgWriter,
-		OnBar:       deps.OnBar,
+		OnBar:       onBar,
 		Log:         log,
 	})
 	mgr.SetOTelTracer(tracer)

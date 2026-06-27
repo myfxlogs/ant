@@ -393,15 +393,6 @@ func registerHandlers(
 		log)
 	strategyServer.SetEngine(scheduleEngine)
 
-	// Factor subscriber activation prerequisites (M10-BASE-B6):
-	// When ready to wire, create and start:
-	//   factorSub := factor.NewSubscriber(factor.DefaultSubscriberConfig(), log)
-	//   go factorSub.Start(pipelineCtx)
-	// Required before activation:
-	//   (1) Factor registry that registers DSL strategies
-	//   (2) Bar-stream subscription from mdgateway → factorSub.Push()
-	//   (3) Evaluation results → signal/order pipeline
-
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
 

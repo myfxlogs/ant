@@ -194,3 +194,8 @@ func (m *Manager) ResetLastTickAt(accountID string) {
 	m.lastTickAt[accountID] = time.Now().Unix()
 	m.mu.Unlock()
 }
+
+// MarketState returns the market state tracker (for factor subscriber tradability gate).
+func (m *Manager) MarketState() *MarketStateTracker {
+	return m.marketState
+}

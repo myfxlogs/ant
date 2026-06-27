@@ -377,4 +377,4 @@
 | # | 组件 | 状态 |
 |---|------|------|
 | 1 | EconomicDataService (后端) | 返回空结果，未接入外部 API（前端已接入，功能空缺非技术债） |
-| 2 | Factor Subscriber (后端) | 代码存在但未启动，prerequisites 未满足 |
+| 2 | ~~Factor Subscriber (后端)~~ | ✅ 已实现：FactorRegistry + FactorEvaluator 接线完成，bar 流 → DSL 评估 → 因子输出 |

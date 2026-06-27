@@ -19,8 +19,10 @@ import (
 	"connectrpc.com/otelconnect"
 	"anttrader/internal/config"
 	"anttrader/internal/connect/strategy"
+	"anttrader/internal/factor"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/mdgateway/adapter"
+	"anttrader/internal/mdgateway/adapter/mdtick"
 	anttrace "anttrader/internal/trace"
 	"anttrader/internal/mthub"
 	notifpubsub "anttrader/internal/notification"
@@ -220,7 +222,19 @@ func main() {
 	brokerReg := adapter.NewBrokerRegistry()
 	mthubSvc.SetBrokerRegistry(brokerReg)
 
-	go startMdGatewayPipeline(pipelineCtx, log, pool, mdStore, chStore, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg)
+	// --- Factor subscriber (M10-BASE-B6) ---
+	factorSub := factor.NewSubscriber(factor.DefaultSubscriberConfig(), log)
+	factorRegistry := factor.NewFactorRegistry(log)
+	factorEvaluator := factor.NewFactorEvaluator(factorSub, factorRegistry, log)
+	// #nosec G118 — factor evaluator runs for pipeline lifetime
+	go factorEvaluator.Start(pipelineCtx)
+	factorSub.Start(pipelineCtx)
+	var factorPusher func(bar *mdtick.Bar)
+	factorPusher = func(bar *mdtick.Bar) {
+		factorSub.Push(bar)
+	}
+
+	go startMdGatewayPipeline(pipelineCtx, log, pool, mdStore, chStore, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg, factorPusher)
 
 	// Graceful shutdown context — created before registerHandlers so background
 	// goroutines spawned there can observe shutdown.

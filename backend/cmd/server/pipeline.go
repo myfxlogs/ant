@@ -43,6 +43,7 @@ func startMdGatewayPipeline(
 	platformAgg **risksvc.PlatformAggregator,
 	reconLoop **mthub.ReconciliationLoop,
 	brokerReg *adapter.BrokerRegistry,
+	factorPusher func(bar *mdtick.Bar),
 ) error {
 	// B-2.3: Per-broker 3-level margin call detection.
 	// Level 1 (预警): margin_level <= call_pct * 1.5 → SSE only
@@ -88,6 +89,7 @@ func startMdGatewayPipeline(
 		Secrets:  secClient,
 		Hub:            hub,
 		BrokerRegistry: brokerReg,
+		FactorPusher:   factorPusher,
 		OnAccountProfit: func(accountID, userID string, p *mdtick.ProfitUpdate) {
 			// Write latest balance/equity to PG via AccountService.
 			writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
