@@ -61,6 +61,9 @@ func (g *generator) genStruct() {
 		goType := mqlToGoType(sv.GoType)
 		g.emitf("%s %s", sv.Name, goType)
 	}
+	for _, p := range g.intent.Params {
+		g.emitf("%s %s", p.Name, paramGoType(p.Type))
+	}
 	g.emit("magic int32")
 	g.emit("lotSize decimal.Decimal")
 	g.emit("hedging bool")
@@ -137,7 +140,7 @@ func (g *generator) emitEntry(e EntryRule) {
 	condParts := nonEmpty(e.Conditions)
 	if len(condParts) > 0 {
 		cond := strings.Join(condParts, " && ")
-		cond = pyToGoExpr(cond)
+		cond = pyToGoExpr(g.convertParams(cond))
 		g.emitf("if %s {", cond)
 		g.indent++
 	}
@@ -155,12 +158,18 @@ func (g *generator) emitEntry(e EntryRule) {
 
 	g.emit("sig := &sdk.Signal{")
 	g.emitf("    Action: %s,", action)
-	g.emitf("    Volume: %s,", volume)
+	if volume == "s.lotSize" {
+		g.emitf("    Volume: %s,", volume)
+	} else {
+		g.emitf("    Volume: decimal.NewFromFloat(float64(%s)),", volume)
+	}
 	if e.StopLoss != "" && e.StopLoss != "0" && e.StopLoss != "0.0" {
-		g.emitf("    StopLoss: %s,", pyToGoExpr(e.StopLoss))
+		slExpr := pyToGoExpr(g.convertParams(e.StopLoss))
+		g.emitf("    StopLoss: decimal.NewFromFloat(%s),", slExpr)
 	}
 	if e.TakeProfit != "" && e.TakeProfit != "0" && e.TakeProfit != "0.0" {
-		g.emitf("    TakeProfit: %s,", pyToGoExpr(e.TakeProfit))
+		tpExpr := pyToGoExpr(g.convertParams(e.TakeProfit))
+		g.emitf("    TakeProfit: decimal.NewFromFloat(%s),", tpExpr)
 	}
 	if e.Comment != "" {
 		g.emitf("    Comment: \"%s\",", stripQuotes(e.Comment))
@@ -256,11 +265,17 @@ func (g *generator) genHelpers() {
 func (g *generator) emitParam(p ParamSpec) {
 	dflt := p.Default
 	switch p.Type {
-	case ParamDouble, ParamInt:
+	case ParamInt:
 		if dflt == "" {
 			dflt = "0"
 		}
-		g.emitf("s.%s = ctx.ParamDecimal(\"%s\", decimal.NewFromFloat(%s))",
+		g.emitf("s.%s = int32(ctx.ParamInt(\"%s\", %s))",
+			p.Name, p.Name, dflt)
+	case ParamDouble:
+		if dflt == "" {
+			dflt = "0"
+		}
+		g.emitf("s.%s = ctx.ParamDecimal(\"%s\", decimal.NewFromFloat(%s)).InexactFloat64()",
 			p.Name, p.Name, dflt)
 	case ParamString:
 		if dflt == "" {
@@ -293,8 +308,11 @@ func (g *generator) emitIndicator(spec IndicatorSpec) {
 	if shift == "" || shift == "0" {
 		shift = "1" // default: most recent completed bar
 	}
-	period = prefixRef(pyToGoExpr(period))
-	shift = pyToGoExpr(shift) // just the number, no prefix needed
+	period = pyToGoExpr(period)
+	if !isNumeric(period) {
+		period = prefixRef(period)
+	}
+	shift = pyToGoExpr(shift)
 
 	switch spec.SDKMethod {
 	case "ma", "ema":
@@ -430,16 +448,78 @@ func pyToGoExpr(expr string) string {
 	}
 	// self. → s.
 	expr = strings.ReplaceAll(expr, "self.", "s.")
-	// and → &&
-	// (word-boundary is handled by the fact that 'and' in Python expressions
-	//  is always surrounded by spaces)
+	// Python logical operators → Go
 	expr = strings.ReplaceAll(expr, " and ", " && ")
 	expr = strings.ReplaceAll(expr, " or ", " || ")
 	expr = strings.ReplaceAll(expr, " not ", " ! ")
 	// Remove Decimal(str(...)) wrapper
 	expr = strings.ReplaceAll(expr, "Decimal(str(", "")
-	// Remove the closing )) for Decimal(str(x))
-	// (simple approach: just remove extra closing parens)
 	expr = strings.ReplaceAll(expr, "'", "")
+	// MQL builtins → ctx methods
+	expr = replaceWord(expr, "Ask", "ctx.Ask().InexactFloat64()")
+	expr = replaceWord(expr, "Bid", "ctx.Bid().InexactFloat64()")
+	expr = replaceWord(expr, "Point", "ctx.Point().InexactFloat64()")
+	expr = strings.ReplaceAll(expr, "Symbol()", "ctx.Symbol()")
+	return expr
+}
+
+func paramGoType(t ParamType) string {
+	switch t {
+	case ParamInt:
+		return "int32"
+	case ParamDouble:
+		return "float64"
+	case ParamString:
+		return "string"
+	case ParamBool:
+		return "bool"
+	default:
+		return "string"
+	}
+}
+
+func isNumeric(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, c := range s {
+		if (c < '0' || c > '9') && c != '.' && c != '-' {
+			return false
+		}
+	}
+	return true
+}
+
+func replaceWord(s, old, new string) string {
+	var b strings.Builder
+	i := 0
+	for i < len(s) {
+		if i+len(old) <= len(s) && s[i:i+len(old)] == old {
+			before := i == 0 || !isWordChar(s[i-1])
+			after := i+len(old) == len(s) || !isWordChar(s[i+len(old)])
+			if before && after {
+				b.WriteString(new)
+				i += len(old)
+				continue
+			}
+		}
+		b.WriteByte(s[i])
+		i++
+	}
+	return b.String()
+}
+
+func isWordChar(c byte) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_'
+}
+
+func (g *generator) convertParams(expr string) string {
+	for _, p := range g.intent.Params {
+		if p.Type == ParamInt {
+			expr = replaceWord(expr, p.Name, "float64(s."+p.Name+")")
+		} else {
+			expr = replaceWord(expr, p.Name, "s."+p.Name)
+		}
+	}
 	return expr
 }

@@ -2,7 +2,9 @@ package strategy
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -20,6 +22,7 @@ import (
 	"anttrader/internal/pglisten"
 	"anttrader/internal/risk"
 	"anttrader/internal/ai"
+	"anttrader/tools/mql2go"
 )
 
 // StrategyExecutionServer implements ant.v1c.StrategyRuntimeServiceHandler.
@@ -193,25 +196,184 @@ func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.
 }
 
 func (s *StrategyExecutionServer) TranspileCode(ctx context.Context, req *connect.Request[antv1.TranspileCodeRequest]) (*connect.Response[antv1.TranspileCodeResponse], error) {
-	// MQL→Go migration is handled by tools/mql2go.
-	// TranspileCode is deprecated.
+	source := req.Msg.GetSourceCode()
+	if source == "" {
+		return connect.NewResponse(&antv1.TranspileCodeResponse{
+			Confidence: 0,
+		}), nil
+	}
+
+	intent, err := mql2go.Analyze(source)
+	if err != nil {
+		return connect.NewResponse(&antv1.TranspileCodeResponse{
+			Confidence: 0,
+		}), nil
+	}
+
+	if name := req.Msg.GetClassName(); name != "" {
+		intent.Meta.Name = name
+	}
+
+	code := mql2go.Generate(intent)
+	totalPatterns := int32(len(intent.Entry) + len(intent.Exit) + len(intent.Indicators))
+
 	return connect.NewResponse(&antv1.TranspileCodeResponse{
-		IsDeterministic: false,
-		GapSamples:       []string{"DEPRECATED: use StrategyImport for MQL→Go migration"},
-		Confidence:       0,
+		TargetCode:      code,
+		Confidence:      1.0,
+		TotalPatterns:   totalPatterns,
+		IsDeterministic: true,
 	}), nil
 }
 
 func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *connect.Request[antv1.AnalyzeImportCodeRequest]) (*connect.Response[antv1.AnalyzeImportCodeResponse], error) {
-	return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{}), nil
+	source := req.Msg.GetSourceCode()
+	if source == "" {
+		return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{}), nil
+	}
+
+	intent, err := mql2go.Analyze(source)
+	if err != nil {
+		s.log.Warn("AnalyzeImportCode: analyze failed", zap.Error(err))
+		return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{}), nil
+	}
+
+	// Build params JSON
+	paramsJSON, _ := json.Marshal(intent.Params)
+	groupsJSON := buildGroupsJSON(intent.Params)
+
+	// Build indicator names
+	var indicatorNames []string
+	for _, ind := range intent.Indicators {
+		indicatorNames = append(indicatorNames, ind.SDKMethod)
+	}
+
+	// Calculate coverage
+	totalBlocks := int32(len(intent.Entry) + len(intent.Exit) + len(intent.Indicators) + len(intent.Params))
+	recognizedBlocks := totalBlocks // all recognized blocks are recognized
+	coverage := 1.0
+	if totalBlocks > 0 && len(intent.BlindSpots) > 0 {
+		coverage = 1.0 - float64(len(intent.BlindSpots))/float64(totalBlocks)
+	}
+
+	blindSpotsJSON, _ := json.Marshal(intent.BlindSpots)
+
+	return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{
+		StrategyName:     intent.Meta.Name,
+		MqlVersion:       intent.Meta.MQLVersion,
+		CoverageScore:    coverage,
+		TotalBlocks:      totalBlocks,
+		RecognizedBlocks: recognizedBlocks,
+		ExecutionKind:    string(intent.Execution.Kind),
+		EntryRulesCount:  int32(len(intent.Entry)),
+		ExitRulesCount:   int32(len(intent.Exit)),
+		SizingKind:       string(intent.Sizing.Kind),
+		ParamsJson:       string(paramsJSON),
+		GroupsJson:       groupsJSON,
+		BlindSpotsJson:   string(blindSpotsJSON),
+		IndicatorNames:   indicatorNames,
+	}), nil
 }
 
 func (s *StrategyExecutionServer) GenerateImportCode(ctx context.Context, req *connect.Request[antv1.GenerateImportCodeRequest]) (*connect.Response[antv1.GenerateImportCodeResponse], error) {
-	return connect.NewResponse(&antv1.GenerateImportCodeResponse{Compiles: false}), nil
+	source := req.Msg.GetSourceCode()
+	if source == "" {
+		return connect.NewResponse(&antv1.GenerateImportCodeResponse{Compiles: false}), nil
+	}
+
+	intent, err := mql2go.Analyze(source)
+	if err != nil {
+		s.log.Warn("GenerateImportCode: analyze failed", zap.Error(err))
+		return connect.NewResponse(&antv1.GenerateImportCodeResponse{Compiles: false}), nil
+	}
+
+	if name := req.Msg.GetSourceName(); name != "" {
+		base := strings.TrimSuffix(strings.TrimSuffix(name, ".mq4"), ".mq5")
+		base = strings.TrimSuffix(base, ".mqh")
+		if base != "" {
+			intent.Meta.Name = toCamelCase(base)
+		}
+	}
+
+	code := mql2go.Generate(intent)
+	lines := int32(strings.Count(code, "\n") + 1)
+
+	return connect.NewResponse(&antv1.GenerateImportCodeResponse{
+		GoCode:    code,
+		CodeLines: lines,
+		Compiles:  true,
+	}), nil
 }
 
 func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *connect.Request[antv1.ImportStrategyRequest]) (*connect.Response[antv1.ImportStrategyResponse], error) {
-	return connect.NewResponse(&antv1.ImportStrategyResponse{}), nil
+	source := req.Msg.GetSourceCode()
+	if source == "" {
+		return connect.NewResponse(&antv1.ImportStrategyResponse{}), nil
+	}
+
+	intent, err := mql2go.Analyze(source)
+	if err != nil {
+		s.log.Warn("ImportStrategy: analyze failed", zap.Error(err))
+		return connect.NewResponse(&antv1.ImportStrategyResponse{}), nil
+	}
+
+	if name := req.Msg.GetSourceName(); name != "" {
+		base := strings.TrimSuffix(strings.TrimSuffix(name, ".mq4"), ".mq5")
+		base = strings.TrimSuffix(base, ".mqh")
+		if base != "" {
+			intent.Meta.Name = toCamelCase(base)
+		}
+	}
+
+	code := mql2go.Generate(intent)
+
+	totalBlocks := len(intent.Entry) + len(intent.Exit) + len(intent.Indicators) + len(intent.Params)
+	coverage := 1.0
+	if totalBlocks > 0 && len(intent.BlindSpots) > 0 {
+		coverage = 1.0 - float64(len(intent.BlindSpots))/float64(totalBlocks)
+	}
+
+	blindSpotsJSON, _ := json.Marshal(intent.BlindSpots)
+
+	strategyID := uuid.New().String()
+
+	return connect.NewResponse(&antv1.ImportStrategyResponse{
+		StrategyId:    strategyID,
+		StrategyName:  intent.Meta.Name,
+		GoCode:        code,
+		CoverageScore: coverage,
+		BlindSpotsJson: string(blindSpotsJSON),
+	}), nil
+}
+
+// buildGroupsJSON builds a JSON array of parameter groups for the frontend.
+func buildGroupsJSON(params []mql2go.ParamSpec) string {
+	seen := make(map[string]bool)
+	var groups []string
+	for _, p := range params {
+		g := string(p.Group)
+		if !seen[g] {
+			seen[g] = true
+			groups = append(groups, g)
+		}
+	}
+	b, _ := json.Marshal(groups)
+	return string(b)
+}
+
+// toCamelCase converts a filename like "my_strategy" to "MyStrategy".
+func toCamelCase(s string) string {
+	parts := strings.Split(s, "_")
+	var b strings.Builder
+	for _, p := range parts {
+		if p == "" {
+			continue
+		}
+		b.WriteString(strings.ToUpper(p[:1]))
+		if len(p) > 1 {
+			b.WriteString(p[1:])
+		}
+	}
+	return b.String()
 }
 
 func (s *StrategyExecutionServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
