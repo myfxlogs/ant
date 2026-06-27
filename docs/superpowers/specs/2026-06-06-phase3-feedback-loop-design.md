@@ -1,5 +1,7 @@
 # Phase 3: 对话式反馈闭环 — 设计文档
 
+> **⚠️ 注意：** AI Prompt 模板当前面向 Python 策略代码生成。迁移至 Go SDK 后需更新系统 Prompt（见 ADR-0021）。
+
 > **关联 spec**：`docs/spec/26-ai-strategy-generation.md` §5
 > **前置依赖**：Phase 1 (GenerateStrategy, 已完成) + Phase 2 (Smart Tuning, 已完成)
 > **创建日期**：2026-06-06

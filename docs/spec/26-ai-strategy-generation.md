@@ -599,7 +599,6 @@ grep -c "Grid\|Random\|DE\|TPE" backend/internal/ai/optimizers.go | grep -q "4"
 | 存储 | BYTEA proto binary (proto_response, StrategyParams, ParameterSpace 等) | ✅ |
 | NATS | TickPayload, TradeEventPayload, AccountEventPayload proto | ✅ |
 | Redis | OrderCacheEntry proto | ✅ |
-| Python 引擎 | proto binary 双编解码器 | ✅ |
 
 **价格精度（全栈 decimal.Decimal）**：
 - 模型层 9 文件 112 字段 float64→decimal.Decimal
@@ -611,7 +610,7 @@ grep -c "Grid\|Random\|DE\|TPE" backend/internal/ai/optimizers.go | grep -q "4"
 - 服务端 LISTEN/NOTIFY 事件驱动（延迟 <1ms，DB 查询减少 98%）
 - 前端: SmartTuningPanel + SchedulePage 全部 SSE 订阅
 
-**Phase 1: NL → Python 策略代码**：
+**Phase 1: NL → Go 策略代码**：
 - 澄清引擎 (clarification.go)
 - 模板库 (template_library.go, 5 个种子模板)
 - AI prompt 构建 (strategy_prompt.go)

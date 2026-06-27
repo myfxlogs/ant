@@ -100,7 +100,7 @@ message CodeQualityHint {
 }
 
 // SweepDimension describes a single parameter dimension for Smart Tuning.
-// Extracted from @param annotations by the Python backend (zero-trust).
+// Extracted from @param annotations by the strategy backend (zero-trust).
 message SweepDimension {
   string key = 1;
   // "int" | "float"
@@ -113,7 +113,7 @@ message SweepDimension {
 }
 
 // StrategyDirective is a key-value directive from @strategy annotations.
-// Extracted by the Python backend (zero-trust).
+// Extracted by the strategy backend (zero-trust).
 message StrategyDirective {
   string key = 1;
   string value = 2;

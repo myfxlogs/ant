@@ -1,5 +1,11 @@
 # Strategy Workspace 对齐 QuantDinger Indicator IDE (v31) 落地方案
 
+> **⚠️ 注意：** 本文档中部分代码路径已按 ADR-0021 更新：
+> - `PythonStrategyServer` → `StrategyRuntimeService`
+> - `python_strategy_handler.go` → `strategy_runtime_handler.go`
+> - `client/pythonStrategy.ts` → `client/strategyRuntime.ts`
+> - Python 策略执行器 → Go SDK（`backend/strategy/sdk/`）
+
 生成时间: 2026-06-01
 目标: 将 `/opt/ant/reference/QuantDinger/docs/screenshots/v31.png`（QuantDinger Indicator IDE）的能力，落地到 ant 现有 `StrategyWorkspacePage`。
 适用对象: 交给 AI 按阶段实施。每个阶段含 proto / backend / frontend 改动点与验收标准。
@@ -258,7 +264,7 @@ if req.Msg.Commission <= 0 { run.Commission = f64Ptr(0.001) }
 if req.Msg.Leverage <= 0 { run.Leverage = i32Ptr(1) }
 if req.Msg.TradeDirection == "" { run.TradeDirection = strPtr("long") }
 ```
-3. 执行回测的 worker（消费 `backtest_runs` PENDING 的组件）需把这些参数传给 Python 策略执行器（对齐 QuantDinger `BacktestService.run(commission, slippage, leverage, trade_direction)`，参考 `reference/.../services/backtest.py:1961`）。
+3. 执行回测的 worker（消费 `backtest_runs` PENDING 的组件）需把这些参数传给 Go 策略执行器（对齐 QuantDinger `BacktestService.run(commission, slippage, leverage, trade_direction)`，参考 `reference/.../services/backtest.py:1961`）。
 
 ### 数据库迁移 `backend/migrations/12X_backtest_run_params.up.sql`
 ```sql

@@ -14,7 +14,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 - **拆分前先判断**：是否有明确的功能边界（CRUD/生命周期/实体类型）？有 → 拆。没有 → 保持内聚。
 - **硬性红线**：Go >450 行、TS >375 行必须拆分（AI 明显退化）。
 - 自动生成代码（`gen/`）、测试文件、i18n 文件豁免。
-- 检查：`python3 scripts/check-file-lines.py --strict`（🔴 阻断 CI，🟡🟢 通过）。
+- 检查：`cd backend && go run ./tools/check-file-lines --strict`（🔴 阻断 CI，🟡🟢 通过）。
 - 详细：见 `complexity-limits.md` 分级严重度系统。
 
 ## Command Output Discipline (Token Efficiency)
@@ -80,7 +80,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 
 ```bash
 go build ./...                                          # must pass
-python3 scripts/check-file-lines.py --strict            # file size check (🔴 blocks, 🟡🟢 pass)
+cd backend && go run ./tools/check-file-lines --strict   # file size check (🔴 blocks, 🟡🟢 pass)
 bash scripts/gen_capability_map.sh                      # refresh docs/CAPABILITIES.md (reuse preflight)
 ```
 

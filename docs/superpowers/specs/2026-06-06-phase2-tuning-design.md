@@ -596,7 +596,7 @@ Database (1 new migration)
 4. `market_regime_ref` populated on experiment after completion
 5. Non-top-K candidates have nil OOS fields in response
 6. `go build ./...` passes
-7. `python3 scripts/check-file-lines.py --strict` passes
+7. `cd backend && go run ./tools/check-file-lines --strict` passes
 8. Existing tests pass
 
 ### §6.7 — Not in scope (explicit exclusions)

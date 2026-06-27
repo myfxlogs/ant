@@ -6,8 +6,8 @@ option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
 import "backtest_execution_config.proto";
 
-// BacktestService runs strategy backtests via the Python engine.
-// Replaces the previous FastAPI JSON /api/backtest endpoint.
+// BacktestService runs strategy backtests via the Go backtest engine.
+// Python strategy engine has been retired (see ADR-0021).
 service BacktestService {
   rpc RunBacktest(ExecuteBacktestRequest) returns (ExecuteBacktestResponse);
   rpc ValidateStrategy(EngineValidateRequest) returns (EngineValidateResponse);
@@ -48,7 +48,7 @@ message ExecuteKlineBar {
 
 message ExecuteBacktestRequest {
   string strategy_id = 1;   // unique run identifier
-  string strategy_code = 2; // Python strategy source
+  string strategy_code = 2; // strategy source code (Go SDK)
   string symbol = 3;
   string timeframe = 4;
   int64 start_date_ms = 5;  // Unix milliseconds

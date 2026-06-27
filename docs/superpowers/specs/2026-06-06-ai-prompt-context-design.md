@@ -1,5 +1,7 @@
 # AI 策略生成 — Prompt Context 架构设计
 
+> **⚠️ 注意：** AI Prompt 模板当前面向 Python 策略代码生成。迁移至 Go SDK 后需更新系统 Prompt（见 ADR-0021）。
+
 - **日期**：2026-06-06
 - **状态**：Draft
 - **关联**：spec/26、ADR-0017

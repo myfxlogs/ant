@@ -11,7 +11,10 @@ type StrategyIntent struct {
 	State      []StateVar
 	Entry      []EntryRule
 	Exit       []ExitRule
-	Indicators []IndicatorSpec
+	Modifies     []ModifyRule
+	OrderLoops   []OrderLoopRule
+	PositionLoops []PositionLoopRule
+	Indicators   []IndicatorSpec
 	Sizing     *SizingRule
 	Risk       []RiskCheck
 	Execution  ExecutionModel
@@ -121,6 +124,31 @@ type ExitRule struct {
 	MagicVal string
 	MagicMin string
 	MagicMax string
+}
+
+// ModifyRule represents an OrderModify / CTrade.PositionModify call.
+type ModifyRule struct {
+	StopLoss   string
+	TakeProfit string
+	MagicVal   string
+	Condition  string // enclosing if condition, if any
+	Kind       string // "trailing_stop" | "manual_modify"
+}
+
+// OrderLoopRule represents the MQL4 OrdersTotal()+OrderSelect() iteration pattern.
+type OrderLoopRule struct {
+	BodyActions      []string
+	HasMagicFilter   bool
+	HasSymbolFilter  bool
+	PropertyCalls    []string
+}
+
+// PositionLoopRule represents the MQL5 PositionsTotal()+PositionGetTicket() iteration pattern.
+type PositionLoopRule struct {
+	BodyActions       []string
+	HasMagicFilter    bool
+	HasSymbolFilter   bool
+	PropertyCalls     []string // PositionGetDouble/Integer/String property IDs used
 }
 
 // ── Sizing / Risk ──────────────────────────────────────────────────

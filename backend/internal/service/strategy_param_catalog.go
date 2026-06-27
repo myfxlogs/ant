@@ -18,14 +18,14 @@ import (
 // how to call it; `ParamKeys` enumerates the `context['params']` keys the
 // generated code must read (and that the frontend form will render).
 type StrategyIndicator struct {
-	Name          string              // exact Python identifier, e.g. "iRSI"
+	Name          string              // exact strategy identifier, e.g. "iRSI"
 	CallSignature string              // "iRSI(prices, period, shift=0)"
 	Description   string              // one-liner shown to the LLM and user
 	ParamKeys     []StrategyParamSpec // params this indicator expects in `context['params']`
 }
 
 // StrategyParamSpec pins down one parameter key: its machine name (used by
-// both the generated Python code and the frontend form), its type, default,
+// both the generated strategy code and the frontend form), its type, default,
 // and optional bounds. Keep the set of `Type` values small and explicit so
 // the frontend form renderer stays trivial.
 type StrategyParamSpec struct {

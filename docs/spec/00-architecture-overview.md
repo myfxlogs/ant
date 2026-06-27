@@ -158,7 +158,7 @@ Never replicate official/platform data inside user-scoped tables. Source: [ADR-0
 These are the "constitution" of ant v2. See [02-overview.md](../architecture/02-overview.md) section 8 for the full list of 20.
 
 1. **Canonical at L3 entry.** Adapter (L2) produces ticks with empty ``Canonical``. ``Normalizer.Resolve`` (L3, step 1) fills it. All downstream code sees non-empty canonical.
-2. **Zero Python on the production path.** From NATS factor to broker order ack, the entire chain is Go. Python is research-mode only.
+2. **Python has been fully removed from the stack. All strategy execution is Go (ADR-0021).**
 3. **Price type discipline.** PG ``NUMERIC(20,8)``, Go ``decimal.Decimal``, CH ``Decimal(18,6)``. Never ``float64``.
 4. **CH write never blocks the hot path.** CHWriter channel full triggers SpillWriter (jsonl rotation). CH down for minutes is survivable.
 5. **Circuit breaker is per-account.** One broker failure does not affect other accounts. Sliding window: 5 failures opens breaker for 30s, 2 consecutive successes closes it.

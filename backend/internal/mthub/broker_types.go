@@ -11,7 +11,7 @@ import (
 // for trading calculations or persistent storage. For price-sensitive operations:
 //   - Trading execution: uses decimal.Decimal (mthub/service.go PlaceOrder)
 //   - Persistent storage: PG NUMERIC(20,8) / CH Decimal(18,6)
-//   - Backtest computation: Python decimal.Decimal
+//   - Backtest computation: decimal.Decimal (Go)
 // float64 provides ~15 significant digits — sufficient for Forex price display
 // (typical quote: 1.12345 has 6 significant digits, well within safe range).
 // Cumulative rounding errors could appear for large trade counts (>10^6) shown

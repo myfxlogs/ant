@@ -1,6 +1,10 @@
 # Strategy Worker OS Isolation (T3.3)
 
-## Architecture
+> **⚠️ 本文档已过时。** Python Worker Pool 已按 ADR-0021 退役。
+> Go SDK 策略执行无需 OS 级沙箱隔离（编译为原生二进制，无外部代码解释执行）。
+> 本文档留存仅供历史参考。
+
+## Architecture（历史）
 
 ```
 Host (Go scheduler)

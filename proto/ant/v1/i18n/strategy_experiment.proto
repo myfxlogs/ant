@@ -4,7 +4,6 @@ package ant.v1.i18n;
 option go_package = "anttrader/gen/proto/ant/v1/i18n";
 
 // ExperimentI18n — auto-generated from strategy.ts
-// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
 
 message ExperimentI18n {
   string candidates_column_actions = 1;  // Actions

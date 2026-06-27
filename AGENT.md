@@ -141,7 +141,6 @@ make detect-spec-drift            # spec 中 LOC 声明 vs 代码 wc -l 偏差�
 
 ```
 backend/         Go 1.26 + ConnectRPC + sqlc        → ant-backend (8080, 集群内)
-strategy-service/ Python 3.14 + uv (研究模式沙箱)    → ant-strategy-service (8081, 集群内)
 frontend/        React 19 + TS 5.9 + pnpm + Tailwind → ant-frontend (Nginx, 宿主 ${ANT_FRONTEND_PORT:-8022})
                                                      → ant-postgres (5432)
                                                      → ant-redis (6379)
@@ -149,10 +148,10 @@ frontend/        React 19 + TS 5.9 + pnpm + Tailwind → ant-frontend (Nginx, �
                                                      → ant-nats (4222) ← v2 新增
 ```
 
-- **proto 单源** `proto/ant/v1/` → `buf generate` 出 Go/TS/Python stub
+- **proto 单源** `proto/ant/v1/` → `buf generate` 出 Go/TS stub
 - **Go module 名**：`anttrader`（历史原因保留，与项目身份 `ant` 不同）。所有 import 路径以 `anttrader/...` 开头，仓库路径 `/opt/ant/`、容器名 `ant-*`。这 3 者不要混淆。
 - **不引入** K8s / Helm / Service Mesh / 多副本
-- **运行时基线**（仅 ADR 可变）：Go 1.26 / Python 3.14 / Node 24 LTS / TS 5.9 / PG 18 / Redis 8 / ClickHouse 24 / NATS 2.10
+- **运行时基线**（仅 ADR 可变）：Go 1.26 / Node 24 LTS / TS 5.9 / PG 18 / Redis 8 / ClickHouse 24 / NATS 2.10
 
 ---
 
@@ -174,8 +173,8 @@ frontend/        React 19 + TS 5.9 + pnpm + Tailwind → ant-frontend (Nginx, �
 - mt4 与 mt5 是两套独立协议：`adapter/mt4/` `adapter/mt5/` 不许共享代码（除 `adapter/mdtick/` 共享 DTO）。
 
 ### 3.4 安全红线
-- 用户 Python 代码**只在研究模式**沙箱中执行（`strategy-service`）。
-- **生产路径**（实盘下单）禁止任何 Python 代码执行。生产策略 = DSL 字符串 + ONNX 模型引用，由 `quantengine` 加载。
+- **生产路径**（实盘下单）禁止任何外部代码解释执行。生产策略 = Go SDK 编译产物，由 Go 引擎直接执行。
+- 策略代码执行已全面迁移至 Go（见 ADR-0021），Python 策略服务已退役。
 - 见 `docs/adr/0003-direct-mtapi-no-wrapping.md` §"沙箱降级"（原误标 ADR-0005）。
 
 ### 3.5 数据归属（ADR-0006）
@@ -191,7 +190,7 @@ frontend/        React 19 + TS 5.9 + pnpm + Tailwind → ant-frontend (Nginx, �
 - 数字格式化、货币计算、状态推断**一律后端处理**后返回展示值。
 
 ### 3.7 类型与精度
-- 价格：`NUMERIC(20,8)` (PG) / `Decimal(18,6)` (CH) / `decimal.Decimal` (Go) / `Decimal` (Python)。**禁止 float64 直接比较或参与价格计算**。
+- 价格：`NUMERIC(20,8)` (PG) / `Decimal(18,6)` (CH) / `decimal.Decimal` (Go)。**禁止 float64 直接比较或参与价格计算**。
 - 时间：UTC，毫秒精度（`int64 ts_unix_ms`）。
 - 日志：结构化 JSON，必带 `trace_id` `user_id` `request_id` `account_id`（涉及账户时）。
 
@@ -228,7 +227,7 @@ frontend/        React 19 + TS 5.9 + pnpm + Tailwind → ant-frontend (Nginx, �
 | **service/ 包文件 ≤ 400 行** | 不要求 | 100% 文件达标 | 100% 文件达标 |
 | **sqlc 覆盖率** | 不要求 | ≥ 80% | ≥ 95% |
 | **CH tick 写入零丢失（连续 7 天）** | ✅ | ✅ | ✅ |
-| **生产路径 Python 执行 grep** | 0 处 | 0 处 | 0 处 |
+| **生产路径外部代码解释执行** | 0 处 | 0 处 | 0 处（Python 已退役，见 ADR-0021）|
 
 任一指标不达标 → milestone 不许标 ☑。
 
@@ -236,13 +235,13 @@ frontend/        React 19 + TS 5.9 + pnpm + Tailwind → ant-frontend (Nginx, �
 
 ## 6. 复杂度硬上限（CI 强制）
 
-| 维度 | Go | Python | TypeScript |
+| 维度 | Go | TypeScript |
 |---|---|---|---|
-| 单文件行数 | ≤ 300 | ≤ 400 | ≤ 250 |
-| 单函数行数 | ≤ 50 | ≤ 50 | ≤ 50 |
-| 圈复杂度 | ≤ 10 | ≤ 10 | ≤ 10 |
-| 函数参数数 | ≤ 5 | ≤ 5 | ≤ 5 |
-| 嵌套深度 | ≤ 4 | ≤ 4 | ≤ 4 |
+| 单文件行数 | ≤ 300 | ≤ 250 |
+| 单函数行数 | ≤ 50 | ≤ 50 |
+| 圈复杂度 | ≤ 10 | ≤ 10 |
+| 函数参数数 | ≤ 5 | ≤ 5 |
+| 嵌套深度 | ≤ 4 | ≤ 4 |
 
 - 严禁 `//nolint` `# noqa` `// @ts-ignore`（特殊场景见 `tools/lint/baseline.json`）
 - 单 PR ≤ 800 行业务代码（生成代码 / YAML / Dockerfile 不计入）
@@ -293,17 +292,12 @@ git diff --exit-code -- backend/gen/proto frontend/src/gen \
 - 包名 snake_case；导出符号 PascalCase；私有 camelCase
 - 文件头注释：`// Package <name> ...`（一行说明）
 
-### 8.2 Python（仅 strategy-service / research）
-- ruff strict + mypy strict（`disallow_untyped_defs = true`）
-- loguru；强制类型注解
-- 模块名 snake_case
-
-### 8.3 TypeScript（frontend）
+### 8.2 TypeScript（frontend）
 - strict mode；禁 any（必要时 `unknown` + 类型守卫）
 - TanStack Query + Zustand；Tailwind；shadcn/ui
 - 文件名 kebab-case
 
-### 8.4 通用
+### 8.3 通用
 - 依赖白名单见 `docs/spec/dep-allowlist.md`（待建）；新增依赖必须 ADR
 - AGPL 代码禁入仓
 - secrets 永不入仓；`.env` 在 gitignore
@@ -341,8 +335,7 @@ Verify: docs/handover/verify-MNNN.log:<起始行>-<结束行>
 - ❌ main 直接 push / force push 共享分支 / `--no-verify`
 - ❌ REST 新接口（除 healthz/readyz/livez/metrics）
 - ❌ WebSocket
-- ❌ 用户 Python 代码访问生产 DB / 网络
-- ❌ 生产路径调用 Python 解释器
+- ❌ 生产路径调用外部代码解释器（Python 已退役，见 ADR-0021）
 - ❌ 业务代码直接 import `internal/mt4client` `internal/mt5client`（v2 起）
 - ❌ 业务代码直接读写 `kline_data` `tick_data` 等老 PG 行情表
 - ❌ float64 参与价格运算
@@ -387,23 +380,23 @@ ROADMAP / BACKLOG / spec 中写的 `psql -c` `clickhouse-client --query` `grpcur
 ```bash
 BASE=$(git merge-base origin/main HEAD)
 git diff --name-only "$BASE"...HEAD \
-  | grep -E '^(backend/(cmd|internal)|strategy-service/(src|app)|frontend/src)/' \
-  | grep -vE '_test\.go$|test_.*\.py$|/testutil/|fixtures/|broker_sim\.py' \
+  | grep -E '^(backend/(cmd|internal)|frontend/src)/' \
+  | grep -vE '_test\.go$|/testutil/' \
   | xargs -r grep -lE '\b(mock|stub|[Ff]ake[A-Z])' 2>/dev/null \
   && echo "FAIL: production code references mock/stub/Fake" && exit 1 || true
 ```
 
-例外白名单：`strategy-service/src/broker_sim.py` / `internal/testutil/` / proto 生成代码 / Connect interceptor noop。
+例外白名单：`internal/testutil/` / proto 生成代码 / Connect interceptor noop。
 
 ### 11.5 禁删 / 弱化测试
 
 ```bash
 BASE=$(git merge-base origin/main HEAD)
-git diff --numstat "$BASE"...HEAD -- '*_test.go' 'test_*.py' \
+git diff --numstat "$BASE"...HEAD -- '*_test.go' \
   | awk '{add+=$1; del+=$2} END{ if (del>add) exit 1 }'
 ```
 
-新增功能必须配回归测试。`t.Skip` / `pytest.skip` / `xfail` 不得净增。
+新增功能必须配回归测试。`t.Skip` 不得净增。
 
 ### 11.6 卡片状态机闭环
 
@@ -427,7 +420,6 @@ wc -l "docs/handover/verify-${CARD_ID}.log" | awk '$1<20{exit 1}'
 
 # (c) build & test
 ( cd backend && go build ./... && go test -race ./internal/... )
-( cd strategy-service && uv run pytest -q )
 
 # (d) 复杂度
 make lint
@@ -502,8 +494,8 @@ go build "./$MODULE_DIR/..."
 ```
 make proto          buf lint + breaking + generate
 make build          go build ./...
-make test           go test -race ./internal/... + uv run pytest
-make lint           gofumpt + golangci-lint + ruff + mypy + tsc
+make test           go test -race ./internal/...
+make lint           go vet + gofumpt + golangci-lint + tsc
 make migrate-pg     PostgreSQL 迁移
 make migrate-ch     ClickHouse 迁移（v2 新增）
 make docker-up      docker-compose up -d

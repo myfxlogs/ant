@@ -9,7 +9,7 @@ import (
 )
 
 // CalculateMetrics produces antv1.BacktestMetrics from equity curve and trades.
-// Reuses the existing proto type defined in python_strategy.proto.
+// Reuses the existing proto type defined in strategy_runtime.proto.
 func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trades []Trade) *antv1.BacktestMetrics {
 	m := &antv1.BacktestMetrics{
 		TotalTrades: int32(len(trades)),

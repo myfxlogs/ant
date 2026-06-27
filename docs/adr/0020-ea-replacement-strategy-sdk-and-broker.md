@@ -1,5 +1,8 @@
 # ADR-0020 · EA 完全替代：统一 Strategy SDK + 双实现 Broker
 
+> **⚠️ D1/D4/D5/D7 已被 ADR-0021 覆盖。** Python Strategy SDK 方案已被推翻，Go SDK 为当前事实标准。
+> 本文档留存仅供历史参考，实施请以 ADR-0021 + `backend/strategy/sdk/` 为准。
+
 - **状态**：Superseded by ADR-0021 (Python→Go 迁移)
 - **日期**：2026-06-23（初版）· 2026-06-26 修订（Go 迁移）
 - **决策者**：架构组 + 人类负责人

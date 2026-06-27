@@ -1,6 +1,10 @@
 # EA 完全替代 — 容器部署指南
 
-## 部署架构
+> **⚠️ 本文档已过时。** Python strategy-service 和 strategy-worker 容器已按 ADR-0021 退役。
+> EA 策略执行已全面迁移至 Go SDK（`backend/strategy/sdk/`）。本文档留存仅供历史参考，
+> 部署请参考 `docker-compose.yml` 和 `AGENT.md`。
+
+## 部署架构（历史）
 
 ```
                     ┌──────────────────┐

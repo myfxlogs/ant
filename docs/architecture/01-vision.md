@@ -91,7 +91,7 @@ ant v2 **不是 alfq 的克隆**。设计采纳 alfq 的层次划分（这是经
 而**坚决不偏离** alfq 的：
 - 7 层架构（adapter → mdgateway → mthub → factorsvc → quantengine → oms → ai）
 - ClickHouse 4 表 schema
-- 因子 DSL Go/Py 双引擎
+- 因子 DSL Go 引擎
 - DSL+ONNX 替代 Python 沙箱（生产路径）
 
 ## 4. 不做什么（划清边界）

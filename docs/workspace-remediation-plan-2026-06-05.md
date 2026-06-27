@@ -160,6 +160,8 @@ useEffect(() => () => { gateStopRef.current?.(); backtestWatchRef.current?.(); e
 
 #### R5. 沙箱双防线（静态扫描 + 资源限制）
 
+> **⚠️ 已过时：** Python 沙箱已按 ADR-0021 退役，此项不再适用。
+
 **现状**：`sandbox_scan.py:34` `scan_code` 生产零调用（死代码，注释却称"executing 前调用"）；`backtest_sandbox.py:131-159` 子进程无 `resource.setrlimit`。
 **为何非最优**：回测路径对用户代码**既无静态扫描又无内存/CPU 上限**；`sandbox_scan.py:15` 自己把 `resource` 列入禁用，反证设计预期有 rlimit 却没接。
 **最优解（两者必须同时）**：

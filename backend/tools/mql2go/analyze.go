@@ -3,13 +3,17 @@ package mql2go
 import (
 	"context"
 	"strings"
+	"sync"
 
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
 // parseSource holds the MQL source being analyzed — set by Analyze(),
-// used by CST helpers for text extraction.
-var parseSource string
+// used by CST helpers for text extraction. Protected by analyzeMu.
+var (
+	parseSource string
+	analyzeMu   sync.Mutex
+)
 
 // ParseMQL parses MQL source into a tree-sitter CST.
 func ParseMQL(source string) (*sitter.Node, error) {
@@ -25,34 +29,43 @@ func ParseMQL(source string) (*sitter.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Keep tree alive — root node references tree memory.
-	// In a CLI tool, the process exits after generating code.
-	// For a long-running server, use a pool of trees.
-	_ = tree
 	return tree.RootNode(), nil
 }
 
 // Analyze parses MQL source and extracts a full StrategyIntent.
+// Thread-safe: serializes access to the global parseSource used by CST helpers.
+// MQL4 and MQL5 have completely different trading APIs — extraction is
+// version-aware to avoid cross-contamination.
 func Analyze(source string) (*StrategyIntent, error) {
-	parseSource = source // store for CST text extraction
+	analyzeMu.Lock()
+	parseSource = source
+	defer analyzeMu.Unlock()
+
 	root, err := ParseMQL(source)
 	if err != nil {
 		return analyzeFallback(source), nil
 	}
 
+	version := detectMQLVersion(source)
+
 	intent := &StrategyIntent{
 		Meta: StrategyMeta{
-			MQLVersion: detectMQLVersion(source),
+			MQLVersion: version,
 		},
 		Params:     extractParamsCST(source, root),
 		State:      extractStateCST(source, root),
-		Entry:      extractEntriesCST(root),
-		Exit:       extractExitsCST(root),
-		Indicators: extractIndicatorsCST(root),
+		Entry:      extractEntriesCST(root, version),
+		Exit:       extractExitsCST(root, version),
+		Modifies:      extractModifiesCST(root, version),
+		OrderLoops:    extractOrderLoopsCST(root, version),
+		PositionLoops: extractPositionLoopsCST(root, version),
+		Indicators:    extractIndicatorsCST(root),
 		Execution:  detectExecCST(root),
 		Timer:      detectTimerCST(root),
+		Risk:       extractRiskChecksCST(root, version),
 	}
 	intent.Sizing = detectSizingCST(intent.Entry)
+	intent.BlindSpots = detectBlindSpots(source, root, intent)
 	return intent, nil
 }
 
@@ -64,7 +77,13 @@ func analyzeFallback(source string) *StrategyIntent {
 }
 
 func detectMQLVersion(source string) string {
-	if strings.Contains(source, "class ") {
+	if strings.Contains(source, "class ") || strings.Contains(source, "CTrade") ||
+		strings.Contains(source, "#include <Trade\\") ||
+		strings.Contains(source, "MqlTradeRequest") || strings.Contains(source, "MqlTradeResult") ||
+		strings.Contains(source, "OnTradeTransaction") || strings.Contains(source, "OnBookEvent") ||
+		strings.Contains(source, "PositionGetDouble") || strings.Contains(source, "PositionGetInteger") ||
+		strings.Contains(source, "PositionGetString") || strings.Contains(source, "PositionGetTicket") ||
+		strings.Contains(source, "PositionSelectByTicket") {
 		return "mql5"
 	}
 	return "mql4"

@@ -70,6 +70,8 @@
 
 ## B-3 · Python sandbox multiprocessing 重构
 
+> **⚠️ 已过时：** Python sandbox 已按 ADR-0021 退役，此决策不再适用。
+
 **问题**（V3-R-8）：当前 `sandbox.py` 用 `threading.Timer` + `PyThreadState_SetAsyncExc`，C 扩展内部循环 / C 阻塞调用时**完全无效**。计划要求 `multiprocessing + Process.terminate`。
 
 ### 需要的决策

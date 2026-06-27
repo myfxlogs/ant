@@ -837,7 +837,7 @@ Expected: exit 0
 - [ ] **Step 2: File size check**
 
 ```bash
-cd /opt/ant && python3 scripts/check-file-lines.py --strict
+cd /opt/ant/backend && go run ./tools/check-file-lines --strict
 ```
 Expected: exit 0 (no 🔴 failures)
 

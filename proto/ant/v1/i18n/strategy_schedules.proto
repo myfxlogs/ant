@@ -4,7 +4,6 @@ package ant.v1.i18n;
 option go_package = "anttrader/gen/proto/ant/v1/i18n";
 
 // SchedulesI18n — auto-generated from strategy.ts
-// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
 
 message SchedulesI18n {
   string actions_create = 1;  // Create

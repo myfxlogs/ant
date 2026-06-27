@@ -1,5 +1,7 @@
 # AI Prompt Context + Conversation Session Implementation Plan
 
+> **⚠️ 注意：** AI Prompt 模板当前面向 Python 策略代码生成。迁移至 Go SDK 后需更新系统 Prompt（见 ADR-0021）。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implement 4-mode intent classification (Generate/Revise/Repair/Discuss) for AI code assistance and strategy-keyed server-side message persistence, eliminating the "repair breaks the flow" bug and enabling cross-device chat history sync.

@@ -138,7 +138,7 @@ mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
 
 - ⚠️ `RiskConfig.MaxDailyLoss` 和 `DailyLossUsed` 在 model 中是 `decimal.Decimal`，proto 中是 `double`
 - ⚠️ 转换时用 `InexactFloat64()` **仅限响应**（非计算路径），符合 "display/transport OK" 规则
-- ✅ 所有价格计算发生在 Python 引擎侧，Go 侧仅透传
+- ✅ 所有价格计算发生在 Go 引擎侧，Go 侧仅透传
 
 ---
 

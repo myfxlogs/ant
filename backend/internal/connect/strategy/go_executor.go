@@ -118,6 +118,31 @@ func (e *GoExecutor) RunBacktest(ctx context.Context, code string, req *antv1.Ex
 	return &resp, nil
 }
 
+// CompileCheck writes strategy code to a temp file and runs `go vet` to verify
+// it compiles. Returns (true, "") if compilation succeeds, (false, stderr) otherwise.
+func (e *GoExecutor) CompileCheck(ctx context.Context, code string) (bool, string) {
+	runDir, err := os.MkdirTemp(e.tmpDir, "check-*")
+	if err != nil {
+		return false, fmt.Sprintf("create temp dir: %v", err)
+	}
+	defer os.RemoveAll(runDir)
+
+	strategyFile := filepath.Join(runDir, "strategy.go")
+	if err := os.WriteFile(strategyFile, []byte(code), 0600); err != nil {
+		return false, fmt.Sprintf("write strategy: %v", err)
+	}
+
+	cmd := exec.CommandContext(ctx, "go", "vet", strategyFile) // #nosec G204 -- path inside tmpDir
+	cmd.Dir = e.goModDir
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return false, stderr.String()
+	}
+	return true, ""
+}
+
 func (e *GoExecutor) Cleanup() {
 	os.RemoveAll(e.tmpDir)
 }

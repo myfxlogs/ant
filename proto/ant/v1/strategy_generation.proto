@@ -31,7 +31,7 @@ message GenerateStrategyChunk {
   string phase = 1;                    // clarifying | generating | compliance | backtest | done
   string delta = 2;                    // streaming text delta (generating phase)
   repeated string questions = 3;       // clarification questions (clarifying phase)
-  string code = 4;                     // final generated Python code (generating or compliance phase)
+  string code = 4;                     // final generated strategy code (generating or compliance phase)
   repeated string compliance_issues = 5; // compliance scan issues (compliance phase)
   string backtest_run_id = 6;          // auto-triggered backtest ID (backtest phase)
   string template_name = 7;            // matched template name (generating phase)

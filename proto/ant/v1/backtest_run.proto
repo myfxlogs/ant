@@ -34,7 +34,7 @@ message BacktestRun {
   optional google.protobuf.Timestamp to = 8;
   BacktestRunStatus status = 9;
   string error = 10;
-  optional string python_service_version = 11;
+  optional string python_service_version = 11; // legacy: Python engine version, now unused (see ADR-0021)
   google.protobuf.Timestamp created_at = 12;
   optional google.protobuf.Timestamp started_at = 13;
   optional google.protobuf.Timestamp finished_at = 14;

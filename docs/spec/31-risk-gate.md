@@ -14,12 +14,12 @@ This document defines the protocol (proto messages) and the judgment rules with 
 ## 2. Architecture
 
 ```
-Strategy SDK (Python)
+Strategy SDK (Go)
        │
        ▼  broker.order_send(request)
   ┌─────────────┐
   │  Broker impl │── SimBroker  (backtest/paper)
-  │  (Python)    │── LiveBroker (real)
+  │  (Go)        │── LiveBroker (real)
   └──────┬──────┘
          │  Build OrderIntent
          ▼

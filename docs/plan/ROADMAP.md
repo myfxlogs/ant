@@ -192,7 +192,7 @@ docker exec ant-clickhouse clickhouse-client --query \
 | M7.5-1 | ☑ `internal/connect/market_service.go` GetKlines 切到 CH（带 PG fallback） | 同左 + test | grpcurl 查近 1h K 线 90% 走 CH（log 计数）|
 | M7.5-2 | ☑ `connect/market_regime_service.go` 切流 | 同左 + test | 同上 |
 | M7.5-3 | ☑ `connect/backtest_dataset_service.go` 切流 | 同左 + test | 回测拉历史数据走 CH |
-| M7.5-4 | ☑ `connect/python_strategy_service.go` 切流 | 同左 + test | 沙箱拉历史走 CH |
+| M7.5-4 | ☑ `connect/python_strategy_service.go` 切流 [已退役，见 ADR-0021] | 同左 + test | 沙箱拉历史走 CH |
 | M7.5-5 | ☑ `service/kline_service*.go` 全部加 `// Deprecated: see internal/mdgateway. To be removed in M9.` | 同左 7 个文件 | `grep -c '// Deprecated' backend/internal/service/kline_service*.go \| grep -q '^7$'` |
 | M7.5-6 | ☑ grep 验证业务代码 0 处直 import mt4client/mt5client（除 service/kline_service*）| — | `! grep -rE 'anttrader/internal/(mt4\|mt5)client' backend/internal/{ai,marketplace,oms,risk,connect,quantengine,factorsvc,mthub}/ \|\| exit 1` |
 | M7.5-7 | ☑ 老 `kline_data` 表设为只读（trigger 阻止 INSERT） | `backend/migrations/101_kline_data_readonly.up.sql` (`+ .down.sql`) | `psql -c "INSERT INTO kline_data ..."` 返回 error |

@@ -135,6 +135,8 @@ return {
 
 ### P0-5. 沙箱双防线（静态扫描 + 资源限制）
 
+> **⚠️ 已过时：** Python 沙箱已按 ADR-0021 退役，此项不再适用。
+
 **现状**:
 - `sandbox_scan.py` 的 `scan_code()` 生产零调用（死代码）
 - `backtest_sandbox.py:131-159` 子进程无 `resource.setrlimit`

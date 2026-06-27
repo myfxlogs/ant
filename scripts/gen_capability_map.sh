@@ -19,10 +19,6 @@ GO_DIRS=(
   backend/internal/service
   backend/internal/connect/strategy
 )
-PY_DIRS=(
-  strategy-service/app/sdk
-  strategy-service/app/engine
-)
 
 emit() { printf '%s\n' "$1"; }
 
@@ -49,13 +45,6 @@ gen() {
         "$ROOT/$d" --include='*.go' 2>/dev/null | grep -v '_test.go' \
         | sed -E "s#^$ROOT/##" \
         | sed -E 's#^([^:]+):([0-9]+):.*\) ([A-Z][A-Za-z0-9_]*)\(.*#\3\t\1:\2#' || true
-    done
-    # Python SDK / 引擎
-    for d in "${PY_DIRS[@]}"; do
-      [ -d "$ROOT/$d" ] && grep -rEn "^[[:space:]]*(def|class) [A-Za-z_]" \
-        "$ROOT/$d" --include='*.py' 2>/dev/null | grep -v '__pycache__' \
-        | sed -E "s#^$ROOT/##" \
-        | sed -E 's#^([^:]+):([0-9]+):[[:space:]]*(def|class) ([A-Za-z_][A-Za-z0-9_]*).*#\4\t\1:\2#' || true
     done
   } | sort -f -u || true
   emit '```'
@@ -85,17 +74,6 @@ gen() {
     [ -d "$ROOT/$d" ] && grep -rEn "func \([a-z]+ \*[A-Za-z0-9_]+\) [A-Z][A-Za-z0-9_]*\(" \
       "$ROOT/$d" --include='*.go' 2>/dev/null \
       | grep -v '_test.go' | sed -E "s#$ROOT/##" || true
-  done | sort
-  emit '```'
-  emit ""
-
-  emit "## Python SDK / 引擎（已实现的类与函数）"
-  emit ""
-  emit '```'
-  for d in "${PY_DIRS[@]}"; do
-    [ -d "$ROOT/$d" ] && grep -rEn "^[[:space:]]*(def|class) [A-Za-z_]" \
-      "$ROOT/$d" --include='*.py' 2>/dev/null \
-      | grep -v '__pycache__' | sed -E "s#$ROOT/##" || true
   done | sort
   emit '```'
   emit ""

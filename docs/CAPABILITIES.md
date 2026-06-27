@@ -46,10 +46,10 @@
 
 | 能力 | 别名 | 状态 | 权威位置 |
 |---|---|---|---|
-| Broker 抽象接口 | order_send/position_modify/position_close/order_delete/positions/orders/account/symbol_info/server_time | ✅ 已冻结 | `strategy-service/app/sdk/broker.py` |
-| 回测 Broker | SimBroker | ✅ 实现，⚠️ 未集成 gate（见 D6-A） | `strategy-service/app/engine/sim_broker.py` |
-| 实盘 Broker | LiveBroker / OrderIntent / to_signal_dict | ✅ 实现，⚠️ 未端到端验证 | `strategy-service/app/engine/live_broker.py` |
-| 策略生命周期 | StrategyRuntime / on_init/on_tick/on_bar/on_timer/on_trade/on_deinit | ✅ | `strategy-service/app/sdk/runtime.py` |
+| Broker 抽象接口 | order_send/position_modify/position_close/order_delete/positions/orders/account/symbol_info/server_time | ✅ 已冻结 | `backend/strategy/sdk/broker.go` |
+| 回测 Broker | SimBroker | ✅ 实现，⚠️ 未集成 gate（见 D6-A） | `backend/strategy/backtest/sim_broker.go` |
+| 实盘 Broker | LiveBroker / OrderIntent / to_signal_dict | ✅ 实现，⚠️ 未端到端验证 | `backend/strategy/sdk/live_broker.go` |
+| 策略生命周期 | StrategyRuntime / OnInit/OnBar/OnDeinit | ✅ | `backend/strategy/sdk/runtime.go` |
 | 风控门 | Gate / Evaluate / risk rules / kill-switch | ✅ 实现，✅ **已接进 live_runner**（dispatchCloseOrder + submitOrder 均经 Gate.Evaluate 过滤，D6-A） | `backend/internal/risk/gate.go:109` |
 | 旧风控管线 | risksvc / SignalPipeline | ✅ 已接线（勿与新 EA gate 混用） | `backend/internal/risksvc/pipeline.go` |
 
@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-06-24 11:10 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-06-27 09:26 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -75,91 +75,48 @@ _最后生成：2026-06-24 11:10 UTC。运行 `bash scripts/gen_capability_map.s
 AcceptDisclaimer	backend/internal/risksvc/jurisdiction_store.go:88
 AcceptDisclaimerAt	backend/internal/risksvc/jurisdiction_store.go:137
 Account	reference/grpc/mt5.proto:58
-account	strategy-service/app/engine/live_broker.py:190
-account	strategy-service/app/engine/sim_broker.py:448
-account	strategy-service/app/sdk/broker.py:58
-AccountBalance	strategy-service/app/engine/indicators.py:225
-AccountEquity	strategy-service/app/engine/indicators.py:229
-AccountInfo	strategy-service/app/sdk/account.py:16
-AccountMode	strategy-service/app/sdk/types.py:44
 AccountSummary	reference/grpc/mt4.proto:60
 AccountSummary	reference/grpc/mt5.proto:64
 ActivateCanary	backend/internal/risk/canary.go:172
 ActiveAccountIDs	backend/internal/mthub/types.go:101
 AddAccount	backend/internal/risk/canary.go:127
-AddGateRule	backend/internal/connect/strategy/python_strategy_handler.go:76
+AddGateRule	backend/internal/connect/strategy/strategy_execution_handler.go:83
 AddRule	backend/internal/risk/gate.go:179
 AddSanctionedCountry	proto/ant/v1/admin_jurisdiction.proto:13
 AdjustBalance	backend/internal/service/wallet_service.go:46
 AdjustBalance	proto/ant/v1/wallet.proto:11
-adjust_cash	strategy-service/app/engine/portfolio.py:111
-advance_tick	strategy-service/app/engine/sim_broker.py:494
 Allocate	backend/internal/risksvc/block_allocator.go:103
 Allocate	backend/internal/risksvc/block_allocator.go:27
 Allocate	backend/internal/risksvc/block_allocator.go:67
 AllowedLotSize	backend/internal/risk/canary.go:153
 AnalyzeAsset	proto/ant/v1/asset_analysis.proto:14
+AnalyzeImportCode	backend/internal/connect/strategy/strategy_execution_handler.go:228
+AnalyzeImportCode	proto/ant/v1/strategy_runtime.proto:33
 AnalyzePlan	proto/ant/v1/strategy_execution.proto:11
-analyze_code_quality	strategy-service/app/engine/code_quality.py:391
 ApplyEvent	backend/internal/mthub/state_cache.go:117
-apply_cgroup_limits	strategy-service/app/engine/sandbox_os.py:233
-apply_fill	strategy-service/app/engine/portfolio.py:119
-apply_os_sandbox	strategy-service/app/engine/sandbox_os.py:265
-apply_rollover_swaps	strategy-service/app/engine/cost.py:105
-apply_seccomp	strategy-service/app/engine/sandbox_os.py:169
-apply_slippage	strategy-service/app/engine/cost.py:57
 ArchiveStrategy	proto/ant/v1/admin_strategy.proto:29
 ArchiveTemplate	backend/internal/service/template_svc_admin.go:330
 AssignAccountNumber	backend/internal/service/account_number.go:215
-atr	strategy-service/app/engine/sdk_indicators.py:67
-atr	strategy-service/app/sdk/indicators.py:40
-Backtest	backend/internal/connect/strategy/python_strategy_handler.go:152
-Backtest	proto/ant/v1/python_strategy.proto:17
-BacktestRequest	strategy-service/app/engine/types.py:219
-BacktestResult	strategy-service/app/engine/types.py:259
-BacktestRunner	strategy-service/app/engine/runner.py:233
-bands	strategy-service/app/engine/sdk_indicators.py:55
-bands	strategy-service/app/sdk/indicators.py:28
-Bar	strategy-service/app/engine/types.py:70
-bars	strategy-service/app/engine/market.py:79
-bars	strategy-service/app/sdk/context.py:22
-bars	strategy-service/app/sdk/runtime.py:257
-Bars	strategy-service/app/sdk/series.py:31
-bar_closed_at_or_before	strategy-service/app/engine/market.py:154
-bar_closed_at_or_before	strategy-service/app/engine/market.py:82
+Backtest	backend/internal/connect/strategy/strategy_execution_handler.go:162
+Backtest	proto/ant/v1/strategy_runtime.proto:17
 BatchSetAgents	proto/ant/v1/ai.proto:20
 BatchSetAgents	proto/ant/v1/ai_agent.proto:9
 BeginTx	backend/internal/service/account_service.go:132
-Broker	strategy-service/app/sdk/broker.py:22
 BrokerRegistry	backend/internal/mthub/service.go:102
-build_live_broker_from_proto	strategy-service/app/engine/live_broker.py:313
-build_metrics	strategy-service/app/engine/metrics.py:135
-build_sandbox_globals	strategy-service/app/engine/compilation.py:36
-CalculateObjectiveScore	backend/internal/connect/strategy/objective_score_handler.go:30
-CalculateObjectiveScore	proto/ant/v1/objective_score.proto:8
 CalculatePositionSize	proto/ant/v1/auto_trading.proto:21
-call	strategy-service/app/engine/vectorized_runner.py:122
-call_dataframe	strategy-service/app/engine/vectorized_runner.py:133
 CanAccept	backend/internal/mthub/reconcile_gate.go:38
 CancelAlgo	proto/ant/v1/execution_algo.proto:20
-CancelBacktestRun	backend/internal/connect/strategy/python_strategy_backtest_crud.go:198
-CancelBacktestRun	proto/ant/v1/python_strategy.proto:22
+CancelBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:198
+CancelBacktestRun	proto/ant/v1/strategy_runtime.proto:22
 CancelJob	proto/ant/v1/job.proto:12
 CancelPaperOrder	backend/internal/paper/engine.go:163
-CancelSignal	backend/internal/connect/strategy/strategy_signals.go:198
+CancelSignal	backend/internal/connect/strategy/strategy_signals.go:86
 CancelSignal	backend/internal/service/signal_svc.go:95
 CancelSignal	proto/ant/v1/strategy.proto:34
 CancelStrategyExperiment	backend/internal/connect/strategy/strategy_experiment_handler.go:164
 CancelStrategyExperiment	proto/ant/v1/strategy_experiment.proto:14
-CancelTemplateDraft	backend/internal/connect/strategy/strategy_templates.go:181
+CancelTemplateDraft	backend/internal/connect/strategy/strategy_handler.go:42
 CancelTemplateDraft	proto/ant/v1/strategy.proto:20
-cancel_all	strategy-service/app/engine/fill.py:76
-can_open_network	strategy-service/app/engine/sandbox_os.py:294
-can_spawn_process	strategy-service/app/engine/sandbox_os.py:314
-can_write_file	strategy-service/app/engine/sandbox_os.py:304
-cash	strategy-service/app/engine/portfolio.py:65
-cci	strategy-service/app/engine/sdk_indicators.py:73
-cci	strategy-service/app/sdk/indicators.py:49
 ChangePassword	reference/grpc/mt5.proto:231
 Chat	proto/ant/v1/ai.proto:11
 ChatCompletion	backend/internal/connect/strategy/ai_proposer_adapter.go:22
@@ -202,29 +159,20 @@ CheckConnect	reference/grpc/mt4.proto:45
 CheckConnect	reference/grpc/mt5.proto:43
 CheckMarginCall	backend/internal/service/account_sync.go:31
 CheckRiskLimits	proto/ant/v1/auto_trading.proto:20
-check_sl_tp	strategy-service/app/engine/portfolio.py:170
+Cleanup	backend/internal/connect/strategy/go_executor.go:146
 CleanupOldSnapshots	backend/internal/service/account_lifecycle.go:205
 ClearAccount	backend/internal/risksvc/platform_aggregator.go:85
-ClearCache	proto/ant/v1/admin_system.proto:11
-clear_intents	strategy-service/app/engine/live_broker.py:92
 CloneStrategyAsset	backend/internal/connect/strategy/strategy_asset_handler.go:146
 CloneStrategyAsset	proto/ant/v1/strategy_asset.proto:14
 ClosedOrders	reference/grpc/mt4.proto:151
-closed_trades	strategy-service/app/engine/portfolio.py:74
-CloseIntent	strategy-service/app/engine/live_broker.py:279
 CloseOrder	backend/internal/mthub/service_orders_close.go:17
 CloseOrder	proto/ant/v1/mthub_service.proto:8
 ClosePaperOrder	backend/internal/paper/engine.go:121
-CloseReason	strategy-service/app/engine/types.py:57
 CloseSession	backend/internal/mthub/types.go:93
-close_intents	strategy-service/app/engine/live_broker.py:220
-close_position	strategy-service/app/engine/portfolio.py:139
-CodeHint	strategy-service/app/engine/code_quality.py:25
-code_sha256	strategy-service/app/engine/compilation.py:29
 CommentOnStrategy	proto/ant/v1/marketplace_service.proto:18
-commission	strategy-service/app/engine/cost.py:51
+CompileCheck	backend/internal/connect/strategy/go_executor.go:123
 Confirm	backend/internal/mthub/idempotency.go:87
-ConfirmSignal	backend/internal/connect/strategy/strategy_signals.go:185
+ConfirmSignal	backend/internal/connect/strategy/strategy_signals.go:73
 ConfirmSignal	backend/internal/service/signal_svc.go:81
 ConfirmSignal	proto/ant/v1/strategy.proto:33
 Connect	reference/grpc/mt4.proto:17
@@ -235,11 +183,7 @@ ConnectEx	reference/grpc/mt4.proto:25
 ConnectEx	reference/grpc/mt5.proto:22
 ConnectProxy	reference/grpc/mt4.proto:39
 ConnectProxy	reference/grpc/mt5.proto:37
-Context	strategy-service/app/sdk/context.py:16
 Conversate	proto/ant/v1/strategy_execution.proto:14
-convert_to_dsl	strategy-service/app/engine/migrate_legacy_strategy.py:101
-CostModel	strategy-service/app/engine/cost.py:32
-CostProfile	strategy-service/app/engine/types.py:95
 Count	backend/internal/risksvc/capability.go:155
 CountryCode	backend/internal/risksvc/jurisdiction.go:185
 CreateAccount	backend/internal/service/account_service.go:155
@@ -248,50 +192,42 @@ CreateAccountTx	backend/internal/service/account_service.go:137
 CreateConversation	proto/ant/v1/ai.proto:16
 CreateFrozenBacktestDataset	proto/ant/v1/backtest_dataset.proto:12
 CreatePaperAccount	proto/ant/v1/paper_trading.proto:10
-CreateSchedule	backend/internal/connect/strategy/strategy_schedules.go:44
+CreateSchedule	backend/internal/connect/strategy/strategy_schedules.go:46
 CreateSchedule	backend/internal/service/schedule_svc.go:75
 CreateSchedule	proto/ant/v1/strategy.proto:24
 CreateShareToken	proto/ant/v1/share.proto:9
 CreateSystemStrategy	backend/internal/service/template_svc_admin.go:70
 CreateSystemStrategy	proto/ant/v1/admin_strategy.proto:14
-CreateTemplate	backend/internal/connect/strategy/strategy_templates.go:52
-CreateTemplate	backend/internal/service/template_svc.go:59
+CreateTemplate	backend/internal/connect/strategy/strategy_template_handlers.go:77
+CreateTemplate	backend/internal/service/template_svc.go:60
 CreateTemplate	proto/ant/v1/strategy.proto:13
-CreateTemplateDraft	backend/internal/connect/strategy/strategy_templates.go:116
+CreateTemplateDraft	backend/internal/connect/strategy/strategy_template_handlers.go:155
 CreateTemplateDraft	proto/ant/v1/strategy.proto:17
 CreateUser	proto/ant/v1/admin_user.proto:12
 CreateWallet	backend/internal/service/wallet_service.go:40
 CurrentStage	backend/internal/risk/canary.go:163
-DataFrameStrategyRunner	strategy-service/app/engine/vectorized_runner.py:94
-DataFrameValidationResult	strategy-service/app/engine/vectorized_runner.py:40
-DataUnavailableError	strategy-service/app/engine/types.py:287
-DeadlineExceededError	strategy-service/app/engine/types.py:291
-DealType	strategy-service/app/sdk/types.py:51
-deinit	strategy-service/app/sdk/runtime.py:141
 DeleteAccount	backend/internal/service/account_service.go:199
 DeleteAccount	proto/ant/v1/account.proto:18
 DeleteBacktestDataset	proto/ant/v1/backtest_dataset.proto:13
-DeleteBacktestRun	backend/internal/connect/strategy/python_strategy_backtest_crud.go:214
-DeleteBacktestRun	proto/ant/v1/python_strategy.proto:23
-DeleteBacktestRuns	backend/internal/connect/strategy/python_strategy_backtest_crud.go:232
-DeleteBacktestRuns	proto/ant/v1/python_strategy.proto:24
+DeleteBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:214
+DeleteBacktestRun	proto/ant/v1/strategy_runtime.proto:23
+DeleteBacktestRuns	backend/internal/connect/strategy/strategy_backtest_crud.go:232
+DeleteBacktestRuns	proto/ant/v1/strategy_runtime.proto:24
 DeleteConversation	proto/ant/v1/ai.proto:17
 DeleteKey	backend/internal/mthub/idempotency.go:172
 DeleteModel	proto/ant/v1/ai_gateway.proto:28
 DeleteProvider	proto/ant/v1/ai_gateway.proto:22
-DeleteSchedule	backend/internal/connect/strategy/strategy_schedules.go:133
+DeleteSchedule	backend/internal/connect/strategy/strategy_schedules.go:135
 DeleteSchedule	backend/internal/service/schedule_svc.go:136
 DeleteSchedule	proto/ant/v1/strategy.proto:26
 DeleteSystemStrategy	backend/internal/service/template_svc_admin.go:133
 DeleteSystemStrategy	proto/ant/v1/admin_strategy.proto:16
-DeleteTemplate	backend/internal/connect/strategy/strategy_templates.go:105
-DeleteTemplate	backend/internal/service/template_svc.go:90
+DeleteTemplate	backend/internal/connect/strategy/strategy_template_handlers.go:140
+DeleteTemplate	backend/internal/service/template_svc.go:91
 DeleteTemplate	proto/ant/v1/strategy.proto:15
 DeleteUser	proto/ant/v1/admin_user.proto:14
 DeleteUsers	proto/ant/v1/admin_user.proto:15
-delete_intents	strategy-service/app/engine/live_broker.py:228
 DetectMarketRegime	proto/ant/v1/market_regime.proto:10
-detect_strategy_type	strategy-service/app/engine/vectorized_runner.py:239
 Diagnose	proto/ant/v1/strategy_execution.proto:12
 DisableStrategy	proto/ant/v1/admin_strategy.proto:27
 DisableTemplate	backend/internal/service/template_svc_admin.go:300
@@ -305,21 +241,14 @@ DiscoverModels	backend/internal/service/systemai/service.go:256
 DiscoverSystemAIModels	proto/ant/v1/system_ai.proto:15
 DisengageKillSwitch	backend/internal/risk/canary.go:266
 DroppedBars	backend/internal/mthub/broker_types.go:153
-drop_root	strategy-service/app/engine/sandbox_os.py:203
-ema	strategy-service/app/engine/sdk_indicators.py:40
-ema	strategy-service/app/sdk/indicators.py:22
-enabled	strategy-service/app/engine/margin.py:33
 EnableStrategy	proto/ant/v1/admin_strategy.proto:28
 EnableTemplate	backend/internal/service/template_svc_admin.go:318
 EnableUser	proto/ant/v1/admin_user.proto:17
 EngageKillSwitch	backend/internal/risk/canary.go:251
-EngineError	strategy-service/app/engine/types.py:275
-enqueue	strategy-service/app/engine/fill.py:64
 EnsureSeed	backend/internal/service/systemai/service.go:140
 EnsureSession	backend/internal/mthub/types.go:71
 EnterAll	backend/internal/mthub/reconcile_gate.go:59
 EnterReconciling	backend/internal/mthub/reconcile_gate.go:24
-equity	strategy-service/app/engine/portfolio.py:105
 Error	backend/internal/mthub/types.go:115
 Error	backend/internal/risksvc/hardlimit.go:181
 Error	backend/internal/service/registration_service.go:109
@@ -331,30 +260,22 @@ Evaluate	backend/internal/risk/gate.go:114
 Evaluate	backend/internal/risksvc/engine.go:27
 Evaluate	backend/internal/risksvc/hardlimit.go:165
 Events	reference/grpc/mt5.proto:512
-Execute	backend/internal/connect/strategy/python_strategy_handler.go:105
-Execute	proto/ant/v1/python_strategy.proto:15
-ExecuteLive	backend/internal/connect/strategy/python_strategy_handler.go:211
-ExecuteLive	proto/ant/v1/python_strategy.proto:29
+Execute	backend/internal/connect/strategy/strategy_execution_handler.go:110
+Execute	proto/ant/v1/strategy_runtime.proto:15
+ExecuteLive	backend/internal/connect/strategy/strategy_execution_handler.go:183
+ExecuteLive	proto/ant/v1/strategy_runtime.proto:28
 ExecutePlan	proto/ant/v1/strategy_execution.proto:13
-ExecuteSignal	backend/internal/connect/strategy/strategy_signals.go:164
+ExecuteSignal	backend/internal/connect/strategy/strategy_signals.go:52
 ExecuteSignal	backend/internal/service/signal_svc.go:66
 ExecuteSignal	proto/ant/v1/strategy.proto:32
-ExecutionAssumptions	strategy-service/app/engine/types.py:193
 ExplainCode	proto/ant/v1/code_assist.proto:12
-export_intents	strategy-service/app/engine/live_broker.py:231
-export_intents	strategy-service/app/sdk/runtime.py:174
-extract_required_params	strategy-service/app/engine/params_extractor.py:139
-extract_signal_at	strategy-service/app/engine/vectorized_runner.py:172
-extract_strategy_directives	strategy-service/app/engine/params_extractor.py:241
-Fetch	backend/internal/connect/strategy/data_source.go:56
-Fill	strategy-service/app/engine/types.py:131
-FillModel	strategy-service/app/engine/fill.py:49
+Fetch	backend/internal/connect/strategy/data_source.go:57
 FlagStrategy	proto/ant/v1/admin_strategy.proto:23
 FlagTemplate	backend/internal/service/template_svc_admin.go:249
-force_liquidate_all	strategy-service/app/engine/portfolio.py:191
-force_liquidate_side	strategy-service/app/engine/portfolio.py:199
 FreezeAccount	proto/ant/v1/admin_account.proto:11
 GenerateAccountNumber	backend/internal/service/account_number.go:45
+GenerateImportCode	backend/internal/connect/strategy/strategy_execution_handler.go:277
+GenerateImportCode	proto/ant/v1/strategy_runtime.proto:35
 GenerateReport	proto/ant/v1/analytics.proto:15
 GenerateStrategy	proto/ant/v1/strategy_generation.proto:12
 Get	backend/internal/mthub/derived_state.go:74
@@ -379,8 +300,8 @@ GetAllLogs	backend/internal/service/log_service.go:69
 GetAttribution	backend/internal/service/analytics_cache.go:63
 GetAttributionAnalysis	proto/ant/v1/analytics.proto:13
 GetAutoTradingStatus	proto/ant/v1/auto_trading.proto:22
-GetBacktestRun	backend/internal/connect/strategy/python_strategy_backtest_crud.go:74
-GetBacktestRun	proto/ant/v1/python_strategy.proto:19
+GetBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:74
+GetBacktestRun	proto/ant/v1/strategy_runtime.proto:19
 GetCanary	proto/ant/v1/admin_sre.proto:10
 GetClients	reference/grpc/mt4.proto:217
 GetClients	reference/grpc/mt5.proto:367
@@ -427,7 +348,7 @@ GetRecentTradingLogs	proto/ant/v1/auto_trading.proto:24
 GetRiskConfig	proto/ant/v1/auto_trading.proto:18
 GetRolling	backend/internal/service/analytics_cache.go:87
 GetRollingMetrics	proto/ant/v1/analytics.proto:14
-GetSchedule	backend/internal/connect/strategy/strategy_schedules.go:32
+GetSchedule	backend/internal/connect/strategy/strategy_schedules.go:34
 GetSchedule	backend/internal/service/schedule_svc.go:55
 GetSchedule	proto/ant/v1/strategy.proto:23
 GetScheduleHealth	proto/ant/v1/schedule_health.proto:10
@@ -445,12 +366,12 @@ GetStrategyExperiment	backend/internal/connect/strategy/strategy_experiment_hand
 GetStrategyExperiment	proto/ant/v1/strategy_experiment.proto:12
 GetSymbolStats	proto/ant/v1/market_service.proto:9
 GetSystemAIConfig	proto/ant/v1/system_ai.proto:12
-GetTemplate	backend/internal/connect/strategy/strategy_templates.go:29
-GetTemplate	backend/internal/service/template_svc.go:44
+GetTemplate	backend/internal/connect/strategy/strategy_template_handlers.go:61
+GetTemplate	backend/internal/service/template_svc.go:45
 GetTemplate	proto/ant/v1/strategy.proto:12
 GetTemplateDetail	backend/internal/service/template_svc_admin.go:14
-GetTemplates	backend/internal/connect/strategy/python_strategy_handler.go:205
-GetTemplates	proto/ant/v1/python_strategy.proto:25
+GetTemplates	backend/internal/connect/strategy/strategy_execution_handler.go:177
+GetTemplates	proto/ant/v1/strategy_runtime.proto:25
 GetTickValueMany	reference/grpc/mt5.proto:216
 GetTier	backend/internal/risk/rules_risksvc.go:159
 GetTokenUsage	proto/ant/v1/ai_gateway.proto:15
@@ -465,23 +386,14 @@ GetUserAccountsSummary	backend/internal/service/platform_service.go:174
 GetWallet	proto/ant/v1/wallet.proto:9
 Groups	reference/grpc/mt4.proto:66
 HasOrderType	backend/internal/risksvc/capability.go:61
-has_open	strategy-service/app/engine/portfolio.py:81
 Health	reference/grpc/mt5.proto:343
 HealthCheck	proto/ant/v1/admin_system.proto:8
 History	backend/internal/risk/canary.go:308
-iATR	strategy-service/app/engine/indicators.py:154
-iBands	strategy-service/app/engine/indicators.py:79
-iCCI	strategy-service/app/engine/indicators.py:173
-iMA	strategy-service/app/engine/indicators.py:43
-iMACD	strategy-service/app/engine/indicators.py:105
-iMomentum	strategy-service/app/engine/indicators.py:191
-Indicators	strategy-service/app/sdk/indicators.py:16
-init	strategy-service/app/sdk/runtime.py:92
+ImportStrategy	backend/internal/connect/strategy/strategy_execution_handler.go:325
+ImportStrategy	proto/ant/v1/strategy_runtime.proto:37
 InsertOrder	backend/internal/mthub/oms_writer.go:116
 Invalidate	backend/internal/service/analytics_cache.go:138
-InvalidateCache	proto/ant/v1/admin_system.proto:12
 InvalidateSummaryCache	backend/internal/service/account_snapshot.go:140
-iRSI	strategy-service/app/engine/indicators.py:62
 IsAccountNumberAvailable	backend/internal/service/account_number.go:87
 IsAccountNumberAvailableExcluding	backend/internal/service/account_number.go:93
 IsAdmin	backend/internal/service/platform_service.go:109
@@ -496,19 +408,8 @@ IsQuoteSessionMany	reference/grpc/mt5.proto:210
 IsReconciling	backend/internal/mthub/reconcile_gate.go:45
 IsSanctioned	backend/internal/risksvc/jurisdiction_store.go:125
 IssueAgentToken	proto/ant/v1/agent_gateway.proto:10
-iStochastic	strategy-service/app/engine/indicators.py:129
 IsTradeSession	reference/grpc/mt5.proto:191
 IsTradeSessionMany	reference/grpc/mt5.proto:197
-is_convertible	strategy-service/app/engine/migrate_legacy_strategy.py:93
-is_margin_call	strategy-service/app/engine/margin.py:60
-is_root	strategy-service/app/engine/sandbox_os.py:220
-is_timer_active	strategy-service/app/sdk/runtime.py:169
-iWPR	strategy-service/app/engine/indicators.py:200
-i_custom	strategy-service/app/engine/sdk_indicators.py:76
-i_custom	strategy-service/app/sdk/indicators.py:52
-kill_timer	strategy-service/app/sdk/context.py:34
-kill_timer	strategy-service/app/sdk/runtime.py:269
-legacy_pnl	strategy-service/app/engine/portfolio.py:78
 List	backend/internal/service/systemai/service.go:170
 ListAccounts	backend/internal/service/account_service.go:105
 ListAccounts	proto/ant/v1/account.proto:14
@@ -523,9 +424,9 @@ ListAllStrategies	proto/ant/v1/admin_strategy.proto:19
 ListAssetClones	backend/internal/connect/strategy/strategy_asset_handler.go:203
 ListAssetClones	proto/ant/v1/strategy_asset.proto:17
 ListBacktestDatasets	proto/ant/v1/backtest_dataset.proto:11
-ListBacktestRuns	backend/internal/connect/strategy/python_strategy_backtest_crud.go:93
-ListBacktestRuns	proto/ant/v1/python_strategy.proto:20
-ListBacktestRunTrades	backend/internal/connect/strategy/backtest_trades_handler.go:53
+ListBacktestRuns	backend/internal/connect/strategy/strategy_backtest_crud.go:93
+ListBacktestRuns	proto/ant/v1/strategy_runtime.proto:20
+ListBacktestRunTrades	backend/internal/connect/strategy/backtest_trades_handler.go:55
 ListBacktestRunTrades	proto/ant/v1/backtest_trades.proto:8
 ListBreakers	proto/ant/v1/admin_sre.proto:8
 ListComments	proto/ant/v1/marketplace_service.proto:19
@@ -543,10 +444,10 @@ ListProviders	proto/ant/v1/ai_gateway.proto:18
 ListPublished	proto/ant/v1/marketplace_service.proto:13
 ListRatings	proto/ant/v1/marketplace_service.proto:17
 ListSanctionedCountries	proto/ant/v1/admin_jurisdiction.proto:12
-ListSchedules	backend/internal/connect/strategy/strategy_schedules.go:20
+ListSchedules	backend/internal/connect/strategy/strategy_schedules.go:22
 ListSchedules	backend/internal/service/schedule_svc.go:42
 ListSchedules	proto/ant/v1/strategy.proto:22
-ListSignals	backend/internal/connect/strategy/strategy_signals.go:147
+ListSignals	backend/internal/connect/strategy/strategy_signals.go:35
 ListSignals	backend/internal/service/signal_svc.go:30
 ListSignals	proto/ant/v1/strategy.proto:31
 ListStrategies	backend/internal/service/platform_service.go:42
@@ -560,51 +461,33 @@ ListSystemAIConfigs	proto/ant/v1/system_ai.proto:11
 ListSystemModels	proto/ant/v1/ai_gateway.proto:13
 ListSystemStrategies	backend/internal/service/template_svc_admin.go:51
 ListSystemStrategies	proto/ant/v1/admin_strategy.proto:13
-ListTemplates	backend/internal/connect/strategy/strategy_templates.go:17
-ListTemplates	backend/internal/service/template_svc.go:33
+ListTemplates	backend/internal/connect/strategy/strategy_template_handlers.go:48
+ListTemplates	backend/internal/service/template_svc.go:34
 ListTemplates	proto/ant/v1/strategy.proto:11
 ListTransactions	backend/internal/service/wallet_service.go:77
 ListTransactions	proto/ant/v1/wallet.proto:10
 ListUsers	proto/ant/v1/admin_user.proto:11
 ListUsersByKYCStatus	proto/ant/v1/admin_jurisdiction.proto:15
-LiveBroker	strategy-service/app/engine/live_broker.py:38
 LoadFromPG	backend/internal/risksvc/capability.go:115
 LoadFromRedis	backend/internal/mthub/state_cache.go:186
-load_sdk_strategy	strategy-service/app/engine/sdk_loader.py:13
 LogConnection	backend/internal/service/log_service.go:21
 LogExecution	backend/internal/service/log_service.go:29
 Login	proto/ant/v1/auth.proto:11
 LogOperation	backend/internal/service/log_service.go:57
 LogOrder	backend/internal/service/log_service.go:41
 Logout	proto/ant/v1/auth.proto:12
-ma	strategy-service/app/engine/sdk_indicators.py:27
-ma	strategy-service/app/sdk/indicators.py:19
-macd	strategy-service/app/engine/sdk_indicators.py:64
-macd	strategy-service/app/sdk/indicators.py:34
 Mails	reference/grpc/mt5.proto:237
-main	strategy-service/app/engine/migrate_legacy_strategy.py:251
-MarginCallError	strategy-service/app/engine/types.py:295
-MarginModel	strategy-service/app/engine/margin.py:20
-margin_level	strategy-service/app/engine/margin.py:51
 MarkAccountNeedsRebind	backend/internal/service/account_lifecycle.go:64
 MarkAllRead	proto/ant/v1/notification_service.proto:12
-market	strategy-service/app/engine/market.py:145
-MarketSimulator	strategy-service/app/engine/market.py:49
 MarketWatchMany	reference/grpc/mt5.proto:151
 MarkRead	proto/ant/v1/notification_service.proto:11
 MarkReconciled	backend/internal/mthub/reconcile_gate.go:31
 MemorySnapshot	reference/grpc/mt4.proto:209
 MemorySnapshot	reference/grpc/mt5.proto:359
 MemoryUsage	reference/grpc/mt4.proto:219
-Metrics	strategy-service/app/engine/types.py:169
-migrate_strategy	strategy-service/app/engine/migrate_legacy_strategy.py:221
-MigrationResult	strategy-service/app/engine/migrate_legacy_strategy.py:84
-ModifyIntent	strategy-service/app/engine/live_broker.py:295
 ModifyOrder	backend/internal/mthub/service_orders_modify.go:18
 ModifyPaperOrder	backend/internal/paper/engine.go:143
-modify_intents	strategy-service/app/engine/live_broker.py:224
-MultiSymbolMarket	strategy-service/app/engine/market.py:112
-Name	backend/internal/connect/strategy/data_source.go:54
+Name	backend/internal/connect/strategy/data_source.go:55
 Name	backend/internal/risk/rules.go:112
 Name	backend/internal/risk/rules.go:133
 Name	backend/internal/risk/rules.go:155
@@ -636,9 +519,16 @@ Name	backend/internal/risksvc/rules.go:70
 Name	backend/internal/risksvc/rules.go:83
 Name	backend/internal/risksvc/vol_target_sizer.go:43
 NetExposureForSymbol	backend/internal/risksvc/platform_aggregator.go:143
-normalize_price	strategy-service/app/sdk/symbol.py:32
-normalize_volume	strategy-service/app/sdk/symbol.py:36
 Notify	backend/internal/connect/strategy/schedule_engine.go:102
+OnBar	backend/internal/connect/strategy/strategy_templates.go:141
+OnBar	backend/internal/connect/strategy/strategy_templates.go:234
+OnBar	backend/internal/connect/strategy/strategy_templates.go:42
+OnDeinit	backend/internal/connect/strategy/strategy_templates.go:104
+OnDeinit	backend/internal/connect/strategy/strategy_templates.go:199
+OnDeinit	backend/internal/connect/strategy/strategy_templates.go:292
+OnInit	backend/internal/connect/strategy/strategy_templates.go:131
+OnInit	backend/internal/connect/strategy/strategy_templates.go:225
+OnInit	backend/internal/connect/strategy/strategy_templates.go:33
 OnMail	reference/grpc/mt5.proto:554
 OnMarketWatch	reference/grpc/mt5.proto:542
 OnOpenedOrdersTickets	reference/grpc/mt5.proto:561
@@ -652,16 +542,6 @@ OnTickHistory	reference/grpc/mt5.proto:462
 OnTickHistory	reference/grpc/mt5.proto:548
 OnTickValue	reference/grpc/mt4.proto:350
 OnTickValue	reference/grpc/mt5.proto:530
-on_bar	strategy-service/app/sdk/runtime.py:124
-on_bar	strategy-service/app/sdk/strategy_base.py:35
-on_deinit	strategy-service/app/sdk/strategy_base.py:44
-on_init	strategy-service/app/sdk/strategy_base.py:29
-on_tick	strategy-service/app/sdk/runtime.py:119
-on_tick	strategy-service/app/sdk/strategy_base.py:32
-on_timer	strategy-service/app/sdk/runtime.py:129
-on_timer	strategy-service/app/sdk/strategy_base.py:38
-on_trade	strategy-service/app/sdk/runtime.py:136
-on_trade	strategy-service/app/sdk/strategy_base.py:41
 OpenedOrder	reference/grpc/mt4.proto:118
 OpenedOrder	reference/grpc/mt5.proto:79
 OpenedOrders	backend/internal/mthub/service.go:198
@@ -669,7 +549,6 @@ OpenedOrders	proto/ant/v1/mthub_service.proto:9
 OpenedOrders	reference/grpc/mt4.proto:86
 OpenedOrders	reference/grpc/mt5.proto:72
 OpenedOrdersTickets	reference/grpc/mt5.proto:85
-Order	strategy-service/app/engine/types.py:116
 OrderClose	reference/grpc/mt4.proto:329
 OrderClose	reference/grpc/mt5.proto:503
 OrderCloseBy	reference/grpc/mt4.proto:312
@@ -679,33 +558,10 @@ OrderHistory	proto/ant/v1/mthub_service.proto:10
 OrderHistory	reference/grpc/mt4.proto:126
 OrderHistory	reference/grpc/mt5.proto:95
 OrderHistoryPagination	reference/grpc/mt5.proto:118
-OrderIntent	strategy-service/app/engine/live_broker.py:253
 OrderModify	reference/grpc/mt4.proto:304
 OrderModify	reference/grpc/mt5.proto:493
-OrderRequest	strategy-service/app/sdk/types.py:75
-OrderResult	strategy-service/app/sdk/types.py:95
-orders	strategy-service/app/engine/live_broker.py:179
-orders	strategy-service/app/engine/sim_broker.py:416
-orders	strategy-service/app/sdk/broker.py:53
 OrderSend	reference/grpc/mt4.proto:294
 OrderSend	reference/grpc/mt5.proto:482
-OrderStatus	strategy-service/app/engine/types.py:36
-OrdersTotal	strategy-service/app/engine/indicators.py:221
-OrderType	strategy-service/app/engine/types.py:23
-OrderType	strategy-service/app/sdk/types.py:23
-order_delete	strategy-service/app/engine/live_broker.py:162
-order_delete	strategy-service/app/engine/sim_broker.py:386
-order_delete	strategy-service/app/sdk/broker.py:43
-order_intents	strategy-service/app/engine/live_broker.py:216
-order_send	strategy-service/app/engine/live_broker.py:101
-order_send	strategy-service/app/engine/sim_broker.py:282
-order_send	strategy-service/app/sdk/broker.py:26
-pack	strategy-service/app/engine/sandbox_os.py:72
-param	strategy-service/app/sdk/context.py:26
-param	strategy-service/app/sdk/runtime.py:261
-ParamSpec	strategy-service/app/engine/params_extractor.py:30
-pending	strategy-service/app/engine/fill.py:61
-PendingOrder	strategy-service/app/sdk/types.py:124
 PendingOrderHistory	reference/grpc/mt5.proto:104
 Ping	reference/grpc/mt4.proto:185
 Ping	reference/grpc/mt5.proto:342
@@ -713,25 +569,10 @@ PingHost	reference/grpc/mt4.proto:192
 PingHost	reference/grpc/mt5.proto:350
 PingHostMany	reference/grpc/mt4.proto:194
 PingHostMany	reference/grpc/mt5.proto:357
-PlaceOrder	backend/internal/mthub/service_orders.go:18
+PlaceOrder	backend/internal/mthub/service_orders.go:19
 PlaceOrder	proto/ant/v1/mthub_service.proto:7
 PlacePaperOrder	backend/internal/paper/engine.go:60
 Platform	backend/internal/mthub/service.go:157
-Portfolio	strategy-service/app/engine/portfolio.py:46
-Position	strategy-service/app/engine/types.py:141
-Position	strategy-service/app/sdk/types.py:106
-positions	strategy-service/app/engine/live_broker.py:168
-positions	strategy-service/app/engine/portfolio.py:70
-positions	strategy-service/app/engine/sim_broker.py:399
-positions	strategy-service/app/sdk/broker.py:48
-PositionSide	strategy-service/app/sdk/types.py:16
-positions_total	strategy-service/app/engine/portfolio.py:84
-position_close	strategy-service/app/engine/live_broker.py:139
-position_close	strategy-service/app/engine/sim_broker.py:332
-position_close	strategy-service/app/sdk/broker.py:38
-position_modify	strategy-service/app/engine/live_broker.py:120
-position_modify	strategy-service/app/engine/sim_broker.py:317
-position_modify	strategy-service/app/sdk/broker.py:31
 PriceHistory	backend/internal/mthub/service.go:227
 PriceHistory	proto/ant/v1/mthub_service.proto:13
 PriceHistory	reference/grpc/mt5.proto:299
@@ -743,16 +584,10 @@ PriceHistoryMonth	reference/grpc/mt5.proto:261
 PriceHistoryMonthMany	reference/grpc/mt5.proto:271
 PriceHistoryToday	reference/grpc/mt5.proto:281
 PriceHistoryTodayMany	reference/grpc/mt5.proto:288
-primary	strategy-service/app/engine/market.py:136
-primary_market	strategy-service/app/engine/market.py:139
 Process	backend/internal/risksvc/pipeline.go:94
-process_bar	strategy-service/app/engine/sdk_worker.py:102
-process_market_order	strategy-service/app/engine/fill.py:140
-process_on_tick	strategy-service/app/engine/fill.py:85
 PromoteCandidateToDraft	backend/internal/connect/strategy/strategy_experiment_handler.go:207
 PromoteCandidateToDraft	proto/ant/v1/strategy_experiment.proto:17
 PromoteToFull	backend/internal/risk/canary.go:234
-provider	strategy-service/app/engine/sdk_worker.py:87
 Publish	backend/internal/mthub/broker_types.go:126
 Publish	backend/internal/mthub/broker_types.go:201
 Publish	backend/internal/mthub/broker_types.go:63
@@ -766,7 +601,7 @@ PublishPositionSnapshot	backend/internal/mthub/service.go:271
 PublishStrategy	proto/ant/v1/admin_strategy.proto:26
 PublishStrategy	proto/ant/v1/marketplace_service.proto:9
 PublishTemplate	backend/internal/service/template_svc_admin.go:288
-PublishTemplateDraft	backend/internal/connect/strategy/strategy_templates.go:162
+PublishTemplateDraft	backend/internal/connect/strategy/strategy_template_handlers.go:204
 PublishTemplateDraft	proto/ant/v1/strategy.proto:19
 PurchaseStrategy	proto/ant/v1/marketplace_service.proto:12
 QuestionnaireCompletedAt	backend/internal/risksvc/jurisdiction_store.go:149
@@ -790,88 +625,68 @@ RefreshToken	proto/ant/v1/auth.proto:13
 Register	backend/internal/mthub/types.go:38
 Register	proto/ant/v1/auth.proto:15
 RegisterUser	backend/internal/service/registration_service.go:49
-remember	strategy-service/app/engine/params_extractor.py:150
 RemoveAccount	backend/internal/risk/canary.go:134
 RemoveSanctionedCountry	proto/ant/v1/admin_jurisdiction.proto:14
 RemoveSession	backend/internal/mthub/types.go:86
 RequestQuoteHistory	reference/grpc/mt4.proto:161
 RequiredMargin	reference/grpc/mt5.proto:247
-required_margin	strategy-service/app/engine/margin.py:38
 ResetBreaker	proto/ant/v1/admin_sre.proto:9
 ResetPeakEquity	backend/internal/connect/strategy/account_provider.go:151
 ResetUserPassword	proto/ant/v1/admin_user.proto:18
-reset_runtime	strategy-service/app/engine/sdk_worker.py:161
-ResolveAlert	proto/ant/v1/admin_system.proto:10
 ResolveSession	proto/ant/v1/ai.proto:21
 ResolveSymbol	backend/internal/service/platform_service.go:139
 RestoreUser	backend/internal/service/user_deletion_service.go:167
 RestoreUser	proto/ant/v1/admin_user.proto:19
-Retcode	strategy-service/app/sdk/types.py:60
 ReviewStrategyAsset	backend/internal/connect/strategy/strategy_asset_handler.go:134
 ReviewStrategyAsset	proto/ant/v1/strategy_asset.proto:13
 ReviseCode	proto/ant/v1/code_assist.proto:10
 ReviseCodeStream	proto/ant/v1/code_assist.proto:11
 RevokeAgentToken	proto/ant/v1/agent_gateway.proto:12
-RiskAssessment	strategy-service/app/engine/types.py:184
 Rollback	backend/internal/risk/canary.go:290
-rsi	strategy-service/app/engine/sdk_indicators.py:43
-rsi	strategy-service/app/sdk/indicators.py:25
 Rules	backend/internal/risk/gate.go:186
 Rules	backend/internal/risksvc/engine.go:49
-run	strategy-service/app/engine/runner.py:342
-RunBacktest	backend/internal/connect/strategy/strategy_signals.go:19
+Run	backend/internal/connect/strategy/go_executor.go:37
+RunBacktest	backend/internal/connect/strategy/go_executor.go:75
+RunBacktest	backend/internal/connect/strategy/strategy_signals.go:16
 RunBacktest	proto/ant/v1/backtest_service.proto:12
 RunBacktest	proto/ant/v1/strategy.proto:29
 RunEvaluation	proto/ant/v1/ai_gate.proto:11
-RunLiveStrategy	backend/internal/connect/strategy/live_runner.go:57
+RunLive	backend/internal/connect/strategy/go_executor.go:152
+RunLiveStrategy	backend/internal/connect/strategy/live_runner.go:58
 RunMarketBacktest	proto/ant/v1/marketplace_service.proto:29
-RunMode	strategy-service/app/engine/types.py:45
-RunSnapshot	strategy-service/app/engine/types.py:206
 RunStrategy	proto/ant/v1/backtest_service.proto:14
-RuntimeContext	strategy-service/app/sdk/runtime.py:233
-run_backtest	strategy-service/app/engine/runner.py:538
-scan_security	strategy-service/app/engine/validation.py:106
-SDKIndicators	strategy-service/app/engine/sdk_indicators.py:12
 Search	reference/grpc/mt4.proto:215
 Search	reference/grpc/mt5.proto:365
 SearchBroker	proto/ant/v1/account.proto:22
-seccomp_is_available	strategy-service/app/engine/sandbox_os.py:156
-SecurityScanResult	strategy-service/app/engine/validation.py:44
 SendNotification	proto/ant/v1/notification_service.proto:14
-Series	strategy-service/app/sdk/series.py:13
 ServerTimezone	reference/grpc/mt4.proto:105
 ServerTimezone	reference/grpc/mt5.proto:184
-server_time	strategy-service/app/engine/live_broker.py:209
-server_time	strategy-service/app/engine/sim_broker.py:487
-server_time	strategy-service/app/sdk/broker.py:68
 SessionState	backend/internal/mthub/service.go:167
 Set	backend/internal/risksvc/capability.go:107
 Set	backend/internal/service/analytics_cache.go:54
 SetAccountNumber	backend/internal/service/account_number.go:230
 SetAccountOwnerVerifier	backend/internal/mthub/service.go:108
-SetAccountProvider	backend/internal/connect/strategy/python_strategy_handler.go:83
+SetAccountProvider	backend/internal/connect/strategy/strategy_execution_handler.go:90
 SetAccountStateProvider	backend/internal/mthub/service.go:85
 SetAIPrimary	backend/internal/service/systemai/service.go:195
 SetAIPrimary	proto/ant/v1/ai_primary.proto:9
 SetAIService	backend/internal/connect/strategy/strategy_experiment_worker.go:80
 SetAttribution	backend/internal/service/analytics_cache.go:78
 SetAutotradeEnabled	backend/internal/risk/gate.go:101
-SetBacktestClient	backend/internal/connect/strategy/python_strategy_handler.go:92
-SetBacktestClient	backend/internal/connect/strategy/strategy_handler.go:44
 SetBarBroker	backend/internal/mthub/service.go:114
-SetBarSource	backend/internal/connect/strategy/python_strategy_handler.go:67
+SetBarSource	backend/internal/connect/strategy/strategy_execution_handler.go:73
 SetBrokerLimits	backend/internal/risksvc/platform_aggregator.go:93
 SetBrokerRegistry	backend/internal/mthub/service.go:99
 SetCanary	proto/ant/v1/admin_sre.proto:11
 SetCircuitBreakerDB	backend/internal/service/systemai/chat_failover.go:27
 SetCodeAccessChecker	backend/internal/connect/strategy/strategy_handler.go:33
 SetConfig	proto/ant/v1/admin_config.proto:11
-SetConnectClient	backend/internal/connect/strategy/python_strategy_handler.go:91
 SetCostEstimator	backend/internal/mthub/service.go:78
-SetEngine	backend/internal/connect/strategy/strategy_handler.go:41
-SetGate	backend/internal/connect/strategy/python_strategy_handler.go:73
+SetEngine	backend/internal/connect/strategy/strategy_handler.go:53
+SetGate	backend/internal/connect/strategy/strategy_execution_handler.go:80
 SetGate	backend/internal/mthub/service.go:88
 SetGatewayProviderRepo	backend/internal/service/systemai/service.go:123
+SetGoExecutor	backend/internal/connect/strategy/strategy_execution_handler.go:76
 SetKillSwitch	backend/internal/mthub/service.go:94
 SetKillSwitch	backend/internal/risk/gate.go:94
 SetKillSwitch	proto/ant/v1/admin_sre.proto:7
@@ -880,20 +695,19 @@ SetKYCStatus	proto/ant/v1/admin_jurisdiction.proto:11
 SetLogger	backend/internal/mthub/service.go:111
 SetLogger	backend/internal/service/account_service.go:60
 SetLogger	backend/internal/service/platform_service.go:29
-SetMarketDataRepo	backend/internal/connect/strategy/python_strategy_handler.go:53
-SetMarketDataRepo	backend/internal/connect/strategy/strategy_handler.go:47
+SetMarketDataRepo	backend/internal/connect/strategy/strategy_execution_handler.go:59
 SetMonthlyDetail	backend/internal/service/analytics_cache.go:127
-SetMtHub	backend/internal/connect/strategy/python_strategy_handler.go:68
-SetNotificationSender	backend/internal/connect/strategy/python_strategy_handler.go:93
+SetMtHub	backend/internal/connect/strategy/strategy_execution_handler.go:74
+SetNotificationSender	backend/internal/connect/strategy/strategy_execution_handler.go:98
 SetNotificationSender	backend/internal/service/account_sync.go:127
 SetOmsWriter	backend/internal/mthub/service.go:91
-SetOnBacktestComplete	backend/internal/connect/strategy/python_strategy_handler.go:94
+SetOnBacktestComplete	backend/internal/connect/strategy/strategy_execution_handler.go:99
 SetOrderEventBroker	backend/internal/mthub/oms_writer.go:98
-SetPaperEngine	backend/internal/connect/strategy/python_strategy_handler.go:69
-SetPgListen	backend/internal/connect/strategy/python_strategy_handler.go:226
+SetPaperEngine	backend/internal/connect/strategy/strategy_execution_handler.go:75
+SetPgListen	backend/internal/connect/strategy/strategy_execution_handler.go:397
 SetPgListen	backend/internal/connect/strategy/strategy_experiment_handler.go:273
 SetPgListen	backend/internal/connect/strategy/strategy_experiment_worker.go:62
-SetPgListen	backend/internal/connect/strategy/strategy_handler.go:63
+SetPgListen	backend/internal/connect/strategy/strategy_handler.go:69
 SetPlacedType	reference/grpc/mt4.proto:168
 SetPostCallBiller	backend/internal/service/systemai/service.go:118
 SetRolling	backend/internal/service/analytics_cache.go:102
@@ -901,60 +715,36 @@ SetSanctionedOverride	proto/ant/v1/admin_jurisdiction.proto:16
 SetScheduleActive	backend/internal/service/schedule_svc.go:148
 SetStatusBroker	backend/internal/mthub/service.go:117
 SetStrategyPricing	proto/ant/v1/marketplace_service.proto:21
-SetTemplateStatus	backend/internal/service/template_svc.go:101
+SetTemplateStatus	backend/internal/service/template_svc.go:102
 SetTicket	backend/internal/mthub/idempotency.go:167
 SetTokenRecorder	backend/internal/service/systemai/service.go:106
 SetUserLimiter	backend/internal/mthub/service.go:75
 SetUserLimiter	backend/internal/risksvc/engine.go:22
 SetUserRepo	backend/internal/service/systemai/service.go:91
 SetWalletChecker	backend/internal/service/systemai/service.go:112
-set_cash	strategy-service/app/engine/portfolio.py:115
-set_timer	strategy-service/app/sdk/context.py:30
-set_timer	strategy-service/app/sdk/runtime.py:265
 Shutdown	backend/internal/risksvc/platform_aggregator.go:174
-shutdown	strategy-service/app/engine/vectorized_runner.py:130
-Side	strategy-service/app/engine/types.py:18
-SimBroker	strategy-service/app/engine/sim_broker.py:229
 Size	backend/internal/risksvc/kelly_sizer.go:44
 Size	backend/internal/risksvc/vol_target_sizer.go:45
-slice	strategy-service/app/engine/runner.py:103
-slice	strategy-service/app/engine/sdk_worker.py:84
-slice	strategy-service/app/sdk/series.py:26
-slice_until	strategy-service/app/engine/market.py:158
-slice_until	strategy-service/app/engine/market.py:94
-SlippageMode	strategy-service/app/engine/types.py:52
-sock_filter	strategy-service/app/engine/sandbox_os.py:64
-sock_fprog	strategy-service/app/engine/sandbox_os.py:76
 SoftDeleteUser	backend/internal/service/user_deletion_service.go:34
 SoftDeleteUsers	backend/internal/service/user_deletion_service.go:85
-source_sha256	strategy-service/app/engine/vectorized_runner.py:119
 Start	backend/internal/connect/strategy/schedule_engine.go:66
 Start	backend/internal/connect/strategy/strategy_experiment_worker.go:44
 Start	backend/internal/mthub/derived_state.go:109
 Start	backend/internal/mthub/reconciliation.go:31
 StartAlgo	proto/ant/v1/execution_algo.proto:14
-StartBacktestRun	backend/internal/connect/strategy/python_strategy_backtest_crud.go:26
-StartBacktestRun	proto/ant/v1/python_strategy.proto:18
-StartBacktestWorker	backend/internal/connect/strategy/backtest_worker.go:408
+StartBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:26
+StartBacktestRun	proto/ant/v1/strategy_runtime.proto:18
+StartBacktestWorker	backend/internal/connect/strategy/backtest_worker.go:425
 StartPaperStrategy	proto/ant/v1/paper_trading.proto:12
 StartRefreshLoop	backend/internal/risksvc/platform_aggregator.go:153
 State	backend/internal/mthub/derived_state.go:119
-state	strategy-service/app/sdk/runtime.py:161
 Stats	backend/internal/mthub/state_cache.go:207
 StepUpLotSize	backend/internal/risk/canary.go:205
-stochastic	strategy-service/app/engine/sdk_indicators.py:70
-stochastic	strategy-service/app/sdk/indicators.py:43
 Stop	backend/internal/connect/strategy/schedule_engine.go:278
 Stop	backend/internal/connect/strategy/strategy_experiment_worker.go:77
 Stop	backend/internal/mthub/derived_state.go:114
 StopPaperStrategy	proto/ant/v1/paper_trading.proto:13
 StopSchedule	backend/internal/connect/strategy/schedule_engine.go:266
-strategy	strategy-service/app/sdk/runtime.py:165
-StrategyBase	strategy-service/app/sdk/strategy_base.py:18
-StrategyCompileError	strategy-service/app/engine/types.py:279
-StrategyRuntime	strategy-service/app/sdk/runtime.py:37
-StrategyRuntimeError	strategy-service/app/engine/types.py:283
-StrategyValidationResult	strategy-service/app/engine/validation.py:149
 StreamNotifications	proto/ant/v1/notification_service.proto:13
 StreamOrderEvents	proto/ant/v1/mthub_service.proto:15
 StreamTicks	proto/ant/v1/market_service.proto:10
@@ -964,7 +754,7 @@ SubmitAssetReview	proto/ant/v1/strategy_asset.proto:12
 SubmitQuestionnaire	backend/internal/risksvc/jurisdiction_store.go:112
 SubmitStrategyExperiment	backend/internal/connect/strategy/strategy_experiment_handler.go:101
 SubmitStrategyExperiment	proto/ant/v1/strategy_experiment.proto:11
-Subscribe	backend/internal/connect/strategy/data_source.go:76
+Subscribe	backend/internal/connect/strategy/data_source.go:77
 Subscribe	backend/internal/mthub/broker_types.go:158
 Subscribe	backend/internal/mthub/broker_types.go:215
 Subscribe	backend/internal/mthub/broker_types.go:77
@@ -999,7 +789,6 @@ SubscribeTickValue	reference/grpc/mt4.proto:264
 SubscribeTickValue	reference/grpc/mt5.proto:421
 SubscribeUserOrderEvents	backend/internal/mthub/service.go:256
 SubscribeUserSummary	proto/ant/v1/stream.proto:79
-SymbolInfo	strategy-service/app/sdk/symbol.py:14
 SymbolList	backend/internal/mthub/service.go:236
 SymbolList	proto/ant/v1/mthub_service.proto:12
 SymbolList	reference/grpc/mt5.proto:130
@@ -1011,46 +800,33 @@ SymbolParamsMany	reference/grpc/mt4.proto:111
 SymbolParamsMany	reference/grpc/mt5.proto:165
 Symbols	reference/grpc/mt4.proto:92
 Symbols	reference/grpc/mt5.proto:124
-symbols	strategy-service/app/engine/market.py:142
 SymbolSessionsEx	reference/grpc/mt5.proto:172
 SymbolSessionsExMany	reference/grpc/mt5.proto:178
-symbol_info	strategy-service/app/engine/live_broker.py:194
-symbol_info	strategy-service/app/engine/sim_broker.py:476
-symbol_info	strategy-service/app/sdk/broker.py:63
 SyncAccountHistory	backend/internal/service/account_sync.go:133
 SyncOrderHistory	proto/ant/v1/mthub_service.proto:16
 SyncStrategyAsset	backend/internal/connect/strategy/strategy_asset_handler.go:185
 SyncStrategyAsset	proto/ant/v1/strategy_asset.proto:16
-synthetic	strategy-service/app/engine/market.py:42
-Tick	strategy-service/app/engine/types.py:83
 TickHistoryRequest	reference/grpc/mt5.proto:453
 TickHistoryStop	reference/grpc/mt5.proto:460
-TickSimulator	strategy-service/app/engine/market.py:15
 TickValueWithSize	reference/grpc/mt4.proto:180
 TickValueWithSize	reference/grpc/mt5.proto:222
 TierCheck	backend/internal/risksvc/capability.go:74
 ToggleAutoTrade	proto/ant/v1/auto_trading.proto:17
 ToggleConfigEnabled	proto/ant/v1/admin_config.proto:12
-ToggleSchedule	backend/internal/connect/strategy/strategy_schedules.go:147
+ToggleSchedule	backend/internal/connect/strategy/strategy_schedules.go:149
 ToggleSchedule	proto/ant/v1/strategy.proto:27
-total	strategy-service/app/engine/runner.py:138
-total	strategy-service/app/sdk/series.py:42
-to_dict	strategy-service/app/engine/params_extractor.py:37
-to_signal_dict	strategy-service/app/engine/live_broker.py:261
-to_signal_dict	strategy-service/app/engine/live_broker.py:287
-to_signal_dict	strategy-service/app/engine/live_broker.py:304
-Trade	strategy-service/app/engine/types.py:152
 TransformCode	proto/ant/v1/code_assist.proto:15
 Transition	backend/internal/mthub/oms_writer.go:133
+TranslateParamLabels	proto/ant/v1/code_assist.proto:17
+TranspileCode	backend/internal/connect/strategy/strategy_execution_handler.go:198
+TranspileCode	proto/ant/v1/strategy_runtime.proto:31
 TriggerReconcile	backend/internal/mthub/reconciliation.go:55
-TypeFilling	strategy-service/app/sdk/types.py:36
 UnflagStrategy	proto/ant/v1/admin_strategy.proto:24
 UnflagTemplate	backend/internal/service/template_svc_admin.go:263
 UnfreezeAccount	proto/ant/v1/admin_account.proto:12
 UnpublishStrategy	proto/ant/v1/admin_strategy.proto:25
 UnpublishStrategy	proto/ant/v1/marketplace_service.proto:23
 UnpublishTemplate	backend/internal/service/template_svc_admin.go:276
-unrealized	strategy-service/app/engine/portfolio.py:95
 Unsubscribe	proto/ant/v1/marketplace_service.proto:11
 UnSubscribe	reference/grpc/mt4.proto:244
 UnSubscribe	reference/grpc/mt5.proto:401
@@ -1072,7 +848,7 @@ UpdateOrderHistoryClose	backend/internal/service/log_service.go:46
 UpdatePosition	backend/internal/risksvc/platform_aggregator.go:73
 UpdateProvider	proto/ant/v1/ai_gateway.proto:20
 UpdateRiskConfig	proto/ant/v1/auto_trading.proto:19
-UpdateSchedule	backend/internal/connect/strategy/strategy_schedules.go:92
+UpdateSchedule	backend/internal/connect/strategy/strategy_schedules.go:94
 UpdateSchedule	backend/internal/service/schedule_svc.go:115
 UpdateSchedule	proto/ant/v1/strategy.proto:25
 UpdateSecret	backend/internal/service/systemai/service.go:205
@@ -1082,169 +858,33 @@ UpdateSystemAIConfig	proto/ant/v1/system_ai.proto:13
 UpdateSystemAISecret	proto/ant/v1/system_ai.proto:14
 UpdateSystemStrategy	backend/internal/service/template_svc_admin.go:98
 UpdateSystemStrategy	proto/ant/v1/admin_strategy.proto:15
-UpdateTemplate	backend/internal/connect/strategy/strategy_templates.go:71
-UpdateTemplate	backend/internal/service/template_svc.go:79
+UpdateTemplate	backend/internal/connect/strategy/strategy_template_handlers.go:99
+UpdateTemplate	backend/internal/service/template_svc.go:80
 UpdateTemplate	proto/ant/v1/strategy.proto:14
-UpdateTemplateDraft	backend/internal/connect/strategy/strategy_templates.go:131
+UpdateTemplateDraft	backend/internal/connect/strategy/strategy_template_handlers.go:169
 UpdateTemplateDraft	proto/ant/v1/strategy.proto:18
 UpdateTradingPassword	backend/internal/service/account_lifecycle.go:189
 UpdateTradingPassword	proto/ant/v1/account.proto:24
 UpdateUser	proto/ant/v1/admin_user.proto:13
-update_state	strategy-service/app/engine/live_broker.py:75
 UpsertModel	proto/ant/v1/ai_gateway.proto:26
-used_margin	strategy-service/app/engine/margin.py:43
 UserOwnsAccount	backend/internal/service/account_snapshot.go:46
 UserOwnsAccount	backend/internal/service/platform_service.go:118
-Validate	backend/internal/connect/strategy/python_strategy_handler.go:130
-Validate	proto/ant/v1/python_strategy.proto:16
+Validate	backend/internal/connect/strategy/strategy_execution_handler.go:133
+Validate	proto/ant/v1/strategy_runtime.proto:16
 ValidateStrategy	proto/ant/v1/backtest_service.proto:13
 ValidateStrategyExtended	proto/ant/v1/code_assist.proto:13
 ValidateSystemAIConnection	proto/ant/v1/system_ai.proto:16
-validate_dataframe_code	strategy-service/app/engine/vectorized_runner.py:47
-validate_strategy_code	strategy-service/app/engine/validation.py:385
 VerifyAccount	proto/ant/v1/account.proto:25
 VerifyTradePermission	proto/ant/v1/account.proto:23
 Version	reference/grpc/mt5.proto:376
-visit_Call	strategy-service/app/engine/validation.py:81
-visit_Import	strategy-service/app/engine/validation.py:59
-visit_ImportFrom	strategy-service/app/engine/validation.py:70
 WaitSession	backend/internal/mthub/types.go:52
-WatchBacktestRun	backend/internal/connect/strategy/python_strategy_backtest_crud.go:126
-WatchBacktestRun	proto/ant/v1/python_strategy.proto:21
+WatchBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:126
+WatchBacktestRun	proto/ant/v1/strategy_runtime.proto:21
 WatchExperiment	backend/internal/connect/strategy/strategy_experiment_handler.go:225
 WatchExperiment	proto/ant/v1/strategy_experiment.proto:20
 WatchPaperAccount	proto/ant/v1/paper_trading.proto:14
-WatchSchedules	backend/internal/connect/strategy/strategy_schedules.go:180
+WatchSchedules	backend/internal/connect/strategy/strategy_schedules.go:182
 WatchSchedules	proto/ant/v1/strategy.proto:28
-_annual_return	strategy-service/app/engine/metrics.py:65
-_arr	strategy-service/app/engine/indicators.py:39
-_BarsProvider	strategy-service/app/engine/runner.py:142
-_bars_per_year	strategy-service/app/engine/metrics.py:45
-_bpf_jump	strategy-service/app/engine/sandbox_os.py:60
-_bpf_stmt	strategy-service/app/engine/sandbox_os.py:56
-_build_bars_provider	strategy-service/app/engine/sdk_worker.py:65
-_build_execution_assumptions	strategy-service/app/engine/runner.py:524
-_build_globals	strategy-service/app/engine/vectorized_runner.py:168
-_build_risk	strategy-service/app/engine/metrics.py:116
-_build_seccomp_filter	strategy-service/app/engine/sandbox_os.py:122
-_build_snapshot	strategy-service/app/engine/runner.py:513
-_cgroup_v2_available	strategy-service/app/engine/sandbox_os.py:229
-_check_future_data_leak	strategy-service/app/engine/code_quality.py:92
-_check_missing_params	strategy-service/app/engine/code_quality.py:182
-_check_ndarray_pandas_misuse	strategy-service/app/engine/code_quality.py:250
-_check_no_entry_pct	strategy-service/app/engine/code_quality.py:357
-_check_no_stop_take_profit	strategy-service/app/engine/code_quality.py:325
-_check_trigger	strategy-service/app/engine/fill.py:188
-_check_unread_params	strategy-service/app/engine/code_quality.py:207
-_close_event	strategy-service/app/engine/runner.py:504
-_coerce_strategy_value	strategy-service/app/engine/params_extractor.py:224
-_collect_alias_names	strategy-service/app/engine/params_extractor.py:128
-_compile_source	strategy-service/app/engine/compilation.py:21
-_count_decimal_places	strategy-service/app/engine/sim_broker.py:123
-_decimal	strategy-service/app/engine/runner.py:190
-_declared_param_names	strategy-service/app/engine/code_quality.py:65
-_derive_symbol_info_from_bars	strategy-service/app/engine/sim_broker.py:145
-_dispatch_signal	strategy-service/app/engine/runner.py:431
-_ema_series	strategy-service/app/engine/indicators.py:97
-_EngineBars	strategy-service/app/engine/runner.py:107
-_EngineSeries	strategy-service/app/engine/runner.py:90
-_enqueue_pending	strategy-service/app/engine/sim_broker.py:533
-_execute_market	strategy-service/app/engine/sim_broker.py:520
-_expr_to_dsl	strategy-service/app/engine/migrate_legacy_strategy.py:139
-_fill_volume	strategy-service/app/engine/fill.py:225
-_find_position	strategy-service/app/engine/sim_broker.py:575
-_get_close	strategy-service/app/engine/sdk_indicators.py:23
-_get_libc	strategy-service/app/engine/sandbox_os.py:165
-_get_or_create_runtime	strategy-service/app/engine/sdk_worker.py:35
-_has_buy_sell_signal	strategy-service/app/engine/code_quality.py:315
-_init_sdk_path	strategy-service/app/engine/runner.py:303
-_is_buy_side	strategy-service/app/engine/fill.py:45
-_is_expired	strategy-service/app/engine/fill.py:180
-_is_market_order	strategy-service/app/engine/sim_broker.py:103
-_is_params_alias	strategy-service/app/engine/params_extractor.py:111
-_is_pending_order	strategy-service/app/engine/sim_broker.py:107
-_is_sdk_strategy	strategy-service/app/engine/runner.py:215
-_is_sdk_strategy	strategy-service/app/engine/validation.py:156
-_line_of	strategy-service/app/engine/code_quality.py:379
-_literal_value	strategy-service/app/engine/params_extractor.py:90
-_LiveSeries	strategy-service/app/engine/sdk_worker.py:74
-_make_symbol_info	strategy-service/app/engine/sim_broker.py:184
-_max_drawdown	strategy-service/app/engine/metrics.py:37
-_ms_to_utc	strategy-service/app/engine/cost.py:22
-_next_rollover_utc	strategy-service/app/engine/cost.py:83
-_on_fill	strategy-service/app/engine/sim_broker.py:550
-_open_event	strategy-service/app/engine/runner.py:495
-_OrderMeta	strategy-service/app/engine/sim_broker.py:220
-_order_side	strategy-service/app/engine/portfolio.py:37
-_param_get_calls	strategy-service/app/engine/code_quality.py:77
-_parse_expiration	strategy-service/app/engine/runner.py:71
-_PositionMeta	strategy-service/app/engine/sim_broker.py:213
-_register	strategy-service/app/engine/validation.py:179
-_register_timer	strategy-service/app/sdk/runtime.py:219
-_require_ready	strategy-service/app/sdk/runtime.py:188
-_rule_float_for_prices	strategy-service/app/engine/validation.py:242
-_rule_hardcoded_divisor	strategy-service/app/engine/validation.py:298
-_rule_hardcoded_lot_quantize	strategy-service/app/engine/validation.py:275
-_rule_hardcoded_magic	strategy-service/app/engine/validation.py:221
-_rule_hardcoded_timeframe	strategy-service/app/engine/validation.py:203
-_rule_invalid_sdk_imports	strategy-service/app/engine/validation.py:189
-_rule_order_send_ignored	strategy-service/app/engine/validation.py:252
-_rule_underscore_methods	strategy-service/app/engine/validation.py:315
-_rule_unnecessary_pre_injected_imports	strategy-service/app/engine/validation.py:325
-_run_general_validation	strategy-service/app/engine/vectorized_runner.py:230
-_run_loop	strategy-service/app/engine/runner.py:369
-_safe_call	strategy-service/app/sdk/runtime.py:194
-_scan_strings_for_danger	strategy-service/app/engine/validation.py:89
-_SecurityVisitor	strategy-service/app/engine/validation.py:53
-_sharpe_ratio	strategy-service/app/engine/metrics.py:55
-_strip_comments	strategy-service/app/engine/code_quality.py:37
-_suggest_default	strategy-service/app/engine/params_extractor.py:81
-_symbol_info_from_dict	strategy-service/app/engine/runner.py:184
-_total_return	strategy-service/app/engine/metrics.py:31
-_to_decimal	strategy-service/app/engine/sim_broker.py:66
-_to_decimal_or_none	strategy-service/app/engine/sim_broker.py:74
-_to_float	strategy-service/app/engine/sim_broker.py:60
-_to_local	strategy-service/app/engine/cost.py:76
-_to_sdk_position	strategy-service/app/engine/sim_broker.py:581
-_trade_stats	strategy-service/app/engine/metrics.py:79
-_type_of	strategy-service/app/engine/params_extractor.py:99
-_unit_pnl	strategy-service/app/engine/portfolio.py:89
-_unregister_timer	strategy-service/app/sdk/runtime.py:225
-_utc_to_ms	strategy-service/app/engine/cost.py:26
-_validate_sdk_strategy	strategy-service/app/engine/validation.py:339
-__call__	strategy-service/app/engine/runner.py:175
-__getitem__	strategy-service/app/engine/runner.py:94
-__getitem__	strategy-service/app/engine/sdk_worker.py:77
-__getitem__	strategy-service/app/sdk/series.py:19
-__init__	strategy-service/app/engine/cost.py:35
-__init__	strategy-service/app/engine/fill.py:52
-__init__	strategy-service/app/engine/live_broker.py:257
-__init__	strategy-service/app/engine/live_broker.py:283
-__init__	strategy-service/app/engine/live_broker.py:299
-__init__	strategy-service/app/engine/live_broker.py:46
-__init__	strategy-service/app/engine/margin.py:29
-__init__	strategy-service/app/engine/market.py:123
-__init__	strategy-service/app/engine/market.py:24
-__init__	strategy-service/app/engine/market.py:60
-__init__	strategy-service/app/engine/portfolio.py:49
-__init__	strategy-service/app/engine/runner.py:108
-__init__	strategy-service/app/engine/runner.py:160
-__init__	strategy-service/app/engine/runner.py:242
-__init__	strategy-service/app/engine/runner.py:91
-__init__	strategy-service/app/engine/sdk_indicators.py:20
-__init__	strategy-service/app/engine/sdk_worker.py:75
-__init__	strategy-service/app/engine/sim_broker.py:246
-__init__	strategy-service/app/engine/validation.py:56
-__init__	strategy-service/app/engine/vectorized_runner.py:102
-__init__	strategy-service/app/sdk/runtime.py:241
-__init__	strategy-service/app/sdk/runtime.py:59
-__iter__	strategy-service/app/engine/market.py:35
-__len__	strategy-service/app/engine/market.py:151
-__len__	strategy-service/app/engine/market.py:38
-__len__	strategy-service/app/engine/market.py:75
-__len__	strategy-service/app/engine/runner.py:100
-__len__	strategy-service/app/engine/sdk_worker.py:82
-__len__	strategy-service/app/sdk/series.py:23
 ```
 
 ## 公开 ConnectRPC（前端/跨服务可直接调用）
@@ -1295,9 +935,6 @@ proto/ant/v1/admin_strategy.proto:26:  rpc PublishStrategy(AdminPublishStrategyR
 proto/ant/v1/admin_strategy.proto:27:  rpc DisableStrategy(DisableStrategyRequest) returns (DisableStrategyResponse);
 proto/ant/v1/admin_strategy.proto:28:  rpc EnableStrategy(EnableStrategyRequest) returns (EnableStrategyResponse);
 proto/ant/v1/admin_strategy.proto:29:  rpc ArchiveStrategy(ArchiveStrategyRequest) returns (ArchiveStrategyResponse);
-proto/ant/v1/admin_system.proto:10:  rpc ResolveAlert(ResolveAlertRequest) returns (ResolveAlertResponse);
-proto/ant/v1/admin_system.proto:11:  rpc ClearCache(ClearCacheRequest) returns (ClearCacheResponse);
-proto/ant/v1/admin_system.proto:12:  rpc InvalidateCache(InvalidateCacheRequest) returns (InvalidateCacheResponse);
 proto/ant/v1/admin_system.proto:8:  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
 proto/ant/v1/admin_system.proto:9:  rpc GetMetrics(GetMetricsRequest) returns (GetMetricsResponse);
 proto/ant/v1/admin_trading.proto:8:  rpc GetTradingSummary(GetTradingSummaryRequest) returns (TradingSummary);
@@ -1376,6 +1013,7 @@ proto/ant/v1/code_assist.proto:11:  rpc ReviseCodeStream(ReviseCodeRequest) retu
 proto/ant/v1/code_assist.proto:12:  rpc ExplainCode(ExplainCodeRequest) returns (ExplainCodeResponse);
 proto/ant/v1/code_assist.proto:13:  rpc ValidateStrategyExtended(ValidateStrategyExtendedRequest) returns (ValidateStrategyExtendedResponse);
 proto/ant/v1/code_assist.proto:15:  rpc TransformCode(TransformCodeRequest) returns (TransformCodeResponse);
+proto/ant/v1/code_assist.proto:17:  rpc TranslateParamLabels(TranslateParamLabelsRequest) returns (TranslateParamLabelsResponse);
 proto/ant/v1/economic_data.proto:10:  rpc ListEconomicCalendarEvents(ListEconomicCalendarEventsRequest) returns (ListEconomicCalendarEventsResponse);
 proto/ant/v1/economic_data.proto:11:  rpc ListEconomicIndicators(google.protobuf.Empty) returns (ListEconomicIndicatorsResponse);
 proto/ant/v1/execution_algo.proto:14:  rpc StartAlgo(StartAlgoRequest) returns (StartAlgoResponse);
@@ -1426,24 +1064,11 @@ proto/ant/v1/notification_service.proto:11:  rpc MarkRead(MarkReadRequest) retur
 proto/ant/v1/notification_service.proto:12:  rpc MarkAllRead(MarkAllReadRequest) returns (MarkAllReadResponse);
 proto/ant/v1/notification_service.proto:13:  rpc StreamNotifications(StreamNotificationsRequest) returns (stream Notification);
 proto/ant/v1/notification_service.proto:14:  rpc SendNotification(SendNotificationRequest) returns (SendNotificationResponse);
-proto/ant/v1/objective_score.proto:8:  rpc CalculateObjectiveScore(ObjectiveScoreRequest) returns (ObjectiveScoreResponse);
 proto/ant/v1/paper_trading.proto:10:  rpc CreatePaperAccount(CreatePaperAccountRequest) returns (PaperAccount);
 proto/ant/v1/paper_trading.proto:11:  rpc ListPaperAccounts(ListPaperAccountsRequest) returns (ListPaperAccountsResponse);
 proto/ant/v1/paper_trading.proto:12:  rpc StartPaperStrategy(StartPaperStrategyRequest) returns (StartPaperStrategyResponse);
 proto/ant/v1/paper_trading.proto:13:  rpc StopPaperStrategy(StopPaperStrategyRequest) returns (StopPaperStrategyResponse);
 proto/ant/v1/paper_trading.proto:14:  rpc WatchPaperAccount(WatchPaperAccountRequest) returns (stream PaperAccountUpdate);
-proto/ant/v1/python_strategy.proto:15:  rpc Execute(ExecuteStrategyRequest) returns (ExecuteStrategyResponse);
-proto/ant/v1/python_strategy.proto:16:  rpc Validate(ValidateStrategyRequest) returns (ValidateStrategyResponse);
-proto/ant/v1/python_strategy.proto:17:  rpc Backtest(BacktestStrategyRequest) returns (BacktestStrategyResponse);
-proto/ant/v1/python_strategy.proto:18:  rpc StartBacktestRun(StartBacktestRunRequest) returns (StartBacktestRunResponse);
-proto/ant/v1/python_strategy.proto:19:  rpc GetBacktestRun(GetBacktestRunRequest) returns (GetBacktestRunResponse);
-proto/ant/v1/python_strategy.proto:20:  rpc ListBacktestRuns(ListBacktestRunsRequest) returns (ListBacktestRunsResponse);
-proto/ant/v1/python_strategy.proto:21:  rpc WatchBacktestRun(WatchBacktestRunRequest) returns (stream BacktestRunUpdate);
-proto/ant/v1/python_strategy.proto:22:  rpc CancelBacktestRun(CancelBacktestRunRequest) returns (CancelBacktestRunResponse);
-proto/ant/v1/python_strategy.proto:23:  rpc DeleteBacktestRun(DeleteBacktestRunRequest) returns (DeleteBacktestRunResponse);
-proto/ant/v1/python_strategy.proto:24:  rpc DeleteBacktestRuns(DeleteBacktestRunsRequest) returns (DeleteBacktestRunsResponse);
-proto/ant/v1/python_strategy.proto:25:  rpc GetTemplates(google.protobuf.Empty) returns (GetPythonTemplatesResponse);
-proto/ant/v1/python_strategy.proto:29:  rpc ExecuteLive(ExecuteLiveRequest) returns (ExecuteLiveResponse);
 proto/ant/v1/schedule_health.proto:10:  rpc GetScheduleHealth(GetScheduleHealthRequest) returns (GetScheduleHealthResponse);
 proto/ant/v1/share.proto:11:  rpc GetSharedPerformance(GetSharedPerformanceRequest) returns (GetSharedPerformanceResponse);
 proto/ant/v1/share.proto:9:  rpc CreateShareToken(CreateShareTokenRequest) returns (CreateShareTokenResponse);
@@ -1489,6 +1114,22 @@ proto/ant/v1/strategy_experiment.proto:16:  rpc GetExperimentCandidate(GetExperi
 proto/ant/v1/strategy_experiment.proto:17:  rpc PromoteCandidateToDraft(PromoteCandidateToDraftRequest) returns (PromoteCandidateToDraftResponse);
 proto/ant/v1/strategy_experiment.proto:20:  rpc WatchExperiment(WatchExperimentRequest) returns (stream WatchExperimentEvent);
 proto/ant/v1/strategy_generation.proto:12:  rpc GenerateStrategy(GenerateStrategyRequest) returns (stream GenerateStrategyChunk);
+proto/ant/v1/strategy_runtime.proto:15:  rpc Execute(ExecuteStrategyRequest) returns (ExecuteStrategyResponse);
+proto/ant/v1/strategy_runtime.proto:16:  rpc Validate(ValidateStrategyRequest) returns (ValidateStrategyResponse);
+proto/ant/v1/strategy_runtime.proto:17:  rpc Backtest(BacktestStrategyRequest) returns (BacktestStrategyResponse);
+proto/ant/v1/strategy_runtime.proto:18:  rpc StartBacktestRun(StartBacktestRunRequest) returns (StartBacktestRunResponse);
+proto/ant/v1/strategy_runtime.proto:19:  rpc GetBacktestRun(GetBacktestRunRequest) returns (GetBacktestRunResponse);
+proto/ant/v1/strategy_runtime.proto:20:  rpc ListBacktestRuns(ListBacktestRunsRequest) returns (ListBacktestRunsResponse);
+proto/ant/v1/strategy_runtime.proto:21:  rpc WatchBacktestRun(WatchBacktestRunRequest) returns (stream BacktestRunUpdate);
+proto/ant/v1/strategy_runtime.proto:22:  rpc CancelBacktestRun(CancelBacktestRunRequest) returns (CancelBacktestRunResponse);
+proto/ant/v1/strategy_runtime.proto:23:  rpc DeleteBacktestRun(DeleteBacktestRunRequest) returns (DeleteBacktestRunResponse);
+proto/ant/v1/strategy_runtime.proto:24:  rpc DeleteBacktestRuns(DeleteBacktestRunsRequest) returns (DeleteBacktestRunsResponse);
+proto/ant/v1/strategy_runtime.proto:25:  rpc GetTemplates(google.protobuf.Empty) returns (GetStrategyTemplatesResponse);
+proto/ant/v1/strategy_runtime.proto:28:  rpc ExecuteLive(ExecuteLiveRequest) returns (ExecuteLiveResponse);
+proto/ant/v1/strategy_runtime.proto:31:  rpc TranspileCode(TranspileCodeRequest) returns (TranspileCodeResponse);
+proto/ant/v1/strategy_runtime.proto:33:  rpc AnalyzeImportCode(AnalyzeImportCodeRequest) returns (AnalyzeImportCodeResponse);
+proto/ant/v1/strategy_runtime.proto:35:  rpc GenerateImportCode(GenerateImportCodeRequest) returns (GenerateImportCodeResponse);
+proto/ant/v1/strategy_runtime.proto:37:  rpc ImportStrategy(ImportStrategyRequest) returns (ImportStrategyResponse);
 proto/ant/v1/stream.proto:75:  rpc SubscribeEvents(SubscribeEventsRequest) returns (stream StreamEvent);
 proto/ant/v1/stream.proto:76:  rpc SubscribeHistory(SubscribeHistoryRequest) returns (stream StreamEvent);
 proto/ant/v1/stream.proto:77:  rpc SubscribeOrderUpdates(SubscribeOrderUpdatesRequest) returns (stream OrderUpdateEvent);
@@ -1645,37 +1286,17 @@ backend/internal/connect/strategy/account_provider.go:151:func (p *MTAccountStat
 backend/internal/connect/strategy/account_provider.go:159:func (p *MTAccountStateProvider) UpdateBalanceFromProfitEvent(accountID string, balance, equity, margin, freeMargin float64) {
 backend/internal/connect/strategy/account_provider.go:53:func (p *MTAccountStateProvider) GetAccountState(ctx context.Context, accountID string) (*risk.AccountState, error) {
 backend/internal/connect/strategy/ai_proposer_adapter.go:22:func (a *systemAIAdapter) ChatCompletion(ctx context.Context, systemPrompt, userPrompt string) (string, error) {
-backend/internal/connect/strategy/backtest_trades_handler.go:53:func (s *BacktestTradesServer) ListBacktestRunTrades(ctx context.Context, req *connect.Request[antv1.ListBacktestRunTradesRequest]) (*connect.Response[antv1.ListBacktestRunTradesResponse], error) {
-backend/internal/connect/strategy/backtest_worker.go:408:func (s *PythonStrategyServer) StartBacktestWorker(ctx context.Context) {
-backend/internal/connect/strategy/data_source.go:54:func (s *LiveSource) Name() string { return "live" }
-backend/internal/connect/strategy/data_source.go:56:func (s *LiveSource) Fetch(ctx context.Context, symbol, timeframe string, from, to *time.Time) ([]*antv1.ExecuteKlineBar, error) {
-backend/internal/connect/strategy/data_source.go:76:func (s *LiveSource) Subscribe(accountID string) (<-chan *mthub.BarUpdate, func()) {
-backend/internal/connect/strategy/live_runner.go:57:func (s *PythonStrategyServer) RunLiveStrategy(ctx context.Context, cfg LiveStrategyConfig) error {
-backend/internal/connect/strategy/objective_score_handler.go:30:func (s *ObjectiveScoreServer) CalculateObjectiveScore(
-backend/internal/connect/strategy/python_strategy_backtest_crud.go:126:func (s *PythonStrategyServer) WatchBacktestRun(ctx context.Context, req *connect.Request[antv1.WatchBacktestRunRequest], stream *connect.ServerStream[antv1.BacktestRunUpdate]) error {
-backend/internal/connect/strategy/python_strategy_backtest_crud.go:198:func (s *PythonStrategyServer) CancelBacktestRun(ctx context.Context, req *connect.Request[antv1.CancelBacktestRunRequest]) (*connect.Response[antv1.CancelBacktestRunResponse], error) {
-backend/internal/connect/strategy/python_strategy_backtest_crud.go:214:func (s *PythonStrategyServer) DeleteBacktestRun(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunRequest]) (*connect.Response[antv1.DeleteBacktestRunResponse], error) {
-backend/internal/connect/strategy/python_strategy_backtest_crud.go:232:func (s *PythonStrategyServer) DeleteBacktestRuns(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunsRequest]) (*connect.Response[antv1.DeleteBacktestRunsResponse], error) {
-backend/internal/connect/strategy/python_strategy_backtest_crud.go:26:func (s *PythonStrategyServer) StartBacktestRun(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) (*connect.Response[antv1.StartBacktestRunResponse], error) {
-backend/internal/connect/strategy/python_strategy_backtest_crud.go:74:func (s *PythonStrategyServer) GetBacktestRun(ctx context.Context, req *connect.Request[antv1.GetBacktestRunRequest]) (*connect.Response[antv1.GetBacktestRunResponse], error) {
-backend/internal/connect/strategy/python_strategy_backtest_crud.go:93:func (s *PythonStrategyServer) ListBacktestRuns(ctx context.Context, req *connect.Request[antv1.ListBacktestRunsRequest]) (*connect.Response[antv1.ListBacktestRunsResponse], error) {
-backend/internal/connect/strategy/python_strategy_handler.go:105:func (s *PythonStrategyServer) Execute(ctx context.Context, req *connect.Request[antv1.ExecuteStrategyRequest]) (*connect.Response[antv1.ExecuteStrategyResponse], error) {
-backend/internal/connect/strategy/python_strategy_handler.go:130:func (s *PythonStrategyServer) Validate(ctx context.Context, req *connect.Request[antv1.ValidateStrategyRequest]) (*connect.Response[antv1.ValidateStrategyResponse], error) {
-backend/internal/connect/strategy/python_strategy_handler.go:152:func (s *PythonStrategyServer) Backtest(ctx context.Context, req *connect.Request[antv1.BacktestStrategyRequest]) (*connect.Response[antv1.BacktestStrategyResponse], error) {
-backend/internal/connect/strategy/python_strategy_handler.go:205:func (s *PythonStrategyServer) GetTemplates(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[antv1.GetPythonTemplatesResponse], error) {
-backend/internal/connect/strategy/python_strategy_handler.go:211:func (s *PythonStrategyServer) ExecuteLive(ctx context.Context, req *connect.Request[antv1.ExecuteLiveRequest]) (*connect.Response[antv1.ExecuteLiveResponse], error) {
-backend/internal/connect/strategy/python_strategy_handler.go:226:func (s *PythonStrategyServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
-backend/internal/connect/strategy/python_strategy_handler.go:53:func (s *PythonStrategyServer) SetMarketDataRepo(r repository.MarketDataStore) {
-backend/internal/connect/strategy/python_strategy_handler.go:67:func (s *PythonStrategyServer) SetBarSource(bs BarSource)                 { s.barSource = bs }
-backend/internal/connect/strategy/python_strategy_handler.go:68:func (s *PythonStrategyServer) SetMtHub(h *mthub.MtHubService)            { s.mtHub = h }
-backend/internal/connect/strategy/python_strategy_handler.go:69:func (s *PythonStrategyServer) SetPaperEngine(pe PaperOrderExecutor)      { s.paperEngine = pe }
-backend/internal/connect/strategy/python_strategy_handler.go:73:func (s *PythonStrategyServer) SetGate(g *risk.Gate) { s.gate = g }
-backend/internal/connect/strategy/python_strategy_handler.go:76:func (s *PythonStrategyServer) AddGateRule(r risk.Rule) {
-backend/internal/connect/strategy/python_strategy_handler.go:83:func (s *PythonStrategyServer) SetAccountProvider(p AccountStateProvider) { s.accountProvider = p }
-backend/internal/connect/strategy/python_strategy_handler.go:91:func (s *PythonStrategyServer) SetConnectClient(c antv1c.PythonStrategyServiceClient) { s.connectClient = c }
-backend/internal/connect/strategy/python_strategy_handler.go:92:func (s *PythonStrategyServer) SetBacktestClient(c antv1c.BacktestServiceClient)     { s.backtestClient = c }
-backend/internal/connect/strategy/python_strategy_handler.go:93:func (s *PythonStrategyServer) SetNotificationSender(ns *notification.Sender)         { s.notifSender = ns }
-backend/internal/connect/strategy/python_strategy_handler.go:94:func (s *PythonStrategyServer) SetOnBacktestComplete(fn func(context.Context, *repository.BacktestRun)) { s.onBacktestComplete = fn }
+backend/internal/connect/strategy/backtest_trades_handler.go:55:func (s *BacktestTradesServer) ListBacktestRunTrades(ctx context.Context, req *connect.Request[antv1.ListBacktestRunTradesRequest]) (*connect.Response[antv1.ListBacktestRunTradesResponse], error) {
+backend/internal/connect/strategy/backtest_worker.go:425:func (s *StrategyExecutionServer) StartBacktestWorker(ctx context.Context) {
+backend/internal/connect/strategy/data_source.go:55:func (s *LiveSource) Name() string { return "live" }
+backend/internal/connect/strategy/data_source.go:57:func (s *LiveSource) Fetch(ctx context.Context, symbol, timeframe string, from, to *time.Time) ([]*antv1.ExecuteKlineBar, error) {
+backend/internal/connect/strategy/data_source.go:77:func (s *LiveSource) Subscribe(accountID string) (<-chan *mthub.BarUpdate, func()) {
+backend/internal/connect/strategy/go_executor.go:123:func (e *GoExecutor) CompileCheck(ctx context.Context, code string) (bool, string) {
+backend/internal/connect/strategy/go_executor.go:146:func (e *GoExecutor) Cleanup() {
+backend/internal/connect/strategy/go_executor.go:152:func (e *GoExecutor) RunLive(ctx context.Context, code string, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
+backend/internal/connect/strategy/go_executor.go:37:func (e *GoExecutor) Run(ctx context.Context, code string, req *antv1.ExecuteStrategyRequest) (*antv1.ExecuteStrategyResponse, error) {
+backend/internal/connect/strategy/go_executor.go:75:func (e *GoExecutor) RunBacktest(ctx context.Context, code string, req *antv1.ExecuteBacktestRequest) (*antv1.ExecuteBacktestResponse, error) {
+backend/internal/connect/strategy/live_runner.go:58:func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveStrategyConfig) error {
 backend/internal/connect/strategy/schedule_engine.go:102:func (e *ScheduleEngine) Notify() {
 backend/internal/connect/strategy/schedule_engine.go:266:func (e *ScheduleEngine) StopSchedule(id uuid.UUID) {
 backend/internal/connect/strategy/schedule_engine.go:278:func (e *ScheduleEngine) Stop() {
@@ -1688,6 +1309,33 @@ backend/internal/connect/strategy/strategy_asset_handler.go:185:func (s *Strateg
 backend/internal/connect/strategy/strategy_asset_handler.go:203:func (s *StrategyAssetServer) ListAssetClones(ctx context.Context, req *connect.Request[antv1.ListAssetClonesRequest]) (*connect.Response[antv1.ListAssetClonesResponse], error) {
 backend/internal/connect/strategy/strategy_asset_handler.go:83:func (s *StrategyAssetServer) ListStrategyAssets(ctx context.Context, req *connect.Request[antv1.ListStrategyAssetsRequest]) (*connect.Response[antv1.ListStrategyAssetsResponse], error) {
 backend/internal/connect/strategy/strategy_asset_handler.go:97:func (s *StrategyAssetServer) GetStrategyAsset(ctx context.Context, req *connect.Request[antv1.GetStrategyAssetRequest]) (*connect.Response[antv1.StrategyAsset], error) {
+backend/internal/connect/strategy/strategy_backtest_crud.go:126:func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *connect.Request[antv1.WatchBacktestRunRequest], stream *connect.ServerStream[antv1.BacktestRunUpdate]) error {
+backend/internal/connect/strategy/strategy_backtest_crud.go:198:func (s *StrategyExecutionServer) CancelBacktestRun(ctx context.Context, req *connect.Request[antv1.CancelBacktestRunRequest]) (*connect.Response[antv1.CancelBacktestRunResponse], error) {
+backend/internal/connect/strategy/strategy_backtest_crud.go:214:func (s *StrategyExecutionServer) DeleteBacktestRun(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunRequest]) (*connect.Response[antv1.DeleteBacktestRunResponse], error) {
+backend/internal/connect/strategy/strategy_backtest_crud.go:232:func (s *StrategyExecutionServer) DeleteBacktestRuns(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunsRequest]) (*connect.Response[antv1.DeleteBacktestRunsResponse], error) {
+backend/internal/connect/strategy/strategy_backtest_crud.go:26:func (s *StrategyExecutionServer) StartBacktestRun(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) (*connect.Response[antv1.StartBacktestRunResponse], error) {
+backend/internal/connect/strategy/strategy_backtest_crud.go:74:func (s *StrategyExecutionServer) GetBacktestRun(ctx context.Context, req *connect.Request[antv1.GetBacktestRunRequest]) (*connect.Response[antv1.GetBacktestRunResponse], error) {
+backend/internal/connect/strategy/strategy_backtest_crud.go:93:func (s *StrategyExecutionServer) ListBacktestRuns(ctx context.Context, req *connect.Request[antv1.ListBacktestRunsRequest]) (*connect.Response[antv1.ListBacktestRunsResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:110:func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Request[antv1.ExecuteStrategyRequest]) (*connect.Response[antv1.ExecuteStrategyResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:133:func (s *StrategyExecutionServer) Validate(ctx context.Context, req *connect.Request[antv1.ValidateStrategyRequest]) (*connect.Response[antv1.ValidateStrategyResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:162:func (s *StrategyExecutionServer) Backtest(ctx context.Context, req *connect.Request[antv1.BacktestStrategyRequest]) (*connect.Response[antv1.BacktestStrategyResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:177:func (s *StrategyExecutionServer) GetTemplates(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[antv1.GetStrategyTemplatesResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:183:func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.Request[antv1.ExecuteLiveRequest]) (*connect.Response[antv1.ExecuteLiveResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:198:func (s *StrategyExecutionServer) TranspileCode(ctx context.Context, req *connect.Request[antv1.TranspileCodeRequest]) (*connect.Response[antv1.TranspileCodeResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:228:func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *connect.Request[antv1.AnalyzeImportCodeRequest]) (*connect.Response[antv1.AnalyzeImportCodeResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:277:func (s *StrategyExecutionServer) GenerateImportCode(ctx context.Context, req *connect.Request[antv1.GenerateImportCodeRequest]) (*connect.Response[antv1.GenerateImportCodeResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:325:func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *connect.Request[antv1.ImportStrategyRequest]) (*connect.Response[antv1.ImportStrategyResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:397:func (s *StrategyExecutionServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
+backend/internal/connect/strategy/strategy_execution_handler.go:59:func (s *StrategyExecutionServer) SetMarketDataRepo(r repository.MarketDataStore) {
+backend/internal/connect/strategy/strategy_execution_handler.go:73:func (s *StrategyExecutionServer) SetBarSource(bs BarSource)                 { s.barSource = bs }
+backend/internal/connect/strategy/strategy_execution_handler.go:74:func (s *StrategyExecutionServer) SetMtHub(h *mthub.MtHubService)            { s.mtHub = h }
+backend/internal/connect/strategy/strategy_execution_handler.go:75:func (s *StrategyExecutionServer) SetPaperEngine(pe PaperOrderExecutor)      { s.paperEngine = pe }
+backend/internal/connect/strategy/strategy_execution_handler.go:76:func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)              { s.goExecutor = ge }
+backend/internal/connect/strategy/strategy_execution_handler.go:80:func (s *StrategyExecutionServer) SetGate(g *risk.Gate) { s.gate = g }
+backend/internal/connect/strategy/strategy_execution_handler.go:83:func (s *StrategyExecutionServer) AddGateRule(r risk.Rule) {
+backend/internal/connect/strategy/strategy_execution_handler.go:90:func (s *StrategyExecutionServer) SetAccountProvider(p AccountStateProvider) { s.accountProvider = p }
+backend/internal/connect/strategy/strategy_execution_handler.go:98:func (s *StrategyExecutionServer) SetNotificationSender(ns *notification.Sender) { s.notifSender = ns }
+backend/internal/connect/strategy/strategy_execution_handler.go:99:func (s *StrategyExecutionServer) SetOnBacktestComplete(fn func(context.Context, *repository.BacktestRun)) { s.onBacktestComplete = fn }
 backend/internal/connect/strategy/strategy_experiment_handler.go:101:func (s *StrategyExperimentServer) SubmitStrategyExperiment(ctx context.Context, req *connect.Request[antv1.SubmitStrategyExperimentRequest]) (*connect.Response[antv1.SubmitStrategyExperimentResponse], error) {
 backend/internal/connect/strategy/strategy_experiment_handler.go:137:func (s *StrategyExperimentServer) GetStrategyExperiment(ctx context.Context, req *connect.Request[antv1.GetStrategyExperimentRequest]) (*connect.Response[antv1.StrategyExperiment], error) {
 backend/internal/connect/strategy/strategy_experiment_handler.go:150:func (s *StrategyExperimentServer) ListStrategyExperiments(ctx context.Context, req *connect.Request[antv1.ListStrategyExperimentsRequest]) (*connect.Response[antv1.ListStrategyExperimentsResponse], error) {
@@ -1702,31 +1350,38 @@ backend/internal/connect/strategy/strategy_experiment_worker.go:62:func (w *Expe
 backend/internal/connect/strategy/strategy_experiment_worker.go:77:func (w *ExperimentWorker) Stop() { close(w.stopCh) }
 backend/internal/connect/strategy/strategy_experiment_worker.go:80:func (w *ExperimentWorker) SetAIService(svc *systemai.Service) { w.systemAISvc = svc }
 backend/internal/connect/strategy/strategy_handler.go:33:func (s *StrategyServer) SetCodeAccessChecker(c CodeAccessChecker) { s.codeAccess = c }
-backend/internal/connect/strategy/strategy_handler.go:41:func (s *StrategyServer) SetEngine(e *ScheduleEngine) { s.engine = e }
-backend/internal/connect/strategy/strategy_handler.go:44:func (s *StrategyServer) SetBacktestClient(c antv1c.BacktestServiceClient) { s.backtestClient = c }
-backend/internal/connect/strategy/strategy_handler.go:47:func (s *StrategyServer) SetMarketDataRepo(r repository.MarketDataStore) { s.marketDataRepo = r }
-backend/internal/connect/strategy/strategy_handler.go:63:func (s *StrategyServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
-backend/internal/connect/strategy/strategy_schedules.go:133:func (s *StrategyServer) DeleteSchedule(ctx context.Context, req *connect.Request[antv1.DeleteScheduleRequest]) (*connect.Response[emptypb.Empty], error) {
-backend/internal/connect/strategy/strategy_schedules.go:147:func (s *StrategyServer) ToggleSchedule(ctx context.Context, req *connect.Request[antv1.ToggleScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
-backend/internal/connect/strategy/strategy_schedules.go:180:func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Request[antv1.WatchSchedulesRequest], stream *connect.ServerStream[antv1.WatchSchedulesEvent]) error {
-backend/internal/connect/strategy/strategy_schedules.go:20:func (s *StrategyServer) ListSchedules(ctx context.Context, req *connect.Request[antv1.ListSchedulesRequest]) (*connect.Response[antv1.ListSchedulesResponse], error) {
-backend/internal/connect/strategy/strategy_schedules.go:32:func (s *StrategyServer) GetSchedule(ctx context.Context, req *connect.Request[antv1.GetScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
-backend/internal/connect/strategy/strategy_schedules.go:44:func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Request[antv1.CreateScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
-backend/internal/connect/strategy/strategy_schedules.go:92:func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Request[antv1.UpdateScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
-backend/internal/connect/strategy/strategy_signals.go:147:func (s *StrategyServer) ListSignals(
-backend/internal/connect/strategy/strategy_signals.go:164:func (s *StrategyServer) ExecuteSignal(
-backend/internal/connect/strategy/strategy_signals.go:185:func (s *StrategyServer) ConfirmSignal(
-backend/internal/connect/strategy/strategy_signals.go:198:func (s *StrategyServer) CancelSignal(
-backend/internal/connect/strategy/strategy_signals.go:19:func (s *StrategyServer) RunBacktest(
-backend/internal/connect/strategy/strategy_templates.go:105:func (s *StrategyServer) DeleteTemplate(ctx context.Context, req *connect.Request[antv1.DeleteTemplateRequest]) (*connect.Response[emptypb.Empty], error) {
-backend/internal/connect/strategy/strategy_templates.go:116:func (s *StrategyServer) CreateTemplateDraft(ctx context.Context, req *connect.Request[antv1.CreateTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-backend/internal/connect/strategy/strategy_templates.go:131:func (s *StrategyServer) UpdateTemplateDraft(ctx context.Context, req *connect.Request[antv1.UpdateTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-backend/internal/connect/strategy/strategy_templates.go:162:func (s *StrategyServer) PublishTemplateDraft(ctx context.Context, req *connect.Request[antv1.PublishTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-backend/internal/connect/strategy/strategy_templates.go:17:func (s *StrategyServer) ListTemplates(ctx context.Context, req *connect.Request[antv1.ListTemplatesRequest]) (*connect.Response[antv1.ListTemplatesResponse], error) {
-backend/internal/connect/strategy/strategy_templates.go:181:func (s *StrategyServer) CancelTemplateDraft(ctx context.Context, req *connect.Request[antv1.CancelTemplateDraftRequest]) (*connect.Response[emptypb.Empty], error) {
-backend/internal/connect/strategy/strategy_templates.go:29:func (s *StrategyServer) GetTemplate(ctx context.Context, req *connect.Request[antv1.GetTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-backend/internal/connect/strategy/strategy_templates.go:52:func (s *StrategyServer) CreateTemplate(ctx context.Context, req *connect.Request[antv1.CreateTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-backend/internal/connect/strategy/strategy_templates.go:71:func (s *StrategyServer) UpdateTemplate(ctx context.Context, req *connect.Request[antv1.UpdateTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+backend/internal/connect/strategy/strategy_handler.go:42:func (s *StrategyServer) CancelTemplateDraft(ctx context.Context, req *connect.Request[antv1.CancelTemplateDraftRequest]) (*connect.Response[emptypb.Empty], error) {
+backend/internal/connect/strategy/strategy_handler.go:53:func (s *StrategyServer) SetEngine(e *ScheduleEngine) { s.engine = e }
+backend/internal/connect/strategy/strategy_handler.go:69:func (s *StrategyServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
+backend/internal/connect/strategy/strategy_schedules.go:135:func (s *StrategyServer) DeleteSchedule(ctx context.Context, req *connect.Request[antv1.DeleteScheduleRequest]) (*connect.Response[emptypb.Empty], error) {
+backend/internal/connect/strategy/strategy_schedules.go:149:func (s *StrategyServer) ToggleSchedule(ctx context.Context, req *connect.Request[antv1.ToggleScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
+backend/internal/connect/strategy/strategy_schedules.go:182:func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Request[antv1.WatchSchedulesRequest], stream *connect.ServerStream[antv1.WatchSchedulesEvent]) error {
+backend/internal/connect/strategy/strategy_schedules.go:22:func (s *StrategyServer) ListSchedules(ctx context.Context, req *connect.Request[antv1.ListSchedulesRequest]) (*connect.Response[antv1.ListSchedulesResponse], error) {
+backend/internal/connect/strategy/strategy_schedules.go:34:func (s *StrategyServer) GetSchedule(ctx context.Context, req *connect.Request[antv1.GetScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
+backend/internal/connect/strategy/strategy_schedules.go:46:func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Request[antv1.CreateScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
+backend/internal/connect/strategy/strategy_schedules.go:94:func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Request[antv1.UpdateScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
+backend/internal/connect/strategy/strategy_signals.go:16:func (s *StrategyServer) RunBacktest(
+backend/internal/connect/strategy/strategy_signals.go:35:func (s *StrategyServer) ListSignals(
+backend/internal/connect/strategy/strategy_signals.go:52:func (s *StrategyServer) ExecuteSignal(
+backend/internal/connect/strategy/strategy_signals.go:73:func (s *StrategyServer) ConfirmSignal(
+backend/internal/connect/strategy/strategy_signals.go:86:func (s *StrategyServer) CancelSignal(
+backend/internal/connect/strategy/strategy_template_handlers.go:140:func (s *StrategyServer) DeleteTemplate(ctx context.Context, req *connect.Request[antv1.DeleteTemplateRequest]) (*connect.Response[emptypb.Empty], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:155:func (s *StrategyServer) CreateTemplateDraft(ctx context.Context, req *connect.Request[antv1.CreateTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:169:func (s *StrategyServer) UpdateTemplateDraft(ctx context.Context, req *connect.Request[antv1.UpdateTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:204:func (s *StrategyServer) PublishTemplateDraft(ctx context.Context, req *connect.Request[antv1.PublishTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:48:func (s *StrategyServer) ListTemplates(ctx context.Context, req *connect.Request[antv1.ListTemplatesRequest]) (*connect.Response[antv1.ListTemplatesResponse], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:61:func (s *StrategyServer) GetTemplate(ctx context.Context, req *connect.Request[antv1.GetTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:77:func (s *StrategyServer) CreateTemplate(ctx context.Context, req *connect.Request[antv1.CreateTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:99:func (s *StrategyServer) UpdateTemplate(ctx context.Context, req *connect.Request[antv1.UpdateTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+backend/internal/connect/strategy/strategy_templates.go:104:func (s *MACrossStrategy) OnDeinit(ctx sdk.Context, reason string) error {
+backend/internal/connect/strategy/strategy_templates.go:131:func (s *RSIStrategy) OnInit(ctx sdk.Context) error {
+backend/internal/connect/strategy/strategy_templates.go:141:func (s *RSIStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
+backend/internal/connect/strategy/strategy_templates.go:199:func (s *RSIStrategy) OnDeinit(ctx sdk.Context, reason string) error {
+backend/internal/connect/strategy/strategy_templates.go:225:func (s *BollingerStrategy) OnInit(ctx sdk.Context) error {
+backend/internal/connect/strategy/strategy_templates.go:234:func (s *BollingerStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
+backend/internal/connect/strategy/strategy_templates.go:292:func (s *BollingerStrategy) OnDeinit(ctx sdk.Context, reason string) error {
+backend/internal/connect/strategy/strategy_templates.go:33:func (s *MACrossStrategy) OnInit(ctx sdk.Context) error {
+backend/internal/connect/strategy/strategy_templates.go:42:func (s *MACrossStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
 backend/internal/mthub/broker_types.go:126:func (b *BarBroker) Publish(ev *BarUpdate) {
 backend/internal/mthub/broker_types.go:153:func (b *BarBroker) DroppedBars(accountID string) int64 {
 backend/internal/mthub/broker_types.go:158:func (b *BarBroker) Subscribe(accountID string) (<-chan *BarUpdate, func()) {
@@ -1788,7 +1443,7 @@ backend/internal/mthub/service.go:88:func (s *MtHubService) SetGate(g *risk.Gate
 backend/internal/mthub/service.go:91:func (s *MtHubService) SetOmsWriter(w *OmsWriter) { s.omsWriter = w }
 backend/internal/mthub/service.go:94:func (s *MtHubService) SetKillSwitch(ks KillSwitchGate) { s.killSwitch = ks }
 backend/internal/mthub/service.go:99:func (s *MtHubService) SetBrokerRegistry(r BrokerRegistry) { s.brokerRegistry = r }
-backend/internal/mthub/service_orders.go:18:func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*OrderRecord, error) {
+backend/internal/mthub/service_orders.go:19:func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*OrderRecord, error) {
 backend/internal/mthub/service_orders_close.go:17:func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket int64, lots decimal.Decimal) error {
 backend/internal/mthub/service_orders_modify.go:18:func (s *MtHubService) ModifyOrder(ctx context.Context, accountID string, ticket int64, sl, tp, price decimal.Decimal) error {
 backend/internal/mthub/state_cache.go:103:func (c *StateCache) GetPositionsByAccount(accountID string) []*PositionCacheEntry {
@@ -2030,12 +1685,12 @@ backend/internal/service/systemai/service.go:205:func (s *Service) UpdateSecret(
 backend/internal/service/systemai/service.go:235:func (s *Service) GetSecret(ctx context.Context, userID uuid.UUID, providerID string) (string, error) {
 backend/internal/service/systemai/service.go:256:func (s *Service) DiscoverModels(ctx context.Context, userID uuid.UUID, providerID string) ([]string, error) {
 backend/internal/service/systemai/service.go:91:func (s *Service) SetUserRepo(r *repository.UserRepository) {
-backend/internal/service/template_svc.go:101:func (s *StrategySvc) SetTemplateStatus(ctx context.Context, id, userID uuid.UUID, status string) error {
-backend/internal/service/template_svc.go:33:func (s *StrategySvc) ListTemplates(ctx context.Context, userID uuid.UUID) ([]TemplateRow, error) {
-backend/internal/service/template_svc.go:44:func (s *StrategySvc) GetTemplate(ctx context.Context, id, userID uuid.UUID) (*TemplateRow, error) {
-backend/internal/service/template_svc.go:59:func (s *StrategySvc) CreateTemplate(ctx context.Context, t *TemplateRow) error {
-backend/internal/service/template_svc.go:79:func (s *StrategySvc) UpdateTemplate(ctx context.Context, t *TemplateRow) error {
-backend/internal/service/template_svc.go:90:func (s *StrategySvc) DeleteTemplate(ctx context.Context, id, userID uuid.UUID) error {
+backend/internal/service/template_svc.go:102:func (s *StrategySvc) SetTemplateStatus(ctx context.Context, id, userID uuid.UUID, status string) error {
+backend/internal/service/template_svc.go:34:func (s *StrategySvc) ListTemplates(ctx context.Context, userID uuid.UUID) ([]TemplateRow, error) {
+backend/internal/service/template_svc.go:45:func (s *StrategySvc) GetTemplate(ctx context.Context, id, userID uuid.UUID) (*TemplateRow, error) {
+backend/internal/service/template_svc.go:60:func (s *StrategySvc) CreateTemplate(ctx context.Context, t *TemplateRow) error {
+backend/internal/service/template_svc.go:80:func (s *StrategySvc) UpdateTemplate(ctx context.Context, t *TemplateRow) error {
+backend/internal/service/template_svc.go:91:func (s *StrategySvc) DeleteTemplate(ctx context.Context, id, userID uuid.UUID) error {
 backend/internal/service/template_svc_admin.go:133:func (s *StrategySvc) DeleteSystemStrategy(ctx context.Context, id uuid.UUID) error {
 backend/internal/service/template_svc_admin.go:14:func (s *StrategySvc) GetTemplateDetail(ctx context.Context, id uuid.UUID) (*TemplateRow, string, error) {
 backend/internal/service/template_svc_admin.go:175:func (s *StrategySvc) ListAllStrategies(ctx context.Context, params ListAllStrategiesParams) ([]AllStrategyRow, int32, error) {
@@ -2060,433 +1715,52 @@ backend/internal/service/wallet_service.go:86:func (e *walletNotFoundError) Erro
 backend/internal/service/wallet_service.go:94:func (e *InsufficientBalanceError) Error() string {
 ```
 
-## Python SDK / 引擎（已实现的类与函数）
-
-```
-strategy-service/app/engine/code_quality.py:182:def _check_missing_params(code: str) -> List[CodeHint]:
-strategy-service/app/engine/code_quality.py:207:def _check_unread_params(code: str) -> List[CodeHint]:
-strategy-service/app/engine/code_quality.py:250:def _check_ndarray_pandas_misuse(code: str) -> List[CodeHint]:
-strategy-service/app/engine/code_quality.py:25:class CodeHint:
-strategy-service/app/engine/code_quality.py:315:def _has_buy_sell_signal(code: str) -> bool:
-strategy-service/app/engine/code_quality.py:325:def _check_no_stop_take_profit(code: str) -> List[CodeHint]:
-strategy-service/app/engine/code_quality.py:357:def _check_no_entry_pct(code: str) -> List[CodeHint]:
-strategy-service/app/engine/code_quality.py:379:def _line_of(pattern: str, code: str, start: int = 0) -> int:
-strategy-service/app/engine/code_quality.py:37:def _strip_comments(code: str) -> str:
-strategy-service/app/engine/code_quality.py:391:def analyze_code_quality(source: str) -> List[CodeHint]:
-strategy-service/app/engine/code_quality.py:65:def _declared_param_names(code: str) -> List[str]:
-strategy-service/app/engine/code_quality.py:77:def _param_get_calls(code: str) -> Set[str]:
-strategy-service/app/engine/code_quality.py:92:def _check_future_data_leak(code: str) -> List[CodeHint]:
-strategy-service/app/engine/compilation.py:21:def _compile_source(source: str) -> Any:
-strategy-service/app/engine/compilation.py:29:def code_sha256(source: str) -> str:
-strategy-service/app/engine/compilation.py:36:def build_sandbox_globals() -> dict:
-strategy-service/app/engine/cost.py:105:    def apply_rollover_swaps(
-strategy-service/app/engine/cost.py:22:def _ms_to_utc(ms: int) -> datetime:
-strategy-service/app/engine/cost.py:26:def _utc_to_ms(dt: datetime) -> int:
-strategy-service/app/engine/cost.py:32:class CostModel:
-strategy-service/app/engine/cost.py:35:    def __init__(self, profile: CostProfile) -> None:
-strategy-service/app/engine/cost.py:51:    def commission(self, volume: float) -> float:
-strategy-service/app/engine/cost.py:57:    def apply_slippage(self, price: float, is_buy_side: bool) -> float:
-strategy-service/app/engine/cost.py:76:    def _to_local(self, dt: datetime) -> datetime:
-strategy-service/app/engine/cost.py:83:    def _next_rollover_utc(self, dt: datetime) -> datetime:
-strategy-service/app/engine/fill.py:140:    def process_market_order(
-strategy-service/app/engine/fill.py:180:    def _is_expired(order: Order, ts: int) -> bool:
-strategy-service/app/engine/fill.py:188:    def _check_trigger(self, order: Order, tick: Tick) -> Tuple[bool, float]:
-strategy-service/app/engine/fill.py:225:    def _fill_volume(self, requested: float) -> float:
-strategy-service/app/engine/fill.py:45:def _is_buy_side(order_type: OrderType) -> bool:
-strategy-service/app/engine/fill.py:49:class FillModel:
-strategy-service/app/engine/fill.py:52:    def __init__(self, cost: CostModel, max_fill_volume: float = 0.0) -> None:
-strategy-service/app/engine/fill.py:61:    def pending(self) -> List[Order]:
-strategy-service/app/engine/fill.py:64:    def enqueue(self, order: Order, replace_same_type: bool = False) -> None:
-strategy-service/app/engine/fill.py:76:    def cancel_all(self) -> int:
-strategy-service/app/engine/fill.py:85:    def process_on_tick(self, tick: Tick) -> List[Tuple[Fill, Order]]:
-strategy-service/app/engine/indicators.py:105:def iMACD(
-strategy-service/app/engine/indicators.py:129:def iStochastic(
-strategy-service/app/engine/indicators.py:154:def iATR(high, low, close, period: int = 14, shift: int = 0) -> float:
-strategy-service/app/engine/indicators.py:173:def iCCI(high, low, close, period: int = 14, shift: int = 0) -> float:
-strategy-service/app/engine/indicators.py:191:def iMomentum(prices, period: int = 14, shift: int = 0) -> float:
-strategy-service/app/engine/indicators.py:200:def iWPR(high, low, close, period: int = 14, shift: int = 0) -> float:
-strategy-service/app/engine/indicators.py:221:def OrdersTotal(context: dict) -> int:
-strategy-service/app/engine/indicators.py:225:def AccountBalance(context: dict) -> float:
-strategy-service/app/engine/indicators.py:229:def AccountEquity(context: dict) -> float:
-strategy-service/app/engine/indicators.py:39:def _arr(prices) -> np.ndarray:
-strategy-service/app/engine/indicators.py:43:def iMA(prices, period: int = 14, shift: int = 0, method: str = "sma") -> float:
-strategy-service/app/engine/indicators.py:62:def iRSI(prices, period: int = 14, shift: int = 0) -> float:
-strategy-service/app/engine/indicators.py:79:def iBands(
-strategy-service/app/engine/indicators.py:97:def _ema_series(arr: np.ndarray, n: int) -> np.ndarray:
-strategy-service/app/engine/live_broker.py:101:    def order_send(self, request: OrderRequest) -> OrderResult:
-strategy-service/app/engine/live_broker.py:120:    def position_modify(
-strategy-service/app/engine/live_broker.py:139:    def position_close(
-strategy-service/app/engine/live_broker.py:162:    def order_delete(self, ticket: int) -> OrderResult:
-strategy-service/app/engine/live_broker.py:168:    def positions(
-strategy-service/app/engine/live_broker.py:179:    def orders(
-strategy-service/app/engine/live_broker.py:190:    def account(self) -> AccountInfo:
-strategy-service/app/engine/live_broker.py:194:    def symbol_info(self, symbol: str) -> SymbolInfo:
-strategy-service/app/engine/live_broker.py:209:    def server_time(self) -> int:
-strategy-service/app/engine/live_broker.py:216:    def order_intents(self) -> List[OrderIntent]:
-strategy-service/app/engine/live_broker.py:220:    def close_intents(self) -> List[CloseIntent]:
-strategy-service/app/engine/live_broker.py:224:    def modify_intents(self) -> List[ModifyIntent]:
-strategy-service/app/engine/live_broker.py:228:    def delete_intents(self) -> List[int]:
-strategy-service/app/engine/live_broker.py:231:    def export_intents(self) -> List[dict]:
-strategy-service/app/engine/live_broker.py:253:class OrderIntent:
-strategy-service/app/engine/live_broker.py:257:    def __init__(self, ticket: int, request: OrderRequest):
-strategy-service/app/engine/live_broker.py:261:    def to_signal_dict(self) -> dict:
-strategy-service/app/engine/live_broker.py:279:class CloseIntent:
-strategy-service/app/engine/live_broker.py:283:    def __init__(self, ticket: int, volume: Optional[Decimal] = None):
-strategy-service/app/engine/live_broker.py:287:    def to_signal_dict(self) -> dict:
-strategy-service/app/engine/live_broker.py:295:class ModifyIntent:
-strategy-service/app/engine/live_broker.py:299:    def __init__(self, ticket: int, sl: Optional[Decimal] = None, tp: Optional[Decimal] = None):
-strategy-service/app/engine/live_broker.py:304:    def to_signal_dict(self) -> dict:
-strategy-service/app/engine/live_broker.py:313:def build_live_broker_from_proto(lctx) -> LiveBroker:
-strategy-service/app/engine/live_broker.py:38:class LiveBroker(Broker):
-strategy-service/app/engine/live_broker.py:46:    def __init__(
-strategy-service/app/engine/live_broker.py:75:    def update_state(
-strategy-service/app/engine/live_broker.py:92:    def clear_intents(self) -> None:
-strategy-service/app/engine/margin.py:20:class MarginModel:
-strategy-service/app/engine/margin.py:29:    def __init__(self, leverage: float, contract_size: float = 100_000.0) -> None:
-strategy-service/app/engine/margin.py:33:    def enabled(self) -> bool:
-strategy-service/app/engine/margin.py:38:    def required_margin(self, position: Position, price: float) -> float:
-strategy-service/app/engine/margin.py:43:    def used_margin(self, portfolio: "Portfolio", tick: Tick) -> float:
-strategy-service/app/engine/margin.py:51:    def margin_level(self, portfolio: "Portfolio", tick: Tick) -> float:
-strategy-service/app/engine/margin.py:60:    def is_margin_call(self, portfolio: "Portfolio", tick: Tick) -> bool:
-strategy-service/app/engine/market.py:112:class MultiSymbolMarket:
-strategy-service/app/engine/market.py:123:    def __init__(self, bars_by_symbol: Dict[str, List], primary: str) -> None:
-strategy-service/app/engine/market.py:136:    def primary(self) -> str:
-strategy-service/app/engine/market.py:139:    def primary_market(self) -> MarketSimulator:
-strategy-service/app/engine/market.py:142:    def symbols(self) -> List[str]:
-strategy-service/app/engine/market.py:145:    def market(self, symbol: str) -> MarketSimulator:
-strategy-service/app/engine/market.py:151:    def __len__(self) -> int:
-strategy-service/app/engine/market.py:154:    def bar_closed_at_or_before(self, ts: int) -> int:
-strategy-service/app/engine/market.py:158:    def slice_until(self, primary_idx: int) -> Dict[str, dict]:
-strategy-service/app/engine/market.py:15:class TickSimulator:
-strategy-service/app/engine/market.py:24:    def __init__(self, bars: List[Bar], ticks: Optional[List[Tick]] = None) -> None:
-strategy-service/app/engine/market.py:35:    def __iter__(self) -> Iterator[Tick]:
-strategy-service/app/engine/market.py:38:    def __len__(self) -> int:
-strategy-service/app/engine/market.py:42:    def synthetic(self) -> bool:
-strategy-service/app/engine/market.py:49:class MarketSimulator:
-strategy-service/app/engine/market.py:60:    def __init__(self, bars: List[Bar]) -> None:
-strategy-service/app/engine/market.py:75:    def __len__(self) -> int:
-strategy-service/app/engine/market.py:79:    def bars(self) -> List[Bar]:
-strategy-service/app/engine/market.py:82:    def bar_closed_at_or_before(self, ts: int) -> int:
-strategy-service/app/engine/market.py:94:    def slice_until(self, idx: int) -> dict:
-strategy-service/app/engine/metrics.py:116:def _build_risk(max_dd: float, sharpe: float, total_trades: int) -> RiskAssessment:
-strategy-service/app/engine/metrics.py:135:def build_metrics(
-strategy-service/app/engine/metrics.py:31:def _total_return(eq: np.ndarray) -> float:
-strategy-service/app/engine/metrics.py:37:def _max_drawdown(eq: np.ndarray) -> float:
-strategy-service/app/engine/metrics.py:45:def _bars_per_year(bars: List[Bar]) -> int:
-strategy-service/app/engine/metrics.py:55:def _sharpe_ratio(eq: np.ndarray, bars: List[Bar]) -> float:
-strategy-service/app/engine/metrics.py:65:def _annual_return(total_return: float, bars: List[Bar]) -> float:
-strategy-service/app/engine/metrics.py:79:def _trade_stats(trades: List[Trade]) -> dict:
-strategy-service/app/engine/migrate_legacy_strategy.py:101:def convert_to_dsl(code: str) -> tuple[str, list[str], list[str]]:
-strategy-service/app/engine/migrate_legacy_strategy.py:139:def _expr_to_dsl(node: ast.AST, depth: int = 0) -> str:
-strategy-service/app/engine/migrate_legacy_strategy.py:221:def migrate_strategy(strategy_id: str, code: str) -> MigrationResult:
-strategy-service/app/engine/migrate_legacy_strategy.py:251:def main() -> None:
-strategy-service/app/engine/migrate_legacy_strategy.py:84:class MigrationResult:
-strategy-service/app/engine/migrate_legacy_strategy.py:93:def is_convertible(code: str) -> tuple[bool, str]:
-strategy-service/app/engine/params_extractor.py:111:def _is_params_alias(value: ast.AST) -> bool:
-strategy-service/app/engine/params_extractor.py:128:def _collect_alias_names(tree: ast.AST) -> Set[str]:
-strategy-service/app/engine/params_extractor.py:139:def extract_required_params(code: str) -> List[Dict[str, Any]]:
-strategy-service/app/engine/params_extractor.py:150:    def remember(spec: ParamSpec) -> None:
-strategy-service/app/engine/params_extractor.py:224:def _coerce_strategy_value(key: str, raw: str) -> Any:
-strategy-service/app/engine/params_extractor.py:241:def extract_strategy_directives(code: str) -> Dict[str, Any]:
-strategy-service/app/engine/params_extractor.py:30:class ParamSpec:
-strategy-service/app/engine/params_extractor.py:37:    def to_dict(self) -> Dict[str, Any]:
-strategy-service/app/engine/params_extractor.py:81:def _suggest_default(key: str) -> Optional[Dict[str, Any]]:
-strategy-service/app/engine/params_extractor.py:90:def _literal_value(node: ast.AST) -> Any:
-strategy-service/app/engine/params_extractor.py:99:def _type_of(value: Any) -> Optional[str]:
-strategy-service/app/engine/portfolio.py:105:    def equity(self, tick: Tick) -> float:
-strategy-service/app/engine/portfolio.py:111:    def adjust_cash(self, delta: float) -> None:
-strategy-service/app/engine/portfolio.py:115:    def set_cash(self, new_cash: float) -> None:
-strategy-service/app/engine/portfolio.py:119:    def apply_fill(self, fill: Fill, order: Order, tick: Tick) -> Position:
-strategy-service/app/engine/portfolio.py:139:    def close_position(
-strategy-service/app/engine/portfolio.py:170:    def check_sl_tp(self, tick: Tick) -> List[Trade]:
-strategy-service/app/engine/portfolio.py:191:    def force_liquidate_all(self, tick: Tick, reason: CloseReason) -> List[Trade]:
-strategy-service/app/engine/portfolio.py:199:    def force_liquidate_side(self, tick: Tick, side: Side, reason: CloseReason) -> List[Trade]:
-strategy-service/app/engine/portfolio.py:37:def _order_side(order_type: OrderType) -> Side:
-strategy-service/app/engine/portfolio.py:46:class Portfolio:
-strategy-service/app/engine/portfolio.py:49:    def __init__(
-strategy-service/app/engine/portfolio.py:65:    def cash(self) -> float:
-strategy-service/app/engine/portfolio.py:70:    def positions(self) -> List[Position]:
-strategy-service/app/engine/portfolio.py:74:    def closed_trades(self) -> List[Trade]:
-strategy-service/app/engine/portfolio.py:78:    def legacy_pnl(self) -> bool:
-strategy-service/app/engine/portfolio.py:81:    def has_open(self) -> bool:
-strategy-service/app/engine/portfolio.py:84:    def positions_total(self) -> int:
-strategy-service/app/engine/portfolio.py:89:    def _unit_pnl(self, side: Side, open_price: float, close_price: float) -> float:
-strategy-service/app/engine/portfolio.py:95:    def unrealized(self, position: Position, tick: Tick) -> float:
-strategy-service/app/engine/runner.py:100:    def __len__(self) -> int:
-strategy-service/app/engine/runner.py:103:    def slice(self, count: int) -> List[float]:
-strategy-service/app/engine/runner.py:107:class _EngineBars(Bars):
-strategy-service/app/engine/runner.py:108:    def __init__(
-strategy-service/app/engine/runner.py:138:    def total(self) -> int:
-strategy-service/app/engine/runner.py:142:class _BarsProvider:
-strategy-service/app/engine/runner.py:160:    def __init__(
-strategy-service/app/engine/runner.py:175:    def __call__(self, timeframe: str | None = None) -> _EngineBars:
-strategy-service/app/engine/runner.py:184:def _symbol_info_from_dict(symbol: str, d: dict) -> SymbolInfo:
-strategy-service/app/engine/runner.py:190:    def _decimal(key: str, fallback: str) -> Decimal:
-strategy-service/app/engine/runner.py:215:def _is_sdk_strategy(code: str) -> bool:
-strategy-service/app/engine/runner.py:233:class BacktestRunner:
-strategy-service/app/engine/runner.py:242:    def __init__(self, req: BacktestRequest, sandbox=None) -> None:
-strategy-service/app/engine/runner.py:303:    def _init_sdk_path(self, req: BacktestRequest) -> None:
-strategy-service/app/engine/runner.py:342:    def run(self) -> BacktestResult:
-strategy-service/app/engine/runner.py:369:    def _run_loop(self) -> None:
-strategy-service/app/engine/runner.py:431:    def _dispatch_signal(self, signal, tick: Tick) -> None:
-strategy-service/app/engine/runner.py:495:    def _open_event(self, pos: Position, fill: Fill) -> dict:
-strategy-service/app/engine/runner.py:504:    def _close_event(self, trade) -> dict:
-strategy-service/app/engine/runner.py:513:    def _build_snapshot(self):
-strategy-service/app/engine/runner.py:524:    def _build_execution_assumptions(self):
-strategy-service/app/engine/runner.py:538:def run_backtest(req: BacktestRequest) -> BacktestResult:
-strategy-service/app/engine/runner.py:71:def _parse_expiration(raw: Any) -> Optional[int]:
-strategy-service/app/engine/runner.py:90:class _EngineSeries(Series):
-strategy-service/app/engine/runner.py:91:    def __init__(self, data: np.ndarray):
-strategy-service/app/engine/runner.py:94:    def __getitem__(self, shift: int) -> float:
-strategy-service/app/engine/sandbox_os.py:122:def _build_seccomp_filter() -> bytes:
-strategy-service/app/engine/sandbox_os.py:156:def seccomp_is_available() -> bool:
-strategy-service/app/engine/sandbox_os.py:165:def _get_libc():
-strategy-service/app/engine/sandbox_os.py:169:def apply_seccomp() -> bool:
-strategy-service/app/engine/sandbox_os.py:203:def drop_root(uid: Optional[int] = None, gid: Optional[int] = None) -> bool:
-strategy-service/app/engine/sandbox_os.py:220:def is_root() -> bool:
-strategy-service/app/engine/sandbox_os.py:229:def _cgroup_v2_available() -> bool:
-strategy-service/app/engine/sandbox_os.py:233:def apply_cgroup_limits(
-strategy-service/app/engine/sandbox_os.py:265:def apply_os_sandbox(
-strategy-service/app/engine/sandbox_os.py:294:def can_open_network() -> bool:
-strategy-service/app/engine/sandbox_os.py:304:def can_write_file(path: str = "/tmp/sandbox_escape_test") -> bool:
-strategy-service/app/engine/sandbox_os.py:314:def can_spawn_process() -> bool:
-strategy-service/app/engine/sandbox_os.py:56:def _bpf_stmt(code: int, k: int) -> "sock_filter":
-strategy-service/app/engine/sandbox_os.py:60:def _bpf_jump(code: int, k: int, jt: int, jf: int) -> "sock_filter":
-strategy-service/app/engine/sandbox_os.py:64:class sock_filter(ctypes.Structure):
-strategy-service/app/engine/sandbox_os.py:72:    def pack(self) -> bytes:
-strategy-service/app/engine/sandbox_os.py:76:class sock_fprog(ctypes.Structure):
-strategy-service/app/engine/sdk_indicators.py:12:class SDKIndicators:
-strategy-service/app/engine/sdk_indicators.py:20:    def __init__(self, bars_provider):
-strategy-service/app/engine/sdk_indicators.py:23:    def _get_close(self) -> np.ndarray:
-strategy-service/app/engine/sdk_indicators.py:27:    def ma(self, period=14, shift=0, method="sma"):
-strategy-service/app/engine/sdk_indicators.py:40:    def ema(self, period=14, shift=0):
-strategy-service/app/engine/sdk_indicators.py:43:    def rsi(self, period=14, shift=0):
-strategy-service/app/engine/sdk_indicators.py:55:    def bands(self, period=20, deviation=2.0, shift=0):
-strategy-service/app/engine/sdk_indicators.py:64:    def macd(self, fast=12, slow=26, signal=9, shift=0):
-strategy-service/app/engine/sdk_indicators.py:67:    def atr(self, period=14, shift=0):
-strategy-service/app/engine/sdk_indicators.py:70:    def stochastic(self, k_period=5, d_period=3, shift=0):
-strategy-service/app/engine/sdk_indicators.py:73:    def cci(self, period=14, shift=0):
-strategy-service/app/engine/sdk_indicators.py:76:    def i_custom(self, name, params=(), buffer=0, shift=0):
-strategy-service/app/engine/sdk_loader.py:13:def load_sdk_strategy(code: str) -> type[StrategyBase]:
-strategy-service/app/engine/sdk_worker.py:102:def process_bar(code: str, bar_context: dict) -> Dict[str, Any]:
-strategy-service/app/engine/sdk_worker.py:161:def reset_runtime():
-strategy-service/app/engine/sdk_worker.py:35:def _get_or_create_runtime(code: str, bar_context: dict) -> StrategyRuntime:
-strategy-service/app/engine/sdk_worker.py:65:def _build_bars_provider(bar_context: dict) -> callable:
-strategy-service/app/engine/sdk_worker.py:74:    class _LiveSeries(Series):
-strategy-service/app/engine/sdk_worker.py:75:        def __init__(self, data):
-strategy-service/app/engine/sdk_worker.py:77:        def __getitem__(self, shift):
-strategy-service/app/engine/sdk_worker.py:82:        def __len__(self):
-strategy-service/app/engine/sdk_worker.py:84:        def slice(self, count):
-strategy-service/app/engine/sdk_worker.py:87:    def provider(timeframe=None):
-strategy-service/app/engine/sim_broker.py:103:def _is_market_order(ot: SDKOrderType) -> bool:
-strategy-service/app/engine/sim_broker.py:107:def _is_pending_order(ot: SDKOrderType) -> bool:
-strategy-service/app/engine/sim_broker.py:123:def _count_decimal_places(value: float) -> int:
-strategy-service/app/engine/sim_broker.py:145:def _derive_symbol_info_from_bars(
-strategy-service/app/engine/sim_broker.py:184:def _make_symbol_info(
-strategy-service/app/engine/sim_broker.py:213:class _PositionMeta:
-strategy-service/app/engine/sim_broker.py:220:class _OrderMeta:
-strategy-service/app/engine/sim_broker.py:229:class SimBroker(Broker):
-strategy-service/app/engine/sim_broker.py:246:    def __init__(
-strategy-service/app/engine/sim_broker.py:282:    def order_send(self, request: OrderRequest) -> OrderResult:
-strategy-service/app/engine/sim_broker.py:317:    def position_modify(
-strategy-service/app/engine/sim_broker.py:332:    def position_close(
-strategy-service/app/engine/sim_broker.py:386:    def order_delete(self, ticket: int) -> OrderResult:
-strategy-service/app/engine/sim_broker.py:399:    def positions(
-strategy-service/app/engine/sim_broker.py:416:    def orders(
-strategy-service/app/engine/sim_broker.py:448:    def account(self) -> AccountInfo:
-strategy-service/app/engine/sim_broker.py:476:    def symbol_info(self, symbol: str) -> SymbolInfo:
-strategy-service/app/engine/sim_broker.py:487:    def server_time(self) -> int:
-strategy-service/app/engine/sim_broker.py:494:    def advance_tick(self, tick: Tick) -> List[Fill]:
-strategy-service/app/engine/sim_broker.py:520:    def _execute_market(self, order: Order, tick: Tick) -> OrderResult:
-strategy-service/app/engine/sim_broker.py:533:    def _enqueue_pending(self, order: Order, tick: Tick) -> OrderResult:
-strategy-service/app/engine/sim_broker.py:550:    def _on_fill(self, fill: Fill, order: Order) -> OrderResult:
-strategy-service/app/engine/sim_broker.py:575:    def _find_position(self, ticket: int) -> Optional[EnginePosition]:
-strategy-service/app/engine/sim_broker.py:581:    def _to_sdk_position(
-strategy-service/app/engine/sim_broker.py:60:def _to_float(d: Optional[Decimal]) -> float:
-strategy-service/app/engine/sim_broker.py:66:def _to_decimal(f: float, precision: Decimal = _DECIMAL_PRECISION) -> Decimal:
-strategy-service/app/engine/sim_broker.py:74:def _to_decimal_or_none(f: float) -> Optional[Decimal]:
-strategy-service/app/engine/types.py:116:class Order:
-strategy-service/app/engine/types.py:131:class Fill:
-strategy-service/app/engine/types.py:141:class Position:
-strategy-service/app/engine/types.py:152:class Trade:
-strategy-service/app/engine/types.py:169:class Metrics:
-strategy-service/app/engine/types.py:184:class RiskAssessment:
-strategy-service/app/engine/types.py:18:class Side(str, Enum):
-strategy-service/app/engine/types.py:193:class ExecutionAssumptions:
-strategy-service/app/engine/types.py:206:class RunSnapshot:
-strategy-service/app/engine/types.py:219:class BacktestRequest:
-strategy-service/app/engine/types.py:23:class OrderType(str, Enum):
-strategy-service/app/engine/types.py:259:class BacktestResult:
-strategy-service/app/engine/types.py:275:class EngineError(Exception):
-strategy-service/app/engine/types.py:279:class StrategyCompileError(EngineError):
-strategy-service/app/engine/types.py:283:class StrategyRuntimeError(EngineError):
-strategy-service/app/engine/types.py:287:class DataUnavailableError(EngineError):
-strategy-service/app/engine/types.py:291:class DeadlineExceededError(EngineError):
-strategy-service/app/engine/types.py:295:class MarginCallError(EngineError):
-strategy-service/app/engine/types.py:36:class OrderStatus(str, Enum):
-strategy-service/app/engine/types.py:45:class RunMode(str, Enum):
-strategy-service/app/engine/types.py:52:class SlippageMode(str, Enum):
-strategy-service/app/engine/types.py:57:class CloseReason(str, Enum):
-strategy-service/app/engine/types.py:70:class Bar:
-strategy-service/app/engine/types.py:83:class Tick:
-strategy-service/app/engine/types.py:95:class CostProfile:
-strategy-service/app/engine/validation.py:106:def scan_security(code: str) -> SecurityScanResult:
-strategy-service/app/engine/validation.py:149:class StrategyValidationResult:
-strategy-service/app/engine/validation.py:156:def _is_sdk_strategy(tree) -> bool:
-strategy-service/app/engine/validation.py:179:def _register(rule):
-strategy-service/app/engine/validation.py:189:def _rule_invalid_sdk_imports(
-strategy-service/app/engine/validation.py:203:def _rule_hardcoded_timeframe(
-strategy-service/app/engine/validation.py:221:def _rule_hardcoded_magic(
-strategy-service/app/engine/validation.py:242:def _rule_float_for_prices(
-strategy-service/app/engine/validation.py:252:def _rule_order_send_ignored(
-strategy-service/app/engine/validation.py:275:def _rule_hardcoded_lot_quantize(
-strategy-service/app/engine/validation.py:298:def _rule_hardcoded_divisor(
-strategy-service/app/engine/validation.py:315:def _rule_underscore_methods(
-strategy-service/app/engine/validation.py:325:def _rule_unnecessary_pre_injected_imports(
-strategy-service/app/engine/validation.py:339:def _validate_sdk_strategy(
-strategy-service/app/engine/validation.py:385:def validate_strategy_code(code: str) -> StrategyValidationResult:
-strategy-service/app/engine/validation.py:44:class SecurityScanResult:
-strategy-service/app/engine/validation.py:53:class _SecurityVisitor(ast.NodeVisitor):
-strategy-service/app/engine/validation.py:56:    def __init__(self, result: SecurityScanResult):
-strategy-service/app/engine/validation.py:59:    def visit_Import(self, node):
-strategy-service/app/engine/validation.py:70:    def visit_ImportFrom(self, node):
-strategy-service/app/engine/validation.py:81:    def visit_Call(self, node):
-strategy-service/app/engine/validation.py:89:def _scan_strings_for_danger(code: str, result: SecurityScanResult) -> None:
-strategy-service/app/engine/vectorized_runner.py:102:    def __init__(self, source: str, timeout_ms: int = 30_000) -> None:
-strategy-service/app/engine/vectorized_runner.py:119:    def source_sha256(self) -> str:
-strategy-service/app/engine/vectorized_runner.py:122:    def call(self, ctx: dict) -> Optional[dict]:
-strategy-service/app/engine/vectorized_runner.py:130:    def shutdown(self) -> None:
-strategy-service/app/engine/vectorized_runner.py:133:    def call_dataframe(
-strategy-service/app/engine/vectorized_runner.py:168:    def _build_globals(self) -> dict:
-strategy-service/app/engine/vectorized_runner.py:172:def extract_signal_at(
-strategy-service/app/engine/vectorized_runner.py:230:def _run_general_validation(source: str) -> StrategyValidationResult:
-strategy-service/app/engine/vectorized_runner.py:239:def detect_strategy_type(code: str) -> str:
-strategy-service/app/engine/vectorized_runner.py:40:class DataFrameValidationResult:
-strategy-service/app/engine/vectorized_runner.py:47:def validate_dataframe_code(code: str) -> DataFrameValidationResult:
-strategy-service/app/engine/vectorized_runner.py:94:class DataFrameStrategyRunner:
-strategy-service/app/sdk/account.py:16:class AccountInfo:
-strategy-service/app/sdk/broker.py:22:class Broker(ABC):
-strategy-service/app/sdk/broker.py:26:    def order_send(self, request: OrderRequest) -> OrderResult:
-strategy-service/app/sdk/broker.py:31:    def position_modify(
-strategy-service/app/sdk/broker.py:38:    def position_close(self, ticket: int, volume: Optional[Decimal] = None) -> OrderResult:
-strategy-service/app/sdk/broker.py:43:    def order_delete(self, ticket: int) -> OrderResult:
-strategy-service/app/sdk/broker.py:48:    def positions(self, symbol: Optional[str] = None, magic: Optional[int] = None) -> List[Position]:
-strategy-service/app/sdk/broker.py:53:    def orders(self, symbol: Optional[str] = None, magic: Optional[int] = None) -> List[PendingOrder]:
-strategy-service/app/sdk/broker.py:58:    def account(self) -> AccountInfo:
-strategy-service/app/sdk/broker.py:63:    def symbol_info(self, symbol: str) -> SymbolInfo:
-strategy-service/app/sdk/broker.py:68:    def server_time(self) -> int:
-strategy-service/app/sdk/context.py:16:class Context:
-strategy-service/app/sdk/context.py:22:    def bars(self, timeframe: Optional[str] = None) -> Bars:
-strategy-service/app/sdk/context.py:26:    def param(self, name: str, default: object = None) -> object:
-strategy-service/app/sdk/context.py:30:    def set_timer(self, seconds: int) -> None:
-strategy-service/app/sdk/context.py:34:    def kill_timer(self) -> None:
-strategy-service/app/sdk/indicators.py:16:class Indicators:
-strategy-service/app/sdk/indicators.py:19:    def ma(self, period: int = 14, shift: int = 0, method: str = "sma") -> float:
-strategy-service/app/sdk/indicators.py:22:    def ema(self, period: int = 14, shift: int = 0) -> float:
-strategy-service/app/sdk/indicators.py:25:    def rsi(self, period: int = 14, shift: int = 0) -> float:
-strategy-service/app/sdk/indicators.py:28:    def bands(
-strategy-service/app/sdk/indicators.py:34:    def macd(
-strategy-service/app/sdk/indicators.py:40:    def atr(self, period: int = 14, shift: int = 0) -> float:
-strategy-service/app/sdk/indicators.py:43:    def stochastic(
-strategy-service/app/sdk/indicators.py:49:    def cci(self, period: int = 14, shift: int = 0) -> float:
-strategy-service/app/sdk/indicators.py:52:    def i_custom(self, name: str, params: Sequence[object], buffer: int = 0, shift: int = 0) -> float:
-strategy-service/app/sdk/runtime.py:119:    def on_tick(self) -> None:
-strategy-service/app/sdk/runtime.py:124:    def on_bar(self, timeframe: str) -> None:
-strategy-service/app/sdk/runtime.py:129:    def on_timer(self) -> None:
-strategy-service/app/sdk/runtime.py:136:    def on_trade(self) -> None:
-strategy-service/app/sdk/runtime.py:141:    def deinit(self, reason: str = "user_stop") -> None:
-strategy-service/app/sdk/runtime.py:161:    def state(self) -> str:
-strategy-service/app/sdk/runtime.py:165:    def strategy(self) -> Optional[StrategyBase]:
-strategy-service/app/sdk/runtime.py:169:    def is_timer_active(self) -> bool:
-strategy-service/app/sdk/runtime.py:174:    def export_intents(self) -> List[Dict[str, Any]]:
-strategy-service/app/sdk/runtime.py:188:    def _require_ready(self) -> None:
-strategy-service/app/sdk/runtime.py:194:    def _safe_call(self, method_name: str, *args: Any) -> Optional[Any]:
-strategy-service/app/sdk/runtime.py:219:    def _register_timer(self, seconds: int) -> None:
-strategy-service/app/sdk/runtime.py:225:    def _unregister_timer(self) -> None:
-strategy-service/app/sdk/runtime.py:233:class RuntimeContext(Context):
-strategy-service/app/sdk/runtime.py:241:    def __init__(
-strategy-service/app/sdk/runtime.py:257:    def bars(self, timeframe: Optional[str] = None) -> Bars:
-strategy-service/app/sdk/runtime.py:261:    def param(self, name: str, default: object = None) -> object:
-strategy-service/app/sdk/runtime.py:265:    def set_timer(self, seconds: int) -> None:
-strategy-service/app/sdk/runtime.py:269:    def kill_timer(self) -> None:
-strategy-service/app/sdk/runtime.py:37:class StrategyRuntime:
-strategy-service/app/sdk/runtime.py:59:    def __init__(
-strategy-service/app/sdk/runtime.py:92:    def init(self) -> None:
-strategy-service/app/sdk/series.py:13:class Series:
-strategy-service/app/sdk/series.py:19:    def __getitem__(self, shift: int) -> float:
-strategy-service/app/sdk/series.py:23:    def __len__(self) -> int:
-strategy-service/app/sdk/series.py:26:    def slice(self, count: int) -> List[float]:
-strategy-service/app/sdk/series.py:31:class Bars:
-strategy-service/app/sdk/series.py:42:    def total(self) -> int:
-strategy-service/app/sdk/strategy_base.py:18:class StrategyBase:
-strategy-service/app/sdk/strategy_base.py:29:    def on_init(self) -> None:
-strategy-service/app/sdk/strategy_base.py:32:    def on_tick(self) -> None:
-strategy-service/app/sdk/strategy_base.py:35:    def on_bar(self, timeframe: str) -> None:
-strategy-service/app/sdk/strategy_base.py:38:    def on_timer(self) -> None:
-strategy-service/app/sdk/strategy_base.py:41:    def on_trade(self) -> None:
-strategy-service/app/sdk/strategy_base.py:44:    def on_deinit(self, reason: str) -> None:
-strategy-service/app/sdk/symbol.py:14:class SymbolInfo:
-strategy-service/app/sdk/symbol.py:32:    def normalize_price(self, price: Decimal) -> Decimal:
-strategy-service/app/sdk/symbol.py:36:    def normalize_volume(self, volume: Decimal) -> Decimal:
-strategy-service/app/sdk/types.py:106:class Position:
-strategy-service/app/sdk/types.py:124:class PendingOrder:
-strategy-service/app/sdk/types.py:16:class PositionSide(Enum):
-strategy-service/app/sdk/types.py:23:class OrderType(Enum):
-strategy-service/app/sdk/types.py:36:class TypeFilling(Enum):
-strategy-service/app/sdk/types.py:44:class AccountMode(Enum):
-strategy-service/app/sdk/types.py:51:class DealType(Enum):
-strategy-service/app/sdk/types.py:60:class Retcode(Enum):
-strategy-service/app/sdk/types.py:75:class OrderRequest:
-strategy-service/app/sdk/types.py:95:class OrderResult:
-```
-
 ## Handler 注册（已接进生产路由 = 非 shelf-ware）
 
 > 在此列表 = 真正可被调用；只在某 *_test.go 出现而不在此 = 货架闲置（shelf-ware）。
 
 ```
-backend/cmd/server/handlers.go:104:	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:111:	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:114:	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:118:	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:126:	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:145:	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:147:	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:152:	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:159:	mux.Handle(antv1c.NewShareServiceHandler(shareServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:184:	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:248:	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:100:	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:105:	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:112:	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:115:	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:119:	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:127:	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:146:	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:148:	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:153:	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:160:	mux.Handle(antv1c.NewShareServiceHandler(shareServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:185:	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:249:	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 backend/cmd/server/handlers.go:257:	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:275:		mux.Handle(antv1c.NewObjectiveScoreServiceHandler(objectiveScoreServer,
-backend/cmd/server/handlers.go:279:	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer,
-backend/cmd/server/handlers.go:288:	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler,
-backend/cmd/server/handlers.go:294:	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:296:	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:298:	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:300:	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:302:	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:304:	mux.Handle(antv1c.NewStrategyGenerationServiceHandler(strategyGenServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:312:	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:315:	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:317:	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:319:	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:321:	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:331:	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers.go:333:	mux.Handle(antv1c.NewAdminConfigServiceHandler(adminConfigServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers.go:335:	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers.go:337:	mux.Handle(antv1c.NewAdminAccountServiceHandler(adminAccountServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers.go:340:	mux.Handle(antv1c.NewAdminUserServiceHandler(adminUserServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers.go:342:	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers.go:344:		mux.Handle(antv1c.NewAdminStrategyServiceHandler(adminStrategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers.go:382:	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
-backend/cmd/server/handlers.go:410:	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers.go:96:	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(otelInterceptor,rateLimitInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:99:	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers_sre.go:101:	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers_sre.go:71:	mux.Handle(antv1c.NewAdminSREServiceHandler(sreHandler, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers_sre.go:75:	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers_sre.go:79:	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers_sre.go:83:	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers_sre.go:97:	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers_sre.go:99:	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:269:	mux.Handle(antv1c.NewStrategyRuntimeServiceHandler(strategyExecServer,
+backend/cmd/server/handlers.go:285:	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler,
+backend/cmd/server/handlers.go:289:	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:291:	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:293:	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:295:	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:297:	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:299:	mux.Handle(antv1c.NewStrategyGenerationServiceHandler(strategyGenServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:307:	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:310:	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:313:	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:315:	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:317:	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:327:	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers.go:329:	mux.Handle(antv1c.NewAdminConfigServiceHandler(adminConfigServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers.go:331:	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers.go:333:	mux.Handle(antv1c.NewAdminAccountServiceHandler(adminAccountServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers.go:336:	mux.Handle(antv1c.NewAdminUserServiceHandler(adminUserServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers.go:338:	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers.go:340:		mux.Handle(antv1c.NewAdminStrategyServiceHandler(adminStrategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers.go:378:	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
+backend/cmd/server/handlers.go:397:	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers.go:97:	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(otelInterceptor,rateLimitInterceptor, authInterceptor)))
+backend/cmd/server/handlers_sre.go:100:	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers_sre.go:102:	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers_sre.go:72:	mux.Handle(antv1c.NewAdminSREServiceHandler(sreHandler, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers_sre.go:76:	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers_sre.go:80:	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers_sre.go:84:	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers_sre.go:98:	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 ```

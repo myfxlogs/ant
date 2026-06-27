@@ -47,7 +47,7 @@ AGENT.md §0.1 列出的 3 种情况停下。
 
 红线（违反一条 = 卡片作废 + 重做）：
   ❌ 业务代码 import mt4client/mt5client（M9 已删）
-  ❌ 生产路径调用 Python（仅沙箱允许）
+  ❌ 生产路径调用外部代码解释器（Python 已退役，见 ADR-0021）
   ❌ 在 user 表复制平台数据（ADR-0006 不变量 #11）
   ❌ 用 users.role 鉴权 admin（不变量 #12）
   ❌ 新增 REST 端点（仅 healthz/readyz/livez/metrics 例外）

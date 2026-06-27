@@ -297,11 +297,29 @@ func (s *StrategyExecutionServer) GenerateImportCode(ctx context.Context, req *c
 	code := mql2go.Generate(intent)
 	lines := int32(strings.Count(code, "\n") + 1)
 
-	return connect.NewResponse(&antv1.GenerateImportCodeResponse{
+	// Compile verification: run go vet on generated code
+	compiles := false
+	compileError := ""
+	if s.goExecutor != nil {
+		compiles, compileError = s.goExecutor.CompileCheck(ctx, code)
+		if !compiles {
+			s.log.Warn("GenerateImportCode: generated code failed compilation",
+				zap.String("error", compileError))
+		}
+	} else {
+		// No executor available — assume compiles for CLI-only usage
+		compiles = true
+	}
+
+	resp := &antv1.GenerateImportCodeResponse{
 		GoCode:    code,
 		CodeLines: lines,
-		Compiles:  true,
-	}), nil
+		Compiles:  compiles,
+	}
+	if !compiles && compileError != "" {
+		resp.QualityGateFailures = []string{compileError}
+	}
+	return connect.NewResponse(resp), nil
 }
 
 func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *connect.Request[antv1.ImportStrategyRequest]) (*connect.Response[antv1.ImportStrategyResponse], error) {

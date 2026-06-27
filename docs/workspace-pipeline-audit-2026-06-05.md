@@ -96,6 +96,8 @@
 - **修复**: 从 ctx 提取 `interceptor.GetUserID(ctx)` 并设置 `row.UserID`
 - **验证**: ✅ 代码级确认
 
+> **⚠️ 以下 Python 特定审计发现（C4, C5, M30-M41, L66-L80）适用于已按 ADR-0021 退役的组件，仅具历史参考价值。**
+
 ### C4. backtest 子进程无资源限制
 
 - **文件**: `strategy-service/app/engine/backtest_sandbox.py:131-156`

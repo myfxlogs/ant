@@ -108,6 +108,7 @@ func (g *generator) genOnBar() {
 		g.emit("    return nil, nil")
 		g.emit("}")
 	}
+	// ExecOnTick: no timeframe filter — execute on every tick
 
 	g.emit("bars := ctx.Bars()")
 	g.emit("_ = bars")
@@ -121,6 +122,11 @@ func (g *generator) genOnBar() {
 	// Exits
 	for _, exit := range g.intent.Exit {
 		g.emitExit(exit)
+	}
+
+	// Modifies (OrderModify / PositionModify)
+	for _, mr := range g.intent.Modifies {
+		g.emitModify(mr)
 	}
 
 	// Entries
@@ -204,6 +210,42 @@ func (g *generator) emitExit(e ExitRule) {
 		g.emit("}")
 	case TriggerAll:
 		g.emit("s.closeAll(ctx)")
+	}
+}
+
+// ── Modify (OrderModify / PositionModify) ─────────────────────────
+
+func (g *generator) emitModify(mr ModifyRule) {
+	magic := pyToGoExpr(mr.MagicVal)
+	if magic == "" {
+		magic = "s.magic"
+	}
+
+	if mr.Condition != "" {
+		cond := pyToGoExpr(g.convertParams(mr.Condition))
+		g.emitf("if %s {", cond)
+		g.indent++
+	}
+
+	g.emitf("for _, pos := range ctx.Broker().Positions(%s) {", magic)
+	g.indent++
+
+	slExpr := "decimal.Zero"
+	tpExpr := "decimal.Zero"
+	if mr.StopLoss != "" && mr.StopLoss != "0" && mr.StopLoss != "0.0" {
+		slExpr = "decimal.NewFromFloat(" + pyToGoExpr(g.convertParams(mr.StopLoss)) + ")"
+	}
+	if mr.TakeProfit != "" && mr.TakeProfit != "0" && mr.TakeProfit != "0.0" {
+		tpExpr = "decimal.NewFromFloat(" + pyToGoExpr(g.convertParams(mr.TakeProfit)) + ")"
+	}
+
+	g.emitf("ctx.Broker().PositionModify(pos.Ticket, %s, %s)", slExpr, tpExpr)
+	g.indent--
+	g.emit("}")
+
+	if mr.Condition != "" {
+		g.indent--
+		g.emit("}")
 	}
 }
 
@@ -335,6 +377,201 @@ func (g *generator) emitIndicator(spec IndicatorSpec) {
 			sig = "9"
 		}
 		g.emitf("%s := ctx.Indicators().MACD(%s, %s, %s, %s)", varName, fast, slow, sig, shift)
+	case "bands":
+		deviation := pyToGoExpr(spec.Params["deviation"])
+		if deviation == "" {
+			deviation = "2.0"
+		}
+		g.emitf("%sUpper, %sMid, %sLower := ctx.Indicators().Bollinger(%s, %s, %s)",
+			varName, varName, varName, period, deviation, shift)
+		g.emitf("_ = %sUpper", varName)
+		g.emitf("_ = %sMid", varName)
+		g.emitf("_ = %sLower", varName)
+	case "stochastic":
+		kPeriod := pyToGoExpr(spec.Params["kperiod"])
+		dPeriod := pyToGoExpr(spec.Params["dperiod"])
+		slowing := pyToGoExpr(spec.Params["slowing"])
+		if kPeriod == "" {
+			kPeriod = "5"
+		}
+		if dPeriod == "" {
+			dPeriod = "3"
+		}
+		if slowing == "" {
+			slowing = "3"
+		}
+		g.emitf("%sK, %sD := ctx.Indicators().Stochastic(%s, %s, %s, %s)",
+			varName, varName, kPeriod, dPeriod, slowing, shift)
+		g.emitf("_ = %sK", varName)
+		g.emitf("_ = %sD", varName)
+	case "cci":
+		g.emitf("%s := ctx.Indicators().CCI(%s, %s)", varName, period, shift)
+	case "adx":
+		g.emitf("%s := ctx.Indicators().ADX(%s, %s)", varName, period, shift)
+	case "momentum":
+		g.emitf("%s := ctx.Indicators().Momentum(%s, %s)", varName, period, shift)
+	case "wpr":
+		g.emitf("%s := ctx.Indicators().WPR(%s, %s)", varName, period, shift)
+	case "mfi":
+		g.emitf("%s := ctx.Indicators().MFI(%s, %s)", varName, period, shift)
+	case "obv":
+		g.emitf("%s := ctx.Indicators().OBV(%s)", varName, shift)
+	case "sar":
+		step := pyToGoExpr(spec.Params["step"])
+		maximum := pyToGoExpr(spec.Params["maximum"])
+		if step == "" {
+			step = "0.02"
+		}
+		if maximum == "" {
+			maximum = "0.2"
+		}
+		g.emitf("%s := ctx.Indicators().SAR(%s, %s, %s)", varName, step, maximum, shift)
+	case "stddev":
+		g.emitf("%s := ctx.Indicators().StdDev(%s, %s)", varName, period, shift)
+	case "alligator":
+		jaw := pyToGoExpr(spec.Params["jaw_period"])
+		teeth := pyToGoExpr(spec.Params["teeth_period"])
+		lips := pyToGoExpr(spec.Params["lips_period"])
+		if jaw == "" {
+			jaw = "13"
+		}
+		if teeth == "" {
+			teeth = "8"
+		}
+		if lips == "" {
+			lips = "5"
+		}
+		g.emitf("// TODO: iAlligator(%s, %s, %s) — SDK IndicatorSet.Alligator not yet implemented", jaw, teeth, lips)
+		g.emitf("_ = %s", varName)
+	case "ichimoku":
+		tenkan := pyToGoExpr(spec.Params["tenkan"])
+		kijun := pyToGoExpr(spec.Params["kijun"])
+		senkouB := pyToGoExpr(spec.Params["senkou_b"])
+		if tenkan == "" {
+			tenkan = "9"
+		}
+		if kijun == "" {
+			kijun = "26"
+		}
+		if senkouB == "" {
+			senkouB = "52"
+		}
+		g.emitf("// TODO: iIchimoku(%s, %s, %s) — SDK IndicatorSet.Ichimoku not yet implemented", tenkan, kijun, senkouB)
+		g.emitf("_ = %s", varName)
+	case "envelopes":
+		deviation := pyToGoExpr(spec.Params["deviation"])
+		if deviation == "" {
+			deviation = "0.1"
+		}
+		g.emitf("// TODO: iEnvelopes(%s, %s) — SDK IndicatorSet.Envelopes not yet implemented", period, deviation)
+		g.emitf("_ = %s", varName)
+	case "demarker":
+		g.emitf("// TODO: iDeMarker(%s) — SDK IndicatorSet.DeMarker not yet implemented", period)
+		g.emitf("_ = %s", varName)
+	case "osma":
+		fast := pyToGoExpr(spec.Params["fast"])
+		slow := pyToGoExpr(spec.Params["slow"])
+		sig := pyToGoExpr(spec.Params["signal"])
+		if fast == "" {
+			fast = "12"
+		}
+		if slow == "" {
+			slow = "26"
+		}
+		if sig == "" {
+			sig = "9"
+		}
+		g.emitf("// TODO: iOsMA(%s, %s, %s) — SDK IndicatorSet.OsMA not yet implemented", fast, slow, sig)
+		g.emitf("_ = %s", varName)
+	case "rvi":
+		g.emitf("// TODO: iRVI(%s) — SDK IndicatorSet.RVI not yet implemented", period)
+		g.emitf("_ = %s", varName)
+	case "force":
+		g.emitf("// TODO: iForce(%s) — SDK IndicatorSet.Force not yet implemented", period)
+		g.emitf("_ = %s", varName)
+	case "fractals":
+		g.emitf("// TODO: iFractals() — SDK IndicatorSet.Fractals not yet implemented")
+		g.emitf("_ = %s", varName)
+	case "gator":
+		jaw := pyToGoExpr(spec.Params["jaw_period"])
+		teeth := pyToGoExpr(spec.Params["teeth_period"])
+		lips := pyToGoExpr(spec.Params["lips_period"])
+		if jaw == "" {
+			jaw = "13"
+		}
+		if teeth == "" {
+			teeth = "8"
+		}
+		if lips == "" {
+			lips = "5"
+		}
+		g.emitf("// TODO: iGator(%s, %s, %s) — SDK IndicatorSet.Gator not yet implemented", jaw, teeth, lips)
+		g.emitf("_ = %s", varName)
+	case "ac":
+		g.emitf("// TODO: iAC() — SDK IndicatorSet.AC not yet implemented")
+		g.emitf("_ = %s", varName)
+	case "ad":
+		g.emitf("// TODO: iAD() — SDK IndicatorSet.AD not yet implemented")
+		g.emitf("_ = %s", varName)
+	case "ao":
+		g.emitf("// TODO: iAO() — SDK IndicatorSet.AO not yet implemented")
+		g.emitf("_ = %s", varName)
+	case "bears_power":
+		g.emitf("// TODO: iBearsPower(%s) — SDK IndicatorSet.BearsPower not yet implemented", period)
+		g.emitf("_ = %s", varName)
+	case "bulls_power":
+		g.emitf("// TODO: iBullsPower(%s) — SDK IndicatorSet.BullsPower not yet implemented", period)
+		g.emitf("_ = %s", varName)
+	case "bwmfi":
+		g.emitf("// TODO: iBWMFI() — SDK IndicatorSet.BWMFI not yet implemented")
+		g.emitf("_ = %s", varName)
+	case "ama":
+		fast := pyToGoExpr(spec.Params["fast"])
+		slow := pyToGoExpr(spec.Params["slow"])
+		if fast == "" {
+			fast = "2"
+		}
+		if slow == "" {
+			slow = "30"
+		}
+		g.emitf("// TODO: iAMA(%s, %s, %s) — SDK IndicatorSet.AMA not yet implemented", period, fast, slow)
+		g.emitf("_ = %s", varName)
+	case "dema":
+		g.emitf("// TODO: iDEMA(%s) — SDK IndicatorSet.DEMA not yet implemented", period)
+		g.emitf("_ = %s", varName)
+	case "tema":
+		g.emitf("// TODO: iTEMA(%s) — SDK IndicatorSet.TEMA not yet implemented", period)
+		g.emitf("_ = %s", varName)
+	case "frama":
+		g.emitf("// TODO: iFrAMA(%s) — SDK IndicatorSet.FrAMA not yet implemented", period)
+		g.emitf("_ = %s", varName)
+	case "vidya":
+		cmoPeriod := pyToGoExpr(spec.Params["cmo_period"])
+		if cmoPeriod == "" {
+			cmoPeriod = "9"
+		}
+		g.emitf("// TODO: iVIDyA(%s, %s) — SDK IndicatorSet.VIDyA not yet implemented", cmoPeriod, period)
+		g.emitf("_ = %s", varName)
+	case "trix":
+		g.emitf("// TODO: iTriX(%s) — SDK IndicatorSet.TriX not yet implemented", period)
+		g.emitf("_ = %s", varName)
+	case "adx_wilder":
+		g.emitf("// TODO: iADXWilder(%s) — SDK IndicatorSet.ADXWilder not yet implemented", period)
+		g.emitf("_ = %s", varName)
+	case "chaikin":
+		fast := pyToGoExpr(spec.Params["fast"])
+		slow := pyToGoExpr(spec.Params["slow"])
+		if fast == "" {
+			fast = "3"
+		}
+		if slow == "" {
+			slow = "10"
+		}
+		g.emitf("// TODO: iChaikin(%s, %s) — SDK IndicatorSet.Chaikin not yet implemented", fast, slow)
+		g.emitf("_ = %s", varName)
+	case "volumes":
+		g.emitf("// TODO: iVolumes() — SDK IndicatorSet.Volumes not yet implemented")
+		g.emitf("_ = %s", varName)
 	}
 }
 

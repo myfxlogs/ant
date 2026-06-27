@@ -322,7 +322,6 @@ ant-server (单进程)
 - alfq 拆为 4 个服务（mdgateway / mthub / quantengine / strategysvc）是为多机扩展，ant 当前不需要
 
 外部辅助进程：
-- `ant-strategy-service`（Python，仅研究模式沙箱）
 - `ant-frontend`（Nginx 静态托管）
 
 ## 6. 端口/网络规范
@@ -331,7 +330,6 @@ ant-server (单进程)
 |---|---|---|---|
 | ant-frontend | 8080 | `${ANT_FRONTEND_PORT:-8022}` | Nginx，唯一对外端口 |
 | ant-backend | 8080 | — | ConnectRPC + SSE |
-| ant-strategy-service | 8081 | — | Python 沙箱 |
 | ant-postgres | 5432 | — | PG |
 | ant-redis | 6379 | — | Redis |
 | ant-clickhouse | 9000 / 8123 | — | CH native + HTTP |
@@ -392,7 +390,7 @@ CI 应有 lint 规则强制 1, 2, 3, 8, 9, 11, 12（其他靠代码 review）。
 | 策略市场变现（支付/订阅/分润/评分）| 核心量化系统先稳定 | `platform_strategies` 表、`user_subscriptions` 表已定义 |
 | 跟单交易自动化 | 依赖订单执行完全稳定 | `copy_trade_links` 表、OMS SignalRouter `Subscription` 接口预留 |
 | 多租户白标（C 模型）| ant 当前单实例 | `PlatformScope` interface（当前 no-op 返回 `'ant'`），见 ADR-0006 |
-| Python 沙箱生产路径 | DSL+ONNX 覆盖 90% 策略需求 | `strategysvc` 仅研究模式运行；生产路径强制 Go |
+| Python 沙箱（已退役） | Go SDK 已完全替代（ADR-0021） | 策略执行统一使用 Go |
 | 策略回测排行榜 | 依赖大量真实回测数据积累 | `BacktestMetrics` 结构体已定义；`paper_strategies` 表预留 `ranking_score` 列 |
 | 社交/社区功能 | 非量化核心 | 未预留 |
 

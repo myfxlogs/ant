@@ -58,6 +58,8 @@ Required before activation:
 
 ## A2 (#187): 新增 ObjectiveScoreService Go handler
 
+> **⚠️ 已过时：** Python REST 端点已按 ADR-0021 退役，ObjectiveScore 和 Backtest 改用 Go 原生实现。
+
 ### 现状
 
 - Proto 定义: `proto/ant/v1/objective_score.proto` — 1个 RPC: `CalculateObjectiveScore`
@@ -92,6 +94,8 @@ mux.Handle(antv1c.NewObjectiveScoreServiceHandler(objectiveScoreServer,
 ---
 
 ## A3 (#188): 迁移 RunBacktest 到 ConnectRPC + 移除 Python 遗留 REST
+
+> **⚠️ 已过时：** Python REST 端点已按 ADR-0021 退役，ObjectiveScore 和 Backtest 改用 Go 原生实现。
 
 ### 现状
 

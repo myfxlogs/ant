@@ -28,9 +28,8 @@ type BacktestRun struct {
 	ToTs                 *time.Time `db:"to_ts"`
 	CancelRequestedAt    *time.Time `db:"cancel_requested_at"`
 	LeaseUntil           *time.Time `db:"lease_until"`
-	StrategyCodeHash     string     `db:"strategy_code_hash"`
-	PythonServiceVersion *string    `db:"python_service_version"` // legacy DB column; kept for compatibility, no longer used
-	CostModelSnapshot    []byte     `db:"cost_model_snapshot"`
+	StrategyCodeHash  string `db:"strategy_code_hash"`
+	CostModelSnapshot []byte `db:"cost_model_snapshot"`
 	Status               string     `db:"status"`
 	Error                string     `db:"error"`
 	StartedAt            *time.Time `db:"started_at"`
@@ -64,14 +63,14 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 			id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
 			mode, from_ts, to_ts,
 			cancel_requested_at, lease_until,
-			strategy_code_hash, python_service_version,
+			strategy_code_hash,
 			cost_model_snapshot,
 			status, error, started_at, finished_at, strategy_code, initial_capital,
 			extra_symbols, parameter_overrides, proto_response,
 			commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
 			created_at
 		)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,CURRENT_TIMESTAMP)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,CURRENT_TIMESTAMP)
 		RETURNING id
 	`
 	id := run.ID
@@ -94,7 +93,6 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 		run.CancelRequestedAt,
 		run.LeaseUntil,
 		run.StrategyCodeHash,
-		run.PythonServiceVersion,
 		run.CostModelSnapshot,
 		run.Status,
 		run.Error,
@@ -125,7 +123,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 			id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
 			mode, from_ts, to_ts,
 			cancel_requested_at, lease_until,
-			strategy_code_hash, python_service_version,
+			strategy_code_hash,
 			cost_model_snapshot,
 			status, error, started_at, finished_at, strategy_code, initial_capital,
 			extra_symbols, parameter_overrides, proto_response,
@@ -138,7 +136,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 		&out.ID, &out.UserID, &out.AccountID, &out.Symbol, &out.Timeframe, &out.DatasetID, &out.TemplateID, &out.TemplateDraftID,
 		&out.Mode, &out.FromTs, &out.ToTs,
 		&out.CancelRequestedAt, &out.LeaseUntil,
-		&out.StrategyCodeHash, &out.PythonServiceVersion,
+		&out.StrategyCodeHash,
 		&out.CostModelSnapshot,
 		&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
 		&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,
@@ -167,7 +165,7 @@ func (r *BacktestRunRepository) ListByUser(ctx context.Context, userID uuid.UUID
 
 	baseQuery := `SELECT id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
 		mode, from_ts, to_ts, cancel_requested_at, lease_until,
-		strategy_code_hash, python_service_version,
+		strategy_code_hash,
 		cost_model_snapshot,
 		status, error, started_at, finished_at, strategy_code, initial_capital,
 		extra_symbols, parameter_overrides, proto_response,
@@ -208,7 +206,7 @@ func (r *BacktestRunRepository) scanBacktestRunRows(ctx context.Context, query s
 			&out.ID, &out.UserID, &out.AccountID, &out.Symbol, &out.Timeframe, &out.DatasetID, &out.TemplateID, &out.TemplateDraftID,
 			&out.Mode, &out.FromTs, &out.ToTs,
 			&out.CancelRequestedAt, &out.LeaseUntil,
-			&out.StrategyCodeHash, &out.PythonServiceVersion,
+			&out.StrategyCodeHash,
 			&out.CostModelSnapshot,
 			&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
 			&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,

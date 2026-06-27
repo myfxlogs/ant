@@ -4,7 +4,6 @@ package ant.v1.i18n;
 option go_package = "anttrader/gen/proto/ant/v1/i18n";
 
 // PaperI18n — auto-generated from strategy.ts
-// DO NOT EDIT MANUALLY — run: python3 scripts/i18n-migrate.py
 
 message PaperI18n {
   string account_name = 1;  // Account name
