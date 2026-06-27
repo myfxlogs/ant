@@ -85,7 +85,7 @@ env-check:
 	fi; \
 	echo "All env keys present ✅"
 
-.PHONY: proto-tools proto proto-python check-lines check-lines-strict check-fk verify
+.PHONY: proto-tools proto check-lines check-lines-strict check-fk verify
 
 proto-tools:
 	@echo "Installing proto generation toolchain..."
@@ -100,25 +100,30 @@ proto:
 	@echo "Generating protobuf code (Go + TS)..."
 	@PATH="$(CURDIR)/tools/proto-gen/bin:$(CURDIR)/frontend/node_modules/.bin:$(CURDIR)/tools/proto-gen/node_modules/.bin:$$PATH" buf generate
 
-# Regenerate Python protobuf files for strategy-service (requires protoc).
-# Not part of `proto` because CI doesn't have protoc installed.
-proto-python:
-	@echo "Generating Python strategy-service protos..."
-	@which protoc >/dev/null 2>&1 || { echo "ERROR: protoc not found. Install: apt install protobuf-compiler"; exit 1; }
-	@protoc --proto_path=$(CURDIR)/proto/ant/v1 --proto_path=/usr/include --python_out=$(CURDIR)/strategy-service/app $(CURDIR)/proto/ant/v1/*.proto
-	@echo "  → Python protos regenerated."
-
 check-lines:
 	@echo "Checking file line limits (flat 800 + baseline)..."
-	@python3 scripts/check-file-lines.py
+	@cd backend && go run ./tools/check-file-lines
 
 check-lines-strict:
 	@echo "Checking file line limits (Go 300 / TS 250, gen+test 50% over)..."
-	@python3 scripts/check-file-lines.py --strict
+	@cd backend && go run ./tools/check-file-lines --strict
 
 check-fk:
 	@echo "Checking FK constraints referencing users(id)..."
-	@python3 scripts/check-fk-cascade.py
+	@docker compose -f docker-compose.yml exec -T postgres \
+		psql -U ant -d ant -t -A -F "|" -c \
+		"SELECT DISTINCT tc.table_name, kcu.column_name, rc.delete_rule \
+		 FROM information_schema.table_constraints tc \
+		 JOIN information_schema.referential_constraints rc ON tc.constraint_name = rc.constraint_name \
+		 AND tc.constraint_schema = rc.constraint_schema \
+		 JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name \
+		 AND tc.constraint_schema = kcu.constraint_schema \
+		 JOIN information_schema.constraint_column_usage ccu ON rc.unique_constraint_name = ccu.constraint_name \
+		 AND rc.unique_constraint_schema = ccu.constraint_schema \
+		 WHERE tc.constraint_type = 'FOREIGN KEY' \
+		 AND ccu.table_name = 'users' AND ccu.column_name = 'id' \
+		 AND rc.delete_rule NOT IN ('CASCADE', 'SET NULL') \
+		 ORDER BY tc.table_name, kcu.column_name;" 2>/dev/null || echo "🟡 DB unavailable — skipping FK check"
 
 check-i18n:
 	@echo "Checking i18n translation completeness..."

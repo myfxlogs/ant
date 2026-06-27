@@ -12,7 +12,7 @@ service GateService {
 }
 
 message RunGateEvaluationRequest {
-  // backtest_run_id from a completed backtest run (PythonStrategyService.StartBacktestRun).
+  // backtest_run_id from a completed backtest run (StrategyRuntimeService.StartBacktestRun).
   string backtest_run_id = 1;
   // Optional: DSL expression override (defaults to empty — skips lookahead gate).
   string expression = 2;
@@ -21,7 +21,7 @@ message RunGateEvaluationRequest {
   // Optional: paper trading days completed (gate skipped if 0).
   int32 paper_days = 4;
   // Optional: paper trading Net P&L (gate skipped if paper_days == 0).
-  double paper_net_pnl = 5;
+  string paper_net_pnl = 5;
   // Optional: paper trading net return (gate skipped if paper_days == 0).
   double paper_net_return = 6;
   // Optional: backtest net return for paper ratio comparison.

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { MESSAGES_BACKTEST_REPORT_DELETED_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
 
 ;
-import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import { isTerminalRun, loadRunTitles } from '../StrategyTemplatePage.utils';
 import type { BacktestRunRow } from './libraryTypes';
 
@@ -27,7 +27,7 @@ export function useLibraryRuns(templateId: string | undefined) {
     try {
       const params: any = { limit: ps + 1, offset: (p - 1) * ps };
       if (templateId) params.templateId = templateId;
-      const resp: any = await pythonStrategyApi.listBacktestRuns(params);
+      const resp: any = await strategyRuntimeApi.listBacktestRuns(params);
       const titles = loadRunTitles();
       const rawList: BacktestRunRow[] = (resp?.runs || []).map((r: any) => ({
         ...r,
@@ -62,11 +62,20 @@ export function useLibraryRuns(templateId: string | undefined) {
   }, []);
 
   useEffect(() => {
+    const currentIds = new Set<string>();
     for (const r of runs) {
       const id = String(r.id || '');
       if (!id || isTerminalRun(r)) continue;
+      currentIds.add(id);
       if (runStreamUnsubRef.current[id]) continue;
-      runStreamUnsubRef.current[id] = pythonStrategyApi.watchBacktestRun(id, updateRunFromStream, () => {});
+      runStreamUnsubRef.current[id] = strategyRuntimeApi.watchBacktestRun(id, updateRunFromStream, () => {});
+    }
+    // Unscribe streams for runs no longer in the current list (e.g. after pagination)
+    for (const id of Object.keys(runStreamUnsubRef.current)) {
+      if (!currentIds.has(id)) {
+        try { runStreamUnsubRef.current[id]?.(); } catch {}
+        delete runStreamUnsubRef.current[id];
+      }
     }
   }, [runs, updateRunFromStream]);
 
@@ -82,7 +91,7 @@ export function useLibraryRuns(templateId: string | undefined) {
   const onDeleteRun = useCallback(async (runId: string) => {
     setDeleting(true);
     try {
-      const resp: any = await pythonStrategyApi.deleteBacktestRun(runId);
+      const resp: any = await strategyRuntimeApi.deleteBacktestRun(runId);
       if (!resp?.deleted) { message.error(t('common.deleteFailed')); return; }
       message.success(t(MESSAGES_BACKTEST_REPORT_DELETED_KEY));
       const newPage = runs.length <= 1 && page > 1 ? page - 1 : page;
@@ -95,7 +104,7 @@ export function useLibraryRuns(templateId: string | undefined) {
     if (!selectedKeys.length) return;
     setDeleting(true);
     try {
-      const resp: any = await pythonStrategyApi.deleteBacktestRuns(selectedKeys.map(String));
+      const resp: any = await strategyRuntimeApi.deleteBacktestRuns(selectedKeys.map(String));
       if (!resp || resp.deletedCount === undefined || resp.deletedCount === null) { message.error(t('common.deleteFailed')); return; }
       message.success(t('strategy.templates.backtestRuns.batchDeleteSuccess', { count: resp.deletedCount }));
       setSelectedKeys([]);

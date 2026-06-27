@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -102,7 +103,7 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 		vol, _ := t.Volume.Float64()
 		prof, _ := t.Profit.Float64()
 		pbTrades = append(pbTrades, &antv1.SharedTrade{
-			Symbol: t.Symbol, Side: t.OrderType, Volume: vol, Profit: prof,
+			Symbol: t.Symbol, Side: t.OrderType, Volume: strconv.FormatFloat(vol, 'f', -1, 64), Profit: strconv.FormatFloat(prof, 'f', -1, 64),
 			CloseTimeMs: t.CloseTime.UnixMilli(),
 		})
 	}

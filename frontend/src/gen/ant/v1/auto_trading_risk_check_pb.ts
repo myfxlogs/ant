@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file auto_trading_risk_check.proto.
  */
 export const file_auto_trading_risk_check: GenFile = /*@__PURE__*/
-  fileDesc("Ch1hdXRvX3RyYWRpbmdfcmlza19jaGVjay5wcm90bxIGYW50LnYxIpUBChZDaGVja1Jpc2tMaW1pdHNSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSDgoGc3ltYm9sGAIgASgJEg4KBnZvbHVtZRgDIAEoARIXCg9jdXJyZW50X2JhbGFuY2UYBCABKAESFgoOY3VycmVudF9lcXVpdHkYBSABKAESFgoOb3Blbl9wb3NpdGlvbnMYBiABKAUi7gEKF0NoZWNrUmlza0xpbWl0c1Jlc3BvbnNlEg8KB2FsbG93ZWQYASABKAgSGAoQaXNfd2l0aGluX2xpbWl0cxgCIAEoCBIOCgZyZWFzb24YAyABKAkSFQoNbWF4X3Bvc2l0aW9ucxgEIAEoBRIWCg5wb3NpdGlvbl9jb3VudBgFIAEoBRIYChBkYWlseV9sb3NzX2xpbWl0GAYgASgBEhcKD2RhaWx5X2xvc3NfdXNlZBgHIAEoARIcChRtYXhfZHJhd2Rvd25fcGVyY2VudBgIIAEoARIYChBkcmF3ZG93bl9wZXJjZW50GAkgASgBQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("Ch1hdXRvX3RyYWRpbmdfcmlza19jaGVjay5wcm90bxIGYW50LnYxIpUBChZDaGVja1Jpc2tMaW1pdHNSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSDgoGc3ltYm9sGAIgASgJEg4KBnZvbHVtZRgDIAEoCRIXCg9jdXJyZW50X2JhbGFuY2UYBCABKAkSFgoOY3VycmVudF9lcXVpdHkYBSABKAkSFgoOb3Blbl9wb3NpdGlvbnMYBiABKAUi7gEKF0NoZWNrUmlza0xpbWl0c1Jlc3BvbnNlEg8KB2FsbG93ZWQYASABKAgSGAoQaXNfd2l0aGluX2xpbWl0cxgCIAEoCBIOCgZyZWFzb24YAyABKAkSFQoNbWF4X3Bvc2l0aW9ucxgEIAEoBRIWCg5wb3NpdGlvbl9jb3VudBgFIAEoBRIYChBkYWlseV9sb3NzX2xpbWl0GAYgASgJEhcKD2RhaWx5X2xvc3NfdXNlZBgHIAEoCRIcChRtYXhfZHJhd2Rvd25fcGVyY2VudBgIIAEoARIYChBkcmF3ZG93bl9wZXJjZW50GAkgASgBQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.CheckRiskLimitsRequest
@@ -27,19 +27,19 @@ export type CheckRiskLimitsRequest = Message<"ant.v1.CheckRiskLimitsRequest"> & 
   symbol: string;
 
   /**
-   * @generated from field: double volume = 3;
+   * @generated from field: string volume = 3;
    */
-  volume: number;
+  volume: string;
 
   /**
-   * @generated from field: double current_balance = 4;
+   * @generated from field: string current_balance = 4;
    */
-  currentBalance: number;
+  currentBalance: string;
 
   /**
-   * @generated from field: double current_equity = 5;
+   * @generated from field: string current_equity = 5;
    */
-  currentEquity: number;
+  currentEquity: string;
 
   /**
    * @generated from field: int32 open_positions = 6;
@@ -84,14 +84,14 @@ export type CheckRiskLimitsResponse = Message<"ant.v1.CheckRiskLimitsResponse"> 
   positionCount: number;
 
   /**
-   * @generated from field: double daily_loss_limit = 6;
+   * @generated from field: string daily_loss_limit = 6;
    */
-  dailyLossLimit: number;
+  dailyLossLimit: string;
 
   /**
-   * @generated from field: double daily_loss_used = 7;
+   * @generated from field: string daily_loss_used = 7;
    */
-  dailyLossUsed: number;
+  dailyLossUsed: string;
 
   /**
    * @generated from field: double max_drawdown_percent = 8;

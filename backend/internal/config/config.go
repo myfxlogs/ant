@@ -64,9 +64,6 @@ type Config struct {
 	RequireDisclaimer    bool
 	RequireQuestionnaire bool
 
-	// External service URLs
-	StrategyServiceURL string // Python strategy-service: http://strategy-service:8081
-
 	// MTAPI
 	MtapiToken string // optional mtapi gateway token for account connection tests
 
@@ -120,8 +117,6 @@ func Load() *Config {
 		RequireKYC:           getenvBool("REQUIRE_KYC", false),
 		RequireDisclaimer:    getenvBool("REQUIRE_DISCLAIMER", false),
 		RequireQuestionnaire: getenvBool("REQUIRE_QUESTIONNAIRE", false),
-
-		StrategyServiceURL: getenv("STRATEGY_SERVICE_URL", ""),
 
 		MtapiToken: getenv("MTAPI_TOKEN", ""),
 

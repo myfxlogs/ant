@@ -39,24 +39,12 @@ const (
 	// AdminSystemServiceGetMetricsProcedure is the fully-qualified name of the AdminSystemService's
 	// GetMetrics RPC.
 	AdminSystemServiceGetMetricsProcedure = "/ant.v1.AdminSystemService/GetMetrics"
-	// AdminSystemServiceResolveAlertProcedure is the fully-qualified name of the AdminSystemService's
-	// ResolveAlert RPC.
-	AdminSystemServiceResolveAlertProcedure = "/ant.v1.AdminSystemService/ResolveAlert"
-	// AdminSystemServiceClearCacheProcedure is the fully-qualified name of the AdminSystemService's
-	// ClearCache RPC.
-	AdminSystemServiceClearCacheProcedure = "/ant.v1.AdminSystemService/ClearCache"
-	// AdminSystemServiceInvalidateCacheProcedure is the fully-qualified name of the
-	// AdminSystemService's InvalidateCache RPC.
-	AdminSystemServiceInvalidateCacheProcedure = "/ant.v1.AdminSystemService/InvalidateCache"
 )
 
 // AdminSystemServiceClient is a client for the ant.v1.AdminSystemService service.
 type AdminSystemServiceClient interface {
 	HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error)
 	GetMetrics(context.Context, *connect.Request[v1.GetMetricsRequest]) (*connect.Response[v1.GetMetricsResponse], error)
-	ResolveAlert(context.Context, *connect.Request[v1.ResolveAlertRequest]) (*connect.Response[v1.ResolveAlertResponse], error)
-	ClearCache(context.Context, *connect.Request[v1.ClearCacheRequest]) (*connect.Response[v1.ClearCacheResponse], error)
-	InvalidateCache(context.Context, *connect.Request[v1.InvalidateCacheRequest]) (*connect.Response[v1.InvalidateCacheResponse], error)
 }
 
 // NewAdminSystemServiceClient constructs a client for the ant.v1.AdminSystemService service. By
@@ -82,34 +70,13 @@ func NewAdminSystemServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(adminSystemServiceMethods.ByName("GetMetrics")),
 			connect.WithClientOptions(opts...),
 		),
-		resolveAlert: connect.NewClient[v1.ResolveAlertRequest, v1.ResolveAlertResponse](
-			httpClient,
-			baseURL+AdminSystemServiceResolveAlertProcedure,
-			connect.WithSchema(adminSystemServiceMethods.ByName("ResolveAlert")),
-			connect.WithClientOptions(opts...),
-		),
-		clearCache: connect.NewClient[v1.ClearCacheRequest, v1.ClearCacheResponse](
-			httpClient,
-			baseURL+AdminSystemServiceClearCacheProcedure,
-			connect.WithSchema(adminSystemServiceMethods.ByName("ClearCache")),
-			connect.WithClientOptions(opts...),
-		),
-		invalidateCache: connect.NewClient[v1.InvalidateCacheRequest, v1.InvalidateCacheResponse](
-			httpClient,
-			baseURL+AdminSystemServiceInvalidateCacheProcedure,
-			connect.WithSchema(adminSystemServiceMethods.ByName("InvalidateCache")),
-			connect.WithClientOptions(opts...),
-		),
 	}
 }
 
 // adminSystemServiceClient implements AdminSystemServiceClient.
 type adminSystemServiceClient struct {
-	healthCheck     *connect.Client[v1.HealthCheckRequest, v1.HealthCheckResponse]
-	getMetrics      *connect.Client[v1.GetMetricsRequest, v1.GetMetricsResponse]
-	resolveAlert    *connect.Client[v1.ResolveAlertRequest, v1.ResolveAlertResponse]
-	clearCache      *connect.Client[v1.ClearCacheRequest, v1.ClearCacheResponse]
-	invalidateCache *connect.Client[v1.InvalidateCacheRequest, v1.InvalidateCacheResponse]
+	healthCheck *connect.Client[v1.HealthCheckRequest, v1.HealthCheckResponse]
+	getMetrics  *connect.Client[v1.GetMetricsRequest, v1.GetMetricsResponse]
 }
 
 // HealthCheck calls ant.v1.AdminSystemService.HealthCheck.
@@ -122,28 +89,10 @@ func (c *adminSystemServiceClient) GetMetrics(ctx context.Context, req *connect.
 	return c.getMetrics.CallUnary(ctx, req)
 }
 
-// ResolveAlert calls ant.v1.AdminSystemService.ResolveAlert.
-func (c *adminSystemServiceClient) ResolveAlert(ctx context.Context, req *connect.Request[v1.ResolveAlertRequest]) (*connect.Response[v1.ResolveAlertResponse], error) {
-	return c.resolveAlert.CallUnary(ctx, req)
-}
-
-// ClearCache calls ant.v1.AdminSystemService.ClearCache.
-func (c *adminSystemServiceClient) ClearCache(ctx context.Context, req *connect.Request[v1.ClearCacheRequest]) (*connect.Response[v1.ClearCacheResponse], error) {
-	return c.clearCache.CallUnary(ctx, req)
-}
-
-// InvalidateCache calls ant.v1.AdminSystemService.InvalidateCache.
-func (c *adminSystemServiceClient) InvalidateCache(ctx context.Context, req *connect.Request[v1.InvalidateCacheRequest]) (*connect.Response[v1.InvalidateCacheResponse], error) {
-	return c.invalidateCache.CallUnary(ctx, req)
-}
-
 // AdminSystemServiceHandler is an implementation of the ant.v1.AdminSystemService service.
 type AdminSystemServiceHandler interface {
 	HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error)
 	GetMetrics(context.Context, *connect.Request[v1.GetMetricsRequest]) (*connect.Response[v1.GetMetricsResponse], error)
-	ResolveAlert(context.Context, *connect.Request[v1.ResolveAlertRequest]) (*connect.Response[v1.ResolveAlertResponse], error)
-	ClearCache(context.Context, *connect.Request[v1.ClearCacheRequest]) (*connect.Response[v1.ClearCacheResponse], error)
-	InvalidateCache(context.Context, *connect.Request[v1.InvalidateCacheRequest]) (*connect.Response[v1.InvalidateCacheResponse], error)
 }
 
 // NewAdminSystemServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -165,36 +114,12 @@ func NewAdminSystemServiceHandler(svc AdminSystemServiceHandler, opts ...connect
 		connect.WithSchema(adminSystemServiceMethods.ByName("GetMetrics")),
 		connect.WithHandlerOptions(opts...),
 	)
-	adminSystemServiceResolveAlertHandler := connect.NewUnaryHandler(
-		AdminSystemServiceResolveAlertProcedure,
-		svc.ResolveAlert,
-		connect.WithSchema(adminSystemServiceMethods.ByName("ResolveAlert")),
-		connect.WithHandlerOptions(opts...),
-	)
-	adminSystemServiceClearCacheHandler := connect.NewUnaryHandler(
-		AdminSystemServiceClearCacheProcedure,
-		svc.ClearCache,
-		connect.WithSchema(adminSystemServiceMethods.ByName("ClearCache")),
-		connect.WithHandlerOptions(opts...),
-	)
-	adminSystemServiceInvalidateCacheHandler := connect.NewUnaryHandler(
-		AdminSystemServiceInvalidateCacheProcedure,
-		svc.InvalidateCache,
-		connect.WithSchema(adminSystemServiceMethods.ByName("InvalidateCache")),
-		connect.WithHandlerOptions(opts...),
-	)
 	return "/ant.v1.AdminSystemService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AdminSystemServiceHealthCheckProcedure:
 			adminSystemServiceHealthCheckHandler.ServeHTTP(w, r)
 		case AdminSystemServiceGetMetricsProcedure:
 			adminSystemServiceGetMetricsHandler.ServeHTTP(w, r)
-		case AdminSystemServiceResolveAlertProcedure:
-			adminSystemServiceResolveAlertHandler.ServeHTTP(w, r)
-		case AdminSystemServiceClearCacheProcedure:
-			adminSystemServiceClearCacheHandler.ServeHTTP(w, r)
-		case AdminSystemServiceInvalidateCacheProcedure:
-			adminSystemServiceInvalidateCacheHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -210,16 +135,4 @@ func (UnimplementedAdminSystemServiceHandler) HealthCheck(context.Context, *conn
 
 func (UnimplementedAdminSystemServiceHandler) GetMetrics(context.Context, *connect.Request[v1.GetMetricsRequest]) (*connect.Response[v1.GetMetricsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminSystemService.GetMetrics is not implemented"))
-}
-
-func (UnimplementedAdminSystemServiceHandler) ResolveAlert(context.Context, *connect.Request[v1.ResolveAlertRequest]) (*connect.Response[v1.ResolveAlertResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminSystemService.ResolveAlert is not implemented"))
-}
-
-func (UnimplementedAdminSystemServiceHandler) ClearCache(context.Context, *connect.Request[v1.ClearCacheRequest]) (*connect.Response[v1.ClearCacheResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminSystemService.ClearCache is not implemented"))
-}
-
-func (UnimplementedAdminSystemServiceHandler) InvalidateCache(context.Context, *connect.Request[v1.InvalidateCacheRequest]) (*connect.Response[v1.InvalidateCacheResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminSystemService.InvalidateCache is not implemented"))
 }

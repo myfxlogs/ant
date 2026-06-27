@@ -32,6 +32,7 @@ function isAbortError(e: unknown): boolean {
 export function useNotificationListener() {
   const addNotification = useNotificationStore((state) => state.addNotification);
   const abortedRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     abortedRef.current = false;
@@ -41,6 +42,7 @@ export function useNotificationListener() {
       if (abortedRef.current) return;
 
       const ctrl = new AbortController();
+      abortRef.current = ctrl;
 
       try {
         const stream = notificationStreamClient.streamNotifications(
@@ -87,6 +89,8 @@ export function useNotificationListener() {
 
     return () => {
       abortedRef.current = true;
+      abortRef.current?.abort();
+      abortRef.current = null;
     };
   }, [addNotification]);
 }

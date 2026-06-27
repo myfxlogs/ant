@@ -31,19 +31,19 @@ message EngineRunStrategyResponse {
   bool success = 1; EngineTradeSignal signal = 2; string error = 3;
 }
 message EngineTradeSignal {
-  string signal = 1; string symbol = 2; double price = 3;
-  double volume = 4; double stop_loss = 5; double take_profit = 6;
+  string signal = 1; string symbol = 2; string price = 3;
+  string volume = 4; string stop_loss = 5; string take_profit = 6;
   double confidence = 7; string reason = 8;
 }
 
 message ExecuteKlineBar {
   int64 open_time_ms = 1;   // Unix milliseconds
   int64 close_time_ms = 2;  // Unix milliseconds
-  double open = 3;
-  double high = 4;
-  double low = 5;
-  double close = 6;
-  double volume = 7;
+  string open = 3;
+  string high = 4;
+  string low = 5;
+  string close = 6;
+  string volume = 7;
 }
 
 message ExecuteBacktestRequest {
@@ -53,7 +53,7 @@ message ExecuteBacktestRequest {
   string timeframe = 4;
   int64 start_date_ms = 5;  // Unix milliseconds
   int64 end_date_ms = 6;    // Unix milliseconds
-  double initial_capital = 7;
+  string initial_capital = 7;
   double commission = 8;
   double spread = 9;
   double swap_rate = 10;
@@ -66,7 +66,7 @@ message ExecuteBacktestRequest {
   repeated ExecuteKlineBar klines = 17;
   repeated string extra_symbols = 18;
   string strategy_params_json = 19;
-  double leverage = 20;                // e.g. 1, 10, 100
+  double leverage = 20;                // e.g. 1, 10, 100 (ratio, kept as double)
   TradeDirection trade_direction = 21; // long / short / both
   bool strict_mode = 22;              // true = next-bar-open, false = same-bar-close + MTF
   StrategyConfig strategy_config = 23; // parsed from @strategy annotations
@@ -77,30 +77,30 @@ message ExecuteBacktestRequest {
 // This is the authoritative source — no hardcoded guesses.
 message SymbolInfo {
   int32 digits = 1;            // decimal places in price quotes
-  double point = 2;            // minimum price increment (10^-digits)
-  double tick_size = 3;        // minimum tick size
-  double tick_value = 4;       // value of one tick in account currency
-  double contract_size = 5;    // base units per lot
-  double volume_min = 6;       // minimum order volume (lots)
-  double volume_max = 7;       // maximum order volume (lots)
-  double volume_step = 8;      // lot increment step
+  string point = 2;            // minimum price increment (10^-digits)
+  string tick_size = 3;        // minimum tick size
+  string tick_value = 4;       // value of one tick in account currency
+  string contract_size = 5;    // base units per lot
+  string volume_min = 6;       // minimum order volume (lots)
+  string volume_max = 7;       // maximum order volume (lots)
+  string volume_step = 8;      // lot increment step
   int32 stops_level = 9;       // SL/TP minimum distance in points
   int32 freeze_level = 10;     // order freeze distance in points
-  double swap_long = 11;       // long swap rate
-  double swap_short = 12;      // short swap rate
-  double margin_rate = 13;     // initial margin rate
+  string swap_long = 11;       // long swap rate
+  string swap_short = 12;      // short swap rate
+  string margin_rate = 13;     // initial margin rate
 }
 
 message ExecuteBacktestTrade {
   int64 ticket = 1;
   string side = 2;
-  double volume = 3;
+  string volume = 3;
   int64 open_ts_ms = 4;
-  double open_price = 5;
+  string open_price = 5;
   int64 close_ts_ms = 6;
-  double close_price = 7;
-  double pnl = 8;
-  double commission = 9;
+  string close_price = 7;
+  string pnl = 8;
+  string commission = 9;
   string reason = 10;
 }
 
@@ -124,9 +124,9 @@ message ExecuteBacktestMetrics {
   int32 total_trades = 7;
   int32 winning_trades = 8;
   int32 losing_trades = 9;
-  double average_profit = 10;
-  double average_loss = 11;
-  double total_pnl_absolute = 12;  // absolute PnL (initial_capital * total_return)
+  string average_profit = 10;
+  string average_loss = 11;
+  string total_pnl_absolute = 12;  // absolute PnL (initial_capital * total_return)
 }
 
 message ExecuteRiskAssessment {

@@ -21,10 +21,10 @@ message StrategySignal {
   string account_id = 3;
   string symbol = 4;
   string signal_type = 5;
-  double volume = 6;
-  double price = 7;
-  double stop_loss = 8;
-  double take_profit = 9;
+  string volume = 6;
+  string price = 7;
+  string stop_loss = 8;
+  string take_profit = 9;
   string reason = 10;
   string status = 11;
   int64 executed_ticket = 12;
@@ -40,8 +40,8 @@ message ExecuteSignalResponse {
   int64 ticket = 1;
   string symbol = 2;
   string type = 3;
-  double volume = 4;
-  double price = 5;
+  string volume = 4;
+  string price = 5;
   google.protobuf.Timestamp executed_at = 6;
 }
 

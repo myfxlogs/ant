@@ -60,9 +60,9 @@ export default function AdminDashboard() {
         ))}
         <Col xs={12} sm={8} lg={4}>
           <Card>
-            <Statistic title="今日盈亏" value={stats?.todayProfit || 0} precision={2}
-              prefix={stats?.todayProfit >= 0 ? <RiseOutlined size={20} stroke={1.5} style={{ color: '#52c41a' }} /> : <FallOutlined size={20} stroke={1.5} style={{ color: '#ff4d4f' }} />}
-              valueStyle={{ color: stats?.todayProfit >= 0 ? '#52c41a' : '#ff4d4f' }} />
+            <Statistic title="今日盈亏" value={toNumber(stats?.todayProfit)} precision={2}
+              prefix={toNumber(stats?.todayProfit) >= 0 ? <RiseOutlined size={20} stroke={1.5} style={{ color: '#52c41a' }} /> : <FallOutlined size={20} stroke={1.5} style={{ color: '#ff4d4f' }} />}
+              valueStyle={{ color: toNumber(stats?.todayProfit) >= 0 ? '#52c41a' : '#ff4d4f' }} />
           </Card>
         </Col>
       </Row>

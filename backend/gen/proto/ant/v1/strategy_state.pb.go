@@ -163,8 +163,8 @@ type StatePosition struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Symbol         string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Side           string                 `protobuf:"bytes,2,opt,name=side,proto3" json:"side,omitempty"` // "buy" / "sell"
-	Volume         float64                `protobuf:"fixed64,3,opt,name=volume,proto3" json:"volume,omitempty"`
-	EntryPrice     float64                `protobuf:"fixed64,4,opt,name=entry_price,json=entryPrice,proto3" json:"entry_price,omitempty"`
+	Volume         string                 `protobuf:"bytes,3,opt,name=volume,proto3" json:"volume,omitempty"`
+	EntryPrice     string                 `protobuf:"bytes,4,opt,name=entry_price,json=entryPrice,proto3" json:"entry_price,omitempty"`
 	OpenTimeUnixMs int64                  `protobuf:"varint,5,opt,name=open_time_unix_ms,json=openTimeUnixMs,proto3" json:"open_time_unix_ms,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
@@ -214,18 +214,18 @@ func (x *StatePosition) GetSide() string {
 	return ""
 }
 
-func (x *StatePosition) GetVolume() float64 {
+func (x *StatePosition) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *StatePosition) GetEntryPrice() float64 {
+func (x *StatePosition) GetEntryPrice() string {
 	if x != nil {
 		return x.EntryPrice
 	}
-	return 0
+	return ""
 }
 
 func (x *StatePosition) GetOpenTimeUnixMs() int64 {
@@ -240,10 +240,10 @@ type StateMetrics struct {
 	TotalTrades   int32                  `protobuf:"varint,1,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
 	WinRate       float64                `protobuf:"fixed64,2,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
 	SharpeRatio   float64                `protobuf:"fixed64,3,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
-	NetPnl        float64                `protobuf:"fixed64,4,opt,name=net_pnl,json=netPnl,proto3" json:"net_pnl,omitempty"`
-	GrossPnl      float64                `protobuf:"fixed64,5,opt,name=gross_pnl,json=grossPnl,proto3" json:"gross_pnl,omitempty"`
+	NetPnl        string                 `protobuf:"bytes,4,opt,name=net_pnl,json=netPnl,proto3" json:"net_pnl,omitempty"`
+	GrossPnl      string                 `protobuf:"bytes,5,opt,name=gross_pnl,json=grossPnl,proto3" json:"gross_pnl,omitempty"`
 	MaxDrawdown   float64                `protobuf:"fixed64,6,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
-	TotalCost     float64                `protobuf:"fixed64,7,opt,name=total_cost,json=totalCost,proto3" json:"total_cost,omitempty"`
+	TotalCost     string                 `protobuf:"bytes,7,opt,name=total_cost,json=totalCost,proto3" json:"total_cost,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -299,18 +299,18 @@ func (x *StateMetrics) GetSharpeRatio() float64 {
 	return 0
 }
 
-func (x *StateMetrics) GetNetPnl() float64 {
+func (x *StateMetrics) GetNetPnl() string {
 	if x != nil {
 		return x.NetPnl
 	}
-	return 0
+	return ""
 }
 
-func (x *StateMetrics) GetGrossPnl() float64 {
+func (x *StateMetrics) GetGrossPnl() string {
 	if x != nil {
 		return x.GrossPnl
 	}
-	return 0
+	return ""
 }
 
 func (x *StateMetrics) GetMaxDrawdown() float64 {
@@ -320,11 +320,11 @@ func (x *StateMetrics) GetMaxDrawdown() float64 {
 	return 0
 }
 
-func (x *StateMetrics) GetTotalCost() float64 {
+func (x *StateMetrics) GetTotalCost() string {
 	if x != nil {
 		return x.TotalCost
 	}
-	return 0
+	return ""
 }
 
 var File_strategy_state_proto protoreflect.FileDescriptor
@@ -356,19 +356,19 @@ const file_strategy_state_proto_rawDesc = "" +
 	"\rStatePosition\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +
-	"\x06volume\x18\x03 \x01(\x01R\x06volume\x12\x1f\n" +
-	"\ventry_price\x18\x04 \x01(\x01R\n" +
+	"\x06volume\x18\x03 \x01(\tR\x06volume\x12\x1f\n" +
+	"\ventry_price\x18\x04 \x01(\tR\n" +
 	"entryPrice\x12)\n" +
 	"\x11open_time_unix_ms\x18\x05 \x01(\x03R\x0eopenTimeUnixMs\"\xe7\x01\n" +
 	"\fStateMetrics\x12!\n" +
 	"\ftotal_trades\x18\x01 \x01(\x05R\vtotalTrades\x12\x19\n" +
 	"\bwin_rate\x18\x02 \x01(\x01R\awinRate\x12!\n" +
 	"\fsharpe_ratio\x18\x03 \x01(\x01R\vsharpeRatio\x12\x17\n" +
-	"\anet_pnl\x18\x04 \x01(\x01R\x06netPnl\x12\x1b\n" +
-	"\tgross_pnl\x18\x05 \x01(\x01R\bgrossPnl\x12!\n" +
+	"\anet_pnl\x18\x04 \x01(\tR\x06netPnl\x12\x1b\n" +
+	"\tgross_pnl\x18\x05 \x01(\tR\bgrossPnl\x12!\n" +
 	"\fmax_drawdown\x18\x06 \x01(\x01R\vmaxDrawdown\x12\x1d\n" +
 	"\n" +
-	"total_cost\x18\a \x01(\x01R\ttotalCostB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"total_cost\x18\a \x01(\tR\ttotalCostB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_state_proto_rawDescOnce sync.Once

@@ -2,25 +2,16 @@ package system
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/mthub"
 )
-
-func decToFloat(d decimal.Decimal) float64 {
-	f, exact := d.Float64()
-	// When !exact the decimal value exceeds float64 range/precision (e.g.,
-	// extremely large/small values). Financial amounts (profit, margin, etc.)
-	// typically fit within float64; lossy conversion is acceptable for display.
-	_ = exact
-	return f
-}
 
 func orderRecordToUpdateEvent(rec *mthub.OrderRecord, accountID string, eventType string, ticket int64) *antv1.OrderUpdateEvent {
 	return &antv1.OrderUpdateEvent{
@@ -33,13 +24,13 @@ func orderRecordToUpdateEvent(rec *mthub.OrderRecord, accountID string, eventTyp
 			return rec.SymbolRaw
 		}(),
 		Type:       orderSideTypeLabel(rec.Side, rec.OrderType),
-		Volume:     decToFloat(rec.Volume),
-		OpenPrice:  decToFloat(rec.OpenPrice),
-		Profit:     decToFloat(rec.Profit),
+		Volume:     rec.Volume.String(),
+		OpenPrice:  rec.OpenPrice.String(),
+		Profit:     rec.Profit.String(),
 		Action:     eventType,
-		ClosePrice: decToFloat(rec.ClosePrice),
-		Swap:       decToFloat(rec.Swap),
-		Commission: decToFloat(rec.Commission),
+		ClosePrice: rec.ClosePrice.String(),
+		Swap:       rec.Swap.String(),
+		Commission: rec.Commission.String(),
 		Comment:    rec.Comment,
 		OpenTime:   rec.OpenTime.Unix(),
 		CloseTime:  rec.CloseTime.Unix(),
@@ -71,20 +62,20 @@ func profitEventToProto(pev *mthub.AccountProfitEvent) *antv1.ProfitUpdateEvent 
 		orders = append(orders, &antv1.OrderProfitItem{
 			Ticket:       pos.Ticket,
 			Symbol:       pos.Symbol,
-			Profit:       pos.Profit,
-			Volume:       pos.Volume,
-			CurrentPrice: pos.CurrentPrice,
+			Profit:       strconv.FormatFloat(pos.Profit, 'f', -1, 64),
+			Volume:       strconv.FormatFloat(pos.Volume, 'f', -1, 64),
+			CurrentPrice: strconv.FormatFloat(pos.CurrentPrice, 'f', -1, 64),
 		})
 	}
 	return &antv1.ProfitUpdateEvent{
 		AccountId:     pev.AccountID,
-		Balance:       pev.Balance,
-		Credit:        pev.Credit,
-		Equity:        pev.Equity,
-		Profit:        pev.Profit,
-		Margin:        pev.Margin,
-		FreeMargin:    pev.FreeMargin,
-		MarginLevel:   pev.MarginLevel,
+		Balance:       strconv.FormatFloat(pev.Balance, 'f', -1, 64),
+		Credit:        strconv.FormatFloat(pev.Credit, 'f', -1, 64),
+		Equity:        strconv.FormatFloat(pev.Equity, 'f', -1, 64),
+		Profit:        strconv.FormatFloat(pev.Profit, 'f', -1, 64),
+		Margin:        strconv.FormatFloat(pev.Margin, 'f', -1, 64),
+		FreeMargin:    strconv.FormatFloat(pev.FreeMargin, 'f', -1, 64),
+		MarginLevel:   strconv.FormatFloat(pev.MarginLevel, 'f', -1, 64),
 		ProfitPercent: pev.ProfitPercent,
 		Orders:        orders,
 	}
@@ -122,13 +113,13 @@ func (s *StreamServer) sendInitialSnapshot(
 			Payload: &antv1.StreamEvent_ProfitUpdate{
 				ProfitUpdate: &antv1.ProfitUpdateEvent{
 					AccountId:     a.ID,
-					Balance:       a.Balance,
-					Equity:        a.Equity,
-					Profit:        profit,
-					Credit:        a.Credit,
-					Margin:        a.Margin,
-					FreeMargin:    a.FreeMargin,
-					MarginLevel:   a.MarginLevel,
+					Balance:       strconv.FormatFloat(a.Balance, 'f', -1, 64),
+					Equity:        strconv.FormatFloat(a.Equity, 'f', -1, 64),
+					Profit:        strconv.FormatFloat(profit, 'f', -1, 64),
+					Credit:        strconv.FormatFloat(a.Credit, 'f', -1, 64),
+					Margin:        strconv.FormatFloat(a.Margin, 'f', -1, 64),
+					FreeMargin:    strconv.FormatFloat(a.FreeMargin, 'f', -1, 64),
+					MarginLevel:   strconv.FormatFloat(a.MarginLevel, 'f', -1, 64),
 					ProfitPercent: profitPercent,
 				},
 			},

@@ -112,7 +112,7 @@ export default function AlgoSubmitForm({ onStarted }: Props) {
           <DatePicker.RangePicker showTime style={{ width: '40%' }}
             presets={[
               { label: t('algo.timePresets.1h'), value: [dayjs(), dayjs().add(1, 'hour')] },
-              { label: t('algo.timePresets.4h'), value: [dayjs(), dayjs().add(1, 'hour')] },
+              { label: t('algo.timePresets.4h'), value: [dayjs(), dayjs().add(4, 'hour')] },
               { label: t('algo.timePresets.EOD'), value: [dayjs(), dayjs().endOf('day')] },
             ]} />
         </Form.Item>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
 import { isTerminalRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 
@@ -41,7 +41,7 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 		(async () => {
 			try {
 				// First fetch current snapshot (fast first paint).
-				const snapshot: any = await pythonStrategyApi.getBacktestRun(runId);
+				const snapshot: any = await strategyRuntimeApi.getBacktestRun(runId);
 				if (stoppedRef.current) return;
 				setRun(snapshot?.run ?? null);
 				setMetrics(snapshot?.metrics ?? null);
@@ -54,7 +54,7 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 				}
 
 				// Push-first: use SSE stream for live updates. No fallback polling.
-				unsubscribe = pythonStrategyApi.watchBacktestRun(
+				unsubscribe = strategyRuntimeApi.watchBacktestRun(
 					runId,
 					(u: BacktestRunUpdate) => {
 						if (stoppedRef.current) return;
@@ -68,8 +68,29 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 						}
 					},
 					(_e: unknown) => {
-						// Stream failed — stop. Initial snapshot already has data.
-						if (!stoppedRef.current) stoppedRef.current = true;
+						// Stream failed — attempt reconnection with backoff.
+						if (stoppedRef.current) return;
+						const delay = Math.min(1000 * Math.pow(2, 3), 30000);
+						setTimeout(() => {
+							if (stoppedRef.current) return;
+							unsubscribe = strategyRuntimeApi.watchBacktestRun(
+								runId,
+								(u: BacktestRunUpdate) => {
+									if (stoppedRef.current) return;
+									setRun(u?.run ?? null);
+									setMetrics(u?.metrics ?? null);
+									setEquityCurve(u?.equityCurve ?? []);
+									if (isTerminalRun(u?.run)) {
+										stoppedRef.current = true;
+										unsubscribe?.();
+										unsubscribe = null;
+									}
+								},
+								(_e: unknown) => {
+									if (!stoppedRef.current) stoppedRef.current = true;
+								},
+							);
+						}, delay);
 					},
 				);
 			} catch (e) {

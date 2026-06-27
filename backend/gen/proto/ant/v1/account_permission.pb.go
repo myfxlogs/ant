@@ -334,10 +334,10 @@ type VerifyAccountResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Verified      bool                   `protobuf:"varint,1,opt,name=verified,proto3" json:"verified,omitempty"`
 	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	Balance       float64                `protobuf:"fixed64,3,opt,name=balance,proto3" json:"balance,omitempty"`
-	Equity        float64                `protobuf:"fixed64,4,opt,name=equity,proto3" json:"equity,omitempty"`
-	Margin        float64                `protobuf:"fixed64,5,opt,name=margin,proto3" json:"margin,omitempty"`
-	FreeMargin    float64                `protobuf:"fixed64,6,opt,name=free_margin,json=freeMargin,proto3" json:"free_margin,omitempty"`
+	Balance       string                 `protobuf:"bytes,3,opt,name=balance,proto3" json:"balance,omitempty"`
+	Equity        string                 `protobuf:"bytes,4,opt,name=equity,proto3" json:"equity,omitempty"`
+	Margin        string                 `protobuf:"bytes,5,opt,name=margin,proto3" json:"margin,omitempty"`
+	FreeMargin    string                 `protobuf:"bytes,6,opt,name=free_margin,json=freeMargin,proto3" json:"free_margin,omitempty"`
 	Leverage      int32                  `protobuf:"varint,7,opt,name=leverage,proto3" json:"leverage,omitempty"`
 	Currency      string                 `protobuf:"bytes,8,opt,name=currency,proto3" json:"currency,omitempty"`
 	AccountType   string                 `protobuf:"bytes,9,opt,name=account_type,json=accountType,proto3" json:"account_type,omitempty"`
@@ -389,32 +389,32 @@ func (x *VerifyAccountResponse) GetMessage() string {
 	return ""
 }
 
-func (x *VerifyAccountResponse) GetBalance() float64 {
+func (x *VerifyAccountResponse) GetBalance() string {
 	if x != nil {
 		return x.Balance
 	}
-	return 0
+	return ""
 }
 
-func (x *VerifyAccountResponse) GetEquity() float64 {
+func (x *VerifyAccountResponse) GetEquity() string {
 	if x != nil {
 		return x.Equity
 	}
-	return 0
+	return ""
 }
 
-func (x *VerifyAccountResponse) GetMargin() float64 {
+func (x *VerifyAccountResponse) GetMargin() string {
 	if x != nil {
 		return x.Margin
 	}
-	return 0
+	return ""
 }
 
-func (x *VerifyAccountResponse) GetFreeMargin() float64 {
+func (x *VerifyAccountResponse) GetFreeMargin() string {
 	if x != nil {
 		return x.FreeMargin
 	}
-	return 0
+	return ""
 }
 
 func (x *VerifyAccountResponse) GetLeverage() int32 {
@@ -470,10 +470,10 @@ const file_account_permission_proto_rawDesc = "" +
 	"\x15VerifyAccountResponse\x12\x1a\n" +
 	"\bverified\x18\x01 \x01(\bR\bverified\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x18\n" +
-	"\abalance\x18\x03 \x01(\x01R\abalance\x12\x16\n" +
-	"\x06equity\x18\x04 \x01(\x01R\x06equity\x12\x16\n" +
-	"\x06margin\x18\x05 \x01(\x01R\x06margin\x12\x1f\n" +
-	"\vfree_margin\x18\x06 \x01(\x01R\n" +
+	"\abalance\x18\x03 \x01(\tR\abalance\x12\x16\n" +
+	"\x06equity\x18\x04 \x01(\tR\x06equity\x12\x16\n" +
+	"\x06margin\x18\x05 \x01(\tR\x06margin\x12\x1f\n" +
+	"\vfree_margin\x18\x06 \x01(\tR\n" +
 	"freeMargin\x12\x1a\n" +
 	"\bleverage\x18\a \x01(\x05R\bleverage\x12\x1a\n" +
 	"\bcurrency\x18\b \x01(\tR\bcurrency\x12!\n" +

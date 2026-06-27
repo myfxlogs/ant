@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"connectrpc.com/connect"
 	"github.com/jackc/pgx/v5"
@@ -83,10 +84,10 @@ func (s *AccountServer) VerifyAccount(ctx context.Context, req *connect.Request[
 	return connect.NewResponse(&antv1.VerifyAccountResponse{
 		Verified:   true,
 		Message:    "account verified",
-		Balance:    info.Balance,
-		Equity:     info.Equity,
-		Margin:     info.Margin,
-		FreeMargin: info.FreeMargin,
+		Balance:    strconv.FormatFloat(info.Balance, 'f', -1, 64),
+		Equity:     strconv.FormatFloat(info.Equity, 'f', -1, 64),
+		Margin:     strconv.FormatFloat(info.Margin, 'f', -1, 64),
+		FreeMargin: strconv.FormatFloat(info.FreeMargin, 'f', -1, 64),
 		Leverage:   info.Leverage,
 		Currency:   info.Currency,
 	}), nil

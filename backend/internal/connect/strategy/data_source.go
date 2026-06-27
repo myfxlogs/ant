@@ -14,6 +14,7 @@ package strategy
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -67,7 +68,7 @@ func (s *LiveSource) Fetch(ctx context.Context, symbol, timeframe string, from, 
 		klines = append(klines, &antv1.ExecuteKlineBar{
 			OpenTimeMs:  int64(b.OpenTsUnixMs),
 			CloseTimeMs: int64(b.CloseTsUnixMs),
-			Open:        b.Open, High: b.High, Low: b.Low, Close: b.Close, Volume: b.Volume,
+			Open:        strconv.FormatFloat(b.Open, 'f', -1, 64), High: strconv.FormatFloat(b.High, 'f', -1, 64), Low: strconv.FormatFloat(b.Low, 'f', -1, 64), Close: strconv.FormatFloat(b.Close, 'f', -1, 64), Volume: strconv.FormatFloat(b.Volume, 'f', -1, 64),
 		})
 	}
 	return klines, nil

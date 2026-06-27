@@ -3,6 +3,7 @@ package ai
 
 import (
 	"sort"
+	"strconv"
 	"time"
 
 	"google.golang.org/protobuf/proto"
@@ -48,7 +49,7 @@ func DailyReturnsFromTrades(trades []*antv1.ExecuteBacktestTrade) []float64 {
 			continue
 		}
 		day := time.UnixMilli(t.CloseTsMs).UTC().Format("2006-01-02")
-		dayPnL[day] += t.Pnl
+		dayPnL[day] += parseFloat(t.Pnl)
 	}
 	if len(dayPnL) == 0 {
 		return nil
@@ -63,4 +64,9 @@ func DailyReturnsFromTrades(trades []*antv1.ExecuteBacktestTrade) []float64 {
 		rets[i] = dayPnL[d]
 	}
 	return rets
+}
+
+func parseFloat(s string) float64 {
+	f, _ := strconv.ParseFloat(s, 64)
+	return f
 }

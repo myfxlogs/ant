@@ -27,8 +27,6 @@ services:
     depends_on:
       backend:
         condition: service_started
-      strategy-service:
-        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health || exit 1"]
       interval: 10s
@@ -63,7 +61,6 @@ services:
       - DB_PORT=5432
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set in .env (32+ chars)}
       - NATS_URL=nats://nats:4222
-      - STRATEGY_SERVICE_URL=http://strategy-service:8081
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - TZ=Asia/Shanghai
@@ -89,38 +86,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    networks:
-      - ant-network
-
-  strategy-service:
-    container_name: ant-strategy-service
-    build:
-      context: .
-      dockerfile: ./strategy-service/Dockerfile
-    image: ant-prod-strategy-service
-    restart: always
-    logging:
-      driver: json-file
-      options:
-        max-size: "50m"
-        max-file: "3"
-    deploy:
-      resources:
-        limits:
-          memory: 192M
-        reservations:
-          memory: 64M
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8081/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    privileged: true
-    cap_add:
-      - NET_ADMIN
-    security_opt:
-      - label=disable
     networks:
       - ant-network
 

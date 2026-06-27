@@ -30,11 +30,11 @@ message StartAlgoRequest {
   string account_id = 1;
   string symbol = 2;
   string side = 3;          // "buy" or "sell"
-  double total_volume = 4;
+  string total_volume = 4;
   google.protobuf.Timestamp start_time = 5;
   google.protobuf.Timestamp end_time = 6;
-  double limit_price = 7;   // 0 for market orders
-  double arrival_price = 8; // used by Shortfall algo
+  string limit_price = 7;   // 0 for market orders
+  string arrival_price = 8; // used by Shortfall algo
 
   // Algo selection.
   string algo = 9;          // "twap", "vwap", "pov", "shortfall"
@@ -66,7 +66,7 @@ message GetAlgoStatusResponse {
   int32 failed_slices = 6;
   string parent_symbol = 7;
   string parent_side = 8;
-  double parent_volume = 9;
+  string parent_volume = 9;
   // Last submitted slice info.
   int64 last_ticket = 10;
   string last_error = 11;

@@ -61,6 +61,9 @@ func (r *NotificationRepository) ListByUser(
 		}
 		out = append(out, n)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
 
 	var unread int32
 	err = r.pool.QueryRow(ctx,

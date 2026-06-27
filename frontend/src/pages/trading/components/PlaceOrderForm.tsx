@@ -23,20 +23,24 @@ export default function PlaceOrderForm({ onSymbolChange }: PlaceOrderFormProps) 
 
   const handleSubmit = async () => {
     if (!currentAccountId) return;
-    const values = await form.validateFields();
-    const type = orderType === 'market'
-      ? side === 'buy' ? 'buy' : 'sell'
-      : side === 'buy' ? `buy_${orderType}` : `sell_${orderType}`;
-    await sendOrder({
-      accountId: currentAccountId,
-      symbol: values.symbol,
-      type,
-      volume: values.volume,
-      price: values.price || undefined,
-      stopLoss: values.stopLoss || undefined,
-      takeProfit: values.takeProfit || undefined,
-    });
-    form.resetFields(['price', 'stopLoss', 'takeProfit', 'volume']);
+    try {
+      const values = await form.validateFields();
+      const type = orderType === 'market'
+        ? side === 'buy' ? 'buy' : 'sell'
+        : side === 'buy' ? `buy_${orderType}` : `sell_${orderType}`;
+      await sendOrder({
+        accountId: currentAccountId,
+        symbol: values.symbol,
+        type,
+        volume: values.volume,
+        price: values.price || undefined,
+        stopLoss: values.stopLoss || undefined,
+        takeProfit: values.takeProfit || undefined,
+      });
+      form.resetFields(['price', 'stopLoss', 'takeProfit', 'volume']);
+    } catch {
+      // error already shown by useTrading.sendOrder
+    }
   };
 
   return (

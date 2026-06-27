@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file auto_trading_risk_config.proto.
  */
 export const file_auto_trading_risk_config: GenFile = /*@__PURE__*/
-  fileDesc("Ch5hdXRvX3RyYWRpbmdfcmlza19jb25maWcucHJvdG8SBmFudC52MSI7ChRHZXRSaXNrQ29uZmlnUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhIKCmFjY291bnRfaWQYAiABKAkiswIKClJpc2tDb25maWcSCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRISCgphY2NvdW50X2lkGAMgASgJEhUKDW1heF9wb3NpdGlvbnMYBCABKAUSFAoMbWF4X2xvdF9zaXplGAUgASgBEhYKDm1heF9kYWlseV9sb3NzGAYgASgBEhcKD2RhaWx5X2xvc3NfdXNlZBgHIAEoARIcChRtYXhfZHJhd2Rvd25fcGVyY2VudBgIIAEoARIYChBtYXhfcmlza19wZXJjZW50GAkgASgBEi4KCmNyZWF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIrgCChdVcGRhdGVSaXNrQ29uZmlnUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhIKCmFjY291bnRfaWQYAiABKAkSGgoNbWF4X3Bvc2l0aW9ucxgDIAEoBUgAiAEBEhkKDG1heF9sb3Rfc2l6ZRgEIAEoAUgBiAEBEhsKDm1heF9kYWlseV9sb3NzGAUgASgBSAKIAQESIQoUbWF4X2RyYXdkb3duX3BlcmNlbnQYBiABKAFIA4gBARIdChBtYXhfcmlza19wZXJjZW50GAcgASgBSASIAQFCEAoOX21heF9wb3NpdGlvbnNCDwoNX21heF9sb3Rfc2l6ZUIRCg9fbWF4X2RhaWx5X2xvc3NCFwoVX21heF9kcmF3ZG93bl9wZXJjZW50QhMKEV9tYXhfcmlza19wZXJjZW50QiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("Ch5hdXRvX3RyYWRpbmdfcmlza19jb25maWcucHJvdG8SBmFudC52MSI7ChRHZXRSaXNrQ29uZmlnUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhIKCmFjY291bnRfaWQYAiABKAkiswIKClJpc2tDb25maWcSCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRISCgphY2NvdW50X2lkGAMgASgJEhUKDW1heF9wb3NpdGlvbnMYBCABKAUSFAoMbWF4X2xvdF9zaXplGAUgASgJEhYKDm1heF9kYWlseV9sb3NzGAYgASgJEhcKD2RhaWx5X2xvc3NfdXNlZBgHIAEoCRIcChRtYXhfZHJhd2Rvd25fcGVyY2VudBgIIAEoARIYChBtYXhfcmlza19wZXJjZW50GAkgASgBEi4KCmNyZWF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIrgCChdVcGRhdGVSaXNrQ29uZmlnUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhIKCmFjY291bnRfaWQYAiABKAkSGgoNbWF4X3Bvc2l0aW9ucxgDIAEoBUgAiAEBEhkKDG1heF9sb3Rfc2l6ZRgEIAEoCUgBiAEBEhsKDm1heF9kYWlseV9sb3NzGAUgASgJSAKIAQESIQoUbWF4X2RyYXdkb3duX3BlcmNlbnQYBiABKAFIA4gBARIdChBtYXhfcmlza19wZXJjZW50GAcgASgBSASIAQFCEAoOX21heF9wb3NpdGlvbnNCDwoNX21heF9sb3Rfc2l6ZUIRCg9fbWF4X2RhaWx5X2xvc3NCFwoVX21heF9kcmF3ZG93bl9wZXJjZW50QhMKEV9tYXhfcmlza19wZXJjZW50QiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.GetRiskConfigRequest
@@ -61,19 +61,19 @@ export type RiskConfig = Message<"ant.v1.RiskConfig"> & {
   maxPositions: number;
 
   /**
-   * @generated from field: double max_lot_size = 5;
+   * @generated from field: string max_lot_size = 5;
    */
-  maxLotSize: number;
+  maxLotSize: string;
 
   /**
-   * @generated from field: double max_daily_loss = 6;
+   * @generated from field: string max_daily_loss = 6;
    */
-  maxDailyLoss: number;
+  maxDailyLoss: string;
 
   /**
-   * @generated from field: double daily_loss_used = 7;
+   * @generated from field: string daily_loss_used = 7;
    */
-  dailyLossUsed: number;
+  dailyLossUsed: string;
 
   /**
    * @generated from field: double max_drawdown_percent = 8;
@@ -123,14 +123,14 @@ export type UpdateRiskConfigRequest = Message<"ant.v1.UpdateRiskConfigRequest"> 
   maxPositions?: number | undefined;
 
   /**
-   * @generated from field: optional double max_lot_size = 4;
+   * @generated from field: optional string max_lot_size = 4;
    */
-  maxLotSize?: number | undefined;
+  maxLotSize?: string | undefined;
 
   /**
-   * @generated from field: optional double max_daily_loss = 5;
+   * @generated from field: optional string max_daily_loss = 5;
    */
-  maxDailyLoss?: number | undefined;
+  maxDailyLoss?: string | undefined;
 
   /**
    * @generated from field: optional double max_drawdown_percent = 6;

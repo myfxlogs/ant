@@ -11,7 +11,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  theme: (localStorage.getItem('ant-theme') as Theme) || 'light',
+  theme: (typeof window !== 'undefined' ? (localStorage.getItem('ant-theme') as Theme) : null) || 'light',
   sidebarCollapsed: false,
 
   setTheme: (theme) => {

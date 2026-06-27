@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file auto_trading_position_size.proto.
  */
 export const file_auto_trading_position_size: GenFile = /*@__PURE__*/
-  fileDesc("CiBhdXRvX3RyYWRpbmdfcG9zaXRpb25fc2l6ZS5wcm90bxIGYW50LnYxIokBChxDYWxjdWxhdGVQb3NpdGlvblNpemVSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSDgoGc3ltYm9sGAIgASgJEhcKD2FjY291bnRfYmFsYW5jZRgDIAEoARIWCg5zdG9wX2xvc3NfcGlwcxgEIAEoARIUCgxyaXNrX3BlcmNlbnQYBSABKAEifwodQ2FsY3VsYXRlUG9zaXRpb25TaXplUmVzcG9uc2USDgoGdm9sdW1lGAEgASgBEhMKC3Jpc2tfYW1vdW50GAIgASgBEhEKCXBpcF92YWx1ZRgDIAEoARISCgptaW5fdm9sdW1lGAQgASgBEhIKCm1heF92b2x1bWUYBSABKAFCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
+  fileDesc("CiBhdXRvX3RyYWRpbmdfcG9zaXRpb25fc2l6ZS5wcm90bxIGYW50LnYxIokBChxDYWxjdWxhdGVQb3NpdGlvblNpemVSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSDgoGc3ltYm9sGAIgASgJEhcKD2FjY291bnRfYmFsYW5jZRgDIAEoCRIWCg5zdG9wX2xvc3NfcGlwcxgEIAEoARIUCgxyaXNrX3BlcmNlbnQYBSABKAEifwodQ2FsY3VsYXRlUG9zaXRpb25TaXplUmVzcG9uc2USDgoGdm9sdW1lGAEgASgJEhMKC3Jpc2tfYW1vdW50GAIgASgJEhEKCXBpcF92YWx1ZRgDIAEoCRISCgptaW5fdm9sdW1lGAQgASgJEhIKCm1heF92b2x1bWUYBSABKAlCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.CalculatePositionSizeRequest
@@ -27,9 +27,9 @@ export type CalculatePositionSizeRequest = Message<"ant.v1.CalculatePositionSize
   symbol: string;
 
   /**
-   * @generated from field: double account_balance = 3;
+   * @generated from field: string account_balance = 3;
    */
-  accountBalance: number;
+  accountBalance: string;
 
   /**
    * @generated from field: double stop_loss_pips = 4;
@@ -54,29 +54,29 @@ export const CalculatePositionSizeRequestSchema: GenMessage<CalculatePositionSiz
  */
 export type CalculatePositionSizeResponse = Message<"ant.v1.CalculatePositionSizeResponse"> & {
   /**
-   * @generated from field: double volume = 1;
+   * @generated from field: string volume = 1;
    */
-  volume: number;
+  volume: string;
 
   /**
-   * @generated from field: double risk_amount = 2;
+   * @generated from field: string risk_amount = 2;
    */
-  riskAmount: number;
+  riskAmount: string;
 
   /**
-   * @generated from field: double pip_value = 3;
+   * @generated from field: string pip_value = 3;
    */
-  pipValue: number;
+  pipValue: string;
 
   /**
-   * @generated from field: double min_volume = 4;
+   * @generated from field: string min_volume = 4;
    */
-  minVolume: number;
+  minVolume: string;
 
   /**
-   * @generated from field: double max_volume = 5;
+   * @generated from field: string max_volume = 5;
    */
-  maxVolume: number;
+  maxVolume: string;
 };
 
 /**

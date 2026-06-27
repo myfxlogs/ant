@@ -30,7 +30,7 @@ type PublishStrategyRequest struct {
 	Title       string   `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
 	Description string   `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
 	PriceModel  string   `protobuf:"bytes,5,opt,name=price_model,json=priceModel,proto3" json:"price_model,omitempty"`
-	PriceAmount float64  `protobuf:"fixed64,6,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
+	PriceAmount string   `protobuf:"bytes,6,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
 	AssetClass  string   `protobuf:"bytes,7,opt,name=asset_class,json=assetClass,proto3" json:"asset_class,omitempty"`
 	Symbols     []string `protobuf:"bytes,8,rep,name=symbols,proto3" json:"symbols,omitempty"`
 	Timeframe   string   `protobuf:"bytes,9,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
@@ -108,11 +108,11 @@ func (x *PublishStrategyRequest) GetPriceModel() string {
 	return ""
 }
 
-func (x *PublishStrategyRequest) GetPriceAmount() float64 {
+func (x *PublishStrategyRequest) GetPriceAmount() string {
 	if x != nil {
 		return x.PriceAmount
 	}
-	return 0
+	return ""
 }
 
 func (x *PublishStrategyRequest) GetAssetClass() string {
@@ -792,7 +792,7 @@ type PublishedStrategy struct {
 	Title            string   `protobuf:"bytes,6,opt,name=title,proto3" json:"title,omitempty"`
 	Description      string   `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
 	PriceModel       string   `protobuf:"bytes,8,opt,name=price_model,json=priceModel,proto3" json:"price_model,omitempty"`
-	PriceAmount      float64  `protobuf:"fixed64,9,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
+	PriceAmount      string   `protobuf:"bytes,9,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
 	AssetClass       string   `protobuf:"bytes,10,opt,name=asset_class,json=assetClass,proto3" json:"asset_class,omitempty"`
 	Symbols          []string `protobuf:"bytes,11,rep,name=symbols,proto3" json:"symbols,omitempty"`
 	Timeframe        string   `protobuf:"bytes,12,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
@@ -800,7 +800,7 @@ type PublishedStrategy struct {
 	Tags             []string `protobuf:"bytes,14,rep,name=tags,proto3" json:"tags,omitempty"`
 	TotalSubscribers int32    `protobuf:"varint,15,opt,name=total_subscribers,json=totalSubscribers,proto3" json:"total_subscribers,omitempty"`
 	WinRate          float64  `protobuf:"fixed64,16,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
-	TotalPnl         float64  `protobuf:"fixed64,17,opt,name=total_pnl,json=totalPnl,proto3" json:"total_pnl,omitempty"`
+	TotalPnl         string   `protobuf:"bytes,17,opt,name=total_pnl,json=totalPnl,proto3" json:"total_pnl,omitempty"`
 	AvgRating        float64  `protobuf:"fixed64,18,opt,name=avg_rating,json=avgRating,proto3" json:"avg_rating,omitempty"`
 	RatingCount      int32    `protobuf:"varint,19,opt,name=rating_count,json=ratingCount,proto3" json:"rating_count,omitempty"`
 	// Code protection & performance
@@ -896,11 +896,11 @@ func (x *PublishedStrategy) GetPriceModel() string {
 	return ""
 }
 
-func (x *PublishedStrategy) GetPriceAmount() float64 {
+func (x *PublishedStrategy) GetPriceAmount() string {
 	if x != nil {
 		return x.PriceAmount
 	}
-	return 0
+	return ""
 }
 
 func (x *PublishedStrategy) GetAssetClass() string {
@@ -952,11 +952,11 @@ func (x *PublishedStrategy) GetWinRate() float64 {
 	return 0
 }
 
-func (x *PublishedStrategy) GetTotalPnl() float64 {
+func (x *PublishedStrategy) GetTotalPnl() string {
 	if x != nil {
 		return x.TotalPnl
 	}
-	return 0
+	return ""
 }
 
 func (x *PublishedStrategy) GetAvgRating() float64 {
@@ -1739,7 +1739,7 @@ type SetStrategyPricingRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	StrategyId      string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"` // publish_id
 	PriceModel      string                 `protobuf:"bytes,2,opt,name=price_model,json=priceModel,proto3" json:"price_model,omitempty"` // "free" | "once" | "subscription"
-	PriceAmount     float64                `protobuf:"fixed64,3,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
+	PriceAmount     string                 `protobuf:"bytes,3,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
 	PlatformFeeRate float64                `protobuf:"fixed64,4,opt,name=platform_fee_rate,json=platformFeeRate,proto3" json:"platform_fee_rate,omitempty"` // 0.0–1.0, platform commission rate (e.g. 0.10 = 10%)
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
@@ -1789,11 +1789,11 @@ func (x *SetStrategyPricingRequest) GetPriceModel() string {
 	return ""
 }
 
-func (x *SetStrategyPricingRequest) GetPriceAmount() float64 {
+func (x *SetStrategyPricingRequest) GetPriceAmount() string {
 	if x != nil {
 		return x.PriceAmount
 	}
-	return 0
+	return ""
 }
 
 func (x *SetStrategyPricingRequest) GetPlatformFeeRate() float64 {
@@ -1807,7 +1807,7 @@ type SetStrategyPricingResponse struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	StrategyId      string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
 	PriceModel      string                 `protobuf:"bytes,2,opt,name=price_model,json=priceModel,proto3" json:"price_model,omitempty"`
-	PriceAmount     float64                `protobuf:"fixed64,3,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
+	PriceAmount     string                 `protobuf:"bytes,3,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
 	PlatformFeeRate float64                `protobuf:"fixed64,4,opt,name=platform_fee_rate,json=platformFeeRate,proto3" json:"platform_fee_rate,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
@@ -1857,11 +1857,11 @@ func (x *SetStrategyPricingResponse) GetPriceModel() string {
 	return ""
 }
 
-func (x *SetStrategyPricingResponse) GetPriceAmount() float64 {
+func (x *SetStrategyPricingResponse) GetPriceAmount() string {
 	if x != nil {
 		return x.PriceAmount
 	}
-	return 0
+	return ""
 }
 
 func (x *SetStrategyPricingResponse) GetPlatformFeeRate() float64 {
@@ -2110,7 +2110,7 @@ type RunMarketBacktestRequest struct {
 	Timeframe       string                   `protobuf:"bytes,3,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
 	StartDateMs     int64                    `protobuf:"varint,4,opt,name=start_date_ms,json=startDateMs,proto3" json:"start_date_ms,omitempty"` // Unix milliseconds
 	EndDateMs       int64                    `protobuf:"varint,5,opt,name=end_date_ms,json=endDateMs,proto3" json:"end_date_ms,omitempty"`       // Unix milliseconds
-	InitialCapital  float64                  `protobuf:"fixed64,6,opt,name=initial_capital,json=initialCapital,proto3" json:"initial_capital,omitempty"`
+	InitialCapital  string                   `protobuf:"bytes,6,opt,name=initial_capital,json=initialCapital,proto3" json:"initial_capital,omitempty"`
 	ExecutionConfig *BacktestExecutionConfig `protobuf:"bytes,7,opt,name=execution_config,json=executionConfig,proto3" json:"execution_config,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
@@ -2181,11 +2181,11 @@ func (x *RunMarketBacktestRequest) GetEndDateMs() int64 {
 	return 0
 }
 
-func (x *RunMarketBacktestRequest) GetInitialCapital() float64 {
+func (x *RunMarketBacktestRequest) GetInitialCapital() string {
 	if x != nil {
 		return x.InitialCapital
 	}
-	return 0
+	return ""
 }
 
 func (x *RunMarketBacktestRequest) GetExecutionConfig() *BacktestExecutionConfig {
@@ -2208,7 +2208,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x1f\n" +
 	"\vprice_model\x18\x05 \x01(\tR\n" +
 	"priceModel\x12!\n" +
-	"\fprice_amount\x18\x06 \x01(\x01R\vpriceAmount\x12\x1f\n" +
+	"\fprice_amount\x18\x06 \x01(\tR\vpriceAmount\x12\x1f\n" +
 	"\vasset_class\x18\a \x01(\tR\n" +
 	"assetClass\x12\x18\n" +
 	"\asymbols\x18\b \x03(\tR\asymbols\x12\x1c\n" +
@@ -2280,7 +2280,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\vdescription\x18\a \x01(\tR\vdescription\x12\x1f\n" +
 	"\vprice_model\x18\b \x01(\tR\n" +
 	"priceModel\x12!\n" +
-	"\fprice_amount\x18\t \x01(\x01R\vpriceAmount\x12\x1f\n" +
+	"\fprice_amount\x18\t \x01(\tR\vpriceAmount\x12\x1f\n" +
 	"\vasset_class\x18\n" +
 	" \x01(\tR\n" +
 	"assetClass\x12\x18\n" +
@@ -2291,7 +2291,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x04tags\x18\x0e \x03(\tR\x04tags\x12+\n" +
 	"\x11total_subscribers\x18\x0f \x01(\x05R\x10totalSubscribers\x12\x19\n" +
 	"\bwin_rate\x18\x10 \x01(\x01R\awinRate\x12\x1b\n" +
-	"\ttotal_pnl\x18\x11 \x01(\x01R\btotalPnl\x12\x1d\n" +
+	"\ttotal_pnl\x18\x11 \x01(\tR\btotalPnl\x12\x1d\n" +
 	"\n" +
 	"avg_rating\x18\x12 \x01(\x01R\tavgRating\x12!\n" +
 	"\frating_count\x18\x13 \x01(\x05R\vratingCount\x12!\n" +
@@ -2361,14 +2361,14 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"strategyId\x12\x1f\n" +
 	"\vprice_model\x18\x02 \x01(\tR\n" +
 	"priceModel\x12!\n" +
-	"\fprice_amount\x18\x03 \x01(\x01R\vpriceAmount\x12*\n" +
+	"\fprice_amount\x18\x03 \x01(\tR\vpriceAmount\x12*\n" +
 	"\x11platform_fee_rate\x18\x04 \x01(\x01R\x0fplatformFeeRate\"\xad\x01\n" +
 	"\x1aSetStrategyPricingResponse\x12\x1f\n" +
 	"\vstrategy_id\x18\x01 \x01(\tR\n" +
 	"strategyId\x12\x1f\n" +
 	"\vprice_model\x18\x02 \x01(\tR\n" +
 	"priceModel\x12!\n" +
-	"\fprice_amount\x18\x03 \x01(\x01R\vpriceAmount\x12*\n" +
+	"\fprice_amount\x18\x03 \x01(\tR\vpriceAmount\x12*\n" +
 	"\x11platform_fee_rate\x18\x04 \x01(\x01R\x0fplatformFeeRate\"A\n" +
 	"\x1eUnpublishMarketStrategyRequest\x12\x1f\n" +
 	"\vstrategy_id\x18\x01 \x01(\tR\n" +
@@ -2395,7 +2395,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\ttimeframe\x18\x03 \x01(\tR\ttimeframe\x12\"\n" +
 	"\rstart_date_ms\x18\x04 \x01(\x03R\vstartDateMs\x12\x1e\n" +
 	"\vend_date_ms\x18\x05 \x01(\x03R\tendDateMs\x12'\n" +
-	"\x0finitial_capital\x18\x06 \x01(\x01R\x0einitialCapital\x12J\n" +
+	"\x0finitial_capital\x18\x06 \x01(\tR\x0einitialCapital\x12J\n" +
 	"\x10execution_config\x18\a \x01(\v2\x1f.ant.v1.BacktestExecutionConfigR\x0fexecutionConfig2\x9a\t\n" +
 	"\x12MarketplaceService\x12R\n" +
 	"\x0fPublishStrategy\x12\x1e.ant.v1.PublishStrategyRequest\x1a\x1f.ant.v1.PublishStrategyResponse\x12@\n" +

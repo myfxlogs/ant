@@ -3,6 +3,7 @@ package autotrading
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -71,11 +72,13 @@ func (s *AutoTradingServer) CheckRiskLimits(
 		return nil, connect.NewError(connect.CodeUnavailable,
 			fmt.Errorf("risk pipeline not configured"))
 	}
+	balance, _ := strconv.ParseFloat(m.CurrentBalance, 64)
+	equity, _ := strconv.ParseFloat(m.CurrentEquity, 64)
 	sig := &risksvc.SignalRequest{
 		AccountID: m.AccountId,
 		Symbol:    m.Symbol,
-		Balance:   m.CurrentBalance,
-		Equity:    m.CurrentEquity,
+		Balance:   balance,
+		Equity:    equity,
 		Positions: int(m.OpenPositions),
 	}
 	result := s.riskPipe.Process(ctx, sig)
@@ -100,7 +103,7 @@ func (s *AutoTradingServer) CalculatePositionSize(
 	req *connect.Request[antv1.CalculatePositionSizeRequest],
 ) (*connect.Response[antv1.CalculatePositionSizeResponse], error) {
 	m := req.Msg
-	balanceDec := decimal.NewFromFloat(m.AccountBalance)
+	balanceDec := decimal.RequireFromString(m.AccountBalance)
 	if balanceDec.LessThanOrEqual(decimal.Zero) {
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			fmt.Errorf("account_balance must be positive"))
@@ -130,11 +133,11 @@ func (s *AutoTradingServer) CalculatePositionSize(
 	pipValueF, _ := pipValueDec.Float64()
 
 	return connect.NewResponse(&antv1.CalculatePositionSizeResponse{
-		Volume:     volumeF,
-		RiskAmount: riskAmountF,
-		PipValue:   pipValueF,
-		MinVolume:  0.01,
-		MaxVolume:  100.0,
+		Volume:     strconv.FormatFloat(volumeF, 'f', -1, 64),
+		RiskAmount: strconv.FormatFloat(riskAmountF, 'f', -1, 64),
+		PipValue:   strconv.FormatFloat(pipValueF, 'f', -1, 64),
+		MinVolume:  "0.01",
+		MaxVolume:  "100",
 	}), nil
 }
 

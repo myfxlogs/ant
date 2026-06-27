@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"log"
 	"sync"
 
 	"github.com/shopspring/decimal"
@@ -74,7 +75,8 @@ func (c *contextImpl) Bars() sdk.BarSeries {
 }
 
 func (c *contextImpl) BarsTF(timeframe string) sdk.BarSeries {
-	// Multi-timeframe not yet implemented — returns primary bars.
+	// In the harness context only the primary timeframe is available.
+	// Multi-timeframe requires a multi-symbol bar source (Phase B2).
 	return c.Bars()
 }
 
@@ -129,9 +131,14 @@ func (c *contextImpl) SetTimer(seconds int) { c.timerSet = true }
 func (c *contextImpl) KillTimer()           { c.timerSet = false }
 
 func (c *contextImpl) Log(msg string) {
-	// Logging via the runner's logger
+	log.Printf("[strategy:%s] %s", c.symbol, msg)
 }
 
 func (c *contextImpl) ServerTime() int64 {
-	return 0 // populated by live source
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	if c.bars != nil && c.bars.Len() > 0 {
+		return c.bars.Time(0)
+	}
+	return 0
 }

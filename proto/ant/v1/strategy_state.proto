@@ -29,8 +29,8 @@ message StrategyState {
 message StatePosition {
     string symbol = 1;
     string side = 2;                   // "buy" / "sell"
-    double volume = 3;
-    double entry_price = 4;
+    string volume = 3;
+    string entry_price = 4;
     int64 open_time_unix_ms = 5;
 }
 
@@ -38,8 +38,8 @@ message StateMetrics {
     int32 total_trades = 1;
     double win_rate = 2;
     double sharpe_ratio = 3;
-    double net_pnl = 4;
-    double gross_pnl = 5;
+    string net_pnl = 4;
+    string gross_pnl = 5;
     double max_drawdown = 6;
-    double total_cost = 7;
+    string total_cost = 7;
 }

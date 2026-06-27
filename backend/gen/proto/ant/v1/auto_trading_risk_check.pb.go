@@ -25,9 +25,9 @@ type CheckRiskLimitsRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	AccountId      string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	Symbol         string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	Volume         float64                `protobuf:"fixed64,3,opt,name=volume,proto3" json:"volume,omitempty"`
-	CurrentBalance float64                `protobuf:"fixed64,4,opt,name=current_balance,json=currentBalance,proto3" json:"current_balance,omitempty"`
-	CurrentEquity  float64                `protobuf:"fixed64,5,opt,name=current_equity,json=currentEquity,proto3" json:"current_equity,omitempty"`
+	Volume         string                 `protobuf:"bytes,3,opt,name=volume,proto3" json:"volume,omitempty"`
+	CurrentBalance string                 `protobuf:"bytes,4,opt,name=current_balance,json=currentBalance,proto3" json:"current_balance,omitempty"`
+	CurrentEquity  string                 `protobuf:"bytes,5,opt,name=current_equity,json=currentEquity,proto3" json:"current_equity,omitempty"`
 	OpenPositions  int32                  `protobuf:"varint,6,opt,name=open_positions,json=openPositions,proto3" json:"open_positions,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
@@ -77,25 +77,25 @@ func (x *CheckRiskLimitsRequest) GetSymbol() string {
 	return ""
 }
 
-func (x *CheckRiskLimitsRequest) GetVolume() float64 {
+func (x *CheckRiskLimitsRequest) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *CheckRiskLimitsRequest) GetCurrentBalance() float64 {
+func (x *CheckRiskLimitsRequest) GetCurrentBalance() string {
 	if x != nil {
 		return x.CurrentBalance
 	}
-	return 0
+	return ""
 }
 
-func (x *CheckRiskLimitsRequest) GetCurrentEquity() float64 {
+func (x *CheckRiskLimitsRequest) GetCurrentEquity() string {
 	if x != nil {
 		return x.CurrentEquity
 	}
-	return 0
+	return ""
 }
 
 func (x *CheckRiskLimitsRequest) GetOpenPositions() int32 {
@@ -112,8 +112,8 @@ type CheckRiskLimitsResponse struct {
 	Reason             string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
 	MaxPositions       int32                  `protobuf:"varint,4,opt,name=max_positions,json=maxPositions,proto3" json:"max_positions,omitempty"`
 	PositionCount      int32                  `protobuf:"varint,5,opt,name=position_count,json=positionCount,proto3" json:"position_count,omitempty"`
-	DailyLossLimit     float64                `protobuf:"fixed64,6,opt,name=daily_loss_limit,json=dailyLossLimit,proto3" json:"daily_loss_limit,omitempty"`
-	DailyLossUsed      float64                `protobuf:"fixed64,7,opt,name=daily_loss_used,json=dailyLossUsed,proto3" json:"daily_loss_used,omitempty"`
+	DailyLossLimit     string                 `protobuf:"bytes,6,opt,name=daily_loss_limit,json=dailyLossLimit,proto3" json:"daily_loss_limit,omitempty"`
+	DailyLossUsed      string                 `protobuf:"bytes,7,opt,name=daily_loss_used,json=dailyLossUsed,proto3" json:"daily_loss_used,omitempty"`
 	MaxDrawdownPercent float64                `protobuf:"fixed64,8,opt,name=max_drawdown_percent,json=maxDrawdownPercent,proto3" json:"max_drawdown_percent,omitempty"`
 	DrawdownPercent    float64                `protobuf:"fixed64,9,opt,name=drawdown_percent,json=drawdownPercent,proto3" json:"drawdown_percent,omitempty"`
 	unknownFields      protoimpl.UnknownFields
@@ -185,18 +185,18 @@ func (x *CheckRiskLimitsResponse) GetPositionCount() int32 {
 	return 0
 }
 
-func (x *CheckRiskLimitsResponse) GetDailyLossLimit() float64 {
+func (x *CheckRiskLimitsResponse) GetDailyLossLimit() string {
 	if x != nil {
 		return x.DailyLossLimit
 	}
-	return 0
+	return ""
 }
 
-func (x *CheckRiskLimitsResponse) GetDailyLossUsed() float64 {
+func (x *CheckRiskLimitsResponse) GetDailyLossUsed() string {
 	if x != nil {
 		return x.DailyLossUsed
 	}
-	return 0
+	return ""
 }
 
 func (x *CheckRiskLimitsResponse) GetMaxDrawdownPercent() float64 {
@@ -222,9 +222,9 @@ const file_auto_trading_risk_check_proto_rawDesc = "" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x16\n" +
-	"\x06volume\x18\x03 \x01(\x01R\x06volume\x12'\n" +
-	"\x0fcurrent_balance\x18\x04 \x01(\x01R\x0ecurrentBalance\x12%\n" +
-	"\x0ecurrent_equity\x18\x05 \x01(\x01R\rcurrentEquity\x12%\n" +
+	"\x06volume\x18\x03 \x01(\tR\x06volume\x12'\n" +
+	"\x0fcurrent_balance\x18\x04 \x01(\tR\x0ecurrentBalance\x12%\n" +
+	"\x0ecurrent_equity\x18\x05 \x01(\tR\rcurrentEquity\x12%\n" +
 	"\x0eopen_positions\x18\x06 \x01(\x05R\ropenPositions\"\xf0\x02\n" +
 	"\x17CheckRiskLimitsResponse\x12\x18\n" +
 	"\aallowed\x18\x01 \x01(\bR\aallowed\x12(\n" +
@@ -232,8 +232,8 @@ const file_auto_trading_risk_check_proto_rawDesc = "" +
 	"\x06reason\x18\x03 \x01(\tR\x06reason\x12#\n" +
 	"\rmax_positions\x18\x04 \x01(\x05R\fmaxPositions\x12%\n" +
 	"\x0eposition_count\x18\x05 \x01(\x05R\rpositionCount\x12(\n" +
-	"\x10daily_loss_limit\x18\x06 \x01(\x01R\x0edailyLossLimit\x12&\n" +
-	"\x0fdaily_loss_used\x18\a \x01(\x01R\rdailyLossUsed\x120\n" +
+	"\x10daily_loss_limit\x18\x06 \x01(\tR\x0edailyLossLimit\x12&\n" +
+	"\x0fdaily_loss_used\x18\a \x01(\tR\rdailyLossUsed\x120\n" +
 	"\x14max_drawdown_percent\x18\b \x01(\x01R\x12maxDrawdownPercent\x12)\n" +
 	"\x10drawdown_percent\x18\t \x01(\x01R\x0fdrawdownPercentB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 

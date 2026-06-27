@@ -34,9 +34,9 @@ message TradingLog {
   string action = 6;
   string symbol = 7;
   string details = 8;
-  double volume = 9;
-  double price = 10;
+  string volume = 9;
+  string price = 10;
   int64 ticket = 11;
-  double profit = 12;
+  string profit = 12;
   google.protobuf.Timestamp created_at = 13;
 }

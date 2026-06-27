@@ -151,7 +151,7 @@ type ScheduleHealthSummary struct {
 	LastRunAt            *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=last_run_at,json=lastRunAt,proto3" json:"last_run_at,omitempty"`
 	LatestError          string                 `protobuf:"bytes,6,opt,name=latest_error,json=latestError,proto3" json:"latest_error,omitempty"`
 	LatestOrderTicket    string                 `protobuf:"bytes,7,opt,name=latest_order_ticket,json=latestOrderTicket,proto3" json:"latest_order_ticket,omitempty"`
-	LatestOrderProfit    float64                `protobuf:"fixed64,8,opt,name=latest_order_profit,json=latestOrderProfit,proto3" json:"latest_order_profit,omitempty"`
+	LatestOrderProfit    string                 `protobuf:"bytes,8,opt,name=latest_order_profit,json=latestOrderProfit,proto3" json:"latest_order_profit,omitempty"`
 	HasLatestOrderProfit bool                   `protobuf:"varint,9,opt,name=has_latest_order_profit,json=hasLatestOrderProfit,proto3" json:"has_latest_order_profit,omitempty"`
 	GradeLevel           string                 `protobuf:"bytes,10,opt,name=grade_level,json=gradeLevel,proto3" json:"grade_level,omitempty"`
 	GradeColor           string                 `protobuf:"bytes,11,opt,name=grade_color,json=gradeColor,proto3" json:"grade_color,omitempty"`
@@ -243,11 +243,11 @@ func (x *ScheduleHealthSummary) GetLatestOrderTicket() string {
 	return ""
 }
 
-func (x *ScheduleHealthSummary) GetLatestOrderProfit() float64 {
+func (x *ScheduleHealthSummary) GetLatestOrderProfit() string {
 	if x != nil {
 		return x.LatestOrderProfit
 	}
-	return 0
+	return ""
 }
 
 func (x *ScheduleHealthSummary) GetHasLatestOrderProfit() bool {
@@ -396,7 +396,7 @@ type ScheduleHealthOrder struct {
 	Ticket        int64                  `protobuf:"varint,2,opt,name=ticket,proto3" json:"ticket,omitempty"`
 	OrderType     string                 `protobuf:"bytes,3,opt,name=order_type,json=orderType,proto3" json:"order_type,omitempty"`
 	Symbol        string                 `protobuf:"bytes,4,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	Profit        float64                `protobuf:"fixed64,5,opt,name=profit,proto3" json:"profit,omitempty"`
+	Profit        string                 `protobuf:"bytes,5,opt,name=profit,proto3" json:"profit,omitempty"`
 	OpenTime      *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=open_time,json=openTime,proto3" json:"open_time,omitempty"`
 	CloseTime     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=close_time,json=closeTime,proto3" json:"close_time,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -461,11 +461,11 @@ func (x *ScheduleHealthOrder) GetSymbol() string {
 	return ""
 }
 
-func (x *ScheduleHealthOrder) GetProfit() float64 {
+func (x *ScheduleHealthOrder) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
 func (x *ScheduleHealthOrder) GetOpenTime() *timestamppb.Timestamp {
@@ -507,7 +507,7 @@ const file_schedule_health_proto_rawDesc = "" +
 	"\vlast_run_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tlastRunAt\x12!\n" +
 	"\flatest_error\x18\x06 \x01(\tR\vlatestError\x12.\n" +
 	"\x13latest_order_ticket\x18\a \x01(\tR\x11latestOrderTicket\x12.\n" +
-	"\x13latest_order_profit\x18\b \x01(\x01R\x11latestOrderProfit\x125\n" +
+	"\x13latest_order_profit\x18\b \x01(\tR\x11latestOrderProfit\x125\n" +
 	"\x17has_latest_order_profit\x18\t \x01(\bR\x14hasLatestOrderProfit\x12\x1f\n" +
 	"\vgrade_level\x18\n" +
 	" \x01(\tR\n" +
@@ -535,7 +535,7 @@ const file_schedule_health_proto_rawDesc = "" +
 	"\n" +
 	"order_type\x18\x03 \x01(\tR\torderType\x12\x16\n" +
 	"\x06symbol\x18\x04 \x01(\tR\x06symbol\x12\x16\n" +
-	"\x06profit\x18\x05 \x01(\x01R\x06profit\x127\n" +
+	"\x06profit\x18\x05 \x01(\tR\x06profit\x127\n" +
 	"\topen_time\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\bopenTime\x129\n" +
 	"\n" +
 	"close_time\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcloseTime2q\n" +

@@ -56,7 +56,7 @@ message TfOutlook {
 
 message SRLevel {
   // Price level (raw double from OHLC clustering; display with symbol precision).
-  double price = 1;
+  string price = 1;
   // "SUPPORT" | "RESISTANCE"
   string type = 2;
   // "MAJOR" | "MINOR"

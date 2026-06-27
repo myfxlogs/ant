@@ -264,10 +264,10 @@ type TradingLog struct {
 	Action        string                 `protobuf:"bytes,6,opt,name=action,proto3" json:"action,omitempty"`
 	Symbol        string                 `protobuf:"bytes,7,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Details       string                 `protobuf:"bytes,8,opt,name=details,proto3" json:"details,omitempty"`
-	Volume        float64                `protobuf:"fixed64,9,opt,name=volume,proto3" json:"volume,omitempty"`
-	Price         float64                `protobuf:"fixed64,10,opt,name=price,proto3" json:"price,omitempty"`
+	Volume        string                 `protobuf:"bytes,9,opt,name=volume,proto3" json:"volume,omitempty"`
+	Price         string                 `protobuf:"bytes,10,opt,name=price,proto3" json:"price,omitempty"`
 	Ticket        int64                  `protobuf:"varint,11,opt,name=ticket,proto3" json:"ticket,omitempty"`
-	Profit        float64                `protobuf:"fixed64,12,opt,name=profit,proto3" json:"profit,omitempty"`
+	Profit        string                 `protobuf:"bytes,12,opt,name=profit,proto3" json:"profit,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -359,18 +359,18 @@ func (x *TradingLog) GetDetails() string {
 	return ""
 }
 
-func (x *TradingLog) GetVolume() float64 {
+func (x *TradingLog) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *TradingLog) GetPrice() float64 {
+func (x *TradingLog) GetPrice() string {
 	if x != nil {
 		return x.Price
 	}
-	return 0
+	return ""
 }
 
 func (x *TradingLog) GetTicket() int64 {
@@ -380,11 +380,11 @@ func (x *TradingLog) GetTicket() int64 {
 	return 0
 }
 
-func (x *TradingLog) GetProfit() float64 {
+func (x *TradingLog) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
 func (x *TradingLog) GetCreatedAt() *timestamppb.Timestamp {
@@ -427,11 +427,11 @@ const file_auto_trading_logs_proto_rawDesc = "" +
 	"\x06action\x18\x06 \x01(\tR\x06action\x12\x16\n" +
 	"\x06symbol\x18\a \x01(\tR\x06symbol\x12\x18\n" +
 	"\adetails\x18\b \x01(\tR\adetails\x12\x16\n" +
-	"\x06volume\x18\t \x01(\x01R\x06volume\x12\x14\n" +
+	"\x06volume\x18\t \x01(\tR\x06volume\x12\x14\n" +
 	"\x05price\x18\n" +
-	" \x01(\x01R\x05price\x12\x16\n" +
+	" \x01(\tR\x05price\x12\x16\n" +
 	"\x06ticket\x18\v \x01(\x03R\x06ticket\x12\x16\n" +
-	"\x06profit\x18\f \x01(\x01R\x06profit\x129\n" +
+	"\x06profit\x18\f \x01(\tR\x06profit\x129\n" +
 	"\n" +
 	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 

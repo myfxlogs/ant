@@ -80,13 +80,13 @@ export interface Quote {
 
 export interface ProfitUpdate {
   accountId: string;
-  balance: number;
-  credit: number;
-  profit: number;
-  equity: number;
-  margin: number;
-  freeMargin: number;
-  marginLevel: number;
+  balance: number | string;
+  credit: number | string;
+  profit: number | string;
+  equity: number | string;
+  margin: number | string;
+  freeMargin: number | string;
+  marginLevel: number | string;
   orders: OrderProfitItem[];
   platform: string;
   updatedAt: string;
@@ -95,9 +95,9 @@ export interface ProfitUpdate {
 export interface OrderProfitItem {
   ticket: number;
   symbol: string;
-  profit: number;
-  volume: number;
-  currentPrice: number;
+  profit: number | string;
+  volume: number | string;
+  currentPrice: number | string;
 }
 
 export interface OrderUpdate {
@@ -105,17 +105,17 @@ export interface OrderUpdate {
   ticket: number;
   symbol: string;
   type: string;
-  volume: number;
-  openPrice: number;
-  profit: number;
+  volume: number | string;
+  openPrice: number | string;
+  profit: number | string;
   action: string;
-  stopLoss?: number;
-  takeProfit?: number;
-  closePrice?: number;
+  stopLoss?: number | string;
+  takeProfit?: number | string;
+  closePrice?: number | string;
   openTime: number;
   closeTime?: number;
-  swap?: number;
-  commission?: number;
+  swap?: number | string;
+  commission?: number | string;
   comment?: string;
 }
 

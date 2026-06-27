@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file common.proto.
  */
 export const file_common: GenFile = /*@__PURE__*/
-  fileDesc("Cgxjb21tb24ucHJvdG8SBmFudC52MSKGAgoPQmFja3Rlc3RNZXRyaWNzEhQKDHRvdGFsX3JldHVybhgBIAEoARIVCg1hbm51YWxfcmV0dXJuGAIgASgBEhQKDG1heF9kcmF3ZG93bhgDIAEoARIUCgxzaGFycGVfcmF0aW8YBCABKAESEAoId2luX3JhdGUYBSABKAESFQoNcHJvZml0X2ZhY3RvchgGIAEoARIUCgx0b3RhbF90cmFkZXMYByABKAUSFgoOd2lubmluZ190cmFkZXMYCCABKAUSFQoNbG9zaW5nX3RyYWRlcxgJIAEoBRIWCg5hdmVyYWdlX3Byb2ZpdBgKIAEoARIUCgxhdmVyYWdlX2xvc3MYCyABKAEiZAoMQmFja3Rlc3RSaXNrEg0KBXNjb3JlGAEgASgFEg0KBWxldmVsGAIgASgJEg8KB3JlYXNvbnMYAyADKAkSEAoId2FybmluZ3MYBCADKAkSEwoLaXNfcmVsaWFibGUYBSABKAhCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
+  fileDesc("Cgxjb21tb24ucHJvdG8SBmFudC52MSKGAgoPQmFja3Rlc3RNZXRyaWNzEhQKDHRvdGFsX3JldHVybhgBIAEoARIVCg1hbm51YWxfcmV0dXJuGAIgASgBEhQKDG1heF9kcmF3ZG93bhgDIAEoARIUCgxzaGFycGVfcmF0aW8YBCABKAESEAoId2luX3JhdGUYBSABKAESFQoNcHJvZml0X2ZhY3RvchgGIAEoARIUCgx0b3RhbF90cmFkZXMYByABKAUSFgoOd2lubmluZ190cmFkZXMYCCABKAUSFQoNbG9zaW5nX3RyYWRlcxgJIAEoBRIWCg5hdmVyYWdlX3Byb2ZpdBgKIAEoCRIUCgxhdmVyYWdlX2xvc3MYCyABKAkiZAoMQmFja3Rlc3RSaXNrEg0KBXNjb3JlGAEgASgFEg0KBWxldmVsGAIgASgJEg8KB3JlYXNvbnMYAyADKAkSEAoId2FybmluZ3MYBCADKAkSEwoLaXNfcmVsaWFibGUYBSABKAhCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.BacktestMetrics
@@ -62,14 +62,14 @@ export type BacktestMetrics = Message<"ant.v1.BacktestMetrics"> & {
   losingTrades: number;
 
   /**
-   * @generated from field: double average_profit = 10;
+   * @generated from field: string average_profit = 10;
    */
-  averageProfit: number;
+  averageProfit: string;
 
   /**
-   * @generated from field: double average_loss = 11;
+   * @generated from field: string average_loss = 11;
    */
-  averageLoss: number;
+  averageLoss: string;
 };
 
 /**

@@ -174,10 +174,10 @@ type OrderHistoryRecord struct {
 	Ticket        int64                  `protobuf:"varint,3,opt,name=ticket,proto3" json:"ticket,omitempty"`
 	Symbol        string                 `protobuf:"bytes,4,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	OrderType     string                 `protobuf:"bytes,5,opt,name=order_type,json=orderType,proto3" json:"order_type,omitempty"`
-	Lots          float64                `protobuf:"fixed64,6,opt,name=lots,proto3" json:"lots,omitempty"`
-	OpenPrice     float64                `protobuf:"fixed64,7,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`
-	ClosePrice    float64                `protobuf:"fixed64,8,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"`
-	Profit        float64                `protobuf:"fixed64,9,opt,name=profit,proto3" json:"profit,omitempty"`
+	Lots          string                 `protobuf:"bytes,6,opt,name=lots,proto3" json:"lots,omitempty"`
+	OpenPrice     string                 `protobuf:"bytes,7,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`
+	ClosePrice    string                 `protobuf:"bytes,8,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"`
+	Profit        string                 `protobuf:"bytes,9,opt,name=profit,proto3" json:"profit,omitempty"`
 	OpenTime      *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=open_time,json=openTime,proto3" json:"open_time,omitempty"`
 	CloseTime     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=close_time,json=closeTime,proto3" json:"close_time,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -256,32 +256,32 @@ func (x *OrderHistoryRecord) GetOrderType() string {
 	return ""
 }
 
-func (x *OrderHistoryRecord) GetLots() float64 {
+func (x *OrderHistoryRecord) GetLots() string {
 	if x != nil {
 		return x.Lots
 	}
-	return 0
+	return ""
 }
 
-func (x *OrderHistoryRecord) GetOpenPrice() float64 {
+func (x *OrderHistoryRecord) GetOpenPrice() string {
 	if x != nil {
 		return x.OpenPrice
 	}
-	return 0
+	return ""
 }
 
-func (x *OrderHistoryRecord) GetClosePrice() float64 {
+func (x *OrderHistoryRecord) GetClosePrice() string {
 	if x != nil {
 		return x.ClosePrice
 	}
-	return 0
+	return ""
 }
 
-func (x *OrderHistoryRecord) GetProfit() float64 {
+func (x *OrderHistoryRecord) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
 func (x *OrderHistoryRecord) GetOpenTime() *timestamppb.Timestamp {
@@ -327,12 +327,12 @@ const file_log_order_proto_rawDesc = "" +
 	"\x06symbol\x18\x04 \x01(\tR\x06symbol\x12\x1d\n" +
 	"\n" +
 	"order_type\x18\x05 \x01(\tR\torderType\x12\x12\n" +
-	"\x04lots\x18\x06 \x01(\x01R\x04lots\x12\x1d\n" +
+	"\x04lots\x18\x06 \x01(\tR\x04lots\x12\x1d\n" +
 	"\n" +
-	"open_price\x18\a \x01(\x01R\topenPrice\x12\x1f\n" +
-	"\vclose_price\x18\b \x01(\x01R\n" +
+	"open_price\x18\a \x01(\tR\topenPrice\x12\x1f\n" +
+	"\vclose_price\x18\b \x01(\tR\n" +
 	"closePrice\x12\x16\n" +
-	"\x06profit\x18\t \x01(\x01R\x06profit\x127\n" +
+	"\x06profit\x18\t \x01(\tR\x06profit\x127\n" +
 	"\topen_time\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\bopenTime\x129\n" +
 	"\n" +

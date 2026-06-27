@@ -16,6 +16,6 @@ message VerifyAccountRequest {
 message VerifyAccountResponse {
   bool verified = 1;
   string message = 2;
-  double balance = 3; double equity = 4; double margin = 5; double free_margin = 6;
+  string balance = 3; string equity = 4; string margin = 5; string free_margin = 6;
   int32 leverage = 7; string currency = 8; string account_type = 9;
 }

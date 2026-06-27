@@ -37,7 +37,7 @@ func (s *AdminLogServer) ListLogs(ctx context.Context, req *connect.Request[antv
 	}
 	logs, total, err := s.repo.ListLogs(ctx, params)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	items := make([]*antv1.AdminLog, len(logs))
 	for i, l := range logs {

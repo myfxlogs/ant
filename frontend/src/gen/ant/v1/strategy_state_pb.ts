@@ -17,7 +17,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file strategy_state.proto.
  */
 export const file_strategy_state: GenFile = /*@__PURE__*/
-  fileDesc("ChRzdHJhdGVneV9zdGF0ZS5wcm90bxIGYW50LnYxIqwDCg1TdHJhdGVneVN0YXRlEhUKDXN0cmF0ZWd5X25hbWUYASABKAkSGAoQc3RyYXRlZ3lfdmVyc2lvbhgCIAEoCRITCgtpbnN0YW5jZV9pZBgDIAEoCRISCgphY2NvdW50X2lkGAQgASgJEg8KB3VzZXJfaWQYBSABKAkSDwoHc3ltYm9scxgGIAMoCRI5CgpwYXJhbWV0ZXJzGAcgAygLMiUuYW50LnYxLlN0cmF0ZWd5U3RhdGUuUGFyYW1ldGVyc0VudHJ5EigKCXBvc2l0aW9ucxgIIAMoCzIVLmFudC52MS5TdGF0ZVBvc2l0aW9uEiUKB21ldHJpY3MYCSABKAsyFC5hbnQudjEuU3RhdGVNZXRyaWNzEhQKDGN1c3RvbV9zdGF0ZRgKIAEoDBIyCg5zbmFwc2hvdHRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASFgoOc2NoZW1hX3ZlcnNpb24YDCABKAUaMQoPUGFyYW1ldGVyc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEibQoNU3RhdGVQb3NpdGlvbhIOCgZzeW1ib2wYASABKAkSDAoEc2lkZRgCIAEoCRIOCgZ2b2x1bWUYAyABKAESEwoLZW50cnlfcHJpY2UYBCABKAESGQoRb3Blbl90aW1lX3VuaXhfbXMYBSABKAMimgEKDFN0YXRlTWV0cmljcxIUCgx0b3RhbF90cmFkZXMYASABKAUSEAoId2luX3JhdGUYAiABKAESFAoMc2hhcnBlX3JhdGlvGAMgASgBEg8KB25ldF9wbmwYBCABKAESEQoJZ3Jvc3NfcG5sGAUgASgBEhQKDG1heF9kcmF3ZG93bhgGIAEoARISCgp0b3RhbF9jb3N0GAcgASgBQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChRzdHJhdGVneV9zdGF0ZS5wcm90bxIGYW50LnYxIqwDCg1TdHJhdGVneVN0YXRlEhUKDXN0cmF0ZWd5X25hbWUYASABKAkSGAoQc3RyYXRlZ3lfdmVyc2lvbhgCIAEoCRITCgtpbnN0YW5jZV9pZBgDIAEoCRISCgphY2NvdW50X2lkGAQgASgJEg8KB3VzZXJfaWQYBSABKAkSDwoHc3ltYm9scxgGIAMoCRI5CgpwYXJhbWV0ZXJzGAcgAygLMiUuYW50LnYxLlN0cmF0ZWd5U3RhdGUuUGFyYW1ldGVyc0VudHJ5EigKCXBvc2l0aW9ucxgIIAMoCzIVLmFudC52MS5TdGF0ZVBvc2l0aW9uEiUKB21ldHJpY3MYCSABKAsyFC5hbnQudjEuU3RhdGVNZXRyaWNzEhQKDGN1c3RvbV9zdGF0ZRgKIAEoDBIyCg5zbmFwc2hvdHRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASFgoOc2NoZW1hX3ZlcnNpb24YDCABKAUaMQoPUGFyYW1ldGVyc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEibQoNU3RhdGVQb3NpdGlvbhIOCgZzeW1ib2wYASABKAkSDAoEc2lkZRgCIAEoCRIOCgZ2b2x1bWUYAyABKAkSEwoLZW50cnlfcHJpY2UYBCABKAkSGQoRb3Blbl90aW1lX3VuaXhfbXMYBSABKAMimgEKDFN0YXRlTWV0cmljcxIUCgx0b3RhbF90cmFkZXMYASABKAUSEAoId2luX3JhdGUYAiABKAESFAoMc2hhcnBlX3JhdGlvGAMgASgBEg8KB25ldF9wbmwYBCABKAkSEQoJZ3Jvc3NfcG5sGAUgASgJEhQKDG1heF9kcmF3ZG93bhgGIAEoARISCgp0b3RhbF9jb3N0GAcgASgJQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.StrategyState
@@ -112,14 +112,14 @@ export type StatePosition = Message<"ant.v1.StatePosition"> & {
   side: string;
 
   /**
-   * @generated from field: double volume = 3;
+   * @generated from field: string volume = 3;
    */
-  volume: number;
+  volume: string;
 
   /**
-   * @generated from field: double entry_price = 4;
+   * @generated from field: string entry_price = 4;
    */
-  entryPrice: number;
+  entryPrice: string;
 
   /**
    * @generated from field: int64 open_time_unix_ms = 5;
@@ -154,14 +154,14 @@ export type StateMetrics = Message<"ant.v1.StateMetrics"> & {
   sharpeRatio: number;
 
   /**
-   * @generated from field: double net_pnl = 4;
+   * @generated from field: string net_pnl = 4;
    */
-  netPnl: number;
+  netPnl: string;
 
   /**
-   * @generated from field: double gross_pnl = 5;
+   * @generated from field: string gross_pnl = 5;
    */
-  grossPnl: number;
+  grossPnl: string;
 
   /**
    * @generated from field: double max_drawdown = 6;
@@ -169,9 +169,9 @@ export type StateMetrics = Message<"ant.v1.StateMetrics"> & {
   maxDrawdown: number;
 
   /**
-   * @generated from field: double total_cost = 7;
+   * @generated from field: string total_cost = 7;
    */
-  totalCost: number;
+  totalCost: string;
 };
 
 /**

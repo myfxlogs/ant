@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stream_event_trade.proto.
  */
 export const file_stream_event_trade: GenFile = /*@__PURE__*/
-  fileDesc("ChhzdHJlYW1fZXZlbnRfdHJhZGUucHJvdG8SBmFudC52MSKvAgoQT3JkZXJVcGRhdGVFdmVudBISCgphY2NvdW50X2lkGAEgASgJEg4KBnRpY2tldBgCIAEoAxIOCgZzeW1ib2wYAyABKAkSDAoEdHlwZRgEIAEoCRIOCgZ2b2x1bWUYBSABKAESEgoKb3Blbl9wcmljZRgGIAEoARIOCgZwcm9maXQYByABKAESDgoGYWN0aW9uGAggASgJEhEKCXN0b3BfbG9zcxgJIAEoARITCgt0YWtlX3Byb2ZpdBgKIAEoARITCgtjbG9zZV9wcmljZRgLIAEoARIRCglvcGVuX3RpbWUYDCABKAMSEgoKY2xvc2VfdGltZRgNIAEoAxIMCgRzd2FwGA4gASgBEhIKCmNvbW1pc3Npb24YDyABKAESDwoHY29tbWVudBgQIAEoCSKMAgoPRGVhbFVwZGF0ZUV2ZW50EhIKCmFjY291bnRfaWQYASABKAkSEwoLZGVhbF90aWNrZXQYAiABKAMSFwoPcG9zaXRpb25fdGlja2V0GAMgASgDEg4KBnN5bWJvbBgEIAEoCRIRCglkZWFsX3R5cGUYBSABKAkSEQoJZGlyZWN0aW9uGAYgASgJEg4KBnZvbHVtZRgHIAEoARINCgVwcmljZRgIIAEoARIOCgZwcm9maXQYCSABKAESDAoEc3dhcBgKIAEoARISCgpjb21taXNzaW9uGAsgASgBEgwKBHRpbWUYDCABKAMSDwoHY29tbWVudBgNIAEoCRIRCglleHBlcnRfaWQYDiABKAMiiwIKE1Bvc2l0aW9uVXBkYXRlRXZlbnQSEgoKYWNjb3VudF9pZBgBIAEoCRIXCg9wb3NpdGlvbl90aWNrZXQYAiABKAMSDgoGc3ltYm9sGAMgASgJEg4KBmFjdGlvbhgEIAEoCRIOCgZ2b2x1bWUYBSABKAESEgoKb3Blbl9wcmljZRgGIAEoARITCgtjbG9zZV9wcmljZRgHIAEoARIOCgZwcm9maXQYCCABKAESEQoJc3RvcF9sb3NzGAkgASgBEhMKC3Rha2VfcHJvZml0GAogASgBEhEKCW9wZW5fdGltZRgLIAEoAxISCgpjbG9zZV90aW1lGAwgASgDEg8KB2NvbW1lbnQYDSABKAkikwEKEExlZGdlckVudHJ5RXZlbnQSEgoKYWNjb3VudF9pZBgBIAEoCRISCgplbnRyeV90eXBlGAIgASgJEg4KBmFtb3VudBgDIAEoARIQCghjdXJyZW5jeRgEIAEoCRIMCgR0aW1lGAUgASgDEg8KB2NvbW1lbnQYBiABKAkSFgoOcmVsYXRlZF90aWNrZXQYByABKAMiWAoVUG9zaXRpb25TbmFwc2hvdEV2ZW50EhIKCmFjY291bnRfaWQYASABKAkSKwoJcG9zaXRpb25zGAIgAygLMhguYW50LnYxLk9yZGVyVXBkYXRlRXZlbnRCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
+  fileDesc("ChhzdHJlYW1fZXZlbnRfdHJhZGUucHJvdG8SBmFudC52MSKvAgoQT3JkZXJVcGRhdGVFdmVudBISCgphY2NvdW50X2lkGAEgASgJEg4KBnRpY2tldBgCIAEoAxIOCgZzeW1ib2wYAyABKAkSDAoEdHlwZRgEIAEoCRIOCgZ2b2x1bWUYBSABKAkSEgoKb3Blbl9wcmljZRgGIAEoCRIOCgZwcm9maXQYByABKAkSDgoGYWN0aW9uGAggASgJEhEKCXN0b3BfbG9zcxgJIAEoCRITCgt0YWtlX3Byb2ZpdBgKIAEoCRITCgtjbG9zZV9wcmljZRgLIAEoCRIRCglvcGVuX3RpbWUYDCABKAMSEgoKY2xvc2VfdGltZRgNIAEoAxIMCgRzd2FwGA4gASgJEhIKCmNvbW1pc3Npb24YDyABKAkSDwoHY29tbWVudBgQIAEoCSKMAgoPRGVhbFVwZGF0ZUV2ZW50EhIKCmFjY291bnRfaWQYASABKAkSEwoLZGVhbF90aWNrZXQYAiABKAMSFwoPcG9zaXRpb25fdGlja2V0GAMgASgDEg4KBnN5bWJvbBgEIAEoCRIRCglkZWFsX3R5cGUYBSABKAkSEQoJZGlyZWN0aW9uGAYgASgJEg4KBnZvbHVtZRgHIAEoCRINCgVwcmljZRgIIAEoCRIOCgZwcm9maXQYCSABKAkSDAoEc3dhcBgKIAEoCRISCgpjb21taXNzaW9uGAsgASgJEgwKBHRpbWUYDCABKAMSDwoHY29tbWVudBgNIAEoCRIRCglleHBlcnRfaWQYDiABKAMiiwIKE1Bvc2l0aW9uVXBkYXRlRXZlbnQSEgoKYWNjb3VudF9pZBgBIAEoCRIXCg9wb3NpdGlvbl90aWNrZXQYAiABKAMSDgoGc3ltYm9sGAMgASgJEg4KBmFjdGlvbhgEIAEoCRIOCgZ2b2x1bWUYBSABKAkSEgoKb3Blbl9wcmljZRgGIAEoCRITCgtjbG9zZV9wcmljZRgHIAEoCRIOCgZwcm9maXQYCCABKAkSEQoJc3RvcF9sb3NzGAkgASgJEhMKC3Rha2VfcHJvZml0GAogASgJEhEKCW9wZW5fdGltZRgLIAEoAxISCgpjbG9zZV90aW1lGAwgASgDEg8KB2NvbW1lbnQYDSABKAkikwEKEExlZGdlckVudHJ5RXZlbnQSEgoKYWNjb3VudF9pZBgBIAEoCRISCgplbnRyeV90eXBlGAIgASgJEg4KBmFtb3VudBgDIAEoCRIQCghjdXJyZW5jeRgEIAEoCRIMCgR0aW1lGAUgASgDEg8KB2NvbW1lbnQYBiABKAkSFgoOcmVsYXRlZF90aWNrZXQYByABKAMiWAoVUG9zaXRpb25TbmFwc2hvdEV2ZW50EhIKCmFjY291bnRfaWQYASABKAkSKwoJcG9zaXRpb25zGAIgAygLMhguYW50LnYxLk9yZGVyVXBkYXRlRXZlbnRCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.OrderUpdateEvent
@@ -37,19 +37,19 @@ export type OrderUpdateEvent = Message<"ant.v1.OrderUpdateEvent"> & {
   type: string;
 
   /**
-   * @generated from field: double volume = 5;
+   * @generated from field: string volume = 5;
    */
-  volume: number;
+  volume: string;
 
   /**
-   * @generated from field: double open_price = 6;
+   * @generated from field: string open_price = 6;
    */
-  openPrice: number;
+  openPrice: string;
 
   /**
-   * @generated from field: double profit = 7;
+   * @generated from field: string profit = 7;
    */
-  profit: number;
+  profit: string;
 
   /**
    * @generated from field: string action = 8;
@@ -57,19 +57,19 @@ export type OrderUpdateEvent = Message<"ant.v1.OrderUpdateEvent"> & {
   action: string;
 
   /**
-   * @generated from field: double stop_loss = 9;
+   * @generated from field: string stop_loss = 9;
    */
-  stopLoss: number;
+  stopLoss: string;
 
   /**
-   * @generated from field: double take_profit = 10;
+   * @generated from field: string take_profit = 10;
    */
-  takeProfit: number;
+  takeProfit: string;
 
   /**
-   * @generated from field: double close_price = 11;
+   * @generated from field: string close_price = 11;
    */
-  closePrice: number;
+  closePrice: string;
 
   /**
    * @generated from field: int64 open_time = 12;
@@ -82,14 +82,14 @@ export type OrderUpdateEvent = Message<"ant.v1.OrderUpdateEvent"> & {
   closeTime: bigint;
 
   /**
-   * @generated from field: double swap = 14;
+   * @generated from field: string swap = 14;
    */
-  swap: number;
+  swap: string;
 
   /**
-   * @generated from field: double commission = 15;
+   * @generated from field: string commission = 15;
    */
-  commission: number;
+  commission: string;
 
   /**
    * @generated from field: string comment = 16;
@@ -139,29 +139,29 @@ export type DealUpdateEvent = Message<"ant.v1.DealUpdateEvent"> & {
   direction: string;
 
   /**
-   * @generated from field: double volume = 7;
+   * @generated from field: string volume = 7;
    */
-  volume: number;
+  volume: string;
 
   /**
-   * @generated from field: double price = 8;
+   * @generated from field: string price = 8;
    */
-  price: number;
+  price: string;
 
   /**
-   * @generated from field: double profit = 9;
+   * @generated from field: string profit = 9;
    */
-  profit: number;
+  profit: string;
 
   /**
-   * @generated from field: double swap = 10;
+   * @generated from field: string swap = 10;
    */
-  swap: number;
+  swap: string;
 
   /**
-   * @generated from field: double commission = 11;
+   * @generated from field: string commission = 11;
    */
-  commission: number;
+  commission: string;
 
   /**
    * @generated from field: int64 time = 12;
@@ -211,34 +211,34 @@ export type PositionUpdateEvent = Message<"ant.v1.PositionUpdateEvent"> & {
   action: string;
 
   /**
-   * @generated from field: double volume = 5;
+   * @generated from field: string volume = 5;
    */
-  volume: number;
+  volume: string;
 
   /**
-   * @generated from field: double open_price = 6;
+   * @generated from field: string open_price = 6;
    */
-  openPrice: number;
+  openPrice: string;
 
   /**
-   * @generated from field: double close_price = 7;
+   * @generated from field: string close_price = 7;
    */
-  closePrice: number;
+  closePrice: string;
 
   /**
-   * @generated from field: double profit = 8;
+   * @generated from field: string profit = 8;
    */
-  profit: number;
+  profit: string;
 
   /**
-   * @generated from field: double stop_loss = 9;
+   * @generated from field: string stop_loss = 9;
    */
-  stopLoss: number;
+  stopLoss: string;
 
   /**
-   * @generated from field: double take_profit = 10;
+   * @generated from field: string take_profit = 10;
    */
-  takeProfit: number;
+  takeProfit: string;
 
   /**
    * @generated from field: int64 open_time = 11;
@@ -278,9 +278,9 @@ export type LedgerEntryEvent = Message<"ant.v1.LedgerEntryEvent"> & {
   entryType: string;
 
   /**
-   * @generated from field: double amount = 3;
+   * @generated from field: string amount = 3;
    */
-  amount: number;
+  amount: string;
 
   /**
    * @generated from field: string currency = 4;

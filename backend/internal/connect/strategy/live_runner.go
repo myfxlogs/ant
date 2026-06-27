@@ -1,9 +1,9 @@
 // live_runner.go — LiveStrategyRunner: subscribes to real-time bar stream,
-// builds proto-native LiveStrategyContext per bar, calls ExecuteLive RPC,
+// builds proto-native LiveStrategyContext per bar, calls ExecuteLive,
 // and dispatches signals to OMS.
 //
 // Architecture:
-//   Bar stream (mthub/LiveSource) → buildContext() → ExecuteLive (Python LiveWorker pool)
+//   Bar stream (mthub/LiveSource) → buildContext() → ExecuteLive
 //   → signal dispatch → OMS (live) or log (paper)
 //
 // Follows push-first architecture: bar events drive the loop; no polling.
@@ -13,6 +13,7 @@ package strategy
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
@@ -50,11 +51,11 @@ type LiveStrategyConfig struct {
 }
 
 // RunLiveStrategy subscribes to real-time bar updates for the given account/symbol/timeframe,
-// builds a proto-native LiveStrategyContext for each bar, calls the Python strategy engine
+// builds a proto-native LiveStrategyContext for each bar, calls the Go-native executor
 // via ExecuteLive, and dispatches the resulting signal.
 //
 // Blocks until ctx is cancelled. Callers should run this in a goroutine.
-func (s *PythonStrategyServer) RunLiveStrategy(ctx context.Context, cfg LiveStrategyConfig) error {
+func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveStrategyConfig) error {
 	if s.barSource == nil {
 		return fmt.Errorf("live strategy runner: no BarSource configured")
 	}
@@ -120,9 +121,9 @@ func (s *PythonStrategyServer) RunLiveStrategy(ctx context.Context, cfg LiveStra
 			}
 
 			// Build proto-native LiveStrategyContext (T3.1: now a method).
-			lctx := s.buildLiveContext(cfg, bars)
+			lctx := s.buildLiveContext(ctx, cfg, bars)
 
-			// Call Python strategy via ConnectRPC.
+			// Call strategy via ExecuteLive.
 			// Inject user ID for paper/internal mode (auth context required).
 			callCtx := ctx
 			if cfg.UserID != "" {
@@ -161,7 +162,7 @@ func (s *PythonStrategyServer) RunLiveStrategy(ctx context.Context, cfg LiveStra
 
 // buildLiveContext constructs the proto-native LiveStrategyContext from accumulated bars.
 // T3.1: now also backfills position/positions/equity/balance/margin (hard injury ① fix).
-func (s *PythonStrategyServer) buildLiveContext(cfg LiveStrategyConfig, bars []liveBar) *antv1.LiveStrategyContext {
+func (s *StrategyExecutionServer) buildLiveContext(ctx context.Context, cfg LiveStrategyConfig, bars []liveBar) *antv1.LiveStrategyContext {
 	n := len(bars)
 	closeVals := make([]float64, n)
 	openVals := make([]float64, n)
@@ -192,12 +193,12 @@ func (s *PythonStrategyServer) buildLiveContext(cfg LiveStrategyConfig, bars []l
 		Params:     buildLiveParams(cfg.Params),
 	}
 	if n > 0 {
-		lctx.CurrentPrice = closeVals[n-1]
+		lctx.CurrentPrice = strconv.FormatFloat(closeVals[n-1], 'f', -1, 64)
 	}
 
 	// T3.1: Backfill live account/position state (hard injury ①).
 	if s.mtHub != nil {
-		s.backfillLiveState(context.Background(), cfg.AccountID, lctx)
+		s.backfillLiveState(ctx, cfg.AccountID, lctx)
 	} else {
 		s.log.Debug("buildLiveContext: mtHub is nil, skipping position backfill")
 	}
@@ -208,12 +209,12 @@ func (s *PythonStrategyServer) buildLiveContext(cfg LiveStrategyConfig, bars []l
 // backfillLiveState queries the AccountStateProvider for real account data (T3.2b / D6-A).
 // If the provider is not yet connected, equity-dependent gate rules will fail-closed
 // (see risk.Gate.Evaluate: nil AccountState → equity rules deny).
-func (s *PythonStrategyServer) backfillLiveState(ctx context.Context, accountID string, lctx *antv1.LiveStrategyContext) {
+func (s *StrategyExecutionServer) backfillLiveState(ctx context.Context, accountID string, lctx *antv1.LiveStrategyContext) {
 	if s.accountProvider == nil {
 		// T3.2b fail-closed: no provider → zero equity → equity-dependent rules deny.
 		// Set sentinel values so the gate can distinguish "not connected" from "zero balance".
-		lctx.Equity = -1.0  // sentinel: account provider not connected
-		lctx.Balance = -1.0
+		lctx.Equity = "-1"  // sentinel: account provider not connected
+		lctx.Balance = "-1"
 		s.log.Debug("backfillLiveState: no AccountStateProvider — equity rules fail-closed",
 			zap.String("account", accountID))
 		return
@@ -223,21 +224,21 @@ func (s *PythonStrategyServer) backfillLiveState(ctx context.Context, accountID 
 	if err != nil {
 		s.log.Warn("backfillLiveState: AccountStateProvider failed — equity rules fail-closed",
 			zap.String("account", accountID), zap.Error(err))
-		lctx.Equity = -1.0
-		lctx.Balance = -1.0
+		lctx.Equity = "-1"
+		lctx.Balance = "-1"
 		return
 	}
 
 	if state == nil {
-		lctx.Equity = -1.0
-		lctx.Balance = -1.0
+		lctx.Equity = "-1"
+		lctx.Balance = "-1"
 		return
 	}
 
 	equity, _ := state.Equity.Float64()
 	balance, _ := state.Balance.Float64()
-	lctx.Equity = equity
-	lctx.Balance = balance
+	lctx.Equity = strconv.FormatFloat(equity, 'f', -1, 64)
+	lctx.Balance = strconv.FormatFloat(balance, 'f', -1, 64)
 
 	// Backfill live positions from MT4 gateway so SDK strategies can
 	// query self.broker.positions() and close/modify positions.
@@ -255,8 +256,8 @@ func (s *PythonStrategyServer) backfillLiveState(ctx context.Context, accountID 
 				lp := &antv1.LivePosition{
 					Ticket:    o.Ticket,
 					Side:      side,
-					Volume:    o.Volume.InexactFloat64(),
-					OpenPrice: o.OpenPrice.InexactFloat64(),
+					Volume:    o.Volume.String(),
+					OpenPrice: o.OpenPrice.String(),
 				}
 				positions = append(positions, lp)
 			}
@@ -293,15 +294,15 @@ func buildLiveParams(params map[string]string) []*antv1.LiveParam {
 //	Close:     close, close_all  → CloseOrder
 //	Modify:    modify            → ModifyOrder
 //	Cancel:    cancel            → CancelPending
-func (s *PythonStrategyServer) dispatchLiveSignal(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, sig *antv1.StrategySignal) {
 	action := sig.GetSignalType()
 	s.log.Info("LiveStrategyRunner: signal",
 		zap.String("account", cfg.AccountID),
 		zap.String("symbol", cfg.Symbol),
 		zap.String("type", action),
-		zap.Float64("volume", sig.GetVolume()),
-		zap.Float64("sl", sig.GetStopLoss()),
-		zap.Float64("tp", sig.GetTakeProfit()),
+		zap.String("volume", sig.GetVolume()),
+		zap.String("sl", sig.GetStopLoss()),
+		zap.String("tp", sig.GetTakeProfit()),
 	)
 
 	if cfg.Mode == "paper" {
@@ -336,7 +337,7 @@ func (s *PythonStrategyServer) dispatchLiveSignal(ctx context.Context, cfg LiveS
 
 // ── T3.1 action dispatchers ──────────────────────────────────────────
 
-func (s *PythonStrategyServer) dispatchMarketOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) dispatchMarketOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
 	side := signalToSide(sig.GetSignalType())
 	if side == 0 {
 		return
@@ -344,7 +345,7 @@ func (s *PythonStrategyServer) dispatchMarketOrder(ctx context.Context, cfg Live
 	s.submitOrder(ctx, cfg, side, mthub.OrderMarket, sig)
 }
 
-func (s *PythonStrategyServer) dispatchPendingOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) dispatchPendingOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
 	side := signalToSide(sig.GetSignalType())
 	if side == 0 {
 		return
@@ -364,7 +365,7 @@ func (s *PythonStrategyServer) dispatchPendingOrder(ctx context.Context, cfg Liv
 }
 
 // dispatchCloseAll closes all open positions for the account.
-func (s *PythonStrategyServer) dispatchCloseAll(ctx context.Context, cfg LiveStrategyConfig) {
+func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg LiveStrategyConfig) {
 	if s.mtHub == nil {
 		s.log.Warn("LiveStrategyRunner: dispatchCloseAll: no MtHubService")
 		return
@@ -395,14 +396,14 @@ func (s *PythonStrategyServer) dispatchCloseAll(ctx context.Context, cfg LiveStr
 	}()
 }
 
-func (s *PythonStrategyServer) dispatchCloseOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) dispatchCloseOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
 	ticket := sig.GetExecutedTicket()
 	if ticket == 0 {
 		s.log.Warn("LiveStrategyRunner: close order without ticket")
 		return
 	}
 	// D6-A: gate moved to MtHubService.CloseOrder (single chokepoint).
-	volume := decimal.NewFromFloat(sig.GetVolume())
+	volume := decimal.NewFromFloat(parseFloat64(sig.GetVolume()))
 	go func() {
 		if err := s.mtHub.CloseOrder(context.Background(), cfg.AccountID, ticket, volume); err != nil {
 			s.log.Error("LiveStrategyRunner: CloseOrder failed",
@@ -413,25 +414,25 @@ func (s *PythonStrategyServer) dispatchCloseOrder(ctx context.Context, cfg LiveS
 	}()
 }
 
-func (s *PythonStrategyServer) dispatchModifyOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) dispatchModifyOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
 	ticket := sig.GetExecutedTicket()
 	if ticket == 0 {
 		s.log.Warn("LiveStrategyRunner: modify order without ticket")
 		return
 	}
-	sl := decimal.NewFromFloat(sig.GetStopLoss())
-	tp := decimal.NewFromFloat(sig.GetTakeProfit())
-	price := decimal.NewFromFloat(sig.GetPrice())
+	sl := decimal.NewFromFloat(parseFloat64(sig.GetStopLoss()))
+	tp := decimal.NewFromFloat(parseFloat64(sig.GetTakeProfit()))
+	price := decimal.NewFromFloat(parseFloat64(sig.GetPrice()))
 
 	go func() {
-		if err := s.mtHub.ModifyOrder(ctx, cfg.AccountID, ticket, sl, tp, price); err != nil {
+		if err := s.mtHub.ModifyOrder(context.WithoutCancel(ctx), cfg.AccountID, ticket, sl, tp, price); err != nil {
 			s.log.Error("LiveStrategyRunner: ModifyOrder failed",
 				zap.Int64("ticket", ticket), zap.Error(err))
 		}
 	}()
 }
 
-func (s *PythonStrategyServer) dispatchCancelOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) dispatchCancelOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
 	ticket := sig.GetExecutedTicket()
 	if ticket == 0 {
 		s.log.Warn("LiveStrategyRunner: cancel order without ticket")
@@ -451,7 +452,7 @@ func (s *PythonStrategyServer) dispatchCancelOrder(ctx context.Context, cfg Live
 	}()
 }
 
-func (s *PythonStrategyServer) dispatchPaperSignal(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) dispatchPaperSignal(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, sig *antv1.StrategySignal) {
 	if s.paperEngine == nil {
 		s.log.Warn("LiveStrategyRunner: no PaperEngine, dropping paper signal")
 		return
@@ -466,8 +467,8 @@ func (s *PythonStrategyServer) dispatchPaperSignal(ctx context.Context, cfg Live
 		}
 		return
 	case "modify":
-		sl := decimal.NewFromFloat(sig.GetStopLoss())
-		tp := decimal.NewFromFloat(sig.GetTakeProfit())
+		sl := decimal.NewFromFloat(parseFloat64(sig.GetStopLoss()))
+		tp := decimal.NewFromFloat(parseFloat64(sig.GetTakeProfit()))
 		if err := s.paperEngine.ModifyPaperOrder(ctx, cfg.AccountID, cfg.Symbol, sl, tp); err != nil {
 			s.log.Warn("LiveStrategyRunner: paper modify failed", zap.Error(err))
 		}
@@ -482,29 +483,32 @@ func (s *PythonStrategyServer) dispatchPaperSignal(ctx context.Context, cfg Live
 	bid := bar.Bid
 	ask := bar.Ask
 	if err := s.paperEngine.PlacePaperOrder(ctx, cfg.AccountID, cfg.Symbol,
-		action, decimal.NewFromFloat(sig.GetVolume()), bid, ask); err != nil {
+		action, decimal.NewFromFloat(parseFloat64(sig.GetVolume())), bid, ask); err != nil {
 		s.log.Warn("LiveStrategyRunner: paper order failed", zap.Error(err))
 	}
 }
 
 // submitOrder is the common order submission helper (T3.1 / D6-A).
 // Every order MUST pass through Gate.Evaluate() before reaching mthub.
-func (s *PythonStrategyServer) submitOrder(ctx context.Context, cfg LiveStrategyConfig, side mthub.Side, orderType mthub.OrderType, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrategyConfig, side mthub.Side, orderType mthub.OrderType, sig *antv1.StrategySignal) {
 	req := &mthub.OrderRequest{
 		AccountID: cfg.AccountID,
 		Canonical: cfg.Symbol,
 		Side:      side,
 		OrderType: orderType,
-		Volume:    decimal.NewFromFloat(sig.GetVolume()),
+		Volume:    decimal.NewFromFloat(parseFloat64(sig.GetVolume())),
 	}
-	if sig.GetStopLoss() > 0 {
-		req.StopLoss = decimal.NewFromFloat(sig.GetStopLoss())
+	slF := parseFloat64(sig.GetStopLoss())
+	if slF > 0 {
+		req.StopLoss = decimal.NewFromFloat(slF)
 	}
-	if sig.GetTakeProfit() > 0 {
-		req.TakeProfit = decimal.NewFromFloat(sig.GetTakeProfit())
+	tpF := parseFloat64(sig.GetTakeProfit())
+	if tpF > 0 {
+		req.TakeProfit = decimal.NewFromFloat(tpF)
 	}
-	if sig.GetPrice() > 0 {
-		req.Price = decimal.NewFromFloat(sig.GetPrice())
+	pxF := parseFloat64(sig.GetPrice())
+	if pxF > 0 {
+		req.Price = decimal.NewFromFloat(pxF)
 	}
 
 	sideStr := sideToString(side)
@@ -513,7 +517,7 @@ func (s *PythonStrategyServer) submitOrder(ctx context.Context, cfg LiveStrategy
 	// Pass user ID in context for mthub capability check.
 	placeCtx := context.WithoutCancel(ctx)
 	if cfg.UserID != "" {
-		placeCtx = context.WithValue(context.Background(), interceptor.UserIDKey, cfg.UserID)
+		placeCtx = context.WithValue(placeCtx, interceptor.UserIDKey, cfg.UserID)
 	}
 	go func() {
 		record, err := s.mtHub.PlaceOrder(placeCtx, req)
@@ -540,11 +544,11 @@ func signalToOrderIntent(sig *antv1.StrategySignal, cfg LiveStrategyConfig) *ant
 		AccountId: cfg.AccountID,
 		Symbol:    cfg.Symbol,
 		Side:      sig.GetSignalType(),
-		Volume:    fmt.Sprintf("%.5f", sig.GetVolume()),
+		Volume:    sig.GetVolume(),
 		Type:      sig.GetSignalType(),
-		Price:     fmt.Sprintf("%.5f", sig.GetPrice()),
-		Sl:        fmt.Sprintf("%.5f", sig.GetStopLoss()),
-		Tp:        fmt.Sprintf("%.5f", sig.GetTakeProfit()),
+		Price:     sig.GetPrice(),
+		Sl:        sig.GetStopLoss(),
+		Tp:        sig.GetTakeProfit(),
 		Magic:     sig.GetExecutedTicket(),
 		Source:    antv1.OrderIntentSource_ORDER_INTENT_SOURCE_LIVE,
 	}
@@ -552,7 +556,7 @@ func signalToOrderIntent(sig *antv1.StrategySignal, cfg LiveStrategyConfig) *ant
 
 // getAccountState fetches live account state for gate evaluation (T3.2b).
 // Returns nil if provider not connected — gate rules fail-closed on nil state.
-func (s *PythonStrategyServer) getAccountState(ctx context.Context, accountID string) *risk.AccountState {
+func (s *StrategyExecutionServer) getAccountState(ctx context.Context, accountID string) *risk.AccountState {
 	if s.accountProvider == nil {
 		return nil // fail-closed: equity-dependent gate rules will deny
 	}

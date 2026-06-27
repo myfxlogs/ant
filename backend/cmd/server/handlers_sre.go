@@ -52,6 +52,7 @@ func registerSREHandlers(
 	analyticsCache *service.AnalyticsCache,
 	aiSvc *systemai.Service,
 	backtestRunRepo *repository.BacktestRunRepository,
+	pgListen *pglisten.Listener,
 ) (*notifier.EmailNotifier, func()) {
 	// --- SRE control plane ---
 	sreKillSwitch := controlplane.NewKillSwitch()
@@ -79,10 +80,10 @@ func registerSREHandlers(
 	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	strategyExperimentServer := strategy.NewStrategyExperimentServer(strategyExperimentRepo, log)
-	strategyExperimentServer.SetPgListen(pglisten.New(pool, log))
+	strategyExperimentServer.SetPgListen(pgListen)
 	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, backtestRunRepo, store, log)
-	experimentWorker.SetPgListen(pglisten.New(pool, log))
+	experimentWorker.SetPgListen(pgListen)
 	if aiSvc != nil {
 		experimentWorker.SetAIService(aiSvc)
 	}

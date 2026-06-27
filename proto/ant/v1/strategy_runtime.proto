@@ -1,0 +1,279 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+import "google/protobuf/empty.proto";
+import "common.proto";
+import "strategy_messages.proto";
+import "backtest_run_start.proto";
+import "backtest_run_query.proto";
+import "backtest_run_control.proto";
+
+service StrategyRuntimeService {
+  rpc Execute(ExecuteStrategyRequest) returns (ExecuteStrategyResponse);
+  rpc Validate(ValidateStrategyRequest) returns (ValidateStrategyResponse);
+  rpc Backtest(BacktestStrategyRequest) returns (BacktestStrategyResponse);
+  rpc StartBacktestRun(StartBacktestRunRequest) returns (StartBacktestRunResponse);
+  rpc GetBacktestRun(GetBacktestRunRequest) returns (GetBacktestRunResponse);
+  rpc ListBacktestRuns(ListBacktestRunsRequest) returns (ListBacktestRunsResponse);
+  rpc WatchBacktestRun(WatchBacktestRunRequest) returns (stream BacktestRunUpdate);
+  rpc CancelBacktestRun(CancelBacktestRunRequest) returns (CancelBacktestRunResponse);
+  rpc DeleteBacktestRun(DeleteBacktestRunRequest) returns (DeleteBacktestRunResponse);
+  rpc DeleteBacktestRuns(DeleteBacktestRunsRequest) returns (DeleteBacktestRunsResponse);
+  rpc GetTemplates(google.protobuf.Empty) returns (GetStrategyTemplatesResponse);
+  // ExecuteLive: proto-native live/paper strategy execution.
+  // Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
+  rpc ExecuteLive(ExecuteLiveRequest) returns (ExecuteLiveResponse);
+  // TranspileCode translates MQL4/MQL5 code to Go using the mql2go transpiler.
+  // Returns confidence score and gap report; AI fallback handled by Go layer.
+  rpc TranspileCode(TranspileCodeRequest) returns (TranspileCodeResponse);
+  // AnalyzeCode analyzes MQL source and returns strategy intent summary + param panel + blind spots.
+  rpc AnalyzeImportCode(AnalyzeImportCodeRequest) returns (AnalyzeImportCodeResponse);
+  // GenerateImportCode generates Go SDK code from analyzed MQL source.
+  rpc GenerateImportCode(GenerateImportCodeRequest) returns (GenerateImportCodeResponse);
+  // ImportStrategy runs the full import pipeline: analyze → generate → return code.
+  rpc ImportStrategy(ImportStrategyRequest) returns (ImportStrategyResponse);
+}
+
+message TranspileCodeRequest {
+  string source_code = 1;  // MQL4 or MQL5 source
+  string source_lang = 2;  // "mql4", "mql5", or "auto"
+  string class_name = 3;   // desired Go strategy type name
+}
+
+message TranspileCodeResponse {
+  string target_code = 1;       // translated Go code
+  float confidence = 2;        // 0.0–1.0
+  int32 total_patterns = 3;    // matched + gaps
+  int32 gaps = 4;              // untranslated patterns
+  repeated string gap_samples = 5;  // gap reasons (max 10)
+  bool is_deterministic = 6;   // true if no AI was used
+}
+
+message ExecuteStrategyRequest {
+  string code = 1;
+  string account_id = 2;
+  string symbol = 3;
+  string timeframe = 4;
+}
+
+message ExecuteStrategyResponse {
+  bool success = 1;
+  StrategySignal signal = 2;
+  repeated string logs = 3;
+  string error = 4;
+}
+
+message ValidateStrategyRequest {
+  string code = 1;
+}
+
+message ValidateStrategyResponse {
+  bool valid = 1;
+  repeated string errors = 2;
+  repeated string warnings = 3;
+  repeated CodeQualityHint quality_hints = 4;
+  repeated SweepDimension sweep_dimensions = 5;
+  repeated StrategyDirective strategy_directives = 6;
+  // Auto-detected strategy type from code analysis.
+  // "run_context" = event-driven OnInit/OnBar | "run_dataframe" = vectorized
+  string strategy_type = 7;
+  // Extracted ctx.Param() calls as JSON array of {name, type, default, label}.
+  // Frontend uses this to render parameter input fields in the backtest card.
+  string parameters_json = 8;
+}
+
+// CodeQualityHint reports a single code quality issue found by static analysis.
+message CodeQualityHint {
+  // Category enum: "FUTURE_DATA_LEAK" | "MISSING_PARAM" | "UNREAD_PARAM"
+  string category = 1;
+  // Severity: "error" | "warn" | "info"
+  string severity = 2;
+  // Human-readable message (Chinese preferred)
+  string message = 3;
+  // Approximate 1-based line number
+  int32 line = 4;
+  // Problematic code fragment
+  string snippet = 5;
+}
+
+// SweepDimension describes a single parameter dimension for Smart Tuning.
+// Extracted from @param annotations by the Python backend (zero-trust).
+message SweepDimension {
+  string key = 1;
+  // "int" | "float"
+  string type = 2;
+  double default = 3;
+  double min = 4;
+  double max = 5;
+  double step = 6;
+  bool has_range = 7;
+}
+
+// StrategyDirective is a key-value directive from @strategy annotations.
+// Extracted by the Python backend (zero-trust).
+message StrategyDirective {
+  string key = 1;
+  string value = 2;
+}
+
+message BacktestStrategyRequest {
+  string code = 1;
+  string account_id = 2;
+  string symbol = 3;
+  string timeframe = 4;
+  string initial_capital = 5;
+  optional string dataset_id = 6;
+}
+
+message BacktestStrategyResponse {
+  bool success = 1;
+  BacktestMetrics metrics = 2;
+  repeated double equity_curve = 3;
+  string error = 4;
+  optional string dataset_id = 5;
+}
+
+message GetStrategyTemplatesResponse {
+  repeated StrategyTemplateInfo templates = 1;
+}
+
+message StrategyTemplateInfo {
+  string name = 1;
+  string description = 2;
+  string code = 3;
+}
+
+// ── ExecuteLive: proto-native live/paper strategy execution ──
+
+// ExecuteLiveRequest sends strategy code with a proto-native context message.
+// The Go-side LiveStrategyRunner builds the context from real-time bar data
+// and calls this RPC per bar.
+message ExecuteLiveRequest {
+  string strategy_code = 1;
+  LiveStrategyContext context = 2;  // proto-native — no JSON
+}
+
+message ExecuteLiveResponse {
+  bool success = 1;
+  StrategySignal signal = 2;            // deprecated — first signal only
+  string error = 3;
+  string strategy_hash = 4;             // cached worker identifier for debugging
+  repeated StrategySignal signals = 5;  // all signals (multi-intent per bar)
+}
+
+// LiveStrategyContext is the execution context passed to OnInit/OnBar in live/paper mode.
+// Proto-native binary encoding — no JSON marshalling.
+message LiveStrategyContext {
+  // Market data (primary symbol OHLCV — length-aligned arrays)
+  repeated double close = 1;
+  repeated double open = 2;
+  repeated double high = 3;
+  repeated double low = 4;
+  repeated double volume = 5;
+  repeated int64 bar_times_ms = 6;  // bar close timestamps in unix ms
+
+  // Account state
+  string equity = 7;
+  string balance = 8;
+  LivePosition position = 9;        // current open position (nil = none)
+  repeated LivePosition positions = 10;  // all open positions
+
+  // Metadata
+  string symbol = 11;
+  string timeframe = 12;
+  string mode = 13;  // "live" | "paper"
+  repeated LiveParam params = 14;
+
+  // Multi-symbol views (Phase B2 — optional)
+  repeated LiveSymbolSeries symbols = 15;
+  string primary_symbol = 16;
+  string current_price = 17;
+}
+
+// LivePosition mirrors the engine Position for live context.
+message LivePosition {
+  int64 ticket = 1;
+  string side = 2;       // "buy" | "sell"
+  string volume = 3;
+  string open_price = 4;
+  string sl = 5;
+  string tp = 6;
+  string swap = 7;
+  string commission = 8;
+}
+
+// LiveParam is a key-value strategy parameter.
+message LiveParam {
+  string key = 1;
+  string value = 2;  // stringly-typed; strategy calls params.get(key) → converts as needed
+}
+
+// LiveSymbolSeries holds OHLCV for one symbol in multi-symbol mode.
+message LiveSymbolSeries {
+  string symbol = 1;
+  repeated double close = 2;
+  repeated double open = 3;
+  repeated double high = 4;
+  repeated double low = 5;
+  repeated double volume = 6;
+}
+
+// ── Strategy Import (migration engine) ──────────────────────────────
+
+message AnalyzeImportCodeRequest {
+  string source_code = 1;
+  string source_name = 2;
+  string source_lang = 3;
+}
+
+message AnalyzeImportCodeResponse {
+  string strategy_name = 1;
+  string mql_version = 2;
+  double coverage_score = 10;
+  int32 total_blocks = 11;
+  int32 recognized_blocks = 12;
+  string execution_kind = 30;
+  int32 entry_rules_count = 50;
+  int32 exit_rules_count = 51;
+  string sizing_kind = 52;
+  int32 risk_checks_count = 53;
+  // Param panel schema (JSON-serialized for frontend convenience — frontend
+  // uses this to render the parameter form; proto-native in a future cleanup).
+  string params_json = 60;
+  string groups_json = 61;
+  // Blind spot report (JSON-serialized; same rationale as above).
+  string blind_spots_json = 70;
+  repeated string indicator_names = 80;
+}
+
+message GenerateImportCodeRequest {
+  string source_code = 1;
+  string source_name = 2;
+  string source_lang = 3;
+}
+
+message GenerateImportCodeResponse {
+  string go_code = 1;
+  int32 code_lines = 2;
+  bool compiles = 3;
+  repeated string quality_gate_failures = 10;
+}
+
+message ImportStrategyRequest {
+  string source_code = 1;
+  string source_name = 2;
+  string source_lang = 3;
+  optional string workspace_id = 20;
+}
+
+message ImportStrategyResponse {
+  string strategy_id = 1;
+  string strategy_name = 2;
+  string go_code = 3;
+  double coverage_score = 4;
+  // JSON-serialized blind spots (same rationale as above).
+  string blind_spots_json = 10;
+}

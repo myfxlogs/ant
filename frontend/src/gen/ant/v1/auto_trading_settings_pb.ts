@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file auto_trading_settings.proto.
  */
 export const file_auto_trading_settings: GenFile = /*@__PURE__*/
-  fileDesc("ChthdXRvX3RyYWRpbmdfc2V0dGluZ3MucHJvdG8SBmFudC52MSIaChhHZXRHbG9iYWxTZXR0aW5nc1JlcXVlc3QipgIKDkdsb2JhbFNldHRpbmdzEgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSGgoSYXV0b190cmFkZV9lbmFibGVkGAMgASgIEhgKEG1heF9yaXNrX3BlcmNlbnQYBCABKAESFQoNbWF4X3Bvc2l0aW9ucxgFIAEoBRIUCgxtYXhfbG90X3NpemUYBiABKAESFgoObWF4X2RhaWx5X2xvc3MYByABKAESHAoUbWF4X2RyYXdkb3duX3BlcmNlbnQYCCABKAESLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAi4AIKG1VwZGF0ZUdsb2JhbFNldHRpbmdzUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEh8KEmF1dG9fdHJhZGVfZW5hYmxlZBgCIAEoCEgAiAEBEh0KEG1heF9yaXNrX3BlcmNlbnQYAyABKAFIAYgBARIaCg1tYXhfcG9zaXRpb25zGAQgASgFSAKIAQESGQoMbWF4X2xvdF9zaXplGAUgASgBSAOIAQESGwoObWF4X2RhaWx5X2xvc3MYBiABKAFIBIgBARIhChRtYXhfZHJhd2Rvd25fcGVyY2VudBgHIAEoAUgFiAEBQhUKE19hdXRvX3RyYWRlX2VuYWJsZWRCEwoRX21heF9yaXNrX3BlcmNlbnRCEAoOX21heF9wb3NpdGlvbnNCDwoNX21heF9sb3Rfc2l6ZUIRCg9fbWF4X2RhaWx5X2xvc3NCFwoVX21heF9kcmF3ZG93bl9wZXJjZW50IjoKFlRvZ2dsZUF1dG9UcmFkZVJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCRIPCgdlbmFibGVkGAIgASgIIjsKF1RvZ2dsZUF1dG9UcmFkZVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCSIdChtHZXRBdXRvVHJhZGluZ1N0YXR1c1JlcXVlc3QijwEKEUF1dG9UcmFkaW5nU3RhdHVzEhYKDmdsb2JhbF9lbmFibGVkGAEgASgIEhkKEWFjdGl2ZV9zdHJhdGVnaWVzGAIgASgFEhcKD3BlbmRpbmdfc2lnbmFscxgDIAEoBRIYChB0b2RheV9leGVjdXRpb25zGAQgASgFEhQKDHRvZGF5X3Byb2ZpdBgFIAEoAUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("ChthdXRvX3RyYWRpbmdfc2V0dGluZ3MucHJvdG8SBmFudC52MSIaChhHZXRHbG9iYWxTZXR0aW5nc1JlcXVlc3QipgIKDkdsb2JhbFNldHRpbmdzEgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSGgoSYXV0b190cmFkZV9lbmFibGVkGAMgASgIEhgKEG1heF9yaXNrX3BlcmNlbnQYBCABKAESFQoNbWF4X3Bvc2l0aW9ucxgFIAEoBRIUCgxtYXhfbG90X3NpemUYBiABKAkSFgoObWF4X2RhaWx5X2xvc3MYByABKAkSHAoUbWF4X2RyYXdkb3duX3BlcmNlbnQYCCABKAESLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAi4AIKG1VwZGF0ZUdsb2JhbFNldHRpbmdzUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEh8KEmF1dG9fdHJhZGVfZW5hYmxlZBgCIAEoCEgAiAEBEh0KEG1heF9yaXNrX3BlcmNlbnQYAyABKAFIAYgBARIaCg1tYXhfcG9zaXRpb25zGAQgASgFSAKIAQESGQoMbWF4X2xvdF9zaXplGAUgASgJSAOIAQESGwoObWF4X2RhaWx5X2xvc3MYBiABKAlIBIgBARIhChRtYXhfZHJhd2Rvd25fcGVyY2VudBgHIAEoAUgFiAEBQhUKE19hdXRvX3RyYWRlX2VuYWJsZWRCEwoRX21heF9yaXNrX3BlcmNlbnRCEAoOX21heF9wb3NpdGlvbnNCDwoNX21heF9sb3Rfc2l6ZUIRCg9fbWF4X2RhaWx5X2xvc3NCFwoVX21heF9kcmF3ZG93bl9wZXJjZW50IjoKFlRvZ2dsZUF1dG9UcmFkZVJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCRIPCgdlbmFibGVkGAIgASgIIjsKF1RvZ2dsZUF1dG9UcmFkZVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCSIdChtHZXRBdXRvVHJhZGluZ1N0YXR1c1JlcXVlc3QijwEKEUF1dG9UcmFkaW5nU3RhdHVzEhYKDmdsb2JhbF9lbmFibGVkGAEgASgIEhkKEWFjdGl2ZV9zdHJhdGVnaWVzGAIgASgFEhcKD3BlbmRpbmdfc2lnbmFscxgDIAEoBRIYChB0b2RheV9leGVjdXRpb25zGAQgASgFEhQKDHRvZGF5X3Byb2ZpdBgFIAEoCUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.GetGlobalSettingsRequest
@@ -57,14 +57,14 @@ export type GlobalSettings = Message<"ant.v1.GlobalSettings"> & {
   maxPositions: number;
 
   /**
-   * @generated from field: double max_lot_size = 6;
+   * @generated from field: string max_lot_size = 6;
    */
-  maxLotSize: number;
+  maxLotSize: string;
 
   /**
-   * @generated from field: double max_daily_loss = 7;
+   * @generated from field: string max_daily_loss = 7;
    */
-  maxDailyLoss: number;
+  maxDailyLoss: string;
 
   /**
    * @generated from field: double max_drawdown_percent = 8;
@@ -114,14 +114,14 @@ export type UpdateGlobalSettingsRequest = Message<"ant.v1.UpdateGlobalSettingsRe
   maxPositions?: number | undefined;
 
   /**
-   * @generated from field: optional double max_lot_size = 5;
+   * @generated from field: optional string max_lot_size = 5;
    */
-  maxLotSize?: number | undefined;
+  maxLotSize?: string | undefined;
 
   /**
-   * @generated from field: optional double max_daily_loss = 6;
+   * @generated from field: optional string max_daily_loss = 6;
    */
-  maxDailyLoss?: number | undefined;
+  maxDailyLoss?: string | undefined;
 
   /**
    * @generated from field: optional double max_drawdown_percent = 7;
@@ -218,9 +218,9 @@ export type AutoTradingStatus = Message<"ant.v1.AutoTradingStatus"> & {
   todayExecutions: number;
 
   /**
-   * @generated from field: double today_profit = 5;
+   * @generated from field: string today_profit = 5;
    */
-  todayProfit: number;
+  todayProfit: string;
 };
 
 /**

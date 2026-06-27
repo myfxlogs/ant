@@ -265,8 +265,8 @@ func (e *CopyTradeEngine) submitCopyOrders(
 				AccountID: acc.sub.TargetUserID, Canonical: signal.Symbol, Side: side, OrderType: mthub.OrderMarket,
 				Volume: decimal.NewFromFloat(volume), Price: decimal.NewFromFloat(signal.Price),
 				StopLoss: decimal.NewFromFloat(signal.StopLoss), TakeProfit: decimal.NewFromFloat(signal.TakeProfit),
-				Comment: fmt.Sprintf("copytrade:%s:%s", signal.StrategyID[:8], signal.Comment),
-				ClientID: fmt.Sprintf("copytrade-%s-%s", signal.SignalID, acc.sub.TargetUserID[:8]),
+				Comment: fmt.Sprintf("copytrade:%s:%s", truncID(signal.StrategyID, 8), signal.Comment),
+				ClientID: fmt.Sprintf("copytrade-%s-%s", signal.SignalID, truncID(acc.sub.TargetUserID, 8)),
 			}
 			if signal.Price > 0 { req.OrderType = mthub.OrderLimit }
 			_, err := e.mthub.PlaceOrder(ctx, req)
@@ -289,3 +289,12 @@ func (e *CopyTradeEngine) Concurrency() int { return len(e.sem) }
 
 // MaxConcurrency returns the maximum concurrent copy operations.
 func (e *CopyTradeEngine) MaxConcurrency() int { return cap(e.sem) }
+
+// truncID safely truncates a string to n characters, returning the full string
+// if it is shorter than n.
+func truncID(s string, n int) string {
+	if len(s) <= n {
+		return s
+	}
+	return s[:n]
+}

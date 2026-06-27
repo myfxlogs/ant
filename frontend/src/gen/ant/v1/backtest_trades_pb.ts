@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file backtest_trades.proto.
  */
 export const file_backtest_trades: GenFile = /*@__PURE__*/
-  fileDesc("ChViYWNrdGVzdF90cmFkZXMucHJvdG8SBmFudC52MSIuChxMaXN0QmFja3Rlc3RSdW5UcmFkZXNSZXF1ZXN0Eg4KBnJ1bl9pZBgBIAEoCSJ1Ch1MaXN0QmFja3Rlc3RSdW5UcmFkZXNSZXNwb25zZRIlCgZ0cmFkZXMYASADKAsyFS5hbnQudjEuQmFja3Rlc3RUcmFkZRItCgdzdW1tYXJ5GAIgASgLMhwuYW50LnYxLkJhY2t0ZXN0VHJhZGVTdW1tYXJ5IroBCg1CYWNrdGVzdFRyYWRlEg4KBnRpY2tldBgBIAEoAxIMCgRzaWRlGAIgASgJEg4KBnZvbHVtZRgDIAEoARIPCgdvcGVuX3RzGAQgASgDEhIKCm9wZW5fcHJpY2UYBSABKAESEAoIY2xvc2VfdHMYBiABKAMSEwoLY2xvc2VfcHJpY2UYByABKAESCwoDcG5sGAggASgBEhIKCmNvbW1pc3Npb24YCSABKAESDgoGcmVhc29uGAogASgJIlQKFEJhY2t0ZXN0VHJhZGVTdW1tYXJ5Eg0KBWNvdW50GAEgASgFEgwKBHdpbnMYAiABKAUSDgoGbG9zc2VzGAMgASgFEg8KB25ldF9wbmwYBCABKAEyfQoVQmFja3Rlc3RUcmFkZXNTZXJ2aWNlEmQKFUxpc3RCYWNrdGVzdFJ1blRyYWRlcxIkLmFudC52MS5MaXN0QmFja3Rlc3RSdW5UcmFkZXNSZXF1ZXN0GiUuYW50LnYxLkxpc3RCYWNrdGVzdFJ1blRyYWRlc1Jlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("ChViYWNrdGVzdF90cmFkZXMucHJvdG8SBmFudC52MSIuChxMaXN0QmFja3Rlc3RSdW5UcmFkZXNSZXF1ZXN0Eg4KBnJ1bl9pZBgBIAEoCSJ1Ch1MaXN0QmFja3Rlc3RSdW5UcmFkZXNSZXNwb25zZRIlCgZ0cmFkZXMYASADKAsyFS5hbnQudjEuQmFja3Rlc3RUcmFkZRItCgdzdW1tYXJ5GAIgASgLMhwuYW50LnYxLkJhY2t0ZXN0VHJhZGVTdW1tYXJ5IroBCg1CYWNrdGVzdFRyYWRlEg4KBnRpY2tldBgBIAEoAxIMCgRzaWRlGAIgASgJEg4KBnZvbHVtZRgDIAEoCRIPCgdvcGVuX3RzGAQgASgDEhIKCm9wZW5fcHJpY2UYBSABKAkSEAoIY2xvc2VfdHMYBiABKAMSEwoLY2xvc2VfcHJpY2UYByABKAkSCwoDcG5sGAggASgJEhIKCmNvbW1pc3Npb24YCSABKAkSDgoGcmVhc29uGAogASgJIlQKFEJhY2t0ZXN0VHJhZGVTdW1tYXJ5Eg0KBWNvdW50GAEgASgFEgwKBHdpbnMYAiABKAUSDgoGbG9zc2VzGAMgASgFEg8KB25ldF9wbmwYBCABKAkyfQoVQmFja3Rlc3RUcmFkZXNTZXJ2aWNlEmQKFUxpc3RCYWNrdGVzdFJ1blRyYWRlcxIkLmFudC52MS5MaXN0QmFja3Rlc3RSdW5UcmFkZXNSZXF1ZXN0GiUuYW50LnYxLkxpc3RCYWNrdGVzdFJ1blRyYWRlc1Jlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.ListBacktestRunTradesRequest
@@ -66,9 +66,9 @@ export type BacktestTrade = Message<"ant.v1.BacktestTrade"> & {
   side: string;
 
   /**
-   * @generated from field: double volume = 3;
+   * @generated from field: string volume = 3;
    */
-  volume: number;
+  volume: string;
 
   /**
    * @generated from field: int64 open_ts = 4;
@@ -76,9 +76,9 @@ export type BacktestTrade = Message<"ant.v1.BacktestTrade"> & {
   openTs: bigint;
 
   /**
-   * @generated from field: double open_price = 5;
+   * @generated from field: string open_price = 5;
    */
-  openPrice: number;
+  openPrice: string;
 
   /**
    * @generated from field: int64 close_ts = 6;
@@ -86,19 +86,19 @@ export type BacktestTrade = Message<"ant.v1.BacktestTrade"> & {
   closeTs: bigint;
 
   /**
-   * @generated from field: double close_price = 7;
+   * @generated from field: string close_price = 7;
    */
-  closePrice: number;
+  closePrice: string;
 
   /**
-   * @generated from field: double pnl = 8;
+   * @generated from field: string pnl = 8;
    */
-  pnl: number;
+  pnl: string;
 
   /**
-   * @generated from field: double commission = 9;
+   * @generated from field: string commission = 9;
    */
-  commission: number;
+  commission: string;
 
   /**
    * @generated from field: string reason = 10;
@@ -133,9 +133,9 @@ export type BacktestTradeSummary = Message<"ant.v1.BacktestTradeSummary"> & {
   losses: number;
 
   /**
-   * @generated from field: double net_pnl = 4;
+   * @generated from field: string net_pnl = 4;
    */
-  netPnl: number;
+  netPnl: string;
 };
 
 /**

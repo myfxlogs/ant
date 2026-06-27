@@ -125,10 +125,10 @@ type StrategySignal struct {
 	AccountId      string                 `protobuf:"bytes,3,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	Symbol         string                 `protobuf:"bytes,4,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	SignalType     string                 `protobuf:"bytes,5,opt,name=signal_type,json=signalType,proto3" json:"signal_type,omitempty"`
-	Volume         float64                `protobuf:"fixed64,6,opt,name=volume,proto3" json:"volume,omitempty"`
-	Price          float64                `protobuf:"fixed64,7,opt,name=price,proto3" json:"price,omitempty"`
-	StopLoss       float64                `protobuf:"fixed64,8,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`
-	TakeProfit     float64                `protobuf:"fixed64,9,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`
+	Volume         string                 `protobuf:"bytes,6,opt,name=volume,proto3" json:"volume,omitempty"`
+	Price          string                 `protobuf:"bytes,7,opt,name=price,proto3" json:"price,omitempty"`
+	StopLoss       string                 `protobuf:"bytes,8,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`
+	TakeProfit     string                 `protobuf:"bytes,9,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`
 	Reason         string                 `protobuf:"bytes,10,opt,name=reason,proto3" json:"reason,omitempty"`
 	Status         string                 `protobuf:"bytes,11,opt,name=status,proto3" json:"status,omitempty"`
 	ExecutedTicket int64                  `protobuf:"varint,12,opt,name=executed_ticket,json=executedTicket,proto3" json:"executed_ticket,omitempty"`
@@ -203,32 +203,32 @@ func (x *StrategySignal) GetSignalType() string {
 	return ""
 }
 
-func (x *StrategySignal) GetVolume() float64 {
+func (x *StrategySignal) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *StrategySignal) GetPrice() float64 {
+func (x *StrategySignal) GetPrice() string {
 	if x != nil {
 		return x.Price
 	}
-	return 0
+	return ""
 }
 
-func (x *StrategySignal) GetStopLoss() float64 {
+func (x *StrategySignal) GetStopLoss() string {
 	if x != nil {
 		return x.StopLoss
 	}
-	return 0
+	return ""
 }
 
-func (x *StrategySignal) GetTakeProfit() float64 {
+func (x *StrategySignal) GetTakeProfit() string {
 	if x != nil {
 		return x.TakeProfit
 	}
-	return 0
+	return ""
 }
 
 func (x *StrategySignal) GetReason() string {
@@ -315,8 +315,8 @@ type ExecuteSignalResponse struct {
 	Ticket        int64                  `protobuf:"varint,1,opt,name=ticket,proto3" json:"ticket,omitempty"`
 	Symbol        string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Type          string                 `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
-	Volume        float64                `protobuf:"fixed64,4,opt,name=volume,proto3" json:"volume,omitempty"`
-	Price         float64                `protobuf:"fixed64,5,opt,name=price,proto3" json:"price,omitempty"`
+	Volume        string                 `protobuf:"bytes,4,opt,name=volume,proto3" json:"volume,omitempty"`
+	Price         string                 `protobuf:"bytes,5,opt,name=price,proto3" json:"price,omitempty"`
 	ExecutedAt    *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=executed_at,json=executedAt,proto3" json:"executed_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -373,18 +373,18 @@ func (x *ExecuteSignalResponse) GetType() string {
 	return ""
 }
 
-func (x *ExecuteSignalResponse) GetVolume() float64 {
+func (x *ExecuteSignalResponse) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteSignalResponse) GetPrice() float64 {
+func (x *ExecuteSignalResponse) GetPrice() string {
 	if x != nil {
 		return x.Price
 	}
-	return 0
+	return ""
 }
 
 func (x *ExecuteSignalResponse) GetExecutedAt() *timestamppb.Timestamp {
@@ -502,10 +502,10 @@ const file_strategy_signal_messages_proto_rawDesc = "" +
 	"\x06symbol\x18\x04 \x01(\tR\x06symbol\x12\x1f\n" +
 	"\vsignal_type\x18\x05 \x01(\tR\n" +
 	"signalType\x12\x16\n" +
-	"\x06volume\x18\x06 \x01(\x01R\x06volume\x12\x14\n" +
-	"\x05price\x18\a \x01(\x01R\x05price\x12\x1b\n" +
-	"\tstop_loss\x18\b \x01(\x01R\bstopLoss\x12\x1f\n" +
-	"\vtake_profit\x18\t \x01(\x01R\n" +
+	"\x06volume\x18\x06 \x01(\tR\x06volume\x12\x14\n" +
+	"\x05price\x18\a \x01(\tR\x05price\x12\x1b\n" +
+	"\tstop_loss\x18\b \x01(\tR\bstopLoss\x12\x1f\n" +
+	"\vtake_profit\x18\t \x01(\tR\n" +
 	"takeProfit\x12\x16\n" +
 	"\x06reason\x18\n" +
 	" \x01(\tR\x06reason\x12\x16\n" +
@@ -521,8 +521,8 @@ const file_strategy_signal_messages_proto_rawDesc = "" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04type\x18\x03 \x01(\tR\x04type\x12\x16\n" +
-	"\x06volume\x18\x04 \x01(\x01R\x06volume\x12\x14\n" +
-	"\x05price\x18\x05 \x01(\x01R\x05price\x12;\n" +
+	"\x06volume\x18\x04 \x01(\tR\x06volume\x12\x14\n" +
+	"\x05price\x18\x05 \x01(\tR\x05price\x12;\n" +
 	"\vexecuted_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"executedAt\"3\n" +
 	"\x14ConfirmSignalRequest\x12\x1b\n" +

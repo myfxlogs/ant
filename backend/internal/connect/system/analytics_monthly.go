@@ -87,7 +87,7 @@ func pointsToMonthlyProto(points []*model.MonthlyAnalysisPoint) *antv1.MonthlyAn
 	for i, p := range points {
 		pb.Points[i] = &antv1.MonthlyAnalysisPoint{
 			Year: int32(p.Year), Month: int32(p.Month),
-			Change: p.Change.InexactFloat64(), Profit: p.Profit.InexactFloat64(), Lots: p.Lots.InexactFloat64(), Pips: p.Pips.InexactFloat64(), Trades: int32(p.Trades),
+			Change: p.Change.String(), Profit: p.Profit.String(), Lots: p.Lots.String(), Pips: p.Pips.String(), Trades: int32(p.Trades),
 		}
 	}
 	return pb

@@ -111,8 +111,8 @@ export function useStrategyWorkspaceState() {
   const fetchHistoryRuns = useCallback(async (page: number, pageSize: number) => {
     setHistoryLoading(true);
     try {
-      const { pythonStrategyApi } = await import('@/client/pythonStrategy');
-      const resp = await pythonStrategyApi.listBacktestRuns({ accountId: accountId || undefined, limit: pageSize, offset: (page - 1) * pageSize });
+      const { strategyRuntimeApi } = await import('@/client/strategyRuntime');
+      const resp = await strategyRuntimeApi.listBacktestRuns({ accountId: accountId || undefined, limit: pageSize, offset: (page - 1) * pageSize });
       const runs = resp.runs ?? [];
       setHistoryRuns(runs);
       // API has no total field — infer from returned count
@@ -142,8 +142,8 @@ export function useStrategyWorkspaceState() {
   const handleDeleteHistoryRun = useCallback(async (runId: string) => {
     setHistoryDeleting(true);
     try {
-      const { pythonStrategyApi } = await import('@/client/pythonStrategy');
-      await pythonStrategyApi.deleteBacktestRun(runId);
+      const { strategyRuntimeApi } = await import('@/client/strategyRuntime');
+      await strategyRuntimeApi.deleteBacktestRun(runId);
       // If page now empty, go back one page
       const newPage = historyRuns.length <= 1 && historyPage > 1 ? historyPage - 1 : historyPage;
       setHistoryPage(newPage);
@@ -158,8 +158,8 @@ export function useStrategyWorkspaceState() {
     if (!historySelectedKeys.length) return;
     setHistoryDeleting(true);
     try {
-      const { pythonStrategyApi } = await import('@/client/pythonStrategy');
-      await pythonStrategyApi.deleteBacktestRuns(historySelectedKeys.map(String));
+      const { strategyRuntimeApi } = await import('@/client/strategyRuntime');
+      await strategyRuntimeApi.deleteBacktestRuns(historySelectedKeys.map(String));
       setHistorySelectedKeys([]);
       const newPage = historyRuns.length <= historySelectedKeys.length && historyPage > 1 ? historyPage - 1 : historyPage;
       setHistoryPage(newPage);

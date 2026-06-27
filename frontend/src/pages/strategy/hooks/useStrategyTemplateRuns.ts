@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { message } from "antd";
-import { pythonStrategyApi } from "@/client/pythonStrategy";
+import { strategyRuntimeApi } from "@/client/strategyRuntime";
 import * as scheduleHelpers from "../StrategyTemplatePage.schedule";
 import { isTerminalRun, loadRunTitles } from "../StrategyTemplatePage.utils";
 import type { ScheduleFlowState } from "../StrategyTemplateScheduleLaunchModal";
@@ -30,7 +30,7 @@ export function useStrategyTemplateRuns(t: (key: string) => string) {
   const fetchRuns = useCallback(async () => {
     setRunsLoading(true);
     try {
-      const resp: any = await pythonStrategyApi.listBacktestRuns({
+      const resp: any = await strategyRuntimeApi.listBacktestRuns({
         limit: 50,
         offset: 0,
       });
@@ -79,6 +79,7 @@ export function useStrategyTemplateRuns(t: (key: string) => string) {
   }, []);
 
   useEffect(() => {
+    const currentIds = new Set<string>();
     for (const r of runs || []) {
       const id = String(r?.id || "");
       if (!id) continue;
@@ -87,12 +88,22 @@ export function useStrategyTemplateRuns(t: (key: string) => string) {
         delete runStreamUnsubRef.current[id];
         continue;
       }
+      currentIds.add(id);
       if (runStreamUnsubRef.current[id]) continue;
-      runStreamUnsubRef.current[id] = pythonStrategyApi.watchBacktestRun(
+      runStreamUnsubRef.current[id] = strategyRuntimeApi.watchBacktestRun(
         id,
         updateRunFromStream,
         () => {},
       );
+    }
+    // Unsubscribe streams for runs no longer in the current list
+    for (const id of Object.keys(runStreamUnsubRef.current)) {
+      if (!currentIds.has(id)) {
+        try {
+          runStreamUnsubRef.current[id]?.();
+        } catch {}
+        delete runStreamUnsubRef.current[id];
+      }
     }
   }, [runs, updateRunFromStream]);
 
@@ -112,7 +123,7 @@ export function useStrategyTemplateRuns(t: (key: string) => string) {
     if (!selectedRunId) return;
     setCanceling(true);
     try {
-      await pythonStrategyApi.cancelBacktestRun(selectedRunId);
+      await strategyRuntimeApi.cancelBacktestRun(selectedRunId);
       message.success(t("strategy.templates.messages.backtestCancelRequested"));
       await fetchRuns();
     } catch (_e) {
@@ -125,7 +136,7 @@ export function useStrategyTemplateRuns(t: (key: string) => string) {
   const deleteRun = async (runId: string) => {
     if (!runId) return;
     try {
-      const resp: any = await pythonStrategyApi.deleteBacktestRun(runId);
+      const resp: any = await strategyRuntimeApi.deleteBacktestRun(runId);
       if (resp?.deleted)
         message.success(t("strategy.templates.messages.backtestReportDeleted"));
       else

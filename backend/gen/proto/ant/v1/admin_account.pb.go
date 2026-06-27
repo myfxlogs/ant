@@ -34,12 +34,12 @@ type AccountWithUser struct {
 	Login           string                 `protobuf:"bytes,8,opt,name=login,proto3" json:"login,omitempty"`
 	Alias           string                 `protobuf:"bytes,9,opt,name=alias,proto3" json:"alias,omitempty"`
 	IsDisabled      bool                   `protobuf:"varint,10,opt,name=is_disabled,json=isDisabled,proto3" json:"is_disabled,omitempty"`
-	Balance         float64                `protobuf:"fixed64,11,opt,name=balance,proto3" json:"balance,omitempty"`
-	Credit          float64                `protobuf:"fixed64,12,opt,name=credit,proto3" json:"credit,omitempty"`
-	Equity          float64                `protobuf:"fixed64,13,opt,name=equity,proto3" json:"equity,omitempty"`
-	Margin          float64                `protobuf:"fixed64,14,opt,name=margin,proto3" json:"margin,omitempty"`
-	FreeMargin      float64                `protobuf:"fixed64,15,opt,name=free_margin,json=freeMargin,proto3" json:"free_margin,omitempty"`
-	MarginLevel     float64                `protobuf:"fixed64,16,opt,name=margin_level,json=marginLevel,proto3" json:"margin_level,omitempty"`
+	Balance         string                 `protobuf:"bytes,11,opt,name=balance,proto3" json:"balance,omitempty"`
+	Credit          string                 `protobuf:"bytes,12,opt,name=credit,proto3" json:"credit,omitempty"`
+	Equity          string                 `protobuf:"bytes,13,opt,name=equity,proto3" json:"equity,omitempty"`
+	Margin          string                 `protobuf:"bytes,14,opt,name=margin,proto3" json:"margin,omitempty"`
+	FreeMargin      string                 `protobuf:"bytes,15,opt,name=free_margin,json=freeMargin,proto3" json:"free_margin,omitempty"`
+	MarginLevel     string                 `protobuf:"bytes,16,opt,name=margin_level,json=marginLevel,proto3" json:"margin_level,omitempty"`
 	Leverage        int32                  `protobuf:"varint,17,opt,name=leverage,proto3" json:"leverage,omitempty"`
 	Currency        string                 `protobuf:"bytes,18,opt,name=currency,proto3" json:"currency,omitempty"`
 	IsInvestor      bool                   `protobuf:"varint,19,opt,name=is_investor,json=isInvestor,proto3" json:"is_investor,omitempty"`
@@ -155,46 +155,46 @@ func (x *AccountWithUser) GetIsDisabled() bool {
 	return false
 }
 
-func (x *AccountWithUser) GetBalance() float64 {
+func (x *AccountWithUser) GetBalance() string {
 	if x != nil {
 		return x.Balance
 	}
-	return 0
+	return ""
 }
 
-func (x *AccountWithUser) GetCredit() float64 {
+func (x *AccountWithUser) GetCredit() string {
 	if x != nil {
 		return x.Credit
 	}
-	return 0
+	return ""
 }
 
-func (x *AccountWithUser) GetEquity() float64 {
+func (x *AccountWithUser) GetEquity() string {
 	if x != nil {
 		return x.Equity
 	}
-	return 0
+	return ""
 }
 
-func (x *AccountWithUser) GetMargin() float64 {
+func (x *AccountWithUser) GetMargin() string {
 	if x != nil {
 		return x.Margin
 	}
-	return 0
+	return ""
 }
 
-func (x *AccountWithUser) GetFreeMargin() float64 {
+func (x *AccountWithUser) GetFreeMargin() string {
 	if x != nil {
 		return x.FreeMargin
 	}
-	return 0
+	return ""
 }
 
-func (x *AccountWithUser) GetMarginLevel() float64 {
+func (x *AccountWithUser) GetMarginLevel() string {
 	if x != nil {
 		return x.MarginLevel
 	}
-	return 0
+	return ""
 }
 
 func (x *AccountWithUser) GetLeverage() int32 {
@@ -589,13 +589,13 @@ const file_admin_account_proto_rawDesc = "" +
 	"\vis_disabled\x18\n" +
 	" \x01(\bR\n" +
 	"isDisabled\x12\x18\n" +
-	"\abalance\x18\v \x01(\x01R\abalance\x12\x16\n" +
-	"\x06credit\x18\f \x01(\x01R\x06credit\x12\x16\n" +
-	"\x06equity\x18\r \x01(\x01R\x06equity\x12\x16\n" +
-	"\x06margin\x18\x0e \x01(\x01R\x06margin\x12\x1f\n" +
-	"\vfree_margin\x18\x0f \x01(\x01R\n" +
+	"\abalance\x18\v \x01(\tR\abalance\x12\x16\n" +
+	"\x06credit\x18\f \x01(\tR\x06credit\x12\x16\n" +
+	"\x06equity\x18\r \x01(\tR\x06equity\x12\x16\n" +
+	"\x06margin\x18\x0e \x01(\tR\x06margin\x12\x1f\n" +
+	"\vfree_margin\x18\x0f \x01(\tR\n" +
 	"freeMargin\x12!\n" +
-	"\fmargin_level\x18\x10 \x01(\x01R\vmarginLevel\x12\x1a\n" +
+	"\fmargin_level\x18\x10 \x01(\tR\vmarginLevel\x12\x1a\n" +
 	"\bleverage\x18\x11 \x01(\x05R\bleverage\x12\x1a\n" +
 	"\bcurrency\x18\x12 \x01(\tR\bcurrency\x12\x1f\n" +
 	"\vis_investor\x18\x13 \x01(\bR\n" +

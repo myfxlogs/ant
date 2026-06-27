@@ -27,17 +27,17 @@ type OrderUpdateEvent struct {
 	Ticket        int64                  `protobuf:"varint,2,opt,name=ticket,proto3" json:"ticket,omitempty"`
 	Symbol        string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Type          string                 `protobuf:"bytes,4,opt,name=type,proto3" json:"type,omitempty"`
-	Volume        float64                `protobuf:"fixed64,5,opt,name=volume,proto3" json:"volume,omitempty"`
-	OpenPrice     float64                `protobuf:"fixed64,6,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`
-	Profit        float64                `protobuf:"fixed64,7,opt,name=profit,proto3" json:"profit,omitempty"`
+	Volume        string                 `protobuf:"bytes,5,opt,name=volume,proto3" json:"volume,omitempty"`
+	OpenPrice     string                 `protobuf:"bytes,6,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`
+	Profit        string                 `protobuf:"bytes,7,opt,name=profit,proto3" json:"profit,omitempty"`
 	Action        string                 `protobuf:"bytes,8,opt,name=action,proto3" json:"action,omitempty"`
-	StopLoss      float64                `protobuf:"fixed64,9,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`
-	TakeProfit    float64                `protobuf:"fixed64,10,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`
-	ClosePrice    float64                `protobuf:"fixed64,11,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"`
+	StopLoss      string                 `protobuf:"bytes,9,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`
+	TakeProfit    string                 `protobuf:"bytes,10,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`
+	ClosePrice    string                 `protobuf:"bytes,11,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"`
 	OpenTime      int64                  `protobuf:"varint,12,opt,name=open_time,json=openTime,proto3" json:"open_time,omitempty"`
 	CloseTime     int64                  `protobuf:"varint,13,opt,name=close_time,json=closeTime,proto3" json:"close_time,omitempty"`
-	Swap          float64                `protobuf:"fixed64,14,opt,name=swap,proto3" json:"swap,omitempty"`
-	Commission    float64                `protobuf:"fixed64,15,opt,name=commission,proto3" json:"commission,omitempty"`
+	Swap          string                 `protobuf:"bytes,14,opt,name=swap,proto3" json:"swap,omitempty"`
+	Commission    string                 `protobuf:"bytes,15,opt,name=commission,proto3" json:"commission,omitempty"`
 	Comment       string                 `protobuf:"bytes,16,opt,name=comment,proto3" json:"comment,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -101,25 +101,25 @@ func (x *OrderUpdateEvent) GetType() string {
 	return ""
 }
 
-func (x *OrderUpdateEvent) GetVolume() float64 {
+func (x *OrderUpdateEvent) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *OrderUpdateEvent) GetOpenPrice() float64 {
+func (x *OrderUpdateEvent) GetOpenPrice() string {
 	if x != nil {
 		return x.OpenPrice
 	}
-	return 0
+	return ""
 }
 
-func (x *OrderUpdateEvent) GetProfit() float64 {
+func (x *OrderUpdateEvent) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
 func (x *OrderUpdateEvent) GetAction() string {
@@ -129,25 +129,25 @@ func (x *OrderUpdateEvent) GetAction() string {
 	return ""
 }
 
-func (x *OrderUpdateEvent) GetStopLoss() float64 {
+func (x *OrderUpdateEvent) GetStopLoss() string {
 	if x != nil {
 		return x.StopLoss
 	}
-	return 0
+	return ""
 }
 
-func (x *OrderUpdateEvent) GetTakeProfit() float64 {
+func (x *OrderUpdateEvent) GetTakeProfit() string {
 	if x != nil {
 		return x.TakeProfit
 	}
-	return 0
+	return ""
 }
 
-func (x *OrderUpdateEvent) GetClosePrice() float64 {
+func (x *OrderUpdateEvent) GetClosePrice() string {
 	if x != nil {
 		return x.ClosePrice
 	}
-	return 0
+	return ""
 }
 
 func (x *OrderUpdateEvent) GetOpenTime() int64 {
@@ -164,18 +164,18 @@ func (x *OrderUpdateEvent) GetCloseTime() int64 {
 	return 0
 }
 
-func (x *OrderUpdateEvent) GetSwap() float64 {
+func (x *OrderUpdateEvent) GetSwap() string {
 	if x != nil {
 		return x.Swap
 	}
-	return 0
+	return ""
 }
 
-func (x *OrderUpdateEvent) GetCommission() float64 {
+func (x *OrderUpdateEvent) GetCommission() string {
 	if x != nil {
 		return x.Commission
 	}
-	return 0
+	return ""
 }
 
 func (x *OrderUpdateEvent) GetComment() string {
@@ -193,11 +193,11 @@ type DealUpdateEvent struct {
 	Symbol         string                 `protobuf:"bytes,4,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	DealType       string                 `protobuf:"bytes,5,opt,name=deal_type,json=dealType,proto3" json:"deal_type,omitempty"`
 	Direction      string                 `protobuf:"bytes,6,opt,name=direction,proto3" json:"direction,omitempty"`
-	Volume         float64                `protobuf:"fixed64,7,opt,name=volume,proto3" json:"volume,omitempty"`
-	Price          float64                `protobuf:"fixed64,8,opt,name=price,proto3" json:"price,omitempty"`
-	Profit         float64                `protobuf:"fixed64,9,opt,name=profit,proto3" json:"profit,omitempty"`
-	Swap           float64                `protobuf:"fixed64,10,opt,name=swap,proto3" json:"swap,omitempty"`
-	Commission     float64                `protobuf:"fixed64,11,opt,name=commission,proto3" json:"commission,omitempty"`
+	Volume         string                 `protobuf:"bytes,7,opt,name=volume,proto3" json:"volume,omitempty"`
+	Price          string                 `protobuf:"bytes,8,opt,name=price,proto3" json:"price,omitempty"`
+	Profit         string                 `protobuf:"bytes,9,opt,name=profit,proto3" json:"profit,omitempty"`
+	Swap           string                 `protobuf:"bytes,10,opt,name=swap,proto3" json:"swap,omitempty"`
+	Commission     string                 `protobuf:"bytes,11,opt,name=commission,proto3" json:"commission,omitempty"`
 	Time           int64                  `protobuf:"varint,12,opt,name=time,proto3" json:"time,omitempty"`
 	Comment        string                 `protobuf:"bytes,13,opt,name=comment,proto3" json:"comment,omitempty"`
 	ExpertId       int64                  `protobuf:"varint,14,opt,name=expert_id,json=expertId,proto3" json:"expert_id,omitempty"`
@@ -277,39 +277,39 @@ func (x *DealUpdateEvent) GetDirection() string {
 	return ""
 }
 
-func (x *DealUpdateEvent) GetVolume() float64 {
+func (x *DealUpdateEvent) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *DealUpdateEvent) GetPrice() float64 {
+func (x *DealUpdateEvent) GetPrice() string {
 	if x != nil {
 		return x.Price
 	}
-	return 0
+	return ""
 }
 
-func (x *DealUpdateEvent) GetProfit() float64 {
+func (x *DealUpdateEvent) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
-func (x *DealUpdateEvent) GetSwap() float64 {
+func (x *DealUpdateEvent) GetSwap() string {
 	if x != nil {
 		return x.Swap
 	}
-	return 0
+	return ""
 }
 
-func (x *DealUpdateEvent) GetCommission() float64 {
+func (x *DealUpdateEvent) GetCommission() string {
 	if x != nil {
 		return x.Commission
 	}
-	return 0
+	return ""
 }
 
 func (x *DealUpdateEvent) GetTime() int64 {
@@ -339,12 +339,12 @@ type PositionUpdateEvent struct {
 	PositionTicket int64                  `protobuf:"varint,2,opt,name=position_ticket,json=positionTicket,proto3" json:"position_ticket,omitempty"`
 	Symbol         string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Action         string                 `protobuf:"bytes,4,opt,name=action,proto3" json:"action,omitempty"`
-	Volume         float64                `protobuf:"fixed64,5,opt,name=volume,proto3" json:"volume,omitempty"`
-	OpenPrice      float64                `protobuf:"fixed64,6,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`
-	ClosePrice     float64                `protobuf:"fixed64,7,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"`
-	Profit         float64                `protobuf:"fixed64,8,opt,name=profit,proto3" json:"profit,omitempty"`
-	StopLoss       float64                `protobuf:"fixed64,9,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`
-	TakeProfit     float64                `protobuf:"fixed64,10,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`
+	Volume         string                 `protobuf:"bytes,5,opt,name=volume,proto3" json:"volume,omitempty"`
+	OpenPrice      string                 `protobuf:"bytes,6,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`
+	ClosePrice     string                 `protobuf:"bytes,7,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"`
+	Profit         string                 `protobuf:"bytes,8,opt,name=profit,proto3" json:"profit,omitempty"`
+	StopLoss       string                 `protobuf:"bytes,9,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`
+	TakeProfit     string                 `protobuf:"bytes,10,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`
 	OpenTime       int64                  `protobuf:"varint,11,opt,name=open_time,json=openTime,proto3" json:"open_time,omitempty"`
 	CloseTime      int64                  `protobuf:"varint,12,opt,name=close_time,json=closeTime,proto3" json:"close_time,omitempty"`
 	Comment        string                 `protobuf:"bytes,13,opt,name=comment,proto3" json:"comment,omitempty"`
@@ -410,46 +410,46 @@ func (x *PositionUpdateEvent) GetAction() string {
 	return ""
 }
 
-func (x *PositionUpdateEvent) GetVolume() float64 {
+func (x *PositionUpdateEvent) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *PositionUpdateEvent) GetOpenPrice() float64 {
+func (x *PositionUpdateEvent) GetOpenPrice() string {
 	if x != nil {
 		return x.OpenPrice
 	}
-	return 0
+	return ""
 }
 
-func (x *PositionUpdateEvent) GetClosePrice() float64 {
+func (x *PositionUpdateEvent) GetClosePrice() string {
 	if x != nil {
 		return x.ClosePrice
 	}
-	return 0
+	return ""
 }
 
-func (x *PositionUpdateEvent) GetProfit() float64 {
+func (x *PositionUpdateEvent) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
-func (x *PositionUpdateEvent) GetStopLoss() float64 {
+func (x *PositionUpdateEvent) GetStopLoss() string {
 	if x != nil {
 		return x.StopLoss
 	}
-	return 0
+	return ""
 }
 
-func (x *PositionUpdateEvent) GetTakeProfit() float64 {
+func (x *PositionUpdateEvent) GetTakeProfit() string {
 	if x != nil {
 		return x.TakeProfit
 	}
-	return 0
+	return ""
 }
 
 func (x *PositionUpdateEvent) GetOpenTime() int64 {
@@ -477,7 +477,7 @@ type LedgerEntryEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	EntryType     string                 `protobuf:"bytes,2,opt,name=entry_type,json=entryType,proto3" json:"entry_type,omitempty"`
-	Amount        float64                `protobuf:"fixed64,3,opt,name=amount,proto3" json:"amount,omitempty"`
+	Amount        string                 `protobuf:"bytes,3,opt,name=amount,proto3" json:"amount,omitempty"`
 	Currency      string                 `protobuf:"bytes,4,opt,name=currency,proto3" json:"currency,omitempty"`
 	Time          int64                  `protobuf:"varint,5,opt,name=time,proto3" json:"time,omitempty"`
 	Comment       string                 `protobuf:"bytes,6,opt,name=comment,proto3" json:"comment,omitempty"`
@@ -530,11 +530,11 @@ func (x *LedgerEntryEvent) GetEntryType() string {
 	return ""
 }
 
-func (x *LedgerEntryEvent) GetAmount() float64 {
+func (x *LedgerEntryEvent) GetAmount() string {
 	if x != nil {
 		return x.Amount
 	}
-	return 0
+	return ""
 }
 
 func (x *LedgerEntryEvent) GetCurrency() string {
@@ -630,23 +630,23 @@ const file_stream_event_trade_proto_rawDesc = "" +
 	"\x06ticket\x18\x02 \x01(\x03R\x06ticket\x12\x16\n" +
 	"\x06symbol\x18\x03 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04type\x18\x04 \x01(\tR\x04type\x12\x16\n" +
-	"\x06volume\x18\x05 \x01(\x01R\x06volume\x12\x1d\n" +
+	"\x06volume\x18\x05 \x01(\tR\x06volume\x12\x1d\n" +
 	"\n" +
-	"open_price\x18\x06 \x01(\x01R\topenPrice\x12\x16\n" +
-	"\x06profit\x18\a \x01(\x01R\x06profit\x12\x16\n" +
+	"open_price\x18\x06 \x01(\tR\topenPrice\x12\x16\n" +
+	"\x06profit\x18\a \x01(\tR\x06profit\x12\x16\n" +
 	"\x06action\x18\b \x01(\tR\x06action\x12\x1b\n" +
-	"\tstop_loss\x18\t \x01(\x01R\bstopLoss\x12\x1f\n" +
+	"\tstop_loss\x18\t \x01(\tR\bstopLoss\x12\x1f\n" +
 	"\vtake_profit\x18\n" +
-	" \x01(\x01R\n" +
+	" \x01(\tR\n" +
 	"takeProfit\x12\x1f\n" +
-	"\vclose_price\x18\v \x01(\x01R\n" +
+	"\vclose_price\x18\v \x01(\tR\n" +
 	"closePrice\x12\x1b\n" +
 	"\topen_time\x18\f \x01(\x03R\bopenTime\x12\x1d\n" +
 	"\n" +
 	"close_time\x18\r \x01(\x03R\tcloseTime\x12\x12\n" +
-	"\x04swap\x18\x0e \x01(\x01R\x04swap\x12\x1e\n" +
+	"\x04swap\x18\x0e \x01(\tR\x04swap\x12\x1e\n" +
 	"\n" +
-	"commission\x18\x0f \x01(\x01R\n" +
+	"commission\x18\x0f \x01(\tR\n" +
 	"commission\x12\x18\n" +
 	"\acomment\x18\x10 \x01(\tR\acomment\"\x92\x03\n" +
 	"\x0fDealUpdateEvent\x12\x1d\n" +
@@ -658,13 +658,13 @@ const file_stream_event_trade_proto_rawDesc = "" +
 	"\x06symbol\x18\x04 \x01(\tR\x06symbol\x12\x1b\n" +
 	"\tdeal_type\x18\x05 \x01(\tR\bdealType\x12\x1c\n" +
 	"\tdirection\x18\x06 \x01(\tR\tdirection\x12\x16\n" +
-	"\x06volume\x18\a \x01(\x01R\x06volume\x12\x14\n" +
-	"\x05price\x18\b \x01(\x01R\x05price\x12\x16\n" +
-	"\x06profit\x18\t \x01(\x01R\x06profit\x12\x12\n" +
+	"\x06volume\x18\a \x01(\tR\x06volume\x12\x14\n" +
+	"\x05price\x18\b \x01(\tR\x05price\x12\x16\n" +
+	"\x06profit\x18\t \x01(\tR\x06profit\x12\x12\n" +
 	"\x04swap\x18\n" +
-	" \x01(\x01R\x04swap\x12\x1e\n" +
+	" \x01(\tR\x04swap\x12\x1e\n" +
 	"\n" +
-	"commission\x18\v \x01(\x01R\n" +
+	"commission\x18\v \x01(\tR\n" +
 	"commission\x12\x12\n" +
 	"\x04time\x18\f \x01(\x03R\x04time\x12\x18\n" +
 	"\acomment\x18\r \x01(\tR\acomment\x12\x1b\n" +
@@ -675,15 +675,15 @@ const file_stream_event_trade_proto_rawDesc = "" +
 	"\x0fposition_ticket\x18\x02 \x01(\x03R\x0epositionTicket\x12\x16\n" +
 	"\x06symbol\x18\x03 \x01(\tR\x06symbol\x12\x16\n" +
 	"\x06action\x18\x04 \x01(\tR\x06action\x12\x16\n" +
-	"\x06volume\x18\x05 \x01(\x01R\x06volume\x12\x1d\n" +
+	"\x06volume\x18\x05 \x01(\tR\x06volume\x12\x1d\n" +
 	"\n" +
-	"open_price\x18\x06 \x01(\x01R\topenPrice\x12\x1f\n" +
-	"\vclose_price\x18\a \x01(\x01R\n" +
+	"open_price\x18\x06 \x01(\tR\topenPrice\x12\x1f\n" +
+	"\vclose_price\x18\a \x01(\tR\n" +
 	"closePrice\x12\x16\n" +
-	"\x06profit\x18\b \x01(\x01R\x06profit\x12\x1b\n" +
-	"\tstop_loss\x18\t \x01(\x01R\bstopLoss\x12\x1f\n" +
+	"\x06profit\x18\b \x01(\tR\x06profit\x12\x1b\n" +
+	"\tstop_loss\x18\t \x01(\tR\bstopLoss\x12\x1f\n" +
 	"\vtake_profit\x18\n" +
-	" \x01(\x01R\n" +
+	" \x01(\tR\n" +
 	"takeProfit\x12\x1b\n" +
 	"\topen_time\x18\v \x01(\x03R\bopenTime\x12\x1d\n" +
 	"\n" +
@@ -694,7 +694,7 @@ const file_stream_event_trade_proto_rawDesc = "" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x1d\n" +
 	"\n" +
 	"entry_type\x18\x02 \x01(\tR\tentryType\x12\x16\n" +
-	"\x06amount\x18\x03 \x01(\x01R\x06amount\x12\x1a\n" +
+	"\x06amount\x18\x03 \x01(\tR\x06amount\x12\x1a\n" +
 	"\bcurrency\x18\x04 \x01(\tR\bcurrency\x12\x12\n" +
 	"\x04time\x18\x05 \x01(\x03R\x04time\x12\x18\n" +
 	"\acomment\x18\x06 \x01(\tR\acomment\x12%\n" +

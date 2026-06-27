@@ -50,32 +50,38 @@ func (s *StrategyGenServer) loadHistory(ctx context.Context, userID uuid.UUID, c
 	return sb.String()
 }
 
-// ExtractCode extracts Python code from an LLM response string.
+// ExtractCode extracts Go code from an LLM response string.
 // Handles markdown code fences, truncated output, and heuristic line-based extraction.
 func ExtractCode(raw string) string {
-	// Try to extract from markdown code block
-	start := strings.Index(raw, "```python")
+	// Try to extract from markdown code block (```go or ```)
+	start := strings.Index(raw, "```go")
 	if start < 0 {
 		start = strings.Index(raw, "```")
 	}
 	if start >= 0 {
 		rest := raw[start:]
 		fenceLen := 3
-		if strings.HasPrefix(rest, "```python") {
+		if strings.HasPrefix(rest, "```go") {
+			fenceLen = 5
+		} else if strings.HasPrefix(rest, "```golang") {
 			fenceLen = 9
 		}
 		end := strings.Index(rest[fenceLen:], "```")
 		if end >= 0 {
 			code := rest[fenceLen : end+fenceLen]
-			code = strings.TrimPrefix(code, "python\n")
-			code = strings.TrimPrefix(code, "python")
+			code = strings.TrimPrefix(code, "go\n")
+			code = strings.TrimPrefix(code, "go")
+			code = strings.TrimPrefix(code, "golang\n")
+			code = strings.TrimPrefix(code, "golang")
 			code = strings.TrimSpace(code)
 			return fixUnclosedBraces(code)
 		}
 		// Code block not closed (streaming truncated): extract everything after opening fence
 		code := rest[fenceLen:]
-		code = strings.TrimPrefix(code, "python\n")
-		code = strings.TrimPrefix(code, "python")
+		code = strings.TrimPrefix(code, "go\n")
+		code = strings.TrimPrefix(code, "go")
+		code = strings.TrimPrefix(code, "golang\n")
+		code = strings.TrimPrefix(code, "golang")
 		code = strings.TrimSpace(code)
 		return fixUnclosedBraces(code)
 	}
@@ -86,9 +92,10 @@ func ExtractCode(raw string) string {
 	inCode := false
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
-		if strings.HasPrefix(trimmed, "def ") ||
-			strings.HasPrefix(trimmed, "@param") ||
-			strings.HasPrefix(trimmed, "class ") {
+		if strings.HasPrefix(trimmed, "package ") ||
+			strings.HasPrefix(trimmed, "import ") ||
+			strings.HasPrefix(trimmed, "func ") ||
+			strings.HasPrefix(trimmed, "type ") {
 			inCode = true
 		}
 		if inCode {

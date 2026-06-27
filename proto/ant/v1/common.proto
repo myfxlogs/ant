@@ -14,8 +14,8 @@ message BacktestMetrics {
   int32 total_trades = 7;
   int32 winning_trades = 8;
   int32 losing_trades = 9;
-  double average_profit = 10;
-  double average_loss = 11;
+  string average_profit = 10;
+  string average_loss = 11;
 }
 
 message BacktestRisk {

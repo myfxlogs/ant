@@ -32,6 +32,7 @@ export function StreamProvider({ children }: { children: ReactNode }) {
   const [connectionState, setConnectionState] = useState<
     'connecting' | 'connected' | 'disconnected'
   >('disconnected');
+  const [reconnectTrigger, setReconnectTrigger] = useState(0);
   const unsubEventsRef = useRef<(() => void) | null>(null);
   const unsubSummaryRef = useRef<(() => void) | null>(null);
   const mountRef = useRef(false);
@@ -44,7 +45,7 @@ export function StreamProvider({ children }: { children: ReactNode }) {
     unsubSummaryRef.current?.();
     unsubSummaryRef.current = null;
     cleanupProfitBridge();
-    // Re-subscription happens via the useEffect below reacting to state change.
+    setReconnectTrigger((n) => n + 1);
   }, []);
 
   useEffect(() => {
@@ -114,6 +115,12 @@ export function StreamProvider({ children }: { children: ReactNode }) {
           if (mountRef.current) {
             setIsConnected(false);
             setConnectionState('disconnected');
+            // Auto-reconnect after a short delay.
+            setTimeout(() => {
+              if (mountRef.current) {
+                setReconnectTrigger((n) => n + 1);
+              }
+            }, 3000);
           }
         },
       });
@@ -123,7 +130,7 @@ export function StreamProvider({ children }: { children: ReactNode }) {
       mountRef.current = false;
       // Don't unsubscribe on normal re-render — only on auth change or unmount.
     };
-  }, [isAuthenticated, queryClient]);
+  }, [isAuthenticated, queryClient, reconnectTrigger]);
 
   // Cleanup on unmount.
   useEffect(() => {

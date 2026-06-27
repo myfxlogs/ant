@@ -2,6 +2,7 @@ package admin
 
 import (
 	"context"
+	"strconv"
 
 	"go.uber.org/zap"
 
@@ -27,7 +28,7 @@ func NewAdminTradingServer(repo *repository.AdminRepository, log *zap.Logger) *A
 func (s *AdminTradingServer) GetTradingSummary(ctx context.Context, req *connect.Request[antv1.GetTradingSummaryRequest]) (*connect.Response[antv1.TradingSummary], error) {
 	summary, err := s.repo.GetTradingSummary(ctx, req.Msg.StartDate, req.Msg.EndDate)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	byPlatform := make(map[string]*antv1.PlatformSummary, len(summary.ByPlatform))
@@ -35,7 +36,7 @@ func (s *AdminTradingServer) GetTradingSummary(ctx context.Context, req *connect
 		byPlatform[k] = &antv1.PlatformSummary{
 			Accounts: v.Accounts,
 			Orders:   v.Orders,
-			Volume:   v.Volume,
+			Volume:   strconv.FormatFloat(v.Volume, 'f', -1, 64),
 		}
 	}
 
@@ -54,10 +55,10 @@ func (s *AdminTradingServer) GetTradingSummary(ctx context.Context, req *connect
 			TotalOrders:   summary.Trading.TotalOrders,
 			ClosedOrders:  summary.Trading.ClosedOrders,
 			PendingOrders: summary.Trading.PendingOrders,
-			TotalVolume:   summary.Trading.TotalVolume.InexactFloat64(),
-			TotalProfit:   summary.Trading.TotalProfit.InexactFloat64(),
-			TotalLoss:     summary.Trading.TotalLoss.InexactFloat64(),
-			NetProfit:     summary.Trading.NetProfit.InexactFloat64(),
+			TotalVolume:   summary.Trading.TotalVolume.String(),
+			TotalProfit:   summary.Trading.TotalProfit.String(),
+			TotalLoss:     summary.Trading.TotalLoss.String(),
+			NetProfit:     summary.Trading.NetProfit.String(),
 		},
 		ByPlatform: byPlatform,
 	}), nil

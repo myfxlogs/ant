@@ -117,8 +117,12 @@ func (ni *NormalizerInvalidator) listenLoop(ctx context.Context, listener PGList
 		payload, err := listener.WaitForNotification(ctx)
 		if err != nil {
 			ni.log.Warn("normalizer_invalidator: LISTEN lost, falling back to ticker", zap.Error(err))
-			// #nosec G118 — tickerLoop fallback runs for pipeline lifetime
-			go ni.tickerLoop(ctx)
+			ni.mu.Lock()
+			if ni.running {
+				// #nosec G118 — tickerLoop fallback runs for pipeline lifetime
+				go ni.tickerLoop(ctx)
+			}
+			ni.mu.Unlock()
 			return
 		}
 

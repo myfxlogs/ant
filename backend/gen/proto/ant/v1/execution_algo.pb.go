@@ -29,11 +29,11 @@ type StartAlgoRequest struct {
 	AccountId    string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	Symbol       string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Side         string                 `protobuf:"bytes,3,opt,name=side,proto3" json:"side,omitempty"` // "buy" or "sell"
-	TotalVolume  float64                `protobuf:"fixed64,4,opt,name=total_volume,json=totalVolume,proto3" json:"total_volume,omitempty"`
+	TotalVolume  string                 `protobuf:"bytes,4,opt,name=total_volume,json=totalVolume,proto3" json:"total_volume,omitempty"`
 	StartTime    *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
 	EndTime      *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
-	LimitPrice   float64                `protobuf:"fixed64,7,opt,name=limit_price,json=limitPrice,proto3" json:"limit_price,omitempty"`       // 0 for market orders
-	ArrivalPrice float64                `protobuf:"fixed64,8,opt,name=arrival_price,json=arrivalPrice,proto3" json:"arrival_price,omitempty"` // used by Shortfall algo
+	LimitPrice   string                 `protobuf:"bytes,7,opt,name=limit_price,json=limitPrice,proto3" json:"limit_price,omitempty"`       // 0 for market orders
+	ArrivalPrice string                 `protobuf:"bytes,8,opt,name=arrival_price,json=arrivalPrice,proto3" json:"arrival_price,omitempty"` // used by Shortfall algo
 	// Algo selection.
 	Algo string `protobuf:"bytes,9,opt,name=algo,proto3" json:"algo,omitempty"` // "twap", "vwap", "pov", "shortfall"
 	// Algo-specific parameters (optional).
@@ -95,11 +95,11 @@ func (x *StartAlgoRequest) GetSide() string {
 	return ""
 }
 
-func (x *StartAlgoRequest) GetTotalVolume() float64 {
+func (x *StartAlgoRequest) GetTotalVolume() string {
 	if x != nil {
 		return x.TotalVolume
 	}
-	return 0
+	return ""
 }
 
 func (x *StartAlgoRequest) GetStartTime() *timestamppb.Timestamp {
@@ -116,18 +116,18 @@ func (x *StartAlgoRequest) GetEndTime() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *StartAlgoRequest) GetLimitPrice() float64 {
+func (x *StartAlgoRequest) GetLimitPrice() string {
 	if x != nil {
 		return x.LimitPrice
 	}
-	return 0
+	return ""
 }
 
-func (x *StartAlgoRequest) GetArrivalPrice() float64 {
+func (x *StartAlgoRequest) GetArrivalPrice() string {
 	if x != nil {
 		return x.ArrivalPrice
 	}
-	return 0
+	return ""
 }
 
 func (x *StartAlgoRequest) GetAlgo() string {
@@ -272,7 +272,7 @@ type GetAlgoStatusResponse struct {
 	FailedSlices    int32                  `protobuf:"varint,6,opt,name=failed_slices,json=failedSlices,proto3" json:"failed_slices,omitempty"`
 	ParentSymbol    string                 `protobuf:"bytes,7,opt,name=parent_symbol,json=parentSymbol,proto3" json:"parent_symbol,omitempty"`
 	ParentSide      string                 `protobuf:"bytes,8,opt,name=parent_side,json=parentSide,proto3" json:"parent_side,omitempty"`
-	ParentVolume    float64                `protobuf:"fixed64,9,opt,name=parent_volume,json=parentVolume,proto3" json:"parent_volume,omitempty"`
+	ParentVolume    string                 `protobuf:"bytes,9,opt,name=parent_volume,json=parentVolume,proto3" json:"parent_volume,omitempty"`
 	// Last submitted slice info.
 	LastTicket    int64  `protobuf:"varint,10,opt,name=last_ticket,json=lastTicket,proto3" json:"last_ticket,omitempty"`
 	LastError     string `protobuf:"bytes,11,opt,name=last_error,json=lastError,proto3" json:"last_error,omitempty"`
@@ -366,11 +366,11 @@ func (x *GetAlgoStatusResponse) GetParentSide() string {
 	return ""
 }
 
-func (x *GetAlgoStatusResponse) GetParentVolume() float64 {
+func (x *GetAlgoStatusResponse) GetParentVolume() string {
 	if x != nil {
 		return x.ParentVolume
 	}
-	return 0
+	return ""
 }
 
 func (x *GetAlgoStatusResponse) GetLastTicket() int64 {
@@ -633,13 +633,13 @@ const file_execution_algo_proto_rawDesc = "" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04side\x18\x03 \x01(\tR\x04side\x12!\n" +
-	"\ftotal_volume\x18\x04 \x01(\x01R\vtotalVolume\x129\n" +
+	"\ftotal_volume\x18\x04 \x01(\tR\vtotalVolume\x129\n" +
 	"\n" +
 	"start_time\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +
 	"\bend_time\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\x12\x1f\n" +
-	"\vlimit_price\x18\a \x01(\x01R\n" +
+	"\vlimit_price\x18\a \x01(\tR\n" +
 	"limitPrice\x12#\n" +
-	"\rarrival_price\x18\b \x01(\x01R\farrivalPrice\x12\x12\n" +
+	"\rarrival_price\x18\b \x01(\tR\farrivalPrice\x12\x12\n" +
 	"\x04algo\x18\t \x01(\tR\x04algo\x12@\n" +
 	"\x0eslice_interval\x18\n" +
 	" \x01(\v2\x19.google.protobuf.DurationR\rsliceInterval\x12-\n" +
@@ -661,7 +661,7 @@ const file_execution_algo_proto_rawDesc = "" +
 	"\rparent_symbol\x18\a \x01(\tR\fparentSymbol\x12\x1f\n" +
 	"\vparent_side\x18\b \x01(\tR\n" +
 	"parentSide\x12#\n" +
-	"\rparent_volume\x18\t \x01(\x01R\fparentVolume\x12\x1f\n" +
+	"\rparent_volume\x18\t \x01(\tR\fparentVolume\x12\x1f\n" +
 	"\vlast_ticket\x18\n" +
 	" \x01(\x03R\n" +
 	"lastTicket\x12\x1d\n" +

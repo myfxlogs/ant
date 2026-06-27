@@ -55,6 +55,7 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 		State:      OrderOpen,
 		Comment:    req.Comment,
 		Magic:      req.Magic,
+		OpenBar:    b.currentBar,
 	}
 
 	// Apply commission (basis points of volume)
@@ -96,17 +97,34 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 func (b *SimBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.OrderResult, error) {
 	for i, pos := range b.positions {
 		if pos.Ticket == ticket {
-			if volume.IsZero() || volume.Equal(pos.Volume) {
+			closeVol := volume
+			if closeVol.IsZero() || closeVol.Equal(pos.Volume) {
+				closeVol = pos.Volume
+			}
+			// Calculate P&L for the closed volume.
+			closePrice := pos.ClosePrice
+			if closePrice.IsZero() {
+				closePrice = pos.Price
+			}
+			profit := closePrice.Sub(pos.Price).Mul(closeVol)
+			if pos.Side == sdk.SideSell {
+				profit = profit.Neg()
+			}
+			b.equity = b.equity.Add(profit)
+			b.balance = b.balance.Add(profit)
+
+			if closeVol.Equal(pos.Volume) {
 				// Close full position
 				pos.State = OrderClosed
 				pos.CloseTime = time.Now()
+				pos.Profit = profit
 				b.history = append(b.history, pos)
 				b.positions = append(b.positions[:i], b.positions[i+1:]...)
 			} else {
-				// Partial close
-				pos.Volume = pos.Volume.Sub(volume)
+				// Partial close — reduce volume, keep position open
+				pos.Volume = pos.Volume.Sub(closeVol)
 			}
-			return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
+			return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket, Volume: closeVol, Price: closePrice}, nil
 		}
 	}
 	return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("ticket %d not found", ticket)
@@ -200,17 +218,19 @@ func (b *SimBroker) applyCommission(rec *OrderRecord) {
 
 // applySwap calculates overnight swap for a position.
 func (b *SimBroker) applySwap(rec *OrderRecord, days int) {
-	// Simplified: swap = volume * point_value * swap_rate * days
-	swapRate := decimal.NewFromFloat(0.00001) // placeholder
+	swapRate := b.config.SwapRate
+	if swapRate.IsZero() {
+		swapRate = decimal.NewFromFloat(0.00001) // fallback default
+	}
 	swap := rec.Volume.Mul(swapRate).Mul(decimal.NewFromInt(int64(days)))
 	rec.Swap = rec.Swap.Add(swap)
 	b.equity = b.equity.Sub(swap)
 }
 
-// expirePending removes pending orders beyond their time window.
-func (b *SimBroker) expirePending(currentBar int, maxBarAge int) {
+// expirePending removes pending orders that have waited longer than maxBars bars.
+func (b *SimBroker) expirePending(currentBar int, maxBars int) {
 	for i := 0; i < len(b.pending); i++ {
-		if int64(b.currentBar)-b.pending[i].Ticket > int64(maxBarAge) {
+		if currentBar-b.pending[i].OpenBar > maxBars {
 			b.pending[i].State = OrderCancelled
 			b.history = append(b.history, b.pending[i])
 			b.pending = append(b.pending[:i], b.pending[i+1:]...)
@@ -220,11 +240,15 @@ func (b *SimBroker) expirePending(currentBar int, maxBarAge int) {
 }
 
 func (b *SimBroker) Account() sdk.AccountInfo {
+	equity := b.equity
+	for _, pos := range b.positions {
+		equity = equity.Add(pos.Profit)
+	}
 	return sdk.AccountInfo{
 		Balance:    b.balance,
-		Equity:     b.equity,
+		Equity:     equity,
 		Margin:     decimal.Zero,
-		FreeMargin: b.equity,
+		FreeMargin: equity,
 		Leverage:   b.config.Leverage,
 		Currency:   "USD",
 	}

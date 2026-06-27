@@ -41,10 +41,10 @@ message TradeEventPayload {
   string canonical = 8;
   string side = 9;
   string order_type = 10;
-  double volume = 11;
-  double price = 12;
-  double stop_loss = 13;
-  double take_profit = 14;
+  string volume = 11;
+  string price = 12;
+  string stop_loss = 13;
+  string take_profit = 14;
   string from_state = 15;
   string to_state = 16;
   string error = 17;
@@ -63,10 +63,10 @@ message AccountEventPayload {
 message MonthlyAnalysisPoint {
   int32 year = 1;
   int32 month = 2;
-  double change = 3;
-  double profit = 4;
-  double lots = 5;
-  double pips = 6;
+  string change = 3;
+  string profit = 4;
+  string lots = 5;
+  string pips = 6;
   int32 trades = 7;
 }
 
@@ -81,16 +81,16 @@ message OrderCacheEntry {
   string state = 3;
   string canonical = 4;
   string side = 5;
-  double volume = 6;
-  double price = 7;
+  string volume = 6;
+  string price = 7;
   int64 updated_at_unix_ms = 8;
 }
 
 // CostEstimate holds pre-trade cost breakdown (replaces JSON string in service_orders.go).
 message CostEstimate {
-  double spread_cost = 1;
-  double commission = 2;
-  double slippage_cost = 3;
-  double swap_cost = 4;
-  double total_cost = 5;
+  string spread_cost = 1;
+  string commission = 2;
+  string slippage_cost = 3;
+  string swap_cost = 4;
+  string total_cost = 5;
 }

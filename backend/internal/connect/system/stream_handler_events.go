@@ -3,6 +3,7 @@ package system
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -248,14 +249,14 @@ func (s *StreamServer) emitPositionSnapshot(
 			Ticket:     pos.Ticket,
 			Symbol:     pos.Symbol,
 			Type:       pos.Type,
-			Volume:     pos.Volume,
-			OpenPrice:  pos.OpenPrice,
-			ClosePrice: pos.CurrentPrice,
-			Profit:     pos.Profit,
-			StopLoss:   pos.StopLoss,
-			TakeProfit: pos.TakeProfit,
-			Swap:       pos.Swap,
-			Commission: pos.Commission,
+			Volume:     strconv.FormatFloat(pos.Volume, 'f', -1, 64),
+			OpenPrice:  strconv.FormatFloat(pos.OpenPrice, 'f', -1, 64),
+			ClosePrice: strconv.FormatFloat(pos.CurrentPrice, 'f', -1, 64),
+			Profit:     strconv.FormatFloat(pos.Profit, 'f', -1, 64),
+			StopLoss:   strconv.FormatFloat(pos.StopLoss, 'f', -1, 64),
+			TakeProfit: strconv.FormatFloat(pos.TakeProfit, 'f', -1, 64),
+			Swap:       strconv.FormatFloat(pos.Swap, 'f', -1, 64),
+			Commission: strconv.FormatFloat(pos.Commission, 'f', -1, 64),
 			Comment:    pos.Comment,
 			Action:     "open",
 			OpenTime:   pos.OpenTime,

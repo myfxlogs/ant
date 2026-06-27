@@ -25,7 +25,7 @@ type CalculatePositionSizeRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	AccountId      string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	Symbol         string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	AccountBalance float64                `protobuf:"fixed64,3,opt,name=account_balance,json=accountBalance,proto3" json:"account_balance,omitempty"`
+	AccountBalance string                 `protobuf:"bytes,3,opt,name=account_balance,json=accountBalance,proto3" json:"account_balance,omitempty"`
 	StopLossPips   float64                `protobuf:"fixed64,4,opt,name=stop_loss_pips,json=stopLossPips,proto3" json:"stop_loss_pips,omitempty"`
 	RiskPercent    float64                `protobuf:"fixed64,5,opt,name=risk_percent,json=riskPercent,proto3" json:"risk_percent,omitempty"`
 	unknownFields  protoimpl.UnknownFields
@@ -76,11 +76,11 @@ func (x *CalculatePositionSizeRequest) GetSymbol() string {
 	return ""
 }
 
-func (x *CalculatePositionSizeRequest) GetAccountBalance() float64 {
+func (x *CalculatePositionSizeRequest) GetAccountBalance() string {
 	if x != nil {
 		return x.AccountBalance
 	}
-	return 0
+	return ""
 }
 
 func (x *CalculatePositionSizeRequest) GetStopLossPips() float64 {
@@ -99,11 +99,11 @@ func (x *CalculatePositionSizeRequest) GetRiskPercent() float64 {
 
 type CalculatePositionSizeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Volume        float64                `protobuf:"fixed64,1,opt,name=volume,proto3" json:"volume,omitempty"`
-	RiskAmount    float64                `protobuf:"fixed64,2,opt,name=risk_amount,json=riskAmount,proto3" json:"risk_amount,omitempty"`
-	PipValue      float64                `protobuf:"fixed64,3,opt,name=pip_value,json=pipValue,proto3" json:"pip_value,omitempty"`
-	MinVolume     float64                `protobuf:"fixed64,4,opt,name=min_volume,json=minVolume,proto3" json:"min_volume,omitempty"`
-	MaxVolume     float64                `protobuf:"fixed64,5,opt,name=max_volume,json=maxVolume,proto3" json:"max_volume,omitempty"`
+	Volume        string                 `protobuf:"bytes,1,opt,name=volume,proto3" json:"volume,omitempty"`
+	RiskAmount    string                 `protobuf:"bytes,2,opt,name=risk_amount,json=riskAmount,proto3" json:"risk_amount,omitempty"`
+	PipValue      string                 `protobuf:"bytes,3,opt,name=pip_value,json=pipValue,proto3" json:"pip_value,omitempty"`
+	MinVolume     string                 `protobuf:"bytes,4,opt,name=min_volume,json=minVolume,proto3" json:"min_volume,omitempty"`
+	MaxVolume     string                 `protobuf:"bytes,5,opt,name=max_volume,json=maxVolume,proto3" json:"max_volume,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -138,39 +138,39 @@ func (*CalculatePositionSizeResponse) Descriptor() ([]byte, []int) {
 	return file_auto_trading_position_size_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *CalculatePositionSizeResponse) GetVolume() float64 {
+func (x *CalculatePositionSizeResponse) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *CalculatePositionSizeResponse) GetRiskAmount() float64 {
+func (x *CalculatePositionSizeResponse) GetRiskAmount() string {
 	if x != nil {
 		return x.RiskAmount
 	}
-	return 0
+	return ""
 }
 
-func (x *CalculatePositionSizeResponse) GetPipValue() float64 {
+func (x *CalculatePositionSizeResponse) GetPipValue() string {
 	if x != nil {
 		return x.PipValue
 	}
-	return 0
+	return ""
 }
 
-func (x *CalculatePositionSizeResponse) GetMinVolume() float64 {
+func (x *CalculatePositionSizeResponse) GetMinVolume() string {
 	if x != nil {
 		return x.MinVolume
 	}
-	return 0
+	return ""
 }
 
-func (x *CalculatePositionSizeResponse) GetMaxVolume() float64 {
+func (x *CalculatePositionSizeResponse) GetMaxVolume() string {
 	if x != nil {
 		return x.MaxVolume
 	}
-	return 0
+	return ""
 }
 
 var File_auto_trading_position_size_proto protoreflect.FileDescriptor
@@ -182,18 +182,18 @@ const file_auto_trading_position_size_proto_rawDesc = "" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12'\n" +
-	"\x0faccount_balance\x18\x03 \x01(\x01R\x0eaccountBalance\x12$\n" +
+	"\x0faccount_balance\x18\x03 \x01(\tR\x0eaccountBalance\x12$\n" +
 	"\x0estop_loss_pips\x18\x04 \x01(\x01R\fstopLossPips\x12!\n" +
 	"\frisk_percent\x18\x05 \x01(\x01R\vriskPercent\"\xb3\x01\n" +
 	"\x1dCalculatePositionSizeResponse\x12\x16\n" +
-	"\x06volume\x18\x01 \x01(\x01R\x06volume\x12\x1f\n" +
-	"\vrisk_amount\x18\x02 \x01(\x01R\n" +
+	"\x06volume\x18\x01 \x01(\tR\x06volume\x12\x1f\n" +
+	"\vrisk_amount\x18\x02 \x01(\tR\n" +
 	"riskAmount\x12\x1b\n" +
-	"\tpip_value\x18\x03 \x01(\x01R\bpipValue\x12\x1d\n" +
+	"\tpip_value\x18\x03 \x01(\tR\bpipValue\x12\x1d\n" +
 	"\n" +
-	"min_volume\x18\x04 \x01(\x01R\tminVolume\x12\x1d\n" +
+	"min_volume\x18\x04 \x01(\tR\tminVolume\x12\x1d\n" +
 	"\n" +
-	"max_volume\x18\x05 \x01(\x01R\tmaxVolumeB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"max_volume\x18\x05 \x01(\tR\tmaxVolumeB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_auto_trading_position_size_proto_rawDescOnce sync.Once

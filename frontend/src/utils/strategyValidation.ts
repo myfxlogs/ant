@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { pythonStrategyApi, type ValidateStrategyResult } from '@/client/pythonStrategy';
+import { strategyRuntimeApi, type ValidateStrategyResult } from '@/client/strategyRuntime';
 import i18n from '@/i18n';
 
 export type StrictValidateOptions = {
@@ -12,7 +12,7 @@ export type StrictValidateResult = {
 };
 
 export async function validateStrategyCodeStrict(code: string, opts?: StrictValidateOptions): Promise<StrictValidateResult> {
-  const res = await pythonStrategyApi.validate(code);
+  const res = await strategyRuntimeApi.validate(code);
   const errors = Array.isArray(res?.errors) ? res.errors : [];
   const warnings = Array.isArray(res?.warnings) ? res.warnings : [];
   const valid = Boolean(res?.valid);

@@ -62,5 +62,8 @@ func (r *BacktestRunRepository) ListTradesByRunID(ctx context.Context, runID uui
 		}
 		out = append(out, t)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate backtest run trades: %w", err)
+	}
 	return out, nil
 }

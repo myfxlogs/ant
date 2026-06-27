@@ -6,7 +6,7 @@ import {
   DEFAULTS_SAVED_KEY, DEFAULTS_LOADED_KEY, DEFAULTS_RESET_KEY,
   SETTINGS_SAVE_KEY, SETTINGS_LOAD_KEY, SETTINGS_RESET_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
-import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import { backtestRunsApi, type BacktestTrade } from '@/client/backtestRuns';
 import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
 import { isTerminalRun, isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
@@ -233,7 +233,7 @@ export function useBacktestRunner() {
     setSubmitting(true);
     setActiveTab('results');
     try {
-      const result = await pythonStrategyApi.startBacktestRun({
+      const result = await strategyRuntimeApi.startBacktestRun({
         code: strategyCode, accountId, symbol, timeframe, initialCapital,
         mode: 'KLINE_RANGE',
         from: startDate ? new Date(startDate) : undefined,
@@ -250,7 +250,7 @@ export function useBacktestRunner() {
       setStatus('running');
       setExecutionAssumptions(null);
       watchRef.current?.();
-      const stopWatching = await pythonStrategyApi.watchBacktestRun(result.runId, (update: BacktestRunUpdate) => {
+      const stopWatching = await strategyRuntimeApi.watchBacktestRun(result.runId, (update: BacktestRunUpdate) => {
         const run = update.run;
         if (run && isTerminalRun(run)) {
           const ok = isSucceededRun(run);

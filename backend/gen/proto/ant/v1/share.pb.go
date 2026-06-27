@@ -305,8 +305,8 @@ type SharedTrade struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Side          string                 `protobuf:"bytes,2,opt,name=side,proto3" json:"side,omitempty"`
-	Volume        float64                `protobuf:"fixed64,3,opt,name=volume,proto3" json:"volume,omitempty"`
-	Profit        float64                `protobuf:"fixed64,4,opt,name=profit,proto3" json:"profit,omitempty"`
+	Volume        string                 `protobuf:"bytes,3,opt,name=volume,proto3" json:"volume,omitempty"`
+	Profit        string                 `protobuf:"bytes,4,opt,name=profit,proto3" json:"profit,omitempty"`
 	CloseTimeMs   int64                  `protobuf:"varint,5,opt,name=close_time_ms,json=closeTimeMs,proto3" json:"close_time_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -356,18 +356,18 @@ func (x *SharedTrade) GetSide() string {
 	return ""
 }
 
-func (x *SharedTrade) GetVolume() float64 {
+func (x *SharedTrade) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *SharedTrade) GetProfit() float64 {
+func (x *SharedTrade) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
 func (x *SharedTrade) GetCloseTimeMs() int64 {
@@ -410,8 +410,8 @@ const file_share_proto_rawDesc = "" +
 	"\vSharedTrade\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +
-	"\x06volume\x18\x03 \x01(\x01R\x06volume\x12\x16\n" +
-	"\x06profit\x18\x04 \x01(\x01R\x06profit\x12\"\n" +
+	"\x06volume\x18\x03 \x01(\tR\x06volume\x12\x16\n" +
+	"\x06profit\x18\x04 \x01(\tR\x06profit\x12\"\n" +
 	"\rclose_time_ms\x18\x05 \x01(\x03R\vcloseTimeMs2\xc8\x01\n" +
 	"\fShareService\x12U\n" +
 	"\x10CreateShareToken\x12\x1f.ant.v1.CreateShareTokenRequest\x1a .ant.v1.CreateShareTokenResponse\x12a\n" +

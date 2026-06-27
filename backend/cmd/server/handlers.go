@@ -52,6 +52,7 @@ import (
 )
 
 func registerHandlers(
+	ctx context.Context,
 	mux *http.ServeMux,
 	log *zap.Logger,
 	pool *pgxpool.Pool,
@@ -113,11 +114,11 @@ func registerHandlers(
 	mktServer := mktplace.NewMarketServer(platformSvc, marketDataRepo, nc, log)
 	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
-	mktplaceSvc := marketplace.New(pool)
+	mktplaceSvc := marketplace.New(pool, log)
 	mktplaceHandler := mktplace.NewMarketplaceServer(mktplaceSvc, platformSvc, log)
 	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
-	mktplaceSvc.StartRenewalLoop(log) // daily subscription renewal (background goroutine)
+	mktplaceSvc.StartRenewalLoop(ctx, log) // daily subscription renewal (background goroutine)
 
 	// M12-A2: Execution Algo handler (TWAP/VWAP/POV/Shortfall).
 	// brokerReg is created in main.go before the pipeline starts; gateways register
@@ -250,13 +251,12 @@ func registerHandlers(
 	strategySvc := service.NewStrategySvc(pool)
 	strategyServer := strategy.NewStrategyServer(strategySvc, log)
 	strategyServer.SetCodeAccessChecker(mktplaceSvc) // marketplace code protection
-	strategy.SetProtoLog(log)
 	pgListen := pglisten.New(pool, log)
 	strategyServer.SetPgListen(pgListen)
 	mktplaceHandler.SetPgListen(pgListen) // marketplace SSE streaming
 	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
-	// Paper trading + notification deps created early — both needed by PythonStrategyServer config.
+	// Paper trading + notification deps created early — both needed by strategy execution config.
 	paperRepo := repository.NewPaperRepo(pool)
 	paperEngine := papereng.New(paperRepo, mthubSvc, log)
 	notifSub := notifpubsub.NewSubscriber()
@@ -264,33 +264,28 @@ func registerHandlers(
 	notifSender := notifpubsub.NewSender(notifRepo, notifSub, log)
 
 	jurisGate, capStore, platformAgg := initRiskPipeline(pool, log, mthubSvc, hub, eventStore, cfg)
-	pythonStrategyServer := configurePythonStrategy(backtestRunRepo, marketDataRepo, mthubSvc, hub,
+	strategyExecServer := configureStrategyExecution(backtestRunRepo, marketDataRepo, mthubSvc, hub,
 		paperEngine, notifSender, aiSvc, pgListen, jurisGate, capStore, cfg, log)
-	if cfg.StrategyServiceURL != "" {
-		backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
-		strategyServer.SetBacktestClient(backtestClient)
-		strategyServer.SetMarketDataRepo(marketDataRepo)
-		objScoreClient := antv1c.NewObjectiveScoreServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
-		objectiveScoreServer := strategy.NewObjectiveScoreServer(objScoreClient, log)
-		mux.Handle(antv1c.NewObjectiveScoreServiceHandler(objectiveScoreServer,
-			connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
-		log.Info("Python strategy client configured", zap.String("url", cfg.StrategyServiceURL))
-	}
-	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer,
+	mux.Handle(antv1c.NewStrategyRuntimeServiceHandler(strategyExecServer,
 		connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
-	paperHandler := paperhdr.NewHandler(paperRepo, paperEngine, pythonStrategyServer, log,
+	paperHandler := paperhdr.NewHandler(paperRepo, paperEngine, strategyExecServer, log,
 		func(ctx context.Context, userID string) string {
-			// Return the first connected MT4 account for bar data in paper mode.
-			// In production, this should query the account connection table.
-			return "a433199e-292d-4735-bddf-452faeb181e7"
+			var mt4ID string
+			err := pool.QueryRow(ctx,
+				`SELECT id::text FROM mt_accounts
+				 WHERE user_id = $1::uuid AND is_disabled = false
+				 ORDER BY created_at LIMIT 1`,
+				userID).Scan(&mt4ID)
+			if err != nil {
+				return ""
+			}
+			return mt4ID
 		})
 	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler,
 		connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	codeAssistServer := ai.NewCodeAssistServer(aiSvc, session, log)
-	if cfg.StrategyServiceURL != "" {
-		codeAssistServer.SetPythonStrategyClient(antv1c.NewPythonStrategyServiceClient(http.DefaultClient, cfg.StrategyServiceURL))
-	}
+	// CodeAssist uses LLM-only code analysis and generation.
 	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	systemAIServer := ai.NewSystemAIServer(aiSvc, log)
 	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
@@ -314,6 +309,7 @@ func registerHandlers(
 	economicDataServer := system.NewEconomicDataServer(log)
 	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	jobServer := system.NewJobServer(jobRepo, log)
+	jobServer.SetPgListen(pgListen)
 	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	logServiceServer := system.NewLogServiceServer(logSvc, log)
 	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
@@ -351,7 +347,7 @@ func registerHandlers(
 
 	// Wire per-user risk config into the Gate (frontend settings → Gate evaluation).
 	// Tries RiskConfig (account-level) first, falls back to GlobalSettings (user-level).
-	pythonStrategyServer.AddGateRule(&risk.UserRiskConfigRule{Store: func(ctx context.Context, accountID string) (*risk.UserRiskConfig, error) {
+	strategyExecServer.AddGateRule(&risk.UserRiskConfigRule{Store: func(ctx context.Context, accountID string) (*risk.UserRiskConfig, error) {
 		aid, err := uuid.Parse(accountID)
 		if err != nil {
 			return nil, nil
@@ -383,10 +379,10 @@ func registerHandlers(
 		connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	// Schedule execution engine — timer-driven loop that dispatches due schedules
-	// to RunLiveStrategy (bar stream → Python LiveWorker → signal → OMS).
+	// to RunLiveStrategy (bar stream → Go-native executor → signal → OMS).
 	scheduleRepo := repository.NewStrategyScheduleRepository(pool)
 	scheduleEngine := strategy.NewScheduleEngine(scheduleRepo, templatesRepo,
-		pythonStrategyServer,
+		strategyExecServer,
 		func(userID uuid.UUID) bool {
 			settings, err := autoTradingRepo.GetGlobalSettingsByUserID(context.Background(), userID)
 			if err != nil {
@@ -417,6 +413,7 @@ func registerHandlers(
 		analyticsCache,
 		aiSvc,
 		backtestRunRepo,
+		pgListen,
 	)
 
 	// Daily hard-delete of expired soft-deleted users (30-day retention).
@@ -426,7 +423,7 @@ func registerHandlers(
 		// Run immediately on startup so recently-expired users are cleaned
 		// without waiting 24h for the first tick.
 		doCleanup := func() {
-			cleanCtx, ccl := context.WithTimeout(context.Background(), 5*time.Minute)
+			cleanCtx, ccl := context.WithTimeout(ctx, 5*time.Minute)
 			deleted, err := adminRepo.HardDeleteExpiredUsers(cleanCtx, 30)
 			if err != nil {
 				log.Warn("hard-delete expired users failed", zap.Error(err))
@@ -439,18 +436,23 @@ func registerHandlers(
 
 		ticker := time.NewTicker(24 * time.Hour)
 		defer ticker.Stop()
-		for range ticker.C {
-			doCleanup()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				doCleanup()
+			}
 		}
 	}()
 
 	return reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup
 }
 
-// configurePythonStrategy creates the PythonStrategyServer with all dependencies
-// wired in — client connections, paper engine, notification sender, and auto-gate
+// configureStrategyExecution creates the StrategyExecutionServer with all dependencies
+// wired in — bar source, paper engine, notification sender, gate, and auto-gate
 // callback. Returns the fully configured server ready for handler registration.
-func configurePythonStrategy(
+func configureStrategyExecution(
 	backtestRunRepo *repository.BacktestRunRepository,
 	marketDataRepo repository.MarketDataStore,
 	mthubSvc *mthub.MtHubService,
@@ -463,46 +465,40 @@ func configurePythonStrategy(
 	capStore *risksvc.CapabilityStore,
 	cfg *config.Config,
 	log *zap.Logger,
-) *strategy.PythonStrategyServer {
-	srv := strategy.NewPythonStrategyServer(backtestRunRepo, log)
+) *strategy.StrategyExecutionServer {
+	srv := strategy.NewStrategyExecutionServer(backtestRunRepo, log)
 	srv.SetPgListen(pgListen)
-	if cfg.StrategyServiceURL != "" {
-		connectClient := antv1c.NewPythonStrategyServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
-		srv.SetConnectClient(connectClient)
-		backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
-		srv.SetBacktestClient(backtestClient)
-		srv.SetMarketDataRepo(marketDataRepo)
-		srv.SetBarSource(strategy.NewLiveSource(mthubSvc, marketDataRepo))
-		srv.SetMtHub(mthubSvc)
-		srv.StartBacktestWorker(context.Background())
-	}
+	srv.SetMarketDataRepo(marketDataRepo)
+	srv.SetBarSource(strategy.NewLiveSource(mthubSvc, marketDataRepo))
+	srv.SetMtHub(mthubSvc)
+	srv.SetGoExecutor(strategy.NewGoExecutor(".", log))
+	srv.StartBacktestWorker(context.Background())
 	srv.SetPaperEngine(paperEngine)
 	srv.SetNotificationSender(notifSender)
 
-		// D6-A: risk Gate — system rules only. User trading constraints are opt-in.
-		gate := risk.NewGateWithSystemRules()
-		gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
-		gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
+	// D6-A: risk Gate — system rules only. User trading constraints are opt-in.
+	gate := risk.NewGateWithSystemRules()
+	gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
+	gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
 
-		// Wire KYC/Jurisdiction (legal compliance — non-optional when configured).
-		if jurisGate != nil {
-			gate.AddRule(&risk.KycJurisdictionGateRule{
-				Gate:      jurisGate,
-				UserIDFn:  usermgr.GetUserID,
-				ClientIPFn: func(ctx context.Context) string { return "" },
-			})
-		}
-		// Wire capability tier (per-user trading limits from DB).
-		if capStore != nil {
-			gate.AddRule(risk.NewCapabilityTierRule(capStore))
-		}
-		srv.SetGate(gate)       // live_runner startup guard only (gate runs in mthub now)
-		mthubSvc.SetGate(gate)   // D6-A single chokepoint: all orders through mthub
-		// T3.2b: Inject AccountStateProvider for live trading.
-		// Uses the MT4 gateway's FetchOpenedOrders to derive equity/balance/margin.
-		srv.SetAccountProvider(strategy.NewMTAccountStateProvider(hub, log))
-		log.Info("D6-A: risk.Gate + AccountStateProvider injected into PythonStrategyServer")
-
+	// Wire KYC/Jurisdiction (legal compliance — non-optional when configured).
+	if jurisGate != nil {
+		gate.AddRule(&risk.KycJurisdictionGateRule{
+			Gate:      jurisGate,
+			UserIDFn:  usermgr.GetUserID,
+			ClientIPFn: func(ctx context.Context) string { return "" },
+		})
+	}
+	// Wire capability tier (per-user trading limits from DB).
+	if capStore != nil {
+		gate.AddRule(risk.NewCapabilityTierRule(capStore))
+	}
+	srv.SetGate(gate)       // live_runner startup guard only (gate runs in mthub now)
+	mthubSvc.SetGate(gate)   // D6-A single chokepoint: all orders through mthub
+	// T3.2b: Inject AccountStateProvider for live trading.
+	// Uses the MT4 gateway's FetchOpenedOrders to derive equity/balance/margin.
+	srv.SetAccountProvider(strategy.NewMTAccountStateProvider(hub, log))
+	log.Info("D6-A: risk.Gate + AccountStateProvider injected into StrategyExecutionServer")
 
 	// Auto-gate: runs gate evaluation after every backtest completion.
 	// On failure, spawns async auto-fix (LLM code repair → new backtest).

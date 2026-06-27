@@ -266,10 +266,10 @@ type TradingStats struct {
 	TotalOrders   int64                  `protobuf:"varint,1,opt,name=total_orders,json=totalOrders,proto3" json:"total_orders,omitempty"`
 	ClosedOrders  int64                  `protobuf:"varint,2,opt,name=closed_orders,json=closedOrders,proto3" json:"closed_orders,omitempty"`
 	PendingOrders int64                  `protobuf:"varint,3,opt,name=pending_orders,json=pendingOrders,proto3" json:"pending_orders,omitempty"`
-	TotalVolume   float64                `protobuf:"fixed64,4,opt,name=total_volume,json=totalVolume,proto3" json:"total_volume,omitempty"`
-	TotalProfit   float64                `protobuf:"fixed64,5,opt,name=total_profit,json=totalProfit,proto3" json:"total_profit,omitempty"`
-	TotalLoss     float64                `protobuf:"fixed64,6,opt,name=total_loss,json=totalLoss,proto3" json:"total_loss,omitempty"`
-	NetProfit     float64                `protobuf:"fixed64,7,opt,name=net_profit,json=netProfit,proto3" json:"net_profit,omitempty"`
+	TotalVolume   string                 `protobuf:"bytes,4,opt,name=total_volume,json=totalVolume,proto3" json:"total_volume,omitempty"`
+	TotalProfit   string                 `protobuf:"bytes,5,opt,name=total_profit,json=totalProfit,proto3" json:"total_profit,omitempty"`
+	TotalLoss     string                 `protobuf:"bytes,6,opt,name=total_loss,json=totalLoss,proto3" json:"total_loss,omitempty"`
+	NetProfit     string                 `protobuf:"bytes,7,opt,name=net_profit,json=netProfit,proto3" json:"net_profit,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -325,39 +325,39 @@ func (x *TradingStats) GetPendingOrders() int64 {
 	return 0
 }
 
-func (x *TradingStats) GetTotalVolume() float64 {
+func (x *TradingStats) GetTotalVolume() string {
 	if x != nil {
 		return x.TotalVolume
 	}
-	return 0
+	return ""
 }
 
-func (x *TradingStats) GetTotalProfit() float64 {
+func (x *TradingStats) GetTotalProfit() string {
 	if x != nil {
 		return x.TotalProfit
 	}
-	return 0
+	return ""
 }
 
-func (x *TradingStats) GetTotalLoss() float64 {
+func (x *TradingStats) GetTotalLoss() string {
 	if x != nil {
 		return x.TotalLoss
 	}
-	return 0
+	return ""
 }
 
-func (x *TradingStats) GetNetProfit() float64 {
+func (x *TradingStats) GetNetProfit() string {
 	if x != nil {
 		return x.NetProfit
 	}
-	return 0
+	return ""
 }
 
 type PlatformSummary struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Accounts      int64                  `protobuf:"varint,1,opt,name=accounts,proto3" json:"accounts,omitempty"`
 	Orders        int64                  `protobuf:"varint,2,opt,name=orders,proto3" json:"orders,omitempty"`
-	Volume        float64                `protobuf:"fixed64,3,opt,name=volume,proto3" json:"volume,omitempty"`
+	Volume        string                 `protobuf:"bytes,3,opt,name=volume,proto3" json:"volume,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -406,11 +406,11 @@ func (x *PlatformSummary) GetOrders() int64 {
 	return 0
 }
 
-func (x *PlatformSummary) GetVolume() float64 {
+func (x *PlatformSummary) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
 var File_admin_trading_proto protoreflect.FileDescriptor
@@ -445,16 +445,16 @@ const file_admin_trading_proto_rawDesc = "" +
 	"\ftotal_orders\x18\x01 \x01(\x03R\vtotalOrders\x12#\n" +
 	"\rclosed_orders\x18\x02 \x01(\x03R\fclosedOrders\x12%\n" +
 	"\x0epending_orders\x18\x03 \x01(\x03R\rpendingOrders\x12!\n" +
-	"\ftotal_volume\x18\x04 \x01(\x01R\vtotalVolume\x12!\n" +
-	"\ftotal_profit\x18\x05 \x01(\x01R\vtotalProfit\x12\x1d\n" +
+	"\ftotal_volume\x18\x04 \x01(\tR\vtotalVolume\x12!\n" +
+	"\ftotal_profit\x18\x05 \x01(\tR\vtotalProfit\x12\x1d\n" +
 	"\n" +
-	"total_loss\x18\x06 \x01(\x01R\ttotalLoss\x12\x1d\n" +
+	"total_loss\x18\x06 \x01(\tR\ttotalLoss\x12\x1d\n" +
 	"\n" +
-	"net_profit\x18\a \x01(\x01R\tnetProfit\"]\n" +
+	"net_profit\x18\a \x01(\tR\tnetProfit\"]\n" +
 	"\x0fPlatformSummary\x12\x1a\n" +
 	"\baccounts\x18\x01 \x01(\x03R\baccounts\x12\x16\n" +
 	"\x06orders\x18\x02 \x01(\x03R\x06orders\x12\x16\n" +
-	"\x06volume\x18\x03 \x01(\x01R\x06volume2d\n" +
+	"\x06volume\x18\x03 \x01(\tR\x06volume2d\n" +
 	"\x13AdminTradingService\x12M\n" +
 	"\x11GetTradingSummary\x12 .ant.v1.GetTradingSummaryRequest\x1a\x16.ant.v1.TradingSummaryB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 

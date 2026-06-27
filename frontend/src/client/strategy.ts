@@ -139,8 +139,8 @@ export const strategyApi = {
       ticket: response.ticket,
       symbol: response.symbol,
       type: response.type,
-      volume: response.volume,
-      price: response.price,
+      volume: Number(response.volume) || 0,
+      price: Number(response.price) || 0,
       executedAt: response.executedAt ? timestampDate(response.executedAt) : undefined,
     };
   },
@@ -154,9 +154,9 @@ export const strategyApi = {
   },
 };
 
-// ── Strategy Import (via PythonStrategyService) ────────────────────
+// ── Strategy Import (via StrategyRuntimeService) ────────────────────
 
-import { pythonStrategyClient } from './connect';
+import { strategyRuntimeClient } from './connect';
 
 export const strategyImportApi = {
   analyzeCode: async (params: {
@@ -164,7 +164,7 @@ export const strategyImportApi = {
     sourceName: string;
     sourceLang?: string;
   }) => {
-    return await pythonStrategyClient.analyzeImportCode({
+    return await strategyRuntimeClient.analyzeImportCode({
       sourceCode: params.sourceCode,
       sourceName: params.sourceName,
       sourceLang: params.sourceLang || 'mql4',
@@ -176,7 +176,7 @@ export const strategyImportApi = {
     sourceName: string;
     sourceLang?: string;
   }) => {
-    return await pythonStrategyClient.generateImportCode({
+    return await strategyRuntimeClient.generateImportCode({
       sourceCode: params.sourceCode,
       sourceName: params.sourceName,
       sourceLang: params.sourceLang || 'mql4',
@@ -189,7 +189,7 @@ export const strategyImportApi = {
     sourceLang?: string;
     workspaceId?: string;
   }) => {
-    return await pythonStrategyClient.importStrategy({
+    return await strategyRuntimeClient.importStrategy({
       sourceCode: params.sourceCode,
       sourceName: params.sourceName,
       sourceLang: params.sourceLang || 'mql4',

@@ -47,12 +47,11 @@ func (e *GoExecutor) Run(ctx context.Context, code string, req *antv1.ExecuteStr
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
 
-	// #nosec G204 — path validated below
 	safePath := filepath.Clean(strategyFile)
 	if !filepath.HasPrefix(safePath, e.tmpDir) {
 		return nil, fmt.Errorf("strategy file outside temp dir: %s", safePath)
 	}
-	cmd := exec.CommandContext(ctx, "go", "run", safePath)
+	cmd := exec.CommandContext(ctx, "go", "run", safePath) // #nosec G204 -- safePath validated inside e.tmpDir
 	cmd.Dir = e.goModDir
 	cmd.Stdin = bytes.NewReader(input)
 	var stdout, stderr bytes.Buffer
@@ -71,6 +70,102 @@ func (e *GoExecutor) Run(ctx context.Context, code string, req *antv1.ExecuteStr
 	return &resp, nil
 }
 
+// RunBacktest compiles strategy code + harness and runs a backtest.
+// Input/output use antv1 proto binary encoding.
+func (e *GoExecutor) RunBacktest(ctx context.Context, code string, req *antv1.ExecuteBacktestRequest) (*antv1.ExecuteBacktestResponse, error) {
+	strategyType, err := findStrategyTypeName(code)
+	if err != nil {
+		return nil, fmt.Errorf("find strategy type: %w", err)
+	}
+
+	runDir, err := os.MkdirTemp(e.tmpDir, "bt-*")
+	if err != nil {
+		return nil, fmt.Errorf("create temp dir: %w", err)
+	}
+	defer os.RemoveAll(runDir)
+
+	strategyFile := filepath.Join(runDir, "strategy.go")
+	if err := os.WriteFile(strategyFile, []byte(code), 0600); err != nil {
+		return nil, fmt.Errorf("write strategy: %w", err)
+	}
+
+	harnessFile := filepath.Join(runDir, "harness.go")
+	if err := os.WriteFile(harnessFile, []byte(generateBacktestHarness(strategyType)), 0600); err != nil {
+		return nil, fmt.Errorf("write harness: %w", err)
+	}
+
+	input, err := proto.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("marshal request: %w", err)
+	}
+
+	cmd := exec.CommandContext(ctx, "go", "run", strategyFile, harnessFile) // #nosec G204 -- paths inside os.MkdirTemp dir
+	cmd.Dir = e.goModDir
+	cmd.Stdin = bytes.NewReader(input)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		e.log.Warn("go run backtest failed", zap.Error(err), zap.String("stderr", stderr.String()))
+		return nil, fmt.Errorf("go run: %w\n%s", err, stderr.String())
+	}
+
+	var resp antv1.ExecuteBacktestResponse
+	if err := proto.Unmarshal(stdout.Bytes(), &resp); err != nil {
+		return nil, fmt.Errorf("unmarshal response: %w", err)
+	}
+	return &resp, nil
+}
+
 func (e *GoExecutor) Cleanup() {
 	os.RemoveAll(e.tmpDir)
+}
+
+// RunLive compiles strategy code + live harness and runs a single-bar live evaluation.
+// Input/output use antv1 proto binary encoding.
+func (e *GoExecutor) RunLive(ctx context.Context, code string, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
+	strategyType, err := findStrategyTypeName(code)
+	if err != nil {
+		return nil, fmt.Errorf("find strategy type: %w", err)
+	}
+
+	runDir, err := os.MkdirTemp(e.tmpDir, "live-*")
+	if err != nil {
+		return nil, fmt.Errorf("create temp dir: %w", err)
+	}
+	defer os.RemoveAll(runDir)
+
+	strategyFile := filepath.Join(runDir, "strategy.go")
+	if err := os.WriteFile(strategyFile, []byte(code), 0600); err != nil {
+		return nil, fmt.Errorf("write strategy: %w", err)
+	}
+
+	harnessFile := filepath.Join(runDir, "harness.go")
+	if err := os.WriteFile(harnessFile, []byte(generateLiveHarness(strategyType)), 0600); err != nil {
+		return nil, fmt.Errorf("write harness: %w", err)
+	}
+
+	input, err := proto.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("marshal request: %w", err)
+	}
+
+	cmd := exec.CommandContext(ctx, "go", "run", strategyFile, harnessFile) // #nosec G204 -- paths inside os.MkdirTemp dir
+	cmd.Dir = e.goModDir
+	cmd.Stdin = bytes.NewReader(input)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		e.log.Warn("go run live failed", zap.Error(err), zap.String("stderr", stderr.String()))
+		return nil, fmt.Errorf("go run: %w\n%s", err, stderr.String())
+	}
+
+	var resp antv1.ExecuteLiveResponse
+	if err := proto.Unmarshal(stdout.Bytes(), &resp); err != nil {
+		return nil, fmt.Errorf("unmarshal response: %w", err)
+	}
+	return &resp, nil
 }

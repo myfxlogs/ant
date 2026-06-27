@@ -34,6 +34,7 @@ function BrandLogo({ name }: { name: string }) {
 function toNum(v: unknown): number {
   if (typeof v === 'bigint') return Number(v);
   if (typeof v === 'number') return v;
+  if (typeof v === 'string') { const n = Number(v); return Number.isFinite(n) ? n : 0; }
   return 0;
 }
 

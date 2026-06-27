@@ -135,10 +135,10 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 	buyerTxID := uuid.New()
 	buyerDesc := fmt.Sprintf("Purchase strategy: %s", strategyTitle)
 	err = tx.QueryRow(ctx,
-		fmt.Sprintf(`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
-			 VALUES ($1, $2, $3, '%s', $4::numeric, $5::numeric, $6::numeric, $7)
-			 RETURNING id`, TxTypePurchase),
-		buyerTxID, buyerWalletID, uid, negAmountStr, buyerBalanceBefore, buyerBalanceAfter, buyerDesc,
+	`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+			 VALUES ($1, $2, $3, $4, $5::numeric, $6::numeric, $7::numeric, $8)
+			 RETURNING id`,
+		buyerTxID, buyerWalletID, uid, TxTypePurchase, negAmountStr, buyerBalanceBefore, buyerBalanceAfter, buyerDesc,
 	).Scan(&buyerTxID)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: record buyer transaction: %w", err)
@@ -192,9 +192,9 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 		saleDesc += fmt.Sprintf(" (platform fee: %.2f)", platformFee)
 	}
 	_, err = tx.Exec(ctx,
-		fmt.Sprintf(`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
-			 VALUES ($1, $2, $3, '%s', $4::numeric, $5::numeric, $6::numeric, $7)`, TxTypeSale),
-		pubTxID, pubWalletID, pid, pubAmountStr, pubBalanceBefore, pubBalanceAfter, saleDesc,
+	`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+			 VALUES ($1, $2, $3, $4, $5::numeric, $6::numeric, $7::numeric, $8)`,
+		pubTxID, pubWalletID, pid, TxTypeSale, pubAmountStr, pubBalanceBefore, pubBalanceAfter, saleDesc,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: record publisher transaction: %w", err)
@@ -232,9 +232,9 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 		feeTxID := uuid.New()
 		feeDesc := fmt.Sprintf("Platform fee from strategy sale: %s", strategyTitle)
 		_, err = tx.Exec(ctx,
-			fmt.Sprintf(`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
-				 VALUES ($1, $2, $3, '%s', $4::numeric, $5::numeric, $6::numeric, $7)`, TxTypePlatformFee),
-			feeTxID, sysWalletID, SystemUserID, feeStr, sysBalBefore, sysBalAfter, feeDesc,
+			`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+				 VALUES ($1, $2, $3, $4, $5::numeric, $6::numeric, $7::numeric, $8)`,
+			feeTxID, sysWalletID, SystemUserID, TxTypePlatformFee, feeStr, sysBalBefore, sysBalAfter, feeDesc,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("marketplace: record platform fee: %w", err)

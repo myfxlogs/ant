@@ -31,7 +31,7 @@ export const useAuthStore = create<AuthState>()(
           user: user || null,
         });
       },
-      logout: () => set({ user: null, accessToken: null, isAuthenticated: false }),
+      logout: () => set({ user: null, accessToken: null, isAuthenticated: false, _hasHydrated: false }),
       setHydrated: (hydrated) => set({ _hasHydrated: hydrated }),
     }),
     {
@@ -39,7 +39,6 @@ export const useAuthStore = create<AuthState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
-        accessToken: state.accessToken,
       }),
       onRehydrateStorage: () => {
         return (state, error) => {

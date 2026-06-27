@@ -23,21 +23,15 @@ const maxInstrLen = 4 * 1024
 
 // CodeAssistServer implements ant.v1.CodeAssistServiceHandler.
 type CodeAssistServer struct {
-	systemSvc            *systemai.Service
-	session              *ai.ConversationSession
-	pythonStrategyClient antv1c.PythonStrategyServiceClient // optional: for quality hints
-	log                  *zap.Logger
+	systemSvc *systemai.Service
+	session   *ai.ConversationSession
+	log       *zap.Logger
 }
 
 var _ antv1c.CodeAssistServiceHandler = (*CodeAssistServer)(nil)
 
 func NewCodeAssistServer(systemSvc *systemai.Service, session *ai.ConversationSession, log *zap.Logger) *CodeAssistServer {
 	return &CodeAssistServer{systemSvc: systemSvc, session: session, log: log}
-}
-
-// SetPythonStrategyClient injects the Python strategy client for quality analysis on ValidateStrategyExtended.
-func (s *CodeAssistServer) SetPythonStrategyClient(c antv1c.PythonStrategyServiceClient) {
-	s.pythonStrategyClient = c
 }
 
 // protoHistoryToChat converts proto CodeChatMessage list to systemai ChatMessage list.
@@ -158,7 +152,7 @@ func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request
 		"Explain the following trading strategy code in clear, concise Chinese. " +
 		"Cover: strategy logic, entry/exit conditions, risk management, and potential improvements. " +
 		"Keep the explanation under 300 words."
-	userMsg := fmt.Sprintf("Please explain this trading strategy:\n```python\n%s\n```", code)
+	userMsg := fmt.Sprintf("Please explain this trading strategy:\n```go\n%s\n```", code)
 	messages := systemai.BuildChatMessages(sysPrompt, userMsg, nil)
 
 	explanation, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
@@ -190,36 +184,6 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 		return nil, err
 	}
 
-	// ── Fast path: deterministic transpiler via ConnectRPC ──
-	if s.pythonStrategyClient != nil {
-		pyResp, pyErr := s.pythonStrategyClient.TranspileCode(ctx, connect.NewRequest(&antv1.TranspileCodeRequest{
-			SourceCode: code,
-			SourceLang: sourceLang,
-			ClassName:  "TranslatedStrategy",
-		}))
-		if pyErr == nil && pyResp != nil && pyResp.Msg != nil && pyResp.Msg.IsDeterministic {
-			detLang := sourceLang
-			if detLang == "" || detLang == "auto" {
-				detLang = "mql4"
-			}
-			return connect.NewResponse(&antv1.TransformCodeResponse{
-				TargetCode:    pyResp.Msg.TargetCode,
-				DetectedLang:  detLang,
-				Explanation:   fmt.Sprintf("Deterministic transpiler: %.0f%% confidence", pyResp.Msg.Confidence*100),
-				Confidence:    pyResp.Msg.Confidence,
-				TotalPatterns: pyResp.Msg.TotalPatterns,
-				Gaps:          pyResp.Msg.Gaps,
-				GapSamples:    pyResp.Msg.GapSamples,
-			}), nil
-		}
-		if pyErr != nil {
-			s.log.Warn("CodeAssist: deterministic transpiler failed, falling back to AI", zap.Error(pyErr))
-		}
-		// Fall through to AI if deterministic transpiler failed.
-	} else {
-		s.log.Warn("CodeAssist: pythonStrategyClient is nil, skipping deterministic transpiler")
-	}
-
 	// Detect language if "auto"
 	langHint := ""
 	detectedLang := sourceLang
@@ -230,91 +194,12 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 	sysPrompt := "You are an expert trading strategy translator. " +
 		langHint +
 		"Translate the following MetaTrader EA/indicator code (MQL4 or MQL5) into a " +
-		"Python strategy for the AntTrader platform.\n\n" +
-		"AntTrader Strategy SDK API (the ONLY valid API — use EXACTLY these signatures):\n\n" +
-		"## Lifecycle (inherit from StrategyBase)\n" +
-		"- `def on_init(self) -> None:` — replaces OnInit(). Register params, set timer.\n" +
-		"- `def on_tick(self) -> None:` — replaces OnTick(). Primary entry for tick-driven EAs.\n" +
-		"- `def on_bar(self, timeframe: str) -> None:` — replaces OnCalculate(). New bar closed.\n" +
-		"- `def on_timer(self) -> None:` — replaces OnTimer(). Requires ctx.set_timer(seconds).\n" +
-		"- `def on_trade(self) -> None:` — replaces OnTrade(). After any trade event.\n" +
-		"- `def on_deinit(self, reason: str) -> None:` — replaces OnDeinit(). Cleanup.\n\n" +
-		"## Order Entry (via self.broker)\n" +
-		"- `self.broker.order_send(OrderRequest(symbol=..., type=OrderType.BUY, volume=Decimal(str(lot)), ...))`\n" +
-		"  OrderType values: BUY, SELL, BUY_LIMIT, SELL_LIMIT, BUY_STOP, SELL_STOP,\n" +
-		"  BUY_STOP_LIMIT, SELL_STOP_LIMIT.\n" +
-		"  Optional fields: price (Decimal, omit for market orders), sl, tp (Decimal or None),\n" +
-		"  deviation (int, slippage in points), magic (int), comment (str),\n" +
-		"  type_filling (TypeFilling.FOK/IOC/RETURN), stop_limit_price (Decimal, only for *_STOP_LIMIT).\n" +
-		"  Returns OrderResult with retcode, ticket, price, volume.\n" +
-		"- `self.broker.position_close(ticket, volume=None)` — close position (None=full, Decimal=partial).\n" +
-		"- `self.broker.position_modify(ticket, sl=None, tp=None)` — modify SL/TP (Decimal or None).\n" +
-		"- `self.broker.order_delete(ticket)` — cancel a pending order.\n\n" +
-		"## Position & Order Query (via self.broker)\n" +
-		"- `self.broker.positions(symbol=None, magic=None) -> list[Position]` — open positions.\n" +
-		"  Position fields: ticket, symbol, side (PositionSide.BUY/SELL), volume (Decimal),\n" +
-		"  open_price (Decimal), sl, tp, profit, swap, magic, comment, open_time_ms.\n" +
-		"- `self.broker.orders(symbol=None, magic=None) -> list[PendingOrder]` — pending orders.\n" +
-		"  PendingOrder fields: ticket, symbol, type (OrderType), volume, price, sl, tp, magic.\n" +
-		"- `self.broker.account() -> AccountInfo` — balance, equity, margin, free_margin, margin_level,\n" +
-		"  leverage, currency, mode (AccountMode.NETTING/HEDGING). All amounts are Decimal.\n" +
-		"- `self.broker.symbol_info(symbol) -> SymbolInfo` — digits, point, tick_size, tick_value,\n" +
-		"  contract_size, volume_min/max/step, stops_level, freeze_level, swap_long/short, margin_rate.\n" +
-		"- `self.broker.server_time() -> int` — unix_ms.\n\n" +
-		"## Price Data (via self.ctx, MQL reverse indexing: [0]=current, [1]=previous)\n" +
-		"- `bars = self.ctx.bars(timeframe=None)` — returns Bars. None = primary timeframe.\n" +
-		"- `bars.close[0]`, `bars.open[0]`, `bars.high[0]`, `bars.low[0]`, `bars.volume[0]`, `bars.time[0]`.\n" +
-		"- `bars.total()` — number of available bars.\n\n" +
-		"## Indicators (via self.indicators, shift=0 = current bar, all return float)\n" +
-		"- `self.indicators.ma(period=14, shift=0, method='sma')` — methods: sma/ema/smma/lwma.\n" +
-		"- `self.indicators.ema(period=14, shift=0)`\n" +
-		"- `self.indicators.rsi(period=14, shift=0)`\n" +
-		"- `self.indicators.bands(period=20, deviation=2.0, shift=0) -> (upper, middle, lower)`\n" +
-		"- `self.indicators.macd(fast=12, slow=26, signal=9, shift=0) -> (macd, signal, histogram)`\n" +
-		"- `self.indicators.atr(period=14, shift=0)`\n" +
-		"- `self.indicators.stochastic(k_period=5, d_period=3, shift=0) -> (k, d)`\n" +
-		"- `self.indicators.cci(period=14, shift=0)`\n" +
-		"- `self.indicators.i_custom(name, params=[], buffer=0, shift=0)` — custom indicator.\n\n" +
-		"## Parameters & Timer (via self.ctx)\n" +
-		"- `self.ctx.param(name, default=None)` — read extern/input parameter (type: object, cast as needed).\n" +
-		"- `self.ctx.set_timer(seconds)` — enable periodic on_timer callback (min 1s).\n" +
-		"- `self.ctx.kill_timer()` — disable timer.\n\n" +
-		"## Critical Rules\n" +
-		"1. ALL monetary values (prices, volumes, balances) MUST use Decimal(str(x)), NEVER float.\n" +
-		"2. Import SDK types from app.sdk: StrategyBase, OrderRequest, OrderType, OrderResult,\n" +
-		"   Position, PendingOrder, PositionSide, Retcode, AccountMode, TypeFilling.\n" +
-		"   Import Decimal from Python stdlib: `from decimal import Decimal`.\n" +
-		"3. Replace extern/input with self.ctx.param() calls in on_init().\n" +
-		"4. MQL OrderSelect loop → `for order in self.broker.orders():` or `for pos in self.broker.positions():`.\n" +
-		"5. MQL Close[i] → bars.close[i]; MQL iMA() → self.indicators.ma().\n" +
-		"6. NEVER use self.buy(), self.sell(), self.close_all(), self.sma() — these DO NOT EXIST.\n" +
-		"7. Return ONLY the Python code inside ```python ... ``` fence.\n" +
-		"8. Mark untranslatable MQL (DLL, WebRequest, GUI, FileIO) with `# TRANSPILER-GAP: <reason>`.\n" +
-			"9. Use descriptive method names — underscore-prefixed private helpers (_count_orders,\n" +
-			"   _send_order) are REJECTED. Use count_orders, send_order instead.\n" +
-			"10. Use `bars = self.ctx.bars(timeframe=None)` for primary timeframe (matches\n" +
-			"   backtest config).  Do NOT hardcode a specific timeframe like 'M15' or '1h'\n" +
-			"   in the on_bar signature or bars() call.  If the EA has a configurable\n" +
-			"   timeframe, expose it as a param: `tf = self.ctx.param('timeframe', '1h')`.\n" +
-			"11. ALL configurable values (magic, lot size, indicator periods) MUST be exposed\n" +
-			"   via `self.ctx.param()`.  Never hardcode: `volume=Decimal('0.1')` or\n" +
-			"   `magic=12345` or `period=14` in the strategy body — use params instead.\n" +
-			"12. ALL prices and volumes MUST use Decimal(str(x)), never float(x).\n" +
-			"   `float(price)` causes precision loss and backtest distortion.\n\n" +
-		"## Few-Shot Example\n" +
-		"MQL: `int OnInit() { EventSetTimer(60); return INIT_SUCCEEDED; }`\n" +
-		"SDK:\n```python\n" +
-		"def on_init(self) -> None:\n" +
-		"    self.ctx.set_timer(60)\n" +
-		"```\n\n" +
-		"MQL: `OrderSend(Symbol(), OP_BUY, 0.1, Ask, 3, 0, 0, \"entry\", 12345, 0, clrNONE);`\n" +
-		"SDK:\n```python\n" +
-		"req = OrderRequest(symbol=self.ctx.symbol, type=OrderType.BUY,\n" +
-		"                   volume=Decimal('0.10'), magic=12345, comment='entry')\n" +
-		"result = self.broker.order_send(req)\n" +
-		"```"
+		"Go strategy for the AntTrader platform.\n\n" +
+		"AntTrader uses the Go strategy SDK (package anttrader/strategy/sdk). " +
+		"Generate idiomatic Go code with proper Decimal handling via shopspring/decimal.\n\n" +
+		"Return ONLY the Go code inside ```go ... ``` fence."
 
-	userMsg := fmt.Sprintf("Translate this trading EA/indicator to Python:\n```\n%s\n```", code)
+	userMsg := fmt.Sprintf("Translate this trading EA/indicator to Go:\n```\n%s\n```", code)
 	messages := systemai.BuildChatMessages(sysPrompt, userMsg, nil)
 
 	// Retry up to 2 times for transient LLM failures (DeepSeek JSON truncation).
@@ -336,25 +221,24 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(lastErr)))
 	}
 
-	// Extract Python code from response (strip markdown fences if present).
-	python := extractCodeBlock(result)
-	if python == "" {
-		python = result
+	// Extract Go code from response (strip markdown fences if present).
+	goCode := extractCodeBlock(result)
+	if goCode == "" {
+		goCode = result
 	}
-	// If still empty, return an error instead of an empty response.
-	if python == "" {
+	if goCode == "" {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("LLM returned empty response"))
 	}
 
 	return connect.NewResponse(&antv1.TransformCodeResponse{
-		TargetCode:    python,
+		TargetCode:    goCode,
 		Explanation:   result[:min(len(result), 200)] + "...",
 		DetectedLang:  detectedLang,
 	}), nil
 }
 
 func extractCodeBlock(s string) string {
-	// Find ```python ... ``` block
+	// Find ```go ... ``` or ``` ... ``` block
 	start := 0
 	for {
 		i := -1
@@ -373,16 +257,11 @@ func extractCodeBlock(s string) string {
 		}
 		if end+3 <= len(s) {
 			code := s[i+3 : end]
-			// Skip language tag if present
-			for len(code) > 0 && (code[0] == 'p' || code[0] == 'P') {
-				nl := 0
-				for nl < len(code) && code[nl] != '\n' {
-					nl++
-				}
-				if nl < len(code) && nl < 20 {
+			// Skip language tag if present (go, python, etc.)
+			if nl := strings.Index(code, "\n"); nl >= 0 && nl < 20 {
+				tag := strings.TrimSpace(code[:nl])
+				if tag == "go" || tag == "python" || tag == "golang" {
 					code = code[nl+1:]
-				} else {
-					break
 				}
 			}
 			return strings.TrimSpace(code)
@@ -397,9 +276,7 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too large: %d bytes", len(code)))
 	}
 
-	// ── Fast path: structural checks + Python AST (no AI call) ──
-	// Security scanning (banned imports, dangerous builtins) is done by
-	// Python scan_security() — the single source of truth.
+	// ── Fast path: structural checks (no AI call) ──
 	_, missingSigs := ai.HasRequiredSignature(code)
 	structWarns := ai.StructuralWarnings(code)
 
@@ -413,23 +290,7 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	// Structural quality warnings
 	warnings = append(warnings, structWarns...)
 
-	// Run Python ast.parse() for authoritative syntax errors + parameter extraction
 	var parametersJson string
-	if s.pythonStrategyClient != nil {
-		pyResp, pyErr := s.pythonStrategyClient.Validate(ctx, connect.NewRequest(&antv1.ValidateStrategyRequest{Code: code}))
-		if pyErr == nil && pyResp != nil && pyResp.Msg != nil {
-			if len(pyResp.Msg.Errors) > 0 {
-				errors = append(pyResp.Msg.Errors, errors...)
-			}
-			if len(pyResp.Msg.Warnings) > 0 {
-				warnings = append(warnings, pyResp.Msg.Warnings...)
-			}
-			// Forward extracted strategy parameters to BacktestPanel.
-			if pyResp.Msg.ParametersJson != "" {
-				parametersJson = pyResp.Msg.ParametersJson
-			}
-		}
-	}
 
 	valid := len(errors) == 0
 
@@ -494,25 +355,23 @@ Example: For parameter "翻倍", return {"en": "Multiplier", "zh-tw": "翻倍", 
 
 func buildValidationPrompt() string {
 	return "You are a trading strategy code validator. " +
-		"Review the following Python strategy code and identify issues. " +
-		"The code MUST use the AntTrader Strategy SDK (docs/spec/30-strategy-sdk.md):\n" +
-		"- Class inherits from StrategyBase with on_init/on_tick/on_bar/on_deinit hooks.\n" +
-		"- Orders via self.broker.order_send(OrderRequest(...)).\n" +
-		"- Prices via self.ctx.bars().close[0] (MQL reverse indexing).\n" +
-		"- Indicators via self.indicators.ma/rsi/ema/atr/bands/macd.\n" +
-		"- Parameters via self.ctx.param(name, default).\n" +
-		"- All monetary values use Decimal(str(x)), never float.\n\n" +
+		"Review the following Go strategy code and identify issues. " +
+		"The code MUST use the AntTrader Go Strategy SDK (anttrader/strategy/sdk):\n" +
+		"- Implements sdk.Strategy interface: OnInit/OnBar/OnDeinit.\n" +
+		"- Orders via ctx.Broker().OrderSend(sdk.OrderRequest{...}).\n" +
+		"- Prices via bars.Close(0) (index 0 = most recent bar).\n" +
+		"- Indicators via ctx.Indicators().MA/RSI/EMA/ATR/Bands/MACD.\n" +
+		"- Parameters via ctx.Param(name, default).\n" +
+		"- All monetary values use decimal.Decimal, never float64.\n\n" +
 		"STRICT RULES that make code INVALID:\n" +
-		"- Non-SDK format (def run(context), signal={...}) — MUST be class-based.\n" +
-		"- Underscore-prefixed method names (_helper, _count_orders) — REJECTED.\n" +
-		"- Missing lifecycle hook (on_init/on_bar/on_tick etc).\n\n" +
+		"- Missing OnInit, OnBar, or OnDeinit method.\n" +
+		"- Using float64 for price/volume calculations.\n\n" +
 		"Return a JSON object with fields: valid (bool), errors (string array), warnings (string array), " +
 		"parameters (array of objects with keys: key (str), required (bool), type (str: int|float|str|bool), " +
 		"default_value (str, optional), suggested_value (str, optional)). " +
-		"Extract all self.ctx.param() calls from on_init() into the parameters array. " +
-		"Check for: non-SDK format, underscore-prefixed helpers, missing stop-loss, missing take-profit, " +
-		"position sizing, error handling, indicator usage correctness, " +
-		"Decimal usage for prices, and data boundary handling. " +
+		"Extract all ctx.Param() calls from OnInit() into the parameters array. " +
+		"Check for: missing stop-loss, missing take-profit, position sizing, error handling, " +
+		"indicator usage correctness, decimal.Decimal usage for prices, and data boundary handling. " +
 		"Respond with ONLY valid JSON, no markdown fences."
 }
 
@@ -551,14 +410,14 @@ func parseValidationResult(raw string, log *zap.Logger) (*connect.Response[antv1
 	}), nil
 }
 
-// extractCodeFromRepair attempts to salvage Python code from an LLM response
+// extractCodeFromRepair attempts to salvage Go code from an LLM response
 // that may contain explanatory text (3-tier extraction).
 func extractCodeFromRepair(raw string) string {
-	// Tier 1: extract from ```python ... ``` fence
-	if code := extractFencedCode(raw, "python"); code != "" {
+	// Tier 1: extract from ```go ... ``` fence
+	if code := extractFencedCode(raw, "go"); code != "" {
 		return code
 	}
-	// Tier 2: heuristic — find lines starting with import/def/class/#
+	// Tier 2: heuristic — find lines starting with import/package/func/type
 	if code := extractByHeuristic(raw); code != "" {
 		return code
 	}
@@ -596,11 +455,12 @@ func extractByHeuristic(raw string) string {
 		if trimmed == "" {
 			continue
 		}
-		if strings.HasPrefix(trimmed, "import ") ||
-			strings.HasPrefix(trimmed, "def ") ||
-			strings.HasPrefix(trimmed, "class ") ||
-			strings.HasPrefix(trimmed, "#") ||
-			strings.HasPrefix(trimmed, "from ") {
+		if strings.HasPrefix(trimmed, "package ") ||
+			strings.HasPrefix(trimmed, "import ") ||
+			strings.HasPrefix(trimmed, "import(") ||
+			strings.HasPrefix(trimmed, "func ") ||
+			strings.HasPrefix(trimmed, "type ") ||
+			strings.HasPrefix(trimmed, "//") {
 			return strings.Join(lines[i:], "\n")
 		}
 		return ""

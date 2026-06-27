@@ -19,6 +19,7 @@ type Config struct {
 	Leverage       int32
 	Commission     decimal.Decimal // percentage, e.g. 0.0003 = 0.03%
 	Slippage       decimal.Decimal // pips
+	SwapRate       decimal.Decimal // overnight swap rate (e.g. 0.00001)
 	StrictMode     bool            // if true, skip bars with missing data
 }
 
@@ -74,6 +75,7 @@ type OrderRecord struct {
 	Swap        decimal.Decimal
 	Comment     string
 	Magic       int32
+	OpenBar     int
 }
 
 // OrderState is the lifecycle state of an order.

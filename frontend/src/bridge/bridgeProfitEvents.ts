@@ -30,8 +30,11 @@ function flushProfitUpdates(queryClient: QueryClient) {
   profitTimeout = null;
   profitLastFlush = Date.now();
 
-  const pick = (v: unknown): number | undefined =>
-    typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+  const pick = (v: unknown): number | undefined => {
+    if (typeof v === 'number' && Number.isFinite(v)) return v;
+    if (typeof v === 'string' && v !== '') { const n = Number(v); return Number.isFinite(n) ? n : undefined; }
+    return undefined;
+  };
 
   for (const [accId, profit] of pendingProfit) {
     queryClient.setQueryData<Record<string, number>>(

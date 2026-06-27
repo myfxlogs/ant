@@ -43,7 +43,7 @@ func configToProto(c *model.SystemConfig) *antv1.SystemConfig {
 func (s *AdminConfigServer) ListConfigs(ctx context.Context, _ *connect.Request[antv1.ListConfigsRequest]) (*connect.Response[antv1.ListConfigsResponse], error) {
 	configs, err := s.repo.ListConfigs(ctx)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	items := make([]*antv1.SystemConfig, len(configs))
 	for i, c := range configs {
@@ -57,7 +57,7 @@ func (s *AdminConfigServer) SetConfig(ctx context.Context, req *connect.Request[
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("unknown config key: %s", req.Msg.Key))
 	}
 	if err := s.repo.SetConfig(ctx, req.Msg.Key, req.Msg.Value, req.Msg.Description); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	s.log.Info("admin: config set",
 		zap.String("actor", getActorID(ctx).String()),
@@ -67,7 +67,7 @@ func (s *AdminConfigServer) SetConfig(ctx context.Context, req *connect.Request[
 
 func (s *AdminConfigServer) ToggleConfigEnabled(ctx context.Context, req *connect.Request[antv1.ToggleConfigEnabledRequest]) (*connect.Response[antv1.ToggleConfigEnabledResponse], error) {
 	if err := s.repo.SetConfigEnabled(ctx, req.Msg.Key, req.Msg.Enabled); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.ToggleConfigEnabledResponse{}), nil
 }

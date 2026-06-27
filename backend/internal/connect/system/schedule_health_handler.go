@@ -106,7 +106,7 @@ func (s *ScheduleHealthServer) buildHealthSummary(ctx context.Context, uid, sche
 		LastRunAt:            ts(lastRunAt),
 		LatestError:          latestError,
 		LatestOrderTicket:    strconv.FormatInt(latestOrderTicket, 10),
-		LatestOrderProfit:    latestOrderProfit,
+		LatestOrderProfit:    strconv.FormatFloat(latestOrderProfit, 'f', -1, 64),
 		HasLatestOrderProfit: hasLatestOrderProfit,
 		GradeLevel:           gradeLevel,
 		GradeColor:           gradeColor,
@@ -143,7 +143,7 @@ func (s *ScheduleHealthServer) fetchHealthOrders(ctx context.Context, uid, sched
 	for _, o := range orders {
 		out = append(out, &antv1.ScheduleHealthOrder{
 			Id: o.ID, Ticket: o.Ticket, OrderType: o.OrderType,
-			Symbol: o.Symbol, Profit: o.Profit,
+			Symbol: o.Symbol, Profit: strconv.FormatFloat(o.Profit, 'f', -1, 64),
 			OpenTime: ts(o.OpenTime), CloseTime: ts(o.CloseTime),
 		})
 	}

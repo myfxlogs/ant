@@ -3,6 +3,7 @@ package mthub
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"google.golang.org/protobuf/proto"
 
 	"go.uber.org/zap"
@@ -237,8 +238,8 @@ func (s *MtHubService) omsTransition(ctx context.Context, orderID, accountID str
 // Precision loss is detected but not rejected — the MT proto requires float64.
 func costToProto(est *costsvc.CostBreakdown) *antv1.CostEstimate {
 	return &antv1.CostEstimate{
-		SpreadCost: est.SpreadCost, Commission: est.Commission.InexactFloat64(),
-		SlippageCost: est.SlippageCost, SwapCost: est.SwapCost,
-		TotalCost: est.TotalCost,
+		SpreadCost: strconv.FormatFloat(est.SpreadCost, 'f', -1, 64), Commission: est.Commission.String(),
+		SlippageCost: strconv.FormatFloat(est.SlippageCost, 'f', -1, 64), SwapCost: strconv.FormatFloat(est.SwapCost, 'f', -1, 64),
+		TotalCost: strconv.FormatFloat(est.TotalCost, 'f', -1, 64),
 	}
 }

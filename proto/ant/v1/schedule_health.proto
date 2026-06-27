@@ -30,7 +30,7 @@ message ScheduleHealthSummary {
   google.protobuf.Timestamp last_run_at = 5;
   string latest_error = 6;
   string latest_order_ticket = 7;
-  double latest_order_profit = 8;
+  string latest_order_profit = 8;
   bool has_latest_order_profit = 9;
   string grade_level = 10;
   string grade_color = 11;
@@ -55,7 +55,7 @@ message ScheduleHealthOrder {
   int64 ticket = 2;
   string order_type = 3;
   string symbol = 4;
-  double profit = 5;
+  string profit = 5;
   google.protobuf.Timestamp open_time = 6;
   google.protobuf.Timestamp close_time = 7;
 }

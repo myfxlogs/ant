@@ -10,5 +10,8 @@ export default class WorkspaceErrorBoundary extends React.Component<
     this.state = { hasError: false };
   }
   static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('[WorkspaceErrorBoundary]', error, info.componentStack);
+  }
   render() { return this.state.hasError ? this.props.fallback : this.props.children; }
 }

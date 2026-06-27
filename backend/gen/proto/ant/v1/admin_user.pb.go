@@ -29,8 +29,8 @@ type DashboardStats struct {
 	TotalAccounts  int64                  `protobuf:"varint,3,opt,name=total_accounts,json=totalAccounts,proto3" json:"total_accounts,omitempty"`
 	OnlineAccounts int64                  `protobuf:"varint,4,opt,name=online_accounts,json=onlineAccounts,proto3" json:"online_accounts,omitempty"`
 	TodayTrades    int64                  `protobuf:"varint,5,opt,name=today_trades,json=todayTrades,proto3" json:"today_trades,omitempty"`
-	TodayVolume    float64                `protobuf:"fixed64,6,opt,name=today_volume,json=todayVolume,proto3" json:"today_volume,omitempty"`
-	TodayProfit    float64                `protobuf:"fixed64,7,opt,name=today_profit,json=todayProfit,proto3" json:"today_profit,omitempty"`
+	TodayVolume    string                 `protobuf:"bytes,6,opt,name=today_volume,json=todayVolume,proto3" json:"today_volume,omitempty"`
+	TodayProfit    string                 `protobuf:"bytes,7,opt,name=today_profit,json=todayProfit,proto3" json:"today_profit,omitempty"`
 	SystemLoad     float64                `protobuf:"fixed64,8,opt,name=system_load,json=systemLoad,proto3" json:"system_load,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
@@ -101,18 +101,18 @@ func (x *DashboardStats) GetTodayTrades() int64 {
 	return 0
 }
 
-func (x *DashboardStats) GetTodayVolume() float64 {
+func (x *DashboardStats) GetTodayVolume() string {
 	if x != nil {
 		return x.TodayVolume
 	}
-	return 0
+	return ""
 }
 
-func (x *DashboardStats) GetTodayProfit() float64 {
+func (x *DashboardStats) GetTodayProfit() string {
 	if x != nil {
 		return x.TodayProfit
 	}
-	return 0
+	return ""
 }
 
 func (x *DashboardStats) GetSystemLoad() float64 {
@@ -1326,8 +1326,8 @@ const file_admin_user_proto_rawDesc = "" +
 	"\x0etotal_accounts\x18\x03 \x01(\x03R\rtotalAccounts\x12'\n" +
 	"\x0fonline_accounts\x18\x04 \x01(\x03R\x0eonlineAccounts\x12!\n" +
 	"\ftoday_trades\x18\x05 \x01(\x03R\vtodayTrades\x12!\n" +
-	"\ftoday_volume\x18\x06 \x01(\x01R\vtodayVolume\x12!\n" +
-	"\ftoday_profit\x18\a \x01(\x01R\vtodayProfit\x12\x1f\n" +
+	"\ftoday_volume\x18\x06 \x01(\tR\vtodayVolume\x12!\n" +
+	"\ftoday_profit\x18\a \x01(\tR\vtodayProfit\x12\x1f\n" +
 	"\vsystem_load\x18\b \x01(\x01R\n" +
 	"systemLoad\"\x15\n" +
 	"\x13GetDashboardRequest\"D\n" +

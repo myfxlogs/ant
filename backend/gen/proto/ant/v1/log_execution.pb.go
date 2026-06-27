@@ -183,14 +183,14 @@ type ExecutionLog struct {
 	Timeframe        string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
 	Status           string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
 	SignalType       string                 `protobuf:"bytes,6,opt,name=signal_type,json=signalType,proto3" json:"signal_type,omitempty"`
-	SignalPrice      float64                `protobuf:"fixed64,7,opt,name=signal_price,json=signalPrice,proto3" json:"signal_price,omitempty"`
-	SignalVolume     float64                `protobuf:"fixed64,8,opt,name=signal_volume,json=signalVolume,proto3" json:"signal_volume,omitempty"`
-	SignalStopLoss   float64                `protobuf:"fixed64,9,opt,name=signal_stop_loss,json=signalStopLoss,proto3" json:"signal_stop_loss,omitempty"`
-	SignalTakeProfit float64                `protobuf:"fixed64,10,opt,name=signal_take_profit,json=signalTakeProfit,proto3" json:"signal_take_profit,omitempty"`
+	SignalPrice      string                 `protobuf:"bytes,7,opt,name=signal_price,json=signalPrice,proto3" json:"signal_price,omitempty"`
+	SignalVolume     string                 `protobuf:"bytes,8,opt,name=signal_volume,json=signalVolume,proto3" json:"signal_volume,omitempty"`
+	SignalStopLoss   string                 `protobuf:"bytes,9,opt,name=signal_stop_loss,json=signalStopLoss,proto3" json:"signal_stop_loss,omitempty"`
+	SignalTakeProfit string                 `protobuf:"bytes,10,opt,name=signal_take_profit,json=signalTakeProfit,proto3" json:"signal_take_profit,omitempty"`
 	ExecutedOrderId  string                 `protobuf:"bytes,11,opt,name=executed_order_id,json=executedOrderId,proto3" json:"executed_order_id,omitempty"`
-	ExecutedPrice    float64                `protobuf:"fixed64,12,opt,name=executed_price,json=executedPrice,proto3" json:"executed_price,omitempty"`
-	ExecutedVolume   float64                `protobuf:"fixed64,13,opt,name=executed_volume,json=executedVolume,proto3" json:"executed_volume,omitempty"`
-	Profit           float64                `protobuf:"fixed64,14,opt,name=profit,proto3" json:"profit,omitempty"`
+	ExecutedPrice    string                 `protobuf:"bytes,12,opt,name=executed_price,json=executedPrice,proto3" json:"executed_price,omitempty"`
+	ExecutedVolume   string                 `protobuf:"bytes,13,opt,name=executed_volume,json=executedVolume,proto3" json:"executed_volume,omitempty"`
+	Profit           string                 `protobuf:"bytes,14,opt,name=profit,proto3" json:"profit,omitempty"`
 	ErrorMessage     string                 `protobuf:"bytes,15,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
 	ExecutionTimeMs  int64                  `protobuf:"varint,16,opt,name=execution_time_ms,json=executionTimeMs,proto3" json:"execution_time_ms,omitempty"`
 	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
@@ -277,32 +277,32 @@ func (x *ExecutionLog) GetSignalType() string {
 	return ""
 }
 
-func (x *ExecutionLog) GetSignalPrice() float64 {
+func (x *ExecutionLog) GetSignalPrice() string {
 	if x != nil {
 		return x.SignalPrice
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecutionLog) GetSignalVolume() float64 {
+func (x *ExecutionLog) GetSignalVolume() string {
 	if x != nil {
 		return x.SignalVolume
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecutionLog) GetSignalStopLoss() float64 {
+func (x *ExecutionLog) GetSignalStopLoss() string {
 	if x != nil {
 		return x.SignalStopLoss
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecutionLog) GetSignalTakeProfit() float64 {
+func (x *ExecutionLog) GetSignalTakeProfit() string {
 	if x != nil {
 		return x.SignalTakeProfit
 	}
-	return 0
+	return ""
 }
 
 func (x *ExecutionLog) GetExecutedOrderId() string {
@@ -312,25 +312,25 @@ func (x *ExecutionLog) GetExecutedOrderId() string {
 	return ""
 }
 
-func (x *ExecutionLog) GetExecutedPrice() float64 {
+func (x *ExecutionLog) GetExecutedPrice() string {
 	if x != nil {
 		return x.ExecutedPrice
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecutionLog) GetExecutedVolume() float64 {
+func (x *ExecutionLog) GetExecutedVolume() string {
 	if x != nil {
 		return x.ExecutedVolume
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecutionLog) GetProfit() float64 {
+func (x *ExecutionLog) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
 func (x *ExecutionLog) GetErrorMessage() string {
@@ -385,15 +385,15 @@ const file_log_execution_proto_rawDesc = "" +
 	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1f\n" +
 	"\vsignal_type\x18\x06 \x01(\tR\n" +
 	"signalType\x12!\n" +
-	"\fsignal_price\x18\a \x01(\x01R\vsignalPrice\x12#\n" +
-	"\rsignal_volume\x18\b \x01(\x01R\fsignalVolume\x12(\n" +
-	"\x10signal_stop_loss\x18\t \x01(\x01R\x0esignalStopLoss\x12,\n" +
+	"\fsignal_price\x18\a \x01(\tR\vsignalPrice\x12#\n" +
+	"\rsignal_volume\x18\b \x01(\tR\fsignalVolume\x12(\n" +
+	"\x10signal_stop_loss\x18\t \x01(\tR\x0esignalStopLoss\x12,\n" +
 	"\x12signal_take_profit\x18\n" +
-	" \x01(\x01R\x10signalTakeProfit\x12*\n" +
+	" \x01(\tR\x10signalTakeProfit\x12*\n" +
 	"\x11executed_order_id\x18\v \x01(\tR\x0fexecutedOrderId\x12%\n" +
-	"\x0eexecuted_price\x18\f \x01(\x01R\rexecutedPrice\x12'\n" +
-	"\x0fexecuted_volume\x18\r \x01(\x01R\x0eexecutedVolume\x12\x16\n" +
-	"\x06profit\x18\x0e \x01(\x01R\x06profit\x12#\n" +
+	"\x0eexecuted_price\x18\f \x01(\tR\rexecutedPrice\x12'\n" +
+	"\x0fexecuted_volume\x18\r \x01(\tR\x0eexecutedVolume\x12\x16\n" +
+	"\x06profit\x18\x0e \x01(\tR\x06profit\x12#\n" +
 	"\rerror_message\x18\x0f \x01(\tR\ferrorMessage\x12*\n" +
 	"\x11execution_time_ms\x18\x10 \x01(\x03R\x0fexecutionTimeMs\x129\n" +
 	"\n" +

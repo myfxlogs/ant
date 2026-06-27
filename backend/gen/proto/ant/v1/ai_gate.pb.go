@@ -23,7 +23,7 @@ const (
 
 type RunGateEvaluationRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// backtest_run_id from a completed backtest run (PythonStrategyService.StartBacktestRun).
+	// backtest_run_id from a completed backtest run (StrategyRuntimeService.StartBacktestRun).
 	BacktestRunId string `protobuf:"bytes,1,opt,name=backtest_run_id,json=backtestRunId,proto3" json:"backtest_run_id,omitempty"`
 	// Optional: DSL expression override (defaults to empty — skips lookahead gate).
 	Expression string `protobuf:"bytes,2,opt,name=expression,proto3" json:"expression,omitempty"`
@@ -32,7 +32,7 @@ type RunGateEvaluationRequest struct {
 	// Optional: paper trading days completed (gate skipped if 0).
 	PaperDays int32 `protobuf:"varint,4,opt,name=paper_days,json=paperDays,proto3" json:"paper_days,omitempty"`
 	// Optional: paper trading Net P&L (gate skipped if paper_days == 0).
-	PaperNetPnl float64 `protobuf:"fixed64,5,opt,name=paper_net_pnl,json=paperNetPnl,proto3" json:"paper_net_pnl,omitempty"`
+	PaperNetPnl string `protobuf:"bytes,5,opt,name=paper_net_pnl,json=paperNetPnl,proto3" json:"paper_net_pnl,omitempty"`
 	// Optional: paper trading net return (gate skipped if paper_days == 0).
 	PaperNetReturn float64 `protobuf:"fixed64,6,opt,name=paper_net_return,json=paperNetReturn,proto3" json:"paper_net_return,omitempty"`
 	// Optional: backtest net return for paper ratio comparison.
@@ -101,11 +101,11 @@ func (x *RunGateEvaluationRequest) GetPaperDays() int32 {
 	return 0
 }
 
-func (x *RunGateEvaluationRequest) GetPaperNetPnl() float64 {
+func (x *RunGateEvaluationRequest) GetPaperNetPnl() string {
 	if x != nil {
 		return x.PaperNetPnl
 	}
-	return 0
+	return ""
 }
 
 func (x *RunGateEvaluationRequest) GetPaperNetReturn() float64 {
@@ -349,7 +349,7 @@ const file_ai_gate_proto_rawDesc = "" +
 	"\fnum_attempts\x18\x03 \x01(\x05R\vnumAttempts\x12\x1d\n" +
 	"\n" +
 	"paper_days\x18\x04 \x01(\x05R\tpaperDays\x12\"\n" +
-	"\rpaper_net_pnl\x18\x05 \x01(\x01R\vpaperNetPnl\x12(\n" +
+	"\rpaper_net_pnl\x18\x05 \x01(\tR\vpaperNetPnl\x12(\n" +
 	"\x10paper_net_return\x18\x06 \x01(\x01R\x0epaperNetReturn\x12.\n" +
 	"\x13backtest_net_return\x18\a \x01(\x01R\x11backtestNetReturn\x12*\n" +
 	"\x11paper_trade_count\x18\b \x01(\x05R\x0fpaperTradeCount\"y\n" +

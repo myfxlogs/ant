@@ -80,9 +80,9 @@ type RiskConfig struct {
 	UserId             string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	AccountId          string                 `protobuf:"bytes,3,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	MaxPositions       int32                  `protobuf:"varint,4,opt,name=max_positions,json=maxPositions,proto3" json:"max_positions,omitempty"`
-	MaxLotSize         float64                `protobuf:"fixed64,5,opt,name=max_lot_size,json=maxLotSize,proto3" json:"max_lot_size,omitempty"`
-	MaxDailyLoss       float64                `protobuf:"fixed64,6,opt,name=max_daily_loss,json=maxDailyLoss,proto3" json:"max_daily_loss,omitempty"`
-	DailyLossUsed      float64                `protobuf:"fixed64,7,opt,name=daily_loss_used,json=dailyLossUsed,proto3" json:"daily_loss_used,omitempty"`
+	MaxLotSize         string                 `protobuf:"bytes,5,opt,name=max_lot_size,json=maxLotSize,proto3" json:"max_lot_size,omitempty"`
+	MaxDailyLoss       string                 `protobuf:"bytes,6,opt,name=max_daily_loss,json=maxDailyLoss,proto3" json:"max_daily_loss,omitempty"`
+	DailyLossUsed      string                 `protobuf:"bytes,7,opt,name=daily_loss_used,json=dailyLossUsed,proto3" json:"daily_loss_used,omitempty"`
 	MaxDrawdownPercent float64                `protobuf:"fixed64,8,opt,name=max_drawdown_percent,json=maxDrawdownPercent,proto3" json:"max_drawdown_percent,omitempty"`
 	MaxRiskPercent     float64                `protobuf:"fixed64,9,opt,name=max_risk_percent,json=maxRiskPercent,proto3" json:"max_risk_percent,omitempty"`
 	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
@@ -149,25 +149,25 @@ func (x *RiskConfig) GetMaxPositions() int32 {
 	return 0
 }
 
-func (x *RiskConfig) GetMaxLotSize() float64 {
+func (x *RiskConfig) GetMaxLotSize() string {
 	if x != nil {
 		return x.MaxLotSize
 	}
-	return 0
+	return ""
 }
 
-func (x *RiskConfig) GetMaxDailyLoss() float64 {
+func (x *RiskConfig) GetMaxDailyLoss() string {
 	if x != nil {
 		return x.MaxDailyLoss
 	}
-	return 0
+	return ""
 }
 
-func (x *RiskConfig) GetDailyLossUsed() float64 {
+func (x *RiskConfig) GetDailyLossUsed() string {
 	if x != nil {
 		return x.DailyLossUsed
 	}
-	return 0
+	return ""
 }
 
 func (x *RiskConfig) GetMaxDrawdownPercent() float64 {
@@ -203,8 +203,8 @@ type UpdateRiskConfigRequest struct {
 	UserId             string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	AccountId          string                 `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	MaxPositions       *int32                 `protobuf:"varint,3,opt,name=max_positions,json=maxPositions,proto3,oneof" json:"max_positions,omitempty"`
-	MaxLotSize         *float64               `protobuf:"fixed64,4,opt,name=max_lot_size,json=maxLotSize,proto3,oneof" json:"max_lot_size,omitempty"`
-	MaxDailyLoss       *float64               `protobuf:"fixed64,5,opt,name=max_daily_loss,json=maxDailyLoss,proto3,oneof" json:"max_daily_loss,omitempty"`
+	MaxLotSize         *string                `protobuf:"bytes,4,opt,name=max_lot_size,json=maxLotSize,proto3,oneof" json:"max_lot_size,omitempty"`
+	MaxDailyLoss       *string                `protobuf:"bytes,5,opt,name=max_daily_loss,json=maxDailyLoss,proto3,oneof" json:"max_daily_loss,omitempty"`
 	MaxDrawdownPercent *float64               `protobuf:"fixed64,6,opt,name=max_drawdown_percent,json=maxDrawdownPercent,proto3,oneof" json:"max_drawdown_percent,omitempty"`
 	MaxRiskPercent     *float64               `protobuf:"fixed64,7,opt,name=max_risk_percent,json=maxRiskPercent,proto3,oneof" json:"max_risk_percent,omitempty"`
 	unknownFields      protoimpl.UnknownFields
@@ -262,18 +262,18 @@ func (x *UpdateRiskConfigRequest) GetMaxPositions() int32 {
 	return 0
 }
 
-func (x *UpdateRiskConfigRequest) GetMaxLotSize() float64 {
+func (x *UpdateRiskConfigRequest) GetMaxLotSize() string {
 	if x != nil && x.MaxLotSize != nil {
 		return *x.MaxLotSize
 	}
-	return 0
+	return ""
 }
 
-func (x *UpdateRiskConfigRequest) GetMaxDailyLoss() float64 {
+func (x *UpdateRiskConfigRequest) GetMaxDailyLoss() string {
 	if x != nil && x.MaxDailyLoss != nil {
 		return *x.MaxDailyLoss
 	}
-	return 0
+	return ""
 }
 
 func (x *UpdateRiskConfigRequest) GetMaxDrawdownPercent() float64 {
@@ -306,10 +306,10 @@ const file_auto_trading_risk_config_proto_rawDesc = "" +
 	"\n" +
 	"account_id\x18\x03 \x01(\tR\taccountId\x12#\n" +
 	"\rmax_positions\x18\x04 \x01(\x05R\fmaxPositions\x12 \n" +
-	"\fmax_lot_size\x18\x05 \x01(\x01R\n" +
+	"\fmax_lot_size\x18\x05 \x01(\tR\n" +
 	"maxLotSize\x12$\n" +
-	"\x0emax_daily_loss\x18\x06 \x01(\x01R\fmaxDailyLoss\x12&\n" +
-	"\x0fdaily_loss_used\x18\a \x01(\x01R\rdailyLossUsed\x120\n" +
+	"\x0emax_daily_loss\x18\x06 \x01(\tR\fmaxDailyLoss\x12&\n" +
+	"\x0fdaily_loss_used\x18\a \x01(\tR\rdailyLossUsed\x120\n" +
 	"\x14max_drawdown_percent\x18\b \x01(\x01R\x12maxDrawdownPercent\x12(\n" +
 	"\x10max_risk_percent\x18\t \x01(\x01R\x0emaxRiskPercent\x129\n" +
 	"\n" +
@@ -322,9 +322,9 @@ const file_auto_trading_risk_config_proto_rawDesc = "" +
 	"\n" +
 	"account_id\x18\x02 \x01(\tR\taccountId\x12(\n" +
 	"\rmax_positions\x18\x03 \x01(\x05H\x00R\fmaxPositions\x88\x01\x01\x12%\n" +
-	"\fmax_lot_size\x18\x04 \x01(\x01H\x01R\n" +
+	"\fmax_lot_size\x18\x04 \x01(\tH\x01R\n" +
 	"maxLotSize\x88\x01\x01\x12)\n" +
-	"\x0emax_daily_loss\x18\x05 \x01(\x01H\x02R\fmaxDailyLoss\x88\x01\x01\x125\n" +
+	"\x0emax_daily_loss\x18\x05 \x01(\tH\x02R\fmaxDailyLoss\x88\x01\x01\x125\n" +
 	"\x14max_drawdown_percent\x18\x06 \x01(\x01H\x03R\x12maxDrawdownPercent\x88\x01\x01\x12-\n" +
 	"\x10max_risk_percent\x18\a \x01(\x01H\x04R\x0emaxRiskPercent\x88\x01\x01B\x10\n" +
 	"\x0e_max_positionsB\x0f\n" +

@@ -5,68 +5,34 @@ import (
 	"testing"
 )
 
-// T2.2: Verify that the TransformCode prompt uses the REAL Strategy SDK API
-// (docs/spec/30-strategy-sdk.md) and does NOT reference the fictional
-// signal-dict API (self.buy, self.sell, self.sma, self.close_all, etc.).
+// T2.2: Verify that the TransformCode prompt uses the Go Strategy SDK API
+// and does NOT reference the old Python signal-dict API.
 
 func TestTransformCodePromptUsesRealSDKAPI(t *testing.T) {
-	// The TransformCode method builds its prompt inline.
-	// We validate the prompt content against the spec.
-
-	// Required SDK API references that MUST appear in the prompt.
 	required := []string{
-		"StrategyBase",
-		"on_init",
-		"on_tick",
-		"on_bar",
-		"on_deinit",
-		"self.broker.order_send",
-		"OrderRequest",
-		"OrderType",           // OrderType values listed: BUY, SELL, BUY_LIMIT, ...
-		"self.broker.position_close",
-		"self.broker.position_modify",
-		"self.broker.order_delete",
-		"self.broker.positions",
-		"self.broker.orders",
-		"self.broker.account",
-		"self.broker.symbol_info",
-		"self.indicators.ma",
-		"self.indicators.ema",
-		"self.indicators.rsi",
-		"self.indicators.bands",
-		"self.indicators.macd",
-		"self.indicators.atr",
-		"self.indicators.stochastic",
-		"self.indicators.cci",
-		"self.indicators.i_custom",
-		"self.ctx.bars",
-		"self.ctx.param",
-		"self.ctx.set_timer",
-		"self.ctx.kill_timer",
-		"bars.close[0]",
-		"bars.open[0]",
-		"MQL reverse indexing",
-		"Decimal(str(",
-		"PositionSide",
-		"AccountMode",
-		"TypeFilling",
+		"sdk.Strategy",
+		"OnInit",
+		"OnBar",
+		"OnDeinit",
+		"ctx.Broker().OrderSend",
+		"sdk.OrderRequest",
+		"sdk.OrderType",
+		"ctx.Broker().Positions",
+		"ctx.Broker().AccountInfo",
+		"ctx.Indicators().MA",
+		"ctx.Indicators().EMA",
+		"ctx.Indicators().RSI",
+		"ctx.Indicators().Bands",
+		"ctx.Indicators().MACD",
+		"ctx.Indicators().ATR",
+		"ctx.Bars",
+		"ctx.Param",
+		"decimal.Decimal",
+		"sdk.Signal",
+		"sdk.OrderTypeBuy",
 		"TRANSPILER-GAP",
 	}
 
-	// Also verify all 8 order type values are listed.
-	orderTypes := []string{
-		"BUY_LIMIT",
-		"SELL_LIMIT",
-		"BUY_STOP",
-		"SELL_STOP",
-		"BUY_STOP_LIMIT",
-		"SELL_STOP_LIMIT",
-	}
-	required = append(required, orderTypes...)
-
-	// Build the prompt the same way TransformCode does (without langHint).
-	// We can't call the actual method without an LLM, but we verify the prompt
-	// string matches the spec by checking the constant parts.
 	prompt := buildTransformCodePromptForTest()
 
 	for _, keyword := range required {
@@ -79,43 +45,20 @@ func TestTransformCodePromptUsesRealSDKAPI(t *testing.T) {
 func TestTransformCodePromptRejectsFictionalAPI(t *testing.T) {
 	prompt := buildTransformCodePromptForTest()
 
-	// These are FICTIONAL API methods from the old prompt that MUST NOT appear
-	// as actual API recommendations. They may appear in the "NEVER use" warning.
 	banned := []string{
-		"self.buy(",
-		"self.sell(",
 		"self.close_all(",
 		"self.sma(",
-		"self.bollinger(",
-		"self.has_position()",
-		"self.position_side",
-		"self.position_profit",
-		"self.order_comment",
-		"self.on_bar(bar)",  // wrong signature
-		"def run(context):", // signal-dict entry point
+		"def run(context):",
+		"StrategyBase",
+		"self.broker.order_send",
+		"self.ctx.param",
 	}
 
 	for _, keyword := range banned {
-		occurrences := countOccurrences(prompt, keyword)
-		// Allow exactly 1 occurrence — the "NEVER use" warning line.
-		// Any additional occurrence means the fictional API is being recommended.
-		if occurrences > 1 {
-			t.Errorf("TransformCode prompt contains FICTIONAL API method %d times: %q — should appear at most once (in NEVER-use warning)", occurrences, keyword)
-		}
-		if occurrences == 1 && !strings.Contains(prompt, "NEVER use") {
-			t.Errorf("TransformCode prompt contains FICTIONAL API method %q outside NEVER-use warning", keyword)
+		if strings.Contains(prompt, keyword) {
+			t.Errorf("TransformCode prompt contains OLD Python API method: %q — should not appear", keyword)
 		}
 	}
-}
-
-func countOccurrences(s, substr string) int {
-	count := 0
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			count++
-		}
-	}
-	return count
 }
 
 func TestTransformCodePromptContainsFewShot(t *testing.T) {
@@ -124,8 +67,8 @@ func TestTransformCodePromptContainsFewShot(t *testing.T) {
 	fewShotMarkers := []string{
 		"Few-Shot Example",
 		"OrderSend(Symbol(), OP_BUY",
-		"on_init(self) -> None",
-		"OrderRequest(symbol=self.ctx.symbol",
+		"OnInit(ctx sdk.Context)",
+		"sdk.OrderRequest{",
 	}
 
 	for _, marker := range fewShotMarkers {
@@ -139,12 +82,9 @@ func TestTransformCodePromptCoversAllLifecycleHooks(t *testing.T) {
 	prompt := buildTransformCodePromptForTest()
 
 	hooks := []string{
-		"on_init",
-		"on_tick",
-		"on_bar",
-		"on_timer",
-		"on_trade",
-		"on_deinit",
+		"OnInit",
+		"OnBar",
+		"OnDeinit",
 	}
 
 	for _, hook := range hooks {
@@ -155,9 +95,6 @@ func TestTransformCodePromptCoversAllLifecycleHooks(t *testing.T) {
 }
 
 func TestLengthLimitsAligned(t *testing.T) {
-	// maxTransformCodeLen (code_assist_handler.go) = 65536
-	// sandbox_scan.py MAX_CODE_LENGTH must be >= this value.
-	// We can't read the Python file here, but we verify the Go constant.
 	if maxTransformCodeLen != 65536 {
 		t.Errorf("maxTransformCodeLen = %d, expected 65536 per T2.2", maxTransformCodeLen)
 	}
@@ -168,76 +105,72 @@ func TestLengthLimitsAligned(t *testing.T) {
 func buildTransformCodePromptForTest() string {
 	return "You are an expert trading strategy translator. " +
 		"Translate the following MetaTrader EA/indicator code (MQL4 or MQL5) into a " +
-		"Python strategy for the AntTrader platform.\n\n" +
-		"AntTrader Strategy SDK API (the ONLY valid API — use EXACTLY these signatures):\n\n" +
-		"## Lifecycle (inherit from StrategyBase)\n" +
-		"- `def on_init(self) -> None:` — replaces OnInit(). Register params, set timer.\n" +
-		"- `def on_tick(self) -> None:` — replaces OnTick(). Primary entry for tick-driven EAs.\n" +
-		"- `def on_bar(self, timeframe: str) -> None:` — replaces OnCalculate(). New bar closed.\n" +
-		"- `def on_timer(self) -> None:` — replaces OnTimer(). Requires ctx.set_timer(seconds).\n" +
-		"- `def on_trade(self) -> None:` — replaces OnTrade(). After any trade event.\n" +
-		"- `def on_deinit(self, reason: str) -> None:` — replaces OnDeinit(). Cleanup.\n\n" +
-		"## Order Entry (via self.broker)\n" +
-		"- `self.broker.order_send(OrderRequest(symbol=..., type=OrderType.BUY, volume=Decimal(str(lot)), ...))`\n" +
-		"  OrderType values: BUY, SELL, BUY_LIMIT, SELL_LIMIT, BUY_STOP, SELL_STOP,\n" +
-		"  BUY_STOP_LIMIT, SELL_STOP_LIMIT.\n" +
-		"  Optional fields: price (Decimal, omit for market orders), sl, tp (Decimal or None),\n" +
-		"  deviation (int, slippage in points), magic (int), comment (str),\n" +
-		"  type_filling (TypeFilling.FOK/IOC/RETURN), stop_limit_price (Decimal, only for *_STOP_LIMIT).\n" +
-		"  Returns OrderResult with retcode, ticket, price, volume.\n" +
-		"- `self.broker.position_close(ticket, volume=None)` — close position (None=full, Decimal=partial).\n" +
-		"- `self.broker.position_modify(ticket, sl=None, tp=None)` — modify SL/TP (Decimal or None).\n" +
-		"- `self.broker.order_delete(ticket)` — cancel a pending order.\n\n" +
-		"## Position & Order Query (via self.broker)\n" +
-		"- `self.broker.positions(symbol=None, magic=None) -> list[Position]` — open positions.\n" +
-		"  Position fields: ticket, symbol, side (PositionSide.BUY/SELL), volume (Decimal),\n" +
-		"  open_price (Decimal), sl, tp, profit, swap, magic, comment, open_time_ms.\n" +
-		"- `self.broker.orders(symbol=None, magic=None) -> list[PendingOrder]` — pending orders.\n" +
-		"  PendingOrder fields: ticket, symbol, type (OrderType), volume, price, sl, tp, magic.\n" +
-		"- `self.broker.account() -> AccountInfo` — balance, equity, margin, free_margin, margin_level,\n" +
-		"  leverage, currency, mode (AccountMode.NETTING/HEDGING). All amounts are Decimal.\n" +
-		"- `self.broker.symbol_info(symbol) -> SymbolInfo` — digits, point, tick_size, tick_value,\n" +
-		"  contract_size, volume_min/max/step, stops_level, freeze_level, swap_long/short, margin_rate.\n" +
-		"- `self.broker.server_time() -> int` — unix_ms.\n\n" +
-		"## Price Data (via self.ctx, MQL reverse indexing: [0]=current, [1]=previous)\n" +
-		"- `bars = self.ctx.bars(timeframe=None)` — returns Bars. None = primary timeframe.\n" +
-		"- `bars.close[0]`, `bars.open[0]`, `bars.high[0]`, `bars.low[0]`, `bars.volume[0]`, `bars.time[0]`.\n" +
-		"- `bars.total()` — number of available bars.\n\n" +
-		"## Indicators (via self.indicators, shift=0 = current bar, all return float)\n" +
-		"- `self.indicators.ma(period=14, shift=0, method='sma')` — methods: sma/ema/smma/lwma.\n" +
-		"- `self.indicators.ema(period=14, shift=0)`\n" +
-		"- `self.indicators.rsi(period=14, shift=0)`\n" +
-		"- `self.indicators.bands(period=20, deviation=2.0, shift=0) -> (upper, middle, lower)`\n" +
-		"- `self.indicators.macd(fast=12, slow=26, signal=9, shift=0) -> (macd, signal, histogram)`\n" +
-		"- `self.indicators.atr(period=14, shift=0)`\n" +
-		"- `self.indicators.stochastic(k_period=5, d_period=3, shift=0) -> (k, d)`\n" +
-		"- `self.indicators.cci(period=14, shift=0)`\n" +
-		"- `self.indicators.i_custom(name, params=[], buffer=0, shift=0)` — custom indicator.\n\n" +
-		"## Parameters & Timer (via self.ctx)\n" +
-		"- `self.ctx.param(name, default=None)` — read extern/input parameter (type: object, cast as needed).\n" +
-		"- `self.ctx.set_timer(seconds)` — enable periodic on_timer callback (min 1s).\n" +
-		"- `self.ctx.kill_timer()` — disable timer.\n\n" +
+		"Go strategy for the AntTrader platform.\n\n" +
+		"AntTrader Go Strategy SDK API (the ONLY valid API — use EXACTLY these signatures):\n\n" +
+		"## Lifecycle (implement sdk.Strategy interface)\n" +
+		"- `func (s *MyStrategy) OnInit(ctx sdk.Context) error` — register params, init state.\n" +
+		"- `func (s *MyStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error)` — new bar closed.\n" +
+		"- `func (s *MyStrategy) OnDeinit(ctx sdk.Context, reason string) error` — cleanup.\n\n" +
+		"## Order Entry (via ctx.Broker())\n" +
+		"- `ctx.Broker().OrderSend(sdk.OrderRequest{Symbol: ..., Type: sdk.OrderTypeBuy, Volume: decimal.NewFromFloat(lot), ...})`\n" +
+		"  OrderType values: OrderTypeBuy, OrderTypeSell, OrderTypeBuyLimit, OrderTypeSellLimit, OrderTypeBuyStop, OrderTypeSellStop,\n" +
+		"  OrderTypeBuyStopLimit, OrderTypeSellStopLimit.\n" +
+		"  Optional fields: Price (decimal.Decimal, omit for market orders), SL, TP (decimal.Decimal),\n" +
+		"  Deviation (int, slippage in points), Magic (int64), Comment (string),\n" +
+		"  TypeFilling (sdk.TypeFillingFOK/IOC/Return), StopLimitPrice (decimal.Decimal).\n" +
+		"  Returns sdk.OrderResult with Retcode, Ticket, Price, Volume.\n" +
+		"- `ctx.Broker().PositionClose(ticket int64, volume decimal.Decimal)` — close position.\n" +
+		"- `ctx.Broker().PositionModify(ticket int64, sl, tp decimal.Decimal)` — modify SL/TP.\n" +
+		"- `ctx.Broker().OrderDelete(ticket int64)` — cancel a pending order.\n\n" +
+		"## Position & Order Query (via ctx.Broker())\n" +
+		"- `ctx.Broker().Positions(magic int64) []sdk.Position` — open positions.\n" +
+		"  Position fields: Ticket (int64), Symbol (string), Side (sdk.SideBuy/SideSell), Volume (decimal.Decimal),\n" +
+		"  OpenPrice, SL, TP, Profit, Swap (decimal.Decimal), Magic (int64), Comment (string), OpenTimeMs (int64).\n" +
+		"- `ctx.Broker().Orders(magic int64) []sdk.PendingOrder` — pending orders.\n" +
+		"  PendingOrder fields: Ticket, Symbol, Type (sdk.OrderType), Volume, Price, SL, TP, Magic.\n" +
+		"- `ctx.Broker().AccountInfo() sdk.AccountInfo` — Balance, Equity, Margin, FreeMargin, MarginLevel,\n" +
+		"  Leverage, Currency, Mode (sdk.AccountModeNetting/Hedging). All amounts are decimal.Decimal.\n" +
+		"- `ctx.Broker().SymbolInfo(symbol string) sdk.SymbolInfo` — Digits, Point, TickSize, TickValue,\n" +
+		"  ContractSize, VolumeMin/Max/Step, StopsLevel, FreezeLevel, SwapLong/Short, MarginRate.\n" +
+		"- `ctx.Broker().ServerTime() int64` — unix_ms.\n\n" +
+		"## Price Data (via ctx.Bars, index 0 = most recent bar)\n" +
+		"- `bars := ctx.Bars(timeframe)` — returns sdk.Bars.\n" +
+		"- `bars.Close(0)`, `bars.Open(0)`, `bars.High(0)`, `bars.Low(0)`, `bars.Volume(0)`, `bars.Time(0)`.\n" +
+		"- `bars.Len()` — number of available bars.\n\n" +
+		"## Indicators (via ctx.Indicators(), all return decimal.Decimal)\n" +
+		"- `ctx.Indicators().MA(period int) sdk.Indicator` — .Value(shift int) decimal.Decimal.\n" +
+		"- `ctx.Indicators().EMA(period int) sdk.Indicator`\n" +
+		"- `ctx.Indicators().RSI(period int) sdk.Indicator`\n" +
+		"- `ctx.Indicators().Bands(period int, stdDev float64) sdk.BandsIndicator` — .Upper(shift), .Middle(shift), .Lower(shift).\n" +
+		"- `ctx.Indicators().MACD(fast, slow, signal int) sdk.MACDIndicator` — .MACD(shift), .Signal(shift), .Histogram(shift).\n" +
+		"- `ctx.Indicators().ATR(period int) sdk.Indicator`\n" +
+		"- `ctx.Indicators().Stochastic(kPeriod, dPeriod int) sdk.StochasticIndicator` — .K(shift), .D(shift).\n" +
+		"- `ctx.Indicators().CCI(period int) sdk.Indicator`\n\n" +
+		"## Parameters (via ctx)\n" +
+		"- `ctx.Param(name string, default T) T` — read parameter with type inference.\n" +
+		"- `ctx.Symbol() string` — current symbol.\n\n" +
 		"## Critical Rules\n" +
-		"1. ALL monetary values (prices, volumes, balances) MUST use Decimal(str(x)), NEVER float.\n" +
-		"2. Import from app.sdk: StrategyBase, OrderRequest, OrderType, OrderResult, Position,\n" +
-		"   PendingOrder, PositionSide, Retcode, AccountMode, TypeFilling, Decimal.\n" +
-		"3. Replace extern/input with self.ctx.param() calls in on_init().\n" +
-		"4. MQL OrderSelect loop → `for order in self.broker.orders():` or `for pos in self.broker.positions():`.\n" +
-		"5. MQL Close[i] → bars.close[i]; MQL iMA() → self.indicators.ma().\n" +
-		"6. NEVER use self.buy(), self.sell(), self.close_all(), self.sma() — these DO NOT EXIST.\n" +
-		"7. Return ONLY the Python code inside ```python ... ``` fence.\n" +
-		"8. Mark untranslatable MQL (DLL, WebRequest, GUI, FileIO) with `# TRANSPILER-GAP: <reason>`.\n\n" +
+		"1. ALL monetary values (prices, volumes, balances) MUST use decimal.Decimal, NEVER float64.\n" +
+		"2. Import: \"anttrader/strategy/sdk\" and \"github.com/shopspring/decimal\".\n" +
+		"3. Replace extern/input with ctx.Param() calls in OnInit().\n" +
+		"4. MQL OrderSelect loop → `for _, pos := range ctx.Broker().Positions(0) {`.\n" +
+		"5. MQL Close[i] → bars.Close(i); MQL iMA() → ctx.Indicators().MA(period).Value(shift).\n" +
+		"6. NEVER use self.buy(), self.sell() — these are Python SDK, DO NOT EXIST in Go SDK.\n" +
+		"7. Return ONLY the Go code inside ```go ... ``` fence.\n" +
+		"8. Mark untranslatable MQL (DLL, WebRequest, GUI, FileIO) with `// TRANSPILER-GAP: <reason>`.\n\n" +
 		"## Few-Shot Example\n" +
 		"MQL: `int OnInit() { EventSetTimer(60); return INIT_SUCCEEDED; }`\n" +
-		"SDK:\n```python\n" +
-		"def on_init(self) -> None:\n" +
-		"    self.ctx.set_timer(60)\n" +
+		"Go SDK:\n```go\n" +
+		"func (s *MyStrategy) OnInit(ctx sdk.Context) error {\n" +
+		"    return nil\n" +
+		"}\n" +
 		"```\n\n" +
 		"MQL: `OrderSend(Symbol(), OP_BUY, 0.1, Ask, 3, 0, 0, \"entry\", 12345, 0, clrNONE);`\n" +
-		"SDK:\n```python\n" +
-		"req = OrderRequest(symbol=self.ctx.symbol, type=OrderType.BUY,\n" +
-		"                   volume=Decimal('0.10'), magic=12345, comment='entry')\n" +
-		"result = self.broker.order_send(req)\n" +
+		"Go SDK:\n```go\n" +
+		"result, err := ctx.Broker().OrderSend(sdk.OrderRequest{\n" +
+		"    Symbol: ctx.Symbol(), Type: sdk.OrderTypeBuy,\n" +
+		"    Volume: decimal.NewFromFloat(0.10), Magic: 12345, Comment: \"entry\",\n" +
+		"})\n" +
 		"```"
 }
 
@@ -245,17 +178,16 @@ func TestBuildValidationPromptReferencesSDK(t *testing.T) {
 	prompt := buildValidationPrompt()
 
 	sdkRefs := []string{
-		"StrategyBase",
-		"on_init",
-		"on_tick",
-		"on_bar",
-		"on_deinit",
-		"self.broker.order_send",
-		"OrderRequest",
-		"self.ctx.bars",
-		"self.ctx.param",
-		"self.indicators",
-		"Decimal(str(",
+		"sdk.Strategy",
+		"OnInit",
+		"OnBar",
+		"OnDeinit",
+		"ctx.Broker().OrderSend",
+		"sdk.OrderRequest",
+		"bars.Close",
+		"ctx.Param",
+		"ctx.Indicators",
+		"decimal.Decimal",
 	}
 
 	for _, ref := range sdkRefs {
@@ -264,30 +196,24 @@ func TestBuildValidationPromptReferencesSDK(t *testing.T) {
 		}
 	}
 
-	// Must NOT reference the old signal-dict API.
 	oldRefs := []string{
 		"@param",
 		"context.get('position')",
 		"def run(context):",
+		"StrategyBase",
+		"self.broker.order_send",
+		"self.ctx.param",
 	}
 	for _, ref := range oldRefs {
 		if strings.Contains(prompt, ref) {
-			t.Errorf("buildValidationPrompt contains OLD signal-dict API reference: %q", ref)
+			t.Errorf("buildValidationPrompt contains OLD Python API reference: %q", ref)
 		}
-	}
-
-	// Must warn against underscore-prefixed helper methods.
-	if !strings.Contains(prompt, "underscore") {
-		t.Error("buildValidationPrompt should mention underscore-prefixed helpers are rejected")
 	}
 }
 
 func TestSandboxScanLengthAligned(t *testing.T) {
-	// Verify that the Go-side maxTransformCodeLen is at least as large
-	// as the Python sandbox_scan MAX_CODE_LENGTH after T2.2 alignment.
-	// The Python value was raised from 10000 to 65536.
 	if maxTransformCodeLen < 65536 {
-		t.Errorf("maxTransformCodeLen=%d too small; sandbox_scan.py MAX_CODE_LENGTH=65536 per T2.2", maxTransformCodeLen)
+		t.Errorf("maxTransformCodeLen=%d too small; expected 65536", maxTransformCodeLen)
 	}
 	if maxCodeLen < maxTransformCodeLen {
 		t.Errorf("maxCodeLen=%d must be >= maxTransformCodeLen=%d", maxCodeLen, maxTransformCodeLen)

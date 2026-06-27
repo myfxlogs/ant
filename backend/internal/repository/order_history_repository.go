@@ -69,9 +69,17 @@ func buildOrderHistoryFilters(userID uuid.UUID, params *model.LogQueryParams) (b
 	args = []interface{}{userID}
 	idx = 2
 	if params == nil { return }
-	addFilter := func(col, val string) { baseQ += fmt.Sprintf(` AND %s = $%d`, col, idx); args = append(args, val); idx++ }
-	if params.ScheduleID != "" { sid, _ := uuid.Parse(params.ScheduleID); addFilter("schedule_id", ""); args[len(args)-1] = sid }
-	if params.AccountID != "" { aid, _ := uuid.Parse(params.AccountID); addFilter("account_id", ""); args[len(args)-1] = aid }
+	addFilter := func(col string, val interface{}) { baseQ += fmt.Sprintf(` AND %s = $%d`, col, idx); args = append(args, val); idx++ }
+	if params.ScheduleID != "" {
+		if sid, err := uuid.Parse(params.ScheduleID); err == nil {
+			addFilter("schedule_id", sid)
+		}
+	}
+	if params.AccountID != "" {
+		if aid, err := uuid.Parse(params.AccountID); err == nil {
+			addFilter("account_id", aid)
+		}
+	}
 	if params.Symbol != "" { addFilter("symbol", params.Symbol) }
 	if params.Type != "" { addFilter("order_type", params.Type) }
 	if params.StartDate != "" { addFilter("open_time >=", params.StartDate) }

@@ -93,7 +93,14 @@ export function refreshAccessToken(): Promise<string | null> {
  */
 export async function ensureFreshToken(): Promise<string | null> {
   const current = useAuthStore.getState().accessToken;
-  if (!current) return null;
+  if (!current) {
+    // Page reload: user profile persisted but accessToken was not.
+    // Attempt a cookie-based refresh to get a new token without a 401 round-trip.
+    if (useAuthStore.getState().isAuthenticated) {
+      return refreshAccessToken();
+    }
+    return null;
+  }
   const exp = getTokenExpiryMs(current);
   // If we cannot decode exp, fall back to optimistic use; the reactive 401
   // interceptor will pick up actual invalidation.

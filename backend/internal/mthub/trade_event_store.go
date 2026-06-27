@@ -137,8 +137,8 @@ func eventToPayload(ev *TradeEvent) *antv1.TradeEventPayload {
 		AccountId: ev.AccountID, UserId: ev.UserID, Broker: ev.Broker,
 		Ticket: ev.Ticket, ClientId: ev.ClientID, Canonical: ev.Canonical,
 		Side: ev.Side, OrderType: ev.OrderType,
-		Volume: ev.Volume.InexactFloat64(), Price: ev.Price.InexactFloat64(),
-		StopLoss: ev.StopLoss.InexactFloat64(), TakeProfit: ev.TakeProfit.InexactFloat64(),
+		Volume: ev.Volume.String(), Price: ev.Price.String(),
+		StopLoss: ev.StopLoss.String(), TakeProfit: ev.TakeProfit.String(),
 		FromState: ev.FromState, ToState: ev.ToState,
 		CostJson: ev.CostBreakdownJSON, TsUnixMs: ev.Timestamp.UnixMilli(),
 	}

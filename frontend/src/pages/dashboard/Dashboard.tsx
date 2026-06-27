@@ -43,9 +43,9 @@ export default function Dashboard() {
   const quickActions = createQuickActions(t);
 
   const stats = {
-    totalBalance: summary?.totalBalance ?? 0,
-    totalEquity: summary?.totalEquity ?? 0,
-    totalProfit: summary?.totalProfit ?? 0,
+    totalBalance: Number(summary?.totalBalance) || 0,
+    totalEquity: Number(summary?.totalEquity) || 0,
+    totalProfit: Number(summary?.totalProfit) || 0,
     connectedCount: summary?.connectedCount ?? 0,
     accountCount: summary?.accountCount ?? accts.length,
   };

@@ -4,7 +4,7 @@ package ant.v1;
 
 option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
-import "python_strategy.proto";
+import "strategy_runtime.proto";
 
 service CodeAssistService {
   rpc ReviseCode(ReviseCodeRequest) returns (ReviseCodeResponse);

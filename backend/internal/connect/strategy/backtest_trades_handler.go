@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -38,15 +39,16 @@ func extractTradeSummary(protoResp []byte) *antv1.BacktestTradeSummary {
 	}
 	m := resp.GetMetrics()
 	trades := resp.GetTrades()
-	var netPnl float64
+	var netPnL float64
 	for _, t := range trades {
-		netPnl += t.GetPnl()
+		f, _ := strconv.ParseFloat(t.GetPnl(), 64)
+		netPnL += f
 	}
 	return &antv1.BacktestTradeSummary{
 		Count:  m.GetTotalTrades(),
 		Wins:   m.GetWinningTrades(),
 		Losses: m.GetLosingTrades(),
-		NetPnl: netPnl,
+		NetPnl: strconv.FormatFloat(netPnL, 'f', -1, 64),
 	}
 }
 
@@ -82,13 +84,13 @@ func (s *BacktestTradesServer) ListBacktestRunTrades(ctx context.Context, req *c
 		trades = append(trades, &antv1.BacktestTrade{
 			Ticket:     t.Ticket,
 			Side:       t.Side,
-			Volume:     t.Volume,
+			Volume:     strconv.FormatFloat(t.Volume, 'f', -1, 64),
 			OpenTs:     t.OpenTs,
-			OpenPrice:  t.OpenPrice,
+			OpenPrice:  strconv.FormatFloat(t.OpenPrice, 'f', -1, 64),
 			CloseTs:    t.CloseTs,
-			ClosePrice: t.ClosePrice,
-			Pnl:        t.PnL,
-			Commission: t.Commission,
+			ClosePrice: strconv.FormatFloat(t.ClosePrice, 'f', -1, 64),
+			Pnl:        strconv.FormatFloat(t.PnL, 'f', -1, 64),
+			Commission: strconv.FormatFloat(t.Commission, 'f', -1, 64),
 			Reason:     t.Reason,
 		})
 	}

@@ -106,17 +106,17 @@ export default function TradingMonitor() {
           </Col>
           <Col xs={12} sm={6}>
             <Card>
-              <Statistic title={t('admin.trading.totalVolume')} value={summary?.trading?.totalVolume || 0} precision={2} />
+              <Statistic title={t('admin.trading.totalVolume')} value={Number(summary?.trading?.totalVolume) || 0} precision={2} />
             </Card>
           </Col>
           <Col xs={12} sm={6}>
             <Card>
               <Statistic
                 title={t('admin.trading.netProfit')}
-                value={summary?.trading?.netProfit || 0}
+                value={Number(summary?.trading?.netProfit) || 0}
                 precision={2}
-                valueStyle={{ color: (summary?.trading?.netProfit || 0) >= 0 ? '#52c41a' : '#ff4d4f' }}
-                prefix={(summary?.trading?.netProfit || 0) >= 0 ? <RiseOutlined size={16} /> : <FallOutlined size={16} />}
+                valueStyle={{ color: Number(summary?.trading?.netProfit) >= 0 ? '#52c41a' : '#ff4d4f' }}
+                prefix={Number(summary?.trading?.netProfit) >= 0 ? <RiseOutlined size={16} /> : <FallOutlined size={16} />}
               />
             </Card>
           </Col>
@@ -131,7 +131,7 @@ export default function TradingMonitor() {
             <Col xs={12} sm={8}>
               <Statistic
                 title={t('admin.trading.totalProfit')}
-                value={summary?.trading?.totalProfit || 0}
+                value={Number(summary?.trading?.totalProfit) || 0}
                 precision={2}
                 valueStyle={{ color: '#52c41a' }}
                 prefix={<RiseOutlined size={16} />}
@@ -140,7 +140,7 @@ export default function TradingMonitor() {
             <Col xs={12} sm={8}>
               <Statistic
                 title={t('admin.trading.totalLoss')}
-                value={Math.abs(summary?.trading?.totalLoss || 0)}
+                value={Math.abs(Number(summary?.trading?.totalLoss) || 0)}
                 precision={2}
                 valueStyle={{ color: '#ff4d4f' }}
                 prefix={<FallOutlined size={16} />}

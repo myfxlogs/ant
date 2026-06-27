@@ -38,19 +38,19 @@ type Account struct {
 	ConnectedAt   *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=connected_at,json=connectedAt,proto3" json:"connected_at,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	Balance       float64                `protobuf:"fixed64,15,opt,name=balance,proto3" json:"balance,omitempty"`
-	Credit        float64                `protobuf:"fixed64,16,opt,name=credit,proto3" json:"credit,omitempty"`
-	Equity        float64                `protobuf:"fixed64,17,opt,name=equity,proto3" json:"equity,omitempty"`
-	Margin        float64                `protobuf:"fixed64,18,opt,name=margin,proto3" json:"margin,omitempty"`
-	FreeMargin    float64                `protobuf:"fixed64,19,opt,name=free_margin,json=freeMargin,proto3" json:"free_margin,omitempty"`
-	MarginLevel   float64                `protobuf:"fixed64,20,opt,name=margin_level,json=marginLevel,proto3" json:"margin_level,omitempty"`
+	Balance       string                 `protobuf:"bytes,15,opt,name=balance,proto3" json:"balance,omitempty"`
+	Credit        string                 `protobuf:"bytes,16,opt,name=credit,proto3" json:"credit,omitempty"`
+	Equity        string                 `protobuf:"bytes,17,opt,name=equity,proto3" json:"equity,omitempty"`
+	Margin        string                 `protobuf:"bytes,18,opt,name=margin,proto3" json:"margin,omitempty"`
+	FreeMargin    string                 `protobuf:"bytes,19,opt,name=free_margin,json=freeMargin,proto3" json:"free_margin,omitempty"`
+	MarginLevel   string                 `protobuf:"bytes,20,opt,name=margin_level,json=marginLevel,proto3" json:"margin_level,omitempty"`
 	Leverage      int32                  `protobuf:"varint,21,opt,name=leverage,proto3" json:"leverage,omitempty"`
 	Currency      string                 `protobuf:"bytes,22,opt,name=currency,proto3" json:"currency,omitempty"`
 	AccountType   string                 `protobuf:"bytes,23,opt,name=account_type,json=accountType,proto3" json:"account_type,omitempty"`
 	AccountMethod string                 `protobuf:"bytes,24,opt,name=account_method,json=accountMethod,proto3" json:"account_method,omitempty"`
 	IsInvestor    bool                   `protobuf:"varint,25,opt,name=is_investor,json=isInvestor,proto3" json:"is_investor,omitempty"`
 	Alias         string                 `protobuf:"bytes,26,opt,name=alias,proto3" json:"alias,omitempty"`
-	Profit        float64                `protobuf:"fixed64,27,opt,name=profit,proto3" json:"profit,omitempty"`
+	Profit        string                 `protobuf:"bytes,27,opt,name=profit,proto3" json:"profit,omitempty"`
 	ProfitPercent float64                `protobuf:"fixed64,28,opt,name=profit_percent,json=profitPercent,proto3" json:"profit_percent,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -184,46 +184,46 @@ func (x *Account) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *Account) GetBalance() float64 {
+func (x *Account) GetBalance() string {
 	if x != nil {
 		return x.Balance
 	}
-	return 0
+	return ""
 }
 
-func (x *Account) GetCredit() float64 {
+func (x *Account) GetCredit() string {
 	if x != nil {
 		return x.Credit
 	}
-	return 0
+	return ""
 }
 
-func (x *Account) GetEquity() float64 {
+func (x *Account) GetEquity() string {
 	if x != nil {
 		return x.Equity
 	}
-	return 0
+	return ""
 }
 
-func (x *Account) GetMargin() float64 {
+func (x *Account) GetMargin() string {
 	if x != nil {
 		return x.Margin
 	}
-	return 0
+	return ""
 }
 
-func (x *Account) GetFreeMargin() float64 {
+func (x *Account) GetFreeMargin() string {
 	if x != nil {
 		return x.FreeMargin
 	}
-	return 0
+	return ""
 }
 
-func (x *Account) GetMarginLevel() float64 {
+func (x *Account) GetMarginLevel() string {
 	if x != nil {
 		return x.MarginLevel
 	}
-	return 0
+	return ""
 }
 
 func (x *Account) GetLeverage() int32 {
@@ -268,11 +268,11 @@ func (x *Account) GetAlias() string {
 	return ""
 }
 
-func (x *Account) GetProfit() float64 {
+func (x *Account) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
 func (x *Account) GetProfitPercent() float64 {
@@ -308,13 +308,13 @@ const file_account_entity_proto_rawDesc = "" +
 	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x18\n" +
-	"\abalance\x18\x0f \x01(\x01R\abalance\x12\x16\n" +
-	"\x06credit\x18\x10 \x01(\x01R\x06credit\x12\x16\n" +
-	"\x06equity\x18\x11 \x01(\x01R\x06equity\x12\x16\n" +
-	"\x06margin\x18\x12 \x01(\x01R\x06margin\x12\x1f\n" +
-	"\vfree_margin\x18\x13 \x01(\x01R\n" +
+	"\abalance\x18\x0f \x01(\tR\abalance\x12\x16\n" +
+	"\x06credit\x18\x10 \x01(\tR\x06credit\x12\x16\n" +
+	"\x06equity\x18\x11 \x01(\tR\x06equity\x12\x16\n" +
+	"\x06margin\x18\x12 \x01(\tR\x06margin\x12\x1f\n" +
+	"\vfree_margin\x18\x13 \x01(\tR\n" +
 	"freeMargin\x12!\n" +
-	"\fmargin_level\x18\x14 \x01(\x01R\vmarginLevel\x12\x1a\n" +
+	"\fmargin_level\x18\x14 \x01(\tR\vmarginLevel\x12\x1a\n" +
 	"\bleverage\x18\x15 \x01(\x05R\bleverage\x12\x1a\n" +
 	"\bcurrency\x18\x16 \x01(\tR\bcurrency\x12!\n" +
 	"\faccount_type\x18\x17 \x01(\tR\vaccountType\x12%\n" +
@@ -322,7 +322,7 @@ const file_account_entity_proto_rawDesc = "" +
 	"\vis_investor\x18\x19 \x01(\bR\n" +
 	"isInvestor\x12\x14\n" +
 	"\x05alias\x18\x1a \x01(\tR\x05alias\x12\x16\n" +
-	"\x06profit\x18\x1b \x01(\x01R\x06profit\x12%\n" +
+	"\x06profit\x18\x1b \x01(\tR\x06profit\x12%\n" +
 	"\x0eprofit_percent\x18\x1c \x01(\x01R\rprofitPercentB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (

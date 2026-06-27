@@ -30,7 +30,7 @@ type runHandle struct {
 type ScheduleEngine struct {
 	repo             *repository.StrategyScheduleRepository
 	templateRepo     *repository.AIStrategyTemplatesRepository
-	runner           *PythonStrategyServer
+	runner           *StrategyExecutionServer
 	autoTradeEnabled func(userID uuid.UUID) bool // nil = all enabled
 	activeRuns       map[uuid.UUID]*runHandle
 	notifyCh         chan struct{} // 1-buffered, external events → recomputeTimer
@@ -47,7 +47,7 @@ const (
 func NewScheduleEngine(
 	repo *repository.StrategyScheduleRepository,
 	templateRepo *repository.AIStrategyTemplatesRepository,
-	runner *PythonStrategyServer,
+	runner *StrategyExecutionServer,
 	autoTradeFn func(userID uuid.UUID) bool,
 	log *zap.Logger,
 ) *ScheduleEngine {
@@ -187,7 +187,7 @@ func (e *ScheduleEngine) executeLoop(ctx context.Context) {
 func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategySchedule) {
 	// Load and validate template.
 	tpl, err := e.templateRepo.GetByID(ctx, schedule.TemplateID)
-	if err != nil || tpl == nil || tpl.PythonSkeleton == "" {
+	if err != nil || tpl == nil || tpl.CodeSkeleton == "" {
 		reason := "template code is empty"
 		if err != nil {
 			reason = err.Error()
@@ -216,7 +216,7 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 		AccountID: schedule.AccountID.String(),
 		Symbol:    schedule.Symbol,
 		Timeframe: schedule.Timeframe,
-		Code:      tpl.PythonSkeleton,
+		Code:      tpl.CodeSkeleton,
 		Mode:      "live",
 		Params:    strParams,
 	}, handle)

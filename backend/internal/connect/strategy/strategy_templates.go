@@ -1,197 +1,297 @@
 package strategy
 
+import antv1 "anttrader/gen/proto/ant/v1"
+
+// builtinTemplates returns the built-in Go strategy templates.
+func builtinTemplates() []*antv1.StrategyTemplateInfo {
+	return []*antv1.StrategyTemplateInfo{
+		tplMACrossover(),
+		tplRSIMeanReversion(),
+		tplBollingerBreakout(),
+	}
+}
+
+func tplMACrossover() *antv1.StrategyTemplateInfo {
+	return &antv1.StrategyTemplateInfo{
+		Name:        "MA Crossover",
+		Description: "双均线交叉策略 — Go SDK",
+	Code: `package main
+
 import (
-	"context"
-	"errors"
-
-	"connectrpc.com/connect"
-	"github.com/google/uuid"
-	"google.golang.org/protobuf/types/known/emptypb"
-
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/service"
+	"anttrader/strategy/sdk"
+	"github.com/shopspring/decimal"
 )
 
-// --- Templates ---
-
-func (s *StrategyServer) ListTemplates(ctx context.Context, req *connect.Request[antv1.ListTemplatesRequest]) (*connect.Response[antv1.ListTemplatesResponse], error) {
-	rows, err := s.svc.ListTemplates(ctx, s.userID(ctx))
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	templates := make([]*antv1.StrategyTemplate, len(rows))
-	for i, r := range rows {
-		templates[i] = templateRowToProto(&r)
-	}
-	return connect.NewResponse(&antv1.ListTemplatesResponse{Templates: templates}), nil
+type MACrossStrategy struct {
+	fastPeriod int
+	slowPeriod int
+	entryPct   float64
+	slPct      float64
+	tpPct      float64
 }
 
-func (s *StrategyServer) GetTemplate(ctx context.Context, req *connect.Request[antv1.GetTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-	id, err := uuid.Parse(req.Msg.Id)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+func (s *MACrossStrategy) OnInit(ctx sdk.Context) error {
+	s.fastPeriod = ctx.ParamInt("fast_period", 10)
+	s.slowPeriod = ctx.ParamInt("slow_period", 30)
+	s.entryPct = ctx.ParamDecimal("entryPct", decimal.NewFromFloat(0.25)).InexactFloat64()
+	s.slPct = ctx.ParamDecimal("stopLossPct", decimal.NewFromFloat(0.03)).InexactFloat64()
+	s.tpPct = ctx.ParamDecimal("takeProfitPct", decimal.NewFromFloat(0.06)).InexactFloat64()
+	return nil
+}
+
+func (s *MACrossStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
+	bars := ctx.Bars()
+	if bars.Len() < s.slowPeriod+1 {
+		return nil, nil
 	}
-	userID := s.userID(ctx)
-	row, err := s.svc.GetTemplate(ctx, id, userID)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	// Code protection: if template is published to marketplace, only owner/purchaser
-	// can see the full code. Others get an empty/masked code.
-	if s.codeAccess != nil && row.Code != "" {
-		allowed, checkErr := s.codeAccess.CanAccessCode(ctx, userID.String(), req.Msg.Id)
-		if checkErr == nil && !allowed {
-			// Return template metadata but mask the code.
-			row.Code = "# This strategy is published in the marketplace.\n# Purchase or subscribe to unlock full access.\n"
+
+	ind := ctx.Indicators()
+	fastNow := ind.EMA(s.fastPeriod, 0)
+	slowNow := ind.EMA(s.slowPeriod, 0)
+	fastPrev := ind.EMA(s.fastPeriod, 1)
+	slowPrev := ind.EMA(s.slowPeriod, 1)
+
+	price := bars.Close(0)
+	positions := ctx.Broker().Positions(0)
+	hasLong := false
+	hasShort := false
+	for _, pos := range positions {
+		if pos.Side == sdk.SideBuy {
+			hasLong = true
+		} else if pos.Side == sdk.SideSell {
+			hasShort = true
 		}
-		// If checkErr != nil, the template is probably not published — allow full access.
 	}
-	return connect.NewResponse(templateRowToProto(row)), nil
-}
 
-func (s *StrategyServer) CreateTemplate(ctx context.Context, req *connect.Request[antv1.CreateTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-	m := req.Msg
-	userID := s.userID(ctx)
-	t := service.TemplateRow{
-		UserID:      &userID,
-		Name:        m.Name,
-		Description: m.Description,
-		Code:        m.Code,
-		Status:      "published",
-		Parameters:  templateParamsToProto(m.Parameters),
-		I18n:        []byte(m.I18N),
-		IsPublic:    m.IsPublic,
-		Tags:        m.Tags,
-	}
-	if err := s.svc.CreateTemplate(ctx, &t); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	return connect.NewResponse(templateRowToProto(&t)), nil
-}
+	balance := ctx.Broker().Account().Balance
+	volume := balance.Mul(decimal.NewFromFloat(s.entryPct)).Div(price)
 
-func (s *StrategyServer) UpdateTemplate(ctx context.Context, req *connect.Request[antv1.UpdateTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-	m := req.Msg
-	id, err := uuid.Parse(m.Id)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
-	}
-	existing, err := s.svc.GetTemplate(ctx, id, s.userID(ctx))
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	if m.Name != nil {
-		existing.Name = *m.Name
-	}
-	if m.Description != nil {
-		existing.Description = *m.Description
-	}
-	if m.Code != nil {
-		existing.Code = *m.Code
-	}
-	if len(m.Parameters) > 0 {
-		existing.Parameters = templateParamsToProto(m.Parameters)
-	}
-	if m.I18N != nil {
-		existing.I18n = []byte(*m.I18N)
-	}
-	if m.IsPublic != nil {
-		existing.IsPublic = *m.IsPublic
-	}
-	if m.Tags != nil {
-		existing.Tags = m.Tags
-	}
-	if err := s.svc.UpdateTemplate(ctx, existing); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	return connect.NewResponse(templateRowToProto(existing)), nil
-}
-
-func (s *StrategyServer) DeleteTemplate(ctx context.Context, req *connect.Request[antv1.DeleteTemplateRequest]) (*connect.Response[emptypb.Empty], error) {
-	id, err := uuid.Parse(req.Msg.Id)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
-	}
-	if err := s.svc.DeleteTemplate(ctx, id, s.userID(ctx)); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	return connect.NewResponse(&emptypb.Empty{}), nil
-}
-
-func (s *StrategyServer) CreateTemplateDraft(ctx context.Context, req *connect.Request[antv1.CreateTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-	userID := s.userID(ctx)
-	t := service.TemplateRow{
-		UserID:     &userID,
-		Name:       req.Msg.Name,
-		Status:     "draft",
-		Parameters: []byte("[]"),
-		Tags:       []string{},
-	}
-	if err := s.svc.CreateTemplate(ctx, &t); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	return connect.NewResponse(templateRowToProto(&t)), nil
-}
-
-func (s *StrategyServer) UpdateTemplateDraft(ctx context.Context, req *connect.Request[antv1.UpdateTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-	m := req.Msg
-	id, err := uuid.Parse(m.Id)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
-	}
-	existing, err := s.svc.GetTemplate(ctx, id, s.userID(ctx))
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	if m.Name != nil {
-		existing.Name = *m.Name
-	}
-	if m.Description != nil {
-		existing.Description = *m.Description
-	}
-	if m.Code != nil {
-		existing.Code = *m.Code
-	}
-	if len(m.Parameters) > 0 {
-		existing.Parameters = templateParamsToProto(m.Parameters)
-	}
-	if m.Tags != nil {
-		existing.Tags = m.Tags
-	}
-	if err := s.svc.UpdateTemplate(ctx, existing); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	return connect.NewResponse(templateRowToProto(existing)), nil
-}
-
-func (s *StrategyServer) PublishTemplateDraft(ctx context.Context, req *connect.Request[antv1.PublishTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-	id, err := uuid.Parse(req.Msg.Id)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
-	}
-	existing, err := s.svc.GetTemplate(ctx, id, s.userID(ctx))
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	if err := s.svc.SetTemplateStatus(ctx, id, s.userID(ctx), "published"); err != nil {
-		if errors.Is(err, service.ErrTemplateNotFound) {
-			return nil, connect.NewError(connect.CodeNotFound, err)
+	if fastNow > slowNow && fastPrev <= slowPrev {
+		if hasShort {
+			return &sdk.Signal{Action: sdk.ActionClose, Symbol: ctx.Symbol()}, nil
 		}
-		return nil, connect.NewError(connect.CodeInternal, err)
+		if !hasLong {
+			return &sdk.Signal{
+				Action:     sdk.ActionBuy,
+				Symbol:     ctx.Symbol(),
+				Volume:     volume,
+				Price:      price,
+				StopLoss:   price.Mul(decimal.NewFromFloat(1 - s.slPct)),
+				TakeProfit: price.Mul(decimal.NewFromFloat(1 + s.tpPct)),
+			}, nil
+		}
 	}
-	existing.Status = "published"
-	return connect.NewResponse(templateRowToProto(existing)), nil
+
+	if fastNow < slowNow && fastPrev >= slowPrev {
+		if hasLong {
+			return &sdk.Signal{Action: sdk.ActionClose, Symbol: ctx.Symbol()}, nil
+		}
+		if !hasShort {
+			return &sdk.Signal{
+				Action:     sdk.ActionSell,
+				Symbol:     ctx.Symbol(),
+				Volume:     volume,
+				Price:      price,
+				StopLoss:   price.Mul(decimal.NewFromFloat(1 + s.slPct)),
+				TakeProfit: price.Mul(decimal.NewFromFloat(1 - s.tpPct)),
+			}, nil
+		}
+	}
+
+	return nil, nil
 }
 
-func (s *StrategyServer) CancelTemplateDraft(ctx context.Context, req *connect.Request[antv1.CancelTemplateDraftRequest]) (*connect.Response[emptypb.Empty], error) {
-	id, err := uuid.Parse(req.Msg.Id)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+func (s *MACrossStrategy) OnDeinit(ctx sdk.Context, reason string) error {
+	return nil
+}
+`,
 	}
-	if err := s.svc.SetTemplateStatus(ctx, id, s.userID(ctx), "canceled"); err != nil {
-		if errors.Is(err, service.ErrTemplateNotFound) {
-			return nil, connect.NewError(connect.CodeNotFound, err)
+}
+
+func tplRSIMeanReversion() *antv1.StrategyTemplateInfo {
+	return &antv1.StrategyTemplateInfo{
+		Name:        "RSI Mean Reversion",
+		Description: "RSI超买超卖反转策略 — Go SDK",
+	Code: `package main
+
+import (
+	"anttrader/strategy/sdk"
+	"github.com/shopspring/decimal"
+)
+
+type RSIStrategy struct {
+	rsiPeriod  int
+	oversold   float64
+	overbought float64
+	entryPct   float64
+	slPct      float64
+	tpPct      float64
+}
+
+func (s *RSIStrategy) OnInit(ctx sdk.Context) error {
+	s.rsiPeriod = ctx.ParamInt("rsi_period", 14)
+	s.oversold = ctx.ParamDecimal("oversold", decimal.NewFromInt(30)).InexactFloat64()
+	s.overbought = ctx.ParamDecimal("overbought", decimal.NewFromInt(70)).InexactFloat64()
+	s.entryPct = ctx.ParamDecimal("entryPct", decimal.NewFromFloat(0.25)).InexactFloat64()
+	s.slPct = ctx.ParamDecimal("stopLossPct", decimal.NewFromFloat(0.02)).InexactFloat64()
+	s.tpPct = ctx.ParamDecimal("takeProfitPct", decimal.NewFromFloat(0.04)).InexactFloat64()
+	return nil
+}
+
+func (s *RSIStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
+	bars := ctx.Bars()
+	if bars.Len() < s.rsiPeriod+1 {
+		return nil, nil
+	}
+
+	rsiVal := ctx.Indicators().RSI(s.rsiPeriod, 0)
+
+	price := bars.Close(0)
+	positions := ctx.Broker().Positions(0)
+	hasLong := false
+	hasShort := false
+	for _, pos := range positions {
+		if pos.Side == sdk.SideBuy {
+			hasLong = true
+		} else if pos.Side == sdk.SideSell {
+			hasShort = true
 		}
-		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&emptypb.Empty{}), nil
+
+	balance := ctx.Broker().Account().Balance
+	volume := balance.Mul(decimal.NewFromFloat(s.entryPct)).Div(price)
+
+	if rsiVal < s.oversold {
+		if hasShort {
+			return &sdk.Signal{Action: sdk.ActionClose, Symbol: ctx.Symbol()}, nil
+		}
+		if !hasLong {
+			return &sdk.Signal{
+				Action:     sdk.ActionBuy,
+				Symbol:     ctx.Symbol(),
+				Volume:     volume,
+				Price:      price,
+				StopLoss:   price.Mul(decimal.NewFromFloat(1 - s.slPct)),
+				TakeProfit: price.Mul(decimal.NewFromFloat(1 + s.tpPct)),
+			}, nil
+		}
+	}
+
+	if rsiVal > s.overbought {
+		if hasLong {
+			return &sdk.Signal{Action: sdk.ActionClose, Symbol: ctx.Symbol()}, nil
+		}
+		if !hasShort {
+			return &sdk.Signal{
+				Action:     sdk.ActionSell,
+				Symbol:     ctx.Symbol(),
+				Volume:     volume,
+				Price:      price,
+				StopLoss:   price.Mul(decimal.NewFromFloat(1 + s.slPct)),
+				TakeProfit: price.Mul(decimal.NewFromFloat(1 - s.tpPct)),
+			}, nil
+		}
+	}
+
+	return nil, nil
+}
+
+func (s *RSIStrategy) OnDeinit(ctx sdk.Context, reason string) error {
+	return nil
+}
+`,
+	}
+}
+
+func tplBollingerBreakout() *antv1.StrategyTemplateInfo {
+	return &antv1.StrategyTemplateInfo{
+		Name:        "Bollinger Breakout",
+		Description: "布林带突破策略 — Go SDK",
+	Code: `package main
+
+import (
+	"anttrader/strategy/sdk"
+	"github.com/shopspring/decimal"
+)
+
+type BollingerStrategy struct {
+	bbPeriod int
+	bbStd    float64
+	entryPct float64
+	slPct    float64
+	tpPct    float64
+}
+
+func (s *BollingerStrategy) OnInit(ctx sdk.Context) error {
+	s.bbPeriod = ctx.ParamInt("bb_period", 20)
+	s.bbStd = ctx.ParamDecimal("bb_std", decimal.NewFromFloat(2.0)).InexactFloat64()
+	s.entryPct = ctx.ParamDecimal("entryPct", decimal.NewFromFloat(0.25)).InexactFloat64()
+	s.slPct = ctx.ParamDecimal("stopLossPct", decimal.NewFromFloat(0.03)).InexactFloat64()
+	s.tpPct = ctx.ParamDecimal("takeProfitPct", decimal.NewFromFloat(0.06)).InexactFloat64()
+	return nil
+}
+
+func (s *BollingerStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
+	bars := ctx.Bars()
+	if bars.Len() < s.bbPeriod+1 {
+		return nil, nil
+	}
+
+	upper, _, lower := ctx.Indicators().Bollinger(s.bbPeriod, s.bbStd, 0)
+
+	price := bars.Close(0)
+	positions := ctx.Broker().Positions(0)
+	hasLong := false
+	hasShort := false
+	for _, pos := range positions {
+		if pos.Side == sdk.SideBuy {
+			hasLong = true
+		} else if pos.Side == sdk.SideSell {
+			hasShort = true
+		}
+	}
+
+	balance := ctx.Broker().Account().Balance
+	volume := balance.Mul(decimal.NewFromFloat(s.entryPct)).Div(price)
+
+	if price.GreaterThan(decimal.NewFromFloat(upper)) {
+		if hasShort {
+			return &sdk.Signal{Action: sdk.ActionClose, Symbol: ctx.Symbol()}, nil
+		}
+		if !hasLong {
+			return &sdk.Signal{
+				Action:     sdk.ActionBuy,
+				Symbol:     ctx.Symbol(),
+				Volume:     volume,
+				Price:      price,
+				StopLoss:   price.Mul(decimal.NewFromFloat(1 - s.slPct)),
+				TakeProfit: price.Mul(decimal.NewFromFloat(1 + s.tpPct)),
+			}, nil
+		}
+	}
+
+	if price.LessThan(decimal.NewFromFloat(lower)) {
+		if hasLong {
+			return &sdk.Signal{Action: sdk.ActionClose, Symbol: ctx.Symbol()}, nil
+		}
+		if !hasShort {
+			return &sdk.Signal{
+				Action:     sdk.ActionSell,
+				Symbol:     ctx.Symbol(),
+				Volume:     volume,
+				Price:      price,
+				StopLoss:   price.Mul(decimal.NewFromFloat(1 + s.slPct)),
+				TakeProfit: price.Mul(decimal.NewFromFloat(1 - s.tpPct)),
+			}, nil
+		}
+	}
+
+	return nil, nil
+}
+
+func (s *BollingerStrategy) OnDeinit(ctx sdk.Context, reason string) error {
+	return nil
+}
+`,
+	}
 }

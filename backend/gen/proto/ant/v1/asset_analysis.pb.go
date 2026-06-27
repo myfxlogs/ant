@@ -328,7 +328,7 @@ func (x *TfOutlook) GetPriceChangePct() float64 {
 type SRLevel struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Price level (raw double from OHLC clustering; display with symbol precision).
-	Price float64 `protobuf:"fixed64,1,opt,name=price,proto3" json:"price,omitempty"`
+	Price string `protobuf:"bytes,1,opt,name=price,proto3" json:"price,omitempty"`
 	// "SUPPORT" | "RESISTANCE"
 	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	// "MAJOR" | "MINOR"
@@ -369,11 +369,11 @@ func (*SRLevel) Descriptor() ([]byte, []int) {
 	return file_asset_analysis_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *SRLevel) GetPrice() float64 {
+func (x *SRLevel) GetPrice() string {
 	if x != nil {
 		return x.Price
 	}
-	return 0
+	return ""
 }
 
 func (x *SRLevel) GetType() string {
@@ -429,7 +429,7 @@ const file_asset_analysis_proto_rawDesc = "" +
 	"\vema_gap_pct\x18\x03 \x01(\x01R\temaGapPct\x12(\n" +
 	"\x10price_change_pct\x18\x04 \x01(\x01R\x0epriceChangePct\"i\n" +
 	"\aSRLevel\x12\x14\n" +
-	"\x05price\x18\x01 \x01(\x01R\x05price\x12\x12\n" +
+	"\x05price\x18\x01 \x01(\tR\x05price\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x1a\n" +
 	"\bstrength\x18\x03 \x01(\tR\bstrength\x12\x18\n" +
 	"\atouches\x18\x04 \x01(\x05R\atouches2c\n" +

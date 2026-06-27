@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
-	"connectrpc.com/connect"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
@@ -25,7 +25,7 @@ const (
 // backtestWorker waits for new PENDING backtest runs via PG LISTEN/NOTIFY,
 // with a 30s fallback ticker for safety (Push-First pattern). This replaces
 // the previous 3-second polling, which violated the project's push-first rule.
-func (s *PythonStrategyServer) backtestWorker(ctx context.Context, workerID int) {
+func (s *StrategyExecutionServer) backtestWorker(ctx context.Context, workerID int) {
 	// Subscribe to PG notifications for new pending runs.
 	notifCh, listenCancel, _ := s.pgListen.Listen(ctx, "backtest_pending")
 	if listenCancel != nil {
@@ -68,7 +68,7 @@ func (s *PythonStrategyServer) backtestWorker(ctx context.Context, workerID int)
 }
 
 // executeBacktestRun orchestrates a full backtest life cycle: parameter extraction,
-// K-line fetching, Python engine execution, and result persistence.
+// K-line fetching, Go-native engine execution, and result persistence.
 
 // backtestParams holds extracted parameters from a BacktestRun for execution.
 type backtestParams struct {
@@ -123,7 +123,7 @@ func extractBacktestParams(run *repository.BacktestRun) (backtestParams, error) 
 
 // startBacktestWatchers starts lease heartbeat and cancel polling goroutines.
 // Returns a derived context that is cancelled when the user requests cancellation.
-func (s *PythonStrategyServer) startBacktestWatchers(ctx context.Context, run *repository.BacktestRun, leaseFor time.Duration) context.Context {
+func (s *StrategyExecutionServer) startBacktestWatchers(ctx context.Context, run *repository.BacktestRun, leaseFor time.Duration) (context.Context, context.CancelFunc) {
 	execCtx, execCancel := context.WithCancel(ctx)
 	go func() {
 		ticker := time.NewTicker(leaseFor / 2)
@@ -161,59 +161,75 @@ func (s *PythonStrategyServer) startBacktestWatchers(ctx context.Context, run *r
 			}
 		}
 	}()
-	return execCtx
+	return execCtx, execCancel
 }
 
 // fetchBars retrieves K-line data via BarSource when available,
 // falling back to direct ClickHouse fetch for backward compatibility.
-func (s *PythonStrategyServer) fetchBars(ctx context.Context, run *repository.BacktestRun) []*antv1.ExecuteKlineBar {
+func (s *StrategyExecutionServer) fetchBars(ctx context.Context, run *repository.BacktestRun) ([]*antv1.ExecuteKlineBar, error) {
 	if s.barSource != nil {
-		klines, _ := s.barSource.Fetch(ctx, run.Symbol, run.Timeframe, run.FromTs, run.ToTs)
-		return klines
+		klines, err := s.barSource.Fetch(ctx, run.Symbol, run.Timeframe, run.FromTs, run.ToTs)
+		if err != nil {
+			return nil, fmt.Errorf("fetch bars from barSource: %w", err)
+		}
+		return klines, nil
 	}
 	return s.fetchBacktestKlines(ctx, run)
 }
 
 // fetchBacktestKlines retrieves K-line data from ClickHouse and converts to proto format.
-func (s *PythonStrategyServer) fetchBacktestKlines(ctx context.Context, run *repository.BacktestRun) []*antv1.ExecuteKlineBar {
+func (s *StrategyExecutionServer) fetchBacktestKlines(ctx context.Context, run *repository.BacktestRun) ([]*antv1.ExecuteKlineBar, error) {
 	if s.marketDataRepo == nil || run.Symbol == "" || run.Timeframe == "" {
-		return nil
+		return nil, nil
 	}
-	chBars, _ := s.marketDataRepo.GetKlines(ctx, run.Symbol, "", run.Timeframe, run.FromTs, run.ToTs, 2000)
+	chBars, err := s.marketDataRepo.GetKlines(ctx, run.Symbol, "", run.Timeframe, run.FromTs, run.ToTs, 2000)
+	if err != nil {
+		return nil, fmt.Errorf("fetch klines from marketDataRepo: %w", err)
+	}
 	klines := make([]*antv1.ExecuteKlineBar, 0, len(chBars))
 	for i := len(chBars) - 1; i >= 0; i-- {
 		b := chBars[i]
 		klines = append(klines, &antv1.ExecuteKlineBar{
 			OpenTimeMs:  int64(b.OpenTsUnixMs),
 			CloseTimeMs: int64(b.CloseTsUnixMs),
-			Open:        b.Open, High: b.High, Low: b.Low, Close: b.Close, Volume: b.Volume,
+			Open:        strconv.FormatFloat(b.Open, 'f', -1, 64), High: strconv.FormatFloat(b.High, 'f', -1, 64), Low: strconv.FormatFloat(b.Low, 'f', -1, 64), Close: strconv.FormatFloat(b.Close, 'f', -1, 64), Volume: strconv.FormatFloat(b.Volume, 'f', -1, 64),
 		})
 	}
-	return klines
+	return klines, nil
 }
-func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repository.BacktestRun, leaseFor time.Duration) {
-	if s.backtestClient == nil { s.failRun(ctx, run, "Python strategy service not available"); return }
+func (s *StrategyExecutionServer) executeBacktestRun(ctx context.Context, run *repository.BacktestRun, leaseFor time.Duration) {
+	defer func() {
+		if r := recover(); r != nil {
+			s.log.Error("backtest worker: panic recovered",
+				zap.String("runID", run.ID.String()), zap.Any("panic", r))
+			s.failRun(ctx, run, fmt.Sprintf("internal panic: %v", r))
+		}
+	}()
+
 	params, err := extractBacktestParams(run)
 	if err != nil { s.failRun(ctx, run, err.Error()); return }
-	execCtx := s.startBacktestWatchers(ctx, run, leaseFor)
-	defer func() { _ = execCtx }()
+	execCtx, execCancel := s.startBacktestWatchers(ctx, run, leaseFor)
+	defer execCancel()
 
-	klines := s.fetchBars(ctx, run)
-	symbolInfo := s.fetchSymbolInfo(ctx, run)
+	klines, err := s.fetchBars(ctx, run)
+	if err != nil {
+		s.failRun(ctx, run, fmt.Sprintf("fetch bars: %v", err))
+		return
+	}
 
-	req := buildBacktestRequest(run, params, klines, symbolInfo)
-	resp, err := s.backtestClient.RunBacktest(execCtx, connect.NewRequest(req))
+	// Go-native backtest engine execution.
+	result, err := s.executeGoBacktest(execCtx, run, params, klines)
 	if err != nil {
 		s.handleBacktestError(ctx, run, execCtx, err)
 		return
 	}
-	s.saveBacktestResult(ctx, run, resp.Msg)
+	s.saveBacktestResult(ctx, run, result)
 }
 
 // fetchSymbolInfo queries the MT gateway for live contract metadata.
-// Returns nil when no MT session is connected — the Python engine will
+// Returns nil when no MT session is connected — the engine will
 // fall back to K-line data derivation.
-func (s *PythonStrategyServer) fetchSymbolInfo(ctx context.Context, run *repository.BacktestRun) *antv1.SymbolInfo {
+func (s *StrategyExecutionServer) fetchSymbolInfo(ctx context.Context, run *repository.BacktestRun) *antv1.SymbolInfo {
 	if s.mtHub == nil {
 		return nil
 	}
@@ -233,21 +249,21 @@ func (s *PythonStrategyServer) fetchSymbolInfo(ctx context.Context, run *reposit
 
 	info := &antv1.SymbolInfo{
 		Digits:       int32(p.Digits),
-		Point:        point,
-		ContractSize: lotSize,
+		Point:        strconv.FormatFloat(point, 'f', -1, 64),
+		ContractSize: strconv.FormatFloat(lotSize, 'f', -1, 64),
 		StopsLevel:   p.StopLevel,
-		TickValue:    tickValue,
+		TickValue:    strconv.FormatFloat(tickValue, 'f', -1, 64),
 	}
 	// Only set volume fields when the broker provides non-zero values
-	// (MT4 may not have these; Python will use sensible defaults).
+	// (MT4 may not have these; use sensible defaults).
 	if lotMin > 0 {
-		info.VolumeMin = lotMin
+		info.VolumeMin = strconv.FormatFloat(lotMin, 'f', -1, 64)
 	}
 	if lotMax > 0 {
-		info.VolumeMax = lotMax
+		info.VolumeMax = strconv.FormatFloat(lotMax, 'f', -1, 64)
 	}
 	if lotStep > 0 {
-		info.VolumeStep = lotStep
+		info.VolumeStep = strconv.FormatFloat(lotStep, 'f', -1, 64)
 	}
 	return info
 }
@@ -260,8 +276,9 @@ func buildBacktestRequest(run *repository.BacktestRun, params backtestParams, kl
 		StrategyId: run.ID.String(), StrategyCode: params.code,
 		Symbol: run.Symbol, Timeframe: run.Timeframe,
 		StartDateMs: fromMs, EndDateMs: toMs,
-		InitialCapital: params.initialCapital, Commission: params.commission,
+		InitialCapital: strconv.FormatFloat(params.initialCapital, 'f', -1, 64), Commission: params.commission,
 		SlippageRate: params.slippage, SlippageMode: "fixed", SlippageSeed: 42,
+		SwapRate: 0.00001, // standard FX overnight swap rate
 		Leverage: params.leverage, TradeDirection: params.tradeDir,
 		StrictMode: params.strictMode, StrategyConfig: params.strategyCfg,
 		Klines: klines, StrategyParamsJson: paramsProtoToJSON(run.ParameterOverrides),
@@ -269,7 +286,7 @@ func buildBacktestRequest(run *repository.BacktestRun, params backtestParams, kl
 	}
 }
 
-func (s *PythonStrategyServer) handleBacktestError(ctx context.Context, run *repository.BacktestRun, execCtx context.Context, err error) {
+func (s *StrategyExecutionServer) handleBacktestError(ctx context.Context, run *repository.BacktestRun, execCtx context.Context, err error) {
 	if execCtx.Err() != nil {
 		s.log.Info("backtest worker: run cancelled", zap.String("runID", run.ID.String()))
 		now := time.Now()
@@ -278,14 +295,14 @@ func (s *PythonStrategyServer) handleBacktestError(ctx context.Context, run *rep
 		}
 		return
 	}
-	s.log.Error("backtest worker: python backtest failed", zap.String("runID", run.ID.String()), zap.Error(err))
+	s.log.Error("backtest worker: backtest execution failed", zap.String("runID", run.ID.String()), zap.Error(err))
 	s.failRun(ctx, run, fmt.Sprintf("backtest execution failed: %v", err))
 }
 
 // persistBacktestTrades converts proto trades to DB rows and writes them via batch insert.
 // Trade persistence is best-effort: failure is logged but does not fail the run,
 // because the authoritative trade data lives in ProtoResponse.
-func (s *PythonStrategyServer) persistBacktestTrades(ctx context.Context, runID uuid.UUID, trades []*antv1.ExecuteBacktestTrade) {
+func (s *StrategyExecutionServer) persistBacktestTrades(ctx context.Context, runID uuid.UUID, trades []*antv1.ExecuteBacktestTrade) {
 	if len(trades) == 0 {
 		return
 	}
@@ -295,13 +312,13 @@ func (s *PythonStrategyServer) persistBacktestTrades(ctx context.Context, runID 
 			RunID:      runID,
 			Ticket:     t.GetTicket(),
 			Side:       t.GetSide(),
-			Volume:     t.GetVolume(),
+			Volume:     parseFloat64(t.GetVolume()),
 			OpenTs:     t.GetOpenTsMs(),
-			OpenPrice:  t.GetOpenPrice(),
+			OpenPrice:  parseFloat64(t.GetOpenPrice()),
 			CloseTs:    t.GetCloseTsMs(),
-			ClosePrice: t.GetClosePrice(),
-			PnL:        t.GetPnl(),
-			Commission: t.GetCommission(),
+			ClosePrice: parseFloat64(t.GetClosePrice()),
+			PnL:        parseFloat64(t.GetPnl()),
+			Commission: parseFloat64(t.GetCommission()),
 			Reason:     t.GetReason(),
 		})
 	}
@@ -311,7 +328,7 @@ func (s *PythonStrategyServer) persistBacktestTrades(ctx context.Context, runID 
 	}
 }
 
-func (s *PythonStrategyServer) saveBacktestResult(ctx context.Context, run *repository.BacktestRun, result *antv1.ExecuteBacktestResponse) {
+func (s *StrategyExecutionServer) saveBacktestResult(ctx context.Context, run *repository.BacktestRun, result *antv1.ExecuteBacktestResponse) {
 	if !result.GetSuccess() { s.failRun(ctx, run, result.GetError()); return }
 	protoResp, err := proto.Marshal(result)
 	if err != nil { s.failRun(ctx, run, fmt.Sprintf("proto marshal failed: %v", err)); return }
@@ -354,7 +371,7 @@ func (s *PythonStrategyServer) saveBacktestResult(ctx context.Context, run *repo
 	}
 }
 
-func (s *PythonStrategyServer) failRun(ctx context.Context, run *repository.BacktestRun, errMsg string) {
+func (s *StrategyExecutionServer) failRun(ctx context.Context, run *repository.BacktestRun, errMsg string) {
 	now := time.Now()
 	BacktestRunsTotal.WithLabelValues(StatusFailed).Inc()
 	status := StatusFailed
@@ -380,20 +397,21 @@ func (s *PythonStrategyServer) failRun(ctx context.Context, run *repository.Back
 
 // syncMarketplacePerformance updates marketplace_strategies with the latest backtest
 // metrics when the run is associated with a published strategy template.
-func (s *PythonStrategyServer) syncMarketplacePerformance(ctx context.Context, run *repository.BacktestRun, result *antv1.ExecuteBacktestResponse) {
+func (s *StrategyExecutionServer) syncMarketplacePerformance(ctx context.Context, run *repository.BacktestRun, result *antv1.ExecuteBacktestResponse) {
 	if run.TemplateID == nil {
 		return
 	}
 	m := result.GetMetrics()
 	// Use total_pnl_absolute (correct absolute PnL), fall back to total_return percentage.
-	pnl := m.GetTotalPnlAbsolute()
-	if pnl == 0 {
-		pnl = m.GetTotalReturn() // legacy: percentage as proxy
+	pnlStr := m.GetTotalPnlAbsolute()
+	pnlF, _ := strconv.ParseFloat(pnlStr, 64)
+	if pnlF == 0 {
+		pnlF = m.GetTotalReturn() // legacy: percentage as proxy
 	}
 	_, err := s.backtestRepo.DB().Exec(ctx,
 		`UPDATE marketplace_strategies SET win_rate = $1, total_pnl = $2, updated_at = now()
 		 WHERE strategy_id = $3`,
-		m.GetWinRate(), pnl, *run.TemplateID,
+		m.GetWinRate(), pnlF, *run.TemplateID,
 	)
 	if err != nil {
 		s.log.Debug("marketplace sync: template not published or update failed",
@@ -402,20 +420,27 @@ func (s *PythonStrategyServer) syncMarketplacePerformance(ctx context.Context, r
 }
 
 // StartBacktestWorker launches a pool of background workers that poll for PENDING backtest
-// runs and execute them via the Python strategy engine. Call this once during server startup.
+// runs and execute them via the Go-native backtest engine. Call this once during server startup.
 // Defaults to 3 concurrent workers; each claims a run via SKIP LOCKED.
-func (s *PythonStrategyServer) StartBacktestWorker(ctx context.Context) {
-	if s.backtestClient == nil {
-		s.log.Warn("backtest worker: Python client not configured, workers will not start")
-		return
-	}
+func (s *StrategyExecutionServer) StartBacktestWorker(ctx context.Context) {
 	s.log.Info("backtest worker: starting pool", zap.Int("workers", defaultWorkers))
 	for i := 0; i < defaultWorkers; i++ {
 		go s.backtestWorker(ctx, i)
 	}
 }
-// paramsToJSON converts proto binary StrategyParams to JSON string for Python engine compat.
- func paramsProtoToJSON(raw []byte) string {
+// executeGoBacktest runs a backtest using the Go-native engine via GoExecutor.
+// Returns proto response compatible with the existing persistence layer.
+func (s *StrategyExecutionServer) executeGoBacktest(ctx context.Context, run *repository.BacktestRun, params backtestParams, klines []*antv1.ExecuteKlineBar) (*antv1.ExecuteBacktestResponse, error) {
+	if s.goExecutor == nil {
+		return nil, fmt.Errorf("GoExecutor not configured — cannot run Go-native backtest")
+	}
+	symbolInfo := s.fetchSymbolInfo(ctx, run)
+	req := buildBacktestRequest(run, params, klines, symbolInfo)
+	return s.goExecutor.RunBacktest(ctx, params.code, req)
+}
+
+// paramsToJSON converts proto binary StrategyParams to JSON string for backtest config.
+func paramsProtoToJSON(raw []byte) string {
 	if len(raw) == 0 {
 		return ""
 	}
@@ -430,3 +455,7 @@ func (s *PythonStrategyServer) StartBacktestWorker(ctx context.Context) {
 	return string(b)
 }
 
+func parseFloat64(s string) float64 {
+	f, _ := strconv.ParseFloat(s, 64)
+	return f
+}

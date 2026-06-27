@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -77,7 +78,7 @@ func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Re
 		Title:               m.Title,
 		Description:         m.Description,
 		PriceModel:          m.PriceModel,
-		PriceAmount:         m.PriceAmount,
+		PriceAmount:         parseFloat64(m.PriceAmount),
 		AssetClass:          m.AssetClass,
 		Symbols:             m.Symbols,
 		Timeframe:           m.Timeframe,
@@ -181,7 +182,7 @@ func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Requ
 			TotalSubscribers: int32(p.TotalSubscribers),
 		}
 		if p.PriceAmount != nil {
-			item.PriceAmount = *p.PriceAmount
+			item.PriceAmount = strconv.FormatFloat(*p.PriceAmount, 'f', -1, 64)
 		}
 		if p.Timeframe != nil {
 			item.Timeframe = *p.Timeframe
@@ -190,7 +191,7 @@ func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Requ
 			item.WinRate = *p.WinRate
 		}
 		if p.TotalPnL != nil {
-			item.TotalPnl = *p.TotalPnL
+			item.TotalPnl = strconv.FormatFloat(*p.TotalPnL, 'f', -1, 64)
 		}
 		if p.CodeSnippet != "" {
 			item.CodeSnippet = p.CodeSnippet
@@ -309,7 +310,7 @@ func (s *MarketplaceServer) SetStrategyPricing(ctx context.Context, req *connect
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin required"))
 	}
 	m := req.Msg
-	if err := s.svc.SetPricing(ctx, m.StrategyId, m.PriceModel, m.PriceAmount, m.PlatformFeeRate); err != nil {
+	if err := s.svc.SetPricing(ctx, m.StrategyId, m.PriceModel, parseFloat64(m.PriceAmount), m.PlatformFeeRate); err != nil {
 		s.log.Error("SetStrategyPricing", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -391,7 +392,7 @@ func (s *MarketplaceServer) RunMarketBacktest(ctx context.Context, req *connect.
 		Timeframe:      m.Timeframe,
 		StartDateMs:    m.StartDateMs,
 		EndDateMs:      m.EndDateMs,
-		InitialCapital: m.InitialCapital,
+		InitialCapital: parseFloat64(m.InitialCapital),
 		TradeDirection: dir,
 	}
 	if m.ExecutionConfig != nil {
@@ -415,4 +416,9 @@ func (s *MarketplaceServer) RunMarketBacktest(ctx context.Context, req *connect.
 	// Stream backtest progress via SSE using the existing PG listen mechanism.
 	runUUID, _ := uuid.Parse(runID)
 	return s.streamBacktestProgress(ctx, runUUID, stream)
+}
+
+func parseFloat64(s string) float64 {
+	f, _ := strconv.ParseFloat(s, 64)
+	return f
 }

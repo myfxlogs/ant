@@ -121,13 +121,13 @@ type BacktestTrade struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Ticket        int64                  `protobuf:"varint,1,opt,name=ticket,proto3" json:"ticket,omitempty"`
 	Side          string                 `protobuf:"bytes,2,opt,name=side,proto3" json:"side,omitempty"`
-	Volume        float64                `protobuf:"fixed64,3,opt,name=volume,proto3" json:"volume,omitempty"`
+	Volume        string                 `protobuf:"bytes,3,opt,name=volume,proto3" json:"volume,omitempty"`
 	OpenTs        int64                  `protobuf:"varint,4,opt,name=open_ts,json=openTs,proto3" json:"open_ts,omitempty"`
-	OpenPrice     float64                `protobuf:"fixed64,5,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`
+	OpenPrice     string                 `protobuf:"bytes,5,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`
 	CloseTs       int64                  `protobuf:"varint,6,opt,name=close_ts,json=closeTs,proto3" json:"close_ts,omitempty"`
-	ClosePrice    float64                `protobuf:"fixed64,7,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"`
-	Pnl           float64                `protobuf:"fixed64,8,opt,name=pnl,proto3" json:"pnl,omitempty"`
-	Commission    float64                `protobuf:"fixed64,9,opt,name=commission,proto3" json:"commission,omitempty"`
+	ClosePrice    string                 `protobuf:"bytes,7,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"`
+	Pnl           string                 `protobuf:"bytes,8,opt,name=pnl,proto3" json:"pnl,omitempty"`
+	Commission    string                 `protobuf:"bytes,9,opt,name=commission,proto3" json:"commission,omitempty"`
 	Reason        string                 `protobuf:"bytes,10,opt,name=reason,proto3" json:"reason,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -177,11 +177,11 @@ func (x *BacktestTrade) GetSide() string {
 	return ""
 }
 
-func (x *BacktestTrade) GetVolume() float64 {
+func (x *BacktestTrade) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
 func (x *BacktestTrade) GetOpenTs() int64 {
@@ -191,11 +191,11 @@ func (x *BacktestTrade) GetOpenTs() int64 {
 	return 0
 }
 
-func (x *BacktestTrade) GetOpenPrice() float64 {
+func (x *BacktestTrade) GetOpenPrice() string {
 	if x != nil {
 		return x.OpenPrice
 	}
-	return 0
+	return ""
 }
 
 func (x *BacktestTrade) GetCloseTs() int64 {
@@ -205,25 +205,25 @@ func (x *BacktestTrade) GetCloseTs() int64 {
 	return 0
 }
 
-func (x *BacktestTrade) GetClosePrice() float64 {
+func (x *BacktestTrade) GetClosePrice() string {
 	if x != nil {
 		return x.ClosePrice
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestTrade) GetPnl() float64 {
+func (x *BacktestTrade) GetPnl() string {
 	if x != nil {
 		return x.Pnl
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestTrade) GetCommission() float64 {
+func (x *BacktestTrade) GetCommission() string {
 	if x != nil {
 		return x.Commission
 	}
-	return 0
+	return ""
 }
 
 func (x *BacktestTrade) GetReason() string {
@@ -238,7 +238,7 @@ type BacktestTradeSummary struct {
 	Count         int32                  `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
 	Wins          int32                  `protobuf:"varint,2,opt,name=wins,proto3" json:"wins,omitempty"`
 	Losses        int32                  `protobuf:"varint,3,opt,name=losses,proto3" json:"losses,omitempty"`
-	NetPnl        float64                `protobuf:"fixed64,4,opt,name=net_pnl,json=netPnl,proto3" json:"net_pnl,omitempty"`
+	NetPnl        string                 `protobuf:"bytes,4,opt,name=net_pnl,json=netPnl,proto3" json:"net_pnl,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -294,11 +294,11 @@ func (x *BacktestTradeSummary) GetLosses() int32 {
 	return 0
 }
 
-func (x *BacktestTradeSummary) GetNetPnl() float64 {
+func (x *BacktestTradeSummary) GetNetPnl() string {
 	if x != nil {
 		return x.NetPnl
 	}
-	return 0
+	return ""
 }
 
 var File_backtest_trades_proto protoreflect.FileDescriptor
@@ -314,16 +314,16 @@ const file_backtest_trades_proto_rawDesc = "" +
 	"\rBacktestTrade\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +
-	"\x06volume\x18\x03 \x01(\x01R\x06volume\x12\x17\n" +
+	"\x06volume\x18\x03 \x01(\tR\x06volume\x12\x17\n" +
 	"\aopen_ts\x18\x04 \x01(\x03R\x06openTs\x12\x1d\n" +
 	"\n" +
-	"open_price\x18\x05 \x01(\x01R\topenPrice\x12\x19\n" +
+	"open_price\x18\x05 \x01(\tR\topenPrice\x12\x19\n" +
 	"\bclose_ts\x18\x06 \x01(\x03R\acloseTs\x12\x1f\n" +
-	"\vclose_price\x18\a \x01(\x01R\n" +
+	"\vclose_price\x18\a \x01(\tR\n" +
 	"closePrice\x12\x10\n" +
-	"\x03pnl\x18\b \x01(\x01R\x03pnl\x12\x1e\n" +
+	"\x03pnl\x18\b \x01(\tR\x03pnl\x12\x1e\n" +
 	"\n" +
-	"commission\x18\t \x01(\x01R\n" +
+	"commission\x18\t \x01(\tR\n" +
 	"commission\x12\x16\n" +
 	"\x06reason\x18\n" +
 	" \x01(\tR\x06reason\"q\n" +
@@ -331,7 +331,7 @@ const file_backtest_trades_proto_rawDesc = "" +
 	"\x05count\x18\x01 \x01(\x05R\x05count\x12\x12\n" +
 	"\x04wins\x18\x02 \x01(\x05R\x04wins\x12\x16\n" +
 	"\x06losses\x18\x03 \x01(\x05R\x06losses\x12\x17\n" +
-	"\anet_pnl\x18\x04 \x01(\x01R\x06netPnl2}\n" +
+	"\anet_pnl\x18\x04 \x01(\tR\x06netPnl2}\n" +
 	"\x15BacktestTradesService\x12d\n" +
 	"\x15ListBacktestRunTrades\x12$.ant.v1.ListBacktestRunTradesRequest\x1a%.ant.v1.ListBacktestRunTradesResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 

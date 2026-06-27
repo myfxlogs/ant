@@ -198,7 +198,7 @@ func (c *StateCache) LoadFromRedis(ctx context.Context) error {
 			c.log.Warn("statecache: redis unmarshal failed", zap.Error(err))
 			continue
 		}
-		c.orders[protoEntry.Ticket] = &OrderStateCacheEntry{Ticket: protoEntry.Ticket, AccountID: protoEntry.AccountId, State: protoEntry.State, Canonical: protoEntry.Canonical, Side: protoEntry.Side, Volume: decimal.NewFromFloat(protoEntry.Volume), Price: decimal.NewFromFloat(protoEntry.Price), UpdatedAt: time.UnixMilli(protoEntry.UpdatedAtUnixMs)}
+		c.orders[protoEntry.Ticket] = &OrderStateCacheEntry{Ticket: protoEntry.Ticket, AccountID: protoEntry.AccountId, State: protoEntry.State, Canonical: protoEntry.Canonical, Side: protoEntry.Side, Volume: decimal.RequireFromString(protoEntry.Volume), Price: decimal.RequireFromString(protoEntry.Price), UpdatedAt: time.UnixMilli(protoEntry.UpdatedAtUnixMs)}
 	}
 	return iter.Err()
 }
@@ -217,7 +217,7 @@ func orderToCacheProto(o *OrderStateCacheEntry) *antv1.OrderCacheEntry {
 	return &antv1.OrderCacheEntry{
 		Ticket: o.Ticket, AccountId: o.AccountID, State: o.State,
 		Canonical: o.Canonical, Side: o.Side,
-		Volume: o.Volume.InexactFloat64(), Price: o.Price.InexactFloat64(),
+		Volume: o.Volume.String(), Price: o.Price.String(),
 		UpdatedAtUnixMs: o.UpdatedAt.UnixMilli(),
 	}
 }

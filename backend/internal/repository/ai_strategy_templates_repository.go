@@ -18,7 +18,7 @@ type AIStrategyTemplate struct {
 	Category       string    `db:"category"`
 	Name           string    `db:"name"`
 	DescriptionZh  string    `db:"description_zh"`
-	PythonSkeleton string    `db:"python_skeleton"`
+	CodeSkeleton string    `db:"code_skeleton"` // Go code skeleton for AI strategy generation
 	ParameterSlots []byte    `db:"parameter_slots"` // proto binary TemplateParameterSlots
 	RiskLevel      string    `db:"risk_level"`
 	IsActive       bool      `db:"is_active"`
@@ -45,11 +45,6 @@ func (t *AIStrategyTemplate) ParameterSlotsString() string {
 	return s
 }
 
-// ParameterSlotMarshal serializes a TemplateParameterSlots proto to bytes.
-func ParameterSlotMarshal(slots *antv1.TemplateParameterSlots) ([]byte, error) {
-	return proto.Marshal(slots)
-}
-
 // AIStrategyTemplatesRepository provides read access to platform strategy templates.
 type AIStrategyTemplatesRepository struct {
 	db *pgxpool.Pool
@@ -62,7 +57,7 @@ func NewAIStrategyTemplatesRepository(db *pgxpool.Pool) *AIStrategyTemplatesRepo
 // ListActive returns all active platform strategies ordered by category.
 func (r *AIStrategyTemplatesRepository) ListActive(ctx context.Context) ([]AIStrategyTemplate, error) {
 	rows, err := r.db.Query(ctx,
-		`SELECT id, category, name, description_zh, python_skeleton, parameter_slots, risk_level, is_active, created_at, updated_at
+		`SELECT id, category, name, description_zh, code_skeleton, parameter_slots, risk_level, is_active, created_at, updated_at
 		 FROM ai_strategy_templates WHERE is_active = true ORDER BY category, name`)
 	if err != nil {
 		return nil, fmt.Errorf("list platform strategies: %w", err)
@@ -73,7 +68,7 @@ func (r *AIStrategyTemplatesRepository) ListActive(ctx context.Context) ([]AIStr
 	for rows.Next() {
 		var s AIStrategyTemplate
 		if err := rows.Scan(&s.ID, &s.Category, &s.Name, &s.DescriptionZh,
-			&s.PythonSkeleton, &s.ParameterSlots, &s.RiskLevel, &s.IsActive,
+			&s.CodeSkeleton, &s.ParameterSlots, &s.RiskLevel, &s.IsActive,
 			&s.CreatedAt, &s.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("scan platform strategy: %w", err)
 		}
@@ -86,10 +81,10 @@ func (r *AIStrategyTemplatesRepository) ListActive(ctx context.Context) ([]AIStr
 func (r *AIStrategyTemplatesRepository) GetByID(ctx context.Context, id uuid.UUID) (*AIStrategyTemplate, error) {
 	var s AIStrategyTemplate
 	err := r.db.QueryRow(ctx,
-		`SELECT id, category, name, description_zh, python_skeleton, parameter_slots, risk_level, is_active, created_at, updated_at
+		`SELECT id, category, name, description_zh, code_skeleton, parameter_slots, risk_level, is_active, created_at, updated_at
 		 FROM ai_strategy_templates WHERE id = $1 AND is_active = true`, id,
 	).Scan(&s.ID, &s.Category, &s.Name, &s.DescriptionZh,
-		&s.PythonSkeleton, &s.ParameterSlots, &s.RiskLevel, &s.IsActive,
+		&s.CodeSkeleton, &s.ParameterSlots, &s.RiskLevel, &s.IsActive,
 		&s.CreatedAt, &s.UpdatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("get platform strategy: %w", err)
@@ -100,7 +95,7 @@ func (r *AIStrategyTemplatesRepository) GetByID(ctx context.Context, id uuid.UUI
 // ListByCategory returns active strategies for a given category.
 func (r *AIStrategyTemplatesRepository) ListByCategory(ctx context.Context, category string) ([]AIStrategyTemplate, error) {
 	rows, err := r.db.Query(ctx,
-		`SELECT id, category, name, description_zh, python_skeleton, parameter_slots, risk_level, is_active, created_at, updated_at
+		`SELECT id, category, name, description_zh, code_skeleton, parameter_slots, risk_level, is_active, created_at, updated_at
 		 FROM ai_strategy_templates WHERE category = $1 AND is_active = true ORDER BY name`, category)
 	if err != nil {
 		return nil, fmt.Errorf("list by category: %w", err)
@@ -111,7 +106,7 @@ func (r *AIStrategyTemplatesRepository) ListByCategory(ctx context.Context, cate
 	for rows.Next() {
 		var s AIStrategyTemplate
 		if err := rows.Scan(&s.ID, &s.Category, &s.Name, &s.DescriptionZh,
-			&s.PythonSkeleton, &s.ParameterSlots, &s.RiskLevel, &s.IsActive,
+			&s.CodeSkeleton, &s.ParameterSlots, &s.RiskLevel, &s.IsActive,
 			&s.CreatedAt, &s.UpdatedAt); err != nil {
 			return nil, err
 		}

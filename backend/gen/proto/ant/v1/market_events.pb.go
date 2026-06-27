@@ -241,10 +241,10 @@ type TradeEventPayload struct {
 	Canonical     string                 `protobuf:"bytes,8,opt,name=canonical,proto3" json:"canonical,omitempty"`
 	Side          string                 `protobuf:"bytes,9,opt,name=side,proto3" json:"side,omitempty"`
 	OrderType     string                 `protobuf:"bytes,10,opt,name=order_type,json=orderType,proto3" json:"order_type,omitempty"`
-	Volume        float64                `protobuf:"fixed64,11,opt,name=volume,proto3" json:"volume,omitempty"`
-	Price         float64                `protobuf:"fixed64,12,opt,name=price,proto3" json:"price,omitempty"`
-	StopLoss      float64                `protobuf:"fixed64,13,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`
-	TakeProfit    float64                `protobuf:"fixed64,14,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`
+	Volume        string                 `protobuf:"bytes,11,opt,name=volume,proto3" json:"volume,omitempty"`
+	Price         string                 `protobuf:"bytes,12,opt,name=price,proto3" json:"price,omitempty"`
+	StopLoss      string                 `protobuf:"bytes,13,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`
+	TakeProfit    string                 `protobuf:"bytes,14,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`
 	FromState     string                 `protobuf:"bytes,15,opt,name=from_state,json=fromState,proto3" json:"from_state,omitempty"`
 	ToState       string                 `protobuf:"bytes,16,opt,name=to_state,json=toState,proto3" json:"to_state,omitempty"`
 	Error         string                 `protobuf:"bytes,17,opt,name=error,proto3" json:"error,omitempty"`
@@ -354,32 +354,32 @@ func (x *TradeEventPayload) GetOrderType() string {
 	return ""
 }
 
-func (x *TradeEventPayload) GetVolume() float64 {
+func (x *TradeEventPayload) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeEventPayload) GetPrice() float64 {
+func (x *TradeEventPayload) GetPrice() string {
 	if x != nil {
 		return x.Price
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeEventPayload) GetStopLoss() float64 {
+func (x *TradeEventPayload) GetStopLoss() string {
 	if x != nil {
 		return x.StopLoss
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeEventPayload) GetTakeProfit() float64 {
+func (x *TradeEventPayload) GetTakeProfit() string {
 	if x != nil {
 		return x.TakeProfit
 	}
-	return 0
+	return ""
 }
 
 func (x *TradeEventPayload) GetFromState() string {
@@ -490,10 +490,10 @@ type MonthlyAnalysisPoint struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Year          int32                  `protobuf:"varint,1,opt,name=year,proto3" json:"year,omitempty"`
 	Month         int32                  `protobuf:"varint,2,opt,name=month,proto3" json:"month,omitempty"`
-	Change        float64                `protobuf:"fixed64,3,opt,name=change,proto3" json:"change,omitempty"`
-	Profit        float64                `protobuf:"fixed64,4,opt,name=profit,proto3" json:"profit,omitempty"`
-	Lots          float64                `protobuf:"fixed64,5,opt,name=lots,proto3" json:"lots,omitempty"`
-	Pips          float64                `protobuf:"fixed64,6,opt,name=pips,proto3" json:"pips,omitempty"`
+	Change        string                 `protobuf:"bytes,3,opt,name=change,proto3" json:"change,omitempty"`
+	Profit        string                 `protobuf:"bytes,4,opt,name=profit,proto3" json:"profit,omitempty"`
+	Lots          string                 `protobuf:"bytes,5,opt,name=lots,proto3" json:"lots,omitempty"`
+	Pips          string                 `protobuf:"bytes,6,opt,name=pips,proto3" json:"pips,omitempty"`
 	Trades        int32                  `protobuf:"varint,7,opt,name=trades,proto3" json:"trades,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -543,32 +543,32 @@ func (x *MonthlyAnalysisPoint) GetMonth() int32 {
 	return 0
 }
 
-func (x *MonthlyAnalysisPoint) GetChange() float64 {
+func (x *MonthlyAnalysisPoint) GetChange() string {
 	if x != nil {
 		return x.Change
 	}
-	return 0
+	return ""
 }
 
-func (x *MonthlyAnalysisPoint) GetProfit() float64 {
+func (x *MonthlyAnalysisPoint) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
-func (x *MonthlyAnalysisPoint) GetLots() float64 {
+func (x *MonthlyAnalysisPoint) GetLots() string {
 	if x != nil {
 		return x.Lots
 	}
-	return 0
+	return ""
 }
 
-func (x *MonthlyAnalysisPoint) GetPips() float64 {
+func (x *MonthlyAnalysisPoint) GetPips() string {
 	if x != nil {
 		return x.Pips
 	}
-	return 0
+	return ""
 }
 
 func (x *MonthlyAnalysisPoint) GetTrades() int32 {
@@ -630,8 +630,8 @@ type OrderCacheEntry struct {
 	State           string                 `protobuf:"bytes,3,opt,name=state,proto3" json:"state,omitempty"`
 	Canonical       string                 `protobuf:"bytes,4,opt,name=canonical,proto3" json:"canonical,omitempty"`
 	Side            string                 `protobuf:"bytes,5,opt,name=side,proto3" json:"side,omitempty"`
-	Volume          float64                `protobuf:"fixed64,6,opt,name=volume,proto3" json:"volume,omitempty"`
-	Price           float64                `protobuf:"fixed64,7,opt,name=price,proto3" json:"price,omitempty"`
+	Volume          string                 `protobuf:"bytes,6,opt,name=volume,proto3" json:"volume,omitempty"`
+	Price           string                 `protobuf:"bytes,7,opt,name=price,proto3" json:"price,omitempty"`
 	UpdatedAtUnixMs int64                  `protobuf:"varint,8,opt,name=updated_at_unix_ms,json=updatedAtUnixMs,proto3" json:"updated_at_unix_ms,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
@@ -702,18 +702,18 @@ func (x *OrderCacheEntry) GetSide() string {
 	return ""
 }
 
-func (x *OrderCacheEntry) GetVolume() float64 {
+func (x *OrderCacheEntry) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *OrderCacheEntry) GetPrice() float64 {
+func (x *OrderCacheEntry) GetPrice() string {
 	if x != nil {
 		return x.Price
 	}
-	return 0
+	return ""
 }
 
 func (x *OrderCacheEntry) GetUpdatedAtUnixMs() int64 {
@@ -726,11 +726,11 @@ func (x *OrderCacheEntry) GetUpdatedAtUnixMs() int64 {
 // CostEstimate holds pre-trade cost breakdown (replaces JSON string in service_orders.go).
 type CostEstimate struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	SpreadCost    float64                `protobuf:"fixed64,1,opt,name=spread_cost,json=spreadCost,proto3" json:"spread_cost,omitempty"`
-	Commission    float64                `protobuf:"fixed64,2,opt,name=commission,proto3" json:"commission,omitempty"`
-	SlippageCost  float64                `protobuf:"fixed64,3,opt,name=slippage_cost,json=slippageCost,proto3" json:"slippage_cost,omitempty"`
-	SwapCost      float64                `protobuf:"fixed64,4,opt,name=swap_cost,json=swapCost,proto3" json:"swap_cost,omitempty"`
-	TotalCost     float64                `protobuf:"fixed64,5,opt,name=total_cost,json=totalCost,proto3" json:"total_cost,omitempty"`
+	SpreadCost    string                 `protobuf:"bytes,1,opt,name=spread_cost,json=spreadCost,proto3" json:"spread_cost,omitempty"`
+	Commission    string                 `protobuf:"bytes,2,opt,name=commission,proto3" json:"commission,omitempty"`
+	SlippageCost  string                 `protobuf:"bytes,3,opt,name=slippage_cost,json=slippageCost,proto3" json:"slippage_cost,omitempty"`
+	SwapCost      string                 `protobuf:"bytes,4,opt,name=swap_cost,json=swapCost,proto3" json:"swap_cost,omitempty"`
+	TotalCost     string                 `protobuf:"bytes,5,opt,name=total_cost,json=totalCost,proto3" json:"total_cost,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -765,39 +765,39 @@ func (*CostEstimate) Descriptor() ([]byte, []int) {
 	return file_market_events_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *CostEstimate) GetSpreadCost() float64 {
+func (x *CostEstimate) GetSpreadCost() string {
 	if x != nil {
 		return x.SpreadCost
 	}
-	return 0
+	return ""
 }
 
-func (x *CostEstimate) GetCommission() float64 {
+func (x *CostEstimate) GetCommission() string {
 	if x != nil {
 		return x.Commission
 	}
-	return 0
+	return ""
 }
 
-func (x *CostEstimate) GetSlippageCost() float64 {
+func (x *CostEstimate) GetSlippageCost() string {
 	if x != nil {
 		return x.SlippageCost
 	}
-	return 0
+	return ""
 }
 
-func (x *CostEstimate) GetSwapCost() float64 {
+func (x *CostEstimate) GetSwapCost() string {
 	if x != nil {
 		return x.SwapCost
 	}
-	return 0
+	return ""
 }
 
-func (x *CostEstimate) GetTotalCost() float64 {
+func (x *CostEstimate) GetTotalCost() string {
 	if x != nil {
 		return x.TotalCost
 	}
-	return 0
+	return ""
 }
 
 var File_market_events_proto protoreflect.FileDescriptor
@@ -843,10 +843,10 @@ const file_market_events_proto_rawDesc = "" +
 	"\n" +
 	"order_type\x18\n" +
 	" \x01(\tR\torderType\x12\x16\n" +
-	"\x06volume\x18\v \x01(\x01R\x06volume\x12\x14\n" +
-	"\x05price\x18\f \x01(\x01R\x05price\x12\x1b\n" +
-	"\tstop_loss\x18\r \x01(\x01R\bstopLoss\x12\x1f\n" +
-	"\vtake_profit\x18\x0e \x01(\x01R\n" +
+	"\x06volume\x18\v \x01(\tR\x06volume\x12\x14\n" +
+	"\x05price\x18\f \x01(\tR\x05price\x12\x1b\n" +
+	"\tstop_loss\x18\r \x01(\tR\bstopLoss\x12\x1f\n" +
+	"\vtake_profit\x18\x0e \x01(\tR\n" +
 	"takeProfit\x12\x1d\n" +
 	"\n" +
 	"from_state\x18\x0f \x01(\tR\tfromState\x12\x19\n" +
@@ -866,10 +866,10 @@ const file_market_events_proto_rawDesc = "" +
 	"\x14MonthlyAnalysisPoint\x12\x12\n" +
 	"\x04year\x18\x01 \x01(\x05R\x04year\x12\x14\n" +
 	"\x05month\x18\x02 \x01(\x05R\x05month\x12\x16\n" +
-	"\x06change\x18\x03 \x01(\x01R\x06change\x12\x16\n" +
-	"\x06profit\x18\x04 \x01(\x01R\x06profit\x12\x12\n" +
-	"\x04lots\x18\x05 \x01(\x01R\x04lots\x12\x12\n" +
-	"\x04pips\x18\x06 \x01(\x01R\x04pips\x12\x16\n" +
+	"\x06change\x18\x03 \x01(\tR\x06change\x12\x16\n" +
+	"\x06profit\x18\x04 \x01(\tR\x06profit\x12\x12\n" +
+	"\x04lots\x18\x05 \x01(\tR\x04lots\x12\x12\n" +
+	"\x04pips\x18\x06 \x01(\tR\x04pips\x12\x16\n" +
 	"\x06trades\x18\a \x01(\x05R\x06trades\"M\n" +
 	"\x15MonthlyAnalysisPoints\x124\n" +
 	"\x06points\x18\x01 \x03(\v2\x1c.ant.v1.MonthlyAnalysisPointR\x06points\"\xeb\x01\n" +
@@ -880,19 +880,19 @@ const file_market_events_proto_rawDesc = "" +
 	"\x05state\x18\x03 \x01(\tR\x05state\x12\x1c\n" +
 	"\tcanonical\x18\x04 \x01(\tR\tcanonical\x12\x12\n" +
 	"\x04side\x18\x05 \x01(\tR\x04side\x12\x16\n" +
-	"\x06volume\x18\x06 \x01(\x01R\x06volume\x12\x14\n" +
-	"\x05price\x18\a \x01(\x01R\x05price\x12+\n" +
+	"\x06volume\x18\x06 \x01(\tR\x06volume\x12\x14\n" +
+	"\x05price\x18\a \x01(\tR\x05price\x12+\n" +
 	"\x12updated_at_unix_ms\x18\b \x01(\x03R\x0fupdatedAtUnixMs\"\xb0\x01\n" +
 	"\fCostEstimate\x12\x1f\n" +
-	"\vspread_cost\x18\x01 \x01(\x01R\n" +
+	"\vspread_cost\x18\x01 \x01(\tR\n" +
 	"spreadCost\x12\x1e\n" +
 	"\n" +
-	"commission\x18\x02 \x01(\x01R\n" +
+	"commission\x18\x02 \x01(\tR\n" +
 	"commission\x12#\n" +
-	"\rslippage_cost\x18\x03 \x01(\x01R\fslippageCost\x12\x1b\n" +
-	"\tswap_cost\x18\x04 \x01(\x01R\bswapCost\x12\x1d\n" +
+	"\rslippage_cost\x18\x03 \x01(\tR\fslippageCost\x12\x1b\n" +
+	"\tswap_cost\x18\x04 \x01(\tR\bswapCost\x12\x1d\n" +
 	"\n" +
-	"total_cost\x18\x05 \x01(\x01R\ttotalCostB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"total_cost\x18\x05 \x01(\tR\ttotalCostB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_market_events_proto_rawDescOnce sync.Once

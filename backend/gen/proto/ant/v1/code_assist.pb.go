@@ -872,7 +872,7 @@ var File_code_assist_proto protoreflect.FileDescriptor
 
 const file_code_assist_proto_rawDesc = "" +
 	"\n" +
-	"\x11code_assist.proto\x12\x06ant.v1\x1a\x15python_strategy.proto\">\n" +
+	"\x11code_assist.proto\x12\x06ant.v1\x1a\x16strategy_runtime.proto\">\n" +
 	"\x1bTranslateParamLabelsRequest\x12\x1f\n" +
 	"\vparam_names\x18\x01 \x03(\tR\n" +
 	"paramNames\"\xd2\x01\n" +
@@ -1022,7 +1022,7 @@ func file_code_assist_proto_init() {
 	if File_code_assist_proto != nil {
 		return
 	}
-	file_python_strategy_proto_init()
+	file_strategy_runtime_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

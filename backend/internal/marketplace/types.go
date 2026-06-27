@@ -7,21 +7,23 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/zap"
 )
 
 // Service implements the C2C marketplace (strategy publish + subscribe).
 // M12-B1: unified model — Publish writes to both user_strategy_publishes
 // and marketplace_strategies; ListPublished JOINs both for rich metadata.
 type Service struct {
-	pg *pgxpool.Pool
+	pg  *pgxpool.Pool
+	log *zap.Logger
 }
 
 // SystemUserID is the designated platform system account for fee collection.
 var SystemUserID = uuid.Nil
 
 // New creates a marketplace service.
-func New(pg *pgxpool.Pool) *Service {
-	return &Service{pg: pg}
+func New(pg *pgxpool.Pool, log *zap.Logger) *Service {
+	return &Service{pg: pg, log: log}
 }
 
 // ── Price model constants ────────────────────────────────────────────────────

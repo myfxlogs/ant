@@ -25,13 +25,13 @@ const (
 type ProfitUpdateEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	Balance       float64                `protobuf:"fixed64,2,opt,name=balance,proto3" json:"balance,omitempty"`
-	Credit        float64                `protobuf:"fixed64,3,opt,name=credit,proto3" json:"credit,omitempty"`
-	Profit        float64                `protobuf:"fixed64,4,opt,name=profit,proto3" json:"profit,omitempty"`
-	Equity        float64                `protobuf:"fixed64,5,opt,name=equity,proto3" json:"equity,omitempty"`
-	Margin        float64                `protobuf:"fixed64,6,opt,name=margin,proto3" json:"margin,omitempty"`
-	FreeMargin    float64                `protobuf:"fixed64,7,opt,name=free_margin,json=freeMargin,proto3" json:"free_margin,omitempty"`
-	MarginLevel   float64                `protobuf:"fixed64,8,opt,name=margin_level,json=marginLevel,proto3" json:"margin_level,omitempty"`
+	Balance       string                 `protobuf:"bytes,2,opt,name=balance,proto3" json:"balance,omitempty"`
+	Credit        string                 `protobuf:"bytes,3,opt,name=credit,proto3" json:"credit,omitempty"`
+	Profit        string                 `protobuf:"bytes,4,opt,name=profit,proto3" json:"profit,omitempty"`
+	Equity        string                 `protobuf:"bytes,5,opt,name=equity,proto3" json:"equity,omitempty"`
+	Margin        string                 `protobuf:"bytes,6,opt,name=margin,proto3" json:"margin,omitempty"`
+	FreeMargin    string                 `protobuf:"bytes,7,opt,name=free_margin,json=freeMargin,proto3" json:"free_margin,omitempty"`
+	MarginLevel   string                 `protobuf:"bytes,8,opt,name=margin_level,json=marginLevel,proto3" json:"margin_level,omitempty"`
 	Orders        []*OrderProfitItem     `protobuf:"bytes,9,rep,name=orders,proto3" json:"orders,omitempty"`
 	ProfitPercent float64                `protobuf:"fixed64,10,opt,name=profit_percent,json=profitPercent,proto3" json:"profit_percent,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -75,53 +75,53 @@ func (x *ProfitUpdateEvent) GetAccountId() string {
 	return ""
 }
 
-func (x *ProfitUpdateEvent) GetBalance() float64 {
+func (x *ProfitUpdateEvent) GetBalance() string {
 	if x != nil {
 		return x.Balance
 	}
-	return 0
+	return ""
 }
 
-func (x *ProfitUpdateEvent) GetCredit() float64 {
+func (x *ProfitUpdateEvent) GetCredit() string {
 	if x != nil {
 		return x.Credit
 	}
-	return 0
+	return ""
 }
 
-func (x *ProfitUpdateEvent) GetProfit() float64 {
+func (x *ProfitUpdateEvent) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
-func (x *ProfitUpdateEvent) GetEquity() float64 {
+func (x *ProfitUpdateEvent) GetEquity() string {
 	if x != nil {
 		return x.Equity
 	}
-	return 0
+	return ""
 }
 
-func (x *ProfitUpdateEvent) GetMargin() float64 {
+func (x *ProfitUpdateEvent) GetMargin() string {
 	if x != nil {
 		return x.Margin
 	}
-	return 0
+	return ""
 }
 
-func (x *ProfitUpdateEvent) GetFreeMargin() float64 {
+func (x *ProfitUpdateEvent) GetFreeMargin() string {
 	if x != nil {
 		return x.FreeMargin
 	}
-	return 0
+	return ""
 }
 
-func (x *ProfitUpdateEvent) GetMarginLevel() float64 {
+func (x *ProfitUpdateEvent) GetMarginLevel() string {
 	if x != nil {
 		return x.MarginLevel
 	}
-	return 0
+	return ""
 }
 
 func (x *ProfitUpdateEvent) GetOrders() []*OrderProfitItem {
@@ -140,15 +140,15 @@ func (x *ProfitUpdateEvent) GetProfitPercent() float64 {
 
 type UserSummaryEvent struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
-	TotalBalance         float64                `protobuf:"fixed64,1,opt,name=total_balance,json=totalBalance,proto3" json:"total_balance,omitempty"`
-	TotalEquity          float64                `protobuf:"fixed64,2,opt,name=total_equity,json=totalEquity,proto3" json:"total_equity,omitempty"`
-	TotalProfit          float64                `protobuf:"fixed64,3,opt,name=total_profit,json=totalProfit,proto3" json:"total_profit,omitempty"`
+	TotalBalance         string                 `protobuf:"bytes,1,opt,name=total_balance,json=totalBalance,proto3" json:"total_balance,omitempty"`
+	TotalEquity          string                 `protobuf:"bytes,2,opt,name=total_equity,json=totalEquity,proto3" json:"total_equity,omitempty"`
+	TotalProfit          string                 `protobuf:"bytes,3,opt,name=total_profit,json=totalProfit,proto3" json:"total_profit,omitempty"`
 	AccountCount         int32                  `protobuf:"varint,4,opt,name=account_count,json=accountCount,proto3" json:"account_count,omitempty"`
 	ConnectedCount       int32                  `protobuf:"varint,5,opt,name=connected_count,json=connectedCount,proto3" json:"connected_count,omitempty"`
 	UpdatedAt            *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	PnlToday             float64                `protobuf:"fixed64,7,opt,name=pnl_today,json=pnlToday,proto3" json:"pnl_today,omitempty"`
-	PnlWeek              float64                `protobuf:"fixed64,8,opt,name=pnl_week,json=pnlWeek,proto3" json:"pnl_week,omitempty"`
-	PnlMonth             float64                `protobuf:"fixed64,9,opt,name=pnl_month,json=pnlMonth,proto3" json:"pnl_month,omitempty"`
+	PnlToday             string                 `protobuf:"bytes,7,opt,name=pnl_today,json=pnlToday,proto3" json:"pnl_today,omitempty"`
+	PnlWeek              string                 `protobuf:"bytes,8,opt,name=pnl_week,json=pnlWeek,proto3" json:"pnl_week,omitempty"`
+	PnlMonth             string                 `protobuf:"bytes,9,opt,name=pnl_month,json=pnlMonth,proto3" json:"pnl_month,omitempty"`
 	TradesToday          int32                  `protobuf:"varint,10,opt,name=trades_today,json=tradesToday,proto3" json:"trades_today,omitempty"`
 	TradesWeek           int32                  `protobuf:"varint,11,opt,name=trades_week,json=tradesWeek,proto3" json:"trades_week,omitempty"`
 	TradesMonth          int32                  `protobuf:"varint,12,opt,name=trades_month,json=tradesMonth,proto3" json:"trades_month,omitempty"`
@@ -191,25 +191,25 @@ func (*UserSummaryEvent) Descriptor() ([]byte, []int) {
 	return file_stream_event_account_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *UserSummaryEvent) GetTotalBalance() float64 {
+func (x *UserSummaryEvent) GetTotalBalance() string {
 	if x != nil {
 		return x.TotalBalance
 	}
-	return 0
+	return ""
 }
 
-func (x *UserSummaryEvent) GetTotalEquity() float64 {
+func (x *UserSummaryEvent) GetTotalEquity() string {
 	if x != nil {
 		return x.TotalEquity
 	}
-	return 0
+	return ""
 }
 
-func (x *UserSummaryEvent) GetTotalProfit() float64 {
+func (x *UserSummaryEvent) GetTotalProfit() string {
 	if x != nil {
 		return x.TotalProfit
 	}
-	return 0
+	return ""
 }
 
 func (x *UserSummaryEvent) GetAccountCount() int32 {
@@ -233,25 +233,25 @@ func (x *UserSummaryEvent) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *UserSummaryEvent) GetPnlToday() float64 {
+func (x *UserSummaryEvent) GetPnlToday() string {
 	if x != nil {
 		return x.PnlToday
 	}
-	return 0
+	return ""
 }
 
-func (x *UserSummaryEvent) GetPnlWeek() float64 {
+func (x *UserSummaryEvent) GetPnlWeek() string {
 	if x != nil {
 		return x.PnlWeek
 	}
-	return 0
+	return ""
 }
 
-func (x *UserSummaryEvent) GetPnlMonth() float64 {
+func (x *UserSummaryEvent) GetPnlMonth() string {
 	if x != nil {
 		return x.PnlMonth
 	}
-	return 0
+	return ""
 }
 
 func (x *UserSummaryEvent) GetTradesToday() int32 {
@@ -314,9 +314,9 @@ type OrderProfitItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Ticket        int64                  `protobuf:"varint,1,opt,name=ticket,proto3" json:"ticket,omitempty"`
 	Symbol        string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	Profit        float64                `protobuf:"fixed64,3,opt,name=profit,proto3" json:"profit,omitempty"`
-	Volume        float64                `protobuf:"fixed64,4,opt,name=volume,proto3" json:"volume,omitempty"`
-	CurrentPrice  float64                `protobuf:"fixed64,5,opt,name=current_price,json=currentPrice,proto3" json:"current_price,omitempty"`
+	Profit        string                 `protobuf:"bytes,3,opt,name=profit,proto3" json:"profit,omitempty"`
+	Volume        string                 `protobuf:"bytes,4,opt,name=volume,proto3" json:"volume,omitempty"`
+	CurrentPrice  string                 `protobuf:"bytes,5,opt,name=current_price,json=currentPrice,proto3" json:"current_price,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -365,25 +365,25 @@ func (x *OrderProfitItem) GetSymbol() string {
 	return ""
 }
 
-func (x *OrderProfitItem) GetProfit() float64 {
+func (x *OrderProfitItem) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
-func (x *OrderProfitItem) GetVolume() float64 {
+func (x *OrderProfitItem) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *OrderProfitItem) GetCurrentPrice() float64 {
+func (x *OrderProfitItem) GetCurrentPrice() string {
 	if x != nil {
 		return x.CurrentPrice
 	}
-	return 0
+	return ""
 }
 
 type AccountStatusEvent struct {
@@ -535,8 +535,8 @@ type RiskAlertEvent struct {
 	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	AlertType     string                 `protobuf:"bytes,2,opt,name=alert_type,json=alertType,proto3" json:"alert_type,omitempty"`
 	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
-	Value         float64                `protobuf:"fixed64,4,opt,name=value,proto3" json:"value,omitempty"`
-	Threshold     float64                `protobuf:"fixed64,5,opt,name=threshold,proto3" json:"threshold,omitempty"`
+	Value         string                 `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
+	Threshold     string                 `protobuf:"bytes,5,opt,name=threshold,proto3" json:"threshold,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -592,18 +592,18 @@ func (x *RiskAlertEvent) GetMessage() string {
 	return ""
 }
 
-func (x *RiskAlertEvent) GetValue() float64 {
+func (x *RiskAlertEvent) GetValue() string {
 	if x != nil {
 		return x.Value
 	}
-	return 0
+	return ""
 }
 
-func (x *RiskAlertEvent) GetThreshold() float64 {
+func (x *RiskAlertEvent) GetThreshold() string {
 	if x != nil {
 		return x.Threshold
 	}
-	return 0
+	return ""
 }
 
 var File_stream_event_account_proto protoreflect.FileDescriptor
@@ -614,28 +614,28 @@ const file_stream_event_account_proto_rawDesc = "" +
 	"\x11ProfitUpdateEvent\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x18\n" +
-	"\abalance\x18\x02 \x01(\x01R\abalance\x12\x16\n" +
-	"\x06credit\x18\x03 \x01(\x01R\x06credit\x12\x16\n" +
-	"\x06profit\x18\x04 \x01(\x01R\x06profit\x12\x16\n" +
-	"\x06equity\x18\x05 \x01(\x01R\x06equity\x12\x16\n" +
-	"\x06margin\x18\x06 \x01(\x01R\x06margin\x12\x1f\n" +
-	"\vfree_margin\x18\a \x01(\x01R\n" +
+	"\abalance\x18\x02 \x01(\tR\abalance\x12\x16\n" +
+	"\x06credit\x18\x03 \x01(\tR\x06credit\x12\x16\n" +
+	"\x06profit\x18\x04 \x01(\tR\x06profit\x12\x16\n" +
+	"\x06equity\x18\x05 \x01(\tR\x06equity\x12\x16\n" +
+	"\x06margin\x18\x06 \x01(\tR\x06margin\x12\x1f\n" +
+	"\vfree_margin\x18\a \x01(\tR\n" +
 	"freeMargin\x12!\n" +
-	"\fmargin_level\x18\b \x01(\x01R\vmarginLevel\x12/\n" +
+	"\fmargin_level\x18\b \x01(\tR\vmarginLevel\x12/\n" +
 	"\x06orders\x18\t \x03(\v2\x17.ant.v1.OrderProfitItemR\x06orders\x12%\n" +
 	"\x0eprofit_percent\x18\n" +
 	" \x01(\x01R\rprofitPercent\"\x9c\x05\n" +
 	"\x10UserSummaryEvent\x12#\n" +
-	"\rtotal_balance\x18\x01 \x01(\x01R\ftotalBalance\x12!\n" +
-	"\ftotal_equity\x18\x02 \x01(\x01R\vtotalEquity\x12!\n" +
-	"\ftotal_profit\x18\x03 \x01(\x01R\vtotalProfit\x12#\n" +
+	"\rtotal_balance\x18\x01 \x01(\tR\ftotalBalance\x12!\n" +
+	"\ftotal_equity\x18\x02 \x01(\tR\vtotalEquity\x12!\n" +
+	"\ftotal_profit\x18\x03 \x01(\tR\vtotalProfit\x12#\n" +
 	"\raccount_count\x18\x04 \x01(\x05R\faccountCount\x12'\n" +
 	"\x0fconnected_count\x18\x05 \x01(\x05R\x0econnectedCount\x129\n" +
 	"\n" +
 	"updated_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1b\n" +
-	"\tpnl_today\x18\a \x01(\x01R\bpnlToday\x12\x19\n" +
-	"\bpnl_week\x18\b \x01(\x01R\apnlWeek\x12\x1b\n" +
-	"\tpnl_month\x18\t \x01(\x01R\bpnlMonth\x12!\n" +
+	"\tpnl_today\x18\a \x01(\tR\bpnlToday\x12\x19\n" +
+	"\bpnl_week\x18\b \x01(\tR\apnlWeek\x12\x1b\n" +
+	"\tpnl_month\x18\t \x01(\tR\bpnlMonth\x12!\n" +
 	"\ftrades_today\x18\n" +
 	" \x01(\x05R\vtradesToday\x12\x1f\n" +
 	"\vtrades_week\x18\v \x01(\x05R\n" +
@@ -649,9 +649,9 @@ const file_stream_event_account_proto_rawDesc = "" +
 	"\x0fOrderProfitItem\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x16\n" +
-	"\x06profit\x18\x03 \x01(\x01R\x06profit\x12\x16\n" +
-	"\x06volume\x18\x04 \x01(\x01R\x06volume\x12#\n" +
-	"\rcurrent_price\x18\x05 \x01(\x01R\fcurrentPrice\"e\n" +
+	"\x06profit\x18\x03 \x01(\tR\x06profit\x12\x16\n" +
+	"\x06volume\x18\x04 \x01(\tR\x06volume\x12#\n" +
+	"\rcurrent_price\x18\x05 \x01(\tR\fcurrentPrice\"e\n" +
 	"\x12AccountStatusEvent\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
@@ -672,8 +672,8 @@ const file_stream_event_account_proto_rawDesc = "" +
 	"\n" +
 	"alert_type\x18\x02 \x01(\tR\talertType\x12\x18\n" +
 	"\amessage\x18\x03 \x01(\tR\amessage\x12\x14\n" +
-	"\x05value\x18\x04 \x01(\x01R\x05value\x12\x1c\n" +
-	"\tthreshold\x18\x05 \x01(\x01R\tthresholdB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x05value\x18\x04 \x01(\tR\x05value\x12\x1c\n" +
+	"\tthreshold\x18\x05 \x01(\tR\tthresholdB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_stream_event_account_proto_rawDescOnce sync.Once

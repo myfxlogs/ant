@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file backtest_service.proto.
  */
 export const file_backtest_service: GenFile = /*@__PURE__*/
-  fileDesc("ChZiYWNrdGVzdF9zZXJ2aWNlLnByb3RvEgZhbnQudjEiLgoVRW5naW5lVmFsaWRhdGVSZXF1ZXN0EhUKDXN0cmF0ZWd5X2NvZGUYASABKAkiYgoWRW5naW5lVmFsaWRhdGVSZXNwb25zZRINCgV2YWxpZBgBIAEoCBIOCgZlcnJvcnMYAiADKAkSEAoId2FybmluZ3MYAyADKAkSFwoPcGFyYW1ldGVyc19qc29uGAQgASgJIpIBChhFbmdpbmVSdW5TdHJhdGVneVJlcXVlc3QSEwoLc3RyYXRlZ3lfaWQYASABKAkSFQoNc3RyYXRlZ3lfY29kZRgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJEicKBmtsaW5lcxgFIAMoCzIXLmFudC52MS5FeGVjdXRlS2xpbmVCYXIiZgoZRW5naW5lUnVuU3RyYXRlZ3lSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEikKBnNpZ25hbBgCIAEoCzIZLmFudC52MS5FbmdpbmVUcmFkZVNpZ25hbBINCgVlcnJvchgDIAEoCSKeAQoRRW5naW5lVHJhZGVTaWduYWwSDgoGc2lnbmFsGAEgASgJEg4KBnN5bWJvbBgCIAEoCRINCgVwcmljZRgDIAEoARIOCgZ2b2x1bWUYBCABKAESEQoJc3RvcF9sb3NzGAUgASgBEhMKC3Rha2VfcHJvZml0GAYgASgBEhIKCmNvbmZpZGVuY2UYByABKAESDgoGcmVhc29uGAggASgJIoYBCg9FeGVjdXRlS2xpbmVCYXISFAoMb3Blbl90aW1lX21zGAEgASgDEhUKDWNsb3NlX3RpbWVfbXMYAiABKAMSDAoEb3BlbhgDIAEoARIMCgRoaWdoGAQgASgBEgsKA2xvdxgFIAEoARINCgVjbG9zZRgGIAEoARIOCgZ2b2x1bWUYByABKAEihQUKFkV4ZWN1dGVCYWNrdGVzdFJlcXVlc3QSEwoLc3RyYXRlZ3lfaWQYASABKAkSFQoNc3RyYXRlZ3lfY29kZRgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJEhUKDXN0YXJ0X2RhdGVfbXMYBSABKAMSEwoLZW5kX2RhdGVfbXMYBiABKAMSFwoPaW5pdGlhbF9jYXBpdGFsGAcgASgBEhIKCmNvbW1pc3Npb24YCCABKAESDgoGc3ByZWFkGAkgASgBEhEKCXN3YXBfcmF0ZRgKIAEoARIXCg9zZXJ2ZXJfdGltZXpvbmUYCyABKAkSFQoNcm9sbG92ZXJfaG91chgMIAEoBRIbChN0cmlwbGVfc3dhcF93ZWVrZGF5GA0gASgFEhUKDXNsaXBwYWdlX21vZGUYDiABKAkSFQoNc2xpcHBhZ2VfcmF0ZRgPIAEoARIVCg1zbGlwcGFnZV9zZWVkGBAgASgFEicKBmtsaW5lcxgRIAMoCzIXLmFudC52MS5FeGVjdXRlS2xpbmVCYXISFQoNZXh0cmFfc3ltYm9scxgSIAMoCRIcChRzdHJhdGVneV9wYXJhbXNfanNvbhgTIAEoCRIQCghsZXZlcmFnZRgUIAEoARIvCg90cmFkZV9kaXJlY3Rpb24YFSABKA4yFi5hbnQudjEuVHJhZGVEaXJlY3Rpb24SEwoLc3RyaWN0X21vZGUYFiABKAgSLwoPc3RyYXRlZ3lfY29uZmlnGBcgASgLMhYuYW50LnYxLlN0cmF0ZWd5Q29uZmlnEicKC3N5bWJvbF9pbmZvGBggASgLMhIuYW50LnYxLlN5bWJvbEluZm8ijQIKClN5bWJvbEluZm8SDgoGZGlnaXRzGAEgASgFEg0KBXBvaW50GAIgASgBEhEKCXRpY2tfc2l6ZRgDIAEoARISCgp0aWNrX3ZhbHVlGAQgASgBEhUKDWNvbnRyYWN0X3NpemUYBSABKAESEgoKdm9sdW1lX21pbhgGIAEoARISCgp2b2x1bWVfbWF4GAcgASgBEhMKC3ZvbHVtZV9zdGVwGAggASgBEhMKC3N0b3BzX2xldmVsGAkgASgFEhQKDGZyZWV6ZV9sZXZlbBgKIAEoBRIRCglzd2FwX2xvbmcYCyABKAESEgoKc3dhcF9zaG9ydBgMIAEoARITCgttYXJnaW5fcmF0ZRgNIAEoASLHAQoURXhlY3V0ZUJhY2t0ZXN0VHJhZGUSDgoGdGlja2V0GAEgASgDEgwKBHNpZGUYAiABKAkSDgoGdm9sdW1lGAMgASgBEhIKCm9wZW5fdHNfbXMYBCABKAMSEgoKb3Blbl9wcmljZRgFIAEoARITCgtjbG9zZV90c19tcxgGIAEoAxITCgtjbG9zZV9wcmljZRgHIAEoARILCgNwbmwYCCABKAESEgoKY29tbWlzc2lvbhgJIAEoARIOCgZyZWFzb24YCiABKAkimAIKF0V4ZWN1dGVCYWNrdGVzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSLwoHbWV0cmljcxgCIAEoCzIeLmFudC52MS5FeGVjdXRlQmFja3Rlc3RNZXRyaWNzEisKBHJpc2sYAyABKAsyHS5hbnQudjEuRXhlY3V0ZVJpc2tBc3Nlc3NtZW50EhQKDGVxdWl0eV9jdXJ2ZRgEIAMoARIsCgZ0cmFkZXMYBSADKAsyHC5hbnQudjEuRXhlY3V0ZUJhY2t0ZXN0VHJhZGUSDQoFZXJyb3IYBiABKAkSOwoVZXhlY3V0aW9uX2Fzc3VtcHRpb25zGAcgASgLMhwuYW50LnYxLkV4ZWN1dGlvbkFzc3VtcHRpb25zIqkCChZFeGVjdXRlQmFja3Rlc3RNZXRyaWNzEhQKDHRvdGFsX3JldHVybhgBIAEoARIVCg1hbm51YWxfcmV0dXJuGAIgASgBEhQKDG1heF9kcmF3ZG93bhgDIAEoARIUCgxzaGFycGVfcmF0aW8YBCABKAESEAoId2luX3JhdGUYBSABKAESFQoNcHJvZml0X2ZhY3RvchgGIAEoARIUCgx0b3RhbF90cmFkZXMYByABKAUSFgoOd2lubmluZ190cmFkZXMYCCABKAUSFQoNbG9zaW5nX3RyYWRlcxgJIAEoBRIWCg5hdmVyYWdlX3Byb2ZpdBgKIAEoARIUCgxhdmVyYWdlX2xvc3MYCyABKAESGgoSdG90YWxfcG5sX2Fic29sdXRlGAwgASgBIm0KFUV4ZWN1dGVSaXNrQXNzZXNzbWVudBINCgVzY29yZRgBIAEoBRINCgVsZXZlbBgCIAEoCRIPCgdyZWFzb25zGAMgAygJEhAKCHdhcm5pbmdzGAQgAygJEhMKC2lzX3JlbGlhYmxlGAUgASgIMogCCg9CYWNrdGVzdFNlcnZpY2USTgoLUnVuQmFja3Rlc3QSHi5hbnQudjEuRXhlY3V0ZUJhY2t0ZXN0UmVxdWVzdBofLmFudC52MS5FeGVjdXRlQmFja3Rlc3RSZXNwb25zZRJRChBWYWxpZGF0ZVN0cmF0ZWd5Eh0uYW50LnYxLkVuZ2luZVZhbGlkYXRlUmVxdWVzdBoeLmFudC52MS5FbmdpbmVWYWxpZGF0ZVJlc3BvbnNlElIKC1J1blN0cmF0ZWd5EiAuYW50LnYxLkVuZ2luZVJ1blN0cmF0ZWd5UmVxdWVzdBohLmFudC52MS5FbmdpbmVSdW5TdHJhdGVneVJlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_backtest_execution_config]);
+  fileDesc("ChZiYWNrdGVzdF9zZXJ2aWNlLnByb3RvEgZhbnQudjEiLgoVRW5naW5lVmFsaWRhdGVSZXF1ZXN0EhUKDXN0cmF0ZWd5X2NvZGUYASABKAkiYgoWRW5naW5lVmFsaWRhdGVSZXNwb25zZRINCgV2YWxpZBgBIAEoCBIOCgZlcnJvcnMYAiADKAkSEAoId2FybmluZ3MYAyADKAkSFwoPcGFyYW1ldGVyc19qc29uGAQgASgJIpIBChhFbmdpbmVSdW5TdHJhdGVneVJlcXVlc3QSEwoLc3RyYXRlZ3lfaWQYASABKAkSFQoNc3RyYXRlZ3lfY29kZRgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJEicKBmtsaW5lcxgFIAMoCzIXLmFudC52MS5FeGVjdXRlS2xpbmVCYXIiZgoZRW5naW5lUnVuU3RyYXRlZ3lSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEikKBnNpZ25hbBgCIAEoCzIZLmFudC52MS5FbmdpbmVUcmFkZVNpZ25hbBINCgVlcnJvchgDIAEoCSKeAQoRRW5naW5lVHJhZGVTaWduYWwSDgoGc2lnbmFsGAEgASgJEg4KBnN5bWJvbBgCIAEoCRINCgVwcmljZRgDIAEoCRIOCgZ2b2x1bWUYBCABKAkSEQoJc3RvcF9sb3NzGAUgASgJEhMKC3Rha2VfcHJvZml0GAYgASgJEhIKCmNvbmZpZGVuY2UYByABKAESDgoGcmVhc29uGAggASgJIoYBCg9FeGVjdXRlS2xpbmVCYXISFAoMb3Blbl90aW1lX21zGAEgASgDEhUKDWNsb3NlX3RpbWVfbXMYAiABKAMSDAoEb3BlbhgDIAEoCRIMCgRoaWdoGAQgASgJEgsKA2xvdxgFIAEoCRINCgVjbG9zZRgGIAEoCRIOCgZ2b2x1bWUYByABKAkihQUKFkV4ZWN1dGVCYWNrdGVzdFJlcXVlc3QSEwoLc3RyYXRlZ3lfaWQYASABKAkSFQoNc3RyYXRlZ3lfY29kZRgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJEhUKDXN0YXJ0X2RhdGVfbXMYBSABKAMSEwoLZW5kX2RhdGVfbXMYBiABKAMSFwoPaW5pdGlhbF9jYXBpdGFsGAcgASgJEhIKCmNvbW1pc3Npb24YCCABKAESDgoGc3ByZWFkGAkgASgBEhEKCXN3YXBfcmF0ZRgKIAEoARIXCg9zZXJ2ZXJfdGltZXpvbmUYCyABKAkSFQoNcm9sbG92ZXJfaG91chgMIAEoBRIbChN0cmlwbGVfc3dhcF93ZWVrZGF5GA0gASgFEhUKDXNsaXBwYWdlX21vZGUYDiABKAkSFQoNc2xpcHBhZ2VfcmF0ZRgPIAEoARIVCg1zbGlwcGFnZV9zZWVkGBAgASgFEicKBmtsaW5lcxgRIAMoCzIXLmFudC52MS5FeGVjdXRlS2xpbmVCYXISFQoNZXh0cmFfc3ltYm9scxgSIAMoCRIcChRzdHJhdGVneV9wYXJhbXNfanNvbhgTIAEoCRIQCghsZXZlcmFnZRgUIAEoARIvCg90cmFkZV9kaXJlY3Rpb24YFSABKA4yFi5hbnQudjEuVHJhZGVEaXJlY3Rpb24SEwoLc3RyaWN0X21vZGUYFiABKAgSLwoPc3RyYXRlZ3lfY29uZmlnGBcgASgLMhYuYW50LnYxLlN0cmF0ZWd5Q29uZmlnEicKC3N5bWJvbF9pbmZvGBggASgLMhIuYW50LnYxLlN5bWJvbEluZm8ijQIKClN5bWJvbEluZm8SDgoGZGlnaXRzGAEgASgFEg0KBXBvaW50GAIgASgJEhEKCXRpY2tfc2l6ZRgDIAEoCRISCgp0aWNrX3ZhbHVlGAQgASgJEhUKDWNvbnRyYWN0X3NpemUYBSABKAkSEgoKdm9sdW1lX21pbhgGIAEoCRISCgp2b2x1bWVfbWF4GAcgASgJEhMKC3ZvbHVtZV9zdGVwGAggASgJEhMKC3N0b3BzX2xldmVsGAkgASgFEhQKDGZyZWV6ZV9sZXZlbBgKIAEoBRIRCglzd2FwX2xvbmcYCyABKAkSEgoKc3dhcF9zaG9ydBgMIAEoCRITCgttYXJnaW5fcmF0ZRgNIAEoCSLHAQoURXhlY3V0ZUJhY2t0ZXN0VHJhZGUSDgoGdGlja2V0GAEgASgDEgwKBHNpZGUYAiABKAkSDgoGdm9sdW1lGAMgASgJEhIKCm9wZW5fdHNfbXMYBCABKAMSEgoKb3Blbl9wcmljZRgFIAEoCRITCgtjbG9zZV90c19tcxgGIAEoAxITCgtjbG9zZV9wcmljZRgHIAEoCRILCgNwbmwYCCABKAkSEgoKY29tbWlzc2lvbhgJIAEoCRIOCgZyZWFzb24YCiABKAkimAIKF0V4ZWN1dGVCYWNrdGVzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSLwoHbWV0cmljcxgCIAEoCzIeLmFudC52MS5FeGVjdXRlQmFja3Rlc3RNZXRyaWNzEisKBHJpc2sYAyABKAsyHS5hbnQudjEuRXhlY3V0ZVJpc2tBc3Nlc3NtZW50EhQKDGVxdWl0eV9jdXJ2ZRgEIAMoARIsCgZ0cmFkZXMYBSADKAsyHC5hbnQudjEuRXhlY3V0ZUJhY2t0ZXN0VHJhZGUSDQoFZXJyb3IYBiABKAkSOwoVZXhlY3V0aW9uX2Fzc3VtcHRpb25zGAcgASgLMhwuYW50LnYxLkV4ZWN1dGlvbkFzc3VtcHRpb25zIqkCChZFeGVjdXRlQmFja3Rlc3RNZXRyaWNzEhQKDHRvdGFsX3JldHVybhgBIAEoARIVCg1hbm51YWxfcmV0dXJuGAIgASgBEhQKDG1heF9kcmF3ZG93bhgDIAEoARIUCgxzaGFycGVfcmF0aW8YBCABKAESEAoId2luX3JhdGUYBSABKAESFQoNcHJvZml0X2ZhY3RvchgGIAEoARIUCgx0b3RhbF90cmFkZXMYByABKAUSFgoOd2lubmluZ190cmFkZXMYCCABKAUSFQoNbG9zaW5nX3RyYWRlcxgJIAEoBRIWCg5hdmVyYWdlX3Byb2ZpdBgKIAEoCRIUCgxhdmVyYWdlX2xvc3MYCyABKAkSGgoSdG90YWxfcG5sX2Fic29sdXRlGAwgASgJIm0KFUV4ZWN1dGVSaXNrQXNzZXNzbWVudBINCgVzY29yZRgBIAEoBRINCgVsZXZlbBgCIAEoCRIPCgdyZWFzb25zGAMgAygJEhAKCHdhcm5pbmdzGAQgAygJEhMKC2lzX3JlbGlhYmxlGAUgASgIMogCCg9CYWNrdGVzdFNlcnZpY2USTgoLUnVuQmFja3Rlc3QSHi5hbnQudjEuRXhlY3V0ZUJhY2t0ZXN0UmVxdWVzdBofLmFudC52MS5FeGVjdXRlQmFja3Rlc3RSZXNwb25zZRJRChBWYWxpZGF0ZVN0cmF0ZWd5Eh0uYW50LnYxLkVuZ2luZVZhbGlkYXRlUmVxdWVzdBoeLmFudC52MS5FbmdpbmVWYWxpZGF0ZVJlc3BvbnNlElIKC1J1blN0cmF0ZWd5EiAuYW50LnYxLkVuZ2luZVJ1blN0cmF0ZWd5UmVxdWVzdBohLmFudC52MS5FbmdpbmVSdW5TdHJhdGVneVJlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_backtest_execution_config]);
 
 /**
  * @generated from message ant.v1.EngineValidateRequest
@@ -144,24 +144,24 @@ export type EngineTradeSignal = Message<"ant.v1.EngineTradeSignal"> & {
   symbol: string;
 
   /**
-   * @generated from field: double price = 3;
+   * @generated from field: string price = 3;
    */
-  price: number;
+  price: string;
 
   /**
-   * @generated from field: double volume = 4;
+   * @generated from field: string volume = 4;
    */
-  volume: number;
+  volume: string;
 
   /**
-   * @generated from field: double stop_loss = 5;
+   * @generated from field: string stop_loss = 5;
    */
-  stopLoss: number;
+  stopLoss: string;
 
   /**
-   * @generated from field: double take_profit = 6;
+   * @generated from field: string take_profit = 6;
    */
-  takeProfit: number;
+  takeProfit: string;
 
   /**
    * @generated from field: double confidence = 7;
@@ -200,29 +200,29 @@ export type ExecuteKlineBar = Message<"ant.v1.ExecuteKlineBar"> & {
   closeTimeMs: bigint;
 
   /**
-   * @generated from field: double open = 3;
+   * @generated from field: string open = 3;
    */
-  open: number;
+  open: string;
 
   /**
-   * @generated from field: double high = 4;
+   * @generated from field: string high = 4;
    */
-  high: number;
+  high: string;
 
   /**
-   * @generated from field: double low = 5;
+   * @generated from field: string low = 5;
    */
-  low: number;
+  low: string;
 
   /**
-   * @generated from field: double close = 6;
+   * @generated from field: string close = 6;
    */
-  close: number;
+  close: string;
 
   /**
-   * @generated from field: double volume = 7;
+   * @generated from field: string volume = 7;
    */
-  volume: number;
+  volume: string;
 };
 
 /**
@@ -275,9 +275,9 @@ export type ExecuteBacktestRequest = Message<"ant.v1.ExecuteBacktestRequest"> & 
   endDateMs: bigint;
 
   /**
-   * @generated from field: double initial_capital = 7;
+   * @generated from field: string initial_capital = 7;
    */
-  initialCapital: number;
+  initialCapital: string;
 
   /**
    * @generated from field: double commission = 8;
@@ -340,7 +340,7 @@ export type ExecuteBacktestRequest = Message<"ant.v1.ExecuteBacktestRequest"> & 
   strategyParamsJson: string;
 
   /**
-   * e.g. 1, 10, 100
+   * e.g. 1, 10, 100 (ratio, kept as double)
    *
    * @generated from field: double leverage = 20;
    */
@@ -399,51 +399,51 @@ export type SymbolInfo = Message<"ant.v1.SymbolInfo"> & {
   /**
    * minimum price increment (10^-digits)
    *
-   * @generated from field: double point = 2;
+   * @generated from field: string point = 2;
    */
-  point: number;
+  point: string;
 
   /**
    * minimum tick size
    *
-   * @generated from field: double tick_size = 3;
+   * @generated from field: string tick_size = 3;
    */
-  tickSize: number;
+  tickSize: string;
 
   /**
    * value of one tick in account currency
    *
-   * @generated from field: double tick_value = 4;
+   * @generated from field: string tick_value = 4;
    */
-  tickValue: number;
+  tickValue: string;
 
   /**
    * base units per lot
    *
-   * @generated from field: double contract_size = 5;
+   * @generated from field: string contract_size = 5;
    */
-  contractSize: number;
+  contractSize: string;
 
   /**
    * minimum order volume (lots)
    *
-   * @generated from field: double volume_min = 6;
+   * @generated from field: string volume_min = 6;
    */
-  volumeMin: number;
+  volumeMin: string;
 
   /**
    * maximum order volume (lots)
    *
-   * @generated from field: double volume_max = 7;
+   * @generated from field: string volume_max = 7;
    */
-  volumeMax: number;
+  volumeMax: string;
 
   /**
    * lot increment step
    *
-   * @generated from field: double volume_step = 8;
+   * @generated from field: string volume_step = 8;
    */
-  volumeStep: number;
+  volumeStep: string;
 
   /**
    * SL/TP minimum distance in points
@@ -462,23 +462,23 @@ export type SymbolInfo = Message<"ant.v1.SymbolInfo"> & {
   /**
    * long swap rate
    *
-   * @generated from field: double swap_long = 11;
+   * @generated from field: string swap_long = 11;
    */
-  swapLong: number;
+  swapLong: string;
 
   /**
    * short swap rate
    *
-   * @generated from field: double swap_short = 12;
+   * @generated from field: string swap_short = 12;
    */
-  swapShort: number;
+  swapShort: string;
 
   /**
    * initial margin rate
    *
-   * @generated from field: double margin_rate = 13;
+   * @generated from field: string margin_rate = 13;
    */
-  marginRate: number;
+  marginRate: string;
 };
 
 /**
@@ -503,9 +503,9 @@ export type ExecuteBacktestTrade = Message<"ant.v1.ExecuteBacktestTrade"> & {
   side: string;
 
   /**
-   * @generated from field: double volume = 3;
+   * @generated from field: string volume = 3;
    */
-  volume: number;
+  volume: string;
 
   /**
    * @generated from field: int64 open_ts_ms = 4;
@@ -513,9 +513,9 @@ export type ExecuteBacktestTrade = Message<"ant.v1.ExecuteBacktestTrade"> & {
   openTsMs: bigint;
 
   /**
-   * @generated from field: double open_price = 5;
+   * @generated from field: string open_price = 5;
    */
-  openPrice: number;
+  openPrice: string;
 
   /**
    * @generated from field: int64 close_ts_ms = 6;
@@ -523,19 +523,19 @@ export type ExecuteBacktestTrade = Message<"ant.v1.ExecuteBacktestTrade"> & {
   closeTsMs: bigint;
 
   /**
-   * @generated from field: double close_price = 7;
+   * @generated from field: string close_price = 7;
    */
-  closePrice: number;
+  closePrice: string;
 
   /**
-   * @generated from field: double pnl = 8;
+   * @generated from field: string pnl = 8;
    */
-  pnl: number;
+  pnl: string;
 
   /**
-   * @generated from field: double commission = 9;
+   * @generated from field: string commission = 9;
    */
-  commission: number;
+  commission: string;
 
   /**
    * @generated from field: string reason = 10;
@@ -647,21 +647,21 @@ export type ExecuteBacktestMetrics = Message<"ant.v1.ExecuteBacktestMetrics"> & 
   losingTrades: number;
 
   /**
-   * @generated from field: double average_profit = 10;
+   * @generated from field: string average_profit = 10;
    */
-  averageProfit: number;
+  averageProfit: string;
 
   /**
-   * @generated from field: double average_loss = 11;
+   * @generated from field: string average_loss = 11;
    */
-  averageLoss: number;
+  averageLoss: string;
 
   /**
    * absolute PnL (initial_capital * total_return)
    *
-   * @generated from field: double total_pnl_absolute = 12;
+   * @generated from field: string total_pnl_absolute = 12;
    */
-  totalPnlAbsolute: number;
+  totalPnlAbsolute: string;
 };
 
 /**

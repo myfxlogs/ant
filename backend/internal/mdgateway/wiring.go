@@ -121,15 +121,30 @@ func startBackfiller(ctx context.Context, deps RunnerDeps, agg *BarAggregator, p
 
 	// PG NOTIFY trigger for instant backfill on new subscription.
 	go func() {
-		conn, err := deps.PG.Acquire(ctx)
-		if err != nil {
-			log.Warn("backfiller: cannot acquire PG conn for NOTIFY", zap.Error(err))
-			return
-		}
-		notifier := &pgxNotifier{conn: conn}
-		trig := backfiller.NewPGTrigger(log, bf.BackfillAccount)
-		if err := trig.Run(ctx, notifier); err != nil {
-			log.Warn("backfiller: PG NOTIFY listener stopped", zap.Error(err))
+		for {
+			if ctx.Err() != nil {
+				return
+			}
+			conn, err := deps.PG.Acquire(ctx)
+			if err != nil {
+				log.Warn("backfiller: cannot acquire PG conn for NOTIFY, retrying", zap.Error(err))
+				select {
+				case <-ctx.Done():
+					return
+				case <-time.After(10 * time.Second):
+				}
+				continue
+			}
+			notifier := &pgxNotifier{conn: conn}
+			trig := backfiller.NewPGTrigger(log, bf.BackfillAccount)
+			if err := trig.Run(ctx, notifier); err != nil {
+				log.Warn("backfiller: PG NOTIFY listener stopped, reconnecting", zap.Error(err))
+			}
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(5 * time.Second):
+			}
 		}
 	}()
 

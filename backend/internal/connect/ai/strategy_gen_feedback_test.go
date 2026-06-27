@@ -15,9 +15,12 @@ Sharpe 0.45 偏低，最大回撤 28% 超过风控线。
 建议将 fast_period 从 5 调整到 10，加入 1% 止损。
 </section>
 <section type="code">
-` + "```python" + `
-def run(context):
-    return {'signal': 'buy', 'volume': 1.0}
+` + "```go" + `
+package main
+
+func (s *MyStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error) {
+    return &sdk.Signal{Action: sdk.ActionBuy}, nil
+}
 ` + "```" + `
 </section>`
 
@@ -40,8 +43,11 @@ def run(context):
 // TestParseSections_MissingSections verifies graceful handling of missing sections.
 func TestParseSections_MissingSections(t *testing.T) {
 	raw := `<section type="code">
-def run(context):
-    return {'signal': 'sell', 'volume': 0.5}
+package main
+
+func (s *MyStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error) {
+    return &sdk.Signal{Action: sdk.ActionSell}, nil
+}
 </section>`
 
 	sections := parseSections(raw)
@@ -68,7 +74,6 @@ func TestParseSections_Empty(t *testing.T) {
 
 // TestParseSections_PartialStream verifies progressive parsing during streaming.
 func TestParseSections_PartialStream(t *testing.T) {
-	// Simulate streaming chunks arriving one at a time
 	chunks := []string{
 		"<section type=\"analysis\">\n",
 		"Sharpe 0.45 偏低。",
@@ -84,8 +89,6 @@ func TestParseSections_PartialStream(t *testing.T) {
 
 		switch {
 		case i < 2:
-			// Analysis section not yet closed — should be empty (partial tag)
-			// Actually, since we use .*? (non-greedy), it won't match until </section>
 		case i >= 2 && i < 4:
 			if sections.Analysis == "" {
 				t.Errorf("chunk %d: expected analysis to be extracted once </section> arrives", i)
@@ -93,7 +96,6 @@ func TestParseSections_PartialStream(t *testing.T) {
 		}
 	}
 
-	// After all chunks: analysis should be complete, advice not yet (no </section>)
 	sections := parseSections(cumulative)
 	if sections.Analysis == "" {
 		t.Error("expected analysis to be complete after all chunks")
@@ -116,7 +118,7 @@ func TestBuildFeedbackPrompt(t *testing.T) {
 		Summary:      "策略方向正确但回撤偏大",
 	}
 	params := &ai.FeedbackPromptParams{
-		PreviousCode:    "def run(context):\n    return {'signal': 'buy', 'volume': 1.0}\n",
+		PreviousCode:    "package main\n\nfunc (s *MyStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error) {\n    return &sdk.Signal{Action: sdk.ActionBuy}, nil\n}\n",
 		Metrics:         metrics,
 		FeedbackMessage: "太激进了，加个止损",
 		FeedbackHints:   "matched keyword: 太激进",
@@ -124,7 +126,6 @@ func TestBuildFeedbackPrompt(t *testing.T) {
 
 	system, user := builder.BuildFeedbackPrompt(params)
 
-	// System prompt must include required elements
 	if system == "" {
 		t.Fatal("system prompt is empty")
 	}
@@ -136,9 +137,8 @@ func TestBuildFeedbackPrompt(t *testing.T) {
 		{"section tags", "<section type=\"analysis\">"},
 		{"section tags", "<section type=\"advice\">"},
 		{"section tags", "<section type=\"code\">"},
-		{"contract text", "def run(context)"},
-		{"forbidden patterns", "eval/exec"},
-		{"previous code", "def run(context)"},
+		{"contract text", "sdk.Strategy"},
+		{"previous code", "func (s *MyStrategy)"},
 		{"backtest metrics", "Sharpe 0.82"},
 		{"backtest metrics", "最大回撤 18.5"},
 		{"feedback hints", "太激进"},
@@ -150,7 +150,6 @@ func TestBuildFeedbackPrompt(t *testing.T) {
 		}
 	}
 
-	// User prompt must include the feedback message
 	if !contains(user, "太激进了，加个止损") {
 		t.Error("user prompt missing feedback message")
 	}
@@ -163,7 +162,7 @@ func TestBuildFeedbackPrompt(t *testing.T) {
 func TestBuildFeedbackPrompt_NilMetrics(t *testing.T) {
 	builder := ai.NewStrategyPromptBuilder()
 	params := &ai.FeedbackPromptParams{
-		PreviousCode:    "def run(context):\n    return {'signal': 'buy'}\n",
+		PreviousCode:    "package main\n\nfunc (s *MyStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error) {\n    return nil, nil\n}\n",
 		Metrics:         nil,
 		FeedbackMessage: "换个方向",
 		FeedbackHints:   "",
@@ -174,8 +173,7 @@ func TestBuildFeedbackPrompt_NilMetrics(t *testing.T) {
 	if system == "" {
 		t.Fatal("system prompt is empty")
 	}
-	// Should not crash, and should include default hints
-	if !contains(system, "def run(context)") {
+	if !contains(system, "func (s *MyStrategy)") {
 		t.Error("missing previous code in prompt")
 	}
 	if user == "" {
@@ -187,13 +185,16 @@ func TestBuildFeedbackPrompt_NilMetrics(t *testing.T) {
 func TestParseSections_FencedCodeBlock(t *testing.T) {
 	raw := `<section type="analysis">Test analysis.</section>
 <section type="code">
-` + "```python" + `
-import numpy as np
+` + "```go" + `
+package main
 
-# @param fast_period 10 range=5:50:5
-def run(context):
-    close = np.array(context['close'])
-    return {'signal': 'buy', 'volume': 1.0}
+import (
+    "anttrader/strategy/sdk"
+)
+
+func (s *MyStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error) {
+    return &sdk.Signal{Action: sdk.ActionBuy}, nil
+}
 ` + "```" + `
 </section>`
 

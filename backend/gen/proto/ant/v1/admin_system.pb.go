@@ -265,238 +265,6 @@ func (x *GetMetricsResponse) GetMetrics() []*MetricPoint {
 	return nil
 }
 
-type ResolveAlertRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AlertId       string                 `protobuf:"bytes,1,opt,name=alert_id,json=alertId,proto3" json:"alert_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ResolveAlertRequest) Reset() {
-	*x = ResolveAlertRequest{}
-	mi := &file_admin_system_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ResolveAlertRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ResolveAlertRequest) ProtoMessage() {}
-
-func (x *ResolveAlertRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_system_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ResolveAlertRequest.ProtoReflect.Descriptor instead.
-func (*ResolveAlertRequest) Descriptor() ([]byte, []int) {
-	return file_admin_system_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *ResolveAlertRequest) GetAlertId() string {
-	if x != nil {
-		return x.AlertId
-	}
-	return ""
-}
-
-type ResolveAlertResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ResolveAlertResponse) Reset() {
-	*x = ResolveAlertResponse{}
-	mi := &file_admin_system_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ResolveAlertResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ResolveAlertResponse) ProtoMessage() {}
-
-func (x *ResolveAlertResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_system_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ResolveAlertResponse.ProtoReflect.Descriptor instead.
-func (*ResolveAlertResponse) Descriptor() ([]byte, []int) {
-	return file_admin_system_proto_rawDescGZIP(), []int{6}
-}
-
-type ClearCacheRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ClearCacheRequest) Reset() {
-	*x = ClearCacheRequest{}
-	mi := &file_admin_system_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ClearCacheRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ClearCacheRequest) ProtoMessage() {}
-
-func (x *ClearCacheRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_system_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ClearCacheRequest.ProtoReflect.Descriptor instead.
-func (*ClearCacheRequest) Descriptor() ([]byte, []int) {
-	return file_admin_system_proto_rawDescGZIP(), []int{7}
-}
-
-type ClearCacheResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ClearCacheResponse) Reset() {
-	*x = ClearCacheResponse{}
-	mi := &file_admin_system_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ClearCacheResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ClearCacheResponse) ProtoMessage() {}
-
-func (x *ClearCacheResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_system_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ClearCacheResponse.ProtoReflect.Descriptor instead.
-func (*ClearCacheResponse) Descriptor() ([]byte, []int) {
-	return file_admin_system_proto_rawDescGZIP(), []int{8}
-}
-
-type InvalidateCacheRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Tags          []string               `protobuf:"bytes,1,rep,name=tags,proto3" json:"tags,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *InvalidateCacheRequest) Reset() {
-	*x = InvalidateCacheRequest{}
-	mi := &file_admin_system_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *InvalidateCacheRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*InvalidateCacheRequest) ProtoMessage() {}
-
-func (x *InvalidateCacheRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_system_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use InvalidateCacheRequest.ProtoReflect.Descriptor instead.
-func (*InvalidateCacheRequest) Descriptor() ([]byte, []int) {
-	return file_admin_system_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *InvalidateCacheRequest) GetTags() []string {
-	if x != nil {
-		return x.Tags
-	}
-	return nil
-}
-
-type InvalidateCacheResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *InvalidateCacheResponse) Reset() {
-	*x = InvalidateCacheResponse{}
-	mi := &file_admin_system_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *InvalidateCacheResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*InvalidateCacheResponse) ProtoMessage() {}
-
-func (x *InvalidateCacheResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_system_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use InvalidateCacheResponse.ProtoReflect.Descriptor instead.
-func (*InvalidateCacheResponse) Descriptor() ([]byte, []int) {
-	return file_admin_system_proto_rawDescGZIP(), []int{10}
-}
-
 var File_admin_system_proto protoreflect.FileDescriptor
 
 const file_admin_system_proto_rawDesc = "" +
@@ -518,23 +286,11 @@ const file_admin_system_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x13\n" +
 	"\x11GetMetricsRequest\"C\n" +
 	"\x12GetMetricsResponse\x12-\n" +
-	"\ametrics\x18\x01 \x03(\v2\x13.ant.v1.MetricPointR\ametrics\"0\n" +
-	"\x13ResolveAlertRequest\x12\x19\n" +
-	"\balert_id\x18\x01 \x01(\tR\aalertId\"\x16\n" +
-	"\x14ResolveAlertResponse\"\x13\n" +
-	"\x11ClearCacheRequest\"\x14\n" +
-	"\x12ClearCacheResponse\",\n" +
-	"\x16InvalidateCacheRequest\x12\x12\n" +
-	"\x04tags\x18\x01 \x03(\tR\x04tags\"\x19\n" +
-	"\x17InvalidateCacheResponse2\x85\x03\n" +
+	"\ametrics\x18\x01 \x03(\v2\x13.ant.v1.MetricPointR\ametrics2\xa1\x01\n" +
 	"\x12AdminSystemService\x12F\n" +
 	"\vHealthCheck\x12\x1a.ant.v1.HealthCheckRequest\x1a\x1b.ant.v1.HealthCheckResponse\x12C\n" +
 	"\n" +
-	"GetMetrics\x12\x19.ant.v1.GetMetricsRequest\x1a\x1a.ant.v1.GetMetricsResponse\x12I\n" +
-	"\fResolveAlert\x12\x1b.ant.v1.ResolveAlertRequest\x1a\x1c.ant.v1.ResolveAlertResponse\x12C\n" +
-	"\n" +
-	"ClearCache\x12\x19.ant.v1.ClearCacheRequest\x1a\x1a.ant.v1.ClearCacheResponse\x12R\n" +
-	"\x0fInvalidateCache\x12\x1e.ant.v1.InvalidateCacheRequest\x1a\x1f.ant.v1.InvalidateCacheResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"GetMetrics\x12\x19.ant.v1.GetMetricsRequest\x1a\x1a.ant.v1.GetMetricsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_admin_system_proto_rawDescOnce sync.Once
@@ -548,39 +304,27 @@ func file_admin_system_proto_rawDescGZIP() []byte {
 	return file_admin_system_proto_rawDescData
 }
 
-var file_admin_system_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_admin_system_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_admin_system_proto_goTypes = []any{
-	(*HealthCheckRequest)(nil),      // 0: ant.v1.HealthCheckRequest
-	(*HealthCheckResponse)(nil),     // 1: ant.v1.HealthCheckResponse
-	(*MetricPoint)(nil),             // 2: ant.v1.MetricPoint
-	(*GetMetricsRequest)(nil),       // 3: ant.v1.GetMetricsRequest
-	(*GetMetricsResponse)(nil),      // 4: ant.v1.GetMetricsResponse
-	(*ResolveAlertRequest)(nil),     // 5: ant.v1.ResolveAlertRequest
-	(*ResolveAlertResponse)(nil),    // 6: ant.v1.ResolveAlertResponse
-	(*ClearCacheRequest)(nil),       // 7: ant.v1.ClearCacheRequest
-	(*ClearCacheResponse)(nil),      // 8: ant.v1.ClearCacheResponse
-	(*InvalidateCacheRequest)(nil),  // 9: ant.v1.InvalidateCacheRequest
-	(*InvalidateCacheResponse)(nil), // 10: ant.v1.InvalidateCacheResponse
-	nil,                             // 11: ant.v1.MetricPoint.LabelsEntry
+	(*HealthCheckRequest)(nil),  // 0: ant.v1.HealthCheckRequest
+	(*HealthCheckResponse)(nil), // 1: ant.v1.HealthCheckResponse
+	(*MetricPoint)(nil),         // 2: ant.v1.MetricPoint
+	(*GetMetricsRequest)(nil),   // 3: ant.v1.GetMetricsRequest
+	(*GetMetricsResponse)(nil),  // 4: ant.v1.GetMetricsResponse
+	nil,                         // 5: ant.v1.MetricPoint.LabelsEntry
 }
 var file_admin_system_proto_depIdxs = []int32{
-	11, // 0: ant.v1.MetricPoint.labels:type_name -> ant.v1.MetricPoint.LabelsEntry
-	2,  // 1: ant.v1.GetMetricsResponse.metrics:type_name -> ant.v1.MetricPoint
-	0,  // 2: ant.v1.AdminSystemService.HealthCheck:input_type -> ant.v1.HealthCheckRequest
-	3,  // 3: ant.v1.AdminSystemService.GetMetrics:input_type -> ant.v1.GetMetricsRequest
-	5,  // 4: ant.v1.AdminSystemService.ResolveAlert:input_type -> ant.v1.ResolveAlertRequest
-	7,  // 5: ant.v1.AdminSystemService.ClearCache:input_type -> ant.v1.ClearCacheRequest
-	9,  // 6: ant.v1.AdminSystemService.InvalidateCache:input_type -> ant.v1.InvalidateCacheRequest
-	1,  // 7: ant.v1.AdminSystemService.HealthCheck:output_type -> ant.v1.HealthCheckResponse
-	4,  // 8: ant.v1.AdminSystemService.GetMetrics:output_type -> ant.v1.GetMetricsResponse
-	6,  // 9: ant.v1.AdminSystemService.ResolveAlert:output_type -> ant.v1.ResolveAlertResponse
-	8,  // 10: ant.v1.AdminSystemService.ClearCache:output_type -> ant.v1.ClearCacheResponse
-	10, // 11: ant.v1.AdminSystemService.InvalidateCache:output_type -> ant.v1.InvalidateCacheResponse
-	7,  // [7:12] is the sub-list for method output_type
-	2,  // [2:7] is the sub-list for method input_type
-	2,  // [2:2] is the sub-list for extension type_name
-	2,  // [2:2] is the sub-list for extension extendee
-	0,  // [0:2] is the sub-list for field type_name
+	5, // 0: ant.v1.MetricPoint.labels:type_name -> ant.v1.MetricPoint.LabelsEntry
+	2, // 1: ant.v1.GetMetricsResponse.metrics:type_name -> ant.v1.MetricPoint
+	0, // 2: ant.v1.AdminSystemService.HealthCheck:input_type -> ant.v1.HealthCheckRequest
+	3, // 3: ant.v1.AdminSystemService.GetMetrics:input_type -> ant.v1.GetMetricsRequest
+	1, // 4: ant.v1.AdminSystemService.HealthCheck:output_type -> ant.v1.HealthCheckResponse
+	4, // 5: ant.v1.AdminSystemService.GetMetrics:output_type -> ant.v1.GetMetricsResponse
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_admin_system_proto_init() }
@@ -594,7 +338,7 @@ func file_admin_system_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_admin_system_proto_rawDesc), len(file_admin_system_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

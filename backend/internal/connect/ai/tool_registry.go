@@ -119,8 +119,7 @@ type complianceTool struct{}
 func (t *complianceTool) Name() string { return "compliance_check" }
 
 func (t *complianceTool) Run(_ context.Context, in ToolInput) ToolOutput {
-	// Security scanning is done by Python validate_strategy_code.
-	// Only run structural quality checks here.
+	// Run structural quality checks on Go strategy code.
 	var allIssues []ai.ComplianceIssue
 	for _, msg := range ai.StructuralWarnings(in.Code) {
 		allIssues = append(allIssues, ai.ComplianceIssue{

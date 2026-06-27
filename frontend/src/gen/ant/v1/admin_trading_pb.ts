@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file admin_trading.proto.
  */
 export const file_admin_trading: GenFile = /*@__PURE__*/
-  fileDesc("ChNhZG1pbl90cmFkaW5nLnByb3RvEgZhbnQudjEiQAoYR2V0VHJhZGluZ1N1bW1hcnlSZXF1ZXN0EhIKCnN0YXJ0X2RhdGUYASABKAkSEAoIZW5kX2RhdGUYAiABKAkikgIKDlRyYWRpbmdTdW1tYXJ5EiUKBnBlcmlvZBgBIAEoCzIVLmFudC52MS5UcmFkaW5nUGVyaW9kEikKCG92ZXJ2aWV3GAIgASgLMhcuYW50LnYxLlRyYWRpbmdPdmVydmlldxIlCgd0cmFkaW5nGAMgASgLMhQuYW50LnYxLlRyYWRpbmdTdGF0cxI7CgtieV9wbGF0Zm9ybRgEIAMoCzImLmFudC52MS5UcmFkaW5nU3VtbWFyeS5CeVBsYXRmb3JtRW50cnkaSgoPQnlQbGF0Zm9ybUVudHJ5EgsKA2tleRgBIAEoCRImCgV2YWx1ZRgCIAEoCzIXLmFudC52MS5QbGF0Zm9ybVN1bW1hcnk6AjgBIjUKDVRyYWRpbmdQZXJpb2QSEgoKc3RhcnRfZGF0ZRgBIAEoCRIQCghlbmRfZGF0ZRgCIAEoCSJwCg9UcmFkaW5nT3ZlcnZpZXcSEwoLdG90YWxfdXNlcnMYASABKAMSFAoMYWN0aXZlX3VzZXJzGAIgASgDEhYKDnRvdGFsX2FjY291bnRzGAMgASgDEhoKEmNvbm5lY3RlZF9hY2NvdW50cxgEIAEoAyKnAQoMVHJhZGluZ1N0YXRzEhQKDHRvdGFsX29yZGVycxgBIAEoAxIVCg1jbG9zZWRfb3JkZXJzGAIgASgDEhYKDnBlbmRpbmdfb3JkZXJzGAMgASgDEhQKDHRvdGFsX3ZvbHVtZRgEIAEoARIUCgx0b3RhbF9wcm9maXQYBSABKAESEgoKdG90YWxfbG9zcxgGIAEoARISCgpuZXRfcHJvZml0GAcgASgBIkMKD1BsYXRmb3JtU3VtbWFyeRIQCghhY2NvdW50cxgBIAEoAxIOCgZvcmRlcnMYAiABKAMSDgoGdm9sdW1lGAMgASgBMmQKE0FkbWluVHJhZGluZ1NlcnZpY2USTQoRR2V0VHJhZGluZ1N1bW1hcnkSIC5hbnQudjEuR2V0VHJhZGluZ1N1bW1hcnlSZXF1ZXN0GhYuYW50LnYxLlRyYWRpbmdTdW1tYXJ5QiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("ChNhZG1pbl90cmFkaW5nLnByb3RvEgZhbnQudjEiQAoYR2V0VHJhZGluZ1N1bW1hcnlSZXF1ZXN0EhIKCnN0YXJ0X2RhdGUYASABKAkSEAoIZW5kX2RhdGUYAiABKAkikgIKDlRyYWRpbmdTdW1tYXJ5EiUKBnBlcmlvZBgBIAEoCzIVLmFudC52MS5UcmFkaW5nUGVyaW9kEikKCG92ZXJ2aWV3GAIgASgLMhcuYW50LnYxLlRyYWRpbmdPdmVydmlldxIlCgd0cmFkaW5nGAMgASgLMhQuYW50LnYxLlRyYWRpbmdTdGF0cxI7CgtieV9wbGF0Zm9ybRgEIAMoCzImLmFudC52MS5UcmFkaW5nU3VtbWFyeS5CeVBsYXRmb3JtRW50cnkaSgoPQnlQbGF0Zm9ybUVudHJ5EgsKA2tleRgBIAEoCRImCgV2YWx1ZRgCIAEoCzIXLmFudC52MS5QbGF0Zm9ybVN1bW1hcnk6AjgBIjUKDVRyYWRpbmdQZXJpb2QSEgoKc3RhcnRfZGF0ZRgBIAEoCRIQCghlbmRfZGF0ZRgCIAEoCSJwCg9UcmFkaW5nT3ZlcnZpZXcSEwoLdG90YWxfdXNlcnMYASABKAMSFAoMYWN0aXZlX3VzZXJzGAIgASgDEhYKDnRvdGFsX2FjY291bnRzGAMgASgDEhoKEmNvbm5lY3RlZF9hY2NvdW50cxgEIAEoAyKnAQoMVHJhZGluZ1N0YXRzEhQKDHRvdGFsX29yZGVycxgBIAEoAxIVCg1jbG9zZWRfb3JkZXJzGAIgASgDEhYKDnBlbmRpbmdfb3JkZXJzGAMgASgDEhQKDHRvdGFsX3ZvbHVtZRgEIAEoCRIUCgx0b3RhbF9wcm9maXQYBSABKAkSEgoKdG90YWxfbG9zcxgGIAEoCRISCgpuZXRfcHJvZml0GAcgASgJIkMKD1BsYXRmb3JtU3VtbWFyeRIQCghhY2NvdW50cxgBIAEoAxIOCgZvcmRlcnMYAiABKAMSDgoGdm9sdW1lGAMgASgJMmQKE0FkbWluVHJhZGluZ1NlcnZpY2USTQoRR2V0VHJhZGluZ1N1bW1hcnkSIC5hbnQudjEuR2V0VHJhZGluZ1N1bW1hcnlSZXF1ZXN0GhYuYW50LnYxLlRyYWRpbmdTdW1tYXJ5QiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.GetTradingSummaryRequest
@@ -140,24 +140,24 @@ export type TradingStats = Message<"ant.v1.TradingStats"> & {
   pendingOrders: bigint;
 
   /**
-   * @generated from field: double total_volume = 4;
+   * @generated from field: string total_volume = 4;
    */
-  totalVolume: number;
+  totalVolume: string;
 
   /**
-   * @generated from field: double total_profit = 5;
+   * @generated from field: string total_profit = 5;
    */
-  totalProfit: number;
+  totalProfit: string;
 
   /**
-   * @generated from field: double total_loss = 6;
+   * @generated from field: string total_loss = 6;
    */
-  totalLoss: number;
+  totalLoss: string;
 
   /**
-   * @generated from field: double net_profit = 7;
+   * @generated from field: string net_profit = 7;
    */
-  netProfit: number;
+  netProfit: string;
 };
 
 /**
@@ -182,9 +182,9 @@ export type PlatformSummary = Message<"ant.v1.PlatformSummary"> & {
   orders: bigint;
 
   /**
-   * @generated from field: double volume = 3;
+   * @generated from field: string volume = 3;
    */
-  volume: number;
+  volume: string;
 };
 
 /**

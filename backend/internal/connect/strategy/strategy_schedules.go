@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 	"google.golang.org/protobuf/proto"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -197,6 +199,7 @@ func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Reques
 
 		rows, err := s.svc.ListSchedules(ctx, uid)
 		if err != nil {
+			s.log.Warn("WatchSchedules: list failed", zap.Error(err))
 			continue
 		}
 		// Compute a simple hash to detect changes
@@ -220,4 +223,44 @@ func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Reques
 			return err
 		}
 	}
+}
+
+// --- Schedule proto converters (stubs) ---
+
+func scheduleRowToProto(r *service.ScheduleRow) *antv1.StrategySchedule {
+	if r == nil {
+		return nil
+	}
+	s := &antv1.StrategySchedule{
+		Id:        r.ID.String(),
+		AccountId: r.AccountID.String(),
+		Symbol:    r.Symbol,
+		Timeframe: r.Timeframe,
+	}
+	if r.TemplateID != uuid.Nil {
+		s.TemplateId = r.TemplateID.String()
+	}
+	return s
+}
+
+func scheduleParamsToProto(params map[string]string) []byte {
+	if len(params) == 0 {
+		return []byte("{}")
+	}
+	b, err := json.Marshal(params)
+	if err != nil {
+		return []byte("{}")
+	}
+	return b
+}
+
+func stringListToProto(list []string) []byte {
+	if len(list) == 0 {
+		return []byte("[]")
+	}
+	b, err := json.Marshal(list)
+	if err != nil {
+		return []byte("[]")
+	}
+	return b
 }

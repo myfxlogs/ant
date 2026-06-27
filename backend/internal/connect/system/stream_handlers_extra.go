@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"connectrpc.com/connect"
@@ -198,9 +199,9 @@ func (s *StreamServer) computeSummary(ctx context.Context, userID string) *antv1
 		return nil
 	}
 	return &antv1.UserSummaryEvent{
-		TotalBalance:   summary.TotalBalance,
-		TotalEquity:    summary.TotalEquity,
-		TotalProfit:    summary.TotalProfit,
+		TotalBalance:   strconv.FormatFloat(summary.TotalBalance, 'f', -1, 64),
+		TotalEquity:    strconv.FormatFloat(summary.TotalEquity, 'f', -1, 64),
+		TotalProfit:    strconv.FormatFloat(summary.TotalProfit, 'f', -1, 64),
 		AccountCount:   summary.AccountCount,
 		ConnectedCount: summary.ConnectedCount,
 		UpdatedAt:      timestamppb.Now(),

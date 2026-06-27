@@ -36,14 +36,14 @@ message TradingStats {
   int64 total_orders = 1;
   int64 closed_orders = 2;
   int64 pending_orders = 3;
-  double total_volume = 4;
-  double total_profit = 5;
-  double total_loss = 6;
-  double net_profit = 7;
+  string total_volume = 4;
+  string total_profit = 5;
+  string total_loss = 6;
+  string net_profit = 7;
 }
 
 message PlatformSummary {
   int64 accounts = 1;
   int64 orders = 2;
-  double volume = 3;
+  string volume = 3;
 }

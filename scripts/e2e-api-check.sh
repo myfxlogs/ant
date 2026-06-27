@@ -54,7 +54,7 @@ echo ""
 echo "── 1. Auth ──"
 
 LOGIN_RESP=$(api POST /ant.v1.AuthService/Login "{\"login\":\"$EMAIL\",\"password\":\"$PASS\"}")
-TOKEN=$(echo "$LOGIN_RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('accessToken',''))" 2>/dev/null || true)
+TOKEN=$(echo "$LOGIN_RESP" | jq -r '.accessToken // ""' 2>/dev/null || true)
 
 if [ -n "$TOKEN" ]; then
   pass "Login succeeded, got JWT (${#TOKEN} chars)"
@@ -71,7 +71,7 @@ echo ""
 echo "── 2. Wallet User Ops ──"
 
 WALLET_RESP=$(api POST /ant.v1.WalletService/GetWallet "{}")
-WALLET_ID=$(echo "$WALLET_RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); w=d.get('wallet',{}); print(w.get('id',''))" 2>/dev/null || true)
+WALLET_ID=$(echo "$WALLET_RESP" | jq -r '.wallet.id // ""' 2>/dev/null || true)
 
 if [ -n "$WALLET_ID" ]; then
   pass "GetWallet returned wallet id=$WALLET_ID"
@@ -81,7 +81,7 @@ else
 fi
 
 TX_RESP=$(api POST /ant.v1.WalletService/ListTransactions "{\"page\":1,\"pageSize\":5}")
-TX_FIRST=$(echo "$TX_RESP" | python3 -c "import json,sys; txs=json.load(sys.stdin).get('transactions',[]); print(len(txs))" 2>/dev/null || true)
+TX_FIRST=$(echo "$TX_RESP" | jq -r '.transactions | length' 2>/dev/null || true)
 if [ "${TX_FIRST:-0}" -ge 0 ] 2>/dev/null; then
   pass "ListTransactions returned ${TX_FIRST} transactions"
 else
@@ -96,12 +96,12 @@ echo "── 3. Admin Wallet ──"
 
 # Get current user ID
 ME_RESP=$(api POST /ant.v1.WalletService/GetWallet "{}")
-MY_USER_ID=$(echo "$ME_RESP" | python3 -c "import json,sys; print(json.load(sys.stdin)['wallet']['userId'])" 2>/dev/null || true)
+MY_USER_ID=$(echo "$ME_RESP" | jq -r '.wallet.userId' 2>/dev/null || true)
 
 # Test: AdjustBalance (admin adding 0.01)
 ADJ_RESP=$(api POST /ant.v1.WalletService/AdjustBalance \
   "{\"userId\":\"$MY_USER_ID\",\"amount\":\"0.01\",\"description\":\"e2e test credit\"}")
-ADJ_BAL=$(echo "$ADJ_RESP" | python3 -c "import json,sys; w=json.load(sys.stdin).get('wallet',{}); print(w.get('balance','ERROR'))" 2>/dev/null || true)
+ADJ_BAL=$(echo "$ADJ_RESP" | jq -r '.wallet.balance // "ERROR"' 2>/dev/null || true)
 if [ "$ADJ_BAL" != "ERROR" ]; then
   pass "AdjustBalance succeeded, balance=$ADJ_BAL"
 else
@@ -112,7 +112,7 @@ fi
 # Reverse the test adjustment
 REV_RESP=$(api POST /ant.v1.WalletService/AdjustBalance \
   "{\"userId\":\"$MY_USER_ID\",\"amount\":\"-0.01\",\"description\":\"e2e test reversal\"}")
-REV_BAL=$(echo "$REV_RESP" | python3 -c "import json,sys; w=json.load(sys.stdin).get('wallet',{}); print(w.get('balance','ERROR'))" 2>/dev/null || true)
+REV_BAL=$(echo "$REV_RESP" | jq -r '.wallet.balance // "ERROR"' 2>/dev/null || true)
 if [ "$REV_BAL" != "ERROR" ]; then
   pass "AdjustBalance reversal succeeded, balance=$REV_BAL"
 else
@@ -128,13 +128,13 @@ echo "── 4. Admin ListUsers ──"
 # Active only (default)
 ACTIVE_RESP=$(api POST /ant.v1.AdminUserService/ListUsers \
   "{\"page\":1,\"pageSize\":100}")
-ACTIVE_TOTAL=$(echo "$ACTIVE_RESP" | python3 -c "import json,sys; print(json.load(sys.stdin).get('total',0))" 2>/dev/null || true)
+ACTIVE_TOTAL=$(echo "$ACTIVE_RESP" | jq -r '.total // 0' 2>/dev/null || true)
 pass "ListUsers (active, default) returned total=$ACTIVE_TOTAL"
 
 # All (including deleted)
 ALL_RESP=$(api POST /ant.v1.AdminUserService/ListUsers \
   "{\"page\":1,\"pageSize\":100,\"deletedFilter\":\"all\"}")
-ALL_TOTAL=$(echo "$ALL_RESP" | python3 -c "import json,sys; print(json.load(sys.stdin).get('total',0))" 2>/dev/null || true)
+ALL_TOTAL=$(echo "$ALL_RESP" | jq -r '.total // 0' 2>/dev/null || true)
 if [ "$ALL_TOTAL" -ge "$ACTIVE_TOTAL" ] 2>/dev/null; then
   pass "ListUsers (deletedFilter=all) returned total=$ALL_TOTAL (>= $ACTIVE_TOTAL active)"
 else
@@ -144,7 +144,7 @@ fi
 # Deleted only
 DEL_RESP=$(api POST /ant.v1.AdminUserService/ListUsers \
   "{\"page\":1,\"pageSize\":100,\"deletedFilter\":\"deleted\"}")
-DEL_TOTAL=$(echo "$DEL_RESP" | python3 -c "import json,sys; print(json.load(sys.stdin).get('total',0))" 2>/dev/null || true)
+DEL_TOTAL=$(echo "$DEL_RESP" | jq -r '.total // 0' 2>/dev/null || true)
 pass "ListUsers (deletedFilter=deleted) returned total=$DEL_TOTAL"
 
 # ══════════════════════════════════════════════════════════════════
@@ -165,7 +165,7 @@ if [ -z "$TEST_USER_ROW" ]; then
     TEST_EMAIL="e2e-test-$(date +%s)@test.com"
     CREATE_RESP=$(api POST /ant.v1.AdminUserService/CreateUser \
       "{\"username\":\"$TEST_EMAIL\",\"email\":\"$TEST_EMAIL\",\"password\":\"test123456\",\"role\":\"user\"}")
-    TEST_USER_ID=$(echo "$CREATE_RESP" | python3 -c "import json,sys; print(json.load(sys.stdin).get('id',''))" 2>/dev/null || true)
+    TEST_USER_ID=$(echo "$CREATE_RESP" | jq -r '.id // ""' 2>/dev/null || true)
     if [ -n "$TEST_USER_ID" ]; then
       pass "Created test user: $TEST_EMAIL (id=$TEST_USER_ID)"
     else
@@ -191,7 +191,7 @@ if [ -n "${TEST_USER_ID:-}" ]; then
 
   # Soft delete
   DEL_RESP=$(api POST /ant.v1.AdminUserService/DeleteUser "{\"id\":\"$TEST_USER_ID\"}")
-  DEL_OK=$(echo "$DEL_RESP" | python3 -c "import json,sys; print('{}' in json.dumps(sys.stdin.read()))" 2>/dev/null || echo "ok")
+  DEL_OK=$(echo "$DEL_RESP" | jq -r 'if . == {} then "ok" else empty end' 2>/dev/null || echo "ok")
   if [ -z "$DEL_RESP" ] || echo "$DEL_RESP" | grep -q "error\|Error\|code"; then
     fail "DeleteUser failed"
     echo "  Response: ${DEL_RESP:0:200}"

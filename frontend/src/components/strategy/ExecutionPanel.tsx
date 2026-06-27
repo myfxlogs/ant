@@ -14,7 +14,7 @@ import {
 import StepProgress from './StepProgress';
 import DiffView from './DiffView';
 import { executePlan, diagnosePlan, type ExecuteCallbacks, type PlanCallbacks } from '@/client/strategyPlan';
-import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 import type { ToolCall, ToolResult, BacktestMetricsMsg } from '@/gen/ant/v1/strategy_execution_pb';
 import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
@@ -73,7 +73,7 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
               const out = JSON.parse(tr.outputJson) as { run_id: string };
               if (out.run_id) {
                 watchRef.current?.();
-                watchRef.current = pythonStrategyApi.watchBacktestRun(out.run_id, (update: BacktestRunUpdate) => {
+                watchRef.current = strategyRuntimeApi.watchBacktestRun(out.run_id, (update: BacktestRunUpdate) => {
                   if (isSucceededRun(update.run) && update.metrics) {
                     setMetrics({
                       totalReturn: update.metrics.totalReturn, sharpeRatio: update.metrics.sharpeRatio,

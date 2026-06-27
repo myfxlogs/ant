@@ -10,14 +10,14 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file ai_gate.proto.
  */
 export const file_ai_gate: GenFile = /*@__PURE__*/
-  fileDesc("Cg1haV9nYXRlLnByb3RvEgZhbnQudjEi2gEKGFJ1bkdhdGVFdmFsdWF0aW9uUmVxdWVzdBIXCg9iYWNrdGVzdF9ydW5faWQYASABKAkSEgoKZXhwcmVzc2lvbhgCIAEoCRIUCgxudW1fYXR0ZW1wdHMYAyABKAUSEgoKcGFwZXJfZGF5cxgEIAEoBRIVCg1wYXBlcl9uZXRfcG5sGAUgASgBEhgKEHBhcGVyX25ldF9yZXR1cm4YBiABKAESGwoTYmFja3Rlc3RfbmV0X3JldHVybhgHIAEoARIZChFwYXBlcl90cmFkZV9jb3VudBgIIAEoBSJoChRHYXRlRXZhbHVhdGlvblVwZGF0ZRIgCgRnYXRlGAEgASgLMhIuYW50LnYxLkdhdGVSZXN1bHQSLgoJY29tcGxldGVkGAIgASgLMhsuYW50LnYxLkdhdGVQaXBlbGluZVN1bW1hcnkibwoKR2F0ZVJlc3VsdBIMCgRnYXRlGAEgASgJEg4KBnBhc3NlZBgCIAEoCBIOCgZyZWFzb24YAyABKAkSDQoFc2NvcmUYBCABKAESEwoLZHVyYXRpb25fbXMYBSABKAMSDwoHc2tpcHBlZBgGIAEoCCJlChNHYXRlUGlwZWxpbmVTdW1tYXJ5Eg4KBnBhc3NlZBgBIAEoCBISCgpmaXJzdF9mYWlsGAIgASgJEg8KB3N1bW1hcnkYAyABKAkSGQoRdG90YWxfZHVyYXRpb25fbXMYBCABKAMyYAoLR2F0ZVNlcnZpY2USUQoNUnVuRXZhbHVhdGlvbhIgLmFudC52MS5SdW5HYXRlRXZhbHVhdGlvblJlcXVlc3QaHC5hbnQudjEuR2F0ZUV2YWx1YXRpb25VcGRhdGUwAUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
+  fileDesc("Cg1haV9nYXRlLnByb3RvEgZhbnQudjEi2gEKGFJ1bkdhdGVFdmFsdWF0aW9uUmVxdWVzdBIXCg9iYWNrdGVzdF9ydW5faWQYASABKAkSEgoKZXhwcmVzc2lvbhgCIAEoCRIUCgxudW1fYXR0ZW1wdHMYAyABKAUSEgoKcGFwZXJfZGF5cxgEIAEoBRIVCg1wYXBlcl9uZXRfcG5sGAUgASgJEhgKEHBhcGVyX25ldF9yZXR1cm4YBiABKAESGwoTYmFja3Rlc3RfbmV0X3JldHVybhgHIAEoARIZChFwYXBlcl90cmFkZV9jb3VudBgIIAEoBSJoChRHYXRlRXZhbHVhdGlvblVwZGF0ZRIgCgRnYXRlGAEgASgLMhIuYW50LnYxLkdhdGVSZXN1bHQSLgoJY29tcGxldGVkGAIgASgLMhsuYW50LnYxLkdhdGVQaXBlbGluZVN1bW1hcnkibwoKR2F0ZVJlc3VsdBIMCgRnYXRlGAEgASgJEg4KBnBhc3NlZBgCIAEoCBIOCgZyZWFzb24YAyABKAkSDQoFc2NvcmUYBCABKAESEwoLZHVyYXRpb25fbXMYBSABKAMSDwoHc2tpcHBlZBgGIAEoCCJlChNHYXRlUGlwZWxpbmVTdW1tYXJ5Eg4KBnBhc3NlZBgBIAEoCBISCgpmaXJzdF9mYWlsGAIgASgJEg8KB3N1bW1hcnkYAyABKAkSGQoRdG90YWxfZHVyYXRpb25fbXMYBCABKAMyYAoLR2F0ZVNlcnZpY2USUQoNUnVuRXZhbHVhdGlvbhIgLmFudC52MS5SdW5HYXRlRXZhbHVhdGlvblJlcXVlc3QaHC5hbnQudjEuR2F0ZUV2YWx1YXRpb25VcGRhdGUwAUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
 
 /**
  * @generated from message ant.v1.RunGateEvaluationRequest
  */
 export type RunGateEvaluationRequest = Message<"ant.v1.RunGateEvaluationRequest"> & {
   /**
-   * backtest_run_id from a completed backtest run (PythonStrategyService.StartBacktestRun).
+   * backtest_run_id from a completed backtest run (StrategyRuntimeService.StartBacktestRun).
    *
    * @generated from field: string backtest_run_id = 1;
    */
@@ -47,9 +47,9 @@ export type RunGateEvaluationRequest = Message<"ant.v1.RunGateEvaluationRequest"
   /**
    * Optional: paper trading Net P&L (gate skipped if paper_days == 0).
    *
-   * @generated from field: double paper_net_pnl = 5;
+   * @generated from field: string paper_net_pnl = 5;
    */
-  paperNetPnl: number;
+  paperNetPnl: string;
 
   /**
    * Optional: paper trading net return (gate skipped if paper_days == 0).

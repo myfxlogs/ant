@@ -181,8 +181,54 @@ func (lr *LiveRunner) Run(ctx context.Context) error {
 				bars = bars[len(bars)-500:]
 			}
 			barSeries = sdk.BarsToSlice(bars)
-			if _, err := lr.OnBar(ctx, barSeries, lr.cfg.Timeframe); err != nil {
+			sig, err := lr.OnBar(ctx, barSeries, lr.cfg.Timeframe)
+			if err != nil {
 				return err
+			}
+			if sig != nil {
+				lr.dispatchSignal(sig)
+			}
+		}
+	}
+}
+
+func (lr *LiveRunner) dispatchSignal(sig *sdk.Signal) {
+	if lr.executor == nil {
+		return
+	}
+	switch sig.Action {
+	case sdk.ActionBuy, sdk.ActionSell, sdk.ActionBuyLimit, sdk.ActionSellLimit,
+		sdk.ActionBuyStop, sdk.ActionSellStop:
+		side := sdk.SideBuy
+		ot := sdk.OrderMarket
+		if sig.Action == sdk.ActionSell {
+			side = sdk.SideSell
+		}
+		if sig.Action == sdk.ActionBuyLimit || sig.Action == sdk.ActionSellLimit {
+			ot = sdk.OrderLimit
+		}
+		if sig.Action == sdk.ActionBuyStop || sig.Action == sdk.ActionSellStop {
+			ot = sdk.OrderStop
+		}
+		lr.executor.PlaceOrder(context.Background(), sig.Symbol, side, ot,
+			sig.Volume, sig.Price, sig.StopLoss, sig.TakeProfit,
+			sig.Comment, sig.Magic)
+	case sdk.ActionClose:
+		lr.executor.CloseOrder(context.Background(), sig.OrderTicket, decimal.Zero)
+	case sdk.ActionCancel:
+		lr.executor.CancelOrder(context.Background(), sig.OrderTicket)
+	case sdk.ActionCloseAll:
+		positions, _ := lr.executor.OpenedOrders(context.Background())
+		for _, p := range positions {
+			if sig.Magic == 0 || p.Magic == sig.Magic {
+				lr.executor.CloseOrder(context.Background(), p.Ticket, decimal.Zero)
+			}
+		}
+	case sdk.ActionCancelAll:
+		orders, _ := lr.executor.PendingOrders(context.Background())
+		for _, o := range orders {
+			if sig.Magic == 0 || o.Magic == sig.Magic {
+				lr.executor.CancelOrder(context.Background(), o.Ticket)
 			}
 		}
 	}

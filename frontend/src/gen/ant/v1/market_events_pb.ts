@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file market_events.proto.
  */
 export const file_market_events: GenFile = /*@__PURE__*/
-  fileDesc("ChNtYXJrZXRfZXZlbnRzLnByb3RvEgZhbnQudjEiXgoLVGlja1BheWxvYWQSEQoJY2Fub25pY2FsGAEgASgJEg4KBmJyb2tlchgCIAEoCRISCgp0c191bml4X21zGAMgASgDEgsKA2JpZBgEIAEoCRILCgNhc2sYBSABKAki4QEKCkJhclBheWxvYWQSDgoGYnJva2VyGAEgASgJEhEKCWNhbm9uaWNhbBgCIAEoCRIOCgZwZXJpb2QYAyABKAkSFwoPb3Blbl90c191bml4X21zGAQgASgDEhgKEGNsb3NlX3RzX3VuaXhfbXMYBSABKAMSDAoEb3BlbhgGIAEoCRIMCgRoaWdoGAcgASgJEgsKA2xvdxgIIAEoCRINCgVjbG9zZRgJIAEoCRIOCgZ2b2x1bWUYCiABKAESEgoKdGlja19jb3VudBgLIAEoDRIRCglpc19yZXBsYXkYDCABKAgi6QIKEVRyYWRlRXZlbnRQYXlsb2FkEhAKCGV2ZW50X2lkGAEgASgJEhIKCmV2ZW50X3R5cGUYAiABKAkSEgoKYWNjb3VudF9pZBgDIAEoCRIPCgd1c2VyX2lkGAQgASgJEg4KBmJyb2tlchgFIAEoCRIOCgZ0aWNrZXQYBiABKAMSEQoJY2xpZW50X2lkGAcgASgJEhEKCWNhbm9uaWNhbBgIIAEoCRIMCgRzaWRlGAkgASgJEhIKCm9yZGVyX3R5cGUYCiABKAkSDgoGdm9sdW1lGAsgASgBEg0KBXByaWNlGAwgASgBEhEKCXN0b3BfbG9zcxgNIAEoARITCgt0YWtlX3Byb2ZpdBgOIAEoARISCgpmcm9tX3N0YXRlGA8gASgJEhAKCHRvX3N0YXRlGBAgASgJEg0KBWVycm9yGBEgASgJEhEKCWNvc3RfanNvbhgSIAEoCRISCgp0c191bml4X21zGBMgASgDImIKE0FjY291bnRFdmVudFBheWxvYWQSEgoKYWNjb3VudF9pZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhIKCnRzX3VuaXhfbXMYAyABKAMSEgoKZXZlbnRfdHlwZRgEIAEoCSJ/ChRNb250aGx5QW5hbHlzaXNQb2ludBIMCgR5ZWFyGAEgASgFEg0KBW1vbnRoGAIgASgFEg4KBmNoYW5nZRgDIAEoARIOCgZwcm9maXQYBCABKAESDAoEbG90cxgFIAEoARIMCgRwaXBzGAYgASgBEg4KBnRyYWRlcxgHIAEoBSJFChVNb250aGx5QW5hbHlzaXNQb2ludHMSLAoGcG9pbnRzGAEgAygLMhwuYW50LnYxLk1vbnRobHlBbmFseXNpc1BvaW50IqABCg9PcmRlckNhY2hlRW50cnkSDgoGdGlja2V0GAEgASgDEhIKCmFjY291bnRfaWQYAiABKAkSDQoFc3RhdGUYAyABKAkSEQoJY2Fub25pY2FsGAQgASgJEgwKBHNpZGUYBSABKAkSDgoGdm9sdW1lGAYgASgBEg0KBXByaWNlGAcgASgBEhoKEnVwZGF0ZWRfYXRfdW5peF9tcxgIIAEoAyJ1CgxDb3N0RXN0aW1hdGUSEwoLc3ByZWFkX2Nvc3QYASABKAESEgoKY29tbWlzc2lvbhgCIAEoARIVCg1zbGlwcGFnZV9jb3N0GAMgASgBEhEKCXN3YXBfY29zdBgEIAEoARISCgp0b3RhbF9jb3N0GAUgASgBQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("ChNtYXJrZXRfZXZlbnRzLnByb3RvEgZhbnQudjEiXgoLVGlja1BheWxvYWQSEQoJY2Fub25pY2FsGAEgASgJEg4KBmJyb2tlchgCIAEoCRISCgp0c191bml4X21zGAMgASgDEgsKA2JpZBgEIAEoCRILCgNhc2sYBSABKAki4QEKCkJhclBheWxvYWQSDgoGYnJva2VyGAEgASgJEhEKCWNhbm9uaWNhbBgCIAEoCRIOCgZwZXJpb2QYAyABKAkSFwoPb3Blbl90c191bml4X21zGAQgASgDEhgKEGNsb3NlX3RzX3VuaXhfbXMYBSABKAMSDAoEb3BlbhgGIAEoCRIMCgRoaWdoGAcgASgJEgsKA2xvdxgIIAEoCRINCgVjbG9zZRgJIAEoCRIOCgZ2b2x1bWUYCiABKAESEgoKdGlja19jb3VudBgLIAEoDRIRCglpc19yZXBsYXkYDCABKAgi6QIKEVRyYWRlRXZlbnRQYXlsb2FkEhAKCGV2ZW50X2lkGAEgASgJEhIKCmV2ZW50X3R5cGUYAiABKAkSEgoKYWNjb3VudF9pZBgDIAEoCRIPCgd1c2VyX2lkGAQgASgJEg4KBmJyb2tlchgFIAEoCRIOCgZ0aWNrZXQYBiABKAMSEQoJY2xpZW50X2lkGAcgASgJEhEKCWNhbm9uaWNhbBgIIAEoCRIMCgRzaWRlGAkgASgJEhIKCm9yZGVyX3R5cGUYCiABKAkSDgoGdm9sdW1lGAsgASgJEg0KBXByaWNlGAwgASgJEhEKCXN0b3BfbG9zcxgNIAEoCRITCgt0YWtlX3Byb2ZpdBgOIAEoCRISCgpmcm9tX3N0YXRlGA8gASgJEhAKCHRvX3N0YXRlGBAgASgJEg0KBWVycm9yGBEgASgJEhEKCWNvc3RfanNvbhgSIAEoCRISCgp0c191bml4X21zGBMgASgDImIKE0FjY291bnRFdmVudFBheWxvYWQSEgoKYWNjb3VudF9pZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhIKCnRzX3VuaXhfbXMYAyABKAMSEgoKZXZlbnRfdHlwZRgEIAEoCSJ/ChRNb250aGx5QW5hbHlzaXNQb2ludBIMCgR5ZWFyGAEgASgFEg0KBW1vbnRoGAIgASgFEg4KBmNoYW5nZRgDIAEoCRIOCgZwcm9maXQYBCABKAkSDAoEbG90cxgFIAEoCRIMCgRwaXBzGAYgASgJEg4KBnRyYWRlcxgHIAEoBSJFChVNb250aGx5QW5hbHlzaXNQb2ludHMSLAoGcG9pbnRzGAEgAygLMhwuYW50LnYxLk1vbnRobHlBbmFseXNpc1BvaW50IqABCg9PcmRlckNhY2hlRW50cnkSDgoGdGlja2V0GAEgASgDEhIKCmFjY291bnRfaWQYAiABKAkSDQoFc3RhdGUYAyABKAkSEQoJY2Fub25pY2FsGAQgASgJEgwKBHNpZGUYBSABKAkSDgoGdm9sdW1lGAYgASgJEg0KBXByaWNlGAcgASgJEhoKEnVwZGF0ZWRfYXRfdW5peF9tcxgIIAEoAyJ1CgxDb3N0RXN0aW1hdGUSEwoLc3ByZWFkX2Nvc3QYASABKAkSEgoKY29tbWlzc2lvbhgCIAEoCRIVCg1zbGlwcGFnZV9jb3N0GAMgASgJEhEKCXN3YXBfY29zdBgEIAEoCRISCgp0b3RhbF9jb3N0GAUgASgJQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.TickPayload
@@ -188,24 +188,24 @@ export type TradeEventPayload = Message<"ant.v1.TradeEventPayload"> & {
   orderType: string;
 
   /**
-   * @generated from field: double volume = 11;
+   * @generated from field: string volume = 11;
    */
-  volume: number;
+  volume: string;
 
   /**
-   * @generated from field: double price = 12;
+   * @generated from field: string price = 12;
    */
-  price: number;
+  price: string;
 
   /**
-   * @generated from field: double stop_loss = 13;
+   * @generated from field: string stop_loss = 13;
    */
-  stopLoss: number;
+  stopLoss: string;
 
   /**
-   * @generated from field: double take_profit = 14;
+   * @generated from field: string take_profit = 14;
    */
-  takeProfit: number;
+  takeProfit: string;
 
   /**
    * @generated from field: string from_state = 15;
@@ -293,24 +293,24 @@ export type MonthlyAnalysisPoint = Message<"ant.v1.MonthlyAnalysisPoint"> & {
   month: number;
 
   /**
-   * @generated from field: double change = 3;
+   * @generated from field: string change = 3;
    */
-  change: number;
+  change: string;
 
   /**
-   * @generated from field: double profit = 4;
+   * @generated from field: string profit = 4;
    */
-  profit: number;
+  profit: string;
 
   /**
-   * @generated from field: double lots = 5;
+   * @generated from field: string lots = 5;
    */
-  lots: number;
+  lots: string;
 
   /**
-   * @generated from field: double pips = 6;
+   * @generated from field: string pips = 6;
    */
-  pips: number;
+  pips: string;
 
   /**
    * @generated from field: int32 trades = 7;
@@ -374,14 +374,14 @@ export type OrderCacheEntry = Message<"ant.v1.OrderCacheEntry"> & {
   side: string;
 
   /**
-   * @generated from field: double volume = 6;
+   * @generated from field: string volume = 6;
    */
-  volume: number;
+  volume: string;
 
   /**
-   * @generated from field: double price = 7;
+   * @generated from field: string price = 7;
    */
-  price: number;
+  price: string;
 
   /**
    * @generated from field: int64 updated_at_unix_ms = 8;
@@ -403,29 +403,29 @@ export const OrderCacheEntrySchema: GenMessage<OrderCacheEntry> = /*@__PURE__*/
  */
 export type CostEstimate = Message<"ant.v1.CostEstimate"> & {
   /**
-   * @generated from field: double spread_cost = 1;
+   * @generated from field: string spread_cost = 1;
    */
-  spreadCost: number;
+  spreadCost: string;
 
   /**
-   * @generated from field: double commission = 2;
+   * @generated from field: string commission = 2;
    */
-  commission: number;
+  commission: string;
 
   /**
-   * @generated from field: double slippage_cost = 3;
+   * @generated from field: string slippage_cost = 3;
    */
-  slippageCost: number;
+  slippageCost: string;
 
   /**
-   * @generated from field: double swap_cost = 4;
+   * @generated from field: string swap_cost = 4;
    */
-  swapCost: number;
+  swapCost: string;
 
   /**
-   * @generated from field: double total_cost = 5;
+   * @generated from field: string total_cost = 5;
    */
-  totalCost: number;
+  totalCost: string;
 };
 
 /**

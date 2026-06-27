@@ -2,7 +2,9 @@ package backtest
 
 import (
 	"context"
+	"fmt"
 	"math"
+	"os"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -51,6 +53,9 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 
 	// Walk through bars
 	for i := 1; i < len(e.bars); i++ {
+		if err := ctx.Err(); err != nil {
+			break
+		}
 		bar := e.bars[i]
 		e.broker.SetBar(i)
 
@@ -67,6 +72,7 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		// Call strategy
 		sig, err := e.strategy.OnBar(btCtx, e.config.Timeframe)
 		if err != nil {
+			fmt.Fprintf(os.Stderr, "backtest: OnBar error at bar %d: %v\n", i, err)
 			continue
 		}
 		if sig != nil {
@@ -208,6 +214,8 @@ func (e *Engine) checkSLTP(bar sdk.Bar) {
 			if pos.ClosePrice.IsZero() {
 				pos.ClosePrice = close
 			}
+			// Apply swap for overnight positions (simplified: 1 day per bar)
+			e.broker.applySwap(pos, 1)
 			pos.Profit = pos.ClosePrice.Sub(pos.Price).Mul(pos.Volume)
 			if pos.Side == sdk.SideSell {
 				pos.Profit = pos.Profit.Neg()
@@ -227,7 +235,8 @@ func (e *Engine) checkSLTP(bar sdk.Bar) {
 				Commission: pos.Commission,
 				Comment:    pos.Comment,
 			})
-			e.broker.equity = e.broker.equity.Add(pos.Profit).Sub(pos.Commission)
+			e.broker.equity = e.broker.equity.Add(pos.Profit)
+			e.broker.balance = e.broker.balance.Add(pos.Profit)
 			e.broker.positions = append(e.broker.positions[:i], e.broker.positions[i+1:]...)
 			i--
 		}
@@ -317,7 +326,12 @@ func (b *btBarSeries) Time(shift int) int64 {
 	return b.bars[idx].Timestamp
 }
 func (b *btBarSeries) Len() int                    { return len(b.bars) }
-func (b *btBarSeries) Slice(n int) sdk.BarSeries    { return b }
+func (b *btBarSeries) Slice(n int) sdk.BarSeries {
+	if n >= len(b.bars) {
+		return &btBarSeries{bars: b.bars}
+	}
+	return &btBarSeries{bars: b.bars[len(b.bars)-n:]}
+}
 func (b *btBarSeries) Timeframe() string            { return "" }
 func (b *btBarSeries) Symbol() string               { return "" }
 
@@ -456,16 +470,253 @@ func (i *btIndicators) StdDev(period, shift int) float64 {
 	return 0
 }
 
-// Remaining indicators: not yet implemented.
-// These require more complex state tracking (previous values, Wilder smoothing).
-// See runner/indicators.go for the live-execution equivalents.
-func (i *btIndicators) Stochastic(kp, dp, slowing, shift int) (float64, float64) { return 50, 50 }
-func (i *btIndicators) CCI(period, shift int) float64                            { return 0 }
-func (i *btIndicators) ADX(period, shift int) float64                            { return 0 }
-func (i *btIndicators) MFI(period, shift int) float64                            { return 0 }
-func (i *btIndicators) OBV(shift int) float64                                    { return 0 }
-func (i *btIndicators) SAR(step, maximum float64, shift int) float64             { return 0 }
-func (i *btIndicators) WPR(period, shift int) float64                            { return 0 }
+// Remaining indicators: implemented with direct bar slice access.
+// btIndicators.bars is chronological (oldest first), shift=0 is latest bar.
+func (i *btIndicators) Stochastic(kPeriod, dPeriod, slowing, shift int) (float64, float64) {
+	n := len(i.bars)
+	if n < kPeriod+shift {
+		return 50, 50
+	}
+	// K = (Close - LowestLow) / (HighestHigh - LowestLow) * 100
+	idx := n - 1 - shift
+	var highestHigh, lowestLow float64
+	for j := idx; j > idx-kPeriod && j >= 0; j-- {
+		h, _ := i.bars[j].High.Float64()
+		l, _ := i.bars[j].Low.Float64()
+		if j == idx {
+			highestHigh = h
+			lowestLow = l
+		} else {
+			if h > highestHigh {
+				highestHigh = h
+			}
+			if l < lowestLow {
+				lowestLow = l
+			}
+		}
+	}
+	currentClose, _ := i.bars[idx].Close.Float64()
+	k := 50.0
+	if highestHigh != lowestLow {
+		k = (currentClose - lowestLow) / (highestHigh - lowestLow) * 100
+	}
+	// D = SMA of K over dPeriod
+	var kSum float64
+	for d := 0; d < dPeriod; d++ {
+		di := idx - d
+		if di < 0 || di-kPeriod+1 < 0 {
+			break
+		}
+		var hh, ll float64
+		for j := di; j > di-kPeriod && j >= 0; j-- {
+			h, _ := i.bars[j].High.Float64()
+			l, _ := i.bars[j].Low.Float64()
+			if j == di {
+				hh = h
+				ll = l
+			} else {
+				if h > hh {
+					hh = h
+				}
+				if l < ll {
+					ll = l
+				}
+			}
+		}
+		cc, _ := i.bars[di].Close.Float64()
+		if hh == ll {
+			kSum += 50
+		} else {
+			kSum += (cc - ll) / (hh - ll) * 100
+		}
+	}
+	d := kSum / float64(dPeriod)
+	return k, d
+}
+
+func (i *btIndicators) CCI(period, shift int) float64 {
+	n := len(i.bars)
+	if n < period+shift {
+		return 0
+	}
+	idx := n - 1 - shift
+	var sumTP float64
+	for j := idx; j > idx-period && j >= 0; j-- {
+		h, _ := i.bars[j].High.Float64()
+		l, _ := i.bars[j].Low.Float64()
+		c, _ := i.bars[j].Close.Float64()
+		sumTP += (h + l + c) / 3
+	}
+	meanTP := sumTP / float64(period)
+	var meanDev float64
+	for j := idx; j > idx-period && j >= 0; j-- {
+		h, _ := i.bars[j].High.Float64()
+		l, _ := i.bars[j].Low.Float64()
+		c, _ := i.bars[j].Close.Float64()
+		tp := (h + l + c) / 3
+		dev := tp - meanTP
+		if dev < 0 {
+			dev = -dev
+		}
+		meanDev += dev
+	}
+	meanDev /= float64(period)
+	if meanDev == 0 {
+		return 0
+	}
+	h, _ := i.bars[idx].High.Float64()
+	l, _ := i.bars[idx].Low.Float64()
+	c, _ := i.bars[idx].Close.Float64()
+	currentTP := (h + l + c) / 3
+	return (currentTP - meanTP) / (0.015 * meanDev)
+}
+
+func (i *btIndicators) ADX(period, shift int) float64 {
+	n := len(i.bars)
+	if n < period*2+shift {
+		return 0
+	}
+	idx := n - 1 - shift
+	var sumDX float64
+	for j := idx; j > idx-period && j >= 1; j-- {
+		high1, _ := i.bars[j].High.Float64()
+		high2, _ := i.bars[j-1].High.Float64()
+		low1, _ := i.bars[j].Low.Float64()
+		low2, _ := i.bars[j-1].Low.Float64()
+		prevClose, _ := i.bars[j-1].Close.Float64()
+		plusDM := high1 - high2
+		minusDM := low2 - low1
+		if plusDM < 0 {
+			plusDM = 0
+		}
+		if minusDM < 0 {
+			minusDM = 0
+		}
+		if plusDM > minusDM {
+			minusDM = 0
+		} else {
+			plusDM = 0
+		}
+		tr := high1 - low1
+		if d := high1 - prevClose; d > tr {
+			tr = d
+		}
+		if d := prevClose - low1; d > tr {
+			tr = d
+		}
+		if tr == 0 {
+			continue
+		}
+		sumDX += (plusDM - minusDM) / tr * 100
+	}
+	if sumDX < 0 {
+		sumDX = -sumDX
+	}
+	return sumDX / float64(period)
+}
+
+func (i *btIndicators) MFI(period, shift int) float64 {
+	n := len(i.bars)
+	if n < period+shift+1 {
+		return 0
+	}
+	idx := n - 1 - shift
+	var posFlow, negFlow float64
+	for j := idx; j > idx-period && j >= 1; j-- {
+		h, _ := i.bars[j].High.Float64()
+		l, _ := i.bars[j].Low.Float64()
+		c, _ := i.bars[j].Close.Float64()
+		prevC, _ := i.bars[j-1].Close.Float64()
+		tp := (h + l + c) / 3
+		prevTP := (h + l + prevC) / 3
+		flow := tp * float64(i.bars[j].Volume)
+		if tp > prevTP {
+			posFlow += flow
+		} else if tp < prevTP {
+			negFlow += flow
+		}
+	}
+	if negFlow == 0 {
+		return 100
+	}
+	return 100 - 100/(1+posFlow/negFlow)
+}
+
+func (i *btIndicators) OBV(shift int) float64 {
+	n := len(i.bars)
+	if n < shift+2 {
+		return 0
+	}
+	var obv float64
+	for j := n - 1; j > shift; j-- {
+		curr, _ := i.bars[j-1].Close.Float64()
+		prev, _ := i.bars[j].Close.Float64()
+		vol := float64(i.bars[j-1].Volume)
+		if curr > prev {
+			obv += vol
+		} else if curr < prev {
+			obv -= vol
+		}
+	}
+	return obv
+}
+
+func (i *btIndicators) SAR(step, maximum float64, shift int) float64 {
+	n := len(i.bars)
+	if n < shift+2 {
+		return 0
+	}
+	idx := n - 1 - shift
+	high, _ := i.bars[idx].High.Float64()
+	low, _ := i.bars[idx].Low.Float64()
+	prevHigh, _ := i.bars[idx-1].High.Float64()
+	prevLow, _ := i.bars[idx-1].Low.Float64()
+	ep := prevHigh
+	sar := prevLow
+	if sar > low {
+		sar = low
+	}
+	accel := step
+	if accel > maximum {
+		accel = maximum
+	}
+	sar = sar + accel*(ep-sar)
+	if sar > low {
+		sar = low
+	}
+	_ = high
+	return sar
+}
+
+func (i *btIndicators) WPR(period, shift int) float64 {
+	n := len(i.bars)
+	if n < period+shift {
+		return 0
+	}
+	idx := n - 1 - shift
+	var highestHigh, lowestLow float64
+	for j := idx; j > idx-period && j >= 0; j-- {
+		h, _ := i.bars[j].High.Float64()
+		l, _ := i.bars[j].Low.Float64()
+		if j == idx {
+			highestHigh = h
+			lowestLow = l
+		} else {
+			if h > highestHigh {
+				highestHigh = h
+			}
+			if l < lowestLow {
+				lowestLow = l
+			}
+		}
+	}
+	currentClose, _ := i.bars[idx].Close.Float64()
+	if highestHigh == lowestLow {
+		return -50
+	}
+	return (highestHigh - currentClose) / (highestHigh - lowestLow) * -100
+}
+
 func (i *btIndicators) ICustom(name string, params []float64, buffer, shift int) float64 {
 	return 0
 }

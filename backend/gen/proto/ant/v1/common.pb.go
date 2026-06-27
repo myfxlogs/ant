@@ -32,8 +32,8 @@ type BacktestMetrics struct {
 	TotalTrades   int32                  `protobuf:"varint,7,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
 	WinningTrades int32                  `protobuf:"varint,8,opt,name=winning_trades,json=winningTrades,proto3" json:"winning_trades,omitempty"`
 	LosingTrades  int32                  `protobuf:"varint,9,opt,name=losing_trades,json=losingTrades,proto3" json:"losing_trades,omitempty"`
-	AverageProfit float64                `protobuf:"fixed64,10,opt,name=average_profit,json=averageProfit,proto3" json:"average_profit,omitempty"`
-	AverageLoss   float64                `protobuf:"fixed64,11,opt,name=average_loss,json=averageLoss,proto3" json:"average_loss,omitempty"`
+	AverageProfit string                 `protobuf:"bytes,10,opt,name=average_profit,json=averageProfit,proto3" json:"average_profit,omitempty"`
+	AverageLoss   string                 `protobuf:"bytes,11,opt,name=average_loss,json=averageLoss,proto3" json:"average_loss,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -131,18 +131,18 @@ func (x *BacktestMetrics) GetLosingTrades() int32 {
 	return 0
 }
 
-func (x *BacktestMetrics) GetAverageProfit() float64 {
+func (x *BacktestMetrics) GetAverageProfit() string {
 	if x != nil {
 		return x.AverageProfit
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestMetrics) GetAverageLoss() float64 {
+func (x *BacktestMetrics) GetAverageLoss() string {
 	if x != nil {
 		return x.AverageLoss
 	}
-	return 0
+	return ""
 }
 
 type BacktestRisk struct {
@@ -237,8 +237,8 @@ const file_common_proto_rawDesc = "" +
 	"\x0ewinning_trades\x18\b \x01(\x05R\rwinningTrades\x12#\n" +
 	"\rlosing_trades\x18\t \x01(\x05R\flosingTrades\x12%\n" +
 	"\x0eaverage_profit\x18\n" +
-	" \x01(\x01R\raverageProfit\x12!\n" +
-	"\faverage_loss\x18\v \x01(\x01R\vaverageLoss\"\x91\x01\n" +
+	" \x01(\tR\raverageProfit\x12!\n" +
+	"\faverage_loss\x18\v \x01(\tR\vaverageLoss\"\x91\x01\n" +
 	"\fBacktestRisk\x12\x14\n" +
 	"\x05score\x18\x01 \x01(\x05R\x05score\x12\x14\n" +
 	"\x05level\x18\x02 \x01(\tR\x05level\x12\x18\n" +

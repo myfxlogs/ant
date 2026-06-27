@@ -38,6 +38,7 @@ export function useServerIndicators({
 }: UseServerIndicatorsOptions) {
   const abortedRef = useRef(false);
   const streamingRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Reapply chart data to trigger indicator recalc with fresh server values.
   const refreshChart = useCallback(() => {
@@ -63,7 +64,8 @@ export function useServerIndicators({
 
     abortedRef.current = false;
     let transportFailStreak = 0;
-    const k = `${symbol}/${timeframe}`; // key for cleanup cache
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
 
     const runStream = async (retryCount = 0) => {
       if (abortedRef.current) return;
@@ -81,7 +83,7 @@ export function useServerIndicators({
           timeframe,
           indicatorIds: ids,
           params,
-        });
+        }, { signal: ctrl.signal });
 
         if (!streamingRef.current) {
           streamingRef.current = true;
@@ -140,6 +142,8 @@ export function useServerIndicators({
 
     return () => {
       abortedRef.current = true;
+      abortRef.current?.abort();
+      abortRef.current = null;
       // Clear data for indicators being removed.
       if (activeIndicators.length === 0) {
         clearServerIndicatorData();

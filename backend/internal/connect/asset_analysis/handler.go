@@ -3,6 +3,7 @@ package asset_analysis
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -151,7 +152,7 @@ func analysisResultToProto(phase string, r *analysis.AnalysisResult) *antv1.Anal
 
 	for _, lvl := range r.KeyLevels {
 		resp.KeyLevels = append(resp.KeyLevels, &antv1.SRLevel{
-			Price:    lvl.Price,
+			Price:    strconv.FormatFloat(lvl.Price, 'f', -1, 64),
 			Type:     lvl.Type,
 			Strength: lvl.Strength,
 			Touches:  lvl.Touches,

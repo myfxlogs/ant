@@ -3,10 +3,9 @@
 // Builds a structured system prompt that includes:
 //   - Template skeleton with parameter slots
 //   - User-provided parameters and preferences
-//   - Python strategy contract (required functions, signals)
+//   - Go strategy contract (sdk.Strategy interface)
 //   - Coding constraints (forbidden patterns, required annotations)
 //   - Phase 3: feedback prompt with backtest metrics + iteration context
-//   - Vectorized (run_dataframe) and event-driven (run_context) dual-mode support
 
 package ai
 
@@ -15,7 +14,6 @@ import (
 	"strings"
 
 	"anttrader/internal/repository"
-	"anttrader/internal/service"
 )
 
 // PromptParams holds all inputs for building the generation prompt.
@@ -27,7 +25,7 @@ type PromptParams struct {
 	ParamMap     map[string]string // merged: LLM intent + keyword fallback
 	History      string            // previous conversation summary
 	Intent       *IntentResult     // LLM-extracted intent (nil for legacy callers)
-	StrategyType string            // "run_dataframe" (vectorized) or "run_context" (event-driven); empty = default to run_context
+	StrategyType string            // reserved for future use; Go SDK has a single strategy mode
 }
 
 // FeedbackPromptParams holds inputs for building the feedback iteration prompt (Phase 3).
@@ -55,22 +53,16 @@ func (b *StrategyPromptBuilder) BuildSystemPrompt(p *PromptParams) string {
 
 	// Role definition — Claude Code style: plan first, then implement.
 	sb.WriteString("你是一位专业的量化交易策略工程师。")
-	sb.WriteString("你的任务是根据用户的自然语言描述，生成符合规范的 Python 策略代码。\n\n")
+	sb.WriteString("你的任务是根据用户的自然语言描述，生成符合规范的 Go 策略代码。\n\n")
 	sb.WriteString("## 工作方式（Claude Code 风格）\n")
 	sb.WriteString("1. 先用 1-2 句话简要说明你理解的策略逻辑和执行计划\n")
-	sb.WriteString("2. 然后直接生成完整的 Python 代码\n")
+	sb.WriteString("2. 然后直接生成完整的 Go 代码\n")
 	sb.WriteString("3. 不要在代码中留 TODO 或占位符 — 所有参数都给具体值\n")
 	sb.WriteString("4. 对于用户未明确的参数，使用合理的默认值，不要询问\n\n")
 
-	// Strategy contract — contractText defaults empty to "run_context".
-	st := p.StrategyType
-	sb.WriteString(contractText(st))
-
-	// Indicator catalog — only for vectorized strategies so LLM knows available helpers.
-	if st == "run_dataframe" {
-		sb.WriteString(service.BuildIndicatorCatalogPromptBlockCompact())
-		sb.WriteString("\n")
-	}
+	// Strategy contract — Go SDK contract.
+	sb.WriteString(contractText(p.StrategyType))
+	sb.WriteString("\n")
 
 	// LLM-extracted intent context + plan
 	if p.Intent != nil && !p.Intent.NeedsClarification {
@@ -150,12 +142,10 @@ func (b *StrategyPromptBuilder) BuildFeedbackPrompt(p *FeedbackPromptParams) (st
 	return system, user
 }
 
-// DetectCodeStrategyType heuristically detects whether code uses run_dataframe or run_context.
+// DetectCodeStrategyType heuristically detects the strategy type from code.
+// Go SDK has a single strategy mode; this is kept for API compatibility.
 func DetectCodeStrategyType(code string) string {
-	if strings.Contains(code, "def run_dataframe(") {
-		return "run_dataframe"
-	}
-	return "run_context"
+	return "go_strategy"
 }
 
 // BuildUserPrompt returns the user message with template context injected.

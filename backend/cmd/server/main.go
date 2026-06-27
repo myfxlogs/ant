@@ -222,13 +222,14 @@ func main() {
 
 	go startMdGatewayPipeline(pipelineCtx, log, pool, mdStore, chStore, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg)
 
-	mux := http.NewServeMux()
-	reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup = registerHandlers(mux, log, pool, mdStore, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, otelInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
-	accountSyncSvc.SetNotificationSender(notifSender)
-
-	// Graceful shutdown
+	// Graceful shutdown context — created before registerHandlers so background
+	// goroutines spawned there can observe shutdown.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+
+	mux := http.NewServeMux()
+	reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup = registerHandlers(ctx, mux, log, pool, mdStore, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, otelInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
+	accountSyncSvc.SetNotificationSender(notifSender)
 
 	go scheduleEngine.Start(ctx)
 	defer workerCleanup()

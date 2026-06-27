@@ -13,8 +13,8 @@ message GlobalSettings {
   bool auto_trade_enabled = 3;
   double max_risk_percent = 4;
   int32 max_positions = 5;
-  double max_lot_size = 6;
-  double max_daily_loss = 7;
+  string max_lot_size = 6;
+  string max_daily_loss = 7;
   double max_drawdown_percent = 8;
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
@@ -24,8 +24,8 @@ message UpdateGlobalSettingsRequest {
   optional bool auto_trade_enabled = 2;
   optional double max_risk_percent = 3;
   optional int32 max_positions = 4;
-  optional double max_lot_size = 5;
-  optional double max_daily_loss = 6;
+  optional string max_lot_size = 5;
+  optional string max_daily_loss = 6;
   optional double max_drawdown_percent = 7;
 }
 message ToggleAutoTradeRequest {
@@ -42,5 +42,5 @@ message AutoTradingStatus {
   int32 active_strategies = 2;
   int32 pending_signals = 3;
   int32 today_executions = 4;
-  double today_profit = 5;
+  string today_profit = 5;
 }

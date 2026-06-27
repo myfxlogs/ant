@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -139,7 +140,7 @@ func buildGateInput(run *repository.BacktestRun, req *antv1.RunGateEvaluationReq
 		NumAttempts:  n,
 		PaperMetrics: aigates.PaperGateMetrics{
 			PaperDays:         int(req.PaperDays),
-			PaperNetPnL:       req.PaperNetPnl,
+			PaperNetPnL:       parseFloat(req.PaperNetPnl),
 			PaperNetReturn:    req.PaperNetReturn,
 			BacktestNetReturn: req.BacktestNetReturn,
 			PaperTradeCount:   int(req.PaperTradeCount),
@@ -183,4 +184,9 @@ func toProtoSummary(r aigates.PipelineResult) *antv1.GatePipelineSummary {
 		Passed: r.Passed, FirstFail: string(r.FirstFail),
 		Summary: r.Summary, TotalDurationMs: r.TotalDuration,
 	}
+}
+
+func parseFloat(s string) float64 {
+	f, _ := strconv.ParseFloat(s, 64)
+	return f
 }

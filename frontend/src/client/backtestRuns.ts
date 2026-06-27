@@ -31,13 +31,13 @@ export const backtestRunsApi = {
 		const trades = (data.trades || []).map((t) => ({
 			ticket: Number(t.ticket),
 			side: t.side,
-			volume: t.volume,
+			volume: Number(t.volume),
 			open_ts: Number(t.openTs),
-			open_price: t.openPrice,
+			open_price: Number(t.openPrice),
 			close_ts: Number(t.closeTs),
-			close_price: t.closePrice,
-			pnl: t.pnl,
-			commission: t.commission,
+			close_price: Number(t.closePrice),
+			pnl: Number(t.pnl),
+			commission: Number(t.commission),
 			reason: t.reason,
 		}));
 		return {
@@ -46,7 +46,7 @@ export const backtestRunsApi = {
 				count: data.summary?.count || 0,
 				wins: data.summary?.wins || 0,
 				losses: data.summary?.losses || 0,
-				netPnl: data.summary?.netPnl || 0,
+				netPnl: Number(data.summary?.netPnl) || 0,
 			},
 		};
 	},

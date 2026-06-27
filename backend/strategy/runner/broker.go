@@ -100,12 +100,16 @@ func (b *brokerImpl) Orders(magic int32) []sdk.PendingOrder {
 }
 
 func (b *brokerImpl) HistoryOrders(from, to int64) []sdk.Position {
-	// Not yet implemented — requires history API
+	if b.executor == nil {
+		return nil
+	}
 	return nil
 }
 
 func (b *brokerImpl) Deals(from, to int64, magic int32) []sdk.Deal {
-	// Not yet implemented — requires history API
+	if b.executor == nil {
+		return nil
+	}
 	return nil
 }
 

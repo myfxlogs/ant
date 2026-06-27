@@ -6,10 +6,12 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/google/uuid"
+	"connectrpc.com/connect"
+	"google.golang.org/protobuf/types/known/emptypb"
 
+	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
-	"anttrader/internal/repository"
 	"anttrader/internal/service"
 	"anttrader/internal/pglisten"
 )
@@ -21,8 +23,6 @@ type CodeAccessChecker interface {
 
 type StrategyServer struct {
 	svc            *service.StrategySvc
-	backtestClient antv1c.BacktestServiceClient   // ConnectRPC to Python BacktestService
-	marketDataRepo repository.MarketDataStore
 	log            *zap.Logger
 	pgListen       *pglisten.Listener
 	engine         *ScheduleEngine
@@ -38,13 +38,19 @@ func NewStrategyServer(svc *service.StrategySvc, log *zap.Logger) *StrategyServe
 	return &StrategyServer{svc: svc, log: log}
 }
 
+// CancelTemplateDraft reverts a draft template back to published status.
+func (s *StrategyServer) CancelTemplateDraft(ctx context.Context, req *connect.Request[antv1.CancelTemplateDraftRequest]) (*connect.Response[emptypb.Empty], error) {
+	id, err := uuid.Parse(req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if err := s.svc.SetTemplateStatus(ctx, id, s.userID(ctx), "published"); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&emptypb.Empty{}), nil
+}
+
 func (s *StrategyServer) SetEngine(e *ScheduleEngine) { s.engine = e }
-
-// SetBacktestClient injects the ConnectRPC backtest client for RunBacktest.
-func (s *StrategyServer) SetBacktestClient(c antv1c.BacktestServiceClient) { s.backtestClient = c }
-
-// SetMarketDataRepo injects the ClickHouse market data repo for fetching K-lines.
-func (s *StrategyServer) SetMarketDataRepo(r repository.MarketDataStore) { s.marketDataRepo = r }
 
 func (s *StrategyServer) userID(ctx context.Context) uuid.UUID {
 	raw := interceptor.GetUserID(ctx)

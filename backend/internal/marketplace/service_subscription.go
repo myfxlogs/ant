@@ -165,7 +165,6 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 		JOIN marketplace_strategies ms ON ms.strategy_id = us.target_strategy_id
 		WHERE us.kind = $1 AND us.active = true
 		  AND us.expires_at IS NOT NULL AND us.expires_at <= now()
-		FOR UPDATE OF us SKIP LOCKED
 		LIMIT 100`, SubKindSubscription)
 	if qErr != nil {
 		return 0, 0, qErr
@@ -204,29 +203,44 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 
 		if chargeErr != nil {
 			// Insufficient balance — deactivate.
-			tx.Exec(ctx, `UPDATE user_subscriptions SET active = false WHERE id = $1`, p.subID)
-			tx.Commit(ctx)
+			if _, dErr := tx.Exec(ctx, `UPDATE user_subscriptions SET active = false WHERE id = $1`, p.subID); dErr != nil {
+				s.log.Warn("renewal: deactivate failed", zap.String("subID", p.subID), zap.Error(dErr))
+			}
+			tx.Rollback(ctx)
 			failed++
 			continue
 		}
 
 		// Extend subscription by 30 days.
-		tx.Exec(ctx,
+		if _, eErr := tx.Exec(ctx,
 			`UPDATE user_subscriptions SET expires_at = now() + INTERVAL '30 days' WHERE id = $1`,
 			p.subID,
-		)
+		); eErr != nil {
+			s.log.Warn("renewal: extend failed", zap.String("subID", p.subID), zap.Error(eErr))
+			tx.Rollback(ctx)
+			failed++
+			continue
+		}
 
-		// Record renewal transaction.
+		// Record renewal transaction. balance_before = balAfter + amount (pre-deduction balance).
 		uid, _ := uuid.Parse(p.userID)
-		tx.Exec(ctx,
-			fmt.Sprintf(`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
-			 VALUES ($1, (SELECT id FROM user_wallets WHERE user_id = $2), $2, '%s', $3::numeric, '0', $4, $5)`,
-				TxTypePurchase),
-			uuid.New(), uid, "-"+amountStr, balAfter,
+		if _, iErr := tx.Exec(ctx,
+			`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+			 VALUES ($1, (SELECT id FROM user_wallets WHERE user_id = $2), $2, $3, $4::numeric + $5::numeric, $6, $7)`,
+			uuid.New(), uid, TxTypePurchase, amountStr, amountStr, balAfter,
 			fmt.Sprintf("Subscription renewal: %s", p.title),
-		)
+		); iErr != nil {
+			s.log.Warn("renewal: insert tx failed", zap.String("subID", p.subID), zap.Error(iErr))
+			tx.Rollback(ctx)
+			failed++
+			continue
+		}
 
-		tx.Commit(ctx)
+		if cErr := tx.Commit(ctx); cErr != nil {
+			s.log.Warn("renewal: commit failed", zap.String("subID", p.subID), zap.Error(cErr))
+			failed++
+			continue
+		}
 		renewed++
 	}
 
@@ -235,23 +249,28 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 
 // StartRenewalLoop runs a daily subscription renewal ticker in a background
 // goroutine. Call during server startup.
-func (s *Service) StartRenewalLoop(log *zap.Logger) {
+func (s *Service) StartRenewalLoop(ctx context.Context, log *zap.Logger) {
 	go func() {
 		ticker := time.NewTicker(24 * time.Hour)
 		defer ticker.Stop()
 		// Run once at startup to catch overdue renewals.
-		renewed, failed, _ := s.RenewSubscriptions(context.Background())
+		renewed, failed, _ := s.RenewSubscriptions(ctx)
 		if renewed+failed > 0 {
 			log.Info("subscription renewal startup run", zap.Int("renewed", renewed), zap.Int("failed", failed))
 		}
-		for range ticker.C {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-			renewed, failed, err := s.RenewSubscriptions(ctx)
-			cancel()
-			if err != nil {
-				log.Error("subscription renewal failed", zap.Error(err))
-			} else if renewed+failed > 0 {
-				log.Info("subscription renewal complete", zap.Int("renewed", renewed), zap.Int("failed", failed))
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				runCtx, cancel := context.WithTimeout(ctx, 5*time.Minute)
+				renewed, failed, err := s.RenewSubscriptions(runCtx)
+				cancel()
+				if err != nil {
+					log.Error("subscription renewal failed", zap.Error(err))
+				} else if renewed+failed > 0 {
+					log.Info("subscription renewal complete", zap.Int("renewed", renewed), zap.Int("failed", failed))
+				}
 			}
 		}
 	}()

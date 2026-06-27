@@ -1,4 +1,5 @@
 import { createClient } from "@connectrpc/connect";
+import { createConnectTransport } from "@connectrpc/connect-web";
 import { AuthService } from "../gen/ant/v1/auth_pb";
 import { AccountService } from "../gen/ant/v1/account_pb";
 import { AdminSREService } from "../gen/ant/v1/admin_sre_pb";
@@ -10,7 +11,7 @@ import { SystemAIService } from "../gen/ant/v1/system_ai_pb";
 import { AIPrimaryService } from "../gen/ant/v1/ai_primary_pb";
 import { CodeAssistService } from "../gen/ant/v1/code_assist_pb";
 import { LogService } from "../gen/ant/v1/log_pb";
-import { PythonStrategyService } from "../gen/ant/v1/python_strategy_pb";
+import { StrategyRuntimeService } from "../gen/ant/v1/strategy_runtime_pb";
 import { BacktestTradesService } from "../gen/ant/v1/backtest_trades_pb";
 import { MtHubService } from "../gen/ant/v1/mthub_service_pb";
 import { EconomicDataService } from "../gen/ant/v1/economic_data_pb";
@@ -40,6 +41,8 @@ import { PaperTradingService } from "../gen/ant/v1/paper_trading_pb";
 import { AutoTradingService } from "../gen/ant/v1/auto_trading_pb";
 import { ObjectiveScoreService } from "../gen/ant/v1/objective_score_pb";
 import { WalletService } from "../gen/ant/v1/wallet_pb";
+import { AIGatewayService } from "../gen/ant/v1/ai_gateway_pb";
+import { ShareService } from "../gen/ant/v1/share_pb";
 import { streamTransport, transport } from "./transport";
 
 export const walletClient = createClient(WalletService, transport);
@@ -62,12 +65,12 @@ export const adminLogClient = createClient(AdminLogService, transport);
 export const adminSystemClient = createClient(AdminSystemService, transport);
 export const analyticsClient = createClient(AnalyticsService, transport);
 export const analyticsStreamClient = createClient(AnalyticsService, streamTransport);
-export const pythonStrategyClient = createClient(
-  PythonStrategyService,
+export const strategyRuntimeClient = createClient(
+  StrategyRuntimeService,
   transport,
 );
-export const pythonStrategyStreamClient = createClient(
-  PythonStrategyService,
+export const strategyRuntimeStreamClient = createClient(
+  StrategyRuntimeService,
   streamTransport,
 );
 export const backtestTradesClient = createClient(
@@ -100,9 +103,6 @@ export const paperTradingClient = createClient(PaperTradingService, transport);
 export const paperTradingStreamClient = createClient(PaperTradingService, streamTransport);
 export const autoTradingClient = createClient(AutoTradingService, transport);
 export const objectiveScoreClient = createClient(ObjectiveScoreService, transport);
-import { AIGatewayService } from "../gen/ant/v1/ai_gateway_pb";
 export const aiGatewayClient = createClient(AIGatewayService, transport);
-import { ShareService } from "../gen/ant/v1/share_pb";
-import { createConnectTransport } from "@connectrpc/connect-web";
 const publicTransport = createConnectTransport({ baseUrl: (import.meta as any).env?.VITE_API_URL || (typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:8080") });
 export const shareClient = createClient(ShareService, publicTransport);

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"connectrpc.com/connect"
@@ -77,8 +78,8 @@ func accountToProto(a *service.AccountDTO) *antv1.Account {
 		Id: a.ID, UserId: a.UserID, Login: a.Login,
 		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
 		IsDisabled: a.IsDisabled, Status: a.Status,
-		Balance: a.Balance, Credit: a.Credit, Equity: a.Equity, Margin: a.Margin,
-		FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
+		Balance: strconv.FormatFloat(a.Balance, 'f', -1, 64), Credit: strconv.FormatFloat(a.Credit, 'f', -1, 64), Equity: strconv.FormatFloat(a.Equity, 'f', -1, 64), Margin: strconv.FormatFloat(a.Margin, 'f', -1, 64),
+		FreeMargin: strconv.FormatFloat(a.FreeMargin, 'f', -1, 64), MarginLevel: strconv.FormatFloat(a.MarginLevel, 'f', -1, 64),
 		Leverage: a.Leverage, Currency: a.Currency,
 		IsInvestor: a.IsInvestor, LastError: a.LastError,
 		ConnectedAt: connectedAt,

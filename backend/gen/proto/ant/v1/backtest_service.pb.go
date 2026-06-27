@@ -273,10 +273,10 @@ type EngineTradeSignal struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Signal        string                 `protobuf:"bytes,1,opt,name=signal,proto3" json:"signal,omitempty"`
 	Symbol        string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	Price         float64                `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
-	Volume        float64                `protobuf:"fixed64,4,opt,name=volume,proto3" json:"volume,omitempty"`
-	StopLoss      float64                `protobuf:"fixed64,5,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`
-	TakeProfit    float64                `protobuf:"fixed64,6,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`
+	Price         string                 `protobuf:"bytes,3,opt,name=price,proto3" json:"price,omitempty"`
+	Volume        string                 `protobuf:"bytes,4,opt,name=volume,proto3" json:"volume,omitempty"`
+	StopLoss      string                 `protobuf:"bytes,5,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`
+	TakeProfit    string                 `protobuf:"bytes,6,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`
 	Confidence    float64                `protobuf:"fixed64,7,opt,name=confidence,proto3" json:"confidence,omitempty"`
 	Reason        string                 `protobuf:"bytes,8,opt,name=reason,proto3" json:"reason,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -327,32 +327,32 @@ func (x *EngineTradeSignal) GetSymbol() string {
 	return ""
 }
 
-func (x *EngineTradeSignal) GetPrice() float64 {
+func (x *EngineTradeSignal) GetPrice() string {
 	if x != nil {
 		return x.Price
 	}
-	return 0
+	return ""
 }
 
-func (x *EngineTradeSignal) GetVolume() float64 {
+func (x *EngineTradeSignal) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *EngineTradeSignal) GetStopLoss() float64 {
+func (x *EngineTradeSignal) GetStopLoss() string {
 	if x != nil {
 		return x.StopLoss
 	}
-	return 0
+	return ""
 }
 
-func (x *EngineTradeSignal) GetTakeProfit() float64 {
+func (x *EngineTradeSignal) GetTakeProfit() string {
 	if x != nil {
 		return x.TakeProfit
 	}
-	return 0
+	return ""
 }
 
 func (x *EngineTradeSignal) GetConfidence() float64 {
@@ -373,11 +373,11 @@ type ExecuteKlineBar struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	OpenTimeMs    int64                  `protobuf:"varint,1,opt,name=open_time_ms,json=openTimeMs,proto3" json:"open_time_ms,omitempty"`    // Unix milliseconds
 	CloseTimeMs   int64                  `protobuf:"varint,2,opt,name=close_time_ms,json=closeTimeMs,proto3" json:"close_time_ms,omitempty"` // Unix milliseconds
-	Open          float64                `protobuf:"fixed64,3,opt,name=open,proto3" json:"open,omitempty"`
-	High          float64                `protobuf:"fixed64,4,opt,name=high,proto3" json:"high,omitempty"`
-	Low           float64                `protobuf:"fixed64,5,opt,name=low,proto3" json:"low,omitempty"`
-	Close         float64                `protobuf:"fixed64,6,opt,name=close,proto3" json:"close,omitempty"`
-	Volume        float64                `protobuf:"fixed64,7,opt,name=volume,proto3" json:"volume,omitempty"`
+	Open          string                 `protobuf:"bytes,3,opt,name=open,proto3" json:"open,omitempty"`
+	High          string                 `protobuf:"bytes,4,opt,name=high,proto3" json:"high,omitempty"`
+	Low           string                 `protobuf:"bytes,5,opt,name=low,proto3" json:"low,omitempty"`
+	Close         string                 `protobuf:"bytes,6,opt,name=close,proto3" json:"close,omitempty"`
+	Volume        string                 `protobuf:"bytes,7,opt,name=volume,proto3" json:"volume,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -426,39 +426,39 @@ func (x *ExecuteKlineBar) GetCloseTimeMs() int64 {
 	return 0
 }
 
-func (x *ExecuteKlineBar) GetOpen() float64 {
+func (x *ExecuteKlineBar) GetOpen() string {
 	if x != nil {
 		return x.Open
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteKlineBar) GetHigh() float64 {
+func (x *ExecuteKlineBar) GetHigh() string {
 	if x != nil {
 		return x.High
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteKlineBar) GetLow() float64 {
+func (x *ExecuteKlineBar) GetLow() string {
 	if x != nil {
 		return x.Low
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteKlineBar) GetClose() float64 {
+func (x *ExecuteKlineBar) GetClose() string {
 	if x != nil {
 		return x.Close
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteKlineBar) GetVolume() float64 {
+func (x *ExecuteKlineBar) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
 type ExecuteBacktestRequest struct {
@@ -469,7 +469,7 @@ type ExecuteBacktestRequest struct {
 	Timeframe          string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
 	StartDateMs        int64                  `protobuf:"varint,5,opt,name=start_date_ms,json=startDateMs,proto3" json:"start_date_ms,omitempty"` // Unix milliseconds
 	EndDateMs          int64                  `protobuf:"varint,6,opt,name=end_date_ms,json=endDateMs,proto3" json:"end_date_ms,omitempty"`       // Unix milliseconds
-	InitialCapital     float64                `protobuf:"fixed64,7,opt,name=initial_capital,json=initialCapital,proto3" json:"initial_capital,omitempty"`
+	InitialCapital     string                 `protobuf:"bytes,7,opt,name=initial_capital,json=initialCapital,proto3" json:"initial_capital,omitempty"`
 	Commission         float64                `protobuf:"fixed64,8,opt,name=commission,proto3" json:"commission,omitempty"`
 	Spread             float64                `protobuf:"fixed64,9,opt,name=spread,proto3" json:"spread,omitempty"`
 	SwapRate           float64                `protobuf:"fixed64,10,opt,name=swap_rate,json=swapRate,proto3" json:"swap_rate,omitempty"`
@@ -482,7 +482,7 @@ type ExecuteBacktestRequest struct {
 	Klines             []*ExecuteKlineBar     `protobuf:"bytes,17,rep,name=klines,proto3" json:"klines,omitempty"`
 	ExtraSymbols       []string               `protobuf:"bytes,18,rep,name=extra_symbols,json=extraSymbols,proto3" json:"extra_symbols,omitempty"`
 	StrategyParamsJson string                 `protobuf:"bytes,19,opt,name=strategy_params_json,json=strategyParamsJson,proto3" json:"strategy_params_json,omitempty"`
-	Leverage           float64                `protobuf:"fixed64,20,opt,name=leverage,proto3" json:"leverage,omitempty"`                                                             // e.g. 1, 10, 100
+	Leverage           float64                `protobuf:"fixed64,20,opt,name=leverage,proto3" json:"leverage,omitempty"`                                                             // e.g. 1, 10, 100 (ratio, kept as double)
 	TradeDirection     TradeDirection         `protobuf:"varint,21,opt,name=trade_direction,json=tradeDirection,proto3,enum=ant.v1.TradeDirection" json:"trade_direction,omitempty"` // long / short / both
 	StrictMode         bool                   `protobuf:"varint,22,opt,name=strict_mode,json=strictMode,proto3" json:"strict_mode,omitempty"`                                        // true = next-bar-open, false = same-bar-close + MTF
 	StrategyConfig     *StrategyConfig        `protobuf:"bytes,23,opt,name=strategy_config,json=strategyConfig,proto3" json:"strategy_config,omitempty"`                             // parsed from @strategy annotations
@@ -563,11 +563,11 @@ func (x *ExecuteBacktestRequest) GetEndDateMs() int64 {
 	return 0
 }
 
-func (x *ExecuteBacktestRequest) GetInitialCapital() float64 {
+func (x *ExecuteBacktestRequest) GetInitialCapital() string {
 	if x != nil {
 		return x.InitialCapital
 	}
-	return 0
+	return ""
 }
 
 func (x *ExecuteBacktestRequest) GetCommission() float64 {
@@ -693,19 +693,19 @@ func (x *ExecuteBacktestRequest) GetSymbolInfo() *SymbolInfo {
 // This is the authoritative source — no hardcoded guesses.
 type SymbolInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Digits        int32                  `protobuf:"varint,1,opt,name=digits,proto3" json:"digits,omitempty"`                                  // decimal places in price quotes
-	Point         float64                `protobuf:"fixed64,2,opt,name=point,proto3" json:"point,omitempty"`                                   // minimum price increment (10^-digits)
-	TickSize      float64                `protobuf:"fixed64,3,opt,name=tick_size,json=tickSize,proto3" json:"tick_size,omitempty"`             // minimum tick size
-	TickValue     float64                `protobuf:"fixed64,4,opt,name=tick_value,json=tickValue,proto3" json:"tick_value,omitempty"`          // value of one tick in account currency
-	ContractSize  float64                `protobuf:"fixed64,5,opt,name=contract_size,json=contractSize,proto3" json:"contract_size,omitempty"` // base units per lot
-	VolumeMin     float64                `protobuf:"fixed64,6,opt,name=volume_min,json=volumeMin,proto3" json:"volume_min,omitempty"`          // minimum order volume (lots)
-	VolumeMax     float64                `protobuf:"fixed64,7,opt,name=volume_max,json=volumeMax,proto3" json:"volume_max,omitempty"`          // maximum order volume (lots)
-	VolumeStep    float64                `protobuf:"fixed64,8,opt,name=volume_step,json=volumeStep,proto3" json:"volume_step,omitempty"`       // lot increment step
-	StopsLevel    int32                  `protobuf:"varint,9,opt,name=stops_level,json=stopsLevel,proto3" json:"stops_level,omitempty"`        // SL/TP minimum distance in points
-	FreezeLevel   int32                  `protobuf:"varint,10,opt,name=freeze_level,json=freezeLevel,proto3" json:"freeze_level,omitempty"`    // order freeze distance in points
-	SwapLong      float64                `protobuf:"fixed64,11,opt,name=swap_long,json=swapLong,proto3" json:"swap_long,omitempty"`            // long swap rate
-	SwapShort     float64                `protobuf:"fixed64,12,opt,name=swap_short,json=swapShort,proto3" json:"swap_short,omitempty"`         // short swap rate
-	MarginRate    float64                `protobuf:"fixed64,13,opt,name=margin_rate,json=marginRate,proto3" json:"margin_rate,omitempty"`      // initial margin rate
+	Digits        int32                  `protobuf:"varint,1,opt,name=digits,proto3" json:"digits,omitempty"`                                // decimal places in price quotes
+	Point         string                 `protobuf:"bytes,2,opt,name=point,proto3" json:"point,omitempty"`                                   // minimum price increment (10^-digits)
+	TickSize      string                 `protobuf:"bytes,3,opt,name=tick_size,json=tickSize,proto3" json:"tick_size,omitempty"`             // minimum tick size
+	TickValue     string                 `protobuf:"bytes,4,opt,name=tick_value,json=tickValue,proto3" json:"tick_value,omitempty"`          // value of one tick in account currency
+	ContractSize  string                 `protobuf:"bytes,5,opt,name=contract_size,json=contractSize,proto3" json:"contract_size,omitempty"` // base units per lot
+	VolumeMin     string                 `protobuf:"bytes,6,opt,name=volume_min,json=volumeMin,proto3" json:"volume_min,omitempty"`          // minimum order volume (lots)
+	VolumeMax     string                 `protobuf:"bytes,7,opt,name=volume_max,json=volumeMax,proto3" json:"volume_max,omitempty"`          // maximum order volume (lots)
+	VolumeStep    string                 `protobuf:"bytes,8,opt,name=volume_step,json=volumeStep,proto3" json:"volume_step,omitempty"`       // lot increment step
+	StopsLevel    int32                  `protobuf:"varint,9,opt,name=stops_level,json=stopsLevel,proto3" json:"stops_level,omitempty"`      // SL/TP minimum distance in points
+	FreezeLevel   int32                  `protobuf:"varint,10,opt,name=freeze_level,json=freezeLevel,proto3" json:"freeze_level,omitempty"`  // order freeze distance in points
+	SwapLong      string                 `protobuf:"bytes,11,opt,name=swap_long,json=swapLong,proto3" json:"swap_long,omitempty"`            // long swap rate
+	SwapShort     string                 `protobuf:"bytes,12,opt,name=swap_short,json=swapShort,proto3" json:"swap_short,omitempty"`         // short swap rate
+	MarginRate    string                 `protobuf:"bytes,13,opt,name=margin_rate,json=marginRate,proto3" json:"margin_rate,omitempty"`      // initial margin rate
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -747,53 +747,53 @@ func (x *SymbolInfo) GetDigits() int32 {
 	return 0
 }
 
-func (x *SymbolInfo) GetPoint() float64 {
+func (x *SymbolInfo) GetPoint() string {
 	if x != nil {
 		return x.Point
 	}
-	return 0
+	return ""
 }
 
-func (x *SymbolInfo) GetTickSize() float64 {
+func (x *SymbolInfo) GetTickSize() string {
 	if x != nil {
 		return x.TickSize
 	}
-	return 0
+	return ""
 }
 
-func (x *SymbolInfo) GetTickValue() float64 {
+func (x *SymbolInfo) GetTickValue() string {
 	if x != nil {
 		return x.TickValue
 	}
-	return 0
+	return ""
 }
 
-func (x *SymbolInfo) GetContractSize() float64 {
+func (x *SymbolInfo) GetContractSize() string {
 	if x != nil {
 		return x.ContractSize
 	}
-	return 0
+	return ""
 }
 
-func (x *SymbolInfo) GetVolumeMin() float64 {
+func (x *SymbolInfo) GetVolumeMin() string {
 	if x != nil {
 		return x.VolumeMin
 	}
-	return 0
+	return ""
 }
 
-func (x *SymbolInfo) GetVolumeMax() float64 {
+func (x *SymbolInfo) GetVolumeMax() string {
 	if x != nil {
 		return x.VolumeMax
 	}
-	return 0
+	return ""
 }
 
-func (x *SymbolInfo) GetVolumeStep() float64 {
+func (x *SymbolInfo) GetVolumeStep() string {
 	if x != nil {
 		return x.VolumeStep
 	}
-	return 0
+	return ""
 }
 
 func (x *SymbolInfo) GetStopsLevel() int32 {
@@ -810,38 +810,38 @@ func (x *SymbolInfo) GetFreezeLevel() int32 {
 	return 0
 }
 
-func (x *SymbolInfo) GetSwapLong() float64 {
+func (x *SymbolInfo) GetSwapLong() string {
 	if x != nil {
 		return x.SwapLong
 	}
-	return 0
+	return ""
 }
 
-func (x *SymbolInfo) GetSwapShort() float64 {
+func (x *SymbolInfo) GetSwapShort() string {
 	if x != nil {
 		return x.SwapShort
 	}
-	return 0
+	return ""
 }
 
-func (x *SymbolInfo) GetMarginRate() float64 {
+func (x *SymbolInfo) GetMarginRate() string {
 	if x != nil {
 		return x.MarginRate
 	}
-	return 0
+	return ""
 }
 
 type ExecuteBacktestTrade struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Ticket        int64                  `protobuf:"varint,1,opt,name=ticket,proto3" json:"ticket,omitempty"`
 	Side          string                 `protobuf:"bytes,2,opt,name=side,proto3" json:"side,omitempty"`
-	Volume        float64                `protobuf:"fixed64,3,opt,name=volume,proto3" json:"volume,omitempty"`
+	Volume        string                 `protobuf:"bytes,3,opt,name=volume,proto3" json:"volume,omitempty"`
 	OpenTsMs      int64                  `protobuf:"varint,4,opt,name=open_ts_ms,json=openTsMs,proto3" json:"open_ts_ms,omitempty"`
-	OpenPrice     float64                `protobuf:"fixed64,5,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`
+	OpenPrice     string                 `protobuf:"bytes,5,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`
 	CloseTsMs     int64                  `protobuf:"varint,6,opt,name=close_ts_ms,json=closeTsMs,proto3" json:"close_ts_ms,omitempty"`
-	ClosePrice    float64                `protobuf:"fixed64,7,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"`
-	Pnl           float64                `protobuf:"fixed64,8,opt,name=pnl,proto3" json:"pnl,omitempty"`
-	Commission    float64                `protobuf:"fixed64,9,opt,name=commission,proto3" json:"commission,omitempty"`
+	ClosePrice    string                 `protobuf:"bytes,7,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"`
+	Pnl           string                 `protobuf:"bytes,8,opt,name=pnl,proto3" json:"pnl,omitempty"`
+	Commission    string                 `protobuf:"bytes,9,opt,name=commission,proto3" json:"commission,omitempty"`
 	Reason        string                 `protobuf:"bytes,10,opt,name=reason,proto3" json:"reason,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -891,11 +891,11 @@ func (x *ExecuteBacktestTrade) GetSide() string {
 	return ""
 }
 
-func (x *ExecuteBacktestTrade) GetVolume() float64 {
+func (x *ExecuteBacktestTrade) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
 func (x *ExecuteBacktestTrade) GetOpenTsMs() int64 {
@@ -905,11 +905,11 @@ func (x *ExecuteBacktestTrade) GetOpenTsMs() int64 {
 	return 0
 }
 
-func (x *ExecuteBacktestTrade) GetOpenPrice() float64 {
+func (x *ExecuteBacktestTrade) GetOpenPrice() string {
 	if x != nil {
 		return x.OpenPrice
 	}
-	return 0
+	return ""
 }
 
 func (x *ExecuteBacktestTrade) GetCloseTsMs() int64 {
@@ -919,25 +919,25 @@ func (x *ExecuteBacktestTrade) GetCloseTsMs() int64 {
 	return 0
 }
 
-func (x *ExecuteBacktestTrade) GetClosePrice() float64 {
+func (x *ExecuteBacktestTrade) GetClosePrice() string {
 	if x != nil {
 		return x.ClosePrice
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteBacktestTrade) GetPnl() float64 {
+func (x *ExecuteBacktestTrade) GetPnl() string {
 	if x != nil {
 		return x.Pnl
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteBacktestTrade) GetCommission() float64 {
+func (x *ExecuteBacktestTrade) GetCommission() string {
 	if x != nil {
 		return x.Commission
 	}
-	return 0
+	return ""
 }
 
 func (x *ExecuteBacktestTrade) GetReason() string {
@@ -1050,9 +1050,9 @@ type ExecuteBacktestMetrics struct {
 	TotalTrades      int32                  `protobuf:"varint,7,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
 	WinningTrades    int32                  `protobuf:"varint,8,opt,name=winning_trades,json=winningTrades,proto3" json:"winning_trades,omitempty"`
 	LosingTrades     int32                  `protobuf:"varint,9,opt,name=losing_trades,json=losingTrades,proto3" json:"losing_trades,omitempty"`
-	AverageProfit    float64                `protobuf:"fixed64,10,opt,name=average_profit,json=averageProfit,proto3" json:"average_profit,omitempty"`
-	AverageLoss      float64                `protobuf:"fixed64,11,opt,name=average_loss,json=averageLoss,proto3" json:"average_loss,omitempty"`
-	TotalPnlAbsolute float64                `protobuf:"fixed64,12,opt,name=total_pnl_absolute,json=totalPnlAbsolute,proto3" json:"total_pnl_absolute,omitempty"` // absolute PnL (initial_capital * total_return)
+	AverageProfit    string                 `protobuf:"bytes,10,opt,name=average_profit,json=averageProfit,proto3" json:"average_profit,omitempty"`
+	AverageLoss      string                 `protobuf:"bytes,11,opt,name=average_loss,json=averageLoss,proto3" json:"average_loss,omitempty"`
+	TotalPnlAbsolute string                 `protobuf:"bytes,12,opt,name=total_pnl_absolute,json=totalPnlAbsolute,proto3" json:"total_pnl_absolute,omitempty"` // absolute PnL (initial_capital * total_return)
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -1150,25 +1150,25 @@ func (x *ExecuteBacktestMetrics) GetLosingTrades() int32 {
 	return 0
 }
 
-func (x *ExecuteBacktestMetrics) GetAverageProfit() float64 {
+func (x *ExecuteBacktestMetrics) GetAverageProfit() string {
 	if x != nil {
 		return x.AverageProfit
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteBacktestMetrics) GetAverageLoss() float64 {
+func (x *ExecuteBacktestMetrics) GetAverageLoss() string {
 	if x != nil {
 		return x.AverageLoss
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteBacktestMetrics) GetTotalPnlAbsolute() float64 {
+func (x *ExecuteBacktestMetrics) GetTotalPnlAbsolute() string {
 	if x != nil {
 		return x.TotalPnlAbsolute
 	}
-	return 0
+	return ""
 }
 
 type ExecuteRiskAssessment struct {
@@ -1273,10 +1273,10 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\x11EngineTradeSignal\x12\x16\n" +
 	"\x06signal\x18\x01 \x01(\tR\x06signal\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x14\n" +
-	"\x05price\x18\x03 \x01(\x01R\x05price\x12\x16\n" +
-	"\x06volume\x18\x04 \x01(\x01R\x06volume\x12\x1b\n" +
-	"\tstop_loss\x18\x05 \x01(\x01R\bstopLoss\x12\x1f\n" +
-	"\vtake_profit\x18\x06 \x01(\x01R\n" +
+	"\x05price\x18\x03 \x01(\tR\x05price\x12\x16\n" +
+	"\x06volume\x18\x04 \x01(\tR\x06volume\x12\x1b\n" +
+	"\tstop_loss\x18\x05 \x01(\tR\bstopLoss\x12\x1f\n" +
+	"\vtake_profit\x18\x06 \x01(\tR\n" +
 	"takeProfit\x12\x1e\n" +
 	"\n" +
 	"confidence\x18\a \x01(\x01R\n" +
@@ -1286,11 +1286,11 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\fopen_time_ms\x18\x01 \x01(\x03R\n" +
 	"openTimeMs\x12\"\n" +
 	"\rclose_time_ms\x18\x02 \x01(\x03R\vcloseTimeMs\x12\x12\n" +
-	"\x04open\x18\x03 \x01(\x01R\x04open\x12\x12\n" +
-	"\x04high\x18\x04 \x01(\x01R\x04high\x12\x10\n" +
-	"\x03low\x18\x05 \x01(\x01R\x03low\x12\x14\n" +
-	"\x05close\x18\x06 \x01(\x01R\x05close\x12\x16\n" +
-	"\x06volume\x18\a \x01(\x01R\x06volume\"\xbf\a\n" +
+	"\x04open\x18\x03 \x01(\tR\x04open\x12\x12\n" +
+	"\x04high\x18\x04 \x01(\tR\x04high\x12\x10\n" +
+	"\x03low\x18\x05 \x01(\tR\x03low\x12\x14\n" +
+	"\x05close\x18\x06 \x01(\tR\x05close\x12\x16\n" +
+	"\x06volume\x18\a \x01(\tR\x06volume\"\xbf\a\n" +
 	"\x16ExecuteBacktestRequest\x12\x1f\n" +
 	"\vstrategy_id\x18\x01 \x01(\tR\n" +
 	"strategyId\x12#\n" +
@@ -1299,7 +1299,7 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\ttimeframe\x18\x04 \x01(\tR\ttimeframe\x12\"\n" +
 	"\rstart_date_ms\x18\x05 \x01(\x03R\vstartDateMs\x12\x1e\n" +
 	"\vend_date_ms\x18\x06 \x01(\x03R\tendDateMs\x12'\n" +
-	"\x0finitial_capital\x18\a \x01(\x01R\x0einitialCapital\x12\x1e\n" +
+	"\x0finitial_capital\x18\a \x01(\tR\x0einitialCapital\x12\x1e\n" +
 	"\n" +
 	"commission\x18\b \x01(\x01R\n" +
 	"commission\x12\x16\n" +
@@ -1325,40 +1325,40 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\n" +
 	"SymbolInfo\x12\x16\n" +
 	"\x06digits\x18\x01 \x01(\x05R\x06digits\x12\x14\n" +
-	"\x05point\x18\x02 \x01(\x01R\x05point\x12\x1b\n" +
-	"\ttick_size\x18\x03 \x01(\x01R\btickSize\x12\x1d\n" +
+	"\x05point\x18\x02 \x01(\tR\x05point\x12\x1b\n" +
+	"\ttick_size\x18\x03 \x01(\tR\btickSize\x12\x1d\n" +
 	"\n" +
-	"tick_value\x18\x04 \x01(\x01R\ttickValue\x12#\n" +
-	"\rcontract_size\x18\x05 \x01(\x01R\fcontractSize\x12\x1d\n" +
+	"tick_value\x18\x04 \x01(\tR\ttickValue\x12#\n" +
+	"\rcontract_size\x18\x05 \x01(\tR\fcontractSize\x12\x1d\n" +
 	"\n" +
-	"volume_min\x18\x06 \x01(\x01R\tvolumeMin\x12\x1d\n" +
+	"volume_min\x18\x06 \x01(\tR\tvolumeMin\x12\x1d\n" +
 	"\n" +
-	"volume_max\x18\a \x01(\x01R\tvolumeMax\x12\x1f\n" +
-	"\vvolume_step\x18\b \x01(\x01R\n" +
+	"volume_max\x18\a \x01(\tR\tvolumeMax\x12\x1f\n" +
+	"\vvolume_step\x18\b \x01(\tR\n" +
 	"volumeStep\x12\x1f\n" +
 	"\vstops_level\x18\t \x01(\x05R\n" +
 	"stopsLevel\x12!\n" +
 	"\ffreeze_level\x18\n" +
 	" \x01(\x05R\vfreezeLevel\x12\x1b\n" +
-	"\tswap_long\x18\v \x01(\x01R\bswapLong\x12\x1d\n" +
+	"\tswap_long\x18\v \x01(\tR\bswapLong\x12\x1d\n" +
 	"\n" +
-	"swap_short\x18\f \x01(\x01R\tswapShort\x12\x1f\n" +
-	"\vmargin_rate\x18\r \x01(\x01R\n" +
+	"swap_short\x18\f \x01(\tR\tswapShort\x12\x1f\n" +
+	"\vmargin_rate\x18\r \x01(\tR\n" +
 	"marginRate\"\xa2\x02\n" +
 	"\x14ExecuteBacktestTrade\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +
-	"\x06volume\x18\x03 \x01(\x01R\x06volume\x12\x1c\n" +
+	"\x06volume\x18\x03 \x01(\tR\x06volume\x12\x1c\n" +
 	"\n" +
 	"open_ts_ms\x18\x04 \x01(\x03R\bopenTsMs\x12\x1d\n" +
 	"\n" +
-	"open_price\x18\x05 \x01(\x01R\topenPrice\x12\x1e\n" +
+	"open_price\x18\x05 \x01(\tR\topenPrice\x12\x1e\n" +
 	"\vclose_ts_ms\x18\x06 \x01(\x03R\tcloseTsMs\x12\x1f\n" +
-	"\vclose_price\x18\a \x01(\x01R\n" +
+	"\vclose_price\x18\a \x01(\tR\n" +
 	"closePrice\x12\x10\n" +
-	"\x03pnl\x18\b \x01(\x01R\x03pnl\x12\x1e\n" +
+	"\x03pnl\x18\b \x01(\tR\x03pnl\x12\x1e\n" +
 	"\n" +
-	"commission\x18\t \x01(\x01R\n" +
+	"commission\x18\t \x01(\tR\n" +
 	"commission\x12\x16\n" +
 	"\x06reason\x18\n" +
 	" \x01(\tR\x06reason\"\xe2\x02\n" +
@@ -1381,9 +1381,9 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\x0ewinning_trades\x18\b \x01(\x05R\rwinningTrades\x12#\n" +
 	"\rlosing_trades\x18\t \x01(\x05R\flosingTrades\x12%\n" +
 	"\x0eaverage_profit\x18\n" +
-	" \x01(\x01R\raverageProfit\x12!\n" +
-	"\faverage_loss\x18\v \x01(\x01R\vaverageLoss\x12,\n" +
-	"\x12total_pnl_absolute\x18\f \x01(\x01R\x10totalPnlAbsolute\"\x9a\x01\n" +
+	" \x01(\tR\raverageProfit\x12!\n" +
+	"\faverage_loss\x18\v \x01(\tR\vaverageLoss\x12,\n" +
+	"\x12total_pnl_absolute\x18\f \x01(\tR\x10totalPnlAbsolute\"\x9a\x01\n" +
 	"\x15ExecuteRiskAssessment\x12\x14\n" +
 	"\x05score\x18\x01 \x01(\x05R\x05score\x12\x14\n" +
 	"\x05level\x18\x02 \x01(\tR\x05level\x12\x18\n" +

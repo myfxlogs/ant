@@ -125,16 +125,22 @@ func (r *JobRepository) AddEvent(ctx context.Context, event *JobEvent) error {
 	if err != nil {
 		return fmt.Errorf("add job event: %w", err)
 	}
+	// Push-first: notify subscribers of new events.
+	_, _ = r.db.Exec(ctx, "SELECT pg_notify('job_events', $1)", event.JobID.String())
 	return nil
 }
 
-func (r *JobRepository) ListEvents(ctx context.Context, jobID uuid.UUID, afterSeq int64, limit int) ([]JobEvent, error) {
+func (r *JobRepository) ListEvents(ctx context.Context, userID, jobID uuid.UUID, afterSeq int64, limit int) ([]JobEvent, error) {
 	if limit <= 0 || limit > 500 {
 		limit = 100
 	}
 	rows, err := r.db.Query(ctx,
-		"SELECT id, job_id, seq, type, status, progress, stage, message, payload, created_at FROM job_events WHERE job_id = $1 AND seq > $2 ORDER BY seq ASC LIMIT $3",
-		jobID, afterSeq, limit)
+		`SELECT e.id, e.job_id, e.seq, e.type, e.status, e.progress, e.stage, e.message, e.payload, e.created_at
+		 FROM job_events e
+		 JOIN jobs j ON j.id = e.job_id
+		 WHERE e.job_id = $1 AND j.user_id = $2 AND e.seq > $3
+		 ORDER BY e.seq ASC LIMIT $4`,
+		jobID, userID, afterSeq, limit)
 	if err != nil {
 		return nil, err
 	}

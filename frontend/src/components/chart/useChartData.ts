@@ -6,6 +6,7 @@ import type { BarUpdateEvent } from '@/gen/ant/v1/stream_pb';
 import { setBidAsk, clearBidAsk, setBidAskPrecision } from './BidAskIndicator';
 
 const INITIAL_BARS = 300;
+const MAX_CACHE_ENTRIES = 20;
 
 /** Convert internal bar (time=seconds) → klinecharts format (timestamp=ms). Shared export for PriceChart. */
 export function toChartBar(bar: KlineData) {
@@ -130,7 +131,7 @@ export function useChartData(
 
     marketApi.getKlines({ symbol: marketApi.resolveSymbol(symbol), timeframe, count: INITIAL_BARS, accountId })
       .then((data) => {
-        if (!cancelled) { barsRef.current = data ?? []; setBars(data ?? []); barCache.current.set(cacheKey, data ?? []); setLoading(false); }
+        if (!cancelled) { barsRef.current = data ?? []; setBars(data ?? []); barCache.current.set(cacheKey, data ?? []); if (barCache.current.size > MAX_CACHE_ENTRIES) { const oldest = barCache.current.keys().next().value; if (oldest) barCache.current.delete(oldest); } setLoading(false); }
       })
       .catch((err: Error) => {
         if (!cancelled) {

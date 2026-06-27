@@ -16,6 +16,7 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/pglisten"
 	"anttrader/internal/repository"
 )
 
@@ -36,8 +37,9 @@ func jsonbToStruct(raw []byte) *structpb.Struct {
 
 // JobServer implements ant.v1.JobServiceHandler.
 type JobServer struct {
-	jobs *repository.JobRepository
-	log  *zap.Logger
+	jobs    *repository.JobRepository
+	log     *zap.Logger
+	pgListen *pglisten.Listener
 }
 
 var _ antv1c.JobServiceHandler = (*JobServer)(nil)
@@ -45,6 +47,8 @@ var _ antv1c.JobServiceHandler = (*JobServer)(nil)
 func NewJobServer(jobs *repository.JobRepository, log *zap.Logger) *JobServer {
 	return &JobServer{jobs: jobs, log: log}
 }
+
+func (s *JobServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
 
 func (s *JobServer) userID(ctx context.Context) uuid.UUID {
 	id, _ := uuid.Parse(interceptor.GetUserID(ctx))
@@ -86,37 +90,79 @@ func (s *JobServer) SubscribeJob(ctx context.Context, req *connect.Request[antv1
 	if err != nil {
 		return connect.NewError(connect.CodeInvalidArgument, err)
 	}
+	uid := s.userID(ctx)
 	afterSeq := req.Msg.AfterSeq
+
+	// Drain any existing events first.
+	events, qerr := s.jobs.ListEvents(ctx, uid, jobID, afterSeq, 100)
+	if qerr != nil {
+		return connect.NewError(connect.CodeInternal, qerr)
+	}
+	for _, ev := range events {
+		if err := stream.Send(&antv1.JobEvent{
+			JobId: ev.JobID.String(), Seq: ev.Seq, Type: ev.Type,
+			Status: ev.Status, Progress: ev.Progress, Stage: ev.Stage,
+			Message: payloadToMsg(ev), Payload: jsonbToStruct(ev.Payload),
+			CreatedAt: timestamppb.New(ev.CreatedAt),
+		}); err != nil {
+			return err
+		}
+		afterSeq = ev.Seq
+	}
+
+	// Check if job is already terminal — no need to listen.
+	job, err := s.jobs.GetJob(ctx, uid, jobID)
+	if err != nil {
+		return connect.NewError(connect.CodeInternal, err)
+	}
+	if job.Status == "succeeded" || job.Status == "failed" || job.Status == "cancelled" {
+		return nil
+	}
+
+	// Push-first: PG LISTEN for new events, ticker as fallback.
+	var notifCh <-chan string
+	var listenCancel func()
+	if s.pgListen != nil {
+		notifCh, listenCancel, _ = s.pgListen.Listen(ctx, "job_events")
+		if listenCancel != nil {
+			defer listenCancel()
+		}
+	}
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		default:
+		case <-notifCh:
+		case <-ticker.C:
 		}
 
-		events, qerr := s.jobs.ListEvents(ctx, jobID, afterSeq, 100)
+		events, qerr := s.jobs.ListEvents(ctx, uid, jobID, afterSeq, 100)
 		if qerr != nil {
-			return connect.NewError(connect.CodeInternal, qerr)
-		}
-
-		if len(events) == 0 {
-			select {
-			case <-ctx.Done():
-				return nil
-			case <-time.After(2 * time.Second):
-			}
+			s.log.Warn("SubscribeJob: ListEvents failed", zap.Error(qerr))
 			continue
 		}
 
 		for _, ev := range events {
-			stream.Send(&antv1.JobEvent{
+			if err := stream.Send(&antv1.JobEvent{
 				JobId: ev.JobID.String(), Seq: ev.Seq, Type: ev.Type,
 				Status: ev.Status, Progress: ev.Progress, Stage: ev.Stage,
 				Message: payloadToMsg(ev), Payload: jsonbToStruct(ev.Payload),
 				CreatedAt: timestamppb.New(ev.CreatedAt),
-			})
+			}); err != nil {
+				return err
+			}
 			afterSeq = ev.Seq
+		}
+
+		// Check if job reached terminal state.
+		if len(events) > 0 {
+			last := events[len(events)-1]
+			if last.Status == "succeeded" || last.Status == "failed" || last.Status == "cancelled" {
+				return nil
+			}
 		}
 	}
 }

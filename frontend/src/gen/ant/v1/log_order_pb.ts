@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file log_order.proto.
  */
 export const file_log_order: GenFile = /*@__PURE__*/
-  fileDesc("Cg9sb2dfb3JkZXIucHJvdG8SBmFudC52MSKbAQoZR2V0T3JkZXJMb2dIaXN0b3J5UmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBRISCgphY2NvdW50X2lkGAMgASgJEg4KBnN5bWJvbBgEIAEoCRISCgpzdGFydF9kYXRlGAUgASgJEhAKCGVuZF9kYXRlGAYgASgJEhMKC3NjaGVkdWxlX2lkGAcgASgJIlcKGkdldE9yZGVyTG9nSGlzdG9yeVJlc3BvbnNlEioKBm9yZGVycxgBIAMoCzIaLmFudC52MS5PcmRlckhpc3RvcnlSZWNvcmQSDQoFdG90YWwYAiABKAUiowIKEk9yZGVySGlzdG9yeVJlY29yZBIKCgJpZBgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEhMKC3NjaGVkdWxlX2lkGAwgASgJEg4KBnRpY2tldBgDIAEoAxIOCgZzeW1ib2wYBCABKAkSEgoKb3JkZXJfdHlwZRgFIAEoCRIMCgRsb3RzGAYgASgBEhIKCm9wZW5fcHJpY2UYByABKAESEwoLY2xvc2VfcHJpY2UYCCABKAESDgoGcHJvZml0GAkgASgBEi0KCW9wZW5fdGltZRgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY2xvc2VfdGltZRgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("Cg9sb2dfb3JkZXIucHJvdG8SBmFudC52MSKbAQoZR2V0T3JkZXJMb2dIaXN0b3J5UmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBRISCgphY2NvdW50X2lkGAMgASgJEg4KBnN5bWJvbBgEIAEoCRISCgpzdGFydF9kYXRlGAUgASgJEhAKCGVuZF9kYXRlGAYgASgJEhMKC3NjaGVkdWxlX2lkGAcgASgJIlcKGkdldE9yZGVyTG9nSGlzdG9yeVJlc3BvbnNlEioKBm9yZGVycxgBIAMoCzIaLmFudC52MS5PcmRlckhpc3RvcnlSZWNvcmQSDQoFdG90YWwYAiABKAUiowIKEk9yZGVySGlzdG9yeVJlY29yZBIKCgJpZBgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEhMKC3NjaGVkdWxlX2lkGAwgASgJEg4KBnRpY2tldBgDIAEoAxIOCgZzeW1ib2wYBCABKAkSEgoKb3JkZXJfdHlwZRgFIAEoCRIMCgRsb3RzGAYgASgJEhIKCm9wZW5fcHJpY2UYByABKAkSEwoLY2xvc2VfcHJpY2UYCCABKAkSDgoGcHJvZml0GAkgASgJEi0KCW9wZW5fdGltZRgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY2xvc2VfdGltZRgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.GetOrderLogHistoryRequest
@@ -118,24 +118,24 @@ export type OrderHistoryRecord = Message<"ant.v1.OrderHistoryRecord"> & {
   orderType: string;
 
   /**
-   * @generated from field: double lots = 6;
+   * @generated from field: string lots = 6;
    */
-  lots: number;
+  lots: string;
 
   /**
-   * @generated from field: double open_price = 7;
+   * @generated from field: string open_price = 7;
    */
-  openPrice: number;
+  openPrice: string;
 
   /**
-   * @generated from field: double close_price = 8;
+   * @generated from field: string close_price = 8;
    */
-  closePrice: number;
+  closePrice: string;
 
   /**
-   * @generated from field: double profit = 9;
+   * @generated from field: string profit = 9;
    */
-  profit: number;
+  profit: string;
 
   /**
    * @generated from field: google.protobuf.Timestamp open_time = 10;

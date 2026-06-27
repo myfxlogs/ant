@@ -6,7 +6,7 @@ import (
 )
 
 func TestClassifyIntent_RepairPriority(t *testing.T) {
-	code := "def run(ctx):\n    pass\n"
+	code := "package main\n\nfunc (s *MyStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error) {\n    return nil, nil\n}\n"
 
 	tests := []struct {
 		msg  string
@@ -31,7 +31,7 @@ func TestClassifyIntent_RepairPriority(t *testing.T) {
 
 func TestRepairPrompt_CodeOnlyConstraints(t *testing.T) {
 	input := BuildContextInput{
-		Code:             "def run(ctx): pass",
+		Code:             "package main\n\nfunc (s *MyStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error) {\n    return nil, nil\n}",
 		Message:          "报错: missing required param",
 		ValidationErrors: []string{"missing stop_loss", "syntax error"},
 	}
@@ -45,7 +45,7 @@ func TestRepairPrompt_CodeOnlyConstraints(t *testing.T) {
 		"CODE REPAIR EXPERT",
 		"CRITICAL RULES",
 		"NO markdown, NO explanations",
-		"Start directly with import/class/#",
+		"Start directly with import/type/func",
 		"FIXME",
 		"missing stop_loss",
 	}
@@ -57,7 +57,7 @@ func TestRepairPrompt_CodeOnlyConstraints(t *testing.T) {
 }
 
 func TestClassifyIntent_DiscussDoesNotTriggerRepair(t *testing.T) {
-	code := "def run(ctx):\n    if ctx.close > ctx.sma(20):\n        return {'signal':'buy'}\n"
+	code := "package main\n\nfunc (s *MyStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error) {\n    return nil, nil\n}\n"
 
 	discussMsgs := []string{
 		"这个止损逻辑对吗？",
@@ -75,8 +75,8 @@ func TestClassifyIntent_DiscussDoesNotTriggerRepair(t *testing.T) {
 }
 
 func TestClassifyIntent_ReviseIsDefault(t *testing.T) {
-	code := "def run(ctx): pass\n"
-	
+	code := "package main\n\nfunc (s *MyStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error) {\n    return nil, nil\n}\n"
+
 	reviseMsgs := []string{
 		"把sma改成ema",
 		"加一个止盈",

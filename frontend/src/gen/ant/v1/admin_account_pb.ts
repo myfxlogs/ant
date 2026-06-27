@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file admin_account.proto.
  */
 export const file_admin_account: GenFile = /*@__PURE__*/
-  fileDesc("ChNhZG1pbl9hY2NvdW50LnByb3RvEgZhbnQudjEilgUKD0FjY291bnRXaXRoVXNlchIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhIKCnVzZXJfZW1haWwYAyABKAkSFQoNdXNlcl9uaWNrbmFtZRgEIAEoCRIPCgdtdF90eXBlGAUgASgJEhYKDmJyb2tlcl9jb21wYW55GAYgASgJEhUKDWJyb2tlcl9zZXJ2ZXIYByABKAkSDQoFbG9naW4YCCABKAkSDQoFYWxpYXMYCSABKAkSEwoLaXNfZGlzYWJsZWQYCiABKAgSDwoHYmFsYW5jZRgLIAEoARIOCgZjcmVkaXQYDCABKAESDgoGZXF1aXR5GA0gASgBEg4KBm1hcmdpbhgOIAEoARITCgtmcmVlX21hcmdpbhgPIAEoARIUCgxtYXJnaW5fbGV2ZWwYECABKAESEAoIbGV2ZXJhZ2UYESABKAUSEAoIY3VycmVuY3kYEiABKAkSEwoLaXNfaW52ZXN0b3IYEyABKAgSFgoOYWNjb3VudF9zdGF0dXMYFCABKAkSFQoNc3RyZWFtX3N0YXR1cxgVIAEoCRISCgpsYXN0X2Vycm9yGBYgASgJEhQKDGFjY291bnRfdHlwZRgXIAEoCRI1ChFsYXN0X2Nvbm5lY3RlZF9hdBgYIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASMwoPbGFzdF9jaGVja2VkX2F0GBkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpjcmVhdGVkX2F0GBogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GBsgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJ9ChhMaXN0QWNjb3VudHNBZG1pblJlcXVlc3QSDAoEcGFnZRgBIAEoBRIRCglwYWdlX3NpemUYAiABKAUSDgoGc2VhcmNoGAMgASgJEg4KBnN0YXR1cxgEIAEoCRIPCgdtdF90eXBlGAUgASgJEg8KB3VzZXJfaWQYBiABKAkiVQoZTGlzdEFjY291bnRzQWRtaW5SZXNwb25zZRIpCghhY2NvdW50cxgBIAMoCzIXLmFudC52MS5BY2NvdW50V2l0aFVzZXISDQoFdG90YWwYAiABKAMiIgoURnJlZXplQWNjb3VudFJlcXVlc3QSCgoCaWQYASABKAkiFwoVRnJlZXplQWNjb3VudFJlc3BvbnNlIiQKFlVuZnJlZXplQWNjb3VudFJlcXVlc3QSCgoCaWQYASABKAkiGQoXVW5mcmVlemVBY2NvdW50UmVzcG9uc2UykQIKE0FkbWluQWNjb3VudFNlcnZpY2USWAoRTGlzdEFjY291bnRzQWRtaW4SIC5hbnQudjEuTGlzdEFjY291bnRzQWRtaW5SZXF1ZXN0GiEuYW50LnYxLkxpc3RBY2NvdW50c0FkbWluUmVzcG9uc2USTAoNRnJlZXplQWNjb3VudBIcLmFudC52MS5GcmVlemVBY2NvdW50UmVxdWVzdBodLmFudC52MS5GcmVlemVBY2NvdW50UmVzcG9uc2USUgoPVW5mcmVlemVBY2NvdW50Eh4uYW50LnYxLlVuZnJlZXplQWNjb3VudFJlcXVlc3QaHy5hbnQudjEuVW5mcmVlemVBY2NvdW50UmVzcG9uc2VCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChNhZG1pbl9hY2NvdW50LnByb3RvEgZhbnQudjEilgUKD0FjY291bnRXaXRoVXNlchIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhIKCnVzZXJfZW1haWwYAyABKAkSFQoNdXNlcl9uaWNrbmFtZRgEIAEoCRIPCgdtdF90eXBlGAUgASgJEhYKDmJyb2tlcl9jb21wYW55GAYgASgJEhUKDWJyb2tlcl9zZXJ2ZXIYByABKAkSDQoFbG9naW4YCCABKAkSDQoFYWxpYXMYCSABKAkSEwoLaXNfZGlzYWJsZWQYCiABKAgSDwoHYmFsYW5jZRgLIAEoCRIOCgZjcmVkaXQYDCABKAkSDgoGZXF1aXR5GA0gASgJEg4KBm1hcmdpbhgOIAEoCRITCgtmcmVlX21hcmdpbhgPIAEoCRIUCgxtYXJnaW5fbGV2ZWwYECABKAkSEAoIbGV2ZXJhZ2UYESABKAUSEAoIY3VycmVuY3kYEiABKAkSEwoLaXNfaW52ZXN0b3IYEyABKAgSFgoOYWNjb3VudF9zdGF0dXMYFCABKAkSFQoNc3RyZWFtX3N0YXR1cxgVIAEoCRISCgpsYXN0X2Vycm9yGBYgASgJEhQKDGFjY291bnRfdHlwZRgXIAEoCRI1ChFsYXN0X2Nvbm5lY3RlZF9hdBgYIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASMwoPbGFzdF9jaGVja2VkX2F0GBkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpjcmVhdGVkX2F0GBogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GBsgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJ9ChhMaXN0QWNjb3VudHNBZG1pblJlcXVlc3QSDAoEcGFnZRgBIAEoBRIRCglwYWdlX3NpemUYAiABKAUSDgoGc2VhcmNoGAMgASgJEg4KBnN0YXR1cxgEIAEoCRIPCgdtdF90eXBlGAUgASgJEg8KB3VzZXJfaWQYBiABKAkiVQoZTGlzdEFjY291bnRzQWRtaW5SZXNwb25zZRIpCghhY2NvdW50cxgBIAMoCzIXLmFudC52MS5BY2NvdW50V2l0aFVzZXISDQoFdG90YWwYAiABKAMiIgoURnJlZXplQWNjb3VudFJlcXVlc3QSCgoCaWQYASABKAkiFwoVRnJlZXplQWNjb3VudFJlc3BvbnNlIiQKFlVuZnJlZXplQWNjb3VudFJlcXVlc3QSCgoCaWQYASABKAkiGQoXVW5mcmVlemVBY2NvdW50UmVzcG9uc2UykQIKE0FkbWluQWNjb3VudFNlcnZpY2USWAoRTGlzdEFjY291bnRzQWRtaW4SIC5hbnQudjEuTGlzdEFjY291bnRzQWRtaW5SZXF1ZXN0GiEuYW50LnYxLkxpc3RBY2NvdW50c0FkbWluUmVzcG9uc2USTAoNRnJlZXplQWNjb3VudBIcLmFudC52MS5GcmVlemVBY2NvdW50UmVxdWVzdBodLmFudC52MS5GcmVlemVBY2NvdW50UmVzcG9uc2USUgoPVW5mcmVlemVBY2NvdW50Eh4uYW50LnYxLlVuZnJlZXplQWNjb3VudFJlcXVlc3QaHy5hbnQudjEuVW5mcmVlemVBY2NvdW50UmVzcG9uc2VCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.AccountWithUser
@@ -69,34 +69,34 @@ export type AccountWithUser = Message<"ant.v1.AccountWithUser"> & {
   isDisabled: boolean;
 
   /**
-   * @generated from field: double balance = 11;
+   * @generated from field: string balance = 11;
    */
-  balance: number;
+  balance: string;
 
   /**
-   * @generated from field: double credit = 12;
+   * @generated from field: string credit = 12;
    */
-  credit: number;
+  credit: string;
 
   /**
-   * @generated from field: double equity = 13;
+   * @generated from field: string equity = 13;
    */
-  equity: number;
+  equity: string;
 
   /**
-   * @generated from field: double margin = 14;
+   * @generated from field: string margin = 14;
    */
-  margin: number;
+  margin: string;
 
   /**
-   * @generated from field: double free_margin = 15;
+   * @generated from field: string free_margin = 15;
    */
-  freeMargin: number;
+  freeMargin: string;
 
   /**
-   * @generated from field: double margin_level = 16;
+   * @generated from field: string margin_level = 16;
    */
-  marginLevel: number;
+  marginLevel: string;
 
   /**
    * @generated from field: int32 leverage = 17;

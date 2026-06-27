@@ -72,13 +72,14 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
         accountId, symbol, type: typeStr, volume: volume, clientId,
         price: isLimitOrStop ? price : undefined,
         stopLoss: stopLoss ?? undefined, takeProfit: takeProfit ?? undefined,
+        marginMode: isMT5 ? marginMode : undefined,
       });
       if (result.error && result.error !== '0' && result.error !== '') {
         message.error(result.message || result.error);
       } else { message.success(t(ORDER_PLACED_KEY, { side: side === 'buy' ? t('trading.buy') : t('trading.sell') })); }
     } catch (e: any) { message.error(e?.message || t(ORDER_FAILED_KEY)); }
     finally { setSubmitting(false); }
-  }, [accountId, symbol, side, orderKind, volume, price, stopLoss, takeProfit, isLimitOrStop]);
+  }, [accountId, symbol, side, orderKind, volume, price, stopLoss, takeProfit, isLimitOrStop, marginMode, isMT5]);
 
   const closeTimerRef = useRef<number | null>(null);
   useEffect(() => () => { if (closeTimerRef.current != null) window.clearTimeout(closeTimerRef.current); }, []);

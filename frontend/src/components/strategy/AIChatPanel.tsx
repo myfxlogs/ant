@@ -7,7 +7,7 @@ import { CODE_UPDATED_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
 import { CHAT_DISCUSS_KEY, CHAT_GENERATE_KEY, CHAT_REPAIR_KEY, CHAT_REVISE_KEY, TITLE_KEY as GEN_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 import { generateStrategyStream } from '@/client/strategyGen';
 import { codeAssistApi, type CodeChatMessage } from '@/client/codeAssist';
-import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 import StepProgress from './StepProgress';
@@ -108,7 +108,7 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
           setBacktestId(id);
           setPlan(""); setPrevCode("");
           watchRef.current?.();
-          const stop = pythonStrategyApi.watchBacktestRun(id, (update: BacktestRunUpdate) => {
+          const stop = strategyRuntimeApi.watchBacktestRun(id, (update: BacktestRunUpdate) => {
             if (isSucceededRun(update.run) && update.metrics) {
               setBacktestMetrics({
                 sharpeRatio: update.metrics.sharpeRatio,

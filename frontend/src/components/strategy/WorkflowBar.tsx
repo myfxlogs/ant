@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Modal, Input, Tooltip } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, ThunderboltOutlined, SafetyOutlined, SaveOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
 import {
   WORKFLOW_BACKTEST_DONE_KEY, WORKFLOW_BACKTEST_FAIL_KEY, WORKFLOW_BACKTEST_HINT_DONE_KEY,
@@ -90,7 +90,7 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
     if (onRunBacktest) { onRunBacktest(); return; }
     // Fallback: direct backtest if not wired to BacktestPanel.
     try {
-      const r = await pythonStrategyApi.backtest({ code, accountId, symbol: symbol!, timeframe: timeframe!, initialCapital: 10000 });
+      const r = await strategyRuntimeApi.backtest({ code, accountId, symbol: symbol!, timeframe: timeframe!, initialCapital: 10000 });
       if (r.success && r.metrics) {
         setStep('backtest', 'done'); setStep('save', 'idle');
         addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_DONE_KEY)} ${r.metrics.sharpeRatio?.toFixed(2)??'-'} | DD: ${((r.metrics.maxDrawdown??0)*100).toFixed(1)}% | WR: ${((r.metrics.winRate??0)*100).toFixed(0)}% | Trades: ${r.metrics.totalTrades??0}` });

@@ -29,7 +29,7 @@ type BacktestRun struct {
 	CancelRequestedAt    *time.Time `db:"cancel_requested_at"`
 	LeaseUntil           *time.Time `db:"lease_until"`
 	StrategyCodeHash     string     `db:"strategy_code_hash"`
-	PythonServiceVersion *string    `db:"python_service_version"`
+	PythonServiceVersion *string    `db:"python_service_version"` // legacy DB column; kept for compatibility, no longer used
 	CostModelSnapshot    []byte     `db:"cost_model_snapshot"`
 	Status               string     `db:"status"`
 	Error                string     `db:"error"`

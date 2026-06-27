@@ -6,11 +6,14 @@ package repository
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
+
+var validPartitionName = regexp.MustCompile(`^[a-z_][a-z0-9_]*$`)
 
 const (
 	mdTicksRetentionDays = 90
@@ -119,6 +122,10 @@ func prunePartitions(ctx context.Context, pool *pgxpool.Pool, log *zap.Logger,
 		toDrop = append(toDrop, name)
 	}
 	for _, name := range toDrop {
+		if !validPartitionName.MatchString(name) {
+			log.Warn("partition_mgr: skipping invalid partition name", zap.String("name", name))
+			continue
+		}
 		sql := fmt.Sprintf("DROP TABLE IF EXISTS %s", name)
 		if _, err := pool.Exec(ctx, sql); err != nil {
 			log.Warn("partition_mgr: drop partition failed", zap.String("table", name), zap.Error(err))

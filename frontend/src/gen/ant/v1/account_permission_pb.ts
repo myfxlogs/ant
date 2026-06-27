@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file account_permission.proto.
  */
 export const file_account_permission: GenFile = /*@__PURE__*/
-  fileDesc("ChhhY2NvdW50X3Blcm1pc3Npb24ucHJvdG8SBmFudC52MSIqChxWZXJpZnlUcmFkZVBlcm1pc3Npb25SZXF1ZXN0EgoKAmlkGAEgASgJInUKHVZlcmlmeVRyYWRlUGVybWlzc2lvblJlc3BvbnNlEhwKFGhhc190cmFkZV9wZXJtaXNzaW9uGAEgASgIEhMKC2lzX2ludmVzdG9yGAIgASgIEhAKCHZlcmlmaWVkGAMgASgIEg8KB21lc3NhZ2UYBCABKAkiVgocVXBkYXRlVHJhZGluZ1Bhc3N3b3JkUmVxdWVzdBIKCgJpZBgBIAEoCRIUCgxuZXdfcGFzc3dvcmQYAiABKAkSFAoMb2xkX3Bhc3N3b3JkGAMgASgJInQKHVVwZGF0ZVRyYWRpbmdQYXNzd29yZFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSHAoUaGFzX3RyYWRlX3Blcm1pc3Npb24YAiABKAgSEwoLaXNfaW52ZXN0b3IYAyABKAgSDwoHbWVzc2FnZRgEIAEoCSJdChRWZXJpZnlBY2NvdW50UmVxdWVzdBINCgVsb2dpbhgBIAEoCRIQCghwYXNzd29yZBgCIAEoCRIPCgdtdF90eXBlGAMgASgJEhMKC2Jyb2tlcl9ob3N0GAQgASgJIroBChVWZXJpZnlBY2NvdW50UmVzcG9uc2USEAoIdmVyaWZpZWQYASABKAgSDwoHbWVzc2FnZRgCIAEoCRIPCgdiYWxhbmNlGAMgASgBEg4KBmVxdWl0eRgEIAEoARIOCgZtYXJnaW4YBSABKAESEwoLZnJlZV9tYXJnaW4YBiABKAESEAoIbGV2ZXJhZ2UYByABKAUSEAoIY3VycmVuY3kYCCABKAkSFAoMYWNjb3VudF90eXBlGAkgASgJQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("ChhhY2NvdW50X3Blcm1pc3Npb24ucHJvdG8SBmFudC52MSIqChxWZXJpZnlUcmFkZVBlcm1pc3Npb25SZXF1ZXN0EgoKAmlkGAEgASgJInUKHVZlcmlmeVRyYWRlUGVybWlzc2lvblJlc3BvbnNlEhwKFGhhc190cmFkZV9wZXJtaXNzaW9uGAEgASgIEhMKC2lzX2ludmVzdG9yGAIgASgIEhAKCHZlcmlmaWVkGAMgASgIEg8KB21lc3NhZ2UYBCABKAkiVgocVXBkYXRlVHJhZGluZ1Bhc3N3b3JkUmVxdWVzdBIKCgJpZBgBIAEoCRIUCgxuZXdfcGFzc3dvcmQYAiABKAkSFAoMb2xkX3Bhc3N3b3JkGAMgASgJInQKHVVwZGF0ZVRyYWRpbmdQYXNzd29yZFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSHAoUaGFzX3RyYWRlX3Blcm1pc3Npb24YAiABKAgSEwoLaXNfaW52ZXN0b3IYAyABKAgSDwoHbWVzc2FnZRgEIAEoCSJdChRWZXJpZnlBY2NvdW50UmVxdWVzdBINCgVsb2dpbhgBIAEoCRIQCghwYXNzd29yZBgCIAEoCRIPCgdtdF90eXBlGAMgASgJEhMKC2Jyb2tlcl9ob3N0GAQgASgJIroBChVWZXJpZnlBY2NvdW50UmVzcG9uc2USEAoIdmVyaWZpZWQYASABKAgSDwoHbWVzc2FnZRgCIAEoCRIPCgdiYWxhbmNlGAMgASgJEg4KBmVxdWl0eRgEIAEoCRIOCgZtYXJnaW4YBSABKAkSEwoLZnJlZV9tYXJnaW4YBiABKAkSEAoIbGV2ZXJhZ2UYByABKAUSEAoIY3VycmVuY3kYCCABKAkSFAoMYWNjb3VudF90eXBlGAkgASgJQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.VerifyTradePermissionRequest
@@ -169,24 +169,24 @@ export type VerifyAccountResponse = Message<"ant.v1.VerifyAccountResponse"> & {
   message: string;
 
   /**
-   * @generated from field: double balance = 3;
+   * @generated from field: string balance = 3;
    */
-  balance: number;
+  balance: string;
 
   /**
-   * @generated from field: double equity = 4;
+   * @generated from field: string equity = 4;
    */
-  equity: number;
+  equity: string;
 
   /**
-   * @generated from field: double margin = 5;
+   * @generated from field: string margin = 5;
    */
-  margin: number;
+  margin: string;
 
   /**
-   * @generated from field: double free_margin = 6;
+   * @generated from field: string free_margin = 6;
    */
-  freeMargin: number;
+  freeMargin: string;
 
   /**
    * @generated from field: int32 leverage = 7;

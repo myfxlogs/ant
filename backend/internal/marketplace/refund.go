@@ -97,9 +97,9 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 	refundTxID := uuid.New()
 	refundDesc := fmt.Sprintf("Refund for subscription %s", subscriptionID)
 	err = tx.QueryRow(ctx,
-		fmt.Sprintf(`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
-		 VALUES ($1, $2, $3, '%s', $4::numeric, $5::numeric, $6::numeric, $7) RETURNING id`, TxTypeRefund),
-		refundTxID, buyerWalletID, uid, absAmount, buyerBalBefore, buyerBalAfter, refundDesc,
+		`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+		 VALUES ($1, $2, $3, $4, $5::numeric, $6::numeric, $7::numeric, $8) RETURNING id`,
+		refundTxID, buyerWalletID, uid, TxTypeRefund, absAmount, buyerBalBefore, buyerBalAfter, refundDesc,
 	).Scan(&refundTxID)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: record refund: %w", err)
@@ -109,10 +109,10 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 	//    they actually received (after platform fee deduction).
 	var pubNetReceived string
 	err = tx.QueryRow(ctx,
-		fmt.Sprintf(`SELECT amount::text FROM wallet_transactions
-		 WHERE user_id = $1 AND tx_type = '%s'
-		 ORDER BY created_at DESC LIMIT 1`, TxTypeSale),
-		subTargetUserID,
+		`SELECT amount::text FROM wallet_transactions
+		 WHERE user_id = $1 AND tx_type = $2
+		 ORDER BY created_at DESC LIMIT 1`,
+		subTargetUserID, TxTypeSale,
 	).Scan(&pubNetReceived)
 	if err != nil {
 		// No sale transaction found — skip publisher debit.
@@ -151,11 +151,13 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 			revTxID := uuid.New()
 			revDesc := fmt.Sprintf("Refund reversal for subscription %s", subscriptionID)
 			negNet := "-" + pubNetReceived
-			_, _ = tx.Exec(ctx,
-				fmt.Sprintf(`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
-				 VALUES ($1, $2, $3, '%s', $4::numeric, $5::numeric, $6::numeric, $7)`, TxTypeRefundReversal),
-				revTxID, pubWalletID, pubUUID, negNet, pubBalBefore, pubBalAfter, revDesc,
-			)
+			if _, err = tx.Exec(ctx,
+				`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+				 VALUES ($1, $2, $3, $4, $5::numeric, $6::numeric, $7::numeric, $8)`,
+				revTxID, pubWalletID, pubUUID, TxTypeRefundReversal, negNet, pubBalBefore, pubBalAfter, revDesc,
+			); err != nil {
+				return nil, fmt.Errorf("marketplace: record refund reversal: %w", err)
+			}
 		}
 	}
 

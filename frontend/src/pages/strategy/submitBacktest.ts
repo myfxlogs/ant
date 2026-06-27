@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { message } from 'antd';
 import type { FormInstance } from 'antd';
 import type { TFunction } from 'i18next';
-import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
 import { wrapStrategyCodeWithParams } from './backtestParamInjection';
 import { quickRangeLabel, saveRunTitle, type QuickRangeKey } from './StrategyTemplatePage.utils';
@@ -43,7 +43,7 @@ export async function doSubmitBacktest(
     return;
   }
   const codeToSubmit = wrapStrategyCodeWithParams(String(backtestTemplate?.code || ''), backtestParamValues);
-  const resp = await pythonStrategyApi.startBacktestRun({
+  const resp = await strategyRuntimeApi.startBacktestRun({
     code: codeToSubmit, accountId: String(values.accountId), symbol: String(values.symbol),
     timeframe: String(values.timeframe), initialCapital: Number(values.initialCapital || 10000),
     mode: 'KLINE_RANGE', from: fromDate, to: toDate,

@@ -1,10 +1,13 @@
 // Package pglisten provides PostgreSQL LISTEN/NOTIFY helpers for push-first SSE.
-// Replaces server-side DB polling (time.Ticker) with event-driven notifications.
+// Uses a shared-listener fan-out pattern: one PG connection per channel,
+// broadcasting notifications to all SSE subscribers via Go channels.
 package pglisten
 
 import (
 	"context"
 	"fmt"
+	"log"
+	"regexp"
 	"sync"
 	"time"
 
@@ -12,96 +15,154 @@ import (
 	"go.uber.org/zap"
 )
 
-// Listener wraps a dedicated pgx connection for LISTEN/NOTIFY.
+// validChannel matches PostgreSQL identifier rules for LISTEN channel names.
+var validChannel = regexp.MustCompile(`^[a-z_][a-z0-9_]*$`)
+
+// channelState holds the dedicated PG connection and subscriber set for one channel.
+type channelState struct {
+	cancel  context.CancelFunc
+	subs    map[int]chan string
+	nextSub int
+}
+
+// Listener wraps a dedicated pgx connection per channel for LISTEN/NOTIFY,
+// fanning out notifications to multiple SSE subscribers without per-stream
+// connection acquisition.
 type Listener struct {
-	pool   *pgxpool.Pool
-	log    *zap.Logger
-	mu     sync.Mutex
-	conns  map[string]context.CancelFunc // channel → cancel
+	pool     *pgxpool.Pool
+	log      *zap.Logger
+	mu       sync.Mutex
+	channels map[string]*channelState
 }
 
-// New creates a Listener using a connection from the pool for each channel.
+// New creates a Listener that shares one PG connection per channel across
+// all SSE subscribers.
 func New(pool *pgxpool.Pool, log *zap.Logger) *Listener {
-	return &Listener{pool: pool, log: log, conns: make(map[string]context.CancelFunc)}
+	return &Listener{pool: pool, log: log, channels: make(map[string]*channelState)}
 }
 
-// Listen starts listening on the given channel. Returns a Go channel that
-// receives the payload (or empty string) on each NOTIFY.
-// Call the returned cancel function to stop listening.
+// Listen subscribes to the given channel. Returns a Go channel that receives
+// the NOTIFY payload on each notification. Call the returned cancel function
+// to unsubscribe.
+//
+// Multiple subscribers can listen on the same channel; they share one PG
+// connection. When the last subscriber cancels, the PG connection is released.
 func (l *Listener) Listen(ctx context.Context, channel string) (<-chan string, context.CancelFunc, error) {
+	if !validChannel.MatchString(channel) {
+		return nil, nil, fmt.Errorf("pglisten: invalid channel name %q", channel)
+	}
+
 	l.mu.Lock()
-	defer l.mu.Unlock()
+	st, exists := l.channels[channel]
+	if !exists {
+		st = &channelState{subs: make(map[int]chan string)}
+		l.channels[channel] = st
 
-	if _, ok := l.conns[channel]; ok {
-		return nil, nil, fmt.Errorf("already listening on %s", channel)
+		conn, err := l.pool.Acquire(ctx)
+		if err != nil {
+			l.mu.Unlock()
+			return nil, nil, fmt.Errorf("pglisten: acquire conn: %w", err)
+		}
+
+		listenCtx, cancel := context.WithCancel(context.Background())
+		_, err = conn.Exec(listenCtx, fmt.Sprintf("LISTEN %s", channel))
+		if err != nil {
+			l.mu.Unlock()
+			cancel()
+			conn.Release()
+			delete(l.channels, channel)
+			return nil, nil, fmt.Errorf("pglisten: LISTEN %s: %w", channel, err)
+		}
+
+		st.cancel = cancel
+		l.mu.Unlock()
+
+		go l.readLoop(listenCtx, channel, st, conn)
+	} else {
+		l.mu.Unlock()
 	}
 
-	conn, err := l.pool.Acquire(ctx)
-	if err != nil {
-		return nil, nil, fmt.Errorf("pglisten: acquire conn: %w", err)
-	}
-
-	listenCtx, cancel := context.WithCancel(ctx)
+	l.mu.Lock()
+	subID := st.nextSub
+	st.nextSub++
 	notifCh := make(chan string, 32)
+	st.subs[subID] = notifCh
+	l.mu.Unlock()
 
-	_, err = conn.Exec(listenCtx, fmt.Sprintf("LISTEN %s", channel))
-	if err != nil {
-		cancel(); conn.Release()
-		return nil, nil, fmt.Errorf("pglisten: LISTEN %s: %w", channel, err)
-	}
-
-	go func() {
-		defer conn.Release()
-		defer close(notifCh)
-		defer func() {
-			l.mu.Lock(); delete(l.conns, channel); l.mu.Unlock()
-		}()
-
-		for {
-			select {
-			case <-listenCtx.Done():
-				return
-			default:
+	cancel := func() {
+		l.mu.Lock()
+		if st, ok := l.channels[channel]; ok {
+			if ch, ok := st.subs[subID]; ok {
+				delete(st.subs, subID)
+				close(ch)
 			}
-
-			notif, err := conn.Conn().WaitForNotification(listenCtx)
-			if err != nil {
-				if listenCtx.Err() == nil {
-					l.log.Warn("pglisten: notification wait error", zap.String("channel", channel), zap.Error(err))
-				}
-				return
-			}
-			select {
-			case notifCh <- notif.Payload:
-			case <-listenCtx.Done():
-				return
-			default:
-				l.log.Warn("pglisten: notification dropped (buffer full)", zap.String("channel", channel))
+			if len(st.subs) == 0 {
+				st.cancel()
+				delete(l.channels, channel)
 			}
 		}
-	}()
+		l.mu.Unlock()
+	}
 
-	l.conns[channel] = cancel
 	return notifCh, cancel, nil
 }
 
-// Close cancels all active listeners.
+// readLoop is the single goroutine per channel that reads PG notifications
+// and fans them out to all subscribers.
+func (l *Listener) readLoop(ctx context.Context, channel string, st *channelState, conn *pgxpool.Conn) {
+	defer conn.Release()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
+		notif, err := conn.Conn().WaitForNotification(ctx)
+		if err != nil {
+			if ctx.Err() == nil {
+				l.log.Warn("pglisten: notification wait error",
+					zap.String("channel", channel),
+					zap.Error(err),
+				)
+			}
+			return
+		}
+
+		l.mu.Lock()
+		for _, sub := range st.subs {
+			select {
+			case sub <- notif.Payload:
+			default:
+				l.log.Warn("pglisten: notification dropped (buffer full)",
+					zap.String("channel", channel),
+				)
+			}
+		}
+		l.mu.Unlock()
+	}
+}
+
+// Close cancels all active listeners and releases all PG connections.
 func (l *Listener) Close() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	for _, cancel := range l.conns {
-		cancel()
+	for _, st := range l.channels {
+		st.cancel()
+		for _, sub := range st.subs {
+			close(sub)
+		}
 	}
-	l.conns = make(map[string]context.CancelFunc)
+	l.channels = make(map[string]*channelState)
 }
 
-// Notify sends a NOTIFY on the given channel. Best-effort (errors are logged).
+// Notify sends a NOTIFY on the given channel. Best-effort (errors are silent).
 func Notify(ctx context.Context, pool *pgxpool.Pool, channel, payload string) {
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
-	_, err := pool.Exec(ctx, fmt.Sprintf("SELECT pg_notify('%s', '%s')", channel, payload))
+	_, err := pool.Exec(ctx, "SELECT pg_notify($1, $2)", channel, payload)
 	if err != nil {
-		// Silent — NOTIFY is a performance optimization, not a correctness requirement
-		_ = err
+		log.Printf("pglisten: notify failed on channel %s: %v", channel, err)
 	}
 }

@@ -5,7 +5,7 @@ import { HEALTH_MESSAGES_LOAD_FAILED_KEY, MESSAGES_EXECUTE_FAILED_KEY, MESSAGES_
 
 ;
 import { strategyScheduleV2Api, strategyTemplateApi } from '@/client/strategy-schedules';
-import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import { tradingApi } from '@/client/trading';
 import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
 import { scheduleHealthApi } from '@/client/scheduleHealth';
@@ -61,7 +61,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
       const tpl = await strategyTemplateApi.get(row.templateId);
       const code = String(tpl?.code || '');
       if (!code) throw new Error(t(MESSAGES_TEMPLATE_CODE_EMPTY_CANNOT_EXECUTE_KEY));
-      const exec = await pythonStrategyApi.execute({ code, accountId: row.accountId, symbol: row.symbol, timeframe: row.timeframe });
+      const exec = await strategyRuntimeApi.execute({ code, accountId: row.accountId, symbol: row.symbol, timeframe: row.timeframe });
       if (!exec.success) throw new Error(exec.error || t(MESSAGES_STRATEGY_EXECUTE_FAILED_KEY));
       setTriggerResult({ logs: exec.logs || [], signal: exec.signal as any, meta: { templateId: row.templateId, scheduleId: row.id } });
     } catch (e: any) {

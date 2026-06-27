@@ -3,6 +3,7 @@ package autotrading
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/google/uuid"
 	"connectrpc.com/connect"
@@ -51,7 +52,7 @@ func (s *AutoTradingServer) GetAutoTradingStatus(
 		ActiveStrategies: int32(activeStrategies),
 		PendingSignals:   int32(pendingSignals),
 		TodayExecutions:  int32(todayExecutions),
-		TodayProfit:      todayProfit,
+		TodayProfit:      strconv.FormatFloat(todayProfit, 'f', -1, 64),
 	}), nil
 }
 

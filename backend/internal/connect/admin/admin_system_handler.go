@@ -2,7 +2,6 @@ package admin
 
 import (
 	"context"
-	"fmt"
 
 	"go.uber.org/zap"
 
@@ -50,16 +49,4 @@ func (s *AdminSystemServer) GetMetrics(ctx context.Context, _ *connect.Request[a
 		{Name: "today_profit", Value: stats.TodayProfit.InexactFloat64()},
 	}
 	return connect.NewResponse(&antv1.GetMetricsResponse{Metrics: metrics}), nil
-}
-
-func (s *AdminSystemServer) ResolveAlert(ctx context.Context, req *connect.Request[antv1.ResolveAlertRequest]) (*connect.Response[antv1.ResolveAlertResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("ResolveAlert: RPC unavailable"))
-}
-
-func (s *AdminSystemServer) ClearCache(ctx context.Context, req *connect.Request[antv1.ClearCacheRequest]) (*connect.Response[antv1.ClearCacheResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("ClearCache: RPC unavailable"))
-}
-
-func (s *AdminSystemServer) InvalidateCache(ctx context.Context, req *connect.Request[antv1.InvalidateCacheRequest]) (*connect.Response[antv1.InvalidateCacheResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("InvalidateCache: RPC unavailable"))
 }

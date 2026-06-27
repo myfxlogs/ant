@@ -114,112 +114,122 @@ func classifyIntent(code, message string) InteractionMode {
 
 func generatePrompt() string {
 	return `You are a professional quantitative trading strategy engineer.
-Generate a complete Python trading strategy based on the user's description.
-All strategies MUST use the SDK class-based format (StrategyBase).
+Generate a complete Go trading strategy based on the user's description.
+All strategies MUST implement the sdk.Strategy interface (OnInit/OnBar/OnDeinit).
 
 ## ⛔ IRON RULES — violating ANY of these = code is REJECTED ⛔
 
-### Rule 1: EVERY configurable value MUST be declared via self.ctx.param() in on_init
-` + "```python" + `
-from app.sdk import StrategyBase, OrderRequest, OrderType
-from decimal import Decimal
+### Rule 1: EVERY configurable value MUST be read via ctx.Param() in OnInit
+` + "```go" + `
+import (
+    "anttrader/strategy/sdk"
+    "github.com/shopspring/decimal"
+)
 
-class MyStrategy(StrategyBase):
-    def on_init(self):
-        # ✅ EVERY parameter MUST have a default value (2nd argument to ctx.param)
-        self.fast = int(self.ctx.param('fast_period', 20))
-        self.slow = int(self.ctx.param('slow_period', 50))
-        self.entry_pct = float(self.ctx.param('entryPct', 0.25))
-        self.sl_pct = float(self.ctx.param('stopLossPct', 0.02))
-        self.tp_pct = float(self.ctx.param('takeProfitPct', 0.04))
-        self.lot_size = Decimal(str(self.ctx.param('lot_size', 0.01)))
+type MyStrategy struct {
+    fast      int
+    slow      int
+    entryPct  float64
+    slPct     float64
+    tpPct     float64
+}
 
-        # ❌ NEVER hardcode: fast = 20
-        # ❌ NEVER omit default: self.x = self.ctx.param('x')  ← MISSING DEFAULT
+func (s *MyStrategy) OnInit(ctx sdk.Context) error {
+    s.fast = ctx.Param("fast_period", 20)
+    s.slow = ctx.Param("slow_period", 50)
+    s.entryPct = ctx.Param("entryPct", 0.25)
+    s.slPct = ctx.Param("stopLossPct", 0.02)
+    s.tpPct = ctx.Param("takeProfitPct", 0.04)
+    return nil
+}
 ` + "```" + `
 
-### Rule 1b: Standard engine params use ctx.backtest_config, NOT self.ctx.param()
-` + "```python" + `
-    def on_init(self):
-        # ✅ Standard params from backtest card (not self.ctx.param!)
-        bt = self.ctx.backtest_config
-        self.direction = bt.get('trade_direction', 'both')
-        self.slippage = int(bt.get('slippage', 3))
-
-        # ✅ Strategy-specific params use self.ctx.param() with defaults
-        self.fast = int(self.ctx.param('fast_period', 20))
-` + "```" + `
-Standard params: trade_direction, slippage, commission, leverage, initial_capital.
-These belong in the backtest card UI — do NOT declare them via self.ctx.param().
-
-### Rule 2: Query positions via self.broker.positions() — NOT position dict
-` + "```python" + `
-    def on_bar(self, timeframe=None):
-        positions = self.broker.positions()  # returns list[Position]
-        for pos in positions:
-            if pos.side == PositionSide.BUY:
-                # ✅ pos.ticket, pos.volume, pos.open_price, pos.sl, pos.tp
-                pass
-        # ❌ NEVER: position = context.get('position')
-        # ❌ NEVER: position['side'], position['open_price']
+### Rule 2: Query positions via ctx.Broker().Positions() — NOT a position dict
+` + "```go" + `
+func (s *MyStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
+    positions := ctx.Broker().Positions(0) // 0 = all magic numbers
+    for _, pos := range positions {
+        if pos.Side == sdk.SideBuy {
+            // pos.Ticket, pos.Volume, pos.OpenPrice, pos.SL, pos.TP
+        }
+    }
+    return nil, nil
+}
 ` + "```" + `
 
-### Rule 3: Stop-loss & take-profit MUST be set on EVERY order
-` + "```python" + `
-        price = Decimal(str(bars.close[0]))
-        sl = price * Decimal(str(1 - self.sl_pct))
-        tp = price * Decimal(str(1 + self.tp_pct))
-        self.broker.order_send(OrderRequest(
-            symbol=self.ctx.symbol, type=OrderType.BUY,
-            volume=volume, sl=sl, tp=tp))
-        # ❌ NEVER: sl=Decimal('0'), tp=Decimal('0')
+### Rule 3: Stop-loss & take-profit MUST be set on EVERY signal
+` + "```go" + `
+    price := bars.Close(0)
+    sl := price.Mul(decimal.NewFromFloat(1 - s.slPct))
+    tp := price.Mul(decimal.NewFromFloat(1 + s.tpPct))
+    return &sdk.Signal{
+        Action:      sdk.ActionBuy,
+        Symbol:      ctx.Symbol(),
+        Volume:      volume,
+        Price:       price,
+        StopLoss:    sl,
+        TakeProfit:  tp,
+    }, nil
+    // ❌ NEVER: StopLoss: decimal.Zero, TakeProfit: decimal.Zero
 ` + "```" + `
 
-### Rule 4: Position sizing via self.broker.account().balance
-` + "```python" + `
-        balance = float(self.broker.account().balance)
-        price = float(bars.close[0])
-        volume = Decimal(str(balance * self.entry_pct / price))
-        # ✅ Use account().balance for position sizing
+### Rule 4: Position sizing via ctx.Broker().AccountInfo().Balance
+` + "```go" + `
+    balance := ctx.Broker().AccountInfo().Balance
+    price := bars.Close(0)
+    volume := balance.Mul(decimal.NewFromFloat(s.entryPct)).Div(price)
 ` + "```" + `
 
-### Rule 5: ALL monetary values MUST use Decimal(str(x)), NEVER float
-### Rule 6: Use descriptive method names — underscore-prefixed helpers are OK for internal use
-### Rule 7: Import ONLY from app.sdk — np, math, pandas are pre-injected
-### Rule 8: MUST use SDK class format. Inherit from StrategyBase. At least one lifecycle hook (on_init/on_bar/on_tick etc). def run(context) is REJECTED.
+### Rule 5: ALL monetary values MUST use decimal.Decimal, NEVER float64
+### Rule 6: MUST implement sdk.Strategy interface (OnInit/OnBar/OnDeinit)
+### Rule 7: Use shopspring/decimal for all price/volume calculations
 
 ## Complete minimal strategy skeleton
-` + "```python" + `
-from app.sdk import StrategyBase, OrderRequest, OrderType, PositionSide
-from decimal import Decimal
+` + "```go" + `
+import (
+    "anttrader/strategy/sdk"
+    "github.com/shopspring/decimal"
+)
 
-class MyStrategy(StrategyBase):
-    def on_init(self):
-        self.fast = int(self.ctx.param('fast_period', 20))
-        self.slow = int(self.ctx.param('slow_period', 50))
+type MyStrategy struct {
+    fast int
+    slow int
+}
 
-    def on_bar(self, timeframe=None):
-        bars = self.ctx.bars(timeframe)
-        if bars.total() < self.slow:
-            return
-        # ... strategy logic ...
+func (s *MyStrategy) OnInit(ctx sdk.Context) error {
+    s.fast = ctx.Param("fast_period", 20)
+    s.slow = ctx.Param("slow_period", 50)
+    return nil
+}
+
+func (s *MyStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
+    bars := ctx.Bars(timeframe)
+    if bars.Len() < s.slow {
+        return nil, nil
+    }
+    // ... strategy logic ...
+    return nil, nil
+}
+
+func (s *MyStrategy) OnDeinit(ctx sdk.Context, reason string) error {
+    return nil
+}
 ` + "```" + `
 
-## Output: ONLY Python code. No markdown fences. No explanations.`
+## Output: ONLY Go code. No markdown fences. No explanations.`
 }
 
 func revisePrompt() string {
-	return `You are a trading strategy engineer. Revise the Python code per the user's instruction.
+	return `You are a trading strategy engineer. Revise the Go code per the user's instruction.
 
 	## RULES — follow exactly
 	1. Make ONLY the changes the user asked for — preserve everything else untouched
-	2. Output ONLY the complete Python code — NO markdown, NO explanations
-	3. Code MUST use SDK class format (class X(StrategyBase)) — NOT def run(context)
-	4. Use descriptive method names — avoid underscore-prefixed helpers (_helper)
-	5. ALL monetary values MUST use Decimal(str(x)), NEVER float
+	2. Output ONLY the complete Go code — NO markdown, NO explanations
+	3. Code MUST implement sdk.Strategy interface (OnInit/OnBar/OnDeinit)
+	4. ALL monetary values MUST use decimal.Decimal, NEVER float64
 
-	## OUTPUT: The complete revised code, starting with import/class/# — nothing else.`
-	}
+	## OUTPUT: The complete revised Go code, starting with import/type/func — nothing else.`
+}
 
 func repairPrompt(errors []string) string {
 	errList := ""
@@ -232,13 +242,12 @@ func repairPrompt(errors []string) string {
 	return `You are a trading strategy CODE REPAIR EXPERT. Fix ONLY the listed errors — do NOT change anything else.
 
 ## ⛔ CRITICAL RULES
-	1. Output ONLY the complete corrected Python code — NO markdown, NO explanations
-	2. Start directly with import/class/# — your output IS the strategy file
+	1. Output ONLY the complete corrected Go code — NO markdown, NO explanations
+	2. Start directly with import/type/func — your output IS the strategy file
 	3. Preserve ALL existing logic, parameters, and comments — only fix the errors
 	4. Do NOT rename variables, restructure code, or "improve" anything not in the error list
-	5. Code MUST use SDK class format (class X(StrategyBase)) — NOT def run(context)
-	6. Avoid underscore-prefixed method names (_helper) — use descriptive names instead
-	7. If an error is unclear, add # FIXME: <reason> at that line — do NOT guess
+	5. Code MUST implement sdk.Strategy interface (OnInit/OnBar/OnDeinit)
+	6. If an error is unclear, add // FIXME: <reason> at that line — do NOT guess
 
 ## VERIFY BEFORE OUTPUT
 - Did I fix EVERY error in the list above?
@@ -248,7 +257,7 @@ func repairPrompt(errors []string) string {
 ## Errors to Fix (fix ALL at once)
 ` + errList + `
 
-## OUTPUT ONLY THE COMPLETE CORRECTED CODE NOW`
+## OUTPUT ONLY THE COMPLETE CORRECTED GO CODE NOW`
 }
 
 func discussPrompt(code string) string {
@@ -256,7 +265,7 @@ func discussPrompt(code string) string {
 The user is developing a trading strategy and needs your professional opinion.
 
 ## Current Strategy Code
-` + "```python\n" + code + "\n```" + `
+` + "```go\n" + code + "\n```" + `
 
 Provide a concise, professional response to the user's question. Be direct — no pleasantries.
 If the user asks "is this correct" or "are there issues", check: entry logic, exit logic,
@@ -268,10 +277,10 @@ func buildReviseUserMessage(input BuildContextInput) string {
 	if input.BacktestSummary != "" {
 		msg += "\n\n【Current Backtest Results】\n" + input.BacktestSummary
 	}
-	msg += "\n\nCode:\n```python\n" + input.Code + "\n```"
+	msg += "\n\nCode:\n```go\n" + input.Code + "\n```"
 	return msg
 }
 
 func buildRepairUserMessage(code, message string) string {
-	return "## Current Code\n```python\n" + code + "\n```\n\n## Error Information\n" + message
+	return "## Current Code\n```go\n" + code + "\n```\n\n## Error Information\n" + message
 }

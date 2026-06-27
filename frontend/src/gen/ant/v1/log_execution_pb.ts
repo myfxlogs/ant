@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file log_execution.proto.
  */
 export const file_log_execution: GenFile = /*@__PURE__*/
-  fileDesc("ChNsb2dfZXhlY3V0aW9uLnByb3RvEgZhbnQudjEiqQEKF0dldEV4ZWN1dGlvbkxvZ3NSZXF1ZXN0EgwKBHBhZ2UYASABKAUSEQoJcGFnZV9zaXplGAIgASgFEhIKCmFjY291bnRfaWQYAyABKAkSEwoLc2NoZWR1bGVfaWQYCCABKAkSDgoGc3ltYm9sGAQgASgJEg4KBnN0YXR1cxgFIAEoCRISCgpzdGFydF9kYXRlGAYgASgJEhAKCGVuZF9kYXRlGAcgASgJIk0KGEdldEV4ZWN1dGlvbkxvZ3NSZXNwb25zZRIiCgRsb2dzGAEgAygLMhQuYW50LnYxLkV4ZWN1dGlvbkxvZxINCgV0b3RhbBgCIAEoBSKsAwoMRXhlY3V0aW9uTG9nEgoKAmlkGAEgASgJEhIKCmFjY291bnRfaWQYAiABKAkSEwoLc2NoZWR1bGVfaWQYEiABKAkSDgoGc3ltYm9sGAMgASgJEhEKCXRpbWVmcmFtZRgEIAEoCRIOCgZzdGF0dXMYBSABKAkSEwoLc2lnbmFsX3R5cGUYBiABKAkSFAoMc2lnbmFsX3ByaWNlGAcgASgBEhUKDXNpZ25hbF92b2x1bWUYCCABKAESGAoQc2lnbmFsX3N0b3BfbG9zcxgJIAEoARIaChJzaWduYWxfdGFrZV9wcm9maXQYCiABKAESGQoRZXhlY3V0ZWRfb3JkZXJfaWQYCyABKAkSFgoOZXhlY3V0ZWRfcHJpY2UYDCABKAESFwoPZXhlY3V0ZWRfdm9sdW1lGA0gASgBEg4KBnByb2ZpdBgOIAEoARIVCg1lcnJvcl9tZXNzYWdlGA8gASgJEhkKEWV4ZWN1dGlvbl90aW1lX21zGBAgASgDEi4KCmNyZWF0ZWRfYXQYESABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChNsb2dfZXhlY3V0aW9uLnByb3RvEgZhbnQudjEiqQEKF0dldEV4ZWN1dGlvbkxvZ3NSZXF1ZXN0EgwKBHBhZ2UYASABKAUSEQoJcGFnZV9zaXplGAIgASgFEhIKCmFjY291bnRfaWQYAyABKAkSEwoLc2NoZWR1bGVfaWQYCCABKAkSDgoGc3ltYm9sGAQgASgJEg4KBnN0YXR1cxgFIAEoCRISCgpzdGFydF9kYXRlGAYgASgJEhAKCGVuZF9kYXRlGAcgASgJIk0KGEdldEV4ZWN1dGlvbkxvZ3NSZXNwb25zZRIiCgRsb2dzGAEgAygLMhQuYW50LnYxLkV4ZWN1dGlvbkxvZxINCgV0b3RhbBgCIAEoBSKsAwoMRXhlY3V0aW9uTG9nEgoKAmlkGAEgASgJEhIKCmFjY291bnRfaWQYAiABKAkSEwoLc2NoZWR1bGVfaWQYEiABKAkSDgoGc3ltYm9sGAMgASgJEhEKCXRpbWVmcmFtZRgEIAEoCRIOCgZzdGF0dXMYBSABKAkSEwoLc2lnbmFsX3R5cGUYBiABKAkSFAoMc2lnbmFsX3ByaWNlGAcgASgJEhUKDXNpZ25hbF92b2x1bWUYCCABKAkSGAoQc2lnbmFsX3N0b3BfbG9zcxgJIAEoCRIaChJzaWduYWxfdGFrZV9wcm9maXQYCiABKAkSGQoRZXhlY3V0ZWRfb3JkZXJfaWQYCyABKAkSFgoOZXhlY3V0ZWRfcHJpY2UYDCABKAkSFwoPZXhlY3V0ZWRfdm9sdW1lGA0gASgJEg4KBnByb2ZpdBgOIAEoCRIVCg1lcnJvcl9tZXNzYWdlGA8gASgJEhkKEWV4ZWN1dGlvbl90aW1lX21zGBAgASgDEi4KCmNyZWF0ZWRfYXQYESABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.GetExecutionLogsRequest
@@ -128,24 +128,24 @@ export type ExecutionLog = Message<"ant.v1.ExecutionLog"> & {
   signalType: string;
 
   /**
-   * @generated from field: double signal_price = 7;
+   * @generated from field: string signal_price = 7;
    */
-  signalPrice: number;
+  signalPrice: string;
 
   /**
-   * @generated from field: double signal_volume = 8;
+   * @generated from field: string signal_volume = 8;
    */
-  signalVolume: number;
+  signalVolume: string;
 
   /**
-   * @generated from field: double signal_stop_loss = 9;
+   * @generated from field: string signal_stop_loss = 9;
    */
-  signalStopLoss: number;
+  signalStopLoss: string;
 
   /**
-   * @generated from field: double signal_take_profit = 10;
+   * @generated from field: string signal_take_profit = 10;
    */
-  signalTakeProfit: number;
+  signalTakeProfit: string;
 
   /**
    * @generated from field: string executed_order_id = 11;
@@ -153,19 +153,19 @@ export type ExecutionLog = Message<"ant.v1.ExecutionLog"> & {
   executedOrderId: string;
 
   /**
-   * @generated from field: double executed_price = 12;
+   * @generated from field: string executed_price = 12;
    */
-  executedPrice: number;
+  executedPrice: string;
 
   /**
-   * @generated from field: double executed_volume = 13;
+   * @generated from field: string executed_volume = 13;
    */
-  executedVolume: number;
+  executedVolume: string;
 
   /**
-   * @generated from field: double profit = 14;
+   * @generated from field: string profit = 14;
    */
-  profit: number;
+  profit: string;
 
   /**
    * @generated from field: string error_message = 15;

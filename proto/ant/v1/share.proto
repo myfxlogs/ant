@@ -43,7 +43,7 @@ message GetSharedPerformanceResponse {
 message SharedTrade {
   string symbol = 1;
   string side = 2;
-  double volume = 3;
-  double profit = 4;
+  string volume = 3;
+  string profit = 4;
   int64 close_time_ms = 5;
 }

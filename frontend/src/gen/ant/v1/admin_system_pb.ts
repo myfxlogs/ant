@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file admin_system.proto.
  */
 export const file_admin_system: GenFile = /*@__PURE__*/
-  fileDesc("ChJhZG1pbl9zeXN0ZW0ucHJvdG8SBmFudC52MSIUChJIZWFsdGhDaGVja1JlcXVlc3QiYwoTSGVhbHRoQ2hlY2tSZXNwb25zZRIOCgZzdGF0dXMYASABKAkSEQoJZGJfc3RhdHVzGAIgASgJEhQKDHJlZGlzX3N0YXR1cxgDIAEoCRITCgtuYXRzX3N0YXR1cxgEIAEoCSKKAQoLTWV0cmljUG9pbnQSDAoEbmFtZRgBIAEoCRINCgV2YWx1ZRgCIAEoARIvCgZsYWJlbHMYAyADKAsyHy5hbnQudjEuTWV0cmljUG9pbnQuTGFiZWxzRW50cnkaLQoLTGFiZWxzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASITChFHZXRNZXRyaWNzUmVxdWVzdCI6ChJHZXRNZXRyaWNzUmVzcG9uc2USJAoHbWV0cmljcxgBIAMoCzITLmFudC52MS5NZXRyaWNQb2ludCInChNSZXNvbHZlQWxlcnRSZXF1ZXN0EhAKCGFsZXJ0X2lkGAEgASgJIhYKFFJlc29sdmVBbGVydFJlc3BvbnNlIhMKEUNsZWFyQ2FjaGVSZXF1ZXN0IhQKEkNsZWFyQ2FjaGVSZXNwb25zZSImChZJbnZhbGlkYXRlQ2FjaGVSZXF1ZXN0EgwKBHRhZ3MYASADKAkiGQoXSW52YWxpZGF0ZUNhY2hlUmVzcG9uc2UyhQMKEkFkbWluU3lzdGVtU2VydmljZRJGCgtIZWFsdGhDaGVjaxIaLmFudC52MS5IZWFsdGhDaGVja1JlcXVlc3QaGy5hbnQudjEuSGVhbHRoQ2hlY2tSZXNwb25zZRJDCgpHZXRNZXRyaWNzEhkuYW50LnYxLkdldE1ldHJpY3NSZXF1ZXN0GhouYW50LnYxLkdldE1ldHJpY3NSZXNwb25zZRJJCgxSZXNvbHZlQWxlcnQSGy5hbnQudjEuUmVzb2x2ZUFsZXJ0UmVxdWVzdBocLmFudC52MS5SZXNvbHZlQWxlcnRSZXNwb25zZRJDCgpDbGVhckNhY2hlEhkuYW50LnYxLkNsZWFyQ2FjaGVSZXF1ZXN0GhouYW50LnYxLkNsZWFyQ2FjaGVSZXNwb25zZRJSCg9JbnZhbGlkYXRlQ2FjaGUSHi5hbnQudjEuSW52YWxpZGF0ZUNhY2hlUmVxdWVzdBofLmFudC52MS5JbnZhbGlkYXRlQ2FjaGVSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
+  fileDesc("ChJhZG1pbl9zeXN0ZW0ucHJvdG8SBmFudC52MSIUChJIZWFsdGhDaGVja1JlcXVlc3QiYwoTSGVhbHRoQ2hlY2tSZXNwb25zZRIOCgZzdGF0dXMYASABKAkSEQoJZGJfc3RhdHVzGAIgASgJEhQKDHJlZGlzX3N0YXR1cxgDIAEoCRITCgtuYXRzX3N0YXR1cxgEIAEoCSKKAQoLTWV0cmljUG9pbnQSDAoEbmFtZRgBIAEoCRINCgV2YWx1ZRgCIAEoARIvCgZsYWJlbHMYAyADKAsyHy5hbnQudjEuTWV0cmljUG9pbnQuTGFiZWxzRW50cnkaLQoLTGFiZWxzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASITChFHZXRNZXRyaWNzUmVxdWVzdCI6ChJHZXRNZXRyaWNzUmVzcG9uc2USJAoHbWV0cmljcxgBIAMoCzITLmFudC52MS5NZXRyaWNQb2ludDKhAQoSQWRtaW5TeXN0ZW1TZXJ2aWNlEkYKC0hlYWx0aENoZWNrEhouYW50LnYxLkhlYWx0aENoZWNrUmVxdWVzdBobLmFudC52MS5IZWFsdGhDaGVja1Jlc3BvbnNlEkMKCkdldE1ldHJpY3MSGS5hbnQudjEuR2V0TWV0cmljc1JlcXVlc3QaGi5hbnQudjEuR2V0TWV0cmljc1Jlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.HealthCheckRequest
@@ -115,92 +115,6 @@ export const GetMetricsResponseSchema: GenMessage<GetMetricsResponse> = /*@__PUR
   messageDesc(file_admin_system, 4);
 
 /**
- * @generated from message ant.v1.ResolveAlertRequest
- */
-export type ResolveAlertRequest = Message<"ant.v1.ResolveAlertRequest"> & {
-  /**
-   * @generated from field: string alert_id = 1;
-   */
-  alertId: string;
-};
-
-/**
- * Describes the message ant.v1.ResolveAlertRequest.
- * Use `create(ResolveAlertRequestSchema)` to create a new message.
- */
-export const ResolveAlertRequestSchema: GenMessage<ResolveAlertRequest> = /*@__PURE__*/
-  messageDesc(file_admin_system, 5);
-
-/**
- * @generated from message ant.v1.ResolveAlertResponse
- */
-export type ResolveAlertResponse = Message<"ant.v1.ResolveAlertResponse"> & {
-};
-
-/**
- * Describes the message ant.v1.ResolveAlertResponse.
- * Use `create(ResolveAlertResponseSchema)` to create a new message.
- */
-export const ResolveAlertResponseSchema: GenMessage<ResolveAlertResponse> = /*@__PURE__*/
-  messageDesc(file_admin_system, 6);
-
-/**
- * @generated from message ant.v1.ClearCacheRequest
- */
-export type ClearCacheRequest = Message<"ant.v1.ClearCacheRequest"> & {
-};
-
-/**
- * Describes the message ant.v1.ClearCacheRequest.
- * Use `create(ClearCacheRequestSchema)` to create a new message.
- */
-export const ClearCacheRequestSchema: GenMessage<ClearCacheRequest> = /*@__PURE__*/
-  messageDesc(file_admin_system, 7);
-
-/**
- * @generated from message ant.v1.ClearCacheResponse
- */
-export type ClearCacheResponse = Message<"ant.v1.ClearCacheResponse"> & {
-};
-
-/**
- * Describes the message ant.v1.ClearCacheResponse.
- * Use `create(ClearCacheResponseSchema)` to create a new message.
- */
-export const ClearCacheResponseSchema: GenMessage<ClearCacheResponse> = /*@__PURE__*/
-  messageDesc(file_admin_system, 8);
-
-/**
- * @generated from message ant.v1.InvalidateCacheRequest
- */
-export type InvalidateCacheRequest = Message<"ant.v1.InvalidateCacheRequest"> & {
-  /**
-   * @generated from field: repeated string tags = 1;
-   */
-  tags: string[];
-};
-
-/**
- * Describes the message ant.v1.InvalidateCacheRequest.
- * Use `create(InvalidateCacheRequestSchema)` to create a new message.
- */
-export const InvalidateCacheRequestSchema: GenMessage<InvalidateCacheRequest> = /*@__PURE__*/
-  messageDesc(file_admin_system, 9);
-
-/**
- * @generated from message ant.v1.InvalidateCacheResponse
- */
-export type InvalidateCacheResponse = Message<"ant.v1.InvalidateCacheResponse"> & {
-};
-
-/**
- * Describes the message ant.v1.InvalidateCacheResponse.
- * Use `create(InvalidateCacheResponseSchema)` to create a new message.
- */
-export const InvalidateCacheResponseSchema: GenMessage<InvalidateCacheResponse> = /*@__PURE__*/
-  messageDesc(file_admin_system, 10);
-
-/**
  * @generated from service ant.v1.AdminSystemService
  */
 export const AdminSystemService: GenService<{
@@ -219,30 +133,6 @@ export const AdminSystemService: GenService<{
     methodKind: "unary";
     input: typeof GetMetricsRequestSchema;
     output: typeof GetMetricsResponseSchema;
-  },
-  /**
-   * @generated from rpc ant.v1.AdminSystemService.ResolveAlert
-   */
-  resolveAlert: {
-    methodKind: "unary";
-    input: typeof ResolveAlertRequestSchema;
-    output: typeof ResolveAlertResponseSchema;
-  },
-  /**
-   * @generated from rpc ant.v1.AdminSystemService.ClearCache
-   */
-  clearCache: {
-    methodKind: "unary";
-    input: typeof ClearCacheRequestSchema;
-    output: typeof ClearCacheResponseSchema;
-  },
-  /**
-   * @generated from rpc ant.v1.AdminSystemService.InvalidateCache
-   */
-  invalidateCache: {
-    methodKind: "unary";
-    input: typeof InvalidateCacheRequestSchema;
-    output: typeof InvalidateCacheResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_admin_system, 0);

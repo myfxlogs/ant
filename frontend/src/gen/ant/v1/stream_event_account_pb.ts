@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stream_event_account.proto.
  */
 export const file_stream_event_account: GenFile = /*@__PURE__*/
-  fileDesc("ChpzdHJlYW1fZXZlbnRfYWNjb3VudC5wcm90bxIGYW50LnYxIuQBChFQcm9maXRVcGRhdGVFdmVudBISCgphY2NvdW50X2lkGAEgASgJEg8KB2JhbGFuY2UYAiABKAESDgoGY3JlZGl0GAMgASgBEg4KBnByb2ZpdBgEIAEoARIOCgZlcXVpdHkYBSABKAESDgoGbWFyZ2luGAYgASgBEhMKC2ZyZWVfbWFyZ2luGAcgASgBEhQKDG1hcmdpbl9sZXZlbBgIIAEoARInCgZvcmRlcnMYCSADKAsyFy5hbnQudjEuT3JkZXJQcm9maXRJdGVtEhYKDnByb2ZpdF9wZXJjZW50GAogASgBIrMDChBVc2VyU3VtbWFyeUV2ZW50EhUKDXRvdGFsX2JhbGFuY2UYASABKAESFAoMdG90YWxfZXF1aXR5GAIgASgBEhQKDHRvdGFsX3Byb2ZpdBgDIAEoARIVCg1hY2NvdW50X2NvdW50GAQgASgFEhcKD2Nvbm5lY3RlZF9jb3VudBgFIAEoBRIuCgp1cGRhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIRCglwbmxfdG9kYXkYByABKAESEAoIcG5sX3dlZWsYCCABKAESEQoJcG5sX21vbnRoGAkgASgBEhQKDHRyYWRlc190b2RheRgKIAEoBRITCgt0cmFkZXNfd2VlaxgLIAEoBRIUCgx0cmFkZXNfbW9udGgYDCABKAUSEAoId2luX3JhdGUYDSABKAESFQoNcHJvZml0X2ZhY3RvchgOIAEoARIcChRtYXhfZHJhd2Rvd25fcGVyY2VudBgPIAEoARIcChRtYXhfY29uc2VjdXRpdmVfd2lucxgQIAEoBRIeChZtYXhfY29uc2VjdXRpdmVfbG9zc2VzGBEgASgFImgKD09yZGVyUHJvZml0SXRlbRIOCgZ0aWNrZXQYASABKAMSDgoGc3ltYm9sGAIgASgJEg4KBnByb2ZpdBgDIAEoARIOCgZ2b2x1bWUYBCABKAESFQoNY3VycmVudF9wcmljZRgFIAEoASJJChJBY2NvdW50U3RhdHVzRXZlbnQSEgoKYWNjb3VudF9pZBgBIAEoCRIOCgZzdGF0dXMYAiABKAkSDwoHbWVzc2FnZRgDIAEoCSKCAQoWU3RyYXRlZ3lFeGVjdXRpb25FdmVudBITCgtzdHJhdGVneV9pZBgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIOCgZhY3Rpb24YBCABKAkSDgoGc3RhdHVzGAUgASgJEg8KB21lc3NhZ2UYBiABKAkiawoOUmlza0FsZXJ0RXZlbnQSEgoKYWNjb3VudF9pZBgBIAEoCRISCgphbGVydF90eXBlGAIgASgJEg8KB21lc3NhZ2UYAyABKAkSDQoFdmFsdWUYBCABKAESEQoJdGhyZXNob2xkGAUgASgBQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChpzdHJlYW1fZXZlbnRfYWNjb3VudC5wcm90bxIGYW50LnYxIuQBChFQcm9maXRVcGRhdGVFdmVudBISCgphY2NvdW50X2lkGAEgASgJEg8KB2JhbGFuY2UYAiABKAkSDgoGY3JlZGl0GAMgASgJEg4KBnByb2ZpdBgEIAEoCRIOCgZlcXVpdHkYBSABKAkSDgoGbWFyZ2luGAYgASgJEhMKC2ZyZWVfbWFyZ2luGAcgASgJEhQKDG1hcmdpbl9sZXZlbBgIIAEoCRInCgZvcmRlcnMYCSADKAsyFy5hbnQudjEuT3JkZXJQcm9maXRJdGVtEhYKDnByb2ZpdF9wZXJjZW50GAogASgBIrMDChBVc2VyU3VtbWFyeUV2ZW50EhUKDXRvdGFsX2JhbGFuY2UYASABKAkSFAoMdG90YWxfZXF1aXR5GAIgASgJEhQKDHRvdGFsX3Byb2ZpdBgDIAEoCRIVCg1hY2NvdW50X2NvdW50GAQgASgFEhcKD2Nvbm5lY3RlZF9jb3VudBgFIAEoBRIuCgp1cGRhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIRCglwbmxfdG9kYXkYByABKAkSEAoIcG5sX3dlZWsYCCABKAkSEQoJcG5sX21vbnRoGAkgASgJEhQKDHRyYWRlc190b2RheRgKIAEoBRITCgt0cmFkZXNfd2VlaxgLIAEoBRIUCgx0cmFkZXNfbW9udGgYDCABKAUSEAoId2luX3JhdGUYDSABKAESFQoNcHJvZml0X2ZhY3RvchgOIAEoARIcChRtYXhfZHJhd2Rvd25fcGVyY2VudBgPIAEoARIcChRtYXhfY29uc2VjdXRpdmVfd2lucxgQIAEoBRIeChZtYXhfY29uc2VjdXRpdmVfbG9zc2VzGBEgASgFImgKD09yZGVyUHJvZml0SXRlbRIOCgZ0aWNrZXQYASABKAMSDgoGc3ltYm9sGAIgASgJEg4KBnByb2ZpdBgDIAEoCRIOCgZ2b2x1bWUYBCABKAkSFQoNY3VycmVudF9wcmljZRgFIAEoCSJJChJBY2NvdW50U3RhdHVzRXZlbnQSEgoKYWNjb3VudF9pZBgBIAEoCRIOCgZzdGF0dXMYAiABKAkSDwoHbWVzc2FnZRgDIAEoCSKCAQoWU3RyYXRlZ3lFeGVjdXRpb25FdmVudBITCgtzdHJhdGVneV9pZBgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIOCgZhY3Rpb24YBCABKAkSDgoGc3RhdHVzGAUgASgJEg8KB21lc3NhZ2UYBiABKAkiawoOUmlza0FsZXJ0RXZlbnQSEgoKYWNjb3VudF9pZBgBIAEoCRISCgphbGVydF90eXBlGAIgASgJEg8KB21lc3NhZ2UYAyABKAkSDQoFdmFsdWUYBCABKAkSEQoJdGhyZXNob2xkGAUgASgJQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.ProfitUpdateEvent
@@ -24,39 +24,39 @@ export type ProfitUpdateEvent = Message<"ant.v1.ProfitUpdateEvent"> & {
   accountId: string;
 
   /**
-   * @generated from field: double balance = 2;
+   * @generated from field: string balance = 2;
    */
-  balance: number;
+  balance: string;
 
   /**
-   * @generated from field: double credit = 3;
+   * @generated from field: string credit = 3;
    */
-  credit: number;
+  credit: string;
 
   /**
-   * @generated from field: double profit = 4;
+   * @generated from field: string profit = 4;
    */
-  profit: number;
+  profit: string;
 
   /**
-   * @generated from field: double equity = 5;
+   * @generated from field: string equity = 5;
    */
-  equity: number;
+  equity: string;
 
   /**
-   * @generated from field: double margin = 6;
+   * @generated from field: string margin = 6;
    */
-  margin: number;
+  margin: string;
 
   /**
-   * @generated from field: double free_margin = 7;
+   * @generated from field: string free_margin = 7;
    */
-  freeMargin: number;
+  freeMargin: string;
 
   /**
-   * @generated from field: double margin_level = 8;
+   * @generated from field: string margin_level = 8;
    */
-  marginLevel: number;
+  marginLevel: string;
 
   /**
    * @generated from field: repeated ant.v1.OrderProfitItem orders = 9;
@@ -81,19 +81,19 @@ export const ProfitUpdateEventSchema: GenMessage<ProfitUpdateEvent> = /*@__PURE_
  */
 export type UserSummaryEvent = Message<"ant.v1.UserSummaryEvent"> & {
   /**
-   * @generated from field: double total_balance = 1;
+   * @generated from field: string total_balance = 1;
    */
-  totalBalance: number;
+  totalBalance: string;
 
   /**
-   * @generated from field: double total_equity = 2;
+   * @generated from field: string total_equity = 2;
    */
-  totalEquity: number;
+  totalEquity: string;
 
   /**
-   * @generated from field: double total_profit = 3;
+   * @generated from field: string total_profit = 3;
    */
-  totalProfit: number;
+  totalProfit: string;
 
   /**
    * @generated from field: int32 account_count = 4;
@@ -111,19 +111,19 @@ export type UserSummaryEvent = Message<"ant.v1.UserSummaryEvent"> & {
   updatedAt?: Timestamp | undefined;
 
   /**
-   * @generated from field: double pnl_today = 7;
+   * @generated from field: string pnl_today = 7;
    */
-  pnlToday: number;
+  pnlToday: string;
 
   /**
-   * @generated from field: double pnl_week = 8;
+   * @generated from field: string pnl_week = 8;
    */
-  pnlWeek: number;
+  pnlWeek: string;
 
   /**
-   * @generated from field: double pnl_month = 9;
+   * @generated from field: string pnl_month = 9;
    */
-  pnlMonth: number;
+  pnlMonth: string;
 
   /**
    * @generated from field: int32 trades_today = 10;
@@ -188,19 +188,19 @@ export type OrderProfitItem = Message<"ant.v1.OrderProfitItem"> & {
   symbol: string;
 
   /**
-   * @generated from field: double profit = 3;
+   * @generated from field: string profit = 3;
    */
-  profit: number;
+  profit: string;
 
   /**
-   * @generated from field: double volume = 4;
+   * @generated from field: string volume = 4;
    */
-  volume: number;
+  volume: string;
 
   /**
-   * @generated from field: double current_price = 5;
+   * @generated from field: string current_price = 5;
    */
-  currentPrice: number;
+  currentPrice: string;
 };
 
 /**
@@ -299,14 +299,14 @@ export type RiskAlertEvent = Message<"ant.v1.RiskAlertEvent"> & {
   message: string;
 
   /**
-   * @generated from field: double value = 4;
+   * @generated from field: string value = 4;
    */
-  value: number;
+  value: string;
 
   /**
-   * @generated from field: double threshold = 5;
+   * @generated from field: string threshold = 5;
    */
-  threshold: number;
+  threshold: string;
 };
 
 /**

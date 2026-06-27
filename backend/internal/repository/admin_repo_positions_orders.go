@@ -33,6 +33,9 @@ func (r *AdminRepository) ListPositions(ctx context.Context, userID, accountID, 
 		}
 		positions = append(positions, &p)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
 	return positions, total, nil
 }
 
@@ -75,6 +78,9 @@ func (r *AdminRepository) ListOrders(ctx context.Context, userID, accountID, sym
 			return nil, 0, err
 		}
 		orders = append(orders, &o)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
 	}
 	return orders, total, nil
 }

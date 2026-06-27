@@ -6,6 +6,7 @@ package algo
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -66,10 +67,13 @@ func (s *ExecutionAlgoServer) StartAlgo(ctx context.Context, req *connect.Reques
 	}
 
 	startTime, endTime := m.StartTime.AsTime(), m.EndTime.AsTime()
+	totalVol, _ := strconv.ParseFloat(m.TotalVolume, 64)
+	limitPx, _ := strconv.ParseFloat(m.LimitPrice, 64)
+	arrivalPx, _ := strconv.ParseFloat(m.ArrivalPrice, 64)
 	parent := execalgo.ParentOrder{
-		Symbol: m.Symbol, Side: m.Side, TotalVolume: m.TotalVolume,
+		Symbol: m.Symbol, Side: m.Side, TotalVolume: totalVol,
 		StartTime: startTime, EndTime: endTime,
-		LimitPrice: m.LimitPrice, ArrivalPrice: m.ArrivalPrice,
+		LimitPrice: limitPx, ArrivalPrice: arrivalPx,
 	}
 
 	schedule, err := algo.Schedule(parent)
@@ -97,7 +101,8 @@ func validateStartAlgoRequest(m *antv1.StartAlgoRequest) error {
 	if m.AccountId == "" { return fmt.Errorf("account_id is required") }
 	if m.Symbol == "" { return fmt.Errorf("symbol is required") }
 	if m.Side != "buy" && m.Side != "sell" { return fmt.Errorf("side must be 'buy' or 'sell'") }
-	if m.TotalVolume <= 0 { return fmt.Errorf("total_volume must be positive") }
+	v, _ := strconv.ParseFloat(m.TotalVolume, 64)
+	if m.TotalVolume == "" || v <= 0 { return fmt.Errorf("total_volume must be positive") }
 	if m.StartTime == nil || m.EndTime == nil { return fmt.Errorf("start_time and end_time are required") }
 	startTime, endTime := m.StartTime.AsTime(), m.EndTime.AsTime()
 	if !endTime.After(startTime) { return fmt.Errorf("end_time must be after start_time") }
@@ -174,7 +179,7 @@ func (s *ExecutionAlgoServer) GetAlgoStatus(ctx context.Context, req *connect.Re
 		TotalSlices:     int32(total),
 		ParentSymbol:    ex.parent.Symbol,
 		ParentSide:      ex.parent.Side,
-		ParentVolume:    ex.parent.TotalVolume,
+		ParentVolume:    strconv.FormatFloat(ex.parent.TotalVolume, 'f', -1, 64),
 	}
 
 	return connect.NewResponse(resp), nil

@@ -7,15 +7,36 @@ export interface ConnectAccountResult {
   message: string;
 }
 
+const NUMERIC_FIELDS: (keyof Account)[] = [
+  'balance', 'credit', 'equity', 'margin', 'freeMargin', 'marginLevel',
+  'profit', 'profitPercent', 'leverage', 'method',
+];
+
+function coerceAccountNumbers(raw: Account): Account {
+  const out = { ...raw };
+  for (const key of NUMERIC_FIELDS) {
+    const v = out[key];
+    if (typeof v === 'string') {
+      const n = Number(v);
+      (out as Record<string, unknown>)[key] = Number.isFinite(n) ? n : 0;
+    }
+  }
+  return out;
+}
+
+function coerceAccountList(raw: Account[]): Account[] {
+  return raw.map(coerceAccountNumbers);
+}
+
 export const accountApi = {
   list: async (): Promise<Account[]> => {
     const response = await accountClient.listAccounts({});
-    return toCamelCase<Account[]>(response.accounts);
+    return coerceAccountList(toCamelCase<Account[]>(response.accounts));
   },
 
   get: async (id: string): Promise<Account> => {
     const response = await accountClient.getAccount({ id });
-    return toCamelCase<Account>(response);
+    return coerceAccountNumbers(toCamelCase<Account>(response));
   },
 
   create: async (data: {
@@ -34,7 +55,7 @@ export const accountApi = {
       brokerServer: data.brokerServer,
       brokerHost: data.brokerHost,
     });
-    return toCamelCase<Account>(response);
+    return coerceAccountNumbers(toCamelCase<Account>(response));
   },
 
   update: async (params: {
@@ -51,7 +72,7 @@ export const accountApi = {
       brokerHost: params.brokerHost,
       isDisabled: params.isDisabled,
     });
-    return toCamelCase<Account>(response);
+    return coerceAccountNumbers(toCamelCase<Account>(response));
   },
 
   delete: async (id: string, password?: string) => {

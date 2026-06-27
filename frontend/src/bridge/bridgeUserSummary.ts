@@ -7,9 +7,9 @@ import { queryKeys } from '@/queries/queryKeys';
  * by the backend — reserved for future analytics integration.
  */
 export interface UserSummaryData {
-  totalBalance: number;
-  totalEquity: number;
-  totalProfit: number;
+  totalBalance: number | string;
+  totalEquity: number | string;
+  totalProfit: number | string;
   accountCount: number;
   connectedCount: number;
   updatedAt?: unknown;

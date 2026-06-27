@@ -138,7 +138,7 @@ func (s *StrategyPlanServer) Conversate(
 	}
 		// If code is loaded, include the actual code text so the AI can see it.
 		if m.CurrentCode != "" {
-			ctxInfo += "\n\n## 当前策略代码\n```python\n" + m.CurrentCode + "\n```"
+			ctxInfo += "\n\n## 当前策略代码\n```go\n" + m.CurrentCode + "\n```"
 		}
 	userPrompt := ctxInfo + " " + m.Message
 	oldCode := m.CurrentCode
@@ -209,7 +209,7 @@ func (s *StrategyPlanServer) ExecutePlan(
 
 	registry := NewToolRegistry(s.backtestRepo, s.marketDataRepo)
 	registry.WireMemoryDB(s.memoryExec, s.memoryQuery)
-	sysPrompt := internalai.AgentPrompt(lang) + "\n\n## 当前任务：生成或修改策略代码\n根据执行计划和用户的最新消息，输出完整的 Python 策略代码。你可以使用 [TOOL: name args] 来查询信息。"
+	sysPrompt := internalai.AgentPrompt(lang) + "\n\n## 当前任务：生成或修改策略代码\n根据执行计划和用户的最新消息，输出完整的 Go 策略代码。你可以使用 [TOOL: name args] 来查询信息。"
 	userPrompt := buildExecuteUserPrompt(m)
 
 	// Agent Loop: LLM ↔ Tools (Claude Code / OpenAI Agents SDK pattern)
@@ -335,7 +335,7 @@ func (s *StrategyPlanServer) Diagnose(
 
 	sysPrompt := internalai.AgentPrompt(lang) + "\n\n## 当前任务：诊断问题，提出建议\n分析用户的反馈和回测数据，给出具体的修改建议。每行一个建议，用 - 开头。不要生成代码，只输出诊断分析和建议。"
 	userPrompt := fmt.Sprintf(
-		"## 执行计划\n%s\n\n## 当前代码\n```python\n%s\n```\n\n## 回测数据\n%s\n\n## 用户反馈\n%s\n\n请诊断问题并给出修改建议。每行一个建议，用 - 开头。",
+		"## 执行计划\n%s\n\n## 当前代码\n```go\n%s\n```\n\n## 回测数据\n%s\n\n## 用户反馈\n%s\n\n请诊断问题并给出修改建议。每行一个建议，用 - 开头。",
 		m.Plan, m.CurrentCode, m.BacktestMetricsJson, m.FeedbackMessage,
 	)
 
@@ -403,7 +403,7 @@ func buildExecuteUserPrompt(m *antv1.ExecutePlanRequest) string {
 		p := "## 执行计划\n" + m.Plan + "\n\n"
 		p += "## 用户的后续消息\n" + m.FeedbackMessage + "\n\n"
 		if m.PreviousCode != "" {
-			p += "## 当前的策略代码\n```python\n" + m.PreviousCode + "\n```\n\n"
+			p += "## 当前的策略代码\n```go\n" + m.PreviousCode + "\n```\n\n"
 		}
 		if m.BacktestMetricsJson != "" {
 			p += "## 回测数据\n" + m.BacktestMetricsJson + "\n"

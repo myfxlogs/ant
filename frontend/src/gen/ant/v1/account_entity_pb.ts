@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file account_entity.proto.
  */
 export const file_account_entity: GenFile = /*@__PURE__*/
-  fileDesc("ChRhY2NvdW50X2VudGl0eS5wcm90bxIGYW50LnYxIu4ECgdBY2NvdW50EgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSDQoFbG9naW4YAyABKAkSDwoHbXRfdHlwZRgEIAEoCRIWCg5icm9rZXJfY29tcGFueRgFIAEoCRIVCg1icm9rZXJfc2VydmVyGAYgASgJEhMKC2Jyb2tlcl9ob3N0GAcgASgJEg4KBnN0YXR1cxgIIAEoCRINCgV0b2tlbhgJIAEoCRITCgtpc19kaXNhYmxlZBgKIAEoCBISCgpsYXN0X2Vycm9yGAsgASgJEjAKDGNvbm5lY3RlZF9hdBgMIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgNIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgOIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHYmFsYW5jZRgPIAEoARIOCgZjcmVkaXQYECABKAESDgoGZXF1aXR5GBEgASgBEg4KBm1hcmdpbhgSIAEoARITCgtmcmVlX21hcmdpbhgTIAEoARIUCgxtYXJnaW5fbGV2ZWwYFCABKAESEAoIbGV2ZXJhZ2UYFSABKAUSEAoIY3VycmVuY3kYFiABKAkSFAoMYWNjb3VudF90eXBlGBcgASgJEhYKDmFjY291bnRfbWV0aG9kGBggASgJEhMKC2lzX2ludmVzdG9yGBkgASgIEg0KBWFsaWFzGBogASgJEg4KBnByb2ZpdBgbIAEoARIWCg5wcm9maXRfcGVyY2VudBgcIAEoAUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("ChRhY2NvdW50X2VudGl0eS5wcm90bxIGYW50LnYxIu4ECgdBY2NvdW50EgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSDQoFbG9naW4YAyABKAkSDwoHbXRfdHlwZRgEIAEoCRIWCg5icm9rZXJfY29tcGFueRgFIAEoCRIVCg1icm9rZXJfc2VydmVyGAYgASgJEhMKC2Jyb2tlcl9ob3N0GAcgASgJEg4KBnN0YXR1cxgIIAEoCRINCgV0b2tlbhgJIAEoCRITCgtpc19kaXNhYmxlZBgKIAEoCBISCgpsYXN0X2Vycm9yGAsgASgJEjAKDGNvbm5lY3RlZF9hdBgMIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgNIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgOIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHYmFsYW5jZRgPIAEoCRIOCgZjcmVkaXQYECABKAkSDgoGZXF1aXR5GBEgASgJEg4KBm1hcmdpbhgSIAEoCRITCgtmcmVlX21hcmdpbhgTIAEoCRIUCgxtYXJnaW5fbGV2ZWwYFCABKAkSEAoIbGV2ZXJhZ2UYFSABKAUSEAoIY3VycmVuY3kYFiABKAkSFAoMYWNjb3VudF90eXBlGBcgASgJEhYKDmFjY291bnRfbWV0aG9kGBggASgJEhMKC2lzX2ludmVzdG9yGBkgASgIEg0KBWFsaWFzGBogASgJEg4KBnByb2ZpdBgbIAEoCRIWCg5wcm9maXRfcGVyY2VudBgcIAEoAUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.Account
@@ -89,34 +89,34 @@ export type Account = Message<"ant.v1.Account"> & {
   updatedAt?: Timestamp | undefined;
 
   /**
-   * @generated from field: double balance = 15;
+   * @generated from field: string balance = 15;
    */
-  balance: number;
+  balance: string;
 
   /**
-   * @generated from field: double credit = 16;
+   * @generated from field: string credit = 16;
    */
-  credit: number;
+  credit: string;
 
   /**
-   * @generated from field: double equity = 17;
+   * @generated from field: string equity = 17;
    */
-  equity: number;
+  equity: string;
 
   /**
-   * @generated from field: double margin = 18;
+   * @generated from field: string margin = 18;
    */
-  margin: number;
+  margin: string;
 
   /**
-   * @generated from field: double free_margin = 19;
+   * @generated from field: string free_margin = 19;
    */
-  freeMargin: number;
+  freeMargin: string;
 
   /**
-   * @generated from field: double margin_level = 20;
+   * @generated from field: string margin_level = 20;
    */
-  marginLevel: number;
+  marginLevel: string;
 
   /**
    * @generated from field: int32 leverage = 21;
@@ -149,9 +149,9 @@ export type Account = Message<"ant.v1.Account"> & {
   alias: string;
 
   /**
-   * @generated from field: double profit = 27;
+   * @generated from field: string profit = 27;
    */
-  profit: number;
+  profit: string;
 
   /**
    * @generated from field: double profit_percent = 28;

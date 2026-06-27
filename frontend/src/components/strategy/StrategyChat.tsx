@@ -3,7 +3,7 @@ import { Button, Input, Tag, Typography, Select, Segmented, Popconfirm } from 'a
 import { SendOutlined, LoadingOutlined, SettingOutlined, HistoryOutlined, EditOutlined, CheckOutlined, CloseOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { conversate, type ConversateCallbacks } from '@/client/strategyPlan';
-import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 import ChatMessageItem, { type ChatMsg } from './ChatMessageItem';
 import WorkflowBar from './WorkflowBar';
@@ -125,7 +125,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
           addMsg('ai', { text: `${icon} ${label}: ${detail}` });
           if (tr.name === 'backtest' && tr.outputJson) try {
             const out = JSON.parse(tr.outputJson);
-            if (out.run_id) pythonStrategyApi.watchBacktestRun(out.run_id, (u: BacktestRunUpdate) => {
+            if (out.run_id) strategyRuntimeApi.watchBacktestRun(out.run_id, (u: BacktestRunUpdate) => {
               if (isSucceededRun(u.run) && u.metrics) setMetrics({ totalReturn: u.metrics.totalReturn, sharpeRatio: u.metrics.sharpeRatio, maxDrawdown: u.metrics.maxDrawdown, winRate: u.metrics.winRate, totalTrades: u.metrics.totalTrades, profitFactor: u.metrics.profitFactor });
             });
           } catch {}

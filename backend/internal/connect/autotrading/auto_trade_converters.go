@@ -1,6 +1,8 @@
 package autotrading
 
 import (
+	"strconv"
+
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -20,8 +22,8 @@ func globalSettingsToProto(gs *model.GlobalSettings) *antv1.GlobalSettings {
 		AutoTradeEnabled:   gs.AutoTradeEnabled,
 		MaxRiskPercent:     gs.MaxRiskPercent,
 		MaxPositions:       int32(gs.MaxPositions),
-		MaxLotSize:         gs.MaxLotSize,
-		MaxDailyLoss:       gs.MaxDailyLoss.InexactFloat64(),
+		MaxLotSize:         strconv.FormatFloat(gs.MaxLotSize, 'f', -1, 64),
+		MaxDailyLoss:       gs.MaxDailyLoss.String(),
 		MaxDrawdownPercent: gs.MaxDrawdownPercent,
 		CreatedAt:          timestamppb.New(gs.CreatedAt),
 		UpdatedAt:          timestamppb.New(gs.UpdatedAt),
@@ -32,8 +34,8 @@ func applyGlobalSettings(existing *model.GlobalSettings, req *antv1.UpdateGlobal
 	existing.AutoTradeEnabled = req.GetAutoTradeEnabled()
 	existing.MaxRiskPercent = req.GetMaxRiskPercent()
 	existing.MaxPositions = int(req.GetMaxPositions())
-	existing.MaxLotSize = req.GetMaxLotSize()
-	existing.MaxDailyLoss = decimal.NewFromFloat(req.GetMaxDailyLoss())
+	existing.MaxLotSize, _ = strconv.ParseFloat(req.GetMaxLotSize(), 64)
+	existing.MaxDailyLoss = decimal.RequireFromString(req.GetMaxDailyLoss())
 	existing.MaxDrawdownPercent = req.GetMaxDrawdownPercent()
 }
 
@@ -48,9 +50,9 @@ func riskConfigToProto(rc *model.RiskConfig) *antv1.RiskConfig {
 		UserId:             rc.UserID.String(),
 		AccountId:          rc.AccountID.String(),
 		MaxRiskPercent:     rc.MaxRiskPercent,
-		MaxLotSize:         rc.MaxLotSize,
-		MaxDailyLoss:       rc.MaxDailyLoss.InexactFloat64(),
-		DailyLossUsed:      rc.DailyLossUsed.InexactFloat64(),
+		MaxLotSize:         strconv.FormatFloat(rc.MaxLotSize, 'f', -1, 64),
+		MaxDailyLoss:       rc.MaxDailyLoss.String(),
+		DailyLossUsed:      rc.DailyLossUsed.String(),
 		MaxDrawdownPercent: rc.MaxDrawdownPercent,
 		MaxPositions:       int32(rc.MaxPositions),
 		CreatedAt:          timestamppb.New(rc.CreatedAt),
@@ -60,8 +62,8 @@ func riskConfigToProto(rc *model.RiskConfig) *antv1.RiskConfig {
 
 func applyRiskConfig(existing *model.RiskConfig, req *antv1.UpdateRiskConfigRequest) {
 	existing.MaxRiskPercent = req.GetMaxRiskPercent()
-	existing.MaxLotSize = req.GetMaxLotSize()
-	existing.MaxDailyLoss = decimal.NewFromFloat(req.GetMaxDailyLoss())
+	existing.MaxLotSize, _ = strconv.ParseFloat(req.GetMaxLotSize(), 64)
+	existing.MaxDailyLoss = decimal.RequireFromString(req.GetMaxDailyLoss())
 	existing.MaxDrawdownPercent = req.GetMaxDrawdownPercent()
 	existing.MaxPositions = int(req.GetMaxPositions())
 }
@@ -81,10 +83,10 @@ func tradingLogToProto(l *model.TradingLog) *antv1.TradingLog {
 		Action:     l.Action,
 		Symbol:     l.Symbol,
 		Details:    l.Message,
-		Volume:     l.Volume.InexactFloat64(),
-		Price:      l.Price.InexactFloat64(),
+		Volume:     l.Volume.String(),
+		Price:      l.Price.String(),
 		Ticket:     l.Ticket,
-		Profit:     l.Profit.InexactFloat64(),
+		Profit:     l.Profit.String(),
 		CreatedAt:  timestamppb.New(l.CreatedAt),
 	}
 }

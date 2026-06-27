@@ -25,7 +25,8 @@ export function startSharedStream<T>(
 ) {
   if (state.started) return;
   state.started = true;
-  (async () => {
+
+  const runStream = async (retryCount = 0) => {
     try {
       const stream = start(state.abortController.signal);
       for await (const item of stream) {
@@ -37,6 +38,13 @@ export function startSharedStream<T>(
             // ignore listener errors
           }
         }
+      }
+
+      // Stream ended cleanly — reconnect with backoff if listeners remain.
+      if (state.listeners.size > 0) {
+        const delay = Math.min(1000 * Math.pow(2, retryCount), 30000);
+        setTimeout(() => runStream(retryCount + 1), delay);
+        return;
       }
     } catch (error) {
       const errorStr = String(error);
@@ -50,6 +58,12 @@ export function startSharedStream<T>(
           // ignore
         }
       }
+      // Reconnect with backoff if listeners remain.
+      if (state.listeners.size > 0) {
+        const delay = Math.min(1000 * Math.pow(2, retryCount), 30000);
+        setTimeout(() => runStream(retryCount + 1), delay);
+        return;
+      }
     } finally {
       state.started = false;
       const current = store.get(key);
@@ -57,7 +71,9 @@ export function startSharedStream<T>(
         store.delete(key);
       }
     }
-  })();
+  };
+
+  runStream();
 }
 
 export function subscribeShared<T>(

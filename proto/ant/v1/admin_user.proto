@@ -25,8 +25,8 @@ message DashboardStats {
   int64 total_accounts = 3;
   int64 online_accounts = 4;
   int64 today_trades = 5;
-  double today_volume = 6;
-  double today_profit = 7;
+  string today_volume = 6;
+  string today_profit = 7;
   double system_load = 8;
 }
 

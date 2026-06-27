@@ -18,11 +18,11 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-go@v5
         with:
-          python-version: '3.11'
+          go-version: '1.26.0'
       - name: Check source and generated line limits
-        run: python3 scripts/check-file-lines.py
+        run: cd backend && go run ./tools/check-file-lines
 
   # ── M0.1-3: backend lint ──
   backend-lint:
@@ -222,27 +222,3 @@ jobs:
       - name: verify-cards-strict (M11)
         run: make verify-cards-strict MILESTONE=M11
 
-  # ── Python: strategy-service tests ──
-  python-tests:
-    name: Python (strategy-service)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install dependencies
-        run: |
-          pip install numpy pandas
-      - name: SDK contract tests
-        run: PYTHONPATH=strategy-service python3 -m unittest discover -s strategy-service/tests -p "test_sdk_contract.py" -v
-      - name: Runtime tests
-        run: PYTHONPATH=strategy-service python3 -m unittest discover -s strategy-service/tests -p "test_runtime.py" -v
-      - name: SimBroker tests
-        run: PYTHONPATH=strategy-service python3 -m unittest discover -s strategy-service/tests -p "test_sim_broker.py" -v
-      - name: LiveBroker tests
-        run: PYTHONPATH=strategy-service python3 -m unittest discover -s strategy-service/tests -p "test_live_broker.py" -v
-      - name: Sandbox escape tests
-        run: PYTHONPATH=strategy-service python3 -m unittest discover -s strategy-service/tests -p "test_sandbox_escape.py" -v
-      # Python transpiler removed — replaced by backend/tools/mql2go (Go-native)
