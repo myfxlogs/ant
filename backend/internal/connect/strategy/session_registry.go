@@ -79,13 +79,14 @@ func (r *SessionRegistry) Watch() (<-chan struct{}, func()) {
 	ch := make(chan struct{}, 1)
 	r.mu.Lock()
 	r.watchers = append(r.watchers, ch)
-	idx := len(r.watchers) - 1
 	r.mu.Unlock()
 	cancel := func() {
 		r.mu.Lock()
-		if idx < len(r.watchers) {
-			r.watchers[idx] = r.watchers[len(r.watchers)-1]
-			r.watchers = r.watchers[:len(r.watchers)-1]
+		for i, w := range r.watchers {
+			if w == ch {
+				r.watchers = append(r.watchers[:i], r.watchers[i+1:]...)
+				break
+			}
 		}
 		r.mu.Unlock()
 		close(ch)

@@ -77,15 +77,25 @@ type LiveTradeSubscriber interface {
 //
 // Blocks until ctx is cancelled. Callers should run this in a goroutine.
 func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveStrategyConfig) error {
+	// cleanupOrphan marks a pre-created run record as failed on early return.
+	cleanupOrphan := func(errMsg string) {
+		if s.runRepo != nil && cfg.RunID != uuid.Nil {
+			_ = s.runRepo.UpdateStopped(context.Background(), cfg.RunID, "error", errMsg)
+		}
+	}
+
 	if s.barSource == nil {
+		cleanupOrphan("no BarSource configured")
 		return fmt.Errorf("live strategy runner: no BarSource configured")
 	}
 	if s.gate == nil {
+		cleanupOrphan("risk.Gate not injected")
 		return fmt.Errorf("live strategy runner: risk.Gate not injected — live trading blocked per D6-A")
 	}
 
 	source, ok := s.barSource.(LiveBarSubscriber)
 	if !ok {
+		cleanupOrphan("BarSource does not support streaming")
 		return fmt.Errorf("live strategy runner: BarSource does not support streaming (got %s)", s.barSource.Name())
 	}
 

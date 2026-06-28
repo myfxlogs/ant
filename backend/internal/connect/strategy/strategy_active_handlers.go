@@ -162,6 +162,12 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 	if s.barSource == nil {
 		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("strategy runner not configured"))
 	}
+	if s.gate == nil {
+		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("risk gate not configured"))
+	}
+	if _, ok := s.barSource.(LiveBarSubscriber); !ok {
+		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("bar source does not support streaming"))
+	}
 
 	// Prevent duplicate strategies on the same account.
 	if s.sessionRegistry != nil {
