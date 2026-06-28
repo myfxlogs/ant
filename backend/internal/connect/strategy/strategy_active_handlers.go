@@ -245,3 +245,56 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 		}(),
 	}), nil
 }
+
+// WatchActiveStrategies streams the active strategy list via SSE.
+// Sends the current list immediately, then pushes updates whenever
+// sessions are registered, deregistered, or change state.
+func (s *StrategyExecutionServer) WatchActiveStrategies(
+	ctx context.Context,
+	req *connect.Request[antv1.WatchActiveStrategiesRequest],
+	stream *connect.ServerStream[antv1.WatchActiveStrategiesEvent],
+) error {
+	uid, err := userIDRequire(ctx)
+	if err != nil {
+		return err
+	}
+	if s.sessionRegistry == nil {
+		return stream.Send(&antv1.WatchActiveStrategiesEvent{})
+	}
+
+	accountFilter := req.Msg.GetAccountId()
+
+	sendList := func() error {
+		var sessions []*ActiveSession
+		if accountFilter != "" {
+			sessions = s.sessionRegistry.ListByAccount(accountFilter)
+		} else {
+			sessions = s.sessionRegistry.ListByUser(uid)
+		}
+		pbStrats := make([]*antv1.ActiveStrategy, 0, len(sessions))
+		for _, sess := range sessions {
+			pbStrats = append(pbStrats, activeSessionToProto(sess))
+		}
+		return stream.Send(&antv1.WatchActiveStrategiesEvent{Strategies: pbStrats})
+	}
+
+	// Send current state immediately.
+	if err := sendList(); err != nil {
+		return err
+	}
+
+	// Subscribe to registry changes.
+	notifCh, cancelWatch := s.sessionRegistry.Watch()
+	defer cancelWatch()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-notifCh:
+			if err := sendList(); err != nil {
+				return err
+			}
+		}
+	}
+}

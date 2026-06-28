@@ -50,6 +50,9 @@ service StrategyRuntimeService {
   rpc WatchStrategySignals(WatchStrategySignalsRequest) returns (stream StrategySignalEvent);
   // StartStrategy launches a new live or paper strategy run.
   rpc StartStrategy(StartStrategyRequest) returns (StartStrategyResponse);
+  // WatchActiveStrategies streams the active strategy list, pushing updates
+  // whenever sessions are registered, deregistered, or change state.
+  rpc WatchActiveStrategies(WatchActiveStrategiesRequest) returns (stream WatchActiveStrategiesEvent);
 }
 
 message TranspileCodeRequest {
@@ -500,4 +503,14 @@ message StartStrategyResponse {
   bool success = 1;
   string run_id = 2;               // populated on success
   string error = 3;
+}
+
+// ── Active strategy watch stream ────────────────────────────────────
+
+message WatchActiveStrategiesRequest {
+  string account_id = 1;  // filter by account (empty = all)
+}
+
+message WatchActiveStrategiesEvent {
+  repeated ActiveStrategy strategies = 1;
 }

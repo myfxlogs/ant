@@ -50,6 +50,7 @@ type SignalEvent struct {
 type SessionRegistry struct {
 	mu       sync.RWMutex
 	sessions map[uuid.UUID]*ActiveSession // keyed by RunID
+	watchers []chan struct{}              // notified on any session change
 }
 
 // NewSessionRegistry creates a new empty registry.
@@ -57,6 +58,38 @@ func NewSessionRegistry() *SessionRegistry {
 	return &SessionRegistry{
 		sessions: make(map[uuid.UUID]*ActiveSession),
 	}
+}
+
+// notifyWatchers sends a non-blocking signal to all watchers.
+func (r *SessionRegistry) notifyWatchers() {
+	r.mu.RLock()
+	for _, w := range r.watchers {
+		select {
+		case w <- struct{}{}:
+		default:
+		}
+	}
+	r.mu.RUnlock()
+}
+
+// Watch returns a channel that receives a signal whenever sessions change
+// (register, deregister, signal, error). The cancel func unsubscribes.
+func (r *SessionRegistry) Watch() (<-chan struct{}, func()) {
+	ch := make(chan struct{}, 1)
+	r.mu.Lock()
+	r.watchers = append(r.watchers, ch)
+	idx := len(r.watchers) - 1
+	r.mu.Unlock()
+	cancel := func() {
+		r.mu.Lock()
+		if idx < len(r.watchers) {
+			r.watchers[idx] = r.watchers[len(r.watchers)-1]
+			r.watchers = r.watchers[:len(r.watchers)-1]
+		}
+		r.mu.Unlock()
+		close(ch)
+	}
+	return ch, cancel
 }
 
 // Register adds a new active session to the registry.
@@ -75,6 +108,7 @@ func (r *SessionRegistry) Register(runID uuid.UUID, userID uuid.UUID, accountID,
 	r.mu.Lock()
 	r.sessions[runID] = sess
 	r.mu.Unlock()
+	r.notifyWatchers()
 	return sess
 }
 
@@ -93,6 +127,8 @@ func (r *SessionRegistry) Deregister(runID uuid.UUID) *ActiveSession {
 	}
 	sess.signalSubs = nil
 	sess.signalSubsMu.Unlock()
+	// Notify watchers outside the lock to avoid deadlock.
+	go r.notifyWatchers()
 	return sess
 }
 

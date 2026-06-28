@@ -254,4 +254,7 @@ export const strategyActiveApi = {
 
   watchSignals: (runId: string, signal?: AbortSignal) =>
     strategyRuntimeStreamClient.watchStrategySignals({ runId }, { signal }),
+
+  watchActive: (accountId: string, signal?: AbortSignal) =>
+    strategyRuntimeStreamClient.watchActiveStrategies({ accountId }, { signal }),
 };

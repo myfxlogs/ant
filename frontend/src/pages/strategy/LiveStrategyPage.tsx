@@ -42,17 +42,6 @@ export default function LiveStrategyPage() {
   const [signals, setSignals] = useState<StrategySignalEvent[]>([]);
   const abortRef = useRef<AbortController | null>(null);
 
-  const fetchActive = useCallback(async () => {
-    setLoading(true);
-    try {
-      const r = await strategyActiveApi.listActive();
-      setActiveStrategies(r as ActiveStrategy[]);
-    } catch {
-      setActiveStrategies([]);
-    }
-    setLoading(false);
-  }, []);
-
   const fetchRuns = useCallback(async () => {
     setLoading(true);
     try {
@@ -64,17 +53,28 @@ export default function LiveStrategyPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    if (activeTab === 'active') fetchActive();
-    else fetchRuns();
-  }, [activeTab, fetchActive, fetchRuns]);
-
-  // Auto-refresh active strategies every 5s
+  // SSE stream for active strategies (push-first, no polling).
   useEffect(() => {
     if (activeTab !== 'active') return;
-    const timer = setInterval(fetchActive, 5000);
-    return () => clearInterval(timer);
-  }, [activeTab, fetchActive]);
+    const abort = new AbortController();
+    setLoading(true);
+    (async () => {
+      try {
+        for await (const event of strategyActiveApi.watchActive('', abort.signal)) {
+          setActiveStrategies((event.strategies || []) as ActiveStrategy[]);
+          setLoading(false);
+        }
+      } catch {
+        setActiveStrategies([]);
+        setLoading(false);
+      }
+    })();
+    return () => abort.abort();
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 'history') fetchRuns();
+  }, [activeTab, fetchRuns]);
 
   const handleStop = async (runId: string) => {
     setStopping(runId);
@@ -82,7 +82,6 @@ export default function LiveStrategyPage() {
       const r = await strategyActiveApi.stop(runId);
       if (r.success) {
         message.success(t('strategy.live.stopSuccess', 'Strategy stopped'));
-        fetchActive();
       } else {
         message.error(r.error || t('strategy.live.stopFailed', 'Failed to stop'));
       }
@@ -249,9 +248,11 @@ export default function LiveStrategyPage() {
     <div style={{ padding: '0 0 12px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>{t('strategy.live.title', 'Live Strategy Monitor')}</h2>
-        <Button icon={<ReloadOutlined />} onClick={activeTab === 'active' ? fetchActive : fetchRuns} loading={loading}>
-          {t('common.refresh', 'Refresh')}
-        </Button>
+        {activeTab === 'history' && (
+          <Button icon={<ReloadOutlined />} onClick={fetchRuns} loading={loading}>
+            {t('common.refresh', 'Refresh')}
+          </Button>
+        )}
       </div>
 
       <Tabs
