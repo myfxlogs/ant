@@ -4,7 +4,6 @@ package strategy
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -12,6 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
+	"anttrader/internal/repository"
 )
 
 // ListActiveStrategies returns currently running strategy sessions.
@@ -195,6 +195,26 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 		}
 	}
 
+	// Pre-create the run record synchronously so we can return run_id immediately.
+	runID := uuid.Nil
+	if s.runRepo != nil {
+		run := &repository.StrategyRun{
+			UserID:       uid,
+			AccountID:    cfg.AccountID,
+			Symbol:       cfg.Symbol,
+			Timeframe:    cfg.Timeframe,
+			Mode:         cfg.Mode,
+			StrategyCode: cfg.Code,
+			Status:       "running",
+		}
+		if err := s.runRepo.Create(ctx, run); err != nil {
+			s.log.Warn("StartStrategy: failed to create run record", zap.Error(err))
+		} else {
+			runID = run.ID
+			cfg.RunID = runID
+		}
+	}
+
 	runCtx, cancel := context.WithCancel(context.Background())
 
 	go func() {
@@ -205,6 +225,7 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 			zap.String("symbol", cfg.Symbol),
 			zap.String("timeframe", cfg.Timeframe),
 			zap.String("mode", cfg.Mode),
+			zap.String("run_id", runID.String()),
 		)
 		if err := s.RunLiveStrategy(runCtx, cfg); err != nil {
 			s.log.Warn("StartStrategy: LiveStrategyRunner exited with error",
@@ -214,23 +235,13 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 		}
 	}()
 
-	// Wait briefly for the run record to be created so we can return the run_id.
-	// RunLiveStrategy creates the run record synchronously before entering the event loop.
-	runID := ""
-	for i := 0; i < 10; i++ {
-		if cfg.RunID != uuid.Nil {
-			runID = cfg.RunID.String()
-			break
-		}
-		select {
-		case <-ctx.Done():
-			break
-		case <-time.After(50 * time.Millisecond):
-		}
-	}
-
 	return connect.NewResponse(&antv1.StartStrategyResponse{
 		Success: true,
-		RunId:   runID,
+		RunId: func() string {
+			if runID != uuid.Nil {
+				return runID.String()
+			}
+			return ""
+		}(),
 	}), nil
 }

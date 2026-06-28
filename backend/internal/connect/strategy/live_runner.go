@@ -128,9 +128,9 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 		}
 	}
 
-	// Create strategy run record for persistence.
-	var runID uuid.UUID
-	if s.runRepo != nil && cfg.UserID != "" {
+	// Create strategy run record for persistence (unless caller pre-created one).
+	runID := cfg.RunID
+	if runID == uuid.Nil && s.runRepo != nil && cfg.UserID != "" {
 		uid, _ := uuid.Parse(cfg.UserID)
 		run := &repository.StrategyRun{
 			UserID:       uid,
