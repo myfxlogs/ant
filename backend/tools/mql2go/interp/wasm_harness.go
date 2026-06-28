@@ -2,23 +2,15 @@
 
 package interp
 
-// WASM harness for wasip1/wasm target (wazero runtime).
+// WASM harness primitives for wasip1/wasm target (wazero runtime).
 //
-// The host (Go native) compiles MQL → IR via CompileToIR, serializes it
-// via SerializeIR, and passes the bytes to the WASM module. The WASM
-// module reads the IR from stdin, deserializes, creates an interpreter,
-// and processes bar events.
+// The host compiles MQL → IR, serializes via SerializeIR, and passes bytes
+// to the WASM module via stdin. The generated harness (backtest_harness.go)
+// produces a main() that calls WASMRunSetup to get an interpreter, then
+// handles proto request/response I/O itself.
 //
 // This file is only compiled under GOOS=wasip1 GOARCH=wasm.
-// It uses WASI stdio (os.Stdin/os.Stdout) — no syscall/js dependency.
-//
-// Host-side (wazero) usage:
-//
-//	cmd := exec.Command("go", "build", "-o", "strategy.wasm",
-//	    "-tags", "wasm", strategyFile, harnessFile)
-//	cmd.Env = append(os.Environ(), "GOOS=wasip1", "GOARCH=wasm")
-//	// ... build and load via wazero ...
-//	// Pass serialized IR + proto bar request via stdin
+// Uses WASI stdio — no syscall/js dependency.
 
 import (
 	"encoding/binary"
@@ -27,20 +19,12 @@ import (
 	"os"
 )
 
-// WASMRun is the WASM entry point. It reads a serialized IR from stdin,
-// then processes bar events in a read-loop (proto requests on stdin,
-// proto responses on stdout).
+// WASMRunSetup reads a serialized IR from stdin and returns a ready-to-use
+// Interpreter. The generated harness calls this once at startup, then
+// handles the bar event loop with proto I/O.
 //
-// Protocol:
-//   1. Host writes: u32 irLen + irBytes (serialized IR)
-//   2. Host writes: u32 reqLen + reqBytes (proto ExecuteLiveRequest)
-//   3. WASM reads IR, creates interpreter, runs OnInit
-//   4. WASM reads request, runs OnBar, writes u32 respLen + respBytes
-//   5. Repeat step 2-4 until EOF
-//
-// This function is called from main() in the generated harness.
-func WASMRun() {
-	// Step 1: Read serialized IR
+// Protocol: host writes u32 irLen + irBytes as the first stdin message.
+func WASMRunSetup() *Interpreter {
 	irData, err := readLengthPrefixed(os.Stdin)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "wasm: read IR: %v\n", err)
@@ -53,28 +37,7 @@ func WASMRun() {
 		os.Exit(1)
 	}
 
-	it := NewInterpreter(ir)
-
-	// Step 2: Process bar events in a loop
-	for {
-		reqData, err := readLengthPrefixed(os.Stdin)
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			fmt.Fprintf(os.Stderr, "wasm: read request: %v\n", err)
-			os.Exit(1)
-		}
-
-		// Proto deserialization and sdk.Context creation are handled by
-		// the generated harness (internal/connect/strategy/backtest_harness.go),
-		// which produces a main() that calls WASMRun or uses the interpreter
-		// directly. This primitive handles IR deserialization + interpreter
-		// lifecycle; the harness bridges proto ↔ sdk.Context.
-
-		_ = reqData
-		_ = it
-	}
+	return NewInterpreter(ir)
 }
 
 // readLengthPrefixed reads a u32 length prefix followed by that many bytes.
@@ -89,15 +52,4 @@ func readLengthPrefixed(r io.Reader) ([]byte, error) {
 		return nil, err
 	}
 	return data, nil
-}
-
-// writeLengthPrefixed writes a u32 length prefix followed by the data.
-func writeLengthPrefixed(w io.Writer, data []byte) error {
-	var lenBuf [4]byte
-	binary.LittleEndian.PutUint32(lenBuf[:], uint32(len(data)))
-	if _, err := w.Write(lenBuf[:]); err != nil {
-		return err
-	}
-	_, err := w.Write(data)
-	return err
 }

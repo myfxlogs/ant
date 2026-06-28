@@ -2,9 +2,7 @@ package interp
 
 import (
 	"encoding/binary"
-	"fmt"
 	"io"
-	"strings"
 
 	"github.com/shopspring/decimal"
 )
@@ -470,15 +468,3 @@ func (r *readBuf) readValue() Value {
 	}
 	return v
 }
-
-// FormatError returns a human-readable description of serialization errors.
-func FormatError(err error) string {
-	if err == nil {
-		return ""
-	}
-	return fmt.Sprintf("IR serialization error: %v", err)
-}
-
-// Ensure unused imports are referenced.
-var _ = strings.TrimSpace
-var _ = io.EOF
