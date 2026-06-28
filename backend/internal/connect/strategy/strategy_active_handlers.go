@@ -169,17 +169,6 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("bar source does not support streaming"))
 	}
 
-	// Prevent duplicate strategies on the same account.
-	if s.sessionRegistry != nil {
-		existing := s.sessionRegistry.ListByAccount(req.Msg.GetAccountId())
-		if len(existing) > 0 {
-			return connect.NewResponse(&antv1.StartStrategyResponse{
-				Success: false,
-				Error:   fmt.Sprintf("strategy already running for account %s", req.Msg.GetAccountId()),
-			}), nil
-		}
-	}
-
 	mode := req.Msg.GetMode()
 	if mode == "" {
 		mode = "paper"
@@ -232,7 +221,24 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 		}
 	}
 
+	// Synchronously register session — atomic conflict detection.
+	// If account already has a running session, Register returns nil.
 	runCtx, cancel := context.WithCancel(context.Background())
+	if s.sessionRegistry != nil && runID != uuid.Nil {
+		sess := s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, cancel)
+		if sess == nil {
+			cancel()
+			// Mark the pre-created run record as error.
+			if s.runRepo != nil {
+				_ = s.runRepo.UpdateStopped(context.Background(), runID, "error", "duplicate strategy for account")
+			}
+			return connect.NewResponse(&antv1.StartStrategyResponse{
+				Success: false,
+				Error:   fmt.Sprintf("strategy already running for account %s", cfg.AccountID),
+			}), nil
+		}
+		cfg.PreRegisteredSession = sess
+	}
 
 	go func() {
 		defer cancel()

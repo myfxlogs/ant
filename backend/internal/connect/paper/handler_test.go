@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sync"
 	"testing"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/shopspring/decimal"
@@ -123,10 +122,9 @@ func newTestHandler(runner StrategyRunner) *Handler {
 
 // ── Tests ──
 
-func TestHandler_StartPaperStrategy_Success(t *testing.T) {
+func TestHandler_StartPaperStrategy_Deprecated(t *testing.T) {
 	t.Parallel()
-	runner := &stubStrategyRunner{}
-	h := newTestHandler(runner)
+	h := newTestHandler(&stubStrategyRunner{})
 
 	req := connect.NewRequest(&antv1.StartPaperStrategyRequest{
 		PaperAccountId: "pa-1",
@@ -138,30 +136,14 @@ func TestHandler_StartPaperStrategy_Success(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !resp.Msg.Success {
-		t.Fatalf("expected success, got error: %s", resp.Msg.Error)
-	}
-	// Wait for goroutine to call RunLiveStrategy.
-	deadline := time.Now().Add(2 * time.Second)
-	for runner.callCount() == 0 && time.Now().Before(deadline) {
-		time.Sleep(10 * time.Millisecond)
-	}
-	if runner.callCount() == 0 {
-		t.Fatal("expected RunLiveStrategy to be called within 2s")
-	}
-	call := runner.lastCall()
-	if call.AccountID != "pa-1" {
-		t.Errorf("expected account pa-1, got %s", call.AccountID)
-	}
-	if call.Mode != "paper" {
-		t.Errorf("expected mode paper, got %s", call.Mode)
+	if resp.Msg.Success {
+		t.Fatal("expected deprecated failure")
 	}
 }
 
 func TestHandler_StartPaperStrategy_MissingAccountID(t *testing.T) {
 	t.Parallel()
-	runner := &stubStrategyRunner{}
-	h := newTestHandler(runner)
+	h := newTestHandler(&stubStrategyRunner{})
 
 	req := connect.NewRequest(&antv1.StartPaperStrategyRequest{
 		PaperAccountId: "", // empty
@@ -173,7 +155,7 @@ func TestHandler_StartPaperStrategy_MissingAccountID(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if resp.Msg.Success {
-		t.Fatal("expected failure for empty account ID")
+		t.Fatal("expected deprecated failure")
 	}
 }
 
@@ -191,45 +173,28 @@ func TestHandler_StartPaperStrategy_NilRunner(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if resp.Msg.Success {
-		t.Fatal("expected failure for nil runner")
+		t.Fatal("expected deprecated failure")
 	}
 }
 
 func TestHandler_StartPaperStrategy_DuplicateStart(t *testing.T) {
 	t.Parallel()
-	runner := &stubStrategyRunner{}
-	h := newTestHandler(runner)
+	h := newTestHandler(&stubStrategyRunner{})
 
 	req := connect.NewRequest(&antv1.StartPaperStrategyRequest{
 		PaperAccountId: "pa-dup",
 		Symbol:         "EURUSD",
 		StrategyCode:   "print('x')",
 	})
-	resp1, _ := h.StartPaperStrategy(authCtx("u1"), req)
-	if !resp1.Msg.Success {
-		t.Fatal("first start should succeed")
-	}
-
-	resp2, _ := h.StartPaperStrategy(authCtx("u1"), req)
-	if resp2.Msg.Success {
-		t.Fatal("second start should fail (duplicate)")
+	resp, _ := h.StartPaperStrategy(authCtx("u1"), req)
+	if resp.Msg.Success {
+		t.Fatal("expected deprecated failure")
 	}
 }
 
-func TestHandler_StopPaperStrategy_Success(t *testing.T) {
+func TestHandler_StopPaperStrategy_Deprecated(t *testing.T) {
 	t.Parallel()
-	runner := &stubStrategyRunner{}
-	h := newTestHandler(runner)
-
-	startReq := connect.NewRequest(&antv1.StartPaperStrategyRequest{
-		PaperAccountId: "pa-stop",
-		Symbol:         "EURUSD",
-		StrategyCode:   "print('x')",
-	})
-	startResp, _ := h.StartPaperStrategy(authCtx("u1"), startReq)
-	if !startResp.Msg.Success {
-		t.Fatal("start should succeed")
-	}
+	h := newTestHandler(&stubStrategyRunner{})
 
 	stopReq := connect.NewRequest(&antv1.StopPaperStrategyRequest{
 		PaperAccountId: "pa-stop",
@@ -238,15 +203,14 @@ func TestHandler_StopPaperStrategy_Success(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !stopResp.Msg.Success {
-		t.Fatalf("expected stop success, got: %s", stopResp.Msg.Error)
+	if stopResp.Msg.Success {
+		t.Fatal("expected deprecated failure")
 	}
 }
 
 func TestHandler_StopPaperStrategy_NotRunning(t *testing.T) {
 	t.Parallel()
-	runner := &stubStrategyRunner{}
-	h := newTestHandler(runner)
+	h := newTestHandler(&stubStrategyRunner{})
 
 	req := connect.NewRequest(&antv1.StopPaperStrategyRequest{
 		PaperAccountId: "pa-never-started",
@@ -256,23 +220,26 @@ func TestHandler_StopPaperStrategy_NotRunning(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if resp.Msg.Success {
-		t.Fatal("expected failure for non-running strategy")
+		t.Fatal("expected deprecated failure")
 	}
 }
 
 func TestHandler_StartPaperStrategy_Unauthenticated(t *testing.T) {
 	t.Parallel()
-	runner := &stubStrategyRunner{}
-	h := newTestHandler(runner)
+	h := newTestHandler(&stubStrategyRunner{})
 
 	req := connect.NewRequest(&antv1.StartPaperStrategyRequest{
 		PaperAccountId: "pa-x",
 		Symbol:         "EURUSD",
 		StrategyCode:   "print('x')",
 	})
-	_, err := h.StartPaperStrategy(context.Background(), req) // no userID in ctx
-	if err == nil {
-		t.Fatal("expected unauthenticated error")
+	resp, err := h.StartPaperStrategy(context.Background(), req) // no userID in ctx
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	// Deprecated stub returns failure (not auth error) regardless of auth.
+	if resp.Msg.Success {
+		t.Fatal("expected deprecated failure")
 	}
 }
 

@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync"
 
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
@@ -37,13 +36,10 @@ type AccountLookup func(ctx context.Context, userID string) string // returns MT
 
 // Handler implements ant.v1.PaperTradingServiceHandler.
 type Handler struct {
-	repo             paperRepo
-	engine           *papereng.PaperEngine
-	strategyRunner   StrategyRunner
-	activeStrategies map[string]context.CancelFunc // paperAccountID → cancel
-	mu               sync.Mutex
-	log              *zap.Logger
-	accountLookup    AccountLookup // provides MT4 account ID for bar data in paper mode
+	repo          paperRepo
+	engine        *papereng.PaperEngine
+	log           *zap.Logger
+	accountLookup AccountLookup // provides MT4 account ID for bar data in paper mode
 }
 
 var _ antv1c.PaperTradingServiceHandler = (*Handler)(nil)
@@ -55,12 +51,10 @@ func NewHandler(repo paperRepo, engine *papereng.PaperEngine, runner StrategyRun
 		accountLookup = func(ctx context.Context, userID string) string { return "" }
 	}
 	return &Handler{
-		repo:             repo,
-		engine:           engine,
-		strategyRunner:   runner,
-		activeStrategies: make(map[string]context.CancelFunc),
-		log:              log,
-		accountLookup:    accountLookup,
+		repo:          repo,
+		engine:        engine,
+		log:           log,
+		accountLookup: accountLookup,
 	}
 }
 
@@ -107,129 +101,20 @@ func (h *Handler) ListPaperAccounts(ctx context.Context, req *connect.Request[an
 	return connect.NewResponse(&antv1.ListPaperAccountsResponse{Accounts: pb}), nil
 }
 
-// StartPaperStrategy launches a strategy in paper trading mode.
-// Spawns a LiveStrategyRunner goroutine that subscribes to bar updates and executes
-// the strategy code against a virtual paper account (mode="paper").
+// StartPaperStrategy is deprecated. Use StrategyRuntimeService.StartStrategy instead.
 func (h *Handler) StartPaperStrategy(ctx context.Context, req *connect.Request[antv1.StartPaperStrategyRequest]) (*connect.Response[antv1.StartPaperStrategyResponse], error) {
-	uid := h.userID(ctx)
-	if uid == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
-	}
-
-	accountID := req.Msg.PaperAccountId
-	if accountID == "" {
-		return connect.NewResponse(&antv1.StartPaperStrategyResponse{
-			Success: false,
-			Error:   "paper_account_id is required",
-		}), nil
-	}
-
-	if h.strategyRunner == nil {
-		return connect.NewResponse(&antv1.StartPaperStrategyResponse{
-			Success: false,
-			Error:   "strategy server not configured",
-		}), nil
-	}
-
-	// Prevent duplicate strategies on the same paper account.
-	h.mu.Lock()
-	if _, running := h.activeStrategies[accountID]; running {
-		h.mu.Unlock()
-		return connect.NewResponse(&antv1.StartPaperStrategyResponse{
-			Success: false,
-			Error:   fmt.Sprintf("strategy already running for paper account %s", accountID),
-		}), nil
-	}
-	h.mu.Unlock()
-
-	runCtx, cancel := context.WithCancel(context.Background())
-
-	cfg := strategy.LiveStrategyConfig{
-		AccountID: accountID,
-		Symbol:    req.Msg.Symbol,
-		Timeframe: req.Msg.Timeframe,
-		Code:      req.Msg.StrategyCode,
-		Mode:      modeOverride(req.Msg.Params),
-		Params:    req.Msg.Params,
-	}
-		cfg.UserID = uid
-		// Live mode: use MT4 account ID for order routing.
-		if cfg.Mode == "live" {
-			if mt4ID := h.accountLookup(ctx, uid); mt4ID != "" {
-				cfg.DataSourceAccountID = mt4ID
-				cfg.AccountID = mt4ID // route orders to real MT4 account
-			}
-		} else {
-			// Paper mode: use linked MT4 account for bar data subscription only.
-			if mt4ID := h.accountLookup(ctx, uid); mt4ID != "" {
-				cfg.DataSourceAccountID = mt4ID
-			}
-		}
-
-	h.mu.Lock()
-	h.activeStrategies[accountID] = cancel
-	h.mu.Unlock()
-
-	go func() {
-		defer func() {
-			h.mu.Lock()
-			delete(h.activeStrategies, accountID)
-			h.mu.Unlock()
-			cancel()
-		}()
-
-		h.log.Info("StartPaperStrategy: launching LiveStrategyRunner",
-			zap.String("user", uid),
-			zap.String("paper_account", accountID),
-			zap.String("symbol", req.Msg.Symbol),
-			zap.String("timeframe", req.Msg.Timeframe),
-		)
-
-		if err := h.strategyRunner.RunLiveStrategy(runCtx, cfg); err != nil {
-			h.log.Warn("StartPaperStrategy: LiveStrategyRunner exited with error",
-				zap.String("paper_account", accountID),
-				zap.Error(err),
-			)
-		} else {
-			h.log.Info("StartPaperStrategy: LiveStrategyRunner exited cleanly",
-				zap.String("paper_account", accountID),
-			)
-		}
-	}()
-
-	return connect.NewResponse(&antv1.StartPaperStrategyResponse{Success: true}), nil
+	return connect.NewResponse(&antv1.StartPaperStrategyResponse{
+		Success: false,
+		Error:   "deprecated: use StrategyRuntimeService.StartStrategy instead",
+	}), nil
 }
 
-// StopPaperStrategy stops a running paper strategy by cancelling its context.
+// StopPaperStrategy is deprecated. Use StrategyRuntimeService.StopStrategy instead.
 func (h *Handler) StopPaperStrategy(ctx context.Context, req *connect.Request[antv1.StopPaperStrategyRequest]) (*connect.Response[antv1.StopPaperStrategyResponse], error) {
-	uid := h.userID(ctx)
-	if uid == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
-	}
-	_ = uid
-
-	accountID := req.Msg.PaperAccountId
-
-	h.mu.Lock()
-	cancel, ok := h.activeStrategies[accountID]
-	if ok {
-		delete(h.activeStrategies, accountID)
-	}
-	h.mu.Unlock()
-
-	if !ok {
-		return connect.NewResponse(&antv1.StopPaperStrategyResponse{
-			Success: false,
-			Error:   fmt.Sprintf("no running strategy found for paper account %s", accountID),
-		}), nil
-	}
-
-	cancel()
-	h.log.Info("StopPaperStrategy: cancelled",
-		zap.String("paper_account", accountID),
-	)
-
-	return connect.NewResponse(&antv1.StopPaperStrategyResponse{Success: true}), nil
+	return connect.NewResponse(&antv1.StopPaperStrategyResponse{
+		Success: false,
+		Error:   "deprecated: use StrategyRuntimeService.StopStrategy instead",
+	}), nil
 }
 
 // WatchPaperAccount streams paper account state updates via SSE.
@@ -276,13 +161,4 @@ func paperAccountToProto(a *repository.PaperAccount) *antv1.PaperAccount {
 		CreatedAtUnixMs:  a.CreatedAt.UnixMilli(),
 		Archived:         a.Archived,
 	}
-}
-
-// modeOverride extracts the mode from params, defaulting to "paper".
-// Set params["mode"] = "live" to run against a real MT account.
-func modeOverride(params map[string]string) string {
-	if params != nil && params["mode"] == "live" {
-		return "live"
-	}
-	return "paper"
 }

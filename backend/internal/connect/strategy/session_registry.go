@@ -95,7 +95,8 @@ func (r *SessionRegistry) Watch() (<-chan struct{}, func()) {
 }
 
 // Register adds a new active session to the registry.
-// Returns the created ActiveSession.
+// Returns the created ActiveSession, or nil if a session is already
+// running for the same account (atomic conflict detection).
 func (r *SessionRegistry) Register(runID uuid.UUID, userID uuid.UUID, accountID, symbol, timeframe, mode string, cancel context.CancelFunc) *ActiveSession {
 	sess := &ActiveSession{
 		RunID:     runID,
@@ -109,6 +110,13 @@ func (r *SessionRegistry) Register(runID uuid.UUID, userID uuid.UUID, accountID,
 		registry:  r,
 	}
 	r.mu.Lock()
+	// Atomic conflict check: reject if account already has a running session.
+	for _, existing := range r.sessions {
+		if existing.AccountID == accountID {
+			r.mu.Unlock()
+			return nil
+		}
+	}
 	r.sessions[runID] = sess
 	r.mu.Unlock()
 	r.notifyWatchers()

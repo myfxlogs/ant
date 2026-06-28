@@ -212,7 +212,7 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 	e.activeRuns[schedule.ID] = handle
 	e.mu.Unlock()
 
-	go e.runOne(runCtx, schedule, LiveStrategyConfig{
+	cfg := LiveStrategyConfig{
 		AccountID: schedule.AccountID.String(),
 		UserID:    schedule.UserID.String(),
 		Symbol:    schedule.Symbol,
@@ -220,7 +220,28 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 		Code:      tpl.CodeSkeleton,
 		Mode:      "live",
 		Params:    strParams,
-	}, handle)
+	}
+
+	// Pre-create run record (RunLiveStrategy requires RunID to be set).
+	if e.runner != nil && e.runner.runRepo != nil {
+		uid, _ := uuid.Parse(cfg.UserID)
+		run := &repository.StrategyRun{
+			UserID:       uid,
+			AccountID:    cfg.AccountID,
+			Symbol:       cfg.Symbol,
+			Timeframe:    cfg.Timeframe,
+			Mode:         cfg.Mode,
+			StrategyCode: cfg.Code,
+			Status:       "running",
+		}
+		if err := e.runner.runRepo.Create(context.Background(), run); err != nil {
+			e.log.Warn("dispatch: failed to create run record", zap.Error(err))
+		} else {
+			cfg.RunID = run.ID
+		}
+	}
+
+	go e.runOne(runCtx, schedule, cfg, handle)
 
 	e.log.Info("dispatched", zap.String("schedule_id", schedule.ID.String()),
 		zap.String("symbol", schedule.Symbol), zap.String("timeframe", schedule.Timeframe))

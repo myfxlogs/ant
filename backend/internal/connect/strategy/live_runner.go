@@ -22,7 +22,6 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/mthub"
-	"anttrader/internal/repository"
 	"anttrader/tools/mql2go"
 	"anttrader/tools/mql2go/interp"
 )
@@ -56,9 +55,13 @@ type LiveStrategyConfig struct {
 	// Default (0) = Bar only.
 	Models ExecutionModels
 
-	// RunID is set by RunLiveStrategy when a run record is created.
-	// Callers can pre-set this to link to an existing run.
+	// RunID must be pre-set by caller (run record pre-created in DB).
 	RunID uuid.UUID
+
+	// PreRegisteredSession is set by callers that synchronously register
+	// the session before launching RunLiveStrategy. If set, RunLiveStrategy
+	// skips registration.
+	PreRegisteredSession *ActiveSession
 }
 
 // LiveTickSubscriber provides tick (Bid/Ask) updates for an account.
@@ -77,10 +80,16 @@ type LiveTradeSubscriber interface {
 //
 // Blocks until ctx is cancelled. Callers should run this in a goroutine.
 func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveStrategyConfig) error {
-	// cleanupOrphan marks a pre-created run record as failed on early return.
+	// Callers must pre-create the run record and set cfg.RunID.
+	if cfg.RunID == uuid.Nil {
+		return fmt.Errorf("live strategy runner: cfg.RunID must be set by caller")
+	}
+	runID := cfg.RunID
+
+	// cleanupOrphan marks the run record as failed on early return.
 	cleanupOrphan := func(errMsg string) {
-		if s.runRepo != nil && cfg.RunID != uuid.Nil {
-			_ = s.runRepo.UpdateStopped(context.Background(), cfg.RunID, "error", errMsg)
+		if s.runRepo != nil {
+			_ = s.runRepo.UpdateStopped(context.Background(), runID, "error", errMsg)
 		}
 	}
 
@@ -138,37 +147,22 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 		}
 	}
 
-	// Create strategy run record for persistence (unless caller pre-created one).
-	runID := cfg.RunID
-	if runID == uuid.Nil && s.runRepo != nil && cfg.UserID != "" {
-		uid, _ := uuid.Parse(cfg.UserID)
-		run := &repository.StrategyRun{
-			UserID:       uid,
-			AccountID:    cfg.AccountID,
-			Symbol:       cfg.Symbol,
-			Timeframe:    cfg.Timeframe,
-			Mode:         cfg.Mode,
-			StrategyCode: cfg.Code,
-			Status:       "running",
-		}
-		if err := s.runRepo.Create(ctx, run); err != nil {
-			s.log.Warn("LiveStrategyRunner: failed to create run record", zap.Error(err))
-		} else {
-			runID = run.ID
-			s.log.Info("LiveStrategyRunner: run record created", zap.String("run_id", runID.String()))
-		}
-	}
-	cfg.RunID = runID
-
 	// Make context cancellable so StopStrategy RPC can stop this run.
 	runCtx, runCancel := context.WithCancel(ctx)
 	defer runCancel()
 
 	// Register in session registry for monitoring + control.
-	var activeSess *ActiveSession
-	if s.sessionRegistry != nil && runID != uuid.Nil {
+	// If caller pre-registered (synchronous conflict check), use that session.
+	activeSess := cfg.PreRegisteredSession
+	if activeSess == nil && s.sessionRegistry != nil {
 		uid, _ := uuid.Parse(cfg.UserID)
 		activeSess = s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, runCancel)
+		if activeSess == nil {
+			cleanupOrphan("another strategy is already running for this account")
+			return fmt.Errorf("live strategy runner: another strategy is already running for account %s", cfg.AccountID)
+		}
+	}
+	if activeSess != nil {
 		s.log.Info("LiveStrategyRunner: session registered", zap.String("run_id", runID.String()))
 	}
 

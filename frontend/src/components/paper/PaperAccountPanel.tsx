@@ -114,28 +114,43 @@ export default function PaperAccountPanel() {
     };
   }, [accounts.map(a => a.id).join(','), subscribeAccount, unsubscribeAccount]);
 
-  // Recover running strategies from server on mount (survives page refresh).
+  // Watch active strategies via SSE (push-first, survives refresh).
   useEffect(() => {
+    const abort = new AbortController();
     (async () => {
       try {
-        const active = await strategyActiveApi.listActive();
-        const recovered: Record<string, RunningStrategy> = {};
-        for (const s of active as any[]) {
-          if (s.accountId && s.mode === 'paper') {
-            recovered[s.accountId] = {
-              symbol: s.symbol,
-              timeframe: s.timeframe,
-              runId: s.runId,
-            };
+        for await (const event of strategyActiveApi.watchActive('', abort.signal)) {
+          const active = (event.strategies || []) as any[];
+          const recovered: Record<string, RunningStrategy> = {};
+          for (const s of active) {
+            if (s.accountId && s.mode === 'paper') {
+              recovered[s.accountId] = {
+                symbol: s.symbol,
+                timeframe: s.timeframe,
+                runId: s.runId,
+              };
+            }
           }
-        }
-        if (Object.keys(recovered).length > 0) {
-          setRunning(prev => ({ ...prev, ...recovered }));
+          setRunning(prev => {
+            // Merge: add new/updated, remove stopped ones for paper accounts.
+            const next = { ...prev };
+            for (const [id, val] of Object.entries(recovered)) {
+              next[id] = val;
+            }
+            // Remove paper accounts that are no longer active.
+            for (const id of Object.keys(next)) {
+              if (!(id in recovered)) {
+                delete next[id];
+              }
+            }
+            return next;
+          });
         }
       } catch {
-        // ignore — no active strategies or server unavailable
+        // Stream ended or aborted
       }
     })();
+    return () => abort.abort();
   }, []);
 
   // ── Handlers ──
