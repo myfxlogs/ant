@@ -82,6 +82,12 @@ const (
 	// StrategyRuntimeServiceImportStrategyProcedure is the fully-qualified name of the
 	// StrategyRuntimeService's ImportStrategy RPC.
 	StrategyRuntimeServiceImportStrategyProcedure = "/ant.v1.StrategyRuntimeService/ImportStrategy"
+	// StrategyRuntimeServiceListStrategyRunsProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's ListStrategyRuns RPC.
+	StrategyRuntimeServiceListStrategyRunsProcedure = "/ant.v1.StrategyRuntimeService/ListStrategyRuns"
+	// StrategyRuntimeServiceGetStrategyRunProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's GetStrategyRun RPC.
+	StrategyRuntimeServiceGetStrategyRunProcedure = "/ant.v1.StrategyRuntimeService/GetStrategyRun"
 )
 
 // StrategyRuntimeServiceClient is a client for the ant.v1.StrategyRuntimeService service.
@@ -109,6 +115,10 @@ type StrategyRuntimeServiceClient interface {
 	GenerateImportCode(context.Context, *connect.Request[v1.GenerateImportCodeRequest]) (*connect.Response[v1.GenerateImportCodeResponse], error)
 	// ImportStrategy runs the full import pipeline: analyze → generate → return code.
 	ImportStrategy(context.Context, *connect.Request[v1.ImportStrategyRequest]) (*connect.Response[v1.ImportStrategyResponse], error)
+	// ListStrategyRuns returns recent live/paper strategy run records.
+	ListStrategyRuns(context.Context, *connect.Request[v1.ListStrategyRunsRequest]) (*connect.Response[v1.ListStrategyRunsResponse], error)
+	// GetStrategyRun returns a single strategy run by ID.
+	GetStrategyRun(context.Context, *connect.Request[v1.GetStrategyRunRequest]) (*connect.Response[v1.GetStrategyRunResponse], error)
 }
 
 // NewStrategyRuntimeServiceClient constructs a client for the ant.v1.StrategyRuntimeService
@@ -218,6 +228,18 @@ func NewStrategyRuntimeServiceClient(httpClient connect.HTTPClient, baseURL stri
 			connect.WithSchema(strategyRuntimeServiceMethods.ByName("ImportStrategy")),
 			connect.WithClientOptions(opts...),
 		),
+		listStrategyRuns: connect.NewClient[v1.ListStrategyRunsRequest, v1.ListStrategyRunsResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceListStrategyRunsProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("ListStrategyRuns")),
+			connect.WithClientOptions(opts...),
+		),
+		getStrategyRun: connect.NewClient[v1.GetStrategyRunRequest, v1.GetStrategyRunResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceGetStrategyRunProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("GetStrategyRun")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -239,6 +261,8 @@ type strategyRuntimeServiceClient struct {
 	analyzeImportCode  *connect.Client[v1.AnalyzeImportCodeRequest, v1.AnalyzeImportCodeResponse]
 	generateImportCode *connect.Client[v1.GenerateImportCodeRequest, v1.GenerateImportCodeResponse]
 	importStrategy     *connect.Client[v1.ImportStrategyRequest, v1.ImportStrategyResponse]
+	listStrategyRuns   *connect.Client[v1.ListStrategyRunsRequest, v1.ListStrategyRunsResponse]
+	getStrategyRun     *connect.Client[v1.GetStrategyRunRequest, v1.GetStrategyRunResponse]
 }
 
 // Execute calls ant.v1.StrategyRuntimeService.Execute.
@@ -321,6 +345,16 @@ func (c *strategyRuntimeServiceClient) ImportStrategy(ctx context.Context, req *
 	return c.importStrategy.CallUnary(ctx, req)
 }
 
+// ListStrategyRuns calls ant.v1.StrategyRuntimeService.ListStrategyRuns.
+func (c *strategyRuntimeServiceClient) ListStrategyRuns(ctx context.Context, req *connect.Request[v1.ListStrategyRunsRequest]) (*connect.Response[v1.ListStrategyRunsResponse], error) {
+	return c.listStrategyRuns.CallUnary(ctx, req)
+}
+
+// GetStrategyRun calls ant.v1.StrategyRuntimeService.GetStrategyRun.
+func (c *strategyRuntimeServiceClient) GetStrategyRun(ctx context.Context, req *connect.Request[v1.GetStrategyRunRequest]) (*connect.Response[v1.GetStrategyRunResponse], error) {
+	return c.getStrategyRun.CallUnary(ctx, req)
+}
+
 // StrategyRuntimeServiceHandler is an implementation of the ant.v1.StrategyRuntimeService service.
 type StrategyRuntimeServiceHandler interface {
 	Execute(context.Context, *connect.Request[v1.ExecuteStrategyRequest]) (*connect.Response[v1.ExecuteStrategyResponse], error)
@@ -346,6 +380,10 @@ type StrategyRuntimeServiceHandler interface {
 	GenerateImportCode(context.Context, *connect.Request[v1.GenerateImportCodeRequest]) (*connect.Response[v1.GenerateImportCodeResponse], error)
 	// ImportStrategy runs the full import pipeline: analyze → generate → return code.
 	ImportStrategy(context.Context, *connect.Request[v1.ImportStrategyRequest]) (*connect.Response[v1.ImportStrategyResponse], error)
+	// ListStrategyRuns returns recent live/paper strategy run records.
+	ListStrategyRuns(context.Context, *connect.Request[v1.ListStrategyRunsRequest]) (*connect.Response[v1.ListStrategyRunsResponse], error)
+	// GetStrategyRun returns a single strategy run by ID.
+	GetStrategyRun(context.Context, *connect.Request[v1.GetStrategyRunRequest]) (*connect.Response[v1.GetStrategyRunResponse], error)
 }
 
 // NewStrategyRuntimeServiceHandler builds an HTTP handler from the service implementation. It
@@ -451,6 +489,18 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 		connect.WithSchema(strategyRuntimeServiceMethods.ByName("ImportStrategy")),
 		connect.WithHandlerOptions(opts...),
 	)
+	strategyRuntimeServiceListStrategyRunsHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceListStrategyRunsProcedure,
+		svc.ListStrategyRuns,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("ListStrategyRuns")),
+		connect.WithHandlerOptions(opts...),
+	)
+	strategyRuntimeServiceGetStrategyRunHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceGetStrategyRunProcedure,
+		svc.GetStrategyRun,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("GetStrategyRun")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.StrategyRuntimeService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case StrategyRuntimeServiceExecuteProcedure:
@@ -485,6 +535,10 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 			strategyRuntimeServiceGenerateImportCodeHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceImportStrategyProcedure:
 			strategyRuntimeServiceImportStrategyHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceListStrategyRunsProcedure:
+			strategyRuntimeServiceListStrategyRunsHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceGetStrategyRunProcedure:
+			strategyRuntimeServiceGetStrategyRunHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -556,4 +610,12 @@ func (UnimplementedStrategyRuntimeServiceHandler) GenerateImportCode(context.Con
 
 func (UnimplementedStrategyRuntimeServiceHandler) ImportStrategy(context.Context, *connect.Request[v1.ImportStrategyRequest]) (*connect.Response[v1.ImportStrategyResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.ImportStrategy is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) ListStrategyRuns(context.Context, *connect.Request[v1.ListStrategyRunsRequest]) (*connect.Response[v1.ListStrategyRunsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.ListStrategyRuns is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) GetStrategyRun(context.Context, *connect.Request[v1.GetStrategyRunRequest]) (*connect.Response[v1.GetStrategyRunResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.GetStrategyRun is not implemented"))
 }

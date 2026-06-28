@@ -5,6 +5,7 @@ package ant.v1;
 option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 import "common.proto";
 import "strategy_messages.proto";
 import "backtest_run_start.proto";
@@ -377,4 +378,38 @@ message ImportStrategyResponse {
   string go_code = 3;
   double coverage_score = 4;
   repeated BlindSpot blind_spots = 10;
+}
+
+// ── Strategy Run lifecycle queries ───────────────────────────────────
+
+message ListStrategyRunsRequest {
+  string account_id = 1;  // optional filter by account
+  int32 limit = 2;        // default 50, max 200
+  int32 offset = 3;
+}
+
+message ListStrategyRunsResponse {
+  repeated StrategyRun runs = 1;
+}
+
+message GetStrategyRunRequest {
+  string run_id = 1;
+}
+
+message GetStrategyRunResponse {
+  StrategyRun run = 1;
+}
+
+message StrategyRun {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string symbol = 4;
+  string timeframe = 5;
+  string mode = 6;          // "live" | "paper"
+  string status = 7;        // "running" | "stopped" | "error"
+  string error = 8;
+  int32 total_signals = 9;
+  google.protobuf.Timestamp started_at = 10;
+  google.protobuf.Timestamp stopped_at = 11;
 }
