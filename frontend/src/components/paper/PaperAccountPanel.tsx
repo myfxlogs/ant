@@ -23,6 +23,7 @@ const { Text, Title } = Typography;
 interface RunningStrategy {
   symbol: string;
   timeframe: string;
+  runId?: string;
 }
 
 export default function PaperAccountPanel() {
@@ -142,7 +143,7 @@ export default function PaperAccountPanel() {
     if (!startCode.trim()) { message.warning(t(MESSAGES_PASTE_CODE_KEY)); return; }
     setStarting(true);
     try {
-      await strategyActiveApi.start({
+      const resp = await strategyActiveApi.start({
         accountId: startTargetId,
         strategyCode: startCode,
         symbol: startSymbol,
@@ -153,7 +154,7 @@ export default function PaperAccountPanel() {
       message.success(t(MESSAGES_STRATEGY_STARTED_KEY));
       setRunning(prev => ({
         ...prev,
-        [startTargetId]: { symbol: startSymbol, timeframe: startTimeframe },
+        [startTargetId]: { symbol: startSymbol, timeframe: startTimeframe, runId: resp.runId || undefined },
       }));
       setStartModalOpen(false);
     } catch { message.error(t(MESSAGES_START_FAILED_KEY)); }
@@ -163,14 +164,12 @@ export default function PaperAccountPanel() {
   const handleStop = useCallback(async (accountId: string) => {
     setStopping(prev => ({ ...prev, [accountId]: true }));
     try {
-      // Find the active run for this account, then stop by run_id.
-      const active = await strategyActiveApi.listActive(accountId);
-      if (active && active.length > 0) {
-        await strategyActiveApi.stop(active[0].runId);
-      } else {
-        // Fallback: legacy paper handler stop.
-        await paperTradingClient.stopPaperStrategy({ paperAccountId: accountId });
+      const runId = running[accountId]?.runId;
+      if (!runId) {
+        message.error(t(MESSAGES_STOP_FAILED_KEY));
+        return;
       }
+      await strategyActiveApi.stop(runId);
       message.success(t(MESSAGES_STRATEGY_STOPPED_KEY));
       setRunning(prev => {
         const next = { ...prev };
@@ -179,7 +178,7 @@ export default function PaperAccountPanel() {
       });
     } catch { message.error(t(MESSAGES_STOP_FAILED_KEY)); }
     setStopping(prev => ({ ...prev, [accountId]: false }));
-  }, []);
+  }, [running]);
 
   return (
     <div style={{ padding: 16 }}>
