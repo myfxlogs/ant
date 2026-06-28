@@ -17,12 +17,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"sync"
 
 	"github.com/tetratelabs/wazero"
@@ -119,40 +117,6 @@ func (w *WasmExecutor) CompileStrategy(ctx context.Context, code string, strateg
 		zap.Int("wasm_bytes", len(wasmBytes)))
 
 	return compiled, hash, nil
-}
-
-// Run executes a compiled WASM module with the given proto request on stdin.
-// Returns the proto response from stdout.
-// This is the hot path — called per bar for live strategies.
-func (w *WasmExecutor) Run(ctx context.Context, compiled wazero.CompiledModule, stdinBytes []byte) ([]byte, error) {
-	if err := w.initRuntime(ctx); err != nil {
-		return nil, err
-	}
-
-	stdin := bytes.NewReader(stdinBytes)
-	var stdout, stderr bytes.Buffer
-
-	// Configure WASI with in-memory stdio.
-	config := wazero.NewModuleConfig().
-		WithStdin(stdin).
-		WithStdout(&stdout).
-		WithStderr(&stderr).
-		WithSysNanosleep().
-		WithSysNanotime().
-		WithName("strategy")
-
-	// Instantiate the module. The WASI _start function runs the harness main()
-	// which reads stdin, processes bars, writes to stdout, and exits.
-	mod, err := w.runtime.InstantiateModule(ctx, compiled, config)
-	if err != nil {
-		w.log.Warn("wasm instantiate failed",
-			zap.Error(err),
-			zap.String("stderr", stderr.String()))
-		return nil, fmt.Errorf("wasm instantiate: %w\n%s", err, stderr.String())
-	}
-	defer mod.Close(ctx)
-
-	return stdout.Bytes(), nil
 }
 
 // buildWasm compiles strategy code + harness to a WASM binary.
@@ -422,16 +386,3 @@ func wasmHash(data []byte) string {
 	}
 	return fmt.Sprintf("%016x", h)
 }
-
-// ── Helper: check wasm support ────────────────────────────────────────
-
-// isWasmSupported returns true if the current Go toolchain supports
-// GOOS=wasip1 GOARCH=wasm compilation.
-func isWasmSupported() bool {
-	// wasip1/wasm is supported since Go 1.21.
-	// We require it; if it's missing, fall back to subprocess model.
-	return runtime.GOARCH != "wasm" // can't compile wasm from within wasm
-}
-
-// ErrWasmNotSupported is returned when the Go toolchain lacks wasip1/wasm support.
-var ErrWasmNotSupported = errors.New("Go toolchain does not support GOOS=wasip1 GOARCH=wasm")

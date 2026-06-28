@@ -121,14 +121,9 @@ func (s *StrategyExecutionServer) dispatchFromBytes(ctx context.Context, cfg Liv
 	}
 }
 
-// getExecutor returns the WASM executor pair (wasm + go fallback).
-func (s *StrategyExecutionServer) getExecutor() *execPair {
-	return &execPair{wasm: s.wasmExecutor, goExec: s.goExecutor}
-}
-
-type execPair struct {
-	wasm   *WasmExecutor
-	goExec *GoExecutor
+// getExecutor returns the WASM executor for live session creation.
+func (s *StrategyExecutionServer) getExecutor() *WasmExecutor {
+	return s.wasmExecutor
 }
 
 // buildLiveContext creates a full OHLCV bar context from the bar window.

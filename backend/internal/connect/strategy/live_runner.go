@@ -161,7 +161,7 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 			if tick.Symbol != cfg.Symbol {
 				continue
 			}
-			s.handleTick(ctx, cfg, exec, tick, &session, &firstBar)
+			s.handleTick(ctx, cfg, tick, &session, &firstBar)
 
 		case evt, ok := <-tradeCh:
 			if !ok {
@@ -172,13 +172,13 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 			if evt.Symbol != cfg.Symbol {
 				continue
 			}
-			s.handleTrade(ctx, cfg, exec, evt, &session, &firstBar)
+			s.handleTrade(ctx, cfg, evt, &session, &firstBar)
 		}
 	}
 }
 
 func (s *StrategyExecutionServer) handleBar(
-	ctx context.Context, cfg LiveStrategyConfig, exec *execPair,
+	ctx context.Context, cfg LiveStrategyConfig, wasm *WasmExecutor,
 	bar *mthub.BarUpdate, bars *[]liveBar,
 	session **LiveSession, firstBar *bool,
 ) {
@@ -217,9 +217,9 @@ func (s *StrategyExecutionServer) handleBar(
 				s.log.Error("LiveStrategyRunner: compile MQL to IR failed", zap.Error(irErr))
 				return
 			}
-			*session = NewInterpLiveSession(exec.wasm, interp.SerializeIR(ir), s.log)
+			*session = NewInterpLiveSession(wasm, interp.SerializeIR(ir), s.log)
 		} else {
-			*session = NewLiveSession(exec.wasm, cfg.Code, s.log)
+			*session = NewLiveSession(wasm, cfg.Code, s.log)
 		}
 		respBytes, err = (*session).Start(ctx, reqBytes)
 		*firstBar = false
@@ -243,7 +243,7 @@ func (s *StrategyExecutionServer) handleBar(
 }
 
 func (s *StrategyExecutionServer) handleTick(
-	ctx context.Context, cfg LiveStrategyConfig, exec *execPair,
+	ctx context.Context, cfg LiveStrategyConfig,
 	tick *mthub.TickUpdate, session **LiveSession, firstBar *bool,
 ) {
 	if *session == nil {
@@ -270,7 +270,7 @@ func (s *StrategyExecutionServer) handleTick(
 }
 
 func (s *StrategyExecutionServer) handleTrade(
-	ctx context.Context, cfg LiveStrategyConfig, exec *execPair,
+	ctx context.Context, cfg LiveStrategyConfig,
 	evt *mthub.BrokerTradeEvent, session **LiveSession, firstBar *bool,
 ) {
 	if *session == nil {
