@@ -261,6 +261,9 @@ func (s *StrategyExecutionServer) handleTick(
 	respBytes, err := (*session).SendBar(reqBytes)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: tick request failed", zap.Error(err))
+		(*session).Close()
+		*session = nil
+		*firstBar = true
 		return
 	}
 	s.dispatchFromBytes(ctx, cfg, nil, respBytes)
@@ -284,6 +287,9 @@ func (s *StrategyExecutionServer) handleTrade(
 	respBytes, err := (*session).SendBar(reqBytes)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: trade request failed", zap.Error(err))
+		(*session).Close()
+		*session = nil
+		*firstBar = true
 		return
 	}
 	s.dispatchFromBytes(ctx, cfg, nil, respBytes)
