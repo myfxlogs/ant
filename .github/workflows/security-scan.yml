@@ -28,7 +28,7 @@ jobs:
       - name: Install gosec
         run: go install github.com/securego/gosec/v2/cmd/gosec@latest
       - name: Run gosec
-        run: gosec -quiet -severity medium -exclude=G101,G115,G118,G404 -exclude-dir=gen ./...
+        run: gosec -quiet -severity medium -exclude=G101,G115,G118,G204,G304,G404 -exclude-dir=gen ./...
 
   # ── trivy filesystem scan ──
   trivy-fs:

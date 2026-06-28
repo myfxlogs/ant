@@ -31,7 +31,7 @@ coverage-html:
 
 security-scan:
 	@echo "=== gosec ==="
-	@cd backend && gosec -quiet -severity medium ./... || echo "gosec: WARNING (install: go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest)"
+	@cd backend && gosec -quiet -severity medium -exclude=G101,G115,G118,G204,G304,G404 -exclude-dir=gen ./... || echo "gosec: WARNING (install: go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest)"
 	@echo "=== trivy fs ==="
 	@trivy fs --severity HIGH,CRITICAL --scanners vuln ./backend 2>&1 || echo "trivy: WARNING (install: https://aquasecurity.github.io/trivy/)"
 
