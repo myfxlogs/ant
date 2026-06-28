@@ -3,12 +3,14 @@ package strategy
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/mthub"
+	"anttrader/internal/repository"
 )
 
 // dispatchLiveSignal routes the strategy signal to the appropriate destination.
@@ -33,6 +35,9 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 		zap.String("sl", sig.GetStopLoss()),
 		zap.String("tp", sig.GetTakeProfit()),
 	)
+
+	// Persist signal to DB before dispatching.
+	s.persistSignal(ctx, cfg, sig)
 
 	if cfg.Mode == "paper" {
 		s.dispatchPaperSignal(ctx, cfg, bar, sig)
@@ -288,5 +293,37 @@ func sideToString(side mthub.Side) string {
 		return "sell"
 	default:
 		return "unknown"
+	}
+}
+
+// persistSignal writes the signal to strategy_signals and increments the run's signal count.
+// Failures are logged but do not block dispatch — persistence is best-effort.
+func (s *StrategyExecutionServer) persistSignal(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+	if s.runRepo == nil {
+		return
+	}
+	var runIDPtr *uuid.UUID
+	if cfg.RunID != uuid.Nil {
+		id := cfg.RunID
+		runIDPtr = &id
+	}
+	params := repository.InsertSignalParams{
+		AccountID:  cfg.AccountID,
+		Symbol:     cfg.Symbol,
+		SignalType: sig.GetSignalType(),
+		Volume:     sig.GetVolume(),
+		Price:      sig.GetPrice(),
+		StopLoss:   sig.GetStopLoss(),
+		TakeProfit: sig.GetTakeProfit(),
+		Reason:     sig.GetReason(),
+		RunID:      runIDPtr,
+	}
+	if err := s.runRepo.InsertSignal(ctx, params); err != nil {
+		s.log.Warn("LiveStrategyRunner: failed to persist signal", zap.Error(err))
+	}
+	if cfg.RunID != uuid.Nil {
+		if err := s.runRepo.IncrementSignalCount(ctx, cfg.RunID); err != nil {
+			s.log.Warn("LiveStrategyRunner: failed to increment signal count", zap.Error(err))
+		}
 	}
 }

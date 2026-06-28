@@ -16,11 +16,13 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/mthub"
+	"anttrader/internal/repository"
 	"anttrader/tools/mql2go"
 	"anttrader/tools/mql2go/interp"
 )
@@ -53,6 +55,10 @@ type LiveStrategyConfig struct {
 	// Models specifies which execution callbacks the strategy implements.
 	// Default (0) = Bar only.
 	Models ExecutionModels
+
+	// RunID is set by RunLiveStrategy when a run record is created.
+	// Callers can pre-set this to link to an existing run.
+	RunID uuid.UUID
 }
 
 // LiveTickSubscriber provides tick (Bid/Ask) updates for an account.
@@ -121,6 +127,38 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 			defer tradeCancel()
 		}
 	}
+
+	// Create strategy run record for persistence.
+	var runID uuid.UUID
+	if s.runRepo != nil && cfg.UserID != "" {
+		uid, _ := uuid.Parse(cfg.UserID)
+		run := &repository.StrategyRun{
+			UserID:       uid,
+			AccountID:    cfg.AccountID,
+			Symbol:       cfg.Symbol,
+			Timeframe:    cfg.Timeframe,
+			Mode:         cfg.Mode,
+			StrategyCode: cfg.Code,
+			Status:       "running",
+		}
+		if err := s.runRepo.Create(ctx, run); err != nil {
+			s.log.Warn("LiveStrategyRunner: failed to create run record", zap.Error(err))
+		} else {
+			runID = run.ID
+			s.log.Info("LiveStrategyRunner: run record created", zap.String("run_id", runID.String()))
+		}
+	}
+	cfg.RunID = runID
+
+	// Ensure run record is closed on exit.
+	defer func() {
+		if s.runRepo != nil && runID != uuid.Nil {
+			status := "stopped"
+			if err := s.runRepo.UpdateStopped(context.Background(), runID, status, ""); err != nil {
+				s.log.Warn("LiveStrategyRunner: failed to update run record on stop", zap.Error(err))
+			}
+		}
+	}()
 
 	bars := make([]liveBar, 0, maxContextBars)
 	var session *LiveSession

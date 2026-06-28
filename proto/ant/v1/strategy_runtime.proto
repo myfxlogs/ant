@@ -35,6 +35,10 @@ service StrategyRuntimeService {
   rpc GenerateImportCode(GenerateImportCodeRequest) returns (GenerateImportCodeResponse);
   // ImportStrategy runs the full import pipeline: analyze → generate → return code.
   rpc ImportStrategy(ImportStrategyRequest) returns (ImportStrategyResponse);
+  // ListStrategyRuns returns recent live/paper strategy run records.
+  rpc ListStrategyRuns(ListStrategyRunsRequest) returns (ListStrategyRunsResponse);
+  // GetStrategyRun returns a single strategy run by ID.
+  rpc GetStrategyRun(GetStrategyRunRequest) returns (GetStrategyRunResponse);
 }
 
 message TranspileCodeRequest {
