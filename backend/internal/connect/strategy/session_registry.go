@@ -28,6 +28,7 @@ type ActiveSession struct {
 	cancel        context.CancelFunc
 	signalSubs    []chan *SignalEvent
 	signalSubsMu  sync.Mutex
+	registry      *SessionRegistry // back-pointer for watcher notification
 }
 
 // SignalEvent is pushed to SSE subscribers when a signal is dispatched.
@@ -104,6 +105,7 @@ func (r *SessionRegistry) Register(runID uuid.UUID, userID uuid.UUID, accountID,
 		Mode:      mode,
 		StartedAt: time.Now(),
 		cancel:    cancel,
+		registry:  r,
 	}
 	r.mu.Lock()
 	r.sessions[runID] = sess
@@ -202,6 +204,9 @@ func (s *ActiveSession) RecordSignal(event *SignalEvent) {
 		}
 	}
 	s.signalSubsMu.Unlock()
+	if s.registry != nil {
+		s.registry.notifyWatchers()
+	}
 }
 
 // SubscribeSignals returns a channel that receives signal events for this session.
@@ -220,6 +225,9 @@ func (s *ActiveSession) RecordError(err string) {
 	s.ErrorCount++
 	s.LastError = err
 	s.signalSubsMu.Unlock()
+	if s.registry != nil {
+		s.registry.notifyWatchers()
+	}
 }
 
 // SetStderrTail updates the captured stderr tail from the WASM session.

@@ -163,6 +163,17 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("strategy runner not configured"))
 	}
 
+	// Prevent duplicate strategies on the same account.
+	if s.sessionRegistry != nil {
+		existing := s.sessionRegistry.ListByAccount(req.Msg.GetAccountId())
+		if len(existing) > 0 {
+			return connect.NewResponse(&antv1.StartStrategyResponse{
+				Success: false,
+				Error:   fmt.Sprintf("strategy already running for account %s", req.Msg.GetAccountId()),
+			}), nil
+		}
+	}
+
 	mode := req.Msg.GetMode()
 	if mode == "" {
 		mode = "paper"
