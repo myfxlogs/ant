@@ -1,5 +1,5 @@
 // live_runner.go — LiveStrategyRunner: subscribes to real-time data streams
-// (bar, tick, trade, timer), builds proto-native context per event, executes
+// (bar, tick, trade), builds proto-native context per event, executes
 // strategy via WASM, and dispatches signals to OMS.
 //
 // Multi-model architecture:
