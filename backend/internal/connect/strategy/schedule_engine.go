@@ -214,6 +214,7 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 
 	go e.runOne(runCtx, schedule, LiveStrategyConfig{
 		AccountID: schedule.AccountID.String(),
+		UserID:    schedule.UserID.String(),
 		Symbol:    schedule.Symbol,
 		Timeframe: schedule.Timeframe,
 		Code:      tpl.CodeSkeleton,

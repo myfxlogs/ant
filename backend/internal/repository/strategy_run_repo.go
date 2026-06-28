@@ -160,7 +160,7 @@ func (r *StrategyRunRepository) InsertSignal(ctx context.Context, params InsertS
 
 // InsertSignalParams holds the fields for inserting a strategy signal.
 type InsertSignalParams struct {
-	StrategyID uuid.UUID
+	StrategyID *uuid.UUID
 	AccountID  string
 	Symbol     string
 	SignalType string

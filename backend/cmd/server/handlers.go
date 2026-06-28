@@ -264,7 +264,7 @@ func registerHandlers(
 	notifSender := notifpubsub.NewSender(notifRepo, notifSub, log)
 
 	jurisGate, capStore, platformAgg := initRiskPipeline(pool, log, mthubSvc, hub, eventStore, cfg)
-	strategyExecServer := configureStrategyExecution(backtestRunRepo, marketDataRepo, mthubSvc, hub,
+	strategyExecServer := configureStrategyExecution(pool, backtestRunRepo, marketDataRepo, mthubSvc, hub,
 		paperEngine, notifSender, aiSvc, pgListen, jurisGate, capStore, cfg, log)
 	mux.Handle(antv1c.NewStrategyRuntimeServiceHandler(strategyExecServer,
 		connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
@@ -444,6 +444,7 @@ func registerHandlers(
 // wired in — bar source, paper engine, notification sender, gate, and auto-gate
 // callback. Returns the fully configured server ready for handler registration.
 func configureStrategyExecution(
+	pool *pgxpool.Pool,
 	backtestRunRepo *repository.BacktestRunRepository,
 	marketDataRepo repository.MarketDataStore,
 	mthubSvc *mthub.MtHubService,

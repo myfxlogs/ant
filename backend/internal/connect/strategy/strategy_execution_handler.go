@@ -515,8 +515,7 @@ func (s *StrategyExecutionServer) ListStrategyRuns(ctx context.Context, req *con
 	if req.Msg.GetAccountId() != "" {
 		runs, err = s.runRepo.ListByAccount(ctx, req.Msg.GetAccountId(), limit)
 	} else {
-		uidParsed, _ := uuid.Parse(uid)
-		runs, err = s.runRepo.ListByUser(ctx, uidParsed, limit, offset)
+		runs, err = s.runRepo.ListByUser(ctx, uid, limit, offset)
 	}
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("list strategy runs: %w", err))

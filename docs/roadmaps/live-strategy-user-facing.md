@@ -92,7 +92,7 @@ Phase 4 (API Independence) — can be done anytime, low priority
 
 ## Current Status
 
-- **Phase 1**: Not started
+- **Phase 1**: ✅ Implemented — migration, repository, dispatch hooks, RPCs
 - **Phase 2**: Not started
 - **Phase 3**: Not started
 - **Phase 4**: Not started
