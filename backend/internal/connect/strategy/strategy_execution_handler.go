@@ -58,6 +58,9 @@ type StrategyExecutionServer struct {
 	// Strategy run + signal persistence.
 	runRepo *repository.StrategyRunRepository
 
+	// Active session registry for monitoring + control.
+	sessionRegistry *SessionRegistry
+
 	// Push-first cancel: shared LISTEN on backtest_cancel channel.
 	activeCancels   map[uuid.UUID]context.CancelFunc
 	activeCancelsMu sync.Mutex
@@ -89,6 +92,7 @@ func (s *StrategyExecutionServer) SetPaperEngine(pe PaperOrderExecutor)      { s
 func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)              { s.goExecutor = ge }
 func (s *StrategyExecutionServer) SetWasmExecutor(we *WasmExecutor)          { s.wasmExecutor = we }
 func (s *StrategyExecutionServer) SetRunRepo(r *repository.StrategyRunRepository) { s.runRepo = r }
+func (s *StrategyExecutionServer) SetSessionRegistry(r *SessionRegistry)           { s.sessionRegistry = r }
 
 // SetGate injects the risk gate (D6-A: mandatory, non-optional).
 // Must be called before RunLiveStrategy.

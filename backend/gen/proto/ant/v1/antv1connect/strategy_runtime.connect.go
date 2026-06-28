@@ -88,6 +88,18 @@ const (
 	// StrategyRuntimeServiceGetStrategyRunProcedure is the fully-qualified name of the
 	// StrategyRuntimeService's GetStrategyRun RPC.
 	StrategyRuntimeServiceGetStrategyRunProcedure = "/ant.v1.StrategyRuntimeService/GetStrategyRun"
+	// StrategyRuntimeServiceListActiveStrategiesProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's ListActiveStrategies RPC.
+	StrategyRuntimeServiceListActiveStrategiesProcedure = "/ant.v1.StrategyRuntimeService/ListActiveStrategies"
+	// StrategyRuntimeServiceGetActiveStrategyProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's GetActiveStrategy RPC.
+	StrategyRuntimeServiceGetActiveStrategyProcedure = "/ant.v1.StrategyRuntimeService/GetActiveStrategy"
+	// StrategyRuntimeServiceStopStrategyProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's StopStrategy RPC.
+	StrategyRuntimeServiceStopStrategyProcedure = "/ant.v1.StrategyRuntimeService/StopStrategy"
+	// StrategyRuntimeServiceWatchStrategySignalsProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's WatchStrategySignals RPC.
+	StrategyRuntimeServiceWatchStrategySignalsProcedure = "/ant.v1.StrategyRuntimeService/WatchStrategySignals"
 )
 
 // StrategyRuntimeServiceClient is a client for the ant.v1.StrategyRuntimeService service.
@@ -119,6 +131,14 @@ type StrategyRuntimeServiceClient interface {
 	ListStrategyRuns(context.Context, *connect.Request[v1.ListStrategyRunsRequest]) (*connect.Response[v1.ListStrategyRunsResponse], error)
 	// GetStrategyRun returns a single strategy run by ID.
 	GetStrategyRun(context.Context, *connect.Request[v1.GetStrategyRunRequest]) (*connect.Response[v1.GetStrategyRunResponse], error)
+	// ListActiveStrategies returns currently running strategy sessions.
+	ListActiveStrategies(context.Context, *connect.Request[v1.ListActiveStrategiesRequest]) (*connect.Response[v1.ListActiveStrategiesResponse], error)
+	// GetActiveStrategy returns a single active strategy session by run ID.
+	GetActiveStrategy(context.Context, *connect.Request[v1.GetActiveStrategyRequest]) (*connect.Response[v1.GetActiveStrategyResponse], error)
+	// StopStrategy cancels a running strategy session by run ID.
+	StopStrategy(context.Context, *connect.Request[v1.StopStrategyRequest]) (*connect.Response[v1.StopStrategyResponse], error)
+	// WatchStrategySignals streams real-time signals from a running strategy.
+	WatchStrategySignals(context.Context, *connect.Request[v1.WatchStrategySignalsRequest]) (*connect.ServerStreamForClient[v1.StrategySignalEvent], error)
 }
 
 // NewStrategyRuntimeServiceClient constructs a client for the ant.v1.StrategyRuntimeService
@@ -240,29 +260,57 @@ func NewStrategyRuntimeServiceClient(httpClient connect.HTTPClient, baseURL stri
 			connect.WithSchema(strategyRuntimeServiceMethods.ByName("GetStrategyRun")),
 			connect.WithClientOptions(opts...),
 		),
+		listActiveStrategies: connect.NewClient[v1.ListActiveStrategiesRequest, v1.ListActiveStrategiesResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceListActiveStrategiesProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("ListActiveStrategies")),
+			connect.WithClientOptions(opts...),
+		),
+		getActiveStrategy: connect.NewClient[v1.GetActiveStrategyRequest, v1.GetActiveStrategyResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceGetActiveStrategyProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("GetActiveStrategy")),
+			connect.WithClientOptions(opts...),
+		),
+		stopStrategy: connect.NewClient[v1.StopStrategyRequest, v1.StopStrategyResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceStopStrategyProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("StopStrategy")),
+			connect.WithClientOptions(opts...),
+		),
+		watchStrategySignals: connect.NewClient[v1.WatchStrategySignalsRequest, v1.StrategySignalEvent](
+			httpClient,
+			baseURL+StrategyRuntimeServiceWatchStrategySignalsProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("WatchStrategySignals")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // strategyRuntimeServiceClient implements StrategyRuntimeServiceClient.
 type strategyRuntimeServiceClient struct {
-	execute            *connect.Client[v1.ExecuteStrategyRequest, v1.ExecuteStrategyResponse]
-	validate           *connect.Client[v1.ValidateStrategyRequest, v1.ValidateStrategyResponse]
-	backtest           *connect.Client[v1.BacktestStrategyRequest, v1.BacktestStrategyResponse]
-	startBacktestRun   *connect.Client[v1.StartBacktestRunRequest, v1.StartBacktestRunResponse]
-	getBacktestRun     *connect.Client[v1.GetBacktestRunRequest, v1.GetBacktestRunResponse]
-	listBacktestRuns   *connect.Client[v1.ListBacktestRunsRequest, v1.ListBacktestRunsResponse]
-	watchBacktestRun   *connect.Client[v1.WatchBacktestRunRequest, v1.BacktestRunUpdate]
-	cancelBacktestRun  *connect.Client[v1.CancelBacktestRunRequest, v1.CancelBacktestRunResponse]
-	deleteBacktestRun  *connect.Client[v1.DeleteBacktestRunRequest, v1.DeleteBacktestRunResponse]
-	deleteBacktestRuns *connect.Client[v1.DeleteBacktestRunsRequest, v1.DeleteBacktestRunsResponse]
-	getTemplates       *connect.Client[emptypb.Empty, v1.GetStrategyTemplatesResponse]
-	executeLive        *connect.Client[v1.ExecuteLiveRequest, v1.ExecuteLiveResponse]
-	transpileCode      *connect.Client[v1.TranspileCodeRequest, v1.TranspileCodeResponse]
-	analyzeImportCode  *connect.Client[v1.AnalyzeImportCodeRequest, v1.AnalyzeImportCodeResponse]
-	generateImportCode *connect.Client[v1.GenerateImportCodeRequest, v1.GenerateImportCodeResponse]
-	importStrategy     *connect.Client[v1.ImportStrategyRequest, v1.ImportStrategyResponse]
-	listStrategyRuns   *connect.Client[v1.ListStrategyRunsRequest, v1.ListStrategyRunsResponse]
-	getStrategyRun     *connect.Client[v1.GetStrategyRunRequest, v1.GetStrategyRunResponse]
+	execute              *connect.Client[v1.ExecuteStrategyRequest, v1.ExecuteStrategyResponse]
+	validate             *connect.Client[v1.ValidateStrategyRequest, v1.ValidateStrategyResponse]
+	backtest             *connect.Client[v1.BacktestStrategyRequest, v1.BacktestStrategyResponse]
+	startBacktestRun     *connect.Client[v1.StartBacktestRunRequest, v1.StartBacktestRunResponse]
+	getBacktestRun       *connect.Client[v1.GetBacktestRunRequest, v1.GetBacktestRunResponse]
+	listBacktestRuns     *connect.Client[v1.ListBacktestRunsRequest, v1.ListBacktestRunsResponse]
+	watchBacktestRun     *connect.Client[v1.WatchBacktestRunRequest, v1.BacktestRunUpdate]
+	cancelBacktestRun    *connect.Client[v1.CancelBacktestRunRequest, v1.CancelBacktestRunResponse]
+	deleteBacktestRun    *connect.Client[v1.DeleteBacktestRunRequest, v1.DeleteBacktestRunResponse]
+	deleteBacktestRuns   *connect.Client[v1.DeleteBacktestRunsRequest, v1.DeleteBacktestRunsResponse]
+	getTemplates         *connect.Client[emptypb.Empty, v1.GetStrategyTemplatesResponse]
+	executeLive          *connect.Client[v1.ExecuteLiveRequest, v1.ExecuteLiveResponse]
+	transpileCode        *connect.Client[v1.TranspileCodeRequest, v1.TranspileCodeResponse]
+	analyzeImportCode    *connect.Client[v1.AnalyzeImportCodeRequest, v1.AnalyzeImportCodeResponse]
+	generateImportCode   *connect.Client[v1.GenerateImportCodeRequest, v1.GenerateImportCodeResponse]
+	importStrategy       *connect.Client[v1.ImportStrategyRequest, v1.ImportStrategyResponse]
+	listStrategyRuns     *connect.Client[v1.ListStrategyRunsRequest, v1.ListStrategyRunsResponse]
+	getStrategyRun       *connect.Client[v1.GetStrategyRunRequest, v1.GetStrategyRunResponse]
+	listActiveStrategies *connect.Client[v1.ListActiveStrategiesRequest, v1.ListActiveStrategiesResponse]
+	getActiveStrategy    *connect.Client[v1.GetActiveStrategyRequest, v1.GetActiveStrategyResponse]
+	stopStrategy         *connect.Client[v1.StopStrategyRequest, v1.StopStrategyResponse]
+	watchStrategySignals *connect.Client[v1.WatchStrategySignalsRequest, v1.StrategySignalEvent]
 }
 
 // Execute calls ant.v1.StrategyRuntimeService.Execute.
@@ -355,6 +403,26 @@ func (c *strategyRuntimeServiceClient) GetStrategyRun(ctx context.Context, req *
 	return c.getStrategyRun.CallUnary(ctx, req)
 }
 
+// ListActiveStrategies calls ant.v1.StrategyRuntimeService.ListActiveStrategies.
+func (c *strategyRuntimeServiceClient) ListActiveStrategies(ctx context.Context, req *connect.Request[v1.ListActiveStrategiesRequest]) (*connect.Response[v1.ListActiveStrategiesResponse], error) {
+	return c.listActiveStrategies.CallUnary(ctx, req)
+}
+
+// GetActiveStrategy calls ant.v1.StrategyRuntimeService.GetActiveStrategy.
+func (c *strategyRuntimeServiceClient) GetActiveStrategy(ctx context.Context, req *connect.Request[v1.GetActiveStrategyRequest]) (*connect.Response[v1.GetActiveStrategyResponse], error) {
+	return c.getActiveStrategy.CallUnary(ctx, req)
+}
+
+// StopStrategy calls ant.v1.StrategyRuntimeService.StopStrategy.
+func (c *strategyRuntimeServiceClient) StopStrategy(ctx context.Context, req *connect.Request[v1.StopStrategyRequest]) (*connect.Response[v1.StopStrategyResponse], error) {
+	return c.stopStrategy.CallUnary(ctx, req)
+}
+
+// WatchStrategySignals calls ant.v1.StrategyRuntimeService.WatchStrategySignals.
+func (c *strategyRuntimeServiceClient) WatchStrategySignals(ctx context.Context, req *connect.Request[v1.WatchStrategySignalsRequest]) (*connect.ServerStreamForClient[v1.StrategySignalEvent], error) {
+	return c.watchStrategySignals.CallServerStream(ctx, req)
+}
+
 // StrategyRuntimeServiceHandler is an implementation of the ant.v1.StrategyRuntimeService service.
 type StrategyRuntimeServiceHandler interface {
 	Execute(context.Context, *connect.Request[v1.ExecuteStrategyRequest]) (*connect.Response[v1.ExecuteStrategyResponse], error)
@@ -384,6 +452,14 @@ type StrategyRuntimeServiceHandler interface {
 	ListStrategyRuns(context.Context, *connect.Request[v1.ListStrategyRunsRequest]) (*connect.Response[v1.ListStrategyRunsResponse], error)
 	// GetStrategyRun returns a single strategy run by ID.
 	GetStrategyRun(context.Context, *connect.Request[v1.GetStrategyRunRequest]) (*connect.Response[v1.GetStrategyRunResponse], error)
+	// ListActiveStrategies returns currently running strategy sessions.
+	ListActiveStrategies(context.Context, *connect.Request[v1.ListActiveStrategiesRequest]) (*connect.Response[v1.ListActiveStrategiesResponse], error)
+	// GetActiveStrategy returns a single active strategy session by run ID.
+	GetActiveStrategy(context.Context, *connect.Request[v1.GetActiveStrategyRequest]) (*connect.Response[v1.GetActiveStrategyResponse], error)
+	// StopStrategy cancels a running strategy session by run ID.
+	StopStrategy(context.Context, *connect.Request[v1.StopStrategyRequest]) (*connect.Response[v1.StopStrategyResponse], error)
+	// WatchStrategySignals streams real-time signals from a running strategy.
+	WatchStrategySignals(context.Context, *connect.Request[v1.WatchStrategySignalsRequest], *connect.ServerStream[v1.StrategySignalEvent]) error
 }
 
 // NewStrategyRuntimeServiceHandler builds an HTTP handler from the service implementation. It
@@ -501,6 +577,30 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 		connect.WithSchema(strategyRuntimeServiceMethods.ByName("GetStrategyRun")),
 		connect.WithHandlerOptions(opts...),
 	)
+	strategyRuntimeServiceListActiveStrategiesHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceListActiveStrategiesProcedure,
+		svc.ListActiveStrategies,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("ListActiveStrategies")),
+		connect.WithHandlerOptions(opts...),
+	)
+	strategyRuntimeServiceGetActiveStrategyHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceGetActiveStrategyProcedure,
+		svc.GetActiveStrategy,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("GetActiveStrategy")),
+		connect.WithHandlerOptions(opts...),
+	)
+	strategyRuntimeServiceStopStrategyHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceStopStrategyProcedure,
+		svc.StopStrategy,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("StopStrategy")),
+		connect.WithHandlerOptions(opts...),
+	)
+	strategyRuntimeServiceWatchStrategySignalsHandler := connect.NewServerStreamHandler(
+		StrategyRuntimeServiceWatchStrategySignalsProcedure,
+		svc.WatchStrategySignals,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("WatchStrategySignals")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.StrategyRuntimeService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case StrategyRuntimeServiceExecuteProcedure:
@@ -539,6 +639,14 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 			strategyRuntimeServiceListStrategyRunsHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceGetStrategyRunProcedure:
 			strategyRuntimeServiceGetStrategyRunHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceListActiveStrategiesProcedure:
+			strategyRuntimeServiceListActiveStrategiesHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceGetActiveStrategyProcedure:
+			strategyRuntimeServiceGetActiveStrategyHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceStopStrategyProcedure:
+			strategyRuntimeServiceStopStrategyHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceWatchStrategySignalsProcedure:
+			strategyRuntimeServiceWatchStrategySignalsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -618,4 +726,20 @@ func (UnimplementedStrategyRuntimeServiceHandler) ListStrategyRuns(context.Conte
 
 func (UnimplementedStrategyRuntimeServiceHandler) GetStrategyRun(context.Context, *connect.Request[v1.GetStrategyRunRequest]) (*connect.Response[v1.GetStrategyRunResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.GetStrategyRun is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) ListActiveStrategies(context.Context, *connect.Request[v1.ListActiveStrategiesRequest]) (*connect.Response[v1.ListActiveStrategiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.ListActiveStrategies is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) GetActiveStrategy(context.Context, *connect.Request[v1.GetActiveStrategyRequest]) (*connect.Response[v1.GetActiveStrategyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.GetActiveStrategy is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) StopStrategy(context.Context, *connect.Request[v1.StopStrategyRequest]) (*connect.Response[v1.StopStrategyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.StopStrategy is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) WatchStrategySignals(context.Context, *connect.Request[v1.WatchStrategySignalsRequest], *connect.ServerStream[v1.StrategySignalEvent]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.WatchStrategySignals is not implemented"))
 }

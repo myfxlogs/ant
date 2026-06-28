@@ -466,6 +466,7 @@ func configureStrategyExecution(
 	srv.SetGoExecutor(strategy.NewGoExecutor(".", log))
 	srv.SetWasmExecutor(strategy.NewWasmExecutor(".", log))
 	srv.SetRunRepo(repository.NewStrategyRunRepository(pool))
+	srv.SetSessionRegistry(strategy.NewSessionRegistry())
 	srv.StartBacktestWorker(context.Background())
 	srv.SetPaperEngine(paperEngine)
 	srv.SetNotificationSender(notifSender)

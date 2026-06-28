@@ -150,11 +150,33 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 	}
 	cfg.RunID = runID
 
-	// Ensure run record is closed on exit.
+	// Make context cancellable so StopStrategy RPC can stop this run.
+	runCtx, runCancel := context.WithCancel(ctx)
+	defer runCancel()
+
+	// Register in session registry for monitoring + control.
+	var activeSess *ActiveSession
+	if s.sessionRegistry != nil && runID != uuid.Nil {
+		uid, _ := uuid.Parse(cfg.UserID)
+		activeSess = s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, runCancel)
+		s.log.Info("LiveStrategyRunner: session registered", zap.String("run_id", runID.String()))
+	}
+
+	// Ensure run record is closed + session deregistered on exit.
 	defer func() {
+		if s.sessionRegistry != nil && runID != uuid.Nil {
+			s.sessionRegistry.Deregister(runID)
+		}
 		if s.runRepo != nil && runID != uuid.Nil {
 			status := "stopped"
-			if err := s.runRepo.UpdateStopped(context.Background(), runID, status, ""); err != nil {
+			if activeSess != nil && activeSess.ErrorCount > 0 {
+				status = "error"
+			}
+			errMsg := ""
+			if activeSess != nil {
+				errMsg = activeSess.LastError
+			}
+			if err := s.runRepo.UpdateStopped(context.Background(), runID, status, errMsg); err != nil {
 				s.log.Warn("LiveStrategyRunner: failed to update run record on stop", zap.Error(err))
 			}
 		}
@@ -173,7 +195,7 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 
 	for {
 		select {
-		case <-ctx.Done():
+		case <-runCtx.Done():
 			s.log.Info("LiveStrategyRunner: context cancelled, exiting")
 			return nil
 
@@ -185,7 +207,7 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 			if bar.Symbol != cfg.Symbol || bar.Period != cfg.Timeframe {
 				continue
 			}
-			s.handleBar(ctx, cfg, exec, bar, &bars, &session, &firstBar)
+			s.handleBar(runCtx, cfg, exec, bar, &bars, &session, &firstBar, activeSess)
 
 		case tick, ok := <-tickCh:
 			if !ok {
@@ -196,7 +218,7 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 			if tick.Symbol != cfg.Symbol {
 				continue
 			}
-			s.handleTick(ctx, cfg, tick, &session, &firstBar)
+			s.handleTick(runCtx, cfg, tick, &session, &firstBar, activeSess)
 
 		case evt, ok := <-tradeCh:
 			if !ok {
@@ -207,7 +229,7 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 			if evt.Symbol != cfg.Symbol {
 				continue
 			}
-			s.handleTrade(ctx, cfg, evt, &session, &firstBar)
+			s.handleTrade(runCtx, cfg, evt, &session, &firstBar, activeSess)
 		}
 	}
 }
@@ -215,7 +237,7 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 func (s *StrategyExecutionServer) handleBar(
 	ctx context.Context, cfg LiveStrategyConfig, wasm *WasmExecutor,
 	bar *mthub.BarUpdate, bars *[]liveBar,
-	session **LiveSession, firstBar *bool,
+	session **LiveSession, firstBar *bool, activeSess *ActiveSession,
 ) {
 	*bars = append(*bars, liveBar{
 		open:     bar.Open.String(),
@@ -267,6 +289,9 @@ func (s *StrategyExecutionServer) handleBar(
 	}
 	if err != nil {
 		s.log.Error("LiveStrategyRunner: bar request failed", zap.Error(err))
+		if activeSess != nil {
+			activeSess.RecordError(err.Error())
+		}
 		if *session != nil {
 			(*session).Close()
 		}
@@ -274,12 +299,12 @@ func (s *StrategyExecutionServer) handleBar(
 		*firstBar = true
 		return
 	}
-	s.dispatchFromBytes(ctx, cfg, bar, respBytes)
+	s.dispatchFromBytes(ctx, cfg, bar, respBytes, activeSess)
 }
 
 func (s *StrategyExecutionServer) handleTick(
 	ctx context.Context, cfg LiveStrategyConfig,
-	tick *mthub.TickUpdate, session **LiveSession, firstBar *bool,
+	tick *mthub.TickUpdate, session **LiveSession, firstBar *bool, activeSess *ActiveSession,
 ) {
 	if *session == nil {
 		return // session not yet started (waiting for first bar)
@@ -296,17 +321,20 @@ func (s *StrategyExecutionServer) handleTick(
 	respBytes, err := (*session).SendBar(reqBytes)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: tick request failed", zap.Error(err))
+		if activeSess != nil {
+			activeSess.RecordError(err.Error())
+		}
 		(*session).Close()
 		*session = nil
 		*firstBar = true
 		return
 	}
-	s.dispatchFromBytes(ctx, cfg, nil, respBytes)
+	s.dispatchFromBytes(ctx, cfg, nil, respBytes, activeSess)
 }
 
 func (s *StrategyExecutionServer) handleTrade(
 	ctx context.Context, cfg LiveStrategyConfig,
-	evt *mthub.BrokerTradeEvent, session **LiveSession, firstBar *bool,
+	evt *mthub.BrokerTradeEvent, session **LiveSession, firstBar *bool, activeSess *ActiveSession,
 ) {
 	if *session == nil {
 		return
@@ -322,11 +350,14 @@ func (s *StrategyExecutionServer) handleTrade(
 	respBytes, err := (*session).SendBar(reqBytes)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: trade request failed", zap.Error(err))
+		if activeSess != nil {
+			activeSess.RecordError(err.Error())
+		}
 		(*session).Close()
 		*session = nil
 		*firstBar = true
 		return
 	}
-	s.dispatchFromBytes(ctx, cfg, nil, respBytes)
+	s.dispatchFromBytes(ctx, cfg, nil, respBytes, activeSess)
 }
 

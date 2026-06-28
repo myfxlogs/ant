@@ -40,6 +40,14 @@ service StrategyRuntimeService {
   rpc ListStrategyRuns(ListStrategyRunsRequest) returns (ListStrategyRunsResponse);
   // GetStrategyRun returns a single strategy run by ID.
   rpc GetStrategyRun(GetStrategyRunRequest) returns (GetStrategyRunResponse);
+  // ListActiveStrategies returns currently running strategy sessions.
+  rpc ListActiveStrategies(ListActiveStrategiesRequest) returns (ListActiveStrategiesResponse);
+  // GetActiveStrategy returns a single active strategy session by run ID.
+  rpc GetActiveStrategy(GetActiveStrategyRequest) returns (GetActiveStrategyResponse);
+  // StopStrategy cancels a running strategy session by run ID.
+  rpc StopStrategy(StopStrategyRequest) returns (StopStrategyResponse);
+  // WatchStrategySignals streams real-time signals from a running strategy.
+  rpc WatchStrategySignals(WatchStrategySignalsRequest) returns (stream StrategySignalEvent);
 }
 
 message TranspileCodeRequest {
@@ -412,4 +420,65 @@ message StrategyRun {
   int32 total_signals = 9;
   google.protobuf.Timestamp started_at = 10;
   google.protobuf.Timestamp stopped_at = 11;
+}
+
+// ── Active strategy monitoring ───────────────────────────────────────
+
+message ListActiveStrategiesRequest {
+  string account_id = 1;  // optional filter by account
+}
+
+message ListActiveStrategiesResponse {
+  repeated ActiveStrategy strategies = 1;
+}
+
+message GetActiveStrategyRequest {
+  string run_id = 1;
+}
+
+message GetActiveStrategyResponse {
+  ActiveStrategy strategy = 1;
+}
+
+message StopStrategyRequest {
+  string run_id = 1;
+}
+
+message StopStrategyResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message ActiveStrategy {
+  string run_id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string symbol = 4;
+  string timeframe = 5;
+  string mode = 6;          // "live" | "paper"
+  google.protobuf.Timestamp started_at = 7;
+  google.protobuf.Timestamp last_signal_at = 8;
+  int32 signal_count = 9;
+  int32 error_count = 10;
+  string last_error = 11;
+  string stderr_tail = 12;
+}
+
+// ── Strategy signal SSE stream ───────────────────────────────────────
+
+message WatchStrategySignalsRequest {
+  string run_id = 1;
+}
+
+message StrategySignalEvent {
+  string run_id = 1;
+  string account_id = 2;
+  string symbol = 3;
+  string signal_type = 4;
+  string volume = 5;
+  string price = 6;
+  string stop_loss = 7;
+  string take_profit = 8;
+  string reason = 9;
+  google.protobuf.Timestamp timestamp = 10;
 }

@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -96,14 +97,20 @@ func (s *StrategyExecutionServer) backfillContextStrings(ctx context.Context, ac
 }
 
 // dispatchFromBytes unmarshals a live response and dispatches signals to OMS.
-func (s *StrategyExecutionServer) dispatchFromBytes(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, respBytes []byte) {
+func (s *StrategyExecutionServer) dispatchFromBytes(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, respBytes []byte, activeSess *ActiveSession) {
 	var resp antv1.ExecuteLiveResponse
 	if err := proto.Unmarshal(respBytes, &resp); err != nil {
 		s.log.Error("LiveStrategyRunner: unmarshal response failed", zap.Error(err))
+		if activeSess != nil {
+			activeSess.RecordError(err.Error())
+		}
 		return
 	}
 	if !resp.GetSuccess() {
 		s.log.Warn("LiveStrategyRunner: strategy returned error", zap.String("error", resp.GetError()))
+		if activeSess != nil {
+			activeSess.RecordError(resp.GetError())
+		}
 		return
 	}
 	signals := resp.GetSignals()
@@ -116,6 +123,20 @@ func (s *StrategyExecutionServer) dispatchFromBytes(ctx context.Context, cfg Liv
 	for _, sig := range signals {
 		if sig.GetSignalType() == "hold" || sig.GetSignalType() == "" {
 			continue
+		}
+		if activeSess != nil {
+			activeSess.RecordSignal(&SignalEvent{
+				RunID:      cfg.RunID,
+				AccountID:  cfg.AccountID,
+				Symbol:     cfg.Symbol,
+				SignalType: sig.GetSignalType(),
+				Volume:     sig.GetVolume(),
+				Price:      sig.GetPrice(),
+				StopLoss:   sig.GetStopLoss(),
+				TakeProfit: sig.GetTakeProfit(),
+				Reason:     sig.GetReason(),
+				Timestamp:  time.Now(),
+			})
 		}
 		s.dispatchLiveSignal(ctx, cfg, bar, sig)
 	}
