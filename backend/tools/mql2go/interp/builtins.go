@@ -44,7 +44,6 @@ func (it *Interpreter) callBuiltin(name string, args []Expr) Value {
 			return v
 		}
 		// Unimplemented — log error and return NoneVal
-		it.lastErr = 1
 		it.errSet = true
 		if it.ctx != nil {
 			it.ctx.Log(fmt.Sprintf("MQL interpreter: unimplemented function %q", name))
@@ -60,7 +59,6 @@ func (it *Interpreter) callBuiltin(name string, args []Expr) Value {
 
 	result, err := fn(it, vals)
 	if err != nil {
-		it.lastErr = 1
 		it.errSet = true
 		return NoneVal()
 	}

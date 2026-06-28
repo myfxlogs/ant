@@ -30,7 +30,6 @@ const (
 	ValBool
 	ValString
 	ValDatetime
-	ValColor
 	ValArray
 	ValClass
 )

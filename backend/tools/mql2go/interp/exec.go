@@ -26,7 +26,6 @@ type Interpreter struct {
 	orderPool *MQL4OrderPool
 	posPool   *MQL5PositionPool
 	signal    *sdk.Signal
-	lastErr   int
 	errSet    bool
 	retVal    Value // return value from user function
 }
@@ -63,18 +62,6 @@ func NewInterpreter(ir *IR) *Interpreter {
 }
 
 // ── Variable management ─────────────────────────────────────────────
-
-// pushScope enters a new block scope.
-func (it *Interpreter) pushScope() {
-	it.scopes = append(it.scopes, make(map[string]Value))
-}
-
-// popScope exits the current block scope.
-func (it *Interpreter) popScope() {
-	if len(it.scopes) > 1 {
-		it.scopes = it.scopes[:len(it.scopes)-1]
-	}
-}
 
 // curScope returns the innermost scope.
 func (it *Interpreter) curScope() map[string]Value {
@@ -422,14 +409,4 @@ func isClassType(typeName string) bool {
 		return true
 	}
 	return false
-}
-
-// SetSignal stores a signal to be returned from OnBar.
-func (it *Interpreter) SetSignal(sig *sdk.Signal) {
-	it.signal = sig
-}
-
-// Context returns the current SDK context.
-func (it *Interpreter) Context() sdk.Context {
-	return it.ctx
 }

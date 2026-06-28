@@ -102,11 +102,6 @@ func (w *writeBuf) writeBool(b bool) {
 	}
 }
 
-func (w *writeBuf) writeBytes(b []byte) {
-	w.writeU32(uint32(len(b)))
-	w.data = append(w.data, b...)
-}
-
 func (w *writeBuf) bytes() []byte { return w.data }
 
 func (w *writeBuf) writeGlobals(globals []GlobalVar) {
@@ -309,18 +304,6 @@ func (r *readBuf) readString() string {
 	s := string(r.data[r.pos : r.pos+int(n)])
 	r.pos += int(n)
 	return s
-}
-
-func (r *readBuf) readBytes() []byte {
-	n := r.readU32()
-	if r.err != nil || r.pos+int(n) > len(r.data) {
-		r.err = io.ErrUnexpectedEOF
-		return nil
-	}
-	b := make([]byte, n)
-	copy(b, r.data[r.pos:r.pos+int(n)])
-	r.pos += int(n)
-	return b
 }
 
 func (r *readBuf) readGlobals() []GlobalVar {
