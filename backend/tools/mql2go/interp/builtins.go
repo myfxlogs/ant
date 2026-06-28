@@ -157,55 +157,17 @@ func (it *Interpreter) callMarketData(name string, args []Expr) (Value, bool) {
 	return NoneVal(), false
 }
 
-func (it *Interpreter) callIndicator(name string, args []Expr) (Value, bool) {
-	if it.ctx == nil || it.ctx.Indicators() == nil {
-		return NoneVal(), false
-	}
-	ind := it.ctx.Indicators()
-	// Evaluate args
-	vals := make([]Value, len(args))
-	for i := range args {
-		vals[i] = it.evalExpr(&args[i])
-	}
-
-	switch name {
-	case "iMA":
-		if len(vals) >= 3 {
-			period := int(vals[0].ToInt())
-			shift := int(vals[1].ToInt())
-			return DecimalVal(ind.MA(period, shift, "sma")), true
-		}
-	case "iRSI":
-		if len(vals) >= 2 {
-			period := int(vals[0].ToInt())
-			shift := int(vals[1].ToInt())
-			return DecimalVal(ind.RSI(period, shift)), true
-		}
-	case "iATR":
-		if len(vals) >= 2 {
-			period := int(vals[0].ToInt())
-			shift := int(vals[1].ToInt())
-			return DecimalVal(ind.ATR(period, shift)), true
-		}
-	case "iMACD":
-		if len(vals) >= 4 {
-			fast := int(vals[0].ToInt())
-			slow := int(vals[1].ToInt())
-			signal := int(vals[2].ToInt())
-			shift := int(vals[3].ToInt())
-			return DecimalVal(ind.MACD(fast, slow, signal, shift)), true
-		}
-	}
-	return NoneVal(), false
-}
-
-func (it *Interpreter) callTrade(name string, args []Expr) (Value, bool) {
-	// Phase 2 will implement OrderSend, OrderClose, etc.
-	return NoneVal(), false
-}
+// callIndicator is implemented in builtin_indicators.go.
+// callTrade is implemented in builtin_trade.go.
 
 func (it *Interpreter) callCTrade(cls *ClassInstance, method string, args []Expr) Value {
-	// Phase 3 will implement CTrade.Buy, CTrade.Sell, etc.
+	if cls == nil {
+		return NoneVal()
+	}
+	switch cls.Name {
+	case "CTrade":
+		return it.execCTrade(cls, method, args)
+	}
 	return NoneVal()
 }
 
