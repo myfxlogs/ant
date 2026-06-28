@@ -260,6 +260,46 @@ func (it *Interpreter) OnInit(ctx sdk.Context) error {
 	it.ctx = ctx
 	it.series.bars = ctx.Bars()
 	it.scopes = []map[string]Value{make(map[string]Value)}
+
+	// Inject extern/input parameters from ctx into globals
+	for _, p := range it.ir.Params {
+		if it.ctx != nil {
+			switch p.Type {
+			case "int", "long":
+				var def int
+				if p.Default != nil {
+					def = int(it.evalExpr(p.Default).ToInt())
+				}
+				it.globals[p.Name] = IntVal(int32(ctx.ParamInt(p.Name, def)))
+			case "double", "float":
+				var def decimal.Decimal
+				if p.Default != nil {
+					def = it.evalExpr(p.Default).ToDecimal()
+				}
+				it.globals[p.Name] = DecimalVal(ctx.ParamDecimal(p.Name, def))
+			case "string":
+				var def string
+				if p.Default != nil {
+					def = it.evalExpr(p.Default).ToString()
+				}
+				it.globals[p.Name] = StringVal(ctx.ParamString(p.Name, def))
+			case "bool":
+				var def bool
+				if p.Default != nil {
+					def = it.evalExpr(p.Default).IsTrue()
+				}
+				it.globals[p.Name] = BoolVal(ctx.ParamBool(p.Name, def))
+			default:
+				// Unknown type — try as string param
+				var def string
+				if p.Default != nil {
+					def = it.evalExpr(p.Default).ToString()
+				}
+				it.globals[p.Name] = StringVal(ctx.ParamString(p.Name, def))
+			}
+		}
+	}
+
 	if len(it.ir.OnInit) > 0 {
 		err := it.execBlock(it.ir.OnInit)
 		if errors.Is(err, errReturn) {
@@ -302,6 +342,50 @@ func (it *Interpreter) OnDeinit(ctx sdk.Context, reason string) error {
 		return err
 	}
 	return nil
+}
+
+// OnTick implements sdk.TickStrategy (optional).
+// Called on every price update (Bid/Ask) for scalping/market-making EAs.
+func (it *Interpreter) OnTick(ctx sdk.Context, bid, ask decimal.Decimal) (*sdk.Signal, error) {
+	if len(it.ir.OnTick) == 0 {
+		return nil, nil
+	}
+	it.ctx = ctx
+	it.series.bars = ctx.Bars()
+	it.scopes = []map[string]Value{make(map[string]Value)}
+	it.signal = nil
+	it.orderPool.Reset(ctx)
+	it.posPool.Reset(ctx)
+
+	if err := it.execBlock(it.ir.OnTick); err != nil {
+		if errors.Is(err, errReturn) {
+			return it.signal, nil
+		}
+		return nil, fmt.Errorf("OnTick: %w", err)
+	}
+	return it.signal, nil
+}
+
+// OnTimer implements sdk.TimerStrategy (optional).
+// Called periodically after EventSetTimer/EventSetTimerMillisecond in OnInit.
+func (it *Interpreter) OnTimer(ctx sdk.Context) (*sdk.Signal, error) {
+	if len(it.ir.OnTimer) == 0 {
+		return nil, nil
+	}
+	it.ctx = ctx
+	it.series.bars = ctx.Bars()
+	it.scopes = []map[string]Value{make(map[string]Value)}
+	it.signal = nil
+	it.orderPool.Reset(ctx)
+	it.posPool.Reset(ctx)
+
+	if err := it.execBlock(it.ir.OnTimer); err != nil {
+		if errors.Is(err, errReturn) {
+			return it.signal, nil
+		}
+		return nil, fmt.Errorf("OnTimer: %w", err)
+	}
+	return it.signal, nil
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────

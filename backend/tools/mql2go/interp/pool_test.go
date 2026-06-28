@@ -1,6 +1,7 @@
 package interp
 
 import (
+	"strconv"
 	"testing"
 	"time"
 
@@ -66,15 +67,46 @@ func (m *mockBroker) Account() sdk.AccountInfo {
 type mockContext struct {
 	bars   *mockBarSeries
 	broker *mockBroker
+	params map[string]string
 }
 
 func (m *mockContext) Param(name string, defaultVal interface{}) interface{} { return defaultVal }
 func (m *mockContext) ParamDecimal(name string, defaultVal decimal.Decimal) decimal.Decimal {
+	if m.params != nil {
+		if v, ok := m.params[name]; ok {
+			if d, err := decimal.NewFromString(v); err == nil {
+				return d
+			}
+		}
+	}
 	return defaultVal
 }
-func (m *mockContext) ParamInt(name string, defaultVal int) int          { return defaultVal }
-func (m *mockContext) ParamString(name, defaultVal string) string        { return defaultVal }
-func (m *mockContext) ParamBool(name string, defaultVal bool) bool       { return defaultVal }
+func (m *mockContext) ParamInt(name string, defaultVal int) int {
+	if m.params != nil {
+		if v, ok := m.params[name]; ok {
+			if i, err := strconv.Atoi(v); err == nil {
+				return i
+			}
+		}
+	}
+	return defaultVal
+}
+func (m *mockContext) ParamString(name, defaultVal string) string {
+	if m.params != nil {
+		if v, ok := m.params[name]; ok {
+			return v
+		}
+	}
+	return defaultVal
+}
+func (m *mockContext) ParamBool(name string, defaultVal bool) bool {
+	if m.params != nil {
+		if v, ok := m.params[name]; ok {
+			return v == "true" || v == "1"
+		}
+	}
+	return defaultVal
+}
 func (m *mockContext) Bars() sdk.BarSeries                                { return m.bars }
 func (m *mockContext) BarsTF(timeframe string) sdk.BarSeries              { return m.bars }
 func (m *mockContext) Symbol() string                                     { return "EURUSD" }
