@@ -151,9 +151,10 @@ func (it *Interpreter) execStmt(stmt *Statement) error {
 					break
 				}
 				if errors.Is(err, errContinue) {
-					continue
+					// fall through to signal check
+				} else {
+					return err
 				}
-				return err
 			}
 			if it.signal != nil {
 				return nil

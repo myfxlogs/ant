@@ -3,6 +3,7 @@ package interp
 import (
 	"fmt"
 	"math"
+	"strings"
 
 	"github.com/shopspring/decimal"
 )
@@ -142,7 +143,7 @@ func builtinPrint(it *Interpreter, args []Value) (Value, error) {
 		for _, a := range args {
 			parts = append(parts, a.ToString())
 		}
-		it.ctx.Log(joinStrings(parts, " "))
+		it.ctx.Log(strings.Join(parts, " "))
 	}
 	return NoneVal(), nil
 }
@@ -198,16 +199,3 @@ func timeframeToPeriod(tf string) int32 {
 
 // callIndicator is implemented in builtin_indicators.go.
 // callTrade is implemented in builtin_trade.go.
-
-// ── String helpers ──────────────────────────────────────────────────
-
-func joinStrings(parts []string, sep string) string {
-	if len(parts) == 0 {
-		return ""
-	}
-	result := parts[0]
-	for i := 1; i < len(parts); i++ {
-		result += sep + parts[i]
-	}
-	return result
-}
