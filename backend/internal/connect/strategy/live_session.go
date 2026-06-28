@@ -19,6 +19,7 @@
 package strategy
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"fmt"
@@ -35,6 +36,7 @@ import (
 type LiveSession struct {
 	wasm    *WasmExecutor
 	code    string
+	irBytes []byte // if non-nil, use interpreter path instead of compiled strategy
 	log     *zap.Logger
 
 	// WASM runtime state for the active session.
@@ -64,12 +66,22 @@ func (b *lockedBuffer) String() string {
 	return string(b.buf)
 }
 
-// NewLiveSession creates a LiveSession that executes strategy code via WASM.
+// NewLiveSession creates a LiveSession for a compiled Go strategy.
 func NewLiveSession(wasm *WasmExecutor, code string, log *zap.Logger) *LiveSession {
 	return &LiveSession{
 		wasm: wasm,
 		code: code,
 		log:  log,
+	}
+}
+
+// NewInterpLiveSession creates a LiveSession for an MQL interpreter strategy.
+// irBytes is the serialized IR passed to the harness via stdin at startup.
+func NewInterpLiveSession(wasm *WasmExecutor, irBytes []byte, log *zap.Logger) *LiveSession {
+	return &LiveSession{
+		wasm:    wasm,
+		irBytes: irBytes,
+		log:     log,
 	}
 }
 
@@ -81,16 +93,26 @@ func (s *LiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, error
 		return nil, fmt.Errorf("live session already started")
 	}
 
-	// Find strategy type name in the generated code.
-	strategyType, err := findStrategyTypeName(s.code)
-	if err != nil {
-		return nil, fmt.Errorf("find strategy type: %w", err)
-	}
+	var compiled wazero.CompiledModule
+	var hash string
 
-	// Compile Go strategy code to WASM.
-	compiled, hash, err := s.wasm.CompileStrategy(ctx, s.code, strategyType)
-	if err != nil {
-		return nil, fmt.Errorf("compile strategy: %w", err)
+	if s.irBytes != nil {
+		// Interpreter path: use cached interp harness, prepend IR to stdin.
+		var err error
+		compiled, hash, err = s.wasm.CompileInterpLive(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("compile interp harness: %w", err)
+		}
+	} else {
+		// Compiled path: find strategy type and compile to WASM.
+		strategyType, err := findStrategyTypeName(s.code)
+		if err != nil {
+			return nil, fmt.Errorf("find strategy type: %w", err)
+		}
+		compiled, hash, err = s.wasm.CompileStrategy(ctx, s.code, strategyType)
+		if err != nil {
+			return nil, fmt.Errorf("compile strategy: %w", err)
+		}
 	}
 	s.compiled = compiled
 
@@ -101,13 +123,22 @@ func (s *LiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, error
 	s.stdoutR = stdoutR
 	s.stderrBuf = &lockedBuffer{}
 
-	// Prepend the initial request to stdin so the harness reads it first.
-	// After the initial request is consumed, stdinR (pipe) takes over,
-	// blocking the harness until the next bar request is written.
-	stdin := io.MultiReader(
-		&lengthPrefixedReader{data: reqBytes},
-		stdinR,
-	)
+	// Build stdin: interp path prepends IR (u32 LE length + IR bytes)
+	// before the first length-prefixed request. After initial data is
+	// consumed, stdinR (pipe) takes over for subsequent bar requests.
+	var stdin io.Reader
+	if s.irBytes != nil {
+		stdin = io.MultiReader(
+			bytes.NewReader(irLengthPrefix(s.irBytes)),
+			&lengthPrefixedReader{data: reqBytes},
+			stdinR,
+		)
+	} else {
+		stdin = io.MultiReader(
+			&lengthPrefixedReader{data: reqBytes},
+			stdinR,
+		)
+	}
 
 	// Configure WASI with piped stdio.
 	config := wazero.NewModuleConfig().
@@ -128,28 +159,29 @@ func (s *LiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, error
 		mod, err := s.wasm.runtime.InstantiateModule(modCtx, compiled, config)
 		s.mod = mod
 		if mod != nil {
-			// Module exited — close it.
 			mod.Close(modCtx)
 		}
 		s.done <- err
 	}()
 
 	// Read the first response. The harness processes the initial request,
-	// writes the response to stdoutW, then blocks on stdinR. The host is
-	// unblocked when data arrives on stdoutR.
+	// writes the response to stdoutW, then blocks on stdinR.
 	resp, err := s.readPipeResponse()
 	if err != nil {
 		cancel()
-		// Drain the done channel.
 		<-s.done
 		return nil, fmt.Errorf("read initial response: %w", err)
 	}
 
 	s.started = true
 
-	s.log.Info("LiveSession: WASM session started",
-		zap.String("strategy_type", strategyType),
-		zap.String("hash", hash))
+	if s.irBytes != nil {
+		s.log.Info("LiveSession: interp session started",
+			zap.String("hash", hash))
+	} else {
+		s.log.Info("LiveSession: WASM session started",
+			zap.String("hash", hash))
+	}
 
 	return resp, nil
 }
