@@ -13,6 +13,8 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/repository"
+	"anttrader/tools/mql2go"
+	"anttrader/tools/mql2go/interp"
 )
 
 const (
@@ -146,15 +148,55 @@ func (s *StrategyExecutionServer) executeBacktestRun(ctx context.Context, run *r
 	s.saveBacktestResult(ctx, run, result)
 }
 
-// executeGoBacktest runs a backtest using the Go-native engine via GoExecutor.
+// executeGoBacktest runs a backtest using the Go-native engine via GoExecutor,
+// or the MQL interpreter path via WasmExecutor for MQL source code.
 // Returns proto response compatible with the existing persistence layer.
 func (s *StrategyExecutionServer) executeGoBacktest(ctx context.Context, run *repository.BacktestRun, params backtestParams, klines []*antv1.ExecuteKlineBar) (*antv1.ExecuteBacktestResponse, error) {
+	// MQL interpreter path: MQL source → IR → WASM interp backtest harness.
+	if s.wasmExecutor != nil && isMQLStrategy(params.code) {
+		return s.executeInterpBacktest(ctx, params, klines, run)
+	}
+
+	// Go-native compilation path: generated Go strategy via go run.
 	if s.goExecutor == nil {
 		return nil, fmt.Errorf("GoExecutor not configured — cannot run Go-native backtest")
 	}
 	symbolInfo := s.fetchSymbolInfo(ctx, run)
 	req := buildBacktestRequest(run, params, klines, symbolInfo)
 	return s.goExecutor.RunBacktest(ctx, params.code, req)
+}
+
+// executeInterpBacktest runs a backtest via the MQL interpreter path:
+// MQL source → CompileToIR → SerializeIR → WASM interp backtest harness.
+func (s *StrategyExecutionServer) executeInterpBacktest(ctx context.Context, params backtestParams, klines []*antv1.ExecuteKlineBar, run *repository.BacktestRun) (*antv1.ExecuteBacktestResponse, error) {
+	ir, err := mql2go.CompileToIR(params.code)
+	if err != nil {
+		return nil, fmt.Errorf("compile MQL to IR: %w", err)
+	}
+	irBytes := interp.SerializeIR(ir)
+
+	compiled, _, err := s.wasmExecutor.CompileInterpBacktest(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("compile interp backtest harness: %w", err)
+	}
+
+	symbolInfo := s.fetchSymbolInfo(ctx, run)
+	req := buildBacktestRequest(run, params, klines, symbolInfo)
+	reqBytes, err := proto.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("marshal backtest request: %w", err)
+	}
+
+	respBytes, err := s.wasmExecutor.RunInterpBacktest(ctx, compiled, irBytes, reqBytes)
+	if err != nil {
+		return nil, fmt.Errorf("wasm interp backtest: %w", err)
+	}
+
+	var resp antv1.ExecuteBacktestResponse
+	if err := proto.Unmarshal(respBytes, &resp); err != nil {
+		return nil, fmt.Errorf("unmarshal interp backtest response: %w", err)
+	}
+	return &resp, nil
 }
 
 // StartBacktestWorker launches a pool of background workers that poll for PENDING backtest

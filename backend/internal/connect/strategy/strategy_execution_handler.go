@@ -12,6 +12,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
+	"google.golang.org/protobuf/proto"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
@@ -23,6 +24,7 @@ import (
 	"anttrader/internal/risk"
 	"anttrader/internal/ai"
 	"anttrader/tools/mql2go"
+	"anttrader/tools/mql2go/interp"
 )
 
 // StrategyExecutionServer implements ant.v1c.StrategyRuntimeServiceHandler.
@@ -132,6 +134,38 @@ func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Requ
 		return connect.NewResponse(resp), nil
 	}
 
+	// MQL interpreter path: compile MQL → IR → serialize → WASM interp harness.
+	if s.wasmExecutor != nil && isMQLStrategy(req.Msg.Code) {
+		ir, err := mql2go.CompileToIR(req.Msg.Code)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("compile MQL to IR: %w", err))
+		}
+		irBytes := interp.SerializeIR(ir)
+
+		compiled, _, err := s.wasmExecutor.CompileInterpLive(ctx)
+		if err != nil {
+			s.log.Warn("wasm interp compile failed", zap.Error(err))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("compile interp harness: %w", err))
+		}
+
+		reqBytes, err := proto.Marshal(req.Msg)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal request: %w", err))
+		}
+
+		respBytes, err := s.wasmExecutor.RunInterpLive(ctx, compiled, irBytes, reqBytes)
+		if err != nil {
+			s.log.Warn("wasm interp execute failed", zap.Error(err))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("interp execution failed: %w", err))
+		}
+
+		var resp antv1.ExecuteStrategyResponse
+		if err := proto.Unmarshal(respBytes, &resp); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unmarshal interp response: %w", err))
+		}
+		return connect.NewResponse(&resp), nil
+	}
+
 	return connect.NewResponse(&antv1.ExecuteStrategyResponse{
 		Success: false,
 		Error:   "strategy execution not available",
@@ -187,11 +221,14 @@ func (s *StrategyExecutionServer) GetTemplates(_ context.Context, _ *connect.Req
 }
 
 // ExecuteLive runs strategy code against a live bar stream.
-// Delegates to GoExecutor.RunLive for Go-native strategy execution.
+// Delegates to GoExecutor.RunLive for Go-native strategy execution,
+// or WasmExecutor.RunInterpLive for MQL interpreter path.
 func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.Request[antv1.ExecuteLiveRequest]) (*connect.Response[antv1.ExecuteLiveResponse], error) {
 	if _, err := userIDRequire(ctx); err != nil {
 		return nil, err
 	}
+
+	// Go-native compilation path: generated Go strategy via go run.
 	if s.goExecutor != nil && isGoStrategy(req.Msg.StrategyCode) {
 		resp, err := s.goExecutor.RunLive(ctx, req.Msg.StrategyCode, req.Msg)
 		if err != nil {
@@ -200,6 +237,39 @@ func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.
 		}
 		return connect.NewResponse(resp), nil
 	}
+
+	// MQL interpreter path: compile MQL → IR → serialize → WASM interp harness.
+	if s.wasmExecutor != nil && isMQLStrategy(req.Msg.StrategyCode) {
+		ir, err := mql2go.CompileToIR(req.Msg.StrategyCode)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("compile MQL to IR: %w", err))
+		}
+		irBytes := interp.SerializeIR(ir)
+
+		compiled, _, err := s.wasmExecutor.CompileInterpLive(ctx)
+		if err != nil {
+			s.log.Warn("wasm interp live compile failed", zap.Error(err))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("compile interp harness: %w", err))
+		}
+
+		reqBytes, err := proto.Marshal(req.Msg)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal live request: %w", err))
+		}
+
+		respBytes, err := s.wasmExecutor.RunInterpLive(ctx, compiled, irBytes, reqBytes)
+		if err != nil {
+			s.log.Warn("wasm interp live failed", zap.Error(err))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("interp live execution failed: %w", err))
+		}
+
+		var resp antv1.ExecuteLiveResponse
+		if err := proto.Unmarshal(respBytes, &resp); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unmarshal interp live response: %w", err))
+		}
+		return connect.NewResponse(&resp), nil
+	}
+
 	return connect.NewResponse(&antv1.ExecuteLiveResponse{Success: false, Error: "live execution not available"}), nil
 }
 
@@ -433,6 +503,20 @@ func (s *StrategyExecutionServer) SetPgListen(l *pglisten.Listener) { s.pgListen
 
 func isGoStrategy(code string) bool {
 	return len(code) > 0 && containsStr(code, "anttrader/strategy/sdk")
+}
+
+// isMQLStrategy returns true if the code looks like MQL source (not Go).
+// MQL code lacks Go package/import declarations and contains MQL patterns.
+func isMQLStrategy(code string) bool {
+	if len(code) == 0 {
+		return false
+	}
+	if isGoStrategy(code) {
+		return false
+	}
+	return containsStr(code, "OnBar") || containsStr(code, "OnTick") ||
+		containsStr(code, "OnInit") || containsStr(code, "OnTimer") ||
+		containsStr(code, "OnDeinit")
 }
 
 func containsStr(s, sub string) bool {
