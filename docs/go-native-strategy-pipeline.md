@@ -2,7 +2,7 @@
 
 > **技术文档** — 供 AI 助手（DeepSeek 等）接手开发时参考。读完本文即可理解整条管线的架构、模块边界、数据流和已知缺口。
 >
-> **版本**: v2 — 2026-06-28 更新。反映 WASM 运行时迁移、delta-bar 协议、回测对齐校验闭环、LiveRunner 删除等架构变更。
+> **版本**: v3 — 2026-06-28 更新。新增 MQL 策略层（解释器路径 + 翻译器双路径）、WASM 运行时迁移、delta-bar 协议、回测对齐校验闭环、LiveRunner 删除等架构变更。
 
 ## 1. 概述
 
@@ -19,24 +19,52 @@ Go-Native Strategy Pipeline 是 AntTrader 平台中 **从 MQL 源码到实盘执
 
 **关联 ADR**：ADR-0021（Python→Go 迁移）、ADR-0020（EA 替代架构，D1/D4/D5/D7 已被 0021 覆盖）、ADR-0012（统一回测/实盘路径）。
 
+### 1.1 层级结构
+
+```
+┌─ 市场数据层 ──  mtapi gRPC → mdtick DTO → BarBroker / TickBroker
+│
+├─ MQL 策略层 ──  输入 MQL 源码，输出 sdk.Strategy
+│   ├── 编译路径:  mql2go/ 转译器（构建时）
+│   └── 解释路径:  mql2go/interp/ 解释器（运行时）
+│
+├─ 策略执行层 ──  LiveStrategyRunner / WASM / Runner
+│
+├─ 信号派发层 ──  dispatchLiveSignal → Gate
+│
+├─ 订单执行层 ──  MtHubService / PaperEngine
+│
+└─ 持久化层  ──  PG / ClickHouse / NATS JetStream
+```
+
+### 1.2 MQL 策略层
+
+> 输入 MQL 源码，输出 `sdk.Strategy`。包含编译路径（`mql2go/` 转译器，构建时）和解释路径（`mql2go/interp/` 解释器，运行时），共享 tree-sitter CST → IR 前端。
+
+| 路径 | 输入 | 输出 | 方式 | 适用场景 |
+|------|------|------|------|---------|
+| 编译路径 | MQL 源码 | Go 源码 → WASM 原生执行 | `mql2go.Analyze` + `mql2go.Generate` | 翻译器已识别模式（~85%+ EA） |
+| 解释路径 | MQL 源码 | 纯 Go IR → WASM 解释执行 | `mql2go.CompileToIR` → `interp.Interpreter` | 翻译器盲点兜底（100% 覆盖率） |
+
+两条路径共享 tree-sitter 解析器（`mql_lang.go`），输出统一的 `sdk.Strategy` 接口，对下游执行层透明。
+
 ## 2. 管线全景
 
 ```
-┌─ 构建时 ──────────────────────────────────────────────────────────┐
+┌─ MQL 策略层 ─────────────────────────────────────────────────────────┐
 │                                                                    │
 │  MQL 源码 (.mq4 / .mq5)                                            │
 │    │                                                               │
-│    ▼ tree-sitter parse                                             │
-│  CST (具体语法树)                                                   │
+│    ▼ tree-sitter parse (mql_lang.go)                               │
+│  CST                                                               │
 │    │                                                               │
-│    ▼ recognizer.go — 版本感知模式匹配                                │
-│  StrategyIntent IR                                                 │
-│    │  EntryRule / ExitRule / OrderLoopRule / PositionLoopRule      │
-│    │  IndicatorSpec / ModifyRule / RiskCheck / SizingRule          │
-│    │  BlindSpot[]                                                  │
-│    ▼ gen.go — IR → Go 源码 (string emit)                            │
-│  .go 策略文件 (实现 sdk.Strategy 接口)                               │
+│    ├─── 编译路径 ────  recognizer.go → StrategyIntent IR            │
+│    │                  gen.go → Go 源码 → WASM 原生执行               │
+│    │                                                               │
+│    └─── 解释路径 ────  compile_interp.go → 纯 Go IR                  │
+│                       interp.Interpreter → WASM 解释执行            │
 │                                                                    │
+│  输出: sdk.Strategy (两条路径统一接口)                                │
 └────────────────────────┬───────────────────────────────────────────┘
                          │ 生成的 Go 代码
                          ▼
