@@ -197,3 +197,43 @@ export const strategyImportApi = {
     });
   },
 };
+
+// ── Strategy Run lifecycle (Phase 1) ─────────────────────────────────
+
+export const strategyRunsApi = {
+  listRuns: async (params?: { accountId?: string; limit?: number; offset?: number }) => {
+    const r = await strategyRuntimeClient.listStrategyRuns({
+      accountId: params?.accountId || '',
+      limit: params?.limit ?? 50,
+      offset: params?.offset ?? 0,
+    });
+    return r.runs;
+  },
+
+  getRun: async (runId: string) => {
+    return await strategyRuntimeClient.getStrategyRun({ runId });
+  },
+};
+
+// ── Active strategy monitoring + control (Phase 2) ──────────────────
+
+export const strategyActiveApi = {
+  listActive: async (accountId?: string) => {
+    const r = await strategyRuntimeClient.listActiveStrategies({
+      accountId: accountId || '',
+    });
+    return r.strategies;
+  },
+
+  getActive: async (runId: string) => {
+    const r = await strategyRuntimeClient.getActiveStrategy({ runId });
+    return r.strategy;
+  },
+
+  stop: async (runId: string) => {
+    return await strategyRuntimeClient.stopStrategy({ runId });
+  },
+
+  watchSignals: (runId: string, signal?: AbortSignal) =>
+    strategyRuntimeStreamClient.watchStrategySignals({ runId }, { signal }),
+};

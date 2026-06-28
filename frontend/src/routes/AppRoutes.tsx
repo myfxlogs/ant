@@ -20,6 +20,7 @@ const StrategyLibraryPage = lazy(() => import('@/pages/strategy/StrategyLibraryP
 const StrategyScheduleLogsPage = lazy(() => import('@/pages/strategy/StrategyScheduleLogsPage'));
 const IndicatorCatalogPage = lazy(() => import('@/pages/strategy/IndicatorCatalogPage'));
 const StrategyWorkspacePage = lazy(() => import('@/pages/strategy/StrategyWorkspacePage'));
+const LiveStrategyPage = lazy(() => import('@/pages/strategy/LiveStrategyPage'));
 const MarketplacePage = lazy(() => import('@/pages/marketplace/MarketplacePage'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const WalletPage = lazy(() => import('@/pages/wallet/WalletPage'));
@@ -72,6 +73,7 @@ const mainRoutes = (
     <Route path="strategy/schedules/:id/logs" element={wrap(<StrategyScheduleLogsPage />)} />
     <Route path="strategy/library" element={wrap(<StrategyLibraryPage />)} />
     <Route path="strategy/workspace" element={wrap(<StrategyWorkspacePage />)} />
+    <Route path="strategy/live" element={wrap(<LiveStrategyPage />)} />
     <Route path="strategy/indicator-catalog" element={wrap(<IndicatorCatalogPage />)} />
     <Route path="marketplace" element={wrap(<MarketplacePage />)} />
     <Route path="strategy/experiments" element={wrap(<StrategyExperimentPage />)} />

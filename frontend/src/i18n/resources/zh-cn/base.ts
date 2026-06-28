@@ -724,6 +724,7 @@ const Base = {
     "strategies": "策略管理",
     "strategy": "策略",
     "strategyLibrary": "策略库",
+    "strategyLive": "实盘监控",
     "strategyWorkspace": "策略工作台",
     "trading": "交易",
     "wallet": "钱包"

@@ -94,5 +94,5 @@ Phase 4 (API Independence) — can be done anytime, low priority
 
 - **Phase 1**: ✅ Implemented — migration, repository, dispatch hooks, RPCs
 - **Phase 2**: ✅ Implemented — session registry, monitoring RPCs, SSE signal stream
-- **Phase 3**: Not started
+- **Phase 3**: ✅ Implemented — LiveStrategyPage with active runs, run history, signal log SSE
 - **Phase 4**: Not started

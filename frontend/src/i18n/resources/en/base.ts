@@ -724,6 +724,7 @@ const Base = {
     "strategies": "Strategies",
     "strategy": "Strategy",
     "strategyLibrary": "Strategy Library",
+    "strategyLive": "Live Monitor",
     "strategyWorkspace": "Strategy Workspace",
     "trading": "Trading",
     "wallet": "Wallet"
