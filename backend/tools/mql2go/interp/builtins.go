@@ -109,6 +109,10 @@ func mathMin(it *Interpreter, args []Value) (Value, error) {
 	return args[1], nil
 }
 
+// mathSqrt computes square root.
+// Known limitation: uses float64 internally (decimal→float64→decimal round-trip).
+// Acceptable for math tool functions, but if an EA uses MathSqrt for position
+// sizing,微小精度误差 may occur. Price calculations elsewhere use pure decimal.
 func mathSqrt(it *Interpreter, args []Value) (Value, error) {
 	if len(args) < 1 {
 		return NoneVal(), fmt.Errorf("MathSqrt: not enough args")
@@ -121,6 +125,9 @@ func mathSqrt(it *Interpreter, args []Value) (Value, error) {
 	return DecimalVal(decimal.NewFromFloat(sqrt(f))), nil
 }
 
+// mathPow computes base^exp.
+// Known limitation: uses float64 internally (decimal→float64→decimal round-trip).
+// Same precision caveat as mathSqrt — acceptable for math tool functions.
 func mathPow(it *Interpreter, args []Value) (Value, error) {
 	if len(args) < 2 {
 		return NoneVal(), fmt.Errorf("MathPow: not enough args")
