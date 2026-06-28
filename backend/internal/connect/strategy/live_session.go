@@ -204,8 +204,13 @@ func (s *LiveSession) SendBar(reqBytes []byte) ([]byte, error) {
 	default:
 	}
 
-	// Write the bar request to stdin pipe — unblocks the harness from
-	// its blocking readRequest(stdin).
+	// Write length-prefixed bar request to stdin pipe — unblocks the
+	// harness from its blocking readRequest(stdin).
+	var lenBuf [4]byte
+	binary.BigEndian.PutUint32(lenBuf[:], uint32(len(reqBytes)))
+	if _, err := s.stdinW.Write(lenBuf[:]); err != nil {
+		return nil, fmt.Errorf("write bar length prefix: %w", err)
+	}
 	if _, err := s.stdinW.Write(reqBytes); err != nil {
 		return nil, fmt.Errorf("write bar request: %w", err)
 	}
