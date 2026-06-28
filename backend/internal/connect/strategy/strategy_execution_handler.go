@@ -134,36 +134,10 @@ func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Requ
 		return connect.NewResponse(resp), nil
 	}
 
-	// MQL interpreter path: compile MQL → IR → serialize → WASM interp harness.
-	if s.wasmExecutor != nil && isMQLStrategy(req.Msg.Code) {
-		ir, err := mql2go.CompileToIR(req.Msg.Code)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("compile MQL to IR: %w", err))
-		}
-		irBytes := interp.SerializeIR(ir)
-
-		compiled, _, err := s.wasmExecutor.CompileInterpLive(ctx)
-		if err != nil {
-			s.log.Warn("wasm interp compile failed", zap.Error(err))
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("compile interp harness: %w", err))
-		}
-
-		reqBytes, err := proto.Marshal(req.Msg)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal request: %w", err))
-		}
-
-		respBytes, err := s.wasmExecutor.RunInterpLive(ctx, compiled, irBytes, reqBytes)
-		if err != nil {
-			s.log.Warn("wasm interp execute failed", zap.Error(err))
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("interp execution failed: %w", err))
-		}
-
-		var resp antv1.ExecuteStrategyResponse
-		if err := proto.Unmarshal(respBytes, &resp); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unmarshal interp response: %w", err))
-		}
-		return connect.NewResponse(&resp), nil
+	// MQL source requires bar data to produce signals — use StartBacktestRun or ExecuteLive.
+	if isMQLStrategy(req.Msg.Code) {
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			fmt.Errorf("MQL strategies require bar data — use StartBacktestRun or ExecuteLive"))
 	}
 
 	return connect.NewResponse(&antv1.ExecuteStrategyResponse{

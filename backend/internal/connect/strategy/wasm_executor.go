@@ -44,6 +44,16 @@ type WasmExecutor struct {
 
 	initOnce sync.Once
 	initErr  error
+
+	// Interp harness caching — the harness code is static (no per-strategy
+	// code), so the WASM binary is identical every call. Compile once, reuse.
+	interpBtOnce   sync.Once
+	interpBtModule wazero.CompiledModule
+	interpBtErr    error
+
+	interpLiveOnce   sync.Once
+	interpLiveModule wazero.CompiledModule
+	interpLiveErr    error
 }
 
 // NewWasmExecutor creates a WasmExecutor.
@@ -199,53 +209,70 @@ func (w *WasmExecutor) buildWasm(ctx context.Context, code string, strategyTypeN
 // ── Interpreter path (IR → WASM) ──────────────────────────────────────
 
 // CompileInterpBacktest compiles the interp backtest harness to a WASM module.
-// The IR is passed at runtime via stdin — the harness is static (no per-strategy code).
+// The harness is static (no per-strategy code) — compiled once and cached.
+// The IR is passed at runtime via stdin.
 func (w *WasmExecutor) CompileInterpBacktest(ctx context.Context) (wazero.CompiledModule, string, error) {
 	if err := w.initRuntime(ctx); err != nil {
 		return nil, "", err
 	}
 
-	wasmBytes, err := w.buildInterpWasm(ctx, generateInterpBacktestHarness())
-	if err != nil {
-		return nil, "", fmt.Errorf("build interp backtest wasm: %w", err)
+	w.interpBtOnce.Do(func() {
+		wasmBytes, err := w.buildInterpWasm(ctx, generateInterpBacktestHarness())
+		if err != nil {
+			w.interpBtErr = fmt.Errorf("build interp backtest wasm: %w", err)
+			return
+		}
+
+		compiled, err := w.runtime.CompileModule(ctx, wasmBytes)
+		if err != nil {
+			w.interpBtErr = fmt.Errorf("compile interp backtest wasm: %w", err)
+			return
+		}
+
+		w.interpBtModule = compiled
+		hash := wasmHash(wasmBytes)
+		w.log.Info("WasmExecutor: interp backtest harness compiled",
+			zap.String("hash", hash),
+			zap.Int("wasm_bytes", len(wasmBytes)))
+	})
+
+	if w.interpBtErr != nil {
+		return nil, "", w.interpBtErr
 	}
-
-	compiled, err := w.runtime.CompileModule(ctx, wasmBytes)
-	if err != nil {
-		return nil, "", fmt.Errorf("compile interp backtest wasm: %w", err)
-	}
-
-	hash := wasmHash(wasmBytes)
-	w.log.Info("WasmExecutor: interp backtest harness compiled",
-		zap.String("hash", hash),
-		zap.Int("wasm_bytes", len(wasmBytes)))
-
-	return compiled, hash, nil
+	return w.interpBtModule, "", nil
 }
 
 // CompileInterpLive compiles the interp live harness to a WASM module.
-// The IR is passed at runtime via stdin — the harness is static.
+// The harness is static — compiled once and cached. The IR is passed at runtime via stdin.
 func (w *WasmExecutor) CompileInterpLive(ctx context.Context) (wazero.CompiledModule, string, error) {
 	if err := w.initRuntime(ctx); err != nil {
 		return nil, "", err
 	}
 
-	wasmBytes, err := w.buildInterpWasm(ctx, generateInterpLiveHarness())
-	if err != nil {
-		return nil, "", fmt.Errorf("build interp live wasm: %w", err)
+	w.interpLiveOnce.Do(func() {
+		wasmBytes, err := w.buildInterpWasm(ctx, generateInterpLiveHarness())
+		if err != nil {
+			w.interpLiveErr = fmt.Errorf("build interp live wasm: %w", err)
+			return
+		}
+
+		compiled, err := w.runtime.CompileModule(ctx, wasmBytes)
+		if err != nil {
+			w.interpLiveErr = fmt.Errorf("compile interp live wasm: %w", err)
+			return
+		}
+
+		w.interpLiveModule = compiled
+		hash := wasmHash(wasmBytes)
+		w.log.Info("WasmExecutor: interp live harness compiled",
+			zap.String("hash", hash),
+			zap.Int("wasm_bytes", len(wasmBytes)))
+	})
+
+	if w.interpLiveErr != nil {
+		return nil, "", w.interpLiveErr
 	}
-
-	compiled, err := w.runtime.CompileModule(ctx, wasmBytes)
-	if err != nil {
-		return nil, "", fmt.Errorf("compile interp live wasm: %w", err)
-	}
-
-	hash := wasmHash(wasmBytes)
-	w.log.Info("WasmExecutor: interp live harness compiled",
-		zap.String("hash", hash),
-		zap.Int("wasm_bytes", len(wasmBytes)))
-
-	return compiled, hash, nil
+	return w.interpLiveModule, "", nil
 }
 
 // RunInterpBacktest runs the interp backtest harness with the given IR and backtest request.
