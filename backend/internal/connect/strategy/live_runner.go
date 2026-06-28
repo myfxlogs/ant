@@ -3,10 +3,9 @@
 // strategy via WASM, and dispatches signals to OMS.
 //
 // Multi-model architecture:
-//   BAR   → barBroker channel   → session.SendBar()   → strategy.OnBar
-//   TICK  → tickBroker channel  → session.SendTick()  → strategy.OnTick
-//   TRADE → tradeBroker channel → session.SendTrade() → strategy.OnTrade
-//   TIMER → timer channel       → session.SendTimer() → strategy.OnTimer
+//   BAR   → barBroker channel   → session.SendBar() → strategy.OnBar
+//   TICK  → tickBroker channel  → session.SendBar() → strategy.OnTick
+//   TRADE → tradeBroker channel → session.SendBar() → strategy.OnTrade
 //
 // Follows push-first architecture: events drive the loop; no polling.
 
@@ -32,10 +31,8 @@ const maxContextBars = 500
 type ExecutionModels int
 
 const (
-	ExecModelBar   ExecutionModels = 1 << iota // OnBar
-	ExecModelTick                               // OnTick
+	ExecModelTick  ExecutionModels = 1 << iota // OnTick
 	ExecModelTrade                              // OnTrade
-	ExecModelTimer                              // OnTimer
 )
 
 type liveBar struct {

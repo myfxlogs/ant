@@ -189,7 +189,7 @@ func (s *StrategyExecutionServer) dispatchPaperSignal(ctx context.Context, cfg L
 
 	action := sig.GetSignalType()
 
-		switch action {
+	switch action {
 	case "close", "close_all":
 		if err := s.paperEngine.ClosePaperOrder(ctx, cfg.AccountID, cfg.Symbol); err != nil {
 			s.log.Warn("LiveStrategyRunner: paper close failed", zap.Error(err))

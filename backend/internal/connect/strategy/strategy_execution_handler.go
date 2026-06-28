@@ -476,7 +476,7 @@ func toCamelCase(s string) string {
 func (s *StrategyExecutionServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
 
 func isGoStrategy(code string) bool {
-	return len(code) > 0 && containsStr(code, "anttrader/strategy/sdk")
+	return len(code) > 0 && strings.Contains(code, "anttrader/strategy/sdk")
 }
 
 // isMQLStrategy returns true if the code looks like MQL source (not Go).
@@ -488,16 +488,7 @@ func isMQLStrategy(code string) bool {
 	if isGoStrategy(code) {
 		return false
 	}
-	return containsStr(code, "OnBar") || containsStr(code, "OnTick") ||
-		containsStr(code, "OnInit") || containsStr(code, "OnTimer") ||
-		containsStr(code, "OnDeinit")
-}
-
-func containsStr(s, sub string) bool {
-	for i := 0; i <= len(s)-len(sub); i++ {
-		if s[i:i+len(sub)] == sub {
-			return true
-		}
-	}
-	return false
+	return strings.Contains(code, "OnBar") || strings.Contains(code, "OnTick") ||
+		strings.Contains(code, "OnInit") || strings.Contains(code, "OnTimer") ||
+		strings.Contains(code, "OnDeinit")
 }
