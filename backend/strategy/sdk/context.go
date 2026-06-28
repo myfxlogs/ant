@@ -3,7 +3,8 @@ package sdk
 import "github.com/shopspring/decimal"
 
 // Context provides the strategy with runtime services.
-// It is passed to OnInit, OnBar, OnDeinit, and optional callbacks.
+// It is passed to OnInit, OnBar, OnDeinit, and optional callbacks
+// (OnTick, OnTimer, OnTrade).
 type Context interface {
 	// ── Parameters ───────────────────────────────────────────────
 
@@ -53,6 +54,9 @@ type Context interface {
 
 	// Bid returns the current bid price.
 	Bid() decimal.Decimal
+
+	// Spread returns the current spread (Ask - Bid) in price units.
+	Spread() decimal.Decimal
 
 	// ── Account ──────────────────────────────────────────────────
 

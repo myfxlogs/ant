@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/shopspring/decimal"
 
 	"anttrader/internal/model"
 )
@@ -150,12 +151,12 @@ func (r *AutoTradingRepository) GetTodayExecutionCount(ctx context.Context, acco
 	return count, err
 }
 
-func (r *AutoTradingRepository) GetTodayProfit(ctx context.Context, accountID uuid.UUID) (float64, error) {
+func (r *AutoTradingRepository) GetTodayProfit(ctx context.Context, accountID uuid.UUID) (decimal.Decimal, error) {
 	query := `
-			SELECT COALESCE(SUM((orders->>'profit')::float), 0)
+			SELECT COALESCE(SUM((orders->>'profit')::numeric), 0)
 			FROM strategy_executions
 			WHERE account_id = $1 AND started_at >= CURRENT_DATE AND status = 'completed'`
-	var profit float64
+	var profit decimal.Decimal
 	err := r.db.QueryRow(ctx, query, accountID).Scan(&profit)
 	return profit, err
 }

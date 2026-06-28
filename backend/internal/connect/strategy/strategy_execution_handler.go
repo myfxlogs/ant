@@ -2,9 +2,9 @@ package strategy
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -46,8 +46,15 @@ type StrategyExecutionServer struct {
 	// Before connected, equity-dependent gate rules fail-closed.
 	accountProvider AccountStateProvider
 
-	// Go-native strategy executor — runs generated Go strategies.
+	// Go-native strategy executor — runs generated Go strategies via go run (backtest).
 	goExecutor *GoExecutor
+
+	// WASM strategy executor — runs generated Go strategies via wazero (live/paper).
+	wasmExecutor *WasmExecutor
+
+	// Push-first cancel: shared LISTEN on backtest_cancel channel.
+	activeCancels   map[uuid.UUID]context.CancelFunc
+	activeCancelsMu sync.Mutex
 }
 
 // AccountStateProvider supplies live account state for gate evaluation (T3.2b).
@@ -64,7 +71,7 @@ func (s *StrategyExecutionServer) SetMarketDataRepo(r repository.MarketDataStore
 // Implemented by paper.PaperEngine to avoid circular imports.
 type PaperOrderExecutor interface {
 	PlacePaperOrder(ctx context.Context, accountID, symbol, side string,
-		volume decimal.Decimal, bid, ask float64) error
+		volume, bid, ask decimal.Decimal) error
 	ClosePaperOrder(ctx context.Context, accountID, symbol string) error
 	ModifyPaperOrder(ctx context.Context, accountID, symbol string, sl, tp decimal.Decimal) error
 	CancelPaperOrder(ctx context.Context, accountID, symbol string) error
@@ -74,6 +81,7 @@ func (s *StrategyExecutionServer) SetBarSource(bs BarSource)                 { s
 func (s *StrategyExecutionServer) SetMtHub(h *mthub.MtHubService)            { s.mtHub = h }
 func (s *StrategyExecutionServer) SetPaperEngine(pe PaperOrderExecutor)      { s.paperEngine = pe }
 func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)              { s.goExecutor = ge }
+func (s *StrategyExecutionServer) SetWasmExecutor(we *WasmExecutor)          { s.wasmExecutor = we }
 
 // SetGate injects the risk gate (D6-A: mandatory, non-optional).
 // Must be called before RunLiveStrategy.
@@ -92,7 +100,7 @@ func (s *StrategyExecutionServer) SetAccountProvider(p AccountStateProvider) { s
 var _ antv1c.StrategyRuntimeServiceHandler = (*StrategyExecutionServer)(nil)
 
 func NewStrategyExecutionServer(backtestRepo *repository.BacktestRunRepository, log *zap.Logger) *StrategyExecutionServer {
-	return &StrategyExecutionServer{backtestRepo: backtestRepo, log: log}
+	return &StrategyExecutionServer{backtestRepo: backtestRepo, log: log, activeCancels: make(map[uuid.UUID]context.CancelFunc)}
 }
 
 func (s *StrategyExecutionServer) SetNotificationSender(ns *notification.Sender) { s.notifSender = ns }
@@ -237,9 +245,9 @@ func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *co
 		return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{}), nil
 	}
 
-	// Build params JSON
-	paramsJSON, _ := json.Marshal(intent.Params)
-	groupsJSON := buildGroupsJSON(intent.Params)
+	// Build params proto fields
+	paramFields := buildParamFields(intent.Params)
+	paramGroups := buildParamGroups(intent.Params)
 
 	// Build indicator names
 	var indicatorNames []string
@@ -255,8 +263,6 @@ func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *co
 		coverage = 1.0 - float64(len(intent.BlindSpots))/float64(totalBlocks)
 	}
 
-	blindSpotsJSON, _ := json.Marshal(intent.BlindSpots)
-
 	return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{
 		StrategyName:     intent.Meta.Name,
 		MqlVersion:       intent.Meta.MQLVersion,
@@ -267,9 +273,9 @@ func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *co
 		EntryRulesCount:  int32(len(intent.Entry)),
 		ExitRulesCount:   int32(len(intent.Exit)),
 		SizingKind:       string(intent.Sizing.Kind),
-		ParamsJson:       string(paramsJSON),
-		GroupsJson:       groupsJSON,
-		BlindSpotsJson:   string(blindSpotsJSON),
+		Params:           paramFields,
+		Groups:           paramGroups,
+		BlindSpots:       buildBlindSpotProtos(intent.BlindSpots),
 		IndicatorNames:   indicatorNames,
 	}), nil
 }
@@ -350,8 +356,6 @@ func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *conne
 		coverage = 1.0 - float64(len(intent.BlindSpots))/float64(totalBlocks)
 	}
 
-	blindSpotsJSON, _ := json.Marshal(intent.BlindSpots)
-
 	strategyID := uuid.New().String()
 
 	return connect.NewResponse(&antv1.ImportStrategyResponse{
@@ -359,23 +363,54 @@ func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *conne
 		StrategyName:  intent.Meta.Name,
 		GoCode:        code,
 		CoverageScore: coverage,
-		BlindSpotsJson: string(blindSpotsJSON),
+		BlindSpots:    buildBlindSpotProtos(intent.BlindSpots),
 	}), nil
 }
 
-// buildGroupsJSON builds a JSON array of parameter groups for the frontend.
-func buildGroupsJSON(params []mql2go.ParamSpec) string {
+// buildParamFields converts mql2go.ParamSpec slice to proto ParamField slice.
+func buildParamFields(params []mql2go.ParamSpec) []*antv1.ParamField {
+	fields := make([]*antv1.ParamField, 0, len(params))
+	for _, p := range params {
+		fields = append(fields, &antv1.ParamField{
+			Name:         p.Name,
+			Label:        p.Label,
+			Type:         string(p.Type),
+			DefaultValue: p.Default,
+			Group:        string(p.Group),
+		})
+	}
+	return fields
+}
+
+// buildParamGroups extracts unique parameter groups as proto ParamGroupInfo slice.
+func buildParamGroups(params []mql2go.ParamSpec) []*antv1.ParamGroupInfo {
 	seen := make(map[string]bool)
-	var groups []string
+	var groups []*antv1.ParamGroupInfo
 	for _, p := range params {
 		g := string(p.Group)
 		if !seen[g] {
 			seen[g] = true
-			groups = append(groups, g)
+			groups = append(groups, &antv1.ParamGroupInfo{Name: g})
 		}
 	}
-	b, _ := json.Marshal(groups)
-	return string(b)
+	return groups
+}
+
+// buildBlindSpotProtos converts mql2go.BlindSpot slice to proto BlindSpot slice.
+func buildBlindSpotProtos(spots []mql2go.BlindSpot) []*antv1.BlindSpot {
+	result := make([]*antv1.BlindSpot, 0, len(spots))
+	for _, bs := range spots {
+		result = append(result, &antv1.BlindSpot{
+			Id:                 bs.ID,
+			Category:           bs.Category,
+			Severity:           bs.Severity,
+			Description:        bs.Description,
+			Location:           bs.Location,
+			Handling:           bs.Handling,
+			UserActionRequired: bs.UserActionRequired,
+		})
+	}
+	return result
 }
 
 // toCamelCase converts a filename like "my_strategy" to "MyStrategy".
@@ -397,7 +432,7 @@ func toCamelCase(s string) string {
 func (s *StrategyExecutionServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
 
 func isGoStrategy(code string) bool {
-	return len(code) > 0 && (containsStr(code, "anttrader/strategy/sdk") || containsStr(code, "package "))
+	return len(code) > 0 && containsStr(code, "anttrader/strategy/sdk")
 }
 
 func containsStr(s, sub string) bool {

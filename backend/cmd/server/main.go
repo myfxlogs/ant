@@ -187,6 +187,8 @@ func main() {
 	accountBroker := mthub.NewAccountProfitBroker()
 	snapshotBroker := mthub.NewPositionSnapshotBroker()
 	barBroker := mthub.NewBarBroker()
+	tickBroker := mthub.NewTickBroker(64, log)
+	tradeBroker := mthub.NewTradeBroker(64, log)
 	statusBroker := mthub.NewAccountStatusBroker()
 	idemGuard := mthub.NewIdempotencyGuard(rdb.Client())
 	reconcileGate := mthub.NewReconcileGate()
@@ -199,6 +201,8 @@ func main() {
 	mthubSvc := mthub.NewMtHubService(hub, eventBroker, accountBroker, snapshotBroker, idemGuard, reconcileGate, eventStore)
 	mthubSvc.SetLogger(log)
 	mthubSvc.SetBarBroker(barBroker)
+	mthubSvc.SetTickBroker(tickBroker)
+	mthubSvc.SetTradeBroker(tradeBroker)
 	mthubSvc.SetStatusBroker(statusBroker)
 	// --- Analytics cache ---
 	analyticsCache := service.NewAnalyticsCache(rdb.Client(), log)

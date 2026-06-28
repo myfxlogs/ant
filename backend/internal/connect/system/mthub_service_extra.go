@@ -69,10 +69,10 @@ func (s *MtHubServer) PriceHistory(ctx context.Context, req *connect.Request[ant
 		out = append(out, &antv1.OHLCV{
 			OpenTime:  timestamppb.New(b.OpenTime()),
 			CloseTime: timestamppb.New(b.CloseTime()),
-			Open:      fmt.Sprintf("%.5f", b.Open),
-			High:      fmt.Sprintf("%.5f", b.High),
-			Low:       fmt.Sprintf("%.5f", b.Low),
-			Close:     fmt.Sprintf("%.5f", b.Close),
+			Open:      b.Open.String(),
+			High:      b.High.String(),
+			Low:       b.Low.String(),
+			Close:     b.Close.String(),
 			Volume:    b.Volume,
 		})
 	}

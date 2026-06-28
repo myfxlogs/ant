@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -17,18 +18,18 @@ import (
 	"anttrader/internal/service"
 )
 
-// formatPrice formats a float64 price with dynamic decimal precision:
+// formatPrice formats a decimal.Decimal price with dynamic decimal precision:
 // - Price > 100:  3 digits (JPY pairs, e.g. 149.250)
 // - Price > 1:    5 digits (standard forex, e.g. 1.12345)
 // - Price <= 1:   6 digits (crypto or fractional assets)
-func formatPrice(p float64) string {
+func formatPrice(p decimal.Decimal) string {
 	switch {
-	case p > 100:
-		return fmt.Sprintf("%.3f", p)
-	case p > 1:
-		return fmt.Sprintf("%.5f", p)
+	case p.GreaterThan(decimal.NewFromInt(100)):
+		return p.StringFixed(3)
+	case p.GreaterThan(decimal.NewFromInt(1)):
+		return p.StringFixed(5)
 	default:
-		return fmt.Sprintf("%.6f", p)
+		return p.StringFixed(6)
 	}
 }
 

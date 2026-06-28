@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
 
@@ -130,10 +131,10 @@ type StartBacktestParams struct {
 	Timeframe          string
 	StartDateMs        int64
 	EndDateMs          int64
-	InitialCapital     float64
-	Commission         float64
-	Slippage           float64
-	Leverage           float64
+	InitialCapital     decimal.Decimal
+	Commission         decimal.Decimal
+	Slippage           decimal.Decimal
+	Leverage           decimal.Decimal
 	TradeDirection     string
 }
 

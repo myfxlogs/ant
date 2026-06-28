@@ -7,7 +7,7 @@ option go_package = "anttrader/gen/proto/ant/v1;antv1";
 // StrategyParams holds parameter key→value overrides for backtest execution.
 // Replaces the JSONB parameter_overrides column and strategy_params_json string.
 message StrategyParams {
-  map<string, double> values = 1;
+  map<string, string> values = 1;
 }
 
 // ParameterDef describes a single tunable parameter in the search space.
@@ -28,7 +28,7 @@ message ParameterSpace {
 
 // CandidateParameters holds the parameter values for a single experiment candidate.
 message CandidateParameters {
-  map<string, double> values = 1;
+  map<string, string> values = 1;
 }
 
 // ScoreComponents holds the breakdown of a candidate's score (replaces score_components JSONB).

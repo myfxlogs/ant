@@ -3,9 +3,9 @@ package autotrading
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 
@@ -42,7 +42,7 @@ func (s *AutoTradingServer) GetAutoTradingStatus(
 	if n, err := s.autoRepo.CountTodayExecutionsByUser(ctx, uid); err == nil {
 		todayExecutions = n
 	}
-	todayProfit := 0.0
+	todayProfit := decimal.Zero
 	if p, err := s.autoRepo.GetTodayProfitByUser(ctx, uid); err == nil {
 		todayProfit = p
 	}
@@ -52,7 +52,7 @@ func (s *AutoTradingServer) GetAutoTradingStatus(
 		ActiveStrategies: int32(activeStrategies),
 		PendingSignals:   int32(pendingSignals),
 		TodayExecutions:  int32(todayExecutions),
-		TodayProfit:      strconv.FormatFloat(todayProfit, 'f', -1, 64),
+		TodayProfit:      todayProfit.String(),
 	}), nil
 }
 

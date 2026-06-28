@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/ai"
@@ -163,8 +164,10 @@ func triggerBacktest(ctx context.Context, repo *repository.BacktestRunRepository
 		ID: uuid.New(), UserID: userID, AccountID: uuid.Nil,
 		Symbol: symbol, Timeframe: timeframe, Mode: "KLINE_RANGE", Status: "PENDING",
 		StrategyCode: &code,
-		InitialCapital: ptr.F64(10000), Commission: ptr.F64(0.001),
-		Slippage: ptr.F64(0), Leverage: ptr.F64(1),
+		InitialCapital: ptr.Decimal(decimal.NewFromInt(10000)),
+		Commission:     ptr.Decimal(decimal.NewFromFloat(0.001)),
+		Slippage:       ptr.Decimal(decimal.Zero),
+		Leverage:       ptr.Decimal(decimal.NewFromInt(1)),
 		TradeDirection: ptr.Str("both"), StrictMode: ptr.Bool(true), ExtraSymbols: []string{},
 	}
 	id, err := repo.Create(ctx, run)

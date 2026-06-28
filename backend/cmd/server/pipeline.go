@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	"anttrader/internal/mdgateway"
@@ -98,7 +99,7 @@ func startMdGatewayPipeline(
 			if err != nil {
 				log.Warn("OnAccountProfit: invalid user UUID", zap.String("userID", userID), zap.Error(err))
 			}
-			if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.MarginLevel); err != nil {
+			if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, p.Balance.InexactFloat64(), p.Equity.InexactFloat64(), p.Credit.InexactFloat64(), p.Margin.InexactFloat64(), p.FreeMargin.InexactFloat64(), p.MarginLevel.InexactFloat64()); err != nil {
 				log.Warn("OnAccountProfit: pg update failed", zap.String("account", accountID), zap.Error(err))
 			}
 			// Record hourly equity snapshot (throttled).
@@ -111,7 +112,7 @@ func startMdGatewayPipeline(
 				}
 				lastSnapshot[accountID] = time.Now()
 				snapshotMu.Unlock()
-				if err := accountSvc.RecordBalanceSnapshot(writeCtx, accountID, userID, p.Balance, p.Equity, p.Margin, p.FreeMargin); err != nil {
+				if err := accountSvc.RecordBalanceSnapshot(writeCtx, accountID, userID, p.Balance.InexactFloat64(), p.Equity.InexactFloat64(), p.Margin.InexactFloat64(), p.FreeMargin.InexactFloat64()); err != nil {
 					log.Debug("OnAccountProfit: snapshot insert failed", zap.String("account", accountID), zap.Error(err))
 				}
 			}()
@@ -125,14 +126,14 @@ func startMdGatewayPipeline(
 					Positions:     convertProfitPositions(p.Positions),
 			})
 			// Update in-memory summary cache so SSE SubscribeUserSummary avoids a full DB scan.
-			accountSvc.UpdateSummaryCache(userID, accountID, p.Balance, p.Equity, "connected")
+			accountSvc.UpdateSummaryCache(userID, accountID, p.Balance.InexactFloat64(), p.Equity.InexactFloat64(), "connected")
 			// B-2.3: 3-level margin call detection with per-broker thresholds.
-			if p.MarginLevel > 0 {
+			if p.MarginLevel.GreaterThan(decimal.Zero) {
 				callPct := marginCallThresholds[accountID]
 				if callPct <= 0 {
 					callPct = 100.0
 				}
-				accountSyncSvc.CheckMarginCall(accountID, userID, p.MarginLevel, p.Margin, p.Equity, callPct, &marginCallMu, marginCallLastSent, eventStore, *emailNotifier)
+				accountSyncSvc.CheckMarginCall(accountID, userID, p.MarginLevel.InexactFloat64(), p.Margin.InexactFloat64(), p.Equity.InexactFloat64(), callPct, &marginCallMu, marginCallLastSent, eventStore, *emailNotifier)
 			}
 		},
 		OnOrderUpdate: buildOnOrderUpdate(log, accountSvc, accountBroker, snapshotBroker, tradeRecordRepo, platformAgg),
@@ -181,9 +182,9 @@ func startMdGatewayPipeline(
 					snapshot := &mthub.PositionSnapshot{AccountID: accountID, Positions: make([]mthub.PositionSnapshotItem, 0, len(orders))}
 					for _, o := range orders {
 						snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
-							Ticket: o.Ticket, Symbol: o.SymbolRaw, Type: service.MapSideToString(o.Side), Volume: o.Volume.InexactFloat64(),
-							OpenPrice: o.OpenPrice.InexactFloat64(), Profit: o.Profit.InexactFloat64(),
-							Swap: o.Swap.InexactFloat64(), Commission: o.Commission.InexactFloat64(), Comment: o.Comment,
+							Ticket: o.Ticket, Symbol: o.SymbolRaw, Type: service.MapSideToString(o.Side), Volume: o.Volume,
+							OpenPrice: o.OpenPrice, Profit: o.Profit,
+							Swap: o.Swap, Commission: o.Commission, Comment: o.Comment,
 							OpenTime: o.OpenTime.Unix(),
 						})
 					}
@@ -232,23 +233,17 @@ func startMdGatewayPipeline(
 			})
 		},
 		OnBar: func(b *mdtick.Bar) {
-			o, _ := b.Open.Float64()
-			h, _ := b.High.Float64()
-			l, _ := b.Low.Float64()
-			c, _ := b.Close.Float64()
-			bid, _ := b.Bid.Float64()
-			ask, _ := b.Ask.Float64()
 			mthubSvc.PublishBar(&mthub.BarUpdate{
 				AccountID: b.AccountID,
 				Symbol:    b.Canonical,
 				Period:    b.Period,
 				OpenTime:  b.OpenTsUnixMs,
-				Open:      o,
-				High:      h,
-				Low:       l,
-				Close:     c,
-				Bid:       bid,
-				Ask:       ask,
+				Open:      b.Open,
+				High:      b.High,
+				Low:       b.Low,
+				Close:     b.Close,
+				Bid:       b.Bid,
+				Ask:       b.Ask,
 				Volume:    b.Volume,
 				Closed:    b.IsClosed,
 			})

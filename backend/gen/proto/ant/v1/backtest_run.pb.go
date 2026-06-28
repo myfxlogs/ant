@@ -144,7 +144,7 @@ type BacktestRun struct {
 	To                   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=to,proto3,oneof" json:"to,omitempty"`
 	Status               BacktestRunStatus      `protobuf:"varint,9,opt,name=status,proto3,enum=ant.v1.BacktestRunStatus" json:"status,omitempty"`
 	Error                string                 `protobuf:"bytes,10,opt,name=error,proto3" json:"error,omitempty"`
-	PythonServiceVersion *string                `protobuf:"bytes,11,opt,name=python_service_version,json=pythonServiceVersion,proto3,oneof" json:"python_service_version,omitempty"`
+	PythonServiceVersion *string                `protobuf:"bytes,11,opt,name=python_service_version,json=pythonServiceVersion,proto3,oneof" json:"python_service_version,omitempty"` // legacy: Python engine version, now unused (see ADR-0021)
 	CreatedAt            *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	StartedAt            *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=started_at,json=startedAt,proto3,oneof" json:"started_at,omitempty"`
 	FinishedAt           *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=finished_at,json=finishedAt,proto3,oneof" json:"finished_at,omitempty"`

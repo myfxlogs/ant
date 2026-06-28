@@ -4,13 +4,15 @@ import "github.com/shopspring/decimal"
 
 // Strategy is the interface every generated strategy implements.
 //
-// The runtime calls OnInit once at startup, then OnBar on every new bar
-// of the primary timeframe. OnDeinit is called on shutdown.
+// The runtime calls OnInit once at startup, then dispatches events based on
+// which optional interfaces the strategy implements:
 //
-// A strategy may also implement optional interfaces:
+//	BarStrategy   — OnBar is called when a new bar closes
+//	TickStrategy  — OnTick is called on every price update (Bid/Ask)
+//	TimerStrategy — OnTimer is called when EventSetTimer fires
+//	TradeStrategy — OnTrade is called after order fill/close/modify
 //
-//	OnTrader  — called after any order fill or position close
-//	OnTimer   — called periodically (if EventSetTimer was called in OnInit)
+// OnDeinit is called on shutdown.
 type Strategy interface {
 	// OnInit is called once when the strategy starts.
 	// Use ctx.Param() to read user-configured parameters.
@@ -27,7 +29,7 @@ type Strategy interface {
 	OnDeinit(ctx Context, reason string) error
 }
 
-// Signal is returned by OnBar to request trade actions.
+// Signal is returned by OnBar/OnTick/OnTimer/OnTrade to request trade actions.
 // Only non-nil fields are acted upon.
 type Signal struct {
 	Action       SignalAction
@@ -61,16 +63,52 @@ const (
 	ActionCancelAll              // cancel all pending orders for this magic
 )
 
-// ── Optional interfaces ─────────────────────────────────────────────
+// ── Optional execution model interfaces ─────────────────────────────
+// Strategies implement the interfaces whose events they need.
+// The runner detects implemented interfaces and subscribes to the
+// corresponding data streams.
 
-// OnTrader is implemented by strategies that need trade-event callbacks.
-// The runtime calls OnTrade after any order is filled or position closed.
-type OnTrader interface {
-	OnTrade(ctx Context) error
+// TickStrategy is implemented by strategies that need per-tick execution.
+// OnTick is called on every price update (Bid/Ask) for the primary symbol.
+// Used by scalping and market-making EAs.
+type TickStrategy interface {
+	OnTick(ctx Context, bid, ask decimal.Decimal) (*Signal, error)
 }
 
-// OnTimer is implemented by strategies that use periodic timers.
-// Call ctx.SetTimer(seconds) in OnInit to enable.
-type OnTimer interface {
-	OnTimer(ctx Context) error
+// TimerStrategy is implemented by strategies that use periodic timers.
+// OnTimer is called every n seconds, as configured by ctx.SetTimer(n) in OnInit.
+type TimerStrategy interface {
+	OnTimer(ctx Context) (*Signal, error)
 }
+
+// TradeStrategy is implemented by strategies that need trade event callbacks.
+// OnTrade is called after an order is filled, closed, or modified.
+// Used by post-fill pyramiding, hedge management, and trailing-stop EAs.
+type TradeStrategy interface {
+	OnTrade(ctx Context, event TradeEvent) (*Signal, error)
+}
+
+// TradeEvent carries information about a completed trade action.
+type TradeEvent struct {
+	Ticket     int64
+	Symbol     string
+	EventType  TradeEventType // fill, close, modify, cancel
+	Side       PositionSide
+	Volume     decimal.Decimal
+	Price      decimal.Decimal
+	StopLoss   decimal.Decimal
+	TakeProfit decimal.Decimal
+	Profit     decimal.Decimal
+	Commission decimal.Decimal
+	Swap       decimal.Decimal
+}
+
+// TradeEventType classifies the trade event.
+type TradeEventType int8
+
+const (
+	TradeFilled  TradeEventType = iota // order executed
+	TradeClosed                        // position closed
+	TradeModified                      // SL/TP modified
+	TradeCancelled                     // pending order cancelled
+)

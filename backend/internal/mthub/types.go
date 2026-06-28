@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 type Session struct {
@@ -121,8 +123,8 @@ type AccountProfitEvent struct {
 	UserID                                  string
 	Platform                                string
 	Status                                  string
-	Balance, Credit, Equity                 float64
-	Margin, FreeMargin, MarginLevel, Profit float64
+	Balance, Credit, Equity                 decimal.Decimal
+	Margin, FreeMargin, MarginLevel, Profit decimal.Decimal
 	ProfitPercent                           float64
 	Timestamp                               time.Time
 	Positions                               []AccountProfitPosition
@@ -131,9 +133,9 @@ type AccountProfitEvent struct {
 type AccountProfitPosition struct {
 	Ticket       int64
 	Symbol       string
-	Profit       float64
-	Volume       float64
-	CurrentPrice float64
+	Profit       decimal.Decimal
+	Volume       decimal.Decimal
+	CurrentPrice decimal.Decimal
 }
 
 type AccountProfitBroker struct {

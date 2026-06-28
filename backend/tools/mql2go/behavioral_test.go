@@ -20,7 +20,7 @@ type manualMAStrategy struct {
 	lotSize   decimal.Decimal
 	magic     int32
 	hedging   bool
-	maValue   float64
+	maValue   decimal.Decimal
 	prevClose decimal.Decimal
 }
 
@@ -46,7 +46,7 @@ func (s *manualMAStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error
 	s.maValue = ctx.Indicators().EMA(int(s.maPeriod), 1)
 	closeVal := ctx.Bars().Close(1)
 
-	if s.maValue > closeVal.InexactFloat64() && s.prevClose.LessThanOrEqual(closeVal) {
+	if s.maValue.GreaterThan(closeVal) && s.prevClose.LessThanOrEqual(closeVal) {
 		s.prevClose = closeVal
 		return &sdk.Signal{
 			Action:     sdk.ActionBuy,
@@ -56,7 +56,7 @@ func (s *manualMAStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error
 		}, nil
 	}
 
-	if s.maValue < closeVal.InexactFloat64() && s.prevClose.GreaterThanOrEqual(closeVal) {
+	if s.maValue.LessThan(closeVal) && s.prevClose.GreaterThanOrEqual(closeVal) {
 		s.prevClose = closeVal
 		return &sdk.Signal{
 			Action:     sdk.ActionSell,

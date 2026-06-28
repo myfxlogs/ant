@@ -62,20 +62,20 @@ func profitEventToProto(pev *mthub.AccountProfitEvent) *antv1.ProfitUpdateEvent 
 		orders = append(orders, &antv1.OrderProfitItem{
 			Ticket:       pos.Ticket,
 			Symbol:       pos.Symbol,
-			Profit:       strconv.FormatFloat(pos.Profit, 'f', -1, 64),
-			Volume:       strconv.FormatFloat(pos.Volume, 'f', -1, 64),
-			CurrentPrice: strconv.FormatFloat(pos.CurrentPrice, 'f', -1, 64),
+			Profit:       pos.Profit.String(),
+			Volume:       pos.Volume.String(),
+			CurrentPrice: pos.CurrentPrice.String(),
 		})
 	}
 	return &antv1.ProfitUpdateEvent{
 		AccountId:     pev.AccountID,
-		Balance:       strconv.FormatFloat(pev.Balance, 'f', -1, 64),
-		Credit:        strconv.FormatFloat(pev.Credit, 'f', -1, 64),
-		Equity:        strconv.FormatFloat(pev.Equity, 'f', -1, 64),
-		Profit:        strconv.FormatFloat(pev.Profit, 'f', -1, 64),
-		Margin:        strconv.FormatFloat(pev.Margin, 'f', -1, 64),
-		FreeMargin:    strconv.FormatFloat(pev.FreeMargin, 'f', -1, 64),
-		MarginLevel:   strconv.FormatFloat(pev.MarginLevel, 'f', -1, 64),
+		Balance:       pev.Balance.String(),
+		Credit:        pev.Credit.String(),
+		Equity:        pev.Equity.String(),
+		Profit:        pev.Profit.String(),
+		Margin:        pev.Margin.String(),
+		FreeMargin:    pev.FreeMargin.String(),
+		MarginLevel:   pev.MarginLevel.String(),
 		ProfitPercent: pev.ProfitPercent,
 		Orders:        orders,
 	}

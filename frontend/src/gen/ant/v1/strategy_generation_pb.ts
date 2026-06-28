@@ -117,7 +117,7 @@ export type GenerateStrategyChunk = Message<"ant.v1.GenerateStrategyChunk"> & {
   questions: string[];
 
   /**
-   * final generated Python code (generating or compliance phase)
+   * final generated strategy code (generating or compliance phase)
    *
    * @generated from field: string code = 4;
    */

@@ -12,7 +12,7 @@ message RunBacktestRequest {
   string symbol = 3;
   string timeframe = 4;
   map<string, string> parameters = 5;
-  double initial_capital = 6;
+  string initial_capital = 6;
   optional string dataset_id = 7;
 }
 

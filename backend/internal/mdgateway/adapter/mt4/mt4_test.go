@@ -693,8 +693,8 @@ func TestProfitRecvLoop_ReceivesUpdates(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		select {
 		case u := <-updates:
-			if u.Balance != 10000 {
-				t.Errorf("Balance = %f, want 10000", u.Balance)
+			if !u.Balance.Equal(decimal.NewFromInt(10000)) {
+				t.Errorf("Balance = %s, want 10000", u.Balance.String())
 			}
 		case <-timeout:
 			t.Fatalf("timeout waiting for profit updates, got %d", i)

@@ -9,17 +9,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/shopspring/decimal"
+
 	antv1 "anttrader/gen/proto/ant/v1"
 )
 
 // UserRiskConfig holds per-account limits set by the user via the frontend.
 type UserRiskConfig struct {
-	MaxLotSize         float64
+	MaxLotSize         decimal.Decimal
 	MaxPositions       int
-	MaxDailyLoss       float64
-	MaxDrawdownPercent float64
-	MaxRiskPercent     float64
-	DailyLossUsed      float64
+	MaxDailyLoss       decimal.Decimal
+	MaxDrawdownPercent decimal.Decimal
+	MaxRiskPercent     decimal.Decimal
+	DailyLossUsed      decimal.Decimal
 }
 
 // UserRiskConfigRule enforces per-account risk limits stored in the DB.
@@ -42,9 +44,9 @@ func (r *UserRiskConfigRule) Check(ctx context.Context, intent *antv1.OrderInten
 
 	vol := parseDecimal(intent.GetVolume())
 
-	if rc.MaxLotSize > 0 && vol > rc.MaxLotSize {
+	if rc.MaxLotSize.GreaterThan(decimal.Zero) && vol.GreaterThan(rc.MaxLotSize) {
 		return &RuleResult{Allowed: false, Reason: fmt.Sprintf(
-			"volume %.2f exceeds max lot size %.2f", vol, rc.MaxLotSize)}
+			"volume %s exceeds max lot size %s", vol.String(), rc.MaxLotSize.String())}
 	}
 
 	if rc.MaxPositions > 0 && state != nil {
@@ -55,34 +57,30 @@ func (r *UserRiskConfigRule) Check(ctx context.Context, intent *antv1.OrderInten
 		}
 	}
 
-	if rc.MaxDailyLoss > 0 {
-		dailyLoss, _ := state.DailyPnL.Float64()
-		if dailyLoss < -rc.MaxDailyLoss {
+	if rc.MaxDailyLoss.GreaterThan(decimal.Zero) {
+		if state.DailyPnL.LessThan(rc.MaxDailyLoss.Neg()) {
 			return &RuleResult{Allowed: false, Reason: fmt.Sprintf(
-				"daily loss %.2f exceeds limit %.2f", -dailyLoss, rc.MaxDailyLoss)}
+				"daily loss %s exceeds limit %s", state.DailyPnL.String(), rc.MaxDailyLoss.String())}
 		}
 	}
 
-	if rc.MaxDrawdownPercent > 0 && state != nil {
-		peak, _ := state.PeakEquity.Float64()
-		equity, _ := state.Equity.Float64()
-		if peak > 0 {
-			dd := (peak - equity) / peak * 100
-			if dd > rc.MaxDrawdownPercent {
+	if rc.MaxDrawdownPercent.GreaterThan(decimal.Zero) && state != nil {
+		if state.PeakEquity.GreaterThan(decimal.Zero) {
+			dd := state.PeakEquity.Sub(state.Equity).Div(state.PeakEquity).Mul(decimal.NewFromInt(100))
+			if dd.GreaterThan(rc.MaxDrawdownPercent) {
 				return &RuleResult{Allowed: false, Reason: fmt.Sprintf(
-					"drawdown %.1f%% exceeds limit %.1f%%", dd, rc.MaxDrawdownPercent)}
+					"drawdown %s%% exceeds limit %s%%", dd.String(), rc.MaxDrawdownPercent.String())}
 			}
 		}
 	}
 
-	if rc.MaxRiskPercent > 0 && state != nil {
-		equity, _ := state.Equity.Float64()
+	if rc.MaxRiskPercent.GreaterThan(decimal.Zero) && state != nil {
 		price := parseDecimal(intent.GetPrice())
-		if equity > 0 && price > 0 {
-			pct := vol * price / equity * 100
-			if pct > rc.MaxRiskPercent {
+		if state.Equity.GreaterThan(decimal.Zero) && price.GreaterThan(decimal.Zero) {
+			pct := vol.Mul(price).Div(state.Equity).Mul(decimal.NewFromInt(100))
+			if pct.GreaterThan(rc.MaxRiskPercent) {
 				return &RuleResult{Allowed: false, Reason: fmt.Sprintf(
-					"risk per trade %.1f%% exceeds limit %.1f%%", pct, rc.MaxRiskPercent)}
+					"risk per trade %s%% exceeds limit %s%%", pct.String(), rc.MaxRiskPercent.String())}
 			}
 		}
 	}

@@ -4,18 +4,9 @@ import (
 	"log"
 	"sync"
 	"time"
-)
 
-// Precision note: financial fields in SSE push types (PositionSnapshot, BarUpdate)
-// use float64 for display efficiency. These are real-time visual updates, NOT used
-// for trading calculations or persistent storage. For price-sensitive operations:
-//   - Trading execution: uses decimal.Decimal (mthub/service.go PlaceOrder)
-//   - Persistent storage: PG NUMERIC(20,8) / CH Decimal(18,6)
-//   - Backtest computation: decimal.Decimal (Go)
-// float64 provides ~15 significant digits — sufficient for Forex price display
-// (typical quote: 1.12345 has 6 significant digits, well within safe range).
-// Cumulative rounding errors could appear for large trade counts (>10^6) shown
-// in position summaries; use PG/CH for authoritative P&L computation.
+	"github.com/shopspring/decimal"
+)
 
 // --- Position snapshots (full OpenedOrders list from OnOrderUpdate) ---
 
@@ -24,13 +15,13 @@ type PositionSnapshot struct {
 	AccountID   string
 	UserID      string
 	Platform    string
-	Balance     float64
-	Credit      float64
-	Equity      float64
-	Margin      float64
-	FreeMargin  float64
-	MarginLevel float64
-	Profit      float64
+	Balance     decimal.Decimal
+	Credit      decimal.Decimal
+	Equity      decimal.Decimal
+	Margin      decimal.Decimal
+	FreeMargin  decimal.Decimal
+	MarginLevel decimal.Decimal
+	Profit      decimal.Decimal
 	Positions   []PositionSnapshotItem
 }
 
@@ -38,14 +29,14 @@ type PositionSnapshotItem struct {
 	Ticket       int64
 	Symbol       string
 	Type         string
-	Volume       float64
-	OpenPrice    float64
-	CurrentPrice float64
-	StopLoss     float64
-	TakeProfit   float64
-	Profit       float64
-	Swap         float64
-	Commission   float64
+	Volume       decimal.Decimal
+	OpenPrice    decimal.Decimal
+	CurrentPrice decimal.Decimal
+	StopLoss     decimal.Decimal
+	TakeProfit   decimal.Decimal
+	Profit       decimal.Decimal
+	Swap         decimal.Decimal
+	Commission   decimal.Decimal
 	Comment      string
 	OpenTime     int64
 }
@@ -100,12 +91,12 @@ type BarUpdate struct {
 	Symbol    string
 	Period    string
 	OpenTime  int64 // unix milliseconds
-	Open      float64
-	High      float64
-	Low       float64
-	Close     float64
-	Bid       float64 // latest bid for real-time quote display
-	Ask       float64 // latest ask for real-time quote display
+	Open      decimal.Decimal
+	High      decimal.Decimal
+	Low       decimal.Decimal
+	Close     decimal.Decimal
+	Bid       decimal.Decimal // latest bid for real-time quote display
+	Ask       decimal.Decimal // latest ask for real-time quote display
 	Volume    float64
 	Closed    bool // true=finalized bar, false=in-progress candle
 }

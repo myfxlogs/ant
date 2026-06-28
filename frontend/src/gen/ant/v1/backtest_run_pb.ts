@@ -71,6 +71,8 @@ export type BacktestRun = Message<"ant.v1.BacktestRun"> & {
   error: string;
 
   /**
+   * legacy: Python engine version, now unused (see ADR-0021)
+   *
    * @generated from field: optional string python_service_version = 11;
    */
   pythonServiceVersion?: string | undefined;

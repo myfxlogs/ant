@@ -1,8 +1,6 @@
 package autotrading
 
 import (
-	"strconv"
-
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -20,11 +18,11 @@ func globalSettingsToProto(gs *model.GlobalSettings) *antv1.GlobalSettings {
 		Id:                 gs.ID.String(),
 		UserId:             gs.UserID.String(),
 		AutoTradeEnabled:   gs.AutoTradeEnabled,
-		MaxRiskPercent:     gs.MaxRiskPercent,
+		MaxRiskPercent:     gs.MaxRiskPercent.String(),
 		MaxPositions:       int32(gs.MaxPositions),
-		MaxLotSize:         strconv.FormatFloat(gs.MaxLotSize, 'f', -1, 64),
+		MaxLotSize:         gs.MaxLotSize.String(),
 		MaxDailyLoss:       gs.MaxDailyLoss.String(),
-		MaxDrawdownPercent: gs.MaxDrawdownPercent,
+		MaxDrawdownPercent: gs.MaxDrawdownPercent.String(),
 		CreatedAt:          timestamppb.New(gs.CreatedAt),
 		UpdatedAt:          timestamppb.New(gs.UpdatedAt),
 	}
@@ -32,11 +30,11 @@ func globalSettingsToProto(gs *model.GlobalSettings) *antv1.GlobalSettings {
 
 func applyGlobalSettings(existing *model.GlobalSettings, req *antv1.UpdateGlobalSettingsRequest) {
 	existing.AutoTradeEnabled = req.GetAutoTradeEnabled()
-	existing.MaxRiskPercent = req.GetMaxRiskPercent()
+	existing.MaxRiskPercent = decimal.RequireFromString(req.GetMaxRiskPercent())
 	existing.MaxPositions = int(req.GetMaxPositions())
-	existing.MaxLotSize, _ = strconv.ParseFloat(req.GetMaxLotSize(), 64)
+	existing.MaxLotSize = decimal.RequireFromString(req.GetMaxLotSize())
 	existing.MaxDailyLoss = decimal.RequireFromString(req.GetMaxDailyLoss())
-	existing.MaxDrawdownPercent = req.GetMaxDrawdownPercent()
+	existing.MaxDrawdownPercent = decimal.RequireFromString(req.GetMaxDrawdownPercent())
 }
 
 // --- RiskConfig ---
@@ -49,11 +47,11 @@ func riskConfigToProto(rc *model.RiskConfig) *antv1.RiskConfig {
 		Id:                 rc.ID.String(),
 		UserId:             rc.UserID.String(),
 		AccountId:          rc.AccountID.String(),
-		MaxRiskPercent:     rc.MaxRiskPercent,
-		MaxLotSize:         strconv.FormatFloat(rc.MaxLotSize, 'f', -1, 64),
+		MaxRiskPercent:     rc.MaxRiskPercent.String(),
+		MaxLotSize:         rc.MaxLotSize.String(),
 		MaxDailyLoss:       rc.MaxDailyLoss.String(),
 		DailyLossUsed:      rc.DailyLossUsed.String(),
-		MaxDrawdownPercent: rc.MaxDrawdownPercent,
+		MaxDrawdownPercent: rc.MaxDrawdownPercent.String(),
 		MaxPositions:       int32(rc.MaxPositions),
 		CreatedAt:          timestamppb.New(rc.CreatedAt),
 		UpdatedAt:          timestamppb.New(rc.UpdatedAt),
@@ -61,10 +59,10 @@ func riskConfigToProto(rc *model.RiskConfig) *antv1.RiskConfig {
 }
 
 func applyRiskConfig(existing *model.RiskConfig, req *antv1.UpdateRiskConfigRequest) {
-	existing.MaxRiskPercent = req.GetMaxRiskPercent()
-	existing.MaxLotSize, _ = strconv.ParseFloat(req.GetMaxLotSize(), 64)
+	existing.MaxRiskPercent = decimal.RequireFromString(req.GetMaxRiskPercent())
+	existing.MaxLotSize = decimal.RequireFromString(req.GetMaxLotSize())
 	existing.MaxDailyLoss = decimal.RequireFromString(req.GetMaxDailyLoss())
-	existing.MaxDrawdownPercent = req.GetMaxDrawdownPercent()
+	existing.MaxDrawdownPercent = decimal.RequireFromString(req.GetMaxDrawdownPercent())
 	existing.MaxPositions = int(req.GetMaxPositions())
 }
 

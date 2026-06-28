@@ -96,17 +96,17 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 			var updateTicket int64
 			var updateType string
 			var updateSymbol string
-			var updateVolume float64
-			var updateOpenPrice float64
-			var updateClosePrice float64
-			var updateProfit float64
-			var updateSwap float64
-			var updateCommission float64
+			var updateVolume decimal.Decimal
+			var updateOpenPrice decimal.Decimal
+			var updateClosePrice decimal.Decimal
+			var updateProfit decimal.Decimal
+			var updateSwap decimal.Decimal
+			var updateCommission decimal.Decimal
 			var updateComment string
 			var updateOpenTime int64
 			var updateCloseTime int64
-			var updateSL float64
-			var updateTP float64
+			var updateSL decimal.Decimal
+			var updateTP decimal.Decimal
 			var updateOrderType string
 			if update != nil && update.GetOrder() != nil {
 				o := update.GetOrder()
@@ -114,17 +114,17 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 				updateType = mt5UpdateTypeLabel(update.GetType())
 				updateOrderType = mt5OrderTypeLabel(o.GetOrderType())
 				updateSymbol = o.GetSymbol()
-				updateVolume = o.GetLots()
-				updateOpenPrice = o.GetOpenPrice()
-				updateClosePrice = o.GetClosePrice()
-				updateProfit = o.GetProfit()
-				updateSwap = o.GetSwap()
-				updateCommission = o.GetCommission()
+				updateVolume = decimal.NewFromFloat(o.GetLots())
+				updateOpenPrice = decimal.NewFromFloat(o.GetOpenPrice())
+				updateClosePrice = decimal.NewFromFloat(o.GetClosePrice())
+				updateProfit = decimal.NewFromFloat(o.GetProfit())
+				updateSwap = decimal.NewFromFloat(o.GetSwap())
+				updateCommission = decimal.NewFromFloat(o.GetCommission())
 				updateComment = o.GetComment()
 				updateOpenTime = o.GetOpenTime().GetSeconds()
 				updateCloseTime = o.GetCloseTime().GetSeconds()
-				updateSL = o.GetStopLoss()
-				updateTP = o.GetTakeProfit()
+				updateSL = decimal.NewFromFloat(o.GetStopLoss())
+				updateTP = decimal.NewFromFloat(o.GetTakeProfit())
 			}
 
 			// Convert OpenedOrders to mdtick format.
@@ -134,14 +134,14 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 					Ticket:       o.GetTicket(),
 					Symbol:       o.GetSymbol(),
 					Type:         mt5OrderTypeLabel(o.GetOrderType()),
-					Volume:       o.GetLots(),
-					OpenPrice:    o.GetOpenPrice(),
-					CurrentPrice: o.GetClosePrice(),
-					StopLoss:     o.GetStopLoss(),
-					TakeProfit:   o.GetTakeProfit(),
-					Profit:       o.GetProfit(),
-					Swap:         o.GetSwap(),
-					Commission:   o.GetCommission(),
+					Volume:       decimal.NewFromFloat(o.GetLots()),
+					OpenPrice:    decimal.NewFromFloat(o.GetOpenPrice()),
+					CurrentPrice: decimal.NewFromFloat(o.GetClosePrice()),
+					StopLoss:     decimal.NewFromFloat(o.GetStopLoss()),
+					TakeProfit:   decimal.NewFromFloat(o.GetTakeProfit()),
+					Profit:       decimal.NewFromFloat(o.GetProfit()),
+					Swap:         decimal.NewFromFloat(o.GetSwap()),
+					Commission:   decimal.NewFromFloat(o.GetCommission()),
 					Comment:      o.GetComment(),
 					OpenTime:     o.GetOpenTime().GetSeconds(),
 				})
@@ -174,13 +174,13 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 				UpdateCloseTime:  updateCloseTime,
 				UpdateSL:         updateSL,
 				UpdateTP:         updateTP,
-				Balance:          balance,
-				Credit:           0, // MT5 OrderUpdateSummary lacks GetCredit; credit arrives via OnAccountProfit stream
-				Equity:           s.GetEquity(),
-				Margin:           s.GetMargin(),
-				FreeMargin:       s.GetFreeMargin(),
-				MarginLevel:      s.GetMarginLevel(),
-				Profit:           profitD.InexactFloat64(),
+				Balance:          balanceD,
+				Credit:           decimal.Zero, // MT5 OrderUpdateSummary lacks GetCredit; credit arrives via OnAccountProfit stream
+				Equity:           equityD,
+				Margin:           decimal.NewFromFloat(s.GetMargin()),
+				FreeMargin:       decimal.NewFromFloat(s.GetFreeMargin()),
+				MarginLevel:      decimal.NewFromFloat(s.GetMarginLevel()),
+				Profit:           profitD,
 				ProfitPercent:    profitPct,
 				Positions:        positions,
 			})

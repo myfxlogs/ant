@@ -2,7 +2,6 @@ package strategy
 
 import (
 	"context"
-	"strconv"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -62,7 +61,7 @@ func (s *StrategyServer) ExecuteSignal(
 	}
 	resp := &antv1.ExecuteSignalResponse{
 		Ticket: row.Ticket, Symbol: row.Symbol,
-		Type: row.SignalType, Volume: strconv.FormatFloat(row.Volume, 'f', -1, 64), Price: strconv.FormatFloat(row.Price, 'f', -1, 64),
+		Type: row.SignalType, Volume: row.Volume.String(), Price: row.Price.String(),
 	}
 	if row.ExecutedAt != nil {
 		resp.ExecutedAt = timestamppb.New(*row.ExecutedAt)
@@ -106,10 +105,10 @@ func signalRowToProto(r *service.SignalRow) *antv1.StrategySignal {
 		AccountId:      r.AccountID.String(),
 		Symbol:         r.Symbol,
 		SignalType:     r.SignalType,
-		Volume:         strconv.FormatFloat(r.Volume, 'f', -1, 64),
-		Price:          strconv.FormatFloat(r.Price, 'f', -1, 64),
-		StopLoss:       strconv.FormatFloat(r.StopLoss, 'f', -1, 64),
-		TakeProfit:     strconv.FormatFloat(r.TakeProfit, 'f', -1, 64),
+		Volume:         r.Volume.String(),
+		Price:          r.Price.String(),
+		StopLoss:       r.StopLoss.String(),
+		TakeProfit:     r.TakeProfit.String(),
 		Reason:         r.Reason,
 		Status:         r.Status,
 		ExecutedTicket: r.Ticket,

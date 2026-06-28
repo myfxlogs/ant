@@ -74,6 +74,7 @@ type ExecutionModel struct {
 	TimeframeFilter   string
 	RequireAccount    bool
 	RequireOnTrade    bool
+	HasBarGuard       bool // true if OnTick/start() checks Volume[0]>1 (new bar guard)
 }
 
 // ── State ──────────────────────────────────────────────────────────

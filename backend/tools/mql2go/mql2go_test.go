@@ -1,6 +1,8 @@
 package mql2go
 
 import (
+	"go/parser"
+	"go/token"
 	"strings"
 	"testing"
 )
@@ -545,15 +547,11 @@ void OnTick() {}
 		}
 	}
 
-	// Should have indicator_stub blind spots
-	stubCount := 0
+	// All indicators now have SDK IndicatorSet method definitions — no stub blind spots expected.
 	for _, bs := range intent.BlindSpots {
 		if bs.Category == "indicator_stub" {
-			stubCount++
+			t.Errorf("should not have indicator_stub blind spot for %s — SDK method exists", bs.ID)
 		}
-	}
-	if stubCount == 0 {
-		t.Error("expected at least one indicator_stub blind spot")
 	}
 }
 
@@ -686,6 +684,7 @@ void OnTick() {
 
 func TestAnalyze_MQL5NewIndicators(t *testing.T) {
 	source := `
+#include <Trade\Trade.mqh>
 int amaHandle = iAMA(NULL, 0, 14, 2, 30, 0, PRICE_CLOSE, 1);
 int demaHandle = iDEMA(NULL, 0, 14, 0, PRICE_CLOSE, 1);
 int temaHandle = iTEMA(NULL, 0, 14, 0, PRICE_CLOSE, 1);
@@ -701,6 +700,9 @@ void OnTick() {}
 	if err != nil {
 		t.Fatalf("Analyze failed: %v", err)
 	}
+	if intent.Meta.MQLVersion != "mql5" {
+		t.Fatalf("expected MQL5 version, got %s", intent.Meta.MQLVersion)
+	}
 
 	expectedMethods := []string{"ama", "dema", "tema", "frama", "vidya", "trix", "adx_wilder", "chaikin", "volumes"}
 	for _, method := range expectedMethods {
@@ -713,6 +715,32 @@ void OnTick() {}
 		}
 		if !found {
 			t.Errorf("expected indicator %s in intent.Indicators", method)
+		}
+	}
+}
+
+func TestAnalyze_MQL5IndicatorsNotInMQL4(t *testing.T) {
+	source := `
+int amaHandle = iAMA(NULL, 0, 14, 2, 30, 0, PRICE_CLOSE, 1);
+int demaHandle = iDEMA(NULL, 0, 14, 0, PRICE_CLOSE, 1);
+int volHandle = iVolumes(NULL, 0, PRICE_CLOSE, 1);
+void OnTick() {}
+`
+	intent, err := Analyze(source)
+	if err != nil {
+		t.Fatalf("Analyze failed: %v", err)
+	}
+	if intent.Meta.MQLVersion != "mql4" {
+		t.Fatalf("expected MQL4 version, got %s", intent.Meta.MQLVersion)
+	}
+
+	// MQL5-only indicators should NOT be recognized in MQL4 source
+	forbiddenMethods := []string{"ama", "dema", "tema", "frama", "vidya", "trix", "adx_wilder", "chaikin", "volumes"}
+	for _, method := range forbiddenMethods {
+		for _, ind := range intent.Indicators {
+			if ind.SDKMethod == method {
+				t.Errorf("MQL5-only indicator %s should NOT be recognized in MQL4 source", method)
+			}
 		}
 	}
 }
@@ -798,5 +826,278 @@ void OnTick() { OrderSend(Symbol(), OP_BUY, 0.1, Ask, 5, 0, 0, "", X, 0, clrGree
 
 	for i := 0; i < len(sources)*3; i++ {
 		<-done
+	}
+}
+
+func TestGenerate_ParsesAsValidGo(t *testing.T) {
+	sources := []struct {
+		name    string
+		source  string
+		strategy string
+	}{
+		{"MQL4_EA", sampleMQL4EA, "TestMQL4"},
+		{"MQL5_EA", sampleMQL5EA, "TestMQL5"},
+		{"MQL4_OrderSelect", `
+extern int Magic = 100;
+void OnTick() {
+    for (int i = OrdersTotal() - 1; i >= 0; i--) {
+        if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES)) {
+            if (OrderMagicNumber() == Magic) {
+                OrderClose(OrderTicket(), OrderLots(), Bid, 5);
+            }
+        }
+    }
+}
+`, "TestOrderLoop"},
+		{"MQL5_PositionLoop", `
+#include <Trade\Trade.mqh>
+CTrade trade;
+input int Magic = 100;
+void OnTick() {
+    for (int i = PositionsTotal() - 1; i >= 0; i--) {
+        ulong ticket = PositionGetTicket(i);
+        if (PositionGetInteger(POSITION_MAGIC) == Magic) {
+            trade.PositionClose(ticket);
+        }
+    }
+}
+`, "TestPosLoop"},
+	}
+
+	for _, tc := range sources {
+		t.Run(tc.name, func(t *testing.T) {
+			intent, err := Analyze(tc.source)
+			if err != nil {
+				t.Fatalf("Analyze failed: %v", err)
+			}
+			intent.Meta.Name = tc.strategy
+			code := Generate(intent)
+
+			fset := token.NewFileSet()
+			_, err = parser.ParseFile(fset, "generated.go", code, parser.AllErrors)
+			if err != nil {
+				t.Errorf("generated code does not parse as valid Go: %v\n--- code ---\n%s", err, code)
+			}
+		})
+	}
+}
+
+func TestGenerate_OrderLoopCode(t *testing.T) {
+	source := `
+extern int Magic = 100;
+void OnTick() {
+    for (int i = OrdersTotal() - 1; i >= 0; i--) {
+        if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES)) {
+            if (OrderMagicNumber() == Magic && OrderSymbol() == Symbol()) {
+                OrderClose(OrderTicket(), OrderLots(), Bid, 5);
+            }
+        }
+    }
+}
+`
+	intent, err := Analyze(source)
+	if err != nil {
+		t.Fatalf("Analyze failed: %v", err)
+	}
+	intent.Meta.Name = "OrderLoopTest"
+	code := Generate(intent)
+
+	if !strings.Contains(code, "MQL4 order iteration") {
+		t.Error("expected MQL4 order iteration comment in generated code")
+	}
+	if !strings.Contains(code, "ctx.Broker().Positions(s.magic)") {
+		t.Error("expected Positions iteration in generated code")
+	}
+	if !strings.Contains(code, "PositionClose") {
+		t.Error("expected PositionClose call in generated code")
+	}
+	if !strings.Contains(code, "pos.Symbol != ctx.Symbol()") {
+		t.Error("expected symbol filter in generated order loop code")
+	}
+}
+
+func TestGenerate_PositionLoopCode(t *testing.T) {
+	source := `
+#include <Trade\Trade.mqh>
+CTrade trade;
+input int Magic = 100;
+void OnTick() {
+    for (int i = PositionsTotal() - 1; i >= 0; i--) {
+        ulong ticket = PositionGetTicket(i);
+        if (PositionGetInteger(POSITION_MAGIC) == Magic) {
+            if (PositionGetString(POSITION_SYMBOL) == Symbol()) {
+                trade.PositionClose(ticket);
+            }
+        }
+    }
+}
+`
+	intent, err := Analyze(source)
+	if err != nil {
+		t.Fatalf("Analyze failed: %v", err)
+	}
+	intent.Meta.Name = "PosLoopTest"
+	code := Generate(intent)
+
+	if !strings.Contains(code, "MQL5 position iteration") {
+		t.Error("expected MQL5 position iteration comment in generated code")
+	}
+	if !strings.Contains(code, "ctx.Broker().Positions(s.magic)") {
+		t.Error("expected Positions iteration in generated code")
+	}
+	if !strings.Contains(code, "PositionClose") {
+		t.Error("expected PositionClose call in generated code")
+	}
+}
+
+func TestGenerate_BlindSpotComments(t *testing.T) {
+	source := `
+double OnTester() { return 0.0; }
+void OnTick() {
+    double v = iCustom(NULL, 0, "MyInd", 14, 0, 1);
+}
+`
+	intent, err := Analyze(source)
+	if err != nil {
+		t.Fatalf("Analyze failed: %v", err)
+	}
+	intent.Meta.Name = "BlindSpotTest"
+	code := Generate(intent)
+
+	if !strings.Contains(code, "Blind spots detected") {
+		t.Error("expected blind spots header comment in generated code")
+	}
+	if !strings.Contains(code, "custom_indicator") {
+		t.Error("expected custom_indicator blind spot in generated code")
+	}
+}
+
+func TestGenerate_RiskCheckCode(t *testing.T) {
+	source := `
+extern int MagicNumber = 12345;
+extern double LotSize = 0.1;
+extern int MAPeriod = 14;
+void OnTick() {
+    double ma = iMA(NULL, 0, MAPeriod, 0, MODE_EMA, PRICE_CLOSE, 1);
+    if (ma > Close[1]) {
+        OrderSend(Symbol(), OP_BUY, LotSize, Ask, 5, 0, 0, "Buy", MagicNumber, 0, clrGreen);
+    }
+}
+`
+	intent, err := Analyze(source)
+	if err != nil {
+		t.Fatalf("Analyze failed: %v", err)
+	}
+	intent.Meta.Name = "RiskTest"
+	code := Generate(intent)
+
+	fset := token.NewFileSet()
+	_, err = parser.ParseFile(fset, "risk.go", code, parser.AllErrors)
+	if err != nil {
+		t.Errorf("generated code does not parse: %v\n%s", err, code)
+	}
+}
+
+func TestGenerate_EndToEnd_MQL4(t *testing.T) {
+	source := `
+extern int MagicNumber = 12345;
+extern double LotSize = 0.1;
+extern int MAPeriod = 14;
+extern double StopLoss = 50;
+extern double TakeProfit = 100;
+double maValue;
+int OnInit() { return 0; }
+void OnTick() {
+    maValue = iMA(NULL, 0, MAPeriod, 0, MODE_EMA, PRICE_CLOSE, 1);
+    if (maValue > Close[1]) {
+        OrderSend(Symbol(), OP_BUY, LotSize, Ask, 5, Ask - StopLoss * Point, Ask + TakeProfit * Point, "Buy", MagicNumber, 0, clrGreen);
+    }
+    if (maValue < Close[1]) {
+        OrderSend(Symbol(), OP_SELL, LotSize, Bid, 5, Bid + StopLoss * Point, Bid - TakeProfit * Point, "Sell", MagicNumber, 0, clrRed);
+    }
+}
+`
+	intent, err := Analyze(source)
+	if err != nil {
+		t.Fatalf("Analyze failed: %v", err)
+	}
+	intent.Meta.Name = "E2EMQL4"
+	code := Generate(intent)
+
+	// Verify time series conversion
+	if !strings.Contains(code, "ctx.Bars().Close(1)") {
+		t.Error("expected Close[1] → ctx.Bars().Close(1)")
+	}
+	// Verify Point conversion
+	if !strings.Contains(code, "ctx.Point()") {
+		t.Error("expected Point → ctx.Point()")
+	}
+	// Verify Ask/Bid conversion
+	if !strings.Contains(code, "ctx.Ask()") {
+		t.Error("expected Ask → ctx.Ask()")
+	}
+	// Verify int cast for indicator params
+	if !strings.Contains(code, "int(s.MAPeriod)") {
+		t.Error("expected int(s.MAPeriod) cast for indicator parameter")
+	}
+	// Verify it parses as valid Go
+	fset := token.NewFileSet()
+	_, err = parser.ParseFile(fset, "e2e_mql4.go", code, parser.AllErrors)
+	if err != nil {
+		t.Errorf("generated MQL4 code does not parse: %v\n%s", err, code)
+	}
+}
+
+func TestGenerate_EndToEnd_MQL5(t *testing.T) {
+	source := `
+#include <Trade\Trade.mqh>
+CTrade trade;
+input int MagicNumber = 12345;
+input double LotSize = 0.1;
+input int MAPeriod = 14;
+input double StopLoss = 50;
+input double TakeProfit = 100;
+double maValue;
+
+int OnInit() { return 0; }
+
+void OnTick() {
+    maValue = iMA(NULL, 0, MAPeriod, 0, MODE_EMA, PRICE_CLOSE, 1);
+    if (maValue > Close[1]) {
+        trade.Buy(LotSize, _Symbol, 0, Ask - StopLoss * _Point, Ask + TakeProfit * _Point, "Buy");
+    }
+}
+`
+	intent, err := Analyze(source)
+	if err != nil {
+		t.Fatalf("Analyze failed: %v", err)
+	}
+	intent.Meta.Name = "E2EMQL5"
+	code := Generate(intent)
+
+	// Verify input params are correctly typed (not string)
+	if strings.Contains(code, "MAPeriod string") {
+		t.Error("MAPeriod should be int32, not string — input type extraction failed")
+	}
+	if strings.Contains(code, "LotSize string") {
+		t.Error("LotSize should be decimal.Decimal, not string — input type extraction failed")
+	}
+	// Verify _Point conversion
+	if !strings.Contains(code, "ctx.Point()") {
+		t.Error("expected _Point → ctx.Point()")
+	}
+	// Verify _Symbol conversion
+	if strings.Contains(code, "_Symbol") {
+		t.Error("expected _Symbol to be converted to ctx.Symbol()")
+	}
+	// Verify time series conversion
+	if !strings.Contains(code, "ctx.Bars().Close(1)") {
+		t.Error("expected Close[1] → ctx.Bars().Close(1)")
+	}
+	// Verify it parses as valid Go
+	fset := token.NewFileSet()
+	_, err = parser.ParseFile(fset, "e2e_mql5.go", code, parser.AllErrors)
+	if err != nil {
+		t.Errorf("generated MQL5 code does not parse: %v\n%s", err, code)
 	}
 }

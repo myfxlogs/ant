@@ -2,10 +2,9 @@ package strategy
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 	"time"
 	"google.golang.org/protobuf/proto"
-	"fmt"
 	"strings"
 
 	"connectrpc.com/connect"
@@ -247,20 +246,32 @@ func scheduleParamsToProto(params map[string]string) []byte {
 	if len(params) == 0 {
 		return []byte("{}")
 	}
-	b, err := json.Marshal(params)
-	if err != nil {
-		return []byte("{}")
+	var b strings.Builder
+	b.WriteByte('{')
+	first := true
+	for k, v := range params {
+		if !first {
+			b.WriteByte(',')
+		}
+		first = false
+		b.WriteString(fmt.Sprintf(`"%s":"%s"`, k, v))
 	}
-	return b
+	b.WriteByte('}')
+	return []byte(b.String())
 }
 
 func stringListToProto(list []string) []byte {
 	if len(list) == 0 {
 		return []byte("[]")
 	}
-	b, err := json.Marshal(list)
-	if err != nil {
-		return []byte("[]")
+	var b strings.Builder
+	b.WriteByte('[')
+	for i, s := range list {
+		if i > 0 {
+			b.WriteByte(',')
+		}
+		b.WriteString(fmt.Sprintf(`"%s"`, s))
 	}
-	return b
+	b.WriteByte(']')
+	return []byte(b.String())
 }

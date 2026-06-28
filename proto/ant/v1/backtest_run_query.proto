@@ -15,7 +15,7 @@ message GetBacktestRunRequest {
 message GetBacktestRunResponse {
   BacktestRun run = 1;
   BacktestMetrics metrics = 2;
-  repeated double equity_curve = 3;
+  repeated string equity_curve = 3;
   optional string dataset_id = 4;
   BacktestRisk risk = 5;
   ExecutionAssumptions execution_assumptions = 6;
@@ -28,7 +28,7 @@ message WatchBacktestRunRequest {
 message BacktestRunUpdate {
   BacktestRun run = 1;
   BacktestMetrics metrics = 2;
-  repeated double equity_curve = 3;
+  repeated string equity_curve = 3;
   BacktestRisk risk = 4;
   ExecutionAssumptions execution_assumptions = 5;
 }

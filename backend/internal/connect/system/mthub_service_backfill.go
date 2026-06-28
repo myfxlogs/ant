@@ -114,7 +114,7 @@ func (s *MtHubServer) backfillKlines(accountID, rawSymbol string) {
 					High:          b.High,
 					Low:           b.Low,
 					Close:         b.Close,
-					Volume:        b.Volume,
+					Volume:        b.Volume.InexactFloat64(),
 				}
 			}
 
@@ -203,7 +203,7 @@ func (s *MtHubServer) brokerFallback(
 			High:          b.High,
 			Low:           b.Low,
 			Close:         b.Close,
-			Volume:        b.Volume,
+			Volume:        b.Volume.InexactFloat64(),
 		})
 	}
 	return out

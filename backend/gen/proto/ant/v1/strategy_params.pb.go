@@ -25,7 +25,7 @@ const (
 // Replaces the JSONB parameter_overrides column and strategy_params_json string.
 type StrategyParams struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Values        map[string]float64     `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"fixed64,2,opt,name=value"`
+	Values        map[string]string      `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -60,7 +60,7 @@ func (*StrategyParams) Descriptor() ([]byte, []int) {
 	return file_strategy_params_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *StrategyParams) GetValues() map[string]float64 {
+func (x *StrategyParams) GetValues() map[string]string {
 	if x != nil {
 		return x.Values
 	}
@@ -208,7 +208,7 @@ func (x *ParameterSpace) GetParams() []*ParameterDef {
 // CandidateParameters holds the parameter values for a single experiment candidate.
 type CandidateParameters struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Values        map[string]float64     `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"fixed64,2,opt,name=value"`
+	Values        map[string]string      `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -243,7 +243,7 @@ func (*CandidateParameters) Descriptor() ([]byte, []int) {
 	return file_strategy_params_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *CandidateParameters) GetValues() map[string]float64 {
+func (x *CandidateParameters) GetValues() map[string]string {
 	if x != nil {
 		return x.Values
 	}
@@ -458,7 +458,7 @@ const file_strategy_params_proto_rawDesc = "" +
 	"\x06values\x18\x01 \x03(\v2\".ant.v1.StrategyParams.ValuesEntryR\x06values\x1a9\n" +
 	"\vValuesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\"\xad\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xad\x01\n" +
 	"\fParameterDef\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12#\n" +
@@ -473,7 +473,7 @@ const file_strategy_params_proto_rawDesc = "" +
 	"\x06values\x18\x01 \x03(\v2'.ant.v1.CandidateParameters.ValuesEntryR\x06values\x1a9\n" +
 	"\vValuesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\"\x99\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x99\x01\n" +
 	"\x0fScoreComponents\x12G\n" +
 	"\n" +
 	"components\x18\x01 \x03(\v2'.ant.v1.ScoreComponents.ComponentsEntryR\n" +

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
@@ -392,13 +393,13 @@ func (s *MarketplaceServer) RunMarketBacktest(ctx context.Context, req *connect.
 		Timeframe:      m.Timeframe,
 		StartDateMs:    m.StartDateMs,
 		EndDateMs:      m.EndDateMs,
-		InitialCapital: parseFloat64(m.InitialCapital),
+		InitialCapital: parseDecimal(m.InitialCapital),
 		TradeDirection: dir,
 	}
 	if m.ExecutionConfig != nil {
-		params.Commission = m.ExecutionConfig.Commission
-		params.Slippage = m.ExecutionConfig.Slippage
-		params.Leverage = m.ExecutionConfig.Leverage
+		params.Commission = parseDecimal(m.ExecutionConfig.Commission)
+		params.Slippage = parseDecimal(m.ExecutionConfig.Slippage)
+		params.Leverage = parseDecimal(m.ExecutionConfig.Leverage)
 	}
 	runID, err := s.svc.StartMarketBacktest(ctx, params)
 	if err != nil {
@@ -421,4 +422,12 @@ func (s *MarketplaceServer) RunMarketBacktest(ctx context.Context, req *connect.
 func parseFloat64(s string) float64 {
 	f, _ := strconv.ParseFloat(s, 64)
 	return f
+}
+
+func parseDecimal(s string) decimal.Decimal {
+	d, err := decimal.NewFromString(s)
+	if err != nil {
+		return decimal.Zero
+	}
+	return d
 }

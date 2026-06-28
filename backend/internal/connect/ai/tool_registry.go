@@ -162,7 +162,7 @@ func (t *detectRegimeTool) Run(ctx context.Context, in ToolInput) ToolOutput {
 func detectRegimeFromBars(bars []repository.KlineBar) string {
 	if len(bars) < 20 { return "unknown" }
 	closes := make([]float64, len(bars))
-	for i, b := range bars { closes[i] = b.Close }
+	for i, b := range bars { closes[i] = b.Close.InexactFloat64() }
 
 	// Simple trend detection: linear regression slope
 	n := float64(len(closes))

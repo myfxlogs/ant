@@ -825,8 +825,8 @@ func TestProfitRecvLoop_ReceivesUpdates(t *testing.T) {
 	for i := 0; i < 3; i++ { // initial fetch + 2 stream frames
 		select {
 		case u := <-updates:
-			if u.Balance != 10000 {
-				t.Errorf("Balance = %f, want 10000", u.Balance)
+			if !u.Balance.Equal(decimal.NewFromInt(10000)) {
+				t.Errorf("Balance = %s, want 10000", u.Balance.String())
 			}
 		case <-timeout:
 			if i < 2 {

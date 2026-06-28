@@ -2,14 +2,15 @@ package marketplace
 
 import (
 	"context"
-	"google.golang.org/protobuf/proto"
 	"fmt"
 	"time"
 
 	"github.com/nats-io/nats.go"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -92,10 +93,10 @@ func (s *MarketServer) GetSymbolStats(ctx context.Context, req *connect.Request[
 		}), nil
 	}
 	spread := "0"
-	bidF, _ := decimalToFloat(tick.Bid)
-	askF, _ := decimalToFloat(tick.Ask)
-	if bidF > 0 && askF > 0 {
-		spread = formatPrice(askF-bidF)
+	bidD, errBid := decimal.NewFromString(tick.Bid)
+	askD, errAsk := decimal.NewFromString(tick.Ask)
+	if errBid == nil && errAsk == nil && bidD.GreaterThan(decimal.Zero) && askD.GreaterThan(decimal.Zero) {
+		spread = formatPrice(askD.Sub(bidD))
 	}
 	return connect.NewResponse(&antv1.GetSymbolStatsResponse{
 		CurrentBid: tick.Bid,
@@ -152,19 +153,13 @@ func (s *MarketServer) StreamTicks(ctx context.Context, req *connect.Request[ant
 // - Price > 100:  3 digits (JPY pairs, e.g. 149.250)
 // - Price > 1:    5 digits (standard forex, e.g. 1.12345)
 // - Price <= 1:   6 digits (crypto or fractional assets)
-func formatPrice(p float64) string {
+func formatPrice(p decimal.Decimal) string {
 	switch {
-	case p > 100:
-		return fmt.Sprintf("%.3f", p)
-	case p > 1:
-		return fmt.Sprintf("%.5f", p)
+	case p.GreaterThan(decimal.NewFromInt(100)):
+		return p.StringFixed(3)
+	case p.GreaterThan(decimal.NewFromInt(1)):
+		return p.StringFixed(5)
 	default:
-		return fmt.Sprintf("%.6f", p)
+		return p.StringFixed(6)
 	}
-}
-
-func decimalToFloat(s string) (float64, error) {
-	var f float64
-	_, err := fmt.Sscanf(s, "%f", &f)
-	return f, err
 }

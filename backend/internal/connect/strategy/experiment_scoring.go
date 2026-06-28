@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/proto"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -39,10 +40,10 @@ func (w *ExperimentWorker) runSingleBacktest(
 		Mode:               "KLINE_RANGE",
 		Status:             StatusPending,
 		StrategyCode:       &modifiedCode,
-		InitialCapital:     ptr.F64(10000),
-		Commission:         ptr.F64(0.001),
-		Slippage:           ptr.F64(0),
-		Leverage:           ptr.F64(1),
+		InitialCapital:     ptr.Decimal(decimal.NewFromInt(10000)),
+		Commission:         ptr.Decimal(decimal.NewFromFloat(0.001)),
+		Slippage:           ptr.Decimal(decimal.Zero),
+		Leverage:           ptr.Decimal(decimal.NewFromInt(1)),
 		TradeDirection:     ptr.Str("both"),
 		StrictMode:         ptr.Bool(true),
 		StrategyCodeHash:   "",
@@ -157,7 +158,7 @@ func extractBacktestMetrics(protoResp []byte) *ai.BacktestMetrics {
 		WinRate:      m.GetWinRate(),
 		ProfitFactor: m.GetProfitFactor(),
 		TotalTrades:  int(m.GetTotalTrades()),
-		Stability:    computeStability(eq),
+		Stability:    computeStability(equityCurveToFloat64(eq)),
 	}
 }
 
@@ -176,7 +177,7 @@ func (w *ExperimentWorker) detectRegime(ctx context.Context, bt *repository.Back
 	ohlc := make([]ai.OHLCBar, len(bars))
 	for i := 0; i < len(bars); i++ {
 		b := bars[len(bars)-1-i] // reverse DESC→ASC
-		ohlc[i] = ai.OHLCBar{Open: b.Open, High: b.High, Low: b.Low, Close: b.Close, Volume: b.Volume}
+		ohlc[i] = ai.OHLCBar{Open: b.Open.InexactFloat64(), High: b.High.InexactFloat64(), Low: b.Low.InexactFloat64(), Close: b.Close.InexactFloat64(), Volume: b.Volume}
 	}
 	result := ai.DetectRegime(ohlc)
 	return result.Regime
@@ -208,7 +209,7 @@ func (w *ExperimentWorker) detectRegimeForExperiment(
 	ohlc := make([]ai.OHLCBar, len(bars))
 	for i := 0; i < len(bars); i++ {
 		b := bars[len(bars)-1-i] // reverse DESC→ASC
-		ohlc[i] = ai.OHLCBar{Open: b.Open, High: b.High, Low: b.Low, Close: b.Close, Volume: b.Volume}
+		ohlc[i] = ai.OHLCBar{Open: b.Open.InexactFloat64(), High: b.High.InexactFloat64(), Low: b.Low.InexactFloat64(), Close: b.Close.InexactFloat64(), Volume: b.Volume}
 	}
 	result := ai.DetectRegime(ohlc)
 	return result.Regime

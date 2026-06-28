@@ -356,7 +356,7 @@ func registerHandlers(
 		if rc, err := autoTradingRepo.GetRiskConfigByAccountID(ctx, aid); err == nil && rc != nil {
 			return &risk.UserRiskConfig{
 				MaxLotSize: rc.MaxLotSize, MaxPositions: rc.MaxPositions,
-				MaxDailyLoss: rc.MaxDailyLoss.InexactFloat64(),
+				MaxDailyLoss: rc.MaxDailyLoss,
 				MaxDrawdownPercent: rc.MaxDrawdownPercent,
 				MaxRiskPercent: rc.MaxRiskPercent,
 			}, nil
@@ -367,7 +367,7 @@ func registerHandlers(
 			if gs, err := autoTradingRepo.GetGlobalSettingsByUserID(ctx, uid); err == nil && gs != nil {
 				return &risk.UserRiskConfig{
 					MaxLotSize: gs.MaxLotSize, MaxPositions: int(gs.MaxPositions),
-					MaxDailyLoss: gs.MaxDailyLoss.InexactFloat64(),
+					MaxDailyLoss: gs.MaxDailyLoss,
 					MaxDrawdownPercent: gs.MaxDrawdownPercent,
 					MaxRiskPercent: gs.MaxRiskPercent,
 				}, nil
@@ -463,6 +463,7 @@ func configureStrategyExecution(
 	srv.SetBarSource(strategy.NewLiveSource(mthubSvc, marketDataRepo))
 	srv.SetMtHub(mthubSvc)
 	srv.SetGoExecutor(strategy.NewGoExecutor(".", log))
+	srv.SetWasmExecutor(strategy.NewWasmExecutor(".", log))
 	srv.StartBacktestWorker(context.Background())
 	srv.SetPaperEngine(paperEngine)
 	srv.SetNotificationSender(notifSender)

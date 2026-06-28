@@ -58,14 +58,14 @@ func New(repo paperRepository, mtHub *mthub.MtHubService, log *zap.Logger) *Pape
 // PlacePaperOrder simulates a market order fill against current bar Bid/Ask prices.
 // Called by LiveStrategyRunner when mode="paper".
 func (e *PaperEngine) PlacePaperOrder(ctx context.Context, accountID, symbol, side string,
-	volume decimal.Decimal, bid, ask float64) error {
+	volume, bid, ask decimal.Decimal) error {
 
 	// Determine simulated fill price: buy → Ask, sell → Bid, fallback to mid.
-	fillPrice := decimal.NewFromFloat((bid + ask) / 2.0)
-	if side == "buy" && ask > 0 {
-		fillPrice = decimal.NewFromFloat(ask)
-	} else if side == "sell" && bid > 0 {
-		fillPrice = decimal.NewFromFloat(bid)
+	fillPrice := bid.Add(ask).Div(decimal.NewFromInt(2))
+	if side == "buy" && ask.GreaterThan(decimal.Zero) {
+		fillPrice = ask
+	} else if side == "sell" && bid.GreaterThan(decimal.Zero) {
+		fillPrice = bid
 	}
 
 	now := time.Now()

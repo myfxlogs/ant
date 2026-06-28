@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/shopspring/decimal"
 )
 
 type SignalRow struct {
@@ -15,15 +16,15 @@ type SignalRow struct {
 	AccountID  uuid.UUID
 	Symbol     string
 	SignalType string
-	Volume     float64
-	Price      float64
-	StopLoss   float64
-	TakeProfit float64
+	Volume     decimal.Decimal
+	Price      decimal.Decimal
+	StopLoss   decimal.Decimal
+	TakeProfit decimal.Decimal
 	Reason     string
 	Status     string
 	ExecutedAt *time.Time
 	Ticket     int64
-	Profit     float64
+	Profit     decimal.Decimal
 	CreatedAt  time.Time
 }
 

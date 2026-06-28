@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/shopspring/decimal"
 )
 
 // BacktestRunTrade mirrors the backtest_run_trades table row.
@@ -13,13 +14,13 @@ type BacktestRunTrade struct {
 	RunID      uuid.UUID
 	Ticket     int64
 	Side       string
-	Volume     float64
+	Volume     decimal.Decimal
 	OpenTs     int64
-	OpenPrice  float64
+	OpenPrice  decimal.Decimal
 	CloseTs    int64
-	ClosePrice float64
-	PnL        float64
-	Commission float64
+	ClosePrice decimal.Decimal
+	PnL        decimal.Decimal
+	Commission decimal.Decimal
 	Reason     string
 }
 

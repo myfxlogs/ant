@@ -80,11 +80,11 @@ type RiskConfig struct {
 	ID                  uuid.UUID `json:"id" db:"id"`
 	UserID              uuid.UUID `json:"user_id" db:"user_id"`
 	AccountID           uuid.UUID `json:"account_id" db:"account_id"`
-	MaxRiskPercent      float64   `json:"max_risk_percent" db:"max_risk_percent"`
+	MaxRiskPercent      decimal.Decimal `json:"max_risk_percent" db:"max_risk_percent"`
 	MaxDailyLoss        decimal.Decimal   `json:"max_daily_loss" db:"max_daily_loss"`
-	MaxDrawdownPercent  float64   `json:"max_drawdown_percent" db:"max_drawdown_percent"`
+	MaxDrawdownPercent  decimal.Decimal `json:"max_drawdown_percent" db:"max_drawdown_percent"`
 	MaxPositions        int       `json:"max_positions" db:"max_positions"`
-	MaxLotSize          float64   `json:"max_lot_size" db:"max_lot_size"`
+	MaxLotSize          decimal.Decimal `json:"max_lot_size" db:"max_lot_size"`
 	DailyLossUsed       decimal.Decimal   `json:"daily_loss_used" db:"daily_loss_used"`
 	TrailingStopEnabled bool      `json:"trailing_stop_enabled" db:"trailing_stop_enabled"`
 	TrailingStopPips    float64   `json:"trailing_stop_pips" db:"trailing_stop_pips"`
@@ -99,11 +99,11 @@ type GlobalSettings struct {
 	NotificationEnabled bool      `json:"notification_enabled" db:"notification_enabled"`
 	EmailNotification   bool      `json:"email_notification" db:"email_notification"`
 	SmsNotification     bool      `json:"sms_notification" db:"sms_notification"`
-	MaxRiskPercent      float64   `json:"max_risk_percent" db:"max_risk_percent"`
+	MaxRiskPercent      decimal.Decimal `json:"max_risk_percent" db:"max_risk_percent"`
 	MaxPositions        int       `json:"max_positions" db:"max_positions"`
-	MaxLotSize          float64   `json:"max_lot_size" db:"max_lot_size"`
+	MaxLotSize          decimal.Decimal `json:"max_lot_size" db:"max_lot_size"`
 	MaxDailyLoss        decimal.Decimal   `json:"max_daily_loss" db:"max_daily_loss"`
-	MaxDrawdownPercent  float64   `json:"max_drawdown_percent" db:"max_drawdown_percent"`
+	MaxDrawdownPercent  decimal.Decimal `json:"max_drawdown_percent" db:"max_drawdown_percent"`
 	CreatedAt           time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at" db:"updated_at"`
 }
@@ -229,7 +229,7 @@ func NewRiskConfig(userID uuid.UUID, accountID uuid.UUID) *RiskConfig {
 		ID:                  uuid.New(),
 		UserID:              userID,
 		AccountID:           accountID,
-		MaxRiskPercent:      2.0,
+		MaxRiskPercent:      decimal.NewFromFloat(2.0),
 		MaxPositions:        5,
 		TrailingStopEnabled: false,
 		CreatedAt:           time.Now(),
@@ -245,11 +245,11 @@ func NewGlobalSettings(userID uuid.UUID) *GlobalSettings {
 		NotificationEnabled: true,
 		EmailNotification:   false,
 		SmsNotification:     false,
-		MaxRiskPercent:      2.0,
+		MaxRiskPercent:      decimal.NewFromFloat(2.0),
 		MaxPositions:        10,
-		MaxLotSize:          100.0,
+		MaxLotSize:          decimal.NewFromFloat(100.0),
 		MaxDailyLoss:        decimal.NewFromFloat(5000),
-		MaxDrawdownPercent:  10.0,
+		MaxDrawdownPercent:  decimal.NewFromFloat(10.0),
 		CreatedAt:           time.Now(),
 		UpdatedAt:           time.Now(),
 	}

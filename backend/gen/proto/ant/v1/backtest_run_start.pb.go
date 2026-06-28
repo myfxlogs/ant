@@ -28,7 +28,7 @@ type StartBacktestRunRequest struct {
 	AccountId       string                 `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	Symbol          string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Timeframe       string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
-	InitialCapital  float64                `protobuf:"fixed64,5,opt,name=initial_capital,json=initialCapital,proto3" json:"initial_capital,omitempty"`
+	InitialCapital  string                 `protobuf:"bytes,5,opt,name=initial_capital,json=initialCapital,proto3" json:"initial_capital,omitempty"`
 	Mode            BacktestRunMode        `protobuf:"varint,6,opt,name=mode,proto3,enum=ant.v1.BacktestRunMode" json:"mode,omitempty"`
 	From            *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=from,proto3,oneof" json:"from,omitempty"`
 	To              *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=to,proto3,oneof" json:"to,omitempty"`
@@ -103,11 +103,11 @@ func (x *StartBacktestRunRequest) GetTimeframe() string {
 	return ""
 }
 
-func (x *StartBacktestRunRequest) GetInitialCapital() float64 {
+func (x *StartBacktestRunRequest) GetInitialCapital() string {
 	if x != nil {
 		return x.InitialCapital
 	}
-	return 0
+	return ""
 }
 
 func (x *StartBacktestRunRequest) GetMode() BacktestRunMode {
@@ -221,7 +221,7 @@ const file_backtest_run_start_proto_rawDesc = "" +
 	"account_id\x18\x02 \x01(\tR\taccountId\x12\x16\n" +
 	"\x06symbol\x18\x03 \x01(\tR\x06symbol\x12\x1c\n" +
 	"\ttimeframe\x18\x04 \x01(\tR\ttimeframe\x12'\n" +
-	"\x0finitial_capital\x18\x05 \x01(\x01R\x0einitialCapital\x12+\n" +
+	"\x0finitial_capital\x18\x05 \x01(\tR\x0einitialCapital\x12+\n" +
 	"\x04mode\x18\x06 \x01(\x0e2\x17.ant.v1.BacktestRunModeR\x04mode\x123\n" +
 	"\x04from\x18\a \x01(\v2\x1a.google.protobuf.TimestampH\x00R\x04from\x88\x01\x01\x12/\n" +
 	"\x02to\x18\b \x01(\v2\x1a.google.protobuf.TimestampH\x01R\x02to\x88\x01\x01\x12\"\n" +

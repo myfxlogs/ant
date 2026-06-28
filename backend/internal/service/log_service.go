@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 
 	"anttrader/internal/model"
 	"anttrader/internal/repository"
@@ -43,7 +44,7 @@ func (s *LogService) LogOrder(ctx context.Context, order *model.OrderHistory) er
 }
 
 // UpdateOrderHistoryClose updates the open row for a schedule ticket after a successful close.
-func (s *LogService) UpdateOrderHistoryClose(ctx context.Context, userID, accountID, scheduleID uuid.UUID, ticket int64, closePrice, profit, swap, commission float64, closeTime time.Time) (int64, error) {
+func (s *LogService) UpdateOrderHistoryClose(ctx context.Context, userID, accountID, scheduleID uuid.UUID, ticket int64, closePrice, profit, swap, commission decimal.Decimal, closeTime time.Time) (int64, error) {
 	if s == nil || s.logRepo == nil {
 		return 0, nil
 	}

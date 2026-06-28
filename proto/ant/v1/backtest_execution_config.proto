@@ -16,9 +16,9 @@ enum TradeDirection {
 // for a single backtest run. Stored as proto binary snapshot (config_snapshot
 // column) for full reproducibility.
 message BacktestExecutionConfig {
-  double commission = 1;       // ratio, e.g. 0.001 = 0.10%
-  double slippage = 2;         // ratio, e.g. 0.0005 = 0.05%
-  double leverage = 3;         // e.g. 1, 10, 100
+  string commission = 1;       // ratio as string, e.g. "0.001" = 0.10%
+  string slippage = 2;         // ratio as string, e.g. "0.0005" = 0.05%
+  string leverage = 3;         // e.g. "1", "10", "100"
   TradeDirection trade_direction = 4;
   bool strict_mode = 5;        // true = next-bar-open, false = same-bar-close + MTF 1m
   StrategyConfig strategy_config = 6;  // parsed from @strategy annotations
@@ -35,19 +35,19 @@ message StrategyConfig {
 }
 
 message StrategyRiskConfig {
-  optional double stop_loss_pct = 1;    // ratio, e.g. 0.02 = 2%
-  optional double take_profit_pct = 2;  // ratio
+  optional string stop_loss_pct = 1;    // ratio as string, e.g. "0.02" = 2%
+  optional string take_profit_pct = 2;  // ratio as string
   TrailingConfig trailing = 3;
 }
 
 message TrailingConfig {
   bool enabled = 1;
-  optional double pct = 2;           // trailing stop distance (ratio)
-  optional double activation_pct = 3; // profit threshold before activation (ratio)
+  optional string pct = 2;           // trailing stop distance (ratio as string)
+  optional string activation_pct = 3; // profit threshold before activation (ratio as string)
 }
 
 message PositionConfig {
-  optional double entry_pct = 1; // ratio of capital per entry, e.g. 0.25 = 25%
+  optional string entry_pct = 1; // ratio of capital per entry as string, e.g. "0.25" = 25%
 }
 
 message ScaleConfig {
@@ -59,8 +59,8 @@ message ScaleConfig {
 
 message ScaleRule {
   bool enabled = 1;
-  optional double step_pct = 2;   // price movement ratio to trigger
-  optional double size_pct = 3;   // ratio of capital to add/reduce
+  optional string step_pct = 2;   // price movement ratio to trigger (string)
+  optional string size_pct = 3;   // ratio of capital to add/reduce (string)
   optional int32 max_times = 4;   // max scaling actions (0 = unlimited)
 }
 
@@ -75,8 +75,8 @@ message ExecutionAssumptions {
   string signal_timing = 2;        // "next_bar_open" or "same_bar_close"
   string fill_rule = 3;            // fill semantics used
   string mtf_fallback_reason = 4;  // empty if MTF sub-resolution was active
-  double actual_commission = 5;
-  double actual_slippage = 6;
-  double actual_leverage = 7;
+  string actual_commission = 5;
+  string actual_slippage = 6;
+  string actual_leverage = 7;
   string trade_direction = 8;
 }

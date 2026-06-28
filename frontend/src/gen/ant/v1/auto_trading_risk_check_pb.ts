@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file auto_trading_risk_check.proto.
  */
 export const file_auto_trading_risk_check: GenFile = /*@__PURE__*/
-  fileDesc("Ch1hdXRvX3RyYWRpbmdfcmlza19jaGVjay5wcm90bxIGYW50LnYxIpUBChZDaGVja1Jpc2tMaW1pdHNSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSDgoGc3ltYm9sGAIgASgJEg4KBnZvbHVtZRgDIAEoCRIXCg9jdXJyZW50X2JhbGFuY2UYBCABKAkSFgoOY3VycmVudF9lcXVpdHkYBSABKAkSFgoOb3Blbl9wb3NpdGlvbnMYBiABKAUi7gEKF0NoZWNrUmlza0xpbWl0c1Jlc3BvbnNlEg8KB2FsbG93ZWQYASABKAgSGAoQaXNfd2l0aGluX2xpbWl0cxgCIAEoCBIOCgZyZWFzb24YAyABKAkSFQoNbWF4X3Bvc2l0aW9ucxgEIAEoBRIWCg5wb3NpdGlvbl9jb3VudBgFIAEoBRIYChBkYWlseV9sb3NzX2xpbWl0GAYgASgJEhcKD2RhaWx5X2xvc3NfdXNlZBgHIAEoCRIcChRtYXhfZHJhd2Rvd25fcGVyY2VudBgIIAEoARIYChBkcmF3ZG93bl9wZXJjZW50GAkgASgBQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("Ch1hdXRvX3RyYWRpbmdfcmlza19jaGVjay5wcm90bxIGYW50LnYxIpUBChZDaGVja1Jpc2tMaW1pdHNSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSDgoGc3ltYm9sGAIgASgJEg4KBnZvbHVtZRgDIAEoCRIXCg9jdXJyZW50X2JhbGFuY2UYBCABKAkSFgoOY3VycmVudF9lcXVpdHkYBSABKAkSFgoOb3Blbl9wb3NpdGlvbnMYBiABKAUi7gEKF0NoZWNrUmlza0xpbWl0c1Jlc3BvbnNlEg8KB2FsbG93ZWQYASABKAgSGAoQaXNfd2l0aGluX2xpbWl0cxgCIAEoCBIOCgZyZWFzb24YAyABKAkSFQoNbWF4X3Bvc2l0aW9ucxgEIAEoBRIWCg5wb3NpdGlvbl9jb3VudBgFIAEoBRIYChBkYWlseV9sb3NzX2xpbWl0GAYgASgJEhcKD2RhaWx5X2xvc3NfdXNlZBgHIAEoCRIcChRtYXhfZHJhd2Rvd25fcGVyY2VudBgIIAEoCRIYChBkcmF3ZG93bl9wZXJjZW50GAkgASgJQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.CheckRiskLimitsRequest
@@ -94,14 +94,14 @@ export type CheckRiskLimitsResponse = Message<"ant.v1.CheckRiskLimitsResponse"> 
   dailyLossUsed: string;
 
   /**
-   * @generated from field: double max_drawdown_percent = 8;
+   * @generated from field: string max_drawdown_percent = 8;
    */
-  maxDrawdownPercent: number;
+  maxDrawdownPercent: string;
 
   /**
-   * @generated from field: double drawdown_percent = 9;
+   * @generated from field: string drawdown_percent = 9;
    */
-  drawdownPercent: number;
+  drawdownPercent: string;
 };
 
 /**

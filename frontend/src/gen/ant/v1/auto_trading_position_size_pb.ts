@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file auto_trading_position_size.proto.
  */
 export const file_auto_trading_position_size: GenFile = /*@__PURE__*/
-  fileDesc("CiBhdXRvX3RyYWRpbmdfcG9zaXRpb25fc2l6ZS5wcm90bxIGYW50LnYxIokBChxDYWxjdWxhdGVQb3NpdGlvblNpemVSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSDgoGc3ltYm9sGAIgASgJEhcKD2FjY291bnRfYmFsYW5jZRgDIAEoCRIWCg5zdG9wX2xvc3NfcGlwcxgEIAEoARIUCgxyaXNrX3BlcmNlbnQYBSABKAEifwodQ2FsY3VsYXRlUG9zaXRpb25TaXplUmVzcG9uc2USDgoGdm9sdW1lGAEgASgJEhMKC3Jpc2tfYW1vdW50GAIgASgJEhEKCXBpcF92YWx1ZRgDIAEoCRISCgptaW5fdm9sdW1lGAQgASgJEhIKCm1heF92b2x1bWUYBSABKAlCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
+  fileDesc("CiBhdXRvX3RyYWRpbmdfcG9zaXRpb25fc2l6ZS5wcm90bxIGYW50LnYxIokBChxDYWxjdWxhdGVQb3NpdGlvblNpemVSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSDgoGc3ltYm9sGAIgASgJEhcKD2FjY291bnRfYmFsYW5jZRgDIAEoCRIWCg5zdG9wX2xvc3NfcGlwcxgEIAEoCRIUCgxyaXNrX3BlcmNlbnQYBSABKAkifwodQ2FsY3VsYXRlUG9zaXRpb25TaXplUmVzcG9uc2USDgoGdm9sdW1lGAEgASgJEhMKC3Jpc2tfYW1vdW50GAIgASgJEhEKCXBpcF92YWx1ZRgDIAEoCRISCgptaW5fdm9sdW1lGAQgASgJEhIKCm1heF92b2x1bWUYBSABKAlCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.CalculatePositionSizeRequest
@@ -32,14 +32,14 @@ export type CalculatePositionSizeRequest = Message<"ant.v1.CalculatePositionSize
   accountBalance: string;
 
   /**
-   * @generated from field: double stop_loss_pips = 4;
+   * @generated from field: string stop_loss_pips = 4;
    */
-  stopLossPips: number;
+  stopLossPips: string;
 
   /**
-   * @generated from field: double risk_percent = 5;
+   * @generated from field: string risk_percent = 5;
    */
-  riskPercent: number;
+  riskPercent: string;
 };
 
 /**

@@ -131,7 +131,7 @@ message BacktestStrategyRequest {
 message BacktestStrategyResponse {
   bool success = 1;
   BacktestMetrics metrics = 2;
-  repeated double equity_curve = 3;
+  repeated string equity_curve = 3;
   string error = 4;
   optional string dataset_id = 5;
 }
@@ -148,12 +148,26 @@ message StrategyTemplateInfo {
 
 // ── ExecuteLive: proto-native live/paper strategy execution ──
 
+// RequestType selects which execution callback the harness dispatches to.
+enum RequestType {
+  REQUEST_TYPE_UNSPECIFIED = 0;
+  REQUEST_TYPE_BAR = 1;    // OnBar — new bar closed
+  REQUEST_TYPE_TICK = 2;   // OnTick — price update (Bid/Ask)
+  REQUEST_TYPE_TRADE = 3;  // OnTrade — order fill/close/modify
+  REQUEST_TYPE_TIMER = 4;  // OnTimer — periodic timer fired
+}
+
 // ExecuteLiveRequest sends strategy code with a proto-native context message.
-// The Go-side LiveStrategyRunner builds the context from real-time bar data
-// and calls this RPC per bar.
+// The Go-side LiveStrategyRunner builds the context from real-time data
+// and calls this RPC per event (bar, tick, trade, or timer).
 message ExecuteLiveRequest {
   string strategy_code = 1;
-  LiveStrategyContext context = 2;  // proto-native — no JSON
+  RequestType request_type = 2;
+  // Context data — which field is populated depends on request_type.
+  LiveStrategyContext bar_context = 3;    // REQUEST_TYPE_BAR
+  TickContext tick_context = 4;           // REQUEST_TYPE_TICK
+  TradeContext trade_context = 5;         // REQUEST_TYPE_TRADE
+  TimerContext timer_context = 6;         // REQUEST_TYPE_TIMER
 }
 
 message ExecuteLiveResponse {
@@ -168,11 +182,11 @@ message ExecuteLiveResponse {
 // Proto-native binary encoding — no JSON marshalling.
 message LiveStrategyContext {
   // Market data (primary symbol OHLCV — length-aligned arrays)
-  repeated double close = 1;
-  repeated double open = 2;
-  repeated double high = 3;
-  repeated double low = 4;
-  repeated double volume = 5;
+  repeated string close = 1;
+  repeated string open = 2;
+  repeated string high = 3;
+  repeated string low = 4;
+  repeated string volume = 5;
   repeated int64 bar_times_ms = 6;  // bar close timestamps in unix ms
 
   // Account state
@@ -191,6 +205,12 @@ message LiveStrategyContext {
   repeated LiveSymbolSeries symbols = 15;
   string primary_symbol = 16;
   string current_price = 17;
+
+  // Delta-bar protocol: if non-empty, the harness appends these to its local
+  // bar window instead of rebuilding from close/open/high/low/volume arrays.
+  // The first bar of a session uses the full OHLCV arrays; subsequent bars
+  // use this field for incremental delivery.
+  repeated DeltaBar delta_bars = 18;
 }
 
 // LivePosition mirrors the engine Position for live context.
@@ -214,11 +234,70 @@ message LiveParam {
 // LiveSymbolSeries holds OHLCV for one symbol in multi-symbol mode.
 message LiveSymbolSeries {
   string symbol = 1;
-  repeated double close = 2;
-  repeated double open = 3;
-  repeated double high = 4;
-  repeated double low = 5;
-  repeated double volume = 6;
+  repeated string close = 2;
+  repeated string open = 3;
+  repeated string high = 4;
+  repeated string low = 5;
+  repeated string volume = 6;
+}
+
+// DeltaBar is a single OHLCV bar for the delta-bar protocol.
+// When LiveStrategyContext.delta_bars is non-empty, the harness appends
+// these bars to its local rolling window rather than rebuilding from the
+// full OHLCV arrays.
+message DeltaBar {
+  string open = 1;
+  string high = 2;
+  string low = 3;
+  string close = 4;
+  string volume = 5;
+  int64 bar_time_ms = 6;
+}
+
+// TickContext carries a single quote update for OnTick strategies.
+message TickContext {
+  string bid = 1;
+  string ask = 2;
+  string symbol = 3;
+  string timeframe = 4;
+  string mode = 5;   // "live" | "paper"
+  repeated LiveParam params = 6;
+  // Account state
+  string equity = 7;
+  string balance = 8;
+  repeated LivePosition positions = 9;
+  string current_price = 10;
+}
+
+// TradeContext carries a trade event for OnTrade strategies.
+message TradeContext {
+  int64 ticket = 1;
+  string symbol = 2;
+  string event_type = 3;  // "fill" | "close" | "modify" | "cancel"
+  string side = 4;        // "buy" | "sell"
+  string volume = 5;
+  string price = 6;
+  string stop_loss = 7;
+  string take_profit = 8;
+  string profit = 9;
+  string commission = 10;
+  string swap = 11;
+  // Account state
+  string equity = 12;
+  string balance = 13;
+  repeated LivePosition positions = 14;
+}
+
+// TimerContext carries a periodic timer fire for OnTimer strategies.
+message TimerContext {
+  string symbol = 1;
+  string timeframe = 2;
+  string mode = 3;   // "live" | "paper"
+  repeated LiveParam params = 4;
+  // Account state
+  string equity = 5;
+  string balance = 6;
+  repeated LivePosition positions = 7;
 }
 
 // ── Strategy Import (migration engine) ──────────────────────────────
@@ -240,12 +319,9 @@ message AnalyzeImportCodeResponse {
   int32 exit_rules_count = 51;
   string sizing_kind = 52;
   int32 risk_checks_count = 53;
-  // Param panel schema (JSON-serialized for frontend convenience — frontend
-  // uses this to render the parameter form; proto-native in a future cleanup).
-  string params_json = 60;
-  string groups_json = 61;
-  // Blind spot report (JSON-serialized; same rationale as above).
-  string blind_spots_json = 70;
+  repeated ParamField params = 60;
+  repeated ParamGroupInfo groups = 61;
+  repeated BlindSpot blind_spots = 70;
   repeated string indicator_names = 80;
 }
 
@@ -262,6 +338,28 @@ message GenerateImportCodeResponse {
   repeated string quality_gate_failures = 10;
 }
 
+message ParamField {
+  string name = 1;
+  string label = 2;
+  string type = 3;       // "int" | "double" | "string" | "bool" | "enum"
+  string default_value = 4;
+  string group = 5;      // group name this param belongs to
+}
+
+message ParamGroupInfo {
+  string name = 1;
+}
+
+message BlindSpot {
+  string id = 1;
+  string category = 2;
+  string severity = 3;    // "致命" | "警告" | "信息"
+  string description = 4;
+  string location = 5;
+  string handling = 6;
+  bool user_action_required = 7;
+}
+
 message ImportStrategyRequest {
   string source_code = 1;
   string source_name = 2;
@@ -274,6 +372,5 @@ message ImportStrategyResponse {
   string strategy_name = 2;
   string go_code = 3;
   double coverage_score = 4;
-  // JSON-serialized blind spots (same rationale as above).
-  string blind_spots_json = 10;
+  repeated BlindSpot blind_spots = 10;
 }

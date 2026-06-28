@@ -462,33 +462,33 @@ func (x *ExecuteKlineBar) GetVolume() string {
 }
 
 type ExecuteBacktestRequest struct {
-	state              protoimpl.MessageState `protogen:"open.v1"`
-	StrategyId         string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`       // unique run identifier
-	StrategyCode       string                 `protobuf:"bytes,2,opt,name=strategy_code,json=strategyCode,proto3" json:"strategy_code,omitempty"` // Python strategy source
-	Symbol             string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	Timeframe          string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
-	StartDateMs        int64                  `protobuf:"varint,5,opt,name=start_date_ms,json=startDateMs,proto3" json:"start_date_ms,omitempty"` // Unix milliseconds
-	EndDateMs          int64                  `protobuf:"varint,6,opt,name=end_date_ms,json=endDateMs,proto3" json:"end_date_ms,omitempty"`       // Unix milliseconds
-	InitialCapital     string                 `protobuf:"bytes,7,opt,name=initial_capital,json=initialCapital,proto3" json:"initial_capital,omitempty"`
-	Commission         float64                `protobuf:"fixed64,8,opt,name=commission,proto3" json:"commission,omitempty"`
-	Spread             float64                `protobuf:"fixed64,9,opt,name=spread,proto3" json:"spread,omitempty"`
-	SwapRate           float64                `protobuf:"fixed64,10,opt,name=swap_rate,json=swapRate,proto3" json:"swap_rate,omitempty"`
-	ServerTimezone     string                 `protobuf:"bytes,11,opt,name=server_timezone,json=serverTimezone,proto3" json:"server_timezone,omitempty"`
-	RolloverHour       int32                  `protobuf:"varint,12,opt,name=rollover_hour,json=rolloverHour,proto3" json:"rollover_hour,omitempty"`
-	TripleSwapWeekday  int32                  `protobuf:"varint,13,opt,name=triple_swap_weekday,json=tripleSwapWeekday,proto3" json:"triple_swap_weekday,omitempty"`
-	SlippageMode       string                 `protobuf:"bytes,14,opt,name=slippage_mode,json=slippageMode,proto3" json:"slippage_mode,omitempty"`
-	SlippageRate       float64                `protobuf:"fixed64,15,opt,name=slippage_rate,json=slippageRate,proto3" json:"slippage_rate,omitempty"`
-	SlippageSeed       int32                  `protobuf:"varint,16,opt,name=slippage_seed,json=slippageSeed,proto3" json:"slippage_seed,omitempty"`
-	Klines             []*ExecuteKlineBar     `protobuf:"bytes,17,rep,name=klines,proto3" json:"klines,omitempty"`
-	ExtraSymbols       []string               `protobuf:"bytes,18,rep,name=extra_symbols,json=extraSymbols,proto3" json:"extra_symbols,omitempty"`
-	StrategyParamsJson string                 `protobuf:"bytes,19,opt,name=strategy_params_json,json=strategyParamsJson,proto3" json:"strategy_params_json,omitempty"`
-	Leverage           float64                `protobuf:"fixed64,20,opt,name=leverage,proto3" json:"leverage,omitempty"`                                                             // e.g. 1, 10, 100 (ratio, kept as double)
-	TradeDirection     TradeDirection         `protobuf:"varint,21,opt,name=trade_direction,json=tradeDirection,proto3,enum=ant.v1.TradeDirection" json:"trade_direction,omitempty"` // long / short / both
-	StrictMode         bool                   `protobuf:"varint,22,opt,name=strict_mode,json=strictMode,proto3" json:"strict_mode,omitempty"`                                        // true = next-bar-open, false = same-bar-close + MTF
-	StrategyConfig     *StrategyConfig        `protobuf:"bytes,23,opt,name=strategy_config,json=strategyConfig,proto3" json:"strategy_config,omitempty"`                             // parsed from @strategy annotations
-	SymbolInfo         *SymbolInfo            `protobuf:"bytes,24,opt,name=symbol_info,json=symbolInfo,proto3" json:"symbol_info,omitempty"`                                         // broker-provided contract metadata
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId        string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`       // unique run identifier
+	StrategyCode      string                 `protobuf:"bytes,2,opt,name=strategy_code,json=strategyCode,proto3" json:"strategy_code,omitempty"` // strategy source code (Go SDK)
+	Symbol            string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Timeframe         string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
+	StartDateMs       int64                  `protobuf:"varint,5,opt,name=start_date_ms,json=startDateMs,proto3" json:"start_date_ms,omitempty"` // Unix milliseconds
+	EndDateMs         int64                  `protobuf:"varint,6,opt,name=end_date_ms,json=endDateMs,proto3" json:"end_date_ms,omitempty"`       // Unix milliseconds
+	InitialCapital    string                 `protobuf:"bytes,7,opt,name=initial_capital,json=initialCapital,proto3" json:"initial_capital,omitempty"`
+	Commission        string                 `protobuf:"bytes,8,opt,name=commission,proto3" json:"commission,omitempty"`
+	Spread            string                 `protobuf:"bytes,9,opt,name=spread,proto3" json:"spread,omitempty"`
+	SwapRate          string                 `protobuf:"bytes,10,opt,name=swap_rate,json=swapRate,proto3" json:"swap_rate,omitempty"`
+	ServerTimezone    string                 `protobuf:"bytes,11,opt,name=server_timezone,json=serverTimezone,proto3" json:"server_timezone,omitempty"`
+	RolloverHour      int32                  `protobuf:"varint,12,opt,name=rollover_hour,json=rolloverHour,proto3" json:"rollover_hour,omitempty"`
+	TripleSwapWeekday int32                  `protobuf:"varint,13,opt,name=triple_swap_weekday,json=tripleSwapWeekday,proto3" json:"triple_swap_weekday,omitempty"`
+	SlippageMode      string                 `protobuf:"bytes,14,opt,name=slippage_mode,json=slippageMode,proto3" json:"slippage_mode,omitempty"`
+	SlippageRate      string                 `protobuf:"bytes,15,opt,name=slippage_rate,json=slippageRate,proto3" json:"slippage_rate,omitempty"`
+	SlippageSeed      int32                  `protobuf:"varint,16,opt,name=slippage_seed,json=slippageSeed,proto3" json:"slippage_seed,omitempty"`
+	Klines            []*ExecuteKlineBar     `protobuf:"bytes,17,rep,name=klines,proto3" json:"klines,omitempty"`
+	ExtraSymbols      []string               `protobuf:"bytes,18,rep,name=extra_symbols,json=extraSymbols,proto3" json:"extra_symbols,omitempty"`
+	StrategyParams    map[string]string      `protobuf:"bytes,19,rep,name=strategy_params,json=strategyParams,proto3" json:"strategy_params,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Leverage          string                 `protobuf:"bytes,20,opt,name=leverage,proto3" json:"leverage,omitempty"`                                                               // e.g. "1", "10", "100" (ratio as string for precision)
+	TradeDirection    TradeDirection         `protobuf:"varint,21,opt,name=trade_direction,json=tradeDirection,proto3,enum=ant.v1.TradeDirection" json:"trade_direction,omitempty"` // long / short / both
+	StrictMode        bool                   `protobuf:"varint,22,opt,name=strict_mode,json=strictMode,proto3" json:"strict_mode,omitempty"`                                        // true = next-bar-open, false = same-bar-close + MTF
+	StrategyConfig    *StrategyConfig        `protobuf:"bytes,23,opt,name=strategy_config,json=strategyConfig,proto3" json:"strategy_config,omitempty"`                             // parsed from @strategy annotations
+	SymbolInfo        *SymbolInfo            `protobuf:"bytes,24,opt,name=symbol_info,json=symbolInfo,proto3" json:"symbol_info,omitempty"`                                         // broker-provided contract metadata
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *ExecuteBacktestRequest) Reset() {
@@ -570,25 +570,25 @@ func (x *ExecuteBacktestRequest) GetInitialCapital() string {
 	return ""
 }
 
-func (x *ExecuteBacktestRequest) GetCommission() float64 {
+func (x *ExecuteBacktestRequest) GetCommission() string {
 	if x != nil {
 		return x.Commission
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteBacktestRequest) GetSpread() float64 {
+func (x *ExecuteBacktestRequest) GetSpread() string {
 	if x != nil {
 		return x.Spread
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteBacktestRequest) GetSwapRate() float64 {
+func (x *ExecuteBacktestRequest) GetSwapRate() string {
 	if x != nil {
 		return x.SwapRate
 	}
-	return 0
+	return ""
 }
 
 func (x *ExecuteBacktestRequest) GetServerTimezone() string {
@@ -619,11 +619,11 @@ func (x *ExecuteBacktestRequest) GetSlippageMode() string {
 	return ""
 }
 
-func (x *ExecuteBacktestRequest) GetSlippageRate() float64 {
+func (x *ExecuteBacktestRequest) GetSlippageRate() string {
 	if x != nil {
 		return x.SlippageRate
 	}
-	return 0
+	return ""
 }
 
 func (x *ExecuteBacktestRequest) GetSlippageSeed() int32 {
@@ -647,18 +647,18 @@ func (x *ExecuteBacktestRequest) GetExtraSymbols() []string {
 	return nil
 }
 
-func (x *ExecuteBacktestRequest) GetStrategyParamsJson() string {
+func (x *ExecuteBacktestRequest) GetStrategyParams() map[string]string {
 	if x != nil {
-		return x.StrategyParamsJson
+		return x.StrategyParams
 	}
-	return ""
+	return nil
 }
 
-func (x *ExecuteBacktestRequest) GetLeverage() float64 {
+func (x *ExecuteBacktestRequest) GetLeverage() string {
 	if x != nil {
 		return x.Leverage
 	}
-	return 0
+	return ""
 }
 
 func (x *ExecuteBacktestRequest) GetTradeDirection() TradeDirection {
@@ -952,7 +952,7 @@ type ExecuteBacktestResponse struct {
 	Success              bool                    `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Metrics              *ExecuteBacktestMetrics `protobuf:"bytes,2,opt,name=metrics,proto3" json:"metrics,omitempty"`
 	Risk                 *ExecuteRiskAssessment  `protobuf:"bytes,3,opt,name=risk,proto3" json:"risk,omitempty"`
-	EquityCurve          []float64               `protobuf:"fixed64,4,rep,packed,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
+	EquityCurve          []string                `protobuf:"bytes,4,rep,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"` // decimal strings for precision
 	Trades               []*ExecuteBacktestTrade `protobuf:"bytes,5,rep,name=trades,proto3" json:"trades,omitempty"`
 	Error                string                  `protobuf:"bytes,6,opt,name=error,proto3" json:"error,omitempty"`
 	ExecutionAssumptions *ExecutionAssumptions   `protobuf:"bytes,7,opt,name=execution_assumptions,json=executionAssumptions,proto3" json:"execution_assumptions,omitempty"`
@@ -1011,7 +1011,7 @@ func (x *ExecuteBacktestResponse) GetRisk() *ExecuteRiskAssessment {
 	return nil
 }
 
-func (x *ExecuteBacktestResponse) GetEquityCurve() []float64 {
+func (x *ExecuteBacktestResponse) GetEquityCurve() []string {
 	if x != nil {
 		return x.EquityCurve
 	}
@@ -1290,7 +1290,7 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\x04high\x18\x04 \x01(\tR\x04high\x12\x10\n" +
 	"\x03low\x18\x05 \x01(\tR\x03low\x12\x14\n" +
 	"\x05close\x18\x06 \x01(\tR\x05close\x12\x16\n" +
-	"\x06volume\x18\a \x01(\tR\x06volume\"\xbf\a\n" +
+	"\x06volume\x18\a \x01(\tR\x06volume\"\xad\b\n" +
 	"\x16ExecuteBacktestRequest\x12\x1f\n" +
 	"\vstrategy_id\x18\x01 \x01(\tR\n" +
 	"strategyId\x12#\n" +
@@ -1301,27 +1301,30 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\vend_date_ms\x18\x06 \x01(\x03R\tendDateMs\x12'\n" +
 	"\x0finitial_capital\x18\a \x01(\tR\x0einitialCapital\x12\x1e\n" +
 	"\n" +
-	"commission\x18\b \x01(\x01R\n" +
+	"commission\x18\b \x01(\tR\n" +
 	"commission\x12\x16\n" +
-	"\x06spread\x18\t \x01(\x01R\x06spread\x12\x1b\n" +
+	"\x06spread\x18\t \x01(\tR\x06spread\x12\x1b\n" +
 	"\tswap_rate\x18\n" +
-	" \x01(\x01R\bswapRate\x12'\n" +
+	" \x01(\tR\bswapRate\x12'\n" +
 	"\x0fserver_timezone\x18\v \x01(\tR\x0eserverTimezone\x12#\n" +
 	"\rrollover_hour\x18\f \x01(\x05R\frolloverHour\x12.\n" +
 	"\x13triple_swap_weekday\x18\r \x01(\x05R\x11tripleSwapWeekday\x12#\n" +
 	"\rslippage_mode\x18\x0e \x01(\tR\fslippageMode\x12#\n" +
-	"\rslippage_rate\x18\x0f \x01(\x01R\fslippageRate\x12#\n" +
+	"\rslippage_rate\x18\x0f \x01(\tR\fslippageRate\x12#\n" +
 	"\rslippage_seed\x18\x10 \x01(\x05R\fslippageSeed\x12/\n" +
 	"\x06klines\x18\x11 \x03(\v2\x17.ant.v1.ExecuteKlineBarR\x06klines\x12#\n" +
-	"\rextra_symbols\x18\x12 \x03(\tR\fextraSymbols\x120\n" +
-	"\x14strategy_params_json\x18\x13 \x01(\tR\x12strategyParamsJson\x12\x1a\n" +
-	"\bleverage\x18\x14 \x01(\x01R\bleverage\x12?\n" +
+	"\rextra_symbols\x18\x12 \x03(\tR\fextraSymbols\x12[\n" +
+	"\x0fstrategy_params\x18\x13 \x03(\v22.ant.v1.ExecuteBacktestRequest.StrategyParamsEntryR\x0estrategyParams\x12\x1a\n" +
+	"\bleverage\x18\x14 \x01(\tR\bleverage\x12?\n" +
 	"\x0ftrade_direction\x18\x15 \x01(\x0e2\x16.ant.v1.TradeDirectionR\x0etradeDirection\x12\x1f\n" +
 	"\vstrict_mode\x18\x16 \x01(\bR\n" +
 	"strictMode\x12?\n" +
 	"\x0fstrategy_config\x18\x17 \x01(\v2\x16.ant.v1.StrategyConfigR\x0estrategyConfig\x123\n" +
 	"\vsymbol_info\x18\x18 \x01(\v2\x12.ant.v1.SymbolInfoR\n" +
-	"symbolInfo\"\x9b\x03\n" +
+	"symbolInfo\x1aA\n" +
+	"\x13StrategyParamsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x9b\x03\n" +
 	"\n" +
 	"SymbolInfo\x12\x16\n" +
 	"\x06digits\x18\x01 \x01(\x05R\x06digits\x12\x14\n" +
@@ -1366,7 +1369,7 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x128\n" +
 	"\ametrics\x18\x02 \x01(\v2\x1e.ant.v1.ExecuteBacktestMetricsR\ametrics\x121\n" +
 	"\x04risk\x18\x03 \x01(\v2\x1d.ant.v1.ExecuteRiskAssessmentR\x04risk\x12!\n" +
-	"\fequity_curve\x18\x04 \x03(\x01R\vequityCurve\x124\n" +
+	"\fequity_curve\x18\x04 \x03(\tR\vequityCurve\x124\n" +
 	"\x06trades\x18\x05 \x03(\v2\x1c.ant.v1.ExecuteBacktestTradeR\x06trades\x12\x14\n" +
 	"\x05error\x18\x06 \x01(\tR\x05error\x12Q\n" +
 	"\x15execution_assumptions\x18\a \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptions\"\xcd\x03\n" +
@@ -1408,7 +1411,7 @@ func file_backtest_service_proto_rawDescGZIP() []byte {
 	return file_backtest_service_proto_rawDescData
 }
 
-var file_backtest_service_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_backtest_service_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_backtest_service_proto_goTypes = []any{
 	(*EngineValidateRequest)(nil),     // 0: ant.v1.EngineValidateRequest
 	(*EngineValidateResponse)(nil),    // 1: ant.v1.EngineValidateResponse
@@ -1422,32 +1425,34 @@ var file_backtest_service_proto_goTypes = []any{
 	(*ExecuteBacktestResponse)(nil),   // 9: ant.v1.ExecuteBacktestResponse
 	(*ExecuteBacktestMetrics)(nil),    // 10: ant.v1.ExecuteBacktestMetrics
 	(*ExecuteRiskAssessment)(nil),     // 11: ant.v1.ExecuteRiskAssessment
-	(TradeDirection)(0),               // 12: ant.v1.TradeDirection
-	(*StrategyConfig)(nil),            // 13: ant.v1.StrategyConfig
-	(*ExecutionAssumptions)(nil),      // 14: ant.v1.ExecutionAssumptions
+	nil,                               // 12: ant.v1.ExecuteBacktestRequest.StrategyParamsEntry
+	(TradeDirection)(0),               // 13: ant.v1.TradeDirection
+	(*StrategyConfig)(nil),            // 14: ant.v1.StrategyConfig
+	(*ExecutionAssumptions)(nil),      // 15: ant.v1.ExecutionAssumptions
 }
 var file_backtest_service_proto_depIdxs = []int32{
 	5,  // 0: ant.v1.EngineRunStrategyRequest.klines:type_name -> ant.v1.ExecuteKlineBar
 	4,  // 1: ant.v1.EngineRunStrategyResponse.signal:type_name -> ant.v1.EngineTradeSignal
 	5,  // 2: ant.v1.ExecuteBacktestRequest.klines:type_name -> ant.v1.ExecuteKlineBar
-	12, // 3: ant.v1.ExecuteBacktestRequest.trade_direction:type_name -> ant.v1.TradeDirection
-	13, // 4: ant.v1.ExecuteBacktestRequest.strategy_config:type_name -> ant.v1.StrategyConfig
-	7,  // 5: ant.v1.ExecuteBacktestRequest.symbol_info:type_name -> ant.v1.SymbolInfo
-	10, // 6: ant.v1.ExecuteBacktestResponse.metrics:type_name -> ant.v1.ExecuteBacktestMetrics
-	11, // 7: ant.v1.ExecuteBacktestResponse.risk:type_name -> ant.v1.ExecuteRiskAssessment
-	8,  // 8: ant.v1.ExecuteBacktestResponse.trades:type_name -> ant.v1.ExecuteBacktestTrade
-	14, // 9: ant.v1.ExecuteBacktestResponse.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
-	6,  // 10: ant.v1.BacktestService.RunBacktest:input_type -> ant.v1.ExecuteBacktestRequest
-	0,  // 11: ant.v1.BacktestService.ValidateStrategy:input_type -> ant.v1.EngineValidateRequest
-	2,  // 12: ant.v1.BacktestService.RunStrategy:input_type -> ant.v1.EngineRunStrategyRequest
-	9,  // 13: ant.v1.BacktestService.RunBacktest:output_type -> ant.v1.ExecuteBacktestResponse
-	1,  // 14: ant.v1.BacktestService.ValidateStrategy:output_type -> ant.v1.EngineValidateResponse
-	3,  // 15: ant.v1.BacktestService.RunStrategy:output_type -> ant.v1.EngineRunStrategyResponse
-	13, // [13:16] is the sub-list for method output_type
-	10, // [10:13] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	12, // 3: ant.v1.ExecuteBacktestRequest.strategy_params:type_name -> ant.v1.ExecuteBacktestRequest.StrategyParamsEntry
+	13, // 4: ant.v1.ExecuteBacktestRequest.trade_direction:type_name -> ant.v1.TradeDirection
+	14, // 5: ant.v1.ExecuteBacktestRequest.strategy_config:type_name -> ant.v1.StrategyConfig
+	7,  // 6: ant.v1.ExecuteBacktestRequest.symbol_info:type_name -> ant.v1.SymbolInfo
+	10, // 7: ant.v1.ExecuteBacktestResponse.metrics:type_name -> ant.v1.ExecuteBacktestMetrics
+	11, // 8: ant.v1.ExecuteBacktestResponse.risk:type_name -> ant.v1.ExecuteRiskAssessment
+	8,  // 9: ant.v1.ExecuteBacktestResponse.trades:type_name -> ant.v1.ExecuteBacktestTrade
+	15, // 10: ant.v1.ExecuteBacktestResponse.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
+	6,  // 11: ant.v1.BacktestService.RunBacktest:input_type -> ant.v1.ExecuteBacktestRequest
+	0,  // 12: ant.v1.BacktestService.ValidateStrategy:input_type -> ant.v1.EngineValidateRequest
+	2,  // 13: ant.v1.BacktestService.RunStrategy:input_type -> ant.v1.EngineRunStrategyRequest
+	9,  // 14: ant.v1.BacktestService.RunBacktest:output_type -> ant.v1.ExecuteBacktestResponse
+	1,  // 15: ant.v1.BacktestService.ValidateStrategy:output_type -> ant.v1.EngineValidateResponse
+	3,  // 16: ant.v1.BacktestService.RunStrategy:output_type -> ant.v1.EngineRunStrategyResponse
+	14, // [14:17] is the sub-list for method output_type
+	11, // [11:14] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_backtest_service_proto_init() }
@@ -1462,7 +1467,7 @@ func file_backtest_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_backtest_service_proto_rawDesc), len(file_backtest_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

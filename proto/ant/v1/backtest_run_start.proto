@@ -13,7 +13,7 @@ message StartBacktestRunRequest {
   string account_id = 2;
   string symbol = 3;
   string timeframe = 4;
-  double initial_capital = 5;
+  string initial_capital = 5;
   BacktestRunMode mode = 6;
   optional google.protobuf.Timestamp from = 7;
   optional google.protobuf.Timestamp to = 8;

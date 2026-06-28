@@ -102,7 +102,7 @@ func TestPlacePaperOrder_BuyFillsAtAsk(t *testing.T) {
 	engine := New(repo, nil, testLogger())
 
 	err := engine.PlacePaperOrder(ctx, "pa-1", "EURUSD", "buy",
-		decimal.NewFromFloat(0.1), 1.1000, 1.1005)
+		decimal.NewFromFloat(0.1), decimal.NewFromFloat(1.1000), decimal.NewFromFloat(1.1005))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -134,7 +134,7 @@ func TestPlacePaperOrder_SellFillsAtBid(t *testing.T) {
 	engine := New(repo, nil, testLogger())
 
 	err := engine.PlacePaperOrder(ctx, "pa-2", "GBPUSD", "sell",
-		decimal.NewFromFloat(0.2), 1.2500, 1.2505)
+		decimal.NewFromFloat(0.2), decimal.NewFromFloat(1.2500), decimal.NewFromFloat(1.2505))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -159,7 +159,7 @@ func TestPlacePaperOrder_FallbackToMidPrice(t *testing.T) {
 
 	// Both bid and ask are 0.
 	err := engine.PlacePaperOrder(ctx, "pa-3", "XAUUSD", "buy",
-		decimal.NewFromFloat(1), 0, 0)
+		decimal.NewFromFloat(1), decimal.Zero, decimal.Zero)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -180,7 +180,7 @@ func TestPlacePaperOrder_AccountNotFound(t *testing.T) {
 	engine := New(repo, nil, testLogger())
 
 	err := engine.PlacePaperOrder(ctx, "nonexistent", "EURUSD", "buy",
-		decimal.NewFromFloat(0.1), 1.1000, 1.1005)
+		decimal.NewFromFloat(0.1), decimal.NewFromFloat(1.1000), decimal.NewFromFloat(1.1005))
 	if err != nil {
 		t.Fatalf("expected no error (graceful), got %v", err)
 	}
@@ -198,7 +198,7 @@ func TestPlacePaperOrder_CreateOrderError(t *testing.T) {
 	engine := New(repo, nil, testLogger())
 
 	err := engine.PlacePaperOrder(ctx, "pa-1", "EURUSD", "buy",
-		decimal.NewFromFloat(0.1), 1.1000, 1.1005)
+		decimal.NewFromFloat(0.1), decimal.NewFromFloat(1.1000), decimal.NewFromFloat(1.1005))
 	if err == nil {
 		t.Fatal("expected error from CreateOrder, got nil")
 	}
@@ -216,7 +216,7 @@ func TestSubscribe_ReceivesUpdateAfterOrder(t *testing.T) {
 
 	// Place order should trigger broadcast.
 	err := engine.PlacePaperOrder(ctx, "pa-sub", "EURUSD", "buy",
-		decimal.NewFromFloat(0.1), 1.1000, 1.1005)
+		decimal.NewFromFloat(0.1), decimal.NewFromFloat(1.1000), decimal.NewFromFloat(1.1005))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -242,7 +242,7 @@ func TestSubscribe_UnsubscribeStopsReceiving(t *testing.T) {
 	unsubscribe()
 
 	err := engine.PlacePaperOrder(ctx, "pa-unsub", "EURUSD", "buy",
-		decimal.NewFromFloat(0.1), 1.1000, 1.1005)
+		decimal.NewFromFloat(0.1), decimal.NewFromFloat(1.1000), decimal.NewFromFloat(1.1005))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

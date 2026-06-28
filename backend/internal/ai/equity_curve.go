@@ -29,10 +29,10 @@ func EquityCurveToDailyReturns(protoResp []byte) []float64 {
 	return DailyReturnsFromTrades(resp.GetTrades())
 }
 
-func equityDiffs(equity []float64) []float64 {
+func equityDiffs(equity []string) []float64 {
 	rets := make([]float64, len(equity)-1)
 	for i := 1; i < len(equity); i++ {
-		rets[i-1] = equity[i] - equity[i-1]
+		rets[i-1] = parseFloat(equity[i]) - parseFloat(equity[i-1])
 	}
 	return rets
 }

@@ -136,7 +136,7 @@ type GenerateStrategyChunk struct {
 	Phase            string                 `protobuf:"bytes,1,opt,name=phase,proto3" json:"phase,omitempty"`                                               // clarifying | generating | compliance | backtest | done
 	Delta            string                 `protobuf:"bytes,2,opt,name=delta,proto3" json:"delta,omitempty"`                                               // streaming text delta (generating phase)
 	Questions        []string               `protobuf:"bytes,3,rep,name=questions,proto3" json:"questions,omitempty"`                                       // clarification questions (clarifying phase)
-	Code             string                 `protobuf:"bytes,4,opt,name=code,proto3" json:"code,omitempty"`                                                 // final generated Python code (generating or compliance phase)
+	Code             string                 `protobuf:"bytes,4,opt,name=code,proto3" json:"code,omitempty"`                                                 // final generated strategy code (generating or compliance phase)
 	ComplianceIssues []string               `protobuf:"bytes,5,rep,name=compliance_issues,json=complianceIssues,proto3" json:"compliance_issues,omitempty"` // compliance scan issues (compliance phase)
 	BacktestRunId    string                 `protobuf:"bytes,6,opt,name=backtest_run_id,json=backtestRunId,proto3" json:"backtest_run_id,omitempty"`        // auto-triggered backtest ID (backtest phase)
 	TemplateName     string                 `protobuf:"bytes,7,opt,name=template_name,json=templateName,proto3" json:"template_name,omitempty"`             // matched template name (generating phase)

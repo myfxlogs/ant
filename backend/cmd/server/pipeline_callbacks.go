@@ -33,12 +33,12 @@ func buildOnOrderUpdate(
 		defer cancel()
 		userUID, err := uuid.Parse(userID)
 		if err != nil { log.Warn("OnOrderUpdate: invalid user UUID", zap.String("userID", userID), zap.Error(err)); return }
-		if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, o.Balance, o.Equity, o.Credit, o.Margin, o.FreeMargin, o.MarginLevel); err != nil {
+		if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, o.Balance.InexactFloat64(), o.Equity.InexactFloat64(), o.Credit.InexactFloat64(), o.Margin.InexactFloat64(), o.FreeMargin.InexactFloat64(), o.MarginLevel.InexactFloat64()); err != nil {
 			log.Warn("OnOrderUpdate: pg update failed", zap.String("account", accountID), zap.Error(err))
 		}
 		publishProfitEvent(accountBroker, accountID, userID, o)
 		// Update in-memory summary cache for SSE SubscribeUserSummary.
-		accountSvc.UpdateSummaryCache(userID, accountID, o.Balance, o.Equity, "connected")
+		accountSvc.UpdateSummaryCache(userID, accountID, o.Balance.InexactFloat64(), o.Equity.InexactFloat64(), "connected")
 		publishPositionSnapshot(snapshotBroker, accountID, userID, o)
 		feedPlatformAggregator(platformAgg, accountID, o)
 		writeClosedTradeRecord(log, tradeRecordRepo, writeCtx, accountID, o)
@@ -77,10 +77,10 @@ func publishPositionSnapshot(broker *mthub.PositionSnapshotBroker, accountID, us
 func feedPlatformAggregator(platformAgg **risksvc.PlatformAggregator, accountID string, o *mdtick.OrderUpdate) {
 	(*platformAgg).ClearAccount(accountID)
 	for _, pos := range o.Positions {
-		netVol := pos.Volume
+		netVol := pos.Volume.InexactFloat64()
 		if pos.Type == "sell" { netVol = -netVol }
 		(*platformAgg).UpdatePosition(accountID, &risksvc.AggregatorPosition{
-			Canonical: pos.Symbol, NetVolume: netVol, Notional: pos.Volume*pos.CurrentPrice*100000, Margin: 0,
+			Canonical: pos.Symbol, NetVolume: netVol, Notional: pos.Volume.Mul(pos.CurrentPrice).Mul(decimal.NewFromInt(100000)).InexactFloat64(), Margin: 0,
 		})
 	}
 }
@@ -102,11 +102,11 @@ func writeClosedTradeRecord(log *zap.Logger, repo *repository.TradeRecordReposit
 	if err != nil { return }
 	rec := &model.TradeRecord{
 		AccountID: uid, Ticket: o.UpdateTicket, Symbol: o.UpdateSymbol, OrderType: o.UpdateOrderType,
-		Volume: decimal.NewFromFloat(o.UpdateVolume), OpenPrice: decimal.NewFromFloat(o.UpdateOpenPrice),
-		ClosePrice: decimal.NewFromFloat(o.UpdateClosePrice), Profit: decimal.NewFromFloat(o.UpdateProfit),
-		Swap: decimal.NewFromFloat(o.UpdateSwap), Commission: decimal.NewFromFloat(o.UpdateCommission),
+		Volume: o.UpdateVolume, OpenPrice: o.UpdateOpenPrice,
+		ClosePrice: o.UpdateClosePrice, Profit: o.UpdateProfit,
+		Swap: o.UpdateSwap, Commission: o.UpdateCommission,
 		OpenTime: time.Unix(o.UpdateOpenTime, 0), CloseTime: time.Unix(o.UpdateCloseTime, 0),
-		StopLoss: decimal.NewFromFloat(o.UpdateSL), TakeProfit: decimal.NewFromFloat(o.UpdateTP),
+		StopLoss: o.UpdateSL, TakeProfit: o.UpdateTP,
 		OrderComment: o.UpdateComment, Platform: o.Platform,
 	}
 	if err := repo.Create(ctx, rec); err != nil {

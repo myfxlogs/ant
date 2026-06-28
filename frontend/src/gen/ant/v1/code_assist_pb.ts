@@ -356,7 +356,7 @@ export type TransformCodeRequest = Message<"ant.v1.TransformCodeRequest"> & {
   sourceLang: string;
 
   /**
-   * "python" (target language)
+   * "go" (target language)
    *
    * @generated from field: string target_lang = 3;
    */
@@ -375,7 +375,7 @@ export const TransformCodeRequestSchema: GenMessage<TransformCodeRequest> = /*@_
  */
 export type TransformCodeResponse = Message<"ant.v1.TransformCodeResponse"> & {
   /**
-   * translated Python strategy code
+   * translated Go strategy code
    *
    * @generated from field: string target_code = 1;
    */
@@ -468,7 +468,7 @@ export const CodeAssistService: GenService<{
     output: typeof ValidateStrategyExtendedResponseSchema;
   },
   /**
-   * TransformCode translates EA/indicator code (MQL4/MQL5) to Python strategy code.
+   * TransformCode translates EA/indicator code (MQL4/MQL5) to Go strategy code.
    *
    * @generated from rpc ant.v1.CodeAssistService.TransformCode
    */

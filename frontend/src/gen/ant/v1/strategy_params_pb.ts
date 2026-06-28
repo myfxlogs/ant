@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file strategy_params.proto.
  */
 export const file_strategy_params: GenFile = /*@__PURE__*/
-  fileDesc("ChVzdHJhdGVneV9wYXJhbXMucHJvdG8SBmFudC52MSJzCg5TdHJhdGVneVBhcmFtcxIyCgZ2YWx1ZXMYASADKAsyIi5hbnQudjEuU3RyYXRlZ3lQYXJhbXMuVmFsdWVzRW50cnkaLQoLVmFsdWVzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgBOgI4ASJ6CgxQYXJhbWV0ZXJEZWYSDAoEbmFtZRgBIAEoCRIMCgR0eXBlGAIgASgJEhUKDWRlZmF1bHRfdmFsdWUYAyABKAESCwoDbWluGAQgASgBEgsKA21heBgFIAEoARIMCgRzdGVwGAYgASgBEg8KB2Nob2ljZXMYByADKAkiNgoOUGFyYW1ldGVyU3BhY2USJAoGcGFyYW1zGAEgAygLMhQuYW50LnYxLlBhcmFtZXRlckRlZiJ9ChNDYW5kaWRhdGVQYXJhbWV0ZXJzEjcKBnZhbHVlcxgBIAMoCzInLmFudC52MS5DYW5kaWRhdGVQYXJhbWV0ZXJzLlZhbHVlc0VudHJ5Gi0KC1ZhbHVlc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoAToCOAEigQEKD1Njb3JlQ29tcG9uZW50cxI7Cgpjb21wb25lbnRzGAEgAygLMicuYW50LnYxLlNjb3JlQ29tcG9uZW50cy5Db21wb25lbnRzRW50cnkaMQoPQ29tcG9uZW50c0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoAToCOAEipwEKFVRlbXBsYXRlUGFyYW1ldGVyU2xvdBIMCgRuYW1lGAEgASgJEgwKBHR5cGUYAiABKAkSDQoFbGFiZWwYAyABKAkSFQoNZGVmYXVsdF92YWx1ZRgEIAEoARILCgNtaW4YBSABKAESCwoDbWF4GAYgASgBEgwKBHN0ZXAYByABKAESDwoHY2hvaWNlcxgIIAMoCRITCgtkZXNjcmlwdGlvbhgJIAEoCSJGChZUZW1wbGF0ZVBhcmFtZXRlclNsb3RzEiwKBXNsb3RzGAEgAygLMh0uYW50LnYxLlRlbXBsYXRlUGFyYW1ldGVyU2xvdEIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
+  fileDesc("ChVzdHJhdGVneV9wYXJhbXMucHJvdG8SBmFudC52MSJzCg5TdHJhdGVneVBhcmFtcxIyCgZ2YWx1ZXMYASADKAsyIi5hbnQudjEuU3RyYXRlZ3lQYXJhbXMuVmFsdWVzRW50cnkaLQoLVmFsdWVzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASJ6CgxQYXJhbWV0ZXJEZWYSDAoEbmFtZRgBIAEoCRIMCgR0eXBlGAIgASgJEhUKDWRlZmF1bHRfdmFsdWUYAyABKAESCwoDbWluGAQgASgBEgsKA21heBgFIAEoARIMCgRzdGVwGAYgASgBEg8KB2Nob2ljZXMYByADKAkiNgoOUGFyYW1ldGVyU3BhY2USJAoGcGFyYW1zGAEgAygLMhQuYW50LnYxLlBhcmFtZXRlckRlZiJ9ChNDYW5kaWRhdGVQYXJhbWV0ZXJzEjcKBnZhbHVlcxgBIAMoCzInLmFudC52MS5DYW5kaWRhdGVQYXJhbWV0ZXJzLlZhbHVlc0VudHJ5Gi0KC1ZhbHVlc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEigQEKD1Njb3JlQ29tcG9uZW50cxI7Cgpjb21wb25lbnRzGAEgAygLMicuYW50LnYxLlNjb3JlQ29tcG9uZW50cy5Db21wb25lbnRzRW50cnkaMQoPQ29tcG9uZW50c0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoAToCOAEipwEKFVRlbXBsYXRlUGFyYW1ldGVyU2xvdBIMCgRuYW1lGAEgASgJEgwKBHR5cGUYAiABKAkSDQoFbGFiZWwYAyABKAkSFQoNZGVmYXVsdF92YWx1ZRgEIAEoARILCgNtaW4YBSABKAESCwoDbWF4GAYgASgBEgwKBHN0ZXAYByABKAESDwoHY2hvaWNlcxgIIAMoCRITCgtkZXNjcmlwdGlvbhgJIAEoCSJGChZUZW1wbGF0ZVBhcmFtZXRlclNsb3RzEiwKBXNsb3RzGAEgAygLMh0uYW50LnYxLlRlbXBsYXRlUGFyYW1ldGVyU2xvdEIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
 
 /**
  * StrategyParams holds parameter key→value overrides for backtest execution.
@@ -20,9 +20,9 @@ export const file_strategy_params: GenFile = /*@__PURE__*/
  */
 export type StrategyParams = Message<"ant.v1.StrategyParams"> & {
   /**
-   * @generated from field: map<string, double> values = 1;
+   * @generated from field: map<string, string> values = 1;
    */
-  values: { [key: string]: number };
+  values: { [key: string]: string };
 };
 
 /**
@@ -109,9 +109,9 @@ export const ParameterSpaceSchema: GenMessage<ParameterSpace> = /*@__PURE__*/
  */
 export type CandidateParameters = Message<"ant.v1.CandidateParameters"> & {
   /**
-   * @generated from field: map<string, double> values = 1;
+   * @generated from field: map<string, string> values = 1;
    */
-  values: { [key: string]: number };
+  values: { [key: string]: string };
 };
 
 /**

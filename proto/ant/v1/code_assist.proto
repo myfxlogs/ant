@@ -11,7 +11,7 @@ service CodeAssistService {
   rpc ReviseCodeStream(ReviseCodeRequest) returns (stream ReviseCodeStreamChunk);
   rpc ExplainCode(ExplainCodeRequest) returns (ExplainCodeResponse);
   rpc ValidateStrategyExtended(ValidateStrategyExtendedRequest) returns (ValidateStrategyExtendedResponse);
-  // TransformCode translates EA/indicator code (MQL4/MQL5) to Python strategy code.
+  // TransformCode translates EA/indicator code (MQL4/MQL5) to Go strategy code.
   rpc TransformCode(TransformCodeRequest) returns (TransformCodeResponse);
   // TranslateParamLabels translates strategy parameter labels to all supported locales.
   rpc TranslateParamLabels(TranslateParamLabelsRequest) returns (TranslateParamLabelsResponse);
@@ -95,11 +95,11 @@ message RequiredParamSpec {
 message TransformCodeRequest {
   string source_code = 1;   // MQL4/MQL5 EA or indicator code
   string source_lang = 2;   // "mql4", "mql5", or "auto" (auto-detect)
-  string target_lang = 3;   // "python" (target language)
+  string target_lang = 3;   // "go" (target language)
 }
 
 message TransformCodeResponse {
-  string target_code = 1;    // translated Python strategy code
+  string target_code = 1;    // translated Go strategy code
   string explanation = 2;    // summary of what was translated and key mappings
   string detected_lang = 3;  // detected source language if source_lang was "auto"
   float confidence = 4;      // 0.0–1.0 translation confidence score

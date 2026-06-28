@@ -63,11 +63,11 @@ type GlobalSettings struct {
 	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	UserId             string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	AutoTradeEnabled   bool                   `protobuf:"varint,3,opt,name=auto_trade_enabled,json=autoTradeEnabled,proto3" json:"auto_trade_enabled,omitempty"`
-	MaxRiskPercent     float64                `protobuf:"fixed64,4,opt,name=max_risk_percent,json=maxRiskPercent,proto3" json:"max_risk_percent,omitempty"`
+	MaxRiskPercent     string                 `protobuf:"bytes,4,opt,name=max_risk_percent,json=maxRiskPercent,proto3" json:"max_risk_percent,omitempty"`
 	MaxPositions       int32                  `protobuf:"varint,5,opt,name=max_positions,json=maxPositions,proto3" json:"max_positions,omitempty"`
 	MaxLotSize         string                 `protobuf:"bytes,6,opt,name=max_lot_size,json=maxLotSize,proto3" json:"max_lot_size,omitempty"`
 	MaxDailyLoss       string                 `protobuf:"bytes,7,opt,name=max_daily_loss,json=maxDailyLoss,proto3" json:"max_daily_loss,omitempty"`
-	MaxDrawdownPercent float64                `protobuf:"fixed64,8,opt,name=max_drawdown_percent,json=maxDrawdownPercent,proto3" json:"max_drawdown_percent,omitempty"`
+	MaxDrawdownPercent string                 `protobuf:"bytes,8,opt,name=max_drawdown_percent,json=maxDrawdownPercent,proto3" json:"max_drawdown_percent,omitempty"`
 	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt          *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields      protoimpl.UnknownFields
@@ -125,11 +125,11 @@ func (x *GlobalSettings) GetAutoTradeEnabled() bool {
 	return false
 }
 
-func (x *GlobalSettings) GetMaxRiskPercent() float64 {
+func (x *GlobalSettings) GetMaxRiskPercent() string {
 	if x != nil {
 		return x.MaxRiskPercent
 	}
-	return 0
+	return ""
 }
 
 func (x *GlobalSettings) GetMaxPositions() int32 {
@@ -153,11 +153,11 @@ func (x *GlobalSettings) GetMaxDailyLoss() string {
 	return ""
 }
 
-func (x *GlobalSettings) GetMaxDrawdownPercent() float64 {
+func (x *GlobalSettings) GetMaxDrawdownPercent() string {
 	if x != nil {
 		return x.MaxDrawdownPercent
 	}
-	return 0
+	return ""
 }
 
 func (x *GlobalSettings) GetCreatedAt() *timestamppb.Timestamp {
@@ -178,11 +178,11 @@ type UpdateGlobalSettingsRequest struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	UserId             string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	AutoTradeEnabled   *bool                  `protobuf:"varint,2,opt,name=auto_trade_enabled,json=autoTradeEnabled,proto3,oneof" json:"auto_trade_enabled,omitempty"`
-	MaxRiskPercent     *float64               `protobuf:"fixed64,3,opt,name=max_risk_percent,json=maxRiskPercent,proto3,oneof" json:"max_risk_percent,omitempty"`
+	MaxRiskPercent     *string                `protobuf:"bytes,3,opt,name=max_risk_percent,json=maxRiskPercent,proto3,oneof" json:"max_risk_percent,omitempty"`
 	MaxPositions       *int32                 `protobuf:"varint,4,opt,name=max_positions,json=maxPositions,proto3,oneof" json:"max_positions,omitempty"`
 	MaxLotSize         *string                `protobuf:"bytes,5,opt,name=max_lot_size,json=maxLotSize,proto3,oneof" json:"max_lot_size,omitempty"`
 	MaxDailyLoss       *string                `protobuf:"bytes,6,opt,name=max_daily_loss,json=maxDailyLoss,proto3,oneof" json:"max_daily_loss,omitempty"`
-	MaxDrawdownPercent *float64               `protobuf:"fixed64,7,opt,name=max_drawdown_percent,json=maxDrawdownPercent,proto3,oneof" json:"max_drawdown_percent,omitempty"`
+	MaxDrawdownPercent *string                `protobuf:"bytes,7,opt,name=max_drawdown_percent,json=maxDrawdownPercent,proto3,oneof" json:"max_drawdown_percent,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -231,11 +231,11 @@ func (x *UpdateGlobalSettingsRequest) GetAutoTradeEnabled() bool {
 	return false
 }
 
-func (x *UpdateGlobalSettingsRequest) GetMaxRiskPercent() float64 {
+func (x *UpdateGlobalSettingsRequest) GetMaxRiskPercent() string {
 	if x != nil && x.MaxRiskPercent != nil {
 		return *x.MaxRiskPercent
 	}
-	return 0
+	return ""
 }
 
 func (x *UpdateGlobalSettingsRequest) GetMaxPositions() int32 {
@@ -259,11 +259,11 @@ func (x *UpdateGlobalSettingsRequest) GetMaxDailyLoss() string {
 	return ""
 }
 
-func (x *UpdateGlobalSettingsRequest) GetMaxDrawdownPercent() float64 {
+func (x *UpdateGlobalSettingsRequest) GetMaxDrawdownPercent() string {
 	if x != nil && x.MaxDrawdownPercent != nil {
 		return *x.MaxDrawdownPercent
 	}
-	return 0
+	return ""
 }
 
 type ToggleAutoTradeRequest struct {
@@ -492,12 +492,12 @@ const file_auto_trading_settings_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12,\n" +
 	"\x12auto_trade_enabled\x18\x03 \x01(\bR\x10autoTradeEnabled\x12(\n" +
-	"\x10max_risk_percent\x18\x04 \x01(\x01R\x0emaxRiskPercent\x12#\n" +
+	"\x10max_risk_percent\x18\x04 \x01(\tR\x0emaxRiskPercent\x12#\n" +
 	"\rmax_positions\x18\x05 \x01(\x05R\fmaxPositions\x12 \n" +
 	"\fmax_lot_size\x18\x06 \x01(\tR\n" +
 	"maxLotSize\x12$\n" +
 	"\x0emax_daily_loss\x18\a \x01(\tR\fmaxDailyLoss\x120\n" +
-	"\x14max_drawdown_percent\x18\b \x01(\x01R\x12maxDrawdownPercent\x129\n" +
+	"\x14max_drawdown_percent\x18\b \x01(\tR\x12maxDrawdownPercent\x129\n" +
 	"\n" +
 	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
@@ -506,12 +506,12 @@ const file_auto_trading_settings_proto_rawDesc = "" +
 	"\x1bUpdateGlobalSettingsRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x121\n" +
 	"\x12auto_trade_enabled\x18\x02 \x01(\bH\x00R\x10autoTradeEnabled\x88\x01\x01\x12-\n" +
-	"\x10max_risk_percent\x18\x03 \x01(\x01H\x01R\x0emaxRiskPercent\x88\x01\x01\x12(\n" +
+	"\x10max_risk_percent\x18\x03 \x01(\tH\x01R\x0emaxRiskPercent\x88\x01\x01\x12(\n" +
 	"\rmax_positions\x18\x04 \x01(\x05H\x02R\fmaxPositions\x88\x01\x01\x12%\n" +
 	"\fmax_lot_size\x18\x05 \x01(\tH\x03R\n" +
 	"maxLotSize\x88\x01\x01\x12)\n" +
 	"\x0emax_daily_loss\x18\x06 \x01(\tH\x04R\fmaxDailyLoss\x88\x01\x01\x125\n" +
-	"\x14max_drawdown_percent\x18\a \x01(\x01H\x05R\x12maxDrawdownPercent\x88\x01\x01B\x15\n" +
+	"\x14max_drawdown_percent\x18\a \x01(\tH\x05R\x12maxDrawdownPercent\x88\x01\x01B\x15\n" +
 	"\x13_auto_trade_enabledB\x13\n" +
 	"\x11_max_risk_percentB\x10\n" +
 	"\x0e_max_positionsB\x0f\n" +

@@ -116,15 +116,15 @@ func buildIndicatorEvent(symbol, timeframe string, barCount int32, r *indicator.
 	return event
 }
 
-// klineBarsToMdtickBars converts repository.KlineBar (float64 OHLCV) to mdtick.Bar (decimal.Decimal).
+// klineBarsToMdtickBars converts repository.KlineBar (decimal OHLC) to mdtick.Bar (decimal.Decimal).
 func klineBarsToMdtickBars(bars []repository.KlineBar) []mdtick.Bar {
 	out := make([]mdtick.Bar, len(bars))
 	for i, b := range bars {
 		out[i] = mdtick.Bar{
-			Open:   decimal.NewFromFloat(b.Open),
-			High:   decimal.NewFromFloat(b.High),
-			Low:    decimal.NewFromFloat(b.Low),
-			Close:  decimal.NewFromFloat(b.Close),
+			Open:   b.Open,
+			High:   b.High,
+			Low:    b.Low,
+			Close:  b.Close,
 			Volume: b.Volume,
 		}
 	}

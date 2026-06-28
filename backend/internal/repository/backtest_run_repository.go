@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 )
 
 type BacktestRunRepository struct {
@@ -34,18 +35,18 @@ type BacktestRun struct {
 	Error                string     `db:"error"`
 	StartedAt            *time.Time `db:"started_at"`
 	FinishedAt           *time.Time `db:"finished_at"`
-	StrategyCode         *string    `db:"strategy_code"`
-	InitialCapital       *float64   `db:"initial_capital"`
-	ExtraSymbols         []string   `db:"extra_symbols"`
-	ParameterOverrides   []byte     `db:"parameter_overrides"`
-	ProtoResponse        []byte     `db:"proto_response"`
-	CreatedAt            time.Time  `db:"created_at"`
-	Commission           *float64   `db:"commission"`
-	Slippage             *float64   `db:"slippage"`
-	Leverage             *float64   `db:"leverage"`
-	TradeDirection       *string    `db:"trade_direction"`
-	StrictMode           *bool      `db:"strict_mode"`
-	ConfigSnapshot       []byte     `db:"config_snapshot"`
+	StrategyCode         *string          `db:"strategy_code"`
+	InitialCapital       *decimal.Decimal `db:"initial_capital"`
+	ExtraSymbols         []string         `db:"extra_symbols"`
+	ParameterOverrides   []byte           `db:"parameter_overrides"`
+	ProtoResponse        []byte           `db:"proto_response"`
+	CreatedAt            time.Time        `db:"created_at"`
+	Commission           *decimal.Decimal `db:"commission"`
+	Slippage             *decimal.Decimal `db:"slippage"`
+	Leverage             *decimal.Decimal `db:"leverage"`
+	TradeDirection       *string          `db:"trade_direction"`
+	StrictMode           *bool            `db:"strict_mode"`
+	ConfigSnapshot       []byte           `db:"config_snapshot"`
 }
 
 func NewBacktestRunRepository(db *pgxpool.Pool) *BacktestRunRepository {

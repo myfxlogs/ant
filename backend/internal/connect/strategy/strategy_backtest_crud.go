@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/proto"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -48,14 +49,14 @@ func buildBacktestRunFromRequest(userID uuid.UUID, msg *antv1.StartBacktestRunRe
 		ID: uuid.New(), UserID: userID, AccountID: accountID,
 		Symbol: msg.Symbol, Timeframe: msg.Timeframe,
 		Mode: backtestModeToString(msg.Mode), Status: StatusPending,
-		StrategyCode: ptr.Str(msg.Code), InitialCapital: ptr.F64(msg.InitialCapital),
+		StrategyCode: ptr.Str(msg.Code), InitialCapital: ptr.Decimal(parseDecimal(msg.InitialCapital)),
 	}
 	if run.Mode == "" { run.Mode = "KLINE_RANGE" }
-	if msg.InitialCapital <= 0 { run.InitialCapital = ptr.F64(10000) }
+	if parseDecimal(msg.InitialCapital).LessThanOrEqual(decimal.Zero) { run.InitialCapital = ptr.Decimal(decimal.NewFromInt(10000)) }
 	if cfg := msg.GetExecutionConfig(); cfg != nil {
-		run.Commission = ptr.F64(cfg.GetCommission())
-		run.Slippage = ptr.F64(cfg.GetSlippage())
-		run.Leverage = ptr.F64(cfg.GetLeverage())
+		run.Commission = ptr.Decimal(parseDecimal(cfg.GetCommission()))
+		run.Slippage = ptr.Decimal(parseDecimal(cfg.GetSlippage()))
+		run.Leverage = ptr.Decimal(parseDecimal(cfg.GetLeverage()))
 		run.TradeDirection = ptr.Str(tradeDirectionToString(cfg.GetTradeDirection()))
 		sMode := cfg.GetStrictMode()
 		run.StrictMode = &sMode

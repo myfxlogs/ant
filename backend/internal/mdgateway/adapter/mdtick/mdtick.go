@@ -59,13 +59,13 @@ type MTAccountInfo struct {
 type ProfitUpdate struct {
 	AccountID    string
 	Platform     string
-	Balance      float64
-	Credit       float64
-	Equity       float64
-	Margin       float64
-	FreeMargin   float64
-	MarginLevel  float64
-	Profit       float64
+	Balance      decimal.Decimal
+	Credit       decimal.Decimal
+	Equity       decimal.Decimal
+	Margin       decimal.Decimal
+	FreeMargin   decimal.Decimal
+	MarginLevel  decimal.Decimal
+	Profit       decimal.Decimal
 	ProfitPercent float64
 	Positions    []ProfitPosition
 }
@@ -74,9 +74,9 @@ type ProfitUpdate struct {
 type ProfitPosition struct {
 	Ticket       int64
 	Symbol       string
-	Profit       float64
-	Volume       float64
-	CurrentPrice float64
+	Profit       decimal.Decimal
+	Volume       decimal.Decimal
+	CurrentPrice decimal.Decimal
 }
 
 // OrderUpdate represents a real-time order change event from OnOrderUpdate stream.
@@ -89,25 +89,25 @@ type OrderUpdate struct {
 	UpdateType      string // "open", "close", "modify", "delete", "pending_open", "pending_close", etc.
 	UpdateOrderType string // "buy", "sell", "buy_limit", "sell_limit", etc. (original order type)
 	UpdateSymbol    string
-	UpdateVolume  float64
-	UpdateOpenPrice  float64
-	UpdateClosePrice float64
-	UpdateProfit     float64
-	UpdateSwap       float64
-	UpdateCommission float64
+	UpdateVolume  decimal.Decimal
+	UpdateOpenPrice  decimal.Decimal
+	UpdateClosePrice decimal.Decimal
+	UpdateProfit     decimal.Decimal
+	UpdateSwap       decimal.Decimal
+	UpdateCommission decimal.Decimal
 	UpdateComment    string
 	UpdateOpenTime   int64 // unix seconds
 	UpdateCloseTime  int64 // unix seconds
-	UpdateSL         float64
-	UpdateTP         float64
+	UpdateSL         decimal.Decimal
+	UpdateTP         decimal.Decimal
 	// Account metrics from OrderUpdateSummary.
-	Balance     float64
-	Credit      float64
-	Equity      float64
-	Margin      float64
-	FreeMargin  float64
-	MarginLevel float64
-	Profit      float64
+	Balance     decimal.Decimal
+	Credit      decimal.Decimal
+	Equity      decimal.Decimal
+	Margin      decimal.Decimal
+	FreeMargin  decimal.Decimal
+	MarginLevel decimal.Decimal
+	Profit      decimal.Decimal
 	// ProfitPercent is profit as percentage of balance (Balance>0 only).
 	ProfitPercent float64
 	// Full opened positions list.
@@ -119,14 +119,14 @@ type OrderUpdatePosition struct {
 	Ticket       int64
 	Symbol       string
 	Type         string  // "buy", "sell", etc.
-	Volume       float64
-	OpenPrice    float64
-	CurrentPrice float64
-	StopLoss     float64
-	TakeProfit   float64
-	Profit       float64
-	Swap         float64
-	Commission   float64
+	Volume       decimal.Decimal
+	OpenPrice    decimal.Decimal
+	CurrentPrice decimal.Decimal
+	StopLoss     decimal.Decimal
+	TakeProfit   decimal.Decimal
+	Profit       decimal.Decimal
+	Swap         decimal.Decimal
+	Commission   decimal.Decimal
 	Comment      string
 	OpenTime     int64   // unix seconds
 }

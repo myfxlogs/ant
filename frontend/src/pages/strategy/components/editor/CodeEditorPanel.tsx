@@ -6,7 +6,7 @@ import { EDIT_TEMPLATE_MODAL_FIELDS_CODE_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_C
 import { codeAssistClient } from '@/client/connect';
 import { strategyImportApi } from '@/client/strategy';
 import { ImportAnalysisReport } from '@/components/strategy/ImportAnalysisReport';
-import type { AnalyzeCodeResponse } from '@/gen/ant/v1/strategy_import_pb';
+import type { AnalyzeImportCodeResponse } from '@/gen/ant/v1/strategy_runtime_pb';
 import type { FormInstance } from 'antd';
 import { Input } from 'antd';
 
@@ -28,7 +28,7 @@ export default function CodeEditorPanel({ form, code }: Props) {
   const [eaResult, setEaResult] = useState('');
   const [importMethod, setImportMethod] = useState<ImportMethod>('migration');
   // Migration engine state
-  const [analysis, setAnalysis] = useState<AnalyzeCodeResponse | null>(null);
+  const [analysis, setAnalysis] = useState<AnalyzeImportCodeResponse | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
 
   // ── Migration: Analyze ──────────────────────────────────────────
@@ -65,7 +65,7 @@ export default function CodeEditorPanel({ form, code }: Props) {
           sourceCode: eaCode,
           sourceName: 'imported.mq4',
         });
-        setEaResult(resp.pythonCode || '');
+        setEaResult(resp.goCode || '');
       } catch (err: any) {
         if (err?.code == null) {
           message.error(t('strategy.importEA.importFailed', { defaultValue: 'Import failed. Please try again.' }));
@@ -84,7 +84,7 @@ export default function CodeEditorPanel({ form, code }: Props) {
     setEaTranslating(true); setEaResult(''); setAnalysis(null);
     (async () => {
       try {
-        const resp = await codeAssistClient.transformCode({ sourceCode: eaCode, sourceLang: 'auto', targetLang: 'python' });
+        const resp = await codeAssistClient.transformCode({ sourceCode: eaCode, sourceLang: 'auto', targetLang: 'go' });
         setEaResult(resp.targetCode || '');
       } catch (err: any) {
         if (err?.code == null) {
@@ -145,7 +145,7 @@ export default function CodeEditorPanel({ form, code }: Props) {
                     <Button type="primary" size="small" icon={<ImportOutlined />} onClick={handleConfirmImport} loading={eaTranslating}>
                       {t('strategy.importEA.confirmImport', { defaultValue: '确认导入' })}</Button>
                     {/* When coverage is low and has real gaps, suggest AI translate */}
-                    {analysis.coverageScore < 0.7 && analysis.blindSpots?.some((b: any) =>
+                    {analysis.coverageScore < 0.7 && (analysis.blindSpots || []).some((b) =>
                       b.category !== '不支持的API调用' || (
                         !b.description?.includes('ObjectCreate') && !b.description?.includes('ObjectDelete')
                       )
@@ -176,7 +176,7 @@ export default function CodeEditorPanel({ form, code }: Props) {
             <>
               <div style={{ padding: '6px 14px', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 8, alignItems: 'center' }}>
                 <Button type="primary" size="small" icon={<RobotOutlined />} onClick={handleImportEA} loading={eaTranslating}>
-                  {t('strategy.importEA.translate', { defaultValue: 'Translate to Python' })}</Button>
+                  {t('strategy.importEA.translate', { defaultValue: 'Translate to Go' })}</Button>
                 {eaResult && <Button size="small" onClick={applyEaResult}>{t('strategy.importEA.apply', { defaultValue: 'Apply to Editor' })}</Button>}
               </div>
               <div style={{ flex: 1, overflow: 'auto', padding: '0 14px' }}>

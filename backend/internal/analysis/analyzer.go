@@ -191,7 +191,7 @@ func (a *Analyzer) computeMTF(barsByTF map[string][]repository.KlineBar) MultiTf
 		n := len(bars)
 		closes := make([]float64, n)
 		for i, b := range bars {
-			closes[i] = b.Close
+			closes[i] = b.Close.InexactFloat64()
 		}
 		// Reverse to chronological order (oldest first).
 		for i, j := 0, n-1; i < j; i, j = i+1, j-1 {

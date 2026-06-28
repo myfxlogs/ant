@@ -15,6 +15,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/shopspring/decimal"
+
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/risksvc"
 )
@@ -111,14 +113,13 @@ func (r *MarginFloorRule) Check(_ context.Context, intent *antv1.OrderIntent, st
 	}
 	vol := parseDecimal(intent.GetVolume())
 	price := parseDecimal(intent.GetPrice())
-	if vol <= 0 || price <= 0 {
+	if vol.LessThanOrEqual(decimal.Zero) || price.LessThanOrEqual(decimal.Zero) {
 		return passResult(r.Name()) // skip for market orders (price unknown)
 	}
-	required := vol * price
-	free, _ := state.FreeMargin.Float64()
-	if free < ratio*required {
+	required := vol.Mul(price)
+	if state.FreeMargin.LessThan(decimal.NewFromFloat(ratio).Mul(required)) {
 		return blockResult(r.Name(),
-			fmt.Sprintf("free margin %.2f < required %.2f (ratio=%.1f)", free, ratio*required, ratio))
+			fmt.Sprintf("free margin %s < required %s (ratio=%.1f)", state.FreeMargin.String(), decimal.NewFromFloat(ratio).Mul(required).String(), ratio))
 	}
 	return passResult(r.Name())
 }
@@ -184,9 +185,9 @@ func (r *CapabilityTierRule) Check(ctx context.Context, intent *antv1.OrderInten
 		return passResult(r.Name()) // no tier assigned = no restriction
 	}
 	vol := parseDecimal(intent.GetVolume())
-	if tier.MaxVolume > 0 && vol > tier.MaxVolume {
+	if tier.MaxVolume > 0 && vol.GreaterThan(decimal.NewFromFloat(tier.MaxVolume)) {
 		return blockResult(r.Name(),
-			fmt.Sprintf("volume %.2f exceeds tier max %.2f (tier: %s)", vol, tier.MaxVolume, tier.Name))
+			fmt.Sprintf("volume %s exceeds tier max %.2f (tier: %s)", vol.String(), tier.MaxVolume, tier.Name))
 	}
 	if len(tier.AllowedSymbols) > 0 {
 		sym := intent.GetSymbol()
@@ -215,10 +216,12 @@ func blockResult(_, reason string) *RuleResult {
 	return &RuleResult{Allowed: false, Reason: reason}
 }
 
-func parseDecimal(s string) float64 {
-	var f float64
-	fmt.Sscanf(s, "%f", &f)
-	return f
+func parseDecimal(s string) decimal.Decimal {
+	d, err := decimal.NewFromString(s)
+	if err != nil {
+		return decimal.Zero
+	}
+	return d
 }
 
 func currentTimeMillis() int64 {

@@ -35,7 +35,7 @@ message GetSharedPerformanceResponse {
   double max_drawdown = 5;
   double sharpe_ratio = 6;
   int32 total_trades = 7;
-  repeated double equity_curve = 8;
+  repeated string equity_curve = 8;
   repeated SharedTrade trades = 9;
   bool expired = 10;
 }

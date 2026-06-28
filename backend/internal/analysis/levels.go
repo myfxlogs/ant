@@ -33,18 +33,18 @@ func detectSRLevels(bars []repository.KlineBar) []SRLevel {
 			if j == i {
 				continue
 			}
-			if bars[j].High >= bars[i].High {
+			if bars[j].High.GreaterThanOrEqual(bars[i].High) {
 				isHigh = false
 			}
-			if bars[j].Low <= bars[i].Low {
+			if bars[j].Low.LessThanOrEqual(bars[i].Low) {
 				isLow = false
 			}
 		}
 		if isHigh {
-			swings = append(swings, swingPoint{price: bars[i].High, isHigh: true})
+			swings = append(swings, swingPoint{price: bars[i].High.InexactFloat64(), isHigh: true})
 		}
 		if isLow {
-			swings = append(swings, swingPoint{price: bars[i].Low, isHigh: false})
+			swings = append(swings, swingPoint{price: bars[i].Low.InexactFloat64(), isHigh: false})
 		}
 	}
 
@@ -57,9 +57,9 @@ func detectSRLevels(bars []repository.KlineBar) []SRLevel {
 	highs := make([]float64, n)
 	lows := make([]float64, n)
 	for i, b := range bars {
-		closes[i] = b.Close
-		highs[i] = b.High
-		lows[i] = b.Low
+		closes[i] = b.Close.InexactFloat64()
+		highs[i] = b.High.InexactFloat64()
+		lows[i] = b.Low.InexactFloat64()
 	}
 	// Reverse to chronological.
 	for i, j := 0, n-1; i < j; i, j = i+1, j-1 {
@@ -161,9 +161,9 @@ func classifyVolatility(bars []repository.KlineBar) (float64, string) {
 	lows := make([]float64, n)
 	closes := make([]float64, n)
 	for i, b := range bars {
-		highs[i] = b.High
-		lows[i] = b.Low
-		closes[i] = b.Close
+		highs[i] = b.High.InexactFloat64()
+		lows[i] = b.Low.InexactFloat64()
+		closes[i] = b.Close.InexactFloat64()
 	}
 	// Reverse to chronological.
 	for i, j := 0, n-1; i < j; i, j = i+1, j-1 {

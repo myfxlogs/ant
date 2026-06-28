@@ -26,8 +26,8 @@ type CalculatePositionSizeRequest struct {
 	AccountId      string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	Symbol         string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	AccountBalance string                 `protobuf:"bytes,3,opt,name=account_balance,json=accountBalance,proto3" json:"account_balance,omitempty"`
-	StopLossPips   float64                `protobuf:"fixed64,4,opt,name=stop_loss_pips,json=stopLossPips,proto3" json:"stop_loss_pips,omitempty"`
-	RiskPercent    float64                `protobuf:"fixed64,5,opt,name=risk_percent,json=riskPercent,proto3" json:"risk_percent,omitempty"`
+	StopLossPips   string                 `protobuf:"bytes,4,opt,name=stop_loss_pips,json=stopLossPips,proto3" json:"stop_loss_pips,omitempty"`
+	RiskPercent    string                 `protobuf:"bytes,5,opt,name=risk_percent,json=riskPercent,proto3" json:"risk_percent,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -83,18 +83,18 @@ func (x *CalculatePositionSizeRequest) GetAccountBalance() string {
 	return ""
 }
 
-func (x *CalculatePositionSizeRequest) GetStopLossPips() float64 {
+func (x *CalculatePositionSizeRequest) GetStopLossPips() string {
 	if x != nil {
 		return x.StopLossPips
 	}
-	return 0
+	return ""
 }
 
-func (x *CalculatePositionSizeRequest) GetRiskPercent() float64 {
+func (x *CalculatePositionSizeRequest) GetRiskPercent() string {
 	if x != nil {
 		return x.RiskPercent
 	}
-	return 0
+	return ""
 }
 
 type CalculatePositionSizeResponse struct {
@@ -183,8 +183,8 @@ const file_auto_trading_position_size_proto_rawDesc = "" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12'\n" +
 	"\x0faccount_balance\x18\x03 \x01(\tR\x0eaccountBalance\x12$\n" +
-	"\x0estop_loss_pips\x18\x04 \x01(\x01R\fstopLossPips\x12!\n" +
-	"\frisk_percent\x18\x05 \x01(\x01R\vriskPercent\"\xb3\x01\n" +
+	"\x0estop_loss_pips\x18\x04 \x01(\tR\fstopLossPips\x12!\n" +
+	"\frisk_percent\x18\x05 \x01(\tR\vriskPercent\"\xb3\x01\n" +
 	"\x1dCalculatePositionSizeResponse\x12\x16\n" +
 	"\x06volume\x18\x01 \x01(\tR\x06volume\x12\x1f\n" +
 	"\vrisk_amount\x18\x02 \x01(\tR\n" +

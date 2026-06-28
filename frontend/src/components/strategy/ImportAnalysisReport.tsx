@@ -10,12 +10,48 @@ import {
   DollarOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
-import type { AnalyzeCodeResponse, BlindSpotItem, ParamField, ParamGroupInfo } from '../../gen/ant/v1/strategy_import_pb';
+import type { AnalyzeImportCodeResponse, BlindSpot, ParamField, ParamGroupInfo } from '@/gen/ant/v1/strategy_runtime_pb';
 
 const { Text, Title } = Typography;
 
+interface ParsedAnalysis {
+  strategyName: string;
+  mqlVersion: string;
+  coverageScore: number;
+  totalBlocks: number;
+  recognizedBlocks: number;
+  executionKind: string;
+  entryRulesCount: number;
+  exitRulesCount: number;
+  sizingKind: string;
+  riskChecksCount: number;
+  indicatorNames: string[];
+  params: ParamField[];
+  groups: ParamGroupInfo[];
+  blindSpots: BlindSpot[];
+}
+
+function parseAnalysis(resp: AnalyzeImportCodeResponse): ParsedAnalysis {
+  return {
+    strategyName: resp.strategyName,
+    mqlVersion: resp.mqlVersion,
+    coverageScore: resp.coverageScore,
+    totalBlocks: resp.totalBlocks,
+    recognizedBlocks: resp.recognizedBlocks,
+    executionKind: resp.executionKind,
+    entryRulesCount: resp.entryRulesCount,
+    exitRulesCount: resp.exitRulesCount,
+    sizingKind: resp.sizingKind,
+    riskChecksCount: resp.riskChecksCount,
+    indicatorNames: resp.indicatorNames || [],
+    params: resp.params || [],
+    groups: resp.groups || [],
+    blindSpots: resp.blindSpots || [],
+  };
+}
+
 interface Props {
-  analysis: AnalyzeCodeResponse | null;
+  analysis: AnalyzeImportCodeResponse | null;
   loading: boolean;
 }
 
@@ -66,14 +102,15 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
 
   if (!analysis) return null;
 
-  const coverage = Math.round(analysis.coverageScore * 100);
-  const criticalBlindSpots = analysis.blindSpots.filter(b => b.severity === '致命');
-  const warningBlindSpots = analysis.blindSpots.filter(b => b.severity === '警告');
-  const infoBlindSpots = analysis.blindSpots.filter(b => b.severity === '信息');
+  const a = parseAnalysis(analysis);
+  const coverage = Math.round(a.coverageScore * 100);
+  const criticalBlindSpots = a.blindSpots.filter(b => b.severity === '致命');
+  const warningBlindSpots = a.blindSpots.filter(b => b.severity === '警告');
+  const infoBlindSpots = a.blindSpots.filter(b => b.severity === '信息');
 
   // Triage: backend marks GUI noise as severity=信息, real gaps as 警告/致命.
-  const guiNoiseSpots = analysis.blindSpots.filter(b => b.severity === '信息');
-  const realBlindSpots = analysis.blindSpots.filter(b => b.severity !== '信息');
+  const guiNoiseSpots = a.blindSpots.filter(b => b.severity === '信息');
+  const realBlindSpots = a.blindSpots.filter(b => b.severity !== '信息');
   const isPureGuiNoise = realBlindSpots.length === 0 && guiNoiseSpots.length > 0;
   const hasRealGaps = realBlindSpots.length > 0;
   const triageLevel = hasRealGaps ? (coverage >= 70 ? 'pass' : coverage >= 40 ? 'warn' : 'block') : 'pass';
@@ -116,7 +153,7 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
             format={(p) => isPureGuiNoise ? `交易逻辑已完整识别` : `已识别 ${p}% 策略逻辑`}
           />
           <Text type="secondary">
-            共 {analysis.totalBlocks} 个逻辑块，{analysis.recognizedBlocks} 个已识别
+            共 {a.totalBlocks} 个逻辑块，{a.recognizedBlocks} 个已识别
           </Text>
         </Space>
       </Card>
@@ -125,31 +162,31 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
       <Card size="small" style={{ marginBottom: 12 }}>
         <Space wrap size="small">
           <Tag icon={<ThunderboltOutlined />} color="blue">
-            {analysis.entryRulesCount} 入场规则
+            {a.entryRulesCount} 入场规则
           </Tag>
           <Tag icon={<SwapOutlined />} color="purple">
-            {analysis.exitRulesCount} 出场规则
+            {a.exitRulesCount} 出场规则
           </Tag>
           <Tag icon={<DollarOutlined />} color="green">
-            {sizingLabel(analysis.sizingKind)}
+            {sizingLabel(a.sizingKind)}
           </Tag>
           <Tag icon={<SettingOutlined />} color="orange">
-            {executionLabel(analysis.executionKind)}
+            {executionLabel(a.executionKind)}
           </Tag>
-          {analysis.riskChecksCount > 0 && (
-            <Tag color="red">{analysis.riskChecksCount} 风控检查</Tag>
+          {a.riskChecksCount > 0 && (
+            <Tag color="red">{a.riskChecksCount} 风控检查</Tag>
           )}
-          {analysis.indicatorNames.length > 0 && (
-            <Tag color="cyan">{analysis.indicatorNames.join(', ')}</Tag>
+          {a.indicatorNames.length > 0 && (
+            <Tag color="cyan">{a.indicatorNames.join(', ')}</Tag>
           )}
         </Space>
       </Card>
 
       {/* ── Parameters ── */}
-      {analysis.params.length > 0 && (
-        <Card size="small" title={`策略参数 (${analysis.params.length})`} style={{ marginBottom: 12 }}>
-          {analysis.groups.map((g: ParamGroupInfo) => {
-            const groupParams = analysis.params.filter((p: ParamField) => p.group === g.name);
+      {a.params.length > 0 && (
+        <Card size="small" title={`策略参数 (${a.params.length})`} style={{ marginBottom: 12 }}>
+          {a.groups.map((g: ParamGroupInfo) => {
+            const groupParams = a.params.filter((p: ParamField) => p.group === g.name);
             if (!groupParams.length) return null;
             return (
               <div key={g.name} style={{ marginBottom: 8 }}>
@@ -179,7 +216,7 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
           }
           style={{ marginBottom: 12, borderColor: criticalBlindSpots.length > 0 ? '#ff4d4f' : '#faad14' }}
         >
-          {criticalBlindSpots.filter(b => b.severity !== '信息').map((b: BlindSpotItem) => (
+          {criticalBlindSpots.filter(b => b.severity !== '信息').map((b: BlindSpot) => (
             <Alert
               key={b.id || b.description}
               type="error"
@@ -198,7 +235,7 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
               style={{ marginBottom: 8 }}
             />
           ))}
-          {warningBlindSpots.filter(b => b.severity !== '信息').map((b: BlindSpotItem) => (
+          {warningBlindSpots.filter(b => b.severity !== '信息').map((b: BlindSpot) => (
             <Alert
               key={b.id || b.description}
               type="warning"
@@ -217,7 +254,7 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
       )}
 
       {/* ── All Clear ── */}
-      {analysis.blindSpots.length === 0 && (
+      {a.blindSpots.length === 0 && (
         <Alert
           type="success"
           showIcon

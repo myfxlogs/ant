@@ -54,19 +54,19 @@ message ExecuteBacktestRequest {
   int64 start_date_ms = 5;  // Unix milliseconds
   int64 end_date_ms = 6;    // Unix milliseconds
   string initial_capital = 7;
-  double commission = 8;
-  double spread = 9;
-  double swap_rate = 10;
+  string commission = 8;
+  string spread = 9;
+  string swap_rate = 10;
   string server_timezone = 11;
   int32 rollover_hour = 12;
   int32 triple_swap_weekday = 13;
   string slippage_mode = 14;
-  double slippage_rate = 15;
+  string slippage_rate = 15;
   int32 slippage_seed = 16;
   repeated ExecuteKlineBar klines = 17;
   repeated string extra_symbols = 18;
-  string strategy_params_json = 19;
-  double leverage = 20;                // e.g. 1, 10, 100 (ratio, kept as double)
+  map<string, string> strategy_params = 19;
+  string leverage = 20;                  // e.g. "1", "10", "100" (ratio as string for precision)
   TradeDirection trade_direction = 21; // long / short / both
   bool strict_mode = 22;              // true = next-bar-open, false = same-bar-close + MTF
   StrategyConfig strategy_config = 23; // parsed from @strategy annotations
@@ -108,7 +108,7 @@ message ExecuteBacktestResponse {
   bool success = 1;
   ExecuteBacktestMetrics metrics = 2;
   ExecuteRiskAssessment risk = 3;
-  repeated double equity_curve = 4;
+  repeated string equity_curve = 4;     // decimal strings for precision
   repeated ExecuteBacktestTrade trades = 5;
   string error = 6;
   ExecutionAssumptions execution_assumptions = 7;

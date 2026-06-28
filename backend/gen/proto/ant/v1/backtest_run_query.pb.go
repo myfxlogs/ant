@@ -69,7 +69,7 @@ type GetBacktestRunResponse struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
 	Run                  *BacktestRun           `protobuf:"bytes,1,opt,name=run,proto3" json:"run,omitempty"`
 	Metrics              *BacktestMetrics       `protobuf:"bytes,2,opt,name=metrics,proto3" json:"metrics,omitempty"`
-	EquityCurve          []float64              `protobuf:"fixed64,3,rep,packed,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
+	EquityCurve          []string               `protobuf:"bytes,3,rep,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
 	DatasetId            *string                `protobuf:"bytes,4,opt,name=dataset_id,json=datasetId,proto3,oneof" json:"dataset_id,omitempty"`
 	Risk                 *BacktestRisk          `protobuf:"bytes,5,opt,name=risk,proto3" json:"risk,omitempty"`
 	ExecutionAssumptions *ExecutionAssumptions  `protobuf:"bytes,6,opt,name=execution_assumptions,json=executionAssumptions,proto3" json:"execution_assumptions,omitempty"`
@@ -121,7 +121,7 @@ func (x *GetBacktestRunResponse) GetMetrics() *BacktestMetrics {
 	return nil
 }
 
-func (x *GetBacktestRunResponse) GetEquityCurve() []float64 {
+func (x *GetBacktestRunResponse) GetEquityCurve() []string {
 	if x != nil {
 		return x.EquityCurve
 	}
@@ -197,7 +197,7 @@ type BacktestRunUpdate struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
 	Run                  *BacktestRun           `protobuf:"bytes,1,opt,name=run,proto3" json:"run,omitempty"`
 	Metrics              *BacktestMetrics       `protobuf:"bytes,2,opt,name=metrics,proto3" json:"metrics,omitempty"`
-	EquityCurve          []float64              `protobuf:"fixed64,3,rep,packed,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
+	EquityCurve          []string               `protobuf:"bytes,3,rep,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
 	Risk                 *BacktestRisk          `protobuf:"bytes,4,opt,name=risk,proto3" json:"risk,omitempty"`
 	ExecutionAssumptions *ExecutionAssumptions  `protobuf:"bytes,5,opt,name=execution_assumptions,json=executionAssumptions,proto3" json:"execution_assumptions,omitempty"`
 	unknownFields        protoimpl.UnknownFields
@@ -248,7 +248,7 @@ func (x *BacktestRunUpdate) GetMetrics() *BacktestMetrics {
 	return nil
 }
 
-func (x *BacktestRunUpdate) GetEquityCurve() []float64 {
+func (x *BacktestRunUpdate) GetEquityCurve() []string {
 	if x != nil {
 		return x.EquityCurve
 	}
@@ -391,7 +391,7 @@ const file_backtest_run_query_proto_rawDesc = "" +
 	"\x16GetBacktestRunResponse\x12%\n" +
 	"\x03run\x18\x01 \x01(\v2\x13.ant.v1.BacktestRunR\x03run\x121\n" +
 	"\ametrics\x18\x02 \x01(\v2\x17.ant.v1.BacktestMetricsR\ametrics\x12!\n" +
-	"\fequity_curve\x18\x03 \x03(\x01R\vequityCurve\x12\"\n" +
+	"\fequity_curve\x18\x03 \x03(\tR\vequityCurve\x12\"\n" +
 	"\n" +
 	"dataset_id\x18\x04 \x01(\tH\x00R\tdatasetId\x88\x01\x01\x12(\n" +
 	"\x04risk\x18\x05 \x01(\v2\x14.ant.v1.BacktestRiskR\x04risk\x12Q\n" +
@@ -402,7 +402,7 @@ const file_backtest_run_query_proto_rawDesc = "" +
 	"\x11BacktestRunUpdate\x12%\n" +
 	"\x03run\x18\x01 \x01(\v2\x13.ant.v1.BacktestRunR\x03run\x121\n" +
 	"\ametrics\x18\x02 \x01(\v2\x17.ant.v1.BacktestMetricsR\ametrics\x12!\n" +
-	"\fequity_curve\x18\x03 \x03(\x01R\vequityCurve\x12(\n" +
+	"\fequity_curve\x18\x03 \x03(\tR\vequityCurve\x12(\n" +
 	"\x04risk\x18\x04 \x01(\v2\x14.ant.v1.BacktestRiskR\x04risk\x12Q\n" +
 	"\x15execution_assumptions\x18\x05 \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptions\"\xb0\x01\n" +
 	"\x17ListBacktestRunsRequest\x12\"\n" +

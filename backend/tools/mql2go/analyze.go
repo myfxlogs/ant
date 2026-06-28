@@ -59,7 +59,7 @@ func Analyze(source string) (*StrategyIntent, error) {
 		Modifies:      extractModifiesCST(root, version),
 		OrderLoops:    extractOrderLoopsCST(root, version),
 		PositionLoops: extractPositionLoopsCST(root, version),
-		Indicators:    extractIndicatorsCST(root),
+		Indicators:    extractIndicatorsCST(root, version),
 		Execution:  detectExecCST(root),
 		Timer:      detectTimerCST(root),
 		Risk:       extractRiskChecksCST(root, version),

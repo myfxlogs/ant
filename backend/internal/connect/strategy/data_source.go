@@ -62,18 +62,28 @@ func (s *LiveSource) Fetch(ctx context.Context, symbol, timeframe string, from, 
 	if err != nil {
 		return nil, err
 	}
+	return klineBarsToProto(chBars), nil
+}
+
+func (s *LiveSource) Subscribe(accountID string) (<-chan *mthub.BarUpdate, func()) {
+	return s.hub.SubscribeBarUpdates(accountID)
+}
+
+// klineBarsToProto converts repository KlineBars to proto ExecuteKlineBars.
+// Bars are reversed to chronological order (oldest first).
+func klineBarsToProto(chBars []repository.KlineBar) []*antv1.ExecuteKlineBar {
 	klines := make([]*antv1.ExecuteKlineBar, 0, len(chBars))
 	for i := len(chBars) - 1; i >= 0; i-- {
 		b := chBars[i]
 		klines = append(klines, &antv1.ExecuteKlineBar{
 			OpenTimeMs:  int64(b.OpenTsUnixMs),
 			CloseTimeMs: int64(b.CloseTsUnixMs),
-			Open:        strconv.FormatFloat(b.Open, 'f', -1, 64), High: strconv.FormatFloat(b.High, 'f', -1, 64), Low: strconv.FormatFloat(b.Low, 'f', -1, 64), Close: strconv.FormatFloat(b.Close, 'f', -1, 64), Volume: strconv.FormatFloat(b.Volume, 'f', -1, 64),
+			Open:        b.Open.String(),
+			High:        b.High.String(),
+			Low:         b.Low.String(),
+			Close:       b.Close.String(),
+			Volume:      strconv.FormatFloat(b.Volume, 'f', -1, 64),
 		})
 	}
-	return klines, nil
-}
-
-func (s *LiveSource) Subscribe(accountID string) (<-chan *mthub.BarUpdate, func()) {
-	return s.hub.SubscribeBarUpdates(accountID)
+	return klines
 }

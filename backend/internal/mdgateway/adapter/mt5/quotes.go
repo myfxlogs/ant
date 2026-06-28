@@ -179,7 +179,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 // via the handler. If AccountSummary fails, falls back to stream-derived values
 // from p; if p is nil (initial call before any stream frame), skips.
 func (g *Gateway) fetchAndPublish(ctx context.Context, sid string, p *pb.ProfitUpdate, handler mdtick.ProfitHandler) {
-	var balance, equity, profit, margin, freeMargin, marginLevel, credit float64
+	var balance, equity, profit, margin, freeMargin, marginLevel, credit decimal.Decimal
 
 	asMd := metadata.New(map[string]string{"id": sid})
 	if tok := g.token(); tok != "" {
@@ -192,24 +192,23 @@ func (g *Gateway) fetchAndPublish(ctx context.Context, sid string, p *pb.ProfitU
 
 	if err == nil && acct != nil && acct.GetResult() != nil {
 		s := acct.GetResult()
-		balance = s.GetBalance()
-		equity = s.GetEquity()
-		profit = s.GetProfit()
-		margin = s.GetMargin()
-		freeMargin = s.GetFreeMargin()
-		marginLevel = s.GetMarginLevel()
-		credit = s.GetCredit()
+		balance = decimal.NewFromFloat(s.GetBalance())
+		equity = decimal.NewFromFloat(s.GetEquity())
+		profit = decimal.NewFromFloat(s.GetProfit())
+		margin = decimal.NewFromFloat(s.GetMargin())
+		freeMargin = decimal.NewFromFloat(s.GetFreeMargin())
+		marginLevel = decimal.NewFromFloat(s.GetMarginLevel())
+		credit = decimal.NewFromFloat(s.GetCredit())
 	} else if p != nil {
 		g.log.Debug("mt5 AccountSummary failed; falling back to stream frame",
 			zap.String("account_id", g.cfg.AccountID), zap.Error(err))
-		balance = p.GetBalance()
-		equity = p.GetEquity()
-		// Use Decimal for arithmetic to avoid float64 rounding.
-		profit = decimal.NewFromFloat(equity).Sub(decimal.NewFromFloat(balance)).InexactFloat64()
-		margin = p.GetMargin()
-		freeMargin = p.GetFreeMargin()
-		marginLevel = p.GetMarginLevel()
-		credit = p.GetCredit()
+		balance = decimal.NewFromFloat(p.GetBalance())
+		equity = decimal.NewFromFloat(p.GetEquity())
+		profit = equity.Sub(balance)
+		margin = decimal.NewFromFloat(p.GetMargin())
+		freeMargin = decimal.NewFromFloat(p.GetFreeMargin())
+		marginLevel = decimal.NewFromFloat(p.GetMarginLevel())
+		credit = decimal.NewFromFloat(p.GetCredit())
 	} else {
 		g.log.Warn("mt5 initial AccountSummary failed; no data to publish",
 			zap.String("account_id", g.cfg.AccountID), zap.Error(err))
@@ -217,9 +216,8 @@ func (g *Gateway) fetchAndPublish(ctx context.Context, sid string, p *pb.ProfitU
 	}
 
 	var profitPercent float64
-	if balance > 0 {
-		// Use Decimal arithmetic for rounding-safe percentage.
-		profitPercent = decimal.NewFromFloat(profit).Div(decimal.NewFromFloat(balance)).Mul(decimal.NewFromInt(100)).InexactFloat64()
+	if balance.GreaterThan(decimal.Zero) {
+		profitPercent = profit.Div(balance).Mul(decimal.NewFromInt(100)).InexactFloat64()
 	}
 
 	var positions []mdtick.ProfitPosition
@@ -229,9 +227,9 @@ func (g *Gateway) fetchAndPublish(ctx context.Context, sid string, p *pb.ProfitU
 			positions = append(positions, mdtick.ProfitPosition{
 				Ticket:       o.GetTicket(),
 				Symbol:       o.GetSymbol(),
-				Profit:       o.GetProfit(),
-				Volume:       o.GetLots(),
-				CurrentPrice: o.GetOpenPrice(),
+				Profit:       decimal.NewFromFloat(o.GetProfit()),
+				Volume:       decimal.NewFromFloat(o.GetLots()),
+				CurrentPrice: decimal.NewFromFloat(o.GetOpenPrice()),
 			})
 		}
 	}

@@ -67,7 +67,20 @@ func (b *brokerImpl) OrderDelete(ticket int64) (sdk.OrderResult, error) {
 
 func (b *brokerImpl) Positions(magic int32) []sdk.Position {
 	if b.executor == nil {
-		return nil
+		// Harness mode: use positions passed from parent process.
+		b.runner.ctx.mu.RLock()
+		livePos := b.runner.ctx.livePositions
+		b.runner.ctx.mu.RUnlock()
+		if magic == 0 {
+			return livePos
+		}
+		var filtered []sdk.Position
+		for _, p := range livePos {
+			if p.Magic == magic {
+				filtered = append(filtered, p)
+			}
+		}
+		return filtered
 	}
 	positions, _ := b.executor.OpenedOrders(context.Background())
 	if magic == 0 {
@@ -122,7 +135,22 @@ func (b *brokerImpl) SymbolInfo(symbol string) (sdk.SymbolInfo, error) {
 
 func (b *brokerImpl) Account() sdk.AccountInfo {
 	if b.executor == nil {
-		return sdk.AccountInfo{}
+		// Harness mode: use account state passed from parent process.
+		b.runner.ctx.mu.RLock()
+		defer b.runner.ctx.mu.RUnlock()
+		return sdk.AccountInfo{
+			Balance: mustDecimal(b.runner.ctx.liveBalance),
+			Equity:  mustDecimal(b.runner.ctx.liveEquity),
+		}
 	}
 	return b.executor.Account()
+}
+
+// mustDecimal parses a decimal string, returning zero on error.
+func mustDecimal(s string) decimal.Decimal {
+	d, err := decimal.NewFromString(s)
+	if err != nil {
+		return decimal.Zero
+	}
+	return d
 }

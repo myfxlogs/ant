@@ -144,7 +144,7 @@ func parseRisk(raw []byte) *antv1.BacktestRisk {
 	}
 }
 
-func parseEquityCurve(raw []byte) []float64 {
+func parseEquityCurve(raw []byte) []string {
 	resp := parseProtoResponse(raw)
 	if resp == nil {
 		return nil

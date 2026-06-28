@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
-	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
 
@@ -193,7 +192,7 @@ func (s *CHMarketDataStore) InsertBars(ctx context.Context, bars []KlineBar) err
 	defer batch.Abort()
 	for _, b := range bars {
 		if err := batch.Append(b.Broker, b.Canonical, b.Canonical, b.Period, b.OpenTsUnixMs, b.CloseTsUnixMs,
-			decimal.NewFromFloat(b.Open), decimal.NewFromFloat(b.High), decimal.NewFromFloat(b.Low), decimal.NewFromFloat(b.Close),
+			b.Open, b.High, b.Low, b.Close,
 			b.Volume, b.TickCount, uint8(0), ""); err != nil {
 			return fmt.Errorf("ch insert bars: append: %w", err)
 		}

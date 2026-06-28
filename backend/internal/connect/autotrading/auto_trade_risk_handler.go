@@ -92,8 +92,8 @@ func (s *AutoTradingServer) CheckRiskLimits(
 		Reason:             result.Reason,
 		MaxPositions:       int32(limits.maxPositions),
 		PositionCount:      int32(sig.Positions),
-		DrawdownPercent:    0,
-		MaxDrawdownPercent: limits.maxDrawdownPercent,
+		DrawdownPercent:    "0",
+		MaxDrawdownPercent: limits.maxDrawdownPercent.String(),
 	}), nil
 }
 
@@ -108,34 +108,25 @@ func (s *AutoTradingServer) CalculatePositionSize(
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			fmt.Errorf("account_balance must be positive"))
 	}
-	riskPct := m.RiskPercent
-	if riskPct <= 0 {
-		riskPct = 2.0
+	riskPctDec := decimal.RequireFromString(m.RiskPercent)
+	if riskPctDec.LessThanOrEqual(decimal.Zero) {
+		riskPctDec = decimal.NewFromFloat(2.0)
 	}
-	slPips := m.StopLossPips
-	if slPips <= 0 {
-		slPips = 20
+	slPipsDec := decimal.RequireFromString(m.StopLossPips)
+	if slPipsDec.LessThanOrEqual(decimal.Zero) {
+		slPipsDec = decimal.NewFromInt(20)
 	}
 
-	// Perform position size calculation in decimal.Decimal to preserve precision.
-	// float64 is only used at the proto transport boundary where protobuf
-	// has no decimal wire type (precision loss ≤1e-15).
-	riskPctDec := decimal.NewFromFloat(riskPct)
-	slPipsDec := decimal.NewFromFloat(slPips)
 	pipValueDec := decimal.NewFromFloat(10.0) // standard lots
 	hundred := decimal.NewFromInt(100)
 
 	riskAmountDec := balanceDec.Mul(riskPctDec).Div(hundred)
 	volumeDec := riskAmountDec.Div(slPipsDec.Mul(pipValueDec))
 
-	riskAmountF, _ := riskAmountDec.Float64()
-	volumeF, _ := volumeDec.Float64()
-	pipValueF, _ := pipValueDec.Float64()
-
 	return connect.NewResponse(&antv1.CalculatePositionSizeResponse{
-		Volume:     strconv.FormatFloat(volumeF, 'f', -1, 64),
-		RiskAmount: strconv.FormatFloat(riskAmountF, 'f', -1, 64),
-		PipValue:   strconv.FormatFloat(pipValueF, 'f', -1, 64),
+		Volume:     volumeDec.String(),
+		RiskAmount: riskAmountDec.String(),
+		PipValue:   pipValueDec.String(),
 		MinVolume:  "0.01",
 		MaxVolume:  "100",
 	}), nil
@@ -146,20 +137,20 @@ func (s *AutoTradingServer) CalculatePositionSize(
 // effectiveLimits holds resolved risk parameters after the fallback chain:
 // account RiskConfig → user GlobalSettings → system defaults.
 type effectiveLimits struct {
-	maxRiskPercent     float64
-	maxDrawdownPercent float64
+	maxRiskPercent     decimal.Decimal
+	maxDrawdownPercent decimal.Decimal
 	maxPositions       int
-	maxLotSize         float64
+	maxLotSize         decimal.Decimal
 }
 
 // resolveRiskLimit loads the effective risk limits for an account.
 // Returns defaults if neither RiskConfig nor GlobalSettings exist.
 func (s *AutoTradingServer) resolveRiskLimit(ctx context.Context, accountID string) *effectiveLimits {
 	defaults := &effectiveLimits{
-		maxRiskPercent:     2.0,
-		maxDrawdownPercent: 10.0,
+		maxRiskPercent:     decimal.NewFromFloat(2.0),
+		maxDrawdownPercent: decimal.NewFromFloat(10.0),
 		maxPositions:       5,
-		maxLotSize:         100.0,
+		maxLotSize:         decimal.NewFromFloat(100.0),
 	}
 
 	aid, err := uuid.Parse(accountID)
@@ -175,32 +166,32 @@ func (s *AutoTradingServer) resolveRiskLimit(ctx context.Context, accountID stri
 
 	// Account-level RiskConfig takes precedence.
 	if rc != nil {
-		if rc.MaxRiskPercent > 0 {
+		if rc.MaxRiskPercent.GreaterThan(decimal.Zero) {
 			limits.maxRiskPercent = rc.MaxRiskPercent
 		}
-		if rc.MaxDrawdownPercent > 0 {
+		if rc.MaxDrawdownPercent.GreaterThan(decimal.Zero) {
 			limits.maxDrawdownPercent = rc.MaxDrawdownPercent
 		}
 		if rc.MaxPositions > 0 {
 			limits.maxPositions = rc.MaxPositions
 		}
-		if rc.MaxLotSize > 0 {
+		if rc.MaxLotSize.GreaterThan(decimal.Zero) {
 			limits.maxLotSize = rc.MaxLotSize
 		}
 	}
 
 	// Fallback to user-level GlobalSettings for any remaining zero/default values.
 	if gs != nil {
-		if limits.maxRiskPercent == defaults.maxRiskPercent && gs.MaxRiskPercent > 0 {
+		if limits.maxRiskPercent.Equal(defaults.maxRiskPercent) && gs.MaxRiskPercent.GreaterThan(decimal.Zero) {
 			limits.maxRiskPercent = gs.MaxRiskPercent
 		}
-		if limits.maxDrawdownPercent == defaults.maxDrawdownPercent && gs.MaxDrawdownPercent > 0 {
+		if limits.maxDrawdownPercent.Equal(defaults.maxDrawdownPercent) && gs.MaxDrawdownPercent.GreaterThan(decimal.Zero) {
 			limits.maxDrawdownPercent = gs.MaxDrawdownPercent
 		}
 		if limits.maxPositions == defaults.maxPositions && gs.MaxPositions > 0 {
 			limits.maxPositions = gs.MaxPositions
 		}
-		if limits.maxLotSize == defaults.maxLotSize && gs.MaxLotSize > 0 {
+		if limits.maxLotSize.Equal(defaults.maxLotSize) && gs.MaxLotSize.GreaterThan(decimal.Zero) {
 			limits.maxLotSize = gs.MaxLotSize
 		}
 	}

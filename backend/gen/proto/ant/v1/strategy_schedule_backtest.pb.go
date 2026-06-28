@@ -28,7 +28,7 @@ type RunBacktestRequest struct {
 	Symbol         string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Timeframe      string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
 	Parameters     map[string]string      `protobuf:"bytes,5,rep,name=parameters,proto3" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	InitialCapital float64                `protobuf:"fixed64,6,opt,name=initial_capital,json=initialCapital,proto3" json:"initial_capital,omitempty"`
+	InitialCapital string                 `protobuf:"bytes,6,opt,name=initial_capital,json=initialCapital,proto3" json:"initial_capital,omitempty"`
 	DatasetId      *string                `protobuf:"bytes,7,opt,name=dataset_id,json=datasetId,proto3,oneof" json:"dataset_id,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
@@ -99,11 +99,11 @@ func (x *RunBacktestRequest) GetParameters() map[string]string {
 	return nil
 }
 
-func (x *RunBacktestRequest) GetInitialCapital() float64 {
+func (x *RunBacktestRequest) GetInitialCapital() string {
 	if x != nil {
 		return x.InitialCapital
 	}
-	return 0
+	return ""
 }
 
 func (x *RunBacktestRequest) GetDatasetId() string {
@@ -236,7 +236,7 @@ const file_strategy_schedule_backtest_proto_rawDesc = "" +
 	"\n" +
 	"parameters\x18\x05 \x03(\v2*.ant.v1.RunBacktestRequest.ParametersEntryR\n" +
 	"parameters\x12'\n" +
-	"\x0finitial_capital\x18\x06 \x01(\x01R\x0einitialCapital\x12\"\n" +
+	"\x0finitial_capital\x18\x06 \x01(\tR\x0einitialCapital\x12\"\n" +
 	"\n" +
 	"dataset_id\x18\a \x01(\tH\x00R\tdatasetId\x88\x01\x01\x1a=\n" +
 	"\x0fParametersEntry\x12\x10\n" +

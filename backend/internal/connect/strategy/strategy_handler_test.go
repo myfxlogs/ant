@@ -15,7 +15,7 @@ func TestRunBacktest_MockFallback(t *testing.T) {
 		TemplateId:     "00000000-0000-0000-0000-000000000001",
 		Symbol:         "EURUSD",
 		Timeframe:      "1h",
-		InitialCapital: 10000,
+		InitialCapital: "10000",
 	})
 	resp, err := srv.RunBacktest(t.Context(), req)
 	if err != nil {

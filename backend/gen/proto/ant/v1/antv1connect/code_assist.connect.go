@@ -59,7 +59,7 @@ type CodeAssistServiceClient interface {
 	ReviseCodeStream(context.Context, *connect.Request[v1.ReviseCodeRequest]) (*connect.ServerStreamForClient[v1.ReviseCodeStreamChunk], error)
 	ExplainCode(context.Context, *connect.Request[v1.ExplainCodeRequest]) (*connect.Response[v1.ExplainCodeResponse], error)
 	ValidateStrategyExtended(context.Context, *connect.Request[v1.ValidateStrategyExtendedRequest]) (*connect.Response[v1.ValidateStrategyExtendedResponse], error)
-	// TransformCode translates EA/indicator code (MQL4/MQL5) to Python strategy code.
+	// TransformCode translates EA/indicator code (MQL4/MQL5) to Go strategy code.
 	TransformCode(context.Context, *connect.Request[v1.TransformCodeRequest]) (*connect.Response[v1.TransformCodeResponse], error)
 	// TranslateParamLabels translates strategy parameter labels to all supported locales.
 	TranslateParamLabels(context.Context, *connect.Request[v1.TranslateParamLabelsRequest]) (*connect.Response[v1.TranslateParamLabelsResponse], error)
@@ -161,7 +161,7 @@ type CodeAssistServiceHandler interface {
 	ReviseCodeStream(context.Context, *connect.Request[v1.ReviseCodeRequest], *connect.ServerStream[v1.ReviseCodeStreamChunk]) error
 	ExplainCode(context.Context, *connect.Request[v1.ExplainCodeRequest]) (*connect.Response[v1.ExplainCodeResponse], error)
 	ValidateStrategyExtended(context.Context, *connect.Request[v1.ValidateStrategyExtendedRequest]) (*connect.Response[v1.ValidateStrategyExtendedResponse], error)
-	// TransformCode translates EA/indicator code (MQL4/MQL5) to Python strategy code.
+	// TransformCode translates EA/indicator code (MQL4/MQL5) to Go strategy code.
 	TransformCode(context.Context, *connect.Request[v1.TransformCodeRequest]) (*connect.Response[v1.TransformCodeResponse], error)
 	// TranslateParamLabels translates strategy parameter labels to all supported locales.
 	TranslateParamLabels(context.Context, *connect.Request[v1.TranslateParamLabelsRequest]) (*connect.Response[v1.TranslateParamLabelsResponse], error)

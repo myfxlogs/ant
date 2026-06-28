@@ -114,8 +114,8 @@ type CheckRiskLimitsResponse struct {
 	PositionCount      int32                  `protobuf:"varint,5,opt,name=position_count,json=positionCount,proto3" json:"position_count,omitempty"`
 	DailyLossLimit     string                 `protobuf:"bytes,6,opt,name=daily_loss_limit,json=dailyLossLimit,proto3" json:"daily_loss_limit,omitempty"`
 	DailyLossUsed      string                 `protobuf:"bytes,7,opt,name=daily_loss_used,json=dailyLossUsed,proto3" json:"daily_loss_used,omitempty"`
-	MaxDrawdownPercent float64                `protobuf:"fixed64,8,opt,name=max_drawdown_percent,json=maxDrawdownPercent,proto3" json:"max_drawdown_percent,omitempty"`
-	DrawdownPercent    float64                `protobuf:"fixed64,9,opt,name=drawdown_percent,json=drawdownPercent,proto3" json:"drawdown_percent,omitempty"`
+	MaxDrawdownPercent string                 `protobuf:"bytes,8,opt,name=max_drawdown_percent,json=maxDrawdownPercent,proto3" json:"max_drawdown_percent,omitempty"`
+	DrawdownPercent    string                 `protobuf:"bytes,9,opt,name=drawdown_percent,json=drawdownPercent,proto3" json:"drawdown_percent,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -199,18 +199,18 @@ func (x *CheckRiskLimitsResponse) GetDailyLossUsed() string {
 	return ""
 }
 
-func (x *CheckRiskLimitsResponse) GetMaxDrawdownPercent() float64 {
+func (x *CheckRiskLimitsResponse) GetMaxDrawdownPercent() string {
 	if x != nil {
 		return x.MaxDrawdownPercent
 	}
-	return 0
+	return ""
 }
 
-func (x *CheckRiskLimitsResponse) GetDrawdownPercent() float64 {
+func (x *CheckRiskLimitsResponse) GetDrawdownPercent() string {
 	if x != nil {
 		return x.DrawdownPercent
 	}
-	return 0
+	return ""
 }
 
 var File_auto_trading_risk_check_proto protoreflect.FileDescriptor
@@ -234,8 +234,8 @@ const file_auto_trading_risk_check_proto_rawDesc = "" +
 	"\x0eposition_count\x18\x05 \x01(\x05R\rpositionCount\x12(\n" +
 	"\x10daily_loss_limit\x18\x06 \x01(\tR\x0edailyLossLimit\x12&\n" +
 	"\x0fdaily_loss_used\x18\a \x01(\tR\rdailyLossUsed\x120\n" +
-	"\x14max_drawdown_percent\x18\b \x01(\x01R\x12maxDrawdownPercent\x12)\n" +
-	"\x10drawdown_percent\x18\t \x01(\x01R\x0fdrawdownPercentB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x14max_drawdown_percent\x18\b \x01(\tR\x12maxDrawdownPercent\x12)\n" +
+	"\x10drawdown_percent\x18\t \x01(\tR\x0fdrawdownPercentB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_auto_trading_risk_check_proto_rawDescOnce sync.Once

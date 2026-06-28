@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/shopspring/decimal"
+
 	antv1 "anttrader/gen/proto/ant/v1"
 )
 
@@ -39,7 +41,7 @@ func TestUserRiskConfigRule_NoConfigPasses(t *testing.T) {
 }
 
 func TestUserRiskConfigRule_BlocksOverMaxLotSize(t *testing.T) {
-	store := &mockConfigStore{config: &UserRiskConfig{MaxLotSize: 5.0}}
+	store := &mockConfigStore{config: &UserRiskConfig{MaxLotSize: decimal.NewFromFloat(5.0)}}
 	rule := &UserRiskConfigRule{Store: store.store()}
 	result := rule.Check(context.Background(),
 		&antv1.OrderIntent{AccountId: "test", Volume: "10.0", Type: "buy"}, nil)
@@ -49,7 +51,7 @@ func TestUserRiskConfigRule_BlocksOverMaxLotSize(t *testing.T) {
 }
 
 func TestUserRiskConfigRule_PassesWithinMaxLotSize(t *testing.T) {
-	store := &mockConfigStore{config: &UserRiskConfig{MaxLotSize: 5.0}}
+	store := &mockConfigStore{config: &UserRiskConfig{MaxLotSize: decimal.NewFromFloat(5.0)}}
 	rule := &UserRiskConfigRule{Store: store.store()}
 	result := rule.Check(context.Background(),
 		&antv1.OrderIntent{AccountId: "test", Volume: "3.0", Type: "buy"}, nil)
@@ -81,7 +83,7 @@ func TestUserRiskConfigRule_PassesUnderMaxPositions(t *testing.T) {
 }
 
 func TestUserRiskConfigRule_BlocksOverMaxDrawdown(t *testing.T) {
-	store := &mockConfigStore{config: &UserRiskConfig{MaxDrawdownPercent: 10.0}}
+	store := &mockConfigStore{config: &UserRiskConfig{MaxDrawdownPercent: decimal.NewFromFloat(10.0)}}
 	rule := &UserRiskConfigRule{Store: store.store()}
 	state := &AccountState{
 		PeakEquity: newDec("100000"),
@@ -95,7 +97,7 @@ func TestUserRiskConfigRule_BlocksOverMaxDrawdown(t *testing.T) {
 }
 
 func TestUserRiskConfigRule_PassesUnderMaxDrawdown(t *testing.T) {
-	store := &mockConfigStore{config: &UserRiskConfig{MaxDrawdownPercent: 20.0}}
+	store := &mockConfigStore{config: &UserRiskConfig{MaxDrawdownPercent: decimal.NewFromFloat(20.0)}}
 	rule := &UserRiskConfigRule{Store: store.store()}
 	state := &AccountState{
 		PeakEquity: newDec("100000"),
@@ -109,7 +111,7 @@ func TestUserRiskConfigRule_PassesUnderMaxDrawdown(t *testing.T) {
 }
 
 func TestUserRiskConfigRule_BlocksOverRiskPercent(t *testing.T) {
-	store := &mockConfigStore{config: &UserRiskConfig{MaxRiskPercent: 2.0}}
+	store := &mockConfigStore{config: &UserRiskConfig{MaxRiskPercent: decimal.NewFromFloat(2.0)}}
 	rule := &UserRiskConfigRule{Store: store.store()}
 	state := &AccountState{Equity: newDec("10000")}
 	// 1 lot × 500 = 500 notional / 10000 equity = 5% risk
@@ -121,7 +123,7 @@ func TestUserRiskConfigRule_BlocksOverRiskPercent(t *testing.T) {
 }
 
 func TestUserRiskConfigRule_PassesUnderRiskPercent(t *testing.T) {
-	store := &mockConfigStore{config: &UserRiskConfig{MaxRiskPercent: 5.0}}
+	store := &mockConfigStore{config: &UserRiskConfig{MaxRiskPercent: decimal.NewFromFloat(5.0)}}
 	rule := &UserRiskConfigRule{Store: store.store()}
 	state := &AccountState{Equity: newDec("10000")}
 	result := rule.Check(context.Background(),

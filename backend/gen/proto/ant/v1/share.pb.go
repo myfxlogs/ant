@@ -194,7 +194,7 @@ type GetSharedPerformanceResponse struct {
 	MaxDrawdown   float64                `protobuf:"fixed64,5,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
 	SharpeRatio   float64                `protobuf:"fixed64,6,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
 	TotalTrades   int32                  `protobuf:"varint,7,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
-	EquityCurve   []float64              `protobuf:"fixed64,8,rep,packed,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
+	EquityCurve   []string               `protobuf:"bytes,8,rep,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
 	Trades        []*SharedTrade         `protobuf:"bytes,9,rep,name=trades,proto3" json:"trades,omitempty"`
 	Expired       bool                   `protobuf:"varint,10,opt,name=expired,proto3" json:"expired,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -280,7 +280,7 @@ func (x *GetSharedPerformanceResponse) GetTotalTrades() int32 {
 	return 0
 }
 
-func (x *GetSharedPerformanceResponse) GetEquityCurve() []float64 {
+func (x *GetSharedPerformanceResponse) GetEquityCurve() []string {
 	if x != nil {
 		return x.EquityCurve
 	}
@@ -403,7 +403,7 @@ const file_share_proto_rawDesc = "" +
 	"\fmax_drawdown\x18\x05 \x01(\x01R\vmaxDrawdown\x12!\n" +
 	"\fsharpe_ratio\x18\x06 \x01(\x01R\vsharpeRatio\x12!\n" +
 	"\ftotal_trades\x18\a \x01(\x05R\vtotalTrades\x12!\n" +
-	"\fequity_curve\x18\b \x03(\x01R\vequityCurve\x12+\n" +
+	"\fequity_curve\x18\b \x03(\tR\vequityCurve\x12+\n" +
 	"\x06trades\x18\t \x03(\v2\x13.ant.v1.SharedTradeR\x06trades\x12\x18\n" +
 	"\aexpired\x18\n" +
 	" \x01(\bR\aexpired\"\x8d\x01\n" +

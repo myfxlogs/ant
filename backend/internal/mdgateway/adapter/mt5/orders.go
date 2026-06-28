@@ -227,11 +227,11 @@ func (g *Gateway) FetchPriceHistory(ctx context.Context, symbol, period string, 
 	for _, b := range bars {
 		out = append(out, &mthub.Bar{
 			Time:   time.UnixMilli(b.OpenTsUnixMs),
-			Open:   b.Open.InexactFloat64(),
-			High:   b.High.InexactFloat64(),
-			Low:    b.Low.InexactFloat64(),
-			Close:  b.Close.InexactFloat64(),
-			Volume: b.Volume,
+			Open:   b.Open,
+			High:   b.High,
+			Low:    b.Low,
+			Close:  b.Close,
+			Volume: decimal.NewFromFloat(b.Volume),
 		})
 	}
 	return out, nil

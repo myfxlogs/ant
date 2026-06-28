@@ -62,6 +62,8 @@ type MtHubService struct {
 	omsWriter      *OmsWriter
 	brokerRegistry BrokerRegistry // M12-C2: multi-broker registry (optional)
 	barBroker      *BarBroker
+	tickBroker     *TickBroker
+	tradeBroker    *TradeBroker
 	statusBroker   *AccountStatusBroker
 	logger         *zap.Logger
 }
@@ -113,6 +115,12 @@ func (s *MtHubService) SetLogger(l *zap.Logger) { s.logger = l }
 // SetBarBroker injects the bar update broker for real-time K-line push.
 func (s *MtHubService) SetBarBroker(b *BarBroker) { s.barBroker = b }
 
+// SetTickBroker injects the tick broker for real-time quote (Bid/Ask) push.
+func (s *MtHubService) SetTickBroker(b *TickBroker) { s.tickBroker = b }
+
+// SetTradeBroker injects the trade event broker for fill/close/modify events.
+func (s *MtHubService) SetTradeBroker(b *TradeBroker) { s.tradeBroker = b }
+
 // SetStatusBroker injects the account status broker for real-time connection state push.
 func (s *MtHubService) SetStatusBroker(b *AccountStatusBroker) { s.statusBroker = b }
 
@@ -131,6 +139,40 @@ func (s *MtHubService) SubscribeBarUpdates(accountID string) (<-chan *BarUpdate,
 		return ch, func() {}
 	}
 	return s.barBroker.Subscribe(accountID)
+}
+
+// PublishTick publishes a tick (Bid/Ask) update to all subscribers for the given account.
+func (s *MtHubService) PublishTick(ev *TickUpdate) {
+	if s.tickBroker != nil {
+		s.tickBroker.Publish(ev)
+	}
+}
+
+// SubscribeTickUpdates returns a channel of tick updates for the given account.
+func (s *MtHubService) SubscribeTickUpdates(accountID string) (<-chan *TickUpdate, func()) {
+	if s.tickBroker == nil {
+		ch := make(chan *TickUpdate)
+		close(ch)
+		return ch, func() {}
+	}
+	return s.tickBroker.Subscribe(accountID)
+}
+
+// PublishTradeEvent publishes a trade event to all subscribers for the given account.
+func (s *MtHubService) PublishTradeEvent(ev *BrokerTradeEvent) {
+	if s.tradeBroker != nil {
+		s.tradeBroker.Publish(ev)
+	}
+}
+
+// SubscribeTradeEvents returns a channel of trade events for the given account.
+func (s *MtHubService) SubscribeTradeEvents(accountID string) (<-chan *BrokerTradeEvent, func()) {
+	if s.tradeBroker == nil {
+		ch := make(chan *BrokerTradeEvent)
+		close(ch)
+		return ch, func() {}
+	}
+	return s.tradeBroker.Subscribe(accountID)
 }
 
 // PublishAccountStatus publishes an account status event to all subscribers.

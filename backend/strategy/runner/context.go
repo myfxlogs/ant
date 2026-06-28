@@ -20,12 +20,28 @@ type contextImpl struct {
 	symbol    string
 	timeframe string
 	timerSet  bool
+
+	// Live state from parent process (harness mode — no RPC).
+	liveBalance   string
+	liveEquity    string
+	livePositions []sdk.Position
+
+	// Tick-level prices (harness mode — set on TICK requests).
+	tickBid decimal.Decimal
+	tickAsk decimal.Decimal
 }
 
 func (c *contextImpl) setBars(b sdk.BarSeries) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.bars = b
+}
+
+func (c *contextImpl) setTick(bid, ask decimal.Decimal) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.tickBid = bid
+	c.tickAsk = ask
 }
 
 // ── Parameters ────────────────────────────────────────────────────
@@ -100,6 +116,10 @@ func (c *contextImpl) Digits() int32 {
 func (c *contextImpl) Ask() decimal.Decimal {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+	// Tick mode: use the actual Ask from the quote stream.
+	if !c.tickAsk.IsZero() {
+		return c.tickAsk
+	}
 	if c.bars != nil && c.bars.Len() > 0 {
 		return c.bars.Close(0)
 	}
@@ -107,7 +127,19 @@ func (c *contextImpl) Ask() decimal.Decimal {
 }
 
 func (c *contextImpl) Bid() decimal.Decimal {
-	return c.Ask()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	if !c.tickBid.IsZero() {
+		return c.tickBid
+	}
+	if c.bars != nil && c.bars.Len() > 0 {
+		return c.bars.Close(0)
+	}
+	return decimal.Zero
+}
+
+func (c *contextImpl) Spread() decimal.Decimal {
+	return c.Ask().Sub(c.Bid())
 }
 
 // ── Account ────────────────────────────────────────────────────────

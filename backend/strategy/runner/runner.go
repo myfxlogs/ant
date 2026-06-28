@@ -1,14 +1,12 @@
 // Package runner executes Go strategies implementing the sdk.Strategy interface.
 //
 // It provides concrete implementations of sdk.Context, sdk.Broker,
-// and sdk.IndicatorSet, backed by the existing BarSource and OrderExecutor
-// infrastructure.
+// and sdk.IndicatorSet for use by the WASM/subprocess harness.
 package runner
 
 import (
 	"context"
 	"sync"
-	"time"
 
 	"github.com/shopspring/decimal"
 
@@ -56,6 +54,16 @@ func (r *Runner) SetStrategy(s sdk.Strategy) {
 	r.strategy = s
 }
 
+// UpdateLiveState sets the live account state from the parent process.
+// Used by the WASM harness to pass equity/balance/positions without RPC.
+func (r *Runner) UpdateLiveState(balance, equity string, positions []sdk.Position) {
+	r.ctx.mu.Lock()
+	defer r.ctx.mu.Unlock()
+	r.ctx.liveBalance = balance
+	r.ctx.liveEquity = equity
+	r.ctx.livePositions = positions
+}
+
 // Init calls the strategy's OnInit.
 func (r *Runner) Init(ctx context.Context) error {
 	if r.strategy == nil {
@@ -65,7 +73,6 @@ func (r *Runner) Init(ctx context.Context) error {
 }
 
 // OnBar calls the strategy's OnBar for a new bar.
-// Returns the signal if any, or nil.
 func (r *Runner) OnBar(ctx context.Context, bars sdk.BarSeries, timeframe string) (*sdk.Signal, error) {
 	if r.strategy == nil {
 		return nil, nil
@@ -76,43 +83,50 @@ func (r *Runner) OnBar(ctx context.Context, bars sdk.BarSeries, timeframe string
 	return r.strategy.OnBar(r.ctx, timeframe)
 }
 
-// Deinit calls the strategy's OnDeinit.
-func (r *Runner) Deinit(ctx context.Context, reason string) error {
+// OnTick calls the strategy's OnTick if it implements TickStrategy.
+func (r *Runner) OnTick(ctx context.Context, bid, ask decimal.Decimal) (*sdk.Signal, error) {
 	if r.strategy == nil {
-		return nil
+		return nil, nil
 	}
-	return r.strategy.OnDeinit(r.ctx, reason)
+	ts, ok := r.strategy.(sdk.TickStrategy)
+	if !ok {
+		return nil, nil
+	}
+	r.ctx.setTick(bid, ask)
+	return ts.OnTick(r.ctx, bid, ask)
 }
 
-// ── Live runner ──────────────────────────────────────────────────
-
-// LiveRunner subscribes to bar updates and runs a strategy in real-time.
-type LiveRunner struct {
-	*Runner
-	barSource BarSource
-	executor  OrderExecutor
+// OnTrade calls the strategy's OnTrade if it implements TradeStrategy.
+func (r *Runner) OnTrade(ctx context.Context, event sdk.TradeEvent) (*sdk.Signal, error) {
+	if r.strategy == nil {
+		return nil, nil
+	}
+	ts, ok := r.strategy.(sdk.TradeStrategy)
+	if !ok {
+		return nil, nil
+	}
+	return ts.OnTrade(r.ctx, event)
 }
 
-// BarSource provides historical and live bar data.
-type BarSource interface {
-	Fetch(ctx context.Context, symbol, timeframe string, from, to *time.Time) ([]sdk.Bar, error)
-	Subscribe(accountID string) (<-chan BarUpdate, func())
+// OnTimerTick calls the strategy's OnTimer if it implements TimerStrategy.
+func (r *Runner) OnTimerTick(ctx context.Context) (*sdk.Signal, error) {
+	if r.strategy == nil {
+		return nil, nil
+	}
+	ts, ok := r.strategy.(sdk.TimerStrategy)
+	if !ok {
+		return nil, nil
+	}
+	return ts.OnTimer(r.ctx)
 }
 
-// BarUpdate is a single bar update from a live source.
-type BarUpdate struct {
-	Symbol    string
-	Period    string
-	OpenTime  int64
-	Open      decimal.Decimal
-	High      decimal.Decimal
-	Low       decimal.Decimal
-	Close     decimal.Decimal
-	Volume    int64
-	Closed    bool
+// UpdateTickState sets the latest bid/ask from a tick event.
+func (r *Runner) UpdateTickState(bid, ask decimal.Decimal) {
+	r.ctx.setTick(bid, ask)
 }
 
 // OrderExecutor wraps the broker's trading interface.
+// Used by backtest.SimBroker and live-trading adapter.
 type OrderExecutor interface {
 	PlaceOrder(ctx context.Context, symbol string, side sdk.PositionSide,
 		orderType sdk.OrderType, volume, price, sl, tp decimal.Decimal,
@@ -126,110 +140,11 @@ type OrderExecutor interface {
 	SymbolInfo(symbol string) (sdk.SymbolInfo, error)
 }
 
-// NewLiveRunner creates a Runner for live trading.
-func NewLiveRunner(cfg Config, barSource BarSource, executor OrderExecutor) *LiveRunner {
-	r := New(cfg)
-	lr := &LiveRunner{Runner: r, barSource: barSource, executor: executor}
-	r.broker.executor = executor
-	return lr
+// Deinit calls the strategy's OnDeinit.
+func (r *Runner) Deinit(ctx context.Context, reason string) error {
+	if r.strategy == nil {
+		return nil
+	}
+	return r.strategy.OnDeinit(r.ctx, reason)
 }
 
-// Run starts the live strategy loop.
-func (lr *LiveRunner) Run(ctx context.Context) error {
-	if err := lr.Init(ctx); err != nil {
-		return err
-	}
-
-	// Backfill historical bars
-	bars, err := lr.barSource.Fetch(ctx, lr.cfg.Symbol, lr.cfg.Timeframe, nil, nil)
-	if err != nil {
-		return err
-	}
-	barSeries := sdk.BarsToSlice(bars)
-
-	// Process initial bars to warm up indicators (no signals)
-	_ = barSeries
-
-	// Subscribe to live bar updates
-	ch, cancel := lr.barSource.Subscribe(lr.cfg.DataSourceAccountID)
-	defer cancel()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return lr.Deinit(ctx, "user_stop")
-		case update, ok := <-ch:
-			if !ok {
-				return lr.Deinit(ctx, "user_stop")
-			}
-			if update.Symbol != lr.cfg.Symbol || update.Period != lr.cfg.Timeframe {
-				continue
-			}
-			if !update.Closed {
-				continue // only process closed bars
-			}
-			bars = append(bars, sdk.Bar{
-				Open:      update.Open,
-				High:      update.High,
-				Low:       update.Low,
-				Close:     update.Close,
-				Volume:    update.Volume,
-				Timestamp: update.OpenTime,
-			})
-			// Keep a sliding window of 500 bars
-			if len(bars) > 500 {
-				bars = bars[len(bars)-500:]
-			}
-			barSeries = sdk.BarsToSlice(bars)
-			sig, err := lr.OnBar(ctx, barSeries, lr.cfg.Timeframe)
-			if err != nil {
-				return err
-			}
-			if sig != nil {
-				lr.dispatchSignal(sig)
-			}
-		}
-	}
-}
-
-func (lr *LiveRunner) dispatchSignal(sig *sdk.Signal) {
-	if lr.executor == nil {
-		return
-	}
-	switch sig.Action {
-	case sdk.ActionBuy, sdk.ActionSell, sdk.ActionBuyLimit, sdk.ActionSellLimit,
-		sdk.ActionBuyStop, sdk.ActionSellStop:
-		side := sdk.SideBuy
-		ot := sdk.OrderMarket
-		if sig.Action == sdk.ActionSell {
-			side = sdk.SideSell
-		}
-		if sig.Action == sdk.ActionBuyLimit || sig.Action == sdk.ActionSellLimit {
-			ot = sdk.OrderLimit
-		}
-		if sig.Action == sdk.ActionBuyStop || sig.Action == sdk.ActionSellStop {
-			ot = sdk.OrderStop
-		}
-		lr.executor.PlaceOrder(context.Background(), sig.Symbol, side, ot,
-			sig.Volume, sig.Price, sig.StopLoss, sig.TakeProfit,
-			sig.Comment, sig.Magic)
-	case sdk.ActionClose:
-		lr.executor.CloseOrder(context.Background(), sig.OrderTicket, decimal.Zero)
-	case sdk.ActionCancel:
-		lr.executor.CancelOrder(context.Background(), sig.OrderTicket)
-	case sdk.ActionCloseAll:
-		positions, _ := lr.executor.OpenedOrders(context.Background())
-		for _, p := range positions {
-			if sig.Magic == 0 || p.Magic == sig.Magic {
-				lr.executor.CloseOrder(context.Background(), p.Ticket, decimal.Zero)
-			}
-		}
-	case sdk.ActionCancelAll:
-		orders, _ := lr.executor.PendingOrders(context.Background())
-		for _, o := range orders {
-			if sig.Magic == 0 || o.Magic == sig.Magic {
-				lr.executor.CancelOrder(context.Background(), o.Ticket)
-			}
-		}
-	}
-}

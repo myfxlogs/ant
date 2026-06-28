@@ -35,23 +35,24 @@ func NewGoExecutor(goModDir string, log *zap.Logger) *GoExecutor {
 // Run compiles and executes a strategy Go file.
 // Input/output use antv1 proto binary encoding.
 func (e *GoExecutor) Run(ctx context.Context, code string, req *antv1.ExecuteStrategyRequest) (*antv1.ExecuteStrategyResponse, error) {
-	strategyFile := filepath.Join(e.tmpDir, "strategy.go")
+	runDir, err := os.MkdirTemp(e.tmpDir, "run-*")
+	if err != nil {
+		return nil, fmt.Errorf("create temp dir: %w", err)
+	}
+	defer os.RemoveAll(runDir)
+
+	strategyFile := filepath.Join(runDir, "strategy.go")
 	if err := os.WriteFile(strategyFile, []byte(code), 0600); err != nil {
 		return nil, fmt.Errorf("write strategy: %w", err)
 	}
-	defer os.Remove(strategyFile)
 
-	// Serialize request as proto binary
 	input, err := proto.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
 
-	safePath := filepath.Clean(strategyFile)
-	if !filepath.HasPrefix(safePath, e.tmpDir) {
-		return nil, fmt.Errorf("strategy file outside temp dir: %s", safePath)
-	}
-	cmd := exec.CommandContext(ctx, "go", "run", safePath) // #nosec G204 -- safePath validated inside e.tmpDir
+	cmd := exec.CommandContext(ctx, "go")
+	cmd.Args = []string{"go", "run", strategyFile}
 	cmd.Dir = e.goModDir
 	cmd.Stdin = bytes.NewReader(input)
 	var stdout, stderr bytes.Buffer
@@ -99,7 +100,8 @@ func (e *GoExecutor) RunBacktest(ctx context.Context, code string, req *antv1.Ex
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
 
-	cmd := exec.CommandContext(ctx, "go", "run", strategyFile, harnessFile) // #nosec G204 -- paths inside os.MkdirTemp dir
+	cmd := exec.CommandContext(ctx, "go")
+	cmd.Args = []string{"go", "run", strategyFile, harnessFile}
 	cmd.Dir = e.goModDir
 	cmd.Stdin = bytes.NewReader(input)
 	var stdout, stderr bytes.Buffer
@@ -132,7 +134,8 @@ func (e *GoExecutor) CompileCheck(ctx context.Context, code string) (bool, strin
 		return false, fmt.Sprintf("write strategy: %v", err)
 	}
 
-	cmd := exec.CommandContext(ctx, "go", "vet", strategyFile) // #nosec G204 -- path inside tmpDir
+	cmd := exec.CommandContext(ctx, "go")
+	cmd.Args = []string{"go", "vet", strategyFile}
 	cmd.Dir = e.goModDir
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
@@ -176,7 +179,8 @@ func (e *GoExecutor) RunLive(ctx context.Context, code string, req *antv1.Execut
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
 
-	cmd := exec.CommandContext(ctx, "go", "run", strategyFile, harnessFile) // #nosec G204 -- paths inside os.MkdirTemp dir
+	cmd := exec.CommandContext(ctx, "go")
+	cmd.Args = []string{"go", "run", strategyFile, harnessFile}
 	cmd.Dir = e.goModDir
 	cmd.Stdin = bytes.NewReader(input)
 	var stdout, stderr bytes.Buffer

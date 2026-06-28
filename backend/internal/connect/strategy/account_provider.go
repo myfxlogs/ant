@@ -30,8 +30,8 @@ type MTAccountStateProvider struct {
 
 	mu           sync.RWMutex
 	peakEquity   map[string]decimal.Decimal // accountID → peak equity
-	balanceCache map[string]float64         // accountID → balance from ProfitUpdate
-	equityCache  map[string]float64         // accountID → equity from ProfitUpdate
+	balanceCache map[string]decimal.Decimal // accountID → balance from ProfitUpdate
+	equityCache  map[string]decimal.Decimal // accountID → equity from ProfitUpdate
 }
 
 // NewMTAccountStateProvider creates a provider backed by the MT gateway Hub.
@@ -43,8 +43,8 @@ func NewMTAccountStateProvider(hub *mthub.Hub, log *zap.Logger) *MTAccountStateP
 		hub:          hub,
 		log:          log,
 		peakEquity:   make(map[string]decimal.Decimal),
-		balanceCache: make(map[string]float64),
-		equityCache:  make(map[string]float64),
+		balanceCache: make(map[string]decimal.Decimal),
+		equityCache:  make(map[string]decimal.Decimal),
 	}
 }
 
@@ -90,14 +90,14 @@ func (p *MTAccountStateProvider) GetAccountState(ctx context.Context, accountID 
 //   - Daily PnL: sum(position.Profit) — reset at broker day rollover
 //   - PeakEquity: tracked in-memory (high-water mark since provider start)
 func (p *MTAccountStateProvider) buildStateFromOrders(accountID string, orders []*mthub.OrderRecord) *risk.AccountState {
-	var totalProfit, totalMargin float64
+	totalProfit := decimal.Zero
+	totalMargin := decimal.Zero
+	defaultLeverage := decimal.NewFromInt(100)
 
 	for _, o := range orders {
-		profit, _ := o.Profit.Float64()
-		totalProfit += profit
-
-		notional := o.Volume.Mul(o.OpenPrice).InexactFloat64()
-		totalMargin += notional / 100.0 // 1:100 leverage default
+		totalProfit = totalProfit.Add(o.Profit)
+		notional := o.Volume.Mul(o.OpenPrice)
+		totalMargin = totalMargin.Add(notional.Div(defaultLeverage))
 	}
 
 	// Use cached balance from ProfitUpdate events when available.
@@ -106,33 +106,31 @@ func (p *MTAccountStateProvider) buildStateFromOrders(accountID string, orders [
 	cachedBalance, hasBalance := p.balanceCache[accountID]
 	p.mu.RUnlock()
 
-	balance := 10000.0
+	balance := decimal.NewFromInt(10000)
 	if hasBalance {
 		balance = cachedBalance
 	}
-	equity := balance + totalProfit
-	freeMargin := equity - totalMargin
-	if freeMargin < 0 {
-		freeMargin = 0
+	equity := balance.Add(totalProfit)
+	freeMargin := equity.Sub(totalMargin)
+	if freeMargin.LessThan(decimal.Zero) {
+		freeMargin = decimal.Zero
 	}
-
-	equityDec := decimal.NewFromFloat(equity)
 
 	p.mu.Lock()
 	peak, ok := p.peakEquity[accountID]
-	if !ok || equityDec.GreaterThan(peak) {
-		peak = equityDec
+	if !ok || equity.GreaterThan(peak) {
+		peak = equity
 		p.peakEquity[accountID] = peak
 	}
 	p.mu.Unlock()
 
 	return &risk.AccountState{
-		Balance:        decimal.NewFromFloat(balance),
-		Equity:         equityDec,
-		FreeMargin:     decimal.NewFromFloat(freeMargin),
-		UsedMargin:     decimal.NewFromFloat(totalMargin),
+		Balance:        balance,
+		Equity:         equity,
+		FreeMargin:     freeMargin,
+		UsedMargin:     totalMargin,
 		OpenPositions:  len(orders),
-		DailyPnL:       decimal.NewFromFloat(totalProfit),
+		DailyPnL:       totalProfit,
 		PeakEquity:     peak,
 		SymbolLeverage: 100,
 	}
@@ -156,7 +154,7 @@ func (p *MTAccountStateProvider) ResetPeakEquity(accountID string) {
 
 // UpdateBalanceFromProfitEvent updates the cached balance from a real
 // MT ProfitUpdate event.
-func (p *MTAccountStateProvider) UpdateBalanceFromProfitEvent(accountID string, balance, equity, margin, freeMargin float64) {
+func (p *MTAccountStateProvider) UpdateBalanceFromProfitEvent(accountID string, balance, equity, margin, freeMargin decimal.Decimal) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.balanceCache[accountID] = balance

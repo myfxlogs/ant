@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 
 	"anttrader/internal/model"
 )
@@ -26,7 +27,7 @@ func (r *LogRepository) CreateOrderHistory(ctx context.Context, order *model.Ord
 }
 
 // UpdateOrderHistoryClose fills close_* / PnL on a row previously inserted for this schedule ticket (first close only).
-func (r *LogRepository) UpdateOrderHistoryClose(ctx context.Context, userID, accountID, scheduleID uuid.UUID, ticket int64, closePrice, profit, swap, commission float64, closeTime time.Time) (int64, error) {
+func (r *LogRepository) UpdateOrderHistoryClose(ctx context.Context, userID, accountID, scheduleID uuid.UUID, ticket int64, closePrice, profit, swap, commission decimal.Decimal, closeTime time.Time) (int64, error) {
 	const q = `
 		UPDATE order_history
 		SET close_price = $5,

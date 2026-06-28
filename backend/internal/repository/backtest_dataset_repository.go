@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 )
 
 type BacktestDatasetRepository struct {
@@ -31,17 +32,17 @@ type BacktestDataset struct {
 }
 
 type BacktestDatasetBar struct {
-	DatasetID  uuid.UUID `db:"dataset_id"`
-	Symbol     string    `db:"symbol"`
-	Timeframe  string    `db:"timeframe"`
-	OpenTime   time.Time `db:"open_time"`
-	CloseTime  time.Time `db:"close_time"`
-	OpenPrice  float64   `db:"open_price"`
-	HighPrice  float64   `db:"high_price"`
-	LowPrice   float64   `db:"low_price"`
-	ClosePrice float64   `db:"close_price"`
-	TickVolume int64     `db:"tick_volume"`
-	CreatedAt  time.Time `db:"created_at"`
+	DatasetID  uuid.UUID       `db:"dataset_id"`
+	Symbol     string          `db:"symbol"`
+	Timeframe  string          `db:"timeframe"`
+	OpenTime   time.Time       `db:"open_time"`
+	CloseTime  time.Time       `db:"close_time"`
+	OpenPrice  decimal.Decimal `db:"open_price"`
+	HighPrice  decimal.Decimal `db:"high_price"`
+	LowPrice   decimal.Decimal `db:"low_price"`
+	ClosePrice decimal.Decimal `db:"close_price"`
+	TickVolume int64           `db:"tick_volume"`
+	CreatedAt  time.Time       `db:"created_at"`
 }
 
 func NewBacktestDatasetRepository(db *pgxpool.Pool) *BacktestDatasetRepository {

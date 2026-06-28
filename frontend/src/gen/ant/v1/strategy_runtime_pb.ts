@@ -2,8 +2,8 @@
 // @generated from file strategy_runtime.proto (package ant.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { EmptySchema } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_empty } from "@bufbuild/protobuf/wkt";
 import type { BacktestMetrics } from "./common_pb";
@@ -22,7 +22,7 @@ import type { StrategySignal } from "./strategy_signal_messages_pb";
  * Describes the file strategy_runtime.proto.
  */
 export const file_strategy_runtime: GenFile = /*@__PURE__*/
-  fileDesc("ChZzdHJhdGVneV9ydW50aW1lLnByb3RvEgZhbnQudjEiVAoUVHJhbnNwaWxlQ29kZVJlcXVlc3QSEwoLc291cmNlX2NvZGUYASABKAkSEwoLc291cmNlX2xhbmcYAiABKAkSEgoKY2xhc3NfbmFtZRgDIAEoCSKVAQoVVHJhbnNwaWxlQ29kZVJlc3BvbnNlEhMKC3RhcmdldF9jb2RlGAEgASgJEhIKCmNvbmZpZGVuY2UYAiABKAISFgoOdG90YWxfcGF0dGVybnMYAyABKAUSDAoEZ2FwcxgEIAEoBRITCgtnYXBfc2FtcGxlcxgFIAMoCRIYChBpc19kZXRlcm1pbmlzdGljGAYgASgIIl0KFkV4ZWN1dGVTdHJhdGVneVJlcXVlc3QSDAoEY29kZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkibwoXRXhlY3V0ZVN0cmF0ZWd5UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBImCgZzaWduYWwYAiABKAsyFi5hbnQudjEuU3RyYXRlZ3lTaWduYWwSDAoEbG9ncxgDIAMoCRINCgVlcnJvchgEIAEoCSInChdWYWxpZGF0ZVN0cmF0ZWd5UmVxdWVzdBIMCgRjb2RlGAEgASgJIpUCChhWYWxpZGF0ZVN0cmF0ZWd5UmVzcG9uc2USDQoFdmFsaWQYASABKAgSDgoGZXJyb3JzGAIgAygJEhAKCHdhcm5pbmdzGAMgAygJEi4KDXF1YWxpdHlfaGludHMYBCADKAsyFy5hbnQudjEuQ29kZVF1YWxpdHlIaW50EjAKEHN3ZWVwX2RpbWVuc2lvbnMYBSADKAsyFi5hbnQudjEuU3dlZXBEaW1lbnNpb24SNgoTc3RyYXRlZ3lfZGlyZWN0aXZlcxgGIAMoCzIZLmFudC52MS5TdHJhdGVneURpcmVjdGl2ZRIVCg1zdHJhdGVneV90eXBlGAcgASgJEhcKD3BhcmFtZXRlcnNfanNvbhgIIAEoCSJlCg9Db2RlUXVhbGl0eUhpbnQSEAoIY2F0ZWdvcnkYASABKAkSEAoIc2V2ZXJpdHkYAiABKAkSDwoHbWVzc2FnZRgDIAEoCRIMCgRsaW5lGAQgASgFEg8KB3NuaXBwZXQYBSABKAkidwoOU3dlZXBEaW1lbnNpb24SCwoDa2V5GAEgASgJEgwKBHR5cGUYAiABKAkSDwoHZGVmYXVsdBgDIAEoARILCgNtaW4YBCABKAESCwoDbWF4GAUgASgBEgwKBHN0ZXAYBiABKAESEQoJaGFzX3JhbmdlGAcgASgIIi8KEVN0cmF0ZWd5RGlyZWN0aXZlEgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCSKfAQoXQmFja3Rlc3RTdHJhdGVneVJlcXVlc3QSDAoEY29kZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFwoPaW5pdGlhbF9jYXBpdGFsGAUgASgJEhcKCmRhdGFzZXRfaWQYBiABKAlIAIgBAUINCgtfZGF0YXNldF9pZCKiAQoYQmFja3Rlc3RTdHJhdGVneVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSKAoHbWV0cmljcxgCIAEoCzIXLmFudC52MS5CYWNrdGVzdE1ldHJpY3MSFAoMZXF1aXR5X2N1cnZlGAMgAygBEg0KBWVycm9yGAQgASgJEhcKCmRhdGFzZXRfaWQYBSABKAlIAIgBAUINCgtfZGF0YXNldF9pZCJPChxHZXRTdHJhdGVneVRlbXBsYXRlc1Jlc3BvbnNlEi8KCXRlbXBsYXRlcxgBIAMoCzIcLmFudC52MS5TdHJhdGVneVRlbXBsYXRlSW5mbyJHChRTdHJhdGVneVRlbXBsYXRlSW5mbxIMCgRuYW1lGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJEgwKBGNvZGUYAyABKAkiWQoSRXhlY3V0ZUxpdmVSZXF1ZXN0EhUKDXN0cmF0ZWd5X2NvZGUYASABKAkSLAoHY29udGV4dBgCIAEoCzIbLmFudC52MS5MaXZlU3RyYXRlZ3lDb250ZXh0Ip0BChNFeGVjdXRlTGl2ZVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSJgoGc2lnbmFsGAIgASgLMhYuYW50LnYxLlN0cmF0ZWd5U2lnbmFsEg0KBWVycm9yGAMgASgJEhUKDXN0cmF0ZWd5X2hhc2gYBCABKAkSJwoHc2lnbmFscxgFIAMoCzIWLmFudC52MS5TdHJhdGVneVNpZ25hbCKTAwoTTGl2ZVN0cmF0ZWd5Q29udGV4dBINCgVjbG9zZRgBIAMoARIMCgRvcGVuGAIgAygBEgwKBGhpZ2gYAyADKAESCwoDbG93GAQgAygBEg4KBnZvbHVtZRgFIAMoARIUCgxiYXJfdGltZXNfbXMYBiADKAMSDgoGZXF1aXR5GAcgASgJEg8KB2JhbGFuY2UYCCABKAkSJgoIcG9zaXRpb24YCSABKAsyFC5hbnQudjEuTGl2ZVBvc2l0aW9uEicKCXBvc2l0aW9ucxgKIAMoCzIULmFudC52MS5MaXZlUG9zaXRpb24SDgoGc3ltYm9sGAsgASgJEhEKCXRpbWVmcmFtZRgMIAEoCRIMCgRtb2RlGA0gASgJEiEKBnBhcmFtcxgOIAMoCzIRLmFudC52MS5MaXZlUGFyYW0SKQoHc3ltYm9scxgPIAMoCzIYLmFudC52MS5MaXZlU3ltYm9sU2VyaWVzEhYKDnByaW1hcnlfc3ltYm9sGBAgASgJEhUKDWN1cnJlbnRfcHJpY2UYESABKAkiigEKDExpdmVQb3NpdGlvbhIOCgZ0aWNrZXQYASABKAMSDAoEc2lkZRgCIAEoCRIOCgZ2b2x1bWUYAyABKAkSEgoKb3Blbl9wcmljZRgEIAEoCRIKCgJzbBgFIAEoCRIKCgJ0cBgGIAEoCRIMCgRzd2FwGAcgASgJEhIKCmNvbW1pc3Npb24YCCABKAkiJwoJTGl2ZVBhcmFtEgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCSJqChBMaXZlU3ltYm9sU2VyaWVzEg4KBnN5bWJvbBgBIAEoCRINCgVjbG9zZRgCIAMoARIMCgRvcGVuGAMgAygBEgwKBGhpZ2gYBCADKAESCwoDbG93GAUgAygBEg4KBnZvbHVtZRgGIAMoASJZChhBbmFseXplSW1wb3J0Q29kZVJlcXVlc3QSEwoLc291cmNlX2NvZGUYASABKAkSEwoLc291cmNlX25hbWUYAiABKAkSEwoLc291cmNlX2xhbmcYAyABKAki6gIKGUFuYWx5emVJbXBvcnRDb2RlUmVzcG9uc2USFQoNc3RyYXRlZ3lfbmFtZRgBIAEoCRITCgttcWxfdmVyc2lvbhgCIAEoCRIWCg5jb3ZlcmFnZV9zY29yZRgKIAEoARIUCgx0b3RhbF9ibG9ja3MYCyABKAUSGQoRcmVjb2duaXplZF9ibG9ja3MYDCABKAUSFgoOZXhlY3V0aW9uX2tpbmQYHiABKAkSGQoRZW50cnlfcnVsZXNfY291bnQYMiABKAUSGAoQZXhpdF9ydWxlc19jb3VudBgzIAEoBRITCgtzaXppbmdfa2luZBg0IAEoCRIZChFyaXNrX2NoZWNrc19jb3VudBg1IAEoBRITCgtwYXJhbXNfanNvbhg8IAEoCRITCgtncm91cHNfanNvbhg9IAEoCRIYChBibGluZF9zcG90c19qc29uGEYgASgJEhcKD2luZGljYXRvcl9uYW1lcxhQIAMoCSJaChlHZW5lcmF0ZUltcG9ydENvZGVSZXF1ZXN0EhMKC3NvdXJjZV9jb2RlGAEgASgJEhMKC3NvdXJjZV9uYW1lGAIgASgJEhMKC3NvdXJjZV9sYW5nGAMgASgJInIKGkdlbmVyYXRlSW1wb3J0Q29kZVJlc3BvbnNlEg8KB2dvX2NvZGUYASABKAkSEgoKY29kZV9saW5lcxgCIAEoBRIQCghjb21waWxlcxgDIAEoCBIdChVxdWFsaXR5X2dhdGVfZmFpbHVyZXMYCiADKAkiggEKFUltcG9ydFN0cmF0ZWd5UmVxdWVzdBITCgtzb3VyY2VfY29kZRgBIAEoCRITCgtzb3VyY2VfbmFtZRgCIAEoCRITCgtzb3VyY2VfbGFuZxgDIAEoCRIZCgx3b3Jrc3BhY2VfaWQYFCABKAlIAIgBAUIPCg1fd29ya3NwYWNlX2lkIocBChZJbXBvcnRTdHJhdGVneVJlc3BvbnNlEhMKC3N0cmF0ZWd5X2lkGAEgASgJEhUKDXN0cmF0ZWd5X25hbWUYAiABKAkSDwoHZ29fY29kZRgDIAEoCRIWCg5jb3ZlcmFnZV9zY29yZRgEIAEoARIYChBibGluZF9zcG90c19qc29uGAogASgJMtAKChZTdHJhdGVneVJ1bnRpbWVTZXJ2aWNlEkoKB0V4ZWN1dGUSHi5hbnQudjEuRXhlY3V0ZVN0cmF0ZWd5UmVxdWVzdBofLmFudC52MS5FeGVjdXRlU3RyYXRlZ3lSZXNwb25zZRJNCghWYWxpZGF0ZRIfLmFudC52MS5WYWxpZGF0ZVN0cmF0ZWd5UmVxdWVzdBogLmFudC52MS5WYWxpZGF0ZVN0cmF0ZWd5UmVzcG9uc2USTQoIQmFja3Rlc3QSHy5hbnQudjEuQmFja3Rlc3RTdHJhdGVneVJlcXVlc3QaIC5hbnQudjEuQmFja3Rlc3RTdHJhdGVneVJlc3BvbnNlElUKEFN0YXJ0QmFja3Rlc3RSdW4SHy5hbnQudjEuU3RhcnRCYWNrdGVzdFJ1blJlcXVlc3QaIC5hbnQudjEuU3RhcnRCYWNrdGVzdFJ1blJlc3BvbnNlEk8KDkdldEJhY2t0ZXN0UnVuEh0uYW50LnYxLkdldEJhY2t0ZXN0UnVuUmVxdWVzdBoeLmFudC52MS5HZXRCYWNrdGVzdFJ1blJlc3BvbnNlElUKEExpc3RCYWNrdGVzdFJ1bnMSHy5hbnQudjEuTGlzdEJhY2t0ZXN0UnVuc1JlcXVlc3QaIC5hbnQudjEuTGlzdEJhY2t0ZXN0UnVuc1Jlc3BvbnNlElAKEFdhdGNoQmFja3Rlc3RSdW4SHy5hbnQudjEuV2F0Y2hCYWNrdGVzdFJ1blJlcXVlc3QaGS5hbnQudjEuQmFja3Rlc3RSdW5VcGRhdGUwARJYChFDYW5jZWxCYWNrdGVzdFJ1bhIgLmFudC52MS5DYW5jZWxCYWNrdGVzdFJ1blJlcXVlc3QaIS5hbnQudjEuQ2FuY2VsQmFja3Rlc3RSdW5SZXNwb25zZRJYChFEZWxldGVCYWNrdGVzdFJ1bhIgLmFudC52MS5EZWxldGVCYWNrdGVzdFJ1blJlcXVlc3QaIS5hbnQudjEuRGVsZXRlQmFja3Rlc3RSdW5SZXNwb25zZRJbChJEZWxldGVCYWNrdGVzdFJ1bnMSIS5hbnQudjEuRGVsZXRlQmFja3Rlc3RSdW5zUmVxdWVzdBoiLmFudC52MS5EZWxldGVCYWNrdGVzdFJ1bnNSZXNwb25zZRJMCgxHZXRUZW1wbGF0ZXMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaJC5hbnQudjEuR2V0U3RyYXRlZ3lUZW1wbGF0ZXNSZXNwb25zZRJGCgtFeGVjdXRlTGl2ZRIaLmFudC52MS5FeGVjdXRlTGl2ZVJlcXVlc3QaGy5hbnQudjEuRXhlY3V0ZUxpdmVSZXNwb25zZRJMCg1UcmFuc3BpbGVDb2RlEhwuYW50LnYxLlRyYW5zcGlsZUNvZGVSZXF1ZXN0Gh0uYW50LnYxLlRyYW5zcGlsZUNvZGVSZXNwb25zZRJYChFBbmFseXplSW1wb3J0Q29kZRIgLmFudC52MS5BbmFseXplSW1wb3J0Q29kZVJlcXVlc3QaIS5hbnQudjEuQW5hbHl6ZUltcG9ydENvZGVSZXNwb25zZRJbChJHZW5lcmF0ZUltcG9ydENvZGUSIS5hbnQudjEuR2VuZXJhdGVJbXBvcnRDb2RlUmVxdWVzdBoiLmFudC52MS5HZW5lcmF0ZUltcG9ydENvZGVSZXNwb25zZRJPCg5JbXBvcnRTdHJhdGVneRIdLmFudC52MS5JbXBvcnRTdHJhdGVneVJlcXVlc3QaHi5hbnQudjEuSW1wb3J0U3RyYXRlZ3lSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_empty, file_common, file_strategy_messages, file_backtest_run_start, file_backtest_run_query, file_backtest_run_control]);
+  fileDesc("ChZzdHJhdGVneV9ydW50aW1lLnByb3RvEgZhbnQudjEiVAoUVHJhbnNwaWxlQ29kZVJlcXVlc3QSEwoLc291cmNlX2NvZGUYASABKAkSEwoLc291cmNlX2xhbmcYAiABKAkSEgoKY2xhc3NfbmFtZRgDIAEoCSKVAQoVVHJhbnNwaWxlQ29kZVJlc3BvbnNlEhMKC3RhcmdldF9jb2RlGAEgASgJEhIKCmNvbmZpZGVuY2UYAiABKAISFgoOdG90YWxfcGF0dGVybnMYAyABKAUSDAoEZ2FwcxgEIAEoBRITCgtnYXBfc2FtcGxlcxgFIAMoCRIYChBpc19kZXRlcm1pbmlzdGljGAYgASgIIl0KFkV4ZWN1dGVTdHJhdGVneVJlcXVlc3QSDAoEY29kZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkibwoXRXhlY3V0ZVN0cmF0ZWd5UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBImCgZzaWduYWwYAiABKAsyFi5hbnQudjEuU3RyYXRlZ3lTaWduYWwSDAoEbG9ncxgDIAMoCRINCgVlcnJvchgEIAEoCSInChdWYWxpZGF0ZVN0cmF0ZWd5UmVxdWVzdBIMCgRjb2RlGAEgASgJIpUCChhWYWxpZGF0ZVN0cmF0ZWd5UmVzcG9uc2USDQoFdmFsaWQYASABKAgSDgoGZXJyb3JzGAIgAygJEhAKCHdhcm5pbmdzGAMgAygJEi4KDXF1YWxpdHlfaGludHMYBCADKAsyFy5hbnQudjEuQ29kZVF1YWxpdHlIaW50EjAKEHN3ZWVwX2RpbWVuc2lvbnMYBSADKAsyFi5hbnQudjEuU3dlZXBEaW1lbnNpb24SNgoTc3RyYXRlZ3lfZGlyZWN0aXZlcxgGIAMoCzIZLmFudC52MS5TdHJhdGVneURpcmVjdGl2ZRIVCg1zdHJhdGVneV90eXBlGAcgASgJEhcKD3BhcmFtZXRlcnNfanNvbhgIIAEoCSJlCg9Db2RlUXVhbGl0eUhpbnQSEAoIY2F0ZWdvcnkYASABKAkSEAoIc2V2ZXJpdHkYAiABKAkSDwoHbWVzc2FnZRgDIAEoCRIMCgRsaW5lGAQgASgFEg8KB3NuaXBwZXQYBSABKAkidwoOU3dlZXBEaW1lbnNpb24SCwoDa2V5GAEgASgJEgwKBHR5cGUYAiABKAkSDwoHZGVmYXVsdBgDIAEoARILCgNtaW4YBCABKAESCwoDbWF4GAUgASgBEgwKBHN0ZXAYBiABKAESEQoJaGFzX3JhbmdlGAcgASgIIi8KEVN0cmF0ZWd5RGlyZWN0aXZlEgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCSKfAQoXQmFja3Rlc3RTdHJhdGVneVJlcXVlc3QSDAoEY29kZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFwoPaW5pdGlhbF9jYXBpdGFsGAUgASgJEhcKCmRhdGFzZXRfaWQYBiABKAlIAIgBAUINCgtfZGF0YXNldF9pZCKiAQoYQmFja3Rlc3RTdHJhdGVneVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSKAoHbWV0cmljcxgCIAEoCzIXLmFudC52MS5CYWNrdGVzdE1ldHJpY3MSFAoMZXF1aXR5X2N1cnZlGAMgAygJEg0KBWVycm9yGAQgASgJEhcKCmRhdGFzZXRfaWQYBSABKAlIAIgBAUINCgtfZGF0YXNldF9pZCJPChxHZXRTdHJhdGVneVRlbXBsYXRlc1Jlc3BvbnNlEi8KCXRlbXBsYXRlcxgBIAMoCzIcLmFudC52MS5TdHJhdGVneVRlbXBsYXRlSW5mbyJHChRTdHJhdGVneVRlbXBsYXRlSW5mbxIMCgRuYW1lGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJEgwKBGNvZGUYAyABKAkijQIKEkV4ZWN1dGVMaXZlUmVxdWVzdBIVCg1zdHJhdGVneV9jb2RlGAEgASgJEikKDHJlcXVlc3RfdHlwZRgCIAEoDjITLmFudC52MS5SZXF1ZXN0VHlwZRIwCgtiYXJfY29udGV4dBgDIAEoCzIbLmFudC52MS5MaXZlU3RyYXRlZ3lDb250ZXh0EikKDHRpY2tfY29udGV4dBgEIAEoCzITLmFudC52MS5UaWNrQ29udGV4dBIrCg10cmFkZV9jb250ZXh0GAUgASgLMhQuYW50LnYxLlRyYWRlQ29udGV4dBIrCg10aW1lcl9jb250ZXh0GAYgASgLMhQuYW50LnYxLlRpbWVyQ29udGV4dCKdAQoTRXhlY3V0ZUxpdmVSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEiYKBnNpZ25hbBgCIAEoCzIWLmFudC52MS5TdHJhdGVneVNpZ25hbBINCgVlcnJvchgDIAEoCRIVCg1zdHJhdGVneV9oYXNoGAQgASgJEicKB3NpZ25hbHMYBSADKAsyFi5hbnQudjEuU3RyYXRlZ3lTaWduYWwiuQMKE0xpdmVTdHJhdGVneUNvbnRleHQSDQoFY2xvc2UYASADKAkSDAoEb3BlbhgCIAMoCRIMCgRoaWdoGAMgAygJEgsKA2xvdxgEIAMoCRIOCgZ2b2x1bWUYBSADKAkSFAoMYmFyX3RpbWVzX21zGAYgAygDEg4KBmVxdWl0eRgHIAEoCRIPCgdiYWxhbmNlGAggASgJEiYKCHBvc2l0aW9uGAkgASgLMhQuYW50LnYxLkxpdmVQb3NpdGlvbhInCglwb3NpdGlvbnMYCiADKAsyFC5hbnQudjEuTGl2ZVBvc2l0aW9uEg4KBnN5bWJvbBgLIAEoCRIRCgl0aW1lZnJhbWUYDCABKAkSDAoEbW9kZRgNIAEoCRIhCgZwYXJhbXMYDiADKAsyES5hbnQudjEuTGl2ZVBhcmFtEikKB3N5bWJvbHMYDyADKAsyGC5hbnQudjEuTGl2ZVN5bWJvbFNlcmllcxIWCg5wcmltYXJ5X3N5bWJvbBgQIAEoCRIVCg1jdXJyZW50X3ByaWNlGBEgASgJEiQKCmRlbHRhX2JhcnMYEiADKAsyEC5hbnQudjEuRGVsdGFCYXIiigEKDExpdmVQb3NpdGlvbhIOCgZ0aWNrZXQYASABKAMSDAoEc2lkZRgCIAEoCRIOCgZ2b2x1bWUYAyABKAkSEgoKb3Blbl9wcmljZRgEIAEoCRIKCgJzbBgFIAEoCRIKCgJ0cBgGIAEoCRIMCgRzd2FwGAcgASgJEhIKCmNvbW1pc3Npb24YCCABKAkiJwoJTGl2ZVBhcmFtEgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCSJqChBMaXZlU3ltYm9sU2VyaWVzEg4KBnN5bWJvbBgBIAEoCRINCgVjbG9zZRgCIAMoCRIMCgRvcGVuGAMgAygJEgwKBGhpZ2gYBCADKAkSCwoDbG93GAUgAygJEg4KBnZvbHVtZRgGIAMoCSJnCghEZWx0YUJhchIMCgRvcGVuGAEgASgJEgwKBGhpZ2gYAiABKAkSCwoDbG93GAMgASgJEg0KBWNsb3NlGAQgASgJEg4KBnZvbHVtZRgFIAEoCRITCgtiYXJfdGltZV9tcxgGIAEoAyLcAQoLVGlja0NvbnRleHQSCwoDYmlkGAEgASgJEgsKA2FzaxgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJEgwKBG1vZGUYBSABKAkSIQoGcGFyYW1zGAYgAygLMhEuYW50LnYxLkxpdmVQYXJhbRIOCgZlcXVpdHkYByABKAkSDwoHYmFsYW5jZRgIIAEoCRInCglwb3NpdGlvbnMYCSADKAsyFC5hbnQudjEuTGl2ZVBvc2l0aW9uEhUKDWN1cnJlbnRfcHJpY2UYCiABKAkikwIKDFRyYWRlQ29udGV4dBIOCgZ0aWNrZXQYASABKAMSDgoGc3ltYm9sGAIgASgJEhIKCmV2ZW50X3R5cGUYAyABKAkSDAoEc2lkZRgEIAEoCRIOCgZ2b2x1bWUYBSABKAkSDQoFcHJpY2UYBiABKAkSEQoJc3RvcF9sb3NzGAcgASgJEhMKC3Rha2VfcHJvZml0GAggASgJEg4KBnByb2ZpdBgJIAEoCRISCgpjb21taXNzaW9uGAogASgJEgwKBHN3YXAYCyABKAkSDgoGZXF1aXR5GAwgASgJEg8KB2JhbGFuY2UYDSABKAkSJwoJcG9zaXRpb25zGA4gAygLMhQuYW50LnYxLkxpdmVQb3NpdGlvbiKsAQoMVGltZXJDb250ZXh0Eg4KBnN5bWJvbBgBIAEoCRIRCgl0aW1lZnJhbWUYAiABKAkSDAoEbW9kZRgDIAEoCRIhCgZwYXJhbXMYBCADKAsyES5hbnQudjEuTGl2ZVBhcmFtEg4KBmVxdWl0eRgFIAEoCRIPCgdiYWxhbmNlGAYgASgJEicKCXBvc2l0aW9ucxgHIAMoCzIULmFudC52MS5MaXZlUG9zaXRpb24iWQoYQW5hbHl6ZUltcG9ydENvZGVSZXF1ZXN0EhMKC3NvdXJjZV9jb2RlGAEgASgJEhMKC3NvdXJjZV9uYW1lGAIgASgJEhMKC3NvdXJjZV9sYW5nGAMgASgJIpoDChlBbmFseXplSW1wb3J0Q29kZVJlc3BvbnNlEhUKDXN0cmF0ZWd5X25hbWUYASABKAkSEwoLbXFsX3ZlcnNpb24YAiABKAkSFgoOY292ZXJhZ2Vfc2NvcmUYCiABKAESFAoMdG90YWxfYmxvY2tzGAsgASgFEhkKEXJlY29nbml6ZWRfYmxvY2tzGAwgASgFEhYKDmV4ZWN1dGlvbl9raW5kGB4gASgJEhkKEWVudHJ5X3J1bGVzX2NvdW50GDIgASgFEhgKEGV4aXRfcnVsZXNfY291bnQYMyABKAUSEwoLc2l6aW5nX2tpbmQYNCABKAkSGQoRcmlza19jaGVja3NfY291bnQYNSABKAUSIgoGcGFyYW1zGDwgAygLMhIuYW50LnYxLlBhcmFtRmllbGQSJgoGZ3JvdXBzGD0gAygLMhYuYW50LnYxLlBhcmFtR3JvdXBJbmZvEiYKC2JsaW5kX3Nwb3RzGEYgAygLMhEuYW50LnYxLkJsaW5kU3BvdBIXCg9pbmRpY2F0b3JfbmFtZXMYUCADKAkiWgoZR2VuZXJhdGVJbXBvcnRDb2RlUmVxdWVzdBITCgtzb3VyY2VfY29kZRgBIAEoCRITCgtzb3VyY2VfbmFtZRgCIAEoCRITCgtzb3VyY2VfbGFuZxgDIAEoCSJyChpHZW5lcmF0ZUltcG9ydENvZGVSZXNwb25zZRIPCgdnb19jb2RlGAEgASgJEhIKCmNvZGVfbGluZXMYAiABKAUSEAoIY29tcGlsZXMYAyABKAgSHQoVcXVhbGl0eV9nYXRlX2ZhaWx1cmVzGAogAygJIl0KClBhcmFtRmllbGQSDAoEbmFtZRgBIAEoCRINCgVsYWJlbBgCIAEoCRIMCgR0eXBlGAMgASgJEhUKDWRlZmF1bHRfdmFsdWUYBCABKAkSDQoFZ3JvdXAYBSABKAkiHgoOUGFyYW1Hcm91cEluZm8SDAoEbmFtZRgBIAEoCSKSAQoJQmxpbmRTcG90EgoKAmlkGAEgASgJEhAKCGNhdGVnb3J5GAIgASgJEhAKCHNldmVyaXR5GAMgASgJEhMKC2Rlc2NyaXB0aW9uGAQgASgJEhAKCGxvY2F0aW9uGAUgASgJEhAKCGhhbmRsaW5nGAYgASgJEhwKFHVzZXJfYWN0aW9uX3JlcXVpcmVkGAcgASgIIoIBChVJbXBvcnRTdHJhdGVneVJlcXVlc3QSEwoLc291cmNlX2NvZGUYASABKAkSEwoLc291cmNlX25hbWUYAiABKAkSEwoLc291cmNlX2xhbmcYAyABKAkSGQoMd29ya3NwYWNlX2lkGBQgASgJSACIAQFCDwoNX3dvcmtzcGFjZV9pZCKVAQoWSW1wb3J0U3RyYXRlZ3lSZXNwb25zZRITCgtzdHJhdGVneV9pZBgBIAEoCRIVCg1zdHJhdGVneV9uYW1lGAIgASgJEg8KB2dvX2NvZGUYAyABKAkSFgoOY292ZXJhZ2Vfc2NvcmUYBCABKAESJgoLYmxpbmRfc3BvdHMYCiADKAsyES5hbnQudjEuQmxpbmRTcG90KogBCgtSZXF1ZXN0VHlwZRIcChhSRVFVRVNUX1RZUEVfVU5TUEVDSUZJRUQQABIUChBSRVFVRVNUX1RZUEVfQkFSEAESFQoRUkVRVUVTVF9UWVBFX1RJQ0sQAhIWChJSRVFVRVNUX1RZUEVfVFJBREUQAxIWChJSRVFVRVNUX1RZUEVfVElNRVIQBDLQCgoWU3RyYXRlZ3lSdW50aW1lU2VydmljZRJKCgdFeGVjdXRlEh4uYW50LnYxLkV4ZWN1dGVTdHJhdGVneVJlcXVlc3QaHy5hbnQudjEuRXhlY3V0ZVN0cmF0ZWd5UmVzcG9uc2USTQoIVmFsaWRhdGUSHy5hbnQudjEuVmFsaWRhdGVTdHJhdGVneVJlcXVlc3QaIC5hbnQudjEuVmFsaWRhdGVTdHJhdGVneVJlc3BvbnNlEk0KCEJhY2t0ZXN0Eh8uYW50LnYxLkJhY2t0ZXN0U3RyYXRlZ3lSZXF1ZXN0GiAuYW50LnYxLkJhY2t0ZXN0U3RyYXRlZ3lSZXNwb25zZRJVChBTdGFydEJhY2t0ZXN0UnVuEh8uYW50LnYxLlN0YXJ0QmFja3Rlc3RSdW5SZXF1ZXN0GiAuYW50LnYxLlN0YXJ0QmFja3Rlc3RSdW5SZXNwb25zZRJPCg5HZXRCYWNrdGVzdFJ1bhIdLmFudC52MS5HZXRCYWNrdGVzdFJ1blJlcXVlc3QaHi5hbnQudjEuR2V0QmFja3Rlc3RSdW5SZXNwb25zZRJVChBMaXN0QmFja3Rlc3RSdW5zEh8uYW50LnYxLkxpc3RCYWNrdGVzdFJ1bnNSZXF1ZXN0GiAuYW50LnYxLkxpc3RCYWNrdGVzdFJ1bnNSZXNwb25zZRJQChBXYXRjaEJhY2t0ZXN0UnVuEh8uYW50LnYxLldhdGNoQmFja3Rlc3RSdW5SZXF1ZXN0GhkuYW50LnYxLkJhY2t0ZXN0UnVuVXBkYXRlMAESWAoRQ2FuY2VsQmFja3Rlc3RSdW4SIC5hbnQudjEuQ2FuY2VsQmFja3Rlc3RSdW5SZXF1ZXN0GiEuYW50LnYxLkNhbmNlbEJhY2t0ZXN0UnVuUmVzcG9uc2USWAoRRGVsZXRlQmFja3Rlc3RSdW4SIC5hbnQudjEuRGVsZXRlQmFja3Rlc3RSdW5SZXF1ZXN0GiEuYW50LnYxLkRlbGV0ZUJhY2t0ZXN0UnVuUmVzcG9uc2USWwoSRGVsZXRlQmFja3Rlc3RSdW5zEiEuYW50LnYxLkRlbGV0ZUJhY2t0ZXN0UnVuc1JlcXVlc3QaIi5hbnQudjEuRGVsZXRlQmFja3Rlc3RSdW5zUmVzcG9uc2USTAoMR2V0VGVtcGxhdGVzEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GiQuYW50LnYxLkdldFN0cmF0ZWd5VGVtcGxhdGVzUmVzcG9uc2USRgoLRXhlY3V0ZUxpdmUSGi5hbnQudjEuRXhlY3V0ZUxpdmVSZXF1ZXN0GhsuYW50LnYxLkV4ZWN1dGVMaXZlUmVzcG9uc2USTAoNVHJhbnNwaWxlQ29kZRIcLmFudC52MS5UcmFuc3BpbGVDb2RlUmVxdWVzdBodLmFudC52MS5UcmFuc3BpbGVDb2RlUmVzcG9uc2USWAoRQW5hbHl6ZUltcG9ydENvZGUSIC5hbnQudjEuQW5hbHl6ZUltcG9ydENvZGVSZXF1ZXN0GiEuYW50LnYxLkFuYWx5emVJbXBvcnRDb2RlUmVzcG9uc2USWwoSR2VuZXJhdGVJbXBvcnRDb2RlEiEuYW50LnYxLkdlbmVyYXRlSW1wb3J0Q29kZVJlcXVlc3QaIi5hbnQudjEuR2VuZXJhdGVJbXBvcnRDb2RlUmVzcG9uc2USTwoOSW1wb3J0U3RyYXRlZ3kSHS5hbnQudjEuSW1wb3J0U3RyYXRlZ3lSZXF1ZXN0Gh4uYW50LnYxLkltcG9ydFN0cmF0ZWd5UmVzcG9uc2VCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_empty, file_common, file_strategy_messages, file_backtest_run_start, file_backtest_run_query, file_backtest_run_control]);
 
 /**
  * @generated from message ant.v1.TranspileCodeRequest
@@ -301,7 +301,7 @@ export const CodeQualityHintSchema: GenMessage<CodeQualityHint> = /*@__PURE__*/
 
 /**
  * SweepDimension describes a single parameter dimension for Smart Tuning.
- * Extracted from @param annotations by the Python backend (zero-trust).
+ * Extracted from @param annotations by the strategy backend (zero-trust).
  *
  * @generated from message ant.v1.SweepDimension
  */
@@ -353,7 +353,7 @@ export const SweepDimensionSchema: GenMessage<SweepDimension> = /*@__PURE__*/
 
 /**
  * StrategyDirective is a key-value directive from @strategy annotations.
- * Extracted by the Python backend (zero-trust).
+ * Extracted by the strategy backend (zero-trust).
  *
  * @generated from message ant.v1.StrategyDirective
  */
@@ -433,9 +433,9 @@ export type BacktestStrategyResponse = Message<"ant.v1.BacktestStrategyResponse"
   metrics?: BacktestMetrics | undefined;
 
   /**
-   * @generated from field: repeated double equity_curve = 3;
+   * @generated from field: repeated string equity_curve = 3;
    */
-  equityCurve: number[];
+  equityCurve: string[];
 
   /**
    * @generated from field: string error = 4;
@@ -501,8 +501,8 @@ export const StrategyTemplateInfoSchema: GenMessage<StrategyTemplateInfo> = /*@_
 
 /**
  * ExecuteLiveRequest sends strategy code with a proto-native context message.
- * The Go-side LiveStrategyRunner builds the context from real-time bar data
- * and calls this RPC per bar.
+ * The Go-side LiveStrategyRunner builds the context from real-time data
+ * and calls this RPC per event (bar, tick, trade, or timer).
  *
  * @generated from message ant.v1.ExecuteLiveRequest
  */
@@ -513,11 +513,39 @@ export type ExecuteLiveRequest = Message<"ant.v1.ExecuteLiveRequest"> & {
   strategyCode: string;
 
   /**
-   * proto-native — no JSON
-   *
-   * @generated from field: ant.v1.LiveStrategyContext context = 2;
+   * @generated from field: ant.v1.RequestType request_type = 2;
    */
-  context?: LiveStrategyContext | undefined;
+  requestType: RequestType;
+
+  /**
+   * Context data — which field is populated depends on request_type.
+   *
+   * REQUEST_TYPE_BAR
+   *
+   * @generated from field: ant.v1.LiveStrategyContext bar_context = 3;
+   */
+  barContext?: LiveStrategyContext | undefined;
+
+  /**
+   * REQUEST_TYPE_TICK
+   *
+   * @generated from field: ant.v1.TickContext tick_context = 4;
+   */
+  tickContext?: TickContext | undefined;
+
+  /**
+   * REQUEST_TYPE_TRADE
+   *
+   * @generated from field: ant.v1.TradeContext trade_context = 5;
+   */
+  tradeContext?: TradeContext | undefined;
+
+  /**
+   * REQUEST_TYPE_TIMER
+   *
+   * @generated from field: ant.v1.TimerContext timer_context = 6;
+   */
+  timerContext?: TimerContext | undefined;
 };
 
 /**
@@ -580,29 +608,29 @@ export type LiveStrategyContext = Message<"ant.v1.LiveStrategyContext"> & {
   /**
    * Market data (primary symbol OHLCV — length-aligned arrays)
    *
-   * @generated from field: repeated double close = 1;
+   * @generated from field: repeated string close = 1;
    */
-  close: number[];
+  close: string[];
 
   /**
-   * @generated from field: repeated double open = 2;
+   * @generated from field: repeated string open = 2;
    */
-  open: number[];
+  open: string[];
 
   /**
-   * @generated from field: repeated double high = 3;
+   * @generated from field: repeated string high = 3;
    */
-  high: number[];
+  high: string[];
 
   /**
-   * @generated from field: repeated double low = 4;
+   * @generated from field: repeated string low = 4;
    */
-  low: number[];
+  low: string[];
 
   /**
-   * @generated from field: repeated double volume = 5;
+   * @generated from field: repeated string volume = 5;
    */
-  volume: number[];
+  volume: string[];
 
   /**
    * bar close timestamps in unix ms
@@ -677,6 +705,16 @@ export type LiveStrategyContext = Message<"ant.v1.LiveStrategyContext"> & {
    * @generated from field: string current_price = 17;
    */
   currentPrice: string;
+
+  /**
+   * Delta-bar protocol: if non-empty, the harness appends these to its local
+   * bar window instead of rebuilding from close/open/high/low/volume arrays.
+   * The first bar of a session uses the full OHLCV arrays; subsequent bars
+   * use this field for incremental delivery.
+   *
+   * @generated from field: repeated ant.v1.DeltaBar delta_bars = 18;
+   */
+  deltaBars: DeltaBar[];
 };
 
 /**
@@ -780,29 +818,29 @@ export type LiveSymbolSeries = Message<"ant.v1.LiveSymbolSeries"> & {
   symbol: string;
 
   /**
-   * @generated from field: repeated double close = 2;
+   * @generated from field: repeated string close = 2;
    */
-  close: number[];
+  close: string[];
 
   /**
-   * @generated from field: repeated double open = 3;
+   * @generated from field: repeated string open = 3;
    */
-  open: number[];
+  open: string[];
 
   /**
-   * @generated from field: repeated double high = 4;
+   * @generated from field: repeated string high = 4;
    */
-  high: number[];
+  high: string[];
 
   /**
-   * @generated from field: repeated double low = 5;
+   * @generated from field: repeated string low = 5;
    */
-  low: number[];
+  low: string[];
 
   /**
-   * @generated from field: repeated double volume = 6;
+   * @generated from field: repeated string volume = 6;
    */
-  volume: number[];
+  volume: string[];
 };
 
 /**
@@ -811,6 +849,264 @@ export type LiveSymbolSeries = Message<"ant.v1.LiveSymbolSeries"> & {
  */
 export const LiveSymbolSeriesSchema: GenMessage<LiveSymbolSeries> = /*@__PURE__*/
   messageDesc(file_strategy_runtime, 18);
+
+/**
+ * DeltaBar is a single OHLCV bar for the delta-bar protocol.
+ * When LiveStrategyContext.delta_bars is non-empty, the harness appends
+ * these bars to its local rolling window rather than rebuilding from the
+ * full OHLCV arrays.
+ *
+ * @generated from message ant.v1.DeltaBar
+ */
+export type DeltaBar = Message<"ant.v1.DeltaBar"> & {
+  /**
+   * @generated from field: string open = 1;
+   */
+  open: string;
+
+  /**
+   * @generated from field: string high = 2;
+   */
+  high: string;
+
+  /**
+   * @generated from field: string low = 3;
+   */
+  low: string;
+
+  /**
+   * @generated from field: string close = 4;
+   */
+  close: string;
+
+  /**
+   * @generated from field: string volume = 5;
+   */
+  volume: string;
+
+  /**
+   * @generated from field: int64 bar_time_ms = 6;
+   */
+  barTimeMs: bigint;
+};
+
+/**
+ * Describes the message ant.v1.DeltaBar.
+ * Use `create(DeltaBarSchema)` to create a new message.
+ */
+export const DeltaBarSchema: GenMessage<DeltaBar> = /*@__PURE__*/
+  messageDesc(file_strategy_runtime, 19);
+
+/**
+ * TickContext carries a single quote update for OnTick strategies.
+ *
+ * @generated from message ant.v1.TickContext
+ */
+export type TickContext = Message<"ant.v1.TickContext"> & {
+  /**
+   * @generated from field: string bid = 1;
+   */
+  bid: string;
+
+  /**
+   * @generated from field: string ask = 2;
+   */
+  ask: string;
+
+  /**
+   * @generated from field: string symbol = 3;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: string timeframe = 4;
+   */
+  timeframe: string;
+
+  /**
+   * "live" | "paper"
+   *
+   * @generated from field: string mode = 5;
+   */
+  mode: string;
+
+  /**
+   * @generated from field: repeated ant.v1.LiveParam params = 6;
+   */
+  params: LiveParam[];
+
+  /**
+   * Account state
+   *
+   * @generated from field: string equity = 7;
+   */
+  equity: string;
+
+  /**
+   * @generated from field: string balance = 8;
+   */
+  balance: string;
+
+  /**
+   * @generated from field: repeated ant.v1.LivePosition positions = 9;
+   */
+  positions: LivePosition[];
+
+  /**
+   * @generated from field: string current_price = 10;
+   */
+  currentPrice: string;
+};
+
+/**
+ * Describes the message ant.v1.TickContext.
+ * Use `create(TickContextSchema)` to create a new message.
+ */
+export const TickContextSchema: GenMessage<TickContext> = /*@__PURE__*/
+  messageDesc(file_strategy_runtime, 20);
+
+/**
+ * TradeContext carries a trade event for OnTrade strategies.
+ *
+ * @generated from message ant.v1.TradeContext
+ */
+export type TradeContext = Message<"ant.v1.TradeContext"> & {
+  /**
+   * @generated from field: int64 ticket = 1;
+   */
+  ticket: bigint;
+
+  /**
+   * @generated from field: string symbol = 2;
+   */
+  symbol: string;
+
+  /**
+   * "fill" | "close" | "modify" | "cancel"
+   *
+   * @generated from field: string event_type = 3;
+   */
+  eventType: string;
+
+  /**
+   * "buy" | "sell"
+   *
+   * @generated from field: string side = 4;
+   */
+  side: string;
+
+  /**
+   * @generated from field: string volume = 5;
+   */
+  volume: string;
+
+  /**
+   * @generated from field: string price = 6;
+   */
+  price: string;
+
+  /**
+   * @generated from field: string stop_loss = 7;
+   */
+  stopLoss: string;
+
+  /**
+   * @generated from field: string take_profit = 8;
+   */
+  takeProfit: string;
+
+  /**
+   * @generated from field: string profit = 9;
+   */
+  profit: string;
+
+  /**
+   * @generated from field: string commission = 10;
+   */
+  commission: string;
+
+  /**
+   * @generated from field: string swap = 11;
+   */
+  swap: string;
+
+  /**
+   * Account state
+   *
+   * @generated from field: string equity = 12;
+   */
+  equity: string;
+
+  /**
+   * @generated from field: string balance = 13;
+   */
+  balance: string;
+
+  /**
+   * @generated from field: repeated ant.v1.LivePosition positions = 14;
+   */
+  positions: LivePosition[];
+};
+
+/**
+ * Describes the message ant.v1.TradeContext.
+ * Use `create(TradeContextSchema)` to create a new message.
+ */
+export const TradeContextSchema: GenMessage<TradeContext> = /*@__PURE__*/
+  messageDesc(file_strategy_runtime, 21);
+
+/**
+ * TimerContext carries a periodic timer fire for OnTimer strategies.
+ *
+ * @generated from message ant.v1.TimerContext
+ */
+export type TimerContext = Message<"ant.v1.TimerContext"> & {
+  /**
+   * @generated from field: string symbol = 1;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: string timeframe = 2;
+   */
+  timeframe: string;
+
+  /**
+   * "live" | "paper"
+   *
+   * @generated from field: string mode = 3;
+   */
+  mode: string;
+
+  /**
+   * @generated from field: repeated ant.v1.LiveParam params = 4;
+   */
+  params: LiveParam[];
+
+  /**
+   * Account state
+   *
+   * @generated from field: string equity = 5;
+   */
+  equity: string;
+
+  /**
+   * @generated from field: string balance = 6;
+   */
+  balance: string;
+
+  /**
+   * @generated from field: repeated ant.v1.LivePosition positions = 7;
+   */
+  positions: LivePosition[];
+};
+
+/**
+ * Describes the message ant.v1.TimerContext.
+ * Use `create(TimerContextSchema)` to create a new message.
+ */
+export const TimerContextSchema: GenMessage<TimerContext> = /*@__PURE__*/
+  messageDesc(file_strategy_runtime, 22);
 
 /**
  * @generated from message ant.v1.AnalyzeImportCodeRequest
@@ -837,7 +1133,7 @@ export type AnalyzeImportCodeRequest = Message<"ant.v1.AnalyzeImportCodeRequest"
  * Use `create(AnalyzeImportCodeRequestSchema)` to create a new message.
  */
 export const AnalyzeImportCodeRequestSchema: GenMessage<AnalyzeImportCodeRequest> = /*@__PURE__*/
-  messageDesc(file_strategy_runtime, 19);
+  messageDesc(file_strategy_runtime, 23);
 
 /**
  * @generated from message ant.v1.AnalyzeImportCodeResponse
@@ -894,24 +1190,19 @@ export type AnalyzeImportCodeResponse = Message<"ant.v1.AnalyzeImportCodeRespons
   riskChecksCount: number;
 
   /**
-   * Param panel schema (JSON-serialized for frontend convenience — frontend
-   * uses this to render the parameter form; proto-native in a future cleanup).
-   *
-   * @generated from field: string params_json = 60;
+   * @generated from field: repeated ant.v1.ParamField params = 60;
    */
-  paramsJson: string;
+  params: ParamField[];
 
   /**
-   * @generated from field: string groups_json = 61;
+   * @generated from field: repeated ant.v1.ParamGroupInfo groups = 61;
    */
-  groupsJson: string;
+  groups: ParamGroupInfo[];
 
   /**
-   * Blind spot report (JSON-serialized; same rationale as above).
-   *
-   * @generated from field: string blind_spots_json = 70;
+   * @generated from field: repeated ant.v1.BlindSpot blind_spots = 70;
    */
-  blindSpotsJson: string;
+  blindSpots: BlindSpot[];
 
   /**
    * @generated from field: repeated string indicator_names = 80;
@@ -924,7 +1215,7 @@ export type AnalyzeImportCodeResponse = Message<"ant.v1.AnalyzeImportCodeRespons
  * Use `create(AnalyzeImportCodeResponseSchema)` to create a new message.
  */
 export const AnalyzeImportCodeResponseSchema: GenMessage<AnalyzeImportCodeResponse> = /*@__PURE__*/
-  messageDesc(file_strategy_runtime, 20);
+  messageDesc(file_strategy_runtime, 24);
 
 /**
  * @generated from message ant.v1.GenerateImportCodeRequest
@@ -951,7 +1242,7 @@ export type GenerateImportCodeRequest = Message<"ant.v1.GenerateImportCodeReques
  * Use `create(GenerateImportCodeRequestSchema)` to create a new message.
  */
 export const GenerateImportCodeRequestSchema: GenMessage<GenerateImportCodeRequest> = /*@__PURE__*/
-  messageDesc(file_strategy_runtime, 21);
+  messageDesc(file_strategy_runtime, 25);
 
 /**
  * @generated from message ant.v1.GenerateImportCodeResponse
@@ -983,7 +1274,114 @@ export type GenerateImportCodeResponse = Message<"ant.v1.GenerateImportCodeRespo
  * Use `create(GenerateImportCodeResponseSchema)` to create a new message.
  */
 export const GenerateImportCodeResponseSchema: GenMessage<GenerateImportCodeResponse> = /*@__PURE__*/
-  messageDesc(file_strategy_runtime, 22);
+  messageDesc(file_strategy_runtime, 26);
+
+/**
+ * @generated from message ant.v1.ParamField
+ */
+export type ParamField = Message<"ant.v1.ParamField"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string label = 2;
+   */
+  label: string;
+
+  /**
+   * "int" | "double" | "string" | "bool" | "enum"
+   *
+   * @generated from field: string type = 3;
+   */
+  type: string;
+
+  /**
+   * @generated from field: string default_value = 4;
+   */
+  defaultValue: string;
+
+  /**
+   * group name this param belongs to
+   *
+   * @generated from field: string group = 5;
+   */
+  group: string;
+};
+
+/**
+ * Describes the message ant.v1.ParamField.
+ * Use `create(ParamFieldSchema)` to create a new message.
+ */
+export const ParamFieldSchema: GenMessage<ParamField> = /*@__PURE__*/
+  messageDesc(file_strategy_runtime, 27);
+
+/**
+ * @generated from message ant.v1.ParamGroupInfo
+ */
+export type ParamGroupInfo = Message<"ant.v1.ParamGroupInfo"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+};
+
+/**
+ * Describes the message ant.v1.ParamGroupInfo.
+ * Use `create(ParamGroupInfoSchema)` to create a new message.
+ */
+export const ParamGroupInfoSchema: GenMessage<ParamGroupInfo> = /*@__PURE__*/
+  messageDesc(file_strategy_runtime, 28);
+
+/**
+ * @generated from message ant.v1.BlindSpot
+ */
+export type BlindSpot = Message<"ant.v1.BlindSpot"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string category = 2;
+   */
+  category: string;
+
+  /**
+   * "致命" | "警告" | "信息"
+   *
+   * @generated from field: string severity = 3;
+   */
+  severity: string;
+
+  /**
+   * @generated from field: string description = 4;
+   */
+  description: string;
+
+  /**
+   * @generated from field: string location = 5;
+   */
+  location: string;
+
+  /**
+   * @generated from field: string handling = 6;
+   */
+  handling: string;
+
+  /**
+   * @generated from field: bool user_action_required = 7;
+   */
+  userActionRequired: boolean;
+};
+
+/**
+ * Describes the message ant.v1.BlindSpot.
+ * Use `create(BlindSpotSchema)` to create a new message.
+ */
+export const BlindSpotSchema: GenMessage<BlindSpot> = /*@__PURE__*/
+  messageDesc(file_strategy_runtime, 29);
 
 /**
  * @generated from message ant.v1.ImportStrategyRequest
@@ -1015,7 +1413,7 @@ export type ImportStrategyRequest = Message<"ant.v1.ImportStrategyRequest"> & {
  * Use `create(ImportStrategyRequestSchema)` to create a new message.
  */
 export const ImportStrategyRequestSchema: GenMessage<ImportStrategyRequest> = /*@__PURE__*/
-  messageDesc(file_strategy_runtime, 23);
+  messageDesc(file_strategy_runtime, 30);
 
 /**
  * @generated from message ant.v1.ImportStrategyResponse
@@ -1042,11 +1440,9 @@ export type ImportStrategyResponse = Message<"ant.v1.ImportStrategyResponse"> & 
   coverageScore: number;
 
   /**
-   * JSON-serialized blind spots (same rationale as above).
-   *
-   * @generated from field: string blind_spots_json = 10;
+   * @generated from field: repeated ant.v1.BlindSpot blind_spots = 10;
    */
-  blindSpotsJson: string;
+  blindSpots: BlindSpot[];
 };
 
 /**
@@ -1054,7 +1450,53 @@ export type ImportStrategyResponse = Message<"ant.v1.ImportStrategyResponse"> & 
  * Use `create(ImportStrategyResponseSchema)` to create a new message.
  */
 export const ImportStrategyResponseSchema: GenMessage<ImportStrategyResponse> = /*@__PURE__*/
-  messageDesc(file_strategy_runtime, 24);
+  messageDesc(file_strategy_runtime, 31);
+
+/**
+ * RequestType selects which execution callback the harness dispatches to.
+ *
+ * @generated from enum ant.v1.RequestType
+ */
+export enum RequestType {
+  /**
+   * @generated from enum value: REQUEST_TYPE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * OnBar — new bar closed
+   *
+   * @generated from enum value: REQUEST_TYPE_BAR = 1;
+   */
+  BAR = 1,
+
+  /**
+   * OnTick — price update (Bid/Ask)
+   *
+   * @generated from enum value: REQUEST_TYPE_TICK = 2;
+   */
+  TICK = 2,
+
+  /**
+   * OnTrade — order fill/close/modify
+   *
+   * @generated from enum value: REQUEST_TYPE_TRADE = 3;
+   */
+  TRADE = 3,
+
+  /**
+   * OnTimer — periodic timer fired
+   *
+   * @generated from enum value: REQUEST_TYPE_TIMER = 4;
+   */
+  TIMER = 4,
+}
+
+/**
+ * Describes the enum ant.v1.RequestType.
+ */
+export const RequestTypeSchema: GenEnum<RequestType> = /*@__PURE__*/
+  enumDesc(file_strategy_runtime, 0);
 
 /**
  * @generated from service ant.v1.StrategyRuntimeService

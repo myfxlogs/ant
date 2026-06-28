@@ -266,21 +266,21 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 				positions = append(positions, mdtick.ProfitPosition{
 					Ticket:       int64(o.GetTicket()),
 					Symbol:       o.GetSymbol(),
-					Profit:       o.GetProfit(),
-					Volume:       o.GetLots(),
-					CurrentPrice: o.GetClosePrice(),
+					Profit:       decimal.NewFromFloat(o.GetProfit()),
+					Volume:       decimal.NewFromFloat(o.GetLots()),
+					CurrentPrice: decimal.NewFromFloat(o.GetClosePrice()),
 				})
 			}
 			handler(&mdtick.ProfitUpdate{
 				AccountID:     g.cfg.AccountID,
 				Platform:      "mt4",
-				Balance:       p.GetBalance(),
-				Credit:        p.GetCredit(),
-				Equity:        p.GetEquity(),
-				Margin:        p.GetMargin(),
-				FreeMargin:    p.GetFreeMargin(),
-				MarginLevel:   p.GetMarginLevel(),
-				Profit:        profitD.InexactFloat64(),
+				Balance:       decimal.NewFromFloat(p.GetBalance()),
+				Credit:        decimal.NewFromFloat(p.GetCredit()),
+				Equity:        decimal.NewFromFloat(p.GetEquity()),
+				Margin:        decimal.NewFromFloat(p.GetMargin()),
+				FreeMargin:    decimal.NewFromFloat(p.GetFreeMargin()),
+				MarginLevel:   decimal.NewFromFloat(p.GetMarginLevel()),
+				Profit:        profitD,
 				ProfitPercent: profitPercent,
 				Positions:     positions,
 			})

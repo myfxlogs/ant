@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 // CountActiveSchedules returns the number of active strategy schedules for a user.
@@ -41,15 +42,15 @@ func (r *AutoTradingRepository) CountTodayExecutionsByUser(ctx context.Context, 
 }
 
 // GetTodayProfitByUser returns today's profit sum across all user accounts.
-func (r *AutoTradingRepository) GetTodayProfitByUser(ctx context.Context, userID uuid.UUID) (float64, error) {
+func (r *AutoTradingRepository) GetTodayProfitByUser(ctx context.Context, userID uuid.UUID) (decimal.Decimal, error) {
 	query := `
-		SELECT COALESCE(SUM((orders->>'profit')::float), 0)
+		SELECT COALESCE(SUM((orders->>'profit')::numeric), 0)
 		FROM strategy_executions
 		WHERE user_id = $1 AND started_at >= CURRENT_DATE AND status = 'completed'`
-	var profit float64
+	var profit decimal.Decimal
 	err := r.db.QueryRow(ctx, query, userID).Scan(&profit)
 	if err != nil {
-		return 0, fmt.Errorf("get today profit: %w", err)
+		return decimal.Zero, fmt.Errorf("get today profit: %w", err)
 	}
 	return profit, nil
 }

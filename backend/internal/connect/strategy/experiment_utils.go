@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strconv"
 	"time"
 
 	"go.uber.org/zap"
@@ -24,6 +25,16 @@ func marshalOverrides(overrides map[string]interface{}) ([]byte, error) {
 }
 
 func timePtr(t time.Time) *time.Time { return &t }
+
+// equityCurveToFloat64 converts a proto []string equity curve to []float64
+// for statistical computations (Spearman, R², etc.).
+func equityCurveToFloat64(curve []string) []float64 {
+	out := make([]float64, len(curve))
+	for i, s := range curve {
+		out[i], _ = strconv.ParseFloat(s, 64)
+	}
+	return out
+}
 
 // computeStability returns the R² of linear regression on the equity curve (0–1).
 // A value near 1 means the equity curve is close to a straight line (stable growth).
@@ -75,15 +86,17 @@ func computeStability(equity []float64) float64 {
 
 // paramsToProto converts a map of parameter overrides to StrategyParams proto.
 func paramsToProto(overrides map[string]interface{}) *antv1.StrategyParams {
-	p := &antv1.StrategyParams{Values: make(map[string]float64)}
+	p := &antv1.StrategyParams{Values: make(map[string]string)}
 	for k, v := range overrides {
 		switch val := v.(type) {
-		case float64:
+		case string:
 			p.Values[k] = val
+		case float64:
+			p.Values[k] = strconv.FormatFloat(val, 'f', -1, 64)
 		case int:
-			p.Values[k] = float64(val)
+			p.Values[k] = strconv.Itoa(val)
 		case int64:
-			p.Values[k] = float64(val)
+			p.Values[k] = strconv.FormatInt(val, 10)
 		}
 	}
 	return p

@@ -79,9 +79,9 @@ func (TradeDirection) EnumDescriptor() ([]byte, []int) {
 // column) for full reproducibility.
 type BacktestExecutionConfig struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
-	Commission     float64                `protobuf:"fixed64,1,opt,name=commission,proto3" json:"commission,omitempty"` // ratio, e.g. 0.001 = 0.10%
-	Slippage       float64                `protobuf:"fixed64,2,opt,name=slippage,proto3" json:"slippage,omitempty"`     // ratio, e.g. 0.0005 = 0.05%
-	Leverage       float64                `protobuf:"fixed64,3,opt,name=leverage,proto3" json:"leverage,omitempty"`     // e.g. 1, 10, 100
+	Commission     string                 `protobuf:"bytes,1,opt,name=commission,proto3" json:"commission,omitempty"` // ratio as string, e.g. "0.001" = 0.10%
+	Slippage       string                 `protobuf:"bytes,2,opt,name=slippage,proto3" json:"slippage,omitempty"`     // ratio as string, e.g. "0.0005" = 0.05%
+	Leverage       string                 `protobuf:"bytes,3,opt,name=leverage,proto3" json:"leverage,omitempty"`     // e.g. "1", "10", "100"
 	TradeDirection TradeDirection         `protobuf:"varint,4,opt,name=trade_direction,json=tradeDirection,proto3,enum=ant.v1.TradeDirection" json:"trade_direction,omitempty"`
 	StrictMode     bool                   `protobuf:"varint,5,opt,name=strict_mode,json=strictMode,proto3" json:"strict_mode,omitempty"`            // true = next-bar-open, false = same-bar-close + MTF 1m
 	StrategyConfig *StrategyConfig        `protobuf:"bytes,6,opt,name=strategy_config,json=strategyConfig,proto3" json:"strategy_config,omitempty"` // parsed from @strategy annotations
@@ -119,25 +119,25 @@ func (*BacktestExecutionConfig) Descriptor() ([]byte, []int) {
 	return file_backtest_execution_config_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *BacktestExecutionConfig) GetCommission() float64 {
+func (x *BacktestExecutionConfig) GetCommission() string {
 	if x != nil {
 		return x.Commission
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestExecutionConfig) GetSlippage() float64 {
+func (x *BacktestExecutionConfig) GetSlippage() string {
 	if x != nil {
 		return x.Slippage
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestExecutionConfig) GetLeverage() float64 {
+func (x *BacktestExecutionConfig) GetLeverage() string {
 	if x != nil {
 		return x.Leverage
 	}
-	return 0
+	return ""
 }
 
 func (x *BacktestExecutionConfig) GetTradeDirection() TradeDirection {
@@ -234,8 +234,8 @@ func (x *StrategyConfig) GetExecution() *ExecutionConfig {
 
 type StrategyRiskConfig struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	StopLossPct   *float64               `protobuf:"fixed64,1,opt,name=stop_loss_pct,json=stopLossPct,proto3,oneof" json:"stop_loss_pct,omitempty"`       // ratio, e.g. 0.02 = 2%
-	TakeProfitPct *float64               `protobuf:"fixed64,2,opt,name=take_profit_pct,json=takeProfitPct,proto3,oneof" json:"take_profit_pct,omitempty"` // ratio
+	StopLossPct   *string                `protobuf:"bytes,1,opt,name=stop_loss_pct,json=stopLossPct,proto3,oneof" json:"stop_loss_pct,omitempty"`       // ratio as string, e.g. "0.02" = 2%
+	TakeProfitPct *string                `protobuf:"bytes,2,opt,name=take_profit_pct,json=takeProfitPct,proto3,oneof" json:"take_profit_pct,omitempty"` // ratio as string
 	Trailing      *TrailingConfig        `protobuf:"bytes,3,opt,name=trailing,proto3" json:"trailing,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -271,18 +271,18 @@ func (*StrategyRiskConfig) Descriptor() ([]byte, []int) {
 	return file_backtest_execution_config_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *StrategyRiskConfig) GetStopLossPct() float64 {
+func (x *StrategyRiskConfig) GetStopLossPct() string {
 	if x != nil && x.StopLossPct != nil {
 		return *x.StopLossPct
 	}
-	return 0
+	return ""
 }
 
-func (x *StrategyRiskConfig) GetTakeProfitPct() float64 {
+func (x *StrategyRiskConfig) GetTakeProfitPct() string {
 	if x != nil && x.TakeProfitPct != nil {
 		return *x.TakeProfitPct
 	}
-	return 0
+	return ""
 }
 
 func (x *StrategyRiskConfig) GetTrailing() *TrailingConfig {
@@ -295,8 +295,8 @@ func (x *StrategyRiskConfig) GetTrailing() *TrailingConfig {
 type TrailingConfig struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Enabled       bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	Pct           *float64               `protobuf:"fixed64,2,opt,name=pct,proto3,oneof" json:"pct,omitempty"`                                          // trailing stop distance (ratio)
-	ActivationPct *float64               `protobuf:"fixed64,3,opt,name=activation_pct,json=activationPct,proto3,oneof" json:"activation_pct,omitempty"` // profit threshold before activation (ratio)
+	Pct           *string                `protobuf:"bytes,2,opt,name=pct,proto3,oneof" json:"pct,omitempty"`                                          // trailing stop distance (ratio as string)
+	ActivationPct *string                `protobuf:"bytes,3,opt,name=activation_pct,json=activationPct,proto3,oneof" json:"activation_pct,omitempty"` // profit threshold before activation (ratio as string)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -338,23 +338,23 @@ func (x *TrailingConfig) GetEnabled() bool {
 	return false
 }
 
-func (x *TrailingConfig) GetPct() float64 {
+func (x *TrailingConfig) GetPct() string {
 	if x != nil && x.Pct != nil {
 		return *x.Pct
 	}
-	return 0
+	return ""
 }
 
-func (x *TrailingConfig) GetActivationPct() float64 {
+func (x *TrailingConfig) GetActivationPct() string {
 	if x != nil && x.ActivationPct != nil {
 		return *x.ActivationPct
 	}
-	return 0
+	return ""
 }
 
 type PositionConfig struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	EntryPct      *float64               `protobuf:"fixed64,1,opt,name=entry_pct,json=entryPct,proto3,oneof" json:"entry_pct,omitempty"` // ratio of capital per entry, e.g. 0.25 = 25%
+	EntryPct      *string                `protobuf:"bytes,1,opt,name=entry_pct,json=entryPct,proto3,oneof" json:"entry_pct,omitempty"` // ratio of capital per entry as string, e.g. "0.25" = 25%
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -389,11 +389,11 @@ func (*PositionConfig) Descriptor() ([]byte, []int) {
 	return file_backtest_execution_config_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *PositionConfig) GetEntryPct() float64 {
+func (x *PositionConfig) GetEntryPct() string {
 	if x != nil && x.EntryPct != nil {
 		return *x.EntryPct
 	}
-	return 0
+	return ""
 }
 
 type ScaleConfig struct {
@@ -467,8 +467,8 @@ func (x *ScaleConfig) GetAdverseReduce() *ScaleRule {
 type ScaleRule struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Enabled       bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	StepPct       *float64               `protobuf:"fixed64,2,opt,name=step_pct,json=stepPct,proto3,oneof" json:"step_pct,omitempty"`   // price movement ratio to trigger
-	SizePct       *float64               `protobuf:"fixed64,3,opt,name=size_pct,json=sizePct,proto3,oneof" json:"size_pct,omitempty"`   // ratio of capital to add/reduce
+	StepPct       *string                `protobuf:"bytes,2,opt,name=step_pct,json=stepPct,proto3,oneof" json:"step_pct,omitempty"`     // price movement ratio to trigger (string)
+	SizePct       *string                `protobuf:"bytes,3,opt,name=size_pct,json=sizePct,proto3,oneof" json:"size_pct,omitempty"`     // ratio of capital to add/reduce (string)
 	MaxTimes      *int32                 `protobuf:"varint,4,opt,name=max_times,json=maxTimes,proto3,oneof" json:"max_times,omitempty"` // max scaling actions (0 = unlimited)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -511,18 +511,18 @@ func (x *ScaleRule) GetEnabled() bool {
 	return false
 }
 
-func (x *ScaleRule) GetStepPct() float64 {
+func (x *ScaleRule) GetStepPct() string {
 	if x != nil && x.StepPct != nil {
 		return *x.StepPct
 	}
-	return 0
+	return ""
 }
 
-func (x *ScaleRule) GetSizePct() float64 {
+func (x *ScaleRule) GetSizePct() string {
 	if x != nil && x.SizePct != nil {
 		return *x.SizePct
 	}
-	return 0
+	return ""
 }
 
 func (x *ScaleRule) GetMaxTimes() int32 {
@@ -584,9 +584,9 @@ type ExecutionAssumptions struct {
 	SignalTiming      string                 `protobuf:"bytes,2,opt,name=signal_timing,json=signalTiming,proto3" json:"signal_timing,omitempty"`                  // "next_bar_open" or "same_bar_close"
 	FillRule          string                 `protobuf:"bytes,3,opt,name=fill_rule,json=fillRule,proto3" json:"fill_rule,omitempty"`                              // fill semantics used
 	MtfFallbackReason string                 `protobuf:"bytes,4,opt,name=mtf_fallback_reason,json=mtfFallbackReason,proto3" json:"mtf_fallback_reason,omitempty"` // empty if MTF sub-resolution was active
-	ActualCommission  float64                `protobuf:"fixed64,5,opt,name=actual_commission,json=actualCommission,proto3" json:"actual_commission,omitempty"`
-	ActualSlippage    float64                `protobuf:"fixed64,6,opt,name=actual_slippage,json=actualSlippage,proto3" json:"actual_slippage,omitempty"`
-	ActualLeverage    float64                `protobuf:"fixed64,7,opt,name=actual_leverage,json=actualLeverage,proto3" json:"actual_leverage,omitempty"`
+	ActualCommission  string                 `protobuf:"bytes,5,opt,name=actual_commission,json=actualCommission,proto3" json:"actual_commission,omitempty"`
+	ActualSlippage    string                 `protobuf:"bytes,6,opt,name=actual_slippage,json=actualSlippage,proto3" json:"actual_slippage,omitempty"`
+	ActualLeverage    string                 `protobuf:"bytes,7,opt,name=actual_leverage,json=actualLeverage,proto3" json:"actual_leverage,omitempty"`
 	TradeDirection    string                 `protobuf:"bytes,8,opt,name=trade_direction,json=tradeDirection,proto3" json:"trade_direction,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
@@ -650,25 +650,25 @@ func (x *ExecutionAssumptions) GetMtfFallbackReason() string {
 	return ""
 }
 
-func (x *ExecutionAssumptions) GetActualCommission() float64 {
+func (x *ExecutionAssumptions) GetActualCommission() string {
 	if x != nil {
 		return x.ActualCommission
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecutionAssumptions) GetActualSlippage() float64 {
+func (x *ExecutionAssumptions) GetActualSlippage() string {
 	if x != nil {
 		return x.ActualSlippage
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecutionAssumptions) GetActualLeverage() float64 {
+func (x *ExecutionAssumptions) GetActualLeverage() string {
 	if x != nil {
 		return x.ActualLeverage
 	}
-	return 0
+	return ""
 }
 
 func (x *ExecutionAssumptions) GetTradeDirection() string {
@@ -685,10 +685,10 @@ const file_backtest_execution_config_proto_rawDesc = "" +
 	"\x1fbacktest_execution_config.proto\x12\x06ant.v1\"\x94\x02\n" +
 	"\x17BacktestExecutionConfig\x12\x1e\n" +
 	"\n" +
-	"commission\x18\x01 \x01(\x01R\n" +
+	"commission\x18\x01 \x01(\tR\n" +
 	"commission\x12\x1a\n" +
-	"\bslippage\x18\x02 \x01(\x01R\bslippage\x12\x1a\n" +
-	"\bleverage\x18\x03 \x01(\x01R\bleverage\x12?\n" +
+	"\bslippage\x18\x02 \x01(\tR\bslippage\x12\x1a\n" +
+	"\bleverage\x18\x03 \x01(\tR\bleverage\x12?\n" +
 	"\x0ftrade_direction\x18\x04 \x01(\x0e2\x16.ant.v1.TradeDirectionR\x0etradeDirection\x12\x1f\n" +
 	"\vstrict_mode\x18\x05 \x01(\bR\n" +
 	"strictMode\x12?\n" +
@@ -699,19 +699,19 @@ const file_backtest_execution_config_proto_rawDesc = "" +
 	"\x05scale\x18\x03 \x01(\v2\x13.ant.v1.ScaleConfigR\x05scale\x125\n" +
 	"\texecution\x18\x04 \x01(\v2\x17.ant.v1.ExecutionConfigR\texecution\"\xc4\x01\n" +
 	"\x12StrategyRiskConfig\x12'\n" +
-	"\rstop_loss_pct\x18\x01 \x01(\x01H\x00R\vstopLossPct\x88\x01\x01\x12+\n" +
-	"\x0ftake_profit_pct\x18\x02 \x01(\x01H\x01R\rtakeProfitPct\x88\x01\x01\x122\n" +
+	"\rstop_loss_pct\x18\x01 \x01(\tH\x00R\vstopLossPct\x88\x01\x01\x12+\n" +
+	"\x0ftake_profit_pct\x18\x02 \x01(\tH\x01R\rtakeProfitPct\x88\x01\x01\x122\n" +
 	"\btrailing\x18\x03 \x01(\v2\x16.ant.v1.TrailingConfigR\btrailingB\x10\n" +
 	"\x0e_stop_loss_pctB\x12\n" +
 	"\x10_take_profit_pct\"\x88\x01\n" +
 	"\x0eTrailingConfig\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x15\n" +
-	"\x03pct\x18\x02 \x01(\x01H\x00R\x03pct\x88\x01\x01\x12*\n" +
-	"\x0eactivation_pct\x18\x03 \x01(\x01H\x01R\ractivationPct\x88\x01\x01B\x06\n" +
+	"\x03pct\x18\x02 \x01(\tH\x00R\x03pct\x88\x01\x01\x12*\n" +
+	"\x0eactivation_pct\x18\x03 \x01(\tH\x01R\ractivationPct\x88\x01\x01B\x06\n" +
 	"\x04_pctB\x11\n" +
 	"\x0f_activation_pct\"@\n" +
 	"\x0ePositionConfig\x12 \n" +
-	"\tentry_pct\x18\x01 \x01(\x01H\x00R\bentryPct\x88\x01\x01B\f\n" +
+	"\tentry_pct\x18\x01 \x01(\tH\x00R\bentryPct\x88\x01\x01B\f\n" +
 	"\n" +
 	"_entry_pct\"\xd9\x01\n" +
 	"\vScaleConfig\x12.\n" +
@@ -721,8 +721,8 @@ const file_backtest_execution_config_proto_rawDesc = "" +
 	"\x0eadverse_reduce\x18\x04 \x01(\v2\x11.ant.v1.ScaleRuleR\radverseReduce\"\xaf\x01\n" +
 	"\tScaleRule\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x1e\n" +
-	"\bstep_pct\x18\x02 \x01(\x01H\x00R\astepPct\x88\x01\x01\x12\x1e\n" +
-	"\bsize_pct\x18\x03 \x01(\x01H\x01R\asizePct\x88\x01\x01\x12 \n" +
+	"\bstep_pct\x18\x02 \x01(\tH\x00R\astepPct\x88\x01\x01\x12\x1e\n" +
+	"\bsize_pct\x18\x03 \x01(\tH\x01R\asizePct\x88\x01\x01\x12 \n" +
 	"\tmax_times\x18\x04 \x01(\x05H\x02R\bmaxTimes\x88\x01\x01B\v\n" +
 	"\t_step_pctB\v\n" +
 	"\t_size_pctB\f\n" +
@@ -735,9 +735,9 @@ const file_backtest_execution_config_proto_rawDesc = "" +
 	"\rsignal_timing\x18\x02 \x01(\tR\fsignalTiming\x12\x1b\n" +
 	"\tfill_rule\x18\x03 \x01(\tR\bfillRule\x12.\n" +
 	"\x13mtf_fallback_reason\x18\x04 \x01(\tR\x11mtfFallbackReason\x12+\n" +
-	"\x11actual_commission\x18\x05 \x01(\x01R\x10actualCommission\x12'\n" +
-	"\x0factual_slippage\x18\x06 \x01(\x01R\x0eactualSlippage\x12'\n" +
-	"\x0factual_leverage\x18\a \x01(\x01R\x0eactualLeverage\x12'\n" +
+	"\x11actual_commission\x18\x05 \x01(\tR\x10actualCommission\x12'\n" +
+	"\x0factual_slippage\x18\x06 \x01(\tR\x0eactualSlippage\x12'\n" +
+	"\x0factual_leverage\x18\a \x01(\tR\x0eactualLeverage\x12'\n" +
 	"\x0ftrade_direction\x18\b \x01(\tR\x0etradeDirection*\x80\x01\n" +
 	"\x0eTradeDirection\x12\x1f\n" +
 	"\x1bTRADE_DIRECTION_UNSPECIFIED\x10\x00\x12\x18\n" +

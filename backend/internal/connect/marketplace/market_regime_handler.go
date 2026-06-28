@@ -166,7 +166,7 @@ func (s *MarketRegimeServer) detectRegime(ctx context.Context, symbol, broker, t
 	ohlc := make([]ai.OHLCBar, len(bars))
 	for i := 0; i < len(bars); i++ {
 		b := bars[len(bars)-1-i]
-		ohlc[i] = ai.OHLCBar{Open: b.Open, High: b.High, Low: b.Low, Close: b.Close, Volume: b.Volume}
+		ohlc[i] = ai.OHLCBar{Open: b.Open.InexactFloat64(), High: b.High.InexactFloat64(), Low: b.Low.InexactFloat64(), Close: b.Close.InexactFloat64(), Volume: b.Volume}
 	}
 	result := ai.DetectRegime(ohlc)
 

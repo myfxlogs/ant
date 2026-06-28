@@ -103,6 +103,8 @@ func (r *BacktestRunRepository) RequestCancel(ctx context.Context, userID, runID
 	if err != nil {
 		return fmt.Errorf("request cancel: %w", err)
 	}
+	// Push-first: notify active workers of cancel request.
+	_, _ = r.db.Exec(ctx, "SELECT pg_notify('backtest_cancel', $1)", runID.String())
 	return nil
 }
 

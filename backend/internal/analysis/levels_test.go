@@ -3,6 +3,8 @@ package analysis
 import (
 	"testing"
 
+	"github.com/shopspring/decimal"
+
 	"anttrader/internal/repository"
 )
 
@@ -10,9 +12,9 @@ func makeBars(prices ...[2]float64) []repository.KlineBar {
 	bars := make([]repository.KlineBar, len(prices))
 	for i, p := range prices {
 		bars[i] = repository.KlineBar{
-			High:  p[0],
-			Low:   p[1],
-			Close: (p[0] + p[1]) / 2,
+			High:  decimal.NewFromFloat(p[0]),
+			Low:   decimal.NewFromFloat(p[1]),
+			Close: decimal.NewFromFloat((p[0] + p[1]) / 2),
 		}
 	}
 	return bars
@@ -23,9 +25,9 @@ func makeTrendBars(n int, startPrice, stepHigh, stepLow float64) []repository.Kl
 	price := startPrice
 	for i := 0; i < n; i++ {
 		bars[i] = repository.KlineBar{
-			High:  price + stepHigh,
-			Low:   price - stepLow,
-			Close: price,
+			High:  decimal.NewFromFloat(price + stepHigh),
+			Low:   decimal.NewFromFloat(price - stepLow),
+			Close: decimal.NewFromFloat(price),
 		}
 		price += 0.1
 	}
@@ -66,9 +68,9 @@ func TestDetectSRLevels_StrongSwingPoints(t *testing.T) {
 			low = base - 0.015
 		}
 		bars[i] = repository.KlineBar{
-			High:  high,
-			Low:   low,
-			Close: (high + low) / 2,
+			High:  decimal.NewFromFloat(high),
+			Low:   decimal.NewFromFloat(low),
+			Close: decimal.NewFromFloat((high + low) / 2),
 		}
 	}
 	levels := detectSRLevels(bars)

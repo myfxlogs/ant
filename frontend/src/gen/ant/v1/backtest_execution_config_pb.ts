@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file backtest_execution_config.proto.
  */
 export const file_backtest_execution_config: GenFile = /*@__PURE__*/
-  fileDesc("Ch9iYWNrdGVzdF9leGVjdXRpb25fY29uZmlnLnByb3RvEgZhbnQudjEiyAEKF0JhY2t0ZXN0RXhlY3V0aW9uQ29uZmlnEhIKCmNvbW1pc3Npb24YASABKAESEAoIc2xpcHBhZ2UYAiABKAESEAoIbGV2ZXJhZ2UYAyABKAESLwoPdHJhZGVfZGlyZWN0aW9uGAQgASgOMhYuYW50LnYxLlRyYWRlRGlyZWN0aW9uEhMKC3N0cmljdF9tb2RlGAUgASgIEi8KD3N0cmF0ZWd5X2NvbmZpZxgGIAEoCzIWLmFudC52MS5TdHJhdGVneUNvbmZpZyK0AQoOU3RyYXRlZ3lDb25maWcSKAoEcmlzaxgBIAEoCzIaLmFudC52MS5TdHJhdGVneVJpc2tDb25maWcSKAoIcG9zaXRpb24YAiABKAsyFi5hbnQudjEuUG9zaXRpb25Db25maWcSIgoFc2NhbGUYAyABKAsyEy5hbnQudjEuU2NhbGVDb25maWcSKgoJZXhlY3V0aW9uGAQgASgLMhcuYW50LnYxLkV4ZWN1dGlvbkNvbmZpZyKeAQoSU3RyYXRlZ3lSaXNrQ29uZmlnEhoKDXN0b3BfbG9zc19wY3QYASABKAFIAIgBARIcCg90YWtlX3Byb2ZpdF9wY3QYAiABKAFIAYgBARIoCgh0cmFpbGluZxgDIAEoCzIWLmFudC52MS5UcmFpbGluZ0NvbmZpZ0IQCg5fc3RvcF9sb3NzX3BjdEISChBfdGFrZV9wcm9maXRfcGN0ImsKDlRyYWlsaW5nQ29uZmlnEg8KB2VuYWJsZWQYASABKAgSEAoDcGN0GAIgASgBSACIAQESGwoOYWN0aXZhdGlvbl9wY3QYAyABKAFIAYgBAUIGCgRfcGN0QhEKD19hY3RpdmF0aW9uX3BjdCI2Cg5Qb3NpdGlvbkNvbmZpZxIWCgllbnRyeV9wY3QYASABKAFIAIgBAUIMCgpfZW50cnlfcGN0IqsBCgtTY2FsZUNvbmZpZxIkCgl0cmVuZF9hZGQYASABKAsyES5hbnQudjEuU2NhbGVSdWxlEiIKB2RjYV9hZGQYAiABKAsyES5hbnQudjEuU2NhbGVSdWxlEicKDHRyZW5kX3JlZHVjZRgDIAEoCzIRLmFudC52MS5TY2FsZVJ1bGUSKQoOYWR2ZXJzZV9yZWR1Y2UYBCABKAsyES5hbnQudjEuU2NhbGVSdWxlIooBCglTY2FsZVJ1bGUSDwoHZW5hYmxlZBgBIAEoCBIVCghzdGVwX3BjdBgCIAEoAUgAiAEBEhUKCHNpemVfcGN0GAMgASgBSAGIAQESFgoJbWF4X3RpbWVzGAQgASgFSAKIAQFCCwoJX3N0ZXBfcGN0QgsKCV9zaXplX3BjdEIMCgpfbWF4X3RpbWVzIigKD0V4ZWN1dGlvbkNvbmZpZxIVCg1zaWduYWxfdGltaW5nGAEgASgJItwBChRFeGVjdXRpb25Bc3N1bXB0aW9ucxIXCg9zaW11bGF0aW9uX21vZGUYASABKAkSFQoNc2lnbmFsX3RpbWluZxgCIAEoCRIRCglmaWxsX3J1bGUYAyABKAkSGwoTbXRmX2ZhbGxiYWNrX3JlYXNvbhgEIAEoCRIZChFhY3R1YWxfY29tbWlzc2lvbhgFIAEoARIXCg9hY3R1YWxfc2xpcHBhZ2UYBiABKAESFwoPYWN0dWFsX2xldmVyYWdlGAcgASgBEhcKD3RyYWRlX2RpcmVjdGlvbhgIIAEoCSqAAQoOVHJhZGVEaXJlY3Rpb24SHwobVFJBREVfRElSRUNUSU9OX1VOU1BFQ0lGSUVEEAASGAoUVFJBREVfRElSRUNUSU9OX0xPTkcQARIZChVUUkFERV9ESVJFQ1RJT05fU0hPUlQQAhIYChRUUkFERV9ESVJFQ1RJT05fQk9USBADQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("Ch9iYWNrdGVzdF9leGVjdXRpb25fY29uZmlnLnByb3RvEgZhbnQudjEiyAEKF0JhY2t0ZXN0RXhlY3V0aW9uQ29uZmlnEhIKCmNvbW1pc3Npb24YASABKAkSEAoIc2xpcHBhZ2UYAiABKAkSEAoIbGV2ZXJhZ2UYAyABKAkSLwoPdHJhZGVfZGlyZWN0aW9uGAQgASgOMhYuYW50LnYxLlRyYWRlRGlyZWN0aW9uEhMKC3N0cmljdF9tb2RlGAUgASgIEi8KD3N0cmF0ZWd5X2NvbmZpZxgGIAEoCzIWLmFudC52MS5TdHJhdGVneUNvbmZpZyK0AQoOU3RyYXRlZ3lDb25maWcSKAoEcmlzaxgBIAEoCzIaLmFudC52MS5TdHJhdGVneVJpc2tDb25maWcSKAoIcG9zaXRpb24YAiABKAsyFi5hbnQudjEuUG9zaXRpb25Db25maWcSIgoFc2NhbGUYAyABKAsyEy5hbnQudjEuU2NhbGVDb25maWcSKgoJZXhlY3V0aW9uGAQgASgLMhcuYW50LnYxLkV4ZWN1dGlvbkNvbmZpZyKeAQoSU3RyYXRlZ3lSaXNrQ29uZmlnEhoKDXN0b3BfbG9zc19wY3QYASABKAlIAIgBARIcCg90YWtlX3Byb2ZpdF9wY3QYAiABKAlIAYgBARIoCgh0cmFpbGluZxgDIAEoCzIWLmFudC52MS5UcmFpbGluZ0NvbmZpZ0IQCg5fc3RvcF9sb3NzX3BjdEISChBfdGFrZV9wcm9maXRfcGN0ImsKDlRyYWlsaW5nQ29uZmlnEg8KB2VuYWJsZWQYASABKAgSEAoDcGN0GAIgASgJSACIAQESGwoOYWN0aXZhdGlvbl9wY3QYAyABKAlIAYgBAUIGCgRfcGN0QhEKD19hY3RpdmF0aW9uX3BjdCI2Cg5Qb3NpdGlvbkNvbmZpZxIWCgllbnRyeV9wY3QYASABKAlIAIgBAUIMCgpfZW50cnlfcGN0IqsBCgtTY2FsZUNvbmZpZxIkCgl0cmVuZF9hZGQYASABKAsyES5hbnQudjEuU2NhbGVSdWxlEiIKB2RjYV9hZGQYAiABKAsyES5hbnQudjEuU2NhbGVSdWxlEicKDHRyZW5kX3JlZHVjZRgDIAEoCzIRLmFudC52MS5TY2FsZVJ1bGUSKQoOYWR2ZXJzZV9yZWR1Y2UYBCABKAsyES5hbnQudjEuU2NhbGVSdWxlIooBCglTY2FsZVJ1bGUSDwoHZW5hYmxlZBgBIAEoCBIVCghzdGVwX3BjdBgCIAEoCUgAiAEBEhUKCHNpemVfcGN0GAMgASgJSAGIAQESFgoJbWF4X3RpbWVzGAQgASgFSAKIAQFCCwoJX3N0ZXBfcGN0QgsKCV9zaXplX3BjdEIMCgpfbWF4X3RpbWVzIigKD0V4ZWN1dGlvbkNvbmZpZxIVCg1zaWduYWxfdGltaW5nGAEgASgJItwBChRFeGVjdXRpb25Bc3N1bXB0aW9ucxIXCg9zaW11bGF0aW9uX21vZGUYASABKAkSFQoNc2lnbmFsX3RpbWluZxgCIAEoCRIRCglmaWxsX3J1bGUYAyABKAkSGwoTbXRmX2ZhbGxiYWNrX3JlYXNvbhgEIAEoCRIZChFhY3R1YWxfY29tbWlzc2lvbhgFIAEoCRIXCg9hY3R1YWxfc2xpcHBhZ2UYBiABKAkSFwoPYWN0dWFsX2xldmVyYWdlGAcgASgJEhcKD3RyYWRlX2RpcmVjdGlvbhgIIAEoCSqAAQoOVHJhZGVEaXJlY3Rpb24SHwobVFJBREVfRElSRUNUSU9OX1VOU1BFQ0lGSUVEEAASGAoUVFJBREVfRElSRUNUSU9OX0xPTkcQARIZChVUUkFERV9ESVJFQ1RJT05fU0hPUlQQAhIYChRUUkFERV9ESVJFQ1RJT05fQk9USBADQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * BacktestExecutionConfig captures all cost, risk, and execution parameters
@@ -21,25 +21,25 @@ export const file_backtest_execution_config: GenFile = /*@__PURE__*/
  */
 export type BacktestExecutionConfig = Message<"ant.v1.BacktestExecutionConfig"> & {
   /**
-   * ratio, e.g. 0.001 = 0.10%
+   * ratio as string, e.g. "0.001" = 0.10%
    *
-   * @generated from field: double commission = 1;
+   * @generated from field: string commission = 1;
    */
-  commission: number;
+  commission: string;
 
   /**
-   * ratio, e.g. 0.0005 = 0.05%
+   * ratio as string, e.g. "0.0005" = 0.05%
    *
-   * @generated from field: double slippage = 2;
+   * @generated from field: string slippage = 2;
    */
-  slippage: number;
+  slippage: string;
 
   /**
-   * e.g. 1, 10, 100
+   * e.g. "1", "10", "100"
    *
-   * @generated from field: double leverage = 3;
+   * @generated from field: string leverage = 3;
    */
-  leverage: number;
+  leverage: string;
 
   /**
    * @generated from field: ant.v1.TradeDirection trade_direction = 4;
@@ -109,18 +109,18 @@ export const StrategyConfigSchema: GenMessage<StrategyConfig> = /*@__PURE__*/
  */
 export type StrategyRiskConfig = Message<"ant.v1.StrategyRiskConfig"> & {
   /**
-   * ratio, e.g. 0.02 = 2%
+   * ratio as string, e.g. "0.02" = 2%
    *
-   * @generated from field: optional double stop_loss_pct = 1;
+   * @generated from field: optional string stop_loss_pct = 1;
    */
-  stopLossPct?: number | undefined;
+  stopLossPct?: string | undefined;
 
   /**
-   * ratio
+   * ratio as string
    *
-   * @generated from field: optional double take_profit_pct = 2;
+   * @generated from field: optional string take_profit_pct = 2;
    */
-  takeProfitPct?: number | undefined;
+  takeProfitPct?: string | undefined;
 
   /**
    * @generated from field: ant.v1.TrailingConfig trailing = 3;
@@ -145,18 +145,18 @@ export type TrailingConfig = Message<"ant.v1.TrailingConfig"> & {
   enabled: boolean;
 
   /**
-   * trailing stop distance (ratio)
+   * trailing stop distance (ratio as string)
    *
-   * @generated from field: optional double pct = 2;
+   * @generated from field: optional string pct = 2;
    */
-  pct?: number | undefined;
+  pct?: string | undefined;
 
   /**
-   * profit threshold before activation (ratio)
+   * profit threshold before activation (ratio as string)
    *
-   * @generated from field: optional double activation_pct = 3;
+   * @generated from field: optional string activation_pct = 3;
    */
-  activationPct?: number | undefined;
+  activationPct?: string | undefined;
 };
 
 /**
@@ -171,11 +171,11 @@ export const TrailingConfigSchema: GenMessage<TrailingConfig> = /*@__PURE__*/
  */
 export type PositionConfig = Message<"ant.v1.PositionConfig"> & {
   /**
-   * ratio of capital per entry, e.g. 0.25 = 25%
+   * ratio of capital per entry as string, e.g. "0.25" = 25%
    *
-   * @generated from field: optional double entry_pct = 1;
+   * @generated from field: optional string entry_pct = 1;
    */
-  entryPct?: number | undefined;
+  entryPct?: string | undefined;
 };
 
 /**
@@ -227,18 +227,18 @@ export type ScaleRule = Message<"ant.v1.ScaleRule"> & {
   enabled: boolean;
 
   /**
-   * price movement ratio to trigger
+   * price movement ratio to trigger (string)
    *
-   * @generated from field: optional double step_pct = 2;
+   * @generated from field: optional string step_pct = 2;
    */
-  stepPct?: number | undefined;
+  stepPct?: string | undefined;
 
   /**
-   * ratio of capital to add/reduce
+   * ratio of capital to add/reduce (string)
    *
-   * @generated from field: optional double size_pct = 3;
+   * @generated from field: optional string size_pct = 3;
    */
-  sizePct?: number | undefined;
+  sizePct?: string | undefined;
 
   /**
    * max scaling actions (0 = unlimited)
@@ -310,19 +310,19 @@ export type ExecutionAssumptions = Message<"ant.v1.ExecutionAssumptions"> & {
   mtfFallbackReason: string;
 
   /**
-   * @generated from field: double actual_commission = 5;
+   * @generated from field: string actual_commission = 5;
    */
-  actualCommission: number;
+  actualCommission: string;
 
   /**
-   * @generated from field: double actual_slippage = 6;
+   * @generated from field: string actual_slippage = 6;
    */
-  actualSlippage: number;
+  actualSlippage: string;
 
   /**
-   * @generated from field: double actual_leverage = 7;
+   * @generated from field: string actual_leverage = 7;
    */
-  actualLeverage: number;
+  actualLeverage: string;
 
   /**
    * @generated from field: string trade_direction = 8;

@@ -84,10 +84,9 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 	start := time.Now().AddDate(-1, 0, 0)
 	end := time.Now()
 	equityPoints, _ := s.eqRepo.GetEquityCurve(ctx, aid, start, end)
-	equityVals := make([]float64, 0, len(equityPoints))
+	equityVals := make([]string, 0, len(equityPoints))
 	for _, p := range equityPoints {
-		f, _ := p.Equity.Float64()
-		equityVals = append(equityVals, f)
+		equityVals = append(equityVals, p.Equity.String())
 	}
 
 	// Recent trades + basic stats from trade_records (not trade_logs).

@@ -6,6 +6,7 @@ package repository
 import (
 	"time"
 
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
 
@@ -16,10 +17,10 @@ type KlineBar struct {
 	Period        string
 	OpenTsUnixMs  uint64
 	CloseTsUnixMs uint64
-	Open          float64
-	High          float64
-	Low           float64
-	Close         float64
+	Open          decimal.Decimal
+	High          decimal.Decimal
+	Low           decimal.Decimal
+	Close         decimal.Decimal
 	Volume        float64
 	TickCount     uint32
 }

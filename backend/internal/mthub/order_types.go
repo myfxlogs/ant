@@ -39,7 +39,7 @@ type SymbolParam struct {
 
 type Bar struct {
 	Time                           time.Time
-	Open, High, Low, Close, Volume float64
+	Open, High, Low, Close, Volume decimal.Decimal
 }
 
 type Side int8

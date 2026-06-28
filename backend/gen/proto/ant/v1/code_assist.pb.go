@@ -720,7 +720,7 @@ type TransformCodeRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SourceCode    string                 `protobuf:"bytes,1,opt,name=source_code,json=sourceCode,proto3" json:"source_code,omitempty"` // MQL4/MQL5 EA or indicator code
 	SourceLang    string                 `protobuf:"bytes,2,opt,name=source_lang,json=sourceLang,proto3" json:"source_lang,omitempty"` // "mql4", "mql5", or "auto" (auto-detect)
-	TargetLang    string                 `protobuf:"bytes,3,opt,name=target_lang,json=targetLang,proto3" json:"target_lang,omitempty"` // "python" (target language)
+	TargetLang    string                 `protobuf:"bytes,3,opt,name=target_lang,json=targetLang,proto3" json:"target_lang,omitempty"` // "go" (target language)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -778,7 +778,7 @@ func (x *TransformCodeRequest) GetTargetLang() string {
 
 type TransformCodeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TargetCode    string                 `protobuf:"bytes,1,opt,name=target_code,json=targetCode,proto3" json:"target_code,omitempty"`           // translated Python strategy code
+	TargetCode    string                 `protobuf:"bytes,1,opt,name=target_code,json=targetCode,proto3" json:"target_code,omitempty"`           // translated Go strategy code
 	Explanation   string                 `protobuf:"bytes,2,opt,name=explanation,proto3" json:"explanation,omitempty"`                           // summary of what was translated and key mappings
 	DetectedLang  string                 `protobuf:"bytes,3,opt,name=detected_lang,json=detectedLang,proto3" json:"detected_lang,omitempty"`     // detected source language if source_lang was "auto"
 	Confidence    float32                `protobuf:"fixed32,4,opt,name=confidence,proto3" json:"confidence,omitempty"`                           // 0.0–1.0 translation confidence score

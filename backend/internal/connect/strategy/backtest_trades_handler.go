@@ -84,13 +84,13 @@ func (s *BacktestTradesServer) ListBacktestRunTrades(ctx context.Context, req *c
 		trades = append(trades, &antv1.BacktestTrade{
 			Ticket:     t.Ticket,
 			Side:       t.Side,
-			Volume:     strconv.FormatFloat(t.Volume, 'f', -1, 64),
+			Volume:     t.Volume.String(),
 			OpenTs:     t.OpenTs,
-			OpenPrice:  strconv.FormatFloat(t.OpenPrice, 'f', -1, 64),
+			OpenPrice:  t.OpenPrice.String(),
 			CloseTs:    t.CloseTs,
-			ClosePrice: strconv.FormatFloat(t.ClosePrice, 'f', -1, 64),
-			Pnl:        strconv.FormatFloat(t.PnL, 'f', -1, 64),
-			Commission: strconv.FormatFloat(t.Commission, 'f', -1, 64),
+			ClosePrice: t.ClosePrice.String(),
+			Pnl:        t.PnL.String(),
+			Commission: t.Commission.String(),
 			Reason:     t.Reason,
 		})
 	}

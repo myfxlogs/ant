@@ -55,8 +55,8 @@ type KlineData struct {
 	CloseTime  time.Time `json:"close_time" db:"close_time"`
 	KlineDate  time.Time `json:"kline_date" db:"kline_date"`
 	OpenPrice  decimal.Decimal   `json:"open_price" db:"open_price"`
-	HighPrice  float64   `json:"high_price" db:"high_price"`
-	LowPrice   float64   `json:"low_price" db:"low_price"`
+	HighPrice  decimal.Decimal   `json:"high_price" db:"high_price"`
+	LowPrice   decimal.Decimal   `json:"low_price" db:"low_price"`
 	ClosePrice decimal.Decimal   `json:"close_price" db:"close_price"`
 	TickVolume int64     `json:"tick_volume" db:"tick_volume"`
 	RealVolume decimal.Decimal   `json:"real_volume" db:"real_volume"`
