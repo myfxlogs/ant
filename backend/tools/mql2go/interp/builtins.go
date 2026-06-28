@@ -36,9 +36,12 @@ func (it *Interpreter) callBuiltin(name string, args []Expr) Value {
 		if v, ok := it.callTrade(name, args); ok {
 			return v
 		}
-		// Unimplemented — return error value
+		// Unimplemented — log error and return NoneVal
 		it.lastErr = 1
 		it.errSet = true
+		if it.ctx != nil {
+			it.ctx.Log(fmt.Sprintf("MQL interpreter: unimplemented function %q", name))
+		}
 		return NoneVal()
 	}
 
