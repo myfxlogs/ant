@@ -218,6 +218,24 @@ export const strategyRunsApi = {
 // ── Active strategy monitoring + control (Phase 2) ──────────────────
 
 export const strategyActiveApi = {
+  start: async (params: {
+    accountId: string;
+    strategyCode: string;
+    symbol: string;
+    timeframe: string;
+    mode?: string;
+    params?: Record<string, string>;
+  }) => {
+    return await strategyRuntimeClient.startStrategy({
+      accountId: params.accountId,
+      strategyCode: params.strategyCode,
+      symbol: params.symbol,
+      timeframe: params.timeframe,
+      mode: params.mode || 'paper',
+      params: params.params || {},
+    });
+  },
+
   listActive: async (accountId?: string) => {
     const r = await strategyRuntimeClient.listActiveStrategies({
       accountId: accountId || '',

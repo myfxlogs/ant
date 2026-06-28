@@ -13,6 +13,7 @@ import { ACCOUNT_NAME_KEY, CREATE_ACCOUNT_KEY, MESSAGES_CREATED_KEY, MESSAGES_CR
 
 ;
 import { paperTradingClient, paperTradingStreamClient } from '@/client/connect';
+import { strategyActiveApi } from '@/client/strategy';
 import type { PaperAccount, PaperAccountUpdate } from '@/gen/ant/v1/paper_trading_pb';
 import { useAuthStore } from '@/stores/authStore';
 import { TIMEFRAMES } from '@/constants/timeframes';
@@ -141,11 +142,12 @@ export default function PaperAccountPanel() {
     if (!startCode.trim()) { message.warning(t(MESSAGES_PASTE_CODE_KEY)); return; }
     setStarting(true);
     try {
-      await paperTradingClient.startPaperStrategy({
-        paperAccountId: startTargetId,
+      await strategyActiveApi.start({
+        accountId: startTargetId,
         strategyCode: startCode,
         symbol: startSymbol,
         timeframe: startTimeframe,
+        mode: 'paper',
         params: {},
       });
       message.success(t(MESSAGES_STRATEGY_STARTED_KEY));
@@ -161,7 +163,14 @@ export default function PaperAccountPanel() {
   const handleStop = useCallback(async (accountId: string) => {
     setStopping(prev => ({ ...prev, [accountId]: true }));
     try {
-      await paperTradingClient.stopPaperStrategy({ paperAccountId: accountId });
+      // Find the active run for this account, then stop by run_id.
+      const active = await strategyActiveApi.listActive(accountId);
+      if (active && active.length > 0) {
+        await strategyActiveApi.stop(active[0].runId);
+      } else {
+        // Fallback: legacy paper handler stop.
+        await paperTradingClient.stopPaperStrategy({ paperAccountId: accountId });
+      }
       message.success(t(MESSAGES_STRATEGY_STOPPED_KEY));
       setRunning(prev => {
         const next = { ...prev };

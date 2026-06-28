@@ -54,7 +54,9 @@ const (
 type PaperTradingServiceClient interface {
 	CreatePaperAccount(context.Context, *connect.Request[v1.CreatePaperAccountRequest]) (*connect.Response[v1.PaperAccount], error)
 	ListPaperAccounts(context.Context, *connect.Request[v1.ListPaperAccountsRequest]) (*connect.Response[v1.ListPaperAccountsResponse], error)
+	// Deprecated: Use StrategyRuntimeService.StartStrategy instead.
 	StartPaperStrategy(context.Context, *connect.Request[v1.StartPaperStrategyRequest]) (*connect.Response[v1.StartPaperStrategyResponse], error)
+	// Deprecated: Use StrategyRuntimeService.StopStrategy instead.
 	StopPaperStrategy(context.Context, *connect.Request[v1.StopPaperStrategyRequest]) (*connect.Response[v1.StopPaperStrategyResponse], error)
 	WatchPaperAccount(context.Context, *connect.Request[v1.WatchPaperAccountRequest]) (*connect.ServerStreamForClient[v1.PaperAccountUpdate], error)
 }
@@ -141,7 +143,9 @@ func (c *paperTradingServiceClient) WatchPaperAccount(ctx context.Context, req *
 type PaperTradingServiceHandler interface {
 	CreatePaperAccount(context.Context, *connect.Request[v1.CreatePaperAccountRequest]) (*connect.Response[v1.PaperAccount], error)
 	ListPaperAccounts(context.Context, *connect.Request[v1.ListPaperAccountsRequest]) (*connect.Response[v1.ListPaperAccountsResponse], error)
+	// Deprecated: Use StrategyRuntimeService.StartStrategy instead.
 	StartPaperStrategy(context.Context, *connect.Request[v1.StartPaperStrategyRequest]) (*connect.Response[v1.StartPaperStrategyResponse], error)
+	// Deprecated: Use StrategyRuntimeService.StopStrategy instead.
 	StopPaperStrategy(context.Context, *connect.Request[v1.StopPaperStrategyRequest]) (*connect.Response[v1.StopPaperStrategyResponse], error)
 	WatchPaperAccount(context.Context, *connect.Request[v1.WatchPaperAccountRequest], *connect.ServerStream[v1.PaperAccountUpdate]) error
 }

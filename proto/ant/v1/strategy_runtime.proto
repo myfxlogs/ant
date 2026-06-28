@@ -48,6 +48,8 @@ service StrategyRuntimeService {
   rpc StopStrategy(StopStrategyRequest) returns (StopStrategyResponse);
   // WatchStrategySignals streams real-time signals from a running strategy.
   rpc WatchStrategySignals(WatchStrategySignalsRequest) returns (stream StrategySignalEvent);
+  // StartStrategy launches a new live or paper strategy run.
+  rpc StartStrategy(StartStrategyRequest) returns (StartStrategyResponse);
 }
 
 message TranspileCodeRequest {
@@ -481,4 +483,21 @@ message StrategySignalEvent {
   string take_profit = 8;
   string reason = 9;
   google.protobuf.Timestamp timestamp = 10;
+}
+
+// ── Strategy control ────────────────────────────────────────────────
+
+message StartStrategyRequest {
+  string account_id = 1;           // paper account ID or MT4/MT5 account ID
+  string strategy_code = 2;
+  string symbol = 3;
+  string timeframe = 4;
+  string mode = 5;                 // "live" | "paper"
+  map<string, string> params = 6;  // strategy params
+}
+
+message StartStrategyResponse {
+  bool success = 1;
+  string run_id = 2;               // populated on success
+  string error = 3;
 }

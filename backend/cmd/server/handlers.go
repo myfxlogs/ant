@@ -467,6 +467,18 @@ func configureStrategyExecution(
 	srv.SetWasmExecutor(strategy.NewWasmExecutor(".", log))
 	srv.SetRunRepo(repository.NewStrategyRunRepository(pool))
 	srv.SetSessionRegistry(strategy.NewSessionRegistry())
+	srv.SetAccountLookup(func(ctx context.Context, userID string) string {
+		var mt4ID string
+		err := pool.QueryRow(ctx,
+			`SELECT id::text FROM mt_accounts
+			 WHERE user_id = $1::uuid AND is_disabled = false
+			 ORDER BY created_at LIMIT 1`,
+			userID).Scan(&mt4ID)
+		if err != nil {
+			return ""
+		}
+		return mt4ID
+	})
 	srv.StartBacktestWorker(context.Background())
 	srv.SetPaperEngine(paperEngine)
 	srv.SetNotificationSender(notifSender)

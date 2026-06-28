@@ -9,7 +9,9 @@ option go_package = "anttrader/gen/proto/ant/v1;antv1";
 service PaperTradingService {
   rpc CreatePaperAccount(CreatePaperAccountRequest) returns (PaperAccount);
   rpc ListPaperAccounts(ListPaperAccountsRequest) returns (ListPaperAccountsResponse);
+  // Deprecated: Use StrategyRuntimeService.StartStrategy instead.
   rpc StartPaperStrategy(StartPaperStrategyRequest) returns (StartPaperStrategyResponse);
+  // Deprecated: Use StrategyRuntimeService.StopStrategy instead.
   rpc StopPaperStrategy(StopPaperStrategyRequest) returns (StopPaperStrategyResponse);
   rpc WatchPaperAccount(WatchPaperAccountRequest) returns (stream PaperAccountUpdate);
 }

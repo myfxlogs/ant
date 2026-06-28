@@ -100,6 +100,9 @@ const (
 	// StrategyRuntimeServiceWatchStrategySignalsProcedure is the fully-qualified name of the
 	// StrategyRuntimeService's WatchStrategySignals RPC.
 	StrategyRuntimeServiceWatchStrategySignalsProcedure = "/ant.v1.StrategyRuntimeService/WatchStrategySignals"
+	// StrategyRuntimeServiceStartStrategyProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's StartStrategy RPC.
+	StrategyRuntimeServiceStartStrategyProcedure = "/ant.v1.StrategyRuntimeService/StartStrategy"
 )
 
 // StrategyRuntimeServiceClient is a client for the ant.v1.StrategyRuntimeService service.
@@ -139,6 +142,8 @@ type StrategyRuntimeServiceClient interface {
 	StopStrategy(context.Context, *connect.Request[v1.StopStrategyRequest]) (*connect.Response[v1.StopStrategyResponse], error)
 	// WatchStrategySignals streams real-time signals from a running strategy.
 	WatchStrategySignals(context.Context, *connect.Request[v1.WatchStrategySignalsRequest]) (*connect.ServerStreamForClient[v1.StrategySignalEvent], error)
+	// StartStrategy launches a new live or paper strategy run.
+	StartStrategy(context.Context, *connect.Request[v1.StartStrategyRequest]) (*connect.Response[v1.StartStrategyResponse], error)
 }
 
 // NewStrategyRuntimeServiceClient constructs a client for the ant.v1.StrategyRuntimeService
@@ -284,6 +289,12 @@ func NewStrategyRuntimeServiceClient(httpClient connect.HTTPClient, baseURL stri
 			connect.WithSchema(strategyRuntimeServiceMethods.ByName("WatchStrategySignals")),
 			connect.WithClientOptions(opts...),
 		),
+		startStrategy: connect.NewClient[v1.StartStrategyRequest, v1.StartStrategyResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceStartStrategyProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("StartStrategy")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -311,6 +322,7 @@ type strategyRuntimeServiceClient struct {
 	getActiveStrategy    *connect.Client[v1.GetActiveStrategyRequest, v1.GetActiveStrategyResponse]
 	stopStrategy         *connect.Client[v1.StopStrategyRequest, v1.StopStrategyResponse]
 	watchStrategySignals *connect.Client[v1.WatchStrategySignalsRequest, v1.StrategySignalEvent]
+	startStrategy        *connect.Client[v1.StartStrategyRequest, v1.StartStrategyResponse]
 }
 
 // Execute calls ant.v1.StrategyRuntimeService.Execute.
@@ -423,6 +435,11 @@ func (c *strategyRuntimeServiceClient) WatchStrategySignals(ctx context.Context,
 	return c.watchStrategySignals.CallServerStream(ctx, req)
 }
 
+// StartStrategy calls ant.v1.StrategyRuntimeService.StartStrategy.
+func (c *strategyRuntimeServiceClient) StartStrategy(ctx context.Context, req *connect.Request[v1.StartStrategyRequest]) (*connect.Response[v1.StartStrategyResponse], error) {
+	return c.startStrategy.CallUnary(ctx, req)
+}
+
 // StrategyRuntimeServiceHandler is an implementation of the ant.v1.StrategyRuntimeService service.
 type StrategyRuntimeServiceHandler interface {
 	Execute(context.Context, *connect.Request[v1.ExecuteStrategyRequest]) (*connect.Response[v1.ExecuteStrategyResponse], error)
@@ -460,6 +477,8 @@ type StrategyRuntimeServiceHandler interface {
 	StopStrategy(context.Context, *connect.Request[v1.StopStrategyRequest]) (*connect.Response[v1.StopStrategyResponse], error)
 	// WatchStrategySignals streams real-time signals from a running strategy.
 	WatchStrategySignals(context.Context, *connect.Request[v1.WatchStrategySignalsRequest], *connect.ServerStream[v1.StrategySignalEvent]) error
+	// StartStrategy launches a new live or paper strategy run.
+	StartStrategy(context.Context, *connect.Request[v1.StartStrategyRequest]) (*connect.Response[v1.StartStrategyResponse], error)
 }
 
 // NewStrategyRuntimeServiceHandler builds an HTTP handler from the service implementation. It
@@ -601,6 +620,12 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 		connect.WithSchema(strategyRuntimeServiceMethods.ByName("WatchStrategySignals")),
 		connect.WithHandlerOptions(opts...),
 	)
+	strategyRuntimeServiceStartStrategyHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceStartStrategyProcedure,
+		svc.StartStrategy,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("StartStrategy")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.StrategyRuntimeService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case StrategyRuntimeServiceExecuteProcedure:
@@ -647,6 +672,8 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 			strategyRuntimeServiceStopStrategyHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceWatchStrategySignalsProcedure:
 			strategyRuntimeServiceWatchStrategySignalsHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceStartStrategyProcedure:
+			strategyRuntimeServiceStartStrategyHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -742,4 +769,8 @@ func (UnimplementedStrategyRuntimeServiceHandler) StopStrategy(context.Context, 
 
 func (UnimplementedStrategyRuntimeServiceHandler) WatchStrategySignals(context.Context, *connect.Request[v1.WatchStrategySignalsRequest], *connect.ServerStream[v1.StrategySignalEvent]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.WatchStrategySignals is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) StartStrategy(context.Context, *connect.Request[v1.StartStrategyRequest]) (*connect.Response[v1.StartStrategyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.StartStrategy is not implemented"))
 }

@@ -374,6 +374,8 @@ export const PaperTradingService: GenService<{
     output: typeof ListPaperAccountsResponseSchema;
   },
   /**
+   * Deprecated: Use StrategyRuntimeService.StartStrategy instead.
+   *
    * @generated from rpc ant.v1.PaperTradingService.StartPaperStrategy
    */
   startPaperStrategy: {
@@ -382,6 +384,8 @@ export const PaperTradingService: GenService<{
     output: typeof StartPaperStrategyResponseSchema;
   },
   /**
+   * Deprecated: Use StrategyRuntimeService.StopStrategy instead.
+   *
    * @generated from rpc ant.v1.PaperTradingService.StopPaperStrategy
    */
   stopPaperStrategy: {

@@ -61,6 +61,9 @@ type StrategyExecutionServer struct {
 	// Active session registry for monitoring + control.
 	sessionRegistry *SessionRegistry
 
+	// AccountLookup provides the MT4 account ID for bar data subscription in paper mode.
+	accountLookup func(ctx context.Context, userID string) string
+
 	// Push-first cancel: shared LISTEN on backtest_cancel channel.
 	activeCancels   map[uuid.UUID]context.CancelFunc
 	activeCancelsMu sync.Mutex
@@ -93,6 +96,7 @@ func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)              { s
 func (s *StrategyExecutionServer) SetWasmExecutor(we *WasmExecutor)          { s.wasmExecutor = we }
 func (s *StrategyExecutionServer) SetRunRepo(r *repository.StrategyRunRepository) { s.runRepo = r }
 func (s *StrategyExecutionServer) SetSessionRegistry(r *SessionRegistry)           { s.sessionRegistry = r }
+func (s *StrategyExecutionServer) SetAccountLookup(f func(ctx context.Context, userID string) string) { s.accountLookup = f }
 
 // SetGate injects the risk gate (D6-A: mandatory, non-optional).
 // Must be called before RunLiveStrategy.
