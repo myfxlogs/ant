@@ -215,11 +215,19 @@ func (it *Interpreter) execStmt(stmt *Statement) error {
 		for _, c := range stmt.Cases {
 			if c.Expr == nil {
 				// default
-				return it.execBlock(c.Body)
+				err := it.execBlock(c.Body)
+				if errors.Is(err, errBreak) {
+					return nil
+				}
+				return err
 			}
 			caseVal := it.evalExpr(c.Expr)
 			if switchVal.Equal(caseVal) {
-				return it.execBlock(c.Body)
+				err := it.execBlock(c.Body)
+				if errors.Is(err, errBreak) {
+					return nil
+				}
+				return err
 			}
 		}
 	}

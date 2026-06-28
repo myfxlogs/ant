@@ -311,3 +311,57 @@ func TestStrategyFactory(t *testing.T) {
 		t.Error("instances should have independent globals")
 	}
 }
+
+func TestSwitchBreakInLoop(t *testing.T) {
+	// switch break should exit the switch, not the enclosing for loop
+	ir := &IR{
+		Version: "mql4",
+		OnBar: []Statement{
+			{Kind: StmtExpr, Expr: &Expr{Kind: ExprAssignment, Name: "total", Args: []Expr{{Kind: ExprLiteral, Val: IntVal(0)}}}},
+			{
+				Kind: StmtFor,
+				Init: &Statement{Kind: StmtExpr, Expr: &Expr{Kind: ExprAssignment, Name: "i", Args: []Expr{{Kind: ExprLiteral, Val: IntVal(0)}}}},
+				Cond: &Expr{Kind: ExprBinary, Op: "<", Args: []Expr{{Kind: ExprVar, Name: "i"}, {Kind: ExprLiteral, Val: IntVal(5)}}},
+				Update: &Statement{Kind: StmtExpr, Expr: &Expr{Kind: ExprUpdate, Name: "i", Op: "++"}},
+				Body: []Statement{
+					{
+						Kind: StmtSwitch,
+						Expr: &Expr{Kind: ExprVar, Name: "i"},
+						Cases: []SwitchCase{
+							{
+								Expr: &Expr{Kind: ExprLiteral, Val: IntVal(2)},
+								Body: []Statement{
+									{Kind: StmtBreak}, // break exits switch, NOT the for loop
+								},
+							},
+							{
+								Expr: nil, // default
+								Body: []Statement{
+									{Kind: StmtExpr, Expr: &Expr{Kind: ExprCompoundAssign, Op: "+=", Name: "total", Args: []Expr{{Kind: ExprLiteral, Val: IntVal(1)}}}},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	it := NewInterpreter(ir)
+	ctx := &mockContext{
+		bars:   &mockBarSeries{closes: []decimal.Decimal{decimal.NewFromFloat(1.1)}},
+		broker: &mockBroker{},
+	}
+	it.OnInit(ctx)
+	it.OnBar(ctx, "H1")
+
+	// i=0 → default → total=1
+	// i=1 → default → total=2
+	// i=2 → case 2 → break (exit switch, continue for loop)
+	// i=3 → default → total=3
+	// i=4 → default → total=4
+	total := it.getVar("total")
+	if total.ToInt() != 4 {
+		t.Errorf("total = %d, want 4 (switch break should not exit for loop)", total.ToInt())
+	}
+}
