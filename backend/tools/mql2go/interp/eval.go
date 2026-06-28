@@ -53,6 +53,41 @@ func (it *Interpreter) evalExpr(e *Expr) Value {
 		it.setVar(e.Name, val)
 		return val
 
+	case ExprCompoundAssign:
+		cur := it.getVar(e.Name)
+		rhs := it.evalExpr(&e.Args[0])
+		var result Value
+		switch e.Op {
+		case "+=":
+			if cur.Kind == ValString || rhs.Kind == ValString {
+				result = StringVal(cur.ToString() + rhs.ToString())
+			} else {
+				result = DecimalVal(cur.ToDecimal().Add(rhs.ToDecimal()))
+			}
+		case "-=":
+			result = DecimalVal(cur.ToDecimal().Sub(rhs.ToDecimal()))
+		case "*=":
+			result = DecimalVal(cur.ToDecimal().Mul(rhs.ToDecimal()))
+		case "/=":
+			d := rhs.ToDecimal()
+			if d.IsZero() {
+				result = DecimalVal(decimal.Zero)
+			} else {
+				result = DecimalVal(cur.ToDecimal().Div(d))
+			}
+		case "%=":
+			r := rhs.ToInt()
+			if r == 0 {
+				result = IntVal(0)
+			} else {
+				result = IntVal(cur.ToInt() % r)
+			}
+		default:
+			result = rhs
+		}
+		it.setVar(e.Name, result)
+		return result
+
 	case ExprUpdate:
 		val := it.getVar(e.Name)
 		one := decimal.NewFromInt(1)
@@ -201,6 +236,12 @@ func (it *Interpreter) lookupConstant(name string) Value {
 	if v, ok := mqlConstants[name]; ok {
 		return v
 	}
+	// Check enum constants
+	if it.ir != nil && it.ir.Enums != nil {
+		if v, ok := it.ir.Enums[name]; ok {
+			return IntVal(v)
+		}
+	}
 	// Check if it's a global variable
 	if v, ok := it.globals[name]; ok {
 		return v
@@ -265,7 +306,11 @@ var mqlConstants = map[string]Value{
 func (it *Interpreter) getArray(name string) ([]Value, bool) {
 	v, ok := it.globals[name]
 	if !ok {
-		v, ok = it.locals[name]
+		for i := len(it.scopes) - 1; i >= 0; i-- {
+			if v, ok = it.scopes[i][name]; ok {
+				break
+			}
+		}
 	}
 	if !ok || v.Kind != ValArray {
 		return nil, false

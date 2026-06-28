@@ -1,10 +1,18 @@
 package interp
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/shopspring/decimal"
 	"anttrader/strategy/sdk"
+)
+
+// Sentinel errors for control flow.
+var (
+	errBreak    = errors.New("break")
+	errContinue = errors.New("continue")
+	errReturn   = errors.New("return")
 )
 
 // Interpreter executes a compiled IR against SDK interfaces.
@@ -13,13 +21,14 @@ type Interpreter struct {
 	ir        *IR
 	ctx       sdk.Context
 	globals   map[string]Value
-	locals    map[string]Value
+	scopes    []map[string]Value // block scope stack
 	series    *SeriesAccessor
 	orderPool *MQL4OrderPool
 	posPool   *MQL5PositionPool
 	signal    *sdk.Signal
 	lastErr   int
 	errSet    bool
+	retVal    Value // return value from user function
 }
 
 // NewInterpreter creates an Interpreter from a compiled IR.
@@ -27,7 +36,7 @@ func NewInterpreter(ir *IR) *Interpreter {
 	it := &Interpreter{
 		ir:      ir,
 		globals: make(map[string]Value),
-		locals:  make(map[string]Value),
+		scopes:  []map[string]Value{make(map[string]Value)}, // root scope
 	}
 	it.series = &SeriesAccessor{}
 	it.orderPool = &MQL4OrderPool{}
@@ -55,9 +64,29 @@ func NewInterpreter(ir *IR) *Interpreter {
 
 // ── Variable management ─────────────────────────────────────────────
 
+// pushScope enters a new block scope.
+func (it *Interpreter) pushScope() {
+	it.scopes = append(it.scopes, make(map[string]Value))
+}
+
+// popScope exits the current block scope.
+func (it *Interpreter) popScope() {
+	if len(it.scopes) > 1 {
+		it.scopes = it.scopes[:len(it.scopes)-1]
+	}
+}
+
+// curScope returns the innermost scope.
+func (it *Interpreter) curScope() map[string]Value {
+	return it.scopes[len(it.scopes)-1]
+}
+
 func (it *Interpreter) getVar(name string) Value {
-	if v, ok := it.locals[name]; ok {
-		return v
+	// Search scopes from innermost to outermost
+	for i := len(it.scopes) - 1; i >= 0; i-- {
+		if v, ok := it.scopes[i][name]; ok {
+			return v
+		}
 	}
 	if v, ok := it.globals[name]; ok {
 		return v
@@ -66,11 +95,20 @@ func (it *Interpreter) getVar(name string) Value {
 }
 
 func (it *Interpreter) setVar(name string, val Value) {
-	if _, isLocal := it.locals[name]; isLocal {
-		it.locals[name] = val
+	// If exists in any scope, update there
+	for i := len(it.scopes) - 1; i >= 0; i-- {
+		if _, ok := it.scopes[i][name]; ok {
+			it.scopes[i][name] = val
+			return
+		}
+	}
+	// If exists in globals, update there
+	if _, ok := it.globals[name]; ok {
+		it.globals[name] = val
 		return
 	}
-	it.globals[name] = val
+	// New variable → declare in current scope
+	it.curScope()[name] = val
 }
 
 // ── Statement execution ─────────────────────────────────────────────
@@ -88,6 +126,8 @@ func (it *Interpreter) execStmt(stmt *Statement) error {
 		}
 
 	case StmtFor:
+		// MQL uses C-style scoping: for-loop init variables are accessible
+		// in the enclosing block, so no pushScope/popScope here.
 		if stmt.Init != nil {
 			if err := it.execStmt(stmt.Init); err != nil {
 				return err
@@ -98,7 +138,14 @@ func (it *Interpreter) execStmt(stmt *Statement) error {
 				break
 			}
 			if err := it.execBlock(stmt.Body); err != nil {
-				return err
+				if errors.Is(err, errBreak) {
+					break
+				}
+				if errors.Is(err, errContinue) {
+					// fall through to update
+				} else {
+					return err
+				}
 			}
 			if it.signal != nil {
 				return nil
@@ -113,6 +160,12 @@ func (it *Interpreter) execStmt(stmt *Statement) error {
 	case StmtWhile:
 		for it.evalExpr(stmt.Cond).IsTrue() {
 			if err := it.execBlock(stmt.Body); err != nil {
+				if errors.Is(err, errBreak) {
+					break
+				}
+				if errors.Is(err, errContinue) {
+					continue
+				}
 				return err
 			}
 			if it.signal != nil {
@@ -120,11 +173,39 @@ func (it *Interpreter) execStmt(stmt *Statement) error {
 			}
 		}
 
+	case StmtDoWhile:
+		for {
+			if err := it.execBlock(stmt.Body); err != nil {
+				if errors.Is(err, errBreak) {
+					break
+				}
+				if errors.Is(err, errContinue) {
+					// fall through to condition check
+				} else {
+					return err
+				}
+			}
+			if it.signal != nil {
+				return nil
+			}
+			if !it.evalExpr(stmt.Cond).IsTrue() {
+				break
+			}
+		}
+
 	case StmtReturn:
 		if stmt.Expr != nil {
-			it.evalExpr(stmt.Expr)
+			it.retVal = it.evalExpr(stmt.Expr)
+		} else {
+			it.retVal = NoneVal()
 		}
-		return nil
+		return errReturn
+
+	case StmtBreak:
+		return errBreak
+
+	case StmtContinue:
+		return errContinue
 
 	case StmtBlock:
 		return it.execBlock(stmt.Body)
@@ -157,15 +238,26 @@ func (it *Interpreter) execBlock(stmts []Statement) error {
 	return nil
 }
 
+// execBlockScoped runs a block with its own scope.
+func (it *Interpreter) execBlockScoped(stmts []Statement) error {
+	it.pushScope()
+	defer it.popScope()
+	return it.execBlock(stmts)
+}
+
 // ── SDK.Strategy implementation ─────────────────────────────────────
 
 // OnInit implements sdk.Strategy.
 func (it *Interpreter) OnInit(ctx sdk.Context) error {
 	it.ctx = ctx
 	it.series.bars = ctx.Bars()
-	it.locals = make(map[string]Value)
+	it.scopes = []map[string]Value{make(map[string]Value)}
 	if len(it.ir.OnInit) > 0 {
-		return it.execBlock(it.ir.OnInit)
+		err := it.execBlock(it.ir.OnInit)
+		if errors.Is(err, errReturn) {
+			return nil
+		}
+		return err
 	}
 	return nil
 }
@@ -174,13 +266,16 @@ func (it *Interpreter) OnInit(ctx sdk.Context) error {
 func (it *Interpreter) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
 	it.ctx = ctx
 	it.series.bars = ctx.Bars()
-	it.locals = make(map[string]Value)
+	it.scopes = []map[string]Value{make(map[string]Value)}
 	it.signal = nil
 	it.orderPool.Reset(ctx)
 	it.posPool.Reset(ctx)
 
 	if len(it.ir.OnBar) > 0 {
 		if err := it.execBlock(it.ir.OnBar); err != nil {
+			if errors.Is(err, errReturn) {
+				return it.signal, nil
+			}
 			return nil, fmt.Errorf("OnBar: %w", err)
 		}
 	}
@@ -190,9 +285,13 @@ func (it *Interpreter) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, er
 // OnDeinit implements sdk.Strategy.
 func (it *Interpreter) OnDeinit(ctx sdk.Context, reason string) error {
 	it.ctx = ctx
-	it.locals = make(map[string]Value)
+	it.scopes = []map[string]Value{make(map[string]Value)}
 	if len(it.ir.OnDeinit) > 0 {
-		return it.execBlock(it.ir.OnDeinit)
+		err := it.execBlock(it.ir.OnDeinit)
+		if errors.Is(err, errReturn) {
+			return nil
+		}
+		return err
 	}
 	return nil
 }

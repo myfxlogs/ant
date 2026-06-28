@@ -24,6 +24,13 @@ var builtinTable = map[string]func(*Interpreter, []Value) (Value, error){
 }
 
 func (it *Interpreter) callBuiltin(name string, args []Expr) Value {
+	// Check user-defined functions first
+	if it.ir != nil && it.ir.Funcs != nil {
+		if fn, ok := it.ir.Funcs[name]; ok {
+			return it.callUserFunc(fn, args)
+		}
+	}
+
 	fn, ok := builtinTable[name]
 	if !ok {
 		// Try market data / indicator functions

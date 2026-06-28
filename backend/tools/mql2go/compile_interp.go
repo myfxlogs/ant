@@ -36,9 +36,13 @@ type compiler struct {
 }
 
 func (c *compiler) compile(root *sitter.Node) *interp.IR {
-	ir := &interp.IR{Version: c.version}
+	ir := &interp.IR{
+		Version: c.version,
+		Funcs:   make(map[string]*interp.FuncDef),
+		Enums:   make(map[string]int32),
+	}
 
-	// First pass: collect known class/struct types
+	// First pass: collect known class/struct types and enums
 	knownClasses := make(map[string]bool)
 	for i := 0; i < int(root.NamedChildCount()); i++ {
 		n := root.NamedChild(i)
@@ -48,6 +52,8 @@ func (c *compiler) compile(root *sitter.Node) *interp.IR {
 			if name != "" {
 				knownClasses[name] = true
 			}
+		case "enum_specifier":
+			c.collectEnum(ir, n)
 		}
 	}
 
@@ -59,6 +65,8 @@ func (c *compiler) compile(root *sitter.Node) *interp.IR {
 			c.collectClassInstance(ir, n, knownClasses)
 		case "class_specifier", "struct_specifier":
 			c.collectClassDecl(ir, n)
+		case "enum_specifier":
+			// already processed in first pass
 		case "function_definition":
 			c.collectFunction(ir, n)
 		}
@@ -168,8 +176,13 @@ func (c *compiler) collectFunction(ir *interp.IR, n *sitter.Node) {
 	case "OnDeinit":
 		ir.OnDeinit = stmts
 	default:
-		// User-defined functions — not yet supported in IR
-		// (future: add to a function table)
+		// User-defined function
+		params := c.collectFuncParams(n)
+		ir.Funcs[name] = &interp.FuncDef{
+			Name:   name,
+			Params: params,
+			Body:   stmts,
+		}
 	}
 }
 
@@ -225,6 +238,15 @@ func (c *compiler) compileStmt(n *sitter.Node) *interp.Statement {
 	case "switch_statement":
 		return c.compileSwitch(n)
 
+	case "break_statement":
+		return &interp.Statement{Kind: interp.StmtBreak}
+
+	case "continue_statement":
+		return &interp.Statement{Kind: interp.StmtContinue}
+
+	case "do_statement":
+		return c.compileDoWhile(n)
+
 	case "declaration":
 		return c.compileDeclaration(n)
 
@@ -247,7 +269,7 @@ func (c *compiler) compileIf(n *sitter.Node) *interp.Statement {
 		Kind: interp.StmtIf,
 		Cond: c.compileExpr(cond),
 	}
-	// Find body (compound_statement) and else clause
+	// Find body (compound_statement or single statement) and else clause
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		if child.Type() == "compound_statement" {
@@ -262,7 +284,15 @@ func (c *compiler) compileIf(n *sitter.Node) *interp.Statement {
 					stmt.ElseBody = c.compileBlock(ec)
 				} else if ec.Type() == "if_statement" {
 					stmt.ElseBody = []interp.Statement{*c.compileIf(ec)}
+				} else if s := c.compileStmt(ec); s != nil {
+					// single-statement else body
+					stmt.ElseBody = append(stmt.ElseBody, *s)
 				}
+			}
+		} else if s := c.compileStmt(child); s != nil {
+			// single-statement if body (no braces)
+			if stmt.Body == nil {
+				stmt.Body = []interp.Statement{*s}
 			}
 		}
 	}
@@ -374,4 +404,89 @@ func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
 		}
 	}
 	return nil
+}
+
+// collectFuncParams extracts parameter declarations from a function_definition node.
+func (c *compiler) collectFuncParams(n *sitter.Node) []interp.ParamDecl {
+	var params []interp.ParamDecl
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "function_declarator" {
+			for j := 0; j < int(child.NamedChildCount()); j++ {
+				fc := child.NamedChild(j)
+				if fc.Type() == "parameter_list" {
+					for k := 0; k < int(fc.NamedChildCount()); k++ {
+						pd := fc.NamedChild(k)
+						if pd.Type() == "parameter_declaration" {
+							pName := c.findIdent(pd)
+							pType := c.findType(pd)
+							if pName != "" {
+								params = append(params, interp.ParamDecl{
+									Name: pName,
+									Type: pType,
+								})
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return params
+}
+
+// collectEnum processes enum declarations and registers constants.
+func (c *compiler) collectEnum(ir *interp.IR, n *sitter.Node) {
+	var enumName string
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "type_identifier" {
+			enumName = c.text(child)
+		}
+		if child.Type() == "enumerator_list" {
+			counter := int32(0)
+			for j := 0; j < int(child.NamedChildCount()); j++ {
+				ec := child.NamedChild(j)
+				if ec.Type() == "enumerator" {
+					var name string
+					var val *int32
+					for k := 0; k < int(ec.NamedChildCount()); k++ {
+						ecChild := ec.NamedChild(k)
+						if ecChild.Type() == "identifier" {
+							name = c.text(ecChild)
+						} else if ecChild.Type() == "number_literal" {
+							nVal := interp.ParseNumberLiteral(c.text(ecChild))
+							v := nVal.ToInt()
+							val = &v
+							counter = v
+						}
+					}
+					if name != "" {
+						if val != nil {
+							counter = *val
+						}
+						ir.Enums[name] = counter
+						if enumName != "" {
+							ir.Enums[enumName+"::"+name] = counter
+						}
+						counter++
+					}
+				}
+			}
+		}
+	}
+}
+
+// compileDoWhile compiles a do { } while(cond) statement.
+func (c *compiler) compileDoWhile(n *sitter.Node) *interp.Statement {
+	stmt := &interp.Statement{Kind: interp.StmtDoWhile}
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "compound_statement" {
+			stmt.Body = c.compileBlock(child)
+		} else if child.Type() == "parenthesized_expression" {
+			stmt.Cond = c.compileExpr(child)
+		}
+	}
+	return stmt
 }

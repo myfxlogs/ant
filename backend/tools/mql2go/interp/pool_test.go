@@ -219,7 +219,7 @@ func TestMQL5PositionPool_Lifecycle(t *testing.T) {
 func TestInterpreter_AccountFunctions(t *testing.T) {
 	it := &Interpreter{
 		globals: make(map[string]Value),
-		locals:  make(map[string]Value),
+		scopes:  []map[string]Value{make(map[string]Value)},
 	}
 	ctx := &mockContext{
 		bars:   &mockBarSeries{closes: []decimal.Decimal{decimal.NewFromFloat(1.1)}},

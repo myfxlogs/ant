@@ -108,9 +108,16 @@ func PreprocessMQL(source string) string {
 			continue
 		}
 
-		// #include — keep for tree-sitter (it handles or ignores)
+		// #include — inject stub declarations for known headers, or keep for tree-sitter
 		if strings.HasPrefix(trimmed, "#include ") {
-			result = append(result, line)
+			// For system headers (<...>), inject stub class declarations
+			// so tree-sitter recognizes the types
+			stub := includeStub(trimmed)
+			if stub != "" {
+				result = append(result, stub)
+			} else {
+				result = append(result, line)
+			}
 			continue
 		}
 
@@ -124,4 +131,40 @@ func PreprocessMQL(source string) string {
 	}
 
 	return strings.Join(result, "\n")
+}
+
+// includeStub returns a stub class/struct declaration for known MQL5 headers
+// so tree-sitter can parse the types. Returns empty string for unknown headers.
+func includeStub(includeLine string) string {
+	// Extract header path from <...> or "..."
+	hdr := ""
+	if strings.Contains(includeLine, "<") && strings.Contains(includeLine, ">") {
+		start := strings.Index(includeLine, "<")
+		end := strings.LastIndex(includeLine, ">")
+		if start+1 < end {
+			hdr = includeLine[start+1 : end]
+		}
+	} else if strings.Contains(includeLine, "\"") {
+		start := strings.Index(includeLine, "\"")
+		end := strings.LastIndex(includeLine, "\"")
+		if start+1 < end {
+			hdr = includeLine[start+1 : end]
+		}
+	}
+
+	switch hdr {
+	case "Trade/Trade.mqh":
+		return "class CTrade { public: void SetExpertMagicNumber(int); bool Buy(double,string,double,double,double,string); bool Sell(double,string,double,double,double,string); bool BuyLimit(double,string,double,double,double,string); bool SellLimit(double,string,double,double,double,string); bool BuyStop(double,string,double,double,double,string); bool SellStop(double,string,double,double,double,string); bool PositionClose(int64); bool PositionClosePartial(int64,double); bool PositionCloseBy(int64,int64); bool PositionModify(int64,double,double); bool OrderDelete(int64); void SetDeviationInPoints(int); };"
+	case "Trade/PositionInfo.mqh":
+		return "class CPositionInfo { public: int64 Ticket(); string Symbol(); double Volume(); double PriceCurrent(); double PriceOpen(); double StopLoss(); double TakeProfit(); };"
+	case "Trade/OrderInfo.mqh":
+		return "class COrderInfo { public: int64 Ticket(); string Symbol(); double Volume(); double PriceOpen(); double PriceCurrent(); double StopLoss(); double TakeProfit(); };"
+	case "Trade/SymbolInfo.mqh":
+		return "class CSymbolInfo { public: string Name(); int Digits(); double Point(); double Bid(); double Ask(); };"
+	case "Arrays/ArrayDouble.mqh":
+		return "class CArrayDouble { public: int Add(double); int Size(); double At(int); };"
+	default:
+		// For unknown headers, return empty line to preserve line numbers
+		return ""
+	}
 }

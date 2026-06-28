@@ -9,7 +9,7 @@ import (
 func TestBuiltin_ArrayFunctions(t *testing.T) {
 	it := &Interpreter{
 		globals: make(map[string]Value),
-		locals:  make(map[string]Value),
+		scopes:  []map[string]Value{make(map[string]Value)},
 	}
 
 	// Initialize an array
@@ -73,7 +73,7 @@ func TestBuiltin_ArrayFunctions(t *testing.T) {
 func TestBuiltin_StringFunctions(t *testing.T) {
 	it := &Interpreter{
 		globals: make(map[string]Value),
-		locals:  make(map[string]Value),
+		scopes:  []map[string]Value{make(map[string]Value)},
 	}
 
 	// StringConcatenate
@@ -125,7 +125,7 @@ func TestBuiltin_StringFunctions(t *testing.T) {
 func TestBuiltin_ConversionFunctions(t *testing.T) {
 	it := &Interpreter{
 		globals: make(map[string]Value),
-		locals:  make(map[string]Value),
+		scopes:  []map[string]Value{make(map[string]Value)},
 	}
 
 	// DoubleToString
@@ -177,7 +177,7 @@ func TestBuiltin_ConversionFunctions(t *testing.T) {
 func TestBuiltin_MathFunctions(t *testing.T) {
 	it := &Interpreter{
 		globals: make(map[string]Value),
-		locals:  make(map[string]Value),
+		scopes:  []map[string]Value{make(map[string]Value)},
 	}
 
 	// MathAbs
@@ -211,7 +211,7 @@ func TestBuiltin_MathFunctions(t *testing.T) {
 func TestBuiltin_UnimplementedFunction(t *testing.T) {
 	it := &Interpreter{
 		globals: make(map[string]Value),
-		locals:  make(map[string]Value),
+		scopes:  []map[string]Value{make(map[string]Value)},
 	}
 
 	// Call an unimplemented function

@@ -159,12 +159,31 @@ func (c *compiler) compileAssignment(n *sitter.Node) *interp.Expr {
 	lhs := children[0]
 	rhs := children[1]
 
-	// Simple variable assignment: x = value
+	// Detect compound assignment operator by scanning non-named children
+	op := "="
+	for i := 0; i < int(n.ChildCount()); i++ {
+		ch := n.Child(i)
+		t := ch.Type()
+		if t == "+=" || t == "-=" || t == "*=" || t == "/=" || t == "%=" {
+			op = t
+			break
+		}
+	}
+
+	// Simple variable assignment: x = value (or x += value)
 	name := c.findIdent(lhs)
 	if name != "" {
+		if op == "=" {
+			return &interp.Expr{
+				Kind: interp.ExprAssignment,
+				Name: name,
+				Args: []interp.Expr{*c.compileExpr(rhs)},
+			}
+		}
 		return &interp.Expr{
-			Kind: interp.ExprAssignment,
+			Kind: interp.ExprCompoundAssign,
 			Name: name,
+			Op:   op,
 			Args: []interp.Expr{*c.compileExpr(rhs)},
 		}
 	}

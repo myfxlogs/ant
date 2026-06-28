@@ -49,7 +49,7 @@ func TestValueEqual(t *testing.T) {
 }
 
 func TestApplyOp(t *testing.T) {
-	it := &Interpreter{globals: map[string]Value{}, locals: map[string]Value{}}
+	it := &Interpreter{globals: map[string]Value{}, scopes: []map[string]Value{make(map[string]Value)}}
 
 	// Addition
 	r := it.applyOp(IntVal(3), IntVal(4), "+")
@@ -77,7 +77,7 @@ func TestApplyOp(t *testing.T) {
 }
 
 func TestApplyUnary(t *testing.T) {
-	it := &Interpreter{globals: map[string]Value{}, locals: map[string]Value{}}
+	it := &Interpreter{globals: map[string]Value{}, scopes: []map[string]Value{make(map[string]Value)}}
 
 	r := it.applyUnary(IntVal(5), "-")
 	if r.ToInt() != -5 {
@@ -103,7 +103,7 @@ func TestParseNumberLiteral(t *testing.T) {
 }
 
 func TestLookupConstant(t *testing.T) {
-	it := &Interpreter{globals: map[string]Value{}, locals: map[string]Value{}}
+	it := &Interpreter{globals: map[string]Value{}, scopes: []map[string]Value{make(map[string]Value)}}
 
 	v := it.lookupConstant("OP_BUY")
 	if v.ToInt() != 0 {
