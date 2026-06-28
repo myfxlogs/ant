@@ -212,14 +212,12 @@ func (it *Interpreter) execStmt(stmt *Statement) error {
 
 	case StmtSwitch:
 		switchVal := it.evalExpr(stmt.Expr)
-		for _, c := range stmt.Cases {
+		var defaultCase *SwitchCase
+		for i := range stmt.Cases {
+			c := &stmt.Cases[i]
 			if c.Expr == nil {
-				// default
-				err := it.execBlock(c.Body)
-				if errors.Is(err, errBreak) {
-					return nil
-				}
-				return err
+				defaultCase = c
+				continue
 			}
 			caseVal := it.evalExpr(c.Expr)
 			if switchVal.Equal(caseVal) {
@@ -229,6 +227,13 @@ func (it *Interpreter) execStmt(stmt *Statement) error {
 				}
 				return err
 			}
+		}
+		if defaultCase != nil {
+			err := it.execBlock(defaultCase.Body)
+			if errors.Is(err, errBreak) {
+				return nil
+			}
+			return err
 		}
 	}
 	return nil
@@ -244,13 +249,6 @@ func (it *Interpreter) execBlock(stmts []Statement) error {
 		}
 	}
 	return nil
-}
-
-// execBlockScoped runs a block with its own scope.
-func (it *Interpreter) execBlockScoped(stmts []Statement) error {
-	it.pushScope()
-	defer it.popScope()
-	return it.execBlock(stmts)
 }
 
 // ── SDK.Strategy implementation ─────────────────────────────────────

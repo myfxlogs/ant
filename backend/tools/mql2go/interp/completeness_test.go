@@ -366,6 +366,44 @@ func TestSwitchBreakInLoop(t *testing.T) {
 	}
 }
 
+func TestSwitchDefaultOrdering(t *testing.T) {
+	// MQL switch: default should only execute if no case matches,
+	// even if default appears before matching cases in the source.
+	ir := &IR{
+		Version: "mql4",
+		OnBar: []Statement{
+			{Kind: StmtExpr, Expr: &Expr{Kind: ExprAssignment, Name: "result", Args: []Expr{{Kind: ExprLiteral, Val: IntVal(0)}}}},
+			{Kind: StmtSwitch, Expr: &Expr{Kind: ExprLiteral, Val: IntVal(2)}, Cases: []SwitchCase{
+				// default appears first in source order
+				{Expr: nil, Body: []Statement{
+					{Kind: StmtExpr, Expr: &Expr{Kind: ExprAssignment, Name: "result", Args: []Expr{{Kind: ExprLiteral, Val: IntVal(99)}}}},
+				}},
+				// case 1
+				{Expr: &Expr{Kind: ExprLiteral, Val: IntVal(1)}, Body: []Statement{
+					{Kind: StmtExpr, Expr: &Expr{Kind: ExprAssignment, Name: "result", Args: []Expr{{Kind: ExprLiteral, Val: IntVal(1)}}}},
+				}},
+				// case 2 — should match switchVal=2
+				{Expr: &Expr{Kind: ExprLiteral, Val: IntVal(2)}, Body: []Statement{
+					{Kind: StmtExpr, Expr: &Expr{Kind: ExprAssignment, Name: "result", Args: []Expr{{Kind: ExprLiteral, Val: IntVal(2)}}}},
+				}},
+			}},
+		},
+	}
+
+	it := NewInterpreter(ir)
+	ctx := &mockContext{
+		bars:   &mockBarSeries{closes: []decimal.Decimal{decimal.NewFromFloat(1.1)}},
+		broker: &mockBroker{},
+	}
+	it.OnInit(ctx)
+	it.OnBar(ctx, "H1")
+
+	result := it.getVar("result")
+	if result.ToInt() != 2 {
+		t.Errorf("result = %d, want 2 (case 2 should match, not default)", result.ToInt())
+	}
+}
+
 func TestParamInjection(t *testing.T) {
 	ir := &IR{
 		Version: "mql4",

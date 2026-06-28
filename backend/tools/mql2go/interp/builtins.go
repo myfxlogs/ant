@@ -2,6 +2,7 @@ package interp
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/shopspring/decimal"
 )
@@ -67,14 +68,13 @@ func (it *Interpreter) callBuiltin(name string, args []Expr) Value {
 }
 
 // dispatchClassMethod handles MQL5 class method calls (CTrade.Buy, etc.).
-// Phase 3 will populate the full CTrade method table.
 func (it *Interpreter) dispatchClassMethod(cls *ClassInstance, method string, args []Expr) Value {
 	if cls == nil {
 		return NoneVal()
 	}
 	switch cls.Name {
 	case "CTrade":
-		return it.callCTrade(cls, method, args)
+		return it.execCTrade(cls, method, args)
 	}
 	return NoneVal()
 }
@@ -121,7 +121,7 @@ func mathSqrt(it *Interpreter, args []Value) (Value, error) {
 		return DecimalVal(decimal.Zero), nil
 	}
 	f, _ := d.Float64()
-	return DecimalVal(decimal.NewFromFloat(sqrt(f))), nil
+	return DecimalVal(decimal.NewFromFloat(math.Sqrt(f))), nil
 }
 
 // mathPow computes base^exp.
@@ -133,7 +133,7 @@ func mathPow(it *Interpreter, args []Value) (Value, error) {
 	}
 	base, _ := args[0].ToDecimal().Float64()
 	exp, _ := args[1].ToDecimal().Float64()
-	return DecimalVal(decimal.NewFromFloat(pow(base, exp))), nil
+	return DecimalVal(decimal.NewFromFloat(math.Pow(base, exp))), nil
 }
 
 // ── Layer 4: Platform functions ─────────────────────────────────────
@@ -201,43 +201,7 @@ func timeframeToPeriod(tf string) int32 {
 // callIndicator is implemented in builtin_indicators.go.
 // callTrade is implemented in builtin_trade.go.
 
-func (it *Interpreter) callCTrade(cls *ClassInstance, method string, args []Expr) Value {
-	if cls == nil {
-		return NoneVal()
-	}
-	switch cls.Name {
-	case "CTrade":
-		return it.execCTrade(cls, method, args)
-	}
-	return NoneVal()
-}
-
-// ── Math helpers ────────────────────────────────────────────────────
-
-func sqrt(f float64) float64 {
-	if f <= 0 {
-		return 0
-	}
-	x := f
-	for i := 0; i < 20; i++ {
-		x = (x + f/x) / 2
-	}
-	return x
-}
-
-func pow(base, exp float64) float64 {
-	if exp == 0 {
-		return 1
-	}
-	if exp == 1 {
-		return base
-	}
-	result := 1.0
-	for i := 0; i < int(exp); i++ {
-		result *= base
-	}
-	return result
-}
+// ── String helpers ──────────────────────────────────────────────────
 
 func joinStrings(parts []string, sep string) string {
 	if len(parts) == 0 {

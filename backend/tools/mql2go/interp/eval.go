@@ -1,8 +1,6 @@
 package interp
 
 import (
-	"fmt"
-
 	"github.com/shopspring/decimal"
 )
 
@@ -316,32 +314,4 @@ func (it *Interpreter) getArray(name string) ([]Value, bool) {
 		return nil, false
 	}
 	return v.Array, true
-}
-
-// formatExpr returns a debug string for an Expr tree.
-func formatExpr(e *Expr, depth int) string {
-	if e == nil {
-		return "nil"
-	}
-	indent := ""
-	for i := 0; i < depth; i++ {
-		indent += "  "
-	}
-	switch e.Kind {
-	case ExprLiteral:
-		return fmt.Sprintf("%sLiteral(%v)", indent, e.Val)
-	case ExprVar:
-		return fmt.Sprintf("%sVar(%s)", indent, e.Name)
-	case ExprConst:
-		return fmt.Sprintf("%sConst(%s)", indent, e.Name)
-	case ExprBinary:
-		return fmt.Sprintf("%sBinary(%s)\n%s\n%s", indent, e.Op,
-			formatExpr(&e.Args[0], depth+1), formatExpr(&e.Args[1], depth+1))
-	case ExprCall:
-		return fmt.Sprintf("%sCall(%s, %d args)", indent, e.Name, len(e.Args))
-	case ExprSubscript:
-		return fmt.Sprintf("%sSubscript(%s)", indent, e.Name)
-	default:
-		return fmt.Sprintf("%sExpr(%d)", indent, e.Kind)
-	}
 }

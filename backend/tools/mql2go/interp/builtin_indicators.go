@@ -40,10 +40,19 @@ func (it *Interpreter) callIndicator(name string, args []Expr) (Value, bool) {
 			dev := vals[1].ToDecimal()
 			shift := int(vals[2].ToInt())
 			upper, middle, lower := ind.Bollinger(period, dev, shift)
-			// MQL iBands returns upper/lower/middle by mode; we return middle for now
-			_ = upper
-			_ = lower
-			return DecimalVal(middle), true
+			// MQL iBands mode: 0=upper, 1=lower, 2=middle (base line)
+			mode := int32(2) // default to middle
+			if len(vals) >= 4 {
+				mode = vals[3].ToInt()
+			}
+			switch mode {
+			case 0:
+				return DecimalVal(upper), true
+			case 1:
+				return DecimalVal(lower), true
+			default:
+				return DecimalVal(middle), true
+			}
 		}
 	case "iStochastic":
 		if len(vals) >= 4 {
