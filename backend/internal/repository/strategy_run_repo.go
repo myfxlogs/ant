@@ -173,3 +173,17 @@ type InsertSignalParams struct {
 }
 
 var ErrStrategyRunNotFound = errors.New("strategy run not found")
+
+// CleanupStaleRuns marks all runs with status='running' as 'stopped'.
+// Called on server startup to clean up runs orphaned by a crash/restart.
+func (r *StrategyRunRepository) CleanupStaleRuns(ctx context.Context) (int64, error) {
+	tag, err := r.db.Exec(ctx, `
+		UPDATE strategy_runs
+		SET status = 'stopped', error = 'server restarted', stopped_at = CURRENT_TIMESTAMP
+		WHERE status = 'running'
+	`)
+	if err != nil {
+		return 0, fmt.Errorf("cleanup stale runs: %w", err)
+	}
+	return tag.RowsAffected(), nil
+}

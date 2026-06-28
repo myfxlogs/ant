@@ -114,6 +114,30 @@ export default function PaperAccountPanel() {
     };
   }, [accounts.map(a => a.id).join(','), subscribeAccount, unsubscribeAccount]);
 
+  // Recover running strategies from server on mount (survives page refresh).
+  useEffect(() => {
+    (async () => {
+      try {
+        const active = await strategyActiveApi.listActive();
+        const recovered: Record<string, RunningStrategy> = {};
+        for (const s of active as any[]) {
+          if (s.accountId && s.mode === 'paper') {
+            recovered[s.accountId] = {
+              symbol: s.symbol,
+              timeframe: s.timeframe,
+              runId: s.runId,
+            };
+          }
+        }
+        if (Object.keys(recovered).length > 0) {
+          setRunning(prev => ({ ...prev, ...recovered }));
+        }
+      } catch {
+        // ignore — no active strategies or server unavailable
+      }
+    })();
+  }, []);
+
   // ── Handlers ──
   const handleCreate = useCallback(async () => {
     if (!createName.trim()) { message.warning(t(MESSAGES_ENTER_NAME_KEY)); return; }

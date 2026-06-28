@@ -465,8 +465,16 @@ func configureStrategyExecution(
 	srv.SetMtHub(mthubSvc)
 	srv.SetGoExecutor(strategy.NewGoExecutor(".", log))
 	srv.SetWasmExecutor(strategy.NewWasmExecutor(".", log))
-	srv.SetRunRepo(repository.NewStrategyRunRepository(pool))
+	strategyRunRepo := repository.NewStrategyRunRepository(pool)
+	srv.SetRunRepo(strategyRunRepo)
 	srv.SetSessionRegistry(strategy.NewSessionRegistry())
+
+	// Clean up runs orphaned by a previous crash/restart.
+	if n, err := strategyRunRepo.CleanupStaleRuns(context.Background()); err != nil {
+		log.Warn("startup: failed to cleanup stale strategy runs", zap.Error(err))
+	} else if n > 0 {
+		log.Info("startup: cleaned up stale strategy runs", zap.Int64("count", n))
+	}
 	srv.SetAccountLookup(func(ctx context.Context, userID string) string {
 		var mt4ID string
 		err := pool.QueryRow(ctx,
