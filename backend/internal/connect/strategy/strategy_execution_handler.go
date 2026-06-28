@@ -54,6 +54,9 @@ type StrategyExecutionServer struct {
 	// WASM strategy executor — runs generated Go strategies via wazero (live/paper).
 	wasmExecutor *WasmExecutor
 
+	// Strategy run + signal persistence.
+	runRepo *repository.StrategyRunRepository
+
 	// Push-first cancel: shared LISTEN on backtest_cancel channel.
 	activeCancels   map[uuid.UUID]context.CancelFunc
 	activeCancelsMu sync.Mutex
@@ -84,6 +87,7 @@ func (s *StrategyExecutionServer) SetMtHub(h *mthub.MtHubService)            { s
 func (s *StrategyExecutionServer) SetPaperEngine(pe PaperOrderExecutor)      { s.paperEngine = pe }
 func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)              { s.goExecutor = ge }
 func (s *StrategyExecutionServer) SetWasmExecutor(we *WasmExecutor)          { s.wasmExecutor = we }
+func (s *StrategyExecutionServer) SetRunRepo(r *repository.StrategyRunRepository) { s.runRepo = r }
 
 // SetGate injects the risk gate (D6-A: mandatory, non-optional).
 // Must be called before RunLiveStrategy.
