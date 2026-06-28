@@ -121,11 +121,6 @@ func (s *StrategyExecutionServer) dispatchFromBytes(ctx context.Context, cfg Liv
 	}
 }
 
-// dispatchFromResponse is the legacy name kept for compatibility.
-func (s *StrategyExecutionServer) dispatchFromResponse(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, respBytes []byte) {
-	s.dispatchFromBytes(ctx, cfg, bar, respBytes)
-}
-
 // getExecutor returns the WASM executor pair (wasm + go fallback).
 func (s *StrategyExecutionServer) getExecutor() *execPair {
 	return &execPair{wasm: s.wasmExecutor, goExec: s.goExecutor}

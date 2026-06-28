@@ -239,7 +239,7 @@ func (s *StrategyExecutionServer) handleBar(
 		*firstBar = true
 		return
 	}
-	s.dispatchFromResponse(ctx, cfg, bar, respBytes)
+	s.dispatchFromBytes(ctx, cfg, bar, respBytes)
 }
 
 func (s *StrategyExecutionServer) handleTick(

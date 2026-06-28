@@ -24,9 +24,9 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/tetratelabs/wazero"
-	"github.com/tetratelabs/wazero/api"
 	"go.uber.org/zap"
 )
 
@@ -40,29 +40,33 @@ type LiveSession struct {
 	log     *zap.Logger
 
 	// WASM runtime state for the active session.
-	compiled  wazero.CompiledModule
 	stdinW    *io.PipeWriter // host → WASM (requests)
 	stdoutR   *io.PipeReader // WASM → host (responses)
 	stderrBuf *lockedBuffer  // WASM stderr capture
 
-	mod    api.Module
 	cancel context.CancelFunc
 	done   chan error
 
 	started bool
 }
 
-// lockedBuffer is a thread-safe bytes.Buffer for stderr capture.
+// lockedBuffer is a mutex-protected byte buffer for stderr capture.
+// WASM goroutine writes, host goroutine reads.
 type lockedBuffer struct {
+	mu  sync.Mutex
 	buf []byte
 }
 
 func (b *lockedBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	b.buf = append(b.buf, p...)
 	return len(p), nil
 }
 
 func (b *lockedBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	return string(b.buf)
 }
 
@@ -114,8 +118,6 @@ func (s *LiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, error
 			return nil, fmt.Errorf("compile strategy: %w", err)
 		}
 	}
-	s.compiled = compiled
-
 	// Create bidirectional pipes for stdio.
 	stdinR, stdinW := io.Pipe()
 	stdoutR, stdoutW := io.Pipe()
@@ -161,7 +163,6 @@ func (s *LiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, error
 
 	go func() {
 		mod, err := s.wasm.runtime.InstantiateModule(modCtx, compiled, config)
-		s.mod = mod
 		if mod != nil {
 			mod.Close(modCtx)
 		}
