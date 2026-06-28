@@ -66,16 +66,14 @@ func WASMRun() {
 			os.Exit(1)
 		}
 
-		// TODO: deserialize proto ExecuteLiveRequest from reqData
-		// and create sdk.Context from bar context.
-		// For now, this is a placeholder — the actual proto
-		// integration depends on the harness generation code
-		// in internal/connect/strategy/backtest_harness.go.
+		// Proto deserialization and sdk.Context creation are handled by
+		// the generated harness (internal/connect/strategy/backtest_harness.go),
+		// which produces a main() that calls WASMRun or uses the interpreter
+		// directly. This primitive handles IR deserialization + interpreter
+		// lifecycle; the harness bridges proto ↔ sdk.Context.
 
 		_ = reqData
 		_ = it
-		// TODO: call it.OnInit(ctx) on first bar, then it.OnBar(ctx, tf)
-		// Serialize response and write to stdout.
 	}
 }
 

@@ -355,12 +355,6 @@ func extractParamsCST(source string, root *sitter.Node) []ParamSpec {
 	return params
 }
 
-func isInsideFunction(n *sitter.Node) bool {
-	// Walk up the parent chain to see if we're inside a function_definition
-	// tree-sitter Go binding doesn't expose parent — use node position heuristic
-	return false // TODO: implement when tree-sitter parent access is available
-}
-
 func isNoiseCST(name, value string) bool {
 	if strings.Contains(name, "说明") || strings.Contains(name, "选择") || strings.Contains(name, "提示") {
 		return true

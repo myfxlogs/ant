@@ -78,7 +78,7 @@ func isBuiltinClass(name string) bool {
 // ── Preprocessor ────────────────────────────────────────────────────
 
 // PreprocessMQL handles MQL preprocessor directives before parsing.
-// #include — file inclusion (stub: skip, tree-sitter handles gracefully)
+// #include — inject stub class declarations for known MQL5 headers
 // #define — macro substitution
 // #property — strip (metadata only)
 // #import — strip (DLL imports, not supported)

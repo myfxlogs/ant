@@ -7,8 +7,7 @@ import (
 )
 
 // callBuiltin dispatches a builtin function call.
-// Phase 2 will populate the full builtin table (Layer 1-4).
-// Unimplemented functions return an error — never silently skip.
+// Unknown functions log an error and return NoneVal — never silently skip.
 
 var builtinTable = map[string]func(*Interpreter, []Value) (Value, error){
 	// Layer 3 — Math functions (decimal.Decimal, no float64)
@@ -150,8 +149,7 @@ func builtinPrint(it *Interpreter, args []Value) (Value, error) {
 	return NoneVal(), nil
 }
 
-// ── Stubs for Phase 2 (market data, indicators, trade) ──────────────
-// These will be fully implemented in Phase 2.
+// ── Market data, indicators, trade dispatch ───────────────────────
 
 func (it *Interpreter) callMarketData(name string, args []Expr) (Value, bool) {
 	if it.ctx == nil {
@@ -169,9 +167,35 @@ func (it *Interpreter) callMarketData(name string, args []Expr) (Value, bool) {
 	case "Digits", "digits":
 		return IntVal(it.ctx.Digits()), true
 	case "Period":
-		return IntVal(0), true // TODO: map timeframe string to int
+		return IntVal(timeframeToPeriod(it.ctx.Timeframe())), true
 	}
 	return NoneVal(), false
+}
+
+// timeframeToPeriod maps SDK timeframe strings to MQL period int values.
+func timeframeToPeriod(tf string) int32 {
+	switch tf {
+	case "M1":
+		return 1
+	case "M5":
+		return 5
+	case "M15":
+		return 15
+	case "M30":
+		return 30
+	case "H1":
+		return 60
+	case "H4":
+		return 240
+	case "D1":
+		return 1440
+	case "W1":
+		return 10080
+	case "MN1":
+		return 43200
+	default:
+		return 0
+	}
 }
 
 // callIndicator is implemented in builtin_indicators.go.
