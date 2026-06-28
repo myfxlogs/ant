@@ -126,16 +126,20 @@ func (s *LiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, error
 	// Build stdin: interp path prepends IR (u32 LE length + IR bytes)
 	// before the first length-prefixed request. After initial data is
 	// consumed, stdinR (pipe) takes over for subsequent bar requests.
+	var reqPrefix [4]byte
+	binary.BigEndian.PutUint32(reqPrefix[:], uint32(len(reqBytes)))
 	var stdin io.Reader
 	if s.irBytes != nil {
 		stdin = io.MultiReader(
 			bytes.NewReader(irLengthPrefix(s.irBytes)),
-			&lengthPrefixedReader{data: reqBytes},
+			bytes.NewReader(reqPrefix[:]),
+			bytes.NewReader(reqBytes),
 			stdinR,
 		)
 	} else {
 		stdin = io.MultiReader(
-			&lengthPrefixedReader{data: reqBytes},
+			bytes.NewReader(reqPrefix[:]),
+			bytes.NewReader(reqBytes),
 			stdinR,
 		)
 	}
@@ -265,47 +269,4 @@ func (s *LiveSession) readPipeResponse() ([]byte, error) {
 		return nil, fmt.Errorf("read message: %w", err)
 	}
 	return buf, nil
-}
-
-// ── lengthPrefixedReader ──────────────────────────────────────────────
-
-// lengthPrefixedReader wraps raw bytes as a length-prefixed stream,
-// matching the format the harness expects: 4-byte BE length + data.
-type lengthPrefixedReader struct {
-	data   []byte
-	offset int
-	prefix bool // have we written the length prefix yet?
-}
-
-func (r *lengthPrefixedReader) Read(p []byte) (int, error) {
-	if r.data == nil {
-		return 0, io.EOF
-	}
-	if !r.prefix {
-		// Write the 4-byte length prefix first.
-		r.prefix = true
-		var lenBuf [4]byte
-		binary.BigEndian.PutUint32(lenBuf[:], uint32(len(r.data)))
-		n := copy(p, lenBuf[:])
-		if n < 4 {
-			// Buffer too small — offset for next read.
-			return n, nil
-		}
-		// Prefix fully written; write data if space remains.
-		dn := copy(p[4:], r.data)
-		r.offset = dn
-		if dn == len(r.data) {
-			r.data = nil // consumed
-			return 4 + dn, io.EOF
-		}
-		return 4 + dn, nil
-	}
-	// Writing remaining data.
-	n := copy(p, r.data[r.offset:])
-	r.offset += n
-	if r.offset >= len(r.data) {
-		r.data = nil
-		return n, io.EOF
-	}
-	return n, nil
 }

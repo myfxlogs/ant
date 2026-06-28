@@ -232,6 +232,9 @@ func (s *StrategyExecutionServer) handleBar(
 	}
 	if err != nil {
 		s.log.Error("LiveStrategyRunner: bar request failed", zap.Error(err))
+		if *session != nil {
+			(*session).Close()
+		}
 		*session = nil
 		*firstBar = true
 		return
