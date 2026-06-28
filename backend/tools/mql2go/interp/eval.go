@@ -167,7 +167,7 @@ func (it *Interpreter) evalSubscript(e *Expr) Value {
 	return NoneVal()
 }
 
-// evalField handles object field/method access: obj.field, obj.method(args)
+// evalField handles object field/method access: obj.field, obj.method(args), obj.field = value
 func (it *Interpreter) evalField(e *Expr) Value {
 	if len(e.Args) == 0 {
 		return NoneVal()
@@ -175,6 +175,13 @@ func (it *Interpreter) evalField(e *Expr) Value {
 	obj := it.evalExpr(&e.Args[0])
 	if obj.Kind != ValClass || obj.Class == nil {
 		return NoneVal()
+	}
+
+	// Field assignment: obj.field = value (IsAssign=true, last arg is the value)
+	if e.IsAssign && len(e.Args) > 1 {
+		val := it.evalExpr(&e.Args[len(e.Args)-1])
+		obj.Class.Fields[e.Name] = val
+		return val
 	}
 
 	// Method call (has additional args beyond the object)

@@ -37,6 +37,14 @@ func NewInterpreter(ir *IR) *Interpreter {
 	for _, g := range ir.Globals {
 		if g.InitVal != nil {
 			it.globals[g.Name] = it.evalExpr(g.InitVal)
+		} else if isClassType(g.Type) {
+			it.globals[g.Name] = Value{
+				Kind: ValClass,
+				Class: &ClassInstance{
+					Name:   g.Type,
+					Fields: make(map[string]Value),
+				},
+			}
 		} else {
 			it.globals[g.Name] = zeroValue(g.Type)
 		}
@@ -204,6 +212,27 @@ func zeroValue(typeName string) Value {
 	default:
 		return NoneVal()
 	}
+}
+
+// isClassType returns true for MQL5 class/struct type names.
+func isClassType(typeName string) bool {
+	if typeName == "class" {
+		return true
+	}
+	switch typeName {
+	case "CTrade", "MqlTradeRequest", "MqlTradeResult",
+		"MqlDateTime", "MqlRates", "MqlTick":
+		return true
+	}
+	// User-defined struct types: capitalized names that aren't primitives
+	if len(typeName) > 0 && typeName[0] >= 'A' && typeName[0] <= 'Z' {
+		switch typeName {
+		case "Int", "Double", "String", "Bool", "Long", "Float":
+			return false
+		}
+		return true
+	}
+	return false
 }
 
 // SetSignal stores a signal to be returned from OnBar.

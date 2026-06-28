@@ -14,6 +14,7 @@ type Expr struct {
 	Cond     *Expr   // ExprTernary: condition
 	ThenExpr *Expr   // ExprTernary: then branch
 	ElseExpr *Expr   // ExprTernary: else branch
+	IsAssign bool    // ExprField: true = field assignment (obj.field = value)
 }
 
 // ExprKind enumerates expression node types.

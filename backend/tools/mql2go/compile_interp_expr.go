@@ -158,15 +158,37 @@ func (c *compiler) compileAssignment(n *sitter.Node) *interp.Expr {
 	}
 	lhs := children[0]
 	rhs := children[1]
+
+	// Simple variable assignment: x = value
 	name := c.findIdent(lhs)
-	if name == "" {
-		return nil
+	if name != "" {
+		return &interp.Expr{
+			Kind: interp.ExprAssignment,
+			Name: name,
+			Args: []interp.Expr{*c.compileExpr(rhs)},
+		}
 	}
-	return &interp.Expr{
-		Kind: interp.ExprAssignment,
-		Name: name,
-		Args: []interp.Expr{*c.compileExpr(rhs)},
+
+	// Field assignment: obj.field = value → ExprField with IsAssign=true
+	if lhs.Type() == "field_expression" {
+		fieldExpr := c.compileField(lhs)
+		if fieldExpr != nil {
+			fieldExpr.IsAssign = true
+			fieldExpr.Args = append(fieldExpr.Args, *c.compileExpr(rhs))
+			return fieldExpr
+		}
 	}
+
+	// Subscript assignment: arr[i] = value
+	if lhs.Type() == "subscript_expression" {
+		subExpr := c.compileSubscript(lhs)
+		if subExpr != nil {
+			subExpr.Args = []interp.Expr{*c.compileExpr(rhs)}
+			return subExpr
+		}
+	}
+
+	return nil
 }
 
 func (c *compiler) compileUpdate(n *sitter.Node) *interp.Expr {

@@ -12,6 +12,9 @@ import (
 // suitable for interpretation. This is the host-side compile step;
 // the resulting IR has no tree-sitter dependency and can run in WASM.
 func CompileToIR(source string) (*interp.IR, error) {
+	// Run preprocessor first (#define, #property stripping)
+	source = PreprocessMQL(source)
+
 	analyzeMu.Lock()
 	parseSource = source
 	defer analyzeMu.Unlock()
@@ -35,11 +38,27 @@ type compiler struct {
 func (c *compiler) compile(root *sitter.Node) *interp.IR {
 	ir := &interp.IR{Version: c.version}
 
+	// First pass: collect known class/struct types
+	knownClasses := make(map[string]bool)
+	for i := 0; i < int(root.NamedChildCount()); i++ {
+		n := root.NamedChild(i)
+		switch n.Type() {
+		case "class_specifier", "struct_specifier":
+			name := c.findTypeName(n)
+			if name != "" {
+				knownClasses[name] = true
+			}
+		}
+	}
+
 	for i := 0; i < int(root.NamedChildCount()); i++ {
 		n := root.NamedChild(i)
 		switch n.Type() {
 		case "declaration":
 			c.collectGlobal(ir, n)
+			c.collectClassInstance(ir, n, knownClasses)
+		case "class_specifier", "struct_specifier":
+			c.collectClassDecl(ir, n)
 		case "function_definition":
 			c.collectFunction(ir, n)
 		}
@@ -88,6 +107,7 @@ func (c *compiler) collectParam(ir *interp.IR, n *sitter.Node) {
 }
 
 func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
+	typeName := c.findType(n)
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		if child.Type() == "init_declarator" {
@@ -97,7 +117,7 @@ func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 			}
 			gv := interp.GlobalVar{
 				Name: name,
-				Type: c.findType(n),
+				Type: typeName,
 			}
 			if valExpr := c.findExprChild(child); valExpr != nil {
 				gv.InitVal = c.compileExpr(valExpr)
@@ -110,8 +130,19 @@ func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 			}
 			ir.Globals = append(ir.Globals, interp.GlobalVar{
 				Name: name,
-				Type: c.findType(n),
+				Type: typeName,
 			})
+		} else if child.Type() == "identifier" && typeName != "" {
+			// Direct declaration: CTrade trade; (no init_declarator wrapper)
+			// Avoid double-adding if already handled by init_declarator above
+			name := c.text(child)
+			// Skip if this is the type_identifier itself
+			if name != typeName {
+				ir.Globals = append(ir.Globals, interp.GlobalVar{
+					Name: name,
+					Type: typeName,
+				})
+			}
 		}
 	}
 }
