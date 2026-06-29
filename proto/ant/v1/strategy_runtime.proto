@@ -27,15 +27,14 @@ service StrategyRuntimeService {
   // ExecuteLive: proto-native live/paper strategy execution.
   // Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
   rpc ExecuteLive(ExecuteLiveRequest) returns (ExecuteLiveResponse);
-  // TranspileCode translates MQL4/MQL5 code to Go using the mql2go transpiler.
-  // Returns confidence score and gap report; AI fallback handled by Go layer.
-  rpc TranspileCode(TranspileCodeRequest) returns (TranspileCodeResponse);
   // AnalyzeCode analyzes MQL source and returns strategy intent summary + param panel + blind spots.
   rpc AnalyzeImportCode(AnalyzeImportCodeRequest) returns (AnalyzeImportCodeResponse);
   // GenerateImportCode generates Go SDK code from analyzed MQL source.
   rpc GenerateImportCode(GenerateImportCodeRequest) returns (GenerateImportCodeResponse);
   // ImportStrategy runs the full import pipeline: analyze → generate → return code.
   rpc ImportStrategy(ImportStrategyRequest) returns (ImportStrategyResponse);
+  // GetImportedStrategy retrieves a previously imported strategy by ID.
+  rpc GetImportedStrategy(GetImportedStrategyRequest) returns (GetImportedStrategyResponse);
   // ListStrategyRuns returns recent live/paper strategy run records.
   rpc ListStrategyRuns(ListStrategyRunsRequest) returns (ListStrategyRunsResponse);
   // GetStrategyRun returns a single strategy run by ID.
@@ -55,19 +54,17 @@ service StrategyRuntimeService {
   rpc WatchActiveStrategies(WatchActiveStrategiesRequest) returns (stream WatchActiveStrategiesEvent);
 }
 
-message TranspileCodeRequest {
-  string source_code = 1;  // MQL4 or MQL5 source
-  string source_lang = 2;  // "mql4", "mql5", or "auto"
-  string class_name = 3;   // desired Go strategy type name
+message GetImportedStrategyRequest {
+  string strategy_id = 1;
 }
 
-message TranspileCodeResponse {
-  string target_code = 1;       // translated Go code
-  float confidence = 2;        // 0.0–1.0
-  int32 total_patterns = 3;    // matched + gaps
-  int32 gaps = 4;              // untranslated patterns
-  repeated string gap_samples = 5;  // gap reasons (max 10)
-  bool is_deterministic = 6;   // true if no AI was used
+message GetImportedStrategyResponse {
+  string strategy_id = 1;
+  string strategy_name = 2;
+  string source_lang = 3;
+  string source_code = 4;
+  double coverage_score = 5;
+  bytes params = 6;           // proto-serialized ParamDecl list
 }
 
 message ExecuteStrategyRequest {

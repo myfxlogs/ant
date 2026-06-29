@@ -79,29 +79,27 @@ func (RequestType) EnumDescriptor() ([]byte, []int) {
 	return file_strategy_runtime_proto_rawDescGZIP(), []int{0}
 }
 
-type TranspileCodeRequest struct {
+type GetImportedStrategyRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	SourceCode    string                 `protobuf:"bytes,1,opt,name=source_code,json=sourceCode,proto3" json:"source_code,omitempty"` // MQL4 or MQL5 source
-	SourceLang    string                 `protobuf:"bytes,2,opt,name=source_lang,json=sourceLang,proto3" json:"source_lang,omitempty"` // "mql4", "mql5", or "auto"
-	ClassName     string                 `protobuf:"bytes,3,opt,name=class_name,json=className,proto3" json:"class_name,omitempty"`    // desired Go strategy type name
+	StrategyId    string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *TranspileCodeRequest) Reset() {
-	*x = TranspileCodeRequest{}
+func (x *GetImportedStrategyRequest) Reset() {
+	*x = GetImportedStrategyRequest{}
 	mi := &file_strategy_runtime_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *TranspileCodeRequest) String() string {
+func (x *GetImportedStrategyRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TranspileCodeRequest) ProtoMessage() {}
+func (*GetImportedStrategyRequest) ProtoMessage() {}
 
-func (x *TranspileCodeRequest) ProtoReflect() protoreflect.Message {
+func (x *GetImportedStrategyRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_strategy_runtime_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -113,114 +111,100 @@ func (x *TranspileCodeRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use TranspileCodeRequest.ProtoReflect.Descriptor instead.
-func (*TranspileCodeRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetImportedStrategyRequest.ProtoReflect.Descriptor instead.
+func (*GetImportedStrategyRequest) Descriptor() ([]byte, []int) {
 	return file_strategy_runtime_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *TranspileCodeRequest) GetSourceCode() string {
+func (x *GetImportedStrategyRequest) GetStrategyId() string {
 	if x != nil {
-		return x.SourceCode
+		return x.StrategyId
 	}
 	return ""
 }
 
-func (x *TranspileCodeRequest) GetSourceLang() string {
+type GetImportedStrategyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId    string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
+	StrategyName  string                 `protobuf:"bytes,2,opt,name=strategy_name,json=strategyName,proto3" json:"strategy_name,omitempty"`
+	SourceLang    string                 `protobuf:"bytes,3,opt,name=source_lang,json=sourceLang,proto3" json:"source_lang,omitempty"`
+	SourceCode    string                 `protobuf:"bytes,4,opt,name=source_code,json=sourceCode,proto3" json:"source_code,omitempty"`
+	CoverageScore float64                `protobuf:"fixed64,5,opt,name=coverage_score,json=coverageScore,proto3" json:"coverage_score,omitempty"`
+	Params        []byte                 `protobuf:"bytes,6,opt,name=params,proto3" json:"params,omitempty"` // proto-serialized ParamDecl list
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetImportedStrategyResponse) Reset() {
+	*x = GetImportedStrategyResponse{}
+	mi := &file_strategy_runtime_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetImportedStrategyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetImportedStrategyResponse) ProtoMessage() {}
+
+func (x *GetImportedStrategyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_strategy_runtime_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetImportedStrategyResponse.ProtoReflect.Descriptor instead.
+func (*GetImportedStrategyResponse) Descriptor() ([]byte, []int) {
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GetImportedStrategyResponse) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *GetImportedStrategyResponse) GetStrategyName() string {
+	if x != nil {
+		return x.StrategyName
+	}
+	return ""
+}
+
+func (x *GetImportedStrategyResponse) GetSourceLang() string {
 	if x != nil {
 		return x.SourceLang
 	}
 	return ""
 }
 
-func (x *TranspileCodeRequest) GetClassName() string {
+func (x *GetImportedStrategyResponse) GetSourceCode() string {
 	if x != nil {
-		return x.ClassName
+		return x.SourceCode
 	}
 	return ""
 }
 
-type TranspileCodeResponse struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	TargetCode      string                 `protobuf:"bytes,1,opt,name=target_code,json=targetCode,proto3" json:"target_code,omitempty"`                 // translated Go code
-	Confidence      float32                `protobuf:"fixed32,2,opt,name=confidence,proto3" json:"confidence,omitempty"`                                 // 0.0–1.0
-	TotalPatterns   int32                  `protobuf:"varint,3,opt,name=total_patterns,json=totalPatterns,proto3" json:"total_patterns,omitempty"`       // matched + gaps
-	Gaps            int32                  `protobuf:"varint,4,opt,name=gaps,proto3" json:"gaps,omitempty"`                                              // untranslated patterns
-	GapSamples      []string               `protobuf:"bytes,5,rep,name=gap_samples,json=gapSamples,proto3" json:"gap_samples,omitempty"`                 // gap reasons (max 10)
-	IsDeterministic bool                   `protobuf:"varint,6,opt,name=is_deterministic,json=isDeterministic,proto3" json:"is_deterministic,omitempty"` // true if no AI was used
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
-}
-
-func (x *TranspileCodeResponse) Reset() {
-	*x = TranspileCodeResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TranspileCodeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TranspileCodeResponse) ProtoMessage() {}
-
-func (x *TranspileCodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[1]
+func (x *GetImportedStrategyResponse) GetCoverageScore() float64 {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TranspileCodeResponse.ProtoReflect.Descriptor instead.
-func (*TranspileCodeResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *TranspileCodeResponse) GetTargetCode() string {
-	if x != nil {
-		return x.TargetCode
-	}
-	return ""
-}
-
-func (x *TranspileCodeResponse) GetConfidence() float32 {
-	if x != nil {
-		return x.Confidence
+		return x.CoverageScore
 	}
 	return 0
 }
 
-func (x *TranspileCodeResponse) GetTotalPatterns() int32 {
+func (x *GetImportedStrategyResponse) GetParams() []byte {
 	if x != nil {
-		return x.TotalPatterns
-	}
-	return 0
-}
-
-func (x *TranspileCodeResponse) GetGaps() int32 {
-	if x != nil {
-		return x.Gaps
-	}
-	return 0
-}
-
-func (x *TranspileCodeResponse) GetGapSamples() []string {
-	if x != nil {
-		return x.GapSamples
+		return x.Params
 	}
 	return nil
-}
-
-func (x *TranspileCodeResponse) GetIsDeterministic() bool {
-	if x != nil {
-		return x.IsDeterministic
-	}
-	return false
 }
 
 type ExecuteStrategyRequest struct {
@@ -3853,25 +3837,20 @@ var File_strategy_runtime_proto protoreflect.FileDescriptor
 
 const file_strategy_runtime_proto_rawDesc = "" +
 	"\n" +
-	"\x16strategy_runtime.proto\x12\x06ant.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\fcommon.proto\x1a\x17strategy_messages.proto\x1a\x18backtest_run_start.proto\x1a\x18backtest_run_query.proto\x1a\x1abacktest_run_control.proto\"w\n" +
-	"\x14TranspileCodeRequest\x12\x1f\n" +
-	"\vsource_code\x18\x01 \x01(\tR\n" +
-	"sourceCode\x12\x1f\n" +
-	"\vsource_lang\x18\x02 \x01(\tR\n" +
-	"sourceLang\x12\x1d\n" +
-	"\n" +
-	"class_name\x18\x03 \x01(\tR\tclassName\"\xdf\x01\n" +
-	"\x15TranspileCodeResponse\x12\x1f\n" +
-	"\vtarget_code\x18\x01 \x01(\tR\n" +
-	"targetCode\x12\x1e\n" +
-	"\n" +
-	"confidence\x18\x02 \x01(\x02R\n" +
-	"confidence\x12%\n" +
-	"\x0etotal_patterns\x18\x03 \x01(\x05R\rtotalPatterns\x12\x12\n" +
-	"\x04gaps\x18\x04 \x01(\x05R\x04gaps\x12\x1f\n" +
-	"\vgap_samples\x18\x05 \x03(\tR\n" +
-	"gapSamples\x12)\n" +
-	"\x10is_deterministic\x18\x06 \x01(\bR\x0fisDeterministic\"\x81\x01\n" +
+	"\x16strategy_runtime.proto\x12\x06ant.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\fcommon.proto\x1a\x17strategy_messages.proto\x1a\x18backtest_run_start.proto\x1a\x18backtest_run_query.proto\x1a\x1abacktest_run_control.proto\"=\n" +
+	"\x1aGetImportedStrategyRequest\x12\x1f\n" +
+	"\vstrategy_id\x18\x01 \x01(\tR\n" +
+	"strategyId\"\xe4\x01\n" +
+	"\x1bGetImportedStrategyResponse\x12\x1f\n" +
+	"\vstrategy_id\x18\x01 \x01(\tR\n" +
+	"strategyId\x12#\n" +
+	"\rstrategy_name\x18\x02 \x01(\tR\fstrategyName\x12\x1f\n" +
+	"\vsource_lang\x18\x03 \x01(\tR\n" +
+	"sourceLang\x12\x1f\n" +
+	"\vsource_code\x18\x04 \x01(\tR\n" +
+	"sourceCode\x12%\n" +
+	"\x0ecoverage_score\x18\x05 \x01(\x01R\rcoverageScore\x12\x16\n" +
+	"\x06params\x18\x06 \x01(\fR\x06params\"\x81\x01\n" +
 	"\x16ExecuteStrategyRequest\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x1d\n" +
 	"\n" +
@@ -4221,7 +4200,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x10REQUEST_TYPE_BAR\x10\x01\x12\x15\n" +
 	"\x11REQUEST_TYPE_TICK\x10\x02\x12\x16\n" +
 	"\x12REQUEST_TYPE_TRADE\x10\x03\x12\x16\n" +
-	"\x12REQUEST_TYPE_TIMER\x10\x042\x8f\x10\n" +
+	"\x12REQUEST_TYPE_TIMER\x10\x042\xa1\x10\n" +
 	"\x16StrategyRuntimeService\x12J\n" +
 	"\aExecute\x12\x1e.ant.v1.ExecuteStrategyRequest\x1a\x1f.ant.v1.ExecuteStrategyResponse\x12M\n" +
 	"\bValidate\x12\x1f.ant.v1.ValidateStrategyRequest\x1a .ant.v1.ValidateStrategyResponse\x12M\n" +
@@ -4234,11 +4213,11 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x11DeleteBacktestRun\x12 .ant.v1.DeleteBacktestRunRequest\x1a!.ant.v1.DeleteBacktestRunResponse\x12[\n" +
 	"\x12DeleteBacktestRuns\x12!.ant.v1.DeleteBacktestRunsRequest\x1a\".ant.v1.DeleteBacktestRunsResponse\x12L\n" +
 	"\fGetTemplates\x12\x16.google.protobuf.Empty\x1a$.ant.v1.GetStrategyTemplatesResponse\x12F\n" +
-	"\vExecuteLive\x12\x1a.ant.v1.ExecuteLiveRequest\x1a\x1b.ant.v1.ExecuteLiveResponse\x12L\n" +
-	"\rTranspileCode\x12\x1c.ant.v1.TranspileCodeRequest\x1a\x1d.ant.v1.TranspileCodeResponse\x12X\n" +
+	"\vExecuteLive\x12\x1a.ant.v1.ExecuteLiveRequest\x1a\x1b.ant.v1.ExecuteLiveResponse\x12X\n" +
 	"\x11AnalyzeImportCode\x12 .ant.v1.AnalyzeImportCodeRequest\x1a!.ant.v1.AnalyzeImportCodeResponse\x12[\n" +
 	"\x12GenerateImportCode\x12!.ant.v1.GenerateImportCodeRequest\x1a\".ant.v1.GenerateImportCodeResponse\x12O\n" +
-	"\x0eImportStrategy\x12\x1d.ant.v1.ImportStrategyRequest\x1a\x1e.ant.v1.ImportStrategyResponse\x12U\n" +
+	"\x0eImportStrategy\x12\x1d.ant.v1.ImportStrategyRequest\x1a\x1e.ant.v1.ImportStrategyResponse\x12^\n" +
+	"\x13GetImportedStrategy\x12\".ant.v1.GetImportedStrategyRequest\x1a#.ant.v1.GetImportedStrategyResponse\x12U\n" +
 	"\x10ListStrategyRuns\x12\x1f.ant.v1.ListStrategyRunsRequest\x1a .ant.v1.ListStrategyRunsResponse\x12O\n" +
 	"\x0eGetStrategyRun\x12\x1d.ant.v1.GetStrategyRunRequest\x1a\x1e.ant.v1.GetStrategyRunResponse\x12a\n" +
 	"\x14ListActiveStrategies\x12#.ant.v1.ListActiveStrategiesRequest\x1a$.ant.v1.ListActiveStrategiesResponse\x12X\n" +
@@ -4264,8 +4243,8 @@ var file_strategy_runtime_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_strategy_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 51)
 var file_strategy_runtime_proto_goTypes = []any{
 	(RequestType)(0),                     // 0: ant.v1.RequestType
-	(*TranspileCodeRequest)(nil),         // 1: ant.v1.TranspileCodeRequest
-	(*TranspileCodeResponse)(nil),        // 2: ant.v1.TranspileCodeResponse
+	(*GetImportedStrategyRequest)(nil),   // 1: ant.v1.GetImportedStrategyRequest
+	(*GetImportedStrategyResponse)(nil),  // 2: ant.v1.GetImportedStrategyResponse
 	(*ExecuteStrategyRequest)(nil),       // 3: ant.v1.ExecuteStrategyRequest
 	(*ExecuteStrategyResponse)(nil),      // 4: ant.v1.ExecuteStrategyResponse
 	(*ValidateStrategyRequest)(nil),      // 5: ant.v1.ValidateStrategyRequest
@@ -4385,10 +4364,10 @@ var file_strategy_runtime_proto_depIdxs = []int32{
 	61, // 47: ant.v1.StrategyRuntimeService.DeleteBacktestRuns:input_type -> ant.v1.DeleteBacktestRunsRequest
 	62, // 48: ant.v1.StrategyRuntimeService.GetTemplates:input_type -> google.protobuf.Empty
 	14, // 49: ant.v1.StrategyRuntimeService.ExecuteLive:input_type -> ant.v1.ExecuteLiveRequest
-	1,  // 50: ant.v1.StrategyRuntimeService.TranspileCode:input_type -> ant.v1.TranspileCodeRequest
-	24, // 51: ant.v1.StrategyRuntimeService.AnalyzeImportCode:input_type -> ant.v1.AnalyzeImportCodeRequest
-	26, // 52: ant.v1.StrategyRuntimeService.GenerateImportCode:input_type -> ant.v1.GenerateImportCodeRequest
-	31, // 53: ant.v1.StrategyRuntimeService.ImportStrategy:input_type -> ant.v1.ImportStrategyRequest
+	24, // 50: ant.v1.StrategyRuntimeService.AnalyzeImportCode:input_type -> ant.v1.AnalyzeImportCodeRequest
+	26, // 51: ant.v1.StrategyRuntimeService.GenerateImportCode:input_type -> ant.v1.GenerateImportCodeRequest
+	31, // 52: ant.v1.StrategyRuntimeService.ImportStrategy:input_type -> ant.v1.ImportStrategyRequest
+	1,  // 53: ant.v1.StrategyRuntimeService.GetImportedStrategy:input_type -> ant.v1.GetImportedStrategyRequest
 	33, // 54: ant.v1.StrategyRuntimeService.ListStrategyRuns:input_type -> ant.v1.ListStrategyRunsRequest
 	35, // 55: ant.v1.StrategyRuntimeService.GetStrategyRun:input_type -> ant.v1.GetStrategyRunRequest
 	38, // 56: ant.v1.StrategyRuntimeService.ListActiveStrategies:input_type -> ant.v1.ListActiveStrategiesRequest
@@ -4409,10 +4388,10 @@ var file_strategy_runtime_proto_depIdxs = []int32{
 	69, // 71: ant.v1.StrategyRuntimeService.DeleteBacktestRuns:output_type -> ant.v1.DeleteBacktestRunsResponse
 	12, // 72: ant.v1.StrategyRuntimeService.GetTemplates:output_type -> ant.v1.GetStrategyTemplatesResponse
 	15, // 73: ant.v1.StrategyRuntimeService.ExecuteLive:output_type -> ant.v1.ExecuteLiveResponse
-	2,  // 74: ant.v1.StrategyRuntimeService.TranspileCode:output_type -> ant.v1.TranspileCodeResponse
-	25, // 75: ant.v1.StrategyRuntimeService.AnalyzeImportCode:output_type -> ant.v1.AnalyzeImportCodeResponse
-	27, // 76: ant.v1.StrategyRuntimeService.GenerateImportCode:output_type -> ant.v1.GenerateImportCodeResponse
-	32, // 77: ant.v1.StrategyRuntimeService.ImportStrategy:output_type -> ant.v1.ImportStrategyResponse
+	25, // 74: ant.v1.StrategyRuntimeService.AnalyzeImportCode:output_type -> ant.v1.AnalyzeImportCodeResponse
+	27, // 75: ant.v1.StrategyRuntimeService.GenerateImportCode:output_type -> ant.v1.GenerateImportCodeResponse
+	32, // 76: ant.v1.StrategyRuntimeService.ImportStrategy:output_type -> ant.v1.ImportStrategyResponse
+	2,  // 77: ant.v1.StrategyRuntimeService.GetImportedStrategy:output_type -> ant.v1.GetImportedStrategyResponse
 	34, // 78: ant.v1.StrategyRuntimeService.ListStrategyRuns:output_type -> ant.v1.ListStrategyRunsResponse
 	36, // 79: ant.v1.StrategyRuntimeService.GetStrategyRun:output_type -> ant.v1.GetStrategyRunResponse
 	39, // 80: ant.v1.StrategyRuntimeService.ListActiveStrategies:output_type -> ant.v1.ListActiveStrategiesResponse

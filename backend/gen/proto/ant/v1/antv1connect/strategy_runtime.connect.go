@@ -70,9 +70,6 @@ const (
 	// StrategyRuntimeServiceExecuteLiveProcedure is the fully-qualified name of the
 	// StrategyRuntimeService's ExecuteLive RPC.
 	StrategyRuntimeServiceExecuteLiveProcedure = "/ant.v1.StrategyRuntimeService/ExecuteLive"
-	// StrategyRuntimeServiceTranspileCodeProcedure is the fully-qualified name of the
-	// StrategyRuntimeService's TranspileCode RPC.
-	StrategyRuntimeServiceTranspileCodeProcedure = "/ant.v1.StrategyRuntimeService/TranspileCode"
 	// StrategyRuntimeServiceAnalyzeImportCodeProcedure is the fully-qualified name of the
 	// StrategyRuntimeService's AnalyzeImportCode RPC.
 	StrategyRuntimeServiceAnalyzeImportCodeProcedure = "/ant.v1.StrategyRuntimeService/AnalyzeImportCode"
@@ -82,6 +79,9 @@ const (
 	// StrategyRuntimeServiceImportStrategyProcedure is the fully-qualified name of the
 	// StrategyRuntimeService's ImportStrategy RPC.
 	StrategyRuntimeServiceImportStrategyProcedure = "/ant.v1.StrategyRuntimeService/ImportStrategy"
+	// StrategyRuntimeServiceGetImportedStrategyProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's GetImportedStrategy RPC.
+	StrategyRuntimeServiceGetImportedStrategyProcedure = "/ant.v1.StrategyRuntimeService/GetImportedStrategy"
 	// StrategyRuntimeServiceListStrategyRunsProcedure is the fully-qualified name of the
 	// StrategyRuntimeService's ListStrategyRuns RPC.
 	StrategyRuntimeServiceListStrategyRunsProcedure = "/ant.v1.StrategyRuntimeService/ListStrategyRuns"
@@ -124,15 +124,14 @@ type StrategyRuntimeServiceClient interface {
 	// ExecuteLive: proto-native live/paper strategy execution.
 	// Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
 	ExecuteLive(context.Context, *connect.Request[v1.ExecuteLiveRequest]) (*connect.Response[v1.ExecuteLiveResponse], error)
-	// TranspileCode translates MQL4/MQL5 code to Go using the mql2go transpiler.
-	// Returns confidence score and gap report; AI fallback handled by Go layer.
-	TranspileCode(context.Context, *connect.Request[v1.TranspileCodeRequest]) (*connect.Response[v1.TranspileCodeResponse], error)
 	// AnalyzeCode analyzes MQL source and returns strategy intent summary + param panel + blind spots.
 	AnalyzeImportCode(context.Context, *connect.Request[v1.AnalyzeImportCodeRequest]) (*connect.Response[v1.AnalyzeImportCodeResponse], error)
 	// GenerateImportCode generates Go SDK code from analyzed MQL source.
 	GenerateImportCode(context.Context, *connect.Request[v1.GenerateImportCodeRequest]) (*connect.Response[v1.GenerateImportCodeResponse], error)
 	// ImportStrategy runs the full import pipeline: analyze → generate → return code.
 	ImportStrategy(context.Context, *connect.Request[v1.ImportStrategyRequest]) (*connect.Response[v1.ImportStrategyResponse], error)
+	// GetImportedStrategy retrieves a previously imported strategy by ID.
+	GetImportedStrategy(context.Context, *connect.Request[v1.GetImportedStrategyRequest]) (*connect.Response[v1.GetImportedStrategyResponse], error)
 	// ListStrategyRuns returns recent live/paper strategy run records.
 	ListStrategyRuns(context.Context, *connect.Request[v1.ListStrategyRunsRequest]) (*connect.Response[v1.ListStrategyRunsResponse], error)
 	// GetStrategyRun returns a single strategy run by ID.
@@ -235,12 +234,6 @@ func NewStrategyRuntimeServiceClient(httpClient connect.HTTPClient, baseURL stri
 			connect.WithSchema(strategyRuntimeServiceMethods.ByName("ExecuteLive")),
 			connect.WithClientOptions(opts...),
 		),
-		transpileCode: connect.NewClient[v1.TranspileCodeRequest, v1.TranspileCodeResponse](
-			httpClient,
-			baseURL+StrategyRuntimeServiceTranspileCodeProcedure,
-			connect.WithSchema(strategyRuntimeServiceMethods.ByName("TranspileCode")),
-			connect.WithClientOptions(opts...),
-		),
 		analyzeImportCode: connect.NewClient[v1.AnalyzeImportCodeRequest, v1.AnalyzeImportCodeResponse](
 			httpClient,
 			baseURL+StrategyRuntimeServiceAnalyzeImportCodeProcedure,
@@ -257,6 +250,12 @@ func NewStrategyRuntimeServiceClient(httpClient connect.HTTPClient, baseURL stri
 			httpClient,
 			baseURL+StrategyRuntimeServiceImportStrategyProcedure,
 			connect.WithSchema(strategyRuntimeServiceMethods.ByName("ImportStrategy")),
+			connect.WithClientOptions(opts...),
+		),
+		getImportedStrategy: connect.NewClient[v1.GetImportedStrategyRequest, v1.GetImportedStrategyResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceGetImportedStrategyProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("GetImportedStrategy")),
 			connect.WithClientOptions(opts...),
 		),
 		listStrategyRuns: connect.NewClient[v1.ListStrategyRunsRequest, v1.ListStrategyRunsResponse](
@@ -324,10 +323,10 @@ type strategyRuntimeServiceClient struct {
 	deleteBacktestRuns    *connect.Client[v1.DeleteBacktestRunsRequest, v1.DeleteBacktestRunsResponse]
 	getTemplates          *connect.Client[emptypb.Empty, v1.GetStrategyTemplatesResponse]
 	executeLive           *connect.Client[v1.ExecuteLiveRequest, v1.ExecuteLiveResponse]
-	transpileCode         *connect.Client[v1.TranspileCodeRequest, v1.TranspileCodeResponse]
 	analyzeImportCode     *connect.Client[v1.AnalyzeImportCodeRequest, v1.AnalyzeImportCodeResponse]
 	generateImportCode    *connect.Client[v1.GenerateImportCodeRequest, v1.GenerateImportCodeResponse]
 	importStrategy        *connect.Client[v1.ImportStrategyRequest, v1.ImportStrategyResponse]
+	getImportedStrategy   *connect.Client[v1.GetImportedStrategyRequest, v1.GetImportedStrategyResponse]
 	listStrategyRuns      *connect.Client[v1.ListStrategyRunsRequest, v1.ListStrategyRunsResponse]
 	getStrategyRun        *connect.Client[v1.GetStrategyRunRequest, v1.GetStrategyRunResponse]
 	listActiveStrategies  *connect.Client[v1.ListActiveStrategiesRequest, v1.ListActiveStrategiesResponse]
@@ -398,11 +397,6 @@ func (c *strategyRuntimeServiceClient) ExecuteLive(ctx context.Context, req *con
 	return c.executeLive.CallUnary(ctx, req)
 }
 
-// TranspileCode calls ant.v1.StrategyRuntimeService.TranspileCode.
-func (c *strategyRuntimeServiceClient) TranspileCode(ctx context.Context, req *connect.Request[v1.TranspileCodeRequest]) (*connect.Response[v1.TranspileCodeResponse], error) {
-	return c.transpileCode.CallUnary(ctx, req)
-}
-
 // AnalyzeImportCode calls ant.v1.StrategyRuntimeService.AnalyzeImportCode.
 func (c *strategyRuntimeServiceClient) AnalyzeImportCode(ctx context.Context, req *connect.Request[v1.AnalyzeImportCodeRequest]) (*connect.Response[v1.AnalyzeImportCodeResponse], error) {
 	return c.analyzeImportCode.CallUnary(ctx, req)
@@ -416,6 +410,11 @@ func (c *strategyRuntimeServiceClient) GenerateImportCode(ctx context.Context, r
 // ImportStrategy calls ant.v1.StrategyRuntimeService.ImportStrategy.
 func (c *strategyRuntimeServiceClient) ImportStrategy(ctx context.Context, req *connect.Request[v1.ImportStrategyRequest]) (*connect.Response[v1.ImportStrategyResponse], error) {
 	return c.importStrategy.CallUnary(ctx, req)
+}
+
+// GetImportedStrategy calls ant.v1.StrategyRuntimeService.GetImportedStrategy.
+func (c *strategyRuntimeServiceClient) GetImportedStrategy(ctx context.Context, req *connect.Request[v1.GetImportedStrategyRequest]) (*connect.Response[v1.GetImportedStrategyResponse], error) {
+	return c.getImportedStrategy.CallUnary(ctx, req)
 }
 
 // ListStrategyRuns calls ant.v1.StrategyRuntimeService.ListStrategyRuns.
@@ -474,15 +473,14 @@ type StrategyRuntimeServiceHandler interface {
 	// ExecuteLive: proto-native live/paper strategy execution.
 	// Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
 	ExecuteLive(context.Context, *connect.Request[v1.ExecuteLiveRequest]) (*connect.Response[v1.ExecuteLiveResponse], error)
-	// TranspileCode translates MQL4/MQL5 code to Go using the mql2go transpiler.
-	// Returns confidence score and gap report; AI fallback handled by Go layer.
-	TranspileCode(context.Context, *connect.Request[v1.TranspileCodeRequest]) (*connect.Response[v1.TranspileCodeResponse], error)
 	// AnalyzeCode analyzes MQL source and returns strategy intent summary + param panel + blind spots.
 	AnalyzeImportCode(context.Context, *connect.Request[v1.AnalyzeImportCodeRequest]) (*connect.Response[v1.AnalyzeImportCodeResponse], error)
 	// GenerateImportCode generates Go SDK code from analyzed MQL source.
 	GenerateImportCode(context.Context, *connect.Request[v1.GenerateImportCodeRequest]) (*connect.Response[v1.GenerateImportCodeResponse], error)
 	// ImportStrategy runs the full import pipeline: analyze → generate → return code.
 	ImportStrategy(context.Context, *connect.Request[v1.ImportStrategyRequest]) (*connect.Response[v1.ImportStrategyResponse], error)
+	// GetImportedStrategy retrieves a previously imported strategy by ID.
+	GetImportedStrategy(context.Context, *connect.Request[v1.GetImportedStrategyRequest]) (*connect.Response[v1.GetImportedStrategyResponse], error)
 	// ListStrategyRuns returns recent live/paper strategy run records.
 	ListStrategyRuns(context.Context, *connect.Request[v1.ListStrategyRunsRequest]) (*connect.Response[v1.ListStrategyRunsResponse], error)
 	// GetStrategyRun returns a single strategy run by ID.
@@ -581,12 +579,6 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 		connect.WithSchema(strategyRuntimeServiceMethods.ByName("ExecuteLive")),
 		connect.WithHandlerOptions(opts...),
 	)
-	strategyRuntimeServiceTranspileCodeHandler := connect.NewUnaryHandler(
-		StrategyRuntimeServiceTranspileCodeProcedure,
-		svc.TranspileCode,
-		connect.WithSchema(strategyRuntimeServiceMethods.ByName("TranspileCode")),
-		connect.WithHandlerOptions(opts...),
-	)
 	strategyRuntimeServiceAnalyzeImportCodeHandler := connect.NewUnaryHandler(
 		StrategyRuntimeServiceAnalyzeImportCodeProcedure,
 		svc.AnalyzeImportCode,
@@ -603,6 +595,12 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 		StrategyRuntimeServiceImportStrategyProcedure,
 		svc.ImportStrategy,
 		connect.WithSchema(strategyRuntimeServiceMethods.ByName("ImportStrategy")),
+		connect.WithHandlerOptions(opts...),
+	)
+	strategyRuntimeServiceGetImportedStrategyHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceGetImportedStrategyProcedure,
+		svc.GetImportedStrategy,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("GetImportedStrategy")),
 		connect.WithHandlerOptions(opts...),
 	)
 	strategyRuntimeServiceListStrategyRunsHandler := connect.NewUnaryHandler(
@@ -679,14 +677,14 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 			strategyRuntimeServiceGetTemplatesHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceExecuteLiveProcedure:
 			strategyRuntimeServiceExecuteLiveHandler.ServeHTTP(w, r)
-		case StrategyRuntimeServiceTranspileCodeProcedure:
-			strategyRuntimeServiceTranspileCodeHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceAnalyzeImportCodeProcedure:
 			strategyRuntimeServiceAnalyzeImportCodeHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceGenerateImportCodeProcedure:
 			strategyRuntimeServiceGenerateImportCodeHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceImportStrategyProcedure:
 			strategyRuntimeServiceImportStrategyHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceGetImportedStrategyProcedure:
+			strategyRuntimeServiceGetImportedStrategyHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceListStrategyRunsProcedure:
 			strategyRuntimeServiceListStrategyRunsHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceGetStrategyRunProcedure:
@@ -760,10 +758,6 @@ func (UnimplementedStrategyRuntimeServiceHandler) ExecuteLive(context.Context, *
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.ExecuteLive is not implemented"))
 }
 
-func (UnimplementedStrategyRuntimeServiceHandler) TranspileCode(context.Context, *connect.Request[v1.TranspileCodeRequest]) (*connect.Response[v1.TranspileCodeResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.TranspileCode is not implemented"))
-}
-
 func (UnimplementedStrategyRuntimeServiceHandler) AnalyzeImportCode(context.Context, *connect.Request[v1.AnalyzeImportCodeRequest]) (*connect.Response[v1.AnalyzeImportCodeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.AnalyzeImportCode is not implemented"))
 }
@@ -774,6 +768,10 @@ func (UnimplementedStrategyRuntimeServiceHandler) GenerateImportCode(context.Con
 
 func (UnimplementedStrategyRuntimeServiceHandler) ImportStrategy(context.Context, *connect.Request[v1.ImportStrategyRequest]) (*connect.Response[v1.ImportStrategyResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.ImportStrategy is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) GetImportedStrategy(context.Context, *connect.Request[v1.GetImportedStrategyRequest]) (*connect.Response[v1.GetImportedStrategyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.GetImportedStrategy is not implemented"))
 }
 
 func (UnimplementedStrategyRuntimeServiceHandler) ListStrategyRuns(context.Context, *connect.Request[v1.ListStrategyRunsRequest]) (*connect.Response[v1.ListStrategyRunsResponse], error) {
