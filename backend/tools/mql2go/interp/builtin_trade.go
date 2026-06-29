@@ -142,6 +142,11 @@ func (it *Interpreter) callTrade(name string, args []Expr) (Value, bool) {
 		return StringVal("SimBroker"), true
 	}
 
+	// Try MQL4/MQL5 stub dispatch (account info, check, market, timeseries, history)
+	if v, ok := it.callTradeStubs(name, args); ok {
+		return v, true
+	}
+
 	return NoneVal(), false
 }
 
@@ -263,10 +268,17 @@ func (it *Interpreter) execOrderCloseBy(args []Expr) Value {
 	return BoolVal(err == nil)
 }
 
-// execOrderSelect implements OrderSelect(index, select, pool)
+// execOrderSelect implements OrderSelect — handles both MQL4 and MQL5 forms.
+// MQL4: OrderSelect(index, select, pool) — select by position or ticket
+// MQL5: OrderSelect(ticket) — select pending order by ticket
 func (it *Interpreter) execOrderSelect(args []Expr) Value {
-	if len(args) < 2 {
+	if len(args) < 1 {
 		return BoolVal(false)
+	}
+	// MQL5 single-arg form: OrderSelect(ticket)
+	if len(args) == 1 {
+		ticket := int64(it.evalExpr(&args[0]).ToInt())
+		return BoolVal(it.orderPool.SelectByTicket(ticket))
 	}
 	index := int(it.evalExpr(&args[0]).ToInt())
 	selectMode := it.evalExpr(&args[1]).ToInt()
