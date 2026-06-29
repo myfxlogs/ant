@@ -63,6 +63,8 @@ func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *co
 		TotalBlocks:      int32(rep.TotalCalls),
 		RecognizedBlocks: int32(rep.SupportedCalls),
 		ExecutionKind:    rep.ExecKind,
+		EntryRulesCount:  int32(rep.EntryRules),
+		ExitRulesCount:   int32(rep.ExitRules),
 		Params:           paramFields,
 		Groups:           paramGroups,
 		BlindSpots:       blindSpots,

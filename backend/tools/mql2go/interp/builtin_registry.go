@@ -86,7 +86,8 @@ var implementedPlatform = []string{
 	"StringToDouble", "StringToInteger", "NormalizeDouble",
 	"TimeToString", "TimeCurrent", "TimeLocal", "TimeToStr", "StrToTime",
 	"EventKillTimer", "EventSetMillisecondTimer", "EventSetTimer",
-	"ExpertRemove", "GetLastError", "IsTesting", "IsOptimization",
+	"ExpertRemove", "GetLastError", "ResetLastError", "IsTesting", "IsOptimization",
 	"IsVisualMode", "RefreshRates",
 	"Day", "DayOfWeek", "Hour", "Minute", "Year", "Month",
+	"StrToInteger",
 }

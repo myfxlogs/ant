@@ -14,6 +14,8 @@ type IRReport struct {
 	Params         []ParamDecl
 	Indicators     []string
 	ExecKind       string // "on_bar" | "on_tick" | "on_timer"
+	EntryRules     int // count of entry-order calls (OrderSend, CTrade.Buy/Sell/BuyLimit/etc)
+	ExitRules      int // count of exit-order calls (OrderClose, CTrade.PositionClose, OrderDelete)
 }
 
 // IRBlindSpot represents an unimplemented or stub builtin call found in the IR.
@@ -58,6 +60,7 @@ func Analyze(ir *IR) *IRReport {
 	rep.BlindSpots = finalizeBlindSpots(blindMap)
 	rep.Indicators = sortedKeys(indSet)
 	rep.ExecKind = determineExecKind(ir)
+	rep.EntryRules, rep.ExitRules = countEntryExitRules(ir)
 	if rep.TotalCalls > 0 {
 		rep.Coverage = float64(rep.SupportedCalls) / float64(rep.TotalCalls)
 	}
@@ -234,6 +237,8 @@ var permanentBlindSpots = map[string]string{
 	"ObjectDescription": "Object/Chart: MT client UI, no server meaning",
 	"ObjectMove":        "Object/Chart: MT client UI, no server meaning",
 	"ObjectText":        "Object/Chart: MT client UI, no server meaning",
+	"ObjectSetText":     "Object/Chart: MT client UI, no server meaning",
+	"ObjectsDeleteAll":  "Object/Chart: MT client UI, no server meaning",
 	"ChartCreate":       "Object/Chart: MT client UI, no server meaning",
 	"ChartDelete":       "Object/Chart: MT client UI, no server meaning",
 	"ChartSetInteger":   "Object/Chart: MT client UI, no server meaning",
@@ -250,6 +255,10 @@ var permanentBlindSpots = map[string]string{
 	"DLLImport":         "DLL #import: security risk, not supported",
 	// MQL5 native OrderSend — CTrade wrapper covers this
 	"OrderSendMQL5":     "MQL5 native OrderSend: CTrade wrapper covers this",
+	// Event handlers — not callable functions, handled as IR entry points
+	"OnTimer":           "Event handler: executed as IR.OnTimer, not a callable builtin",
+	"OnTrade":           "Event handler: executed as IR.OnTrade, not a callable builtin",
+	"OnTradeTransaction": "Event handler: executed as IR.OnTradeTransaction, not a callable builtin",
 }
 
 // isPermanentBlindSpot returns true if the function is a known permanent blind spot.
@@ -380,6 +389,52 @@ func inSlice(s string, list []string) bool {
 
 func startsWith(s, prefix string) bool {
 	return len(s) >= len(prefix) && s[:len(prefix)] == prefix
+}
+
+// countEntryExitRules counts entry-order and exit-order calls in the IR.
+// Entry: OrderSend, CTrade.Buy/Sell/BuyLimit/SellLimit/BuyStop/SellStop
+// Exit:  OrderClose, OrderCloseBy, OrderDelete, CTrade.PositionClose/PositionClosePartial/PositionCloseBy
+func countEntryExitRules(ir *IR) (entry, exit int) {
+	entryNames := map[string]bool{
+		"OrderSend": true,
+	}
+	exitNames := map[string]bool{
+		"OrderClose": true, "OrderCloseBy": true, "OrderDelete": true,
+	}
+	ctradeEntry := map[string]bool{
+		"Buy": true, "Sell": true, "BuyLimit": true, "SellLimit": true,
+		"BuyStop": true, "SellStop": true,
+	}
+	ctradeExit := map[string]bool{
+		"PositionClose": true, "PositionClosePartial": true, "PositionCloseBy": true,
+		"OrderDelete": true,
+	}
+	globalTypes := buildGlobalTypes(ir)
+	visit := func(e *Expr) {
+		switch e.Kind {
+		case ExprCall:
+			if entryNames[e.Name] {
+				entry++
+			}
+			if exitNames[e.Name] {
+				exit++
+			}
+		case ExprField:
+			if !e.IsAssign && len(e.Args) > 1 {
+				clsType := resolveClassType(&e.Args[0], globalTypes)
+				if clsType == "CTrade" {
+					if ctradeEntry[e.Name] {
+						entry++
+					}
+					if ctradeExit[e.Name] {
+						exit++
+					}
+				}
+			}
+		}
+	}
+	walkIR(ir, visit)
+	return
 }
 
 // EvalExprLiteral evaluates a simple literal/var Expr to its string form.

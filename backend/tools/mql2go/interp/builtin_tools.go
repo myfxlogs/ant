@@ -51,6 +51,7 @@ func init() {
 	builtinTable["EventSetTimer"]             = noopReturn0
 	builtinTable["ExpertRemove"]              = noopReturn0
 	builtinTable["GetLastError"]              = noopReturn0
+	builtinTable["ResetLastError"]            = noopReturn0
 	builtinTable["IsTesting"]                 = isTesting
 	builtinTable["IsOptimization"]            = noopReturn0
 	builtinTable["IsVisualMode"]              = noopReturn0
@@ -64,6 +65,7 @@ func init() {
 	builtinTable["TimeLocal"]                 = timeCurrent
 	builtinTable["StrToTime"]                 = strToTime
 	builtinTable["TimeToStr"]                 = timeToStr
+	builtinTable["StrToInteger"]              = stringToInteger
 }
 
 // ── Array functions ─────────────────────────────────────────────────
