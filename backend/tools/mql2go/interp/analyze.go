@@ -210,6 +210,11 @@ func classifySeverity(version string, c callInfo) string {
 	if startsWith(name, "Order") || startsWith(name, "Position") || startsWith(name, "Account") {
 		return SeverityFatal
 	}
+	// Doesn't match any known MQL builtin pattern → likely user code
+	// (e.g. functions defined in #include .mqh files, free functions)
+	if !looksLikeMQLBuiltin(name) {
+		return SeverityInfo
+	}
 	return SeverityWarning
 }
 
@@ -570,6 +575,59 @@ func isTradeName(name string) bool {
 
 func isIndicatorName(name string) bool {
 	return inSlice(name, implementedIndicators)
+}
+
+// looksLikeMQLBuiltin checks if a function name matches known MQL builtin
+// naming patterns. MQL builtins use PascalCase with recognizable prefixes.
+// If a name doesn't match any pattern, it's likely user-defined code
+// (e.g. from #include .mqh files).
+func looksLikeMQLBuiltin(name string) bool {
+	prefixes := []string{
+		"Order", "Position", "Account", "History", "Deal",
+		"Symbol", "Market", "Chart", "Object", "Terminal",
+		"Event", "Expert", "MQL", "File", "Resource",
+		"Array", "String", "Math", "Double", "Integer",
+		"Normalize", "Period", "Series", "Bars", "Copy",
+		"Time", "Date", "Struct", "Enum", "Char", "Short",
+		"Color", "Bool",
+	}
+	for _, p := range prefixes {
+		if startsWith(name, p) {
+			return true
+		}
+	}
+	// Single-word builtins
+	switch name {
+	case "Print", "Alert", "Comment", "Sleep", "RefreshRates",
+		"IsTesting", "IsOptimization", "IsVisualMode", "IsConnected",
+		"IsDemo", "IsDllsAllowed", "IsExpertEnabled", "IsLibrariesAllowed",
+		"IsTradeAllowed", "IsTradeContextBusy", "IsStopped",
+		"UninitializeReason", "GetLastError", "ResetLastError",
+		"GetTickCount", "GetTickCount64", "GetMicrosecondCount",
+		"SetUserError", "SetReturnError", "PlaySound", "MessageBox",
+		"SendMail", "SendNotification", "CurTime", "Day", "DayOfWeek",
+		"Hour", "Minute", "Year", "Month", "Seconds", "DayOfYear",
+		"TimeCurrent", "TimeGMT", "TimeLocal", "Point", "Bid", "Ask",
+		"Digits", "Period", "Bars", "Volume", "Close", "Open", "High", "Low":
+		return true
+	}
+	// iXxx indicator pattern
+	if len(name) > 1 && name[0] == 'i' && name[1] >= 'A' && name[1] <= 'Z' {
+		return true
+	}
+	// Is* checkup pattern
+	if startsWith(name, "Is") && len(name) > 2 && name[2] >= 'A' && name[2] <= 'Z' {
+		return true
+	}
+	// Set*/Get* accessor pattern
+	if (startsWith(name, "Set") || startsWith(name, "Get")) && len(name) > 3 && name[3] >= 'A' && name[3] <= 'Z' {
+		return true
+	}
+	// MQL4 lowercase aliases (ceil, floor, cos, sin, etc.)
+	if name[0] >= 'a' && name[0] <= 'z' && len(name) <= 8 {
+		return true
+	}
+	return false
 }
 
 // ── IR traversal ────────────────────────────────────────────────────
