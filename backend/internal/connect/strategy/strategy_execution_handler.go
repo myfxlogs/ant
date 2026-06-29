@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
@@ -58,6 +57,9 @@ type StrategyExecutionServer struct {
 	// Strategy run + signal persistence.
 	runRepo *repository.StrategyRunRepository
 
+	// Imported strategy persistence (raw MQL source of truth).
+	importedRepo *repository.ImportedStrategyRepository
+
 	// Active session registry for monitoring + control.
 	sessionRegistry *SessionRegistry
 
@@ -95,6 +97,7 @@ func (s *StrategyExecutionServer) SetPaperEngine(pe PaperOrderExecutor)      { s
 func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)              { s.goExecutor = ge }
 func (s *StrategyExecutionServer) SetWasmExecutor(we *WasmExecutor)          { s.wasmExecutor = we }
 func (s *StrategyExecutionServer) SetRunRepo(r *repository.StrategyRunRepository) { s.runRepo = r }
+func (s *StrategyExecutionServer) SetImportedRepo(r *repository.ImportedStrategyRepository) { s.importedRepo = r }
 func (s *StrategyExecutionServer) SetSessionRegistry(r *SessionRegistry)           { s.sessionRegistry = r }
 func (s *StrategyExecutionServer) SetAccountLookup(f func(ctx context.Context, userID string) string) { s.accountLookup = f }
 
@@ -260,216 +263,6 @@ func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.
 	return connect.NewResponse(&antv1.ExecuteLiveResponse{Success: false, Error: "live execution not available"}), nil
 }
 
-func (s *StrategyExecutionServer) TranspileCode(ctx context.Context, req *connect.Request[antv1.TranspileCodeRequest]) (*connect.Response[antv1.TranspileCodeResponse], error) {
-	source := req.Msg.GetSourceCode()
-	if source == "" {
-		return connect.NewResponse(&antv1.TranspileCodeResponse{
-			Confidence: 0,
-		}), nil
-	}
-
-	intent, err := mql2go.Analyze(source)
-	if err != nil {
-		return connect.NewResponse(&antv1.TranspileCodeResponse{
-			Confidence: 0,
-		}), nil
-	}
-
-	if name := req.Msg.GetClassName(); name != "" {
-		intent.Meta.Name = name
-	}
-
-	code := mql2go.Generate(intent)
-	totalPatterns := int32(len(intent.Entry) + len(intent.Exit) + len(intent.Indicators))
-
-	return connect.NewResponse(&antv1.TranspileCodeResponse{
-		TargetCode:      code,
-		Confidence:      1.0,
-		TotalPatterns:   totalPatterns,
-		IsDeterministic: true,
-	}), nil
-}
-
-func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *connect.Request[antv1.AnalyzeImportCodeRequest]) (*connect.Response[antv1.AnalyzeImportCodeResponse], error) {
-	source := req.Msg.GetSourceCode()
-	if source == "" {
-		return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{}), nil
-	}
-
-	intent, err := mql2go.Analyze(source)
-	if err != nil {
-		s.log.Warn("AnalyzeImportCode: analyze failed", zap.Error(err))
-		return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{}), nil
-	}
-
-	// Build params proto fields
-	paramFields := buildParamFields(intent.Params)
-	paramGroups := buildParamGroups(intent.Params)
-
-	// Build indicator names
-	var indicatorNames []string
-	for _, ind := range intent.Indicators {
-		indicatorNames = append(indicatorNames, ind.SDKMethod)
-	}
-
-	// Calculate coverage
-	totalBlocks := int32(len(intent.Entry) + len(intent.Exit) + len(intent.Indicators) + len(intent.Params))
-	recognizedBlocks := totalBlocks // all recognized blocks are recognized
-	coverage := 1.0
-	if totalBlocks > 0 && len(intent.BlindSpots) > 0 {
-		coverage = 1.0 - float64(len(intent.BlindSpots))/float64(totalBlocks)
-	}
-
-	return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{
-		StrategyName:     intent.Meta.Name,
-		MqlVersion:       intent.Meta.MQLVersion,
-		CoverageScore:    coverage,
-		TotalBlocks:      totalBlocks,
-		RecognizedBlocks: recognizedBlocks,
-		ExecutionKind:    string(intent.Execution.Kind),
-		EntryRulesCount:  int32(len(intent.Entry)),
-		ExitRulesCount:   int32(len(intent.Exit)),
-		SizingKind:       string(intent.Sizing.Kind),
-		Params:           paramFields,
-		Groups:           paramGroups,
-		BlindSpots:       buildBlindSpotProtos(intent.BlindSpots),
-		IndicatorNames:   indicatorNames,
-	}), nil
-}
-
-func (s *StrategyExecutionServer) GenerateImportCode(ctx context.Context, req *connect.Request[antv1.GenerateImportCodeRequest]) (*connect.Response[antv1.GenerateImportCodeResponse], error) {
-	source := req.Msg.GetSourceCode()
-	if source == "" {
-		return connect.NewResponse(&antv1.GenerateImportCodeResponse{Compiles: false}), nil
-	}
-
-	intent, err := mql2go.Analyze(source)
-	if err != nil {
-		s.log.Warn("GenerateImportCode: analyze failed", zap.Error(err))
-		return connect.NewResponse(&antv1.GenerateImportCodeResponse{Compiles: false}), nil
-	}
-
-	if name := req.Msg.GetSourceName(); name != "" {
-		base := strings.TrimSuffix(strings.TrimSuffix(name, ".mq4"), ".mq5")
-		base = strings.TrimSuffix(base, ".mqh")
-		if base != "" {
-			intent.Meta.Name = toCamelCase(base)
-		}
-	}
-
-	code := mql2go.Generate(intent)
-	lines := int32(strings.Count(code, "\n") + 1)
-
-	// Compile verification: run go vet on generated code
-	compiles := false
-	compileError := ""
-	if s.goExecutor != nil {
-		compiles, compileError = s.goExecutor.CompileCheck(ctx, code)
-		if !compiles {
-			s.log.Warn("GenerateImportCode: generated code failed compilation",
-				zap.String("error", compileError))
-		}
-	} else {
-		// No executor available — assume compiles for CLI-only usage
-		compiles = true
-	}
-
-	resp := &antv1.GenerateImportCodeResponse{
-		GoCode:    code,
-		CodeLines: lines,
-		Compiles:  compiles,
-	}
-	if !compiles && compileError != "" {
-		resp.QualityGateFailures = []string{compileError}
-	}
-	return connect.NewResponse(resp), nil
-}
-
-func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *connect.Request[antv1.ImportStrategyRequest]) (*connect.Response[antv1.ImportStrategyResponse], error) {
-	source := req.Msg.GetSourceCode()
-	if source == "" {
-		return connect.NewResponse(&antv1.ImportStrategyResponse{}), nil
-	}
-
-	intent, err := mql2go.Analyze(source)
-	if err != nil {
-		s.log.Warn("ImportStrategy: analyze failed", zap.Error(err))
-		return connect.NewResponse(&antv1.ImportStrategyResponse{}), nil
-	}
-
-	if name := req.Msg.GetSourceName(); name != "" {
-		base := strings.TrimSuffix(strings.TrimSuffix(name, ".mq4"), ".mq5")
-		base = strings.TrimSuffix(base, ".mqh")
-		if base != "" {
-			intent.Meta.Name = toCamelCase(base)
-		}
-	}
-
-	code := mql2go.Generate(intent)
-
-	totalBlocks := len(intent.Entry) + len(intent.Exit) + len(intent.Indicators) + len(intent.Params)
-	coverage := 1.0
-	if totalBlocks > 0 && len(intent.BlindSpots) > 0 {
-		coverage = 1.0 - float64(len(intent.BlindSpots))/float64(totalBlocks)
-	}
-
-	strategyID := uuid.New().String()
-
-	return connect.NewResponse(&antv1.ImportStrategyResponse{
-		StrategyId:    strategyID,
-		StrategyName:  intent.Meta.Name,
-		GoCode:        code,
-		CoverageScore: coverage,
-		BlindSpots:    buildBlindSpotProtos(intent.BlindSpots),
-	}), nil
-}
-
-// buildParamFields converts mql2go.ParamSpec slice to proto ParamField slice.
-func buildParamFields(params []mql2go.ParamSpec) []*antv1.ParamField {
-	fields := make([]*antv1.ParamField, 0, len(params))
-	for _, p := range params {
-		fields = append(fields, &antv1.ParamField{
-			Name:         p.Name,
-			Label:        p.Label,
-			Type:         string(p.Type),
-			DefaultValue: p.Default,
-			Group:        string(p.Group),
-		})
-	}
-	return fields
-}
-
-// buildParamGroups extracts unique parameter groups as proto ParamGroupInfo slice.
-func buildParamGroups(params []mql2go.ParamSpec) []*antv1.ParamGroupInfo {
-	seen := make(map[string]bool)
-	var groups []*antv1.ParamGroupInfo
-	for _, p := range params {
-		g := string(p.Group)
-		if !seen[g] {
-			seen[g] = true
-			groups = append(groups, &antv1.ParamGroupInfo{Name: g})
-		}
-	}
-	return groups
-}
-
-// buildBlindSpotProtos converts mql2go.BlindSpot slice to proto BlindSpot slice.
-func buildBlindSpotProtos(spots []mql2go.BlindSpot) []*antv1.BlindSpot {
-	result := make([]*antv1.BlindSpot, 0, len(spots))
-	for _, bs := range spots {
-		result = append(result, &antv1.BlindSpot{
-			Id:                 bs.ID,
-			Category:           bs.Category,
-			Severity:           bs.Severity,
-			Description:        bs.Description,
-			Location:           bs.Location,
-			Handling:           bs.Handling,
-			UserActionRequired: bs.UserActionRequired,
-		})
-	}
-	return result
-}
-
 // toCamelCase converts a filename like "my_strategy" to "MyStrategy".
 func toCamelCase(s string) string {
 	parts := strings.Split(s, "_")
@@ -506,74 +299,3 @@ func isMQLStrategy(code string) bool {
 		strings.Contains(code, "OnDeinit")
 }
 
-// ListStrategyRuns returns recent live/paper strategy run records for the authenticated user.
-func (s *StrategyExecutionServer) ListStrategyRuns(ctx context.Context, req *connect.Request[antv1.ListStrategyRunsRequest]) (*connect.Response[antv1.ListStrategyRunsResponse], error) {
-	uid, err := userIDRequire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if s.runRepo == nil {
-		return connect.NewResponse(&antv1.ListStrategyRunsResponse{}), nil
-	}
-
-	limit := int(req.Msg.GetLimit())
-	offset := int(req.Msg.GetOffset())
-
-	var runs []*repository.StrategyRun
-	if req.Msg.GetAccountId() != "" {
-		runs, err = s.runRepo.ListByAccount(ctx, req.Msg.GetAccountId(), limit)
-	} else {
-		runs, err = s.runRepo.ListByUser(ctx, uid, limit, offset)
-	}
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("list strategy runs: %w", err))
-	}
-
-	pbRuns := make([]*antv1.StrategyRun, len(runs))
-	for i, r := range runs {
-		pbRuns[i] = strategyRunToProto(r)
-	}
-	return connect.NewResponse(&antv1.ListStrategyRunsResponse{Runs: pbRuns}), nil
-}
-
-// GetStrategyRun returns a single strategy run by ID.
-func (s *StrategyExecutionServer) GetStrategyRun(ctx context.Context, req *connect.Request[antv1.GetStrategyRunRequest]) (*connect.Response[antv1.GetStrategyRunResponse], error) {
-	if _, err := userIDRequire(ctx); err != nil {
-		return nil, err
-	}
-	if s.runRepo == nil {
-		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("run repository not configured"))
-	}
-
-	runID, err := uuid.Parse(req.Msg.GetRunId())
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid run_id: %w", err))
-	}
-
-	run, err := s.runRepo.GetByID(ctx, runID)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("strategy run not found: %w", err))
-	}
-
-	return connect.NewResponse(&antv1.GetStrategyRunResponse{Run: strategyRunToProto(run)}), nil
-}
-
-// strategyRunToProto converts a repository StrategyRun to a proto StrategyRun.
-func strategyRunToProto(r *repository.StrategyRun) *antv1.StrategyRun {
-	pb := &antv1.StrategyRun{
-		Id:           r.ID.String(),
-		UserId:       r.UserID.String(),
-		AccountId:    r.AccountID,
-		Symbol:       r.Symbol,
-		Timeframe:    r.Timeframe,
-		Mode:         r.Mode,
-		Status:       r.Status,
-		Error:        r.Error,
-		TotalSignals: int32(r.TotalSignals),
-		StartedAt:    timestamppb.New(r.StartedAt),
-	}
-	if r.StoppedAt != nil {
-		pb.StoppedAt = timestamppb.New(*r.StoppedAt)
-	}
-	return pb
-}

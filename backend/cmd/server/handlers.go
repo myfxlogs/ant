@@ -3,9 +3,6 @@ package main
 import (
 	"context"
 	"net/http"
-	"os"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,7 +14,6 @@ import (
 	internalai "anttrader/internal/ai"
 	"anttrader/internal/analysis"
 	"anttrader/internal/config"
-	"anttrader/internal/connect/admin"
 	"anttrader/internal/connect/ai"
 	algo "anttrader/internal/connect/algo"
 	assetanalysis "anttrader/internal/connect/asset_analysis"
@@ -153,29 +149,8 @@ func registerHandlers(
 	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	// Share performance: generate expiring public links for trading results.
-	shareRepo := repository.NewShareRepository(pool)
-	
-	analyticsRepo := repository.NewAnalyticsRepository(pool)
-	shareServer := user.NewShareServer(shareRepo, tradeRecordRepo, analyticsRepo, userRepo, mthubSvc, pool, jwtSecret, log)
-	mux.Handle(antv1c.NewShareServiceHandler(shareServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
-		mux.HandleFunc("/api/shares/create", shareServer.HandleCreateShareTokenREST)
-		mux.HandleFunc("/api/shares/update", shareServer.HandleUpdateShareToken)
-		mux.HandleFunc("/api/share/performance", shareServer.HandleGetSharedPerformanceJSON)
-		mux.HandleFunc("/api/shares/delete", shareServer.HandleDeleteShareToken)
-		mux.HandleFunc("/api/shares/list", shareServer.HandleListShareTokens)
-		mux.HandleFunc("/api/admin/shares/list", func(w http.ResponseWriter, r *http.Request) {
-			uid, err := authInterceptor.UserIDFromHTTP(r)
-			if err != nil {
-				http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-				return
-			}
-			ok, _ := platformSvc.IsAdmin(r.Context(), uid)
-			if !ok {
-				http.Error(w, `{"error":"admin required"}`, http.StatusForbidden)
-				return
-			}
-			shareServer.HandleListAllShareTokens(w, r)
-		})
+	registerShareHandlers(mux, pool, log, tradeRecordRepo, userRepo, mthubSvc, platformSvc,
+		jwtSecret, otelInterceptor, authInterceptor, authInterceptor)
 
 	// AI Gateway: platform-operated AI model relay with token billing.
 	gatewayProviderRepo := repository.NewSystemAIProviderRepository(pool)
@@ -187,62 +162,7 @@ func registerHandlers(
 	// Wire AI Gateway fallback: if user has no own API key, use system providers.
 	aiSvc.SetGatewayProviderRepo(gatewayProviderRepo)
 
-	// Wire wallet pre-check: block AI calls when balance is insufficient.
-	aiMinBalance := 1.0
-	if v := os.Getenv("AI_MIN_BALANCE"); v != "" {
-		if parsed, err := strconv.ParseFloat(v, 64); err == nil && parsed >= 0 {
-			aiMinBalance = parsed
-		}
-	}
-	aiSvc.SetWalletChecker(func(ctx context.Context, userID uuid.UUID) error {
-		w, err := walletSvc.GetOrCreateWallet(ctx, userID)
-		if err != nil {
-			return nil // don't block on wallet lookup errors
-		}
-		bal, _ := strconv.ParseFloat(w.Balance, 64)
-		if bal < aiMinBalance {
-			return systemai.ErrInsufficientBalance
-		}
-		return nil
-	})
-
-	// Wire post-call billing: after a successful AI call, deduct cost before returning the result.
-	// If deduction fails (insufficient balance), the error propagates to the user and they see a
-	// friendly "insufficient balance" message. No free AI.
-	aiSvc.SetPostCallBiller(func(ctx context.Context, userID uuid.UUID, providerID, modelName string, inputTokens, outputTokens int) error {
-		cost := "0"
-		if m, err := gatewayModelRepo.GetByProviderAndModel(ctx, providerID, modelName); err == nil && m != nil {
-			ip, _ := strconv.ParseFloat(m.PricePer1MInput, 64)
-			op, _ := strconv.ParseFloat(m.PricePer1MOutput, 64)
-			inCost := float64(inputTokens) / 1_000_000.0 * ip
-			outCost := float64(outputTokens) / 1_000_000.0 * op
-			cost = strconv.FormatFloat(inCost+outCost, 'f', 8, 64)
-		}
-		if err := gatewayServer.RecordTokenUsage(ctx, userID, "system", providerID, modelName, "chat", inputTokens, outputTokens, cost); err != nil {
-			// Map wallet insufficient balance to the AI-level sentinel so handlers
-			// can detect it with errors.Is(err, systemai.ErrInsufficientBalance).
-			if strings.Contains(err.Error(), "insufficient balance") {
-				return systemai.ErrInsufficientBalance
-			}
-			return err
-		}
-		return nil
-	})
-
-	// Wire token billing: all ChatCompletion calls automatically record usage through this hook.
-	aiSvc.SetTokenRecorder(func(ctx context.Context, r systemai.TokenRecord) {
-		// Compute cost from model pricing (per-1M-token rates).
-		cost := "0"
-		if m, err := gatewayModelRepo.GetByProviderAndModel(ctx, r.ProviderID, r.Model); err == nil && m != nil {
-			ip, _ := strconv.ParseFloat(m.PricePer1MInput, 64)
-			op, _ := strconv.ParseFloat(m.PricePer1MOutput, 64)
-			inCost := float64(r.InputTokens) / 1_000_000.0 * ip
-			outCost := float64(r.OutputTokens) / 1_000_000.0 * op
-			cost = strconv.FormatFloat(inCost+outCost, 'f', 8, 64)
-		}
-		// Usage tracking only (billing is handled by postCallBiller).
-		_ = gatewayServer.RecordTokenUsage(ctx, r.UserID, "user", r.ProviderID, r.Model, r.Feature, r.InputTokens, r.OutputTokens, cost)
-	})
+	wireAIBilling(aiSvc, walletSvc, gatewayServer, gatewayModelRepo, log)
 
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
 	streamServer.SetMarketDataRepo(marketDataRepo)
@@ -318,26 +238,11 @@ func registerHandlers(
 	gateEvalServer.SetNotificationSender(notifSender)
 
 		gate := risk.NewDefaultGate()
-		gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
-		gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
+	gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
+	gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
 
-	adminRepo := repository.NewAdminRepository(pool)
-	passwordResetRepo := repository.NewPasswordResetRepo(pool)
-	adminTradingServer := admin.NewAdminTradingServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-	adminConfigServer := admin.NewAdminConfigServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminConfigServiceHandler(adminConfigServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-	adminLogServer := admin.NewAdminLogServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-	adminAccountServer := admin.NewAdminAccountServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminAccountServiceHandler(adminAccountServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-	deletionSvc := service.NewUserDeletionService(adminRepo, log)
-		adminUserServer := admin.NewAdminUserServer(adminRepo, passwordResetRepo, walletSvc, accountNumberSvc, deletionSvc, log)
-	mux.Handle(antv1c.NewAdminUserServiceHandler(adminUserServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-	adminSystemServer := admin.NewAdminSystemServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-		adminStrategyServer := admin.NewAdminStrategyServer(strategySvc, log)
-		mux.Handle(antv1c.NewAdminStrategyServiceHandler(adminStrategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
+	registerAdminHandlers(mux, pool, log, walletSvc, accountNumberSvc, strategySvc,
+		otelInterceptor, authInterceptor, adminInterceptor)
 
 	// S1.1-S1.3: Wire SignalPipeline, rate limiter, cost estimator, OMS writer.
 
@@ -376,7 +281,7 @@ func registerHandlers(
 		return nil, nil // no config = no restriction
 	}})
 	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
-		connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+		connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	// Schedule execution engine — timer-driven loop that dispatches due schedules
 	// to RunLiveStrategy (bar stream → Go-native executor → signal → OMS).
@@ -393,9 +298,6 @@ func registerHandlers(
 		log)
 	strategyServer.SetEngine(scheduleEngine)
 
-	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-
 	emailNotifier, workerCleanup := registerSREHandlers(
 		userRepo, mux, log, pool, store, nc, rdb, cfg,
 		authInterceptor, otelInterceptor, platformSvc, mthubSvc,
@@ -410,12 +312,13 @@ func registerHandlers(
 	// Daily hard-delete of expired soft-deleted users (30-day retention).
 	// After 30 days, CASCADE/SET NULL FKs from migrations 149/150 take effect,
 	// permanently removing all user-owned data.
+	cleanupRepo := repository.NewAdminRepository(pool)
 	go func() {
 		// Run immediately on startup so recently-expired users are cleaned
 		// without waiting 24h for the first tick.
 		doCleanup := func() {
 			cleanCtx, ccl := context.WithTimeout(ctx, 5*time.Minute)
-			deleted, err := adminRepo.HardDeleteExpiredUsers(cleanCtx, 30)
+			deleted, err := cleanupRepo.HardDeleteExpiredUsers(cleanCtx, 30)
 			if err != nil {
 				log.Warn("hard-delete expired users failed", zap.Error(err))
 			} else if deleted > 0 {
@@ -438,101 +341,4 @@ func registerHandlers(
 	}()
 
 	return reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup
-}
-
-// configureStrategyExecution creates the StrategyExecutionServer with all dependencies
-// wired in — bar source, paper engine, notification sender, gate, and auto-gate
-// callback. Returns the fully configured server ready for handler registration.
-func configureStrategyExecution(
-	pool *pgxpool.Pool,
-	backtestRunRepo *repository.BacktestRunRepository,
-	marketDataRepo repository.MarketDataStore,
-	mthubSvc *mthub.MtHubService,
-	hub *mthub.Hub,
-	paperEngine *papereng.PaperEngine,
-	notifSender *notifpubsub.Sender,
-	aiSvc *systemai.Service,
-	pgListen *pglisten.Listener,
-	jurisGate *risksvc.JurisdictionGate,
-	capStore *risksvc.CapabilityStore,
-	cfg *config.Config,
-	log *zap.Logger,
-) *strategy.StrategyExecutionServer {
-	srv := strategy.NewStrategyExecutionServer(backtestRunRepo, log)
-	srv.SetPgListen(pgListen)
-	srv.SetMarketDataRepo(marketDataRepo)
-	srv.SetBarSource(strategy.NewLiveSource(mthubSvc, marketDataRepo))
-	srv.SetMtHub(mthubSvc)
-	srv.SetGoExecutor(strategy.NewGoExecutor(".", log))
-	srv.SetWasmExecutor(strategy.NewWasmExecutor(".", log))
-	strategyRunRepo := repository.NewStrategyRunRepository(pool)
-	srv.SetRunRepo(strategyRunRepo)
-	srv.SetSessionRegistry(strategy.NewSessionRegistry())
-
-	// Clean up runs orphaned by a previous crash/restart.
-	if n, err := strategyRunRepo.CleanupStaleRuns(context.Background()); err != nil {
-		log.Warn("startup: failed to cleanup stale strategy runs", zap.Error(err))
-	} else if n > 0 {
-		log.Info("startup: cleaned up stale strategy runs", zap.Int64("count", n))
-	}
-	srv.SetAccountLookup(func(ctx context.Context, userID string) string {
-		var mt4ID string
-		err := pool.QueryRow(ctx,
-			`SELECT id::text FROM mt_accounts
-			 WHERE user_id = $1::uuid AND is_disabled = false
-			 ORDER BY created_at LIMIT 1`,
-			userID).Scan(&mt4ID)
-		if err != nil {
-			return ""
-		}
-		return mt4ID
-	})
-	srv.StartBacktestWorker(context.Background())
-	srv.SetPaperEngine(paperEngine)
-	srv.SetNotificationSender(notifSender)
-
-	// D6-A: risk Gate — system rules only. User trading constraints are opt-in.
-	gate := risk.NewGateWithSystemRules()
-	gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
-	gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
-
-	// Wire KYC/Jurisdiction (legal compliance — non-optional when configured).
-	if jurisGate != nil {
-		gate.AddRule(&risk.KycJurisdictionGateRule{
-			Gate:      jurisGate,
-			UserIDFn:  usermgr.GetUserID,
-			ClientIPFn: func(ctx context.Context) string { return "" },
-		})
-	}
-	// Wire capability tier (per-user trading limits from DB).
-	if capStore != nil {
-		gate.AddRule(risk.NewCapabilityTierRule(capStore))
-	}
-	srv.SetGate(gate)       // live_runner startup guard only (gate runs in mthub now)
-	mthubSvc.SetGate(gate)   // D6-A single chokepoint: all orders through mthub
-	// T3.2b: Inject AccountStateProvider for live trading.
-	// Uses the MT4 gateway's FetchOpenedOrders to derive equity/balance/margin.
-	srv.SetAccountProvider(strategy.NewMTAccountStateProvider(hub, log))
-	log.Info("D6-A: risk.Gate + AccountStateProvider injected into StrategyExecutionServer")
-
-	// Auto-gate: runs gate evaluation after every backtest completion.
-	// On failure, spawns async auto-fix (LLM code repair → new backtest).
-	onBacktestComplete := func(ctx context.Context, run *repository.BacktestRun) {
-		dailyReturns := internalai.EquityCurveToDailyReturns(run.ProtoResponse)
-		if len(dailyReturns) < 10 {
-			return
-		}
-		input := internalai.PipelineInput{
-			DailyReturns: dailyReturns,
-			NumAttempts:  1,
-		}
-		result := internalai.Pipeline(input)
-		ai.SendGateNotification(ctx, notifSender, run.UserID, run, result)
-		if result.Passed {
-			return
-		}
-		go autoFixCode(context.Background(), run, result, aiSvc, backtestRunRepo, notifSender, log)
-	}
-	srv.SetOnBacktestComplete(onBacktestComplete)
-	return srv
 }
