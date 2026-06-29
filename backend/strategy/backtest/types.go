@@ -21,6 +21,14 @@ type Config struct {
 	Slippage       decimal.Decimal // pips
 	SwapRate       decimal.Decimal // overnight swap rate (e.g. 0.00001)
 	StrictMode     bool            // if true, skip bars with missing data
+
+	// Symbol properties for SymbolInfo
+	SymbolDigits  int32           // e.g. 5 for EURUSD
+	SymbolPoint   decimal.Decimal // e.g. 0.00001 for 5-digit
+	VolumeMin     decimal.Decimal
+	VolumeMax     decimal.Decimal
+	VolumeStep    decimal.Decimal
+	ContractSize  decimal.Decimal // typically 100000 for forex
 }
 
 // Result holds the complete backtest output.

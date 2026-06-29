@@ -16,8 +16,10 @@ type SimBroker struct {
 	positions   []*OrderRecord
 	pending     []*OrderRecord
 	history     []*OrderRecord
+	deals       []sdk.Deal
 	trades      []Trade
 	ticketSeq   int64
+	dealSeq     int64
 	equity      decimal.Decimal
 	balance     decimal.Decimal
 	currentBar  int
@@ -119,15 +121,109 @@ func (b *SimBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.Ord
 				pos.CloseTime = time.Now()
 				pos.Profit = profit
 				b.history = append(b.history, pos)
+				b.recordDeal(pos, closeVol, profit, pos.CloseTime)
 				b.positions = append(b.positions[:i], b.positions[i+1:]...)
 			} else {
 				// Partial close — reduce volume, keep position open
 				pos.Volume = pos.Volume.Sub(closeVol)
+				b.recordDealPartial(pos, closeVol, profit, time.Now())
 			}
 			return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket, Volume: closeVol, Price: closePrice}, nil
 		}
 	}
 	return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("ticket %d not found", ticket)
+}
+
+func (b *SimBroker) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, error) {
+	var pos1, pos2 *OrderRecord
+	var idx1, idx2 int = -1, -1
+	for i, p := range b.positions {
+		if p.Ticket == ticket1 {
+			pos1 = p
+			idx1 = i
+		}
+		if p.Ticket == ticket2 {
+			pos2 = p
+			idx2 = i
+		}
+	}
+	if pos1 == nil || pos2 == nil {
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("one or both tickets not found")
+	}
+	if pos1.Side == pos2.Side {
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("positions must be opposite sides")
+	}
+	if pos1.Symbol != pos2.Symbol {
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("positions must be same symbol")
+	}
+
+	closePrice := pos1.ClosePrice
+	if closePrice.IsZero() {
+		closePrice = pos1.Price
+	}
+
+	closeVol := pos1.Volume
+	if pos2.Volume.LessThan(closeVol) {
+		closeVol = pos2.Volume
+	}
+
+	profit1 := closePrice.Sub(pos1.Price).Mul(closeVol)
+	if pos1.Side == sdk.SideSell {
+		profit1 = profit1.Neg()
+	}
+	profit2 := closePrice.Sub(pos2.Price).Mul(closeVol)
+	if pos2.Side == sdk.SideSell {
+		profit2 = profit2.Neg()
+	}
+	netProfit := profit1.Add(profit2)
+
+	b.equity = b.equity.Add(netProfit)
+	b.balance = b.balance.Add(netProfit)
+
+	now := time.Now()
+
+	if closeVol.Equal(pos1.Volume) {
+		pos1.State = OrderClosed
+		pos1.CloseTime = now
+		pos1.ClosePrice = closePrice
+		pos1.Profit = profit1
+		b.history = append(b.history, pos1)
+		b.recordDeal(pos1, closeVol, profit1, now)
+	} else {
+		pos1.Volume = pos1.Volume.Sub(closeVol)
+		b.recordDealPartial(pos1, closeVol, profit1, now)
+	}
+
+	if closeVol.Equal(pos2.Volume) {
+		pos2.State = OrderClosed
+		pos2.CloseTime = now
+		pos2.ClosePrice = closePrice
+		pos2.Profit = profit2
+		b.history = append(b.history, pos2)
+		b.recordDeal(pos2, closeVol, profit2, now)
+	} else {
+		pos2.Volume = pos2.Volume.Sub(closeVol)
+		b.recordDealPartial(pos2, closeVol, profit2, now)
+	}
+
+	// Remove closed positions from active list (process higher index first)
+	if idx2 > idx1 {
+		if pos2.State == OrderClosed {
+			b.positions = append(b.positions[:idx2], b.positions[idx2+1:]...)
+		}
+		if pos1.State == OrderClosed {
+			b.positions = append(b.positions[:idx1], b.positions[idx1+1:]...)
+		}
+	} else {
+		if pos1.State == OrderClosed {
+			b.positions = append(b.positions[:idx1], b.positions[idx1+1:]...)
+		}
+		if pos2.State == OrderClosed {
+			b.positions = append(b.positions[:idx2], b.positions[idx2+1:]...)
+		}
+	}
+
+	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket1, Volume: closeVol, Price: closePrice}, nil
 }
 
 func (b *SimBroker) PositionModify(ticket int64, sl, tp decimal.Decimal) (sdk.OrderResult, error) {
@@ -198,10 +294,74 @@ func (b *SimBroker) Orders(magic int32) []sdk.PendingOrder {
 	return out
 }
 
-func (b *SimBroker) HistoryOrders(from, to int64) []sdk.Position { return nil }
-func (b *SimBroker) Deals(from, to int64, magic int32) []sdk.Deal { return nil }
+func (b *SimBroker) HistoryOrders(from, to int64) []sdk.Position {
+	var out []sdk.Position
+	for _, h := range b.history {
+		if h.State != OrderClosed {
+			continue
+		}
+		t := h.CloseTime.UnixMilli()
+		if from > 0 && t < from {
+			continue
+		}
+		if to > 0 && t > to {
+			continue
+		}
+		out = append(out, sdk.Position{
+			Ticket:     h.Ticket,
+			Symbol:     h.Symbol,
+			Side:       h.Side,
+			Volume:     h.Volume,
+			OpenPrice:  h.Price,
+			StopLoss:   h.StopLoss,
+			TakeProfit: h.TakeProfit,
+			Profit:     h.Profit,
+			Swap:       h.Swap,
+			Commission: h.Commission,
+			Comment:    h.Comment,
+			Magic:      h.Magic,
+			OpenTime:   h.OpenTime,
+		})
+	}
+	return out
+}
+
+func (b *SimBroker) Deals(from, to int64, magic int32) []sdk.Deal {
+	var out []sdk.Deal
+	for _, d := range b.deals {
+		t := d.CloseTime.UnixMilli()
+		if from > 0 && t < from {
+			continue
+		}
+		if to > 0 && t > to {
+			continue
+		}
+		if magic != 0 && d.Magic != magic {
+			continue
+		}
+		out = append(out, d)
+	}
+	return out
+}
+
 func (b *SimBroker) SymbolInfo(symbol string) (sdk.SymbolInfo, error) {
-	return sdk.SymbolInfo{Name: symbol, Digits: 5, Point: decimal.NewFromFloat(0.00001)}, nil
+	digits := int32(5)
+	point := decimal.NewFromFloat(0.00001)
+	if b.config.SymbolDigits > 0 {
+		digits = b.config.SymbolDigits
+	}
+	if !b.config.SymbolPoint.IsZero() {
+		point = b.config.SymbolPoint
+	}
+	return sdk.SymbolInfo{
+		Name:         symbol,
+		Digits:       digits,
+		Point:        point,
+		VolumeMin:    b.config.VolumeMin,
+		VolumeMax:    b.config.VolumeMax,
+		VolumeStep:   b.config.VolumeStep,
+		ContractSize: b.config.ContractSize,
+	}, nil
 }
 
 // applyCommission deducts commission from equity and records it.
@@ -225,6 +385,42 @@ func (b *SimBroker) applySwap(rec *OrderRecord, days int) {
 	swap := rec.Volume.Mul(swapRate).Mul(decimal.NewFromInt(int64(days)))
 	rec.Swap = rec.Swap.Add(swap)
 	b.equity = b.equity.Sub(swap)
+}
+
+func (b *SimBroker) recordDeal(rec *OrderRecord, vol decimal.Decimal, profit decimal.Decimal, now time.Time) {
+	b.dealSeq++
+	b.deals = append(b.deals, sdk.Deal{
+		Ticket:      b.dealSeq,
+		OrderTicket: rec.Ticket,
+		Symbol:      rec.Symbol,
+		Side:        rec.Side,
+		Volume:      vol,
+		Price:       rec.ClosePrice,
+		Profit:      profit,
+		Commission:  rec.Commission,
+		Swap:        rec.Swap,
+		Comment:     rec.Comment,
+		Magic:       rec.Magic,
+		OpenTime:    rec.OpenTime,
+		CloseTime:   now,
+	})
+}
+
+func (b *SimBroker) recordDealPartial(rec *OrderRecord, vol decimal.Decimal, profit decimal.Decimal, now time.Time) {
+	b.dealSeq++
+	b.deals = append(b.deals, sdk.Deal{
+		Ticket:      b.dealSeq,
+		OrderTicket: rec.Ticket,
+		Symbol:      rec.Symbol,
+		Side:        rec.Side,
+		Volume:      vol,
+		Price:       rec.ClosePrice,
+		Profit:      profit,
+		Comment:     rec.Comment,
+		Magic:       rec.Magic,
+		OpenTime:    rec.OpenTime,
+		CloseTime:   now,
+	})
 }
 
 // expirePending removes pending orders that have waited longer than maxBars bars.

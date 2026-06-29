@@ -68,8 +68,16 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		// Check stop loss / take profit
 		e.checkSLTP(bar)
 
-		// Call strategy
-		sig, err := e.strategy.OnBar(btCtx, e.config.Timeframe)
+		// Call strategy — check for TickStrategy interface first
+		var sig *sdk.Signal
+		var err error
+		if ts, ok := e.strategy.(sdk.TickStrategy); ok {
+			bid := bar.Close
+			ask := bar.Close
+			sig, err = ts.OnTick(btCtx, bid, ask)
+		} else {
+			sig, err = e.strategy.OnBar(btCtx, e.config.Timeframe)
+		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "backtest: OnBar error at bar %d: %v\n", i, err)
 			continue
@@ -271,7 +279,7 @@ func (c *backtestContext) Indicators() sdk.IndicatorSet  { return c.ind }
 func (c *backtestContext) SetTimer(int)                  {}
 func (c *backtestContext) KillTimer()                    {}
 func (c *backtestContext) Log(string)                    {}
-func (c *backtestContext) ServerTime() int64             { return 0 }
+func (c *backtestContext) ServerTime() int64             { return c.currentBar.Timestamp }
 
 func (c *backtestContext) Param(name string, defaultVal interface{}) interface{}         { return defaultVal }
 func (c *backtestContext) ParamDecimal(name string, d decimal.Decimal) decimal.Decimal   { return d }

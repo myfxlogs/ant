@@ -12,6 +12,9 @@ type Broker interface {
 	// volume=0 means close the full position.
 	PositionClose(ticket int64, volume decimal.Decimal) (OrderResult, error)
 
+	// PositionCloseBy closes one position against another (hedging close).
+	PositionCloseBy(ticket1, ticket2 int64) (OrderResult, error)
+
 	// PositionModify changes SL/TP on an open position.
 	PositionModify(ticket int64, sl, tp decimal.Decimal) (OrderResult, error)
 

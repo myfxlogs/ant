@@ -5,6 +5,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
+	"anttrader/strategy/indicators"
 	"anttrader/strategy/sdk"
 )
 
@@ -394,52 +395,80 @@ func (i *btIndicators) ICustom(name string, params []decimal.Decimal, buffer, sh
 	return decimal.Zero
 }
 
-// ── Shared MQL4/MQL5 indicator stubs ──
+// ── Shared MQL4/MQL5 indicators ──
 
 func (i *btIndicators) Alligator(jawPeriod, jawShift, teethPeriod, teethShift, lipsPeriod, lipsShift int, method string, appliedPrice int, shift int) (jaw, teeth, lips decimal.Decimal) {
-	return decimal.Zero, decimal.Zero, decimal.Zero
+	return indicators.Alligator(i.barSource(), jawPeriod, jawShift, teethPeriod, teethShift, lipsPeriod, lipsShift, method, appliedPrice, shift)
 }
 func (i *btIndicators) Ichimoku(tenkan, kijun, senkou int, shift int) (tenkanVal, kijunVal, senkouA, senkouB decimal.Decimal) {
-	return decimal.Zero, decimal.Zero, decimal.Zero, decimal.Zero
+	return indicators.Ichimoku(i.barSource(), tenkan, kijun, senkou, shift)
 }
 func (i *btIndicators) Envelopes(period int, deviation decimal.Decimal, method string, appliedPrice int, shift int) (upper, lower decimal.Decimal) {
-	return decimal.Zero, decimal.Zero
+	return indicators.Envelopes(i.barSource(), period, deviation, method, appliedPrice, shift)
 }
-func (i *btIndicators) DeMarker(period, shift int) decimal.Decimal { return decimal.Zero }
+func (i *btIndicators) DeMarker(period, shift int) decimal.Decimal {
+	return indicators.DeMarker(i.barSource(), period, shift)
+}
 func (i *btIndicators) OsMA(fastPeriod, slowPeriod, signalPeriod, appliedPrice, shift int) decimal.Decimal {
-	return decimal.Zero
+	return indicators.OsMA(i.barSource(), fastPeriod, slowPeriod, signalPeriod, appliedPrice, shift)
 }
-func (i *btIndicators) RVI(period, shift int) decimal.Decimal { return decimal.Zero }
+func (i *btIndicators) RVI(period, shift int) decimal.Decimal {
+	return indicators.RVI(i.barSource(), period, shift)
+}
 func (i *btIndicators) Force(period int, method string, appliedPrice int, shift int) decimal.Decimal {
-	return decimal.Zero
+	return indicators.Force(i.barSource(), period, method, appliedPrice, shift)
 }
 func (i *btIndicators) Fractals(shift int) (upper, lower decimal.Decimal) {
-	return decimal.Zero, decimal.Zero
+	return indicators.Fractals(i.barSource(), shift)
 }
 func (i *btIndicators) Gator(jawPeriod, jawShift, teethPeriod, teethShift, lipsPeriod, lipsShift int, method string, appliedPrice int, shift int) (upper, lower decimal.Decimal) {
-	return decimal.Zero, decimal.Zero
+	return indicators.Gator(i.barSource(), jawPeriod, jawShift, teethPeriod, teethShift, lipsPeriod, lipsShift, method, appliedPrice, shift)
 }
-func (i *btIndicators) AC(shift int) decimal.Decimal  { return decimal.Zero }
-func (i *btIndicators) AD(shift int) decimal.Decimal  { return decimal.Zero }
-func (i *btIndicators) AO(shift int) decimal.Decimal  { return decimal.Zero }
+func (i *btIndicators) AC(shift int) decimal.Decimal {
+	return indicators.AC(i.barSource(), shift)
+}
+func (i *btIndicators) AD(shift int) decimal.Decimal {
+	return indicators.AD(i.barSource(), shift)
+}
+func (i *btIndicators) AO(shift int) decimal.Decimal {
+	return indicators.AO(i.barSource(), shift)
+}
 func (i *btIndicators) BearsPower(period int, appliedPrice int, shift int) decimal.Decimal {
-	return decimal.Zero
+	return indicators.BearsPower(i.barSource(), period, appliedPrice, shift)
 }
 func (i *btIndicators) BullsPower(period int, appliedPrice int, shift int) decimal.Decimal {
-	return decimal.Zero
+	return indicators.BullsPower(i.barSource(), period, appliedPrice, shift)
 }
-func (i *btIndicators) BWMFI(shift int) decimal.Decimal { return decimal.Zero }
+func (i *btIndicators) BWMFI(shift int) decimal.Decimal {
+	return indicators.BWMFI(i.barSource(), shift)
+}
 
-// ── MQL5-only indicator stubs ──
+// ── MQL5-only indicators ──
 
-func (i *btIndicators) AMA(period, fastPeriod, slowPeriod, shift int) decimal.Decimal { return decimal.Zero }
-func (i *btIndicators) DEMA(period, shift int) decimal.Decimal                        { return decimal.Zero }
-func (i *btIndicators) TEMA(period, shift int) decimal.Decimal                        { return decimal.Zero }
-func (i *btIndicators) FrAMA(period, shift int) decimal.Decimal                       { return decimal.Zero }
+func (i *btIndicators) AMA(period, fastPeriod, slowPeriod, shift int) decimal.Decimal {
+	return indicators.AMA(i.barSource(), period, fastPeriod, slowPeriod, shift)
+}
+func (i *btIndicators) DEMA(period, shift int) decimal.Decimal {
+	return indicators.DEMA(i.barSource(), period, shift)
+}
+func (i *btIndicators) TEMA(period, shift int) decimal.Decimal {
+	return indicators.TEMA(i.barSource(), period, shift)
+}
+func (i *btIndicators) FrAMA(period, shift int) decimal.Decimal {
+	return indicators.FrAMA(i.barSource(), period, shift)
+}
 func (i *btIndicators) VIDyA(cmoPeriod, cmoShift, maPeriod, maShift, shift int) decimal.Decimal {
-	return decimal.Zero
+	return indicators.VIDyA(i.barSource(), cmoPeriod, cmoShift, maPeriod, maShift, shift)
 }
-func (i *btIndicators) TriX(period, shift int) decimal.Decimal    { return decimal.Zero }
-func (i *btIndicators) ADXWilder(period, shift int) decimal.Decimal { return decimal.Zero }
-func (i *btIndicators) Chaikin(fastPeriod, slowPeriod, shift int) decimal.Decimal { return decimal.Zero }
-func (i *btIndicators) Volumes(shift int) decimal.Decimal         { return decimal.Zero }
+func (i *btIndicators) TriX(period, shift int) decimal.Decimal {
+	return indicators.TriX(i.barSource(), period, shift)
+}
+func (i *btIndicators) ADXWilder(period, shift int) decimal.Decimal {
+	return indicators.ADXWilder(i.barSource(), period, shift)
+}
+func (i *btIndicators) Chaikin(fastPeriod, slowPeriod, shift int) decimal.Decimal {
+	return indicators.Chaikin(i.barSource(), fastPeriod, slowPeriod, shift)
+}
+func (i *btIndicators) Volumes(shift int) decimal.Decimal {
+	return indicators.Volumes(i.barSource(), shift)
+}

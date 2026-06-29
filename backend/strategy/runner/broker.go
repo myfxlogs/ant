@@ -45,6 +45,20 @@ func (b *brokerImpl) PositionClose(ticket int64, volume decimal.Decimal) (sdk.Or
 	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
 }
 
+func (b *brokerImpl) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, error) {
+	if b.executor == nil {
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, nil
+	}
+	// Close both positions fully
+	if err := b.executor.CloseOrder(context.Background(), ticket1, decimal.Zero); err != nil {
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, err
+	}
+	if err := b.executor.CloseOrder(context.Background(), ticket2, decimal.Zero); err != nil {
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, err
+	}
+	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket1}, nil
+}
+
 func (b *brokerImpl) PositionModify(ticket int64, sl, tp decimal.Decimal) (sdk.OrderResult, error) {
 	if b.executor == nil {
 		return sdk.OrderResult{RetCode: sdk.RetRejected}, nil
