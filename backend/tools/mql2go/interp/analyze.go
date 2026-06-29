@@ -496,6 +496,54 @@ var permanentBlindSpots = map[string]string{
 	// MQL5 native OrderSend — CTrade wrapper covers this
 	"OrderSendMQL5":     "MQL5 native OrderSend: CTrade wrapper covers this",
 	"OrderSendAsync":    "MQL5 async OrderSend: use CTrade wrapper instead",
+	// MQL4-only Window functions — client UI, no server meaning
+	"WindowBarsPerChart":     "Window: MT client UI, no server meaning",
+	"WindowExpertName":       "Window: MT client UI, no server meaning",
+	"WindowFind":             "Window: MT client UI, no server meaning",
+	"WindowFirstVisibleBar":  "Window: MT client UI, no server meaning",
+	"WindowHandle":           "Window: MT client UI, no server meaning",
+	"WindowIsVisible":        "Window: MT client UI, no server meaning",
+	"WindowOnDropped":        "Window: MT client UI, no server meaning",
+	"WindowPriceMax":         "Window: MT client UI, no server meaning",
+	"WindowPriceMin":         "Window: MT client UI, no server meaning",
+	"WindowPriceOnDropped":   "Window: MT client UI, no server meaning",
+	"WindowRedraw":           "Window: MT client UI, no server meaning",
+	"WindowScreenShot":       "Window: MT client UI, no server meaning",
+	"WindowsTotal":           "Window: MT client UI, no server meaning",
+	"WindowTimeOnDropped":    "Window: MT client UI, no server meaning",
+	"WindowXOnDropped":       "Window: MT client UI, no server meaning",
+	"WindowYOnDropped":       "Window: MT client UI, no server meaning",
+	// MQL4-only custom indicator functions — indicator development only
+	"IndicatorBuffers":       "Custom Indicators: indicator development only",
+	"IndicatorCounted":       "Custom Indicators: indicator development only",
+	"IndicatorDigits":        "Custom Indicators: indicator development only",
+	"IndicatorShortName":     "Custom Indicators: indicator development only",
+	"SetIndexArrow":          "Custom Indicators: indicator development only",
+	"SetIndexDrawBegin":      "Custom Indicators: indicator development only",
+	"SetIndexEmptyValue":     "Custom Indicators: indicator development only",
+	"SetIndexLabel":          "Custom Indicators: indicator development only",
+	"SetIndexShift":          "Custom Indicators: indicator development only",
+	"SetIndexStyle":          "Custom Indicators: indicator development only",
+	"SetLevelStyle":          "Custom Indicators: indicator development only",
+	"SetLevelValue":          "Custom Indicators: indicator development only",
+	// MQL4-only Object functions
+	"ObjectType":             "Object/Chart: MT client UI, no server meaning",
+	"ObjectGetFiboDescription":   "Object/Chart: MT client UI, no server meaning",
+	"ObjectSetFiboDescription":   "Object/Chart: MT client UI, no server meaning",
+	"ObjectGetShiftByValue":  "Object/Chart: MT client UI, no server meaning",
+	"ObjectGetValueByShift":  "Object/Chart: MT client UI, no server meaning",
+	// MQL4-only Array functions
+	"ArrayCopyRates":         "Array: MQL4 timeseries copy, use Copy* functions",
+	"ArrayCopySeries":        "Array: MQL4 timeseries copy, use Copy* functions",
+	"ArrayDimension":         "Array: MQL4 legacy, use ArrayRange",
+	// Tester functions
+	"HideTestIndicators":     "Strategy tester only",
+	"TesterHideIndicators":   "Strategy tester only",
+	"TesterStop":             "Strategy tester only",
+	"TesterDeposit":          "Strategy tester only",
+	"TesterWithdrawal":       "Strategy tester only",
+	// Misc client-only
+	"TranslateKey":           "Client UI: keyboard input, not applicable server-side",
 }
 
 // isPermanentBlindSpot returns true if the function is a known permanent blind spot.

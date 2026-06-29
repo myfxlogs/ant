@@ -146,4 +146,14 @@ var implementedPlatform = []string{
 	"HistoryOrderGetDouble", "HistoryOrderGetInteger", "HistoryOrderGetString",
 	// MQL5 order functions
 	"OrderGetTicket", "OrderSelect", "OrderGetDouble", "OrderGetInteger", "OrderGetString",
+	// MQL4-only account functions (not in MQL5)
+	"AccountFreeMarginCheck", "AccountFreeMarginMode", "AccountServer",
+	"AccountStopoutMode", "AccountCredit", "AccountProfit",
+	// MQL4-only check functions (not in MQL5)
+	"IsConnected", "IsDemo", "IsDllsAllowed", "IsExpertEnabled",
+	"IsLibrariesAllowed", "IsTradeAllowed", "IsTradeContextBusy",
+	// MQL4 deprecated aliases
+	"CurTime",
+	// Common additions
+	"GetTickCount64", "GetMicrosecondCount", "SetUserError", "SetReturnError",
 }
