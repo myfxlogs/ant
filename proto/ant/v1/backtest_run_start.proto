@@ -26,6 +26,10 @@ message StartBacktestRunRequest {
   // Execution config carries commission/slippage/leverage/direction/strict_mode
   // and parsed @strategy directives. Optional; safe defaults when absent.
   BacktestExecutionConfig execution_config = 13;
+  // imported_strategies.id — when set, source code + params are fetched
+  // from the imported strategy instead of using the code field.
+  // If both strategy_id and code are set, strategy_id takes precedence.
+  optional string strategy_id = 14;
 }
 
 message StartBacktestRunResponse {

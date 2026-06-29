@@ -50,6 +50,9 @@ func toProtoBacktestRun(r *repository.BacktestRun) *antv1.BacktestRun {
 	}
 	out.IsTerminal = r.Status == StatusSucceeded || r.Status == StatusFailed || r.Status == StatusCanceled
 	out.IsSucceeded = r.Status == StatusSucceeded
+	if r.StrategyID != nil {
+		out.StrategyId = proto.String(r.StrategyID.String())
+	}
 	// Deserialize config snapshot to proto.
 	if len(r.ConfigSnapshot) > 0 {
 		var ec antv1.BacktestExecutionConfig

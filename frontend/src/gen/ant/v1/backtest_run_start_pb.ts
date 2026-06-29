@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file backtest_run_start.proto.
  */
 export const file_backtest_run_start: GenFile = /*@__PURE__*/
-  fileDesc("ChhiYWNrdGVzdF9ydW5fc3RhcnQucHJvdG8SBmFudC52MSLkAwoXU3RhcnRCYWNrdGVzdFJ1blJlcXVlc3QSDAoEY29kZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFwoPaW5pdGlhbF9jYXBpdGFsGAUgASgJEiUKBG1vZGUYBiABKA4yFy5hbnQudjEuQmFja3Rlc3RSdW5Nb2RlEi0KBGZyb20YByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSACIAQESKwoCdG8YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSAGIAQESFwoKZGF0YXNldF9pZBgJIAEoCUgCiAEBEhgKC3RlbXBsYXRlX2lkGAogASgJSAOIAQESHgoRdGVtcGxhdGVfZHJhZnRfaWQYCyABKAlIBIgBARIVCg1leHRyYV9zeW1ib2xzGAwgAygJEjkKEGV4ZWN1dGlvbl9jb25maWcYDSABKAsyHy5hbnQudjEuQmFja3Rlc3RFeGVjdXRpb25Db25maWdCBwoFX2Zyb21CBQoDX3RvQg0KC19kYXRhc2V0X2lkQg4KDF90ZW1wbGF0ZV9pZEIUChJfdGVtcGxhdGVfZHJhZnRfaWQiKgoYU3RhcnRCYWNrdGVzdFJ1blJlc3BvbnNlEg4KBnJ1bl9pZBgBIAEoCUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_backtest_run, file_backtest_execution_config]);
+  fileDesc("ChhiYWNrdGVzdF9ydW5fc3RhcnQucHJvdG8SBmFudC52MSKOBAoXU3RhcnRCYWNrdGVzdFJ1blJlcXVlc3QSDAoEY29kZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFwoPaW5pdGlhbF9jYXBpdGFsGAUgASgJEiUKBG1vZGUYBiABKA4yFy5hbnQudjEuQmFja3Rlc3RSdW5Nb2RlEi0KBGZyb20YByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSACIAQESKwoCdG8YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSAGIAQESFwoKZGF0YXNldF9pZBgJIAEoCUgCiAEBEhgKC3RlbXBsYXRlX2lkGAogASgJSAOIAQESHgoRdGVtcGxhdGVfZHJhZnRfaWQYCyABKAlIBIgBARIVCg1leHRyYV9zeW1ib2xzGAwgAygJEjkKEGV4ZWN1dGlvbl9jb25maWcYDSABKAsyHy5hbnQudjEuQmFja3Rlc3RFeGVjdXRpb25Db25maWcSGAoLc3RyYXRlZ3lfaWQYDiABKAlIBYgBAUIHCgVfZnJvbUIFCgNfdG9CDQoLX2RhdGFzZXRfaWRCDgoMX3RlbXBsYXRlX2lkQhQKEl90ZW1wbGF0ZV9kcmFmdF9pZEIOCgxfc3RyYXRlZ3lfaWQiKgoYU3RhcnRCYWNrdGVzdFJ1blJlc3BvbnNlEg4KBnJ1bl9pZBgBIAEoCUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_backtest_run, file_backtest_execution_config]);
 
 /**
  * @generated from message ant.v1.StartBacktestRunRequest
@@ -92,6 +92,15 @@ export type StartBacktestRunRequest = Message<"ant.v1.StartBacktestRunRequest"> 
    * @generated from field: ant.v1.BacktestExecutionConfig execution_config = 13;
    */
   executionConfig?: BacktestExecutionConfig | undefined;
+
+  /**
+   * imported_strategies.id — when set, source code + params are fetched
+   * from the imported strategy instead of using the code field.
+   * If both strategy_id and code are set, strategy_id takes precedence.
+   *
+   * @generated from field: optional string strategy_id = 14;
+   */
+  strategyId?: string | undefined;
 };
 
 /**

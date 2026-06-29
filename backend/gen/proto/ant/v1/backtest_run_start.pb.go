@@ -41,8 +41,12 @@ type StartBacktestRunRequest struct {
 	// Execution config carries commission/slippage/leverage/direction/strict_mode
 	// and parsed @strategy directives. Optional; safe defaults when absent.
 	ExecutionConfig *BacktestExecutionConfig `protobuf:"bytes,13,opt,name=execution_config,json=executionConfig,proto3" json:"execution_config,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// imported_strategies.id — when set, source code + params are fetched
+	// from the imported strategy instead of using the code field.
+	// If both strategy_id and code are set, strategy_id takes precedence.
+	StrategyId    *string `protobuf:"bytes,14,opt,name=strategy_id,json=strategyId,proto3,oneof" json:"strategy_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *StartBacktestRunRequest) Reset() {
@@ -166,6 +170,13 @@ func (x *StartBacktestRunRequest) GetExecutionConfig() *BacktestExecutionConfig 
 	return nil
 }
 
+func (x *StartBacktestRunRequest) GetStrategyId() string {
+	if x != nil && x.StrategyId != nil {
+		return *x.StrategyId
+	}
+	return ""
+}
+
 type StartBacktestRunResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RunId         string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
@@ -214,7 +225,7 @@ var File_backtest_run_start_proto protoreflect.FileDescriptor
 
 const file_backtest_run_start_proto_rawDesc = "" +
 	"\n" +
-	"\x18backtest_run_start.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x12backtest_run.proto\x1a\x1fbacktest_execution_config.proto\"\xef\x04\n" +
+	"\x18backtest_run_start.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x12backtest_run.proto\x1a\x1fbacktest_execution_config.proto\"\xa5\x05\n" +
 	"\x17StartBacktestRunRequest\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x1d\n" +
 	"\n" +
@@ -232,12 +243,15 @@ const file_backtest_run_start_proto_rawDesc = "" +
 	"templateId\x88\x01\x01\x12/\n" +
 	"\x11template_draft_id\x18\v \x01(\tH\x04R\x0ftemplateDraftId\x88\x01\x01\x12#\n" +
 	"\rextra_symbols\x18\f \x03(\tR\fextraSymbols\x12J\n" +
-	"\x10execution_config\x18\r \x01(\v2\x1f.ant.v1.BacktestExecutionConfigR\x0fexecutionConfigB\a\n" +
+	"\x10execution_config\x18\r \x01(\v2\x1f.ant.v1.BacktestExecutionConfigR\x0fexecutionConfig\x12$\n" +
+	"\vstrategy_id\x18\x0e \x01(\tH\x05R\n" +
+	"strategyId\x88\x01\x01B\a\n" +
 	"\x05_fromB\x05\n" +
 	"\x03_toB\r\n" +
 	"\v_dataset_idB\x0e\n" +
 	"\f_template_idB\x14\n" +
-	"\x12_template_draft_id\"1\n" +
+	"\x12_template_draft_idB\x0e\n" +
+	"\f_strategy_id\"1\n" +
 	"\x18StartBacktestRunResponse\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runIdB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 

@@ -156,6 +156,7 @@ type BacktestRun struct {
 	IsTerminal      bool                     `protobuf:"varint,18,opt,name=is_terminal,json=isTerminal,proto3" json:"is_terminal,omitempty"`
 	IsSucceeded     bool                     `protobuf:"varint,19,opt,name=is_succeeded,json=isSucceeded,proto3" json:"is_succeeded,omitempty"`
 	ExecutionConfig *BacktestExecutionConfig `protobuf:"bytes,20,opt,name=execution_config,json=executionConfig,proto3,oneof" json:"execution_config,omitempty"`
+	StrategyId      *string                  `protobuf:"bytes,21,opt,name=strategy_id,json=strategyId,proto3,oneof" json:"strategy_id,omitempty"` // imported_strategies.id (nullable)
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -330,11 +331,18 @@ func (x *BacktestRun) GetExecutionConfig() *BacktestExecutionConfig {
 	return nil
 }
 
+func (x *BacktestRun) GetStrategyId() string {
+	if x != nil && x.StrategyId != nil {
+		return *x.StrategyId
+	}
+	return ""
+}
+
 var File_backtest_run_proto protoreflect.FileDescriptor
 
 const file_backtest_run_proto_rawDesc = "" +
 	"\n" +
-	"\x12backtest_run.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fbacktest_execution_config.proto\"\x8f\b\n" +
+	"\x12backtest_run.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fbacktest_execution_config.proto\"\xc5\b\n" +
 	"\vBacktestRun\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -363,7 +371,9 @@ const file_backtest_run_proto_rawDesc = "" +
 	"\vis_terminal\x18\x12 \x01(\bR\n" +
 	"isTerminal\x12!\n" +
 	"\fis_succeeded\x18\x13 \x01(\bR\visSucceeded\x12O\n" +
-	"\x10execution_config\x18\x14 \x01(\v2\x1f.ant.v1.BacktestExecutionConfigH\bR\x0fexecutionConfig\x88\x01\x01B\r\n" +
+	"\x10execution_config\x18\x14 \x01(\v2\x1f.ant.v1.BacktestExecutionConfigH\bR\x0fexecutionConfig\x88\x01\x01\x12$\n" +
+	"\vstrategy_id\x18\x15 \x01(\tH\tR\n" +
+	"strategyId\x88\x01\x01B\r\n" +
 	"\v_dataset_idB\a\n" +
 	"\x05_fromB\x05\n" +
 	"\x03_toB\x19\n" +
@@ -372,7 +382,8 @@ const file_backtest_run_proto_rawDesc = "" +
 	"\f_finished_atB\x0e\n" +
 	"\f_template_idB\x14\n" +
 	"\x12_template_draft_idB\x13\n" +
-	"\x11_execution_config*v\n" +
+	"\x11_execution_configB\x0e\n" +
+	"\f_strategy_id*v\n" +
 	"\x0fBacktestRunMode\x12!\n" +
 	"\x1dBACKTEST_RUN_MODE_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dBACKTEST_RUN_MODE_KLINE_RANGE\x10\x01\x12\x1d\n" +

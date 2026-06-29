@@ -46,4 +46,5 @@ message BacktestRun {
   bool is_terminal = 18;
   bool is_succeeded = 19;
   optional BacktestExecutionConfig execution_config = 20;
+  optional string strategy_id = 21; // imported_strategies.id (nullable)
 }

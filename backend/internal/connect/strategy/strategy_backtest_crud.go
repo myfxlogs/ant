@@ -16,6 +16,7 @@ import (
 	"anttrader/internal/interceptor"
 	"anttrader/internal/pkg/ptr"
 	"anttrader/internal/repository"
+	"anttrader/tools/mql2go/interp"
 )
 
 
@@ -27,6 +28,35 @@ func validateBacktestRun(run *repository.BacktestRun) {
 func (s *StrategyExecutionServer) StartBacktestRun(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) (*connect.Response[antv1.StartBacktestRunResponse], error) {
 	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
 	run := buildBacktestRunFromRequest(userID, req.Msg)
+
+	// If strategy_id is provided, fetch source code + params from imported_strategies.
+	if sid := req.Msg.GetStrategyId(); sid != "" {
+		importedID, err := uuid.Parse(sid)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid strategy_id: %w", err))
+		}
+		if s.importedRepo == nil {
+			return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("imported strategy repository not configured"))
+		}
+		imported, err := s.importedRepo.GetByIDAndUser(ctx, importedID, userID)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("imported strategy not found: %w", err))
+		}
+		run.StrategyCode = ptr.Str(imported.SourceCode)
+		run.StrategyID = &imported.ID
+		// Convert interp params (SerializeParams format) to proto StrategyParams
+		// so the backtest worker can use paramsProtoToMap uniformly.
+		if len(imported.Params) > 0 && len(run.ParameterOverrides) == 0 {
+			defaults := interp.ParamDefaultsToMap(imported.Params)
+			if len(defaults) > 0 {
+				sp := &antv1.StrategyParams{Values: defaults}
+				if raw, err := proto.Marshal(sp); err == nil {
+					run.ParameterOverrides = raw
+				}
+			}
+		}
+	}
+
 	validateBacktestRun(run)
 	if cfg := req.Msg.GetExecutionConfig(); cfg != nil {
 		snap, err := proto.Marshal(cfg)
