@@ -196,6 +196,10 @@ export const strategyImportApi = {
       workspaceId: params.workspaceId,
     });
   },
+
+  getImportedStrategy: async (strategyId: string) => {
+    return await strategyRuntimeClient.getImportedStrategy({ strategyId });
+  },
 };
 
 // ── Strategy Run lifecycle (Phase 1) ─────────────────────────────────

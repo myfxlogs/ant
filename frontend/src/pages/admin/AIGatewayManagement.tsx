@@ -1,17 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Table, Button, Modal, Form, Input, InputNumber,
-  Switch, Space, Tag, Popconfirm, message, Typography, Spin
-} from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, ApiOutlined, ThunderboltOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Table, Button, Modal, Form, Input, Space, Tag, message, Typography, Switch } from 'antd';
+import { PlusOutlined, EditOutlined, ApiOutlined, ReloadOutlined } from '@ant-design/icons';
 import { aiGatewayApi, type AIProviderInfo, type AIModelConfigInfo } from '@/client/aiGateway';
+import { AIGatewayModals, ProviderExpandedRow, type ProviderState } from './AIGatewayModals';
 
 const { Title, Text } = Typography;
-
-interface ProviderState extends AIProviderInfo {
-  models?: AIModelConfigInfo[];
-  modelsLoading?: boolean;
-}
 
 export default function AIGatewayManagement() {
   const [providers, setProviders] = useState<ProviderState[]>([]);
@@ -31,7 +24,6 @@ export default function AIGatewayManagement() {
       const list = await aiGatewayApi.listProviders();
       setProviders(list.map(p => ({ ...p, models: undefined, modelsLoading: false })));
     } catch (e) {
-      console.error('listProviders failed', e);
       message.error('加载厂商列表失败');
     } finally {
       setLoading(false);
@@ -40,7 +32,6 @@ export default function AIGatewayManagement() {
 
   useEffect(() => { loadProviders(); }, [loadProviders]);
 
-  // ── Provider CRUD ──
   const handleAddProvider = () => {
     setEditingProvider(null);
     providerForm.resetFields();
@@ -69,8 +60,8 @@ export default function AIGatewayManagement() {
       }
       setProviderModalOpen(false);
       await loadProviders();
-    } catch (e) {
-      console.error('saveProvider failed', e);
+    } catch {
+      // validation error
     } finally {
       setSaving(false);
     }
@@ -80,13 +71,11 @@ export default function AIGatewayManagement() {
     try {
       await aiGatewayApi.updateProvider({ id: p.id, enabled });
       setProviders(prev => prev.map(x => x.id === p.id ? { ...x, enabled } : x));
-    } catch (e) {
-      console.error('toggleProvider failed', e);
+    } catch {
       message.error('切换状态失败');
     }
   };
 
-  // ── Model CRUD ──
   const loadModels = async (provider: ProviderState) => {
     setProviders(prev => prev.map(p => p.id === provider.id ? { ...p, modelsLoading: true } : p));
     try {
@@ -94,7 +83,7 @@ export default function AIGatewayManagement() {
       setProviders(prev => prev.map(p => p.id === provider.id ? { ...p, models, modelsLoading: false } : p));
     } catch {
       setProviders(prev => prev.map(p => p.id === provider.id ? { ...p, modelsLoading: false } : p));
-      console.error('listModels failed', e); message.error('加载模型列表失败');
+      message.error('加载模型列表失败');
     }
   };
 
@@ -118,12 +107,9 @@ export default function AIGatewayManagement() {
       if (!currentProvider) return;
       setSaving(true);
       await aiGatewayApi.upsertModel({
-        id: editingModel?.id,
-        providerId: currentProvider.id,
-        modelName: v.modelName,
-        displayName: v.displayName,
-        pricePer1mInput: String(v.pricePer1mInput),
-        pricePer1mOutput: String(v.pricePer1mOutput),
+        id: editingModel?.id, providerId: currentProvider.id,
+        modelName: v.modelName, displayName: v.displayName,
+        pricePer1mInput: String(v.pricePer1mInput), pricePer1mOutput: String(v.pricePer1mOutput),
       });
       message.success('保存成功');
       setModelModalOpen(false);
@@ -141,7 +127,7 @@ export default function AIGatewayManagement() {
       message.success('已删除');
       loadModels(provider);
     } catch {
-      console.error('deleteModel failed', e); message.error('删除失败');
+      message.error('删除失败');
     }
   };
 
@@ -149,8 +135,7 @@ export default function AIGatewayManagement() {
     try {
       await aiGatewayApi.upsertModel({
         id: model.id, providerId: provider.id, modelName: model.modelName,
-        pricePer1mInput: model.pricePer1mInput, pricePer1mOutput: model.pricePer1mOutput,
-        enabled,
+        pricePer1mInput: model.pricePer1mInput, pricePer1mOutput: model.pricePer1mOutput, enabled,
       });
       setProviders(prev => prev.map(p => {
         if (p.id !== provider.id) return p;
@@ -159,55 +144,6 @@ export default function AIGatewayManagement() {
     } catch {
       message.error('切换失败');
     }
-  };
-
-  const expandedRowRender = (provider: ProviderState) => {
-    const models = provider.models || [];
-    return (
-      <div style={{ padding: '8px 16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <Text strong><ThunderboltOutlined /> 模型列表 ({models.length})</Text>
-          <Space>
-            {provider.modelsLoading && <Spin size="small" />}
-            <Button size="small" onClick={() => loadModels(provider)} icon={<ReloadOutlined />} />
-            <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => handleAddModel(provider)}>
-              添加模型
-            </Button>
-          </Space>
-        </div>
-        <Table
-          dataSource={models}
-          columns={[
-            { title: '模型名', dataIndex: 'modelName', key: 'modelName', width: 180 },
-            { title: '显示名', dataIndex: 'displayName', key: 'displayName', width: 160 },
-            { title: '输入价格 ($/1M)', dataIndex: 'pricePer1mInput', key: 'pi', width: 140,
-              render: (v: string) => <Text>${parseFloat(v).toFixed(6)}</Text> },
-            { title: '输出价格 ($/1M)', dataIndex: 'pricePer1mOutput', key: 'po', width: 140,
-              render: (v: string) => <Text>${parseFloat(v).toFixed(6)}</Text> },
-            { title: '启用', dataIndex: 'enabled', key: 'enabled', width: 70,
-              render: (_: boolean, record: AIModelConfigInfo) => (
-                <Switch size="small" checked={record.enabled}
-                  onChange={v => handleToggleModel(provider, record, v)} />
-              ),
-            },
-            { title: '操作', key: 'actions', width: 120,
-              render: (_: unknown, record: AIModelConfigInfo) => (
-                <Space>
-                  <Button size="small" icon={<EditOutlined />} onClick={() => handleEditModel(provider, record)} />
-                  <Popconfirm title="确认删除此模型？" onConfirm={() => handleDeleteModel(provider, record.id)}>
-                    <Button size="small" danger icon={<DeleteOutlined />} />
-                  </Popconfirm>
-                </Space>
-              ),
-            },
-          ]}
-          rowKey="id"
-          size="small"
-          pagination={false}
-          locale={{ emptyText: '暂无模型' }}
-        />
-      </div>
-    );
   };
 
   return (
@@ -224,9 +160,7 @@ export default function AIGatewayManagement() {
         </div>
         <Space>
           <Button icon={<ReloadOutlined />} onClick={loadProviders} loading={loading}>刷新</Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddProvider}>
-            添加厂商
-          </Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddProvider}>添加厂商</Button>
         </Space>
       </div>
 
@@ -260,7 +194,16 @@ export default function AIGatewayManagement() {
         rowKey="id"
         loading={loading}
         expandable={{
-          expandedRowRender,
+          expandedRowRender: (provider: ProviderState) => (
+            <ProviderExpandedRow
+              provider={provider}
+              onLoadModels={loadModels}
+              onAddModel={handleAddModel}
+              onEditModel={handleEditModel}
+              onDeleteModel={handleDeleteModel}
+              onToggleModel={handleToggleModel}
+            />
+          ),
           expandRowByClick: true,
           onExpand: (expanded: boolean, record: ProviderState) => {
             if (expanded && !record.models) loadModels(record);
@@ -270,61 +213,19 @@ export default function AIGatewayManagement() {
         size="middle"
       />
 
-      {/* Provider Edit Modal */}
-      <Modal
-        title={editingProvider ? '编辑厂商' : '添加厂商'}
-        open={providerModalOpen}
-        onOk={handleSaveProvider}
-        onCancel={() => setProviderModalOpen(false)}
-        confirmLoading={saving}
-        width={560}
-      >
-        <Form form={providerForm} layout="vertical">
-          {!editingProvider && (
-            <Form.Item name="providerId" label="厂商 ID" rules={[{ required: true, message: '请输入厂商 ID' }]}>
-              <Input placeholder="deepseek / openai / qwen ..." />
-            </Form.Item>
-          )}
-          <Form.Item name="name" label="显示名称" rules={[{ required: true, message: '请输入显示名称' }]}>
-            <Input placeholder="DeepSeek" />
-          </Form.Item>
-          <Form.Item name="baseUrl" label="Base URL" rules={[{ required: true, message: '请输入 Base URL' }]}>
-            <Input placeholder="https://api.deepseek.com/v1" />
-          </Form.Item>
-          <Form.Item name="apiKey" label="API Key" extra={editingProvider ? '留空则不修改已有 Key' : 'API 密钥，加密存储'}>
-            <Input
-              placeholder={editingProvider ? '留空则不修改' : 'sk-...'}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {/* Model Edit Modal */}
-      <Modal
-        title={editingModel ? '编辑模型' : '添加模型'}
-        open={modelModalOpen}
-        onOk={handleSaveModel}
-        onCancel={() => setModelModalOpen(false)}
-        confirmLoading={saving}
-        width={500}
-      >
-        <Form form={modelForm} layout="vertical">
-          <Form.Item name="modelName" label="模型名" rules={[{ required: true, message: '请输入模型名' }]}>
-            <Input placeholder="deepseek-chat" />
-          </Form.Item>
-          <Form.Item name="displayName" label="显示名">
-            <Input placeholder="DeepSeek Chat" />
-          </Form.Item>
-          <Space style={{ width: '100%' }}>
-            <Form.Item name="pricePer1mInput" label="输入价格 ($/1M)" rules={[{ required: true }]}>
-              <InputNumber min={0} step={0.00001} style={{ width: 210 }} placeholder="0.00014" />
-            </Form.Item>
-            <Form.Item name="pricePer1mOutput" label="输出价格 ($/1M)" rules={[{ required: true }]}>
-              <InputNumber min={0} step={0.00001} style={{ width: 210 }} placeholder="0.00028" />
-            </Form.Item>
-          </Space>
-        </Form>
-      </Modal>
+      <AIGatewayModals
+        providerModalOpen={providerModalOpen}
+        editingProvider={editingProvider}
+        providerForm={providerForm}
+        saving={saving}
+        onSaveProvider={handleSaveProvider}
+        onCloseProvider={() => setProviderModalOpen(false)}
+        modelModalOpen={modelModalOpen}
+        editingModel={editingModel}
+        modelForm={modelForm}
+        onSaveModel={handleSaveModel}
+        onCloseModel={() => setModelModalOpen(false)}
+      />
     </div>
   );
 }

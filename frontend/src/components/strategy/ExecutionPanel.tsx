@@ -1,4 +1,3 @@
-import { useState, useRef, useCallback } from 'react';
 import { Button, Input, Tag, Typography, Card, Space } from 'antd';
 import { CodeOutlined, ThunderboltOutlined, CheckCircleOutlined, CloseCircleOutlined, EditOutlined, LoadingOutlined, SendOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
@@ -13,11 +12,7 @@ import {
 } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 import StepProgress from './StepProgress';
 import DiffView from './DiffView';
-import { executePlan, diagnosePlan, type ExecuteCallbacks, type PlanCallbacks } from '@/client/strategyPlan';
-import { strategyRuntimeApi } from '@/client/strategyRuntime';
-import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
-import type { ToolCall, ToolResult, BacktestMetricsMsg } from '@/gen/ant/v1/strategy_execution_pb';
-import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
+import { useExecutionPanel } from './useExecutionPanel';
 
 const { TextArea } = Input;
 
@@ -31,133 +26,15 @@ interface Props {
   onReset: () => void;
 }
 
-type Phase = 'idle' | 'generating' | 'tool_call' | 'tool_result' | 'done' | 'error';
-
 export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, previousCode, onApply, onReset }: Props) {
   const { t } = useTranslation();
-  const [phase, setPhase] = useState<Phase>('idle');
-  const [currentPhase, setCurrentPhase] = useState('');
-  const [streamCode, setStreamCode] = useState('');
-  const [code, setCode] = useState('');
-  const [prevCode, setPrevCode] = useState(previousCode || '');
-  const [toolResults, setToolResults] = useState<ToolResult[]>([]);
-  const [currentTool, setCurrentTool] = useState('');
-  const [error, setError] = useState('');
-  const [feedback, setFeedback] = useState('');
-  const [analysis, setAnalysis] = useState('');
-  const [discussionReply, setDiscussionReply] = useState('');
-  const [metrics, setMetrics] = useState<BacktestMetricsMsg | null>(null);
-  const abortRef = useRef<(() => void) | null>(null);
-  const watchRef = useRef<(() => void) | null>(null);
-
-  useState(() => () => { abortRef.current?.(); watchRef.current?.(); });
-
-  const start = useCallback(() => {
-    setPhase('generating'); setStreamCode(''); setCode(''); setPrevCode(previousCode || ''); setError('');
-    setToolResults([]); setCurrentTool('');
-
-    const abort = executePlan(
-      { plan, conversationId: sessionId, symbol, timeframe, previousCode: previousCode || '' },
-      {
-        onPhase: (p) => { setCurrentPhase(p); if (p === 'generating') setPhase('generating'); },
-        onDelta: (d) => setStreamCode(s => s + d),
-        onCode: (c) => { setCode(c); setStreamCode(''); },
-        onPreviousCode: (c) => setPrevCode(c),
-        onAnalysis: (a) => setAnalysis(a),
-        onToolCall: (tc: ToolCall) => { setPhase('tool_call'); setCurrentTool(tc.name); },
-        onToolResult: (tr: ToolResult) => {
-          setPhase('tool_result'); setCurrentTool('');
-          setToolResults(prev => [...prev, tr]);
-          if (tr.name === 'backtest' && tr.success && tr.outputJson) {
-            try {
-              const out = JSON.parse(tr.outputJson) as { run_id: string };
-              if (out.run_id) {
-                watchRef.current?.();
-                watchRef.current = strategyRuntimeApi.watchBacktestRun(out.run_id, (update: BacktestRunUpdate) => {
-                  if (isSucceededRun(update.run) && update.metrics) {
-                    setMetrics({
-                      totalReturn: update.metrics.totalReturn, sharpeRatio: update.metrics.sharpeRatio,
-                      maxDrawdown: update.metrics.maxDrawdown, winRate: update.metrics.winRate,
-                      totalTrades: update.metrics.totalTrades, profitFactor: update.metrics.profitFactor,
-                    });
-                  }
-                });
-              }
-            } catch { /* ignore */ }
-          }
-        },
-        onError: (e) => { setError(e); setPhase('error'); },
-        onDone: () => { setPhase('done'); },
-      } satisfies ExecuteCallbacks,
-    );
-    abortRef.current = abort;
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const started = useRef(false);
-  if (!started.current) { started.current = true; setTimeout(start, 0); }
-
-  const [diagnosis, setDiagnosis] = useState('');
-  const [pendingFeedback, setPendingFeedback] = useState('');
-
-  const handleFeedback = useCallback(() => {
-    const msg = feedback.trim();
-    if (!msg) return;
-    setFeedback('');
-    setDiagnosis('');
-    setPendingFeedback(msg);
-    setPhase('generating'); setError('');
-
-    // Phase 1: Diagnosis only — no code generation
-    const abort = diagnosePlan(
-      { plan, conversationId: sessionId, feedbackMessage: msg,
-        currentCode: code || streamCode,
-        backtestMetricsJson: metrics ? JSON.stringify(metrics) : '' },
-      {
-        onDelta: () => {}, // ignore streaming, show final
-        onPlan: (p) => { setDiagnosis(p); setPhase('done'); },
-        onError: (e) => { setError(e); setPhase('error'); },
-        onDone: () => {},
-      } satisfies PlanCallbacks,
-    );
-    abortRef.current = abort;
-  }, [feedback, plan, sessionId, code, streamCode, metrics]);
-
-  const handleConfirmDiagnosis = useCallback(() => {
-    const msg = pendingFeedback;
-    setDiagnosis(''); setPendingFeedback('');
-    const currentCode = code || streamCode;
-    setPrevCode(currentCode); setStreamCode(''); setCode(''); setAnalysis('');
-    setPhase('generating'); setToolResults([]); setError(''); setMetrics(null);
-
-    const abort = executePlan(
-      { plan, conversationId: sessionId, symbol, timeframe, previousCode: currentCode,
-        feedbackMessage: msg, backtestMetricsJson: metrics ? JSON.stringify(metrics) : '' },
-      {
-        onPhase: (p) => setCurrentPhase(p),
-        onAnalysis: (a) => setAnalysis(a),
-        onDelta: (d) => setStreamCode(s => s + d),
-        onCode: (c) => { setCode(c); setStreamCode(''); setPhase('done'); },
-        onPreviousCode: (c) => setPrevCode(c),
-        onToolCall: (tc: ToolCall) => { setPhase('tool_call'); setCurrentTool(tc.name); },
-        onToolResult: (tr: ToolResult) => {
-          setPhase('tool_result'); setCurrentTool('');
-          setToolResults(prev => [...prev, tr]);
-        },
-        onError: (e) => { setError(e); setPhase('error'); },
-        onDone: () => { setPhase('done'); },
-      } satisfies ExecuteCallbacks,
-    );
-    abortRef.current = abort;
-  }, [pendingFeedback, plan, sessionId, symbol, timeframe, code, streamCode, metrics]);
-
-  const handleRetryFeedback = useCallback(() => {
-    const msg = pendingFeedback;
-    setDiagnosis(''); setPendingFeedback('');
-    setFeedback(msg); // put it back so user can edit
-    setPhase('done');
-  }, [pendingFeedback]);
-
-  const busy = phase === 'generating' || phase === 'tool_call';
+  const {
+    phase, currentPhase, streamCode, code, prevCode, toolResults,
+    error, feedback, setFeedback, analysis, discussionReply, metrics,
+    diagnosis, pendingFeedback,
+    handleFeedback, handleConfirmDiagnosis, handleRetryFeedback,
+    busy, setDiagnosis, setPendingFeedback,
+  } = useExecutionPanel({ plan, symbol, timeframe, sessionId, previousCode });
 
   const toolLabel = (name: string) => {
     switch (name) {
@@ -182,9 +59,7 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
     { key: 'long_only', label: t(EXEC_CHIP_LONG_ONLY_KEY, 'Long Only') },
   ];
 
-  // Parse plan into numbered steps for the checklist
   const planSteps = plan.split('\n').filter(line => /^\d+[\.\)]\s/.test(line.trim()));
-
   const hasSymbol = !!(symbol && timeframe);
 
   return (
@@ -234,7 +109,6 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
       {toolResults.map((tr, i) => (
         <div key={i} style={{
           padding: '6px 10px', marginBottom: 4, borderRadius: 4, fontSize: 11,
-          // compliance: green/red is meaningful (pass/fail); backtest: neutral (ran ≠ good result)
           background: tr.name === 'backtest' ? '#f0f5ff' : (tr.success ? '#f6ffed' : '#fff2f0'),
           border: `1px solid ${tr.name === 'backtest' ? '#d6e4ff' : (tr.success ? '#b7eb8f' : '#ffa39e')}`,
         }}>
@@ -267,7 +141,6 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
         <div style={{ padding: 6, marginBottom: 8, background: '#fff2f0', borderRadius: 4, fontSize: 11, color: '#cf1322' }}>{error}</div>
       )}
 
-      {/* Diagnosis card — AI suggests, user confirms */}
       {diagnosis && phase === 'done' && (
         <div style={{ marginBottom: 8, padding: 10, background: '#fffbe6', borderRadius: 6, border: '1px solid #ffe58f' }}>
           <Typography.Text strong style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>

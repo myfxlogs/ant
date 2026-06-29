@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Button, Form, Tag, Segmented, Typography, Spin, message, Radio } from 'antd';
+import { Button, Form, Tag, Segmented, Typography, Spin, message, Radio, Alert } from 'antd';
 import { CodeOutlined, ImportOutlined, RobotOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { EDIT_TEMPLATE_MODAL_FIELDS_CODE_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_CODE_SAMPLE_KEY, EDIT_TEMPLATE_MODAL_VALIDATION_CODE_REQUIRED_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
@@ -26,6 +26,8 @@ export default function CodeEditorPanel({ form, code }: Props) {
   const [eaCode, setEaCode] = useState('');
   const [eaTranslating, setEaTranslating] = useState(false);
   const [eaResult, setEaResult] = useState('');
+  const [eaExportCode, setEaExportCode] = useState('');
+  const [eaStrategyId, setEaStrategyId] = useState('');
   const [importMethod, setImportMethod] = useState<ImportMethod>('migration');
   // Migration engine state
   const [analysis, setAnalysis] = useState<AnalyzeImportCodeResponse | null>(null);
@@ -65,14 +67,20 @@ export default function CodeEditorPanel({ form, code }: Props) {
           sourceCode: eaCode,
           sourceName: 'imported.mq4',
         });
-        setEaResult(resp.goCode || '');
+        // Store raw MQL as execution code (single source of truth).
+        // gen.go Go output is a read-only export preview, NOT execution path.
+        setEaResult(eaCode);
+        setEaExportCode(resp.goCode || '');
+        setEaStrategyId(resp.strategyId || '');
+        // Immediately set the form code to the raw MQL so execution uses it.
+        form.setFieldsValue({ code: eaCode });
       } catch (err: any) {
         if (err?.code == null) {
           message.error(t('strategy.importEA.importFailed', { defaultValue: 'Import failed. Please try again.' }));
         }
       } finally { setEaTranslating(false); }
     })().catch(() => {});
-  }, [eaCode, t]);
+  }, [eaCode, t, form]);
 
   // ── AI Translation ──────────────────────────────────────────────
 
@@ -156,11 +164,21 @@ export default function CodeEditorPanel({ form, code }: Props) {
                   </>
                 )}
                 {eaResult && <Button size="small" onClick={applyEaResult}>{t('strategy.importEA.apply', { defaultValue: 'Apply to Editor' })}</Button>}
+                {eaStrategyId && <Tag color="blue" style={{ marginLeft: 'auto' }}>ID: {eaStrategyId.slice(0, 8)}</Tag>}
               </div>
               <div style={{ flex: 1, overflow: 'auto', padding: '0 14px' }}>
                 <ImportAnalysisReport analysis={analysis} loading={analyzing} />
                 {eaResult && (
-                  <pre style={{ margin: 0, padding: '10px 0', fontFamily: '"Fira Code", monospace', fontSize: 12, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{eaResult}</pre>
+                  <>
+                    <Alert
+                      type="info"
+                      showIcon
+                      message={t('strategy.importEA.exportPreview', { defaultValue: '导出 Go 源码（仅供阅读/二次开发，非执行路径）' })}
+                      description={t('strategy.importEA.exportPreviewDesc', { defaultValue: 'Execution uses the original MQL via the IR interpreter. This Go code is for reference only.' })}
+                      style={{ margin: '8px 0' }}
+                    />
+                    <pre style={{ margin: 0, padding: '10px 0', fontFamily: '"Fira Code", monospace', fontSize: 12, lineHeight: 1.5, whiteSpace: 'pre-wrap', opacity: 0.7 }}>{eaExportCode}</pre>
+                  </>
                 )}
                 {!analysis && !eaResult && !analyzing && (
                   <div style={{ textAlign: 'center', padding: 24 }}>

@@ -1,12 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import {
-  Card, Table, Input, Button, Select, InputNumber, message, Space, Tag, Descriptions, Modal, Divider, Typography
+  Card, Table, Input, Button, Select, InputNumber, message, Space, Tag, Descriptions, Modal, Typography
 } from 'antd';
-import { WalletOutlined, SearchOutlined, PlusOutlined, CalculatorOutlined } from '@ant-design/icons';
+import { WalletOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { walletApi } from '@/client/wallet';
-import { aiGatewayApi } from '@/client/aiGateway';
 import { formatDateTime } from '@/utils/date';
+import WalletCalculator from './WalletCalculator';
 
 const { Title, Text } = Typography;
 
@@ -19,68 +19,7 @@ export default function WalletManagement() {
   const [adjustAmount, setAdjustAmount] = useState<number>(0);
   const [adjustDesc, setAdjustDesc] = useState('');
   const [adjustType, setAdjustType] = useState<'add' | 'deduct'>('add');
-  // Bidirectional calculator: change one, auto-update the other
-  const [calcModel, setCalcModel] = useState<string | undefined>();
-  const [calcUSD, setCalcUSD] = useState<string>('0.10');
-  const [calcTokens, setCalcTokens] = useState<string>('714285');
-  const [editingField, setEditingField] = useState<'usd' | 'tokens'>('usd');
 
-  const { data: systemModels } = useQuery({
-    queryKey: ['admin', 'ai-gateway', 'models'],
-    queryFn: () => aiGatewayApi.listSystemModels().catch(() => []),
-  });
-
-  const modelOptions = useMemo(() =>
-    (systemModels || []).map(m => ({
-      value: m.id,
-      label: `${m.displayName || m.modelName} ($${parseFloat(m.pricePer1mInput).toFixed(2)}/1M)`,
-      pricePerToken: (parseFloat(m.pricePer1mInput) + parseFloat(m.pricePer1mOutput)) / 2 / 1000000,
-    })),
-    [systemModels]);
-
-  const selectedModel = modelOptions.find(m => m.value === calcModel);
-
-  // Sync: when USD changes → compute tokens; when tokens change → compute USD
-  const handleUSDChange = (v: string) => {
-    setCalcUSD(v);
-    setEditingField('usd');
-    const usd = parseFloat(v) || 0;
-    if (selectedModel && usd > 0) {
-      setCalcTokens(Math.round(usd / selectedModel.pricePerToken).toString());
-    }
-  };
-
-  const handleTokensChange = (v: string) => {
-    setCalcTokens(v);
-    setEditingField('tokens');
-    const tokens = parseInt(v) || 0;
-    if (selectedModel && tokens > 0) {
-      setCalcUSD((tokens * selectedModel.pricePerToken).toFixed(8));
-    }
-  };
-
-  const handleModelChange = (modelId: string) => {
-    setCalcModel(modelId);
-    const m = modelOptions.find(x => x.value === modelId);
-    if (m) {
-      if (editingField === 'usd') {
-        const usd = parseFloat(calcUSD) || 0;
-        if (usd > 0) setCalcTokens(Math.round(usd / m.pricePerToken).toString());
-      } else {
-        const tokens = parseInt(calcTokens) || 0;
-        if (tokens > 0) setCalcUSD((tokens * m.pricePerToken).toFixed(8));
-      }
-    }
-  };
-
-  const fillAdjust = () => {
-    setAdjustAmount(parseFloat(calcUSD) || 0);
-    const t = parseInt(calcTokens) || 0;
-    const label = selectedModel?.label?.split(' ')[0] || '';
-    setAdjustDesc(`${t >= 1000 ? (t / 1000).toFixed(0) + 'K' : t} tokens (${label})`);
-  };
-
-  // Always fetch user list; search filters on the server side
   const { data: userData, isFetching: searching } = useQuery({
     queryKey: ['admin', 'wallet', 'users', search || ''],
     queryFn: () => walletApi.searchUsers(search || ''),
@@ -88,14 +27,12 @@ export default function WalletManagement() {
 
   const users = userData || [];
 
-  // Selected user's wallet
   const { data: wallet, isLoading: walletLoading } = useQuery({
     queryKey: ['admin', 'wallet', 'detail', selectedUserId],
     queryFn: () => walletApi.getWallet(selectedUserId!),
     enabled: !!selectedUserId,
   });
 
-  // Transactions
   const { data: txData, isLoading: txLoading } = useQuery({
     queryKey: ['admin', 'wallet', 'transactions', selectedUserId],
     queryFn: () => walletApi.listTransactions(1, 50, selectedUserId!),
@@ -123,6 +60,12 @@ export default function WalletManagement() {
   const selectUser = (u: { id: string; email: string; accountNumber?: string }) => {
     setSelectedUserId(u.id);
     setSelectedUserInfo({ email: u.email, accountNumber: u.accountNumber });
+  };
+
+  const handleFillAdjust = (usd: string, tokens: string, modelLabel: string) => {
+    setAdjustAmount(parseFloat(usd) || 0);
+    const t = parseInt(tokens) || 0;
+    setAdjustDesc(`${t >= 1000 ? (t / 1000).toFixed(0) + 'K' : t} tokens (${modelLabel})`);
   };
 
   const userColumns = [
@@ -173,7 +116,6 @@ export default function WalletManagement() {
         <WalletOutlined /> 钱包管理
       </Title>
 
-      {/* User list + search */}
       <Card size="small" title="用户列表">
         <Input
           prefix={<SearchOutlined />}
@@ -201,7 +143,6 @@ export default function WalletManagement() {
         />
       </Card>
 
-      {/* Wallet detail */}
       {selectedUserId && (
         <>
           <Card
@@ -257,57 +198,7 @@ export default function WalletManagement() {
         width={520}
       >
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
-          {/* Token ↔ USD 双向换算器 */}
-          <div style={{ background: '#f6ffed', borderRadius: 8, padding: 12, border: '1px solid #b7eb8f' }}>
-            <div style={{ fontSize: 12, color: '#52c41a', marginBottom: 8, fontWeight: 500 }}>
-              <CalculatorOutlined /> Token ↔ USD 换算
-            </div>
-            <Select
-              showSearch
-              value={calcModel}
-              onChange={handleModelChange}
-              style={{ width: '100%', marginBottom: 12 }}
-              placeholder="选择模型（定价基准）"
-              options={modelOptions}
-              filterOption={(input, option) =>
-                (option?.label as string || '').toLowerCase().includes(input.toLowerCase())
-              }
-            />
-            {selectedModel && (
-              <Space style={{ width: '100%' }} size={12}>
-                <div style={{ flex: 1 }}>
-                  <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>USD 金额</Text>
-                  <InputNumber
-                    value={calcUSD}
-                    onChange={(v) => handleUSDChange(String(v || '0'))}
-                    min={0}
-                    step={0.01}
-                    style={{ width: '100%' }}
-                    addonBefore="$"
-                    precision={8}
-                  />
-                </div>
-                <div style={{ textAlign: 'center', paddingTop: 18 }}>
-                  <Text type="secondary">⇄</Text>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>Token 数量</Text>
-                  <InputNumber
-                    value={calcTokens}
-                    onChange={(v) => handleTokensChange(String(v || '0'))}
-                    min={0}
-                    step={10000}
-                    style={{ width: '100%' }}
-                    addonAfter="tokens"
-                  />
-                </div>
-              </Space>
-            )}
-          </div>
-
-          <Divider style={{ margin: 0 }} />
-
-          {/* 实际调整 */}
+          <WalletCalculator onFillAdjust={handleFillAdjust} />
           <Space>
             <Select
               value={adjustType}
@@ -327,9 +218,6 @@ export default function WalletManagement() {
               placeholder="0.00"
               addonAfter="USD"
             />
-            <Button size="small" icon={<CalculatorOutlined />} onClick={fillAdjust}>
-              填入换算结果
-            </Button>
           </Space>
           <Input
             placeholder="调整原因"

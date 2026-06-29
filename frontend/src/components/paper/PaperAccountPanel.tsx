@@ -1,7 +1,4 @@
-// PaperAccountPanel — virtual paper trading account management + real-time portfolio display.
-// Subscribes via SSE (WatchPaperAccount) for push-first portfolio updates.
-
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button, Card, Input, List, Modal, Space, Tag, Typography, message, Statistic, Row, Col, Form, Select } from 'antd';
 import { PlusOutlined, PlayCircleOutlined, StopOutlined, RiseOutlined, FallOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
@@ -10,21 +7,14 @@ import { NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
 import { CREATE_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
 import { TRADING_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_market_regime_keys';
 import { ACCOUNT_NAME_KEY, CREATE_ACCOUNT_KEY, MESSAGES_CREATED_KEY, MESSAGES_CREATE_FAILED_KEY, MESSAGES_ENTER_NAME_KEY, MESSAGES_PASTE_CODE_KEY, MESSAGES_START_FAILED_KEY, MESSAGES_STOP_FAILED_KEY, MESSAGES_STRATEGY_STARTED_KEY, MESSAGES_STRATEGY_STOPPED_KEY, PAPER_KEY, RUNNING_KEY, START_KEY, START_STRATEGY_KEY, TRADING_STOP_KEY, STRATEGY_CODE_KEY, TRADING_SYMBOL_KEY, TIMEFRAME_KEY, WATCH_KEY } from '@/gen/ant/v1/i18n/strategy_paper_keys';
-
-;
-import { paperTradingClient, paperTradingStreamClient } from '@/client/connect';
+import { paperTradingClient } from '@/client/connect';
 import { strategyActiveApi } from '@/client/strategy';
-import type { PaperAccount, PaperAccountUpdate } from '@/gen/ant/v1/paper_trading_pb';
+import type { PaperAccount } from '@/gen/ant/v1/paper_trading_pb';
 import { useAuthStore } from '@/stores/authStore';
 import { TIMEFRAMES } from '@/constants/timeframes';
+import { usePaperAccountSSE, type RunningStrategy } from './usePaperAccountSSE';
 
 const { Text, Title } = Typography;
-
-interface RunningStrategy {
-  symbol: string;
-  timeframe: string;
-  runId?: string;
-}
 
 export default function PaperAccountPanel() {
   const { t } = useTranslation();
@@ -34,7 +24,6 @@ export default function PaperAccountPanel() {
   const [createName, setCreateName] = useState('');
   const [createBalance, setCreateBalance] = useState('10000');
 
-  // Start modal state
   const [startModalOpen, setStartModalOpen] = useState(false);
   const [startTargetId, setStartTargetId] = useState('');
   const [startSymbol, setStartSymbol] = useState('XAUUSD');
@@ -42,12 +31,10 @@ export default function PaperAccountPanel() {
   const [startCode, setStartCode] = useState('');
   const [starting, setStarting] = useState(false);
 
-  // Running strategies: accountId → RunningStrategy
   const [running, setRunning] = useState<Record<string, RunningStrategy>>({});
   const [stopping, setStopping] = useState<Record<string, boolean>>({});
 
-  // SSE subscriptions ref
-  const streamRefs = useRef<Map<string, { abort: () => void }>>(new Map());
+  const { subscribeAccount } = usePaperAccountSSE(accounts, setAccounts, setRunning);
 
   const loadAccounts = useCallback(async () => {
     if (!userId) return;
@@ -61,99 +48,6 @@ export default function PaperAccountPanel() {
 
   useEffect(() => { loadAccounts(); }, [loadAccounts]);
 
-  // ── SSE WatchPaperAccount ──
-  const subscribeAccount = useCallback((accountId: string) => {
-    // Prevent duplicate subscriptions.
-    if (streamRefs.current.has(accountId)) return;
-
-    const abort = new AbortController();
-    let cancelled = false;
-    streamRefs.current.set(accountId, { abort: () => { cancelled = true; abort.abort(); } });
-
-    (async () => {
-      try {
-        const stream = paperTradingStreamClient.watchPaperAccount(
-          { paperAccountId: accountId },
-          { signal: abort.signal },
-        );
-        for await (const update of stream) {
-          if (cancelled) break;
-          const u = update as PaperAccountUpdate;
-          setAccounts(prev =>
-            prev.map(a => (a.id === accountId ? { ...u.account! } : a)),
-          );
-        }
-      } catch (err) {
-        if (!cancelled) {
-          console.warn('[PaperAccountPanel] SSE stream ended for', accountId, err);
-        }
-      } finally {
-        streamRefs.current.delete(accountId);
-      }
-    })();
-  }, []);
-
-  const unsubscribeAccount = useCallback((accountId: string) => {
-    const ref = streamRefs.current.get(accountId);
-    if (ref) {
-      ref.abort();
-      streamRefs.current.delete(accountId);
-    }
-  }, []);
-
-  // Subscribe to all accounts on load.
-  useEffect(() => {
-    for (const a of accounts) {
-      subscribeAccount(a.id);
-    }
-    return () => {
-      // Cleanup all on unmount.
-      for (const [id] of streamRefs.current) {
-        unsubscribeAccount(id);
-      }
-    };
-  }, [accounts.map(a => a.id).join(','), subscribeAccount, unsubscribeAccount]);
-
-  // Watch active strategies via SSE (push-first, survives refresh).
-  useEffect(() => {
-    const abort = new AbortController();
-    (async () => {
-      try {
-        for await (const event of strategyActiveApi.watchActive('', abort.signal)) {
-          const active = (event.strategies || []) as any[];
-          const recovered: Record<string, RunningStrategy> = {};
-          for (const s of active) {
-            if (s.accountId && s.mode === 'paper') {
-              recovered[s.accountId] = {
-                symbol: s.symbol,
-                timeframe: s.timeframe,
-                runId: s.runId,
-              };
-            }
-          }
-          setRunning(prev => {
-            // Merge: add new/updated, remove stopped ones for paper accounts.
-            const next = { ...prev };
-            for (const [id, val] of Object.entries(recovered)) {
-              next[id] = val;
-            }
-            // Remove paper accounts that are no longer active.
-            for (const id of Object.keys(next)) {
-              if (!(id in recovered)) {
-                delete next[id];
-              }
-            }
-            return next;
-          });
-        }
-      } catch {
-        // Stream ended or aborted
-      }
-    })();
-    return () => abort.abort();
-  }, []);
-
-  // ── Handlers ──
   const handleCreate = useCallback(async () => {
     if (!createName.trim()) { message.warning(t(MESSAGES_ENTER_NAME_KEY)); return; }
     try {
@@ -164,11 +58,10 @@ export default function PaperAccountPanel() {
       message.success(t(MESSAGES_CREATED_KEY));
       setCreateName('');
       setCreateBalance('10000');
-      // Add to frontend state immediately and subscribe.
       setAccounts(prev => [...prev, resp]);
       subscribeAccount(resp.id);
     } catch { message.error(t(MESSAGES_CREATE_FAILED_KEY)); }
-  }, [createName, createBalance, subscribeAccount]);
+  }, [createName, createBalance, subscribeAccount, t]);
 
   const openStartModal = useCallback((accountId: string) => {
     setStartTargetId(accountId);
@@ -198,7 +91,7 @@ export default function PaperAccountPanel() {
       setStartModalOpen(false);
     } catch { message.error(t(MESSAGES_START_FAILED_KEY)); }
     setStarting(false);
-  }, [startCode, startTargetId, startSymbol, startTimeframe]);
+  }, [startCode, startTargetId, startSymbol, startTimeframe, t]);
 
   const handleStop = useCallback(async (accountId: string) => {
     setStopping(prev => ({ ...prev, [accountId]: true }));
@@ -217,13 +110,12 @@ export default function PaperAccountPanel() {
       });
     } catch { message.error(t(MESSAGES_STOP_FAILED_KEY)); }
     setStopping(prev => ({ ...prev, [accountId]: false }));
-  }, [running]);
+  }, [running, t]);
 
   return (
     <div style={{ padding: 16 }}>
       <Title level={5} style={{ marginBottom: 16 }}>{t(TRADING_TITLE_KEY)}</Title>
 
-      {/* Create account */}
       <Card size="small" style={{ marginBottom: 16, background: '#fafafa' }}>
         <Space direction="vertical" style={{ width: '100%' }}>
           <Text strong style={{ fontSize: 12 }}>{t(CREATE_ACCOUNT_KEY)}</Text>
@@ -238,7 +130,6 @@ export default function PaperAccountPanel() {
         </Space>
       </Card>
 
-      {/* Account list */}
       <List
         loading={loading}
         dataSource={accounts}
@@ -298,7 +189,6 @@ export default function PaperAccountPanel() {
         }}
       />
 
-      {/* Start Strategy Modal */}
       <Modal
         title={t(START_STRATEGY_KEY)}
         open={startModalOpen}
