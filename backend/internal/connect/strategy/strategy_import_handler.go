@@ -238,10 +238,14 @@ func irParamGroups(params []interp.ParamDecl) []*antv1.ParamGroupInfo {
 func irBlindSpotProtos(spots []interp.IRBlindSpot) []*antv1.BlindSpot {
 	result := make([]*antv1.BlindSpot, 0, len(spots))
 	for _, bs := range spots {
+		severity := bs.Severity
+		if severity == "永久盲区" {
+			severity = "信息"
+		}
 		result = append(result, &antv1.BlindSpot{
 			Id:          bs.Builtin,
 			Category:    classifyBlindSpotCategory(bs.Builtin),
-			Severity:    bs.Severity,
+			Severity:    severity,
 			Description: bs.Builtin + " is not supported by the interpreter",
 		})
 	}

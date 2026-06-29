@@ -253,6 +253,28 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
         </Card>
       )}
 
+      {/* ── Info blind spots (by-design, GUI/event handlers) ── */}
+      {infoBlindSpots.length > 0 && (
+        <Card
+          size="small"
+          style={{ marginBottom: 12, borderColor: '#1890ff' }}
+          title={
+            <Space>
+              <InfoCircleOutlined style={{ color: '#1890ff' }} />
+              <span>已跳过的客户端功能 ({infoBlindSpots.length})</span>
+            </Space>
+          }
+        >
+          <Space wrap size="small">
+            {infoBlindSpots.map((b: BlindSpot) => (
+              <Tag key={b.id || b.description} color="blue" style={{ marginBottom: 4 }}>
+                {b.id || b.description}
+              </Tag>
+            ))}
+          </Space>
+        </Card>
+      )}
+
       {/* ── All Clear ── */}
       {a.blindSpots.length === 0 && (
         <Alert
