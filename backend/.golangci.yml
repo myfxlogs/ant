@@ -147,6 +147,8 @@ issues:
       linters: [forbidigo]
     - path: "internal/pkg/jwt/"
       linters: [forbidigo]
+    - path: "tools/mql2go/"
+      linters: [forbidigo]
 
     # Complexity exemptions for inherently complex files
     - path: "internal/risksvc/jurisdiction\\.go"

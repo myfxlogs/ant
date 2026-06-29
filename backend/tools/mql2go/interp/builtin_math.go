@@ -3,8 +3,14 @@ package interp
 import (
 	"math"
 	"math/rand"
+	"sync"
 
 	"github.com/shopspring/decimal"
+)
+
+var (
+	randMu  sync.Mutex
+	randSrc = rand.New(rand.NewSource(1))
 )
 
 // Math builtin functions — MQL5 official list + MQL4 lowercase aliases.
@@ -108,12 +114,17 @@ func mathMod(it *Interpreter, args []Value) (Value, error) {
 }
 
 func mathRand(it *Interpreter, args []Value) (Value, error) {
-	return IntVal(int32(rand.Intn(32767))), nil
+	randMu.Lock()
+	v := randSrc.Intn(32767)
+	randMu.Unlock()
+	return IntVal(int32(v)), nil
 }
 
 func mathSrand(it *Interpreter, args []Value) (Value, error) {
 	if len(args) >= 1 {
-		rand.Seed(int64(args[0].ToInt()))
+		randMu.Lock()
+		randSrc = rand.New(rand.NewSource(int64(args[0].ToInt())))
+		randMu.Unlock()
 	}
 	return NoneVal(), nil
 }
