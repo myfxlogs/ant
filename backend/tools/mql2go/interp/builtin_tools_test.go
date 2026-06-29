@@ -1,6 +1,7 @@
 package interp
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/shopspring/decimal"
@@ -210,16 +211,71 @@ func TestBuiltin_MathFunctions(t *testing.T) {
 
 func TestBuiltin_UnimplementedFunction(t *testing.T) {
 	it := &Interpreter{
-		globals: make(map[string]Value),
-		scopes:  []map[string]Value{make(map[string]Value)},
+		globals:           make(map[string]Value),
+		scopes:            []map[string]Value{make(map[string]Value)},
+		runtimeBlindSpots: make(map[string]int),
 	}
 
-	// Call an unimplemented function
+	// Call an unimplemented non-fatal function (no Order/iXxx prefix → warning)
 	v := it.callBuiltin("NonExistentFunction", nil)
 	if v.Kind != ValNone {
 		t.Errorf("Unimplemented function should return NoneVal, got %v", v.Kind)
 	}
-	if !it.errSet {
-		t.Error("errSet should be true after unimplemented function call")
+	if it.runtimeBlindSpots["NonExistentFunction"] != 1 {
+		t.Errorf("runtimeBlindSpots[NonExistentFunction] = %d, want 1", it.runtimeBlindSpots["NonExistentFunction"])
+	}
+}
+
+func TestBuiltin_FatalBlindSpotAborts(t *testing.T) {
+	it := &Interpreter{
+		globals:           make(map[string]Value),
+		scopes:            []map[string]Value{make(map[string]Value)},
+		runtimeBlindSpots: make(map[string]int),
+	}
+
+	// OrderSend is a fatal blind spot — should panic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatal("expected panic for fatal blind spot OrderSend")
+		}
+		e, ok := r.(error)
+		if !ok || !errors.Is(e, errFatalBlindSpot) {
+			t.Fatalf("expected errFatalBlindSpot, got %v", r)
+		}
+	}()
+
+	it.callBuiltin("OrderSend", nil)
+}
+
+func TestRuntimeBlindSpots_API(t *testing.T) {
+	it := &Interpreter{
+		globals:           make(map[string]Value),
+		scopes:            []map[string]Value{make(map[string]Value)},
+		runtimeBlindSpots: make(map[string]int),
+	}
+
+	// Record non-fatal blind spots
+	it.recordBlindSpot("SomeWarning")
+	it.recordBlindSpot("SomeWarning")
+	it.recordBlindSpot("AnotherFunc")
+
+	// Verify GetRuntimeBlindSpots returns sorted results
+	spots := it.GetRuntimeBlindSpots()
+	if len(spots) != 2 {
+		t.Fatalf("GetRuntimeBlindSpots returned %d entries, want 2", len(spots))
+	}
+	// SomeWarning has count 2, should come first (both are warnings, sort by count desc)
+	if spots[0].Builtin != "SomeWarning" || spots[0].Count != 2 {
+		t.Errorf("spots[0] = {%s, %d}, want {SomeWarning, 2}", spots[0].Builtin, spots[0].Count)
+	}
+	if spots[1].Builtin != "AnotherFunc" || spots[1].Count != 1 {
+		t.Errorf("spots[1] = {%s, %d}, want {AnotherFunc, 1}", spots[1].Builtin, spots[1].Count)
+	}
+
+	// Reset
+	it.ResetRuntimeBlindSpots()
+	if len(it.runtimeBlindSpots) != 0 {
+		t.Errorf("runtimeBlindSpots not cleared after Reset")
 	}
 }

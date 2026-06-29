@@ -28,7 +28,7 @@ var builtinTable = map[string]func(*Interpreter, []Value) (Value, error){
 	"Alert":  builtinPrint, // alias
 }
 
-func (it *Interpreter) callBuiltin(name string, args []Expr) Value {
+func (it *Interpreter) callBuiltin(name string, args []Expr) (valOut Value) {
 	// Check user-defined functions first
 	if it.ir != nil && it.ir.Funcs != nil {
 		if fn, ok := it.ir.Funcs[name]; ok {
@@ -51,11 +51,8 @@ func (it *Interpreter) callBuiltin(name string, args []Expr) Value {
 		if v, ok := it.callTrade(name, args); ok {
 			return v
 		}
-		// Unimplemented — log error and return NoneVal
-		it.errSet = true
-		if it.ctx != nil {
-			it.ctx.Log(fmt.Sprintf("MQL interpreter: unimplemented function %q", name))
-		}
+		// Unimplemented — record runtime blind spot
+		it.recordBlindSpot(name)
 		return NoneVal()
 	}
 
@@ -67,10 +64,28 @@ func (it *Interpreter) callBuiltin(name string, args []Expr) Value {
 
 	result, err := fn(it, vals)
 	if err != nil {
-		it.errSet = true
+		it.recordBlindSpot(name)
 		return NoneVal()
 	}
 	return result
+}
+
+// recordBlindSpot logs an unimplemented function call at runtime.
+// Fatal blind spots abort the current execution via panic(errFatalBlindSpot),
+// which is recovered in execBlock to return an error to the caller.
+func (it *Interpreter) recordBlindSpot(name string) {
+	if it.runtimeBlindSpots == nil {
+		it.runtimeBlindSpots = make(map[string]int)
+	}
+	it.runtimeBlindSpots[name]++
+	if it.ctx != nil {
+		it.ctx.Log(fmt.Sprintf("MQL interpreter: unimplemented function %q (hit #%d)", name, it.runtimeBlindSpots[name]))
+	}
+	// Fatal blind spots abort execution — returning NoneVal for trade/indicator
+	// functions would silently corrupt EA logic (e.g. OrderSend returns 0 → no order)
+	if classifyRuntimeSeverity(name) == "致命" {
+		panic(errFatalBlindSpot)
+	}
 }
 
 // dispatchClassMethod handles MQL5 class method calls (CTrade.Buy, etc.).

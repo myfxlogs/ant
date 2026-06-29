@@ -3,6 +3,8 @@ package interp
 import (
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/shopspring/decimal"
 	"anttrader/strategy/sdk"
@@ -26,16 +28,31 @@ type Interpreter struct {
 	orderPool *MQL4OrderPool
 	posPool   *MQL5PositionPool
 	signal    *sdk.Signal
-	errSet    bool
 	retVal    Value // return value from user function
+
+	// runtimeBlindSpots tracks unimplemented functions encountered during execution.
+	// Map key = function name, value = hit count.
+	runtimeBlindSpots map[string]int
 }
+
+// RuntimeBlindSpot is a single entry returned by GetRuntimeBlindSpots.
+type RuntimeBlindSpot struct {
+	Builtin  string
+	Count    int
+	Severity string
+}
+
+// errFatalBlindSpot is returned when a fatal unimplemented function is called,
+// aborting the current OnTick/OnBar execution.
+var errFatalBlindSpot = errors.New("fatal blind spot: unimplemented function critical to EA logic")
 
 // NewInterpreter creates an Interpreter from a compiled IR.
 func NewInterpreter(ir *IR) *Interpreter {
 	it := &Interpreter{
-		ir:      ir,
-		globals: make(map[string]Value),
-		scopes:  []map[string]Value{make(map[string]Value)}, // root scope
+		ir:                ir,
+		globals:           make(map[string]Value),
+		scopes:            []map[string]Value{make(map[string]Value)}, // root scope
+		runtimeBlindSpots: make(map[string]int),
 	}
 	it.series = &SeriesAccessor{}
 	it.orderPool = &MQL4OrderPool{}
@@ -64,6 +81,33 @@ func NewInterpreter(ir *IR) *Interpreter {
 // GetGlobal returns a global variable value by name (for test/debug inspection).
 func (it *Interpreter) GetGlobal(name string) Value {
 	return it.globals[name]
+}
+
+// GetRuntimeBlindSpots returns unimplemented functions encountered during execution,
+// sorted by severity (fatal first) then by hit count (descending).
+func (it *Interpreter) GetRuntimeBlindSpots() []RuntimeBlindSpot {
+	result := make([]RuntimeBlindSpot, 0, len(it.runtimeBlindSpots))
+	for name, count := range it.runtimeBlindSpots {
+		severity := classifyRuntimeSeverity(name)
+		result = append(result, RuntimeBlindSpot{
+			Builtin:  name,
+			Count:    count,
+			Severity: severity,
+		})
+	}
+	// Sort: fatal first, then by count descending
+	sort.Slice(result, func(i, j int) bool {
+		if result[i].Severity != result[j].Severity {
+			return result[i].Severity == "致命"
+		}
+		return result[i].Count > result[j].Count
+	})
+	return result
+}
+
+// ResetRuntimeBlindSpots clears the runtime blind spot log (e.g. between backtest runs).
+func (it *Interpreter) ResetRuntimeBlindSpots() {
+	it.runtimeBlindSpots = make(map[string]int)
 }
 
 // ── Variable management ─────────────────────────────────────────────
@@ -241,7 +285,17 @@ func (it *Interpreter) execStmt(stmt *Statement) error {
 	return nil
 }
 
-func (it *Interpreter) execBlock(stmts []Statement) error {
+func (it *Interpreter) execBlock(stmts []Statement) (err error) {
+	// Recover from fatal blind spot panics (triggered by recordBlindSpot)
+	defer func() {
+		if r := recover(); r != nil {
+			if e, ok := r.(error); ok && errors.Is(e, errFatalBlindSpot) {
+				err = e
+				return
+			}
+			panic(r) // re-panic non-blindspot panics
+		}
+	}()
 	for i := range stmts {
 		if err := it.execStmt(&stmts[i]); err != nil {
 			return err
@@ -489,4 +543,25 @@ func isClassType(typeName string) bool {
 		return true
 	}
 	return false
+}
+
+// classifyRuntimeSeverity determines the severity of a runtime blind spot.
+// Fatal blind spots abort the current tick/bar; warnings allow continued execution.
+func classifyRuntimeSeverity(name string) string {
+	if isPermanentBlindSpot(name) {
+		return "永久盲区"
+	}
+	// Trade / indicator functions are fatal — returning NoneVal corrupts EA logic
+	if isTradeName(name) || isIndicatorName(name) {
+		return "致命"
+	}
+	// iXxx pattern (custom indicators etc.)
+	if len(name) > 1 && name[0] == 'i' && name[1] >= 'A' && name[1] <= 'Z' {
+		return "致命"
+	}
+	// Order*/Position*/Account* pattern
+	if strings.HasPrefix(name, "Order") || strings.HasPrefix(name, "Position") || strings.HasPrefix(name, "Account") {
+		return "致命"
+	}
+	return "警告"
 }
