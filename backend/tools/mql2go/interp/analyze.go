@@ -255,10 +255,6 @@ var permanentBlindSpots = map[string]string{
 	"DLLImport":         "DLL #import: security risk, not supported",
 	// MQL5 native OrderSend — CTrade wrapper covers this
 	"OrderSendMQL5":     "MQL5 native OrderSend: CTrade wrapper covers this",
-	// Event handlers — not callable functions, handled as IR entry points
-	"OnTimer":           "Event handler: executed as IR.OnTimer, not a callable builtin",
-	"OnTrade":           "Event handler: executed as IR.OnTrade, not a callable builtin",
-	"OnTradeTransaction": "Event handler: executed as IR.OnTradeTransaction, not a callable builtin",
 }
 
 // isPermanentBlindSpot returns true if the function is a known permanent blind spot.

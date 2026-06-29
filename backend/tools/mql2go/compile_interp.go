@@ -205,6 +205,14 @@ func (c *compiler) collectFunction(ir *interp.IR, n *sitter.Node) {
 			Params: params,
 			Body:   stmts,
 		}
+		return
+	}
+	// Event handlers: also register as callable user functions so they
+	// can be invoked from other code (e.g. OnTick calling OnTimer()).
+	ir.Funcs[name] = &interp.FuncDef{
+		Name:   name,
+		Params: c.collectFuncParams(n),
+		Body:   stmts,
 	}
 }
 
