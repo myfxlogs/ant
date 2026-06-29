@@ -18,6 +18,7 @@ GO_DIRS=(
   backend/internal/paper
   backend/internal/service
   backend/internal/connect/strategy
+  backend/tools/mql2go/interp
 )
 
 emit() { printf '%s\n' "$1"; }
