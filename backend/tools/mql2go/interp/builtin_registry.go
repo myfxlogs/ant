@@ -53,12 +53,18 @@ var implementedMQL5Position = []string{
 	"PositionGetString",
 }
 
-// implementedAccount — account case labels in builtin_trade.go callTrade switch.
+// implementedAccount — account case labels in builtin_trade.go callTrade + callTradeStubs.
 var implementedAccount = []string{
+	// MQL4 Account* functions (callTrade)
 	"AccountBalance", "AccountEquity", "AccountFreeMargin",
 	"AccountMargin", "AccountLeverage",
 	"AccountNumber", "AccountStopoutLevel", "AccountCurrency",
 	"AccountName", "AccountCompany",
+	// MQL4-only account functions (callTradeStubs)
+	"AccountFreeMarginCheck", "AccountFreeMarginMode", "AccountServer",
+	"AccountStopoutMode", "AccountCredit", "AccountProfit",
+	// MQL5 AccountInfo* functions (callTradeStubs)
+	"AccountInfoDouble", "AccountInfoInteger", "AccountInfoString",
 }
 
 // implementedCTradeMethods — case labels in builtin_ctrade.go execCTrade switch.
@@ -121,8 +127,6 @@ var implementedPlatform = []string{
 	"TerminalInfoDouble", "TerminalInfoInteger", "TerminalInfoString",
 	// Common functions
 	"GetTickCount",
-	// MQL5 account info (aliases for MQL4 Account* functions)
-	"AccountInfoDouble", "AccountInfoInteger", "AccountInfoString",
 	// MQL5 market info additions
 	"SymbolInfoTick", "SymbolName", "SymbolSelect", "SymbolsTotal",
 	"SymbolInfoMarginRate", "SymbolInfoSessionQuote", "SymbolInfoSessionTrade",
@@ -137,18 +141,15 @@ var implementedPlatform = []string{
 	"SeriesInfoInteger",
 	// MQL5 trade helpers
 	"OrderCalcMargin", "OrderCalcProfit", "OrderCheck",
-	"PositionSelect", "PositionSelectByTicket",
+	"PositionSelect",
 	// MQL5 order history
 	"HistorySelect", "HistorySelectByPosition",
 	"HistoryDealsTotal", "HistoryDealSelect", "HistoryDealGetTicket",
 	"HistoryDealGetDouble", "HistoryDealGetInteger", "HistoryDealGetString",
 	"HistoryOrdersTotal", "HistoryOrderSelect", "HistoryOrderGetTicket",
 	"HistoryOrderGetDouble", "HistoryOrderGetInteger", "HistoryOrderGetString",
-	// MQL5 order functions
-	"OrderGetTicket", "OrderSelect", "OrderGetDouble", "OrderGetInteger", "OrderGetString",
-	// MQL4-only account functions (not in MQL5)
-	"AccountFreeMarginCheck", "AccountFreeMarginMode", "AccountServer",
-	"AccountStopoutMode", "AccountCredit", "AccountProfit",
+	// MQL5 order functions (OrderSelect is in implementedMQL4Trade — shared MQL4/MQL5)
+	"OrderGetTicket", "OrderGetDouble", "OrderGetInteger", "OrderGetString",
 	// MQL4-only check functions (not in MQL5)
 	"IsConnected", "IsDemo", "IsDllsAllowed", "IsExpertEnabled",
 	"IsLibrariesAllowed", "IsTradeAllowed", "IsTradeContextBusy",
