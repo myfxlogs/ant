@@ -45,7 +45,7 @@ func Analyze(ir *IR) *IRReport {
 	indSet := map[string]bool{}
 
 	for _, c := range calls {
-		if c.isUserFunc {
+		if c.isUserFunc || c.isUserMethod {
 			rep.SupportedCalls++
 			continue
 		}
@@ -107,6 +107,7 @@ func IsStubIndicator(name string) bool {
 type callInfo struct {
 	name          string
 	isUserFunc    bool
+	isUserMethod  bool // user-defined class method (non-CTrade)
 	isImplemented bool
 	classType     string // for ExprField method calls: class name (e.g. "CTrade")
 }
@@ -156,6 +157,10 @@ func classifyMethodCall(ir *IR, classType, method string) callInfo {
 	ci := callInfo{name: method, classType: classType}
 	if classType == "CTrade" {
 		ci.isImplemented = IsCTradeMethodImplemented(method)
+	} else {
+		// User-defined class method (e.g. LadinoBot.onTick, _logs.adicionarLog)
+		// — not a missing builtin, just user code we can't see into
+		ci.isUserMethod = true
 	}
 	return ci
 }
@@ -187,6 +192,11 @@ func classifySeverity(version string, c callInfo) string {
 	// CTrade method → fatal
 	if c.classType == "CTrade" {
 		return SeverityFatal
+	}
+	// User-defined class method call (e.g. _ladinoBot.onTick(), _logs.adicionarLog())
+	// → info, not warning: these are user code, not missing builtins
+	if c.classType != "" {
+		return SeverityInfo
 	}
 	// Known trade / indicator → fatal
 	if isTradeName(name) || isIndicatorName(name) {
