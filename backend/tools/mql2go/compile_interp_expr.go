@@ -9,6 +9,16 @@ import (
 
 // ── Expression compilation (CST → pure Go Expr) ─────────────────────
 
+// mustExpr wraps compileExpr to guarantee a non-nil result.
+// If compileExpr returns nil (unrecognized node type), returns a zero literal
+// to avoid nil-pointer panics in callers that dereference immediately.
+func (c *compiler) mustExpr(n *sitter.Node) interp.Expr {
+	if e := c.compileExpr(n); e != nil {
+		return *e
+	}
+	return interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(0)}
+}
+
 func (c *compiler) compileExprFromStmt(n *sitter.Node) *interp.Expr {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
@@ -134,7 +144,7 @@ func (c *compiler) compileBinary(n *sitter.Node) *interp.Expr {
 	return &interp.Expr{
 		Kind: interp.ExprBinary,
 		Op:   op,
-		Args: []interp.Expr{*c.compileExpr(left), *c.compileExpr(right)},
+		Args: []interp.Expr{c.mustExpr(left), c.mustExpr(right)},
 	}
 }
 
@@ -164,7 +174,7 @@ func (c *compiler) compileUnary(n *sitter.Node) *interp.Expr {
 	return &interp.Expr{
 		Kind: interp.ExprUnary,
 		Op:   op,
-		Args: []interp.Expr{*c.compileExpr(operand)},
+		Args: []interp.Expr{c.mustExpr(operand)},
 	}
 }
 
@@ -215,14 +225,14 @@ func (c *compiler) compileAssignment(n *sitter.Node) *interp.Expr {
 			return &interp.Expr{
 				Kind: interp.ExprAssignment,
 				Name: name,
-				Args: []interp.Expr{*c.compileExpr(rhs)},
+				Args: []interp.Expr{c.mustExpr(rhs)},
 			}
 		}
 		return &interp.Expr{
 			Kind: interp.ExprCompoundAssign,
 			Name: name,
 			Op:   op,
-			Args: []interp.Expr{*c.compileExpr(rhs)},
+			Args: []interp.Expr{c.mustExpr(rhs)},
 		}
 	}
 
@@ -231,7 +241,7 @@ func (c *compiler) compileAssignment(n *sitter.Node) *interp.Expr {
 		fieldExpr := c.compileField(lhs)
 		if fieldExpr != nil {
 			fieldExpr.IsAssign = true
-			fieldExpr.Args = append(fieldExpr.Args, *c.compileExpr(rhs))
+			fieldExpr.Args = append(fieldExpr.Args, c.mustExpr(rhs))
 			return fieldExpr
 		}
 	}
@@ -240,7 +250,7 @@ func (c *compiler) compileAssignment(n *sitter.Node) *interp.Expr {
 	if lhs.Type() == "subscript_expression" {
 		subExpr := c.compileSubscript(lhs)
 		if subExpr != nil {
-			subExpr.Args = []interp.Expr{*c.compileExpr(rhs)}
+			subExpr.Args = []interp.Expr{c.mustExpr(rhs)}
 			return subExpr
 		}
 	}
@@ -316,7 +326,7 @@ func (c *compiler) compileField(n *sitter.Node) *interp.Expr {
 	result := &interp.Expr{
 		Kind: interp.ExprField,
 		Name: fieldName,
-		Args: []interp.Expr{*c.compileExpr(obj)},
+		Args: []interp.Expr{c.mustExpr(obj)},
 	}
 	result.Args = append(result.Args, args...)
 	return result
