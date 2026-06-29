@@ -81,10 +81,10 @@ ADR-0020 确立了"Python Strategy SDK + Go 引擎编排"的架构。经过实�
   - 与现有 Go 后端共享类型系统（`sdk.Position`/`sdk.OrderRequest` 等）
 
 - **负面**：
-  - Python `strategy-service/` 的回测引擎（fill/cost/margin/portfolio/market）功能丰富，Go 侧 `backtest/` 需要补齐
-  - 行为对齐 harness 需要用 Go SimBroker 重新实现
-  - Go `indicatorSet` 中部分指标是 stub（Stochastic/CCI/ADX/MFI/OBV/SAR/StdDev/WPR），需要补齐实现
-  - `mql2go` 识别器覆盖率需评估——目前从 MQL4 CST 提取，MQL5（class/OOP）支持待验证
+  - ~~Python `strategy-service/` 的回测引擎（fill/cost/margin/portfolio/market）功能丰富，Go 侧 `backtest/` 需要补齐~~ → ✅ 已补齐（T2）
+  - ~~行为对齐 harness 需要用 Go SimBroker 重新实现~~ → ✅ 已实现（parity 框架：MT 报告解析 + 交易逐笔对比）
+  - ~~Go `indicatorSet` 中部分指标是 stub（Stochastic/CCI/ADX/MFI/OBV/SAR/StdDev/WPR），需要补齐实现~~ → ✅ 已补齐（T1: 全部 38 个指标真实计算）
+  - ~~`mql2go` 识别器覆盖率需评估——目前从 MQL4 CST 提取，MQL5（class/OOP）支持待验证~~ → ✅ 已完成（MQL5 CTrade/Position/事件回调全部支持）
 
 - **中性**：
   - `strategy-service/` 代码保留作为参考，但不再维护
@@ -107,13 +107,19 @@ ADR-0020 确立了"Python Strategy SDK + Go 引擎编排"的架构。经过实�
 
 | 项目 | 当前状态 | 优先级 |
 |------|---------|--------|
-| `indicatorSet` stub 指标 | Stochastic/CCI/ADX/MFI/OBV/SAR/StdDev/WPR 为 stub | P1 |
-| Go SimBroker 功能补齐 | 对比 Python SimBroker 的 fill/cost/margin/portfolio | P1 |
-| `GoStrategyExecutor` 完整实现 | `go_runner.go` 中 `OnBar` 传 `nil` context | P1 |
-| `mql2go` MQL5 支持 | 当前主要支持 MQL4（`OrderSend` 语法），MQL5（`OrderSend` + class）待验证 | P2 |
-| Go 行为对齐 harness | 需实现 Go 版 `SignalComparator` + `RecordingBroker` | P2 |
-| `mql2go` 表达式翻译 | `pyToGoExpr()` 是简单字符串替换，复杂表达式可能出错 | P2 |
-| Go 回测 metrics | `CalculateMetrics` 需对齐 Python 侧的完整 metrics 计算 | P2 |
+| `indicatorSet` stub 指标 | ✅ 已实现（T1: 24 个 stub 指标全部真实计算） | ~~P1~~ 完成 |
+| Go SimBroker 功能补齐 | ✅ 已实现（T2: PositionClosePartial/PositionCloseBy/HistoryOrders/Deals/SymbolInfo） | ~~P1~~ 完成 |
+| `GoStrategyExecutor` 完整实现 | ✅ 已实现（解释器路径替代，`interp.Interpreter` 实现 `sdk.Strategy` + 可选接口） | ~~P1~~ 完成 |
+| `mql2go` MQL5 支持 | ✅ 已完成（CTrade/Position/OnTrade/OnTradeTransaction 事件回调） | ~~P2~~ 完成 |
+| `mql2go` 表达式翻译 | ✅ 已完成（解释器路径不再需要表达式翻译，直接执行 IR） | ~~P2~~ 完成 |
+| Go 回测 metrics | ✅ 已完成 | ~~P2~~ 完成 |
+| SymbolInfo/MarketInfo | ✅ 已实现（T3: SymbolInfoDouble/Integer/String + MarketInfo） | ~~P2~~ 完成 |
+| OrderCloseBy + OrdersHistoryTotal | ✅ 已实现（T4: 对冲平仓 + 历史订单遍历） | ~~P2~~ 完成 |
+| MQL5 事件回调 | ✅ 已实现（T5: OnTrade/OnTradeTransaction） | ~~P2~~ 完成 |
+| `*OnArray` 指标 | ✅ 已实现（T6a: iMAOnArray/iRSIOnArray 等 8 个函数） | ~~P3~~ 完成 |
+| 永久盲区标记 | ✅ 已实现（T6c: File/Object/DLL/NativeOrderSend 标记为"永久盲区"） | ~~P3~~ 完成 |
+| iCustom 自定义指标 | ⏳ 待规划（需 OnCalculate + buffer 模型 + 指标加载机制） | P3 |
+| Go 行为对齐 harness | ✅ 已实现（`parity.go` + `parity_runner.go` + `mt_report.go`：MT4/MT5 报告解析 + 交易逐笔对比 + 容差配置） | ~~P2~~ 完成 |
 
 ## 7. 验证方式
 
