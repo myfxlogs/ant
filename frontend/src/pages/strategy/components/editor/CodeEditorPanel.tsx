@@ -18,9 +18,10 @@ type ImportMethod = 'migration' | 'ai';
 interface Props {
   form: FormInstance;
   code: string;
+  onStrategyIdChange?: (id: string | undefined) => void;
 }
 
-export default function CodeEditorPanel({ form, code }: Props) {
+export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Props) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<string>('write');
   const [eaCode, setEaCode] = useState('');
@@ -72,8 +73,9 @@ export default function CodeEditorPanel({ form, code }: Props) {
         setEaResult(eaCode);
         setEaExportCode(resp.goCode || '');
         setEaStrategyId(resp.strategyId || '');
-        // Immediately set the form code to the raw MQL so execution uses it.
-        form.setFieldsValue({ code: eaCode });
+        // Set form code to raw MQL and store strategy_id for backtest linking.
+        form.setFieldsValue({ code: eaCode, strategyId: resp.strategyId || '' });
+        onStrategyIdChange?.(resp.strategyId || undefined);
       } catch (err: any) {
         if (err?.code == null) {
           message.error(t('strategy.importEA.importFailed', { defaultValue: 'Import failed. Please try again.' }));

@@ -69,4 +69,5 @@ export interface BacktestRunnerInputs {
   symbol: string;
   timeframe: string;
   templateId?: string;
+  strategyId?: string;
 }

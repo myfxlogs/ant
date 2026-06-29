@@ -134,6 +134,7 @@ export const strategyRuntimeApi = {
     templateId?: string;
     templateDraftId?: string;
     extraSymbols?: string[];
+    strategyId?: string;
     executionConfig?: {
       commission: number;
       slippage: number;
@@ -158,6 +159,7 @@ export const strategyRuntimeApi = {
       templateId: params.templateId,
       templateDraftId: params.templateDraftId,
       extraSymbols: (params.extraSymbols ?? []).filter((s) => !!s && s !== params.symbol),
+      strategyId: params.strategyId,
       executionConfig: params.executionConfig ? {
         commission: params.executionConfig.commission,
         slippage: params.executionConfig.slippage,

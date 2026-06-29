@@ -165,7 +165,7 @@ export function useBacktestRunner() {
   // ── Run backtest ──────────────────────────────────────────────────────
 
   const run = useCallback(async (inputs: BacktestRunnerInputs) => {
-    const { strategyCode, accountId, symbol, timeframe, templateId } = inputs;
+    const { strategyCode, accountId, symbol, timeframe, templateId, strategyId } = inputs;
     if (!strategyCode || !symbol) { message.warning(t(ENTER_CODE_AND_SYMBOL_KEY)); return; }
     setSubmitting(true);
     setActiveTab('results');
@@ -176,6 +176,7 @@ export function useBacktestRunner() {
         from: startDate ? new Date(startDate) : undefined,
         to: endDate ? new Date(endDate) : undefined,
         templateId: templateId || undefined,
+        strategyId: strategyId || undefined,
         executionConfig: {
           commission, slippage, leverage,
           tradeDirection: tradeDirection as 'long' | 'short' | 'both',

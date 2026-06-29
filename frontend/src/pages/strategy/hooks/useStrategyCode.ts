@@ -12,6 +12,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
   const onValidateResult = opts?.onValidateResult;
   const { t } = useTranslation();
   const [code, setCode] = useState('');
+  const [strategyId, setStrategyId] = useState<string | undefined>(undefined);
   const [lastValidatedCode, setLastValidatedCode] = useState('');
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<ValidateExtendedResult | null>(null);
@@ -124,7 +125,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
     navigator.clipboard.writeText(code).then(() => message.success(t(COPY_SUCCESS_KEY))).catch(() => message.error(t(COPY_FAILED_KEY)));
   }, [code, t]);
 
-  return { code, setCode, validating, validationResult, setValidationResult,
+  return { code, setCode, strategyId, setStrategyId, validating, validationResult, setValidationResult,
     lastValidatedCode, setLastValidatedCode, handleValidate,
     templates, templatesLoading, loadedTemplate, loadTemplates, handleLoadTemplate,
     saveModalOpen, setSaveModalOpen, saveLoading, saveForm, canSave,

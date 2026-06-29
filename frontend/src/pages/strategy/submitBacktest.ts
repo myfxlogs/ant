@@ -43,12 +43,14 @@ export async function doSubmitBacktest(
     return;
   }
   const codeToSubmit = wrapStrategyCodeWithParams(String(backtestTemplate?.code || ''), backtestParamValues);
+  const strategyId = values.strategyId ? String(values.strategyId) : undefined;
   const resp = await strategyRuntimeApi.startBacktestRun({
     code: codeToSubmit, accountId: String(values.accountId), symbol: String(values.symbol),
     timeframe: String(values.timeframe), initialCapital: Number(values.initialCapital || 10000),
     mode: 'KLINE_RANGE', from: fromDate, to: toDate,
     templateId: String(backtestTemplate?.id || '').startsWith('default-') ? undefined : String(backtestTemplate?.id || ''),
     extraSymbols,
+    strategyId,
   });
   saveRunTitle(String(resp?.runId || ''), String(values.title || dayjs().format('YYYY-MM-DD')));
   message.success(t(MESSAGES_BACKTEST_SUBMITTED_KEY));

@@ -74,8 +74,9 @@ export function useStrategyWorkspaceState() {
     btCtx.run({
       strategyCode: codeCtx.code, symbol, accountId, timeframe,
       templateId: selectedTemplateId || undefined,
+      strategyId: codeCtx.strategyId,
     });
-  }, [codeCtx.code, symbol, accountId, timeframe, selectedTemplateId, btCtx.run]);
+  }, [codeCtx.code, codeCtx.strategyId, symbol, accountId, timeframe, selectedTemplateId, btCtx.run]);
 
   const handleRunTuning = useCallback(async (): Promise<string> => {
     return btCtx.tuning.run({
