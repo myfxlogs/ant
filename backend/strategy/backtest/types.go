@@ -22,6 +22,9 @@ type Config struct {
 	SwapRate       decimal.Decimal // overnight swap rate (e.g. 0.00001)
 	StrictMode     bool            // if true, skip bars with missing data
 
+	// Strategy parameters passed to OnInit via ctx.Param*
+	Params         map[string]string
+
 	// Symbol properties for SymbolInfo
 	SymbolDigits  int32           // e.g. 5 for EURUSD
 	SymbolPoint   decimal.Decimal // e.g. 0.00001 for 5-digit

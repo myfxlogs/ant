@@ -23,6 +23,7 @@ type SimBroker struct {
 	equity      decimal.Decimal
 	balance     decimal.Decimal
 	currentBar  int
+	currentBarTime time.Time // timestamp of the bar being processed
 }
 
 // NewSimBroker creates a simulated broker for backtesting.
@@ -37,6 +38,9 @@ func NewSimBroker(cfg Config) *SimBroker {
 
 // SetBar updates the current bar index for position matching.
 func (b *SimBroker) SetBar(index int) { b.currentBar = index }
+
+// SetBarTime updates the current bar timestamp for order time tracking.
+func (b *SimBroker) SetBarTime(t time.Time) { b.currentBarTime = t }
 
 // ── Order execution ────────────────────────────────────────────────
 
@@ -53,7 +57,7 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 		Price:      req.Price,
 		StopLoss:   req.StopLoss,
 		TakeProfit: req.TakeProfit,
-		OpenTime:   time.Now(),
+		OpenTime:   b.currentBarTime,
 		State:      OrderOpen,
 		Comment:    req.Comment,
 		Magic:      req.Magic,
@@ -118,7 +122,7 @@ func (b *SimBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.Ord
 			if closeVol.Equal(pos.Volume) {
 				// Close full position
 				pos.State = OrderClosed
-				pos.CloseTime = time.Now()
+				pos.CloseTime = b.currentBarTime
 				pos.Profit = profit
 				b.history = append(b.history, pos)
 				b.recordDeal(pos, closeVol, profit, pos.CloseTime)
@@ -126,7 +130,7 @@ func (b *SimBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.Ord
 			} else {
 				// Partial close — reduce volume, keep position open
 				pos.Volume = pos.Volume.Sub(closeVol)
-				b.recordDealPartial(pos, closeVol, profit, time.Now())
+				b.recordDealPartial(pos, closeVol, profit, b.currentBarTime)
 			}
 			return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket, Volume: closeVol, Price: closePrice}, nil
 		}
@@ -180,7 +184,7 @@ func (b *SimBroker) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, er
 	b.equity = b.equity.Add(netProfit)
 	b.balance = b.balance.Add(netProfit)
 
-	now := time.Now()
+	now := b.currentBarTime
 
 	if closeVol.Equal(pos1.Volume) {
 		pos1.State = OrderClosed
@@ -436,7 +440,7 @@ func (b *SimBroker) expirePending(currentBar int, maxBars int) {
 }
 
 func (b *SimBroker) Account() sdk.AccountInfo {
-	equity := b.equity
+	equity := b.balance
 	for _, pos := range b.positions {
 		equity = equity.Add(pos.Profit)
 	}

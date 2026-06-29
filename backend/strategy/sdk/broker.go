@@ -70,3 +70,8 @@ type SymbolInfo struct {
 	SwapShort   decimal.Decimal
 	ContractSize decimal.Decimal
 }
+
+// SpreadDecimal returns the spread as a decimal price value (Spread * Point).
+func (s SymbolInfo) SpreadDecimal() decimal.Decimal {
+	return s.Point.Mul(decimal.NewFromInt(int64(s.Spread)))
+}

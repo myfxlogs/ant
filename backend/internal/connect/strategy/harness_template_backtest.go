@@ -86,6 +86,7 @@ func main() {
 		Slippage:       mustDecimal(req.SlippageRate),
 		SwapRate:       mustDecimal(req.SwapRate),
 		StrictMode:     req.StrictMode,
+		Params:         req.StrategyParams,
 	}
 	if req.StartDateMs > 0 {
 		cfg.StartDate = time.UnixMilli(req.StartDateMs)

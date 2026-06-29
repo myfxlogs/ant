@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -43,6 +44,9 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		tf:      e.config.Timeframe,
 		bars:    e.bars,
 		ind:     &btIndicators{bars: e.bars},
+		params:  e.config.Params,
+		point:   e.config.SymbolPoint,
+		digits:  e.config.SymbolDigits,
 	}
 
 	// OnInit
@@ -57,6 +61,7 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		}
 		bar := e.bars[i]
 		e.broker.SetBar(i)
+		e.broker.SetBarTime(time.UnixMilli(bar.Timestamp))
 
 		// Update context with current bar slice
 		btCtx.barIndex = i
@@ -86,10 +91,15 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 			e.dispatchSignal(sig, bar)
 		}
 
-		// Update equity
-		equity := e.broker.equity
+		// Update equity with floating P&L from open positions
+		equity := e.broker.balance
+		closePrice := decimal.NewFromFloat(bar.Close.InexactFloat64())
 		for _, pos := range e.broker.positions {
-			equity = equity.Add(pos.Profit)
+			floating := closePrice.Sub(pos.Price).Mul(pos.Volume)
+			if pos.Side == sdk.SideSell {
+				floating = floating.Neg()
+			}
+			equity = equity.Add(floating).Sub(pos.Commission).Sub(pos.Swap)
 		}
 		e.equity = append(e.equity, EquityPoint{
 			Time:   time.UnixMilli(bar.Timestamp),
@@ -228,7 +238,7 @@ func (e *Engine) checkSLTP(bar sdk.Bar) {
 				pos.Profit = pos.Profit.Neg()
 			}
 			pos.State = OrderClosed
-			pos.CloseTime = time.Now()
+			pos.CloseTime = time.UnixMilli(bar.Timestamp)
 			e.broker.history = append(e.broker.history, pos)
 			e.trades = append(e.trades, Trade{
 				Symbol:     pos.Symbol,
@@ -260,18 +270,34 @@ type backtestContext struct {
 	barIndex   int
 	currentBar sdk.Bar
 	ind        *btIndicators
+	params     map[string]string
+	point      decimal.Decimal
+	digits     int32
 }
 
 func (c *backtestContext) Bars() sdk.BarSeries          { return &btBarSeries{bars: c.bars[:c.barIndex+1]} }
 func (c *backtestContext) BarsTF(_ string) sdk.BarSeries { return c.Bars() }
 func (c *backtestContext) Symbol() string                { return c.symbol }
 func (c *backtestContext) Timeframe() string             { return c.tf }
-func (c *backtestContext) Point() decimal.Decimal        { return decimal.NewFromFloat(0.00001) }
-func (c *backtestContext) Pip() decimal.Decimal          { return decimal.NewFromFloat(0.0001) }
-func (c *backtestContext) Digits() int32                 { return 5 }
-func (c *backtestContext) Ask() decimal.Decimal          { return c.currentBar.Close }
+func (c *backtestContext) Point() decimal.Decimal {
+	if !c.point.IsZero() {
+		return c.point
+	}
+	return decimal.NewFromFloat(0.00001)
+}
+func (c *backtestContext) Pip() decimal.Decimal          { return c.Point().Mul(decimal.NewFromInt(10)) }
+func (c *backtestContext) Digits() int32 {
+	if c.digits > 0 {
+		return c.digits
+	}
+	return 5
+}
+func (c *backtestContext) Ask() decimal.Decimal {
+	spread := c.broker.config.Slippage
+	return c.currentBar.Close.Add(spread)
+}
 func (c *backtestContext) Bid() decimal.Decimal          { return c.currentBar.Close }
-func (c *backtestContext) Spread() decimal.Decimal       { return decimal.Zero }
+func (c *backtestContext) Spread() decimal.Decimal       { return c.broker.config.Slippage }
 func (c *backtestContext) Account() sdk.AccountInfo      { return c.broker.Account() }
 func (c *backtestContext) Mode() sdk.AccountMode         { return sdk.ModeHedging }
 func (c *backtestContext) Broker() sdk.Broker            { return c.broker }
@@ -281,11 +307,53 @@ func (c *backtestContext) KillTimer()                    {}
 func (c *backtestContext) Log(string)                    {}
 func (c *backtestContext) ServerTime() int64             { return c.currentBar.Timestamp }
 
-func (c *backtestContext) Param(name string, defaultVal interface{}) interface{}         { return defaultVal }
-func (c *backtestContext) ParamDecimal(name string, d decimal.Decimal) decimal.Decimal   { return d }
-func (c *backtestContext) ParamInt(name string, d int) int                               { return d }
-func (c *backtestContext) ParamString(name, d string) string                             { return d }
-func (c *backtestContext) ParamBool(name string, d bool) bool                            { return d }
+func (c *backtestContext) Param(name string, defaultVal interface{}) interface{} {
+	if c.params != nil {
+		if v, ok := c.params[name]; ok {
+			return v
+		}
+	}
+	return defaultVal
+}
+func (c *backtestContext) ParamDecimal(name string, d decimal.Decimal) decimal.Decimal {
+	if c.params != nil {
+		if v, ok := c.params[name]; ok {
+			if parsed, err := decimal.NewFromString(v); err == nil {
+				return parsed
+			}
+		}
+	}
+	return d
+}
+func (c *backtestContext) ParamInt(name string, d int) int {
+	if c.params != nil {
+		if v, ok := c.params[name]; ok {
+			if parsed, err := strconv.Atoi(v); err == nil {
+				return parsed
+			}
+		}
+	}
+	return d
+}
+func (c *backtestContext) ParamString(name, d string) string {
+	if c.params != nil {
+		if v, ok := c.params[name]; ok {
+			return v
+		}
+	}
+	return d
+}
+func (c *backtestContext) ParamBool(name string, d bool) bool {
+	if c.params != nil {
+		if v, ok := c.params[name]; ok {
+			if v == "true" || v == "1" {
+				return true
+			}
+			return false
+		}
+	}
+	return d
+}
 
 // ── Bar series ────────────────────────────────────────────────────
 
