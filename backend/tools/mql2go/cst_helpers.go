@@ -19,13 +19,10 @@ func nodeText(source string, n *sitter.Node) string {
 	if n == nil {
 		return ""
 	}
-	if source == "" {
-		source = parseSource
-	}
 	return source[n.StartByte():n.EndByte()]
 }
 
-func childByType(source string, n *sitter.Node, kind string) *sitter.Node {
+func childByType(n *sitter.Node, kind string) *sitter.Node {
 	for i := 0; i < int(n.ChildCount()); i++ {
 		c := n.Child(i)
 		if c.Type() == kind {
@@ -44,18 +41,6 @@ func childrenByType(n *sitter.Node, kind string) []*sitter.Node {
 		}
 	}
 	return out
-}
-
-func findChild(source string, n *sitter.Node, kinds ...string) *sitter.Node {
-	for i := 0; i < int(n.ChildCount()); i++ {
-		c := n.Child(i)
-		for _, k := range kinds {
-			if c.Type() == k {
-				return c
-			}
-		}
-	}
-	return nil
 }
 
 func findNamedChild(n *sitter.Node, kinds ...string) *sitter.Node {
@@ -82,75 +67,23 @@ func walkCST(n *sitter.Node, visitor func(*sitter.Node) bool) {
 	}
 }
 
-func findCall(n *sitter.Node, name string) *sitter.Node {
-	var found *sitter.Node
-	walkCST(n, func(n *sitter.Node) bool {
-		if found != nil {
-			return false
-		}
-		if n.Type() == "call_expression" {
-			if id := childByType("", n, "identifier"); id != nil && nodeText("", id) == name {
-				found = n
-				return false
-			}
-			if id := childByType("", n, "field_identifier"); id != nil && nodeText("", id) == name {
-				found = n
-				return false
-			}
-		}
-		return true
-	})
-	return found
-}
-
-func callFuncName(n *sitter.Node) string {
-	if id := childByType("", n, "identifier"); id != nil {
-		return nodeText("", id)
+func callFuncName(source string, n *sitter.Node) string {
+	if id := childByType(n, "identifier"); id != nil {
+		return nodeText(source, id)
 	}
-	if fe := childByType("", n, "field_expression"); fe != nil {
-		if id := childByType("", fe, "field_identifier"); id != nil {
-			return nodeText("", id)
+	if fe := childByType(n, "field_expression"); fe != nil {
+		if id := childByType(fe, "field_identifier"); id != nil {
+			return nodeText(source, id)
 		}
-		if id := childByType("", fe, "identifier"); id != nil {
-			return nodeText("", id)
+		if id := childByType(fe, "identifier"); id != nil {
+			return nodeText(source, id)
 		}
 	}
-	if id := childByType("", n, "field_identifier"); id != nil {
-		return nodeText("", id)
+	if id := childByType(n, "field_identifier"); id != nil {
+		return nodeText(source, id)
 	}
-	if id := childByType("", n, "statement_identifier"); id != nil {
-		return nodeText("", id)
-	}
-	return ""
-}
-
-func callArg(n *sitter.Node, idx int) string {
-	args := childByType("", n, "argument_list")
-	if args == nil {
-		return ""
-	}
-	named := getNamedChildren(args)
-	if idx < len(named) {
-		return nodeText("", named[idx])
-	}
-	return ""
-}
-
-func callArgID(n *sitter.Node, idx int) string {
-	args := childByType("", n, "argument_list")
-	if args == nil {
-		return ""
-	}
-	named := getNamedChildren(args)
-	if idx < len(named) {
-		c := named[idx]
-		if id := childByType("", c, "identifier"); id != nil {
-			return nodeText("", id)
-		}
-		if id := childByType("", c, "field_identifier"); id != nil {
-			return nodeText("", id)
-		}
-		return nodeText("", c)
+	if id := childByType(n, "statement_identifier"); id != nil {
+		return nodeText(source, id)
 	}
 	return ""
 }
@@ -168,26 +101,26 @@ func findFunctions(root *sitter.Node) []*sitter.Node {
 	return fns
 }
 
-func funcName(n *sitter.Node) string {
-	decl := childByType("", n, "function_declarator")
+func funcName(source string, n *sitter.Node) string {
+	decl := childByType(n, "function_declarator")
 	if decl != nil {
-		id := childByType("", decl, "identifier")
+		id := childByType(decl, "identifier")
 		if id == nil {
-			id = childByType("", decl, "field_identifier")
+			id = childByType(decl, "field_identifier")
 		}
 		if id == nil {
-			id = childByType("", decl, "statement_identifier")
+			id = childByType(decl, "statement_identifier")
 		}
-		return nodeText("", id)
+		return nodeText(source, id)
 	}
-	id := childByType("", n, "identifier")
+	id := childByType(n, "identifier")
 	if id == nil {
-		id = childByType("", n, "field_identifier")
+		id = childByType(n, "field_identifier")
 	}
 	if id == nil {
-		id = childByType("", n, "statement_identifier")
+		id = childByType(n, "statement_identifier")
 	}
-	return nodeText("", id)
+	return nodeText(source, id)
 }
 
 func funcBody(n *sitter.Node) *sitter.Node {

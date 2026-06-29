@@ -317,6 +317,14 @@ func timeframeToPeriod(tf string) int32 {
 		return 60
 	case "H4":
 		return 240
+	case "H2":
+		return 120
+	case "H6":
+		return 360
+	case "H8":
+		return 480
+	case "H12":
+		return 720
 	case "D1":
 		return 1440
 	case "W1":
@@ -343,6 +351,14 @@ func periodToTimeframe(period int32) string {
 		return "H1"
 	case 240:
 		return "H4"
+	case 120:
+		return "H2"
+	case 360:
+		return "H6"
+	case 480:
+		return "H8"
+	case 720:
+		return "H12"
 	case 1440:
 		return "D1"
 	case 10080:

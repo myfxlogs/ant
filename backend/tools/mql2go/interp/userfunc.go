@@ -27,8 +27,15 @@ func (it *Interpreter) callUserFunc(fn *FuncDef, args []Expr) Value {
 	// Restore scope stack
 	it.scopes = savedScopes
 
-	if err != nil && !errors.Is(err, errReturn) {
-		// Log error but don't propagate
+	if err != nil {
+		if errors.Is(err, errReturn) {
+			return it.retVal
+		}
+		// Fatal blind spots must propagate — don't swallow them
+		if errors.Is(err, errFatalBlindSpot) {
+			panic(err)
+		}
+		// Log other errors but don't propagate
 		if it.ctx != nil {
 			it.ctx.Log("MQL interpreter: error in user function " + fn.Name)
 		}

@@ -15,10 +15,6 @@ func CompileToIR(source string) (*interp.IR, error) {
 	// Run preprocessor first (#define, #property stripping)
 	source = PreprocessMQL(source)
 
-	analyzeMu.Lock()
-	parseSource = source
-	defer analyzeMu.Unlock()
-
 	root, err := ParseMQL(source)
 	if err != nil {
 		return nil, fmt.Errorf("parse: %w", err)
@@ -90,7 +86,7 @@ func (c *compiler) collectGlobal(ir *interp.IR, n *sitter.Node) {
 		return
 	}
 	// Skip function declarations
-	if childByType(c.source, n, "function_declarator") != nil {
+	if childByType(n, "function_declarator") != nil {
 		return
 	}
 	c.collectGlobalVar(ir, n)
@@ -115,7 +111,7 @@ func (c *compiler) collectParam(ir *interp.IR, n *sitter.Node) {
 				if valExpr := c.findInitValue(child, name); valExpr != nil {
 					pd.Default = c.compileExpr(valExpr)
 				}
-			} else if init := childByType(c.source, decl, "init_declarator"); init != nil {
+			} else if init := childByType(decl, "init_declarator"); init != nil {
 				if valExpr := c.findInitValue(init, name); valExpr != nil {
 					pd.Default = c.compileExpr(valExpr)
 				}
@@ -168,7 +164,7 @@ func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 
 // collectFunction maps MQL event functions to IR slots.
 func (c *compiler) collectFunction(ir *interp.IR, n *sitter.Node) {
-	name := funcName(n)
+	name := funcName(c.source, n)
 	if name == "" {
 		return
 	}
@@ -259,7 +255,7 @@ func (c *compiler) compileStmt(n *sitter.Node) *interp.Statement {
 		if expr != nil {
 			// Handle 'return(val)' which tree-sitter may parse as call_expression
 			// with function name 'return' — unwrap to the argument
-			if expr.Type() == "call_expression" && callFuncName(expr) == "return" {
+			if expr.Type() == "call_expression" && callFuncName(c.source, expr) == "return" {
 				args := c.compileArgs(expr)
 				if len(args) > 0 {
 					e = &args[0]

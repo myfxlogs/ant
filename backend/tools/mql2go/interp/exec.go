@@ -258,28 +258,37 @@ func (it *Interpreter) execStmt(stmt *Statement) error {
 
 	case StmtSwitch:
 		switchVal := it.evalExpr(stmt.Expr)
-		var defaultCase *SwitchCase
+		// Find the first matching case index (or default)
+		startIdx := -1
+		defaultIdx := -1
 		for i := range stmt.Cases {
-			c := &stmt.Cases[i]
-			if c.Expr == nil {
-				defaultCase = c
+			if stmt.Cases[i].Expr == nil {
+				defaultIdx = i
 				continue
 			}
-			caseVal := it.evalExpr(c.Expr)
+			caseVal := it.evalExpr(stmt.Cases[i].Expr)
 			if switchVal.Equal(caseVal) {
-				err := it.execBlock(c.Body)
-				if errors.Is(err, errBreak) {
-					return nil
-				}
-				return err
+				startIdx = i
+				break
 			}
 		}
-		if defaultCase != nil {
-			err := it.execBlock(defaultCase.Body)
+		if startIdx == -1 {
+			startIdx = defaultIdx
+		}
+		if startIdx == -1 {
+			return nil
+		}
+		// Execute from the matched case onward — C/MQL fallthrough semantics:
+		// if no break is hit, execution continues into the next case body.
+		for i := startIdx; i < len(stmt.Cases); i++ {
+			err := it.execBlock(stmt.Cases[i].Body)
 			if errors.Is(err, errBreak) {
 				return nil
 			}
-			return err
+			if err != nil {
+				return err
+			}
+			// No break → fall through to next case
 		}
 	}
 	return nil
@@ -562,6 +571,10 @@ func classifyRuntimeSeverity(name string) string {
 	// Order*/Position*/Account* pattern
 	if strings.HasPrefix(name, "Order") || strings.HasPrefix(name, "Position") || strings.HasPrefix(name, "Account") {
 		return "致命"
+	}
+	// Doesn't match any known MQL builtin pattern → likely user code
+	if !looksLikeMQLBuiltin(name) {
+		return "信息"
 	}
 	return "警告"
 }

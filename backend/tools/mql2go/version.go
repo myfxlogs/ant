@@ -3,16 +3,8 @@ package mql2go
 import (
 	"context"
 	"strings"
-	"sync"
 
 	sitter "github.com/smacker/go-tree-sitter"
-)
-
-// parseSource holds the MQL source being analyzed — set by CompileToIR,
-// used by CST helpers for text extraction. Protected by analyzeMu.
-var (
-	parseSource string
-	analyzeMu   sync.Mutex
 )
 
 // ParseMQL parses MQL source into a tree-sitter CST.

@@ -83,6 +83,29 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 	case "field_expression":
 		return c.compileField(n)
 
+	case "cast_expression":
+		// (type)operand — unwrap to the operand, discarding the cast
+		// (MQL is loosely typed, casts are mostly int↔double conversions)
+		for i := 0; i < int(n.NamedChildCount()); i++ {
+			child := n.NamedChild(i)
+			ct := child.Type()
+			if ct != "primitive_type" && ct != "type_identifier" {
+				return c.compileExpr(child)
+			}
+		}
+		return nil
+
+	case "comma_expression":
+		// Evaluate left-to-right, return last value (C comma operator)
+		var last *interp.Expr
+		for i := 0; i < int(n.NamedChildCount()); i++ {
+			child := n.NamedChild(i)
+			if e := c.compileExpr(child); e != nil {
+				last = e
+			}
+		}
+		return last
+
 	case "argument_list":
 		// Should not be compiled directly
 		return nil
@@ -109,7 +132,7 @@ func (c *compiler) compileCall(n *sitter.Node) *interp.Expr {
 			return fieldExpr
 		}
 	}
-	name := callFuncName(n)
+	name := callFuncName(c.source, n)
 	args := c.compileArgs(n)
 	return &interp.Expr{Kind: interp.ExprCall, Name: name, Args: args}
 }
@@ -310,7 +333,7 @@ func (c *compiler) compileField(n *sitter.Node) *interp.Expr {
 			}
 		case "call_expression":
 			// method call: obj.method(args)
-			fieldName = callFuncName(child)
+			fieldName = callFuncName(c.source, child)
 			args = c.compileArgs(child)
 		case "argument_list":
 			// already handled by call_expression above
@@ -333,7 +356,7 @@ func (c *compiler) compileField(n *sitter.Node) *interp.Expr {
 }
 
 func (c *compiler) compileArgs(n *sitter.Node) []interp.Expr {
-	args := childByType(c.source, n, "argument_list")
+	args := childByType(n, "argument_list")
 	if args == nil {
 		return nil
 	}
@@ -378,7 +401,7 @@ func (c *compiler) findType(n *sitter.Node) string {
 			}
 		}
 	}
-	if pt := childByType(c.source, n, "primitive_type"); pt != nil {
+	if pt := childByType(n, "primitive_type"); pt != nil {
 		return c.text(pt)
 	}
 	// Find type_identifier, skipping 'input'/'extern' keywords
