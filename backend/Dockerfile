@@ -15,7 +15,7 @@ RUN if [ -n "$ALPINE_MIRROR" ]; then \
         sed -i "s|dl-cdn.alpinelinux.org|$ALPINE_MIRROR|g" /etc/apk/repositories; \
     fi && \
     apk update && \
-    apk add --no-cache git ca-certificates tzdata
+    apk add --no-cache git ca-certificates tzdata gcc musl-dev
 
 COPY go.mod go.sum ./
 
@@ -26,7 +26,9 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -ldflags="-w -s" -o /antrader ./cmd/server
+# CGO_ENABLED=1 required for go-tree-sitter (cgo bindings to C library)
+ENV CGO_ENABLED=1
+RUN go build -ldflags="-w -s" -o /app/antrader ./cmd/server
 
 FROM golang:1.26.2-alpine
 ARG ALPINE_MIRROR
@@ -40,7 +42,8 @@ RUN if [ -n "$ALPINE_MIRROR" ]; then \
     apk add --no-cache ca-certificates tzdata wget postgresql-client procps && \
     adduser -D -u 1000 -g '' appuser
 
-COPY --from=builder /antrader /app/antrader
+COPY --from=builder /app/antrader /app/antrader
+COPY --from=builder /app/tools/mql2go/mql.so /app/tools/mql2go/mql.so
 COPY configs /app/configs
 COPY migrations /app/migrations
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
@@ -51,6 +54,7 @@ USER appuser
 
 ENV TZ=Asia/Shanghai
 ENV GIN_MODE=release
+ENV LD_LIBRARY_PATH=/app/tools/mql2go
 
 EXPOSE 8080
 
