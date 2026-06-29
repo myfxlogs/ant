@@ -22,13 +22,13 @@ func TestAnalyze_PermanentBlindSpots(t *testing.T) {
 	}
 	found := false
 	for _, bs := range rep.BlindSpots {
-		if bs.Severity == "永久盲区" {
+		if bs.Severity == SeverityInfo {
 			found = true
 			break
 		}
 	}
 	if !found {
-		t.Errorf("Expected at least one blind spot with severity '永久盲区', got: %v", rep.BlindSpots)
+		t.Errorf("Expected at least one blind spot with severity %q, got: %v", SeverityInfo, rep.BlindSpots)
 	}
 }
 
@@ -44,8 +44,8 @@ func TestAnalyze_PermanentBlindSpot_FileOpen(t *testing.T) {
 	}
 	rep := Analyze(ir)
 	for _, bs := range rep.BlindSpots {
-		if bs.Builtin == "FileOpen" && bs.Severity != "永久盲区" {
-			t.Errorf("FileOpen severity = %q, want '永久盲区'", bs.Severity)
+		if bs.Builtin == "FileOpen" && bs.Severity != SeverityInfo {
+			t.Errorf("FileOpen severity = %q, want %q", bs.Severity, SeverityInfo)
 		}
 	}
 }
@@ -62,8 +62,8 @@ func TestAnalyze_PermanentBlindSpot_ObjectCreate(t *testing.T) {
 	}
 	rep := Analyze(ir)
 	for _, bs := range rep.BlindSpots {
-		if bs.Builtin == "ObjectCreate" && bs.Severity != "永久盲区" {
-			t.Errorf("ObjectCreate severity = %q, want '永久盲区'", bs.Severity)
+		if bs.Builtin == "ObjectCreate" && bs.Severity != SeverityInfo {
+			t.Errorf("ObjectCreate severity = %q, want %q", bs.Severity, SeverityInfo)
 		}
 	}
 }

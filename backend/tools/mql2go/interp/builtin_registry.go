@@ -90,4 +90,60 @@ var implementedPlatform = []string{
 	"IsVisualMode", "RefreshRates",
 	"Day", "DayOfWeek", "Hour", "Minute", "Year", "Month",
 	"StrToInteger",
+	// Math functions (MQL5 official list — aliases and full names)
+	"MathCeil", "MathFloor", "MathCos", "MathSin", "MathTan",
+	"MathExp", "MathMod", "MathRand", "MathSrand",
+	"MathArccos", "MathArcsin", "MathArctan", "MathLog10",
+	"MathIsValidNumber",
+	// MQL4 lowercase math aliases
+	"ceil", "floor", "cos", "sin", "tan", "exp", "fabs",
+	"fmax", "fmin", "fmod", "log", "log10", "pow", "round", "rand", "srand", "sqrt",
+	// String functions
+	"StringAdd", "StringCompare", "StringFormat",
+	"StringGetCharacter", "StringSetCharacter",
+	"StringToLower", "StringToUpper",
+	"StringBufferLen", "StringInit", "StringFill",
+	// Array functions
+	"ArrayBsearch", "ArrayCompare", "ArrayFill", "ArrayFree",
+	"ArrayGetAsSeries", "ArrayIsDynamic", "ArrayIsSeries",
+	"ArrayRange", "ArrayPrint", "ArrayInsert", "ArrayRemove",
+	"ArrayReverse", "ArraySwap",
+	// Conversion functions
+	"CharToString", "CharArrayToString", "ShortToString",
+	"ShortArrayToString", "StringToColor", "StringToCharArray",
+	"StringToShortArray", "EnumToString",
+	// Date/Time functions
+	"TimeGMT", "TimeGMTOffset", "TimeDaylightSavings",
+	"TimeTradeServer", "TimeToStruct", "StructToTime",
+	// Checkup functions
+	"PeriodSeconds", "UninitializeReason", "IsStopped",
+	"MQLInfoInteger", "MQLInfoString",
+	"TerminalInfoDouble", "TerminalInfoInteger", "TerminalInfoString",
+	// Common functions
+	"GetTickCount",
+	// MQL5 account info (aliases for MQL4 Account* functions)
+	"AccountInfoDouble", "AccountInfoInteger", "AccountInfoString",
+	// MQL5 market info additions
+	"SymbolInfoTick", "SymbolName", "SymbolSelect", "SymbolsTotal",
+	"SymbolInfoMarginRate", "SymbolInfoSessionQuote", "SymbolInfoSessionTrade",
+	"SymbolIsSynchronized",
+	// MQL5 timeseries access
+	"Bars", "iBarShift", "iHighest", "iLowest",
+	"iTickVolume", "iRealVolume", "iVolume", "iSpread",
+	"CopyRates", "CopyClose", "CopyHigh", "CopyLow", "CopyOpen",
+	"CopyTime", "CopyBuffer", "CopyTickVolume", "CopyRealVolume", "CopySpread",
+	"CopyTicks",
+	"BarsCalculated",
+	"SeriesInfoInteger",
+	// MQL5 trade helpers
+	"OrderCalcMargin", "OrderCalcProfit", "OrderCheck",
+	"PositionSelect", "PositionSelectByTicket",
+	// MQL5 order history
+	"HistorySelect", "HistorySelectByPosition",
+	"HistoryDealsTotal", "HistoryDealSelect", "HistoryDealGetTicket",
+	"HistoryDealGetDouble", "HistoryDealGetInteger", "HistoryDealGetString",
+	"HistoryOrdersTotal", "HistoryOrderSelect", "HistoryOrderGetTicket",
+	"HistoryOrderGetDouble", "HistoryOrderGetInteger", "HistoryOrderGetString",
+	// MQL5 order functions
+	"OrderGetTicket", "OrderSelect", "OrderGetDouble", "OrderGetInteger", "OrderGetString",
 }
