@@ -89,6 +89,8 @@ func (v Value) ToDecimal() decimal.Decimal {
 		return decimal.NewFromInt(int64(v.Int))
 	case ValDecimal:
 		return v.Decimal
+	case ValDatetime:
+		return decimal.NewFromInt(v.Datetime)
 	case ValBool:
 		if v.Bool {
 			return decimal.NewFromInt(1)
@@ -110,6 +112,8 @@ func (v Value) ToInt() int32 {
 		d := v.Decimal
 		i := d.IntPart()
 		return int32(i)
+	case ValDatetime:
+		return int32(v.Datetime)
 	case ValBool:
 		if v.Bool {
 			return 1
@@ -160,7 +164,7 @@ func (v Value) Equal(other Value) bool {
 }
 
 func isNumeric(k ValueKind) bool {
-	return k == ValInt || k == ValDecimal
+	return k == ValInt || k == ValDecimal || k == ValDatetime
 }
 
 // ParseNumberLiteral parses a numeric literal string into a Value.

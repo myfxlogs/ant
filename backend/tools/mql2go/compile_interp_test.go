@@ -183,7 +183,7 @@ void OnBar()
 	foundUpdate := false
 	for _, s := range ir.OnBar {
 		if s.Kind == interp.StmtExpr && s.Expr != nil {
-			if s.Expr.Kind == interp.ExprAssignment {
+			if s.Expr.Kind == interp.ExprAssignment || s.Expr.Kind == interp.ExprDecl {
 				foundAssign = true
 			}
 			if s.Expr.Kind == interp.ExprUpdate {

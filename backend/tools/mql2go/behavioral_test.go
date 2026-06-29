@@ -2,6 +2,7 @@ package mql2go
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
@@ -11,10 +12,8 @@ import (
 	"anttrader/strategy/sdk"
 )
 
-// manualMAStrategy is a hand-written Go strategy that mirrors what mql2go
-// would generate for a simple MA crossover MQL4 EA. Used to verify that
-// the SimBroker + Engine pipeline produces correct behavioral results
-// that the generated code should also produce.
+// manualMAStrategy is a hand-written Go strategy that mirrors what
+// GenerateFromIR would produce for a simple MA crossover MQL4 EA.
 type manualMAStrategy struct {
 	maPeriod  int32
 	lotSize   decimal.Decimal
@@ -40,8 +39,6 @@ func (s *manualMAStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error
 	if bars.Len() < int(s.maPeriod)+1 {
 		return nil, nil
 	}
-
-	_ = bars
 
 	s.maValue = ctx.Indicators().EMA(int(s.maPeriod), 1)
 	closeVal := ctx.Bars().Close(1)
@@ -74,12 +71,10 @@ func (s *manualMAStrategy) OnDeinit(ctx sdk.Context, reason string) error {
 	return nil
 }
 
-// makeTestBars creates a simple uptrend series of bars for testing.
 func makeTestBars(n int) []sdk.Bar {
 	bars := make([]sdk.Bar, n)
 	price := 1.1000
 	for i := 0; i < n; i++ {
-		// Simple uptrend: each bar closes higher
 		open := price
 		close := price + 0.0010
 		high := close + 0.0005
@@ -123,33 +118,28 @@ func TestBehavioralAlignment_SimBroker(t *testing.T) {
 		t.Fatalf("backtest failed: %v", err)
 	}
 
-	// Verify we got equity points
 	if len(result.Equity) == 0 {
 		t.Error("expected equity points from backtest")
 	}
 
-	// Verify initial equity is the starting capital
 	firstEquity := result.Equity[0].Equity
 	if !firstEquity.Equals(decimal.NewFromInt(10000)) {
 		t.Errorf("expected initial equity 10000, got %s", firstEquity.String())
 	}
 
-	// The strategy should produce at least one signal in an uptrend
-	// (MA will be below price in uptrend → buy signal on first crossover)
 	if len(result.Trades) == 0 {
 		t.Log("no trades produced — this may be expected if EMA never crosses below price in pure uptrend")
 	}
 
-	// Verify equity curve has the right number of points (one per bar after bar 0)
 	if len(result.Equity) != len(bars)-1 {
 		t.Errorf("expected %d equity points, got %d", len(bars)-1, len(result.Equity))
 	}
 }
 
-// TestGenerate_ProducesRunnableCode verifies that generated code for a
-// realistic MQL4 EA has all the structural elements needed to compile
+// TestGenerateFromIR_ProducesRunnableCode verifies that generated code
+// for a realistic MQL4 EA has all structural elements needed to compile
 // and run against the SimBroker.
-func TestGenerate_ProducesRunnableCode(t *testing.T) {
+func TestGenerateFromIR_ProducesRunnableCode(t *testing.T) {
 	source := `
 extern int MagicNumber = 12345;
 extern double LotSize = 0.1;
@@ -171,15 +161,13 @@ void OnTick() {
     }
 }
 `
-	intent, err := Analyze(source)
+	ir, err := CompileToIR(source)
 	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
+		t.Fatalf("CompileToIR failed: %v", err)
 	}
-	intent.Meta.Name = "BehavioralTest"
 
-	code := Generate(intent)
+	code := GenerateFromIR(ir, "BehavioralTest")
 
-	// Verify all structural elements needed for SimBroker compatibility
 	checks := []struct {
 		name     string
 		expected string
@@ -190,30 +178,12 @@ void OnTick() {
 		{"struct", "type BehavioralTest struct"},
 		{"interface assertion", "var _ sdk.Strategy = (*BehavioralTest)(nil)"},
 		{"OnInit", "func (s *BehavioralTest) OnInit"},
-		{"OnBar", "func (s *BehavioralTest) OnBar"},
 		{"OnDeinit", "func (s *BehavioralTest) OnDeinit"},
-		{"EMA indicator", "ctx.Indicators().EMA("},
-		{"signal creation", "sdk.Signal{"},
-		{"buy action", "sdk.ActionBuy"},
-		{"closeAll helper", "func (s *BehavioralTest) closeAll"},
 	}
 
 	for _, ch := range checks {
-		if !contains(code, ch.expected) {
+		if !strings.Contains(code, ch.expected) {
 			t.Errorf("generated code missing %s: expected to contain %q", ch.name, ch.expected)
 		}
 	}
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(s) > 0 && indexOf(s, substr) >= 0)
-}
-
-func indexOf(s, substr string) int {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return i
-		}
-	}
-	return -1
 }

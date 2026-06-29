@@ -5,9 +5,11 @@ import (
 	"go/token"
 	"strings"
 	"testing"
+
+	"anttrader/tools/mql2go/interp"
 )
 
-// sampleMQL4EA is a representative MQL4 EA for testing the transpiler pipeline.
+// sampleMQL4EA is a representative MQL4 EA for testing the IR pipeline.
 const sampleMQL4EA = `
 extern int MagicNumber = 12345;
 extern double LotSize = 0.1;
@@ -60,779 +62,204 @@ void OnTick() {
 }
 `
 
-func TestAnalyze_BasicMQL4(t *testing.T) {
-	intent, err := Analyze(sampleMQL4EA)
+func TestCompileToIR_BasicMQL4(t *testing.T) {
+	ir, err := CompileToIR(sampleMQL4EA)
 	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
+		t.Fatalf("CompileToIR failed: %v", err)
 	}
 
-	if intent.Meta.MQLVersion != "mql4" {
-		t.Errorf("expected mql4, got %s", intent.Meta.MQLVersion)
+	if ir.Version != "mql4" {
+		t.Errorf("expected mql4, got %s", ir.Version)
 	}
 
-	if len(intent.Params) < 4 {
-		t.Errorf("expected at least 4 params, got %d", len(intent.Params))
+	if len(ir.Params) < 4 {
+		t.Errorf("expected at least 4 params, got %d", len(ir.Params))
 	}
 
-	// Should detect OnTick execution
-	if intent.Execution.Kind != ExecOnTick {
-		t.Errorf("expected ExecOnTick, got %s", intent.Execution.Kind)
+	if len(ir.OnTick) == 0 {
+		t.Error("expected OnTick statements")
 	}
 
-	// Should detect indicators
-	if len(intent.Indicators) == 0 {
-		t.Error("expected at least 1 indicator")
-	}
-
-	// Should detect entries
-	if len(intent.Entry) == 0 {
-		t.Error("expected at least 1 entry rule")
-	}
-
-	// Should detect exits
-	if len(intent.Exit) == 0 {
-		t.Error("expected at least 1 exit rule")
+	if len(ir.OnInit) == 0 {
+		t.Error("expected OnInit statements")
 	}
 }
 
-func TestAnalyze_MQL5Detection(t *testing.T) {
-	intent, err := Analyze(sampleMQL5EA)
+func TestCompileToIR_MQL5Detection(t *testing.T) {
+	ir, err := CompileToIR(sampleMQL5EA)
 	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
+		t.Fatalf("CompileToIR failed: %v", err)
 	}
 
-	if intent.Meta.MQLVersion != "mql5" {
-		t.Errorf("expected mql5, got %s", intent.Meta.MQLVersion)
+	if ir.Version != "mql5" {
+		t.Errorf("expected mql5, got %s", ir.Version)
 	}
 
-	// Should have CTrade blind spot
 	foundCTrade := false
-	for _, bs := range intent.BlindSpots {
-		if bs.Category == "mql5_ctrade" {
+	for _, g := range ir.Globals {
+		if g.Type == "CTrade" {
 			foundCTrade = true
 		}
 	}
 	if !foundCTrade {
-		t.Error("expected CTrade blind spot for MQL5 code")
-	}
-
-	// Should detect CTrade.Buy as an entry rule
-	foundBuy := false
-	for _, e := range intent.Entry {
-		if e.Action == ActionMarketBuy {
-			foundBuy = true
-		}
-	}
-	if !foundBuy {
-		t.Error("expected CTrade.Buy to produce a market_buy entry rule")
-	}
-
-	// Should detect PositionClose as an exit rule
-	foundClose := false
-	for _, e := range intent.Exit {
-		if e.Action == "position_close" || strings.HasPrefix(e.Action, "position_close:") {
-			foundClose = true
-		}
-	}
-	if !foundClose {
-		t.Error("expected PositionClose to produce a position_close exit rule")
+		t.Error("expected CTrade global variable")
 	}
 }
 
-func TestAnalyze_BlindSpots(t *testing.T) {
+func TestAnalyze_MQL4FullCoverage(t *testing.T) {
+	ir, err := CompileToIR(sampleMQL4EA)
+	if err != nil {
+		t.Fatalf("CompileToIR failed: %v", err)
+	}
+
+	rep := interp.Analyze(ir)
+	if rep.Version != "mql4" {
+		t.Errorf("expected mql4, got %s", rep.Version)
+	}
+
+	if rep.TotalCalls == 0 {
+		t.Error("expected some calls to be detected")
+	}
+
+	if len(rep.Indicators) == 0 {
+		t.Error("expected at least 1 indicator")
+	}
+
+	if rep.ExecKind != "on_tick" {
+		t.Errorf("expected on_tick, got %s", rep.ExecKind)
+	}
+}
+
+func TestAnalyze_MQL5CTradeCoverage(t *testing.T) {
+	ir, err := CompileToIR(sampleMQL5EA)
+	if err != nil {
+		t.Fatalf("CompileToIR failed: %v", err)
+	}
+
+	rep := interp.Analyze(ir)
+	if rep.Version != "mql5" {
+		t.Errorf("expected mql5, got %s", rep.Version)
+	}
+
+	if rep.TotalCalls == 0 {
+		t.Error("expected calls to be detected")
+	}
+
+	if rep.SupportedCalls == 0 {
+		t.Error("expected some supported calls (CTrade methods are implemented)")
+	}
+}
+
+func TestAnalyze_MQL5UnknownCTradeMethod_BlindSpot(t *testing.T) {
 	source := `
-extern int Magic = 100;
+#include <Trade/Trade.mqh>
+CTrade trade;
 void OnTick() {
-    ObjectCreate("label", OBJ_LABEL, 0, 0, 0);
-    OrderModify(OrderTicket(), OrderOpenPrice(), 0, 0, 0, clrWhite);
-    SendMail("subject", "body");
+    trade.SomeUnknownMethod(42);
 }
 `
-	intent, err := Analyze(source)
+	ir, err := CompileToIR(source)
 	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
+		t.Fatalf("CompileToIR failed: %v", err)
 	}
 
-	categories := map[string]bool{}
-	for _, bs := range intent.BlindSpots {
-		categories[bs.Category] = true
-	}
-
-	if !categories["chart_objects"] {
-		t.Error("expected chart_objects blind spot")
-	}
-	if !categories["order_modify"] {
-		t.Error("expected order_modify blind spot")
-	}
-	if !categories["notification"] {
-		t.Error("expected notification blind spot")
-	}
-}
-
-func TestAnalyze_RiskChecks(t *testing.T) {
-	source := `
-extern int Magic = 100;
-void OnTick() {
-    if (AccountFreeMargin() <= 0) return;
-    OrderSend(Symbol(), OP_BUY, 0.1, Ask, 5, 0, 0, "", Magic, 0, clrGreen);
-}
-`
-	intent, err := Analyze(source)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-
-	if len(intent.Risk) == 0 {
-		t.Error("expected at least 1 risk check")
-	}
-
+	rep := interp.Analyze(ir)
 	found := false
-	for _, r := range intent.Risk {
-		if r.Kind == "margin_check" {
+	for _, bs := range rep.BlindSpots {
+		if bs.Builtin == "SomeUnknownMethod" {
+			found = true
+			if bs.Severity != "致命" {
+				t.Errorf("expected 致命 severity, got %s", bs.Severity)
+			}
+		}
+	}
+	if !found {
+		t.Error("expected SomeUnknownMethod as a blind spot")
+	}
+}
+
+func TestAnalyze_iCustom_BlindSpot(t *testing.T) {
+	source := `
+void OnTick() {
+    double v = iCustom(NULL, 0, "MyInd", 14, 0, 1);
+}
+`
+	ir, err := CompileToIR(source)
+	if err != nil {
+		t.Fatalf("CompileToIR failed: %v", err)
+	}
+
+	rep := interp.Analyze(ir)
+	found := false
+	for _, bs := range rep.BlindSpots {
+		if bs.Builtin == "iCustom" {
 			found = true
 		}
 	}
 	if !found {
-		t.Error("expected margin_check risk check")
+		t.Error("expected iCustom as a blind spot")
 	}
 }
 
-func TestGenerate_Compiles(t *testing.T) {
-	intent, err := Analyze(sampleMQL4EA)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-	intent.Meta.Name = "TestStrategy"
-
-	code := Generate(intent)
-	if code == "" {
-		t.Fatal("Generate returned empty code")
-	}
-
-	// Basic structural checks
-	if !strings.Contains(code, "package ") {
-		t.Error("generated code missing package declaration")
-	}
-	if !strings.Contains(code, "type TestStrategy struct") {
-		t.Error("generated code missing struct declaration")
-	}
-	if !strings.Contains(code, "func (s *TestStrategy) OnInit") {
-		t.Error("generated code missing OnInit")
-	}
-	if !strings.Contains(code, "func (s *TestStrategy) OnBar") {
-		t.Error("generated code missing OnBar")
-	}
-	if !strings.Contains(code, "var _ sdk.Strategy = (*TestStrategy)(nil)") {
-		t.Error("generated code missing sdk.Strategy interface assertion")
-	}
-}
-
-func TestGenerate_AllIndicators(t *testing.T) {
-	// Test that all indicator types generate valid code
-	indicators := []IndicatorSpec{
-		{SDKMethod: "ema", ResultVar: "emaVal", Params: map[string]string{"period": "14", "shift": "1"}},
-		{SDKMethod: "rsi", ResultVar: "rsiVal", Params: map[string]string{"period": "14", "shift": "1"}},
-		{SDKMethod: "atr", ResultVar: "atrVal", Params: map[string]string{"period": "14", "shift": "1"}},
-		{SDKMethod: "macd", ResultVar: "macdVal", Params: map[string]string{"fast": "12", "slow": "26", "signal": "9", "shift": "1"}},
-		{SDKMethod: "bands", ResultVar: "bandsVal", Params: map[string]string{"period": "20", "deviation": "2.0", "shift": "1"}},
-		{SDKMethod: "stochastic", ResultVar: "stochVal", Params: map[string]string{"kperiod": "5", "dperiod": "3", "slowing": "3", "shift": "1"}},
-		{SDKMethod: "cci", ResultVar: "cciVal", Params: map[string]string{"period": "14", "shift": "1"}},
-		{SDKMethod: "adx", ResultVar: "adxVal", Params: map[string]string{"period": "14", "shift": "1"}},
-		{SDKMethod: "momentum", ResultVar: "momVal", Params: map[string]string{"period": "14", "shift": "1"}},
-		{SDKMethod: "wpr", ResultVar: "wprVal", Params: map[string]string{"period": "14", "shift": "1"}},
-		{SDKMethod: "mfi", ResultVar: "mfiVal", Params: map[string]string{"period": "14", "shift": "1"}},
-		{SDKMethod: "obv", ResultVar: "obvVal", Params: map[string]string{"shift": "1"}},
-		{SDKMethod: "sar", ResultVar: "sarVal", Params: map[string]string{"step": "0.02", "maximum": "0.2", "shift": "1"}},
-		{SDKMethod: "stddev", ResultVar: "stdVal", Params: map[string]string{"period": "14", "shift": "1"}},
-	}
-
-	intent := &StrategyIntent{
-		Meta:       StrategyMeta{Name: "IndicatorTest", MQLVersion: "mql4"},
-		Indicators: indicators,
-		Execution:  ExecutionModel{Kind: ExecOnBar},
-	}
-
-	code := Generate(intent)
-
-	for _, ind := range indicators {
-		if !strings.Contains(code, ind.ResultVar) {
-			t.Errorf("generated code missing result var %s for %s", ind.ResultVar, ind.SDKMethod)
-		}
-	}
-}
-
-func TestAnalyze_OrderModify(t *testing.T) {
+func TestAnalyze_UserFuncNotBlindSpot(t *testing.T) {
 	source := `
-extern int Magic = 100;
-extern double NewSL = 50;
-extern double NewTP = 100;
+double MyHelper(double x) {
+    return x * 2;
+}
 void OnTick() {
-    if (OrdersTotal() > 0) {
-        OrderModify(OrderTicket(), OrderOpenPrice(), NewSL * Point, NewTP * Point, 0, clrWhite);
-    }
+    double v = MyHelper(10);
 }
 `
-	intent, err := Analyze(source)
+	ir, err := CompileToIR(source)
 	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
+		t.Fatalf("CompileToIR failed: %v", err)
 	}
 
-	if len(intent.Modifies) == 0 {
-		t.Fatal("expected at least 1 modify rule")
-	}
-
-	mr := intent.Modifies[0]
-	if mr.StopLoss == "" {
-		t.Error("expected StopLoss to be extracted")
-	}
-	if mr.TakeProfit == "" {
-		t.Error("expected TakeProfit to be extracted")
-	}
-	if mr.Condition == "" {
-		t.Error("expected Condition to be extracted from enclosing if")
-	}
-}
-
-func TestGenerate_ModifyCode(t *testing.T) {
-	intent := &StrategyIntent{
-		Meta:     StrategyMeta{Name: "ModifyTest", MQLVersion: "mql4"},
-		Execution: ExecutionModel{Kind: ExecOnBar},
-		Modifies: []ModifyRule{
-			{StopLoss: "50", TakeProfit: "100", MagicVal: "s.magic"},
-		},
-	}
-
-	code := Generate(intent)
-	if !strings.Contains(code, "PositionModify") {
-		t.Error("generated code missing PositionModify call")
-	}
-	if !strings.Contains(code, "decimal.NewFromFloat") {
-		t.Error("generated code missing decimal conversion for SL/TP")
-	}
-}
-
-func TestAnalyze_OrderCloseBy(t *testing.T) {
-	source := `
-extern int Magic = 100;
-void OnTick() {
-    if (OrdersTotal() > 1) {
-        OrderCloseBy(OrderTicket(), OrderTicket() + 1);
-    }
-}
-`
-	intent, err := Analyze(source)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-
-	// Should detect OrderCloseBy as an exit rule
-	foundCloseBy := false
-	for _, e := range intent.Exit {
-		if e.Action == "position_close_by" || strings.HasPrefix(e.Action, "position_close_by:") {
-			foundCloseBy = true
+	rep := interp.Analyze(ir)
+	for _, bs := range rep.BlindSpots {
+		if bs.Builtin == "MyHelper" {
+			t.Error("user-defined function should NOT be a blind spot")
 		}
-	}
-	if !foundCloseBy {
-		t.Error("expected OrderCloseBy to produce a position_close_by exit rule")
-	}
-
-	// Should have OrderCloseBy blind spot
-	foundBS := false
-	for _, bs := range intent.BlindSpots {
-		if bs.Category == "order_close_by" {
-			foundBS = true
-		}
-	}
-	if !foundBS {
-		t.Error("expected order_close_by blind spot")
-	}
-}
-
-func TestAnalyze_MQL5VersionFiltering(t *testing.T) {
-	// MQL5 source with PositionSelect — should NOT trigger MQL4 OrderClose
-	source := `
-#include <Trade/Trade.mqh>
-input int Magic = 100;
-CTrade trade;
-void OnTick() {
-    if (PositionSelect(Symbol())) {
-        trade.PositionClose(Symbol());
-    }
-}
-`
-	intent, err := Analyze(source)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-
-	if intent.Meta.MQLVersion != "mql5" {
-		t.Fatalf("expected mql5, got %s", intent.Meta.MQLVersion)
-	}
-
-	// Should NOT have any MQL4-specific exits (OrderClose/OrderDelete/OrderCloseBy)
-	for _, e := range intent.Exit {
-		if strings.Contains(e.Action, "order_delete") && !strings.Contains(e.Action, "position") {
-			t.Errorf("MQL5 source should not produce MQL4 order_delete exit: %s", e.Action)
-		}
-	}
-
-	// Should have PositionSelect blind spot
-	foundPosSelect := false
-	for _, bs := range intent.BlindSpots {
-		if bs.Category == "mql5_position_select" {
-			foundPosSelect = true
-		}
-	}
-	if !foundPosSelect {
-		t.Error("expected mql5_position_select blind spot")
 	}
 }
 
 func TestAnalyze_MQL4VersionFiltering(t *testing.T) {
-	// MQL4 source — should NOT trigger MQL5 CTrade detection
 	source := `
 extern int Magic = 100;
 void OnTick() {
     OrderSend(Symbol(), OP_BUY, 0.1, Ask, 5, 0, 0, "", Magic, 0, clrGreen);
 }
 `
-	intent, err := Analyze(source)
+	ir, err := CompileToIR(source)
 	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
+		t.Fatalf("CompileToIR failed: %v", err)
 	}
-
-	if intent.Meta.MQLVersion != "mql4" {
-		t.Fatalf("expected mql4, got %s", intent.Meta.MQLVersion)
-	}
-
-	// Should NOT have MQL5 CTrade blind spot
-	for _, bs := range intent.BlindSpots {
-		if bs.Category == "mql5_ctrade" {
-			t.Error("MQL4 source should not have mql5_ctrade blind spot")
-		}
-		if bs.Category == "mql5_position_select" {
-			t.Error("MQL4 source should not have mql5_position_select blind spot")
-		}
-	}
-
-	// Should have market_buy entry
-	foundBuy := false
-	for _, e := range intent.Entry {
-		if e.Action == ActionMarketBuy {
-			foundBuy = true
-		}
-	}
-	if !foundBuy {
-		t.Error("expected market_buy entry from OrderSend")
+	if ir.Version != "mql4" {
+		t.Fatalf("expected mql4, got %s", ir.Version)
 	}
 }
 
-func TestAnalyze_OrderSelectPattern(t *testing.T) {
+func TestAnalyze_MQL5VersionFiltering(t *testing.T) {
 	source := `
-extern int Magic = 100;
-extern int TrailingStop = 50;
-void OnTick() {
-    for (int i = OrdersTotal() - 1; i >= 0; i--) {
-        if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES)) {
-            if (OrderMagicNumber() == Magic && OrderSymbol() == Symbol()) {
-                if (Bid - OrderOpenPrice() > Point * TrailingStop) {
-                    if (OrderStopLoss() < Bid - Point * TrailingStop) {
-                        OrderModify(OrderTicket(), OrderOpenPrice(), NormalizeDouble(Bid - Point * TrailingStop, Digits), OrderTakeProfit(), 0, Blue);
-                    }
-                }
-            }
-        }
-    }
-}
-`
-	intent, err := Analyze(source)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-
-	// Should detect OrderLoopRule
-	if len(intent.OrderLoops) == 0 {
-		t.Fatal("expected at least one OrderLoopRule")
-	}
-	loop := intent.OrderLoops[0]
-	if !loop.HasMagicFilter {
-		t.Error("expected HasMagicFilter=true")
-	}
-	if !loop.HasSymbolFilter {
-		t.Error("expected HasSymbolFilter=true")
-	}
-
-	// Should detect property calls
-	foundTicket := false
-	foundStopLoss := false
-	for _, pc := range loop.PropertyCalls {
-		if pc == "OrderTicket" {
-			foundTicket = true
-		}
-		if pc == "OrderStopLoss" {
-			foundStopLoss = true
-		}
-	}
-	if !foundTicket {
-		t.Error("expected OrderTicket in PropertyCalls")
-	}
-	if !foundStopLoss {
-		t.Error("expected OrderStopLoss in PropertyCalls")
-	}
-
-	// Should detect trailing stop action
-	foundTrailing := false
-	for _, action := range loop.BodyActions {
-		if action == "order_modify:trailing_stop" {
-			foundTrailing = true
-		}
-	}
-	if !foundTrailing {
-		t.Error("expected order_modify:trailing_stop in BodyActions")
-	}
-
-	// Should have trailing stop ModifyRule
-	foundTSModify := false
-	for _, mr := range intent.Modifies {
-		if mr.Kind == "trailing_stop" {
-			foundTSModify = true
-		}
-	}
-	if !foundTSModify {
-		t.Error("expected trailing_stop ModifyRule")
-	}
-
-	// Should have OrderSelect blind spot (info level since recognized)
-	foundBS := false
-	for _, bs := range intent.BlindSpots {
-		if bs.Category == "order_select" && bs.Severity == "信息" {
-			foundBS = true
-		}
-	}
-	if !foundBS {
-		t.Error("expected order_select blind spot with info severity")
-	}
-}
-
-func TestAnalyze_RemainingIndicators(t *testing.T) {
-	source := `
-double alligator = iAlligator(NULL, 0, 13, 8, 8, 5, 5, 3, MODE_SMMA, PRICE_MEDIAN, 1);
-double ichimoku = iIchimoku(NULL, 0, 9, 26, 52, 1);
-double demarker = iDeMarker(NULL, 0, 14, 1);
-double osma = iOsMA(NULL, 0, 12, 26, 9, PRICE_CLOSE, 1);
-double rvi = iRVI(NULL, 0, 10, 0, 1);
-double force = iForce(NULL, 0, 13, MODE_SMA, PRICE_CLOSE, 1);
-double ac = iAC(NULL, 0, 1);
-double ao = iAO(NULL, 0, 1);
-double bears = iBearsPower(NULL, 0, 13, PRICE_CLOSE, 1);
-double bulls = iBullsPower(NULL, 0, 13, PRICE_CLOSE, 1);
-void OnTick() {}
-`
-	intent, err := Analyze(source)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-
-	expectedMethods := []string{"alligator", "ichimoku", "demarker", "osma", "rvi", "force", "ac", "ao", "bears_power", "bulls_power"}
-	for _, method := range expectedMethods {
-		found := false
-		for _, ind := range intent.Indicators {
-			if ind.SDKMethod == method {
-				found = true
-				break
-			}
-		}
-		if !found {
-			t.Errorf("expected indicator %s in intent.Indicators", method)
-		}
-	}
-
-	// All indicators now have SDK IndicatorSet method definitions — no stub blind spots expected.
-	for _, bs := range intent.BlindSpots {
-		if bs.Category == "indicator_stub" {
-			t.Errorf("should not have indicator_stub blind spot for %s — SDK method exists", bs.ID)
-		}
-	}
-}
-
-func TestAnalyze_OnTesterAndOnArray(t *testing.T) {
-	source := `
-double OnTester() { return 0.0; }
-double customMA = iMAOnArray(myArray, 0, 14, 0, MODE_EMA, 1);
-void OnTick() {}
-`
-	intent, err := Analyze(source)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-
-	// Should have OnTester blind spot
-	foundTester := false
-	for _, bs := range intent.BlindSpots {
-		if bs.Category == "on_tester" {
-			foundTester = true
-		}
-	}
-	if !foundTester {
-		t.Error("expected on_tester blind spot")
-	}
-
-	// Should have indicator_on_array blind spot
-	foundOnArray := false
-	for _, bs := range intent.BlindSpots {
-		if bs.Category == "indicator_on_array" {
-			foundOnArray = true
-		}
-	}
-	if !foundOnArray {
-		t.Error("expected indicator_on_array blind spot")
-	}
-}
-
-func TestAnalyze_MQL5PositionLoopPattern(t *testing.T) {
-	source := `
-#include <Trade\Trade.mqh>
-CTrade trade;
-input int Magic = 100;
-void OnTick() {
-    for (int i = PositionsTotal() - 1; i >= 0; i--) {
-        ulong ticket = PositionGetTicket(i);
-        if (PositionGetInteger(POSITION_MAGIC) == Magic) {
-            if (PositionGetString(POSITION_SYMBOL) == Symbol()) {
-                trade.PositionClose(ticket);
-            }
-        }
-    }
-}
-`
-	intent, err := Analyze(source)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-
-	if len(intent.PositionLoops) == 0 {
-		t.Fatal("expected at least one PositionLoopRule")
-	}
-	loop := intent.PositionLoops[0]
-	if !loop.HasMagicFilter {
-		t.Error("expected HasMagicFilter=true")
-	}
-	if !loop.HasSymbolFilter {
-		t.Error("expected HasSymbolFilter=true")
-	}
-
-	foundClose := false
-	for _, action := range loop.BodyActions {
-		if action == "position_close" {
-			foundClose = true
-		}
-	}
-	if !foundClose {
-		t.Error("expected position_close in BodyActions")
-	}
-
-	foundProp := false
-	for _, pc := range loop.PropertyCalls {
-		if pc == "PositionGetTicket" {
-			foundProp = true
-		}
-	}
-	if !foundProp {
-		t.Error("expected PositionGetTicket in PropertyCalls")
-	}
-}
-
-func TestAnalyze_MQL5CTradeExits(t *testing.T) {
-	source := `
-#include <Trade\Trade.mqh>
+#include <Trade/Trade.mqh>
 CTrade trade;
 void OnTick() {
-    trade.PositionClosePartial(Symbol(), 0.5);
-    trade.PositionCloseBy(ticket1, ticket2);
-    trade.OrderDelete(orderTicket);
+    trade.Buy(0.1);
 }
 `
-	intent, err := Analyze(source)
+	ir, err := CompileToIR(source)
 	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
+		t.Fatalf("CompileToIR failed: %v", err)
 	}
-
-	foundPartial := false
-	foundCloseBy := false
-	foundDelete := false
-	for _, exit := range intent.Exit {
-		if exit.Action == "position_close_partial" {
-			foundPartial = true
-		}
-		if exit.Action == "position_close_by" {
-			foundCloseBy = true
-		}
-		if exit.Action == "order_delete" {
-			foundDelete = true
-		}
-	}
-	if !foundPartial {
-		t.Error("expected position_close_partial exit")
-	}
-	if !foundCloseBy {
-		t.Error("expected position_close_by exit")
-	}
-	if !foundDelete {
-		t.Error("expected order_delete exit")
+	if ir.Version != "mql5" {
+		t.Fatalf("expected mql5, got %s", ir.Version)
 	}
 }
 
-func TestAnalyze_MQL5NewIndicators(t *testing.T) {
-	source := `
-#include <Trade\Trade.mqh>
-int amaHandle = iAMA(NULL, 0, 14, 2, 30, 0, PRICE_CLOSE, 1);
-int demaHandle = iDEMA(NULL, 0, 14, 0, PRICE_CLOSE, 1);
-int temaHandle = iTEMA(NULL, 0, 14, 0, PRICE_CLOSE, 1);
-int framaHandle = iFrAMA(NULL, 0, 14, 0, PRICE_CLOSE, 1);
-int vidyaHandle = iVIDyA(NULL, 0, 9, 0, 14, 0, PRICE_CLOSE, 1);
-int trixHandle = iTriX(NULL, 0, 14, 0, PRICE_CLOSE, 1);
-int adxwHandle = iADXWilder(NULL, 0, 14, PRICE_CLOSE, 1);
-int chaikinHandle = iChaikin(NULL, 0, 3, 10, MODE_SMA, PRICE_CLOSE, 1);
-int volHandle = iVolumes(NULL, 0, PRICE_CLOSE, 1);
-void OnTick() {}
-`
-	intent, err := Analyze(source)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-	if intent.Meta.MQLVersion != "mql5" {
-		t.Fatalf("expected MQL5 version, got %s", intent.Meta.MQLVersion)
-	}
-
-	expectedMethods := []string{"ama", "dema", "tema", "frama", "vidya", "trix", "adx_wilder", "chaikin", "volumes"}
-	for _, method := range expectedMethods {
-		found := false
-		for _, ind := range intent.Indicators {
-			if ind.SDKMethod == method {
-				found = true
-				break
-			}
-		}
-		if !found {
-			t.Errorf("expected indicator %s in intent.Indicators", method)
-		}
-	}
-}
-
-func TestAnalyze_MQL5IndicatorsNotInMQL4(t *testing.T) {
-	source := `
-int amaHandle = iAMA(NULL, 0, 14, 2, 30, 0, PRICE_CLOSE, 1);
-int demaHandle = iDEMA(NULL, 0, 14, 0, PRICE_CLOSE, 1);
-int volHandle = iVolumes(NULL, 0, PRICE_CLOSE, 1);
-void OnTick() {}
-`
-	intent, err := Analyze(source)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-	if intent.Meta.MQLVersion != "mql4" {
-		t.Fatalf("expected MQL4 version, got %s", intent.Meta.MQLVersion)
-	}
-
-	// MQL5-only indicators should NOT be recognized in MQL4 source
-	forbiddenMethods := []string{"ama", "dema", "tema", "frama", "vidya", "trix", "adx_wilder", "chaikin", "volumes"}
-	for _, method := range forbiddenMethods {
-		for _, ind := range intent.Indicators {
-			if ind.SDKMethod == method {
-				t.Errorf("MQL5-only indicator %s should NOT be recognized in MQL4 source", method)
-			}
-		}
-	}
-}
-
-func TestAnalyze_MQL5EventsAndNativeOrderSend(t *testing.T) {
-	source := `
-void OnTrade() {}
-void OnTradeTransaction(const MqlTradeTransaction& trans, const MqlTradeRequest& request, const MqlTradeResult& result) {}
-void OnBookEvent(const string symbol) {}
-void OnTesterInit() {}
-void OnTesterDeinit() {}
-void OnTesterPass() {}
-void OnTick() {
-    MqlTradeRequest request;
-    MqlTradeResult result;
-    OrderSend(request, result);
-}
-`
-	intent, err := Analyze(source)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-
-	foundOnTrade := false
-	foundOnTradeTrans := false
-	foundOnBookEvent := false
-	foundOnTesterInit := false
-	foundNativeOrderSend := false
-	for _, bs := range intent.BlindSpots {
-		switch bs.Category {
-		case "on_trade":
-			foundOnTrade = true
-		case "on_trade_transaction":
-			foundOnTradeTrans = true
-		case "on_book_event":
-			foundOnBookEvent = true
-		case "on_tester_init":
-			foundOnTesterInit = true
-		case "native_ordersend":
-			foundNativeOrderSend = true
-		}
-	}
-	if !foundOnTrade {
-		t.Error("expected on_trade blind spot")
-	}
-	if !foundOnTradeTrans {
-		t.Error("expected on_trade_transaction blind spot")
-	}
-	if !foundOnBookEvent {
-		t.Error("expected on_book_event blind spot")
-	}
-	if !foundOnTesterInit {
-		t.Error("expected on_tester_init blind spot")
-	}
-	if !foundNativeOrderSend {
-		t.Error("expected native_ordersend blind spot")
-	}
-}
-
-func TestAnalyze_ThreadSafety(t *testing.T) {
-	// Run Analyze concurrently to verify mutex protection
-	sources := []string{sampleMQL4EA, sampleMQL5EA, `
-extern int X = 1;
-void OnTick() { OrderSend(Symbol(), OP_BUY, 0.1, Ask, 5, 0, 0, "", X, 0, clrGreen); }
-`}
-	done := make(chan bool, len(sources)*3)
-
-	for _, src := range sources {
-		for i := 0; i < 3; i++ {
-			go func(s string) {
-				defer func() { done <- true }()
-				intent, err := Analyze(s)
-				if err != nil {
-					t.Errorf("Analyze failed: %v", err)
-					return
-				}
-				if intent == nil {
-					t.Error("Analyze returned nil intent")
-				}
-			}(src)
-		}
-	}
-
-	for i := 0; i < len(sources)*3; i++ {
-		<-done
-	}
-}
-
-func TestGenerate_ParsesAsValidGo(t *testing.T) {
+func TestGenerateFromIR_ParsesAsValidGo(t *testing.T) {
 	sources := []struct {
-		name    string
-		source  string
+		name     string
+		source   string
 		strategy string
 	}{
 		{"MQL4_EA", sampleMQL4EA, "TestMQL4"},
@@ -866,12 +293,11 @@ void OnTick() {
 
 	for _, tc := range sources {
 		t.Run(tc.name, func(t *testing.T) {
-			intent, err := Analyze(tc.source)
+			ir, err := CompileToIR(tc.source)
 			if err != nil {
-				t.Fatalf("Analyze failed: %v", err)
+				t.Fatalf("CompileToIR failed: %v", err)
 			}
-			intent.Meta.Name = tc.strategy
-			code := Generate(intent)
+			code := GenerateFromIR(ir, tc.strategy)
 
 			fset := token.NewFileSet()
 			_, err = parser.ParseFile(fset, "generated.go", code, parser.AllErrors)
@@ -882,123 +308,32 @@ void OnTick() {
 	}
 }
 
-func TestGenerate_OrderLoopCode(t *testing.T) {
-	source := `
-extern int Magic = 100;
-void OnTick() {
-    for (int i = OrdersTotal() - 1; i >= 0; i--) {
-        if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES)) {
-            if (OrderMagicNumber() == Magic && OrderSymbol() == Symbol()) {
-                OrderClose(OrderTicket(), OrderLots(), Bid, 5);
-            }
-        }
-    }
-}
-`
-	intent, err := Analyze(source)
+func TestGenerateFromIR_StructuralChecks(t *testing.T) {
+	ir, err := CompileToIR(sampleMQL4EA)
 	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
+		t.Fatalf("CompileToIR failed: %v", err)
 	}
-	intent.Meta.Name = "OrderLoopTest"
-	code := Generate(intent)
 
-	if !strings.Contains(code, "MQL4 order iteration") {
-		t.Error("expected MQL4 order iteration comment in generated code")
+	code := GenerateFromIR(ir, "TestStrategy")
+	if code == "" {
+		t.Fatal("GenerateFromIR returned empty code")
 	}
-	if !strings.Contains(code, "ctx.Broker().Positions(s.magic)") {
-		t.Error("expected Positions iteration in generated code")
+
+	if !strings.Contains(code, "package ") {
+		t.Error("generated code missing package declaration")
 	}
-	if !strings.Contains(code, "PositionClose") {
-		t.Error("expected PositionClose call in generated code")
+	if !strings.Contains(code, "type TestStrategy struct") {
+		t.Error("generated code missing struct declaration")
 	}
-	if !strings.Contains(code, "pos.Symbol != ctx.Symbol()") {
-		t.Error("expected symbol filter in generated order loop code")
+	if !strings.Contains(code, "func (s *TestStrategy) OnInit") {
+		t.Error("generated code missing OnInit")
+	}
+	if !strings.Contains(code, "var _ sdk.Strategy = (*TestStrategy)(nil)") {
+		t.Error("generated code missing sdk.Strategy interface assertion")
 	}
 }
 
-func TestGenerate_PositionLoopCode(t *testing.T) {
-	source := `
-#include <Trade\Trade.mqh>
-CTrade trade;
-input int Magic = 100;
-void OnTick() {
-    for (int i = PositionsTotal() - 1; i >= 0; i--) {
-        ulong ticket = PositionGetTicket(i);
-        if (PositionGetInteger(POSITION_MAGIC) == Magic) {
-            if (PositionGetString(POSITION_SYMBOL) == Symbol()) {
-                trade.PositionClose(ticket);
-            }
-        }
-    }
-}
-`
-	intent, err := Analyze(source)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-	intent.Meta.Name = "PosLoopTest"
-	code := Generate(intent)
-
-	if !strings.Contains(code, "MQL5 position iteration") {
-		t.Error("expected MQL5 position iteration comment in generated code")
-	}
-	if !strings.Contains(code, "ctx.Broker().Positions(s.magic)") {
-		t.Error("expected Positions iteration in generated code")
-	}
-	if !strings.Contains(code, "PositionClose") {
-		t.Error("expected PositionClose call in generated code")
-	}
-}
-
-func TestGenerate_BlindSpotComments(t *testing.T) {
-	source := `
-double OnTester() { return 0.0; }
-void OnTick() {
-    double v = iCustom(NULL, 0, "MyInd", 14, 0, 1);
-}
-`
-	intent, err := Analyze(source)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-	intent.Meta.Name = "BlindSpotTest"
-	code := Generate(intent)
-
-	if !strings.Contains(code, "Blind spots detected") {
-		t.Error("expected blind spots header comment in generated code")
-	}
-	if !strings.Contains(code, "custom_indicator") {
-		t.Error("expected custom_indicator blind spot in generated code")
-	}
-}
-
-func TestGenerate_RiskCheckCode(t *testing.T) {
-	source := `
-extern int MagicNumber = 12345;
-extern double LotSize = 0.1;
-extern int MAPeriod = 14;
-void OnTick() {
-    double ma = iMA(NULL, 0, MAPeriod, 0, MODE_EMA, PRICE_CLOSE, 1);
-    if (ma > Close[1]) {
-        OrderSend(Symbol(), OP_BUY, LotSize, Ask, 5, 0, 0, "Buy", MagicNumber, 0, clrGreen);
-    }
-}
-`
-	intent, err := Analyze(source)
-	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
-	}
-	intent.Meta.Name = "RiskTest"
-	code := Generate(intent)
-
-	fset := token.NewFileSet()
-	_, err = parser.ParseFile(fset, "risk.go", code, parser.AllErrors)
-	if err != nil {
-		t.Errorf("generated code does not parse: %v\n%s", err, code)
-	}
-}
-
-func TestGenerate_EndToEnd_MQL4(t *testing.T) {
+func TestGenerateFromIR_EndToEnd_MQL4(t *testing.T) {
 	source := `
 extern int MagicNumber = 12345;
 extern double LotSize = 0.1;
@@ -1017,30 +352,12 @@ void OnTick() {
     }
 }
 `
-	intent, err := Analyze(source)
+	ir, err := CompileToIR(source)
 	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
+		t.Fatalf("CompileToIR failed: %v", err)
 	}
-	intent.Meta.Name = "E2EMQL4"
-	code := Generate(intent)
+	code := GenerateFromIR(ir, "E2EMQL4")
 
-	// Verify time series conversion
-	if !strings.Contains(code, "ctx.Bars().Close(1)") {
-		t.Error("expected Close[1] → ctx.Bars().Close(1)")
-	}
-	// Verify Point conversion
-	if !strings.Contains(code, "ctx.Point()") {
-		t.Error("expected Point → ctx.Point()")
-	}
-	// Verify Ask/Bid conversion
-	if !strings.Contains(code, "ctx.Ask()") {
-		t.Error("expected Ask → ctx.Ask()")
-	}
-	// Verify int cast for indicator params
-	if !strings.Contains(code, "int(s.MAPeriod)") {
-		t.Error("expected int(s.MAPeriod) cast for indicator parameter")
-	}
-	// Verify it parses as valid Go
 	fset := token.NewFileSet()
 	_, err = parser.ParseFile(fset, "e2e_mql4.go", code, parser.AllErrors)
 	if err != nil {
@@ -1048,7 +365,7 @@ void OnTick() {
 	}
 }
 
-func TestGenerate_EndToEnd_MQL5(t *testing.T) {
+func TestGenerateFromIR_EndToEnd_MQL5(t *testing.T) {
 	source := `
 #include <Trade\Trade.mqh>
 CTrade trade;
@@ -1068,36 +385,304 @@ void OnTick() {
     }
 }
 `
-	intent, err := Analyze(source)
+	ir, err := CompileToIR(source)
 	if err != nil {
-		t.Fatalf("Analyze failed: %v", err)
+		t.Fatalf("CompileToIR failed: %v", err)
 	}
-	intent.Meta.Name = "E2EMQL5"
-	code := Generate(intent)
+	code := GenerateFromIR(ir, "E2EMQL5")
 
-	// Verify input params are correctly typed (not string)
-	if strings.Contains(code, "MAPeriod string") {
-		t.Error("MAPeriod should be int32, not string — input type extraction failed")
-	}
-	if strings.Contains(code, "LotSize string") {
-		t.Error("LotSize should be decimal.Decimal, not string — input type extraction failed")
-	}
-	// Verify _Point conversion
-	if !strings.Contains(code, "ctx.Point()") {
-		t.Error("expected _Point → ctx.Point()")
-	}
-	// Verify _Symbol conversion
-	if strings.Contains(code, "_Symbol") {
-		t.Error("expected _Symbol to be converted to ctx.Symbol()")
-	}
-	// Verify time series conversion
-	if !strings.Contains(code, "ctx.Bars().Close(1)") {
-		t.Error("expected Close[1] → ctx.Bars().Close(1)")
-	}
-	// Verify it parses as valid Go
 	fset := token.NewFileSet()
 	_, err = parser.ParseFile(fset, "e2e_mql5.go", code, parser.AllErrors)
 	if err != nil {
 		t.Errorf("generated MQL5 code does not parse: %v\n%s", err, code)
+	}
+}
+
+func TestCompileToIR_ThreadSafety(t *testing.T) {
+	sources := []string{sampleMQL4EA, sampleMQL5EA, `
+extern int X = 1;
+void OnTick() { OrderSend(Symbol(), OP_BUY, 0.1, Ask, 5, 0, 0, "", X, 0, clrGreen); }
+`}
+	done := make(chan bool, len(sources)*3)
+
+	for _, src := range sources {
+		for i := 0; i < 3; i++ {
+			go func(s string) {
+				defer func() { done <- true }()
+				ir, err := CompileToIR(s)
+				if err != nil {
+					t.Errorf("CompileToIR failed: %v", err)
+					return
+				}
+				if ir == nil {
+					t.Error("CompileToIR returned nil IR")
+				}
+			}(src)
+		}
+	}
+
+	for i := 0; i < len(sources)*3; i++ {
+		<-done
+	}
+}
+
+func TestAnalyze_StubIndicatorIsWarning(t *testing.T) {
+	source := `
+void OnTick() {
+    double v = iAlligator(NULL, 0, 13, 8, 8, 5, 5, 3, MODE_SMMA, PRICE_MEDIAN, 1);
+}
+`
+	ir, err := CompileToIR(source)
+	if err != nil {
+		t.Fatalf("CompileToIR failed: %v", err)
+	}
+
+	rep := interp.Analyze(ir)
+	for _, bs := range rep.BlindSpots {
+		if bs.Builtin == "iAlligator" {
+			if bs.Severity != "警告" {
+				t.Errorf("expected iAlligator (stub) to be 警告, got %s", bs.Severity)
+			}
+		}
+	}
+}
+
+// ── Fix 18-26 regression tests ──────────────────────────────────────
+
+func TestGenIR_DecimalRequireFromString(t *testing.T) {
+	source := `
+extern double LotSize = 0.1;
+void OnTick() {}
+`
+	ir, err := CompileToIR(source)
+	if err != nil {
+		t.Fatalf("CompileToIR failed: %v", err)
+	}
+	code := GenerateFromIR(ir, "DecTest")
+	if !strings.Contains(code, `decimal.RequireFromString("0.1")`) {
+		t.Errorf("expected decimal.RequireFromString(\"0.1\") in generated code:\n%s", code)
+	}
+	// Verify the generated code parses as valid Go.
+	fset := token.NewFileSet()
+	if _, err := parser.ParseFile(fset, "dec_test.go", code, parser.AllErrors); err != nil {
+		t.Errorf("generated code does not parse: %v\n%s", err, code)
+	}
+}
+
+func TestGenIR_StringParamNoDoubleQuotes(t *testing.T) {
+	source := `
+extern string Comment = "test";
+void OnTick() {}
+`
+	ir, err := CompileToIR(source)
+	if err != nil {
+		t.Fatalf("CompileToIR failed: %v", err)
+	}
+	code := GenerateFromIR(ir, "StrTest")
+	if !strings.Contains(code, `ctx.ParamString("Comment", "test")`) {
+		t.Errorf("expected ctx.ParamString(\"Comment\", \"test\") in generated code:\n%s", code)
+	}
+	if strings.Contains(code, `""test""`) {
+		t.Errorf("found double-quoted string default value in generated code:\n%s", code)
+	}
+}
+
+func TestGenIR_StdImportsConditional(t *testing.T) {
+	t.Run("with_math", func(t *testing.T) {
+		source := `void OnTick() { double v = MathSqrt(2.0); }`
+		ir, err := CompileToIR(source)
+		if err != nil {
+			t.Fatalf("CompileToIR failed: %v", err)
+		}
+		code := GenerateFromIR(ir, "MathImp")
+		if !strings.Contains(code, `"math"`) {
+			t.Errorf("expected \"math\" import when MathSqrt is used:\n%s", code)
+		}
+	})
+
+	t.Run("without_stdlib", func(t *testing.T) {
+		source := `
+extern double X = 0.1;
+void OnTick() { double v = X; }
+`
+		ir, err := CompileToIR(source)
+		if err != nil {
+			t.Fatalf("CompileToIR failed: %v", err)
+		}
+		code := GenerateFromIR(ir, "NoImp")
+		for _, pkg := range []string{`"math"`, `"fmt"`, `"strings"`, `"time"`} {
+			if strings.Contains(code, pkg) {
+				t.Errorf("unexpected stdlib import %s in code without stdlib builtins:\n%s", pkg, code)
+			}
+		}
+	})
+
+	t.Run("with_strings", func(t *testing.T) {
+		source := `void OnTick() { int n = StringFind("hello", "ell"); }`
+		ir, err := CompileToIR(source)
+		if err != nil {
+			t.Fatalf("CompileToIR failed: %v", err)
+		}
+		code := GenerateFromIR(ir, "StrImp")
+		if !strings.Contains(code, `"strings"`) {
+			t.Errorf("expected \"strings\" import when StringFind is used:\n%s", code)
+		}
+	})
+}
+
+func TestGenIR_OrderSendTypeSideMapping(t *testing.T) {
+	source := `
+extern int Magic = 100;
+void OnTick() {
+    OrderSend(Symbol(), OP_BUY, 0.1, Ask, 5, 0, 0, "", Magic, 0, clrGreen);
+    OrderSend(Symbol(), OP_SELL, 0.1, Bid, 5, 0, 0, "", Magic, 0, clrRed);
+    OrderSend(Symbol(), OP_BUYLIMIT, 0.1, 0, 5, 0, 0, "", Magic, 0, clrGreen);
+    OrderSend(Symbol(), OP_SELLLIMIT, 0.1, 0, 5, 0, 0, "", Magic, 0, clrRed);
+    OrderSend(Symbol(), OP_BUYSTOP, 0.1, 0, 5, 0, 0, "", Magic, 0, clrGreen);
+    OrderSend(Symbol(), OP_SELLSTOP, 0.1, 0, 5, 0, 0, "", Magic, 0, clrRed);
+}
+`
+	ir, err := CompileToIR(source)
+	if err != nil {
+		t.Fatalf("CompileToIR failed: %v", err)
+	}
+	code := GenerateFromIR(ir, "OrdSend")
+
+	want := []struct {
+		orderType string
+		side      string
+	}{
+		{"sdk.OrderMarket", "sdk.SideBuy"},
+		{"sdk.OrderMarket", "sdk.SideSell"},
+		{"sdk.OrderLimit", "sdk.SideBuy"},
+		{"sdk.OrderLimit", "sdk.SideSell"},
+		{"sdk.OrderStop", "sdk.SideBuy"},
+		{"sdk.OrderStop", "sdk.SideSell"},
+	}
+	for _, tc := range want {
+		if !strings.Contains(code, "Type: "+tc.orderType+",") {
+			t.Errorf("expected OrderType %s in generated code", tc.orderType)
+		}
+		if !strings.Contains(code, "Side: "+tc.side+",") {
+			t.Errorf("expected Side %s in generated code", tc.side)
+		}
+	}
+
+	// Verify the generated code parses as valid Go.
+	fset := token.NewFileSet()
+	if _, err := parser.ParseFile(fset, "ord_send.go", code, parser.AllErrors); err != nil {
+		t.Errorf("generated code does not parse: %v\n%s", err, code)
+	}
+}
+
+func TestGenIR_GlobalVarSPrefix(t *testing.T) {
+	source := `
+extern int Magic = 100;
+double myGlobal;
+void OnTick() {
+    myGlobal = Magic;
+}
+`
+	ir, err := CompileToIR(source)
+	if err != nil {
+		t.Fatalf("CompileToIR failed: %v", err)
+	}
+	code := GenerateFromIR(ir, "GlobTest")
+	if !strings.Contains(code, "s.myGlobal = s.Magic") {
+		t.Errorf("expected s.myGlobal = s.Magic in generated code:\n%s", code)
+	}
+}
+
+func TestGenIR_IntTernaryReturnType(t *testing.T) {
+	source := `
+extern int A = 1;
+extern int B = 2;
+void OnTick() {
+    int x = A > B ? A : B;
+}
+`
+	ir, err := CompileToIR(source)
+	if err != nil {
+		t.Fatalf("CompileToIR failed: %v", err)
+	}
+	code := GenerateFromIR(ir, "TernTest")
+	if !strings.Contains(code, "func() int32 {") {
+		t.Errorf("expected func() int32 { for int ternary:\n%s", code)
+	}
+	if strings.Contains(code, "func() decimal.Decimal {") {
+		t.Errorf("should not have decimal.Decimal return for int ternary:\n%s", code)
+	}
+}
+
+func TestGenIR_IfTrueDeadCodeElimination(t *testing.T) {
+	source := `
+void OnTick() {
+    if (true) {
+        double x = 0.1;
+    }
+}
+`
+	ir, err := CompileToIR(source)
+	if err != nil {
+		t.Fatalf("CompileToIR failed: %v", err)
+	}
+	code := GenerateFromIR(ir, "DeadCode")
+	if strings.Contains(code, "if true {") {
+		t.Errorf("expected dead code elimination for 'if true', but found 'if true {' in:\n%s", code)
+	}
+	if !strings.Contains(code, `decimal.RequireFromString("0.1")`) {
+		t.Errorf("expected body content after dead code elimination:\n%s", code)
+	}
+}
+
+func TestGenIR_IfFalseDeadCodeElimination(t *testing.T) {
+	source := `
+void OnTick() {
+    if (false) {
+        double x = 0.1;
+    } else {
+        double y = 0.2;
+    }
+}
+`
+	ir, err := CompileToIR(source)
+	if err != nil {
+		t.Fatalf("CompileToIR failed: %v", err)
+	}
+	code := GenerateFromIR(ir, "DeadFalse")
+	if strings.Contains(code, "if false {") {
+		t.Errorf("expected dead code elimination for 'if false', but found 'if false {' in:\n%s", code)
+	}
+	if !strings.Contains(code, `decimal.RequireFromString("0.2")`) {
+		t.Errorf("expected else body content after dead code elimination:\n%s", code)
+	}
+	if strings.Contains(code, `decimal.RequireFromString("0.1")`) {
+		t.Errorf("if-false body should be eliminated, but found 0.1 literal in:\n%s", code)
+	}
+}
+
+func TestGenIR_IsDecimalExpr_BuiltinCalls(t *testing.T) {
+	cases := []struct {
+		name     string
+		source   string
+		wantMethod string
+	}{
+		{"MathPow", `void OnTick() { if (MathPow(2.0, 3.0) > 0.1) { double x = 0.1; } }`, ".GreaterThan("},
+		{"MathMax", `void OnTick() { if (MathMax(0.1, 0.2) > 0.15) { double x = 0.1; } }`, ".GreaterThan("},
+		{"MathMin", `void OnTick() { if (MathMin(0.1, 0.2) < 0.05) { double x = 0.1; } }`, ".LessThan("},
+		{"NormalizeDouble", `void OnTick() { if (NormalizeDouble(0.1, 5) > 0.05) { double x = 0.1; } }`, ".GreaterThan("},
+		{"StringToDouble", `void OnTick() { if (StringToDouble("0.1") > 0.05) { double x = 0.1; } }`, ".GreaterThan("},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			ir, err := CompileToIR(tc.source)
+			if err != nil {
+				t.Fatalf("CompileToIR failed: %v", err)
+			}
+			code := GenerateFromIR(ir, "DecExpr"+tc.name)
+			if !strings.Contains(code, tc.wantMethod) {
+				t.Errorf("expected decimal comparison method %s for %s:\n%s", tc.wantMethod, tc.name, code)
+			}
+		})
 	}
 }

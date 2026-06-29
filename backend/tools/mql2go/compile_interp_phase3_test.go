@@ -122,7 +122,7 @@ int OnInit()
 	// Verify assignments exist
 	foundAssign := false
 	for _, s := range ir.OnInit {
-		if s.Kind == interp.StmtExpr && s.Expr != nil && s.Expr.Kind == interp.ExprAssignment {
+		if s.Kind == interp.StmtExpr && s.Expr != nil && (s.Expr.Kind == interp.ExprAssignment || s.Expr.Kind == interp.ExprDecl) {
 			foundAssign = true
 			break
 		}

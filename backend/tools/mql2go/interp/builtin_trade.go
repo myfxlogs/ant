@@ -12,26 +12,42 @@ func (it *Interpreter) callTrade(name string, args []Expr) (Value, bool) {
 		return NoneVal(), false
 	}
 	broker := it.ctx.Broker()
-	if broker == nil {
-		return NoneVal(), false
-	}
 
 	switch name {
 	// ── Order placement ──────────────────────────────────────────────
 	case "OrderSend":
+		if broker == nil {
+			return IntVal(-1), true
+		}
 		return it.execOrderSend(args), true
 
 	// ── Order close/modify/delete ────────────────────────────────────
 	case "OrderClose":
+		if broker == nil {
+			return BoolVal(false), true
+		}
 		return it.execOrderClose(args), true
+	case "OrderCloseBy":
+		if broker == nil {
+			return BoolVal(false), true
+		}
+		return it.execOrderCloseBy(args), true
 	case "OrderModify":
+		if broker == nil {
+			return BoolVal(false), true
+		}
 		return it.execOrderModify(args), true
 	case "OrderDelete":
+		if broker == nil {
+			return BoolVal(false), true
+		}
 		return it.execOrderDelete(args), true
 
 	// ── Order selection ──────────────────────────────────────────────
 	case "OrdersTotal":
 		return IntVal(int32(it.orderPool.Total())), true
+	case "OrdersHistoryTotal":
+		return IntVal(int32(it.orderPool.HistoryTotal())), true
 	case "OrderSelect":
 		return it.execOrderSelect(args), true
 
@@ -114,6 +130,16 @@ func (it *Interpreter) callTrade(name string, args []Expr) (Value, bool) {
 		return DecimalVal(it.ctx.Account().Margin), true
 	case "AccountLeverage":
 		return IntVal(it.ctx.Account().Leverage), true
+	case "AccountNumber":
+		return IntVal(0), true // backtest has no real account number
+	case "AccountStopoutLevel":
+		return IntVal(0), true // backtest has no stopout level
+	case "AccountCurrency":
+		return StringVal("USD"), true
+	case "AccountName":
+		return StringVal("Backtest"), true
+	case "AccountCompany":
+		return StringVal("SimBroker"), true
 	}
 
 	return NoneVal(), false
@@ -225,7 +251,19 @@ func (it *Interpreter) execOrderDelete(args []Expr) Value {
 	return BoolVal(err == nil)
 }
 
-// execOrderSelect implements OrderSelect(index, SELECT_BY_POS, MODE_TRADES)
+// execOrderCloseBy implements MQL4 OrderCloseBy(ticket1, ticket2, color)
+func (it *Interpreter) execOrderCloseBy(args []Expr) Value {
+	if len(args) < 2 {
+		return BoolVal(false)
+	}
+	ticket1 := int64(it.evalExpr(&args[0]).ToInt())
+	ticket2 := int64(it.evalExpr(&args[1]).ToInt())
+
+	_, err := it.ctx.Broker().PositionCloseBy(ticket1, ticket2)
+	return BoolVal(err == nil)
+}
+
+// execOrderSelect implements OrderSelect(index, select, pool)
 func (it *Interpreter) execOrderSelect(args []Expr) Value {
 	if len(args) < 2 {
 		return BoolVal(false)
@@ -233,8 +271,17 @@ func (it *Interpreter) execOrderSelect(args []Expr) Value {
 	index := int(it.evalExpr(&args[0]).ToInt())
 	selectMode := it.evalExpr(&args[1]).ToInt()
 
+	// Third argument: pool mode (MODE_TRADES=0, MODE_HISTORY=1)
+	poolMode := int32(0) // default MODE_TRADES
+	if len(args) >= 3 {
+		poolMode = it.evalExpr(&args[2]).ToInt()
+	}
+
 	switch selectMode {
 	case 0: // SELECT_BY_POS
+		if poolMode == 1 { // MODE_HISTORY
+			return BoolVal(it.orderPool.SelectHistory(index))
+		}
 		return BoolVal(it.orderPool.Select(index))
 	case 1: // SELECT_BY_TICKET
 		return BoolVal(it.orderPool.SelectByTicket(int64(index)))

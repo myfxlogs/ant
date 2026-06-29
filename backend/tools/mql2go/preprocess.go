@@ -1,7 +1,10 @@
 package mql2go
 
 import (
+	"fmt"
+	"regexp"
 	"strings"
+	"time"
 
 	sitter "github.com/smacker/go-tree-sitter"
 	"anttrader/tools/mql2go/interp"
@@ -14,15 +17,8 @@ import (
 func (c *compiler) collectClassDecl(ir *interp.IR, n *sitter.Node) {
 	switch n.Type() {
 	case "class_specifier", "struct_specifier":
-		name := c.findTypeName(n)
-		if name == "" {
-			return
-		}
-		// Register as a global variable of type class
-		ir.Globals = append(ir.Globals, interp.GlobalVar{
-			Name: name,
-			Type: "class",
-		})
+		// Class/struct declarations define types, not variables.
+		// Don't add to ir.Globals — just let knownClasses track them.
 	}
 }
 
@@ -127,10 +123,81 @@ func PreprocessMQL(source string) string {
 			processed = replaceWord(processed, key, val)
 		}
 
+		// Transform 'input EnumType name = value;' → 'extern int name = value;'
+		// tree-sitter can't parse 'input CustomType' as a declaration,
+		// so we rewrite it to a parseable form.
+		processed = rewriteInputEnum(processed)
+
+		// Transform MQL datetime literals D'YYYY.MM.DD' → Unix millisecond timestamp
+		processed = rewriteDatetimeLiteral(processed)
+
 		result = append(result, processed)
 	}
 
 	return strings.Join(result, "\n")
+}
+
+// rewriteInputEnum transforms 'input EnumType name = value;' → 'extern int name = value;'
+// and 'input EnumType name;' → 'extern int name;'
+// tree-sitter can't parse 'input CustomType' as a declaration because 'input'
+// is not a C keyword and custom enum types confuse the parser.
+func rewriteInputEnum(line string) string {
+	trimmed := strings.TrimSpace(line)
+	if !strings.HasPrefix(trimmed, "input ") && !strings.HasPrefix(trimmed, "extern ") {
+		return line
+	}
+	// Remove 'input ' or 'extern ' prefix (different lengths!)
+	var rest string
+	if strings.HasPrefix(trimmed, "input ") {
+		rest = trimmed[6:] // len("input ") == 6
+	} else {
+		rest = trimmed[7:] // len("extern ") == 7
+	}
+	// Check if the next token is a primitive type — if so, no rewrite needed
+	primitives := map[string]bool{"int": true, "long": true, "double": true, "float": true, "string": true, "bool": true, "datetime": true, "char": true, "void": true, "color": true}
+	parts := strings.SplitN(rest, " ", 2)
+	if len(parts) < 2 {
+		return line
+	}
+	typeName := strings.TrimSpace(parts[0])
+	if primitives[typeName] {
+		return line
+	}
+	// Non-primitive type (enum/class) — rewrite to 'extern int name = value;'
+	// Preserve leading indentation
+	indent := line[:len(line)-len(strings.TrimLeft(line, " \t"))]
+	suffix := parts[1]
+	return indent + "extern int " + suffix
+}
+
+var datetimeLiteralRe = regexp.MustCompile(`D'(\d{4})\.(\d{2})\.(\d{2})(?:\s+(\d{2}):(\d{2}):(\d{2}))?'`)
+
+// rewriteDatetimeLiteral converts MQL datetime literals D'YYYY.MM.DD' or
+// D'YYYY.MM.DD HH:MM:SS' to Unix millisecond timestamps so tree-sitter can
+// parse them as number literals.
+func rewriteDatetimeLiteral(line string) string {
+	return datetimeLiteralRe.ReplaceAllStringFunc(line, func(match string) string {
+		sub := datetimeLiteralRe.FindStringSubmatch(match)
+		if len(sub) < 4 {
+			return match
+		}
+		year := sub[1]
+		month := sub[2]
+		day := sub[3]
+		hour := "00"
+		min := "00"
+		sec := "00"
+		if len(sub) >= 7 && sub[4] != "" {
+			hour = sub[4]
+			min = sub[5]
+			sec = sub[6]
+		}
+		t, err := time.Parse("2006.01.02 15:04:05", year+"."+month+"."+day+" "+hour+":"+min+":"+sec)
+		if err != nil {
+			return match
+		}
+		return fmt.Sprintf("%d", t.UnixMilli())
+	})
 }
 
 // includeStub returns a stub class/struct declaration for known MQL5 headers

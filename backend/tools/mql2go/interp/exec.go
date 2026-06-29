@@ -61,6 +61,11 @@ func NewInterpreter(ir *IR) *Interpreter {
 	return it
 }
 
+// GetGlobal returns a global variable value by name (for test/debug inspection).
+func (it *Interpreter) GetGlobal(name string) Value {
+	return it.globals[name]
+}
+
 // ── Variable management ─────────────────────────────────────────────
 
 // curScope returns the innermost scope.
@@ -78,6 +83,13 @@ func (it *Interpreter) getVar(name string) Value {
 	if v, ok := it.globals[name]; ok {
 		return v
 	}
+	// MQL predefined variables (Digits, Ask, Bid, Point, Symbol, etc.)
+	// are compiled as ExprVar but need to be resolved via market data dispatch.
+	if it.ctx != nil {
+		if v, ok := it.callMarketData(name, nil); ok {
+			return v
+		}
+	}
 	return NoneVal()
 }
 
@@ -94,8 +106,10 @@ func (it *Interpreter) setVar(name string, val Value) {
 		it.globals[name] = val
 		return
 	}
-	// New variable → declare in current scope
-	it.curScope()[name] = val
+	// In MQL4, assigning to an undeclared variable at function scope
+	// means it's a global variable (MQL4 has no block-scoped locals
+	// for undeclared names). Store in globals to persist across calls.
+	it.globals[name] = val
 }
 
 // ── Statement execution ─────────────────────────────────────────────
@@ -276,12 +290,21 @@ func (it *Interpreter) OnInit(ctx sdk.Context) error {
 				}
 				it.globals[p.Name] = BoolVal(ctx.ParamBool(p.Name, def))
 			default:
-				// Unknown type — try as string param
-				var def string
-				if p.Default != nil {
-					def = it.evalExpr(p.Default).ToString()
+				// Enum types or other custom types — treat as int (MQL enums are int32)
+				if it.ir.EnumTypes != nil && it.ir.EnumTypes[p.Type] {
+					var def int
+					if p.Default != nil {
+						def = int(it.evalExpr(p.Default).ToInt())
+					}
+					it.globals[p.Name] = IntVal(int32(ctx.ParamInt(p.Name, def)))
+				} else {
+					// Unknown type — try as string param
+					var def string
+					if p.Default != nil {
+						def = it.evalExpr(p.Default).ToString()
+					}
+					it.globals[p.Name] = StringVal(ctx.ParamString(p.Name, def))
 				}
-				it.globals[p.Name] = StringVal(ctx.ParamString(p.Name, def))
 			}
 		}
 	}
@@ -374,6 +397,60 @@ func (it *Interpreter) OnTimer(ctx sdk.Context) (*sdk.Signal, error) {
 	return it.signal, nil
 }
 
+// OnTrade implements sdk.TradeStrategy (optional).
+// Called after an order is filled, closed, or modified.
+// Maps MQL5 OnTrade() and OnTradeTransaction() callbacks.
+func (it *Interpreter) OnTrade(ctx sdk.Context, event sdk.TradeEvent) (*sdk.Signal, error) {
+	if len(it.ir.OnTrade) == 0 && len(it.ir.OnTradeTransaction) == 0 {
+		return nil, nil
+	}
+	it.ctx = ctx
+	it.series.bars = ctx.Bars()
+	it.scopes = []map[string]Value{make(map[string]Value)}
+	it.signal = nil
+	it.orderPool.Reset(ctx)
+	it.posPool.Reset(ctx)
+
+	// OnTradeTransaction receives a MqlTradeTransaction struct.
+	// We expose the trade event as global variables that the transaction
+	// handler can read, since the IR has no struct parameter passing.
+	if len(it.ir.OnTradeTransaction) > 0 {
+		it.globals["_TransactionTicket"] = IntVal(int32(event.Ticket))
+		it.globals["_TransactionSymbol"] = StringVal(event.Symbol)
+		it.globals["_TransactionVolume"] = DecimalVal(event.Volume)
+		it.globals["_TransactionPrice"] = DecimalVal(event.Price)
+		it.globals["_TransactionProfit"] = DecimalVal(event.Profit)
+		switch event.EventType {
+		case sdk.TradeFilled:
+			it.globals["_TransactionType"] = IntVal(0)
+		case sdk.TradeClosed:
+			it.globals["_TransactionType"] = IntVal(1)
+		case sdk.TradeModified:
+			it.globals["_TransactionType"] = IntVal(2)
+		case sdk.TradeCancelled:
+			it.globals["_TransactionType"] = IntVal(3)
+		}
+		if err := it.execBlock(it.ir.OnTradeTransaction); err != nil {
+			if !errors.Is(err, errReturn) {
+				return nil, fmt.Errorf("OnTradeTransaction: %w", err)
+			}
+		}
+	}
+
+	// OnTrade has no arguments — just executes the body.
+	if len(it.ir.OnTrade) > 0 {
+		it.scopes = []map[string]Value{make(map[string]Value)}
+		it.signal = nil
+		if err := it.execBlock(it.ir.OnTrade); err != nil {
+			if errors.Is(err, errReturn) {
+				return it.signal, nil
+			}
+			return nil, fmt.Errorf("OnTrade: %w", err)
+		}
+	}
+	return it.signal, nil
+}
+
 // ── Helpers ─────────────────────────────────────────────────────────
 
 func zeroValue(typeName string) Value {
@@ -386,6 +463,8 @@ func zeroValue(typeName string) Value {
 		return StringVal("")
 	case "bool":
 		return BoolVal(false)
+	case "datetime":
+		return Value{Kind: ValDatetime, Datetime: 0}
 	default:
 		return NoneVal()
 	}

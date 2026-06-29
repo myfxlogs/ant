@@ -81,6 +81,24 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 }
 
 func (c *compiler) compileCall(n *sitter.Node) *interp.Expr {
+	// Check if this is a method call: call_expression wrapping a field_expression
+	var fieldNode *sitter.Node
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "field_expression" {
+			fieldNode = child
+			break
+		}
+	}
+	if fieldNode != nil {
+		fieldExpr := c.compileField(fieldNode)
+		if fieldExpr != nil {
+			// Append method args from the call_expression's argument_list
+			args := c.compileArgs(n)
+			fieldExpr.Args = append(fieldExpr.Args, args...)
+			return fieldExpr
+		}
+	}
 	name := callFuncName(n)
 	args := c.compileArgs(n)
 	return &interp.Expr{Kind: interp.ExprCall, Name: name, Args: args}
@@ -89,11 +107,22 @@ func (c *compiler) compileCall(n *sitter.Node) *interp.Expr {
 func (c *compiler) compileBinary(n *sitter.Node) *interp.Expr {
 	var op string
 	var left, right *sitter.Node
+	// Scan all children for the operator (operators are unnamed nodes in tree-sitter)
+	for i := 0; i < int(n.ChildCount()); i++ {
+		child := n.Child(i)
+		ct := child.Type()
+		if ct == "operator" || isBinaryOp(ct) {
+			op = ct
+			if ct == "operator" {
+				op = c.text(child)
+			}
+			continue
+		}
+	}
+	// Scan named children for operands
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "operator" || isBinaryOp(child.Type()) {
-			op = c.text(child)
-		} else if left == nil {
+		if left == nil {
 			left = child
 		} else {
 			right = child
@@ -112,13 +141,22 @@ func (c *compiler) compileBinary(n *sitter.Node) *interp.Expr {
 func (c *compiler) compileUnary(n *sitter.Node) *interp.Expr {
 	var op string
 	var operand *sitter.Node
-	for i := 0; i < int(n.NamedChildCount()); i++ {
-		child := n.NamedChild(i)
-		if child.Type() == "operator" || isUnaryOp(c.text(child)) {
-			op = c.text(child)
-		} else {
-			operand = child
+	// Scan all children for the operator
+	for i := 0; i < int(n.ChildCount()); i++ {
+		child := n.Child(i)
+		ct := child.Type()
+		if ct == "operator" || isUnaryOp(ct) {
+			op = ct
+			if ct == "operator" {
+				op = c.text(child)
+			}
+			continue
 		}
+	}
+	// Scan named children for the operand
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		operand = n.NamedChild(i)
+		break
 	}
 	if operand == nil {
 		return nil
@@ -254,8 +292,12 @@ func (c *compiler) compileField(n *sitter.Node) *interp.Expr {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		switch child.Type() {
-		case "field_identifier", "identifier":
+		case "field_identifier":
 			fieldName = c.text(child)
+		case "identifier":
+			if obj == nil {
+				obj = child
+			}
 		case "call_expression":
 			// method call: obj.method(args)
 			fieldName = callFuncName(child)
@@ -316,17 +358,28 @@ func (c *compiler) findIdent(n *sitter.Node) string {
 }
 
 func (c *compiler) findType(n *sitter.Node) string {
-	if pt := childByType(c.source, n, "primitive_type"); pt != nil {
-		return c.text(pt)
-	}
-	if ti := childByType(c.source, n, "type_identifier"); ti != nil {
-		return c.text(ti)
-	}
-	// MQL5 input: type might be in ERROR node
+	// First check ERROR nodes for primitive types (MQL5 'input int' pattern)
 	for i := 0; i < int(n.ChildCount()); i++ {
 		child := n.Child(i)
 		if child.Type() == "ERROR" {
-			return c.text(child)
+			txt := c.text(child)
+			if isMQLPrimitiveType(txt) {
+				return txt
+			}
+		}
+	}
+	if pt := childByType(c.source, n, "primitive_type"); pt != nil {
+		return c.text(pt)
+	}
+	// Find type_identifier, skipping 'input'/'extern' keywords
+	// (tree-sitter parses 'input BuyOrSell0 x' with 'input' as type_identifier)
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "type_identifier" {
+			name := c.text(child)
+			if name != "input" && name != "extern" {
+				return name
+			}
 		}
 	}
 	return ""
@@ -342,6 +395,25 @@ func (c *compiler) findExprChild(n *sitter.Node) *sitter.Node {
 			"parenthesized_expression", "field_expression",
 			"assignment_expression", "true", "false":
 			return child
+		}
+	}
+	return nil
+}
+
+func (c *compiler) findInitValue(n *sitter.Node, declName string) *sitter.Node {
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		switch child.Type() {
+		case "number_literal", "string_literal",
+			"call_expression", "binary_expression", "unary_expression",
+			"subscript_expression", "conditional_expression",
+			"parenthesized_expression", "field_expression",
+			"assignment_expression", "true", "false":
+			return child
+		case "identifier":
+			if c.text(child) != declName {
+				return child
+			}
 		}
 	}
 	return nil

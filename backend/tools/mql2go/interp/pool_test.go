@@ -30,6 +30,7 @@ func (m *mockBarSeries) Symbol() string                  { return "EURUSD" }
 type mockBroker struct {
 	positions []sdk.Position
 	orders    []sdk.PendingOrder
+	history   []sdk.Position
 	lastReq   sdk.OrderRequest
 }
 
@@ -40,6 +41,9 @@ func (m *mockBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 func (m *mockBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.OrderResult, error) {
 	return sdk.OrderResult{}, nil
 }
+func (m *mockBroker) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, error) {
+	return sdk.OrderResult{}, nil
+}
 func (m *mockBroker) PositionModify(ticket int64, sl, tp decimal.Decimal) (sdk.OrderResult, error) {
 	return sdk.OrderResult{}, nil
 }
@@ -48,10 +52,22 @@ func (m *mockBroker) OrderDelete(ticket int64) (sdk.OrderResult, error) {
 }
 func (m *mockBroker) Positions(magic int32) []sdk.Position { return m.positions }
 func (m *mockBroker) Orders(magic int32) []sdk.PendingOrder { return m.orders }
-func (m *mockBroker) HistoryOrders(from, to int64) []sdk.Position { return nil }
+func (m *mockBroker) HistoryOrders(from, to int64) []sdk.Position { return m.history }
 func (m *mockBroker) Deals(from, to int64, magic int32) []sdk.Deal { return nil }
 func (m *mockBroker) SymbolInfo(symbol string) (sdk.SymbolInfo, error) {
-	return sdk.SymbolInfo{}, nil
+	return sdk.SymbolInfo{
+		Name:        symbol,
+		Digits:      5,
+		Point:       decimal.NewFromFloat(0.00001),
+		VolumeMin:   decimal.NewFromFloat(0.01),
+		VolumeMax:   decimal.NewFromInt(100),
+		VolumeStep:  decimal.NewFromFloat(0.01),
+		Spread:      2,
+		StopsLevel:  10,
+		TickValue:   decimal.NewFromFloat(1.0),
+		TickSize:    decimal.NewFromFloat(0.00001),
+		ContractSize: decimal.NewFromInt(100000),
+	}, nil
 }
 func (m *mockBroker) Account() sdk.AccountInfo {
 	return sdk.AccountInfo{

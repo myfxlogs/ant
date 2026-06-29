@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/shopspring/decimal"
+
+	"anttrader/strategy/sdk"
 )
 
 // callBuiltin dispatches a builtin function call.
@@ -13,11 +15,13 @@ import (
 
 var builtinTable = map[string]func(*Interpreter, []Value) (Value, error){
 	// Layer 3 — Math functions (decimal.Decimal, no float64)
-	"MathAbs":  mathAbs,
-	"MathMax":  mathMax,
-	"MathMin":  mathMin,
-	"MathSqrt": mathSqrt,
-	"MathPow":  mathPow,
+	"MathAbs":   mathAbs,
+	"MathMax":   mathMax,
+	"MathMin":   mathMin,
+	"MathSqrt":  mathSqrt,
+	"MathPow":   mathPow,
+	"MathLog":   mathLog,
+	"MathRound": mathRound,
 
 	// Layer 4 — Platform functions
 	"Print":  builtinPrint,
@@ -39,6 +43,9 @@ func (it *Interpreter) callBuiltin(name string, args []Expr) Value {
 			return v
 		}
 		if v, ok := it.callIndicator(name, args); ok {
+			return v
+		}
+		if v, ok := it.callIndicatorOnArray(name, args); ok {
 			return v
 		}
 		if v, ok := it.callTrade(name, args); ok {
@@ -135,6 +142,25 @@ func mathPow(it *Interpreter, args []Value) (Value, error) {
 	return DecimalVal(decimal.NewFromFloat(math.Pow(base, exp))), nil
 }
 
+func mathLog(it *Interpreter, args []Value) (Value, error) {
+	if len(args) < 1 {
+		return NoneVal(), fmt.Errorf("MathLog: not enough args")
+	}
+	f, _ := args[0].ToDecimal().Float64()
+	if f <= 0 {
+		return DecimalVal(decimal.Zero), nil
+	}
+	return DecimalVal(decimal.NewFromFloat(math.Log(f))), nil
+}
+
+func mathRound(it *Interpreter, args []Value) (Value, error) {
+	if len(args) < 1 {
+		return NoneVal(), fmt.Errorf("MathRound: not enough args")
+	}
+	f, _ := args[0].ToDecimal().Float64()
+	return DecimalVal(decimal.NewFromFloat(math.Round(f))), nil
+}
+
 // ── Layer 4: Platform functions ─────────────────────────────────────
 
 func builtinPrint(it *Interpreter, args []Value) (Value, error) {
@@ -167,6 +193,96 @@ func (it *Interpreter) callMarketData(name string, args []Expr) (Value, bool) {
 		return IntVal(it.ctx.Digits()), true
 	case "Period":
 		return IntVal(timeframeToPeriod(it.ctx.Timeframe())), true
+
+	// MQL5 SymbolInfoDouble(symbol, property) → double
+	case "SymbolInfoDouble":
+		if len(args) >= 2 && it.ctx.Broker() != nil {
+			sym := it.evalExpr(&args[0]).ToString()
+			prop := it.evalExpr(&args[1]).ToInt()
+			info, err := it.ctx.Broker().SymbolInfo(sym)
+			if err != nil {
+				return DecimalVal(decimal.Zero), true
+			}
+			return DecimalVal(symbolInfoDouble(info, prop)), true
+		}
+		return DecimalVal(decimal.Zero), true
+
+	// MQL5 SymbolInfoInteger(symbol, property) → long
+	case "SymbolInfoInteger":
+		if len(args) >= 2 && it.ctx.Broker() != nil {
+			sym := it.evalExpr(&args[0]).ToString()
+			prop := it.evalExpr(&args[1]).ToInt()
+			info, err := it.ctx.Broker().SymbolInfo(sym)
+			if err != nil {
+				return IntVal(0), true
+			}
+			return IntVal(symbolInfoInteger(info, prop)), true
+		}
+		return IntVal(0), true
+
+	// MQL5 SymbolInfoString(symbol, property) → string
+	case "SymbolInfoString":
+		if len(args) >= 2 && it.ctx.Broker() != nil {
+			sym := it.evalExpr(&args[0]).ToString()
+			prop := it.evalExpr(&args[1]).ToInt()
+			info, err := it.ctx.Broker().SymbolInfo(sym)
+			if err != nil {
+				return StringVal(""), true
+			}
+			return StringVal(symbolInfoString(info, prop)), true
+		}
+		return StringVal(""), true
+
+	// MQL4 MarketInfo(symbol, mode) → double
+	case "MarketInfo":
+		if len(args) >= 2 && it.ctx.Broker() != nil {
+			sym := it.evalExpr(&args[0]).ToString()
+			mode := it.evalExpr(&args[1]).ToInt()
+			info, err := it.ctx.Broker().SymbolInfo(sym)
+			if err != nil {
+				return DecimalVal(decimal.Zero), true
+			}
+			return DecimalVal(marketInfo(info, mode)), true
+		}
+		return DecimalVal(decimal.Zero), true
+
+	// Cross-timeframe market data: iHigh/iLow/iOpen/iClose/iTime
+	// MQL4/MQL5: iHigh(symbol, timeframe, shift) → double
+	case "iHigh":
+		if len(args) >= 3 {
+			tf := periodToTimeframe(it.evalExpr(&args[1]).ToInt())
+			shift := int(it.evalExpr(&args[2]).ToInt())
+			return DecimalVal(it.ctx.BarsTF(tf).High(shift)), true
+		}
+		return DecimalVal(decimal.Zero), true
+	case "iLow":
+		if len(args) >= 3 {
+			tf := periodToTimeframe(it.evalExpr(&args[1]).ToInt())
+			shift := int(it.evalExpr(&args[2]).ToInt())
+			return DecimalVal(it.ctx.BarsTF(tf).Low(shift)), true
+		}
+		return DecimalVal(decimal.Zero), true
+	case "iOpen":
+		if len(args) >= 3 {
+			tf := periodToTimeframe(it.evalExpr(&args[1]).ToInt())
+			shift := int(it.evalExpr(&args[2]).ToInt())
+			return DecimalVal(it.ctx.BarsTF(tf).Open(shift)), true
+		}
+		return DecimalVal(decimal.Zero), true
+	case "iClose":
+		if len(args) >= 3 {
+			tf := periodToTimeframe(it.evalExpr(&args[1]).ToInt())
+			shift := int(it.evalExpr(&args[2]).ToInt())
+			return DecimalVal(it.ctx.BarsTF(tf).Close(shift)), true
+		}
+		return DecimalVal(decimal.Zero), true
+	case "iTime":
+		if len(args) >= 3 {
+			tf := periodToTimeframe(it.evalExpr(&args[1]).ToInt())
+			shift := int(it.evalExpr(&args[2]).ToInt())
+			return Value{Kind: ValDatetime, Datetime: it.ctx.BarsTF(tf).Time(shift)}, true
+		}
+		return Value{Kind: ValDatetime, Datetime: 0}, true
 	}
 	return NoneVal(), false
 }
@@ -197,5 +313,150 @@ func timeframeToPeriod(tf string) int32 {
 	}
 }
 
+// periodToTimeframe maps MQL period int values to SDK timeframe strings.
+func periodToTimeframe(period int32) string {
+	switch period {
+	case 1:
+		return "M1"
+	case 5:
+		return "M5"
+	case 15:
+		return "M15"
+	case 30:
+		return "M30"
+	case 60:
+		return "H1"
+	case 240:
+		return "H4"
+	case 1440:
+		return "D1"
+	case 10080:
+		return "W1"
+	case 43200:
+		return "MN1"
+	default:
+		return ""
+	}
+}
+
 // callIndicator is implemented in builtin_indicators.go.
 // callTrade is implemented in builtin_trade.go.
+
+// ── SymbolInfo / MarketInfo property mappers ───────────────────────
+
+// MQL5 SYMBOL_* double property constants.
+const (
+	symBid         = 1
+	symAsk         = 2
+	symLast        = 3
+	symPoint       = 11
+	symTickSize    = 15
+	symTickValue   = 16
+	symSwapLong    = 18
+	symSwapShort   = 19
+	symVolumeMin   = 23
+	symVolumeMax   = 24
+	symVolumeStep  = 25
+	symTradeAccVal = 30
+)
+
+// MQL5 SYMBOL_* integer property constants.
+const (
+	symDigits     = 12
+	symSpread     = 13
+	symStopsLevel = 14
+)
+
+// MQL5 SYMBOL_* string property constants.
+const (
+	symCurrencyBase   = 1
+	symCurrencyProfit = 2
+	symCurrencyMargin = 3
+)
+
+// MQL4 MarketInfo mode constants.
+const (
+	miBid       = 1
+	miAsk       = 2
+	miPoint     = 3
+	miDigits    = 4
+	miSpread    = 5
+	miStopLevel = 6
+	miMinLot    = 17
+	miMaxLot    = 18
+	miLotStep   = 19
+	miTickValue = 16
+	miTickSize  = 20
+)
+
+func symbolInfoDouble(info sdk.SymbolInfo, prop int32) decimal.Decimal {
+	switch prop {
+	case symBid:
+		return decimal.Zero // no live bid in backtest
+	case symAsk:
+		return decimal.Zero
+	case symPoint:
+		return info.Point
+	case symTickSize:
+		return info.TickSize
+	case symTickValue:
+		return info.TickValue
+	case symSwapLong:
+		return info.SwapLong
+	case symSwapShort:
+		return info.SwapShort
+	case symVolumeMin:
+		return info.VolumeMin
+	case symVolumeMax:
+		return info.VolumeMax
+	case symVolumeStep:
+		return info.VolumeStep
+	}
+	return decimal.Zero
+}
+
+func symbolInfoInteger(info sdk.SymbolInfo, prop int32) int32 {
+	switch prop {
+	case symDigits:
+		return info.Digits
+	case symSpread:
+		return info.Spread
+	case symStopsLevel:
+		return info.StopsLevel
+	}
+	return 0
+}
+
+func symbolInfoString(info sdk.SymbolInfo, prop int32) string {
+	switch prop {
+	case symCurrencyBase, symCurrencyProfit, symCurrencyMargin:
+		return info.Name
+	}
+	return ""
+}
+
+func marketInfo(info sdk.SymbolInfo, mode int32) decimal.Decimal {
+	switch mode {
+	case miBid, miAsk:
+		return decimal.Zero
+	case miPoint:
+		return info.Point
+	case miDigits:
+		return decimal.NewFromInt(int64(info.Digits))
+	case miSpread:
+		return decimal.NewFromInt(int64(info.Spread))
+	case miStopLevel:
+		return decimal.NewFromInt(int64(info.StopsLevel))
+	case miMinLot:
+		return info.VolumeMin
+	case miMaxLot:
+		return info.VolumeMax
+	case miLotStep:
+		return info.VolumeStep
+	case miTickValue:
+		return info.TickValue
+	case miTickSize:
+		return info.TickSize
+	}
+	return decimal.Zero
+}

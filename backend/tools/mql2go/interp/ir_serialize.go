@@ -24,6 +24,8 @@ import (
 //   u32 len(onBar) + [Statement]...
 //   u32 len(onTick) + [Statement]...
 //   u32 len(onTimer) + [Statement]...
+//   u32 len(onTrade) + [Statement]...
+//   u32 len(onTradeTransaction) + [Statement]...
 //   u32 len(onDeinit) + [Statement]...
 
 const irFormatVersion byte = 1
@@ -37,10 +39,13 @@ func SerializeIR(ir *IR) []byte {
 	buf.writeParams(ir.Params)
 	buf.writeFuncs(ir.Funcs)
 	buf.writeEnums(ir.Enums)
+	buf.writeEnumTypes(ir.EnumTypes)
 	buf.writeStatements(ir.OnInit)
 	buf.writeStatements(ir.OnBar)
 	buf.writeStatements(ir.OnTick)
 	buf.writeStatements(ir.OnTimer)
+	buf.writeStatements(ir.OnTrade)
+	buf.writeStatements(ir.OnTradeTransaction)
 	buf.writeStatements(ir.OnDeinit)
 	return buf.bytes()
 }
@@ -56,16 +61,19 @@ func DeserializeIR(data []byte) *IR {
 		return nil
 	}
 	ir := &IR{
-		Version:  buf.readString(),
-		Globals:  buf.readGlobals(),
-		Params:   buf.readParams(),
-		Funcs:    buf.readFuncs(),
-		Enums:    buf.readEnums(),
-		OnInit:   buf.readStatements(),
-		OnBar:    buf.readStatements(),
-		OnTick:   buf.readStatements(),
-		OnTimer:  buf.readStatements(),
-		OnDeinit: buf.readStatements(),
+		Version:            buf.readString(),
+		Globals:            buf.readGlobals(),
+		Params:             buf.readParams(),
+		Funcs:              buf.readFuncs(),
+		Enums:              buf.readEnums(),
+		EnumTypes:          buf.readEnumTypes(),
+		OnInit:             buf.readStatements(),
+		OnBar:              buf.readStatements(),
+		OnTick:             buf.readStatements(),
+		OnTimer:            buf.readStatements(),
+		OnTrade:            buf.readStatements(),
+		OnTradeTransaction: buf.readStatements(),
+		OnDeinit:           buf.readStatements(),
 	}
 	if buf.err != nil {
 		return nil
@@ -142,6 +150,17 @@ func (w *writeBuf) writeEnums(enums map[string]int32) {
 	for name, val := range enums {
 		w.writeString(name)
 		w.writeU32(uint32(val))
+	}
+}
+
+func (w *writeBuf) writeEnumTypes(types map[string]bool) {
+	if types == nil {
+		w.writeU32(0)
+		return
+	}
+	w.writeU32(uint32(len(types)))
+	for name := range types {
+		w.writeString(name)
 	}
 }
 
@@ -356,6 +375,18 @@ func (r *readBuf) readEnums() map[string]int32 {
 		enums[name] = val
 	}
 	return enums
+}
+
+func (r *readBuf) readEnumTypes() map[string]bool {
+	n := r.readU32()
+	if n == 0 {
+		return nil
+	}
+	types := make(map[string]bool, n)
+	for i := uint32(0); i < n; i++ {
+		types[r.readString()] = true
+	}
+	return types
 }
 
 func (r *readBuf) readStatements() []Statement {

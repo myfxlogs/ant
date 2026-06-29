@@ -7,7 +7,8 @@ import (
 // MQL4OrderPool simulates the MQL4 OrdersTotal()/OrderSelect() model.
 // It is rebuilt from SDK positions/orders at the start of each bar.
 type MQL4OrderPool struct {
-	orders  []OrderRecord
+	orders   []OrderRecord
+	history  []OrderRecord
 	current *OrderRecord
 	total   int
 }
@@ -100,6 +101,32 @@ func (p *MQL4OrderPool) Reset(ctx sdk.Context) {
 	}
 	p.total = len(p.orders)
 	p.current = nil
+
+	// Load history orders
+	histPositions := broker.HistoryOrders(0, 0)
+	p.history = make([]OrderRecord, 0, len(histPositions))
+	for _, h := range histPositions {
+		rec := OrderRecord{
+			Ticket:      h.Ticket,
+			Symbol:      h.Symbol,
+			Lots:        DecimalVal(h.Volume),
+			OpenPrice:   DecimalVal(h.OpenPrice),
+			StopLoss:    DecimalVal(h.StopLoss),
+			TakeProfit:  DecimalVal(h.TakeProfit),
+			Profit:      DecimalVal(h.Profit),
+			Commission:  DecimalVal(h.Commission),
+			Swap:        DecimalVal(h.Swap),
+			MagicNumber: h.Magic,
+			Comment:     h.Comment,
+			OpenTime:    h.OpenTime.UnixMilli(),
+		}
+		if h.Side == sdk.SideBuy {
+			rec.Type = 0 // OP_BUY
+		} else {
+			rec.Type = 1 // OP_SELL
+		}
+		p.history = append(p.history, rec)
+	}
 }
 
 // Select implements OrderSelect(index, SELECT_BY_POS, MODE_TRADES).
@@ -111,6 +138,15 @@ func (p *MQL4OrderPool) Select(index int) bool {
 	return true
 }
 
+// SelectHistory implements OrderSelect(index, SELECT_BY_POS, MODE_HISTORY).
+func (p *MQL4OrderPool) SelectHistory(index int) bool {
+	if index < 0 || index >= len(p.history) {
+		return false
+	}
+	p.current = &p.history[index]
+	return true
+}
+
 // SelectByTicket implements OrderSelect(ticket, SELECT_BY_TICKET, MODE_TRADES).
 func (p *MQL4OrderPool) SelectByTicket(ticket int64) bool {
 	for i := range p.orders {
@@ -119,7 +155,19 @@ func (p *MQL4OrderPool) SelectByTicket(ticket int64) bool {
 			return true
 		}
 	}
+	// Also search history
+	for i := range p.history {
+		if p.history[i].Ticket == ticket {
+			p.current = &p.history[i]
+			return true
+		}
+	}
 	return false
+}
+
+// HistoryTotal returns the number of closed orders in history.
+func (p *MQL4OrderPool) HistoryTotal() int {
+	return len(p.history)
 }
 
 // Total returns the number of orders in the pool.

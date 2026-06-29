@@ -3,6 +3,7 @@ package interp
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/shopspring/decimal"
 )
@@ -40,6 +41,29 @@ func init() {
 
 	builtinTable["Comment"] = builtinPrint // alias for Print
 	builtinTable["Sleep"] = builtinSleep
+
+	// MQL4 aliases
+	builtinTable["DoubleToStr"] = doubleToString // alias for DoubleToString
+
+	// Platform no-op / stub functions
+	builtinTable["EventKillTimer"]            = noopReturn0
+	builtinTable["EventSetMillisecondTimer"]  = noopReturn0
+	builtinTable["EventSetTimer"]             = noopReturn0
+	builtinTable["ExpertRemove"]              = noopReturn0
+	builtinTable["GetLastError"]              = noopReturn0
+	builtinTable["IsTesting"]                 = isTesting
+	builtinTable["IsOptimization"]            = noopReturn0
+	builtinTable["IsVisualMode"]              = noopReturn0
+	builtinTable["RefreshRates"]              = noopReturnTrue
+	builtinTable["Day"]                       = dayFunc
+	builtinTable["DayOfWeek"]                 = dayOfWeekFunc
+	builtinTable["Hour"]                      = hourFunc
+	builtinTable["Minute"]                    = minuteFunc
+	builtinTable["Year"]                      = yearFunc
+	builtinTable["Month"]                     = monthFunc
+	builtinTable["TimeLocal"]                 = timeCurrent
+	builtinTable["StrToTime"]                 = strToTime
+	builtinTable["TimeToStr"]                 = timeToStr
 }
 
 // ── Array functions ─────────────────────────────────────────────────
@@ -334,4 +358,121 @@ func timeCurrent(it *Interpreter, args []Value) (Value, error) {
 func builtinSleep(it *Interpreter, args []Value) (Value, error) {
 	// No-op in interpreter (can't sleep in backtest)
 	return NoneVal(), nil
+}
+
+func noopReturn0(it *Interpreter, args []Value) (Value, error) {
+	return IntVal(0), nil
+}
+
+func noopReturnTrue(it *Interpreter, args []Value) (Value, error) {
+	return BoolVal(true), nil
+}
+
+func isTesting(it *Interpreter, args []Value) (Value, error) {
+	// In backtest context, IsTesting() returns true.
+	// In live context, it returns false.
+	// We detect by checking if ctx has ServerTime > 0 (backtest sets it).
+	if it.ctx != nil && it.ctx.ServerTime() > 0 {
+		return BoolVal(true), nil
+	}
+	return BoolVal(false), nil
+}
+
+func dayFunc(it *Interpreter, args []Value) (Value, error) {
+	if it.ctx != nil {
+		ts := it.ctx.ServerTime()
+		if ts > 0 {
+			return IntVal(int32(time.UnixMilli(ts).UTC().Day())), nil
+		}
+	}
+	return IntVal(1), nil
+}
+
+func dayOfWeekFunc(it *Interpreter, args []Value) (Value, error) {
+	if it.ctx != nil {
+		ts := it.ctx.ServerTime()
+		if ts > 0 {
+			return IntVal(int32(time.UnixMilli(ts).UTC().Weekday())), nil
+		}
+	}
+	return IntVal(1), nil
+}
+
+func hourFunc(it *Interpreter, args []Value) (Value, error) {
+	if it.ctx != nil {
+		ts := it.ctx.ServerTime()
+		if ts > 0 {
+			return IntVal(int32(time.UnixMilli(ts).UTC().Hour())), nil
+		}
+	}
+	return IntVal(0), nil
+}
+
+func minuteFunc(it *Interpreter, args []Value) (Value, error) {
+	if it.ctx != nil {
+		ts := it.ctx.ServerTime()
+		if ts > 0 {
+			return IntVal(int32(time.UnixMilli(ts).UTC().Minute())), nil
+		}
+	}
+	return IntVal(0), nil
+}
+
+func yearFunc(it *Interpreter, args []Value) (Value, error) {
+	if it.ctx != nil {
+		ts := it.ctx.ServerTime()
+		if ts > 0 {
+			return IntVal(int32(time.UnixMilli(ts).UTC().Year())), nil
+		}
+	}
+	return IntVal(2024), nil
+}
+
+func monthFunc(it *Interpreter, args []Value) (Value, error) {
+	if it.ctx != nil {
+		ts := it.ctx.ServerTime()
+		if ts > 0 {
+			return IntVal(int32(time.UnixMilli(ts).UTC().Month())), nil
+		}
+	}
+	return IntVal(1), nil
+}
+
+func strToTime(it *Interpreter, args []Value) (Value, error) {
+	if len(args) < 1 {
+		return Value{Kind: ValDatetime, Datetime: 0}, fmt.Errorf("StrToTime: needs 1 arg")
+	}
+	s := args[0].ToString()
+	// MQL format: "yyyy.mm.dd hh:mi"
+	t, err := time.Parse("2006.01.02 15:04", s)
+	if err != nil {
+		t, err = time.Parse("2006.01.02", s)
+		if err != nil {
+			return Value{Kind: ValDatetime, Datetime: 0}, nil
+		}
+	}
+	return Value{Kind: ValDatetime, Datetime: t.Unix()}, nil
+}
+
+func timeToStr(it *Interpreter, args []Value) (Value, error) {
+	if len(args) < 1 {
+		return StringVal(""), fmt.Errorf("TimeToStr: needs 1 arg")
+	}
+	ts := int64(args[0].ToInt())
+	// MQL format: "yyyy.mm.dd hh:mi"
+	t := time.Unix(ts, 0).UTC()
+	mode := int32(0)
+	if len(args) >= 2 {
+		mode = args[1].ToInt()
+	}
+	switch mode {
+	case 1: // TIME_DATE
+		return StringVal(t.Format("2006.01.02")), nil
+	case 2: // TIME_MINUTES
+		return StringVal(t.Format("15:04")), nil
+	case 4: // TIME_SECONDS
+		return StringVal(t.Format("15:04:05")), nil
+	default: // TIME_DATE|TIME_MINUTES
+		return StringVal(t.Format("2006.01.02 15:04")), nil
+	}
 }

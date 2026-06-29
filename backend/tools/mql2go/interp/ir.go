@@ -32,6 +32,7 @@ const (
 	ExprTernary                     // Cond ? ThenExpr : ElseExpr
 	ExprUpdate                      // Name + Op: i++, i--
 	ExprAssignment                  // Name + Args[0]: a = b
+	ExprDecl                        // Name + Args[0]: name := value (declaration)
 	ExprCompoundAssign              // Name + Op + Args[0]: a += b
 )
 
@@ -71,16 +72,19 @@ const (
 
 // IR is the compiled representation of an MQL EA.
 type IR struct {
-	Version  string              // "mql4" or "mql5"
-	OnInit   []Statement         // OnInit body (variable initialization + EventSetTimer)
-	OnBar    []Statement         // OnBar body
-	OnTick   []Statement         // OnTick body
-	OnTimer  []Statement         // OnTimer body
-	OnDeinit []Statement         // OnDeinit body
-	Globals  []GlobalVar         // global variable declarations
-	Params   []ParamDecl         // extern/input parameter declarations
-	Funcs    map[string]*FuncDef // user-defined functions
-	Enums    map[string]int32    // enum constants → int value
+	Version           string              // "mql4" or "mql5"
+	OnInit            []Statement         // OnInit body (variable initialization + EventSetTimer)
+	OnBar             []Statement         // OnBar body
+	OnTick            []Statement         // OnTick body
+	OnTimer           []Statement         // OnTimer body
+	OnTrade           []Statement         // OnTrade body (MQL5, no args)
+	OnTradeTransaction []Statement        // OnTradeTransaction body (MQL5, receives MqlTradeTransaction)
+	OnDeinit          []Statement         // OnDeinit body
+	Globals           []GlobalVar         // global variable declarations
+	Params            []ParamDecl         // extern/input parameter declarations
+	Funcs             map[string]*FuncDef // user-defined functions
+	Enums             map[string]int32    // enum constants → int value
+	EnumTypes         map[string]bool     // enum type names (e.g. "BuyOrSell0")
 }
 
 // GlobalVar represents a global variable declaration.

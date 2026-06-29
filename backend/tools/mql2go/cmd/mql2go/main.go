@@ -31,16 +31,13 @@ func main() {
 		os.Exit(2)
 	}
 
-	intent, err := mql2go.Analyze(string(source))
+	ir, err := mql2go.CompileToIR(string(source))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Analysis failed: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Compile to IR failed: %v\n", err)
 		os.Exit(3)
 	}
-	if *className != "" {
-		intent.Meta.Name = *className
-	}
 
-	code := mql2go.Generate(intent)
+	code := mql2go.GenerateFromIR(ir, *className)
 
 	if *output != "" {
 		outPath := filepath.Clean(*output)

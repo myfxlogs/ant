@@ -59,6 +59,7 @@ func (c *compiler) compile(root *sitter.Node) *interp.IR {
 
 	for i := 0; i < int(root.NamedChildCount()); i++ {
 		n := root.NamedChild(i)
+		txt := c.text(n)
 		switch n.Type() {
 		case "declaration":
 			c.collectGlobal(ir, n)
@@ -69,6 +70,12 @@ func (c *compiler) compile(root *sitter.Node) *interp.IR {
 			// already processed in first pass
 		case "function_definition":
 			c.collectFunction(ir, n)
+		default:
+			// Fallback: handle nodes that tree-sitter doesn't parse as 'declaration'
+			// (e.g. 'input BuyOrSell0 x = 2;' with enum type may parse as ERROR)
+			if strings.Contains(txt, "input ") || strings.Contains(txt, "extern ") {
+				c.collectParam(ir, n)
+			}
 		}
 	}
 
@@ -78,7 +85,7 @@ func (c *compiler) compile(root *sitter.Node) *interp.IR {
 // collectGlobal processes top-level declarations (globals + params).
 func (c *compiler) collectGlobal(ir *interp.IR, n *sitter.Node) {
 	text := c.text(n)
-	if strings.Contains(text, "extern ") || strings.Contains(text, "input ") {
+	if strings.Contains(text, "extern ") || strings.Contains(text, "input ") || strings.HasPrefix(text, "input ") || strings.HasPrefix(text, "extern ") {
 		c.collectParam(ir, n)
 		return
 	}
@@ -104,8 +111,12 @@ func (c *compiler) collectParam(ir *interp.IR, n *sitter.Node) {
 				Type: c.findType(n),
 			}
 			// Look for default value
-			if init := childByType(c.source, child, "init_declarator"); init != nil {
-				if valExpr := c.findExprChild(init); valExpr != nil {
+			if child.Type() == "init_declarator" {
+				if valExpr := c.findInitValue(child, name); valExpr != nil {
+					pd.Default = c.compileExpr(valExpr)
+				}
+			} else if init := childByType(c.source, decl, "init_declarator"); init != nil {
+				if valExpr := c.findInitValue(init, name); valExpr != nil {
 					pd.Default = c.compileExpr(valExpr)
 				}
 			}
@@ -127,7 +138,7 @@ func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 				Name: name,
 				Type: typeName,
 			}
-			if valExpr := c.findExprChild(child); valExpr != nil {
+			if valExpr := c.findInitValue(child, name); valExpr != nil {
 				gv.InitVal = c.compileExpr(valExpr)
 			}
 			ir.Globals = append(ir.Globals, gv)
@@ -158,6 +169,13 @@ func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 // collectFunction maps MQL event functions to IR slots.
 func (c *compiler) collectFunction(ir *interp.IR, n *sitter.Node) {
 	name := funcName(n)
+	if name == "" {
+		return
+	}
+	// Skip class declarations that tree-sitter mis-parses as function_definition
+	if isBuiltinClass(name) {
+		return
+	}
 	body := funcBody(n)
 	if body == nil {
 		return
@@ -173,6 +191,10 @@ func (c *compiler) collectFunction(ir *interp.IR, n *sitter.Node) {
 		ir.OnBar = stmts
 	case "OnTimer":
 		ir.OnTimer = stmts
+	case "OnTrade":
+		ir.OnTrade = stmts
+	case "OnTradeTransaction":
+		ir.OnTradeTransaction = stmts
 	case "OnDeinit":
 		ir.OnDeinit = stmts
 	default:
@@ -227,7 +249,16 @@ func (c *compiler) compileStmt(n *sitter.Node) *interp.Statement {
 		expr := c.findExprChild(n)
 		var e *interp.Expr
 		if expr != nil {
-			e = c.compileExpr(expr)
+			// Handle 'return(val)' which tree-sitter may parse as call_expression
+			// with function name 'return' — unwrap to the argument
+			if expr.Type() == "call_expression" && callFuncName(expr) == "return" {
+				args := c.compileArgs(expr)
+				if len(args) > 0 {
+					e = &args[0]
+				}
+			} else {
+				e = c.compileExpr(expr)
+			}
 		}
 		return &interp.Statement{Kind: interp.StmtReturn, Expr: e}
 
@@ -390,12 +421,12 @@ func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
 			if name == "" {
 				continue
 			}
-			valExpr := c.findExprChild(child)
+			valExpr := c.findInitValue(child, name)
 			if valExpr != nil {
 				return &interp.Statement{
 					Kind: interp.StmtExpr,
 					Expr: &interp.Expr{
-						Kind: interp.ExprAssignment,
+						Kind: interp.ExprDecl,
 						Name: name,
 						Args: []interp.Expr{*c.compileExpr(valExpr)},
 					},
@@ -442,6 +473,10 @@ func (c *compiler) collectEnum(ir *interp.IR, n *sitter.Node) {
 		child := n.NamedChild(i)
 		if child.Type() == "type_identifier" {
 			enumName = c.text(child)
+			if ir.EnumTypes == nil {
+				ir.EnumTypes = make(map[string]bool)
+			}
+			ir.EnumTypes[enumName] = true
 		}
 		if child.Type() == "enumerator_list" {
 			counter := int32(0)
