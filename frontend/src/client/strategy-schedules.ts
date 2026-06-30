@@ -103,7 +103,7 @@ export const strategyScheduleApi = {
       symbol: params.symbol,
       timeframe: params.timeframe,
       parameters: params.parameters || {},
-      initialCapital: params.initialCapital || 10000,
+      initialCapital: String(params.initialCapital || 10000),
     });
     return {
       success: response.success,

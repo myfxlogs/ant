@@ -148,7 +148,7 @@ export const strategyRuntimeApi = {
       accountId: params.accountId,
       symbol: params.symbol,
       timeframe: params.timeframe,
-      initialCapital: params.initialCapital ?? 10000,
+      initialCapital: String(params.initialCapital ?? 10000),
       mode:
         params.mode === 'DATASET'
           ? BacktestRunMode.DATASET

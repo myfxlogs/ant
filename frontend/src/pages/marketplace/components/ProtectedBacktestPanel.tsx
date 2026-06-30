@@ -68,7 +68,7 @@ export default function ProtectedBacktestPanel({ strategyId, defaultSymbol = 'EU
         timeframe,
         startDateMs: BigInt(dateRange[0].valueOf()),
         endDateMs: BigInt(dateRange[1].valueOf()),
-        initialCapital,
+        initialCapital: String(initialCapital),
         executionConfig: {
           commission,
           slippage: 0,
