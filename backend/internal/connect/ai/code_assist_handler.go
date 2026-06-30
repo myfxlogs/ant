@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"go.uber.org/zap"
@@ -61,7 +62,8 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	// Structural quality warnings
 	warnings = append(warnings, structWarns...)
 
-	var parametersJson string
+	// ── Static param extraction ──
+	parametersJson := extractParamsJSON(code)
 
 	valid := len(errors) == 0
 
@@ -179,6 +181,51 @@ func parseValidationResult(raw string, log *zap.Logger) (*connect.Response[antv1
 		Valid: parsed.Valid, Errors: parsed.Errors, Warnings: parsed.Warnings,
 		Parameters: params,
 	}), nil
+}
+
+// paramPattern matches ctx.Param*("name", default) calls.
+// Group 1: method suffix (empty, Int, Decimal, Bool, String)
+// Group 2: parameter name
+// Group 3: default value expression
+var paramPattern = regexp.MustCompile(`ctx\.Param(Int|Decimal|Bool|String)?\s*\(\s*"([^"]+)"\s*,\s*([^)]+)\)`)
+
+// paramType maps Param* suffix to proto type string.
+var paramType = map[string]string{
+	"":        "str",
+	"Int":     "int",
+	"Decimal": "float",
+	"Bool":    "bool",
+	"String":  "str",
+}
+
+// extractParamsJSON statically extracts ctx.Param*() calls and returns a JSON array.
+// Each element: {"name": "...", "type": "int|float|str|bool", "default": "..."}
+func extractParamsJSON(code string) string {
+	matches := paramPattern.FindAllStringSubmatch(code, -1)
+	if len(matches) == 0 {
+		return ""
+	}
+	seen := make(map[string]bool)
+	type paramEntry struct {
+		Name    string `json:"name"`
+		Type    string `json:"type"`
+		Default string `json:"default"`
+	}
+	var entries []paramEntry
+	for _, m := range matches {
+		name := m[2]
+		if seen[name] {
+			continue
+		}
+		seen[name] = true
+		entries = append(entries, paramEntry{
+			Name:    name,
+			Type:    paramType[m[1]],
+			Default: strings.TrimSpace(m[3]),
+		})
+	}
+	b, _ := json.Marshal(entries)
+	return string(b)
 }
 
 // extractCodeFromRepair attempts to salvage Go code from an LLM response
