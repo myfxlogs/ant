@@ -67,6 +67,10 @@ func (s *StrategySvc) CreateTemplate(ctx context.Context, t *TemplateRow) error 
 	if t.Tags == nil {
 		t.Tags = []string{}
 	}
+	// Empty byte slice is not valid JSON; nil lets the column default ('{}'::jsonb) take effect.
+	if len(t.I18n) == 0 {
+		t.I18n = nil
+	}
 	_, err := s.pg.Exec(ctx,
 		`INSERT INTO strategy_templates (id, user_id, name, description, code, status, parameters, i18n, is_public, is_system, tags, use_count, created_at, updated_at)
 		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
@@ -79,6 +83,10 @@ func (s *StrategySvc) CreateTemplate(ctx context.Context, t *TemplateRow) error 
 
 func (s *StrategySvc) UpdateTemplate(ctx context.Context, t *TemplateRow) error {
 	t.UpdatedAt = time.Now()
+	// Empty byte slice is not valid JSON; nil lets the column default ('{}'::jsonb) take effect.
+	if len(t.I18n) == 0 {
+		t.I18n = nil
+	}
 	_, err := s.pg.Exec(ctx,
 		`UPDATE strategy_templates SET name=$2, description=$3, code=$4, status=$5, parameters=$6, i18n=$7, is_public=$8, tags=$9, updated_at=$10 WHERE id=$1 AND user_id=$11`,
 		t.ID, t.Name, t.Description, t.Code, t.Status, t.Parameters, t.I18n, t.IsPublic, t.Tags, t.UpdatedAt, t.UserID)
