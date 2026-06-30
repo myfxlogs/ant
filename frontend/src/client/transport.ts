@@ -178,10 +178,12 @@ const interceptors: Interceptor[] = [
 
 export const transport = createConnectTransport({
   baseUrl: API_URL,
+  useBinaryFormat: true,
   interceptors,
 });
 
 export const streamTransport = createConnectTransport({
   baseUrl: STREAM_URL,
+  useBinaryFormat: true,
   interceptors,
 });

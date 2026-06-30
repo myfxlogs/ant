@@ -104,5 +104,5 @@ export const paperTradingStreamClient = createClient(PaperTradingService, stream
 export const autoTradingClient = createClient(AutoTradingService, transport);
 export const objectiveScoreClient = createClient(ObjectiveScoreService, transport);
 export const aiGatewayClient = createClient(AIGatewayService, transport);
-const publicTransport = createConnectTransport({ baseUrl: (import.meta as any).env?.VITE_API_URL || (typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:8080") });
+const publicTransport = createConnectTransport({ baseUrl: (import.meta as any).env?.VITE_API_URL || (typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:8080"), useBinaryFormat: true });
 export const shareClient = createClient(ShareService, publicTransport);
