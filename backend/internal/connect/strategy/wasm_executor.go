@@ -56,7 +56,8 @@ type WasmExecutor struct {
 // NewWasmExecutor creates a WasmExecutor.
 // goModDir is the directory containing go.mod for SDK dependencies.
 func NewWasmExecutor(goModDir string, log *zap.Logger) *WasmExecutor {
-	tmpDir, _ := os.MkdirTemp("", "wasm-strategy-*")
+	// Create temp dirs inside the module tree so go build can find go.mod.
+	tmpDir, _ := os.MkdirTemp(goModDir, ".wasm-*")
 	return &WasmExecutor{
 		goModDir: goModDir,
 		tmpDir:   tmpDir,
