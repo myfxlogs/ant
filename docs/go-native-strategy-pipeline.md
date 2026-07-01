@@ -697,14 +697,15 @@ assert.True(t, report.Passed)
 
 ## 8. 已知缺口
 
-| 缺口 | 描述 | 优先级 |
-|------|------|--------|
-| **barsDropped 通知** | 策略无法感知被丢弃的 bar（网络抖动等），需添加 `barsDropped` 字段 | P2 |
-| **per-bar OpenedOrders 查询** | `backfillContextStrings` 每 bar 调用 `mtHub.OpenedOrders`，应改为 `PositionSnapshotBroker` 订阅 | P2 |
-| **AccountService 仍用 float64** | `UpdateAccountMetrics` / `RecordBalanceSnapshot` / `UpdateSummaryCache` 接受 `float64`，pipeline 层需 `.InexactFloat64()` 转换 | P2 |
-| **MTAccountInfo 仍用 float64** | `mdtick.MTAccountInfo` 的 Balance/Equity 等仍为 `float64` | P2 |
-| **iCustom 自定义指标** | 需 OnCalculate + buffer 模型 + 指标加载机制 | P3 |
-| **Bytecode 缓存持久化** | 跨重启持久化 bytecode 到 DB，用源码 hash 做 cache key | P3 |
+| 缺口 | 描述 | 优先级 | 状态 |
+|------|------|--------|------|
+| ~~barsDropped 通知~~ | ~~策略无法感知被丢弃的 bar~~ → 已实现 `BarDropBroker` → SSE `RiskAlertEvent` | P2 | ✅ 已完成 |
+| ~~per-bar OpenedOrders 查询~~ | ~~`backfillContextStrings` 每 bar 调用 `mtHub.OpenedOrders`~~ → 已改为 `PositionCache` 订阅 `PositionSnapshotBroker` | P2 | ✅ 已完成 |
+| ~~AccountService 仍用 float64~~ | ~~`UpdateAccountMetrics` 等接受 `float64`~~ → 已全链路迁移至 `decimal.Decimal` | P2 | ✅ 已完成 |
+| ~~MTAccountInfo 仍用 float64~~ | ~~`mdtick.MTAccountInfo` 的 Balance/Equity 等仍为 `float64`~~ → 已迁移至 `decimal.Decimal` | P2 | ✅ 已完成 |
+| **实盘一致性验证** | VM 信号与回测结果一致 (同码不变量) | P1 | ❌ 未验证 |
+| **iCustom 自定义指标** | 需 OnCalculate + buffer 模型 + 指标加载机制 | P3 | ❌ 未实现 |
+| **Bytecode 缓存持久化** | 跨重启持久化 bytecode 到 DB，用源码 hash 做 cache key | P3 | ❌ 未实现 |
 
 ## 9. 验证方式
 
@@ -713,7 +714,8 @@ assert.True(t, report.Passed)
 | 编译通过 | `go build ./...` | ✅ |
 | 全部测试通过 | `go test ./...` | ✅ |
 | 文件行数检查 | `go run ./tools/check-file-lines --strict` | ✅ (无新增违规) |
-| 精度一致性 | 全链路 `decimal.Decimal`，边界 `.InexactFloat64()` 仅用于统计/服务层 | ✅ |
+| 精度一致性 | 全链路 `decimal.Decimal`，边界 `.InexactFloat64()` 仅用于 `CheckMarginCall` 统计 | ✅ |
+| Push-first | 无轮询：`PositionCache` 订阅 `PositionSnapshotBroker`，`BarDropBroker` 推送丢弃事件 | ✅ |
 | 回测对齐 | `backtest.RunParityTest` — Go SimBroker vs MT Strategy Tester 信号序列比对 | ✅ 已实现 (8 个测试通过) |
 | 实盘一致性 | VM 信号与回测结果一致 (同码不变量) | ❌ 未验证 |
 | 风控不可绕过 | 策略所有 `Broker.OrderSend` 必经 `Gate.Evaluate` | ✅ (编译期保证) |
@@ -788,14 +790,15 @@ backend/
 │   │   ├── go_executor.go                 #   GoExecutor (legacy Go 策略 go run 子进程)
 │   │   ├── backtest_worker.go             #   异步回测工作池 (SKIP LOCKED)
 │   │   ├── data_source.go                 #   BarSource + klineBarsToProto
-│   │   ├── account_provider.go            #   AccountStateProvider 接口
+│   │   ├── account_provider.go            #   AccountStateProvider 接口 (PositionCache 优先)
+│   │   ├── position_cache.go             #   PositionCache (订阅 PositionSnapshotBroker)
 │   │   └── session_registry.go            #   SessionRegistry (活跃 session 注册表)
 │   │
 │   ├── mthub/                             # [运行时] OMS + 数据分发
 │   │   ├── service.go                     #   MtHubService
 │   │   ├── service_orders.go              #   PlaceOrder (风控→OMS→broker)
 │   │   ├── types.go                       #   AccountProfitEvent + Brokers
-│   │   ├── broker_types.go                #   BarUpdate/PositionSnapshot/TickUpdate/BrokerTradeEvent
+│   │   ├── broker_types.go                #   BarUpdate/BarDropEvent/PositionSnapshot/TickUpdate/BrokerTradeEvent
 │   │   └── order_types.go                 #   OrderRecord/SymbolParam/Bar
 │   │
 │   ├── risk/                              # [运行时] 风控
