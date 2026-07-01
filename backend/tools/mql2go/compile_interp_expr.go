@@ -49,7 +49,15 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.BoolVal(false)}
 
 	case "identifier":
-		return &interp.Expr{Kind: interp.ExprVar, Name: c.text(n)}
+		name := c.text(n)
+		// MQL constants like PRICE_CLOSE, OP_BUY may parse as identifier
+		if interp.IsMQLConstant(name) {
+			return &interp.Expr{Kind: interp.ExprConst, Name: name}
+		}
+		return &interp.Expr{Kind: interp.ExprVar, Name: name}
+
+	case "null":
+		return &interp.Expr{Kind: interp.ExprConst, Name: "NULL"}
 
 	case "type_identifier":
 		// Predefined constant: OP_BUY, PRICE_CLOSE, etc.
