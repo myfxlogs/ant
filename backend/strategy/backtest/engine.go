@@ -33,6 +33,11 @@ func New(cfg Config, strategy sdk.Strategy, bars []sdk.Bar) *Engine {
 	}
 }
 
+// Broker returns the internal SimBroker for inspection (mainly for testing).
+func (e *Engine) Broker() *SimBroker {
+	return e.broker
+}
+
 // Run executes the backtest and returns the result.
 func (e *Engine) Run(ctx context.Context) (*Result, error) {
 	startedAt := time.Now()

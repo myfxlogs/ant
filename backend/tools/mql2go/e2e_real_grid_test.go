@@ -383,6 +383,19 @@ func TestRealGridEA_Backtest(t *testing.T) {
 		fmt.Printf("最终资金:    %s\n", last.String())
 	}
 
+	// Check broker internal state
+	broker := engine.Broker()
+	openPos := broker.Positions(0)
+	history := broker.HistoryOrders(0, 0)
+	fmt.Printf("未平仓:      %d\n", len(openPos))
+	fmt.Printf("已平仓:      %d\n", len(history))
+	for _, p := range openPos {
+		fmt.Printf("  open: ticket=%d side=%d vol=%s price=%s\n", p.Ticket, p.Side, p.Volume.String(), p.OpenPrice.String())
+	}
+	for _, h := range history {
+		fmt.Printf("  closed: ticket=%d side=%d vol=%s profit=%s\n", h.Ticket, h.Side, h.Volume.String(), h.Profit.String())
+	}
+
 	blinds := runner.GetRuntimeBlindSpots()
 	fmt.Printf("\n运行时 Blind Spots: %d\n", len(blinds))
 	for _, bs := range blinds {
