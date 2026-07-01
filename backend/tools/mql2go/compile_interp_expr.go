@@ -372,9 +372,14 @@ func (c *compiler) compileArgs(n *sitter.Node) []interp.Expr {
 	named := getNamedChildren(args)
 	var result []interp.Expr
 	for _, a := range named {
-		if e := c.compileExpr(a); e != nil {
-			result = append(result, *e)
+		e := c.compileExpr(a)
+		if e == nil {
+			// Unhandled node type — push zero literal to preserve argument count.
+			// Without this, a nil return silently drops the argument, causing
+			// all subsequent arguments to shift positions (the NULL bug).
+			e = &interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(0)}
 		}
+		result = append(result, *e)
 	}
 	return result
 }
