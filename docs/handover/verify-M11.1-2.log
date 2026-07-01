@@ -1,48 +1,38 @@
 === Handover Log: M11.1-2 ===
 Date: 2026-07-01
-Status: Complete
-Verified by: automated CI + manual review
+Card: M11.1-2 — Delete old interpreter test files
 
---- Summary ---
-Completed as part of M11 milestone: MQL→VM single execution pipeline cleanup.
+--- Changes ---
+Removed 11 test files from interp/ package:
+  completeness_test.go, integration_test.go, ontrade_test.go,
+  ordercloseby_test.go, pool_test.go, onarray_test.go,
+  symbolinfo_test.go, venus_e2e_test.go, builtin_tools_test.go,
+  blindspot_test.go, interp_test.go
 
---- Changes Made ---
-- Removed legacy interpreter execution files from interp/ package
-- Removed Go code generation path (gen_ir*.go) retired by ADR-0023
-- Implemented 328 VM builtin functions across 18 source files
-- Cleaned stale comments referencing deleted files
-- Fixed CodeEditorPanel.tsx JSX syntax error
+These tests depended on the Interpreter struct and its execution methods
+which were removed in M11.1-1. The static analysis tests in analyze_test.go
+were retained as they only use IR types.
 
 --- Verification ---
-- go build ./... passes
-- go test ./tools/mql2go/... passes (39 tests)
-- go test ./tools/mql2go/interp... passes (8 tests)
-- go test ./strategy/backtest/... passes
-- go run ./tools/check-file-lines --strict passes (no new violations)
-- npm run build passes (frontend)
-- Docker image built and deployed to production container
-- Container healthcheck: healthy
-- /readyz endpoint: ready
+--- PASS: TestAnalyze_MQL4_FullSupport (0.00s)
+--- PASS: TestAnalyze_MQL5_CTradeAndPosition (0.00s)
+--- PASS: TestAnalyze_MQL5_UnknownCTradeMethod (0.00s)
+--- PASS: TestAnalyze_MissingBuiltin_iCustom (0.00s)
+--- PASS: TestAnalyze_PreviouslyStubIndicator_NowImplemented (0.00s)
+--- PASS: TestAnalyze_UserFuncNotBlindSpot (0.00s)
+--- PASS: TestAnalyze_MixedSupportedAndBlind (0.00s)
+--- PASS: TestAnalyze_ExecKind_OnTick (0.00s)
+ok      anttrader/tools/mql2go/interp   0.005s
 
---- Files Affected ---
-- backend/tools/mql2go/interp/ (reduced from 32 to 7 files)
-- backend/tools/mql2go/gen_ir*.go (5 files deleted)
-- backend/tools/mql2go/cmd/ (deleted)
-- backend/tools/mql2go/mql2go_test.go (cleaned)
-- backend/tools/mql2go/vm_builtin_*.go (18 new/modified files)
-- frontend/src/pages/strategy/components/editor/CodeEditorPanel.tsx
-- docs/plan/ROADMAP.md (created)
-
---- Test Functions ---
-- TestAllBuiltinsWired: verifies 328 wired + 20 blind spots
-- TestNoDuplicateBuiltins: no duplicate registry entries
-- TestBuiltinCount: 348 total, 328 wired, 20 blind spots
-- TestE2E_VMRunner_Backtest: end-to-end MQL4 backtest
-- TestE2E_VMRunner_OrderSelect: MQL4 OrderSelect loop
-- TestE2E_VMRunner_iMA: indicator call in backtest
-- TestCompileToIR_BasicMQL4: MQL4 parsing
-- TestCompileToIR_MQL5Detection: MQL5 CTrade detection
-- TestAnalyze_MQL4FullCoverage: static analysis coverage
-- TestAnalyze_MQL5CTradeCoverage: MQL5 CTrade coverage
-- TestCompileToIR_ThreadSafety: concurrent compilation safety
-- TestAnalyze_StubIndicatorIsWarning: stub indicator severity
+--- Files Deleted ---
+backend/tools/mql2go/interp/completeness_test.go
+backend/tools/mql2go/interp/integration_test.go
+backend/tools/mql2go/interp/ontrade_test.go
+backend/tools/mql2go/interp/ordercloseby_test.go
+backend/tools/mql2go/interp/pool_test.go
+backend/tools/mql2go/interp/onarray_test.go
+backend/tools/mql2go/interp/symbolinfo_test.go
+backend/tools/mql2go/interp/venus_e2e_test.go
+backend/tools/mql2go/interp/builtin_tools_test.go
+backend/tools/mql2go/interp/blindspot_test.go
+backend/tools/mql2go/interp/interp_test.go

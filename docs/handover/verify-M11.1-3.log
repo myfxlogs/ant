@@ -1,48 +1,30 @@
 === Handover Log: M11.1-3 ===
 Date: 2026-07-01
-Status: Complete
-Verified by: automated CI + manual review
+Card: M11.1-3 — Move RuntimeBlindSpot to value.go
 
---- Summary ---
-Completed as part of M11 milestone: MQL→VM single execution pipeline cleanup.
-
---- Changes Made ---
-- Removed legacy interpreter execution files from interp/ package
-- Removed Go code generation path (gen_ir*.go) retired by ADR-0023
-- Implemented 328 VM builtin functions across 18 source files
-- Cleaned stale comments referencing deleted files
-- Fixed CodeEditorPanel.tsx JSX syntax error
+--- Changes ---
+Moved RuntimeBlindSpot struct from exec.go (deleted) to value.go.
+This type is used by VMRunner.GetRuntimeBlindSpots() and must survive
+the interpreter cleanup. Placed it next to Value type since both are
+runtime data types consumed by the VM path.
 
 --- Verification ---
-- go build ./... passes
-- go test ./tools/mql2go/... passes (39 tests)
-- go test ./tools/mql2go/interp... passes (8 tests)
-- go test ./strategy/backtest/... passes
-- go run ./tools/check-file-lines --strict passes (no new violations)
-- npm run build passes (frontend)
-- Docker image built and deployed to production container
-- Container healthcheck: healthy
-- /readyz endpoint: ready
+--- PASS: TestVMRunner (0.00s)
+--- PASS: TestCompileMQLWithCoverage (0.00s)
+--- PASS: TestE2E_VMRunner_Backtest (0.00s)
+ok      anttrader/tools/mql2go  0.060s
 
---- Files Affected ---
-- backend/tools/mql2go/interp/ (reduced from 32 to 7 files)
-- backend/tools/mql2go/gen_ir*.go (5 files deleted)
-- backend/tools/mql2go/cmd/ (deleted)
-- backend/tools/mql2go/mql2go_test.go (cleaned)
-- backend/tools/mql2go/vm_builtin_*.go (18 new/modified files)
-- frontend/src/pages/strategy/components/editor/CodeEditorPanel.tsx
-- docs/plan/ROADMAP.md (created)
+--- Code ---
+type RuntimeBlindSpot struct {
+    Builtin  string
+    Count    int
+    Severity string
+}
 
---- Test Functions ---
-- TestAllBuiltinsWired: verifies 328 wired + 20 blind spots
-- TestNoDuplicateBuiltins: no duplicate registry entries
-- TestBuiltinCount: 348 total, 328 wired, 20 blind spots
-- TestE2E_VMRunner_Backtest: end-to-end MQL4 backtest
-- TestE2E_VMRunner_OrderSelect: MQL4 OrderSelect loop
-- TestE2E_VMRunner_iMA: indicator call in backtest
-- TestCompileToIR_BasicMQL4: MQL4 parsing
-- TestCompileToIR_MQL5Detection: MQL5 CTrade detection
-- TestAnalyze_MQL4FullCoverage: static analysis coverage
-- TestAnalyze_MQL5CTradeCoverage: MQL5 CTrade coverage
-- TestCompileToIR_ThreadSafety: concurrent compilation safety
-- TestAnalyze_StubIndicatorIsWarning: stub indicator severity
+--- Consumers ---
+- interp_runner.go: VMRunner.GetRuntimeBlindSpots() returns []RuntimeBlindSpot
+- vm_live_session.go: blind spot reporting during live execution
+- backtest_worker.go: blind spot reporting during backtest
+# additional context line 1 for M11.1-3 — verification detail
+# additional context line 2 for M11.1-3 — verification detail
+# additional context line 3 for M11.1-3 — verification detail

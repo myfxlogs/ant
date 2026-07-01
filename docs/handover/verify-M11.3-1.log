@@ -1,48 +1,31 @@
 === Handover Log: M11.3-1 ===
 Date: 2026-07-01
-Status: Complete
-Verified by: automated CI + manual review
+Card: M11.3-1 — Implement 328 VM builtin functions
 
---- Summary ---
-Completed as part of M11 milestone: MQL→VM single execution pipeline cleanup.
-
---- Changes Made ---
-- Removed legacy interpreter execution files from interp/ package
-- Removed Go code generation path (gen_ir*.go) retired by ADR-0023
-- Implemented 328 VM builtin functions across 18 source files
-- Cleaned stale comments referencing deleted files
-- Fixed CodeEditorPanel.tsx JSX syntax error
+--- Changes ---
+Implemented 328 VM builtin functions across 18 source files covering:
+  Math (22): MathAbs/Max/Min/Sqrt/Pow/Log/Round/Floor/Ceil/Exp/Cos/Sin/Tan...
+  String (16): StringConcatenate/Find/Substr/Len/Replace/Split/Trim...
+  Time (12): TimeCurrent/TimeLocal/TimeYear/TimeMonth/TimeDay...
+  Array (20): ArrayResize/Size/Copy/SetAsSeries/Maximum/Minimum/Sort...
+  Convert (10): NormalizeDouble/DoubleToString/StringToDouble/IntegerToString...
+  Checkup (8): IsConnected/IsTesting/IsOptimization/IsVisualMode...
+  Trade MQL4 (21): OrderSend/OrderClose/OrderModify/OrderDelete/OrderSelect...
+  Trade MQL5 (7): PositionsTotal/PositionGetTicket/PositionGetDouble...
+  Market Data (12): Ask/Bid/Point/Symbol/Digits/SymbolInfoDouble...
+  Account (14): AccountBalance/Equity/FreeMargin/Margin/Leverage...
+  Globals (8): GlobalVariableSet/Get/Check/Del/VariablesTotal...
 
 --- Verification ---
-- go build ./... passes
-- go test ./tools/mql2go/... passes (39 tests)
-- go test ./tools/mql2go/interp... passes (8 tests)
-- go test ./strategy/backtest/... passes
-- go run ./tools/check-file-lines --strict passes (no new violations)
-- npm run build passes (frontend)
-- Docker image built and deployed to production container
-- Container healthcheck: healthy
-- /readyz endpoint: ready
+--- PASS: TestAllBuiltinsWired (0.00s)
+--- PASS: TestNoDuplicateBuiltins (0.00s)
+--- PASS: TestBuiltinCount (0.00s)
+ok      anttrader/tools/mql2go  0.060s
 
---- Files Affected ---
-- backend/tools/mql2go/interp/ (reduced from 32 to 7 files)
-- backend/tools/mql2go/gen_ir*.go (5 files deleted)
-- backend/tools/mql2go/cmd/ (deleted)
-- backend/tools/mql2go/mql2go_test.go (cleaned)
-- backend/tools/mql2go/vm_builtin_*.go (18 new/modified files)
-- frontend/src/pages/strategy/components/editor/CodeEditorPanel.tsx
-- docs/plan/ROADMAP.md (created)
-
---- Test Functions ---
-- TestAllBuiltinsWired: verifies 328 wired + 20 blind spots
-- TestNoDuplicateBuiltins: no duplicate registry entries
-- TestBuiltinCount: 348 total, 328 wired, 20 blind spots
-- TestE2E_VMRunner_Backtest: end-to-end MQL4 backtest
-- TestE2E_VMRunner_OrderSelect: MQL4 OrderSelect loop
-- TestE2E_VMRunner_iMA: indicator call in backtest
-- TestCompileToIR_BasicMQL4: MQL4 parsing
-- TestCompileToIR_MQL5Detection: MQL5 CTrade detection
-- TestAnalyze_MQL4FullCoverage: static analysis coverage
-- TestAnalyze_MQL5CTradeCoverage: MQL5 CTrade coverage
-- TestCompileToIR_ThreadSafety: concurrent compilation safety
-- TestAnalyze_StubIndicatorIsWarning: stub indicator severity
+--- VM Builtin Files ---
+vm_builtin_impls.go, vm_builtin_math.go, vm_builtin_string.go,
+vm_builtin_string_ext.go, vm_builtin_time.go, vm_builtin_array.go,
+vm_builtin_convert.go, vm_builtin_checkup.go, vm_builtin_trade.go,
+vm_builtin_mql5_trade.go, vm_builtin_mql5_ts.go, vm_builtin_mql5_info.go,
+vm_builtin_market.go, vm_builtin_account.go, vm_builtin_globals.go,
+vm_builtin_indicators.go, vm_builtin_indicators_ext.go, vm_builtin_util.go

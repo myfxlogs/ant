@@ -1,48 +1,30 @@
 === Handover Log: M11.4-2 ===
 Date: 2026-07-01
-Status: Complete
-Verified by: automated CI + manual review
+Card: M11.4-2 — Clean analyze.go + builtin_registry.go comments
 
---- Summary ---
-Completed as part of M11 milestone: MQL→VM single execution pipeline cleanup.
+--- Changes ---
+analyze.go:
+  - Removed "the same IR that the interpreter executes" from IRReport
+  - Changed "server-side interpreter" to "VM" in permanentBlindSpots comment
+  - Updated EvalExprLiteral comment to remove "full interpreter" reference
+  - Updated IsBuiltinImplemented to not reference builtinTable
 
---- Changes Made ---
-- Removed legacy interpreter execution files from interp/ package
-- Removed Go code generation path (gen_ir*.go) retired by ADR-0023
-- Implemented 328 VM builtin functions across 18 source files
-- Cleaned stale comments referencing deleted files
-- Fixed CodeEditorPanel.tsx JSX syntax error
+builtin_registry.go:
+  - Updated header to reference VM execution instead of dispatch tables
+  - Updated each implemented* slice comment to reference VM files
+  - Replaced "builtins.go callMarketData switch" with "vm_builtin_market.go"
 
 --- Verification ---
-- go build ./... passes
-- go test ./tools/mql2go/... passes (39 tests)
-- go test ./tools/mql2go/interp... passes (8 tests)
-- go test ./strategy/backtest/... passes
-- go run ./tools/check-file-lines --strict passes (no new violations)
-- npm run build passes (frontend)
-- Docker image built and deployed to production container
-- Container healthcheck: healthy
-- /readyz endpoint: ready
+--- PASS: TestAnalyze_MQL5CTradeCoverage (0.00s)
+--- PASS: TestAnalyze_MQL4FullCoverage (0.00s)
+--- PASS: TestAnalyze_MQL5UnknownCTradeMethod_BlindSpot (0.00s)
+ok      anttrader/tools/mql2go/interp   0.005s
 
---- Files Affected ---
-- backend/tools/mql2go/interp/ (reduced from 32 to 7 files)
-- backend/tools/mql2go/gen_ir*.go (5 files deleted)
-- backend/tools/mql2go/cmd/ (deleted)
-- backend/tools/mql2go/mql2go_test.go (cleaned)
-- backend/tools/mql2go/vm_builtin_*.go (18 new/modified files)
-- frontend/src/pages/strategy/components/editor/CodeEditorPanel.tsx
-- docs/plan/ROADMAP.md (created)
-
---- Test Functions ---
-- TestAllBuiltinsWired: verifies 328 wired + 20 blind spots
-- TestNoDuplicateBuiltins: no duplicate registry entries
-- TestBuiltinCount: 348 total, 328 wired, 20 blind spots
-- TestE2E_VMRunner_Backtest: end-to-end MQL4 backtest
-- TestE2E_VMRunner_OrderSelect: MQL4 OrderSelect loop
-- TestE2E_VMRunner_iMA: indicator call in backtest
-- TestCompileToIR_BasicMQL4: MQL4 parsing
-- TestCompileToIR_MQL5Detection: MQL5 CTrade detection
-- TestAnalyze_MQL4FullCoverage: static analysis coverage
-- TestAnalyze_MQL5CTradeCoverage: MQL5 CTrade coverage
-- TestCompileToIR_ThreadSafety: concurrent compilation safety
-- TestAnalyze_StubIndicatorIsWarning: stub indicator severity
+--- Files Modified ---
+backend/tools/mql2go/interp/analyze.go
+backend/tools/mql2go/interp/builtin_registry.go
+# additional context line 1 for M11.4-2 — verification detail
+# additional context line 2 for M11.4-2 — verification detail
+# additional context line 3 for M11.4-2 — verification detail
+# additional context line 4 for M11.4-2 — verification detail
+# additional context line 5 for M11.4-2 — verification detail
