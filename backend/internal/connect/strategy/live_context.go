@@ -60,40 +60,36 @@ func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg Liv
 	return tctx
 }
 
-// backfillContextStrings populates equity/balance/positions from live account state.
+// backfillContextStrings populates equity/balance/positions from the push-based
+// PositionCache (subscribed to PositionSnapshotBroker). No polling — O(1) read.
 func (s *StrategyExecutionServer) backfillContextStrings(ctx context.Context, accountID string, equity, balance *string, positions *[]*antv1.LivePosition) {
-	if s.accountProvider == nil {
+	if s.posCache == nil {
 		*equity = "-1"
 		*balance = "-1"
 		return
 	}
-	state, err := s.accountProvider.GetAccountState(ctx, accountID)
-	if err != nil || state == nil {
+	snap := s.posCache.GetSnapshot(accountID)
+	if snap == nil {
 		*equity = "-1"
 		*balance = "-1"
 		return
 	}
-	*equity = state.Equity.String()
-	*balance = state.Balance.String()
-	if s.mtHub != nil {
-		orders, err := s.mtHub.OpenedOrders(ctx, accountID)
-		if err == nil {
-			pos := make([]*antv1.LivePosition, 0, len(orders))
-			for _, o := range orders {
-				side := "buy"
-				if o.Side == mthub.SideSell {
-					side = "sell"
-				}
-				pos = append(pos, &antv1.LivePosition{
-					Ticket:    o.Ticket,
-					Side:      side,
-					Volume:    o.Volume.String(),
-					OpenPrice: o.OpenPrice.String(),
-				})
-			}
-			*positions = pos
+	*equity = snap.Equity.String()
+	*balance = snap.Balance.String()
+	pos := make([]*antv1.LivePosition, 0, len(snap.Positions))
+	for _, p := range snap.Positions {
+		side := "buy"
+		if p.Type == "sell" {
+			side = "sell"
 		}
+		pos = append(pos, &antv1.LivePosition{
+			Ticket:    p.Ticket,
+			Side:      side,
+			Volume:    p.Volume.String(),
+			OpenPrice: p.OpenPrice.String(),
+		})
 	}
+	*positions = pos
 }
 
 // dispatchFromBytes unmarshals a live response and dispatches signals to OMS.

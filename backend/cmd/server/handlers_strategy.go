@@ -91,10 +91,15 @@ func configureStrategyExecution(
 	}
 	srv.SetGate(gate)       // live_runner startup guard only (gate runs in mthub now)
 	mthubSvc.SetGate(gate)   // D6-A single chokepoint: all orders through mthub
+	// Push-first: PositionCache subscribes to PositionSnapshotBroker (no per-bar polling).
+	posCache := strategy.NewPositionCache(log)
+	srv.SetPositionCache(posCache)
 	// T3.2b: Inject AccountStateProvider for live trading.
-	// Uses the MT4 gateway's FetchOpenedOrders to derive equity/balance/margin.
-	srv.SetAccountProvider(strategy.NewMTAccountStateProvider(hub, log))
-	log.Info("D6-A: risk.Gate + AccountStateProvider injected into StrategyExecutionServer")
+	// Uses push-based PositionCache when available, falls back to FetchOpenedOrders.
+	accountProvider := strategy.NewMTAccountStateProvider(hub, log)
+	accountProvider.SetPositionCache(posCache)
+	srv.SetAccountProvider(accountProvider)
+	log.Info("D6-A: risk.Gate + AccountStateProvider + PositionCache injected into StrategyExecutionServer")
 
 	// Auto-gate: runs gate evaluation after every backtest completion.
 	// On failure, spawns async auto-fix (LLM code repair → new backtest).

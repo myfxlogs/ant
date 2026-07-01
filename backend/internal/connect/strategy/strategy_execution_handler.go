@@ -66,6 +66,10 @@ type StrategyExecutionServer struct {
 	// Push-first cancel: shared LISTEN on backtest_cancel channel.
 	activeCancels   map[uuid.UUID]context.CancelFunc
 	activeCancelsMu sync.Mutex
+
+	// PositionCache holds push-based position snapshots from PositionSnapshotBroker.
+	// Eliminates per-bar OpenedOrders polling (push-first architecture).
+	posCache *PositionCache
 }
 
 // AccountStateProvider supplies live account state for gate evaluation (T3.2b).
@@ -96,6 +100,7 @@ func (s *StrategyExecutionServer) SetRunRepo(r *repository.StrategyRunRepository
 func (s *StrategyExecutionServer) SetImportedRepo(r *repository.ImportedStrategyRepository) { s.importedRepo = r }
 func (s *StrategyExecutionServer) SetSessionRegistry(r *SessionRegistry)           { s.sessionRegistry = r }
 func (s *StrategyExecutionServer) SetAccountLookup(f func(ctx context.Context, userID string) string) { s.accountLookup = f }
+func (s *StrategyExecutionServer) SetPositionCache(pc *PositionCache)                                  { s.posCache = pc }
 
 // SetGate injects the risk gate (D6-A: mandatory, non-optional).
 // Must be called before RunLiveStrategy.

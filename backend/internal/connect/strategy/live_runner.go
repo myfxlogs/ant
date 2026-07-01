@@ -146,6 +146,12 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 	runCtx, runCancel := context.WithCancel(ctx)
 	defer runCancel()
 
+	// Push-first: subscribe to PositionSnapshotBroker for this account.
+	// backfillContextStrings reads from posCache (O(1) read, no per-bar polling).
+	if s.posCache != nil && s.mtHub != nil {
+		s.posCache.Subscribe(runCtx, s.mtHub, cfg.AccountID)
+	}
+
 	// Register in session registry for monitoring + control.
 	// If caller pre-registered (synchronous conflict check), use that session.
 	activeSess := cfg.PreRegisteredSession

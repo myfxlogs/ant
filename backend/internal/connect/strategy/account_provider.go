@@ -25,8 +25,9 @@ import (
 // the MT gateway's OrderExecutor for open positions and deriving
 // account state from position PnL + balance history.
 type MTAccountStateProvider struct {
-	hub *mthub.Hub
-	log *zap.Logger
+	hub      *mthub.Hub
+	log      *zap.Logger
+	posCache *PositionCache // push-based position snapshots (no polling)
 
 	mu           sync.RWMutex
 	peakEquity   map[string]decimal.Decimal // accountID → peak equity
@@ -48,9 +49,29 @@ func NewMTAccountStateProvider(hub *mthub.Hub, log *zap.Logger) *MTAccountStateP
 	}
 }
 
+// SetPositionCache injects the push-based position cache.
+func (p *MTAccountStateProvider) SetPositionCache(pc *PositionCache) { p.posCache = pc }
+
 // GetAccountState fetches live account state for gate evaluation.
+// Uses push-based PositionCache when available (no polling).
 // Returns (nil, nil) on error — gate fail-closed per D6-A.
 func (p *MTAccountStateProvider) GetAccountState(ctx context.Context, accountID string) (*risk.AccountState, error) {
+	// Push-first: read from PositionCache if available (no RPC).
+	if p.posCache != nil {
+		snap := p.posCache.GetSnapshot(accountID)
+		if snap != nil {
+			state := p.buildStateFromSnapshot(accountID, snap)
+			p.log.Debug("MTAccountStateProvider: state from PositionCache",
+				zap.String("account", accountID),
+				zap.String("equity", state.Equity.String()),
+				zap.Int("positions", state.OpenPositions),
+			)
+			return state, nil
+		}
+		// No snapshot yet — fall through to legacy path.
+	}
+
+	// Legacy fallback: poll FetchOpenedOrders (only when no PositionCache wired).
 	exec := p.hub.Get(accountID)
 	if exec == nil {
 		p.log.Debug("MTAccountStateProvider: no executor for account — gate fail-closed",
@@ -58,7 +79,6 @@ func (p *MTAccountStateProvider) GetAccountState(ctx context.Context, accountID 
 		return nil, nil // nil state → gate blocks (fail-closed)
 	}
 
-	// Fetch open positions from the MT gateway.
 	orders, err := exec.FetchOpenedOrders(ctx)
 	if err != nil {
 		p.log.Warn("MTAccountStateProvider: FetchOpenedOrders failed — gate fail-closed",
@@ -67,14 +87,65 @@ func (p *MTAccountStateProvider) GetAccountState(ctx context.Context, accountID 
 	}
 
 	state := p.buildStateFromOrders(accountID, orders)
-
-	p.log.Debug("MTAccountStateProvider: state computed",
+	p.log.Debug("MTAccountStateProvider: state computed (legacy poll)",
 		zap.String("account", accountID),
 		zap.String("equity", state.Equity.String()),
 		zap.Int("positions", state.OpenPositions),
 	)
-
 	return state, nil
+}
+
+// buildStateFromSnapshot derives AccountState from a push-based PositionSnapshot.
+func (p *MTAccountStateProvider) buildStateFromSnapshot(accountID string, snap *mthub.PositionSnapshot) *risk.AccountState {
+	totalProfit := decimal.Zero
+	totalMargin := decimal.Zero
+	defaultLeverage := decimal.NewFromInt(100)
+
+	for _, pos := range snap.Positions {
+		totalProfit = totalProfit.Add(pos.Profit)
+		notional := pos.Volume.Mul(pos.OpenPrice)
+		totalMargin = totalMargin.Add(notional.Div(defaultLeverage))
+	}
+
+	balance := snap.Balance
+	if balance.IsZero() {
+		p.mu.RLock()
+		cachedBalance, hasBalance := p.balanceCache[accountID]
+		p.mu.RUnlock()
+		if hasBalance {
+			balance = cachedBalance
+		} else {
+			balance = decimal.NewFromInt(10000)
+		}
+	}
+
+	equity := snap.Equity
+	if equity.IsZero() {
+		equity = balance.Add(totalProfit)
+	}
+	freeMargin := equity.Sub(totalMargin)
+	if freeMargin.LessThan(decimal.Zero) {
+		freeMargin = decimal.Zero
+	}
+
+	p.mu.Lock()
+	peak, ok := p.peakEquity[accountID]
+	if !ok || equity.GreaterThan(peak) {
+		peak = equity
+		p.peakEquity[accountID] = peak
+	}
+	p.mu.Unlock()
+
+	return &risk.AccountState{
+		Balance:        balance,
+		Equity:         equity,
+		FreeMargin:     freeMargin,
+		UsedMargin:     totalMargin,
+		OpenPositions:  len(snap.Positions),
+		DailyPnL:       totalProfit,
+		PeakEquity:     peak,
+		SymbolLeverage: 100,
+	}
 }
 
 // ── State computation ──────────────────────────────────────────────────
