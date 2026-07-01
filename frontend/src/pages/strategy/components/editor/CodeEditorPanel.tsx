@@ -173,7 +173,7 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
                     message={t('strategy.importEA.importSuccess', { defaultValue: 'MQL 源码已导入，点击「Apply to Editor」写入编辑器' })}
                     style={{ margin: '8px 0' }}
                   />
-                )
+                )}
                 {!analysis && !eaResult && !analyzing && (
                   <div style={{ textAlign: 'center', padding: 24 }}>
                     <Text type="secondary">{t('strategy.importEA.hint', { defaultValue: 'Paste MQL4/MQL5 code and click Analyze' })}</Text>

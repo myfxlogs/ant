@@ -13,22 +13,22 @@
 | tree-sitter 解析 | `tools/mql2go/analyze.go` | MQL4/MQL5 → CST |
 | IR 编译 | `tools/mql2go/compile_interp.go` | CST → `interp.IR`（纯 Go） |
 | Bytecode 编译 | `tools/mql2go/compile.go` | AST → 线性字节码（一次性，~300ms） |
-| VM 执行 | `tools/mql2go/vm.go` + `interp/exec.go` | 指令计数器 + 显式数据栈 + panic recovery |
+| VM 执行 | `tools/mql2go/vm.go` + `vm_execute.go` | 指令计数器 + 显式数据栈 + panic recovery |
 | 回测路径 | `internal/connect/strategy/backtest_worker.go` | MQL → AST → Bytecode → VM 执行（进程内） |
 | 实盘路径 | `internal/connect/strategy/vm_live_session.go` | MQL → AST → Bytecode → VMLiveSession（进程内） |
-| Go 代码导出 | `tools/mql2go/gen.go` / `gen_ir.go` | IR → Go 源码（仅 CLI 开发调试，不参与运行时） |
+| ~~Go 代码导出~~ | ~~`tools/mql2go/gen_ir*.go`~~ | 已删除（ADR-0023 退役） |
 | 前端导入 | `frontend/src/pages/strategy/components/editor/CodeEditorPanel.tsx` | Analyze → Generate → Import |
 | 14 个核心指标 | `strategy/backtest/engine.go`, `strategy/runner/indicators.go` | iMA/iRSI/iATR/iMACD/iBands/iStochastic/iCCI/iADX/iMFI/iOBV/iSAR/iStdDev/iWPR/iMomentum |
-| MQL4 交易 | `tools/mql2go/interp/builtin_trade.go` | OrderSend/OrderClose/OrderModify/OrderDelete + 16 Order* 属性函数 |
-| MQL5 CTrade | `tools/mql2go/interp/builtin_ctrade.go` | Buy/Sell/BuyLimit/SellLimit/BuyStop/SellStop/PositionClose/PositionModify/OrderDelete |
-| MQL5 Position 查询 | `tools/mql2go/interp/builtin_trade.go` | PositionsTotal/PositionGetTicket/PositionGetDouble/Integer/String |
-| 控制流 | `tools/mql2go/interp/exec.go` | if/else, for, while, do-while, switch, break, continue, return |
-| 工具函数 | `tools/mql2go/interp/builtin_tools.go` | Math*, String*, Array*, Time*, Print, Sleep, NormalizeDouble |
-| 定时器 | `tools/mql2go/interp/builtins.go` | EventSetTimer/EventKillTimer |
+| MQL4 交易 | `tools/mql2go/vm_builtin_trade.go` | OrderSend/OrderClose/OrderModify/OrderDelete + 16 Order* 属性函数 |
+| MQL5 CTrade | `tools/mql2go/vm_builtin_mql5_trade.go` | Buy/Sell/BuyLimit/SellLimit/BuyStop/SellStop/PositionClose/PositionModify/OrderDelete |
+| MQL5 Position 查询 | `tools/mql2go/vm_builtin_trade.go` | PositionsTotal/PositionGetTicket/PositionGetDouble/Integer/String |
+| 控制流 | `tools/mql2go/compile.go` + `vm_execute.go` | if/else, for, while, do-while, switch, break, continue, return |
+| 工具函数 | `tools/mql2go/vm_builtin_*.go` (18 文件) | Math*, String*, Array*, Time*, Print, Sleep, NormalizeDouble |
+| 定时器 | `tools/mql2go/vm_builtin_impls.go` | EventSetTimer/EventKillTimer |
 
 ### 1.2 Stub 实现 ✅ 已全部实现（T1）
 
-~~24 个指标在 `interp/builtin_indicators.go` 有 case 分支，但 `backtest/engine.go` 和 `runner/indicators.go` 中 `return decimal.Zero`~~
+~~24 个指标在 `vm_builtin_indicators.go` 有 case 分支，但 `backtest/engine.go` 和 `runner/indicators.go` 中 `return decimal.Zero`~~
 
 全部 24 个指标已实现真实计算算法。
 
