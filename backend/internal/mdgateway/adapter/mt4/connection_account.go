@@ -7,6 +7,7 @@ import (
 
 	pb "anttrader/mt4"
 	"anttrader/internal/mdgateway/adapter/mdtick"
+	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -42,11 +43,11 @@ func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, 
 
 	s := resp.GetResult()
 	return &mdtick.MTAccountInfo{
-		Balance:    s.GetBalance(),
-		Credit:     s.GetCredit(),
-		Equity:     s.GetEquity(),
-		Margin:     s.GetMargin(),
-		FreeMargin: s.GetFreeMargin(),
+		Balance:    decimal.NewFromFloat(s.GetBalance()),
+		Credit:     decimal.NewFromFloat(s.GetCredit()),
+		Equity:     decimal.NewFromFloat(s.GetEquity()),
+		Margin:     decimal.NewFromFloat(s.GetMargin()),
+		FreeMargin: decimal.NewFromFloat(s.GetFreeMargin()),
 		Leverage:   int32(s.GetLeverage()),
 		Currency:   s.GetCurrency(),
 		IsInvestor: s.GetIsInvestor(),

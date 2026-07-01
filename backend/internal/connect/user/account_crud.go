@@ -86,7 +86,7 @@ func (s *AccountServer) verifyAndUpdateAccount(ctx context.Context, tx pgx.Tx, u
 		return connect.NewError(connect.CodeInternal, fmt.Errorf("update account info: %w", err))
 	}
 	s.log.Info("CreateAccount: verified and created",
-		zap.String("id", accountID), zap.Float64("balance", info.Balance))
+		zap.String("id", accountID), zap.String("balance", info.Balance.String()))
 	return nil
 }
 

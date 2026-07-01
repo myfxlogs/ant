@@ -2,12 +2,11 @@ package service
 
 import (
 	"fmt"
-	"math"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/shopspring/decimal"
 
 	"anttrader/internal/repository"
 )
@@ -33,35 +32,31 @@ func pgUUIDToString(u pgtype.UUID) string {
 	return uuid.UUID(u.Bytes).String()
 }
 
-func float64ToPgNumeric(v float64) (pgtype.Numeric, error) {
-	if math.IsNaN(v) || math.IsInf(v, 0) {
-		return pgtype.Numeric{}, fmt.Errorf("float64ToPgNumeric: cannot convert NaN or Inf")
-	}
+func decimalToPgNumeric(d decimal.Decimal) (pgtype.Numeric, error) {
 	var n pgtype.Numeric
-	// Full-precision formatting preserves values that "%.8f" would truncate
-	// (e.g. 0.000000001 → "0.00000000" → zero).
-	if err := n.Scan(strconv.FormatFloat(v, 'f', -1, 64)); err != nil {
-		return n, fmt.Errorf("float64ToPgNumeric: %w", err)
+	if err := n.Scan(d.String()); err != nil {
+		return n, fmt.Errorf("decimalToPgNumeric: %w", err)
 	}
 	return n, nil
 }
 
-func pgNumericToFloat64(n pgtype.Numeric) (float64, bool) {
+func pgNumericToDecimal(n pgtype.Numeric) decimal.Decimal {
 	if !n.Valid {
-		return 0, false
+		return decimal.Zero
 	}
-	f8, err := n.Float64Value()
-	if err != nil || !f8.Valid {
-		return 0, false
+	v, err := n.Value()
+	if err != nil {
+		return decimal.Zero
 	}
-	return f8.Float64, true
-}
-
-// pgNumericToFloat64Ignore calls pgNumericToFloat64 and discards the valid flag
-// for callers that treat NULL as 0.
-func pgNumericToFloat64Ignore(n pgtype.Numeric) float64 {
-	v, _ := pgNumericToFloat64(n)
-	return v
+	s, ok := v.(string)
+	if !ok {
+		return decimal.Zero
+	}
+	d, err := decimal.NewFromString(s)
+	if err != nil {
+		return decimal.Zero
+	}
+	return d
 }
 
 
@@ -101,12 +96,12 @@ func mtAccountToDTO(a repository.MtAccount) AccountDTO {
 		Server:          pgTextToString(a.BrokerServer),
 		IsDisabled:      pgBoolToBool(a.IsDisabled),
 		Status:          a.AccountStatus,
-		Balance:         pgNumericToFloat64Ignore(a.Balance),
-		Equity:          pgNumericToFloat64Ignore(a.Equity),
-		Credit:          pgNumericToFloat64Ignore(a.Credit),
-		Margin:          pgNumericToFloat64Ignore(a.Margin),
-		FreeMargin:      pgNumericToFloat64Ignore(a.FreeMargin),
-		MarginLevel:     pgNumericToFloat64Ignore(a.MarginLevel),
+		Balance:         pgNumericToDecimal(a.Balance),
+		Equity:          pgNumericToDecimal(a.Equity),
+		Credit:          pgNumericToDecimal(a.Credit),
+		Margin:          pgNumericToDecimal(a.Margin),
+		FreeMargin:      pgNumericToDecimal(a.FreeMargin),
+		MarginLevel:     pgNumericToDecimal(a.MarginLevel),
 		Leverage:        pgInt4ToInt32(a.Leverage),
 		Currency:        pgTextToString(a.Currency),
 		LastError:       pgTextToString(a.LastError),

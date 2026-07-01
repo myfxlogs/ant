@@ -13,6 +13,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -119,11 +120,11 @@ func TestAccountLifecycle(t *testing.T) {
 
 	mockTester := &mockMTTester{
 		info: &mdtick.MTAccountInfo{
-			Balance:    10000.0,
-			Equity:     10100.0,
-			Credit:     0,
-			Margin:     500.0,
-			FreeMargin: 9600.0,
+			Balance:    decimal.NewFromFloat(10000.0),
+			Equity:     decimal.NewFromFloat(10100.0),
+			Credit:     decimal.Zero,
+			Margin:     decimal.NewFromFloat(500.0),
+			FreeMargin: decimal.NewFromFloat(9600.0),
 			Leverage:   100,
 			Currency:   "USD",
 		},

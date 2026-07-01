@@ -2,10 +2,10 @@ package system
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"connectrpc.com/connect"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -100,10 +100,11 @@ func (s *StreamServer) sendInitialSnapshot(
 			continue
 		}
 
-		profit := a.Equity - a.Balance
+		profit := a.Equity.Sub(a.Balance)
 		var profitPercent float64
-		if a.Balance > 0 {
-			profitPercent = profit / a.Balance * 100
+		if a.Balance.GreaterThan(decimal.Zero) {
+			pp, _ := profit.Div(a.Balance).Mul(decimal.NewFromInt(100)).Float64()
+			profitPercent = pp
 		}
 
 		if err := stream.Send(&antv1.StreamEvent{
@@ -113,13 +114,13 @@ func (s *StreamServer) sendInitialSnapshot(
 			Payload: &antv1.StreamEvent_ProfitUpdate{
 				ProfitUpdate: &antv1.ProfitUpdateEvent{
 					AccountId:     a.ID,
-					Balance:       strconv.FormatFloat(a.Balance, 'f', -1, 64),
-					Equity:        strconv.FormatFloat(a.Equity, 'f', -1, 64),
-					Profit:        strconv.FormatFloat(profit, 'f', -1, 64),
-					Credit:        strconv.FormatFloat(a.Credit, 'f', -1, 64),
-					Margin:        strconv.FormatFloat(a.Margin, 'f', -1, 64),
-					FreeMargin:    strconv.FormatFloat(a.FreeMargin, 'f', -1, 64),
-					MarginLevel:   strconv.FormatFloat(a.MarginLevel, 'f', -1, 64),
+					Balance:       a.Balance.String(),
+					Equity:        a.Equity.String(),
+					Profit:        profit.String(),
+					Credit:        a.Credit.String(),
+					Margin:        a.Margin.String(),
+					FreeMargin:    a.FreeMargin.String(),
+					MarginLevel:   a.MarginLevel.String(),
 					ProfitPercent: profitPercent,
 				},
 			},

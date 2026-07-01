@@ -99,7 +99,7 @@ func startMdGatewayPipeline(
 			if err != nil {
 				log.Warn("OnAccountProfit: invalid user UUID", zap.String("userID", userID), zap.Error(err))
 			}
-			if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, p.Balance.InexactFloat64(), p.Equity.InexactFloat64(), p.Credit.InexactFloat64(), p.Margin.InexactFloat64(), p.FreeMargin.InexactFloat64(), p.MarginLevel.InexactFloat64()); err != nil {
+			if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.MarginLevel); err != nil {
 				log.Warn("OnAccountProfit: pg update failed", zap.String("account", accountID), zap.Error(err))
 			}
 			// Record hourly equity snapshot (throttled).
@@ -112,7 +112,7 @@ func startMdGatewayPipeline(
 				}
 				lastSnapshot[accountID] = time.Now()
 				snapshotMu.Unlock()
-				if err := accountSvc.RecordBalanceSnapshot(writeCtx, accountID, userID, p.Balance.InexactFloat64(), p.Equity.InexactFloat64(), p.Margin.InexactFloat64(), p.FreeMargin.InexactFloat64()); err != nil {
+				if err := accountSvc.RecordBalanceSnapshot(writeCtx, accountID, userID, p.Balance, p.Equity, p.Margin, p.FreeMargin); err != nil {
 					log.Debug("OnAccountProfit: snapshot insert failed", zap.String("account", accountID), zap.Error(err))
 				}
 			}()
@@ -126,7 +126,7 @@ func startMdGatewayPipeline(
 					Positions:     convertProfitPositions(p.Positions),
 			})
 			// Update in-memory summary cache so SSE SubscribeUserSummary avoids a full DB scan.
-			accountSvc.UpdateSummaryCache(userID, accountID, p.Balance.InexactFloat64(), p.Equity.InexactFloat64(), "connected")
+			accountSvc.UpdateSummaryCache(userID, accountID, p.Balance, p.Equity, "connected")
 			// B-2.3: 3-level margin call detection with per-broker thresholds.
 			if p.MarginLevel.GreaterThan(decimal.Zero) {
 				callPct := marginCallThresholds[accountID]

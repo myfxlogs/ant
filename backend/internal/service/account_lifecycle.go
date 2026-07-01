@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	"anttrader/internal/repository"
@@ -90,7 +91,7 @@ func (s *AccountService) GetAccountCredentials(ctx context.Context, userID uuid.
 
 // UpdateAccountInfoTx updates balance/equity/margin/leverage/currency within a transaction.
 // Does NOT touch account_status — that is owned by the gateway lifecycle (startGatewayForAccount / OnAccountDisconnect).
-func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin float64, leverage int64, currency string, isInvestor bool) error {
+func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin decimal.Decimal, leverage int64, currency string, isInvestor bool) error {
 	_, err := tx.Exec(ctx, `
 		UPDATE mt_accounts SET
 			balance = $3,
@@ -112,7 +113,7 @@ func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, use
 
 // UpdateAccountInfo updates balance/equity/margin/leverage/currency after MT verification.
 // Does NOT touch account_status — that is owned by the gateway lifecycle (startGatewayForAccount / OnAccountDisconnect).
-func (s *AccountService) UpdateAccountInfo(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin float64, leverage int64, currency string) error {
+func (s *AccountService) UpdateAccountInfo(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin decimal.Decimal, leverage int64, currency string) error {
 	_, err := s.db.Exec(ctx, `
 		UPDATE mt_accounts SET
 			balance = $3,
@@ -133,32 +134,32 @@ func (s *AccountService) UpdateAccountInfo(ctx context.Context, userID uuid.UUID
 
 // UpdateAccountMetrics updates runtime balance/equity/margin metrics from broker callbacks.
 // Unlike UpdateAccountInfo, this does not overwrite leverage or currency.
-func (s *AccountService) UpdateAccountMetrics(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin, marginLevel float64) error {
+func (s *AccountService) UpdateAccountMetrics(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin, marginLevel decimal.Decimal) error {
 	pgID, err := stringToPgUUID(id)
 	if err != nil {
 		return fmt.Errorf("service: update account metrics: invalid account id: %w", err)
 	}
-	balN, err := float64ToPgNumeric(balance)
+	balN, err := decimalToPgNumeric(balance)
 	if err != nil {
 		return fmt.Errorf("service: update account metrics: balance: %w", err)
 	}
-	eqN, err := float64ToPgNumeric(equity)
+	eqN, err := decimalToPgNumeric(equity)
 	if err != nil {
 		return fmt.Errorf("service: update account metrics: equity: %w", err)
 	}
-	crN, err := float64ToPgNumeric(credit)
+	crN, err := decimalToPgNumeric(credit)
 	if err != nil {
 		return fmt.Errorf("service: update account metrics: credit: %w", err)
 	}
-	marginN, err := float64ToPgNumeric(margin)
+	marginN, err := decimalToPgNumeric(margin)
 	if err != nil {
 		return fmt.Errorf("service: update account metrics: margin: %w", err)
 	}
-	fmN, err := float64ToPgNumeric(freeMargin)
+	fmN, err := decimalToPgNumeric(freeMargin)
 	if err != nil {
 		return fmt.Errorf("service: update account metrics: free_margin: %w", err)
 	}
-	mlN, err := float64ToPgNumeric(marginLevel)
+	mlN, err := decimalToPgNumeric(marginLevel)
 	if err != nil {
 		return fmt.Errorf("service: update account metrics: margin_level: %w", err)
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	"anttrader/internal/repository"
@@ -41,8 +42,8 @@ type userSummaryCacheEntry struct {
 }
 
 type accountSummaryItem struct {
-	balance float64
-	equity  float64
+	balance decimal.Decimal
+	equity  decimal.Decimal
 	status  string
 }
 
@@ -64,8 +65,8 @@ type AccountDTO struct {
 	ID, UserID, Platform, Broker, Login, Server string
 	IsDisabled                                   bool
 	Status                                       string
-	Balance, Equity, Credit, Margin, FreeMargin  float64
-	MarginLevel                                  float64
+	Balance, Equity, Credit, Margin, FreeMargin  decimal.Decimal
+	MarginLevel                                  decimal.Decimal
 	Leverage                                     int32
 	Currency                                     string
 	LastError                                    string
@@ -84,19 +85,19 @@ type AccountCredentials struct {
 type AccountSnapshot struct {
 	ID          string
 	Status      string
-	Balance     float64
-	Equity      float64
-	Credit      float64
-	Margin      float64
-	FreeMargin  float64
-	MarginLevel float64
+	Balance     decimal.Decimal
+	Equity      decimal.Decimal
+	Credit      decimal.Decimal
+	Margin      decimal.Decimal
+	FreeMargin  decimal.Decimal
+	MarginLevel decimal.Decimal
 }
 
 // UserAccountsSummary holds the aggregated account summary for a user.
 type UserAccountsSummary struct {
-	TotalBalance   float64
-	TotalEquity    float64
-	TotalProfit    float64
+	TotalBalance   decimal.Decimal
+	TotalEquity    decimal.Decimal
+	TotalProfit    decimal.Decimal
 	AccountCount   int32
 	ConnectedCount int32
 }

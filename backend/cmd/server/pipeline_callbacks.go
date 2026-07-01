@@ -33,12 +33,12 @@ func buildOnOrderUpdate(
 		defer cancel()
 		userUID, err := uuid.Parse(userID)
 		if err != nil { log.Warn("OnOrderUpdate: invalid user UUID", zap.String("userID", userID), zap.Error(err)); return }
-		if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, o.Balance.InexactFloat64(), o.Equity.InexactFloat64(), o.Credit.InexactFloat64(), o.Margin.InexactFloat64(), o.FreeMargin.InexactFloat64(), o.MarginLevel.InexactFloat64()); err != nil {
+		if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, o.Balance, o.Equity, o.Credit, o.Margin, o.FreeMargin, o.MarginLevel); err != nil {
 			log.Warn("OnOrderUpdate: pg update failed", zap.String("account", accountID), zap.Error(err))
 		}
 		publishProfitEvent(accountBroker, accountID, userID, o)
 		// Update in-memory summary cache for SSE SubscribeUserSummary.
-		accountSvc.UpdateSummaryCache(userID, accountID, o.Balance.InexactFloat64(), o.Equity.InexactFloat64(), "connected")
+		accountSvc.UpdateSummaryCache(userID, accountID, o.Balance, o.Equity, "connected")
 		publishPositionSnapshot(snapshotBroker, accountID, userID, o)
 		feedPlatformAggregator(platformAgg, accountID, o)
 		writeClosedTradeRecord(log, tradeRecordRepo, writeCtx, accountID, o)

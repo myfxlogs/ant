@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/shopspring/decimal"
 
 	"anttrader/internal/repository"
 )
@@ -12,7 +14,7 @@ import (
 // RecordBalanceSnapshot inserts a throttled equity/balance snapshot row.
 // Writes at most once per hour per account to bound disk growth
 // (unthrottled profit updates can fire every few seconds).
-func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, id string, userID string, balance, equity, margin, freeMargin float64) error {
+func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, id string, userID string, balance, equity, margin, freeMargin decimal.Decimal) error {
 	s.snapshotThrottleMu.Lock()
 	last, ok := s.snapshotThrottle[id]
 	// Sweep stale entries (> 2h idle) every ~100 calls to bound map growth.
@@ -88,12 +90,12 @@ func (s *AccountService) GetUserAccountSnapshots(ctx context.Context, userID str
 		out[i] = AccountSnapshot{
 			ID:      pgUUIDToString(r.ID),
 			Status:  r.AccountStatus,
-			Balance: pgNumericToFloat64Ignore(r.Balance),
-			Equity:  pgNumericToFloat64Ignore(r.Equity),
-			Credit:  pgNumericToFloat64Ignore(r.Credit),
-			Margin:  pgNumericToFloat64Ignore(r.Margin),
-			FreeMargin:  pgNumericToFloat64Ignore(r.FreeMargin),
-			MarginLevel: pgNumericToFloat64Ignore(r.MarginLevel),
+			Balance: pgNumericToDecimal(r.Balance),
+			Equity:  pgNumericToDecimal(r.Equity),
+			Credit:  pgNumericToDecimal(r.Credit),
+			Margin:  pgNumericToDecimal(r.Margin),
+			FreeMargin:  pgNumericToDecimal(r.FreeMargin),
+			MarginLevel: pgNumericToDecimal(r.MarginLevel),
 		}
 	}
 	return out, nil
@@ -101,7 +103,7 @@ func (s *AccountService) GetUserAccountSnapshots(ctx context.Context, userID str
 
 // UpdateSummaryCache incrementally updates the in-memory summary for a user
 // from a profit event. Called from the pipeline on every account profit update.
-func (s *AccountService) UpdateSummaryCache(userID, accountID string, balance, equity float64, status string) {
+func (s *AccountService) UpdateSummaryCache(userID, accountID string, balance, equity decimal.Decimal, status string) {
 	s.summaryMu.Lock()
 	defer s.summaryMu.Unlock()
 
@@ -116,17 +118,17 @@ func (s *AccountService) UpdateSummaryCache(userID, accountID string, balance, e
 	if !existed {
 		// New account added while cache was warm — recompute aggregates.
 		entry.summary.AccountCount++
-		entry.summary.TotalBalance += balance
-		entry.summary.TotalEquity += equity
-		entry.summary.TotalProfit += equity - balance
+		entry.summary.TotalBalance = entry.summary.TotalBalance.Add(balance)
+		entry.summary.TotalEquity = entry.summary.TotalEquity.Add(equity)
+		entry.summary.TotalProfit = entry.summary.TotalProfit.Add(equity.Sub(balance))
 		if status == "connected" {
 			entry.summary.ConnectedCount++
 		}
 	} else {
 		// Existing account — update aggregate deltas.
-		entry.summary.TotalBalance += balance - prev.balance
-		entry.summary.TotalEquity += equity - prev.equity
-		entry.summary.TotalProfit += (equity - balance) - (prev.equity - prev.balance)
+		entry.summary.TotalBalance = entry.summary.TotalBalance.Add(balance.Sub(prev.balance))
+		entry.summary.TotalEquity = entry.summary.TotalEquity.Add(equity.Sub(prev.equity))
+		entry.summary.TotalProfit = entry.summary.TotalProfit.Add(equity.Sub(balance).Sub(prev.equity.Sub(prev.balance)))
 		if prev.status != "connected" && status == "connected" {
 			entry.summary.ConnectedCount++
 		} else if prev.status == "connected" && status != "connected" {
@@ -177,20 +179,22 @@ func (s *AccountService) GetUserAccountsSummary(ctx context.Context, userID stri
 	}
 	for rows.Next() {
 		var id string
-		var balance, equity sql.NullFloat64
+		var balance, equity pgtype.Numeric
 		var status string
 		if err := rows.Scan(&id, &balance, &equity, &status); err != nil {
 			return nil, fmt.Errorf("service: get user accounts summary: scan row: %w", err)
 		}
-		entry.summary.TotalBalance += balance.Float64
-		entry.summary.TotalEquity += equity.Float64
-		entry.summary.TotalProfit += equity.Float64 - balance.Float64
+		bal := pgNumericToDecimal(balance)
+		eq := pgNumericToDecimal(equity)
+		entry.summary.TotalBalance = entry.summary.TotalBalance.Add(bal)
+		entry.summary.TotalEquity = entry.summary.TotalEquity.Add(eq)
+		entry.summary.TotalProfit = entry.summary.TotalProfit.Add(eq.Sub(bal))
 		entry.summary.AccountCount++
 		if status == "connected" {
 			entry.summary.ConnectedCount++
 		}
 		entry.accounts[id] = accountSummaryItem{
-			balance: balance.Float64, equity: equity.Float64, status: status,
+			balance: bal, equity: eq, status: status,
 		}
 	}
 	if err := rows.Err(); err != nil {

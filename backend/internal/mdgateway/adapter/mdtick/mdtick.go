@@ -45,11 +45,11 @@ type AccountInfoProvider interface {
 
 // MTAccountInfo holds basic account details from AccountSummary.
 type MTAccountInfo struct {
-	Balance    float64
-	Credit     float64
-	Equity     float64
-	Margin     float64
-	FreeMargin float64
+	Balance    decimal.Decimal
+	Credit     decimal.Decimal
+	Equity     decimal.Decimal
+	Margin     decimal.Decimal
+	FreeMargin decimal.Decimal
 	Leverage   int32
 	Currency   string
 	IsInvestor bool // true = read-only / investor password
