@@ -89,9 +89,11 @@ type IR struct {
 
 // GlobalVar represents a global variable declaration.
 type GlobalVar struct {
-	Name    string
-	Type    string // "int", "double", "string", "bool", "datetime"
-	InitVal *Expr  // initializer expression (nil = zero value)
+	Name      string
+	Type      string // "int", "double", "string", "bool", "datetime"
+	InitVal   *Expr  // initializer expression (nil = zero value)
+	IsArray   bool   // true if declared as array (e.g. double arr[30])
+	ArraySize int    // array dimension size (0 = unknown/uninitialized)
 }
 
 // ParamDecl represents an extern/input parameter.

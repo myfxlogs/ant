@@ -91,7 +91,7 @@ func (s *StrategyExecutionServer) fetchBacktestKlines(ctx context.Context, run *
 	if s.marketDataRepo == nil || run.Symbol == "" || run.Timeframe == "" {
 		return nil, nil
 	}
-	chBars, err := s.marketDataRepo.GetKlines(ctx, run.Symbol, "", run.Timeframe, run.FromTs, run.ToTs, 2000)
+	chBars, err := s.marketDataRepo.GetKlines(ctx, run.Symbol, "", run.Timeframe, run.FromTs, run.ToTs, 100000)
 	if err != nil {
 		return nil, fmt.Errorf("fetch klines from marketDataRepo: %w", err)
 	}

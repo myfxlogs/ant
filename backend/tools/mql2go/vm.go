@@ -3,6 +3,8 @@ package mql2go
 import (
 	"context"
 
+	"github.com/shopspring/decimal"
+
 	"anttrader/strategy/sdk"
 	"anttrader/tools/mql2go/interp"
 )
@@ -31,6 +33,7 @@ type VM struct {
 	cachedPositions []sdk.Position // cached list for OrderSelect(i, SELECT_BY_POS)
 	runCtx     context.Context // context for cancellation checks
 	callDepth  int            // current user function call depth
+	fatalError string         // set when a critical builtin is missing (ADR §5.4)
 
 	// Pre-built lookup: EntryPC → FuncEntry (avoids O(n) scan per call)
 	funcByEntryPC map[int32]FuncEntry
@@ -194,5 +197,33 @@ func (vm *VM) runEvent(ctx context.Context, entryPC int32) error {
 // initGlobals initializes global variables from the Bytecode's variable slots.
 func (vm *VM) initGlobals() {
 	vm.globals = make([]interp.Value, len(vm.bc.GlobalSlots))
-	// Globals start as zero values; the OnInit handler will set them.
+	// Initialize array globals with proper size
+	for _, decl := range vm.bc.GlobalDecls {
+		if decl.IsArray && decl.ArraySize > 0 {
+			slot, ok := vm.bc.GlobalSlots[decl.Name]
+			if !ok {
+				continue
+			}
+			arr := make([]interp.Value, decl.ArraySize)
+			zeroVal := zeroValueForType(decl.Type)
+			for i := range arr {
+				arr[i] = zeroVal
+			}
+			vm.globals[slot] = interp.Value{Kind: interp.ValArray, Array: arr}
+		}
+	}
+}
+
+// zeroValueForType returns a zero Value for the given MQL type.
+func zeroValueForType(typeName string) interp.Value {
+	switch typeName {
+	case "int", "long", "datetime", "bool":
+		return interp.IntVal(0)
+	case "double", "float":
+		return interp.DecimalVal(decimal.Zero)
+	case "string":
+		return interp.StringVal("")
+	default:
+		return interp.DecimalVal(decimal.Zero)
+	}
 }

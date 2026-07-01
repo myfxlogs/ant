@@ -1,8 +1,19 @@
 package mql2go
 
 import (
+	"strings"
+
 	"anttrader/tools/mql2go/interp"
 )
+
+// isSeriesName returns true for MQL predefined time-series names.
+func isSeriesName(name string) bool {
+	switch strings.ToLower(name) {
+	case "close", "open", "high", "low", "volume", "time":
+		return true
+	}
+	return false
+}
 
 // ── Expression compilation ───────────────────────────────────────────
 
@@ -36,6 +47,9 @@ func (c *astCompiler) compileExpr(e *interp.Expr) {
 		if val, ok := c.bc.Enums[e.Name]; ok {
 			cid := c.addConst(interp.IntVal(val))
 			c.emit(OP_PUSH_CONST, int32(cid), 0, 0)
+		} else if val, ok := interp.LookupMQLConstant(e.Name); ok {
+			cid := c.addConst(val)
+			c.emit(OP_PUSH_CONST, int32(cid), 0, 0)
 		} else {
 			// Unknown constant — push 0 and record blind spot
 			c.bc.Coverage.AddBlindSpot("unknown constant: " + e.Name)
@@ -63,9 +77,32 @@ func (c *astCompiler) compileExpr(e *interp.Expr) {
 		c.compileCall(e)
 
 	case interp.ExprSubscript:
-		// Series access: Close[i], Open[i], etc.
-		c.compileExpr(e.Index)
-		c.emit(OP_PUSH_SERIES, 0, int32(c.addSeriesName(e.Name)), 0)
+		// Check if this is an array write: arr[i] = value
+		// compileAssignment sets Args[0] = value for subscript assignments
+		if len(e.Args) > 0 {
+			// Array write: push value, push index, then STORE_ARRAY
+			c.compileExpr(&e.Args[0]) // value to store
+			c.compileExpr(e.Index)     // array index
+			slot, isGlobal := c.resolveVar(e.Name)
+			if !isGlobal {
+				c.bc.Coverage.AddBlindSpot("local array write: " + e.Name)
+			}
+			c.emit(OP_STORE_ARRAY, int32(slot), 0, 0)
+			return
+		}
+		// Array read: check if it's a predefined series or user array
+		if isSeriesName(e.Name) {
+			c.compileExpr(e.Index)
+			c.emit(OP_PUSH_SERIES, 0, int32(c.addSeriesName(e.Name)), 0)
+		} else {
+			// User array read: push index, PUSH_ARRAY with global slot
+			c.compileExpr(e.Index)
+			slot, isGlobal := c.resolveVar(e.Name)
+			if !isGlobal {
+				c.bc.Coverage.AddBlindSpot("local array read: " + e.Name)
+			}
+			c.emit(OP_PUSH_ARRAY, int32(slot), 0, 0)
+		}
 
 	case interp.ExprField:
 		c.compileField(e)

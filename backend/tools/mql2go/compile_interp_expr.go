@@ -1,6 +1,7 @@
 package mql2go
 
 import (
+	"fmt"
 	"strings"
 
 	sitter "github.com/smacker/go-tree-sitter"
@@ -388,6 +389,31 @@ func (c *compiler) findIdent(n *sitter.Node) string {
 		return c.text(n)
 	}
 	return ""
+}
+
+// findArraySize detects array dimension in declarations like double Gd_720[30].
+// Returns (size, true) if an array dimension is found, (0, false) otherwise.
+func (c *compiler) findArraySize(n *sitter.Node) (int, bool) {
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "subscript_expression" {
+			// The child of subscript_expression is the array name (identifier)
+			// and the index is the dimension size
+			for j := 0; j < int(child.NamedChildCount()); j++ {
+				dim := child.NamedChild(j)
+				if dim.Type() == "number_literal" {
+					txt := c.text(dim)
+					var size int
+					fmt.Sscanf(txt, "%d", &size)
+					if size > 0 {
+						return size, true
+					}
+				}
+			}
+			return 0, true // array but unknown size
+		}
+	}
+	return 0, false
 }
 
 func (c *compiler) findType(n *sitter.Node) string {

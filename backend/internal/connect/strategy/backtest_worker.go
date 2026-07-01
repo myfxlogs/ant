@@ -171,10 +171,17 @@ func (s *StrategyExecutionServer) executeGoBacktest(ctx context.Context, run *re
 // executeVMBacktest runs a backtest via the in-process Bytecode VM:
 // MQL source → CompileMQL → VMRunner → backtest.Engine → ExecuteBacktestResponse.
 func (s *StrategyExecutionServer) executeVMBacktest(ctx context.Context, params backtestParams, klines []*antv1.ExecuteKlineBar, run *repository.BacktestRun) (*antv1.ExecuteBacktestResponse, error) {
+	s.log.Info("executeVMBacktest: starting",
+		zap.Int("klines", len(klines)),
+		zap.String("symbol", run.Symbol),
+		zap.String("timeframe", run.Timeframe))
+
 	runner, err := mql2go.CompileMQL(params.code)
 	if err != nil {
+		s.log.Error("executeVMBacktest: compile failed", zap.Error(err))
 		return nil, fmt.Errorf("compile MQL: %w", err)
 	}
+	s.log.Info("executeVMBacktest: compiled successfully")
 
 	// Convert klines to sdk.Bar
 	bars := make([]sdk.Bar, len(klines))
@@ -227,13 +234,48 @@ func (s *StrategyExecutionServer) executeVMBacktest(ctx context.Context, params 
 		if v, err := decimal.NewFromString(symbolInfo.ContractSize); err == nil {
 			cfg.ContractSize = v
 		}
+	} else if len(bars) > 0 {
+		// Derive digits/point from K-line data when MT gateway is unavailable.
+		// Count decimal places in the first bar's close price.
+		closeStr := bars[0].Close.String()
+		dotIdx := -1
+		for i, c := range closeStr {
+			if c == '.' {
+				dotIdx = i
+				break
+			}
+		}
+		digits := int32(0)
+		if dotIdx >= 0 {
+			digits = int32(len(closeStr) - dotIdx - 1)
+		}
+		if digits > 8 {
+			digits = 8
+		}
+		cfg.SymbolDigits = digits
+		point := decimal.NewFromFloat(1)
+		for i := int32(0); i < digits; i++ {
+			point = point.Div(decimal.NewFromInt(10))
+		}
+		cfg.SymbolPoint = point
+		// Derive a reasonable spread from point (typical: 10-20 points for forex, 1-2 for crypto)
+		cfg.Spread = point.Mul(decimal.NewFromInt(10))
+		s.log.Info("executeVMBacktest: derived symbol info from K-lines",
+			zap.Int32("digits", digits),
+			zap.String("point", point.String()),
+			zap.String("spread", cfg.Spread.String()))
 	}
 
 	engine := backtest.New(cfg, runner, bars)
 	result, err := engine.Run(ctx)
 	if err != nil {
+		s.log.Error("executeVMBacktest: engine.Run failed", zap.Error(err), zap.Int("bars", len(bars)))
 		return &antv1.ExecuteBacktestResponse{Success: false, Error: err.Error()}, nil
 	}
+	s.log.Info("executeVMBacktest: engine.Run completed",
+		zap.Int("trades", len(result.Trades)),
+		zap.Int("equity_points", len(result.Equity)),
+		zap.Int("bars_processed", len(bars)))
 
 	// Convert backtest.Result → ExecuteBacktestResponse
 	resp := &antv1.ExecuteBacktestResponse{

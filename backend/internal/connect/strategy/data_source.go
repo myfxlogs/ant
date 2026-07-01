@@ -58,7 +58,7 @@ func (s *LiveSource) Fetch(ctx context.Context, symbol, timeframe string, from, 
 	if s.mktRepo == nil || symbol == "" || timeframe == "" {
 		return nil, nil
 	}
-	chBars, err := s.mktRepo.GetKlines(ctx, symbol, "", timeframe, from, to, 2000)
+	chBars, err := s.mktRepo.GetKlines(ctx, symbol, "", timeframe, from, to, 100000)
 	if err != nil {
 		return nil, err
 	}

@@ -146,6 +146,15 @@ func (vm *VM) setField(obj interp.Value, fieldName string, val interp.Value) {
 
 // ── Builtin dispatch ─────────────────────────────────────────────────
 
+// fatalBuiltins are builtins that should cause execution to stop if unimplemented.
+// Missing trade or market data functions indicate a broken strategy.
+var fatalBuiltins = map[string]bool{
+	"OrderSend": true, "OrderClose": true, "OrderModify": true, "OrderDelete": true,
+	"OrdersTotal": true, "OrderSelect": true,
+	"MarketInfo": true,
+	"iClose": true, "iOpen": true, "iHigh": true, "iLow": true, "iTime": true, "iVolume": true,
+}
+
 func (vm *VM) callBuiltin(builtinID int32, args []interp.Value) interp.Value {
 	id := BuiltinID(builtinID)
 	if int(id) >= len(builtinRegistry) {
@@ -161,7 +170,13 @@ func (vm *VM) callBuiltin(builtinID int32, args []interp.Value) interp.Value {
 		}
 		return result
 	}
-	// No handler registered — record blind spot
+	// No handler registered — classify severity per ADR §5.4
+	if fatalBuiltins[entry.name] {
+		vm.fatalError = fmt.Sprintf("unimplemented critical builtin: %s", entry.name)
+		vm.recordBlindSpot(entry.name)
+		return interp.NoneVal()
+	}
+	// Skip: Object/Chart/File operations — silent blind spot
 	vm.recordBlindSpot(entry.name)
 	return interp.NoneVal()
 }

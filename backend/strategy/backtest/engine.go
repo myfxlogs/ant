@@ -76,9 +76,22 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		// Call strategy — check for TickStrategy interface first
 		var sig *sdk.Signal
 		var err error
-		if ts, ok := e.strategy.(sdk.TickStrategy); ok {
+		useTick := false
+		if _, ok := e.strategy.(sdk.TickStrategy); ok {
+			if tc, ok2 := e.strategy.(sdk.TickCapable); ok2 {
+				useTick = tc.HasOnTick()
+			} else {
+				useTick = true // implements TickStrategy but not TickCapable — assume OnTick
+			}
+		}
+		if useTick {
+			ts := e.strategy.(sdk.TickStrategy)
+			spread := e.broker.config.Spread
+			if spread.IsZero() {
+				spread = e.broker.config.Slippage
+			}
 			bid := bar.Close
-			ask := bar.Close
+			ask := bar.Close.Add(spread)
 			sig, err = ts.OnTick(btCtx, bid, ask)
 		} else {
 			sig, err = e.strategy.OnBar(btCtx, e.config.Timeframe)
@@ -93,7 +106,7 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 
 		// Update equity with floating P&L from open positions
 		equity := e.broker.balance
-		closePrice := decimal.NewFromFloat(bar.Close.InexactFloat64())
+		closePrice := bar.Close
 		for _, pos := range e.broker.positions {
 			floating := closePrice.Sub(pos.Price).Mul(pos.Volume)
 			if pos.Side == sdk.SideSell {
@@ -139,7 +152,7 @@ func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
 		if sig.Action == sdk.ActionBuyStop || sig.Action == sdk.ActionSellStop {
 			ot = sdk.OrderStop
 		}
-		price := decimal.NewFromFloat(bar.Close.InexactFloat64())
+		price := bar.Close
 		if sig.Price.IsPositive() {
 			price = sig.Price
 		}
@@ -168,8 +181,8 @@ func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
 func (e *Engine) checkPendingOrders(bar sdk.Bar) {
 	for i := 0; i < len(e.broker.pending); i++ {
 		ord := e.broker.pending[i]
-		high := decimal.NewFromFloat(bar.High.InexactFloat64())
-		low := decimal.NewFromFloat(bar.Low.InexactFloat64())
+		high := bar.High
+		low := bar.Low
 
 		filled := false
 		if ord.OrderType == sdk.OrderLimit {
@@ -199,9 +212,9 @@ func (e *Engine) checkPendingOrders(bar sdk.Bar) {
 }
 
 func (e *Engine) checkSLTP(bar sdk.Bar) {
-	high := decimal.NewFromFloat(bar.High.InexactFloat64())
-	low := decimal.NewFromFloat(bar.Low.InexactFloat64())
-	close := decimal.NewFromFloat(bar.Close.InexactFloat64())
+	high := bar.High
+	low := bar.Low
+	close := bar.Close
 
 	for i := 0; i < len(e.broker.positions); i++ {
 		pos := e.broker.positions[i]
@@ -231,8 +244,13 @@ func (e *Engine) checkSLTP(bar sdk.Bar) {
 			if pos.ClosePrice.IsZero() {
 				pos.ClosePrice = close
 			}
-			// Apply swap for overnight positions (simplified: 1 day per bar)
-			e.broker.applySwap(pos, 1)
+			// Apply swap based on actual time held (not per-bar=1-day)
+			heldDuration := time.UnixMilli(bar.Timestamp).Sub(pos.OpenTime)
+			days := int64(heldDuration.Hours() / 24)
+			if days < 0 {
+				days = 0
+			}
+			e.broker.applySwap(pos, int(days))
 			pos.Profit = pos.ClosePrice.Sub(pos.Price).Mul(pos.Volume)
 			if pos.Side == sdk.SideSell {
 				pos.Profit = pos.Profit.Neg()
@@ -275,8 +293,19 @@ type backtestContext struct {
 	digits     int32
 }
 
-func (c *backtestContext) Bars() sdk.BarSeries          { return &btBarSeries{bars: c.bars[:c.barIndex+1]} }
-func (c *backtestContext) BarsTF(_ string) sdk.BarSeries { return c.Bars() }
+func (c *backtestContext) Bars() sdk.BarSeries { return &btBarSeries{bars: c.bars[:c.barIndex+1]} }
+
+func (c *backtestContext) BarsTF(tf string) sdk.BarSeries {
+	if tf == "" || tf == c.tf {
+		return c.Bars()
+	}
+	// Aggregate only bars up to current barIndex — no future data leakage.
+	// MT4 semantics: shift=0 on higher TF returns the bar containing the current
+	// lower-TF bar, with OHLCV accumulated only from bars seen so far.
+	visible := c.bars[:c.barIndex+1]
+	aggregated := aggregateBars(visible, tf)
+	return &btBarSeries{bars: aggregated}
+}
 func (c *backtestContext) Symbol() string                { return c.symbol }
 func (c *backtestContext) Timeframe() string             { return c.tf }
 func (c *backtestContext) Point() decimal.Decimal {
@@ -293,11 +322,19 @@ func (c *backtestContext) Digits() int32 {
 	return 5
 }
 func (c *backtestContext) Ask() decimal.Decimal {
-	spread := c.broker.config.Slippage
+	spread := c.broker.config.Spread
+	if spread.IsZero() {
+		spread = c.broker.config.Slippage // fallback: use slippage as spread if spread not set
+	}
 	return c.currentBar.Close.Add(spread)
 }
-func (c *backtestContext) Bid() decimal.Decimal          { return c.currentBar.Close }
-func (c *backtestContext) Spread() decimal.Decimal       { return c.broker.config.Slippage }
+func (c *backtestContext) Bid() decimal.Decimal    { return c.currentBar.Close }
+func (c *backtestContext) Spread() decimal.Decimal {
+	if !c.broker.config.Spread.IsZero() {
+		return c.broker.config.Spread
+	}
+	return c.broker.config.Slippage
+}
 func (c *backtestContext) Account() sdk.AccountInfo      { return c.broker.Account() }
 func (c *backtestContext) Mode() sdk.AccountMode         { return sdk.ModeHedging }
 func (c *backtestContext) Broker() sdk.Broker            { return c.broker }

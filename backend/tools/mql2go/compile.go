@@ -43,6 +43,7 @@ func CompileAST(ir *interp.IR) (*Bytecode, error) {
 	for _, g := range ir.Globals {
 		c.bc.GlobalSlots[g.Name] = VarID(len(c.bc.GlobalSlots))
 	}
+	c.bc.GlobalDecls = ir.Globals
 
 	// Compile user-defined functions first (so we know their entry points)
 	for name, fn := range ir.Funcs {
@@ -106,12 +107,18 @@ func CompileAST(ir *interp.IR) (*Bytecode, error) {
 	return c.bc, nil
 }
 
+type loopContext struct {
+	breakJumps    []int32
+	continueJumps []int32
+}
+
 type astCompiler struct {
 	bc            *Bytecode
 	ir            *interp.IR
 	localScopes   []map[string]VarID // scope stack for local variables
 	currentFunc   *FuncEntry
 	nextLocalSlot int                // next available local slot in current function
+	loopStack     []*loopContext     // stack of loop contexts for break/continue
 }
 
 // emit appends an instruction and returns its index.
@@ -286,11 +293,16 @@ func (c *astCompiler) compileStmt(s *interp.Statement) {
 		c.compileSwitch(s)
 
 	case interp.StmtBreak:
-		// Emit JMP with placeholder — will be patched by enclosing loop
-		c.emitJump(OP_JMP, 0) // break jump target patched by loop
+		if len(c.loopStack) > 0 {
+			jmp := c.emitJump(OP_JMP, 0)
+			c.loopStack[len(c.loopStack)-1].breakJumps = append(c.loopStack[len(c.loopStack)-1].breakJumps, jmp)
+		}
 
 	case interp.StmtContinue:
-		c.emitJump(OP_JMP, 0) // continue jump target patched by loop
+		if len(c.loopStack) > 0 {
+			jmp := c.emitJump(OP_JMP, 0)
+			c.loopStack[len(c.loopStack)-1].continueJumps = append(c.loopStack[len(c.loopStack)-1].continueJumps, jmp)
+		}
 	}
 }
 

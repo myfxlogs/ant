@@ -3,8 +3,7 @@ package interp
 import "sort"
 
 // IRReport is the static analysis report derived from an IR.
-// It is the single source for coverage/blind-spot reporting —
-// the same IR that the interpreter executes.
+// It is the single source for coverage/blind-spot reporting.
 type IRReport struct {
 	Version        string
 	Coverage       float64
@@ -76,11 +75,8 @@ func Analyze(ir *IR) *IRReport {
 }
 
 // IsBuiltinImplemented checks if a free-function builtin is implemented.
-// Single source of truth: references builtinTable + implemented* slices.
+// Single source of truth: implemented* slices in builtin_registry.go.
 func IsBuiltinImplemented(name string) bool {
-	if _, ok := builtinTable[name]; ok {
-		return true
-	}
 	if stubIndicators[name] {
 		return true
 	}
@@ -219,8 +215,8 @@ func classifySeverity(version string, c callInfo) string {
 }
 
 // permanentBlindSpots lists functions that will never be implemented in the
-// server-side interpreter, by design. These are MT client-side features or
-// security risks that have no server-side equivalent.
+// VM, by design. These are MT client-side features or security risks
+// that have no server-side equivalent.
 var permanentBlindSpots = map[string]string{
 	// File I/O — system has its own logging and parameter management
 	"FileOpen":          "File I/O: system has own logging/params",
@@ -435,18 +431,10 @@ var permanentBlindSpots = map[string]string{
 	"CustomTicksDelete":           "Custom Symbols: not applicable server-side",
 	"CustomTicksReplace":          "Custom Symbols: not applicable server-side",
 	"CustomBookAdd":               "Custom Symbols: not applicable server-side",
-	// Global Variables of Terminal — client-side state
-	"GlobalVariableCheck":         "Global Variables: terminal client-side state",
-	"GlobalVariableDel":           "Global Variables: terminal client-side state",
-	"GlobalVariableGet":           "Global Variables: terminal client-side state",
-	"GlobalVariableName":          "Global Variables: terminal client-side state",
-	"GlobalVariablesDeleteAll":    "Global Variables: terminal client-side state",
-	"GlobalVariableSet":           "Global Variables: terminal client-side state",
+	// Global Variables of Terminal — remaining unimplemented
 	"GlobalVariableSetOnCondition": "Global Variables: terminal client-side state",
-	"GlobalVariablesFlush":        "Global Variables: terminal client-side state",
-	"GlobalVariablesTotal":        "Global Variables: terminal client-side state",
-	"GlobalVariableTemp":          "Global Variables: terminal client-side state",
-	"GlobalVariableTime":          "Global Variables: terminal client-side state",
+	"GlobalVariablesFlush":         "Global Variables: terminal client-side state",
+	"GlobalVariableTime":           "Global Variables: terminal client-side state",
 	// Optimization Frames — strategy tester only
 	"FrameAdd":                    "Optimization: strategy tester only",
 	"FrameFilter":                 "Optimization: strategy tester only",
@@ -791,7 +779,7 @@ func countEntryExitRules(ir *IR) (entry, exit int) {
 }
 
 // EvalExprLiteral evaluates a simple literal/var Expr to its string form.
-// Used for extracting parameter default values without a full interpreter.
+// Used for extracting parameter default values without a full evaluation pass.
 func EvalExprLiteral(e *Expr) string {
 	if e == nil {
 		return ""

@@ -167,6 +167,13 @@ func isNumeric(k ValueKind) bool {
 	return k == ValInt || k == ValDecimal || k == ValDatetime
 }
 
+// RuntimeBlindSpot is a single entry returned by GetRuntimeBlindSpots.
+type RuntimeBlindSpot struct {
+	Builtin  string
+	Count    int
+	Severity string
+}
+
 // ParseNumberLiteral parses a numeric literal string into a Value.
 // Handles integer and decimal literals.
 func ParseNumberLiteral(s string) Value {

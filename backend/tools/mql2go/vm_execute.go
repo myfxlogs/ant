@@ -11,6 +11,11 @@ import (
 // runLoop is the main VM execution loop.
 func (vm *VM) runLoop(ctx context.Context) error {
 	for vm.pc < int32(len(vm.bc.Code)) {
+		// Check for fatal error (ADR §5.4 — critical builtin missing)
+		if vm.fatalError != "" {
+			return fmt.Errorf("VM fatal: %s", vm.fatalError)
+		}
+
 		// Check for cancellation / timeout
 		if vm.ticks%10000 == 0 {
 			select {
@@ -261,6 +266,34 @@ func (vm *VM) execute(ins Instruction) error {
 		seriesName := vm.bc.Consts[ins.B].Str
 		idx := vm.pop()
 		vm.push(vm.getSeries(seriesName, idx.ToInt()))
+
+	// ── User array access ──
+	case OP_PUSH_ARRAY:
+		idx := vm.pop()
+		if int(ins.A) < len(vm.globals) {
+			arrVal := vm.globals[ins.A]
+			if arrVal.Kind == interp.ValArray {
+				i := int(idx.ToInt())
+				if i >= 0 && i < len(arrVal.Array) {
+					vm.push(arrVal.Array[i])
+					break
+				}
+			}
+		}
+		vm.push(interp.NoneVal())
+
+	case OP_STORE_ARRAY:
+		idx := vm.pop()
+		val := vm.pop()
+		if int(ins.A) < len(vm.globals) {
+			arrVal := vm.globals[ins.A]
+			if arrVal.Kind == interp.ValArray {
+				i := int(idx.ToInt())
+				if i >= 0 && i < len(arrVal.Array) {
+					arrVal.Array[i] = val
+				}
+			}
+		}
 
 	// ── Field access ──
 	case OP_GET_FIELD:

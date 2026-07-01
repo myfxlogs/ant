@@ -206,9 +206,8 @@ func builtinOrderOpenPrice(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderClosePrice(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.currentPos != nil {
-		return interp.DecimalVal(vm.currentPos.OpenPrice), nil
-	}
+	// MQL4: OrderClosePrice returns 0 for open orders, close price for closed orders.
+	// Since our Position struct only tracks open positions, return 0.
 	return interp.DecimalVal(decimal.Zero), nil
 }
 

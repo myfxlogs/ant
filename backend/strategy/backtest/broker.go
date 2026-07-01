@@ -69,7 +69,7 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 
 	// Apply slippage for market orders
 	if req.Type == sdk.OrderMarket {
-		slip := b.config.Slippage.Mul(decimal.NewFromInt(10)) // pips to points
+		slip := b.config.Slippage
 		if req.Side == sdk.SideBuy {
 			rec.Price = rec.Price.Add(slip)
 		} else {
@@ -357,14 +357,33 @@ func (b *SimBroker) SymbolInfo(symbol string) (sdk.SymbolInfo, error) {
 	if !b.config.SymbolPoint.IsZero() {
 		point = b.config.SymbolPoint
 	}
+	volMin := b.config.VolumeMin
+	if volMin.IsZero() {
+		volMin = decimal.NewFromFloat(0.01)
+	}
+	volMax := b.config.VolumeMax
+	if volMax.IsZero() {
+		volMax = decimal.NewFromInt(1000)
+	}
+	volStep := b.config.VolumeStep
+	if volStep.IsZero() {
+		volStep = decimal.NewFromFloat(0.01)
+	}
+	contractSize := b.config.ContractSize
+	if contractSize.IsZero() {
+		contractSize = decimal.NewFromInt(100000)
+	}
 	return sdk.SymbolInfo{
 		Name:         symbol,
 		Digits:       digits,
 		Point:        point,
-		VolumeMin:    b.config.VolumeMin,
-		VolumeMax:    b.config.VolumeMax,
-		VolumeStep:   b.config.VolumeStep,
-		ContractSize: b.config.ContractSize,
+		VolumeMin:    volMin,
+		VolumeMax:    volMax,
+		VolumeStep:   volStep,
+		ContractSize: contractSize,
+		StopsLevel:   b.config.StopsLevel,
+		TickValue:    b.config.TickValue,
+		TickSize:     point,
 	}, nil
 }
 

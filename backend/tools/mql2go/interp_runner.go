@@ -124,9 +124,9 @@ func (r *VMRunner) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error)
 }
 
 // OnTick implements sdk.TickStrategy (optional).
-// If the EA defines OnTick, that bytecode runs. If not, we fall back to OnBar
-// bytecode — the backtest engine prefers TickStrategy over BarStrategy, so
-// this ensures OnBar-only EAs still execute correctly.
+// Only executes OnTick bytecode — does NOT fallback to OnBar.
+// The engine checks for TickStrategy and calls OnTick; if the EA
+// only has OnBar, the engine's else-branch calls OnBar directly.
 func (r *VMRunner) OnTick(ctx sdk.Context, bid, ask decimal.Decimal) (*sdk.Signal, error) {
 	r.vm.SetContext(ctx)
 
@@ -134,13 +134,14 @@ func (r *VMRunner) OnTick(ctx sdk.Context, bid, ask decimal.Decimal) (*sdk.Signa
 		if err := safeRun(func() error { return r.vm.RunOnTick(context.Background()) }); err != nil {
 			return nil, fmt.Errorf("VM OnTick: %w", err)
 		}
-	} else if r.vm.bc.OnBar >= 0 {
-		if err := safeRun(func() error { return r.vm.RunOnBar(context.Background()) }); err != nil {
-			return nil, fmt.Errorf("VM OnBar (via OnTick fallback): %w", err)
-		}
 	}
 
 	return nil, nil
+}
+
+// HasOnTick implements sdk.TickCapable — returns true if the EA has OnTick bytecode.
+func (r *VMRunner) HasOnTick() bool {
+	return r.vm.bc.OnTick >= 0
 }
 
 // OnTrade implements sdk.TradeStrategy (optional).

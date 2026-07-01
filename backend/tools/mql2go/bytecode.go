@@ -68,6 +68,10 @@ const (
 	// Subscript (series access: Close[i], Open[i], etc.)
 	OP_PUSH_SERIES
 
+	// User array access (arr[i] read / arr[i] = val write)
+	OP_PUSH_ARRAY
+	OP_STORE_ARRAY
+
 	// Field access (obj.field)
 	OP_GET_FIELD
 	OP_SET_FIELD
@@ -115,6 +119,9 @@ type Bytecode struct {
 
 	// Variable name → slot ID mapping (globals)
 	GlobalSlots map[string]VarID
+
+	// Global variable declarations (for array initialization)
+	GlobalDecls []interp.GlobalVar
 
 	// Function name → entry point mapping (user-defined funcs)
 	Funcs map[string]FuncEntry
@@ -214,6 +221,7 @@ func opName(op Opcode) string {
 		"ENTER_ONINIT", "ENTER_ONBAR", "ENTER_ONTICK", "ENTER_ONTRADE", "ENTER_ONTIMER", "ENTER_ONDEINIT",
 		"RETURN",
 		"PUSH_SERIES",
+		"PUSH_ARRAY", "STORE_ARRAY",
 		"GET_FIELD", "SET_FIELD",
 		"HALT",
 	}

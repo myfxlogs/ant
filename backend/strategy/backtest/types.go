@@ -18,7 +18,8 @@ type Config struct {
 	InitialCapital decimal.Decimal
 	Leverage       int32
 	Commission     decimal.Decimal // percentage, e.g. 0.0003 = 0.03%
-	Slippage       decimal.Decimal // pips
+	Slippage       decimal.Decimal // in price units, applied to market order fills
+	Spread         decimal.Decimal // bid/ask spread in price units
 	SwapRate       decimal.Decimal // overnight swap rate (e.g. 0.00001)
 	StrictMode     bool            // if true, skip bars with missing data
 
@@ -32,6 +33,8 @@ type Config struct {
 	VolumeMax     decimal.Decimal
 	VolumeStep    decimal.Decimal
 	ContractSize  decimal.Decimal // typically 100000 for forex
+	StopsLevel    int32           // minimum stop distance in points
+	TickValue     decimal.Decimal // value of one tick in account currency
 }
 
 // Result holds the complete backtest output.

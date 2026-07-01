@@ -88,6 +88,29 @@ func init() {
 	builtinRegistry[id("Sleep")].fn = builtinNoop
 	builtinRegistry[id("EventSetTimer")].fn = builtinEventSetTimer
 	builtinRegistry[id("EventKillTimer")].fn = builtinEventKillTimer
+	builtinRegistry[id("EventSetMillisecondTimer")].fn = builtinEventSetTimer
+
+	// Datetime functions
+	builtinRegistry[id("Day")].fn = builtinDay
+	builtinRegistry[id("DayOfWeek")].fn = builtinDayOfWeek
+	builtinRegistry[id("Hour")].fn = builtinHour
+	builtinRegistry[id("Minute")].fn = builtinMinute
+	builtinRegistry[id("Year")].fn = builtinYear
+	builtinRegistry[id("Month")].fn = builtinMonth
+	builtinRegistry[id("StrToTime")].fn = builtinStrToTime
+	builtinRegistry[id("TimeToStr")].fn = builtinTimeToStr
+
+	// Platform functions
+	builtinRegistry[id("RefreshRates")].fn = builtinNoopBool
+	builtinRegistry[id("GetLastError")].fn = builtinNoopInt
+	builtinRegistry[id("ResetLastError")].fn = builtinNoop
+	builtinRegistry[id("ExpertRemove")].fn = builtinNoop
+	builtinRegistry[id("IsTesting")].fn = builtinIsTesting
+	builtinRegistry[id("IsOptimization")].fn = builtinNoopInt
+	builtinRegistry[id("IsVisualMode")].fn = builtinNoopInt
+
+	// DoubleToStr alias
+	builtinRegistry[id("DoubleToStr")].fn = builtinDoubleToString
 
 	// Account functions
 	builtinRegistry[id("AccountBalance")].fn = builtinAccountBalance
@@ -98,6 +121,12 @@ func init() {
 	builtinRegistry[id("AccountProfit")].fn = builtinNoopDecimal
 	builtinRegistry[id("AccountCurrency")].fn = builtinNoopString
 	builtinRegistry[id("AccountCompany")].fn = builtinNoopString
+	builtinRegistry[id("AccountNumber")].fn = builtinAccountNumber
+	builtinRegistry[id("AccountStopoutLevel")].fn = builtinNoopInt
+	builtinRegistry[id("AccountName")].fn = builtinNoopString
+	builtinRegistry[id("AccountServer")].fn = builtinNoopString
+	builtinRegistry[id("AccountFreeMarginCheck")].fn = builtinNoopDecimal
+	builtinRegistry[id("AccountFreeMarginMode")].fn = builtinNoopInt
 
 	// Symbol info
 	builtinRegistry[id("SymbolInfoDouble")].fn = builtinSymbolInfoDouble
@@ -107,6 +136,15 @@ func init() {
 
 	// String format
 	builtinRegistry[id("StringFormat")].fn = builtinStringFormat
+	builtinRegistry[id("StringFind")].fn = builtinStringFind
+	builtinRegistry[id("StringSubstr")].fn = builtinStringSubstr
+	builtinRegistry[id("StringLen")].fn = builtinStringLen
+	builtinRegistry[id("StringReplace")].fn = builtinStringReplace
+	builtinRegistry[id("StringSplit")].fn = builtinStringSplit
+	builtinRegistry[id("StringTrimLeft")].fn = builtinStringTrimLeft
+	builtinRegistry[id("StringTrimRight")].fn = builtinStringTrimRight
+	builtinRegistry[id("StringConcatenate")].fn = builtinStringConcatenate
+	builtinRegistry[id("StringToDouble")].fn = builtinStringToDouble
 
 	// MQL4 trade functions
 	builtinRegistry[id("OrderSend")].fn = builtinOrderSend
@@ -158,17 +196,17 @@ func init() {
 	builtinRegistry[id("CTrade.SetExpertMagicNumber")].fn = builtinNoop
 	builtinRegistry[id("CTrade.SetDeviationInPoints")].fn = builtinNoop
 
-	// Array functions — stubs
+	// Array functions — real implementations
 	builtinRegistry[id("ArraySize")].fn = builtinArraySize
-	builtinRegistry[id("ArrayResize")].fn = builtinNoopInt
-	builtinRegistry[id("ArrayCopy")].fn = builtinNoopInt
+	builtinRegistry[id("ArrayResize")].fn = builtinArrayResize
+	builtinRegistry[id("ArrayCopy")].fn = builtinArrayCopy
 	builtinRegistry[id("ArraySetAsSeries")].fn = builtinNoopBool
-	builtinRegistry[id("ArrayMaximum")].fn = builtinNoopInt
-	builtinRegistry[id("ArrayMinimum")].fn = builtinNoopInt
-	builtinRegistry[id("ArraySort")].fn = builtinNoopInt
+	builtinRegistry[id("ArrayMaximum")].fn = builtinArrayMaximum
+	builtinRegistry[id("ArrayMinimum")].fn = builtinArrayMinimum
+	builtinRegistry[id("ArraySort")].fn = builtinArraySort
 	builtinRegistry[id("ArrayFree")].fn = builtinNoop
-	builtinRegistry[id("ArrayInitialize")].fn = builtinNoopInt
-	builtinRegistry[id("ArrayFill")].fn = builtinNoop
+	builtinRegistry[id("ArrayInitialize")].fn = builtinArrayInitialize
+	builtinRegistry[id("ArrayFill")].fn = builtinArrayFill
 	builtinRegistry[id("ArrayRange")].fn = builtinNoopInt
 	builtinRegistry[id("ArrayIsSeries")].fn = builtinNoopBool
 }
@@ -182,30 +220,6 @@ func id(name string) int {
 		}
 	}
 	panic(fmt.Sprintf("builtin not found in registry: %s", name))
-}
-
-// argD returns arg i as decimal, defaulting to zero if out of range.
-func argD(args []interp.Value, i int) decimal.Decimal {
-	if i >= len(args) {
-		return decimal.Zero
-	}
-	return args[i].ToDecimal()
-}
-
-// argI returns arg i as int32, defaulting to 0 if out of range.
-func argI(args []interp.Value, i int) int32 {
-	if i >= len(args) {
-		return 0
-	}
-	return args[i].ToInt()
-}
-
-// argS returns arg i as string, defaulting to "" if out of range.
-func argS(args []interp.Value, i int) string {
-	if i >= len(args) {
-		return ""
-	}
-	return args[i].ToString()
 }
 
 // ── Math builtins ────────────────────────────────────────────────────
@@ -223,15 +237,25 @@ func builtinMathMin(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinMathSqrt(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.DecimalVal(decimal.NewFromFloat(math.Sqrt(argD(args, 0).InexactFloat64()))), nil
+	f := argD(args, 0).InexactFloat64()
+	if f < 0 {
+		return interp.DecimalVal(decimal.Zero), nil
+	}
+	return interp.DecimalVal(safeDecimalFromFloat(math.Sqrt(f))), nil
 }
 
 func builtinMathPow(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.DecimalVal(decimal.NewFromFloat(math.Pow(argD(args, 0).InexactFloat64(), argD(args, 1).InexactFloat64()))), nil
+	base := argD(args, 0).InexactFloat64()
+	exp := argD(args, 1).InexactFloat64()
+	return interp.DecimalVal(safeDecimalFromFloat(math.Pow(base, exp))), nil
 }
 
 func builtinMathLog(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.DecimalVal(decimal.NewFromFloat(math.Log(argD(args, 0).InexactFloat64()))), nil
+	f := argD(args, 0).InexactFloat64()
+	if f <= 0 {
+		return interp.DecimalVal(decimal.Zero), nil
+	}
+	return interp.DecimalVal(safeDecimalFromFloat(math.Log(f))), nil
 }
 
 func builtinMathRound(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -253,7 +277,7 @@ func builtinMathCeil(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinMathExp(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.DecimalVal(decimal.NewFromFloat(math.Exp(argD(args, 0).InexactFloat64()))), nil
+	return interp.DecimalVal(safeDecimalFromFloat(math.Exp(argD(args, 0).InexactFloat64()))), nil
 }
 
 // ── Platform builtins ────────────────────────────────────────────────
@@ -363,75 +387,4 @@ func tfToInt(tf string) int32 {
 	default:
 		return 0
 	}
-}
-
-// ── Utility builtins ─────────────────────────────────────────────────
-
-func builtinNormalizeDouble(vm *VM, args []interp.Value) (interp.Value, error) {
-	value := argD(args, 0)
-	digits := int(argI(args, 1))
-	return interp.DecimalVal(value.Round(int32(digits))), nil
-}
-
-func builtinDoubleToString(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.StringVal(argD(args, 0).String()), nil
-}
-
-func builtinIntegerToString(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.StringVal(fmt.Sprintf("%d", argI(args, 0))), nil
-}
-
-func builtinStringToDouble(vm *VM, args []interp.Value) (interp.Value, error) {
-	d, err := decimal.NewFromString(argS(args, 0))
-	if err != nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
-	return interp.DecimalVal(d), nil
-}
-
-func builtinStringToInteger(vm *VM, args []interp.Value) (interp.Value, error) {
-	var n int32
-	fmt.Sscanf(argS(args, 0), "%d", &n)
-	return interp.IntVal(n), nil
-}
-
-func builtinTimeCurrent(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
-	return interp.IntVal(int32(vm.ctx.ServerTime() / 1000)), nil
-}
-
-func builtinNoop(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.NoneVal(), nil
-}
-
-func builtinNoopBool(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(true), nil
-}
-
-func builtinNoopInt(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.IntVal(0), nil
-}
-
-func builtinNoopDecimal(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.DecimalVal(decimal.Zero), nil
-}
-
-func builtinNoopString(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.StringVal(""), nil
-}
-
-func builtinEventSetTimer(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx != nil {
-		vm.ctx.SetTimer(int(argI(args, 0)))
-	}
-	return interp.NoneVal(), nil
-}
-
-func builtinEventKillTimer(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx != nil {
-		vm.ctx.KillTimer()
-	}
-	return interp.NoneVal(), nil
 }

@@ -23,14 +23,15 @@ func (c *astCompiler) compileFor(s *interp.Statement) {
 		jmpEnd = -2 // sentinel: no condition jump
 	}
 
-	// Body — continue jumps to update section (forward jump, patched later)
-	breakJumps := []int32{}
-	continueJumps := []int32{}
-	c.compileStmtsWithLoop(s.Body, &breakJumps, &continueJumps)
+	// Body — push loop context so break/continue at any nesting depth are tracked
+	lc := &loopContext{}
+	c.loopStack = append(c.loopStack, lc)
+	c.compileStmts(s.Body)
+	c.loopStack = c.loopStack[:len(c.loopStack)-1]
 
 	// Update — continue jumps here (after body, before condition check)
 	updateStart := int32(len(c.bc.Code))
-	for _, cj := range continueJumps {
+	for _, cj := range lc.continueJumps {
 		c.bc.Code[cj].A = updateStart
 	}
 	if s.Update != nil {
@@ -45,7 +46,7 @@ func (c *astCompiler) compileFor(s *interp.Statement) {
 	if jmpEnd >= 0 {
 		c.patchJump(jmpEnd)
 	}
-	for _, bj := range breakJumps {
+	for _, bj := range lc.breakJumps {
 		c.bc.Code[bj].A = endPC
 	}
 
@@ -58,12 +59,13 @@ func (c *astCompiler) compileWhile(s *interp.Statement) {
 	c.compileExpr(s.Cond)
 	jmpEnd := c.emitJump(OP_JMP_IF_FALSE, 0)
 
-	breakJumps := []int32{}
-	continueJumps := []int32{}
-	c.compileStmtsWithLoop(s.Body, &breakJumps, &continueJumps)
+	lc := &loopContext{}
+	c.loopStack = append(c.loopStack, lc)
+	c.compileStmts(s.Body)
+	c.loopStack = c.loopStack[:len(c.loopStack)-1]
 
 	// Patch continue jumps to condition check
-	for _, cj := range continueJumps {
+	for _, cj := range lc.continueJumps {
 		c.bc.Code[cj].A = condStart
 	}
 
@@ -72,7 +74,7 @@ func (c *astCompiler) compileWhile(s *interp.Statement) {
 
 	endPC := int32(len(c.bc.Code))
 	c.patchJump(jmpEnd)
-	for _, bj := range breakJumps {
+	for _, bj := range lc.breakJumps {
 		c.bc.Code[bj].A = endPC
 	}
 }
@@ -80,13 +82,14 @@ func (c *astCompiler) compileWhile(s *interp.Statement) {
 func (c *astCompiler) compileDoWhile(s *interp.Statement) {
 	bodyStart := int32(len(c.bc.Code))
 
-	breakJumps := []int32{}
-	continueJumps := []int32{}
-	c.compileStmtsWithLoop(s.Body, &breakJumps, &continueJumps)
+	lc := &loopContext{}
+	c.loopStack = append(c.loopStack, lc)
+	c.compileStmts(s.Body)
+	c.loopStack = c.loopStack[:len(c.loopStack)-1]
 
 	// Condition check — continue jumps here
 	condStart := int32(len(c.bc.Code))
-	for _, cj := range continueJumps {
+	for _, cj := range lc.continueJumps {
 		c.bc.Code[cj].A = condStart
 	}
 
@@ -94,7 +97,7 @@ func (c *astCompiler) compileDoWhile(s *interp.Statement) {
 	c.emit(OP_JMP_IF_TRUE, bodyStart, 0, 0)
 
 	endPC := int32(len(c.bc.Code))
-	for _, bj := range breakJumps {
+	for _, bj := range lc.breakJumps {
 		c.bc.Code[bj].A = endPC
 	}
 }
@@ -102,7 +105,8 @@ func (c *astCompiler) compileDoWhile(s *interp.Statement) {
 func (c *astCompiler) compileSwitch(s *interp.Statement) {
 	c.compileExpr(s.Expr)
 
-	breakJumps := []int32{}
+	lc := &loopContext{} // switch uses loop context for break only
+	c.loopStack = append(c.loopStack, lc)
 	endJumps := []int32{}
 
 	// Separate default case from regular cases.
@@ -128,13 +132,13 @@ func (c *astCompiler) compileSwitch(s *interp.Statement) {
 		jmpNext := c.emitJump(OP_JMP_IF_FALSE, 0)
 		jmpFalseIndices = append(jmpFalseIndices, jmpNext)
 		// Matched — execute case body, then jump to end
-		c.compileStmtsWithLoop(sc.Body, &breakJumps, nil)
+		c.compileStmts(sc.Body)
 		endJumps = append(endJumps, c.emitJump(OP_JMP, 0))
 	}
 
 	// Default body (compiled after all cases so it only runs when no case matches)
 	if defaultBody != nil {
-		c.compileStmtsWithLoop(defaultBody, &breakJumps, nil)
+		c.compileStmts(defaultBody)
 		endJumps = append(endJumps, c.emitJump(OP_JMP, 0))
 	}
 
@@ -156,27 +160,16 @@ func (c *astCompiler) compileSwitch(s *interp.Statement) {
 	for _, ej := range endJumps {
 		c.patchJump(ej)
 	}
-	for _, bj := range breakJumps {
+	for _, bj := range lc.breakJumps {
 		c.bc.Code[bj].A = endPC
 	}
+	c.loopStack = c.loopStack[:len(c.loopStack)-1]
 }
 
-// compileStmtsWithLoop compiles statements within a loop context,
-// tracking break/continue jumps for later patching.
-// breakJumps and continueJumps collect forward jump placeholders.
+// compileStmtsWithLoop is deprecated — break/continue now use loopStack.
+// Kept for backward compatibility; delegates to compileStmts.
 func (c *astCompiler) compileStmtsWithLoop(stmts []interp.Statement, breakJumps *[]int32, continueJumps *[]int32) {
-	for i := range stmts {
-		s := &stmts[i]
-		if s.Kind == interp.StmtBreak {
-			*breakJumps = append(*breakJumps, c.emitJump(OP_JMP, 0))
-			continue
-		}
-		if s.Kind == interp.StmtContinue {
-			*continueJumps = append(*continueJumps, c.emitJump(OP_JMP, 0))
-			continue
-		}
-		c.compileStmt(s)
-	}
+	c.compileStmts(stmts)
 }
 
 // isStackNeutral returns true for expression types that don't leave a value

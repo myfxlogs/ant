@@ -75,6 +75,14 @@ type TickStrategy interface {
 	OnTick(ctx Context, bid, ask decimal.Decimal) (*Signal, error)
 }
 
+// TickCapable is an optional interface for strategies to declare whether
+// they actually have OnTick logic. If a strategy implements TickStrategy
+// but not TickCapable, the engine assumes OnTick is always available.
+// If TickCapable is implemented, the engine checks HasOnTick() first.
+type TickCapable interface {
+	HasOnTick() bool
+}
+
 // TimerStrategy is implemented by strategies that use periodic timers.
 // OnTimer is called every n seconds, as configured by ctx.SetTimer(n) in OnInit.
 type TimerStrategy interface {

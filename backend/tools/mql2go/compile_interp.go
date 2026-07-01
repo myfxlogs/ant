@@ -146,6 +146,11 @@ func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 				Name: name,
 				Type: typeName,
 			}
+			// Check for array declaration: init_declarator may contain subscript_expression
+			if arrSize, isArr := c.findArraySize(child); isArr {
+				gv.IsArray = true
+				gv.ArraySize = arrSize
+			}
 			if valExpr := c.findInitValue(child, name); valExpr != nil {
 				gv.InitVal = c.compileExpr(valExpr)
 			}
@@ -155,10 +160,15 @@ func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 			if name == "" {
 				continue
 			}
-			ir.Globals = append(ir.Globals, interp.GlobalVar{
+			gv := interp.GlobalVar{
 				Name: name,
 				Type: typeName,
-			})
+			}
+			if arrSize, isArr := c.findArraySize(child); isArr {
+				gv.IsArray = true
+				gv.ArraySize = arrSize
+			}
+			ir.Globals = append(ir.Globals, gv)
 		} else if child.Type() == "identifier" && typeName != "" {
 			// Direct declaration: CTrade trade; (no init_declarator wrapper)
 			// Avoid double-adding if already handled by init_declarator above
