@@ -1,9 +1,10 @@
 # ADR-0021 · 策略运行时从 Python 迁移到 Go
 
-- **状态**：Accepted
+- **状态**：Partially superseded by 0023
 - **日期**：2026-06-26
 - **决策者**：人类负责人
-- **关联 ADR**：ADR-0020（被本 ADR 覆盖 D1/D4/D5/D7）、ADR-0012（统一回测/实盘路径）
+- **关联 ADR**：ADR-0020（被本 ADR 覆盖 D1/D4/D5/D7）、ADR-0012（统一回测/实盘路径）、ADR-0023（覆盖 G1/§3.1）
+- ** superseded 注记**：G1（目标语言 = Go Strategy SDK，MQL → Go 源码编译）和 §3.1（代码生成方式：tree-sitter CST → IR → 字符串拼接）已被 ADR-0023 取代。ADR-0023 改为 MQL → AST → Bytecode VM 进程内执行，不再生成 Go 源码用于运行时。G2-G7（Python 退役、风控门、Decimal 一致性、行为对齐 harness）仍然有效。
 - **关联文档**：`docs/audit/2026-06-22-策略EA执行系统-现状地图.md`、`docs/audit/2026-06-26-翻译器实施说明书落地审计-v2.md`
 
 ## 1. 背景
@@ -42,7 +43,7 @@ ADR-0020 确立了"Python Strategy SDK + Go 引擎编排"的架构。经过实�
 
 | # | 决策 |
 |---|---|
-| G1 | **目标语言 = Go Strategy SDK**。MQL EA 经 `mql2go` 转译为 Go 源码，编译后与后端同二进制执行。 |
+| G1 | ~~**目标语言 = Go Strategy SDK**。MQL EA 经 `mql2go` 转译为 Go 源码，编译后与后端同二进制执行。~~ → **Superseded by ADR-0023**: MQL → AST → Bytecode VM 进程内执行，不再生成 Go 源码用于运行时。`mql2go` 的 Go 代码生成仅保留用于 CLI 开发调试。 |
 | G2 | **`strategy-service/` Python 服务退役**。所有策略执行（回测+实盘）由 Go 后端直接处理。 |
 | G3 | **`tools/mql_transpiler/` + `tools/mql_migration/` 退役**。MQL→Go 转译由 `backend/tools/mql2go/` 替代。 |
 | G4 | **安全模型简化**：Go 编译产物无 RCE 风险，无需 OS 级沙箱（seccomp/断网/只读 FS/cgroup）。策略代码在编译期类型检查。 |
@@ -60,11 +61,13 @@ ADR-0020 确立了"Python Strategy SDK + Go 引擎编排"的架构。经过实�
 
 ### 3.1 代码生成方式决策
 
+> **§3.1 已被 ADR-0023 取代**。运行时不再使用 Go 代码生成，改为 MQL → AST → Bytecode VM 进程内执行。以下内容保留仅供历史参考。
+
 `mql2go` 代码生成采用 **tree-sitter CST → StrategyIntent IR → 字符串拼接（emitf）** 架构。
 
 | 方案 | 评估 | 结论 |
 |------|------|------|
-| **字符串拼接（emitf）** | 简单直接，模式匹配式生成足够覆盖常见 MQL 模式 | **采纳** |
+| **字符串拼接（emitf）** | 简单直接，模式匹配式生成足够覆盖常见 MQL 模式 | **采纳**（仅 CLI 开发调试） |
 | `go/ast` + `format.Node` | 保证语法正确性，但构造 AST 节点复杂度高，对当前模式匹配式生成属于过度工程 | **否决** — 2026-06-27 |
 
 > **注意**：Python 侧的 `ast_transpiler.py`（MQL → Python AST）已废弃。`go/ast`（Go 标准库，用于 Go 代码生成端）是不同的东西，但同样不采纳。两者都不要重新提起。

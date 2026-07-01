@@ -36,6 +36,9 @@ func templateRowToProto(r *service.TemplateRow) *antv1.StrategyTemplate {
 	if r.UserID != nil {
 		pb.UserId = r.UserID.String()
 	}
+	if r.StrategyID != nil {
+		pb.StrategyId = r.StrategyID.String()
+	}
 	if len(r.Parameters) > 0 {
 		var params antv1.StrategyTemplate
 		if err := proto.Unmarshal(r.Parameters, &params); err == nil {
@@ -86,6 +89,11 @@ func (s *StrategyServer) CreateTemplate(ctx context.Context, req *connect.Reques
 		Tags:        req.Msg.GetTags(),
 		I18n:        []byte(req.Msg.GetI18N()),
 	}
+	if sid := req.Msg.GetStrategyId(); sid != "" {
+		if parsed, err := uuid.Parse(sid); err == nil {
+			row.StrategyID = &parsed
+		}
+	}
 	if req.Msg.Parameters != nil {
 		wrapper := &antv1.StrategyTemplate{Parameters: req.Msg.Parameters}
 		row.Parameters, _ = proto.Marshal(wrapper)
@@ -126,6 +134,11 @@ func (s *StrategyServer) UpdateTemplate(ctx context.Context, req *connect.Reques
 	}
 	if v := req.Msg.I18N; v != nil {
 		existing.I18n = []byte(*v)
+	}
+	if v := req.Msg.StrategyId; v != nil && *v != "" {
+		if parsed, err := uuid.Parse(*v); err == nil {
+			existing.StrategyID = &parsed
+		}
 	}
 	if req.Msg.Parameters != nil {
 		wrapper := &antv1.StrategyTemplate{Parameters: req.Msg.Parameters}
@@ -190,6 +203,11 @@ func (s *StrategyServer) UpdateTemplateDraft(ctx context.Context, req *connect.R
 	}
 	if req.Msg.Tags != nil {
 		existing.Tags = req.Msg.Tags
+	}
+	if v := req.Msg.StrategyId; v != nil && *v != "" {
+		if parsed, err := uuid.Parse(*v); err == nil {
+			existing.StrategyID = &parsed
+		}
 	}
 	if req.Msg.Parameters != nil {
 		wrapper := &antv1.StrategyTemplate{Parameters: req.Msg.Parameters}

@@ -2,7 +2,7 @@
 
 ## Background
 
-Engine layer is complete: WASM strategy compilation + execution (Go compiled path + MQL interpreter path), real-time data streaming (bar/tick/trade), signal dispatch to broker/paper, session lifecycle management, risk gate integration.
+Engine layer is complete: Bytecode VM strategy compilation + execution (MQL → AST → Bytecode → in-process VM), real-time data streaming (bar/tick/trade), signal dispatch to broker/paper, session lifecycle management, risk gate integration.
 
 This roadmap covers the remaining work to make live strategies usable by end users.
 
@@ -41,7 +41,7 @@ This roadmap covers the remaining work to make live strategies usable by end use
 - [ ] In-memory session registry: track active `LiveSession` instances with metadata (run_id, account, symbol, started_at, last_signal_at, error_count)
 - [ ] Add ConnectRPC: `ListActiveStrategies`, `GetActiveStrategy`, `StopStrategy`
 - [ ] Wire `RunLiveStrategy` to register/deregister in session registry
-- [ ] Expose session health: WASM alive, last bar processed, stderr tail
+- [ ] Expose session health: VM alive, last bar processed, error tail
 - [ ] SSE stream: `WatchStrategySignals` (real-time signal push to frontend)
 - [ ] Integration tests for registry lifecycle
 

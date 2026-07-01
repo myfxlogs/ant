@@ -1,5 +1,5 @@
 import { Button, Input, Tag, Typography, Card, Space } from 'antd';
-import { CodeOutlined, ThunderboltOutlined, CheckCircleOutlined, CloseCircleOutlined, EditOutlined, LoadingOutlined, SendOutlined } from '@ant-design/icons';
+import { CodeOutlined, ThunderboltOutlined, CheckCircleOutlined, CloseCircleOutlined, EditOutlined, LoadingOutlined, SendOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import {
   EXEC_TITLE_KEY, EXEC_RUNNING_KEY, EXEC_DONE_KEY, EXEC_BACK_TO_PLAN_KEY,
@@ -12,6 +12,7 @@ import {
 } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 import StepProgress from './StepProgress';
 import DiffView from './DiffView';
+import CoverageReportView from './CoverageReportView';
 import { useExecutionPanel } from './useExecutionPanel';
 
 const { TextArea } = Input;
@@ -40,6 +41,7 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
     switch (name) {
       case 'compliance_check': return t(EXEC_COMPLIANCE_TOOL_KEY, 'Compliance Check');
       case 'backtest': return t(EXEC_BACKTEST_TOOL_KEY, 'Backtest');
+      case 'analyze_strategy': return 'Strategy Analysis';
       default: return name;
     }
   };
@@ -48,6 +50,7 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
     switch (name) {
       case 'compliance_check': return <CodeOutlined />;
       case 'backtest': return <ThunderboltOutlined />;
+      case 'analyze_strategy': return <SafetyCertificateOutlined />;
       default: return <CodeOutlined />;
     }
   };
@@ -120,6 +123,7 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
             <span>{toolIcon(tr.name)} <b>{toolLabel(tr.name)}</b></span>
             {tr.error && <span style={{ color: '#cf1322' }}>{tr.error}</span>}
           </Space>
+          {tr.name === 'analyze_strategy' && tr.success && tr.outputJson && <CoverageReportView json={tr.outputJson} />}
         </div>
       ))}
 

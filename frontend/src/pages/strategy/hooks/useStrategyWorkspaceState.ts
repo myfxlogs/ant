@@ -61,8 +61,11 @@ export function useStrategyWorkspaceState() {
         default: p.default || '', label: p.label || p.name || '',
       }));
       btCtx.updateExtractedParams(params);
+    } else if (tpl.code?.trim()) {
+      // No stored parameters — auto-validate to extract ctx.Param() calls.
+      codeCtx.validateCode(tpl.code);
     }
-  }, [codeCtx.handleLoadTemplate, btCtx.updateExtractedParams]);
+  }, [codeCtx.handleLoadTemplate, codeCtx.validateCode, btCtx.updateExtractedParams]);
 
   // Load template from URL on mount (e.g. from Library "Open in Workspace").
   useEffect(() => {

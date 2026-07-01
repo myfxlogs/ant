@@ -12,7 +12,6 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-	"google.golang.org/protobuf/proto"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
@@ -23,12 +22,12 @@ import (
 	"anttrader/internal/pglisten"
 	"anttrader/internal/risk"
 	"anttrader/internal/ai"
+	"anttrader/strategy/runner"
 	"anttrader/tools/mql2go"
-	"anttrader/tools/mql2go/interp"
 )
 
 // StrategyExecutionServer implements ant.v1c.StrategyRuntimeServiceHandler.
-// Handles strategy execution via the Go-native executor (GoExecutor).
+// Handles strategy execution via in-process Bytecode VM (MQL) and legacy GoExecutor (Go).
 type StrategyExecutionServer struct {
 	backtestRepo        *repository.BacktestRunRepository
 	log                 *zap.Logger
@@ -49,10 +48,8 @@ type StrategyExecutionServer struct {
 	accountProvider AccountStateProvider
 
 	// Go-native strategy executor — runs generated Go strategies via go run (backtest).
+	// ADR-0023: retained for legacy Go strategies; all new strategies use MQL→Bytecode VM.
 	goExecutor *GoExecutor
-
-	// WASM strategy executor — runs generated Go strategies via wazero (live/paper).
-	wasmExecutor *WasmExecutor
 
 	// Strategy run + signal persistence.
 	runRepo *repository.StrategyRunRepository
@@ -95,7 +92,6 @@ func (s *StrategyExecutionServer) SetBarSource(bs BarSource)                 { s
 func (s *StrategyExecutionServer) SetMtHub(h *mthub.MtHubService)            { s.mtHub = h }
 func (s *StrategyExecutionServer) SetPaperEngine(pe PaperOrderExecutor)      { s.paperEngine = pe }
 func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)              { s.goExecutor = ge }
-func (s *StrategyExecutionServer) SetWasmExecutor(we *WasmExecutor)          { s.wasmExecutor = we }
 func (s *StrategyExecutionServer) SetRunRepo(r *repository.StrategyRunRepository) { s.runRepo = r }
 func (s *StrategyExecutionServer) SetImportedRepo(r *repository.ImportedStrategyRepository) { s.importedRepo = r }
 func (s *StrategyExecutionServer) SetSessionRegistry(r *SessionRegistry)           { s.sessionRegistry = r }
@@ -141,7 +137,10 @@ func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Requ
 	_ = uid
 
 	// Go-native path: execute generated Go strategies via proto binary.
-	if s.goExecutor != nil && isGoStrategy(req.Msg.Code) {
+	if isGoStrategy(req.Msg.Code) {
+		if s.goExecutor == nil {
+			return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("Go strategy executor not configured"))
+		}
 		resp, err := s.goExecutor.Run(ctx, req.Msg.Code, req.Msg)
 		if err != nil {
 			s.log.Warn("go executor failed", zap.Error(err))
@@ -212,14 +211,17 @@ func (s *StrategyExecutionServer) GetTemplates(_ context.Context, _ *connect.Req
 
 // ExecuteLive runs strategy code against a live bar stream.
 // Delegates to GoExecutor.RunLive for Go-native strategy execution,
-// or WasmExecutor.RunInterpLive for MQL interpreter path.
+// or executeVMLive for MQL in-process Bytecode VM path.
 func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.Request[antv1.ExecuteLiveRequest]) (*connect.Response[antv1.ExecuteLiveResponse], error) {
 	if _, err := userIDRequire(ctx); err != nil {
 		return nil, err
 	}
 
 	// Go-native compilation path: generated Go strategy via go run.
-	if s.goExecutor != nil && isGoStrategy(req.Msg.StrategyCode) {
+	if isGoStrategy(req.Msg.StrategyCode) {
+		if s.goExecutor == nil {
+			return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("Go strategy executor not configured"))
+		}
 		resp, err := s.goExecutor.RunLive(ctx, req.Msg.StrategyCode, req.Msg)
 		if err != nil {
 			s.log.Warn("go executor live failed", zap.Error(err))
@@ -228,39 +230,70 @@ func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.
 		return connect.NewResponse(resp), nil
 	}
 
-	// MQL interpreter path: compile MQL → IR → serialize → WASM interp harness.
-	if s.wasmExecutor != nil && isMQLStrategy(req.Msg.StrategyCode) {
-		ir, err := mql2go.CompileToIR(req.Msg.StrategyCode)
+	// MQL path: in-process Bytecode VM execution.
+	if isMQLStrategy(req.Msg.StrategyCode) {
+		resp, err := s.executeVMLive(ctx, req.Msg)
 		if err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("compile MQL to IR: %w", err))
+			s.log.Warn("vm live execution failed", zap.Error(err))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("live execution failed: %w", err))
 		}
-		irBytes := interp.SerializeIR(ir)
-
-		compiled, _, err := s.wasmExecutor.CompileInterpLive(ctx)
-		if err != nil {
-			s.log.Warn("wasm interp live compile failed", zap.Error(err))
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("compile interp harness: %w", err))
-		}
-
-		reqBytes, err := proto.Marshal(req.Msg)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal live request: %w", err))
-		}
-
-		respBytes, err := s.wasmExecutor.RunInterpLive(ctx, compiled, irBytes, reqBytes)
-		if err != nil {
-			s.log.Warn("wasm interp live failed", zap.Error(err))
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("interp live execution failed: %w", err))
-		}
-
-		var resp antv1.ExecuteLiveResponse
-		if err := proto.Unmarshal(respBytes, &resp); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("unmarshal interp live response: %w", err))
-		}
-		return connect.NewResponse(&resp), nil
+		return connect.NewResponse(resp), nil
 	}
 
 	return connect.NewResponse(&antv1.ExecuteLiveResponse{Success: false, Error: "live execution not available"}), nil
+}
+
+// executeVMLive runs a single live event via the in-process Bytecode VM.
+// MQL source → CompileMQL → VMRunner → runner.Runner → dispatch event → ExecuteLiveResponse.
+func (s *StrategyExecutionServer) executeVMLive(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
+	strategy, err := mql2go.CompileMQL(req.StrategyCode)
+	if err != nil {
+		return nil, fmt.Errorf("compile MQL: %w", err)
+	}
+
+	// Build runner config from bar context (first request must have bar_context).
+	bctx := req.GetBarContext()
+	if bctx == nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "first request must have bar_context for initialization"}, nil
+	}
+
+	params := make(map[string]string)
+	for _, p := range bctx.GetParams() {
+		params[p.GetKey()] = p.GetValue()
+	}
+
+	r := runner.New(runner.Config{
+		Symbol:    bctx.Symbol,
+		Timeframe: bctx.Timeframe,
+		Params:    params,
+		Mode:      bctx.Mode,
+	})
+	r.SetStrategy(strategy)
+
+	if err := r.Init(ctx); err != nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}, nil
+	}
+
+	// Dispatch based on request type
+	switch req.GetRequestType() {
+	case antv1.RequestType_REQUEST_TYPE_BAR:
+		return vmHandleBar(r, bctx), nil
+
+	case antv1.RequestType_REQUEST_TYPE_TICK:
+		return vmHandleTick(r, req.GetTickContext()), nil
+
+	case antv1.RequestType_REQUEST_TYPE_TRADE:
+		return vmHandleTrade(r, req.GetTradeContext()), nil
+
+	case antv1.RequestType_REQUEST_TYPE_TIMER:
+		return vmHandleTimer(r, req.GetTimerContext()), nil
+
+	default:
+		if bctx != nil {
+			return vmHandleBar(r, bctx), nil
+		}
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "unknown request type"}, nil
+	}
 }
 
 // toCamelCase converts a filename like "my_strategy" to "MyStrategy".

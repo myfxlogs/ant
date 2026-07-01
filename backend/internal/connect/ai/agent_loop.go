@@ -24,6 +24,7 @@ type AgentLoop struct {
 	streamChunk  func(delta string) error                           // forward delta to frontend
 	toolStream   func(tc *antv1.ToolCall, tr *antv1.ToolResult) error // forward tool events to frontend
 	maxRounds    int
+	currentCode  string // workspace code injected into ToolInput.Code for tools like analyze_strategy
 }
 
 // NewAgentLoop creates an AgentLoop with the given tools and LLM streaming function.
@@ -41,6 +42,12 @@ func NewAgentLoop(
 		toolStream:   toolStream,
 		maxRounds:    5,
 	}
+}
+
+// SetCurrentCode injects the workspace strategy code into tool inputs.
+// Tools like analyze_strategy use this to access the code being discussed.
+func (a *AgentLoop) SetCurrentCode(code string) {
+	a.currentCode = code
 }
 
 // RunWithHistory executes the agent loop with pre-loaded conversation history.
@@ -108,6 +115,9 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		var toolResults []string
 		for _, call := range calls {
 			call.Input.UserID = userID // wire authenticated user for DB tools (remember, save, etc.)
+		if call.Input.Code == "" && a.currentCode != "" {
+			call.Input.Code = a.currentCode
+		}
 			tool := a.toolRegistry.FindPreTool(call.Name)
 			var result ToolOutput
 			if tool == nil {

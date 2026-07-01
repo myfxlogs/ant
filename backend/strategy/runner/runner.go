@@ -1,7 +1,7 @@
 // Package runner executes Go strategies implementing the sdk.Strategy interface.
 //
 // It provides concrete implementations of sdk.Context, sdk.Broker,
-// and sdk.IndicatorSet for use by the WASM/subprocess harness.
+// and sdk.IndicatorSet for use by strategy execution.
 package runner
 
 import (
@@ -55,7 +55,7 @@ func (r *Runner) SetStrategy(s sdk.Strategy) {
 }
 
 // UpdateLiveState sets the live account state from the parent process.
-// Used by the WASM harness to pass equity/balance/positions without RPC.
+// Used by the live harness to pass equity/balance/positions without RPC.
 func (r *Runner) UpdateLiveState(balance, equity string, positions []sdk.Position) {
 	r.ctx.mu.Lock()
 	defer r.ctx.mu.Unlock()

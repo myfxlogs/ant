@@ -18,7 +18,7 @@ var (
 )
 
 // Interpreter executes a compiled IR against SDK interfaces.
-// Pure Go — no tree-sitter dependency — safe for WASM.
+// Pure Go — no tree-sitter dependency.
 type Interpreter struct {
 	ir        *IR
 	ctx       sdk.Context

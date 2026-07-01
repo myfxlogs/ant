@@ -25,6 +25,8 @@ message CreateTemplateRequest {
   repeated string tags = 6;
   // I18n data for parameter labels (JSON-encoded TemplateI18n).
   string i18n = 7;
+  // FK to imported_strategies.id (ADR-0023).
+  string strategy_id = 8;
 }
 
 message CreateTemplateDraftRequest {
@@ -38,6 +40,8 @@ message UpdateTemplateDraftRequest {
   optional string code = 4;
   repeated TemplateParameter parameters = 5;
   repeated string tags = 6;
+  // FK to imported_strategies.id (ADR-0023).
+  optional string strategy_id = 7;
 }
 
 message PublishTemplateDraftRequest {
@@ -58,6 +62,8 @@ message UpdateTemplateRequest {
   repeated string tags = 7;
   // I18n data for parameter labels (JSON-encoded TemplateI18n).
   optional string i18n = 8;
+  // FK to imported_strategies.id (ADR-0023).
+  optional string strategy_id = 9;
 }
 
 message DeleteTemplateRequest {

@@ -1,23 +1,23 @@
-# Go-Native Strategy Pipeline
+# Strategy Pipeline
 
-> **技术文档** — 供 AI 助手（DeepSeek 等）接手开发时参考。读完本文即可理解整条管线的架构、模块边界、数据流和已知缺口。
+> **技术文档** — 供 AI 助手接手开发时参考。读完本文即可理解整条管线的架构、模块边界、数据流和已知缺口。
 >
-> **版本**: v3 — 2026-06-28 更新。新增 MQL 策略层（解释器路径 + 翻译器双路径）、WASM 运行时迁移、delta-bar 协议、回测对齐校验闭环、LiveRunner 删除等架构变更。
+> **版本**: v4 — 2026-07-01 更新。ADR-0023 架构变更：移除 WASM 沙箱 + Go 代码生成，改为 MQL → AST → Bytecode VM 进程内执行。MQL 源码为唯一真实来源。
+>
+> **关联 ADR**：ADR-0023（AST 解释器 + MQL 源码为唯一真实来源）、ADR-0021（Python→Go 迁移，G1/§3.1 已被 0023 覆盖）、ADR-0022（盲区架构）、ADR-0012（统一回测/实盘路径）。
 
 ## 1. 概述
 
-Go-Native Strategy Pipeline 是 AntTrader 平台中 **从 MQL 源码到实盘执行** 的完整管线。它取代 MetaTrader EA 运行时，用 Go 编译产物替代 MQL 解释执行，实现：
+Strategy Pipeline 是 AntTrader 平台中 **从 MQL 源码到实盘执行** 的完整管线。它取代 MetaTrader EA 运行时，用进程内 Bytecode VM 执行 MQL 策略，实现：
 
-- MQL4/MQL5 EA → Go 代码转译（构建时）
-- Go 策略代码在统一 SDK 接口上运行（运行时）
-- 回测与实盘共用同一份策略代码（差异仅在注入的 Broker 实现）
+- MQL4/MQL5 EA → tree-sitter 解析 → AST → Bytecode 编译 → VM 执行（进程内，无 WASM）
+- MQL 源码是唯一真实来源（`imported_strategies.source_code`），不再生成或存储 Go 代码
+- 回测与实盘共用同一份 Bytecode（差异仅在注入的 Broker 实现）
 - 全链路 `decimal.Decimal` 精度，无 `float64` 金融计算
 - 所有下单意图必经风控 Gate（不可绕过）
-- **WASM 沙箱执行**（wazero）— 替代子进程模型，~200ms 编译 vs ~5-10s `go run`
-- **Delta-bar 协议** — 首次全量 OHLCV，后续仅传增量 bar，减少 IPC 开销
+- **安全隔离**: 指令计数器 + context 超时 + panic recovery（无 WASM 沙箱，VM 只能调 SDK 函数）
+- **Delta-bar 协议** — 首次全量 OHLCV，后续仅传增量 bar
 - **回测对齐校验闭环** — Go SimBroker 交易序列 vs MT Strategy Tester 报告比对
-
-**关联 ADR**：ADR-0021（Python→Go 迁移）、ADR-0020（EA 替代架构，D1/D4/D5/D7 已被 0021 覆盖）、ADR-0012（统一回测/实盘路径）。
 
 ### 1.1 层级结构
 
@@ -25,10 +25,10 @@ Go-Native Strategy Pipeline 是 AntTrader 平台中 **从 MQL 源码到实盘执
 ┌─ 市场数据层 ──  mtapi gRPC → mdtick DTO → BarBroker / TickBroker
 │
 ├─ MQL 策略层 ──  输入 MQL 源码，输出 sdk.Strategy
-│   ├── 编译路径:  mql2go/ 转译器（构建时）
-│   └── 解释路径:  mql2go/interp/ 解释器（运行时）
+│   MQL → tree-sitter CST → AST (IR) → Bytecode → VMRunner
+│   (进程内执行，无 WASM，无 Go 代码生成)
 │
-├─ 策略执行层 ──  LiveStrategyRunner / WASM / Runner
+├─ 策略执行层 ──  LiveStrategyRunner / VMRunner / Runner
 │
 ├─ 信号派发层 ──  dispatchLiveSignal → Gate
 │
@@ -39,14 +39,20 @@ Go-Native Strategy Pipeline 是 AntTrader 平台中 **从 MQL 源码到实盘执
 
 ### 1.2 MQL 策略层
 
-> 输入 MQL 源码，输出 `sdk.Strategy`。包含编译路径（`mql2go/` 转译器，构建时）和解释路径（`mql2go/interp/` 解释器，运行时），共享 tree-sitter CST → IR 前端。
+> 输入 MQL 源码，输出 `sdk.Strategy`。单一路径：MQL → tree-sitter CST → AST (IR) → Bytecode → VMRunner。
 
-| 路径 | 输入 | 输出 | 方式 | 适用场景 |
-|------|------|------|------|---------|
-| 编译路径 | MQL 源码 | Go 源码 → WASM 原生执行 | `mql2go.Analyze` + `mql2go.Generate` | 翻译器已识别模式（~85%+ EA） |
-| 解释路径 | MQL 源码 | 纯 Go IR → WASM 解释执行 | `mql2go.CompileToIR` → `interp.Interpreter` | 翻译器盲点兜底（100% 覆盖率） |
+| 阶段 | 文件 | 说明 |
+|------|------|------|
+| 预处理 | `preprocess.go` | `#include`/`#define`/`#ifdef`/`#ifndef`/`#property` |
+| 解析 | `analyze.go` | tree-sitter parse → CST；`detectMQLVersion` |
+| AST 编译 | `compile_interp.go` | CST → `interp.IR`（纯 Go AST，含 500K 限制 + panic recovery） |
+| 分析 | `interp/analyze.go` | 遍历 AST → 覆盖度报告 + 盲区检测 + 参数提取 |
+| Bytecode 编译 | `compile.go` | AST → 线性字节码（一次性，~300ms） |
+| VM 执行 | `interp/exec.go` + `vm.go` | `for { switch op }` + 显式数据栈 + 指令计数器 |
+| SDK 绑定 | `interp/builtins.go` | MQL 函数名 → SDK 方法映射 |
+| 入口 | `interp_runner.go` | `CompileMQL()` / `CompileMQLWithCoverage()` → `VMRunner` |
 
-两条路径共享 tree-sitter 解析器（`mql_lang.go`），输出统一的 `sdk.Strategy` 接口，对下游执行层透明。
+**ADR-0023 关键原则**: 分析用 AST，执行用 Bytecode。tree-sitter 能解析的代码一定被编译为字节码，不存在"能解析但静默丢弃"的灰色地带。
 
 ## 2. 管线全景
 
@@ -55,18 +61,24 @@ Go-Native Strategy Pipeline 是 AntTrader 平台中 **从 MQL 源码到实盘执
 │                                                                    │
 │  MQL 源码 (.mq4 / .mq5)                                            │
 │    │                                                               │
-│    ▼ tree-sitter parse (mql_lang.go)                               │
+│    ▼ PreprocessMQL (preprocess.go)                                 │
+│  预处理: #include / #define / #ifdef / #property                   │
+│    │                                                               │
+│    ▼ tree-sitter parse (analyze.go)                                │
 │  CST                                                               │
 │    │                                                               │
-│    ├─── 编译路径 ────  recognizer.go → StrategyIntent IR            │
-│    │                  gen.go → Go 源码 → WASM 原生执行               │
+│    ▼ CompileToIR (compile_interp.go)                               │
+│  AST (interp.IR) — 纯 Go，无 tree-sitter 依赖                      │
 │    │                                                               │
-│    └─── 解释路径 ────  compile_interp.go → 纯 Go IR                  │
-│                       interp.Interpreter → WASM 解释执行            │
+│    ├─── 分析路径 ────  interp.Analyze → 覆盖度报告 + 盲区 + 参数    │
+│    │                                                               │
+│    └─── 执行路径 ────  CompileAST → Bytecode                        │
+│                       NewVMRunner(bc) → VMRunner (sdk.Strategy)     │
+│                       VM: 指令计数器 + 显式数据栈 + recover()       │
 │                                                                    │
-│  输出: sdk.Strategy (两条路径统一接口)                                │
+│  输出: sdk.Strategy (VMRunner 实现)                                  │
 └────────────────────────┬───────────────────────────────────────────┘
-                         │ 生成的 Go 代码
+                         │ VMRunner (sdk.Strategy)
                          ▼
 ┌─ 运行时 ──────────────────────────────────────────────────────────┐
 │                                                                    │
@@ -94,7 +106,7 @@ Go-Native Strategy Pipeline 是 AntTrader 平台中 **从 MQL 源码到实盘执
 │  └──────────────────────────────────────────────────────────┘     │
 │                           │                                        │
 │                           ▼ bar 流                                  │
-│  Layer 3: 策略执行 (WASM 沙箱)                                       │
+│  Layer 3: 策略执行 (进程内 Bytecode VM)                              │
 │  ┌──────────────────────────────────────────────────────────┐     │
 │  │ LiveStrategyRunner                                        │     │
 │  │   订阅 BarBroker → 滚动窗口 (max 500 bars)                 │     │
@@ -102,10 +114,10 @@ Go-Native Strategy Pipeline 是 AntTrader 平台中 **从 MQL 源码到实盘执
 │  │   后续: buildDeltaContext (仅 DeltaBar 增量)               │     │
 │  │   backfillContextStrings (持仓/权益从 MT 网关回填)          │     │
 │  │                                                            │     │
-│  │ LiveSession (WASM/wazero)                                  │     │
-│  │   编译: GOOS=wasip1 GOARCH=wasm go build                  │     │
-│  │   执行: wazero runtime + WASI stdio (in-memory pipes)     │     │
-│  │   通信: length-prefixed protobuf via io.Pipe              │     │
+│  │ VMLiveSession (进程内 Bytecode VM)                         │     │
+│  │   编译: mql2go.CompileMQL(source) → VMRunner (一次性)      │     │
+│  │   执行: VMRunner.OnInit / OnBar / OnTick / OnTrade          │     │
+│  │   安全: 指令计数器 + context 超时 + safeRun (recover)      │     │
 │  │   首次: Start() → OnInit + 第一个 OnBar → Response         │     │
 │  │   后续: SendBar() → OnBar → Response (无重编译)            │     │
 │  │   多事件: BAR / TICK / TRADE / TIMER 分发                  │     │
@@ -167,29 +179,49 @@ Go-Native Strategy Pipeline 是 AntTrader 平台中 **从 MQL 源码到实盘执
 
 ## 3. 模块清单
 
-### 3.1 构建时 — mql2go 转译器
+### 3.1 运行时 — MQL → Bytecode VM 编译管线
 
 **路径**: `backend/tools/mql2go/`
 
 | 文件 | 职责 |
 |------|------|
+| `preprocess.go` | MQL 预处理：`#include`/`#define`/`#ifdef`/`#ifndef`/`#property` |
 | `analyze.go` | tree-sitter parse → CST；`detectMQLVersion` 识别 MQL4 vs MQL5 |
-| `recognizer.go` | CST 模式匹配 → `StrategyIntent` IR；版本感知提取（MQL4 `OrderSend` vs MQL5 `CTrade`） |
-| `ir.go` | `StrategyIntent` 及所有子类型定义（`EntryRule`/`ExitRule`/`OrderLoopRule`/`PositionLoopRule`/`IndicatorSpec`/`ModifyRule`/`RiskCheck`/`SizingRule`/`BlindSpot`） |
-| `gen.go` | IR → Go 源码（string emit）；表达式转换（`Close[1]` → `ctx.Bars().Close(1).InexactFloat64()`） |
+| `compile_interp.go` | CST → `interp.IR`（纯 Go AST）；含 500K 限制 + panic recovery |
+| `compile.go` | AST → Bytecode（线性字节码，一次性编译 ~300ms） |
+| `vm.go` | Bytecode VM：`for { switch op }` + 显式数据栈 + 指令计数器 |
+| `interp_runner.go` | `CompileMQL()` / `CompileMQLWithCoverage()` → `VMRunner`；`safeRun()` panic recovery |
+| `ast_coverage.go` | `AnalyzeCoverage` — 合并静态分析 + 编译覆盖度 |
+| `ast_params.go` | `ExtractParamInfos` — 从 Bytecode 提取参数 |
+| `gen.go` / `gen_ir.go` | IR → Go 源码（**仅 CLI 开发调试**，不参与运行时） |
 
-**转译策略**: 基于模式识别的语义级转译（Pattern-Recognition Semantic Transpilation）。不是逐行语法翻译，不是功能理解后重写。识别 MQL 交易模式 → 映射到 Go SDK 调用。
+**`interp/` 子包**:
 
-**已识别模式**:
-- MQL4: `OrderSend` / `OrderClose` / `OrderModify` / `OrderDelete` / `OrderCloseBy` / `OrderSelect`+`OrdersTotal` 循环 / 追踪止损 / 16 个 `Order*` 属性函数 / `extern` 参数
-- MQL5: `CTrade.Buy/Sell/BuyLimit/...` / `PositionClose/Modify` / `PositionsTotal`+`PositionGetTicket` 循环 / `PositionGetDouble/Integer/String` / `input` 参数 / `_Point` / `_Symbol`
-- 指标: 30+ 指标全部生成 `ctx.Indicators().*()` 调用
+| 文件 | 职责 |
+|------|------|
+| `ir.go` | `IR` 类型定义（纯 Go AST） |
+| `exec.go` | `Interpreter` + VM 执行引擎 |
+| `analyze.go` | 静态分析：遍历 AST → 覆盖度报告 + 盲区检测 |
+| `builtins.go` | MQL 函数名 → SDK 方法映射 + `callBuiltin` 分发 |
+| `builtin_registry.go` | 已实现函数名列表（单一真相源） |
+| `builtin_trade.go` / `builtin_indicators.go` / `builtin_math.go` / `builtin_tools.go` | 按域分类的内置函数实现 |
+| `eval.go` | 表达式求值 |
+| `value.go` | `Value` 类型（decimal/int64/string/bool） |
+| `userfunc.go` | 用户自定义函数支持 |
+| `orderpool.go` / `pospool.go` | 订单池/持仓池管理 |
+| `series.go` | 时间序列数据 |
+| `params.go` | 参数序列化 |
 
-**Blind spots** (识别不到 → 注释标记):
-- `iCustom` (自定义指标)
-- MQL5 原生 `OrderSend(MqlTradeRequest, MqlTradeResult)`
-- `*OnArray` 指标变体
-- MQL5 事件: `OnTrade`/`OnTradeTransaction`/`OnBookEvent`/`OnTesterInit/Deinit/Pass`
+**安全约束** (ADR-0023 §5.4):
+- `MaxSourceSize = 500_000` 字节 — 超过拒绝编译
+- `CompileToIR` / `CompileMQL` / `CompileMQLWithCoverage` 均有 `defer recover()` — cgo panic / 深递归转为 error
+- VM 指令计数器上限 — 防死循环
+- `safeRun()` 包装所有 VM 执行方法 — 运行期 panic 转为 error
+
+**盲区处理** (ADR-0022 三层原则，ADR-0023 变更实现):
+- 静态分析：遍历 AST 标记未实现函数（`interp.Analyze`）
+- 运行时追踪：VM 执行到未实现函数时按严重度分级（致命→中止，警告→记录，永久盲区→跳过）
+- 运行后上报：`GetRuntimeBlindSpots()` 返回实际触发的盲区列表
 
 ### 3.2 SDK 接口层
 
@@ -215,37 +247,43 @@ Go-Native Strategy Pipeline 是 AntTrader 平台中 **从 MQL 源码到实盘执
 
 | 文件 | 职责 |
 |------|------|
-| `strategy_execution_handler.go` | `StrategyExecutionServer` — 依赖注入中心；注入 `backtestRepo` / `marketDataRepo` / `barSource` / `mtHub` / `paperEngine` / `gate` / `accountProvider` / `goExecutor` / `wasmExecutor` |
-| `wasm_executor.go` | `WasmExecutor` — wazero 运行时管理；`CompileStrategy` (Go→WASM) / `Run` (实例化执行) / `CompilationCache` (跨 session 复用) |
-| `live_runner.go` | `RunLiveStrategy` — 多事件循环 (BAR/TICK/TRADE/TIMER)；`handleBar` / `handleTick` / `handleTrade`；`buildLiveContext` (全量) / `buildDeltaContext` (增量) |
-| `live_session.go` | `LiveSession` — WASM session 生命周期；`Start` (编译+首次执行) / `SendBar` (增量 bar) / `Close` (EOF→OnDeinit)；in-memory `io.Pipe` 通信 |
-| `live_dispatch.go` | `dispatchLiveSignal` — 信号路由；`dispatchMarketOrder` / `dispatchPendingOrder` / `dispatchCloseOrder` / `dispatchModifyOrder` / `dispatchCancelOrder` / `dispatchPaperSignal` |
-| `backtest_harness.go` | `generateBacktestHarness` (回测 harness) / `generateLiveHarness` (WASM live harness)；harness 内含 delta-bar 窗口管理、多事件分发、`mustDecimal`/`mustInt64` |
-| `go_executor.go` | `GoExecutor` — 回测用 `go run` 子进程执行；`Run` (单次执行) / `RunBacktest` (回测) |
-| `backtest_worker.go` | `StartBacktestWorker` — 异步回测工作池 (SKIP LOCKED)；`executeGoBacktest` |
-| `data_source.go` | `BarSource` 接口 / `LiveBarSubscriber` 接口 / `klineBarsToProto` — 历史数据 + 实时订阅统一抽象 |
+| `strategy_execution_handler.go` | `StrategyExecutionServer` — 依赖注入中心；`Execute` / `Validate` / `ExecuteLive` RPC handler |
+| `vm_live_handlers.go` | VM live 事件处理：`vmHandleBar` / `vmHandleTick` / `vmHandleTrade` / `vmHandleTimer` + proto 转换 |
+| `vm_live_session.go` | `VMLiveSession` — 进程内 VM session 生命周期；`Start` (编译+首次执行) / `SendBar` (增量 bar) / `Close` |
+| `live_runner.go` | `RunLiveStrategy` — 多事件循环 (BAR/TICK/TRADE/TIMER)；`buildLiveContext` / `buildDeltaContext` |
+| `live_dispatch.go` | `dispatchLiveSignal` — 信号路由；`dispatchMarketOrder` / `dispatchCloseOrder` / `dispatchModifyOrder` 等 |
+| `live_runner_events.go` | 实盘事件处理：`handleBar` / `handleTick` / `handleTrade` |
+| `harness_template_live.go` / `harness_template_backtest.go` | harness 模板生成（legacy Go 策略路径） |
+| `go_executor.go` | `GoExecutor` — legacy Go 策略执行（`go run` 子进程）；ADR-0023 保留用于遗留 Go 策略 |
+| `backtest_worker.go` | `StartBacktestWorker` — 异步回测工作池 (SKIP LOCKED)；`executeVMBacktest` / `executeGoBacktest` |
+| `strategy_import_handler.go` | 导入 RPC：`AnalyzeImportCode` / `GenerateImportCode` / `ImportStrategy` |
+| `data_source.go` | `BarSource` 接口 / `klineBarsToProto` — 历史数据 + 实时订阅统一抽象 |
 | `account_provider.go` | `AccountStateProvider` 接口 — 实时账户状态供给 Gate 评估 |
+| `session_registry.go` | `SessionRegistry` — 活跃 session 注册表 |
 
-**WASM 执行架构** (替代子进程模型):
+**进程内 VM 执行架构** (ADR-0023，替代 WASM):
 
 ```
-Host goroutine              WASM goroutine (harness)
-─────────────              ──────────────────────
-InstantiateModule ──→     main():
-                             readRequest(stdin) ─── blocks on pipe
-write(initialReq) ──→       unblocks → OnInit + first OnBar
-                             writeResponse(stdout)
-readResponse() ←────        readRequest(stdin) ─── blocks on pipe
-write(barReq) ─────→        unblocks → OnBar
-                             writeResponse(stdout)
-readResponse() ←────        readRequest(stdin) ─── blocks
-... (loop per bar)
+Host goroutine (同进程)
+─────────────────────
+CompileMQL(source) → VMRunner (sdk.Strategy)
+  ↓
+VMLiveSession.Start():
+  VMRunner.OnInit(ctx)
+  VMRunner.OnBar(ctx, bars, timeframe) → Signal
+  ↓
+VMLiveSession.SendBar():
+  VMRunner.OnBar(ctx, bars, timeframe) → Signal (无重编译)
+  ↓
+多事件: BAR / TICK / TRADE / TIMER 分发
+  ↓
+ExecuteLiveResponse.Signals[]
 ```
 
-- 编译: `GOOS=wasip1 GOARCH=wasm go build -o strategy.wasm strategy.go harness.go`
-- 运行: wazero `InstantiateModule` + WASI stdio piped through `io.Pipe`
-- 缓存: `wazero.CompilationCache` — 相同 wasm 二进制不重编译
-- 通信: 4 字节 big-endian length prefix + protobuf body (与子进程模型相同)
+- 编译: `mql2go.CompileMQL(source)` → `VMRunner`（进程内，一次性 ~300ms）
+- 执行: VM `for { switch op }` + 显式数据栈 + 指令计数器
+- 安全: `safeRun()` panic recovery + context 超时 + 指令计数器上限
+- 无 WASM、无序列化、无 io.Pipe、无跨进程通信
 
 **Delta-bar 协议**:
 
@@ -270,21 +308,17 @@ LiveStrategyContext {
         Low: "1.1015", Close: "1.1022",
         Volume: "800", BarTimeMs: 1718035260000
     }]
-    Close[]: []                              // 空 — harness 自己维护窗口
+    Close[]: []                              // 空 — VM 自己维护窗口
 }
 ```
-
-Harness 侧窗口管理 (`backtest_harness.go` `handleBar`):
-- `DeltaBars` 非空 → append 到 `barWindow` (max 500)
-- `DeltaBars` 空 + `Close[]` 非空 → 全量重建 `barWindow`
 
 **多事件支持**:
 
 `ExecuteLiveRequest.RequestType` 分发:
-- `REQUEST_TYPE_BAR` → `handleBar` → `runner.OnBar`
-- `REQUEST_TYPE_TICK` → `handleTick` → `runner.OnTick` (需 `TickStrategy`)
-- `REQUEST_TYPE_TRADE` → `handleTrade` → `runner.OnTrade` (需 `TradeStrategy`)
-- `REQUEST_TYPE_TIMER` → `handleTimer` → `runner.OnTimerTick` (需 `TimerStrategy`)
+- `REQUEST_TYPE_BAR` → `vmHandleBar` → `runner.OnBar`
+- `REQUEST_TYPE_TICK` → `vmHandleTick` → `runner.OnTick` (需 `TickStrategy`)
+- `REQUEST_TYPE_TRADE` → `vmHandleTrade` → `runner.OnTrade` (需 `TradeStrategy`)
+- `REQUEST_TYPE_TIMER` → `vmHandleTimer` → `runner.OnTimerTick` (需 `TimerStrategy`)
 
 **LiveStrategyContext proto 字段**:
 - `Close[]` / `Open[]` / `High[]` / `Low[]` / `Volume[]` — string 数组 (decimal.String())
@@ -295,7 +329,7 @@ Harness 侧窗口管理 (`backtest_harness.go` `handleBar`):
 - `Positions[]` — `LivePosition` proto
 - `Params[]` — `LiveParam` key-value
 
-### 3.4 运行时 — Runner (WASM 内执行器)
+### 3.4 运行时 — Runner (策略执行器)
 
 **路径**: `backend/strategy/runner/`
 
@@ -307,7 +341,7 @@ Harness 侧窗口管理 (`backtest_harness.go` `handleBar`):
 | `indicators.go` | `indicatorSet` — 实现 `sdk.IndicatorSet`；14 完整实现 + 24 stub |
 | `indicators_decimal.go` | 指标计算辅助 (decimal 精度) |
 
-> **注意**: `runner.LiveRunner` 已删除 (v2)。原 `LiveRunner` 绕过风控 Gate 直接下单，是安全隐患。实盘执行现在通过 `LiveStrategyRunner` → `LiveSession` (WASM) → `dispatchLiveSignal` → `risk.Gate` 路径，风控不可绕过。
+> **注意**: `runner.LiveRunner` 已删除 (v2)。实盘执行通过 `LiveStrategyRunner` → `VMLiveSession` (进程内 VM) → `dispatchLiveSignal` → `risk.Gate` 路径，风控不可绕过。
 
 ### 3.5 运行时 — 回测引擎 + 对齐校验
 
@@ -353,7 +387,7 @@ fmt.Println(report.FormatReport())
 |------|------|
 | `service.go` | `MtHubService` — 会话管理；`OpenedOrders` / `SubscribeSymbols` |
 | `service_orders.go` | `PlaceOrder` — 幂等检查 → 风控 → OMS 状态机 → broker executor；`decimalToFloat64` 在 MT 网关边界转换 |
-| `types.go` | `Hub` / `Session` / `AccountProfitEvent` / `AccountProfitPosition` / `AccountProfitBroker` / `OrderEventBroker` — 全部 `decimal.Decimal` |
+| `types.go` | `Hub` / `Session` / `AccountProfitEvent` / `AccountProfitBroker` / `OrderEventBroker` — 全部 `decimal.Decimal` |
 | `broker_types.go` | `BarUpdate` / `BarBroker` / `PositionSnapshot` / `PositionSnapshotItem` / `PositionSnapshotBroker` / `TickUpdate` / `BrokerTradeEvent` — 全部 `decimal.Decimal` (Volume 除外，`float64`) |
 | `order_types.go` | `OrderRecord` / `SymbolParam` / `Bar` — 全部 `decimal.Decimal` |
 
@@ -485,7 +519,7 @@ func (e *PaperEngine) PlacePaperOrder(
 | adapter → pipeline | `decimal.Decimal` 直传 | — | mdtick DTO 全部 decimal |
 | pipeline → mthub DTO | `decimal.Decimal` 直传 | — | mthub DTO 全部 decimal |
 | mthub DTO → SSE proto | `decimal.Decimal` → `string` | `.String()` / `.StringFixed(N)` | proto wire 用 string |
-| mthub DTO → LiveStrategyContext | `decimal.Decimal` → `string` | `.String()` | proto IPC 用 string |
+| mthub DTO → LiveStrategyContext | `decimal.Decimal` → `string` | `.String()` | proto wire 用 string |
 | KlineBar → 统计分析 (ATR/EMA/regime) | `decimal.Decimal` → `float64` | `.InexactFloat64()` | 统计聚合，非金融计算 |
 | KlineBar → PG/CH 持久化 | `decimal.Decimal` 直传 | — | DB 支持 NUMERIC/Decimal |
 | KlineBar.Volume | `float64` (保留) | — | 成交量非价格，统计用途 |
@@ -498,35 +532,59 @@ func (e *PaperEngine) PlacePaperOrder(
 - `json.Marshal` / `json.Unmarshal` 用于数据交换（用 proto）
 - 跨 `decimal.Decimal` 比较用 `==`（用 `.Equal()` / `.GreaterThan()` / `.LessThanOrEqual()`）
 
-## 5. mql2go IR 结构
+## 5. Bytecode VM 结构
+
+**IR** (`interp.IR`) — tree-sitter CST 编译后的纯 Go AST:
 
 ```go
-type StrategyIntent struct {
-    Meta           StrategyMeta       // 策略名 + MQL 版本
-    Params         []ParamSpec        // extern/input 参数
-    State          []StateVar         // 策略全局变量
-    Entry          []EntryRule        // 入场规则 (OrderSend → Action + Conditions)
-    Exit           []ExitRule         // 出场规则 (reverse_signal / magic_close / close_all)
-    Modifies       []ModifyRule       // OrderModify (trailing_stop / manual_modify)
-    OrderLoops     []OrderLoopRule    // MQL4 OrdersTotal 循环
-    PositionLoops  []PositionLoopRule // MQL5 PositionsTotal 循环
-    Indicators     []IndicatorSpec    // 指标调用 → SDK method 映射
-    Sizing         *SizingRule        // 仓位管理 (fixed / martingale / percent_balance)
-    Risk           []RiskCheck        // 风控条件 (closeAll / return / log)
-    Execution      ExecutionModel     // on_tick / on_bar / on_init_grid
-    Timer          *TimerRule         // EventSetTimer
-    BlindSpots     []BlindSpot        // 识别不到的模式
+type IR struct {
+    Version  string       // "mql4" | "mql5"
+    Params   []ParamDecl  // extern/input 参数
+    Globals  []GlobalVar  // 全局变量
+    Funcs    []FuncDecl   // 用户自定义函数
+    OnInit   *FuncBody    // OnInit 事件
+    OnBar    *FuncBody    // OnBar 事件
+    OnTick   *FuncBody    // OnTick 事件 (可选)
+    OnTrade  *FuncBody    // OnTrade 事件 (可选)
+    OnTimer  *FuncBody    // OnTimer 事件 (可选)
+    OnDeinit *FuncBody    // OnDeinit 事件 (可选)
 }
 ```
 
-**代码生成顺序** (gen.go `genOnBar`):
-1. Indicators — `ctx.Indicators().*()`
-2. Risk — `if condition { closeAll/return/log }`
-3. Exits — `ctx.Broker().PositionClose() / OrderDelete()`
-4. OrderLoops — `for _, pos := range ctx.Broker().Positions(magic)`
-5. PositionLoops — 同上 (MQL5)
-6. Modifies — `ctx.Broker().PositionModify()`
-7. Entries — `ctx.Broker().OrderSend()`
+**Bytecode** — AST 编译后的线性字节码:
+
+```go
+type Bytecode struct {
+    Code       []Instruction  // 线性指令序列
+    Params     []ParamDecl    // 参数声明
+    GlobalSlots map[string]int // 全局变量名 → 槽位
+    Funcs      map[string]int // 函数名 → 入口地址
+    Events     EventEntryPoints // OnInit/OnBar/OnTick/OnTrade/OnTimer/OnDeinit 入口
+    Coverage   *CoverageReport   // 编译时覆盖度
+}
+```
+
+**指令集** (stack-based):
+
+```
+数据栈:   decimal.Decimal / int64 / string / bool
+控制流:   JMP, JMP_IF_FALSE, JMP_IF_TRUE
+函数调用: CALL_BUILTIN (SDK 函数), CALL_USER (用户自定义函数)
+函数边界: ENTER_FUNC n, LEAVE_FUNC
+事件入口: ENTER_ONINIT, ENTER_ONBAR, ENTER_ONTICK, ENTER_ONTRADE
+返回:     RETURN
+算术:     ADD, SUB, MUL, DIV, MOD, NEG
+比较:     EQ, NE, LT, LE, GT, GE
+逻辑:     AND, OR, NOT
+栈操作:   PUSH_CONST, PUSH_VAR, POP, DUP, SWAP
+赋值:     STORE_VAR
+```
+
+**VM 安全机制**:
+- 指令计数器: `vm.ticks > vm.maxInstructions` → 中止
+- context 超时: `select { case <-ctx.Done(): }` 每条指令检查
+- `safeRun()` wrapper: `defer recover()` 将 panic 转为 error
+- 显式数据栈: 无 Go 调用栈递归，无栈溢出风险
 
 ## 6. 运行时调用链 — 从 bar 到达到订单执行
 
@@ -543,8 +601,8 @@ type StrategyIntent struct {
    b. first bar: buildLiveContext → full LiveStrategyContext proto
       subsequent: buildDeltaContext → DeltaBar only
    c. backfillContextStrings → AccountStateProvider.GetAccountState + mtHub.OpenedOrders
-   d. first bar: LiveSession.Start(reqBytes) → WASM compile + OnInit + OnBar
-      subsequent: LiveSession.SendBar(reqBytes) → OnBar (no recompile)
+   d. first bar: VMLiveSession.Start() → CompileMQL + OnInit + OnBar
+      subsequent: VMLiveSession.SendBar() → OnBar (no recompile)
    e. ExecuteLiveResponse.Signals[]
 
 5. ExecuteLiveResponse.Signals[] → dispatchLiveSignal:
@@ -577,7 +635,7 @@ type StrategyIntent struct {
     │       ▼
     │       MTReport.Trades[]: MTReportTrade
     │
-    └──→ mql2go 转译 → Go 策略代码
+    └──→ mql2go.CompileMQL → VMRunner (Bytecode VM)
             │
             ▼ backtest.Engine + SimBroker
             Result.Trades[]: Trade
@@ -641,18 +699,12 @@ assert.True(t, report.Passed)
 
 | 缺口 | 描述 | 优先级 |
 |------|------|--------|
-| **runner.OrderExecutor 接口遗留** | `runner.go` 中 `OrderExecutor` 接口仍存在但无使用方 (LiveRunner 已删除)，`broker.go` 中 `executor` 字段待清理 | P1 |
-| **risksvc.SignalPipeline 死代码** | `risksvc.SignalPipeline` + `SignalRequest` (float64) 为死代码，待删除 | P1 |
-| **mustDecimal 静默零值** | `backtest_harness.go` 中 `mustDecimal` 解析失败返回 `decimal.Zero` 而非 panic，可能掩盖数据问题 | P1 |
 | **barsDropped 通知** | 策略无法感知被丢弃的 bar（网络抖动等），需添加 `barsDropped` 字段 | P2 |
 | **per-bar OpenedOrders 查询** | `backfillContextStrings` 每 bar 调用 `mtHub.OpenedOrders`，应改为 `PositionSnapshotBroker` 订阅 | P2 |
-| **blind spot 启动检查** | `RunLiveStrategy` 启动时未检查策略是否有 blind spot，可能导致未识别模式在实盘静默跳过 | P2 |
 | **AccountService 仍用 float64** | `UpdateAccountMetrics` / `RecordBalanceSnapshot` / `UpdateSummaryCache` 接受 `float64`，pipeline 层需 `.InexactFloat64()` 转换 | P2 |
-| **indicator stub 未实现** | 15 共享 stub + 9 MQL5-only stub 返回 0，需补齐真实计算 | P1 |
-| **Go SimBroker 功能补齐** | 对比 Python SimBroker 的 fill/cost/margin/portfolio 功能缺失 | P1 |
-| **mql2go 表达式翻译** | `pyToGoExpr()` 是简单字符串替换，复杂表达式可能出错 | P2 |
-| **Go 回测 metrics** | `CalculateMetrics` 需对齐 Python 侧完整 metrics 计算 | P2 |
 | **MTAccountInfo 仍用 float64** | `mdtick.MTAccountInfo` 的 Balance/Equity 等仍为 `float64` | P2 |
+| **iCustom 自定义指标** | 需 OnCalculate + buffer 模型 + 指标加载机制 | P3 |
+| **Bytecode 缓存持久化** | 跨重启持久化 bytecode 到 DB，用源码 hash 做 cache key | P3 |
 
 ## 9. 验证方式
 
@@ -661,23 +713,41 @@ assert.True(t, report.Passed)
 | 编译通过 | `go build ./...` | ✅ |
 | 全部测试通过 | `go test ./...` | ✅ |
 | 文件行数检查 | `go run ./tools/check-file-lines --strict` | ✅ (无新增违规) |
-| mql2go 生成代码编译 | `go vet` on generated MQL4+MQL5 EA | ✅ |
 | 精度一致性 | 全链路 `decimal.Decimal`，边界 `.InexactFloat64()` 仅用于统计/服务层 | ✅ |
 | 回测对齐 | `backtest.RunParityTest` — Go SimBroker vs MT Strategy Tester 信号序列比对 | ✅ 已实现 (8 个测试通过) |
-| 实盘一致性 | Go LiveRunner 信号与回测结果一致 (同码不变量) | ❌ 未验证 |
-| 风控不可绕过 | Go 策略所有 `Broker.OrderSend` 必经 `Gate.Evaluate` | ✅ (编译期保证) |
+| 实盘一致性 | VM 信号与回测结果一致 (同码不变量) | ❌ 未验证 |
+| 风控不可绕过 | 策略所有 `Broker.OrderSend` 必经 `Gate.Evaluate` | ✅ (编译期保证) |
 
 ## 10. 关键文件索引
 
 ```
 backend/
-├── tools/mql2go/                          # [构建时] 转译器
+├── tools/mql2go/                          # [运行时] MQL → Bytecode VM 编译管线
+│   ├── preprocess.go                      #   MQL 预处理 (#include/#define/#ifdef/#property)
 │   ├── analyze.go                         #   tree-sitter parse + 版本检测
-│   ├── recognizer.go                      #   CST 模式匹配 → IR
-│   ├── ir.go                              #   StrategyIntent 类型定义
-│   ├── gen.go                             #   IR → Go 源码生成
-│   ├── mql2go_test.go                     #   33 个测试
-│   └── behavioral_test.go                 #   行为对齐测试 (SimBroker + 生成代码结构验证)
+│   ├── compile_interp.go                  #   CST → AST (interp.IR) + 500K 限制 + panic recovery
+│   ├── compile.go                         #   AST → Bytecode 编译器
+│   ├── vm.go                              #   Bytecode VM (指令计数器 + 显式数据栈)
+│   ├── interp_runner.go                   #   CompileMQL/CompileMQLWithCoverage → VMRunner + safeRun
+│   ├── ast_coverage.go                    #   AnalyzeCoverage (静态+编译覆盖度合并)
+│   ├── ast_params.go                      #   ExtractParamInfos (从 Bytecode 提取参数)
+│   ├── gen.go / gen_ir.go                 #   IR → Go 源码 (仅 CLI 开发调试)
+│   └── interp/                            #   解释器子包
+│       ├── ir.go                          #     IR 类型定义 (纯 Go AST)
+│       ├── exec.go                        #     VM 执行引擎
+│       ├── analyze.go                     #     静态分析 (覆盖度+盲区)
+│       ├── builtins.go                    #     MQL 函数 → SDK 方法映射
+│       ├── builtin_registry.go            #     已实现函数名列表 (单一真相源)
+│       ├── builtin_trade.go               #     交易函数实现
+│       ├── builtin_indicators.go          #     指标函数实现
+│       ├── builtin_math.go                #     数学函数实现
+│       ├── builtin_tools.go               #     工具函数实现
+│       ├── eval.go                        #     表达式求值
+│       ├── value.go                       #     Value 类型 (decimal/int64/string/bool)
+│       ├── userfunc.go                    #     用户自定义函数
+│       ├── orderpool.go / pospool.go      #     订单池/持仓池
+│       ├── series.go                      #     时间序列
+│       └── params.go                      #     参数序列化
 │
 ├── strategy/
 │   ├── sdk/                               # [接口层] SDK 定义
@@ -687,7 +757,7 @@ backend/
 │   │   ├── indicators.go                  #   IndicatorSet 接口 (30+ 指标)
 │   │   ├── series.go                      #   BarSeries 接口 (MQL 逆序索引)
 │   │   └── types.go                       #   OrderRequest/Result/Position/Deal/TradeEvent
-│   ├── runner/                            # [运行时] WASM 内执行器
+│   ├── runner/                            # [运行时] 策略执行器
 │   │   ├── runner.go                      #   Runner (生命周期: Init/OnBar/OnTick/OnTrade/OnTimerTick/Deinit)
 │   │   ├── broker.go                      #   brokerImpl (harness 模式)
 │   │   ├── context.go                     #   contextImpl (liveBalance/liveEquity/livePositions)
@@ -706,16 +776,20 @@ backend/
 │
 ├── internal/
 │   ├── connect/strategy/                  # [运行时] 策略服务层
-│   │   ├── strategy_execution_handler.go  #   StrategyExecutionServer + DI
-│   │   ├── wasm_executor.go               #   WasmExecutor (wazero 运行时 + 编译缓存)
+│   │   ├── strategy_execution_handler.go  #   StrategyExecutionServer + DI + Execute/Validate/ExecuteLive
+│   │   ├── vm_live_handlers.go            #   VM live 事件处理 (vmHandleBar/Tick/Trade/Timer)
+│   │   ├── vm_live_session.go             #   VMLiveSession (进程内 VM session 生命周期)
 │   │   ├── live_runner.go                 #   LiveStrategyRunner (多事件循环 + delta-bar)
-│   │   ├── live_session.go                #   LiveSession (WASM session 生命周期 + io.Pipe)
+│   │   ├── live_runner_events.go          #   实盘事件处理
 │   │   ├── live_dispatch.go               #   信号派发 (market/pending/close/modify/cancel)
-│   │   ├── backtest_harness.go            #   generateBacktestHarness / generateLiveHarness
-│   │   ├── go_executor.go                 #   GoExecutor (回测用 go run 子进程)
+│   │   ├── strategy_import_handler.go     #   导入 RPC (AnalyzeImportCode/GenerateImportCode/ImportStrategy)
+│   │   ├── harness_template_live.go       #   live harness 模板 (legacy Go 策略)
+│   │   ├── harness_template_backtest.go   #   backtest harness 模板 (legacy Go 策略)
+│   │   ├── go_executor.go                 #   GoExecutor (legacy Go 策略 go run 子进程)
 │   │   ├── backtest_worker.go             #   异步回测工作池 (SKIP LOCKED)
 │   │   ├── data_source.go                 #   BarSource + klineBarsToProto
-│   │   └── account_provider.go            #   AccountStateProvider 接口
+│   │   ├── account_provider.go            #   AccountStateProvider 接口
+│   │   └── session_registry.go            #   SessionRegistry (活跃 session 注册表)
 │   │
 │   ├── mthub/                             # [运行时] OMS + 数据分发
 │   │   ├── service.go                     #   MtHubService

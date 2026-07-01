@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-06-29 15:36 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-07-01 03:48 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -80,7 +80,7 @@ AccountSummary	reference/grpc/mt5.proto:64
 ActivateCanary	backend/internal/risk/canary.go:172
 ActiveAccountIDs	backend/internal/mthub/types.go:103
 AddAccount	backend/internal/risk/canary.go:127
-AddGateRule	backend/internal/connect/strategy/strategy_execution_handler.go:109
+AddGateRule	backend/internal/connect/strategy/strategy_execution_handler.go:105
 AddRule	backend/internal/risk/gate.go:179
 AddSanctionedCountry	proto/ant/v1/admin_jurisdiction.proto:13
 AdjustBalance	backend/internal/service/wallet_service.go:46
@@ -90,14 +90,14 @@ Allocate	backend/internal/risksvc/block_allocator.go:27
 Allocate	backend/internal/risksvc/block_allocator.go:67
 AllowedLotSize	backend/internal/risk/canary.go:153
 AnalyzeAsset	proto/ant/v1/asset_analysis.proto:14
-AnalyzeImportCode	backend/internal/connect/strategy/strategy_import_handler.go:41
+AnalyzeImportCode	backend/internal/connect/strategy/strategy_import_handler.go:40
 AnalyzeImportCode	proto/ant/v1/strategy_runtime.proto:31
 AnalyzePlan	proto/ant/v1/strategy_execution.proto:11
 ApplyEvent	backend/internal/mthub/state_cache.go:117
 ArchiveStrategy	proto/ant/v1/admin_strategy.proto:29
 ArchiveTemplate	backend/internal/service/template_svc_admin.go:330
 AssignAccountNumber	backend/internal/service/account_number.go:215
-Backtest	backend/internal/connect/strategy/strategy_execution_handler.go:194
+Backtest	backend/internal/connect/strategy/strategy_execution_handler.go:193
 Backtest	proto/ant/v1/strategy_runtime.proto:18
 BatchSetAgents	proto/ant/v1/ai.proto:20
 BatchSetAgents	proto/ant/v1/ai_agent.proto:9
@@ -106,7 +106,7 @@ BrokerRegistry	backend/internal/mthub/service.go:104
 CalculatePositionSize	proto/ant/v1/auto_trading.proto:21
 CanAccept	backend/internal/mthub/reconcile_gate.go:38
 CancelAlgo	proto/ant/v1/execution_algo.proto:20
-CancelBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:199
+CancelBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:229
 CancelBacktestRun	proto/ant/v1/strategy_runtime.proto:23
 CancelJob	proto/ant/v1/job.proto:12
 CancelPaperOrder	backend/internal/paper/engine.go:163
@@ -164,8 +164,7 @@ CleanupOldSnapshots	backend/internal/service/account_lifecycle.go:205
 ClearAccount	backend/internal/risksvc/platform_aggregator.go:85
 CloneStrategyAsset	backend/internal/connect/strategy/strategy_asset_handler.go:146
 CloneStrategyAsset	proto/ant/v1/strategy_asset.proto:14
-Close	backend/internal/connect/strategy/live_session.go:234
-Close	backend/internal/connect/strategy/wasm_executor.go:174
+Close	backend/internal/connect/strategy/vm_live_session.go:92
 Close	backend/tools/mql2go/interp/builtin_onarray.go:32
 Close	backend/tools/mql2go/interp/series.go:13
 ClosedOrders	reference/grpc/mt4.proto:151
@@ -179,9 +178,6 @@ Comment	backend/tools/mql2go/interp/orderpool.go:257
 CommentOnStrategy	proto/ant/v1/marketplace_service.proto:18
 Commission	backend/tools/mql2go/interp/orderpool.go:236
 CompileCheck	backend/internal/connect/strategy/go_executor.go:125
-CompileInterpBacktest	backend/internal/connect/strategy/wasm_executor_interp.go:19
-CompileInterpLive	backend/internal/connect/strategy/wasm_executor_interp.go:52
-CompileStrategy	backend/internal/connect/strategy/wasm_executor.go:94
 Confirm	backend/internal/mthub/idempotency.go:87
 ConfirmSignal	backend/internal/connect/strategy/strategy_signals.go:72
 ConfirmSignal	backend/internal/service/signal_svc.go:82
@@ -197,7 +193,6 @@ ConnectProxy	reference/grpc/mt5.proto:37
 Conversate	proto/ant/v1/strategy_execution.proto:14
 Count	backend/internal/risksvc/capability.go:155
 CountryCode	backend/internal/risksvc/jurisdiction.go:185
-Create	backend/tools/mql2go/interp/factory.go:30
 CreateAccount	backend/internal/service/account_service.go:155
 CreateAccount	proto/ant/v1/account.proto:16
 CreateAccountTx	backend/internal/service/account_service.go:137
@@ -210,10 +205,10 @@ CreateSchedule	proto/ant/v1/strategy.proto:24
 CreateShareToken	proto/ant/v1/share.proto:9
 CreateSystemStrategy	backend/internal/service/template_svc_admin.go:70
 CreateSystemStrategy	proto/ant/v1/admin_strategy.proto:14
-CreateTemplate	backend/internal/connect/strategy/strategy_template_handlers.go:77
-CreateTemplate	backend/internal/service/template_svc.go:60
+CreateTemplate	backend/internal/connect/strategy/strategy_template_handlers.go:80
+CreateTemplate	backend/internal/service/template_svc.go:61
 CreateTemplate	proto/ant/v1/strategy.proto:13
-CreateTemplateDraft	backend/internal/connect/strategy/strategy_template_handlers.go:155
+CreateTemplateDraft	backend/internal/connect/strategy/strategy_template_handlers.go:168
 CreateTemplateDraft	proto/ant/v1/strategy.proto:17
 CreateUser	proto/ant/v1/admin_user.proto:12
 CreateWallet	backend/internal/service/wallet_service.go:40
@@ -221,9 +216,9 @@ CurrentStage	backend/internal/risk/canary.go:163
 DeleteAccount	backend/internal/service/account_service.go:199
 DeleteAccount	proto/ant/v1/account.proto:18
 DeleteBacktestDataset	proto/ant/v1/backtest_dataset.proto:13
-DeleteBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:215
+DeleteBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:245
 DeleteBacktestRun	proto/ant/v1/strategy_runtime.proto:24
-DeleteBacktestRuns	backend/internal/connect/strategy/strategy_backtest_crud.go:233
+DeleteBacktestRuns	backend/internal/connect/strategy/strategy_backtest_crud.go:263
 DeleteBacktestRuns	proto/ant/v1/strategy_runtime.proto:25
 DeleteConversation	proto/ant/v1/ai.proto:17
 DeleteKey	backend/internal/mthub/idempotency.go:172
@@ -234,8 +229,8 @@ DeleteSchedule	backend/internal/service/schedule_svc.go:136
 DeleteSchedule	proto/ant/v1/strategy.proto:26
 DeleteSystemStrategy	backend/internal/service/template_svc_admin.go:133
 DeleteSystemStrategy	proto/ant/v1/admin_strategy.proto:16
-DeleteTemplate	backend/internal/connect/strategy/strategy_template_handlers.go:140
-DeleteTemplate	backend/internal/service/template_svc.go:91
+DeleteTemplate	backend/internal/connect/strategy/strategy_template_handlers.go:153
+DeleteTemplate	backend/internal/service/template_svc.go:100
 DeleteTemplate	proto/ant/v1/strategy.proto:15
 DeleteUser	proto/ant/v1/admin_user.proto:14
 DeleteUsers	proto/ant/v1/admin_user.proto:15
@@ -273,9 +268,9 @@ Evaluate	backend/internal/risk/gate.go:114
 Evaluate	backend/internal/risksvc/engine.go:27
 Evaluate	backend/internal/risksvc/hardlimit.go:165
 Events	reference/grpc/mt5.proto:512
-Execute	backend/internal/connect/strategy/strategy_execution_handler.go:136
+Execute	backend/internal/connect/strategy/strategy_execution_handler.go:132
 Execute	proto/ant/v1/strategy_runtime.proto:16
-ExecuteLive	backend/internal/connect/strategy/strategy_execution_handler.go:216
+ExecuteLive	backend/internal/connect/strategy/strategy_execution_handler.go:215
 ExecuteLive	proto/ant/v1/strategy_runtime.proto:29
 ExecutePlan	proto/ant/v1/strategy_execution.proto:13
 ExecuteSignal	backend/internal/connect/strategy/strategy_signals.go:51
@@ -287,7 +282,7 @@ FlagStrategy	proto/ant/v1/admin_strategy.proto:23
 FlagTemplate	backend/internal/service/template_svc_admin.go:249
 FreezeAccount	proto/ant/v1/admin_account.proto:11
 GenerateAccountNumber	backend/internal/service/account_number.go:45
-GenerateImportCode	backend/internal/connect/strategy/strategy_import_handler.go:75
+GenerateImportCode	backend/internal/connect/strategy/strategy_import_handler.go:74
 GenerateImportCode	proto/ant/v1/strategy_runtime.proto:33
 GenerateReport	proto/ant/v1/analytics.proto:15
 GenerateStrategy	proto/ant/v1/strategy_generation.proto:12
@@ -316,7 +311,7 @@ GetAllLogs	backend/internal/service/log_service.go:70
 GetAttribution	backend/internal/service/analytics_cache.go:63
 GetAttributionAnalysis	proto/ant/v1/analytics.proto:13
 GetAutoTradingStatus	proto/ant/v1/auto_trading.proto:22
-GetBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:75
+GetBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:105
 GetBacktestRun	proto/ant/v1/strategy_runtime.proto:20
 GetCanary	proto/ant/v1/admin_sre.proto:10
 GetClients	reference/grpc/mt4.proto:217
@@ -333,7 +328,7 @@ GetExperimentCandidate	backend/internal/connect/strategy/strategy_experiment_han
 GetExperimentCandidate	proto/ant/v1/strategy_experiment.proto:16
 GetGlobal	backend/tools/mql2go/interp/exec.go:82
 GetGlobalSettings	proto/ant/v1/auto_trading.proto:15
-GetImportedStrategy	backend/internal/connect/strategy/strategy_import_handler.go:173
+GetImportedStrategy	backend/internal/connect/strategy/strategy_import_handler.go:150
 GetImportedStrategy	proto/ant/v1/strategy_runtime.proto:37
 GetIndicatorCatalog	proto/ant/v1/indicator_catalog.proto:10
 GetInteger	backend/tools/mql2go/interp/pospool.go:125
@@ -391,11 +386,11 @@ GetStrategyRun	proto/ant/v1/strategy_runtime.proto:41
 GetString	backend/tools/mql2go/interp/pospool.go:141
 GetSymbolStats	proto/ant/v1/market_service.proto:9
 GetSystemAIConfig	proto/ant/v1/system_ai.proto:12
-GetTemplate	backend/internal/connect/strategy/strategy_template_handlers.go:61
-GetTemplate	backend/internal/service/template_svc.go:45
+GetTemplate	backend/internal/connect/strategy/strategy_template_handlers.go:64
+GetTemplate	backend/internal/service/template_svc.go:46
 GetTemplate	proto/ant/v1/strategy.proto:12
 GetTemplateDetail	backend/internal/service/template_svc_admin.go:14
-GetTemplates	backend/internal/connect/strategy/strategy_execution_handler.go:209
+GetTemplates	backend/internal/connect/strategy/strategy_execution_handler.go:208
 GetTemplates	proto/ant/v1/strategy_runtime.proto:26
 GetTicket	backend/tools/mql2go/interp/pospool.go:75
 GetTickValueMany	reference/grpc/mt5.proto:216
@@ -418,7 +413,7 @@ High	backend/tools/mql2go/interp/builtin_onarray.go:24
 High	backend/tools/mql2go/interp/series.go:27
 History	backend/internal/risk/canary.go:308
 HistoryTotal	backend/tools/mql2go/interp/orderpool.go:169
-ImportStrategy	backend/internal/connect/strategy/strategy_import_handler.go:123
+ImportStrategy	backend/internal/connect/strategy/strategy_import_handler.go:102
 ImportStrategy	proto/ant/v1/strategy_runtime.proto:35
 InsertOrder	backend/internal/mthub/oms_writer.go:116
 Invalidate	backend/internal/service/analytics_cache.go:138
@@ -457,7 +452,7 @@ ListAllStrategies	proto/ant/v1/admin_strategy.proto:19
 ListAssetClones	backend/internal/connect/strategy/strategy_asset_handler.go:203
 ListAssetClones	proto/ant/v1/strategy_asset.proto:17
 ListBacktestDatasets	proto/ant/v1/backtest_dataset.proto:11
-ListBacktestRuns	backend/internal/connect/strategy/strategy_backtest_crud.go:94
+ListBacktestRuns	backend/internal/connect/strategy/strategy_backtest_crud.go:124
 ListBacktestRuns	proto/ant/v1/strategy_runtime.proto:21
 ListBacktestRunTrades	backend/internal/connect/strategy/backtest_trades_handler.go:55
 ListBacktestRunTrades	proto/ant/v1/backtest_trades.proto:8
@@ -498,8 +493,8 @@ ListSystemAIConfigs	proto/ant/v1/system_ai.proto:11
 ListSystemModels	proto/ant/v1/ai_gateway.proto:13
 ListSystemStrategies	backend/internal/service/template_svc_admin.go:51
 ListSystemStrategies	proto/ant/v1/admin_strategy.proto:13
-ListTemplates	backend/internal/connect/strategy/strategy_template_handlers.go:48
-ListTemplates	backend/internal/service/template_svc.go:34
+ListTemplates	backend/internal/connect/strategy/strategy_template_handlers.go:51
+ListTemplates	backend/internal/service/template_svc.go:35
 ListTemplates	proto/ant/v1/strategy.proto:11
 ListTransactions	backend/internal/service/wallet_service.go:77
 ListTransactions	proto/ant/v1/wallet.proto:10
@@ -564,15 +559,15 @@ Notify	backend/internal/connect/strategy/schedule_engine.go:102
 OnBar	backend/internal/connect/strategy/strategy_templates.go:141
 OnBar	backend/internal/connect/strategy/strategy_templates.go:234
 OnBar	backend/internal/connect/strategy/strategy_templates.go:42
-OnBar	backend/tools/mql2go/interp/exec.go:377
+OnBar	backend/tools/mql2go/interp/exec.go:386
 OnDeinit	backend/internal/connect/strategy/strategy_templates.go:104
 OnDeinit	backend/internal/connect/strategy/strategy_templates.go:199
 OnDeinit	backend/internal/connect/strategy/strategy_templates.go:292
-OnDeinit	backend/tools/mql2go/interp/exec.go:397
+OnDeinit	backend/tools/mql2go/interp/exec.go:406
 OnInit	backend/internal/connect/strategy/strategy_templates.go:131
 OnInit	backend/internal/connect/strategy/strategy_templates.go:225
 OnInit	backend/internal/connect/strategy/strategy_templates.go:33
-OnInit	backend/tools/mql2go/interp/exec.go:313
+OnInit	backend/tools/mql2go/interp/exec.go:322
 OnMail	reference/grpc/mt5.proto:554
 OnMarketWatch	reference/grpc/mt5.proto:542
 OnOpenedOrdersTickets	reference/grpc/mt5.proto:561
@@ -582,13 +577,13 @@ OnOrderUpdate	reference/grpc/mt4.proto:338
 OnOrderUpdate	reference/grpc/mt5.proto:518
 OnQuote	reference/grpc/mt4.proto:344
 OnQuote	reference/grpc/mt5.proto:524
-OnTick	backend/tools/mql2go/interp/exec.go:412
+OnTick	backend/tools/mql2go/interp/exec.go:421
 OnTickHistory	reference/grpc/mt5.proto:462
 OnTickHistory	reference/grpc/mt5.proto:548
 OnTickValue	reference/grpc/mt4.proto:350
 OnTickValue	reference/grpc/mt5.proto:530
-OnTimer	backend/tools/mql2go/interp/exec.go:434
-OnTrade	backend/tools/mql2go/interp/exec.go:457
+OnTimer	backend/tools/mql2go/interp/exec.go:443
+OnTrade	backend/tools/mql2go/interp/exec.go:466
 Open	backend/tools/mql2go/interp/builtin_onarray.go:17
 Open	backend/tools/mql2go/interp/series.go:20
 OpenedOrder	reference/grpc/mt4.proto:118
@@ -655,7 +650,7 @@ PublishPositionSnapshot	backend/internal/mthub/service.go:313
 PublishStrategy	proto/ant/v1/admin_strategy.proto:26
 PublishStrategy	proto/ant/v1/marketplace_service.proto:9
 PublishTemplate	backend/internal/service/template_svc_admin.go:288
-PublishTemplateDraft	backend/internal/connect/strategy/strategy_template_handlers.go:204
+PublishTemplateDraft	backend/internal/connect/strategy/strategy_template_handlers.go:222
 PublishTemplateDraft	proto/ant/v1/strategy.proto:19
 PublishTick	backend/internal/mthub/service.go:145
 PublishTradeEvent	backend/internal/mthub/service.go:162
@@ -713,8 +708,6 @@ RunBacktest	backend/internal/connect/strategy/strategy_signals.go:15
 RunBacktest	proto/ant/v1/backtest_service.proto:12
 RunBacktest	proto/ant/v1/strategy.proto:29
 RunEvaluation	proto/ant/v1/ai_gate.proto:11
-RunInterpBacktest	backend/internal/connect/strategy/wasm_executor_interp.go:86
-RunInterpLive	backend/internal/connect/strategy/wasm_executor_interp.go:118
 RunLive	backend/internal/connect/strategy/go_executor.go:155
 RunLiveStrategy	backend/internal/connect/strategy/live_runner.go:77
 RunMarketBacktest	proto/ant/v1/marketplace_service.proto:29
@@ -726,17 +719,17 @@ Select	backend/tools/mql2go/interp/orderpool.go:133
 SelectByTicket	backend/tools/mql2go/interp/orderpool.go:151
 SelectByTicket	backend/tools/mql2go/interp/pospool.go:84
 SelectHistory	backend/tools/mql2go/interp/orderpool.go:142
-SendBar	backend/internal/connect/strategy/live_session.go:196
+SendBar	backend/internal/connect/strategy/vm_live_session.go:78
 SendNotification	proto/ant/v1/notification_service.proto:14
 ServerTimezone	reference/grpc/mt4.proto:105
 ServerTimezone	reference/grpc/mt5.proto:184
 SessionState	backend/internal/mthub/service.go:209
 Set	backend/internal/risksvc/capability.go:107
 Set	backend/internal/service/analytics_cache.go:54
-SetAccountLookup	backend/internal/connect/strategy/strategy_execution_handler.go:102
+SetAccountLookup	backend/internal/connect/strategy/strategy_execution_handler.go:98
 SetAccountNumber	backend/internal/service/account_number.go:230
 SetAccountOwnerVerifier	backend/internal/mthub/service.go:110
-SetAccountProvider	backend/internal/connect/strategy/strategy_execution_handler.go:116
+SetAccountProvider	backend/internal/connect/strategy/strategy_execution_handler.go:112
 SetAccountStateProvider	backend/internal/mthub/service.go:87
 SetAIPrimary	backend/internal/service/systemai/service.go:194
 SetAIPrimary	proto/ant/v1/ai_primary.proto:9
@@ -744,7 +737,7 @@ SetAIService	backend/internal/connect/strategy/strategy_experiment_worker.go:80
 SetAttribution	backend/internal/service/analytics_cache.go:78
 SetAutotradeEnabled	backend/internal/risk/gate.go:101
 SetBarBroker	backend/internal/mthub/service.go:116
-SetBarSource	backend/internal/connect/strategy/strategy_execution_handler.go:94
+SetBarSource	backend/internal/connect/strategy/strategy_execution_handler.go:91
 SetBrokerLimits	backend/internal/risksvc/platform_aggregator.go:93
 SetBrokerRegistry	backend/internal/mthub/service.go:101
 SetCanary	proto/ant/v1/admin_sre.proto:11
@@ -753,11 +746,11 @@ SetCodeAccessChecker	backend/internal/connect/strategy/strategy_handler.go:33
 SetConfig	proto/ant/v1/admin_config.proto:11
 SetCostEstimator	backend/internal/mthub/service.go:80
 SetEngine	backend/internal/connect/strategy/strategy_handler.go:53
-SetGate	backend/internal/connect/strategy/strategy_execution_handler.go:106
+SetGate	backend/internal/connect/strategy/strategy_execution_handler.go:102
 SetGate	backend/internal/mthub/service.go:90
 SetGatewayProviderRepo	backend/internal/service/systemai/service.go:122
-SetGoExecutor	backend/internal/connect/strategy/strategy_execution_handler.go:97
-SetImportedRepo	backend/internal/connect/strategy/strategy_execution_handler.go:100
+SetGoExecutor	backend/internal/connect/strategy/strategy_execution_handler.go:94
+SetImportedRepo	backend/internal/connect/strategy/strategy_execution_handler.go:96
 SetKillSwitch	backend/internal/mthub/service.go:96
 SetKillSwitch	backend/internal/risk/gate.go:94
 SetKillSwitch	proto/ant/v1/admin_sre.proto:7
@@ -766,30 +759,30 @@ SetKYCStatus	proto/ant/v1/admin_jurisdiction.proto:11
 SetLogger	backend/internal/mthub/service.go:113
 SetLogger	backend/internal/service/account_service.go:60
 SetLogger	backend/internal/service/platform_service.go:29
-SetMarketDataRepo	backend/internal/connect/strategy/strategy_execution_handler.go:80
+SetMarketDataRepo	backend/internal/connect/strategy/strategy_execution_handler.go:77
 SetMonthlyDetail	backend/internal/service/analytics_cache.go:127
-SetMtHub	backend/internal/connect/strategy/strategy_execution_handler.go:95
-SetNotificationSender	backend/internal/connect/strategy/strategy_execution_handler.go:124
+SetMtHub	backend/internal/connect/strategy/strategy_execution_handler.go:92
+SetNotificationSender	backend/internal/connect/strategy/strategy_execution_handler.go:120
 SetNotificationSender	backend/internal/service/account_sync.go:127
 SetOmsWriter	backend/internal/mthub/service.go:93
-SetOnBacktestComplete	backend/internal/connect/strategy/strategy_execution_handler.go:125
+SetOnBacktestComplete	backend/internal/connect/strategy/strategy_execution_handler.go:121
 SetOrderEventBroker	backend/internal/mthub/oms_writer.go:98
-SetPaperEngine	backend/internal/connect/strategy/strategy_execution_handler.go:96
-SetPgListen	backend/internal/connect/strategy/strategy_execution_handler.go:282
+SetPaperEngine	backend/internal/connect/strategy/strategy_execution_handler.go:93
+SetPgListen	backend/internal/connect/strategy/strategy_execution_handler.go:315
 SetPgListen	backend/internal/connect/strategy/strategy_experiment_handler.go:273
 SetPgListen	backend/internal/connect/strategy/strategy_experiment_worker.go:62
 SetPgListen	backend/internal/connect/strategy/strategy_handler.go:69
 SetPlacedType	reference/grpc/mt4.proto:168
 SetPostCallBiller	backend/internal/service/systemai/service.go:117
 SetRolling	backend/internal/service/analytics_cache.go:102
-SetRunRepo	backend/internal/connect/strategy/strategy_execution_handler.go:99
+SetRunRepo	backend/internal/connect/strategy/strategy_execution_handler.go:95
 SetSanctionedOverride	proto/ant/v1/admin_jurisdiction.proto:16
 SetScheduleActive	backend/internal/service/schedule_svc.go:148
-SetSessionRegistry	backend/internal/connect/strategy/strategy_execution_handler.go:101
+SetSessionRegistry	backend/internal/connect/strategy/strategy_execution_handler.go:97
 SetStatusBroker	backend/internal/mthub/service.go:125
 SetStderrTail	backend/internal/connect/strategy/session_registry.go:243
 SetStrategyPricing	proto/ant/v1/marketplace_service.proto:21
-SetTemplateStatus	backend/internal/service/template_svc.go:102
+SetTemplateStatus	backend/internal/service/template_svc.go:111
 SetTickBroker	backend/internal/mthub/service.go:119
 SetTicket	backend/internal/mthub/idempotency.go:167
 SetTokenRecorder	backend/internal/service/systemai/service.go:105
@@ -798,21 +791,20 @@ SetUserLimiter	backend/internal/mthub/service.go:77
 SetUserLimiter	backend/internal/risksvc/engine.go:22
 SetUserRepo	backend/internal/service/systemai/service.go:90
 SetWalletChecker	backend/internal/service/systemai/service.go:111
-SetWasmExecutor	backend/internal/connect/strategy/strategy_execution_handler.go:98
 Shutdown	backend/internal/risksvc/platform_aggregator.go:174
 Size	backend/internal/risksvc/kelly_sizer.go:44
 Size	backend/internal/risksvc/vol_target_sizer.go:45
 SoftDeleteUser	backend/internal/service/user_deletion_service.go:34
 SoftDeleteUsers	backend/internal/service/user_deletion_service.go:85
-Start	backend/internal/connect/strategy/live_session.go:95
 Start	backend/internal/connect/strategy/schedule_engine.go:66
 Start	backend/internal/connect/strategy/strategy_experiment_worker.go:44
+Start	backend/internal/connect/strategy/vm_live_session.go:40
 Start	backend/internal/mthub/derived_state.go:109
 Start	backend/internal/mthub/reconciliation.go:31
 StartAlgo	proto/ant/v1/execution_algo.proto:14
-StartBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:27
+StartBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:28
 StartBacktestRun	proto/ant/v1/strategy_runtime.proto:19
-StartBacktestWorker	backend/internal/connect/strategy/backtest_worker.go:205
+StartBacktestWorker	backend/internal/connect/strategy/backtest_worker.go:306
 StartPaperStrategy	proto/ant/v1/paper_trading.proto:13
 StartRefreshLoop	backend/internal/risksvc/platform_aggregator.go:153
 StartStrategy	backend/internal/connect/strategy/strategy_active_handlers.go:157
@@ -832,7 +824,6 @@ StopStrategy	proto/ant/v1/strategy_runtime.proto:47
 StreamNotifications	proto/ant/v1/notification_service.proto:13
 StreamOrderEvents	proto/ant/v1/mthub_service.proto:15
 StreamTicks	proto/ant/v1/market_service.proto:10
-String	backend/internal/connect/strategy/live_session.go:67
 String	backend/internal/risk/gate.go:228
 SubmitAssetReview	backend/internal/connect/strategy/strategy_asset_handler.go:110
 SubmitAssetReview	proto/ant/v1/strategy_asset.proto:12
@@ -955,10 +946,10 @@ UpdateSystemAIConfig	proto/ant/v1/system_ai.proto:13
 UpdateSystemAISecret	proto/ant/v1/system_ai.proto:14
 UpdateSystemStrategy	backend/internal/service/template_svc_admin.go:98
 UpdateSystemStrategy	proto/ant/v1/admin_strategy.proto:15
-UpdateTemplate	backend/internal/connect/strategy/strategy_template_handlers.go:99
-UpdateTemplate	backend/internal/service/template_svc.go:80
+UpdateTemplate	backend/internal/connect/strategy/strategy_template_handlers.go:107
+UpdateTemplate	backend/internal/service/template_svc.go:85
 UpdateTemplate	proto/ant/v1/strategy.proto:14
-UpdateTemplateDraft	backend/internal/connect/strategy/strategy_template_handlers.go:169
+UpdateTemplateDraft	backend/internal/connect/strategy/strategy_template_handlers.go:182
 UpdateTemplateDraft	proto/ant/v1/strategy.proto:18
 UpdateTradingPassword	backend/internal/service/account_lifecycle.go:189
 UpdateTradingPassword	proto/ant/v1/account.proto:24
@@ -966,7 +957,7 @@ UpdateUser	proto/ant/v1/admin_user.proto:13
 UpsertModel	proto/ant/v1/ai_gateway.proto:26
 UserOwnsAccount	backend/internal/service/account_snapshot.go:46
 UserOwnsAccount	backend/internal/service/platform_service.go:118
-Validate	backend/internal/connect/strategy/strategy_execution_handler.go:165
+Validate	backend/internal/connect/strategy/strategy_execution_handler.go:164
 Validate	proto/ant/v1/strategy_runtime.proto:17
 ValidateStrategy	proto/ant/v1/backtest_service.proto:13
 ValidateStrategyExtended	proto/ant/v1/code_assist.proto:13
@@ -980,7 +971,7 @@ WaitSession	backend/internal/mthub/types.go:54
 Watch	backend/internal/connect/strategy/session_registry.go:78
 WatchActiveStrategies	backend/internal/connect/strategy/strategy_active_handlers.go:275
 WatchActiveStrategies	proto/ant/v1/strategy_runtime.proto:54
-WatchBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:127
+WatchBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:157
 WatchBacktestRun	proto/ant/v1/strategy_runtime.proto:22
 WatchExperiment	backend/internal/connect/strategy/strategy_experiment_handler.go:225
 WatchExperiment	proto/ant/v1/strategy_experiment.proto:20
@@ -989,7 +980,6 @@ WatchSchedules	backend/internal/connect/strategy/strategy_schedules.go:181
 WatchSchedules	proto/ant/v1/strategy.proto:28
 WatchStrategySignals	backend/internal/connect/strategy/strategy_active_handlers.go:89
 WatchStrategySignals	proto/ant/v1/strategy_runtime.proto:49
-Write	backend/internal/connect/strategy/live_session.go:60
 ```
 
 ## 公开 ConnectRPC（前端/跨服务可直接调用）
@@ -1400,7 +1390,7 @@ backend/internal/connect/strategy/account_provider.go:157:func (p *MTAccountStat
 backend/internal/connect/strategy/account_provider.go:53:func (p *MTAccountStateProvider) GetAccountState(ctx context.Context, accountID string) (*risk.AccountState, error) {
 backend/internal/connect/strategy/ai_proposer_adapter.go:22:func (a *systemAIAdapter) ChatCompletion(ctx context.Context, systemPrompt, userPrompt string) (string, error) {
 backend/internal/connect/strategy/backtest_trades_handler.go:55:func (s *BacktestTradesServer) ListBacktestRunTrades(ctx context.Context, req *connect.Request[antv1.ListBacktestRunTradesRequest]) (*connect.Response[antv1.ListBacktestRunTradesResponse], error) {
-backend/internal/connect/strategy/backtest_worker.go:205:func (s *StrategyExecutionServer) StartBacktestWorker(ctx context.Context) {
+backend/internal/connect/strategy/backtest_worker.go:306:func (s *StrategyExecutionServer) StartBacktestWorker(ctx context.Context) {
 backend/internal/connect/strategy/data_source.go:55:func (s *LiveSource) Name() string { return "live" }
 backend/internal/connect/strategy/data_source.go:57:func (s *LiveSource) Fetch(ctx context.Context, symbol, timeframe string, from, to *time.Time) ([]*antv1.ExecuteKlineBar, error) {
 backend/internal/connect/strategy/data_source.go:68:func (s *LiveSource) Subscribe(accountID string) (<-chan *mthub.BarUpdate, func()) {
@@ -1410,11 +1400,6 @@ backend/internal/connect/strategy/go_executor.go:155:func (e *GoExecutor) RunLiv
 backend/internal/connect/strategy/go_executor.go:37:func (e *GoExecutor) Run(ctx context.Context, code string, req *antv1.ExecuteStrategyRequest) (*antv1.ExecuteStrategyResponse, error) {
 backend/internal/connect/strategy/go_executor.go:76:func (e *GoExecutor) RunBacktest(ctx context.Context, code string, req *antv1.ExecuteBacktestRequest) (*antv1.ExecuteBacktestResponse, error) {
 backend/internal/connect/strategy/live_runner.go:77:func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveStrategyConfig) error {
-backend/internal/connect/strategy/live_session.go:196:func (s *LiveSession) SendBar(reqBytes []byte) ([]byte, error) {
-backend/internal/connect/strategy/live_session.go:234:func (s *LiveSession) Close() error {
-backend/internal/connect/strategy/live_session.go:60:func (b *lockedBuffer) Write(p []byte) (int, error) {
-backend/internal/connect/strategy/live_session.go:67:func (b *lockedBuffer) String() string {
-backend/internal/connect/strategy/live_session.go:95:func (s *LiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, error) {
 backend/internal/connect/strategy/schedule_engine.go:102:func (e *ScheduleEngine) Notify() {
 backend/internal/connect/strategy/schedule_engine.go:288:func (e *ScheduleEngine) StopSchedule(id uuid.UUID) {
 backend/internal/connect/strategy/schedule_engine.go:300:func (e *ScheduleEngine) Stop() {
@@ -1445,34 +1430,33 @@ backend/internal/connect/strategy/strategy_asset_handler.go:185:func (s *Strateg
 backend/internal/connect/strategy/strategy_asset_handler.go:203:func (s *StrategyAssetServer) ListAssetClones(ctx context.Context, req *connect.Request[antv1.ListAssetClonesRequest]) (*connect.Response[antv1.ListAssetClonesResponse], error) {
 backend/internal/connect/strategy/strategy_asset_handler.go:83:func (s *StrategyAssetServer) ListStrategyAssets(ctx context.Context, req *connect.Request[antv1.ListStrategyAssetsRequest]) (*connect.Response[antv1.ListStrategyAssetsResponse], error) {
 backend/internal/connect/strategy/strategy_asset_handler.go:97:func (s *StrategyAssetServer) GetStrategyAsset(ctx context.Context, req *connect.Request[antv1.GetStrategyAssetRequest]) (*connect.Response[antv1.StrategyAsset], error) {
-backend/internal/connect/strategy/strategy_backtest_crud.go:127:func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *connect.Request[antv1.WatchBacktestRunRequest], stream *connect.ServerStream[antv1.BacktestRunUpdate]) error {
-backend/internal/connect/strategy/strategy_backtest_crud.go:199:func (s *StrategyExecutionServer) CancelBacktestRun(ctx context.Context, req *connect.Request[antv1.CancelBacktestRunRequest]) (*connect.Response[antv1.CancelBacktestRunResponse], error) {
-backend/internal/connect/strategy/strategy_backtest_crud.go:215:func (s *StrategyExecutionServer) DeleteBacktestRun(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunRequest]) (*connect.Response[antv1.DeleteBacktestRunResponse], error) {
-backend/internal/connect/strategy/strategy_backtest_crud.go:233:func (s *StrategyExecutionServer) DeleteBacktestRuns(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunsRequest]) (*connect.Response[antv1.DeleteBacktestRunsResponse], error) {
-backend/internal/connect/strategy/strategy_backtest_crud.go:27:func (s *StrategyExecutionServer) StartBacktestRun(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) (*connect.Response[antv1.StartBacktestRunResponse], error) {
-backend/internal/connect/strategy/strategy_backtest_crud.go:75:func (s *StrategyExecutionServer) GetBacktestRun(ctx context.Context, req *connect.Request[antv1.GetBacktestRunRequest]) (*connect.Response[antv1.GetBacktestRunResponse], error) {
-backend/internal/connect/strategy/strategy_backtest_crud.go:94:func (s *StrategyExecutionServer) ListBacktestRuns(ctx context.Context, req *connect.Request[antv1.ListBacktestRunsRequest]) (*connect.Response[antv1.ListBacktestRunsResponse], error) {
-backend/internal/connect/strategy/strategy_execution_handler.go:100:func (s *StrategyExecutionServer) SetImportedRepo(r *repository.ImportedStrategyRepository) { s.importedRepo = r }
-backend/internal/connect/strategy/strategy_execution_handler.go:101:func (s *StrategyExecutionServer) SetSessionRegistry(r *SessionRegistry)           { s.sessionRegistry = r }
-backend/internal/connect/strategy/strategy_execution_handler.go:102:func (s *StrategyExecutionServer) SetAccountLookup(f func(ctx context.Context, userID string) string) { s.accountLookup = f }
-backend/internal/connect/strategy/strategy_execution_handler.go:106:func (s *StrategyExecutionServer) SetGate(g *risk.Gate) { s.gate = g }
-backend/internal/connect/strategy/strategy_execution_handler.go:109:func (s *StrategyExecutionServer) AddGateRule(r risk.Rule) {
-backend/internal/connect/strategy/strategy_execution_handler.go:116:func (s *StrategyExecutionServer) SetAccountProvider(p AccountStateProvider) { s.accountProvider = p }
-backend/internal/connect/strategy/strategy_execution_handler.go:124:func (s *StrategyExecutionServer) SetNotificationSender(ns *notification.Sender) { s.notifSender = ns }
-backend/internal/connect/strategy/strategy_execution_handler.go:125:func (s *StrategyExecutionServer) SetOnBacktestComplete(fn func(context.Context, *repository.BacktestRun)) { s.onBacktestComplete = fn }
-backend/internal/connect/strategy/strategy_execution_handler.go:136:func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Request[antv1.ExecuteStrategyRequest]) (*connect.Response[antv1.ExecuteStrategyResponse], error) {
-backend/internal/connect/strategy/strategy_execution_handler.go:165:func (s *StrategyExecutionServer) Validate(ctx context.Context, req *connect.Request[antv1.ValidateStrategyRequest]) (*connect.Response[antv1.ValidateStrategyResponse], error) {
-backend/internal/connect/strategy/strategy_execution_handler.go:194:func (s *StrategyExecutionServer) Backtest(ctx context.Context, req *connect.Request[antv1.BacktestStrategyRequest]) (*connect.Response[antv1.BacktestStrategyResponse], error) {
-backend/internal/connect/strategy/strategy_execution_handler.go:209:func (s *StrategyExecutionServer) GetTemplates(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[antv1.GetStrategyTemplatesResponse], error) {
-backend/internal/connect/strategy/strategy_execution_handler.go:216:func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.Request[antv1.ExecuteLiveRequest]) (*connect.Response[antv1.ExecuteLiveResponse], error) {
-backend/internal/connect/strategy/strategy_execution_handler.go:282:func (s *StrategyExecutionServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
-backend/internal/connect/strategy/strategy_execution_handler.go:80:func (s *StrategyExecutionServer) SetMarketDataRepo(r repository.MarketDataStore) {
-backend/internal/connect/strategy/strategy_execution_handler.go:94:func (s *StrategyExecutionServer) SetBarSource(bs BarSource)                 { s.barSource = bs }
-backend/internal/connect/strategy/strategy_execution_handler.go:95:func (s *StrategyExecutionServer) SetMtHub(h *mthub.MtHubService)            { s.mtHub = h }
-backend/internal/connect/strategy/strategy_execution_handler.go:96:func (s *StrategyExecutionServer) SetPaperEngine(pe PaperOrderExecutor)      { s.paperEngine = pe }
-backend/internal/connect/strategy/strategy_execution_handler.go:97:func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)              { s.goExecutor = ge }
-backend/internal/connect/strategy/strategy_execution_handler.go:98:func (s *StrategyExecutionServer) SetWasmExecutor(we *WasmExecutor)          { s.wasmExecutor = we }
-backend/internal/connect/strategy/strategy_execution_handler.go:99:func (s *StrategyExecutionServer) SetRunRepo(r *repository.StrategyRunRepository) { s.runRepo = r }
+backend/internal/connect/strategy/strategy_backtest_crud.go:105:func (s *StrategyExecutionServer) GetBacktestRun(ctx context.Context, req *connect.Request[antv1.GetBacktestRunRequest]) (*connect.Response[antv1.GetBacktestRunResponse], error) {
+backend/internal/connect/strategy/strategy_backtest_crud.go:124:func (s *StrategyExecutionServer) ListBacktestRuns(ctx context.Context, req *connect.Request[antv1.ListBacktestRunsRequest]) (*connect.Response[antv1.ListBacktestRunsResponse], error) {
+backend/internal/connect/strategy/strategy_backtest_crud.go:157:func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *connect.Request[antv1.WatchBacktestRunRequest], stream *connect.ServerStream[antv1.BacktestRunUpdate]) error {
+backend/internal/connect/strategy/strategy_backtest_crud.go:229:func (s *StrategyExecutionServer) CancelBacktestRun(ctx context.Context, req *connect.Request[antv1.CancelBacktestRunRequest]) (*connect.Response[antv1.CancelBacktestRunResponse], error) {
+backend/internal/connect/strategy/strategy_backtest_crud.go:245:func (s *StrategyExecutionServer) DeleteBacktestRun(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunRequest]) (*connect.Response[antv1.DeleteBacktestRunResponse], error) {
+backend/internal/connect/strategy/strategy_backtest_crud.go:263:func (s *StrategyExecutionServer) DeleteBacktestRuns(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunsRequest]) (*connect.Response[antv1.DeleteBacktestRunsResponse], error) {
+backend/internal/connect/strategy/strategy_backtest_crud.go:28:func (s *StrategyExecutionServer) StartBacktestRun(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) (*connect.Response[antv1.StartBacktestRunResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:102:func (s *StrategyExecutionServer) SetGate(g *risk.Gate) { s.gate = g }
+backend/internal/connect/strategy/strategy_execution_handler.go:105:func (s *StrategyExecutionServer) AddGateRule(r risk.Rule) {
+backend/internal/connect/strategy/strategy_execution_handler.go:112:func (s *StrategyExecutionServer) SetAccountProvider(p AccountStateProvider) { s.accountProvider = p }
+backend/internal/connect/strategy/strategy_execution_handler.go:120:func (s *StrategyExecutionServer) SetNotificationSender(ns *notification.Sender) { s.notifSender = ns }
+backend/internal/connect/strategy/strategy_execution_handler.go:121:func (s *StrategyExecutionServer) SetOnBacktestComplete(fn func(context.Context, *repository.BacktestRun)) { s.onBacktestComplete = fn }
+backend/internal/connect/strategy/strategy_execution_handler.go:132:func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Request[antv1.ExecuteStrategyRequest]) (*connect.Response[antv1.ExecuteStrategyResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:164:func (s *StrategyExecutionServer) Validate(ctx context.Context, req *connect.Request[antv1.ValidateStrategyRequest]) (*connect.Response[antv1.ValidateStrategyResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:193:func (s *StrategyExecutionServer) Backtest(ctx context.Context, req *connect.Request[antv1.BacktestStrategyRequest]) (*connect.Response[antv1.BacktestStrategyResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:208:func (s *StrategyExecutionServer) GetTemplates(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[antv1.GetStrategyTemplatesResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:215:func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.Request[antv1.ExecuteLiveRequest]) (*connect.Response[antv1.ExecuteLiveResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:315:func (s *StrategyExecutionServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
+backend/internal/connect/strategy/strategy_execution_handler.go:77:func (s *StrategyExecutionServer) SetMarketDataRepo(r repository.MarketDataStore) {
+backend/internal/connect/strategy/strategy_execution_handler.go:91:func (s *StrategyExecutionServer) SetBarSource(bs BarSource)                 { s.barSource = bs }
+backend/internal/connect/strategy/strategy_execution_handler.go:92:func (s *StrategyExecutionServer) SetMtHub(h *mthub.MtHubService)            { s.mtHub = h }
+backend/internal/connect/strategy/strategy_execution_handler.go:93:func (s *StrategyExecutionServer) SetPaperEngine(pe PaperOrderExecutor)      { s.paperEngine = pe }
+backend/internal/connect/strategy/strategy_execution_handler.go:94:func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)              { s.goExecutor = ge }
+backend/internal/connect/strategy/strategy_execution_handler.go:95:func (s *StrategyExecutionServer) SetRunRepo(r *repository.StrategyRunRepository) { s.runRepo = r }
+backend/internal/connect/strategy/strategy_execution_handler.go:96:func (s *StrategyExecutionServer) SetImportedRepo(r *repository.ImportedStrategyRepository) { s.importedRepo = r }
+backend/internal/connect/strategy/strategy_execution_handler.go:97:func (s *StrategyExecutionServer) SetSessionRegistry(r *SessionRegistry)           { s.sessionRegistry = r }
+backend/internal/connect/strategy/strategy_execution_handler.go:98:func (s *StrategyExecutionServer) SetAccountLookup(f func(ctx context.Context, userID string) string) { s.accountLookup = f }
 backend/internal/connect/strategy/strategy_execution_runs.go:16:func (s *StrategyExecutionServer) ListStrategyRuns(ctx context.Context, req *connect.Request[antv1.ListStrategyRunsRequest]) (*connect.Response[antv1.ListStrategyRunsResponse], error) {
 backend/internal/connect/strategy/strategy_execution_runs.go:46:func (s *StrategyExecutionServer) GetStrategyRun(ctx context.Context, req *connect.Request[antv1.GetStrategyRunRequest]) (*connect.Response[antv1.GetStrategyRunResponse], error) {
 backend/internal/connect/strategy/strategy_experiment_handler.go:101:func (s *StrategyExperimentServer) SubmitStrategyExperiment(ctx context.Context, req *connect.Request[antv1.SubmitStrategyExperimentRequest]) (*connect.Response[antv1.SubmitStrategyExperimentResponse], error) {
@@ -1492,10 +1476,10 @@ backend/internal/connect/strategy/strategy_handler.go:33:func (s *StrategyServer
 backend/internal/connect/strategy/strategy_handler.go:42:func (s *StrategyServer) CancelTemplateDraft(ctx context.Context, req *connect.Request[antv1.CancelTemplateDraftRequest]) (*connect.Response[emptypb.Empty], error) {
 backend/internal/connect/strategy/strategy_handler.go:53:func (s *StrategyServer) SetEngine(e *ScheduleEngine) { s.engine = e }
 backend/internal/connect/strategy/strategy_handler.go:69:func (s *StrategyServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
-backend/internal/connect/strategy/strategy_import_handler.go:123:func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *connect.Request[antv1.ImportStrategyRequest]) (*connect.Response[antv1.ImportStrategyResponse], error) {
-backend/internal/connect/strategy/strategy_import_handler.go:173:func (s *StrategyExecutionServer) GetImportedStrategy(ctx context.Context, req *connect.Request[antv1.GetImportedStrategyRequest]) (*connect.Response[antv1.GetImportedStrategyResponse], error) {
-backend/internal/connect/strategy/strategy_import_handler.go:41:func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *connect.Request[antv1.AnalyzeImportCodeRequest]) (*connect.Response[antv1.AnalyzeImportCodeResponse], error) {
-backend/internal/connect/strategy/strategy_import_handler.go:75:func (s *StrategyExecutionServer) GenerateImportCode(ctx context.Context, req *connect.Request[antv1.GenerateImportCodeRequest]) (*connect.Response[antv1.GenerateImportCodeResponse], error) {
+backend/internal/connect/strategy/strategy_import_handler.go:102:func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *connect.Request[antv1.ImportStrategyRequest]) (*connect.Response[antv1.ImportStrategyResponse], error) {
+backend/internal/connect/strategy/strategy_import_handler.go:150:func (s *StrategyExecutionServer) GetImportedStrategy(ctx context.Context, req *connect.Request[antv1.GetImportedStrategyRequest]) (*connect.Response[antv1.GetImportedStrategyResponse], error) {
+backend/internal/connect/strategy/strategy_import_handler.go:40:func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *connect.Request[antv1.AnalyzeImportCodeRequest]) (*connect.Response[antv1.AnalyzeImportCodeResponse], error) {
+backend/internal/connect/strategy/strategy_import_handler.go:74:func (s *StrategyExecutionServer) GenerateImportCode(ctx context.Context, req *connect.Request[antv1.GenerateImportCodeRequest]) (*connect.Response[antv1.GenerateImportCodeResponse], error) {
 backend/internal/connect/strategy/strategy_schedules.go:134:func (s *StrategyServer) DeleteSchedule(ctx context.Context, req *connect.Request[antv1.DeleteScheduleRequest]) (*connect.Response[emptypb.Empty], error) {
 backend/internal/connect/strategy/strategy_schedules.go:148:func (s *StrategyServer) ToggleSchedule(ctx context.Context, req *connect.Request[antv1.ToggleScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
 backend/internal/connect/strategy/strategy_schedules.go:181:func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Request[antv1.WatchSchedulesRequest], stream *connect.ServerStream[antv1.WatchSchedulesEvent]) error {
@@ -1508,14 +1492,14 @@ backend/internal/connect/strategy/strategy_signals.go:34:func (s *StrategyServer
 backend/internal/connect/strategy/strategy_signals.go:51:func (s *StrategyServer) ExecuteSignal(
 backend/internal/connect/strategy/strategy_signals.go:72:func (s *StrategyServer) ConfirmSignal(
 backend/internal/connect/strategy/strategy_signals.go:85:func (s *StrategyServer) CancelSignal(
-backend/internal/connect/strategy/strategy_template_handlers.go:140:func (s *StrategyServer) DeleteTemplate(ctx context.Context, req *connect.Request[antv1.DeleteTemplateRequest]) (*connect.Response[emptypb.Empty], error) {
-backend/internal/connect/strategy/strategy_template_handlers.go:155:func (s *StrategyServer) CreateTemplateDraft(ctx context.Context, req *connect.Request[antv1.CreateTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-backend/internal/connect/strategy/strategy_template_handlers.go:169:func (s *StrategyServer) UpdateTemplateDraft(ctx context.Context, req *connect.Request[antv1.UpdateTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-backend/internal/connect/strategy/strategy_template_handlers.go:204:func (s *StrategyServer) PublishTemplateDraft(ctx context.Context, req *connect.Request[antv1.PublishTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-backend/internal/connect/strategy/strategy_template_handlers.go:48:func (s *StrategyServer) ListTemplates(ctx context.Context, req *connect.Request[antv1.ListTemplatesRequest]) (*connect.Response[antv1.ListTemplatesResponse], error) {
-backend/internal/connect/strategy/strategy_template_handlers.go:61:func (s *StrategyServer) GetTemplate(ctx context.Context, req *connect.Request[antv1.GetTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-backend/internal/connect/strategy/strategy_template_handlers.go:77:func (s *StrategyServer) CreateTemplate(ctx context.Context, req *connect.Request[antv1.CreateTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
-backend/internal/connect/strategy/strategy_template_handlers.go:99:func (s *StrategyServer) UpdateTemplate(ctx context.Context, req *connect.Request[antv1.UpdateTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:107:func (s *StrategyServer) UpdateTemplate(ctx context.Context, req *connect.Request[antv1.UpdateTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:153:func (s *StrategyServer) DeleteTemplate(ctx context.Context, req *connect.Request[antv1.DeleteTemplateRequest]) (*connect.Response[emptypb.Empty], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:168:func (s *StrategyServer) CreateTemplateDraft(ctx context.Context, req *connect.Request[antv1.CreateTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:182:func (s *StrategyServer) UpdateTemplateDraft(ctx context.Context, req *connect.Request[antv1.UpdateTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:222:func (s *StrategyServer) PublishTemplateDraft(ctx context.Context, req *connect.Request[antv1.PublishTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:51:func (s *StrategyServer) ListTemplates(ctx context.Context, req *connect.Request[antv1.ListTemplatesRequest]) (*connect.Response[antv1.ListTemplatesResponse], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:64:func (s *StrategyServer) GetTemplate(ctx context.Context, req *connect.Request[antv1.GetTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+backend/internal/connect/strategy/strategy_template_handlers.go:80:func (s *StrategyServer) CreateTemplate(ctx context.Context, req *connect.Request[antv1.CreateTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
 backend/internal/connect/strategy/strategy_templates.go:104:func (s *MACrossStrategy) OnDeinit(ctx sdk.Context, reason string) error {
 backend/internal/connect/strategy/strategy_templates.go:131:func (s *RSIStrategy) OnInit(ctx sdk.Context) error {
 backend/internal/connect/strategy/strategy_templates.go:141:func (s *RSIStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
@@ -1525,12 +1509,9 @@ backend/internal/connect/strategy/strategy_templates.go:234:func (s *BollingerSt
 backend/internal/connect/strategy/strategy_templates.go:292:func (s *BollingerStrategy) OnDeinit(ctx sdk.Context, reason string) error {
 backend/internal/connect/strategy/strategy_templates.go:33:func (s *MACrossStrategy) OnInit(ctx sdk.Context) error {
 backend/internal/connect/strategy/strategy_templates.go:42:func (s *MACrossStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
-backend/internal/connect/strategy/wasm_executor.go:174:func (w *WasmExecutor) Close() error {
-backend/internal/connect/strategy/wasm_executor.go:94:func (w *WasmExecutor) CompileStrategy(ctx context.Context, code string, strategyTypeName string) (wazero.CompiledModule, string, error) {
-backend/internal/connect/strategy/wasm_executor_interp.go:118:func (w *WasmExecutor) RunInterpLive(ctx context.Context, compiled wazero.CompiledModule, irBytes []byte, reqBytes []byte) ([]byte, error) {
-backend/internal/connect/strategy/wasm_executor_interp.go:19:func (w *WasmExecutor) CompileInterpBacktest(ctx context.Context) (wazero.CompiledModule, string, error) {
-backend/internal/connect/strategy/wasm_executor_interp.go:52:func (w *WasmExecutor) CompileInterpLive(ctx context.Context) (wazero.CompiledModule, string, error) {
-backend/internal/connect/strategy/wasm_executor_interp.go:86:func (w *WasmExecutor) RunInterpBacktest(ctx context.Context, compiled wazero.CompiledModule, irBytes []byte, reqBytes []byte) ([]byte, error) {
+backend/internal/connect/strategy/vm_live_session.go:40:func (s *VMLiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, error) {
+backend/internal/connect/strategy/vm_live_session.go:78:func (s *VMLiveSession) SendBar(reqBytes []byte) ([]byte, error) {
+backend/internal/connect/strategy/vm_live_session.go:92:func (s *VMLiveSession) Close() error {
 backend/internal/mthub/broker_types.go:117:func (b *BarBroker) Publish(ev *BarUpdate) {
 backend/internal/mthub/broker_types.go:144:func (b *BarBroker) DroppedBars(accountID string) int64 {
 backend/internal/mthub/broker_types.go:149:func (b *BarBroker) Subscribe(accountID string) (<-chan *BarUpdate, func()) {
@@ -1844,12 +1825,12 @@ backend/internal/service/systemai/service.go:204:func (s *Service) UpdateSecret(
 backend/internal/service/systemai/service.go:234:func (s *Service) GetSecret(ctx context.Context, userID uuid.UUID, providerID string) (string, error) {
 backend/internal/service/systemai/service.go:255:func (s *Service) DiscoverModels(ctx context.Context, userID uuid.UUID, providerID string) ([]string, error) {
 backend/internal/service/systemai/service.go:90:func (s *Service) SetUserRepo(r *repository.UserRepository) {
-backend/internal/service/template_svc.go:102:func (s *StrategySvc) SetTemplateStatus(ctx context.Context, id, userID uuid.UUID, status string) error {
-backend/internal/service/template_svc.go:34:func (s *StrategySvc) ListTemplates(ctx context.Context, userID uuid.UUID) ([]TemplateRow, error) {
-backend/internal/service/template_svc.go:45:func (s *StrategySvc) GetTemplate(ctx context.Context, id, userID uuid.UUID) (*TemplateRow, error) {
-backend/internal/service/template_svc.go:60:func (s *StrategySvc) CreateTemplate(ctx context.Context, t *TemplateRow) error {
-backend/internal/service/template_svc.go:80:func (s *StrategySvc) UpdateTemplate(ctx context.Context, t *TemplateRow) error {
-backend/internal/service/template_svc.go:91:func (s *StrategySvc) DeleteTemplate(ctx context.Context, id, userID uuid.UUID) error {
+backend/internal/service/template_svc.go:100:func (s *StrategySvc) DeleteTemplate(ctx context.Context, id, userID uuid.UUID) error {
+backend/internal/service/template_svc.go:111:func (s *StrategySvc) SetTemplateStatus(ctx context.Context, id, userID uuid.UUID, status string) error {
+backend/internal/service/template_svc.go:35:func (s *StrategySvc) ListTemplates(ctx context.Context, userID uuid.UUID) ([]TemplateRow, error) {
+backend/internal/service/template_svc.go:46:func (s *StrategySvc) GetTemplate(ctx context.Context, id, userID uuid.UUID) (*TemplateRow, error) {
+backend/internal/service/template_svc.go:61:func (s *StrategySvc) CreateTemplate(ctx context.Context, t *TemplateRow) error {
+backend/internal/service/template_svc.go:85:func (s *StrategySvc) UpdateTemplate(ctx context.Context, t *TemplateRow) error {
 backend/internal/service/template_svc_admin.go:133:func (s *StrategySvc) DeleteSystemStrategy(ctx context.Context, id uuid.UUID) error {
 backend/internal/service/template_svc_admin.go:14:func (s *StrategySvc) GetTemplateDetail(ctx context.Context, id uuid.UUID) (*TemplateRow, string, error) {
 backend/internal/service/template_svc_admin.go:175:func (s *StrategySvc) ListAllStrategies(ctx context.Context, params ListAllStrategiesParams) ([]AllStrategyRow, int32, error) {
@@ -1879,15 +1860,14 @@ backend/tools/mql2go/interp/builtin_onarray.go:32:func (a *arrayBarSource) Close
 backend/tools/mql2go/interp/builtin_onarray.go:36:func (a *arrayBarSource) Volume(i int) int64 {
 backend/tools/mql2go/interp/builtin_onarray.go:40:func (a *arrayBarSource) Len() int {
 backend/tools/mql2go/interp/exec.go:109:func (it *Interpreter) ResetRuntimeBlindSpots() {
-backend/tools/mql2go/interp/exec.go:313:func (it *Interpreter) OnInit(ctx sdk.Context) error {
-backend/tools/mql2go/interp/exec.go:377:func (it *Interpreter) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
-backend/tools/mql2go/interp/exec.go:397:func (it *Interpreter) OnDeinit(ctx sdk.Context, reason string) error {
-backend/tools/mql2go/interp/exec.go:412:func (it *Interpreter) OnTick(ctx sdk.Context, bid, ask decimal.Decimal) (*sdk.Signal, error) {
-backend/tools/mql2go/interp/exec.go:434:func (it *Interpreter) OnTimer(ctx sdk.Context) (*sdk.Signal, error) {
-backend/tools/mql2go/interp/exec.go:457:func (it *Interpreter) OnTrade(ctx sdk.Context, event sdk.TradeEvent) (*sdk.Signal, error) {
+backend/tools/mql2go/interp/exec.go:322:func (it *Interpreter) OnInit(ctx sdk.Context) error {
+backend/tools/mql2go/interp/exec.go:386:func (it *Interpreter) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
+backend/tools/mql2go/interp/exec.go:406:func (it *Interpreter) OnDeinit(ctx sdk.Context, reason string) error {
+backend/tools/mql2go/interp/exec.go:421:func (it *Interpreter) OnTick(ctx sdk.Context, bid, ask decimal.Decimal) (*sdk.Signal, error) {
+backend/tools/mql2go/interp/exec.go:443:func (it *Interpreter) OnTimer(ctx sdk.Context) (*sdk.Signal, error) {
+backend/tools/mql2go/interp/exec.go:466:func (it *Interpreter) OnTrade(ctx sdk.Context, event sdk.TradeEvent) (*sdk.Signal, error) {
 backend/tools/mql2go/interp/exec.go:82:func (it *Interpreter) GetGlobal(name string) Value {
 backend/tools/mql2go/interp/exec.go:88:func (it *Interpreter) GetRuntimeBlindSpots() []RuntimeBlindSpot {
-backend/tools/mql2go/interp/factory.go:30:func (f *StrategyFactory) Create() sdk.Strategy {
 backend/tools/mql2go/interp/orderpool.go:133:func (p *MQL4OrderPool) Select(index int) bool {
 backend/tools/mql2go/interp/orderpool.go:142:func (p *MQL4OrderPool) SelectHistory(index int) bool {
 backend/tools/mql2go/interp/orderpool.go:151:func (p *MQL4OrderPool) SelectByTicket(ticket int64) bool {

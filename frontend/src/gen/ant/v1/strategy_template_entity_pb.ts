@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file strategy_template_entity.proto.
  */
 export const file_strategy_template_entity: GenFile = /*@__PURE__*/
-  fileDesc("Ch5zdHJhdGVneV90ZW1wbGF0ZV9lbnRpdHkucHJvdG8SBmFudC52MSLUAgoQU3RyYXRlZ3lUZW1wbGF0ZRIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEgwKBG5hbWUYAyABKAkSEwoLZGVzY3JpcHRpb24YBCABKAkSDAoEY29kZRgFIAEoCRItCgpwYXJhbWV0ZXJzGAYgAygLMhkuYW50LnYxLlRlbXBsYXRlUGFyYW1ldGVyEhEKCWlzX3B1YmxpYxgHIAEoCBIMCgR0YWdzGAggAygJEhEKCXVzZV9jb3VudBgJIAEoBRIOCgZzdGF0dXMYDCABKAkSLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEQoJaXNfc3lzdGVtGA0gASgIEgwKBGkxOG4YDiABKAkinQEKEVRlbXBsYXRlUGFyYW1ldGVyEgwKBG5hbWUYASABKAkSDAoEdHlwZRgCIAEoCRIPCgdkZWZhdWx0GAMgASgJEgsKA21pbhgEIAEoCRILCgNtYXgYBSABKAkSDAoEc3RlcBgGIAEoCRINCgVsYWJlbBgHIAEoCRITCgtkZXNjcmlwdGlvbhgIIAEoCRIPCgdvcHRpb25zGAkgAygJQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("Ch5zdHJhdGVneV90ZW1wbGF0ZV9lbnRpdHkucHJvdG8SBmFudC52MSLpAgoQU3RyYXRlZ3lUZW1wbGF0ZRIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEgwKBG5hbWUYAyABKAkSEwoLZGVzY3JpcHRpb24YBCABKAkSDAoEY29kZRgFIAEoCRItCgpwYXJhbWV0ZXJzGAYgAygLMhkuYW50LnYxLlRlbXBsYXRlUGFyYW1ldGVyEhEKCWlzX3B1YmxpYxgHIAEoCBIMCgR0YWdzGAggAygJEhEKCXVzZV9jb3VudBgJIAEoBRIOCgZzdGF0dXMYDCABKAkSLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEQoJaXNfc3lzdGVtGA0gASgIEgwKBGkxOG4YDiABKAkSEwoLc3RyYXRlZ3lfaWQYDyABKAkinQEKEVRlbXBsYXRlUGFyYW1ldGVyEgwKBG5hbWUYASABKAkSDAoEdHlwZRgCIAEoCRIPCgdkZWZhdWx0GAMgASgJEgsKA21pbhgEIAEoCRILCgNtYXgYBSABKAkSDAoEc3RlcBgGIAEoCRINCgVsYWJlbBgHIAEoCRITCgtkZXNjcmlwdGlvbhgIIAEoCRIPCgdvcHRpb25zGAkgAygJQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.StrategyTemplate
@@ -89,6 +89,13 @@ export type StrategyTemplate = Message<"ant.v1.StrategyTemplate"> & {
    * @generated from field: string i18n = 14;
    */
   i18n: string;
+
+  /**
+   * FK to imported_strategies.id (ADR-0023: MQL source of truth).
+   *
+   * @generated from field: string strategy_id = 15;
+   */
+  strategyId: string;
 };
 
 /**

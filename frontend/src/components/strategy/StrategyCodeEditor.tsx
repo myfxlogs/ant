@@ -1,14 +1,15 @@
 /**
- * StrategyCodeEditor — CodeMirror 6 wrapper for Python strategy code.
+ * StrategyCodeEditor — CodeMirror 6 wrapper for MQL strategy code.
  *
  * Replaces the plain <Input.TextArea> in WorkspaceCodePanel with syntax
  * highlighting, line numbers, bracket matching, and auto-indentation.
+ * Uses C/C++ syntax highlighting since MQL is C-like.
  */
 import { useEffect, useRef, useMemo } from 'react';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightSpecialChars, drawSelection, rectangularSelection } from '@codemirror/view';
 import { EditorState, Compartment } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
-import { python } from '@codemirror/lang-python';
+import { cpp } from '@codemirror/lang-cpp';
 import { syntaxHighlighting, defaultHighlightStyle, bracketMatching, indentOnInput } from '@codemirror/language';
 import { closeBrackets, autocompletion } from '@codemirror/autocomplete';
 
@@ -45,7 +46,7 @@ export default function StrategyCodeEditor({ value, onChange, readOnly, diagnost
     closeBrackets(),
     autocompletion(),
     indentOnInput(),
-    python(),
+    cpp(),
     syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
     history(),
     keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),

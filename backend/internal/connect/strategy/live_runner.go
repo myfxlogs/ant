@@ -1,6 +1,6 @@
 // live_runner.go — LiveStrategyRunner: subscribes to real-time data streams
 // (bar, tick, trade), builds proto-native context per event, executes
-// strategy via WASM, and dispatches signals to OMS.
+// strategy via in-process Bytecode VM, and dispatches signals to OMS.
 //
 // Multi-model architecture:
 //   BAR   → barBroker channel   → session.SendBar() → strategy.OnBar
@@ -70,7 +70,7 @@ type LiveTradeSubscriber interface {
 }
 
 // RunLiveStrategy subscribes to real-time data streams for the given account/symbol/timeframe,
-// builds proto-native context for each event, executes the strategy via WASM,
+// builds proto-native context for each event, executes the strategy via Bytecode VM,
 // and dispatches the resulting signals.
 //
 // Blocks until ctx is cancelled. Callers should run this in a goroutine.
@@ -182,9 +182,8 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 	}()
 
 	bars := make([]liveBar, 0, maxContextBars)
-	var session *LiveSession
+	var session Session
 	var firstBar bool = true
-	exec := s.getExecutor()
 
 	defer func() {
 		if session != nil {
@@ -206,7 +205,7 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 			if bar.Symbol != cfg.Symbol || bar.Period != cfg.Timeframe {
 				continue
 			}
-			s.handleBar(runCtx, cfg, exec, bar, &bars, &session, &firstBar, activeSess)
+			s.handleBar(runCtx, cfg, bar, &bars, &session, &firstBar, activeSess)
 
 		case tick, ok := <-tickCh:
 			if !ok {

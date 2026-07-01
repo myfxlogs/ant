@@ -13,8 +13,9 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/repository"
+	"anttrader/strategy/backtest"
+	"anttrader/strategy/sdk"
 	"anttrader/tools/mql2go"
-	"anttrader/tools/mql2go/interp"
 )
 
 const (
@@ -112,7 +113,8 @@ func extractBacktestParams(run *repository.BacktestRun) (backtestParams, error) 
 	}
 	if len(run.ConfigSnapshot) > 0 {
 		var ec antv1.BacktestExecutionConfig
-		if err := proto.Unmarshal(run.ConfigSnapshot, &ec); err == nil {
+		opts := proto.UnmarshalOptions{DiscardUnknown: true}
+		if err := opts.Unmarshal(run.ConfigSnapshot, &ec); err == nil {
 			p.strategyCfg = ec.GetStrategyConfig()
 		}
 	}
@@ -148,13 +150,13 @@ func (s *StrategyExecutionServer) executeBacktestRun(ctx context.Context, run *r
 	s.saveBacktestResult(ctx, run, result)
 }
 
-// executeGoBacktest runs a backtest using the Go-native engine via GoExecutor,
-// or the MQL interpreter path via WasmExecutor for MQL source code.
-// Returns proto response compatible with the existing persistence layer.
+// executeGoBacktest runs a backtest using the Go-native engine.
+// MQL source → VMRunner (in-process Bytecode VM) + backtest.Engine.
+// Generated Go strategy → GoExecutor (subprocess go run).
 func (s *StrategyExecutionServer) executeGoBacktest(ctx context.Context, run *repository.BacktestRun, params backtestParams, klines []*antv1.ExecuteKlineBar) (*antv1.ExecuteBacktestResponse, error) {
-	// MQL interpreter path: MQL source → IR → WASM interp backtest harness.
-	if s.wasmExecutor != nil && isMQLStrategy(params.code) {
-		return s.executeInterpBacktest(ctx, params, klines, run)
+	// MQL path: in-process Bytecode VM execution.
+	if isMQLStrategy(params.code) {
+		return s.executeVMBacktest(ctx, params, klines, run)
 	}
 
 	// Go-native compilation path: generated Go strategy via go run.
@@ -166,37 +168,136 @@ func (s *StrategyExecutionServer) executeGoBacktest(ctx context.Context, run *re
 	return s.goExecutor.RunBacktest(ctx, params.code, req)
 }
 
-// executeInterpBacktest runs a backtest via the MQL interpreter path:
-// MQL source → CompileToIR → SerializeIR → WASM interp backtest harness.
-func (s *StrategyExecutionServer) executeInterpBacktest(ctx context.Context, params backtestParams, klines []*antv1.ExecuteKlineBar, run *repository.BacktestRun) (*antv1.ExecuteBacktestResponse, error) {
-	ir, err := mql2go.CompileToIR(params.code)
+// executeVMBacktest runs a backtest via the in-process Bytecode VM:
+// MQL source → CompileMQL → VMRunner → backtest.Engine → ExecuteBacktestResponse.
+func (s *StrategyExecutionServer) executeVMBacktest(ctx context.Context, params backtestParams, klines []*antv1.ExecuteKlineBar, run *repository.BacktestRun) (*antv1.ExecuteBacktestResponse, error) {
+	runner, err := mql2go.CompileMQL(params.code)
 	if err != nil {
-		return nil, fmt.Errorf("compile MQL to IR: %w", err)
-	}
-	irBytes := interp.SerializeIR(ir)
-
-	compiled, _, err := s.wasmExecutor.CompileInterpBacktest(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("compile interp backtest harness: %w", err)
+		return nil, fmt.Errorf("compile MQL: %w", err)
 	}
 
+	// Convert klines to sdk.Bar
+	bars := make([]sdk.Bar, len(klines))
+	for i, k := range klines {
+		bars[i] = sdk.Bar{
+			Open:      parseDecimal(k.Open),
+			High:      parseDecimal(k.High),
+			Low:       parseDecimal(k.Low),
+			Close:     parseDecimal(k.Close),
+			Volume:    parseInt64(k.Volume),
+			Timestamp: k.OpenTimeMs,
+		}
+	}
+
+	// Build backtest config
+	cfg := backtest.Config{
+		Symbol:         run.Symbol,
+		Timeframe:      run.Timeframe,
+		InitialCapital: parseDecimal(params.initialCapital),
+		Leverage:       parseInt32(params.leverage),
+		Commission:     parseDecimal(params.commission),
+		Slippage:       parseDecimal(params.slippage),
+		SwapRate:       decimal.NewFromFloat(0.00001),
+		StrictMode:     params.strictMode,
+		Params:         paramsProtoToMap(run.ParameterOverrides),
+	}
+	if run.FromTs != nil {
+		cfg.StartDate = *run.FromTs
+	}
+	if run.ToTs != nil {
+		cfg.EndDate = *run.ToTs
+	}
+
+	// Fetch symbol info for digits/point
 	symbolInfo := s.fetchSymbolInfo(ctx, run)
-	req := buildBacktestRequest(run, params, klines, symbolInfo)
-	reqBytes, err := proto.Marshal(req)
-	if err != nil {
-		return nil, fmt.Errorf("marshal backtest request: %w", err)
+	if symbolInfo != nil {
+		cfg.SymbolDigits = symbolInfo.Digits
+		if p, err := decimal.NewFromString(symbolInfo.Point); err == nil {
+			cfg.SymbolPoint = p
+		}
+		if v, err := decimal.NewFromString(symbolInfo.VolumeMin); err == nil {
+			cfg.VolumeMin = v
+		}
+		if v, err := decimal.NewFromString(symbolInfo.VolumeMax); err == nil {
+			cfg.VolumeMax = v
+		}
+		if v, err := decimal.NewFromString(symbolInfo.VolumeStep); err == nil {
+			cfg.VolumeStep = v
+		}
+		if v, err := decimal.NewFromString(symbolInfo.ContractSize); err == nil {
+			cfg.ContractSize = v
+		}
 	}
 
-	respBytes, err := s.wasmExecutor.RunInterpBacktest(ctx, compiled, irBytes, reqBytes)
+	engine := backtest.New(cfg, runner, bars)
+	result, err := engine.Run(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("wasm interp backtest: %w", err)
+		return &antv1.ExecuteBacktestResponse{Success: false, Error: err.Error()}, nil
 	}
 
-	var resp antv1.ExecuteBacktestResponse
-	if err := proto.Unmarshal(respBytes, &resp); err != nil {
-		return nil, fmt.Errorf("unmarshal interp backtest response: %w", err)
+	// Convert backtest.Result → ExecuteBacktestResponse
+	resp := &antv1.ExecuteBacktestResponse{
+		Success: true,
+		Metrics: &antv1.ExecuteBacktestMetrics{
+			TotalReturn:   result.Metrics.TotalReturn,
+			AnnualReturn:  result.Metrics.AnnualReturn,
+			MaxDrawdown:   result.Metrics.MaxDrawdown,
+			SharpeRatio:   result.Metrics.SharpeRatio,
+			WinRate:       result.Metrics.WinRate,
+			ProfitFactor:  result.Metrics.ProfitFactor,
+			TotalTrades:   result.Metrics.TotalTrades,
+			WinningTrades: result.Metrics.WinningTrades,
+			LosingTrades:  result.Metrics.LosingTrades,
+		},
 	}
-	return &resp, nil
+	if result.Metrics != nil {
+		totalPnl := cfg.InitialCapital.Mul(decimal.NewFromFloat(result.Metrics.TotalReturn))
+		resp.Metrics.TotalPnlAbsolute = totalPnl.String()
+	}
+	for _, ep := range result.Equity {
+		resp.EquityCurve = append(resp.EquityCurve, ep.Equity.String())
+		resp.EquityTimesMs = append(resp.EquityTimesMs, ep.Time.UnixMilli())
+	}
+	for i, t := range result.Trades {
+		side := "BUY"
+		if t.Side == sdk.SideSell {
+			side = "SELL"
+		}
+		resp.Trades = append(resp.Trades, &antv1.ExecuteBacktestTrade{
+			Ticket:     int64(i + 1),
+			Side:       side,
+			Volume:     t.Volume.String(),
+			OpenTsMs:   t.EntryTime.UnixMilli(),
+			OpenPrice:  t.EntryPrice.String(),
+			CloseTsMs:  t.ExitTime.UnixMilli(),
+			ClosePrice: t.ExitPrice.String(),
+			Pnl:        t.Profit.String(),
+			Commission: t.Commission.String(),
+			Reason:     t.Comment,
+		})
+	}
+
+	// ADR-0023 §5.5 #14: ExecutionAssumptions — transparency panel.
+	resp.ExecutionAssumptions = &antv1.ExecutionAssumptions{
+		SimulationMode:  "KLINE_RANGE",
+		SignalTiming:    "next_bar_open",
+		FillRule:        "bar_close",
+		ActualCommission: cfg.Commission.String(),
+		ActualSlippage:  cfg.Slippage.String(),
+		ActualLeverage:  fmt.Sprintf("%d", cfg.Leverage),
+		TradeDirection:  "both",
+	}
+	if cfg.StrictMode {
+		resp.ExecutionAssumptions.SignalTiming = "next_bar_open"
+	} else {
+		resp.ExecutionAssumptions.SignalTiming = "same_bar_close"
+		resp.ExecutionAssumptions.MtfFallbackReason = "strict_mode disabled"
+	}
+
+	// ADR-0023 §5.5 #14: RiskAssessment — basic heuristic from metrics.
+	resp.Risk = assessRisk(result.Metrics)
+
+	return resp, nil
 }
 
 // StartBacktestWorker launches a pool of background workers that poll for PENDING backtest
@@ -271,4 +372,105 @@ func parseDecimal(s string) decimal.Decimal {
 		return decimal.Zero
 	}
 	return d
+}
+
+func parseInt64(s string) int64 {
+	n, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0
+	}
+	return n
+}
+
+func parseInt32(s string) int32 {
+	n, err := strconv.ParseInt(s, 10, 32)
+	if err != nil {
+		return 0
+	}
+	return int32(n)
+}
+
+// assessRisk produces a basic ExecuteRiskAssessment from backtest metrics.
+// ADR-0023 §5.5 #14: transparency for the user.
+func assessRisk(m *antv1.BacktestMetrics) *antv1.ExecuteRiskAssessment {
+	if m == nil {
+		return &antv1.ExecuteRiskAssessment{Score: 50, Level: "unknown", IsReliable: false}
+	}
+
+	score := 50
+	var reasons, warnings []string
+
+	// Max drawdown penalty (0-25 points)
+	switch {
+	case m.MaxDrawdown > 0.5:
+		score -= 25
+		warnings = append(warnings, "Max drawdown exceeds 50%")
+	case m.MaxDrawdown > 0.3:
+		score -= 15
+		reasons = append(reasons, "High drawdown (30-50%)")
+	case m.MaxDrawdown > 0.15:
+		score -= 8
+		reasons = append(reasons, "Moderate drawdown (15-30%)")
+	default:
+		reasons = append(reasons, "Low drawdown (<15%)")
+	}
+
+	// Sharpe ratio (0-25 points)
+	switch {
+	case m.SharpeRatio >= 2.0:
+		score += 20
+		reasons = append(reasons, "Excellent Sharpe ratio (≥2.0)")
+	case m.SharpeRatio >= 1.0:
+		score += 10
+		reasons = append(reasons, "Good Sharpe ratio (≥1.0)")
+	case m.SharpeRatio < 0:
+		score -= 15
+		warnings = append(warnings, "Negative Sharpe ratio")
+	default:
+		score -= 5
+		reasons = append(reasons, "Low Sharpe ratio (<1.0)")
+	}
+
+	// Win rate (0-15 points)
+	if m.WinRate >= 0.6 {
+		score += 10
+	} else if m.WinRate < 0.3 {
+		score -= 10
+		warnings = append(warnings, "Low win rate (<30%)")
+	}
+
+	// Trade count reliability
+	if m.TotalTrades < 10 {
+		warnings = append(warnings, "Insufficient trades for reliable assessment")
+	}
+
+	// Profit factor
+	if m.ProfitFactor > 0 && m.ProfitFactor < 1.0 {
+		score -= 10
+		warnings = append(warnings, "Profit factor below 1.0 (unprofitable)")
+	}
+
+	// Clamp 0-100
+	if score < 0 {
+		score = 0
+	}
+	if score > 100 {
+		score = 100
+	}
+
+	level := "medium"
+	switch {
+	case score >= 70:
+		level = "low"
+	case score < 40:
+		level = "high"
+	}
+
+	return &antv1.ExecuteRiskAssessment{
+		Score:       int32(score),
+		Level:       level,
+		Reasons:     reasons,
+		Warnings:    warnings,
+		IsReliable:  m.TotalTrades >= 10,
+	}
 }

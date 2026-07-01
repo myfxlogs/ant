@@ -45,7 +45,6 @@ func configureStrategyExecution(
 	srv.SetBarSource(strategy.NewLiveSource(mthubSvc, marketDataRepo))
 	srv.SetMtHub(mthubSvc)
 	srv.SetGoExecutor(strategy.NewGoExecutor(".", log))
-	srv.SetWasmExecutor(strategy.NewWasmExecutor(".", log))
 	strategyRunRepo := repository.NewStrategyRunRepository(pool)
 	srv.SetRunRepo(strategyRunRepo)
 	srv.SetImportedRepo(repository.NewImportedStrategyRepository(pool))

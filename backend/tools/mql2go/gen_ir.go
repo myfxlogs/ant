@@ -18,7 +18,7 @@ func GenerateFromIR(ir *interp.IR, name string) string {
 	g := &irGenerator{
 		ir:         ir,
 		name:       name,
-		pkg:        irPkgName(name),
+		pkg:        "main",
 		param:      make(map[string]bool),
 		intVars:    make(map[string]bool),
 		stdImports: make(map[string]bool),

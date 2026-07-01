@@ -47,6 +47,12 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
     await _validate(code);
   }, [code, _validate]);
 
+  // Validate a specific code string (used after template load to extract
+  // params before React state batches the setCode update).
+  const validateCode = useCallback(async (codeToValidate: string) => {
+    await _validate(codeToValidate);
+  }, [_validate]);
+
   // Parse extracted parameters from the last validation result into the format
   // accepted by createTemplate / updateTemplate (TemplateParameter proto).
   const _validatedParams = useCallback((): TemplateParameter[] => {
@@ -126,7 +132,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
   }, [code, t]);
 
   return { code, setCode, strategyId, setStrategyId, validating, validationResult, setValidationResult,
-    lastValidatedCode, setLastValidatedCode, handleValidate,
+    lastValidatedCode, setLastValidatedCode, handleValidate, validateCode,
     templates, templatesLoading, loadedTemplate, loadTemplates, handleLoadTemplate,
     saveModalOpen, setSaveModalOpen, saveLoading, saveForm, canSave,
     handleSave, handleSaveAs, handleSaveModalOk, handleCopy, lastSavedId };

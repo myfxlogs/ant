@@ -1,7 +1,7 @@
 package interp
 
 // Pure Go IR types for the MQL interpreter.
-// No tree-sitter dependency — safe for WASM compilation.
+// No tree-sitter dependency.
 
 // Expr is a pure Go expression tree node.
 type Expr struct {

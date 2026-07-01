@@ -1,7 +1,7 @@
 # MQL 源码转换系统 — 覆盖率补齐计划
 
 - **创建日期**：2026-06-29
-- **关联 ADR**：ADR-0021（Python→Go 策略迁移）
+- **关联 ADR**：ADR-0023（AST 解释器 + MQL 源码为唯一真实来源）、ADR-0021（Python→Go 策略迁移，G1/§3.1 已被 0023 覆盖）
 - **目标**：将 MQL EA 导入系统的实际执行覆盖率从当前水平提升到生产可用
 
 ## 1. 当前状态快照
@@ -12,11 +12,11 @@
 |------|------|------|
 | tree-sitter 解析 | `tools/mql2go/analyze.go` | MQL4/MQL5 → CST |
 | IR 编译 | `tools/mql2go/compile_interp.go` | CST → `interp.IR`（纯 Go） |
-| IR 序列化 | `tools/mql2go/interp/ir_serialize.go` | IR → bytes（WASM 传递） |
-| 解释器 | `tools/mql2go/interp/exec.go` | OnInit/OnBar/OnTick/OnTimer/OnDeinit |
-| 回测路径 | `internal/connect/strategy/backtest_worker.go` | MQL → IR → WASM interp harness |
-| 实盘路径 | `internal/connect/strategy/live_runner_events.go` | MQL → IR → InterpLiveSession |
-| Go 代码导出 | `tools/mql2go/gen_ir.go` | IR → Go 源码（预览用） |
+| Bytecode 编译 | `tools/mql2go/compile.go` | AST → 线性字节码（一次性，~300ms） |
+| VM 执行 | `tools/mql2go/vm.go` + `interp/exec.go` | 指令计数器 + 显式数据栈 + panic recovery |
+| 回测路径 | `internal/connect/strategy/backtest_worker.go` | MQL → AST → Bytecode → VM 执行（进程内） |
+| 实盘路径 | `internal/connect/strategy/vm_live_session.go` | MQL → AST → Bytecode → VMLiveSession（进程内） |
+| Go 代码导出 | `tools/mql2go/gen.go` / `gen_ir.go` | IR → Go 源码（仅 CLI 开发调试，不参与运行时） |
 | 前端导入 | `frontend/src/pages/strategy/components/editor/CodeEditorPanel.tsx` | Analyze → Generate → Import |
 | 14 个核心指标 | `strategy/backtest/engine.go`, `strategy/runner/indicators.go` | iMA/iRSI/iATR/iMACD/iBands/iStochastic/iCCI/iADX/iMFI/iOBV/iSAR/iStdDev/iWPR/iMomentum |
 | MQL4 交易 | `tools/mql2go/interp/builtin_trade.go` | OrderSend/OrderClose/OrderModify/OrderDelete + 16 Order* 属性函数 |
@@ -136,10 +136,9 @@
 
 - **文件**：
   - `tools/mql2go/interp/ir.go` — IR 增加 `OnTrade`/`OnTradeTransaction` 字段
-  - `tools/mql2go/interp/ir_serialize.go` — 序列化新字段
   - `tools/mql2go/interp/exec.go` — 增加 `OnTrade`/`OnTradeTransaction` 方法
   - `tools/mql2go/compile_interp.go` — 编译器收集新函数
-  - `internal/connect/strategy/live_runner_events.go` — trade 事件分发到 `OnTrade`
+  - `internal/connect/strategy/vm_live_handlers.go` — trade 事件分发到 VM `OnTrade`
   - `backend/strategy/sdk/strategy.go` — SDK 增加可选 `TradeStrategy` 接口
 - **验收**：MQL5 EA 含 OnTrade 可正确编译并执行
 - **工作量**：约 1 天
@@ -177,10 +176,10 @@ ADR-0021 第 6 节的待补齐清单已同步更新：
 |--------|--------|
 | `indicatorSet` stub 指标: Stochastic/CCI/ADX/MFI/OBV/SAR/StdDev/WPR | ✅ 已实现（T1: 全部 38 个指标真实计算） |
 | Go SimBroker 功能补齐 | ✅ 已实现（T2: PositionClosePartial/CloseBy/HistoryOrders/Deals/SymbolInfo） |
-| `GoStrategyExecutor` 完整实现 | ✅ 已实现（interp 路径替代） |
+| `GoStrategyExecutor` 完整实现 | ✅ 已实现（Bytecode VM 路径替代，`VMRunner` 实现 `sdk.Strategy`） |
 | `mql2go` MQL5 支持 | ✅ 已完成（CTrade/Position/OnTrade/OnTradeTransaction） |
 | Go 行为对齐 harness | ✅ 已实现（`parity.go` + `parity_runner.go` + `mt_report.go`） |
-| `mql2go` 表达式翻译 | ✅ 已完成（interp 路径不再需要表达式翻译） |
+| `mql2go` 表达式翻译 | ✅ 已完成（VM 路径直接执行 AST，不再需要表达式翻译） |
 | Go 回测 metrics | ✅ 已完成 |
 | SymbolInfo/MarketInfo | ✅ 已实现（T3） |
 | OrderCloseBy + OrdersHistoryTotal | ✅ 已实现（T4） |

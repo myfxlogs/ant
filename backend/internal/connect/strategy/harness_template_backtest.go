@@ -5,13 +5,12 @@ package strategy
 // should define a `strategy` variable implementing sdk.Strategy.
 //
 // Compiled path: strategy := &TypeName{}
-// Interp path:   strategy := interp.WASMRunSetup()
+// ADR-0023: WASM interp path removed — all MQL strategies use VMRunner.
 func generateBacktestHarnessBase(strategyCreation, extraImport string) string {
 	return `package main
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
 	"io"
 	"os"
@@ -128,6 +127,7 @@ func main() {
 
 	for _, ep := range result.Equity {
 		resp.EquityCurve = append(resp.EquityCurve, ep.Equity.String())
+		resp.EquityTimesMs = append(resp.EquityTimesMs, ep.Time.UnixMilli())
 	}
 
 	for i, t := range result.Trades {
@@ -147,6 +147,21 @@ func main() {
 			Commission: t.Commission.String(),
 			Reason:     t.Comment,
 		})
+	}
+
+	// ADR-0023 §5.5 #14: ExecutionAssumptions — transparency panel.
+	resp.ExecutionAssumptions = &antv1.ExecutionAssumptions{
+		SimulationMode:   "KLINE_RANGE",
+		SignalTiming:     "next_bar_open",
+		FillRule:         "bar_close",
+		ActualCommission: req.Commission,
+		ActualSlippage:   req.SlippageRate,
+		ActualLeverage:   fmt.Sprintf("%d", req.Leverage),
+		TradeDirection:   "both",
+	}
+	if !req.StrictMode {
+		resp.ExecutionAssumptions.SignalTiming = "same_bar_close"
+		resp.ExecutionAssumptions.MtfFallbackReason = "strict_mode disabled"
 	}
 
 	out, err := proto.Marshal(resp)

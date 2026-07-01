@@ -50,6 +50,7 @@ func NewToolRegistry(backtestRepo *repository.BacktestRunRepository, store repos
 		preTools: []Tool{
 			&readKlineTool{repo: store},
 			&readBacktestLogTool{repo: backtestRepo},
+			&analyzeStrategyTool{},
 		},
 		tools: []Tool{
 			&complianceTool{},

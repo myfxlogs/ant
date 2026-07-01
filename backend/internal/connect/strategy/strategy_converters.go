@@ -54,9 +54,14 @@ func toProtoBacktestRun(r *repository.BacktestRun) *antv1.BacktestRun {
 		out.StrategyId = proto.String(r.StrategyID.String())
 	}
 	// Deserialize config snapshot to proto.
+	// DiscardUnknown prevents stale fields from older proto schemas
+	// (e.g. commission/leverage as double) from being preserved as
+	// unknown fields and re-serialized with wrong wire types, which
+	// causes "premature EOF" in the JS protobuf parser.
 	if len(r.ConfigSnapshot) > 0 {
 		var ec antv1.BacktestExecutionConfig
-		if err := proto.Unmarshal(r.ConfigSnapshot, &ec); err == nil {
+		opts := proto.UnmarshalOptions{DiscardUnknown: true}
+		if err := opts.Unmarshal(r.ConfigSnapshot, &ec); err == nil {
 			out.ExecutionConfig = &ec
 		}
 	}

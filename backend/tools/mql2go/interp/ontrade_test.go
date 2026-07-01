@@ -138,32 +138,3 @@ func TestOnTrade_BothCallbacks(t *testing.T) {
 		t.Fatalf("OnTrade with both callbacks failed: %v", err)
 	}
 }
-
-func TestSerializeIR_OnTrade_RoundTrip(t *testing.T) {
-	ir := &IR{
-		Version: "mql5",
-		OnTrade: []Statement{
-			{Kind: StmtExpr, Expr: ptr(callExpr("Print",
-				Expr{Kind: ExprLiteral, Val: StringVal("trade")},
-			))},
-		},
-		OnTradeTransaction: []Statement{
-			{Kind: StmtExpr, Expr: ptr(callExpr("Print",
-				Expr{Kind: ExprLiteral, Val: StringVal("txn")},
-			))},
-		},
-		Funcs: map[string]*FuncDef{},
-	}
-
-	data := SerializeIR(ir)
-	restored := DeserializeIR(data)
-	if restored == nil {
-		t.Fatal("DeserializeIR returned nil")
-	}
-	if len(restored.OnTrade) != 1 {
-		t.Errorf("OnTrade len = %d, want 1", len(restored.OnTrade))
-	}
-	if len(restored.OnTradeTransaction) != 1 {
-		t.Errorf("OnTradeTransaction len = %d, want 1", len(restored.OnTradeTransaction))
-	}
-}

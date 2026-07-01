@@ -156,6 +156,7 @@ func (s *StrategyPlanServer) Conversate(
 		},
 		chunk, toolEvt,
 	)
+	loop.SetCurrentCode(m.CurrentCode)
 
 	raw, err := loop.RunWithHistory(ctx, sysPrompt, userPrompt, history, userID)
 	if err != nil {
@@ -224,6 +225,8 @@ func (s *StrategyPlanServer) ExecutePlan(
 			return stream.Send(&antv1.ExecutePlanChunk{Phase: "tool_result", ToolCall: tc, ToolResult: tr})
 		},
 	)
+
+	loop.SetCurrentCode(m.PreviousCode)
 
 	raw, err := loop.Run(ctx, sysPrompt, userPrompt, userID)
 	if err != nil {

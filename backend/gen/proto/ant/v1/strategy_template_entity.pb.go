@@ -38,7 +38,9 @@ type StrategyTemplate struct {
 	UpdatedAt   *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	IsSystem    bool                   `protobuf:"varint,13,opt,name=is_system,json=isSystem,proto3" json:"is_system,omitempty"`
 	// I18n data for parameter labels (JSON-encoded TemplateI18n).
-	I18N          string `protobuf:"bytes,14,opt,name=i18n,proto3" json:"i18n,omitempty"`
+	I18N string `protobuf:"bytes,14,opt,name=i18n,proto3" json:"i18n,omitempty"`
+	// FK to imported_strategies.id (ADR-0023: MQL source of truth).
+	StrategyId    string `protobuf:"bytes,15,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -171,6 +173,13 @@ func (x *StrategyTemplate) GetI18N() string {
 	return ""
 }
 
+func (x *StrategyTemplate) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
 type TemplateParameter struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -283,7 +292,7 @@ var File_strategy_template_entity_proto protoreflect.FileDescriptor
 
 const file_strategy_template_entity_proto_rawDesc = "" +
 	"\n" +
-	"\x1estrategy_template_entity.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xcd\x03\n" +
+	"\x1estrategy_template_entity.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xee\x03\n" +
 	"\x10StrategyTemplate\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
@@ -303,7 +312,9 @@ const file_strategy_template_entity_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1b\n" +
 	"\tis_system\x18\r \x01(\bR\bisSystem\x12\x12\n" +
-	"\x04i18n\x18\x0e \x01(\tR\x04i18n\"\xdf\x01\n" +
+	"\x04i18n\x18\x0e \x01(\tR\x04i18n\x12\x1f\n" +
+	"\vstrategy_id\x18\x0f \x01(\tR\n" +
+	"strategyId\"\xdf\x01\n" +
 	"\x11TemplateParameter\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x18\n" +

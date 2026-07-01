@@ -239,7 +239,7 @@ func (s *ActiveSession) RecordError(err string) {
 	}
 }
 
-// SetStderrTail updates the captured stderr tail from the WASM session.
+// SetStderrTail updates the captured stderr tail from the live session.
 func (s *ActiveSession) SetStderrTail(tail string) {
 	s.signalSubsMu.Lock()
 	s.StderrTail = tail

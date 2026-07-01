@@ -32,11 +32,10 @@ func paramGroup(name string) string {
 	return "entry"
 }
 
-// ── IR-based import RPCs ─────────────────────────────────────────────
-// All three RPCs use CompileToIR + interp.Analyze as the single source
-// for coverage/blind-spot reporting. GenerateFromIR produces Go source
-// from interp.IR — used as export preview only (not execution path).
-// Execution goes through the interpreter: CompileToIR → interp.Interpreter.
+// ── Import RPCs ──────────────────────────────────────────────────────
+// Analysis path: MQL → CompileToIR → interp.Analyze (coverage/blind-spot report).
+// Execution path: MQL → CompileMQL → Bytecode VM (ADR-0023 D2: analysis uses AST, execution uses Bytecode).
+// Per ADR-0023 D4, Go code generation is no longer used at runtime.
 
 func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *connect.Request[antv1.AnalyzeImportCodeRequest]) (*connect.Response[antv1.AnalyzeImportCodeResponse], error) {
 	source := req.Msg.GetSourceCode()
@@ -86,32 +85,12 @@ func (s *StrategyExecutionServer) GenerateImportCode(ctx context.Context, req *c
 	}
 	rep := interp.Analyze(ir)
 
-	// GenerateFromIR produces Go source for export preview (not execution).
-	// Execution path: MQL → CompileToIR → interp.Interpreter (WASM harness).
-	strategyName := deriveStrategyName(req.Msg.GetSourceName())
-	code := mql2go.GenerateFromIR(ir, strategyName)
-	lines := int32(strings.Count(code, "\n") + 1)
-
-	// Compile verification on exported Go code (quality hint, not execution gate)
-	compiles := false
-	compileError := ""
-	if s.goExecutor != nil {
-		compiles, compileError = s.goExecutor.CompileCheck(ctx, code)
-		if !compiles {
-			s.log.Warn("GenerateImportCode: exported code failed compilation",
-				zap.String("error", compileError))
-		}
-	} else {
-		compiles = true
-	}
+	lines := int32(strings.Count(source, "\n") + 1)
 
 	resp := &antv1.GenerateImportCodeResponse{
-		GoCode:    code,
+		GoCode:    source, // ADR-0023: MQL is the single source of truth
 		CodeLines: lines,
-		Compiles:  compiles,
-	}
-	if !compiles && compileError != "" {
-		resp.QualityGateFailures = append(resp.QualityGateFailures, compileError)
+		Compiles:  true,
 	}
 	for _, bs := range rep.BlindSpots {
 		resp.QualityGateFailures = append(resp.QualityGateFailures,
@@ -134,9 +113,7 @@ func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *conne
 
 	rep := interp.Analyze(ir)
 
-	// Go code generated from IR (export preview only, not execution path)
 	strategyName := deriveStrategyName(req.Msg.GetSourceName())
-	code := mql2go.GenerateFromIR(ir, strategyName)
 
 	// Persist raw MQL as source of truth (if repo is configured).
 	strategyID := uuid.New().String()
@@ -163,7 +140,7 @@ func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *conne
 	return connect.NewResponse(&antv1.ImportStrategyResponse{
 		StrategyId:    strategyID,
 		StrategyName:  strategyName,
-		GoCode:        code,
+		GoCode:        source, // ADR-0023: return MQL source, not generated Go
 		CoverageScore: rep.Coverage,
 		BlindSpots:    irBlindSpotProtos(rep.BlindSpots),
 	}), nil

@@ -75,6 +75,7 @@ const agentPrompt_ZH = `你是 AntTrader 策略开发智能体。
 **主动查询工具**（使用 [TOOL: name args] 语法调用）：
 - [TOOL: read_kline SYMBOL TIMEFRAME] — 查询 K 线数据统计。返回 bar 数量、数据起止日期。使用场景：生成代码前检查数据是否充足；回测失败时排查数据问题。示例：[TOOL: read_kline BTCUSDm 5m]
 - [TOOL: read_backtest_log] — 读取最近一次回测的状态和错误信息。使用场景：回测失败后查看具体错误原因。
+- [TOOL: analyze_strategy] — 分析当前策略代码的覆盖度和兼容性。返回：编译是否通过、覆盖度评分、支持的函数数、盲区列表（fatal/warning）、参数列表、执行模式（on_bar/on_tick）、推荐操作（ready_to_run/needs_ai_translation/needs_review）。使用场景：用户导入 MQL 代码后，先分析是否可以直接在 VM 上运行，还是有不支持的函数需要 AI 翻译。
 
 	**生成代码后**：用户需要手动运行下方的工作流按钮（策略审查 → 回测 → 保存）。不要声称检查会自动执行——这些现在是用户手动触发的。当用户运行后，结果会以对话消息形式出现，你需要解读这些结果。
 
@@ -248,6 +249,7 @@ The user has selected a trading symbol and timeframe (shown at the top of the in
 **Query Tools** (invoke with [TOOL: name args] syntax):
 - [TOOL: read_kline SYMBOL TIMEFRAME] — Query K-line statistics. Returns bar count and date range. Use before generating code to verify data availability, or when backtests fail to diagnose data issues. Example: [TOOL: read_kline BTCUSDm 5m]
 - [TOOL: read_backtest_log] — Read the most recent backtest status and error details. Use when backtests fail to understand what went wrong.
+- [TOOL: analyze_strategy] — Analyze the current strategy code for coverage and compatibility. Returns: compiles (bool), coverage score, supported/total calls, blind spots (fatal/warning), parameter list, execution mode (on_bar/on_tick), and recommendation (ready_to_run/needs_ai_translation/needs_review). Use after the user imports MQL code to determine if it can run directly on the VM or has unsupported functions requiring AI translation.
 
 	**After code generation**: The user manually runs the workflow buttons below the chat (Strategy Review → Backtest → Save). Do NOT claim checks run automatically — they are user-triggered. When the user runs them, results appear as chat messages; you must interpret those results.
 

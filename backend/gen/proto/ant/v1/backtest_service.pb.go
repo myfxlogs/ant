@@ -956,6 +956,7 @@ type ExecuteBacktestResponse struct {
 	Trades               []*ExecuteBacktestTrade `protobuf:"bytes,5,rep,name=trades,proto3" json:"trades,omitempty"`
 	Error                string                  `protobuf:"bytes,6,opt,name=error,proto3" json:"error,omitempty"`
 	ExecutionAssumptions *ExecutionAssumptions   `protobuf:"bytes,7,opt,name=execution_assumptions,json=executionAssumptions,proto3" json:"execution_assumptions,omitempty"`
+	EquityTimesMs        []int64                 `protobuf:"varint,8,rep,packed,name=equity_times_ms,json=equityTimesMs,proto3" json:"equity_times_ms,omitempty"` // bar timestamps for equity_curve points
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -1035,6 +1036,13 @@ func (x *ExecuteBacktestResponse) GetError() string {
 func (x *ExecuteBacktestResponse) GetExecutionAssumptions() *ExecutionAssumptions {
 	if x != nil {
 		return x.ExecutionAssumptions
+	}
+	return nil
+}
+
+func (x *ExecuteBacktestResponse) GetEquityTimesMs() []int64 {
+	if x != nil {
+		return x.EquityTimesMs
 	}
 	return nil
 }
@@ -1364,7 +1372,7 @@ const file_backtest_service_proto_rawDesc = "" +
 	"commission\x18\t \x01(\tR\n" +
 	"commission\x12\x16\n" +
 	"\x06reason\x18\n" +
-	" \x01(\tR\x06reason\"\xe2\x02\n" +
+	" \x01(\tR\x06reason\"\x8a\x03\n" +
 	"\x17ExecuteBacktestResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x128\n" +
 	"\ametrics\x18\x02 \x01(\v2\x1e.ant.v1.ExecuteBacktestMetricsR\ametrics\x121\n" +
@@ -1372,7 +1380,8 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\fequity_curve\x18\x04 \x03(\tR\vequityCurve\x124\n" +
 	"\x06trades\x18\x05 \x03(\v2\x1c.ant.v1.ExecuteBacktestTradeR\x06trades\x12\x14\n" +
 	"\x05error\x18\x06 \x01(\tR\x05error\x12Q\n" +
-	"\x15execution_assumptions\x18\a \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptions\"\xcd\x03\n" +
+	"\x15execution_assumptions\x18\a \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptions\x12&\n" +
+	"\x0fequity_times_ms\x18\b \x03(\x03R\requityTimesMs\"\xcd\x03\n" +
 	"\x16ExecuteBacktestMetrics\x12!\n" +
 	"\ftotal_return\x18\x01 \x01(\x01R\vtotalReturn\x12#\n" +
 	"\rannual_return\x18\x02 \x01(\x01R\fannualReturn\x12!\n" +

@@ -27,7 +27,6 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
   const [eaCode, setEaCode] = useState('');
   const [eaTranslating, setEaTranslating] = useState(false);
   const [eaResult, setEaResult] = useState('');
-  const [eaExportCode, setEaExportCode] = useState('');
   const [eaStrategyId, setEaStrategyId] = useState('');
   const [importMethod, setImportMethod] = useState<ImportMethod>('migration');
   // Migration engine state
@@ -68,12 +67,9 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
           sourceCode: eaCode,
           sourceName: 'imported.mq4',
         });
-        // Store raw MQL as execution code (single source of truth).
-        // gen.go Go output is a read-only export preview, NOT execution path.
+        // MQL is the single source of truth — apply directly to editor.
         setEaResult(eaCode);
-        setEaExportCode(resp.goCode || '');
         setEaStrategyId(resp.strategyId || '');
-        // Set form code to raw MQL and store strategy_id for backtest linking.
         form.setFieldsValue({ code: eaCode, strategyId: resp.strategyId || '' });
         onStrategyIdChange?.(resp.strategyId || undefined);
       } catch (err: any) {
@@ -171,17 +167,13 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
               <div style={{ flex: 1, overflow: 'auto', padding: '0 14px' }}>
                 <ImportAnalysisReport analysis={analysis} loading={analyzing} />
                 {eaResult && (
-                  <>
-                    <Alert
-                      type="info"
-                      showIcon
-                      message={t('strategy.importEA.exportPreview', { defaultValue: '导出 Go 源码（仅供阅读/二次开发，非执行路径）' })}
-                      description={t('strategy.importEA.exportPreviewDesc', { defaultValue: 'Execution uses the original MQL via the IR interpreter. This Go code is for reference only.' })}
-                      style={{ margin: '8px 0' }}
-                    />
-                    <pre style={{ margin: 0, padding: '10px 0', fontFamily: '"Fira Code", monospace', fontSize: 12, lineHeight: 1.5, whiteSpace: 'pre-wrap', opacity: 0.7 }}>{eaExportCode}</pre>
-                  </>
-                )}
+                  <Alert
+                    type="success"
+                    showIcon
+                    message={t('strategy.importEA.importSuccess', { defaultValue: 'MQL 源码已导入，点击「Apply to Editor」写入编辑器' })}
+                    style={{ margin: '8px 0' }}
+                  />
+                )
                 {!analysis && !eaResult && !analyzing && (
                   <div style={{ textAlign: 'center', padding: 24 }}>
                     <Text type="secondary">{t('strategy.importEA.hint', { defaultValue: 'Paste MQL4/MQL5 code and click Analyze' })}</Text>

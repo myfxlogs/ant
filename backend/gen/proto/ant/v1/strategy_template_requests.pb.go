@@ -154,7 +154,9 @@ type CreateTemplateRequest struct {
 	IsPublic    bool                   `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
 	Tags        []string               `protobuf:"bytes,6,rep,name=tags,proto3" json:"tags,omitempty"`
 	// I18n data for parameter labels (JSON-encoded TemplateI18n).
-	I18N          string `protobuf:"bytes,7,opt,name=i18n,proto3" json:"i18n,omitempty"`
+	I18N string `protobuf:"bytes,7,opt,name=i18n,proto3" json:"i18n,omitempty"`
+	// FK to imported_strategies.id (ADR-0023).
+	StrategyId    string `protobuf:"bytes,8,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -238,6 +240,13 @@ func (x *CreateTemplateRequest) GetI18N() string {
 	return ""
 }
 
+func (x *CreateTemplateRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
 type CreateTemplateDraftRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -283,13 +292,15 @@ func (x *CreateTemplateDraftRequest) GetName() string {
 }
 
 type UpdateTemplateDraftRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	Code          *string                `protobuf:"bytes,4,opt,name=code,proto3,oneof" json:"code,omitempty"`
-	Parameters    []*TemplateParameter   `protobuf:"bytes,5,rep,name=parameters,proto3" json:"parameters,omitempty"`
-	Tags          []string               `protobuf:"bytes,6,rep,name=tags,proto3" json:"tags,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name        *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	Description *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	Code        *string                `protobuf:"bytes,4,opt,name=code,proto3,oneof" json:"code,omitempty"`
+	Parameters  []*TemplateParameter   `protobuf:"bytes,5,rep,name=parameters,proto3" json:"parameters,omitempty"`
+	Tags        []string               `protobuf:"bytes,6,rep,name=tags,proto3" json:"tags,omitempty"`
+	// FK to imported_strategies.id (ADR-0023).
+	StrategyId    *string `protobuf:"bytes,7,opt,name=strategy_id,json=strategyId,proto3,oneof" json:"strategy_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -364,6 +375,13 @@ func (x *UpdateTemplateDraftRequest) GetTags() []string {
 		return x.Tags
 	}
 	return nil
+}
+
+func (x *UpdateTemplateDraftRequest) GetStrategyId() string {
+	if x != nil && x.StrategyId != nil {
+		return *x.StrategyId
+	}
+	return ""
 }
 
 type PublishTemplateDraftRequest struct {
@@ -464,7 +482,9 @@ type UpdateTemplateRequest struct {
 	IsPublic    *bool                  `protobuf:"varint,6,opt,name=is_public,json=isPublic,proto3,oneof" json:"is_public,omitempty"`
 	Tags        []string               `protobuf:"bytes,7,rep,name=tags,proto3" json:"tags,omitempty"`
 	// I18n data for parameter labels (JSON-encoded TemplateI18n).
-	I18N          *string `protobuf:"bytes,8,opt,name=i18n,proto3,oneof" json:"i18n,omitempty"`
+	I18N *string `protobuf:"bytes,8,opt,name=i18n,proto3,oneof" json:"i18n,omitempty"`
+	// FK to imported_strategies.id (ADR-0023).
+	StrategyId    *string `protobuf:"bytes,9,opt,name=strategy_id,json=strategyId,proto3,oneof" json:"strategy_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -555,6 +575,13 @@ func (x *UpdateTemplateRequest) GetI18N() string {
 	return ""
 }
 
+func (x *UpdateTemplateRequest) GetStrategyId() string {
+	if x != nil && x.StrategyId != nil {
+		return *x.StrategyId
+	}
+	return ""
+}
+
 type DeleteTemplateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -608,7 +635,7 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"\x15ListTemplatesResponse\x126\n" +
 	"\ttemplates\x18\x01 \x03(\v2\x18.ant.v1.StrategyTemplateR\ttemplates\"$\n" +
 	"\x12GetTemplateRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xe1\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x82\x02\n" +
 	"\x15CreateTemplateRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x12\n" +
@@ -618,9 +645,11 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"parameters\x12\x1b\n" +
 	"\tis_public\x18\x05 \x01(\bR\bisPublic\x12\x12\n" +
 	"\x04tags\x18\x06 \x03(\tR\x04tags\x12\x12\n" +
-	"\x04i18n\x18\a \x01(\tR\x04i18n\"0\n" +
+	"\x04i18n\x18\a \x01(\tR\x04i18n\x12\x1f\n" +
+	"\vstrategy_id\x18\b \x01(\tR\n" +
+	"strategyId\"0\n" +
 	"\x1aCreateTemplateDraftRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\"\xf6\x01\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\"\xac\x02\n" +
 	"\x1aUpdateTemplateDraftRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12%\n" +
@@ -629,14 +658,17 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"\n" +
 	"parameters\x18\x05 \x03(\v2\x19.ant.v1.TemplateParameterR\n" +
 	"parameters\x12\x12\n" +
-	"\x04tags\x18\x06 \x03(\tR\x04tagsB\a\n" +
+	"\x04tags\x18\x06 \x03(\tR\x04tags\x12$\n" +
+	"\vstrategy_id\x18\a \x01(\tH\x03R\n" +
+	"strategyId\x88\x01\x01B\a\n" +
 	"\x05_nameB\x0e\n" +
 	"\f_descriptionB\a\n" +
-	"\x05_code\"-\n" +
+	"\x05_codeB\x0e\n" +
+	"\f_strategy_id\"-\n" +
 	"\x1bPublishTemplateDraftRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\",\n" +
 	"\x1aCancelTemplateDraftRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xc3\x02\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xf9\x02\n" +
 	"\x15UpdateTemplateRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12%\n" +
@@ -647,13 +679,16 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"parameters\x12 \n" +
 	"\tis_public\x18\x06 \x01(\bH\x03R\bisPublic\x88\x01\x01\x12\x12\n" +
 	"\x04tags\x18\a \x03(\tR\x04tags\x12\x17\n" +
-	"\x04i18n\x18\b \x01(\tH\x04R\x04i18n\x88\x01\x01B\a\n" +
+	"\x04i18n\x18\b \x01(\tH\x04R\x04i18n\x88\x01\x01\x12$\n" +
+	"\vstrategy_id\x18\t \x01(\tH\x05R\n" +
+	"strategyId\x88\x01\x01B\a\n" +
 	"\x05_nameB\x0e\n" +
 	"\f_descriptionB\a\n" +
 	"\x05_codeB\f\n" +
 	"\n" +
 	"_is_publicB\a\n" +
-	"\x05_i18n\"'\n" +
+	"\x05_i18nB\x0e\n" +
+	"\f_strategy_id\"'\n" +
 	"\x15DeleteTemplateRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02idB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 

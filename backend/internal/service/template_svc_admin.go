@@ -15,13 +15,13 @@ func (s *StrategySvc) GetTemplateDetail(ctx context.Context, id uuid.UUID) (*Tem
 	var t TemplateRow
 	var userEmail string
 	err := s.pg.QueryRow(ctx,
-		`SELECT st.id, st.user_id, st.name, st.description, st.code, st.status, st.parameters, st.is_public, st.is_system,
+		`SELECT st.id, st.user_id, st.name, st.description, st.code, st.strategy_id, st.status, st.parameters, st.is_public, st.is_system,
 		        st.tags, st.use_count, st.flag, st.flag_reason, st.flagged_by, st.flagged_at, st.created_at, st.updated_at,
 		        COALESCE(u.email, '')
 		 FROM strategy_templates st
 		 LEFT JOIN users u ON st.user_id = u.id
 		 WHERE st.id = $1`, id,
-	).Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.Status, &t.Parameters,
+	).Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.StrategyID, &t.Status, &t.Parameters,
 		&t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount,
 		&t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt,
 		&userEmail)
@@ -99,9 +99,9 @@ func (s *StrategySvc) UpdateSystemStrategy(ctx context.Context, id uuid.UUID, na
 	// Fetch existing
 	var t TemplateRow
 	err := s.pg.QueryRow(ctx,
-		`SELECT id, user_id, name, description, code, status, parameters, i18n, is_public, is_system, tags, use_count, flag, flag_reason, flagged_by, flagged_at, created_at, updated_at
+		`SELECT id, user_id, name, description, code, strategy_id, status, parameters, i18n, is_public, is_system, tags, use_count, flag, flag_reason, flagged_by, flagged_at, created_at, updated_at
 		 FROM strategy_templates WHERE id = $1 AND is_system = true`, id,
-	).Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.Status, &t.Parameters, &t.I18n, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt)
+	).Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.StrategyID, &t.Status, &t.Parameters, &t.I18n, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrTemplateNotFound

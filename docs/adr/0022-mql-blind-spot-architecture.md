@@ -4,6 +4,12 @@
 
 Accepted — 2026-06-29
 
+> **实现方式变更注记** (2026-07-01)：本 ADR 的三层盲区处理原则（静态分析 + 运行时追踪 + 致命阻断）仍然有效，但实现方式已由 ADR-0023 更新：
+> - 静态分析从遍历 IR 改为遍历 AST（`interp.Analyze`）
+> - 运行时执行从 IR 解释器改为 Bytecode VM（`vm.go` + `interp/exec.go`）
+> - 致命阻断从 `panic(errFatalBlindSpot)` + `execBlock defer recover` 改为 VM 指令计数器中止 + `safeRun()` panic recovery
+> - 盲区分级规则不变（致命/警告/永久盲区）
+
 ## 背景
 
 MQL4/MQL5 有数百个内置函数。我们的 Go 解释器（`tools/mql2go/interp/`）实现了其中约 120 个，覆盖交易、行情、指标、平台工具等核心功能。但 EA 可能调用我们尚未实现的函数。

@@ -282,36 +282,6 @@ func TestBlockScope(t *testing.T) {
 	}
 }
 
-func TestStrategyFactory(t *testing.T) {
-	ir := &IR{
-		Version: "mql4",
-		OnBar: []Statement{
-			{Kind: StmtExpr, Expr: &Expr{Kind: ExprAssignment, Name: "x", Args: []Expr{{Kind: ExprLiteral, Val: IntVal(42)}}}},
-		},
-	}
-
-	factory := NewStrategyFactory(ir)
-	s1 := factory.Create()
-	s2 := factory.Create()
-
-	if s1 == s2 {
-		t.Error("Create() should return independent instances")
-	}
-
-	// Both should be *Interpreter
-	it1, ok1 := s1.(*Interpreter)
-	it2, ok2 := s2.(*Interpreter)
-	if !ok1 || !ok2 {
-		t.Fatal("Create() should return *Interpreter")
-	}
-
-	// They should have independent globals
-	it1.globals["test"] = IntVal(1)
-	if _, exists := it2.globals["test"]; exists {
-		t.Error("instances should have independent globals")
-	}
-}
-
 func TestSwitchBreakInLoop(t *testing.T) {
 	// switch break should exit the switch, not the enclosing for loop
 	ir := &IR{

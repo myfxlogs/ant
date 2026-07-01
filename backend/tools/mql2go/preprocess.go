@@ -76,6 +76,7 @@ func isBuiltinClass(name string) bool {
 // PreprocessMQL handles MQL preprocessor directives before parsing.
 // #include — inject stub class declarations for known MQL5 headers
 // #define — macro substitution
+// #ifdef/#ifndef/#else/#endif — simple conditional inclusion
 // #property — strip (metadata only)
 // #import — strip (DLL imports, not supported)
 func PreprocessMQL(source string) string {
@@ -83,18 +84,95 @@ func PreprocessMQL(source string) string {
 	defines := make(map[string]string)
 	var result []string
 
+	// Conditional compilation stack: each entry is true if the current
+	// block should be included (all enclosing #ifdef/#ifndef evaluated true).
+	var condStack []bool
+
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
 
+		// Check if we're inside a skipped conditional block
+		skipped := false
+		for _, active := range condStack {
+			if !active {
+				skipped = true
+				break
+			}
+		}
+
 		// #define NAME value
 		if strings.HasPrefix(trimmed, "#define ") {
-			parts := strings.SplitN(trimmed[8:], " ", 2)
-			if len(parts) >= 2 {
-				key := strings.TrimSpace(parts[0])
-				val := strings.TrimSpace(parts[1])
-				defines[key] = val
+			if !skipped {
+				parts := strings.SplitN(trimmed[8:], " ", 2)
+				if len(parts) >= 2 {
+					key := strings.TrimSpace(parts[0])
+					val := strings.TrimSpace(parts[1])
+					defines[key] = val
+				}
 			}
 			result = append(result, line) // Keep for tree-sitter
+			continue
+		}
+
+		// #undef NAME — remove from defines
+		if strings.HasPrefix(trimmed, "#undef ") {
+			if !skipped {
+				key := strings.TrimSpace(trimmed[7:])
+				delete(defines, key)
+			}
+			result = append(result, "")
+			continue
+		}
+
+		// #ifdef NAME — include block if NAME is defined
+		if strings.HasPrefix(trimmed, "#ifdef ") {
+			name := strings.TrimSpace(trimmed[7:])
+			condStack = append(condStack, !skipped && defines[name] != "")
+			result = append(result, "")
+			continue
+		}
+
+		// #ifndef NAME — include block if NAME is NOT defined
+		if strings.HasPrefix(trimmed, "#ifndef ") {
+			name := strings.TrimSpace(trimmed[8:])
+			condStack = append(condStack, !skipped && defines[name] == "")
+			result = append(result, "")
+			continue
+		}
+
+		// #else — flip the innermost condition
+		if trimmed == "#else" {
+			if len(condStack) > 0 {
+				// Check if any outer condition is false — if so, #else can't reactivate
+				outerSkipped := false
+				for i := 0; i < len(condStack)-1; i++ {
+					if !condStack[i] {
+						outerSkipped = true
+						break
+					}
+				}
+				if outerSkipped {
+					condStack[len(condStack)-1] = false
+				} else {
+					condStack[len(condStack)-1] = !condStack[len(condStack)-1]
+				}
+			}
+			result = append(result, "")
+			continue
+		}
+
+		// #endif — pop the condition stack
+		if trimmed == "#endif" {
+			if len(condStack) > 0 {
+				condStack = condStack[:len(condStack)-1]
+			}
+			result = append(result, "")
+			continue
+		}
+
+		// Skip lines inside excluded conditional blocks
+		if skipped {
+			result = append(result, "")
 			continue
 		}
 
@@ -106,8 +184,6 @@ func PreprocessMQL(source string) string {
 
 		// #include — inject stub declarations for known headers, or keep for tree-sitter
 		if strings.HasPrefix(trimmed, "#include ") {
-			// For system headers (<...>), inject stub class declarations
-			// so tree-sitter recognizes the types
 			stub := includeStub(trimmed)
 			if stub != "" {
 				result = append(result, stub)
@@ -124,8 +200,6 @@ func PreprocessMQL(source string) string {
 		}
 
 		// Transform 'input EnumType name = value;' → 'extern int name = value;'
-		// tree-sitter can't parse 'input CustomType' as a declaration,
-		// so we rewrite it to a parseable form.
 		processed = rewriteInputEnum(processed)
 
 		// Transform MQL datetime literals D'YYYY.MM.DD' → Unix millisecond timestamp

@@ -9,9 +9,21 @@ import (
 )
 
 // CompileToIR parses MQL source and compiles it to a pure Go IR
-// suitable for interpretation. This is the host-side compile step;
-// the resulting IR has no tree-sitter dependency and can run in WASM.
-func CompileToIR(source string) (*interp.IR, error) {
+// suitable for interpretation. This is the host-side compile step.
+//
+// Safety: enforces MaxSourceSize limit and recovers from panics
+// (tree-sitter cgo panics, deep recursion). ADR-0023 §5.4.
+func CompileToIR(source string) (ir *interp.IR, err error) {
+	if len(source) > MaxSourceSize {
+		return nil, fmt.Errorf("MQL source too large: %d bytes (max %d)", len(source), MaxSourceSize)
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			ir = nil
+			err = fmt.Errorf("compile MQL panic: %v", r)
+		}
+	}()
+
 	// Run preprocessor first (#define, #property stripping)
 	source = PreprocessMQL(source)
 

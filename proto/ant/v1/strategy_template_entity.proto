@@ -22,6 +22,8 @@ message StrategyTemplate {
   bool is_system = 13;
   // I18n data for parameter labels (JSON-encoded TemplateI18n).
   string i18n = 14;
+  // FK to imported_strategies.id (ADR-0023: MQL source of truth).
+  string strategy_id = 15;
 }
 
 message TemplateParameter {

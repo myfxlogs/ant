@@ -142,11 +142,6 @@ func (s *StrategyExecutionServer) dispatchFromBytes(ctx context.Context, cfg Liv
 	}
 }
 
-// getExecutor returns the WASM executor for live session creation.
-func (s *StrategyExecutionServer) getExecutor() *WasmExecutor {
-	return s.wasmExecutor
-}
-
 // buildLiveContext creates a full OHLCV bar context from the bar window.
 func (s *StrategyExecutionServer) buildLiveContext(ctx context.Context, cfg LiveStrategyConfig, bars []liveBar) *antv1.LiveStrategyContext {
 	n := len(bars)

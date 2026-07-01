@@ -15,7 +15,8 @@ type TemplateRow struct {
 	UserID      *uuid.UUID // nil for system strategies (is_system=true)
 	Name        string
 	Description string
-	Code        string
+	Code        string // MQL source code (ADR-0023: single source of truth)
+	StrategyID  *uuid.UUID // FK to imported_strategies.id (nullable for legacy/system templates)
 	Status      string
 	Parameters  []byte
 	IsPublic    bool
@@ -33,7 +34,7 @@ type TemplateRow struct {
 
 func (s *StrategySvc) ListTemplates(ctx context.Context, userID uuid.UUID) ([]TemplateRow, error) {
 	rows, err := s.pg.Query(ctx,
-		`SELECT id, user_id, name, description, code, status, parameters, i18n, is_public, is_system, tags, use_count, flag, flag_reason, flagged_by, flagged_at, created_at, updated_at
+		`SELECT id, user_id, name, description, code, strategy_id, status, parameters, i18n, is_public, is_system, tags, use_count, flag, flag_reason, flagged_by, flagged_at, created_at, updated_at
 		 FROM strategy_templates WHERE (user_id = $1 OR is_public = true OR is_system = true) AND status != 'canceled' ORDER BY created_at DESC`, userID)
 	if err != nil {
 		return nil, fmt.Errorf("list templates: %w", err)
@@ -45,9 +46,9 @@ func (s *StrategySvc) ListTemplates(ctx context.Context, userID uuid.UUID) ([]Te
 func (s *StrategySvc) GetTemplate(ctx context.Context, id, userID uuid.UUID) (*TemplateRow, error) {
 	var t TemplateRow
 	err := s.pg.QueryRow(ctx,
-		`SELECT id, user_id, name, description, code, status, parameters, i18n, is_public, is_system, tags, use_count, flag, flag_reason, flagged_by, flagged_at, created_at, updated_at
+		`SELECT id, user_id, name, description, code, strategy_id, status, parameters, i18n, is_public, is_system, tags, use_count, flag, flag_reason, flagged_by, flagged_at, created_at, updated_at
 		 FROM strategy_templates WHERE id = $1 AND (user_id = $2 OR is_public = true OR is_system = true)`, id, userID,
-	).Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.Status, &t.Parameters, &t.I18n, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt)
+	).Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.StrategyID, &t.Status, &t.Parameters, &t.I18n, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrTemplateNotFound
@@ -72,9 +73,9 @@ func (s *StrategySvc) CreateTemplate(ctx context.Context, t *TemplateRow) error 
 		t.I18n = nil
 	}
 	_, err := s.pg.Exec(ctx,
-		`INSERT INTO strategy_templates (id, user_id, name, description, code, status, parameters, i18n, is_public, is_system, tags, use_count, created_at, updated_at)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
-		t.ID, t.UserID, t.Name, t.Description, t.Code, t.Status, t.Parameters, t.I18n, t.IsPublic, t.IsSystem, t.Tags, t.UseCount, t.CreatedAt, t.UpdatedAt)
+		`INSERT INTO strategy_templates (id, user_id, name, description, code, strategy_id, status, parameters, i18n, is_public, is_system, tags, use_count, created_at, updated_at)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+		t.ID, t.UserID, t.Name, t.Description, t.Code, t.StrategyID, t.Status, t.Parameters, t.I18n, t.IsPublic, t.IsSystem, t.Tags, t.UseCount, t.CreatedAt, t.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("CreateTemplate: %w", err)
 	}
@@ -88,8 +89,8 @@ func (s *StrategySvc) UpdateTemplate(ctx context.Context, t *TemplateRow) error 
 		t.I18n = nil
 	}
 	_, err := s.pg.Exec(ctx,
-		`UPDATE strategy_templates SET name=$2, description=$3, code=$4, status=$5, parameters=$6, i18n=$7, is_public=$8, tags=$9, updated_at=$10 WHERE id=$1 AND user_id=$11`,
-		t.ID, t.Name, t.Description, t.Code, t.Status, t.Parameters, t.I18n, t.IsPublic, t.Tags, t.UpdatedAt, t.UserID)
+		`UPDATE strategy_templates SET name=$2, description=$3, code=$4, strategy_id=$5, status=$6, parameters=$7, i18n=$8, is_public=$9, tags=$10, updated_at=$11 WHERE id=$1 AND user_id=$12`,
+		t.ID, t.Name, t.Description, t.Code, t.StrategyID, t.Status, t.Parameters, t.I18n, t.IsPublic, t.Tags, t.UpdatedAt, t.UserID)
 	if err != nil {
 		return fmt.Errorf("UpdateTemplate: %w", err)
 	}
@@ -122,7 +123,7 @@ func scanTemplateRows(rows pgx.Rows) ([]TemplateRow, error) {
 	var out []TemplateRow
 	for rows.Next() {
 		var t TemplateRow
-		err := rows.Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.Status, &t.Parameters, &t.I18n, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt)
+		err := rows.Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.StrategyID, &t.Status, &t.Parameters, &t.I18n, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("scan template row: %w", err)
 		}

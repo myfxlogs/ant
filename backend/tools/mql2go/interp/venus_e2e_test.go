@@ -473,15 +473,14 @@ func TestVenusEA_E2E_CompileAndAnalyze(t *testing.T) {
 
 // TestVenusEA_E2E_Backtest runs the full backtest pipeline:
 // MQL source → CompileToIR → Interpreter → SimBroker → Result
-// This is the exact same code path as production (minus WASM transport).
+// This is the exact same code path as production.
 func TestVenusEA_E2E_Backtest(t *testing.T) {
 	ir, err := mql2go.CompileToIR(venusEA)
 	if err != nil {
 		t.Fatalf("CompileToIR failed: %v", err)
 	}
 
-	factory := interp.NewStrategyFactory(ir)
-	strategy := factory.Create()
+	strategy := interp.NewInterpreter(ir)
 
 	bars := generateBars(200)
 
@@ -557,76 +556,6 @@ func TestVenusEA_E2E_Backtest(t *testing.T) {
 	}
 }
 
-// TestVenusEA_E2E_IRSerialization tests that IR survives serialization round-trip,
-// which is what the WASM path does (host serializes → WASM deserializes).
-func TestVenusEA_E2E_IRSerialization(t *testing.T) {
-	ir, err := mql2go.CompileToIR(venusEA)
-	if err != nil {
-		t.Fatalf("CompileToIR failed: %v", err)
-	}
-
-	// Serialize → Deserialize (same as host → WASM)
-	irBytes := interp.SerializeIR(ir)
-	if len(irBytes) == 0 {
-		t.Fatal("SerializeIR returned empty bytes")
-	}
-
-	ir2 := interp.DeserializeIR(irBytes)
-	if ir2 == nil {
-		t.Fatal("DeserializeIR returned nil")
-	}
-
-	// Verify key fields survived
-	if ir2.Version != ir.Version {
-		t.Errorf("version mismatch: %s vs %s", ir.Version, ir2.Version)
-	}
-	if len(ir2.OnInit) != len(ir.OnInit) {
-		t.Errorf("OnInit mismatch: %d vs %d", len(ir.OnInit), len(ir2.OnInit))
-	}
-	if len(ir2.OnTick) != len(ir.OnTick) {
-		t.Errorf("OnTick mismatch: %d vs %d", len(ir.OnTick), len(ir2.OnTick))
-	}
-	if len(ir2.Params) != len(ir.Params) {
-		t.Errorf("Params mismatch: %d vs %d", len(ir.Params), len(ir2.Params))
-	}
-	if len(ir2.Funcs) != len(ir.Funcs) {
-		t.Errorf("Funcs mismatch: %d vs %d", len(ir.Funcs), len(ir2.Funcs))
-	}
-	if len(ir2.Globals) != len(ir.Globals) {
-		t.Errorf("Globals mismatch: %d vs %d", len(ir.Globals), len(ir2.Globals))
-	}
-
-	t.Logf("IR serialization: %d bytes, %d funcs, %d globals, %d params",
-		len(irBytes), len(ir2.Funcs), len(ir2.Globals), len(ir2.Params))
-
-	// Verify the deserialized IR can create a working strategy
-	factory := interp.NewStrategyFactory(ir2)
-	strategy := factory.Create()
-	if strategy == nil {
-		t.Fatal("factory.Create() returned nil from deserialized IR")
-	}
-
-	// Run a minimal backtest with the deserialized IR
-	bars := generateBars(50)
-	cfg := backtest.Config{
-		Symbol:         "EURUSD",
-		Timeframe:      "M15",
-		InitialCapital: decimal.NewFromFloat(20000),
-		Leverage:       100,
-		SymbolDigits:   5,
-		SymbolPoint:    decimal.NewFromFloat(0.00001),
-		VolumeMin:      decimal.NewFromFloat(0.01),
-		VolumeMax:      decimal.NewFromFloat(100),
-		VolumeStep:     decimal.NewFromFloat(0.01),
-		ContractSize:   decimal.NewFromFloat(100000),
-	}
-	engine := backtest.New(cfg, strategy, bars)
-	_, err = engine.Run(context.Background())
-	if err != nil {
-		t.Fatalf("Backtest with deserialized IR failed: %v", err)
-	}
-}
-
 // TestVenusEA_E2E_GoCodeGeneration tests that the Go code generation
 // produces compilable Go code from the Venus EA IR.
 func TestVenusEA_E2E_GoCodeGeneration(t *testing.T) {
@@ -653,7 +582,7 @@ func TestVenusEA_E2E_GoCodeGeneration(t *testing.T) {
 		name    string
 		pattern string
 	}{
-		{"package decl", "package venus"},
+		{"package decl", "package main"},
 		{"sdk import", "anttrader/strategy/sdk"},
 		{"struct type", "type Venus struct"},
 		{"OnInit method", "func (s *Venus) OnInit"},

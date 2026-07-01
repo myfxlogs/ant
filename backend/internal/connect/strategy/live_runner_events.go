@@ -9,14 +9,12 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/mthub"
-	"anttrader/tools/mql2go"
-	"anttrader/tools/mql2go/interp"
 )
 
 func (s *StrategyExecutionServer) handleBar(
-	ctx context.Context, cfg LiveStrategyConfig, wasm *WasmExecutor,
+	ctx context.Context, cfg LiveStrategyConfig,
 	bar *mthub.BarUpdate, bars *[]liveBar,
-	session **LiveSession, firstBar *bool, activeSess *ActiveSession,
+	session *Session, firstBar *bool, activeSess *ActiveSession,
 ) {
 	*bars = append(*bars, liveBar{
 		open:     bar.Open.String(),
@@ -47,16 +45,12 @@ func (s *StrategyExecutionServer) handleBar(
 	var respBytes []byte
 	var err error
 	if *firstBar {
-		if isMQLStrategy(cfg.Code) {
-			ir, irErr := mql2go.CompileToIR(cfg.Code)
-			if irErr != nil {
-				s.log.Error("LiveStrategyRunner: compile MQL to IR failed", zap.Error(irErr))
-				return
-			}
-			*session = NewInterpLiveSession(wasm, interp.SerializeIR(ir), s.log)
-		} else {
-			*session = NewLiveSession(wasm, cfg.Code, s.log)
+		vmSess, vmErr := NewVMLiveSession(cfg.Code)
+		if vmErr != nil {
+			s.log.Error("LiveStrategyRunner: compile MQL failed", zap.Error(vmErr))
+			return
 		}
+		*session = vmSess
 		respBytes, err = (*session).Start(ctx, reqBytes)
 		*firstBar = false
 	} else {
@@ -83,7 +77,7 @@ func (s *StrategyExecutionServer) handleBar(
 
 func (s *StrategyExecutionServer) handleTick(
 	ctx context.Context, cfg LiveStrategyConfig,
-	tick *mthub.TickUpdate, session **LiveSession, firstBar *bool, activeSess *ActiveSession,
+	tick *mthub.TickUpdate, session *Session, firstBar *bool, activeSess *ActiveSession,
 ) {
 	if *session == nil {
 		return
@@ -112,7 +106,7 @@ func (s *StrategyExecutionServer) handleTick(
 
 func (s *StrategyExecutionServer) handleTrade(
 	ctx context.Context, cfg LiveStrategyConfig,
-	evt *mthub.BrokerTradeEvent, session **LiveSession, firstBar *bool, activeSess *ActiveSession,
+	evt *mthub.BrokerTradeEvent, session *Session, firstBar *bool, activeSess *ActiveSession,
 ) {
 	if *session == nil {
 		return

@@ -5,7 +5,7 @@ package strategy
 // should define a `strategy` variable implementing sdk.Strategy.
 //
 // Compiled path: strategy := &TypeName{}
-// Interp path:   strategy := interp.WASMRunSetup()
+// VM path:        strategy := mql2go.NewVMRunner(bc)
 func generateLiveHarnessBase(strategyCreation, extraImport string) string {
 	return `package main
 
