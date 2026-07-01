@@ -139,7 +139,7 @@ func (s *StreamServer) SubscribeEvents(
 	loopCtx, loopCancel := context.WithCancel(ctx)
 	defer loopCancel()
 
-	profitCh, snapCh, statusCh, barCh, barCancel := s.initEventChannels(loopCtx, profitSubs, snapSubs, statusSubs, accountIDs, filterAll, accountSet)
+	profitCh, snapCh, statusCh, barCh, barDropCh, barCancel := s.initEventChannels(loopCtx, profitSubs, snapSubs, statusSubs, accountIDs, filterAll, accountSet)
 	defer barCancel()
 
 	snapKnownTickets := make(map[string]map[int64]bool)
@@ -165,6 +165,30 @@ func (s *StreamServer) SubscribeEvents(
 				continue
 			}
 			if err := s.handleBarEvent(b, filterAll, accountSet, sendEvent); err != nil {
+				return err
+			}
+
+		case drop, ok := <-barDropCh:
+			if !ok {
+				barDropCh = nil
+				continue
+			}
+			if !filterAll && !accountSet[drop.AccountID] {
+				continue
+			}
+			if err := sendEvent(&antv1.StreamEvent{
+				Type:      "risk_alert",
+				AccountId: drop.AccountID,
+				Timestamp: timestamppb.Now(),
+				Payload: &antv1.StreamEvent_RiskAlert{
+					RiskAlert: &antv1.RiskAlertEvent{
+						AccountId: drop.AccountID,
+						AlertType: "bars_dropped",
+						Message:   "Real-time bars are being dropped due to slow processing. Strategy execution may be delayed.",
+						Value:     fmt.Sprintf("%d", drop.TotalDrops),
+					},
+				},
+			}); err != nil {
 				return err
 			}
 
@@ -214,18 +238,25 @@ func (s *StreamServer) forwardBarEvents(
 	accountIDs []string,
 	filterAll bool,
 	accountSet map[string]bool,
-) (chan *mthub.BarUpdate, func()) {
+) (chan *mthub.BarUpdate, <-chan *mthub.BarDropEvent, func()) {
 	type barSub struct {
 		ch     <-chan *mthub.BarUpdate
 		cancel func()
 	}
 	barSubs := make([]barSub, 0, len(accountIDs))
+	type dropSub struct {
+		ch     <-chan *mthub.BarDropEvent
+		cancel func()
+	}
+	dropSubs := make([]dropSub, 0, len(accountIDs))
 	for _, aid := range accountIDs {
 		if !filterAll && !accountSet[aid] {
 			continue
 		}
 		ch, cancel := s.svc.SubscribeBarUpdates(aid)
 		barSubs = append(barSubs, barSub{ch, cancel})
+		dCh, dCancel := s.svc.SubscribeBarDrops(aid)
+		dropSubs = append(dropSubs, dropSub{ch: dCh, cancel: dCancel})
 	}
 	barCh := make(chan *mthub.BarUpdate, 64)
 	for _, bs := range barSubs {
@@ -239,12 +270,27 @@ func (s *StreamServer) forwardBarEvents(
 			}
 		}(bs.ch)
 	}
+	barDropCh := make(chan *mthub.BarDropEvent, 4)
+	for _, ds := range dropSubs {
+		go func(ch <-chan *mthub.BarDropEvent) {
+			for ev := range ch {
+				select {
+				case barDropCh <- ev:
+				case <-loopCtx.Done():
+					return
+				}
+			}
+		}(ds.ch)
+	}
 	cancelAll := func() {
 		for _, bs := range barSubs {
 			bs.cancel()
 		}
+		for _, ds := range dropSubs {
+			ds.cancel()
+		}
 	}
-	return barCh, cancelAll
+	return barCh, barDropCh, cancelAll
 }
 
 func (s *StreamServer) handleBarEvent(

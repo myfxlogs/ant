@@ -101,11 +101,60 @@ type BarUpdate struct {
 	Closed    bool // true=finalized bar, false=in-progress candle
 }
 
+// BarDropEvent is pushed when bars are dropped due to slow subscribers.
+type BarDropEvent struct {
+	AccountID string
+	TotalDrops int64 // cumulative drop count for this account
+}
+
+// BarDropBroker broadcasts bar drop notifications per accountID.
+type BarDropBroker struct {
+	mu          sync.RWMutex
+	subscribers map[string][]chan *BarDropEvent
+}
+
+func NewBarDropBroker() *BarDropBroker {
+	return &BarDropBroker{subscribers: map[string][]chan *BarDropEvent{}}
+}
+
+func (b *BarDropBroker) Publish(ev *BarDropEvent) {
+	b.mu.RLock()
+	src := b.subscribers[ev.AccountID]
+	b.mu.RUnlock()
+	chs := make([]chan *BarDropEvent, len(src))
+	copy(chs, src)
+	for _, ch := range chs {
+		select {
+		case ch <- ev:
+		default:
+		}
+	}
+}
+
+func (b *BarDropBroker) Subscribe(accountID string) (<-chan *BarDropEvent, func()) {
+	ch := make(chan *BarDropEvent, 4)
+	b.mu.Lock()
+	b.subscribers[accountID] = append(b.subscribers[accountID], ch)
+	b.mu.Unlock()
+	return ch, func() {
+		b.mu.Lock()
+		defer b.mu.Unlock()
+		for i, c := range b.subscribers[accountID] {
+			if c == ch {
+				b.subscribers[accountID] = append(b.subscribers[accountID][:i], b.subscribers[accountID][i+1:]...)
+				close(ch)
+				return
+			}
+		}
+	}
+}
+
 // BarBroker broadcasts bar updates per accountID.
 type BarBroker struct {
 	mu          sync.RWMutex
 	subscribers map[string][]chan *BarUpdate
 	drops       map[string]int64 // accountID → dropped bar count
+	dropBroker  *BarDropBroker   // push-based drop notifications (nil = no notification)
 }
 
 func NewBarBroker() *BarBroker {
@@ -137,6 +186,10 @@ func (b *BarBroker) Publish(ev *BarUpdate) {
 		if total%100 == 1 {
 			log.Printf("WARNING: BarBroker dropped bars for account %s (total drops: %d, buffer: 64). Strategy is too slow or timeframe is too short.", ev.AccountID, total)
 		}
+		// Push-first: notify subscribers via BarDropBroker.
+		if b.dropBroker != nil {
+			b.dropBroker.Publish(&BarDropEvent{AccountID: ev.AccountID, TotalDrops: total})
+		}
 	}
 }
 
@@ -146,6 +199,8 @@ func (b *BarBroker) DroppedBars(accountID string) int64 {
 	defer b.mu.RUnlock()
 	return b.drops[accountID]
 }
+func (b *BarBroker) SetDropBroker(db *BarDropBroker) { b.dropBroker = db }
+
 func (b *BarBroker) Subscribe(accountID string) (<-chan *BarUpdate, func()) {
 	ch := make(chan *BarUpdate, 64)
 	b.mu.Lock()

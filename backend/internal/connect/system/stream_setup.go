@@ -97,11 +97,11 @@ func (s *StreamServer) initEventChannels(
 	accountIDs []string,
 	filterAll bool,
 	accountSet map[string]bool,
-) (profitCh <-chan *mthub.AccountProfitEvent, snapCh <-chan *mthub.PositionSnapshot, statusCh <-chan *mthub.AccountStatusEvent, barCh <-chan *mthub.BarUpdate, barCancel func()) {
+) (profitCh <-chan *mthub.AccountProfitEvent, snapCh <-chan *mthub.PositionSnapshot, statusCh <-chan *mthub.AccountStatusEvent, barCh <-chan *mthub.BarUpdate, barDropCh <-chan *mthub.BarDropEvent, barCancel func()) {
 	profitCh = s.forwardProfitEvents(loopCtx, profitSubs)
 	snapCh = s.forwardSnapEvents(loopCtx, snapSubs)
 	statusCh = s.forwardStatusEvents(loopCtx, statusSubs)
-	barCh, barCancel = s.forwardBarEvents(loopCtx, accountIDs, filterAll, accountSet)
+	barCh, barDropCh, barCancel = s.forwardBarEvents(loopCtx, accountIDs, filterAll, accountSet)
 	return
 }
 
