@@ -52,5 +52,5 @@ func (b *btBarSource) Volume(i int) int64 {
 }
 
 func (i *btIndicators) barSource() indicators.BarSource {
-	return &btBarSource{bars: i.bars}
+	return &btBarSource{bars: i.visibleBars()}
 }

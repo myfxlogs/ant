@@ -16,7 +16,8 @@ func builtinIMA(vm *VM, args []interp.Value) (interp.Value, error) {
 	shift := int(argI(args, 6))
 	period := int(argI(args, 2))
 	method := maMethodName(argI(args, 4))
-	return interp.DecimalVal(vm.ctx.Indicators().MA(period, shift, method)), nil
+	appliedPrice := int(argI(args, 5))
+	return interp.DecimalVal(vm.ctx.Indicators().MA(period, shift, method, appliedPrice)), nil
 }
 
 func maMethodName(id int32) string {
@@ -40,8 +41,9 @@ func builtinIRSI(vm *VM, args []interp.Value) (interp.Value, error) {
 	}
 	// iRSI(symbol, period, rsi_period, applied_price, shift)
 	period := int(argI(args, 2))
+	appliedPrice := int(argI(args, 3))
 	shift := int(argI(args, 4))
-	return interp.DecimalVal(vm.ctx.Indicators().RSI(period, shift)), nil
+	return interp.DecimalVal(vm.ctx.Indicators().RSI(period, shift, appliedPrice)), nil
 }
 
 func builtinIATR(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -61,8 +63,9 @@ func builtinIBands(vm *VM, args []interp.Value) (interp.Value, error) {
 	// iBands(symbol, period, bands_period, deviation, bands_shift, applied_price, mode, shift)
 	period := int(argI(args, 2))
 	deviation := argD(args, 3)
+	appliedPrice := int(argI(args, 5))
 	shift := int(argI(args, 7))
-	upper, middle, lower := vm.ctx.Indicators().Bollinger(period, deviation, shift)
+	upper, middle, lower := vm.ctx.Indicators().Bollinger(period, deviation, appliedPrice, shift)
 	mode := argI(args, 6)
 	switch mode {
 	case 1:
@@ -82,12 +85,13 @@ func builtinIMACD(vm *VM, args []interp.Value) (interp.Value, error) {
 	fast := int(argI(args, 2))
 	slow := int(argI(args, 3))
 	signal := int(argI(args, 4))
+	appliedPrice := int(argI(args, 5))
 	shift := int(argI(args, 7))
 	mode := argI(args, 6)
 	if mode == 1 {
-		return interp.DecimalVal(vm.ctx.Indicators().MACDSignal(fast, slow, signal, shift)), nil
+		return interp.DecimalVal(vm.ctx.Indicators().MACDSignal(fast, slow, signal, appliedPrice, shift)), nil
 	}
-	return interp.DecimalVal(vm.ctx.Indicators().MACD(fast, slow, signal, shift)), nil
+	return interp.DecimalVal(vm.ctx.Indicators().MACD(fast, slow, signal, appliedPrice, shift)), nil
 }
 
 func builtinIStochastic(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -113,8 +117,9 @@ func builtinICCI(vm *VM, args []interp.Value) (interp.Value, error) {
 	}
 	// iCCI(symbol, period, cci_period, applied_price, shift)
 	period := int(argI(args, 2))
+	appliedPrice := int(argI(args, 3))
 	shift := int(argI(args, 4))
-	return interp.DecimalVal(vm.ctx.Indicators().CCI(period, shift)), nil
+	return interp.DecimalVal(vm.ctx.Indicators().CCI(period, shift, appliedPrice)), nil
 }
 
 func builtinIADX(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -133,8 +138,9 @@ func builtinIMomentum(vm *VM, args []interp.Value) (interp.Value, error) {
 	}
 	// iMomentum(symbol, period, mom_period, applied_price, shift)
 	period := int(argI(args, 2))
+	appliedPrice := int(argI(args, 3))
 	shift := int(argI(args, 4))
-	return interp.DecimalVal(vm.ctx.Indicators().Momentum(period, shift)), nil
+	return interp.DecimalVal(vm.ctx.Indicators().Momentum(period, shift, appliedPrice)), nil
 }
 
 func builtinIWPR(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -162,8 +168,9 @@ func builtinIOBV(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.DecimalVal(decimal.Zero), nil
 	}
 	// iOBV(symbol, period, applied_price, shift)
+	appliedPrice := int(argI(args, 2))
 	shift := int(argI(args, 3))
-	return interp.DecimalVal(vm.ctx.Indicators().OBV(shift)), nil
+	return interp.DecimalVal(vm.ctx.Indicators().OBV(appliedPrice, shift)), nil
 }
 
 func builtinISAR(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -183,6 +190,8 @@ func builtinIStdDev(vm *VM, args []interp.Value) (interp.Value, error) {
 	}
 	// iStdDev(symbol, period, ma_period, ma_shift, ma_method, applied_price, shift)
 	period := int(argI(args, 2))
+	method := maMethodName(argI(args, 4))
+	appliedPrice := int(argI(args, 5))
 	shift := int(argI(args, 6))
-	return interp.DecimalVal(vm.ctx.Indicators().StdDev(period, shift)), nil
+	return interp.DecimalVal(vm.ctx.Indicators().StdDev(period, shift, method, appliedPrice)), nil
 }

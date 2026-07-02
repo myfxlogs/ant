@@ -1,9 +1,9 @@
 package runner
 
 import (
-	"github.com/shopspring/decimal"
 	"anttrader/strategy/indicators"
 	"anttrader/strategy/sdk"
+	"github.com/shopspring/decimal"
 )
 
 // runnerBarSource adapts sdk.BarSeries to indicators.BarSource.

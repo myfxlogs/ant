@@ -8,19 +8,23 @@ import "github.com/shopspring/decimal"
 type IndicatorSet interface {
 	// MA returns Moving Average value.
 	// method: "sma", "ema", "smma", "lwma"
-	MA(period, shift int, method string) decimal.Decimal
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	MA(period, shift int, method string, appliedPrice int) decimal.Decimal
 
 	// EMA is a convenience method for exponential moving average.
 	EMA(period, shift int) decimal.Decimal
 
 	// RSI returns Relative Strength Index.
-	RSI(period, shift int) decimal.Decimal
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	RSI(period, shift int, appliedPrice int) decimal.Decimal
 
 	// MACD returns the MACD line.
-	MACD(fastPeriod, slowPeriod, signalPeriod, shift int) decimal.Decimal
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	MACD(fastPeriod, slowPeriod, signalPeriod, appliedPrice, shift int) decimal.Decimal
 
 	// MACDSignal returns the MACD signal line.
-	MACDSignal(fastPeriod, slowPeriod, signalPeriod, shift int) decimal.Decimal
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	MACDSignal(fastPeriod, slowPeriod, signalPeriod, appliedPrice, shift int) decimal.Decimal
 
 	// ATR returns Average True Range.
 	ATR(period, shift int) decimal.Decimal
@@ -28,14 +32,16 @@ type IndicatorSet interface {
 	// Bollinger returns Bollinger Band values.
 	// upper, middle, lower at the given shift.
 	// deviation is the number of standard deviations (typically 2.0).
-	Bollinger(period int, deviation decimal.Decimal, shift int) (upper, middle, lower decimal.Decimal)
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	Bollinger(period int, deviation decimal.Decimal, appliedPrice, shift int) (upper, middle, lower decimal.Decimal)
 
 	// Stochastic returns Stochastic oscillator values.
 	// k, d values at the given shift.
 	Stochastic(kPeriod, dPeriod, slowing, shift int) (k, d decimal.Decimal)
 
 	// CCI returns Commodity Channel Index.
-	CCI(period, shift int) decimal.Decimal
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	CCI(period, shift int, appliedPrice int) decimal.Decimal
 
 	// ADX returns Average Directional Index.
 	ADX(period, shift int) decimal.Decimal
@@ -44,19 +50,23 @@ type IndicatorSet interface {
 	MFI(period, shift int) decimal.Decimal
 
 	// OBV returns On-Balance Volume.
-	OBV(shift int) decimal.Decimal
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	OBV(appliedPrice, shift int) decimal.Decimal
 
 	// SAR returns Parabolic SAR.
 	SAR(step, maximum decimal.Decimal, shift int) decimal.Decimal
 
 	// StdDev returns Standard Deviation.
-	StdDev(period, shift int) decimal.Decimal
+	// method: "sma", "ema", "smma", "lwma"
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	StdDev(period, shift int, method string, appliedPrice int) decimal.Decimal
 
 	// WPR returns Williams %R.
 	WPR(period, shift int) decimal.Decimal
 
 	// Momentum returns Momentum indicator.
-	Momentum(period, shift int) decimal.Decimal
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	Momentum(period, shift int, appliedPrice int) decimal.Decimal
 
 	// ICustom returns a custom indicator value.
 	// name is the indicator name; params are the custom parameters.
@@ -112,22 +122,28 @@ type IndicatorSet interface {
 	// ── MQL5-only indicators ──
 
 	// AMA returns Adaptive Moving Average value.
-	AMA(period, fastPeriod, slowPeriod, shift int) decimal.Decimal
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	AMA(period, fastPeriod, slowPeriod, appliedPrice, shift int) decimal.Decimal
 
 	// DEMA returns Double Exponential Moving Average value.
-	DEMA(period, shift int) decimal.Decimal
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	DEMA(period, appliedPrice, shift int) decimal.Decimal
 
 	// TEMA returns Triple Exponential Moving Average value.
-	TEMA(period, shift int) decimal.Decimal
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	TEMA(period, appliedPrice, shift int) decimal.Decimal
 
 	// FrAMA returns Fractal Adaptive Moving Average value.
-	FrAMA(period, shift int) decimal.Decimal
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	FrAMA(period, appliedPrice, shift int) decimal.Decimal
 
 	// VIDyA returns Variable Index Dynamic Average value.
-	VIDyA(cmoPeriod, cmoShift, maPeriod, maShift, shift int) decimal.Decimal
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	VIDyA(cmoPeriod, cmoShift, maPeriod, maShift, appliedPrice, shift int) decimal.Decimal
 
 	// TriX returns Triple Exponential Average value.
-	TriX(period, shift int) decimal.Decimal
+	// appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted
+	TriX(period, appliedPrice, shift int) decimal.Decimal
 
 	// ADXWilder returns ADX Wilder value.
 	ADXWilder(period, shift int) decimal.Decimal
@@ -143,11 +159,11 @@ type IndicatorSet interface {
 type IndicatorParams struct {
 	Period    int
 	Shift     int
-	Method    string            // "sma", "ema", etc.
-	Deviation decimal.Decimal   // for Bollinger, Envelopes
-	Fast      int               // for MACD
-	Slow      int               // for MACD
-	Signal    int               // for MACD
-	Step      decimal.Decimal   // for SAR
-	Maximum   decimal.Decimal   // for SAR
+	Method    string          // "sma", "ema", etc.
+	Deviation decimal.Decimal // for Bollinger, Envelopes
+	Fast      int             // for MACD
+	Slow      int             // for MACD
+	Signal    int             // for MACD
+	Step      decimal.Decimal // for SAR
+	Maximum   decimal.Decimal // for SAR
 }

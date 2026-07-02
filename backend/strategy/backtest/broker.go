@@ -78,7 +78,12 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 	}
 
 	// Check margin before opening
-	margin := req.Volume.Mul(rec.Price).Div(decimal.NewFromInt(int64(b.config.Leverage)))
+	contractSize := b.config.ContractSize
+	if contractSize.IsZero() {
+		contractSize = decimal.NewFromInt(100000)
+	}
+	notional := req.Volume.Mul(contractSize).Mul(rec.Price)
+	margin := notional.Div(decimal.NewFromInt(int64(b.config.Leverage)))
 	if b.equity.LessThan(margin) {
 		return sdk.OrderResult{RetCode: sdk.RetNoMoney}, fmt.Errorf("insufficient margin")
 	}
@@ -112,7 +117,11 @@ func (b *SimBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.Ord
 			if closePrice.IsZero() {
 				closePrice = pos.Price
 			}
-			profit := closePrice.Sub(pos.Price).Mul(closeVol)
+			contractSize := b.config.ContractSize
+			if contractSize.IsZero() {
+				contractSize = decimal.NewFromInt(100000)
+			}
+			profit := closePrice.Sub(pos.Price).Mul(closeVol).Mul(contractSize)
 			if pos.Side == sdk.SideSell {
 				profit = profit.Neg()
 			}
@@ -171,11 +180,15 @@ func (b *SimBroker) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, er
 		closeVol = pos2.Volume
 	}
 
-	profit1 := closePrice.Sub(pos1.Price).Mul(closeVol)
+	contractSize := b.config.ContractSize
+	if contractSize.IsZero() {
+		contractSize = decimal.NewFromInt(100000)
+	}
+	profit1 := closePrice.Sub(pos1.Price).Mul(closeVol).Mul(contractSize)
 	if pos1.Side == sdk.SideSell {
 		profit1 = profit1.Neg()
 	}
-	profit2 := closePrice.Sub(pos2.Price).Mul(closeVol)
+	profit2 := closePrice.Sub(pos2.Price).Mul(closeVol).Mul(contractSize)
 	if pos2.Side == sdk.SideSell {
 		profit2 = profit2.Neg()
 	}
@@ -392,8 +405,12 @@ func (b *SimBroker) applyCommission(rec *OrderRecord) {
 	if b.config.Commission.IsZero() {
 		return
 	}
-	// Commission as percentage of notional value
-	notional := rec.Volume.Mul(rec.Price)
+	// Commission as percentage of notional value (volume * contractSize * price)
+	contractSize := b.config.ContractSize
+	if contractSize.IsZero() {
+		contractSize = decimal.NewFromInt(100000)
+	}
+	notional := rec.Volume.Mul(contractSize).Mul(rec.Price)
 	commission := notional.Mul(b.config.Commission)
 	rec.Commission = commission
 	b.equity = b.equity.Sub(commission)
@@ -405,7 +422,11 @@ func (b *SimBroker) applySwap(rec *OrderRecord, days int) {
 	if swapRate.IsZero() {
 		swapRate = decimal.NewFromFloat(0.00001) // fallback default
 	}
-	swap := rec.Volume.Mul(swapRate).Mul(decimal.NewFromInt(int64(days)))
+	contractSize := b.config.ContractSize
+	if contractSize.IsZero() {
+		contractSize = decimal.NewFromInt(100000)
+	}
+	swap := rec.Volume.Mul(contractSize).Mul(swapRate).Mul(decimal.NewFromInt(int64(days)))
 	rec.Swap = rec.Swap.Add(swap)
 	b.equity = b.equity.Sub(swap)
 }
@@ -459,15 +480,33 @@ func (b *SimBroker) expirePending(currentBar int, maxBars int) {
 }
 
 func (b *SimBroker) Account() sdk.AccountInfo {
-	equity := b.balance
-	for _, pos := range b.positions {
-		equity = equity.Add(pos.Profit)
+	contractSize := b.config.ContractSize
+	if contractSize.IsZero() {
+		contractSize = decimal.NewFromInt(100000)
 	}
+	floatingProfit := decimal.Zero
+	marginUsed := decimal.Zero
+	for _, pos := range b.positions {
+		// Calculate unrealized P&L using current close price
+		closePrice := pos.ClosePrice
+		if closePrice.IsZero() {
+			closePrice = pos.Price
+		}
+		profit := closePrice.Sub(pos.Price).Mul(pos.Volume).Mul(contractSize)
+		if pos.Side == sdk.SideSell {
+			profit = profit.Neg()
+		}
+		floatingProfit = floatingProfit.Add(profit)
+		// Margin = notional / leverage
+		notional := pos.Volume.Mul(contractSize).Mul(pos.Price)
+		marginUsed = marginUsed.Add(notional.Div(decimal.NewFromInt(int64(b.config.Leverage))))
+	}
+	equity := b.balance.Add(floatingProfit)
 	return sdk.AccountInfo{
 		Balance:    b.balance,
 		Equity:     equity,
-		Margin:     decimal.Zero,
-		FreeMargin: equity,
+		Margin:     marginUsed,
+		FreeMargin: equity.Sub(marginUsed),
 		Leverage:   b.config.Leverage,
 		Currency:   "USD",
 	}
