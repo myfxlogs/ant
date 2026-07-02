@@ -67,6 +67,8 @@ func vmHandleTick(r *runner.Runner, tctx *antv1.TickContext) *antv1.ExecuteLiveR
 }
 
 // vmHandleTrade processes a trade event.
+// If the strategy also implements OnTradeTransaction (MQL5), it is dispatched
+// immediately after OnTrade, and signals from both are combined.
 func vmHandleTrade(r *runner.Runner, evctx *antv1.TradeContext) *antv1.ExecuteLiveResponse {
 	if evctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "trade_context missing"}
@@ -94,7 +96,23 @@ func vmHandleTrade(r *runner.Runner, evctx *antv1.TradeContext) *antv1.ExecuteLi
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
 	}
-	return vmSignalResponse(sig, evctx.Symbol)
+	resp := vmSignalResponse(sig, evctx.Symbol)
+
+	// Dispatch OnTradeTransaction (MQL5) if the strategy implements it.
+	if r.HasOnTradeTransaction() {
+		ttSig, ttErr := r.OnTradeTransaction(context.Background())
+		if ttErr != nil {
+			return resp
+		}
+		if ttSig != nil {
+			ttSignalProto := vmSignalToProto(ttSig, evctx.Symbol)
+			if ttSignalProto != nil {
+				resp.Signals = append(resp.Signals, ttSignalProto)
+			}
+		}
+	}
+
+	return resp
 }
 
 // vmHandleTimer processes a timer event.

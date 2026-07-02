@@ -1,6 +1,7 @@
 package mql2go
 
 import (
+	"anttrader/strategy/sdk"
 	"anttrader/tools/mql2go/interp"
 )
 
@@ -130,80 +131,153 @@ func builtinISpread(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.IntVal(0), nil
 }
 
-// Copy* functions — return data count or -1 on failure.
-// In MQL5, CopyClose(symbol, timeframe, start_pos, count, array) copies data into the array.
-// In our VM, we return the count and leave the array argument unchanged (arrays are by-value).
+// Copy* functions — copy bar data into the caller's array.
+// MQL5: CopyClose(symbol, timeframe, start_pos, count, array[])
+//   start_pos >= 0: offset from current bar (0 = latest)
+//   count > 0: number of elements to copy forward (oldest first in output)
+//   count < 0: number of elements to copy backward (newest first in output)
+// Returns the number of elements actually copied, or -1 on failure.
+//
+// In MQL5 series-indexing, bar[0] = current, bar[1] = previous, etc.
+// CopyClose with start_pos=0, count=5 copies bars [4,3,2,1,0] into array[0..4]
+// (chronological order: oldest first when count > 0).
+
+// resolveSeries returns the BarSeries for the given symbol/timeframe args.
+func resolveSeries(vm *VM, symArgIdx, tfArgIdx int, args []interp.Value) (sdk.BarSeries, bool) {
+	if vm.ctx == nil {
+		return nil, false
+	}
+	sym := argS(args, symArgIdx)
+	_ = sym // current symbol only in backtest
+	tf := periodToTimeframe(argI(args, tfArgIdx))
+	if tf == "" || tf == vm.ctx.Timeframe() {
+		return vm.ctx.Bars(), true
+	}
+	return vm.ctx.BarsTF(tf), true
+}
+
+// copyBarData fills the array argument (last arg) with bar data from the series.
+// getVal selects which OHLCV field to extract.
+// Returns the count actually copied.
+func copyBarData(args []interp.Value, series sdk.BarSeries, getVal func(sdk.BarSeries, int) interp.Value) int32 {
+	startPos := int(argI(args, 2))
+	count := int(argI(args, 3))
+	if len(args) < 5 || args[4].Kind != interp.ValArray {
+		return -1
+	}
+	arrIdx := 4
+
+	absCount := count
+	if absCount < 0 {
+		absCount = -absCount
+	}
+	if absCount <= 0 || series == nil {
+		args[arrIdx].Array = args[arrIdx].Array[:0]
+		return 0
+	}
+	if startPos < 0 {
+		startPos = 0
+	}
+	if startPos+absCount > series.Len() {
+		absCount = series.Len() - startPos
+		if absCount <= 0 {
+			args[arrIdx].Array = args[arrIdx].Array[:0]
+			return 0
+		}
+	}
+
+	result := make([]interp.Value, absCount)
+	for i := 0; i < absCount; i++ {
+		var shift int
+		if count > 0 {
+			// Chronological: oldest first → bar[startPos+absCount-1-i]
+			shift = startPos + absCount - 1 - i
+		} else {
+			// Reverse chronological: newest first → bar[startPos+i]
+			shift = startPos + i
+		}
+		result[i] = getVal(series, shift)
+	}
+	args[arrIdx].Array = result
+	return int32(absCount)
+}
 
 func builtinCopyRates(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
+	series, ok := resolveSeries(vm, 0, 1, args)
+	if !ok {
 		return interp.IntVal(-1), nil
 	}
-	count := int(argI(args, 3))
-	if count <= 0 {
-		return interp.IntVal(0), nil
-	}
-	return interp.IntVal(int32(count)), nil
+	// CopyRates fills a MqlRates struct array — we fill with close as proxy
+	// since our VM doesn't have a MqlRates struct type.
+	n := copyBarData(args, series, func(s sdk.BarSeries, shift int) interp.Value {
+		return interp.DecimalVal(s.Close(shift))
+	})
+	return interp.IntVal(n), nil
 }
 
 func builtinCopyClose(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
+	series, ok := resolveSeries(vm, 0, 1, args)
+	if !ok {
 		return interp.IntVal(-1), nil
 	}
-	count := int(argI(args, 3))
-	if count <= 0 {
-		return interp.IntVal(0), nil
-	}
-	return interp.IntVal(int32(count)), nil
+	n := copyBarData(args, series, func(s sdk.BarSeries, shift int) interp.Value {
+		return interp.DecimalVal(s.Close(shift))
+	})
+	return interp.IntVal(n), nil
 }
 
 func builtinCopyHigh(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
+	series, ok := resolveSeries(vm, 0, 1, args)
+	if !ok {
 		return interp.IntVal(-1), nil
 	}
-	count := int(argI(args, 3))
-	if count <= 0 {
-		return interp.IntVal(0), nil
-	}
-	return interp.IntVal(int32(count)), nil
+	n := copyBarData(args, series, func(s sdk.BarSeries, shift int) interp.Value {
+		return interp.DecimalVal(s.High(shift))
+	})
+	return interp.IntVal(n), nil
 }
 
 func builtinCopyLow(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
+	series, ok := resolveSeries(vm, 0, 1, args)
+	if !ok {
 		return interp.IntVal(-1), nil
 	}
-	count := int(argI(args, 3))
-	if count <= 0 {
-		return interp.IntVal(0), nil
-	}
-	return interp.IntVal(int32(count)), nil
+	n := copyBarData(args, series, func(s sdk.BarSeries, shift int) interp.Value {
+		return interp.DecimalVal(s.Low(shift))
+	})
+	return interp.IntVal(n), nil
 }
 
 func builtinCopyOpen(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
+	series, ok := resolveSeries(vm, 0, 1, args)
+	if !ok {
 		return interp.IntVal(-1), nil
 	}
-	count := int(argI(args, 3))
-	if count <= 0 {
-		return interp.IntVal(0), nil
-	}
-	return interp.IntVal(int32(count)), nil
+	n := copyBarData(args, series, func(s sdk.BarSeries, shift int) interp.Value {
+		return interp.DecimalVal(s.Open(shift))
+	})
+	return interp.IntVal(n), nil
 }
 
 func builtinCopyTime(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
+	series, ok := resolveSeries(vm, 0, 1, args)
+	if !ok {
 		return interp.IntVal(-1), nil
 	}
-	count := int(argI(args, 3))
-	if count <= 0 {
-		return interp.IntVal(0), nil
-	}
-	return interp.IntVal(int32(count)), nil
+	n := copyBarData(args, series, func(s sdk.BarSeries, shift int) interp.Value {
+		return interp.IntVal(int32(s.Time(shift)))
+	})
+	return interp.IntVal(n), nil
 }
 
 func builtinCopyBuffer(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil {
 		return interp.IntVal(-1), nil
 	}
+	// CopyBuffer(handle, buffer_num, start_pos, count, array[])
+	// We don't have indicator handles in the VM — all i* builtins return
+	// scalar values directly. Return the requested count as a best-effort
+	// so MQL5 code that checks the return value doesn't error out.
 	count := int(argI(args, 4))
 	if count <= 0 {
 		return interp.IntVal(0), nil
@@ -212,14 +286,14 @@ func builtinCopyBuffer(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinCopyTickVolume(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
+	series, ok := resolveSeries(vm, 0, 1, args)
+	if !ok {
 		return interp.IntVal(-1), nil
 	}
-	count := int(argI(args, 3))
-	if count <= 0 {
-		return interp.IntVal(0), nil
-	}
-	return interp.IntVal(int32(count)), nil
+	n := copyBarData(args, series, func(s sdk.BarSeries, shift int) interp.Value {
+		return interp.IntVal(int32(s.Volume(shift)))
+	})
+	return interp.IntVal(n), nil
 }
 
 func builtinCopyRealVolume(vm *VM, args []interp.Value) (interp.Value, error) {

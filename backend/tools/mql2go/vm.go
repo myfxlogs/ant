@@ -153,6 +153,22 @@ func (vm *VM) RunOnDeinit(ctx context.Context) error {
 	return vm.runEvent(ctx, vm.bc.OnDeinit)
 }
 
+// RunOnTradeTransaction executes the OnTradeTransaction event handler (MQL5).
+func (vm *VM) RunOnTradeTransaction(ctx context.Context) error {
+	if vm.bc.OnTradeTransaction < 0 {
+		return nil
+	}
+	return vm.runEvent(ctx, vm.bc.OnTradeTransaction)
+}
+
+// RunOnBookEvent executes the OnBookEvent event handler (MQL5).
+func (vm *VM) RunOnBookEvent(ctx context.Context) error {
+	if vm.bc.OnBookEvent < 0 {
+		return nil
+	}
+	return vm.runEvent(ctx, vm.bc.OnBookEvent)
+}
+
 // GetRuntimeBlindSpots returns the blind spots encountered during execution.
 func (vm *VM) GetRuntimeBlindSpots() []interp.RuntimeBlindSpot {
 	var out []interp.RuntimeBlindSpot

@@ -79,6 +79,7 @@ type IR struct {
 	OnTimer           []Statement         // OnTimer body
 	OnTrade           []Statement         // OnTrade body (MQL5, no args)
 	OnTradeTransaction []Statement        // OnTradeTransaction body (MQL5, receives MqlTradeTransaction)
+	OnBookEvent       []Statement         // OnBookEvent body (MQL5, receives symbol string)
 	OnDeinit          []Statement         // OnDeinit body
 	Globals           []GlobalVar         // global variable declarations
 	Params            []ParamDecl         // extern/input parameter declarations

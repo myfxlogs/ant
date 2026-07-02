@@ -61,6 +61,8 @@ const (
 	OP_ENTER_ONTRADE
 	OP_ENTER_ONTIMER
 	OP_ENTER_ONDEINIT
+	OP_ENTER_ONTRADETRANSACTION
+	OP_ENTER_ONBOOKEVENT
 
 	// Return
 	OP_RETURN
@@ -130,12 +132,14 @@ type Bytecode struct {
 	Builtins map[string]BuiltinID
 
 	// Event entry points (instruction indices, -1 = not compiled)
-	OnInit   int32
-	OnBar    int32
-	OnTick   int32
-	OnTrade  int32
-	OnTimer  int32
-	OnDeinit int32
+	OnInit              int32
+	OnBar               int32
+	OnTick              int32
+	OnTrade             int32
+	OnTimer             int32
+	OnDeinit            int32
+	OnTradeTransaction  int32
+	OnBookEvent         int32
 
 	// EventLocals tracks the number of local variable slots needed per event handler.
 	// Key = entry PC, value = number of local slots.
@@ -219,6 +223,7 @@ func opName(op Opcode) string {
 		"JMP", "JMP_IF_FALSE", "JMP_IF_TRUE",
 		"CALL_BUILTIN", "CALL_USER", "ENTER_FUNC", "LEAVE_FUNC",
 		"ENTER_ONINIT", "ENTER_ONBAR", "ENTER_ONTICK", "ENTER_ONTRADE", "ENTER_ONTIMER", "ENTER_ONDEINIT",
+		"ENTER_ONTRADETRANSACTION", "ENTER_ONBOOKEVENT",
 		"RETURN",
 		"PUSH_SERIES",
 		"PUSH_ARRAY", "STORE_ARRAY",

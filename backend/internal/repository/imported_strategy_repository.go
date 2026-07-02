@@ -120,3 +120,23 @@ func (r *ImportedStrategyRepository) Delete(ctx context.Context, id, userID uuid
 	}
 	return nil
 }
+
+// GetBytecode retrieves the cached bytecode for a strategy.
+// Returns nil, nil if no cache exists (not an error).
+func (r *ImportedStrategyRepository) GetBytecode(ctx context.Context, id uuid.UUID) ([]byte, error) {
+	var bytecode []byte
+	err := r.db.QueryRow(ctx,
+		`SELECT bytecode_cache FROM imported_strategies WHERE id = $1`, id).Scan(&bytecode)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrImportedStrategyNotFound
+	}
+	return bytecode, err
+}
+
+// SaveBytecode stores compiled bytecode for a strategy.
+func (r *ImportedStrategyRepository) SaveBytecode(ctx context.Context, id uuid.UUID, bytecode []byte) error {
+	_, err := r.db.Exec(ctx,
+		`UPDATE imported_strategies SET bytecode_cache = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+		id, bytecode)
+	return err
+}

@@ -37,6 +37,16 @@ func NewVMLiveSession(source string) (*VMLiveSession, error) {
 	return &VMLiveSession{strategy: strategy}, nil
 }
 
+// NewVMLiveSessionCached creates a VMLiveSession using cached bytecode when available.
+// Falls back to full compilation on cache miss or corruption.
+func NewVMLiveSessionCached(source string, cachedBytecode []byte) (*VMLiveSession, error) {
+	strategy, _, err := mql2go.CompileMQLCached(source, cachedBytecode)
+	if err != nil {
+		return nil, fmt.Errorf("compile MQL: %w", err)
+	}
+	return &VMLiveSession{strategy: strategy}, nil
+}
+
 func (s *VMLiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, error) {
 	if s.started {
 		return nil, fmt.Errorf("vm live session already started")

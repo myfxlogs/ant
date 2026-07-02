@@ -39,6 +39,39 @@ func NewVMRunner(bc *Bytecode) *VMRunner {
 // resource exhaustion. ADR-0023 §5.4.
 const MaxSourceSize = 500_000
 
+// CompileMQLFromBytecode creates a VMRunner from cached bytecode data.
+// Returns error if the bytecode is invalid or corrupted.
+func CompileMQLFromBytecode(data []byte) (*VMRunner, error) {
+	bc, err := UnmarshalBytecode(data)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal cached bytecode: %w", err)
+	}
+	return NewVMRunner(bc), nil
+}
+
+// CompileMQLCached tries to load cached bytecode first; on failure or nil cache,
+// falls back to full compilation from source. Returns the runner and the
+// serialized bytecode (for caching by the caller).
+func CompileMQLCached(source string, cachedBytecode []byte) (runner *VMRunner, bytecode []byte, err error) {
+	if len(cachedBytecode) > 0 {
+		r, e := CompileMQLFromBytecode(cachedBytecode)
+		if e == nil {
+			return r, cachedBytecode, nil
+		}
+		// Cache corrupted — fall through to recompile
+	}
+	r, err := CompileMQL(source)
+	if err != nil {
+		return nil, nil, err
+	}
+	bc := r.Bytecode()
+	data, mErr := MarshalBytecode(bc)
+	if mErr != nil {
+		return r, nil, nil
+	}
+	return r, data, nil
+}
+
 // CompileMQL is a convenience function that compiles MQL source to a VMRunner.
 // This is the single entrypoint for the in-process execution path:
 // MQL source → CST → AST (IR) → Bytecode → VMRunner
@@ -153,6 +186,38 @@ func (r *VMRunner) OnTrade(ctx sdk.Context, event sdk.TradeEvent) (*sdk.Signal, 
 	}
 
 	return nil, nil
+}
+
+// OnTradeTransaction implements sdk.TradeTransactionStrategy (optional, MQL5).
+func (r *VMRunner) OnTradeTransaction(ctx sdk.Context) (*sdk.Signal, error) {
+	r.vm.SetContext(ctx)
+
+	if err := safeRun(func() error { return r.vm.RunOnTradeTransaction(context.Background()) }); err != nil {
+		return nil, fmt.Errorf("VM OnTradeTransaction: %w", err)
+	}
+
+	return nil, nil
+}
+
+// OnBookEvent implements sdk.BookEventStrategy (optional, MQL5).
+func (r *VMRunner) OnBookEvent(ctx sdk.Context) (*sdk.Signal, error) {
+	r.vm.SetContext(ctx)
+
+	if err := safeRun(func() error { return r.vm.RunOnBookEvent(context.Background()) }); err != nil {
+		return nil, fmt.Errorf("VM OnBookEvent: %w", err)
+	}
+
+	return nil, nil
+}
+
+// HasOnTradeTransaction returns true if the EA has OnTradeTransaction bytecode.
+func (r *VMRunner) HasOnTradeTransaction() bool {
+	return r.vm.bc.OnTradeTransaction >= 0
+}
+
+// HasOnBookEvent returns true if the EA has OnBookEvent bytecode.
+func (r *VMRunner) HasOnBookEvent() bool {
+	return r.vm.bc.OnBookEvent >= 0
 }
 
 // OnDeinit implements sdk.Strategy.

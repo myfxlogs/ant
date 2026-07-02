@@ -166,12 +166,6 @@ func (c *astCompiler) compileSwitch(s *interp.Statement) {
 	c.loopStack = c.loopStack[:len(c.loopStack)-1]
 }
 
-// compileStmtsWithLoop is deprecated — break/continue now use loopStack.
-// Kept for backward compatibility; delegates to compileStmts.
-func (c *astCompiler) compileStmtsWithLoop(stmts []interp.Statement, breakJumps *[]int32, continueJumps *[]int32) {
-	c.compileStmts(stmts)
-}
-
 // isStackNeutral returns true for expression types that don't leave a value
 // on the stack after compilation (they push then store/pop internally).
 // These should not be followed by OP_POP in StmtExpr context.

@@ -57,6 +57,7 @@ func init() {
 	builtinRegistry[id("iRSI")].fn = builtinIRSI
 	builtinRegistry[id("iATR")].fn = builtinIATR
 	builtinRegistry[id("iBands")].fn = builtinIBands
+	builtinRegistry[id("iBollinger")].fn = builtinIBands
 	builtinRegistry[id("iMACD")].fn = builtinIMACD
 	builtinRegistry[id("iStochastic")].fn = builtinIStochastic
 	builtinRegistry[id("iCCI")].fn = builtinICCI
@@ -67,6 +68,16 @@ func init() {
 	builtinRegistry[id("iOBV")].fn = builtinIOBV
 	builtinRegistry[id("iSAR")].fn = builtinISAR
 	builtinRegistry[id("iStdDev")].fn = builtinIStdDev
+
+	// *OnArray indicator variants
+	builtinRegistry[id("iMAOnArray")].fn = builtinIMAOnArray
+	builtinRegistry[id("iRSIOnArray")].fn = builtinIRSIOnArray
+	builtinRegistry[id("iATROnArray")].fn = builtinIATROnArray
+	builtinRegistry[id("iBandsOnArray")].fn = builtinIBandsOnArray
+	builtinRegistry[id("iStdDevOnArray")].fn = builtinIStdDevOnArray
+	builtinRegistry[id("iMomentumOnArray")].fn = builtinIMomentumOnArray
+	builtinRegistry[id("iCCIOnArray")].fn = builtinICCIOnArray
+	builtinRegistry[id("iMACDOnArray")].fn = builtinIMACDOnArray
 
 	// Cross-timeframe market data
 	builtinRegistry[id("iClose")].fn = builtinIClose

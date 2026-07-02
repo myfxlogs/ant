@@ -134,6 +134,13 @@ func (s *StrategyExecutionServer) dispatchFromBytes(ctx context.Context, cfg Liv
 				Timestamp:  time.Now(),
 			})
 		}
+		if cfg.ShadowVerifier != nil {
+			barTime := int64(0)
+			if bar != nil {
+				barTime = bar.OpenTime
+			}
+			cfg.ShadowVerifier.RecordLiveSignal(barTime, sig.GetSignalType(), sig.GetVolume(), sig.GetPrice())
+		}
 		s.dispatchLiveSignal(ctx, cfg, bar, sig)
 	}
 }

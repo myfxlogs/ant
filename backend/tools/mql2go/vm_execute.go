@@ -254,7 +254,7 @@ func (vm *VM) execute(ins Instruction) error {
 		// No-op: frame cleanup is handled by CALL_USER
 
 	// ── Event entry markers ──
-	case OP_ENTER_ONINIT, OP_ENTER_ONBAR, OP_ENTER_ONTICK, OP_ENTER_ONTRADE, OP_ENTER_ONTIMER, OP_ENTER_ONDEINIT:
+	case OP_ENTER_ONINIT, OP_ENTER_ONBAR, OP_ENTER_ONTICK, OP_ENTER_ONTRADE, OP_ENTER_ONTIMER, OP_ENTER_ONDEINIT, OP_ENTER_ONTRADETRANSACTION, OP_ENTER_ONBOOKEVENT:
 		// No-op: just markers
 
 	case OP_RETURN:

@@ -57,6 +57,10 @@ type LiveStrategyConfig struct {
 	// the session before launching RunLiveStrategy. If set, RunLiveStrategy
 	// skips registration.
 	PreRegisteredSession *ActiveSession
+
+	// ShadowVerifier runs a background consistency check comparing live
+	// signals with shadow backtest results. Nil = disabled.
+	ShadowVerifier *ShadowVerifier
 }
 
 // LiveTickSubscriber provides tick (Bid/Ask) updates for an account.
@@ -168,6 +172,11 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 	}
 
 	// Ensure run record is closed + session deregistered on exit.
+	// Stop shadow verifier if active.
+	if cfg.ShadowVerifier != nil {
+		cfg.ShadowVerifier.Stop()
+	}
+
 	defer func() {
 		if s.sessionRegistry != nil && runID != uuid.Nil {
 			s.sessionRegistry.Deregister(runID)

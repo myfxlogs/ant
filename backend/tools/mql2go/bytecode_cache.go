@@ -1,0 +1,498 @@
+package mql2go
+
+import (
+	"encoding/binary"
+	"fmt"
+	"io"
+
+	"github.com/shopspring/decimal"
+
+	"anttrader/tools/mql2go/interp"
+)
+
+// Bytecode binary cache format (version 1).
+// All integers are little-endian. Strings are uint16-length-prefixed.
+// Slices/maps are uint32-count-prefixed.
+//
+// Layout:
+//   magic: "BC01" (4 bytes)
+//   consts: count + entries
+//   code: count + entries
+//   globalSlots: count + entries
+//   globalDecls: count + entries (InitVal omitted — not needed at runtime)
+//   funcs: count + entries
+//   builtins: count + entries
+//   events: 6 × int32
+//   eventLocals: count + entries
+//   params: uint32 length + raw bytes (SerializeParams format)
+//   version: string
+//   enums: count + entries
+//   (Coverage omitted — not needed for execution)
+
+const bytecodeMagic = "BC01"
+
+// MarshalBytecode serializes a Bytecode to a compact binary format for DB storage.
+// Coverage report is omitted (not needed for VM execution).
+func MarshalBytecode(bc *Bytecode) ([]byte, error) {
+	w := &bytecodeWriter{buf: make([]byte, 0, 4096)}
+	w.writeString(bytecodeMagic)
+
+	// Consts
+	w.writeU32(uint32(len(bc.Consts)))
+	for _, c := range bc.Consts {
+		w.writeU8(uint8(c.Kind))
+		w.writeI32(c.Int)
+		w.writeString(c.Dec.String())
+		w.writeString(c.Str)
+		w.writeBool(c.Bool)
+	}
+
+	// Code
+	w.writeU32(uint32(len(bc.Code)))
+	for _, ins := range bc.Code {
+		w.writeU8(uint8(ins.Op))
+		w.writeI32(ins.A)
+		w.writeI32(ins.B)
+		w.writeU32(ins.Line)
+	}
+
+	// GlobalSlots
+	w.writeU32(uint32(len(bc.GlobalSlots)))
+	for name, id := range bc.GlobalSlots {
+		w.writeString(name)
+		w.writeU16(uint16(id))
+	}
+
+	// GlobalDecls (InitVal omitted)
+	w.writeU32(uint32(len(bc.GlobalDecls)))
+	for _, g := range bc.GlobalDecls {
+		w.writeString(g.Name)
+		w.writeString(g.Type)
+		w.writeBool(g.IsArray)
+		w.writeI32(int32(g.ArraySize))
+	}
+
+	// Funcs
+	w.writeU32(uint32(len(bc.Funcs)))
+	for name, fn := range bc.Funcs {
+		w.writeString(name)
+		w.writeI32(fn.EntryPC)
+		w.writeI32(int32(fn.NumParams))
+		w.writeI32(int32(fn.NumLocals))
+		w.writeU8(uint8(len(fn.ParamName)))
+		for _, pn := range fn.ParamName {
+			w.writeString(pn)
+		}
+	}
+
+	// Builtins
+	w.writeU32(uint32(len(bc.Builtins)))
+	for name, id := range bc.Builtins {
+		w.writeString(name)
+		w.writeU16(uint16(id))
+	}
+
+	// Events
+	w.writeI32(bc.OnInit)
+	w.writeI32(bc.OnBar)
+	w.writeI32(bc.OnTick)
+	w.writeI32(bc.OnTrade)
+	w.writeI32(bc.OnTimer)
+	w.writeI32(bc.OnDeinit)
+	w.writeI32(bc.OnTradeTransaction)
+	w.writeI32(bc.OnBookEvent)
+
+	// EventLocals
+	w.writeU32(uint32(len(bc.EventLocals)))
+	for pc, n := range bc.EventLocals {
+		w.writeI32(pc)
+		w.writeI32(int32(n))
+	}
+
+	// Params (use existing SerializeParams format)
+	paramsRaw := interp.SerializeParams(bc.Params)
+	w.writeU32(uint32(len(paramsRaw)))
+	w.writeBytes(paramsRaw)
+
+	// Version
+	w.writeString(bc.Version)
+
+	// Enums
+	w.writeU32(uint32(len(bc.Enums)))
+	for name, val := range bc.Enums {
+		w.writeString(name)
+		w.writeI32(val)
+	}
+
+	return w.buf, nil
+}
+
+// UnmarshalBytecode deserializes a Bytecode from the binary cache format.
+func UnmarshalBytecode(data []byte) (*Bytecode, error) {
+	r := &bytecodeReader{data: data}
+
+	magic, err := r.readString()
+	if err != nil {
+		return nil, fmt.Errorf("bytecode: read magic: %w", err)
+	}
+	if magic != bytecodeMagic {
+		return nil, fmt.Errorf("bytecode: invalid magic %q (expected %q)", magic, bytecodeMagic)
+	}
+
+	bc := &Bytecode{
+		OnInit:              -1,
+		OnBar:               -1,
+		OnTick:              -1,
+		OnTrade:             -1,
+		OnTimer:             -1,
+		OnDeinit:            -1,
+		OnTradeTransaction:  -1,
+		OnBookEvent:         -1,
+		EventLocals: make(map[int32]int),
+	}
+
+	// Consts
+	n, err := r.readU32()
+	if err != nil {
+		return nil, fmt.Errorf("bytecode: read consts count: %w", err)
+	}
+	bc.Consts = make([]ConstValue, n)
+	for i := uint32(0); i < n; i++ {
+		kind, err := r.readU8()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read const[%d] kind: %w", i, err)
+		}
+		intVal, err := r.readI32()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read const[%d] int: %w", i, err)
+		}
+		decStr, err := r.readString()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read const[%d] dec: %w", i, err)
+		}
+		str, err := r.readString()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read const[%d] str: %w", i, err)
+		}
+		b, err := r.readBool()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read const[%d] bool: %w", i, err)
+		}
+		dec, _ := decimal.NewFromString(decStr)
+		bc.Consts[i] = ConstValue{Kind: interp.ValueKind(kind), Int: intVal, Dec: dec, Str: str, Bool: b}
+	}
+
+	// Code
+	n, err = r.readU32()
+	if err != nil {
+		return nil, fmt.Errorf("bytecode: read code count: %w", err)
+	}
+	bc.Code = make([]Instruction, n)
+	for i := uint32(0); i < n; i++ {
+		op, err := r.readU8()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read code[%d] op: %w", i, err)
+		}
+		a, err := r.readI32()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read code[%d] A: %w", i, err)
+		}
+		b, err := r.readI32()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read code[%d] B: %w", i, err)
+		}
+		line, err := r.readU32()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read code[%d] line: %w", i, err)
+		}
+		bc.Code[i] = Instruction{Op: Opcode(op), A: a, B: b, Line: line}
+	}
+
+	// GlobalSlots
+	n, err = r.readU32()
+	if err != nil {
+		return nil, fmt.Errorf("bytecode: read globalSlots count: %w", err)
+	}
+	bc.GlobalSlots = make(map[string]VarID, n)
+	for i := uint32(0); i < n; i++ {
+		name, err := r.readString()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read globalSlot[%d] name: %w", i, err)
+		}
+		id, err := r.readU16()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read globalSlot[%d] id: %w", i, err)
+		}
+		bc.GlobalSlots[name] = VarID(id)
+	}
+
+	// GlobalDecls
+	n, err = r.readU32()
+	if err != nil {
+		return nil, fmt.Errorf("bytecode: read globalDecls count: %w", err)
+	}
+	bc.GlobalDecls = make([]interp.GlobalVar, n)
+	for i := uint32(0); i < n; i++ {
+		name, err := r.readString()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read globalDecl[%d] name: %w", i, err)
+		}
+		typ, err := r.readString()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read globalDecl[%d] type: %w", i, err)
+		}
+		isArray, err := r.readBool()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read globalDecl[%d] isArray: %w", i, err)
+		}
+		arrSize, err := r.readI32()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read globalDecl[%d] arrSize: %w", i, err)
+		}
+		bc.GlobalDecls[i] = interp.GlobalVar{Name: name, Type: typ, IsArray: isArray, ArraySize: int(arrSize)}
+	}
+
+	// Funcs
+	n, err = r.readU32()
+	if err != nil {
+		return nil, fmt.Errorf("bytecode: read funcs count: %w", err)
+	}
+	bc.Funcs = make(map[string]FuncEntry, n)
+	for i := uint32(0); i < n; i++ {
+		name, err := r.readString()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read func[%d] name: %w", i, err)
+		}
+		entryPC, err := r.readI32()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read func[%d] entryPC: %w", i, err)
+		}
+		numParams, err := r.readI32()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read func[%d] numParams: %w", i, err)
+		}
+		numLocals, err := r.readI32()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read func[%d] numLocals: %w", i, err)
+		}
+		paramCount, err := r.readU8()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read func[%d] paramCount: %w", i, err)
+		}
+		paramNames := make([]string, paramCount)
+		for j := 0; j < int(paramCount); j++ {
+			pn, err := r.readString()
+			if err != nil {
+				return nil, fmt.Errorf("bytecode: read func[%d] paramName[%d]: %w", i, j, err)
+			}
+			paramNames[j] = pn
+		}
+		bc.Funcs[name] = FuncEntry{
+			Name: name, EntryPC: entryPC,
+			NumParams: int(numParams), NumLocals: int(numLocals),
+			ParamName: paramNames,
+		}
+	}
+
+	// Builtins
+	n, err = r.readU32()
+	if err != nil {
+		return nil, fmt.Errorf("bytecode: read builtins count: %w", err)
+	}
+	bc.Builtins = make(map[string]BuiltinID, n)
+	for i := uint32(0); i < n; i++ {
+		name, err := r.readString()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read builtin[%d] name: %w", i, err)
+		}
+		id, err := r.readU16()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read builtin[%d] id: %w", i, err)
+		}
+		bc.Builtins[name] = BuiltinID(id)
+	}
+
+	// Events
+	if bc.OnInit, err = r.readI32(); err != nil {
+		return nil, fmt.Errorf("bytecode: read OnInit: %w", err)
+	}
+	if bc.OnBar, err = r.readI32(); err != nil {
+		return nil, fmt.Errorf("bytecode: read OnBar: %w", err)
+	}
+	if bc.OnTick, err = r.readI32(); err != nil {
+		return nil, fmt.Errorf("bytecode: read OnTick: %w", err)
+	}
+	if bc.OnTrade, err = r.readI32(); err != nil {
+		return nil, fmt.Errorf("bytecode: read OnTrade: %w", err)
+	}
+	if bc.OnTimer, err = r.readI32(); err != nil {
+		return nil, fmt.Errorf("bytecode: read OnTimer: %w", err)
+	}
+	if bc.OnDeinit, err = r.readI32(); err != nil {
+		return nil, fmt.Errorf("bytecode: read OnDeinit: %w", err)
+	}
+	if bc.OnTradeTransaction, err = r.readI32(); err != nil {
+		return nil, fmt.Errorf("bytecode: read OnTradeTransaction: %w", err)
+	}
+	if bc.OnBookEvent, err = r.readI32(); err != nil {
+		return nil, fmt.Errorf("bytecode: read OnBookEvent: %w", err)
+	}
+
+	// EventLocals
+	n, err = r.readU32()
+	if err != nil {
+		return nil, fmt.Errorf("bytecode: read eventLocals count: %w", err)
+	}
+	for i := uint32(0); i < n; i++ {
+		pc, err := r.readI32()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read eventLocal[%d] pc: %w", i, err)
+		}
+		count, err := r.readI32()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read eventLocal[%d] count: %w", i, err)
+		}
+		bc.EventLocals[pc] = int(count)
+	}
+
+	// Params
+	paramsLen, err := r.readU32()
+	if err != nil {
+		return nil, fmt.Errorf("bytecode: read params length: %w", err)
+	}
+	paramsRaw := make([]byte, paramsLen)
+	if _, err := r.readBytes(paramsRaw); err != nil {
+		return nil, fmt.Errorf("bytecode: read params data: %w", err)
+	}
+	bc.Params = interp.DeserializeParams(paramsRaw)
+
+	// Version
+	if bc.Version, err = r.readString(); err != nil {
+		return nil, fmt.Errorf("bytecode: read version: %w", err)
+	}
+
+	// Enums
+	n, err = r.readU32()
+	if err != nil {
+		return nil, fmt.Errorf("bytecode: read enums count: %w", err)
+	}
+	bc.Enums = make(map[string]int32, n)
+	for i := uint32(0); i < n; i++ {
+		name, err := r.readString()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read enum[%d] name: %w", i, err)
+		}
+		val, err := r.readI32()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read enum[%d] val: %w", i, err)
+		}
+		bc.Enums[name] = val
+	}
+
+	return bc, nil
+}
+
+// ── binary writer ────────────────────────────────────────────────────
+
+type bytecodeWriter struct {
+	buf []byte
+}
+
+func (w *bytecodeWriter) writeU8(v uint8) {
+	w.buf = append(w.buf, v)
+}
+
+func (w *bytecodeWriter) writeU16(v uint16) {
+	w.buf = binary.LittleEndian.AppendUint16(w.buf, v)
+}
+
+func (w *bytecodeWriter) writeU32(v uint32) {
+	w.buf = binary.LittleEndian.AppendUint32(w.buf, v)
+}
+
+func (w *bytecodeWriter) writeI32(v int32) {
+	w.buf = binary.LittleEndian.AppendUint32(w.buf, uint32(v))
+}
+
+func (w *bytecodeWriter) writeBool(v bool) {
+	if v {
+		w.buf = append(w.buf, 1)
+	} else {
+		w.buf = append(w.buf, 0)
+	}
+}
+
+func (w *bytecodeWriter) writeString(s string) {
+	w.writeU16(uint16(len(s)))
+	w.buf = append(w.buf, s...)
+}
+
+func (w *bytecodeWriter) writeBytes(b []byte) {
+	w.buf = append(w.buf, b...)
+}
+
+// ── binary reader ────────────────────────────────────────────────────
+
+type bytecodeReader struct {
+	data []byte
+	pos  int
+}
+
+func (r *bytecodeReader) readU8() (uint8, error) {
+	if r.pos >= len(r.data) {
+		return 0, io.ErrUnexpectedEOF
+	}
+	v := r.data[r.pos]
+	r.pos++
+	return v, nil
+}
+
+func (r *bytecodeReader) readU16() (uint16, error) {
+	if r.pos+2 > len(r.data) {
+		return 0, io.ErrUnexpectedEOF
+	}
+	v := binary.LittleEndian.Uint16(r.data[r.pos:])
+	r.pos += 2
+	return v, nil
+}
+
+func (r *bytecodeReader) readU32() (uint32, error) {
+	if r.pos+4 > len(r.data) {
+		return 0, io.ErrUnexpectedEOF
+	}
+	v := binary.LittleEndian.Uint32(r.data[r.pos:])
+	r.pos += 4
+	return v, nil
+}
+
+func (r *bytecodeReader) readI32() (int32, error) {
+	v, err := r.readU32()
+	return int32(v), err
+}
+
+func (r *bytecodeReader) readBool() (bool, error) {
+	b, err := r.readU8()
+	return b != 0, err
+}
+
+func (r *bytecodeReader) readString() (string, error) {
+	length, err := r.readU16()
+	if err != nil {
+		return "", err
+	}
+	if r.pos+int(length) > len(r.data) {
+		return "", io.ErrUnexpectedEOF
+	}
+	s := string(r.data[r.pos : r.pos+int(length)])
+	r.pos += int(length)
+	return s, nil
+}
+
+func (r *bytecodeReader) readBytes(dst []byte) (int, error) {
+	if r.pos+len(dst) > len(r.data) {
+		return 0, io.ErrUnexpectedEOF
+	}
+	n := copy(dst, r.data[r.pos:])
+	r.pos += n
+	return n, nil
+}

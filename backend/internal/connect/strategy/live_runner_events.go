@@ -9,6 +9,7 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/mthub"
+	"anttrader/strategy/sdk"
 )
 
 func (s *StrategyExecutionServer) handleBar(
@@ -26,6 +27,18 @@ func (s *StrategyExecutionServer) handleBar(
 	})
 	if len(*bars) > maxContextBars {
 		*bars = (*bars)[len(*bars)-maxContextBars:]
+	}
+
+	// Feed bar to shadow verifier if enabled.
+	if cfg.ShadowVerifier != nil {
+		cfg.ShadowVerifier.RecordBar(sdk.Bar{
+			Open:      bar.Open,
+			High:      bar.High,
+			Low:       bar.Low,
+			Close:     bar.Close,
+			Volume:    int64(bar.Volume),
+			Timestamp: bar.OpenTime,
+		})
 	}
 
 	var lctx *antv1.LiveStrategyContext

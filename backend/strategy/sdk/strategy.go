@@ -96,6 +96,18 @@ type TradeStrategy interface {
 	OnTrade(ctx Context, event TradeEvent) (*Signal, error)
 }
 
+// TradeTransactionStrategy is implemented by MQL5 strategies that use OnTradeTransaction.
+// OnTradeTransaction is called for every trade transaction state change (request, result, deal).
+type TradeTransactionStrategy interface {
+	OnTradeTransaction(ctx Context) (*Signal, error)
+}
+
+// BookEventStrategy is implemented by MQL5 strategies that use OnBookEvent.
+// OnBookEvent is called when the market depth (order book) changes for a symbol.
+type BookEventStrategy interface {
+	OnBookEvent(ctx Context) (*Signal, error)
+}
+
 // TradeEvent carries information about a completed trade action.
 type TradeEvent struct {
 	Ticket     int64

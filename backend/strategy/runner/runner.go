@@ -120,6 +120,48 @@ func (r *Runner) OnTimerTick(ctx context.Context) (*sdk.Signal, error) {
 	return ts.OnTimer(r.ctx)
 }
 
+// OnTradeTransaction calls the strategy's OnTradeTransaction if it implements TradeTransactionStrategy.
+func (r *Runner) OnTradeTransaction(ctx context.Context) (*sdk.Signal, error) {
+	if r.strategy == nil {
+		return nil, nil
+	}
+	ts, ok := r.strategy.(sdk.TradeTransactionStrategy)
+	if !ok {
+		return nil, nil
+	}
+	return ts.OnTradeTransaction(r.ctx)
+}
+
+// OnBookEvent calls the strategy's OnBookEvent if it implements BookEventStrategy.
+func (r *Runner) OnBookEvent(ctx context.Context) (*sdk.Signal, error) {
+	if r.strategy == nil {
+		return nil, nil
+	}
+	ts, ok := r.strategy.(sdk.BookEventStrategy)
+	if !ok {
+		return nil, nil
+	}
+	return ts.OnBookEvent(r.ctx)
+}
+
+// HasOnTradeTransaction returns true if the underlying strategy implements TradeTransactionStrategy.
+func (r *Runner) HasOnTradeTransaction() bool {
+	if r.strategy == nil {
+		return false
+	}
+	_, ok := r.strategy.(sdk.TradeTransactionStrategy)
+	return ok
+}
+
+// HasOnBookEvent returns true if the underlying strategy implements BookEventStrategy.
+func (r *Runner) HasOnBookEvent() bool {
+	if r.strategy == nil {
+		return false
+	}
+	_, ok := r.strategy.(sdk.BookEventStrategy)
+	return ok
+}
+
 // UpdateTickState sets the latest bid/ask from a tick event.
 func (r *Runner) UpdateTickState(bid, ask decimal.Decimal) {
 	r.ctx.setTick(bid, ask)

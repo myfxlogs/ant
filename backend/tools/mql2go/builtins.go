@@ -61,6 +61,7 @@ var builtinRegistry = []builtinEntry{
 	{"iRSI", nil},
 	{"iATR", nil},
 	{"iBands", nil},
+	{"iBollinger", nil},
 	{"iMACD", nil},
 	{"iStochastic", nil},
 	{"iCCI", nil},
@@ -97,6 +98,16 @@ var builtinRegistry = []builtinEntry{
 	{"iADXWilder", nil},
 	{"iChaikin", nil},
 	{"iVolumes", nil},
+
+	// *OnArray variants (compute on user-provided arrays)
+	{"iMAOnArray", nil},
+	{"iRSIOnArray", nil},
+	{"iATROnArray", nil},
+	{"iBandsOnArray", nil},
+	{"iStdDevOnArray", nil},
+	{"iMomentumOnArray", nil},
+	{"iCCIOnArray", nil},
+	{"iMACDOnArray", nil},
 
 	// Account functions
 	{"AccountBalance", nil},

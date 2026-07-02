@@ -213,6 +213,8 @@ func (c *compiler) collectFunction(ir *interp.IR, n *sitter.Node) {
 		ir.OnTrade = stmts
 	case "OnTradeTransaction":
 		ir.OnTradeTransaction = stmts
+	case "OnBookEvent":
+		ir.OnBookEvent = stmts
 	case "OnDeinit":
 		ir.OnDeinit = stmts
 	default:

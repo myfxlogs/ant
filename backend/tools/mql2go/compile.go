@@ -21,12 +21,14 @@ func CompileAST(ir *interp.IR) (*Bytecode, error) {
 			Version:     ir.Version,
 			Enums:       ir.Enums,
 			Coverage:    &CoverageReport{},
-			OnInit:      -1,
-			OnBar:       -1,
-			OnTick:      -1,
-			OnTrade:     -1,
-			OnTimer:     -1,
-			OnDeinit:    -1,
+			OnInit:              -1,
+			OnBar:               -1,
+			OnTick:              -1,
+			OnTrade:             -1,
+			OnTimer:             -1,
+			OnDeinit:            -1,
+			OnTradeTransaction:  -1,
+			OnBookEvent:         -1,
 			EventLocals: make(map[int32]int),
 		},
 		ir:           ir,
@@ -96,6 +98,16 @@ func CompileAST(ir *interp.IR) (*Bytecode, error) {
 		c.bc.OnDeinit = int32(len(c.bc.Code))
 		c.emit(OP_ENTER_ONDEINIT, 0, 0, 0)
 		c.compileEventBody(ir.OnDeinit)
+	}
+	if len(ir.OnTradeTransaction) > 0 {
+		c.bc.OnTradeTransaction = int32(len(c.bc.Code))
+		c.emit(OP_ENTER_ONTRADETRANSACTION, 0, 0, 0)
+		c.compileEventBody(ir.OnTradeTransaction)
+	}
+	if len(ir.OnBookEvent) > 0 {
+		c.bc.OnBookEvent = int32(len(c.bc.Code))
+		c.emit(OP_ENTER_ONBOOKEVENT, 0, 0, 0)
+		c.compileEventBody(ir.OnBookEvent)
 	}
 
 	// Halt instruction at end
@@ -189,7 +201,7 @@ func (c *astCompiler) resolveVar(name string) (VarID, bool) {
 
 func isEventFunction(name string) bool {
 	switch name {
-	case "OnInit", "OnTick", "OnBar", "OnTimer", "OnTrade", "OnTradeTransaction", "OnDeinit":
+	case "OnInit", "OnTick", "OnBar", "OnTimer", "OnTrade", "OnTradeTransaction", "OnBookEvent", "OnDeinit":
 		return true
 	}
 	return false
