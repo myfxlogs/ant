@@ -556,6 +556,19 @@ Python 子集禁止 `import`、`try/except`、`with`、`async/await`——Agent 
 | 最快迭代速度 | Python 回测引擎与 Go SimBroker 行为不一致 | 回测结果不可信 |
 | 不需要 Go ↔ Python 通信 | 重复实现撮合/风控/指标 | 维护成本极高 |
 
+### 选定方案: 双编译前端 + Python Agent 层（§2 D1-D8）
+
+| 维度 | 决策 |
+|------|------|
+| 策略语言 | MQL（现有管线） + Python 子集（新增，Agent 生成目标） |
+| 编译 | compile_mql.go + compile_py.go → 共用 interp.IR → Bytecode → VM |
+| 执行 | 单一 Bytecode VM（回测 SimBroker / 实盘 LiveRunner） |
+| Agent 层 | Python（LangChain/CrewAI + pandas/optuna/pgvector），通过 ConnectRPC 调用 Go Gateway |
+| Agent ↔ Go 通信 | ConnectRPC + SSE（protobuf），每迭代一次 RPC 往返 |
+| 安全 | 四层：Python 子集验证 → Bytecode VM 沙箱 → SDK 风控 Gate → Agent 进程隔离 |
+
+选取理由：方案 A（MQL）LLM 生成质量不足，方案 B（Go SDK）Agent 生态为零，方案 C（per-bar RPC）性能不可接受，方案 D（Python 回测）破坏回测即实盘原则。双编译前端 + 单 VM 是唯一同时满足 LLM 生成质量、Agent 生态需求和回测性能约束的架构。
+
 ---
 
 ## 4. 后果
