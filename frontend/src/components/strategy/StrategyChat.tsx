@@ -6,6 +6,7 @@ import ChatMessageItem, { type ChatMsg } from './ChatMessageItem';
 import WorkflowBar from './WorkflowBar';
 import StrategyList from './StrategyList';
 import StrategyChatHistory from './StrategyChatHistory';
+import AgentGenChat from './AgentGenChat';
 import { useConversationHandlers } from './useConversationHandlers';
 import { generateTitle, runConversate as runConversateFn, type TabKey, type Conversation, type Template } from './strategyChatUtils';
 import { aiApi } from '@/client/ai';
@@ -158,7 +159,7 @@ const isFirst = messages.length === 0 && !titleGeneratedRef.current;
       {/* Tabs */}
       <div style={{ flexShrink: 0, padding: '6px 12px', background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
         <Segmented value={tab} onChange={(v) => setTab(v as TabKey)}
-          options={[{ label: t(CHAT_TAB_KEY), value: 'chat' }, { label: t(HISTORY_TAB_KEY), value: 'history' }, { label: t(STRATEGIES_TAB_KEY), value: 'strategies' }]}
+          options={[{ label: t(CHAT_TAB_KEY), value: 'chat' }, { label: t('strategy.gen.generateTab', 'Generate'), value: 'generate' }, { label: t(HISTORY_TAB_KEY), value: 'history' }, { label: t(STRATEGIES_TAB_KEY), value: 'strategies' }]}
           block style={{ fontSize: 12 }} />
       </div>
 
@@ -201,6 +202,10 @@ const isFirst = messages.length === 0 && !titleGeneratedRef.current;
             />
           </div>
         </>)}
+
+        {tab === 'generate' && (
+          <AgentGenChat symbol={symbol} timeframe={timeframe} onApply={onApplyCode} />
+        )}
 
         {tab === 'history' && (
           <StrategyChatHistory

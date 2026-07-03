@@ -19,11 +19,14 @@ service AgentService {
 
 // AgentGatewayService is the ADR-0024 Agent Gateway for strategy submission,
 // compilation, backtest execution, and knowledge base access.
-// Phase 0: synchronous mode — SubmitStrategy blocks until backtest completes.
 service AgentGatewayService {
   // Agent submits strategy source code, triggers compile + backtest.
-  // Phase 0: SYNC only — blocks until backtest completes (<30s), returns result directly.
+  // Synchronous mode — blocks until backtest completes (<30s), returns result directly.
   rpc SubmitStrategy(SubmitStrategyRequest) returns (SubmitStrategyResponse);
+
+  // Generate strategy from natural language description via LLM → Python subset → VM backtest.
+  // Streaming: plan → code → compile → backtest → analysis, with retry on compile/backtest failure.
+  rpc GenerateStrategy(AgentGenerateStrategyRequest) returns (stream AgentGenerateStrategyChunk);
 
   // Agent searches knowledge base for similar experiences (Go-side pgvector).
   rpc SearchExperience(SearchExperienceRequest) returns (SearchExperienceResponse);
@@ -109,19 +112,19 @@ message AgentCapabilities {
   repeated string available_tools = 3;
 }
 
-// ── AgentGatewayService messages (ADR-0024 Phase 0) ──────────────────────
+// ── AgentGatewayService messages ────────────────────────────────────────
 
 enum SubmitMode {
-  SUBMIT_SYNC = 0;   // 同步: 阻塞等待回测完成 (Phase 0, 回测 <30s)
-  SUBMIT_ASYNC = 1;  // 异步: 立即返回 strategy_id (Phase 2, 未实现)
+  SUBMIT_SYNC = 0;   // 同步: 阻塞等待回测完成 (回测 <30s)
+  SUBMIT_ASYNC = 1;  // 异步: 立即返回 strategy_id (未实现)
 }
 
 message SubmitStrategyRequest {
   string source_code = 1;             // 策略源码 (MQL4/MQL5)
-  string language = 2;                // "mql4" | "mql5" | "python" (Phase 2: Python supported)
+  string language = 2;                // "mql4" | "mql5" | "python"
   map<string, string> params = 3;     // 参数覆盖
   AgentBacktestConfig backtest_config = 4; // 回测配置
-  SubmitMode mode = 5;                // 同步/异步模式 (Phase 0: SYNC only)
+  SubmitMode mode = 5;                // 同步/异步模式
 }
 
 message AgentBacktestConfig {
@@ -146,14 +149,14 @@ message SubmitStrategyResponse {
   double coverage_score = 7;          // 0.0-1.0
   repeated AgentBlindSpot blind_spots = 8;
   SubmitMode mode = 9;                // actual mode used
-  SemanticDiff semantic_diff = 10;    // ADR-0024 Phase 2: semantic change description
+  SemanticDiff semantic_diff = 10;    // semantic change description (bridge)
   string bridge_status = 11;          // "success" | "bridge_failed" | "not_attempted"
   string bridged_python_source = 12;  // translated Python source (if bridge successful)
   string bridge_compile_error = 13;   // last compile error from bridge retry loop
 }
 
 // SemanticDiff describes strategy changes in natural language (non-programmer friendly).
-// ADR-0024 Phase 2: "策略语义 diff（非代码 diff）"
+// ADR-0024: "策略语义 diff（非代码 diff）"
 message SemanticDiff {
   repeated SemanticChange changes = 1;
   string effect_summary = 2;           // e.g. "夏普 1.2 → 1.6, 回撤 28% → 14%"
@@ -230,4 +233,30 @@ message StoreExperienceRequest {
 message StoreExperienceResponse {
   string id = 1;                      // generated UUID
   bool success = 2;
+}
+
+// ── GenerateStrategy (Phase 3) ──────────────────────────────────────────
+
+message AgentGenerateStrategyRequest {
+  string message = 1;                      // natural language strategy description
+  string symbol = 2;                       // trading symbol (e.g. "EURUSD")
+  string timeframe = 3;                    // e.g. "H1", "M15"
+  map<string, string> params = 4;          // parameter overrides
+  AgentBacktestConfig backtest_config = 5; // backtest configuration
+}
+
+message AgentGenerateStrategyChunk {
+  string phase = 1;                        // planning | generating | compiling | backtesting | analyzing | done
+  string delta = 2;                        // streaming text delta (generating phase)
+  reserved 3;                              // was plan (unused, kept for wire compatibility)
+  string python_source = 4;               // generated Python subset code
+  string compile_error = 5;               // compile error if compilation fails
+  AgentBacktestResult result = 6;         // backtest result (backtesting/done phase)
+  StrategyProfile profile = 7;            // LLM-generated strategy profile
+  BacktestAnalysis analysis = 8;          // LLM-generated backtest analysis
+  double coverage_score = 9;              // 0.0-1.0
+  repeated AgentBlindSpot blind_spots = 10;
+  int32 attempts = 11;                    // number of generation attempts (1-3)
+  string error = 12;                      // non-fatal error message
+  string backtest_error = 13;             // backtest error if backtest fails
 }

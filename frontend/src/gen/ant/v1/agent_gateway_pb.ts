@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file agent_gateway.proto.
  */
 export const file_agent_gateway: GenFile = /*@__PURE__*/
-  fileDesc("ChNhZ2VudF9nYXRld2F5LnByb3RvEgZhbnQudjEilAMKCkFnZW50VG9rZW4SCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhQKDHRva2VuX3ByZWZpeBgEIAEoCRIOCgZzY29wZXMYBSADKAkSGQoRYWNjb3VudF9hbGxvd2xpc3QYBiADKAkSGAoQc3ltYm9sX2FsbG93bGlzdBgHIAMoCRISCgpwYXBlcl9vbmx5GAggASgIEhoKEnJhdGVfbGltaXRfcGVyX21pbhgJIAEoBRIuCgpleHBpcmVzX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIOCgZzdGF0dXMYCyABKAkSMAoMbGFzdF91c2VkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpjcmVhdGVkX2F0GA0gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLPAgoPQWdlbnRBdWRpdEVudHJ5EgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSFgoOYWdlbnRfdG9rZW5faWQYAyABKAkSEgoKYWdlbnRfbmFtZRgEIAEoCRITCgtycGNfc2VydmljZRgFIAEoCRISCgpycGNfbWV0aG9kGAYgASgJEg0KBXNjb3BlGAcgASgJEhMKC3N0YXR1c19jb2RlGAggASgJEhcKD2lkZW1wb3RlbmN5X2tleRgJIAEoCRIVCg1yaXNrX2RlY2lzaW9uGAogASgJEhcKD3JlcXVlc3Rfc3VtbWFyeRgLIAEoCRIYChByZXNwb25zZV9zdW1tYXJ5GAwgASgJEhMKC2R1cmF0aW9uX21zGA0gASgDEi4KCmNyZWF0ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIssBChZJc3N1ZUFnZW50VG9rZW5SZXF1ZXN0EgwKBG5hbWUYASABKAkSDgoGc2NvcGVzGAIgAygJEhkKEWFjY291bnRfYWxsb3dsaXN0GAMgAygJEhgKEHN5bWJvbF9hbGxvd2xpc3QYBCADKAkSEgoKcGFwZXJfb25seRgFIAEoCBIaChJyYXRlX2xpbWl0X3Blcl9taW4YBiABKAUSLgoKZXhwaXJlc19hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiVQoXSXNzdWVBZ2VudFRva2VuUmVzcG9uc2USIQoFdG9rZW4YASABKAsyEi5hbnQudjEuQWdlbnRUb2tlbhIXCg9wbGFpbnRleHRfdG9rZW4YAiABKAkiGAoWTGlzdEFnZW50VG9rZW5zUmVxdWVzdCI9ChdMaXN0QWdlbnRUb2tlbnNSZXNwb25zZRIiCgZ0b2tlbnMYASADKAsyEi5hbnQudjEuQWdlbnRUb2tlbiIrChdSZXZva2VBZ2VudFRva2VuUmVxdWVzdBIQCgh0b2tlbl9pZBgBIAEoCSJIChVMaXN0QWdlbnRBdWRpdFJlcXVlc3QSEAoIdG9rZW5faWQYASABKAkSDQoFbGltaXQYAiABKAUSDgoGb2Zmc2V0GAMgASgFIkIKFkxpc3RBZ2VudEF1ZGl0UmVzcG9uc2USKAoHZW50cmllcxgBIAMoCzIXLmFudC52MS5BZ2VudEF1ZGl0RW50cnkiHQobR2V0QWdlbnRDYXBhYmlsaXRpZXNSZXF1ZXN0IloKEUFnZW50Q2FwYWJpbGl0aWVzEg4KBnNjb3BlcxgBIAMoCRIcChRsaXZlX3RyYWRpbmdfZW5hYmxlZBgCIAEoCBIXCg9hdmFpbGFibGVfdG9vbHMYAyADKAkigAIKFVN1Ym1pdFN0cmF0ZWd5UmVxdWVzdBITCgtzb3VyY2VfY29kZRgBIAEoCRIQCghsYW5ndWFnZRgCIAEoCRI5CgZwYXJhbXMYAyADKAsyKS5hbnQudjEuU3VibWl0U3RyYXRlZ3lSZXF1ZXN0LlBhcmFtc0VudHJ5EjQKD2JhY2t0ZXN0X2NvbmZpZxgEIAEoCzIbLmFudC52MS5BZ2VudEJhY2t0ZXN0Q29uZmlnEiAKBG1vZGUYBSABKA4yEi5hbnQudjEuU3VibWl0TW9kZRotCgtQYXJhbXNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIsoBChNBZ2VudEJhY2t0ZXN0Q29uZmlnEg4KBnN5bWJvbBgBIAEoCRIRCgl0aW1lZnJhbWUYAiABKAkSFQoNc3RhcnRfZGF0ZV9tcxgDIAEoAxITCgtlbmRfZGF0ZV9tcxgEIAEoAxIXCg9pbml0aWFsX2NhcGl0YWwYBSABKAkSEgoKY29tbWlzc2lvbhgGIAEoCRIQCghzbGlwcGFnZRgHIAEoCRIQCghsZXZlcmFnZRgIIAEoCRITCgtzdHJpY3RfbW9kZRgJIAEoCCLIAwoWU3VibWl0U3RyYXRlZ3lSZXNwb25zZRITCgtzdHJhdGVneV9pZBgBIAEoCRIXCg9jb21waWxlX3N1Y2Nlc3MYAiABKAgSFQoNY29tcGlsZV9lcnJvchgDIAEoCRIrCgZyZXN1bHQYBCABKAsyGy5hbnQudjEuQWdlbnRCYWNrdGVzdFJlc3VsdBIoCgdwcm9maWxlGAUgASgLMhcuYW50LnYxLlN0cmF0ZWd5UHJvZmlsZRIqCghhbmFseXNpcxgGIAEoCzIYLmFudC52MS5CYWNrdGVzdEFuYWx5c2lzEhYKDmNvdmVyYWdlX3Njb3JlGAcgASgBEisKC2JsaW5kX3Nwb3RzGAggAygLMhYuYW50LnYxLkFnZW50QmxpbmRTcG90EiAKBG1vZGUYCSABKA4yEi5hbnQudjEuU3VibWl0TW9kZRIrCg1zZW1hbnRpY19kaWZmGAogASgLMhQuYW50LnYxLlNlbWFudGljRGlmZhIVCg1icmlkZ2Vfc3RhdHVzGAsgASgJEh0KFWJyaWRnZWRfcHl0aG9uX3NvdXJjZRgMIAEoCRIcChRicmlkZ2VfY29tcGlsZV9lcnJvchgNIAEoCSJPCgxTZW1hbnRpY0RpZmYSJwoHY2hhbmdlcxgBIAMoCzIWLmFudC52MS5TZW1hbnRpY0NoYW5nZRIWCg5lZmZlY3Rfc3VtbWFyeRgCIAEoCSIzCg5TZW1hbnRpY0NoYW5nZRIMCgRraW5kGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJIusCChNBZ2VudEJhY2t0ZXN0UmVzdWx0Eg8KB3N1Y2Nlc3MYASABKAgSDQoFZXJyb3IYAiABKAkSFAoMdG90YWxfcmV0dXJuGAMgASgBEhUKDWFubnVhbF9yZXR1cm4YBCABKAESFAoMbWF4X2RyYXdkb3duGAUgASgBEhQKDHNoYXJwZV9yYXRpbxgGIAEoARIQCgh3aW5fcmF0ZRgHIAEoARIVCg1wcm9maXRfZmFjdG9yGAggASgBEhQKDHRvdGFsX3RyYWRlcxgJIAEoBRIWCg53aW5uaW5nX3RyYWRlcxgKIAEoBRIVCg1sb3NpbmdfdHJhZGVzGAsgASgFEhoKEnRvdGFsX3BubF9hYnNvbHV0ZRgMIAEoCRIUCgxlcXVpdHlfY3VydmUYDSADKAkSFwoPZXF1aXR5X3RpbWVzX21zGA4gAygDEiIKBnRyYWRlcxgPIAMoCzISLmFudC52MS5BZ2VudFRyYWRlIr0BCgpBZ2VudFRyYWRlEg4KBnRpY2tldBgBIAEoAxIMCgRzaWRlGAIgASgJEg4KBnZvbHVtZRgDIAEoCRISCgpvcGVuX3RzX21zGAQgASgDEhIKCm9wZW5fcHJpY2UYBSABKAkSEwoLY2xvc2VfdHNfbXMYBiABKAMSEwoLY2xvc2VfcHJpY2UYByABKAkSCwoDcG5sGAggASgJEhIKCmNvbW1pc3Npb24YCSABKAkSDgoGcmVhc29uGAogASgJIkIKDkFnZW50QmxpbmRTcG90Eg8KB2J1aWx0aW4YASABKAkSEAoIc2V2ZXJpdHkYAiABKAkSDQoFY291bnQYAyABKAUiSQoXU2VhcmNoRXhwZXJpZW5jZVJlcXVlc3QSDQoFcXVlcnkYASABKAkSEAoIY2F0ZWdvcnkYAiABKAkSDQoFbGltaXQYAyABKAUimAEKD0V4cGVyaWVuY2VFbnRyeRIKCgJpZBgBIAEoCRIQCghjYXRlZ29yeRgCIAEoCRIPCgdjb250ZW50GAMgASgJEhIKCm1hdGNoX3R5cGUYBCABKAkSEgoKc2ltaWxhcml0eRgFIAEoARIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJEChhTZWFyY2hFeHBlcmllbmNlUmVzcG9uc2USKAoHZW50cmllcxgBIAMoCzIXLmFudC52MS5FeHBlcmllbmNlRW50cnkiUAoWU3RvcmVFeHBlcmllbmNlUmVxdWVzdBIQCghjYXRlZ29yeRgBIAEoCRIPCgdjb250ZW50GAIgASgJEhMKC2ZpbmdlcnByaW50GAMgASgJIjYKF1N0b3JlRXhwZXJpZW5jZVJlc3BvbnNlEgoKAmlkGAEgASgJEg8KB3N1Y2Nlc3MYAiABKAgqLwoKU3VibWl0TW9kZRIPCgtTVUJNSVRfU1lOQxAAEhAKDFNVQk1JVF9BU1lOQxABMqgDCgxBZ2VudFNlcnZpY2USUgoPSXNzdWVBZ2VudFRva2VuEh4uYW50LnYxLklzc3VlQWdlbnRUb2tlblJlcXVlc3QaHy5hbnQudjEuSXNzdWVBZ2VudFRva2VuUmVzcG9uc2USUgoPTGlzdEFnZW50VG9rZW5zEh4uYW50LnYxLkxpc3RBZ2VudFRva2Vuc1JlcXVlc3QaHy5hbnQudjEuTGlzdEFnZW50VG9rZW5zUmVzcG9uc2USRwoQUmV2b2tlQWdlbnRUb2tlbhIfLmFudC52MS5SZXZva2VBZ2VudFRva2VuUmVxdWVzdBoSLmFudC52MS5BZ2VudFRva2VuEk8KDkxpc3RBZ2VudEF1ZGl0Eh0uYW50LnYxLkxpc3RBZ2VudEF1ZGl0UmVxdWVzdBoeLmFudC52MS5MaXN0QWdlbnRBdWRpdFJlc3BvbnNlElYKFEdldEFnZW50Q2FwYWJpbGl0aWVzEiMuYW50LnYxLkdldEFnZW50Q2FwYWJpbGl0aWVzUmVxdWVzdBoZLmFudC52MS5BZ2VudENhcGFiaWxpdGllczKRAgoTQWdlbnRHYXRld2F5U2VydmljZRJPCg5TdWJtaXRTdHJhdGVneRIdLmFudC52MS5TdWJtaXRTdHJhdGVneVJlcXVlc3QaHi5hbnQudjEuU3VibWl0U3RyYXRlZ3lSZXNwb25zZRJVChBTZWFyY2hFeHBlcmllbmNlEh8uYW50LnYxLlNlYXJjaEV4cGVyaWVuY2VSZXF1ZXN0GiAuYW50LnYxLlNlYXJjaEV4cGVyaWVuY2VSZXNwb25zZRJSCg9TdG9yZUV4cGVyaWVuY2USHi5hbnQudjEuU3RvcmVFeHBlcmllbmNlUmVxdWVzdBofLmFudC52MS5TdG9yZUV4cGVyaWVuY2VSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_agent_profile, file_agent_analysis]);
+  fileDesc("ChNhZ2VudF9nYXRld2F5LnByb3RvEgZhbnQudjEilAMKCkFnZW50VG9rZW4SCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhQKDHRva2VuX3ByZWZpeBgEIAEoCRIOCgZzY29wZXMYBSADKAkSGQoRYWNjb3VudF9hbGxvd2xpc3QYBiADKAkSGAoQc3ltYm9sX2FsbG93bGlzdBgHIAMoCRISCgpwYXBlcl9vbmx5GAggASgIEhoKEnJhdGVfbGltaXRfcGVyX21pbhgJIAEoBRIuCgpleHBpcmVzX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIOCgZzdGF0dXMYCyABKAkSMAoMbGFzdF91c2VkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpjcmVhdGVkX2F0GA0gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLPAgoPQWdlbnRBdWRpdEVudHJ5EgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSFgoOYWdlbnRfdG9rZW5faWQYAyABKAkSEgoKYWdlbnRfbmFtZRgEIAEoCRITCgtycGNfc2VydmljZRgFIAEoCRISCgpycGNfbWV0aG9kGAYgASgJEg0KBXNjb3BlGAcgASgJEhMKC3N0YXR1c19jb2RlGAggASgJEhcKD2lkZW1wb3RlbmN5X2tleRgJIAEoCRIVCg1yaXNrX2RlY2lzaW9uGAogASgJEhcKD3JlcXVlc3Rfc3VtbWFyeRgLIAEoCRIYChByZXNwb25zZV9zdW1tYXJ5GAwgASgJEhMKC2R1cmF0aW9uX21zGA0gASgDEi4KCmNyZWF0ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIssBChZJc3N1ZUFnZW50VG9rZW5SZXF1ZXN0EgwKBG5hbWUYASABKAkSDgoGc2NvcGVzGAIgAygJEhkKEWFjY291bnRfYWxsb3dsaXN0GAMgAygJEhgKEHN5bWJvbF9hbGxvd2xpc3QYBCADKAkSEgoKcGFwZXJfb25seRgFIAEoCBIaChJyYXRlX2xpbWl0X3Blcl9taW4YBiABKAUSLgoKZXhwaXJlc19hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiVQoXSXNzdWVBZ2VudFRva2VuUmVzcG9uc2USIQoFdG9rZW4YASABKAsyEi5hbnQudjEuQWdlbnRUb2tlbhIXCg9wbGFpbnRleHRfdG9rZW4YAiABKAkiGAoWTGlzdEFnZW50VG9rZW5zUmVxdWVzdCI9ChdMaXN0QWdlbnRUb2tlbnNSZXNwb25zZRIiCgZ0b2tlbnMYASADKAsyEi5hbnQudjEuQWdlbnRUb2tlbiIrChdSZXZva2VBZ2VudFRva2VuUmVxdWVzdBIQCgh0b2tlbl9pZBgBIAEoCSJIChVMaXN0QWdlbnRBdWRpdFJlcXVlc3QSEAoIdG9rZW5faWQYASABKAkSDQoFbGltaXQYAiABKAUSDgoGb2Zmc2V0GAMgASgFIkIKFkxpc3RBZ2VudEF1ZGl0UmVzcG9uc2USKAoHZW50cmllcxgBIAMoCzIXLmFudC52MS5BZ2VudEF1ZGl0RW50cnkiHQobR2V0QWdlbnRDYXBhYmlsaXRpZXNSZXF1ZXN0IloKEUFnZW50Q2FwYWJpbGl0aWVzEg4KBnNjb3BlcxgBIAMoCRIcChRsaXZlX3RyYWRpbmdfZW5hYmxlZBgCIAEoCBIXCg9hdmFpbGFibGVfdG9vbHMYAyADKAkigAIKFVN1Ym1pdFN0cmF0ZWd5UmVxdWVzdBITCgtzb3VyY2VfY29kZRgBIAEoCRIQCghsYW5ndWFnZRgCIAEoCRI5CgZwYXJhbXMYAyADKAsyKS5hbnQudjEuU3VibWl0U3RyYXRlZ3lSZXF1ZXN0LlBhcmFtc0VudHJ5EjQKD2JhY2t0ZXN0X2NvbmZpZxgEIAEoCzIbLmFudC52MS5BZ2VudEJhY2t0ZXN0Q29uZmlnEiAKBG1vZGUYBSABKA4yEi5hbnQudjEuU3VibWl0TW9kZRotCgtQYXJhbXNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIsoBChNBZ2VudEJhY2t0ZXN0Q29uZmlnEg4KBnN5bWJvbBgBIAEoCRIRCgl0aW1lZnJhbWUYAiABKAkSFQoNc3RhcnRfZGF0ZV9tcxgDIAEoAxITCgtlbmRfZGF0ZV9tcxgEIAEoAxIXCg9pbml0aWFsX2NhcGl0YWwYBSABKAkSEgoKY29tbWlzc2lvbhgGIAEoCRIQCghzbGlwcGFnZRgHIAEoCRIQCghsZXZlcmFnZRgIIAEoCRITCgtzdHJpY3RfbW9kZRgJIAEoCCLIAwoWU3VibWl0U3RyYXRlZ3lSZXNwb25zZRITCgtzdHJhdGVneV9pZBgBIAEoCRIXCg9jb21waWxlX3N1Y2Nlc3MYAiABKAgSFQoNY29tcGlsZV9lcnJvchgDIAEoCRIrCgZyZXN1bHQYBCABKAsyGy5hbnQudjEuQWdlbnRCYWNrdGVzdFJlc3VsdBIoCgdwcm9maWxlGAUgASgLMhcuYW50LnYxLlN0cmF0ZWd5UHJvZmlsZRIqCghhbmFseXNpcxgGIAEoCzIYLmFudC52MS5CYWNrdGVzdEFuYWx5c2lzEhYKDmNvdmVyYWdlX3Njb3JlGAcgASgBEisKC2JsaW5kX3Nwb3RzGAggAygLMhYuYW50LnYxLkFnZW50QmxpbmRTcG90EiAKBG1vZGUYCSABKA4yEi5hbnQudjEuU3VibWl0TW9kZRIrCg1zZW1hbnRpY19kaWZmGAogASgLMhQuYW50LnYxLlNlbWFudGljRGlmZhIVCg1icmlkZ2Vfc3RhdHVzGAsgASgJEh0KFWJyaWRnZWRfcHl0aG9uX3NvdXJjZRgMIAEoCRIcChRicmlkZ2VfY29tcGlsZV9lcnJvchgNIAEoCSJPCgxTZW1hbnRpY0RpZmYSJwoHY2hhbmdlcxgBIAMoCzIWLmFudC52MS5TZW1hbnRpY0NoYW5nZRIWCg5lZmZlY3Rfc3VtbWFyeRgCIAEoCSIzCg5TZW1hbnRpY0NoYW5nZRIMCgRraW5kGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJIusCChNBZ2VudEJhY2t0ZXN0UmVzdWx0Eg8KB3N1Y2Nlc3MYASABKAgSDQoFZXJyb3IYAiABKAkSFAoMdG90YWxfcmV0dXJuGAMgASgBEhUKDWFubnVhbF9yZXR1cm4YBCABKAESFAoMbWF4X2RyYXdkb3duGAUgASgBEhQKDHNoYXJwZV9yYXRpbxgGIAEoARIQCgh3aW5fcmF0ZRgHIAEoARIVCg1wcm9maXRfZmFjdG9yGAggASgBEhQKDHRvdGFsX3RyYWRlcxgJIAEoBRIWCg53aW5uaW5nX3RyYWRlcxgKIAEoBRIVCg1sb3NpbmdfdHJhZGVzGAsgASgFEhoKEnRvdGFsX3BubF9hYnNvbHV0ZRgMIAEoCRIUCgxlcXVpdHlfY3VydmUYDSADKAkSFwoPZXF1aXR5X3RpbWVzX21zGA4gAygDEiIKBnRyYWRlcxgPIAMoCzISLmFudC52MS5BZ2VudFRyYWRlIr0BCgpBZ2VudFRyYWRlEg4KBnRpY2tldBgBIAEoAxIMCgRzaWRlGAIgASgJEg4KBnZvbHVtZRgDIAEoCRISCgpvcGVuX3RzX21zGAQgASgDEhIKCm9wZW5fcHJpY2UYBSABKAkSEwoLY2xvc2VfdHNfbXMYBiABKAMSEwoLY2xvc2VfcHJpY2UYByABKAkSCwoDcG5sGAggASgJEhIKCmNvbW1pc3Npb24YCSABKAkSDgoGcmVhc29uGAogASgJIkIKDkFnZW50QmxpbmRTcG90Eg8KB2J1aWx0aW4YASABKAkSEAoIc2V2ZXJpdHkYAiABKAkSDQoFY291bnQYAyABKAUiSQoXU2VhcmNoRXhwZXJpZW5jZVJlcXVlc3QSDQoFcXVlcnkYASABKAkSEAoIY2F0ZWdvcnkYAiABKAkSDQoFbGltaXQYAyABKAUimAEKD0V4cGVyaWVuY2VFbnRyeRIKCgJpZBgBIAEoCRIQCghjYXRlZ29yeRgCIAEoCRIPCgdjb250ZW50GAMgASgJEhIKCm1hdGNoX3R5cGUYBCABKAkSEgoKc2ltaWxhcml0eRgFIAEoARIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJEChhTZWFyY2hFeHBlcmllbmNlUmVzcG9uc2USKAoHZW50cmllcxgBIAMoCzIXLmFudC52MS5FeHBlcmllbmNlRW50cnkiUAoWU3RvcmVFeHBlcmllbmNlUmVxdWVzdBIQCghjYXRlZ29yeRgBIAEoCRIPCgdjb250ZW50GAIgASgJEhMKC2ZpbmdlcnByaW50GAMgASgJIjYKF1N0b3JlRXhwZXJpZW5jZVJlc3BvbnNlEgoKAmlkGAEgASgJEg8KB3N1Y2Nlc3MYAiABKAgi+QEKHEFnZW50R2VuZXJhdGVTdHJhdGVneVJlcXVlc3QSDwoHbWVzc2FnZRgBIAEoCRIOCgZzeW1ib2wYAiABKAkSEQoJdGltZWZyYW1lGAMgASgJEkAKBnBhcmFtcxgEIAMoCzIwLmFudC52MS5BZ2VudEdlbmVyYXRlU3RyYXRlZ3lSZXF1ZXN0LlBhcmFtc0VudHJ5EjQKD2JhY2t0ZXN0X2NvbmZpZxgFIAEoCzIbLmFudC52MS5BZ2VudEJhY2t0ZXN0Q29uZmlnGi0KC1BhcmFtc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEi7wIKGkFnZW50R2VuZXJhdGVTdHJhdGVneUNodW5rEg0KBXBoYXNlGAEgASgJEg0KBWRlbHRhGAIgASgJEhUKDXB5dGhvbl9zb3VyY2UYBCABKAkSFQoNY29tcGlsZV9lcnJvchgFIAEoCRIrCgZyZXN1bHQYBiABKAsyGy5hbnQudjEuQWdlbnRCYWNrdGVzdFJlc3VsdBIoCgdwcm9maWxlGAcgASgLMhcuYW50LnYxLlN0cmF0ZWd5UHJvZmlsZRIqCghhbmFseXNpcxgIIAEoCzIYLmFudC52MS5CYWNrdGVzdEFuYWx5c2lzEhYKDmNvdmVyYWdlX3Njb3JlGAkgASgBEisKC2JsaW5kX3Nwb3RzGAogAygLMhYuYW50LnYxLkFnZW50QmxpbmRTcG90EhAKCGF0dGVtcHRzGAsgASgFEg0KBWVycm9yGAwgASgJEhYKDmJhY2t0ZXN0X2Vycm9yGA0gASgJSgQIAxAEKi8KClN1Ym1pdE1vZGUSDwoLU1VCTUlUX1NZTkMQABIQCgxTVUJNSVRfQVNZTkMQATKoAwoMQWdlbnRTZXJ2aWNlElIKD0lzc3VlQWdlbnRUb2tlbhIeLmFudC52MS5Jc3N1ZUFnZW50VG9rZW5SZXF1ZXN0Gh8uYW50LnYxLklzc3VlQWdlbnRUb2tlblJlc3BvbnNlElIKD0xpc3RBZ2VudFRva2VucxIeLmFudC52MS5MaXN0QWdlbnRUb2tlbnNSZXF1ZXN0Gh8uYW50LnYxLkxpc3RBZ2VudFRva2Vuc1Jlc3BvbnNlEkcKEFJldm9rZUFnZW50VG9rZW4SHy5hbnQudjEuUmV2b2tlQWdlbnRUb2tlblJlcXVlc3QaEi5hbnQudjEuQWdlbnRUb2tlbhJPCg5MaXN0QWdlbnRBdWRpdBIdLmFudC52MS5MaXN0QWdlbnRBdWRpdFJlcXVlc3QaHi5hbnQudjEuTGlzdEFnZW50QXVkaXRSZXNwb25zZRJWChRHZXRBZ2VudENhcGFiaWxpdGllcxIjLmFudC52MS5HZXRBZ2VudENhcGFiaWxpdGllc1JlcXVlc3QaGS5hbnQudjEuQWdlbnRDYXBhYmlsaXRpZXMy8QIKE0FnZW50R2F0ZXdheVNlcnZpY2USTwoOU3VibWl0U3RyYXRlZ3kSHS5hbnQudjEuU3VibWl0U3RyYXRlZ3lSZXF1ZXN0Gh4uYW50LnYxLlN1Ym1pdFN0cmF0ZWd5UmVzcG9uc2USXgoQR2VuZXJhdGVTdHJhdGVneRIkLmFudC52MS5BZ2VudEdlbmVyYXRlU3RyYXRlZ3lSZXF1ZXN0GiIuYW50LnYxLkFnZW50R2VuZXJhdGVTdHJhdGVneUNodW5rMAESVQoQU2VhcmNoRXhwZXJpZW5jZRIfLmFudC52MS5TZWFyY2hFeHBlcmllbmNlUmVxdWVzdBogLmFudC52MS5TZWFyY2hFeHBlcmllbmNlUmVzcG9uc2USUgoPU3RvcmVFeHBlcmllbmNlEh4uYW50LnYxLlN0b3JlRXhwZXJpZW5jZVJlcXVlc3QaHy5hbnQudjEuU3RvcmVFeHBlcmllbmNlUmVzcG9uc2VCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp, file_agent_profile, file_agent_analysis]);
 
 /**
  * @generated from message ant.v1.AgentToken
@@ -394,7 +394,7 @@ export type SubmitStrategyRequest = Message<"ant.v1.SubmitStrategyRequest"> & {
   sourceCode: string;
 
   /**
-   * "mql4" | "mql5" | "python" (Phase 2: Python supported)
+   * "mql4" | "mql5" | "python"
    *
    * @generated from field: string language = 2;
    */
@@ -415,7 +415,7 @@ export type SubmitStrategyRequest = Message<"ant.v1.SubmitStrategyRequest"> & {
   backtestConfig?: AgentBacktestConfig | undefined;
 
   /**
-   * 同步/异步模式 (Phase 0: SYNC only)
+   * 同步/异步模式
    *
    * @generated from field: ant.v1.SubmitMode mode = 5;
    */
@@ -564,7 +564,7 @@ export type SubmitStrategyResponse = Message<"ant.v1.SubmitStrategyResponse"> & 
   mode: SubmitMode;
 
   /**
-   * ADR-0024 Phase 2: semantic change description
+   * semantic change description (bridge)
    *
    * @generated from field: ant.v1.SemanticDiff semantic_diff = 10;
    */
@@ -601,7 +601,7 @@ export const SubmitStrategyResponseSchema: GenMessage<SubmitStrategyResponse> = 
 
 /**
  * SemanticDiff describes strategy changes in natural language (non-programmer friendly).
- * ADR-0024 Phase 2: "策略语义 diff（非代码 diff）"
+ * ADR-0024: "策略语义 diff（非代码 diff）"
  *
  * @generated from message ant.v1.SemanticDiff
  */
@@ -1004,18 +1004,159 @@ export const StoreExperienceResponseSchema: GenMessage<StoreExperienceResponse> 
   messageDesc(file_agent_gateway, 23);
 
 /**
+ * @generated from message ant.v1.AgentGenerateStrategyRequest
+ */
+export type AgentGenerateStrategyRequest = Message<"ant.v1.AgentGenerateStrategyRequest"> & {
+  /**
+   * natural language strategy description
+   *
+   * @generated from field: string message = 1;
+   */
+  message: string;
+
+  /**
+   * trading symbol (e.g. "EURUSD")
+   *
+   * @generated from field: string symbol = 2;
+   */
+  symbol: string;
+
+  /**
+   * e.g. "H1", "M15"
+   *
+   * @generated from field: string timeframe = 3;
+   */
+  timeframe: string;
+
+  /**
+   * parameter overrides
+   *
+   * @generated from field: map<string, string> params = 4;
+   */
+  params: { [key: string]: string };
+
+  /**
+   * backtest configuration
+   *
+   * @generated from field: ant.v1.AgentBacktestConfig backtest_config = 5;
+   */
+  backtestConfig?: AgentBacktestConfig | undefined;
+};
+
+/**
+ * Describes the message ant.v1.AgentGenerateStrategyRequest.
+ * Use `create(AgentGenerateStrategyRequestSchema)` to create a new message.
+ */
+export const AgentGenerateStrategyRequestSchema: GenMessage<AgentGenerateStrategyRequest> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 24);
+
+/**
+ * @generated from message ant.v1.AgentGenerateStrategyChunk
+ */
+export type AgentGenerateStrategyChunk = Message<"ant.v1.AgentGenerateStrategyChunk"> & {
+  /**
+   * planning | generating | compiling | backtesting | analyzing | done
+   *
+   * @generated from field: string phase = 1;
+   */
+  phase: string;
+
+  /**
+   * streaming text delta (generating phase)
+   *
+   * @generated from field: string delta = 2;
+   */
+  delta: string;
+
+  /**
+   * generated Python subset code
+   *
+   * @generated from field: string python_source = 4;
+   */
+  pythonSource: string;
+
+  /**
+   * compile error if compilation fails
+   *
+   * @generated from field: string compile_error = 5;
+   */
+  compileError: string;
+
+  /**
+   * backtest result (backtesting/done phase)
+   *
+   * @generated from field: ant.v1.AgentBacktestResult result = 6;
+   */
+  result?: AgentBacktestResult | undefined;
+
+  /**
+   * LLM-generated strategy profile
+   *
+   * @generated from field: ant.v1.StrategyProfile profile = 7;
+   */
+  profile?: StrategyProfile | undefined;
+
+  /**
+   * LLM-generated backtest analysis
+   *
+   * @generated from field: ant.v1.BacktestAnalysis analysis = 8;
+   */
+  analysis?: BacktestAnalysis | undefined;
+
+  /**
+   * 0.0-1.0
+   *
+   * @generated from field: double coverage_score = 9;
+   */
+  coverageScore: number;
+
+  /**
+   * @generated from field: repeated ant.v1.AgentBlindSpot blind_spots = 10;
+   */
+  blindSpots: AgentBlindSpot[];
+
+  /**
+   * number of generation attempts (1-3)
+   *
+   * @generated from field: int32 attempts = 11;
+   */
+  attempts: number;
+
+  /**
+   * non-fatal error message
+   *
+   * @generated from field: string error = 12;
+   */
+  error: string;
+
+  /**
+   * backtest error if backtest fails
+   *
+   * @generated from field: string backtest_error = 13;
+   */
+  backtestError: string;
+};
+
+/**
+ * Describes the message ant.v1.AgentGenerateStrategyChunk.
+ * Use `create(AgentGenerateStrategyChunkSchema)` to create a new message.
+ */
+export const AgentGenerateStrategyChunkSchema: GenMessage<AgentGenerateStrategyChunk> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 25);
+
+/**
  * @generated from enum ant.v1.SubmitMode
  */
 export enum SubmitMode {
   /**
-   * 同步: 阻塞等待回测完成 (Phase 0, 回测 <30s)
+   * 同步: 阻塞等待回测完成 (回测 <30s)
    *
    * @generated from enum value: SUBMIT_SYNC = 0;
    */
   SUBMIT_SYNC = 0,
 
   /**
-   * 异步: 立即返回 strategy_id (Phase 2, 未实现)
+   * 异步: 立即返回 strategy_id (未实现)
    *
    * @generated from enum value: SUBMIT_ASYNC = 1;
    */
@@ -1080,14 +1221,13 @@ export const AgentService: GenService<{
 /**
  * AgentGatewayService is the ADR-0024 Agent Gateway for strategy submission,
  * compilation, backtest execution, and knowledge base access.
- * Phase 0: synchronous mode — SubmitStrategy blocks until backtest completes.
  *
  * @generated from service ant.v1.AgentGatewayService
  */
 export const AgentGatewayService: GenService<{
   /**
    * Agent submits strategy source code, triggers compile + backtest.
-   * Phase 0: SYNC only — blocks until backtest completes (<30s), returns result directly.
+   * Synchronous mode — blocks until backtest completes (<30s), returns result directly.
    *
    * @generated from rpc ant.v1.AgentGatewayService.SubmitStrategy
    */
@@ -1095,6 +1235,17 @@ export const AgentGatewayService: GenService<{
     methodKind: "unary";
     input: typeof SubmitStrategyRequestSchema;
     output: typeof SubmitStrategyResponseSchema;
+  },
+  /**
+   * Generate strategy from natural language description via LLM → Python subset → VM backtest.
+   * Streaming: plan → code → compile → backtest → analysis, with retry on compile/backtest failure.
+   *
+   * @generated from rpc ant.v1.AgentGatewayService.GenerateStrategy
+   */
+  generateStrategy: {
+    methodKind: "server_streaming";
+    input: typeof AgentGenerateStrategyRequestSchema;
+    output: typeof AgentGenerateStrategyChunkSchema;
   },
   /**
    * Agent searches knowledge base for similar experiences (Go-side pgvector).

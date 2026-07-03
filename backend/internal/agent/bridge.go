@@ -216,14 +216,9 @@ func buildBridgeUserPrompt(mqlSource string, coverage *mql2go.CoverageResult, pr
 	sb.WriteString(mqlSource)
 	sb.WriteString("\n```\n\n")
 
+	writeProfileToPrompt(&sb, profile, "## Strategy Profile\n")
 	if profile != nil {
-		sb.WriteString("## Strategy Profile\n")
-		sb.WriteString(fmt.Sprintf("Type: %s\n", profile.StrategyType))
-		sb.WriteString(fmt.Sprintf("Description: %s\n", profile.Description))
-		sb.WriteString(fmt.Sprintf("Indicators: %s\n", strings.Join(profile.IndicatorsUsed, ", ")))
-		sb.WriteString(fmt.Sprintf("Entry: %s\n", profile.EntryLogic))
-		sb.WriteString(fmt.Sprintf("Exit: %s\n", profile.ExitLogic))
-		sb.WriteString(fmt.Sprintf("Risk: %s\n\n", profile.RiskManagement))
+		sb.WriteString("\n")
 	}
 
 	sb.WriteString("## Coverage Report\n")
@@ -253,21 +248,4 @@ func parseBridgeResponse(resp string) *BridgeResult {
 	return &BridgeResult{
 		PythonSource: python,
 	}
-}
-
-// stripMarkdownFences removes ```python ... ``` or ``` ... ``` fences if present.
-func stripMarkdownFences(s string) string {
-	s = strings.TrimSpace(s)
-	if strings.HasPrefix(s, "```") {
-		// Remove opening fence line
-		idx := strings.Index(s, "\n")
-		if idx < 0 {
-			return s
-		}
-		s = s[idx+1:]
-	}
-	if strings.HasSuffix(s, "```") {
-		s = s[:len(s)-3]
-	}
-	return strings.TrimSpace(s)
 }

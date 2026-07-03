@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/service/systemai"
@@ -22,7 +21,7 @@ type Interpreter struct {
 }
 
 // NewInterpreter creates a backtest analysis generator.
-func NewInterpreter(aiSvc *systemai.Service, _ *zap.Logger, cache *LLCache) *Interpreter {
+func NewInterpreter(aiSvc *systemai.Service, cache *LLCache) *Interpreter {
 	return &Interpreter{aiSvc: aiSvc, cache: cache}
 }
 
@@ -99,14 +98,8 @@ func (i *Interpreter) AnalyzeBacktest(
 func buildAnalysisUserPrompt(result *antv1.AgentBacktestResult, profile *antv1.StrategyProfile) string {
 	var sb strings.Builder
 
+	writeProfileToPrompt(&sb, profile, "## Strategy Profile\n")
 	if profile != nil {
-		sb.WriteString("## Strategy Profile\n")
-		sb.WriteString(fmt.Sprintf("Type: %s\n", profile.StrategyType))
-		sb.WriteString(fmt.Sprintf("Description: %s\n", profile.Description))
-		sb.WriteString(fmt.Sprintf("Indicators: %s\n", strings.Join(profile.IndicatorsUsed, ", ")))
-		sb.WriteString(fmt.Sprintf("Entry: %s\n", profile.EntryLogic))
-		sb.WriteString(fmt.Sprintf("Exit: %s\n", profile.ExitLogic))
-		sb.WriteString(fmt.Sprintf("Risk Management: %s\n", profile.RiskManagement))
 		sb.WriteString("\n")
 	}
 

@@ -53,6 +53,9 @@ const (
 	// AgentGatewayServiceSubmitStrategyProcedure is the fully-qualified name of the
 	// AgentGatewayService's SubmitStrategy RPC.
 	AgentGatewayServiceSubmitStrategyProcedure = "/ant.v1.AgentGatewayService/SubmitStrategy"
+	// AgentGatewayServiceGenerateStrategyProcedure is the fully-qualified name of the
+	// AgentGatewayService's GenerateStrategy RPC.
+	AgentGatewayServiceGenerateStrategyProcedure = "/ant.v1.AgentGatewayService/GenerateStrategy"
 	// AgentGatewayServiceSearchExperienceProcedure is the fully-qualified name of the
 	// AgentGatewayService's SearchExperience RPC.
 	AgentGatewayServiceSearchExperienceProcedure = "/ant.v1.AgentGatewayService/SearchExperience"
@@ -238,8 +241,11 @@ func (UnimplementedAgentServiceHandler) GetAgentCapabilities(context.Context, *c
 // AgentGatewayServiceClient is a client for the ant.v1.AgentGatewayService service.
 type AgentGatewayServiceClient interface {
 	// Agent submits strategy source code, triggers compile + backtest.
-	// Phase 0: SYNC only — blocks until backtest completes (<30s), returns result directly.
+	// Synchronous mode — blocks until backtest completes (<30s), returns result directly.
 	SubmitStrategy(context.Context, *connect.Request[v1.SubmitStrategyRequest]) (*connect.Response[v1.SubmitStrategyResponse], error)
+	// Generate strategy from natural language description via LLM → Python subset → VM backtest.
+	// Streaming: plan → code → compile → backtest → analysis, with retry on compile/backtest failure.
+	GenerateStrategy(context.Context, *connect.Request[v1.AgentGenerateStrategyRequest]) (*connect.ServerStreamForClient[v1.AgentGenerateStrategyChunk], error)
 	// Agent searches knowledge base for similar experiences (Go-side pgvector).
 	SearchExperience(context.Context, *connect.Request[v1.SearchExperienceRequest]) (*connect.Response[v1.SearchExperienceResponse], error)
 	// Agent stores an experience to the knowledge base.
@@ -263,6 +269,12 @@ func NewAgentGatewayServiceClient(httpClient connect.HTTPClient, baseURL string,
 			connect.WithSchema(agentGatewayServiceMethods.ByName("SubmitStrategy")),
 			connect.WithClientOptions(opts...),
 		),
+		generateStrategy: connect.NewClient[v1.AgentGenerateStrategyRequest, v1.AgentGenerateStrategyChunk](
+			httpClient,
+			baseURL+AgentGatewayServiceGenerateStrategyProcedure,
+			connect.WithSchema(agentGatewayServiceMethods.ByName("GenerateStrategy")),
+			connect.WithClientOptions(opts...),
+		),
 		searchExperience: connect.NewClient[v1.SearchExperienceRequest, v1.SearchExperienceResponse](
 			httpClient,
 			baseURL+AgentGatewayServiceSearchExperienceProcedure,
@@ -281,6 +293,7 @@ func NewAgentGatewayServiceClient(httpClient connect.HTTPClient, baseURL string,
 // agentGatewayServiceClient implements AgentGatewayServiceClient.
 type agentGatewayServiceClient struct {
 	submitStrategy   *connect.Client[v1.SubmitStrategyRequest, v1.SubmitStrategyResponse]
+	generateStrategy *connect.Client[v1.AgentGenerateStrategyRequest, v1.AgentGenerateStrategyChunk]
 	searchExperience *connect.Client[v1.SearchExperienceRequest, v1.SearchExperienceResponse]
 	storeExperience  *connect.Client[v1.StoreExperienceRequest, v1.StoreExperienceResponse]
 }
@@ -288,6 +301,11 @@ type agentGatewayServiceClient struct {
 // SubmitStrategy calls ant.v1.AgentGatewayService.SubmitStrategy.
 func (c *agentGatewayServiceClient) SubmitStrategy(ctx context.Context, req *connect.Request[v1.SubmitStrategyRequest]) (*connect.Response[v1.SubmitStrategyResponse], error) {
 	return c.submitStrategy.CallUnary(ctx, req)
+}
+
+// GenerateStrategy calls ant.v1.AgentGatewayService.GenerateStrategy.
+func (c *agentGatewayServiceClient) GenerateStrategy(ctx context.Context, req *connect.Request[v1.AgentGenerateStrategyRequest]) (*connect.ServerStreamForClient[v1.AgentGenerateStrategyChunk], error) {
+	return c.generateStrategy.CallServerStream(ctx, req)
 }
 
 // SearchExperience calls ant.v1.AgentGatewayService.SearchExperience.
@@ -303,8 +321,11 @@ func (c *agentGatewayServiceClient) StoreExperience(ctx context.Context, req *co
 // AgentGatewayServiceHandler is an implementation of the ant.v1.AgentGatewayService service.
 type AgentGatewayServiceHandler interface {
 	// Agent submits strategy source code, triggers compile + backtest.
-	// Phase 0: SYNC only — blocks until backtest completes (<30s), returns result directly.
+	// Synchronous mode — blocks until backtest completes (<30s), returns result directly.
 	SubmitStrategy(context.Context, *connect.Request[v1.SubmitStrategyRequest]) (*connect.Response[v1.SubmitStrategyResponse], error)
+	// Generate strategy from natural language description via LLM → Python subset → VM backtest.
+	// Streaming: plan → code → compile → backtest → analysis, with retry on compile/backtest failure.
+	GenerateStrategy(context.Context, *connect.Request[v1.AgentGenerateStrategyRequest], *connect.ServerStream[v1.AgentGenerateStrategyChunk]) error
 	// Agent searches knowledge base for similar experiences (Go-side pgvector).
 	SearchExperience(context.Context, *connect.Request[v1.SearchExperienceRequest]) (*connect.Response[v1.SearchExperienceResponse], error)
 	// Agent stores an experience to the knowledge base.
@@ -324,6 +345,12 @@ func NewAgentGatewayServiceHandler(svc AgentGatewayServiceHandler, opts ...conne
 		connect.WithSchema(agentGatewayServiceMethods.ByName("SubmitStrategy")),
 		connect.WithHandlerOptions(opts...),
 	)
+	agentGatewayServiceGenerateStrategyHandler := connect.NewServerStreamHandler(
+		AgentGatewayServiceGenerateStrategyProcedure,
+		svc.GenerateStrategy,
+		connect.WithSchema(agentGatewayServiceMethods.ByName("GenerateStrategy")),
+		connect.WithHandlerOptions(opts...),
+	)
 	agentGatewayServiceSearchExperienceHandler := connect.NewUnaryHandler(
 		AgentGatewayServiceSearchExperienceProcedure,
 		svc.SearchExperience,
@@ -340,6 +367,8 @@ func NewAgentGatewayServiceHandler(svc AgentGatewayServiceHandler, opts ...conne
 		switch r.URL.Path {
 		case AgentGatewayServiceSubmitStrategyProcedure:
 			agentGatewayServiceSubmitStrategyHandler.ServeHTTP(w, r)
+		case AgentGatewayServiceGenerateStrategyProcedure:
+			agentGatewayServiceGenerateStrategyHandler.ServeHTTP(w, r)
 		case AgentGatewayServiceSearchExperienceProcedure:
 			agentGatewayServiceSearchExperienceHandler.ServeHTTP(w, r)
 		case AgentGatewayServiceStoreExperienceProcedure:
@@ -355,6 +384,10 @@ type UnimplementedAgentGatewayServiceHandler struct{}
 
 func (UnimplementedAgentGatewayServiceHandler) SubmitStrategy(context.Context, *connect.Request[v1.SubmitStrategyRequest]) (*connect.Response[v1.SubmitStrategyResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.SubmitStrategy is not implemented"))
+}
+
+func (UnimplementedAgentGatewayServiceHandler) GenerateStrategy(context.Context, *connect.Request[v1.AgentGenerateStrategyRequest], *connect.ServerStream[v1.AgentGenerateStrategyChunk]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.GenerateStrategy is not implemented"))
 }
 
 func (UnimplementedAgentGatewayServiceHandler) SearchExperience(context.Context, *connect.Request[v1.SearchExperienceRequest]) (*connect.Response[v1.SearchExperienceResponse], error) {

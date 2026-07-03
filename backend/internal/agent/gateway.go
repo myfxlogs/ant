@@ -6,10 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
-
 	"connectrpc.com/connect"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -17,7 +14,6 @@ import (
 	"anttrader/internal/interceptor"
 	"anttrader/internal/repository"
 	"anttrader/internal/service/systemai"
-	"anttrader/strategy/backtest"
 	"anttrader/strategy/sdk"
 	"anttrader/tools/mql2go"
 )
@@ -26,25 +22,27 @@ import (
 // Synchronous strategy submission → compile → backtest → LLM analysis.
 type GatewayServer struct {
 	marketDataRepo repository.MarketDataStore
-	aiSvc         *systemai.Service
 	log           *zap.Logger
 	bridge         *Bridge    // reuse bridge instance
 	profiler       *Profiler  // reuse profiler instance
 	interpreter    *Interpreter // reuse interpreter instance
+	generator      *Generator // strategy generation from natural language
 }
 
 var _ antv1c.AgentGatewayServiceHandler = (*GatewayServer)(nil)
 
 // NewGatewayServer creates the Agent Gateway ConnectRPC handler.
-func NewGatewayServer(_ *pgxpool.Pool, mdr repository.MarketDataStore, aiSvc *systemai.Service, log *zap.Logger) *GatewayServer {
+func NewGatewayServer(mdr repository.MarketDataStore, aiSvc *systemai.Service, log *zap.Logger) *GatewayServer {
 	cache := NewLLCache(30 * time.Minute)
+	profiler := NewProfiler(aiSvc, cache)
+	interpreter := NewInterpreter(aiSvc, cache)
 	return &GatewayServer{
 		marketDataRepo: mdr,
-		aiSvc:          aiSvc,
 		log:            log,
 		bridge:         NewBridge(aiSvc, log, cache),
-		profiler:       NewProfiler(aiSvc, log, cache),
-		interpreter:    NewInterpreter(aiSvc, log, cache),
+		profiler:       profiler,
+		interpreter:    interpreter,
+		generator:      NewGenerator(aiSvc, log, profiler, interpreter, cache),
 	}
 }
 
@@ -118,7 +116,7 @@ func (s *GatewayServer) SubmitStrategy(
 	}
 
 	// ── Step 3: Run backtest via VM + SimBroker ──
-	btResult, btErr := s.runBacktest(ctx, runner, btCfg, bars, msg.Params)
+	btResult, btErr := runVMBacktest(ctx, runner, btCfg, bars, msg.Params)
 
 	// Convert to proto for response + LLM analysis.
 	var btProto *antv1.AgentBacktestResult
@@ -153,7 +151,7 @@ func (s *GatewayServer) SubmitStrategy(
 
 	if language != "python" && coverage.Score < 1.0 && len(coverage.BlindSpots) > 0 {
 		validateBacktest := func(pyRunner *mql2go.VMRunner) error {
-			_, btErr := s.runBacktest(ctx, pyRunner, btCfg, bars, msg.Params)
+			_, btErr := runVMBacktest(ctx, pyRunner, btCfg, bars, msg.Params)
 			return btErr
 		}
 
@@ -217,6 +215,53 @@ func (s *GatewayServer) SubmitStrategy(
 	return connect.NewResponse(resp), nil
 }
 
+// GenerateStrategy generates a Python subset strategy from natural language via LLM,
+// then compiles and backtests it in the VM. Streams progress chunks to the client.
+func (s *GatewayServer) GenerateStrategy(
+	ctx context.Context,
+	req *connect.Request[antv1.AgentGenerateStrategyRequest],
+	stream *connect.ServerStream[antv1.AgentGenerateStrategyChunk],
+) error {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id: %w", err))
+	}
+
+	msg := req.Msg
+	if msg.Message == "" {
+		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("message is required"))
+	}
+
+	btCfg := msg.BacktestConfig
+	if btCfg == nil {
+		btCfg = &antv1.AgentBacktestConfig{
+			Symbol:    msg.Symbol,
+			Timeframe: msg.Timeframe,
+		}
+	}
+
+	bars, err := s.fetchBars(ctx, btCfg)
+	if err != nil {
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("fetch market data: %w", err))
+	}
+	if len(bars) < 2 {
+		return connect.NewError(connect.CodeFailedPrecondition,
+			fmt.Errorf("insufficient market data: %d bars (need ≥2)", len(bars)))
+	}
+
+	err = s.generator.Generate(ctx, uid, msg, bars, func(chunk *antv1.AgentGenerateStrategyChunk) error {
+		return stream.Send(chunk)
+	})
+	if err != nil {
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("generation failed: %w", err))
+	}
+	return nil
+}
+
 // SearchExperience searches the knowledge base for similar experiences.
 // Stub — pgvector schema not yet created. Returns empty.
 func (s *GatewayServer) SearchExperience(
@@ -274,91 +319,4 @@ func (s *GatewayServer) fetchBars(ctx context.Context, cfg *antv1.AgentBacktestC
 		})
 	}
 	return bars, nil
-}
-
-func (s *GatewayServer) runBacktest(
-	ctx context.Context,
-	runner *mql2go.VMRunner,
-	cfg *antv1.AgentBacktestConfig,
-	bars []sdk.Bar,
-	params map[string]string,
-) (*backtest.Result, error) {
-	initialCapital := parseDecimalDefault(cfg.InitialCapital, "10000")
-	leverage := int32(100)
-	if cfg.Leverage != "" {
-		if d, err := decimal.NewFromString(cfg.Leverage); err == nil {
-			leverage = int32(d.IntPart())
-		}
-	}
-	commission := parseDecimalDefault(cfg.Commission, "0.0003")
-	slippage := parseDecimalDefault(cfg.Slippage, "0.00001")
-
-	btConfig := backtest.Config{
-		Symbol:         cfg.Symbol,
-		Timeframe:      cfg.Timeframe,
-		InitialCapital: initialCapital,
-		Leverage:       leverage,
-		Commission:     commission,
-		Slippage:       slippage,
-		SwapRate:       decimal.NewFromFloat(0.00001),
-		StrictMode:     cfg.StrictMode,
-		Params:         params,
-	}
-
-	// Derive symbol info from bars when broker SymbolInfo is unavailable.
-	// REUSE: backtest.DeriveSymbolInfoFromBars (shared with executeVMBacktest).
-	backtest.DeriveSymbolInfoFromBars(&btConfig, bars)
-
-	// ADR-0024 §5.3: 30s VM timeout — prevent runaway backtests in Agent loops.
-	vmCtx, vmCancel := context.WithTimeout(ctx, 30*time.Second)
-	defer vmCancel()
-
-	engine := backtest.New(btConfig, runner, bars)
-	result, err := engine.Run(vmCtx)
-	if err != nil {
-		return nil, fmt.Errorf("backtest engine: %w", err)
-	}
-	return result, nil
-}
-
-func buildBacktestResultProto(r *backtest.Result) *antv1.AgentBacktestResult {
-	resp := &antv1.AgentBacktestResult{
-		Success: true,
-	}
-	if r.Metrics != nil {
-		resp.TotalReturn = r.Metrics.TotalReturn
-		resp.AnnualReturn = r.Metrics.AnnualReturn
-		resp.MaxDrawdown = r.Metrics.MaxDrawdown
-		resp.SharpeRatio = r.Metrics.SharpeRatio
-		resp.WinRate = r.Metrics.WinRate
-		resp.ProfitFactor = r.Metrics.ProfitFactor
-		resp.TotalTrades = r.Metrics.TotalTrades
-		resp.WinningTrades = r.Metrics.WinningTrades
-		resp.LosingTrades = r.Metrics.LosingTrades
-		totalPnl := r.Config.InitialCapital.Mul(decimal.NewFromFloat(r.Metrics.TotalReturn))
-		resp.TotalPnlAbsolute = totalPnl.String()
-	}
-	for _, ep := range r.Equity {
-		resp.EquityCurve = append(resp.EquityCurve, ep.Equity.String())
-		resp.EquityTimesMs = append(resp.EquityTimesMs, ep.Time.UnixMilli())
-	}
-	for i, t := range r.Trades {
-		side := "BUY"
-		if t.Side == sdk.SideSell {
-			side = "SELL"
-		}
-		resp.Trades = append(resp.Trades, &antv1.AgentTrade{
-			Ticket:     int64(i + 1),
-			Side:       side,
-			Volume:     t.Volume.String(),
-			OpenTsMs:   t.EntryTime.UnixMilli(),
-			OpenPrice:  t.EntryPrice.String(),
-			CloseTsMs:  t.ExitTime.UnixMilli(),
-			ClosePrice: t.ExitPrice.String(),
-			Pnl:        t.Profit.String(),
-			Commission: t.Commission.String(),
-			Reason:     t.Comment,
-		})
-	}
-	return resp
 }

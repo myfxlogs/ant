@@ -11,7 +11,7 @@ export async function generateTitle(firstMsg: string): Promise<string> {
   }
 }
 
-export type TabKey = 'chat' | 'history' | 'strategies';
+export type TabKey = 'chat' | 'generate' | 'history' | 'strategies';
 
 export type Conversation = { id: string; title: string; created_at: string };
 

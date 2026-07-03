@@ -166,7 +166,7 @@ func registerHandlers(
 	wireAIBilling(aiSvc, walletSvc, gatewayServer, gatewayModelRepo, log)
 
 	// ADR-0024: Agent Gateway — strategy submission → compile → backtest → LLM analysis.
-	agentGateway := agent.NewGatewayServer(pool, marketDataRepo, aiSvc, log)
+	agentGateway := agent.NewGatewayServer(marketDataRepo, aiSvc, log)
 	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
@@ -220,9 +220,6 @@ func registerHandlers(
 	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	gateEvalServer := ai.NewGateEvalServer(backtestRunRepo, log)
 	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-	strategyGenServer := ai.NewStrategyGenServer(aiSvc, templatesRepo, convRepo, backtestRunRepo, log)
-	mux.Handle(antv1c.NewStrategyGenerationServiceHandler(strategyGenServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-
 	// Claude Code style: separated plan → execute pipeline
 	strategyPlanServer := ai.NewStrategyPlanServer(aiSvc, templatesRepo, backtestRunRepo, convRepo, marketDataRepo, log)
 	strategyPlanServer.SetPoolAdapter(

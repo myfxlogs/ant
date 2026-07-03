@@ -4,52 +4,14 @@ package ai
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/ai"
 	"anttrader/internal/pkg/ptr"
 	"anttrader/internal/repository"
 )
-
-func (s *StrategyGenServer) buildParamMap(m *antv1.GenerateStrategyRequest) map[string]string {
-	pm := map[string]string{}
-	if m.Symbol != "" {
-		pm["symbol"] = m.Symbol
-	}
-	if m.Timeframe != "" {
-		pm["timeframe"] = m.Timeframe
-	}
-	return pm
-}
-
-// loadHistory loads recent conversation messages and returns a summary string.
-func (s *StrategyGenServer) loadHistory(ctx context.Context, userID uuid.UUID, convID string) string {
-	if convID == "" {
-		return ""
-	}
-	cid, err := uuid.Parse(convID)
-	if err != nil {
-		return ""
-	}
-	msgs, err := s.convRepo.GetMessages(ctx, userID, cid)
-	if err != nil || len(msgs) == 0 {
-		return ""
-	}
-	start := 0
-	if len(msgs) > 6 {
-		start = len(msgs) - 6
-	}
-	var sb strings.Builder
-	for _, m := range msgs[start:] {
-		sb.WriteString(fmt.Sprintf("[%s]: %s\n", m.Role, m.Content))
-	}
-	return sb.String()
-}
 
 // ExtractCode extracts Go code from an LLM response string.
 // Handles markdown code fences, truncated output, and heuristic line-based extraction.
@@ -109,43 +71,19 @@ func ExtractCode(raw string) string {
 	return "" // no code found — don't treat entire response as code
 }
 
-// fixUnclosedBraces adds missing closing braces/returns for truncated code.
+// fixUnclosedBraces adds missing closing braces for truncated code.
 func fixUnclosedBraces(code string) string {
-	// Count braces
 	opens := strings.Count(code, "{")
 	closes := strings.Count(code, "}")
 	if closes < opens {
-		// Add missing closing braces for the return dict
 		for i := closes; i < opens; i++ {
 			code += "\n}"
 		}
 	}
-	// Add missing return if needed
-	code = strings.TrimSpace(code)
-	if !strings.HasSuffix(code, "}") && !strings.Contains(code, "return ") {
-		// Don't try to guess — just ensure braces balance
-	}
-	// Ensure the last return statement has complete closing
-	if strings.Count(code, "{") > strings.Count(code, "}") {
-		missing := strings.Count(code, "{") - strings.Count(code, "}")
-		for i := 0; i < missing; i++ {
-			code += "\n}"
-		}
-	}
-	return code
+	return strings.TrimSpace(code)
 }
 
-// collectComplianceIssues gathers all blocking issues into a string slice.
-func (s *StrategyGenServer) collectComplianceIssues(blocks []ai.ComplianceIssue, missingSigs []string) []string {
-	issues := make([]string, 0, len(blocks)+len(missingSigs))
-	for _, b := range blocks {
-		issues = append(issues, fmt.Sprintf("[%s] %s (line %d)", b.RuleName, b.Message, b.Line))
-	}
-	issues = append(issues, missingSigs...)
-	return issues
-}
-
-// CreateBacktestRun is a standalone helper used by both StrategyGenServer and StrategyPlanServer.
+// CreateBacktestRun is a standalone helper used by StrategyPlanServer.
 func CreateBacktestRun(ctx context.Context, repo *repository.BacktestRunRepository, userID uuid.UUID, code, symbol, timeframe string) (string, error) {
 	return triggerBacktest(ctx, repo, userID, code, symbol, timeframe)
 }
@@ -177,39 +115,3 @@ func triggerBacktest(ctx context.Context, repo *repository.BacktestRunRepository
 	return id.String(), nil
 }
 
-// triggerBacktest delegates to the standalone helper for backward compatibility.
-func (s *StrategyGenServer) triggerBacktest(ctx context.Context, userID uuid.UUID, code, symbol, timeframe string) (string, error) {
-	return CreateBacktestRun(ctx, s.backtestRepo, userID, code, symbol, timeframe)
-}
-
-
-// ── Phase 3: section parsing for feedback mode ──
-
-// parsedSections holds the extracted <section> blocks from LLM feedback output.
-type parsedSections struct {
-	Analysis string
-	Advice   string
-	Code     string
-}
-
-// parseSections extracts <section type="..."> blocks from raw LLM output.
-// Partial output is fine — missing sections are empty strings.
-func parseSections(raw string) parsedSections {
-	var s parsedSections
-	s.Analysis = extractSection(raw, "analysis")
-	s.Advice = extractSection(raw, "advice")
-	s.Code = extractSection(raw, "code")
-	return s
-}
-
-// extractSection matches <section type="TYPE"> ... </section> and returns the inner content.
-func extractSection(raw, sectionType string) string {
-	re := regexp.MustCompile(
-		`(?s)<section\s+type="` + regexp.QuoteMeta(sectionType) + `">(.*?)</section>`,
-	)
-	m := re.FindStringSubmatch(raw)
-	if len(m) < 2 {
-		return ""
-	}
-	return strings.TrimSpace(m[1])
-}

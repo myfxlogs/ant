@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/service/systemai"
@@ -23,7 +21,7 @@ type Profiler struct {
 }
 
 // NewProfiler creates a strategy profile generator.
-func NewProfiler(aiSvc *systemai.Service, _ *zap.Logger, cache *LLCache) *Profiler {
+func NewProfiler(aiSvc *systemai.Service, cache *LLCache) *Profiler {
 	return &Profiler{aiSvc: aiSvc, cache: cache}
 }
 
@@ -119,9 +117,8 @@ func buildProfileUserPrompt(source string, cov *mql2go.CoverageResult) string {
 
 // parseProfileResponse parses KEY: "value" lines into StrategyProfile proto.
 func parseProfileResponse(raw string, cov *mql2go.CoverageResult) *antv1.StrategyProfile {
-	profile := &antv1.StrategyProfile{
-		CoverageScore: cov.Score,
-	}
+	profile := parseProfileLines(raw)
+	profile.CoverageScore = cov.Score
 	if cov.Indicators != nil {
 		profile.IndicatorsUsed = append([]string(nil), cov.Indicators...)
 	}
@@ -130,54 +127,5 @@ func parseProfileResponse(raw string, cov *mql2go.CoverageResult) *antv1.Strateg
 			profile.BlindSpots = append(profile.BlindSpots, bs.Builtin)
 		}
 	}
-
-	lines := strings.Split(strings.TrimSpace(raw), "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "```") {
-			continue
-		}
-		colonIdx := strings.Index(line, ":")
-		if colonIdx < 0 {
-			continue
-		}
-		key := strings.TrimSpace(line[:colonIdx])
-		val := strings.TrimSpace(line[colonIdx+1:])
-		val = unquote(val)
-
-		switch key {
-		case "strategy_type":
-			profile.StrategyType = val
-		case "description":
-			profile.Description = val
-		case "indicators_used":
-			if val != "" {
-				profile.IndicatorsUsed = splitTrimmed(val, ",")
-			}
-		case "entry_logic":
-			profile.EntryLogic = val
-		case "exit_logic":
-			profile.ExitLogic = val
-		case "risk_management":
-			profile.RiskManagement = val
-		case "timeframe_preference":
-			profile.TimeframePreference = val
-		case "market_regime":
-			profile.MarketRegime = val
-		case "strengths":
-			profile.Strengths = splitTrimmed(val, ",")
-		case "weaknesses":
-			profile.Weaknesses = splitTrimmed(val, ",")
-		case "coverage_score":
-			if f, err := strconv.ParseFloat(val, 64); err == nil {
-				profile.CoverageScore = f
-			}
-		case "blind_spots":
-			if val != "" {
-				profile.BlindSpots = splitTrimmed(val, ",")
-			}
-		}
-	}
-
 	return profile
 }

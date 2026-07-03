@@ -2,6 +2,7 @@ package agent
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/shopspring/decimal"
@@ -26,6 +27,22 @@ func truncate(s string, maxLen int) string {
 		return s
 	}
 	return s[:maxLen] + "..."
+}
+
+// stripMarkdownFences removes ```python ... ``` or ``` ... ``` fences if present.
+func stripMarkdownFences(s string) string {
+	s = strings.TrimSpace(s)
+	if strings.HasPrefix(s, "```") {
+		idx := strings.Index(s, "\n")
+		if idx < 0 {
+			return s
+		}
+		s = s[idx+1:]
+	}
+	if strings.HasSuffix(s, "```") {
+		s = s[:len(s)-3]
+	}
+	return strings.TrimSpace(s)
 }
 
 func buildBridgeChanges(orig, bridged *mql2go.CoverageResult) []*antv1.SemanticChange {
@@ -103,4 +120,57 @@ func splitTrimmed(s, sep string) []string {
 		}
 	}
 	return out
+}
+
+// parseProfileLines parses KEY: "value" lines into a StrategyProfile.
+// Shared by parseProfileResponse (source+coverage) and parseProfileResponseNL (NL only).
+func parseProfileLines(raw string) *antv1.StrategyProfile {
+	profile := &antv1.StrategyProfile{}
+	lines := strings.Split(strings.TrimSpace(raw), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "```") {
+			continue
+		}
+		colonIdx := strings.Index(line, ":")
+		if colonIdx < 0 {
+			continue
+		}
+		key := strings.TrimSpace(line[:colonIdx])
+		val := strings.TrimSpace(line[colonIdx+1:])
+		val = unquote(val)
+		switch key {
+		case "strategy_type":
+			profile.StrategyType = val
+		case "description":
+			profile.Description = val
+		case "indicators_used":
+			if val != "" {
+				profile.IndicatorsUsed = splitTrimmed(val, ",")
+			}
+		case "entry_logic":
+			profile.EntryLogic = val
+		case "exit_logic":
+			profile.ExitLogic = val
+		case "risk_management":
+			profile.RiskManagement = val
+		case "timeframe_preference":
+			profile.TimeframePreference = val
+		case "market_regime":
+			profile.MarketRegime = val
+		case "strengths":
+			profile.Strengths = splitTrimmed(val, ",")
+		case "weaknesses":
+			profile.Weaknesses = splitTrimmed(val, ",")
+		case "coverage_score":
+			if f, err := strconv.ParseFloat(val, 64); err == nil {
+				profile.CoverageScore = f
+			}
+		case "blind_spots":
+			if val != "" {
+				profile.BlindSpots = splitTrimmed(val, ",")
+			}
+		}
+	}
+	return profile
 }
