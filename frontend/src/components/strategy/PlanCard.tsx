@@ -44,7 +44,7 @@ export default function PlanCard({ plan, onConfirm, onRefine, refining }: Props)
   return (
     <Card
       size="small"
-      style={{ marginBottom: 8, background: '#f6ffed', borderColor: '#b7eb8f' }}
+      style={{ marginBottom: 8, background: 'var(--ant-color-bg-elevated)', borderColor: 'var(--ant-color-border)' }}
       title={
         <Space size={4}>
           <ThunderboltOutlined style={{ color: '#faad14' }} />

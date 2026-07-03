@@ -24,7 +24,7 @@ func TestBuildGeneratePrompt(t *testing.T) {
 	}
 
 	// System prompt should contain Python subset rules
-	if !contains(sysPrompt, "Python Subset Rules") {
+	if !contains(sysPrompt, "IRON RULES") {
 		t.Error("system prompt should contain Python subset rules")
 	}
 	if !contains(sysPrompt, "ctx.bars().close(0)") {

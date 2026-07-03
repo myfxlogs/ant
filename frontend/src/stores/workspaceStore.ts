@@ -6,19 +6,22 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
+export type CenterTab = 'design' | 'code' | 'backtest';
+export type RightTab = 'results' | 'quicktrade';
+
 interface WorkspaceState {
   accountId: string;
   symbol: string;
   timeframe: string;
-  codePanelVisible: boolean;
-  quickTradeVisible: boolean;
+  centerTab: CenterTab;
+  rightTab: RightTab;
   positionsPanelVisible: boolean;
   _hasHydrated: boolean;
   setAccountId: (v: string) => void;
   setSymbol: (v: string) => void;
   setTimeframe: (v: string) => void;
-  setCodePanelVisible: (v: boolean) => void;
-  setQuickTradeVisible: (v: boolean) => void;
+  setCenterTab: (v: CenterTab) => void;
+  setRightTab: (v: RightTab) => void;
   setPositionsPanelVisible: (v: boolean) => void;
 }
 
@@ -28,15 +31,15 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       accountId: '',
       symbol: '',
       timeframe: '1h',
-      codePanelVisible: false,
-      quickTradeVisible: true,
+      centerTab: 'design' as CenterTab,
+      rightTab: 'results' as RightTab,
       positionsPanelVisible: false,
       _hasHydrated: false,
       setAccountId: (v) => set({ accountId: v }),
       setSymbol: (v) => set({ symbol: v }),
       setTimeframe: (v) => set({ timeframe: v }),
-      setCodePanelVisible: (v) => set({ codePanelVisible: v }),
-      setQuickTradeVisible: (v) => set({ quickTradeVisible: v }),
+      setCenterTab: (v) => set({ centerTab: v }),
+      setRightTab: (v) => set({ rightTab: v }),
       setPositionsPanelVisible: (v) => set({ positionsPanelVisible: v }),
     }),
     {
@@ -46,8 +49,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         accountId: state.accountId,
         symbol: state.symbol,
         timeframe: state.timeframe,
-        codePanelVisible: state.codePanelVisible,
-        quickTradeVisible: state.quickTradeVisible,
+        centerTab: state.centerTab,
+        rightTab: state.rightTab,
         positionsPanelVisible: state.positionsPanelVisible,
       }),
       onRehydrateStorage: () => (state) => {

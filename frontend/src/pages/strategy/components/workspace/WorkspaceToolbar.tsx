@@ -1,9 +1,9 @@
-import { Select, Space, Button, Tooltip, Tag } from 'antd';
-import { ThunderboltOutlined, CodeOutlined, RiseOutlined, FallOutlined, BankOutlined, AimOutlined, KeyOutlined, EyeOutlined } from '@ant-design/icons';
+import { Select, Space, Tag } from 'antd';
+import { RiseOutlined, FallOutlined, BankOutlined, AimOutlined, KeyOutlined, EyeOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { TRADING_BALANCE_KEY, TRADING_EQUITY_KEY, TRADING_FREE_MARGIN_KEY, TRADING_MARGIN_LEVEL_KEY, TRADING_POSITIONS_KEY, TRADING_POSITION_LEVERAGE_KEY, TRADING_PROFIT_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 import { NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
-import { HIDE_CODE_KEY, INVESTOR_READ_ONLY_KEY, MASTER_TRADING_KEY, QUICK_TRADE_KEY, SELECT_ACCOUNT_KEY, SHOW_CODE_KEY, WATCHLIST_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import { INVESTOR_READ_ONLY_KEY, MASTER_TRADING_KEY, SELECT_ACCOUNT_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
 ;
 import SymbolPicker from '@/components/chart/SymbolPicker';
@@ -17,22 +17,13 @@ interface Props {
   accountInfo?: AccountInfo | null;
   positionCount?: number;
   busy?: boolean;
-  codePanelVisible: boolean; onToggleCodePanel: () => void;
-  onCloseCodePanel?: () => void;
   positionsCount?: number; onTogglePositionsPanel?: () => void;
-  quickTradeVisible: boolean; onToggleQuickTrade: () => void;
   mtError?: string | null;
 }
 
 const groupStyle: React.CSSProperties = {
   padding: '5px 10px 7px', borderRadius: 10,
-  background: 'rgba(255,255,255,0.72)', border: '1px solid rgba(0,0,0,0.05)',
-  boxShadow: '0 1px 3px rgba(15,23,42,0.04)',
-};
-
-const groupLabelStyle: React.CSSProperties = {
-  fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const,
-  color: '#64748b', marginBottom: 4, lineHeight: 1,
+  background: 'var(--ant-color-bg-elevated)', border: '1px solid var(--ant-color-border)',
 };
 
 function fmtCompact(v: number | undefined | null): string {
@@ -48,10 +39,10 @@ function SummaryChip({ label, value, color, icon }: { label: string; value: stri
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       padding: '4px 12px', borderRadius: 8,
-      background: 'rgba(255,255,255,0.8)', border: '1px solid rgba(0,0,0,0.06)',
+      background: 'var(--ant-color-bg-elevated)', border: '1px solid var(--ant-color-border)',
     }}>
-      <span style={{ fontSize: 9, color: '#8c8c8c', fontWeight: 500, textTransform: 'uppercase' }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 700, color: color || '#262626', display: 'flex', alignItems: 'center', gap: 4 }}>
+      <span style={{ fontSize: 9, color: 'var(--ant-color-text-tertiary)', fontWeight: 500, textTransform: 'uppercase' }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: color || 'var(--ant-color-text)', display: 'flex', alignItems: 'center', gap: 4 }}>
         {icon}{value}
       </span>
     </div>
@@ -61,34 +52,30 @@ function SummaryChip({ label, value, color, icon }: { label: string; value: stri
 export default function WorkspaceToolbar({
   accounts, accountId, onAccountChange, busy,
   symbol, onSymbolChange, accountInfo, positionCount,
-  codePanelVisible, onToggleCodePanel, onCloseCodePanel,
   positionsCount, onTogglePositionsPanel,
-  quickTradeVisible, onToggleQuickTrade,
   mtError,
 }: Props) {
   const { t } = useTranslation();
   const hasData = accountInfo != null;
-  const profitColor = accountInfo && accountInfo.profit >= 0 ? '#26a69a' : '#ef5350';
+  const profitColor = accountInfo && accountInfo.profit >= 0 ? '#3fb950' : '#f85149';
   const selectedAccount = (accounts || []).find(a => a.id === accountId);
-  const maybeCloseCode = (open: boolean) => { if (open && codePanelVisible) onCloseCodePanel?.(); };
 
   return (
     <div style={{
       display: 'flex', alignItems: 'flex-end', gap: 10, flexWrap: 'wrap',
-      padding: '8px 12px 10px', background: '#f8fafc',
-      borderBottom: '1px solid #e8e8e8', flexShrink: 0,
+      padding: '8px 12px 10px', background: 'var(--ant-color-bg-container)',
+      borderBottom: '1px solid var(--ant-color-border)', flexShrink: 0,
     }}>
       {/* Account & Symbol selector */}
       <div style={{ ...groupStyle, flex: '0 0 auto' }}>
         <Space size={4}>
           <Select size="small" style={{ minWidth: 120, width: 220, maxWidth: '36vw' }}
             value={accountId || undefined} onChange={onAccountChange} disabled={busy}
-            onDropdownVisibleChange={maybeCloseCode}
             placeholder={t(SELECT_ACCOUNT_KEY)} showSearch optionFilterProp="label"
             notFoundContent={t(NO_ACCOUNTS_KEY)}
             options={(accounts || []).map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))} />
           <SymbolPicker accountId={accountId} value={symbol} onChange={onSymbolChange}
-            onDropdownVisibleChange={maybeCloseCode} style={{ width: 120 }} />
+            style={{ width: 120 }} />
         </Space>
       </div>
 
@@ -117,7 +104,7 @@ export default function WorkspaceToolbar({
         onKeyUp={e => e.key === 'Enter' && onTogglePositionsPanel?.()}
         style={{ cursor: 'pointer' }}>
         <SummaryChip label={t(TRADING_POSITIONS_KEY)} value={positionCount != null ? String(positionCount) : '0'}
-          color={positionCount != null && positionCount > 0 ? '#1677ff' : undefined} />
+          color={positionCount != null && positionCount > 0 ? '#58a6ff' : undefined} />
       </div>
 
       {/* Account Metadata — platform, broker, server, mode, investor, leverage */}
@@ -146,33 +133,12 @@ export default function WorkspaceToolbar({
         </div>
       )}
 
-      {/* Spacer */}
-      <div style={{ flex: 1 }} />
-
-      {/* Actions — chart toolbar handles timeframe + indicators internally */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-        <Tooltip title={codePanelVisible ? t(HIDE_CODE_KEY) : t(SHOW_CODE_KEY)}>
-          <Button size="small" type={codePanelVisible ? 'primary' : 'default'}
-            icon={<CodeOutlined />} onClick={onToggleCodePanel}
-            style={{ width: 30, height: 30, borderRadius: 6, padding: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
-        </Tooltip>
-        <Button size="small" type={quickTradeVisible ? 'primary' : 'default'}
-          icon={<ThunderboltOutlined />} onClick={onToggleQuickTrade}
-          style={{ height: 30, borderRadius: 6, fontWeight: 600, padding: '0 14px',
-            background: quickTradeVisible ? '#1890ff' : undefined,
-            borderColor: quickTradeVisible ? '#1890ff' : undefined,
-            boxShadow: quickTradeVisible ? '0 2px 8px rgba(24,144,255,0.3)' : undefined }}>
-          {t(QUICK_TRADE_KEY)}
-        </Button>
-      </div>
-
       {/* MT session error banner */}
       {mtError && (
         <div style={{
           marginTop: 8, padding: '6px 12px',
-          background: '#fff2f0', border: '1px solid #ffccc7',
-          borderRadius: 6, fontSize: 12, color: '#cf1322',
+          background: 'rgba(248,81,73,0.1)', border: '1px solid var(--ant-color-error)',
+          borderRadius: 6, fontSize: 12, color: 'var(--ant-color-error)',
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <span style={{ fontSize: 14 }}>⚠</span>

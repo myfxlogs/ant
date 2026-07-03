@@ -12,15 +12,50 @@ import (
 // MUST stay in sync with:
 //   - compile_py_mapping.go (Python SDK → VM builtin mapping)
 //   - interp/builtin_registry.go (VM implementation source of truth)
-const pythonSubsetRules = `## Python Subset Rules
-- Class-based: class MyStrategy: with methods on_init, on_bar, on_tick, on_timer, on_deinit
-- __init__ params become strategy parameters with type annotations
-- All methods must have return type annotations (-> None, -> int, etc.)
-- Allowed import: ONLY "from decimal import Decimal"
-- NO: list comprehensions, lambda, try/except, with, yield, decorators, async/await
-- NO: exec, eval, open, print, len, sorted, sum, enumerate, zip, range (outside for-loops)
-- NO: f-strings, walrus operator (:=), global/nonlocal, del, assert, raise
-- NO: slicing, tuple unpacking, *args, **kwargs
+const pythonSubsetRules = `## ⛔ IRON RULES — violating ANY of these = code REJECTED ⛔
+
+### Required Code Skeleton (EVERY strategy MUST follow this exactly):
+[CODE:python]
+from decimal import Decimal
+
+class MyStrategy(StrategyBase):
+    def __init__(self, period: int = 14, lot: Decimal = Decimal("0.1")) -> None:
+        self.period: int = period
+        self.lot: Decimal = lot
+
+    def on_bar(self, ctx: BarContext) -> None:
+        # strategy logic here
+        pass
+
+    def on_deinit(self, ctx: BarContext, reason: str) -> None:
+        pass
+[/CODE]
+
+### Type Annotations — MANDATORY, no exceptions:
+- __init__ MUST have -> None return type: def __init__(self, period: int = 14) -> None:
+- EVERY __init__ parameter MUST have a type annotation (int, float, bool, str, Decimal)
+- EVERY method MUST have a return type annotation (-> None, -> int, -> float, -> Decimal)
+- EVERY local variable MUST have a type annotation: ema_fast: float = ctx.indicators.ima(...)
+
+### What IS Allowed:
+- from decimal import Decimal (ONLY this import)
+- if/elif/else, for i in range(N), while cond, break, continue
+- float for indicator values (EMA, RSI, ATR, etc.)
+- Decimal for all prices, volumes, P&L, stop-loss, take-profit
+- ctx.* SDK calls (indicators, broker, bars, positions)
+- None, True, False literals
+- Arithmetic, comparison, and logic operators
+
+### What is FORBIDDEN (code will be REJECTED):
+- Missing type annotations on __init__ params, methods, or local variables
+- import anything other than "from decimal import Decimal"
+- list comprehensions, lambda, try/except, with, yield, decorators, async/await
+- exec, eval, open, print, len, sorted, sum, enumerate, zip (outside for-loops)
+- f-strings, walrus operator (:=), global/nonlocal, del, assert, raise
+- slicing, tuple unpacking, *args, **kwargs, multiple inheritance
+- float for prices or volumes — use Decimal
+- markdown fences or explanations in output
+
 
 ## SDK API Mapping
 ### Market Data

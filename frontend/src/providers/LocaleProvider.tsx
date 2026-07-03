@@ -65,10 +65,30 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     }
   }, [lang]);
 
+  const darkTokens = {
+    colorBgBase: '#0d1117',
+    colorBgContainer: '#161b22',
+    colorBgElevated: '#1c2128',
+    colorBorder: '#21262d',
+    colorBorderSecondary: '#30363d',
+    colorPrimary: '#58a6ff',
+    colorSuccess: '#3fb950',
+    colorError: '#f85149',
+    colorWarning: '#d29922',
+    colorText: '#c9d1d9',
+    colorTextSecondary: '#8b949e',
+    colorTextTertiary: '#6e7681',
+    colorFill: 'rgba(88,166,255,0.12)',
+    borderRadius: 6,
+  };
+
   return (
     <ConfigProvider
       locale={antdLocale || undefined}
-      theme={{ algorithm: isDark ? darkAlgorithm : defaultAlgorithm }}
+      theme={{
+        algorithm: isDark ? darkAlgorithm : defaultAlgorithm,
+        token: isDark ? darkTokens : undefined,
+      }}
     >
       {children}
     </ConfigProvider>

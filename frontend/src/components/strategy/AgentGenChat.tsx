@@ -1,20 +1,18 @@
 import { useState, useRef, useCallback } from 'react';
-import { Input, Button, Space, Tag, Typography, Alert, Statistic, Row, Col, Progress } from 'antd';
-import { ThunderboltOutlined, SendOutlined, LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Space, Tag, Alert, Statistic, Row, Col, Progress } from 'antd';
+import { LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { agentGenerateStrategyStream } from '@/client/agentGen';
 import type { AgentBacktestResult, StrategyPlan } from '@/gen/ant/v1/agent_gateway_pb';
 import type { StrategyProfile } from '@/gen/ant/v1/agent_profile_pb';
 import type { BacktestAnalysis } from '@/gen/ant/v1/agent_analysis_pb';
 import PlanCard from './PlanCard';
+import ChatHistory, { type ChatTurn } from './ChatHistory';
+import ChatInput from './ChatInput';
 import {
   GENERATING_KEY,
   DONE_KEY,
   RESET_KEY,
-  PLACEHOLDER_KEY,
-  REGENERATE_KEY,
-  SEND_KEY,
-  TITLE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 
 interface Props {
@@ -42,13 +40,27 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
   const [error, setError] = useState('');
   const [plan, setPlan] = useState<StrategyPlan | null>(null);
   const [planRefining, setPlanRefining] = useState(false);
+  const [history, setHistory] = useState<ChatTurn[]>([]);
   const abortRef = useRef<(() => void) | null>(null);
   const phaseRef = useRef<Phase>('idle');
   const lastMsgRef = useRef('');
+  const streamTextRef = useRef('');
   const confirmedPlanRef = useRef<StrategyPlan | null>(null);
+  const turnIdRef = useRef(0);
+
+  const nextTurnId = () => String(++turnIdRef.current);
+  const nowTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const metricsFromResult = (r: AgentBacktestResult) => [
+    { label: 'Return', value: `${r.totalReturn.toFixed(1)}%`, positive: r.totalReturn >= 0 },
+    { label: 'DD', value: `${r.maxDrawdown.toFixed(1)}%`, positive: r.maxDrawdown <= 0 },
+    { label: 'Sharpe', value: r.sharpeRatio.toFixed(2), positive: r.sharpeRatio >= 1 },
+    { label: 'Win', value: `${r.winRate.toFixed(1)}%` },
+  ];
 
   const clearState = useCallback(() => {
     setStreamText('');
+    streamTextRef.current = '';
     setPythonCode('');
     setCompileError('');
     setCoverageScore(0);
@@ -71,71 +83,16 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
     clearState();
   }, [clearState]);
 
-  const handleSend = useCallback(() => {
-    const msg = userInput.trim();
-    if (!msg) return;
-    setUserInput('');
-    clearState();
-    setPhase('planning');
-    phaseRef.current = 'planning';
-    lastMsgRef.current = msg;
-
-    const abort = agentGenerateStrategyStream(
-      {
-        message: msg,
-        symbol,
-        timeframe,
-        planMode: 'plan',
-      },
-      makeCallbacks(),
-    );
-    abortRef.current = abort;
-  }, [userInput, symbol, timeframe, onApply]);
-
-  const handlePlanConfirm = useCallback(() => {
-    if (!plan) return;
-    const savedPlan = plan;
-    clearState();
-    confirmedPlanRef.current = savedPlan;
-    setPlan(savedPlan);
-    setPhase('generating');
-    phaseRef.current = 'generating';
-
-    const abort = agentGenerateStrategyStream(
-      {
-        message: lastMsgRef.current,
-        symbol,
-        timeframe,
-        planMode: 'generate',
-        confirmedPlan: savedPlan,
-      },
-      makeCallbacks(),
-    );
-    abortRef.current = abort;
-  }, [plan, symbol, timeframe, onApply]);
-
-  const handlePlanRefine = useCallback((feedback: string) => {
-    setPlanRefining(true);
-    const abort = agentGenerateStrategyStream(
-      {
-        message: lastMsgRef.current,
-        symbol,
-        timeframe,
-        planMode: 'plan',
-        planFeedback: feedback,
-      },
-      makeCallbacks(),
-    );
-    abortRef.current = abort;
-  }, [symbol, timeframe, onApply]);
-
   const makeCallbacks = useCallback(() => ({
     onPhase: (p: string) => {
       const next = p as Phase;
       setPhase(next);
       phaseRef.current = next;
     },
-    onDelta: (d: string) => setStreamText((prev) => prev + d),
+    onDelta: (d: string) => {
+      streamTextRef.current += d;
+      setStreamText((prev) => prev + d);
+    },
     onPythonSource: (code: string) => {
       setPythonCode(code);
       onApply(code);
@@ -143,7 +100,18 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
     onCompileError: (err: string) => setCompileError(err),
     onBacktestError: (err: string) => setBacktestError(err),
     onCoverageScore: (score: number) => setCoverageScore(score),
-    onResult: (result: AgentBacktestResult | null) => setBtResult(result || null),
+    onResult: (result: AgentBacktestResult | null) => {
+      setBtResult(result || null);
+      if (result?.success) {
+        setHistory((prev) => [...prev, {
+          id: String(++turnIdRef.current),
+          role: 'ai',
+          message: streamTextRef.current || 'Strategy generated.',
+          timestamp: nowTime(),
+          metrics: metricsFromResult(result),
+        }]);
+      }
+    },
     onProfile: (p: StrategyProfile | null) => {
       if (phaseRef.current === 'planning' || phaseRef.current === 'idle') {
         setPlanningProfile(p || null);
@@ -159,6 +127,54 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
       setPlanRefining(false);
     },
   }), [onApply]);
+
+  const handleSend = useCallback(() => {
+    const msg = userInput.trim();
+    if (!msg) return;
+    setHistory((prev) => [...prev, {
+      id: String(++turnIdRef.current),
+      role: 'user',
+      message: msg,
+      timestamp: nowTime(),
+    }]);
+    setUserInput('');
+    streamTextRef.current = '';
+    clearState();
+    setPhase('planning');
+    phaseRef.current = 'planning';
+    lastMsgRef.current = msg;
+
+    const abort = agentGenerateStrategyStream(
+      { message: msg, symbol, timeframe, planMode: 'plan' },
+      makeCallbacks(),
+    );
+    abortRef.current = abort;
+  }, [userInput, symbol, timeframe, onApply, clearState, makeCallbacks]);
+
+  const handlePlanConfirm = useCallback(() => {
+    if (!plan) return;
+    const savedPlan = plan;
+    clearState();
+    confirmedPlanRef.current = savedPlan;
+    setPlan(savedPlan);
+    setPhase('generating');
+    phaseRef.current = 'generating';
+
+    const abort = agentGenerateStrategyStream(
+      { message: lastMsgRef.current, symbol, timeframe, planMode: 'generate', confirmedPlan: savedPlan },
+      makeCallbacks(),
+    );
+    abortRef.current = abort;
+  }, [plan, symbol, timeframe, onApply, clearState, makeCallbacks]);
+
+  const handlePlanRefine = useCallback((feedback: string) => {
+    setPlanRefining(true);
+    const abort = agentGenerateStrategyStream(
+      { message: lastMsgRef.current, symbol, timeframe, planMode: 'plan', planFeedback: feedback },
+      makeCallbacks(),
+    );
+    abortRef.current = abort;
+  }, [symbol, timeframe, onApply, makeCallbacks]);
 
   const isBusy = phase !== 'idle' && phase !== 'done';
 
@@ -181,156 +197,95 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
   };
 
   return (
-    <div style={{ padding: 10, background: '#fafafa', borderRadius: 6, border: '1px solid #e8e8e8' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-        <ThunderboltOutlined style={{ color: '#faad14' }} />
-        <Typography.Text strong style={{ fontSize: 13 }}>
-          {t(TITLE_KEY, 'AI Strategy Generation')}
-        </Typography.Text>
-        {phase !== 'idle' && !isBusy && (
-          <Button size="small" type="link" onClick={reset} style={{ marginLeft: 'auto' }}>
-            {t(RESET_KEY)}
-          </Button>
-        )}
-      </div>
-
-      {/* Status tags */}
-      {phase !== 'idle' && (
-        <Space size={4} wrap style={{ marginBottom: 8 }}>
-          {phaseTag()}
-          {attempts > 1 && <Tag color="orange">{t('strategy.gen.attempts', 'Attempts')}: {attempts}/3</Tag>}
-          {coverageScore > 0 && <Tag color="blue">{t('strategy.gen.coverage', 'Coverage')}: {(coverageScore * 100).toFixed(0)}%</Tag>}
-        </Space>
-      )}
-
-      {/* Compile error */}
-      {compileError && (!btResult || phase === 'compiling') && (
-        <Alert type="error" showIcon style={{ marginBottom: 8 }}
-          message={t('strategy.gen.compileError', 'Compile Error')}
-          description={<pre style={{ fontSize: 11, whiteSpace: 'pre-wrap', margin: 0 }}>{compileError}</pre>}
-        />
-      )}
-
-      {/* Backtest error */}
-      {backtestError && (!btResult || phase === 'backtesting') && (
-        <Alert type="error" showIcon style={{ marginBottom: 8 }}
-          message={t('strategy.gen.backtestError', 'Backtest Error')}
-          description={<pre style={{ fontSize: 11, whiteSpace: 'pre-wrap', margin: 0 }}>{backtestError}</pre>}
-        />
-      )}
-
-      {/* Streamed output */}
-      {streamText && (
-        <div style={{
-          maxHeight: 200, overflow: 'auto', padding: 8, marginBottom: 8,
-          background: '#fff', borderRadius: 4, border: '1px solid #f0f0f0',
-          fontSize: 12, fontFamily: 'monospace', whiteSpace: 'pre-wrap',
-        }}>
-          {streamText}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      {/* ── Layer 1: PlanCard (fixed top, not scrolling) ── */}
+      {plan && !pythonCode && (
+        <div style={{ flexShrink: 0, padding: '12px 16px 0' }}>
+          <PlanCard plan={plan} onConfirm={handlePlanConfirm} onRefine={handlePlanRefine} refining={planRefining} />
         </div>
       )}
 
-      {/* Generated Python code */}
-      {pythonCode && (
-        <div style={{
-          maxHeight: 250, overflow: 'auto', padding: 8, marginBottom: 8,
-          background: '#f6f8fa', borderRadius: 4, border: '1px solid #d0d7de',
-          fontSize: 12, fontFamily: 'monospace', whiteSpace: 'pre-wrap',
-        }}>
-          <Typography.Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>
-            {t('strategy.gen.pythonSource', 'Generated Python Strategy Code')}
-          </Typography.Text>
-          {pythonCode}
+      {/* ── Layer 2: Chat History (scrollable) ── */}
+      <ChatHistory turns={history} />
+
+      {/* ── Layer 3: Current stream output (max 100px) ── */}
+      {(streamText || phase !== 'idle') && (
+        <div style={{ flexShrink: 0, maxHeight: 100, overflowY: 'auto', padding: '8px 16px', fontSize: 12 }}>
+          {phase !== 'idle' && phase !== 'done' && (
+            <Space size={4} wrap style={{ marginBottom: 4 }}>
+              {phaseTag()}
+              {attempts > 1 && <Tag color="orange">{t('strategy.gen.attempts', 'Attempts')}: {attempts}/3</Tag>}
+              {coverageScore > 0 && <Tag color="blue">{t('strategy.gen.coverage', 'Coverage')}: {(coverageScore * 100).toFixed(0)}%</Tag>}
+            </Space>
+          )}
+          {compileError && (!btResult || phase === 'compiling') && (
+            <Alert type="error" showIcon style={{ marginBottom: 4 }}
+              message={t('strategy.gen.compileError', 'Compile Error')}
+              description={<pre style={{ fontSize: 11, whiteSpace: 'pre-wrap', margin: 0 }}>{compileError}</pre>}
+            />
+          )}
+          {backtestError && (!btResult || phase === 'backtesting') && (
+            <Alert type="error" showIcon style={{ marginBottom: 4 }}
+              message={t('strategy.gen.backtestError', 'Backtest Error')}
+              description={<pre style={{ fontSize: 11, whiteSpace: 'pre-wrap', margin: 0 }}>{backtestError}</pre>}
+            />
+          )}
+          {streamText && (
+            <div style={{
+              padding: 4, marginBottom: 4,
+              background: 'var(--ant-color-bg-base)', borderRadius: 4,
+              fontSize: 12, fontFamily: 'monospace', whiteSpace: 'pre-wrap',
+            }}>
+              {streamText}
+            </div>
+          )}
+          {btResult?.success && (
+            <Row gutter={8} style={{ marginBottom: 4 }}>
+              <Col span={6}><Statistic title={t('strategy.gen.totalReturn', 'Total Return')} value={btResult.totalReturn} precision={2} suffix="%" valueStyle={{ fontSize: 14 }} /></Col>
+              <Col span={6}><Statistic title={t('strategy.gen.maxDrawdown', 'Max Drawdown')} value={btResult.maxDrawdown} precision={2} suffix="%" valueStyle={{ fontSize: 14 }} /></Col>
+              <Col span={6}><Statistic title={t('strategy.gen.sharpe', 'Sharpe Ratio')} value={btResult.sharpeRatio} precision={2} valueStyle={{ fontSize: 14 }} /></Col>
+              <Col span={6}><Statistic title={t('strategy.gen.winRate', 'Win Rate')} value={btResult.winRate} precision={1} suffix="%" valueStyle={{ fontSize: 14 }} /></Col>
+            </Row>
+          )}
+          {coverageScore > 0 && (
+            <Progress percent={coverageScore * 100} size="small" format={(p) => `${t('strategy.gen.coverage', 'Coverage')}: ${(p || 0).toFixed(0)}%`} style={{ marginBottom: 4 }} />
+          )}
+          {planningProfile && (
+            <Alert type="info" showIcon style={{ marginBottom: 4 }}
+              message={t('strategy.gen.planningProfile', 'Strategy Profile (Planning)')}
+              description={`${planningProfile.strategyType || ''} — ${planningProfile.description || ''}`}
+            />
+          )}
+          {finalProfile && (
+            <Alert type="info" showIcon style={{ marginBottom: 4 }}
+              message={finalProfile.strategyType || t('strategy.gen.profile', 'Strategy Profile')}
+              description={finalProfile.description || ''}
+            />
+          )}
+          {analysis?.summary && (
+            <Alert type="success" showIcon style={{ marginBottom: 4 }}
+              message={t('strategy.gen.analysis', 'Backtest Analysis')}
+              description={analysis.summary}
+            />
+          )}
+          {error && (
+            <Alert type="warning" showIcon closable style={{ marginBottom: 4 }}
+              message={error} onClose={() => setError('')} />
+          )}
+          {phase !== 'idle' && !isBusy && (
+            <a onClick={reset} style={{ fontSize: 12, cursor: 'pointer' }}>{t(RESET_KEY)}</a>
+          )}
         </div>
       )}
 
-      {/* Backtest metrics */}
-      {btResult?.success && (
-        <Row gutter={8} style={{ marginBottom: 8 }}>
-          <Col span={6}>
-            <Statistic title={t('strategy.gen.totalReturn', 'Total Return')} value={btResult.totalReturn} precision={2} suffix="%" valueStyle={{ fontSize: 14 }} />
-          </Col>
-          <Col span={6}>
-            <Statistic title={t('strategy.gen.maxDrawdown', 'Max Drawdown')} value={btResult.maxDrawdown} precision={2} suffix="%" valueStyle={{ fontSize: 14 }} />
-          </Col>
-          <Col span={6}>
-            <Statistic title={t('strategy.gen.sharpe', 'Sharpe Ratio')} value={btResult.sharpeRatio} precision={2} valueStyle={{ fontSize: 14 }} />
-          </Col>
-          <Col span={6}>
-            <Statistic title={t('strategy.gen.winRate', 'Win Rate')} value={btResult.winRate} precision={1} suffix="%" valueStyle={{ fontSize: 14 }} />
-          </Col>
-        </Row>
-      )}
-
-      {/* Coverage progress */}
-      {coverageScore > 0 && (
-        <Progress
-          percent={coverageScore * 100}
-          size="small"
-          format={(p) => `${t('strategy.gen.coverage', 'Coverage')}: ${(p || 0).toFixed(0)}%`}
-          style={{ marginBottom: 8 }}
-        />
-      )}
-
-      {/* Planning profile (from NL) */}
-      {planningProfile && (
-        <Alert type="info" showIcon style={{ marginBottom: 8 }}
-          message={t('strategy.gen.planningProfile', 'Strategy Profile (Planning)')}
-          description={`${planningProfile.strategyType || ''} — ${planningProfile.description || ''}`}
-        />
-      )}
-
-      {/* Final profile (from source+coverage) */}
-      {finalProfile && (
-        <Alert type="info" showIcon style={{ marginBottom: 8 }}
-          message={finalProfile.strategyType || t('strategy.gen.profile', 'Strategy Profile')}
-          description={finalProfile.description || ''}
-        />
-      )}
-
-      {/* Analysis */}
-      {analysis?.summary && (
-        <Alert type="success" showIcon style={{ marginBottom: 8 }}
-          message={t('strategy.gen.analysis', 'Backtest Analysis')}
-          description={analysis.summary}
-        />
-      )}
-
-      {/* Error */}
-      {error && (
-        <Alert type="warning" showIcon closable style={{ marginBottom: 8 }}
-          message={error} onClose={() => setError('')}
-        />
-      )}
-
-      {/* Plan Mode card (ADR-0025 §3) */}
-      {plan && phase === 'done' && !pythonCode && (
-        <PlanCard
-          plan={plan}
-          onConfirm={handlePlanConfirm}
-          onRefine={handlePlanRefine}
-          refining={planRefining}
-        />
-      )}
-
-      {/* Input area */}
-      {!isBusy && (
-        <>
-          <Input.TextArea
-            rows={3}
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            onPressEnter={(e) => { e.preventDefault(); handleSend(); }}
-            placeholder={t(PLACEHOLDER_KEY)}
-            style={{ fontSize: 13, marginBottom: 8 }}
-          />
-          <Button type="primary" icon={<SendOutlined />} size="small"
-            onClick={handleSend} disabled={!userInput.trim()} block>
-            {pythonCode ? t(REGENERATE_KEY) : t(SEND_KEY)}
-          </Button>
-        </>
-      )}
+      {/* ── Layer 4: Input (fixed bottom) ── */}
+      <ChatInput
+        value={userInput}
+        onChange={setUserInput}
+        onSend={handleSend}
+        disabled={isBusy}
+        hasResult={!!pythonCode}
+      />
     </div>
   );
 }

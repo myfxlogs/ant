@@ -97,8 +97,8 @@ export function useStrategyWorkspaceState() {
   const qt = useQuickTradeData(accountId, symbol);
 
   // Layout
-  const codePanelVisible = wsStore.codePanelVisible; const setCodePanelVisible = wsStore.setCodePanelVisible;
-  const quickTradeVisible = wsStore.quickTradeVisible; const setQuickTradeVisible = wsStore.setQuickTradeVisible;
+  const centerTab = wsStore.centerTab; const setCenterTab = wsStore.setCenterTab;
+  const rightTab = wsStore.rightTab; const setRightTab = wsStore.setRightTab;
   const positionsPanelVisible = wsStore.positionsPanelVisible; const setPositionsPanelVisible = wsStore.setPositionsPanelVisible;
 
   // Backtest panel collapse state
@@ -183,8 +183,8 @@ export function useStrategyWorkspaceState() {
     if (historyModalOpen) { setHistoryPage(1); fetchHistoryRuns(1, historyPageSize); }
   }, [accountId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // AI workflow
-  const ai = useAIWorkflow(codeCtx, btCtx.metrics, setCodePanelVisible);
+  // AI workflow — no longer needs setCodePanelVisible (chat is always visible)
+  const ai = useAIWorkflow(codeCtx, btCtx.metrics, () => setCenterTab('code'));
 
   // Reset backtest state when code changes (AI apply, template load, manual edit).
   useEffect(() => {
@@ -243,7 +243,7 @@ export function useStrategyWorkspaceState() {
     },
     gate: { loading: btCtx.gate.loading, gates: btCtx.gate.gates, summary: btCtx.gate.summary, error: btCtx.gate.error, run: btCtx.gate.run },
     quickTrade: { positionCount: qt.positionCount, allPositions: qt.allPositions, qtPositions: qt.qtPositions, qtRecentTrades: qt.qtRecentTrades, handleClosePosition: qt.handleClosePosition },
-    layout: { codePanelVisible, setCodePanelVisible, positionsPanelVisible, setPositionsPanelVisible, quickTradeVisible, setQuickTradeVisible },
+    layout: { centerTab, setCenterTab, rightTab, setRightTab, positionsPanelVisible, setPositionsPanelVisible },
     history: {
       drawerOpen: historyDrawerOpen, runId: historyRunId,
       open: handleOpenHistory, close: handleCloseHistory,
