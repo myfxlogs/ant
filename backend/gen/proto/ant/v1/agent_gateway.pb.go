@@ -1895,6 +1895,84 @@ func (x *StoreExperienceResponse) GetSuccess() bool {
 	return false
 }
 
+// StrategyPlan is a structured strategy plan for Plan Mode (ADR-0025 §3).
+// LLM outputs line-based format, Go parser fills this proto, frontend renders as card.
+type StrategyPlan struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`     // e.g. "dual_ema_crossover"
+	Entry         string                 `protobuf:"bytes,2,opt,name=entry,proto3" json:"entry,omitempty"`   // entry conditions
+	Exit          string                 `protobuf:"bytes,3,opt,name=exit,proto3" json:"exit,omitempty"`     // exit conditions
+	Risk          string                 `protobuf:"bytes,4,opt,name=risk,proto3" json:"risk,omitempty"`     // risk management
+	Market        string                 `protobuf:"bytes,5,opt,name=market,proto3" json:"market,omitempty"` // market regime + suitability
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StrategyPlan) Reset() {
+	*x = StrategyPlan{}
+	mi := &file_agent_gateway_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StrategyPlan) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StrategyPlan) ProtoMessage() {}
+
+func (x *StrategyPlan) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StrategyPlan.ProtoReflect.Descriptor instead.
+func (*StrategyPlan) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *StrategyPlan) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *StrategyPlan) GetEntry() string {
+	if x != nil {
+		return x.Entry
+	}
+	return ""
+}
+
+func (x *StrategyPlan) GetExit() string {
+	if x != nil {
+		return x.Exit
+	}
+	return ""
+}
+
+func (x *StrategyPlan) GetRisk() string {
+	if x != nil {
+		return x.Risk
+	}
+	return ""
+}
+
+func (x *StrategyPlan) GetMarket() string {
+	if x != nil {
+		return x.Market
+	}
+	return ""
+}
+
 type AgentGenerateStrategyRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Message        string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`                                                                         // natural language strategy description
@@ -1902,13 +1980,17 @@ type AgentGenerateStrategyRequest struct {
 	Timeframe      string                 `protobuf:"bytes,3,opt,name=timeframe,proto3" json:"timeframe,omitempty"`                                                                     // e.g. "H1", "M15"
 	Params         map[string]string      `protobuf:"bytes,4,rep,name=params,proto3" json:"params,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // parameter overrides
 	BacktestConfig *AgentBacktestConfig   `protobuf:"bytes,5,opt,name=backtest_config,json=backtestConfig,proto3" json:"backtest_config,omitempty"`                                     // backtest configuration
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// ADR-0025 Plan Mode (§3)
+	PlanMode      string        `protobuf:"bytes,6,opt,name=plan_mode,json=planMode,proto3" json:"plan_mode,omitempty"`                // "plan" (default) | "generate"
+	PlanFeedback  string        `protobuf:"bytes,7,opt,name=plan_feedback,json=planFeedback,proto3" json:"plan_feedback,omitempty"`    // user modification feedback for plan revision
+	ConfirmedPlan *StrategyPlan `protobuf:"bytes,8,opt,name=confirmed_plan,json=confirmedPlan,proto3" json:"confirmed_plan,omitempty"` // user-confirmed plan, used when plan_mode = "generate"
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *AgentGenerateStrategyRequest) Reset() {
 	*x = AgentGenerateStrategyRequest{}
-	mi := &file_agent_gateway_proto_msgTypes[24]
+	mi := &file_agent_gateway_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1920,7 +2002,7 @@ func (x *AgentGenerateStrategyRequest) String() string {
 func (*AgentGenerateStrategyRequest) ProtoMessage() {}
 
 func (x *AgentGenerateStrategyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[24]
+	mi := &file_agent_gateway_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1933,7 +2015,7 @@ func (x *AgentGenerateStrategyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentGenerateStrategyRequest.ProtoReflect.Descriptor instead.
 func (*AgentGenerateStrategyRequest) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{24}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *AgentGenerateStrategyRequest) GetMessage() string {
@@ -1971,6 +2053,27 @@ func (x *AgentGenerateStrategyRequest) GetBacktestConfig() *AgentBacktestConfig 
 	return nil
 }
 
+func (x *AgentGenerateStrategyRequest) GetPlanMode() string {
+	if x != nil {
+		return x.PlanMode
+	}
+	return ""
+}
+
+func (x *AgentGenerateStrategyRequest) GetPlanFeedback() string {
+	if x != nil {
+		return x.PlanFeedback
+	}
+	return ""
+}
+
+func (x *AgentGenerateStrategyRequest) GetConfirmedPlan() *StrategyPlan {
+	if x != nil {
+		return x.ConfirmedPlan
+	}
+	return nil
+}
+
 type AgentGenerateStrategyChunk struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Phase         string                 `protobuf:"bytes,1,opt,name=phase,proto3" json:"phase,omitempty"`                                        // planning | generating | compiling | backtesting | analyzing | done
@@ -1985,13 +2088,14 @@ type AgentGenerateStrategyChunk struct {
 	Attempts      int32                  `protobuf:"varint,11,opt,name=attempts,proto3" json:"attempts,omitempty"`                               // number of generation attempts (1-3)
 	Error         string                 `protobuf:"bytes,12,opt,name=error,proto3" json:"error,omitempty"`                                      // non-fatal error message
 	BacktestError string                 `protobuf:"bytes,13,opt,name=backtest_error,json=backtestError,proto3" json:"backtest_error,omitempty"` // backtest error if backtest fails
+	Plan          *StrategyPlan          `protobuf:"bytes,14,opt,name=plan,proto3" json:"plan,omitempty"`                                        // structured plan (planning phase, ADR-0025 §3)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *AgentGenerateStrategyChunk) Reset() {
 	*x = AgentGenerateStrategyChunk{}
-	mi := &file_agent_gateway_proto_msgTypes[25]
+	mi := &file_agent_gateway_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2003,7 +2107,7 @@ func (x *AgentGenerateStrategyChunk) String() string {
 func (*AgentGenerateStrategyChunk) ProtoMessage() {}
 
 func (x *AgentGenerateStrategyChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[25]
+	mi := &file_agent_gateway_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2016,7 +2120,7 @@ func (x *AgentGenerateStrategyChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentGenerateStrategyChunk.ProtoReflect.Descriptor instead.
 func (*AgentGenerateStrategyChunk) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{25}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *AgentGenerateStrategyChunk) GetPhase() string {
@@ -2101,6 +2205,13 @@ func (x *AgentGenerateStrategyChunk) GetBacktestError() string {
 		return x.BacktestError
 	}
 	return ""
+}
+
+func (x *AgentGenerateStrategyChunk) GetPlan() *StrategyPlan {
+	if x != nil {
+		return x.Plan
+	}
+	return nil
 }
 
 var File_agent_gateway_proto protoreflect.FileDescriptor
@@ -2289,16 +2400,25 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"\vfingerprint\x18\x03 \x01(\tR\vfingerprint\"C\n" +
 	"\x17StoreExperienceResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
-	"\asuccess\x18\x02 \x01(\bR\asuccess\"\xb9\x02\n" +
+	"\asuccess\x18\x02 \x01(\bR\asuccess\"x\n" +
+	"\fStrategyPlan\x12\x12\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x12\x14\n" +
+	"\x05entry\x18\x02 \x01(\tR\x05entry\x12\x12\n" +
+	"\x04exit\x18\x03 \x01(\tR\x04exit\x12\x12\n" +
+	"\x04risk\x18\x04 \x01(\tR\x04risk\x12\x16\n" +
+	"\x06market\x18\x05 \x01(\tR\x06market\"\xb8\x03\n" +
 	"\x1cAgentGenerateStrategyRequest\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x1c\n" +
 	"\ttimeframe\x18\x03 \x01(\tR\ttimeframe\x12H\n" +
 	"\x06params\x18\x04 \x03(\v20.ant.v1.AgentGenerateStrategyRequest.ParamsEntryR\x06params\x12D\n" +
-	"\x0fbacktest_config\x18\x05 \x01(\v2\x1b.ant.v1.AgentBacktestConfigR\x0ebacktestConfig\x1a9\n" +
+	"\x0fbacktest_config\x18\x05 \x01(\v2\x1b.ant.v1.AgentBacktestConfigR\x0ebacktestConfig\x12\x1b\n" +
+	"\tplan_mode\x18\x06 \x01(\tR\bplanMode\x12#\n" +
+	"\rplan_feedback\x18\a \x01(\tR\fplanFeedback\x12;\n" +
+	"\x0econfirmed_plan\x18\b \x01(\v2\x14.ant.v1.StrategyPlanR\rconfirmedPlan\x1a9\n" +
 	"\vParamsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xef\x03\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x99\x04\n" +
 	"\x1aAgentGenerateStrategyChunk\x12\x14\n" +
 	"\x05phase\x18\x01 \x01(\tR\x05phase\x12\x14\n" +
 	"\x05delta\x18\x02 \x01(\tR\x05delta\x12#\n" +
@@ -2313,7 +2433,8 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"blindSpots\x12\x1a\n" +
 	"\battempts\x18\v \x01(\x05R\battempts\x12\x14\n" +
 	"\x05error\x18\f \x01(\tR\x05error\x12%\n" +
-	"\x0ebacktest_error\x18\r \x01(\tR\rbacktestErrorJ\x04\b\x03\x10\x04*/\n" +
+	"\x0ebacktest_error\x18\r \x01(\tR\rbacktestError\x12(\n" +
+	"\x04plan\x18\x0e \x01(\v2\x14.ant.v1.StrategyPlanR\x04planJ\x04\b\x03\x10\x04*/\n" +
 	"\n" +
 	"SubmitMode\x12\x0f\n" +
 	"\vSUBMIT_SYNC\x10\x00\x12\x10\n" +
@@ -2343,7 +2464,7 @@ func file_agent_gateway_proto_rawDescGZIP() []byte {
 }
 
 var file_agent_gateway_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_agent_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
+var file_agent_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
 var file_agent_gateway_proto_goTypes = []any{
 	(SubmitMode)(0),                      // 0: ant.v1.SubmitMode
 	(*AgentToken)(nil),                   // 1: ant.v1.AgentToken
@@ -2370,66 +2491,69 @@ var file_agent_gateway_proto_goTypes = []any{
 	(*SearchExperienceResponse)(nil),     // 22: ant.v1.SearchExperienceResponse
 	(*StoreExperienceRequest)(nil),       // 23: ant.v1.StoreExperienceRequest
 	(*StoreExperienceResponse)(nil),      // 24: ant.v1.StoreExperienceResponse
-	(*AgentGenerateStrategyRequest)(nil), // 25: ant.v1.AgentGenerateStrategyRequest
-	(*AgentGenerateStrategyChunk)(nil),   // 26: ant.v1.AgentGenerateStrategyChunk
-	nil,                                  // 27: ant.v1.SubmitStrategyRequest.ParamsEntry
-	nil,                                  // 28: ant.v1.AgentGenerateStrategyRequest.ParamsEntry
-	(*timestamppb.Timestamp)(nil),        // 29: google.protobuf.Timestamp
-	(*StrategyProfile)(nil),              // 30: ant.v1.StrategyProfile
-	(*BacktestAnalysis)(nil),             // 31: ant.v1.BacktestAnalysis
+	(*StrategyPlan)(nil),                 // 25: ant.v1.StrategyPlan
+	(*AgentGenerateStrategyRequest)(nil), // 26: ant.v1.AgentGenerateStrategyRequest
+	(*AgentGenerateStrategyChunk)(nil),   // 27: ant.v1.AgentGenerateStrategyChunk
+	nil,                                  // 28: ant.v1.SubmitStrategyRequest.ParamsEntry
+	nil,                                  // 29: ant.v1.AgentGenerateStrategyRequest.ParamsEntry
+	(*timestamppb.Timestamp)(nil),        // 30: google.protobuf.Timestamp
+	(*StrategyProfile)(nil),              // 31: ant.v1.StrategyProfile
+	(*BacktestAnalysis)(nil),             // 32: ant.v1.BacktestAnalysis
 }
 var file_agent_gateway_proto_depIdxs = []int32{
-	29, // 0: ant.v1.AgentToken.expires_at:type_name -> google.protobuf.Timestamp
-	29, // 1: ant.v1.AgentToken.last_used_at:type_name -> google.protobuf.Timestamp
-	29, // 2: ant.v1.AgentToken.created_at:type_name -> google.protobuf.Timestamp
-	29, // 3: ant.v1.AgentToken.updated_at:type_name -> google.protobuf.Timestamp
-	29, // 4: ant.v1.AgentAuditEntry.created_at:type_name -> google.protobuf.Timestamp
-	29, // 5: ant.v1.IssueAgentTokenRequest.expires_at:type_name -> google.protobuf.Timestamp
+	30, // 0: ant.v1.AgentToken.expires_at:type_name -> google.protobuf.Timestamp
+	30, // 1: ant.v1.AgentToken.last_used_at:type_name -> google.protobuf.Timestamp
+	30, // 2: ant.v1.AgentToken.created_at:type_name -> google.protobuf.Timestamp
+	30, // 3: ant.v1.AgentToken.updated_at:type_name -> google.protobuf.Timestamp
+	30, // 4: ant.v1.AgentAuditEntry.created_at:type_name -> google.protobuf.Timestamp
+	30, // 5: ant.v1.IssueAgentTokenRequest.expires_at:type_name -> google.protobuf.Timestamp
 	1,  // 6: ant.v1.IssueAgentTokenResponse.token:type_name -> ant.v1.AgentToken
 	1,  // 7: ant.v1.ListAgentTokensResponse.tokens:type_name -> ant.v1.AgentToken
 	2,  // 8: ant.v1.ListAgentAuditResponse.entries:type_name -> ant.v1.AgentAuditEntry
-	27, // 9: ant.v1.SubmitStrategyRequest.params:type_name -> ant.v1.SubmitStrategyRequest.ParamsEntry
+	28, // 9: ant.v1.SubmitStrategyRequest.params:type_name -> ant.v1.SubmitStrategyRequest.ParamsEntry
 	13, // 10: ant.v1.SubmitStrategyRequest.backtest_config:type_name -> ant.v1.AgentBacktestConfig
 	0,  // 11: ant.v1.SubmitStrategyRequest.mode:type_name -> ant.v1.SubmitMode
 	17, // 12: ant.v1.SubmitStrategyResponse.result:type_name -> ant.v1.AgentBacktestResult
-	30, // 13: ant.v1.SubmitStrategyResponse.profile:type_name -> ant.v1.StrategyProfile
-	31, // 14: ant.v1.SubmitStrategyResponse.analysis:type_name -> ant.v1.BacktestAnalysis
+	31, // 13: ant.v1.SubmitStrategyResponse.profile:type_name -> ant.v1.StrategyProfile
+	32, // 14: ant.v1.SubmitStrategyResponse.analysis:type_name -> ant.v1.BacktestAnalysis
 	19, // 15: ant.v1.SubmitStrategyResponse.blind_spots:type_name -> ant.v1.AgentBlindSpot
 	0,  // 16: ant.v1.SubmitStrategyResponse.mode:type_name -> ant.v1.SubmitMode
 	15, // 17: ant.v1.SubmitStrategyResponse.semantic_diff:type_name -> ant.v1.SemanticDiff
 	16, // 18: ant.v1.SemanticDiff.changes:type_name -> ant.v1.SemanticChange
 	18, // 19: ant.v1.AgentBacktestResult.trades:type_name -> ant.v1.AgentTrade
-	29, // 20: ant.v1.ExperienceEntry.created_at:type_name -> google.protobuf.Timestamp
+	30, // 20: ant.v1.ExperienceEntry.created_at:type_name -> google.protobuf.Timestamp
 	21, // 21: ant.v1.SearchExperienceResponse.entries:type_name -> ant.v1.ExperienceEntry
-	28, // 22: ant.v1.AgentGenerateStrategyRequest.params:type_name -> ant.v1.AgentGenerateStrategyRequest.ParamsEntry
+	29, // 22: ant.v1.AgentGenerateStrategyRequest.params:type_name -> ant.v1.AgentGenerateStrategyRequest.ParamsEntry
 	13, // 23: ant.v1.AgentGenerateStrategyRequest.backtest_config:type_name -> ant.v1.AgentBacktestConfig
-	17, // 24: ant.v1.AgentGenerateStrategyChunk.result:type_name -> ant.v1.AgentBacktestResult
-	30, // 25: ant.v1.AgentGenerateStrategyChunk.profile:type_name -> ant.v1.StrategyProfile
-	31, // 26: ant.v1.AgentGenerateStrategyChunk.analysis:type_name -> ant.v1.BacktestAnalysis
-	19, // 27: ant.v1.AgentGenerateStrategyChunk.blind_spots:type_name -> ant.v1.AgentBlindSpot
-	3,  // 28: ant.v1.AgentService.IssueAgentToken:input_type -> ant.v1.IssueAgentTokenRequest
-	5,  // 29: ant.v1.AgentService.ListAgentTokens:input_type -> ant.v1.ListAgentTokensRequest
-	7,  // 30: ant.v1.AgentService.RevokeAgentToken:input_type -> ant.v1.RevokeAgentTokenRequest
-	8,  // 31: ant.v1.AgentService.ListAgentAudit:input_type -> ant.v1.ListAgentAuditRequest
-	10, // 32: ant.v1.AgentService.GetAgentCapabilities:input_type -> ant.v1.GetAgentCapabilitiesRequest
-	12, // 33: ant.v1.AgentGatewayService.SubmitStrategy:input_type -> ant.v1.SubmitStrategyRequest
-	25, // 34: ant.v1.AgentGatewayService.GenerateStrategy:input_type -> ant.v1.AgentGenerateStrategyRequest
-	20, // 35: ant.v1.AgentGatewayService.SearchExperience:input_type -> ant.v1.SearchExperienceRequest
-	23, // 36: ant.v1.AgentGatewayService.StoreExperience:input_type -> ant.v1.StoreExperienceRequest
-	4,  // 37: ant.v1.AgentService.IssueAgentToken:output_type -> ant.v1.IssueAgentTokenResponse
-	6,  // 38: ant.v1.AgentService.ListAgentTokens:output_type -> ant.v1.ListAgentTokensResponse
-	1,  // 39: ant.v1.AgentService.RevokeAgentToken:output_type -> ant.v1.AgentToken
-	9,  // 40: ant.v1.AgentService.ListAgentAudit:output_type -> ant.v1.ListAgentAuditResponse
-	11, // 41: ant.v1.AgentService.GetAgentCapabilities:output_type -> ant.v1.AgentCapabilities
-	14, // 42: ant.v1.AgentGatewayService.SubmitStrategy:output_type -> ant.v1.SubmitStrategyResponse
-	26, // 43: ant.v1.AgentGatewayService.GenerateStrategy:output_type -> ant.v1.AgentGenerateStrategyChunk
-	22, // 44: ant.v1.AgentGatewayService.SearchExperience:output_type -> ant.v1.SearchExperienceResponse
-	24, // 45: ant.v1.AgentGatewayService.StoreExperience:output_type -> ant.v1.StoreExperienceResponse
-	37, // [37:46] is the sub-list for method output_type
-	28, // [28:37] is the sub-list for method input_type
-	28, // [28:28] is the sub-list for extension type_name
-	28, // [28:28] is the sub-list for extension extendee
-	0,  // [0:28] is the sub-list for field type_name
+	25, // 24: ant.v1.AgentGenerateStrategyRequest.confirmed_plan:type_name -> ant.v1.StrategyPlan
+	17, // 25: ant.v1.AgentGenerateStrategyChunk.result:type_name -> ant.v1.AgentBacktestResult
+	31, // 26: ant.v1.AgentGenerateStrategyChunk.profile:type_name -> ant.v1.StrategyProfile
+	32, // 27: ant.v1.AgentGenerateStrategyChunk.analysis:type_name -> ant.v1.BacktestAnalysis
+	19, // 28: ant.v1.AgentGenerateStrategyChunk.blind_spots:type_name -> ant.v1.AgentBlindSpot
+	25, // 29: ant.v1.AgentGenerateStrategyChunk.plan:type_name -> ant.v1.StrategyPlan
+	3,  // 30: ant.v1.AgentService.IssueAgentToken:input_type -> ant.v1.IssueAgentTokenRequest
+	5,  // 31: ant.v1.AgentService.ListAgentTokens:input_type -> ant.v1.ListAgentTokensRequest
+	7,  // 32: ant.v1.AgentService.RevokeAgentToken:input_type -> ant.v1.RevokeAgentTokenRequest
+	8,  // 33: ant.v1.AgentService.ListAgentAudit:input_type -> ant.v1.ListAgentAuditRequest
+	10, // 34: ant.v1.AgentService.GetAgentCapabilities:input_type -> ant.v1.GetAgentCapabilitiesRequest
+	12, // 35: ant.v1.AgentGatewayService.SubmitStrategy:input_type -> ant.v1.SubmitStrategyRequest
+	26, // 36: ant.v1.AgentGatewayService.GenerateStrategy:input_type -> ant.v1.AgentGenerateStrategyRequest
+	20, // 37: ant.v1.AgentGatewayService.SearchExperience:input_type -> ant.v1.SearchExperienceRequest
+	23, // 38: ant.v1.AgentGatewayService.StoreExperience:input_type -> ant.v1.StoreExperienceRequest
+	4,  // 39: ant.v1.AgentService.IssueAgentToken:output_type -> ant.v1.IssueAgentTokenResponse
+	6,  // 40: ant.v1.AgentService.ListAgentTokens:output_type -> ant.v1.ListAgentTokensResponse
+	1,  // 41: ant.v1.AgentService.RevokeAgentToken:output_type -> ant.v1.AgentToken
+	9,  // 42: ant.v1.AgentService.ListAgentAudit:output_type -> ant.v1.ListAgentAuditResponse
+	11, // 43: ant.v1.AgentService.GetAgentCapabilities:output_type -> ant.v1.AgentCapabilities
+	14, // 44: ant.v1.AgentGatewayService.SubmitStrategy:output_type -> ant.v1.SubmitStrategyResponse
+	27, // 45: ant.v1.AgentGatewayService.GenerateStrategy:output_type -> ant.v1.AgentGenerateStrategyChunk
+	22, // 46: ant.v1.AgentGatewayService.SearchExperience:output_type -> ant.v1.SearchExperienceResponse
+	24, // 47: ant.v1.AgentGatewayService.StoreExperience:output_type -> ant.v1.StoreExperienceResponse
+	39, // [39:48] is the sub-list for method output_type
+	30, // [30:39] is the sub-list for method input_type
+	30, // [30:30] is the sub-list for extension type_name
+	30, // [30:30] is the sub-list for extension extendee
+	0,  // [0:30] is the sub-list for field type_name
 }
 
 func init() { file_agent_gateway_proto_init() }
@@ -2445,7 +2569,7 @@ func file_agent_gateway_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_agent_gateway_proto_rawDesc), len(file_agent_gateway_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   28,
+			NumMessages:   29,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

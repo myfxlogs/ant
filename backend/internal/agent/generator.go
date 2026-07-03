@@ -102,6 +102,35 @@ func (g *Generator) Generate(
 		}
 	}
 
+	// ── ADR-0025 §3: Plan Mode — generate structured plan, wait for user confirmation ──
+	planMode := msg.PlanMode
+	if planMode == "" {
+		planMode = "plan" // default to plan mode
+	}
+
+	if planMode == "plan" {
+		plan, planErr := g.generatePlan(ctx, userID, msg, preProfile)
+		if planErr != nil {
+			g.log.Warn("generator: plan generation failed", zap.Error(planErr))
+			_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{
+				Phase: "done",
+				Error: fmt.Sprintf("plan generation failed: %v", planErr),
+			})
+			return nil
+		}
+		_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{
+			Phase: "done",
+			Plan:  plan,
+		})
+		return nil
+	}
+
+	// planMode == "generate": use confirmed plan for code generation
+	var confirmedPlan *antv1.StrategyPlan
+	if msg.ConfirmedPlan != nil {
+		confirmedPlan = msg.ConfirmedPlan
+	}
+
 	for attempt := 1; attempt <= maxGenerateRetries; attempt++ {
 		// Cost ceiling check (ADR-0024 §D7)
 		if estCostUSD >= costCeilingUSD {
@@ -117,7 +146,11 @@ func (g *Generator) Generate(
 		// ── LLM generation (streaming) ──
 		var sysPrompt, userPrompt string
 		if attempt == 1 {
-			sysPrompt, userPrompt = buildGeneratePrompt(msg, preProfile)
+			if confirmedPlan != nil {
+				sysPrompt, userPrompt = buildGenerateFromPlanPrompt(msg, confirmedPlan, preProfile)
+			} else {
+				sysPrompt, userPrompt = buildGeneratePrompt(msg, preProfile)
+			}
 		} else {
 			sysPrompt, userPrompt = buildGenerateRetryPrompt(msg, result.PythonSource, result.CompileError, result.BacktestError, preProfile)
 		}
@@ -309,4 +342,27 @@ func degradedAnalysis(r *antv1.AgentBacktestResult) *antv1.BacktestAnalysis {
 		)
 	}
 	return &antv1.BacktestAnalysis{Summary: summary}
+}
+
+// generatePlan calls LLM to produce a structured StrategyPlan from NL + profile (ADR-0025 §3).
+func (g *Generator) generatePlan(
+	ctx context.Context,
+	userID uuid.UUID,
+	msg *antv1.AgentGenerateStrategyRequest,
+	profile *antv1.StrategyProfile,
+) (*antv1.StrategyPlan, error) {
+	userPrompt := buildPlanPrompt(msg, profile, msg.PlanFeedback)
+
+	llmCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+
+	resp, err := g.aiSvc.ChatCompletion(llmCtx, userID, []systemai.ChatMessage{
+		{Role: "system", Content: planSystemPrompt},
+		{Role: "user", Content: userPrompt},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("plan LLM call: %w", err)
+	}
+
+	return parsePlanResponse(resp), nil
 }

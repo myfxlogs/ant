@@ -1,5 +1,5 @@
 import { agentGatewayClient } from './connect';
-import type { AgentGenerateStrategyChunk } from '../gen/ant/v1/agent_gateway_pb';
+import type { AgentGenerateStrategyChunk, StrategyPlan } from '../gen/ant/v1/agent_gateway_pb';
 import { AgentGenerateStrategyRequestSchema } from '../gen/ant/v1/agent_gateway_pb';
 import { create } from '@bufbuild/protobuf';
 
@@ -8,6 +8,9 @@ export interface AgentGenInput {
   symbol?: string;
   timeframe?: string;
   params?: Record<string, string>;
+  planMode?: string;           // "plan" | "generate"
+  planFeedback?: string;       // user modification feedback
+  confirmedPlan?: StrategyPlan; // confirmed plan for code generation
   backtestConfig?: {
     symbol?: string;
     timeframe?: string;
@@ -33,6 +36,7 @@ export interface AgentGenCallbacks {
   onAnalysis: (analysis: AgentGenerateStrategyChunk['analysis']) => void;
   onAttempts: (attempts: number) => void;
   onError: (error: string) => void;
+  onPlan: (plan: StrategyPlan) => void;
 }
 
 export function agentGenerateStrategyStream(
@@ -48,6 +52,9 @@ export function agentGenerateStrategyStream(
         symbol: input.symbol || '',
         timeframe: input.timeframe || '',
         params: input.params || {},
+        planMode: input.planMode || '',
+        planFeedback: input.planFeedback || '',
+        confirmedPlan: input.confirmedPlan,
         backtestConfig: input.backtestConfig ? {
           symbol: input.backtestConfig.symbol || '',
           timeframe: input.backtestConfig.timeframe || '',
@@ -110,5 +117,8 @@ function handleAgentChunk(chunk: AgentGenerateStrategyChunk, cbs: AgentGenCallba
   }
   if (chunk.error) {
     cbs.onError(chunk.error);
+  }
+  if (chunk.plan) {
+    cbs.onPlan(chunk.plan);
   }
 }

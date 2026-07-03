@@ -1,5 +1,41 @@
 # Project "ant" — Mandatory Constraints
 
+## Codebase Navigation（功能块导航）
+
+用名字定位代码：说块名即可，AI 按表定位。调试时追管线（块名 → 目录 → 文件）。
+
+| # | 块名 (EN) | 中文 | 目录 | 一句话 |
+|---|---|---|---|---|
+| 1 | `mt-gateway` | MT网关 | `backend/adapter/mt{4,5}/` `backend/internal/mthub/` | mtapi.io 连接 MT, 下单/查持仓/拉K线 |
+| 2 | `strategy-runtime` | 策略运行时 | `backend/strategy/{sdk,runner,backtest,indicators}/` | Strategy接口, Bar重放, 回测指标, 技术指标库 |
+| 3 | `mql-compiler` | MQL编译器 | `backend/tools/mql2go/` | MQL/Python → tree-sitter → IR → Bytecode → VM |
+| 4 | `agent-engine` | Agent引擎 | `backend/internal/{agent,ai}/` | 策略生成, 盲区桥接, 画像, 解读, 记忆, 回溯 |
+| 5 | `backtest-engine` | 回测引擎 | `backend/internal/backtest/` `backend/strategy/backtest/` | SimBroker, 撮合, 滑点, 手续费, 净值曲线 |
+| 6 | `risk-gate` | 实盘风控 | `backend/internal/{risk,risksvc,paper,oms}/` | 6门管线, 仿真交易, 订单管理, 熔断 |
+| 7 | `account-mgmt` | 账户管理 | `backend/internal/connect/{gateway,marketplace,user}/` | MT账户CRUD, 经纪商搜索, 用户体系 |
+| 8 | `market-data` | 市场数据 | `backend/internal/{mdgateway,source,symbol}/` | K线/Tick存储(CH+PG), 实时报价流 |
+| 9 | `frontend` | 前端界面 | `frontend/src/` | React, 策略工作区, 回测面板, Agent聊天 |
+| 10 | `api-gateway` | API层 | `backend/internal/connect/*/` `proto/ant/v1/` | ConnectRPC handlers, SSE, proto定义 |
+
+**怎么用**：对话中提块名即可。"agent-engine 生成策略超时" → AI 定位 `backend/internal/agent/generator.go`。"mql-compiler IR 不兼容" → AI 定位 `backend/tools/mql2go/compile_py.go`。
+
+**管线调试**（跨块追数据流，出问题时按线追）：
+
+| 管线 | 路径 |
+|------|------|
+| 行情引入 | `mt-gateway(MT4/5) → market-data(去重/质量/归一化) → NATS + CH/PG` |
+| 策略执行 | `market-data(bar源) → strategy-runtime(runner) → risk-gate(信号管线) → oms(16状态机) → mt-gateway(下单)` |
+| 订单对账 | `mt-gateway(订单事件) → mthub(幂等门/对账门) → oms(状态更新) → NATS(实时PnL)` |
+| Agent循环 | `frontend(用户输入) → api-gateway(SSE) → agent-engine(generate/revise) → mql-compiler(compile) → backtest-engine(SimBroker) → agent-engine(分析/迭代)` |
+| 回测 | `frontend(参数) → api-gateway → backtest-engine(VMRunner+SimBroker) → PG(结果) → SSE(通知)` |
+| 实盘调度 | `frontend(计划) → api-gateway → strategy-runtime(LiveRunner) → market-data(实时bar) → mt-gateway(下单)` |
+
+**常用调试入口**："净值曲线为空" → 追 策略执行 线，从 `frontend` filter 到 `CH` 逐层查。"Agent生成超时" → 追 Agent循环 线，看是 LLM 推理卡了还是回测卡了。
+
+---
+
+## Mandatory Constraints
+
 These constraints are enforced at implementation time. Violation = fix before commit.
 
 ## File & Function Size
