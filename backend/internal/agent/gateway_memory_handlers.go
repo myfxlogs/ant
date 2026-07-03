@@ -2,7 +2,7 @@ package agent
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -12,25 +12,31 @@ import (
 	"anttrader/internal/interceptor"
 )
 
+
+// authenticatedUser extracts and validates the user ID from the ConnectRPC context.
+func (s *GatewayServer) authenticatedUser(ctx context.Context) (uuid.UUID, error) {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
+	}
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid user ID"))
+	}
+	return uid, nil
+}
+
 // SearchExperience searches the knowledge base for similar experiences (ADR-0025 §4).
 func (s *GatewayServer) SearchExperience(
 	ctx context.Context,
 	req *connect.Request[antv1.SearchExperienceRequest],
 ) (*connect.Response[antv1.SearchExperienceResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	uid, err := uuid.Parse(userID)
+	uid, err := s.authenticatedUser(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 
-	if s.memory == nil {
-		return connect.NewResponse(&antv1.SearchExperienceResponse{}), nil
-	}
-
-	entries, err := s.memory.SearchExperiences(ctx, uid, req.Msg.Query, req.Msg.Category, int(req.Msg.Limit))
+entries, err := s.memory.SearchExperiences(ctx, uid, req.Msg.Query, req.Msg.Category, int(req.Msg.Limit))
 	if err != nil {
 		s.log.Warn("SearchExperience failed", zap.Error(err))
 		return connect.NewResponse(&antv1.SearchExperienceResponse{}), nil
@@ -43,13 +49,9 @@ func (s *GatewayServer) StoreExperience(
 	ctx context.Context,
 	req *connect.Request[antv1.StoreExperienceRequest],
 ) (*connect.Response[antv1.StoreExperienceResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	uid, err := uuid.Parse(userID)
+	uid, err := s.authenticatedUser(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 
 	if s.memory == nil {
@@ -77,20 +79,12 @@ func (s *GatewayServer) ListMemory(
 	ctx context.Context,
 	req *connect.Request[antv1.ListMemoryRequest],
 ) (*connect.Response[antv1.ListMemoryResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	uid, err := uuid.Parse(userID)
+	uid, err := s.authenticatedUser(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 
-	if s.memory == nil {
-		return connect.NewResponse(&antv1.ListMemoryResponse{}), nil
-	}
-
-	templates, err := s.memory.ListUserTemplates(ctx, uid)
+templates, err := s.memory.ListUserTemplates(ctx, uid)
 	if err != nil {
 		s.log.Warn("ListMemory: templates failed", zap.Error(err))
 	}
@@ -109,13 +103,9 @@ func (s *GatewayServer) SaveUserTemplate(
 	ctx context.Context,
 	req *connect.Request[antv1.SaveUserTemplateRequest],
 ) (*connect.Response[antv1.SaveUserTemplateResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	uid, err := uuid.Parse(userID)
+	uid, err := s.authenticatedUser(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 
 	if s.memory == nil {
@@ -135,13 +125,9 @@ func (s *GatewayServer) DeleteUserTemplate(
 	ctx context.Context,
 	req *connect.Request[antv1.DeleteUserTemplateRequest],
 ) (*connect.Response[antv1.DeleteUserTemplateResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	uid, err := uuid.Parse(userID)
+	uid, err := s.authenticatedUser(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 
 	if s.memory == nil {
@@ -161,13 +147,9 @@ func (s *GatewayServer) DeleteAgentExperience(
 	ctx context.Context,
 	req *connect.Request[antv1.DeleteAgentExperienceRequest],
 ) (*connect.Response[antv1.DeleteAgentExperienceResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	uid, err := uuid.Parse(userID)
+	uid, err := s.authenticatedUser(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 
 	if s.memory == nil {
@@ -187,20 +169,12 @@ func (s *GatewayServer) GetAgentSettings(
 	ctx context.Context,
 	req *connect.Request[antv1.GetAgentSettingsRequest],
 ) (*connect.Response[antv1.GetAgentSettingsResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	uid, err := uuid.Parse(userID)
+	uid, err := s.authenticatedUser(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 
-	if s.settings == nil {
-		return connect.NewResponse(&antv1.GetAgentSettingsResponse{}), nil
-	}
-
-	rs, err := s.settings.ResolveSettings(ctx, uid)
+rs, err := s.settings.ResolveSettings(ctx, uid)
 	if err != nil {
 		s.log.Warn("GetAgentSettings failed", zap.Error(err))
 		return connect.NewResponse(&antv1.GetAgentSettingsResponse{}), nil
@@ -222,13 +196,9 @@ func (s *GatewayServer) SetUserSetting(
 	ctx context.Context,
 	req *connect.Request[antv1.SetUserSettingRequest],
 ) (*connect.Response[antv1.SetUserSettingResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	uid, err := uuid.Parse(userID)
+	uid, err := s.authenticatedUser(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 
 	if s.settings == nil {
@@ -248,13 +218,9 @@ func (s *GatewayServer) DeleteUserSetting(
 	ctx context.Context,
 	req *connect.Request[antv1.DeleteUserSettingRequest],
 ) (*connect.Response[antv1.DeleteUserSettingResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	uid, err := uuid.Parse(userID)
+	uid, err := s.authenticatedUser(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 
 	if s.settings == nil {
@@ -274,20 +240,12 @@ func (s *GatewayServer) GetCapabilities(
 	ctx context.Context,
 	req *connect.Request[antv1.GetCapabilitiesRequest],
 ) (*connect.Response[antv1.GetCapabilitiesResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	uid, err := uuid.Parse(userID)
+	uid, err := s.authenticatedUser(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 
-	if s.permissions == nil {
-		return connect.NewResponse(&antv1.GetCapabilitiesResponse{}), nil
-	}
-
-	caps := s.permissions.CapabilitiesForUser(ctx, uid)
+caps := s.permissions.CapabilitiesForUser(ctx, uid)
 	var entries []*antv1.CapabilityEntry
 	for cap, allowed := range caps {
 		entries = append(entries, &antv1.CapabilityEntry{

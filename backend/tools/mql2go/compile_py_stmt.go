@@ -176,24 +176,18 @@ func (c *pyCompiler) compileFor(n *sitter.Node) *interp.Statement {
 			Args: []interp.Expr{rangeInit(args)},
 		},
 	}
-	if len(args) == 1 {
-		stmt.Cond = &interp.Expr{
-			Kind: interp.ExprBinary,
-			Op:   "<",
-			Args: []interp.Expr{
-				{Kind: interp.ExprVar, Name: targetName},
-				args[0],
-			},
-		}
-	} else {
-		stmt.Cond = &interp.Expr{
-			Kind: interp.ExprBinary,
-			Op:   "<",
-			Args: []interp.Expr{
-				{Kind: interp.ExprVar, Name: targetName},
-				args[1],
-			},
-		}
+	// Upper bound is args[0] for range(N), args[1] for range(M,N)
+	upperBound := args[0]
+	if len(args) >= 2 {
+		upperBound = args[1]
+	}
+	stmt.Cond = &interp.Expr{
+		Kind: interp.ExprBinary,
+		Op:   "<",
+		Args: []interp.Expr{
+			{Kind: interp.ExprVar, Name: targetName},
+			upperBound,
+		},
 	}
 	if len(args) >= 3 {
 		stmt.Update = &interp.Statement{

@@ -65,6 +65,27 @@ type generateState struct {
 	BacktestError string
 }
 
+
+// firePostGenHook dispatches the post-generation hook or retrospect agent (ADR-0025 §6, §8).
+func (g *Generator) firePostGenHook(ctx context.Context, userID uuid.UUID, source string, profile *antv1.StrategyProfile, btProto *antv1.AgentBacktestResult, analysis *antv1.BacktestAnalysis) {
+	if g.hooks != nil && g.hooks.HasHandlers(HookPostStrategyGen) {
+		go g.hooks.Fire(ctx, &HookContext{
+			Event:         HookPostStrategyGen,
+			UserID:        userID,
+			Source:        source,
+			Profile:       profile,
+			BacktestResult: btProto,
+			Analysis:      analysis,
+		})
+	} else if g.retrospect != nil {
+		go g.retrospect.Run(ctx, userID, retrospectInput{
+			Profile:       profile,
+			BacktestResult: btProto,
+			Analysis:      analysis,
+		})
+	}
+}
+
 // Generate runs the generation loop: LLM generate → compile → backtest → retry on failure.
 // Streams progress chunks to the frontend via the stream callback.
 func (g *Generator) Generate(
@@ -346,7 +367,7 @@ func (g *Generator) Generate(
 		CompileError:   result.CompileError,
 		BacktestError:  result.BacktestError,
 		Attempts:       int32(effectiveMaxRetries),
-		Error:          "generation failed after " + fmt.Sprintf("%d", effectiveMaxRetries) + " attempts",
+		Error:          fmt.Sprintf("generation failed after %d attempts", effectiveMaxRetries),
 	}
 	_ = streamOrAbort(finalChunk)
 
