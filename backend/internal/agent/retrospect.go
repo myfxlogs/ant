@@ -39,28 +39,106 @@ type retrospectInput struct {
 	CoverageScore float64
 }
 
-// retrospectSystemPrompt instructs the LLM to produce a concise experience entry.
-const retrospectSystemPrompt = `You are a strategy retrospective analyst. Analyze the completed strategy generation and produce a concise experience entry for future reference.
-Output a single paragraph (3-5 sentences) covering:
-1. What strategy type was attempted
-2. Key entry/exit/risk decisions
-3. Backtest outcome (success/failure, key metrics)
-4. What worked well or what went wrong
-5. One actionable lesson for future strategy generation
+// retrospectSystemPrompt instructs the LLM to produce a structured experience entry (ADR-0025 §6.2).
+// Output is line-based KEY: value format, parsed by parseRetrospectResponse.
+const retrospectSystemPrompt = `You are a strategy retrospective analyst. Analyze the completed strategy generation and produce a structured experience entry.
+Output in the following line-based format (one key per line):
 
-Be specific and quantitative. Do NOT output markdown or code.`
+KEY_FINDING: EMA(12,26) c/o on EURUSD H1: sharpe 1.6, maxDD 14%
+SUCCESS_FACTOR: ADX>25 filter reduced whipsaws by 60%
+FAILURE_AVOID: Avoid <8 UTC session, false breakout rate >40%
+
+Rules:
+- KEY_FINDING: the most important quantitative finding from this strategy generation
+- SUCCESS_FACTOR: what worked well (omit if backtest failed)
+- FAILURE_AVOID: what to avoid in future (omit if nothing notable)
+- Be specific and quantitative — use actual metrics from the backtest
+- Each field should be 1-2 sentences
+- Output ONLY the KEY: value lines, no markdown, no explanations`
+
+// retrospectResult holds parsed structured output from the retrospect LLM call.
+type retrospectResult struct {
+	KeyFinding     string
+	SuccessFactor  string
+	FailureAvoid   string
+}
+
+// parseRetrospectResponse parses KEY: value lines into a structured result.
+func parseRetrospectResponse(raw string) retrospectResult {
+	result := retrospectResult{}
+	for _, line := range strings.Split(strings.TrimSpace(raw), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "```") {
+			continue
+		}
+		colonIdx := strings.Index(line, ":")
+		if colonIdx < 0 {
+			continue
+		}
+		key := strings.TrimSpace(line[:colonIdx])
+		val := strings.TrimSpace(line[colonIdx+1:])
+		switch key {
+		case "KEY_FINDING":
+			result.KeyFinding = val
+		case "SUCCESS_FACTOR":
+			result.SuccessFactor = val
+		case "FAILURE_AVOID":
+			result.FailureAvoid = val
+		}
+	}
+	return result
+}
+
+// formatRetrospectContent combines structured fields into a single content string for storage.
+func formatRetrospectContent(r retrospectResult) string {
+	var sb strings.Builder
+	if r.KeyFinding != "" {
+		sb.WriteString("Finding: ")
+		sb.WriteString(r.KeyFinding)
+	}
+	if r.SuccessFactor != "" {
+		if sb.Len() > 0 {
+			sb.WriteString(" | ")
+		}
+		sb.WriteString("Success: ")
+		sb.WriteString(r.SuccessFactor)
+	}
+	if r.FailureAvoid != "" {
+		if sb.Len() > 0 {
+			sb.WriteString(" | ")
+		}
+		sb.WriteString("Avoid: ")
+		sb.WriteString(r.FailureAvoid)
+	}
+	if sb.Len() == 0 {
+		return "No structured findings extracted."
+	}
+	return sb.String()
+}
 
 // Run analyzes the generation result and stores an experience asynchronously.
 // This is the PostStrategyGeneration lifecycle hook (ADR-0025 §6.2).
 func (r *RetrospectAgent) Run(ctx context.Context, userID uuid.UUID, input retrospectInput) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			r.log.Error("retrospect panicked", zap.Any("recover", rec))
+		}
+	}()
 	if r.memory == nil {
 		return
 	}
 
-	content, err := r.generateRetrospect(ctx, userID, input)
+	rawContent, err := r.generateRetrospect(ctx, userID, input)
 	if err != nil {
 		r.log.Warn("retrospect: LLM analysis failed, using fallback", zap.Error(err))
-		content = r.fallbackRetrospect(input)
+		rawContent = r.fallbackRetrospect(input)
+	}
+
+	// Parse structured output, fall back to raw content if parsing yields nothing
+	parsed := parseRetrospectResponse(rawContent)
+	content := formatRetrospectContent(parsed)
+	if content == "No structured findings extracted." {
+		content = rawContent // use raw LLM output if structured parse failed
 	}
 
 	fingerprint := r.buildFingerprint(input)
@@ -108,11 +186,11 @@ func (r *RetrospectAgent) buildRetrospectPrompt(input retrospectInput) string {
 	}
 
 	if input.BacktestResult != nil {
-		r := input.BacktestResult
+		bt := input.BacktestResult
 		sb.WriteString(fmt.Sprintf("Backtest: success=%v, trades=%d, return=%.2f%%, drawdown=%.2f%%, sharpe=%.2f, win_rate=%.1f%%\n",
-			r.Success, r.TotalTrades, r.TotalReturn, r.MaxDrawdown, r.SharpeRatio, r.WinRate))
-		if r.Error != "" {
-			sb.WriteString(fmt.Sprintf("Backtest Error: %s\n", r.Error))
+			bt.Success, bt.TotalTrades, bt.TotalReturn, bt.MaxDrawdown, bt.SharpeRatio, bt.WinRate))
+		if bt.Error != "" {
+			sb.WriteString(fmt.Sprintf("Backtest Error: %s\n", bt.Error))
 		}
 	}
 
@@ -129,11 +207,11 @@ func (r *RetrospectAgent) fallbackRetrospect(input retrospectInput) string {
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("Strategy: %s on %s %s. ", input.Message[:min(60, len(input.Message))], input.Symbol, input.Timeframe))
 	if input.BacktestResult != nil {
-		r := input.BacktestResult
-		if r.Success {
-			sb.WriteString(fmt.Sprintf("Backtest succeeded: %d trades, %.1f%% return, %.1f%% drawdown. ", r.TotalTrades, r.TotalReturn, r.MaxDrawdown))
+		bt := input.BacktestResult
+		if bt.Success {
+			sb.WriteString(fmt.Sprintf("Backtest succeeded: %d trades, %.1f%% return, %.1f%% drawdown. ", bt.TotalTrades, bt.TotalReturn, bt.MaxDrawdown))
 		} else {
-			sb.WriteString(fmt.Sprintf("Backtest failed: %s. ", r.Error))
+			sb.WriteString(fmt.Sprintf("Backtest failed: %s. ", bt.Error))
 		}
 	}
 	sb.WriteString("Retrospect LLM unavailable — see metrics for details.")

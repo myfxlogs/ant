@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"anttrader/internal/agent"
 	"anttrader/internal/connect/admin"
 	"anttrader/internal/repository"
 	"anttrader/internal/service"
@@ -22,6 +23,8 @@ func registerAdminHandlers(
 	walletSvc *service.WalletService,
 	accountNumberSvc *service.AccountNumberService,
 	strategySvc *service.StrategySvc,
+	settingsStore *agent.SettingsStore,
+	hookEngine *agent.HookEngine,
 	otelInterceptor, authInterceptor, adminInterceptor connectrpc.Interceptor,
 ) {
 	adminRepo := repository.NewAdminRepository(pool)
@@ -51,4 +54,14 @@ func registerAdminHandlers(
 
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+
+	// ADR-0025 §5.4 + §8: Agent settings + hooks management.
+	if settingsStore != nil {
+		adminAgentSettingsServer := admin.NewAdminAgentSettingsServer(settingsStore, log)
+		mux.Handle(antv1c.NewAdminAgentSettingsServiceHandler(adminAgentSettingsServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+	}
+	if pool != nil {
+		agentHooksServer := admin.NewAgentHooksServer(pool, hookEngine, log)
+		mux.Handle(antv1c.NewAgentHooksServiceHandler(agentHooksServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+	}
 }

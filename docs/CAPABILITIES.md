@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-07-03 04:18 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-07-03 07:39 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -209,6 +209,7 @@ CreateWallet	backend/internal/service/wallet_service.go:40
 CurrentStage	backend/internal/risk/canary.go:163
 DeleteAccount	backend/internal/service/account_service.go:200
 DeleteAccount	proto/ant/v1/account.proto:18
+DeleteAgentExperience	proto/ant/v1/agent_gateway.proto:41
 DeleteBacktestDataset	proto/ant/v1/backtest_dataset.proto:13
 DeleteBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:245
 DeleteBacktestRun	proto/ant/v1/strategy_runtime.proto:24
@@ -228,6 +229,8 @@ DeleteTemplate	backend/internal/service/template_svc.go:100
 DeleteTemplate	proto/ant/v1/strategy.proto:15
 DeleteUser	proto/ant/v1/admin_user.proto:14
 DeleteUsers	proto/ant/v1/admin_user.proto:15
+DeleteUserSetting	proto/ant/v1/agent_gateway.proto:46
+DeleteUserTemplate	proto/ant/v1/agent_gateway.proto:40
 Deregister	backend/internal/connect/strategy/session_registry.go:127
 DetectMarketRegime	proto/ant/v1/market_regime.proto:10
 Diagnose	proto/ant/v1/strategy_execution.proto:12
@@ -280,7 +283,6 @@ GenerateImportCode	backend/internal/connect/strategy/strategy_import_handler.go:
 GenerateImportCode	proto/ant/v1/strategy_runtime.proto:33
 GenerateReport	proto/ant/v1/analytics.proto:15
 GenerateStrategy	proto/ant/v1/agent_gateway.proto:29
-GenerateStrategy	proto/ant/v1/strategy_generation.proto:12
 Get	backend/internal/connect/strategy/session_registry.go:147
 Get	backend/internal/mthub/derived_state.go:74
 Get	backend/internal/mthub/types.go:67
@@ -299,6 +301,7 @@ GetAccountStatus	proto/ant/v1/mthub_service.proto:14
 GetActiveStrategy	backend/internal/connect/strategy/strategy_active_handlers.go:42
 GetActiveStrategy	proto/ant/v1/strategy_runtime.proto:45
 GetAgentCapabilities	proto/ant/v1/agent_gateway.proto:17
+GetAgentSettings	proto/ant/v1/agent_gateway.proto:44
 GetAIPrimary	backend/internal/service/systemai/service.go:187
 GetAIPrimary	proto/ant/v1/ai_primary.proto:8
 GetAlgoStatus	proto/ant/v1/execution_algo.proto:17
@@ -310,6 +313,7 @@ GetBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:105
 GetBacktestRun	proto/ant/v1/strategy_runtime.proto:20
 GetBalance	backend/internal/connect/strategy/position_cache.go:74
 GetCanary	proto/ant/v1/admin_sre.proto:10
+GetCapabilities	proto/ant/v1/agent_gateway.proto:49
 GetClients	reference/grpc/mt4.proto:217
 GetClients	reference/grpc/mt5.proto:367
 GetConnectionLogs	backend/internal/service/log_service.go:26
@@ -455,6 +459,7 @@ ListEconomicIndicators	proto/ant/v1/economic_data.proto:11
 ListExperimentCandidates	backend/internal/connect/strategy/strategy_experiment_handler.go:177
 ListExperimentCandidates	proto/ant/v1/strategy_experiment.proto:15
 ListLogs	proto/ant/v1/admin_log.proto:10
+ListMemory	proto/ant/v1/agent_gateway.proto:38
 ListModels	proto/ant/v1/ai_gateway.proto:24
 ListNotifications	proto/ant/v1/notification_service.proto:10
 ListPaperAccounts	proto/ant/v1/paper_trading.proto:11
@@ -685,6 +690,7 @@ RunLive	backend/internal/connect/strategy/go_executor.go:155
 RunLiveStrategy	backend/internal/connect/strategy/live_runner.go:81
 RunMarketBacktest	proto/ant/v1/marketplace_service.proto:29
 RunStrategy	proto/ant/v1/backtest_service.proto:14
+SaveUserTemplate	proto/ant/v1/agent_gateway.proto:39
 Search	reference/grpc/mt4.proto:215
 Search	reference/grpc/mt5.proto:365
 SearchBroker	proto/ant/v1/account.proto:22
@@ -764,6 +770,7 @@ SetTradeBroker	backend/internal/mthub/service.go:131
 SetUserLimiter	backend/internal/mthub/service.go:78
 SetUserLimiter	backend/internal/risksvc/engine.go:22
 SetUserRepo	backend/internal/service/systemai/service.go:90
+SetUserSetting	proto/ant/v1/agent_gateway.proto:45
 SetWalletChecker	backend/internal/service/systemai/service.go:111
 Shutdown	backend/internal/risksvc/platform_aggregator.go:174
 Size	backend/internal/risksvc/kelly_sizer.go:44
@@ -1022,6 +1029,14 @@ proto/ant/v1/agent_gateway.proto:25:  rpc SubmitStrategy(SubmitStrategyRequest) 
 proto/ant/v1/agent_gateway.proto:29:  rpc GenerateStrategy(AgentGenerateStrategyRequest) returns (stream AgentGenerateStrategyChunk);
 proto/ant/v1/agent_gateway.proto:32:  rpc SearchExperience(SearchExperienceRequest) returns (SearchExperienceResponse);
 proto/ant/v1/agent_gateway.proto:35:  rpc StoreExperience(StoreExperienceRequest) returns (StoreExperienceResponse);
+proto/ant/v1/agent_gateway.proto:38:  rpc ListMemory(ListMemoryRequest) returns (ListMemoryResponse);
+proto/ant/v1/agent_gateway.proto:39:  rpc SaveUserTemplate(SaveUserTemplateRequest) returns (SaveUserTemplateResponse);
+proto/ant/v1/agent_gateway.proto:40:  rpc DeleteUserTemplate(DeleteUserTemplateRequest) returns (DeleteUserTemplateResponse);
+proto/ant/v1/agent_gateway.proto:41:  rpc DeleteAgentExperience(DeleteAgentExperienceRequest) returns (DeleteAgentExperienceResponse);
+proto/ant/v1/agent_gateway.proto:44:  rpc GetAgentSettings(GetAgentSettingsRequest) returns (GetAgentSettingsResponse);
+proto/ant/v1/agent_gateway.proto:45:  rpc SetUserSetting(SetUserSettingRequest) returns (SetUserSettingResponse);
+proto/ant/v1/agent_gateway.proto:46:  rpc DeleteUserSetting(DeleteUserSettingRequest) returns (DeleteUserSettingResponse);
+proto/ant/v1/agent_gateway.proto:49:  rpc GetCapabilities(GetCapabilitiesRequest) returns (GetCapabilitiesResponse);
 proto/ant/v1/ai.proto:11:  rpc Chat(ChatRequest) returns (ChatResponse);
 proto/ant/v1/ai.proto:13:  rpc ChatStream(ChatRequest) returns (stream ChatStreamChunk);
 proto/ant/v1/ai.proto:14:  rpc ListConversations(ListConversationsRequest) returns (ListConversationsResponse);
@@ -1182,7 +1197,6 @@ proto/ant/v1/strategy_experiment.proto:15:  rpc ListExperimentCandidates(ListExp
 proto/ant/v1/strategy_experiment.proto:16:  rpc GetExperimentCandidate(GetExperimentCandidateRequest) returns (StrategyExperimentCandidate);
 proto/ant/v1/strategy_experiment.proto:17:  rpc PromoteCandidateToDraft(PromoteCandidateToDraftRequest) returns (PromoteCandidateToDraftResponse);
 proto/ant/v1/strategy_experiment.proto:20:  rpc WatchExperiment(WatchExperimentRequest) returns (stream WatchExperimentEvent);
-proto/ant/v1/strategy_generation.proto:12:  rpc GenerateStrategy(GenerateStrategyRequest) returns (stream GenerateStrategyChunk);
 proto/ant/v1/strategy_runtime.proto:16:  rpc Execute(ExecuteStrategyRequest) returns (ExecuteStrategyResponse);
 proto/ant/v1/strategy_runtime.proto:17:  rpc Validate(ValidateStrategyRequest) returns (ValidateStrategyResponse);
 proto/ant/v1/strategy_runtime.proto:18:  rpc Backtest(BacktestStrategyRequest) returns (BacktestStrategyResponse);
@@ -1869,13 +1883,12 @@ backend/cmd/server/handlers.go:216:	mux.Handle(antv1c.NewSystemAIServiceHandler(
 backend/cmd/server/handlers.go:218:	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 backend/cmd/server/handlers.go:220:	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 backend/cmd/server/handlers.go:222:	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:224:	mux.Handle(antv1c.NewStrategyGenerationServiceHandler(strategyGenServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:232:	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:235:	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:238:	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:240:	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:242:	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:288:	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
+backend/cmd/server/handlers.go:229:	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:232:	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:235:	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:237:	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:239:	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:285:	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
 backend/cmd/server/handlers.go:94:	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(otelInterceptor,rateLimitInterceptor, authInterceptor)))
 backend/cmd/server/handlers.go:97:	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 backend/cmd/server/handlers_admin.go:31:	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))

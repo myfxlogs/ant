@@ -32,7 +32,7 @@ The code must be a complete, compilable Python subset strategy.
 All parameters must have concrete default values — no TODOs or placeholders.
 For unspecified parameters, use reasonable defaults based on the strategy description.`
 
-func buildGeneratePrompt(msg *antv1.AgentGenerateStrategyRequest, profile *antv1.StrategyProfile) (string, string) {
+func buildGeneratePrompt(msg *antv1.AgentGenerateStrategyRequest, profile *antv1.StrategyProfile, mem *SessionMemory) (string, string) {
 	var sb strings.Builder
 	sb.WriteString("## Strategy Description\n")
 	sb.WriteString(msg.Message)
@@ -41,6 +41,10 @@ func buildGeneratePrompt(msg *antv1.AgentGenerateStrategyRequest, profile *antv1
 	writeProfileToPrompt(&sb, profile, "## Strategy Profile (use as guidance)\n")
 	if profile != nil {
 		sb.WriteString("\n")
+	}
+
+	if mem != nil {
+		mem.InjectIntoPrompt(&sb)
 	}
 
 	writeRequestContext(&sb, msg)
@@ -53,7 +57,7 @@ func buildGeneratePrompt(msg *antv1.AgentGenerateStrategyRequest, profile *antv1
 	return generateSystemPrompt, sb.String()
 }
 
-func buildGenerateRetryPrompt(msg *antv1.AgentGenerateStrategyRequest, prevCode, compileErr, btErr string, profile *antv1.StrategyProfile) (string, string) {
+func buildGenerateRetryPrompt(msg *antv1.AgentGenerateStrategyRequest, prevCode, compileErr, btErr string, profile *antv1.StrategyProfile, mem *SessionMemory) (string, string) {
 	var sb strings.Builder
 	sb.WriteString("## Previous Attempt (failed validation)\n```\n")
 	sb.WriteString(prevCode)
@@ -74,6 +78,10 @@ func buildGenerateRetryPrompt(msg *antv1.AgentGenerateStrategyRequest, prevCode,
 		sb.WriteString(fmt.Sprintf("Indicators: %s\n", strings.Join(profile.IndicatorsUsed, ", ")))
 		sb.WriteString(fmt.Sprintf("Entry: %s\n", profile.EntryLogic))
 		sb.WriteString(fmt.Sprintf("Exit: %s\n", profile.ExitLogic))
+	}
+
+	if mem != nil {
+		mem.InjectIntoPrompt(&sb)
 	}
 
 	sb.WriteString("\n\n## Original Strategy Description\n")

@@ -65,7 +65,8 @@ export default function AdminLayout() {
     { key: '/admin/jurisdiction', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.jurisdiction') },
     { key: '/admin/strategies', icon: <CodeOutlined size={20} stroke={1.5} />, label: 'Strategies' },
     { key: '/admin/shares', icon: <ShareAltOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.shareManagement', { defaultValue: '分享统计' }) },
-	    { key: '/admin/ai-gateway', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: 'AI Gateway' },
+    { key: '/admin/ai-gateway', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: 'AI Gateway' },
+    { key: '/admin/agent-settings', icon: <SafetyOutlined size={20} stroke={1.5} />, label: 'Agent 管理' },
     { key: '/admin/sre', icon: <SafetyOutlined size={20} stroke={1.5} />, label: 'SRE 控制' },
   ];
 

@@ -224,6 +224,10 @@ func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID)
 		if m == "" {
 			continue
 		}
+		// ADR-0025 §5.2: model whitelist filter — skip providers whose model is not allowed.
+		if s.modelFilter != nil && !s.modelFilter(ctx, userID, m) {
+			continue
+		}
 		if s.isCircuitOpen(ctx, userID, row.ProviderID) {
 			continue
 		}
@@ -260,6 +264,9 @@ func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID)
 					continue
 				}
 				m := resolveModel(sp.DefaultModel, sp.Models, sp.ProviderID, primaryPID, primaryModel)
+				if s.modelFilter != nil && !s.modelFilter(ctx, userID, m) {
+					continue
+				}
 				cp := chatProvider{
 					userID: userID, providerID: sp.ProviderID,
 					model: m, baseURL: base, secret: pt,

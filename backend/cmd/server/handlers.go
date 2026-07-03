@@ -16,6 +16,7 @@ import (
 	"anttrader/internal/analysis"
 	"anttrader/internal/config"
 	"anttrader/internal/connect/ai"
+	"anttrader/internal/connect/admin"
 	algo "anttrader/internal/connect/algo"
 	assetanalysis "anttrader/internal/connect/asset_analysis"
 	"anttrader/internal/connect/gateway"
@@ -169,6 +170,35 @@ func registerHandlers(
 	agentGateway := agent.NewGatewayServer(pool, marketDataRepo, aiSvc, log)
 	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
+	// ADR-0025 §8: Load persisted hook configs from DB at startup.
+	if pool != nil && agentGateway.HookEngine() != nil {
+		if err := admin.LoadHookConfigsFromDB(ctx, pool, agentGateway.HookEngine()); err != nil {
+			log.Warn("failed to load hook configs from DB", zap.Error(err))
+		}
+	}
+
+	// ADR-0025 §5.2: Wire model whitelist filter from managed settings into systemai.Service.
+	if ss := agentGateway.SettingsStore(); ss != nil {
+		aiSvc.SetModelFilter(func(ctx context.Context, userID uuid.UUID, model string) bool {
+			rs, err := ss.ResolveSettings(ctx, userID)
+			if err != nil || !rs.Loaded {
+				return true // fail-open if settings can't load (fail-closed is handled elsewhere)
+			}
+			if !rs.Managed.EnforceAllowedModels {
+				return true
+			}
+			if len(rs.Managed.AllowedModels) == 0 {
+				return false // empty whitelist + enforce = deny all
+			}
+			for _, allowed := range rs.Managed.AllowedModels {
+				if allowed == model {
+					return true
+				}
+			}
+			return false
+		})
+	}
+
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
 	streamServer.SetMarketDataRepo(marketDataRepo)
 	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
@@ -244,6 +274,7 @@ func registerHandlers(
 	gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
 
 	registerAdminHandlers(mux, pool, log, walletSvc, accountNumberSvc, strategySvc,
+		agentGateway.SettingsStore(), agentGateway.HookEngine(),
 		otelInterceptor, authInterceptor, adminInterceptor)
 
 	// S1.1-S1.3: Wire SignalPipeline, rate limiter, cost estimator, OMS writer.

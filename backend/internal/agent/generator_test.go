@@ -14,7 +14,7 @@ func TestBuildGeneratePrompt(t *testing.T) {
 		Timeframe: "H1",
 	}
 
-	sysPrompt, userPrompt := buildGeneratePrompt(msg, nil)
+	sysPrompt, userPrompt := buildGeneratePrompt(msg, nil, nil)
 
 	if sysPrompt == "" {
 		t.Error("system prompt should not be empty")
@@ -50,7 +50,7 @@ func TestBuildGenerateRetryPrompt(t *testing.T) {
 		Symbol:  "GBPUSD",
 	}
 
-	sysPrompt, userPrompt := buildGenerateRetryPrompt(msg, "class S:\n    pass", "syntax error at line 3", "", nil)
+	sysPrompt, userPrompt := buildGenerateRetryPrompt(msg, "class S:\n    pass", "syntax error at line 3", "", nil, nil)
 
 	if sysPrompt == "" {
 		t.Error("system prompt should not be empty")
@@ -72,7 +72,7 @@ func TestBuildGenerateRetryPrompt_BacktestError(t *testing.T) {
 		Message: "Bollinger Band mean reversion",
 	}
 
-	_, userPrompt := buildGenerateRetryPrompt(msg, "class S:\n    pass", "", "backtest: no trades executed", nil)
+	_, userPrompt := buildGenerateRetryPrompt(msg, "class S:\n    pass", "", "backtest: no trades executed", nil, nil)
 
 	if !contains(userPrompt, "no trades executed") {
 		t.Error("retry prompt should contain backtest error")
@@ -87,7 +87,7 @@ func TestBuildGeneratePrompt_WithParams(t *testing.T) {
 		Params:  map[string]string{"fast": "12", "slow": "26", "signal": "9"},
 	}
 
-	_, userPrompt := buildGeneratePrompt(msg, nil)
+	_, userPrompt := buildGeneratePrompt(msg, nil, nil)
 
 	if !contains(userPrompt, "fast: 12") {
 		t.Error("user prompt should contain param overrides")
@@ -111,7 +111,7 @@ func TestBuildGeneratePrompt_WithProfile(t *testing.T) {
 		RiskManagement:  "fixed stop-loss 50 pips",
 	}
 
-	_, userPrompt := buildGeneratePrompt(msg, profile)
+	_, userPrompt := buildGeneratePrompt(msg, profile, nil)
 
 	if !contains(userPrompt, "trend_following") {
 		t.Error("user prompt should contain profile strategy type")

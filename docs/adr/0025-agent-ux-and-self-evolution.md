@@ -35,7 +35,7 @@ Claude Code、Hermes Agent、OpenClaw 三个成熟 Agent 框架在各自的领�
 | 5 个关键生命周期钩子（Pre* 可阻断） | 实盘安全网——上线前必须过风控门，失败就阻断 |
 | 模型降级链 | 用户选的模型挂了自动切备选，不中断策略生成 |
 | Fail-closed 安全 | Admin 配置解析失败 = 锁定，不是开放 |
-| 热重载 + `/memory` 管理界面 | Admin 改配置零停机；用户可浏览 Agent 学到的东西 |
+| 热重载 + 记忆管理页面 | Admin 改配置零停机；用户可浏览 Agent 学到的东西 |
 
 | 砍掉 | 理由 |
 |---|---|
@@ -56,7 +56,7 @@ Claude Code、Hermes Agent、OpenClaw 三个成熟 Agent 框架在各自的领�
 |---|---|
 | 通用 Nudge Engine（每次对话后都复盘） | 成本高（每次额外 LLM 调用）、范围散（什么都记）。聚焦到策略领域：只在策略生成流程结束后触发 |
 | DSPy prompt 自动优化 | 需要几百次会话数据才能生效，平台未上线没数据可喂 |
-| 技能自动生成 | 风险高——Agent 自己判断"这个模式值得固化成 Skill"易产生垃圾，用户手动 `/save-strategy` 更可靠 |
+| 技能自动生成 | 风险高——Agent 自己判断"这个模式值得固化成 Skill"易产生垃圾，用户手动保存策略更可靠 |
 | SQLite + FTS5 存储 | 我们已有 pgvector，不引入新存储 |
 
 ### 2.3 从 OpenClaw 取
@@ -129,6 +129,22 @@ MARKET: trending, ADX>25, H1
 
 Go 端行解析器消费 → 前端渲染为卡片 UI。
 
+### 3.3 Web 原生交互（非终端命令）
+
+Claude Code 使用 `/design`、`/memory` 等斜杠命令——这是终端工具的交互惯例。我们的平台是网页前端，用户不会在聊天框里敲 `/`。
+
+**交互原则：每个用户意图都由一个可见的 UI 元素承载。**
+
+| 用户意图 | 终端 (Claude Code) | 网页 (Ant) |
+|---|---|---|
+| 设计策略 | `/design` | 聊天框旁的**"策略设计"按钮**，或直接自然语言输入 |
+| 查看记忆 | `/memory` | 侧边栏/顶部导航的**"记忆管理"入口** |
+| 调整偏好 | `/profile` | 设置页面的**"策略偏好"标签页** |
+| 切换模型 | `/model` | 聊天框顶部的**模型选择下拉框** |
+| 保存模板 | `/save` | 记忆管理页面中的 **[+ 新增偏好]** 按钮 |
+
+**Plan Mode 不需要命令触发。** 用户说"帮我做趋势跟踪"→ Agent 自动进入 planning phase → 前端渲染方案卡片。触发方式是自然语言+上下文，不是用户主动输入 `/design`。
+
 ---
 
 ## 4. 三层记忆系统
@@ -137,7 +153,7 @@ Go 端行解析器消费 → 前端渲染为卡片 UI。
 
 | | 全局领域知识 | 用户策略模板 | Agent 自动记忆 |
 |---|---|---|---|
-| 谁写 | 平台运营（手工） | 用户（手动或 `/save`） | Agent（自动，策略流程结束时） |
+| 谁写 | 平台运营（手工） | 用户（手动保存） | Agent（自动，策略流程结束时） |
 | 存储 | `domain_knowledge` 表 | `user_strategy_templates` 表 | `agent_experience` 表（ADR-0024 §5.5） |
 | Scope | 全局共享 | 按租户隔离 | 按租户隔离 |
 | 注入时机 | 会话启动，按 scope 匹配 | 会话启动 | 会话启动，知识库检索 |
@@ -212,9 +228,9 @@ Agent 自动记忆：
 Agent 带着"记忆"开始服务
 ```
 
-### 4.4 `/memory` 管理界面
+### 4.4 记忆管理页面
 
-前端新增 Memory 管理页——用户看到两栏：
+前端新增"记忆管理"导航页——用户看到两栏：
 
 ```
 ┌─ 我的策略偏好 (可编辑) ────────┐  ┌─ Agent 学到的东西 (可删除) ──────┐
@@ -457,7 +473,7 @@ ADR-0024 Phase 4 的计划是"知识库 + 策略进化 (4 周)"。**本 ADR 不�
 | **P4** | 5 个生命周期钩子 | Claude Code | 插入 Phase 2/3/4 | Hook engine |
 | **P5** | 模型降级链 | OpenClaw | 插入 Phase 0 | `systemai.Service` 已有适配层 |
 | **P6** | 热重载 + Fail-closed | Claude Code | Admin 管理端 | PG NOTIFY |
-| **P7** | `/memory` `/design` 命令 | Claude Code | Phase 4 前端 | P1 完成 |
+| **P7** | 策略设计入口 + 记忆管理导航 | Claude Code | Phase 4 前端 | P1 完成 |
 
 ### 10.3 P0-P3 关键交付物
 
@@ -471,7 +487,7 @@ P1 (2 周):
   backend/  domain_knowledge 表建表 migration + Admin 管理端领域知识页
   backend/  memory.go — 三重记忆系统 (StoreExperience 实现 + MEMORY.md 读写 + 领域知识 scope 匹配注入)
   backend/  Session startup: 加载用户模板 + 领域知识 + 经验索引 → 注入 prompt
-  frontend/ MemoryPage.tsx — /memory 管理界面
+  frontend/ MemoryPage.tsx — 记忆管理页面
 
 P2 (1.5 周):
   proto/    admin_settings.proto (ManagedSettings + CapabilityRule)
@@ -503,7 +519,7 @@ E2E: 用户输入 "EURUSD H1 趋势跟踪"
 ```
 1. 用户保存策略模板 → 下次新会话 Agent 自动引用
 2. 策略生成完成 → agent_experience 表有新增记录 → MEMORY.md 更新
-3. /memory 页面显示用户模板 + Agent 经验，可编辑/删除
+3. 记忆管理页面显示用户模板 + Agent 经验，可编辑/删除
 ```
 
 ### 11.3 分层权限
@@ -548,7 +564,7 @@ backend/internal/
   agent/
     memory.go             (新建 — 三重记忆 CRUD + MEMORY.md 读写 + 领域知识注入)
     retrospect.go          (新建 — 策略回溯 Agent + PostGenerationHook)
-    hook_engine.go         (新建 — 5 个钩子事件 + command/webhook/internal 三种类型)
+    hooks.go               (新建 — 5 个钩子事件 + command/webhook/internal 三种类型)
   admin/
     settings.go            (新建 — 5-tier 设置引擎)
     permissions.go         (新建 — Capability Rule Engine)
@@ -563,7 +579,7 @@ frontend/src/pages/
   admin/
     AdminSettingsPage.tsx   (新建 — Admin 管理端)
   memory/
-    MemoryPage.tsx          (新建 — /memory 管理页)
+    MemoryPage.tsx          (新建 — 记忆管理页)
 ```
 
 ---

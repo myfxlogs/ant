@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// AgentHooksService manages ADR-0025 §8 lifecycle hook configurations.
+// Hooks can be command (shell), webhook (HTTP POST), or internal (Go function).
+// Pre* hooks can abort the operation; Post* hooks are informational only.
+service AgentHooksService {
+  // List all registered hook configurations.
+  rpc ListHookConfigs(ListHookConfigsRequest) returns (ListHookConfigsResponse);
+  // Register or update a hook configuration.
+  rpc SetHookConfig(SetHookConfigRequest) returns (SetHookConfigResponse);
+  // Remove a hook configuration.
+  rpc DeleteHookConfig(DeleteHookConfigRequest) returns (DeleteHookConfigResponse);
+}
+
+// ── Hook Configuration (ADR-0025 §8) ──────────────────────────────────────
+
+// HookEventType enumerates the 5 lifecycle hook events.
+enum HookEventType {
+  HOOK_EVENT_UNSPECIFIED = 0;
+  HOOK_EVENT_PRE_STRATEGY_SUBMIT = 1;
+  HOOK_EVENT_POST_BACKTEST = 2;
+  HOOK_EVENT_PRE_LIVE_DEPLOY = 3;
+  HOOK_EVENT_DEGRADATION_ALERT = 4;
+  HOOK_EVENT_POST_STRATEGY_GENERATION = 5;
+}
+
+// HookExecutionType enumerates how a hook is executed.
+enum HookExecutionType {
+  HOOK_EXEC_UNSPECIFIED = 0;
+  HOOK_EXEC_COMMAND = 1;  // shell command, stdin=JSON, exit code 2 = abort
+  HOOK_EXEC_WEBHOOK = 2;  // HTTP POST, {"allow": false} = abort
+  HOOK_EXEC_INTERNAL = 3; // Go function call (not configurable via RPC)
+}
+
+message HookConfigEntry {
+  string id = 1;
+  HookEventType event = 2;
+  HookExecutionType type = 3;
+  string command = 4;       // for HOOK_EXEC_COMMAND
+  string webhook_url = 5;   // for HOOK_EXEC_WEBHOOK
+  int32 timeout_seconds = 6; // default 10
+  bool enabled = 7;
+}
+
+message ListHookConfigsRequest {}
+
+message ListHookConfigsResponse {
+  repeated HookConfigEntry configs = 1;
+}
+
+message SetHookConfigRequest {
+  HookEventType event = 1;
+  HookExecutionType type = 2;
+  string command = 3;
+  string webhook_url = 4;
+  int32 timeout_seconds = 5;
+  bool enabled = 6;
+}
+
+message SetHookConfigResponse {
+  string id = 1;
+  bool success = 2;
+}
+
+message DeleteHookConfigRequest {
+  string id = 1;
+}
+
+message DeleteHookConfigResponse {
+  bool success = 1;
+}

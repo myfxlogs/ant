@@ -9,6 +9,27 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// ManagedConfig holds structured admin-managed settings (ADR-0025 §5.2).
+// Stored as individual key-value rows in agent_managed_settings, parsed into this struct.
+type ManagedConfig struct {
+	AllowedModels         []string // "allowed_models" — comma-separated in DB
+	EnforceAllowedModels  bool     // "enforce_allowed_models"
+	MaxCostCeilingUSD     float64  // "max_cost_ceiling_usd"
+	MaxIterations         int      // "max_iterations_per_strategy"
+	DisableLiveTrading    bool     // "disable_live_trading"
+	RequiredRiskGates     []string // "required_risk_gates" — comma-separated
+	AuditRetentionDays    int      // "audit_retention_days"
+	AllowManagedRulesOnly bool     // "allow_managed_rules_only"
+}
+
+// ResolvedSettings is the fully resolved settings for a user, including parsed managed config.
+type ResolvedSettings struct {
+	Flat    map[string]string // all key-value settings (for prompt injection)
+	Tiers   map[string]string // key -> tier source ("default" | "user" | "managed")
+	Managed ManagedConfig     // parsed structured managed config
+	Loaded  bool              // true if settings loaded successfully
+}
+
 // SettingTier represents the priority level of a setting (ADR-0025 §5).
 // Higher priority tiers override lower ones.
 type SettingTier int
@@ -49,14 +70,41 @@ var defaultSettings = map[string]string{
 	"agent.capability.can_live": "false",
 }
 
+// defaultManagedConfig is the fail-closed default when managed settings can't be loaded.
+// ADR-0025 §5.2: "解析失败 = fail-closed: disable_live_trading 强制为 true,
+// allowed_models 强制为空白名单"
+var defaultManagedConfigFailClosed = ManagedConfig{
+	AllowedModels:         nil, // empty whitelist
+	EnforceAllowedModels:  true,
+	MaxCostCeilingUSD:     0.01, // minimal cost
+	MaxIterations:         3,
+	DisableLiveTrading:    true, // fail-closed
+	RequiredRiskGates:     []string{"lookahead", "walkforward", "paper"},
+	AuditRetentionDays:    365,
+	AllowManagedRulesOnly: true,
+}
+
 // GetSettings resolves settings for a user by merging tiers (ADR-0025 §5).
 // Managed settings override User settings, which override Defaults.
+// Returns a flat map for backward compatibility.
 func (s *SettingsStore) GetSettings(ctx context.Context, userID uuid.UUID) (map[string]string, error) {
+	rs, err := s.ResolveSettings(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return rs.Flat, nil
+}
+
+// ResolveSettings resolves all settings tiers and parses managed config (ADR-0025 §5.2).
+// On managed settings load failure, returns fail-closed config.
+func (s *SettingsStore) ResolveSettings(ctx context.Context, userID uuid.UUID) (*ResolvedSettings, error) {
 	result := make(map[string]string)
+	tiers := make(map[string]string)
 
 	// Tier 0: Defaults
 	for k, v := range defaultSettings {
 		result[k] = v
+		tiers[k] = "default"
 	}
 
 	// Tier 1: User overrides
@@ -65,21 +113,106 @@ func (s *SettingsStore) GetSettings(ctx context.Context, userID uuid.UUID) (map[
 		if err == nil {
 			for k, v := range userSettings {
 				result[k] = v
+				tiers[k] = "user"
 			}
 		}
 	}
 
 	// Tier 2: Managed (admin) overrides — highest priority
+	var managed ManagedConfig
+	loaded := false
 	if s.pool != nil {
 		managedSettings, err := s.loadManagedSettings(ctx)
 		if err == nil {
 			for k, v := range managedSettings {
 				result[k] = v
+				tiers[k] = "managed"
 			}
+			managed = parseManagedConfig(managedSettings)
+			loaded = true
 		}
 	}
 
-	return result, nil
+	// Fail-closed: if managed settings failed to load, use fail-closed defaults
+	if !loaded {
+		managed = defaultManagedConfigFailClosed
+		// Apply fail-closed overrides to flat map
+		result["agent.capability.can_live"] = "false"
+		tiers["agent.capability.can_live"] = "managed"
+		result["agent.cost_ceiling_usd"] = fmt.Sprintf("%.2f", managed.MaxCostCeilingUSD)
+		tiers["agent.cost_ceiling_usd"] = "managed"
+	}
+
+	return &ResolvedSettings{
+		Flat:    result,
+		Tiers:   tiers,
+		Managed: managed,
+		Loaded:  loaded,
+	}, nil
+}
+
+// parseManagedConfig parses flat key-value managed settings into structured config.
+func parseManagedConfig(m map[string]string) ManagedConfig {
+	cfg := ManagedConfig{
+		MaxCostCeilingUSD: 0.50,
+		MaxIterations:     50,
+		AuditRetentionDays: 365,
+	}
+	if v, ok := m["allowed_models"]; ok {
+		cfg.AllowedModels = splitCSV(v)
+	}
+	if v, ok := m["enforce_allowed_models"]; ok {
+		cfg.EnforceAllowedModels = v == "true"
+	}
+	if v, ok := m["max_cost_ceiling_usd"]; ok {
+		if f, err := parseFloat(v); err == nil {
+			cfg.MaxCostCeilingUSD = f
+		}
+	}
+	if v, ok := m["max_iterations_per_strategy"]; ok {
+		if n, err := parseInt(v); err == nil {
+			cfg.MaxIterations = n
+		}
+	}
+	if v, ok := m["disable_live_trading"]; ok {
+		cfg.DisableLiveTrading = v == "true"
+	}
+	if v, ok := m["required_risk_gates"]; ok {
+		cfg.RequiredRiskGates = splitCSV(v)
+	}
+	if v, ok := m["audit_retention_days"]; ok {
+		if n, err := parseInt(v); err == nil {
+			cfg.AuditRetentionDays = n
+		}
+	}
+	if v, ok := m["allow_managed_rules_only"]; ok {
+		cfg.AllowManagedRulesOnly = v == "true"
+	}
+	return cfg
+}
+
+func splitCSV(s string) []string {
+	parts := strings.Split(s, ",")
+	var result []string
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			result = append(result, p)
+		}
+	}
+	return result
+}
+
+func parseFloat(s string) (float64, error) {
+	var f float64
+	_, err := fmt.Sscanf(s, "%f", &f)
+	return f, err
+}
+
+func parseInt(s string) (int, error) {
+	var n int
+	_, err := fmt.Sscanf(s, "%d", &n)
+	return n, err
 }
 
 // SetUserSetting sets a user-level setting override.

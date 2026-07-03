@@ -94,9 +94,10 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
 
   const handlePlanConfirm = useCallback(() => {
     if (!plan) return;
-    confirmedPlanRef.current = plan;
+    const savedPlan = plan;
     clearState();
-    setPlan(plan);
+    confirmedPlanRef.current = savedPlan;
+    setPlan(savedPlan);
     setPhase('generating');
     phaseRef.current = 'generating';
 
@@ -106,7 +107,7 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
         symbol,
         timeframe,
         planMode: 'generate',
-        confirmedPlan: plan,
+        confirmedPlan: savedPlan,
       },
       makeCallbacks(),
     );

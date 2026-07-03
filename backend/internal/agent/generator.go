@@ -44,13 +44,17 @@ type Generator struct {
 	cache       *LLCache
 	memory      *MemoryStore
 	retrospect  *RetrospectAgent
+	hooks       *HookEngine
+	settings    *SettingsStore
 }
 
 // NewGenerator creates the strategy generation orchestrator.
-func NewGenerator(aiSvc *systemai.Service, log *zap.Logger, profiler *Profiler, interpreter *Interpreter, cache *LLCache, memory *MemoryStore) *Generator {
+func NewGenerator(aiSvc *systemai.Service, log *zap.Logger, profiler *Profiler, interpreter *Interpreter, cache *LLCache, memory *MemoryStore, hooks *HookEngine, settings *SettingsStore) *Generator {
 	return &Generator{
 		aiSvc: aiSvc, log: log, profiler: profiler, interpreter: interpreter, cache: cache, memory: memory,
 		retrospect: NewRetrospectAgent(aiSvc, memory, log),
+		hooks:      hooks,
+		settings:   settings,
 	}
 }
 
@@ -80,6 +84,20 @@ func (g *Generator) Generate(
 
 	result := &generateState{}
 	var estCostUSD float64
+
+	// Resolve managed settings for cost ceiling and max iterations (ADR-0025 §5.2).
+	effectiveCostCeiling := costCeilingUSD // fallback to default constant
+	effectiveMaxRetries := maxGenerateRetries
+	if g.settings != nil {
+		if rs, err := g.settings.ResolveSettings(ctx, userID); err == nil && rs.Loaded {
+			if rs.Managed.MaxCostCeilingUSD > 0 {
+				effectiveCostCeiling = rs.Managed.MaxCostCeilingUSD
+			}
+			if rs.Managed.MaxIterations > 0 {
+				effectiveMaxRetries = rs.Managed.MaxIterations
+			}
+		}
+	}
 
 	// streamOrAbort sends a chunk and returns immediately if the client disconnected.
 	streamOrAbort := func(chunk *antv1.AgentGenerateStrategyChunk) error {
@@ -147,13 +165,13 @@ func (g *Generator) Generate(
 		confirmedPlan = msg.ConfirmedPlan
 	}
 
-	for attempt := 1; attempt <= maxGenerateRetries; attempt++ {
-		// Cost ceiling check (ADR-0024 §D7)
-		if estCostUSD >= costCeilingUSD {
-			g.log.Warn("generator: cost ceiling exceeded, stopping", zap.Float64("est_cost", estCostUSD))
+	for attempt := 1; attempt <= effectiveMaxRetries; attempt++ {
+		// Cost ceiling check (ADR-0024 §D7, ADR-0025 §5.2)
+		if estCostUSD >= effectiveCostCeiling {
+			g.log.Warn("generator: cost ceiling exceeded, stopping", zap.Float64("est_cost", estCostUSD), zap.Float64("ceiling", effectiveCostCeiling))
 			_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{
 				Phase:    "done",
-				Error:    fmt.Sprintf("cost ceiling $%.2f exceeded (est $%.4f)", costCeilingUSD, estCostUSD),
+				Error:    fmt.Sprintf("cost ceiling $%.2f exceeded (est $%.4f)", effectiveCostCeiling, estCostUSD),
 				Attempts: int32(attempt - 1),
 			})
 			return nil
@@ -165,10 +183,10 @@ func (g *Generator) Generate(
 			if confirmedPlan != nil {
 				sysPrompt, userPrompt = buildGenerateFromPlanPrompt(msg, confirmedPlan, preProfile, sessionMem)
 			} else {
-				sysPrompt, userPrompt = buildGeneratePrompt(msg, preProfile)
+				sysPrompt, userPrompt = buildGeneratePrompt(msg, preProfile, sessionMem)
 			}
 		} else {
-			sysPrompt, userPrompt = buildGenerateRetryPrompt(msg, result.PythonSource, result.CompileError, result.BacktestError, preProfile)
+			sysPrompt, userPrompt = buildGenerateRetryPrompt(msg, result.PythonSource, result.CompileError, result.BacktestError, preProfile, sessionMem)
 		}
 
 		if err := streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "generating", Attempts: int32(attempt)}); err != nil {
@@ -253,7 +271,7 @@ func (g *Generator) Generate(
 		}
 		if profile == nil {
 			g.log.Warn("generator: post-profile degraded to nil after retries")
-			g.fireDegradationAlert(userID, "profile generation failed after retries")
+			g.fireDegradationAlert(ctx, userID, "profile generation failed after retries", stream)
 		}
 
 		// Analysis: retry max 2, degrade to template on failure (ADR-0024 §5.4).
@@ -271,7 +289,7 @@ func (g *Generator) Generate(
 			if analysis == nil {
 				analysis = degradedAnalysis(btProto)
 				g.log.Warn("generator: analysis degraded to template")
-				g.fireDegradationAlert(userID, "analysis generation failed after retries")
+				g.fireDegradationAlert(ctx, userID, "analysis generation failed after retries", stream)
 			}
 		}
 
@@ -296,8 +314,16 @@ func (g *Generator) Generate(
 			return err
 		}
 
-		// ── ADR-0025 §6.2: PostStrategyGeneration hook — retrospect Agent ──
-		if g.retrospect != nil {
+		// ── ADR-0025 §6.2: PostStrategyGeneration hook — fires retrospect Agent via HookEngine ──
+		if g.hooks != nil && g.hooks.HasHandlers(HookPostStrategyGen) {
+			go g.hooks.Fire(context.Background(), &HookContext{
+				Event:          HookPostStrategyGen,
+				UserID:         userID,
+				Profile:        profile,
+				BacktestResult: btProto,
+				Analysis:       analysis,
+			})
+		} else if g.retrospect != nil {
 			go g.retrospect.Run(context.Background(), userID, retrospectInput{
 				Message:        msg.Message,
 				Symbol:         msg.Symbol,
@@ -319,13 +345,19 @@ func (g *Generator) Generate(
 		PythonSource:   result.PythonSource,
 		CompileError:   result.CompileError,
 		BacktestError:  result.BacktestError,
-		Attempts:       int32(maxGenerateRetries),
-		Error:          "generation failed after " + fmt.Sprintf("%d", maxGenerateRetries) + " attempts",
+		Attempts:       int32(effectiveMaxRetries),
+		Error:          "generation failed after " + fmt.Sprintf("%d", effectiveMaxRetries) + " attempts",
 	}
 	_ = streamOrAbort(finalChunk)
 
-	// ── ADR-0025 §6.2: Retrospect on failure too ──
-	if g.retrospect != nil {
+	// ── ADR-0025 §6.2: Retrospect on failure too (via HookEngine if available) ──
+	if g.hooks != nil && g.hooks.HasHandlers(HookPostStrategyGen) {
+		go g.hooks.Fire(context.Background(), &HookContext{
+			Event:          HookPostStrategyGen,
+			UserID:         userID,
+			BacktestResult: &antv1.AgentBacktestResult{Success: false, Error: result.BacktestError},
+		})
+	} else if g.retrospect != nil {
 		go g.retrospect.Run(context.Background(), userID, retrospectInput{
 			Message:        msg.Message,
 			Symbol:         msg.Symbol,
@@ -375,45 +407,4 @@ func (g *Generator) generateProfileFromNL(
 	}
 
 	return parseProfileLines(resp), nil
-}
-
-// fireDegradationAlert fires the DegradationAlert hook (ADR-0025 §8) asynchronously.
-func (g *Generator) fireDegradationAlert(userID uuid.UUID, reason string) {
-	g.log.Warn("generator: degradation alert", zap.String("reason", reason))
-}
-
-// degradedAnalysis returns a template BacktestAnalysis when LLM analysis fails (ADR-0024 §5.4).
-func degradedAnalysis(r *antv1.AgentBacktestResult) *antv1.BacktestAnalysis {
-	summary := "Backtest completed. LLM analysis unavailable — see metrics above."
-	if r != nil && r.TotalTrades > 0 {
-		summary = fmt.Sprintf(
-			"Backtest completed with %d trades. Total return: %.2f%%, Max drawdown: %.2f%%, Win rate: %.1f%%. LLM analysis unavailable.",
-			r.TotalTrades, r.TotalReturn, r.MaxDrawdown, r.WinRate,
-		)
-	}
-	return &antv1.BacktestAnalysis{Summary: summary}
-}
-
-// generatePlan calls LLM to produce a structured StrategyPlan from NL + profile (ADR-0025 §3).
-func (g *Generator) generatePlan(
-	ctx context.Context,
-	userID uuid.UUID,
-	msg *antv1.AgentGenerateStrategyRequest,
-	profile *antv1.StrategyProfile,
-	sessionMem *SessionMemory,
-) (*antv1.StrategyPlan, error) {
-	userPrompt := buildPlanPrompt(msg, profile, msg.PlanFeedback, sessionMem)
-
-	llmCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-
-	resp, err := g.aiSvc.ChatCompletion(llmCtx, userID, []systemai.ChatMessage{
-		{Role: "system", Content: planSystemPrompt},
-		{Role: "user", Content: userPrompt},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("plan LLM call: %w", err)
-	}
-
-	return parsePlanResponse(resp), nil
 }

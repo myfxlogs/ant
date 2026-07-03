@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package ant.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// AdminAgentSettingsService manages ADR-0025 §5 tiered agent settings.
+// Admins manage the Managed tier (model whitelist, risk gates, permission rules, kill switch).
+service AdminAgentSettingsService {
+  // Get all managed settings (key-value pairs).
+  rpc GetManagedSettings(GetManagedSettingsRequest) returns (GetManagedSettingsResponse);
+  // Set a managed setting key-value pair.
+  rpc SetManagedSetting(SetManagedSettingRequest) returns (SetManagedSettingResponse);
+  // Delete a managed setting key.
+  rpc DeleteManagedSetting(DeleteManagedSettingRequest) returns (DeleteManagedSettingResponse);
+}
+
+// ── Managed Settings (ADR-0025 §5.2) ──────────────────────────────────────
+
+message GetManagedSettingsRequest {}
+
+message ManagedSettingEntry {
+  string key = 1;
+  string value = 2;
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+message GetManagedSettingsResponse {
+  repeated ManagedSettingEntry settings = 1;
+}
+
+message SetManagedSettingRequest {
+  string key = 1;
+  string value = 2;
+}
+
+message SetManagedSettingResponse {
+  bool success = 1;
+}
+
+message DeleteManagedSettingRequest {
+  string key = 1;
+}
+
+message DeleteManagedSettingResponse {
+  bool success = 1;
+}

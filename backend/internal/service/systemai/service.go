@@ -84,6 +84,7 @@ type Service struct {
 	walletChecker       func(ctx context.Context, userID uuid.UUID) error // pre-check before API call
 	gatewayProviderRepo *repository.SystemAIProviderRepository // optional: fallback for AI Gateway
 	cbDB                cbExecutor                             // optional: PG pool for persistent circuit breaker
+	modelFilter         func(ctx context.Context, userID uuid.UUID, model string) bool // optional: ADR-0025 §5.2 model whitelist
 }
 
 // SetUserRepo sets the user repository for AI primary model queries.
@@ -121,6 +122,13 @@ func (s *Service) SetPostCallBiller(fn PostCallBiller) {
 // SetGatewayProviderRepo sets an optional fallback provider repo for AI Gateway.
 func (s *Service) SetGatewayProviderRepo(repo *repository.SystemAIProviderRepository) {
 	s.gatewayProviderRepo = repo
+}
+
+// SetModelFilter sets an optional model whitelist filter (ADR-0025 §5.2).
+// When set, providers whose model is not in the whitelist are skipped during resolution.
+// Returns true if the model is allowed, false to filter it out.
+func (s *Service) SetModelFilter(fn func(ctx context.Context, userID uuid.UUID, model string) bool) {
+	s.modelFilter = fn
 }
 
 // aiFeatureKey is a context key for tagging AI calls with a feature name.

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Layout } from 'antd';
-import { HomeOutlined, HistoryOutlined, UnorderedListOutlined, CodeOutlined, ShopOutlined, SettingOutlined, ExperimentOutlined, RadarChartOutlined, DashboardOutlined, PieChartOutlined, WalletOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { HomeOutlined, HistoryOutlined, UnorderedListOutlined, CodeOutlined, ShopOutlined, SettingOutlined, ExperimentOutlined, RadarChartOutlined, DashboardOutlined, PieChartOutlined, WalletOutlined, ThunderboltOutlined, BookOutlined } from '@ant-design/icons';
 import { Outlet } from 'react-router-dom';
 import ContentContainer from '@/components/layout/ContentContainer';
 import { useTranslation } from 'react-i18next';
@@ -47,6 +47,7 @@ export default function MainLayout() {
         { key: '/strategy/live', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('menu.strategyLive', { defaultValue: 'Live Monitor' }) },
         { key: '/strategy/experiments', icon: <ExperimentOutlined size={20} stroke={1.5} />, label: t('menu.experiments') },
         { key: '/strategy/market-tools', icon: <RadarChartOutlined size={20} stroke={1.5} />, label: t('menu.marketTools') },
+        { key: '/strategy/memory', icon: <BookOutlined size={20} stroke={1.5} />, label: t('menu.agentMemory', { defaultValue: 'Agent Memory' }) },
       ],
     },
     { key: '/wallet', icon: <WalletOutlined size={20} stroke={1.5} />, label: t('menu.wallet') },
