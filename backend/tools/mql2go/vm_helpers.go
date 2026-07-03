@@ -99,6 +99,33 @@ func (vm *VM) compare(a, b interp.Value) int {
 	return ad.Cmp(bd)
 }
 
+// floorDiv implements Python floor division (//): result = floor(a / b).
+// Unlike Go's integer division (truncation toward zero), Python's // floors toward negative infinity.
+// -5 // 2 = -3 (Go: -5 / 2 = -2)
+func (vm *VM) floorDiv(a, b interp.Value) interp.Value {
+	// If either is decimal, use decimal arithmetic with Floor
+	if a.Kind == interp.ValDecimal || b.Kind == interp.ValDecimal {
+		ad := a.ToDecimal()
+		bd := b.ToDecimal()
+		if bd.IsZero() {
+			return interp.DecimalVal(decimal.Zero)
+		}
+		return interp.DecimalVal(ad.Div(bd).Floor())
+	}
+	// Integer floor division: floor(a/b)
+	ai := a.ToInt()
+	bi := b.ToInt()
+	if bi == 0 {
+		return interp.IntVal(0)
+	}
+	q := ai / bi
+	// If signs differ and there's a remainder, floor down by 1
+	if (ai < 0) != (bi < 0) && ai%bi != 0 {
+		q--
+	}
+	return interp.IntVal(q)
+}
+
 // ── Series access ────────────────────────────────────────────────────
 
 func (vm *VM) getSeries(name string, shift int32) interp.Value {

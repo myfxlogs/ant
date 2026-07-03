@@ -28,6 +28,7 @@ const (
 	OP_MUL
 	OP_DIV
 	OP_MOD
+	OP_FLOOR_DIV
 	OP_NEG
 
 	// Comparison
@@ -217,7 +218,7 @@ func opName(op Opcode) string {
 	names := []string{
 		"PUSH_CONST", "PUSH_VAR", "PUSH_GLOBAL", "STORE_VAR", "STORE_GLOBAL",
 		"POP", "DUP", "SWAP",
-		"ADD", "SUB", "MUL", "DIV", "MOD", "NEG",
+		"ADD", "SUB", "MUL", "DIV", "MOD", "FLOOR_DIV", "NEG",
 		"EQ", "NE", "LT", "LE", "GT", "GE",
 		"AND", "OR", "NOT",
 		"JMP", "JMP_IF_FALSE", "JMP_IF_TRUE",

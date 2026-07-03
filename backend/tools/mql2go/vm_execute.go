@@ -114,6 +114,10 @@ func (vm *VM) execute(ins Instruction) error {
 		b, a := vm.pop2()
 		vm.push(vm.arith(a, b, "%"))
 
+	case OP_FLOOR_DIV:
+		b, a := vm.pop2()
+		vm.push(vm.floorDiv(a, b))
+
 	case OP_NEG:
 		a := vm.pop()
 		if a.Kind == ValDecimal {

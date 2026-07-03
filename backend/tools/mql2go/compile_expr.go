@@ -176,6 +176,20 @@ func (c *astCompiler) compileExpr(e *interp.Expr) {
 		} else {
 			c.emit(OP_STORE_VAR, int32(slot), 0, 0)
 		}
+
+	case interp.ExprSeq:
+		// Evaluate all children in order; only the last leaves a value on stack.
+		for i := range e.Args {
+			if i < len(e.Args)-1 {
+				c.compileExpr(&e.Args[i])
+				// Stack-neutral expressions (decl, assignment) don't leave a value.
+				if !isStackNeutral(&e.Args[i]) {
+					c.emit(OP_POP, 0, 0, 0)
+				}
+			} else {
+				c.compileExpr(&e.Args[i])
+			}
+		}
 	}
 }
 
@@ -257,6 +271,15 @@ func (c *astCompiler) foldConstBinary(e *interp.Expr) (interp.Value, bool) {
 				return interp.NoneVal(), false
 			}
 			return interp.IntVal(ai % bi), true
+		case "//":
+			if bi == 0 {
+				return interp.NoneVal(), false
+			}
+			q := ai / bi
+			if (ai < 0) != (bi < 0) && ai%bi != 0 {
+				q--
+			}
+			return interp.IntVal(q), true
 		case "==":
 			return interp.BoolVal(ai == bi), true
 		case "!=":
@@ -291,6 +314,11 @@ func (c *astCompiler) foldConstBinary(e *interp.Expr) (interp.Value, bool) {
 			return interp.NoneVal(), false
 		}
 		return interp.DecimalVal(ad.Mod(bd)), true
+	case "//":
+		if bd.IsZero() {
+			return interp.NoneVal(), false
+		}
+		return interp.DecimalVal(ad.Div(bd).Floor()), true
 	case "==":
 		return interp.BoolVal(a.Equal(b)), true
 	case "!=":
@@ -389,6 +417,8 @@ func (c *astCompiler) binaryOp(op string) Opcode {
 		return OP_MUL
 	case "/":
 		return OP_DIV
+	case "//":
+		return OP_FLOOR_DIV
 	case "%":
 		return OP_MOD
 	case "==":
@@ -419,6 +449,8 @@ func (c *astCompiler) compoundAssignOp(op string) Opcode {
 		return OP_MUL
 	case "/=":
 		return OP_DIV
+	case "//=":
+		return OP_FLOOR_DIV
 	case "%=":
 		return OP_MOD
 	default:

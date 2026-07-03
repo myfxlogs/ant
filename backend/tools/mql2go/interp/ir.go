@@ -34,6 +34,7 @@ const (
 	ExprAssignment                  // Name + Args[0]: a = b
 	ExprDecl                        // Name + Args[0]: name := value (declaration)
 	ExprCompoundAssign              // Name + Op + Args[0]: a += b
+	ExprSeq                         // Args: evaluate all in order, return last result
 )
 
 // Statement is a pure Go statement tree node.
