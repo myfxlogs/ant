@@ -73,7 +73,7 @@ const (
 
 // IR is the compiled representation of an MQL EA.
 type IR struct {
-	Version           string              // "mql4" or "mql5"
+	Version           string              // "mql4" | "mql5" | "python"
 	OnInit            []Statement         // OnInit body (variable initialization + EventSetTimer)
 	OnBar             []Statement         // OnBar body
 	OnTick            []Statement         // OnTick body

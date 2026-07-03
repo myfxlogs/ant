@@ -40,43 +40,6 @@ type BridgeResult struct {
 	BacktestError string
 }
 
-// translateBlindSpot calls LLM to translate MQL with blind spots into Python subset.
-// ADR-0024: "盲区桥接 prompt + Agent 循环编排"
-func (b *Bridge) translateBlindSpot(
-	ctx context.Context,
-	uid uuid.UUID,
-	mqlSource string,
-	coverage *mql2go.CoverageResult,
-	profile *antv1.StrategyProfile,
-) (*BridgeResult, error) {
-	userPrompt := buildBridgeUserPrompt(mqlSource, coverage, profile)
-
-	// Check cache
-	if b.cache != nil {
-		if cached, ok := b.cache.Get(mqlSource, userPrompt); ok {
-			return parseBridgeResponse(cached), nil
-		}
-	}
-
-	// LLM call timeout (per ADR §5.3: 30s)
-	llmCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-
-	resp, err := b.aiSvc.ChatCompletion(llmCtx, uid, []systemai.ChatMessage{
-		{Role: "system", Content: bridgeSystemPrompt},
-		{Role: "user", Content: userPrompt},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("bridge LLM call: %w", err)
-	}
-
-	if b.cache != nil {
-		b.cache.Set(mqlSource, userPrompt, resp)
-	}
-
-	return parseBridgeResponse(resp), nil
-}
-
 const maxBridgeRetries = 3
 
 // BacktestValidator runs a backtest on the already-compiled Python runner to verify runtime correctness.
@@ -102,45 +65,49 @@ func (b *Bridge) TranslateWithRetry(
 		return nil, fmt.Errorf("parse user id: %w", err)
 	}
 
-	result, err := b.translateBlindSpot(ctx, uid, mqlSource, coverage, profile)
-	if err != nil {
-		return nil, err
-	}
-	result.Attempts = 1
-
-	// Verify: compile + coverage + backtest
-	if ok := b.verifyBridgeResult(result, coverage, validateBacktest); ok {
-		return result, nil
-	}
-
-	// Retry loop: feed compile/backtest error back to LLM
-	for attempt := 2; attempt <= maxBridgeRetries; attempt++ {
-		result.Attempts = attempt
-		errorMsg := result.CompileError
-		if result.BacktestError != "" {
-			errorMsg = result.BacktestError
+	// Unified retry loop: initial call + retries in one path.
+	// ADR-0024 §5.4: max 3 retries total (3 attempts = 1 initial + 2 retries).
+	// LLM transient failures are also retried, not fatal.
+	var result *BridgeResult
+	var lastCompileError string
+	for attempt := 1; attempt <= maxBridgeRetries; attempt++ {
+		// Build prompt: original for attempt 1, error-feedback for retries
+		var userPrompt string
+		if attempt == 1 {
+			userPrompt = buildBridgeUserPrompt(mqlSource, coverage, profile)
+		} else {
+			userPrompt = buildBridgeRetryPrompt(mqlSource, result.PythonSource, lastCompileError, profile)
 		}
-		b.log.Info("bridge retry",
-			zap.Int("attempt", attempt),
-			zap.String("error", truncate(errorMsg, 200)))
 
-		retryPrompt := buildBridgeRetryPrompt(mqlSource, result.PythonSource, errorMsg, profile)
-		// LLM call timeout
+		// LLM call with timeout (30s per ADR §5.3)
 		llmCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		resp, llmErr := b.aiSvc.ChatCompletion(llmCtx, uid, []systemai.ChatMessage{
 			{Role: "system", Content: bridgeSystemPrompt},
-			{Role: "user", Content: retryPrompt},
+			{Role: "user", Content: userPrompt},
 		})
 		cancel()
 		if llmErr != nil {
-			return nil, fmt.Errorf("bridge LLM retry %d: %w", attempt, llmErr)
+			b.log.Warn("bridge LLM call failed, retrying",
+				zap.Int("attempt", attempt),
+				zap.Error(llmErr))
+			continue // transient LLM failure → next attempt, not fatal
 		}
+
 		result = parseBridgeResponse(resp)
 		result.Attempts = attempt
+		lastCompileError = result.CompileError
+		if result.BacktestError != "" {
+			lastCompileError = result.BacktestError
+		}
 
+		// Verify: compile + coverage + backtest
 		if b.verifyBridgeResult(result, coverage, validateBacktest) {
 			return result, nil
 		}
+
+		b.log.Info("bridge retry",
+			zap.Int("attempt", attempt),
+			zap.String("error", truncate(lastCompileError, 200)))
 	}
 
 	result.Status = "bridge_failed"

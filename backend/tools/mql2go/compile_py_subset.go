@@ -233,7 +233,7 @@ var forbiddenNodeTypes = map[string]bool{
 	"type_alias_statement": true,
 	// Python 2 print statement — not supported (print is also in forbiddenBuiltins)
 	"print_statement":      true,
-	// Multiple inheritance is allowed but we check separately
+	// Multiple inheritance is rejected at compile time (ADR-0024 D3) — see compileClass
 }
 
 // isComplexLiteral checks if a line contains a complex number literal (e.g. 3j, 3.14j, 3J).

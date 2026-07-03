@@ -29,7 +29,7 @@ Rules:
 - Output ONLY the KEY: value lines, no markdown, no explanations`
 
 // buildPlanPrompt constructs the user prompt for plan generation.
-func buildPlanPrompt(msg *antv1.AgentGenerateStrategyRequest, profile *antv1.StrategyProfile, feedback string) string {
+func buildPlanPrompt(msg *antv1.AgentGenerateStrategyRequest, profile *antv1.StrategyProfile, feedback string, mem *SessionMemory) string {
 	var sb strings.Builder
 	sb.WriteString("## Strategy Request\n")
 	sb.WriteString(msg.Message)
@@ -38,6 +38,10 @@ func buildPlanPrompt(msg *antv1.AgentGenerateStrategyRequest, profile *antv1.Str
 	writeProfileToPrompt(&sb, profile, "## Strategy Profile (AI-generated, for reference)\n")
 	if profile != nil {
 		sb.WriteString("\n")
+	}
+
+	if mem != nil {
+		mem.InjectIntoPrompt(&sb)
 	}
 
 	writeRequestContext(&sb, msg)
@@ -85,7 +89,7 @@ func parsePlanResponse(raw string) *antv1.StrategyPlan {
 }
 
 // buildGenerateFromPlanPrompt constructs the user prompt for code generation from a confirmed plan.
-func buildGenerateFromPlanPrompt(msg *antv1.AgentGenerateStrategyRequest, plan *antv1.StrategyPlan, profile *antv1.StrategyProfile) (string, string) {
+func buildGenerateFromPlanPrompt(msg *antv1.AgentGenerateStrategyRequest, plan *antv1.StrategyPlan, profile *antv1.StrategyProfile, mem *SessionMemory) (string, string) {
 	var sb strings.Builder
 	sb.WriteString("## Strategy Description\n")
 	sb.WriteString(msg.Message)
@@ -101,6 +105,10 @@ func buildGenerateFromPlanPrompt(msg *antv1.AgentGenerateStrategyRequest, plan *
 	writeProfileToPrompt(&sb, profile, "## Strategy Profile (use as guidance)\n")
 	if profile != nil {
 		sb.WriteString("\n")
+	}
+
+	if mem != nil {
+		mem.InjectIntoPrompt(&sb)
 	}
 
 	writeRequestContext(&sb, msg)

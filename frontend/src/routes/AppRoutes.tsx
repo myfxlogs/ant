@@ -28,6 +28,7 @@ const LogManagement = lazy(() => import('@/pages/logs/LogManagement'));
 const AutoTradingSettings = lazy(() => import('@/pages/auto-trading/AutoTradingSettings'));
 const StrategyExperimentPage = lazy(() => import('@/pages/strategy/StrategyExperimentPage'));
 const MarketToolsPage = lazy(() => import('@/pages/strategy/MarketToolsPage'));
+const MemoryPage = lazy(() => import('@/pages/strategy/MemoryPage'));
 const AlgoDashboard = lazy(() => import('@/pages/trading/AlgoDashboard'));
 const AnalyticsSummary = lazy(() => import('@/pages/analytics/Summary'));
 const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
@@ -80,6 +81,7 @@ const mainRoutes = (
     <Route path="strategy/market-tools" element={wrap(<MarketToolsPage />)} />
     <Route path="strategy/analysis" element={<Navigate to="/strategy/market-tools?tab=symbol" replace />} />
     <Route path="strategy/market-regime" element={<Navigate to="/strategy/market-tools?tab=regime" replace />} />
+    <Route path="strategy/memory" element={wrap(<MemoryPage />)} />
     <Route path="logs" element={wrap(<LogManagement />)} />
     <Route path="auto-trading" element={wrap(<AutoTradingSettings />)} />
     <Route path="trading/algos" element={wrap(<AlgoDashboard />)} />

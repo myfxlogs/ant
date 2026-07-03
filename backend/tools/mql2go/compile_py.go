@@ -97,6 +97,12 @@ func (c *pyCompiler) compileClass(ir *interp.IR, n *sitter.Node) {
 		return
 	}
 
+	// Multiple inheritance is prohibited (ADR-0024 D3)
+	if baseCount := c.countBases(n); baseCount > 1 {
+		panic(fmt.Sprintf("line %d: multiple inheritance not supported (%d bases), extend StrategyBase only",
+			n.StartPoint().Row+1, baseCount))
+	}
+
 	// Find class body (block)
 	body := c.findBlock(n)
 	if body == nil {

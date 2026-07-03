@@ -240,3 +240,34 @@ func (c *pyCompiler) compileArgsOrdered(n *sitter.Node, methodPath string) []int
 
 	return result
 }
+
+// rangeInit returns the init expression for a range-based for-loop.
+// Single-arg range(N): init i=0 (use 0, not N as the start value).
+// Two-arg range(M,N) and three-arg range(M,N,S): init i=M.
+func rangeInit(args []interp.Expr) interp.Expr {
+	if len(args) == 1 {
+		return interp.Expr{
+			Kind: interp.ExprLiteral,
+			Val:  interp.Value{Kind: interp.ValInt, Int: 0},
+		}
+	}
+	return args[0]
+}
+
+// countBases returns the number of base classes in a class definition.
+// Used to reject multiple inheritance (ADR-0024 D3 prohibits it).
+func (c *pyCompiler) countBases(n *sitter.Node) int {
+	count := 0
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "argument_list" {
+			for j := 0; j < int(child.NamedChildCount()); j++ {
+				gc := child.NamedChild(j)
+				if gc.Type() == "identifier" {
+					count++
+				}
+			}
+		}
+	}
+	return count
+}

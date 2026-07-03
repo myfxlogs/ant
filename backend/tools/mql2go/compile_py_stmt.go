@@ -172,7 +172,7 @@ func (c *pyCompiler) compileFor(n *sitter.Node) *interp.Statement {
 		Expr: &interp.Expr{
 			Kind: interp.ExprDecl,
 			Name: targetName,
-			Args: []interp.Expr{args[0]},
+			Args: []interp.Expr{rangeInit(args)},
 		},
 	}
 	if len(args) == 1 {

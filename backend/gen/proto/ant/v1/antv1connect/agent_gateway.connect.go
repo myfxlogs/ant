@@ -62,6 +62,30 @@ const (
 	// AgentGatewayServiceStoreExperienceProcedure is the fully-qualified name of the
 	// AgentGatewayService's StoreExperience RPC.
 	AgentGatewayServiceStoreExperienceProcedure = "/ant.v1.AgentGatewayService/StoreExperience"
+	// AgentGatewayServiceListMemoryProcedure is the fully-qualified name of the AgentGatewayService's
+	// ListMemory RPC.
+	AgentGatewayServiceListMemoryProcedure = "/ant.v1.AgentGatewayService/ListMemory"
+	// AgentGatewayServiceSaveUserTemplateProcedure is the fully-qualified name of the
+	// AgentGatewayService's SaveUserTemplate RPC.
+	AgentGatewayServiceSaveUserTemplateProcedure = "/ant.v1.AgentGatewayService/SaveUserTemplate"
+	// AgentGatewayServiceDeleteUserTemplateProcedure is the fully-qualified name of the
+	// AgentGatewayService's DeleteUserTemplate RPC.
+	AgentGatewayServiceDeleteUserTemplateProcedure = "/ant.v1.AgentGatewayService/DeleteUserTemplate"
+	// AgentGatewayServiceDeleteAgentExperienceProcedure is the fully-qualified name of the
+	// AgentGatewayService's DeleteAgentExperience RPC.
+	AgentGatewayServiceDeleteAgentExperienceProcedure = "/ant.v1.AgentGatewayService/DeleteAgentExperience"
+	// AgentGatewayServiceGetAgentSettingsProcedure is the fully-qualified name of the
+	// AgentGatewayService's GetAgentSettings RPC.
+	AgentGatewayServiceGetAgentSettingsProcedure = "/ant.v1.AgentGatewayService/GetAgentSettings"
+	// AgentGatewayServiceSetUserSettingProcedure is the fully-qualified name of the
+	// AgentGatewayService's SetUserSetting RPC.
+	AgentGatewayServiceSetUserSettingProcedure = "/ant.v1.AgentGatewayService/SetUserSetting"
+	// AgentGatewayServiceDeleteUserSettingProcedure is the fully-qualified name of the
+	// AgentGatewayService's DeleteUserSetting RPC.
+	AgentGatewayServiceDeleteUserSettingProcedure = "/ant.v1.AgentGatewayService/DeleteUserSetting"
+	// AgentGatewayServiceGetCapabilitiesProcedure is the fully-qualified name of the
+	// AgentGatewayService's GetCapabilities RPC.
+	AgentGatewayServiceGetCapabilitiesProcedure = "/ant.v1.AgentGatewayService/GetCapabilities"
 )
 
 // AgentServiceClient is a client for the ant.v1.AgentService service.
@@ -250,6 +274,17 @@ type AgentGatewayServiceClient interface {
 	SearchExperience(context.Context, *connect.Request[v1.SearchExperienceRequest]) (*connect.Response[v1.SearchExperienceResponse], error)
 	// Agent stores an experience to the knowledge base.
 	StoreExperience(context.Context, *connect.Request[v1.StoreExperienceRequest]) (*connect.Response[v1.StoreExperienceResponse], error)
+	// ADR-0025 §4.4: Memory management — list/delete user templates and agent experiences.
+	ListMemory(context.Context, *connect.Request[v1.ListMemoryRequest]) (*connect.Response[v1.ListMemoryResponse], error)
+	SaveUserTemplate(context.Context, *connect.Request[v1.SaveUserTemplateRequest]) (*connect.Response[v1.SaveUserTemplateResponse], error)
+	DeleteUserTemplate(context.Context, *connect.Request[v1.DeleteUserTemplateRequest]) (*connect.Response[v1.DeleteUserTemplateResponse], error)
+	DeleteAgentExperience(context.Context, *connect.Request[v1.DeleteAgentExperienceRequest]) (*connect.Response[v1.DeleteAgentExperienceResponse], error)
+	// ADR-0025 §5: Settings management — get/set user and managed settings.
+	GetAgentSettings(context.Context, *connect.Request[v1.GetAgentSettingsRequest]) (*connect.Response[v1.GetAgentSettingsResponse], error)
+	SetUserSetting(context.Context, *connect.Request[v1.SetUserSettingRequest]) (*connect.Response[v1.SetUserSettingResponse], error)
+	DeleteUserSetting(context.Context, *connect.Request[v1.DeleteUserSettingRequest]) (*connect.Response[v1.DeleteUserSettingResponse], error)
+	// ADR-0025 §9: Capability permissions — list user capabilities.
+	GetCapabilities(context.Context, *connect.Request[v1.GetCapabilitiesRequest]) (*connect.Response[v1.GetCapabilitiesResponse], error)
 }
 
 // NewAgentGatewayServiceClient constructs a client for the ant.v1.AgentGatewayService service. By
@@ -287,15 +322,71 @@ func NewAgentGatewayServiceClient(httpClient connect.HTTPClient, baseURL string,
 			connect.WithSchema(agentGatewayServiceMethods.ByName("StoreExperience")),
 			connect.WithClientOptions(opts...),
 		),
+		listMemory: connect.NewClient[v1.ListMemoryRequest, v1.ListMemoryResponse](
+			httpClient,
+			baseURL+AgentGatewayServiceListMemoryProcedure,
+			connect.WithSchema(agentGatewayServiceMethods.ByName("ListMemory")),
+			connect.WithClientOptions(opts...),
+		),
+		saveUserTemplate: connect.NewClient[v1.SaveUserTemplateRequest, v1.SaveUserTemplateResponse](
+			httpClient,
+			baseURL+AgentGatewayServiceSaveUserTemplateProcedure,
+			connect.WithSchema(agentGatewayServiceMethods.ByName("SaveUserTemplate")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteUserTemplate: connect.NewClient[v1.DeleteUserTemplateRequest, v1.DeleteUserTemplateResponse](
+			httpClient,
+			baseURL+AgentGatewayServiceDeleteUserTemplateProcedure,
+			connect.WithSchema(agentGatewayServiceMethods.ByName("DeleteUserTemplate")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteAgentExperience: connect.NewClient[v1.DeleteAgentExperienceRequest, v1.DeleteAgentExperienceResponse](
+			httpClient,
+			baseURL+AgentGatewayServiceDeleteAgentExperienceProcedure,
+			connect.WithSchema(agentGatewayServiceMethods.ByName("DeleteAgentExperience")),
+			connect.WithClientOptions(opts...),
+		),
+		getAgentSettings: connect.NewClient[v1.GetAgentSettingsRequest, v1.GetAgentSettingsResponse](
+			httpClient,
+			baseURL+AgentGatewayServiceGetAgentSettingsProcedure,
+			connect.WithSchema(agentGatewayServiceMethods.ByName("GetAgentSettings")),
+			connect.WithClientOptions(opts...),
+		),
+		setUserSetting: connect.NewClient[v1.SetUserSettingRequest, v1.SetUserSettingResponse](
+			httpClient,
+			baseURL+AgentGatewayServiceSetUserSettingProcedure,
+			connect.WithSchema(agentGatewayServiceMethods.ByName("SetUserSetting")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteUserSetting: connect.NewClient[v1.DeleteUserSettingRequest, v1.DeleteUserSettingResponse](
+			httpClient,
+			baseURL+AgentGatewayServiceDeleteUserSettingProcedure,
+			connect.WithSchema(agentGatewayServiceMethods.ByName("DeleteUserSetting")),
+			connect.WithClientOptions(opts...),
+		),
+		getCapabilities: connect.NewClient[v1.GetCapabilitiesRequest, v1.GetCapabilitiesResponse](
+			httpClient,
+			baseURL+AgentGatewayServiceGetCapabilitiesProcedure,
+			connect.WithSchema(agentGatewayServiceMethods.ByName("GetCapabilities")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // agentGatewayServiceClient implements AgentGatewayServiceClient.
 type agentGatewayServiceClient struct {
-	submitStrategy   *connect.Client[v1.SubmitStrategyRequest, v1.SubmitStrategyResponse]
-	generateStrategy *connect.Client[v1.AgentGenerateStrategyRequest, v1.AgentGenerateStrategyChunk]
-	searchExperience *connect.Client[v1.SearchExperienceRequest, v1.SearchExperienceResponse]
-	storeExperience  *connect.Client[v1.StoreExperienceRequest, v1.StoreExperienceResponse]
+	submitStrategy        *connect.Client[v1.SubmitStrategyRequest, v1.SubmitStrategyResponse]
+	generateStrategy      *connect.Client[v1.AgentGenerateStrategyRequest, v1.AgentGenerateStrategyChunk]
+	searchExperience      *connect.Client[v1.SearchExperienceRequest, v1.SearchExperienceResponse]
+	storeExperience       *connect.Client[v1.StoreExperienceRequest, v1.StoreExperienceResponse]
+	listMemory            *connect.Client[v1.ListMemoryRequest, v1.ListMemoryResponse]
+	saveUserTemplate      *connect.Client[v1.SaveUserTemplateRequest, v1.SaveUserTemplateResponse]
+	deleteUserTemplate    *connect.Client[v1.DeleteUserTemplateRequest, v1.DeleteUserTemplateResponse]
+	deleteAgentExperience *connect.Client[v1.DeleteAgentExperienceRequest, v1.DeleteAgentExperienceResponse]
+	getAgentSettings      *connect.Client[v1.GetAgentSettingsRequest, v1.GetAgentSettingsResponse]
+	setUserSetting        *connect.Client[v1.SetUserSettingRequest, v1.SetUserSettingResponse]
+	deleteUserSetting     *connect.Client[v1.DeleteUserSettingRequest, v1.DeleteUserSettingResponse]
+	getCapabilities       *connect.Client[v1.GetCapabilitiesRequest, v1.GetCapabilitiesResponse]
 }
 
 // SubmitStrategy calls ant.v1.AgentGatewayService.SubmitStrategy.
@@ -318,6 +409,46 @@ func (c *agentGatewayServiceClient) StoreExperience(ctx context.Context, req *co
 	return c.storeExperience.CallUnary(ctx, req)
 }
 
+// ListMemory calls ant.v1.AgentGatewayService.ListMemory.
+func (c *agentGatewayServiceClient) ListMemory(ctx context.Context, req *connect.Request[v1.ListMemoryRequest]) (*connect.Response[v1.ListMemoryResponse], error) {
+	return c.listMemory.CallUnary(ctx, req)
+}
+
+// SaveUserTemplate calls ant.v1.AgentGatewayService.SaveUserTemplate.
+func (c *agentGatewayServiceClient) SaveUserTemplate(ctx context.Context, req *connect.Request[v1.SaveUserTemplateRequest]) (*connect.Response[v1.SaveUserTemplateResponse], error) {
+	return c.saveUserTemplate.CallUnary(ctx, req)
+}
+
+// DeleteUserTemplate calls ant.v1.AgentGatewayService.DeleteUserTemplate.
+func (c *agentGatewayServiceClient) DeleteUserTemplate(ctx context.Context, req *connect.Request[v1.DeleteUserTemplateRequest]) (*connect.Response[v1.DeleteUserTemplateResponse], error) {
+	return c.deleteUserTemplate.CallUnary(ctx, req)
+}
+
+// DeleteAgentExperience calls ant.v1.AgentGatewayService.DeleteAgentExperience.
+func (c *agentGatewayServiceClient) DeleteAgentExperience(ctx context.Context, req *connect.Request[v1.DeleteAgentExperienceRequest]) (*connect.Response[v1.DeleteAgentExperienceResponse], error) {
+	return c.deleteAgentExperience.CallUnary(ctx, req)
+}
+
+// GetAgentSettings calls ant.v1.AgentGatewayService.GetAgentSettings.
+func (c *agentGatewayServiceClient) GetAgentSettings(ctx context.Context, req *connect.Request[v1.GetAgentSettingsRequest]) (*connect.Response[v1.GetAgentSettingsResponse], error) {
+	return c.getAgentSettings.CallUnary(ctx, req)
+}
+
+// SetUserSetting calls ant.v1.AgentGatewayService.SetUserSetting.
+func (c *agentGatewayServiceClient) SetUserSetting(ctx context.Context, req *connect.Request[v1.SetUserSettingRequest]) (*connect.Response[v1.SetUserSettingResponse], error) {
+	return c.setUserSetting.CallUnary(ctx, req)
+}
+
+// DeleteUserSetting calls ant.v1.AgentGatewayService.DeleteUserSetting.
+func (c *agentGatewayServiceClient) DeleteUserSetting(ctx context.Context, req *connect.Request[v1.DeleteUserSettingRequest]) (*connect.Response[v1.DeleteUserSettingResponse], error) {
+	return c.deleteUserSetting.CallUnary(ctx, req)
+}
+
+// GetCapabilities calls ant.v1.AgentGatewayService.GetCapabilities.
+func (c *agentGatewayServiceClient) GetCapabilities(ctx context.Context, req *connect.Request[v1.GetCapabilitiesRequest]) (*connect.Response[v1.GetCapabilitiesResponse], error) {
+	return c.getCapabilities.CallUnary(ctx, req)
+}
+
 // AgentGatewayServiceHandler is an implementation of the ant.v1.AgentGatewayService service.
 type AgentGatewayServiceHandler interface {
 	// Agent submits strategy source code, triggers compile + backtest.
@@ -330,6 +461,17 @@ type AgentGatewayServiceHandler interface {
 	SearchExperience(context.Context, *connect.Request[v1.SearchExperienceRequest]) (*connect.Response[v1.SearchExperienceResponse], error)
 	// Agent stores an experience to the knowledge base.
 	StoreExperience(context.Context, *connect.Request[v1.StoreExperienceRequest]) (*connect.Response[v1.StoreExperienceResponse], error)
+	// ADR-0025 §4.4: Memory management — list/delete user templates and agent experiences.
+	ListMemory(context.Context, *connect.Request[v1.ListMemoryRequest]) (*connect.Response[v1.ListMemoryResponse], error)
+	SaveUserTemplate(context.Context, *connect.Request[v1.SaveUserTemplateRequest]) (*connect.Response[v1.SaveUserTemplateResponse], error)
+	DeleteUserTemplate(context.Context, *connect.Request[v1.DeleteUserTemplateRequest]) (*connect.Response[v1.DeleteUserTemplateResponse], error)
+	DeleteAgentExperience(context.Context, *connect.Request[v1.DeleteAgentExperienceRequest]) (*connect.Response[v1.DeleteAgentExperienceResponse], error)
+	// ADR-0025 §5: Settings management — get/set user and managed settings.
+	GetAgentSettings(context.Context, *connect.Request[v1.GetAgentSettingsRequest]) (*connect.Response[v1.GetAgentSettingsResponse], error)
+	SetUserSetting(context.Context, *connect.Request[v1.SetUserSettingRequest]) (*connect.Response[v1.SetUserSettingResponse], error)
+	DeleteUserSetting(context.Context, *connect.Request[v1.DeleteUserSettingRequest]) (*connect.Response[v1.DeleteUserSettingResponse], error)
+	// ADR-0025 §9: Capability permissions — list user capabilities.
+	GetCapabilities(context.Context, *connect.Request[v1.GetCapabilitiesRequest]) (*connect.Response[v1.GetCapabilitiesResponse], error)
 }
 
 // NewAgentGatewayServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -363,6 +505,54 @@ func NewAgentGatewayServiceHandler(svc AgentGatewayServiceHandler, opts ...conne
 		connect.WithSchema(agentGatewayServiceMethods.ByName("StoreExperience")),
 		connect.WithHandlerOptions(opts...),
 	)
+	agentGatewayServiceListMemoryHandler := connect.NewUnaryHandler(
+		AgentGatewayServiceListMemoryProcedure,
+		svc.ListMemory,
+		connect.WithSchema(agentGatewayServiceMethods.ByName("ListMemory")),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentGatewayServiceSaveUserTemplateHandler := connect.NewUnaryHandler(
+		AgentGatewayServiceSaveUserTemplateProcedure,
+		svc.SaveUserTemplate,
+		connect.WithSchema(agentGatewayServiceMethods.ByName("SaveUserTemplate")),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentGatewayServiceDeleteUserTemplateHandler := connect.NewUnaryHandler(
+		AgentGatewayServiceDeleteUserTemplateProcedure,
+		svc.DeleteUserTemplate,
+		connect.WithSchema(agentGatewayServiceMethods.ByName("DeleteUserTemplate")),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentGatewayServiceDeleteAgentExperienceHandler := connect.NewUnaryHandler(
+		AgentGatewayServiceDeleteAgentExperienceProcedure,
+		svc.DeleteAgentExperience,
+		connect.WithSchema(agentGatewayServiceMethods.ByName("DeleteAgentExperience")),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentGatewayServiceGetAgentSettingsHandler := connect.NewUnaryHandler(
+		AgentGatewayServiceGetAgentSettingsProcedure,
+		svc.GetAgentSettings,
+		connect.WithSchema(agentGatewayServiceMethods.ByName("GetAgentSettings")),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentGatewayServiceSetUserSettingHandler := connect.NewUnaryHandler(
+		AgentGatewayServiceSetUserSettingProcedure,
+		svc.SetUserSetting,
+		connect.WithSchema(agentGatewayServiceMethods.ByName("SetUserSetting")),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentGatewayServiceDeleteUserSettingHandler := connect.NewUnaryHandler(
+		AgentGatewayServiceDeleteUserSettingProcedure,
+		svc.DeleteUserSetting,
+		connect.WithSchema(agentGatewayServiceMethods.ByName("DeleteUserSetting")),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentGatewayServiceGetCapabilitiesHandler := connect.NewUnaryHandler(
+		AgentGatewayServiceGetCapabilitiesProcedure,
+		svc.GetCapabilities,
+		connect.WithSchema(agentGatewayServiceMethods.ByName("GetCapabilities")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.AgentGatewayService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AgentGatewayServiceSubmitStrategyProcedure:
@@ -373,6 +563,22 @@ func NewAgentGatewayServiceHandler(svc AgentGatewayServiceHandler, opts ...conne
 			agentGatewayServiceSearchExperienceHandler.ServeHTTP(w, r)
 		case AgentGatewayServiceStoreExperienceProcedure:
 			agentGatewayServiceStoreExperienceHandler.ServeHTTP(w, r)
+		case AgentGatewayServiceListMemoryProcedure:
+			agentGatewayServiceListMemoryHandler.ServeHTTP(w, r)
+		case AgentGatewayServiceSaveUserTemplateProcedure:
+			agentGatewayServiceSaveUserTemplateHandler.ServeHTTP(w, r)
+		case AgentGatewayServiceDeleteUserTemplateProcedure:
+			agentGatewayServiceDeleteUserTemplateHandler.ServeHTTP(w, r)
+		case AgentGatewayServiceDeleteAgentExperienceProcedure:
+			agentGatewayServiceDeleteAgentExperienceHandler.ServeHTTP(w, r)
+		case AgentGatewayServiceGetAgentSettingsProcedure:
+			agentGatewayServiceGetAgentSettingsHandler.ServeHTTP(w, r)
+		case AgentGatewayServiceSetUserSettingProcedure:
+			agentGatewayServiceSetUserSettingHandler.ServeHTTP(w, r)
+		case AgentGatewayServiceDeleteUserSettingProcedure:
+			agentGatewayServiceDeleteUserSettingHandler.ServeHTTP(w, r)
+		case AgentGatewayServiceGetCapabilitiesProcedure:
+			agentGatewayServiceGetCapabilitiesHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -396,4 +602,36 @@ func (UnimplementedAgentGatewayServiceHandler) SearchExperience(context.Context,
 
 func (UnimplementedAgentGatewayServiceHandler) StoreExperience(context.Context, *connect.Request[v1.StoreExperienceRequest]) (*connect.Response[v1.StoreExperienceResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.StoreExperience is not implemented"))
+}
+
+func (UnimplementedAgentGatewayServiceHandler) ListMemory(context.Context, *connect.Request[v1.ListMemoryRequest]) (*connect.Response[v1.ListMemoryResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.ListMemory is not implemented"))
+}
+
+func (UnimplementedAgentGatewayServiceHandler) SaveUserTemplate(context.Context, *connect.Request[v1.SaveUserTemplateRequest]) (*connect.Response[v1.SaveUserTemplateResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.SaveUserTemplate is not implemented"))
+}
+
+func (UnimplementedAgentGatewayServiceHandler) DeleteUserTemplate(context.Context, *connect.Request[v1.DeleteUserTemplateRequest]) (*connect.Response[v1.DeleteUserTemplateResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.DeleteUserTemplate is not implemented"))
+}
+
+func (UnimplementedAgentGatewayServiceHandler) DeleteAgentExperience(context.Context, *connect.Request[v1.DeleteAgentExperienceRequest]) (*connect.Response[v1.DeleteAgentExperienceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.DeleteAgentExperience is not implemented"))
+}
+
+func (UnimplementedAgentGatewayServiceHandler) GetAgentSettings(context.Context, *connect.Request[v1.GetAgentSettingsRequest]) (*connect.Response[v1.GetAgentSettingsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.GetAgentSettings is not implemented"))
+}
+
+func (UnimplementedAgentGatewayServiceHandler) SetUserSetting(context.Context, *connect.Request[v1.SetUserSettingRequest]) (*connect.Response[v1.SetUserSettingResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.SetUserSetting is not implemented"))
+}
+
+func (UnimplementedAgentGatewayServiceHandler) DeleteUserSetting(context.Context, *connect.Request[v1.DeleteUserSettingRequest]) (*connect.Response[v1.DeleteUserSettingResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.DeleteUserSetting is not implemented"))
+}
+
+func (UnimplementedAgentGatewayServiceHandler) GetCapabilities(context.Context, *connect.Request[v1.GetCapabilitiesRequest]) (*connect.Response[v1.GetCapabilitiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.GetCapabilities is not implemented"))
 }

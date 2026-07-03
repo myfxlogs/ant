@@ -3,9 +3,10 @@ import { Input, Button, Space, Tag, Typography, Alert, Statistic, Row, Col, Prog
 import { ThunderboltOutlined, SendOutlined, LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { agentGenerateStrategyStream } from '@/client/agentGen';
-import type { AgentBacktestResult } from '@/gen/ant/v1/agent_gateway_pb';
+import type { AgentBacktestResult, StrategyPlan } from '@/gen/ant/v1/agent_gateway_pb';
 import type { StrategyProfile } from '@/gen/ant/v1/agent_profile_pb';
 import type { BacktestAnalysis } from '@/gen/ant/v1/agent_analysis_pb';
+import PlanCard from './PlanCard';
 import {
   GENERATING_KEY,
   DONE_KEY,
@@ -39,8 +40,12 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
   const [analysis, setAnalysis] = useState<BacktestAnalysis | null>(null);
   const [backtestError, setBacktestError] = useState('');
   const [error, setError] = useState('');
+  const [plan, setPlan] = useState<StrategyPlan | null>(null);
+  const [planRefining, setPlanRefining] = useState(false);
   const abortRef = useRef<(() => void) | null>(null);
   const phaseRef = useRef<Phase>('idle');
+  const lastMsgRef = useRef('');
+  const confirmedPlanRef = useRef<StrategyPlan | null>(null);
 
   const clearState = useCallback(() => {
     setStreamText('');
@@ -54,6 +59,9 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
     setAnalysis(null);
     setBacktestError('');
     setError('');
+    setPlan(null);
+    setPlanRefining(false);
+    confirmedPlanRef.current = null;
   }, []);
 
   const reset = useCallback(() => {
@@ -70,42 +78,86 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
     clearState();
     setPhase('planning');
     phaseRef.current = 'planning';
+    lastMsgRef.current = msg;
 
     const abort = agentGenerateStrategyStream(
       {
         message: msg,
         symbol,
         timeframe,
+        planMode: 'plan',
       },
-      {
-        onPhase: (p) => {
-          const next = p as Phase;
-          setPhase(next);
-          phaseRef.current = next;
-        },
-        onDelta: (d) => setStreamText((prev) => prev + d),
-        onPythonSource: (code) => {
-          setPythonCode(code);
-          onApply(code);
-        },
-        onCompileError: (err) => setCompileError(err),
-        onBacktestError: (err) => setBacktestError(err),
-        onCoverageScore: (score) => setCoverageScore(score),
-        onResult: (result) => setBtResult(result || null),
-        onProfile: (p) => {
-          if (phaseRef.current === 'planning' || phaseRef.current === 'idle') {
-            setPlanningProfile(p || null);
-          } else {
-            setFinalProfile(p || null);
-          }
-        },
-        onAnalysis: (a) => setAnalysis(a || null),
-        onAttempts: (n) => setAttempts(n),
-        onError: (e) => setError(e),
-      },
+      makeCallbacks(),
     );
     abortRef.current = abort;
   }, [userInput, symbol, timeframe, onApply]);
+
+  const handlePlanConfirm = useCallback(() => {
+    if (!plan) return;
+    confirmedPlanRef.current = plan;
+    clearState();
+    setPlan(plan);
+    setPhase('generating');
+    phaseRef.current = 'generating';
+
+    const abort = agentGenerateStrategyStream(
+      {
+        message: lastMsgRef.current,
+        symbol,
+        timeframe,
+        planMode: 'generate',
+        confirmedPlan: plan,
+      },
+      makeCallbacks(),
+    );
+    abortRef.current = abort;
+  }, [plan, symbol, timeframe, onApply]);
+
+  const handlePlanRefine = useCallback((feedback: string) => {
+    setPlanRefining(true);
+    const abort = agentGenerateStrategyStream(
+      {
+        message: lastMsgRef.current,
+        symbol,
+        timeframe,
+        planMode: 'plan',
+        planFeedback: feedback,
+      },
+      makeCallbacks(),
+    );
+    abortRef.current = abort;
+  }, [symbol, timeframe, onApply]);
+
+  const makeCallbacks = useCallback(() => ({
+    onPhase: (p: string) => {
+      const next = p as Phase;
+      setPhase(next);
+      phaseRef.current = next;
+    },
+    onDelta: (d: string) => setStreamText((prev) => prev + d),
+    onPythonSource: (code: string) => {
+      setPythonCode(code);
+      onApply(code);
+    },
+    onCompileError: (err: string) => setCompileError(err),
+    onBacktestError: (err: string) => setBacktestError(err),
+    onCoverageScore: (score: number) => setCoverageScore(score),
+    onResult: (result: AgentBacktestResult | null) => setBtResult(result || null),
+    onProfile: (p: StrategyProfile | null) => {
+      if (phaseRef.current === 'planning' || phaseRef.current === 'idle') {
+        setPlanningProfile(p || null);
+      } else {
+        setFinalProfile(p || null);
+      }
+    },
+    onAnalysis: (a: BacktestAnalysis | null) => setAnalysis(a || null),
+    onAttempts: (n: number) => setAttempts(n),
+    onError: (e: string) => setError(e),
+    onPlan: (p: StrategyPlan) => {
+      setPlan(p);
+      setPlanRefining(false);
+    },
+  }), [onApply]);
 
   const isBusy = phase !== 'idle' && phase !== 'done';
 
@@ -248,6 +300,16 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
       {error && (
         <Alert type="warning" showIcon closable style={{ marginBottom: 8 }}
           message={error} onClose={() => setError('')}
+        />
+      )}
+
+      {/* Plan Mode card (ADR-0025 §3) */}
+      {plan && phase === 'done' && !pythonCode && (
+        <PlanCard
+          plan={plan}
+          onConfirm={handlePlanConfirm}
+          onRefine={handlePlanRefine}
+          refining={planRefining}
         />
       )}
 

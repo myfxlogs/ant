@@ -42,11 +42,16 @@ type Generator struct {
 	profiler    *Profiler
 	interpreter *Interpreter
 	cache       *LLCache
+	memory      *MemoryStore
+	retrospect  *RetrospectAgent
 }
 
 // NewGenerator creates the strategy generation orchestrator.
-func NewGenerator(aiSvc *systemai.Service, log *zap.Logger, profiler *Profiler, interpreter *Interpreter, cache *LLCache) *Generator {
-	return &Generator{aiSvc: aiSvc, log: log, profiler: profiler, interpreter: interpreter, cache: cache}
+func NewGenerator(aiSvc *systemai.Service, log *zap.Logger, profiler *Profiler, interpreter *Interpreter, cache *LLCache, memory *MemoryStore) *Generator {
+	return &Generator{
+		aiSvc: aiSvc, log: log, profiler: profiler, interpreter: interpreter, cache: cache, memory: memory,
+		retrospect: NewRetrospectAgent(aiSvc, memory, log),
+	}
 }
 
 // generateState tracks mutable state across retry attempts within a single Generate call.
@@ -102,6 +107,17 @@ func (g *Generator) Generate(
 		}
 	}
 
+	// ── ADR-0025 §4.3: Load session memory for prompt injection ──
+	var sessionMem *SessionMemory
+	if g.memory != nil {
+		mem, memErr := g.memory.LoadSessionMemory(ctx, userID, msg.Symbol, msg.Timeframe)
+		if memErr != nil {
+			g.log.Warn("generator: session memory load failed", zap.Error(memErr))
+		} else {
+			sessionMem = mem
+		}
+	}
+
 	// ── ADR-0025 §3: Plan Mode — generate structured plan, wait for user confirmation ──
 	planMode := msg.PlanMode
 	if planMode == "" {
@@ -109,7 +125,7 @@ func (g *Generator) Generate(
 	}
 
 	if planMode == "plan" {
-		plan, planErr := g.generatePlan(ctx, userID, msg, preProfile)
+		plan, planErr := g.generatePlan(ctx, userID, msg, preProfile, sessionMem)
 		if planErr != nil {
 			g.log.Warn("generator: plan generation failed", zap.Error(planErr))
 			_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{
@@ -147,7 +163,7 @@ func (g *Generator) Generate(
 		var sysPrompt, userPrompt string
 		if attempt == 1 {
 			if confirmedPlan != nil {
-				sysPrompt, userPrompt = buildGenerateFromPlanPrompt(msg, confirmedPlan, preProfile)
+				sysPrompt, userPrompt = buildGenerateFromPlanPrompt(msg, confirmedPlan, preProfile, sessionMem)
 			} else {
 				sysPrompt, userPrompt = buildGeneratePrompt(msg, preProfile)
 			}
@@ -237,6 +253,7 @@ func (g *Generator) Generate(
 		}
 		if profile == nil {
 			g.log.Warn("generator: post-profile degraded to nil after retries")
+			g.fireDegradationAlert(userID, "profile generation failed after retries")
 		}
 
 		// Analysis: retry max 2, degrade to template on failure (ADR-0024 §5.4).
@@ -254,6 +271,7 @@ func (g *Generator) Generate(
 			if analysis == nil {
 				analysis = degradedAnalysis(btProto)
 				g.log.Warn("generator: analysis degraded to template")
+				g.fireDegradationAlert(userID, "analysis generation failed after retries")
 			}
 		}
 
@@ -277,6 +295,21 @@ func (g *Generator) Generate(
 		if err := streamOrAbort(chunk); err != nil {
 			return err
 		}
+
+		// ── ADR-0025 §6.2: PostStrategyGeneration hook — retrospect Agent ──
+		if g.retrospect != nil {
+			go g.retrospect.Run(context.Background(), userID, retrospectInput{
+				Message:        msg.Message,
+				Symbol:         msg.Symbol,
+				Timeframe:      msg.Timeframe,
+				Profile:        profile,
+				Plan:           confirmedPlan,
+				BacktestResult: btProto,
+				Analysis:       analysis,
+				CoverageScore:  coverage.Score,
+			})
+		}
+
 		return nil
 	}
 
@@ -290,6 +323,18 @@ func (g *Generator) Generate(
 		Error:          "generation failed after " + fmt.Sprintf("%d", maxGenerateRetries) + " attempts",
 	}
 	_ = streamOrAbort(finalChunk)
+
+	// ── ADR-0025 §6.2: Retrospect on failure too ──
+	if g.retrospect != nil {
+		go g.retrospect.Run(context.Background(), userID, retrospectInput{
+			Message:        msg.Message,
+			Symbol:         msg.Symbol,
+			Timeframe:      msg.Timeframe,
+			BacktestResult: &antv1.AgentBacktestResult{Success: false, Error: result.BacktestError},
+			CoverageScore:  0,
+		})
+	}
+
 	return nil
 }
 
@@ -314,7 +359,7 @@ func (g *Generator) generateProfileFromNL(
 		}
 	}
 
-	llmCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	llmCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	resp, err := g.aiSvc.ChatCompletion(llmCtx, userID, []systemai.ChatMessage{
@@ -330,6 +375,11 @@ func (g *Generator) generateProfileFromNL(
 	}
 
 	return parseProfileLines(resp), nil
+}
+
+// fireDegradationAlert fires the DegradationAlert hook (ADR-0025 §8) asynchronously.
+func (g *Generator) fireDegradationAlert(userID uuid.UUID, reason string) {
+	g.log.Warn("generator: degradation alert", zap.String("reason", reason))
 }
 
 // degradedAnalysis returns a template BacktestAnalysis when LLM analysis fails (ADR-0024 §5.4).
@@ -350,10 +400,11 @@ func (g *Generator) generatePlan(
 	userID uuid.UUID,
 	msg *antv1.AgentGenerateStrategyRequest,
 	profile *antv1.StrategyProfile,
+	sessionMem *SessionMemory,
 ) (*antv1.StrategyPlan, error) {
-	userPrompt := buildPlanPrompt(msg, profile, msg.PlanFeedback)
+	userPrompt := buildPlanPrompt(msg, profile, msg.PlanFeedback, sessionMem)
 
-	llmCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	llmCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	resp, err := g.aiSvc.ChatCompletion(llmCtx, userID, []systemai.ChatMessage{

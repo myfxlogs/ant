@@ -33,6 +33,20 @@ service AgentGatewayService {
 
   // Agent stores an experience to the knowledge base.
   rpc StoreExperience(StoreExperienceRequest) returns (StoreExperienceResponse);
+
+  // ADR-0025 §4.4: Memory management — list/delete user templates and agent experiences.
+  rpc ListMemory(ListMemoryRequest) returns (ListMemoryResponse);
+  rpc SaveUserTemplate(SaveUserTemplateRequest) returns (SaveUserTemplateResponse);
+  rpc DeleteUserTemplate(DeleteUserTemplateRequest) returns (DeleteUserTemplateResponse);
+  rpc DeleteAgentExperience(DeleteAgentExperienceRequest) returns (DeleteAgentExperienceResponse);
+
+  // ADR-0025 §5: Settings management — get/set user and managed settings.
+  rpc GetAgentSettings(GetAgentSettingsRequest) returns (GetAgentSettingsResponse);
+  rpc SetUserSetting(SetUserSettingRequest) returns (SetUserSettingResponse);
+  rpc DeleteUserSetting(DeleteUserSettingRequest) returns (DeleteUserSettingResponse);
+
+  // ADR-0025 §9: Capability permissions — list user capabilities.
+  rpc GetCapabilities(GetCapabilitiesRequest) returns (GetCapabilitiesResponse);
 }
 
 message AgentToken {
@@ -274,4 +288,91 @@ message AgentGenerateStrategyChunk {
   string error = 12;                      // non-fatal error message
   string backtest_error = 13;             // backtest error if backtest fails
   StrategyPlan plan = 14;                 // structured plan (planning phase, ADR-0025 §3)
+}
+
+// ── Memory Management (ADR-0025 §4.4) ────────────────────────────────────
+
+message UserTemplateEntry {
+  string id = 1;
+  string name = 2;
+  string content = 3;
+  int64 created_at = 4;
+  int64 updated_at = 5;
+}
+
+message ListMemoryRequest {}
+
+message ListMemoryResponse {
+  repeated UserTemplateEntry templates = 1;
+  repeated ExperienceEntry experiences = 2;
+}
+
+message SaveUserTemplateRequest {
+  string name = 1;
+  string content = 2;
+  string scope_json = 3;              // JSON string of scope (symbols, timeframes)
+}
+
+message SaveUserTemplateResponse {
+  bool success = 1;
+}
+
+message DeleteUserTemplateRequest {
+  string id = 1;
+}
+
+message DeleteUserTemplateResponse {
+  bool success = 1;
+}
+
+message DeleteAgentExperienceRequest {
+  string id = 1;
+}
+
+message DeleteAgentExperienceResponse {
+  bool success = 1;
+}
+
+// ── Settings Management (ADR-0025 §5) ────────────────────────────────────
+
+message GetAgentSettingsRequest {}
+
+message AgentSettingEntry {
+  string key = 1;
+  string value = 2;
+  string tier = 3;             // "default" | "user" | "managed"
+}
+
+message GetAgentSettingsResponse {
+  repeated AgentSettingEntry settings = 1;
+}
+
+message SetUserSettingRequest {
+  string key = 1;
+  string value = 2;
+}
+
+message SetUserSettingResponse {
+  bool success = 1;
+}
+
+message DeleteUserSettingRequest {
+  string key = 1;
+}
+
+message DeleteUserSettingResponse {
+  bool success = 1;
+}
+
+// ── Capability Permissions (ADR-0025 §9) ─────────────────────────────────
+
+message GetCapabilitiesRequest {}
+
+message CapabilityEntry {
+  string capability = 1;
+  bool allowed = 2;
+}
+
+message GetCapabilitiesResponse {
+  repeated CapabilityEntry capabilities = 1;
 }
