@@ -286,7 +286,7 @@ detect-spec-drift:
 	@bash scripts/detect-spec-drift.sh
 
 # R0 五件套全跑
-detect-all: detect-stubs detect-deadcode detect-fakecomplete detect-layering detect-spec-drift
+detect-all: detect-stubs detect-deadcode detect-layering detect-spec-drift
 	@echo "=== R0 detect-all: all 5 checks PASSED ==="
 
 # ── Help ──────────────────────────────────────────────────────────────

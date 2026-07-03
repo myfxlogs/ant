@@ -129,8 +129,9 @@ message AgentCapabilities {
 // ── AgentGatewayService messages ────────────────────────────────────────
 
 enum SubmitMode {
-  SUBMIT_SYNC = 0;   // 同步: 阻塞等待回测完成 (回测 <30s)
-  SUBMIT_ASYNC = 1;  // 异步: 立即返回 strategy_id (未实现)
+  SUBMIT_MODE_UNSPECIFIED = 0;
+  SUBMIT_MODE_SYNC = 1;   // 同步: 阻塞等待回测完成 (回测 <30s)
+  SUBMIT_MODE_ASYNC = 2;  // 异步: 立即返回 strategy_id (未实现)
 }
 
 message SubmitStrategyRequest {

@@ -71,7 +71,7 @@ func (s *GatewayServer) SubmitStrategy(
 	}
 
 	// SYNC only — async mode is Phase 3.
-	if msg.Mode == antv1.SubmitMode_SUBMIT_ASYNC {
+	if msg.Mode == antv1.SubmitMode_SUBMIT_MODE_ASYNC {
 		return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("async mode not yet supported"))
 	}
 
@@ -123,7 +123,7 @@ func (s *GatewayServer) SubmitStrategy(
 			StrategyId:    strategyID,
 			CompileSuccess: false,
 			CompileError:  err.Error(),
-			Mode:          antv1.SubmitMode_SUBMIT_SYNC,
+			Mode:          antv1.SubmitMode_SUBMIT_MODE_SYNC,
 		}), nil
 	}
 
@@ -231,7 +231,7 @@ func (s *GatewayServer) SubmitStrategy(
 	resp := &antv1.SubmitStrategyResponse{
 		StrategyId:          strategyID,
 		CompileSuccess:      true,
-		Mode:                antv1.SubmitMode_SUBMIT_SYNC,
+		Mode:                antv1.SubmitMode_SUBMIT_MODE_SYNC,
 		Profile:             profile,
 		Analysis:            analysis,
 		CoverageScore:       coverage.Score,

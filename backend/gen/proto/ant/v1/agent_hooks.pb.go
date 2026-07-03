@@ -25,31 +25,31 @@ const (
 type HookEventType int32
 
 const (
-	HookEventType_HOOK_EVENT_UNSPECIFIED              HookEventType = 0
-	HookEventType_HOOK_EVENT_PRE_STRATEGY_SUBMIT      HookEventType = 1
-	HookEventType_HOOK_EVENT_POST_BACKTEST            HookEventType = 2
-	HookEventType_HOOK_EVENT_PRE_LIVE_DEPLOY          HookEventType = 3
-	HookEventType_HOOK_EVENT_DEGRADATION_ALERT        HookEventType = 4
-	HookEventType_HOOK_EVENT_POST_STRATEGY_GENERATION HookEventType = 5
+	HookEventType_HOOK_EVENT_TYPE_UNSPECIFIED              HookEventType = 0
+	HookEventType_HOOK_EVENT_TYPE_PRE_STRATEGY_SUBMIT      HookEventType = 1
+	HookEventType_HOOK_EVENT_TYPE_POST_BACKTEST            HookEventType = 2
+	HookEventType_HOOK_EVENT_TYPE_PRE_LIVE_DEPLOY          HookEventType = 3
+	HookEventType_HOOK_EVENT_TYPE_DEGRADATION_ALERT        HookEventType = 4
+	HookEventType_HOOK_EVENT_TYPE_POST_STRATEGY_GENERATION HookEventType = 5
 )
 
 // Enum value maps for HookEventType.
 var (
 	HookEventType_name = map[int32]string{
-		0: "HOOK_EVENT_UNSPECIFIED",
-		1: "HOOK_EVENT_PRE_STRATEGY_SUBMIT",
-		2: "HOOK_EVENT_POST_BACKTEST",
-		3: "HOOK_EVENT_PRE_LIVE_DEPLOY",
-		4: "HOOK_EVENT_DEGRADATION_ALERT",
-		5: "HOOK_EVENT_POST_STRATEGY_GENERATION",
+		0: "HOOK_EVENT_TYPE_UNSPECIFIED",
+		1: "HOOK_EVENT_TYPE_PRE_STRATEGY_SUBMIT",
+		2: "HOOK_EVENT_TYPE_POST_BACKTEST",
+		3: "HOOK_EVENT_TYPE_PRE_LIVE_DEPLOY",
+		4: "HOOK_EVENT_TYPE_DEGRADATION_ALERT",
+		5: "HOOK_EVENT_TYPE_POST_STRATEGY_GENERATION",
 	}
 	HookEventType_value = map[string]int32{
-		"HOOK_EVENT_UNSPECIFIED":              0,
-		"HOOK_EVENT_PRE_STRATEGY_SUBMIT":      1,
-		"HOOK_EVENT_POST_BACKTEST":            2,
-		"HOOK_EVENT_PRE_LIVE_DEPLOY":          3,
-		"HOOK_EVENT_DEGRADATION_ALERT":        4,
-		"HOOK_EVENT_POST_STRATEGY_GENERATION": 5,
+		"HOOK_EVENT_TYPE_UNSPECIFIED":              0,
+		"HOOK_EVENT_TYPE_PRE_STRATEGY_SUBMIT":      1,
+		"HOOK_EVENT_TYPE_POST_BACKTEST":            2,
+		"HOOK_EVENT_TYPE_PRE_LIVE_DEPLOY":          3,
+		"HOOK_EVENT_TYPE_DEGRADATION_ALERT":        4,
+		"HOOK_EVENT_TYPE_POST_STRATEGY_GENERATION": 5,
 	}
 )
 
@@ -84,25 +84,25 @@ func (HookEventType) EnumDescriptor() ([]byte, []int) {
 type HookExecutionType int32
 
 const (
-	HookExecutionType_HOOK_EXEC_UNSPECIFIED HookExecutionType = 0
-	HookExecutionType_HOOK_EXEC_COMMAND     HookExecutionType = 1 // shell command, stdin=JSON, exit code 2 = abort
-	HookExecutionType_HOOK_EXEC_WEBHOOK     HookExecutionType = 2 // HTTP POST, {"allow": false} = abort
-	HookExecutionType_HOOK_EXEC_INTERNAL    HookExecutionType = 3 // Go function call (not configurable via RPC)
+	HookExecutionType_HOOK_EXECUTION_TYPE_UNSPECIFIED HookExecutionType = 0
+	HookExecutionType_HOOK_EXECUTION_TYPE_COMMAND     HookExecutionType = 1 // shell command, stdin=JSON, exit code 2 = abort
+	HookExecutionType_HOOK_EXECUTION_TYPE_WEBHOOK     HookExecutionType = 2 // HTTP POST, {"allow": false} = abort
+	HookExecutionType_HOOK_EXECUTION_TYPE_INTERNAL    HookExecutionType = 3 // Go function call (not configurable via RPC)
 )
 
 // Enum value maps for HookExecutionType.
 var (
 	HookExecutionType_name = map[int32]string{
-		0: "HOOK_EXEC_UNSPECIFIED",
-		1: "HOOK_EXEC_COMMAND",
-		2: "HOOK_EXEC_WEBHOOK",
-		3: "HOOK_EXEC_INTERNAL",
+		0: "HOOK_EXECUTION_TYPE_UNSPECIFIED",
+		1: "HOOK_EXECUTION_TYPE_COMMAND",
+		2: "HOOK_EXECUTION_TYPE_WEBHOOK",
+		3: "HOOK_EXECUTION_TYPE_INTERNAL",
 	}
 	HookExecutionType_value = map[string]int32{
-		"HOOK_EXEC_UNSPECIFIED": 0,
-		"HOOK_EXEC_COMMAND":     1,
-		"HOOK_EXEC_WEBHOOK":     2,
-		"HOOK_EXEC_INTERNAL":    3,
+		"HOOK_EXECUTION_TYPE_UNSPECIFIED": 0,
+		"HOOK_EXECUTION_TYPE_COMMAND":     1,
+		"HOOK_EXECUTION_TYPE_WEBHOOK":     2,
+		"HOOK_EXECUTION_TYPE_INTERNAL":    3,
 	}
 )
 
@@ -138,8 +138,8 @@ type HookConfigEntry struct {
 	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Event          HookEventType          `protobuf:"varint,2,opt,name=event,proto3,enum=ant.v1.HookEventType" json:"event,omitempty"`
 	Type           HookExecutionType      `protobuf:"varint,3,opt,name=type,proto3,enum=ant.v1.HookExecutionType" json:"type,omitempty"`
-	Command        string                 `protobuf:"bytes,4,opt,name=command,proto3" json:"command,omitempty"`                                      // for HOOK_EXEC_COMMAND
-	WebhookUrl     string                 `protobuf:"bytes,5,opt,name=webhook_url,json=webhookUrl,proto3" json:"webhook_url,omitempty"`              // for HOOK_EXEC_WEBHOOK
+	Command        string                 `protobuf:"bytes,4,opt,name=command,proto3" json:"command,omitempty"`                                      // for HOOK_EXECUTION_TYPE_COMMAND
+	WebhookUrl     string                 `protobuf:"bytes,5,opt,name=webhook_url,json=webhookUrl,proto3" json:"webhook_url,omitempty"`              // for HOOK_EXECUTION_TYPE_WEBHOOK
 	TimeoutSeconds int32                  `protobuf:"varint,6,opt,name=timeout_seconds,json=timeoutSeconds,proto3" json:"timeout_seconds,omitempty"` // default 10
 	Enabled        bool                   `protobuf:"varint,7,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	unknownFields  protoimpl.UnknownFields
@@ -187,14 +187,14 @@ func (x *HookConfigEntry) GetEvent() HookEventType {
 	if x != nil {
 		return x.Event
 	}
-	return HookEventType_HOOK_EVENT_UNSPECIFIED
+	return HookEventType_HOOK_EVENT_TYPE_UNSPECIFIED
 }
 
 func (x *HookConfigEntry) GetType() HookExecutionType {
 	if x != nil {
 		return x.Type
 	}
-	return HookExecutionType_HOOK_EXEC_UNSPECIFIED
+	return HookExecutionType_HOOK_EXECUTION_TYPE_UNSPECIFIED
 }
 
 func (x *HookConfigEntry) GetCommand() string {
@@ -351,14 +351,14 @@ func (x *SetHookConfigRequest) GetEvent() HookEventType {
 	if x != nil {
 		return x.Event
 	}
-	return HookEventType_HOOK_EVENT_UNSPECIFIED
+	return HookEventType_HOOK_EVENT_TYPE_UNSPECIFIED
 }
 
 func (x *SetHookConfigRequest) GetType() HookExecutionType {
 	if x != nil {
 		return x.Type
 	}
-	return HookExecutionType_HOOK_EXEC_UNSPECIFIED
+	return HookExecutionType_HOOK_EXECUTION_TYPE_UNSPECIFIED
 }
 
 func (x *SetHookConfigRequest) GetCommand() string {
@@ -560,19 +560,19 @@ const file_agent_hooks_proto_rawDesc = "" +
 	"\x17DeleteHookConfigRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"4\n" +
 	"\x18DeleteHookConfigResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess*\xd8\x01\n" +
-	"\rHookEventType\x12\x1a\n" +
-	"\x16HOOK_EVENT_UNSPECIFIED\x10\x00\x12\"\n" +
-	"\x1eHOOK_EVENT_PRE_STRATEGY_SUBMIT\x10\x01\x12\x1c\n" +
-	"\x18HOOK_EVENT_POST_BACKTEST\x10\x02\x12\x1e\n" +
-	"\x1aHOOK_EVENT_PRE_LIVE_DEPLOY\x10\x03\x12 \n" +
-	"\x1cHOOK_EVENT_DEGRADATION_ALERT\x10\x04\x12'\n" +
-	"#HOOK_EVENT_POST_STRATEGY_GENERATION\x10\x05*t\n" +
-	"\x11HookExecutionType\x12\x19\n" +
-	"\x15HOOK_EXEC_UNSPECIFIED\x10\x00\x12\x15\n" +
-	"\x11HOOK_EXEC_COMMAND\x10\x01\x12\x15\n" +
-	"\x11HOOK_EXEC_WEBHOOK\x10\x02\x12\x16\n" +
-	"\x12HOOK_EXEC_INTERNAL\x10\x032\x8c\x02\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess*\xf6\x01\n" +
+	"\rHookEventType\x12\x1f\n" +
+	"\x1bHOOK_EVENT_TYPE_UNSPECIFIED\x10\x00\x12'\n" +
+	"#HOOK_EVENT_TYPE_PRE_STRATEGY_SUBMIT\x10\x01\x12!\n" +
+	"\x1dHOOK_EVENT_TYPE_POST_BACKTEST\x10\x02\x12#\n" +
+	"\x1fHOOK_EVENT_TYPE_PRE_LIVE_DEPLOY\x10\x03\x12%\n" +
+	"!HOOK_EVENT_TYPE_DEGRADATION_ALERT\x10\x04\x12,\n" +
+	"(HOOK_EVENT_TYPE_POST_STRATEGY_GENERATION\x10\x05*\x9c\x01\n" +
+	"\x11HookExecutionType\x12#\n" +
+	"\x1fHOOK_EXECUTION_TYPE_UNSPECIFIED\x10\x00\x12\x1f\n" +
+	"\x1bHOOK_EXECUTION_TYPE_COMMAND\x10\x01\x12\x1f\n" +
+	"\x1bHOOK_EXECUTION_TYPE_WEBHOOK\x10\x02\x12 \n" +
+	"\x1cHOOK_EXECUTION_TYPE_INTERNAL\x10\x032\x8c\x02\n" +
 	"\x11AgentHooksService\x12R\n" +
 	"\x0fListHookConfigs\x12\x1e.ant.v1.ListHookConfigsRequest\x1a\x1f.ant.v1.ListHookConfigsResponse\x12L\n" +
 	"\rSetHookConfig\x12\x1c.ant.v1.SetHookConfigRequest\x1a\x1d.ant.v1.SetHookConfigResponse\x12U\n" +

@@ -25,19 +25,22 @@ const (
 type SubmitMode int32
 
 const (
-	SubmitMode_SUBMIT_SYNC  SubmitMode = 0 // 同步: 阻塞等待回测完成 (回测 <30s)
-	SubmitMode_SUBMIT_ASYNC SubmitMode = 1 // 异步: 立即返回 strategy_id (未实现)
+	SubmitMode_SUBMIT_MODE_UNSPECIFIED SubmitMode = 0
+	SubmitMode_SUBMIT_MODE_SYNC        SubmitMode = 1 // 同步: 阻塞等待回测完成 (回测 <30s)
+	SubmitMode_SUBMIT_MODE_ASYNC       SubmitMode = 2 // 异步: 立即返回 strategy_id (未实现)
 )
 
 // Enum value maps for SubmitMode.
 var (
 	SubmitMode_name = map[int32]string{
-		0: "SUBMIT_SYNC",
-		1: "SUBMIT_ASYNC",
+		0: "SUBMIT_MODE_UNSPECIFIED",
+		1: "SUBMIT_MODE_SYNC",
+		2: "SUBMIT_MODE_ASYNC",
 	}
 	SubmitMode_value = map[string]int32{
-		"SUBMIT_SYNC":  0,
-		"SUBMIT_ASYNC": 1,
+		"SUBMIT_MODE_UNSPECIFIED": 0,
+		"SUBMIT_MODE_SYNC":        1,
+		"SUBMIT_MODE_ASYNC":       2,
 	}
 )
 
@@ -905,7 +908,7 @@ func (x *SubmitStrategyRequest) GetMode() SubmitMode {
 	if x != nil {
 		return x.Mode
 	}
-	return SubmitMode_SUBMIT_SYNC
+	return SubmitMode_SUBMIT_MODE_UNSPECIFIED
 }
 
 type AgentBacktestConfig struct {
@@ -1125,7 +1128,7 @@ func (x *SubmitStrategyResponse) GetMode() SubmitMode {
 	if x != nil {
 		return x.Mode
 	}
-	return SubmitMode_SUBMIT_SYNC
+	return SubmitMode_SUBMIT_MODE_UNSPECIFIED
 }
 
 func (x *SubmitStrategyResponse) GetSemanticDiff() *SemanticDiff {
@@ -3385,11 +3388,12 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"capability\x12\x18\n" +
 	"\aallowed\x18\x02 \x01(\bR\aallowed\"V\n" +
 	"\x17GetCapabilitiesResponse\x12;\n" +
-	"\fcapabilities\x18\x01 \x03(\v2\x17.ant.v1.CapabilityEntryR\fcapabilities*/\n" +
+	"\fcapabilities\x18\x01 \x03(\v2\x17.ant.v1.CapabilityEntryR\fcapabilities*V\n" +
 	"\n" +
-	"SubmitMode\x12\x0f\n" +
-	"\vSUBMIT_SYNC\x10\x00\x12\x10\n" +
-	"\fSUBMIT_ASYNC\x10\x012\xa8\x03\n" +
+	"SubmitMode\x12\x1b\n" +
+	"\x17SUBMIT_MODE_UNSPECIFIED\x10\x00\x12\x14\n" +
+	"\x10SUBMIT_MODE_SYNC\x10\x01\x12\x15\n" +
+	"\x11SUBMIT_MODE_ASYNC\x10\x022\xa8\x03\n" +
 	"\fAgentService\x12R\n" +
 	"\x0fIssueAgentToken\x12\x1e.ant.v1.IssueAgentTokenRequest\x1a\x1f.ant.v1.IssueAgentTokenResponse\x12R\n" +
 	"\x0fListAgentTokens\x12\x1e.ant.v1.ListAgentTokensRequest\x1a\x1f.ant.v1.ListAgentTokensResponse\x12G\n" +

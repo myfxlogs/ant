@@ -37,7 +37,7 @@ export async function submitStrategy(input: SubmitStrategyInput) {
     language: input.language,
     params: input.params || {},
     backtestConfig: btCfg,
-    mode: SubmitMode.SUBMIT_SYNC,
+    mode: SubmitMode.SUBMIT_MODE_SYNC,
   });
 
   const resp = await agentGatewayClient.submitStrategy(req);

@@ -67,10 +67,10 @@ func (s *AgentHooksServer) SetHookConfig(
 	ctx context.Context,
 	req *connect.Request[antv1.SetHookConfigRequest],
 ) (*connect.Response[antv1.SetHookConfigResponse], error) {
-	if req.Msg.Event == antv1.HookEventType_HOOK_EVENT_UNSPECIFIED {
+	if req.Msg.Event == antv1.HookEventType_HOOK_EVENT_TYPE_UNSPECIFIED {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("event is required"))
 	}
-	if req.Msg.Type == antv1.HookExecutionType_HOOK_EXEC_UNSPECIFIED {
+	if req.Msg.Type == antv1.HookExecutionType_HOOK_EXECUTION_TYPE_UNSPECIFIED {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("type is required"))
 	}
 
@@ -160,15 +160,15 @@ func rowToProto(r hookConfigRow) *antv1.HookConfigEntry {
 
 func hookEventTypeToString(e antv1.HookEventType) string {
 	switch e {
-	case antv1.HookEventType_HOOK_EVENT_PRE_STRATEGY_SUBMIT:
+	case antv1.HookEventType_HOOK_EVENT_TYPE_PRE_STRATEGY_SUBMIT:
 		return "pre_strategy_submit"
-	case antv1.HookEventType_HOOK_EVENT_POST_BACKTEST:
+	case antv1.HookEventType_HOOK_EVENT_TYPE_POST_BACKTEST:
 		return "post_backtest"
-	case antv1.HookEventType_HOOK_EVENT_PRE_LIVE_DEPLOY:
+	case antv1.HookEventType_HOOK_EVENT_TYPE_PRE_LIVE_DEPLOY:
 		return "pre_live_deploy"
-	case antv1.HookEventType_HOOK_EVENT_DEGRADATION_ALERT:
+	case antv1.HookEventType_HOOK_EVENT_TYPE_DEGRADATION_ALERT:
 		return "degradation_alert"
-	case antv1.HookEventType_HOOK_EVENT_POST_STRATEGY_GENERATION:
+	case antv1.HookEventType_HOOK_EVENT_TYPE_POST_STRATEGY_GENERATION:
 		return "post_strategy_generation"
 	default:
 		return ""
@@ -178,27 +178,27 @@ func hookEventTypeToString(e antv1.HookEventType) string {
 func stringToHookEventType(s string) antv1.HookEventType {
 	switch s {
 	case "pre_strategy_submit":
-		return antv1.HookEventType_HOOK_EVENT_PRE_STRATEGY_SUBMIT
+		return antv1.HookEventType_HOOK_EVENT_TYPE_PRE_STRATEGY_SUBMIT
 	case "post_backtest":
-		return antv1.HookEventType_HOOK_EVENT_POST_BACKTEST
+		return antv1.HookEventType_HOOK_EVENT_TYPE_POST_BACKTEST
 	case "pre_live_deploy":
-		return antv1.HookEventType_HOOK_EVENT_PRE_LIVE_DEPLOY
+		return antv1.HookEventType_HOOK_EVENT_TYPE_PRE_LIVE_DEPLOY
 	case "degradation_alert":
-		return antv1.HookEventType_HOOK_EVENT_DEGRADATION_ALERT
+		return antv1.HookEventType_HOOK_EVENT_TYPE_DEGRADATION_ALERT
 	case "post_strategy_generation":
-		return antv1.HookEventType_HOOK_EVENT_POST_STRATEGY_GENERATION
+		return antv1.HookEventType_HOOK_EVENT_TYPE_POST_STRATEGY_GENERATION
 	default:
-		return antv1.HookEventType_HOOK_EVENT_UNSPECIFIED
+		return antv1.HookEventType_HOOK_EVENT_TYPE_UNSPECIFIED
 	}
 }
 
 func hookExecTypeToString(t antv1.HookExecutionType) string {
 	switch t {
-	case antv1.HookExecutionType_HOOK_EXEC_COMMAND:
+	case antv1.HookExecutionType_HOOK_EXECUTION_TYPE_COMMAND:
 		return "command"
-	case antv1.HookExecutionType_HOOK_EXEC_WEBHOOK:
+	case antv1.HookExecutionType_HOOK_EXECUTION_TYPE_WEBHOOK:
 		return "webhook"
-	case antv1.HookExecutionType_HOOK_EXEC_INTERNAL:
+	case antv1.HookExecutionType_HOOK_EXECUTION_TYPE_INTERNAL:
 		return "internal"
 	default:
 		return ""
@@ -208,12 +208,12 @@ func hookExecTypeToString(t antv1.HookExecutionType) string {
 func stringToHookExecType(s string) antv1.HookExecutionType {
 	switch s {
 	case "command":
-		return antv1.HookExecutionType_HOOK_EXEC_COMMAND
+		return antv1.HookExecutionType_HOOK_EXECUTION_TYPE_COMMAND
 	case "webhook":
-		return antv1.HookExecutionType_HOOK_EXEC_WEBHOOK
+		return antv1.HookExecutionType_HOOK_EXECUTION_TYPE_WEBHOOK
 	case "internal":
-		return antv1.HookExecutionType_HOOK_EXEC_INTERNAL
+		return antv1.HookExecutionType_HOOK_EXECUTION_TYPE_INTERNAL
 	default:
-		return antv1.HookExecutionType_HOOK_EXEC_UNSPECIFIED
+		return antv1.HookExecutionType_HOOK_EXECUTION_TYPE_UNSPECIFIED
 	}
 }
