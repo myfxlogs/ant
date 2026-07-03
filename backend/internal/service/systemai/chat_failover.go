@@ -331,6 +331,3 @@ func resolveModel(defaultModel string, models []string, providerID, primaryPID, 
 	}
 	return m
 }
-
-// extractJSONField extracts a string value for the given key from a JSON object.
-// Manual string parsing — avoids encoding/json (CLAUDE.md §0 prohibition).

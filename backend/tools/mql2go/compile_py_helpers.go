@@ -252,8 +252,6 @@ func rangeInit(args []interp.Expr) interp.Expr {
 	return args[0]
 }
 
-// findArgumentList returns the argument_list child of a call node, or nil.
-
 // countBases returns the number of base classes in a class definition.
 // Used to reject multiple inheritance (ADR-0024 D3 prohibits it).
 func (c *pyCompiler) countBases(n *sitter.Node) int {

@@ -4,14 +4,13 @@ import (
 	"context"
 	"errors"
 
+	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"connectrpc.com/connect"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/interceptor"
 )
-
 
 // authenticatedUser extracts and validates the user ID from the ConnectRPC context.
 func (s *GatewayServer) authenticatedUser(ctx context.Context) (uuid.UUID, error) {
@@ -36,7 +35,11 @@ func (s *GatewayServer) SearchExperience(
 		return nil, err
 	}
 
-entries, err := s.memory.SearchExperiences(ctx, uid, req.Msg.Query, req.Msg.Category, int(req.Msg.Limit))
+	if s.memory == nil {
+		return connect.NewResponse(&antv1.SearchExperienceResponse{}), nil
+	}
+
+	entries, err := s.memory.SearchExperiences(ctx, uid, req.Msg.Query, req.Msg.Category, int(req.Msg.Limit))
 	if err != nil {
 		s.log.Warn("SearchExperience failed", zap.Error(err))
 		return connect.NewResponse(&antv1.SearchExperienceResponse{}), nil
@@ -84,7 +87,11 @@ func (s *GatewayServer) ListMemory(
 		return nil, err
 	}
 
-templates, err := s.memory.ListUserTemplates(ctx, uid)
+	if s.memory == nil {
+		return connect.NewResponse(&antv1.ListMemoryResponse{}), nil
+	}
+
+	templates, err := s.memory.ListUserTemplates(ctx, uid)
 	if err != nil {
 		s.log.Warn("ListMemory: templates failed", zap.Error(err))
 	}
@@ -174,7 +181,11 @@ func (s *GatewayServer) GetAgentSettings(
 		return nil, err
 	}
 
-rs, err := s.settings.ResolveSettings(ctx, uid)
+	if s.settings == nil {
+		return connect.NewResponse(&antv1.GetAgentSettingsResponse{}), nil
+	}
+
+	rs, err := s.settings.ResolveSettings(ctx, uid)
 	if err != nil {
 		s.log.Warn("GetAgentSettings failed", zap.Error(err))
 		return connect.NewResponse(&antv1.GetAgentSettingsResponse{}), nil
@@ -245,7 +256,11 @@ func (s *GatewayServer) GetCapabilities(
 		return nil, err
 	}
 
-caps := s.permissions.CapabilitiesForUser(ctx, uid)
+	if s.permissions == nil {
+		return connect.NewResponse(&antv1.GetCapabilitiesResponse{}), nil
+	}
+
+	caps := s.permissions.CapabilitiesForUser(ctx, uid)
 	var entries []*antv1.CapabilityEntry
 	for cap, allowed := range caps {
 		entries = append(entries, &antv1.CapabilityEntry{
