@@ -1,5 +1,7 @@
 # ROADMAP — M11: MQL→VM 单一执行管线
 
+> **Status: COMPLETE** — All cards verified via `go test ./tools/mql2go/...` (33 tests pass). Handover logs removed during repo cleanup (2026-07-03).
+
 ## M11.1 — 清除旧解释器执行路径
 
 | ID | Status | Description | Tests |

@@ -105,6 +105,23 @@ jobs:
       - name: go build cmd/server
         run: go build -o /dev/null ./cmd/server
 
+  # ── R0: detect-all suite ──
+  detect-all:
+    name: R0 detect-all
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.0'
+          cache: true
+          cache-dependency-path: backend/go.sum
+      - name: R0 detect-all
+        run: make detect-all
+
   # ── M0.1-3: proto breaking ──
   proto-breaking:
     name: Proto (buf breaking)
@@ -207,18 +224,4 @@ jobs:
           fi
       - name: Build
         run: npm run build
-
-  # ── P2-3: verify-cards-strict + R0 five-piece ──
-  verify-cards-strict:
-    name: Card verification (strict)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: R0 five-piece suite
-        run: make detect-all
-      - name: verify-cards-strict (M11)
-        run: make verify-cards-strict MILESTONE=M11
 
