@@ -72,6 +72,49 @@ func CompileMQLCached(source string, cachedBytecode []byte) (runner *VMRunner, b
 	return r, data, nil
 }
 
+// CompilePython is a convenience function that compiles Python subset source to a VMRunner.
+// Pipeline: Python source → CST → IR → Bytecode → VMRunner
+// Safety: CompilePythonToIR enforces MaxSourceSize + subset validation + panic recovery.
+func CompilePython(source string) (runner *VMRunner, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("compile Python panic: %v", r)
+			runner = nil
+		}
+	}()
+	ir, err := CompilePythonToIR(source)
+	if err != nil {
+		return nil, fmt.Errorf("compile Python to IR: %w", err)
+	}
+	bc, err := CompileAST(ir)
+	if err != nil {
+		return nil, fmt.Errorf("compile IR to bytecode: %w", err)
+	}
+	return NewVMRunner(bc), nil
+}
+
+// CompilePythonWithCoverage compiles Python subset source and returns both the runner
+// and the coverage analysis result. Mirrors CompileMQLWithCoverage.
+func CompilePythonWithCoverage(source string) (r *VMRunner, cov *CoverageResult, err error) {
+	defer func() {
+		if p := recover(); p != nil {
+			err = fmt.Errorf("compile Python panic: %v", p)
+			r = nil
+			cov = nil
+		}
+	}()
+	ir, err := CompilePythonToIR(source)
+	if err != nil {
+		return nil, nil, fmt.Errorf("compile Python to IR: %w", err)
+	}
+	bc, err := CompileAST(ir)
+	if err != nil {
+		return nil, nil, fmt.Errorf("compile IR to bytecode: %w", err)
+	}
+	coverage := AnalyzeCoverage(ir, bc)
+	return NewVMRunner(bc), coverage, nil
+}
+
 // CompileMQL is a convenience function that compiles MQL source to a VMRunner.
 // This is the single entrypoint for the in-process execution path:
 // MQL source → CST → AST (IR) → Bytecode → VMRunner

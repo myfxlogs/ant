@@ -113,7 +113,7 @@ export function useBacktestRunner() {
     updateExtractedParams(
       result.parametersJson || result.parameters_json || (result as any).parameters || null
     );
-  }, [tuning, updateDirectivesFromCode, updateExtractedParams]);
+  }, [tuning.updateSweepFromCode, updateDirectivesFromCode, updateExtractedParams]);
 
   const setParam = useCallback((name: string, value: string) => {
     setStrategyParamValues(prev => ({ ...prev, [name]: value }));

@@ -220,6 +220,16 @@ func init() {
 	builtinRegistry[id("ArrayFill")].fn = builtinArrayFill
 	builtinRegistry[id("ArrayRange")].fn = builtinNoopInt
 	builtinRegistry[id("ArrayIsSeries")].fn = builtinNoopBool
+
+	// Python-specific operators
+	builtinRegistry[id("operator_in")].fn = builtinOperatorIn
+
+	// Standalone position functions (legacy snake_case mappings)
+	builtinRegistry[id("PositionClose")].fn = builtinCTradePositionClose
+	builtinRegistry[id("PositionModify")].fn = builtinCTradePositionModify
+
+	// Market data — Spread
+	builtinRegistry[id("Spread")].fn = builtinSpread
 }
 
 // id looks up a builtin name in the registry and returns its index.
@@ -373,6 +383,45 @@ func builtinPeriod(vm *VM, args []interp.Value) (interp.Value, error) {
 	}
 	tf := vm.ctx.Timeframe()
 	return interp.IntVal(tfToInt(tf)), nil
+}
+
+// builtinOperatorIn implements the Python `in` / `not in` operator.
+// args[0] = left (needle), args[1] = right (haystack).
+// Supports: string substring, array membership, scalar equality.
+func builtinOperatorIn(vm *VM, args []interp.Value) (interp.Value, error) {
+	if len(args) < 2 {
+		return interp.BoolVal(false), nil
+	}
+	left := args[0]
+	right := args[1]
+	switch right.Kind {
+	case interp.ValString:
+		return interp.BoolVal(strings.Contains(right.Str, left.ToString())), nil
+	case interp.ValArray:
+		for _, v := range right.Array {
+			if v.Equal(left) {
+				return interp.BoolVal(true), nil
+			}
+		}
+		return interp.BoolVal(false), nil
+	default:
+		return interp.BoolVal(right.Equal(left)), nil
+	}
+}
+
+// builtinSpread returns the current spread in points (Ask - Bid) / Point.
+func builtinSpread(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.ctx == nil {
+		return interp.IntVal(0), nil
+	}
+	ask := vm.ctx.Ask()
+	bid := vm.ctx.Bid()
+	point := vm.ctx.Point()
+	if point.IsZero() {
+		return interp.IntVal(0), nil
+	}
+	spread := ask.Sub(bid).Div(point)
+	return interp.IntVal(int32(spread.IntPart())), nil
 }
 
 func tfToInt(tf string) int32 {

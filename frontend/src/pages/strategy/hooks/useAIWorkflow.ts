@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { message } from 'antd';
 import type { BacktestMetrics } from './useBacktestParams';
 
+function isMQLCode(code: string): boolean {
+  if (code.includes('package ') && code.includes('import (')) return false;
+  return code.includes('OnTick') || code.includes('OnBar') ||
+    code.includes('OnInit') || code.includes('extern ') ||
+    code.includes('input ') || code.includes('#property');
+}
+
 /** Snapshot of issues at a point in time (used for before/after comparison). */
 interface IssueSnapshot {
   errors: string[];
@@ -108,8 +115,9 @@ export function useAIWorkflow(
     if (!vr || vr.valid) return;
     const errors = (vr.errors || []).map(e => `- ${e}`).join('\n');
     const warnings = (vr.warnings || []).map(w => `- ${w}`).join('\n');
+    const strategyLang = isMQLCode(codeCtx.code) ? 'MQL' : 'Go';
     const prompt = [
-      'I need help understanding and fixing validation issues in my Python trading strategy.',
+      `I need help understanding and fixing validation issues in my ${strategyLang} trading strategy.`,
       'Please analyze these issues and ask me clarifying questions about my trading logic,',
       'so I can explain what I intended. Help me fix them step by step.',
       '', '**Validation errors:**', errors || '(none)', '',
@@ -151,8 +159,9 @@ export function useAIWorkflow(
           });
         const errorsText = lastErrors.map(e => `- ${e}`).join('\n');
         const warningsText = lastWarnings.map(w => `- ${w}`).join('\n');
+        const strategyLang = isMQLCode(code) ? 'MQL4' : 'Go';
         const instruction = [
-          'Fix ALL of the following validation errors in this Python trading strategy.',
+          `Fix ALL of the following validation errors in this ${strategyLang} trading strategy.`,
           'Return the COMPLETE corrected code — do not omit any part.',
           '', '**Validation errors to fix:**', errorsText || '(none)', '',
           warningsText ? '**Warnings:**' : '', warningsText || '',
@@ -161,13 +170,13 @@ export function useAIWorkflow(
           '', 'Rules:', '1. Keep all existing logic unchanged unless it causes an error.',
           '2. Add missing @param annotations with reasonable defaults.',
           '3. Fix calculation errors (EMA, data length checks, etc).',
-          '4. Return ONLY valid Python code — no explanations, no markdown.',
+          `4. Return ONLY valid ${strategyLang} code — no explanations, no markdown.`,
         ].filter(Boolean).join('\n');
         try {
           const { codeAssistApi } = await import('@/client/codeAssist');
           const result = await codeAssistApi.revise({ code, instruction });
-          if (!result.python) throw new Error('AI returned no code');
-          code = result.python;
+          if (!result.text) throw new Error('AI returned no code');
+          code = result.text;
           const recheck = await codeAssistApi.validateExtended(code);
           const postSnapshot = snapshotFromResult(recheck);
 

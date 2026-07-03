@@ -287,6 +287,8 @@ func builtinPositionGetDouble(vm *VM, args []interp.Value) (interp.Value, error)
 		return interp.DecimalVal(vm.currentPos.Swap), nil
 	case 6: // POSITION_COMMISSION
 		return interp.DecimalVal(vm.currentPos.Commission), nil
+	case 7: // POSITION_PROFIT
+		return interp.DecimalVal(vm.currentPos.Profit), nil
 	default:
 		return interp.DecimalVal(decimal.Zero), nil
 	}
@@ -304,6 +306,8 @@ func builtinPositionGetInteger(vm *VM, args []interp.Value) (interp.Value, error
 		return interp.IntVal(vm.currentPos.Magic), nil
 	case 2: // POSITION_TYPE
 		return interp.IntVal(int32(vm.currentPos.Side)), nil
+	case 3: // POSITION_TIME
+		return interp.DatetimeVal(vm.currentPos.OpenTime.UnixMilli()), nil
 	default:
 		return interp.IntVal(vm.currentPos.Magic), nil
 	}
@@ -311,7 +315,15 @@ func builtinPositionGetInteger(vm *VM, args []interp.Value) (interp.Value, error
 
 func builtinPositionGetString(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.currentPos != nil {
-		return interp.StringVal(vm.currentPos.Symbol), nil
+		prop := argI(args, 0)
+		switch prop {
+		case 0: // POSITION_SYMBOL
+			return interp.StringVal(vm.currentPos.Symbol), nil
+		case 1: // POSITION_COMMENT
+			return interp.StringVal(vm.currentPos.Comment), nil
+		default:
+			return interp.StringVal(vm.currentPos.Symbol), nil
+		}
 	}
 	return interp.StringVal(""), nil
 }

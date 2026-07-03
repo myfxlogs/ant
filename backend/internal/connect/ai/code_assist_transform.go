@@ -30,7 +30,11 @@ func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request
 		"Explain the following trading strategy code in clear, concise Chinese. " +
 		"Cover: strategy logic, entry/exit conditions, risk management, and potential improvements. " +
 		"Keep the explanation under 300 words."
-	userMsg := fmt.Sprintf("Please explain this trading strategy:\n```go\n%s\n```", code)
+	langTag := "go"
+	if isMQLCode(code) {
+		langTag = "mql4"
+	}
+	userMsg := fmt.Sprintf("Please explain this trading strategy:\n```%s\n%s\n```", langTag, code)
 	messages := systemai.BuildChatMessages(sysPrompt, userMsg, nil)
 
 	explanation, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
@@ -135,10 +139,10 @@ func extractCodeBlock(s string) string {
 		}
 		if end+3 <= len(s) {
 			code := s[i+3 : end]
-			// Skip language tag if present (go, python, etc.)
+			// Skip language tag if present (go, mql4, mql5, etc.)
 			if nl := strings.Index(code, "\n"); nl >= 0 && nl < 20 {
 				tag := strings.TrimSpace(code[:nl])
-				if tag == "go" || tag == "python" || tag == "golang" {
+				if tag == "go" || tag == "golang" || tag == "mql4" || tag == "mql5" || tag == "mql" {
 					code = code[nl+1:]
 				}
 			}

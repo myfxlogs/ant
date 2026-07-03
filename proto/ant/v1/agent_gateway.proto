@@ -3,15 +3,33 @@ syntax = "proto3";
 package ant.v1;
 
 import "google/protobuf/timestamp.proto";
+import "agent_profile.proto";
+import "agent_analysis.proto";
 
 option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
+// AgentService manages agent tokens, audit logs, and capabilities.
 service AgentService {
   rpc IssueAgentToken(IssueAgentTokenRequest) returns (IssueAgentTokenResponse);
   rpc ListAgentTokens(ListAgentTokensRequest) returns (ListAgentTokensResponse);
   rpc RevokeAgentToken(RevokeAgentTokenRequest) returns (AgentToken);
   rpc ListAgentAudit(ListAgentAuditRequest) returns (ListAgentAuditResponse);
   rpc GetAgentCapabilities(GetAgentCapabilitiesRequest) returns (AgentCapabilities);
+}
+
+// AgentGatewayService is the ADR-0024 Agent Gateway for strategy submission,
+// compilation, backtest execution, and knowledge base access.
+// Phase 0: synchronous mode — SubmitStrategy blocks until backtest completes.
+service AgentGatewayService {
+  // Agent submits strategy source code, triggers compile + backtest.
+  // Phase 0: SYNC only — blocks until backtest completes (<30s), returns result directly.
+  rpc SubmitStrategy(SubmitStrategyRequest) returns (SubmitStrategyResponse);
+
+  // Agent searches knowledge base for similar experiences (Go-side pgvector).
+  rpc SearchExperience(SearchExperienceRequest) returns (SearchExperienceResponse);
+
+  // Agent stores an experience to the knowledge base.
+  rpc StoreExperience(StoreExperienceRequest) returns (StoreExperienceResponse);
 }
 
 message AgentToken {
@@ -89,4 +107,127 @@ message AgentCapabilities {
   repeated string scopes = 1;
   bool live_trading_enabled = 2;
   repeated string available_tools = 3;
+}
+
+// ── AgentGatewayService messages (ADR-0024 Phase 0) ──────────────────────
+
+enum SubmitMode {
+  SUBMIT_SYNC = 0;   // 同步: 阻塞等待回测完成 (Phase 0, 回测 <30s)
+  SUBMIT_ASYNC = 1;  // 异步: 立即返回 strategy_id (Phase 2, 未实现)
+}
+
+message SubmitStrategyRequest {
+  string source_code = 1;             // 策略源码 (MQL4/MQL5)
+  string language = 2;                // "mql4" | "mql5" | "python" (Phase 2: Python supported)
+  map<string, string> params = 3;     // 参数覆盖
+  AgentBacktestConfig backtest_config = 4; // 回测配置
+  SubmitMode mode = 5;                // 同步/异步模式 (Phase 0: SYNC only)
+}
+
+message AgentBacktestConfig {
+  string symbol = 1;
+  string timeframe = 2;
+  int64 start_date_ms = 3;            // Unix milliseconds
+  int64 end_date_ms = 4;              // Unix milliseconds
+  string initial_capital = 5;         // decimal string
+  string commission = 6;              // ratio as string
+  string slippage = 7;                // ratio as string
+  string leverage = 8;                // e.g. "100"
+  bool strict_mode = 9;               // true = next-bar-open
+}
+
+message SubmitStrategyResponse {
+  string strategy_id = 1;             // generated UUID
+  bool compile_success = 2;
+  string compile_error = 3;           // empty if success
+  AgentBacktestResult result = 4;     // backtest result (SYNC mode)
+  StrategyProfile profile = 5;        // LLM-generated strategy profile
+  BacktestAnalysis analysis = 6;      // LLM-generated backtest analysis
+  double coverage_score = 7;          // 0.0-1.0
+  repeated AgentBlindSpot blind_spots = 8;
+  SubmitMode mode = 9;                // actual mode used
+  SemanticDiff semantic_diff = 10;    // ADR-0024 Phase 2: semantic change description
+  string bridge_status = 11;          // "success" | "bridge_failed" | "not_attempted"
+  string bridged_python_source = 12;  // translated Python source (if bridge successful)
+  string bridge_compile_error = 13;   // last compile error from bridge retry loop
+}
+
+// SemanticDiff describes strategy changes in natural language (non-programmer friendly).
+// ADR-0024 Phase 2: "策略语义 diff（非代码 diff）"
+message SemanticDiff {
+  repeated SemanticChange changes = 1;
+  string effect_summary = 2;           // e.g. "夏普 1.2 → 1.6, 回撤 28% → 14%"
+}
+
+// SemanticChange represents one semantic change item.
+message SemanticChange {
+  string kind = 1;                     // "added" | "modified" | "removed"
+  string description = 2;             // human-readable description
+}
+
+message AgentBacktestResult {
+  bool success = 1;
+  string error = 2;
+  double total_return = 3;
+  double annual_return = 4;
+  double max_drawdown = 5;
+  double sharpe_ratio = 6;
+  double win_rate = 7;
+  double profit_factor = 8;
+  int32 total_trades = 9;
+  int32 winning_trades = 10;
+  int32 losing_trades = 11;
+  string total_pnl_absolute = 12;     // decimal string
+  repeated string equity_curve = 13;  // decimal strings
+  repeated int64 equity_times_ms = 14;// bar timestamps
+  repeated AgentTrade trades = 15;
+}
+
+message AgentTrade {
+  int64 ticket = 1;
+  string side = 2;                    // "BUY" | "SELL"
+  string volume = 3;                  // decimal string
+  int64 open_ts_ms = 4;
+  string open_price = 5;              // decimal string
+  int64 close_ts_ms = 6;
+  string close_price = 7;             // decimal string
+  string pnl = 8;                     // decimal string
+  string commission = 9;              // decimal string
+  string reason = 10;
+}
+
+message AgentBlindSpot {
+  string builtin = 1;
+  string severity = 2;                // "fatal", "warning", "info"
+  int32 count = 3;
+}
+
+message SearchExperienceRequest {
+  string query = 1;                   // natural language description
+  string category = 2;                // strategy_pattern / market_regime / optimization_result
+  int32 limit = 3;                    // max results (default 10)
+}
+
+message ExperienceEntry {
+  string id = 1;
+  string category = 2;
+  string content = 3;
+  string match_type = 4;              // "semantic" / "structural" / "both"
+  double similarity = 5;              // 0.0-1.0
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message SearchExperienceResponse {
+  repeated ExperienceEntry entries = 1;
+}
+
+message StoreExperienceRequest {
+  string category = 1;                // strategy_pattern / market_regime / optimization_result
+  string content = 2;                 // natural language description
+  string fingerprint = 3;             // JSON string of structural fingerprint
+}
+
+message StoreExperienceResponse {
+  string id = 1;                      // generated UUID
+  bool success = 2;
 }

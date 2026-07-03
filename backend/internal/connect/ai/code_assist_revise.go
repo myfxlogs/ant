@@ -27,7 +27,7 @@ func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[
 		return nil, err
 	}
 
-	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction, Locale: req.Msg.Locale})
+	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction, Locale: req.Msg.Locale, IsMQL: isMQLCode(code)})
 	messages := systemai.BuildChatMessages(pc.SystemPrompt, pc.UserMessage, protoHistoryToChat(req.Msg.History))
 	revised, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
 	if err != nil {
@@ -40,7 +40,7 @@ func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[
 
 	result := revised
 	if pc.Mode == ai.ModeRepair {
-		if code := extractCodeFromRepair(revised); code != "" {
+		if code := extractCodeFromRepair(revised, isMQLCode(code)); code != "" {
 			result = code
 		}
 	}
@@ -62,7 +62,7 @@ func (s *CodeAssistServer) ReviseCodeStream(
 		return err
 	}
 
-	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction, Locale: req.Msg.Locale})
+	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction, Locale: req.Msg.Locale, IsMQL: isMQLCode(code)})
 	messages := systemai.BuildChatMessages(pc.SystemPrompt, pc.UserMessage, protoHistoryToChat(req.Msg.History))
 	var fullText strings.Builder
 	err = s.systemSvc.ChatCompletionStream(ctx, uid, messages,
@@ -81,7 +81,7 @@ func (s *CodeAssistServer) ReviseCodeStream(
 	// Repair mode post-processing
 	result := fullText.String()
 	if pc.Mode == ai.ModeRepair {
-		if code := extractCodeFromRepair(result); code != "" {
+		if code := extractCodeFromRepair(result, isMQLCode(code)); code != "" {
 			result = code
 		}
 	}

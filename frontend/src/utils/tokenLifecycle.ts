@@ -37,6 +37,23 @@ let schedulerTimer: number | null = null;
 let lastUserActivity = Date.now();
 let listenersAttached = false;
 
+/** Wait for Zustand persist middleware to finish rehydrating from localStorage. */
+function waitForHydration(): Promise<void> {
+  if (useAuthStore.persist.hasHydrated()) return Promise.resolve();
+  return new Promise((resolve) => {
+    const unsub = useAuthStore.persist.onFinishHydration(() => {
+      unsub();
+      resolve();
+    });
+    // Race guard: hydration may have completed between the check above and
+    // the listener registration.
+    if (useAuthStore.persist.hasHydrated()) {
+      unsub();
+      resolve();
+    }
+  });
+}
+
 /** Decode a JWT and return its `exp` claim in epoch milliseconds, or 0 if unavailable. */
 export function getTokenExpiryMs(token: string | null): number {
   if (!token) return 0;
@@ -92,6 +109,10 @@ export function refreshAccessToken(): Promise<string | null> {
  * (caller should then surface a normal Unauthenticated error).
  */
 export async function ensureFreshToken(): Promise<string | null> {
+  // Wait for Zustand persist to rehydrate from localStorage before checking
+  // isAuthenticated — otherwise we see default values (false) on page reload.
+  await waitForHydration();
+
   const current = useAuthStore.getState().accessToken;
   if (!current) {
     // Page reload: user profile persisted but accessToken was not.

@@ -39,6 +39,7 @@ type BuildContextInput struct {
 	BacktestSummary  string
 	ValidationErrors []string
 	Locale           string // user UI language (e.g. en, zh, zh-TW, ja, vi); blank = no directive
+	IsMQL            bool   // true = MQL source, false = Go source
 }
 
 // localeDirective returns a language instruction for AI prose responses.
@@ -62,16 +63,28 @@ func BuildContext(input BuildContextInput) *PromptContext {
 
 	switch mode {
 	case ModeGenerate:
-		pc.SystemPrompt = generatePrompt()
+		if input.IsMQL {
+			pc.SystemPrompt = generateMQLPrompt()
+		} else {
+			pc.SystemPrompt = generatePrompt()
+		}
 		pc.UserMessage = input.Message
 	case ModeRevise:
-		pc.SystemPrompt = revisePrompt()
+		if input.IsMQL {
+			pc.SystemPrompt = reviseMQLPrompt()
+		} else {
+			pc.SystemPrompt = revisePrompt()
+		}
 		pc.UserMessage = buildReviseUserMessage(input)
 	case ModeRepair:
-		pc.SystemPrompt = repairPrompt(input.ValidationErrors)
-		pc.UserMessage = buildRepairUserMessage(input.Code, input.Message)
+		if input.IsMQL {
+			pc.SystemPrompt = repairMQLPrompt(input.ValidationErrors)
+		} else {
+			pc.SystemPrompt = repairPrompt(input.ValidationErrors)
+		}
+		pc.UserMessage = buildRepairUserMessage(input.Code, input.Message, input.IsMQL)
 	case ModeDiscuss:
-		pc.SystemPrompt = discussPrompt(input.Code) + localeDirective(input.Locale)
+		pc.SystemPrompt = discussPrompt(input.Code, input.IsMQL) + localeDirective(input.Locale)
 		pc.UserMessage = input.Message
 	}
 
@@ -87,9 +100,9 @@ func classifyIntent(code, message string) InteractionMode {
 
 	// Repair: error-related keywords (highest priority)
 	repairKw := []string{
-		"报错", "error", "错误", "traceback", "缺少参数", "missing",
+		"报错", "error", "错误", "缺少参数", "missing",
 		"验证失败", "syntax error", "syntaxerror", "undefined", "未定义",
-		"缺少 required", "参数不足", "attributeerror", "typeerror",
+		"缺少 required", "参数不足", "compile failed", "编译失败",
 	}
 	for _, kw := range repairKw {
 		if strings.Contains(lower, kw) {
@@ -260,12 +273,146 @@ func repairPrompt(errors []string) string {
 ## OUTPUT ONLY THE COMPLETE CORRECTED GO CODE NOW`
 }
 
-func discussPrompt(code string) string {
+// ── MQL prompts ──────────────────────────────────────────────────────
+
+func generateMQLPrompt() string {
+	return `You are a professional MQL4 trading strategy engineer.
+Generate a complete MQL4 Expert Advisor based on the user's description.
+
+## ⛔ IRON RULES — violating ANY of these = code is REJECTED ⛔
+
+### Rule 1: EVERY configurable value MUST be declared as extern
+` + "```mql4" + `
+extern int    FastPeriod   = 14;
+extern int    SlowPeriod   = 50;
+extern double LotSize      = 0.1;
+extern double StopLossPct  = 0.02;
+extern double TakeProfitPct = 0.04;
+` + "```" + `
+
+### Rule 2: MUST implement OnInit, OnTick, OnDeinit
+` + "```mql4" + `
+int OnInit() {
+    return(INIT_SUCCEEDED);
+}
+
+void OnTick() {
+    // strategy logic
+}
+
+void OnDeinit(const int reason) {
+}
+` + "```" + `
+
+### Rule 3: Stop-loss & take-profit MUST be set on EVERY order
+` + "```mql4" + `
+double sl = Ask - StopLossPct * Ask;
+double tp = Ask + TakeProfitPct * Ask;
+int ticket = OrderSend(Symbol(), OP_BUY, LotSize, Ask, 3, sl, tp, "EA", 12345, 0, clrGreen);
+` + "```" + `
+
+### Rule 4: Use standard MQL4 indicators (iMA, iRSI, iATR, iBands, iMACD, etc.)
+` + "```mql4" + `
+double ma = iMA(Symbol(), PERIOD_CURRENT, FastPeriod, 0, MODE_EMA, PRICE_CLOSE, 0);
+double rsi = iRSI(Symbol(), PERIOD_CURRENT, 14, PRICE_CLOSE, 0);
+` + "```" + `
+
+### Rule 5: Check bars count before accessing indicator values
+` + "```mql4" + `
+if (Bars < SlowPeriod) return;
+` + "```" + `
+
+### Rule 6: Use OrderSelect + OrdersTotal for position management
+` + "```mql4" + `
+for (int i = 0; i < OrdersTotal(); i++) {
+    if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES)) {
+        if (OrderSymbol() == Symbol() && OrderMagicNumber() == MagicNumber) {
+            // manage position
+        }
+    }
+}
+` + "```" + `
+
+## Complete minimal strategy skeleton
+` + "```mql4" + `
+#property strict
+
+extern int    FastPeriod   = 14;
+extern int    SlowPeriod   = 50;
+extern double LotSize      = 0.1;
+extern int    MagicNumber  = 12345;
+
+int OnInit() {
+    return(INIT_SUCCEEDED);
+}
+
+void OnTick() {
+    if (Bars < SlowPeriod) return;
+
+    double maFast = iMA(Symbol(), PERIOD_CURRENT, FastPeriod, 0, MODE_EMA, PRICE_CLOSE, 0);
+    double maSlow = iMA(Symbol(), PERIOD_CURRENT, SlowPeriod, 0, MODE_EMA, PRICE_CLOSE, 0);
+
+    // ... strategy logic ...
+}
+
+void OnDeinit(const int reason) {
+}
+` + "```" + `
+
+## Output: ONLY MQL4 code. No markdown fences. No explanations.`
+}
+
+func reviseMQLPrompt() string {
+	return `You are a trading strategy engineer. Revise the MQL4 code per the user's instruction.
+
+	## RULES — follow exactly
+	1. Make ONLY the changes the user asked for — preserve everything else untouched
+	2. Output ONLY the complete MQL4 code — NO markdown, NO explanations
+	3. MUST keep OnInit/OnTick/OnDeinit structure
+	4. MUST keep extern declarations for all configurable parameters
+
+	## OUTPUT: The complete revised MQL4 code — nothing else.`
+}
+
+func repairMQLPrompt(errors []string) string {
+	errList := ""
+	for _, e := range errors {
+		errList += "- " + e + "\n"
+	}
+	if errList == "" {
+		errList = "- (errors provided in user message)\n"
+	}
+	return `You are a trading strategy CODE REPAIR EXPERT. Fix ONLY the listed errors — do NOT change anything else.
+
+## ⛔ CRITICAL RULES
+	1. Output ONLY the complete corrected MQL4 code — NO markdown, NO explanations
+	2. Start directly with #property or extern — your output IS the strategy file
+	3. Preserve ALL existing logic, parameters, and comments — only fix the errors
+	4. Do NOT rename variables, restructure code, or "improve" anything not in the error list
+	5. MUST keep OnInit/OnTick/OnDeinit structure
+	6. If an error is unclear, add // FIXME: <reason> at that line — do NOT guess
+
+## VERIFY BEFORE OUTPUT
+- Did I fix EVERY error in the list above?
+- Did I preserve the original strategy logic unchanged?
+- Did I introduce any new undefined variables or syntax errors?
+
+## Errors to Fix (fix ALL at once)
+` + errList + `
+
+## OUTPUT ONLY THE COMPLETE CORRECTED MQL4 CODE NOW`
+}
+
+func discussPrompt(code string, isMQL bool) string {
+	lang := "go"
+	if isMQL {
+		lang = "mql4"
+	}
 	return `You are an experienced quantitative trading strategy analyst.
 The user is developing a trading strategy and needs your professional opinion.
 
 ## Current Strategy Code
-` + "```go\n" + code + "\n```" + `
+` + "```" + lang + "\n" + code + "\n```" + `
 
 Provide a concise, professional response to the user's question. Be direct — no pleasantries.
 If the user asks "is this correct" or "are there issues", check: entry logic, exit logic,
@@ -277,10 +424,18 @@ func buildReviseUserMessage(input BuildContextInput) string {
 	if input.BacktestSummary != "" {
 		msg += "\n\n【Current Backtest Results】\n" + input.BacktestSummary
 	}
-	msg += "\n\nCode:\n```go\n" + input.Code + "\n```"
+	lang := "go"
+	if input.IsMQL {
+		lang = "mql4"
+	}
+	msg += "\n\nCode:\n```" + lang + "\n" + input.Code + "\n```"
 	return msg
 }
 
-func buildRepairUserMessage(code, message string) string {
-	return "## Current Code\n```go\n" + code + "\n```\n\n## Error Information\n" + message
+func buildRepairUserMessage(code, message string, isMQL bool) string {
+	lang := "go"
+	if isMQL {
+		lang = "mql4"
+	}
+	return "## Current Code\n```" + lang + "\n" + code + "\n```\n\n## Error Information\n" + message
 }

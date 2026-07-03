@@ -299,8 +299,8 @@ void OnTick() {}
 	}
 
 	infos := ExtractParamInfos(bc)
-	if len(infos) != 3 {
-		t.Fatalf("expected 3 param infos, got %d", len(infos))
+	if len(infos) != 2 {
+		t.Fatalf("expected 2 param infos (extern string Comment filtered as unreferenced), got %d", len(infos))
 	}
 
 	// Verify first param
@@ -318,6 +318,48 @@ void OnTick() {}
 	raw := SerializeParams(bc)
 	if len(raw) == 0 {
 		t.Error("SerializeParams should return non-empty bytes")
+	}
+}
+
+// TestExtractParamInfos_FiltersUnreferencedStringParams verifies that extern string
+// parameters used as UI labels (never read in code) are filtered out,
+// while extern string parameters that ARE referenced in code are kept.
+func TestExtractParamInfos_FiltersUnreferencedStringParams(t *testing.T) {
+	source := `
+extern string LabelText = "This is a UI label, not a parameter";
+extern string TradeComment = "EA";
+extern int Period = 14;
+
+void OnTick() {
+    int ticket = OrderSend(Symbol(), OP_BUY, 0.1, Ask, 3, 0, 0, TradeComment, 12345, 0, clrGreen);
+}
+`
+	ir, err := CompileToIR(source)
+	if err != nil {
+		t.Fatalf("CompileToIR failed: %v", err)
+	}
+	bc, err := CompileAST(ir)
+	if err != nil {
+		t.Fatalf("CompileAST failed: %v", err)
+	}
+
+	infos := ExtractParamInfos(bc)
+	names := make(map[string]bool)
+	for _, info := range infos {
+		names[info.Name] = true
+	}
+
+	// LabelText is never referenced → filtered
+	if names["LabelText"] {
+		t.Error("LabelText should be filtered (unreferenced extern string)")
+	}
+	// TradeComment IS referenced in OrderSend → kept
+	if !names["TradeComment"] {
+		t.Error("TradeComment should be kept (referenced in OnTick)")
+	}
+	// Period is non-string → always kept
+	if !names["Period"] {
+		t.Error("Period should be kept (non-string param)")
 	}
 }
 

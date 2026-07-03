@@ -91,31 +91,10 @@ func (s *StrategyExecutionServer) executeVMBacktest(ctx context.Context, params 
 			cfg.ContractSize = v
 		}
 	} else if len(bars) > 0 {
-		closeStr := bars[0].Close.String()
-		dotIdx := -1
-		for i, c := range closeStr {
-			if c == '.' {
-				dotIdx = i
-				break
-			}
-		}
-		digits := int32(0)
-		if dotIdx >= 0 {
-			digits = int32(len(closeStr) - dotIdx - 1)
-		}
-		if digits > 8 {
-			digits = 8
-		}
-		cfg.SymbolDigits = digits
-		point := decimal.NewFromFloat(1)
-		for i := int32(0); i < digits; i++ {
-			point = point.Div(decimal.NewFromInt(10))
-		}
-		cfg.SymbolPoint = point
-		cfg.Spread = point.Mul(decimal.NewFromInt(10))
+		backtest.DeriveSymbolInfoFromBars(&cfg, bars)
 		s.log.Info("executeVMBacktest: derived symbol info from K-lines",
-			zap.Int32("digits", digits),
-			zap.String("point", point.String()),
+			zap.Int32("digits", cfg.SymbolDigits),
+			zap.String("point", cfg.SymbolPoint.String()),
 			zap.String("spread", cfg.Spread.String()))
 	}
 

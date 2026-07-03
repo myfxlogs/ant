@@ -23,6 +23,8 @@ const _ = connect.IsAtLeastVersion1_13_0
 const (
 	// AgentServiceName is the fully-qualified name of the AgentService service.
 	AgentServiceName = "ant.v1.AgentService"
+	// AgentGatewayServiceName is the fully-qualified name of the AgentGatewayService service.
+	AgentGatewayServiceName = "ant.v1.AgentGatewayService"
 )
 
 // These constants are the fully-qualified names of the RPCs defined in this package. They're
@@ -48,6 +50,15 @@ const (
 	// AgentServiceGetAgentCapabilitiesProcedure is the fully-qualified name of the AgentService's
 	// GetAgentCapabilities RPC.
 	AgentServiceGetAgentCapabilitiesProcedure = "/ant.v1.AgentService/GetAgentCapabilities"
+	// AgentGatewayServiceSubmitStrategyProcedure is the fully-qualified name of the
+	// AgentGatewayService's SubmitStrategy RPC.
+	AgentGatewayServiceSubmitStrategyProcedure = "/ant.v1.AgentGatewayService/SubmitStrategy"
+	// AgentGatewayServiceSearchExperienceProcedure is the fully-qualified name of the
+	// AgentGatewayService's SearchExperience RPC.
+	AgentGatewayServiceSearchExperienceProcedure = "/ant.v1.AgentGatewayService/SearchExperience"
+	// AgentGatewayServiceStoreExperienceProcedure is the fully-qualified name of the
+	// AgentGatewayService's StoreExperience RPC.
+	AgentGatewayServiceStoreExperienceProcedure = "/ant.v1.AgentGatewayService/StoreExperience"
 )
 
 // AgentServiceClient is a client for the ant.v1.AgentService service.
@@ -222,4 +233,134 @@ func (UnimplementedAgentServiceHandler) ListAgentAudit(context.Context, *connect
 
 func (UnimplementedAgentServiceHandler) GetAgentCapabilities(context.Context, *connect.Request[v1.GetAgentCapabilitiesRequest]) (*connect.Response[v1.AgentCapabilities], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentService.GetAgentCapabilities is not implemented"))
+}
+
+// AgentGatewayServiceClient is a client for the ant.v1.AgentGatewayService service.
+type AgentGatewayServiceClient interface {
+	// Agent submits strategy source code, triggers compile + backtest.
+	// Phase 0: SYNC only — blocks until backtest completes (<30s), returns result directly.
+	SubmitStrategy(context.Context, *connect.Request[v1.SubmitStrategyRequest]) (*connect.Response[v1.SubmitStrategyResponse], error)
+	// Agent searches knowledge base for similar experiences (Go-side pgvector).
+	SearchExperience(context.Context, *connect.Request[v1.SearchExperienceRequest]) (*connect.Response[v1.SearchExperienceResponse], error)
+	// Agent stores an experience to the knowledge base.
+	StoreExperience(context.Context, *connect.Request[v1.StoreExperienceRequest]) (*connect.Response[v1.StoreExperienceResponse], error)
+}
+
+// NewAgentGatewayServiceClient constructs a client for the ant.v1.AgentGatewayService service. By
+// default, it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses,
+// and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the
+// connect.WithGRPC() or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewAgentGatewayServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) AgentGatewayServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	agentGatewayServiceMethods := v1.File_agent_gateway_proto.Services().ByName("AgentGatewayService").Methods()
+	return &agentGatewayServiceClient{
+		submitStrategy: connect.NewClient[v1.SubmitStrategyRequest, v1.SubmitStrategyResponse](
+			httpClient,
+			baseURL+AgentGatewayServiceSubmitStrategyProcedure,
+			connect.WithSchema(agentGatewayServiceMethods.ByName("SubmitStrategy")),
+			connect.WithClientOptions(opts...),
+		),
+		searchExperience: connect.NewClient[v1.SearchExperienceRequest, v1.SearchExperienceResponse](
+			httpClient,
+			baseURL+AgentGatewayServiceSearchExperienceProcedure,
+			connect.WithSchema(agentGatewayServiceMethods.ByName("SearchExperience")),
+			connect.WithClientOptions(opts...),
+		),
+		storeExperience: connect.NewClient[v1.StoreExperienceRequest, v1.StoreExperienceResponse](
+			httpClient,
+			baseURL+AgentGatewayServiceStoreExperienceProcedure,
+			connect.WithSchema(agentGatewayServiceMethods.ByName("StoreExperience")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// agentGatewayServiceClient implements AgentGatewayServiceClient.
+type agentGatewayServiceClient struct {
+	submitStrategy   *connect.Client[v1.SubmitStrategyRequest, v1.SubmitStrategyResponse]
+	searchExperience *connect.Client[v1.SearchExperienceRequest, v1.SearchExperienceResponse]
+	storeExperience  *connect.Client[v1.StoreExperienceRequest, v1.StoreExperienceResponse]
+}
+
+// SubmitStrategy calls ant.v1.AgentGatewayService.SubmitStrategy.
+func (c *agentGatewayServiceClient) SubmitStrategy(ctx context.Context, req *connect.Request[v1.SubmitStrategyRequest]) (*connect.Response[v1.SubmitStrategyResponse], error) {
+	return c.submitStrategy.CallUnary(ctx, req)
+}
+
+// SearchExperience calls ant.v1.AgentGatewayService.SearchExperience.
+func (c *agentGatewayServiceClient) SearchExperience(ctx context.Context, req *connect.Request[v1.SearchExperienceRequest]) (*connect.Response[v1.SearchExperienceResponse], error) {
+	return c.searchExperience.CallUnary(ctx, req)
+}
+
+// StoreExperience calls ant.v1.AgentGatewayService.StoreExperience.
+func (c *agentGatewayServiceClient) StoreExperience(ctx context.Context, req *connect.Request[v1.StoreExperienceRequest]) (*connect.Response[v1.StoreExperienceResponse], error) {
+	return c.storeExperience.CallUnary(ctx, req)
+}
+
+// AgentGatewayServiceHandler is an implementation of the ant.v1.AgentGatewayService service.
+type AgentGatewayServiceHandler interface {
+	// Agent submits strategy source code, triggers compile + backtest.
+	// Phase 0: SYNC only — blocks until backtest completes (<30s), returns result directly.
+	SubmitStrategy(context.Context, *connect.Request[v1.SubmitStrategyRequest]) (*connect.Response[v1.SubmitStrategyResponse], error)
+	// Agent searches knowledge base for similar experiences (Go-side pgvector).
+	SearchExperience(context.Context, *connect.Request[v1.SearchExperienceRequest]) (*connect.Response[v1.SearchExperienceResponse], error)
+	// Agent stores an experience to the knowledge base.
+	StoreExperience(context.Context, *connect.Request[v1.StoreExperienceRequest]) (*connect.Response[v1.StoreExperienceResponse], error)
+}
+
+// NewAgentGatewayServiceHandler builds an HTTP handler from the service implementation. It returns
+// the path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewAgentGatewayServiceHandler(svc AgentGatewayServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	agentGatewayServiceMethods := v1.File_agent_gateway_proto.Services().ByName("AgentGatewayService").Methods()
+	agentGatewayServiceSubmitStrategyHandler := connect.NewUnaryHandler(
+		AgentGatewayServiceSubmitStrategyProcedure,
+		svc.SubmitStrategy,
+		connect.WithSchema(agentGatewayServiceMethods.ByName("SubmitStrategy")),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentGatewayServiceSearchExperienceHandler := connect.NewUnaryHandler(
+		AgentGatewayServiceSearchExperienceProcedure,
+		svc.SearchExperience,
+		connect.WithSchema(agentGatewayServiceMethods.ByName("SearchExperience")),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentGatewayServiceStoreExperienceHandler := connect.NewUnaryHandler(
+		AgentGatewayServiceStoreExperienceProcedure,
+		svc.StoreExperience,
+		connect.WithSchema(agentGatewayServiceMethods.ByName("StoreExperience")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/ant.v1.AgentGatewayService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case AgentGatewayServiceSubmitStrategyProcedure:
+			agentGatewayServiceSubmitStrategyHandler.ServeHTTP(w, r)
+		case AgentGatewayServiceSearchExperienceProcedure:
+			agentGatewayServiceSearchExperienceHandler.ServeHTTP(w, r)
+		case AgentGatewayServiceStoreExperienceProcedure:
+			agentGatewayServiceStoreExperienceHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedAgentGatewayServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedAgentGatewayServiceHandler struct{}
+
+func (UnimplementedAgentGatewayServiceHandler) SubmitStrategy(context.Context, *connect.Request[v1.SubmitStrategyRequest]) (*connect.Response[v1.SubmitStrategyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.SubmitStrategy is not implemented"))
+}
+
+func (UnimplementedAgentGatewayServiceHandler) SearchExperience(context.Context, *connect.Request[v1.SearchExperienceRequest]) (*connect.Response[v1.SearchExperienceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.SearchExperience is not implemented"))
+}
+
+func (UnimplementedAgentGatewayServiceHandler) StoreExperience(context.Context, *connect.Request[v1.StoreExperienceRequest]) (*connect.Response[v1.StoreExperienceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AgentGatewayService.StoreExperience is not implemented"))
 }

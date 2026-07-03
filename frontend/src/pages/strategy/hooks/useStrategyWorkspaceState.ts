@@ -36,12 +36,16 @@ export function useStrategyWorkspaceState() {
   // Backtest + Smart Tuning (must precede useStrategyCode for onValidateResult wiring)
   const btCtx = useBacktestRunner();
 
-  // Code + Templates + Save
-  const codeCtx = useStrategyCode({
-    onValidateResult: (result) => {
+  // Stable callback to avoid useEffect infinite loop (handleValidationResult is already useCallback-stable)
+  const onValidateResult = useCallback(
+    (result: import('@/client/codeAssist').ValidateExtendedResult) => {
       btCtx.handleValidationResult(result);
     },
-  });
+    [btCtx.handleValidationResult],
+  );
+
+  // Code + Templates + Save
+  const codeCtx = useStrategyCode({ onValidateResult });
   const [searchParams] = useSearchParams();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
 

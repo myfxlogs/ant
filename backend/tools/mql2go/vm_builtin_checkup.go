@@ -14,11 +14,11 @@ func builtinIsConnected(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIsDemo(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(false), nil
+	return interp.BoolVal(true), nil
 }
 
 func builtinIsDllsAllowed(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(false), nil
+	return interp.BoolVal(true), nil
 }
 
 func builtinIsExpertEnabled(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -26,7 +26,7 @@ func builtinIsExpertEnabled(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIsLibrariesAllowed(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(false), nil
+	return interp.BoolVal(true), nil
 }
 
 func builtinIsTradeAllowed(vm *VM, args []interp.Value) (interp.Value, error) {

@@ -151,4 +151,10 @@ var implementedPlatform = []string{
 	"GlobalVariableSet", "GlobalVariableGet", "GlobalVariableDel",
 	"GlobalVariableCheck", "GlobalVariableTemp", "GlobalVariableFlush",
 	"GlobalVariablesDeleteAll", "GlobalVariablesTotal", "GlobalVariableName",
+	// Python-specific operators
+	"operator_in",
+	// Standalone position functions
+	"PositionClose", "PositionModify",
+	// Market data
+	"Spread",
 }

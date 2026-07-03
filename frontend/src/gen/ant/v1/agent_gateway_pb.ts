@@ -2,17 +2,21 @@
 // @generated from file agent_gateway.proto (package ant.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { StrategyProfile } from "./agent_profile_pb";
+import { file_agent_profile } from "./agent_profile_pb";
+import type { BacktestAnalysis } from "./agent_analysis_pb";
+import { file_agent_analysis } from "./agent_analysis_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file agent_gateway.proto.
  */
 export const file_agent_gateway: GenFile = /*@__PURE__*/
-  fileDesc("ChNhZ2VudF9nYXRld2F5LnByb3RvEgZhbnQudjEilAMKCkFnZW50VG9rZW4SCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhQKDHRva2VuX3ByZWZpeBgEIAEoCRIOCgZzY29wZXMYBSADKAkSGQoRYWNjb3VudF9hbGxvd2xpc3QYBiADKAkSGAoQc3ltYm9sX2FsbG93bGlzdBgHIAMoCRISCgpwYXBlcl9vbmx5GAggASgIEhoKEnJhdGVfbGltaXRfcGVyX21pbhgJIAEoBRIuCgpleHBpcmVzX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIOCgZzdGF0dXMYCyABKAkSMAoMbGFzdF91c2VkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpjcmVhdGVkX2F0GA0gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLPAgoPQWdlbnRBdWRpdEVudHJ5EgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSFgoOYWdlbnRfdG9rZW5faWQYAyABKAkSEgoKYWdlbnRfbmFtZRgEIAEoCRITCgtycGNfc2VydmljZRgFIAEoCRISCgpycGNfbWV0aG9kGAYgASgJEg0KBXNjb3BlGAcgASgJEhMKC3N0YXR1c19jb2RlGAggASgJEhcKD2lkZW1wb3RlbmN5X2tleRgJIAEoCRIVCg1yaXNrX2RlY2lzaW9uGAogASgJEhcKD3JlcXVlc3Rfc3VtbWFyeRgLIAEoCRIYChByZXNwb25zZV9zdW1tYXJ5GAwgASgJEhMKC2R1cmF0aW9uX21zGA0gASgDEi4KCmNyZWF0ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIssBChZJc3N1ZUFnZW50VG9rZW5SZXF1ZXN0EgwKBG5hbWUYASABKAkSDgoGc2NvcGVzGAIgAygJEhkKEWFjY291bnRfYWxsb3dsaXN0GAMgAygJEhgKEHN5bWJvbF9hbGxvd2xpc3QYBCADKAkSEgoKcGFwZXJfb25seRgFIAEoCBIaChJyYXRlX2xpbWl0X3Blcl9taW4YBiABKAUSLgoKZXhwaXJlc19hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiVQoXSXNzdWVBZ2VudFRva2VuUmVzcG9uc2USIQoFdG9rZW4YASABKAsyEi5hbnQudjEuQWdlbnRUb2tlbhIXCg9wbGFpbnRleHRfdG9rZW4YAiABKAkiGAoWTGlzdEFnZW50VG9rZW5zUmVxdWVzdCI9ChdMaXN0QWdlbnRUb2tlbnNSZXNwb25zZRIiCgZ0b2tlbnMYASADKAsyEi5hbnQudjEuQWdlbnRUb2tlbiIrChdSZXZva2VBZ2VudFRva2VuUmVxdWVzdBIQCgh0b2tlbl9pZBgBIAEoCSJIChVMaXN0QWdlbnRBdWRpdFJlcXVlc3QSEAoIdG9rZW5faWQYASABKAkSDQoFbGltaXQYAiABKAUSDgoGb2Zmc2V0GAMgASgFIkIKFkxpc3RBZ2VudEF1ZGl0UmVzcG9uc2USKAoHZW50cmllcxgBIAMoCzIXLmFudC52MS5BZ2VudEF1ZGl0RW50cnkiHQobR2V0QWdlbnRDYXBhYmlsaXRpZXNSZXF1ZXN0IloKEUFnZW50Q2FwYWJpbGl0aWVzEg4KBnNjb3BlcxgBIAMoCRIcChRsaXZlX3RyYWRpbmdfZW5hYmxlZBgCIAEoCBIXCg9hdmFpbGFibGVfdG9vbHMYAyADKAkyqAMKDEFnZW50U2VydmljZRJSCg9Jc3N1ZUFnZW50VG9rZW4SHi5hbnQudjEuSXNzdWVBZ2VudFRva2VuUmVxdWVzdBofLmFudC52MS5Jc3N1ZUFnZW50VG9rZW5SZXNwb25zZRJSCg9MaXN0QWdlbnRUb2tlbnMSHi5hbnQudjEuTGlzdEFnZW50VG9rZW5zUmVxdWVzdBofLmFudC52MS5MaXN0QWdlbnRUb2tlbnNSZXNwb25zZRJHChBSZXZva2VBZ2VudFRva2VuEh8uYW50LnYxLlJldm9rZUFnZW50VG9rZW5SZXF1ZXN0GhIuYW50LnYxLkFnZW50VG9rZW4STwoOTGlzdEFnZW50QXVkaXQSHS5hbnQudjEuTGlzdEFnZW50QXVkaXRSZXF1ZXN0Gh4uYW50LnYxLkxpc3RBZ2VudEF1ZGl0UmVzcG9uc2USVgoUR2V0QWdlbnRDYXBhYmlsaXRpZXMSIy5hbnQudjEuR2V0QWdlbnRDYXBhYmlsaXRpZXNSZXF1ZXN0GhkuYW50LnYxLkFnZW50Q2FwYWJpbGl0aWVzQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChNhZ2VudF9nYXRld2F5LnByb3RvEgZhbnQudjEilAMKCkFnZW50VG9rZW4SCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhQKDHRva2VuX3ByZWZpeBgEIAEoCRIOCgZzY29wZXMYBSADKAkSGQoRYWNjb3VudF9hbGxvd2xpc3QYBiADKAkSGAoQc3ltYm9sX2FsbG93bGlzdBgHIAMoCRISCgpwYXBlcl9vbmx5GAggASgIEhoKEnJhdGVfbGltaXRfcGVyX21pbhgJIAEoBRIuCgpleHBpcmVzX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIOCgZzdGF0dXMYCyABKAkSMAoMbGFzdF91c2VkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpjcmVhdGVkX2F0GA0gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLPAgoPQWdlbnRBdWRpdEVudHJ5EgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSFgoOYWdlbnRfdG9rZW5faWQYAyABKAkSEgoKYWdlbnRfbmFtZRgEIAEoCRITCgtycGNfc2VydmljZRgFIAEoCRISCgpycGNfbWV0aG9kGAYgASgJEg0KBXNjb3BlGAcgASgJEhMKC3N0YXR1c19jb2RlGAggASgJEhcKD2lkZW1wb3RlbmN5X2tleRgJIAEoCRIVCg1yaXNrX2RlY2lzaW9uGAogASgJEhcKD3JlcXVlc3Rfc3VtbWFyeRgLIAEoCRIYChByZXNwb25zZV9zdW1tYXJ5GAwgASgJEhMKC2R1cmF0aW9uX21zGA0gASgDEi4KCmNyZWF0ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIssBChZJc3N1ZUFnZW50VG9rZW5SZXF1ZXN0EgwKBG5hbWUYASABKAkSDgoGc2NvcGVzGAIgAygJEhkKEWFjY291bnRfYWxsb3dsaXN0GAMgAygJEhgKEHN5bWJvbF9hbGxvd2xpc3QYBCADKAkSEgoKcGFwZXJfb25seRgFIAEoCBIaChJyYXRlX2xpbWl0X3Blcl9taW4YBiABKAUSLgoKZXhwaXJlc19hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiVQoXSXNzdWVBZ2VudFRva2VuUmVzcG9uc2USIQoFdG9rZW4YASABKAsyEi5hbnQudjEuQWdlbnRUb2tlbhIXCg9wbGFpbnRleHRfdG9rZW4YAiABKAkiGAoWTGlzdEFnZW50VG9rZW5zUmVxdWVzdCI9ChdMaXN0QWdlbnRUb2tlbnNSZXNwb25zZRIiCgZ0b2tlbnMYASADKAsyEi5hbnQudjEuQWdlbnRUb2tlbiIrChdSZXZva2VBZ2VudFRva2VuUmVxdWVzdBIQCgh0b2tlbl9pZBgBIAEoCSJIChVMaXN0QWdlbnRBdWRpdFJlcXVlc3QSEAoIdG9rZW5faWQYASABKAkSDQoFbGltaXQYAiABKAUSDgoGb2Zmc2V0GAMgASgFIkIKFkxpc3RBZ2VudEF1ZGl0UmVzcG9uc2USKAoHZW50cmllcxgBIAMoCzIXLmFudC52MS5BZ2VudEF1ZGl0RW50cnkiHQobR2V0QWdlbnRDYXBhYmlsaXRpZXNSZXF1ZXN0IloKEUFnZW50Q2FwYWJpbGl0aWVzEg4KBnNjb3BlcxgBIAMoCRIcChRsaXZlX3RyYWRpbmdfZW5hYmxlZBgCIAEoCBIXCg9hdmFpbGFibGVfdG9vbHMYAyADKAkigAIKFVN1Ym1pdFN0cmF0ZWd5UmVxdWVzdBITCgtzb3VyY2VfY29kZRgBIAEoCRIQCghsYW5ndWFnZRgCIAEoCRI5CgZwYXJhbXMYAyADKAsyKS5hbnQudjEuU3VibWl0U3RyYXRlZ3lSZXF1ZXN0LlBhcmFtc0VudHJ5EjQKD2JhY2t0ZXN0X2NvbmZpZxgEIAEoCzIbLmFudC52MS5BZ2VudEJhY2t0ZXN0Q29uZmlnEiAKBG1vZGUYBSABKA4yEi5hbnQudjEuU3VibWl0TW9kZRotCgtQYXJhbXNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIsoBChNBZ2VudEJhY2t0ZXN0Q29uZmlnEg4KBnN5bWJvbBgBIAEoCRIRCgl0aW1lZnJhbWUYAiABKAkSFQoNc3RhcnRfZGF0ZV9tcxgDIAEoAxITCgtlbmRfZGF0ZV9tcxgEIAEoAxIXCg9pbml0aWFsX2NhcGl0YWwYBSABKAkSEgoKY29tbWlzc2lvbhgGIAEoCRIQCghzbGlwcGFnZRgHIAEoCRIQCghsZXZlcmFnZRgIIAEoCRITCgtzdHJpY3RfbW9kZRgJIAEoCCLIAwoWU3VibWl0U3RyYXRlZ3lSZXNwb25zZRITCgtzdHJhdGVneV9pZBgBIAEoCRIXCg9jb21waWxlX3N1Y2Nlc3MYAiABKAgSFQoNY29tcGlsZV9lcnJvchgDIAEoCRIrCgZyZXN1bHQYBCABKAsyGy5hbnQudjEuQWdlbnRCYWNrdGVzdFJlc3VsdBIoCgdwcm9maWxlGAUgASgLMhcuYW50LnYxLlN0cmF0ZWd5UHJvZmlsZRIqCghhbmFseXNpcxgGIAEoCzIYLmFudC52MS5CYWNrdGVzdEFuYWx5c2lzEhYKDmNvdmVyYWdlX3Njb3JlGAcgASgBEisKC2JsaW5kX3Nwb3RzGAggAygLMhYuYW50LnYxLkFnZW50QmxpbmRTcG90EiAKBG1vZGUYCSABKA4yEi5hbnQudjEuU3VibWl0TW9kZRIrCg1zZW1hbnRpY19kaWZmGAogASgLMhQuYW50LnYxLlNlbWFudGljRGlmZhIVCg1icmlkZ2Vfc3RhdHVzGAsgASgJEh0KFWJyaWRnZWRfcHl0aG9uX3NvdXJjZRgMIAEoCRIcChRicmlkZ2VfY29tcGlsZV9lcnJvchgNIAEoCSJPCgxTZW1hbnRpY0RpZmYSJwoHY2hhbmdlcxgBIAMoCzIWLmFudC52MS5TZW1hbnRpY0NoYW5nZRIWCg5lZmZlY3Rfc3VtbWFyeRgCIAEoCSIzCg5TZW1hbnRpY0NoYW5nZRIMCgRraW5kGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJIusCChNBZ2VudEJhY2t0ZXN0UmVzdWx0Eg8KB3N1Y2Nlc3MYASABKAgSDQoFZXJyb3IYAiABKAkSFAoMdG90YWxfcmV0dXJuGAMgASgBEhUKDWFubnVhbF9yZXR1cm4YBCABKAESFAoMbWF4X2RyYXdkb3duGAUgASgBEhQKDHNoYXJwZV9yYXRpbxgGIAEoARIQCgh3aW5fcmF0ZRgHIAEoARIVCg1wcm9maXRfZmFjdG9yGAggASgBEhQKDHRvdGFsX3RyYWRlcxgJIAEoBRIWCg53aW5uaW5nX3RyYWRlcxgKIAEoBRIVCg1sb3NpbmdfdHJhZGVzGAsgASgFEhoKEnRvdGFsX3BubF9hYnNvbHV0ZRgMIAEoCRIUCgxlcXVpdHlfY3VydmUYDSADKAkSFwoPZXF1aXR5X3RpbWVzX21zGA4gAygDEiIKBnRyYWRlcxgPIAMoCzISLmFudC52MS5BZ2VudFRyYWRlIr0BCgpBZ2VudFRyYWRlEg4KBnRpY2tldBgBIAEoAxIMCgRzaWRlGAIgASgJEg4KBnZvbHVtZRgDIAEoCRISCgpvcGVuX3RzX21zGAQgASgDEhIKCm9wZW5fcHJpY2UYBSABKAkSEwoLY2xvc2VfdHNfbXMYBiABKAMSEwoLY2xvc2VfcHJpY2UYByABKAkSCwoDcG5sGAggASgJEhIKCmNvbW1pc3Npb24YCSABKAkSDgoGcmVhc29uGAogASgJIkIKDkFnZW50QmxpbmRTcG90Eg8KB2J1aWx0aW4YASABKAkSEAoIc2V2ZXJpdHkYAiABKAkSDQoFY291bnQYAyABKAUiSQoXU2VhcmNoRXhwZXJpZW5jZVJlcXVlc3QSDQoFcXVlcnkYASABKAkSEAoIY2F0ZWdvcnkYAiABKAkSDQoFbGltaXQYAyABKAUimAEKD0V4cGVyaWVuY2VFbnRyeRIKCgJpZBgBIAEoCRIQCghjYXRlZ29yeRgCIAEoCRIPCgdjb250ZW50GAMgASgJEhIKCm1hdGNoX3R5cGUYBCABKAkSEgoKc2ltaWxhcml0eRgFIAEoARIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJEChhTZWFyY2hFeHBlcmllbmNlUmVzcG9uc2USKAoHZW50cmllcxgBIAMoCzIXLmFudC52MS5FeHBlcmllbmNlRW50cnkiUAoWU3RvcmVFeHBlcmllbmNlUmVxdWVzdBIQCghjYXRlZ29yeRgBIAEoCRIPCgdjb250ZW50GAIgASgJEhMKC2ZpbmdlcnByaW50GAMgASgJIjYKF1N0b3JlRXhwZXJpZW5jZVJlc3BvbnNlEgoKAmlkGAEgASgJEg8KB3N1Y2Nlc3MYAiABKAgqLwoKU3VibWl0TW9kZRIPCgtTVUJNSVRfU1lOQxAAEhAKDFNVQk1JVF9BU1lOQxABMqgDCgxBZ2VudFNlcnZpY2USUgoPSXNzdWVBZ2VudFRva2VuEh4uYW50LnYxLklzc3VlQWdlbnRUb2tlblJlcXVlc3QaHy5hbnQudjEuSXNzdWVBZ2VudFRva2VuUmVzcG9uc2USUgoPTGlzdEFnZW50VG9rZW5zEh4uYW50LnYxLkxpc3RBZ2VudFRva2Vuc1JlcXVlc3QaHy5hbnQudjEuTGlzdEFnZW50VG9rZW5zUmVzcG9uc2USRwoQUmV2b2tlQWdlbnRUb2tlbhIfLmFudC52MS5SZXZva2VBZ2VudFRva2VuUmVxdWVzdBoSLmFudC52MS5BZ2VudFRva2VuEk8KDkxpc3RBZ2VudEF1ZGl0Eh0uYW50LnYxLkxpc3RBZ2VudEF1ZGl0UmVxdWVzdBoeLmFudC52MS5MaXN0QWdlbnRBdWRpdFJlc3BvbnNlElYKFEdldEFnZW50Q2FwYWJpbGl0aWVzEiMuYW50LnYxLkdldEFnZW50Q2FwYWJpbGl0aWVzUmVxdWVzdBoZLmFudC52MS5BZ2VudENhcGFiaWxpdGllczKRAgoTQWdlbnRHYXRld2F5U2VydmljZRJPCg5TdWJtaXRTdHJhdGVneRIdLmFudC52MS5TdWJtaXRTdHJhdGVneVJlcXVlc3QaHi5hbnQudjEuU3VibWl0U3RyYXRlZ3lSZXNwb25zZRJVChBTZWFyY2hFeHBlcmllbmNlEh8uYW50LnYxLlNlYXJjaEV4cGVyaWVuY2VSZXF1ZXN0GiAuYW50LnYxLlNlYXJjaEV4cGVyaWVuY2VSZXNwb25zZRJSCg9TdG9yZUV4cGVyaWVuY2USHi5hbnQudjEuU3RvcmVFeHBlcmllbmNlUmVxdWVzdBofLmFudC52MS5TdG9yZUV4cGVyaWVuY2VSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_agent_profile, file_agent_analysis]);
 
 /**
  * @generated from message ant.v1.AgentToken
@@ -379,6 +383,654 @@ export const AgentCapabilitiesSchema: GenMessage<AgentCapabilities> = /*@__PURE_
   messageDesc(file_agent_gateway, 10);
 
 /**
+ * @generated from message ant.v1.SubmitStrategyRequest
+ */
+export type SubmitStrategyRequest = Message<"ant.v1.SubmitStrategyRequest"> & {
+  /**
+   * 策略源码 (MQL4/MQL5)
+   *
+   * @generated from field: string source_code = 1;
+   */
+  sourceCode: string;
+
+  /**
+   * "mql4" | "mql5" | "python" (Phase 2: Python supported)
+   *
+   * @generated from field: string language = 2;
+   */
+  language: string;
+
+  /**
+   * 参数覆盖
+   *
+   * @generated from field: map<string, string> params = 3;
+   */
+  params: { [key: string]: string };
+
+  /**
+   * 回测配置
+   *
+   * @generated from field: ant.v1.AgentBacktestConfig backtest_config = 4;
+   */
+  backtestConfig?: AgentBacktestConfig | undefined;
+
+  /**
+   * 同步/异步模式 (Phase 0: SYNC only)
+   *
+   * @generated from field: ant.v1.SubmitMode mode = 5;
+   */
+  mode: SubmitMode;
+};
+
+/**
+ * Describes the message ant.v1.SubmitStrategyRequest.
+ * Use `create(SubmitStrategyRequestSchema)` to create a new message.
+ */
+export const SubmitStrategyRequestSchema: GenMessage<SubmitStrategyRequest> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 11);
+
+/**
+ * @generated from message ant.v1.AgentBacktestConfig
+ */
+export type AgentBacktestConfig = Message<"ant.v1.AgentBacktestConfig"> & {
+  /**
+   * @generated from field: string symbol = 1;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: string timeframe = 2;
+   */
+  timeframe: string;
+
+  /**
+   * Unix milliseconds
+   *
+   * @generated from field: int64 start_date_ms = 3;
+   */
+  startDateMs: bigint;
+
+  /**
+   * Unix milliseconds
+   *
+   * @generated from field: int64 end_date_ms = 4;
+   */
+  endDateMs: bigint;
+
+  /**
+   * decimal string
+   *
+   * @generated from field: string initial_capital = 5;
+   */
+  initialCapital: string;
+
+  /**
+   * ratio as string
+   *
+   * @generated from field: string commission = 6;
+   */
+  commission: string;
+
+  /**
+   * ratio as string
+   *
+   * @generated from field: string slippage = 7;
+   */
+  slippage: string;
+
+  /**
+   * e.g. "100"
+   *
+   * @generated from field: string leverage = 8;
+   */
+  leverage: string;
+
+  /**
+   * true = next-bar-open
+   *
+   * @generated from field: bool strict_mode = 9;
+   */
+  strictMode: boolean;
+};
+
+/**
+ * Describes the message ant.v1.AgentBacktestConfig.
+ * Use `create(AgentBacktestConfigSchema)` to create a new message.
+ */
+export const AgentBacktestConfigSchema: GenMessage<AgentBacktestConfig> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 12);
+
+/**
+ * @generated from message ant.v1.SubmitStrategyResponse
+ */
+export type SubmitStrategyResponse = Message<"ant.v1.SubmitStrategyResponse"> & {
+  /**
+   * generated UUID
+   *
+   * @generated from field: string strategy_id = 1;
+   */
+  strategyId: string;
+
+  /**
+   * @generated from field: bool compile_success = 2;
+   */
+  compileSuccess: boolean;
+
+  /**
+   * empty if success
+   *
+   * @generated from field: string compile_error = 3;
+   */
+  compileError: string;
+
+  /**
+   * backtest result (SYNC mode)
+   *
+   * @generated from field: ant.v1.AgentBacktestResult result = 4;
+   */
+  result?: AgentBacktestResult | undefined;
+
+  /**
+   * LLM-generated strategy profile
+   *
+   * @generated from field: ant.v1.StrategyProfile profile = 5;
+   */
+  profile?: StrategyProfile | undefined;
+
+  /**
+   * LLM-generated backtest analysis
+   *
+   * @generated from field: ant.v1.BacktestAnalysis analysis = 6;
+   */
+  analysis?: BacktestAnalysis | undefined;
+
+  /**
+   * 0.0-1.0
+   *
+   * @generated from field: double coverage_score = 7;
+   */
+  coverageScore: number;
+
+  /**
+   * @generated from field: repeated ant.v1.AgentBlindSpot blind_spots = 8;
+   */
+  blindSpots: AgentBlindSpot[];
+
+  /**
+   * actual mode used
+   *
+   * @generated from field: ant.v1.SubmitMode mode = 9;
+   */
+  mode: SubmitMode;
+
+  /**
+   * ADR-0024 Phase 2: semantic change description
+   *
+   * @generated from field: ant.v1.SemanticDiff semantic_diff = 10;
+   */
+  semanticDiff?: SemanticDiff | undefined;
+
+  /**
+   * "success" | "bridge_failed" | "not_attempted"
+   *
+   * @generated from field: string bridge_status = 11;
+   */
+  bridgeStatus: string;
+
+  /**
+   * translated Python source (if bridge successful)
+   *
+   * @generated from field: string bridged_python_source = 12;
+   */
+  bridgedPythonSource: string;
+
+  /**
+   * last compile error from bridge retry loop
+   *
+   * @generated from field: string bridge_compile_error = 13;
+   */
+  bridgeCompileError: string;
+};
+
+/**
+ * Describes the message ant.v1.SubmitStrategyResponse.
+ * Use `create(SubmitStrategyResponseSchema)` to create a new message.
+ */
+export const SubmitStrategyResponseSchema: GenMessage<SubmitStrategyResponse> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 13);
+
+/**
+ * SemanticDiff describes strategy changes in natural language (non-programmer friendly).
+ * ADR-0024 Phase 2: "策略语义 diff（非代码 diff）"
+ *
+ * @generated from message ant.v1.SemanticDiff
+ */
+export type SemanticDiff = Message<"ant.v1.SemanticDiff"> & {
+  /**
+   * @generated from field: repeated ant.v1.SemanticChange changes = 1;
+   */
+  changes: SemanticChange[];
+
+  /**
+   * e.g. "夏普 1.2 → 1.6, 回撤 28% → 14%"
+   *
+   * @generated from field: string effect_summary = 2;
+   */
+  effectSummary: string;
+};
+
+/**
+ * Describes the message ant.v1.SemanticDiff.
+ * Use `create(SemanticDiffSchema)` to create a new message.
+ */
+export const SemanticDiffSchema: GenMessage<SemanticDiff> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 14);
+
+/**
+ * SemanticChange represents one semantic change item.
+ *
+ * @generated from message ant.v1.SemanticChange
+ */
+export type SemanticChange = Message<"ant.v1.SemanticChange"> & {
+  /**
+   * "added" | "modified" | "removed"
+   *
+   * @generated from field: string kind = 1;
+   */
+  kind: string;
+
+  /**
+   * human-readable description
+   *
+   * @generated from field: string description = 2;
+   */
+  description: string;
+};
+
+/**
+ * Describes the message ant.v1.SemanticChange.
+ * Use `create(SemanticChangeSchema)` to create a new message.
+ */
+export const SemanticChangeSchema: GenMessage<SemanticChange> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 15);
+
+/**
+ * @generated from message ant.v1.AgentBacktestResult
+ */
+export type AgentBacktestResult = Message<"ant.v1.AgentBacktestResult"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+
+  /**
+   * @generated from field: string error = 2;
+   */
+  error: string;
+
+  /**
+   * @generated from field: double total_return = 3;
+   */
+  totalReturn: number;
+
+  /**
+   * @generated from field: double annual_return = 4;
+   */
+  annualReturn: number;
+
+  /**
+   * @generated from field: double max_drawdown = 5;
+   */
+  maxDrawdown: number;
+
+  /**
+   * @generated from field: double sharpe_ratio = 6;
+   */
+  sharpeRatio: number;
+
+  /**
+   * @generated from field: double win_rate = 7;
+   */
+  winRate: number;
+
+  /**
+   * @generated from field: double profit_factor = 8;
+   */
+  profitFactor: number;
+
+  /**
+   * @generated from field: int32 total_trades = 9;
+   */
+  totalTrades: number;
+
+  /**
+   * @generated from field: int32 winning_trades = 10;
+   */
+  winningTrades: number;
+
+  /**
+   * @generated from field: int32 losing_trades = 11;
+   */
+  losingTrades: number;
+
+  /**
+   * decimal string
+   *
+   * @generated from field: string total_pnl_absolute = 12;
+   */
+  totalPnlAbsolute: string;
+
+  /**
+   * decimal strings
+   *
+   * @generated from field: repeated string equity_curve = 13;
+   */
+  equityCurve: string[];
+
+  /**
+   * bar timestamps
+   *
+   * @generated from field: repeated int64 equity_times_ms = 14;
+   */
+  equityTimesMs: bigint[];
+
+  /**
+   * @generated from field: repeated ant.v1.AgentTrade trades = 15;
+   */
+  trades: AgentTrade[];
+};
+
+/**
+ * Describes the message ant.v1.AgentBacktestResult.
+ * Use `create(AgentBacktestResultSchema)` to create a new message.
+ */
+export const AgentBacktestResultSchema: GenMessage<AgentBacktestResult> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 16);
+
+/**
+ * @generated from message ant.v1.AgentTrade
+ */
+export type AgentTrade = Message<"ant.v1.AgentTrade"> & {
+  /**
+   * @generated from field: int64 ticket = 1;
+   */
+  ticket: bigint;
+
+  /**
+   * "BUY" | "SELL"
+   *
+   * @generated from field: string side = 2;
+   */
+  side: string;
+
+  /**
+   * decimal string
+   *
+   * @generated from field: string volume = 3;
+   */
+  volume: string;
+
+  /**
+   * @generated from field: int64 open_ts_ms = 4;
+   */
+  openTsMs: bigint;
+
+  /**
+   * decimal string
+   *
+   * @generated from field: string open_price = 5;
+   */
+  openPrice: string;
+
+  /**
+   * @generated from field: int64 close_ts_ms = 6;
+   */
+  closeTsMs: bigint;
+
+  /**
+   * decimal string
+   *
+   * @generated from field: string close_price = 7;
+   */
+  closePrice: string;
+
+  /**
+   * decimal string
+   *
+   * @generated from field: string pnl = 8;
+   */
+  pnl: string;
+
+  /**
+   * decimal string
+   *
+   * @generated from field: string commission = 9;
+   */
+  commission: string;
+
+  /**
+   * @generated from field: string reason = 10;
+   */
+  reason: string;
+};
+
+/**
+ * Describes the message ant.v1.AgentTrade.
+ * Use `create(AgentTradeSchema)` to create a new message.
+ */
+export const AgentTradeSchema: GenMessage<AgentTrade> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 17);
+
+/**
+ * @generated from message ant.v1.AgentBlindSpot
+ */
+export type AgentBlindSpot = Message<"ant.v1.AgentBlindSpot"> & {
+  /**
+   * @generated from field: string builtin = 1;
+   */
+  builtin: string;
+
+  /**
+   * "fatal", "warning", "info"
+   *
+   * @generated from field: string severity = 2;
+   */
+  severity: string;
+
+  /**
+   * @generated from field: int32 count = 3;
+   */
+  count: number;
+};
+
+/**
+ * Describes the message ant.v1.AgentBlindSpot.
+ * Use `create(AgentBlindSpotSchema)` to create a new message.
+ */
+export const AgentBlindSpotSchema: GenMessage<AgentBlindSpot> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 18);
+
+/**
+ * @generated from message ant.v1.SearchExperienceRequest
+ */
+export type SearchExperienceRequest = Message<"ant.v1.SearchExperienceRequest"> & {
+  /**
+   * natural language description
+   *
+   * @generated from field: string query = 1;
+   */
+  query: string;
+
+  /**
+   * strategy_pattern / market_regime / optimization_result
+   *
+   * @generated from field: string category = 2;
+   */
+  category: string;
+
+  /**
+   * max results (default 10)
+   *
+   * @generated from field: int32 limit = 3;
+   */
+  limit: number;
+};
+
+/**
+ * Describes the message ant.v1.SearchExperienceRequest.
+ * Use `create(SearchExperienceRequestSchema)` to create a new message.
+ */
+export const SearchExperienceRequestSchema: GenMessage<SearchExperienceRequest> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 19);
+
+/**
+ * @generated from message ant.v1.ExperienceEntry
+ */
+export type ExperienceEntry = Message<"ant.v1.ExperienceEntry"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string category = 2;
+   */
+  category: string;
+
+  /**
+   * @generated from field: string content = 3;
+   */
+  content: string;
+
+  /**
+   * "semantic" / "structural" / "both"
+   *
+   * @generated from field: string match_type = 4;
+   */
+  matchType: string;
+
+  /**
+   * 0.0-1.0
+   *
+   * @generated from field: double similarity = 5;
+   */
+  similarity: number;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 6;
+   */
+  createdAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message ant.v1.ExperienceEntry.
+ * Use `create(ExperienceEntrySchema)` to create a new message.
+ */
+export const ExperienceEntrySchema: GenMessage<ExperienceEntry> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 20);
+
+/**
+ * @generated from message ant.v1.SearchExperienceResponse
+ */
+export type SearchExperienceResponse = Message<"ant.v1.SearchExperienceResponse"> & {
+  /**
+   * @generated from field: repeated ant.v1.ExperienceEntry entries = 1;
+   */
+  entries: ExperienceEntry[];
+};
+
+/**
+ * Describes the message ant.v1.SearchExperienceResponse.
+ * Use `create(SearchExperienceResponseSchema)` to create a new message.
+ */
+export const SearchExperienceResponseSchema: GenMessage<SearchExperienceResponse> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 21);
+
+/**
+ * @generated from message ant.v1.StoreExperienceRequest
+ */
+export type StoreExperienceRequest = Message<"ant.v1.StoreExperienceRequest"> & {
+  /**
+   * strategy_pattern / market_regime / optimization_result
+   *
+   * @generated from field: string category = 1;
+   */
+  category: string;
+
+  /**
+   * natural language description
+   *
+   * @generated from field: string content = 2;
+   */
+  content: string;
+
+  /**
+   * JSON string of structural fingerprint
+   *
+   * @generated from field: string fingerprint = 3;
+   */
+  fingerprint: string;
+};
+
+/**
+ * Describes the message ant.v1.StoreExperienceRequest.
+ * Use `create(StoreExperienceRequestSchema)` to create a new message.
+ */
+export const StoreExperienceRequestSchema: GenMessage<StoreExperienceRequest> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 22);
+
+/**
+ * @generated from message ant.v1.StoreExperienceResponse
+ */
+export type StoreExperienceResponse = Message<"ant.v1.StoreExperienceResponse"> & {
+  /**
+   * generated UUID
+   *
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: bool success = 2;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message ant.v1.StoreExperienceResponse.
+ * Use `create(StoreExperienceResponseSchema)` to create a new message.
+ */
+export const StoreExperienceResponseSchema: GenMessage<StoreExperienceResponse> = /*@__PURE__*/
+  messageDesc(file_agent_gateway, 23);
+
+/**
+ * @generated from enum ant.v1.SubmitMode
+ */
+export enum SubmitMode {
+  /**
+   * 同步: 阻塞等待回测完成 (Phase 0, 回测 <30s)
+   *
+   * @generated from enum value: SUBMIT_SYNC = 0;
+   */
+  SUBMIT_SYNC = 0,
+
+  /**
+   * 异步: 立即返回 strategy_id (Phase 2, 未实现)
+   *
+   * @generated from enum value: SUBMIT_ASYNC = 1;
+   */
+  SUBMIT_ASYNC = 1,
+}
+
+/**
+ * Describes the enum ant.v1.SubmitMode.
+ */
+export const SubmitModeSchema: GenEnum<SubmitMode> = /*@__PURE__*/
+  enumDesc(file_agent_gateway, 0);
+
+/**
+ * AgentService manages agent tokens, audit logs, and capabilities.
+ *
  * @generated from service ant.v1.AgentService
  */
 export const AgentService: GenService<{
@@ -424,4 +1076,46 @@ export const AgentService: GenService<{
   },
 }> = /*@__PURE__*/
   serviceDesc(file_agent_gateway, 0);
+
+/**
+ * AgentGatewayService is the ADR-0024 Agent Gateway for strategy submission,
+ * compilation, backtest execution, and knowledge base access.
+ * Phase 0: synchronous mode — SubmitStrategy blocks until backtest completes.
+ *
+ * @generated from service ant.v1.AgentGatewayService
+ */
+export const AgentGatewayService: GenService<{
+  /**
+   * Agent submits strategy source code, triggers compile + backtest.
+   * Phase 0: SYNC only — blocks until backtest completes (<30s), returns result directly.
+   *
+   * @generated from rpc ant.v1.AgentGatewayService.SubmitStrategy
+   */
+  submitStrategy: {
+    methodKind: "unary";
+    input: typeof SubmitStrategyRequestSchema;
+    output: typeof SubmitStrategyResponseSchema;
+  },
+  /**
+   * Agent searches knowledge base for similar experiences (Go-side pgvector).
+   *
+   * @generated from rpc ant.v1.AgentGatewayService.SearchExperience
+   */
+  searchExperience: {
+    methodKind: "unary";
+    input: typeof SearchExperienceRequestSchema;
+    output: typeof SearchExperienceResponseSchema;
+  },
+  /**
+   * Agent stores an experience to the knowledge base.
+   *
+   * @generated from rpc ant.v1.AgentGatewayService.StoreExperience
+   */
+  storeExperience: {
+    methodKind: "unary";
+    input: typeof StoreExperienceRequestSchema;
+    output: typeof StoreExperienceResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_agent_gateway, 1);
 

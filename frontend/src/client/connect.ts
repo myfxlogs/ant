@@ -42,6 +42,7 @@ import { AutoTradingService } from "../gen/ant/v1/auto_trading_pb";
 import { ObjectiveScoreService } from "../gen/ant/v1/objective_score_pb";
 import { WalletService } from "../gen/ant/v1/wallet_pb";
 import { AIGatewayService } from "../gen/ant/v1/ai_gateway_pb";
+import { AgentGatewayService } from "../gen/ant/v1/agent_gateway_pb";
 import { ShareService } from "../gen/ant/v1/share_pb";
 import { streamTransport, transport } from "./transport";
 
@@ -104,5 +105,6 @@ export const paperTradingStreamClient = createClient(PaperTradingService, stream
 export const autoTradingClient = createClient(AutoTradingService, transport);
 export const objectiveScoreClient = createClient(ObjectiveScoreService, transport);
 export const aiGatewayClient = createClient(AIGatewayService, transport);
+export const agentGatewayClient = createClient(AgentGatewayService, transport);
 const publicTransport = createConnectTransport({ baseUrl: (import.meta as any).env?.VITE_API_URL || (typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:8080"), useBinaryFormat: true });
 export const shareClient = createClient(ShareService, publicTransport);

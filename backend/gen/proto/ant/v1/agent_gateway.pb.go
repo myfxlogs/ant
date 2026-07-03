@@ -22,6 +22,52 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type SubmitMode int32
+
+const (
+	SubmitMode_SUBMIT_SYNC  SubmitMode = 0 // 同步: 阻塞等待回测完成 (Phase 0, 回测 <30s)
+	SubmitMode_SUBMIT_ASYNC SubmitMode = 1 // 异步: 立即返回 strategy_id (Phase 2, 未实现)
+)
+
+// Enum value maps for SubmitMode.
+var (
+	SubmitMode_name = map[int32]string{
+		0: "SUBMIT_SYNC",
+		1: "SUBMIT_ASYNC",
+	}
+	SubmitMode_value = map[string]int32{
+		"SUBMIT_SYNC":  0,
+		"SUBMIT_ASYNC": 1,
+	}
+)
+
+func (x SubmitMode) Enum() *SubmitMode {
+	p := new(SubmitMode)
+	*p = x
+	return p
+}
+
+func (x SubmitMode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SubmitMode) Descriptor() protoreflect.EnumDescriptor {
+	return file_agent_gateway_proto_enumTypes[0].Descriptor()
+}
+
+func (SubmitMode) Type() protoreflect.EnumType {
+	return &file_agent_gateway_proto_enumTypes[0]
+}
+
+func (x SubmitMode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SubmitMode.Descriptor instead.
+func (SubmitMode) EnumDescriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{0}
+}
+
 type AgentToken struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -786,11 +832,1074 @@ func (x *AgentCapabilities) GetAvailableTools() []string {
 	return nil
 }
 
+type SubmitStrategyRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	SourceCode     string                 `protobuf:"bytes,1,opt,name=source_code,json=sourceCode,proto3" json:"source_code,omitempty"`                                                 // 策略源码 (MQL4/MQL5)
+	Language       string                 `protobuf:"bytes,2,opt,name=language,proto3" json:"language,omitempty"`                                                                       // "mql4" | "mql5" | "python" (Phase 2: Python supported)
+	Params         map[string]string      `protobuf:"bytes,3,rep,name=params,proto3" json:"params,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // 参数覆盖
+	BacktestConfig *AgentBacktestConfig   `protobuf:"bytes,4,opt,name=backtest_config,json=backtestConfig,proto3" json:"backtest_config,omitempty"`                                     // 回测配置
+	Mode           SubmitMode             `protobuf:"varint,5,opt,name=mode,proto3,enum=ant.v1.SubmitMode" json:"mode,omitempty"`                                                       // 同步/异步模式 (Phase 0: SYNC only)
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *SubmitStrategyRequest) Reset() {
+	*x = SubmitStrategyRequest{}
+	mi := &file_agent_gateway_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SubmitStrategyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubmitStrategyRequest) ProtoMessage() {}
+
+func (x *SubmitStrategyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubmitStrategyRequest.ProtoReflect.Descriptor instead.
+func (*SubmitStrategyRequest) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *SubmitStrategyRequest) GetSourceCode() string {
+	if x != nil {
+		return x.SourceCode
+	}
+	return ""
+}
+
+func (x *SubmitStrategyRequest) GetLanguage() string {
+	if x != nil {
+		return x.Language
+	}
+	return ""
+}
+
+func (x *SubmitStrategyRequest) GetParams() map[string]string {
+	if x != nil {
+		return x.Params
+	}
+	return nil
+}
+
+func (x *SubmitStrategyRequest) GetBacktestConfig() *AgentBacktestConfig {
+	if x != nil {
+		return x.BacktestConfig
+	}
+	return nil
+}
+
+func (x *SubmitStrategyRequest) GetMode() SubmitMode {
+	if x != nil {
+		return x.Mode
+	}
+	return SubmitMode_SUBMIT_SYNC
+}
+
+type AgentBacktestConfig struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Symbol         string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Timeframe      string                 `protobuf:"bytes,2,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
+	StartDateMs    int64                  `protobuf:"varint,3,opt,name=start_date_ms,json=startDateMs,proto3" json:"start_date_ms,omitempty"`       // Unix milliseconds
+	EndDateMs      int64                  `protobuf:"varint,4,opt,name=end_date_ms,json=endDateMs,proto3" json:"end_date_ms,omitempty"`             // Unix milliseconds
+	InitialCapital string                 `protobuf:"bytes,5,opt,name=initial_capital,json=initialCapital,proto3" json:"initial_capital,omitempty"` // decimal string
+	Commission     string                 `protobuf:"bytes,6,opt,name=commission,proto3" json:"commission,omitempty"`                               // ratio as string
+	Slippage       string                 `protobuf:"bytes,7,opt,name=slippage,proto3" json:"slippage,omitempty"`                                   // ratio as string
+	Leverage       string                 `protobuf:"bytes,8,opt,name=leverage,proto3" json:"leverage,omitempty"`                                   // e.g. "100"
+	StrictMode     bool                   `protobuf:"varint,9,opt,name=strict_mode,json=strictMode,proto3" json:"strict_mode,omitempty"`            // true = next-bar-open
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *AgentBacktestConfig) Reset() {
+	*x = AgentBacktestConfig{}
+	mi := &file_agent_gateway_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentBacktestConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentBacktestConfig) ProtoMessage() {}
+
+func (x *AgentBacktestConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentBacktestConfig.ProtoReflect.Descriptor instead.
+func (*AgentBacktestConfig) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *AgentBacktestConfig) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *AgentBacktestConfig) GetTimeframe() string {
+	if x != nil {
+		return x.Timeframe
+	}
+	return ""
+}
+
+func (x *AgentBacktestConfig) GetStartDateMs() int64 {
+	if x != nil {
+		return x.StartDateMs
+	}
+	return 0
+}
+
+func (x *AgentBacktestConfig) GetEndDateMs() int64 {
+	if x != nil {
+		return x.EndDateMs
+	}
+	return 0
+}
+
+func (x *AgentBacktestConfig) GetInitialCapital() string {
+	if x != nil {
+		return x.InitialCapital
+	}
+	return ""
+}
+
+func (x *AgentBacktestConfig) GetCommission() string {
+	if x != nil {
+		return x.Commission
+	}
+	return ""
+}
+
+func (x *AgentBacktestConfig) GetSlippage() string {
+	if x != nil {
+		return x.Slippage
+	}
+	return ""
+}
+
+func (x *AgentBacktestConfig) GetLeverage() string {
+	if x != nil {
+		return x.Leverage
+	}
+	return ""
+}
+
+func (x *AgentBacktestConfig) GetStrictMode() bool {
+	if x != nil {
+		return x.StrictMode
+	}
+	return false
+}
+
+type SubmitStrategyResponse struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId          string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"` // generated UUID
+	CompileSuccess      bool                   `protobuf:"varint,2,opt,name=compile_success,json=compileSuccess,proto3" json:"compile_success,omitempty"`
+	CompileError        string                 `protobuf:"bytes,3,opt,name=compile_error,json=compileError,proto3" json:"compile_error,omitempty"`      // empty if success
+	Result              *AgentBacktestResult   `protobuf:"bytes,4,opt,name=result,proto3" json:"result,omitempty"`                                      // backtest result (SYNC mode)
+	Profile             *StrategyProfile       `protobuf:"bytes,5,opt,name=profile,proto3" json:"profile,omitempty"`                                    // LLM-generated strategy profile
+	Analysis            *BacktestAnalysis      `protobuf:"bytes,6,opt,name=analysis,proto3" json:"analysis,omitempty"`                                  // LLM-generated backtest analysis
+	CoverageScore       float64                `protobuf:"fixed64,7,opt,name=coverage_score,json=coverageScore,proto3" json:"coverage_score,omitempty"` // 0.0-1.0
+	BlindSpots          []*AgentBlindSpot      `protobuf:"bytes,8,rep,name=blind_spots,json=blindSpots,proto3" json:"blind_spots,omitempty"`
+	Mode                SubmitMode             `protobuf:"varint,9,opt,name=mode,proto3,enum=ant.v1.SubmitMode" json:"mode,omitempty"`                                     // actual mode used
+	SemanticDiff        *SemanticDiff          `protobuf:"bytes,10,opt,name=semantic_diff,json=semanticDiff,proto3" json:"semantic_diff,omitempty"`                        // ADR-0024 Phase 2: semantic change description
+	BridgeStatus        string                 `protobuf:"bytes,11,opt,name=bridge_status,json=bridgeStatus,proto3" json:"bridge_status,omitempty"`                        // "success" | "bridge_failed" | "not_attempted"
+	BridgedPythonSource string                 `protobuf:"bytes,12,opt,name=bridged_python_source,json=bridgedPythonSource,proto3" json:"bridged_python_source,omitempty"` // translated Python source (if bridge successful)
+	BridgeCompileError  string                 `protobuf:"bytes,13,opt,name=bridge_compile_error,json=bridgeCompileError,proto3" json:"bridge_compile_error,omitempty"`    // last compile error from bridge retry loop
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *SubmitStrategyResponse) Reset() {
+	*x = SubmitStrategyResponse{}
+	mi := &file_agent_gateway_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SubmitStrategyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubmitStrategyResponse) ProtoMessage() {}
+
+func (x *SubmitStrategyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubmitStrategyResponse.ProtoReflect.Descriptor instead.
+func (*SubmitStrategyResponse) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SubmitStrategyResponse) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *SubmitStrategyResponse) GetCompileSuccess() bool {
+	if x != nil {
+		return x.CompileSuccess
+	}
+	return false
+}
+
+func (x *SubmitStrategyResponse) GetCompileError() string {
+	if x != nil {
+		return x.CompileError
+	}
+	return ""
+}
+
+func (x *SubmitStrategyResponse) GetResult() *AgentBacktestResult {
+	if x != nil {
+		return x.Result
+	}
+	return nil
+}
+
+func (x *SubmitStrategyResponse) GetProfile() *StrategyProfile {
+	if x != nil {
+		return x.Profile
+	}
+	return nil
+}
+
+func (x *SubmitStrategyResponse) GetAnalysis() *BacktestAnalysis {
+	if x != nil {
+		return x.Analysis
+	}
+	return nil
+}
+
+func (x *SubmitStrategyResponse) GetCoverageScore() float64 {
+	if x != nil {
+		return x.CoverageScore
+	}
+	return 0
+}
+
+func (x *SubmitStrategyResponse) GetBlindSpots() []*AgentBlindSpot {
+	if x != nil {
+		return x.BlindSpots
+	}
+	return nil
+}
+
+func (x *SubmitStrategyResponse) GetMode() SubmitMode {
+	if x != nil {
+		return x.Mode
+	}
+	return SubmitMode_SUBMIT_SYNC
+}
+
+func (x *SubmitStrategyResponse) GetSemanticDiff() *SemanticDiff {
+	if x != nil {
+		return x.SemanticDiff
+	}
+	return nil
+}
+
+func (x *SubmitStrategyResponse) GetBridgeStatus() string {
+	if x != nil {
+		return x.BridgeStatus
+	}
+	return ""
+}
+
+func (x *SubmitStrategyResponse) GetBridgedPythonSource() string {
+	if x != nil {
+		return x.BridgedPythonSource
+	}
+	return ""
+}
+
+func (x *SubmitStrategyResponse) GetBridgeCompileError() string {
+	if x != nil {
+		return x.BridgeCompileError
+	}
+	return ""
+}
+
+// SemanticDiff describes strategy changes in natural language (non-programmer friendly).
+// ADR-0024 Phase 2: "策略语义 diff（非代码 diff）"
+type SemanticDiff struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Changes       []*SemanticChange      `protobuf:"bytes,1,rep,name=changes,proto3" json:"changes,omitempty"`
+	EffectSummary string                 `protobuf:"bytes,2,opt,name=effect_summary,json=effectSummary,proto3" json:"effect_summary,omitempty"` // e.g. "夏普 1.2 → 1.6, 回撤 28% → 14%"
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SemanticDiff) Reset() {
+	*x = SemanticDiff{}
+	mi := &file_agent_gateway_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SemanticDiff) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SemanticDiff) ProtoMessage() {}
+
+func (x *SemanticDiff) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SemanticDiff.ProtoReflect.Descriptor instead.
+func (*SemanticDiff) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *SemanticDiff) GetChanges() []*SemanticChange {
+	if x != nil {
+		return x.Changes
+	}
+	return nil
+}
+
+func (x *SemanticDiff) GetEffectSummary() string {
+	if x != nil {
+		return x.EffectSummary
+	}
+	return ""
+}
+
+// SemanticChange represents one semantic change item.
+type SemanticChange struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Kind          string                 `protobuf:"bytes,1,opt,name=kind,proto3" json:"kind,omitempty"`               // "added" | "modified" | "removed"
+	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"` // human-readable description
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SemanticChange) Reset() {
+	*x = SemanticChange{}
+	mi := &file_agent_gateway_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SemanticChange) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SemanticChange) ProtoMessage() {}
+
+func (x *SemanticChange) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SemanticChange.ProtoReflect.Descriptor instead.
+func (*SemanticChange) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *SemanticChange) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *SemanticChange) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+type AgentBacktestResult struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Success          bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Error            string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	TotalReturn      float64                `protobuf:"fixed64,3,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
+	AnnualReturn     float64                `protobuf:"fixed64,4,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"`
+	MaxDrawdown      float64                `protobuf:"fixed64,5,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
+	SharpeRatio      float64                `protobuf:"fixed64,6,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
+	WinRate          float64                `protobuf:"fixed64,7,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	ProfitFactor     float64                `protobuf:"fixed64,8,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
+	TotalTrades      int32                  `protobuf:"varint,9,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
+	WinningTrades    int32                  `protobuf:"varint,10,opt,name=winning_trades,json=winningTrades,proto3" json:"winning_trades,omitempty"`
+	LosingTrades     int32                  `protobuf:"varint,11,opt,name=losing_trades,json=losingTrades,proto3" json:"losing_trades,omitempty"`
+	TotalPnlAbsolute string                 `protobuf:"bytes,12,opt,name=total_pnl_absolute,json=totalPnlAbsolute,proto3" json:"total_pnl_absolute,omitempty"` // decimal string
+	EquityCurve      []string               `protobuf:"bytes,13,rep,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`                  // decimal strings
+	EquityTimesMs    []int64                `protobuf:"varint,14,rep,packed,name=equity_times_ms,json=equityTimesMs,proto3" json:"equity_times_ms,omitempty"`  // bar timestamps
+	Trades           []*AgentTrade          `protobuf:"bytes,15,rep,name=trades,proto3" json:"trades,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *AgentBacktestResult) Reset() {
+	*x = AgentBacktestResult{}
+	mi := &file_agent_gateway_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentBacktestResult) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentBacktestResult) ProtoMessage() {}
+
+func (x *AgentBacktestResult) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentBacktestResult.ProtoReflect.Descriptor instead.
+func (*AgentBacktestResult) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *AgentBacktestResult) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *AgentBacktestResult) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+func (x *AgentBacktestResult) GetTotalReturn() float64 {
+	if x != nil {
+		return x.TotalReturn
+	}
+	return 0
+}
+
+func (x *AgentBacktestResult) GetAnnualReturn() float64 {
+	if x != nil {
+		return x.AnnualReturn
+	}
+	return 0
+}
+
+func (x *AgentBacktestResult) GetMaxDrawdown() float64 {
+	if x != nil {
+		return x.MaxDrawdown
+	}
+	return 0
+}
+
+func (x *AgentBacktestResult) GetSharpeRatio() float64 {
+	if x != nil {
+		return x.SharpeRatio
+	}
+	return 0
+}
+
+func (x *AgentBacktestResult) GetWinRate() float64 {
+	if x != nil {
+		return x.WinRate
+	}
+	return 0
+}
+
+func (x *AgentBacktestResult) GetProfitFactor() float64 {
+	if x != nil {
+		return x.ProfitFactor
+	}
+	return 0
+}
+
+func (x *AgentBacktestResult) GetTotalTrades() int32 {
+	if x != nil {
+		return x.TotalTrades
+	}
+	return 0
+}
+
+func (x *AgentBacktestResult) GetWinningTrades() int32 {
+	if x != nil {
+		return x.WinningTrades
+	}
+	return 0
+}
+
+func (x *AgentBacktestResult) GetLosingTrades() int32 {
+	if x != nil {
+		return x.LosingTrades
+	}
+	return 0
+}
+
+func (x *AgentBacktestResult) GetTotalPnlAbsolute() string {
+	if x != nil {
+		return x.TotalPnlAbsolute
+	}
+	return ""
+}
+
+func (x *AgentBacktestResult) GetEquityCurve() []string {
+	if x != nil {
+		return x.EquityCurve
+	}
+	return nil
+}
+
+func (x *AgentBacktestResult) GetEquityTimesMs() []int64 {
+	if x != nil {
+		return x.EquityTimesMs
+	}
+	return nil
+}
+
+func (x *AgentBacktestResult) GetTrades() []*AgentTrade {
+	if x != nil {
+		return x.Trades
+	}
+	return nil
+}
+
+type AgentTrade struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ticket        int64                  `protobuf:"varint,1,opt,name=ticket,proto3" json:"ticket,omitempty"`
+	Side          string                 `protobuf:"bytes,2,opt,name=side,proto3" json:"side,omitempty"`     // "BUY" | "SELL"
+	Volume        string                 `protobuf:"bytes,3,opt,name=volume,proto3" json:"volume,omitempty"` // decimal string
+	OpenTsMs      int64                  `protobuf:"varint,4,opt,name=open_ts_ms,json=openTsMs,proto3" json:"open_ts_ms,omitempty"`
+	OpenPrice     string                 `protobuf:"bytes,5,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"` // decimal string
+	CloseTsMs     int64                  `protobuf:"varint,6,opt,name=close_ts_ms,json=closeTsMs,proto3" json:"close_ts_ms,omitempty"`
+	ClosePrice    string                 `protobuf:"bytes,7,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"` // decimal string
+	Pnl           string                 `protobuf:"bytes,8,opt,name=pnl,proto3" json:"pnl,omitempty"`                                 // decimal string
+	Commission    string                 `protobuf:"bytes,9,opt,name=commission,proto3" json:"commission,omitempty"`                   // decimal string
+	Reason        string                 `protobuf:"bytes,10,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AgentTrade) Reset() {
+	*x = AgentTrade{}
+	mi := &file_agent_gateway_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentTrade) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentTrade) ProtoMessage() {}
+
+func (x *AgentTrade) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentTrade.ProtoReflect.Descriptor instead.
+func (*AgentTrade) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *AgentTrade) GetTicket() int64 {
+	if x != nil {
+		return x.Ticket
+	}
+	return 0
+}
+
+func (x *AgentTrade) GetSide() string {
+	if x != nil {
+		return x.Side
+	}
+	return ""
+}
+
+func (x *AgentTrade) GetVolume() string {
+	if x != nil {
+		return x.Volume
+	}
+	return ""
+}
+
+func (x *AgentTrade) GetOpenTsMs() int64 {
+	if x != nil {
+		return x.OpenTsMs
+	}
+	return 0
+}
+
+func (x *AgentTrade) GetOpenPrice() string {
+	if x != nil {
+		return x.OpenPrice
+	}
+	return ""
+}
+
+func (x *AgentTrade) GetCloseTsMs() int64 {
+	if x != nil {
+		return x.CloseTsMs
+	}
+	return 0
+}
+
+func (x *AgentTrade) GetClosePrice() string {
+	if x != nil {
+		return x.ClosePrice
+	}
+	return ""
+}
+
+func (x *AgentTrade) GetPnl() string {
+	if x != nil {
+		return x.Pnl
+	}
+	return ""
+}
+
+func (x *AgentTrade) GetCommission() string {
+	if x != nil {
+		return x.Commission
+	}
+	return ""
+}
+
+func (x *AgentTrade) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type AgentBlindSpot struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Builtin       string                 `protobuf:"bytes,1,opt,name=builtin,proto3" json:"builtin,omitempty"`
+	Severity      string                 `protobuf:"bytes,2,opt,name=severity,proto3" json:"severity,omitempty"` // "fatal", "warning", "info"
+	Count         int32                  `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AgentBlindSpot) Reset() {
+	*x = AgentBlindSpot{}
+	mi := &file_agent_gateway_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentBlindSpot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentBlindSpot) ProtoMessage() {}
+
+func (x *AgentBlindSpot) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentBlindSpot.ProtoReflect.Descriptor instead.
+func (*AgentBlindSpot) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *AgentBlindSpot) GetBuiltin() string {
+	if x != nil {
+		return x.Builtin
+	}
+	return ""
+}
+
+func (x *AgentBlindSpot) GetSeverity() string {
+	if x != nil {
+		return x.Severity
+	}
+	return ""
+}
+
+func (x *AgentBlindSpot) GetCount() int32 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
+type SearchExperienceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Query         string                 `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`       // natural language description
+	Category      string                 `protobuf:"bytes,2,opt,name=category,proto3" json:"category,omitempty"` // strategy_pattern / market_regime / optimization_result
+	Limit         int32                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`      // max results (default 10)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchExperienceRequest) Reset() {
+	*x = SearchExperienceRequest{}
+	mi := &file_agent_gateway_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchExperienceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchExperienceRequest) ProtoMessage() {}
+
+func (x *SearchExperienceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchExperienceRequest.ProtoReflect.Descriptor instead.
+func (*SearchExperienceRequest) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *SearchExperienceRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *SearchExperienceRequest) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
+}
+
+func (x *SearchExperienceRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type ExperienceEntry struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Category      string                 `protobuf:"bytes,2,opt,name=category,proto3" json:"category,omitempty"`
+	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	MatchType     string                 `protobuf:"bytes,4,opt,name=match_type,json=matchType,proto3" json:"match_type,omitempty"` // "semantic" / "structural" / "both"
+	Similarity    float64                `protobuf:"fixed64,5,opt,name=similarity,proto3" json:"similarity,omitempty"`              // 0.0-1.0
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExperienceEntry) Reset() {
+	*x = ExperienceEntry{}
+	mi := &file_agent_gateway_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExperienceEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExperienceEntry) ProtoMessage() {}
+
+func (x *ExperienceEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExperienceEntry.ProtoReflect.Descriptor instead.
+func (*ExperienceEntry) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *ExperienceEntry) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ExperienceEntry) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
+}
+
+func (x *ExperienceEntry) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *ExperienceEntry) GetMatchType() string {
+	if x != nil {
+		return x.MatchType
+	}
+	return ""
+}
+
+func (x *ExperienceEntry) GetSimilarity() float64 {
+	if x != nil {
+		return x.Similarity
+	}
+	return 0
+}
+
+func (x *ExperienceEntry) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+type SearchExperienceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Entries       []*ExperienceEntry     `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchExperienceResponse) Reset() {
+	*x = SearchExperienceResponse{}
+	mi := &file_agent_gateway_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchExperienceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchExperienceResponse) ProtoMessage() {}
+
+func (x *SearchExperienceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchExperienceResponse.ProtoReflect.Descriptor instead.
+func (*SearchExperienceResponse) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *SearchExperienceResponse) GetEntries() []*ExperienceEntry {
+	if x != nil {
+		return x.Entries
+	}
+	return nil
+}
+
+type StoreExperienceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Category      string                 `protobuf:"bytes,1,opt,name=category,proto3" json:"category,omitempty"`       // strategy_pattern / market_regime / optimization_result
+	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`         // natural language description
+	Fingerprint   string                 `protobuf:"bytes,3,opt,name=fingerprint,proto3" json:"fingerprint,omitempty"` // JSON string of structural fingerprint
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StoreExperienceRequest) Reset() {
+	*x = StoreExperienceRequest{}
+	mi := &file_agent_gateway_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StoreExperienceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StoreExperienceRequest) ProtoMessage() {}
+
+func (x *StoreExperienceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StoreExperienceRequest.ProtoReflect.Descriptor instead.
+func (*StoreExperienceRequest) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *StoreExperienceRequest) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
+}
+
+func (x *StoreExperienceRequest) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *StoreExperienceRequest) GetFingerprint() string {
+	if x != nil {
+		return x.Fingerprint
+	}
+	return ""
+}
+
+type StoreExperienceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // generated UUID
+	Success       bool                   `protobuf:"varint,2,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StoreExperienceResponse) Reset() {
+	*x = StoreExperienceResponse{}
+	mi := &file_agent_gateway_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StoreExperienceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StoreExperienceResponse) ProtoMessage() {}
+
+func (x *StoreExperienceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StoreExperienceResponse.ProtoReflect.Descriptor instead.
+func (*StoreExperienceResponse) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *StoreExperienceResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *StoreExperienceResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_agent_gateway_proto protoreflect.FileDescriptor
 
 const file_agent_gateway_proto_rawDesc = "" +
 	"\n" +
-	"\x13agent_gateway.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xaf\x04\n" +
+	"\x13agent_gateway.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13agent_profile.proto\x1a\x14agent_analysis.proto\"\xaf\x04\n" +
 	"\n" +
 	"AgentToken\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
@@ -863,13 +1972,130 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"\x11AgentCapabilities\x12\x16\n" +
 	"\x06scopes\x18\x01 \x03(\tR\x06scopes\x120\n" +
 	"\x14live_trading_enabled\x18\x02 \x01(\bR\x12liveTradingEnabled\x12'\n" +
-	"\x0favailable_tools\x18\x03 \x03(\tR\x0eavailableTools2\xa8\x03\n" +
+	"\x0favailable_tools\x18\x03 \x03(\tR\x0eavailableTools\"\xc0\x02\n" +
+	"\x15SubmitStrategyRequest\x12\x1f\n" +
+	"\vsource_code\x18\x01 \x01(\tR\n" +
+	"sourceCode\x12\x1a\n" +
+	"\blanguage\x18\x02 \x01(\tR\blanguage\x12A\n" +
+	"\x06params\x18\x03 \x03(\v2).ant.v1.SubmitStrategyRequest.ParamsEntryR\x06params\x12D\n" +
+	"\x0fbacktest_config\x18\x04 \x01(\v2\x1b.ant.v1.AgentBacktestConfigR\x0ebacktestConfig\x12&\n" +
+	"\x04mode\x18\x05 \x01(\x0e2\x12.ant.v1.SubmitModeR\x04mode\x1a9\n" +
+	"\vParamsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xb1\x02\n" +
+	"\x13AgentBacktestConfig\x12\x16\n" +
+	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x1c\n" +
+	"\ttimeframe\x18\x02 \x01(\tR\ttimeframe\x12\"\n" +
+	"\rstart_date_ms\x18\x03 \x01(\x03R\vstartDateMs\x12\x1e\n" +
+	"\vend_date_ms\x18\x04 \x01(\x03R\tendDateMs\x12'\n" +
+	"\x0finitial_capital\x18\x05 \x01(\tR\x0einitialCapital\x12\x1e\n" +
+	"\n" +
+	"commission\x18\x06 \x01(\tR\n" +
+	"commission\x12\x1a\n" +
+	"\bslippage\x18\a \x01(\tR\bslippage\x12\x1a\n" +
+	"\bleverage\x18\b \x01(\tR\bleverage\x12\x1f\n" +
+	"\vstrict_mode\x18\t \x01(\bR\n" +
+	"strictMode\"\xf3\x04\n" +
+	"\x16SubmitStrategyResponse\x12\x1f\n" +
+	"\vstrategy_id\x18\x01 \x01(\tR\n" +
+	"strategyId\x12'\n" +
+	"\x0fcompile_success\x18\x02 \x01(\bR\x0ecompileSuccess\x12#\n" +
+	"\rcompile_error\x18\x03 \x01(\tR\fcompileError\x123\n" +
+	"\x06result\x18\x04 \x01(\v2\x1b.ant.v1.AgentBacktestResultR\x06result\x121\n" +
+	"\aprofile\x18\x05 \x01(\v2\x17.ant.v1.StrategyProfileR\aprofile\x124\n" +
+	"\banalysis\x18\x06 \x01(\v2\x18.ant.v1.BacktestAnalysisR\banalysis\x12%\n" +
+	"\x0ecoverage_score\x18\a \x01(\x01R\rcoverageScore\x127\n" +
+	"\vblind_spots\x18\b \x03(\v2\x16.ant.v1.AgentBlindSpotR\n" +
+	"blindSpots\x12&\n" +
+	"\x04mode\x18\t \x01(\x0e2\x12.ant.v1.SubmitModeR\x04mode\x129\n" +
+	"\rsemantic_diff\x18\n" +
+	" \x01(\v2\x14.ant.v1.SemanticDiffR\fsemanticDiff\x12#\n" +
+	"\rbridge_status\x18\v \x01(\tR\fbridgeStatus\x122\n" +
+	"\x15bridged_python_source\x18\f \x01(\tR\x13bridgedPythonSource\x120\n" +
+	"\x14bridge_compile_error\x18\r \x01(\tR\x12bridgeCompileError\"g\n" +
+	"\fSemanticDiff\x120\n" +
+	"\achanges\x18\x01 \x03(\v2\x16.ant.v1.SemanticChangeR\achanges\x12%\n" +
+	"\x0eeffect_summary\x18\x02 \x01(\tR\reffectSummary\"F\n" +
+	"\x0eSemanticChange\x12\x12\n" +
+	"\x04kind\x18\x01 \x01(\tR\x04kind\x12 \n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\"\xa7\x04\n" +
+	"\x13AgentBacktestResult\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x14\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\x12!\n" +
+	"\ftotal_return\x18\x03 \x01(\x01R\vtotalReturn\x12#\n" +
+	"\rannual_return\x18\x04 \x01(\x01R\fannualReturn\x12!\n" +
+	"\fmax_drawdown\x18\x05 \x01(\x01R\vmaxDrawdown\x12!\n" +
+	"\fsharpe_ratio\x18\x06 \x01(\x01R\vsharpeRatio\x12\x19\n" +
+	"\bwin_rate\x18\a \x01(\x01R\awinRate\x12#\n" +
+	"\rprofit_factor\x18\b \x01(\x01R\fprofitFactor\x12!\n" +
+	"\ftotal_trades\x18\t \x01(\x05R\vtotalTrades\x12%\n" +
+	"\x0ewinning_trades\x18\n" +
+	" \x01(\x05R\rwinningTrades\x12#\n" +
+	"\rlosing_trades\x18\v \x01(\x05R\flosingTrades\x12,\n" +
+	"\x12total_pnl_absolute\x18\f \x01(\tR\x10totalPnlAbsolute\x12!\n" +
+	"\fequity_curve\x18\r \x03(\tR\vequityCurve\x12&\n" +
+	"\x0fequity_times_ms\x18\x0e \x03(\x03R\requityTimesMs\x12*\n" +
+	"\x06trades\x18\x0f \x03(\v2\x12.ant.v1.AgentTradeR\x06trades\"\x98\x02\n" +
+	"\n" +
+	"AgentTrade\x12\x16\n" +
+	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x12\n" +
+	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +
+	"\x06volume\x18\x03 \x01(\tR\x06volume\x12\x1c\n" +
+	"\n" +
+	"open_ts_ms\x18\x04 \x01(\x03R\bopenTsMs\x12\x1d\n" +
+	"\n" +
+	"open_price\x18\x05 \x01(\tR\topenPrice\x12\x1e\n" +
+	"\vclose_ts_ms\x18\x06 \x01(\x03R\tcloseTsMs\x12\x1f\n" +
+	"\vclose_price\x18\a \x01(\tR\n" +
+	"closePrice\x12\x10\n" +
+	"\x03pnl\x18\b \x01(\tR\x03pnl\x12\x1e\n" +
+	"\n" +
+	"commission\x18\t \x01(\tR\n" +
+	"commission\x12\x16\n" +
+	"\x06reason\x18\n" +
+	" \x01(\tR\x06reason\"\\\n" +
+	"\x0eAgentBlindSpot\x12\x18\n" +
+	"\abuiltin\x18\x01 \x01(\tR\abuiltin\x12\x1a\n" +
+	"\bseverity\x18\x02 \x01(\tR\bseverity\x12\x14\n" +
+	"\x05count\x18\x03 \x01(\x05R\x05count\"a\n" +
+	"\x17SearchExperienceRequest\x12\x14\n" +
+	"\x05query\x18\x01 \x01(\tR\x05query\x12\x1a\n" +
+	"\bcategory\x18\x02 \x01(\tR\bcategory\x12\x14\n" +
+	"\x05limit\x18\x03 \x01(\x05R\x05limit\"\xd1\x01\n" +
+	"\x0fExperienceEntry\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
+	"\bcategory\x18\x02 \x01(\tR\bcategory\x12\x18\n" +
+	"\acontent\x18\x03 \x01(\tR\acontent\x12\x1d\n" +
+	"\n" +
+	"match_type\x18\x04 \x01(\tR\tmatchType\x12\x1e\n" +
+	"\n" +
+	"similarity\x18\x05 \x01(\x01R\n" +
+	"similarity\x129\n" +
+	"\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"M\n" +
+	"\x18SearchExperienceResponse\x121\n" +
+	"\aentries\x18\x01 \x03(\v2\x17.ant.v1.ExperienceEntryR\aentries\"p\n" +
+	"\x16StoreExperienceRequest\x12\x1a\n" +
+	"\bcategory\x18\x01 \x01(\tR\bcategory\x12\x18\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\x12 \n" +
+	"\vfingerprint\x18\x03 \x01(\tR\vfingerprint\"C\n" +
+	"\x17StoreExperienceResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
+	"\asuccess\x18\x02 \x01(\bR\asuccess*/\n" +
+	"\n" +
+	"SubmitMode\x12\x0f\n" +
+	"\vSUBMIT_SYNC\x10\x00\x12\x10\n" +
+	"\fSUBMIT_ASYNC\x10\x012\xa8\x03\n" +
 	"\fAgentService\x12R\n" +
 	"\x0fIssueAgentToken\x12\x1e.ant.v1.IssueAgentTokenRequest\x1a\x1f.ant.v1.IssueAgentTokenResponse\x12R\n" +
 	"\x0fListAgentTokens\x12\x1e.ant.v1.ListAgentTokensRequest\x1a\x1f.ant.v1.ListAgentTokensResponse\x12G\n" +
 	"\x10RevokeAgentToken\x12\x1f.ant.v1.RevokeAgentTokenRequest\x1a\x12.ant.v1.AgentToken\x12O\n" +
 	"\x0eListAgentAudit\x12\x1d.ant.v1.ListAgentAuditRequest\x1a\x1e.ant.v1.ListAgentAuditResponse\x12V\n" +
-	"\x14GetAgentCapabilities\x12#.ant.v1.GetAgentCapabilitiesRequest\x1a\x19.ant.v1.AgentCapabilitiesB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x14GetAgentCapabilities\x12#.ant.v1.GetAgentCapabilitiesRequest\x1a\x19.ant.v1.AgentCapabilities2\x91\x02\n" +
+	"\x13AgentGatewayService\x12O\n" +
+	"\x0eSubmitStrategy\x12\x1d.ant.v1.SubmitStrategyRequest\x1a\x1e.ant.v1.SubmitStrategyResponse\x12U\n" +
+	"\x10SearchExperience\x12\x1f.ant.v1.SearchExperienceRequest\x1a .ant.v1.SearchExperienceResponse\x12R\n" +
+	"\x0fStoreExperience\x12\x1e.ant.v1.StoreExperienceRequest\x1a\x1f.ant.v1.StoreExperienceResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_agent_gateway_proto_rawDescOnce sync.Once
@@ -883,46 +2109,83 @@ func file_agent_gateway_proto_rawDescGZIP() []byte {
 	return file_agent_gateway_proto_rawDescData
 }
 
-var file_agent_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_agent_gateway_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_agent_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_agent_gateway_proto_goTypes = []any{
-	(*AgentToken)(nil),                  // 0: ant.v1.AgentToken
-	(*AgentAuditEntry)(nil),             // 1: ant.v1.AgentAuditEntry
-	(*IssueAgentTokenRequest)(nil),      // 2: ant.v1.IssueAgentTokenRequest
-	(*IssueAgentTokenResponse)(nil),     // 3: ant.v1.IssueAgentTokenResponse
-	(*ListAgentTokensRequest)(nil),      // 4: ant.v1.ListAgentTokensRequest
-	(*ListAgentTokensResponse)(nil),     // 5: ant.v1.ListAgentTokensResponse
-	(*RevokeAgentTokenRequest)(nil),     // 6: ant.v1.RevokeAgentTokenRequest
-	(*ListAgentAuditRequest)(nil),       // 7: ant.v1.ListAgentAuditRequest
-	(*ListAgentAuditResponse)(nil),      // 8: ant.v1.ListAgentAuditResponse
-	(*GetAgentCapabilitiesRequest)(nil), // 9: ant.v1.GetAgentCapabilitiesRequest
-	(*AgentCapabilities)(nil),           // 10: ant.v1.AgentCapabilities
-	(*timestamppb.Timestamp)(nil),       // 11: google.protobuf.Timestamp
+	(SubmitMode)(0),                     // 0: ant.v1.SubmitMode
+	(*AgentToken)(nil),                  // 1: ant.v1.AgentToken
+	(*AgentAuditEntry)(nil),             // 2: ant.v1.AgentAuditEntry
+	(*IssueAgentTokenRequest)(nil),      // 3: ant.v1.IssueAgentTokenRequest
+	(*IssueAgentTokenResponse)(nil),     // 4: ant.v1.IssueAgentTokenResponse
+	(*ListAgentTokensRequest)(nil),      // 5: ant.v1.ListAgentTokensRequest
+	(*ListAgentTokensResponse)(nil),     // 6: ant.v1.ListAgentTokensResponse
+	(*RevokeAgentTokenRequest)(nil),     // 7: ant.v1.RevokeAgentTokenRequest
+	(*ListAgentAuditRequest)(nil),       // 8: ant.v1.ListAgentAuditRequest
+	(*ListAgentAuditResponse)(nil),      // 9: ant.v1.ListAgentAuditResponse
+	(*GetAgentCapabilitiesRequest)(nil), // 10: ant.v1.GetAgentCapabilitiesRequest
+	(*AgentCapabilities)(nil),           // 11: ant.v1.AgentCapabilities
+	(*SubmitStrategyRequest)(nil),       // 12: ant.v1.SubmitStrategyRequest
+	(*AgentBacktestConfig)(nil),         // 13: ant.v1.AgentBacktestConfig
+	(*SubmitStrategyResponse)(nil),      // 14: ant.v1.SubmitStrategyResponse
+	(*SemanticDiff)(nil),                // 15: ant.v1.SemanticDiff
+	(*SemanticChange)(nil),              // 16: ant.v1.SemanticChange
+	(*AgentBacktestResult)(nil),         // 17: ant.v1.AgentBacktestResult
+	(*AgentTrade)(nil),                  // 18: ant.v1.AgentTrade
+	(*AgentBlindSpot)(nil),              // 19: ant.v1.AgentBlindSpot
+	(*SearchExperienceRequest)(nil),     // 20: ant.v1.SearchExperienceRequest
+	(*ExperienceEntry)(nil),             // 21: ant.v1.ExperienceEntry
+	(*SearchExperienceResponse)(nil),    // 22: ant.v1.SearchExperienceResponse
+	(*StoreExperienceRequest)(nil),      // 23: ant.v1.StoreExperienceRequest
+	(*StoreExperienceResponse)(nil),     // 24: ant.v1.StoreExperienceResponse
+	nil,                                 // 25: ant.v1.SubmitStrategyRequest.ParamsEntry
+	(*timestamppb.Timestamp)(nil),       // 26: google.protobuf.Timestamp
+	(*StrategyProfile)(nil),             // 27: ant.v1.StrategyProfile
+	(*BacktestAnalysis)(nil),            // 28: ant.v1.BacktestAnalysis
 }
 var file_agent_gateway_proto_depIdxs = []int32{
-	11, // 0: ant.v1.AgentToken.expires_at:type_name -> google.protobuf.Timestamp
-	11, // 1: ant.v1.AgentToken.last_used_at:type_name -> google.protobuf.Timestamp
-	11, // 2: ant.v1.AgentToken.created_at:type_name -> google.protobuf.Timestamp
-	11, // 3: ant.v1.AgentToken.updated_at:type_name -> google.protobuf.Timestamp
-	11, // 4: ant.v1.AgentAuditEntry.created_at:type_name -> google.protobuf.Timestamp
-	11, // 5: ant.v1.IssueAgentTokenRequest.expires_at:type_name -> google.protobuf.Timestamp
-	0,  // 6: ant.v1.IssueAgentTokenResponse.token:type_name -> ant.v1.AgentToken
-	0,  // 7: ant.v1.ListAgentTokensResponse.tokens:type_name -> ant.v1.AgentToken
-	1,  // 8: ant.v1.ListAgentAuditResponse.entries:type_name -> ant.v1.AgentAuditEntry
-	2,  // 9: ant.v1.AgentService.IssueAgentToken:input_type -> ant.v1.IssueAgentTokenRequest
-	4,  // 10: ant.v1.AgentService.ListAgentTokens:input_type -> ant.v1.ListAgentTokensRequest
-	6,  // 11: ant.v1.AgentService.RevokeAgentToken:input_type -> ant.v1.RevokeAgentTokenRequest
-	7,  // 12: ant.v1.AgentService.ListAgentAudit:input_type -> ant.v1.ListAgentAuditRequest
-	9,  // 13: ant.v1.AgentService.GetAgentCapabilities:input_type -> ant.v1.GetAgentCapabilitiesRequest
-	3,  // 14: ant.v1.AgentService.IssueAgentToken:output_type -> ant.v1.IssueAgentTokenResponse
-	5,  // 15: ant.v1.AgentService.ListAgentTokens:output_type -> ant.v1.ListAgentTokensResponse
-	0,  // 16: ant.v1.AgentService.RevokeAgentToken:output_type -> ant.v1.AgentToken
-	8,  // 17: ant.v1.AgentService.ListAgentAudit:output_type -> ant.v1.ListAgentAuditResponse
-	10, // 18: ant.v1.AgentService.GetAgentCapabilities:output_type -> ant.v1.AgentCapabilities
-	14, // [14:19] is the sub-list for method output_type
-	9,  // [9:14] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	26, // 0: ant.v1.AgentToken.expires_at:type_name -> google.protobuf.Timestamp
+	26, // 1: ant.v1.AgentToken.last_used_at:type_name -> google.protobuf.Timestamp
+	26, // 2: ant.v1.AgentToken.created_at:type_name -> google.protobuf.Timestamp
+	26, // 3: ant.v1.AgentToken.updated_at:type_name -> google.protobuf.Timestamp
+	26, // 4: ant.v1.AgentAuditEntry.created_at:type_name -> google.protobuf.Timestamp
+	26, // 5: ant.v1.IssueAgentTokenRequest.expires_at:type_name -> google.protobuf.Timestamp
+	1,  // 6: ant.v1.IssueAgentTokenResponse.token:type_name -> ant.v1.AgentToken
+	1,  // 7: ant.v1.ListAgentTokensResponse.tokens:type_name -> ant.v1.AgentToken
+	2,  // 8: ant.v1.ListAgentAuditResponse.entries:type_name -> ant.v1.AgentAuditEntry
+	25, // 9: ant.v1.SubmitStrategyRequest.params:type_name -> ant.v1.SubmitStrategyRequest.ParamsEntry
+	13, // 10: ant.v1.SubmitStrategyRequest.backtest_config:type_name -> ant.v1.AgentBacktestConfig
+	0,  // 11: ant.v1.SubmitStrategyRequest.mode:type_name -> ant.v1.SubmitMode
+	17, // 12: ant.v1.SubmitStrategyResponse.result:type_name -> ant.v1.AgentBacktestResult
+	27, // 13: ant.v1.SubmitStrategyResponse.profile:type_name -> ant.v1.StrategyProfile
+	28, // 14: ant.v1.SubmitStrategyResponse.analysis:type_name -> ant.v1.BacktestAnalysis
+	19, // 15: ant.v1.SubmitStrategyResponse.blind_spots:type_name -> ant.v1.AgentBlindSpot
+	0,  // 16: ant.v1.SubmitStrategyResponse.mode:type_name -> ant.v1.SubmitMode
+	15, // 17: ant.v1.SubmitStrategyResponse.semantic_diff:type_name -> ant.v1.SemanticDiff
+	16, // 18: ant.v1.SemanticDiff.changes:type_name -> ant.v1.SemanticChange
+	18, // 19: ant.v1.AgentBacktestResult.trades:type_name -> ant.v1.AgentTrade
+	26, // 20: ant.v1.ExperienceEntry.created_at:type_name -> google.protobuf.Timestamp
+	21, // 21: ant.v1.SearchExperienceResponse.entries:type_name -> ant.v1.ExperienceEntry
+	3,  // 22: ant.v1.AgentService.IssueAgentToken:input_type -> ant.v1.IssueAgentTokenRequest
+	5,  // 23: ant.v1.AgentService.ListAgentTokens:input_type -> ant.v1.ListAgentTokensRequest
+	7,  // 24: ant.v1.AgentService.RevokeAgentToken:input_type -> ant.v1.RevokeAgentTokenRequest
+	8,  // 25: ant.v1.AgentService.ListAgentAudit:input_type -> ant.v1.ListAgentAuditRequest
+	10, // 26: ant.v1.AgentService.GetAgentCapabilities:input_type -> ant.v1.GetAgentCapabilitiesRequest
+	12, // 27: ant.v1.AgentGatewayService.SubmitStrategy:input_type -> ant.v1.SubmitStrategyRequest
+	20, // 28: ant.v1.AgentGatewayService.SearchExperience:input_type -> ant.v1.SearchExperienceRequest
+	23, // 29: ant.v1.AgentGatewayService.StoreExperience:input_type -> ant.v1.StoreExperienceRequest
+	4,  // 30: ant.v1.AgentService.IssueAgentToken:output_type -> ant.v1.IssueAgentTokenResponse
+	6,  // 31: ant.v1.AgentService.ListAgentTokens:output_type -> ant.v1.ListAgentTokensResponse
+	1,  // 32: ant.v1.AgentService.RevokeAgentToken:output_type -> ant.v1.AgentToken
+	9,  // 33: ant.v1.AgentService.ListAgentAudit:output_type -> ant.v1.ListAgentAuditResponse
+	11, // 34: ant.v1.AgentService.GetAgentCapabilities:output_type -> ant.v1.AgentCapabilities
+	14, // 35: ant.v1.AgentGatewayService.SubmitStrategy:output_type -> ant.v1.SubmitStrategyResponse
+	22, // 36: ant.v1.AgentGatewayService.SearchExperience:output_type -> ant.v1.SearchExperienceResponse
+	24, // 37: ant.v1.AgentGatewayService.StoreExperience:output_type -> ant.v1.StoreExperienceResponse
+	30, // [30:38] is the sub-list for method output_type
+	22, // [22:30] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_agent_gateway_proto_init() }
@@ -930,18 +2193,21 @@ func file_agent_gateway_proto_init() {
 	if File_agent_gateway_proto != nil {
 		return
 	}
+	file_agent_profile_proto_init()
+	file_agent_analysis_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_agent_gateway_proto_rawDesc), len(file_agent_gateway_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   11,
+			NumEnums:      1,
+			NumMessages:   25,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   2,
 		},
 		GoTypes:           file_agent_gateway_proto_goTypes,
 		DependencyIndexes: file_agent_gateway_proto_depIdxs,
+		EnumInfos:         file_agent_gateway_proto_enumTypes,
 		MessageInfos:      file_agent_gateway_proto_msgTypes,
 	}.Build()
 	File_agent_gateway_proto = out.File

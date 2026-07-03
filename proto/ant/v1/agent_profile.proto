@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// StrategyProfile is the LLM-generated profile of a strategy (injection point [1]).
+// Produced after compilation by analyzing the AST + coverage report.
+// LLM output format: KEY: "value" lines parsed by Go-side line parser.
+message StrategyProfile {
+  string strategy_type = 1;         // trend_following, mean_reversion, breakout, grid, scalping, hedge
+  string description = 2;           // 1-2 sentence summary of what the strategy does
+  repeated string indicators_used = 3;  // e.g. ["EMA", "RSI", "ATR"]
+  string entry_logic = 4;           // plain-language description of entry conditions
+  string exit_logic = 5;            // plain-language description of exit conditions
+  string risk_management = 6;       // stop-loss, take-profit, trailing, position sizing
+  string timeframe_preference = 7;  // M1, M5, H1, H4, D1, etc.
+  string market_regime = 8;         // trending, ranging, volatile, calm
+  repeated string strengths = 9;    // what the strategy does well
+  repeated string weaknesses = 10;  // potential issues or limitations
+  double coverage_score = 11;       // 0.0-1.0, from coverage analysis
+  repeated string blind_spots = 12; // unsupported functions detected
+}

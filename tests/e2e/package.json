@@ -1,0 +1,9 @@
+{
+  "name": "ant-e2e-tests",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "typescript": "^5"
+  }
+}

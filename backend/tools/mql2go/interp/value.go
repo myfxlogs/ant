@@ -62,6 +62,10 @@ func NoneVal() Value {
 	return Value{Kind: ValNone}
 }
 
+func DatetimeVal(ms int64) Value {
+	return Value{Kind: ValDatetime, Datetime: ms}
+}
+
 // ── Value helpers ───────────────────────────────────────────────────
 
 // IsTrue returns the truthiness of a Value following MQL semantics.

@@ -28,6 +28,7 @@
 | 0021 | 策略运行时从 Python 迁移到 Go | Partially superseded by 0023 |
 | 0022 | MQL 盲区架构 — 静态分析 + 运行时追踪 + 致命阻断 | Accepted |
 | 0023 | AST 树遍历解释器 + MQL 源码为唯一真实来源 | Accepted |
+| 0024 | Agent-Native 策略平台 — 双前端编译 + Python Agent 层 | Accepted |
 
 ## 编号规则
 

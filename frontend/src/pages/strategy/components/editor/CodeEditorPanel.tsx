@@ -5,15 +5,18 @@ import { useTranslation } from 'react-i18next';
 import { EDIT_TEMPLATE_MODAL_FIELDS_CODE_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_CODE_SAMPLE_KEY, EDIT_TEMPLATE_MODAL_VALIDATION_CODE_REQUIRED_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
 import { codeAssistClient } from '@/client/connect';
 import { strategyImportApi } from '@/client/strategy';
+import { submitStrategy } from '@/client/agentGateway';
 import { ImportAnalysisReport } from '@/components/strategy/ImportAnalysisReport';
+import SemanticDiffCard from '@/components/strategy/SemanticDiffCard';
 import type { AnalyzeImportCodeResponse } from '@/gen/ant/v1/strategy_runtime_pb';
+import type { SubmitStrategyResponse } from '@/gen/ant/v1/agent_gateway_pb';
 import type { FormInstance } from 'antd';
 import { Input } from 'antd';
 
 const { TextArea } = Input;
 const { Text } = Typography;
 
-type ImportMethod = 'migration' | 'ai';
+type ImportMethod = 'migration' | 'ai' | 'bridge';
 
 interface Props {
   form: FormInstance;
@@ -32,6 +35,9 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
   // Migration engine state
   const [analysis, setAnalysis] = useState<AnalyzeImportCodeResponse | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  // Bridge state (ADR-0024 Phase 2)
+  const [bridgeResult, setBridgeResult] = useState<SubmitStrategyResponse | null>(null);
+  const [bridging, setBridging] = useState(false);
 
   // ── Migration: Analyze ──────────────────────────────────────────
 
@@ -79,6 +85,39 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
       } finally { setEaTranslating(false); }
     })().catch(() => {});
   }, [eaCode, t, form]);
+
+  // ── Bridge (ADR-0024 Phase 2) ───────────────────────────────────
+
+  const handleBridge = useCallback(() => {
+    if (!eaCode.trim() || eaCode.trim().length < 20) {
+      message.warning(t('strategy.importEA.codeTooShort', { defaultValue: 'Please paste complete EA/indicator source code.' }));
+      return;
+    }
+    setBridging(true); setBridgeResult(null);
+    (async () => {
+      try {
+        const resp = await submitStrategy({
+          sourceCode: eaCode,
+          language: 'mql4',
+          backtestConfig: {
+            symbol: 'EURUSD',
+            timeframe: 'H1',
+            startDateMs: Date.now() - 365 * 24 * 60 * 60 * 1000,
+            endDateMs: Date.now(),
+          },
+        });
+        setBridgeResult(resp);
+        if (resp.bridgeStatus === 'success' && resp.bridgedPythonSource) {
+          setEaResult(resp.bridgedPythonSource);
+          setEaStrategyId(resp.strategyId || '');
+        }
+      } catch (err: any) {
+        if (err?.code == null) {
+          message.error(t('strategy.importEA.bridgeFailed', { defaultValue: 'Bridge translation failed. Please try again.' }));
+        }
+      } finally { setBridging(false); }
+    })().catch(() => {});
+  }, [eaCode, t]);
 
   // ── AI Translation ──────────────────────────────────────────────
 
@@ -129,12 +168,14 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
 
           {/* ── Method selector ── */}
           <div style={{ padding: '4px 14px', borderTop: '1px solid var(--color-border)', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-            <Radio.Group size="small" value={importMethod} onChange={e => { setImportMethod(e.target.value); setEaResult(''); setAnalysis(null); }}
+            <Radio.Group size="small" value={importMethod} onChange={e => { setImportMethod(e.target.value); setEaResult(''); setAnalysis(null); setBridgeResult(null); }}
               optionType="button" buttonStyle="solid">
               <Radio.Button value="migration">
                 <ThunderboltOutlined /> {t('strategy.importEA.migration', { defaultValue: '策略导入' })}</Radio.Button>
               <Radio.Button value="ai">
                 <RobotOutlined /> {t('strategy.importEA.aiTranslate', { defaultValue: 'AI 翻译' })}</Radio.Button>
+              <Radio.Button value="bridge">
+                <RobotOutlined /> {t('strategy.importEA.bridge', { defaultValue: '盲区桥接' })}</Radio.Button>
             </Radio.Group>
           </div>
 
@@ -198,6 +239,62 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
                   <div style={{ textAlign: 'center', padding: 24 }}>
                     {eaTranslating ? <Spin tip={t('strategy.importEA.translating', { defaultValue: 'AI translating...' })} />
                       : <Text type="secondary">{t('strategy.importEA.hint', { defaultValue: 'Paste MQL4/MQL5 code and click Translate' })}</Text>}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* ── Bridge flow (ADR-0024 Phase 2) ── */}
+          {importMethod === 'bridge' && (
+            <>
+              <div style={{ padding: '6px 14px', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 8, alignItems: 'center' }}>
+                <Button type="primary" size="small" icon={<RobotOutlined />} onClick={handleBridge} loading={bridging}>
+                  {t('strategy.importEA.bridgeBtn', { defaultValue: '盲区桥接翻译' })}</Button>
+                {eaResult && <Button size="small" onClick={applyEaResult}>{t('strategy.importEA.apply', { defaultValue: 'Apply to Editor' })}</Button>}
+                {bridgeResult && bridgeResult.bridgeStatus === 'success' && (
+                  <Tag color="success" style={{ marginLeft: 'auto' }}>
+                    {t('strategy.importEA.bridgeSuccess', { defaultValue: '桥接成功' })}
+                  </Tag>
+                )}
+                {bridgeResult && bridgeResult.bridgeStatus === 'bridge_failed' && (
+                  <Tag color="error" style={{ marginLeft: 'auto' }}>
+                    {t('strategy.importEA.bridgeFailedTag', { defaultValue: '桥接失败' })}
+                  </Tag>
+                )}
+              </div>
+              <div style={{ flex: 1, overflow: 'auto', padding: '0 14px' }}>
+                {bridging ? (
+                  <div style={{ textAlign: 'center', padding: 24 }}>
+                    <Spin tip={t('strategy.importEA.bridging', { defaultValue: 'AI bridging blind spots...' })} />
+                  </div>
+                ) : bridgeResult ? (
+                  <>
+                    {bridgeResult.semanticDiff && (
+                      <SemanticDiffCard diff={bridgeResult.semanticDiff} />
+                    )}
+                    {bridgeResult.bridgeStatus === 'success' && eaResult ? (
+                      <pre style={{ margin: 0, padding: '10px 0', fontFamily: '"Fira Code", monospace', fontSize: 12, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{eaResult}</pre>
+                    ) : bridgeResult.bridgeStatus === 'bridge_failed' ? (
+                      <Alert
+                        type="warning"
+                        showIcon
+                        message={t('strategy.importEA.bridgeFailedMsg', { defaultValue: 'Agent 无法自动桥接所有盲区' })}
+                        description={bridgeResult.bridgeCompileError || ''}
+                        style={{ margin: '8px 0' }}
+                      />
+                    ) : (
+                      <Alert
+                        type="info"
+                        showIcon
+                        message={t('strategy.importEA.noBridgeNeeded', { defaultValue: '覆盖率 100%，无需桥接' })}
+                        style={{ margin: '8px 0' }}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: 24 }}>
+                    <Text type="secondary">{t('strategy.importEA.bridgeHint', { defaultValue: '粘贴 MQL4/MQL5 EA 代码，AI 将自动翻译盲区为 Python 子集' })}</Text>
                   </div>
                 )}
               </div>

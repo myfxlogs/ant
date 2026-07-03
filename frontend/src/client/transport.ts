@@ -79,11 +79,11 @@ const interceptors: Interceptor[] = [
     const proc = procedureHint(req).key;
     const isAuthFree = proc.includes('authservice') && (proc.includes('login') || proc.includes('register'));
 
-    // Proactive preflight: if the access token is expired or about to expire,
-    // refresh BEFORE issuing the request so the server never sees a 401 and
-    // the browser DevTools never logs a red error line.
+    // Proactive preflight: refresh if token is missing (page reload) or about to expire.
+    // Always call ensureFreshToken() for non-auth requests so it can attempt
+    // a cookie-based refresh when accessToken is null but user is authenticated.
     let token = getAccessToken();
-    if (token && !isAuthFree) {
+    if (!isAuthFree) {
       token = await ensureFreshToken();
     }
     if (token && !isAuthFree) {

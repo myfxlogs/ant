@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// BacktestAnalysis is the LLM-generated interpretation of backtest results
+// (injection point [4]). Produced after backtest by analyzing results + profile.
+// LLM output format: KEY: "value" lines parsed by Go-side line parser.
+message BacktestAnalysis {
+  string summary = 1;               // 1-2 sentence overall assessment
+  string performance_grade = 2;     // A, B, C, D, F
+  double sharpe_assessment = 3;     // 0.0-1.0 score for Sharpe ratio quality
+  double drawdown_assessment = 4;   // 0.0-1.0 score for drawdown acceptability
+  double win_rate_assessment = 5;   // 0.0-1.0 score for win rate quality
+  string profit_consistency = 6;    // consistent, inconsistent, streaky
+  string risk_adjusted_return = 7;  // excellent, good, moderate, poor
+  repeated string key_observations = 8;  // notable patterns in equity curve / trade distribution
+  repeated string improvement_suggestions = 9;  // actionable suggestions for strategy improvement
+  string overfitting_risk = 10;     // low, moderate, high
+  string recommended_action = 11;   // deploy, optimize, refine, discard
+  string detailed_analysis = 12;    // longer-form paragraph analysis
+}

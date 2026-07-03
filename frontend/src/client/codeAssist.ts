@@ -2,7 +2,6 @@ import { codeAssistClient } from './connect';
 import { create } from '@bufbuild/protobuf';
 import {
   ReviseCodeRequestSchema,
-  type ReviseCodeStreamChunk,
 } from '../gen/ant/v1/code_assist_pb';
 
 // Client for the lightweight code-assist ConnectRPC service.
@@ -22,6 +21,7 @@ export interface ReviseCodeInput {
 
 export interface ReviseCodeResult {
   text: string;
+  /** Legacy proto field name; contains the revised code regardless of language. */
   python: string;
 }
 
@@ -62,11 +62,11 @@ export interface ValidateExtendedResult {
   errors: string[];
   warnings: string[];
   parameters: RequiredParamSpec[];
-  parametersJson: string;  // JSON array of {name, type, default, label} from self.ctx.param()
+  parametersJson: string;  // JSON array of {name, type, default} from MQL extern/input params
   qualityHints: CodeQualityHint[];
   sweepDimensions: BackendSweepDim[];
   strategyDirectives: { key: string; value: string }[];
-  strategyType: string;  // "run_dataframe" | "run_context"
+  strategyType: string;
 }
 
 const parseParamValue = (value: string, type?: RequiredParamSpec['type']) => {
@@ -81,7 +81,7 @@ const parseParamValue = (value: string, type?: RequiredParamSpec['type']) => {
 
 export interface ReviseStreamCallbacks {
   onDelta: (delta: string, done: boolean) => void;
-  onResult: (python: string) => void;
+  onResult: (code: string) => void;
   onError?: (err: unknown) => void;
 }
 
@@ -150,9 +150,7 @@ export const codeAssistApi = {
   validateExtended: async (code: string): Promise<ValidateExtendedResult> => {
     const data = await codeAssistClient.validateStrategyExtended({ code });
 
-    // Read structured proto fields directly (Python backend — zero-trust).
-    // quality_hints, sweep_dimensions, and strategy_directives are now
-    // first-class proto message fields — no JSON-in-warnings parsing needed.
+    // Read structured proto fields directly (zero-trust).
     return {
       valid: data.valid,
       errors: data.errors || [],

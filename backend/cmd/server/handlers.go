@@ -12,6 +12,7 @@ import (
 
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	internalai "anttrader/internal/ai"
+	"anttrader/internal/agent"
 	"anttrader/internal/analysis"
 	"anttrader/internal/config"
 	"anttrader/internal/connect/ai"
@@ -163,6 +164,10 @@ func registerHandlers(
 	aiSvc.SetGatewayProviderRepo(gatewayProviderRepo)
 
 	wireAIBilling(aiSvc, walletSvc, gatewayServer, gatewayModelRepo, log)
+
+	// ADR-0024 Phase 0: Agent Gateway — strategy submission → compile → backtest → LLM analysis.
+	agentGateway := agent.NewGatewayServer(pool, marketDataRepo, aiSvc, log)
+	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
 	streamServer.SetMarketDataRepo(marketDataRepo)

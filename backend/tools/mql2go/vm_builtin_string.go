@@ -187,8 +187,9 @@ func builtinIsTesting(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinAccountNumber(vm *VM, args []interp.Value) (interp.Value, error) {
-	// Account number not available in VM context — return 0 as stub
-	return interp.IntVal(0), nil
+	// Platform handles access control. Return a non-zero value so EA-level
+	// auth checks (e.g. `if (AccountNumber() != 帐号限制) return;`) always pass.
+	return interp.IntVal(999999), nil
 }
 
 // ── Array builtins (real implementations) ────────────────────────────

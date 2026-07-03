@@ -15,6 +15,7 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/ai"
 	systemai "anttrader/internal/service/systemai"
+	"anttrader/tools/mql2go"
 )
 
 const maxCodeLen = 100 * 1024
@@ -48,21 +49,23 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too large: %d bytes", len(code)))
 	}
 
-	// ── Fast path: structural checks (no AI call) ──
+	// ── MQL path: compile via Bytecode VM, extract params from AST ──
+	if isMQLCode(code) {
+		return s.validateMQL(ctx, code)
+	}
+
+	// ── Go path: structural checks (legacy generated Go strategy) ──
 	_, missingSigs := ai.HasRequiredSignature(code)
 	structWarns := ai.StructuralWarnings(code)
 
 	var errors []string
 	var warnings []string
 
-	// Missing signature is always an error
 	for _, m := range missingSigs {
 		errors = append(errors, m)
 	}
-	// Structural quality warnings
 	warnings = append(warnings, structWarns...)
 
-	// ── Static param extraction ──
 	parametersJson := extractParamsJSON(code)
 
 	valid := len(errors) == 0
@@ -73,6 +76,67 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		Warnings:       warnings,
 		ParametersJson: parametersJson,
 	}), nil
+}
+
+// isMQLCode returns true if the code looks like MQL source (not Go).
+func isMQLCode(code string) bool {
+	if strings.Contains(code, "package ") && strings.Contains(code, "import (") {
+		return false
+	}
+	return strings.Contains(code, "OnTick") || strings.Contains(code, "OnBar") ||
+		strings.Contains(code, "OnInit") || strings.Contains(code, "extern ") ||
+		strings.Contains(code, "input ") || strings.Contains(code, "#property")
+}
+
+// validateMQL compiles MQL source via the Bytecode VM pipeline and extracts parameters.
+func (s *CodeAssistServer) validateMQL(_ context.Context, code string) (*connect.Response[antv1.ValidateStrategyExtendedResponse], error) {
+	runner, err := mql2go.CompileMQL(code)
+	if err != nil {
+		return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
+			Valid:  false,
+			Errors: []string{fmt.Sprintf("MQL compile failed: %v", err)},
+		}), nil
+	}
+
+	paramInfos := mql2go.ExtractParamInfos(runner.Bytecode())
+	params := make([]*antv1.RequiredParamSpec, 0, len(paramInfos))
+	type paramEntry struct {
+		Name    string `json:"name"`
+		Type    string `json:"type"`
+		Default string `json:"default"`
+	}
+	var entries []paramEntry
+	for _, p := range paramInfos {
+		pType := mqlTypeToProtoType(p.Type)
+		params = append(params, &antv1.RequiredParamSpec{
+			Key:         p.Name,
+			Required:    false,
+			Type:        pType,
+			DefaultValue: p.Default,
+		})
+		entries = append(entries, paramEntry{Name: p.Name, Type: pType, Default: p.Default})
+	}
+	parametersJson, _ := json.Marshal(entries)
+
+	return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
+		Valid:          true,
+		Parameters:     params,
+		ParametersJson: string(parametersJson),
+	}), nil
+}
+
+// mqlTypeToProtoType maps MQL type names to proto RequiredParamSpec type strings.
+func mqlTypeToProtoType(mqlType string) string {
+	switch mqlType {
+	case "int", "long", "uint", "ulong", "short", "ushort", "char", "uchar":
+		return "int"
+	case "double", "float":
+		return "float"
+	case "bool":
+		return "bool"
+	default:
+		return "str"
+	}
 }
 
 func (s *CodeAssistServer) TranslateParamLabels(ctx context.Context, req *connect.Request[antv1.TranslateParamLabelsRequest]) (*connect.Response[antv1.TranslateParamLabelsResponse], error) {
@@ -126,63 +190,6 @@ Rules:
 
 Example: For parameter "翻倍", return {"en": "Multiplier", "zh-tw": "翻倍", "ja": "倍率", "vi": "Hệ số nhân"}`
 
-func buildValidationPrompt() string {
-	return "You are a trading strategy code validator. " +
-		"Review the following Go strategy code and identify issues. " +
-		"The code MUST use the AntTrader Go Strategy SDK (anttrader/strategy/sdk):\n" +
-		"- Implements sdk.Strategy interface: OnInit/OnBar/OnDeinit.\n" +
-		"- Orders via ctx.Broker().OrderSend(sdk.OrderRequest{...}).\n" +
-		"- Prices via bars.Close(0) (index 0 = most recent bar).\n" +
-		"- Indicators via ctx.Indicators().MA/RSI/EMA/ATR/Bands/MACD.\n" +
-		"- Parameters via ctx.Param(name, default).\n" +
-		"- All monetary values use decimal.Decimal, never float64.\n\n" +
-		"STRICT RULES that make code INVALID:\n" +
-		"- Missing OnInit, OnBar, or OnDeinit method.\n" +
-		"- Using float64 for price/volume calculations.\n\n" +
-		"Return a JSON object with fields: valid (bool), errors (string array), warnings (string array), " +
-		"parameters (array of objects with keys: key (str), required (bool), type (str: int|float|str|bool), " +
-		"default_value (str, optional), suggested_value (str, optional)). " +
-		"Extract all ctx.Param() calls from OnInit() into the parameters array. " +
-		"Check for: missing stop-loss, missing take-profit, position sizing, error handling, " +
-		"indicator usage correctness, decimal.Decimal usage for prices, and data boundary handling. " +
-		"Respond with ONLY valid JSON, no markdown fences."
-}
-
-func parseValidationResult(raw string, log *zap.Logger) (*connect.Response[antv1.ValidateStrategyExtendedResponse], error) {
-	var parsed struct {
-		Valid    bool     `json:"valid"`
-		Errors   []string `json:"errors"`
-		Warnings []string `json:"warnings"`
-		Params   []struct {
-			Key      string `json:"key"`
-			Required bool   `json:"required"`
-			Type     string `json:"type"`
-			Default  string `json:"default_value"`
-			Suggest  string `json:"suggested_value"`
-		} `json:"parameters"`
-	}
-	cleaned := stripMarkdownFences(raw)
-	if err := json.Unmarshal([]byte(cleaned), &parsed); err != nil {
-		log.Warn("CodeAssist: ValidateStrategyExtended failed to parse LLM JSON",
-			zap.Error(err), zap.String("raw", cleaned[:min(len(cleaned), 200)]))
-		return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
-			Valid: false, Errors: []string{"AI 验证结果解析失败，请检查策略代码格式。"}, Warnings: []string{},
-		}), nil
-	}
-
-	params := make([]*antv1.RequiredParamSpec, len(parsed.Params))
-	for i, p := range parsed.Params {
-		params[i] = &antv1.RequiredParamSpec{
-			Key: p.Key, Required: p.Required, Type: p.Type,
-			DefaultValue: p.Default, SuggestedValue: p.Suggest,
-		}
-	}
-	return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
-		Valid: parsed.Valid, Errors: parsed.Errors, Warnings: parsed.Warnings,
-		Parameters: params,
-	}), nil
-}
-
 // paramPattern matches ctx.Param*("name", default) calls.
 // Group 1: method suffix (empty, Int, Decimal, Bool, String)
 // Group 2: parameter name
@@ -228,14 +235,23 @@ func extractParamsJSON(code string) string {
 	return string(b)
 }
 
-// extractCodeFromRepair attempts to salvage Go code from an LLM response
+// extractCodeFromRepair attempts to salvage code from an LLM response
 // that may contain explanatory text (3-tier extraction).
-func extractCodeFromRepair(raw string) string {
-	// Tier 1: extract from ```go ... ``` fence
-	if code := extractFencedCode(raw, "go"); code != "" {
-		return code
+// When isMQL is true, MQL fenced blocks are tried before Go ones.
+func extractCodeFromRepair(raw string, isMQL bool) string {
+	var langs []string
+	if isMQL {
+		langs = []string{"mql4", "mql5", "mql", "go"}
+	} else {
+		langs = []string{"go", "mql4", "mql5", "mql"}
 	}
-	// Tier 2: heuristic — find lines starting with import/package/func/type
+	// Tier 1: extract from fenced code blocks
+	for _, lang := range langs {
+		if code := extractFencedCode(raw, lang); code != "" {
+			return code
+		}
+	}
+	// Tier 2: heuristic — find lines starting with known code markers
 	if code := extractByHeuristic(raw); code != "" {
 		return code
 	}
@@ -273,6 +289,7 @@ func extractByHeuristic(raw string) string {
 		if trimmed == "" {
 			continue
 		}
+		// Go markers
 		if strings.HasPrefix(trimmed, "package ") ||
 			strings.HasPrefix(trimmed, "import ") ||
 			strings.HasPrefix(trimmed, "import(") ||
@@ -281,21 +298,19 @@ func extractByHeuristic(raw string) string {
 			strings.HasPrefix(trimmed, "//") {
 			return strings.Join(lines[i:], "\n")
 		}
+		// MQL markers
+		if strings.HasPrefix(trimmed, "#property") ||
+			strings.HasPrefix(trimmed, "#include") ||
+			strings.HasPrefix(trimmed, "#define") ||
+			strings.HasPrefix(trimmed, "extern ") ||
+			strings.HasPrefix(trimmed, "input ") ||
+			strings.HasPrefix(trimmed, "int OnInit") ||
+			strings.HasPrefix(trimmed, "void OnTick") ||
+			strings.HasPrefix(trimmed, "void OnBar") ||
+			strings.HasPrefix(trimmed, "int OnInit()") {
+			return strings.Join(lines[i:], "\n")
+		}
 		return ""
 	}
 	return ""
-}
-
-func stripMarkdownFences(s string) string {
-	for _, fence := range []string{"```json", "```"} {
-		t := strings.TrimSpace(s)
-		if strings.HasPrefix(t, fence) {
-			t = t[len(fence):]
-			if idx := strings.LastIndex(t, "```"); idx >= 0 {
-				t = t[:idx]
-			}
-			return strings.TrimSpace(t)
-		}
-	}
-	return s
 }

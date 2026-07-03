@@ -28,7 +28,11 @@ export function isLikelyStreamTransportFailure(error: unknown): boolean {
     parts.includes('gateway timeout') ||
     parts.includes('deadline exceeded') ||
     parts.includes('err_unavailable') ||
-    parts.includes('unavailable')
+    parts.includes('unavailable') ||
+    // Request body not fully sent — typical when a long-lived stream is
+    // aborted mid-flight (page refresh / component unmount / navigation).
+    // This is a transport interruption, NOT an authentication failure.
+    parts.includes('missing request message')
   );
 }
 
@@ -47,7 +51,6 @@ export function isStreamAuthFailure(error: unknown): boolean {
     .join(' ')
     .toLowerCase();
   return (
-    parts.includes('missing request message') ||
     parts.includes('missing authorization header') ||
     parts.includes('unauthenticated') ||
     parts.includes('token expired') ||

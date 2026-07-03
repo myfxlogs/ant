@@ -55,6 +55,7 @@ var builtinRegistry = []builtinEntry{
 	{"Digits", nil},
 	{"Symbol", nil},
 	{"Period", nil},
+	{"Spread", nil},
 
 	// Indicators (MQL4 + shared)
 	{"iMA", nil},
@@ -177,6 +178,8 @@ var builtinRegistry = []builtinEntry{
 	{"PositionGetString", nil},
 	{"PositionGetSymbol", nil},
 	{"PositionSelectByTicket", nil},
+	{"PositionClose", nil},
+	{"PositionModify", nil},
 
 	// MQL5 CTrade methods (registered as method builtins)
 	{"CTrade.Buy", nil},
@@ -427,6 +430,9 @@ var builtinRegistry = []builtinEntry{
 	{"AccountInfoString", nil},
 	{"AccountStopoutMode", nil},
 	{"AccountCredit", nil},
+
+	// ── Python-specific operators ─────────────────────────────────────
+	{"operator_in", nil},
 
 	// ── Global Variables of the Terminal ──────────────────────────────
 	{"GlobalVariableSet", nil},

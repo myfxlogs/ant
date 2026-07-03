@@ -132,6 +132,8 @@ Agent 的核心特征：
 
 不是完整 Python，是约束子集——与 Bytecode 指令集几乎一一对应。
 
+**定位：Python 子集是 Agent 与 VM 执行引擎之间的接口契约。** Claude 承诺输出符合此契约的策略描述，VM 承诺正确执行。子集越小、越规整，Claude 的生成正确率越高，编译错误信息越精确（"第 17 行，期望 `Decimal`，得到 `float`"），Agent 循环收敛越快。类型标注强制不是束缚——它让编译错误可以被 Claude 自主修复，是 Agent 循环能收敛的前提。
+
 **允许：**
 - `if/elif/else`、`for i in range(n)`、`while cond`
 - `def func(args) -> type:`、`return val`
@@ -182,6 +184,15 @@ class MyStrategy(StrategyBase):
                 ctx.broker.close(pos.ticket)
 ```
 
+**`float` vs `Decimal` 使用边界：** 示例中 `ema_fast` 和 `rsi` 标注为 `float`，`sl` 和 `pos.profit` 用 `Decimal`。这不是随意选择：
+
+| 类型 | 使用场景 | 原因 |
+|---|---|---|
+| `float` | 指标返回值（EMA、RSI、ATR 等） | 指标输出是纯数值，不参与价格计算，`float64` 精度足够 |
+| `Decimal` | 价格、仓位大小、盈亏、止损/止盈距离 | 项目约束：禁止 float64 用于价格计算 |
+
+`compile_py.go` 在编译期检查此边界——指标返回值赋值给 `float` 合法，价格运算必须走 `Decimal`。编译器不会将 `Decimal` 隐式转为 `float` 或反之，需要显式转换（`Decimal(str(atr))`）。
+
 ### D4: Python SDK 接口（IR 层面）
 
 Python 子集中的 `ctx.*` 调用映射到 VM 内置函数，与 MQL 路径共享同一套 `OP_CALL_BUILTIN` 实现。
@@ -200,9 +211,11 @@ Python 子集中的 `ctx.*` 调用映射到 VM 内置函数，与 MQL 路径共�
 | `ctx.broker.close(ticket)` | `OrderClose(ticket, lots, Bid, 3)` | `OP_CALL_BUILTIN("OrderClose")` |
 | `ctx.broker.modify(ticket, sl, tp)` | `OrderModify(ticket, price, sl, tp, 0, clrNone)` | `OP_CALL_BUILTIN("OrderModify")` |
 | `ctx.positions.count()` | `OrdersTotal()` | `OP_CALL_BUILTIN("OrdersTotal")` |
-| `ctx.positions[magic]` | `OrderSelect(i, SELECT_BY_POS, MODE_TRADES)` 循环 | `OP_CALL_BUILTIN` 组合 |
+| `for pos in ctx.positions` | `OrderSelect(i, SELECT_BY_POS, MODE_TRADES)` 循环 | `compileForPositions` desugar → `OP_CALL_BUILTIN` 组合 |
 
 **关键设计：** Python SDK 的语义和 MQL 内置函数完全等价，底层调用同一个 VM builtin 实现。不存在"Python 版 iMA"和"MQL 版 iMA"——只有一个 `builtinIMA` 函数。
+
+**`ctx.positions` 迭代：** 实际实现使用 `for pos in ctx.positions` desugar 模式（`compileForPositions`），而非 subscript 语法 `ctx.positions[magic]`。编译器将 `for` 循环展开为 `OrdersTotal` + `OrderSelect` 的内置函数调用序列，与 MQL 的 `for(i=0; i<OrdersTotal(); i++) { OrderSelect(i, ...) }` 语义等价。示例代码见 §D3。
 
 ### D5: Agent 层架构
 
@@ -308,20 +321,30 @@ Agent 满意 → 存入知识库 → 返回最终策略 + 分析报告
 
 compile_py.go 的价值不是让 Agent 循环变快（LLM 是瓶颈），而是**确保回测不成为额外瓶颈**。per-bar RPC 方案下回测需要 16 分钟/次，50 次迭代 = 13 小时——这才是不可接受的。VM 内执行让回测从 16 分钟降到 200ms，使其相对 LLM 推理时间可忽略。
 
+**Agent 循环终止条件：** `max_iterations=50` 和 `cost_ceiling=$0.50` 是硬上限保底。此外需要软终止条件，让 Claude 在"够好了"时主动停下，避免无效迭代：
+
+| 终止条件 | 触发规则 | 行为 |
+|---|---|---|
+| 收益递减 | 连续 3 次迭代夏普改善 < 0.05，且 Claude 判断无结构性改进空间 | 停止迭代，输出当前最优策略 |
+| 过拟合预警 | 样本内夏普 − 样本外夏普 > 0.5 | 停止迭代，标记"可能过拟合"，建议 walk-forward 验证 |
+| 用户目标达成 | 用户明确的目标已满足（如"年化 > 15% 且回撤 < 20%"） | 停止迭代，报告目标已达成 |
+
+硬上限防失控，软终止保体验——用户等 50-250 秒时，第 51 次迭代的边际收益已经很低。
+
 #### 5.3 六个 LLM 注入点
 
 | 注入点 | 位置 | 输入 | 输出格式 | 输出语言 |
 |---|---|---|---|---|
-| [1] 策略画像 | 编译后 | AST + 覆盖率报告 | protobuf text format → `StrategyProfile` proto | 非代码 |
+| [1] 策略画像 | 编译后 | AST + 覆盖率报告 | 轻量行格式 → `StrategyProfile` proto | 非代码 |
 | [2] 盲区桥接 | 覆盖率 < 100% | MQL 源码 + 盲区列表 + 策略画像 | Python 策略源码 | Python 子集 |
 | [3] 回测执行 | 回测时 | Bytecode + SimBroker | 回测结果 (protobuf) | 非代码 (确定性) |
-| [4] 回测解读 | 回测后 | 回测结果 + 策略画像 | protobuf text format → `BacktestAnalysis` proto | 非代码 |
-| [5] 参数优化 | 回测后 | 参数空间 + 回测结果 | protobuf text format → `OptimizedParams` proto | 非代码 |
+| [4] 回测解读 | 回测后 | 回测结果 + 策略画像 | 轻量行格式 → `BacktestAnalysis` proto | 非代码 |
+| [5] 参数优化 | 回测后 | 参数空间 + 回测结果 | 轻量行格式 → `OptimizedParams` proto | 非代码 |
 | [6] 策略改进 | 回测后 | 源码 + 回测结果 + 市场状态 | Python 策略源码 (Agent 路径) 或 MQL 源码 (用户路径) | Python/MQL |
 
 **[3] 不是 LLM 注入点**——回测执行是确定性的 VM + SimBroker，无 LLM 参与。
 
-**所有结构化输出用 protobuf text format**，Go 端用 `prototext.Unmarshal` 解析。禁止 JSON（项目约束）。
+**LLM 输出格式分两档：** 简单分析输出（[1] [4] [5]）用 `KEY: "value"` 轻量行格式——LLM 对此正确率接近 100%，Go 端用行解析器消费（几十行代码）。复杂嵌套结构用真 protobuf text format + `prototext.Unmarshal`。原则：LLM 输出格式越简单，可靠性越高；Go 端解析多做一点，LLM 自由度少给一点。禁止 JSON（项目约束）。
 
 #### 5.4 LLM 输出验证门
 
@@ -374,6 +397,7 @@ CREATE TABLE agent_experience (
     category    VARCHAR(32) NOT NULL,   -- strategy_pattern / market_regime / optimization_result
     content     TEXT NOT NULL,           -- 自然语言描述
     embedding   VECTOR(1536) NOT NULL,   -- LLM embedding
+    fingerprint JSONB NOT NULL DEFAULT '{}', -- 结构指纹 (indicators_used, condition_structure, risk_model, timeframe)
     metadata    JSONB NOT NULL DEFAULT '{}',  -- 结构化补充 (PG JSONB, 不在应用层 json.Marshal)
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -386,12 +410,24 @@ CREATE INDEX idx_agent_experience_tenant_category
     ON agent_experience(tenant_id, category);
 ```
 
-Agent 遇到新策略时：
+**结构指纹（`fingerprint`）补充语义检索。** 两个策略可能"语义上相似"（都是"趋势跟踪"）但"结构上完全不同"（双均线 vs ADX 突破 vs 布林带回归）。纯 embedding 检索无法区分。`fingerprint` 列存储策略的结构化元数据：
+
+```json
+{
+  "indicators_used": ["EMA", "RSI", "ATR"],
+  "condition_structure": {"entry": "crossover_and_threshold", "exit": "crossover_or_trailing"},
+  "risk_model": "atr_multiple_rr_ratio",
+  "timeframe": "H1"
+}
+```
+
+Agent 遇到新策略时，执行**双路径检索**：
 1. Agent 通过 ConnectRPC 调用 Go Gateway 的 `SearchExperience` RPC
-2. Go API 层生成 embedding → pgvector 检索相似经验（cosine similarity > 0.85，`tenant_id` 过滤）
-3. Go API 层返回相似经验列表（protobuf）
-4. Agent 注入 LLM prompt："历史上类似策略的经验：..."
-5. 生成初始策略时主动加入已知优化
+2. Go API 层生成 embedding → pgvector 检索相似经验（cosine similarity > 0.85，`tenant_id` 过滤）——**语义路径**，召回思路相近的策略
+3. Go API 层同时按 fingerprint 字段匹配同结构类型的经验——**结构路径**，召回同类型策略（如同为"双均线 crossover + RSI 过滤 + ATR 止损"）
+4. Go API 层合并去重后返回相似经验列表（protobuf），标注匹配类型（`semantic` / `structural` / `both`）
+5. Agent 注入 LLM prompt："历史上类似策略的经验：..."，优先引用 `both` 和 `structural` 匹配的结果
+6. 生成初始策略时主动加入已知优化
 
 **设计决策：知识库检索放在 Go API 层而非 Python Agent 层。**
 
@@ -556,6 +592,19 @@ Python 子集禁止 `import`、`try/except`、`with`、`async/await`——Agent 
 | 最快迭代速度 | Python 回测引擎与 Go SimBroker 行为不一致 | 回测结果不可信 |
 | 不需要 Go ↔ Python 通信 | 重复实现撮合/风控/指标 | 维护成本极高 |
 
+### 方案 E: 声明式策略 DSL + 规则引擎
+
+LLM 输出结构化策略声明（protobuf），而非代码。Go 端用通用规则引擎逐 bar 评估条件树。
+
+| 优点 | 缺点 | 否决理由 |
+|---|---|---|
+| LLM 输出结构化配置, 正确率 ~98% | 需要第二套执行引擎（规则引擎 vs VM） | MQL 上传是硬需求 → VM 已存在且必须维护 |
+| 零编译器, ~2000 行规则引擎即可 | 两套引擎的撮合/滑点/手续费行为必须一致 | 违反"单执行引擎"原则, 维护成本翻倍 |
+| 覆盖 80% 零售策略 | 复杂策略不覆盖, 需 MT 托管兜底 | MQL 路径已覆盖全部复杂度, 不需要第二个兜底 |
+| 策略可解释性极强（每根 bar 的条件评估结果可观测） | 条件树表达能力有上限（多时间框架联动、状态机、动态仓位公式） | Python 子集可表达, 且与 MQL 共享 VM, 一石二鸟 |
+
+否决的核心逻辑：**用户上传 MQL 是硬需求，VM 已经存在且必须维护。在这个前提下，不应再建第二个执行引擎。** compile_py.go 让 AI 生成路径复用已有 VM，而非另起炉灶。若无 MQL 上传需求，方案 E 更优——但这不是我们的场景。
+
 ### 选定方案: 双编译前端 + Python Agent 层（§2 D1-D8）
 
 | 维度 | 决策 |
@@ -588,7 +637,7 @@ Python 子集禁止 `import`、`try/except`、`with`、`async/await`——Agent 
 - **compile_py.go 开发成本**：3-4 周（tree-sitter Python grammar Go binding + CST → IR + 类型检查 + 子集验证器 + 测试）
 - **Python Agent 服务运维成本**：额外语言栈、K8s Pod 管理、LLM API 成本
 - **LLM 非确定性风险**：同一输入可能产生不同输出，需要缓存（source hash → 结果）和重试机制
-- **protobuf text format LLM 可靠性**：LLM 对 protobuf text format 的训练语料少于 JSON，需要 prompt 模板引导和 fallback 解析
+- **LLM 输出格式可靠性**：LLM 对完整 protobuf text format 的训练语料少于 JSON。缓解：复杂嵌套结构用真 protobuf + 验证门；简单分析输出（策略画像、回测解读）用 `KEY: "value"` 行格式——LLM 对此格式正确率接近 100%（训练语料中有无尽 YAML/frontmatter/INI），Go 端用行解析器消费，几十行代码。原则：LLM 输出格式越简单，可靠性越高；Go 端解析多做一点，LLM 自由度少给一点。
 - **Python 子集不是标准 Python**：LLM 需要被约束在子集内，可能生成被拒绝的语法（list comprehension 等），需要 prompt 工程和重试
 
 ### 中性
@@ -652,6 +701,7 @@ python/agent/           (新建)
 - Agent 每次迭代只有一次 RPC 往返（提交源码 + 取回结果）
 - Agent 循环有上限：max 50 次迭代，$0.50 成本上限，30 秒 VM 超时
 - LLM 输出缓存：按 source hash + prompt hash 缓存，避免重复调用
+- **实盘修改需用户显式确认**：Agent 对实盘中策略的任何参数或逻辑修改，必须经过用户显式确认才能生效。Agent 可以建议、可以展示改进后回测对比、可以评估风险，但不能自主变更实盘运行中的策略。唯一例外：用户预设的风控熔断（如单日亏损 > 5% → 自动暂停交易）。这不是技术约束，是信任约束——用户需要确信"我的实盘策略不会被 AI 自作主张改了"。
 
 ### 5.4 数据精度约束
 
@@ -669,7 +719,7 @@ python/agent/           (新建)
 | ❌ WebSocket | SSE 推送 |
 | ❌ float64 in price | Decimal in Python 子集 + decimal.Decimal in Go |
 | ✅ MT access via mtapi.io | Python 不直接访问 MT，通过 Go Gateway |
-| ✅ Push-first | SSE 推送退化告警，Agent 不轮询 |
+| ✅ Push-first | 同步模式不轮询（阻塞等待结果返回）；异步模式 Agent 可通过 `SubscribeBacktestCompletion` SSE 等待或 `GetBacktestResult` 主动查询。退化告警走 SSE 推送，无轮询。 |
 | ✅ 回测即实盘 | Python 策略走同一 VM + SimBroker，回测/实盘代码路径统一 |
 
 ---
@@ -763,9 +813,25 @@ Python 子集注入测试:
 
 ## 7. 实施路线
 
-### Phase 0: compile_py.go (3-4 周)
+### Phase 0: Agent Gateway + 策略画像 + 回测解读 (2 周)
 
-**目标：** Python 子集 → IR → Bytecode → VM 执行
+**目标：** 先跑通 Agent 循环——Claude 生成 MQL、走现有 tree-sitter 管线、VM 回测。Phase 0 不依赖 compile_py.go，能立即验证 Agent 循环的行为模式。
+
+**为什么 Phase 0 不是 compile_py.go：** Agent 循环的价值不依赖 Python 编译前端。今天 Claude 就可以生成 MQL（正确率 ~70%），走现有管线在 VM 中回测。先跑通 Agent 循环可以获得真实数据——Claude 实际会怎么迭代？最常见的代码生成模式是什么？哪些错误类型最频繁？——这些数据直接决定 compile_py.go 的 Python 子集该如何设计，避免凭空猜测。
+
+| 工作项 | 周期 |
+|---|---|
+| `agent_gateway.proto` + ConnectRPC handler | 3 天 |
+| `agent_profile.proto` + `agent_analysis.proto` | 1 天 |
+| 策略画像 prompt + prototext 解析 + 缓存 | 3 天 |
+| 回测解读 prompt + prototext 解析 + 缓存 | 3 天 |
+| 前端策略卡片 + 回测解读 UI | 4 天 |
+
+**产出：** 用户上传 EA 后立即看到策略画像，回测后看到 LLM 解读。Agent 循环在 MQL 上跑通，为 compile_py.go 收集数据。
+
+### Phase 1: compile_py.go (3-4 周)
+
+**目标：** Python 子集 → IR → Bytecode → VM 执行。用 Phase 0 收集的 Claude 代码生成模式数据驱动子集设计，目标：Claude 生成的 Python 一次编译通过率 > 90%。
 
 | 工作项 | 周期 |
 |---|---|
@@ -785,20 +851,6 @@ Python 子集注入测试:
 - 禁止语法被正确拒绝并给出 Agent 可理解的错误信息
 - 与 MQL 路径产出的 IR 结构兼容（`compile.go` 无需修改）
 
-### Phase 1: Agent Gateway + 策略画像 + 回测解读 (2 周)
-
-**目标：** Agent ↔ Go 通信 + 两个 LLM 分析注入点
-
-| 工作项 | 周期 |
-|---|---|
-| `agent_gateway.proto` + ConnectRPC handler | 3 天 |
-| `agent_profile.proto` + `agent_analysis.proto` | 1 天 |
-| 策略画像 prompt + prototext 解析 + 缓存 | 3 天 |
-| 回测解读 prompt + prototext 解析 + 缓存 | 3 天 |
-| 前端策略卡片 + 回测解读 UI | 4 天 |
-
-**产出：** 用户上传 EA 后立即看到策略画像，回测后看到 LLM 解读
-
 ### Phase 2: 盲区桥接 Agent (2 周)
 
 **目标：** MQL 盲区 EA → Agent 翻译为 Python → VM 回测
@@ -807,8 +859,21 @@ Python 子集注入测试:
 |---|---|
 | Python Agent SDK (ConnectRPC client + 策略提交) | 3 天 |
 | 盲区桥接 prompt + Agent 循环编排 | 4 天 |
-| 变更审计存储 + UI (diff 前后代码) | 3 天 |
+| 策略语义变更审计 + UI | 3 天 |
 | 端到端测试 (MQL EA → Agent → Python → VM → 结果) | 4 天 |
+
+**策略语义 diff（非代码 diff）：** Phase 2 的变更审计输出面向非程序员用户。每次迭代产出策略语义变更说明，而非源码 diff：
+
+```
+本次修改:
+  + 新增: ADX(14) > 25 入场过滤 (减少震荡市假突破)
+  ~ 变更: 止损从固定50点 → ATR(14) × 2 (自适应波动率)
+  ~ 变更: EMA 参数 (10,30) → (12,26)
+
+  效果: 夏普 1.2 → 1.6, 回撤 28% → 14%, 交易次数 45 → 32
+```
+
+Claude 生成语义 diff 比生成代码更可靠——本质是自然语言总结。前端展示时并列代码 diff（给程序员）和语义 diff（给所有用户）。
 
 **产出：** 覆盖率 60% → 90%+
 
@@ -831,8 +896,8 @@ Python 子集注入测试:
 
 | 工作项 | 周期 |
 |---|---|
-| pgvector 知识库 schema + 语义检索 | 3 天 |
-| 经验存储 + 检索 + prompt 注入 | 3 天 |
+| pgvector 知识库 schema + 语义检索 + 结构指纹 | 3 天 |
+| 经验存储 + 双路径检索 + prompt 注入 | 3 天 |
 | 策略进化 Agent (退化检测 + 改进循环) | 5 天 |
 | SSE 退化告警 + 前端通知 | 3 天 |
 | 跨策略学习 + 主动建议 | 5 天 |
