@@ -13,6 +13,11 @@ backend/main
 backend/server
 backend/cmd/server/server
 backend/migrate-ch
+backend/ant
+backend/ant-vault
+backend/md-doctor
+backend/slo-report
+backend/*.test
 
 # Temp / tool artifacts
 .tmp_*
@@ -48,6 +53,7 @@ docker-compose.override.yml
 .windsurfrules
 .cursor/
 .trae/
+.deepseek/
 
 # Local backups (large, not source of truth)
 bak260421/
@@ -64,6 +70,7 @@ frontend/e2e/
 frontend/playwright-report/
 frontend/playwright-traces/
 frontend/test-results/
+tmp/
 
 # Local credentials
 id_ed25519
