@@ -83,7 +83,9 @@ func (c *pyCompiler) callName(n *sitter.Node) string {
 	return ""
 }
 
-func (c *pyCompiler) compileArgs(n *sitter.Node) []interp.Expr {
+// findArgumentList locates the argument_list child node of a call expression node.
+// Uses findNamedChild first (fast path), then falls back to iterating named children.
+func findArgumentList(n *sitter.Node) *sitter.Node {
 	args := findNamedChild(n, "argument_list")
 	if args == nil {
 		for i := 0; i < int(n.NamedChildCount()); i++ {
@@ -94,6 +96,11 @@ func (c *pyCompiler) compileArgs(n *sitter.Node) []interp.Expr {
 			}
 		}
 	}
+	return args
+}
+
+func (c *pyCompiler) compileArgs(n *sitter.Node) []interp.Expr {
+	args := findArgumentList(n)
 	if args == nil {
 		return nil
 	}
@@ -131,16 +138,7 @@ func (c *pyCompiler) compileArgs(n *sitter.Node) []interp.Expr {
 // Python keyword arguments like ctx.broker.buy(sl=..., lot=...) by reordering
 // them to the positional order expected by the VM builtin (lot, ..., sl, ...).
 func (c *pyCompiler) compileArgsOrdered(n *sitter.Node, methodPath string) []interp.Expr {
-	args := findNamedChild(n, "argument_list")
-	if args == nil {
-		for i := 0; i < int(n.NamedChildCount()); i++ {
-			child := n.NamedChild(i)
-			if child.Type() == "argument_list" {
-				args = child
-				break
-			}
-		}
-	}
+	args := findArgumentList(n)
 	if args == nil {
 		return nil
 	}
@@ -253,6 +251,8 @@ func rangeInit(args []interp.Expr) interp.Expr {
 	}
 	return args[0]
 }
+
+// findArgumentList returns the argument_list child of a call node, or nil.
 
 // countBases returns the number of base classes in a class definition.
 // Used to reject multiple inheritance (ADR-0024 D3 prohibits it).

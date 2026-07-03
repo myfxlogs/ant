@@ -38,13 +38,27 @@ func CompilePythonToIR(source string) (ir *interp.IR, err error) {
 	}
 
 	c := &pyCompiler{source: source}
-	return c.compile(root), nil
+	ir = c.compile(root)
+	if len(c.errors) > 0 {
+		return nil, c.errors[0]
+	}
+	return ir, nil
 }
 
 type pyCompiler struct {
-	source     string
-	selfVars   map[string]bool
+	source      string
+	selfVars    map[string]bool
 	posLoopVars map[string]bool
+	errors      []error
+}
+
+// errorf appends a compilation error with line number from the tree-sitter node.
+func (c *pyCompiler) errorf(n *sitter.Node, format string, args ...any) {
+	line := 0
+	if n != nil {
+		line = int(n.StartPoint().Row) + 1
+	}
+	c.errors = append(c.errors, fmt.Errorf("line %d: "+format, append([]any{line}, args...)...))
 }
 
 func (c *pyCompiler) text(n *sitter.Node) string {
@@ -99,8 +113,8 @@ func (c *pyCompiler) compileClass(ir *interp.IR, n *sitter.Node) {
 
 	// Multiple inheritance is prohibited (ADR-0024 D3)
 	if baseCount := c.countBases(n); baseCount > 1 {
-		panic(fmt.Sprintf("line %d: multiple inheritance not supported (%d bases), extend StrategyBase only",
-			n.StartPoint().Row+1, baseCount))
+		c.errorf(n, "multiple inheritance not supported (%d bases), extend StrategyBase only", baseCount)
+		return
 	}
 
 	// Find class body (block)

@@ -1,0 +1,15 @@
+## MQL Source Code (has blind spots)
+```
+{{.MQLSource}}
+```
+
+{{.ProfileBlock}}
+
+## Coverage Report
+{{.CoverageBlock}}
+
+## Task
+Translate this MQL strategy into a Python subset strategy that avoids the blind spots.
+Use the strategy profile to guide semantic translation of custom indicators.
+Map MQL trading functions to the Python SDK API shown above.
+Output ONLY the Python source code.

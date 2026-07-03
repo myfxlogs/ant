@@ -1,8 +1,6 @@
 package mql2go
 
 import (
-	"fmt"
-
 	sitter "github.com/smacker/go-tree-sitter"
 	"anttrader/tools/mql2go/interp"
 )
@@ -56,8 +54,9 @@ func (c *pyCompiler) compilePyAssignment(n *sitter.Node) *interp.Expr {
 				if fieldNode := lhs.NamedChild(1); fieldNode != nil && fieldNode.Type() == "identifier" {
 					fieldName = c.text(fieldNode)
 				}
-				panic(fmt.Sprintf("line %d: cannot assign to position field '%s.%s' — use ctx.broker.modify() instead",
-					lhs.StartPoint().Row+1, objName, fieldName))
+				c.errorf(lhs, "cannot assign to position field '%s.%s' — use ctx.broker.modify() instead",
+					objName, fieldName)
+				return nil
 			}
 		}
 		attrExpr := c.compilePyAttribute(lhs)
@@ -148,8 +147,9 @@ func (c *pyCompiler) compilePyAugmentedAssign(n *sitter.Node) *interp.Expr {
 				if fieldNode := lhs.NamedChild(1); fieldNode != nil && fieldNode.Type() == "identifier" {
 					fieldName = c.text(fieldNode)
 				}
-				panic(fmt.Sprintf("line %d: cannot assign to position field '%s.%s' — use ctx.broker.modify() instead",
-					lhs.StartPoint().Row+1, objName, fieldName))
+				c.errorf(lhs, "cannot assign to position field '%s.%s' — use ctx.broker.modify() instead",
+					objName, fieldName)
+				return nil
 			}
 		}
 	}

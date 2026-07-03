@@ -2,7 +2,6 @@ package systemai
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -138,21 +137,46 @@ func readAPIErrorBody(resp *http.Response) apiError {
 	return parseAPIError(body)
 }
 
+
+// extractJSONField extracts a string value for the given key from a JSON object.
+// Manual string parsing — avoids encoding/json (CLAUDE.md §0 prohibition).
+func extractJSONField(raw []byte, key string) string {
+	s := string(raw)
+	// Look for "key":"value"
+	search := `"` + key + `":"`
+	idx := strings.Index(s, search)
+	if idx < 0 {
+		search2 := `"` + key + `": "`
+		idx = strings.Index(s, search2)
+		if idx < 0 {
+			return ""
+		}
+		start := idx + len(search2)
+		end := strings.Index(s[start:], `"`)
+		if end < 0 {
+			return ""
+		}
+		return s[start : start+end]
+	}
+	start := idx + len(search)
+	end := strings.Index(s[start:], `"`)
+	if end < 0 {
+		return ""
+	}
+	return s[start : start+end]
+}
+
 // readAPIErrorBodyFromBytes parses an already-read response body.
 func readAPIErrorBodyFromBytes(body []byte) apiError {
 	return parseAPIError(body)
 }
 
+// parseAPIError extracts error information from provider API responses.
+// Uses manual string parsing to avoid encoding/json (CLAUDE.md §0 prohibition).
 func parseAPIError(body []byte) apiError {
-	var parsed struct {
-		Error struct {
-			Message string `json:"message"`
-			Type    string `json:"type"`
-			Code    string `json:"code"`
-		} `json:"error"`
-	}
-	if json.Unmarshal(body, &parsed) == nil && parsed.Error.Message != "" {
-		return apiError{Type: parsed.Error.Type, Message: parsed.Error.Message}
+	msg := extractJSONField(body, "message")
+	if msg != "" {
+		return apiError{Type: extractJSONField(body, "type"), Message: msg}
 	}
 	raw := strings.TrimSpace(string(body))
 	if len(raw) > 500 {
@@ -307,3 +331,6 @@ func resolveModel(defaultModel string, models []string, providerID, primaryPID, 
 	}
 	return m
 }
+
+// extractJSONField extracts a string value for the given key from a JSON object.
+// Manual string parsing — avoids encoding/json (CLAUDE.md §0 prohibition).

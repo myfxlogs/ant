@@ -1,6 +1,7 @@
 package agent
 
 import (
+	_ "embed"
 	"context"
 	"fmt"
 	"strings"
@@ -12,6 +13,9 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/service/systemai"
 )
+
+//go:embed prompts/retrospect_user.prompt
+var retrospectUserPromptTmpl string
 
 // RetrospectAgent analyzes completed strategy generation results and stores
 // experiences to the memory system (ADR-0025 §6.2).
@@ -171,20 +175,16 @@ func (r *RetrospectAgent) generateRetrospect(ctx context.Context, userID uuid.UU
 
 func (r *RetrospectAgent) buildRetrospectPrompt(input retrospectInput) string {
 	var sb strings.Builder
-	sb.WriteString("## Strategy Generation Summary\n")
 	sb.WriteString(fmt.Sprintf("Request: %s\n", input.Message))
 	sb.WriteString(fmt.Sprintf("Symbol: %s, Timeframe: %s\n", input.Symbol, input.Timeframe))
-
 	if input.Plan != nil {
 		sb.WriteString(fmt.Sprintf("Plan Type: %s\n", input.Plan.Type))
 		sb.WriteString(fmt.Sprintf("Entry: %s\n", input.Plan.Entry))
 		sb.WriteString(fmt.Sprintf("Exit: %s\n", input.Plan.Exit))
 	}
-
 	if input.Profile != nil {
 		sb.WriteString(fmt.Sprintf("Profile: %s — %s\n", input.Profile.StrategyType, input.Profile.Description))
 	}
-
 	if input.BacktestResult != nil {
 		bt := input.BacktestResult
 		sb.WriteString(fmt.Sprintf("Backtest: success=%v, trades=%d, return=%.2f%%, drawdown=%.2f%%, sharpe=%.2f, win_rate=%.1f%%\n",
@@ -193,14 +193,18 @@ func (r *RetrospectAgent) buildRetrospectPrompt(input retrospectInput) string {
 			sb.WriteString(fmt.Sprintf("Backtest Error: %s\n", bt.Error))
 		}
 	}
-
 	if input.Analysis != nil && input.Analysis.Summary != "" {
 		sb.WriteString(fmt.Sprintf("Analysis: %s\n", input.Analysis.Summary))
 	}
-
 	sb.WriteString(fmt.Sprintf("Coverage Score: %.0f%%\n", input.CoverageScore*100))
-	sb.WriteString("\nProduce the experience entry now.\n")
-	return sb.String()
+	data := promptData{
+		RetrospectBlock: wrapXML("generation_summary", sanitizeInput(sb.String())),
+	}
+	userPrompt, err := renderPrompt("retrospect_user", retrospectUserPromptTmpl, data)
+	if err != nil {
+		return fallbackRetrospectPrompt(input)
+	}
+	return userPrompt
 }
 
 func (r *RetrospectAgent) fallbackRetrospect(input retrospectInput) string {
@@ -245,4 +249,19 @@ func (r *RetrospectAgent) extractConditionStructure(profile *antv1.StrategyProfi
 		return "entry_only"
 	}
 	return ""
+}
+
+func fallbackRetrospectPrompt(input retrospectInput) string {
+	var sb strings.Builder
+	sb.WriteString("## Strategy Generation Summary\n")
+	sb.WriteString(fmt.Sprintf("Request: %s\n", input.Message))
+	sb.WriteString(fmt.Sprintf("Symbol: %s, Timeframe: %s\n", input.Symbol, input.Timeframe))
+	if input.BacktestResult != nil {
+		bt := input.BacktestResult
+		sb.WriteString(fmt.Sprintf("Backtest: success=%v, trades=%d, return=%.2f%%\n",
+			bt.Success, bt.TotalTrades, bt.TotalReturn))
+	}
+	sb.WriteString(fmt.Sprintf("Coverage Score: %.0f%%\n", input.CoverageScore*100))
+	sb.WriteString("\nProduce the experience entry now.\n")
+	return sb.String()
 }

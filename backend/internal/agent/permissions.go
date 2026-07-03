@@ -238,19 +238,3 @@ func (p *PermissionEngine) CapabilitiesForUser(ctx context.Context, userID uuid.
 	return result
 }
 
-// FormatCapabilities formats capabilities as a string for prompt injection.
-func FormatCapabilities(caps map[Capability]bool) string {
-	if len(caps) == 0 {
-		return ""
-	}
-	var sb strings.Builder
-	sb.WriteString("\n## Agent Capabilities\n")
-	for cap, allowed := range caps {
-		status := "denied"
-		if allowed {
-			status = "allowed"
-		}
-		sb.WriteString(string(cap) + ": " + status + "\n")
-	}
-	return sb.String()
-}

@@ -43,7 +43,6 @@ type HookContext struct {
 type HookType string
 
 const (
-	HookTypeInternal HookType = "internal" // Go function call
 	HookTypeCommand  HookType = "command"  // shell command, stdin=JSON, exit code 2 = abort
 	HookTypeWebhook  HookType = "webhook"  // HTTP POST, {"allow": false} = abort
 )
@@ -81,11 +80,6 @@ func NewHookEngine(log *zap.Logger) *HookEngine {
 		configs:  make(map[HookEvent][]HookConfig),
 		log:      log,
 	}
-}
-
-// Register adds an internal handler for a lifecycle event.
-func (e *HookEngine) Register(event HookEvent, handler HookHandler) {
-	e.handlers[event] = append(e.handlers[event], handler)
 }
 
 // RegisterConfig adds a command or webhook hook for a lifecycle event.

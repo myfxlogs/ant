@@ -1,6 +1,7 @@
 package agent
 
 import (
+	_ "embed"
 	"context"
 	"fmt"
 	"strings"
@@ -14,6 +15,12 @@ import (
 	"anttrader/tools/mql2go"
 )
 
+//go:embed prompts/bridge_user.prompt
+var bridgeUserPromptTmpl string
+
+//go:embed prompts/bridge_retry_user.prompt
+var bridgeRetryUserPromptTmpl string
+
 // Bridge orchestrates the blind-spot bridging Agent loop.
 // ADR-0024: MQL blind-spot EA → LLM translates to Python subset → compile_py → VM backtest.
 //
@@ -22,12 +29,11 @@ import (
 type Bridge struct {
 	aiSvc *systemai.Service
 	log   *zap.Logger
-	cache *LLCache
 }
 
 // NewBridge creates the blind-spot bridging orchestrator.
-func NewBridge(aiSvc *systemai.Service, log *zap.Logger, cache *LLCache) *Bridge {
-	return &Bridge{aiSvc: aiSvc, log: log, cache: cache}
+func NewBridge(aiSvc *systemai.Service, log *zap.Logger, _ *LLCache) *Bridge {
+	return &Bridge{aiSvc: aiSvc, log: log}
 }
 
 // BridgeResult holds the output of a bridge translation attempt.
@@ -155,6 +161,64 @@ func (b *Bridge) verifyBridgeResult(
 }
 
 func buildBridgeRetryPrompt(mqlSource, prevPython, errorMsg string, profile *antv1.StrategyProfile) string {
+	data := promptData{
+		MQLSource:  sanitizeInput(mqlSource),
+		PrevPython: sanitizeInput(prevPython),
+		ErrorMsg:   errorMsg,
+	}
+	if profile != nil {
+		var sb strings.Builder
+		sb.WriteString("## Strategy Profile (for context)\n")
+		sb.WriteString(fmt.Sprintf("Type: %s\n", profile.StrategyType))
+		sb.WriteString(fmt.Sprintf("Indicators: %s\n", strings.Join(profile.IndicatorsUsed, ", ")))
+		sb.WriteString(fmt.Sprintf("Entry: %s\n", profile.EntryLogic))
+		sb.WriteString(fmt.Sprintf("Exit: %s\n", profile.ExitLogic))
+		data.ProfileBlock = sb.String()
+	}
+	userPrompt, err := renderPrompt("bridge_retry_user", bridgeRetryUserPromptTmpl, data)
+	if err != nil {
+		return fallbackBridgeRetryPrompt(mqlSource, prevPython, errorMsg, profile)
+	}
+	return userPrompt
+}
+
+func buildBridgeUserPrompt(mqlSource string, coverage *mql2go.CoverageResult, profile *antv1.StrategyProfile) string {
+	data := promptData{
+		MQLSource: sanitizeInput(mqlSource),
+	}
+	if profile != nil {
+		var sb strings.Builder
+		writeProfileToPrompt(&sb, profile, "## Strategy Profile\n")
+		data.ProfileBlock = sb.String()
+	}
+	var covSB strings.Builder
+	covSB.WriteString(fmt.Sprintf("Coverage score: %.0f%%\n", coverage.Score*100))
+	if len(coverage.BlindSpots) > 0 {
+		covSB.WriteString("Blind spots:\n")
+		for _, bs := range coverage.BlindSpots {
+			covSB.WriteString(fmt.Sprintf("- %s (severity: %s, count: %d)\n", bs.Builtin, bs.Severity, bs.Count))
+		}
+	}
+	data.CoverageBlock = covSB.String()
+	userPrompt, err := renderPrompt("bridge_user", bridgeUserPromptTmpl, data)
+	if err != nil {
+		return fallbackBridgeUserPrompt(mqlSource, coverage, profile)
+	}
+	return userPrompt
+}
+
+// parseBridgeResponse extracts the Python source from the LLM response.
+// The LLM may wrap code in markdown fences despite instructions — strip them.
+func parseBridgeResponse(resp string) *BridgeResult {
+	python := stripMarkdownFences(resp)
+	python = strings.TrimSpace(python)
+
+	return &BridgeResult{
+		PythonSource: python,
+	}
+}
+
+func fallbackBridgeRetryPrompt(mqlSource, prevPython, errorMsg string, profile *antv1.StrategyProfile) string {
 	var sb strings.Builder
 	sb.WriteString("## Previous Attempt (failed validation)\n```\n")
 	sb.WriteString(prevPython)
@@ -177,17 +241,15 @@ func buildBridgeRetryPrompt(mqlSource, prevPython, errorMsg string, profile *ant
 	return sb.String()
 }
 
-func buildBridgeUserPrompt(mqlSource string, coverage *mql2go.CoverageResult, profile *antv1.StrategyProfile) string {
+func fallbackBridgeUserPrompt(mqlSource string, coverage *mql2go.CoverageResult, profile *antv1.StrategyProfile) string {
 	var sb strings.Builder
 	sb.WriteString("## MQL Source Code (has blind spots)\n```\n")
 	sb.WriteString(mqlSource)
 	sb.WriteString("\n```\n\n")
-
 	writeProfileToPrompt(&sb, profile, "## Strategy Profile\n")
 	if profile != nil {
 		sb.WriteString("\n")
 	}
-
 	sb.WriteString("## Coverage Report\n")
 	sb.WriteString(fmt.Sprintf("Coverage score: %.0f%%\n", coverage.Score*100))
 	if len(coverage.BlindSpots) > 0 {
@@ -196,23 +258,10 @@ func buildBridgeUserPrompt(mqlSource string, coverage *mql2go.CoverageResult, pr
 			sb.WriteString(fmt.Sprintf("- %s (severity: %s, count: %d)\n", bs.Builtin, bs.Severity, bs.Count))
 		}
 	}
-
 	sb.WriteString("\n## Task\n")
 	sb.WriteString("Translate this MQL strategy into a Python subset strategy that avoids the blind spots.\n")
 	sb.WriteString("Use the strategy profile to guide semantic translation of custom indicators.\n")
 	sb.WriteString("Map MQL trading functions to the Python SDK API shown above.\n")
 	sb.WriteString("Output ONLY the Python source code.\n")
-
 	return sb.String()
-}
-
-// parseBridgeResponse extracts the Python source from the LLM response.
-// The LLM may wrap code in markdown fences despite instructions — strip them.
-func parseBridgeResponse(resp string) *BridgeResult {
-	python := stripMarkdownFences(resp)
-	python = strings.TrimSpace(python)
-
-	return &BridgeResult{
-		PythonSource: python,
-	}
 }

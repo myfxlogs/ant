@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-07-03 07:39 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-07-03 09:35 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -216,7 +216,9 @@ DeleteBacktestRun	proto/ant/v1/strategy_runtime.proto:24
 DeleteBacktestRuns	backend/internal/connect/strategy/strategy_backtest_crud.go:263
 DeleteBacktestRuns	proto/ant/v1/strategy_runtime.proto:25
 DeleteConversation	proto/ant/v1/ai.proto:17
+DeleteHookConfig	proto/ant/v1/agent_hooks.proto:16
 DeleteKey	backend/internal/mthub/idempotency.go:172
+DeleteManagedSetting	proto/ant/v1/admin_settings.proto:17
 DeleteModel	proto/ant/v1/ai_gateway.proto:28
 DeleteProvider	proto/ant/v1/ai_gateway.proto:22
 DeleteSchedule	backend/internal/connect/strategy/strategy_schedules.go:134
@@ -242,7 +244,7 @@ Disconnect	reference/grpc/mt5.proto:49
 DisconnectAccount	backend/internal/service/account_lifecycle.go:30
 DisconnectAccount	proto/ant/v1/account.proto:20
 DisconnectAccountByID	backend/internal/service/account_lifecycle.go:43
-DiscoverModels	backend/internal/service/systemai/service.go:255
+DiscoverModels	backend/internal/service/systemai/service.go:263
 DiscoverSystemAIModels	proto/ant/v1/system_ai.proto:15
 DisengageKillSwitch	backend/internal/risk/canary.go:266
 DroppedBars	backend/internal/mthub/broker_types.go:197
@@ -250,14 +252,14 @@ EnableStrategy	proto/ant/v1/admin_strategy.proto:28
 EnableTemplate	backend/internal/service/template_svc_admin.go:318
 EnableUser	proto/ant/v1/admin_user.proto:17
 EngageKillSwitch	backend/internal/risk/canary.go:251
-EnsureSeed	backend/internal/service/systemai/service.go:139
+EnsureSeed	backend/internal/service/systemai/service.go:147
 EnsureSession	backend/internal/mthub/types.go:73
 EnterAll	backend/internal/mthub/reconcile_gate.go:59
 EnterReconciling	backend/internal/mthub/reconcile_gate.go:24
 Error	backend/internal/mthub/types.go:117
 Error	backend/internal/risksvc/hardlimit.go:181
 Error	backend/internal/service/registration_service.go:109
-Error	backend/internal/service/systemai/chat_failover.go:83
+Error	backend/internal/service/systemai/chat_failover.go:82
 Error	backend/internal/service/wallet_service.go:86
 Error	backend/internal/service/wallet_service.go:94
 Estimate	backend/internal/mthub/hub_estimator.go:46
@@ -288,7 +290,7 @@ Get	backend/internal/mthub/derived_state.go:74
 Get	backend/internal/mthub/types.go:67
 Get	backend/internal/risksvc/capability.go:97
 Get	backend/internal/service/analytics_cache.go:39
-Get	backend/internal/service/systemai/service.go:176
+Get	backend/internal/service/systemai/service.go:184
 GetAccount	backend/internal/mthub/derived_state.go:81
 GetAccount	backend/internal/service/account_service.go:119
 GetAccount	backend/internal/service/platform_service.go:123
@@ -302,7 +304,7 @@ GetActiveStrategy	backend/internal/connect/strategy/strategy_active_handlers.go:
 GetActiveStrategy	proto/ant/v1/strategy_runtime.proto:45
 GetAgentCapabilities	proto/ant/v1/agent_gateway.proto:17
 GetAgentSettings	proto/ant/v1/agent_gateway.proto:44
-GetAIPrimary	backend/internal/service/systemai/service.go:187
+GetAIPrimary	backend/internal/service/systemai/service.go:195
 GetAIPrimary	proto/ant/v1/ai_primary.proto:8
 GetAlgoStatus	proto/ant/v1/execution_algo.proto:17
 GetAllLogs	backend/internal/service/log_service.go:70
@@ -336,6 +338,7 @@ GetKillSwitch	proto/ant/v1/admin_sre.proto:6
 GetKlines	proto/ant/v1/market_service.proto:8
 GetLogs	reference/grpc/mt4.proto:200
 GetLogsByUser	reference/grpc/mt4.proto:207
+GetManagedSettings	proto/ant/v1/admin_settings.proto:13
 GetMarketRegime	proto/ant/v1/market_regime.proto:11
 GetMe	proto/ant/v1/auth.proto:14
 GetMetrics	proto/ant/v1/admin_system.proto:9
@@ -368,7 +371,7 @@ GetSchedule	proto/ant/v1/strategy.proto:23
 GetScheduleHealth	proto/ant/v1/schedule_health.proto:10
 GetScheduleRunLogs	backend/internal/service/log_service.go:66
 GetScheduleRunLogs	proto/ant/v1/log.proto:18
-GetSecret	backend/internal/service/systemai/service.go:234
+GetSecret	backend/internal/service/systemai/service.go:242
 GetSharedPerformance	proto/ant/v1/share.proto:11
 GetSignal	backend/internal/service/signal_svc.go:51
 GetSnapshot	backend/internal/connect/strategy/position_cache.go:67
@@ -427,7 +430,7 @@ IsSanctioned	backend/internal/risksvc/jurisdiction_store.go:125
 IssueAgentToken	proto/ant/v1/agent_gateway.proto:13
 IsTradeSession	reference/grpc/mt5.proto:191
 IsTradeSessionMany	reference/grpc/mt5.proto:197
-List	backend/internal/service/systemai/service.go:169
+List	backend/internal/service/systemai/service.go:177
 ListAccounts	backend/internal/service/account_service.go:106
 ListAccounts	proto/ant/v1/account.proto:14
 ListAccountsAdmin	proto/ant/v1/admin_account.proto:10
@@ -458,6 +461,7 @@ ListEconomicCalendarEvents	proto/ant/v1/economic_data.proto:10
 ListEconomicIndicators	proto/ant/v1/economic_data.proto:11
 ListExperimentCandidates	backend/internal/connect/strategy/strategy_experiment_handler.go:177
 ListExperimentCandidates	proto/ant/v1/strategy_experiment.proto:15
+ListHookConfigs	proto/ant/v1/agent_hooks.proto:12
 ListLogs	proto/ant/v1/admin_log.proto:10
 ListMemory	proto/ant/v1/agent_gateway.proto:38
 ListModels	proto/ant/v1/ai_gateway.proto:24
@@ -707,7 +711,7 @@ SetAccountNumber	backend/internal/service/account_number.go:230
 SetAccountOwnerVerifier	backend/internal/mthub/service.go:111
 SetAccountProvider	backend/internal/connect/strategy/strategy_execution_handler.go:117
 SetAccountStateProvider	backend/internal/mthub/service.go:88
-SetAIPrimary	backend/internal/service/systemai/service.go:194
+SetAIPrimary	backend/internal/service/systemai/service.go:202
 SetAIPrimary	proto/ant/v1/ai_primary.proto:9
 SetAIService	backend/internal/connect/strategy/strategy_experiment_worker.go:80
 SetAttribution	backend/internal/service/analytics_cache.go:78
@@ -718,7 +722,7 @@ SetBarSource	backend/internal/connect/strategy/strategy_execution_handler.go:95
 SetBrokerLimits	backend/internal/risksvc/platform_aggregator.go:93
 SetBrokerRegistry	backend/internal/mthub/service.go:102
 SetCanary	proto/ant/v1/admin_sre.proto:11
-SetCircuitBreakerDB	backend/internal/service/systemai/chat_failover.go:27
+SetCircuitBreakerDB	backend/internal/service/systemai/chat_failover.go:26
 SetCodeAccessChecker	backend/internal/connect/strategy/strategy_handler.go:33
 SetConfig	proto/ant/v1/admin_config.proto:11
 SetCostEstimator	backend/internal/mthub/service.go:81
@@ -726,8 +730,9 @@ SetDropBroker	backend/internal/mthub/broker_types.go:202
 SetEngine	backend/internal/connect/strategy/strategy_handler.go:53
 SetGate	backend/internal/connect/strategy/strategy_execution_handler.go:107
 SetGate	backend/internal/mthub/service.go:91
-SetGatewayProviderRepo	backend/internal/service/systemai/service.go:122
+SetGatewayProviderRepo	backend/internal/service/systemai/service.go:123
 SetGoExecutor	backend/internal/connect/strategy/strategy_execution_handler.go:98
+SetHookConfig	proto/ant/v1/agent_hooks.proto:14
 SetImportedRepo	backend/internal/connect/strategy/strategy_execution_handler.go:100
 SetKillSwitch	backend/internal/mthub/service.go:97
 SetKillSwitch	backend/internal/risk/gate.go:94
@@ -737,7 +742,9 @@ SetKYCStatus	proto/ant/v1/admin_jurisdiction.proto:11
 SetLogger	backend/internal/mthub/service.go:114
 SetLogger	backend/internal/service/account_service.go:61
 SetLogger	backend/internal/service/platform_service.go:29
+SetManagedSetting	proto/ant/v1/admin_settings.proto:15
 SetMarketDataRepo	backend/internal/connect/strategy/strategy_execution_handler.go:81
+SetModelFilter	backend/internal/service/systemai/service.go:130
 SetMonthlyDetail	backend/internal/service/analytics_cache.go:127
 SetMtHub	backend/internal/connect/strategy/strategy_execution_handler.go:96
 SetNotificationSender	backend/internal/connect/strategy/strategy_execution_handler.go:125
@@ -753,7 +760,7 @@ SetPgListen	backend/internal/connect/strategy/strategy_handler.go:69
 SetPlacedType	reference/grpc/mt4.proto:168
 SetPositionCache	backend/internal/connect/strategy/account_provider.go:53
 SetPositionCache	backend/internal/connect/strategy/strategy_execution_handler.go:103
-SetPostCallBiller	backend/internal/service/systemai/service.go:117
+SetPostCallBiller	backend/internal/service/systemai/service.go:118
 SetRolling	backend/internal/service/analytics_cache.go:102
 SetRunRepo	backend/internal/connect/strategy/strategy_execution_handler.go:99
 SetSanctionedOverride	proto/ant/v1/admin_jurisdiction.proto:16
@@ -765,13 +772,13 @@ SetStrategyPricing	proto/ant/v1/marketplace_service.proto:21
 SetTemplateStatus	backend/internal/service/template_svc.go:111
 SetTickBroker	backend/internal/mthub/service.go:128
 SetTicket	backend/internal/mthub/idempotency.go:167
-SetTokenRecorder	backend/internal/service/systemai/service.go:105
+SetTokenRecorder	backend/internal/service/systemai/service.go:106
 SetTradeBroker	backend/internal/mthub/service.go:131
 SetUserLimiter	backend/internal/mthub/service.go:78
 SetUserLimiter	backend/internal/risksvc/engine.go:22
-SetUserRepo	backend/internal/service/systemai/service.go:90
+SetUserRepo	backend/internal/service/systemai/service.go:91
 SetUserSetting	proto/ant/v1/agent_gateway.proto:45
-SetWalletChecker	backend/internal/service/systemai/service.go:111
+SetWalletChecker	backend/internal/service/systemai/service.go:112
 Shutdown	backend/internal/risksvc/platform_aggregator.go:174
 Size	backend/internal/risksvc/kelly_sizer.go:44
 Size	backend/internal/risksvc/vol_target_sizer.go:45
@@ -907,7 +914,7 @@ UpdateAccountInfoTx	backend/internal/service/account_lifecycle.go:94
 UpdateAccountMetrics	backend/internal/service/account_lifecycle.go:137
 UpdateBalanceFromProfitEvent	backend/internal/connect/strategy/account_provider.go:228
 UpdateBrokerThresholds	backend/internal/service/account_lifecycle.go:179
-UpdateConfig	backend/internal/service/systemai/service.go:180
+UpdateConfig	backend/internal/service/systemai/service.go:188
 UpdateConversationTitle	proto/ant/v1/ai.proto:18
 UpdateExecution	backend/internal/service/log_service.go:34
 UpdateGlobalSettings	proto/ant/v1/auto_trading.proto:16
@@ -918,7 +925,7 @@ UpdateRiskConfig	proto/ant/v1/auto_trading.proto:19
 UpdateSchedule	backend/internal/connect/strategy/strategy_schedules.go:93
 UpdateSchedule	backend/internal/service/schedule_svc.go:115
 UpdateSchedule	proto/ant/v1/strategy.proto:25
-UpdateSecret	backend/internal/service/systemai/service.go:204
+UpdateSecret	backend/internal/service/systemai/service.go:212
 UpdateSessionStrategyKey	proto/ant/v1/ai.proto:22
 UpdateSummaryCache	backend/internal/service/account_snapshot.go:106
 UpdateSystemAIConfig	proto/ant/v1/system_ai.proto:13
@@ -988,6 +995,9 @@ proto/ant/v1/admin_jurisdiction.proto:14:  rpc RemoveSanctionedCountry(RemoveSan
 proto/ant/v1/admin_jurisdiction.proto:15:  rpc ListUsersByKYCStatus(ListUsersByKYCStatusRequest) returns (ListUsersByKYCStatusResponse);
 proto/ant/v1/admin_jurisdiction.proto:16:  rpc SetSanctionedOverride(SetSanctionedOverrideRequest) returns (SetSanctionedOverrideResponse);
 proto/ant/v1/admin_log.proto:10:  rpc ListLogs(ListLogsRequest) returns (ListLogsResponse);
+proto/ant/v1/admin_settings.proto:13:  rpc GetManagedSettings(GetManagedSettingsRequest) returns (GetManagedSettingsResponse);
+proto/ant/v1/admin_settings.proto:15:  rpc SetManagedSetting(SetManagedSettingRequest) returns (SetManagedSettingResponse);
+proto/ant/v1/admin_settings.proto:17:  rpc DeleteManagedSetting(DeleteManagedSettingRequest) returns (DeleteManagedSettingResponse);
 proto/ant/v1/admin_sre.proto:10:  rpc GetCanary(GetCanaryRequest) returns (CanaryStatus);
 proto/ant/v1/admin_sre.proto:11:  rpc SetCanary(SetCanaryRequest) returns (CanaryStatus);
 proto/ant/v1/admin_sre.proto:6:  rpc GetKillSwitch(GetKillSwitchRequest) returns (KillSwitchStatus);
@@ -1037,6 +1047,9 @@ proto/ant/v1/agent_gateway.proto:44:  rpc GetAgentSettings(GetAgentSettingsReque
 proto/ant/v1/agent_gateway.proto:45:  rpc SetUserSetting(SetUserSettingRequest) returns (SetUserSettingResponse);
 proto/ant/v1/agent_gateway.proto:46:  rpc DeleteUserSetting(DeleteUserSettingRequest) returns (DeleteUserSettingResponse);
 proto/ant/v1/agent_gateway.proto:49:  rpc GetCapabilities(GetCapabilitiesRequest) returns (GetCapabilitiesResponse);
+proto/ant/v1/agent_hooks.proto:12:  rpc ListHookConfigs(ListHookConfigsRequest) returns (ListHookConfigsResponse);
+proto/ant/v1/agent_hooks.proto:14:  rpc SetHookConfig(SetHookConfigRequest) returns (SetHookConfigResponse);
+proto/ant/v1/agent_hooks.proto:16:  rpc DeleteHookConfig(DeleteHookConfigRequest) returns (DeleteHookConfigResponse);
 proto/ant/v1/ai.proto:11:  rpc Chat(ChatRequest) returns (ChatResponse);
 proto/ant/v1/ai.proto:13:  rpc ChatStream(ChatRequest) returns (stream ChatStreamChunk);
 proto/ant/v1/ai.proto:14:  rpc ListConversations(ListConversationsRequest) returns (ListConversationsResponse);
@@ -1812,23 +1825,24 @@ backend/internal/service/signal_svc.go:82:func (s *StrategySvc) ConfirmSignal(ct
 backend/internal/service/signal_svc.go:96:func (s *StrategySvc) CancelSignal(ctx context.Context, signalID, userID uuid.UUID) error {
 backend/internal/service/systemai/chat.go:117:func (s *Service) ChatCompletion(
 backend/internal/service/systemai/chat.go:130:func (s *Service) ChatCompletionWithUsage(
-backend/internal/service/systemai/chat_failover.go:27:func (s *Service) SetCircuitBreakerDB(db cbExecutor) {
-backend/internal/service/systemai/chat_failover.go:83:func (e *failoverErr) Error() string { return e.msg }
+backend/internal/service/systemai/chat_failover.go:26:func (s *Service) SetCircuitBreakerDB(db cbExecutor) {
+backend/internal/service/systemai/chat_failover.go:82:func (e *failoverErr) Error() string { return e.msg }
 backend/internal/service/systemai/chat_stream.go:15:func (s *Service) ChatCompletionStream(
-backend/internal/service/systemai/service.go:105:func (s *Service) SetTokenRecorder(fn TokenRecorder) {
-backend/internal/service/systemai/service.go:111:func (s *Service) SetWalletChecker(fn func(ctx context.Context, userID uuid.UUID) error) {
-backend/internal/service/systemai/service.go:117:func (s *Service) SetPostCallBiller(fn PostCallBiller) {
-backend/internal/service/systemai/service.go:122:func (s *Service) SetGatewayProviderRepo(repo *repository.SystemAIProviderRepository) {
-backend/internal/service/systemai/service.go:139:func (s *Service) EnsureSeed(ctx context.Context, userID uuid.UUID) error {
-backend/internal/service/systemai/service.go:169:func (s *Service) List(ctx context.Context, userID uuid.UUID) ([]*repository.SystemAIConfigRow, error) {
-backend/internal/service/systemai/service.go:176:func (s *Service) Get(ctx context.Context, userID uuid.UUID, providerID string) (*repository.SystemAIConfigRow, error) {
-backend/internal/service/systemai/service.go:180:func (s *Service) UpdateConfig(ctx context.Context, row *repository.SystemAIConfigRow, updatedBy string) error {
-backend/internal/service/systemai/service.go:187:func (s *Service) GetAIPrimary(ctx context.Context, userID uuid.UUID) (providerID, model string, err error) {
-backend/internal/service/systemai/service.go:194:func (s *Service) SetAIPrimary(ctx context.Context, userID uuid.UUID, providerID, defaultModel string) error {
-backend/internal/service/systemai/service.go:204:func (s *Service) UpdateSecret(ctx context.Context, userID uuid.UUID, providerID, secret, updatedBy string) error {
-backend/internal/service/systemai/service.go:234:func (s *Service) GetSecret(ctx context.Context, userID uuid.UUID, providerID string) (string, error) {
-backend/internal/service/systemai/service.go:255:func (s *Service) DiscoverModels(ctx context.Context, userID uuid.UUID, providerID string) ([]string, error) {
-backend/internal/service/systemai/service.go:90:func (s *Service) SetUserRepo(r *repository.UserRepository) {
+backend/internal/service/systemai/service.go:106:func (s *Service) SetTokenRecorder(fn TokenRecorder) {
+backend/internal/service/systemai/service.go:112:func (s *Service) SetWalletChecker(fn func(ctx context.Context, userID uuid.UUID) error) {
+backend/internal/service/systemai/service.go:118:func (s *Service) SetPostCallBiller(fn PostCallBiller) {
+backend/internal/service/systemai/service.go:123:func (s *Service) SetGatewayProviderRepo(repo *repository.SystemAIProviderRepository) {
+backend/internal/service/systemai/service.go:130:func (s *Service) SetModelFilter(fn func(ctx context.Context, userID uuid.UUID, model string) bool) {
+backend/internal/service/systemai/service.go:147:func (s *Service) EnsureSeed(ctx context.Context, userID uuid.UUID) error {
+backend/internal/service/systemai/service.go:177:func (s *Service) List(ctx context.Context, userID uuid.UUID) ([]*repository.SystemAIConfigRow, error) {
+backend/internal/service/systemai/service.go:184:func (s *Service) Get(ctx context.Context, userID uuid.UUID, providerID string) (*repository.SystemAIConfigRow, error) {
+backend/internal/service/systemai/service.go:188:func (s *Service) UpdateConfig(ctx context.Context, row *repository.SystemAIConfigRow, updatedBy string) error {
+backend/internal/service/systemai/service.go:195:func (s *Service) GetAIPrimary(ctx context.Context, userID uuid.UUID) (providerID, model string, err error) {
+backend/internal/service/systemai/service.go:202:func (s *Service) SetAIPrimary(ctx context.Context, userID uuid.UUID, providerID, defaultModel string) error {
+backend/internal/service/systemai/service.go:212:func (s *Service) UpdateSecret(ctx context.Context, userID uuid.UUID, providerID, secret, updatedBy string) error {
+backend/internal/service/systemai/service.go:242:func (s *Service) GetSecret(ctx context.Context, userID uuid.UUID, providerID string) (string, error) {
+backend/internal/service/systemai/service.go:263:func (s *Service) DiscoverModels(ctx context.Context, userID uuid.UUID, providerID string) ([]string, error) {
+backend/internal/service/systemai/service.go:91:func (s *Service) SetUserRepo(r *repository.UserRepository) {
 backend/internal/service/template_svc.go:100:func (s *StrategySvc) DeleteTemplate(ctx context.Context, id, userID uuid.UUID) error {
 backend/internal/service/template_svc.go:111:func (s *StrategySvc) SetTemplateStatus(ctx context.Context, id, userID uuid.UUID, status string) error {
 backend/internal/service/template_svc.go:35:func (s *StrategySvc) ListTemplates(ctx context.Context, userID uuid.UUID) ([]TemplateRow, error) {
@@ -1864,41 +1878,43 @@ backend/internal/service/wallet_service.go:94:func (e *InsufficientBalanceError)
 > 在此列表 = 真正可被调用；只在某 *_test.go 出现而不在此 = 货架闲置（shelf-ware）。
 
 ```
-backend/cmd/server/handlers.go:102:	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:109:	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:112:	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:116:	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:124:	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:143:	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:145:	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:150:	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:161:	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:170:	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:174:	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:182:	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:194:	mux.Handle(antv1c.NewStrategyRuntimeServiceHandler(strategyExecServer,
-backend/cmd/server/handlers.go:210:	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler,
-backend/cmd/server/handlers.go:214:	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:216:	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:218:	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:220:	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:222:	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:229:	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:232:	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:235:	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:237:	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:239:	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers.go:285:	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
-backend/cmd/server/handlers.go:94:	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(otelInterceptor,rateLimitInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:97:	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-backend/cmd/server/handlers_admin.go:31:	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers_admin.go:34:	mux.Handle(antv1c.NewAdminConfigServiceHandler(adminConfigServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers_admin.go:37:	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers_admin.go:40:	mux.Handle(antv1c.NewAdminAccountServiceHandler(adminAccountServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers_admin.go:44:	mux.Handle(antv1c.NewAdminUserServiceHandler(adminUserServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers_admin.go:47:	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers_admin.go:50:	mux.Handle(antv1c.NewAdminStrategyServiceHandler(adminStrategyServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
-backend/cmd/server/handlers_admin.go:53:	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers.go:103:	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:110:	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:113:	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:117:	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:125:	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:144:	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:146:	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:151:	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:162:	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:171:	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:204:	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:212:	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:224:	mux.Handle(antv1c.NewStrategyRuntimeServiceHandler(strategyExecServer,
+backend/cmd/server/handlers.go:240:	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler,
+backend/cmd/server/handlers.go:244:	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:246:	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:248:	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:250:	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:252:	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:259:	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:262:	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:265:	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:267:	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:269:	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers.go:316:	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
+backend/cmd/server/handlers.go:95:	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(otelInterceptor,rateLimitInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:98:	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+backend/cmd/server/handlers_admin.go:34:	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers_admin.go:37:	mux.Handle(antv1c.NewAdminConfigServiceHandler(adminConfigServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers_admin.go:40:	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers_admin.go:43:	mux.Handle(antv1c.NewAdminAccountServiceHandler(adminAccountServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers_admin.go:47:	mux.Handle(antv1c.NewAdminUserServiceHandler(adminUserServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers_admin.go:50:	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers_admin.go:53:	mux.Handle(antv1c.NewAdminStrategyServiceHandler(adminStrategyServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers_admin.go:56:	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers_admin.go:61:		mux.Handle(antv1c.NewAdminAgentSettingsServiceHandler(adminAgentSettingsServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+backend/cmd/server/handlers_admin.go:65:		mux.Handle(antv1c.NewAgentHooksServiceHandler(agentHooksServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
 backend/cmd/server/handlers_share.go:35:	mux.Handle(antv1c.NewShareServiceHandler(shareServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 backend/cmd/server/handlers_sre.go:100:	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 backend/cmd/server/handlers_sre.go:102:	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))

@@ -1,0 +1,18 @@
+## Previous Attempt (failed validation)
+```
+{{.PrevPython}}
+```
+
+## Error
+{{.ErrorMsg}}
+
+{{.ProfileBlock}}
+
+## Original MQL Source
+```
+{{.MQLSource}}
+```
+
+## Task
+The previous Python translation failed validation (compile error, coverage regression, or backtest failure). Fix the issue above and output the corrected Python source code.
+Output ONLY the Python source code.

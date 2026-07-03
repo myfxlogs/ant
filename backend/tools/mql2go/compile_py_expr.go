@@ -1,7 +1,6 @@
 package mql2go
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -224,7 +223,8 @@ func (c *pyCompiler) compilePyBinary(n *sitter.Node) *interp.Expr {
 		return nil
 	}
 	if op == "" {
-		panic(fmt.Sprintf("line %d: binary operator not found in expression", n.StartPoint().Row+1))
+		c.errorf(n, "binary operator not found in expression")
+		return nil
 	}
 	switch op {
 	case "**":
@@ -234,7 +234,8 @@ func (c *pyCompiler) compilePyBinary(n *sitter.Node) *interp.Expr {
 			Args: []interp.Expr{*c.mustPyExpr(left), *c.mustPyExpr(right)},
 		}
 	case "&", "|", "^", "<<", ">>":
-		panic(fmt.Sprintf("line %d: bitwise operator '%s' is not supported in Python subset (no VM opcode)", n.StartPoint().Row+1, op))
+		c.errorf(n, "bitwise operator '%s' is not supported in Python subset (no VM opcode)", op)
+		return nil
 	}
 	return &interp.Expr{
 		Kind: interp.ExprBinary,
@@ -321,7 +322,8 @@ func (c *pyCompiler) compilePyUnary(n *sitter.Node) *interp.Expr {
 		op = "!"
 	}
 	if op == "~" {
-		panic(fmt.Sprintf("line %d: bitwise NOT '~' is not supported in Python subset (no VM opcode)", n.StartPoint().Row+1))
+		c.errorf(n, "bitwise NOT '~' is not supported in Python subset (no VM opcode)")
+		return nil
 	}
 	return &interp.Expr{
 		Kind: interp.ExprUnary,

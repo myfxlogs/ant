@@ -84,17 +84,6 @@ var defaultManagedConfigFailClosed = ManagedConfig{
 	AllowManagedRulesOnly: true,
 }
 
-// GetSettings resolves settings for a user by merging tiers (ADR-0025 §5).
-// Managed settings override User settings, which override Defaults.
-// Returns a flat map for backward compatibility.
-func (s *SettingsStore) GetSettings(ctx context.Context, userID uuid.UUID) (map[string]string, error) {
-	rs, err := s.ResolveSettings(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-	return rs.Flat, nil
-}
-
 // ResolveSettings resolves all settings tiers and parses managed config (ADR-0025 §5.2).
 // On managed settings load failure, returns fail-closed config.
 func (s *SettingsStore) ResolveSettings(ctx context.Context, userID uuid.UUID) (*ResolvedSettings, error) {
@@ -325,39 +314,3 @@ func (s *SettingsStore) ListManagedSettings(ctx context.Context) ([]AgentSetting
 	return result, nil
 }
 
-// ListUserSettings returns all user-level settings for a user.
-func (s *SettingsStore) ListUserSettings(ctx context.Context, userID uuid.UUID) ([]AgentSetting, error) {
-	if s.pool == nil {
-		return nil, fmt.Errorf("settings store not configured")
-	}
-	rows, err := s.pool.Query(ctx,
-		`SELECT key, value FROM agent_user_settings WHERE user_id = $1 ORDER BY key`,
-		userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var result []AgentSetting
-	for rows.Next() {
-		var k, v string
-		if err := rows.Scan(&k, &v); err != nil {
-			continue
-		}
-		result = append(result, AgentSetting{Key: k, Value: v, Tier: TierUser})
-	}
-	return result, nil
-}
-
-// FormatSettings formats resolved settings as a string for prompt injection.
-func FormatSettings(settings map[string]string) string {
-	if len(settings) == 0 {
-		return ""
-	}
-	var sb strings.Builder
-	sb.WriteString("\n## Agent Settings\n")
-	for k, v := range settings {
-		sb.WriteString(fmt.Sprintf("- %s: %s\n", k, v))
-	}
-	return sb.String()
-}

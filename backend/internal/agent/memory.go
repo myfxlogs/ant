@@ -60,30 +60,36 @@ func (m *MemoryStore) LoadSessionMemory(ctx context.Context, userID uuid.UUID, s
 // InjectIntoPrompt writes session memory into a prompt builder (ADR-0025 §4.3).
 func (mem *SessionMemory) InjectIntoPrompt(sb *strings.Builder) {
 	if len(mem.DomainKnowledge) > 0 {
-		sb.WriteString("\n## Domain Knowledge\n")
+		var dkSB strings.Builder
+		dkSB.WriteString("\n## Domain Knowledge\n")
 		for _, dk := range mem.DomainKnowledge {
-			sb.WriteString("- ")
-			sb.WriteString(dk)
-			sb.WriteString("\n")
+			dkSB.WriteString("- ")
+			dkSB.WriteString(dk)
+			dkSB.WriteString("\n")
 		}
+		sb.WriteString(wrapXML("domain_knowledge", sanitizeInput(dkSB.String())))
 	}
 
 	if len(mem.UserTemplates) > 0 {
-		sb.WriteString("\n## User Preferences\n")
+		var utSB strings.Builder
+		utSB.WriteString("\n## User Preferences\n")
 		for _, ut := range mem.UserTemplates {
-			sb.WriteString("- ")
-			sb.WriteString(ut)
-			sb.WriteString("\n")
+			utSB.WriteString("- ")
+			utSB.WriteString(ut)
+			utSB.WriteString("\n")
 		}
+		sb.WriteString(wrapXML("user_preferences", sanitizeInput(utSB.String())))
 	}
 
 	if len(mem.Experiences) > 0 {
-		sb.WriteString("\n## Past Experiences\n")
+		var expSB strings.Builder
+		expSB.WriteString("\n## Past Experiences\n")
 		for _, exp := range mem.Experiences {
-			sb.WriteString("- ")
-			sb.WriteString(exp)
-			sb.WriteString("\n")
+			expSB.WriteString("- ")
+			expSB.WriteString(exp)
+			expSB.WriteString("\n")
 		}
+		sb.WriteString(wrapXML("past_experiences", sanitizeInput(expSB.String())))
 	}
 }
 

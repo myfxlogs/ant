@@ -1,0 +1,8 @@
+{{.ProfileBlock}}
+
+## Backtest Results
+{{.BacktestBlock}}
+
+{{.TradesBlock}}
+
+Produce the backtest analysis now.

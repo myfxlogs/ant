@@ -1,6 +1,7 @@
 package agent
 
 import (
+	_ "embed"
 	"context"
 	"fmt"
 	"strconv"
@@ -12,6 +13,9 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/service/systemai"
 )
+
+//go:embed prompts/analysis_user.prompt
+var analysisUserPromptTmpl string
 
 // Interpreter generates backtest analysis via LLM (injection point [4]).
 // Input: backtest result + strategy profile → LLM → KEY: "value" lines → BacktestAnalysis proto.
@@ -96,49 +100,53 @@ func (i *Interpreter) AnalyzeBacktest(
 }
 
 func buildAnalysisUserPrompt(result *antv1.AgentBacktestResult, profile *antv1.StrategyProfile) string {
-	var sb strings.Builder
-
-	writeProfileToPrompt(&sb, profile, "## Strategy Profile\n")
+	data := promptData{}
 	if profile != nil {
-		sb.WriteString("\n")
+		var sb strings.Builder
+		writeProfileToPrompt(&sb, profile, "## Strategy Profile\n")
+		data.ProfileBlock = sb.String()
 	}
-
-	sb.WriteString("## Backtest Results\n")
-	sb.WriteString(fmt.Sprintf("Success: %v\n", result.Success))
+	var btSB strings.Builder
+	btSB.WriteString(fmt.Sprintf("Success: %v\n", result.Success))
 	if result.Error != "" {
-		sb.WriteString(fmt.Sprintf("Error: %s\n", result.Error))
+		btSB.WriteString(fmt.Sprintf("Error: %s\n", result.Error))
 	}
-	sb.WriteString(fmt.Sprintf("Total Return: %.2f%%\n", result.TotalReturn*100))
-	sb.WriteString(fmt.Sprintf("Annual Return: %.2f%%\n", result.AnnualReturn*100))
-	sb.WriteString(fmt.Sprintf("Max Drawdown: %.2f%%\n", result.MaxDrawdown*100))
-	sb.WriteString(fmt.Sprintf("Sharpe Ratio: %.2f\n", result.SharpeRatio))
-	sb.WriteString(fmt.Sprintf("Win Rate: %.1f%%\n", result.WinRate*100))
-	sb.WriteString(fmt.Sprintf("Profit Factor: %.2f\n", result.ProfitFactor))
-	sb.WriteString(fmt.Sprintf("Total Trades: %d (Win: %d, Loss: %d)\n",
+	btSB.WriteString(fmt.Sprintf("Total Return: %.2f%%\n", result.TotalReturn*100))
+	btSB.WriteString(fmt.Sprintf("Annual Return: %.2f%%\n", result.AnnualReturn*100))
+	btSB.WriteString(fmt.Sprintf("Max Drawdown: %.2f%%\n", result.MaxDrawdown*100))
+	btSB.WriteString(fmt.Sprintf("Sharpe Ratio: %.2f\n", result.SharpeRatio))
+	btSB.WriteString(fmt.Sprintf("Win Rate: %.1f%%\n", result.WinRate*100))
+	btSB.WriteString(fmt.Sprintf("Profit Factor: %.2f\n", result.ProfitFactor))
+	btSB.WriteString(fmt.Sprintf("Total Trades: %d (Win: %d, Loss: %d)\n",
 		result.TotalTrades, result.WinningTrades, result.LosingTrades))
-	sb.WriteString(fmt.Sprintf("Total PnL: %s\n", result.TotalPnlAbsolute))
-
+	btSB.WriteString(fmt.Sprintf("Total PnL: %s\n", result.TotalPnlAbsolute))
 	if len(result.EquityCurve) > 0 {
-		sb.WriteString(fmt.Sprintf("Equity Points: %d\n", len(result.EquityCurve)))
-		sb.WriteString(fmt.Sprintf("Start Equity: %s\n", result.EquityCurve[0]))
-		sb.WriteString(fmt.Sprintf("End Equity: %s\n", result.EquityCurve[len(result.EquityCurve)-1]))
+		btSB.WriteString(fmt.Sprintf("Equity Points: %d\n", len(result.EquityCurve)))
+		btSB.WriteString(fmt.Sprintf("Start Equity: %s\n", result.EquityCurve[0]))
+		btSB.WriteString(fmt.Sprintf("End Equity: %s\n", result.EquityCurve[len(result.EquityCurve)-1]))
 	}
-
+	data.BacktestBlock = btSB.String()
 	if len(result.Trades) > 0 && len(result.Trades) <= 50 {
-		sb.WriteString("\n## Trades\n")
+		var trSB strings.Builder
+		trSB.WriteString("\n## Trades\n")
 		for _, t := range result.Trades {
-			sb.WriteString(fmt.Sprintf("  #%d %s vol=%s pnl=%s reason=%s\n",
+			trSB.WriteString(fmt.Sprintf("  #%d %s vol=%s pnl=%s reason=%s\n",
 				t.Ticket, t.Side, t.Volume, t.Pnl, t.Reason))
 		}
+		data.TradesBlock = trSB.String()
 	} else if len(result.Trades) > 50 {
-		sb.WriteString(fmt.Sprintf("\n## Trades (showing first 10 of %d)\n", len(result.Trades)))
+		var trSB strings.Builder
+		trSB.WriteString(fmt.Sprintf("\n## Trades (showing first 10 of %d)\n", len(result.Trades)))
 		for _, t := range result.Trades[:10] {
-			sb.WriteString(fmt.Sprintf("  #%d %s vol=%s pnl=%s\n", t.Ticket, t.Side, t.Volume, t.Pnl))
+			trSB.WriteString(fmt.Sprintf("  #%d %s vol=%s pnl=%s\n", t.Ticket, t.Side, t.Volume, t.Pnl))
 		}
+		data.TradesBlock = trSB.String()
 	}
-
-	sb.WriteString("\nProduce the backtest analysis now.\n")
-	return sb.String()
+	userPrompt, err := renderPrompt("analysis_user", analysisUserPromptTmpl, data)
+	if err != nil {
+		return fallbackAnalysisUserPrompt(result, profile)
+	}
+	return userPrompt
 }
 
 // parseAnalysisResponse parses KEY: "value" lines into BacktestAnalysis proto.
@@ -194,4 +202,24 @@ func parseAnalysisResponse(raw string) *antv1.BacktestAnalysis {
 	}
 
 	return analysis
+}
+
+func fallbackAnalysisUserPrompt(result *antv1.AgentBacktestResult, profile *antv1.StrategyProfile) string {
+	var sb strings.Builder
+	writeProfileToPrompt(&sb, profile, "## Strategy Profile\n")
+	if profile != nil {
+		sb.WriteString("\n")
+	}
+	sb.WriteString("## Backtest Results\n")
+	sb.WriteString(fmt.Sprintf("Success: %v\n", result.Success))
+	if result.Error != "" {
+		sb.WriteString(fmt.Sprintf("Error: %s\n", result.Error))
+	}
+	sb.WriteString(fmt.Sprintf("Total Return: %.2f%%\n", result.TotalReturn*100))
+	sb.WriteString(fmt.Sprintf("Max Drawdown: %.2f%%\n", result.MaxDrawdown*100))
+	sb.WriteString(fmt.Sprintf("Sharpe Ratio: %.2f\n", result.SharpeRatio))
+	sb.WriteString(fmt.Sprintf("Win Rate: %.1f%%\n", result.WinRate*100))
+	sb.WriteString(fmt.Sprintf("Total Trades: %d\n", result.TotalTrades))
+	sb.WriteString("\nProduce the backtest analysis now.\n")
+	return sb.String()
 }

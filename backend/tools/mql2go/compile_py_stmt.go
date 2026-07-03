@@ -1,8 +1,6 @@
 package mql2go
 
 import (
-	"fmt"
-
 	sitter "github.com/smacker/go-tree-sitter"
 	"anttrader/tools/mql2go/interp"
 )
@@ -65,7 +63,8 @@ func (c *pyCompiler) compileStmt(n *sitter.Node) *interp.Statement {
 	case "pass_statement":
 		return nil
 	case "class_definition":
-		panic(fmt.Sprintf("line %d: nested class definitions are not supported in Python subset", n.StartPoint().Row+1))
+		c.errorf(n, "nested class definitions are not supported in Python subset")
+		return nil
 	}
 	return nil
 }
@@ -138,7 +137,7 @@ func (c *pyCompiler) compileFor(n *sitter.Node) *interp.Statement {
 		case "block":
 			bodyNode = child
 		case "else_clause":
-			panic(fmt.Sprintf("line %d: for...else is not supported in Python subset", n.StartPoint().Row+1))
+			c.errorf(n, "for...else is not supported in Python subset")
 		}
 	}
 
@@ -146,7 +145,8 @@ func (c *pyCompiler) compileFor(n *sitter.Node) *interp.Statement {
 		return stmt
 	}
 	if iterNode == nil {
-		panic(fmt.Sprintf("line %d: Python subset only supports 'for ... in range(...)' or 'for ... in ctx.positions'", n.StartPoint().Row+1))
+		c.errorf(n, "Python subset only supports 'for ... in range(...)' or 'for ... in ctx.positions'")
+		return nil
 	}
 
 	targetName := c.text(targetNode)
@@ -158,8 +158,9 @@ func (c *pyCompiler) compileFor(n *sitter.Node) *interp.Statement {
 
 	funcName := c.callName(iterNode)
 	if funcName != "range" {
-		panic(fmt.Sprintf("line %d: Python subset only supports 'for ... in range(...)' or 'for ... in ctx.positions', got: for %s in %s",
-			n.StartPoint().Row+1, targetName, c.text(iterNode)))
+		c.errorf(n, "Python subset only supports 'for ... in range(...)' or 'for ... in ctx.positions', got: for %s in %s",
+			targetName, c.text(iterNode))
+		return nil
 	}
 
 	args := c.compileArgs(iterNode)
@@ -339,7 +340,7 @@ func (c *pyCompiler) compileWhile(n *sitter.Node) *interp.Statement {
 		case "block":
 			stmt.Body = c.compileBlock(child)
 		case "else_clause":
-			panic(fmt.Sprintf("line %d: while...else is not supported in Python subset", n.StartPoint().Row+1))
+			c.errorf(n, "while...else is not supported in Python subset")
 		default:
 			if stmt.Cond == nil {
 				if e := c.compileExpr(child); e != nil {

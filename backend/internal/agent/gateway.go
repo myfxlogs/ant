@@ -334,33 +334,6 @@ func (s *GatewayServer) fetchBars(ctx context.Context, cfg *antv1.AgentBacktestC
 	return bars, nil
 }
 
-// CheckLiveDeployPermission fires the PreLiveDeploy hook (ADR-0025 §8) and checks
-// capability permission before allowing a strategy to go live.
-// Any future live deploy RPC must call this before proceeding.
-func (s *GatewayServer) CheckLiveDeployPermission(ctx context.Context, userID uuid.UUID, strategyID, source string) error {
-	// 1. Capability permission check (fail-closed)
-	if s.permissions != nil {
-		if !s.permissions.Can(ctx, userID, CapLiveDeploy) {
-			return fmt.Errorf("live deploy not permitted: capability denied")
-		}
-	}
-
-	// 2. PreLiveDeploy hook — can abort (ADR-0025 §8)
-	if s.hooks != nil && s.hooks.HasHandlers(HookPreLiveDeploy) {
-		result := s.hooks.Fire(ctx, &HookContext{
-			Event:      HookPreLiveDeploy,
-			UserID:     userID,
-			StrategyID: strategyID,
-			Source:     source,
-		})
-		if result.Abort {
-			return fmt.Errorf("live deploy blocked: %s", result.Reason)
-		}
-	}
-
-	return nil
-}
-
 // SettingsStore returns the shared settings store instance.
 func (s *GatewayServer) SettingsStore() *SettingsStore { return s.settings }
 

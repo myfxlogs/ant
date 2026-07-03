@@ -1,0 +1,10 @@
+## Strategy Description
+{{.Message}}
+
+{{.ProfileBlock}}
+{{.MemoryBlock}}
+{{.Params}}
+## Task
+Generate a complete Python subset trading strategy based on the description above.
+Use the SDK API mapping shown in the system prompt.
+Output ONLY the Python source code.
