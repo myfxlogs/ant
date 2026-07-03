@@ -165,7 +165,7 @@ func registerHandlers(
 
 	wireAIBilling(aiSvc, walletSvc, gatewayServer, gatewayModelRepo, log)
 
-	// ADR-0024 Phase 0: Agent Gateway — strategy submission → compile → backtest → LLM analysis.
+	// ADR-0024: Agent Gateway — strategy submission → compile → backtest → LLM analysis.
 	agentGateway := agent.NewGatewayServer(pool, marketDataRepo, aiSvc, log)
 	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 

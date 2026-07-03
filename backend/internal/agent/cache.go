@@ -30,21 +30,37 @@ func NewLLCache(ttl time.Duration) *LLCache {
 }
 
 // Get returns the cached LLM response for the given source + prompt, if present and not expired.
+// Performs lazy eviction: expired entries are deleted on access.
 func (c *LLCache) Get(sourceCode, prompt string) (string, bool) {
 	key := cacheKey(sourceCode, prompt)
 	c.mu.RLock()
 	entry, ok := c.entries[key]
 	c.mu.RUnlock()
-	if !ok || time.Now().After(entry.expiresAt) {
+	if !ok {
+		return "", false
+	}
+	if time.Now().After(entry.expiresAt) {
+		c.mu.Lock()
+		delete(c.entries, key)
+		c.mu.Unlock()
 		return "", false
 	}
 	return entry.value, true
 }
 
 // Set stores an LLM response for the given source + prompt.
+// Opportunistic eviction: when the map exceeds 256 entries, expired ones are purged.
 func (c *LLCache) Set(sourceCode, prompt, value string) {
 	key := cacheKey(sourceCode, prompt)
 	c.mu.Lock()
+	if len(c.entries) > 256 {
+		now := time.Now()
+		for k, e := range c.entries {
+			if now.After(e.expiresAt) {
+				delete(c.entries, k)
+			}
+		}
+	}
 	c.entries[key] = cacheEntry{
 		value:     value,
 		expiresAt: time.Now().Add(c.ttl),

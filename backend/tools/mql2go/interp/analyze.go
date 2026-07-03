@@ -1,6 +1,9 @@
 package interp
 
-import "sort"
+import (
+	"sort"
+	"strings"
+)
 
 // IRReport is the static analysis report derived from an IR.
 // It is the single source for coverage/blind-spot reporting.
@@ -144,6 +147,15 @@ func classifyCall(ir *IR, name string, _ map[string]string) callInfo {
 			ci.isUserFunc = true
 			return ci
 		}
+	}
+	// Python compiler produces ExprCall{Name: "CTrade.Buy"} for ctx.broker.buy().
+	// MQL path uses ExprField with classType="CTrade" → classifyMethodCall.
+	// Handle the dotted name here so Python IR gets correct coverage.
+	if strings.HasPrefix(name, "CTrade.") {
+		method := name[len("CTrade."):]
+		ci.classType = "CTrade"
+		ci.isImplemented = IsCTradeMethodImplemented(method)
+		return ci
 	}
 	ci.isImplemented = IsBuiltinImplemented(name)
 	return ci

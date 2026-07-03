@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Button, Form, Tag, Segmented, Typography, Spin, message, Radio, Alert } from 'antd';
+import { Button, Form, Tag, Segmented, Typography, Spin, message, Radio, Alert, Input } from 'antd';
 import { CodeOutlined, ImportOutlined, RobotOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { EDIT_TEMPLATE_MODAL_FIELDS_CODE_KEY, EDIT_TEMPLATE_MODAL_PLACEHOLDERS_CODE_SAMPLE_KEY, EDIT_TEMPLATE_MODAL_VALIDATION_CODE_REQUIRED_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
@@ -11,7 +11,6 @@ import SemanticDiffCard from '@/components/strategy/SemanticDiffCard';
 import type { AnalyzeImportCodeResponse } from '@/gen/ant/v1/strategy_runtime_pb';
 import type { SubmitStrategyResponse } from '@/gen/ant/v1/agent_gateway_pb';
 import type { FormInstance } from 'antd';
-import { Input } from 'antd';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -35,9 +34,13 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
   // Migration engine state
   const [analysis, setAnalysis] = useState<AnalyzeImportCodeResponse | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
-  // Bridge state (ADR-0024 Phase 2)
+  // Bridge state (ADR-0024)
   const [bridgeResult, setBridgeResult] = useState<SubmitStrategyResponse | null>(null);
   const [bridging, setBridging] = useState(false);
+  // Configurable backtest params
+  const [bridgeSymbol, setBridgeSymbol] = useState('EURUSD');
+  const [bridgeTimeframe, setBridgeTimeframe] = useState('H1');
+  const [bridgeLanguage, setBridgeLanguage] = useState<'mql4' | 'mql5'>('mql4');
 
   // ── Migration: Analyze ──────────────────────────────────────────
 
@@ -86,7 +89,7 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
     })().catch(() => {});
   }, [eaCode, t, form]);
 
-  // ── Bridge (ADR-0024 Phase 2) ───────────────────────────────────
+  // ── Bridge (ADR-0024) ───────────────────────────────────────
 
   const handleBridge = useCallback(() => {
     if (!eaCode.trim() || eaCode.trim().length < 20) {
@@ -98,10 +101,10 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
       try {
         const resp = await submitStrategy({
           sourceCode: eaCode,
-          language: 'mql4',
+          language: bridgeLanguage,
           backtestConfig: {
-            symbol: 'EURUSD',
-            timeframe: 'H1',
+            symbol: bridgeSymbol,
+            timeframe: bridgeTimeframe,
             startDateMs: Date.now() - 365 * 24 * 60 * 60 * 1000,
             endDateMs: Date.now(),
           },
@@ -117,7 +120,7 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
         }
       } finally { setBridging(false); }
     })().catch(() => {});
-  }, [eaCode, t]);
+  }, [eaCode, t, bridgeSymbol, bridgeTimeframe, bridgeLanguage]);
 
   // ── AI Translation ──────────────────────────────────────────────
 
@@ -245,12 +248,16 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
             </>
           )}
 
-          {/* ── Bridge flow (ADR-0024 Phase 2) ── */}
+          {/* ── Bridge flow (ADR-0024) ── */}
           {importMethod === 'bridge' && (
             <>
-              <div style={{ padding: '6px 14px', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div style={{ padding: '6px 14px', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                 <Button type="primary" size="small" icon={<RobotOutlined />} onClick={handleBridge} loading={bridging}>
                   {t('strategy.importEA.bridgeBtn', { defaultValue: '盲区桥接翻译' })}</Button>
+                {/* Configurable language/symbol/timeframe */}
+                <Segmented size="small" value={bridgeLanguage} onChange={(v) => setBridgeLanguage(v as 'mql4' | 'mql5')} options={[{ label: 'MQL4', value: 'mql4' }, { label: 'MQL5', value: 'mql5' }]} />
+                <Input size="small" style={{ width: 90 }} value={bridgeSymbol} onChange={e => setBridgeSymbol(e.target.value)} placeholder="Symbol" />
+                <Input size="small" style={{ width: 60 }} value={bridgeTimeframe} onChange={e => setBridgeTimeframe(e.target.value)} placeholder="TF" />
                 {eaResult && <Button size="small" onClick={applyEaResult}>{t('strategy.importEA.apply', { defaultValue: 'Apply to Editor' })}</Button>}
                 {bridgeResult && bridgeResult.bridgeStatus === 'success' && (
                   <Tag color="success" style={{ marginLeft: 'auto' }}>
@@ -270,6 +277,18 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
                   </div>
                 ) : bridgeResult ? (
                   <>
+                    {/* Show coverage score + blind spots list */}
+                    {bridgeResult.coverageScore !== undefined && bridgeResult.coverageScore < 1.0 && (
+                      <Alert
+                        type="info"
+                        showIcon
+                        style={{ margin: '8px 0' }}
+                        message={`覆盖率: ${(bridgeResult.coverageScore * 100).toFixed(0)}%`}
+                        description={bridgeResult.blindSpots && bridgeResult.blindSpots.length > 0
+                          ? bridgeResult.blindSpots.map(bs => `${bs.builtin} (${bs.severity}, ×${bs.count})`).join(' · ')
+                          : undefined}
+                      />
+                    )}
                     {bridgeResult.semanticDiff && (
                       <SemanticDiffCard diff={bridgeResult.semanticDiff} />
                     )}

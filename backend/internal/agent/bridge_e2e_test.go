@@ -1,9 +1,8 @@
 package agent
 
 import (
+	"strings"
 	"testing"
-
-	"go.uber.org/zap"
 
 	"anttrader/tools/mql2go"
 )
@@ -31,24 +30,24 @@ class S:
 // TestBridge_RetryPromptConstruction verifies that the retry prompt includes
 // the previous attempt, compile error, and original MQL source.
 func TestBridge_RetryPromptConstruction(t *testing.T) {
-	prompt := buildBridgeRetryPrompt("int start() { return 0; }", "x = 1", "syntax error at line 1")
+	prompt := buildBridgeRetryPrompt("int start() { return 0; }", "x = 1", "syntax error at line 1", nil)
 
 	if prompt == "" {
 		t.Fatal("expected non-empty retry prompt")
 	}
-	if !contains(prompt, "Previous Attempt") {
+	if !strings.Contains(prompt, "Previous Attempt") {
 		t.Error("retry prompt should mention 'Previous Attempt'")
 	}
-	if !contains(prompt, "Compile Error") {
-		t.Error("retry prompt should mention 'Compile Error'")
+	if !strings.Contains(prompt, "Error") {
+		t.Error("retry prompt should mention 'Error'")
 	}
-	if !contains(prompt, "Original MQL Source") {
+	if !strings.Contains(prompt, "Original MQL Source") {
 		t.Error("retry prompt should mention 'Original MQL Source'")
 	}
-	if !contains(prompt, "syntax error at line 1") {
+	if !strings.Contains(prompt, "syntax error at line 1") {
 		t.Error("retry prompt should include the compile error message")
 	}
-	if !contains(prompt, "int start() { return 0; }") {
+	if !strings.Contains(prompt, "int start() { return 0; }") {
 		t.Error("retry prompt should include the original MQL source")
 	}
 }
@@ -97,9 +96,6 @@ func TestBridge_InvalidPythonSubsetFails(t *testing.T) {
 // This test does NOT call the real LLM — it uses a pre-written Python translation
 // to validate the compile + coverage + semantic-diff pipeline.
 func TestBridge_MQLToPythonToVM_E2E(t *testing.T) {
-	log := zap.NewNop()
-	_ = log
-
 	// Step 1: Compile MQL with blind spots
 	mqlSource := `#property strict
 extern int MAPeriod = 14;
@@ -190,7 +186,6 @@ func TestBridge_BridgeResultFields(t *testing.T) {
 	r := &BridgeResult{
 		PythonSource:  validPythonSubset,
 		CompileError:  "",
-		Translated:    true,
 		Status:        "success",
 		Attempts:      1,
 	}
@@ -206,17 +201,4 @@ func TestBridge_BridgeResultFields(t *testing.T) {
 	if err != nil {
 		t.Errorf("bridge result Python source should compile: %v", err)
 	}
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(s) > 0 && indexOf(s, substr) >= 0)
-}
-
-func indexOf(s, substr string) int {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return i
-		}
-	}
-	return -1
 }

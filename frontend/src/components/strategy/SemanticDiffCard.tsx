@@ -1,5 +1,5 @@
-import { Card, Tag, Typography, Space, Empty } from 'antd';
-import { PlusCircleOutlined, EditOutlined, MinusCircleOutlined } from '@ant-design/icons';
+import { Card, Tag, Typography, Space } from 'antd';
+import { PlusCircleOutlined, EditOutlined, MinusCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { SemanticDiff, SemanticChange } from '@/gen/ant/v1/agent_gateway_pb';
 
@@ -11,12 +11,14 @@ const kindIcon: Record<string, React.ReactNode> = {
   added: <PlusCircleOutlined style={{ color: '#52c41a' }} />,
   modified: <EditOutlined style={{ color: '#1677ff' }} />,
   removed: <MinusCircleOutlined style={{ color: '#cf1322' }} />,
+  remaining: <ExclamationCircleOutlined style={{ color: '#faad14' }} />,
 };
 
 const kindColor: Record<string, string> = {
   added: 'success',
   modified: 'processing',
   removed: 'error',
+  remaining: 'warning',
 };
 
 export default function SemanticDiffCard({ diff }: Props) {

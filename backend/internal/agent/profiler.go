@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"strings"
 	"strconv"
+	"time"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -17,13 +19,12 @@ import (
 // Input: source code + coverage report → LLM → KEY: "value" lines → StrategyProfile proto.
 type Profiler struct {
 	aiSvc *systemai.Service
-	log   *zap.Logger
 	cache *LLCache
 }
 
 // NewProfiler creates a strategy profile generator.
-func NewProfiler(aiSvc *systemai.Service, log *zap.Logger, cache *LLCache) *Profiler {
-	return &Profiler{aiSvc: aiSvc, log: log, cache: cache}
+func NewProfiler(aiSvc *systemai.Service, _ *zap.Logger, cache *LLCache) *Profiler {
+	return &Profiler{aiSvc: aiSvc, cache: cache}
 }
 
 const profileSystemPrompt = `You are a quantitative strategy analyst. Analyze the given trading strategy source code and coverage report.
@@ -66,12 +67,15 @@ func (p *Profiler) GenerateProfile(
 		}
 	}
 
-	uid, err := parseUUID(userID)
+	uid, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, fmt.Errorf("parse user id: %w", err)
 	}
 
-	resp, err := p.aiSvc.ChatCompletion(ctx, uid, []systemai.ChatMessage{
+	llmCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	resp, err := p.aiSvc.ChatCompletion(llmCtx, uid, []systemai.ChatMessage{
 		{Role: "system", Content: profileSystemPrompt},
 		{Role: "user", Content: userPrompt},
 	})
@@ -148,7 +152,7 @@ func parseProfileResponse(raw string, cov *mql2go.CoverageResult) *antv1.Strateg
 			profile.Description = val
 		case "indicators_used":
 			if val != "" {
-				profile.IndicatorsUsed = splitCSV(val)
+				profile.IndicatorsUsed = splitTrimmed(val, ",")
 			}
 		case "entry_logic":
 			profile.EntryLogic = val
@@ -161,43 +165,19 @@ func parseProfileResponse(raw string, cov *mql2go.CoverageResult) *antv1.Strateg
 		case "market_regime":
 			profile.MarketRegime = val
 		case "strengths":
-			profile.Strengths = splitCSV(val)
+			profile.Strengths = splitTrimmed(val, ",")
 		case "weaknesses":
-			profile.Weaknesses = splitCSV(val)
+			profile.Weaknesses = splitTrimmed(val, ",")
 		case "coverage_score":
 			if f, err := strconv.ParseFloat(val, 64); err == nil {
 				profile.CoverageScore = f
 			}
 		case "blind_spots":
 			if val != "" {
-				profile.BlindSpots = splitCSV(val)
+				profile.BlindSpots = splitTrimmed(val, ",")
 			}
 		}
 	}
 
 	return profile
-}
-
-// unquote removes surrounding quotes from a value.
-func unquote(s string) string {
-	s = strings.TrimSpace(s)
-	if len(s) >= 2 {
-		if (s[0] == '"' && s[len(s)-1] == '"') || (s[0] == '\'' && s[len(s)-1] == '\'') {
-			return s[1 : len(s)-1]
-		}
-	}
-	return s
-}
-
-// splitCSV splits a comma-separated string into trimmed fields.
-func splitCSV(s string) []string {
-	parts := strings.Split(s, ",")
-	out := make([]string, 0, len(parts))
-	for _, p := range parts {
-		p = strings.TrimSpace(p)
-		if p != "" {
-			out = append(out, p)
-		}
-	}
-	return out
 }

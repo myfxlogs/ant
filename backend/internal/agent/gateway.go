@@ -23,30 +23,33 @@ import (
 )
 
 // GatewayServer implements ant.v1.AgentGatewayServiceHandler.
-// ADR-0024 Phase 0: synchronous strategy submission → compile → backtest → LLM analysis.
+// Synchronous strategy submission → compile → backtest → LLM analysis.
 type GatewayServer struct {
-	pool           *pgxpool.Pool
 	marketDataRepo repository.MarketDataStore
 	aiSvc         *systemai.Service
 	log           *zap.Logger
-	cache         *LLCache
+	bridge         *Bridge    // reuse bridge instance
+	profiler       *Profiler  // reuse profiler instance
+	interpreter    *Interpreter // reuse interpreter instance
 }
 
 var _ antv1c.AgentGatewayServiceHandler = (*GatewayServer)(nil)
 
 // NewGatewayServer creates the Agent Gateway ConnectRPC handler.
-func NewGatewayServer(pool *pgxpool.Pool, mdr repository.MarketDataStore, aiSvc *systemai.Service, log *zap.Logger) *GatewayServer {
+func NewGatewayServer(_ *pgxpool.Pool, mdr repository.MarketDataStore, aiSvc *systemai.Service, log *zap.Logger) *GatewayServer {
+	cache := NewLLCache(30 * time.Minute)
 	return &GatewayServer{
-		pool:           pool,
 		marketDataRepo: mdr,
 		aiSvc:          aiSvc,
 		log:            log,
-		cache:          NewLLCache(30 * time.Minute),
+		bridge:         NewBridge(aiSvc, log, cache),
+		profiler:       NewProfiler(aiSvc, log, cache),
+		interpreter:    NewInterpreter(aiSvc, log, cache),
 	}
 }
 
 // SubmitStrategy handles Agent strategy submission: compile MQL → VM backtest → profile + analysis.
-// Phase 0: synchronous mode only — blocks until backtest completes (<30s).
+// Synchronous mode only — blocks until backtest completes (<30s).
 func (s *GatewayServer) SubmitStrategy(
 	ctx context.Context,
 	req *connect.Request[antv1.SubmitStrategyRequest],
@@ -57,9 +60,9 @@ func (s *GatewayServer) SubmitStrategy(
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
 
-	// Phase 0: SYNC only
+	// SYNC only — async mode is Phase 3.
 	if msg.Mode == antv1.SubmitMode_SUBMIT_ASYNC {
-		return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("async mode not yet supported (Phase 2)"))
+		return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("async mode not yet supported"))
 	}
 
 	sourceCode := msg.SourceCode
@@ -126,8 +129,7 @@ func (s *GatewayServer) SubmitStrategy(
 	}
 
 	// ── Step 4: Generate strategy profile (LLM injection point [1]) ──
-	profiler := NewProfiler(s.aiSvc, s.log, s.cache)
-	profile, profErr := profiler.GenerateProfile(ctx, userID, sourceCode, coverage)
+	profile, profErr := s.profiler.GenerateProfile(ctx, userID, sourceCode, coverage)
 	if profErr != nil {
 		s.log.Warn("AgentGateway: profile generation failed", zap.Error(profErr))
 	}
@@ -135,34 +137,41 @@ func (s *GatewayServer) SubmitStrategy(
 	// ── Step 5: Generate backtest analysis (LLM injection point [4]) ──
 	var analysis *antv1.BacktestAnalysis
 	if btErr == nil {
-		interpreter := NewInterpreter(s.aiSvc, s.log, s.cache)
-		analysis, err = interpreter.AnalyzeBacktest(ctx, userID, btProto, profile)
+		analysis, err = s.interpreter.AnalyzeBacktest(ctx, userID, btProto, profile)
 		if err != nil {
 			s.log.Warn("AgentGateway: analysis generation failed", zap.Error(err))
 		}
 	}
 
-	// ── Step 6: Blind-spot bridge (ADR-0024 Phase 2) ──
+	// ── Step 6: Blind-spot bridge (ADR-0024) ──
 	// When MQL has blind spots (coverage < 1.0), trigger LLM translation to Python subset.
-	// Uses retry loop: LLM translate → compile → error feedback → retry (max 3).
+	// Retry loop: LLM translate → compile → coverage check → backtest → error feedback → retry (max 3).
 	var semanticDiff *antv1.SemanticDiff
 	bridgeStatus := "not_attempted"
 	var bridgedPython string
 	var bridgeCompileErr string
 
 	if language != "python" && coverage.Score < 1.0 && len(coverage.BlindSpots) > 0 {
-		bridge := NewBridge(s.aiSvc, s.log, s.cache)
-		bridgeResult, bridgeErr := bridge.TranslateWithRetry(ctx, userID, sourceCode, coverage)
+		validateBacktest := func(pyRunner *mql2go.VMRunner) error {
+			_, btErr := s.runBacktest(ctx, pyRunner, btCfg, bars, msg.Params)
+			return btErr
+		}
+
+		bridgeResult, bridgeErr := s.bridge.TranslateWithRetry(ctx, userID, sourceCode, coverage, profile, validateBacktest)
 		if bridgeErr != nil {
 			s.log.Warn("AgentGateway: bridge translation failed", zap.Error(bridgeErr))
 			bridgeStatus = "bridge_failed"
 			bridgeCompileErr = bridgeErr.Error()
+			semanticDiff = buildBridgeFailureReport(coverage)
 		} else {
 			bridgeStatus = bridgeResult.Status
 			bridgeCompileErr = bridgeResult.CompileError
+			if bridgeResult.BacktestError != "" {
+				bridgeCompileErr = bridgeResult.BacktestError
+			}
 			if bridgeResult.Status == "success" {
 				bridgedPython = bridgeResult.PythonSource
-				_, pyCov, _ := mql2go.CompilePythonWithCoverage(bridgeResult.PythonSource)
+				pyCov := bridgeResult.BridgedCov
 				s.log.Info("AgentGateway: bridge translation successful",
 					zap.Int("attempts", bridgeResult.Attempts),
 					zap.Float64("original_coverage", coverage.Score),
@@ -174,9 +183,11 @@ func (s *GatewayServer) SubmitStrategy(
 					}
 				}
 			} else {
+				// Degradation path — generate blind spot report + MT hosted suggestion
 				s.log.Warn("AgentGateway: bridge failed after retries",
 					zap.Int("attempts", bridgeResult.Attempts),
 					zap.String("last_error", truncate(bridgeCompileErr, 200)))
+				semanticDiff = buildBridgeFailureReport(coverage)
 			}
 		}
 	}
@@ -207,23 +218,23 @@ func (s *GatewayServer) SubmitStrategy(
 }
 
 // SearchExperience searches the knowledge base for similar experiences.
-// Phase 0: stub — pgvector schema not yet created. Returns empty.
+// Stub — pgvector schema not yet created. Returns empty.
 func (s *GatewayServer) SearchExperience(
 	ctx context.Context,
 	req *connect.Request[antv1.SearchExperienceRequest],
 ) (*connect.Response[antv1.SearchExperienceResponse], error) {
-	// Phase 0: knowledge base not yet implemented.
+	// knowledge base not yet implemented.
 	// Phase 4 will implement pgvector search with tenant_id isolation.
 	return connect.NewResponse(&antv1.SearchExperienceResponse{}), nil
 }
 
 // StoreExperience stores an experience to the knowledge base.
-// Phase 0: stub — pgvector schema not yet created.
+// Stub — pgvector schema not yet created.
 func (s *GatewayServer) StoreExperience(
 	ctx context.Context,
 	req *connect.Request[antv1.StoreExperienceRequest],
 ) (*connect.Response[antv1.StoreExperienceResponse], error) {
-	// Phase 0: knowledge base not yet implemented.
+	// knowledge base not yet implemented.
 	return connect.NewResponse(&antv1.StoreExperienceResponse{
 		Id:     uuid.New().String(),
 		Success: false,

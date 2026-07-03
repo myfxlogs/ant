@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -16,13 +18,12 @@ import (
 // Input: backtest result + strategy profile → LLM → KEY: "value" lines → BacktestAnalysis proto.
 type Interpreter struct {
 	aiSvc *systemai.Service
-	log   *zap.Logger
 	cache *LLCache
 }
 
 // NewInterpreter creates a backtest analysis generator.
-func NewInterpreter(aiSvc *systemai.Service, log *zap.Logger, cache *LLCache) *Interpreter {
-	return &Interpreter{aiSvc: aiSvc, log: log, cache: cache}
+func NewInterpreter(aiSvc *systemai.Service, _ *zap.Logger, cache *LLCache) *Interpreter {
+	return &Interpreter{aiSvc: aiSvc, cache: cache}
 }
 
 const analysisSystemPrompt = `You are a quantitative backtest analyst. Analyze the given backtest results and strategy profile.
@@ -72,12 +73,15 @@ func (i *Interpreter) AnalyzeBacktest(
 		}
 	}
 
-	uid, err := parseUUID(userID)
+	uid, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, fmt.Errorf("parse user id: %w", err)
 	}
 
-	resp, err := i.aiSvc.ChatCompletion(ctx, uid, []systemai.ChatMessage{
+	llmCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	resp, err := i.aiSvc.ChatCompletion(llmCtx, uid, []systemai.ChatMessage{
 		{Role: "system", Content: analysisSystemPrompt},
 		{Role: "user", Content: userPrompt},
 	})
@@ -184,9 +188,9 @@ func parseAnalysisResponse(raw string) *antv1.BacktestAnalysis {
 		case "risk_adjusted_return":
 			analysis.RiskAdjustedReturn = val
 		case "key_observations":
-			analysis.KeyObservations = splitSemicolon(val)
+			analysis.KeyObservations = splitTrimmed(val, ";")
 		case "improvement_suggestions":
-			analysis.ImprovementSuggestions = splitSemicolon(val)
+			analysis.ImprovementSuggestions = splitTrimmed(val, ";")
 		case "overfitting_risk":
 			analysis.OverfittingRisk = val
 		case "recommended_action":
@@ -197,17 +201,4 @@ func parseAnalysisResponse(raw string) *antv1.BacktestAnalysis {
 	}
 
 	return analysis
-}
-
-// splitSemicolon splits a semicolon-separated string into trimmed fields.
-func splitSemicolon(s string) []string {
-	parts := strings.Split(s, ";")
-	out := make([]string, 0, len(parts))
-	for _, p := range parts {
-		p = strings.TrimSpace(p)
-		if p != "" {
-			out = append(out, p)
-		}
-	}
-	return out
 }

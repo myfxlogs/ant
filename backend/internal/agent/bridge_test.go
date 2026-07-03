@@ -3,19 +3,12 @@ package agent
 import (
 	"testing"
 
-	"go.uber.org/zap"
-
 	"anttrader/tools/mql2go"
 )
 
 // TestBridge_TranslateBlindSpot verifies the bridge LLM prompt construction and response parsing.
 // This is a unit test for the bridge logic — it does not call the actual LLM.
 func TestBridge_TranslateBlindSpot(t *testing.T) {
-	log := zap.NewNop()
-	cache := NewLLCache(0) // no cache
-
-	b := NewBridge(nil, log, cache)
-
 	// Test stripMarkdownFences
 	tests := []struct {
 		name  string
@@ -35,35 +28,29 @@ func TestBridge_TranslateBlindSpot(t *testing.T) {
 			}
 		})
 	}
-
-	_ = b
 }
 
 // TestBridge_ParseBridgeResponse verifies that LLM response parsing works correctly.
 func TestBridge_ParseBridgeResponse(t *testing.T) {
 	tests := []struct {
-		name    string
-		resp    string
-		wantPy  string
-		wantTr  bool
+		name   string
+		resp   string
+		wantPy string
 	}{
 		{
 			name:   "plain python code",
 			resp:   "from decimal import Decimal\nclass S:\n    def on_bar(self) -> None:\n        x = 0",
 			wantPy: "from decimal import Decimal\nclass S:\n    def on_bar(self) -> None:\n        x = 0",
-			wantTr: true,
 		},
 		{
 			name:   "markdown fenced",
 			resp:   "```python\nfrom decimal import Decimal\nclass S:\n    def on_bar(self) -> None:\n        x = 0\n```",
 			wantPy: "from decimal import Decimal\nclass S:\n    def on_bar(self) -> None:\n        x = 0",
-			wantTr: true,
 		},
 		{
 			name:   "empty response",
 			resp:   "",
 			wantPy: "",
-			wantTr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -71,9 +58,6 @@ func TestBridge_ParseBridgeResponse(t *testing.T) {
 			result := parseBridgeResponse(tt.resp)
 			if result.PythonSource != tt.wantPy {
 				t.Errorf("PythonSource = %q, want %q", result.PythonSource, tt.wantPy)
-			}
-			if result.Translated != tt.wantTr {
-				t.Errorf("Translated = %v, want %v", result.Translated, tt.wantTr)
 			}
 		})
 	}
@@ -102,20 +86,20 @@ func TestBuildBridgeChanges(t *testing.T) {
 
 	// iCustom should be "removed" (resolved)
 	foundRemoved := false
-	foundModified := false
+	foundRemaining := false
 	for _, c := range changes {
 		if c.Kind == "removed" && c.Description != "" {
 			foundRemoved = true
 		}
-		if c.Kind == "modified" && c.Description != "" {
-			foundModified = true
+		if c.Kind == "remaining" && c.Description != "" {
+			foundRemaining = true
 		}
 	}
 	if !foundRemoved {
 		t.Error("expected a 'removed' change for resolved blind spot")
 	}
-	if !foundModified {
-		t.Error("expected a 'modified' change for remaining blind spot")
+	if !foundRemaining {
+		t.Error("expected a 'remaining' change for remaining blind spot")
 	}
 }
 

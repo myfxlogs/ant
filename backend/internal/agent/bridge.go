@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -13,11 +15,10 @@ import (
 )
 
 // Bridge orchestrates the blind-spot bridging Agent loop.
-// ADR-0024 Phase 2: MQL blind-spot EA → LLM translates to Python subset → compile_py → VM backtest.
+// ADR-0024: MQL blind-spot EA → LLM translates to Python subset → compile_py → VM backtest.
 //
-// The bridge does NOT execute strategies itself — it calls LLM to translate MQL
-// (with blind spots) into Python subset code, then submits the Python code
-// through the normal GatewayServer.SubmitStrategy path.
+// The bridge calls LLM to translate MQL (with blind spots) into Python subset code,
+// then verifies via compile + coverage check + VM backtest (BacktestValidator).
 type Bridge struct {
 	aiSvc *systemai.Service
 	log   *zap.Logger
@@ -29,67 +30,26 @@ func NewBridge(aiSvc *systemai.Service, log *zap.Logger, cache *LLCache) *Bridge
 	return &Bridge{aiSvc: aiSvc, log: log, cache: cache}
 }
 
-const bridgeSystemPrompt = `You are a quantitative strategy translator. Your task is to translate an MQL trading strategy with blind spots into an equivalent Python subset strategy.
-
-## Python Subset Rules
-- Class-based: class MyStrategy: with methods on_init, on_bar, on_tick, on_timer, on_deinit
-- __init__ params become strategy parameters with type annotations
-- All methods must have return type annotations (-> None, -> int, etc.)
-- Allowed import: ONLY "from decimal import Decimal"
-- NO: list comprehensions, lambda, try/except, with, yield, decorators, async/await
-- NO: exec, eval, open, print, len, sorted, sum, enumerate, zip, range (outside for-loops)
-- NO: f-strings, walrus operator (:=), global/nonlocal, del, assert, raise
-- NO: slicing, tuple unpacking, *args, **kwargs
-
-## SDK API Mapping (MQL → Python subset)
-- Close[0] → ctx.bars().close(0)
-- Open[0] → ctx.bars().open(0)
-- High[0] → ctx.bars().high(0)
-- Low[0] → ctx.bars().low(0)
-- Volume[0] → ctx.bars().volume(0)
-- iMA(symbol, period, shift) → ctx.indicators().ima(ctx.symbol(), period, shift)
-- iRSI(symbol, period, shift) → ctx.indicators().irsi(ctx.symbol(), period, shift)
-- iATR(symbol, period, shift) → ctx.indicators().iatr(ctx.symbol(), period, shift)
-- OrderSend(...) → ctx.broker().buy(lot=Decimal("0.1")) or ctx.broker().sell(lot=Decimal("0.1"))
-- OrderClose(...) → ctx.broker().close(ticket)
-- OrderModify(...) → ctx.broker().modify(ticket, sl, tp)
-- PositionsTotal() → ctx.positions().count()
-- Bid → ctx.bars().bid()
-- Ask → ctx.bars().ask()
-- Point → ctx.point()
-- Symbol() → ctx.symbol()
-
-## Output Format
-Output ONLY the Python source code, no markdown fences, no explanations.
-The code must be a complete, compilable Python subset strategy.
-
-## Blind Spot Handling
-- iCustom → replace with equivalent standard indicator or comment as limitation
-- ObjectCreate/ObjectDelete → remove (UI operations not relevant to backtest)
-- WebRequest → remove (network calls not allowed in VM)
-- FileOpen/FileWrite → remove (file I/O not allowed in VM)
-- EventSetTimer → map to on_timer method
-- OnTradeTransaction → map to on_trade_transaction method`
-
 // BridgeResult holds the output of a bridge translation attempt.
 type BridgeResult struct {
 	PythonSource  string
-	SemanticDiff  *antv1.SemanticDiff
 	CompileError  string
-	Translated    bool
 	Status        string // "success" | "bridge_failed"
 	Attempts      int
+	BridgedCov    *mql2go.CoverageResult
+	BacktestError string
 }
 
-// TranslateBlindSpot calls LLM to translate MQL with blind spots into Python subset.
-// ADR-0024 Phase 2: "盲区桥接 prompt + Agent 循环编排"
-func (b *Bridge) TranslateBlindSpot(
+// translateBlindSpot calls LLM to translate MQL with blind spots into Python subset.
+// ADR-0024: "盲区桥接 prompt + Agent 循环编排"
+func (b *Bridge) translateBlindSpot(
 	ctx context.Context,
-	userID string,
+	uid uuid.UUID,
 	mqlSource string,
 	coverage *mql2go.CoverageResult,
+	profile *antv1.StrategyProfile,
 ) (*BridgeResult, error) {
-	userPrompt := buildBridgeUserPrompt(mqlSource, coverage)
+	userPrompt := buildBridgeUserPrompt(mqlSource, coverage, profile)
 
 	// Check cache
 	if b.cache != nil {
@@ -98,12 +58,11 @@ func (b *Bridge) TranslateBlindSpot(
 		}
 	}
 
-	uid, err := parseUUID(userID)
-	if err != nil {
-		return nil, fmt.Errorf("parse user id: %w", err)
-	}
+	// LLM call timeout (per ADR §5.3: 30s)
+	llmCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
 
-	resp, err := b.aiSvc.ChatCompletion(ctx, uid, []systemai.ChatMessage{
+	resp, err := b.aiSvc.ChatCompletion(llmCtx, uid, []systemai.ChatMessage{
 		{Role: "system", Content: bridgeSystemPrompt},
 		{Role: "user", Content: userPrompt},
 	})
@@ -120,84 +79,152 @@ func (b *Bridge) TranslateBlindSpot(
 
 const maxBridgeRetries = 3
 
-// TranslateWithRetry runs the bridge Agent loop: LLM translate → compile → error feedback → retry.
+// BacktestValidator runs a backtest on the already-compiled Python runner to verify runtime correctness.
+// The runner is produced by verifyBridgeResult via CompilePythonWithCoverage — no recompilation needed.
+// Returns nil if the backtest succeeds, or an error describing the failure.
+type BacktestValidator func(runner *mql2go.VMRunner) error
+
+// TranslateWithRetry runs the bridge Agent loop: LLM translate → compile → coverage check → backtest → error feedback → retry.
 // ADR-0024 §5.4: max 3 retries with compile error feedback to LLM.
+// Also runs backtest to verify runtime correctness.
+// Parses UUID once outside the retry loop.
 func (b *Bridge) TranslateWithRetry(
 	ctx context.Context,
 	userID string,
 	mqlSource string,
 	coverage *mql2go.CoverageResult,
+	profile *antv1.StrategyProfile,
+	validateBacktest BacktestValidator,
 ) (*BridgeResult, error) {
-	result, err := b.TranslateBlindSpot(ctx, userID, mqlSource, coverage)
+	// Parse UUID once outside the retry loop.
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, fmt.Errorf("parse user id: %w", err)
+	}
+
+	result, err := b.translateBlindSpot(ctx, uid, mqlSource, coverage, profile)
 	if err != nil {
 		return nil, err
 	}
 	result.Attempts = 1
 
-	// Try to compile the translated Python
-	_, _, pyErr := mql2go.CompilePythonWithCoverage(result.PythonSource)
-	if pyErr == nil {
-		result.Status = "success"
+	// Verify: compile + coverage + backtest
+	if ok := b.verifyBridgeResult(result, coverage, validateBacktest); ok {
 		return result, nil
 	}
-	result.CompileError = pyErr.Error()
 
-	// Retry loop: feed compile error back to LLM
+	// Retry loop: feed compile/backtest error back to LLM
 	for attempt := 2; attempt <= maxBridgeRetries; attempt++ {
 		result.Attempts = attempt
+		errorMsg := result.CompileError
+		if result.BacktestError != "" {
+			errorMsg = result.BacktestError
+		}
 		b.log.Info("bridge retry",
 			zap.Int("attempt", attempt),
-			zap.String("compile_error", truncate(pyErr.Error(), 200)))
+			zap.String("error", truncate(errorMsg, 200)))
 
-		retryPrompt := buildBridgeRetryPrompt(mqlSource, result.PythonSource, pyErr.Error())
-		uid, uidErr := parseUUID(userID)
-		if uidErr != nil {
-			return nil, fmt.Errorf("parse user id: %w", uidErr)
-		}
-		resp, llmErr := b.aiSvc.ChatCompletion(ctx, uid, []systemai.ChatMessage{
+		retryPrompt := buildBridgeRetryPrompt(mqlSource, result.PythonSource, errorMsg, profile)
+		// LLM call timeout
+		llmCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+		resp, llmErr := b.aiSvc.ChatCompletion(llmCtx, uid, []systemai.ChatMessage{
 			{Role: "system", Content: bridgeSystemPrompt},
 			{Role: "user", Content: retryPrompt},
 		})
+		cancel()
 		if llmErr != nil {
 			return nil, fmt.Errorf("bridge LLM retry %d: %w", attempt, llmErr)
 		}
 		result = parseBridgeResponse(resp)
 		result.Attempts = attempt
 
-		_, _, pyErr = mql2go.CompilePythonWithCoverage(result.PythonSource)
-		if pyErr == nil {
-			result.Status = "success"
-			result.CompileError = ""
+		if b.verifyBridgeResult(result, coverage, validateBacktest) {
 			return result, nil
 		}
-		result.CompileError = pyErr.Error()
 	}
 
 	result.Status = "bridge_failed"
 	return result, nil
 }
 
-func buildBridgeRetryPrompt(mqlSource, prevPython, compileError string) string {
+// verifyBridgeResult checks compilation, coverage improvement, and backtest success.
+// Returns true if all checks pass, false otherwise (with error details set on result).
+func (b *Bridge) verifyBridgeResult(
+	result *BridgeResult,
+	origCoverage *mql2go.CoverageResult,
+	validateBacktest BacktestValidator,
+) bool {
+	result.CompileError = ""
+	result.BacktestError = ""
+	result.Status = ""
+	result.BridgedCov = nil
+
+	// Step 1: Compile (single compilation — runner reused for backtest)
+	pyRunner, pyCov, pyErr := mql2go.CompilePythonWithCoverage(result.PythonSource)
+	if pyErr != nil {
+		result.CompileError = pyErr.Error()
+		return false
+	}
+	result.BridgedCov = pyCov
+
+	// Step 2: Coverage improvement check (ADR §5.4)
+	if pyCov.Score < origCoverage.Score {
+		result.CompileError = fmt.Sprintf(
+			"coverage regression: %.0f%% → %.0f%% (must not decrease)",
+			origCoverage.Score*100, pyCov.Score*100)
+		return false
+	}
+
+	// Step 3: Backtest validation — reuse compiled runner, no recompilation
+	if validateBacktest != nil {
+		if btErr := validateBacktest(pyRunner); btErr != nil {
+			result.BacktestError = btErr.Error()
+			return false
+		}
+	}
+
+	result.Status = "success"
+	return true
+}
+
+func buildBridgeRetryPrompt(mqlSource, prevPython, errorMsg string, profile *antv1.StrategyProfile) string {
 	var sb strings.Builder
-	sb.WriteString("## Previous Attempt (failed to compile)\n```\n")
+	sb.WriteString("## Previous Attempt (failed validation)\n```\n")
 	sb.WriteString(prevPython)
 	sb.WriteString("\n```\n\n")
-	sb.WriteString("## Compile Error\n")
-	sb.WriteString(compileError)
+	sb.WriteString("## Error\n")
+	sb.WriteString(errorMsg)
+	if profile != nil {
+		sb.WriteString("\n\n## Strategy Profile (for context)\n")
+		sb.WriteString(fmt.Sprintf("Type: %s\n", profile.StrategyType))
+		sb.WriteString(fmt.Sprintf("Indicators: %s\n", strings.Join(profile.IndicatorsUsed, ", ")))
+		sb.WriteString(fmt.Sprintf("Entry: %s\n", profile.EntryLogic))
+		sb.WriteString(fmt.Sprintf("Exit: %s\n", profile.ExitLogic))
+	}
 	sb.WriteString("\n\n## Original MQL Source\n```\n")
 	sb.WriteString(mqlSource)
 	sb.WriteString("\n```\n\n")
 	sb.WriteString("## Task\n")
-	sb.WriteString("The previous Python translation failed to compile. Fix the error above and output the corrected Python source code.\n")
+	sb.WriteString("The previous Python translation failed validation (compile error, coverage regression, or backtest failure). Fix the issue above and output the corrected Python source code.\n")
 	sb.WriteString("Output ONLY the Python source code.")
 	return sb.String()
 }
 
-func buildBridgeUserPrompt(mqlSource string, coverage *mql2go.CoverageResult) string {
+func buildBridgeUserPrompt(mqlSource string, coverage *mql2go.CoverageResult, profile *antv1.StrategyProfile) string {
 	var sb strings.Builder
 	sb.WriteString("## MQL Source Code (has blind spots)\n```\n")
 	sb.WriteString(mqlSource)
 	sb.WriteString("\n```\n\n")
+
+	if profile != nil {
+		sb.WriteString("## Strategy Profile\n")
+		sb.WriteString(fmt.Sprintf("Type: %s\n", profile.StrategyType))
+		sb.WriteString(fmt.Sprintf("Description: %s\n", profile.Description))
+		sb.WriteString(fmt.Sprintf("Indicators: %s\n", strings.Join(profile.IndicatorsUsed, ", ")))
+		sb.WriteString(fmt.Sprintf("Entry: %s\n", profile.EntryLogic))
+		sb.WriteString(fmt.Sprintf("Exit: %s\n", profile.ExitLogic))
+		sb.WriteString(fmt.Sprintf("Risk: %s\n\n", profile.RiskManagement))
+	}
 
 	sb.WriteString("## Coverage Report\n")
 	sb.WriteString(fmt.Sprintf("Coverage score: %.0f%%\n", coverage.Score*100))
@@ -210,6 +237,7 @@ func buildBridgeUserPrompt(mqlSource string, coverage *mql2go.CoverageResult) st
 
 	sb.WriteString("\n## Task\n")
 	sb.WriteString("Translate this MQL strategy into a Python subset strategy that avoids the blind spots.\n")
+	sb.WriteString("Use the strategy profile to guide semantic translation of custom indicators.\n")
 	sb.WriteString("Map MQL trading functions to the Python SDK API shown above.\n")
 	sb.WriteString("Output ONLY the Python source code.\n")
 
@@ -224,7 +252,6 @@ func parseBridgeResponse(resp string) *BridgeResult {
 
 	return &BridgeResult{
 		PythonSource: python,
-		Translated:   python != "",
 	}
 }
 
