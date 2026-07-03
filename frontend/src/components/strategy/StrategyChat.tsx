@@ -13,7 +13,7 @@ import { aiApi } from '@/client/ai';
 const AISettingsModal = lazy(() => import('@/pages/strategy/components/workspace/AISettingsModal'));
 import { aiGatewayApi } from '@/client/aiGateway';
 import type { BacktestMetricsMsg } from '@/gen/ant/v1/strategy_execution_pb';
-import { AI_GATEWAY_SETTINGS_KEY, CHAT_TAB_KEY, INPUT_HINT_KEY, NEW_CONVERSATION_KEY, PLACEHOLDER_CONTINUE_KEY, PLACEHOLDER_DESCRIBE_STRATEGY_KEY, PLACEHOLDER_MODIFY_KEY, PLACEHOLDER_REVISE_PLAN_KEY, PLACEHOLDER_START_KEY, SELECT_MODEL_KEY, SELECT_SYMBOL_KEY, STRATEGIES_TAB_KEY, THINKING_KEY } from '@/gen/ant/v1/i18n/strategy_ai_chat_keys';
+import { AI_GATEWAY_SETTINGS_KEY, CHAT_TAB_KEY, HISTORY_TAB_KEY, INPUT_HINT_KEY, NEW_CONVERSATION_KEY, PLACEHOLDER_CONTINUE_KEY, PLACEHOLDER_DESCRIBE_STRATEGY_KEY, PLACEHOLDER_MODIFY_KEY, PLACEHOLDER_REVISE_PLAN_KEY, PLACEHOLDER_START_KEY, SELECT_MODEL_KEY, SELECT_SYMBOL_KEY, STRATEGIES_TAB_KEY, THINKING_KEY } from '@/gen/ant/v1/i18n/strategy_ai_chat_keys';
 
 const { TextArea } = Input;
 import type { ValidateExtendedResult } from '@/client/codeAssist';
