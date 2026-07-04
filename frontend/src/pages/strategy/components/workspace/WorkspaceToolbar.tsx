@@ -1,6 +1,9 @@
-import { Select } from 'antd';
+import { Select, Tag } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { TRADING_BALANCE_KEY, TRADING_EQUITY_KEY, TRADING_PROFIT_KEY, TRADING_POSITIONS_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import {
+  TRADING_BALANCE_KEY, TRADING_EQUITY_KEY, TRADING_PROFIT_KEY,
+  TRADING_FREE_MARGIN_KEY, TRADING_POSITIONS_KEY,
+} from '@/gen/ant/v1/i18n/trading_keys';
 import { NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
 import { SELECT_ACCOUNT_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import SymbolPicker from '@/components/chart/SymbolPicker';
@@ -14,7 +17,7 @@ interface Props {
   accountInfo?: AccountInfo | null;
   positionCount?: number;
   busy?: boolean;
-  positionsCount?: number; onTogglePositionsPanel?: () => void;
+  onTogglePositionsPanel?: () => void;
   mtError?: string | null;
   strategyName?: string;
   saveStatus?: 'modified' | 'saved' | 'none';
@@ -39,12 +42,13 @@ function Stat({ label, value, color }: { label: string; value: string; color?: s
 export default function WorkspaceToolbar({
   accounts, accountId, onAccountChange, busy,
   symbol, onSymbolChange, accountInfo, positionCount,
-  positionsCount, onTogglePositionsPanel,
+  onTogglePositionsPanel,
   mtError, strategyName, saveStatus,
 }: Props) {
   const { t } = useTranslation();
   const hasData = accountInfo != null;
   const profitColor = accountInfo && accountInfo.profit >= 0 ? '#3fb950' : '#f85149';
+  const selectedAccount = accounts?.find((a) => a.id === accountId);
 
   return (
     <div style={{
@@ -53,9 +57,6 @@ export default function WorkspaceToolbar({
       background: 'var(--ant-color-bg-container)',
       borderBottom: '1px solid var(--ant-color-border)',
     }}>
-      <span style={{ fontWeight: 700, color: '#58a6ff', fontSize: 14 }}>Ant</span>
-      <span style={{ color: 'var(--ant-color-text-secondary)', fontSize: 12 }}>Strategy Workspace</span>
-
       <Select size="small" style={{ minWidth: 160, width: 220, maxWidth: '30vw' }}
         value={accountId || undefined} onChange={onAccountChange} disabled={busy}
         placeholder={t(SELECT_ACCOUNT_KEY)} showSearch optionFilterProp="label"
@@ -82,6 +83,7 @@ export default function WorkspaceToolbar({
           <Stat label={t(TRADING_PROFIT_KEY)}
             value={`${accountInfo!.profit >= 0 ? '+' : ''}$${fmtCompact(Math.abs(accountInfo!.profit))}`}
             color={profitColor} />
+          <Stat label={t(TRADING_FREE_MARGIN_KEY)} value={`$${fmtCompact(accountInfo!.freeMargin)}`} />
         </>
       )}
 
@@ -91,6 +93,22 @@ export default function WorkspaceToolbar({
         <Stat label={t(TRADING_POSITIONS_KEY)} value={positionCount != null ? String(positionCount) : '0'}
           color={positionCount != null && positionCount > 0 ? '#58a6ff' : undefined} />
       </div>
+
+      {selectedAccount && (
+        <>
+          <Tag style={{ fontSize: 10, margin: 0 }}>{selectedAccount.mtType}</Tag>
+          <span style={{ fontSize: 11, color: 'var(--ant-color-text-secondary)', whiteSpace: 'nowrap' }}>{selectedAccount.brokerCompany}</span>
+          <span style={{ fontSize: 11, color: 'var(--ant-color-text-tertiary)', whiteSpace: 'nowrap' }}>{selectedAccount.brokerServer}</span>
+          <span style={{ fontSize: 11, color: selectedAccount.isDisabled ? '#f85149' : '#3fb950', whiteSpace: 'nowrap' }}>
+            {selectedAccount.isDisabled ? '⛔' : '✅'}
+          </span>
+          {selectedAccount.leverage != null && (
+            <span style={{ fontSize: 11, color: 'var(--ant-color-text-secondary)', whiteSpace: 'nowrap' }}>
+              1:{selectedAccount.leverage}
+            </span>
+          )}
+        </>
+      )}
 
       {mtError && (
         <span style={{ fontSize: 11, color: 'var(--ant-color-error)', marginLeft: 8 }}>⚠ {mtError}</span>

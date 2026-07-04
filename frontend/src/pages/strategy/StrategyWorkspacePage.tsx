@@ -40,7 +40,6 @@ export default function StrategyWorkspacePage() {
         symbol={ws.account.symbol} onSymbolChange={ws.account.setSymbol}
         accountInfo={ws.account.accountInfo} positionCount={ws.quickTrade.positionCount}
         busy={ws.backtest.submitting || ws.tuning.running}
-        positionsCount={ws.quickTrade.allPositions.length}
         onTogglePositionsPanel={() => ws.layout.setPositionsPanelVisible(!ws.layout.positionsPanelVisible)}
         strategyName={ws.templates.list.find((t: any) => t.id === ws.templates.selectedId)?.name}
         saveStatus={ws.code.code && ws.code.lastValidatedCode && ws.code.code !== ws.code.lastValidatedCode ? 'modified' : ws.code.lastSavedId ? 'saved' : 'none'}
