@@ -1,8 +1,0 @@
-## Strategy Request
-{{.Message}}
-
-{{.ProfileBlock}}
-{{.MemoryBlock}}
-{{.Params}}
-{{.Feedback}}
-Produce the strategy plan now.

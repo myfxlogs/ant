@@ -126,8 +126,8 @@ func (s *StrategyPlanServer) Conversate(
 	m := req.Msg
 
 	registry := NewEmptyToolRegistry()
-	registry.AddPreTool(&ReadKlineTool{repo: s.marketDataRepo})
-	registry.AddPreTool(&ReadBacktestLogTool{repo: s.backtestRepo})
+	registry.AddPreTool(NewReadKlineTool(s.marketDataRepo))
+	registry.AddPreTool(NewReadBacktestLogTool(s.backtestRepo))
 	registry.AddPreTool(&compilePythonChatTool{})
 	registry.WireMemoryDB(s.memoryExec, s.memoryQuery)
 
@@ -195,8 +195,8 @@ func (s *StrategyPlanServer) ExecutePlan(
 	_ = stream.Send(&antv1.ExecutePlanChunk{Phase: "generating"})
 
 	registry := NewEmptyToolRegistry()
-	registry.AddPreTool(&ReadKlineTool{repo: s.marketDataRepo})
-	registry.AddPreTool(&ReadBacktestLogTool{repo: s.backtestRepo})
+	registry.AddPreTool(NewReadKlineTool(s.marketDataRepo))
+	registry.AddPreTool(NewReadBacktestLogTool(s.backtestRepo))
 	registry.WireMemoryDB(s.memoryExec, s.memoryQuery)
 
 	lang := LangFromAccept(req.Header().Get("Accept-Language"))

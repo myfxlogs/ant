@@ -89,6 +89,11 @@ func (r *ToolRegistry) FindPreTool(name string) Tool {
 
 type ReadKlineTool struct{ repo repository.MarketDataStore }
 
+// NewReadKlineTool creates a read_kline tool with the given market data store.
+func NewReadKlineTool(repo repository.MarketDataStore) *ReadKlineTool {
+	return &ReadKlineTool{repo: repo}
+}
+
 func (t *ReadKlineTool) Name() string { return "read_kline" }
 func (t *ReadKlineTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
@@ -237,6 +242,10 @@ func ema(bars []repository.KlineBar, period int) float64 {
 // ── read_backtest_log tool ──
 
 type ReadBacktestLogTool struct{ repo *repository.BacktestRunRepository }
+
+func NewReadBacktestLogTool(repo *repository.BacktestRunRepository) *ReadBacktestLogTool {
+	return &ReadBacktestLogTool{repo: repo}
+}
 
 func (t *ReadBacktestLogTool) Name() string { return "read_backtest_log" }
 func (t *ReadBacktestLogTool) Schema() systemai.ToolDefinition {

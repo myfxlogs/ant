@@ -12,14 +12,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/pkg/secretbox"
 	"anttrader/internal/repository"
 	systemai "anttrader/internal/service/systemai"
-	"anttrader/strategy/sdk"
 )
 
 // genE2ETestPG connects to the test database or skips the test.
@@ -75,23 +73,6 @@ func genE2ETestAI(t *testing.T, pool *pgxpool.Pool) *systemai.Service {
 	return systemai.NewService(repo, box)
 }
 
-// genE2ETestBars creates synthetic bars for backtesting.
-func genE2ETestBars(n int) []sdk.Bar {
-	bars := make([]sdk.Bar, n)
-	for i := range bars {
-		price := 1.1000 + float64(i)*0.0010
-		bars[i] = sdk.Bar{
-			Timestamp: int64(time.Unix(int64(i)*3600, 0).UnixMilli()),
-			Open:      decimal.NewFromFloat(price),
-			High:      decimal.NewFromFloat(price + 0.0005),
-			Low:       decimal.NewFromFloat(price - 0.0005),
-			Close:     decimal.NewFromFloat(price + 0.0002),
-			Volume:    1000,
-		}
-	}
-	return bars
-}
-
 // collectChunks is a stream callback that collects all chunks for assertion.
 func collectChunks(out *[]*antv1.AgentGenerateStrategyChunk) func(*antv1.AgentGenerateStrategyChunk) error {
 	return func(c *antv1.AgentGenerateStrategyChunk) error {
@@ -132,7 +113,6 @@ func TestGeneratorE2E_PlanMode_NoLLM(t *testing.T) {
 			Timeframe: "H1",
 			PlanMode:  "plan",
 		},
-		genE2ETestBars(100),
 		collectChunks(&chunks),
 	)
 
@@ -205,7 +185,6 @@ func TestGeneratorE2E_GenerateMode_CostCeiling(t *testing.T) {
 			Timeframe: "H1",
 			PlanMode:  "generate",
 		},
-		genE2ETestBars(50),
 		collectChunks(&chunks),
 	)
 	if err != nil {
@@ -312,7 +291,6 @@ func TestGeneratorE2E_PlanMode_WithMemory(t *testing.T) {
 			Timeframe: "H1",
 			PlanMode:  "plan",
 		},
-		genE2ETestBars(100),
 		collectChunks(&chunks),
 	)
 	if err != nil {
@@ -367,7 +345,6 @@ func TestGeneratorE2E_GenerateMode_WithConfirmedPlan(t *testing.T) {
 			PlanMode:      "generate",
 			ConfirmedPlan: plan,
 		},
-		genE2ETestBars(100),
 		collectChunks(&chunks),
 	)
 	if err != nil {

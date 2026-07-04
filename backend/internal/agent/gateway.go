@@ -284,24 +284,7 @@ func (s *GatewayServer) GenerateStrategy(
 		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("message is required"))
 	}
 
-	btCfg := msg.BacktestConfig
-	if btCfg == nil {
-		btCfg = &antv1.AgentBacktestConfig{
-			Symbol:    msg.Symbol,
-			Timeframe: msg.Timeframe,
-		}
-	}
-
-	bars, err := s.fetchBars(ctx, btCfg)
-	if err != nil {
-		return connect.NewError(connect.CodeInternal, fmt.Errorf("fetch market data: %w", err))
-	}
-	if len(bars) < 2 {
-		return connect.NewError(connect.CodeFailedPrecondition,
-			fmt.Errorf("insufficient market data: %d bars (need ≥2)", len(bars)))
-	}
-
-	err = s.generator.Generate(ctx, uid, msg, bars, func(chunk *antv1.AgentGenerateStrategyChunk) error {
+	err = s.generator.Generate(ctx, uid, msg, func(chunk *antv1.AgentGenerateStrategyChunk) error {
 		return stream.Send(chunk)
 	})
 	if err != nil {

@@ -104,9 +104,23 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		}
 		fullBuf.WriteString(roundText)
 
-		// No tool calls → LLM is done.
+		// No native tool calls → check for text-based [TOOL: name args] fallback.
 		if len(toolCalls) == 0 {
-			return fullBuf.String(), nil
+			textCalls := parseTextToolCalls(roundText)
+			if len(textCalls) == 0 {
+				return fullBuf.String(), nil
+			}
+			// Convert text-based calls to structured tool calls.
+			for _, tc := range textCalls {
+				toolCalls = append(toolCalls, systemai.ToolCall{
+					ID:   "call_" + tc.Name,
+					Type: "function",
+					Function: systemai.ToolCallFunction{
+						Name:      tc.Name,
+						Arguments: tc.ArgsJSON,
+					},
+				})
+			}
 		}
 
 		// Build the assistant message with tool calls.
@@ -205,4 +219,57 @@ func parseToolArguments(toolName, argsJSON string) ToolInput {
 		}
 	}
 	return in
+}
+
+// ── Text-based tool call fallback (for models without native tool_use) ──
+
+type textToolCall struct {
+	Name     string
+	ArgsJSON string
+}
+
+// parseTextToolCalls extracts [TOOL: name key=val ...] patterns from text.
+// Fallback for models (DeepSeek, GLM, Qwen) that don't support native function calling.
+func parseTextToolCalls(text string) []textToolCall {
+	var calls []textToolCall
+	rest := text
+	for {
+		start := strings.Index(rest, "[TOOL:")
+		if start < 0 {
+			break
+		}
+		rest = rest[start+6:]
+		end := strings.Index(rest, "]")
+		if end < 0 {
+			break
+		}
+		content := strings.TrimSpace(rest[:end])
+		rest = rest[end+1:]
+
+		parts := strings.Fields(content)
+		if len(parts) == 0 {
+			continue
+		}
+		tc := textToolCall{Name: parts[0]}
+
+		// Build JSON args from positional or key=value arguments.
+		args := make(map[string]string)
+		for _, p := range parts[1:] {
+			if kv := strings.SplitN(p, "=", 2); len(kv) == 2 {
+				args[kv[0]] = kv[1]
+			}
+		}
+		// If no key=value pairs, use positional: arg1=symbol, arg2=timeframe
+		if len(args) == 0 && len(parts) >= 2 {
+			args["symbol"] = parts[1]
+		}
+		if len(args) == 0 && len(parts) >= 3 {
+			args["timeframe"] = parts[2]
+		}
+
+		jsonBytes, _ := json.Marshal(args)
+		tc.ArgsJSON = string(jsonBytes)
+		calls = append(calls, tc)
+	}
+	return calls
 }
