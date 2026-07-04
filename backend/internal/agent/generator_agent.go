@@ -73,8 +73,9 @@ Your task is to generate Python trading strategies from natural language descrip
 
 ## Workflow
 
-You have ONE tool available:
-- **compile_python** — Compile your Python strategy code. Returns success + coverage score, or a specific error message. Only call this when the user explicitly asks you to verify the code.
+You have tools available:
+- **read_kline** — Query real market data. Returns current price, EMA20/50, trend direction, volatility, and recent OHLC bars. Use FIRST when asked about market conditions or chart data.
+- **compile_python** — Compile your Python code. Returns success or a specific error. Only call when the user explicitly asks you to verify.
 
 Follow this workflow:
 1. **Discuss the plan first.** Analyze the user's strategy request, propose a concrete execution plan (numbered 1. 2. 3.), and confirm with the user.
@@ -95,7 +96,6 @@ Follow this workflow:
 
 // runAgentLoop runs the LLM-driven agent loop for the Generator.
 // After the loop completes, code is extracted and sent to the frontend.
-// No auto-compile or auto-backtest — the LLM presents code and waits for user instruction.
 func (g *Generator) runAgentLoop(
 	ctx context.Context,
 	userID uuid.UUID,
@@ -107,8 +107,17 @@ func (g *Generator) runAgentLoop(
 ) error {
 	result := &generateState{}
 
-	// ── Build Python tools (compile_python only) ──
+// ── Build tool registry — same tools as Conversate path
 	registry := buildPythonToolRegistry(result)
+	if g.mkt != nil {
+		registry.AddPreTool(&connectai.ReadKlineTool{})
+	}
+	if g.btRepo != nil {
+		registry.AddPreTool(&connectai.ReadBacktestLogTool{})
+	}
+	if g.dbExec != nil && g.dbQuery != nil {
+		registry.WireMemoryDB(g.dbExec, g.dbQuery)
+	}
 
 	// ── Build system prompt ──
 	sysPrompt := generatorAgentSystemPrompt
@@ -126,7 +135,7 @@ func (g *Generator) runAgentLoop(
 		userPrompt.WriteString(fmt.Sprintf("Description: %s\n", preProfile.Description))
 		if len(preProfile.IndicatorsUsed) > 0 {
 			userPrompt.WriteString(fmt.Sprintf("Indicators: %s\n", strings.Join(preProfile.IndicatorsUsed, ", ")))
-		}
+	}
 		userPrompt.WriteString(fmt.Sprintf("Entry: %s\n", preProfile.EntryLogic))
 		userPrompt.WriteString(fmt.Sprintf("Exit: %s\n", preProfile.ExitLogic))
 		userPrompt.WriteString(fmt.Sprintf("Risk: %s\n", preProfile.RiskManagement))
@@ -149,12 +158,15 @@ func (g *Generator) runAgentLoop(
 		return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "generating", Delta: delta})
 	}
 	toolStream := func(tc *antv1.ToolCall, tr *antv1.ToolResult) error {
-		if tc.Name == "compile_python" {
+		switch tc.Name {
+		case "compile_python":
 			chunk := &antv1.AgentGenerateStrategyChunk{Phase: "compiling", PythonSource: result.PythonSource}
 			if !tr.Success {
 				chunk.CompileError = tr.Error
 			}
 			return streamOrAbort(chunk)
+		case "read_kline":
+			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "planning"})
 		}
 		return nil
 	}
@@ -163,7 +175,7 @@ func (g *Generator) runAgentLoop(
 	loop := connectai.NewAgentLoop(registry,
 		func(llmCtx context.Context, messages []systemai.ChatMessage, tools []systemai.ToolDefinition, onChunk func(systemai.ChatStreamChunk) error) error {
 			return g.aiSvc.ChatCompletionStreamWithTools(llmCtx, userID, messages, tools, onChunk)
-		},
+	},
 		streamChunk, toolStream,
 	)
 	loop.SetCurrentCode("")
@@ -174,7 +186,7 @@ func (g *Generator) runAgentLoop(
 		_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{
 			Phase: "done",
 			Error: fmt.Sprintf("agent loop: %v", loopErr),
-		})
+	})
 		return nil
 	}
 

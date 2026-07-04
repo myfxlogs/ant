@@ -87,10 +87,10 @@ func (r *ToolRegistry) FindPreTool(name string) Tool {
 
 // ── read_kline tool ──
 
-type readKlineTool struct{ repo repository.MarketDataStore }
+type ReadKlineTool struct{ repo repository.MarketDataStore }
 
-func (t *readKlineTool) Name() string { return "read_kline" }
-func (t *readKlineTool) Schema() systemai.ToolDefinition {
+func (t *ReadKlineTool) Name() string { return "read_kline" }
+func (t *ReadKlineTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
 		Type: "function",
 		Function: systemai.ToolDefFunction{
@@ -107,7 +107,7 @@ func (t *readKlineTool) Schema() systemai.ToolDefinition {
 		},
 	}
 }
-func (t *readKlineTool) Run(ctx context.Context, in ToolInput) ToolOutput {
+func (t *ReadKlineTool) Run(ctx context.Context, in ToolInput) ToolOutput {
 	bars, err := t.repo.GetKlines(ctx, in.Symbol, "", in.Timeframe, nil, nil, 2000)
 	if err != nil {
 		return ToolOutput{Success: false, Error: err.Error()}
@@ -236,10 +236,10 @@ func ema(bars []repository.KlineBar, period int) float64 {
 
 // ── read_backtest_log tool ──
 
-type readBacktestLogTool struct{ repo *repository.BacktestRunRepository }
+type ReadBacktestLogTool struct{ repo *repository.BacktestRunRepository }
 
-func (t *readBacktestLogTool) Name() string { return "read_backtest_log" }
-func (t *readBacktestLogTool) Schema() systemai.ToolDefinition {
+func (t *ReadBacktestLogTool) Name() string { return "read_backtest_log" }
+func (t *ReadBacktestLogTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
 		Type: "function",
 		Function: systemai.ToolDefFunction{
@@ -252,7 +252,7 @@ func (t *readBacktestLogTool) Schema() systemai.ToolDefinition {
 		},
 	}
 }
-func (t *readBacktestLogTool) Run(ctx context.Context, in ToolInput) ToolOutput {
+func (t *ReadBacktestLogTool) Run(ctx context.Context, in ToolInput) ToolOutput {
 	// Use the most recent backtest run for this code hash
 	runs, err := t.repo.ListByUser(ctx, in.UserID, nil, nil, 1, 0)
 	if err != nil || len(runs) == 0 {

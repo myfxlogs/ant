@@ -44,13 +44,24 @@ func NewGatewayServer(pool *pgxpool.Pool, mdr repository.MarketDataStore, aiSvc 
 	hooks := NewHookEngine(log)
 	memory := NewMemoryStore(pool, log)
 	settings := NewSettingsStore(pool)
+	// Build a minimal backtest repo for the Generator's tools.
+	btRepo := repository.NewBacktestRunRepository(pool)
+	memExec := func(ctx context.Context, sql string, args ...any) error {
+		_, err := pool.Exec(ctx, sql, args...)
+		return err
+	}
+	memQuery := func(ctx context.Context, sql string, args ...any) (string, error) {
+		var result string
+		err := pool.QueryRow(ctx, sql, args...).Scan(&result)
+		return result, err
+	}
 	return &GatewayServer{
 		marketDataRepo: mdr,
 		log:            log,
 		bridge:         NewBridge(aiSvc, log, cache),
 		profiler:       profiler,
 		interpreter:    interpreter,
-		generator:      NewGenerator(aiSvc, log, cache, memory),
+		generator:      NewGenerator(aiSvc, log, cache, memory, mdr, btRepo, memExec, memQuery),
 		memory:         memory,
 		hooks:          hooks,
 		settings:       settings,
