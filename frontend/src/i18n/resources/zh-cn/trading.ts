@@ -157,7 +157,17 @@ const Trading = {
     "time": "时间",
     "title": "交易",
     "type": "类型",
-    "volume": "数量"
+    "volume": "数量",
+    "broker": "经纪商",
+    "closePrice": "平仓价",
+    "closeTime": "平仓时间",
+    "entryPrice": "入场价",
+    "investor": "投资者",
+    "leverage": "杠杆",
+    "master": "主账户",
+    "permission": "权限",
+    "platform": "平台",
+    "server": "服务器"
   },
   "algo": {
     "actions": {

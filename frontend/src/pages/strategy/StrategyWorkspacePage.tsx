@@ -64,17 +64,17 @@ export default function StrategyWorkspacePage() {
   const handleCopy = () => {
     if (!ws.code.code) return;
     navigator.clipboard?.writeText(ws.code.code)
-      .then(() => message.success(t('common.copied', '已复制')))
-      .catch(() => message.error(t('common.copyFailed', '复制失败')));
+      .then(() => message.success(t('common.copied')))
+      .catch(() => message.error(t('common.copyFailed')));
   };
 
   const strategyName = ws.templates.list.find((t2: any) => t2.id === ws.templates.selectedId)?.name || ws.code.loadedTemplate?.name || '';
   const saveStatus: 'modified' | 'saved' | 'none' = ws.code.code && ws.code.lastValidatedCode && ws.code.code !== ws.code.lastValidatedCode ? 'modified' : ws.code.lastSavedId ? 'saved' : 'none';
 
   const CTABS: { key: CenterTab; icon: string; label: string }[] = [
-    { key: 'design', icon: '📈', label: t('strategy.workspace.design', 'Design') },
-    { key: 'code', icon: '📄', label: 'Code' },
-    { key: 'backtest', icon: '📊', label: t('strategy.gen.backtest', 'Backtest') },
+    { key: 'design', icon: '📈', label: t('strategy.workspace.design') },
+    { key: 'code', icon: '📄', label: t('strategy.workspace.code') },
+    { key: 'backtest', icon: '📊', label: t('strategy.gen.backtest') },
   ];
 
   return (
@@ -102,7 +102,7 @@ export default function StrategyWorkspacePage() {
           background: 'var(--ant-color-bg-container)',
         }}>
           <div style={{ padding: '8px 12px 2px', fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, flexShrink: 0 }}>
-            📋 {t('strategy.workspace.templates', 'Strategies')}
+            📋 {t('strategy.workspace.templates')}
           </div>
           <div style={{ padding: '4px 12px', flexShrink: 0 }}>
             <WorkspaceTemplateManager
@@ -135,7 +135,7 @@ export default function StrategyWorkspacePage() {
             alignSelf: 'center',
           }}
         >
-          Strategies
+          {t('strategy.workspace.templates')}
         </div>
 
         {/* ── CENTER COLUMN: Design/Code/Backtest tabs ── */}
@@ -166,26 +166,26 @@ export default function StrategyWorkspacePage() {
             {centerTab === 'code' && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', fontSize: 11 }}>
                 {strategyName && <span style={{ fontWeight: 600, color: 'var(--ant-color-text)' }}>{strategyName}</span>}
-                {saveStatus === 'modified' && <span style={{ color: '#d29922' }}>● {t('common.unsaved', 'Unsaved')}</span>}
-                {saveStatus === 'saved' && <span style={{ color: '#3fb950' }}>✓ {t('common.saved', 'Saved')}</span>}
-                <Tooltip title={t('strategy.workspace.save', 'Save Strategy')}>
+                {saveStatus === 'modified' && <span style={{ color: '#d29922' }}>● {t('common.unsaved')}</span>}
+                {saveStatus === 'saved' && <span style={{ color: '#3fb950' }}>✓ {t('common.saved')}</span>}
+                <Tooltip title={t('strategy.workspace.save')}>
                   <Button size="small" icon={<SaveOutlined />}
                     onClick={() => ws.code.setSaveModalOpen(true)}
                     style={{ background: '#58a6ff', borderColor: '#58a6ff', color: '#fff' }}>
-                    {t('common.save', 'Save')}
+                    {t('common.save')}
                   </Button>
                 </Tooltip>
-                <Tooltip title={t('strategy.workspace.runBacktest', 'Run Backtest')}>
+                <Tooltip title={t('strategy.workspace.runBacktest')}>
                   <Button size="small" type="primary" icon={<PlayCircleOutlined />}
                     onClick={ws.backtest.run}
                     style={{ background: '#3fb950', borderColor: '#3fb950' }}>
-                    {t('strategy.gen.backtest', 'Backtest')}
+                    {t('strategy.workspace.backtest')}
                   </Button>
                 </Tooltip>
-                <Tooltip title={t('common.copy', 'Copy Code')}>
+                <Tooltip title={t('strategy.workspace.copy')}>
                   <Button size="small" icon={<CopyOutlined />} onClick={handleCopy} />
                 </Tooltip>
-                <Tooltip title={editable ? t('common.readOnly', 'Read Only') : t('common.edit', 'Edit')}>
+                <Tooltip title={editable ? t('common.readOnly') : t('common.edit')}>
                   <Button size="small" type={editable ? 'primary' : 'default'} icon={<EditOutlined />}
                     onClick={() => setEditable(e => !e)} />
                 </Tooltip>
@@ -206,7 +206,7 @@ export default function StrategyWorkspacePage() {
               </WorkspaceErrorBoundary>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--ant-color-text-secondary)', fontSize: 14 }}>
-                {t(SELECT_SYMBOL_HINT_KEY, 'Select a trading account and symbol to view chart')}
+                {t(SELECT_SYMBOL_HINT_KEY)}
               </div>
             )}
           </div>
@@ -237,7 +237,7 @@ export default function StrategyWorkspacePage() {
             ) : (
               <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 40 }}>
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description={t('strategy.workspace.noCode', 'No code generated yet')} />
+                  description={t('strategy.workspace.noCode')} />
               </div>
             )}
           </div>
@@ -309,7 +309,7 @@ export default function StrategyWorkspacePage() {
                     background: 'var(--ant-color-bg-layout)',
                     display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
                   }}>
-                    ⚡ Quick Trade
+                    ⚡ {t('strategy.workspace.quickTrade')}
                   </div>
                   <div style={{ flex: 1, overflowY: 'auto', padding: '4px 10px' }}>
                     <QuickTradePanel

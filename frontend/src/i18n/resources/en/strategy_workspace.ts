@@ -51,6 +51,14 @@ const StrategyWorkspace = {
       "ai": "AI",
       "aiAssist": "AI Assistant",
       "backtest": "Backtest",
+      "design": "Design",
+      "history": "History",
+      "noBacktest": "No backtest results",
+      "noCode": "No code generated yet",
+      "noHistory": "No trade history",
+      "noResults": "No backtest results",
+      "positions": "Positions",
+      "templates": "Strategies",
       "backtestCompleted": "Completed",
       "backtestEmpty": "Run a backtest to see results",
       "backtestError": "Backtest failed",
@@ -96,7 +104,8 @@ const StrategyWorkspace = {
       "validateBeforeSave": "Please validate code before saving",
       "validateFailed": "Validation failed",
       "validatePass": "Validation passed",
-      "watchlist": "Watchlist"
+      "watchlist": "Watchlist",
+      "backtesting": "Backtesting...",
     }
   }
 } as const;

@@ -18,10 +18,14 @@ const StrategyGen = {
         "return": "收益",
         "sharpe": "夏普",
         "trades": "交易数",
-        "winRate": "勝率"
+        "winRate": "勝率",
+        "totalReturn": "收益",
+        "totalTrades": "交易數"
       },
       "backtestMsg": "回測任务已建立",
       "backtestStarted": "回測已啟動",
+      "backtest": "回測",
+      "backtesting": "回測中...",
       "clarifyTitle": "确认以下细节:",
       "done": "完成",
       "generating": "生成中...",

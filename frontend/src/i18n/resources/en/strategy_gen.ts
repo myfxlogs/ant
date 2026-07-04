@@ -18,10 +18,14 @@ const StrategyGen = {
         "return": "Return",
         "sharpe": "Sharpe",
         "trades": "Trades",
-        "winRate": "Win"
+        "winRate": "Win",
+        "totalReturn": "Return",
+        "totalTrades": "Trades"
       },
       "backtestMsg": "Backtest task created",
       "backtestStarted": "Backtest Started",
+      "backtest": "Backtest",
+      "backtesting": "Backtesting...",
       "clarifyTitle": "A few details to confirm:",
       "done": "Done",
       "generating": "Generating...",

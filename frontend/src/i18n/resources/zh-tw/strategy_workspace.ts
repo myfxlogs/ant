@@ -51,6 +51,14 @@ const StrategyWorkspace = {
       "ai": "AI 助手",
       "aiAssist": "AI 助手",
       "backtest": "回測",
+      "design": "設計",
+      "history": "歷史",
+      "noBacktest": "暫無回測結果",
+      "noCode": "尚未生成程式碼",
+      "noHistory": "暫無交易歷史",
+      "noResults": "暫無回測結果",
+      "positions": "持倉",
+      "templates": "策略列表",
       "backtestCompleted": "已完成",
       "backtestEmpty": "執行回測以查看结果",
       "backtestError": "回測失敗",
@@ -96,7 +104,8 @@ const StrategyWorkspace = {
       "validateBeforeSave": "儲存前请先驗證程式碼",
       "validateFailed": "代碼驗證失敗",
       "validatePass": "代碼驗證通過",
-      "watchlist": "自选"
+      "watchlist": "自选",
+      "backtesting": "回測中...",
     }
   }
 } as const;

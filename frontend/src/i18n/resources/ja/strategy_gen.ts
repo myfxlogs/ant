@@ -18,10 +18,14 @@ const StrategyGen = {
         "return": "リターン",
         "sharpe": "シャープレシオ",
         "trades": "取引",
-        "winRate": "勝率"
+        "winRate": "勝率",
+        "totalReturn": "リターン",
+        "totalTrades": "取引数"
       },
       "backtestMsg": "バックテストタスク作成済",
       "backtestStarted": "バックテスト開始",
+      "backtest": "バックテスト",
+      "backtesting": "バックテスト中...",
       "clarifyTitle": "確認事項:",
       "done": "完了",
       "generating": "生成中...",

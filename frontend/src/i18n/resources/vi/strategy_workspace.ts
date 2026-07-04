@@ -51,6 +51,14 @@ const StrategyWorkspace = {
       "ai": "AI 助手",
       "aiAssist": "Trợ Lý AI",
       "backtest": "Kiểm thử lùi",
+      "design": "Thiết kế",
+      "history": "Lịch sử",
+      "noBacktest": "Chưa có kết quả backtest",
+      "noCode": "Chưa tạo code",
+      "noHistory": "Chưa có lịch sử giao dịch",
+      "noResults": "Chưa có kết quả backtest",
+      "positions": "Vị thế",
+      "templates": "Danh sách chiến lược",
       "backtestCompleted": "Hoàn tất",
       "backtestEmpty": "Chạy backtest để xem kết quả",
       "backtestError": "Backtest thất bại",
@@ -96,7 +104,8 @@ const StrategyWorkspace = {
       "validateBeforeSave": "Vui lòng xác thực code trước khi lưu",
       "validateFailed": "Xác thực thất bại",
       "validatePass": "Xác thực thành công",
-      "watchlist": "Danh Sách Theo Dõi"
+      "watchlist": "Danh Sách Theo Dõi",
+      "backtesting": "Đang backtest...",
     }
   }
 } as const;

@@ -130,15 +130,15 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
           )}
           {isLimitOrStop && (
             <InputNumber size="small" style={{ width: 76 }} min={0} step={0.00001}
-              value={price} onChange={(v) => setPrice(v)} placeholder="Price" />
+              value={price} onChange={(v) => setPrice(v)} placeholder={t(TRADING_PRICE_KEY)} />
           )}
         </div>
         {/* Row 2: SL | TP | Submit */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={labelSm}>SL</span>
+          <span style={labelSm}>{t(TRADING_STOP_LOSS_KEY)}</span>
           <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
             value={stopLoss} onChange={(v) => setStopLoss(v)} placeholder="0.00000" />
-          <span style={labelSm}>TP</span>
+          <span style={labelSm}>{t(TRADING_TAKE_PROFIT_KEY)}</span>
           <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
             value={takeProfit} onChange={(v) => setTakeProfit(v)} placeholder="0.00000" />
           <Button type="primary" size="small" loading={submitting}

@@ -51,6 +51,14 @@ const StrategyWorkspace = {
       "ai": "AI 助手",
       "aiAssist": "AIアシスタント",
       "backtest": "バックテスト",
+      "design": "デザイン",
+      "history": "履歴",
+      "noBacktest": "バックテスト結果なし",
+      "noCode": "コードがまだ生成されていません",
+      "noHistory": "取引履歴なし",
+      "noResults": "バックテスト結果なし",
+      "positions": "ポジション",
+      "templates": "戦略リスト",
       "backtestCompleted": "完了",
       "backtestEmpty": "バックテストを実行して結果を表示",
       "backtestError": "バックテストに失敗",
@@ -96,7 +104,8 @@ const StrategyWorkspace = {
       "validateBeforeSave": "保存前にコードを検証してください",
       "validateFailed": "検証に失敗しました",
       "validatePass": "検証に成功しました",
-      "watchlist": "ウォッチリスト"
+      "watchlist": "ウォッチリスト",
+      "backtesting": "バックテスト中...",
     }
   }
 } as const;

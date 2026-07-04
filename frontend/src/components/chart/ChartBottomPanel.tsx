@@ -44,38 +44,38 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
           fontSize: 11, color: 'var(--ant-color-text-secondary)', userSelect: 'none',
         }}
       >
-        <span>▲ {t('strategy.workspace.positions', 'Positions')} ({positions.length})</span>
+        <span>▲ {t('strategy.workspace.positions')} ({positions.length})</span>
         <span>·</span>
-        <span>{t('strategy.workspace.history', 'History')} ({recentTrades.length})</span>
+        <span>{t('strategy.workspace.history')} ({recentTrades.length})</span>
         <span>·</span>
-        <span>{t('strategy.gen.backtest', 'Backtest')}</span>
+        <span>{t('strategy.workspace.backtest')}</span>
       </div>
     );
   }
 
   const positionColumns = [
     {
-      title: t('trading.symbol', 'Symbol'), dataIndex: 'symbol', key: 'symbol',
+      title: t('trading.symbol'), dataIndex: 'symbol', key: 'symbol',
       width: 100, render: (v: string) => <span style={{ fontSize: 11, fontWeight: 600 }}>{v}</span>,
     },
     {
-      title: t('trading.side', 'Side'), dataIndex: 'side', key: 'side', width: 60,
+      title: t('trading.side'), dataIndex: 'side', key: 'side', width: 60,
       render: (v: string) => <Tag color={v === 'buy' ? 'success' : 'error'} style={{ fontSize: 10 }}>{v?.toUpperCase()}</Tag>,
     },
     {
-      title: t('trading.volume', 'Volume'), dataIndex: 'volume', key: 'volume', width: 70,
+      title: t('trading.volume'), dataIndex: 'volume', key: 'volume', width: 70,
       render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 2)}</span>,
     },
     {
-      title: t('trading.entryPrice', 'Entry'), dataIndex: 'openPrice', key: 'openPrice', width: 90,
+      title: t('trading.entryPrice'), dataIndex: 'openPrice', key: 'openPrice', width: 90,
       render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 5)}</span>,
     },
     {
-      title: t('trading.markPrice', 'Mark'), dataIndex: 'markPrice', key: 'markPrice', width: 90,
+      title: t('trading.markPrice'), dataIndex: 'markPrice', key: 'markPrice', width: 90,
       render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 5)}</span>,
     },
     {
-      title: t('trading.pnl', 'P&L'), dataIndex: 'profit', key: 'profit', width: 80,
+      title: t('trading.pnl'), dataIndex: 'profit', key: 'profit', width: 80,
       render: (v: number) => <span style={{ fontSize: 11, fontWeight: 600, color: v >= 0 ? '#3fb950' : '#f85149' }}>
         {v >= 0 ? '+' : ''}{fmtNum(v, 2)}
       </span>,
@@ -91,29 +91,29 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
 
   const historyColumns = [
     {
-      title: t('trading.symbol', 'Symbol'), dataIndex: 'symbol', key: 'symbol',
+      title: t('trading.symbol'), dataIndex: 'symbol', key: 'symbol',
       width: 100, render: (v: string) => <span style={{ fontSize: 11, fontWeight: 600 }}>{v}</span>,
     },
     {
-      title: t('trading.side', 'Side'), dataIndex: 'side', key: 'side', width: 60,
+      title: t('trading.side'), dataIndex: 'side', key: 'side', width: 60,
       render: (v: string) => <Tag color={v === 'buy' || v === 'long' ? 'success' : 'error'} style={{ fontSize: 10 }}>{v?.toUpperCase()}</Tag>,
     },
     {
-      title: t('trading.volume', 'Volume'), dataIndex: 'volume', key: 'volume', width: 70,
+      title: t('trading.volume'), dataIndex: 'volume', key: 'volume', width: 70,
       render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 2)}</span>,
     },
     {
-      title: t('trading.closePrice', 'Close'), dataIndex: 'closePrice', key: 'closePrice', width: 90,
+      title: t('trading.closePrice'), dataIndex: 'closePrice', key: 'closePrice', width: 90,
       render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 5)}</span>,
     },
     {
-      title: t('trading.pnl', 'P&L'), dataIndex: 'profit', key: 'profit', width: 80,
+      title: t('trading.pnl'), dataIndex: 'profit', key: 'profit', width: 80,
       render: (v: number) => <span style={{ fontSize: 11, fontWeight: 600, color: v >= 0 ? '#3fb950' : '#f85149' }}>
         {v >= 0 ? '+' : ''}{fmtNum(v, 2)}
       </span>,
     },
     {
-      title: t('trading.closeTime', 'Time'), dataIndex: 'closeTime', key: 'closeTime', width: 100,
+      title: t('trading.closeTime'), dataIndex: 'closeTime', key: 'closeTime', width: 100,
       render: (v: string) => <span style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>{fmtTime(v)}</span>,
     },
   ];
@@ -137,7 +137,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
             borderBottom: tab === 'positions' ? '2px solid #58a6ff' : 'none',
           }}
         >
-          {t('strategy.workspace.positions', 'Positions')}
+          {t('strategy.workspace.positions')}
           {positions.length > 0 && <span style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>({positions.length})</span>}
         </div>
         <div
@@ -149,7 +149,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
             borderBottom: tab === 'history' ? '2px solid #58a6ff' : 'none',
           }}
         >
-          {t('strategy.workspace.history', 'History')}
+          {t('strategy.workspace.history')}
           {recentTrades.length > 0 && <span style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>({recentTrades.length})</span>}
         </div>
         <div
@@ -161,7 +161,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
             borderBottom: tab === 'backtest' ? '2px solid #58a6ff' : 'none',
           }}
         >
-          {t('strategy.gen.backtest', 'Backtest')}
+          {t('strategy.workspace.backtest')}
         </div>
         <div style={{ flex: 1 }} />
         <div
@@ -185,7 +185,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
               style={{ fontSize: 11 }}
             />
           ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.workspace.noOpenPositions', 'No open positions')}
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.workspace.noOpenPositions')}
               style={{ margin: '20px 0' }} />
           )
         ) : tab === 'history' ? (
@@ -199,7 +199,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
               style={{ fontSize: 11 }}
             />
           ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.workspace.noHistory', 'No trade history')}
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.workspace.noHistory')}
               style={{ margin: '20px 0' }} />
           )
         ) : (
@@ -207,11 +207,11 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
             {backtestMetrics ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                 {[
-                  { label: t('strategy.gen.return', 'Return'), value: backtestMetrics.totalReturn != null ? `${backtestMetrics.totalReturn.toFixed(1)}%` : '—', color: (backtestMetrics.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149' },
-                  { label: t('strategy.gen.maxDrawdown', 'Max DD'), value: backtestMetrics.maxDrawdown != null ? `${backtestMetrics.maxDrawdown.toFixed(1)}%` : '—', color: '#f85149' },
-                  { label: t('strategy.gen.sharpe', 'Sharpe'), value: backtestMetrics.sharpeRatio != null ? backtestMetrics.sharpeRatio.toFixed(2) : '—' },
-                  { label: t('strategy.gen.winRate', 'Win Rate'), value: backtestMetrics.winRate != null ? `${backtestMetrics.winRate.toFixed(1)}%` : '—' },
-                  { label: t('strategy.gen.totalTrades', 'Trades'), value: backtestMetrics.totalTrades != null ? String(backtestMetrics.totalTrades) : '—' },
+                  { label: t('strategy.gen.return'), value: backtestMetrics.totalReturn != null ? `${backtestMetrics.totalReturn.toFixed(1)}%` : '—', color: (backtestMetrics.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149' },
+                  { label: t('strategy.gen.maxDrawdown'), value: backtestMetrics.maxDrawdown != null ? `${backtestMetrics.maxDrawdown.toFixed(1)}%` : '—', color: '#f85149' },
+                  { label: t('strategy.gen.sharpe'), value: backtestMetrics.sharpeRatio != null ? backtestMetrics.sharpeRatio.toFixed(2) : '—' },
+                  { label: t('strategy.gen.winRate'), value: backtestMetrics.winRate != null ? `${backtestMetrics.winRate.toFixed(1)}%` : '—' },
+                  { label: t('strategy.gen.totalTrades'), value: backtestMetrics.totalTrades != null ? String(backtestMetrics.totalTrades) : '—' },
                 ].map((m, i) => (
                   <div key={i} style={{ background: 'var(--ant-color-fill-quaternary)', borderRadius: 6, padding: '8px 12px', textAlign: 'center' }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: m.color }}>{m.value}</div>
@@ -220,7 +220,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
                 ))}
               </div>
             ) : (
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.workspace.noBacktest', 'No backtest results')} />
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.workspace.noResults')} />
             )}
           </div>
         )}

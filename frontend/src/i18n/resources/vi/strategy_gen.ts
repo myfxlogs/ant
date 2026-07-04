@@ -18,10 +18,14 @@ const StrategyGen = {
         "return": "Lợi Nhuận",
         "sharpe": "夏普",
         "trades": "Giao Dịch",
-        "winRate": "Thắng"
+        "winRate": "Thắng",
+        "totalReturn": "Lợi Nhuận",
+        "totalTrades": "Số Giao Dịch"
       },
       "backtestMsg": "Tác vụ backtest đã tạo",
       "backtestStarted": "Backtest Đã Bắt Đầu",
+      "backtest": "Backtest",
+      "backtesting": "Đang backtest...",
       "clarifyTitle": "Một vài chi tiết cần xác nhận:",
       "done": "Xong",
       "generating": "Đang Tạo...",

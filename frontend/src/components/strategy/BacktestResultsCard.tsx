@@ -32,10 +32,10 @@ export default function BacktestResultsCard({ metrics, status }: Props) {
     return (
       <div style={{ margin: '8px 10px', background: 'var(--ant-color-bg-base)', border: '1px solid var(--ant-color-border)', borderRadius: 8, padding: 12 }}>
         <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', marginBottom: 8 }}>
-          {t('strategy.workspace.backtest', 'Backtest')}
+          {t('strategy.workspace.backtest')}
         </div>
         <div style={{ textAlign: 'center', padding: 12, color: 'var(--ant-color-text-secondary)', fontSize: 12 }}>
-          {t('strategy.gen.backtesting', 'Backtesting...')}
+          {t('strategy.gen.backtesting')}
         </div>
       </div>
     );
@@ -45,26 +45,26 @@ export default function BacktestResultsCard({ metrics, status }: Props) {
     return (
       <div style={{ margin: '8px 10px', background: 'var(--ant-color-bg-base)', border: '1px solid var(--ant-color-border)', borderRadius: 8, padding: 12 }}>
         <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', marginBottom: 8 }}>
-          {t('strategy.workspace.backtest', 'Backtest')}
+          {t('strategy.workspace.backtest')}
         </div>
         <div style={{ textAlign: 'center', padding: 12, color: 'var(--ant-color-text-tertiary)', fontSize: 12 }}>
-          {t('strategy.workspace.noResults', 'No backtest results')}
+          {t('strategy.workspace.noResults')}
         </div>
       </div>
     );
   }
 
   const cells = [
-    { label: t('strategy.gen.totalReturn', 'Return'), value: fmtPct(metrics.totalReturn), positive: (metrics.totalReturn ?? 0) >= 0 },
-    { label: t('strategy.gen.maxDrawdown', 'Max DD'), value: fmtPct(metrics.maxDrawdown), positive: false },
-    { label: t('strategy.gen.sharpe', 'Sharpe'), value: fmtNum(metrics.sharpeRatio), positive: (metrics.sharpeRatio ?? 0) >= 1 },
-    { label: t('strategy.gen.winRate', 'Win Rate'), value: fmtPct(metrics.winRate), positive: undefined },
+    { label: t('strategy.gen.totalReturn'), value: fmtPct(metrics.totalReturn), positive: (metrics.totalReturn ?? 0) >= 0 },
+    { label: t('strategy.gen.maxDrawdown'), value: fmtPct(metrics.maxDrawdown), positive: false },
+    { label: t('strategy.gen.sharpe'), value: fmtNum(metrics.sharpeRatio), positive: (metrics.sharpeRatio ?? 0) >= 1 },
+    { label: t('strategy.gen.winRate'), value: fmtPct(metrics.winRate), positive: undefined },
   ];
 
   return (
     <div style={{ margin: '8px 10px', background: 'var(--ant-color-bg-base)', border: '1px solid var(--ant-color-border)', borderRadius: 8, padding: 12 }}>
       <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', marginBottom: 8 }}>
-        {t('strategy.workspace.backtest', 'Backtest Results')}
+        {t('strategy.workspace.backtestResultsLabel')}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
         {cells.map((c, i) => (

@@ -104,7 +104,7 @@ export default function WorkspaceToolbar({
           />
           <SummaryChip label={t(TRADING_FREE_MARGIN_KEY)} value={`$${fmtCompact(accountInfo!.freeMargin)}`} />
           {accountInfo!.marginLevel > 0 && (
-            <SummaryChip label={t('trading.marginLevel', 'Margin Lvl')} value={`${accountInfo!.marginLevel.toFixed(0)}%`} />
+            <SummaryChip label={t('trading.marginLevel')} value={`${accountInfo!.marginLevel.toFixed(0)}%`} />
           )}
         </div>
       )}
@@ -120,15 +120,15 @@ export default function WorkspaceToolbar({
       {/* Account Metadata — SummaryChip cards for consistent rounded borders */}
       {selectedAccount && (
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <SummaryChip label={t('trading.platform', 'Platform')} value={selectedAccount.mtType}
+          <SummaryChip label={t('trading.platform')} value={selectedAccount.mtType}
             color={selectedAccount.mtType === 'MT5' ? '#1677ff' : '#fa8c16'} />
-          <SummaryChip label={t('trading.broker', 'Broker')} value={selectedAccount.brokerCompany} />
-          <SummaryChip label={t('trading.server', 'Server')} value={selectedAccount.brokerServer} />
-          <SummaryChip label={t('trading.permission', 'Permission')}
-            value={selectedAccount.isInvestor ? t('trading.investor', 'Investor') : t('trading.master', 'Master')}
+          <SummaryChip label={t('trading.broker')} value={selectedAccount.brokerCompany} />
+          <SummaryChip label={t('trading.server')} value={selectedAccount.brokerServer} />
+          <SummaryChip label={t('trading.permission')}
+            value={selectedAccount.isInvestor ? t('trading.investor') : t('trading.master')}
             color={selectedAccount.isInvestor ? '#fa8c16' : '#52c41a'} />
           {selectedAccount.leverage && selectedAccount.leverage > 0 && (
-            <SummaryChip label={t('trading.leverage', 'Leverage')} value={`1:${selectedAccount.leverage}`} />
+            <SummaryChip label={t('trading.leverage')} value={`1:${selectedAccount.leverage}`} />
           )}
         </div>
       )}
