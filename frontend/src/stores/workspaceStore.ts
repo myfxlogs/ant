@@ -9,24 +9,32 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 export type CenterTab = 'design' | 'code' | 'backtest';
 export type RightTab = 'chat' | 'code';
 
+// Persisted to localStorage so code survives page refresh during a session.
+
 interface WorkspaceState {
   accountId: string;
   symbol: string;
   timeframe: string;
+  centerTab: CenterTab;
   rightTab: RightTab;
   leftSidebarCollapsed: boolean;
   bottomPanelCollapsed: boolean;
   quickTradeCollapsed: boolean;
   positionsPanelVisible: boolean;
+  currentCode: string;
+  currentCodeName: string;
   _hasHydrated: boolean;
   setAccountId: (v: string) => void;
   setSymbol: (v: string) => void;
   setTimeframe: (v: string) => void;
+  setCenterTab: (v: CenterTab) => void;
   setRightTab: (v: RightTab) => void;
   setLeftSidebarCollapsed: (v: boolean) => void;
   setBottomPanelCollapsed: (v: boolean) => void;
   setQuickTradeCollapsed: (v: boolean) => void;
   setPositionsPanelVisible: (v: boolean) => void;
+  setCurrentCode: (v: string) => void;
+  setCurrentCodeName: (v: string) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>()(
@@ -35,20 +43,26 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       accountId: '',
       symbol: '',
       timeframe: '1h',
+      centerTab: 'design',
       rightTab: 'chat',
       leftSidebarCollapsed: true,
       bottomPanelCollapsed: true,
       quickTradeCollapsed: true,
       positionsPanelVisible: false,
+      currentCode: '',
+      currentCodeName: '',
       _hasHydrated: false,
       setAccountId: (v) => set({ accountId: v }),
       setSymbol: (v) => set({ symbol: v }),
       setTimeframe: (v) => set({ timeframe: v }),
+      setCenterTab: (v) => set({ centerTab: v }),
       setRightTab: (v) => set({ rightTab: v }),
       setLeftSidebarCollapsed: (v) => set({ leftSidebarCollapsed: v }),
       setBottomPanelCollapsed: (v) => set({ bottomPanelCollapsed: v }),
       setQuickTradeCollapsed: (v) => set({ quickTradeCollapsed: v }),
       setPositionsPanelVisible: (v) => set({ positionsPanelVisible: v }),
+      setCurrentCode: (v) => set({ currentCode: v }),
+      setCurrentCodeName: (v) => set({ currentCodeName: v }),
     }),
     {
       name: 'ant-workspace-v5',
@@ -57,6 +71,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         accountId: state.accountId,
         symbol: state.symbol,
         timeframe: state.timeframe,
+        centerTab: state.centerTab,
         rightTab: state.rightTab,
         leftSidebarCollapsed: state.leftSidebarCollapsed,
         bottomPanelCollapsed: state.bottomPanelCollapsed,

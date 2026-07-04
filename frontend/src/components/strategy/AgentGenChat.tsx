@@ -56,8 +56,7 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
     },
     onPythonSource: (code: string) => {
       setHasCode(true);
-      onApply(code);
-      updateCurrentTurn({ hasCode: true });
+      updateCurrentTurn({ hasCode: true, generatedCode: code });
     },
     onCompileError: (err: string) => updateCurrentTurn({ compileError: err }),
     onBacktestError: (err: string) => {

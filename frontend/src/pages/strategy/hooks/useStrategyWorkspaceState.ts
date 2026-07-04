@@ -188,6 +188,23 @@ export function useStrategyWorkspaceState() {
   // AI workflow — AI drawer is always available
   const ai = useAIWorkflow(codeCtx, btCtx.metrics, () => setRightTab('chat'));
 
+  // Sync code to workspaceStore for persistence across page refresh
+  useEffect(() => {
+    wsStore.setCurrentCode(codeCtx.code);
+  }, [codeCtx.code]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const name = codeCtx.loadedTemplate?.name || '';
+    wsStore.setCurrentCodeName(name);
+  }, [codeCtx.loadedTemplate]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Restore code from workspaceStore on mount (after hydration)
+  useEffect(() => {
+    if (wsStore._hasHydrated && wsStore.currentCode && !codeCtx.code) {
+      codeCtx.setCode(wsStore.currentCode);
+    }
+  }, [wsStore._hasHydrated]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Reset backtest state when code changes (AI apply, template load, manual edit).
   useEffect(() => {
     btCtx.resetStatus();

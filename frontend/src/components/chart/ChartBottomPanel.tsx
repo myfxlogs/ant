@@ -10,6 +10,8 @@ interface Props {
   onClosePosition: (ticket: number, volume?: number) => void;
   collapsed: boolean;
   onToggleCollapsed: () => void;
+  backtestMetrics?: { totalReturn?: number; maxDrawdown?: number; sharpeRatio?: number; winRate?: number; totalTrades?: number } | null;
+  backtestStatus?: string;
 }
 
 function fmtNum(v: number | undefined, d = 2): string {
@@ -27,9 +29,9 @@ function fmtTime(ts?: string): string {
   return `${mm}-${dd} ${hh}:${min}`;
 }
 
-export default function ChartBottomPanel({ positions, recentTrades, onClosePosition, collapsed, onToggleCollapsed }: Props) {
+export default function ChartBottomPanel({ positions, recentTrades, onClosePosition, collapsed, onToggleCollapsed, backtestMetrics, backtestStatus }: Props) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'positions' | 'history'>('positions');
+  const [tab, setTab] = useState<'positions' | 'history' | 'backtest'>('positions');
 
   if (collapsed) {
     return (
@@ -45,6 +47,8 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
         <span>▲ {t('strategy.workspace.positions', 'Positions')} ({positions.length})</span>
         <span>·</span>
         <span>{t('strategy.workspace.history', 'History')} ({recentTrades.length})</span>
+        <span>·</span>
+        <span>{t('strategy.gen.backtest', 'Backtest')}</span>
       </div>
     );
   }
@@ -148,6 +152,17 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
           {t('strategy.workspace.history', 'History')}
           {recentTrades.length > 0 && <span style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>({recentTrades.length})</span>}
         </div>
+        <div
+          onClick={() => setTab('backtest')}
+          style={{
+            padding: '0 16px', height: '100%', display: 'flex', alignItems: 'center', gap: 6,
+            cursor: 'pointer', fontSize: 12, fontWeight: 600,
+            color: tab === 'backtest' ? '#58a6ff' : 'var(--ant-color-text-secondary)',
+            borderBottom: tab === 'backtest' ? '2px solid #58a6ff' : 'none',
+          }}
+        >
+          {t('strategy.gen.backtest', 'Backtest')}
+        </div>
         <div style={{ flex: 1 }} />
         <div
           onClick={onToggleCollapsed}
@@ -173,7 +188,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
             <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.workspace.noOpenPositions', 'No open positions')}
               style={{ margin: '20px 0' }} />
           )
-        ) : (
+        ) : tab === 'history' ? (
           recentTrades.length > 0 ? (
             <Table
               dataSource={recentTrades}
@@ -187,6 +202,27 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
             <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.workspace.noHistory', 'No trade history')}
               style={{ margin: '20px 0' }} />
           )
+        ) : (
+          <div style={{ padding: 16 }}>
+            {backtestMetrics ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                {[
+                  { label: t('strategy.gen.return', 'Return'), value: backtestMetrics.totalReturn != null ? `${backtestMetrics.totalReturn.toFixed(1)}%` : '—', color: (backtestMetrics.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149' },
+                  { label: t('strategy.gen.maxDrawdown', 'Max DD'), value: backtestMetrics.maxDrawdown != null ? `${backtestMetrics.maxDrawdown.toFixed(1)}%` : '—', color: '#f85149' },
+                  { label: t('strategy.gen.sharpe', 'Sharpe'), value: backtestMetrics.sharpeRatio != null ? backtestMetrics.sharpeRatio.toFixed(2) : '—' },
+                  { label: t('strategy.gen.winRate', 'Win Rate'), value: backtestMetrics.winRate != null ? `${backtestMetrics.winRate.toFixed(1)}%` : '—' },
+                  { label: t('strategy.gen.totalTrades', 'Trades'), value: backtestMetrics.totalTrades != null ? String(backtestMetrics.totalTrades) : '—' },
+                ].map((m, i) => (
+                  <div key={i} style={{ background: 'var(--ant-color-fill-quaternary)', borderRadius: 6, padding: '8px 12px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: m.color }}>{m.value}</div>
+                    <div style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>{m.label}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.workspace.noBacktest', 'No backtest results')} />
+            )}
+          </div>
         )}
       </div>
     </div>
