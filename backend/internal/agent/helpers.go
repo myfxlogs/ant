@@ -45,6 +45,24 @@ func stripMarkdownFences(s string) string {
 	return strings.TrimSpace(s)
 }
 
+// stripThinkBlocks removes [THINK]...[/THINK] blocks from LLM output.
+// These are reasoning traces that should never appear in extracted code.
+func stripThinkBlocks(s string) string {
+	for {
+		start := strings.Index(s, "[THINK]")
+		if start < 0 {
+			break
+		}
+		end := strings.Index(s[start:], "[/THINK]")
+		if end < 0 {
+			s = s[:start]
+			break
+		}
+		s = s[:start] + s[start+end+len("[/THINK]"):]
+	}
+	return strings.TrimSpace(s)
+}
+
 func buildBridgeChanges(orig, bridged *mql2go.CoverageResult) []*antv1.SemanticChange {
 	var changes []*antv1.SemanticChange
 

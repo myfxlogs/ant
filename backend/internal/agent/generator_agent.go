@@ -80,9 +80,10 @@ func (g *Generator) runAgentLoop(
 	}
 
 	// ── Extract code and send final result ──
-	pythonSource := stripMarkdownFences(connectai.ExtractCode(raw))
+	cleaned := stripThinkBlocks(raw)
+	pythonSource := stripMarkdownFences(connectai.ExtractCode(cleaned))
 	if pythonSource == "" {
-		pythonSource = raw
+		pythonSource = stripMarkdownFences(cleaned)
 	}
 	result.PythonSource = pythonSource
 
