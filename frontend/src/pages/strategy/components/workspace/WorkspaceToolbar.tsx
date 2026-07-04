@@ -1,4 +1,5 @@
-import { Select, Tag } from 'antd';
+import { Select, Tag, Tooltip } from 'antd';
+import { RiseOutlined, FallOutlined, BankOutlined, AimOutlined, KeyOutlined, EyeOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import {
   TRADING_BALANCE_KEY, TRADING_EQUITY_KEY, TRADING_PROFIT_KEY,
@@ -23,6 +24,17 @@ interface Props {
   saveStatus?: 'modified' | 'saved' | 'none';
 }
 
+const groupStyle: React.CSSProperties = {
+  padding: '5px 10px 7px', borderRadius: 10,
+  background: 'rgba(255,255,255,0.72)', border: '1px solid rgba(0,0,0,0.05)',
+  boxShadow: '0 1px 3px rgba(15,23,42,0.04)',
+};
+
+const groupLabelStyle: React.CSSProperties = {
+  fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const,
+  color: '#64748b', marginBottom: 4, lineHeight: 1,
+};
+
 function fmtCompact(v: number | undefined | null): string {
   if (v == null) return '—';
   const abs = Math.abs(v);
@@ -31,11 +43,18 @@ function fmtCompact(v: number | undefined | null): string {
   return v.toFixed(2);
 }
 
-function Stat({ label, value, color }: { label: string; value: string; color?: string }) {
+function SummaryChip({ label, value, color, icon }: { label: string; value: string | number; color?: string; icon?: React.ReactNode }) {
   return (
-    <span style={{ fontSize: 11, color: 'var(--ant-color-text-secondary)', whiteSpace: 'nowrap' }}>
-      {label} <span style={{ fontWeight: 600, fontSize: 12, color: color || 'var(--ant-color-text)' }}>{value}</span>
-    </span>
+    <div style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      padding: '4px 12px', borderRadius: 8,
+      background: 'rgba(255,255,255,0.8)', border: '1px solid rgba(0,0,0,0.06)',
+    }}>
+      <span style={{ fontSize: 9, color: '#8c8c8c', fontWeight: 500, textTransform: 'uppercase' }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: color || '#262626', display: 'flex', alignItems: 'center', gap: 4 }}>
+        {icon}{value}
+      </span>
+    </div>
   );
 }
 
@@ -47,71 +66,96 @@ export default function WorkspaceToolbar({
 }: Props) {
   const { t } = useTranslation();
   const hasData = accountInfo != null;
-  const profitColor = accountInfo && accountInfo.profit >= 0 ? '#3fb950' : '#f85149';
-  const selectedAccount = accounts?.find((a) => a.id === accountId);
+  const profitColor = accountInfo && accountInfo.profit >= 0 ? '#26a69a' : '#ef5350';
+  const selectedAccount = (accounts || []).find(a => a.id === accountId);
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 8,
-      height: 44, flexShrink: 0, padding: '0 10px',
-      background: 'var(--ant-color-bg-container)',
-      borderBottom: '1px solid var(--ant-color-border)',
+      display: 'flex', alignItems: 'flex-end', gap: 10, flexWrap: 'wrap',
+      padding: '8px 12px 10px', background: '#f8fafc',
+      borderBottom: '1px solid #e8e8e8', flexShrink: 0,
     }}>
-      <Select size="small" style={{ minWidth: 160, width: 220, maxWidth: '30vw' }}
-        value={accountId || undefined} onChange={onAccountChange} disabled={busy}
-        placeholder={t(SELECT_ACCOUNT_KEY)} showSearch optionFilterProp="label"
-        notFoundContent={t(NO_ACCOUNTS_KEY)}
-        options={(accounts || []).map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))} />
+      {/* Watchlist group */}
+      <div style={{ ...groupStyle, flex: '0 0 auto' }}>
+        <div style={groupLabelStyle}>{t('strategy.workspace.watchlist', 'Watchlist')}</div>
+        <Select size="small" style={{ minWidth: 120, width: 220, maxWidth: '36vw' }}
+          value={accountId || undefined} onChange={onAccountChange} disabled={busy}
+          placeholder={t(SELECT_ACCOUNT_KEY)} showSearch optionFilterProp="label"
+          notFoundContent={t(NO_ACCOUNTS_KEY)}
+          options={(accounts || []).map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))} />
+        <SymbolPicker accountId={accountId} value={symbol} onChange={onSymbolChange} style={{ width: 120, marginTop: 4 }} />
+      </div>
 
-      <SymbolPicker accountId={accountId} value={symbol} onChange={onSymbolChange} style={{ width: 120 }} />
-
+      {/* Strategy name + save status */}
       {strategyName && (
-        <span style={{ fontSize: 11, color: 'var(--ant-color-text-secondary)', whiteSpace: 'nowrap', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {strategyName}
-        </span>
+        <div style={{ ...groupStyle, flex: '0 0 auto' }}>
+          <div style={groupLabelStyle}>{t('strategy.workspace.strategy', 'Strategy')}</div>
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#262626', display: 'flex', alignItems: 'center', gap: 4 }}>
+            {saveStatus === 'modified' && <span style={{ color: '#f0a020' }}>●</span>}
+            {saveStatus === 'saved' && <span style={{ color: '#3fb950' }}>✓</span>}
+            {strategyName}
+          </span>
+        </div>
       )}
-      {saveStatus === 'modified' && <span style={{ fontSize: 10, color: '#f0a020' }}>●</span>}
-      {saveStatus === 'saved' && <span style={{ fontSize: 10, color: '#3fb950' }}>✓</span>}
 
-      <div style={{ flex: 1 }} />
-
+      {/* Account Summary — SummaryChip cards */}
       {hasData && (
-        <>
-          <Stat label={t(TRADING_BALANCE_KEY)} value={`$${fmtCompact(accountInfo!.balance)}`} />
-          <Stat label={t(TRADING_EQUITY_KEY)} value={`$${fmtCompact(accountInfo!.equity)}`}
-            color={accountInfo!.equity >= accountInfo!.balance ? '#3fb950' : undefined} />
-          <Stat label={t(TRADING_PROFIT_KEY)}
-            value={`${accountInfo!.profit >= 0 ? '+' : ''}$${fmtCompact(Math.abs(accountInfo!.profit))}`}
-            color={profitColor} />
-          <Stat label={t(TRADING_FREE_MARGIN_KEY)} value={`$${fmtCompact(accountInfo!.freeMargin)}`} />
-        </>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <SummaryChip label={t(TRADING_BALANCE_KEY)} value={`$${fmtCompact(accountInfo!.balance)}`} />
+          <SummaryChip label={t(TRADING_EQUITY_KEY)} value={`$${fmtCompact(accountInfo!.equity)}`} />
+          <SummaryChip
+            label={t(TRADING_PROFIT_KEY)}
+            value={`$${fmtCompact(Math.abs(accountInfo!.profit))}`}
+            color={profitColor}
+            icon={accountInfo!.profit >= 0
+              ? <RiseOutlined style={{ fontSize: 11 }} />
+              : <FallOutlined style={{ fontSize: 11 }} />}
+          />
+          <SummaryChip label={t(TRADING_FREE_MARGIN_KEY)} value={`$${fmtCompact(accountInfo!.freeMargin)}`} />
+          {accountInfo!.marginLevel > 0 && (
+            <SummaryChip label={t('trading.marginLevel', 'Margin Lvl')} value={`${accountInfo!.marginLevel.toFixed(0)}%`} />
+          )}
+        </div>
       )}
 
+      {/* Open Positions */}
       <div onClick={onTogglePositionsPanel} role="button" tabIndex={0}
         onKeyUp={e => e.key === 'Enter' && onTogglePositionsPanel?.()}
         style={{ cursor: 'pointer' }}>
-        <Stat label={t(TRADING_POSITIONS_KEY)} value={positionCount != null ? String(positionCount) : '0'}
-          color={positionCount != null && positionCount > 0 ? '#58a6ff' : undefined} />
+        <SummaryChip label={t(TRADING_POSITIONS_KEY)} value={positionCount != null ? String(positionCount) : '0'}
+          color={positionCount != null && positionCount > 0 ? '#1677ff' : undefined} />
       </div>
 
+      {/* Account Metadata — platform, broker, server, mode, leverage */}
       {selectedAccount && (
-        <>
-          <Tag style={{ fontSize: 10, margin: 0 }}>{selectedAccount.mtType}</Tag>
-          <span style={{ fontSize: 11, color: 'var(--ant-color-text-secondary)', whiteSpace: 'nowrap' }}>{selectedAccount.brokerCompany}</span>
-          <span style={{ fontSize: 11, color: 'var(--ant-color-text-tertiary)', whiteSpace: 'nowrap' }}>{selectedAccount.brokerServer}</span>
-          <span style={{ fontSize: 11, color: selectedAccount.isDisabled ? '#f85149' : '#3fb950', whiteSpace: 'nowrap' }}>
-            {selectedAccount.isDisabled ? '⛔' : '✅'}
-          </span>
-          {selectedAccount.leverage != null && (
-            <span style={{ fontSize: 11, color: 'var(--ant-color-text-secondary)', whiteSpace: 'nowrap' }}>
-              1:{selectedAccount.leverage}
-            </span>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+          <Tag color={selectedAccount.mtType === 'MT5' ? 'blue' : 'orange'} style={{ fontSize: 10, margin: 0, lineHeight: '18px' }}>
+            {selectedAccount.mtType}
+          </Tag>
+          <Tag icon={<BankOutlined style={{ fontSize: 10 }} />} color="default" style={{ fontSize: 10, margin: 0, lineHeight: '18px' }}>
+            {selectedAccount.brokerCompany}
+          </Tag>
+          <Tag icon={<AimOutlined style={{ fontSize: 10 }} />} color="default" style={{ fontSize: 10, margin: 0, lineHeight: '18px' }}>
+            {selectedAccount.brokerServer}
+          </Tag>
+          <Tag icon={selectedAccount.isInvestor
+              ? <EyeOutlined style={{ fontSize: 10 }} />
+              : <KeyOutlined style={{ fontSize: 10 }} />}
+            color={selectedAccount.isInvestor ? 'orange' : 'green'}
+            style={{ fontSize: 10, margin: 0, lineHeight: '18px' }}>
+            {selectedAccount.isInvestor ? t('trading.investor', 'Investor') : t('trading.master', 'Master')}
+          </Tag>
+          {selectedAccount.leverage && selectedAccount.leverage > 0 && (
+            <SummaryChip label={t('trading.leverage', 'Leverage')} value={`1:${selectedAccount.leverage}`} />
           )}
-        </>
+        </div>
       )}
 
+      {/* Spacer */}
+      <div style={{ flex: 1 }} />
+
       {mtError && (
-        <span style={{ fontSize: 11, color: 'var(--ant-color-error)', marginLeft: 8 }}>⚠ {mtError}</span>
+        <span style={{ fontSize: 11, color: 'var(--ant-color-error)' }}>⚠ {mtError}</span>
       )}
     </div>
   );
