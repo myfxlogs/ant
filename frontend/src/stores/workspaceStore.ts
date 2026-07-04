@@ -7,13 +7,13 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 export type CenterTab = 'design' | 'code' | 'backtest';
-export type RightTab = 'results' | 'quicktrade';
+export type RightTab = 'chat' | 'results' | 'code';
 
 interface WorkspaceState {
   accountId: string;
   symbol: string;
   timeframe: string;
-  aiDrawerOpen: boolean;
+  rightTab: RightTab;
   leftSidebarCollapsed: boolean;
   bottomPanelCollapsed: boolean;
   quickTradeCollapsed: boolean;
@@ -22,7 +22,7 @@ interface WorkspaceState {
   setAccountId: (v: string) => void;
   setSymbol: (v: string) => void;
   setTimeframe: (v: string) => void;
-  setAiDrawerOpen: (v: boolean) => void;
+  setRightTab: (v: RightTab) => void;
   setLeftSidebarCollapsed: (v: boolean) => void;
   setBottomPanelCollapsed: (v: boolean) => void;
   setQuickTradeCollapsed: (v: boolean) => void;
@@ -35,16 +35,16 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       accountId: '',
       symbol: '',
       timeframe: '1h',
-      aiDrawerOpen: false,
+      rightTab: 'chat',
       leftSidebarCollapsed: true,
-      bottomPanelCollapsed: false,
+      bottomPanelCollapsed: true,
       quickTradeCollapsed: true,
       positionsPanelVisible: false,
       _hasHydrated: false,
       setAccountId: (v) => set({ accountId: v }),
       setSymbol: (v) => set({ symbol: v }),
       setTimeframe: (v) => set({ timeframe: v }),
-      setAiDrawerOpen: (v) => set({ aiDrawerOpen: v }),
+      setRightTab: (v) => set({ rightTab: v }),
       setLeftSidebarCollapsed: (v) => set({ leftSidebarCollapsed: v }),
       setBottomPanelCollapsed: (v) => set({ bottomPanelCollapsed: v }),
       setQuickTradeCollapsed: (v) => set({ quickTradeCollapsed: v }),
@@ -57,7 +57,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         accountId: state.accountId,
         symbol: state.symbol,
         timeframe: state.timeframe,
-        aiDrawerOpen: state.aiDrawerOpen,
+        rightTab: state.rightTab,
         leftSidebarCollapsed: state.leftSidebarCollapsed,
         bottomPanelCollapsed: state.bottomPanelCollapsed,
         quickTradeCollapsed: state.quickTradeCollapsed,

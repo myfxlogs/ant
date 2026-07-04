@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react';
-import { Button, Drawer, Tag, Typography, Select, Tooltip } from 'antd';
-import { HistoryOutlined, SettingOutlined, FileTextOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { Button, Drawer, Tag, Select, Tooltip } from 'antd';
+import { HistoryOutlined, SettingOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import StrategyList from './StrategyList';
 import StrategyChatHistory from './StrategyChatHistory';
@@ -92,15 +92,13 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Header */}
-      <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--ant-color-border)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, background: 'var(--ant-color-bg-container)' }}>
-        <ThunderboltOutlined style={{ color: '#d29922', fontSize: 16 }} />
-        <Typography.Text strong style={{ fontSize: 14 }}>Strategy AI</Typography.Text>
+      {/* Compact sub-bar: model selector + action buttons (no title — tab bar handles that) */}
+      <div style={{ padding: '4px 8px', borderBottom: '1px solid var(--ant-color-border)', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, background: 'var(--ant-color-bg-container)' }}>
         {symbolTag}
         {modelOptions.length > 0 && (
           <Select size="small" value={selectedModel || undefined}
             onChange={async (v) => { setSelectedModel(v); const [pid, model] = v.split('|'); try { await aiApi.setPrimary({ providerId: pid, model }); } catch {} }}
-            style={{ width: 160, fontSize: 12 }} options={modelOptions} placeholder={t(SELECT_MODEL_KEY)} />
+            style={{ width: 140, fontSize: 11 }} options={modelOptions} placeholder={t(SELECT_MODEL_KEY)} />
         )}
         <div style={{ flex: 1 }} />
         <Tooltip title={t('strategy.aiChat.historyTab', 'History')}>

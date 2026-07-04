@@ -2,6 +2,7 @@ import { agentGatewayClient } from './connect';
 import type { AgentGenerateStrategyChunk, StrategyPlan } from '../gen/ant/v1/agent_gateway_pb';
 import { AgentGenerateStrategyRequestSchema } from '../gen/ant/v1/agent_gateway_pb';
 import { create } from '@bufbuild/protobuf';
+import i18n from '@/i18n';
 
 export interface AgentGenInput {
   message: string;
@@ -55,6 +56,7 @@ export function agentGenerateStrategyStream(
         planMode: input.planMode || '',
         planFeedback: input.planFeedback || '',
         confirmedPlan: input.confirmedPlan,
+        locale: i18n.language || 'en',
         backtestConfig: input.backtestConfig ? {
           symbol: input.backtestConfig.symbol || '',
           timeframe: input.backtestConfig.timeframe || '',

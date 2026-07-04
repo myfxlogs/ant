@@ -97,7 +97,7 @@ export function useStrategyWorkspaceState() {
   const qt = useQuickTradeData(accountId, symbol);
 
   // Layout
-  const aiDrawerOpen = wsStore.aiDrawerOpen; const setAiDrawerOpen = wsStore.setAiDrawerOpen;
+  const rightTab = wsStore.rightTab; const setRightTab = wsStore.setRightTab;
   const leftSidebarCollapsed = wsStore.leftSidebarCollapsed; const setLeftSidebarCollapsed = wsStore.setLeftSidebarCollapsed;
   const bottomPanelCollapsed = wsStore.bottomPanelCollapsed; const setBottomPanelCollapsed = wsStore.setBottomPanelCollapsed;
   const quickTradeCollapsed = wsStore.quickTradeCollapsed; const setQuickTradeCollapsed = wsStore.setQuickTradeCollapsed;
@@ -186,7 +186,7 @@ export function useStrategyWorkspaceState() {
   }, [accountId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // AI workflow — AI drawer is always available
-  const ai = useAIWorkflow(codeCtx, btCtx.metrics, () => setAiDrawerOpen(true));
+  const ai = useAIWorkflow(codeCtx, btCtx.metrics, () => setRightTab('chat'));
 
   // Reset backtest state when code changes (AI apply, template load, manual edit).
   useEffect(() => {
@@ -245,7 +245,7 @@ export function useStrategyWorkspaceState() {
     },
     gate: { loading: btCtx.gate.loading, gates: btCtx.gate.gates, summary: btCtx.gate.summary, error: btCtx.gate.error, run: btCtx.gate.run },
     quickTrade: { positionCount: qt.positionCount, allPositions: qt.allPositions, qtPositions: qt.qtPositions, qtRecentTrades: qt.qtRecentTrades, handleClosePosition: qt.handleClosePosition },
-    layout: { aiDrawerOpen, setAiDrawerOpen, leftSidebarCollapsed, setLeftSidebarCollapsed, bottomPanelCollapsed, setBottomPanelCollapsed, quickTradeCollapsed, setQuickTradeCollapsed, positionsPanelVisible, setPositionsPanelVisible },
+    layout: { rightTab, setRightTab, leftSidebarCollapsed, setLeftSidebarCollapsed, bottomPanelCollapsed, setBottomPanelCollapsed, quickTradeCollapsed, setQuickTradeCollapsed, positionsPanelVisible, setPositionsPanelVisible },
     history: {
       drawerOpen: historyDrawerOpen, runId: historyRunId,
       open: handleOpenHistory, close: handleCloseHistory,

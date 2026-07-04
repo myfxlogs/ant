@@ -4,7 +4,6 @@ import { CHART_ERROR_KEY, SELECT_SYMBOL_HINT_KEY, TITLE_KEY } from '@/gen/ant/v1
 import { useStrategyWorkspaceState } from './hooks/useStrategyWorkspaceState';
 import WorkspaceTemplateManager from './components/workspace/WorkspaceTemplateManager';
 import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
-import StrategyChat from '@/components/strategy/StrategyChat';
 import BacktestResultsCard from '@/components/strategy/BacktestResultsCard';
 import QuickTradePanel from '@/components/chart/QuickTradePanel';
 import ChartBottomPanel from '@/components/chart/ChartBottomPanel';
@@ -15,6 +14,7 @@ import BacktestRunDrawer from '@/components/strategy/BacktestRunDrawer';
 import BacktestHistoryModal from './components/workspace/BacktestHistoryModal';
 import WorkspaceErrorBoundary from './components/workspace/WorkspaceErrorBoundary';
 import MobileGuard from './components/workspace/MobileGuard';
+import RightPanel from './components/workspace/RightPanel';
 import { useWorkspaceSession } from './hooks/useWorkspaceSession';
 import { SaveTemplateWrapper } from './WorkspaceLayout';
 
@@ -37,12 +37,7 @@ export default function StrategyWorkspacePage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 112px)' }}>
-      {/* Title bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0 12px' }}>
-        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{t(TITLE_KEY, 'Strategy Workspace')}</h2>
-      </div>
-
-      {/* ═══ TOP TOOLBAR ═══ */}
+      {/* ═══ TOP TOOLBAR (44px single line) ═══ */}
       <WorkspaceToolbar
         accounts={ws.account.activeAccounts} accountId={ws.account.accountId} onAccountChange={ws.account.handleAccountChange}
         symbol={ws.account.symbol} onSymbolChange={ws.account.setSymbol}
@@ -52,17 +47,22 @@ export default function StrategyWorkspacePage() {
         onTogglePositionsPanel={() => ws.layout.setPositionsPanelVisible(!ws.layout.positionsPanelVisible)}
       />
 
-      {/* ═══ BODY: Two-column + AI drawer overlay ═══ */}
-      <div style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden', minHeight: 0, position: 'relative' }}>
+      {/* ═══ BODY: Three-column layout ═══ */}
+      <div style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden', minHeight: 0 }}>
 
-        {/* ── LEFT COLUMN: slide-out drawer (like AI chat) ── */}
+        {/* ── LEFT COLUMN: Strategy list + backtest summary (260px, collapsible) ── */}
         <div style={{
           width: 260, minWidth: 260, flexShrink: 0, borderRight: COL_BORDER,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
           marginLeft: ws.layout.leftSidebarCollapsed ? -260 : 0,
           transition: 'margin-left 0.25s ease',
+          background: 'var(--ant-color-bg-container)',
         }}>
-          <div style={{ padding: 12, flexShrink: 0 }}>
+          {/* Section: Strategy templates */}
+          <div style={{ padding: '8px 12px 2px', fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, flexShrink: 0 }}>
+            📋 {t('strategy.workspace.templates', 'Strategies')}
+          </div>
+          <div style={{ padding: '4px 12px', flexShrink: 0 }}>
             <WorkspaceTemplateManager
               templates={ws.templates.list}
               loading={ws.templates.loading}
@@ -72,18 +72,20 @@ export default function StrategyWorkspacePage() {
             />
           </div>
 
+          {/* Section: Backtest summary */}
           <div style={{ flexShrink: 0 }}>
             <BacktestResultsCard metrics={ws.backtest.metrics} status={ws.backtest.status} />
           </div>
 
           <div style={{ flex: 1 }} />
 
+          {/* Section: Symbol & Timeframe */}
           <div style={{ borderTop: COL_BORDER, padding: 10, flexShrink: 0 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', marginBottom: 6 }}>
-              {t('strategy.workspace.symbol', 'Symbol')}
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
+              🔍 {t('strategy.workspace.symbol', 'Symbol')}
             </div>
             <SymbolPicker accountId={ws.account.accountId} value={ws.account.symbol} onChange={ws.account.setSymbol} style={{ width: '100%' }} />
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', margin: '8px 0 4px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, margin: '8px 0 4px' }}>
               {t('strategy.workspace.timeframe', 'Timeframe')}
             </div>
             <Select size="small" style={{ width: '100%' }} value={ws.account.timeframe} onChange={ws.account.setTimeframe}
@@ -91,7 +93,7 @@ export default function StrategyWorkspacePage() {
           </div>
         </div>
 
-        {/* Left sidebar toggle button (vertical, left edge of chart) */}
+        {/* Left sidebar toggle button */}
         <div
           onClick={() => ws.layout.setLeftSidebarCollapsed(!ws.layout.leftSidebarCollapsed)}
           style={{
@@ -108,9 +110,8 @@ export default function StrategyWorkspacePage() {
           Strategies
         </div>
 
-        {/* ── CENTER COLUMN: Chart (flex:1) + Bottom Panel (fixed) ── */}
+        {/* ── CENTER COLUMN: Chart full height + bottom panel ── */}
         <div style={{ flex: '1 1 0', minWidth: 0, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          {/* Chart area */}
           <div style={{ flex: '1 1 0', minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}>
             {ws.account.symbol ? (
               <WorkspaceErrorBoundary fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--ant-color-text-tertiary)' }}>{t(CHART_ERROR_KEY)}</div>}>
@@ -126,17 +127,16 @@ export default function StrategyWorkspacePage() {
               </div>
             )}
 
-            {/* Quick Trade floating overlay (top-right, 210px) — collapsible */}
+            {/* Quick Trade floating overlay (top-right) */}
             {ws.account.symbol && (
               <div style={{
-                position: 'absolute', top: 48, right: ws.layout.aiDrawerOpen ? 496 : 40, zIndex: 10,
-                width: 210, transition: 'right 0.25s ease',
+                position: 'absolute', top: 48, right: 12, zIndex: 10,
+                width: 210,
               }}>
                 <div style={{
                   background: 'var(--ant-color-bg-elevated)', border: '1px solid var(--ant-color-border)',
                   borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.4)', overflow: 'hidden',
                 }}>
-                  {/* Title bar — always visible, click to toggle */}
                   <div
                     onClick={() => ws.layout.setQuickTradeCollapsed(!ws.layout.quickTradeCollapsed)}
                     style={{
@@ -152,7 +152,6 @@ export default function StrategyWorkspacePage() {
                       {ws.layout.quickTradeCollapsed ? '▼' : '▲'}
                     </span>
                   </div>
-                  {/* Order form — only when expanded */}
                   {!ws.layout.quickTradeCollapsed && (
                     <div style={{ padding: 10 }}>
                       <QuickTradePanel
@@ -169,46 +168,9 @@ export default function StrategyWorkspacePage() {
                 </div>
               </div>
             )}
-
-            {/* AI Chat toggle button (vertical, right edge) */}
-            <div
-              onClick={() => ws.layout.setAiDrawerOpen(!ws.layout.aiDrawerOpen)}
-              style={{
-                position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)',
-                width: 28, height: 80, background: 'var(--ant-color-bg-elevated)',
-                border: '1px solid var(--ant-color-border)', borderRight: 'none',
-                borderRadius: '8px 0 0 8px', cursor: 'pointer', zIndex: 20,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                color: ws.layout.aiDrawerOpen ? '#58a6ff' : 'var(--ant-color-text-tertiary)',
-                fontSize: 11, writingMode: 'vertical-rl', letterSpacing: 2,
-              }}
-            >
-              AI Chat
-            </div>
-
-            {/* AI Chat Drawer (480px slide-out, overlays chart) */}
-            <div style={{
-              position: 'absolute', right: 0, top: 0, bottom: 0, width: 480, zIndex: 15,
-              background: 'var(--ant-color-bg-container)', borderLeft: COL_BORDER,
-              display: 'flex', flexDirection: 'column',
-              transform: ws.layout.aiDrawerOpen ? 'translateX(0)' : 'translateX(100%)',
-              transition: 'transform 0.25s ease',
-              boxShadow: ws.layout.aiDrawerOpen ? '-8px 0 24px rgba(0,0,0,0.3)' : 'none',
-            }}>
-              <StrategyChat
-                symbol={ws.account.symbol}
-                timeframe={ws.account.timeframe}
-                sessionId={sessionId}
-                accountId={ws.account.accountId}
-                onApplyCode={(code) => ws.code.setCode(code)}
-                onValidateResult={(result) => ws.backtest.runner.handleValidationResult(result)}
-                onRunBacktest={ws.backtest.run}
-                backtestStatus={ws.backtest.status}
-              />
-            </div>
           </div>
 
-          {/* Bottom panel: Positions + History (MT-style) */}
+          {/* Bottom panel: Positions + History */}
           <ChartBottomPanel
             positions={ws.quickTrade.allPositions}
             recentTrades={ws.quickTrade.qtRecentTrades}
@@ -217,6 +179,26 @@ export default function StrategyWorkspacePage() {
             onToggleCollapsed={() => ws.layout.setBottomPanelCollapsed(!ws.layout.bottomPanelCollapsed)}
           />
         </div>
+
+        {/* ── RIGHT COLUMN: Tabbed panel (380px) — Chat / Results / Code ── */}
+        <RightPanel
+          tab={ws.layout.rightTab}
+          onTabChange={ws.layout.setRightTab}
+          symbol={ws.account.symbol}
+          timeframe={ws.account.timeframe}
+          sessionId={sessionId}
+          accountId={ws.account.accountId}
+          onApplyCode={(code) => ws.code.setCode(code)}
+          onValidateResult={(result) => ws.backtest.runner.handleValidationResult(result)}
+          onRunBacktest={ws.backtest.run}
+          backtestStatus={ws.backtest.status}
+          metrics={ws.backtest.metrics}
+          backtestStatus2={ws.backtest.status}
+          code={ws.code.code}
+          onCodeChange={ws.code.setCode}
+          onSaveCode={() => ws.code.setSaveModalOpen(true)}
+          onRunBacktest2={ws.backtest.run}
+        />
       </div>
 
       <SaveTemplateWrapper ws={ws} />

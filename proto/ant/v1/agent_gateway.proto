@@ -272,6 +272,7 @@ message AgentGenerateStrategyRequest {
   string plan_mode = 6;                    // "plan" (default) | "generate"
   string plan_feedback = 7;                // user modification feedback for plan revision
   StrategyPlan confirmed_plan = 8;         // user-confirmed plan, used when plan_mode = "generate"
+  string locale = 9;                       // Accept-Language header value for i18n prompts
 }
 
 message AgentGenerateStrategyChunk {
