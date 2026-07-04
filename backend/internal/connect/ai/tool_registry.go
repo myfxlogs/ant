@@ -95,7 +95,7 @@ func (t *readKlineTool) Schema() systemai.ToolDefinition {
 		Type: "function",
 		Function: systemai.ToolDefFunction{
 			Name:        "read_kline",
-			Description: "K线数据统计。返回指定品种和时间周期的bar数量、数据起止日期。用于在生成代码前检查数据是否充足，或回测失败时排查数据问题。",
+			Description: "读取K线数据并返回市场分析。包含：总bar数、日期范围、当前价格、EMA20/EMA50、趋势方向、近期高低价、波动率、最近10根K线OHLC。用于分析行情、判断趋势、检查数据充足性。",
 			Parameters: map[string]any{
 				"type": "object",
 				"properties": map[string]any{
@@ -118,20 +118,120 @@ func (t *readKlineTool) Run(ctx context.Context, in ToolInput) ToolOutput {
 			"message": fmt.Sprintf("数据库中无 %s %s 的数据。请如实告诉用户：该品种暂无K线数据。不要编造任何日期或数量。", in.Symbol, in.Timeframe),
 		}}
 	}
+
 	first := int64(bars[0].CloseTsUnixMs)
 	last := int64(bars[len(bars)-1].CloseTsUnixMs)
+
+	// ── Build market analysis ──
+	// Last 10 bars for the LLM to "see" recent price action.
+	type barSummary struct {
+		T int64   `json:"t"`
+		O float64 `json:"o"`
+		H float64 `json:"h"`
+		L float64 `json:"l"`
+		C float64 `json:"c"`
+	}
+	recent := bars
+	if len(recent) > 10 {
+		recent = recent[len(recent)-10:]
+	}
+	recentBars := make([]barSummary, len(recent))
+	for i, b := range recent {
+		recentBars[i] = barSummary{
+			T: int64(b.CloseTsUnixMs),
+			O: b.Open.InexactFloat64(),
+			H: b.High.InexactFloat64(),
+			L: b.Low.InexactFloat64(),
+			C: b.Close.InexactFloat64(),
+		}
+	}
+
+	// Compute EMA(20) and EMA(50) for trend detection.
+	ema20 := ema(bars, 20)
+	ema50 := ema(bars, 50)
+	currentPrice := recentBars[len(recentBars)-1].C
+
+	// Trend detection: EMA position + recent slope.
+	trend := "ranging"
+	trendStrength := "neutral"
+	if ema20 > 0 && ema50 > 0 {
+		if ema20 > ema50 && currentPrice > ema20 {
+			trend = "上升趋势 (uptrend)"
+			trendStrength = "bullish"
+		} else if ema20 < ema50 && currentPrice < ema20 {
+			trend = "下降趋势 (downtrend)"
+			trendStrength = "bearish"
+		}
+	}
+
+	// Recent price range (last 50 bars).
+	lookback := bars
+	if len(lookback) > 50 {
+		lookback = lookback[len(lookback)-50:]
+	}
+	high, low := lookback[0].High.InexactFloat64(), lookback[0].Low.InexactFloat64()
+	for _, b := range lookback {
+		if h := b.High.InexactFloat64(); h > high {
+			high = h
+		}
+		if l := b.Low.InexactFloat64(); l < low {
+			low = l
+		}
+	}
+	rangePct := (high - low) / low * 100
+
+	// Volatility (mean absolute return %, last 20 bars).
+	volLookback := bars
+	if len(volLookback) > 20 {
+		volLookback = volLookback[len(volLookback)-20:]
+	}
+	var sumAbsReturn float64
+	for i := 1; i < len(volLookback); i++ {
+		r := (volLookback[i].Close.InexactFloat64() - volLookback[i-1].Close.InexactFloat64()) / volLookback[i-1].Close.InexactFloat64() * 100
+		if r < 0 {
+			r = -r
+		}
+		sumAbsReturn += r
+	}
+	meanVol := sumAbsReturn / float64(len(volLookback)-1)
+
 	return ToolOutput{
 		Success: true,
 		Output: map[string]any{
-			"symbol":    in.Symbol,
-			"timeframe": in.Timeframe,
-			"bars":      len(bars),
-			"first_ms":  first,
-			"last_ms":   last,
-			"first_utc": time.UnixMilli(first).UTC().Format("2006-01-02 15:04:05"),
-			"last_utc":  time.UnixMilli(last).UTC().Format("2006-01-02 15:04:05"),
+			"symbol":          in.Symbol,
+			"timeframe":       in.Timeframe,
+			"total_bars":      len(bars),
+			"date_from":       time.UnixMilli(first).UTC().Format("2006-01-02"),
+			"date_to":         time.UnixMilli(last).UTC().Format("2006-01-02"),
+			"current_price":   fmt.Sprintf("%.5f", currentPrice),
+			"ema_20":          fmt.Sprintf("%.5f", ema20),
+			"ema_50":          fmt.Sprintf("%.5f", ema50),
+			"trend":           trend,
+			"trend_strength":  trendStrength,
+			"recent_high":     fmt.Sprintf("%.5f", high),
+			"recent_low":      fmt.Sprintf("%.5f", low),
+			"recent_range_pct": fmt.Sprintf("%.2f", rangePct),
+			"volatility_pct":  fmt.Sprintf("%.3f", meanVol),
+			"recent_bars":     recentBars,
 		},
 	}
+}
+
+// ema computes the Exponential Moving Average for the last N bars.
+func ema(bars []repository.KlineBar, period int) float64 {
+	if len(bars) < period {
+		return 0
+	}
+	closes := make([]float64, len(bars))
+	for i, b := range bars {
+		closes[i] = b.Close.InexactFloat64()
+	}
+	k := 2.0 / float64(period+1)
+	result := closes[0]
+	for i := 1; i < len(closes); i++ {
+		result = closes[i]*k + result*(1-k)
+	}
+	return result
 }
 
 // ── read_backtest_log tool ──
