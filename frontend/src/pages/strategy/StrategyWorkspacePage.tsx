@@ -1,17 +1,14 @@
-import { Grid, Select } from 'antd';
+import { Grid } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { CHART_ERROR_KEY, SELECT_SYMBOL_HINT_KEY, TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import { CHART_ERROR_KEY, SELECT_SYMBOL_HINT_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { useStrategyWorkspaceState } from './hooks/useStrategyWorkspaceState';
 import WorkspaceTemplateManager from './components/workspace/WorkspaceTemplateManager';
 import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
 import BacktestResultsCard from '@/components/strategy/BacktestResultsCard';
-import QuickTradePanel from '@/components/chart/QuickTradePanel';
 import ChartBottomPanel from '@/components/chart/ChartBottomPanel';
-import SymbolPicker from '@/components/chart/SymbolPicker';
 import { useAuthStore } from '@/stores/authStore';
 import PriceChart from '@/components/chart/PriceChart';
-import BacktestRunDrawer from '@/components/strategy/BacktestRunDrawer';
-import BacktestHistoryModal from './components/workspace/BacktestHistoryModal';
+import BacktestHistoryDrawer from './components/workspace/BacktestHistoryDrawer';
 import WorkspaceErrorBoundary from './components/workspace/WorkspaceErrorBoundary';
 import MobileGuard from './components/workspace/MobileGuard';
 import RightPanel from './components/workspace/RightPanel';
@@ -19,13 +16,12 @@ import { useWorkspaceSession } from './hooks/useWorkspaceSession';
 import { SaveTemplateWrapper } from './WorkspaceLayout';
 
 const COL_BORDER = '1px solid var(--ant-color-border)';
-const TIMEFRAMES = ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w'];
 
 export default function StrategyWorkspacePage() {
   const { t } = useTranslation();
   const screens = Grid.useBreakpoint();
   const ws = useStrategyWorkspaceState();
-  const userId = useAuthStore(s => s.user?.id);
+  const userId = useAuthStore(s => s.user?.id) ?? '';
   const { sessionId } = useWorkspaceSession(
     userId,
     ws.account.symbol,
@@ -45,6 +41,8 @@ export default function StrategyWorkspacePage() {
         busy={ws.backtest.submitting || ws.tuning.running}
         positionsCount={ws.quickTrade.allPositions.length}
         onTogglePositionsPanel={() => ws.layout.setPositionsPanelVisible(!ws.layout.positionsPanelVisible)}
+        strategyName={ws.templates.list.find((t: any) => t.id === ws.templates.selectedId)?.name}
+        saveStatus={ws.code.code && ws.code.lastValidatedCode && ws.code.code !== ws.code.lastValidatedCode ? 'modified' : ws.code.lastSavedId ? 'saved' : 'none'}
       />
 
       {/* ═══ BODY: Three-column layout ═══ */}
@@ -78,19 +76,6 @@ export default function StrategyWorkspacePage() {
           </div>
 
           <div style={{ flex: 1 }} />
-
-          {/* Section: Symbol & Timeframe */}
-          <div style={{ borderTop: COL_BORDER, padding: 10, flexShrink: 0 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
-              🔍 {t('strategy.workspace.symbol', 'Symbol')}
-            </div>
-            <SymbolPicker accountId={ws.account.accountId} value={ws.account.symbol} onChange={ws.account.setSymbol} style={{ width: '100%' }} />
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, margin: '8px 0 4px' }}>
-              {t('strategy.workspace.timeframe', 'Timeframe')}
-            </div>
-            <Select size="small" style={{ width: '100%' }} value={ws.account.timeframe} onChange={ws.account.setTimeframe}
-              options={TIMEFRAMES.map(tf => ({ value: tf, label: tf.toUpperCase() }))} />
-          </div>
         </div>
 
         {/* Left sidebar toggle button */}
@@ -127,47 +112,6 @@ export default function StrategyWorkspacePage() {
               </div>
             )}
 
-            {/* Quick Trade floating overlay (top-right) */}
-            {ws.account.symbol && (
-              <div style={{
-                position: 'absolute', top: 48, right: 12, zIndex: 10,
-                width: 210,
-              }}>
-                <div style={{
-                  background: 'var(--ant-color-bg-elevated)', border: '1px solid var(--ant-color-border)',
-                  borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.4)', overflow: 'hidden',
-                }}>
-                  <div
-                    onClick={() => ws.layout.setQuickTradeCollapsed(!ws.layout.quickTradeCollapsed)}
-                    style={{
-                      padding: '8px 12px', cursor: 'pointer', userSelect: 'none',
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      fontSize: 12, fontWeight: 700, color: 'var(--ant-color-text)',
-                      borderBottom: ws.layout.quickTradeCollapsed ? 'none' : '1px solid var(--ant-color-border)',
-                      background: 'var(--ant-color-bg-layout)',
-                    }}
-                  >
-                    <span>⚡ Quick Trade</span>
-                    <span style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>
-                      {ws.layout.quickTradeCollapsed ? '▼' : '▲'}
-                    </span>
-                  </div>
-                  {!ws.layout.quickTradeCollapsed && (
-                    <div style={{ padding: 10 }}>
-                      <QuickTradePanel
-                        accountId={ws.account.accountId} symbol={ws.account.symbol}
-                        accountMeta={ws.account.selectedAccountMeta}
-                        allPositions={[]}
-                        positions={[]}
-                        recentTrades={[]}
-                        onClosePosition={ws.quickTrade.handleClosePosition}
-                        onToggleAllPositions={() => ws.layout.setBottomPanelCollapsed(false)}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Bottom panel: Positions + History */}
@@ -190,20 +134,24 @@ export default function StrategyWorkspacePage() {
           accountId={ws.account.accountId}
           onApplyCode={(code) => { ws.code.setCode(code); ws.layout.setRightTab('code'); }}
           onValidateResult={(result) => ws.backtest.runner.handleValidationResult(result)}
-          onRunBacktest={ws.backtest.run}
-          backtestStatus={ws.backtest.status}
-          metrics={ws.backtest.metrics}
-          backtestStatus2={ws.backtest.status}
           code={ws.code.code}
           onCodeChange={ws.code.setCode}
           onSaveCode={() => ws.code.setSaveModalOpen(true)}
-          onRunBacktest2={ws.backtest.run}
+          backtest={{ metrics: ws.backtest.metrics, status: ws.backtest.status, run: ws.backtest.run }}
+          quickTrade={{
+            accountId: ws.account.accountId,
+            symbol: ws.account.symbol,
+            accountMeta: ws.account.selectedAccountMeta,
+            collapsed: ws.layout.quickTradeCollapsed,
+            onToggle: () => ws.layout.setQuickTradeCollapsed(!ws.layout.quickTradeCollapsed),
+            onClosePosition: ws.quickTrade.handleClosePosition,
+          }}
         />
       </div>
 
       <SaveTemplateWrapper ws={ws} />
-      <BacktestHistoryModal
-        open={ws.history.modalOpen}
+      <BacktestHistoryDrawer
+        open={ws.history.modalOpen || ws.history.drawerOpen}
         runs={ws.history.runs}
         loading={ws.history.loading}
         page={ws.history.page}
@@ -217,12 +165,8 @@ export default function StrategyWorkspacePage() {
         onDeleteRun={ws.history.onDeleteRun}
         onBatchDelete={ws.history.onBatchDelete}
         onRefresh={ws.history.onRefresh}
-        onClose={ws.history.closeModal}
-      />
-      <BacktestRunDrawer
-        open={ws.history.drawerOpen} runId={ws.history.runId}
-        onClose={ws.history.close}
-        onCancel={ws.history.close}
+        onClose={ws.history.runId ? ws.history.close : ws.history.closeModal}
+        runId={ws.history.runId}
       />
     </div>
   );

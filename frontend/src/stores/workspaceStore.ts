@@ -7,7 +7,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 export type CenterTab = 'design' | 'code' | 'backtest';
-export type RightTab = 'chat' | 'results' | 'code';
+export type RightTab = 'chat' | 'code';
 
 interface WorkspaceState {
   accountId: string;

@@ -16,6 +16,8 @@ interface Props {
   busy?: boolean;
   positionsCount?: number; onTogglePositionsPanel?: () => void;
   mtError?: string | null;
+  strategyName?: string;
+  saveStatus?: 'modified' | 'saved' | 'none';
 }
 
 function fmtCompact(v: number | undefined | null): string {
@@ -38,7 +40,7 @@ export default function WorkspaceToolbar({
   accounts, accountId, onAccountChange, busy,
   symbol, onSymbolChange, accountInfo, positionCount,
   positionsCount, onTogglePositionsPanel,
-  mtError,
+  mtError, strategyName, saveStatus,
 }: Props) {
   const { t } = useTranslation();
   const hasData = accountInfo != null;
@@ -61,6 +63,14 @@ export default function WorkspaceToolbar({
         options={(accounts || []).map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))} />
 
       <SymbolPicker accountId={accountId} value={symbol} onChange={onSymbolChange} style={{ width: 120 }} />
+
+      {strategyName && (
+        <span style={{ fontSize: 11, color: 'var(--ant-color-text-secondary)', whiteSpace: 'nowrap', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {strategyName}
+        </span>
+      )}
+      {saveStatus === 'modified' && <span style={{ fontSize: 10, color: '#f0a020' }}>●</span>}
+      {saveStatus === 'saved' && <span style={{ fontSize: 10, color: '#3fb950' }}>✓</span>}
 
       <div style={{ flex: 1 }} />
 

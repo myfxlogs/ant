@@ -5,8 +5,9 @@ import { PlayCircleOutlined, SaveOutlined, CopyOutlined, EditOutlined } from '@a
 import type { RightTab } from '@/stores/workspaceStore';
 import StrategyChat from '@/components/strategy/StrategyChat';
 import BacktestResultsCard from '@/components/strategy/BacktestResultsCard';
+import QuickTradePanel from '@/components/chart/QuickTradePanel';
 
-interface BacktestMetrics {
+export interface BacktestMetrics {
   totalReturn?: number;
   annualReturn?: number;
   maxDrawdown?: number;
@@ -14,6 +15,21 @@ interface BacktestMetrics {
   winRate?: number;
   totalTrades?: number;
   equityCurve?: Array<{ time: number; equity: number }>;
+}
+
+export interface BacktestState {
+  metrics: BacktestMetrics | null;
+  status: string;
+  run: () => void;
+}
+
+export interface QuickTradeState {
+  accountId: string;
+  symbol: string;
+  accountMeta?: { brokerCompany: string; brokerServer: string; mtType: 'MT4' | 'MT5'; leverage: number } | null;
+  collapsed: boolean;
+  onToggle: () => void;
+  onClosePosition?: (ticket: number, volume?: number) => void;
 }
 
 interface Props {
@@ -27,23 +43,21 @@ interface Props {
   accountId?: string;
   onApplyCode: (code: string) => void;
   onValidateResult?: (result: import('@/client/codeAssist').ValidateExtendedResult) => void;
-  onRunBacktest?: () => void;
-  backtestStatus?: string;
-
-  // Results
-  metrics: BacktestMetrics | null;
-  backtestStatus2: string;
 
   // Code
   code: string;
   onCodeChange: (code: string) => void;
   onSaveCode: () => void;
-  onRunBacktest2: () => void;
+
+  // Backtest (single object — no duplication)
+  backtest: BacktestState;
+
+  // QuickTrade (bottom fixed)
+  quickTrade?: QuickTradeState;
 }
 
 const TABS: { key: RightTab; icon: string; labelKey: string; fallback: string }[] = [
   { key: 'chat', icon: '💬', labelKey: 'strategy.workspace.tabChat', fallback: 'Chat' },
-  { key: 'results', icon: '📊', labelKey: 'strategy.workspace.tabResults', fallback: 'Results' },
   { key: 'code', icon: '📄', labelKey: 'strategy.workspace.tabCode', fallback: 'Code' },
 ];
 
@@ -97,15 +111,9 @@ export default function RightPanel(props: Props) {
             accountId={props.accountId}
             onApplyCode={props.onApplyCode}
             onValidateResult={props.onValidateResult}
-            onRunBacktest={props.onRunBacktest}
-            backtestStatus={props.backtestStatus}
+            onRunBacktest={props.backtest.run}
+            backtestStatus={props.backtest.status}
           />
-        </div>
-      )}
-
-      {tab === 'results' && (
-        <div style={{ flex: 1, overflowY: 'auto', padding: 12 }}>
-          <BacktestResultsCard metrics={props.metrics} status={props.backtestStatus2} />
         </div>
       )}
 
@@ -130,7 +138,7 @@ export default function RightPanel(props: Props) {
             </Tooltip>
             <Tooltip title={t('strategy.workspace.runBacktest', 'Run Backtest')}>
               <Button size="small" type="primary" icon={<PlayCircleOutlined />}
-                onClick={props.onRunBacktest2}
+                onClick={props.backtest.run}
                 style={{ background: '#3fb950', borderColor: '#3fb950' }}>
                 {t('strategy.gen.backtest', 'Backtest')}
               </Button>
@@ -170,6 +178,44 @@ export default function RightPanel(props: Props) {
             <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 40 }}>
               <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}
                 description={t('strategy.workspace.noCode', 'No code generated yet')} />
+            </div>
+          )}
+
+          {/* Backtest results — merged into Code Tab bottom */}
+          <div style={{ flexShrink: 0, borderTop: '1px solid var(--ant-color-border)' }}>
+            <BacktestResultsCard metrics={props.backtest.metrics} status={props.backtest.status} />
+          </div>
+        </div>
+      )}
+
+      {/* QuickTrade — fixed bottom, doesn't block chart */}
+      {props.quickTrade && props.quickTrade.symbol && (
+        <div style={{ flexShrink: 0, borderTop: '1px solid var(--ant-color-border)' }}>
+          <div
+            onClick={props.quickTrade.onToggle}
+            style={{
+              padding: '6px 12px', cursor: 'pointer', userSelect: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              fontSize: 11, fontWeight: 700, color: 'var(--ant-color-text)',
+              background: 'var(--ant-color-bg-layout)',
+            }}
+          >
+            <span>⚡ Quick Trade</span>
+            <span style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>
+              {props.quickTrade.collapsed ? '▼' : '▲'}
+            </span>
+          </div>
+          {!props.quickTrade.collapsed && (
+            <div style={{ padding: 8, maxHeight: 300, overflowY: 'auto' }}>
+              <QuickTradePanel
+                accountId={props.quickTrade.accountId}
+                symbol={props.quickTrade.symbol}
+                accountMeta={props.quickTrade.accountMeta}
+                allPositions={[]}
+                positions={[]}
+                recentTrades={[]}
+                onClosePosition={props.quickTrade.onClosePosition}
+              />
             </div>
           )}
         </div>
