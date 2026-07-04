@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"anttrader/tools/mql2go"
+	systemai "anttrader/internal/service/systemai"
 )
 
 // analyzeStrategyTool lets the AI agent analyze MQL source code:
@@ -17,6 +18,19 @@ import (
 type analyzeStrategyTool struct{}
 
 func (t *analyzeStrategyTool) Name() string { return "analyze_strategy" }
+func (t *analyzeStrategyTool) Schema() systemai.ToolDefinition {
+	return systemai.ToolDefinition{
+		Type: "function",
+		Function: systemai.ToolDefFunction{
+			Name:        "analyze_strategy",
+			Description: "分析当前策略代码的编译状态、覆盖度和兼容性。返回：编译是否通过、覆盖度评分、盲区列表、参数列表、推荐操作。用于用户导入MQL代码后判断是否可直接在VM上运行。",
+			Parameters: map[string]any{
+				"type":       "object",
+				"properties": map[string]any{},
+			},
+		},
+	}
+}
 
 func (t *analyzeStrategyTool) Run(_ context.Context, in ToolInput) ToolOutput {
 	code := in.Code

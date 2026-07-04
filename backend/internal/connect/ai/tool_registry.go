@@ -11,6 +11,8 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/ai"
 	"anttrader/internal/repository"
+	systemai "anttrader/internal/service/systemai"
+	"anttrader/tools/mql2go"
 )
 
 // ── Tool interface ──
@@ -34,6 +36,8 @@ type ToolOutput struct {
 type Tool interface {
 	Name() string
 	Run(ctx context.Context, in ToolInput) ToolOutput
+	// Schema returns the JSON Schema definition for this tool (OpenAI function calling format).
+	Schema() systemai.ToolDefinition
 }
 
 // ── Tool Registry ──
@@ -42,6 +46,17 @@ type Tool interface {
 type ToolRegistry struct {
 	preTools []Tool     // tools the AI can request during planning/generation
 	tools    []Tool     // auto-run tools after code generation
+}
+
+// NewEmptyToolRegistry creates a registry with no pre-loaded tools.
+// Callers add tools via AddPreTool.
+func NewEmptyToolRegistry() *ToolRegistry {
+	return &ToolRegistry{}
+}
+
+// AddPreTool appends a tool to the pre-execution tool set.
+func (r *ToolRegistry) AddPreTool(t Tool) {
+	r.preTools = append(r.preTools, t)
 }
 
 // NewToolRegistry creates a registry with the standard tool set.
@@ -68,6 +83,16 @@ func (r *ToolRegistry) WireMemoryDB(execFn func(ctx context.Context, sql string,
 	sv := &saveStrategyTool{execFn: execFn}
 	ld := &loadStrategyTool{queryFn: queryFn}
 	r.preTools = append(r.preTools, rem, rec, ls, sv, ld)
+}
+
+// BuildToolSchemas returns JSON Schema definitions for all pre-execution tools.
+// These are injected into LLM requests so the model can use native tool_use.
+func (r *ToolRegistry) BuildToolSchemas() []systemai.ToolDefinition {
+	schemas := make([]systemai.ToolDefinition, len(r.preTools))
+	for i, t := range r.preTools {
+		schemas[i] = t.Schema()
+	}
+	return schemas
 }
 
 // PreToolNames returns the names of pre-execution tools the AI can request.
@@ -117,6 +142,19 @@ func (r *ToolRegistry) Execute(ctx context.Context, in ToolInput, send func(*ant
 type complianceTool struct{}
 
 func (t *complianceTool) Name() string { return "compliance_check" }
+func (t *complianceTool) Schema() systemai.ToolDefinition {
+	return systemai.ToolDefinition{
+		Type: "function",
+		Function: systemai.ToolDefFunction{
+			Name:        "compliance_check",
+			Description: "对Go策略代码进行结构性安全检查，扫描13条规则。返回通过/失败状态和具体问题列表。",
+			Parameters: map[string]any{
+				"type":       "object",
+				"properties": map[string]any{},
+			},
+		},
+	}
+}
 
 func (t *complianceTool) Run(_ context.Context, in ToolInput) ToolOutput {
 	// Run structural quality checks on Go strategy code.
@@ -144,6 +182,23 @@ func (t *complianceTool) Run(_ context.Context, in ToolInput) ToolOutput {
 type detectRegimeTool struct{ store repository.MarketDataStore }
 
 func (t *detectRegimeTool) Name() string { return "detect_regime" }
+func (t *detectRegimeTool) Schema() systemai.ToolDefinition {
+	return systemai.ToolDefinition{
+		Type: "function",
+		Function: systemai.ToolDefFunction{
+			Name:        "detect_regime",
+			Description: "检测当前品种的市场状态（趋势/震荡/高波动等）。需要指定品种和时间周期。",
+			Parameters: map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"symbol":    map[string]any{"type": "string", "description": "交易品种代码"},
+					"timeframe": map[string]any{"type": "string", "enum": []string{"1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"}},
+				},
+				"required": []string{"symbol", "timeframe"},
+			},
+		},
+	}
+}
 func (t *detectRegimeTool) Run(ctx context.Context, in ToolInput) ToolOutput {
 	if t.store == nil {
 		return ToolOutput{Success: false, Error: "market data store not wired"}
@@ -206,6 +261,23 @@ func detectRegimeFromBars(bars []repository.KlineBar) string {
 type readKlineTool struct{ repo repository.MarketDataStore }
 
 func (t *readKlineTool) Name() string { return "read_kline" }
+func (t *readKlineTool) Schema() systemai.ToolDefinition {
+	return systemai.ToolDefinition{
+		Type: "function",
+		Function: systemai.ToolDefFunction{
+			Name:        "read_kline",
+			Description: "K线数据统计。返回指定品种和时间周期的bar数量、数据起止日期。用于在生成代码前检查数据是否充足，或回测失败时排查数据问题。",
+			Parameters: map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"symbol":    map[string]any{"type": "string", "description": "交易品种代码，例如 BTCUSDm, XAUUSDm"},
+					"timeframe": map[string]any{"type": "string", "enum": []string{"1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"}},
+				},
+				"required": []string{"symbol", "timeframe"},
+			},
+		},
+	}
+}
 func (t *readKlineTool) Run(_ context.Context, in ToolInput) ToolOutput {
 	bars, err := t.repo.GetKlines(context.Background(), in.Symbol, "", in.Timeframe, nil, nil, 2000)
 	if err != nil {
@@ -238,6 +310,19 @@ func (t *readKlineTool) Run(_ context.Context, in ToolInput) ToolOutput {
 type readBacktestLogTool struct{ repo *repository.BacktestRunRepository }
 
 func (t *readBacktestLogTool) Name() string { return "read_backtest_log" }
+func (t *readBacktestLogTool) Schema() systemai.ToolDefinition {
+	return systemai.ToolDefinition{
+		Type: "function",
+		Function: systemai.ToolDefFunction{
+			Name:        "read_backtest_log",
+			Description: "读取最近一次回测的状态和错误信息。用于回测失败后查看具体原因。无需参数。",
+			Parameters: map[string]any{
+				"type":       "object",
+				"properties": map[string]any{},
+			},
+		},
+	}
+}
 func (t *readBacktestLogTool) Run(ctx context.Context, in ToolInput) ToolOutput {
 	// Use the most recent backtest run for this code hash
 	runs, err := t.repo.ListByUser(ctx, in.UserID, nil, nil, 1, 0)
@@ -255,3 +340,38 @@ func (t *readBacktestLogTool) Run(ctx context.Context, in ToolInput) ToolOutput 
 	return ToolOutput{Success: true, Output: out}
 }
 
+
+// ── compile_python tool (chat context — lightweight, no bars/btCfg needed) ──
+
+type compilePythonChatTool struct{}
+
+func (t *compilePythonChatTool) Name() string { return "compile_python" }
+func (t *compilePythonChatTool) Schema() systemai.ToolDefinition {
+	return systemai.ToolDefinition{
+		Type: "function",
+		Function: systemai.ToolDefFunction{
+			Name:        "compile_python",
+			Description: "编译当前的 Python 策略代码。代码必须是符合 Python 子集规范的完整策略。编译成功返回覆盖度评分；编译失败返回具体错误信息。",
+			Parameters: map[string]any{
+				"type":       "object",
+				"properties": map[string]any{},
+			},
+		},
+	}
+}
+func (t *compilePythonChatTool) Run(_ context.Context, in ToolInput) ToolOutput {
+	if in.Code == "" {
+		return ToolOutput{Success: false, Error: "no Python code to compile — generate code first"}
+	}
+	_, coverage, err := mql2go.CompilePythonWithCoverage(in.Code)
+	if err != nil {
+		return ToolOutput{Success: false, Error: err.Error()}
+	}
+	return ToolOutput{
+		Success: true,
+		Output: map[string]any{
+			"compiles":       true,
+			"coverage_score": coverage.Score,
+		},
+	}
+}

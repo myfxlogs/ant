@@ -15,23 +15,56 @@ import (
 const chatTimeout = 60 * time.Second
 const secretCacheTTL = 30 * time.Minute
 // ChatMessage is a single message in a chat completion request.
+// Supports both text-only messages and tool-calling messages (OpenAI tool_use protocol).
 type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+	Role       string     `json:"role"`
+	Content    string     `json:"content,omitempty"`
+	ToolCalls  []ToolCall `json:"tool_calls,omitempty"`  // assistant messages with tool calls
+	ToolCallID string     `json:"tool_call_id,omitempty"` // tool result messages
+	Name       string     `json:"name,omitempty"`         // tool result messages (tool name)
+}
+
+// ToolCall represents a single tool call in an assistant message (OpenAI format).
+type ToolCall struct {
+	ID       string           `json:"id"`
+	Type     string           `json:"type"` // "function"
+	Function ToolCallFunction `json:"function"`
+}
+
+// ToolCallFunction holds the function name and JSON-encoded arguments.
+type ToolCallFunction struct {
+	Name      string `json:"name"`
+	Arguments string `json:"arguments"` // JSON-encoded string
+}
+
+// ToolDefinition describes a tool available to the LLM (OpenAI function calling format).
+type ToolDefinition struct {
+	Type     string         `json:"type"` // "function"
+	Function ToolDefFunction `json:"function"`
+}
+
+// ToolDefFunction describes a function's name, description, and JSON Schema parameters.
+type ToolDefFunction struct {
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Parameters  map[string]any `json:"parameters"`
 }
 
 // ChatCompletionRequest mirrors the OpenAI /v1/chat/completions request shape.
 type ChatCompletionRequest struct {
-	Model       string        `json:"model"`
-	Messages    []ChatMessage `json:"messages"`
-	MaxTokens   int           `json:"max_tokens,omitempty"`
-	Temperature float64       `json:"temperature,omitempty"`
-	Stream      bool          `json:"stream"`
+	Model       string           `json:"model"`
+	Messages    []ChatMessage    `json:"messages"`
+	MaxTokens   int              `json:"max_tokens,omitempty"`
+	Temperature float64          `json:"temperature,omitempty"`
+	Stream      bool             `json:"stream"`
+	Tools       []ToolDefinition `json:"tools,omitempty"`
+	ToolChoice  string           `json:"tool_choice,omitempty"` // "auto", "none", or specific tool
 }
 // ChatCompletionResponse mirrors the OpenAI /v1/chat/completions response shape (non-streaming).
 type ChatCompletionResponse struct {
 	Choices []struct {
-		Message ChatMessage `json:"message"`
+		Message      ChatMessage `json:"message"`
+		FinishReason string      `json:"finish_reason,omitempty"`
 	} `json:"choices"`
 	Usage *ChatUsage `json:"usage,omitempty"`
 	Error *struct {
@@ -49,8 +82,23 @@ type ChatUsage struct {
 
 // ChatStreamChunk represents a single delta from a streaming chat completion.
 type ChatStreamChunk struct {
-	Content string
-	Done    bool
+	Content      string
+	Done         bool
+	FinishReason string            // "stop", "tool_calls", "length", etc.
+	ToolCalls    []StreamToolCall  // accumulated tool calls from streaming deltas
+}
+
+// StreamToolCall is a tool call delta as it arrives in a streaming response.
+// OpenAI streams tool calls incrementally: first chunk has index+id+function.name,
+// subsequent chunks append to function.arguments. The stream parser accumulates these.
+type StreamToolCall struct {
+	Index    int    `json:"index"`
+	ID       string `json:"id"`
+	Type     string `json:"type"` // "function"
+	Function struct {
+		Name      string `json:"name"`
+		Arguments string `json:"arguments"`
+	} `json:"function"`
 }
 // buildChatMessages builds messages with system + history + user.
 func BuildChatMessages(systemPrompt, userMessage string, history []ChatMessage) []ChatMessage {
@@ -81,13 +129,18 @@ func (s *Service) getCachedSecret(ctx context.Context, userID uuid.UUID, provide
 }
 
 // doChatRequest builds the HTTP request body and creates an authenticated request.
-func doChatRequest(model string, messages []ChatMessage, stream bool, endpoint, secret string) (*http.Request, error) {
+// tools may be nil when the caller does not need tool calling.
+func doChatRequest(model string, messages []ChatMessage, tools []ToolDefinition, stream bool, endpoint, secret string) (*http.Request, error) {
 	reqBody := ChatCompletionRequest{
 		Model:       model,
 		Messages:    messages,
 		MaxTokens:   8192,
 		Temperature: 0.3,
 		Stream:      stream,
+		Tools:       tools,
+	}
+	if len(tools) > 0 {
+		reqBody.ToolChoice = "auto"
 	}
 	bodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
@@ -172,7 +225,7 @@ func (s *Service) ChatCompletionWithUsage(
 // (429/5xx) before giving up — so a single-provider user isn't immediately failed.
 func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, messages []ChatMessage) (string, *ChatUsage, error) {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
-	httpReq, err := doChatRequest(p.model, messages, false, endpoint, p.secret)
+	httpReq, err := doChatRequest(p.model, messages, nil, false, endpoint, p.secret)
 	if err != nil {
 		return "", nil, err
 	}

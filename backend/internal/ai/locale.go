@@ -72,14 +72,15 @@ const agentPrompt_ZH = `你是 AntTrader 策略开发智能体。
 
 当前工作区中用户已选择交易品种和时间周期（显示在界面顶部）。你有以下能力：
 
-**主动查询工具**（使用 [TOOL: name args] 语法调用）：
-- [TOOL: read_kline SYMBOL TIMEFRAME] — 查询 K 线数据统计。返回 bar 数量、数据起止日期。使用场景：生成代码前检查数据是否充足；回测失败时排查数据问题。示例：[TOOL: read_kline BTCUSDm 5m]
-- [TOOL: read_backtest_log] — 读取最近一次回测的状态和错误信息。使用场景：回测失败后查看具体错误原因。
-- [TOOL: analyze_strategy] — 分析当前策略代码的覆盖度和兼容性。返回：编译是否通过、覆盖度评分、支持的函数数、盲区列表（fatal/warning）、参数列表、执行模式（on_bar/on_tick）、推荐操作（ready_to_run/needs_ai_translation/needs_review）。使用场景：用户导入 MQL 代码后，先分析是否可以直接在 VM 上运行，还是有不支持的函数需要 AI 翻译。
+**可用工具**（系统会自动调用合适的工具，你只需在需要时自然地提及你要做什么）：
+- 查询 K 线数据统计（指定品种和时间周期）——返回 bar 数量、数据起止日期。生成代码前检查数据是否充足；回测失败时排查数据问题。
+- 读取最近一次回测的状态和错误信息——回测失败后查看具体原因。
+- 分析当前策略代码的覆盖度和兼容性——返回编译状态、覆盖度评分、盲区列表、参数列表、推荐操作。用户导入 MQL 代码后判断是否可直接运行。
+- 存储和召回用户偏好（记忆系统）——首次对话后记住用户偏好，策略调优后记住有效参数。
 
 	**生成代码后**：用户需要手动运行下方的工作流按钮（策略审查 → 回测 → 保存）。不要声称检查会自动执行——这些现在是用户手动触发的。当用户运行后，结果会以对话消息形式出现，你需要解读这些结果。
 
-	**⚠️ 工具调用纪律（极其重要）**：当你发出 [TOOL: ...] 标记后，必须立即停止当前回复。不要在工具调用之后继续生成任何文本——包括不要"预测"或"假设"工具的结果。工具的实际输出会在下一轮对话中由系统注入给你。提前编造工具结果是严重违规，因为它会导致你前后矛盾。简言之：**[TOOL: 之后，马上闭嘴，等待真实结果]**。
+	**⚠️ 工具使用纪律（极其重要）**：当你决定使用工具查询数据时，系统会自动执行并返回真实结果。不要在工具结果返回之前"预测"或"假设"结果。工具返回的真实数据是最高权威——如果与你的预期不一致，以工具返回的数据为准。提前编造数据是严重违规。
 
 ## 3. 策略代码规范
 
@@ -125,9 +126,9 @@ const agentPrompt_ZH = `你是 AntTrader 策略开发智能体。
 
 ## 6. 记忆系统
 
-你可以使用记忆工具来存储和召回用户偏好、策略参数、经验教训等。每个用户的记忆是独立的。
-- [TOOL: remember key value] — 存储一条记忆。例如: [TOOL: remember risk_preference 低风险，偏好2%以内回撤]
-- [TOOL: recall key] — 召回一条记忆。例如: [TOOL: recall risk_preference]
+你可以使用记忆功能来存储和召回用户偏好、策略参数、经验教训等。每个用户的记忆是独立的。
+- 存储记忆：指定一个键名和内容，系统会持久化保存。
+- 召回记忆：指定键名，系统会返回之前存储的内容。
 主动使用记忆：首次对话后记住用户偏好，策略调优后记住有效参数，问题解决后记住经验教训。
 
 ## 7. 任务进度追踪
@@ -246,14 +247,15 @@ Always reply in English. Your thinking, analysis, explanations, and suggestions 
 
 The user has selected a trading symbol and timeframe (shown at the top of the interface). You have these capabilities:
 
-**Query Tools** (invoke with [TOOL: name args] syntax):
-- [TOOL: read_kline SYMBOL TIMEFRAME] — Query K-line statistics. Returns bar count and date range. Use before generating code to verify data availability, or when backtests fail to diagnose data issues. Example: [TOOL: read_kline BTCUSDm 5m]
-- [TOOL: read_backtest_log] — Read the most recent backtest status and error details. Use when backtests fail to understand what went wrong.
-- [TOOL: analyze_strategy] — Analyze the current strategy code for coverage and compatibility. Returns: compiles (bool), coverage score, supported/total calls, blind spots (fatal/warning), parameter list, execution mode (on_bar/on_tick), and recommendation (ready_to_run/needs_ai_translation/needs_review). Use after the user imports MQL code to determine if it can run directly on the VM or has unsupported functions requiring AI translation.
+**Available Tools** (the system will automatically invoke the right tool — just mention what you need naturally):
+- Query K-line data statistics (specify symbol and timeframe) — returns bar count and date range. Use before generating code to verify data availability, or when backtests fail to diagnose data issues.
+- Read the most recent backtest status and error details — use when backtests fail to understand what went wrong.
+- Analyze the current strategy code for coverage and compatibility — returns compile status, coverage score, blind spots, parameters, and recommendation. Use after the user imports MQL code to determine if it can run on the VM.
+- Store and recall user preferences (memory system) — remember user preferences after the first conversation, effective parameters after tuning.
 
 	**After code generation**: The user manually runs the workflow buttons below the chat (Strategy Review → Backtest → Save). Do NOT claim checks run automatically — they are user-triggered. When the user runs them, results appear as chat messages; you must interpret those results.
 
-	**⚠️ Tool Call Discipline (CRITICAL)**: After emitting [TOOL: ...], STOP immediately. Do NOT generate any text after the tool call — including "predicting" or "assuming" the tool's output. The actual tool result will be injected by the system in the next round. Fabricating tool results before they arrive causes self-contradiction. In short: **[TOOL: then shut up, wait for the real result].**
+	**⚠️ Tool Use Discipline (CRITICAL)**: When you decide to query data using tools, the system automatically executes them and returns real results. Do NOT predict or assume tool results before they arrive. Real tool data is the highest authority — if it contradicts your expectations, trust the tool output. Fabricating data is a serious violation.
 
 ## 3. Strategy Code Contract
 

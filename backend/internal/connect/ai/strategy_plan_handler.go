@@ -17,6 +17,119 @@ import (
 	systemai "anttrader/internal/service/systemai"
 )
 
+// pythonAgentPrompt is the system prompt for the Python strategy agent in chat context.
+// It instructs the LLM to generate Python subset code and use compile_python to verify.
+const pythonAgentPrompt = `You are a quantitative strategy developer on the AntTrader platform.
+Your task is to generate Python trading strategies from natural language descriptions.
+
+## Python Subset Rules (MUST follow — code that violates ANY rule will be REJECTED)
+
+### Required code skeleton:
+` + "```python" + `
+from decimal import Decimal
+
+class MyStrategy(StrategyBase):
+    def __init__(self, period: int = 14, lot: Decimal = Decimal("0.1")) -> None:
+        self.period: int = period
+        self.lot: Decimal = lot
+
+    def on_bar(self, ctx: BarContext) -> None:
+        # strategy logic here
+        pass
+
+    def on_deinit(self, ctx: BarContext, reason: str) -> None:
+        pass
+` + "```" + `
+
+### Mandatory:
+- EVERY __init__ parameter MUST have a type annotation and default value
+- EVERY method MUST have -> return type annotation
+- EVERY local variable MUST have a type annotation
+- Use Decimal for ALL prices, volumes, P&L, stop-loss, take-profit
+- Use float for indicator values only
+- Only import: from decimal import Decimal
+
+### What is FORBIDDEN:
+- Missing type annotations
+- import anything other than "from decimal import Decimal"
+- list comprehensions, lambda, try/except, with, yield, decorators
+- exec, eval, open, print, f-strings
+- float for prices or volumes — use Decimal
+
+### SDK API:
+- Close[0] → ctx.bars().close(0)
+- iMA → ctx.indicators().ima(ctx.symbol(), period, shift)
+- iRSI → ctx.indicators().irsi(ctx.symbol(), period, shift)
+- iATR → ctx.indicators().iatr(ctx.symbol(), period, shift)
+- iBands → ctx.indicators().ibands(ctx.symbol(), period, shift)
+- iMACD → ctx.indicators().imacd(ctx.symbol(), fast, slow, signal, shift)
+- Buy → ctx.broker().buy(lot=Decimal("0.1"))
+- Sell → ctx.broker().sell(lot=Decimal("0.1"))
+- Close position → ctx.broker().close(ticket)
+- Position count → ctx.positions().count()
+
+## Thinking Discipline (CRITICAL)
+
+Before EVERY significant action (generating code, calling a tool, analyzing results), you MUST output a [THINK] block:
+
+[THINK]
+1. Current state: (what just happened? what do I know?)
+2. Next action: (what am I about to do?)
+3. Reason: (why this specific action?)
+[/THINK]
+
+Then immediately take the action. This prevents impulsive decisions and helps you catch mistakes before they happen.
+
+## Pre-Compile Self-Verification (MANDATORY)
+
+Before calling compile_python, silently run through this checklist. If ANY item fails, fix the code first — do NOT call compile_python with known issues:
+
+□ Every __init__ param has type annotation AND default value?
+□ __init__ has -> None return type?
+□ Every method has a return type annotation?
+□ Every local variable has a type annotation (e.g., ema_fast: float = ...)?
+□ All prices/volumes/P&L/stop-loss/take-profit use Decimal (not float)?
+□ Only import is "from decimal import Decimal"?
+□ No forbidden syntax (lambda, try/except, f-strings, list comprehensions)?
+
+## Error Memory — Common Mistakes
+
+These are the most frequent compile errors. Check these FIRST before generating code:
+- FORGETTING -> None on __init__ method
+- FORGETTING type annotation on local variables
+- Using float for stop_loss/take_profit/price instead of Decimal
+- Missing -> None on on_deinit method
+- Importing anything other than Decimal
+- Using f-strings or list comprehensions
+
+If you just fixed a compile error, REMEMBER what caused it. Do NOT repeat the same mistake in the next attempt.
+
+## Workflow
+
+You have tools available (the system will invoke them automatically):
+- **compile_python** — Compile your Python code. Returns success + coverage score, or a specific error.
+- **read_kline** — Query K-line data statistics for a symbol/timeframe.
+- **read_backtest_log** — Read the most recent backtest status and errors.
+- **remember / recall** — Store and retrieve user preferences.
+
+Follow this workflow:
+1. **Discuss first.** Analyze the strategy request, confirm understanding, propose a numbered plan.
+2. **[THINK]** Before generating code, think through the strategy logic.
+3. **Generate code.** Output complete Python code in a markdown code block.
+4. **Self-verify.** Run through the pre-compile checklist above. Fix any issues silently.
+5. **Compile.** Call compile_python to verify.
+6. **Fix if needed.** If compilation fails: [THINK] read the error, understand the root cause, fix the specific issue, self-verify again, compile again. Do NOT blindly guess.
+7. The user will run backtest manually — interpret the results when they appear.
+
+## Conversation Rules
+- Discuss first, code later. Do not skip the discussion phase.
+- [THINK] before acting. Every significant action needs a thinking block.
+- Explain your reasoning for indicator choices and parameter values.
+- Use sensible defaults for unspecified parameters.
+- Iterate on existing code rather than rewriting from scratch.
+- Be honest about limitations — if something is infeasible, say so.
+- After calling a tool, wait for the real result. Do not predict tool output.`
+
 // StrategyPlanServer implements ant.v1.StrategyPlanServiceHandler (both AnalyzePlan and ExecutePlan).
 type StrategyPlanServer struct {
 	systemSvc      *systemai.Service
@@ -110,7 +223,7 @@ func (s *StrategyPlanServer) AnalyzePlan(
 	return nil
 }
 
-// ── Conversate: unified agent conversation (Claude Code style) ──
+// ── Conversate: unified Python strategy agent conversation ──
 
 func (s *StrategyPlanServer) Conversate(
 	ctx context.Context,
@@ -122,26 +235,27 @@ func (s *StrategyPlanServer) Conversate(
 		return err
 	}
 	m := req.Msg
-	lang := LangFromAccept(req.Header().Get("Accept-Language"))
 
-	registry := NewToolRegistry(s.backtestRepo, s.marketDataRepo)
+	registry := NewEmptyToolRegistry()
+	registry.AddPreTool(&readKlineTool{repo: s.marketDataRepo})
+	registry.AddPreTool(&readBacktestLogTool{repo: s.backtestRepo})
+	registry.AddPreTool(&compilePythonChatTool{})
 	registry.WireMemoryDB(s.memoryExec, s.memoryQuery)
 
-	sysPrompt := internalai.AgentPrompt(lang)
+	// Build Python agent system prompt with workspace context.
+	sysPrompt := pythonAgentPrompt
+	if m.Symbol != "" && m.Timeframe != "" {
+		sysPrompt += fmt.Sprintf("\n\n## Current Workspace\nSymbol: %s\nTimeframe: %s", m.Symbol, m.Timeframe)
+	}
 
 	history := s.loadHistory(ctx, userID, m.ConversationId, 5)
 
-	// Inject workspace context into the user prompt
+	// Inject workspace context into the user prompt.
 	ctxInfo := fmt.Sprintf("[当前工作区: 品种=%s, 周期=%s]", m.Symbol, m.Timeframe)
-	if m.Symbol != "" && m.Timeframe != "" {
-		ctxInfo = fmt.Sprintf("[当前工作区: 品种=%s, 周期=%s。你可以直接使用这些信息，无需询问用户。]", m.Symbol, m.Timeframe)
+	if m.CurrentCode != "" {
+		ctxInfo += "\n\n## 当前策略代码\n```python\n" + m.CurrentCode + "\n```"
 	}
-		// If code is loaded, include the actual code text so the AI can see it.
-		if m.CurrentCode != "" {
-			ctxInfo += "\n\n## 当前策略代码\n```go\n" + m.CurrentCode + "\n```"
-		}
 	userPrompt := ctxInfo + " " + m.Message
-	oldCode := m.CurrentCode
 
 	chunk := func(delta string) error {
 		return stream.Send(&antv1.ConversateChunk{Phase: "thinking", Delta: delta})
@@ -151,8 +265,8 @@ func (s *StrategyPlanServer) Conversate(
 	}
 
 	loop := NewAgentLoop(registry,
-		func(ctx context.Context, msgs []systemai.ChatMessage, onChunk func(systemai.ChatStreamChunk) error) error {
-			return s.systemSvc.ChatCompletionStream(ctx, userID, msgs, onChunk)
+		func(llmCtx context.Context, msgs []systemai.ChatMessage, tools []systemai.ToolDefinition, onChunk func(systemai.ChatStreamChunk) error) error {
+			return s.systemSvc.ChatCompletionStreamWithTools(llmCtx, userID, msgs, tools, onChunk)
 		},
 		chunk, toolEvt,
 	)
@@ -163,21 +277,15 @@ func (s *StrategyPlanServer) Conversate(
 		return stream.Send(&antv1.ConversateChunk{Phase: "done", Error: systemai.FriendlyError(err)})
 	}
 
-	// Extract plan/code from the response
-	plan := extractPlan(raw)
+	// Extract Python code from the response.
 	code := ExtractCode(raw)
-	// If less than 30% of response, it's discussion, not code output
 	if code != "" && len(code) < len(raw)/3 {
-		code = ""
+		code = "" // discussion, not code output
 	}
 
+	s.persistExchange(ctx, userID, m.ConversationId, "", code, m.Message)
 
-// Compliance, backtest, and save are now manual user actions
-		// (buttons below the chat input: validate → backtest → save).
-
-	s.persistExchange(ctx, userID, m.ConversationId, plan, code, m.Message)
-
-	return stream.Send(&antv1.ConversateChunk{Phase: "done", Code: code, Plan: plan, PreviousCode: oldCode})
+	return stream.Send(&antv1.ConversateChunk{Phase: "done", Code: code})
 }
 
 // extractPlan pulls the first non-code text that looks like a plan from the response.
@@ -204,19 +312,26 @@ func (s *StrategyPlanServer) ExecutePlan(
 		return err
 	}
 	m := req.Msg
-	lang := LangFromAccept(req.Header().Get("Accept-Language"))
 
 	_ = stream.Send(&antv1.ExecutePlanChunk{Phase: "generating"})
 
-	registry := NewToolRegistry(s.backtestRepo, s.marketDataRepo)
+	registry := NewEmptyToolRegistry()
+	registry.AddPreTool(&readKlineTool{repo: s.marketDataRepo})
+	registry.AddPreTool(&compilePythonChatTool{})
 	registry.WireMemoryDB(s.memoryExec, s.memoryQuery)
-	sysPrompt := internalai.AgentPrompt(lang) + "\n\n## 当前任务：生成或修改策略代码\n根据执行计划和用户的最新消息，输出完整的 Go 策略代码。你可以使用 [TOOL: name args] 来查询信息。"
+
+	// Build Python agent system prompt with task instruction.
+	sysPrompt := pythonAgentPrompt
+	if m.Symbol != "" && m.Timeframe != "" {
+		sysPrompt += fmt.Sprintf("\n\n## Current Workspace\nSymbol: %s\nTimeframe: %s", m.Symbol, m.Timeframe)
+	}
+	sysPrompt += "\n\n## 当前任务：生成或修改 Python 策略代码\n根据执行计划和用户的最新消息，输出完整的 Python 子集策略代码。生成后调用 compile_python 验证编译。"
+
 	userPrompt := buildExecuteUserPrompt(m)
 
-	// Agent Loop: LLM ↔ Tools (Claude Code / OpenAI Agents SDK pattern)
 	loop := NewAgentLoop(registry,
-		func(ctx context.Context, messages []systemai.ChatMessage, onChunk func(systemai.ChatStreamChunk) error) error {
-			return s.systemSvc.ChatCompletionStream(ctx, userID, messages, onChunk)
+		func(llmCtx context.Context, messages []systemai.ChatMessage, tools []systemai.ToolDefinition, onChunk func(systemai.ChatStreamChunk) error) error {
+			return s.systemSvc.ChatCompletionStreamWithTools(llmCtx, userID, messages, tools, onChunk)
 		},
 		func(delta string) error {
 			return stream.Send(&antv1.ExecutePlanChunk{Phase: "generating", Delta: delta})
@@ -225,7 +340,6 @@ func (s *StrategyPlanServer) ExecutePlan(
 			return stream.Send(&antv1.ExecutePlanChunk{Phase: "tool_result", ToolCall: tc, ToolResult: tr})
 		},
 	)
-
 	loop.SetCurrentCode(m.PreviousCode)
 
 	raw, err := loop.Run(ctx, sysPrompt, userPrompt, userID)
@@ -234,24 +348,12 @@ func (s *StrategyPlanServer) ExecutePlan(
 	}
 
 	code := ExtractCode(raw)
-	// If code is less than 30% of the response, it's likely just code snippets
-	// in a discussion — treat the whole response as analysis, not code output.
 	if code != "" && len(code) < len(raw)/3 {
 		code = ""
 	}
-	var analysis string
-	if m.FeedbackMessage != "" && code != "" && raw != code {
-		if idx := strings.Index(raw, code); idx > 0 {
-			analysis = strings.TrimSpace(raw[:idx])
-		}
-	}
-
-	// ── Auto-run tools after code generation ──
-	registry.Execute(ctx, ToolInput{Code: code, Symbol: m.Symbol, Timeframe: m.Timeframe, UserID: userID},
-		func(chunk *antv1.ExecutePlanChunk) error { return stream.Send(chunk) })
 
 	s.persistExchange(ctx, userID, m.ConversationId, m.Plan, code, m.FeedbackMessage)
-	return stream.Send(&antv1.ExecutePlanChunk{Phase: "done", Code: code, PreviousCode: m.PreviousCode, Analysis: analysis})
+	return stream.Send(&antv1.ExecutePlanChunk{Phase: "done", Code: code, PreviousCode: m.PreviousCode})
 }
 
 

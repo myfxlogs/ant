@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/google/uuid"
@@ -16,6 +17,29 @@ func (s *Service) ChatCompletionStream(
 	ctx context.Context,
 	userID uuid.UUID,
 	messages []ChatMessage,
+	onChunk func(chunk ChatStreamChunk) error,
+) error {
+	return s.chatCompletionStream(ctx, userID, messages, nil, onChunk)
+}
+
+// ChatCompletionStreamWithTools is like ChatCompletionStream but passes tool
+// definitions to the LLM so it can request tool calls via the native tool_use
+// protocol (OpenAI function calling).
+func (s *Service) ChatCompletionStreamWithTools(
+	ctx context.Context,
+	userID uuid.UUID,
+	messages []ChatMessage,
+	tools []ToolDefinition,
+	onChunk func(chunk ChatStreamChunk) error,
+) error {
+	return s.chatCompletionStream(ctx, userID, messages, tools, onChunk)
+}
+
+func (s *Service) chatCompletionStream(
+	ctx context.Context,
+	userID uuid.UUID,
+	messages []ChatMessage,
+	tools []ToolDefinition,
 	onChunk func(chunk ChatStreamChunk) error,
 ) error {
 	// Pre-check wallet balance before making any API call.
@@ -32,7 +56,7 @@ func (s *Service) ChatCompletionStream(
 
 	var lastErr error
 	for _, p := range providers {
-		err := s.tryChatCompletionStream(ctx, p, messages, onChunk)
+		err := s.tryChatCompletionStream(ctx, p, messages, tools, onChunk)
 		if err == nil {
 			return nil
 		}
@@ -47,9 +71,9 @@ func (s *Service) ChatCompletionStream(
 	return fmt.Errorf("AI 未配置")
 }
 
-func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, messages []ChatMessage, onChunk func(chunk ChatStreamChunk) error) error {
+func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition, onChunk func(chunk ChatStreamChunk) error) error {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
-	httpReq, err := doChatRequest(p.model, messages, true, endpoint, p.secret)
+	httpReq, err := doChatRequest(p.model, messages, tools, true, endpoint, p.secret)
 	if err != nil {
 		return err
 	}
@@ -76,23 +100,22 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 		} else if ae.Raw != "" {
 			msg += " (" + ae.Raw + ")"
 		}
-		// PRIORITY: fallbackNonStream fires BEFORE failover for 400 errors.
-		//  1. 400 + streaming → fallbackNonStream (same provider, no streaming)
-		//  2. fallbackNonStream fails → failover to next provider (if transient)
-		//  3. non-transient → stop, return FriendlyError
-		// Only auth errors skip the fallback (retrying non-streaming won't fix a bad key).
 		if resp.StatusCode == 400 && !isAuthErrorBody(ae.Raw) {
-			return s.fallbackNonStream(ctx, p, messages, onChunk)
+			return s.fallbackNonStream(ctx, p, messages, tools, onChunk)
 		}
 		if transient {
 			s.recordProviderFailure(ctx, p.userID, p.providerID)
 		}
 		return &failoverErr{msg: msg, transient: transient}
 	}
+
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Buffer(make([]byte, 0, 64*1024), 2*1024*1024)
 
 	var streamUsage *ChatUsage
+	// Accumulate streaming tool_call deltas keyed by index.
+	toolCallAcc := make(map[int]*StreamToolCall)
+
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line == "" || !strings.HasPrefix(line, "data: ") {
@@ -102,10 +125,12 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 		if data == "[DONE]" {
 			break
 		}
+
 		var chunk struct {
 			Choices []struct {
 				Delta struct {
-					Content string `json:"content"`
+					Content   string           `json:"content"`
+					ToolCalls []StreamToolCall `json:"tool_calls"`
 				} `json:"delta"`
 				FinishReason *string `json:"finish_reason"`
 			} `json:"choices"`
@@ -121,11 +146,55 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 			continue
 		}
 		c := chunk.Choices[0]
-		done := c.FinishReason != nil && *c.FinishReason != "" && *c.FinishReason != "null"
-		if err := onChunk(ChatStreamChunk{Content: c.Delta.Content, Done: done}); err != nil {
+
+		// Accumulate tool_call deltas (OpenAI streams them incrementally).
+		for _, tc := range c.Delta.ToolCalls {
+			acc, ok := toolCallAcc[tc.Index]
+			if !ok {
+				acc = &StreamToolCall{Index: tc.Index}
+				toolCallAcc[tc.Index] = acc
+			}
+			if tc.ID != "" {
+				acc.ID = tc.ID
+			}
+			if tc.Type != "" {
+				acc.Type = tc.Type
+			}
+			if tc.Function.Name != "" {
+				acc.Function.Name = tc.Function.Name
+			}
+			acc.Function.Arguments += tc.Function.Arguments
+		}
+
+		finishReason := ""
+		if c.FinishReason != nil && *c.FinishReason != "" && *c.FinishReason != "null" {
+			finishReason = *c.FinishReason
+		}
+
+		// Only emit tool calls on the final chunk (finish_reason set).
+		var finalToolCalls []StreamToolCall
+		if finishReason != "" && len(toolCallAcc) > 0 {
+			// Sort by index for deterministic order.
+			idxs := make([]int, 0, len(toolCallAcc))
+			for idx := range toolCallAcc {
+				idxs = append(idxs, idx)
+			}
+			sort.Ints(idxs)
+			for _, idx := range idxs {
+				finalToolCalls = append(finalToolCalls, *toolCallAcc[idx])
+			}
+		}
+
+		if err := onChunk(ChatStreamChunk{
+			Content:      c.Delta.Content,
+			Done:         finishReason != "",
+			FinishReason: finishReason,
+			ToolCalls:    finalToolCalls,
+		}); err != nil {
 			return err
 		}
-		if done {
+
+		if finishReason != "" {
 			break
 		}
 	}
@@ -149,13 +218,13 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 // fallbackNonStream retries the chat completion on the same provider with
 // streaming disabled, then delivers the full content as a single chunk.
 // Used when the provider returns 400 "streaming not supported".
-func (s *Service) fallbackNonStream(ctx context.Context, p chatProvider, messages []ChatMessage, onChunk func(chunk ChatStreamChunk) error) error {
+func (s *Service) fallbackNonStream(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition, onChunk func(chunk ChatStreamChunk) error) error {
 	result, usage, err := s.tryChatCompletion(ctx, p, messages)
 	if err != nil {
 		return err
 	}
 	// Deliver as a single chunk (frontend stream consumers handle this).
-	if err := onChunk(ChatStreamChunk{Content: result, Done: true}); err != nil {
+	if err := onChunk(ChatStreamChunk{Content: result, Done: true, FinishReason: "stop"}); err != nil {
 		return err
 	}
 	// Record token usage from the non-streaming fallback.

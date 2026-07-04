@@ -12,7 +12,6 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/service/systemai"
 	"anttrader/strategy/sdk"
-	"anttrader/tools/mql2go"
 )
 
 const (
@@ -103,7 +102,6 @@ func (g *Generator) Generate(
 		}
 	}
 
-	result := &generateState{}
 	var estCostUSD float64
 
 	// Resolve managed settings for cost ceiling and max iterations (ADR-0025 §5.2).
@@ -129,7 +127,26 @@ func (g *Generator) Generate(
 		return nil
 	}
 
-	// ── Step 0: Generate strategy profile from NL (first attempt only) ──
+	// ── Intent classification: chat vs generate ──
+	// Classify FIRST, before any profile/plan work, so chat messages don't
+	// trigger unnecessary LLM calls that produce garbage output.
+	planMode := msg.PlanMode
+	if planMode == "" {
+		planMode = "plan" // default to plan mode
+	}
+	if planMode == "plan" && msg.PlanFeedback == "" {
+		if err := streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "planning"}); err != nil {
+			return err
+		}
+		intent, intentErr := g.classifyIntent(ctx, userID, msg.Message)
+		if intentErr != nil {
+			g.log.Warn("generator: intent classification failed, defaulting to generate", zap.Error(intentErr))
+		} else if intent == "chat" {
+			return g.streamChatResponse(ctx, userID, msg, streamOrAbort)
+		}
+	}
+
+	// ── Step 0: Generate strategy profile from NL (generate intent only) ──
 	var preProfile *antv1.StrategyProfile
 	if err := streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "planning"}); err != nil {
 		return err
@@ -157,12 +174,6 @@ func (g *Generator) Generate(
 		}
 	}
 
-	// ── ADR-0025 §3: Plan Mode — generate structured plan, wait for user confirmation ──
-	planMode := msg.PlanMode
-	if planMode == "" {
-		planMode = "plan" // default to plan mode
-	}
-
 	if planMode == "plan" {
 		plan, planErr := g.generatePlan(ctx, userID, msg, preProfile, sessionMem)
 		if planErr != nil {
@@ -186,209 +197,16 @@ func (g *Generator) Generate(
 		confirmedPlan = msg.ConfirmedPlan
 	}
 
-	for attempt := 1; attempt <= effectiveMaxRetries; attempt++ {
-		// Cost ceiling check (ADR-0024 §D7, ADR-0025 §5.2)
-		if estCostUSD >= effectiveCostCeiling {
-			g.log.Warn("generator: cost ceiling exceeded, stopping", zap.Float64("est_cost", estCostUSD), zap.Float64("ceiling", effectiveCostCeiling))
-			_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{
-				Phase:    "done",
-				Error:    fmt.Sprintf("cost ceiling $%.2f exceeded (est $%.4f)", effectiveCostCeiling, estCostUSD),
-				Attempts: int32(attempt - 1),
-			})
-			return nil
-		}
+	// ── Agent Loop: LLM drives generate → compile → backtest → fix → repeat ──
+	_ = estCostUSD // retained for future cost tracking
+	_ = effectiveMaxRetries
+	_ = effectiveCostCeiling
 
-		// ── LLM generation (streaming) ──
-		var sysPrompt, userPrompt string
-		if attempt == 1 {
-			if confirmedPlan != nil {
-				sysPrompt, userPrompt = buildGenerateFromPlanPrompt(msg, confirmedPlan, preProfile, sessionMem)
-			} else {
-				sysPrompt, userPrompt = buildGeneratePrompt(msg, preProfile, sessionMem)
-			}
-		} else {
-			sysPrompt, userPrompt = buildGenerateRetryPrompt(msg, result.PythonSource, result.CompileError, result.BacktestError, preProfile, sessionMem)
-		}
-
-		if err := streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "generating", Attempts: int32(attempt)}); err != nil {
-			return err
-		}
-
-		estCostUSD += estCostCodeGen
-
-		llmCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
-		var codeBuf strings.Builder
-		err := g.aiSvc.ChatCompletionStream(llmCtx, userID,
-			[]systemai.ChatMessage{
-				{Role: "system", Content: sysPrompt},
-				{Role: "user", Content: userPrompt},
-			},
-			func(chunk systemai.ChatStreamChunk) error {
-				codeBuf.WriteString(chunk.Content)
-				return stream(&antv1.AgentGenerateStrategyChunk{Phase: "generating", Delta: chunk.Content})
-			})
-		cancel()
-		if err != nil {
-			if ctx.Err() != nil {
-				g.log.Info("generator: context canceled, aborting", zap.Error(ctx.Err()))
-				return ctx.Err()
-			}
-			g.log.Warn("generator: LLM stream failed", zap.Int("attempt", attempt), zap.Error(err))
-			result.CompileError = fmt.Sprintf("LLM call failed: %v", err)
-			continue
-		}
-
-		pythonSource := stripMarkdownFences(codeBuf.String())
-		result.PythonSource = pythonSource
-
-		// ── Compile ──
-		if err := streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "compiling", PythonSource: pythonSource}); err != nil {
-			return err
-		}
-
-		runner, coverage, compileErr := mql2go.CompilePythonWithCoverage(pythonSource)
-		if compileErr != nil {
-			result.CompileError = compileErr.Error()
-			result.BacktestError = ""
-			g.log.Info("generator: compile failed", zap.Int("attempt", attempt), zap.String("error", truncate(compileErr.Error(), 200)))
-			_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "compiling", CompileError: compileErr.Error()})
-			continue
-		}
-
-		result.CompileError = ""
-
-		// ── Backtest ──
-		if err := streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "backtesting", CoverageScore: coverage.Score}); err != nil {
-			return err
-		}
-
-		btResult, btErr := runVMBacktest(ctx, runner, btCfg, bars, msg.Params)
-		if btErr != nil {
-			result.BacktestError = btErr.Error()
-			g.log.Info("generator: backtest failed", zap.Int("attempt", attempt), zap.String("error", truncate(btErr.Error(), 200)))
-			_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "backtesting", BacktestError: btErr.Error()})
-			continue
-		}
-
-		result.BacktestError = ""
-
-		// ── Success: generate profile + analysis (with retry/degraded fallback) ──
-		if err := streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "analyzing"}); err != nil {
-			return err
-		}
-
-		btProto := buildBacktestResultProto(btResult)
-
-		// Post-generation profile: retry max 2, degrade to nil on failure (ADR-0024 §5.4).
-		var profile *antv1.StrategyProfile
-		for pr := 1; pr <= maxProfileRetries; pr++ {
-			estCostUSD += estCostProfile
-			profile, profErr = g.profiler.GenerateProfile(ctx, userID.String(), pythonSource, coverage)
-			if profErr == nil {
-				break
-			}
-			estCostUSD -= estCostProfile // failed, don't count
-			g.log.Warn("generator: post-profile attempt failed", zap.Int("attempt", pr), zap.Error(profErr))
-		}
-		if profile == nil {
-			g.log.Warn("generator: post-profile degraded to nil after retries")
-			g.fireDegradationAlert(ctx, userID, "profile generation failed after retries", stream)
-		}
-
-		// Analysis: retry max 2, degrade to template on failure (ADR-0024 §5.4).
-		var analysis *antv1.BacktestAnalysis
-		if profile != nil {
-			for ar := 1; ar <= maxAnalysisRetries; ar++ {
-				estCostUSD += estCostAnalysis
-				analysis, err = g.interpreter.AnalyzeBacktest(ctx, userID.String(), btProto, profile)
-				if err == nil {
-					break
-				}
-				estCostUSD -= estCostAnalysis // failed, don't count
-				g.log.Warn("generator: analysis attempt failed", zap.Int("attempt", ar), zap.Error(err))
-			}
-			if analysis == nil {
-				analysis = degradedAnalysis(btProto)
-				g.log.Warn("generator: analysis degraded to template")
-				g.fireDegradationAlert(ctx, userID, "analysis generation failed after retries", stream)
-			}
-		}
-
-		// ── Send final chunk ──
-		chunk := &antv1.AgentGenerateStrategyChunk{
-			Phase:         "done",
-			PythonSource:  pythonSource,
-			Result:        btProto,
-			Profile:       profile,
-			Analysis:      analysis,
-			CoverageScore: coverage.Score,
-			Attempts:      int32(attempt),
-		}
-		for _, bs := range coverage.BlindSpots {
-			chunk.BlindSpots = append(chunk.BlindSpots, &antv1.AgentBlindSpot{
-				Builtin:  bs.Builtin,
-				Severity: bs.Severity,
-				Count:    int32(bs.Count),
-			})
-		}
-		if err := streamOrAbort(chunk); err != nil {
-			return err
-		}
-
-		// ── ADR-0025 §6.2: PostStrategyGeneration hook — fires retrospect Agent via HookEngine ──
-		if g.hooks != nil && g.hooks.HasHandlers(HookPostStrategyGen) {
-			go g.hooks.Fire(context.Background(), &HookContext{
-				Event:          HookPostStrategyGen,
-				UserID:         userID,
-				Profile:        profile,
-				BacktestResult: btProto,
-				Analysis:       analysis,
-			})
-		} else if g.retrospect != nil {
-			go g.retrospect.Run(context.Background(), userID, retrospectInput{
-				Message:        msg.Message,
-				Symbol:         msg.Symbol,
-				Timeframe:      msg.Timeframe,
-				Profile:        profile,
-				Plan:           confirmedPlan,
-				BacktestResult: btProto,
-				Analysis:       analysis,
-				CoverageScore:  coverage.Score,
-			})
-		}
-
-		return nil
+	if err := streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "generating"}); err != nil {
+		return err
 	}
 
-	// All retries exhausted
-	finalChunk := &antv1.AgentGenerateStrategyChunk{
-		Phase:          "done",
-		PythonSource:   result.PythonSource,
-		CompileError:   result.CompileError,
-		BacktestError:  result.BacktestError,
-		Attempts:       int32(effectiveMaxRetries),
-		Error:          fmt.Sprintf("generation failed after %d attempts", effectiveMaxRetries),
-	}
-	_ = streamOrAbort(finalChunk)
-
-	// ── ADR-0025 §6.2: Retrospect on failure too (via HookEngine if available) ──
-	if g.hooks != nil && g.hooks.HasHandlers(HookPostStrategyGen) {
-		go g.hooks.Fire(context.Background(), &HookContext{
-			Event:          HookPostStrategyGen,
-			UserID:         userID,
-			BacktestResult: &antv1.AgentBacktestResult{Success: false, Error: result.BacktestError},
-		})
-	} else if g.retrospect != nil {
-		go g.retrospect.Run(context.Background(), userID, retrospectInput{
-			Message:        msg.Message,
-			Symbol:         msg.Symbol,
-			Timeframe:      msg.Timeframe,
-			BacktestResult: &antv1.AgentBacktestResult{Success: false, Error: result.BacktestError},
-			CoverageScore:  0,
-		})
-	}
-
-	return nil
+	return g.runAgentLoop(ctx, userID, msg, bars, btCfg, preProfile, sessionMem, confirmedPlan, streamOrAbort)
 }
 
 // generateProfileFromNL calls LLM to produce a strategy profile from the natural language
@@ -429,3 +247,99 @@ func (g *Generator) generateProfileFromNL(
 
 	return parseProfileLines(resp), nil
 }
+
+// classifyIntent determines whether the user message is a general discussion/question
+// ("chat") or a strategy generation request ("generate"). Uses a fast LLM call.
+func (g *Generator) classifyIntent(ctx context.Context, userID uuid.UUID, message string) (string, error) {
+	llmCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	resp, err := g.aiSvc.ChatCompletion(llmCtx, userID, []systemai.ChatMessage{
+		{Role: "system", Content: intentClassificationPrompt},
+		{Role: "user", Content: message},
+	})
+	if err != nil {
+		return "", fmt.Errorf("intent classification LLM call: %w", err)
+	}
+
+	intent := strings.TrimSpace(strings.ToLower(resp))
+	// Accept "chat", "generate", "discussion", "question", etc.
+	switch {
+	case strings.Contains(intent, "generate"), strings.Contains(intent, "strategy"), strings.Contains(intent, "code"):
+		return "generate", nil
+	default:
+		return "chat", nil
+	}
+}
+
+// streamChatResponse streams a natural LLM conversation response without going
+// through the plan/generate/compile/backtest pipeline. This makes the AI chat
+// feel natural — users can discuss strategies, ask questions, and get explanations.
+func (g *Generator) streamChatResponse(
+	ctx context.Context,
+	userID uuid.UUID,
+	msg *antv1.AgentGenerateStrategyRequest,
+	streamOrAbort func(*antv1.AgentGenerateStrategyChunk) error,
+) error {
+	// Send "chatting" phase so the frontend shows a thinking indicator
+	if err := streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "chatting"}); err != nil {
+		return err
+	}
+
+	// Build a conversational system prompt with trading context
+	sysPrompt := chatSystemPrompt
+	if msg.Symbol != "" || msg.Timeframe != "" {
+		sysPrompt += fmt.Sprintf("\n\n## Current Context\nSymbol: %s\nTimeframe: %s", msg.Symbol, msg.Timeframe)
+	}
+
+	llmCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
+
+	err := g.aiSvc.ChatCompletionStream(llmCtx, userID,
+		[]systemai.ChatMessage{
+			{Role: "system", Content: sysPrompt},
+			{Role: "user", Content: msg.Message},
+		},
+		func(chunk systemai.ChatStreamChunk) error {
+			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{
+				Phase: "chatting",
+				Delta: chunk.Content,
+			})
+		})
+	if err != nil {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		g.log.Warn("generator: chat stream failed", zap.Error(err))
+		_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{
+			Phase: "done",
+			Error: fmt.Sprintf("chat failed: %v", err),
+		})
+		return nil
+	}
+
+	_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done"})
+	return nil
+}
+
+// intentClassificationPrompt is a fast LLM prompt to classify user intent.
+const intentClassificationPrompt = `You are an intent classifier for a trading strategy AI assistant. Classify the user's message into one of two categories:
+
+- "generate": The user wants to CREATE, GENERATE, or BUILD a trading strategy/EA/robot. Keywords: 生成, 创建, 开发, 写一个, make, create, generate, build, write a strategy, 编写, 开发一套, 生成一套, 自动交易, EA.
+- "chat": The user is asking a question, discussing, seeking advice, or wants an explanation. Keywords: 什么是, 怎么理解, 解释一下, 帮我分析, what is, how does, explain, 分析一下, 讨论, 建议, 看看, 评价.
+
+Respond with ONLY one word: "generate" or "chat". No other text.`
+
+// chatSystemPrompt is the system prompt for natural conversation mode.
+const chatSystemPrompt = `You are AntTrader AI, a knowledgeable trading strategy assistant. You help users discuss trading strategies, explain technical concepts, analyze market conditions, and provide guidance on strategy development.
+
+You are conversational, friendly, and professional. You can:
+- Explain trading concepts (indicators, patterns, risk management)
+- Discuss strategy ideas and their pros/cons
+- Analyze market conditions and trends
+- Suggest improvements to existing strategies
+- Answer questions about the AntTrader platform
+
+When the user wants to actually generate and backtest a strategy, suggest they describe the strategy in detail and you'll help create it.
+
+Keep responses concise and focused. Use markdown formatting when helpful (code blocks for examples, bullet points for lists).`
