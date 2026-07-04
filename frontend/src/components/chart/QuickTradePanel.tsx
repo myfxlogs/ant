@@ -97,7 +97,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
 
   if (horizontal) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', gap: 16, padding: '4px 10px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 20, padding: '8px 10px' }}>
         {symbol && (<>
         {/* Row 1: Buy/Sell | Volume | OrderType | MarginMode | Price */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
