@@ -273,10 +273,10 @@ export default function StrategyWorkspacePage() {
                   backtestStatus={ws.backtest.status}
                 />
               </div>
-              {/* Right: Quick Trade */}
+              {/* Right: Quick Trade — 2-row horizontal layout */}
               {ws.account.symbol && (
                 <div style={{
-                  width: 280, flexShrink: 0,
+                  width: 420, flexShrink: 0,
                   borderLeft: '1px solid var(--ant-color-border)',
                   background: 'var(--ant-color-bg-elevated)',
                   display: 'flex', flexDirection: 'column',
@@ -290,7 +290,7 @@ export default function StrategyWorkspacePage() {
                   }}>
                     ⚡ Quick Trade
                   </div>
-                  <div style={{ flex: 1, overflowY: 'auto', padding: '4px 8px' }}>
+                  <div style={{ flex: 1, overflowY: 'auto', padding: '4px 10px' }}>
                     <QuickTradePanel
                       accountId={ws.account.accountId}
                       symbol={ws.account.symbol}
@@ -299,6 +299,7 @@ export default function StrategyWorkspacePage() {
                       positions={ws.quickTrade.qtPositions}
                       recentTrades={ws.quickTrade.qtRecentTrades}
                       onClosePosition={ws.quickTrade.handleClosePosition}
+                      horizontal
                     />
                   </div>
                 </div>

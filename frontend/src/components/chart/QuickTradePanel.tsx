@@ -25,6 +25,7 @@ interface Props {
   recentTrades?: TradeItem[];
   onClosePosition?: (ticket: number, volume?: number) => void;
   onToggleAllPositions?: () => void;
+  horizontal?: boolean;
 }
 
 type OrderSide = 'buy' | 'sell';
@@ -39,7 +40,7 @@ const ORDER_KIND_KEYS: Record<OrderKind, string> = {
 const cardBox: React.CSSProperties = { background: 'var(--ant-color-bg-elevated)', border: '1px solid var(--ant-color-border)', borderRadius: 6, padding: '6px 10px' };
 const labelSm: React.CSSProperties = { fontSize: 10, color: 'var(--ant-color-text-tertiary)', fontWeight: 600 };
 
-export default function QuickTradePanel({ accountId, symbol, accountMeta, allPositions = [], positions = [], recentTrades = [], onClosePosition, onToggleAllPositions }: Props) {
+export default function QuickTradePanel({ accountId, symbol, accountMeta, allPositions = [], positions = [], recentTrades = [], onClosePosition, onToggleAllPositions, horizontal }: Props) {
   const { t } = useTranslation();
   const totalLots = (allPositions || []).reduce((s, p) => s + (p.volume || 0), 0);
   const [side, setSide] = useState<OrderSide>('buy');
@@ -93,6 +94,69 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
       closeTimerRef.current = window.setTimeout(() => setClosingTicket(null), 5000);
     }
   }, [onClosePosition]);
+
+  if (horizontal) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '4px 0' }}>
+        {symbol && (<>
+        {/* Row 1: Buy/Sell | Volume | OrderType | MarginMode */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Button size="small" type={side === 'buy' ? 'primary' : 'default'}
+            onClick={() => setSide('buy')} icon={<RiseOutlined />}
+            style={{ height: 28, fontWeight: 700, fontSize: 11, borderRadius: '6px 0 0 6px',
+              background: side === 'buy' ? '#22c55e' : 'var(--ant-color-bg-elevated)',
+              borderColor: side === 'buy' ? '#22c55e' : 'var(--ant-color-border)',
+              color: side === 'buy' ? '#fff' : 'var(--ant-color-text-secondary)',
+            }}>{t(TRADING_BUY_KEY)}</Button>
+          <Button size="small" type={side === 'sell' ? 'primary' : 'default'}
+            onClick={() => setSide('sell')} icon={<FallOutlined />}
+            style={{ height: 28, fontWeight: 700, fontSize: 11, borderRadius: '0 6px 6px 0', marginLeft: -1,
+              background: side === 'sell' ? '#ef4444' : 'var(--ant-color-bg-elevated)',
+              borderColor: side === 'sell' ? '#ef4444' : 'var(--ant-color-border)',
+              color: side === 'sell' ? '#fff' : 'var(--ant-color-text-secondary)',
+            }}>{t(TRADING_SELL_KEY)}</Button>
+          <span style={labelSm}>{t(AMOUNT_LOTS_KEY)}</span>
+          <InputNumber size="small" style={{ width: 70 }} min={0.01} step={0.01}
+            value={volume} onChange={(v) => setVolume(v ?? 0.01)} placeholder="0.01" />
+          <Select size="small" value={orderKind} onChange={setOrderKind}
+            options={Object.entries(ORDER_KIND_KEYS).map(([value, key]) => ({ value, label: t(key) }))}
+            style={{ width: 80 }} />
+          {isMT5 && (
+            <Radio.Group size="small" buttonStyle="solid"
+              value={marginMode} onChange={e => setMarginMode(e.target.value)}>
+              <Radio.Button value="cross">{t(CROSS_KEY)}</Radio.Button>
+              <Radio.Button value="isolated">{t(ISOLATED_KEY)}</Radio.Button>
+            </Radio.Group>
+          )}
+          {isLimitOrStop && (
+            <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
+              value={price} onChange={(v) => setPrice(v)} placeholder="Price" />
+          )}
+        </div>
+        {/* Row 2: SL | TP | Submit */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={labelSm}>SL</span>
+          <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
+            value={stopLoss} onChange={(v) => setStopLoss(v)} placeholder="0.00000" />
+          <span style={labelSm}>TP</span>
+          <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
+            value={takeProfit} onChange={(v) => setTakeProfit(v)} placeholder="0.00000" />
+          <div style={{ flex: 1 }} />
+          <Button type="primary" size="small" loading={submitting}
+            icon={<SendOutlined />} onClick={handleSubmit} disabled={!canSubmit}
+            style={{ height: 28, fontWeight: 700, fontSize: 12, borderRadius: 6,
+              background: side === 'buy'
+                ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
+                : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+              border: 'none',
+            }}>
+            {side === 'buy' ? t(TRADING_BUY_KEY) : t(TRADING_SELL_KEY)} {symbol}
+          </Button>
+        </div>
+        </>)}
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '8px 0' }}>
