@@ -97,7 +97,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
 
   if (horizontal) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '4px 0' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', gap: 16, padding: '4px 10px' }}>
         {symbol && (<>
         {/* Row 1: Buy/Sell | Volume | OrderType | MarginMode | Price */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -133,7 +133,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
               value={price} onChange={(v) => setPrice(v)} placeholder="Price" />
           )}
         </div>
-        {/* Row 2: SL | TP | Submit (right-aligned) */}
+        {/* Row 2: SL | TP | Submit */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={labelSm}>SL</span>
           <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
@@ -141,7 +141,6 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
           <span style={labelSm}>TP</span>
           <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
             value={takeProfit} onChange={(v) => setTakeProfit(v)} placeholder="0.00000" />
-          <div style={{ flex: 1 }} />
           <Button type="primary" size="small" loading={submitting}
             icon={<SendOutlined />} onClick={handleSubmit} disabled={!canSubmit}
             style={{ height: 28, fontWeight: 700, fontSize: 12, borderRadius: 6,
