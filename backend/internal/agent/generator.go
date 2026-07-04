@@ -136,7 +136,7 @@ func (g *Generator) Generate(
 		return err
 	}
 
-	return g.runAgentLoop(ctx, userID, msg, bars, btCfg, preProfile, sessionMem, confirmedPlan, streamOrAbort)
+	return g.runAgentLoop(ctx, userID, msg, preProfile, sessionMem, confirmedPlan, streamOrAbort)
 }
 
 // generateProfileFromNL calls LLM to produce a strategy profile from the natural language

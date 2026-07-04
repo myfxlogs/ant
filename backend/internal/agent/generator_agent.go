@@ -11,14 +11,11 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	connectai "anttrader/internal/connect/ai"
 	systemai "anttrader/internal/service/systemai"
-	"anttrader/strategy/sdk"
-	"anttrader/tools/mql2go"
 )
 
 // generatorDiscipline defines the thinking and verification discipline for the
 // Generator agent. Separate from the compilation contract (pythonSubsetRules)
-// because it's a prompt-engineering concern — it can evolve independently
-// from the chat agent's discipline.
+// because it's a prompt-engineering concern — it can evolve independently.
 const generatorDiscipline = `
 ## Thinking Discipline (CRITICAL)
 
@@ -31,6 +28,17 @@ Before EVERY significant action (generating code, calling a tool, analyzing resu
 [/THINK]
 
 Then immediately take the action. This prevents impulsive decisions and helps you catch mistakes before they happen.
+
+## Pre-Generation Syntax Check (MANDATORY)
+
+Before outputting ANY Python code, mentally verify:
+□ Does every function/method have a colon after its definition line?
+□ Are all parentheses and brackets properly matched?
+□ Is indentation consistent (4 spaces per level)?
+□ Are all string literals properly closed?
+□ No stray characters, incomplete lines, or copy-paste artifacts?
+
+Code that fails tree-sitter parsing (HasError=true) will be REJECTED immediately. Check basic syntax BEFORE outputting.
 
 ## Pre-Compile Self-Verification (MANDATORY)
 
@@ -53,8 +61,9 @@ These are the most frequent compile errors. Check these FIRST before generating 
 - Missing -> None on on_deinit method
 - Importing anything other than Decimal
 - Using f-strings or list comprehensions
+- Missing colon after def line, causing tree-sitter parse failure
 
-If you just fixed a compile error, REMEMBER what caused it. Do NOT repeat the same mistake. If a backtest failed, analyze the metrics carefully before modifying the strategy.`
+If you just fixed a compile error, REMEMBER what caused it. Do NOT repeat the same mistake.`
 
 // generatorAgentSystemPrompt is the system prompt for the Python strategy agent.
 const generatorAgentSystemPrompt = `You are a quantitative strategy generator on the AntTrader platform.
@@ -64,19 +73,18 @@ Your task is to generate Python trading strategies from natural language descrip
 
 ## Workflow
 
-You have access to two tools:
-- **compile_python** — Compile your Python strategy code. Returns success + coverage score, or a specific error message.
-- **run_backtest** — Run a backtest on your compiled strategy. Returns key metrics (total return, max drawdown, Sharpe ratio, win rate, trade count, etc.).
+You have ONE tool available:
+- **compile_python** — Compile your Python strategy code. Returns success + coverage score, or a specific error message. Only call this when the user explicitly asks you to verify the code.
 
 Follow this workflow:
 1. **Discuss the plan first.** Analyze the user's strategy request, propose a concrete execution plan (numbered 1. 2. 3.), and confirm with the user.
-2. **[THINK]** Before generating code, think through the strategy logic.
+2. **[THINK]** Before generating code, think through the strategy logic silently.
 3. **Generate the Python code.** Output complete, compilable Python subset code in a markdown code block. Do NOT use TODO or pass as placeholders.
-4. **Self-verify.** Run through the pre-compile checklist. Fix any issues silently.
-5. **Compile.** Call compile_python to check for errors.
-6. **Fix if needed.** If compilation fails: [THINK] read the error, understand the root cause, fix, self-verify, compile again.
-7. **Backtest.** Once compilation passes, call run_backtest to see the performance.
-8. **Analyze.** Interpret the backtest results. Explain what the metrics mean and suggest improvements.
+4. **Present the code to the user.** After generating code, STOP. Show the code and tell the user: "Here's your strategy code. You can save it, or ask me to compile and verify it."
+5. **Wait for user instruction.** Do NOT call compile_python automatically. Wait for the user to explicitly ask you to compile, modify, or explain the code.
+6. **Compile only when asked.** If the user asks you to verify: call compile_python. If it fails, [THINK] read the error, understand the root cause, fix the specific issue, and compile again.
+
+**IMPORTANT**: Never call compile_python without the user asking. Never run backtest — the user does that manually via the UI buttons. Your job is to generate clean, correct code and present it.
 
 ` + generatorDiscipline + `
 
@@ -85,16 +93,13 @@ Follow this workflow:
 - After calling a tool, STOP and wait for the result. Do not predict tool output.
 - If the user provides a confirmed plan, follow it precisely.`
 
-// runAgentLoop replaces the hardcoded generate→compile→backtest→retry pipeline
-// with an LLM-driven agent loop. The LLM decides when to generate code, compile,
-// backtest, fix errors, and iterate — using native tool_use via compile_python
-// and run_backtest tools.
+// runAgentLoop runs the LLM-driven agent loop for the Generator.
+// After the loop completes, code is extracted and sent to the frontend.
+// No auto-compile or auto-backtest — the LLM presents code and waits for user instruction.
 func (g *Generator) runAgentLoop(
 	ctx context.Context,
 	userID uuid.UUID,
 	msg *antv1.AgentGenerateStrategyRequest,
-	bars []sdk.Bar,
-	btCfg *antv1.AgentBacktestConfig,
 	preProfile *antv1.StrategyProfile,
 	sessionMem *SessionMemory,
 	confirmedPlan *antv1.StrategyPlan,
@@ -102,13 +107,8 @@ func (g *Generator) runAgentLoop(
 ) error {
 	result := &generateState{}
 
-	// ── Build Python tools ──
-	gtCtx := &genToolContext{
-		bars:   bars,
-		btCfg:  btCfg,
-		params: msg.Params,
-	}
-	registry := buildPythonToolRegistry(gtCtx, result)
+	// ── Build Python tools (compile_python only) ──
+	registry := buildPythonToolRegistry(result)
 
 	// ── Build system prompt ──
 	sysPrompt := generatorAgentSystemPrompt
@@ -142,24 +142,17 @@ func (g *Generator) runAgentLoop(
 	if sessionMem != nil {
 		sessionMem.InjectIntoPrompt(&userPrompt)
 	}
-	userPrompt.WriteString("\n\nDiscuss the plan briefly, then generate the Python strategy code, compile it, and run the backtest.")
+	userPrompt.WriteString("\n\nDiscuss the plan briefly, then generate the Python strategy code and present it to the user. Do NOT compile — the user will ask if they want verification.")
 
 	// ── Stream callbacks — map AgentLoop events to Generator chunk format ──
 	streamChunk := func(delta string) error {
 		return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "generating", Delta: delta})
 	}
 	toolStream := func(tc *antv1.ToolCall, tr *antv1.ToolResult) error {
-		switch tc.Name {
-		case "compile_python":
+		if tc.Name == "compile_python" {
 			chunk := &antv1.AgentGenerateStrategyChunk{Phase: "compiling", PythonSource: result.PythonSource}
 			if !tr.Success {
 				chunk.CompileError = tr.Error
-			}
-			return streamOrAbort(chunk)
-		case "run_backtest":
-			chunk := &antv1.AgentGenerateStrategyChunk{Phase: "backtesting"}
-			if !tr.Success {
-				chunk.BacktestError = tr.Error
 			}
 			return streamOrAbort(chunk)
 		}
@@ -173,7 +166,7 @@ func (g *Generator) runAgentLoop(
 		},
 		streamChunk, toolStream,
 	)
-	loop.SetCurrentCode("") // starts empty — LLM generates code, tools use it
+	loop.SetCurrentCode("")
 
 	raw, loopErr := loop.Run(ctx, sysPrompt, userPrompt.String(), userID)
 	if loopErr != nil {
@@ -188,47 +181,14 @@ func (g *Generator) runAgentLoop(
 	// ── Extract code from the final LLM response ──
 	pythonSource := stripMarkdownFences(connectai.ExtractCode(raw))
 	if pythonSource == "" {
-		pythonSource = raw // fallback: use entire response as code
+		pythonSource = raw
 	}
 	result.PythonSource = pythonSource
 
-	// If the LLM never called compile_python (no errors set), compile manually.
-	if result.CompileError == "" && result.BacktestError == "" {
-		runner, coverage, compileErr := mql2go.CompilePythonWithCoverage(pythonSource)
-		if compileErr != nil {
-			result.CompileError = compileErr.Error()
-		} else {
-			// Run backtest if LLM didn't call run_backtest.
-			btResult, btErr := runVMBacktest(ctx, runner, btCfg, bars, msg.Params)
-			if btErr != nil {
-				result.BacktestError = btErr.Error()
-			} else {
-				// Success — send final result.
-				btProto := buildBacktestResultProto(btResult)
-				chunk := &antv1.AgentGenerateStrategyChunk{
-					Phase:         "done",
-					PythonSource:  pythonSource,
-					Result:        btProto,
-					CoverageScore: coverage.Score,
-				}
-				for _, bs := range coverage.BlindSpots {
-					chunk.BlindSpots = append(chunk.BlindSpots, &antv1.AgentBlindSpot{
-						Builtin: bs.Builtin, Severity: bs.Severity, Count: int32(bs.Count),
-					})
-				}
-				_ = streamOrAbort(chunk)
-				return nil
-			}
-		}
-	}
-
-	// ── Send final chunk with whatever state we have ──
-	finalChunk := &antv1.AgentGenerateStrategyChunk{
-		Phase:         "done",
-		PythonSource:  result.PythonSource,
-		CompileError:  result.CompileError,
-		BacktestError: result.BacktestError,
-	}
-	_ = streamOrAbort(finalChunk)
+	// ── Send final chunk with the generated code ──
+	_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{
+		Phase:        "done",
+		PythonSource: pythonSource,
+	})
 	return nil
 }
