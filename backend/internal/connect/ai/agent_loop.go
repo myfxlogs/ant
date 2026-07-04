@@ -167,6 +167,9 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 
 // parseToolArguments parses the JSON arguments string from an LLM tool call
 // and maps known fields into a ToolInput struct.
+// Standard fields (symbol, timeframe, code) are mapped directly.
+// Legacy memory tools use key/value which map to Symbol/Timeframe — these
+// never overlap with standard fields in practice, but standard fields win on conflict.
 func parseToolArguments(toolName, argsJSON string) ToolInput {
 	in := ToolInput{}
 	if argsJSON == "" {
@@ -185,16 +188,21 @@ func parseToolArguments(toolName, argsJSON string) ToolInput {
 	if v, ok := args["code"].(string); ok {
 		in.Code = v
 	}
-	// For tools like remember/recall that use "key"/"value" fields.
-	if v, ok := args["key"].(string); ok {
-		in.Symbol = v // reuse Symbol field for key
+	// Memory tool fields (remember, recall, save_strategy, load_strategy)
+	// map key/name → Symbol and value → Timeframe. Only applied when the
+	// standard field wasn't already set (standard fields win on conflict).
+	if in.Symbol == "" {
+		if v, ok := args["key"].(string); ok {
+			in.Symbol = v
+		}
+		if v, ok := args["name"].(string); ok {
+			in.Symbol = v
+		}
 	}
-	if v, ok := args["value"].(string); ok {
-		in.Timeframe = v // reuse Timeframe field for value
-	}
-	// For save_strategy: "name" field → Symbol
-	if v, ok := args["name"].(string); ok {
-		in.Symbol = v
+	if in.Timeframe == "" {
+		if v, ok := args["value"].(string); ok {
+			in.Timeframe = v
+		}
 	}
 	return in
 }

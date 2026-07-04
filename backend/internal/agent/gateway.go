@@ -50,7 +50,7 @@ func NewGatewayServer(pool *pgxpool.Pool, mdr repository.MarketDataStore, aiSvc 
 		bridge:         NewBridge(aiSvc, log, cache),
 		profiler:       profiler,
 		interpreter:    interpreter,
-		generator:      NewGenerator(aiSvc, log, profiler, interpreter, cache, memory, hooks, settings),
+		generator:      NewGenerator(aiSvc, log, cache, memory),
 		memory:         memory,
 		hooks:          hooks,
 		settings:       settings,

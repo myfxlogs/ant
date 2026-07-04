@@ -67,7 +67,9 @@ const StrategyGen = {
       "execApplyCode": "应用代码到编辑器",
       "execSkipNoSymbol": "回测跳过：未选择交易品种",
       "execSkipNoCode": "回测跳过：代码为空",
-      "validating": "合规检查"
+      "validating": "合规检查",
+      "noMarketData": "暂无行情数据",
+      "noMarketDataHint": "请先选择交易账号和品种，待图表加载行情数据后再重试。"
     }
   }
 } as const;

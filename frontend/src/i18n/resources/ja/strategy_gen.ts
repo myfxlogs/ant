@@ -65,7 +65,9 @@ const StrategyGen = {
       "execApplyCode": "エディタに適用",
       "execSkipNoSymbol": "バックテストスキップ：銘柄未選択",
       "execSkipNoCode": "バックテストスキップ：コードが空",
-      "validating": "コンプライアンスチェック"
+      "validating": "コンプライアンスチェック",
+      "noMarketData": "マーケットデータがありません",
+      "noMarketDataHint": "取引口座と銘柄を選択してチャートにデータを読み込んでから、再試行してください。"
     }
   }
 } as const;

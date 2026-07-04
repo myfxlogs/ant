@@ -14,78 +14,30 @@ import (
 	"anttrader/strategy/sdk"
 )
 
-const (
-	maxGenerateRetries = 3
-	maxProfileRetries  = 2
-	maxAnalysisRetries = 2
-)
 
-// costCeilingUSD is the hard LLM cost limit per strategy generation (ADR-0024 §D7).
-const costCeilingUSD = 0.50
-
-// Estimated cost per LLM call type (ADR-0024 §D7 cost model).
-const (
-	estCostCodeGen    = 0.004 // ~2000 in + ~1500 out tokens
-	estCostProfile    = 0.0004 // ~500 in + ~200 out tokens
-	estCostAnalysis   = 0.0006 // ~800 in + ~300 out tokens
-)
-
-// Generator orchestrates the strategy generation Agent loop.
-// ADR-0024 Phase 3: natural language → strategy profile → LLM → Python subset → compile_py → VM backtest.
-//
-// Phase 3 simplification: the Agent loop runs in Go (not Python) with 3 retries (not 50 iterations).
-// Phase 4 will migrate to a Python Agent process with pandas/optuna/pgvector per ADR-0024 §5.1.
+// Generator orchestrates the strategy generation Agent loop:
+// intent → profile → plan → AgentLoop (generate/compile/backtest/fix).
 type Generator struct {
-	aiSvc       *systemai.Service
-	log         *zap.Logger
-	profiler    *Profiler
-	interpreter *Interpreter
-	cache       *LLCache
-	memory      *MemoryStore
-	retrospect  *RetrospectAgent
-	hooks       *HookEngine
-	settings    *SettingsStore
+	aiSvc  *systemai.Service
+	log    *zap.Logger
+	cache  *LLCache
+	memory *MemoryStore
 }
 
 // NewGenerator creates the strategy generation orchestrator.
-func NewGenerator(aiSvc *systemai.Service, log *zap.Logger, profiler *Profiler, interpreter *Interpreter, cache *LLCache, memory *MemoryStore, hooks *HookEngine, settings *SettingsStore) *Generator {
-	return &Generator{
-		aiSvc: aiSvc, log: log, profiler: profiler, interpreter: interpreter, cache: cache, memory: memory,
-		retrospect: NewRetrospectAgent(aiSvc, memory, log),
-		hooks:      hooks,
-		settings:   settings,
-	}
+func NewGenerator(aiSvc *systemai.Service, log *zap.Logger, cache *LLCache, memory *MemoryStore) *Generator {
+	return &Generator{aiSvc: aiSvc, log: log, cache: cache, memory: memory}
 }
 
-// generateState tracks mutable state across retry attempts within a single Generate call.
+// generateState tracks mutable state during AgentLoop execution — tools update
+// compile/backtest results so runAgentLoop can inspect final state after completion.
 type generateState struct {
 	PythonSource  string
 	CompileError  string
 	BacktestError string
 }
 
-
-// firePostGenHook dispatches the post-generation hook or retrospect agent (ADR-0025 §6, §8).
-func (g *Generator) firePostGenHook(ctx context.Context, userID uuid.UUID, source string, profile *antv1.StrategyProfile, btProto *antv1.AgentBacktestResult, analysis *antv1.BacktestAnalysis) {
-	if g.hooks != nil && g.hooks.HasHandlers(HookPostStrategyGen) {
-		go g.hooks.Fire(ctx, &HookContext{
-			Event:         HookPostStrategyGen,
-			UserID:        userID,
-			Source:        source,
-			Profile:       profile,
-			BacktestResult: btProto,
-			Analysis:      analysis,
-		})
-	} else if g.retrospect != nil {
-		go g.retrospect.Run(ctx, userID, retrospectInput{
-			Profile:       profile,
-			BacktestResult: btProto,
-			Analysis:      analysis,
-		})
-	}
-}
-
-// Generate runs the generation loop: LLM generate → compile → backtest → retry on failure.
+// Generate runs the LLM-driven agent loop: intent → profile → plan → AgentLoop (generate/compile/backtest/fix).
 // Streams progress chunks to the frontend via the stream callback.
 func (g *Generator) Generate(
 	ctx context.Context,
@@ -99,22 +51,6 @@ func (g *Generator) Generate(
 		btCfg = &antv1.AgentBacktestConfig{
 			Symbol:    msg.Symbol,
 			Timeframe: msg.Timeframe,
-		}
-	}
-
-	var estCostUSD float64
-
-	// Resolve managed settings for cost ceiling and max iterations (ADR-0025 §5.2).
-	effectiveCostCeiling := costCeilingUSD // fallback to default constant
-	effectiveMaxRetries := maxGenerateRetries
-	if g.settings != nil {
-		if rs, err := g.settings.ResolveSettings(ctx, userID); err == nil && rs.Loaded {
-			if rs.Managed.MaxCostCeilingUSD > 0 {
-				effectiveCostCeiling = rs.Managed.MaxCostCeilingUSD
-			}
-			if rs.Managed.MaxIterations > 0 {
-				effectiveMaxRetries = rs.Managed.MaxIterations
-			}
 		}
 	}
 
@@ -151,10 +87,8 @@ func (g *Generator) Generate(
 	if err := streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "planning"}); err != nil {
 		return err
 	}
-	estCostUSD += estCostProfile
 	pp, profErr := g.generateProfileFromNL(ctx, userID, msg)
 	if profErr != nil {
-		estCostUSD -= estCostProfile // failed call, don't count
 		g.log.Warn("generator: pre-profile failed, proceeding without", zap.Error(profErr))
 	} else {
 		preProfile = pp
@@ -198,10 +132,6 @@ func (g *Generator) Generate(
 	}
 
 	// ── Agent Loop: LLM drives generate → compile → backtest → fix → repeat ──
-	_ = estCostUSD // retained for future cost tracking
-	_ = effectiveMaxRetries
-	_ = effectiveCostCeiling
-
 	if err := streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "generating"}); err != nil {
 		return err
 	}
@@ -343,3 +273,27 @@ You are conversational, friendly, and professional. You can:
 When the user wants to actually generate and backtest a strategy, suggest they describe the strategy in detail and you'll help create it.
 
 Keep responses concise and focused. Use markdown formatting when helpful (code blocks for examples, bullet points for lists).`
+
+// generatePlan calls LLM to produce a structured StrategyPlan from NL + profile (ADR-0025 §3).
+func (g *Generator) generatePlan(
+	ctx context.Context,
+	userID uuid.UUID,
+	msg *antv1.AgentGenerateStrategyRequest,
+	profile *antv1.StrategyProfile,
+	sessionMem *SessionMemory,
+) (*antv1.StrategyPlan, error) {
+	userPrompt := buildPlanPrompt(msg, profile, msg.PlanFeedback, sessionMem)
+
+	llmCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	resp, err := g.aiSvc.ChatCompletion(llmCtx, userID, []systemai.ChatMessage{
+		{Role: "system", Content: planSystemPrompt},
+		{Role: "user", Content: userPrompt},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("plan LLM call: %w", err)
+	}
+
+	return parsePlanResponse(resp), nil
+}

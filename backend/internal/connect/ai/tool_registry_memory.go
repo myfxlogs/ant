@@ -2,9 +2,7 @@ package ai
 
 import (
 	"context"
-	"strings"
 
-	"anttrader/internal/repository"
 	systemai "anttrader/internal/service/systemai"
 )
 
@@ -32,13 +30,8 @@ func (t *rememberTool) Schema() systemai.ToolDefinition {
 }
 func (t *rememberTool) Run(ctx context.Context, in ToolInput) ToolOutput {
 	if t.execFn == nil { return ToolOutput{Success: false, Error: "db not wired"} }
-	parts := strings.SplitN(in.Symbol, " ", 2) // abuse Symbol field for "key value"
 	key := in.Symbol
 	val := in.Timeframe
-	if len(parts) >= 2 {
-		key = parts[0]
-		val = strings.Join(parts[1:], " ")
-	}
 	err := t.execFn(ctx,
 		"INSERT INTO ai_memory (user_id, key, value, updated_at) VALUES ($1,$2,$3,NOW()) ON CONFLICT (user_id,key) DO UPDATE SET value=$3, updated_at=NOW()",
 		in.UserID, key, val)
@@ -180,36 +173,3 @@ func (t *loadStrategyTool) Run(ctx context.Context, in ToolInput) ToolOutput {
 	return ToolOutput{Success: true, Output: map[string]string{"name": name, "code": code}}
 }
 
-// ── backtest tool ──
-
-type backtestTool struct{ repo *repository.BacktestRunRepository }
-
-func (t *backtestTool) Name() string { return "backtest" }
-func (t *backtestTool) Schema() systemai.ToolDefinition {
-	return systemai.ToolDefinition{
-		Type: "function",
-		Function: systemai.ToolDefFunction{
-			Name:        "backtest",
-			Description: "对当前策略代码执行回测。需要指定品种和时间周期。回测在历史K线数据上运行，完成后可通过 read_backtest_log 查看结果。",
-			Parameters: map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"symbol":    map[string]any{"type": "string", "description": "交易品种代码"},
-					"timeframe": map[string]any{"type": "string", "enum": []string{"1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"}},
-				},
-				"required": []string{"symbol", "timeframe"},
-			},
-		},
-	}
-}
-
-func (t *backtestTool) Run(ctx context.Context, in ToolInput) ToolOutput {
-	runID, err := CreateBacktestRun(ctx, t.repo, in.UserID, in.Code, in.Symbol, in.Timeframe)
-	if err != nil {
-		return ToolOutput{Success: false, Error: err.Error()}
-	}
-	return ToolOutput{
-		Success: true,
-		Output:  map[string]string{"run_id": runID},
-	}
-}

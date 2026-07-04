@@ -2,7 +2,6 @@ package agent
 
 import (
 	_ "embed"
-	"fmt"
 	"strings"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -10,9 +9,6 @@ import (
 
 //go:embed prompts/plan_user.prompt
 var planUserPromptTmpl string
-
-//go:embed prompts/generate_from_plan_user.prompt
-var generateFromPlanUserPromptTmpl string
 
 // planSystemPrompt instructs the LLM to produce a structured strategy plan (ADR-0025 §3).
 // Output is line-based KEY: value format, parsed by parsePlanResponse into StrategyPlan proto.
@@ -80,23 +76,6 @@ func parsePlanResponse(raw string) *antv1.StrategyPlan {
 	return plan
 }
 
-// buildGenerateFromPlanPrompt constructs the user prompt for code generation from a confirmed plan.
-func buildGenerateFromPlanPrompt(msg *antv1.AgentGenerateStrategyRequest, plan *antv1.StrategyPlan, profile *antv1.StrategyProfile, mem *SessionMemory) (string, string) {
-	data := buildPromptData(msg, profile, mem)
-	var planSB strings.Builder
-	planSB.WriteString(fmt.Sprintf("Type: %s\n", plan.Type))
-	planSB.WriteString(fmt.Sprintf("Entry: %s\n", plan.Entry))
-	planSB.WriteString(fmt.Sprintf("Exit: %s\n", plan.Exit))
-	planSB.WriteString(fmt.Sprintf("Risk: %s\n", plan.Risk))
-	planSB.WriteString(fmt.Sprintf("Market: %s\n", plan.Market))
-	data.PlanBlock = planSB.String()
-	userPrompt, err := renderPrompt("generate_from_plan_user", generateFromPlanUserPromptTmpl, data)
-	if err != nil {
-		return generateSystemPrompt, fallbackGenerateFromPlanPrompt(msg, plan, profile, mem)
-	}
-	return generateSystemPrompt, userPrompt
-}
-
 func fallbackPlanPrompt(msg *antv1.AgentGenerateStrategyRequest, profile *antv1.StrategyProfile, feedback string, mem *SessionMemory) string {
 	var sb strings.Builder
 	sb.WriteString("## Strategy Request\n")
@@ -119,29 +98,3 @@ func fallbackPlanPrompt(msg *antv1.AgentGenerateStrategyRequest, profile *antv1.
 	return sb.String()
 }
 
-func fallbackGenerateFromPlanPrompt(msg *antv1.AgentGenerateStrategyRequest, plan *antv1.StrategyPlan, profile *antv1.StrategyProfile, mem *SessionMemory) string {
-	var sb strings.Builder
-	sb.WriteString("## Strategy Description\n")
-	sb.WriteString(msg.Message)
-	sb.WriteString("\n\n")
-	sb.WriteString("## Confirmed Strategy Plan\n")
-	sb.WriteString(fmt.Sprintf("Type: %s\n", plan.Type))
-	sb.WriteString(fmt.Sprintf("Entry: %s\n", plan.Entry))
-	sb.WriteString(fmt.Sprintf("Exit: %s\n", plan.Exit))
-	sb.WriteString(fmt.Sprintf("Risk: %s\n", plan.Risk))
-	sb.WriteString(fmt.Sprintf("Market: %s\n\n", plan.Market))
-	writeProfileToPrompt(&sb, profile, "## Strategy Profile (use as guidance)\n")
-	if profile != nil {
-		sb.WriteString("\n")
-	}
-	if mem != nil {
-		mem.InjectIntoPrompt(&sb)
-	}
-	writeRequestContext(&sb, msg)
-	sb.WriteString("\n## Task\n")
-	sb.WriteString("Generate a complete Python subset trading strategy based on the confirmed plan above.\n")
-	sb.WriteString("Follow the plan's entry, exit, and risk rules precisely.\n")
-	sb.WriteString("Use the SDK API mapping shown in the system prompt.\n")
-	sb.WriteString("Output ONLY the Python source code.\n")
-	return sb.String()
-}

@@ -19,11 +19,10 @@ import (
 type HookEvent string
 
 const (
-	HookPreStrategySubmit  HookEvent = "pre_strategy_submit"
-	HookPostBacktest       HookEvent = "post_backtest"
-	HookPreLiveDeploy      HookEvent = "pre_live_deploy"
-	HookDegradationAlert   HookEvent = "degradation_alert"
-	HookPostStrategyGen    HookEvent = "post_strategy_generation"
+	HookPreStrategySubmit HookEvent = "pre_strategy_submit"
+	HookPostBacktest      HookEvent = "post_backtest"
+	HookPreLiveDeploy     HookEvent = "pre_live_deploy"
+	HookPostStrategyGen   HookEvent = "post_strategy_generation"
 )
 
 // HookContext carries data to lifecycle hooks.
@@ -35,8 +34,7 @@ type HookContext struct {
 	BacktestResult *antv1.AgentBacktestResult
 	Profile        *antv1.StrategyProfile
 	Analysis       *antv1.BacktestAnalysis
-	Error          error
-	DegradationReason string // for DegradationAlert
+	Error error
 }
 
 // HookType is the execution type of a hook (ADR-0025 §8).
@@ -206,8 +204,8 @@ func (e *HookEngine) HasHandlers(event HookEvent) bool {
 
 // buildHookJSON serializes hook context as a simple JSON string for command/webhook hooks.
 func buildHookJSON(hc *HookContext) string {
-	return fmt.Sprintf(`{"event":"%s","user_id":"%s","strategy_id":"%s","source":"%s","degradation_reason":"%s"}`,
-		hc.Event, hc.UserID, hc.StrategyID, escapeJSON(hc.Source), escapeJSON(hc.DegradationReason))
+	return fmt.Sprintf(`{"event":"%s","user_id":"%s","strategy_id":"%s","source":"%s"}`,
+		hc.Event, hc.UserID, hc.StrategyID, escapeJSON(hc.Source))
 }
 
 func escapeJSON(s string) string {

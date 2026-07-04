@@ -36,8 +36,8 @@ const ORDER_KIND_KEYS: Record<OrderKind, string> = {
   STOP: 'trading.stop',
 };
 
-const cardBox: React.CSSProperties = { background: '#f6f9fc', border: '1px solid #e0e8f0', borderRadius: 6, padding: '6px 10px' };
-const labelSm: React.CSSProperties = { fontSize: 10, color: '#64748b', fontWeight: 600 };
+const cardBox: React.CSSProperties = { background: 'var(--ant-color-bg-elevated)', border: '1px solid var(--ant-color-border)', borderRadius: 6, padding: '6px 10px' };
+const labelSm: React.CSSProperties = { fontSize: 10, color: 'var(--ant-color-text-tertiary)', fontWeight: 600 };
 
 export default function QuickTradePanel({ accountId, symbol, accountMeta, allPositions = [], positions = [], recentTrades = [], onClosePosition, onToggleAllPositions }: Props) {
   const { t } = useTranslation();
@@ -104,17 +104,17 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
           onClick={() => setSide('buy')} icon={<RiseOutlined />}
           style={{
             height: 38, fontWeight: 700, fontSize: 13, borderRadius: '8px 0 0 8px',
-            background: side === 'buy' ? '#22c55e' : '#f1f5f9',
-            borderColor: side === 'buy' ? '#22c55e' : '#d1d5db',
-            color: side === 'buy' ? '#fff' : '#64748b',
+            background: side === 'buy' ? '#22c55e' : 'var(--ant-color-bg-elevated)',
+            borderColor: side === 'buy' ? '#22c55e' : 'var(--ant-color-border)',
+            color: side === 'buy' ? '#fff' : 'var(--ant-color-text-secondary)',
           }}>{t(TRADING_BUY_KEY)}</Button>
         <Button block type={side === 'sell' ? 'primary' : 'default'}
           onClick={() => setSide('sell')} icon={<FallOutlined />}
           style={{
             height: 38, fontWeight: 700, fontSize: 13, borderRadius: '0 8px 8px 0', marginLeft: -1,
-            background: side === 'sell' ? '#ef4444' : '#f1f5f9',
-            borderColor: side === 'sell' ? '#ef4444' : '#d1d5db',
-            color: side === 'sell' ? '#fff' : '#64748b',
+            background: side === 'sell' ? '#ef4444' : 'var(--ant-color-bg-elevated)',
+            borderColor: side === 'sell' ? '#ef4444' : 'var(--ant-color-border)',
+            color: side === 'sell' ? '#fff' : 'var(--ant-color-text-secondary)',
           }}>{t(TRADING_SELL_KEY)}</Button>
       </div>
 
@@ -183,23 +183,6 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
         {side === 'buy' ? t(TRADING_BUY_KEY) : t(TRADING_SELL_KEY)} {symbol || '—'}
       </Button>
       </>)}
-
-      {/* Position summary — click to expand all positions overlay */}
-      <div onClick={onToggleAllPositions} role="button" tabIndex={0}
-        onKeyUp={e => e.key === 'Enter' && onToggleAllPositions?.()}
-        style={{ ...cardBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-        <span style={labelSm}>{t(TRADING_OPEN_POSITIONS_TITLE_KEY)}</span>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>
-          {totalLots.toFixed(2)} lots · {allPositions.length} &gt;
-        </span>
-      </div>
-
-      {/* Position Section */}
-      <PositionSection symbol={symbol} positions={positions}
-        closingTicket={closingTicket} onClosePosition={handleClosePos} />
-
-      {/* Trade History */}
-      <TradeHistorySection trades={recentTrades} />
     </div>
   );
 }

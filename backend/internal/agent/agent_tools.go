@@ -40,18 +40,12 @@ func (t *compilePythonTool) Schema() systemai.ToolDefinition {
 }
 func (t *compilePythonTool) Run(_ context.Context, in connectai.ToolInput) connectai.ToolOutput {
 	code := in.Code
-	if code == "" {
-		return connectai.ToolOutput{Success: false, Error: "no Python code to compile — generate code first"}
-	}
 	t.result.PythonSource = code
 	_, coverage, err := mql2go.CompilePythonWithCoverage(code)
 	if err != nil {
 		t.result.CompileError = err.Error()
 		t.result.BacktestError = ""
-		return connectai.ToolOutput{
-			Success: false,
-			Error:   err.Error(),
-		}
+		return connectai.ToolOutput{Success: false, Error: err.Error()}
 	}
 	t.result.CompileError = ""
 	return connectai.ToolOutput{

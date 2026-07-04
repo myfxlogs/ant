@@ -13,15 +13,19 @@ interface WorkspaceState {
   accountId: string;
   symbol: string;
   timeframe: string;
-  centerTab: CenterTab;
-  rightTab: RightTab;
+  aiDrawerOpen: boolean;
+  leftSidebarCollapsed: boolean;
+  bottomPanelCollapsed: boolean;
+  quickTradeCollapsed: boolean;
   positionsPanelVisible: boolean;
   _hasHydrated: boolean;
   setAccountId: (v: string) => void;
   setSymbol: (v: string) => void;
   setTimeframe: (v: string) => void;
-  setCenterTab: (v: CenterTab) => void;
-  setRightTab: (v: RightTab) => void;
+  setAiDrawerOpen: (v: boolean) => void;
+  setLeftSidebarCollapsed: (v: boolean) => void;
+  setBottomPanelCollapsed: (v: boolean) => void;
+  setQuickTradeCollapsed: (v: boolean) => void;
   setPositionsPanelVisible: (v: boolean) => void;
 }
 
@@ -31,26 +35,32 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       accountId: '',
       symbol: '',
       timeframe: '1h',
-      centerTab: 'design' as CenterTab,
-      rightTab: 'results' as RightTab,
+      aiDrawerOpen: false,
+      leftSidebarCollapsed: true,
+      bottomPanelCollapsed: false,
+      quickTradeCollapsed: true,
       positionsPanelVisible: false,
       _hasHydrated: false,
       setAccountId: (v) => set({ accountId: v }),
       setSymbol: (v) => set({ symbol: v }),
       setTimeframe: (v) => set({ timeframe: v }),
-      setCenterTab: (v) => set({ centerTab: v }),
-      setRightTab: (v) => set({ rightTab: v }),
+      setAiDrawerOpen: (v) => set({ aiDrawerOpen: v }),
+      setLeftSidebarCollapsed: (v) => set({ leftSidebarCollapsed: v }),
+      setBottomPanelCollapsed: (v) => set({ bottomPanelCollapsed: v }),
+      setQuickTradeCollapsed: (v) => set({ quickTradeCollapsed: v }),
       setPositionsPanelVisible: (v) => set({ positionsPanelVisible: v }),
     }),
     {
-      name: 'ant-workspace-state',
+      name: 'ant-workspace-v5',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         accountId: state.accountId,
         symbol: state.symbol,
         timeframe: state.timeframe,
-        centerTab: state.centerTab,
-        rightTab: state.rightTab,
+        aiDrawerOpen: state.aiDrawerOpen,
+        leftSidebarCollapsed: state.leftSidebarCollapsed,
+        bottomPanelCollapsed: state.bottomPanelCollapsed,
+        quickTradeCollapsed: state.quickTradeCollapsed,
         positionsPanelVisible: state.positionsPanelVisible,
       }),
       onRehydrateStorage: () => (state) => {

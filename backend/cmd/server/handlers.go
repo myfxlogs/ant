@@ -251,7 +251,7 @@ func registerHandlers(
 	gateEvalServer := ai.NewGateEvalServer(backtestRunRepo, log)
 	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	// Claude Code style: separated plan → execute pipeline
-	strategyPlanServer := ai.NewStrategyPlanServer(aiSvc, templatesRepo, backtestRunRepo, convRepo, marketDataRepo, log)
+	strategyPlanServer := ai.NewStrategyPlanServer(aiSvc, backtestRunRepo, convRepo, marketDataRepo, log)
 	strategyPlanServer.SetPoolAdapter(
 		func(ctx context.Context, sql string, args ...any) error { _, e := pool.Exec(ctx, sql, args...); return e },
 		func(ctx context.Context, sql string, args ...any) (string, error) { var v string; row := pool.QueryRow(ctx, sql, args...); err := row.Scan(&v); return v, err },

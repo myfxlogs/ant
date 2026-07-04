@@ -46,10 +46,15 @@
 .center-tabs .ant-tabs-content-holder {
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 .center-tabs .ant-tabs-content {
   height: 100%;
 }
 .center-tabs .ant-tabs-tabpane {
   height: 100%;
+}
+.center-tabs .ant-tabs-tabpane-active {
+  display: flex;
+  flex-direction: column;
 }

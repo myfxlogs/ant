@@ -97,8 +97,10 @@ export function useStrategyWorkspaceState() {
   const qt = useQuickTradeData(accountId, symbol);
 
   // Layout
-  const centerTab = wsStore.centerTab; const setCenterTab = wsStore.setCenterTab;
-  const rightTab = wsStore.rightTab; const setRightTab = wsStore.setRightTab;
+  const aiDrawerOpen = wsStore.aiDrawerOpen; const setAiDrawerOpen = wsStore.setAiDrawerOpen;
+  const leftSidebarCollapsed = wsStore.leftSidebarCollapsed; const setLeftSidebarCollapsed = wsStore.setLeftSidebarCollapsed;
+  const bottomPanelCollapsed = wsStore.bottomPanelCollapsed; const setBottomPanelCollapsed = wsStore.setBottomPanelCollapsed;
+  const quickTradeCollapsed = wsStore.quickTradeCollapsed; const setQuickTradeCollapsed = wsStore.setQuickTradeCollapsed;
   const positionsPanelVisible = wsStore.positionsPanelVisible; const setPositionsPanelVisible = wsStore.setPositionsPanelVisible;
 
   // Backtest panel collapse state
@@ -183,8 +185,8 @@ export function useStrategyWorkspaceState() {
     if (historyModalOpen) { setHistoryPage(1); fetchHistoryRuns(1, historyPageSize); }
   }, [accountId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // AI workflow — no longer needs setCodePanelVisible (chat is always visible)
-  const ai = useAIWorkflow(codeCtx, btCtx.metrics, () => setCenterTab('code'));
+  // AI workflow — AI drawer is always available
+  const ai = useAIWorkflow(codeCtx, btCtx.metrics, () => setAiDrawerOpen(true));
 
   // Reset backtest state when code changes (AI apply, template load, manual edit).
   useEffect(() => {
@@ -243,7 +245,7 @@ export function useStrategyWorkspaceState() {
     },
     gate: { loading: btCtx.gate.loading, gates: btCtx.gate.gates, summary: btCtx.gate.summary, error: btCtx.gate.error, run: btCtx.gate.run },
     quickTrade: { positionCount: qt.positionCount, allPositions: qt.allPositions, qtPositions: qt.qtPositions, qtRecentTrades: qt.qtRecentTrades, handleClosePosition: qt.handleClosePosition },
-    layout: { centerTab, setCenterTab, rightTab, setRightTab, positionsPanelVisible, setPositionsPanelVisible },
+    layout: { aiDrawerOpen, setAiDrawerOpen, leftSidebarCollapsed, setLeftSidebarCollapsed, bottomPanelCollapsed, setBottomPanelCollapsed, quickTradeCollapsed, setQuickTradeCollapsed, positionsPanelVisible, setPositionsPanelVisible },
     history: {
       drawerOpen: historyDrawerOpen, runId: historyRunId,
       open: handleOpenHistory, close: handleCloseHistory,

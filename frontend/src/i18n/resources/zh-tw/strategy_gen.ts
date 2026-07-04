@@ -65,7 +65,9 @@ const StrategyGen = {
       "execApplyCode": "應用程式碼到編輯器",
       "execSkipNoSymbol": "回測跳過：未選擇交易品種",
       "execSkipNoCode": "回測跳過：程式碼為空",
-      "validating": "合规检查"
+      "validating": "合规检查",
+      "noMarketData": "暫無行情資料",
+      "noMarketDataHint": "請先選擇交易帳號和品種，待圖表載入行情資料後再重試。"
     }
   }
 } as const;

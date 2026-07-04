@@ -2,14 +2,11 @@ package ai
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/ai"
 	"anttrader/internal/repository"
 	systemai "anttrader/internal/service/systemai"
 	"anttrader/tools/mql2go"
@@ -42,10 +39,9 @@ type Tool interface {
 
 // ── Tool Registry ──
 
-// ToolRegistry holds the ordered list of tools to execute after code generation.
+// ToolRegistry holds the ordered list of tools the AI agent can request.
 type ToolRegistry struct {
-	preTools []Tool     // tools the AI can request during planning/generation
-	tools    []Tool     // auto-run tools after code generation
+	preTools []Tool
 }
 
 // NewEmptyToolRegistry creates a registry with no pre-loaded tools.
@@ -58,22 +54,6 @@ func NewEmptyToolRegistry() *ToolRegistry {
 func (r *ToolRegistry) AddPreTool(t Tool) {
 	r.preTools = append(r.preTools, t)
 }
-
-// NewToolRegistry creates a registry with the standard tool set.
-func NewToolRegistry(backtestRepo *repository.BacktestRunRepository, store repository.MarketDataStore) *ToolRegistry {
-	return &ToolRegistry{
-		preTools: []Tool{
-			&readKlineTool{repo: store},
-			&readBacktestLogTool{repo: backtestRepo},
-			&analyzeStrategyTool{},
-		},
-		tools: []Tool{
-			&complianceTool{},
-			&backtestTool{repo: backtestRepo},
-		},
-	}
-}
-
 
 // WireMemoryDB wires the PG pool for memory tools.
 func (r *ToolRegistry) WireMemoryDB(execFn func(ctx context.Context, sql string, args ...any) error, queryFn func(ctx context.Context, sql string, args ...any) (string, error)) {
@@ -95,16 +75,7 @@ func (r *ToolRegistry) BuildToolSchemas() []systemai.ToolDefinition {
 	return schemas
 }
 
-// PreToolNames returns the names of pre-execution tools the AI can request.
-func (r *ToolRegistry) PreToolNames() []string {
-	var names []string
-	for _, t := range r.preTools {
-		names = append(names, t.Name())
-	}
-	return names
-}
-
-// FindPreTool looks up a pre-execution tool by name. Returns nil if not found.
+// FindPreTool looks up a tool by name. Returns nil if not found.
 func (r *ToolRegistry) FindPreTool(name string) Tool {
 	for _, t := range r.preTools {
 		if t.Name() == name {
@@ -112,148 +83,6 @@ func (r *ToolRegistry) FindPreTool(name string) Tool {
 		}
 	}
 	return nil
-}
-
-// Execute runs all registered tools in order, streaming results via the callback.
-func (r *ToolRegistry) Execute(ctx context.Context, in ToolInput, send func(*antv1.ExecutePlanChunk) error) {
-	for _, t := range r.tools {
-		callID := "call_" + t.Name()
-		_ = send(&antv1.ExecutePlanChunk{
-			Phase: "tool_call",
-			ToolCall: &antv1.ToolCall{
-				CallId: callID, Name: t.Name(), ParamsJson: `{}`,
-			},
-		})
-
-		out := t.Run(ctx, in)
-		outJSON, _ := json.Marshal(out.Output)
-		_ = send(&antv1.ExecutePlanChunk{
-			Phase: "tool_result",
-			ToolResult: &antv1.ToolResult{
-				CallId: callID, Name: t.Name(),
-				Success: out.Success, OutputJson: string(outJSON), Error: out.Error,
-			},
-		})
-	}
-}
-
-// ── compliance_check tool ──
-
-type complianceTool struct{}
-
-func (t *complianceTool) Name() string { return "compliance_check" }
-func (t *complianceTool) Schema() systemai.ToolDefinition {
-	return systemai.ToolDefinition{
-		Type: "function",
-		Function: systemai.ToolDefFunction{
-			Name:        "compliance_check",
-			Description: "对Go策略代码进行结构性安全检查，扫描13条规则。返回通过/失败状态和具体问题列表。",
-			Parameters: map[string]any{
-				"type":       "object",
-				"properties": map[string]any{},
-			},
-		},
-	}
-}
-
-func (t *complianceTool) Run(_ context.Context, in ToolInput) ToolOutput {
-	// Run structural quality checks on Go strategy code.
-	var allIssues []ai.ComplianceIssue
-	for _, msg := range ai.StructuralWarnings(in.Code) {
-		allIssues = append(allIssues, ai.ComplianceIssue{
-			RuleName: "structural", Message: msg, Severity: "warn",
-		})
-	}
-	var issueProtos []*antv1.ComplianceIssue
-	for _, iss := range allIssues {
-		issueProtos = append(issueProtos, &antv1.ComplianceIssue{
-			Rule: iss.RuleName, Message: iss.Message, Severity: iss.Severity, Line: int32(iss.Line),
-		})
-	}
-	return ToolOutput{
-		Success: len(allIssues) == 0,
-		Output:  &antv1.ComplianceResult{Passed: len(allIssues) == 0, Issues: issueProtos},
-	}
-}
-
-
-// ── detect_regime tool ──
-
-type detectRegimeTool struct{ store repository.MarketDataStore }
-
-func (t *detectRegimeTool) Name() string { return "detect_regime" }
-func (t *detectRegimeTool) Schema() systemai.ToolDefinition {
-	return systemai.ToolDefinition{
-		Type: "function",
-		Function: systemai.ToolDefFunction{
-			Name:        "detect_regime",
-			Description: "检测当前品种的市场状态（趋势/震荡/高波动等）。需要指定品种和时间周期。",
-			Parameters: map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"symbol":    map[string]any{"type": "string", "description": "交易品种代码"},
-					"timeframe": map[string]any{"type": "string", "enum": []string{"1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"}},
-				},
-				"required": []string{"symbol", "timeframe"},
-			},
-		},
-	}
-}
-func (t *detectRegimeTool) Run(ctx context.Context, in ToolInput) ToolOutput {
-	if t.store == nil {
-		return ToolOutput{Success: false, Error: "market data store not wired"}
-	}
-	bars, err := t.store.GetKlines(ctx, in.Symbol, "", in.Timeframe, nil, nil, 200)
-	if err != nil || len(bars) < 20 {
-		return ToolOutput{Success: false, Error: fmt.Sprintf("insufficient kline data: %d bars", len(bars))}
-	}
-	regime := detectRegimeFromBars(bars)
-	return ToolOutput{Success: true, Output: map[string]string{
-		"symbol": in.Symbol, "timeframe": in.Timeframe,
-		"regime": regime, "bars": fmt.Sprintf("%d", len(bars)),
-	}}
-}
-
-func detectRegimeFromBars(bars []repository.KlineBar) string {
-	if len(bars) < 20 { return "unknown" }
-	closes := make([]float64, len(bars))
-	for i, b := range bars { closes[i] = b.Close.InexactFloat64() }
-
-	// Simple trend detection: linear regression slope
-	n := float64(len(closes))
-	sumX, sumY, sumXY, sumX2 := 0.0, 0.0, 0.0, 0.0
-	for i, y := range closes {
-		x := float64(i)
-		sumX += x; sumY += y; sumXY += x*y; sumX2 += x*x
-	}
-	slope := (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX)
-	avgPrice := sumY / n
-	normalizedSlope := slope / avgPrice * 100
-
-	// Volatility
-	var variance float64
-	for _, y := range closes {
-		variance += (y - avgPrice) * (y - avgPrice)
-	}
-	vol := variance / n
-	avgVol := avgPrice * 0.02 // 2% baseline
-
-	switch {
-	case normalizedSlope > 0.5 && vol > avgVol:
-		return "bull_trend_volatile"
-	case normalizedSlope > 0.3:
-		return "bull_trend"
-	case normalizedSlope < -0.5 && vol > avgVol:
-		return "bear_trend_volatile"
-	case normalizedSlope < -0.3:
-		return "bear_trend"
-	case vol > avgVol*2:
-		return "high_volatility"
-	case vol < avgVol*0.5:
-		return "range_compression"
-	default:
-		return "ranging"
-	}
 }
 
 // ── read_kline tool ──
@@ -278,8 +107,8 @@ func (t *readKlineTool) Schema() systemai.ToolDefinition {
 		},
 	}
 }
-func (t *readKlineTool) Run(_ context.Context, in ToolInput) ToolOutput {
-	bars, err := t.repo.GetKlines(context.Background(), in.Symbol, "", in.Timeframe, nil, nil, 2000)
+func (t *readKlineTool) Run(ctx context.Context, in ToolInput) ToolOutput {
+	bars, err := t.repo.GetKlines(ctx, in.Symbol, "", in.Timeframe, nil, nil, 2000)
 	if err != nil {
 		return ToolOutput{Success: false, Error: err.Error()}
 	}
@@ -341,7 +170,7 @@ func (t *readBacktestLogTool) Run(ctx context.Context, in ToolInput) ToolOutput 
 }
 
 
-// ── compile_python tool (chat context — lightweight, no bars/btCfg needed) ──
+// ── compile_python tool ──
 
 type compilePythonChatTool struct{}
 
@@ -361,7 +190,7 @@ func (t *compilePythonChatTool) Schema() systemai.ToolDefinition {
 }
 func (t *compilePythonChatTool) Run(_ context.Context, in ToolInput) ToolOutput {
 	if in.Code == "" {
-		return ToolOutput{Success: false, Error: "no Python code to compile — generate code first"}
+		return ToolOutput{Success: false, Error: "no Python code to compile"}
 	}
 	_, coverage, err := mql2go.CompilePythonWithCoverage(in.Code)
 	if err != nil {

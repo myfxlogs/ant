@@ -68,7 +68,9 @@ const StrategyGen = {
       "execApplyCode": "Apply to Editor",
       "execSkipNoSymbol": "Backtest skipped: no symbol selected",
       "execSkipNoCode": "Backtest skipped: empty code",
-      "validating": "Compliance Check"
+      "validating": "Compliance Check",
+      "noMarketData": "No market data available",
+      "noMarketDataHint": "Please select a trading account and a symbol so the chart can load market data, then try again."
     }
   }
 } as const;

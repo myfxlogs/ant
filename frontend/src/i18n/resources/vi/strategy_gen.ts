@@ -65,7 +65,9 @@ const StrategyGen = {
       "execApplyCode": "Áp Dụng vào Editor",
       "execSkipNoSymbol": "Backtest bị bỏ qua: chưa chọn cặp",
       "execSkipNoCode": "Backtest bị bỏ qua: code trống",
-      "validating": "Kiểm Tra Tuân Thủ"
+      "validating": "Kiểm Tra Tuân Thủ",
+      "noMarketData": "Không có dữ liệu thị trường",
+      "noMarketDataHint": "Vui lòng chọn tài khoản giao dịch và cặp tiền để biểu đồ tải dữ liệu, sau đó thử lại."
     }
   }
 } as const;

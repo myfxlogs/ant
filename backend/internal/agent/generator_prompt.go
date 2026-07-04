@@ -8,63 +8,8 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 )
 
-//go:embed prompts/generate_user.prompt
-var generateUserPromptTmpl string
-
-//go:embed prompts/generate_retry_user.prompt
-var generateRetryUserPromptTmpl string
-
 //go:embed prompts/profile_from_nl_user.prompt
 var profileFromNLUserPromptTmpl string
-
-// generateSystemPrompt instructs the LLM to generate a Python subset strategy from natural language.
-// Shares Python subset rules + SDK API mapping via pythonSubsetRules (prompts_shared.go).
-const generateSystemPrompt = `You are a quantitative strategy generator. Your task is to generate a Python subset trading strategy from a natural language description.
-
-` + pythonSubsetRules + `
-
-### Trading
-- Buy → ctx.broker().buy(lot=Decimal("0.1"))
-- Sell → ctx.broker().sell(lot=Decimal("0.1"))
-- Close position → ctx.broker().close(ticket)
-- Modify position → ctx.broker().modify(ticket, sl, tp)
-- Delete order → ctx.broker().delete(ticket)
-- Buy Limit → ctx.broker().buy_limit(lot, price, sl, tp)
-- Sell Limit → ctx.broker().sell_limit(lot, price, sl, tp)
-- Buy Stop → ctx.broker().buy_stop(lot, price, sl, tp)
-- Sell Stop → ctx.broker().sell_stop(lot, price, sl, tp)
-- Position count → ctx.positions().count()
-- Iterate positions → for pos in ctx.positions: pos.ticket, pos.profit, pos.volume, pos.sl, pos.tp
-
-## Output Format
-Output ONLY the Python source code, no markdown fences, no explanations.
-The code must be a complete, compilable Python subset strategy.
-All parameters must have concrete default values — no TODOs or placeholders.
-For unspecified parameters, use reasonable defaults based on the strategy description.`
-
-func buildGeneratePrompt(msg *antv1.AgentGenerateStrategyRequest, profile *antv1.StrategyProfile, mem *SessionMemory) (string, string) {
-	data := buildPromptData(msg, profile, mem)
-	userPrompt, err := renderPrompt("generate_user", generateUserPromptTmpl, data)
-	if err != nil {
-		return generateSystemPrompt, fallbackGeneratePrompt(msg, profile, mem)
-	}
-	return generateSystemPrompt, userPrompt
-}
-
-func buildGenerateRetryPrompt(msg *antv1.AgentGenerateStrategyRequest, prevCode, compileErr, btErr string, profile *antv1.StrategyProfile, mem *SessionMemory) (string, string) {
-	data := buildPromptData(msg, profile, mem)
-	data.PrevCode = sanitizeInput(prevCode)
-	if compileErr != "" {
-		data.ErrorMsg = "Compile error:\n" + compileErr
-	} else if btErr != "" {
-		data.ErrorMsg = "Backtest error:\n" + btErr
-	}
-	userPrompt, err := renderPrompt("generate_retry_user", generateRetryUserPromptTmpl, data)
-	if err != nil {
-		return generateSystemPrompt, fallbackGenerateRetryPrompt(msg, prevCode, compileErr, btErr, profile, mem)
-	}
-	return generateSystemPrompt, userPrompt
-}
 
 // profileFromNLSystemPrompt instructs the LLM to produce a strategy profile from NL description.
 const profileFromNLSystemPrompt = `You are a quantitative strategy analyst. Analyze the given natural language strategy description and produce a strategy profile in the following line-based format (one key per line):
@@ -120,59 +65,6 @@ func buildPromptData(msg *antv1.AgentGenerateStrategyRequest, profile *antv1.Str
 		data.MemoryBlock = sb.String()
 	}
 	return data
-}
-
-func fallbackGeneratePrompt(msg *antv1.AgentGenerateStrategyRequest, profile *antv1.StrategyProfile, mem *SessionMemory) string {
-	var sb strings.Builder
-	sb.WriteString("## Strategy Description\n")
-	sb.WriteString(msg.Message)
-	sb.WriteString("\n\n")
-	writeProfileToPrompt(&sb, profile, "## Strategy Profile (use as guidance)\n")
-	if profile != nil {
-		sb.WriteString("\n")
-	}
-	if mem != nil {
-		mem.InjectIntoPrompt(&sb)
-	}
-	writeRequestContext(&sb, msg)
-	sb.WriteString("\n## Task\n")
-	sb.WriteString("Generate a complete Python subset trading strategy based on the description above.\n")
-	sb.WriteString("Use the SDK API mapping shown in the system prompt.\n")
-	sb.WriteString("Output ONLY the Python source code.\n")
-	return sb.String()
-}
-
-func fallbackGenerateRetryPrompt(msg *antv1.AgentGenerateStrategyRequest, prevCode, compileErr, btErr string, profile *antv1.StrategyProfile, mem *SessionMemory) string {
-	var sb strings.Builder
-	sb.WriteString("## Previous Attempt (failed validation)\n```\n")
-	sb.WriteString(prevCode)
-	sb.WriteString("\n```\n\n")
-	sb.WriteString("## Error\n")
-	if compileErr != "" {
-		sb.WriteString("Compile error:\n")
-		sb.WriteString(compileErr)
-	} else if btErr != "" {
-		sb.WriteString("Backtest error:\n")
-		sb.WriteString(btErr)
-	}
-	if profile != nil {
-		sb.WriteString("\n\n## Strategy Profile (for context)\n")
-		sb.WriteString(fmt.Sprintf("Type: %s\n", profile.StrategyType))
-		sb.WriteString(fmt.Sprintf("Indicators: %s\n", strings.Join(profile.IndicatorsUsed, ", ")))
-		sb.WriteString(fmt.Sprintf("Entry: %s\n", profile.EntryLogic))
-		sb.WriteString(fmt.Sprintf("Exit: %s\n", profile.ExitLogic))
-	}
-	if mem != nil {
-		mem.InjectIntoPrompt(&sb)
-	}
-	sb.WriteString("\n\n## Original Strategy Description\n")
-	sb.WriteString(msg.Message)
-	writeRequestContext(&sb, msg)
-	sb.WriteString("\n\n## Task\n")
-	sb.WriteString("The previous Python strategy failed validation (compile error or backtest failure).\n")
-	sb.WriteString("Fix the issue above and output the corrected Python source code.\n")
-	sb.WriteString("Output ONLY the Python source code.\n")
-	return sb.String()
 }
 
 func fallbackProfileFromNLPrompt(msg *antv1.AgentGenerateStrategyRequest) string {

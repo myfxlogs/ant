@@ -1,7 +1,7 @@
 package ai
 
 import (
-	internalai "anttrader/internal/ai"
+	"anttrader/internal/ai"
 	"context"
 	"fmt"
 	"strings"
@@ -17,57 +17,10 @@ import (
 	systemai "anttrader/internal/service/systemai"
 )
 
-// pythonAgentPrompt is the system prompt for the Python strategy agent in chat context.
-// It instructs the LLM to generate Python subset code and use compile_python to verify.
-const pythonAgentPrompt = `You are a quantitative strategy developer on the AntTrader platform.
-Your task is to generate Python trading strategies from natural language descriptions.
-
-## Python Subset Rules (MUST follow — code that violates ANY rule will be REJECTED)
-
-### Required code skeleton:
-` + "```python" + `
-from decimal import Decimal
-
-class MyStrategy(StrategyBase):
-    def __init__(self, period: int = 14, lot: Decimal = Decimal("0.1")) -> None:
-        self.period: int = period
-        self.lot: Decimal = lot
-
-    def on_bar(self, ctx: BarContext) -> None:
-        # strategy logic here
-        pass
-
-    def on_deinit(self, ctx: BarContext, reason: str) -> None:
-        pass
-` + "```" + `
-
-### Mandatory:
-- EVERY __init__ parameter MUST have a type annotation and default value
-- EVERY method MUST have -> return type annotation
-- EVERY local variable MUST have a type annotation
-- Use Decimal for ALL prices, volumes, P&L, stop-loss, take-profit
-- Use float for indicator values only
-- Only import: from decimal import Decimal
-
-### What is FORBIDDEN:
-- Missing type annotations
-- import anything other than "from decimal import Decimal"
-- list comprehensions, lambda, try/except, with, yield, decorators
-- exec, eval, open, print, f-strings
-- float for prices or volumes — use Decimal
-
-### SDK API:
-- Close[0] → ctx.bars().close(0)
-- iMA → ctx.indicators().ima(ctx.symbol(), period, shift)
-- iRSI → ctx.indicators().irsi(ctx.symbol(), period, shift)
-- iATR → ctx.indicators().iatr(ctx.symbol(), period, shift)
-- iBands → ctx.indicators().ibands(ctx.symbol(), period, shift)
-- iMACD → ctx.indicators().imacd(ctx.symbol(), fast, slow, signal, shift)
-- Buy → ctx.broker().buy(lot=Decimal("0.1"))
-- Sell → ctx.broker().sell(lot=Decimal("0.1"))
-- Close position → ctx.broker().close(ticket)
-- Position count → ctx.positions().count()
-
+// chatDiscipline defines the thinking and verification discipline for the chat agent.
+// Separate from the compilation contract (PythonSubsetRules) — prompt engineering
+// can evolve independently for chat vs. generator contexts.
+const chatDiscipline = `
 ## Thinking Discipline (CRITICAL)
 
 Before EVERY significant action (generating code, calling a tool, analyzing results), you MUST output a [THINK] block:
@@ -82,27 +35,34 @@ Then immediately take the action. This prevents impulsive decisions and helps yo
 
 ## Pre-Compile Self-Verification (MANDATORY)
 
-Before calling compile_python, silently run through this checklist. If ANY item fails, fix the code first — do NOT call compile_python with known issues:
+Before calling compile_python, silently run through this checklist. If ANY item fails, fix the code first:
 
 □ Every __init__ param has type annotation AND default value?
 □ __init__ has -> None return type?
 □ Every method has a return type annotation?
-□ Every local variable has a type annotation (e.g., ema_fast: float = ...)?
-□ All prices/volumes/P&L/stop-loss/take-profit use Decimal (not float)?
+□ Every local variable has a type annotation?
+□ All prices/volumes/P&L use Decimal (not float)?
 □ Only import is "from decimal import Decimal"?
 □ No forbidden syntax (lambda, try/except, f-strings, list comprehensions)?
 
 ## Error Memory — Common Mistakes
 
-These are the most frequent compile errors. Check these FIRST before generating code:
-- FORGETTING -> None on __init__ method
+These are the most frequent compile errors. Check FIRST before generating code:
+- FORGETTING -> None on __init__
 - FORGETTING type annotation on local variables
-- Using float for stop_loss/take_profit/price instead of Decimal
-- Missing -> None on on_deinit method
+- Using float for prices instead of Decimal
+- Missing -> None on on_deinit
 - Importing anything other than Decimal
 - Using f-strings or list comprehensions
 
-If you just fixed a compile error, REMEMBER what caused it. Do NOT repeat the same mistake in the next attempt.
+If you just fixed a compile error, REMEMBER what caused it. Do NOT repeat the same mistake.`
+
+// pythonAgentPrompt is the system prompt for the Python strategy agent in chat context.
+const pythonAgentPrompt = `You are a quantitative strategy developer on the AntTrader platform.
+Your task is to generate Python trading strategies from natural language descriptions.
+
+` + ai.PythonSubsetRules + `
+` + chatDiscipline + `
 
 ## Workflow
 
@@ -116,7 +76,7 @@ Follow this workflow:
 1. **Discuss first.** Analyze the strategy request, confirm understanding, propose a numbered plan.
 2. **[THINK]** Before generating code, think through the strategy logic.
 3. **Generate code.** Output complete Python code in a markdown code block.
-4. **Self-verify.** Run through the pre-compile checklist above. Fix any issues silently.
+4. **Self-verify.** Run through the pre-compile checklist. Fix any issues silently.
 5. **Compile.** Call compile_python to verify.
 6. **Fix if needed.** If compilation fails: [THINK] read the error, understand the root cause, fix the specific issue, self-verify again, compile again. Do NOT blindly guess.
 7. The user will run backtest manually — interpret the results when they appear.
@@ -133,13 +93,12 @@ Follow this workflow:
 // StrategyPlanServer implements ant.v1.StrategyPlanServiceHandler (both AnalyzePlan and ExecutePlan).
 type StrategyPlanServer struct {
 	systemSvc      *systemai.Service
-	templatesRepo  *repository.AIStrategyTemplatesRepository
 	backtestRepo   *repository.BacktestRunRepository
 	convRepo       *repository.AIConversationRepository
 	marketDataRepo repository.MarketDataStore
 	memoryExec     func(ctx context.Context, sql string, args ...any) error
 	memoryQuery    func(ctx context.Context, sql string, args ...any) (string, error)
-	intentAnalyzer *internalai.IntentAnalyzer
+	intentAnalyzer *ai.IntentAnalyzer
 	log            *zap.Logger
 }
 
@@ -154,13 +113,12 @@ func (s *StrategyPlanServer) SetPoolAdapter(execFn func(ctx context.Context, sql
 
 func NewStrategyPlanServer(
 	systemSvc *systemai.Service,
-	templatesRepo *repository.AIStrategyTemplatesRepository,
 	backtestRepo *repository.BacktestRunRepository,
 	convRepo *repository.AIConversationRepository,
 	marketDataRepo repository.MarketDataStore,
 	log *zap.Logger,
 ) *StrategyPlanServer {
-	analyzer := internalai.NewIntentAnalyzer(func(ctx context.Context, userID uuid.UUID, messages []internalai.ChatMessage, _ string) (string, error) {
+	analyzer := ai.NewIntentAnalyzer(func(ctx context.Context, userID uuid.UUID, messages []ai.ChatMessage, _ string) (string, error) {
 		sysMsgs := make([]systemai.ChatMessage, len(messages))
 		for i, m := range messages {
 			sysMsgs[i] = systemai.ChatMessage{Role: m.Role, Content: m.Content}
@@ -168,7 +126,7 @@ func NewStrategyPlanServer(
 		return systemSvc.ChatCompletion(ctx, userID, sysMsgs)
 	})
 	return &StrategyPlanServer{
-		systemSvc: systemSvc, templatesRepo: templatesRepo, backtestRepo: backtestRepo,
+		systemSvc: systemSvc, backtestRepo: backtestRepo,
 		convRepo: convRepo, marketDataRepo: marketDataRepo, intentAnalyzer: analyzer, log: log,
 		// memoryExec and memoryQuery are set via SetPoolAdapter after construction
 	}
@@ -199,7 +157,7 @@ func (s *StrategyPlanServer) AnalyzePlan(
 		plan = buildFallbackPlan(intent)
 	}
 
-	sysPrompt := internalai.AgentPrompt(lang) + "\n\n## 当前任务：制定执行计划（绝对不要生成代码！）\n分析用户需求，输出一个纯文本的执行计划。每行一个步骤，用 1. 2. 3. 开头。只讨论策略逻辑和方案，不要写任何代码。"
+	sysPrompt := ai.AgentPrompt(lang) + "\n\n## 当前任务：制定执行计划（绝对不要生成代码！）\n分析用户需求，输出一个纯文本的执行计划。每行一个步骤，用 1. 2. 3. 开头。只讨论策略逻辑和方案，不要写任何代码。"
 	userPrompt := fmt.Sprintf("用户需求: %s\n\n分析结果: 策略类型=%s, 方向=%s, 风险=%s\n请用1-2句话生成一个简明的执行计划。",
 		m.Message, intent.StrategyFamily, intent.TradeDirection, intent.RiskLevel)
 
@@ -288,18 +246,6 @@ func (s *StrategyPlanServer) Conversate(
 	return stream.Send(&antv1.ConversateChunk{Phase: "done", Code: code})
 }
 
-// extractPlan pulls the first non-code text that looks like a plan from the response.
-func extractPlan(raw string) string {
-	code := ExtractCode(raw)
-	if code == "" {
-		return raw
-	}
-	if idx := strings.Index(raw, code); idx > 0 {
-		return strings.TrimSpace(raw[:idx])
-	}
-	return ""
-}
-
 // ── ExecutePlan: execution phase ──
 
 func (s *StrategyPlanServer) ExecutePlan(
@@ -363,7 +309,7 @@ func (s *StrategyPlanServer) ExecutePlan(
 
 
 
-func buildFallbackPlan(intent *internalai.IntentResult) string {
+func buildFallbackPlan(intent *ai.IntentResult) string {
 	s := "Strategy Plan:\n"
 	if intent.StrategyFamily != "" && intent.StrategyFamily != "unknown" {
 		s += "- Type: " + intent.StrategyFamily + "\n"
