@@ -99,7 +99,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '4px 0' }}>
         {symbol && (<>
-        {/* Row 1: Buy/Sell | Volume | OrderType | MarginMode */}
+        {/* Row 1: Buy/Sell | Volume | OrderType | MarginMode | Price | Submit */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Button size="small" type={side === 'buy' ? 'primary' : 'default'}
             onClick={() => setSide('buy')} icon={<RiseOutlined />}
@@ -116,11 +116,11 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
               color: side === 'sell' ? '#fff' : 'var(--ant-color-text-secondary)',
             }}>{t(TRADING_SELL_KEY)}</Button>
           <span style={labelSm}>{t(AMOUNT_LOTS_KEY)}</span>
-          <InputNumber size="small" style={{ width: 70 }} min={0.01} step={0.01}
+          <InputNumber size="small" style={{ width: 64 }} min={0.01} step={0.01}
             value={volume} onChange={(v) => setVolume(v ?? 0.01)} placeholder="0.01" />
           <Select size="small" value={orderKind} onChange={setOrderKind}
             options={Object.entries(ORDER_KIND_KEYS).map(([value, key]) => ({ value, label: t(key) }))}
-            style={{ width: 80 }} />
+            style={{ width: 76 }} />
           {isMT5 && (
             <Radio.Group size="small" buttonStyle="solid"
               value={marginMode} onChange={e => setMarginMode(e.target.value)}>
@@ -129,19 +129,9 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
             </Radio.Group>
           )}
           {isLimitOrStop && (
-            <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
+            <InputNumber size="small" style={{ width: 76 }} min={0} step={0.00001}
               value={price} onChange={(v) => setPrice(v)} placeholder="Price" />
           )}
-        </div>
-        {/* Row 2: SL | TP | Submit */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={labelSm}>SL</span>
-          <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
-            value={stopLoss} onChange={(v) => setStopLoss(v)} placeholder="0.00000" />
-          <span style={labelSm}>TP</span>
-          <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
-            value={takeProfit} onChange={(v) => setTakeProfit(v)} placeholder="0.00000" />
-          <div style={{ flex: 1 }} />
           <Button type="primary" size="small" loading={submitting}
             icon={<SendOutlined />} onClick={handleSubmit} disabled={!canSubmit}
             style={{ height: 28, fontWeight: 700, fontSize: 12, borderRadius: 6,
@@ -152,6 +142,15 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
             }}>
             {side === 'buy' ? t(TRADING_BUY_KEY) : t(TRADING_SELL_KEY)} {symbol}
           </Button>
+        </div>
+        {/* Row 2: SL | TP */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={labelSm}>SL</span>
+          <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
+            value={stopLoss} onChange={(v) => setStopLoss(v)} placeholder="0.00000" />
+          <span style={labelSm}>TP</span>
+          <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
+            value={takeProfit} onChange={(v) => setTakeProfit(v)} placeholder="0.00000" />
         </div>
         </>)}
       </div>
