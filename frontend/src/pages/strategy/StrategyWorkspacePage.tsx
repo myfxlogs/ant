@@ -5,6 +5,7 @@ import { useStrategyWorkspaceState } from './hooks/useStrategyWorkspaceState';
 import WorkspaceTemplateManager from './components/workspace/WorkspaceTemplateManager';
 import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
 import BacktestResultsCard from '@/components/strategy/BacktestResultsCard';
+import BacktestPanel from '@/components/backtest/BacktestPanel';
 import ChartBottomPanel from '@/components/chart/ChartBottomPanel';
 import { useAuthStore } from '@/stores/authStore';
 import PriceChart from '@/components/chart/PriceChart';
@@ -113,6 +114,31 @@ export default function StrategyWorkspacePage() {
             )}
 
           </div>
+
+          {/* Backtest panel: params + results + trades + tuning + gate */}
+          <BacktestPanel
+            runner={ws.backtest.runner}
+            inputs={{
+              strategyCode: ws.code.code,
+              accountId: ws.account.accountId,
+              symbol: ws.account.symbol,
+              timeframe: ws.account.timeframe,
+              templateId: ws.templates.selectedId || undefined,
+              strategyId: ws.code.strategyId,
+            }}
+            templates={{
+              list: ws.templates.list,
+              loading: ws.templates.loading,
+              selectedId: ws.templates.selectedId,
+              onSelect: ws.templates.onSelect,
+            }}
+            collapsed={ws.backtest.btCollapsed}
+            onToggleCollapsed={() => ws.backtest.setBtCollapsed(!ws.backtest.btCollapsed)}
+            onOpenHistory={() => ws.history.open()}
+            onAIOptimize={() => ws.ai.optimize()}
+            code={ws.code.code}
+            onApplyTunedParams={ws.code.setCode}
+          />
 
           {/* Bottom panel: Positions + History */}
           <ChartBottomPanel
