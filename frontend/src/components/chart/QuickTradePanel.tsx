@@ -99,7 +99,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '4px 0' }}>
         {symbol && (<>
-        {/* Row 1: Buy/Sell | Volume | OrderType | MarginMode | Price | Submit */}
+        {/* Row 1: Buy/Sell | Volume | OrderType | MarginMode | Price */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Button size="small" type={side === 'buy' ? 'primary' : 'default'}
             onClick={() => setSide('buy')} icon={<RiseOutlined />}
@@ -132,6 +132,16 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
             <InputNumber size="small" style={{ width: 76 }} min={0} step={0.00001}
               value={price} onChange={(v) => setPrice(v)} placeholder="Price" />
           )}
+        </div>
+        {/* Row 2: SL | TP | Submit (right-aligned) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={labelSm}>SL</span>
+          <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
+            value={stopLoss} onChange={(v) => setStopLoss(v)} placeholder="0.00000" />
+          <span style={labelSm}>TP</span>
+          <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
+            value={takeProfit} onChange={(v) => setTakeProfit(v)} placeholder="0.00000" />
+          <div style={{ flex: 1 }} />
           <Button type="primary" size="small" loading={submitting}
             icon={<SendOutlined />} onClick={handleSubmit} disabled={!canSubmit}
             style={{ height: 28, fontWeight: 700, fontSize: 12, borderRadius: 6,
@@ -142,15 +152,6 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
             }}>
             {side === 'buy' ? t(TRADING_BUY_KEY) : t(TRADING_SELL_KEY)} {symbol}
           </Button>
-        </div>
-        {/* Row 2: SL | TP */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={labelSm}>SL</span>
-          <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
-            value={stopLoss} onChange={(v) => setStopLoss(v)} placeholder="0.00000" />
-          <span style={labelSm}>TP</span>
-          <InputNumber size="small" style={{ width: 80 }} min={0} step={0.00001}
-            value={takeProfit} onChange={(v) => setTakeProfit(v)} placeholder="0.00000" />
         </div>
         </>)}
       </div>
