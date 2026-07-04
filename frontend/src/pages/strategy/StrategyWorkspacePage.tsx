@@ -188,7 +188,7 @@ export default function StrategyWorkspacePage() {
           timeframe={ws.account.timeframe}
           sessionId={sessionId}
           accountId={ws.account.accountId}
-          onApplyCode={(code) => ws.code.setCode(code)}
+          onApplyCode={(code) => { ws.code.setCode(code); ws.layout.setRightTab('code'); }}
           onValidateResult={(result) => ws.backtest.runner.handleValidationResult(result)}
           onRunBacktest={ws.backtest.run}
           backtestStatus={ws.backtest.status}

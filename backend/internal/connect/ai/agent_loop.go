@@ -104,6 +104,12 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		}
 		fullBuf.WriteString(roundText)
 
+		// Update currentCode if this round contains Python code — so subsequent
+		// tool calls (save_strategy, compile_python) see the latest code.
+		if code := ExtractCode(roundText); code != "" {
+			a.currentCode = code
+		}
+
 		// No native tool calls → check for text-based [TOOL: name args] fallback.
 		if len(toolCalls) == 0 {
 			textCalls := parseTextToolCalls(roundText)
