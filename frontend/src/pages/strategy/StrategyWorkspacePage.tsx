@@ -16,6 +16,7 @@ import BacktestHistoryDrawer from './components/workspace/BacktestHistoryDrawer'
 import WorkspaceErrorBoundary from './components/workspace/WorkspaceErrorBoundary';
 import MobileGuard from './components/workspace/MobileGuard';
 import RightPanel from './components/workspace/RightPanel';
+import QuickTradePanel from '@/components/chart/QuickTradePanel';
 import { useWorkspaceSession } from './hooks/useWorkspaceSession';
 import { SaveTemplateWrapper } from './WorkspaceLayout';
 
@@ -247,19 +248,66 @@ export default function StrategyWorkspacePage() {
             />
           </div>
 
-          {/* Bottom panel: Positions + History */}
-          <ChartBottomPanel
-            positions={ws.quickTrade.allPositions}
-            recentTrades={ws.quickTrade.qtRecentTrades}
-            onClosePosition={ws.quickTrade.handleClosePosition}
-            collapsed={ws.layout.bottomPanelCollapsed}
-            onToggleCollapsed={() => ws.layout.setBottomPanelCollapsed(!ws.layout.bottomPanelCollapsed)}
-            backtestMetrics={ws.backtest.metrics}
-            backtestStatus={ws.backtest.status}
-          />
+          {/* Bottom panel: Positions | History | Backtest  +  Quick Trade on the right */}
+          {ws.layout.bottomPanelCollapsed ? (
+            <ChartBottomPanel
+              positions={ws.quickTrade.allPositions}
+              recentTrades={ws.quickTrade.qtRecentTrades}
+              onClosePosition={ws.quickTrade.handleClosePosition}
+              collapsed={true}
+              onToggleCollapsed={() => ws.layout.setBottomPanelCollapsed(false)}
+              backtestMetrics={ws.backtest.metrics}
+              backtestStatus={ws.backtest.status}
+            />
+          ) : (
+            <div style={{ flexShrink: 0, display: 'flex', borderTop: '1px solid var(--ant-color-border)' }}>
+              {/* Left: tabbed tables */}
+              <div style={{ flex: '1 1 0', minWidth: 0 }}>
+                <ChartBottomPanel
+                  positions={ws.quickTrade.allPositions}
+                  recentTrades={ws.quickTrade.qtRecentTrades}
+                  onClosePosition={ws.quickTrade.handleClosePosition}
+                  collapsed={false}
+                  onToggleCollapsed={() => ws.layout.setBottomPanelCollapsed(true)}
+                  backtestMetrics={ws.backtest.metrics}
+                  backtestStatus={ws.backtest.status}
+                />
+              </div>
+              {/* Right: Quick Trade */}
+              {ws.account.symbol && (
+                <div style={{
+                  width: 280, flexShrink: 0,
+                  borderLeft: '1px solid var(--ant-color-border)',
+                  background: 'var(--ant-color-bg-elevated)',
+                  display: 'flex', flexDirection: 'column',
+                  maxHeight: 200, overflow: 'hidden',
+                }}>
+                  <div style={{
+                    padding: '4px 10px', fontSize: 11, fontWeight: 700,
+                    borderBottom: '1px solid var(--ant-color-border)',
+                    background: 'var(--ant-color-bg-layout)',
+                    display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
+                  }}>
+                    ⚡ Quick Trade
+                  </div>
+                  <div style={{ flex: 1, overflowY: 'auto', padding: '4px 8px' }}>
+                    <QuickTradePanel
+                      accountId={ws.account.accountId}
+                      symbol={ws.account.symbol}
+                      accountMeta={ws.account.selectedAccountMeta}
+                      allPositions={ws.quickTrade.allPositions}
+                      positions={ws.quickTrade.qtPositions}
+                      recentTrades={ws.quickTrade.qtRecentTrades}
+                      onClosePosition={ws.quickTrade.handleClosePosition}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* ── RIGHT COLUMN: QuickTrade + Chat (380px, no tabs) ── */}
+        {/* ── RIGHT COLUMN: Chat only (380px, no tabs) ── */}
         <RightPanel
           symbol={ws.account.symbol}
           timeframe={ws.account.timeframe}
@@ -267,14 +315,6 @@ export default function StrategyWorkspacePage() {
           accountId={ws.account.accountId}
           onApplyCode={(code) => { ws.code.setCode(code); setCenterTab('code'); }}
           onValidateResult={(result) => ws.backtest.runner.handleValidationResult(result)}
-          quickTrade={{
-            accountId: ws.account.accountId,
-            symbol: ws.account.symbol,
-            accountMeta: ws.account.selectedAccountMeta,
-            collapsed: ws.layout.quickTradeCollapsed,
-            onToggle: () => ws.layout.setQuickTradeCollapsed(!ws.layout.quickTradeCollapsed),
-            onClosePosition: ws.quickTrade.handleClosePosition,
-          }}
         />
       </div>
 
