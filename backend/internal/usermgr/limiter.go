@@ -18,11 +18,11 @@ var Clk clock.Clock = clock.NewRealClock()
 
 // RateLimit tracks per-user rate limit counters with per-second windows.
 type RateLimit struct {
-	signalWindow int64 // unix second of current signal window
+	signalWindow atomic.Int64 // unix second of current signal window
 	signalCount  atomic.Int64
-	orderWindow  int64 // unix second of current order window
+	orderWindow  atomic.Int64 // unix second of current order window
 	orderCount   atomic.Int64
-	chWindow     int64 // unix second of current CH write window
+	chWindow     atomic.Int64 // unix second of current CH write window
 	chBytes      atomic.Int64
 
 	LastAccess atomic.Int64 // unix nano
@@ -96,10 +96,9 @@ func (l *UserLimiter) AllowSignal(userID string) bool {
 	}
 
 	for {
-		old := rl.signalWindow
+		old := rl.signalWindow.Load()
 		if nowSec > old {
-			// Try to advance the window.
-			if atomic.CompareAndSwapInt64(&rl.signalWindow, old, nowSec) {
+			if rl.signalWindow.CompareAndSwap(old, nowSec) {
 				rl.signalCount.Store(0)
 			}
 		} else {
@@ -128,9 +127,9 @@ func (l *UserLimiter) AllowOrder(userID string) bool {
 	}
 
 	for {
-		old := rl.orderWindow
+		old := rl.orderWindow.Load()
 		if nowSec > old {
-			if atomic.CompareAndSwapInt64(&rl.orderWindow, old, nowSec) {
+			if rl.orderWindow.CompareAndSwap(old, nowSec) {
 				rl.orderCount.Store(0)
 			}
 		} else {
@@ -166,9 +165,9 @@ func (l *UserLimiter) AllowCHWrite(userID string, bytes int64) bool {
 	}
 
 	for {
-		old := rl.chWindow
+		old := rl.chWindow.Load()
 		if nowSec > old {
-			if atomic.CompareAndSwapInt64(&rl.chWindow, old, nowSec) {
+			if rl.chWindow.CompareAndSwap(old, nowSec) {
 				rl.chBytes.Store(0)
 			}
 		} else {
@@ -269,11 +268,11 @@ func (l *UserLimiter) getOrCreate(userID string) *RateLimit {
 
 	nowUnix := Clk.Now().Unix()
 	rl := &RateLimit{
-		userID:       userID,
-		signalWindow: nowUnix,
-		orderWindow:  nowUnix,
-		chWindow:     nowUnix,
+		userID: userID,
 	}
+	rl.signalWindow.Store(nowUnix)
+	rl.orderWindow.Store(nowUnix)
+	rl.chWindow.Store(nowUnix)
 	rl.LastAccess.Store(Clk.Now().UnixNano())
 	elem := l.lru.PushFront(rl)
 	l.entries[userID] = elem

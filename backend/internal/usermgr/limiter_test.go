@@ -276,7 +276,7 @@ func TestUserLimiter_PerUserWindowReset(t *testing.T) {
 	l.mu.Lock()
 	if elem, ok := l.entries["user-r"]; ok {
 		rl := elem.Value.(*RateLimit)
-		rl.signalWindow = time.Now().Unix()
+		rl.signalWindow.Store(time.Now().Unix())
 		rl.signalCount.Store(0)
 	}
 	l.mu.Unlock()
