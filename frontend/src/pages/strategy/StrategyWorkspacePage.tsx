@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Grid, Button, Tooltip, Input, Empty, message } from 'antd';
 import { PlayCircleOutlined, SaveOutlined, CopyOutlined, EditOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +36,28 @@ export default function StrategyWorkspacePage() {
 
   const centerTab = useWorkspaceStore(s => s.centerTab);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
+  const rightPanelWidth = useWorkspaceStore(s => s.rightPanelWidth);
+  const setRightPanelWidth = useWorkspaceStore(s => s.setRightPanelWidth);
   const [editable, setEditable] = useState(false);
+
+  const startResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = rightPanelWidth;
+    const onMove = (ev: MouseEvent) => {
+      setRightPanelWidth(startW + (startX - ev.clientX));
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }, [rightPanelWidth, setRightPanelWidth]);
 
   if (!screens.lg) return <MobileGuard />;
 
@@ -308,7 +329,19 @@ export default function StrategyWorkspacePage() {
           )}
         </div>
 
-        {/* ── RIGHT COLUMN: Chat only (380px, no tabs) ── */}
+        {/* ── Resize handle ── */}
+        <div
+          onMouseDown={startResize}
+          style={{
+            width: 5, flexShrink: 0, cursor: 'col-resize',
+            background: 'var(--ant-color-border)',
+            transition: 'background 0.15s',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#58a6ff')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--ant-color-border)')}
+        />
+
+        {/* ── RIGHT COLUMN: Chat (resizable, no tabs) ── */}
         <RightPanel
           symbol={ws.account.symbol}
           timeframe={ws.account.timeframe}
@@ -316,6 +349,7 @@ export default function StrategyWorkspacePage() {
           accountId={ws.account.accountId}
           onApplyCode={(code) => { ws.code.setCode(code); setCenterTab('code'); }}
           onValidateResult={(result) => ws.backtest.runner.handleValidationResult(result)}
+          width={rightPanelWidth}
         />
       </div>
 

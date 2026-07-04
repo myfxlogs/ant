@@ -23,6 +23,7 @@ interface WorkspaceState {
   positionsPanelVisible: boolean;
   currentCode: string;
   currentCodeName: string;
+  rightPanelWidth: number;
   _hasHydrated: boolean;
   setAccountId: (v: string) => void;
   setSymbol: (v: string) => void;
@@ -35,6 +36,7 @@ interface WorkspaceState {
   setPositionsPanelVisible: (v: boolean) => void;
   setCurrentCode: (v: string) => void;
   setCurrentCodeName: (v: string) => void;
+  setRightPanelWidth: (v: number) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>()(
@@ -51,6 +53,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       positionsPanelVisible: false,
       currentCode: '',
       currentCodeName: '',
+      rightPanelWidth: 380,
       _hasHydrated: false,
       setAccountId: (v) => set({ accountId: v }),
       setSymbol: (v) => set({ symbol: v }),
@@ -63,6 +66,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       setPositionsPanelVisible: (v) => set({ positionsPanelVisible: v }),
       setCurrentCode: (v) => set({ currentCode: v }),
       setCurrentCodeName: (v) => set({ currentCodeName: v }),
+      setRightPanelWidth: (v) => set({ rightPanelWidth: Math.max(280, Math.min(600, v)) }),
     }),
     {
       name: 'ant-workspace-v5',
@@ -77,6 +81,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         bottomPanelCollapsed: state.bottomPanelCollapsed,
         quickTradeCollapsed: state.quickTradeCollapsed,
         positionsPanelVisible: state.positionsPanelVisible,
+        rightPanelWidth: state.rightPanelWidth,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) state._hasHydrated = true;
