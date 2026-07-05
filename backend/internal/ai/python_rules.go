@@ -125,5 +125,20 @@ class MyStrategy(StrategyBase):
 - AccountMargin() → ctx.account().margin()
 - AccountFreeMargin() → ctx.account().free_margin()
 - AccountProfit() → ctx.account().profit()
-- AccountLeverage() → ctx.account().leverage()`
+- AccountLeverage() → ctx.account().leverage()
+
+## ⚠️ PRE-OUTPUT SELF-CHECK — run this checklist BEFORE you output code ⚠️
+If your code violates ANY of these, FIX IT before outputting. No exceptions.
+
+1. ✅ Only import is "from decimal import Decimal" — NO open, NO os, NO sys, NO math, NO numpy, NO pandas
+2. ✅ NO built-in functions: open, print, exec, eval, len, sorted, sum, range (outside for-loop), enumerate, zip
+3. ✅ NO f-strings — use string concatenation with + 
+4. ✅ NO list comprehensions — use explicit for loops
+5. ✅ NO try/except, with, lambda, decorators, async/await
+6. ✅ NO slicing (x[1:3]), tuple unpacking, *args, **kwargs
+7. ✅ ALL __init__ params have type annotations, ALL methods have -> return type
+8. ✅ Prices/volumes use Decimal, NOT float — float only for indicator return values
+9. ✅ Code follows the exact skeleton: class MyStrategy(StrategyBase) with __init__ and on_bar
+
+VIOLATING ANY RULE ABOVE = CODE WILL BE REJECTED. Do not output code you have not verified.`
 
