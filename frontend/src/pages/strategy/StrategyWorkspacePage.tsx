@@ -72,7 +72,7 @@ export default function StrategyWorkspacePage() {
   const saveStatus: 'modified' | 'saved' | 'none' = ws.code.code && ws.code.lastValidatedCode && ws.code.code !== ws.code.lastValidatedCode ? 'modified' : ws.code.lastSavedId ? 'saved' : 'none';
 
   const CTABS: { key: CenterTab; icon: string; label: string }[] = [
-    { key: 'design', icon: '📈', label: t('strategy.workspace.design') },
+    { key: 'design', icon: '📈', label: t('strategy.workspace.chartWindow') },
     { key: 'code', icon: '📄', label: t('strategy.workspace.code') },
     { key: 'backtest', icon: '📊', label: t('strategy.gen.backtest') },
   ];
