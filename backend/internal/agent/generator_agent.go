@@ -73,19 +73,26 @@ func (g *Generator) runAgentLoop(
 	)
 
 	raw, loopErr := loop.Run(ctx, sysPrompt, userPrompt, userID)
-	if loopErr != nil {
-		g.log.Warn("generator: agent loop failed", zap.Error(loopErr))
-		_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", Error: loopErr.Error()})
-		return nil
-	}
 
-	// ── Extract code and send final result ──
+	// Extract code regardless of loopErr — the LLM may have generated valid code
+	// even if max rounds was exceeded.
 	cleaned := stripThinkBlocks(raw)
 	pythonSource := stripMarkdownFences(connectai.ExtractCode(cleaned))
 	if pythonSource == "" {
 		pythonSource = stripMarkdownFences(cleaned)
 	}
 	result.PythonSource = pythonSource
+
+	if loopErr != nil {
+		g.log.Warn("generator: agent loop ended", zap.Error(loopErr))
+		// If we got code despite the error, send it with a warning instead of failing.
+		if pythonSource != "" {
+			_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", PythonSource: pythonSource})
+			return nil
+		}
+		_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", Error: loopErr.Error()})
+		return nil
+	}
 
 	_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", PythonSource: pythonSource})
 	return nil

@@ -42,7 +42,7 @@ func NewAgentLoop(
 		llmStream:    llmStream,
 		streamChunk:  streamChunk,
 		toolStream:   toolStream,
-		maxRounds:    5,
+		maxRounds:    10,
 		toolDefs:     registry.BuildToolSchemas(),
 	}
 }
