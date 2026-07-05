@@ -286,18 +286,6 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
                 </div>
               )}
 
-              {/* Generated code — [Copy] [Apply to Code Editor] buttons */}
-              {turn.generatedCode && (
-                <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-                  <Button size="small" icon={<CopyOutlined />} onClick={() => {
-                    navigator.clipboard.writeText(turn.generatedCode || '');
-                  }}>{t('common.copy', 'Copy')}</Button>
-                  <Button size="small" type="primary" icon={<CodeOutlined />} onClick={() => onApplyCode?.(turn.generatedCode!)}>
-                    {t('strategy.gen.applyToEditor', 'Apply to Code Editor')}
-                  </Button>
-                </div>
-              )}
-
               {/* Metrics */}
               {turn.metrics && turn.metrics.length > 0 && (
                 <Row gutter={8} style={{ marginBottom: 8 }}>
