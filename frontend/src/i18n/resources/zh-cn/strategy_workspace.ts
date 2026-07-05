@@ -58,6 +58,8 @@ const StrategyWorkspace = {
       "noHistory": "暂无交易历史",
       "noResults": "暂无回测结果",
       "positions": "持仓",
+      "codeValid": "代码验证通过",
+      "validateFirst": "请先验证代码",
       "templates": "策略列表",
       "backtestCompleted": "已完成",
       "backtestEmpty": "运行回测以查看结果",

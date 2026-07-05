@@ -19,6 +19,8 @@ import RightPanel from './components/workspace/RightPanel';
 import QuickTradePanel from '@/components/chart/QuickTradePanel';
 import { useWorkspaceSession } from './hooks/useWorkspaceSession';
 import { SaveTemplateWrapper } from './WorkspaceLayout';
+import { BacktestParamsModal, type BacktestModalResult } from './components/workspace/BacktestParamsModal';
+import type { StandardParams } from '@/components/backtest/backtestRunnerTypes';
 
 const COL_BORDER = '1px solid var(--ant-color-border)';
 
@@ -39,6 +41,7 @@ export default function StrategyWorkspacePage() {
   const rightPanelWidth = useWorkspaceStore(s => s.rightPanelWidth);
   const setRightPanelWidth = useWorkspaceStore(s => s.setRightPanelWidth);
   const [editable, setEditable] = useState(false);
+  const [btModalOpen, setBtModalOpen] = useState(false);
 
   const startResize = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -177,7 +180,7 @@ export default function StrategyWorkspacePage() {
                 </Tooltip>
                 <Tooltip title={t('strategy.workspace.runBacktest')}>
                   <Button size="small" type="primary" icon={<PlayCircleOutlined />}
-                    onClick={ws.backtest.run}
+                    onClick={() => setBtModalOpen(true)}
                     style={{ background: '#3fb950', borderColor: '#3fb950' }}>
                     {t('strategy.workspace.backtest')}
                   </Button>
@@ -353,6 +356,24 @@ export default function StrategyWorkspacePage() {
         />
       </div>
 
+      <BacktestParamsModal
+        open={btModalOpen}
+        onClose={() => setBtModalOpen(false)}
+        code={ws.code.code}
+        symbol={ws.account.symbol}
+        onConfirm={(result: BacktestModalResult) => {
+          const p = result.params;
+          ws.backtest.setInitialCapital(p.initialCapital);
+          ws.backtest.setLeverage(p.leverage);
+          ws.backtest.setCommission(p.commission);
+          ws.backtest.setSlippage(p.slippage);
+          ws.backtest.setTradeDirection(p.tradeDirection);
+          ws.backtest.setStrictMode(p.strictMode);
+          ws.backtest.setStartDate(result.startDate);
+          ws.backtest.setEndDate(result.endDate);
+          ws.backtest.run();
+        }}
+      />
       <SaveTemplateWrapper ws={ws} />
       <BacktestHistoryDrawer
         open={ws.history.modalOpen || ws.history.drawerOpen}

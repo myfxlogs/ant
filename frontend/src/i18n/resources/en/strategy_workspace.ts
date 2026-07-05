@@ -58,6 +58,8 @@ const StrategyWorkspace = {
       "noHistory": "No trade history",
       "noResults": "No backtest results",
       "positions": "Positions",
+      "codeValid": "Code validation passed",
+      "validateFirst": "Please validate code first",
       "templates": "Strategies",
       "backtestCompleted": "Completed",
       "backtestEmpty": "Run a backtest to see results",

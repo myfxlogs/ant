@@ -58,6 +58,8 @@ const StrategyWorkspace = {
       "noHistory": "取引履歴なし",
       "noResults": "バックテスト結果なし",
       "positions": "ポジション",
+      "codeValid": "コード検証に成功しました",
+      "validateFirst": "先にコードを検証してください",
       "templates": "戦略リスト",
       "backtestCompleted": "完了",
       "backtestEmpty": "バックテストを実行して結果を表示",

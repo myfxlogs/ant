@@ -58,6 +58,8 @@ const StrategyWorkspace = {
       "noHistory": "Chưa có lịch sử giao dịch",
       "noResults": "Chưa có kết quả backtest",
       "positions": "Vị thế",
+      "codeValid": "Xác thực code thành công",
+      "validateFirst": "Vui lòng xác thực code trước",
       "templates": "Danh sách chiến lược",
       "backtestCompleted": "Hoàn tất",
       "backtestEmpty": "Chạy backtest để xem kết quả",

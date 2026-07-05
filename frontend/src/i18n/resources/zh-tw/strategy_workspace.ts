@@ -58,6 +58,8 @@ const StrategyWorkspace = {
       "noHistory": "暫無交易歷史",
       "noResults": "暫無回測結果",
       "positions": "持倉",
+      "codeValid": "程式碼驗證通過",
+      "validateFirst": "請先驗證程式碼",
       "templates": "策略列表",
       "backtestCompleted": "已完成",
       "backtestEmpty": "執行回測以查看结果",
