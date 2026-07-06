@@ -34,20 +34,32 @@ type SessionReadyWaiter interface {
 	WaitSession(accountID string) <-chan struct{}
 }
 
+// GatewayRemover stops a running gateway by account ID.
+type GatewayRemover interface {
+	RemoveGateway(ctx context.Context, accountID string) error
+}
+
 // AccountServer implements ant.v1.AccountServiceHandler.
 type AccountServer struct {
-	svc           *service.AccountService
-	searcher      *brokersearch.Searcher
-	publisher     *mdgateway.AccountEventPublisher
-	mtTester      MTConnectionTester
-	sessionWaiter SessionReadyWaiter // may be nil
-	log           *zap.Logger
+	svc            *service.AccountService
+	searcher       *brokersearch.Searcher
+	publisher      *mdgateway.AccountEventPublisher
+	mtTester       MTConnectionTester
+	sessionWaiter  SessionReadyWaiter // may be nil
+	gatewayRemover GatewayRemover     // may be nil
+	log            *zap.Logger
 }
 
 var _ antv1c.AccountServiceHandler = (*AccountServer)(nil)
 
 func NewAccountServer(svc *service.AccountService, searcher *brokersearch.Searcher, publisher *mdgateway.AccountEventPublisher, tester MTConnectionTester, log *zap.Logger) *AccountServer {
 	return &AccountServer{svc: svc, searcher: searcher, publisher: publisher, mtTester: tester, log: log}
+}
+
+// WithGatewayRemover sets an optional gateway manager for stopping gateways on account delete.
+func (s *AccountServer) WithGatewayRemover(r GatewayRemover) *AccountServer {
+	s.gatewayRemover = r
+	return s
 }
 
 // WithSessionWaiter sets an optional readiness waiter used by ConnectAccount.

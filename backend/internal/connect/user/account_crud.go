@@ -167,6 +167,12 @@ func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[
 	if s.publisher != nil {
 		s.publisher.PublishDisconnect(ctx, req.Msg.Id, userID.String())
 	}
+	// Synchronously remove the gateway to prevent zombie gateways after delete.
+	if s.gatewayRemover != nil {
+		if err := s.gatewayRemover.RemoveGateway(ctx, req.Msg.Id); err != nil {
+			s.log.Warn("DeleteAccount: gateway removal failed", zap.String("accountId", req.Msg.Id), zap.Error(err))
+		}
+	}
 
 	if err := s.svc.DeleteAccount(ctx, userID, req.Msg.Id); err != nil {
 		s.log.Error("DeleteAccount", zap.Error(err))
