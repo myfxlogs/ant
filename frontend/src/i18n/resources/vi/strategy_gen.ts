@@ -18,19 +18,12 @@ const StrategyGen = {
         "return": "Lợi Nhuận",
         "sharpe": "夏普",
         "trades": "Giao Dịch",
-        "winRate": "Thắng",
-        "totalReturn": "Lợi Nhuận",
-        "totalTrades": "Số Giao Dịch"
+        "winRate": "Thắng"
       },
       "backtestMsg": "Tác vụ backtest đã tạo",
       "backtestStarted": "Backtest Đã Bắt Đầu",
-      "backtest": "Backtest",
-      "backtesting": "Đang backtest...",
       "clarifyTitle": "Một vài chi tiết cần xác nhận:",
-      "compileError": "Lỗi Biên Dịch",
-      "compiling": "Đang biên dịch...",
       "done": "Xong",
-      "failed": "Thất bại",
       "generating": "Đang Tạo...",
       "placeholder": "Mô tả chiến lược giao dịch bạn muốn tạo, VD: \"Tạo chiến lược hồi quy trung bình Bollinger Band cho EURUSD khung 1H\"",
       "regenerate": "Tạo Lại",
@@ -72,9 +65,7 @@ const StrategyGen = {
       "execApplyCode": "Áp Dụng vào Editor",
       "execSkipNoSymbol": "Backtest bị bỏ qua: chưa chọn cặp",
       "execSkipNoCode": "Backtest bị bỏ qua: code trống",
-      "validating": "Kiểm Tra Tuân Thủ",
-      "noMarketData": "Không có dữ liệu thị trường",
-      "noMarketDataHint": "Vui lòng chọn tài khoản giao dịch và cặp tiền để biểu đồ tải dữ liệu, sau đó thử lại."
+      "validating": "Kiểm Tra Tuân Thủ"
     }
   }
 } as const;

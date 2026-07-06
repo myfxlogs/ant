@@ -475,6 +475,9 @@ export const DETAIL_ACTIONS_DELETE_PASSWORD_HINT_KEY = 'accounts.detail.actions.
 /** detail.actions.deletePasswordPlaceholder */
 export const DETAIL_ACTIONS_DELETE_PASSWORD_PLACEHOLDER_KEY = 'accounts.detail.actions.deletePasswordPlaceholder' as const;
 
+/** detail.actions.deletePasswordWrong */
+export const DETAIL_ACTIONS_DELETE_PASSWORD_WRONG_KEY = 'accounts.detail.actions.deletePasswordWrong' as const;
+
 /** detail.actions.deleteWarning */
 export const DETAIL_ACTIONS_DELETE_WARNING_KEY = 'accounts.detail.actions.deleteWarning' as const;
 
@@ -997,6 +1000,7 @@ export const ACCOUNTS_KEYS = {
   detail_actions_delete_confirm: 'accounts.detail.actions.deleteConfirm',
   detail_actions_delete_password_hint: 'accounts.detail.actions.deletePasswordHint',
   detail_actions_delete_password_placeholder: 'accounts.detail.actions.deletePasswordPlaceholder',
+  detail_actions_delete_password_wrong: 'accounts.detail.actions.deletePasswordWrong',
   detail_actions_delete_warning: 'accounts.detail.actions.deleteWarning',
   detail_actions_disable_account: 'accounts.detail.actions.disableAccount',
   detail_actions_enable_account: 'accounts.detail.actions.enableAccount',

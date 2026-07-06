@@ -157,17 +157,7 @@ const Trading = {
     "time": "時間",
     "title": "交易",
     "type": "類型",
-    "volume": "數量",
-    "broker": "經紀商",
-    "closePrice": "平倉價",
-    "closeTime": "平倉時間",
-    "entryPrice": "入場價",
-    "investor": "投資者",
-    "leverage": "槓桿",
-    "master": "主帳戶",
-    "permission": "權限",
-    "platform": "平台",
-    "server": "伺服器"
+    "volume": "數量"
   },
   "algo": {
     "actions": {

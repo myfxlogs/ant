@@ -18,19 +18,12 @@ const StrategyGen = {
         "return": "收益",
         "sharpe": "夏普",
         "trades": "交易数",
-        "winRate": "胜率",
-        "totalReturn": "收益",
-        "totalTrades": "交易数"
+        "winRate": "胜率"
       },
       "backtestMsg": "回测任务已创建",
       "backtestStarted": "回测已启动",
-      "backtest": "回测",
-      "backtesting": "回测中...",
       "clarifyTitle": "确认以下细节:",
-      "compileError": "编译错误",
-      "compiling": "编译中...",
       "done": "完成",
-      "failed": "失败",
       "generating": "生成中...",
       "placeholder": "描述您想要创建的交易策略，例如：“制作一个 EURUSD 1H 布林带均值回归策略”",
       "regenerate": "重新生成",
@@ -74,9 +67,7 @@ const StrategyGen = {
       "execApplyCode": "应用代码到编辑器",
       "execSkipNoSymbol": "回测跳过：未选择交易品种",
       "execSkipNoCode": "回测跳过：代码为空",
-      "validating": "合规检查",
-      "noMarketData": "暂无行情数据",
-      "noMarketDataHint": "请先选择交易账号和品种，待图表加载行情数据后再重试。"
+      "validating": "合规检查"
     }
   }
 } as const;

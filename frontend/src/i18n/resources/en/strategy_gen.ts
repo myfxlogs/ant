@@ -18,19 +18,12 @@ const StrategyGen = {
         "return": "Return",
         "sharpe": "Sharpe",
         "trades": "Trades",
-        "winRate": "Win",
-        "totalReturn": "Return",
-        "totalTrades": "Trades"
+        "winRate": "Win"
       },
       "backtestMsg": "Backtest task created",
       "backtestStarted": "Backtest Started",
-      "backtest": "Backtest",
-      "backtesting": "Backtesting...",
       "clarifyTitle": "A few details to confirm:",
-      "compileError": "Compile Error",
-      "compiling": "Compiling...",
       "done": "Done",
-      "failed": "Failed",
       "generating": "Generating...",
       "placeholder": "Describe the trading strategy you want to create, e.g.: \"Make a Bollinger Band mean-reversion strategy for EURUSD on 1H\"",
       "regenerate": "Regenerate",
@@ -75,9 +68,7 @@ const StrategyGen = {
       "execApplyCode": "Apply to Editor",
       "execSkipNoSymbol": "Backtest skipped: no symbol selected",
       "execSkipNoCode": "Backtest skipped: empty code",
-      "validating": "Compliance Check",
-      "noMarketData": "No market data available",
-      "noMarketDataHint": "Please select a trading account and a symbol so the chart can load market data, then try again."
+      "validating": "Compliance Check"
     }
   }
 } as const;

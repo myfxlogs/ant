@@ -162,6 +162,7 @@ message AccountsI18n {
   string detail_actions_delete_confirm = 156;  // Verify & Delete
   string detail_actions_delete_password_hint = 157;  // Enter the MT trading password or read-only password to verif
   string detail_actions_delete_password_placeholder = 158;  // MT trading / read-only password
+  string detail_actions_delete_password_wrong = 280;  // Trading password incorrect error
   string detail_actions_delete_warning = 159;  // This action is irreversible. All account data (trade records
   string detail_actions_disable_account = 160;  // Disable account
   string detail_actions_enable_account = 161;  // Enable account

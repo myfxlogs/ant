@@ -51,22 +51,6 @@ const StrategyWorkspace = {
       "ai": "AI 助手",
       "aiAssist": "AI 助手",
       "backtest": "回测",
-      "design": "设计",
-      "history": "历史",
-      "noBacktest": "暂无回测结果",
-      "noCode": "尚未生成代码",
-      "noHistory": "暂无交易历史",
-      "noResults": "暂无回测结果",
-      "positions": "持仓",
-      "codeValid": "代码验证通过",
-      "validateFirst": "请先验证代码",
-      "codeEditorPlaceholder": "在此编写 Python subset 策略代码，或从 AI 助手加载...",
-      "browseIndicators": "浏览指标",
-      "aiAssistant": "AI 助手",
-      "tuningInteractive": "交互式",
-      "tuningBatch": "批量",
-      "manage": "管理",
-      "templates": "策略列表",
       "backtestCompleted": "已完成",
       "backtestEmpty": "运行回测以查看结果",
       "backtestError": "回测失败",
@@ -112,8 +96,7 @@ const StrategyWorkspace = {
       "validateBeforeSave": "保存前请先验证代码",
       "validateFailed": "代码验证失败",
       "validatePass": "代码验证通过",
-      "watchlist": "自选",
-      "backtesting": "回测中...",
+      "watchlist": "自选"
     }
   }
 } as const;

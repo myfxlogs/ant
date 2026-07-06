@@ -18,19 +18,12 @@ const StrategyGen = {
         "return": "リターン",
         "sharpe": "シャープレシオ",
         "trades": "取引",
-        "winRate": "勝率",
-        "totalReturn": "リターン",
-        "totalTrades": "取引数"
+        "winRate": "勝率"
       },
       "backtestMsg": "バックテストタスク作成済",
       "backtestStarted": "バックテスト開始",
-      "backtest": "バックテスト",
-      "backtesting": "バックテスト中...",
       "clarifyTitle": "確認事項:",
-      "compileError": "コンパイルエラー",
-      "compiling": "コンパイル中...",
       "done": "完了",
-      "failed": "失敗",
       "generating": "生成中...",
       "placeholder": "作成する取引戦略を説明してください。例：「EURUSD 1Hのボリンジャーバンド平均回帰戦略」",
       "regenerate": "再生成",
@@ -72,9 +65,7 @@ const StrategyGen = {
       "execApplyCode": "エディタに適用",
       "execSkipNoSymbol": "バックテストスキップ：銘柄未選択",
       "execSkipNoCode": "バックテストスキップ：コードが空",
-      "validating": "コンプライアンスチェック",
-      "noMarketData": "マーケットデータがありません",
-      "noMarketDataHint": "取引口座と銘柄を選択してチャートにデータを読み込んでから、再試行してください。"
+      "validating": "コンプライアンスチェック"
     }
   }
 } as const;

@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next'
 import { message } from 'antd';
-import { MESSAGES_CONNECTING_MT_SERVER_KEY, MESSAGES_CONNECT_FAILED_KEY, MESSAGES_DISABLED_SUCCESS_KEY, MESSAGES_ENABLED_SUCCESS_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+import { MESSAGES_CONNECTING_MT_SERVER_KEY, MESSAGES_CONNECT_FAILED_KEY, MESSAGES_DISABLED_SUCCESS_KEY, MESSAGES_ENABLED_SUCCESS_KEY, DETAIL_ACTIONS_DELETE_PASSWORD_WRONG_KEY, MESSAGES_DELETE_FAILED_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 
 ;
 import { showSuccessModal, showErrorModal, showLoadingModal, showSuccess, showError } from '@/utils/message';
@@ -120,9 +120,9 @@ export function useAccountDetailData(id: string | undefined) {
       // onError handler in useDeleteAccountMutation rolls back optimistic update.
       const msg = String(err?.message ?? '');
       if (msg.includes('password verification failed') || msg.includes('Invalid account')) {
-        message.error(t('accounts.detail.actions.deletePasswordWrong', 'Trading password is incorrect. Please enter the current MT password.'));
+        message.error(t(DETAIL_ACTIONS_DELETE_PASSWORD_WRONG_KEY));
       } else {
-        message.error(getErrorMessage(err, t('accounts.messages.deleteFailed', 'Failed to delete account')));
+        message.error(getErrorMessage(err, t(MESSAGES_DELETE_FAILED_KEY)));
       }
     } finally { setDeleting(false); }
   }, [currentAccount, deletePassword, deleteMut, navigate]);

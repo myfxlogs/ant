@@ -51,22 +51,6 @@ const StrategyWorkspace = {
       "ai": "AI",
       "aiAssist": "AI Assistant",
       "backtest": "Backtest",
-      "design": "Design",
-      "history": "History",
-      "noBacktest": "No backtest results",
-      "noCode": "No code generated yet",
-      "noHistory": "No trade history",
-      "noResults": "No backtest results",
-      "positions": "Positions",
-      "codeValid": "Code validation passed",
-      "validateFirst": "Please validate code first",
-      "codeEditorPlaceholder": "Write Python subset strategy code here, or load from AI assistant...",
-      "browseIndicators": "Browse Indicators",
-      "aiAssistant": "AI Assistant",
-      "tuningInteractive": "Interactive",
-      "tuningBatch": "Batch",
-      "manage": "Manage",
-      "templates": "Strategies",
       "backtestCompleted": "Completed",
       "backtestEmpty": "Run a backtest to see results",
       "backtestError": "Backtest failed",
@@ -112,8 +96,7 @@ const StrategyWorkspace = {
       "validateBeforeSave": "Please validate code before saving",
       "validateFailed": "Validation failed",
       "validatePass": "Validation passed",
-      "watchlist": "Watchlist",
-      "backtesting": "Backtesting...",
+      "watchlist": "Watchlist"
     }
   }
 } as const;

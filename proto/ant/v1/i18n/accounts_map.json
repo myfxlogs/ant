@@ -159,6 +159,7 @@
     "detail_actions_delete_confirm": "detail.actions.deleteConfirm",
     "detail_actions_delete_password_hint": "detail.actions.deletePasswordHint",
     "detail_actions_delete_password_placeholder": "detail.actions.deletePasswordPlaceholder",
+    "detail_actions_delete_password_wrong": "detail.actions.deletePasswordWrong",
     "detail_actions_delete_warning": "detail.actions.deleteWarning",
     "detail_actions_disable_account": "detail.actions.disableAccount",
     "detail_actions_enable_account": "detail.actions.enableAccount",

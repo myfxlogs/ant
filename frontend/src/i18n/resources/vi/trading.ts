@@ -157,17 +157,7 @@ const Trading = {
     "time": "Thời gian",
     "title": "Giao dịch",
     "type": "Loại",
-    "volume": "Khối Lượng",
-    "broker": "Broker",
-    "closePrice": "Giá đóng",
-    "closeTime": "Thời gian đóng",
-    "entryPrice": "Già vào",
-    "investor": "Nhà đầu tư",
-    "leverage": "Đòn bẩy",
-    "master": "Master",
-    "permission": "Quyền",
-    "platform": "Nền tảng",
-    "server": "Server"
+    "volume": "Khối Lượng"
   },
   "algo": {
     "actions": {

@@ -44,7 +44,7 @@ const StrategyTemplates = {
           "create": "Create Schedule",
           "createAndEnable": "Create & enable",
           "createScheduleNoEnable": "Create schedule",
-          "publishTemplate": "Publish strategy",
+          "publishTemplate": "Publish template",
           "updateTradingPassword": "Update Trading Password"
         },
         "metrics": {
@@ -162,8 +162,8 @@ const StrategyTemplates = {
           "name": "Enter name"
         },
         "title": {
-          "create": "Create strategy",
-          "edit": "Edit strategy"
+          "create": "Create template",
+          "edit": "Edit template"
         },
         "validation": {
           "codeRequired": "Code is required",
@@ -173,8 +173,8 @@ const StrategyTemplates = {
       "actions": {
         "backtest": "Backtest",
         "copy": "Copy",
-        "create": "New Strategy",
-        "createTemplate": "Create strategy",
+        "create": "New Template",
+        "createTemplate": "Create template",
         "delete": "Delete",
         "edit": "Edit",
         "launchSchedule": "Launch schedule",
@@ -189,7 +189,7 @@ const StrategyTemplates = {
         "backtestRangeInvalid": "Invalid backtest range",
         "backtestReportDeleted": "Backtest report deleted",
         "backtestReportNotFound": "Backtest report not found",
-        "backtestRunNoPublishedTemplate": "Backtest run has no published strategy",
+        "backtestRunNoPublishedTemplate": "Backtest run has no published template",
         "backtestRunningCannotPublish": "Backtest is running. Cannot publish now.",
         "backtestSubmitFailed": "Failed to submit backtest",
         "backtestSubmitted": "Backtest submitted",
@@ -200,30 +200,30 @@ const StrategyTemplates = {
         "codeValidationPassed": "Code validation passed",
         "copyFailed": "Copy failed",
         "createScheduleFailed": "Failed to create schedule",
-        "deepLinkNavigate": "Opened strategy and latest run details from external link",
+        "deepLinkNavigate": "Opened template and latest run details from external link",
         "enterStrategyCode": "Please enter strategy code",
-        "fetchTemplateListFailed": "Failed to load strategy list",
+        "fetchTemplateListFailed": "Failed to load template list",
         "missingDraftIdCannotPublish": "Missing draft id. Cannot publish.",
         "missingScheduleInfo": "Missing schedule info",
         "publishFailed": "Publish failed",
-        "publishedButNoTemplateId": "Published, but strategy id is missing.",
+        "publishedButNoTemplateId": "Published, but template id is missing.",
         "readStrategyCodeFailed": "Failed to read strategy code",
-        "readTemplateStatusFailed": "Failed to read strategy status",
-        "republishedButNoTemplateId": "Republished, but strategy id is missing.",
+        "readTemplateStatusFailed": "Failed to read template status",
+        "republishedButNoTemplateId": "Republished, but template id is missing.",
         "scheduleCreated": "Schedule created",
         "scheduleCreatedAndEnabled": "Schedule created and enabled",
         "selectBacktestRange": "Please select backtest range",
         "strategyCodeEmptyCannotBacktest": "Strategy code is empty. Cannot backtest.",
         "strategyCodeEmptyCannotPublish": "Strategy code is empty. Please save your code before publishing.",
-        "systemTemplateReadOnly": "System strategies are read-only. Clone to edit.",
-        "templateAlreadyPublished": "Strategy already published",
-        "templateCreated": "Strategy created",
-        "templateDeleted": "Strategy deleted",
-        "templateNotDraftUnknownPublishStatus": "Strategy is not a draft. Unknown publish status.",
-        "templateNotPublishedCannotCreateSchedule": "Strategy is not published. Cannot create schedule.",
-        "templatePublished": "Strategy published",
-        "templateRepublished": "Strategy republished",
-        "templateUpdated": "Strategy updated"
+        "systemTemplateReadOnly": "System templates are read-only. Clone to edit.",
+        "templateAlreadyPublished": "Template already published",
+        "templateCreated": "Template created",
+        "templateDeleted": "Template deleted",
+        "templateNotDraftUnknownPublishStatus": "Template is not a draft. Unknown publish status.",
+        "templateNotPublishedCannotCreateSchedule": "Template is not published. Cannot create schedule.",
+        "templatePublished": "Template published",
+        "templateRepublished": "Template republished",
+        "templateUpdated": "Template updated"
       },
       "status": {
         "draft": "Draft",
@@ -244,16 +244,16 @@ const StrategyTemplates = {
         "visibility": "Visibility"
       },
       "tabs": {
-        "system": "System strategies",
-        "user": "User strategies"
+        "system": "System templates",
+        "user": "User templates"
       },
       "visibility": {
         "private": "Private",
         "public": "Public"
       },
       "copySuffix": " (copy)",
-      "defaultDraftName": "Draft strategy",
-      "deleteConfirm": "Delete this strategy?",
+      "defaultDraftName": "Draft template",
+      "deleteConfirm": "Delete this template?",
       "scheduleName": "Schedule name: {{name}}",
       "title": "Templates"
     }
