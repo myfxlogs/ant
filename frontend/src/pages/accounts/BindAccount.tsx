@@ -100,7 +100,7 @@ export default function BindAccount() {
     setLoading(true); setBindError('');
     try {
       if (!selectedServer.access || selectedServer.access.length === 0) { showError(t(BIND_MESSAGES_NO_ACCESS_HOSTS_KEY)); return; }
-      const host = selectedServer.access[0];
+      const host = selectedServer.access.join(',');
       const request: BindAccountRequest = {
         alias: alias || selectedServer.name, mtType,
         login: login.trim(), password,

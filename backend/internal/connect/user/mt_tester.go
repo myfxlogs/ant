@@ -75,17 +75,31 @@ func (t *mtConnectionTester) VerifyPassword(ctx context.Context, platform, broke
 }
 
 func (t *mtConnectionTester) testMT4(ctx context.Context, cfg mdtick.AccountConfig) (*mdtick.MTAccountInfo, error) {
-	gw := mt4.New(cfg, t.log)
-	if err := gw.Connect(ctx); err != nil {
-		return nil, fmt.Errorf("connection failed: %w", err)
+	hosts := strings.Split(cfg.BrokerHost, ",")
+	var lastErr error
+	for _, host := range hosts {
+		host = strings.TrimSpace(host)
+		if host == "" {
+			continue
+		}
+		cfg.BrokerHost = host
+		gw := mt4.New(cfg, t.log)
+		if err := gw.Connect(ctx); err != nil {
+			lastErr = err
+			continue
+		}
+		info, err := gw.FetchAccountInfo(ctx)
+		gw.Disconnect(ctx)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		return info, nil
 	}
-	defer gw.Disconnect(ctx)
-
-	info, err := gw.FetchAccountInfo(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("account info: %w", err)
+	if lastErr != nil {
+		return nil, fmt.Errorf("all %d hosts failed, last error: %w", len(hosts), lastErr)
 	}
-	return info, nil
+	return nil, fmt.Errorf("no valid hosts to try")
 }
 
 func (t *mtConnectionTester) testMT5(ctx context.Context, cfg mdtick.AccountConfig) (*mdtick.MTAccountInfo, error) {
