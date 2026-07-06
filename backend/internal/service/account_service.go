@@ -192,10 +192,31 @@ func (s *AccountService) UpdateAccount(ctx context.Context, userID uuid.UUID, id
 	return nil
 }
 
-// DeleteAccount removes an MT account. Related tables are cleaned up by FK ON DELETE CASCADE.
+// DeleteAccount soft-deletes an MT account by setting deleted_at.
 func (s *AccountService) DeleteAccount(ctx context.Context, userID uuid.UUID, id string) error {
-	if _, err := s.db.Exec(ctx, `DELETE FROM mt_accounts WHERE id = $1::uuid AND user_id = $2`, id, userID); err != nil {
+	tag, err := s.db.Exec(ctx,
+		`UPDATE mt_accounts SET deleted_at = NOW(), account_status = 'disconnected' WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL`,
+		id, userID)
+	if err != nil {
 		return fmt.Errorf("service: delete account: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+	s.InvalidateSummaryCache(userID.String())
+	return nil
+}
+
+// RestoreAccount restores a soft-deleted account.
+func (s *AccountService) RestoreAccount(ctx context.Context, userID uuid.UUID, id string) error {
+	tag, err := s.db.Exec(ctx,
+		`UPDATE mt_accounts SET deleted_at = NULL, account_status = 'disconnected' WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NOT NULL`,
+		id, userID)
+	if err != nil {
+		return fmt.Errorf("service: restore account: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
 	}
 	s.InvalidateSummaryCache(userID.String())
 	return nil
@@ -302,6 +323,15 @@ func (s *AccountService) UpdateBrokerThresholds(ctx context.Context, id string, 
 		return fmt.Errorf("service: update broker thresholds: %w", err)
 	}
 	return nil
+}
+
+// LogAudit inserts an account audit event. Non-blocking — failures are logged but not returned.
+func (s *AccountService) LogAudit(ctx context.Context, accountID, userID uuid.UUID, action, detail string) {
+	if _, err := s.db.Exec(ctx,
+		`INSERT INTO account_audit_log (account_id, user_id, action, detail) VALUES ($1, $2, $3, $4)`,
+		accountID, userID, action, detail); err != nil && s.log != nil {
+		s.log.Warn("LogAudit: insert failed", zap.String("action", action), zap.Error(err))
+	}
 }
 
 // UserOwnsAccount checks if an account belongs to the given user.

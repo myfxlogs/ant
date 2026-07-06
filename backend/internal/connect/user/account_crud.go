@@ -71,6 +71,8 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 		s.log.Error("CreateAccount: get account after create", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	s.svc.LogAudit(ctx, uuid.MustParse(id), userID, "create",
+		fmt.Sprintf("bound %s account %s on %s", r.MtType, r.Login, r.BrokerCompany))
 	return connect.NewResponse(accountToProto(a)), nil
 }
 
@@ -178,5 +180,7 @@ func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[
 		s.log.Error("DeleteAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	s.svc.LogAudit(ctx, uuid.MustParse(req.Msg.Id), userID, "delete",
+		fmt.Sprintf("deleted account %s", creds.Login))
 	return connect.NewResponse(&emptypb.Empty{}), nil
 }

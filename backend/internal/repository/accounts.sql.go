@@ -12,7 +12,7 @@ import (
 )
 
 const getAccount = `-- name: GetAccount :one
-SELECT id, user_id, mt_type, broker_company, broker_server, broker_host, login, password, alias, balance, credit, equity, margin, free_margin, margin_level, leverage, currency, account_method, is_investor, account_status, mt_token, last_error, last_connected_at, last_checked_at, created_at, updated_at, account_type, mtapi_port, mtapi_token_encrypted, password_encrypted, canonical_subscribed_symbols, broker_id, broker_margin_call_pct, broker_stop_out_pct FROM mt_accounts WHERE id = $1 AND user_id = $2
+SELECT id, user_id, mt_type, broker_company, broker_server, broker_host, login, password, alias, balance, credit, equity, margin, free_margin, margin_level, leverage, currency, account_method, is_investor, account_status, mt_token, last_error, last_connected_at, last_checked_at, created_at, updated_at, account_type, mtapi_port, mtapi_token_encrypted, password_encrypted, canonical_subscribed_symbols, broker_id, broker_margin_call_pct, broker_stop_out_pct FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
 `
 
 type GetAccountParams struct {
@@ -63,7 +63,7 @@ func (q *Queries) GetAccount(ctx context.Context, arg GetAccountParams) (MtAccou
 }
 
 const getAccountCredentials = `-- name: GetAccountCredentials :one
-SELECT login, password, mt_type, broker_host FROM mt_accounts WHERE id = $1 AND user_id = $2
+SELECT login, password, mt_type, broker_host FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
 `
 
 type GetAccountCredentialsParams struct {
@@ -91,7 +91,7 @@ func (q *Queries) GetAccountCredentials(ctx context.Context, arg GetAccountCrede
 }
 
 const getAccountSnapshots = `-- name: GetAccountSnapshots :many
-SELECT id, balance, equity, credit, margin, free_margin, margin_level, account_status FROM mt_accounts WHERE user_id = $1
+SELECT id, balance, equity, credit, margin, free_margin, margin_level, account_status FROM mt_accounts WHERE user_id = $1 AND deleted_at IS NULL
 `
 
 type GetAccountSnapshotsRow struct {
@@ -135,7 +135,7 @@ func (q *Queries) GetAccountSnapshots(ctx context.Context, userID pgtype.UUID) (
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT id, user_id, mt_type, broker_company, broker_server, broker_host, login, password, alias, balance, credit, equity, margin, free_margin, margin_level, leverage, currency, account_method, is_investor, account_status, mt_token, last_error, last_connected_at, last_checked_at, created_at, updated_at, account_type, mtapi_port, mtapi_token_encrypted, password_encrypted, canonical_subscribed_symbols, broker_id, broker_margin_call_pct, broker_stop_out_pct FROM mt_accounts WHERE user_id = $1 ORDER BY created_at DESC
+SELECT id, user_id, mt_type, broker_company, broker_server, broker_host, login, password, alias, balance, credit, equity, margin, free_margin, margin_level, leverage, currency, account_method, is_investor, account_status, mt_token, last_error, last_connected_at, last_checked_at, created_at, updated_at, account_type, mtapi_port, mtapi_token_encrypted, password_encrypted, canonical_subscribed_symbols, broker_id, broker_margin_call_pct, broker_stop_out_pct FROM mt_accounts WHERE user_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC
 `
 
 func (q *Queries) ListAccounts(ctx context.Context, userID pgtype.UUID) ([]MtAccount, error) {
@@ -223,7 +223,7 @@ func (q *Queries) UpdateAccountMetrics(ctx context.Context, arg UpdateAccountMet
 }
 
 const userOwnsAccount = `-- name: UserOwnsAccount :one
-SELECT EXISTS(SELECT 1 FROM mt_accounts WHERE id = $1 AND user_id = $2) AS owns
+SELECT EXISTS(SELECT 1 FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL) AS owns
 `
 
 type UserOwnsAccountParams struct {
