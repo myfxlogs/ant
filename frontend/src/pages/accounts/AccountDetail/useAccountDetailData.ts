@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next'
+import { message } from 'antd';
 import { MESSAGES_CONNECTING_MT_SERVER_KEY, MESSAGES_CONNECT_FAILED_KEY, MESSAGES_DISABLED_SUCCESS_KEY, MESSAGES_ENABLED_SUCCESS_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 
 ;
@@ -115,9 +116,9 @@ export function useAccountDetailData(id: string | undefined) {
       await deleteMut.mutateAsync({ id: currentAccount.id, password: deletePassword.trim() });
       setDeleteModalOpen(false);
       navigate('/');
-    } catch {
+    } catch (err: any) {
       // onError handler in useDeleteAccountMutation rolls back optimistic update.
-      // Keep modal open so user can retry.
+      message.error(err?.message ?? 'Failed to delete account');
     } finally { setDeleting(false); }
   }, [currentAccount, deletePassword, deleteMut, navigate]);
 
