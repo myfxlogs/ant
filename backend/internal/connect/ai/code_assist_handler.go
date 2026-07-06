@@ -51,7 +51,7 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	}
 
 	// ── MQL path: compile via Bytecode VM, extract params from AST ──
-	if isMQLCode(code) {
+	if sdk.IsMQL(code) {
 		return s.validateMQL(ctx, code)
 	}
 
@@ -82,16 +82,6 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		Warnings:       warnings,
 		ParametersJson: parametersJson,
 	}), nil
-}
-
-// isMQLCode returns true if the code looks like MQL source (not Go).
-func isMQLCode(code string) bool {
-	if strings.Contains(code, "package ") && strings.Contains(code, "import (") {
-		return false
-	}
-	return strings.Contains(code, "OnTick") || strings.Contains(code, "OnBar") ||
-		strings.Contains(code, "OnInit") || strings.Contains(code, "extern ") ||
-		strings.Contains(code, "input ") || strings.Contains(code, "#property")
 }
 
 // validateMQL compiles MQL source via the Bytecode VM pipeline and extracts parameters.

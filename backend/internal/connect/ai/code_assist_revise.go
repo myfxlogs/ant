@@ -14,6 +14,7 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/ai"
 	systemai "anttrader/internal/service/systemai"
+	"anttrader/strategy/sdk"
 )
 
 func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[antv1.ReviseCodeRequest]) (*connect.Response[antv1.ReviseCodeResponse], error) {
@@ -27,7 +28,7 @@ func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[
 		return nil, err
 	}
 
-	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction, Locale: req.Msg.Locale, IsMQL: isMQLCode(code)})
+	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction, Locale: req.Msg.Locale, IsMQL: sdk.IsMQL(code)})
 	messages := systemai.BuildChatMessages(pc.SystemPrompt, pc.UserMessage, protoHistoryToChat(req.Msg.History))
 	revised, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
 	if err != nil {
@@ -40,7 +41,7 @@ func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[
 
 	result := revised
 	if pc.Mode == ai.ModeRepair {
-		if code := extractCodeFromRepair(revised, isMQLCode(code)); code != "" {
+		if code := extractCodeFromRepair(revised, sdk.IsMQL(code)); code != "" {
 			result = code
 		}
 	}
@@ -62,7 +63,7 @@ func (s *CodeAssistServer) ReviseCodeStream(
 		return err
 	}
 
-	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction, Locale: req.Msg.Locale, IsMQL: isMQLCode(code)})
+	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction, Locale: req.Msg.Locale, IsMQL: sdk.IsMQL(code)})
 	messages := systemai.BuildChatMessages(pc.SystemPrompt, pc.UserMessage, protoHistoryToChat(req.Msg.History))
 	var fullText strings.Builder
 	err = s.systemSvc.ChatCompletionStream(ctx, uid, messages,
@@ -81,7 +82,7 @@ func (s *CodeAssistServer) ReviseCodeStream(
 	// Repair mode post-processing
 	result := fullText.String()
 	if pc.Mode == ai.ModeRepair {
-		if code := extractCodeFromRepair(result, isMQLCode(code)); code != "" {
+		if code := extractCodeFromRepair(result, sdk.IsMQL(code)); code != "" {
 			result = code
 		}
 	}

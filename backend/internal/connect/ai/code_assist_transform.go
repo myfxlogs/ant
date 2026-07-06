@@ -12,6 +12,7 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	systemai "anttrader/internal/service/systemai"
+	"anttrader/strategy/sdk"
 )
 
 func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request[antv1.ExplainCodeRequest]) (*connect.Response[antv1.ExplainCodeResponse], error) {
@@ -31,7 +32,7 @@ func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request
 		"Cover: strategy logic, entry/exit conditions, risk management, and potential improvements. " +
 		"Keep the explanation under 300 words."
 	langTag := "go"
-	if isMQLCode(code) {
+	if sdk.IsMQL(code) {
 		langTag = "mql4"
 	}
 	userMsg := fmt.Sprintf("Please explain this trading strategy:\n```%s\n%s\n```", langTag, code)
