@@ -111,17 +111,28 @@ const (
 
 ### 修复方案
 
-**前端：AccountDetail 精简为纯账号信息页**
+**前端：AccountDetail 保留账号级分析，移除策略级分析**
 
-AccountDetail 页面只保留：
+两种分析维度不可混淆：
+
+| 维度 | 定义 | 归属 | 示例 |
+|------|------|------|------|
+| 账号级 | 跨策略、跨时段的宏观交易成绩 | **留 AccountDetail** | 净值曲线、月度盈亏、品种分布、交易统计、风险指标 |
+| 策略级 | 单个策略在特定参数下的表现 | **去策略模块** | 策略 A 的回测报告、策略 B 的参数优化结果 |
+
+用户可能在不同阶段使用不同策略，账号级分析反映的是**实盘综合结果**，这是账号维度的核心数据。
+
+AccountDetail 保留：
 - 账号基础信息（login, broker, server, platform, currency, leverage）
 - 连接状态 + 连接/断连操作
 - 实时余额/净值/保证金指标
-- 删除/修改密码操作
+- 持仓/挂单/历史订单
+- **账号级分析图表**（权益曲线、月度分析、品种分布、PnL 图表、交易统计、风险指标）
+- 删除操作
 
-移除到分析模块：
-- 权益曲线、月度分析、品种分布、PnL 图表 → 移至策略模块的 Analytics 页面（通过 `accountId` 参数查询）
-- AI 交易报告 → 删除独立路由 `/accounts/:id/report`，报告生成移至策略分析模块
+移除到策略模块：
+- 策略级回测分析 → 策略模块的 Analytics 页面（通过 `accountId` 参数查询）
+- AI 交易报告 → 删除独立路由 `/accounts/:id/report`
 
 **前端：Dashboard 保持**
 
@@ -943,18 +954,17 @@ queryClient.invalidateQueries({ queryKey: queryKeys.accounts.financials })
 
 ### 步骤 10：前端 Detail 页面精简
 
-**10a. 分析组件移除**：
+**10a. 分析组件清理**：
 
-从 `AccountDetail.tsx` 中删除以下导入和渲染：
-- `AccountAnalyticsSection`（权益曲线/月度分析/品种分布/PnL 图表）
-- `ShareAccountButton`（性能分享）
-- `AccountReport` 引用
+从 `AccountDetail.tsx` 中删除：
+- `ShareAccountButton`（性能分享——这是策略级功能）
+- `AccountReport` 引用（AI 报告——去策略分析模块）
 
 保留：
+- `AccountAnalyticsSection`（**账号级**分析：权益曲线/月度分析/品种分布/PnL 图表）
 - `AccountMetricsCards`（余额/净值/保证金）
 - `AccountTradeTabs`（持仓/挂单/历史）
-- `AccountCard`（基础信息）
-- `AccountDeleteModal`（删除确认，改用平台密码验证）
+- `AccountDeleteModal`（删除确认）
 
 **10b. Zustand 删除**：
 - 删除 `frontend/src/stores/accountStore.ts`
@@ -994,6 +1004,6 @@ queryClient.invalidateQueries({ queryKey: queryKeys.accounts.financials })
 - 盈亏推送每 tick 不写 DB（改为节流 5 秒）
 - 订单更新回调不调用 `UpdateAccountMetrics`
 - BindAccount 无单独"验证"按钮
-- AccountDetail 无分析图表、无分享按钮
+- AccountDetail 保留账号级分析图表，删除 ShareAccountButton
 - accountStore.ts / adminAccountStore.ts 已删除
 - account_number.go 已移至 user 模块
