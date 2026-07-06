@@ -16,9 +16,7 @@ const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
 const AccountDetail = lazy(() => import('@/pages/accounts/AccountDetail'));
 const AccountReport = lazy(() => import('@/pages/accounts/AccountReport'));
 const BindAccount = lazy(() => import('@/pages/accounts/BindAccount'));
-const StrategyLibraryPage = lazy(() => import('@/pages/strategy/StrategyLibraryPage'));
 const StrategyScheduleLogsPage = lazy(() => import('@/pages/strategy/StrategyScheduleLogsPage'));
-const IndicatorCatalogPage = lazy(() => import('@/pages/strategy/IndicatorCatalogPage'));
 const StrategyWorkspacePage = lazy(() => import('@/pages/strategy/StrategyWorkspacePage'));
 const LiveStrategyPage = lazy(() => import('@/pages/strategy/LiveStrategyPage'));
 const MarketplacePage = lazy(() => import('@/pages/marketplace/MarketplacePage'));
@@ -26,9 +24,7 @@ const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const WalletPage = lazy(() => import('@/pages/wallet/WalletPage'));
 const LogManagement = lazy(() => import('@/pages/logs/LogManagement'));
 const AutoTradingSettings = lazy(() => import('@/pages/auto-trading/AutoTradingSettings'));
-const StrategyExperimentPage = lazy(() => import('@/pages/strategy/StrategyExperimentPage'));
 const MarketToolsPage = lazy(() => import('@/pages/strategy/MarketToolsPage'));
-const MemoryPage = lazy(() => import('@/pages/strategy/MemoryPage'));
 const AlgoDashboard = lazy(() => import('@/pages/trading/AlgoDashboard'));
 const AnalyticsSummary = lazy(() => import('@/pages/analytics/Summary'));
 const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
@@ -70,19 +66,19 @@ const mainRoutes = (
     <Route path="accounts/bind" element={wrap(<BindAccount />)} />
     <Route path="profile" element={wrap(<ProfilePage />)} />
     <Route path="wallet" element={wrap(<WalletPage />)} />
-    <Route path="strategy/templates" element={<Navigate to="/strategy/library" replace />} />
-    <Route path="strategy/schedules" element={<Navigate to="/strategy/library" replace />} />
+    <Route path="strategy/templates" element={<Navigate to="/strategy/workspace" replace />} />
+    <Route path="strategy/schedules" element={<Navigate to="/strategy/live" replace />} />
     <Route path="strategy/schedules/:id/logs" element={wrap(<StrategyScheduleLogsPage />)} />
-    <Route path="strategy/library" element={wrap(<StrategyLibraryPage />)} />
+    <Route path="strategy/library" element={<Navigate to="/strategy/workspace" replace />} />
     <Route path="strategy/workspace" element={wrap(<StrategyWorkspacePage />)} />
     <Route path="strategy/live" element={wrap(<LiveStrategyPage />)} />
-    <Route path="strategy/indicator-catalog" element={wrap(<IndicatorCatalogPage />)} />
+    <Route path="strategy/indicator-catalog" element={<Navigate to="/strategy/workspace" replace />} />
     <Route path="marketplace" element={wrap(<MarketplacePage />)} />
-    <Route path="strategy/experiments" element={wrap(<StrategyExperimentPage />)} />
+    <Route path="strategy/experiments" element={<Navigate to="/strategy/workspace" replace />} />
     <Route path="strategy/market-tools" element={wrap(<MarketToolsPage />)} />
     <Route path="strategy/analysis" element={<Navigate to="/strategy/market-tools?tab=symbol" replace />} />
     <Route path="strategy/market-regime" element={<Navigate to="/strategy/market-tools?tab=regime" replace />} />
-    <Route path="strategy/memory" element={wrap(<MemoryPage />)} />
+    <Route path="strategy/memory" element={<Navigate to="/strategy/workspace" replace />} />
     <Route path="logs" element={wrap(<LogManagement />)} />
     <Route path="auto-trading" element={wrap(<AutoTradingSettings />)} />
     <Route path="trading/algos" element={wrap(<AlgoDashboard />)} />

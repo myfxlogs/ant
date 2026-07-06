@@ -1,5 +1,5 @@
-import { useCallback, useRef } from 'react';
-import { Button, Tabs, Tooltip, Dropdown } from 'antd';
+import { useCallback, useRef, useState } from 'react';
+import { Button, Tabs, Tooltip, Dropdown, Radio } from 'antd';
 import {
   PlayCircleOutlined, SettingOutlined, CaretDownOutlined,
   HistoryOutlined, DoubleRightOutlined,
@@ -17,6 +17,7 @@ import {
   TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, WIN_RATE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import SmartTuningPanel from '@/pages/strategy/components/workspace/SmartTuningPanel';
+import BatchTuningPanel from '@/pages/strategy/components/workspace/BatchTuningPanel';
 import GatePanel from '@/pages/strategy/components/workspace/GatePanel';
 import BacktestResultsTab from './BacktestResultsTab';
 import BacktestTradesTab from './BacktestTradesTab';
@@ -62,6 +63,7 @@ export default function BacktestPanel(props: Props) {
     onOpenHistory, onAIOptimize, code, onApplyTunedParams,
   } = props;
   const { t } = useTranslation();
+  const [tuningMode, setTuningMode] = useState<'interactive' | 'batch'>('interactive');
 
   const handleRun = () => runner.run(inputs);
   const canRun = Boolean(inputs.strategyCode && inputs.symbol) && !runner.submitting;
@@ -181,18 +183,29 @@ export default function BacktestPanel(props: Props) {
 
         {/* ── Tuning Tab ──────────────────────────────────────────────── */}
         {runner.activeTab === 'tuning' && runner.tuning && (
-          <SmartTuningPanel
-            tuneMethod={runner.tuning.method || 'grid'} onTuneMethodChange={runner.tuning.setMethod || (() => {})}
-            sweepDimensions={runner.tuning.sweepDimensions || []} onToggleDimension={runner.tuning.toggleDimension || (() => {})}
-            enabledSweepDims={runner.tuning.enabledDims || []} cartesianSize={runner.tuning.cartesianSize || 0}
-            tuningRunning={runner.tuning.running || false} canRun={Boolean(inputs.strategyCode && inputs.symbol)}
-            onRunTuning={() => runner.tuning.run?.({
-              code: inputs.strategyCode, symbol: inputs.symbol, timeframe: inputs.timeframe,
-              startDate: runner.startDate, endDate: runner.endDate,
-              templateId: inputs.templateId,
-            })}
-            code={code} onApplyToCode={onApplyTunedParams}
-          />
+          <>
+            <Radio.Group value={tuningMode} onChange={e => setTuningMode(e.target.value)} size="small"
+              buttonStyle="solid" style={{ marginBottom: 8 }}>
+              <Radio.Button value="interactive">{t('strategy.workspace.tuningInteractive')}</Radio.Button>
+              <Radio.Button value="batch">{t('strategy.workspace.tuningBatch')}</Radio.Button>
+            </Radio.Group>
+            {tuningMode === 'interactive' ? (
+              <SmartTuningPanel
+                tuneMethod={runner.tuning.method || 'grid'} onTuneMethodChange={runner.tuning.setMethod || (() => {})}
+                sweepDimensions={runner.tuning.sweepDimensions || []} onToggleDimension={runner.tuning.toggleDimension || (() => {})}
+                enabledSweepDims={runner.tuning.enabledDims || []} cartesianSize={runner.tuning.cartesianSize || 0}
+                tuningRunning={runner.tuning.running || false} canRun={Boolean(inputs.strategyCode && inputs.symbol)}
+                onRunTuning={() => runner.tuning.run?.({
+                  code: inputs.strategyCode, symbol: inputs.symbol, timeframe: inputs.timeframe,
+                  startDate: runner.startDate, endDate: runner.endDate,
+                  templateId: inputs.templateId,
+                })}
+                code={code} onApplyToCode={onApplyTunedParams}
+              />
+            ) : (
+              <BatchTuningPanel />
+            )}
+          </>
         )}
 
         {/* ── Gate Tab ────────────────────────────────────────────────── */}

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { Grid, Button, Tooltip, Input, Empty, message } from 'antd';
-import { PlayCircleOutlined, SaveOutlined, CopyOutlined, EditOutlined } from '@ant-design/icons';
+import { Grid, Button, Tooltip, Empty, Drawer, message } from 'antd';
+import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { CHART_ERROR_KEY, SELECT_SYMBOL_HINT_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { useStrategyWorkspaceState } from './hooks/useStrategyWorkspaceState';
@@ -20,6 +20,9 @@ import QuickTradePanel from '@/components/chart/QuickTradePanel';
 import { useWorkspaceSession } from './hooks/useWorkspaceSession';
 import { SaveTemplateWrapper } from './WorkspaceLayout';
 import { BacktestParamsModal, type BacktestModalResult } from './components/workspace/BacktestParamsModal';
+import StrategyCodeEditor from '@/components/strategy/StrategyCodeEditor';
+import IndicatorCatalogContent from './components/workspace/IndicatorCatalogContent';
+import TemplateManagerContent from './components/workspace/TemplateManagerContent';
 import type { StandardParams } from '@/components/backtest/backtestRunnerTypes';
 
 const COL_BORDER = '1px solid var(--ant-color-border)';
@@ -40,8 +43,9 @@ export default function StrategyWorkspacePage() {
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
   const rightPanelWidth = useWorkspaceStore(s => s.rightPanelWidth);
   const setRightPanelWidth = useWorkspaceStore(s => s.setRightPanelWidth);
-  const [editable, setEditable] = useState(false);
   const [btModalOpen, setBtModalOpen] = useState(false);
+  const [indicatorDrawerOpen, setIndicatorDrawerOpen] = useState(false);
+  const [tplDrawerOpen, setTplDrawerOpen] = useState(false);
 
   const startResize = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -104,8 +108,9 @@ export default function StrategyWorkspacePage() {
           transition: 'margin-left 0.25s ease',
           background: 'var(--ant-color-bg-container)',
         }}>
-          <div style={{ padding: '8px 12px 2px', fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, flexShrink: 0 }}>
-            📋 {t('strategy.workspace.templates')}
+          <div style={{ padding: '8px 12px 2px', fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>📋 {t('strategy.workspace.templates')}</span>
+            <Button size="small" type="text" style={{ fontSize: 10, padding: '0 4px' }} onClick={() => setTplDrawerOpen(true)}>{t('strategy.workspace.manage')}</Button>
           </div>
           <div style={{ padding: '4px 12px', flexShrink: 0 }}>
             <WorkspaceTemplateManager
@@ -188,9 +193,8 @@ export default function StrategyWorkspacePage() {
                 <Tooltip title={t('strategy.workspace.copy')}>
                   <Button size="small" icon={<CopyOutlined />} onClick={handleCopy} />
                 </Tooltip>
-                <Tooltip title={editable ? t('common.readOnly') : t('common.edit')}>
-                  <Button size="small" type={editable ? 'primary' : 'default'} icon={<EditOutlined />}
-                    onClick={() => setEditable(e => !e)} />
+                <Tooltip title={t('strategy.workspace.browseIndicators')}>
+                  <Button size="small" icon={<QuestionCircleOutlined />} onClick={() => setIndicatorDrawerOpen(true)} />
                 </Tooltip>
               </div>
             )}
@@ -216,39 +220,16 @@ export default function StrategyWorkspacePage() {
 
           {/* Code */}
           <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'code' ? 'flex' : 'none', flexDirection: 'column' }}>
-            {ws.code.code || editable ? (
-              editable ? (
-                <Input.TextArea
-                  value={ws.code.code}
-                  onChange={(e) => ws.code.setCode(e.target.value)}
-                  placeholder={t('strategy.workspace.codeEditorPlaceholder')}
-                  style={{
-                    flex: 1, borderRadius: 0, resize: 'none',
-                    fontFamily: '"SF Mono", "Fira Code", monospace',
-                    fontSize: 12, lineHeight: 1.6,
-                  }}
-                />
-              ) : (
-                <div style={{
-                  flex: 1, overflowY: 'auto', padding: 16,
-                  fontFamily: '"SF Mono", "Fira Code", monospace',
-                  fontSize: 12, lineHeight: 1.7, whiteSpace: 'pre-wrap',
-                  color: 'var(--ant-color-text)',
-                }}>
-                  {ws.code.code}
-                </div>
-              )
+            {ws.code.code ? (
+              <StrategyCodeEditor
+                value={ws.code.code}
+                onChange={ws.code.setCode}
+                style={{ flex: 1, borderRadius: 0, border: 'none', minHeight: 0 }}
+              />
             ) : (
-              <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 40 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12 }}>
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description={
-                    <span>
-                      {t('strategy.workspace.noCode')}
-                      <Button type="link" size="small" onClick={() => setEditable(true)}>
-                        {t('common.edit')}
-                      </Button>
-                    </span>
-                  } />
+                  description={t('strategy.workspace.noCode')} />
               </div>
             )}
           </div>
@@ -383,6 +364,24 @@ export default function StrategyWorkspacePage() {
         }}
       />
       <SaveTemplateWrapper ws={ws} />
+      <Drawer
+        title={t('indicatorCatalog.title')}
+        open={indicatorDrawerOpen}
+        onClose={() => setIndicatorDrawerOpen(false)}
+        width={640}
+        styles={{ body: { overflowY: 'auto' } }}
+      >
+        <IndicatorCatalogContent />
+      </Drawer>
+      <Drawer
+        title={t('strategy.library.title', 'Strategy Library')}
+        open={tplDrawerOpen}
+        onClose={() => setTplDrawerOpen(false)}
+        width={420}
+        styles={{ body: { padding: 0, overflow: 'hidden' } }}
+      >
+        <TemplateManagerContent />
+      </Drawer>
       <BacktestHistoryDrawer
         open={ws.history.modalOpen || ws.history.drawerOpen}
         runs={ws.history.runs}

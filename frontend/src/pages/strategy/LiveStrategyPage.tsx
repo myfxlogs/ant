@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { strategyActiveApi, strategyRunsApi } from '@/client/strategy';
 import type { ActiveStrategy, StrategyRun, StrategySignalEvent } from '@/gen/ant/v1/strategy_runtime_pb';
 import { SignalDrawer, formatTime, shortId, STATUS_COLORS, MODE_COLORS } from './LiveStrategyPageSignalDrawer';
+import LiveSchedulesTab from './components/workspace/LiveSchedulesTab';
 
 const { Text } = Typography;
 
@@ -230,6 +231,11 @@ export default function LiveStrategyPage() {
                 />
               </Card>
             ),
+          },
+          {
+            key: 'schedules',
+            label: <span><ClockCircleOutlined /> {t('strategy.live.schedulesTab', 'Schedules')}</span>,
+            children: <LiveSchedulesTab />,
           },
         ]}
       />
