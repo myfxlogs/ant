@@ -71,6 +71,8 @@ export function handleOrderUpdate(queryClient: QueryClient, order: OrderUpdate) 
         return { trades: [trade, ...filtered], total: old.total + 1 };
       },
     );
+	    // Invalidate analytics so charts/stats refresh when new trades arrive.
+	    queryClient.invalidateQueries({ queryKey: ["analytics", accountId] });
     return;
   }
 
