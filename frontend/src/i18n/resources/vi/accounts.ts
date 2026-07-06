@@ -223,6 +223,7 @@ const Accounts = {
         "deleteConfirm": "Xác minh & Xóa",
         "deletePasswordHint": "Nhập mật khẩu giao dịch MT hoặc mật khẩu chỉ-đọc để xác minh:",
         "deletePasswordPlaceholder": "Mật khẩu giao dịch / chỉ-đọc MT",
+        "deletePasswordWrong": "Mật khẩu giao dịch không đúng. Vui lòng nhập mật khẩu MT hiện tại.",
         "deleteWarning": "Hành động này không thể hoàn tác. Toàn bộ dữ liệu tài khoản (lịch sử giao dịch, phân tích, v.v.) sẽ bị xóa vĩnh viễn.",
         "disableAccount": "Tắt tài khoản",
         "enableAccount": "Bật tài khoản",

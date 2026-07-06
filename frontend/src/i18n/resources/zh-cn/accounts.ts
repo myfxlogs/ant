@@ -223,6 +223,7 @@ const Accounts = {
         "deleteConfirm": "验证并删除",
         "deletePasswordHint": "请输入该账户的 MT 交易密码或只读密码进行验证：",
         "deletePasswordPlaceholder": "MT 交易密码 / 只读密码",
+        "deletePasswordWrong": "交易密码错误，请输入正确的 MT 交易密码。",
         "deleteWarning": "此操作不可撤销。账户所有数据（交易记录、分析数据等）将被永久删除。",
         "disableAccount": "停用账户",
         "enableAccount": "启用账户",

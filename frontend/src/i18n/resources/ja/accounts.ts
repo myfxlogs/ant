@@ -223,6 +223,7 @@ const Accounts = {
         "deleteConfirm": "確認して削除",
         "deletePasswordHint": "確認のため、MT取引パスワードまたは読み取り専用パスワードを入力してください：",
         "deletePasswordPlaceholder": "MT取引/読み取り専用パスワード",
+        "deletePasswordWrong": "取引パスワードが正しくありません。現在のMTパスワードを入力してください。",
         "deleteWarning": "この操作は元に戻せません。取引記録、分析データなど、すべてのアカウントデータが完全に削除されます。",
         "disableAccount": "口座を無効化",
         "enableAccount": "口座を有効化",

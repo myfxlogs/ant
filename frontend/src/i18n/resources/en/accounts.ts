@@ -223,6 +223,7 @@ const Accounts = {
         "deleteConfirm": "Verify & Delete",
         "deletePasswordHint": "Enter the MT trading password or read-only password to verify:",
         "deletePasswordPlaceholder": "MT trading / read-only password",
+        "deletePasswordWrong": "Trading password is incorrect. Please enter the current MT password.",
         "deleteWarning": "This action is irreversible. All account data (trade records, analytics, etc.) will be permanently deleted.",
         "disableAccount": "Disable account",
         "enableAccount": "Enable account",

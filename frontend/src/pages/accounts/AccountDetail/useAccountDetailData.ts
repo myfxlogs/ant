@@ -118,7 +118,12 @@ export function useAccountDetailData(id: string | undefined) {
       navigate('/');
     } catch (err: any) {
       // onError handler in useDeleteAccountMutation rolls back optimistic update.
-      message.error(err?.message ?? 'Failed to delete account');
+      const msg = String(err?.message ?? '');
+      if (msg.includes('password verification failed') || msg.includes('Invalid account')) {
+        message.error(t('accounts.detail.actions.deletePasswordWrong', 'Trading password is incorrect. Please enter the current MT password.'));
+      } else {
+        message.error(getErrorMessage(err, t('accounts.messages.deleteFailed', 'Failed to delete account')));
+      }
     } finally { setDeleting(false); }
   }, [currentAccount, deletePassword, deleteMut, navigate]);
 
