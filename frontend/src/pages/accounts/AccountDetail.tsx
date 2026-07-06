@@ -13,6 +13,7 @@ import AccountTradeTabs from './components/AccountTradeTabs';
 import AccountMetricsCards from './components/AccountMetricsCards';
 import AccountAnalyticsSection from './components/AccountAnalyticsSection';
 import AccountDeleteModal from './components/AccountDeleteModal';
+import ShareAccountButton from './components/ShareAccountButton';
 import { useAccountDetailData } from './AccountDetail/useAccountDetailData';
 
 export default function AccountDetail() {
@@ -156,6 +157,7 @@ export default function AccountDetail() {
             <Button icon={<FileTextOutlined />} onClick={() => navigate(`/accounts/${id}/report`)}>
               {t(REPORT_TITLE_SHORT_KEY)}
             </Button>
+            {id && <ShareAccountButton accountId={id} />}
             <Button icon={<ReloadOutlined />} onClick={handleRefresh} loading={analyticsLoading}>
               {t('common.refresh')}
             </Button>

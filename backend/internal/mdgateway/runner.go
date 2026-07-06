@@ -118,6 +118,11 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	mgr.SetOTelTracer(tracer)
 	mgr.SetBaseContext(ctx)
 
+	// Wire synchronous gateway removal for account deletion.
+	if deps.Hub != nil {
+		deps.Hub.RemoveGateway = mgr.RemoveGateway
+	}
+
 	// --- Open bar ticker (500ms) for real-time price updates ---
 	// #nosec G118 — pipeline ctx is the correct lifecycle scope for open bar ticker
 	go mgr.StartOpenBarTicker(ctx)

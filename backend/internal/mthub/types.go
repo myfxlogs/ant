@@ -26,6 +26,9 @@ type Hub struct {
 	sessions  map[string]*Session
 	executors map[string]OrderExecutor
 	waiters   map[string][]chan struct{} // signaled on Register
+	// RemoveGateway is an optional callback to synchronously stop a gateway.
+	// Set by the pipeline after the gateway Manager is created.
+	RemoveGateway func(ctx context.Context, accountID string) error
 }
 
 func NewHub() *Hub {

@@ -106,7 +106,8 @@ func registerHandlers(
 	accountEventPub := mdgateway.NewAccountEventPublisher(js, log)
 	mtTester := user.NewMTConnectionTester(cfg.MtapiToken, log)
 	accountServer := user.NewAccountServer(accountSvc, searcher, accountEventPub, mtTester, log).
-		WithSessionWaiter(hub)
+		WithSessionWaiter(hub).
+		WithStopGateway(hub.RemoveGateway)
 	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	mktServer := mktplace.NewMarketServer(platformSvc, marketDataRepo, nc, log)
