@@ -94,7 +94,7 @@ func (g *Gateway) Connect(ctx context.Context) error {
 	brokerHost := g.cfg.BrokerHost
 	brokerPort := int32(443)
 	if idx := strings.LastIndex(brokerHost, ":"); idx > 0 {
-		if p, err := strconv.Atoi(brokerHost[idx+1:]); err == nil && p > 0 && p <= 65535 {
+		if p, err := strconv.ParseInt(brokerHost[idx+1:], 10, 32); err == nil && p > 0 && p <= 65535 {
 			brokerPort = int32(p)
 		}
 		brokerHost = brokerHost[:idx]
