@@ -56,7 +56,7 @@ func (c *AnalyticsCache) Set(ctx context.Context, accountID string, resp *antv1.
 	if err != nil {
 		return err
 	}
-	return c.redis.Set(ctx, "analytics:"+accountID, data, 30*time.Minute).Err()
+	return c.redis.Set(ctx, "analytics:"+accountID, data, 5*time.Minute).Err()
 }
 
 // GetAttribution returns the cached attribution analysis for an account, or nil on cache miss.
@@ -80,7 +80,7 @@ func (c *AnalyticsCache) SetAttribution(ctx context.Context, accountID string, r
 	if err != nil {
 		return err
 	}
-	return c.redis.Set(ctx, "analytics:attribution:"+accountID, data, 30*time.Minute).Err()
+	return c.redis.Set(ctx, "analytics:attribution:"+accountID, data, 5*time.Minute).Err()
 }
 
 // GetRolling returns the cached rolling metrics for an account, or nil on cache miss.
@@ -104,7 +104,7 @@ func (c *AnalyticsCache) SetRolling(ctx context.Context, accountID string, resp 
 	if err != nil {
 		return err
 	}
-	return c.redis.Set(ctx, "analytics:rolling:"+accountID, data, 30*time.Minute).Err()
+	return c.redis.Set(ctx, "analytics:rolling:"+accountID, data, 5*time.Minute).Err()
 }
 
 // GetMonthlyDetail retrieves a cached monthly detail response for a given year/month.
@@ -130,7 +130,7 @@ func (c *AnalyticsCache) SetMonthlyDetail(ctx context.Context, accountID string,
 	if err != nil {
 		return err
 	}
-	return c.redis.Set(ctx, key, data, 30*time.Minute).Err()
+	return c.redis.Set(ctx, key, data, 5*time.Minute).Err()
 }
 
 // Invalidate clears all analytics caches for an account after trade data changes.
