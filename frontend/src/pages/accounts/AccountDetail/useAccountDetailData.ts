@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next'
 import { message } from 'antd';
 import { MESSAGES_CONNECTING_MT_SERVER_KEY, MESSAGES_CONNECT_FAILED_KEY, MESSAGES_DISABLED_SUCCESS_KEY, MESSAGES_ENABLED_SUCCESS_KEY, DETAIL_ACTIONS_DELETE_PASSWORD_WRONG_KEY, MESSAGES_DELETE_FAILED_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
-
-;
 import { showSuccessModal, showErrorModal, showLoadingModal, showSuccess, showError } from '@/utils/message';
 import { translateMaybeI18nKey } from '@/utils/error';
+import { getErrorMessage } from '@/utils/error';
 import type { ConnectAccountResult } from '@/client/account';
 import { useAccountDetailQuery } from '@/queries/useAccountDetailQuery';
 import { useAccountFinancials } from '@/queries/useAccountFinancials';
@@ -16,7 +15,7 @@ import { useEnableDisableAccountMutation } from '@/mutations/useEnableDisableAcc
 import { useDeleteAccountMutation } from '@/mutations/useDeleteAccountMutation';
 import { useConnect } from '@/providers/useConnect';
 import { isPendingOrder } from '../components/AccountDetail.utils';
-import { useAccountAnalytics } from './useAccountAnalytics';
+import { useHistoryTrades } from './useHistoryTrades';
 
 export function useAccountDetailData(id: string | undefined) {
   const { t } = useTranslation();
@@ -31,9 +30,12 @@ export function useAccountDetailData(id: string | undefined) {
   const toggleMut = useEnableDisableAccountMutation();
   const deleteMut = useDeleteAccountMutation();
 
-  // ── Chart UI ──
-  const [chartType, setChartType] = useState<'equity' | 'balance' | 'profit'>('equity');
-  const [chartPeriod, setChartPeriod] = useState<'day' | 'week' | 'month' | 'all'>('month');
+  // ── History trades (for AccountTradeTabs) ──
+  const {
+    historyTrades, historyTotal, historyPage, historyLoading,
+    setHistoryTrades, setHistoryTotal, setHistoryPage,
+    handleRefresh: handleRefreshHistory, handleRetry: handleRetryHistory,
+  } = useHistoryTrades(id);
 
   // ── Action state ──
   const [connecting, setConnecting] = useState(false);
@@ -44,17 +46,11 @@ export function useAccountDetailData(id: string | undefined) {
 
   // ── Account ──
   const currentAccount = accountDetailQ.data ?? null;
-  // Consider data "received" when the financials query has either succeeded
-  // or failed (we can fall back to the account snapshot). Only show loading
-  // when the query is genuinely in-flight.
   const hasReceivedData = financialsQ.isSuccess || financialsQ.isError;
   const isDataReceived = !!id && hasReceivedData;
   const isStreamLoading = !isDataReceived && financialsQ.isLoading;
   const accountLoadError = accountDetailQ.isError && !currentAccount;
   const positions = positionsQ.data ?? [];
-
-  // ── Analytics (delegated) ──
-  const analytics = useAccountAnalytics(id, isDataReceived, chartPeriod);
 
   // ── Financial values (prefer SSE over snapshot) ──
   const financials = useMemo(() => {
@@ -117,7 +113,6 @@ export function useAccountDetailData(id: string | undefined) {
       setDeleteModalOpen(false);
       navigate('/');
     } catch (err: any) {
-      // onError handler in useDeleteAccountMutation rolls back optimistic update.
       const msg = String(err?.message ?? '');
       if (msg.includes('password verification failed') || msg.includes('Invalid account')) {
         message.error(t(DETAIL_ACTIONS_DELETE_PASSWORD_WRONG_KEY));
@@ -125,7 +120,7 @@ export function useAccountDetailData(id: string | undefined) {
         message.error(getErrorMessage(err, t(MESSAGES_DELETE_FAILED_KEY)));
       }
     } finally { setDeleting(false); }
-  }, [currentAccount, deletePassword, deleteMut, navigate]);
+  }, [currentAccount, deletePassword, deleteMut, navigate, t]);
 
   // ── Position filtering ──
   const { realPositions, pendingOrders } = useMemo(() => {
@@ -139,33 +134,16 @@ export function useAccountDetailData(id: string | undefined) {
   return {
     currentAccount, isDataReceived, isStreamLoading, accountLoadError, financials,
     positions: realPositions, pendingOrders,
-    chartType, setChartType, chartPeriod, setChartPeriod,
     connecting, disabling,
     handleConnect, handleToggleStatus,
     deleteModalOpen, setDeleteModalOpen,
     deletePassword, setDeletePassword,
     deleting, handleDelete,
     togglePending: toggleMut.isPending,
-    // analytics (spread from useAccountAnalytics)
-    analyticsLoading: analytics.analyticsLoading,
-    analyticsError: analytics.analyticsError,
-    equityChartData: analytics.equityChartData,
-    profitByMonthData: analytics.profitByMonthData,
-    symbolDistributionData: analytics.symbolDistributionData,
-    dailyPnLData: analytics.dailyPnLData,
-    hourlyData: analytics.hourlyData,
-    tradeStats: analytics.tradeStats,
-    riskMetrics: analytics.riskMetrics,
-    monthlyAnalysisYears: analytics.monthlyAnalysisYears,
-    monthlyAnalysisData: analytics.monthlyAnalysisData,
-    historyTrades: analytics.historyTrades,
-    historyTotal: analytics.historyTotal,
-    historyPage: analytics.historyPage,
-    historyLoading: analytics.historyLoading,
-    setHistoryTrades: analytics.setHistoryTrades,
-    setHistoryTotal: analytics.setHistoryTotal,
-    setHistoryPage: analytics.setHistoryPage,
-    handleRefresh: analytics.handleRefresh,
-    handleRetry: analytics.handleRetry,
+    // history trades
+    historyTrades, historyTotal, historyPage, historyLoading,
+    setHistoryTrades, setHistoryTotal, setHistoryPage,
+    handleRefresh: () => { accountDetailQ.refetch(); handleRefreshHistory(); },
+    handleRetry: () => { accountDetailQ.refetch(); handleRetryHistory(); },
   };
 }

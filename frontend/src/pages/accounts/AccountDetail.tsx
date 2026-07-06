@@ -9,13 +9,9 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next'
 import { DETAIL_ACCOUNT_TYPE_DEMO_KEY, DETAIL_ACCOUNT_TYPE_REAL_KEY, DETAIL_ACTIONS_DELETE_ACCOUNT_KEY, DETAIL_ACTIONS_DISABLE_ACCOUNT_KEY, DETAIL_ACTIONS_ENABLE_ACCOUNT_KEY, DETAIL_LEVERAGE_KEY, DETAIL_MESSAGES_FETCH_ACCOUNT_FAILED_KEY, DETAIL_MODE_INVESTOR_KEY, DETAIL_MODE_TRADER_KEY, DETAIL_STATUS_CONNECTED_KEY, DETAIL_STATUS_CONNECTING_KEY, DETAIL_STATUS_DISABLED_KEY, DETAIL_STATUS_DISCONNECTED_KEY, DETAIL_STATUS_ERROR_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
-
-;
 import AccountTradeTabs from './components/AccountTradeTabs';
-import AccountAnalyticsSection from './components/AccountAnalyticsSection';
 import AccountMetricsCards from './components/AccountMetricsCards';
 import AccountDeleteModal from './components/AccountDeleteModal';
-import ShareAccountButton from './components/ShareAccountButton';
 import { useAccountDetailData } from './AccountDetail/useAccountDetailData';
 
 export default function AccountDetail() {
@@ -26,13 +22,8 @@ export default function AccountDetail() {
   const {
     currentAccount, isStreamLoading, accountLoadError, financials,
     positions, pendingOrders,
-    analyticsLoading, analyticsError,
-    equityChartData, profitByMonthData, symbolDistributionData,
-    dailyPnLData, hourlyData, tradeStats, riskMetrics,
-    monthlyAnalysisYears, monthlyAnalysisData,
     historyTrades, historyTotal, historyPage, historyLoading,
     setHistoryTrades, setHistoryTotal, setHistoryPage,
-    chartType, setChartType, chartPeriod, setChartPeriod,
     connecting, disabling,
     handleConnect, handleToggleStatus, handleRefresh, handleRetry,
     deleteModalOpen, setDeleteModalOpen,
@@ -155,8 +146,7 @@ export default function AccountDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            {id && <ShareAccountButton accountId={id} />}
-            <Button icon={<ReloadOutlined />} onClick={handleRefresh} loading={analyticsLoading}>
+            <Button icon={<ReloadOutlined />} onClick={handleRefresh}>
               {t('common.refresh')}
             </Button>
             <Dropdown menu={{ items: menuItems }} trigger={['click']}>
@@ -208,28 +198,6 @@ export default function AccountDetail() {
             />
           )}
         </div>
-
-        {/* ── Analytics ── */}
-        <AccountAnalyticsSection
-          analyticsLoading={analyticsLoading}
-          analyticsError={analyticsError}
-          onRetryAnalytics={handleRetry}
-          chartType={chartType}
-          setChartType={setChartType}
-          chartPeriod={chartPeriod}
-          setChartPeriod={setChartPeriod}
-          equityChartData={equityChartData}
-          profitByMonthData={profitByMonthData}
-          symbolDistributionData={symbolDistributionData}
-          dailyPnLData={dailyPnLData}
-          hourlyData={hourlyData}
-          tradeStats={tradeStats}
-          riskMetrics={riskMetrics}
-          monthlyAnalysisYears={monthlyAnalysisYears}
-          monthlyAnalysisData={monthlyAnalysisData}
-          currency={currentAccount?.currency || 'USD'}
-          accountId={id}
-        />
 
         {/* ── Delete modal ── */}
         <AccountDeleteModal
