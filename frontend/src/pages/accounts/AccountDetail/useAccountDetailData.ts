@@ -16,6 +16,7 @@ import { useDeleteAccountMutation } from '@/mutations/useDeleteAccountMutation';
 import { useConnect } from '@/providers/useConnect';
 import { isPendingOrder } from '../components/AccountDetail.utils';
 import { useHistoryTrades } from './useHistoryTrades';
+import { useAccountAnalytics } from './useAccountAnalytics';
 
 export function useAccountDetailData(id: string | undefined) {
   const { t } = useTranslation();
@@ -30,12 +31,19 @@ export function useAccountDetailData(id: string | undefined) {
   const toggleMut = useEnableDisableAccountMutation();
   const deleteMut = useDeleteAccountMutation();
 
+  // ── Chart UI ──
+  const [chartType, setChartType] = useState<'equity' | 'balance' | 'profit'>('equity');
+  const [chartPeriod, setChartPeriod] = useState<'day' | 'week' | 'month' | 'all'>('month');
+
   // ── History trades (for AccountTradeTabs) ──
   const {
     historyTrades, historyTotal, historyPage, historyLoading,
     setHistoryTrades, setHistoryTotal, setHistoryPage,
     handleRefresh: handleRefreshHistory, handleRetry: handleRetryHistory,
   } = useHistoryTrades(id);
+
+  // ── Analytics (account-level performance charts) ──
+  const analytics = useAccountAnalytics(id, isDataReceived, chartPeriod);
 
   // ── Action state ──
   const [connecting, setConnecting] = useState(false);
@@ -143,7 +151,16 @@ export function useAccountDetailData(id: string | undefined) {
     // history trades
     historyTrades, historyTotal, historyPage, historyLoading,
     setHistoryTrades, setHistoryTotal, setHistoryPage,
-    handleRefresh: () => { accountDetailQ.refetch(); handleRefreshHistory(); },
-    handleRetry: () => { accountDetailQ.refetch(); handleRetryHistory(); },
+    handleRefresh: () => { accountDetailQ.refetch(); handleRefreshHistory(); analytics.handleRefresh(); },
+    handleRetry: () => { accountDetailQ.refetch(); handleRetryHistory(); analytics.handleRetry(); },
+    // analytics (account-level performance)
+    chartType, setChartType, chartPeriod, setChartPeriod,
+    analyticsLoading: analytics.analyticsLoading, analyticsError: analytics.analyticsError,
+    equityChartData: analytics.equityChartData, profitByMonthData: analytics.profitByMonthData,
+    symbolDistributionData: analytics.symbolDistributionData,
+    dailyPnLData: analytics.dailyPnLData, hourlyData: analytics.hourlyData,
+    tradeStats: analytics.tradeStats, riskMetrics: analytics.riskMetrics,
+    monthlyAnalysisYears: analytics.monthlyAnalysisYears,
+    monthlyAnalysisData: analytics.monthlyAnalysisData,
   };
 }

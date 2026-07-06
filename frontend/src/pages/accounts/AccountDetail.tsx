@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 import { DETAIL_ACCOUNT_TYPE_DEMO_KEY, DETAIL_ACCOUNT_TYPE_REAL_KEY, DETAIL_ACTIONS_DELETE_ACCOUNT_KEY, DETAIL_ACTIONS_DISABLE_ACCOUNT_KEY, DETAIL_ACTIONS_ENABLE_ACCOUNT_KEY, DETAIL_LEVERAGE_KEY, DETAIL_MESSAGES_FETCH_ACCOUNT_FAILED_KEY, DETAIL_MODE_INVESTOR_KEY, DETAIL_MODE_TRADER_KEY, DETAIL_STATUS_CONNECTED_KEY, DETAIL_STATUS_CONNECTING_KEY, DETAIL_STATUS_DISABLED_KEY, DETAIL_STATUS_DISCONNECTED_KEY, DETAIL_STATUS_ERROR_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 import AccountTradeTabs from './components/AccountTradeTabs';
 import AccountMetricsCards from './components/AccountMetricsCards';
+import AccountAnalyticsSection from './components/AccountAnalyticsSection';
 import AccountDeleteModal from './components/AccountDeleteModal';
 import { useAccountDetailData } from './AccountDetail/useAccountDetailData';
 
@@ -30,6 +31,12 @@ export default function AccountDetail() {
     deletePassword, setDeletePassword,
     deleting, handleDelete,
     togglePending,
+    // analytics
+    chartType, setChartType, chartPeriod, setChartPeriod,
+    analyticsLoading, analyticsError,
+    equityChartData, profitByMonthData, symbolDistributionData,
+    dailyPnLData, hourlyData, tradeStats, riskMetrics,
+    monthlyAnalysisYears, monthlyAnalysisData,
   } = useAccountDetailData(id);
 
   const disabled = !!currentAccount?.isDisabled;
@@ -146,7 +153,7 @@ export default function AccountDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Button icon={<ReloadOutlined />} onClick={handleRefresh}>
+            <Button icon={<ReloadOutlined />} onClick={handleRefresh} loading={analyticsLoading}>
               {t('common.refresh')}
             </Button>
             <Dropdown menu={{ items: menuItems }} trigger={['click']}>
@@ -198,6 +205,28 @@ export default function AccountDetail() {
             />
           )}
         </div>
+
+        {/* ── Account-level Analytics ── */}
+        <AccountAnalyticsSection
+          analyticsLoading={analyticsLoading}
+          analyticsError={analyticsError}
+          onRetryAnalytics={handleRetry}
+          chartType={chartType}
+          setChartType={setChartType}
+          chartPeriod={chartPeriod}
+          setChartPeriod={setChartPeriod}
+          equityChartData={equityChartData}
+          profitByMonthData={profitByMonthData}
+          symbolDistributionData={symbolDistributionData}
+          dailyPnLData={dailyPnLData}
+          hourlyData={hourlyData}
+          tradeStats={tradeStats}
+          riskMetrics={riskMetrics}
+          monthlyAnalysisYears={monthlyAnalysisYears}
+          monthlyAnalysisData={monthlyAnalysisData}
+          currency={currentAccount?.currency || 'USD'}
+          accountId={id}
+        />
 
         {/* ── Delete modal ── */}
         <AccountDeleteModal
