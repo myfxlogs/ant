@@ -4,11 +4,11 @@ import type { MenuProps } from 'antd';
 import {
   ArrowLeftOutlined, ReloadOutlined, PauseCircleOutlined,
   CaretRightOutlined, MoreOutlined,
-  WarningOutlined, DeleteOutlined, FileTextOutlined,
+  WarningOutlined, DeleteOutlined,
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next'
-import { DETAIL_ACCOUNT_TYPE_DEMO_KEY, DETAIL_ACCOUNT_TYPE_REAL_KEY, DETAIL_ACTIONS_DELETE_ACCOUNT_KEY, DETAIL_ACTIONS_DISABLE_ACCOUNT_KEY, DETAIL_ACTIONS_ENABLE_ACCOUNT_KEY, DETAIL_LEVERAGE_KEY, DETAIL_MESSAGES_FETCH_ACCOUNT_FAILED_KEY, DETAIL_MODE_INVESTOR_KEY, DETAIL_MODE_TRADER_KEY, DETAIL_STATUS_CONNECTED_KEY, DETAIL_STATUS_CONNECTING_KEY, DETAIL_STATUS_DISABLED_KEY, DETAIL_STATUS_DISCONNECTED_KEY, DETAIL_STATUS_ERROR_KEY, REPORT_TITLE_SHORT_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+import { DETAIL_ACCOUNT_TYPE_DEMO_KEY, DETAIL_ACCOUNT_TYPE_REAL_KEY, DETAIL_ACTIONS_DELETE_ACCOUNT_KEY, DETAIL_ACTIONS_DISABLE_ACCOUNT_KEY, DETAIL_ACTIONS_ENABLE_ACCOUNT_KEY, DETAIL_LEVERAGE_KEY, DETAIL_MESSAGES_FETCH_ACCOUNT_FAILED_KEY, DETAIL_MODE_INVESTOR_KEY, DETAIL_MODE_TRADER_KEY, DETAIL_STATUS_CONNECTED_KEY, DETAIL_STATUS_CONNECTING_KEY, DETAIL_STATUS_DISABLED_KEY, DETAIL_STATUS_DISCONNECTED_KEY, DETAIL_STATUS_ERROR_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 
 ;
 import AccountTradeTabs from './components/AccountTradeTabs';
@@ -155,9 +155,6 @@ export default function AccountDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Button icon={<FileTextOutlined />} onClick={() => navigate(`/accounts/${id}/report`)}>
-              {t(REPORT_TITLE_SHORT_KEY)}
-            </Button>
             {id && <ShareAccountButton accountId={id} />}
             <Button icon={<ReloadOutlined />} onClick={handleRefresh} loading={analyticsLoading}>
               {t('common.refresh')}
