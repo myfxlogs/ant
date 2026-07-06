@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -91,11 +92,15 @@ func (g *Gateway) Connect(ctx context.Context) error {
 	md := metadata.New(map[string]string{"id": tempID})
 	loginCtx := metadata.NewOutgoingContext(ctx, md)
 	brokerHost := g.cfg.BrokerHost
+	brokerPort := int32(443)
 	if idx := strings.LastIndex(brokerHost, ":"); idx > 0 {
+		if p, err := strconv.Atoi(brokerHost[idx+1:]); err == nil && p > 0 && p <= 65535 {
+			brokerPort = int32(p)
+		}
 		brokerHost = brokerHost[:idx]
 	}
 	loginResp, err := g.connCli.Connect(loginCtx, &pb.ConnectRequest{
-		Host: brokerHost, Port: 443, User: int32(strToInt(g.cfg.Login)),
+		Host: brokerHost, Port: brokerPort, User: int32(strToInt(g.cfg.Login)),
 		Password: g.cfg.Password, Id: &tempID,
 	})
 	if err != nil {
