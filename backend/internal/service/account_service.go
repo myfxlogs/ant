@@ -64,15 +64,15 @@ func (s *AccountService) SetLogger(log *zap.Logger) { s.log = log }
 
 // AccountDTO is a lightweight account view for the frontend.
 type AccountDTO struct {
-	ID, UserID, Platform, Broker, Login, Server string
-	Status                                       string
-	Balance, Equity, Credit, Margin, FreeMargin  decimal.Decimal
-	MarginLevel                                  decimal.Decimal
-	Leverage                                     int32
-	Currency                                     string
-	LastError                                    string
-	LastConnectedAt                              string
-	IsInvestor                                   bool
+	ID, UserID, Platform, Broker, Login, Server, BrokerHost string
+	Status                                                   string
+	Balance, Equity, Credit, Margin, FreeMargin              decimal.Decimal
+	MarginLevel                                              decimal.Decimal
+	Leverage                                                 int32
+	Currency                                                 string
+	LastError                                                string
+	LastConnectedAt                                          string
+	IsInvestor                                               bool
 }
 
 // AccountCredentials holds the fields needed to verify an MT account password.

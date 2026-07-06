@@ -14,24 +14,13 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/mthub"
+	antdecimal "anttrader/internal/pkg/decimal"
 	"anttrader/internal/repository"
 	"anttrader/internal/service"
 )
 
-// formatPrice formats a decimal.Decimal price with dynamic decimal precision:
-// - Price > 100:  3 digits (JPY pairs, e.g. 149.250)
-// - Price > 1:    5 digits (standard forex, e.g. 1.12345)
-// - Price <= 1:   6 digits (crypto or fractional assets)
-func formatPrice(p decimal.Decimal) string {
-	switch {
-	case p.GreaterThan(decimal.NewFromInt(100)):
-		return p.StringFixed(3)
-	case p.GreaterThan(decimal.NewFromInt(1)):
-		return p.StringFixed(5)
-	default:
-		return p.StringFixed(6)
-	}
-}
+// formatPrice delegates to the shared decimal utility.
+func formatPrice(p decimal.Decimal) string { return antdecimal.FormatPrice(p) }
 
 // StreamServer implements the ant.v1.StreamServiceHandler interface.
 type StreamServer struct {

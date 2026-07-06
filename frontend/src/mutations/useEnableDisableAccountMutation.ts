@@ -11,13 +11,16 @@ interface ToggleVars {
 
 /**
  * Optimistic update for enable/disable toggle.
+ * Uses disconnect/reconnect RPCs (migration 187 replaced is_disabled column
+ * with the account_status state machine).
  * Updates Query cache immediately, rolls back on error.
  */
 export function useEnableDisableAccountMutation() {
   const queryClient = useQueryClient();
 
   return useRpcMutation<Account, Error, ToggleVars>(
-    ({ id, isDisabled }) => accountApi.update({ id, isDisabled }),
+    ({ id, isDisabled }) =>
+      isDisabled ? accountApi.disconnect(id) : accountApi.reconnect(id),
     {
       onMutate: async ({ id, isDisabled }) => {
         await queryClient.cancelQueries({ queryKey: queryKeys.accounts.list() });
@@ -29,7 +32,7 @@ export function useEnableDisableAccountMutation() {
           (old = []) =>
             old.map((a) =>
               a.id === id
-                ? { ...a, isDisabled, status: isDisabled ? 'disconnected' : a.status }
+                ? { ...a, isDisabled, status: isDisabled ? 'disconnected' : 'connecting' }
                 : a,
             ),
         );

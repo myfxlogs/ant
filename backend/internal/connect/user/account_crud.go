@@ -126,6 +126,23 @@ func (s *AccountServer) UpdateAccount(ctx context.Context, req *connect.Request[
 		s.log.Error("UpdateAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	// Handle is_disabled: translate to connection state changes.
+	// Migration 187 replaced the is_disabled column with the account_status state machine.
+	if r.IsDisabled != nil {
+		if *r.IsDisabled {
+			_ = s.updateAccountStatus(ctx, userID, r.Id, service.StatusDisconnected, func() {
+				if s.publisher != nil {
+					s.publisher.PublishDisconnect(ctx, r.Id, userID.String())
+				}
+			})
+		} else {
+			_ = s.updateAccountStatus(ctx, userID, r.Id, service.StatusConnecting, func() {
+				if s.publisher != nil {
+					s.publisher.PublishConnect(ctx, r.Id, userID.String())
+				}
+			})
+		}
+	}
 	// Return updated account
 	a, err := s.svc.GetAccount(ctx, userID, r.Id)
 	if err != nil {

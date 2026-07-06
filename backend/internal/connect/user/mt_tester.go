@@ -74,7 +74,16 @@ func (t *mtConnectionTester) VerifyPassword(ctx context.Context, platform, broke
 	}
 }
 
-func (t *mtConnectionTester) testMT4(ctx context.Context, cfg mdtick.AccountConfig) (*mdtick.MTAccountInfo, error) {
+// mtGateway is the subset of MT4/MT5 gateway methods needed for connection testing.
+type mtGateway interface {
+	Connect(ctx context.Context) error
+	FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, error)
+	Disconnect(ctx context.Context) error
+}
+
+// testMT iterates through comma-separated broker hosts, trying each one.
+// Returns account info from the first host that connects successfully.
+func (t *mtConnectionTester) testMT(ctx context.Context, cfg mdtick.AccountConfig, newGW func(mdtick.AccountConfig, *zap.Logger) mtGateway) (*mdtick.MTAccountInfo, error) {
 	hosts := strings.Split(cfg.BrokerHost, ",")
 	var lastErr error
 	for _, host := range hosts {
@@ -83,7 +92,7 @@ func (t *mtConnectionTester) testMT4(ctx context.Context, cfg mdtick.AccountConf
 			continue
 		}
 		cfg.BrokerHost = host
-		gw := mt4.New(cfg, t.log)
+		gw := newGW(cfg, t.log)
 		if err := gw.Connect(ctx); err != nil {
 			lastErr = err
 			continue
@@ -103,31 +112,10 @@ func (t *mtConnectionTester) testMT4(ctx context.Context, cfg mdtick.AccountConf
 	return nil, fmt.Errorf("no valid hosts to try")
 }
 
+func (t *mtConnectionTester) testMT4(ctx context.Context, cfg mdtick.AccountConfig) (*mdtick.MTAccountInfo, error) {
+	return t.testMT(ctx, cfg, func(c mdtick.AccountConfig, l *zap.Logger) mtGateway { return mt4.New(c, l) })
+}
+
 func (t *mtConnectionTester) testMT5(ctx context.Context, cfg mdtick.AccountConfig) (*mdtick.MTAccountInfo, error) {
-	hosts := strings.Split(cfg.BrokerHost, ",")
-	var lastErr error
-	for _, host := range hosts {
-		host = strings.TrimSpace(host)
-		if host == "" {
-			continue
-		}
-		cfg.BrokerHost = host
-		gw := mt5.New(cfg, t.log)
-		if err := gw.Connect(ctx); err != nil {
-			lastErr = err
-			continue
-		}
-		info, err := gw.FetchAccountInfo(ctx)
-		gw.Disconnect(ctx)
-		if err != nil {
-			lastErr = err
-			continue
-		}
-		info.BrokerHost = host
-		return info, nil
-	}
-	if lastErr != nil {
-		return nil, fmt.Errorf("all %d hosts failed, last error: %w", len(hosts), lastErr)
-	}
-	return nil, fmt.Errorf("no valid hosts to try")
+	return t.testMT(ctx, cfg, func(c mdtick.AccountConfig, l *zap.Logger) mtGateway { return mt5.New(c, l) })
 }

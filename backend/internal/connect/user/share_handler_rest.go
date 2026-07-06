@@ -1,3 +1,9 @@
+// Package user (share_handler_rest.go) — plain HTTP handlers for share token CRUD.
+// These are intentional exceptions to the ConnectRPC-only rule:
+// share tokens are managed via a public-facing REST API consumed by external
+// users (share pages), where JSON is the standard interchange format.
+// The ConnectRPC ShareService handler (share_handler.go) serves internal clients.
+
 package user
 
 import (
@@ -16,20 +22,29 @@ import (
 	"anttrader/internal/repository"
 )
 
-// HandleCreateShareTokenREST creates a share token via plain JSON (supports show_positions).
-func (s *ShareServer) HandleCreateShareTokenREST(w http.ResponseWriter, r *http.Request) {
+// parseAuthUser extracts and validates the Bearer JWT from an HTTP request,
+// returning the authenticated user's UUID. The caller is responsible for
+// writing an HTTP error response if the returned error is non-nil.
+func (s *ShareServer) parseAuthUser(r *http.Request) (uuid.UUID, error) {
 	tokenStr := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	if tokenStr == "" || tokenStr == r.Header.Get("Authorization") {
-		http.Error(w, `{"error":"login required"}`, http.StatusUnauthorized)
-		return
+		return uuid.Nil, fmt.Errorf("missing authorization header")
 	}
 	claims, err := interceptor.ValidateToken(tokenStr, s.jwtSecret)
 	if err != nil {
-		http.Error(w, `{"error":"invalid token"}`, http.StatusUnauthorized)
-		return
+		return uuid.Nil, err
 	}
 	uid, err := uuid.Parse(claims.UserID)
 	if err != nil || uid == uuid.Nil {
+		return uuid.Nil, fmt.Errorf("invalid user")
+	}
+	return uid, nil
+}
+
+// HandleCreateShareTokenREST creates a share token via plain JSON (supports show_positions).
+func (s *ShareServer) HandleCreateShareTokenREST(w http.ResponseWriter, r *http.Request) {
+	uid, err := s.parseAuthUser(r)
+	if err != nil {
 		http.Error(w, `{"error":"login required"}`, http.StatusUnauthorized)
 		return
 	}
@@ -68,17 +83,11 @@ func (s *ShareServer) HandleCreateShareTokenREST(w http.ResponseWriter, r *http.
 
 // HandleUpdateShareToken updates show_positions flag.
 func (s *ShareServer) HandleUpdateShareToken(w http.ResponseWriter, r *http.Request) {
-	tokenStr := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	if tokenStr == "" {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
-	}
-	claims, err := interceptor.ValidateToken(tokenStr, s.jwtSecret)
+	uid, err := s.parseAuthUser(r)
 	if err != nil {
 		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
 		return
 	}
-	uid, _ := uuid.Parse(claims.UserID)
 	var req struct {
 		Token         string `json:"token"`
 		ShowPositions *bool  `json:"show_positions"`
@@ -95,19 +104,9 @@ func (s *ShareServer) HandleUpdateShareToken(w http.ResponseWriter, r *http.Requ
 
 // HandleListShareTokens returns the current user's share tokens with view counts.
 func (s *ShareServer) HandleListShareTokens(w http.ResponseWriter, r *http.Request) {
-	tokenStr := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	if tokenStr == "" || tokenStr == r.Header.Get("Authorization") {
-		http.Error(w, `{"error":"missing authorization header"}`, http.StatusUnauthorized)
-		return
-	}
-	claims, err := interceptor.ValidateToken(tokenStr, s.jwtSecret)
+	uid, err := s.parseAuthUser(r)
 	if err != nil {
-		http.Error(w, `{"error":"invalid token"}`, http.StatusUnauthorized)
-		return
-	}
-	uid, err := uuid.Parse(claims.UserID)
-	if err != nil || uid == uuid.Nil {
-		http.Error(w, `{"error":"invalid user"}`, http.StatusUnauthorized)
+		http.Error(w, `{"error":"missing authorization header"}`, http.StatusUnauthorized)
 		return
 	}
 	tokens, err := s.repo.ListByUser(r.Context(), uid)
@@ -182,19 +181,9 @@ func (s *ShareServer) HandleListAllShareTokens(w http.ResponseWriter, r *http.Re
 
 // HandleDeleteShareToken deletes a share token owned by the current user.
 func (s *ShareServer) HandleDeleteShareToken(w http.ResponseWriter, r *http.Request) {
-	tokenStr := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	if tokenStr == "" || tokenStr == r.Header.Get("Authorization") {
-		http.Error(w, `{"error":"missing authorization header"}`, http.StatusUnauthorized)
-		return
-	}
-	claims, err := interceptor.ValidateToken(tokenStr, s.jwtSecret)
+	uid, err := s.parseAuthUser(r)
 	if err != nil {
-		http.Error(w, `{"error":"invalid token"}`, http.StatusUnauthorized)
-		return
-	}
-	uid, err := uuid.Parse(claims.UserID)
-	if err != nil || uid == uuid.Nil {
-		http.Error(w, `{"error":"invalid user"}`, http.StatusUnauthorized)
+		http.Error(w, `{"error":"missing authorization header"}`, http.StatusUnauthorized)
 		return
 	}
 	var req struct{ Token string `json:"token"` }

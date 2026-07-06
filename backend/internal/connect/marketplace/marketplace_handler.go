@@ -28,7 +28,6 @@ type marketplaceSvc interface {
 	SetPricing(ctx context.Context, strategyID, priceModel string, priceAmount, platformFeeRate float64) error
 	Unpublish(ctx context.Context, strategyID, userID string, isAdmin bool) error
 	GetPublisherStats(ctx context.Context, userID string) (*marketplace.PublisherStats, error)
-	CanAccessCode(ctx context.Context, userID, strategyID string) (bool, error)
 	StartMarketBacktest(ctx context.Context, params marketplace.StartBacktestParams) (string, error)
 	QueryBacktestRun(ctx context.Context, runID uuid.UUID) (*marketplace.BacktestRunSnapshot, error)
 }

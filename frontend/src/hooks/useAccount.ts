@@ -108,7 +108,7 @@ export function useAccount() {
       // Optimistic: set status to disconnected in TQ cache.
       queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
         old?.map((a) => a.id === id ? { ...a, status: 'disconnected' } : a));
-      await accountApi.update({ id, isDisabled: true });
+      await accountApi.disconnect(id);
       const account = await accountApi.get(id);
       queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
         old?.map((a) => a.id === id ? account : a));
@@ -130,7 +130,7 @@ export function useAccount() {
       // Optimistic: set status to connecting in TQ cache.
       queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
         old?.map((a) => a.id === id ? { ...a, status: 'connecting' } : a));
-      await accountApi.update({ id, isDisabled: false });
+      await accountApi.reconnect(id);
       const account = await accountApi.get(id);
       queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
         old?.map((a) => a.id === id ? account : a));

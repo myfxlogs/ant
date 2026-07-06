@@ -1,3 +1,8 @@
+// Package user (share_handler_perf.go) — plain HTTP handler for public share pages.
+// This is an intentional exception to the ConnectRPC-only rule:
+// the shared performance page is a public-facing URL consumed by external users
+// in browsers, where JSON is the standard format and no authentication is required.
+
 package user
 
 import (
@@ -6,7 +11,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 )
 
 // HandleGetSharedPerformanceJSON returns enhanced share data as plain JSON.
@@ -46,11 +50,7 @@ func (s *ShareServer) HandleGetSharedPerformanceJSON(w http.ResponseWriter, r *h
 	}
 
 	trades, _ := s.tradeRecords.GetByAccountID(r.Context(), st.UserID, aid, start, end, 100)
-	var totalProfit, totalVolume decimal.Decimal
-	wins, losses := 0, 0
-	grossProfit, grossLoss := decimal.Zero, decimal.Zero
-	var openTimeSum int64
-	var maxDD decimal.Decimal
+	stats := summarizeTrades(trades)
 
 	type tradeJSON struct {
 		Symbol      string  `json:"symbol"`
@@ -61,19 +61,6 @@ func (s *ShareServer) HandleGetSharedPerformanceJSON(w http.ResponseWriter, r *h
 	}
 	tradesOut := make([]tradeJSON, 0, len(trades))
 	for _, t := range trades {
-		totalProfit = totalProfit.Add(t.Profit)
-		totalVolume = totalVolume.Add(t.Volume)
-		if t.Profit.IsPositive() {
-			wins++
-			grossProfit = grossProfit.Add(t.Profit)
-		} else {
-			losses++
-			grossLoss = grossLoss.Add(t.Profit.Abs())
-		}
-		if t.Profit.LessThan(maxDD) {
-			maxDD = t.Profit
-		}
-		openTimeSum += t.CloseTime.Sub(t.OpenTime).Milliseconds()
 		vol, _ := t.Volume.Float64()
 		prof, _ := t.Profit.Float64()
 		tradesOut = append(tradesOut, tradeJSON{
@@ -83,18 +70,12 @@ func (s *ShareServer) HandleGetSharedPerformanceJSON(w http.ResponseWriter, r *h
 		})
 	}
 
-	totalRet, _ := totalProfit.Float64()
-	winRate := 0.0
-	if wins+losses > 0 { winRate = float64(wins) / float64(wins+losses) * 100 }
-	maxDDval, _ := maxDD.Float64()
-	profitFactor := 0.0
-	if grossLoss.IsPositive() {
-		pf, _ := grossProfit.Div(grossLoss).Float64()
-		profitFactor = pf
-	}
-	avgHoldingMs := int64(0)
-	if len(trades) > 0 { avgHoldingMs = openTimeSum / int64(len(trades)) }
-	totalVol, _ := totalVolume.Float64()
+	totalRet := stats.totalReturn()
+	winRate := stats.winRate()
+	maxDDval := stats.maxDrawdown()
+	profitFactor := stats.profitFactor()
+	avgHoldingMs := stats.avgHoldingMs()
+	totalVol := stats.totalVol()
 	sharpe := 0.0
 	if len(equityVals) > 1 {
 		var sum, sumSq float64

@@ -17,6 +17,7 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/model"
 	"anttrader/internal/mthub"
 	"anttrader/internal/repository"
 )
@@ -86,16 +87,11 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 		equityVals = append(equityVals, p.Equity.String())
 	}
 
-	// Recent trades + basic stats from trade_records (not trade_logs).
+	// Recent trades + stats from trade_records.
 	trades, _ := s.tradeRecords.GetByAccountID(ctx, st.UserID, aid, start, end, 50)
-	var totalProfit decimal.Decimal
-	wins, losses := 0, 0
-	var maxDD decimal.Decimal
+	stats := summarizeTrades(trades)
 	pbTrades := make([]*antv1.SharedTrade, 0, len(trades))
 	for _, t := range trades {
-		totalProfit = totalProfit.Add(t.Profit)
-		if t.Profit.IsPositive() { wins++ } else { losses++ }
-		if t.Profit.LessThan(maxDD) { maxDD = t.Profit }
 		vol, _ := t.Volume.Float64()
 		prof, _ := t.Profit.Float64()
 		pbTrades = append(pbTrades, &antv1.SharedTrade{
@@ -103,42 +99,79 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 			CloseTimeMs: t.CloseTime.UnixMilli(),
 		})
 	}
-	totalRet, _ := totalProfit.Float64()
-	winRate := 0.0
-	if wins+losses > 0 { winRate = float64(wins) / float64(wins+losses) * 100 }
-	maxDDval, _ := maxDD.Float64()
-
-	// Additional metrics
-	var totalVolume decimal.Decimal
-	var profitFactor float64
-	grossProfit, grossLoss := decimal.Zero, decimal.Zero
-	var openTimeSum int64
-	for _, t := range trades {
-		totalVolume = totalVolume.Add(t.Volume)
-		if t.Profit.IsPositive() {
-			grossProfit = grossProfit.Add(t.Profit)
-		} else {
-			grossLoss = grossLoss.Add(t.Profit.Abs())
-		}
-		openTimeSum += t.CloseTime.Sub(t.OpenTime).Milliseconds()
-	}
-	if grossLoss.IsPositive() {
-		pf, _ := grossProfit.Div(grossLoss).Float64()
-		profitFactor = pf
-	}
-	avgHoldingMs := int64(0)
-	if len(trades) > 0 {
-		avgHoldingMs = openTimeSum / int64(len(trades))
-	}
-	totalVol, _ := totalVolume.Float64()
 
 	resp := connect.NewResponse(&antv1.GetSharedPerformanceResponse{
 		UserName: userName, TotalTrades: int32(len(trades)),
-		TotalReturn: totalRet, WinRate: winRate, MaxDrawdown: maxDDval,
+		TotalReturn: stats.totalReturn(), WinRate: stats.winRate(), MaxDrawdown: stats.maxDrawdown(),
 		EquityCurve: equityVals, Trades: pbTrades,
 	})
-	resp.Header().Set("X-Total-Volume", fmt.Sprintf("%.2f", totalVol))
-	resp.Header().Set("X-Profit-Factor", fmt.Sprintf("%.2f", profitFactor))
-	resp.Header().Set("X-Avg-Holding-Ms", fmt.Sprintf("%d", avgHoldingMs))
+	resp.Header().Set("X-Total-Volume", fmt.Sprintf("%.2f", stats.totalVol()))
+	resp.Header().Set("X-Profit-Factor", fmt.Sprintf("%.2f", stats.profitFactor()))
+	resp.Header().Set("X-Avg-Holding-Ms", fmt.Sprintf("%d", stats.avgHoldingMs()))
 	return resp, nil
+}
+
+// tradeSummary holds computed metrics from a set of trades.
+// Used by both the ConnectRPC and HTTP share handlers.
+type tradeSummary struct {
+	totalProfit, totalVolume, grossProfit, grossLoss, maxDD decimal.Decimal
+	wins, losses                                            int
+	openTimeSum                                             int64
+}
+
+func summarizeTrades(trades []*model.TradeRecord) tradeSummary {
+	var s tradeSummary
+	for _, t := range trades {
+		s.totalProfit = s.totalProfit.Add(t.Profit)
+		s.totalVolume = s.totalVolume.Add(t.Volume)
+		if t.Profit.IsPositive() {
+			s.wins++
+			s.grossProfit = s.grossProfit.Add(t.Profit)
+		} else {
+			s.losses++
+			s.grossLoss = s.grossLoss.Add(t.Profit.Abs())
+		}
+		if t.Profit.LessThan(s.maxDD) {
+			s.maxDD = t.Profit
+		}
+		s.openTimeSum += t.CloseTime.Sub(t.OpenTime).Milliseconds()
+	}
+	return s
+}
+
+func (s tradeSummary) totalReturn() float64 {
+	v, _ := s.totalProfit.Float64()
+	return v
+}
+
+func (s tradeSummary) winRate() float64 {
+	if s.wins+s.losses == 0 {
+		return 0
+	}
+	return float64(s.wins) / float64(s.wins+s.losses) * 100
+}
+
+func (s tradeSummary) maxDrawdown() float64 {
+	v, _ := s.maxDD.Float64()
+	return v
+}
+
+func (s tradeSummary) profitFactor() float64 {
+	if !s.grossLoss.IsPositive() {
+		return 0
+	}
+	pf, _ := s.grossProfit.Div(s.grossLoss).Float64()
+	return pf
+}
+
+func (s tradeSummary) avgHoldingMs() int64 {
+	if len := s.wins + s.losses; len > 0 {
+		return s.openTimeSum / int64(len)
+	}
+	return 0
+}
+
+func (s tradeSummary) totalVol() float64 {
+	v, _ := s.totalVolume.Float64()
+	return v
 }

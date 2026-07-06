@@ -71,10 +71,6 @@ func (s *stubMarketplaceSvc) GetPublisherStats(_ context.Context, _ string) (*ma
 	if s.err != nil { return nil, s.err }
 	return &marketplace.PublisherStats{TotalPublished: 3, TotalSubscribers: 10}, nil
 }
-func (s *stubMarketplaceSvc) CanAccessCode(_ context.Context, _, _ string) (bool, error) {
-	if s.err != nil { return false, s.err }
-	return true, nil
-}
 func (s *stubMarketplaceSvc) StartMarketBacktest(_ context.Context, _ marketplace.StartBacktestParams) (string, error) {
 	return "run-1", s.err
 }

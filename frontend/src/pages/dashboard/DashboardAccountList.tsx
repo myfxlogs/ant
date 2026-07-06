@@ -17,7 +17,8 @@ interface Props {
 }
 
 function getStatusTag(item: Account, t: (key: string) => string) {
-  if (item?.isDisabled) {
+  const status = (item?.status || item?.accountStatus || '').toLowerCase();
+  if (status === 'disconnected' || status === 'frozen') {
     return <Tag color="default">{t(CARD_STATUS_DISABLED_KEY)}</Tag>;
   }
   const s = item?.status || item?.accountStatus;
@@ -34,7 +35,8 @@ function getStatusTag(item: Account, t: (key: string) => string) {
 }
 
 function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: string) => void; t: (key: string) => string }) {
-  const isDisabled = item.isDisabled;
+  const status = (item?.status || item?.accountStatus || '').toLowerCase();
+  const isDisabled = status === 'disconnected' || status === 'frozen' || item.isDisabled === true;
   const balance = item.balance;
   const equity = item.equity;
   const floating = item.profit ?? 0;

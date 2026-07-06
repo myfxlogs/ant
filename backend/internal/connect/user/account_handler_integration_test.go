@@ -153,7 +153,7 @@ func TestAccountLifecycle(t *testing.T) {
 		}
 	})
 
-	// 2. VerifyAccount — mock tester returns verified info with balance/equity
+	// 2. VerifyAccount — deprecated, always returns Unimplemented (use CreateAccount instead)
 	t.Run("VerifyAccount", func(t *testing.T) {
 		req := connect.NewRequest(&antv1.VerifyAccountRequest{
 			Login:      "12345",
@@ -161,21 +161,17 @@ func TestAccountLifecycle(t *testing.T) {
 			MtType:     "mt5",
 			BrokerHost: "demo.example.com:443",
 		})
-		resp, err := srv.VerifyAccount(ctx, req)
-		if err != nil {
-			t.Fatalf("VerifyAccount unexpected error: %v", err)
+		_, err := srv.VerifyAccount(ctx, req)
+		if err == nil {
+			t.Fatal("expected error from deprecated VerifyAccount")
 		}
-		if !resp.Msg.GetVerified() {
-			t.Error("expected verified=true from mock tester")
+		cerr, ok := err.(*connect.Error)
+		if !ok {
+			t.Fatalf("expected connect.Error, got %T: %v", err, err)
 		}
-		if resp.Msg.GetBalance() != 10000.0 {
-			t.Errorf("expected balance=10000, got %v", resp.Msg.GetBalance())
+		if cerr.Code() != connect.CodeUnimplemented {
+			t.Errorf("expected CodeUnimplemented, got %s", cerr.Code())
 		}
-		if resp.Msg.GetEquity() != 10100.0 {
-			t.Errorf("expected equity=10100, got %v", resp.Msg.GetEquity())
-		}
-		t.Logf("VerifyAccount: verified=%v balance=%.2f equity=%.2f currency=%s",
-			resp.Msg.GetVerified(), resp.Msg.GetBalance(), resp.Msg.GetEquity(), resp.Msg.GetCurrency())
 	})
 
 	var accountID string

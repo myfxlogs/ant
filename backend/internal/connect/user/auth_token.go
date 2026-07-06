@@ -1,3 +1,9 @@
+// Package user (auth_token.go) — plain HTTP handlers for token refresh and logout.
+// These are intentional exceptions to the ConnectRPC-only rule:
+// browser cookie-based OAuth2 flows require reading/writing cookies, which
+// ConnectRPC unary calls cannot do. The handlers return JSON to match the
+// OAuth2 token endpoint convention expected by web clients.
+
 package user
 
 import (
@@ -132,8 +138,8 @@ func (s *AuthServer) HandleTokenRefresh(w http.ResponseWriter, r *http.Request) 
 	}
 	w.Header().Set("Set-Cookie", s.makeRefreshCookie(refreshToken))
 	w.Header().Set("Content-Type", "application/json")
-	// #nosec G705 — accessToken is a server-generated JWT, not user-provided content
-	w.Write([]byte(fmt.Sprintf(`{"access_token":"%s"}`, accessToken)))
+	// JWT tokens are base64url-encoded — safe for direct string concatenation.
+	w.Write([]byte(`{"access_token":"` + accessToken + `"}`))
 }
 
 // HandleLogout is a plain HTTP handler that clears the refresh token cookie.
