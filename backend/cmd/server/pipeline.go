@@ -155,7 +155,7 @@ func startMdGatewayPipeline(
 			}
 			// Push real-time status update to SSE subscribers.
 			mthubSvc.PublishAccountStatus(&mthub.AccountStatusEvent{
-				AccountID: accountID, UserID: uid, Status: "disconnected",
+				AccountID: accountID, UserID: uid, Status: string(service.StatusDisconnected),
 				Message: "health monitor: account dead after reconnect failure",
 				Timestamp: time.Now(),
 			})

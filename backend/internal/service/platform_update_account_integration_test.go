@@ -59,7 +59,7 @@ func TestUpdateAccountParamsCorrect(t *testing.T) {
 	})
 
 	// Call UpdateAccount with new values
-	err = svc.UpdateAccount(ctx, userID, accID.String(), "NewBroker", "NewServer", "live.mt5.com", nil)
+	err = svc.UpdateAccount(ctx, userID, accID.String(), "NewBroker", "NewServer", "live.mt5.com")
 	if err != nil {
 		t.Fatalf("UpdateAccount: %v", err)
 	}
@@ -89,19 +89,5 @@ func TestUpdateAccountParamsCorrect(t *testing.T) {
 		t.Errorf("broker_host: expected 'live.mt5.com', got '%s'", brokerHost)
 	} else {
 		t.Log("broker_host correct:", brokerHost)
-	}
-
-	// Verify is_disabled unchanged (we passed nil, meaning COALESCE should keep existing value)
-	var isDisabled bool
-	err = pool.QueryRow(ctx,
-		`SELECT is_disabled FROM mt_accounts WHERE id = $1`, accID,
-	).Scan(&isDisabled)
-	if err != nil {
-		t.Fatalf("query is_disabled: %v", err)
-	}
-	if isDisabled {
-		t.Errorf("is_disabled: expected false (unchanged), got true")
-	} else {
-		t.Log("is_disabled unchanged: PASS (COALESCE nil → kept false)")
 	}
 }

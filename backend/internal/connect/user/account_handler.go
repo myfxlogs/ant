@@ -76,7 +76,7 @@ func accountToProto(a *service.AccountDTO) *antv1.Account {
 	return &antv1.Account{
 		Id: a.ID, UserId: a.UserID, Login: a.Login,
 		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
-		IsDisabled: a.IsDisabled, Status: a.Status,
+		Status: a.Status,
 		Balance: a.Balance.String(), Credit: a.Credit.String(), Equity: a.Equity.String(), Margin: a.Margin.String(),
 		FreeMargin: a.FreeMargin.String(), MarginLevel: a.MarginLevel.String(),
 		Leverage: a.Leverage, Currency: a.Currency,

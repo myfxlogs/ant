@@ -94,7 +94,6 @@ func mtAccountToDTO(a repository.MtAccount) AccountDTO {
 		Broker:          pgTextToString(a.BrokerCompany),
 		Login:           a.Login,
 		Server:          pgTextToString(a.BrokerServer),
-		IsDisabled:      pgBoolToBool(a.IsDisabled),
 		Status:          a.AccountStatus,
 		Balance:         pgNumericToDecimal(a.Balance),
 		Equity:          pgNumericToDecimal(a.Equity),

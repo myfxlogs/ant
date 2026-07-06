@@ -25,7 +25,7 @@ func (r *AnalyticsRepository) GetUserPnLTradesWinLoss(ctx context.Context, userI
 		JOIN mt_accounts ma ON tr.account_id = ma.id
 		WHERE ma.user_id = $1
 			AND tr.close_time >= $2 AND tr.close_time <= $3
-			AND ($4 = false OR ma.is_disabled = false)
+			AND ($4 = false OR ma.account_status != 'frozen')
 	`
 	err = r.db.QueryRow(ctx, query, userID, start, end, enabledOnly).Scan(&pnl, &trades, &winTrades, &lossTrades, &sumProfitPos, &sumLossAbs)
 	return
@@ -40,7 +40,7 @@ func (r *AnalyticsRepository) GetUserDailyPnL(ctx context.Context, userID uuid.U
 		JOIN mt_accounts ma ON tr.account_id = ma.id
 		WHERE ma.user_id = $1
 			AND tr.close_time >= $2 AND tr.close_time <= $3
-			AND ($4 = false OR ma.is_disabled = false)
+			AND ($4 = false OR ma.account_status != 'frozen')
 		GROUP BY DATE(tr.close_time)
 		ORDER BY date ASC
 	`
@@ -73,7 +73,7 @@ func (r *AnalyticsRepository) GetUserConsecutiveStats(ctx context.Context, userI
 			WHERE ma.user_id = $1
 				AND tr.close_time >= $2 AND tr.close_time <= $3
 				AND tr.order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
-				AND ($4 = false OR ma.is_disabled = false)
+				AND ($4 = false OR ma.account_status != 'frozen')
 		),
 		groups AS (
 			SELECT sign, grp, COUNT(*) AS cnt

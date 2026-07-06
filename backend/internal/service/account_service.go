@@ -25,20 +25,20 @@ var ErrAccountPasswordMismatch = errors.New("old password does not match")
 
 // AccountService provides account CRUD and lifecycle operations.
 type AccountService struct {
-	db           *pgxpool.Pool
-	queries      *repository.Queries
-	log          *zap.Logger
+	db     *pgxpool.Pool
+	queries *repository.Queries
+	log    *zap.Logger
+	// Snapshot/cache fields (used by lifecycle methods, wired by NewAccountService).
 	summaryMu          sync.RWMutex
-	summaryCache       map[string]*userSummaryCacheEntry // userID -> cached per-account data
+	summaryCache       map[string]*userSummaryCacheEntry
 	snapshotThrottleMu sync.Mutex
 	snapshotThrottle   map[string]time.Time
 }
 
-// userSummaryCacheEntry holds per-account data for a user, enabling incremental
-// aggregate updates from profit events without a full DB scan.
+// userSummaryCacheEntry holds per-account data for a user.
 type userSummaryCacheEntry struct {
-	accounts map[string]accountSummaryItem // accountID -> latest metrics
-	summary  UserAccountsSummary           // pre-computed aggregate
+	accounts map[string]accountSummaryItem
+	summary  UserAccountsSummary
 }
 
 type accountSummaryItem struct {
@@ -50,20 +50,21 @@ type accountSummaryItem struct {
 // NewAccountService creates an account service backed by the given pool.
 func NewAccountService(db *pgxpool.Pool) *AccountService {
 	return &AccountService{
-		db:           db,
-		queries:      repository.New(db),
-		summaryCache:     make(map[string]*userSummaryCacheEntry),
-		snapshotThrottle: make(map[string]time.Time),
+		db:                db,
+		queries:           repository.New(db),
+		summaryCache:      make(map[string]*userSummaryCacheEntry),
+		snapshotThrottle:  make(map[string]time.Time),
 	}
 }
 
 // SetLogger injects a logger into the service.
 func (s *AccountService) SetLogger(log *zap.Logger) { s.log = log }
 
+// ── DTO types ──
+
 // AccountDTO is a lightweight account view for the frontend.
 type AccountDTO struct {
 	ID, UserID, Platform, Broker, Login, Server string
-	IsDisabled                                   bool
 	Status                                       string
 	Balance, Equity, Credit, Margin, FreeMargin  decimal.Decimal
 	MarginLevel                                  decimal.Decimal
@@ -102,6 +103,8 @@ type UserAccountsSummary struct {
 	ConnectedCount int32
 }
 
+// ── CRUD ──
+
 // ListAccounts returns all accounts belonging to the given user.
 func (s *AccountService) ListAccounts(ctx context.Context, userID uuid.UUID) ([]AccountDTO, error) {
 	rows, err := s.queries.ListAccounts(ctx, uuidToPgUUID(userID))
@@ -129,19 +132,19 @@ func (s *AccountService) GetAccount(ctx context.Context, userID uuid.UUID, accou
 	return &a, nil
 }
 
-// BeginTx starts a new database transaction (for #2, #28).
+// BeginTx starts a new database transaction.
 func (s *AccountService) BeginTx(ctx context.Context) (pgx.Tx, error) {
 	return s.db.Begin(ctx)
 }
 
-// CreateAccountTx inserts a new MT account row within a transaction (#2).
+// CreateAccountTx inserts a new MT account row within a transaction.
 func (s *AccountService) CreateAccountTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID, login, password, mtType, brokerCompany, brokerServer, brokerHost string) (string, error) {
 	var id string
 	err := tx.QueryRow(ctx, `
 		INSERT INTO mt_accounts (user_id, login, password, mt_type, broker_company, broker_server, broker_host, account_status)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, 'connecting')
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		RETURNING id::text
-	`, userID, login, password, mtType, brokerCompany, brokerServer, brokerHost).Scan(&id)
+	`, userID, login, password, mtType, brokerCompany, brokerServer, brokerHost, string(StatusConnecting)).Scan(&id)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
@@ -170,60 +173,164 @@ func (s *AccountService) CreateAccount(ctx context.Context, userID uuid.UUID, lo
 	return id, nil
 }
 
-// UpdateAccount updates broker fields and disabled status for an account.
-func (s *AccountService) UpdateAccount(ctx context.Context, userID uuid.UUID, id, brokerCompany, brokerServer, brokerHost string, isDisabled *bool) error {
+// UpdateAccount updates broker fields for an account.
+func (s *AccountService) UpdateAccount(ctx context.Context, userID uuid.UUID, id, brokerCompany, brokerServer, brokerHost string) error {
 	tag, err := s.db.Exec(ctx, `
 		UPDATE mt_accounts SET
 			broker_company = COALESCE(NULLIF($3, ''), broker_company),
 			broker_server  = COALESCE(NULLIF($4, ''), broker_server),
 			broker_host    = COALESCE(NULLIF($5, ''), broker_host),
-			is_disabled    = COALESCE($6, is_disabled),
 			updated_at     = CURRENT_TIMESTAMP
 		WHERE id = $1::uuid AND user_id = $2
-	`, id, userID, brokerCompany, brokerServer, brokerHost, isDisabled)
+	`, id, userID, brokerCompany, brokerServer, brokerHost)
 	if err != nil {
 		return fmt.Errorf("service: update account: %w", err)
 	}
 	if tag.RowsAffected() == 0 {
 		return pgx.ErrNoRows
 	}
-	// Invalidate summary cache when disabled status may have changed (disabled
-	// accounts stop sending profit events, so incremental updates can't fix it).
-	if isDisabled != nil {
-		s.InvalidateSummaryCache(userID.String())
+	return nil
+}
+
+// DeleteAccount removes an MT account. Related tables are cleaned up by FK ON DELETE CASCADE.
+func (s *AccountService) DeleteAccount(ctx context.Context, userID uuid.UUID, id string) error {
+	if _, err := s.db.Exec(ctx, `DELETE FROM mt_accounts WHERE id = $1::uuid AND user_id = $2`, id, userID); err != nil {
+		return fmt.Errorf("service: delete account: %w", err)
+	}
+	s.InvalidateSummaryCache(userID.String())
+	return nil
+}
+
+// ── Account Info ──
+
+// GetAccountCredentials returns the credentials needed for MT password verification.
+func (s *AccountService) GetAccountCredentials(ctx context.Context, userID uuid.UUID, id string) (*AccountCredentials, error) {
+	pgID, err := stringToPgUUID(id)
+	if err != nil {
+		return nil, fmt.Errorf("service: get account credentials: invalid account id: %w", err)
+	}
+	row, err := s.queries.GetAccountCredentials(ctx, repository.GetAccountCredentialsParams{ID: pgID, UserID: uuidToPgUUID(userID)})
+	if err != nil {
+		return nil, fmt.Errorf("service: get account credentials: %w", err)
+	}
+	return &AccountCredentials{
+		Login:      row.Login,
+		Platform:   row.MtType,
+		BrokerHost: row.BrokerHost,
+	}, nil
+}
+
+// UpdateAccountInfoTx updates balance/equity/margin/leverage/currency within a transaction.
+// Does NOT touch account_status — that is owned by the gateway lifecycle.
+func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin decimal.Decimal, leverage int64, currency string, isInvestor bool) error {
+	_, err := tx.Exec(ctx, `
+		UPDATE mt_accounts SET
+			balance = $3, equity = $4, credit = $5, margin = $6,
+			free_margin = $7, leverage = $8, currency = $9,
+			is_investor = $10, updated_at = CURRENT_TIMESTAMP
+		WHERE id = $1::uuid AND user_id = $2
+	`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency, isInvestor)
+	if err != nil {
+		return fmt.Errorf("service: update account info: %w", err)
 	}
 	return nil
 }
 
-// DeleteAccount removes an MT account and all its related data within a transaction (#28).
-// Related tables without ON DELETE CASCADE are cleaned up first.
-func (s *AccountService) DeleteAccount(ctx context.Context, userID uuid.UUID, id string) error {
-	tx, err := s.db.Begin(ctx)
+// UpdateAccountInfo updates balance/equity/margin/leverage/currency after MT verification.
+func (s *AccountService) UpdateAccountInfo(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin decimal.Decimal, leverage int64, currency string) error {
+	_, err := s.db.Exec(ctx, `
+		UPDATE mt_accounts SET
+			balance = $3, equity = $4, credit = $5, margin = $6,
+			free_margin = $7, leverage = $8, currency = $9,
+			updated_at = CURRENT_TIMESTAMP
+		WHERE id = $1::uuid AND user_id = $2
+	`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency)
 	if err != nil {
-		return fmt.Errorf("service: delete account: begin tx: %w", err)
+		return fmt.Errorf("service: update account info: %w", err)
 	}
-	defer tx.Rollback(ctx)
-
-	// Delete related rows from tables that lack ON DELETE CASCADE.
-	related := []string{
-		`DELETE FROM account_balance_history WHERE account_id = $1::uuid`,
-		`DELETE FROM account_connection_logs WHERE account_id = $1::uuid`,
-		`DELETE FROM strategy_execution_logs WHERE account_id = $1::uuid`,
-		`DELETE FROM order_history WHERE account_id = $1::uuid`,
-	}
-	for _, q := range related {
-		if _, err := tx.Exec(ctx, q, id); err != nil {
-			return fmt.Errorf("service: delete account: cleanup: %w", err)
-		}
-	}
-
-	if _, err := tx.Exec(ctx, `DELETE FROM mt_accounts WHERE id = $1::uuid AND user_id = $2`, id, userID); err != nil {
-		return fmt.Errorf("service: delete account: %w", err)
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("service: delete account: commit tx: %w", err)
-	}
-	s.InvalidateSummaryCache(userID.String())
 	return nil
+}
+
+// UpdateAccountMetrics updates runtime balance/equity/margin metrics from broker callbacks.
+func (s *AccountService) UpdateAccountMetrics(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin, marginLevel decimal.Decimal) error {
+	pgID, err := stringToPgUUID(id)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: invalid account id: %w", err)
+	}
+	balN, err := decimalToPgNumeric(balance)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: balance: %w", err)
+	}
+	eqN, err := decimalToPgNumeric(equity)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: equity: %w", err)
+	}
+	crN, err := decimalToPgNumeric(credit)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: credit: %w", err)
+	}
+	marginN, err := decimalToPgNumeric(margin)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: margin: %w", err)
+	}
+	fmN, err := decimalToPgNumeric(freeMargin)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: free_margin: %w", err)
+	}
+	mlN, err := decimalToPgNumeric(marginLevel)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: margin_level: %w", err)
+	}
+	return s.queries.UpdateAccountMetrics(ctx, repository.UpdateAccountMetricsParams{
+		ID:          pgID,
+		UserID:      uuidToPgUUID(userID),
+		Balance:     balN,
+		Equity:      eqN,
+		Credit:      crN,
+		Margin:      marginN,
+		FreeMargin:  fmN,
+		MarginLevel: mlN,
+	})
+}
+
+// UpdateBrokerThresholds updates broker margin_call/stop_out thresholds on an account.
+func (s *AccountService) UpdateBrokerThresholds(ctx context.Context, id string, marginCallPct, stopOutPct float64) error {
+	_, err := s.db.Exec(ctx,
+		`UPDATE mt_accounts SET broker_margin_call_pct=$1, broker_stop_out_pct=$2,
+		 updated_at=CURRENT_TIMESTAMP WHERE id=$3`, marginCallPct, stopOutPct, id)
+	if err != nil {
+		return fmt.Errorf("service: update broker thresholds: %w", err)
+	}
+	return nil
+}
+
+// UserOwnsAccount checks if an account belongs to the given user.
+func (s *AccountService) UserOwnsAccount(ctx context.Context, userID, accountID string) (bool, error) {
+	pgUserID, err := stringToPgUUID(userID)
+	if err != nil {
+		return false, fmt.Errorf("service: user owns account: invalid user id: %w", err)
+	}
+	pgAccountID, err := stringToPgUUID(accountID)
+	if err != nil {
+		return false, fmt.Errorf("service: user owns account: invalid account id: %w", err)
+	}
+	return s.queries.UserOwnsAccount(ctx, repository.UserOwnsAccountParams{ID: pgAccountID, UserID: pgUserID})
+}
+
+// GetUserAccountIDs returns all account IDs belonging to a user.
+func (s *AccountService) GetUserAccountIDs(ctx context.Context, userID string) ([]string, error) {
+	rows, err := s.db.Query(ctx, "SELECT id FROM mt_accounts WHERE user_id = $1", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var ids []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
 }

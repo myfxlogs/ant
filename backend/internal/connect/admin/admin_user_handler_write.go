@@ -16,6 +16,7 @@ import (
 	"anttrader/internal/pkg/hash"
 	"anttrader/internal/repository"
 	"anttrader/internal/service"
+	usersvc "anttrader/internal/service/user"
 )
 
 func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[antv1.CreateUserRequest]) (*connect.Response[antv1.CreateUserResponse], error) {
@@ -40,7 +41,7 @@ func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[a
 		Role:  role,
 	}
 	if acctNum := req.Msg.AccountNumber; acctNum != "" {
-		if err := service.ValidateAccountNumber(acctNum); err != nil {
+		if err := usersvc.ValidateAccountNumber(acctNum); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_number: %w", err))
 		}
 		if s.acctSvc != nil {
@@ -73,7 +74,7 @@ func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[a
 		if err == nil {
 			break
 		}
-		if service.IsAccountNumberViolation(err) {
+		if usersvc.IsAccountNumberViolation(err) {
 			if attempt >= maxRetries {
 				return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("account number collision after %d retries", maxRetries))
 			}
@@ -86,7 +87,7 @@ func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[a
 			}
 			continue
 		}
-		if service.IsUniqueViolation(err) {
+		if usersvc.IsUniqueViolation(err) {
 			return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("email already registered"))
 		}
 		return nil, err
@@ -130,7 +131,7 @@ func (s *AdminUserServer) UpdateUser(ctx context.Context, req *connect.Request[a
 		existing.Nickname = &req.Msg.Nickname
 	}
 	if req.Msg.AccountNumber != "" {
-		if err := service.ValidateAccountNumber(req.Msg.AccountNumber); err != nil {
+		if err := usersvc.ValidateAccountNumber(req.Msg.AccountNumber); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_number: %w", err))
 		}
 		if existing.AccountNumber == nil || *existing.AccountNumber != req.Msg.AccountNumber {

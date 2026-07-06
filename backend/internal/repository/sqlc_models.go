@@ -18,7 +18,6 @@ type MtAccount struct {
 	Login                      string
 	Password                   string
 	Alias                      pgtype.Text
-	IsDisabled                 pgtype.Bool
 	Balance                    pgtype.Numeric
 	Credit                     pgtype.Numeric
 	Equity                     pgtype.Numeric
@@ -30,7 +29,6 @@ type MtAccount struct {
 	AccountMethod              pgtype.Text
 	IsInvestor                 pgtype.Bool
 	AccountStatus              string
-	StreamStatus               string
 	MtToken                    pgtype.Text
 	LastError                  pgtype.Text
 	LastConnectedAt            pgtype.Timestamp

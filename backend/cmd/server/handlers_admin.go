@@ -11,6 +11,7 @@ import (
 	"anttrader/internal/connect/admin"
 	"anttrader/internal/repository"
 	"anttrader/internal/service"
+	usersvc "anttrader/internal/service/user"
 
 	connectrpc "connectrpc.com/connect"
 )
@@ -21,7 +22,7 @@ func registerAdminHandlers(
 	pool *pgxpool.Pool,
 	log *zap.Logger,
 	walletSvc *service.WalletService,
-	accountNumberSvc *service.AccountNumberService,
+	accountNumberSvc *usersvc.AccountNumberService,
 	strategySvc *service.StrategySvc,
 	settingsStore *agent.SettingsStore,
 	hookEngine *agent.HookEngine,

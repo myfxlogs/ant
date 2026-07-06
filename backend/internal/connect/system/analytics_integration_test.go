@@ -93,17 +93,17 @@ func createTestAccount(t *testing.T, pool *pgxpool.Pool, userID uuid.UUID, login
 	_, err := pool.Exec(ctx,
 		`INSERT INTO mt_accounts (
 			id, user_id, mt_type, broker_company, broker_server, broker_host,
-			login, password, alias, is_disabled, balance, credit, equity,
+			login, password, alias, balance, credit, equity,
 			margin, free_margin, margin_level, leverage, currency,
 			account_method, account_type, is_investor, account_status,
-			stream_status, mt_token, broker_margin_call_pct, broker_stop_out_pct,
+			mt_token, broker_margin_call_pct, broker_stop_out_pct,
 			last_error, created_at, updated_at
 		) VALUES (
 			$1, $2, 'MT5', 'TestBroker', 'TestServer', 'test.example.com',
-			$3, 'encrypted', 'test-account', false, 10000, 0, 10000,
+			$3, 'encrypted', 'test-account', 10000, 0, 10000,
 			0, 10000, 0, 100, 'USD',
 			'hedging', 'demo', false, 'connected',
-			'inactive', '', 100, 50,
+			'', 100, 50,
 			'', NOW(), NOW()
 		) ON CONFLICT (id) DO NOTHING`,
 		id, userID, login,

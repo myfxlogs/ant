@@ -36,7 +36,6 @@ func accountWithUserToProto(a *repository.AccountWithUser) *antv1.AccountWithUse
 		BrokerServer:  a.BrokerServer,
 		Login:         a.Login,
 		Alias:         a.Alias,
-		IsDisabled:    a.IsDisabled,
 		// Financial values: use string-encoded decimal to avoid float64 precision loss.
 		// When proto fields are migrated to string, this will become direct string assignment.
 		Balance:       a.Balance.String(),
@@ -49,7 +48,6 @@ func accountWithUserToProto(a *repository.AccountWithUser) *antv1.AccountWithUse
 		Currency:      a.Currency,
 		IsInvestor:    a.IsInvestor,
 		AccountStatus: a.AccountStatus,
-		StreamStatus:  a.StreamStatus,
 		LastError:     a.LastError,
 		AccountType:   a.AccountType,
 		CreatedAt:     timestamppb.New(a.CreatedAt),

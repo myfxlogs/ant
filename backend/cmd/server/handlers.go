@@ -43,6 +43,7 @@ import (
 	"anttrader/internal/risk"
 	"anttrader/internal/risksvc"
 	"anttrader/internal/service"
+	usersvc "anttrader/internal/service/user"
 	systemai "anttrader/internal/service/systemai"
 	antredis "anttrader/internal/storage/redis"
 
@@ -86,7 +87,7 @@ func registerHandlers(
 	marketDataRepo := store
 	walletRepo := repository.NewWalletRepository(pool)
 	walletSvc := service.NewWalletService(walletRepo, pool, log)
-	accountNumberSvc := service.NewAccountNumberService(pool)
+	accountNumberSvc := usersvc.NewAccountNumberService(pool)
 	registrationSvc := service.NewRegistrationService(userRepo, accountNumberSvc, walletSvc, log)
 
 	authServer := user.NewAuthServer(userRepo, jwtSecret, log)
@@ -229,7 +230,7 @@ func registerHandlers(
 			var mt4ID string
 			err := pool.QueryRow(ctx,
 				`SELECT id::text FROM mt_accounts
-				 WHERE user_id = $1::uuid AND is_disabled = false
+				 WHERE user_id = $1::uuid AND account_status != 'frozen'
 				 ORDER BY created_at LIMIT 1`,
 				userID).Scan(&mt4ID)
 			if err != nil {

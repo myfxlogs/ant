@@ -27,15 +27,8 @@ func (s *AccountServer) VerifyTradePermission(ctx context.Context, req *connect.
 		s.log.Error("VerifyTradePermission", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	// Check real account state: disabled or frozen accounts cannot trade.
-	if acct.IsDisabled {
-		return connect.NewResponse(&antv1.VerifyTradePermissionResponse{
-			HasTradePermission: false,
-			Verified:           true,
-			Message:            "account is disabled",
-		}), nil
-	}
-	if acct.Status == "frozen" || acct.Status == "needs_rebind" {
+	// Check real account state: frozen accounts cannot trade.
+	if acct.Status == string(service.StatusFrozen) {
 		return connect.NewResponse(&antv1.VerifyTradePermissionResponse{
 			HasTradePermission: false,
 			Verified:           true,
@@ -65,37 +58,7 @@ func (s *AccountServer) UpdateTradingPassword(ctx context.Context, req *connect.
 	return connect.NewResponse(&antv1.UpdateTradingPasswordResponse{Success: true}), nil
 }
 
-// VerifyAccount connects to the MT broker with the given credentials and returns
-// account summary info WITHOUT saving anything to the database.
+// VerifyAccount is deprecated. Use CreateAccount which verifies MT credentials inline.
 func (s *AccountServer) VerifyAccount(ctx context.Context, req *connect.Request[antv1.VerifyAccountRequest]) (*connect.Response[antv1.VerifyAccountResponse], error) {
-	r := req.Msg
-	if s.mtTester == nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("MT connection tester not available"))
-	}
-	info, err := s.mtTester.Test(ctx, r.MtType, r.BrokerHost, r.Login, r.Password)
-	if err != nil {
-		s.log.Warn("VerifyAccount: connection failed", zap.String("accountLogin", maskLogin(r.Login)), zap.Error(err))
-		return connect.NewResponse(&antv1.VerifyAccountResponse{
-			Verified: false,
-			Message:  "Account verification failed — please check your credentials and broker server.",
-		}), nil
-	}
-	return connect.NewResponse(&antv1.VerifyAccountResponse{
-		Verified:   true,
-		Message:    "account verified",
-		Balance:    info.Balance.String(),
-		Equity:     info.Equity.String(),
-		Margin:     info.Margin.String(),
-		FreeMargin: info.FreeMargin.String(),
-		Leverage:   info.Leverage,
-		Currency:   info.Currency,
-	}), nil
-}
-
-// maskLogin masks a login value for safe logging.
-func maskLogin(login string) string {
-	if len(login) <= 3 {
-		return "***"
-	}
-	return login[:3] + "***"
+	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("VerifyAccount is deprecated, use CreateAccount instead"))
 }

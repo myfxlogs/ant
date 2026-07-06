@@ -12,7 +12,7 @@ import (
 )
 
 const getAccount = `-- name: GetAccount :one
-SELECT id, user_id, mt_type, broker_company, broker_server, broker_host, login, password, alias, is_disabled, balance, credit, equity, margin, free_margin, margin_level, leverage, currency, account_method, is_investor, account_status, stream_status, mt_token, last_error, last_connected_at, last_checked_at, created_at, updated_at, account_type, mtapi_port, mtapi_token_encrypted, password_encrypted, canonical_subscribed_symbols, broker_id, broker_margin_call_pct, broker_stop_out_pct FROM mt_accounts WHERE id = $1 AND user_id = $2
+SELECT id, user_id, mt_type, broker_company, broker_server, broker_host, login, password, alias, balance, credit, equity, margin, free_margin, margin_level, leverage, currency, account_method, is_investor, account_status, mt_token, last_error, last_connected_at, last_checked_at, created_at, updated_at, account_type, mtapi_port, mtapi_token_encrypted, password_encrypted, canonical_subscribed_symbols, broker_id, broker_margin_call_pct, broker_stop_out_pct FROM mt_accounts WHERE id = $1 AND user_id = $2
 `
 
 type GetAccountParams struct {
@@ -33,7 +33,6 @@ func (q *Queries) GetAccount(ctx context.Context, arg GetAccountParams) (MtAccou
 		&i.Login,
 		&i.Password,
 		&i.Alias,
-		&i.IsDisabled,
 		&i.Balance,
 		&i.Credit,
 		&i.Equity,
@@ -45,7 +44,6 @@ func (q *Queries) GetAccount(ctx context.Context, arg GetAccountParams) (MtAccou
 		&i.AccountMethod,
 		&i.IsInvestor,
 		&i.AccountStatus,
-		&i.StreamStatus,
 		&i.MtToken,
 		&i.LastError,
 		&i.LastConnectedAt,
@@ -137,7 +135,7 @@ func (q *Queries) GetAccountSnapshots(ctx context.Context, userID pgtype.UUID) (
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT id, user_id, mt_type, broker_company, broker_server, broker_host, login, password, alias, is_disabled, balance, credit, equity, margin, free_margin, margin_level, leverage, currency, account_method, is_investor, account_status, stream_status, mt_token, last_error, last_connected_at, last_checked_at, created_at, updated_at, account_type, mtapi_port, mtapi_token_encrypted, password_encrypted, canonical_subscribed_symbols, broker_id, broker_margin_call_pct, broker_stop_out_pct FROM mt_accounts WHERE user_id = $1 ORDER BY created_at DESC
+SELECT id, user_id, mt_type, broker_company, broker_server, broker_host, login, password, alias, balance, credit, equity, margin, free_margin, margin_level, leverage, currency, account_method, is_investor, account_status, mt_token, last_error, last_connected_at, last_checked_at, created_at, updated_at, account_type, mtapi_port, mtapi_token_encrypted, password_encrypted, canonical_subscribed_symbols, broker_id, broker_margin_call_pct, broker_stop_out_pct FROM mt_accounts WHERE user_id = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) ListAccounts(ctx context.Context, userID pgtype.UUID) ([]MtAccount, error) {
@@ -159,7 +157,6 @@ func (q *Queries) ListAccounts(ctx context.Context, userID pgtype.UUID) ([]MtAcc
 			&i.Login,
 			&i.Password,
 			&i.Alias,
-			&i.IsDisabled,
 			&i.Balance,
 			&i.Credit,
 			&i.Equity,
@@ -171,7 +168,6 @@ func (q *Queries) ListAccounts(ctx context.Context, userID pgtype.UUID) ([]MtAcc
 			&i.AccountMethod,
 			&i.IsInvestor,
 			&i.AccountStatus,
-			&i.StreamStatus,
 			&i.MtToken,
 			&i.LastError,
 			&i.LastConnectedAt,

@@ -52,12 +52,9 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("commit transaction: %w", err))
 	}
 
-	// Trigger gateway connection after successful account creation.
-	// Set status to 'connecting' and publish NATS event so mdgateway runner
-	// picks it up and starts a persistent broker connection.
-	if err := s.svc.ConnectAccount(ctx, userID, id); err != nil {
-		s.log.Warn("CreateAccount: ConnectAccount after create failed", zap.String("id", id), zap.Error(err))
-	} else if s.publisher != nil {
+	// Publish NATS event so mdgateway runner picks up the new account.
+	// Status is already 'connecting' from CreateAccountTx INSERT — no need to set it again.
+	if s.publisher != nil {
 		s.publisher.PublishConnect(ctx, id, userID.String())
 	}
 
@@ -109,7 +106,7 @@ func (s *AccountServer) UpdateAccount(ctx context.Context, req *connect.Request[
 	if err != nil {
 		return nil, err
 	}
-	if err := s.svc.UpdateAccount(ctx, userID, r.Id, brokerCompany, brokerServer, brokerHost, r.IsDisabled); err != nil {
+	if err := s.svc.UpdateAccount(ctx, userID, r.Id, brokerCompany, brokerServer, brokerHost); err != nil {
 		s.log.Error("UpdateAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -148,7 +145,7 @@ func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[
 			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("password verification failed: %w", err))
 		}
 	} else {
-		s.log.Warn("DeleteAccount: skipping password verification (needs_rebind, no broker host)", zap.String("accountId", req.Msg.Id))
+		s.log.Warn("DeleteAccount: skipping password verification (no broker host)", zap.String("accountId", req.Msg.Id))
 	}
 
 	if err := s.svc.DeleteAccount(ctx, userID, req.Msg.Id); err != nil {

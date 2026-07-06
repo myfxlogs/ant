@@ -29,7 +29,7 @@ func main() {
 
 	var id, broker, login, host, port string
 	var pwEnc, tokenEnc []byte
-	pool.QueryRow(ctx, "SELECT id, broker_company, login, broker_host, COALESCE(mtapi_port,'443'), password_encrypted, mtapi_token_encrypted FROM mt_accounts WHERE mt_type='MT4' AND NOT is_disabled LIMIT 1").Scan(&id, &broker, &login, &host, &port, &pwEnc, &tokenEnc)
+	pool.QueryRow(ctx, "SELECT id, broker_company, login, broker_host, COALESCE(mtapi_port,'443'), password_encrypted, mtapi_token_encrypted FROM mt_accounts WHERE mt_type='MT4' AND account_status != 'frozen' LIMIT 1").Scan(&id, &broker, &login, &host, &port, &pwEnc, &tokenEnc)
 	pw, _ := vault.Decrypt(ctx, secrets.PurposeMTPassword, pwEnc)
 	token, _ := vault.Decrypt(ctx, secrets.PurposeMTAPIToken, tokenEnc)
 	fmt.Printf("MT4 %s @ %s\n", login, broker)

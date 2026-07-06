@@ -9,28 +9,25 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	"github.com/google/uuid"
+
 	antv1 "anttrader/gen/proto/ant/v1"
+	"anttrader/internal/service"
 )
 
 // ConnectAccount connects an account to the broker and publishes a NATS event
 // so the mdgateway runner reloads and connects the account.
-// When a SessionReadyWaiter is configured, blocks on a channel (not polling)
-// until the runner calls Hub.Register — eliminating "session not found" races.
 func (s *AccountServer) ConnectAccount(ctx context.Context, req *connect.Request[antv1.ConnectAccountRequest]) (*connect.Response[antv1.ConnectAccountResponse], error) {
 	userID, err := parseUserID(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if err := s.svc.ConnectAccount(ctx, userID, req.Msg.Id); err != nil {
-		s.log.Error("ConnectAccount", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	// Publish NATS event to trigger mdgateway runner to connect this account.
-	if s.publisher != nil {
+	if err := s.updateAccountStatus(ctx, userID, req.Msg.Id, service.StatusConnecting, func() {
 		s.publisher.PublishConnect(ctx, req.Msg.Id, userID.String())
+	}); err != nil {
+		return nil, err
 	}
 
-	// Event-driven wait: block on a channel that Register() closes — zero CPU.
 	msg := "connected"
 	if s.sessionWaiter != nil {
 		select {
@@ -55,12 +52,10 @@ func (s *AccountServer) DisconnectAccount(ctx context.Context, req *connect.Requ
 	if err != nil {
 		return nil, err
 	}
-	if err := s.svc.DisconnectAccount(ctx, userID, req.Msg.Id); err != nil {
-		s.log.Error("DisconnectAccount", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	if s.publisher != nil {
+	if err := s.updateAccountStatus(ctx, userID, req.Msg.Id, service.StatusDisconnected, func() {
 		s.publisher.PublishDisconnect(ctx, req.Msg.Id, userID.String())
+	}); err != nil {
+		return nil, err
 	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
 }
@@ -71,14 +66,24 @@ func (s *AccountServer) ReconnectAccount(ctx context.Context, req *connect.Reque
 	if err != nil {
 		return nil, err
 	}
-	if err := s.svc.ReconnectAccount(ctx, userID, req.Msg.Id); err != nil {
-		s.log.Error("ReconnectAccount", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	if s.publisher != nil {
+	if err := s.updateAccountStatus(ctx, userID, req.Msg.Id, service.StatusConnecting, func() {
 		s.publisher.PublishReconnect(ctx, req.Msg.Id, userID.String())
+	}); err != nil {
+		return nil, err
 	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
+}
+
+// updateAccountStatus sets the account status via SetStatus and invokes publishFn.
+func (s *AccountServer) updateAccountStatus(ctx context.Context, userID uuid.UUID, id string, status service.AccountStatus, publishFn func()) error {
+	if err := s.svc.SetStatus(ctx, userID, id, status); err != nil {
+		s.log.Error("updateAccountStatus", zap.String("accountId", id), zap.String("status", string(status)), zap.Error(err))
+		return connect.NewError(connect.CodeInternal, err)
+	}
+	if s.publisher != nil && publishFn != nil {
+		publishFn()
+	}
+	return nil
 }
 
 // SearchBroker calls mtapi Search RPC for real broker discovery.

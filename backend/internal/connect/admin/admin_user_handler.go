@@ -15,20 +15,21 @@ import (
 	"anttrader/internal/model"
 	"anttrader/internal/repository"
 	"anttrader/internal/service"
+	usersvc "anttrader/internal/service/user"
 )
 
 type AdminUserServer struct {
 	repo       *repository.AdminRepository
 	resetRepo  *repository.PasswordResetRepo
 	walletSvc  *service.WalletService
-	acctSvc    *service.AccountNumberService
+	acctSvc    *usersvc.AccountNumberService
 	deletionSvc *service.UserDeletionService
 	log        *zap.Logger
 }
 
 var _ antv1c.AdminUserServiceHandler = (*AdminUserServer)(nil)
 
-func NewAdminUserServer(repo *repository.AdminRepository, resetRepo *repository.PasswordResetRepo, walletSvc *service.WalletService, acctSvc *service.AccountNumberService, deletionSvc *service.UserDeletionService, log *zap.Logger) *AdminUserServer {
+func NewAdminUserServer(repo *repository.AdminRepository, resetRepo *repository.PasswordResetRepo, walletSvc *service.WalletService, acctSvc *usersvc.AccountNumberService, deletionSvc *service.UserDeletionService, log *zap.Logger) *AdminUserServer {
 	return &AdminUserServer{repo: repo, resetRepo: resetRepo, walletSvc: walletSvc, acctSvc: acctSvc, deletionSvc: deletionSvc, log: log}
 }
 

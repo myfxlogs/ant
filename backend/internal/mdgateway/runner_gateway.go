@@ -54,7 +54,7 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 			accountMethod = "investor"
 		}
 		if _, err := deps.PG.Exec(ctx,
-			`UPDATE mt_accounts SET account_status = 'connected', stream_status = 'active',
+			`UPDATE mt_accounts SET account_status = 'connected',
 			 is_investor = $2, account_method = $3, last_connected_at = CURRENT_TIMESTAMP,
 			 last_error = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
 			accID, isInvestor, accountMethod); err != nil {
