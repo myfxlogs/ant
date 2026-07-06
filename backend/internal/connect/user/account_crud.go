@@ -127,13 +127,26 @@ func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[
 		return nil, err
 	}
 
-	// Verify platform login password (not MT password — delete is a local operation).
-	if err := s.svc.VerifyUserPassword(ctx, userID, req.Msg.Password); err != nil {
-		if errors.Is(err, service.ErrPlatformPasswordMismatch) {
-			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("password incorrect"))
+	// Verify MT broker password — the broker is the only source of truth.
+	// A locally stored password may be stale if the user changed it on the MT side.
+	creds, err := s.svc.GetAccountCredentials(ctx, userID, req.Msg.Id)
+	if err != nil {
+		s.log.Error("DeleteAccount: get credentials", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get account info: %w", err))
+	}
+	if creds.BrokerHost != "" {
+		if req.Msg.Password == "" {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("password is required to delete a verified account"))
 		}
-		s.log.Error("DeleteAccount: password verification failed", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("password verification failed: %w", err))
+		if s.mtTester == nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("MT connection tester not available"))
+		}
+		if err := s.mtTester.VerifyPassword(ctx, creds.Platform, creds.BrokerHost, creds.Login, req.Msg.Password); err != nil {
+			s.log.Warn("DeleteAccount: password verification failed", zap.String("accountId", req.Msg.Id), zap.Error(err))
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("password verification failed: %w", err))
+		}
+	} else {
+		s.log.Warn("DeleteAccount: skipping password verification (no broker host)", zap.String("accountId", req.Msg.Id))
 	}
 
 	// Disconnect MT gateway before deleting the account.
