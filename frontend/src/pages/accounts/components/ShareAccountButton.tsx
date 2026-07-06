@@ -33,7 +33,7 @@ export default function ShareAccountButton({ accountId }: Props) {
 
   const fetchList = useCallback(async () => {
     const h = authHeaders();
-    if (!h) { message.error(t('common.loginRequired', { defaultValue: 'Login required' })); return; }
+    if (!h) return;
     setLoading(true);
     try {
       const resp = await fetch('/api/shares/list', { headers: h });
@@ -49,7 +49,7 @@ export default function ShareAccountButton({ accountId }: Props) {
 
   const handleCreate = async () => {
     const h = authHeaders();
-    if (!h) { message.error(t('common.loginRequired', { defaultValue: 'Login required' })); return; }
+    if (!h) return;
     try {
       const resp = await fetch('/api/shares/create', {
         method: 'POST',
