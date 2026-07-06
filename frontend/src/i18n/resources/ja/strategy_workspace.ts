@@ -60,6 +60,7 @@ const StrategyWorkspace = {
       "positions": "ポジション",
       "codeValid": "コード検証に成功しました",
       "validateFirst": "先にコードを検証してください",
+      "codeEditorPlaceholder": "ここにPython subset戦略コードを書くか、AIアシスタントから読み込んでください...",
       "templates": "戦略リスト",
       "backtestCompleted": "完了",
       "backtestEmpty": "バックテストを実行して結果を表示",

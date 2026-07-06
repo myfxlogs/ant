@@ -60,6 +60,7 @@ const StrategyWorkspace = {
       "positions": "Vị thế",
       "codeValid": "Xác thực code thành công",
       "validateFirst": "Vui lòng xác thực code trước",
+      "codeEditorPlaceholder": "Viết code chiến lược Python subset tại đây, hoặc tải từ AI...",
       "templates": "Danh sách chiến lược",
       "backtestCompleted": "Hoàn tất",
       "backtestEmpty": "Chạy backtest để xem kết quả",

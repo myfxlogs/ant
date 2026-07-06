@@ -60,6 +60,7 @@ const StrategyWorkspace = {
       "positions": "持仓",
       "codeValid": "代码验证通过",
       "validateFirst": "请先验证代码",
+      "codeEditorPlaceholder": "在此编写 Python subset 策略代码，或从 AI 助手加载...",
       "templates": "策略列表",
       "backtestCompleted": "已完成",
       "backtestEmpty": "运行回测以查看结果",

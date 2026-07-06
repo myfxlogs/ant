@@ -60,6 +60,7 @@ const StrategyWorkspace = {
       "positions": "Positions",
       "codeValid": "Code validation passed",
       "validateFirst": "Please validate code first",
+      "codeEditorPlaceholder": "Write Python subset strategy code here, or load from AI assistant...",
       "templates": "Strategies",
       "backtestCompleted": "Completed",
       "backtestEmpty": "Run a backtest to see results",

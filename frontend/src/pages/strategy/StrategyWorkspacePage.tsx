@@ -216,11 +216,12 @@ export default function StrategyWorkspacePage() {
 
           {/* Code */}
           <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'code' ? 'flex' : 'none', flexDirection: 'column' }}>
-            {ws.code.code ? (
+            {ws.code.code || editable ? (
               editable ? (
                 <Input.TextArea
                   value={ws.code.code}
                   onChange={(e) => ws.code.setCode(e.target.value)}
+                  placeholder={t('strategy.workspace.codeEditorPlaceholder')}
                   style={{
                     flex: 1, borderRadius: 0, resize: 'none',
                     fontFamily: '"SF Mono", "Fira Code", monospace',
@@ -240,7 +241,14 @@ export default function StrategyWorkspacePage() {
             ) : (
               <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 40 }}>
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description={t('strategy.workspace.noCode')} />
+                  description={
+                    <span>
+                      {t('strategy.workspace.noCode')}
+                      <Button type="link" size="small" onClick={() => setEditable(true)}>
+                        {t('common.edit')}
+                      </Button>
+                    </span>
+                  } />
               </div>
             )}
           </div>
