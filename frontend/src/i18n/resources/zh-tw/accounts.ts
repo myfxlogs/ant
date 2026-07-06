@@ -223,7 +223,7 @@ const Accounts = {
         "deleteConfirm": "驗證並刪除",
         "deletePasswordHint": "請輸入MT交易密碼或唯讀密碼以驗證：",
         "deletePasswordPlaceholder": "MT交易密碼/唯讀密碼",
-        "deletePasswordWrong": "交易密碼錯誤，請輸入正確的 MT 交易密碼。",
+        "deletePasswordWrong": "交易密碼/唯讀密碼錯誤，請輸入正確的 MT 密碼。",
         "deleteWarning": "此操作不可逆轉。所有帳戶資料（交易記錄、分析等）將被永久刪除。",
         "disableAccount": "停用帳戶",
         "enableAccount": "啟用帳戶",
