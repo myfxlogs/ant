@@ -181,6 +181,7 @@ type AccountsI18N struct {
 	DetailActionsDeleteConfirm                     string                 `protobuf:"bytes,156,opt,name=detail_actions_delete_confirm,json=detailActionsDeleteConfirm,proto3" json:"detail_actions_delete_confirm,omitempty"`                                                                  // Verify & Delete
 	DetailActionsDeletePasswordHint                string                 `protobuf:"bytes,157,opt,name=detail_actions_delete_password_hint,json=detailActionsDeletePasswordHint,proto3" json:"detail_actions_delete_password_hint,omitempty"`                                                 // Enter the MT trading password or read-only password to verif
 	DetailActionsDeletePasswordPlaceholder         string                 `protobuf:"bytes,158,opt,name=detail_actions_delete_password_placeholder,json=detailActionsDeletePasswordPlaceholder,proto3" json:"detail_actions_delete_password_placeholder,omitempty"`                            // MT trading / read-only password
+	DetailActionsDeletePasswordWrong               string                 `protobuf:"bytes,280,opt,name=detail_actions_delete_password_wrong,json=detailActionsDeletePasswordWrong,proto3" json:"detail_actions_delete_password_wrong,omitempty"`                                              // Trading password incorrect error
 	DetailActionsDeleteWarning                     string                 `protobuf:"bytes,159,opt,name=detail_actions_delete_warning,json=detailActionsDeleteWarning,proto3" json:"detail_actions_delete_warning,omitempty"`                                                                  // This action is irreversible. All account data (trade records
 	DetailActionsDisableAccount                    string                 `protobuf:"bytes,160,opt,name=detail_actions_disable_account,json=detailActionsDisableAccount,proto3" json:"detail_actions_disable_account,omitempty"`                                                               // Disable account
 	DetailActionsEnableAccount                     string                 `protobuf:"bytes,161,opt,name=detail_actions_enable_account,json=detailActionsEnableAccount,proto3" json:"detail_actions_enable_account,omitempty"`                                                                  // Enable account
@@ -1442,6 +1443,13 @@ func (x *AccountsI18N) GetDetailActionsDeletePasswordPlaceholder() string {
 	return ""
 }
 
+func (x *AccountsI18N) GetDetailActionsDeletePasswordWrong() string {
+	if x != nil {
+		return x.DetailActionsDeletePasswordWrong
+	}
+	return ""
+}
+
 func (x *AccountsI18N) GetDetailActionsDeleteWarning() string {
 	if x != nil {
 		return x.DetailActionsDeleteWarning
@@ -2293,7 +2301,7 @@ var File_i18n_accounts_proto protoreflect.FileDescriptor
 
 const file_i18n_accounts_proto_rawDesc = "" +
 	"\n" +
-	"\x13i18n/accounts.proto\x12\vant.v1.i18n\"\xef\x89\x01\n" +
+	"\x13i18n/accounts.proto\x12\vant.v1.i18n\"\xc0\x8a\x01\n" +
 	"\fAccountsI18n\x12C\n" +
 	"\x1eanalytics_advanced_stats_title\x18\x01 \x01(\tR\x1banalyticsAdvancedStatsTitle\x12A\n" +
 	"\x1danalytics_advanced_tabs_daily\x18\x02 \x01(\tR\x1aanalyticsAdvancedTabsDaily\x12C\n" +
@@ -2454,7 +2462,8 @@ const file_i18n_accounts_proto_rawDesc = "" +
 	"\x1ddetail_actions_delete_account\x18\x9b\x01 \x01(\tR\x1adetailActionsDeleteAccount\x12B\n" +
 	"\x1ddetail_actions_delete_confirm\x18\x9c\x01 \x01(\tR\x1adetailActionsDeleteConfirm\x12M\n" +
 	"#detail_actions_delete_password_hint\x18\x9d\x01 \x01(\tR\x1fdetailActionsDeletePasswordHint\x12[\n" +
-	"*detail_actions_delete_password_placeholder\x18\x9e\x01 \x01(\tR&detailActionsDeletePasswordPlaceholder\x12B\n" +
+	"*detail_actions_delete_password_placeholder\x18\x9e\x01 \x01(\tR&detailActionsDeletePasswordPlaceholder\x12O\n" +
+	"$detail_actions_delete_password_wrong\x18\x98\x02 \x01(\tR detailActionsDeletePasswordWrong\x12B\n" +
 	"\x1ddetail_actions_delete_warning\x18\x9f\x01 \x01(\tR\x1adetailActionsDeleteWarning\x12D\n" +
 	"\x1edetail_actions_disable_account\x18\xa0\x01 \x01(\tR\x1bdetailActionsDisableAccount\x12B\n" +
 	"\x1ddetail_actions_enable_account\x18\xa1\x01 \x01(\tR\x1adetailActionsEnableAccount\x12>\n" +
