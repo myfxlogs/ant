@@ -26,6 +26,17 @@ export default function AccountManagement() {
   const [total, setTotal] = useState(0);
   const [params, setParams] = useState<AccountListParams>({ page: 1, pageSize: 20 });
   const [detailDrawerVisible, setDetailDrawerVisible] = useState(false);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+
+  const fetchAuditLogs = async (accountId: string) => {
+    setAuditLoading(true);
+    try {
+      const res = await fetch(`/api/admin/audit-logs?account_id=${accountId}`);
+      if (res.ok) setAuditLogs(await res.json());
+    } catch { setAuditLogs([]); }
+    finally { setAuditLoading(false); }
+  };
   const [currentAccount, setCurrentAccount] = useState<AccountWithUser | null>(null);
   
   const getCachedData = useAdminAccountStore((state) => state.getCachedData);
@@ -114,7 +125,7 @@ export default function AccountManagement() {
       width: 150,
       render: (_: unknown, record: AccountWithUser) => (
         <Space>
-          <Button size="small" onClick={() => { setCurrentAccount(record); setDetailDrawerVisible(true); }}>
+          <Button size="small" onClick={() => { setCurrentAccount(record); setDetailDrawerVisible(true); fetchAuditLogs(record.id); }}>
             详情
           </Button>
           {record.accountStatus === 'frozen' ? (
@@ -184,6 +195,23 @@ export default function AccountManagement() {
             <Descriptions.Item label="保证金">{currentAccount.margin}</Descriptions.Item>
             <Descriptions.Item label="创建时间">{formatDateTime(currentAccount.createdAt)}</Descriptions.Item>
           </Descriptions>
+        )}
+        {currentAccount && (
+          <div style={{ marginTop: 16 }}>
+            <h4 style={{ marginBottom: 8 }}>操作日志</h4>
+            <Table
+              dataSource={auditLogs}
+              loading={auditLoading}
+              rowKey="id"
+              size="small"
+              pagination={false}
+              columns={[
+                { title: '时间', dataIndex: 'created_at', width: 160, render: (v: string) => v?.slice(0, 19).replace('T', ' ') },
+                { title: '操作', dataIndex: 'action', width: 80 },
+                { title: '详情', dataIndex: 'detail' },
+              ]}
+            />
+          </div>
         )}
       </Drawer>
     </Card>

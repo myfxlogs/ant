@@ -2,6 +2,8 @@ package admin
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -106,4 +108,23 @@ func (s *AdminAccountServer) UnfreezeAccount(ctx context.Context, req *connect.R
 		return nil, err
 	}
 	return connect.NewResponse(&antv1.UnfreezeAccountResponse{}), nil
+}
+
+// ServeAuditLogs returns audit log entries for an account as JSON.
+// Registered as a raw HTTP handler on /admin/audit-logs in handlers_admin.go.
+func (s *AdminAccountServer) ServeAuditLogs(w http.ResponseWriter, r *http.Request) {
+	accountID := r.URL.Query().Get("account_id")
+	if accountID == "" {
+		http.Error(w, "missing account_id", http.StatusBadRequest)
+		return
+	}
+	entries, err := s.repo.GetAuditLogs(r.Context(), accountID, 100)
+	if err != nil {
+		s.log.Error("ServeAuditLogs", zap.Error(err))
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	enc := json.NewEncoder(w)
+	_ = enc.Encode(entries)
 }

@@ -154,3 +154,37 @@ func isReadPermission(code string) bool {
 	}
 	return false
 }
+
+// AuditLogEntry represents a single account audit event.
+type AuditLogEntry struct {
+	ID        string    `json:"id"`
+	AccountID string    `json:"account_id"`
+	UserID    string    `json:"user_id"`
+	Action    string    `json:"action"`
+	Detail    string    `json:"detail"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// GetAuditLogs returns audit entries for the given account, newest first.
+func (r *AdminRepository) GetAuditLogs(ctx context.Context, accountID string, limit int) ([]*AuditLogEntry, error) {
+	if limit <= 0 || limit > 200 {
+		limit = 50
+	}
+	rows, err := r.db.Query(ctx,
+		`SELECT id::text, account_id::text, user_id::text, action, detail, created_at
+		 FROM account_audit_log WHERE account_id = $1
+		 ORDER BY created_at DESC LIMIT $2`, accountID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var entries []*AuditLogEntry
+	for rows.Next() {
+		e := &AuditLogEntry{}
+		if err := rows.Scan(&e.ID, &e.AccountID, &e.UserID, &e.Action, &e.Detail, &e.CreatedAt); err != nil {
+			return nil, err
+		}
+		entries = append(entries, e)
+	}
+	return entries, rows.Err()
+}

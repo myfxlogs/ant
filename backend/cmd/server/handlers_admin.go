@@ -58,6 +58,9 @@ func registerAdminHandlers(
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
 
+	// Internal admin tool — audit log viewer (consistent with /api/shares pattern).
+	mux.HandleFunc("/api/admin/audit-logs", adminAccountServer.ServeAuditLogs)
+
 	// ADR-0025 §5.4 + §8: Agent settings + hooks management.
 	if settingsStore != nil {
 		adminAgentSettingsServer := admin.NewAdminAgentSettingsServer(settingsStore, log)
