@@ -3,8 +3,6 @@ import { CloudServerOutlined, CheckOutlined, ExclamationCircleOutlined } from '@
 import GradientButton, { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useTranslation } from 'react-i18next'
 import { BIND_ACTIONS_CONFIRM_BIND_KEY, BIND_ACTIONS_SEARCH_KEY, BIND_FIELDS_BROKER_NAME_KEY, BIND_FIELDS_COMPANY_KEY, BIND_FIELDS_PASSWORD_KEY, BIND_FIELDS_PLATFORM_KEY, BIND_FIELDS_SERVER_KEY, BIND_FIELDS_TRADING_ACCOUNT_KEY, BIND_LABELS_SERVER_COUNT_KEY, BIND_MESSAGES_LOGIN_DIGITS_ONLY_KEY, BIND_PASSWORD_HINT_KEY, BIND_PLACEHOLDERS_BROKER_NAME_KEY, BIND_PLACEHOLDERS_COMPANY_KEY, BIND_PLACEHOLDERS_PASSWORD_KEY, BIND_PLACEHOLDERS_SERVER_KEY, BIND_PLACEHOLDERS_TRADING_ACCOUNT_KEY, BIND_STEP1_SUBTITLE_KEY, BIND_STEP1_TITLE_KEY, BIND_STEP2_SUBTITLE_KEY, BIND_STEP2_TITLE_KEY, BIND_STEP3_SUBTITLE_KEY, BIND_STEP3_TITLE_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
-
-;
 import type { BrokerSearchResult, BrokerServer } from './BindAccount';
 
 export function Step1SearchBroker({
@@ -131,9 +129,9 @@ export function Step2Credentials({
         </div>
       </div>
       <div>
-        <label className="block mb-2 font-medium" style={{ color: 'var(--color-text)' }}>{t(BIND_FIELDS_ACCOUNT_KEY)}</label>
+        <label className="block mb-2 font-medium" style={{ color: 'var(--color-text)' }}>{t(BIND_FIELDS_TRADING_ACCOUNT_KEY)}</label>
         <input type="text" value={login} onChange={(e) => setLogin(e.target.value)}
-          placeholder={t(BIND_PLACEHOLDERS_ACCOUNT_KEY)} className="w-full outline-none transition-all"
+          placeholder={t(BIND_PLACEHOLDERS_TRADING_ACCOUNT_KEY)} className="w-full outline-none transition-all"
           style={{ background: 'var(--color-bg-card)', border: `1px solid ${loginHasNonDigits ? '#E53935' : 'rgba(185, 201, 223, 0.4)'}`, borderRadius: '10px', padding: '14px 16px', fontSize: '16px', color: 'var(--color-text)', height: '48px' }} />
         {loginHasNonDigits && (
           <p className="mt-1 text-xs" style={{ color: '#E53935' }}>{t(BIND_MESSAGES_LOGIN_DIGITS_ONLY_KEY)}</p>
