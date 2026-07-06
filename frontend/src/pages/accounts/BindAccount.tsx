@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { Button } from 'antd';
 import { showSuccess, showError, showWarning, showInfo } from '@/utils/message';
 import { ArrowLeftOutlined, CheckOutlined } from '@ant-design/icons';
@@ -84,6 +84,15 @@ export default function BindAccount() {
     } catch { showError(t(BIND_MESSAGES_SEARCH_FAILED_KEY)); }
     finally { setSearching(false); }
   };
+
+  // Debounced auto-search as user types (400ms after last keystroke)
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    if (!companySearch.trim() || companySearch.trim().length < 2) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => { handleSearch(); }, 400);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [companySearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCompanyChange = (companyName: string) => {
     setSelectedCompany(searchResults.find(c => c.companyName === companyName) || null);
