@@ -3,9 +3,7 @@ import { Button, Modal, Table, message, Tag, Space, Typography, Popconfirm, Swit
 import { ShareAltOutlined, CopyOutlined, LinkOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { SHARE_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
-
-;
-import { getAccessToken } from '@/utils/getAccessToken';
+import { useAuthStore } from '@/stores/authStore';
 
 interface ShareItem {
   token: string;
@@ -26,10 +24,10 @@ export default function ShareAccountButton({ accountId }: Props) {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<ShareItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const accessToken = useAuthStore(s => s.accessToken);
   const authHeaders = useCallback(() => {
-    const token = getAccessToken();
-    return token ? { 'Content-Type': 'application/json' as const, 'Authorization': `Bearer ${token}` } : null;
-  }, []);
+    return accessToken ? { 'Content-Type': 'application/json' as const, 'Authorization': `Bearer ${accessToken}` } : null;
+  }, [accessToken]);
 
   const fetchList = useCallback(async () => {
     const h = authHeaders();
