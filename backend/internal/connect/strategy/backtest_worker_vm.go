@@ -42,6 +42,13 @@ func (s *StrategyExecutionServer) executeVMBacktest(ctx context.Context, params 
 		}
 	}
 
+	return s.runVMEngine(ctx, vmRunner, params, klines, run)
+}
+
+// runVMEngine executes the backtest engine with a pre-compiled VMRunner.
+// Shared by both MQL (executeVMBacktest) and Python (executePythonVMBacktest) paths.
+func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql2go.VMRunner, params backtestParams, klines []*antv1.ExecuteKlineBar, run *repository.BacktestRun) (*antv1.ExecuteBacktestResponse, error) {
+
 	bars := make([]sdk.Bar, len(klines))
 	for i, k := range klines {
 		bars[i] = sdk.Bar{

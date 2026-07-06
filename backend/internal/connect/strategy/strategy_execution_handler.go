@@ -23,6 +23,7 @@ import (
 	"anttrader/internal/risk"
 	"anttrader/internal/ai"
 	"anttrader/strategy/runner"
+	"anttrader/strategy/sdk"
 	"anttrader/tools/mql2go"
 )
 
@@ -320,20 +321,16 @@ func toCamelCase(s string) string {
 func (s *StrategyExecutionServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
 
 func isGoStrategy(code string) bool {
-	return len(code) > 0 && strings.Contains(code, "anttrader/strategy/sdk")
+	return sdk.IsGo(code)
 }
 
-// isMQLStrategy returns true if the code looks like MQL source (not Go).
-// MQL code lacks Go package/import declarations and contains MQL patterns.
+// isMQLStrategy returns true if the code looks like MQL source (not Go, not Python).
 func isMQLStrategy(code string) bool {
-	if len(code) == 0 {
-		return false
-	}
-	if isGoStrategy(code) {
-		return false
-	}
-	return strings.Contains(code, "OnBar") || strings.Contains(code, "OnTick") ||
-		strings.Contains(code, "OnInit") || strings.Contains(code, "OnTimer") ||
-		strings.Contains(code, "OnDeinit")
+	return sdk.IsMQL(code)
+}
+
+// isPythonStrategy returns true if the code is Python subset source.
+func isPythonStrategy(code string) bool {
+	return sdk.IsPython(code)
 }
 

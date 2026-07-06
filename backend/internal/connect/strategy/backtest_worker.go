@@ -148,11 +148,17 @@ func (s *StrategyExecutionServer) executeBacktestRun(ctx context.Context, run *r
 
 // executeGoBacktest runs a backtest using the Go-native engine.
 // MQL source → VMRunner (in-process Bytecode VM) + backtest.Engine.
+// Python subset → VMRunner (in-process Bytecode VM) + backtest.Engine.
 // Generated Go strategy → GoExecutor (subprocess go run).
 func (s *StrategyExecutionServer) executeGoBacktest(ctx context.Context, run *repository.BacktestRun, params backtestParams, klines []*antv1.ExecuteKlineBar) (*antv1.ExecuteBacktestResponse, error) {
 	// MQL path: in-process Bytecode VM execution.
 	if isMQLStrategy(params.code) {
 		return s.executeVMBacktest(ctx, params, klines, run)
+	}
+
+	// Python subset path: in-process Bytecode VM execution (same engine, different compiler).
+	if isPythonStrategy(params.code) {
+		return s.executePythonVMBacktest(ctx, params, klines, run)
 	}
 
 	// Go-native compilation path: generated Go strategy via go run.

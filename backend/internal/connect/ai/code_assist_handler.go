@@ -15,6 +15,7 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/ai"
 	systemai "anttrader/internal/service/systemai"
+	"anttrader/strategy/sdk"
 	"anttrader/tools/mql2go"
 )
 
@@ -52,6 +53,11 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	// ── MQL path: compile via Bytecode VM, extract params from AST ──
 	if isMQLCode(code) {
 		return s.validateMQL(ctx, code)
+	}
+
+	// ── Python subset path: compile via Bytecode VM (same pipeline) ──
+	if sdk.IsPython(code) {
+		return s.validatePython(ctx, code)
 	}
 
 	// ── Go path: structural checks (legacy generated Go strategy) ──
@@ -112,6 +118,43 @@ func (s *CodeAssistServer) validateMQL(_ context.Context, code string) (*connect
 			Key:         p.Name,
 			Required:    false,
 			Type:        pType,
+			DefaultValue: p.Default,
+		})
+		entries = append(entries, paramEntry{Name: p.Name, Type: pType, Default: p.Default})
+	}
+	parametersJson, _ := json.Marshal(entries)
+
+	return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
+		Valid:          true,
+		Parameters:     params,
+		ParametersJson: string(parametersJson),
+	}), nil
+}
+
+// validatePython compiles Python subset source via the Bytecode VM pipeline and extracts parameters.
+func (s *CodeAssistServer) validatePython(_ context.Context, code string) (*connect.Response[antv1.ValidateStrategyExtendedResponse], error) {
+	runner, err := mql2go.CompilePython(code)
+	if err != nil {
+		return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
+			Valid:  false,
+			Errors: []string{fmt.Sprintf("Python compile failed: %v", err)},
+		}), nil
+	}
+
+	paramInfos := mql2go.ExtractParamInfos(runner.Bytecode())
+	params := make([]*antv1.RequiredParamSpec, 0, len(paramInfos))
+	type paramEntry struct {
+		Name    string `json:"name"`
+		Type    string `json:"type"`
+		Default string `json:"default"`
+	}
+	var entries []paramEntry
+	for _, p := range paramInfos {
+		pType := mqlTypeToProtoType(p.Type)
+		params = append(params, &antv1.RequiredParamSpec{
+			Key:          p.Name,
+			Required:     false,
+			Type:         pType,
 			DefaultValue: p.Default,
 		})
 		entries = append(entries, paramEntry{Name: p.Name, Type: pType, Default: p.Default})
