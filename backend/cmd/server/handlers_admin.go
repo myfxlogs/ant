@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -64,5 +66,33 @@ func registerAdminHandlers(
 	if pool != nil {
 		agentHooksServer := admin.NewAgentHooksServer(pool, hookEngine, log)
 		mux.Handle(antv1c.NewAgentHooksServiceHandler(agentHooksServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+	}
+}
+
+// startHardDeleteCleanup periodically hard-deletes expired soft-deleted users (30-day retention).
+func startHardDeleteCleanup(ctx context.Context, pool *pgxpool.Pool, log *zap.Logger) {
+	cleanupRepo := repository.NewAdminRepository(pool)
+	doCleanup := func() {
+		cleanCtx, ccl := context.WithTimeout(ctx, 5*time.Minute)
+		deleted, err := cleanupRepo.HardDeleteExpiredUsers(cleanCtx, 30)
+		if err != nil {
+			log.Warn("hard-delete expired users failed", zap.Error(err))
+		} else if deleted > 0 {
+			log.Info("hard-deleted expired users", zap.Int64("count", deleted))
+		}
+		ccl()
+	}
+	// Run immediately on startup.
+	doCleanup()
+
+	ticker := time.NewTicker(24 * time.Hour)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			doCleanup()
+		}
 	}
 }

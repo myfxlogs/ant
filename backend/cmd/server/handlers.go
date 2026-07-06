@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -343,36 +342,7 @@ func registerHandlers(
 		pgListen,
 	)
 
-	// Daily hard-delete of expired soft-deleted users (30-day retention).
-	// After 30 days, CASCADE/SET NULL FKs from migrations 149/150 take effect,
-	// permanently removing all user-owned data.
-	cleanupRepo := repository.NewAdminRepository(pool)
-	go func() {
-		// Run immediately on startup so recently-expired users are cleaned
-		// without waiting 24h for the first tick.
-		doCleanup := func() {
-			cleanCtx, ccl := context.WithTimeout(ctx, 5*time.Minute)
-			deleted, err := cleanupRepo.HardDeleteExpiredUsers(cleanCtx, 30)
-			if err != nil {
-				log.Warn("hard-delete expired users failed", zap.Error(err))
-			} else if deleted > 0 {
-				log.Info("hard-deleted expired users", zap.Int64("count", deleted))
-			}
-			ccl()
-		}
-		doCleanup()
-
-		ticker := time.NewTicker(24 * time.Hour)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				doCleanup()
-			}
-		}
-	}()
+	go startHardDeleteCleanup(ctx, pool, log)
 
 	return reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup
 }
