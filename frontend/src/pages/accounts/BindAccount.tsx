@@ -145,7 +145,7 @@ export default function BindAccount() {
           {renderStepIndicator()}
           {step === 1 && <Step1SearchBroker mtType={mtType} setMtType={setMtType} companySearch={companySearch} setCompanySearch={setCompanySearch} searching={searching} searchResults={searchResults} setSearchResults={setSearchResults} selectedCompany={selectedCompany} selectedServer={selectedServer} setSelectedCompany={setSelectedCompany} setSelectedServer={setSelectedServer} alias={alias} setAlias={setAlias} handleSearch={handleSearch} handleCompanyChange={handleCompanyChange} handleServerChange={handleServerChange} onNext={() => setStep(2)} />}
           {step === 2 && <Step2Credentials mtType={mtType} selectedServer={selectedServer} selectedCompany={selectedCompany} login={login} setLogin={setLogin} password={password} setPassword={setPassword} onBack={() => setStep(1)} onNext={() => setStep(3)} />}
-          {step === 3 && <Step3Bind mtType={mtType} selectedServer={selectedServer} selectedCompany={selectedCompany} login={login} loading={loading} bindError={bindError} handleBind={handleBind} onBack={() => setStep(2)} />
+          {step === 3 && <Step3Bind mtType={mtType} selectedServer={selectedServer} selectedCompany={selectedCompany} login={login} loading={loading} bindError={bindError} handleBind={handleBind} onBack={() => setStep(2)} />}
         </div>
       </div>
     </div>
