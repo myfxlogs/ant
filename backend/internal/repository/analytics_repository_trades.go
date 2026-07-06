@@ -209,8 +209,7 @@ func (r *AnalyticsRepository) GetTradeStatsData(ctx context.Context, accountID u
 		SELECT order_type, volume, profit, open_time, close_time
 		FROM trade_records
 		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
-			AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
-				ORDER BY close_time ASC
+			ORDER BY close_time ASC
 	`
 	rows, err := r.db.Query(ctx, query, accountID, start, end)
 	if err != nil {
