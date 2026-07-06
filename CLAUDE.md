@@ -112,6 +112,16 @@ These constraints are enforced at implementation time. Violation = fix before co
 - Time: UTC, millisecond precision (`int64 ts_unix_ms`)
 - Symbol: raw broker symbol = canonical (no suffix stripping)
 
+## Deployment (强制 — 禁止手动)
+
+- **后端部署唯一方式**: `docker compose build backend && docker compose up -d backend`
+- **前端部署唯一方式**: `docker cp frontend/dist/. ant-frontend:/usr/share/nginx/html/ && docker exec ant-frontend nginx -s reload`
+- **❌ 禁止宿主机 `go build` → `docker cp` 到容器**（宿主 glibc，容器 Alpine musl，二进制不兼容）
+- **❌ 禁止在运行中容器里 `go build` 或 `apk add build-base`**（污染运行时环境，容器重建即丢失）
+- **迁移文件**: `git status backend/migrations/` — 未提交的 `.up.sql` 会随 Docker build 自动执行；WIP 文件先移走再 build
+- 项目使用 multi-stage Docker build（`backend/Dockerfile`）：builder stage 在 `golang:alpine` 里编译 CGO 代码，runtime stage 只拷贝二进制 + `mql.so`
+- 运行中二进制名是 `/app/antrader`（不是 `ant-backend` / `server`）
+
 ## Before Commit
 
 ```bash
