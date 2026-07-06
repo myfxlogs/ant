@@ -33,6 +33,7 @@ func (r *AnalyticsRepository) GetTradeRecords(ctx context.Context, accountID uui
 			open_time, close_time
 		FROM trade_records
 		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
+			AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
 				ORDER BY close_time ASC
 	`
 	rows, err := r.db.Query(ctx, query, accountID, start, end)
@@ -60,6 +61,7 @@ func (r *AnalyticsRepository) GetTradeRecordsByUser(ctx context.Context, userID 
 		FROM trade_records tr
 		JOIN mt_accounts ma ON tr.account_id = ma.id
 		WHERE ma.user_id = $1 AND tr.close_time >= $2 AND tr.close_time <= $3
+			AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
 				ORDER BY tr.close_time ASC
 	`
 	rows, err := r.db.Query(ctx, query, userID, start, end)
@@ -108,6 +110,7 @@ func (r *AnalyticsRepository) GetTradeRecordsWithLimit(ctx context.Context, acco
 			open_time, close_time, stop_loss, take_profit, order_comment, magic_number
 		FROM trade_records
 		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
+			AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
 				ORDER BY close_time DESC
 	`
 	if limit > 0 {
@@ -206,6 +209,7 @@ func (r *AnalyticsRepository) GetTradeStatsData(ctx context.Context, accountID u
 		SELECT order_type, volume, profit, open_time, close_time
 		FROM trade_records
 		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
+			AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
 				ORDER BY close_time ASC
 	`
 	rows, err := r.db.Query(ctx, query, accountID, start, end)
