@@ -52,7 +52,8 @@ type MTAccountInfo struct {
 	FreeMargin decimal.Decimal
 	Leverage   int32
 	Currency   string
-	IsInvestor bool // true = read-only / investor password
+	IsInvestor bool   // true = read-only / investor password
+	BrokerHost string // the access host that successfully connected
 }
 
 // ProfitUpdate represents an account profit/financial snapshot from mtapi OnOrderProfit.

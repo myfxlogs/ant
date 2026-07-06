@@ -82,8 +82,14 @@ func (s *AccountServer) verifyAndUpdateAccount(ctx context.Context, tx pgx.Tx, u
 		s.log.Error("CreateAccount: UpdateAccountInfo failed", zap.Error(err))
 		return connect.NewError(connect.CodeInternal, fmt.Errorf("update account info: %w", err))
 	}
+	// Store only the working broker host (not all comma-separated candidates).
+	if info.BrokerHost != "" {
+		if _, err := tx.Exec(ctx, `UPDATE mt_accounts SET broker_host = $1 WHERE id = $2`, info.BrokerHost, accountID); err != nil {
+			s.log.Warn("CreateAccount: update broker_host failed", zap.Error(err))
+		}
+	}
 	s.log.Info("CreateAccount: verified and created",
-		zap.String("id", accountID), zap.String("balance", info.Balance.String()))
+		zap.String("id", accountID), zap.String("host", info.BrokerHost), zap.String("balance", info.Balance.String()))
 	return nil
 }
 

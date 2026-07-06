@@ -94,6 +94,7 @@ func (t *mtConnectionTester) testMT4(ctx context.Context, cfg mdtick.AccountConf
 			lastErr = err
 			continue
 		}
+		info.BrokerHost = host
 		return info, nil
 	}
 	if lastErr != nil {
