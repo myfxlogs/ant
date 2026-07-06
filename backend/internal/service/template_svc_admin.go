@@ -15,8 +15,8 @@ func (s *StrategySvc) GetTemplateDetail(ctx context.Context, id uuid.UUID) (*Tem
 	var t TemplateRow
 	var userEmail string
 	err := s.pg.QueryRow(ctx,
-		`SELECT st.id, st.user_id, st.name, st.description, st.code, st.strategy_id, st.status, st.parameters, st.is_public, st.is_system,
-		        st.tags, st.use_count, st.flag, st.flag_reason, st.flagged_by, st.flagged_at, st.created_at, st.updated_at,
+		`SELECT st.id, st.user_id, st.name, COALESCE(st.description, ''), COALESCE(st.code, ''), st.strategy_id, COALESCE(st.status, ''), st.parameters, st.is_public, st.is_system,
+		        st.tags, st.use_count, COALESCE(st.flag, ''), COALESCE(st.flag_reason, ''), st.flagged_by, st.flagged_at, st.created_at, st.updated_at,
 		        COALESCE(u.email, '')
 		 FROM strategy_templates st
 		 LEFT JOIN users u ON st.user_id = u.id
@@ -50,7 +50,7 @@ type SystemStrategyRow struct {
 
 func (s *StrategySvc) ListSystemStrategies(ctx context.Context) ([]SystemStrategyRow, error) {
 	rows, err := s.pg.Query(ctx,
-		`SELECT id, name, description, code, tags, use_count, created_at, updated_at
+		`SELECT id, name, COALESCE(description, ''), COALESCE(code, ''), tags, use_count, created_at, updated_at
 		 FROM strategy_templates WHERE is_system = true AND status != 'canceled' ORDER BY created_at DESC`)
 	if err != nil {
 		return nil, fmt.Errorf("list system strategies: %w", err)

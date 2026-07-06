@@ -34,7 +34,7 @@ type TemplateRow struct {
 
 func (s *StrategySvc) ListTemplates(ctx context.Context, userID uuid.UUID) ([]TemplateRow, error) {
 	rows, err := s.pg.Query(ctx,
-		`SELECT id, user_id, name, description, code, strategy_id, status, parameters, i18n, is_public, is_system, tags, use_count, flag, flag_reason, flagged_by, flagged_at, created_at, updated_at
+		`SELECT id, user_id, name, COALESCE(description, ''), COALESCE(code, ''), strategy_id, COALESCE(status, ''), parameters, i18n, is_public, is_system, tags, use_count, COALESCE(flag, ''), COALESCE(flag_reason, ''), flagged_by, flagged_at, created_at, updated_at
 		 FROM strategy_templates WHERE (user_id = $1 OR is_public = true OR is_system = true) AND status != 'canceled' ORDER BY created_at DESC`, userID)
 	if err != nil {
 		return nil, fmt.Errorf("list templates: %w", err)
@@ -46,7 +46,7 @@ func (s *StrategySvc) ListTemplates(ctx context.Context, userID uuid.UUID) ([]Te
 func (s *StrategySvc) GetTemplate(ctx context.Context, id, userID uuid.UUID) (*TemplateRow, error) {
 	var t TemplateRow
 	err := s.pg.QueryRow(ctx,
-		`SELECT id, user_id, name, description, code, strategy_id, status, parameters, i18n, is_public, is_system, tags, use_count, flag, flag_reason, flagged_by, flagged_at, created_at, updated_at
+		`SELECT id, user_id, name, COALESCE(description, ''), COALESCE(code, ''), strategy_id, COALESCE(status, ''), parameters, i18n, is_public, is_system, tags, use_count, COALESCE(flag, ''), COALESCE(flag_reason, ''), flagged_by, flagged_at, created_at, updated_at
 		 FROM strategy_templates WHERE id = $1 AND (user_id = $2 OR is_public = true OR is_system = true)`, id, userID,
 	).Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.StrategyID, &t.Status, &t.Parameters, &t.I18n, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
