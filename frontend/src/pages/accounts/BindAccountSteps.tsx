@@ -2,10 +2,10 @@ import { Button, Input, Select, Tag } from 'antd';
 import { CloudServerOutlined, CheckOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import GradientButton, { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useTranslation } from 'react-i18next'
-import { BIND_ACTIONS_CONFIRM_BIND_KEY, BIND_ACTIONS_RETRY_VERIFY_KEY, BIND_ACTIONS_SEARCH_KEY, BIND_ACTIONS_VERIFY_ACCOUNT_KEY, BIND_FIELDS_BROKER_NAME_KEY, BIND_FIELDS_COMPANY_KEY, BIND_FIELDS_PASSWORD_KEY, BIND_FIELDS_PLATFORM_KEY, BIND_FIELDS_SERVER_KEY, BIND_FIELDS_TRADING_ACCOUNT_KEY, BIND_LABELS_SERVER_COUNT_KEY, BIND_MESSAGES_LOGIN_DIGITS_ONLY_KEY, BIND_PASSWORD_HINT_KEY, BIND_PLACEHOLDERS_BROKER_NAME_KEY, BIND_PLACEHOLDERS_COMPANY_KEY, BIND_PLACEHOLDERS_PASSWORD_KEY, BIND_PLACEHOLDERS_SERVER_KEY, BIND_PLACEHOLDERS_TRADING_ACCOUNT_KEY, BIND_STEP1_SUBTITLE_KEY, BIND_STEP1_TITLE_KEY, BIND_STEP2_SUBTITLE_KEY, BIND_STEP2_TITLE_KEY, BIND_STEP3_SUBTITLE_KEY, BIND_STEP3_TITLE_KEY, BIND_SUMMARY_BALANCE_KEY, BIND_SUMMARY_CURRENCY_KEY, BIND_SUMMARY_EQUITY_KEY, BIND_SUMMARY_FREE_MARGIN_KEY, BIND_SUMMARY_LEVERAGE_KEY, BIND_SUMMARY_MARGIN_KEY, BIND_SUMMARY_VERIFIED_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+import { BIND_ACTIONS_CONFIRM_BIND_KEY, BIND_ACTIONS_SEARCH_KEY, BIND_FIELDS_BROKER_NAME_KEY, BIND_FIELDS_COMPANY_KEY, BIND_FIELDS_PASSWORD_KEY, BIND_FIELDS_PLATFORM_KEY, BIND_FIELDS_SERVER_KEY, BIND_FIELDS_TRADING_ACCOUNT_KEY, BIND_LABELS_SERVER_COUNT_KEY, BIND_MESSAGES_LOGIN_DIGITS_ONLY_KEY, BIND_PASSWORD_HINT_KEY, BIND_PLACEHOLDERS_BROKER_NAME_KEY, BIND_PLACEHOLDERS_COMPANY_KEY, BIND_PLACEHOLDERS_PASSWORD_KEY, BIND_PLACEHOLDERS_SERVER_KEY, BIND_PLACEHOLDERS_TRADING_ACCOUNT_KEY, BIND_STEP1_SUBTITLE_KEY, BIND_STEP1_TITLE_KEY, BIND_STEP2_SUBTITLE_KEY, BIND_STEP2_TITLE_KEY, BIND_STEP3_SUBTITLE_KEY, BIND_STEP3_TITLE_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 
 ;
-import type { BrokerSearchResult, BrokerServer, VerifyResult } from './BindAccount';
+import type { BrokerSearchResult, BrokerServer } from './BindAccount';
 
 export function Step1SearchBroker({
   mtType, setMtType, companySearch, setCompanySearch, searching,
@@ -154,21 +154,15 @@ export function Step2Credentials({
   );
 }
 
-export function Step3Verify({
-  mtType, selectedServer, selectedCompany, login, verifying, verifyResult,
-  verifyError, loading, setVerifyResult, setVerifyError, handleVerify, handleBind, onBack,
+export function Step3Bind({
+  mtType, selectedServer, selectedCompany, login, loading, bindError, handleBind, onBack,
 }: {
   mtType: 'MT4' | 'MT5';
   selectedServer: BrokerServer | null;
   selectedCompany: BrokerSearchResult | null;
   login: string;
-  verifying: boolean;
-  verifyResult: VerifyResult | null;
-  verifyError: string;
   loading: boolean;
-  setVerifyResult: (v: VerifyResult | null) => void;
-  setVerifyError: (v: string) => void;
-  handleVerify: () => Promise<void>;
+  bindError: string;
   handleBind: () => Promise<void>;
   onBack: () => void;
 }) {
@@ -188,48 +182,19 @@ export function Step3Verify({
         </div>
       </div>
 
-      {!verifyResult && (<>
-        <div className="flex justify-between pt-4">
-          <Button onClick={onBack} style={{ borderRadius: '10px' }}>{t('common.previous')}</Button>
-          <GradientButton loading={verifying} onClick={handleVerify} style={{ padding: '0 32px' }}>
-            {t(BIND_ACTIONS_VERIFY_ACCOUNT_KEY)}
-          </GradientButton>
-        </div>
-      </>)}
-
-      {verifyError && (
+      {bindError && (
         <div className="p-3 rounded-xl text-center" style={{ background: 'rgba(229, 57, 53, 0.05)', border: '1px solid rgba(229, 57, 53, 0.15)' }}>
           <ExclamationCircleOutlined style={{ fontSize: 16, color: '#E53935' }} />
-          <p className="mt-1 text-sm" style={{ color: '#E53935' }}>{verifyError}</p>
-          <div className="flex justify-center gap-2 mt-3">
-            <Button size="small" onClick={onBack}>{t('common.previous')}</Button>
-            <Button size="small" onClick={() => { setVerifyError(''); setVerifyResult(null); }}>{t(BIND_ACTIONS_RETRY_VERIFY_KEY)}</Button>
-          </div>
+          <p className="mt-1 text-sm" style={{ color: '#E53935' }}>{bindError}</p>
         </div>
       )}
 
-      {verifyResult?.verified && (<>
-        <div className="p-4 rounded-xl" style={{ background: 'rgba(0, 166, 81, 0.05)', border: '1px solid rgba(0, 166, 81, 0.15)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <CheckOutlined style={{ color: '#00A651' }} />
-            <span className="font-medium" style={{ color: '#00A651' }}>{t(BIND_SUMMARY_VERIFIED_KEY)}</span>
-          </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_BALANCE_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{Number(verifyResult.balance || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
-            <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_EQUITY_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{Number(verifyResult.equity || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
-            <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_MARGIN_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{Number(verifyResult.margin || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
-            <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_FREE_MARGIN_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{Number(verifyResult.freeMargin || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
-            {verifyResult.leverage > 0 && <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_LEVERAGE_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>1:{verifyResult.leverage}</span></div>}
-            <div className="flex justify-between"><span style={{ color: 'var(--color-text-muted)' }}>{t(BIND_SUMMARY_CURRENCY_KEY)}</span><span className="font-medium" style={{ color: 'var(--color-text)' }}>{verifyResult.currency || '-'}</span></div>
-          </div>
-        </div>
-        <div className="flex justify-between pt-4">
-          <Button onClick={() => { setVerifyResult(null); setVerifyError(''); onBack(); }} style={{ borderRadius: '10px' }}>{t('common.previous')}</Button>
-          <GradientButton loading={loading} onClick={handleBind} style={{ padding: '0 32px' }}>
-            {t(BIND_ACTIONS_CONFIRM_BIND_KEY)}
-          </GradientButton>
-        </div>
-      </>)}
+      <div className="flex justify-between pt-4">
+        <Button onClick={onBack} style={{ borderRadius: '10px' }}>{t('common.previous')}</Button>
+        <GradientButton loading={loading} onClick={handleBind} style={{ padding: '0 32px' }}>
+          {t(BIND_ACTIONS_CONFIRM_BIND_KEY)}
+        </GradientButton>
+      </div>
     </div>
   );
 }

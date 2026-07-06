@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -228,4 +229,20 @@ func (s *AccountService) GetUserAccountsSummary(ctx context.Context, userID stri
 	s.summaryCache[userID] = entry
 	cpy := entry.summary
 	return &cpy, nil
+}
+
+// ErrPlatformPasswordMismatch is returned when the platform login password is incorrect.
+var ErrPlatformPasswordMismatch = errors.New("platform password does not match")
+
+// VerifyUserPassword checks the user's platform login password against the stored hash.
+func (s *AccountService) VerifyUserPassword(ctx context.Context, userID uuid.UUID, password string) error {
+	var hash string
+	err := s.db.QueryRow(ctx, `SELECT password_hash FROM users WHERE id = $1`, userID).Scan(&hash)
+	if err != nil {
+		return fmt.Errorf("service: verify user password: %w", err)
+	}
+	if !VerifyPassword(hash, password) {
+		return ErrPlatformPasswordMismatch
+	}
+	return nil
 }

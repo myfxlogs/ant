@@ -63,35 +63,18 @@ export const accountApi = {
     brokerCompany?: string;
     brokerServer?: string;
     brokerHost?: string;
-    isDisabled?: boolean;
   }): Promise<Account> => {
     const response = await accountClient.updateAccount({
       id: params.id,
       brokerCompany: params.brokerCompany,
       brokerServer: params.brokerServer,
       brokerHost: params.brokerHost,
-      isDisabled: params.isDisabled,
     });
     return coerceAccountNumbers(toCamelCase<Account>(response));
   },
 
   delete: async (id: string, password?: string) => {
     await accountClient.deleteAccount({ id, password: password || '' });
-  },
-
-  verifyAccount: async (params: {
-    login: string;
-    password: string;
-    mtType: string;
-    brokerHost: string;
-  }) => {
-    const response = await accountClient.verifyAccount({
-      login: params.login,
-      password: params.password,
-      mtType: params.mtType,
-      brokerHost: params.brokerHost,
-    });
-    return toCamelCase(response);
   },
 
   connect: async (id: string): Promise<ConnectAccountResult> => {

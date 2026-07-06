@@ -10,12 +10,12 @@ import { getErrorMessage } from '@/utils/error';
 import type { BindAccountRequest } from '@/types/account';
 import type { Account } from '@/types/account';
 import { useTranslation } from 'react-i18next'
-import { BIND_ERRORS_BROKER_UNAVAILABLE_KEY, BIND_ERRORS_CONNECTION_FAILED_KEY, BIND_ERRORS_INVALID_CREDENTIALS_KEY, BIND_ERRORS_TIMEOUT_KEY, BIND_MESSAGES_BIND_FAILED_KEY, BIND_MESSAGES_BIND_SUCCESS_KEY, BIND_MESSAGES_ENTER_BROKER_NAME_KEY, BIND_MESSAGES_ENTER_PASSWORD_KEY, BIND_MESSAGES_ENTER_TRADING_ACCOUNT_KEY, BIND_MESSAGES_FOUND_BROKERS_KEY, BIND_MESSAGES_NO_ACCESS_HOSTS_KEY, BIND_MESSAGES_NO_BROKERS_FOUND_KEY, BIND_MESSAGES_SEARCH_FAILED_KEY, BIND_MESSAGES_SELECT_SERVER_KEY, BIND_MESSAGES_VERIFY_FAILED_KEY, BIND_TITLE_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+import { BIND_ERRORS_BROKER_UNAVAILABLE_KEY, BIND_ERRORS_CONNECTION_FAILED_KEY, BIND_ERRORS_INVALID_CREDENTIALS_KEY, BIND_ERRORS_TIMEOUT_KEY, BIND_MESSAGES_BIND_FAILED_KEY, BIND_MESSAGES_BIND_SUCCESS_KEY, BIND_MESSAGES_ENTER_BROKER_NAME_KEY, BIND_MESSAGES_ENTER_PASSWORD_KEY, BIND_MESSAGES_ENTER_TRADING_ACCOUNT_KEY, BIND_MESSAGES_FOUND_BROKERS_KEY, BIND_MESSAGES_NO_ACCESS_HOSTS_KEY, BIND_MESSAGES_NO_BROKERS_FOUND_KEY, BIND_MESSAGES_SEARCH_FAILED_KEY, BIND_MESSAGES_SELECT_SERVER_KEY, BIND_TITLE_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 
 ;
 import i18n from '@/i18n';
 import { ConnectContext } from '@/providers/connectContext';
-import { Step1SearchBroker, Step2Credentials, Step3Verify } from './BindAccountSteps';
+import { Step1SearchBroker, Step2Credentials, Step3Bind } from './BindAccountSteps';
 
 export interface BrokerServer {
   name: string;
@@ -25,17 +25,6 @@ export interface BrokerServer {
 export interface BrokerSearchResult {
   companyName: string;
   servers: BrokerServer[];
-}
-
-export interface VerifyResult {
-  verified: boolean;
-  balance?: number;
-  equity?: number;
-  margin?: number;
-  freeMargin?: number;
-  leverage?: number;
-  currency?: string;
-  accountType?: string;
 }
 
 /** Translate raw MT broker errors into user-friendly messages via i18n. */
@@ -60,9 +49,7 @@ export default function BindAccount() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [verifying, setVerifying] = useState(false);
-  const [verifyResult, setVerifyResult] = useState<VerifyResult | null>(null);
-  const [verifyError, setVerifyError] = useState('');
+  const [bindError, setBindError] = useState('');
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
   const { createAccount } = useAccount();
@@ -108,25 +95,9 @@ export default function BindAccount() {
     if (server) { setSelectedServer(server); if (!alias) setAlias(server.name); }
   };
 
-  const handleVerify = async () => {
-    if (!selectedCompany || !selectedServer) { showWarning(t(BIND_MESSAGES_SELECT_SERVER_KEY)); return; }
-    if (!login.trim()) { showWarning(t(BIND_MESSAGES_ENTER_ACCOUNT_KEY)); return; }
-    if (!password.trim()) { showWarning(t(BIND_MESSAGES_ENTER_PASSWORD_KEY)); return; }
-    if (!selectedServer.access || selectedServer.access.length === 0) { showError(t(BIND_MESSAGES_NO_ACCESS_HOSTS_KEY)); return; }
-    setVerifying(true); setVerifyError(''); setVerifyResult(null);
-    try {
-      const host = selectedServer.access[0];
-      const result = await accountApi.verifyAccount({ login: login.trim(), password, mtType, brokerHost: host });
-      setVerifyResult(result);
-      if (!result.verified) setVerifyError(friendlyError(result.message) || t(BIND_MESSAGES_VERIFY_FAILED_KEY));
-    } catch (error) {
-      setVerifyError(friendlyError(getErrorMessage(error, '')) || t(BIND_MESSAGES_VERIFY_FAILED_KEY));
-    } finally { setVerifying(false); }
-  };
-
   const handleBind = async () => {
     if (!selectedCompany || !selectedServer) return;
-    setLoading(true);
+    setLoading(true); setBindError('');
     try {
       if (!selectedServer.access || selectedServer.access.length === 0) { showError(t(BIND_MESSAGES_NO_ACCESS_HOSTS_KEY)); return; }
       const host = selectedServer.access[0];
@@ -138,13 +109,14 @@ export default function BindAccount() {
       };
       const account = await createAccount(request);
       setPassword('');
-      await accountApi.connect(account.id);
       await connectCtx?.reconnect();
       showSuccess(t(BIND_MESSAGES_BIND_SUCCESS_KEY));
       navigate(`/accounts/${account.id}`);
     } catch (error) {
       setPassword('');
-      showError(friendlyError(getErrorMessage(error, '')) || t(BIND_MESSAGES_BIND_FAILED_KEY));
+      const friendly = friendlyError(getErrorMessage(error, ''));
+      setBindError(friendly || t(BIND_MESSAGES_BIND_FAILED_KEY));
+      showError(friendly || t(BIND_MESSAGES_BIND_FAILED_KEY));
     } finally { setLoading(false); }
   };
 
@@ -173,7 +145,7 @@ export default function BindAccount() {
           {renderStepIndicator()}
           {step === 1 && <Step1SearchBroker mtType={mtType} setMtType={setMtType} companySearch={companySearch} setCompanySearch={setCompanySearch} searching={searching} searchResults={searchResults} setSearchResults={setSearchResults} selectedCompany={selectedCompany} selectedServer={selectedServer} setSelectedCompany={setSelectedCompany} setSelectedServer={setSelectedServer} alias={alias} setAlias={setAlias} handleSearch={handleSearch} handleCompanyChange={handleCompanyChange} handleServerChange={handleServerChange} onNext={() => setStep(2)} />}
           {step === 2 && <Step2Credentials mtType={mtType} selectedServer={selectedServer} selectedCompany={selectedCompany} login={login} setLogin={setLogin} password={password} setPassword={setPassword} onBack={() => setStep(1)} onNext={() => setStep(3)} />}
-          {step === 3 && <Step3Verify mtType={mtType} selectedServer={selectedServer} selectedCompany={selectedCompany} login={login} verifying={verifying} verifyResult={verifyResult} verifyError={verifyError} loading={loading} setVerifyResult={setVerifyResult} setVerifyError={setVerifyError} handleVerify={handleVerify} handleBind={handleBind} onBack={() => setStep(2)} />}
+          {step === 3 && <Step3Bind mtType={mtType} selectedServer={selectedServer} selectedCompany={selectedCompany} login={login} loading={loading} bindError={bindError} handleBind={handleBind} onBack={() => setStep(2)} />
         </div>
       </div>
     </div>

@@ -56,6 +56,8 @@ func startMdGatewayPipeline(
 	marginCallThresholds := make(map[string]float64) // accountID → broker_margin_call_pct
 	var snapshotMu sync.Mutex
 	lastSnapshot := make(map[string]time.Time) // throttle: 1 snapshot/hour/account
+	var metricsMu sync.Mutex
+	lastMetricsWrite := make(map[string]time.Time) // throttle: 5s between PG metric writes
 
 	// Load per-account broker margin call thresholds (default 100.0 from migration 122).
 	func() {
@@ -99,8 +101,20 @@ func startMdGatewayPipeline(
 			if err != nil {
 				log.Warn("OnAccountProfit: invalid user UUID", zap.String("userID", userID), zap.Error(err))
 			}
-			if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.MarginLevel); err != nil {
-				log.Warn("OnAccountProfit: pg update failed", zap.String("account", accountID), zap.Error(err))
+			// Throttle PG metric writes to at most once per 5s per account.
+			writeNow := false
+			func() {
+				metricsMu.Lock()
+				defer metricsMu.Unlock()
+				if time.Since(lastMetricsWrite[accountID]) > 5*time.Second {
+					lastMetricsWrite[accountID] = time.Now()
+					writeNow = true
+				}
+			}()
+			if writeNow {
+				if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.MarginLevel); err != nil {
+					log.Warn("OnAccountProfit: pg update failed", zap.String("account", accountID), zap.Error(err))
+				}
 			}
 			// Record hourly equity snapshot (throttled).
 			func() {
@@ -136,7 +150,7 @@ func startMdGatewayPipeline(
 				accountSyncSvc.CheckMarginCall(accountID, userID, p.MarginLevel.InexactFloat64(), p.Margin.InexactFloat64(), p.Equity.InexactFloat64(), callPct, &marginCallMu, marginCallLastSent, eventStore, *emailNotifier)
 			}
 		},
-		OnOrderUpdate: buildOnOrderUpdate(log, accountSvc, accountBroker, snapshotBroker, tradeRecordRepo, platformAgg),
+		OnOrderUpdate: buildOnOrderUpdate(log, snapshotBroker, tradeRecordRepo),
 		OnAccountDisconnect: func(accountID string) {
 			var uid string
 			if userID, err := getUserIDFromPool(context.Background(), pool, accountID); err == nil {
@@ -208,6 +222,12 @@ func startMdGatewayPipeline(
 			}
 		},
 		OnAccountStatus: func(accountID, userID, status, message string) {
+			// "reconnecting" is a transient partial state — don't persist or push SSE.
+			// Stream recovery is handled by startGatewayForAccount (→ "connected").
+			// Stream loss is handled by the health monitor (→ DisconnectAccountByID).
+			if status == "reconnecting" {
+				return
+			}
 			writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			if status == "connected" {

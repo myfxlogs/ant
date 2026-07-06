@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/shopspring/decimal"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
@@ -13,46 +12,24 @@ import (
 	"anttrader/internal/model"
 	"anttrader/internal/mthub"
 	"anttrader/internal/repository"
-	"anttrader/internal/risksvc"
-	"anttrader/internal/service"
 )
 
 // buildOnOrderUpdate creates the OnOrderUpdate callback for the mdgateway pipeline.
-// It updates PG metrics, publishes profit/snapshot events, feeds platform aggregator,
-// and auto-writes closed orders to trade_records.
+// It publishes position snapshots (read-only display) and records closed trades.
+// Profit/equity DB writes belong to the profit pipeline (OnAccountProfit).
+// Risk calculation (feedPlatformAggregator) is decoupled — it subscribes to
+// PositionSnapshotBroker independently.
 func buildOnOrderUpdate(
 	log *zap.Logger,
-	accountSvc *service.AccountService,
-	accountBroker *mthub.AccountProfitBroker,
 	snapshotBroker *mthub.PositionSnapshotBroker,
 	tradeRecordRepo *repository.TradeRecordRepository,
-	platformAgg **risksvc.PlatformAggregator,
 ) func(accountID, userID string, o *mdtick.OrderUpdate) {
 	return func(accountID, userID string, o *mdtick.OrderUpdate) {
 		writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		userUID, err := uuid.Parse(userID)
-		if err != nil { log.Warn("OnOrderUpdate: invalid user UUID", zap.String("userID", userID), zap.Error(err)); return }
-		if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, o.Balance, o.Equity, o.Credit, o.Margin, o.FreeMargin, o.MarginLevel); err != nil {
-			log.Warn("OnOrderUpdate: pg update failed", zap.String("account", accountID), zap.Error(err))
-		}
-		publishProfitEvent(accountBroker, accountID, userID, o)
-		// Update in-memory summary cache for SSE SubscribeUserSummary.
-		accountSvc.UpdateSummaryCache(userID, accountID, o.Balance, o.Equity, "connected")
 		publishPositionSnapshot(snapshotBroker, accountID, userID, o)
-		feedPlatformAggregator(platformAgg, accountID, o)
 		writeClosedTradeRecord(log, tradeRecordRepo, writeCtx, accountID, o)
 	}
-}
-
-func publishProfitEvent(broker *mthub.AccountProfitBroker, accountID, userID string, o *mdtick.OrderUpdate) {
-	broker.Publish(&mthub.AccountProfitEvent{
-		AccountID: accountID, UserID: userID, Platform: o.Platform,
-		Balance: o.Balance, Credit: o.Credit, Equity: o.Equity,
-		Margin: o.Margin, FreeMargin: o.FreeMargin, MarginLevel: o.MarginLevel,
-		Profit: o.Profit, ProfitPercent: o.ProfitPercent, Status: "connected", Timestamp: time.Now(),
-		Positions: mapOrderPositions(o.Positions),
-	})
 }
 
 func publishPositionSnapshot(broker *mthub.PositionSnapshotBroker, accountID, userID string, o *mdtick.OrderUpdate) {
@@ -74,32 +51,14 @@ func publishPositionSnapshot(broker *mthub.PositionSnapshotBroker, accountID, us
 	broker.Publish(snapshot)
 }
 
-func feedPlatformAggregator(platformAgg **risksvc.PlatformAggregator, accountID string, o *mdtick.OrderUpdate) {
-	(*platformAgg).ClearAccount(accountID)
-	for _, pos := range o.Positions {
-		netVol := pos.Volume.InexactFloat64()
-		if pos.Type == "sell" { netVol = -netVol }
-		(*platformAgg).UpdatePosition(accountID, &risksvc.AggregatorPosition{
-			Canonical: pos.Symbol, NetVolume: netVol, Notional: pos.Volume.Mul(pos.CurrentPrice).Mul(decimal.NewFromInt(100000)).InexactFloat64(), Margin: 0,
-		})
-	}
-}
-
-func mapOrderPositions(positions []mdtick.OrderUpdatePosition) []mthub.AccountProfitPosition {
-	out := make([]mthub.AccountProfitPosition, 0, len(positions))
-	for _, pos := range positions {
-		out = append(out, mthub.AccountProfitPosition{
-			Ticket: pos.Ticket, Symbol: pos.Symbol, Profit: pos.Profit,
-			Volume: pos.Volume, CurrentPrice: pos.CurrentPrice,
-		})
-	}
-	return out
-}
-
 func writeClosedTradeRecord(log *zap.Logger, repo *repository.TradeRecordRepository, ctx context.Context, accountID string, o *mdtick.OrderUpdate) {
-	if !strings.EqualFold(o.UpdateType, "close") || o.UpdateCloseTime <= 0 { return }
+	if !strings.EqualFold(o.UpdateType, "close") || o.UpdateCloseTime <= 0 {
+		return
+	}
 	uid, err := uuid.Parse(accountID)
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 	rec := &model.TradeRecord{
 		AccountID: uid, Ticket: o.UpdateTicket, Symbol: o.UpdateSymbol, OrderType: o.UpdateOrderType,
 		Volume: o.UpdateVolume, OpenPrice: o.UpdateOpenPrice,
