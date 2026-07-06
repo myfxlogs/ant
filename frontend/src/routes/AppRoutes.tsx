@@ -15,6 +15,7 @@ const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
 const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
 const AccountDetail = lazy(() => import('@/pages/accounts/AccountDetail'));
 const BindAccount = lazy(() => import('@/pages/accounts/BindAccount'));
+const AccountReport = lazy(() => import('@/pages/accounts/AccountReport'));
 const StrategyScheduleLogsPage = lazy(() => import('@/pages/strategy/StrategyScheduleLogsPage'));
 const StrategyWorkspacePage = lazy(() => import('@/pages/strategy/StrategyWorkspacePage'));
 const LiveStrategyPage = lazy(() => import('@/pages/strategy/LiveStrategyPage'));
@@ -61,7 +62,7 @@ const mainRoutes = (
   <Route path="/" element={<PrivateRoute><MainLayout /></PrivateRoute>}>
     <Route index element={wrap(<Dashboard />)} />
     <Route path="accounts/:id" element={wrap(<AccountDetail />)} />
-    <Route path="accounts/:id/report" element={<Navigate to="/accounts/:id" replace />} />
+    <Route path="accounts/:id/report" element={wrap(<AccountReport />)} />
     <Route path="accounts/bind" element={wrap(<BindAccount />)} />
     <Route path="profile" element={wrap(<ProfilePage />)} />
     <Route path="wallet" element={wrap(<WalletPage />)} />
