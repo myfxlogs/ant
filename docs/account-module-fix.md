@@ -132,7 +132,9 @@ AccountDetail 保留：
 
 移除到策略模块：
 - 策略级回测分析 → 策略模块的 Analytics 页面（通过 `accountId` 参数查询）
-- AI 交易报告 → 删除独立路由 `/accounts/:id/report`
+
+**AI 交易报告（AccountReport）也是账号级分析**——它是 AI 对单账号跨时段交易成绩的自然语言
+总结，与权益曲线/交易统计属同一维度。保留在 AccountDetail。
 
 **前端：Dashboard 保持**
 
