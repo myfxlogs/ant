@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -33,7 +34,14 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 	defer tx.Rollback(ctx) // no-op after successful Commit
 
 	// 1. Insert into DB within the transaction.
-	id, err := s.svc.CreateAccountTx(ctx, tx, userID, r.Login, r.Password, r.MtType, r.BrokerCompany, r.BrokerServer, r.BrokerHost)
+	// Use only the first host for INSERT — the full comma-separated list
+	// may exceed VARCHAR(100). verifyAndUpdateAccount will update to the
+	// actual working host after trying all candidates.
+	firstHost := r.BrokerHost
+	if idx := strings.IndexByte(firstHost, ','); idx > 0 {
+		firstHost = firstHost[:idx]
+	}
+	id, err := s.svc.CreateAccountTx(ctx, tx, userID, r.Login, r.Password, r.MtType, r.BrokerCompany, r.BrokerServer, firstHost)
 	if err != nil {
 		if errors.Is(err, service.ErrAccountAlreadyBound) {
 			return nil, connect.NewError(connect.CodeAlreadyExists, err)
