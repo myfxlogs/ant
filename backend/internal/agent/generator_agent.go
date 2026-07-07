@@ -68,7 +68,7 @@ func (g *Generator) runAgentLoop(
 		streamChunk, toolStream,
 	)
 
-	raw, loopErr := loop.Run(ctx, sysPrompt, userPrompt, userID)
+	raw, loopErr := loop.RunWithHistory(ctx, sysPrompt, userPrompt, nil, userID) // history=nil until proto adds session_id
 	g.log.Info("generator: loop done", zap.Int("raw_len", len(raw)), zap.Bool("has_err", loopErr != nil))
 
 	// Extract code regardless of loopErr — the LLM may have generated valid code
