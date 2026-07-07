@@ -2,7 +2,6 @@ import { createClient } from '@connectrpc/connect';
 import { LogService } from '../gen/ant/v1/log_pb';
 import { transport } from './transport';
 import type { ConnectionLog as RpcConnectionLog } from '../gen/ant/v1/log_connection_pb';
-import type { ExecutionLog as RpcExecutionLog } from '../gen/ant/v1/log_execution_pb';
 import type { OrderHistoryRecord as RpcOrderHistoryRecord } from '../gen/ant/v1/log_order_pb';
 import type { OperationLog as RpcOperationLog } from '../gen/ant/v1/log_operation_pb';
 import type { ScheduleRunLog } from '../gen/ant/v1/log_schedule_pb';
@@ -24,30 +23,6 @@ export const logApi = {
       page: params.page || 1,
       pageSize: params.pageSize || 20,
       accountId: params.accountId || '',
-      status: params.status || '',
-      startDate: params.startDate || '',
-      endDate: params.endDate || '',
-    });
-    return {
-      logs: response.logs,
-      total: Number(response.total),
-    };
-  },
-
-    page?: number;
-    pageSize?: number;
-    accountId?: string;
-    scheduleId?: string;
-    symbol?: string;
-    status?: string;
-    startDate?: string;
-    endDate?: string;
-  }): Promise<{ logs: RpcExecutionLog[]; total: number }> => {
-      page: params.page || 1,
-      pageSize: params.pageSize || 20,
-      accountId: params.accountId || '',
-      scheduleId: params.scheduleId || '',
-      symbol: params.symbol || '',
       status: params.status || '',
       startDate: params.startDate || '',
       endDate: params.endDate || '',
