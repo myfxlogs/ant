@@ -71,6 +71,14 @@ func (g *Generator) runAgentLoop(
 			return streamOrAbort(chunk)
 		case "read_kline":
 			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "planning"})
+		case "run_backtest":
+			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "backtesting", Delta: tr.OutputJson})
+		case "edit_code":
+			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "editing", PythonSource: result.PythonSource})
+		case "read_current_code":
+			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "reading"})
+		case "update_plan":
+			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "planning", Delta: tr.OutputJson})
 		}
 		return nil
 	}
