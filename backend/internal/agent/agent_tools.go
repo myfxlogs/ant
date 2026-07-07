@@ -48,9 +48,12 @@ func (t *compilePythonTool) Run(_ context.Context, in connectai.ToolInput) conne
 	}
 }
 
-// buildPythonToolRegistry creates a ToolRegistry with the compile_python tool.
+// buildPythonToolRegistry creates a ToolRegistry with all agent tools.
 func buildPythonToolRegistry(result *generateState) *connectai.ToolRegistry {
 	reg := connectai.NewEmptyToolRegistry()
 	reg.AddPreTool(&compilePythonTool{result: result})
+	reg.AddPreTool(&runBacktestTool{result: result})
+	reg.AddPreTool(&readCurrentCodeTool{result: result})
+	reg.AddPreTool(&editCodeTool{result: result})
 	return reg
 }

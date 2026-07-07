@@ -208,6 +208,7 @@ func parseToolArguments(toolName, argsJSON string) ToolInput {
 	if err := json.Unmarshal([]byte(argsJSON), &args); err != nil {
 		return in
 	}
+	in.RawArgs = args // Full args for tools to access custom fields
 	if v, ok := args["symbol"].(string); ok {
 		in.Symbol = v
 	}

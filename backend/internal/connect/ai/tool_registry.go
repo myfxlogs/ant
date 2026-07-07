@@ -20,6 +20,7 @@ type ToolInput struct {
 	Symbol    string
 	Timeframe string
 	UserID    uuid.UUID
+	RawArgs   map[string]any // full LLM arguments — tools read what they need
 }
 
 // ToolOutput is the structured result returned by each tool.
