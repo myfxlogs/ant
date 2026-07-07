@@ -6,11 +6,11 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
+// TODO(Task B): add rpc GetAccountAuditLogs after protoc is available.
 service AdminAccountService {
   rpc ListAccountsAdmin(ListAccountsAdminRequest) returns (ListAccountsAdminResponse);
   rpc FreezeAccount(FreezeAccountRequest) returns (FreezeAccountResponse);
   rpc UnfreezeAccount(UnfreezeAccountRequest) returns (UnfreezeAccountResponse);
-  // TODO: add rpc GetAccountAuditLogs after protoc is available to regenerate
 }
 
 message AccountWithUser {
