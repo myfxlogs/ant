@@ -16,5 +16,4 @@ const agentSystemPrompt_JA = `あなたはPythonトレーディング戦略プ�
 1. 設計選択の簡単な説明
 2. マークダウンブロック内の完全なPythonコード。クラス名：MyStrategy。メソッド：on_bar。TODOやpassを使わない。
 3. [TOOL: compile_python]
-
-` + PythonSubsetRules
+`

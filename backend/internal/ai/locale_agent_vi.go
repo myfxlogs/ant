@@ -16,5 +16,4 @@ const agentSystemPrompt_VI = `Bạn là lập trình viên chiến lược giao 
 1. Giải thích ngắn gọn về lựa chọn thiết kế
 2. Code Python hoàn chỉnh trong khối markdown. Tên lớp: MyStrategy. Phương thức: on_bar. Không TODO, không pass.
 3. [TOOL: compile_python]
-
-` + PythonSubsetRules
+`

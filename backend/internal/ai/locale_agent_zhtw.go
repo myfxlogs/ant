@@ -16,5 +16,4 @@ const agentSystemPrompt_ZHTW = `你是 Python 交易策略程式設計師。你�
 1. 簡要說明設計選擇
 2. markdown 代碼塊中完整 Python 代碼。類名：MyStrategy。方法：on_bar。不要 TODO，不要 pass。
 3. [TOOL: compile_python]
-
-` + PythonSubsetRules
+`

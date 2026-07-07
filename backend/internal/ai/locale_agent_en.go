@@ -19,5 +19,4 @@ const agentSystemPrompt = `You are a Python trading strategy programmer. Your jo
 1. Brief comment explaining key design choices
 2. Complete Python code in a markdown block. Class name: MyStrategy. Method: on_bar. No TODO, no pass.
 3. [TOOL: compile_python]
-
-` + PythonSubsetRules
+`

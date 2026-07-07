@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 
+	"anttrader/internal/ai"
 	connectai "anttrader/internal/connect/ai"
 	systemai "anttrader/internal/service/systemai"
 	"anttrader/tools/mql2go"
@@ -20,7 +21,7 @@ func (t *compilePythonTool) Schema() systemai.ToolDefinition {
 		Type: "function",
 		Function: systemai.ToolDefFunction{
 			Name:        "compile_python",
-			Description: "编译当前的 Python 策略代码。代码必须是符合 Python 子集规范的完整策略（类名 MyStrategy，包含 on_bar 方法）。编译成功后返回覆盖度评分；编译失败返回具体错误信息。",
+			Description: "编译当前的 Python 策略代码。代码必须是符合 Python 子集规范的完整策略（类名 MyStrategy，包含 on_bar 方法）。编译成功后返回覆盖度评分；编译失败返回具体错误信息。\n\n" + ai.PythonSubsetRules,
 			Parameters: map[string]any{
 				"type":       "object",
 				"properties": map[string]any{},

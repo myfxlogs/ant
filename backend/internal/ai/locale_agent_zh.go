@@ -16,5 +16,4 @@ const agentSystemPrompt_ZH = `你是 Python 交易策略程序员。你的工作
 1. 简要说明设计选择
 2. markdown 代码块中完整 Python 代码。类名：MyStrategy。方法：on_bar。不要 TODO，不要 pass。
 3. [TOOL: compile_python]
-
-` + PythonSubsetRules
+`
