@@ -17,26 +17,30 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-// ── BrokerAdapter wrappers ──
+// ── BrokerAdapter wrapper ──
 
-// mt4Adapter wraps mt4.Gateway to implement oms.BrokerAdapter.
-type mt4Adapter struct{ gw *mt4.Gateway }
+// brokerAdapter wraps mthub.OrderExecutor (implemented by both mt4.Gateway and mt5.Gateway)
+// to implement oms.BrokerAdapter. Uses platform name for error message prefixes.
+type brokerAdapter struct {
+	gw       mthub.OrderExecutor
+	platform string
+}
 
-func (a *mt4Adapter) Submit(ctx context.Context, req *oms.OrderRequest) (*oms.BrokerResp, error) {
+func (a *brokerAdapter) Submit(ctx context.Context, req *oms.OrderRequest) (*oms.BrokerResp, error) {
 	side := mthub.SideBuy
 	if req.Side == "sell" {
 		side = mthub.SideSell
 	}
 	mreq := &mthub.OrderRequest{
-		Canonical: req.Symbol,
-		AccountID: req.AccountID,
-		Side:      side,
-		OrderType: mthub.OrderMarket,
-		Volume:    decimal.NewFromFloat(req.Volume),
-		Price:     decimal.NewFromFloat(req.Price),
-		StopLoss:  decimal.NewFromFloat(req.StopLoss),
+		Canonical:  req.Symbol,
+		AccountID:  req.AccountID,
+		Side:       side,
+		OrderType:  mthub.OrderMarket,
+		Volume:     decimal.NewFromFloat(req.Volume),
+		Price:      decimal.NewFromFloat(req.Price),
+		StopLoss:   decimal.NewFromFloat(req.StopLoss),
 		TakeProfit: decimal.NewFromFloat(req.TakeProfit),
-		Comment:   req.Comment,
+		Comment:    req.Comment,
 	}
 	ticket, err := a.gw.PlaceOrder(ctx, mreq)
 	if err != nil {
@@ -45,23 +49,23 @@ func (a *mt4Adapter) Submit(ctx context.Context, req *oms.OrderRequest) (*oms.Br
 	return &oms.BrokerResp{Ticket: strconv.FormatInt(ticket, 10), State: oms.StateSubmitted}, nil
 }
 
-func (a *mt4Adapter) Cancel(ctx context.Context, ticket string) error {
+func (a *brokerAdapter) Cancel(ctx context.Context, ticket string) error {
 	tid, err := strconv.ParseInt(ticket, 10, 64)
 	if err != nil {
-		return fmt.Errorf("mt4 cancel: invalid ticket %q: %w", ticket, err)
+		return fmt.Errorf("%s cancel: invalid ticket %q: %w", a.platform, ticket, err)
 	}
 	return a.gw.CloseOrder(ctx, tid, decimal.Zero)
 }
 
-func (a *mt4Adapter) Modify(ctx context.Context, ticket string, price, stopPrice float64) error {
+func (a *brokerAdapter) Modify(ctx context.Context, ticket string, price, stopPrice float64) error {
 	tid, err := strconv.ParseInt(ticket, 10, 64)
 	if err != nil {
-		return fmt.Errorf("mt4 modify: invalid ticket %q: %w", ticket, err)
+		return fmt.Errorf("%s modify: invalid ticket %q: %w", a.platform, ticket, err)
 	}
 	return a.gw.ModifyOrder(ctx, tid, decimal.NewFromFloat(stopPrice), decimal.Zero, decimal.NewFromFloat(price))
 }
 
-func (a *mt4Adapter) Query(ctx context.Context, ticket string) (*oms.Order, error) {
+func (a *brokerAdapter) Query(ctx context.Context, ticket string) (*oms.Order, error) {
 	orders, err := a.gw.FetchOpenedOrders(ctx)
 	if err != nil {
 		return nil, err
@@ -69,76 +73,15 @@ func (a *mt4Adapter) Query(ctx context.Context, ticket string) (*oms.Order, erro
 	for _, o := range orders {
 		if strconv.FormatInt(o.Ticket, 10) == ticket {
 			return &oms.Order{
-				Ticket:  ticket,
-				Symbol:  o.SymbolRaw,
-				Volume:  o.Volume.InexactFloat64(),
-				Price:   o.OpenPrice.InexactFloat64(),
-				State:   oms.StateWorking,
+				Ticket: ticket,
+				Symbol: o.SymbolRaw,
+				Volume: o.Volume.InexactFloat64(),
+				Price:  o.OpenPrice.InexactFloat64(),
+				State:  oms.StateWorking,
 			}, nil
 		}
 	}
-	return nil, fmt.Errorf("mt4 query: ticket %s not found", ticket)
-}
-
-// mt5Adapter wraps mt5.Gateway to implement oms.BrokerAdapter.
-type mt5Adapter struct{ gw *mt5.Gateway }
-
-func (a *mt5Adapter) Submit(ctx context.Context, req *oms.OrderRequest) (*oms.BrokerResp, error) {
-	side := mthub.SideBuy
-	if req.Side == "sell" {
-		side = mthub.SideSell
-	}
-	mreq := &mthub.OrderRequest{
-		Canonical: req.Symbol,
-		AccountID: req.AccountID,
-		Side:      side,
-		OrderType: mthub.OrderMarket,
-		Volume:    decimal.NewFromFloat(req.Volume),
-		Price:     decimal.NewFromFloat(req.Price),
-		StopLoss:  decimal.NewFromFloat(req.StopLoss),
-		TakeProfit: decimal.NewFromFloat(req.TakeProfit),
-		Comment:   req.Comment,
-	}
-	ticket, err := a.gw.PlaceOrder(ctx, mreq)
-	if err != nil {
-		return &oms.BrokerResp{ErrorMsg: err.Error(), ErrorCode: -1}, err
-	}
-	return &oms.BrokerResp{Ticket: strconv.FormatInt(ticket, 10), State: oms.StateSubmitted}, nil
-}
-
-func (a *mt5Adapter) Cancel(ctx context.Context, ticket string) error {
-	tid, err := strconv.ParseInt(ticket, 10, 64)
-	if err != nil {
-		return fmt.Errorf("mt5 cancel: invalid ticket %q: %w", ticket, err)
-	}
-	return a.gw.CloseOrder(ctx, tid, decimal.Zero)
-}
-
-func (a *mt5Adapter) Modify(ctx context.Context, ticket string, price, stopPrice float64) error {
-	tid, err := strconv.ParseInt(ticket, 10, 64)
-	if err != nil {
-		return fmt.Errorf("mt5 modify: invalid ticket %q: %w", ticket, err)
-	}
-	return a.gw.ModifyOrder(ctx, tid, decimal.NewFromFloat(stopPrice), decimal.Zero, decimal.NewFromFloat(price))
-}
-
-func (a *mt5Adapter) Query(ctx context.Context, ticket string) (*oms.Order, error) {
-	orders, err := a.gw.FetchOpenedOrders(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, o := range orders {
-		if strconv.FormatInt(o.Ticket, 10) == ticket {
-			return &oms.Order{
-				Ticket:  ticket,
-				Symbol:  o.SymbolRaw,
-				Volume:  o.Volume.InexactFloat64(),
-				Price:   o.OpenPrice.InexactFloat64(),
-				State:   oms.StateWorking,
-			}, nil
-		}
-	}
-	return nil, fmt.Errorf("mt5 query: ticket %s not found", ticket)
+	return nil, fmt.Errorf("%s query: ticket %s not found", a.platform, ticket)
 }
 
 // ── brokerExecutor adapts oms.BrokerAdapter.Submit to mthub.BrokerExecutor ──
@@ -235,12 +178,12 @@ var _ mthub.BrokerRegistry = (*BrokerRegistry)(nil)
 // gateways should already be connected before registration.
 func RegisterDefaults(reg *BrokerRegistry, mt4gw *mt4.Gateway, mt5gw *mt5.Gateway) error {
 	if mt4gw != nil {
-		if err := reg.Register("mt4", "mt4", &mt4Adapter{gw: mt4gw}); err != nil {
+		if err := reg.Register("mt4", "mt4", &brokerAdapter{gw: mt4gw, platform: "mt4"}); err != nil {
 			return err
 		}
 	}
 	if mt5gw != nil {
-		if err := reg.Register("mt5", "mt5", &mt5Adapter{gw: mt5gw}); err != nil {
+		if err := reg.Register("mt5", "mt5", &brokerAdapter{gw: mt5gw, platform: "mt5"}); err != nil {
 			return err
 		}
 	}

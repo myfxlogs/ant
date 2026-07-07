@@ -6,7 +6,13 @@ import (
 	"context"
 
 	"github.com/shopspring/decimal"
+
+	"anttrader/internal/clock"
 )
+
+// Clk is the shared package-level clock for all mdgateway adapters.
+// mt4 and mt5 reference this instead of maintaining duplicate clock.go files.
+var Clk clock.Clock = clock.NewRealClock()
 
 // TickHandler is the callback that receives ticks from a gateway adapter.
 type TickHandler func(t *Tick)
