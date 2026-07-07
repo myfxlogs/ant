@@ -73,10 +73,12 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 
 	for round := 0; round < a.maxRounds; round++ {
 		var roundBuf strings.Builder
+		var reasoningBuf strings.Builder
 		var toolCalls []systemai.ToolCall // accumulated from stream chunks
 
 		err := a.llmStream(ctx, messages, a.toolDefs, func(chunk systemai.ChatStreamChunk) error {
 			roundBuf.WriteString(chunk.Content)
+			reasoningBuf.WriteString(chunk.Reasoning)
 			// Collect any tool calls from the final chunk.
 			if len(chunk.ToolCalls) > 0 {
 				for _, stc := range chunk.ToolCalls {
@@ -97,6 +99,10 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		}
 
 		roundText := strings.TrimSpace(roundBuf.String())
+		reasoningText := strings.TrimSpace(reasoningBuf.String())
+		if roundText == "" && reasoningText != "" {
+			roundText = reasoningText
+		}
 		if roundText == "" && len(toolCalls) == 0 {
 			return "", fmt.Errorf("agent: LLM returned empty response on round %d", round+1)
 		}

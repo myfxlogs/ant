@@ -17,9 +17,10 @@ const secretCacheTTL = 30 * time.Minute
 // ChatMessage is a single message in a chat completion request.
 // Supports both text-only messages and tool-calling messages (OpenAI tool_use protocol).
 type ChatMessage struct {
-	Role       string     `json:"role"`
-	Content    string     `json:"content,omitempty"`
-	ToolCalls  []ToolCall `json:"tool_calls,omitempty"`  // assistant messages with tool calls
+	Role             string     `json:"role"`
+	Content          string     `json:"content,omitempty"`
+	ReasoningContent string     `json:"reasoning_content,omitempty"`
+	ToolCalls        []ToolCall `json:"tool_calls,omitempty"`  // assistant messages with tool calls
 	ToolCallID string     `json:"tool_call_id,omitempty"` // tool result messages
 	Name       string     `json:"name,omitempty"`         // tool result messages (tool name)
 }
@@ -83,6 +84,7 @@ type ChatUsage struct {
 // ChatStreamChunk represents a single delta from a streaming chat completion.
 type ChatStreamChunk struct {
 	Content      string
+	Reasoning    string
 	Done         bool
 	FinishReason string            // "stop", "tool_calls", "length", etc.
 	ToolCalls    []StreamToolCall  // accumulated tool calls from streaming deltas

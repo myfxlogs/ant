@@ -116,6 +116,8 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 	// Accumulate streaming tool_call deltas keyed by index.
 	toolCallAcc := make(map[int]*StreamToolCall)
 	totalContentLen := 0
+	totalReasoningLen := 0
+	lastFinishReason := ""
 
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -131,6 +133,7 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 			Choices []struct {
 				Delta struct {
 					Content   string           `json:"content"`
+						ReasoningContent string           `json:"reasoning_content"`
 					ToolCalls []StreamToolCall `json:"tool_calls"`
 				} `json:"delta"`
 				FinishReason *string `json:"finish_reason"`
@@ -149,6 +152,9 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 		c := chunk.Choices[0]
 		if c.Delta.Content != "" {
 			totalContentLen += len(c.Delta.Content)
+		}
+		if c.Delta.ReasoningContent != "" {
+			totalReasoningLen += len(c.Delta.ReasoningContent)
 		}
 
 		// Accumulate tool_call deltas (OpenAI streams them incrementally).
@@ -199,6 +205,7 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 		}
 
 		if finishReason != "" {
+			lastFinishReason = finishReason
 			break
 		}
 	}
@@ -206,8 +213,8 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 		return fmt.Errorf("read stream: %w", err)
 	}
 	// Empty response from provider: trigger failover to next provider.
-	if totalContentLen == 0 && len(toolCallAcc) == 0 {
-		return &failoverErr{msg: fmt.Sprintf("[%s] chat stream returned empty response", p.providerID), transient: true}
+	if totalContentLen == 0 && totalReasoningLen == 0 && len(toolCallAcc) == 0 {
+		return &failoverErr{msg: fmt.Sprintf("[%s] chat stream empty (finish_reason=%q)", p.providerID, lastFinishReason), transient: true}
 	}
 	// Record token usage from streaming response.
 	if s.tokenRecorder != nil && streamUsage != nil {
