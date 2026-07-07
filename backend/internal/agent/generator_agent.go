@@ -14,27 +14,24 @@ import (
 )
 
 // runAgentLoop is the single unified entry point for all Generator requests.
-// Pre-checks workspace prerequisites before delegating to AgentLoop.
+// It builds the full tool registry, uses the unified Python agent prompt,
+// and delegates to AgentLoop. No pre-processing, no gates, no routing.
 func (g *Generator) runAgentLoop(
 	ctx context.Context,
 	userID uuid.UUID,
 	msg *antv1.AgentGenerateStrategyRequest,
 	streamOrAbort func(*antv1.AgentGenerateStrategyChunk) error,
 ) error {
-	// ── Pre-flight gate: workspace must have symbol + timeframe ──
-	if msg.Symbol == "" || msg.Timeframe == "" {
-		return streamOrAbort(&antv1.AgentGenerateStrategyChunk{
-			Phase: "error",
-			Delta: "请先在 workspace 中选择交易品种（Symbol）和时间周期（Timeframe），再生成策略代码。",
-		})
-	}
-
 	result := &generateState{}
 
-	// ── Generator tool registry: compile_python only ──
-	// Strategy code generation does not need market data or backtest logs.
-	// Those tools belong to the Chat agent, not the Generator.
+	// ── Full tool registry ──
 	registry := buildPythonToolRegistry(result)
+	if g.mkt != nil {
+		registry.AddPreTool(connectai.NewReadKlineTool(g.mkt))
+	}
+	if g.btRepo != nil {
+		registry.AddPreTool(connectai.NewReadBacktestLogTool(g.btRepo))
+	}
 	if g.dbExec != nil && g.dbQuery != nil {
 		registry.WireMemoryDB(g.dbExec, g.dbQuery)
 	}
