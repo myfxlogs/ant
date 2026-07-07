@@ -1,6 +1,7 @@
 package risksvc
 
 import (
+	"sync"
 	"context"
 	"fmt"
 	"time"
@@ -22,6 +23,7 @@ func (r *MaxPosition) Check(_ context.Context, req *CheckRequest) *CheckResult {
 // ── Rule 2: DailyLoss — reject if daily P&L exceeds limit ───────────
 
 type DailyLoss struct {
+	mu        sync.Mutex
 	Limit     float64
 	DayStart  time.Time
 	DailyPL   float64
@@ -29,6 +31,8 @@ type DailyLoss struct {
 
 func (r *DailyLoss) Name() string { return "daily_loss" }
 func (r *DailyLoss) Check(_ context.Context, req *CheckRequest) *CheckResult {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if time.Since(r.DayStart) > 24*time.Hour {
 		r.DayStart = Clk.Now()
 		r.DailyPL = 0
@@ -43,6 +47,7 @@ func (r *DailyLoss) Check(_ context.Context, req *CheckRequest) *CheckResult {
 // ── Rule 3: Drawdown — reject if equity drawdown exceeds pct ─────────
 
 type Drawdown struct {
+	mu          sync.Mutex
 	MaxPct      float64
 	PeakEquity  float64
 }
@@ -50,6 +55,8 @@ type Drawdown struct {
 func (r *Drawdown) Name() string { return "drawdown" }
 
 func (r *Drawdown) Check(_ context.Context, req *CheckRequest) *CheckResult {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if req.Equity > r.PeakEquity {
 		r.PeakEquity = req.Equity
 	}

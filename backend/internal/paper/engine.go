@@ -87,9 +87,9 @@ func (e *PaperEngine) PlacePaperOrder(ctx context.Context, accountID, symbol, si
 	// Fetch the specific paper account for balance update.
 	target, err := e.repo.GetAccount(ctx, accountID)
 	if err != nil || target == nil {
-		e.log.Warn("PaperEngine: cannot fetch account for balance update",
+		e.log.Error("PaperEngine: cannot fetch account for balance update",
 			zap.String("accountID", accountID), zap.Error(err))
-		return nil
+		return fmt.Errorf("paper: fetch account %s: %w", accountID, err)
 	}
 
 	marginPct := decimal.NewFromFloat(0.01)

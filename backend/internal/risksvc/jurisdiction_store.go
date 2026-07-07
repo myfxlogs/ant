@@ -80,7 +80,7 @@ func (s *PgJurisdictionStore) IsDisclaimerAccepted(ctx context.Context, userID s
 		FROM user_jurisdiction WHERE user_id = $1
 	`, userID).Scan(&accepted)
 	if err != nil {
-		return false, nil // no row = not accepted
+		return false, fmt.Errorf("check questionnaire: %w", err) // no row = not accepted
 	}
 	return accepted, nil
 }
@@ -104,7 +104,7 @@ func (s *PgJurisdictionStore) IsQuestionnaireCompleted(ctx context.Context, user
 		FROM user_jurisdiction WHERE user_id = $1
 	`, userID).Scan(&done)
 	if err != nil {
-		return false, nil
+		return false, fmt.Errorf("check questionnaire: %w", err)
 	}
 	return done, nil
 }
@@ -140,7 +140,7 @@ func (s *PgJurisdictionStore) AcceptDisclaimerAt(ctx context.Context, userID str
 		SELECT disclaimer_accepted_at FROM user_jurisdiction WHERE user_id = $1
 	`, userID).Scan(&t)
 	if err != nil {
-		return nil, nil
+		return nil, fmt.Errorf("questionnaire completed: %w", err)
 	}
 	return t, nil
 }
@@ -152,7 +152,7 @@ func (s *PgJurisdictionStore) QuestionnaireCompletedAt(ctx context.Context, user
 		SELECT questionnaire_completed_at FROM user_jurisdiction WHERE user_id = $1
 	`, userID).Scan(&t)
 	if err != nil {
-		return nil, nil
+		return nil, fmt.Errorf("questionnaire completed: %w", err)
 	}
 	return t, nil
 }

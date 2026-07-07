@@ -97,8 +97,9 @@ func (a *MTBrokerAdapter) Query(ctx context.Context, ticket string) (*Order, err
 				Symbol:    o.Canonical,
 				Volume:    o.Volume.InexactFloat64(),
 				Price:     o.OpenPrice.InexactFloat64(),
-				StopLoss:  decimal.Zero.InexactFloat64(),
-				State:     mtStateToOMS(o.State),
+				StopLoss:  0,  // OrderRecord lacks SL/TP; add to DTO
+				TakeProfit: 0,
+		State:     mtStateToOMS(o.State),
 				AccountID: o.AccountID,
 			}, nil
 		}

@@ -181,12 +181,8 @@ func TestPlacePaperOrder_AccountNotFound(t *testing.T) {
 
 	err := engine.PlacePaperOrder(ctx, "nonexistent", "EURUSD", "buy",
 		decimal.NewFromFloat(0.1), decimal.NewFromFloat(1.1000), decimal.NewFromFloat(1.1005))
-	if err != nil {
-		t.Fatalf("expected no error (graceful), got %v", err)
-	}
-	// Order is still created even if account not found.
-	if len(repo.orders) != 1 {
-		t.Fatalf("order should be created even without account, got %d", len(repo.orders))
+	if err == nil {
+		t.Fatal("expected error for nonexistent account, got nil")
 	}
 }
 
