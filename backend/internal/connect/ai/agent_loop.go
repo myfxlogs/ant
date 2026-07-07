@@ -97,6 +97,10 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		}
 
 		roundText := strings.TrimSpace(roundBuf.String())
+		if roundText == "" && len(toolCalls) == 0 {
+			// LLM returned empty — might be confused prompt or API issue
+			return "", fmt.Errorf("agent: LLM returned empty response on round 1")
+		}
 
 		// Stream text content to frontend (non-tool-call text).
 		if roundText != "" && a.streamChunk != nil {
