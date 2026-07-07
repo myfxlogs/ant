@@ -16,7 +16,7 @@ import (
 // SetStatus updates the account_status column and invalidates summary cache on disconnect.
 func (s *AccountService) SetStatus(ctx context.Context, userID uuid.UUID, id string, status AccountStatus) error {
 	tag, err := s.db.Exec(ctx,
-		"UPDATE mt_accounts SET account_status = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $1::uuid AND user_id = $2",
+		"UPDATE mt_accounts SET account_status = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL",
 		id, userID, string(status))
 	if err != nil {
 		return fmt.Errorf("service: set status: %w", err)
@@ -34,7 +34,7 @@ func (s *AccountService) SetStatus(ctx context.Context, userID uuid.UUID, id str
 // (for system callbacks where userID is not available).
 func (s *AccountService) DisconnectAccountByID(ctx context.Context, id string) error {
 	_, err := s.db.Exec(ctx,
-		"UPDATE mt_accounts SET account_status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1::uuid",
+		"UPDATE mt_accounts SET account_status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1::uuid AND deleted_at IS NULL",
 		id, string(StatusDisconnected))
 	if err != nil {
 		return fmt.Errorf("service: disconnect account by id: %w", err)

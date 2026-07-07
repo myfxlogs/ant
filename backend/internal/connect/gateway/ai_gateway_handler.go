@@ -7,6 +7,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -278,7 +279,15 @@ func (s *AIGatewayServer) RecordTokenUsage(
 		if err != nil {
 			return fmt.Errorf("get wallet: %w", err)
 		}
-		if w.Balance < cost {
+		bal, err := decimal.NewFromString(w.Balance)
+		if err != nil {
+			return fmt.Errorf("parse wallet balance: %w", err)
+		}
+		costD, err := decimal.NewFromString(cost)
+		if err != nil {
+			return fmt.Errorf("parse cost: %w", err)
+		}
+		if bal.LessThan(costD) {
 			return &service.InsufficientBalanceError{Balance: w.Balance, Cost: cost}
 		}
 		desc := fmt.Sprintf("AI %s (%s): %d+%d tokens", feature, modelName, inputTokens, outputTokens)

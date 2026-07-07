@@ -181,7 +181,7 @@ func (s *AccountService) UpdateAccount(ctx context.Context, userID uuid.UUID, id
 			broker_server  = COALESCE(NULLIF($4, ''), broker_server),
 			broker_host    = COALESCE(NULLIF($5, ''), broker_host),
 			updated_at     = CURRENT_TIMESTAMP
-		WHERE id = $1::uuid AND user_id = $2
+		WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL AND deleted_at IS NULL
 	`, id, userID, brokerCompany, brokerServer, brokerHost)
 	if err != nil {
 		return fmt.Errorf("service: update account: %w", err)
@@ -195,7 +195,7 @@ func (s *AccountService) UpdateAccount(ctx context.Context, userID uuid.UUID, id
 // DeleteAccount soft-deletes an MT account by setting deleted_at.
 func (s *AccountService) DeleteAccount(ctx context.Context, userID uuid.UUID, id string) error {
 	tag, err := s.db.Exec(ctx,
-		`UPDATE mt_accounts SET deleted_at = NOW(), account_status = 'disconnected' WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL`,
+		`UPDATE mt_accounts SET deleted_at = NOW(), account_status = 'disconnected' WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL AND deleted_at IS NULL`,
 		id, userID)
 	if err != nil {
 		return fmt.Errorf("service: delete account: %w", err)
@@ -210,7 +210,7 @@ func (s *AccountService) DeleteAccount(ctx context.Context, userID uuid.UUID, id
 // RestoreAccount restores a soft-deleted account.
 func (s *AccountService) RestoreAccount(ctx context.Context, userID uuid.UUID, id string) error {
 	tag, err := s.db.Exec(ctx,
-		`UPDATE mt_accounts SET deleted_at = NULL, account_status = 'disconnected' WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NOT NULL`,
+		`UPDATE mt_accounts SET deleted_at = NULL, account_status = 'disconnected' WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL AND deleted_at IS NOT NULL`,
 		id, userID)
 	if err != nil {
 		return fmt.Errorf("service: restore account: %w", err)
@@ -249,7 +249,7 @@ func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, use
 			balance = $3, equity = $4, credit = $5, margin = $6,
 			free_margin = $7, leverage = $8, currency = $9,
 			is_investor = $10, updated_at = CURRENT_TIMESTAMP
-		WHERE id = $1::uuid AND user_id = $2
+		WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL
 	`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency, isInvestor)
 	if err != nil {
 		return fmt.Errorf("service: update account info: %w", err)
@@ -264,7 +264,7 @@ func (s *AccountService) UpdateAccountInfo(ctx context.Context, userID uuid.UUID
 			balance = $3, equity = $4, credit = $5, margin = $6,
 			free_margin = $7, leverage = $8, currency = $9,
 			updated_at = CURRENT_TIMESTAMP
-		WHERE id = $1::uuid AND user_id = $2
+		WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL
 	`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency)
 	if err != nil {
 		return fmt.Errorf("service: update account info: %w", err)
@@ -315,10 +315,12 @@ func (s *AccountService) UpdateAccountMetrics(ctx context.Context, userID uuid.U
 }
 
 // UpdateBrokerThresholds updates broker margin_call/stop_out thresholds on an account.
+// This is a system callback (called from the gateway pipeline where only accountID
+// is available). Do not expose via ConnectRPC without adding a user_id check.
 func (s *AccountService) UpdateBrokerThresholds(ctx context.Context, id string, marginCallPct, stopOutPct float64) error {
 	_, err := s.db.Exec(ctx,
 		`UPDATE mt_accounts SET broker_margin_call_pct=$1, broker_stop_out_pct=$2,
-		 updated_at=CURRENT_TIMESTAMP WHERE id=$3`, marginCallPct, stopOutPct, id)
+		 updated_at=CURRENT_TIMESTAMP WHERE id=$3 AND deleted_at IS NULL`, marginCallPct, stopOutPct, id)
 	if err != nil {
 		return fmt.Errorf("service: update broker thresholds: %w", err)
 	}
