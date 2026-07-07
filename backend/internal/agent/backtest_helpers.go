@@ -39,7 +39,7 @@ func runVMBacktest(
 		Leverage:       leverage,
 		Commission:     commission,
 		Slippage:       slippage,
-		SwapRate:       decimal.NewFromFloat(0.00001),
+		SwapRate:       decimal.RequireFromString("0.00001"),
 		StrictMode:     cfg.StrictMode,
 		Params:         params,
 	}
@@ -71,7 +71,7 @@ func buildBacktestResultProto(r *backtest.Result) *antv1.AgentBacktestResult {
 		resp.TotalTrades = r.Metrics.TotalTrades
 		resp.WinningTrades = r.Metrics.WinningTrades
 		resp.LosingTrades = r.Metrics.LosingTrades
-		totalPnl := r.Config.InitialCapital.Mul(decimal.NewFromFloat(r.Metrics.TotalReturn))
+		totalPnl := r.Config.InitialCapital.Mul(decimal.NewFromFloat(r.Metrics.TotalReturn)) // float64 boundary from backtest VM — fix upstream
 		resp.TotalPnlAbsolute = totalPnl.String()
 	}
 	for _, ep := range r.Equity {
