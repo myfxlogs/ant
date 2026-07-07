@@ -128,13 +128,19 @@ func (s *Service) getCachedSecret(ctx context.Context, userID uuid.UUID, provide
 	return secret, nil
 }
 
+const defaultMaxTokens = 8192
+
 // doChatRequest builds the HTTP request body and creates an authenticated request.
 // tools may be nil when the caller does not need tool calling.
-func doChatRequest(model string, messages []ChatMessage, tools []ToolDefinition, stream bool, endpoint, secret string) (*http.Request, error) {
+// maxTokens 0 means use defaultMaxTokens.
+func doChatRequest(model string, messages []ChatMessage, tools []ToolDefinition, stream bool, endpoint, secret string, maxTokens int) (*http.Request, error) {
+	if maxTokens <= 0 {
+		maxTokens = defaultMaxTokens
+	}
 	reqBody := ChatCompletionRequest{
 		Model:       model,
 		Messages:    messages,
-		MaxTokens:   8192,
+		MaxTokens:   maxTokens,
 		Temperature: 0.3,
 		Stream:      stream,
 		Tools:       tools,
@@ -199,7 +205,7 @@ func (s *Service) ChatCompletionWithUsage(
 
 	var lastErr error
 	for _, p := range providers {
-		result, usage, err := s.tryChatCompletion(ctx, p, messages)
+		result, _, usage, err := s.tryChatCompletion(ctx, p, messages, nil)
 		if err == nil {
 				// Bill before returning — user must pay to receive the result.
 				if s.postCallBiller != nil && usage != nil {
@@ -223,11 +229,11 @@ func (s *Service) ChatCompletionWithUsage(
 // tryChatCompletion attempts a single chat completion against one provider.
 // Retries once on transient network errors AND once on transient HTTP statuses
 // (429/5xx) before giving up — so a single-provider user isn't immediately failed.
-func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, messages []ChatMessage) (string, *ChatUsage, error) {
+func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition) (string, []ToolCall, *ChatUsage, error) {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
-	httpReq, err := doChatRequest(p.model, messages, nil, false, endpoint, p.secret)
+	httpReq, err := doChatRequest(p.model, messages, tools, false, endpoint, p.secret, p.maxTokens)
 	if err != nil {
-		return "", nil, err
+			return "", nil, nil, err
 	}
 	httpReq = httpReq.WithContext(ctx)
 	client := &http.Client{Timeout: chatTimeout}
@@ -243,7 +249,7 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 				if isTransientChatErr(doErr) {
 					s.recordProviderFailure(ctx, p.userID, p.providerID)
 				}
-				return "", nil, &failoverErr{msg: fmt.Sprintf("chat completion http: %v", doErr), transient: isTransientChatErr(doErr)}
+					return "", nil, nil, &failoverErr{msg: fmt.Sprintf("chat completion http: %v", doErr), transient: isTransientChatErr(doErr)}
 			}
 			continue
 		}
@@ -253,14 +259,14 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 		if resp.StatusCode == http.StatusOK {
 			var cr ChatCompletionResponse
 			if err := json.Unmarshal(bodyBytes, &cr); err != nil {
-				return "", nil, fmt.Errorf("decode chat response: %w", err)
+					return "", nil, nil, fmt.Errorf("decode chat response: %w", err)
 			}
 			if cr.Error != nil {
 				s.recordProviderFailure(ctx, p.userID, p.providerID)
-				return "", nil, &failoverErr{msg: fmt.Sprintf("chat completion api error: %s", cr.Error.Message), transient: true}
+					return "", nil, nil, &failoverErr{msg: fmt.Sprintf("chat completion api error: %s", cr.Error.Message), transient: true}
 			}
 			if len(cr.Choices) == 0 {
-				return "", nil, fmt.Errorf("chat completion: empty choices")
+				return "", nil, nil, fmt.Errorf("chat completion: empty choices")
 			}
 			s.recordProviderSuccess(ctx, p.userID, p.providerID)
 			if s.tokenRecorder != nil && cr.Usage != nil {
@@ -273,7 +279,7 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 					Feature: feature, InputTokens: cr.Usage.PromptTokens, OutputTokens: cr.Usage.CompletionTokens,
 				})
 			}
-			return strings.TrimSpace(cr.Choices[0].Message.Content), cr.Usage, nil
+			return strings.TrimSpace(cr.Choices[0].Message.Content), cr.Choices[0].Message.ToolCalls, cr.Usage, nil
 		}
 
 		// Non-2xx: parse error, decide whether to retry or fail.
@@ -292,11 +298,11 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 			if transient {
 				s.recordProviderFailure(ctx, p.userID, p.providerID)
 			}
-			return "", nil, &failoverErr{msg: msg, transient: transient}
+			return "", nil, nil, &failoverErr{msg: msg, transient: transient}
 		}
 		// Transient status — retry after backoff.
 	}
-	return "", nil, fmt.Errorf("chat completion: exhausted retries")
+	return "", nil, nil, fmt.Errorf("chat completion: exhausted retries")
 }
 
 func isTransientChatErr(err error) bool {

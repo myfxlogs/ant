@@ -73,7 +73,7 @@ func (s *Service) chatCompletionStream(
 
 func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition, onChunk func(chunk ChatStreamChunk) error) error {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
-	httpReq, err := doChatRequest(p.model, messages, tools, true, endpoint, p.secret)
+	httpReq, err := doChatRequest(p.model, messages, tools, true, endpoint, p.secret, p.maxTokens)
 	if err != nil {
 		return err
 	}
@@ -227,12 +227,24 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 // streaming disabled, then delivers the full content as a single chunk.
 // Used when the provider returns 400 "streaming not supported".
 func (s *Service) fallbackNonStream(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition, onChunk func(chunk ChatStreamChunk) error) error {
-	result, usage, err := s.tryChatCompletion(ctx, p, messages)
+	result, toolCalls, usage, err := s.tryChatCompletion(ctx, p, messages, tools)
 	if err != nil {
 		return err
 	}
+	// Convert non-streaming ToolCalls to StreamToolCall format for the chunk.
+	var streamToolCalls []StreamToolCall
+	for _, tc := range toolCalls {
+		stc := StreamToolCall{ID: tc.ID, Type: tc.Type}
+		stc.Function.Name = tc.Function.Name
+		stc.Function.Arguments = tc.Function.Arguments
+		streamToolCalls = append(streamToolCalls, stc)
+	}
+	finishReason := "stop"
+	if len(streamToolCalls) > 0 {
+		finishReason = "tool_calls"
+	}
 	// Deliver as a single chunk (frontend stream consumers handle this).
-	if err := onChunk(ChatStreamChunk{Content: result, Done: true, FinishReason: "stop"}); err != nil {
+	if err := onChunk(ChatStreamChunk{Content: result, Done: true, FinishReason: finishReason, ToolCalls: streamToolCalls}); err != nil {
 		return err
 	}
 	// Record token usage from the non-streaming fallback.

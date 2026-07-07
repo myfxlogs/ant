@@ -104,7 +104,7 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
 
               {turn.phase === 'done' && (
                 <div style={{ marginBottom: 6, fontSize: 11, color: 'var(--ant-color-text-tertiary)' }}>
-                  {(turn.compileError || turn.backtestError) && !turn.metrics ? (
+                  {(turn.error || turn.compileError || turn.backtestError) && !turn.metrics ? (
                     <span style={{ color: 'var(--ant-color-error)' }}>✕ {t('strategy.gen.failed', 'Failed')}</span>
                   ) : (
                     <span style={{ color: 'var(--ant-color-success)' }}>✓ {t('strategy.gen.done', 'Done')}</span>

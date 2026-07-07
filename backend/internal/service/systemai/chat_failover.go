@@ -213,6 +213,7 @@ type chatProvider struct {
 	model      string
 	baseURL    string
 	secret     string
+	maxTokens  int // from DB config; 0 = use default
 }
 
 // resolveAllChatProviders returns all enabled providers with valid secrets,
@@ -258,6 +259,7 @@ func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID)
 		cp := chatProvider{
 			userID: userID, providerID: row.ProviderID,
 			model: m, baseURL: base, secret: sec,
+			maxTokens: row.MaxTokens,
 		}
 		seenPID[row.ProviderID] = true
 		if row.ProviderID == primaryPID {
@@ -294,6 +296,7 @@ func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID)
 				cp := chatProvider{
 					userID: userID, providerID: sp.ProviderID,
 					model: m, baseURL: base, secret: pt,
+					// gateway providers have no per-config maxTokens; use default
 				}
 				if sp.ProviderID == primaryPID {
 					out = append([]chatProvider{cp}, out...)
