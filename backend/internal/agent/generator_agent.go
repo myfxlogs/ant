@@ -26,12 +26,8 @@ func (g *Generator) runAgentLoop(
 
 	// ── Full tool registry ──
 	registry := buildPythonToolRegistry(result)
-	if g.mkt != nil {
-		registry.AddPreTool(connectai.NewReadKlineTool(g.mkt))
-	}
-	if g.btRepo != nil {
-		registry.AddPreTool(connectai.NewReadBacktestLogTool(g.btRepo))
-	}
+	// read_kline and read_backtest_log are Chat agent tools, not Generator tools.
+	// Strategy logic doesn't depend on current market data.
 	if g.dbExec != nil && g.dbQuery != nil {
 		registry.WireMemoryDB(g.dbExec, g.dbQuery)
 	}
