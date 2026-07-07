@@ -115,6 +115,7 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 	var streamUsage *ChatUsage
 	// Accumulate streaming tool_call deltas keyed by index.
 	toolCallAcc := make(map[int]*StreamToolCall)
+	totalContentLen := 0
 
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -146,6 +147,9 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 			continue
 		}
 		c := chunk.Choices[0]
+		if c.Delta.Content != "" {
+			totalContentLen += len(c.Delta.Content)
+		}
 
 		// Accumulate tool_call deltas (OpenAI streams them incrementally).
 		for _, tc := range c.Delta.ToolCalls {
@@ -200,6 +204,10 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 	}
 	if err := scanner.Err(); err != nil && !errors.Is(err, context.Canceled) {
 		return fmt.Errorf("read stream: %w", err)
+	}
+	// Empty response from provider: trigger failover to next provider.
+	if totalContentLen == 0 && len(toolCallAcc) == 0 {
+		return &failoverErr{msg: fmt.Sprintf("[%s] chat stream returned empty response", p.providerID), transient: true}
 	}
 	// Record token usage from streaming response.
 	if s.tokenRecorder != nil && streamUsage != nil {
