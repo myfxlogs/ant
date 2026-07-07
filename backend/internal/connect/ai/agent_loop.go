@@ -72,6 +72,23 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 	var fullBuf strings.Builder
 
 	for round := 0; round < a.maxRounds; round++ {
+		// Context compression: if total estimated tokens exceed budget,
+		// keep system + first user + last 12 messages, drop middle.
+		if len(messages) > 16 {
+			totalChars := 0
+			for _, m := range messages {
+				totalChars += len(m.Content)
+			}
+			if totalChars/4 > 8000 {
+				keep := make([]systemai.ChatMessage, 0, 14)
+				keep = append(keep, messages[0]) // system
+				keep = append(keep, messages[1]) // first user
+				if len(messages) > 12 {
+					keep = append(keep, messages[len(messages)-12:]...)
+				}
+				messages = keep
+			}
+		}
 		var roundBuf strings.Builder
 		var reasoningBuf strings.Builder
 		var toolCalls []systemai.ToolCall // accumulated from stream chunks

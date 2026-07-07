@@ -55,5 +55,6 @@ func buildPythonToolRegistry(result *generateState) *connectai.ToolRegistry {
 	reg.AddPreTool(&runBacktestTool{result: result})
 	reg.AddPreTool(&readCurrentCodeTool{result: result})
 	reg.AddPreTool(&editCodeTool{result: result})
+	reg.AddPreTool(&updatePlanTool{})
 	return reg
 }

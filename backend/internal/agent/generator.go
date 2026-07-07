@@ -15,14 +15,20 @@ import (
 // Generator orchestrates the strategy generation Agent loop:
 // intent → profile → plan → AgentLoop (generate/compile/backtest/fix).
 type Generator struct {
-	mkt       repository.MarketDataStore
-	btRepo    *repository.BacktestRunRepository
-	dbExec    func(ctx context.Context, sql string, args ...any) error
-	dbQuery   func(ctx context.Context, sql string, args ...any) (string, error)
-	aiSvc     *systemai.Service
-	log       *zap.Logger
-	cache     *LLCache
-	memory    *MemoryStore
+	mkt              repository.MarketDataStore
+	btRepo           *repository.BacktestRunRepository
+	dbExec           func(ctx context.Context, sql string, args ...any) error
+	dbQuery          func(ctx context.Context, sql string, args ...any) (string, error)
+	aiSvc            *systemai.Service
+	log              *zap.Logger
+	cache            *LLCache
+	memory           *MemoryStore
+	conversationRepo *repository.AIConversationRepository
+}
+
+// SetConversationRepo injects the conversation store for multi-turn history.
+func (g *Generator) SetConversationRepo(r *repository.AIConversationRepository) {
+	g.conversationRepo = r
 }
 
 // NewGenerator creates the strategy generation orchestrator.

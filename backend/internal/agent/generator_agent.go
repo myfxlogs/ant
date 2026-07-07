@@ -42,6 +42,21 @@ func (g *Generator) runAgentLoop(
 	// ── User prompt ──
 	userPrompt := msg.Message
 
+	// ── Conversation history ──
+	var history []systemai.ChatMessage
+	if msg.ConversationId != "" && g.conversationRepo != nil {
+		cid, err := uuid.Parse(msg.ConversationId)
+		if err == nil {
+			msgs, _ := g.conversationRepo.GetMessages(ctx, userID, cid)
+			for _, m := range msgs {
+				history = append(history, systemai.ChatMessage{
+					Role:    m.Role,
+					Content: m.Content,
+				})
+			}
+		}
+	}
+
 	// ── Stream callbacks ──
 	streamChunk := func(delta string) error {
 		return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "generating", Delta: delta})
@@ -68,7 +83,7 @@ func (g *Generator) runAgentLoop(
 		streamChunk, toolStream,
 	)
 
-	raw, loopErr := loop.RunWithHistory(ctx, sysPrompt, userPrompt, nil, userID) // history=nil until proto adds session_id
+	raw, loopErr := loop.RunWithHistory(ctx, sysPrompt, userPrompt, history, userID)
 	g.log.Info("generator: loop done", zap.Int("raw_len", len(raw)), zap.Bool("has_err", loopErr != nil))
 
 	// Extract code regardless of loopErr — the LLM may have generated valid code
