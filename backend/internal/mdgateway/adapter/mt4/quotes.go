@@ -166,7 +166,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 				SymbolRaw:     q.GetSymbol(),
 				Canonical:     "",
 				TsUnixMs:      q.GetTime().AsTime().UnixMilli(),
-				ArrivedUnixMs: mdtick.Clk.Now().UTC().UnixMilli(),
+				ArrivedUnixMs: Clk.Now().UTC().UnixMilli(),
 				Bid:           decimal.NewFromFloat(q.GetBid()),
 				Ask:           decimal.NewFromFloat(q.GetAsk()),
 			})
