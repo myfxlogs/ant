@@ -11,6 +11,7 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/agent"
 	"anttrader/internal/connect/admin"
+	"anttrader/internal/mdgateway"
 	"anttrader/internal/repository"
 	"anttrader/internal/service"
 	usersvc "anttrader/internal/service/user"
@@ -28,6 +29,7 @@ func registerAdminHandlers(
 	strategySvc *service.StrategySvc,
 	settingsStore *agent.SettingsStore,
 	hookEngine *agent.HookEngine,
+	accountEventPub *mdgateway.AccountEventPublisher,
 	otelInterceptor, authInterceptor, adminInterceptor connectrpc.Interceptor,
 ) {
 	adminRepo := repository.NewAdminRepository(pool)
@@ -42,7 +44,7 @@ func registerAdminHandlers(
 	adminLogServer := admin.NewAdminLogServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
 
-	adminAccountServer := admin.NewAdminAccountServer(adminRepo, log)
+	adminAccountServer := admin.NewAdminAccountServer(adminRepo, log).WithPublisher(accountEventPub)
 	mux.Handle(antv1c.NewAdminAccountServiceHandler(adminAccountServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
 
 	deletionSvc := service.NewUserDeletionService(adminRepo, log)
@@ -57,9 +59,6 @@ func registerAdminHandlers(
 
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
-
-	// Internal admin tool — audit log viewer (consistent with /api/shares pattern).
-	mux.HandleFunc("/api/admin/audit-logs", adminAccountServer.ServeAuditLogs)
 
 	// ADR-0025 §5.4 + §8: Agent settings + hooks management.
 	if settingsStore != nil {

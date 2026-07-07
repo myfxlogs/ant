@@ -116,7 +116,7 @@ func (r *AnalyticsRepository) GetDailyEquity(ctx context.Context, accountID uuid
 }
 
 func (r *AnalyticsRepository) GetAccountBalance(ctx context.Context, accountID uuid.UUID) (float64, error) {
-	query := `SELECT balance FROM mt_accounts WHERE id = $1`
+	query := `SELECT balance FROM mt_accounts WHERE deleted_at IS NULL AND id = $1`
 	var balance float64
 	err := r.db.QueryRow(ctx, query, accountID).Scan(&balance)
 	return balance, err
@@ -129,7 +129,7 @@ func (r *AnalyticsRepository) GetAccountInitialBalance(ctx context.Context, acco
 			 WHERE account_id = $1
 			 ORDER BY created_at ASC
 			 LIMIT 1),
-			(SELECT balance FROM mt_accounts WHERE id = $1)
+			(SELECT balance FROM mt_accounts WHERE deleted_at IS NULL AND id = $1)
 		) as initial_balance
 	`
 	var balance float64

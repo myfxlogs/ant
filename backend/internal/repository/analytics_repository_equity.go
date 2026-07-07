@@ -178,7 +178,7 @@ func (r *AnalyticsRepository) GetCurrentAccountMetrics(ctx context.Context, acco
 	var m CurrentAccountMetrics
 	err := r.db.QueryRow(ctx,
 		`SELECT COALESCE(balance, 0), COALESCE(equity, 0), COALESCE(profit, 0)
-		 FROM mt_accounts WHERE id = $1`, accountID,
+		 FROM mt_accounts WHERE deleted_at IS NULL AND id = $1`, accountID,
 	).Scan(&m.Balance, &m.Equity, &m.Profit)
 	if err != nil {
 		return nil, err

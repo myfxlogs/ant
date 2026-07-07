@@ -65,7 +65,7 @@ func (s *ShareServer) CreateShareToken(ctx context.Context, req *connect.Request
 
 func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Request[antv1.GetSharedPerformanceRequest]) (*connect.Response[antv1.GetSharedPerformanceResponse], error) {
 	st, err := s.repo.GetByToken(ctx, req.Msg.Token)
-	if err != nil || time.Now().After(st.ExpiresAt) {
+	if err != nil || st == nil || time.Now().After(st.ExpiresAt) {
 		return connect.NewResponse(&antv1.GetSharedPerformanceResponse{Expired: true}), nil
 	}
 	s.repo.IncrementView(ctx, st.Token)

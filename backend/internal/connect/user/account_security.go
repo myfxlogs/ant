@@ -42,20 +42,10 @@ func (s *AccountServer) VerifyTradePermission(ctx context.Context, req *connect.
 	}), nil
 }
 
-// UpdateTradingPassword updates the trading password for an account.
+// UpdateTradingPassword is deprecated. The frontend EditAccountModal was removed (task 9b).
+// Password changes should go through the MT broker directly.
 func (s *AccountServer) UpdateTradingPassword(ctx context.Context, req *connect.Request[antv1.UpdateTradingPasswordRequest]) (*connect.Response[antv1.UpdateTradingPasswordResponse], error) {
-	userID, err := parseUserID(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if err := s.svc.UpdateTradingPassword(ctx, userID, req.Msg.Id, req.Msg.OldPassword, req.Msg.NewPassword); err != nil {
-		if errors.Is(err, service.ErrAccountPasswordMismatch) {
-			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("old password does not match"))
-		}
-		s.log.Error("UpdateTradingPassword", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	return connect.NewResponse(&antv1.UpdateTradingPasswordResponse{Success: true}), nil
+	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("UpdateTradingPassword is deprecated"))
 }
 
 // VerifyAccount is deprecated. Use CreateAccount which verifies MT credentials inline.

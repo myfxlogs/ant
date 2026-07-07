@@ -2,22 +2,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { Card, Table, Button, Input, Select, Space, Tag, Drawer, Descriptions, message, Popconfirm } from 'antd';
 import { adminApi, type AccountWithUser, type AccountListParams } from '@/client/admin';
 import { formatDateTime } from '@/utils/date';
-import { useAdminAccountStore } from '@/stores/adminAccountStore';
 import { getErrorMessage } from '@/utils/error';
 import { StatusResult } from '@/components/common/StatusResult';
 
 const { Search } = Input;
-
-const getParamsKey = (params: AccountListParams) => {
-  return JSON.stringify({
-    page: params.page || 1,
-    pageSize: params.pageSize || 20,
-    search: params.search || '',
-    status: params.status || '',
-    mtType: params.mtType || '',
-    userId: params.userId || '',
-  });
-};
 
 export default function AccountManagement() {
   const [accounts, setAccounts] = useState<AccountWithUser[]>([]);
@@ -39,57 +27,31 @@ export default function AccountManagement() {
   };
   const [currentAccount, setCurrentAccount] = useState<AccountWithUser | null>(null);
   
-  const getCachedData = useAdminAccountStore((state) => state.getCachedData);
-  const setCachedData = useAdminAccountStore((state) => state.setCachedData);
-  const setLoadingStore = useAdminAccountStore((state) => state.setLoading);
-
   const fetchAccounts = useCallback(async (silent = false) => {
-    if (!silent) {
-      setLoading(true);
-      setLoadingStore(true);
-    }
-    
-    const paramsKey = getParamsKey(params);
-    const cached = getCachedData(paramsKey);
-    
-    if (cached) {
-      setAccounts(cached.accounts);
-      setTotal(cached.total);
-      if (!silent) {
-        setLoading(false);
-        setLoadingStore(false);
-      }
-    }
-    
+    if (!silent) setLoading(true);
     try {
       const result = await adminApi.listAccounts(params);
       setAccounts(result.accounts);
       setTotal(result.total);
-      setCachedData(paramsKey, result.accounts, result.total);
       setError(null);
     } catch (err) {
-      if (!cached) {
-        const msg = getErrorMessage(err, '加载账户列表失败');
-        setError(msg);
-        message.error(msg);
-      }
+      const msg = getErrorMessage(err, '加载账户列表失败');
+      setError(msg);
+      message.error(msg);
     } finally {
       setLoading(false);
-      setLoadingStore(false);
     }
-  }, [params, getCachedData, setCachedData, setLoadingStore]);
+  }, [params]);
 
   useEffect(() => {
     fetchAccounts();
   }, [fetchAccounts]);
 
-  const invalidateCache = useAdminAccountStore((state) => state.invalidateCache);
 
   const handleFreeze = async (account: AccountWithUser) => {
     try {
       await adminApi.freezeAccount(account.id);
       message.success('账户已冻结');
-      invalidateCache();
       fetchAccounts(true);
     } catch (error) {
       message.error(getErrorMessage(error, '冻结失败'));
@@ -100,7 +62,6 @@ export default function AccountManagement() {
     try {
       await adminApi.unfreezeAccount(account.id);
       message.success('账户已解冻');
-      invalidateCache();
       fetchAccounts(true);
     } catch (error) {
       message.error(getErrorMessage(error, '解冻失败'));

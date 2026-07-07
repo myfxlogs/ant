@@ -60,8 +60,8 @@ func (r *AdminRepository) ListAccounts(ctx context.Context, params *model.Accoun
 }
 
 func buildAccountListFilters(params *model.AccountListParams) (countQ, query string, args []interface{}) {
-	countQ = `SELECT COUNT(*) FROM mt_accounts ma JOIN users u ON ma.user_id = u.id WHERE 1=1`
-	query = fmt.Sprintf(`SELECT %s, u.email as user_email, u.nickname as user_nickname FROM mt_accounts ma JOIN users u ON ma.user_id = u.id WHERE 1=1`, accountCols)
+	countQ = `SELECT COUNT(*) FROM mt_accounts ma JOIN users u ON ma.user_id = u.id WHERE ma.deleted_at IS NULL AND 1=1`
+	query = fmt.Sprintf(`SELECT %s, u.email as user_email, u.nickname as user_nickname FROM mt_accounts ma JOIN users u ON ma.user_id = u.id WHERE ma.deleted_at IS NULL AND 1=1`, accountCols)
 	var conds []string
 	addCond := func(col, val string) {
 		if val == "" { return }
@@ -82,7 +82,7 @@ func buildAccountListFilters(params *model.AccountListParams) (countQ, query str
 
 func (r *AdminRepository) SetAccountStatus(ctx context.Context, id uuid.UUID, status string) error {
 	result, err := r.db.Exec(ctx,
-		`UPDATE mt_accounts SET account_status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+		`UPDATE mt_accounts SET account_status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`,
 		id, status)
 	if err != nil {
 		return fmt.Errorf("set account status: %w", err)
@@ -97,7 +97,7 @@ func (r *AdminRepository) GetAccountByID(ctx context.Context, id uuid.UUID) (*Ac
 	query := fmt.Sprintf(`SELECT %s, u.email as user_email, u.nickname as user_nickname
 			      FROM mt_accounts ma
 			      JOIN users u ON ma.user_id = u.id
-			      WHERE ma.id = $1`, accountCols)
+			      WHERE ma.id = $1 AND ma.deleted_at IS NULL`, accountCols)
 	var a AccountWithUser
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&a.ID, &a.UserID, &a.MTType, &a.BrokerCompany, &a.BrokerServer,

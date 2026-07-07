@@ -276,6 +276,7 @@ func registerHandlers(
 
 	registerAdminHandlers(mux, pool, log, walletSvc, accountNumberSvc, strategySvc,
 		agentGateway.SettingsStore(), agentGateway.HookEngine(),
+		accountEventPub,
 		otelInterceptor, authInterceptor, adminInterceptor)
 
 	// S1.1-S1.3: Wire SignalPipeline, rate limiter, cost estimator, OMS writer.

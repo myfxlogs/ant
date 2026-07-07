@@ -290,11 +290,16 @@ func (s *AIGatewayServer) RecordTokenUsage(
 		if bal.LessThan(costD) {
 			return &service.InsufficientBalanceError{Balance: w.Balance, Cost: cost}
 		}
+		// Insert usage record BEFORE deducting wallet — if Insert fails,
+		// we haven't charged the user.
+		if err := s.tokenUsageRepo.Insert(ctx, rec); err != nil {
+			return fmt.Errorf("insert token usage: %w", err)
+		}
 		desc := fmt.Sprintf("AI %s (%s): %d+%d tokens", feature, modelName, inputTokens, outputTokens)
-		_, err = s.walletSvc.AdjustBalance(ctx, userID, "-"+cost, "ai_usage", desc, nil)
-		if err != nil {
+		if _, err := s.walletSvc.AdjustBalance(ctx, userID, "-"+cost, "ai_usage", desc, nil); err != nil {
 			return fmt.Errorf("deduct wallet: %w", err)
 		}
+		return nil
 	}
 	return s.tokenUsageRepo.Insert(ctx, rec)
 }

@@ -42,6 +42,11 @@ export function useAccountDetailData(id: string | undefined) {
     handleRefresh: handleRefreshHistory, handleRetry: handleRetryHistory,
   } = useHistoryTrades(id);
 
+  // ── Account ── (must come before analytics — isDataReceived used below)
+  const currentAccount = accountDetailQ.data ?? null;
+  const hasReceivedData = financialsQ.isSuccess || financialsQ.isError;
+  const isDataReceived = !!id && hasReceivedData;
+
   // ── Analytics (account-level performance charts) ──
   const analytics = useAccountAnalytics(id, isDataReceived, chartPeriod);
 
@@ -51,11 +56,6 @@ export function useAccountDetailData(id: string | undefined) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleting, setDeleting] = useState(false);
-
-  // ── Account ──
-  const currentAccount = accountDetailQ.data ?? null;
-  const hasReceivedData = financialsQ.isSuccess || financialsQ.isError;
-  const isDataReceived = !!id && hasReceivedData;
   const isStreamLoading = !isDataReceived && financialsQ.isLoading;
   const accountLoadError = accountDetailQ.isError && !currentAccount;
   const positions = positionsQ.data ?? [];
@@ -96,7 +96,8 @@ export function useAccountDetailData(id: string | undefined) {
 
   const handleToggleStatus = useCallback(async () => {
     if (!currentAccount) return;
-    if (currentAccount.isDisabled) {
+    const s = (currentAccount.status || currentAccount.accountStatus || '').toLowerCase();
+    if (s === 'disconnected' || s === 'frozen' || s === 'error' || s === 'connecting' || currentAccount.isDisabled === true) {
       const modal = showLoadingModal(t(MESSAGES_CONNECTING_MT_SERVER_KEY), t('common.pleaseWait'));
       try {
         await toggleMut.mutateAsync({ id: currentAccount.id, isDisabled: false });

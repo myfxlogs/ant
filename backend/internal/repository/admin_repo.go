@@ -40,8 +40,8 @@ func (r *AdminRepository) fetchDashboardUsers(ctx context.Context, s *model.Dash
 }
 
 func (r *AdminRepository) fetchDashboardAccounts(ctx context.Context, s *model.DashboardStats) error {
-	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts`).Scan(&s.TotalAccounts); err != nil { return err }
-	return r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts WHERE account_status='connected'`).Scan(&s.OnlineAccounts)
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts WHERE deleted_at IS NULL`).Scan(&s.TotalAccounts); err != nil { return err }
+	return r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts WHERE deleted_at IS NULL AND account_status='connected'`).Scan(&s.OnlineAccounts)
 }
 
 func (r *AdminRepository) fetchDashboardToday(ctx context.Context, s *model.DashboardStats) error {
@@ -91,8 +91,8 @@ func (r *AdminRepository) GetTradingSummary(ctx context.Context, startDate, endD
 func fetchTradingSummaryOverview(ctx context.Context, r *AdminRepository, s *model.TradingSummary) {
 	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users`).Scan(&s.Overview.TotalUsers)
 	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users WHERE status='active'`).Scan(&s.Overview.ActiveUsers)
-	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts`).Scan(&s.Overview.TotalAccounts)
-	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts WHERE account_status='connected'`).Scan(&s.Overview.ConnectedAccounts)
+	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts WHERE deleted_at IS NULL`).Scan(&s.Overview.TotalAccounts)
+	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts WHERE deleted_at IS NULL AND account_status='connected'`).Scan(&s.Overview.ConnectedAccounts)
 }
 
 func fetchTradingSummaryTrading(ctx context.Context, r *AdminRepository, start, end string, s *model.TradingSummary) {
@@ -157,12 +157,12 @@ func isReadPermission(code string) bool {
 
 // AuditLogEntry represents a single account audit event.
 type AuditLogEntry struct {
-	ID        string    `json:"id"`
-	AccountID string    `json:"account_id"`
-	UserID    string    `json:"user_id"`
-	Action    string    `json:"action"`
-	Detail    string    `json:"detail"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        string
+	AccountID string
+	UserID    string
+	Action    string
+	Detail    string
+	CreatedAt time.Time
 }
 
 // GetAuditLogs returns audit entries for the given account, newest first.

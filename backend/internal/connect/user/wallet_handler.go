@@ -36,7 +36,8 @@ func (s *WalletServer) requireAdmin(ctx context.Context) (uuid.UUID, error) {
 		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid actor"))
 	}
 	if s.platformSvc == nil {
-		return actorID, nil // no platform service = admin check disabled (dev/test)
+		s.log.Warn("requireAdmin: platformSvc is nil — admin check bypassed (ensure this is dev/test only)")
+		return actorID, nil
 	}
 	isAdmin, err := s.platformSvc.IsAdmin(ctx, actorID)
 	if err != nil {

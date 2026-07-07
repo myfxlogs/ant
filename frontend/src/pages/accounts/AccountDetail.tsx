@@ -40,7 +40,8 @@ export default function AccountDetail() {
     monthlyAnalysisYears, monthlyAnalysisData,
   } = useAccountDetailData(id);
 
-  const disabled = !!currentAccount?.isDisabled;
+  const s = (currentAccount?.status || currentAccount?.accountStatus || '').toLowerCase();
+  const disabled = s === 'disconnected' || s === 'frozen' || currentAccount?.isDisabled === true;
   const { balance, equity, margin, freeMargin, marginLevel, profit, profitPercent, credit } = financials;
 
   const formatCurrency = useCallback((value: number) => {
@@ -196,7 +197,7 @@ export default function AccountDetail() {
             </div>
           ) : (
             <AccountTradeTabs
-              id={id}
+              id={id ?? ''}
               realPositions={positions}
               pendingOrders={pendingOrders}
               historyTrades={historyTrades}

@@ -118,13 +118,17 @@ export function handleAccountStatus(queryClient: QueryClient, status: AccountSta
   if (s === 'enabled') mapped = 'connecting';
   if (s === 'disabled') mapped = 'disconnected';
 
+  const isDisabled = s === 'disabled' ? true : s === 'enabled' ? false : undefined;
+  const patch: Partial<Account> = { status: mapped };
+  if (isDisabled !== undefined) patch.isDisabled = isDisabled;
+
   queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old = []) =>
-    old.map((a) => (a.id === status.accountId ? { ...a, status: mapped } : a)),
+    old.map((a) => (a.id === status.accountId ? { ...a, ...patch } : a)),
   );
   // Also update the individual detail query so AccountDetail page sees the change.
   queryClient.setQueryData<Account>(
     queryKeys.accounts.detail(status.accountId),
-    (old) => (old ? { ...old, status: mapped } : old),
+    (old) => (old ? { ...old, ...patch } : old),
   );
 }
 

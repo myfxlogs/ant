@@ -181,7 +181,7 @@ func (s *AccountService) UpdateAccount(ctx context.Context, userID uuid.UUID, id
 			broker_server  = COALESCE(NULLIF($4, ''), broker_server),
 			broker_host    = COALESCE(NULLIF($5, ''), broker_host),
 			updated_at     = CURRENT_TIMESTAMP
-		WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL AND deleted_at IS NULL
+		WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL
 	`, id, userID, brokerCompany, brokerServer, brokerHost)
 	if err != nil {
 		return fmt.Errorf("service: update account: %w", err)
@@ -195,7 +195,7 @@ func (s *AccountService) UpdateAccount(ctx context.Context, userID uuid.UUID, id
 // DeleteAccount soft-deletes an MT account by setting deleted_at.
 func (s *AccountService) DeleteAccount(ctx context.Context, userID uuid.UUID, id string) error {
 	tag, err := s.db.Exec(ctx,
-		`UPDATE mt_accounts SET deleted_at = NOW(), account_status = 'disconnected' WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL AND deleted_at IS NULL`,
+		`UPDATE mt_accounts SET deleted_at = NOW(), account_status = 'disconnected', password = '' WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL`,
 		id, userID)
 	if err != nil {
 		return fmt.Errorf("service: delete account: %w", err)
@@ -207,20 +207,6 @@ func (s *AccountService) DeleteAccount(ctx context.Context, userID uuid.UUID, id
 	return nil
 }
 
-// RestoreAccount restores a soft-deleted account.
-func (s *AccountService) RestoreAccount(ctx context.Context, userID uuid.UUID, id string) error {
-	tag, err := s.db.Exec(ctx,
-		`UPDATE mt_accounts SET deleted_at = NULL, account_status = 'disconnected' WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL AND deleted_at IS NOT NULL`,
-		id, userID)
-	if err != nil {
-		return fmt.Errorf("service: restore account: %w", err)
-	}
-	if tag.RowsAffected() == 0 {
-		return pgx.ErrNoRows
-	}
-	s.InvalidateSummaryCache(userID.String())
-	return nil
-}
 
 // ── Account Info ──
 
@@ -351,7 +337,7 @@ func (s *AccountService) UserOwnsAccount(ctx context.Context, userID, accountID 
 
 // GetUserAccountIDs returns all account IDs belonging to a user.
 func (s *AccountService) GetUserAccountIDs(ctx context.Context, userID string) ([]string, error) {
-	rows, err := s.db.Query(ctx, "SELECT id FROM mt_accounts WHERE user_id = $1", userID)
+	rows, err := s.db.Query(ctx, "SELECT id FROM mt_accounts WHERE user_id = $1 AND deleted_at IS NULL", userID)
 	if err != nil {
 		return nil, err
 	}

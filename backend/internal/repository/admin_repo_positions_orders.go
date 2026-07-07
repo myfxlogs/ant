@@ -40,8 +40,8 @@ func (r *AdminRepository) ListPositions(ctx context.Context, userID, accountID, 
 }
 
 func buildPositionFilters(userID, accountID, symbol string) (countQ, query string, args []interface{}) {
-	countQ = `SELECT COUNT(*) FROM positions p JOIN mt_accounts ma ON p.mt_account_id = ma.id WHERE 1=1`
-	query = `SELECT p.* FROM positions p JOIN mt_accounts ma ON p.mt_account_id = ma.id WHERE 1=1`
+	countQ = `SELECT COUNT(*) FROM positions p JOIN mt_accounts ma ON p.mt_account_id = ma.id AND ma.deleted_at IS NULL WHERE 1=1`
+	query = `SELECT p.* FROM positions p JOIN mt_accounts ma ON p.mt_account_id = ma.id AND ma.deleted_at IS NULL WHERE 1=1`
 	addFilter := func(cond, val string) {
 		countQ += fmt.Sprintf(" AND %s = $%d", cond, len(args)+1)
 		query += fmt.Sprintf(" AND %s = $%d", cond, len(args)+1)
@@ -86,8 +86,8 @@ func (r *AdminRepository) ListOrders(ctx context.Context, userID, accountID, sym
 }
 
 func buildOrderFilters(userID, accountID, symbol, orderType string) (countQ, query string, args []interface{}) {
-	countQ = `SELECT COUNT(*) FROM orders o JOIN mt_accounts ma ON o.mt_account_id = ma.id WHERE 1=1`
-	query = `SELECT o.* FROM orders o JOIN mt_accounts ma ON o.mt_account_id = ma.id WHERE 1=1`
+	countQ = `SELECT COUNT(*) FROM orders o JOIN mt_accounts ma ON o.mt_account_id = ma.id AND ma.deleted_at IS NULL WHERE 1=1`
+	query = `SELECT o.* FROM orders o JOIN mt_accounts ma ON o.mt_account_id = ma.id AND ma.deleted_at IS NULL WHERE 1=1`
 	addFilter := func(cond, val string) {
 		countQ += fmt.Sprintf(" AND %s = $%d", cond, len(args)+1)
 		query += fmt.Sprintf(" AND %s = $%d", cond, len(args)+1)

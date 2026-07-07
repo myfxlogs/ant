@@ -7,12 +7,12 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
+	"anttrader/internal/mdgateway/adapter/mdtick"
 	"anttrader/internal/service"
 )
 
@@ -25,21 +25,34 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 		return nil, err
 	}
 
-	// Begin transaction for the create + verify + update flow.
+	// 1. Verify MT credentials BEFORE opening a PG transaction — holding a TX
+	//    open across a network round-trip exhausts the connection pool under load.
+	var info *mdtick.MTAccountInfo
+	if s.mtTester != nil {
+		result, err := s.verifyMTCredentials(ctx, r)
+		if err != nil {
+			return nil, err
+		}
+		info = result
+	} else {
+		s.log.Warn("CreateAccount: MT connection tester not available, skipping verification")
+	}
+
+	// 2. Begin transaction and insert.
 	tx, err := s.svc.BeginTx(ctx)
 	if err != nil {
 		s.log.Error("CreateAccount: begin tx failed", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	defer tx.Rollback(ctx) // no-op after successful Commit
+	defer tx.Rollback(context.Background()) // use Background — user ctx may be cancelled
 
-	// 1. Insert into DB within the transaction.
-	// Use only the first host for INSERT — the full comma-separated list
-	// may exceed VARCHAR(100). verifyAndUpdateAccount will update to the
-	// actual working host after trying all candidates.
 	firstHost := r.BrokerHost
 	if idx := strings.IndexByte(firstHost, ','); idx > 0 {
 		firstHost = firstHost[:idx]
+	}
+	// If verification found a working host, use it instead.
+	if info != nil && info.BrokerHost != "" {
+		firstHost = info.BrokerHost
 	}
 	id, err := s.svc.CreateAccountTx(ctx, tx, userID, r.Login, r.Password, r.MtType, r.BrokerCompany, r.BrokerServer, firstHost)
 	if err != nil {
@@ -50,18 +63,21 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	// 2. Test MT connection and update account info within transaction.
-	if err := s.verifyAndUpdateAccount(ctx, tx, userID, id, r); err != nil {
-		return nil, err
+	// 3. Update with verified account info (within transaction).
+	if info != nil {
+		if err := s.svc.UpdateAccountInfoTx(ctx, tx, userID, id, info.Balance, info.Equity, info.Credit, info.Margin, info.FreeMargin, int64(info.Leverage), info.Currency, info.IsInvestor); err != nil {
+			s.log.Error("CreateAccount: UpdateAccountInfo failed", zap.Error(err))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("update account info: %w", err))
+		}
 	}
-	// Commit and fetch full account for response.
+
+	// 4. Commit.
 	if err := tx.Commit(ctx); err != nil {
 		s.log.Error("CreateAccount: tx commit failed", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("commit transaction: %w", err))
 	}
 
-	// Publish NATS event so mdgateway runner picks up the new account.
-	// Status is already 'connecting' from CreateAccountTx INSERT — no need to set it again.
+	// 5. Publish NATS event so mdgateway runner picks up the new account.
 	if s.publisher != nil {
 		s.publisher.PublishConnect(ctx, id, userID.String())
 	}
@@ -76,31 +92,17 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 	return connect.NewResponse(accountToProto(a)), nil
 }
 
-func (s *AccountServer) verifyAndUpdateAccount(ctx context.Context, tx pgx.Tx, userID uuid.UUID, accountID string, r *antv1.CreateAccountRequest) error {
-	if s.mtTester == nil {
-		s.log.Warn("CreateAccount: MT connection tester not available, skipping verification",
-			zap.String("id", accountID))
-		return nil
-	}
+// verifyMTCredentials tests the MT connection and returns account info.
+// Called BEFORE opening a PG transaction — network calls must not hold TX open.
+func (s *AccountServer) verifyMTCredentials(ctx context.Context, r *antv1.CreateAccountRequest) (*mdtick.MTAccountInfo, error) {
 	info, err := s.mtTester.Test(ctx, r.MtType, r.BrokerHost, r.Login, r.Password)
 	if err != nil {
-		s.log.Warn("CreateAccount: MT verification failed, rolling back",
-			zap.String("accountId", accountID), zap.Error(err))
-		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("account verification failed: %w", err))
+		s.log.Warn("CreateAccount: MT verification failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("account verification failed: %w", err))
 	}
-	if err := s.svc.UpdateAccountInfoTx(ctx, tx, userID, accountID, info.Balance, info.Equity, info.Credit, info.Margin, info.FreeMargin, int64(info.Leverage), info.Currency, info.IsInvestor); err != nil {
-		s.log.Error("CreateAccount: UpdateAccountInfo failed", zap.Error(err))
-		return connect.NewError(connect.CodeInternal, fmt.Errorf("update account info: %w", err))
-	}
-	// Store only the working broker host (not all comma-separated candidates).
-	if info.BrokerHost != "" {
-		if _, err := tx.Exec(ctx, `UPDATE mt_accounts SET broker_host = $1 WHERE id = $2`, info.BrokerHost, accountID); err != nil {
-			s.log.Warn("CreateAccount: update broker_host failed", zap.Error(err))
-		}
-	}
-	s.log.Info("CreateAccount: verified and created",
-		zap.String("id", accountID), zap.String("host", info.BrokerHost), zap.String("balance", info.Balance.String()))
-	return nil
+	s.log.Info("CreateAccount: verified credentials",
+		zap.String("host", info.BrokerHost), zap.String("balance", info.Balance.String()))
+	return info, nil
 }
 
 // UpdateAccount updates broker fields and disabled status.
@@ -130,17 +132,25 @@ func (s *AccountServer) UpdateAccount(ctx context.Context, req *connect.Request[
 	// Migration 187 replaced the is_disabled column with the account_status state machine.
 	if r.IsDisabled != nil {
 		if *r.IsDisabled {
-			_ = s.updateAccountStatus(ctx, userID, r.Id, service.StatusDisconnected, func() {
+			err := s.updateAccountStatus(ctx, userID, r.Id, service.StatusDisconnected, func() {
 				if s.publisher != nil {
 					s.publisher.PublishDisconnect(ctx, r.Id, userID.String())
 				}
 			})
+			if err != nil {
+				s.log.Error("UpdateAccount: disconnect failed", zap.String("id", r.Id), zap.Error(err))
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
 		} else {
-			_ = s.updateAccountStatus(ctx, userID, r.Id, service.StatusConnecting, func() {
+			err := s.updateAccountStatus(ctx, userID, r.Id, service.StatusConnecting, func() {
 				if s.publisher != nil {
 					s.publisher.PublishConnect(ctx, r.Id, userID.String())
 				}
 			})
+			if err != nil {
+				s.log.Error("UpdateAccount: connect failed", zap.String("id", r.Id), zap.Error(err))
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
 		}
 	}
 	// Return updated account

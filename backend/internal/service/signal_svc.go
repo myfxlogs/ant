@@ -31,7 +31,7 @@ type SignalRow struct {
 func (s *StrategySvc) ListSignals(ctx context.Context, userID, accountID uuid.UUID, status string) ([]SignalRow, error) {
 	var rows pgx.Rows
 	var err error
-	signalsCols := `SELECT s.id, s.account_id, s.symbol, s.signal_type, s.volume, s.price, s.stop_loss, s.take_profit, s.reason, s.status, s.executed_at, s.ticket, s.profit, s.created_at FROM strategy_signals s JOIN mt_accounts a ON s.account_id = a.id`
+	signalsCols := `SELECT s.id, s.account_id, s.symbol, s.signal_type, s.volume, s.price, s.stop_loss, s.take_profit, s.reason, s.status, s.executed_at, s.ticket, s.profit, s.created_at FROM strategy_signals s JOIN mt_accounts a ON s.account_id = a.id AND a.deleted_at IS NULL`
 	if accountID == uuid.Nil && status == "" {
 		rows, err = s.pg.Query(ctx, signalsCols+` WHERE a.user_id = $1 ORDER BY s.created_at DESC LIMIT 100`, userID)
 	} else if status == "" {
@@ -52,7 +52,7 @@ func (s *StrategySvc) GetSignal(ctx context.Context, id, userID uuid.UUID) (*Sig
 	var r SignalRow
 	err := s.pg.QueryRow(ctx,
 		`SELECT s.id, s.account_id, s.symbol, s.signal_type, s.volume, s.price, s.stop_loss, s.take_profit, s.reason, s.status, s.executed_at, s.ticket, s.profit, s.created_at
-		 FROM strategy_signals s JOIN mt_accounts a ON s.account_id = a.id
+		 FROM strategy_signals s JOIN mt_accounts a ON s.account_id = a.id AND a.deleted_at IS NULL
 		 WHERE s.id = $1 AND a.user_id = $2`, id, userID,
 	).Scan(&r.ID, &r.AccountID, &r.Symbol, &r.SignalType, &r.Volume, &r.Price, &r.StopLoss, &r.TakeProfit, &r.Reason, &r.Status, &r.ExecutedAt, &r.Ticket, &r.Profit, &r.CreatedAt)
 	if err != nil {
@@ -69,7 +69,7 @@ func (s *StrategySvc) ExecuteSignal(ctx context.Context, signalID, userID uuid.U
 	tag, err := s.pg.Exec(ctx,
 		`UPDATE strategy_signals SET status='executed', executed_at=$2
 		 WHERE id=$1 AND status='pending'
-		 AND account_id IN (SELECT id FROM mt_accounts WHERE user_id = $3)`, signalID, now, userID)
+		 AND account_id IN (SELECT id FROM mt_accounts WHERE deleted_at IS NULL AND user_id = $3)`, signalID, now, userID)
 	if err != nil {
 		return nil, fmt.Errorf("ExecuteSignal: %w", err)
 	}
@@ -83,7 +83,7 @@ func (s *StrategySvc) ConfirmSignal(ctx context.Context, signalID, userID uuid.U
 	tag, err := s.pg.Exec(ctx,
 		`UPDATE strategy_signals SET status='confirmed'
 		 WHERE id=$1 AND status='pending'
-		 AND account_id IN (SELECT id FROM mt_accounts WHERE user_id = $2)`, signalID, userID)
+		 AND account_id IN (SELECT id FROM mt_accounts WHERE deleted_at IS NULL AND user_id = $2)`, signalID, userID)
 	if err != nil {
 		return fmt.Errorf("ConfirmSignal: %w", err)
 	}
@@ -97,7 +97,7 @@ func (s *StrategySvc) CancelSignal(ctx context.Context, signalID, userID uuid.UU
 	tag, err := s.pg.Exec(ctx,
 		`UPDATE strategy_signals SET status='cancelled'
 		 WHERE id=$1 AND status IN ('pending','confirmed')
-		 AND account_id IN (SELECT id FROM mt_accounts WHERE user_id = $2)`, signalID, userID)
+		 AND account_id IN (SELECT id FROM mt_accounts WHERE deleted_at IS NULL AND user_id = $2)`, signalID, userID)
 	if err != nil {
 		return fmt.Errorf("CancelSignal: %w", err)
 	}

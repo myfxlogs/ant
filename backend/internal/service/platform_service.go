@@ -128,7 +128,7 @@ func (s *PlatformService) GetAccount(ctx context.Context, userID uuid.UUID, acco
 func (s *PlatformService) GetAccountBroker(ctx context.Context, accountID string) (string, error) {
 	var broker string
 	err := s.pg.QueryRow(ctx,
-		`SELECT broker_company FROM mt_accounts WHERE id=$1`, accountID,
+		`SELECT broker_company FROM mt_accounts WHERE deleted_at IS NULL AND id=$1`, accountID,
 	).Scan(&broker)
 	return broker, err
 }
@@ -143,7 +143,7 @@ func (s *PlatformService) ResolveSymbol(ctx context.Context, accountID, rawSymbo
 	// Look up the account's broker.
 	var broker string
 	err := s.pg.QueryRow(ctx,
-		`SELECT broker_company FROM mt_accounts WHERE id=$1`, accountID,
+		`SELECT broker_company FROM mt_accounts WHERE deleted_at IS NULL AND id=$1`, accountID,
 	).Scan(&broker)
 	if err != nil || broker == "" {
 		return rawSymbol

@@ -61,7 +61,7 @@ func startMdGatewayPipeline(
 
 	// Load per-account broker margin call thresholds (default 100.0 from migration 122).
 	func() {
-		rows, err := pool.Query(context.Background(), `SELECT id, broker_margin_call_pct FROM mt_accounts`)
+		rows, err := pool.Query(context.Background(), `SELECT id, broker_margin_call_pct FROM mt_accounts WHERE deleted_at IS NULL`)
 		if err != nil {
 			log.Warn("B-2.3: failed to load margin thresholds, using defaults", zap.Error(err))
 			return
@@ -232,7 +232,7 @@ func startMdGatewayPipeline(
 			defer cancel()
 			if status == "connected" {
 				if _, err := pool.Exec(writeCtx,
-					`UPDATE mt_accounts SET account_status = $1, last_error = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
+					`UPDATE mt_accounts SET account_status = $1, last_error = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND deleted_at IS NULL`,
 					status, accountID); err != nil {
 					log.Warn("OnAccountStatus: update failed", zap.String("account", accountID), zap.Error(err))
 				}
@@ -277,6 +277,6 @@ func startMdGatewayPipeline(
 
 func getUserIDFromPool(ctx context.Context, pool *pgxpool.Pool, accountID string) (string, error) {
 	var userID string
-	err := pool.QueryRow(ctx, "SELECT user_id::text FROM mt_accounts WHERE id = $1", accountID).Scan(&userID)
+	err := pool.QueryRow(ctx, "SELECT user_id::text FROM mt_accounts WHERE deleted_at IS NULL AND id = $1", accountID).Scan(&userID)
 	return userID, err
 }

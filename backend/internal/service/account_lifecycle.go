@@ -42,23 +42,6 @@ func (s *AccountService) DisconnectAccountByID(ctx context.Context, id string) e
 	return nil
 }
 
-// ── Password ──
-
-// UpdateTradingPassword updates the trading password for an account.
-func (s *AccountService) UpdateTradingPassword(ctx context.Context, userID uuid.UUID, id, oldPassword, newPassword string) error {
-	tag, err := s.db.Exec(ctx, `
-		UPDATE mt_accounts SET password = $4, updated_at = CURRENT_TIMESTAMP
-		WHERE id = $1::uuid AND user_id = $2 AND password = $3
-	`, id, userID, oldPassword, newPassword)
-	if err != nil {
-		return fmt.Errorf("service: update trading password: %w", err)
-	}
-	if tag.RowsAffected() == 0 {
-		return ErrAccountPasswordMismatch
-	}
-	return nil
-}
-
 // ── Cleanup ──
 
 // CleanupOldSnapshots deletes account_balance_history rows older than retention
@@ -192,7 +175,7 @@ func (s *AccountService) GetUserAccountsSummary(ctx context.Context, userID stri
 	}
 
 	rows, err := s.db.Query(ctx,
-		"SELECT id::text, balance, equity, account_status FROM mt_accounts WHERE user_id = $1", userID)
+		"SELECT id::text, balance, equity, account_status FROM mt_accounts WHERE user_id = $1 AND deleted_at IS NULL", userID)
 	if err != nil {
 		return nil, err
 	}

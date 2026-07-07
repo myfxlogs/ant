@@ -12,7 +12,7 @@ const { Text } = Typography;
 
 export default function AccountSummaryCard() {
   const { t } = useTranslation();
-  const { accounts, setCurrentAccount } = useAccount();
+  const { accounts } = useAccount();
   const accountInfo = useTradingStore((s) => s.accountInfo);
   const currentAccountId = useTradingStore((s) => s.currentAccountId);
   const setCurrentAccountId = useTradingStore((s) => s.setCurrentAccountId);
@@ -20,7 +20,6 @@ export default function AccountSummaryCard() {
 
   const handleAccountChange = (accountId: string) => {
     setCurrentAccountId(accountId);
-    setCurrentAccount(accounts.find((a: Account) => a.id === accountId) || null);
     if (accountId) {
       setPositions(accountId, []);
     }

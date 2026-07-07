@@ -37,7 +37,7 @@ function flushProfitUpdates(queryClient: QueryClient) {
   };
 
   for (const [accId, profit] of pendingProfit) {
-    queryClient.setQueryData<Record<string, number>>(
+    queryClient.setQueryData<Record<string, unknown>>(
       queryKeys.accounts.financials(accId),
       (old) => {
         const base = old ?? {};

@@ -54,8 +54,11 @@ export default function ShareAccountButton({ accountId }: Props) {
         headers: h,
         body: JSON.stringify({ account_id: accountId, expire_days: 7 }),
       });
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => 'Unknown error');
+        throw new Error(text);
+      }
       const data = await resp.json();
-      if (!resp.ok) throw new Error(data.message);
       const url = `${window.location.origin}${data.shareUrl}`;
       await navigator.clipboard.writeText(url);
       message.success(t('accounts.messages.shareLinkCopied', { defaultValue: 'Share link copied to clipboard' }));

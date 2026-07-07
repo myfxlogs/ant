@@ -7,6 +7,7 @@ package user
 
 import (
 	"encoding/json"
+	"math"
 	"net/http"
 	"time"
 
@@ -93,8 +94,8 @@ func (s *ShareServer) HandleGetSharedPerformanceJSON(w http.ResponseWriter, r *h
 				sumSq += (r - mean) * (r - mean)
 			}
 			std := 0.0
-			if sumSq > 0 { std = sumSq / float64(len(dailyReturns)-1) }
-			if std > 0 { sharpe = mean / std * 16 }
+			if sumSq > 0 { std = math.Sqrt(sumSq / float64(len(dailyReturns)-1)) }
+			if std > 0 { sharpe = mean / std * math.Sqrt(252) }
 		}
 	}
 

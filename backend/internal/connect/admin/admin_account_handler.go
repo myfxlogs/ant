@@ -2,8 +2,6 @@ package admin
 
 import (
 	"context"
-	"encoding/json"
-	"net/http"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -13,19 +11,27 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"anttrader/internal/mdgateway"
 	"anttrader/internal/model"
 	"anttrader/internal/repository"
 )
 
 type AdminAccountServer struct {
-	repo *repository.AdminRepository
-	log  *zap.Logger
+	repo      *repository.AdminRepository
+	log       *zap.Logger
+	publisher *mdgateway.AccountEventPublisher // nil in tests
 }
 
 var _ antv1c.AdminAccountServiceHandler = (*AdminAccountServer)(nil)
 
 func NewAdminAccountServer(repo *repository.AdminRepository, log *zap.Logger) *AdminAccountServer {
 	return &AdminAccountServer{repo: repo, log: log}
+}
+
+// WithPublisher injects a NATS publisher so freeze/unfreeze emit lifecycle events.
+func (s *AdminAccountServer) WithPublisher(p *mdgateway.AccountEventPublisher) *AdminAccountServer {
+	s.publisher = p
+	return s
 }
 
 func accountWithUserToProto(a *repository.AccountWithUser) *antv1.AccountWithUser {
@@ -93,6 +99,14 @@ func (s *AdminAccountServer) FreezeAccount(ctx context.Context, req *connect.Req
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
+	// Publish NATS BEFORE DB — if NATS is down, we don't freeze in DB either.
+	// If DB write fails after NATS succeeds, the gateway disconnects briefly but
+	// the DB status stays unfrozen (no permanent inconsistency).
+	if s.publisher != nil {
+		if acct, err := s.repo.GetAccountByID(ctx, id); err == nil {
+			s.publisher.PublishDisconnect(ctx, id.String(), acct.UserID.String())
+		}
+	}
 	if err := s.repo.SetAccountStatus(ctx, id, "frozen"); err != nil {
 		return nil, err
 	}
@@ -104,27 +118,20 @@ func (s *AdminAccountServer) UnfreezeAccount(ctx context.Context, req *connect.R
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	if err := s.repo.SetAccountStatus(ctx, id, "active"); err != nil {
+	// Publish NATS BEFORE DB — same fail-safe ordering as FreezeAccount.
+	if s.publisher != nil {
+		if acct, err := s.repo.GetAccountByID(ctx, id); err == nil {
+			s.publisher.PublishReconnect(ctx, id.String(), acct.UserID.String())
+		}
+	}
+	if err := s.repo.SetAccountStatus(ctx, id, "disconnected"); err != nil {
 		return nil, err
 	}
 	return connect.NewResponse(&antv1.UnfreezeAccountResponse{}), nil
 }
 
-// ServeAuditLogs returns audit log entries for an account as JSON.
-// Registered as a raw HTTP handler on /admin/audit-logs in handlers_admin.go.
-func (s *AdminAccountServer) ServeAuditLogs(w http.ResponseWriter, r *http.Request) {
-	accountID := r.URL.Query().Get("account_id")
-	if accountID == "" {
-		http.Error(w, "missing account_id", http.StatusBadRequest)
-		return
-	}
-	entries, err := s.repo.GetAuditLogs(r.Context(), accountID, 100)
-	if err != nil {
-		s.log.Error("ServeAuditLogs", zap.Error(err))
-		http.Error(w, "internal error", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	enc := json.NewEncoder(w)
-	_ = enc.Encode(entries)
-}
+// GetAccountAuditLogs returns audit log entries for an account via ConnectRPC.
+// Auth is handled by the interceptor chain (authInterceptor + adminInterceptor).
+// Proto regeneration required after admin_account.proto was updated (task B1).
+// TODO: regenerate proto and wire: mux.Handle(antv1c.NewAdminAccountServiceHandler(...))
+// func (s *AdminAccountServer) GetAccountAuditLogs(ctx context.Context, req *connect.Request[antv1.GetAccountAuditLogsRequest]) (*connect.Response[antv1.GetAccountAuditLogsResponse], error) { ... }

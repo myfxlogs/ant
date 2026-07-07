@@ -31,7 +31,8 @@ type Props = {
 };
 
 const getStatusIndicator = (account: Account, t: (key: string) => string) => {
-  if (account.isDisabled) {
+  const status = (account.status || account.accountStatus || '').toLowerCase();
+  if (status === 'disconnected' || status === 'frozen' || account.isDisabled === true) {
     return { icon: '⚪', color: 'var(--color-text-muted)', text: t(CARD_STATUS_DISABLED_KEY) };
   }
   switch (account.status) {

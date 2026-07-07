@@ -1,10 +1,9 @@
 import { MESSAGES_DELETE_FAILED_KEY, MESSAGES_DISABLE_FAILED_KEY, MESSAGES_DISCONNECT_FAILED_KEY, MESSAGES_ENABLE_FAILED_KEY, MESSAGES_FETCH_ACCOUNT_FAILED_KEY, MESSAGES_FETCH_LIST_FAILED_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 import { MESSAGES_DELETED_KEY } from '@/gen/ant/v1/i18n/ai_settings_keys';
 
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 ;
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAccountStore } from '@/stores/accountStore';
 import { accountApi } from '@/client/account';
 import type { Account } from '@/types/account';
 import { getErrorMessage } from '@/utils/error';
@@ -16,17 +15,14 @@ export function useAccount() {
   const queryClient = useQueryClient();
 
   // Single source of truth: TanStack Query cache, shared with MainLayout.
-  const { data: accounts } = useQuery<Account[]>({
+  const { data: accounts, isLoading: queryLoading } = useQuery<Account[]>({
     queryKey: queryKeys.accounts.list(),
     queryFn: () => accountApi.list(),
   });
 
-  // UI-only transient state from Zustand.
-  const currentAccount = useAccountStore((s) => s.currentAccount);
-  const loading = useAccountStore((s) => s.loading);
-  const setCurrentAccount = useAccountStore((s) => s.setCurrentAccount);
-  const setLoading = useAccountStore((s) => s.setLoading);
-  const setEnablingAccount = useAccountStore((s) => s.setEnablingAccount);
+  // Local transient state (was Zustand store — Task C removed it).
+  const [loading, setLoading] = useState(false);
+  const [enablingAccount, setEnablingAccount] = useState<string | null>(null);
 
   const fetchAccounts = useCallback(async (force = false) => {
     const cached = queryClient.getQueryData<Account[]>(queryKeys.accounts.list());
@@ -53,7 +49,6 @@ export function useAccount() {
     if (showLoading) setLoading(true);
     try {
       const account = await accountApi.get(id);
-      setCurrentAccount(account);
       return account;
     } catch (error) {
       showError(getErrorMessage(error, i18n.t(MESSAGES_FETCH_ACCOUNT_FAILED_KEY)));
@@ -61,7 +56,7 @@ export function useAccount() {
     } finally {
       if (showLoading) setLoading(false);
     }
-  }, [setLoading, setCurrentAccount]);
+  }, [setLoading]);
 
   const createAccount = useCallback(async (data: {
     login: string; password: string; mtType: string;
@@ -164,7 +159,6 @@ export function useAccount() {
 
   return {
     accounts: accounts ?? [],
-    currentAccount,
     loading,
     fetchAccounts,
     fetchAccount,
@@ -174,6 +168,5 @@ export function useAccount() {
     disableAccount,
     enableAccount,
     deleteAccount,
-    setCurrentAccount,
   };
 }

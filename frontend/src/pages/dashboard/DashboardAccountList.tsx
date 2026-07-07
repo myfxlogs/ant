@@ -41,9 +41,9 @@ function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: st
   const equity = item.equity;
   const floating = item.profit ?? 0;
   const isMT4 = item.mtType === 'MT4';
-  const fmt = (v: number, prefix = '') => {
+  const fmt = (v: number | undefined, prefix = '') => {
     if (isDisabled) return '--';
-    return `${prefix}${Number.isFinite(v) ? v.toFixed(2) : '0.00'}`;
+    return `${prefix}${Number.isFinite(v) ? v!.toFixed(2) : '0.00'}`;
   };
 
   return (
