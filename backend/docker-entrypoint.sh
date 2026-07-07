@@ -83,7 +83,6 @@ SELECT string_agg(t, ',') FROM (
     ('orders'),
     ('positions'),
     ('backtest_runs'),
-    ('strategy_execution_logs'),
     ('order_history'),
     ('system_operation_logs')
   ) AS v(t)
