@@ -24,40 +24,35 @@ var File_log_proto protoreflect.FileDescriptor
 
 const file_log_proto_rawDesc = "" +
 	"\n" +
-	"\tlog.proto\x12\x06ant.v1\x1a\x14log_connection.proto\x1a\x13log_execution.proto\x1a\x0flog_order.proto\x1a\x13log_operation.proto\x1a\x12log_schedule.proto2\xce\x03\n" +
+	"\tlog.proto\x12\x06ant.v1\x1a\x14log_connection.proto\x1a\x0flog_order.proto\x1a\x13log_operation.proto\x1a\x12log_schedule.proto2\xf7\x02\n" +
 	"\n" +
 	"LogService\x12X\n" +
-	"\x11GetConnectionLogs\x12 .ant.v1.GetConnectionLogsRequest\x1a!.ant.v1.GetConnectionLogsResponse\x12U\n" +
-	"\x10GetExecutionLogs\x12\x1f.ant.v1.GetExecutionLogsRequest\x1a .ant.v1.GetExecutionLogsResponse\x12[\n" +
+	"\x11GetConnectionLogs\x12 .ant.v1.GetConnectionLogsRequest\x1a!.ant.v1.GetConnectionLogsResponse\x12[\n" +
 	"\x12GetOrderLogHistory\x12!.ant.v1.GetOrderLogHistoryRequest\x1a\".ant.v1.GetOrderLogHistoryResponse\x12U\n" +
 	"\x10GetOperationLogs\x12\x1f.ant.v1.GetOperationLogsRequest\x1a .ant.v1.GetOperationLogsResponse\x12[\n" +
 	"\x12GetScheduleRunLogs\x12!.ant.v1.GetScheduleRunLogsRequest\x1a\".ant.v1.GetScheduleRunLogsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var file_log_proto_goTypes = []any{
 	(*GetConnectionLogsRequest)(nil),   // 0: ant.v1.GetConnectionLogsRequest
-	(*GetExecutionLogsRequest)(nil),    // 1: ant.v1.GetExecutionLogsRequest
-	(*GetOrderLogHistoryRequest)(nil),  // 2: ant.v1.GetOrderLogHistoryRequest
-	(*GetOperationLogsRequest)(nil),    // 3: ant.v1.GetOperationLogsRequest
-	(*GetScheduleRunLogsRequest)(nil),  // 4: ant.v1.GetScheduleRunLogsRequest
-	(*GetConnectionLogsResponse)(nil),  // 5: ant.v1.GetConnectionLogsResponse
-	(*GetExecutionLogsResponse)(nil),   // 6: ant.v1.GetExecutionLogsResponse
-	(*GetOrderLogHistoryResponse)(nil), // 7: ant.v1.GetOrderLogHistoryResponse
-	(*GetOperationLogsResponse)(nil),   // 8: ant.v1.GetOperationLogsResponse
-	(*GetScheduleRunLogsResponse)(nil), // 9: ant.v1.GetScheduleRunLogsResponse
+	(*GetOrderLogHistoryRequest)(nil),  // 1: ant.v1.GetOrderLogHistoryRequest
+	(*GetOperationLogsRequest)(nil),    // 2: ant.v1.GetOperationLogsRequest
+	(*GetScheduleRunLogsRequest)(nil),  // 3: ant.v1.GetScheduleRunLogsRequest
+	(*GetConnectionLogsResponse)(nil),  // 4: ant.v1.GetConnectionLogsResponse
+	(*GetOrderLogHistoryResponse)(nil), // 5: ant.v1.GetOrderLogHistoryResponse
+	(*GetOperationLogsResponse)(nil),   // 6: ant.v1.GetOperationLogsResponse
+	(*GetScheduleRunLogsResponse)(nil), // 7: ant.v1.GetScheduleRunLogsResponse
 }
 var file_log_proto_depIdxs = []int32{
 	0, // 0: ant.v1.LogService.GetConnectionLogs:input_type -> ant.v1.GetConnectionLogsRequest
-	1, // 1: ant.v1.LogService.GetExecutionLogs:input_type -> ant.v1.GetExecutionLogsRequest
-	2, // 2: ant.v1.LogService.GetOrderLogHistory:input_type -> ant.v1.GetOrderLogHistoryRequest
-	3, // 3: ant.v1.LogService.GetOperationLogs:input_type -> ant.v1.GetOperationLogsRequest
-	4, // 4: ant.v1.LogService.GetScheduleRunLogs:input_type -> ant.v1.GetScheduleRunLogsRequest
-	5, // 5: ant.v1.LogService.GetConnectionLogs:output_type -> ant.v1.GetConnectionLogsResponse
-	6, // 6: ant.v1.LogService.GetExecutionLogs:output_type -> ant.v1.GetExecutionLogsResponse
-	7, // 7: ant.v1.LogService.GetOrderLogHistory:output_type -> ant.v1.GetOrderLogHistoryResponse
-	8, // 8: ant.v1.LogService.GetOperationLogs:output_type -> ant.v1.GetOperationLogsResponse
-	9, // 9: ant.v1.LogService.GetScheduleRunLogs:output_type -> ant.v1.GetScheduleRunLogsResponse
-	5, // [5:10] is the sub-list for method output_type
-	0, // [0:5] is the sub-list for method input_type
+	1, // 1: ant.v1.LogService.GetOrderLogHistory:input_type -> ant.v1.GetOrderLogHistoryRequest
+	2, // 2: ant.v1.LogService.GetOperationLogs:input_type -> ant.v1.GetOperationLogsRequest
+	3, // 3: ant.v1.LogService.GetScheduleRunLogs:input_type -> ant.v1.GetScheduleRunLogsRequest
+	4, // 4: ant.v1.LogService.GetConnectionLogs:output_type -> ant.v1.GetConnectionLogsResponse
+	5, // 5: ant.v1.LogService.GetOrderLogHistory:output_type -> ant.v1.GetOrderLogHistoryResponse
+	6, // 6: ant.v1.LogService.GetOperationLogs:output_type -> ant.v1.GetOperationLogsResponse
+	7, // 7: ant.v1.LogService.GetScheduleRunLogs:output_type -> ant.v1.GetScheduleRunLogsResponse
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -69,7 +64,6 @@ func file_log_proto_init() {
 		return
 	}
 	file_log_connection_proto_init()
-	file_log_execution_proto_init()
 	file_log_order_proto_init()
 	file_log_operation_proto_init()
 	file_log_schedule_proto_init()

@@ -50,34 +50,6 @@ func connectionLogToProto(l *model.AccountConnectionLog) *antv1.ConnectionLog {
 	}
 }
 
-func executionLogToProto(l *model.StrategyExecutionLog) *antv1.ExecutionLog {
-	e := &antv1.ExecutionLog{
-		Id:              l.ID.String(),
-		Symbol:          l.Symbol,
-		Timeframe:       l.Timeframe,
-		Status:          string(l.Status),
-		SignalType:      string(l.SignalType),
-		SignalPrice:     l.SignalPrice.String(),
-		SignalVolume:    l.SignalVolume.String(),
-		SignalStopLoss:  l.SignalStopLoss.String(),
-		SignalTakeProfit: l.SignalTakeProfit.String(),
-		ExecutedOrderId: l.ExecutedOrderID,
-		ExecutedPrice:   l.ExecutedPrice.String(),
-		ExecutedVolume:  l.ExecutedVolume.String(),
-		Profit:          l.Profit.String(),
-		ErrorMessage:    l.ErrorMessage,
-		ExecutionTimeMs: l.ExecutionTimeMs,
-		CreatedAt:       timestamppb.New(l.CreatedAt),
-	}
-	if l.AccountID != nil {
-		e.AccountId = l.AccountID.String()
-	}
-	if l.ScheduleID != nil {
-		e.ScheduleId = l.ScheduleID.String()
-	}
-	return e
-}
-
 func orderHistoryToProto(o *model.OrderHistory) *antv1.OrderHistoryRecord {
 	r := &antv1.OrderHistoryRecord{
 		Id:         o.ID.String(),
@@ -135,28 +107,6 @@ func (s *LogServiceServer) GetConnectionLogs(ctx context.Context, req *connect.R
 		items[i] = connectionLogToProto(l)
 	}
 	return connect.NewResponse(&antv1.GetConnectionLogsResponse{Logs: items, Total: int32(total)}), nil
-}
-
-func (s *LogServiceServer) GetExecutionLogs(ctx context.Context, req *connect.Request[antv1.GetExecutionLogsRequest]) (*connect.Response[antv1.GetExecutionLogsResponse], error) {
-	params := &model.LogQueryParams{
-		Page:       int(req.Msg.Page),
-		PageSize:   int(req.Msg.PageSize),
-		AccountID:  req.Msg.AccountId,
-		ScheduleID: req.Msg.ScheduleId,
-		Symbol:     req.Msg.Symbol,
-		Status:     req.Msg.Status,
-		StartDate:  req.Msg.StartDate,
-		EndDate:    req.Msg.EndDate,
-	}
-	logs, total, err := s.logSvc.GetExecutionLogs(ctx, s.userID(ctx), params)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	items := make([]*antv1.ExecutionLog, len(logs))
-	for i, l := range logs {
-		items[i] = executionLogToProto(l)
-	}
-	return connect.NewResponse(&antv1.GetExecutionLogsResponse{Logs: items, Total: int32(total)}), nil
 }
 
 func (s *LogServiceServer) GetOrderLogHistory(ctx context.Context, req *connect.Request[antv1.GetOrderLogHistoryRequest]) (*connect.Response[antv1.GetOrderLogHistoryResponse], error) {

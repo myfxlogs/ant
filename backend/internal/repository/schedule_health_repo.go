@@ -110,7 +110,7 @@ func (r *ScheduleHealthRepository) GetGradingConfig(ctx context.Context) HealthG
 // GetScheduleStats returns summary statistics for a schedule's execution history.
 func (r *ScheduleHealthRepository) GetScheduleStats(ctx context.Context, userID, scheduleID uuid.UUID) (totalRuns, successRuns, failedRuns int32, successRate float64, lastRunAt *time.Time, latestError string, err error) {
 	err = r.db.QueryRow(ctx,
-		"SELECT COUNT(*), COUNT(*) FILTER (WHERE status = 'success'), COUNT(*) FILTER (WHERE status = 'failed'), MAX(created_at) FROM strategy_execution_logs WHERE user_id = $1 AND schedule_id = $2",
+		"SELECT COUNT(*), COUNT(*) FILTER (WHERE status = 'success'), COUNT(*) FILTER (WHERE status = 'failed'), MAX(created_at) FROM schedule_run_logs WHERE user_id = $1 AND schedule_id = $2",
 		userID, scheduleID,
 	).Scan(&totalRuns, &successRuns, &failedRuns, &lastRunAt)
 	if err != nil {
@@ -121,7 +121,7 @@ func (r *ScheduleHealthRepository) GetScheduleStats(ctx context.Context, userID,
 	}
 	var latestErr *string
 	_ = r.db.QueryRow(ctx,
-		"SELECT error_message FROM strategy_execution_logs WHERE user_id = $1 AND schedule_id = $2 AND status = 'failed' ORDER BY created_at DESC LIMIT 1",
+		"SELECT error_message FROM schedule_run_logs WHERE user_id = $1 AND schedule_id = $2 AND status = 'failed' ORDER BY created_at DESC LIMIT 1",
 		userID, scheduleID,
 	).Scan(&latestErr)
 	if latestErr != nil && *latestErr != "" {
@@ -145,7 +145,7 @@ func (r *ScheduleHealthRepository) ListRunLogs(ctx context.Context, userID, sche
 		limit = 20
 	}
 	rows, err := r.db.Query(ctx,
-		"SELECT id, status, COALESCE(signal_type, ''), COALESCE(execution_time_ms, 0), COALESCE(error_message, ''), created_at FROM strategy_execution_logs WHERE user_id = $1 AND schedule_id = $2 ORDER BY created_at DESC LIMIT $3",
+		"SELECT id, status, COALESCE(signal_type, ''), COALESCE(duration_ms, 0), COALESCE(error_message, ''), created_at FROM schedule_run_logs WHERE user_id = $1 AND schedule_id = $2 ORDER BY created_at DESC LIMIT $3",
 		userID, scheduleID, limit,
 	)
 	if err != nil {

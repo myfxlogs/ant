@@ -6,8 +6,6 @@ import type { GenFile, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { GetConnectionLogsRequestSchema, GetConnectionLogsResponseSchema } from "./log_connection_pb";
 import { file_log_connection } from "./log_connection_pb";
-import type { GetExecutionLogsRequestSchema, GetExecutionLogsResponseSchema } from "./log_execution_pb";
-import { file_log_execution } from "./log_execution_pb";
 import type { GetOrderLogHistoryRequestSchema, GetOrderLogHistoryResponseSchema } from "./log_order_pb";
 import { file_log_order } from "./log_order_pb";
 import type { GetOperationLogsRequestSchema, GetOperationLogsResponseSchema } from "./log_operation_pb";
@@ -19,7 +17,7 @@ import { file_log_schedule } from "./log_schedule_pb";
  * Describes the file log.proto.
  */
 export const file_log: GenFile = /*@__PURE__*/
-  fileDesc("Cglsb2cucHJvdG8SBmFudC52MTLOAwoKTG9nU2VydmljZRJYChFHZXRDb25uZWN0aW9uTG9ncxIgLmFudC52MS5HZXRDb25uZWN0aW9uTG9nc1JlcXVlc3QaIS5hbnQudjEuR2V0Q29ubmVjdGlvbkxvZ3NSZXNwb25zZRJVChBHZXRFeGVjdXRpb25Mb2dzEh8uYW50LnYxLkdldEV4ZWN1dGlvbkxvZ3NSZXF1ZXN0GiAuYW50LnYxLkdldEV4ZWN1dGlvbkxvZ3NSZXNwb25zZRJbChJHZXRPcmRlckxvZ0hpc3RvcnkSIS5hbnQudjEuR2V0T3JkZXJMb2dIaXN0b3J5UmVxdWVzdBoiLmFudC52MS5HZXRPcmRlckxvZ0hpc3RvcnlSZXNwb25zZRJVChBHZXRPcGVyYXRpb25Mb2dzEh8uYW50LnYxLkdldE9wZXJhdGlvbkxvZ3NSZXF1ZXN0GiAuYW50LnYxLkdldE9wZXJhdGlvbkxvZ3NSZXNwb25zZRJbChJHZXRTY2hlZHVsZVJ1bkxvZ3MSIS5hbnQudjEuR2V0U2NoZWR1bGVSdW5Mb2dzUmVxdWVzdBoiLmFudC52MS5HZXRTY2hlZHVsZVJ1bkxvZ3NSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_log_connection, file_log_execution, file_log_order, file_log_operation, file_log_schedule]);
+  fileDesc("Cglsb2cucHJvdG8SBmFudC52MTL3AgoKTG9nU2VydmljZRJYChFHZXRDb25uZWN0aW9uTG9ncxIgLmFudC52MS5HZXRDb25uZWN0aW9uTG9nc1JlcXVlc3QaIS5hbnQudjEuR2V0Q29ubmVjdGlvbkxvZ3NSZXNwb25zZRJbChJHZXRPcmRlckxvZ0hpc3RvcnkSIS5hbnQudjEuR2V0T3JkZXJMb2dIaXN0b3J5UmVxdWVzdBoiLmFudC52MS5HZXRPcmRlckxvZ0hpc3RvcnlSZXNwb25zZRJVChBHZXRPcGVyYXRpb25Mb2dzEh8uYW50LnYxLkdldE9wZXJhdGlvbkxvZ3NSZXF1ZXN0GiAuYW50LnYxLkdldE9wZXJhdGlvbkxvZ3NSZXNwb25zZRJbChJHZXRTY2hlZHVsZVJ1bkxvZ3MSIS5hbnQudjEuR2V0U2NoZWR1bGVSdW5Mb2dzUmVxdWVzdBoiLmFudC52MS5HZXRTY2hlZHVsZVJ1bkxvZ3NSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_log_connection, file_log_order, file_log_operation, file_log_schedule]);
 
 /**
  * @generated from service ant.v1.LogService
@@ -32,14 +30,6 @@ export const LogService: GenService<{
     methodKind: "unary";
     input: typeof GetConnectionLogsRequestSchema;
     output: typeof GetConnectionLogsResponseSchema;
-  },
-  /**
-   * @generated from rpc ant.v1.LogService.GetExecutionLogs
-   */
-  getExecutionLogs: {
-    methodKind: "unary";
-    input: typeof GetExecutionLogsRequestSchema;
-    output: typeof GetExecutionLogsResponseSchema;
   },
   /**
    * @generated from rpc ant.v1.LogService.GetOrderLogHistory

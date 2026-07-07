@@ -51,65 +51,6 @@ func NewAccountConnectionLog(userID, accountID uuid.UUID, eventType ConnectionEv
 	}
 }
 
-type StrategyExecutionLogStatus string
-
-const (
-	StrategyExecutionStatusPending   StrategyExecutionLogStatus = "pending"
-	StrategyExecutionStatusRunning   StrategyExecutionLogStatus = "running"
-	StrategyExecutionStatusCompleted StrategyExecutionLogStatus = "completed"
-	StrategyExecutionStatusFailed    StrategyExecutionLogStatus = "failed"
-	StrategyExecutionStatusSkipped   StrategyExecutionLogStatus = "skipped"
-)
-
-type StrategyExecutionLogSignalType string
-
-const (
-	StrategySignalTypeBuy    StrategyExecutionLogSignalType = "buy"
-	StrategySignalTypeSell   StrategyExecutionLogSignalType = "sell"
-	StrategySignalTypeClose  StrategyExecutionLogSignalType = "close"
-	StrategySignalTypeHold   StrategyExecutionLogSignalType = "hold"
-	StrategySignalTypeModify StrategyExecutionLogSignalType = "modify"
-)
-
-type StrategyExecutionLog struct {
-	ID               uuid.UUID                      `db:"id" json:"id"`
-	UserID           uuid.UUID                      `db:"user_id" json:"user_id"`
-	ScheduleID       *uuid.UUID                     `db:"schedule_id" json:"schedule_id,omitempty"`
-	TemplateID       *uuid.UUID                     `db:"template_id" json:"template_id,omitempty"`
-	AccountID        *uuid.UUID                     `db:"account_id" json:"account_id,omitempty"`
-	Symbol           string                         `db:"symbol" json:"symbol"`
-	Timeframe        string                         `db:"timeframe" json:"timeframe"`
-	Status           StrategyExecutionLogStatus     `db:"status" json:"status"`
-	SignalType       StrategyExecutionLogSignalType `db:"signal_type" json:"signal_type,omitempty"`
-	SignalPrice      decimal.Decimal                        `db:"signal_price" json:"signal_price,omitempty"`
-	SignalVolume     decimal.Decimal                        `db:"signal_volume" json:"signal_volume,omitempty"`
-	SignalStopLoss   decimal.Decimal                        `db:"signal_stop_loss" json:"signal_stop_loss,omitempty"`
-	SignalTakeProfit decimal.Decimal                        `db:"signal_take_profit" json:"signal_take_profit,omitempty"`
-	ExecutedOrderID  string                         `db:"executed_order_id" json:"executed_order_id,omitempty"`
-	ExecutedPrice    decimal.Decimal                        `db:"executed_price" json:"executed_price,omitempty"`
-	ExecutedVolume   decimal.Decimal                        `db:"executed_volume" json:"executed_volume,omitempty"`
-	Profit           decimal.Decimal                        `db:"profit" json:"profit,omitempty"`
-	ErrorMessage     string                         `db:"error_message" json:"error_message,omitempty"`
-	ExecutionTimeMs  int64                          `db:"execution_time_ms" json:"execution_time_ms"`
-	KlineData        interface{}                    `db:"kline_data" json:"kline_data,omitempty"`
-	StrategyParams   interface{}                    `db:"strategy_params" json:"strategy_params,omitempty"`
-	CreatedAt        time.Time                      `db:"created_at" json:"created_at"`
-}
-
-func NewStrategyExecutionLog(userID uuid.UUID, symbol, timeframe string) *StrategyExecutionLog {
-	return &StrategyExecutionLog{
-		ID:         uuid.New(),
-		UserID:     userID,
-		ScheduleID: nil,
-		TemplateID: nil,
-		AccountID:  nil,
-		Symbol:     symbol,
-		Timeframe:  timeframe,
-		Status:     StrategyExecutionStatusPending,
-		CreatedAt:  time.Now(),
-	}
-}
-
 type OrderHistoryType string
 
 const (

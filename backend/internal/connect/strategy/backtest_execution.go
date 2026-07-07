@@ -3,10 +3,9 @@ package strategy
 import (
 	"context"
 	"fmt"
-	"math"
-	"strconv"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -112,30 +111,26 @@ func (s *StrategyExecutionServer) fetchSymbolInfo(ctx context.Context, run *repo
 		return nil
 	}
 	p := params[0]
-	point := math.Pow(10, -float64(p.Digits))
-	lotMin, _ := p.LotMin.Float64()
-	lotMax, _ := p.LotMax.Float64()
-	lotStep, _ := p.LotStep.Float64()
-	lotSize, _ := p.LotSize.Float64()
-	tickValue, _ := p.PointValue.Float64()
+	// Compute point as decimal string to preserve precision (no float64).
+	point := decimal.New(1, int32(-p.Digits)).String()
 
 	info := &antv1.SymbolInfo{
 		Digits:       int32(p.Digits),
-		Point:        strconv.FormatFloat(point, 'f', -1, 64),
-		ContractSize: strconv.FormatFloat(lotSize, 'f', -1, 64),
+		Point:        point,
+		ContractSize: p.LotSize.String(),
 		StopsLevel:   p.StopLevel,
-		TickValue:    strconv.FormatFloat(tickValue, 'f', -1, 64),
+		TickValue:    p.PointValue.String(),
 	}
 	// Only set volume fields when the broker provides non-zero values
 	// (MT4 may not have these; use sensible defaults).
-	if lotMin > 0 {
-		info.VolumeMin = strconv.FormatFloat(lotMin, 'f', -1, 64)
+	if p.LotMin.IsPositive() {
+		info.VolumeMin = p.LotMin.String()
 	}
-	if lotMax > 0 {
-		info.VolumeMax = strconv.FormatFloat(lotMax, 'f', -1, 64)
+	if p.LotMax.IsPositive() {
+		info.VolumeMax = p.LotMax.String()
 	}
-	if lotStep > 0 {
-		info.VolumeStep = strconv.FormatFloat(lotStep, 'f', -1, 64)
+	if p.LotStep.IsPositive() {
+		info.VolumeStep = p.LotStep.String()
 	}
 	return info
 }

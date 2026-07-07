@@ -27,18 +27,6 @@ func (s *LogService) GetConnectionLogs(ctx context.Context, userID uuid.UUID, pa
 	return s.logRepo.GetConnectionLogs(ctx, userID, params)
 }
 
-func (s *LogService) LogExecution(ctx context.Context, log *model.StrategyExecutionLog) error {
-	return s.logRepo.CreateExecutionLog(ctx, log)
-}
-
-func (s *LogService) UpdateExecution(ctx context.Context, log *model.StrategyExecutionLog) error {
-	return s.logRepo.UpdateExecutionLog(ctx, log)
-}
-
-func (s *LogService) GetExecutionLogs(ctx context.Context, userID uuid.UUID, params *model.LogQueryParams) ([]*model.StrategyExecutionLog, int, error) {
-	return s.logRepo.GetExecutionLogs(ctx, userID, params)
-}
-
 func (s *LogService) LogOrder(ctx context.Context, order *model.OrderHistory) error {
 	return s.logRepo.CreateOrderHistory(ctx, order)
 }
@@ -76,13 +64,6 @@ func (s *LogService) GetAllLogs(ctx context.Context, userID uuid.UUID, params *m
 	}
 	result["connection_logs"] = connLogs
 	result["connection_total"] = connTotal
-
-	execLogs, execTotal, err := s.logRepo.GetExecutionLogs(ctx, userID, params)
-	if err != nil {
-		return nil, err
-	}
-	result["execution_logs"] = execLogs
-	result["execution_total"] = execTotal
 
 	orders, orderTotal, err := s.logRepo.GetOrderHistory(ctx, userID, params)
 	if err != nil {

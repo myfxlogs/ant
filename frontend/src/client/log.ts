@@ -34,7 +34,6 @@ export const logApi = {
     };
   },
 
-  getExecutionLogs: async (params: {
     page?: number;
     pageSize?: number;
     accountId?: string;
@@ -44,7 +43,6 @@ export const logApi = {
     startDate?: string;
     endDate?: string;
   }): Promise<{ logs: RpcExecutionLog[]; total: number }> => {
-    const response = await logClient.getExecutionLogs({
       page: params.page || 1,
       pageSize: params.pageSize || 20,
       accountId: params.accountId || '',

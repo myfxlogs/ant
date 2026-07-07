@@ -36,9 +36,6 @@ const (
 	// LogServiceGetConnectionLogsProcedure is the fully-qualified name of the LogService's
 	// GetConnectionLogs RPC.
 	LogServiceGetConnectionLogsProcedure = "/ant.v1.LogService/GetConnectionLogs"
-	// LogServiceGetExecutionLogsProcedure is the fully-qualified name of the LogService's
-	// GetExecutionLogs RPC.
-	LogServiceGetExecutionLogsProcedure = "/ant.v1.LogService/GetExecutionLogs"
 	// LogServiceGetOrderLogHistoryProcedure is the fully-qualified name of the LogService's
 	// GetOrderLogHistory RPC.
 	LogServiceGetOrderLogHistoryProcedure = "/ant.v1.LogService/GetOrderLogHistory"
@@ -53,7 +50,6 @@ const (
 // LogServiceClient is a client for the ant.v1.LogService service.
 type LogServiceClient interface {
 	GetConnectionLogs(context.Context, *connect.Request[v1.GetConnectionLogsRequest]) (*connect.Response[v1.GetConnectionLogsResponse], error)
-	GetExecutionLogs(context.Context, *connect.Request[v1.GetExecutionLogsRequest]) (*connect.Response[v1.GetExecutionLogsResponse], error)
 	GetOrderLogHistory(context.Context, *connect.Request[v1.GetOrderLogHistoryRequest]) (*connect.Response[v1.GetOrderLogHistoryResponse], error)
 	GetOperationLogs(context.Context, *connect.Request[v1.GetOperationLogsRequest]) (*connect.Response[v1.GetOperationLogsResponse], error)
 	GetScheduleRunLogs(context.Context, *connect.Request[v1.GetScheduleRunLogsRequest]) (*connect.Response[v1.GetScheduleRunLogsResponse], error)
@@ -74,12 +70,6 @@ func NewLogServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 			httpClient,
 			baseURL+LogServiceGetConnectionLogsProcedure,
 			connect.WithSchema(logServiceMethods.ByName("GetConnectionLogs")),
-			connect.WithClientOptions(opts...),
-		),
-		getExecutionLogs: connect.NewClient[v1.GetExecutionLogsRequest, v1.GetExecutionLogsResponse](
-			httpClient,
-			baseURL+LogServiceGetExecutionLogsProcedure,
-			connect.WithSchema(logServiceMethods.ByName("GetExecutionLogs")),
 			connect.WithClientOptions(opts...),
 		),
 		getOrderLogHistory: connect.NewClient[v1.GetOrderLogHistoryRequest, v1.GetOrderLogHistoryResponse](
@@ -106,7 +96,6 @@ func NewLogServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 // logServiceClient implements LogServiceClient.
 type logServiceClient struct {
 	getConnectionLogs  *connect.Client[v1.GetConnectionLogsRequest, v1.GetConnectionLogsResponse]
-	getExecutionLogs   *connect.Client[v1.GetExecutionLogsRequest, v1.GetExecutionLogsResponse]
 	getOrderLogHistory *connect.Client[v1.GetOrderLogHistoryRequest, v1.GetOrderLogHistoryResponse]
 	getOperationLogs   *connect.Client[v1.GetOperationLogsRequest, v1.GetOperationLogsResponse]
 	getScheduleRunLogs *connect.Client[v1.GetScheduleRunLogsRequest, v1.GetScheduleRunLogsResponse]
@@ -115,11 +104,6 @@ type logServiceClient struct {
 // GetConnectionLogs calls ant.v1.LogService.GetConnectionLogs.
 func (c *logServiceClient) GetConnectionLogs(ctx context.Context, req *connect.Request[v1.GetConnectionLogsRequest]) (*connect.Response[v1.GetConnectionLogsResponse], error) {
 	return c.getConnectionLogs.CallUnary(ctx, req)
-}
-
-// GetExecutionLogs calls ant.v1.LogService.GetExecutionLogs.
-func (c *logServiceClient) GetExecutionLogs(ctx context.Context, req *connect.Request[v1.GetExecutionLogsRequest]) (*connect.Response[v1.GetExecutionLogsResponse], error) {
-	return c.getExecutionLogs.CallUnary(ctx, req)
 }
 
 // GetOrderLogHistory calls ant.v1.LogService.GetOrderLogHistory.
@@ -140,7 +124,6 @@ func (c *logServiceClient) GetScheduleRunLogs(ctx context.Context, req *connect.
 // LogServiceHandler is an implementation of the ant.v1.LogService service.
 type LogServiceHandler interface {
 	GetConnectionLogs(context.Context, *connect.Request[v1.GetConnectionLogsRequest]) (*connect.Response[v1.GetConnectionLogsResponse], error)
-	GetExecutionLogs(context.Context, *connect.Request[v1.GetExecutionLogsRequest]) (*connect.Response[v1.GetExecutionLogsResponse], error)
 	GetOrderLogHistory(context.Context, *connect.Request[v1.GetOrderLogHistoryRequest]) (*connect.Response[v1.GetOrderLogHistoryResponse], error)
 	GetOperationLogs(context.Context, *connect.Request[v1.GetOperationLogsRequest]) (*connect.Response[v1.GetOperationLogsResponse], error)
 	GetScheduleRunLogs(context.Context, *connect.Request[v1.GetScheduleRunLogsRequest]) (*connect.Response[v1.GetScheduleRunLogsResponse], error)
@@ -157,12 +140,6 @@ func NewLogServiceHandler(svc LogServiceHandler, opts ...connect.HandlerOption) 
 		LogServiceGetConnectionLogsProcedure,
 		svc.GetConnectionLogs,
 		connect.WithSchema(logServiceMethods.ByName("GetConnectionLogs")),
-		connect.WithHandlerOptions(opts...),
-	)
-	logServiceGetExecutionLogsHandler := connect.NewUnaryHandler(
-		LogServiceGetExecutionLogsProcedure,
-		svc.GetExecutionLogs,
-		connect.WithSchema(logServiceMethods.ByName("GetExecutionLogs")),
 		connect.WithHandlerOptions(opts...),
 	)
 	logServiceGetOrderLogHistoryHandler := connect.NewUnaryHandler(
@@ -187,8 +164,6 @@ func NewLogServiceHandler(svc LogServiceHandler, opts ...connect.HandlerOption) 
 		switch r.URL.Path {
 		case LogServiceGetConnectionLogsProcedure:
 			logServiceGetConnectionLogsHandler.ServeHTTP(w, r)
-		case LogServiceGetExecutionLogsProcedure:
-			logServiceGetExecutionLogsHandler.ServeHTTP(w, r)
 		case LogServiceGetOrderLogHistoryProcedure:
 			logServiceGetOrderLogHistoryHandler.ServeHTTP(w, r)
 		case LogServiceGetOperationLogsProcedure:
@@ -206,10 +181,6 @@ type UnimplementedLogServiceHandler struct{}
 
 func (UnimplementedLogServiceHandler) GetConnectionLogs(context.Context, *connect.Request[v1.GetConnectionLogsRequest]) (*connect.Response[v1.GetConnectionLogsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.LogService.GetConnectionLogs is not implemented"))
-}
-
-func (UnimplementedLogServiceHandler) GetExecutionLogs(context.Context, *connect.Request[v1.GetExecutionLogsRequest]) (*connect.Response[v1.GetExecutionLogsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.LogService.GetExecutionLogs is not implemented"))
 }
 
 func (UnimplementedLogServiceHandler) GetOrderLogHistory(context.Context, *connect.Request[v1.GetOrderLogHistoryRequest]) (*connect.Response[v1.GetOrderLogHistoryResponse], error) {
