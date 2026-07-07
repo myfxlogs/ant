@@ -8,6 +8,7 @@ package user
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -138,8 +139,8 @@ func (s *AuthServer) HandleTokenRefresh(w http.ResponseWriter, r *http.Request) 
 	}
 	w.Header().Set("Set-Cookie", s.makeRefreshCookie(refreshToken))
 	w.Header().Set("Content-Type", "application/json")
-	// JWT tokens are base64url-encoded — safe for direct string concatenation.
-	w.Write([]byte(`{"access_token":"` + accessToken + `"}`))
+	// Use json.NewEncoder to satisfy gosec G705.
+	_ = json.NewEncoder(w).Encode(map[string]string{"access_token": accessToken})
 }
 
 // HandleLogout is a plain HTTP handler that clears the refresh token cookie.
