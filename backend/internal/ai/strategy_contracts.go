@@ -196,6 +196,7 @@ func goStrategyContractText() string {
 
 // feedbackSystemTemplate is the system prompt template for feedback iteration mode.
 // It instructs the LLM to analyze backtest results and output structured sections.
+// TODO(i18n): add English version of feedbackSystemTemplate for non-Chinese users.
 const feedbackSystemTemplate = `你是量化策略迭代助手。用户已查看回测结果并给出反馈，你需要：
 
 1. 分析回测结果的问题（1-2 句，中文）

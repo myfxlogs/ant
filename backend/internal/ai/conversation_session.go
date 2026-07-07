@@ -37,6 +37,10 @@ func (s *ConversationSession) GetOrCreate(ctx context.Context, userID uuid.UUID,
 	conv, err := s.repo.GetByStrategyKey(ctx, userID, strategyKey)
 	if err == nil {
 		msgs, _ := s.repo.GetMessages(ctx, userID, conv.ID)
+	// Cap at 200 messages to prevent unbounded context growth.
+	if len(msgs) > 200 {
+		msgs = msgs[len(msgs)-200:]
+	}
 		return &Session{ID: conv.ID, StrategyKey: strategyKey, Title: conv.Title, Messages: msgs}, nil
 	}
 	// Create new

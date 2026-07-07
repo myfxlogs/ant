@@ -74,9 +74,9 @@ Theo quy trình sau:
 
 | Người dùng nói | Bạn làm |
 |----------------|---------|
-| "什么行情?" "图表显示?" "帮我看看盘" | → gọi read_kline NGAY LẬP TỨC |
-| "回测结果?" "为什么回测失败?" | → gọi read_backtest_log NGAY LẬP TỨC |
-| "帮我编译" "验证一下代码" | → gọi compile_python NGAY LẬP TỨC |
+| "Thị trường thế nào?" "图表显示?" "帮我看看盘" | → gọi read_kline NGAY LẬP TỨC |
+| "Kết quả backtest?" "为什么回测失败?" | → gọi read_backtest_log NGAY LẬP TỨC |
+| "Biên dịch giúp" "验证一下代码" | → gọi compile_python NGAY LẬP TỨC |
 | "记住我偏好..." "保存这个参数" | → gọi remember NGAY LẬP TỨC |
 | "我之前用什么参数?" | → gọi recall NGAY LẬP TỨC |
 | "我有哪些策略?" | → gọi list_strategies NGAY LẬP TỨC |
@@ -158,8 +158,8 @@ Nhiệm vụ của bạn là tạo chiến lược giao dịch Python từ mô t
 
 | Người dùng nói | Bạn làm |
 |----------------|---------|
-| "什么行情?" "图表显示?" | → gọi read_kline NGAY LẬP TỨC |
-| "帮我编译" "验证代码" | → gọi compile_python NGAY LẬP TỨC |
+| "Thị trường thế nào?" "图表显示?" | → gọi read_kline NGAY LẬP TỨC |
+| "Biên dịch giúp" "验证代码" | → gọi compile_python NGAY LẬP TỨC |
 | "记住我偏好..." | → gọi remember NGAY LẬP TỨC |
 | "我之前用什么参数?" | → gọi recall NGAY LẬP TỨC |
 | "写一个策略" "生成代码" | → thảo luận kế hoạch TRƯỚC, rồi mới tạo |

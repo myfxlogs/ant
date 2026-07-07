@@ -2,6 +2,7 @@ package agent
 
 import (
 	"strings"
+	"sync"
 	"text/template"
 )
 
@@ -40,6 +41,7 @@ func sanitizeInput(s string) string {
 
 // promptRenderer manages parsed templates for reuse.
 type promptRenderer struct {
+	mu        sync.RWMutex
 	templates map[string]*template.Template
 }
 
@@ -48,14 +50,18 @@ var renderer = &promptRenderer{templates: make(map[string]*template.Template)}
 // renderPrompt parses (once) and executes a text/template, returning the rendered string.
 // Templates use {{.Field}} for structured data and {{.UserInput}} for sanitized user content.
 func renderPrompt(name, tmplText string, data interface{}) (string, error) {
+	renderer.mu.RLock()
 	t, ok := renderer.templates[name]
+	renderer.mu.RUnlock()
 	if !ok {
 		var err error
 		t, err = template.New(name).Parse(tmplText)
 		if err != nil {
 			return "", err
 		}
+		renderer.mu.Lock()
 		renderer.templates[name] = t
+		renderer.mu.Unlock()
 	}
 	var sb strings.Builder
 	if err := t.Execute(&sb, data); err != nil {
