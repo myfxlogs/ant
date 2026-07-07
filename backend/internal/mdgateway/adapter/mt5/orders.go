@@ -285,7 +285,7 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 	ctx, g.cancelHubOrderSub = context.WithCancel(ctx)
 	g.mu.Unlock()
 	go func() {
-		defer func() { recover() }()
+		defer func() { if r := recover(); r != nil { g.log.Error("mt5 order event recv panic", zap.Any("panic", r)) } }()
 		for {
 			if ctx.Err() != nil {
 				return

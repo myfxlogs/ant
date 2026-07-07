@@ -99,7 +99,8 @@ func (g *Gateway) Connect(ctx context.Context) error {
 		}
 		brokerHost = brokerHost[:idx]
 	}
-	loginResp, err := g.connCli.Connect(loginCtx, &pb.ConnectRequest{
+	connCli := g.connCli
+	loginResp, err := connCli.Connect(loginCtx, &pb.ConnectRequest{
 		Host: brokerHost, Port: brokerPort, User: int32(strToInt(g.cfg.Login)),
 		Password: g.cfg.Password, Id: &tempID,
 	})
@@ -210,9 +211,11 @@ func (g *Gateway) ensureConnected(ctx context.Context, backoff *time.Duration, m
 }
 
 func (g *Gateway) sleep(ctx context.Context, d time.Duration) {
+	timer := time.NewTimer(d)
+	defer timer.Stop()
 	select {
 	case <-ctx.Done():
-	case <-time.After(d):
+	case <-timer.C:
 	}
 }
 

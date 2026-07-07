@@ -192,16 +192,15 @@ type OrderEventBroker struct {
 func NewOrderEventBroker() *OrderEventBroker {
 	return &OrderEventBroker{subscribers: map[string][]chan *OrderEvent{}}
 }
-func (b *OrderEventBroker) PublishEvent(userID string, ev *OrderEvent) {
+func (b *OrderEventBroker) PublishEvent(_ string, ev *OrderEvent) {
 	b.mu.RLock()
-	src := b.subscribers[userID]
-	b.mu.RUnlock()
-	chs := make([]chan *OrderEvent, len(src))
-	copy(chs, src)
-	for _, ch := range chs {
-		select {
-		case ch <- ev:
-		default:
+	defer b.mu.RUnlock()
+	for _, subs := range b.subscribers {
+		for _, ch := range subs {
+			select {
+			case ch <- ev:
+			default:
+			}
 		}
 	}
 }

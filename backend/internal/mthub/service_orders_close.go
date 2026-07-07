@@ -92,7 +92,8 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 				s.logger.Warn("CloseOrder: OMS insert skipped", zap.Error(err))
 			}
 		} else {
-			s.omsTransition(ctx, closeOrderID, accountID, OMSStateNew, OMSStateRiskApproved)
+			s.omsTransition(ctx, closeOrderID, accountID, OMSStateNew, OMSStateValidated)
+			s.omsTransition(ctx, closeOrderID, accountID, OMSStateValidated, OMSStateRiskApproved)
 			s.omsTransition(ctx, closeOrderID, accountID, OMSStateRiskApproved, OMSStateSubmitted)
 		}
 	}

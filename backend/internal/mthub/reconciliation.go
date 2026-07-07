@@ -128,36 +128,30 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 		antTickets[ticket] = state
 	}
 
-	// 3. Compare
-	var ghosts, orphans, mismatches int
-	for ticket, antState := range antTickets {
+	// 3. Compare ticket existence only (OMS and broker use different state enums,
+	//    so direct state comparison is meaningless. Detect ghost/orphan tickets.)
+	var ghosts, orphans int
+	for ticket := range antTickets {
 		if _, exists := brokerTickets[ticket]; !exists {
 			r.log.Debug("reconciliation: orphan order (ant has, broker missing)",
-				zap.Int64("ticket", ticket), zap.String("state", antState))
+				zap.Int64("ticket", ticket))
 			orphans++
 		}
 	}
 
-	for ticket, brokerOrder := range brokerTickets {
-		brokerState := orderStateToString(brokerOrder.State)
-		if antState, exists := antTickets[ticket]; !exists {
+	for ticket := range brokerTickets {
+		if _, exists := antTickets[ticket]; !exists {
 			r.log.Debug("reconciliation: ghost order (broker has, ant missing)",
-				zap.Int64("ticket", ticket), zap.String("broker_state", brokerState))
+				zap.Int64("ticket", ticket))
 			ghosts++
-		} else if antState != brokerState {
-			r.log.Debug("reconciliation: state mismatch",
-				zap.Int64("ticket", ticket), zap.String("ant_state", antState),
-				zap.String("broker_state", brokerState))
-			mismatches++
 		}
 	}
 
-	if ghosts+orphans+mismatches > 0 {
+	if ghosts+orphans > 0 {
 		r.log.Info("reconciliation: account summary",
 			zap.String("accountID", accountID),
 			zap.Int("ghosts", ghosts),
 			zap.Int("orphans", orphans),
-			zap.Int("mismatches", mismatches),
 			zap.Int("broker_orders", len(brokerTickets)),
 			zap.Int("ant_orders", len(antTickets)),
 		)
