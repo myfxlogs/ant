@@ -69,6 +69,7 @@ func (g *Generator) runAgentLoop(
 	)
 
 	raw, loopErr := loop.Run(ctx, sysPrompt, userPrompt, userID)
+	g.log.Info("generator: loop done", zap.Int("raw_len", len(raw)), zap.Bool("has_err", loopErr != nil))
 
 	// Extract code regardless of loopErr — the LLM may have generated valid code
 	// even if max rounds was exceeded.
