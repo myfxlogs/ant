@@ -42,6 +42,9 @@ const (
 	// AdminAccountServiceUnfreezeAccountProcedure is the fully-qualified name of the
 	// AdminAccountService's UnfreezeAccount RPC.
 	AdminAccountServiceUnfreezeAccountProcedure = "/ant.v1.AdminAccountService/UnfreezeAccount"
+	// AdminAccountServiceGetAccountAuditLogsProcedure is the fully-qualified name of the
+	// AdminAccountService's GetAccountAuditLogs RPC.
+	AdminAccountServiceGetAccountAuditLogsProcedure = "/ant.v1.AdminAccountService/GetAccountAuditLogs"
 )
 
 // AdminAccountServiceClient is a client for the ant.v1.AdminAccountService service.
@@ -49,6 +52,7 @@ type AdminAccountServiceClient interface {
 	ListAccountsAdmin(context.Context, *connect.Request[v1.ListAccountsAdminRequest]) (*connect.Response[v1.ListAccountsAdminResponse], error)
 	FreezeAccount(context.Context, *connect.Request[v1.FreezeAccountRequest]) (*connect.Response[v1.FreezeAccountResponse], error)
 	UnfreezeAccount(context.Context, *connect.Request[v1.UnfreezeAccountRequest]) (*connect.Response[v1.UnfreezeAccountResponse], error)
+	GetAccountAuditLogs(context.Context, *connect.Request[v1.GetAccountAuditLogsRequest]) (*connect.Response[v1.GetAccountAuditLogsResponse], error)
 }
 
 // NewAdminAccountServiceClient constructs a client for the ant.v1.AdminAccountService service. By
@@ -80,14 +84,21 @@ func NewAdminAccountServiceClient(httpClient connect.HTTPClient, baseURL string,
 			connect.WithSchema(adminAccountServiceMethods.ByName("UnfreezeAccount")),
 			connect.WithClientOptions(opts...),
 		),
+		getAccountAuditLogs: connect.NewClient[v1.GetAccountAuditLogsRequest, v1.GetAccountAuditLogsResponse](
+			httpClient,
+			baseURL+AdminAccountServiceGetAccountAuditLogsProcedure,
+			connect.WithSchema(adminAccountServiceMethods.ByName("GetAccountAuditLogs")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // adminAccountServiceClient implements AdminAccountServiceClient.
 type adminAccountServiceClient struct {
-	listAccountsAdmin *connect.Client[v1.ListAccountsAdminRequest, v1.ListAccountsAdminResponse]
-	freezeAccount     *connect.Client[v1.FreezeAccountRequest, v1.FreezeAccountResponse]
-	unfreezeAccount   *connect.Client[v1.UnfreezeAccountRequest, v1.UnfreezeAccountResponse]
+	listAccountsAdmin   *connect.Client[v1.ListAccountsAdminRequest, v1.ListAccountsAdminResponse]
+	freezeAccount       *connect.Client[v1.FreezeAccountRequest, v1.FreezeAccountResponse]
+	unfreezeAccount     *connect.Client[v1.UnfreezeAccountRequest, v1.UnfreezeAccountResponse]
+	getAccountAuditLogs *connect.Client[v1.GetAccountAuditLogsRequest, v1.GetAccountAuditLogsResponse]
 }
 
 // ListAccountsAdmin calls ant.v1.AdminAccountService.ListAccountsAdmin.
@@ -105,11 +116,17 @@ func (c *adminAccountServiceClient) UnfreezeAccount(ctx context.Context, req *co
 	return c.unfreezeAccount.CallUnary(ctx, req)
 }
 
+// GetAccountAuditLogs calls ant.v1.AdminAccountService.GetAccountAuditLogs.
+func (c *adminAccountServiceClient) GetAccountAuditLogs(ctx context.Context, req *connect.Request[v1.GetAccountAuditLogsRequest]) (*connect.Response[v1.GetAccountAuditLogsResponse], error) {
+	return c.getAccountAuditLogs.CallUnary(ctx, req)
+}
+
 // AdminAccountServiceHandler is an implementation of the ant.v1.AdminAccountService service.
 type AdminAccountServiceHandler interface {
 	ListAccountsAdmin(context.Context, *connect.Request[v1.ListAccountsAdminRequest]) (*connect.Response[v1.ListAccountsAdminResponse], error)
 	FreezeAccount(context.Context, *connect.Request[v1.FreezeAccountRequest]) (*connect.Response[v1.FreezeAccountResponse], error)
 	UnfreezeAccount(context.Context, *connect.Request[v1.UnfreezeAccountRequest]) (*connect.Response[v1.UnfreezeAccountResponse], error)
+	GetAccountAuditLogs(context.Context, *connect.Request[v1.GetAccountAuditLogsRequest]) (*connect.Response[v1.GetAccountAuditLogsResponse], error)
 }
 
 // NewAdminAccountServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -137,6 +154,12 @@ func NewAdminAccountServiceHandler(svc AdminAccountServiceHandler, opts ...conne
 		connect.WithSchema(adminAccountServiceMethods.ByName("UnfreezeAccount")),
 		connect.WithHandlerOptions(opts...),
 	)
+	adminAccountServiceGetAccountAuditLogsHandler := connect.NewUnaryHandler(
+		AdminAccountServiceGetAccountAuditLogsProcedure,
+		svc.GetAccountAuditLogs,
+		connect.WithSchema(adminAccountServiceMethods.ByName("GetAccountAuditLogs")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.AdminAccountService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AdminAccountServiceListAccountsAdminProcedure:
@@ -145,6 +168,8 @@ func NewAdminAccountServiceHandler(svc AdminAccountServiceHandler, opts ...conne
 			adminAccountServiceFreezeAccountHandler.ServeHTTP(w, r)
 		case AdminAccountServiceUnfreezeAccountProcedure:
 			adminAccountServiceUnfreezeAccountHandler.ServeHTTP(w, r)
+		case AdminAccountServiceGetAccountAuditLogsProcedure:
+			adminAccountServiceGetAccountAuditLogsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -164,4 +189,8 @@ func (UnimplementedAdminAccountServiceHandler) FreezeAccount(context.Context, *c
 
 func (UnimplementedAdminAccountServiceHandler) UnfreezeAccount(context.Context, *connect.Request[v1.UnfreezeAccountRequest]) (*connect.Response[v1.UnfreezeAccountResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminAccountService.UnfreezeAccount is not implemented"))
+}
+
+func (UnimplementedAdminAccountServiceHandler) GetAccountAuditLogs(context.Context, *connect.Request[v1.GetAccountAuditLogsRequest]) (*connect.Response[v1.GetAccountAuditLogsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminAccountService.GetAccountAuditLogs is not implemented"))
 }

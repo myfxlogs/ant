@@ -132,6 +132,26 @@ func (s *AdminAccountServer) UnfreezeAccount(ctx context.Context, req *connect.R
 
 // GetAccountAuditLogs returns audit log entries for an account via ConnectRPC.
 // Auth is handled by the interceptor chain (authInterceptor + adminInterceptor).
-// Proto regeneration required after admin_account.proto was updated (task B1).
-// TODO: regenerate proto and wire: mux.Handle(antv1c.NewAdminAccountServiceHandler(...))
-// func (s *AdminAccountServer) GetAccountAuditLogs(ctx context.Context, req *connect.Request[antv1.GetAccountAuditLogsRequest]) (*connect.Response[antv1.GetAccountAuditLogsResponse], error) { ... }
+func (s *AdminAccountServer) GetAccountAuditLogs(ctx context.Context, req *connect.Request[antv1.GetAccountAuditLogsRequest]) (*connect.Response[antv1.GetAccountAuditLogsResponse], error) {
+	limit := int(req.Msg.Limit)
+	if limit <= 0 || limit > 200 {
+		limit = 100
+	}
+	entries, err := s.repo.GetAuditLogs(ctx, req.Msg.AccountId, limit)
+	if err != nil {
+		s.log.Error("GetAccountAuditLogs", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	pb := make([]*antv1.AccountAuditLogEntry, len(entries))
+	for i, e := range entries {
+		pb[i] = &antv1.AccountAuditLogEntry{
+			Id:        e.ID,
+			AccountId: e.AccountID,
+			UserId:    e.UserID,
+			Action:    e.Action,
+			Detail:    e.Detail,
+			CreatedAt: timestamppb.New(e.CreatedAt),
+		}
+	}
+	return connect.NewResponse(&antv1.GetAccountAuditLogsResponse{Entries: pb}), nil
+}

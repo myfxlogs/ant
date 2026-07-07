@@ -22,6 +22,186 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type GetAccountAuditLogsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAccountAuditLogsRequest) Reset() {
+	*x = GetAccountAuditLogsRequest{}
+	mi := &file_admin_account_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAccountAuditLogsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAccountAuditLogsRequest) ProtoMessage() {}
+
+func (x *GetAccountAuditLogsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_admin_account_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAccountAuditLogsRequest.ProtoReflect.Descriptor instead.
+func (*GetAccountAuditLogsRequest) Descriptor() ([]byte, []int) {
+	return file_admin_account_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *GetAccountAuditLogsRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+func (x *GetAccountAuditLogsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type AccountAuditLogEntry struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	AccountId     string                 `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Action        string                 `protobuf:"bytes,4,opt,name=action,proto3" json:"action,omitempty"`
+	Detail        string                 `protobuf:"bytes,5,opt,name=detail,proto3" json:"detail,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AccountAuditLogEntry) Reset() {
+	*x = AccountAuditLogEntry{}
+	mi := &file_admin_account_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AccountAuditLogEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AccountAuditLogEntry) ProtoMessage() {}
+
+func (x *AccountAuditLogEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_admin_account_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AccountAuditLogEntry.ProtoReflect.Descriptor instead.
+func (*AccountAuditLogEntry) Descriptor() ([]byte, []int) {
+	return file_admin_account_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *AccountAuditLogEntry) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *AccountAuditLogEntry) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+func (x *AccountAuditLogEntry) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *AccountAuditLogEntry) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+func (x *AccountAuditLogEntry) GetDetail() string {
+	if x != nil {
+		return x.Detail
+	}
+	return ""
+}
+
+func (x *AccountAuditLogEntry) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+type GetAccountAuditLogsResponse struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Entries       []*AccountAuditLogEntry `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAccountAuditLogsResponse) Reset() {
+	*x = GetAccountAuditLogsResponse{}
+	mi := &file_admin_account_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAccountAuditLogsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAccountAuditLogsResponse) ProtoMessage() {}
+
+func (x *GetAccountAuditLogsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_admin_account_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAccountAuditLogsResponse.ProtoReflect.Descriptor instead.
+func (*GetAccountAuditLogsResponse) Descriptor() ([]byte, []int) {
+	return file_admin_account_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetAccountAuditLogsResponse) GetEntries() []*AccountAuditLogEntry {
+	if x != nil {
+		return x.Entries
+	}
+	return nil
+}
+
 type AccountWithUser struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -57,7 +237,7 @@ type AccountWithUser struct {
 
 func (x *AccountWithUser) Reset() {
 	*x = AccountWithUser{}
-	mi := &file_admin_account_proto_msgTypes[0]
+	mi := &file_admin_account_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -69,7 +249,7 @@ func (x *AccountWithUser) String() string {
 func (*AccountWithUser) ProtoMessage() {}
 
 func (x *AccountWithUser) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_account_proto_msgTypes[0]
+	mi := &file_admin_account_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -82,7 +262,7 @@ func (x *AccountWithUser) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccountWithUser.ProtoReflect.Descriptor instead.
 func (*AccountWithUser) Descriptor() ([]byte, []int) {
-	return file_admin_account_proto_rawDescGZIP(), []int{0}
+	return file_admin_account_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *AccountWithUser) GetId() string {
@@ -288,7 +468,7 @@ type ListAccountsAdminRequest struct {
 
 func (x *ListAccountsAdminRequest) Reset() {
 	*x = ListAccountsAdminRequest{}
-	mi := &file_admin_account_proto_msgTypes[1]
+	mi := &file_admin_account_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -300,7 +480,7 @@ func (x *ListAccountsAdminRequest) String() string {
 func (*ListAccountsAdminRequest) ProtoMessage() {}
 
 func (x *ListAccountsAdminRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_account_proto_msgTypes[1]
+	mi := &file_admin_account_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -313,7 +493,7 @@ func (x *ListAccountsAdminRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAccountsAdminRequest.ProtoReflect.Descriptor instead.
 func (*ListAccountsAdminRequest) Descriptor() ([]byte, []int) {
-	return file_admin_account_proto_rawDescGZIP(), []int{1}
+	return file_admin_account_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ListAccountsAdminRequest) GetPage() int32 {
@@ -368,7 +548,7 @@ type ListAccountsAdminResponse struct {
 
 func (x *ListAccountsAdminResponse) Reset() {
 	*x = ListAccountsAdminResponse{}
-	mi := &file_admin_account_proto_msgTypes[2]
+	mi := &file_admin_account_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -380,7 +560,7 @@ func (x *ListAccountsAdminResponse) String() string {
 func (*ListAccountsAdminResponse) ProtoMessage() {}
 
 func (x *ListAccountsAdminResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_account_proto_msgTypes[2]
+	mi := &file_admin_account_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -393,7 +573,7 @@ func (x *ListAccountsAdminResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAccountsAdminResponse.ProtoReflect.Descriptor instead.
 func (*ListAccountsAdminResponse) Descriptor() ([]byte, []int) {
-	return file_admin_account_proto_rawDescGZIP(), []int{2}
+	return file_admin_account_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ListAccountsAdminResponse) GetAccounts() []*AccountWithUser {
@@ -419,7 +599,7 @@ type FreezeAccountRequest struct {
 
 func (x *FreezeAccountRequest) Reset() {
 	*x = FreezeAccountRequest{}
-	mi := &file_admin_account_proto_msgTypes[3]
+	mi := &file_admin_account_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -431,7 +611,7 @@ func (x *FreezeAccountRequest) String() string {
 func (*FreezeAccountRequest) ProtoMessage() {}
 
 func (x *FreezeAccountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_account_proto_msgTypes[3]
+	mi := &file_admin_account_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -444,7 +624,7 @@ func (x *FreezeAccountRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FreezeAccountRequest.ProtoReflect.Descriptor instead.
 func (*FreezeAccountRequest) Descriptor() ([]byte, []int) {
-	return file_admin_account_proto_rawDescGZIP(), []int{3}
+	return file_admin_account_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *FreezeAccountRequest) GetId() string {
@@ -462,7 +642,7 @@ type FreezeAccountResponse struct {
 
 func (x *FreezeAccountResponse) Reset() {
 	*x = FreezeAccountResponse{}
-	mi := &file_admin_account_proto_msgTypes[4]
+	mi := &file_admin_account_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -474,7 +654,7 @@ func (x *FreezeAccountResponse) String() string {
 func (*FreezeAccountResponse) ProtoMessage() {}
 
 func (x *FreezeAccountResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_account_proto_msgTypes[4]
+	mi := &file_admin_account_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -487,7 +667,7 @@ func (x *FreezeAccountResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FreezeAccountResponse.ProtoReflect.Descriptor instead.
 func (*FreezeAccountResponse) Descriptor() ([]byte, []int) {
-	return file_admin_account_proto_rawDescGZIP(), []int{4}
+	return file_admin_account_proto_rawDescGZIP(), []int{7}
 }
 
 type UnfreezeAccountRequest struct {
@@ -499,7 +679,7 @@ type UnfreezeAccountRequest struct {
 
 func (x *UnfreezeAccountRequest) Reset() {
 	*x = UnfreezeAccountRequest{}
-	mi := &file_admin_account_proto_msgTypes[5]
+	mi := &file_admin_account_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -511,7 +691,7 @@ func (x *UnfreezeAccountRequest) String() string {
 func (*UnfreezeAccountRequest) ProtoMessage() {}
 
 func (x *UnfreezeAccountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_account_proto_msgTypes[5]
+	mi := &file_admin_account_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -524,7 +704,7 @@ func (x *UnfreezeAccountRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnfreezeAccountRequest.ProtoReflect.Descriptor instead.
 func (*UnfreezeAccountRequest) Descriptor() ([]byte, []int) {
-	return file_admin_account_proto_rawDescGZIP(), []int{5}
+	return file_admin_account_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UnfreezeAccountRequest) GetId() string {
@@ -542,7 +722,7 @@ type UnfreezeAccountResponse struct {
 
 func (x *UnfreezeAccountResponse) Reset() {
 	*x = UnfreezeAccountResponse{}
-	mi := &file_admin_account_proto_msgTypes[6]
+	mi := &file_admin_account_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -554,7 +734,7 @@ func (x *UnfreezeAccountResponse) String() string {
 func (*UnfreezeAccountResponse) ProtoMessage() {}
 
 func (x *UnfreezeAccountResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_account_proto_msgTypes[6]
+	mi := &file_admin_account_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -567,14 +747,29 @@ func (x *UnfreezeAccountResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnfreezeAccountResponse.ProtoReflect.Descriptor instead.
 func (*UnfreezeAccountResponse) Descriptor() ([]byte, []int) {
-	return file_admin_account_proto_rawDescGZIP(), []int{6}
+	return file_admin_account_proto_rawDescGZIP(), []int{9}
 }
 
 var File_admin_account_proto protoreflect.FileDescriptor
 
 const file_admin_account_proto_rawDesc = "" +
 	"\n" +
-	"\x13admin_account.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xbf\a\n" +
+	"\x13admin_account.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"Q\n" +
+	"\x1aGetAccountAuditLogsRequest\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\"\xc9\x01\n" +
+	"\x14AccountAuditLogEntry\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x02 \x01(\tR\taccountId\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\x12\x16\n" +
+	"\x06action\x18\x04 \x01(\tR\x06action\x12\x16\n" +
+	"\x06detail\x18\x05 \x01(\tR\x06detail\x129\n" +
+	"\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"U\n" +
+	"\x1bGetAccountAuditLogsResponse\x126\n" +
+	"\aentries\x18\x01 \x03(\v2\x1c.ant.v1.AccountAuditLogEntryR\aentries\"\xbf\a\n" +
 	"\x0fAccountWithUser\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1d\n" +
@@ -626,11 +821,12 @@ const file_admin_account_proto_rawDesc = "" +
 	"\x15FreezeAccountResponse\"(\n" +
 	"\x16UnfreezeAccountRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x19\n" +
-	"\x17UnfreezeAccountResponse2\x91\x02\n" +
+	"\x17UnfreezeAccountResponse2\xf1\x02\n" +
 	"\x13AdminAccountService\x12X\n" +
 	"\x11ListAccountsAdmin\x12 .ant.v1.ListAccountsAdminRequest\x1a!.ant.v1.ListAccountsAdminResponse\x12L\n" +
 	"\rFreezeAccount\x12\x1c.ant.v1.FreezeAccountRequest\x1a\x1d.ant.v1.FreezeAccountResponse\x12R\n" +
-	"\x0fUnfreezeAccount\x12\x1e.ant.v1.UnfreezeAccountRequest\x1a\x1f.ant.v1.UnfreezeAccountResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x0fUnfreezeAccount\x12\x1e.ant.v1.UnfreezeAccountRequest\x1a\x1f.ant.v1.UnfreezeAccountResponse\x12^\n" +
+	"\x13GetAccountAuditLogs\x12\".ant.v1.GetAccountAuditLogsRequest\x1a#.ant.v1.GetAccountAuditLogsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_admin_account_proto_rawDescOnce sync.Once
@@ -644,34 +840,41 @@ func file_admin_account_proto_rawDescGZIP() []byte {
 	return file_admin_account_proto_rawDescData
 }
 
-var file_admin_account_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_admin_account_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_admin_account_proto_goTypes = []any{
-	(*AccountWithUser)(nil),           // 0: ant.v1.AccountWithUser
-	(*ListAccountsAdminRequest)(nil),  // 1: ant.v1.ListAccountsAdminRequest
-	(*ListAccountsAdminResponse)(nil), // 2: ant.v1.ListAccountsAdminResponse
-	(*FreezeAccountRequest)(nil),      // 3: ant.v1.FreezeAccountRequest
-	(*FreezeAccountResponse)(nil),     // 4: ant.v1.FreezeAccountResponse
-	(*UnfreezeAccountRequest)(nil),    // 5: ant.v1.UnfreezeAccountRequest
-	(*UnfreezeAccountResponse)(nil),   // 6: ant.v1.UnfreezeAccountResponse
-	(*timestamppb.Timestamp)(nil),     // 7: google.protobuf.Timestamp
+	(*GetAccountAuditLogsRequest)(nil),  // 0: ant.v1.GetAccountAuditLogsRequest
+	(*AccountAuditLogEntry)(nil),        // 1: ant.v1.AccountAuditLogEntry
+	(*GetAccountAuditLogsResponse)(nil), // 2: ant.v1.GetAccountAuditLogsResponse
+	(*AccountWithUser)(nil),             // 3: ant.v1.AccountWithUser
+	(*ListAccountsAdminRequest)(nil),    // 4: ant.v1.ListAccountsAdminRequest
+	(*ListAccountsAdminResponse)(nil),   // 5: ant.v1.ListAccountsAdminResponse
+	(*FreezeAccountRequest)(nil),        // 6: ant.v1.FreezeAccountRequest
+	(*FreezeAccountResponse)(nil),       // 7: ant.v1.FreezeAccountResponse
+	(*UnfreezeAccountRequest)(nil),      // 8: ant.v1.UnfreezeAccountRequest
+	(*UnfreezeAccountResponse)(nil),     // 9: ant.v1.UnfreezeAccountResponse
+	(*timestamppb.Timestamp)(nil),       // 10: google.protobuf.Timestamp
 }
 var file_admin_account_proto_depIdxs = []int32{
-	7, // 0: ant.v1.AccountWithUser.last_connected_at:type_name -> google.protobuf.Timestamp
-	7, // 1: ant.v1.AccountWithUser.last_checked_at:type_name -> google.protobuf.Timestamp
-	7, // 2: ant.v1.AccountWithUser.created_at:type_name -> google.protobuf.Timestamp
-	7, // 3: ant.v1.AccountWithUser.updated_at:type_name -> google.protobuf.Timestamp
-	0, // 4: ant.v1.ListAccountsAdminResponse.accounts:type_name -> ant.v1.AccountWithUser
-	1, // 5: ant.v1.AdminAccountService.ListAccountsAdmin:input_type -> ant.v1.ListAccountsAdminRequest
-	3, // 6: ant.v1.AdminAccountService.FreezeAccount:input_type -> ant.v1.FreezeAccountRequest
-	5, // 7: ant.v1.AdminAccountService.UnfreezeAccount:input_type -> ant.v1.UnfreezeAccountRequest
-	2, // 8: ant.v1.AdminAccountService.ListAccountsAdmin:output_type -> ant.v1.ListAccountsAdminResponse
-	4, // 9: ant.v1.AdminAccountService.FreezeAccount:output_type -> ant.v1.FreezeAccountResponse
-	6, // 10: ant.v1.AdminAccountService.UnfreezeAccount:output_type -> ant.v1.UnfreezeAccountResponse
-	8, // [8:11] is the sub-list for method output_type
-	5, // [5:8] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	10, // 0: ant.v1.AccountAuditLogEntry.created_at:type_name -> google.protobuf.Timestamp
+	1,  // 1: ant.v1.GetAccountAuditLogsResponse.entries:type_name -> ant.v1.AccountAuditLogEntry
+	10, // 2: ant.v1.AccountWithUser.last_connected_at:type_name -> google.protobuf.Timestamp
+	10, // 3: ant.v1.AccountWithUser.last_checked_at:type_name -> google.protobuf.Timestamp
+	10, // 4: ant.v1.AccountWithUser.created_at:type_name -> google.protobuf.Timestamp
+	10, // 5: ant.v1.AccountWithUser.updated_at:type_name -> google.protobuf.Timestamp
+	3,  // 6: ant.v1.ListAccountsAdminResponse.accounts:type_name -> ant.v1.AccountWithUser
+	4,  // 7: ant.v1.AdminAccountService.ListAccountsAdmin:input_type -> ant.v1.ListAccountsAdminRequest
+	6,  // 8: ant.v1.AdminAccountService.FreezeAccount:input_type -> ant.v1.FreezeAccountRequest
+	8,  // 9: ant.v1.AdminAccountService.UnfreezeAccount:input_type -> ant.v1.UnfreezeAccountRequest
+	0,  // 10: ant.v1.AdminAccountService.GetAccountAuditLogs:input_type -> ant.v1.GetAccountAuditLogsRequest
+	5,  // 11: ant.v1.AdminAccountService.ListAccountsAdmin:output_type -> ant.v1.ListAccountsAdminResponse
+	7,  // 12: ant.v1.AdminAccountService.FreezeAccount:output_type -> ant.v1.FreezeAccountResponse
+	9,  // 13: ant.v1.AdminAccountService.UnfreezeAccount:output_type -> ant.v1.UnfreezeAccountResponse
+	2,  // 14: ant.v1.AdminAccountService.GetAccountAuditLogs:output_type -> ant.v1.GetAccountAuditLogsResponse
+	11, // [11:15] is the sub-list for method output_type
+	7,  // [7:11] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_admin_account_proto_init() }
@@ -685,7 +888,7 @@ func file_admin_account_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_admin_account_proto_rawDesc), len(file_admin_account_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
