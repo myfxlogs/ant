@@ -10,6 +10,7 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/costsvc"
+	"anttrader/internal/risk"
 	"anttrader/internal/usermgr"
 )
 
@@ -20,6 +21,19 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	// Pre-trade gates.
 	if s.killSwitch != nil && s.killSwitch.IsEngaged() {
 		return nil, ErrKillSwitchEngaged
+	}
+	// Guard: mandatory 3-rule safety net (kill switch, duplicate, max lot size).
+	if s.guard != nil {
+		side := "buy"
+		if req.Side == SideSell {
+			side = "sell"
+		}
+		if result := s.guard.Check(ctx, &risk.GuardRequest{
+			Symbol: req.Canonical, Side: side,
+			Volume: req.Volume, OrderType: "market",
+		}); !result.Allowed {
+			return nil, fmt.Errorf("guard: %s", result.Reason)
+		}
 	}
 	if s.accountOwnerVerifier != nil {
 		uid := usermgr.GetUserID(ctx)

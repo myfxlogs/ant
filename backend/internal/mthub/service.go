@@ -58,6 +58,10 @@ type MtHubService struct {
 	// D6-A: single-chokepoint risk gate evaluated before every order (Place/Close/Modify).
 	gate *risk.Gate
 
+	// Guard is the mandatory 3-rule safety net (kill switch, duplicate, max lot size).
+	// Evaluated BEFORE the optional Gate. Must pass for any order to reach a broker.
+	guard *risk.Guard
+
 	// S1.2: OMS 16-state state machine writer (NEW to VALIDATED to RISK_APPROVED to SUBMITTED).
 	omsWriter      *OmsWriter
 	brokerRegistry BrokerRegistry // M12-C2: multi-broker registry (optional)
@@ -89,6 +93,9 @@ func (s *MtHubService) SetAccountStateProvider(p AccountStateProvider) { s.accou
 
 // SetGate injects the risk gate for pre-trade evaluation (D6-A single chokepoint).
 func (s *MtHubService) SetGate(g *risk.Gate) { s.gate = g }
+
+// SetGuard injects the mandatory safety net (kill switch, duplicate, max lot size).
+func (s *MtHubService) SetGuard(g *risk.Guard) { s.guard = g }
 
 // SetOmsWriter injects the OMS state writer for order lifecycle tracking (S1.2).
 func (s *MtHubService) SetOmsWriter(w *OmsWriter) { s.omsWriter = w }

@@ -20,6 +20,7 @@ import (
 	"go.uber.org/zap"
 
 	"anttrader/internal/mthub"
+	"anttrader/internal/risk"
 	"anttrader/internal/repository"
 )
 
@@ -39,11 +40,15 @@ type PaperEngine struct {
 	repo  paperRepository
 	mtHub *mthub.MtHubService
 	log   *zap.Logger
+	guard *risk.Guard // mandatory safety net (nil = no-op, for tests)
 
 	// SSE subscribers: paperAccountID → list of subscriber channels
 	subscribers map[string][]chan *repository.PaperAccount
 	mu          sync.RWMutex
 }
+
+// SetGuard injects the mandatory safety net for paper trading.
+func (e *PaperEngine) SetGuard(g *risk.Guard) { e.guard = g }
 
 // New creates a PaperEngine.
 func New(repo paperRepository, mtHub *mthub.MtHubService, log *zap.Logger) *PaperEngine {
@@ -59,6 +64,16 @@ func New(repo paperRepository, mtHub *mthub.MtHubService, log *zap.Logger) *Pape
 // Called by LiveStrategyRunner when mode="paper".
 func (e *PaperEngine) PlacePaperOrder(ctx context.Context, accountID, symbol, side string,
 	volume, bid, ask decimal.Decimal) error {
+
+	// Guard: mandatory safety net before any order reaches the broker.
+	if e.guard != nil {
+		if result := e.guard.Check(ctx, &risk.GuardRequest{
+			Symbol: symbol, Side: side,
+			Volume: volume, OrderType: "market",
+		}); !result.Allowed {
+			return fmt.Errorf("paper: guard blocked: %s", result.Reason)
+		}
+	}
 
 	// Determine simulated fill price: buy → Ask, sell → Bid, fallback to mid.
 	fillPrice := bid.Add(ask).Div(decimal.NewFromInt(2))

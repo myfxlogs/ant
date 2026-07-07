@@ -23,6 +23,7 @@ import (
 func initRiskPipeline(
 	pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHubService,
 	hub *mthub.Hub, eventStore *mthub.TradeEventStore, cfg *config.Config,
+	guard *risk.Guard,
 ) (*risksvc.JurisdictionGate, *risksvc.CapabilityStore, *risksvc.PlatformAggregator) {
 	jurisGate := buildJurisdictionGate(pool, cfg)
 	capStore := loadCapabilityStore(pool, log)
@@ -30,7 +31,7 @@ func initRiskPipeline(
 	platformAgg.StartRefreshLoop(5 * time.Second)
 
 	// D6-A: risksvc pipeline replaced by risk.Gate (single chokepoint).
-	wireMthubServices(pool, log, mthubSvc, hub, eventStore)
+	wireMthubServices(pool, log, mthubSvc, hub, eventStore, guard)
 	return jurisGate, capStore, platformAgg
 }
 
@@ -61,7 +62,7 @@ func loadCapabilityStore(pool *pgxpool.Pool, log *zap.Logger) *risksvc.Capabilit
 	return capStore
 }
 
-func wireMthubServices(pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHubService, hub *mthub.Hub, eventStore *mthub.TradeEventStore) {
+func wireMthubServices(pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHubService, hub *mthub.Hub, eventStore *mthub.TradeEventStore, guard *risk.Guard) {
 	mthubSvc.SetAccountStateProvider(func(ctx context.Context, accountID string) (*risk.AccountState, error) {
 		var balance, equity, freeMargin, margin, positions float64
 		err := pool.QueryRow(ctx,
@@ -85,4 +86,5 @@ func wireMthubServices(pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHu
 		Symbol: "DEFAULT", SpreadPips: 1.0, PipSize: 0.00001, PipValue: 1.0, CommissionPerLot: 0,
 	}, log))
 	mthubSvc.SetOmsWriter(mthub.NewOmsWriter(pool, eventStore))
+	mthubSvc.SetGuard(guard)
 }

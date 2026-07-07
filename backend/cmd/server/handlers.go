@@ -214,12 +214,16 @@ func registerHandlers(
 
 	// Paper trading + notification deps created early — both needed by strategy execution config.
 	paperRepo := repository.NewPaperRepo(pool)
+	guard := risk.NewGuard(&risk.GuardConfig{
+		KillSwitch: func() bool { return cfg.RiskGateKillSwitch },
+	})
 	paperEngine := papereng.New(paperRepo, mthubSvc, log)
+	paperEngine.SetGuard(guard)
 	notifSub := notifpubsub.NewSubscriber()
 	notifRepo := repository.NewNotificationRepository(pool)
 	notifSender := notifpubsub.NewSender(notifRepo, notifSub, log)
 
-	jurisGate, capStore, platformAgg := initRiskPipeline(pool, log, mthubSvc, hub, eventStore, cfg)
+	jurisGate, capStore, platformAgg := initRiskPipeline(pool, log, mthubSvc, hub, eventStore, cfg, guard)
 	strategyExecServer := configureStrategyExecution(pool, backtestRunRepo, marketDataRepo, mthubSvc, hub,
 		paperEngine, notifSender, aiSvc, pgListen, jurisGate, capStore, cfg, log)
 	mux.Handle(antv1c.NewStrategyRuntimeServiceHandler(strategyExecServer,

@@ -24,6 +24,7 @@ type OrderRecord struct {
 	Side                                                    Side
 	OrderType                                               OrderType
 	Volume, OpenPrice, ClosePrice, Profit, Commission, Swap decimal.Decimal
+	StopLoss, TakeProfit                                    decimal.Decimal
 	OpenTime, CloseTime                                     time.Time
 	Comment                                                 string
 	Magic                                                   int32
