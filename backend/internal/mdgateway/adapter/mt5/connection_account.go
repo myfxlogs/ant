@@ -32,7 +32,8 @@ func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, 
 		return nil, fmt.Errorf("mt5 AccountSummary: %w", err)
 	}
 	if resp.GetResult() == nil {
-		return &mdtick.MTAccountInfo{}, nil
+		g.log.Warn("mt5 AccountSummary: result nil, assuming investor (read-only) account")
+		return &mdtick.MTAccountInfo{IsInvestor: true}, nil
 	}
 
 	s := resp.GetResult()

@@ -85,6 +85,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 
 	// --- Backfiller (initial scan + 6h cron) ---
 	bf, srcMap := startBackfiller(ctx, deps, aggregator, publisher, pgWriter, log)
+	_ = bf // backfiller goroutines run until ctx is done; cleanup handled by ctx cancellation
 
 	// --- NormalizerInvalidator (PG LISTEN) ---
 	invalidator := NewNormalizerInvalidator(log, deps.PG, func(broker, symbolRaw string) {
@@ -197,8 +198,6 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 
 	pticks, pbars := pgWriter.Drain()
 	pgWriter.Flush(ctx, pticks, pbars)
-	_ = invalidator
-	_ = bf
 	log.Info("mdgateway: stopped")
 	return nil
 }
