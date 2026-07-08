@@ -55,13 +55,15 @@ func NewGatewayServer(pool *pgxpool.Pool, mdr repository.MarketDataStore, aiSvc 
 		err := pool.QueryRow(ctx, sql, args...).Scan(&result)
 		return result, err
 	}
+	generator := NewGenerator(aiSvc, log, cache, memory, mdr, btRepo, memExec, memQuery)
+	generator.SetConversationRepo(repository.NewAIConversationRepository(pool))
 	return &GatewayServer{
 		marketDataRepo: mdr,
 		log:            log,
 		bridge:         NewBridge(aiSvc, log, cache),
 		profiler:       profiler,
 		interpreter:    interpreter,
-		generator:      NewGenerator(aiSvc, log, cache, memory, mdr, btRepo, memExec, memQuery),
+		generator:      generator,
 		memory:         memory,
 		hooks:          hooks,
 		settings:       settings,
