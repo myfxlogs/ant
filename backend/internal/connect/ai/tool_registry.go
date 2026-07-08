@@ -101,7 +101,7 @@ func (t *ReadKlineTool) Schema() systemai.ToolDefinition {
 		Type: "function",
 		Function: systemai.ToolDefFunction{
 			Name:        "read_kline",
-			Description: "读取K线数据并返回市场分析。包含：总bar数、日期范围、当前价格、EMA20/EMA50、趋势方向、近期高低价、波动率、最近10根K线OHLC。用于分析行情、判断趋势、检查数据充足性。",
+			Description: "读取K线数据并返回市场分析（bar数/日期/价格/EMA/趋势/波动率/近期OHLC）。当你需要了解当前市场状况、分析行情趋势、查看价格形态、或写策略前确认数据可用性时调用此工具。用户问'市场怎么样/什么形态/趋势如何'时必须调用。",
 			Parameters: map[string]any{
 				"type": "object",
 				"properties": map[string]any{

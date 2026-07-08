@@ -22,7 +22,7 @@ func (t *readCurrentCodeTool) Schema() systemai.ToolDefinition {
 		Type: "function",
 		Function: systemai.ToolDefFunction{
 			Name:        "read_current_code",
-			Description: "读取当前workspace中已有的策略代码，返回带行号的完整代码。在edit_code之前必须先调用此工具确认old_string内容。",
+			Description: "读取当前workspace中已有的策略代码（带行号）。修改已有策略之前必须先调用此工具确认代码内容。",
 			Parameters:  map[string]any{"type": "object", "properties": map[string]any{}},
 		},
 	}
@@ -57,7 +57,7 @@ func (t *editCodeTool) Schema() systemai.ToolDefinition {
 		Type: "function",
 		Function: systemai.ToolDefFunction{
 			Name: "edit_code",
-			Description: "精确编辑当前策略代码：将old_string替换为new_string。old_string必须在代码中唯一出现，否则报错要求补充上下文。替换后自动编译验证。",
+			Description: "精确编辑当前策略代码（old_string→new_string）。小改动时使用；大改动或重写请用write_strategy。old_string必须唯一匹配。",
 			Parameters: map[string]any{
 				"type":     "object",
 				"required": []string{"old_string", "new_string"},
