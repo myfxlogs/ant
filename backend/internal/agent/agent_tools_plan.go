@@ -19,7 +19,7 @@ func (t *updatePlanTool) Schema() systemai.ToolDefinition {
 		Type: "function",
 		Function: systemai.ToolDefFunction{
 			Name: "update_plan",
-			Description: "复杂策略的分步计划工具（JSON [{step, status}]）。仅当策略逻辑复杂需要多步拆解时使用；简单策略请直接调用write_strategy。",
+			Description: "复杂策略的分步计划工具（JSON [{step, status}]）。仅多步策略使用，简单策略请直接调用write_strategy。",
 			Parameters: map[string]any{
 				"type":     "object",
 				"required": []string{"plan"},

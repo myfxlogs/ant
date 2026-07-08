@@ -157,11 +157,7 @@ func doChatRequest(model string, messages []ChatMessage, tools []ToolDefinition,
 		Tools:       tools,
 	}
 	if agentMode {
-		reqBody.ReasoningEffort = "low"    // force model to think less, output sooner
-		reqBody.ToolChoice = "auto"
-	}
-	if len(tools) > 0 {
-		reqBody.ToolChoice = "auto"
+		reqBody.ToolChoice = "auto" // let the model decide when to call tools
 	}
 	bodyBytes, err := json.Marshal(reqBody)
 	if err != nil {

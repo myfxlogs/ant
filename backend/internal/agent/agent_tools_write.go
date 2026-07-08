@@ -35,7 +35,7 @@ func (t *writeStrategyTool) Schema() systemai.ToolDefinition {
 		Type: "function",
 		Function: systemai.ToolDefFunction{
 			Name: "write_strategy",
-			Description: "提交完整的 Python 策略代码。当你需要生成新策略或重写现有策略时调用此工具。code 参数必填——代码通过此参数提交，不要在聊天文本中粘贴代码。内部自动编译→真实回测。如果只是讨论、解释或回答市场问题，不要调用此工具。",
+			Description: "提交完整的 Python 策略代码。用于生成新策略或重写现有策略。code 参数必填。内部自动编译→真实回测。不要在聊天文本中粘贴代码——代码只能通过此工具提交。",
 			Parameters: map[string]any{
 				"type":     "object",
 				"required": []string{"code"},
