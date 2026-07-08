@@ -78,6 +78,17 @@ write_strategy(code: string)  ← 模型把完整代码作为工具参数提交
 - 自由文本通道只承载：简短说明 / 追问 / 计划。**永不承载成品代码。**
 - I1 由此结构性成立：`generateState.PythonSource` 是唯一终稿，前端只渲染它。
 
+### 3.1b 意图路由 + 工具可靠性（这个支点的两个致命前提）
+
+**前提 1 — 不是每轮都产代码。** 用户可能只是提问（"这策略在干嘛"）、闲聊、要求解释。**绝不能无脑强制 write_strategy**，否则会给出用户没要的代码。规则：
+- 意图=产出/修改代码 → 必须走 write_strategy（代码不进自由文本）。
+- 意图=讨论/答疑/追问 → 走自由文本通道，**不调** write_strategy。
+- 判定交给模型（提示词写清），而不是硬编码 `tool_choice=required`。
+
+**前提 2 — 模型必须真的会调工具。** 纯推理模型（如 R1 风格）tool-calling 不可靠，可能永远不调 write_strategy → 整个支点失效。护栏：
+- 若某轮意图明显是产代码，却出现"代码写进自由文本、没有 tool call" → 视为**违规输出**：注入纠偏消息要求改用 write_strategy 重试（≤2 次），**而不是**回落到正则 `ExtractCode`（那等于把根因 B 又请回来）。
+- agent/generator 默认优选 instruct/chat 模型（对齐 §5 阶段2 的模型选择）。tool-calling 能力是本架构的硬依赖，选型时须校验。
+
 ### 3.2 验证内建到产出（兑现 I2）
 
 `write_strategy` 内部直接复用现成真回测闭环——**不是新造轮子**：
@@ -93,7 +104,7 @@ write_strategy(code: string)  ← 模型把完整代码作为工具参数提交
   backtest: { total_trades, win_rate, total_return, max_drawdown, sharpe } | null,
   backtest_error?: string }
 ```
-模型据此自我修正（如 `total_trades==0` → 入场太严 → 改）。这就是 I2 的闭环。
+模型据此自我修正。⚠️ **注意 `total_trades==0` 不等于 bug**：可能是入场条件在该数据窗口内本就罕见（用户这类"4H放量+吞没+回调+5M吞没"的多条件策略尤其如此），或数据窗口太短。它是**信号**，不是自动判失败——不要因此陷入无限"修复"循环。正确做法：如实告知"该窗口内未触发交易"，让模型/用户判断是逻辑过严还是窗口/品种不合适。这就是 I2 的闭环。
 
 > Generator 已持有 `mkt`(bars) 和 `btRepo`（`generator.go:18-19`），依赖齐全，只需把它们透传进工具。
 
@@ -117,7 +128,7 @@ write_strategy(code: string)  ← 模型把完整代码作为工具参数提交
 
 | 情况 | 处理 |
 |------|------|
-| symbol 已选（`msg.Symbol!=""`，正常） | 用工作区 symbol+timeframe + **透明默认**日期区间(全部可用 bar)/资金($10k)/手续费 → 跑 I2b 绩效回测。**结果必须随附这些输入参数**（I4） |
+| symbol 已选（`msg.Symbol!=""`，正常） | 用工作区 symbol+timeframe + **透明默认**日期区间(**有界最近窗口**，如最近 N 根 bar，勿"全部可用 bar"——5M 会巨慢/长 TF 太短无交易)/资金($10k)/手续费 → 跑 I2b 绩效回测。**结果必须随附这些输入参数**（I4） |
 | symbol 未选 | **禁止默认一个 symbol**（symbol 是语义参数，§3.5）。降级为 I2a：要么明确要求用户先选 symbol，要么只做冒烟测试并如实标注"样本数据、非绩效评估" |
 | 日期/资金缺失 | 可用惯例默认，但**必须在结果里显示**。透明是有效的前提（I4） |
 
@@ -157,6 +168,13 @@ write_strategy(code: string)  ← 模型把完整代码作为工具参数提交
 用户那条需求要 4H+1H+5M，而 SDK 无干净多周期访问 → 模型耗大量推理硬凑。
 - **本方案标注为独立前置任务**：给策略 SDK 增加多时间框架 bar 访问能力（如 `ctx.bars(timeframe)`）。
 - 在此之前，`write_strategy` 编译层应对"多周期不支持"返回明确错误，让模型走 §3.5 追问或降级，而不是空转。
+
+### 3.7 已知风险与边界（DeepSeek 施工前必读，避免踩坑）
+
+- **诚实排序警告**：触发这一切的那条旗舰需求（4H+1H+5M 多周期）**依赖 §3.6 的 SDK 多周期能力**，而它排在阶段 3。**只做阶段 1 无法让那条策略正确落地**——别过度承诺。阶段 1 先用单周期策略验证 I1–I4 闭环，多周期是独立能力任务。
+- **回测延迟/成本**：`runVMBacktest` 有 30s 超时（`backtest_helpers.go:49`），每次 `write_strategy` 都编译+取bars+回测。模型迭代 5 次 = 5 次回测，慢且耗算力。策略：**迭代中允许"仅编译"快速反馈，交付前必跑一次完整回测**（兑现 I2 的时机是"交付前"，不是"每次改都全量回测"）。给模型的工具可区分 `compile_only` vs `full`，或由收敛阶段控制。
+- **不要把 §5 阶段2 的收敛守卫当主力**：它是安全网。若阶段 1（结构化产出+意图路由）做对，模型不该频繁撞 `finish_reason=length`。守卫频繁触发 = 阶段 1 没做对，回去查根因，别靠守卫硬扛。
+- **history 一致性**：多轮对话里 `edit_code`/`write_strategy` 反复改，**最新一次 write_strategy 的产物**才是 I1 的唯一终稿；确保 `generateState.PythonSource` 始终指向最新，历史轮的旧代码不得被误当终稿。
 
 ---
 
@@ -228,3 +246,37 @@ generateState.PythonSource ← 唯一终稿
 ## §8 一句话总结
 
 当前 agent 在解一个被扭曲的问题——"生成一大段可能含多草稿、只编译不验证、思考与成品混杂的自由文本"。本方案把它拨回本质："**产出一份经真实回测验证的、唯一确定的策略代码**"。做法不是加检查，而是改形状：**代码变成工具产出**（I1）、**验证内建**（I2）、**思考与成品分离**（I3）。地基立住，之前那堆 bug 在结构上就不再可能发生。
+
+---
+
+## §9 给 DeepSeek 的施工提示语（直接复制这段发给它）
+
+```
+你是本次重构的施工方。请严格按 docs/agent-first-principles-rebuild.md 落地，规则如下：
+
+【读法】
+1. 先读完整文档，重点吃透 §1 的四条不变量 I1/I2/I3/I4 —— 它们是验收标准，不是建议。
+2. §2 是根因（A/B/C），§3 是目标架构，§3.1b/§3.2c/§3.7 是最容易踩的坑，务必读。
+3. 其它 agent-*.md 文档已被本文档收编：reasoning 回退文档作废，token预算/收敛守卫降级为安全网。有冲突以本文档为准。
+
+【只做阶段 1，做完停下等验收】
+本轮只实现 §5 阶段 1 四件事，不要碰阶段 2/3：
+  1. write_strategy 工具（code 必填 → compile → 交付前回测），照抄 §3.2b 的四个锚点，禁止从零写回测/编译逻辑。
+  2. 删除 chat.go:297-299 的 reasoning 回退，改 thinking 通道分离（§3.3）。
+  3. 成品唯一化：generateState.PythonSource 只由 write_strategy 写入，前端只渲染它为唯一 Apply 卡片。
+  4. run_backtest 真实化或并入 write_strategy，消灭假验证。
+
+【铁律，违反即返工】
+- 禁止"回退代替重新生成"（如 reasoning 当答案）、"沉默代替修复"（如只编译冒充回测）、标 legacy 绕过。遇阻回根因，不许退而求其次（AGENTS.md）。
+- 代码永不进自由文本，只经 write_strategy（§3.1b 前提1）；但不是每轮都产代码，讨论/答疑走自由文本，别无脑强制 tool（§3.1b）。
+- 回测参数不透明就是误导：任何绩效数字必须随附 symbol/timeframe/日期/资金；symbol 未选绝不瞎填，降级为冒烟测试（§3.2c/I4）。
+- total_trades==0 是信号不是 bug，别陷入无限修复循环（§3.2 注）。
+- 每个新 file/function 在 PR 里标 REUSE: 或 NEW:；动工前 bash scripts/cap.sh <动词>。
+
+【自检 + 提交】
+- 做完按 §6 用 I1/I2/I3/I4 逐条自检，在 PR 里逐条给证据。
+- go build ./... + cd backend && go run ./tools/check-file-lines --strict 必须过。
+- proto 改动跑 gen 脚本，前后端 _pb 同步。
+- 部署：docker compose build backend && docker compose up -d backend。
+- 有任何"文档没覆盖/看似矛盾"的点，先停下问，不要自行猜测扩大范围。
+```
