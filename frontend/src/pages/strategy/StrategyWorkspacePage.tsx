@@ -33,6 +33,7 @@ export default function StrategyWorkspacePage() {
 
   const rightPanelWidth = useWorkspaceStore(s => s.rightPanelWidth);
   const setRightPanelWidth = useWorkspaceStore(s => s.setRightPanelWidth);
+  const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
   const [btModalOpen, setBtModalOpen] = useState(false);
   const [indicatorDrawerOpen, setIndicatorDrawerOpen] = useState(false);
   const [tplDrawerOpen, setTplDrawerOpen] = useState(false);
@@ -142,7 +143,7 @@ export default function StrategyWorkspacePage() {
           timeframe={ws.account.timeframe}
           sessionId={sessionId}
           accountId={ws.account.accountId}
-          onApplyCode={(code) => { ws.code.setCode(code); }}
+          onApplyCode={(code) => { ws.code.setCode(code); setCenterTab("code"); }}
           onValidateResult={(result) => ws.backtest.runner.handleValidationResult(result)}
           width={rightPanelWidth}
         />
