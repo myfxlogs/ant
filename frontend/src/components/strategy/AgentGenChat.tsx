@@ -16,7 +16,7 @@ interface Props {
 
 const NO_DATA_RE = /insufficient market data|0 bars|need.*≥.*2/i;
 
-export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
+export default function AgentGenChat({ symbol, timeframe, conversationId, onApply }: Props) {
   const { t } = useTranslation();
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [userInput, setUserInput] = useState('');
