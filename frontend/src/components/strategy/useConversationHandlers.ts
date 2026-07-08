@@ -2,8 +2,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { aiApi } from '@/client/ai';
 import {
-  LOADED_STRATEGY_KEY, NEW_CONVERSATION_KEY, SAVED_STRATEGY_KEY,
-  STRATEGY_NAME_PROMPT_KEY,
+  LOADED_STRATEGY_KEY, SAVED_STRATEGY_KEY, STRATEGY_NAME_PROMPT_KEY,
 } from '@/gen/ant/v1/i18n/strategy_ai_chat_keys';
 import type { ChatMsg } from './ChatMessageItem';
 import type { Conversation, Template } from './strategyChatUtils';
@@ -83,15 +82,16 @@ export function useConversationHandlers({
     } catch {}
   }, [codeRef, t, fetchTemplates, addMsg]);
 
-  const handleNewConv = useCallback(async () => {
-    try {
-      const conv = await aiApi.createConversation(t(NEW_CONVERSATION_KEY));
-      setActiveConvId(conv.id); setMessages([]);
-      planRef.current = ''; codeRef.current = ''; prevCodeRef.current = '';
-      titleGeneratedRef.current = false; firstUserMsgRef.current = '';
-      setTab('chat'); fetchConversations();
-    } catch {}
-  }, [t, setActiveConvId, setMessages, planRef, codeRef, prevCodeRef, titleGeneratedRef, firstUserMsgRef, setTab, fetchConversations]);
+  // Lazy-create: only generate a new UUID. The actual DB row is created
+  // when the first message is sent (generator_agent.go CreateWithID).
+  // This aligns with Claude Code: conversations only appear in history
+  // after the first exchange, not on "New" button click.
+  const handleNewConv = useCallback(() => {
+    setActiveConvId(crypto.randomUUID()); setMessages([]);
+    planRef.current = ''; codeRef.current = ''; prevCodeRef.current = '';
+    titleGeneratedRef.current = false; firstUserMsgRef.current = '';
+    setTab('chat'); fetchConversations();
+  }, [setActiveConvId, setMessages, planRef, codeRef, prevCodeRef, titleGeneratedRef, firstUserMsgRef, setTab, fetchConversations]);
 
   const handleLoadConv = useCallback(async (id: string) => {
     try {
