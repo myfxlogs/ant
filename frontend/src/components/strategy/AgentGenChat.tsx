@@ -21,6 +21,7 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
   const [userInput, setUserInput] = useState('');
   const [planRefining, setPlanRefining] = useState(false);
   const [hasCode, setHasCode] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   const abortRef = useRef<(() => void) | null>(null);
   const turnIdRef = useRef(0);
@@ -172,7 +173,7 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
         value={userInput}
         onChange={setUserInput}
         onSend={handleSend}
-        disabled={false}
+        disabled={generating}
         hasResult={hasCode}
       />
     </div>
