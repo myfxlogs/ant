@@ -3,8 +3,10 @@ package agent
 import (
 	"context"
 
+	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/ai"
 	connectai "anttrader/internal/connect/ai"
+	"anttrader/internal/repository"
 	systemai "anttrader/internal/service/systemai"
 	"anttrader/tools/mql2go"
 )
@@ -31,7 +33,7 @@ func (t *compilePythonTool) Schema() systemai.ToolDefinition {
 }
 func (t *compilePythonTool) Run(_ context.Context, in connectai.ToolInput) connectai.ToolOutput {
 	code := in.Code
-	t.result.PythonSource = code
+	// I1: only write_strategy sets PythonSource. compile_python just verifies.
 	_, coverage, err := mql2go.CompilePythonWithCoverage(code)
 	if err != nil {
 		t.result.CompileError = err.Error()
@@ -49,12 +51,17 @@ func (t *compilePythonTool) Run(_ context.Context, in connectai.ToolInput) conne
 }
 
 // buildPythonToolRegistry creates a ToolRegistry with all agent tools.
-func buildPythonToolRegistry(result *generateState) *connectai.ToolRegistry {
+// NEW: mkt+cfg injected for write_strategy real backtest (I2).
+func buildPythonToolRegistry(result *generateState, mkt repository.MarketDataStore, cfg *antv1.AgentBacktestConfig) *connectai.ToolRegistry {
 	reg := connectai.NewEmptyToolRegistry()
-	reg.AddPreTool(&compilePythonTool{result: result})
-	reg.AddPreTool(&runBacktestTool{result: result})
+	// PRIMARY: write_strategy — the only way to submit final code (I1).
+	// Compile + real backtest happen inside this tool (I2).
+	reg.AddPreTool(&writeStrategyTool{result: result, mkt: mkt, cfg: cfg})
+	// Support tools.
 	reg.AddPreTool(&readCurrentCodeTool{result: result})
 	reg.AddPreTool(&editCodeTool{result: result})
 	reg.AddPreTool(&updatePlanTool{})
+	// compile-only for quick checks — does NOT write PythonSource (I1).
+	reg.AddPreTool(&compilePythonTool{result: result})
 	return reg
 }

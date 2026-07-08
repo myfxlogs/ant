@@ -25,7 +25,7 @@ func (g *Generator) runAgentLoop(
 	result := &generateState{}
 
 	// ── Full tool registry ──
-	registry := buildPythonToolRegistry(result)
+	registry := buildPythonToolRegistry(result, g.mkt, msg.BacktestConfig)
 	// read_kline and read_backtest_log are Chat agent tools, not Generator tools.
 	// Strategy logic doesn't depend on current market data.
 	if g.dbExec != nil && g.dbQuery != nil {

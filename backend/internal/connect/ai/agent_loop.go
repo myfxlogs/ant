@@ -153,10 +153,7 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		}
 
 		roundText := strings.TrimSpace(roundBuf.String())
-		// Reasoning is for code extraction only — never displayed as answer.
-		if roundText == "" && reasoningText != "" {
-			roundText = reasoningText // use for ExtractCode fallback
-		}
+		// I3: reasoning is NEVER used as answer. No fallback.
 		if roundText == "" && len(toolCalls) == 0 {
 			return "", fmt.Errorf("agent: LLM returned empty response on round %d", round+1)
 		}

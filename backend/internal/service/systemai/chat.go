@@ -294,9 +294,6 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 			}
 			msg := cr.Choices[0].Message
 			content := strings.TrimSpace(msg.Content)
-			if content == "" && msg.ReasoningContent != "" {
-				content = strings.TrimSpace(msg.ReasoningContent)
-			}
 			return content, msg.ToolCalls, cr.Usage, nil
 		}
 
