@@ -59,7 +59,13 @@ func (g *Generator) runAgentLoop(
 
 	// ── Stream callbacks ──
 	streamChunk := func(delta string) error {
-		return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "generating", Delta: delta})
+		// Strip [THINK] blocks from streamed content — DeepSeek models output them
+		// regardless of prompt instructions. User never sees reasoning traces.
+		cleaned := stripThinkBlocks(delta)
+		if cleaned == "" {
+			return nil // nothing visible to stream
+		}
+		return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "generating", Delta: cleaned})
 	}
 	reasoningStream := func(delta string) error {
 		return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "thinking", Delta: delta})

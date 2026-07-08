@@ -54,13 +54,14 @@ type ToolDefFunction struct {
 
 // ChatCompletionRequest mirrors the OpenAI /v1/chat/completions request shape.
 type ChatCompletionRequest struct {
-	Model       string           `json:"model"`
-	Messages    []ChatMessage    `json:"messages"`
-	MaxTokens   int              `json:"max_tokens,omitempty"`
-	Temperature float64          `json:"temperature,omitempty"`
-	Stream      bool             `json:"stream"`
-	Tools       []ToolDefinition `json:"tools,omitempty"`
-	ToolChoice  string           `json:"tool_choice,omitempty"` // "auto", "none", or specific tool
+	Model           string           `json:"model"`
+	Messages        []ChatMessage    `json:"messages"`
+	MaxTokens       int              `json:"max_tokens,omitempty"`
+	Temperature     float64          `json:"temperature,omitempty"`
+	Stream          bool             `json:"stream"`
+	Tools           []ToolDefinition `json:"tools,omitempty"`
+	ToolChoice      string           `json:"tool_choice,omitempty"`      // "auto", "none", or specific tool
+	ReasoningEffort string           `json:"reasoning_effort,omitempty"` // "low"|"medium"|"high" — agent uses "low"
 }
 
 // ChatCompletionResponse mirrors the OpenAI /v1/chat/completions response shape (non-streaming).
@@ -133,7 +134,7 @@ func (s *Service) getCachedSecret(ctx context.Context, userID uuid.UUID, provide
 	return secret, nil
 }
 
-const defaultMaxTokens = 8192
+const defaultMaxTokens = 32768 // was 8192; reasoning models need budget for thinking + code
 
 // doChatRequest builds the HTTP request body and creates an authenticated request.
 // tools may be nil when the caller does not need tool calling.
@@ -142,6 +143,11 @@ func doChatRequest(model string, messages []ChatMessage, tools []ToolDefinition,
 	if maxTokens <= 0 {
 		maxTokens = defaultMaxTokens
 	}
+	// Agent scenarios with tools: ensure enough budget + limit reasoning to force output.
+	agentMode := len(tools) > 0
+	if agentMode && maxTokens < 16384 {
+		maxTokens = 16384
+	}
 	reqBody := ChatCompletionRequest{
 		Model:       model,
 		Messages:    messages,
@@ -149,6 +155,10 @@ func doChatRequest(model string, messages []ChatMessage, tools []ToolDefinition,
 		Temperature: 0.3,
 		Stream:      stream,
 		Tools:       tools,
+	}
+	if agentMode {
+		reqBody.ReasoningEffort = "low"    // force model to think less, output sooner
+		reqBody.ToolChoice = "auto"
 	}
 	if len(tools) > 0 {
 		reqBody.ToolChoice = "auto"

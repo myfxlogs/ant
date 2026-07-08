@@ -94,6 +94,7 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		}
 		var roundBuf strings.Builder
 		var reasoningBuf strings.Builder
+		var roundFinishReason string
 		var toolCalls []systemai.ToolCall // accumulated from stream chunks
 
 		err := a.llmStream(ctx, messages, a.toolDefs, func(chunk systemai.ChatStreamChunk) error {
@@ -104,6 +105,9 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 			if chunk.Reasoning != "" {
 				reasoningBuf.WriteString(chunk.Reasoning)
 				if a.reasoningStream != nil { _ = a.reasoningStream(chunk.Reasoning) }
+			}
+			if chunk.FinishReason != "" {
+				roundFinishReason = chunk.FinishReason
 			}
 			// Collect any tool calls from the final chunk.
 			if len(chunk.ToolCalls) > 0 {
@@ -124,8 +128,31 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 			return "", err
 		}
 
-		roundText := strings.TrimSpace(roundBuf.String())
+		// Convergence guard: thinking drained budget without producing code.
+		// Inject correction and retry (max 2 convergence retries per round).
 		reasoningText := strings.TrimSpace(reasoningBuf.String())
+		convergences := 0
+		for (roundFinishReason == "length" || (roundBuf.Len() == 0 && len(reasoningText) > 500 && len(toolCalls) == 0)) && convergences < 2 {
+			convergences++
+			messages = append(messages, systemai.ChatMessage{Role: "user", Content: "Stop thinking. Output the complete Python strategy code NOW in a markdown block (class MyStrategy, on_bar method), then call [TOOL: compile_python]. Use professional defaults for any ambiguous parameters and note them in ONE comment. Do not re-analyze."})
+			roundBuf.Reset()
+			reasoningBuf.Reset()
+			toolCalls = nil
+			roundFinishReason = ""
+			if err := a.llmStream(ctx, messages, a.toolDefs, func(chunk systemai.ChatStreamChunk) error {
+				if chunk.Content != "" { roundBuf.WriteString(chunk.Content); if a.streamChunk != nil { _ = a.streamChunk(chunk.Content) } }
+				if chunk.Reasoning != "" { reasoningBuf.WriteString(chunk.Reasoning); if a.reasoningStream != nil { _ = a.reasoningStream(chunk.Reasoning) } }
+				if chunk.FinishReason != "" { roundFinishReason = chunk.FinishReason }
+				if len(chunk.ToolCalls) > 0 {
+					for _, stc := range chunk.ToolCalls { toolCalls = append(toolCalls, systemai.ToolCall{ID: stc.ID, Type: stc.Type, Function: systemai.ToolCallFunction{Name: stc.Function.Name, Arguments: stc.Function.Arguments}}) }
+				}
+				return nil
+			}); err != nil {
+				return "", err
+			}
+		}
+
+		roundText := strings.TrimSpace(roundBuf.String())
 		// Reasoning is for code extraction only — never displayed as answer.
 		if roundText == "" && reasoningText != "" {
 			roundText = reasoningText // use for ExtractCode fallback
