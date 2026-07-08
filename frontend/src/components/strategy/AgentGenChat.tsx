@@ -24,6 +24,7 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
   const [generating, setGenerating] = useState(false);
 
   const abortRef = useRef<(() => void) | null>(null);
+  const conversationIdRef = useRef(crypto.randomUUID());
   const turnIdRef = useRef(0);
   const currentTurnIdRef = useRef<string | null>(null);
   const lastMsgRef = useRef('');
@@ -114,7 +115,7 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
     currentTurnIdRef.current = aiTurn.id;
     setTurns((prev) => [...prev, aiTurn]);
 
-    const abort = agentGenerateStrategyStream(input, makeCallbacks());
+    const abort = agentGenerateStrategyStream({ ...input, conversationId: conversationIdRef.current }, makeCallbacks());
     abortRef.current = abort;
   }, [makeCallbacks]);
 

@@ -43,10 +43,12 @@ func (g *Generator) runAgentLoop(
 	userPrompt := msg.Message
 
 	// ── Conversation history ──
+	var convID uuid.UUID
 	var history []systemai.ChatMessage
 	if msg.ConversationId != "" && g.conversationRepo != nil {
 		cid, err := uuid.Parse(msg.ConversationId)
 		if err == nil {
+			convID = cid
 			msgs, _ := g.conversationRepo.GetMessages(ctx, userID, cid)
 			for _, m := range msgs {
 				history = append(history, systemai.ChatMessage{
@@ -54,6 +56,19 @@ func (g *Generator) runAgentLoop(
 					Content: m.Content,
 				})
 			}
+		}
+	}
+	// Auto-create conversation if this is a new session.
+	if convID == uuid.Nil && g.conversationRepo != nil {
+		title := userPrompt
+		if len(title) > 80 {
+			title = title[:80]
+		}
+		conv, err := g.conversationRepo.Create(ctx, userID, title)
+		if err != nil {
+			g.log.Warn("generator: failed to create conversation", zap.Error(err))
+		} else {
+			convID = conv.ID
 		}
 	}
 
@@ -100,6 +115,19 @@ func (g *Generator) runAgentLoop(
 
 	raw, loopErr := loop.RunWithHistory(ctx, sysPrompt, userPrompt, history, userID)
 	g.log.Info("generator: loop done", zap.Int("raw_len", len(raw)), zap.Bool("has_err", loopErr != nil))
+
+	// Persist conversation messages for multi-turn context.
+	if convID != uuid.Nil && g.conversationRepo != nil {
+		if _, err := g.conversationRepo.AddMessage(ctx, userID, convID, "user", userPrompt); err != nil {
+			g.log.Warn("generator: failed to save user message", zap.Error(err))
+		}
+		if raw != "" {
+			if _, err := g.conversationRepo.AddMessage(ctx, userID, convID, "assistant", raw); err != nil {
+				g.log.Warn("generator: failed to save assistant message", zap.Error(err))
+			}
+		}
+		_ = g.conversationRepo.Touch(ctx, convID, userID)
+	}
 
 	// I1: PythonSource is ONLY set by write_strategy tool. Never overwrite it here (§3.1b前提2).
 	if loopErr != nil {
