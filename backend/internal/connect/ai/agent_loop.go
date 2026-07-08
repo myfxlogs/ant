@@ -25,7 +25,6 @@ type AgentLoop struct {
 	streamChunk     func(delta string) error                                 // forward content delta to frontend
 	reasoningStream func(delta string) error                                 // forward reasoning delta to frontend
 	toolStream      func(tc *antv1.ToolCall, tr *antv1.ToolResult) error     // forward tool events to frontend
-	maxRounds       int
 	currentCode     string // workspace code injected into ToolInput.Code
 	toolDefs        []systemai.ToolDefinition // cached tool schemas built from registry
 }
@@ -45,7 +44,6 @@ func NewAgentLoop(
 		streamChunk:     streamChunk,
 		toolStream:      toolStream,
 		reasoningStream: reasoningStream,
-		maxRounds:       10,
 		toolDefs:     registry.BuildToolSchemas(),
 	}
 }
@@ -74,7 +72,7 @@ func (a *AgentLoop) Run(ctx context.Context, systemPrompt, userPrompt string, us
 func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, userID uuid.UUID) (string, error) {
 	var fullBuf strings.Builder
 
-	for round := 0; round < a.maxRounds; round++ {
+	for round := 0; ; round++ { // no hard limit — aligned with Claude Code
 		// Context compression: if total estimated tokens exceed budget,
 		// keep system + first user + last 12 messages, drop middle.
 		if len(messages) > 16 {
@@ -250,8 +248,8 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		}
 		// Loop continues — LLM sees tool results and decides next action.
 	}
-
-	return fullBuf.String(), fmt.Errorf("agent loop: max rounds (%d) exceeded", a.maxRounds)
+	// unreachable: loop exits via return when LLM has no more tool calls.
+	return fullBuf.String(), nil
 }
 
 // parseToolArguments parses the JSON arguments string from an LLM tool call
