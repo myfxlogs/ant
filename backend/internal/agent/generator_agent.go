@@ -124,6 +124,8 @@ func (g *Generator) runAgentLoop(
 				Phase:        "editing",
 				PythonSource: result.PythonSource,
 			})
+		case "read_kline":
+			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "reading", Delta: tr.OutputJson})
 		case "read_current_code":
 			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "reading"})
 		case "update_plan":
