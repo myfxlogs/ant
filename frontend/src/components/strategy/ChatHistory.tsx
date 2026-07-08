@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Alert, Statistic, Row, Col, Progress } from 'antd';
+import { Alert, Button, Statistic, Row, Col, Progress } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { StrategyPlan } from '@/gen/ant/v1/agent_gateway_pb';
