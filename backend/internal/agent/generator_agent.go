@@ -69,8 +69,8 @@ func (g *Generator) runAgentLoop(
 			// Ensure conversation row exists (frontend may send fresh UUID not yet persisted).
 			if _, getErr := g.conversationRepo.GetByID(ctx, cid, userID); getErr != nil {
 				title := userPrompt
-				if len(title) > 80 {
-					title = title[:80]
+				if runes := []rune(title); len(runes) > 80 {
+					title = string(runes[:80])
 				}
 				if _, createErr := g.conversationRepo.CreateWithID(ctx, userID, cid, title); createErr != nil {
 					g.log.Warn("generator: auto-create conversation failed", zap.Error(createErr))
@@ -85,11 +85,11 @@ func (g *Generator) runAgentLoop(
 			}
 		}
 	}
-	// Auto-create conversation if this is a new session.
+	// Auto-create conversation if no ID was provided at all.
 	if convID == uuid.Nil && g.conversationRepo != nil {
 		title := userPrompt
-		if len(title) > 80 {
-			title = title[:80]
+		if runes := []rune(title); len(runes) > 80 {
+			title = string(runes[:80])
 		}
 		conv, err := g.conversationRepo.Create(ctx, userID, title)
 		if err != nil {
