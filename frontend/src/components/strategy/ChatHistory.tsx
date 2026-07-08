@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Statistic, Row, Col, Progress } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined, CopyOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { StrategyPlan } from '@/gen/ant/v1/agent_gateway_pb';
 import type { StrategyProfile } from '@/gen/ant/v1/agent_profile_pb';
 import type { BacktestAnalysis } from '@/gen/ant/v1/agent_analysis_pb';
+import { CHAT_BOX_THINKING_KEY } from '@/gen/ant/v1/i18n/ai_core_keys';
 import PlanCard from './PlanCard';
 import CollapsibleBlock from './CollapsibleBlock';
 import { StreamContent, phaseLabels, isNoMarketData } from './chatUtils';
@@ -29,6 +30,7 @@ export interface ChatTurn {
   analysis?: BacktestAnalysis;
   hasCode?: boolean;
   generatedCode?: string;
+  reasoning?: string;
 }
 
 interface Props {
@@ -43,6 +45,13 @@ interface Props {
 export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRefining, activePlanId, onApplyCode }: Props) {
   const { t } = useTranslation();
   const endRef = useRef<HTMLDivElement>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopy = (id: string, code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -151,20 +160,45 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
                 />
               )}
 
+              {turn.reasoning && turn.reasoning.length > 0 && (
+                <CollapsibleBlock
+                  icon={<span style={{ fontSize: 12 }}>💭</span>}
+                  title={t(CHAT_BOX_THINKING_KEY, 'Thinking Process')}
+                  defaultOpen={false}
+                >
+                  <div style={{
+                    fontSize: 12, lineHeight: '18px', whiteSpace: 'pre-wrap',
+                    color: 'var(--ant-color-text-tertiary)',
+                    maxHeight: 300, overflowY: 'auto',
+                    padding: '4px 0',
+                  }}>
+                    {turn.reasoning}
+                  </div>
+                </CollapsibleBlock>
+              )}
+
               {turn.streamText && !turn.plan && (
                 <div style={{ marginBottom: 8 }}>
-                  <StreamContent text={turn.streamText} onApply={onApplyCode} />
+                  <StreamContent text={turn.streamText} />
                 </div>
               )}
 
               {/* I1: generatedCode is the single deliverable — rendered as THE Apply card */}
               {turn.generatedCode && (
                 <div style={{ marginBottom: 8, background: 'var(--ant-color-bg-container)', borderRadius: 8, padding: 12, border: '1px solid var(--ant-color-border)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, gap: 8 }}>
                     <strong>{t('strategy.gen.finalCode', 'Final Strategy Code')}</strong>
-                    <Button size="small" type="primary" onClick={() => onApplyCode?.(turn.generatedCode!)}>
-                      {t('strategy.gen.applyToEditor', 'Apply to Editor')}
-                    </Button>
+                    <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                      <Button size="small" icon={<CopyOutlined />}
+                        onClick={() => handleCopy(turn.id, turn.generatedCode!)}>
+                        {copiedId === turn.id ? '✓' : t('strategy.gen.copy', 'Copy')}
+                      </Button>
+                      <Button size="small" type="primary"
+                        disabled={turn.phase !== 'done' || !!(turn.compileError || turn.backtestError || turn.error)}
+                        onClick={() => onApplyCode?.(turn.generatedCode!)}>
+                        {t('strategy.gen.applyToEditor', 'Apply to Editor')}
+                      </Button>
+                    </div>
                   </div>
                   <pre style={{ fontSize: 12, maxHeight: 200, overflow: 'auto', background: '#f5f5f5', padding: 8, borderRadius: 4, margin: 0 }}>{turn.generatedCode}</pre>
                 </div>

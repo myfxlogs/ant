@@ -68,22 +68,20 @@ func (g *Generator) runAgentLoop(
 		return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "generating", Delta: cleaned})
 	}
 	reasoningStream := func(delta string) error {
-		return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "thinking", Delta: delta})
+		return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "thinking", Reasoning: delta})
 	}
 	toolStream := func(tc *antv1.ToolCall, tr *antv1.ToolResult) error {
 		switch tc.Name {
-		case "compile_python":
-			chunk := &antv1.AgentGenerateStrategyChunk{Phase: "compiling", PythonSource: result.PythonSource}
-			if !tr.Success {
-				chunk.CompileError = tr.Error
-			}
-			return streamOrAbort(chunk)
-		case "read_kline":
-			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "planning"})
-		case "run_backtest":
-			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "backtesting", Delta: tr.OutputJson})
+		case "write_strategy":
+			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{
+				Phase:        "generating",
+				PythonSource: result.PythonSource,
+			})
 		case "edit_code":
-			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "editing", PythonSource: result.PythonSource})
+			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{
+				Phase:        "editing",
+				PythonSource: result.PythonSource,
+			})
 		case "read_current_code":
 			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "reading"})
 		case "update_plan":

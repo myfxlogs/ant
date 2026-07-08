@@ -29,6 +29,7 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
   const lastMsgRef = useRef('');
   const confirmedPlanRef = useRef<StrategyPlan | null>(null);
   const streamTextRef = useRef('');
+  const reasoningRef = useRef('');
 
   const nextTurnId = () => String(++turnIdRef.current);
   const nowTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -54,6 +55,10 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
     onDelta: (d: string) => {
       streamTextRef.current += d;
       updateCurrentTurn({ streamText: streamTextRef.current });
+    },
+    onReasoning: (r: string) => {
+      reasoningRef.current += r;
+      updateCurrentTurn({ reasoning: reasoningRef.current });
     },
     onPythonSource: (code: string) => {
       setHasCode(true);
@@ -97,6 +102,7 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
     planMode?: string; planFeedback?: string; confirmedPlan?: StrategyPlan;
   }) => {
     streamTextRef.current = '';
+    reasoningRef.current = '';
 
     const aiTurn: ChatTurn = {
       id: nextTurnId(),

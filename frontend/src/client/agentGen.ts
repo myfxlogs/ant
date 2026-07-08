@@ -28,6 +28,7 @@ export interface AgentGenInput {
 export interface AgentGenCallbacks {
   onPhase: (phase: string) => void;
   onDelta: (delta: string) => void;
+  onReasoning: (reasoning: string) => void;
   onPythonSource: (code: string) => void;
   onCompileError: (err: string) => void;
   onBacktestError: (err: string) => void;
@@ -92,6 +93,9 @@ function handleAgentChunk(chunk: AgentGenerateStrategyChunk, cbs: AgentGenCallba
 
   if (chunk.delta) {
     cbs.onDelta(chunk.delta);
+  }
+  if (chunk.reasoning) {
+    cbs.onReasoning(chunk.reasoning);
   }
   if (chunk.pythonSource) {
     cbs.onPythonSource(chunk.pythonSource);
