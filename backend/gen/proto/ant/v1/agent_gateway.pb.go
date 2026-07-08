@@ -1989,6 +1989,7 @@ type AgentGenerateStrategyRequest struct {
 	ConfirmedPlan  *StrategyPlan `protobuf:"bytes,8,opt,name=confirmed_plan,json=confirmedPlan,proto3" json:"confirmed_plan,omitempty"`     // user-confirmed plan, used when plan_mode = "generate"
 	Locale         string        `protobuf:"bytes,9,opt,name=locale,proto3" json:"locale,omitempty"`                                        // Accept-Language header value for i18n prompts
 	ConversationId string        `protobuf:"bytes,10,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"` // session ID for multi-turn conversation history
+	AccountId      string        `protobuf:"bytes,11,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`                // selected MT account for symbol/balance context
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -2089,6 +2090,13 @@ func (x *AgentGenerateStrategyRequest) GetLocale() string {
 func (x *AgentGenerateStrategyRequest) GetConversationId() string {
 	if x != nil {
 		return x.ConversationId
+	}
+	return ""
+}
+
+func (x *AgentGenerateStrategyRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
 	}
 	return ""
 }
@@ -3333,7 +3341,7 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"\x05entry\x18\x02 \x01(\tR\x05entry\x12\x12\n" +
 	"\x04exit\x18\x03 \x01(\tR\x04exit\x12\x12\n" +
 	"\x04risk\x18\x04 \x01(\tR\x04risk\x12\x16\n" +
-	"\x06market\x18\x05 \x01(\tR\x06market\"\xf9\x03\n" +
+	"\x06market\x18\x05 \x01(\tR\x06market\"\x98\x04\n" +
 	"\x1cAgentGenerateStrategyRequest\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x1c\n" +
@@ -3345,7 +3353,9 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"\x0econfirmed_plan\x18\b \x01(\v2\x14.ant.v1.StrategyPlanR\rconfirmedPlan\x12\x16\n" +
 	"\x06locale\x18\t \x01(\tR\x06locale\x12'\n" +
 	"\x0fconversation_id\x18\n" +
-	" \x01(\tR\x0econversationId\x1a9\n" +
+	" \x01(\tR\x0econversationId\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\v \x01(\tR\taccountId\x1a9\n" +
 	"\vParamsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xb7\x04\n" +

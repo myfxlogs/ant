@@ -10,6 +10,7 @@ import ChatInput from './ChatInput';
 interface Props {
   symbol?: string;
   timeframe?: string;
+  accountId?: string;
   conversationId?: string;
   onApply: (pythonCode: string) => void;
   onDone?: () => void;
@@ -18,7 +19,7 @@ interface Props {
 
 const NO_DATA_RE = /insufficient market data|0 bars|need.*≥.*2/i;
 
-export default function AgentGenChat({ symbol, timeframe, conversationId, onApply, onDone, initialTurnsRef }: Props) {
+export default function AgentGenChat({ symbol, timeframe, accountId, conversationId, onApply, onDone, initialTurnsRef }: Props) {
   const { t } = useTranslation();
   const [turns, setTurns] = useState<ChatTurn[]>(initialTurnsRef?.current ?? []);
   const [userInput, setUserInput] = useState('');
@@ -119,7 +120,7 @@ export default function AgentGenChat({ symbol, timeframe, conversationId, onAppl
     currentTurnIdRef.current = aiTurn.id;
     setTurns((prev) => [...prev, aiTurn]);
 
-    const abort = agentGenerateStrategyStream({ ...input, conversationId: conversationIdRef.current }, makeCallbacks());
+    const abort = agentGenerateStrategyStream({ ...input, conversationId: conversationIdRef.current, accountId }, makeCallbacks());
     abortRef.current = abort;
   }, [makeCallbacks]);
 

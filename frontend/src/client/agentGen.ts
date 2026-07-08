@@ -13,6 +13,7 @@ export interface AgentGenInput {
   planFeedback?: string;       // user modification feedback
   confirmedPlan?: StrategyPlan; // confirmed plan for code generation
   conversationId?: string;     // multi-turn conversation session ID
+  accountId?: string;          // selected MT account for workspace context
   backtestConfig?: {
     symbol?: string;
     timeframe?: string;
@@ -60,6 +61,7 @@ export function agentGenerateStrategyStream(
         planFeedback: input.planFeedback || '',
         confirmedPlan: input.confirmedPlan,
         conversationId: input.conversationId || '',
+        accountId: input.accountId || '',
         locale: i18n.language || 'en',
         backtestConfig: input.backtestConfig ? {
           symbol: input.backtestConfig.symbol || '',

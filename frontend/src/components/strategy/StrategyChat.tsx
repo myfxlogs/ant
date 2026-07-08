@@ -153,6 +153,7 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
           key={activeConvId}
           conversationId={activeConvId}
           symbol={symbol} timeframe={timeframe}
+          accountId={accountId}
           onApply={onApplyCode}
           onDone={fetchConversations}
           initialTurnsRef={initialTurnsRef}

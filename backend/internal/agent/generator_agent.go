@@ -38,8 +38,11 @@ func (g *Generator) runAgentLoop(
 	// ── Unified system prompt ──
 	lang := ai.NormalizeLocale(msg.Locale)
 	sysPrompt := ai.PythonAgentPrompt(lang)
-	if msg.Symbol != "" || msg.Timeframe != "" {
+	if msg.Symbol != "" || msg.Timeframe != "" || msg.AccountId != "" {
 		sysPrompt += fmt.Sprintf("\n\n## Current Workspace\nSymbol: %s\nTimeframe: %s", msg.Symbol, msg.Timeframe)
+		if msg.AccountId != "" {
+			sysPrompt += fmt.Sprintf("\nAccount: %s", msg.AccountId)
+		}
 	}
 
 	// ── Structured memory injection (§4 Layer 2) ──

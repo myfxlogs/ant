@@ -274,6 +274,7 @@ message AgentGenerateStrategyRequest {
   StrategyPlan confirmed_plan = 8;         // user-confirmed plan, used when plan_mode = "generate"
   string locale = 9;                       // Accept-Language header value for i18n prompts
   string conversation_id = 10;              // session ID for multi-turn conversation history
+  string account_id = 11;                   // selected MT account for symbol/balance context
 }
 
 message AgentGenerateStrategyChunk {
