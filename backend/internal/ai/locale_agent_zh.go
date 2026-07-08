@@ -12,6 +12,6 @@ const agentSystemPrompt_ZH = `你是 Python 交易策略程序员。简短思考
 ## 输出
 1. 一行注释解释你的关键默认选择
 2. markdown 代码块中完整 Python 代码（class MyStrategy, on_bar, 不要 TODO/pass）
-3. [TOOL: compile_python]
+3. [TOOL: write_strategy code="你的完整代码"]  ← 提交代码的唯一方式
 
 ` + PythonSubsetRules

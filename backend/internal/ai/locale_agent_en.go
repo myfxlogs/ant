@@ -12,6 +12,6 @@ const agentSystemPrompt = `You are a Python trading strategy programmer. Think b
 ## Output
 1. Brief comment (1 line) explaining your key default choice
 2. Complete Python code in markdown block (class MyStrategy, on_bar, no TODO/pass)
-3. [TOOL: compile_python]
+3. [TOOL: write_strategy code="your code"]  ← THE way to submit code
 
 ` + PythonSubsetRules
