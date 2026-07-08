@@ -32,8 +32,8 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
   const [editingConvId, setEditingConvId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const codeRef = useRef('');
-  const [codeGenKey, setCodeGenKey] = useState(0);
-  const bumpCodeGen = () => setCodeGenKey(k => k + 1);
+  const bumpCodeGen = () => {};
+
   const hasSymbol = !!(symbol && timeframe);
 
   useEffect(() => {
@@ -72,45 +72,45 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
   });
 
   const handleSendToAIWrapper = (code: string, name: string) => {
-    setLoadedTemplateId(templates.find(t => t.code === code)?.id || '');
     handleSendToAI(code, name);
     setStrategiesOpen(false);
   };
 
-  // Load turn_data BEFORE remount so AgentGenChat mounts with full history.
+  // Load full conversation history — every message, not just code-bearing turns.
+  // Aligns with Claude Code: resume shows the complete transcript.
   const handleLoadConvWrapper = async (id: string) => {
     const turns: ChatTurn[] = [];
     try {
       const detail = await aiApi.getConversation(id);
       const { AgentGenerateStrategyChunk } = await import('@/gen/ant/v1/agent_gateway_pb');
-      const aiTurns = (detail.messages || [])
-        .filter(m => m.role === 'assistant' && m.turnData && m.turnData.length > 0)
-        .map(m => {
-          try {
-            const chunk = AgentGenerateStrategyChunk.fromBinary(m.turnData);
-            return {
-              id: crypto.randomUUID(), role: 'ai' as const, message: '',
-              phase: 'done' as const,
-              streamText: chunk.delta || m.content,
-              generatedCode: chunk.pythonSource || undefined,
-              compileError: chunk.compileError || undefined,
-              backtestError: chunk.backtestError || undefined,
-              metrics: chunk.result?.success ? [
-                { label: 'Return', value: `${chunk.result.totalReturn.toFixed(1)}%`, positive: chunk.result.totalReturn >= 0 },
-                { label: 'Max DD', value: `${chunk.result.maxDrawdown.toFixed(1)}%`, positive: chunk.result.maxDrawdown <= 0 },
-                { label: 'Sharpe', value: chunk.result.sharpeRatio.toFixed(2), positive: chunk.result.sharpeRatio >= 1 },
-                { label: 'Win', value: `${chunk.result.winRate.toFixed(1)}%` },
-              ] : undefined,
-            } as ChatTurn;
-          } catch { return null; }
-        })
-        .filter(Boolean) as ChatTurn[];
-      let aiIdx = 0;
       for (const m of (detail.messages || [])) {
         if (m.role === 'user') {
           turns.push({ id: crypto.randomUUID(), role: 'user', message: m.content });
-        } else if (aiIdx < aiTurns.length) {
-          turns.push(aiTurns[aiIdx++]);
+        } else {
+          let turn: ChatTurn | null = null;
+          if (m.turnData && m.turnData.length > 0) {
+            try {
+              const chunk = AgentGenerateStrategyChunk.fromBinary(m.turnData);
+              turn = {
+                id: crypto.randomUUID(), role: 'ai', message: '',
+                phase: 'done' as const,
+                streamText: chunk.delta || m.content,
+                generatedCode: chunk.pythonSource || undefined,
+                compileError: chunk.compileError || undefined,
+                backtestError: chunk.backtestError || undefined,
+                metrics: chunk.result?.success ? [
+                  { label: 'Return', value: `${chunk.result.totalReturn.toFixed(1)}%`, positive: chunk.result.totalReturn >= 0 },
+                  { label: 'Max DD', value: `${chunk.result.maxDrawdown.toFixed(1)}%`, positive: chunk.result.maxDrawdown <= 0 },
+                  { label: 'Sharpe', value: chunk.result.sharpeRatio.toFixed(2), positive: chunk.result.sharpeRatio >= 1 },
+                  { label: 'Win', value: `${chunk.result.winRate.toFixed(1)}%` },
+                ] : undefined,
+              } as ChatTurn;
+            } catch { /* fall through to plain text */ }
+          }
+          if (!turn) {
+            turn = { id: crypto.randomUUID(), role: 'ai', message: m.content, phase: 'done', streamText: m.content };
+          }
+          turns.push(turn);
         }
       }
     } catch {}
@@ -159,13 +159,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
         />
       </div>
 
-      <Drawer
-        title={t('strategy.aiChat.historyTab', 'History')}
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        width={360}
-        styles={{ body: { padding: 0 } }}
-      >
+      <Drawer title={t('strategy.aiChat.historyTab', 'History')} open={historyOpen} onClose={() => setHistoryOpen(false)} width={360} styles={{ body: { padding: 0 } }}>
         <StrategyChatHistory
           conversations={conversations} activeConvId={activeConvId}
           editingConvId={editingConvId} editTitle={editTitle}
@@ -176,13 +170,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
         />
       </Drawer>
 
-      <Drawer
-        title={t('strategy.aiChat.strategiesTab', 'Strategies')}
-        open={strategiesOpen}
-        onClose={() => setStrategiesOpen(false)}
-        width={360}
-        styles={{ body: { padding: 0 } }}
-      >
+      <Drawer title={t('strategy.aiChat.strategiesTab', 'Strategies')} open={strategiesOpen} onClose={() => setStrategiesOpen(false)} width={360} styles={{ body: { padding: 0 } }}>
         <StrategyList templates={templates} loadedId={loadedTemplateId}
           hasCode={!!codeRef.current} onLoad={handleLoadTemplate} onSave={handleSaveTemplate}
           onRename={handleRenameTemplate} onDelete={handleDeleteTemplate}
