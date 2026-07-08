@@ -30,6 +30,7 @@ export interface ConversationMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
   createdAt: Date;
+  turnData?: Uint8Array;
 }
 
 export interface ConversationDetail extends ConversationSummary {

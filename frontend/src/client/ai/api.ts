@@ -120,6 +120,7 @@ export const aiApi = {
         role: toConversationRole(m.role),
         content: m.content,
         createdAt: protoDate(m.createdAt),
+        turnData: m.turnData,
       })),
     };
   },
