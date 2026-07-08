@@ -49,16 +49,6 @@ func (g *Generator) runAgentLoop(
 		cid, err := uuid.Parse(msg.ConversationId)
 		if err == nil {
 			convID = cid
-			// Ensure conversation row exists (frontend may send fresh UUID not yet persisted).
-			if _, getErr := g.conversationRepo.GetByID(ctx, cid, userID); getErr != nil {
-				title := userPrompt
-				if len(title) > 80 {
-					title = title[:80]
-				}
-				if _, createErr := g.conversationRepo.Create(ctx, userID, title); createErr != nil {
-					g.log.Warn("generator: auto-create conversation failed", zap.Error(createErr))
-				}
-			}
 			msgs, _ := g.conversationRepo.GetMessages(ctx, userID, cid)
 			for _, m := range msgs {
 				history = append(history, systemai.ChatMessage{
