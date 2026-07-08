@@ -92,6 +92,7 @@ func (t *writeStrategyTool) Run(ctx context.Context, in connectai.ToolInput) con
 			result["backtest_error"] = btErr.Error()
 			result["tier"] = "compile_only"
 		} else {
+			t.result.LastBacktest = btSummary // captured for persistent cross-conversation memory
 			result["tier"] = tier
 			result["total_trades"] = fmt.Sprintf("%d", btSummary.TotalTrades)
 			result["win_rate"] = fmt.Sprintf("%.1f%%", btSummary.WinRate)

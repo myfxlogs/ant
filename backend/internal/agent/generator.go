@@ -42,6 +42,7 @@ type generateState struct {
 	PythonSource  string
 	CompileError  string
 	BacktestError string
+	LastBacktest  *backtestSummary // captured on write_strategy success for persistent memory
 }
 
 // Generate runs the unified AgentLoop — single path, full tools, no pre-processing.

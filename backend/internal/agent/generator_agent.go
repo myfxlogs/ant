@@ -2,7 +2,9 @@ package agent
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -37,6 +39,20 @@ func (g *Generator) runAgentLoop(
 	sysPrompt := ai.PythonAgentPrompt(lang)
 	if msg.Symbol != "" || msg.Timeframe != "" {
 		sysPrompt += fmt.Sprintf("\n\n## Current Workspace\nSymbol: %s\nTimeframe: %s", msg.Symbol, msg.Timeframe)
+	}
+
+	// ── Structured memory injection (§4 Layer 2) ──
+	if g.memory != nil {
+		session, err := g.memory.LoadSessionMemory(ctx, userID, msg.Symbol, msg.Timeframe)
+		if err != nil {
+			g.log.Warn("generator: failed to load session memory", zap.Error(err))
+		} else if session != nil {
+			var memSB strings.Builder
+			session.InjectIntoPrompt(&memSB)
+			if memStr := memSB.String(); memStr != "" {
+				sysPrompt += "\n" + memStr
+			}
+		}
 	}
 
 	// ── User prompt ──
@@ -137,6 +153,29 @@ func (g *Generator) runAgentLoop(
 			}
 		}
 		_ = g.conversationRepo.Touch(ctx, convID, userID)
+	}
+
+	// Persist structured memory when a strategy was successfully delivered (deterministic, zero LLM call).
+	if result.LastBacktest != nil && result.PythonSource != "" && g.memory != nil {
+		symbol := msg.Symbol
+		if symbol == "" && msg.BacktestConfig != nil {
+			symbol = msg.BacktestConfig.Symbol
+		}
+		tf := msg.Timeframe
+		if tf == "" && msg.BacktestConfig != nil {
+			tf = msg.BacktestConfig.Timeframe
+		}
+		summary := fmt.Sprintf("%s %s: %d trades, %.1f%% win, %.2f%% return",
+			symbol, tf,
+			result.LastBacktest.TotalTrades,
+			result.LastBacktest.WinRate,
+			result.LastBacktest.TotalReturn)
+		fp := fmt.Sprintf("%x", sha256.Sum256([]byte(result.PythonSource)))
+		_, err := g.memory.StoreExperience(ctx, userID, "strategy",
+			summary, fp, nil, symbol+" "+tf)
+		if err != nil {
+			g.log.Warn("generator: failed to store experience", zap.Error(err))
+		}
 	}
 
 	// I1: PythonSource is ONLY set by write_strategy tool. Never overwrite it here (§3.1b前提2).
