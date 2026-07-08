@@ -19,7 +19,7 @@ func (t *updatePlanTool) Schema() systemai.ToolDefinition {
 		Type: "function",
 		Function: systemai.ToolDefFunction{
 			Name: "update_plan",
-			Description: "更新当前策略实现计划。参数 plan 是一个JSON数组，每项包含 step(步骤名) 和 status(pending|doing|done)。用于在多步骤策略中追踪进度。",
+			Description: "复杂策略先拆解为分步计划（入场/仓位/加仓/出场），每步完成后调用 write_strategy 提交代码验证。plan 是 JSON 数组 [{step, status}]，status: pending|doing|done。简单策略可跳过直接 write_strategy。",
 			Parameters: map[string]any{
 				"type":     "object",
 				"required": []string{"plan"},

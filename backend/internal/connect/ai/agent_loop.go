@@ -167,6 +167,18 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 			a.currentCode = code
 		}
 
+		// §3.1b前提2: Guard against code-in-free-text without write_strategy.
+		// If LLM output contains Python code but didn't call write_strategy,
+		// inject correction and retry (≤2 per round). Never fall back to ExtractCode.
+		if code := ExtractCode(roundText); code != "" && !hasWriteStrategyCall(toolCalls, roundText) && convergences < 2 {
+			convergences++
+			messages = append(messages, systemai.ChatMessage{
+				Role:    "user",
+				Content: "Do NOT put code in chat text. Use the write_strategy tool to submit your code. Call [TOOL: write_strategy code=\"...\"] with your complete strategy code.",
+			})
+			continue // retry this round
+		}
+
 		// No native tool calls → check for text-based [TOOL: name args] fallback.
 		if len(toolCalls) == 0 {
 			textCalls := parseTextToolCalls(roundText)
@@ -336,4 +348,21 @@ func parseTextToolCalls(text string) []textToolCall {
 		calls = append(calls, tc)
 	}
 	return calls
+}
+
+// hasWriteStrategyCall checks whether the LLM invoked write_strategy,
+// either via native tool calls or text-based [TOOL: write_strategy ...].
+func hasWriteStrategyCall(nativeCalls []systemai.ToolCall, roundText string) bool {
+	for _, tc := range nativeCalls {
+		if tc.Function.Name == "write_strategy" {
+			return true
+		}
+	}
+	textCalls := parseTextToolCalls(roundText)
+	for _, tc := range textCalls {
+		if tc.Name == "write_strategy" {
+			return true
+		}
+	}
+	return false
 }
