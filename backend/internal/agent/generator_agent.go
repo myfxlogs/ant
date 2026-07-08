@@ -61,6 +61,9 @@ func (g *Generator) runAgentLoop(
 	streamChunk := func(delta string) error {
 		return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "generating", Delta: delta})
 	}
+	reasoningStream := func(delta string) error {
+		return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "thinking", Delta: delta})
+	}
 	toolStream := func(tc *antv1.ToolCall, tr *antv1.ToolResult) error {
 		switch tc.Name {
 		case "compile_python":
@@ -88,7 +91,7 @@ func (g *Generator) runAgentLoop(
 		func(llmCtx context.Context, messages []systemai.ChatMessage, tools []systemai.ToolDefinition, onChunk func(systemai.ChatStreamChunk) error) error {
 			return g.aiSvc.ChatCompletionStreamWithTools(llmCtx, userID, messages, tools, onChunk)
 		},
-		streamChunk, toolStream,
+		streamChunk, toolStream, reasoningStream,
 	)
 
 	raw, loopErr := loop.RunWithHistory(ctx, sysPrompt, userPrompt, history, userID)

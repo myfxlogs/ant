@@ -291,6 +291,7 @@ message AgentGenerateStrategyChunk {
   string error = 12;                      // non-fatal error message
   string backtest_error = 13;             // backtest error if backtest fails
   StrategyPlan plan = 14;                 // structured plan (planning phase, ADR-0025 §3)
+  string reasoning = 15;                  // thinking/reasoning stream (thinking phase)
 }
 
 // ── Memory Management (ADR-0025 §4.4) ────────────────────────────────────

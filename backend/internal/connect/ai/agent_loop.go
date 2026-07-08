@@ -20,13 +20,14 @@ import (
 
 // AgentLoop orchestrates the LLM ↔ Tools conversation loop.
 type AgentLoop struct {
-	toolRegistry  *ToolRegistry
-	llmStream     func(ctx context.Context, messages []systemai.ChatMessage, tools []systemai.ToolDefinition, onChunk func(systemai.ChatStreamChunk) error) error
-	streamChunk   func(delta string) error                                 // forward delta to frontend
-	toolStream    func(tc *antv1.ToolCall, tr *antv1.ToolResult) error     // forward tool events to frontend
-	maxRounds     int
-	currentCode   string // workspace code injected into ToolInput.Code
-	toolDefs      []systemai.ToolDefinition // cached tool schemas built from registry
+	toolRegistry    *ToolRegistry
+	llmStream       func(ctx context.Context, messages []systemai.ChatMessage, tools []systemai.ToolDefinition, onChunk func(systemai.ChatStreamChunk) error) error
+	streamChunk     func(delta string) error                                 // forward content delta to frontend
+	reasoningStream func(delta string) error                                 // forward reasoning delta to frontend
+	toolStream      func(tc *antv1.ToolCall, tr *antv1.ToolResult) error     // forward tool events to frontend
+	maxRounds       int
+	currentCode     string // workspace code injected into ToolInput.Code
+	toolDefs        []systemai.ToolDefinition // cached tool schemas built from registry
 }
 
 // NewAgentLoop creates an AgentLoop with the given tools and LLM streaming function.
@@ -36,13 +37,15 @@ func NewAgentLoop(
 	llmStream func(ctx context.Context, messages []systemai.ChatMessage, tools []systemai.ToolDefinition, onChunk func(systemai.ChatStreamChunk) error) error,
 	streamChunk func(delta string) error,
 	toolStream func(tc *antv1.ToolCall, tr *antv1.ToolResult) error,
+	reasoningStream func(delta string) error,
 ) *AgentLoop {
 	return &AgentLoop{
 		toolRegistry: registry,
 		llmStream:    llmStream,
-		streamChunk:  streamChunk,
-		toolStream:   toolStream,
-		maxRounds:    10,
+		streamChunk:     streamChunk,
+		toolStream:      toolStream,
+		reasoningStream: reasoningStream,
+		maxRounds:       10,
 		toolDefs:     registry.BuildToolSchemas(),
 	}
 }
@@ -94,8 +97,14 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		var toolCalls []systemai.ToolCall // accumulated from stream chunks
 
 		err := a.llmStream(ctx, messages, a.toolDefs, func(chunk systemai.ChatStreamChunk) error {
-			roundBuf.WriteString(chunk.Content)
-			reasoningBuf.WriteString(chunk.Reasoning)
+			if chunk.Content != "" {
+				roundBuf.WriteString(chunk.Content)
+				if a.streamChunk != nil { _ = a.streamChunk(chunk.Content) }
+			}
+			if chunk.Reasoning != "" {
+				reasoningBuf.WriteString(chunk.Reasoning)
+				if a.reasoningStream != nil { _ = a.reasoningStream(chunk.Reasoning) }
+			}
 			// Collect any tool calls from the final chunk.
 			if len(chunk.ToolCalls) > 0 {
 				for _, stc := range chunk.ToolCalls {
@@ -117,17 +126,15 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 
 		roundText := strings.TrimSpace(roundBuf.String())
 		reasoningText := strings.TrimSpace(reasoningBuf.String())
+		// Reasoning is for code extraction only — never displayed as answer.
 		if roundText == "" && reasoningText != "" {
-			roundText = reasoningText
+			roundText = reasoningText // use for ExtractCode fallback
 		}
 		if roundText == "" && len(toolCalls) == 0 {
 			return "", fmt.Errorf("agent: LLM returned empty response on round %d", round+1)
 		}
 
-		// Stream text content to frontend (non-tool-call text).
-		if roundText != "" && a.streamChunk != nil {
-			_ = a.streamChunk(roundText)
-		}
+		// Already streamed incrementally in onChunk. Just accumulate for ExtractCode.
 		fullBuf.WriteString(roundText)
 
 		// Update currentCode if this round contains Python code — so subsequent

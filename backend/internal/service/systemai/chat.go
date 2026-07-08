@@ -5,24 +5,25 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"strings"
 	"time"
-	"github.com/google/uuid"
 )
 
 const chatTimeout = 60 * time.Second
 const secretCacheTTL = 30 * time.Minute
+
 // ChatMessage is a single message in a chat completion request.
 // Supports both text-only messages and tool-calling messages (OpenAI tool_use protocol).
 type ChatMessage struct {
 	Role             string     `json:"role"`
 	Content          string     `json:"content,omitempty"`
 	ReasoningContent string     `json:"reasoning_content,omitempty"`
-	ToolCalls        []ToolCall `json:"tool_calls,omitempty"`  // assistant messages with tool calls
-	ToolCallID string     `json:"tool_call_id,omitempty"` // tool result messages
-	Name       string     `json:"name,omitempty"`         // tool result messages (tool name)
+	ToolCalls        []ToolCall `json:"tool_calls,omitempty"`   // assistant messages with tool calls
+	ToolCallID       string     `json:"tool_call_id,omitempty"` // tool result messages
+	Name             string     `json:"name,omitempty"`         // tool result messages (tool name)
 }
 
 // ToolCall represents a single tool call in an assistant message (OpenAI format).
@@ -40,7 +41,7 @@ type ToolCallFunction struct {
 
 // ToolDefinition describes a tool available to the LLM (OpenAI function calling format).
 type ToolDefinition struct {
-	Type     string         `json:"type"` // "function"
+	Type     string          `json:"type"` // "function"
 	Function ToolDefFunction `json:"function"`
 }
 
@@ -61,6 +62,7 @@ type ChatCompletionRequest struct {
 	Tools       []ToolDefinition `json:"tools,omitempty"`
 	ToolChoice  string           `json:"tool_choice,omitempty"` // "auto", "none", or specific tool
 }
+
 // ChatCompletionResponse mirrors the OpenAI /v1/chat/completions response shape (non-streaming).
 type ChatCompletionResponse struct {
 	Choices []struct {
@@ -86,8 +88,8 @@ type ChatStreamChunk struct {
 	Content      string
 	Reasoning    string
 	Done         bool
-	FinishReason string            // "stop", "tool_calls", "length", etc.
-	ToolCalls    []StreamToolCall  // accumulated tool calls from streaming deltas
+	FinishReason string           // "stop", "tool_calls", "length", etc.
+	ToolCalls    []StreamToolCall // accumulated tool calls from streaming deltas
 }
 
 // StreamToolCall is a tool call delta as it arrives in a streaming response.
@@ -102,6 +104,7 @@ type StreamToolCall struct {
 		Arguments string `json:"arguments"`
 	} `json:"function"`
 }
+
 // buildChatMessages builds messages with system + history + user.
 func BuildChatMessages(systemPrompt, userMessage string, history []ChatMessage) []ChatMessage {
 	msgs := make([]ChatMessage, 0, 2+len(history))
@@ -167,8 +170,6 @@ func doChatRequest(model string, messages []ChatMessage, tools []ToolDefinition,
 	return httpReq, nil
 }
 
-
-
 // ChatResult bundles the response text with token usage.
 type ChatResult struct {
 	Content string
@@ -209,13 +210,13 @@ func (s *Service) ChatCompletionWithUsage(
 	for _, p := range providers {
 		result, _, usage, err := s.tryChatCompletion(ctx, p, messages, nil)
 		if err == nil {
-				// Bill before returning — user must pay to receive the result.
-				if s.postCallBiller != nil && usage != nil {
-					if billErr := s.postCallBiller(ctx, userID, p.providerID, p.model, usage.PromptTokens, usage.CompletionTokens); billErr != nil {
-						return nil, billErr
-					}
+			// Bill before returning — user must pay to receive the result.
+			if s.postCallBiller != nil && usage != nil {
+				if billErr := s.postCallBiller(ctx, userID, p.providerID, p.model, usage.PromptTokens, usage.CompletionTokens); billErr != nil {
+					return nil, billErr
 				}
-				return &ChatResult{Content: result, Usage: usage}, nil
+			}
+			return &ChatResult{Content: result, Usage: usage}, nil
 		}
 		lastErr = err
 		if !isFailoverErr(err) {
@@ -235,7 +236,7 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
 	httpReq, err := doChatRequest(p.model, messages, tools, false, endpoint, p.secret, p.maxTokens)
 	if err != nil {
-			return "", nil, nil, err
+		return "", nil, nil, err
 	}
 	httpReq = httpReq.WithContext(ctx)
 	client := &http.Client{Timeout: chatTimeout}
@@ -251,7 +252,7 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 				if isTransientChatErr(doErr) {
 					s.recordProviderFailure(ctx, p.userID, p.providerID)
 				}
-					return "", nil, nil, &failoverErr{msg: fmt.Sprintf("chat completion http: %v", doErr), transient: isTransientChatErr(doErr)}
+				return "", nil, nil, &failoverErr{msg: fmt.Sprintf("chat completion http: %v", doErr), transient: isTransientChatErr(doErr)}
 			}
 			continue
 		}
@@ -261,11 +262,11 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 		if resp.StatusCode == http.StatusOK {
 			var cr ChatCompletionResponse
 			if err := json.Unmarshal(bodyBytes, &cr); err != nil {
-					return "", nil, nil, fmt.Errorf("decode chat response: %w", err)
+				return "", nil, nil, fmt.Errorf("decode chat response: %w", err)
 			}
 			if cr.Error != nil {
 				s.recordProviderFailure(ctx, p.userID, p.providerID)
-					return "", nil, nil, &failoverErr{msg: fmt.Sprintf("chat completion api error: %s", cr.Error.Message), transient: true}
+				return "", nil, nil, &failoverErr{msg: fmt.Sprintf("chat completion api error: %s", cr.Error.Message), transient: true}
 			}
 			if len(cr.Choices) == 0 {
 				return "", nil, nil, fmt.Errorf("chat completion: empty choices")
@@ -281,7 +282,12 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 					Feature: feature, InputTokens: cr.Usage.PromptTokens, OutputTokens: cr.Usage.CompletionTokens,
 				})
 			}
-			return strings.TrimSpace(cr.Choices[0].Message.Content), cr.Choices[0].Message.ToolCalls, cr.Usage, nil
+			msg := cr.Choices[0].Message
+			content := strings.TrimSpace(msg.Content)
+			if content == "" && msg.ReasoningContent != "" {
+				content = strings.TrimSpace(msg.ReasoningContent)
+			}
+			return content, msg.ToolCalls, cr.Usage, nil
 		}
 
 		// Non-2xx: parse error, decide whether to retry or fail.

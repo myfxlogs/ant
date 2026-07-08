@@ -132,9 +132,9 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 		var chunk struct {
 			Choices []struct {
 				Delta struct {
-					Content   string           `json:"content"`
-						ReasoningContent string           `json:"reasoning_content"`
-					ToolCalls []StreamToolCall `json:"tool_calls"`
+					Content          string           `json:"content"`
+					ReasoningContent string           `json:"reasoning_content"`
+					ToolCalls        []StreamToolCall `json:"tool_calls"`
 				} `json:"delta"`
 				FinishReason *string `json:"finish_reason"`
 			} `json:"choices"`
@@ -197,6 +197,7 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 
 		if err := onChunk(ChatStreamChunk{
 			Content:      c.Delta.Content,
+			Reasoning:    c.Delta.ReasoningContent,
 			Done:         finishReason != "",
 			FinishReason: finishReason,
 			ToolCalls:    finalToolCalls,

@@ -159,7 +159,7 @@ func (s *StrategyPlanServer) Conversate(
 		func(llmCtx context.Context, msgs []systemai.ChatMessage, tools []systemai.ToolDefinition, onChunk func(systemai.ChatStreamChunk) error) error {
 			return s.systemSvc.ChatCompletionStreamWithTools(llmCtx, userID, msgs, tools, onChunk)
 		},
-		chunk, toolEvt,
+		chunk, toolEvt, nil,
 	)
 	loop.SetCurrentCode(m.CurrentCode)
 
@@ -220,6 +220,7 @@ func (s *StrategyPlanServer) ExecutePlan(
 		func(tc *antv1.ToolCall, tr *antv1.ToolResult) error {
 			return stream.Send(&antv1.ExecutePlanChunk{Phase: "tool_result", ToolCall: tc, ToolResult: tr})
 		},
+		nil,
 	)
 	loop.SetCurrentCode(m.PreviousCode)
 

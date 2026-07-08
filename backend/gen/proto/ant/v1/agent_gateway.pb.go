@@ -2108,6 +2108,7 @@ type AgentGenerateStrategyChunk struct {
 	Error         string                 `protobuf:"bytes,12,opt,name=error,proto3" json:"error,omitempty"`                                      // non-fatal error message
 	BacktestError string                 `protobuf:"bytes,13,opt,name=backtest_error,json=backtestError,proto3" json:"backtest_error,omitempty"` // backtest error if backtest fails
 	Plan          *StrategyPlan          `protobuf:"bytes,14,opt,name=plan,proto3" json:"plan,omitempty"`                                        // structured plan (planning phase, ADR-0025 §3)
+	Reasoning     string                 `protobuf:"bytes,15,opt,name=reasoning,proto3" json:"reasoning,omitempty"`                              // thinking/reasoning stream (thinking phase)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2231,6 +2232,13 @@ func (x *AgentGenerateStrategyChunk) GetPlan() *StrategyPlan {
 		return x.Plan
 	}
 	return nil
+}
+
+func (x *AgentGenerateStrategyChunk) GetReasoning() string {
+	if x != nil {
+		return x.Reasoning
+	}
+	return ""
 }
 
 type UserTemplateEntry struct {
@@ -3340,7 +3348,7 @@ const file_agent_gateway_proto_rawDesc = "" +
 	" \x01(\tR\x0econversationId\x1a9\n" +
 	"\vParamsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x99\x04\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xb7\x04\n" +
 	"\x1aAgentGenerateStrategyChunk\x12\x14\n" +
 	"\x05phase\x18\x01 \x01(\tR\x05phase\x12\x14\n" +
 	"\x05delta\x18\x02 \x01(\tR\x05delta\x12#\n" +
@@ -3356,7 +3364,8 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"\battempts\x18\v \x01(\x05R\battempts\x12\x14\n" +
 	"\x05error\x18\f \x01(\tR\x05error\x12%\n" +
 	"\x0ebacktest_error\x18\r \x01(\tR\rbacktestError\x12(\n" +
-	"\x04plan\x18\x0e \x01(\v2\x14.ant.v1.StrategyPlanR\x04planJ\x04\b\x03\x10\x04\"\x8f\x01\n" +
+	"\x04plan\x18\x0e \x01(\v2\x14.ant.v1.StrategyPlanR\x04plan\x12\x1c\n" +
+	"\treasoning\x18\x0f \x01(\tR\treasoningJ\x04\b\x03\x10\x04\"\x8f\x01\n" +
 	"\x11UserTemplateEntry\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
