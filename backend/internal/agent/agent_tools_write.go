@@ -65,7 +65,7 @@ func (t *writeStrategyTool) Run(ctx context.Context, in connectai.ToolInput) con
 	t.result.BacktestError = ""
 
 	// Step 1: Compile (REUSE: gateway.go:126).
-	_, cov, compileErr := mql2go.CompilePythonWithCoverage(code)
+	runner, cov, compileErr := mql2go.CompilePythonWithCoverage(code)
 	if compileErr != nil {
 		t.result.CompileError = compileErr.Error()
 		return connectai.ToolOutput{
@@ -87,7 +87,7 @@ func (t *writeStrategyTool) Run(ctx context.Context, in connectai.ToolInput) con
 	// I2a: smoke test (compile + execute on bars). I2b: performance (with full params).
 	// I4: inputs must be included alongside results (§3.2c).
 	if t.mkt != nil && t.cfg != nil && t.cfg.Symbol != "" {
-		btSummary, tier, btErr := t.runBacktest(ctx, code)
+		btSummary, tier, btErr := t.runBacktest(ctx, runner)
 		if btErr != nil {
 			result["backtest_error"] = btErr.Error()
 			result["tier"] = "compile_only"
@@ -113,7 +113,7 @@ func (t *writeStrategyTool) Run(ctx context.Context, in connectai.ToolInput) con
 
 // runBacktest REUSEs: gateway.go:141-163 flow (fetchBars → runVMBacktest → buildBacktestResultProto).
 // Returns smoke tier (I2a) when config is partial, performance tier (I2b) when full.
-func (t *writeStrategyTool) runBacktest(ctx context.Context, code string) (*backtestSummary, string, error) {
+func (t *writeStrategyTool) runBacktest(ctx context.Context, runner *mql2go.VMRunner) (*backtestSummary, string, error) {
 	// Step 2a: Fetch bars (REUSE: gateway.go:141-153).
 	bars, err := fetchBarsForBacktest(ctx, t.mkt, t.cfg)
 	if err != nil {
@@ -123,13 +123,7 @@ func (t *writeStrategyTool) runBacktest(ctx context.Context, code string) (*back
 		return nil, "", fmt.Errorf("insufficient market data: %d bars (need ≥2)", len(bars))
 	}
 
-	// Step 2b: Compile to VMRunner (already compiled above, but backtest needs runner).
-	runner, _, err := mql2go.CompilePythonWithCoverage(code)
-	if err != nil {
-		return nil, "", fmt.Errorf("backtest compile: %w", err)
-	}
-
-	// Step 2c: Run VM backtest (REUSE: runVMBacktest @ backtest_helpers.go:18).
+	// Step 2b: Run VM backtest (runner already compiled above) (REUSE: runVMBacktest @ backtest_helpers.go:18).
 	btResult, btErr := runVMBacktest(ctx, runner, t.cfg, bars, nil)
 
 	// I2a vs I2b: determine tier.

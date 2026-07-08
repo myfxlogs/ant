@@ -103,26 +103,20 @@ func (g *Generator) runAgentLoop(
 	raw, loopErr := loop.RunWithHistory(ctx, sysPrompt, userPrompt, history, userID)
 	g.log.Info("generator: loop done", zap.Int("raw_len", len(raw)), zap.Bool("has_err", loopErr != nil))
 
-	// Extract code regardless of loopErr — the LLM may have generated valid code
-	// even if max rounds was exceeded.
+	// I1: PythonSource is ONLY set by write_strategy tool. Never overwrite it here.
+	// ExtractCode from free text is for display only — not a source of truth (§3.1b前提2).
 	cleaned := stripThinkBlocks(raw)
-	pythonSource := stripMarkdownFences(connectai.ExtractCode(cleaned))
-	if pythonSource == "" {
-		pythonSource = stripMarkdownFences(cleaned)
+	displaySource := stripMarkdownFences(connectai.ExtractCode(cleaned))
+	if displaySource == "" {
+		displaySource = stripMarkdownFences(cleaned)
 	}
-	result.PythonSource = pythonSource
 
 	if loopErr != nil {
 		g.log.Warn("generator: agent loop ended", zap.Error(loopErr))
-		// If we got code despite the error, send it with a warning instead of failing.
-		if pythonSource != "" {
-			_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", PythonSource: pythonSource})
-			return nil
-		}
-		_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", Error: loopErr.Error()})
+		_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", PythonSource: result.PythonSource, Error: loopErr.Error()})
 		return nil
 	}
 
-	_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", PythonSource: pythonSource})
+	_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", PythonSource: result.PythonSource})
 	return nil
 }
