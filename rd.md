@@ -9,3 +9,4 @@
 - 审计完成，删 2 个死代码，路由/管线确认正常
 
  commit and push it, then deploy
+prompt
