@@ -157,6 +157,19 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
                 </div>
               )}
 
+              {/* I1: generatedCode is the single deliverable — rendered as THE Apply card */}
+              {turn.generatedCode && (
+                <div style={{ marginBottom: 8, background: 'var(--ant-color-bg-container)', borderRadius: 8, padding: 12, border: '1px solid var(--ant-color-border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <strong>{t('strategy.gen.finalCode', 'Final Strategy Code')}</strong>
+                    <Button size="small" type="primary" onClick={() => onApplyCode?.(turn.generatedCode!)}>
+                      {t('strategy.gen.applyToEditor', 'Apply to Editor')}
+                    </Button>
+                  </div>
+                  <pre style={{ fontSize: 12, maxHeight: 200, overflow: 'auto', background: '#f5f5f5', padding: 8, borderRadius: 4, margin: 0 }}>{turn.generatedCode}</pre>
+                </div>
+              )}
+
               {turn.metrics && turn.metrics.length > 0 && (
                 <Row gutter={8} style={{ marginBottom: 8 }}>
                   {turn.metrics.map((m, i) => (
