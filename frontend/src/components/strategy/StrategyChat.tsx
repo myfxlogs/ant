@@ -15,9 +15,9 @@ import { AI_GATEWAY_SETTINGS_KEY, NEW_CONVERSATION_KEY, SELECT_MODEL_KEY, SELECT
 
 import type { ValidateExtendedResult } from '@/client/codeAssist';
 
-interface Props { symbol?: string; timeframe?: string; sessionId?: string; accountId?: string; onApplyCode: (code: string) => void; onValidateResult?: (result: ValidateExtendedResult) => void; onRunBacktest?: () => void; backtestStatus?: string; }
+interface Props { symbol?: string; timeframe?: string; accountId?: string; onApplyCode: (code: string) => void; onValidateResult?: (result: ValidateExtendedResult) => void; onRunBacktest?: () => void; backtestStatus?: string; }
 
-export default function StrategyChat({ symbol, timeframe, sessionId, accountId, onApplyCode, onValidateResult, onRunBacktest, backtestStatus }: Props) {
+export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode, onValidateResult, onRunBacktest, backtestStatus }: Props) {
   const { t } = useTranslation();
   const [modelOptions, setModelOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [selectedModel, setSelectedModel] = useState('');
@@ -63,7 +63,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
     handleSaveTemplate, handleNewConv, handleLoadConv,
     handleStartRename, handleCancelRename, handleConfirmRename, handleDeleteConv,
   } = useConversationHandlers({
-    sessionId, onApplyCode, addMsg: noop, setMessages: noop, setTab: noop,
+    sessionId: '', onApplyCode, addMsg: noop, setMessages: noop, setTab: noop,
     templates, conversations, setConversations,
     activeConvId, setActiveConvId, editingConvId, setEditingConvId,
     editTitle, setEditTitle, planRef: useRef(''), codeRef, prevCodeRef: useRef(''),

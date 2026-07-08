@@ -8,7 +8,6 @@ import MemoryContent from './MemoryContent';
 interface Props {
   symbol?: string;
   timeframe?: string;
-  sessionId?: string;
   accountId?: string;
   onApplyCode: (code: string) => void;
   onValidateResult?: (result: import('@/client/codeAssist').ValidateExtendedResult) => void;
@@ -45,7 +44,6 @@ export default function RightPanel(props: Props) {
         <StrategyChat
           symbol={props.symbol}
           timeframe={props.timeframe}
-          sessionId={props.sessionId}
           accountId={props.accountId}
           onApplyCode={props.onApplyCode}
           onValidateResult={props.onValidateResult}

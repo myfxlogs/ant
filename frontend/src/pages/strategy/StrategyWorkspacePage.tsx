@@ -5,12 +5,10 @@ import { useStrategyWorkspaceState } from './hooks/useStrategyWorkspaceState';
 import WorkspaceTemplateManager from './components/workspace/WorkspaceTemplateManager';
 import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
 import BacktestResultsCard from '@/components/strategy/BacktestResultsCard';
-import { useAuthStore } from '@/stores/authStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import BacktestHistoryDrawer from './components/workspace/BacktestHistoryDrawer';
 import MobileGuard from './components/workspace/MobileGuard';
 import RightPanel from './components/workspace/RightPanel';
-import { useWorkspaceSession } from './hooks/useWorkspaceSession';
 import { SaveTemplateWrapper } from './WorkspaceLayout';
 import { BacktestParamsModal, type BacktestModalResult } from './components/workspace/BacktestParamsModal';
 import WorkspaceCenterColumn from './components/workspace/WorkspaceCenterColumn';
@@ -23,14 +21,6 @@ export default function StrategyWorkspacePage() {
   const { t } = useTranslation();
   const screens = Grid.useBreakpoint();
   const ws = useStrategyWorkspaceState();
-  const userId = useAuthStore(s => s.user?.id) ?? '';
-  const { sessionId } = useWorkspaceSession(
-    userId,
-    ws.account.symbol,
-    ws.account.timeframe,
-    ws.code.lastSavedId,
-  );
-
   const rightPanelWidth = useWorkspaceStore(s => s.rightPanelWidth);
   const setRightPanelWidth = useWorkspaceStore(s => s.setRightPanelWidth);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
@@ -141,7 +131,6 @@ export default function StrategyWorkspacePage() {
         <RightPanel
           symbol={ws.account.symbol}
           timeframe={ws.account.timeframe}
-          sessionId={sessionId}
           accountId={ws.account.accountId}
           onApplyCode={(code) => { ws.code.setCode(code); setCenterTab("code"); }}
           onValidateResult={(result) => ws.backtest.runner.handleValidationResult(result)}
