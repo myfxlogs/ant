@@ -120,7 +120,7 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
   };
 
 function extractCodeFromContent(content: string): string | undefined {
-  const m = content.match(/```python[sS]*?```/);
+  const m = content.match(/```python[\s\S]*?```/);
   if (!m) return undefined;
   return m[0].replace(/^```python\n?/, '').replace(/\n?```$/, '').trim();
 }
