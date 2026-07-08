@@ -95,7 +95,7 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
                 id: crypto.randomUUID(), role: 'ai', message: '',
                 phase: 'done' as const,
                 streamText: chunk.delta || m.content,
-                generatedCode: chunk.pythonSource || undefined,
+                generatedCode: chunk.pythonSource || extractCodeFromContent(m.content),
                 compileError: chunk.compileError || undefined,
                 backtestError: chunk.backtestError || undefined,
                 metrics: chunk.result?.success ? [
@@ -118,6 +118,12 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
     setActiveConvId(id);
     setHistoryOpen(false);
   };
+
+function extractCodeFromContent(content: string): string | undefined {
+  const m = content.match(/```python[sS]*?```/);
+  if (!m) return undefined;
+  return m[0].replace(/^```python\n?/, '').replace(/\n?```$/, '').trim();
+}
 
   const handleNewConvWrapper = () => {
     initialTurnsRef.current = [];
