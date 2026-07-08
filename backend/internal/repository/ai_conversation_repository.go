@@ -35,8 +35,15 @@ func NewAIConversationRepository(db *pgxpool.Pool) *AIConversationRepository {
 }
 
 func (r *AIConversationRepository) Create(ctx context.Context, userID uuid.UUID, title string) (*AIConversation, error) {
+	return r.CreateWithID(ctx, userID, uuid.New(), title)
+}
+
+// CreateWithID creates a conversation with an explicit ID (caller-provided UUID).
+// Use this when the frontend generates the conversation ID and the backend must
+// persist it as-is so subsequent requests with the same ID can load history.
+func (r *AIConversationRepository) CreateWithID(ctx context.Context, userID, convID uuid.UUID, title string) (*AIConversation, error) {
 	conv := &AIConversation{
-		ID:        uuid.New(),
+		ID:        convID,
 		UserID:    userID,
 		Title:     title,
 		CreatedAt: time.Now(),

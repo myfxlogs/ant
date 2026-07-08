@@ -55,7 +55,7 @@ func (g *Generator) runAgentLoop(
 				if len(title) > 80 {
 					title = title[:80]
 				}
-				if _, createErr := g.conversationRepo.Create(ctx, userID, title); createErr != nil {
+				if _, createErr := g.conversationRepo.CreateWithID(ctx, userID, cid, title); createErr != nil {
 					g.log.Warn("generator: auto-create conversation failed", zap.Error(createErr))
 				}
 			}
