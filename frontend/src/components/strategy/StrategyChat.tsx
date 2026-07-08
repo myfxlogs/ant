@@ -53,7 +53,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
   useEffect(() => { fetchTemplates(); }, []);
 
   const fetchConversations = async () => {
-    try { const list = await aiApi.listConversations(); setConversations(list.map(c => ({ id: c.id, title: c.title || t(NEW_CONVERSATION_KEY), created_at: c.createdAt?.toISOString() || '' }))); } catch {}
+    try { const list = await aiApi.listConversations(); setConversations(list.filter(c => c.messageCount > 0).map(c => ({ id: c.id, title: c.title || t(NEW_CONVERSATION_KEY), created_at: c.createdAt?.toISOString() || '' }))); } catch {}
   };
   useEffect(() => { fetchConversations(); }, []);
 
