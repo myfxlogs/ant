@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file ai_conversation.proto.
  */
 export const file_ai_conversation: GenFile = /*@__PURE__*/
-  fileDesc("ChVhaV9jb252ZXJzYXRpb24ucHJvdG8SBmFudC52MSKnAQoTQ29udmVyc2F0aW9uU3VtbWFyeRIKCgJpZBgBIAEoCRINCgV0aXRsZRgCIAEoCRIVCg1tZXNzYWdlX2NvdW50GAMgASgFEi4KCmNyZWF0ZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wInAKE0NvbnZlcnNhdGlvbk1lc3NhZ2USCgoCaWQYASABKAkSDAoEcm9sZRgCIAEoCRIPCgdjb250ZW50GAMgASgJEi4KCmNyZWF0ZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChVhaV9jb252ZXJzYXRpb24ucHJvdG8SBmFudC52MSKnAQoTQ29udmVyc2F0aW9uU3VtbWFyeRIKCgJpZBgBIAEoCRINCgV0aXRsZRgCIAEoCRIVCg1tZXNzYWdlX2NvdW50GAMgASgFEi4KCmNyZWF0ZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIoMBChNDb252ZXJzYXRpb25NZXNzYWdlEgoKAmlkGAEgASgJEgwKBHJvbGUYAiABKAkSDwoHY29udGVudBgDIAEoCRIuCgpjcmVhdGVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIRCgl0dXJuX2RhdGEYBSABKAxCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.ConversationSummary
@@ -74,6 +74,13 @@ export type ConversationMessage = Message<"ant.v1.ConversationMessage"> & {
    * @generated from field: google.protobuf.Timestamp created_at = 4;
    */
   createdAt?: Timestamp | undefined;
+
+  /**
+   * serialized AgentGenerateStrategyChunk for full turn replay
+   *
+   * @generated from field: bytes turn_data = 5;
+   */
+  turnData: Uint8Array;
 };
 
 /**

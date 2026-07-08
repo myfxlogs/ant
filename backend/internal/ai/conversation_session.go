@@ -57,10 +57,10 @@ func (s *ConversationSession) GetOrCreate(ctx context.Context, userID uuid.UUID,
 // AppendExchange persists a user→assistant message pair atomically.
 // Non-fatal on failure — callers should log warning and continue.
 func (s *ConversationSession) AppendExchange(ctx context.Context, sessionID, userID uuid.UUID, userMsg, assistantMsg string) error {
-	if _, err := s.repo.AddMessage(ctx, userID, sessionID, "user", userMsg); err != nil {
+	if _, err := s.repo.AddMessage(ctx, userID, sessionID, "user", userMsg, nil); err != nil {
 		return err
 	}
-	if _, err := s.repo.AddMessage(ctx, userID, sessionID, "assistant", assistantMsg); err != nil {
+	if _, err := s.repo.AddMessage(ctx, userID, sessionID, "assistant", assistantMsg, nil); err != nil {
 		return err
 	}
 	return s.repo.Touch(ctx, sessionID, userID)

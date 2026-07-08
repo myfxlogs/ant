@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/ai"
@@ -142,13 +143,42 @@ func (g *Generator) runAgentLoop(
 	raw, loopErr := loop.RunWithHistory(ctx, sysPrompt, userPrompt, history, userID)
 	g.log.Info("generator: loop done", zap.Int("raw_len", len(raw)), zap.Bool("has_err", loopErr != nil))
 
+	// Serialize the final turn chunk for full replay on resume.
+	var turnDataBytes []byte
+	if result.PythonSource != "" {
+		finalChunk := &antv1.AgentGenerateStrategyChunk{
+			Phase:        "done",
+			Delta:        raw,
+			PythonSource: result.PythonSource,
+		}
+		if result.LastBacktest != nil {
+			finalChunk.Result = &antv1.AgentBacktestResult{
+				Success:      true,
+				TotalTrades:  int32(result.LastBacktest.TotalTrades),
+				WinRate:      result.LastBacktest.WinRate,
+				TotalReturn:  result.LastBacktest.TotalReturn,
+				MaxDrawdown:  result.LastBacktest.MaxDrawdown,
+				SharpeRatio:  result.LastBacktest.SharpeRatio,
+			}
+		}
+		if result.CompileError != "" {
+			finalChunk.CompileError = result.CompileError
+		}
+		if result.BacktestError != "" {
+			finalChunk.BacktestError = result.BacktestError
+		}
+		if data, err := proto.Marshal(finalChunk); err == nil {
+			turnDataBytes = data
+		}
+	}
+
 	// Persist conversation messages for multi-turn context.
 	if convID != uuid.Nil && g.conversationRepo != nil {
-		if _, err := g.conversationRepo.AddMessage(ctx, userID, convID, "user", userPrompt); err != nil {
+		if _, err := g.conversationRepo.AddMessage(ctx, userID, convID, "user", userPrompt, nil); err != nil {
 			g.log.Warn("generator: failed to save user message", zap.Error(err))
 		}
 		if raw != "" {
-			if _, err := g.conversationRepo.AddMessage(ctx, userID, convID, "assistant", raw); err != nil {
+			if _, err := g.conversationRepo.AddMessage(ctx, userID, convID, "assistant", raw, turnDataBytes); err != nil {
 				g.log.Warn("generator: failed to save assistant message", zap.Error(err))
 			}
 		}

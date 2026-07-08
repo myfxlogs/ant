@@ -24,6 +24,7 @@ type AIMessage struct {
 	Role           string    `db:"role"`
 	Content        string    `db:"content"`
 	CreatedAt      time.Time `db:"created_at"`
+	TurnData       []byte    `db:"turn_data"`
 }
 
 type AIConversationRepository struct {
@@ -135,7 +136,7 @@ func (r *AIConversationRepository) Delete(ctx context.Context, id, userID uuid.U
 	return nil
 }
 
-func (r *AIConversationRepository) AddMessage(ctx context.Context, userID, conversationID uuid.UUID, role, content string) (*AIMessage, error) {
+func (r *AIConversationRepository) AddMessage(ctx context.Context, userID, conversationID uuid.UUID, role, content string, turnData []byte) (*AIMessage, error) {
 	msg := &AIMessage{
 		ID:             uuid.New(),
 		ConversationID: conversationID,
@@ -144,11 +145,11 @@ func (r *AIConversationRepository) AddMessage(ctx context.Context, userID, conve
 		CreatedAt:      time.Now(),
 	}
 	ct, err := r.db.Exec(ctx,
-		`INSERT INTO ai_messages (id, conversation_id, role, content, created_at)
-		 SELECT $1, $2, $3, $4, $5
+		`INSERT INTO ai_messages (id, conversation_id, role, content, created_at, turn_data)
+		 SELECT $1, $2, $3, $4, $5, $6
 		 FROM ai_conversations
-		 WHERE id = $2 AND user_id = $6`,
-		msg.ID, msg.ConversationID, msg.Role, msg.Content, msg.CreatedAt, userID,
+		 WHERE id = $2 AND user_id = $7`,
+		msg.ID, msg.ConversationID, msg.Role, msg.Content, msg.CreatedAt, turnData, userID,
 	)
 	if err != nil {
 		return nil, err
@@ -163,7 +164,7 @@ func (r *AIConversationRepository) GetMessages(ctx context.Context, userID, conv
 	// Single JOIN query atomically verifies ownership AND fetches messages.
 	// Eliminates the TOCTOU window between the old two-step approach.
 	rows, err := r.db.Query(ctx,
-		`SELECT m.id, m.conversation_id, m.role, m.content, m.created_at
+		`SELECT m.id, m.conversation_id, m.role, m.content, m.created_at, COALESCE(m.turn_data, NULL) AS turn_data
 		 FROM ai_messages m
 		 JOIN ai_conversations c ON c.id = m.conversation_id
 		 WHERE m.conversation_id = $1 AND c.user_id = $2
@@ -178,7 +179,7 @@ func (r *AIConversationRepository) GetMessages(ctx context.Context, userID, conv
 	var msgs []AIMessage
 	for rows.Next() {
 		var m AIMessage
-		if err := rows.Scan(&m.ID, &m.ConversationID, &m.Role, &m.Content, &m.CreatedAt); err != nil {
+		if err := rows.Scan(&m.ID, &m.ConversationID, &m.Role, &m.Content, &m.CreatedAt, &m.TurnData); err != nil {
 			return nil, err
 		}
 		msgs = append(msgs, m)

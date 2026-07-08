@@ -40,6 +40,7 @@ export interface AgentGenCallbacks {
   onAttempts: (attempts: number) => void;
   onError: (error: string) => void;
   onPlan: (plan: StrategyPlan) => void;
+  onDone?: () => void;
 }
 
 export function agentGenerateStrategyStream(
@@ -80,6 +81,7 @@ export function agentGenerateStrategyStream(
       for await (const chunk of stream) {
         handleAgentChunk(chunk, callbacks);
       }
+      callbacks.onDone?.();
     } catch (e: unknown) {
       const s = String(e);
       if ((e as { name?: string })?.name === 'AbortError' || s.includes('canceled')) return;

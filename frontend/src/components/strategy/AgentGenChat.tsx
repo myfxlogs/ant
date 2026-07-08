@@ -12,13 +12,15 @@ interface Props {
   timeframe?: string;
   conversationId?: string;
   onApply: (pythonCode: string) => void;
+  onDone?: () => void;
+  initialTurnsRef?: React.MutableRefObject<ChatTurn[]>;
 }
 
 const NO_DATA_RE = /insufficient market data|0 bars|need.*≥.*2/i;
 
-export default function AgentGenChat({ symbol, timeframe, conversationId, onApply }: Props) {
+export default function AgentGenChat({ symbol, timeframe, conversationId, onApply, onDone, initialTurnsRef }: Props) {
   const { t } = useTranslation();
-  const [turns, setTurns] = useState<ChatTurn[]>([]);
+  const [turns, setTurns] = useState<ChatTurn[]>(initialTurnsRef?.current ?? []);
   const [userInput, setUserInput] = useState('');
   const [planRefining, setPlanRefining] = useState(false);
   const [hasCode, setHasCode] = useState(false);
@@ -97,7 +99,8 @@ export default function AgentGenChat({ symbol, timeframe, conversationId, onAppl
       updateCurrentTurn({ plan: p });
       setPlanRefining(false);
     },
-  }), [onApply, updateCurrentTurn]);
+    onDone: onDone || (() => {}),
+  }), [onApply, updateCurrentTurn, onDone]);
 
   const startStream = useCallback((input: {
     message: string; symbol?: string; timeframe?: string;

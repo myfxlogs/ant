@@ -66,8 +66,8 @@ func (s *AIServer) GetConversation(ctx context.Context, req *connect.Request[ant
 			Role:      m.Role,
 			Content:   m.Content,
 			CreatedAt: timestamppb.New(m.CreatedAt),
+				TurnData:  m.TurnData,
 		})
-	}
 	return connect.NewResponse(&antv1.GetConversationResponse{
 		Conversation: summary,
 		Messages:     messages,

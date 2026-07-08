@@ -62,10 +62,10 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 	if m.ConversationId != "" {
 		cid, parseErr := uuid.Parse(m.ConversationId)
 		if parseErr == nil {
-			if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "user", m.Message); aErr != nil {
+			if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "user", m.Message, nil); aErr != nil {
 				s.log.Warn("Chat: AddMessage user failed", zap.Error(aErr))
 			}
-			if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "assistant", reply); aErr != nil {
+			if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "assistant", reply, nil); aErr != nil {
 				s.log.Warn("Chat: AddMessage assistant failed", zap.Error(aErr))
 			}
 			if err := s.conversations.Touch(ctx, cid, uid); err != nil {
@@ -111,10 +111,10 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 		cid, parseErr := uuid.Parse(m.ConversationId)
 		if parseErr == nil {
 			reply := fullReply.String()
-			if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "user", m.Message); aErr != nil {
+			if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "user", m.Message, nil); aErr != nil {
 				s.log.Warn("ChatStream: AddMessage user failed", zap.Error(aErr))
 			}
-			if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "assistant", reply); aErr != nil {
+			if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "assistant", reply, nil); aErr != nil {
 				s.log.Warn("ChatStream: AddMessage assistant failed", zap.Error(aErr))
 			}
 			if err := s.conversations.Touch(ctx, cid, uid); err != nil {

@@ -43,8 +43,8 @@ func (s *StrategyPlanServer) persistPlan(ctx context.Context, userID uuid.UUID, 
 	if err != nil {
 		return
 	}
-	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "user", userMsg)
-	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "assistant", "[PLAN]\n"+plan)
+	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "user", userMsg, nil)
+	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "assistant", "[PLAN]\n"+plan, nil)
 	_ = s.convRepo.Touch(ctx, cid, userID)
 }
 
@@ -57,9 +57,9 @@ func (s *StrategyPlanServer) persistExchange(ctx context.Context, userID uuid.UU
 		return
 	}
 	if feedback != "" {
-		_, _ = s.convRepo.AddMessage(ctx, userID, cid, "user", feedback)
+		_, _ = s.convRepo.AddMessage(ctx, userID, cid, "user", feedback, nil)
 	} else {
-		_, _ = s.convRepo.AddMessage(ctx, userID, cid, "user", plan)
+		_, _ = s.convRepo.AddMessage(ctx, userID, cid, "user", plan, nil)
 	}
 	tag := "[DISCUSSION]"
 	if code != "" {
@@ -71,7 +71,7 @@ func (s *StrategyPlanServer) persistExchange(ctx context.Context, userID uuid.UU
 	if content == "" {
 		content = plan
 	}
-	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "assistant", tag+"\n"+content)
+	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "assistant", tag+"\n"+content, nil)
 	_ = s.convRepo.Touch(ctx, cid, userID)
 }
 
@@ -83,7 +83,7 @@ func (s *StrategyPlanServer) persistDiagnose(ctx context.Context, userID uuid.UU
 	if err != nil {
 		return
 	}
-	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "user", question)
-	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "assistant", "[DIAGNOSIS]\n"+answer)
+	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "user", question, nil)
+	_, _ = s.convRepo.AddMessage(ctx, userID, cid, "assistant", "[DIAGNOSIS]\n"+answer, nil)
 	_ = s.convRepo.Touch(ctx, cid, userID)
 }

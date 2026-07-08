@@ -7,6 +7,7 @@ import StrategyChatHistory from './StrategyChatHistory';
 import AgentGenChat from './AgentGenChat';
 import { useConversationHandlers } from './useConversationHandlers';
 import type { Conversation, Template } from './strategyChatUtils';
+import type { ChatTurn } from './ChatHistory';
 import { aiApi } from '@/client/ai';
 const AISettingsModal = lazy(() => import('@/pages/strategy/components/workspace/AISettingsModal'));
 import { aiGatewayApi } from '@/client/aiGateway';
@@ -26,7 +27,8 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [strategiesOpen, setStrategiesOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeConvId, setActiveConvId] = useState('');
+  const [activeConvId, setActiveConvId] = useState(crypto.randomUUID());
+  const initialTurnsRef = useRef<ChatTurn[]>([]);
   const [editingConvId, setEditingConvId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const codeRef = useRef('');
@@ -34,7 +36,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
   const bumpCodeGen = () => setCodeGenKey(k => k + 1);
   const hasSymbol = !!(symbol && timeframe);
 
-  // Fetch model options
   useEffect(() => {
     (async () => {
       try { const r = await aiApi.getPrimary(); if (r.providerId) setSelectedModel(`${r.providerId}|${r.model || ''}`); } catch {}
@@ -76,12 +77,50 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
     setStrategiesOpen(false);
   };
 
-  const handleLoadConvWrapper = (id: string) => {
-    handleLoadConv(id);
+  // Load turn_data BEFORE remount so AgentGenChat mounts with full history.
+  const handleLoadConvWrapper = async (id: string) => {
+    const turns: ChatTurn[] = [];
+    try {
+      const detail = await aiApi.getConversation(id);
+      const { AgentGenerateStrategyChunk } = await import('@/gen/ant/v1/agent_gateway_pb');
+      const aiTurns = (detail.messages || [])
+        .filter(m => m.role === 'assistant' && m.turnData && m.turnData.length > 0)
+        .map(m => {
+          try {
+            const chunk = AgentGenerateStrategyChunk.fromBinary(m.turnData);
+            return {
+              id: crypto.randomUUID(), role: 'ai' as const, message: '',
+              phase: 'done' as const,
+              streamText: chunk.delta || m.content,
+              generatedCode: chunk.pythonSource || undefined,
+              compileError: chunk.compileError || undefined,
+              backtestError: chunk.backtestError || undefined,
+              metrics: chunk.result?.success ? [
+                { label: 'Return', value: `${chunk.result.totalReturn.toFixed(1)}%`, positive: chunk.result.totalReturn >= 0 },
+                { label: 'Max DD', value: `${chunk.result.maxDrawdown.toFixed(1)}%`, positive: chunk.result.maxDrawdown <= 0 },
+                { label: 'Sharpe', value: chunk.result.sharpeRatio.toFixed(2), positive: chunk.result.sharpeRatio >= 1 },
+                { label: 'Win', value: `${chunk.result.winRate.toFixed(1)}%` },
+              ] : undefined,
+            } as ChatTurn;
+          } catch { return null; }
+        })
+        .filter(Boolean) as ChatTurn[];
+      let aiIdx = 0;
+      for (const m of (detail.messages || [])) {
+        if (m.role === 'user') {
+          turns.push({ id: crypto.randomUUID(), role: 'user', message: m.content });
+        } else if (aiIdx < aiTurns.length) {
+          turns.push(aiTurns[aiIdx++]);
+        }
+      }
+    } catch {}
+    initialTurnsRef.current = turns;
+    setActiveConvId(id);
     setHistoryOpen(false);
   };
 
   const handleNewConvWrapper = () => {
+    initialTurnsRef.current = [];
     handleNewConv();
     setHistoryOpen(false);
   };
@@ -92,7 +131,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Compact sub-bar: model selector + action buttons (no title — tab bar handles that) */}
       <div style={{ padding: '4px 8px', borderBottom: '1px solid var(--ant-color-border)', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, background: 'var(--ant-color-bg-container)' }}>
         {symbolTag}
         {modelOptions.length > 0 && (
@@ -110,12 +148,17 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
         <Button size="small" type="text" icon={<SettingOutlined />} onClick={() => setAiSettingsOpen(true)} title={t(AI_GATEWAY_SETTINGS_KEY)} />
       </div>
 
-      {/* Main content: AgentGenChat as the single unified interface */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <AgentGenChat key={activeConvId} conversationId={activeConvId} symbol={symbol} timeframe={timeframe} onApply={onApplyCode} />
+        <AgentGenChat
+          key={activeConvId}
+          conversationId={activeConvId}
+          symbol={symbol} timeframe={timeframe}
+          onApply={onApplyCode}
+          onDone={fetchConversations}
+          initialTurnsRef={initialTurnsRef}
+        />
       </div>
 
-      {/* History drawer */}
       <Drawer
         title={t('strategy.aiChat.historyTab', 'History')}
         open={historyOpen}
@@ -133,7 +176,6 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
         />
       </Drawer>
 
-      {/* Strategies drawer */}
       <Drawer
         title={t('strategy.aiChat.strategiesTab', 'Strategies')}
         open={strategiesOpen}
