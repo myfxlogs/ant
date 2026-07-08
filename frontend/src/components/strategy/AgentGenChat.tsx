@@ -10,6 +10,7 @@ import ChatInput from './ChatInput';
 interface Props {
   symbol?: string;
   timeframe?: string;
+  conversationId?: string;
   onApply: (pythonCode: string) => void;
 }
 
@@ -24,7 +25,7 @@ export default function AgentGenChat({ symbol, timeframe, onApply }: Props) {
   const [generating, setGenerating] = useState(false);
 
   const abortRef = useRef<(() => void) | null>(null);
-  const conversationIdRef = useRef(crypto.randomUUID());
+  const conversationIdRef = useRef(conversationId || crypto.randomUUID());
   const turnIdRef = useRef(0);
   const currentTurnIdRef = useRef<string | null>(null);
   const lastMsgRef = useRef('');

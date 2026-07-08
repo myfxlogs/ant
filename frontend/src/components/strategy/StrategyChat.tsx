@@ -112,7 +112,7 @@ export default function StrategyChat({ symbol, timeframe, sessionId, accountId, 
 
       {/* Main content: AgentGenChat as the single unified interface */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <AgentGenChat symbol={symbol} timeframe={timeframe} onApply={onApplyCode} />
+        <AgentGenChat key={activeConvId} conversationId={activeConvId} symbol={symbol} timeframe={timeframe} onApply={onApplyCode} />
       </div>
 
       {/* History drawer */}
