@@ -191,7 +191,8 @@ func (m *MemoryStore) StoreExperience(ctx context.Context, userID uuid.UUID, cat
 	id := uuid.New()
 	_, err := m.pool.Exec(ctx,
 		`INSERT INTO agent_experience (id, user_id, category, content, fingerprint, indicators, condition_structure)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+		 VALUES ($1, $2, $3, $4, $5, $6, $7)
+		 ON CONFLICT (user_id, fingerprint) WHERE fingerprint <> '' DO NOTHING`,
 		id, userID, category, content, fingerprint, indicators, conditionStructure)
 	if err != nil {
 		return "", fmt.Errorf("store experience: %w", err)
