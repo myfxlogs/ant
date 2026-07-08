@@ -45,7 +45,7 @@ func (s *ConversationSession) GetOrCreate(ctx context.Context, userID uuid.UUID,
 	}
 	// Create new
 	if title == "" {
-		title = "AI 策略协作"
+		title = strategyKey
 	}
 	conv, err = s.repo.CreateWithStrategyKey(ctx, userID, title, strategyKey)
 	if err != nil {
