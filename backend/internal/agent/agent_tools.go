@@ -61,7 +61,7 @@ func buildPythonToolRegistry(result *generateState, mkt repository.MarketDataSto
 	reg.AddPreTool(&readCurrentCodeTool{result: result})
 	reg.AddPreTool(&editCodeTool{result: result})
 	reg.AddPreTool(&updatePlanTool{})
-	// compile-only for quick checks — does NOT write PythonSource (I1).
-	reg.AddPreTool(&compilePythonTool{result: result})
+	// compile_python removed: write_strategy already does compile + backtest.
+	// Its presence confuses LLM into picking it over write_strategy (native function calling).
 	return reg
 }
