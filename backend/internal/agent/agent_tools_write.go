@@ -98,10 +98,18 @@ func (t *writeStrategyTool) Run(ctx context.Context, in connectai.ToolInput) con
 			result["total_return"] = fmt.Sprintf("%.2f%%", btSummary.TotalReturn)
 			result["max_drawdown"] = fmt.Sprintf("%.2f%%", btSummary.MaxDrawdown)
 			result["sharpe"] = fmt.Sprintf("%.2f", btSummary.SharpeRatio)
-			// I4: transparent inputs alongside results.
+			// I4: transparent inputs alongside results (§3.2c).
 			result["symbol"] = t.cfg.Symbol
 			result["timeframe"] = t.cfg.Timeframe
 			result["initial_capital"] = t.cfg.InitialCapital
+			result["commission"] = t.cfg.Commission
+			if t.cfg.StartDateMs > 0 {
+				result["date_range"] = fmt.Sprintf("%s → %s",
+					time.UnixMilli(t.cfg.StartDateMs).Format("2006-01-02"),
+					time.UnixMilli(t.cfg.EndDateMs).Format("2006-01-02"))
+			} else {
+				result["date_range"] = "recent (auto)"
+			}
 		}
 	} else {
 		result["tier"] = "compile_only"

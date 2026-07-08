@@ -103,14 +103,7 @@ func (g *Generator) runAgentLoop(
 	raw, loopErr := loop.RunWithHistory(ctx, sysPrompt, userPrompt, history, userID)
 	g.log.Info("generator: loop done", zap.Int("raw_len", len(raw)), zap.Bool("has_err", loopErr != nil))
 
-	// I1: PythonSource is ONLY set by write_strategy tool. Never overwrite it here.
-	// ExtractCode from free text is for display only — not a source of truth (§3.1b前提2).
-	cleaned := stripThinkBlocks(raw)
-	displaySource := stripMarkdownFences(connectai.ExtractCode(cleaned))
-	if displaySource == "" {
-		displaySource = stripMarkdownFences(cleaned)
-	}
-
+	// I1: PythonSource is ONLY set by write_strategy tool. Never overwrite it here (§3.1b前提2).
 	if loopErr != nil {
 		g.log.Warn("generator: agent loop ended", zap.Error(loopErr))
 		_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", PythonSource: result.PythonSource, Error: loopErr.Error()})
