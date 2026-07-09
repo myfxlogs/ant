@@ -6,6 +6,17 @@ import { strategyExperimentApi, type StrategyExperiment, type StrategyExperiment
 import { useRpcQuery } from '@/hooks/useRpcQuery';
 import { showError, showSuccess } from '@/utils/message';
 import { useTranslation } from 'react-i18next';
+import {
+  MESSAGES_CANDIDATES_GENERATED_KEY, MESSAGES_SUBMIT_FAILED_KEY, MESSAGES_DRAFT_GENERATED_KEY,
+  MESSAGES_PROMOTE_FAILED_KEY, LIST_COLUMN_STATUS_KEY, LIST_COLUMN_SEARCH_METHOD_KEY,
+  LIST_COLUMN_MAX_CANDIDATES_KEY, LIST_COLUMN_ACTIONS_KEY, LIST_COLUMN_VIEW_CANDIDATES_KEY,
+  CANDIDATES_COLUMN_RANK_KEY, CANDIDATES_COLUMN_GRADE_KEY, CANDIDATES_COLUMN_SCORE_KEY,
+  CANDIDATES_COLUMN_PARAMETERS_KEY, CANDIDATES_COLUMN_ACTIONS_KEY, CANDIDATES_COLUMN_GENERATE_DRAFT_KEY,
+  SUBMIT_FORM_TITLE_KEY, SUBMIT_FORM_BASE_TEMPLATE_KEY, SUBMIT_FORM_BASE_TEMPLATE_PLACEHOLDER_KEY,
+  SUBMIT_FORM_PARAMETER_SPACE_KEY, SUBMIT_FORM_SEARCH_METHOD_KEY, SUBMIT_FORM_MAX_CANDIDATES_KEY,
+  SUBMIT_FORM_OBJECTIVE_KEY, SUBMIT_FORM_SUBMIT_KEY, LIST_TITLE_KEY,
+  CANDIDATES_TITLE_KEY, CANDIDATES_TITLE_WITH_ID_KEY,
+} from '@/gen/ant/v1/i18n/strategy_experiment_keys';
 
 const { Text } = Typography;
 
@@ -49,11 +60,11 @@ export default function BatchTuningPanel() {
         maxCandidates: values.maxCandidates,
         objective: values.objective,
       });
-      showSuccess(t('strategy.experiment.messages.candidatesGenerated'));
+      showSuccess(t(MESSAGES_CANDIDATES_GENERATED_KEY));
       await refetch();
       if (res.experiment?.id) setSelectedId(res.experiment.id);
     } catch {
-      showError(t('strategy.experiment.messages.submitFailed'));
+      showError(t(MESSAGES_SUBMIT_FAILED_KEY));
     } finally {
       setLoading(false);
     }
@@ -62,60 +73,60 @@ export default function BatchTuningPanel() {
   const promote = async (c: StrategyExperimentCandidate) => {
     try {
       const res = await strategyExperimentApi.promoteCandidateToDraft(c.id, `Batch candidate ${c.rank}`);
-      showSuccess(t('strategy.experiment.messages.draftGenerated', { templateId: res.templateId }));
+      showSuccess(t(MESSAGES_DRAFT_GENERATED_KEY, { templateId: res.templateId }));
     } catch {
-      showError(t('strategy.experiment.messages.promoteFailed'));
+      showError(t(MESSAGES_PROMOTE_FAILED_KEY));
     }
   };
 
   const expColumns: ColumnsType<StrategyExperiment> = [
-    { title: t('strategy.experiment.list.status'), dataIndex: 'status', render: v => <Tag color={v === 'SUCCEEDED' ? 'green' : 'blue'}>{v}</Tag> },
-    { title: t('strategy.experiment.list.searchMethod'), dataIndex: 'searchMethod' },
-    { title: t('strategy.experiment.list.maxCandidates'), dataIndex: 'maxCandidates' },
-    { title: t('strategy.experiment.list.actions'), render: (_, r) => <Button size="small" onClick={() => setSelectedId(r.id)}>{t('strategy.experiment.list.viewCandidates')}</Button> },
+    { title: t(LIST_COLUMN_STATUS_KEY), dataIndex: 'status', render: v => <Tag color={v === 'SUCCEEDED' ? 'green' : 'blue'}>{v}</Tag> },
+    { title: t(LIST_COLUMN_SEARCH_METHOD_KEY), dataIndex: 'searchMethod' },
+    { title: t(LIST_COLUMN_MAX_CANDIDATES_KEY), dataIndex: 'maxCandidates' },
+    { title: t(LIST_COLUMN_ACTIONS_KEY), render: (_, r) => <Button size="small" onClick={() => setSelectedId(r.id)}>{t(LIST_COLUMN_VIEW_CANDIDATES_KEY)}</Button> },
   ];
 
   const candColumns: ColumnsType<StrategyExperimentCandidate> = [
-    { title: t('strategy.experiment.candidates.rank'), dataIndex: 'rank', width: 60 },
-    { title: t('strategy.experiment.candidates.grade'), dataIndex: 'grade', width: 60, render: v => <Tag color={v === 'A' ? 'gold' : v === 'B' ? 'blue' : 'default'}>{v}</Tag> },
-    { title: t('strategy.experiment.candidates.score'), dataIndex: 'score', width: 70, render: v => Number(v).toFixed(1) },
-    { title: t('strategy.experiment.candidates.parameters'), dataIndex: 'parameters', render: v => <Text code style={{ fontSize: 10 }}>{JSON.stringify(v)}</Text> },
-    { title: t('strategy.experiment.candidates.actions'), width: 100, render: (_, r) => <Button size="small" type="primary" onClick={() => promote(r)}>{t('strategy.experiment.candidates.generateDraft')}</Button> },
+    { title: t(CANDIDATES_COLUMN_RANK_KEY), dataIndex: 'rank', width: 60 },
+    { title: t(CANDIDATES_COLUMN_GRADE_KEY), dataIndex: 'grade', width: 60, render: v => <Tag color={v === 'A' ? 'gold' : v === 'B' ? 'blue' : 'default'}>{v}</Tag> },
+    { title: t(CANDIDATES_COLUMN_SCORE_KEY), dataIndex: 'score', width: 70, render: v => Number(v).toFixed(1) },
+    { title: t(CANDIDATES_COLUMN_PARAMETERS_KEY), dataIndex: 'parameters', render: v => <Text code style={{ fontSize: 10 }}>{JSON.stringify(v)}</Text> },
+    { title: t(CANDIDATES_COLUMN_ACTIONS_KEY), width: 100, render: (_, r) => <Button size="small" type="primary" onClick={() => promote(r)}>{t(CANDIDATES_COLUMN_GENERATE_DRAFT_KEY)}</Button> },
   ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <Card size="small" title={t('strategy.experiment.submit.title')}>
+      <Card size="small" title={t(SUBMIT_FORM_TITLE_KEY)}>
         <Form layout="vertical" size="small" initialValues={{ parameterSpace: defaultParamSpace(), searchMethod: 'grid', maxCandidates: 12, objective: 'balanced' }} onFinish={handleSubmit}>
-          <Form.Item name="baseTemplateId" label={t('strategy.experiment.submit.baseTemplate')} rules={[{ required: true }]}>
-            <Select showSearch placeholder={t('strategy.experiment.submit.baseTemplatePlaceholder')}
+          <Form.Item name="baseTemplateId" label={t(SUBMIT_FORM_BASE_TEMPLATE_KEY)} rules={[{ required: true }]}>
+            <Select showSearch placeholder={t(SUBMIT_FORM_BASE_TEMPLATE_PLACEHOLDER_KEY)}
               options={templates.map((t: StrategyTemplate) => ({ value: t.id, label: `${t.name || t.id}` }))} />
           </Form.Item>
-          <Form.Item name="parameterSpace" label={t('strategy.experiment.submit.parameterSpace')} rules={[{ required: true }]}>
+          <Form.Item name="parameterSpace" label={t(SUBMIT_FORM_PARAMETER_SPACE_KEY)} rules={[{ required: true }]}>
             <Input.TextArea rows={4} style={{ fontFamily: 'monospace', fontSize: 11 }} />
           </Form.Item>
           <Space size="small" wrap>
-            <Form.Item name="searchMethod" label={t('strategy.experiment.submit.searchMethod')}>
+            <Form.Item name="searchMethod" label={t(SUBMIT_FORM_SEARCH_METHOD_KEY)}>
               <Select style={{ width: 120 }} options={[{ value: 'grid', label: 'Grid' }, { value: 'random', label: 'Random' }]} />
             </Form.Item>
-            <Form.Item name="maxCandidates" label={t('strategy.experiment.submit.maxCandidates')}>
+            <Form.Item name="maxCandidates" label={t(SUBMIT_FORM_MAX_CANDIDATES_KEY)}>
               <InputNumber min={1} max={50} />
             </Form.Item>
-            <Form.Item name="objective" label={t('strategy.experiment.submit.objective')}>
+            <Form.Item name="objective" label={t(SUBMIT_FORM_OBJECTIVE_KEY)}>
               <Input style={{ width: 140 }} />
             </Form.Item>
           </Space>
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading} size="small">{t('strategy.experiment.submit.submit')}</Button>
+            <Button type="primary" htmlType="submit" loading={loading} size="small">{t(SUBMIT_FORM_SUBMIT_KEY)}</Button>
           </Form.Item>
         </Form>
       </Card>
 
-      <Card size="small" title={t('strategy.experiment.list.title')}>
+      <Card size="small" title={t(LIST_TITLE_KEY)}>
         <Table rowKey="id" size="small" dataSource={experiments} columns={expColumns} pagination={false} scroll={{ x: 400 }} />
       </Card>
 
-      <Card size="small" title={selectedId ? t('strategy.experiment.candidates.titleWithId', { id: selectedId }) : t('strategy.experiment.candidates.title')}>
+      <Card size="small" title={selectedId ? t(CANDIDATES_TITLE_WITH_ID_KEY, { id: selectedId }) : t(CANDIDATES_TITLE_KEY)}>
         <Table rowKey="id" size="small" loading={candLoading} dataSource={candidates} columns={candColumns} pagination={false} scroll={{ x: 600 }} />
       </Card>
     </div>

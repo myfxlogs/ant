@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+option go_package = "anttrader/gen/proto/ant/v1/i18n";
+
+// IndicatorCatalogI18n — indicator catalog UI strings
+
+message IndicatorCatalogI18n {
+  string title = 1;               // Indicator Catalog
+  string param_key = 2;           // Key
+  string param_label = 3;         // Label
+  string param_type = 4;          // Type
+  string param_default = 5;       // Default
+  string param_range = 6;         // Range
+  string param_description = 7;   // Description
+  string risk_params_title = 8;   // Risk Parameters
+  string risk_params_desc = 9;    // Built-in risk control parameters
+  string indicators_title = 10;   // Indicators
+  string risk_section_title = 11; // Risk Controls
+}

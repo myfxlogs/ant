@@ -46,6 +46,22 @@ const StrategyWorkspace = {
         "selectPlaceholder": "Select a template...",
         "title": "Template"
       },
+      "memory": {
+        "saveSuccess": "Saved",
+        "saveFailed": "Save failed",
+        "name": "Name",
+        "content": "Content",
+        "confirmDelete": "Delete?",
+        "category": "Category",
+        "templates": "User Strategy Templates",
+        "add": "Add",
+        "empty": "No data",
+        "experiences": "Agent Experiences",
+        "addTemplate": "Add Strategy Template",
+        "save": "Save",
+        "namePlaceholder": "Template name",
+        "contentPlaceholder": "Strategy description, preferences, rules..."
+      },
       "account": "Account",
       "accountPlaceholder": "Account ID",
       "ai": "AI",
@@ -96,7 +112,27 @@ const StrategyWorkspace = {
       "validateBeforeSave": "Please validate code before saving",
       "validateFailed": "Validation failed",
       "validatePass": "Validation passed",
-      "watchlist": "Watchlist"
+      "watchlist": "Watchlist",
+      "sendToAI": "Send to AI",
+      "browseIndicators": "Browse Indicators",
+      "noCode": "No code to validate",
+      "compileError": "Compile error",
+      "validateFirst": "Please validate code first",
+      "codeValid": "Code is valid",
+      "aiAssistant": "AI Assistant",
+      "mobileTitle": "Desktop Required",
+      "mobileSubtitle": "The Strategy Workspace needs a larger screen. Please switch to a desktop device, or browse strategy templates instead.",
+      "mobileCta": "Go to Strategy Templates",
+      "positions": "Positions",
+      "history": "History",
+      "templates": "Strategy Management",
+      "manage": "Manage",
+      "tuningInteractive": "Interactive",
+      "tuningBatch": "Batch",
+      "noResults": "No results",
+      "noHistory": "No history",
+      "untitledDraft": "Untitled Draft",
+      "name": "Name"
     }
   }
 } as const;

@@ -5,7 +5,8 @@ const StrategyAi = {
     "ai": {
       "checkSettings": "Check AI Settings",
       "refreshFailed": "Refresh failed",
-      "settings": "AI Settings"
+      "settings": "AI Settings",
+      "agentMemory": "Agent Memory"
     }
   }
 } as const;

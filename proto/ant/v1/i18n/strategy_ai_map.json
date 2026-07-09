@@ -3,6 +3,7 @@
   "fields": {
     "check_settings": "checkSettings",
     "refresh_failed": "refreshFailed",
-    "settings": "settings"
+    "settings": "settings",
+    "agent_memory": "agentMemory"
   }
 }

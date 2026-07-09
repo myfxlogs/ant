@@ -23,6 +23,12 @@ import { useWatchBacktestRun } from '@/hooks/useWatchBacktestRun';
 import { backtestRunsApi, type BacktestTrade, type BacktestTradeSummary } from '@/client/backtestRuns';
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 import BacktestRunDrawerContent from '@/components/strategy/BacktestRunDrawerContent';
+import {
+  COMMON_CLOSE_KEY, COMMON_REFRESH_KEY, COMMON_YES_KEY, COMMON_NO_KEY, COMMON_TOTAL_ITEMS_KEY,
+} from '@/gen/ant/v1/i18n/base_keys';
+import {
+  BACKTEST_RUNS_BATCH_DELETE_CONFIRM_KEY, BACKTEST_RUNS_BATCH_DELETE_KEY,
+} from '@/gen/ant/v1/i18n/strategy_templates_keys';
 
 const { Text } = Typography;
 
@@ -177,7 +183,7 @@ const BacktestHistoryDrawer: React.FC<Props> = ({
             {t(BACKTEST_RUNS_ACTIONS_VIEW_KEY, 'View')}
           </Button>
           <Popconfirm title={t(BACKTEST_RUNS_DELETE_CONFIRM_KEY, 'Delete this backtest run?')}
-            onConfirm={() => onDeleteRun(record.id)} okText={t('common.yes', 'Yes')} cancelText={t('common.no', 'No')}>
+            onConfirm={() => onDeleteRun(record.id)} okText={t(COMMON_YES_KEY)} cancelText={t(COMMON_NO_KEY)}>
             <Button type="link" size="small" danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
@@ -208,7 +214,7 @@ const BacktestHistoryDrawer: React.FC<Props> = ({
                 {t(ACTIONS_CANCEL_KEY)}
               </Button>
             )}
-            <Button type="primary" onClick={onClose}>{t('common.close', { defaultValue: 'Close' })}</Button>
+            <Button type="primary" onClick={onClose}>{t(COMMON_CLOSE_KEY)}</Button>
           </Space>
         ) : null
       }
@@ -228,14 +234,14 @@ const BacktestHistoryDrawer: React.FC<Props> = ({
           <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between' }}>
             <Space>
               <Button icon={<ReloadOutlined />} onClick={onRefresh} loading={loading}>
-                {t('common.refresh', 'Refresh')}
+                {t(COMMON_REFRESH_KEY)}
               </Button>
               {selectedRowKeys.length > 0 && (
                 <Popconfirm
-                  title={t('strategy.templates.backtestRuns.batchDeleteConfirm', 'Delete {{count}} selected backtest runs?', { count: selectedRowKeys.length })}
-                  onConfirm={onBatchDelete} okText={t('common.yes', 'Yes')} cancelText={t('common.no', 'No')}>
+                  title={t(BACKTEST_RUNS_BATCH_DELETE_CONFIRM_KEY, { count: selectedRowKeys.length })}
+                  onConfirm={onBatchDelete} okText={t(COMMON_YES_KEY)} cancelText={t(COMMON_NO_KEY)}>
                   <Button danger loading={deleting}>
-                    {t('strategy.templates.backtestRuns.batchDelete', 'Delete {{count}}', { count: selectedRowKeys.length })}
+                    {t(BACKTEST_RUNS_BATCH_DELETE_KEY, { count: selectedRowKeys.length })}
                   </Button>
                 </Popconfirm>
               )}
@@ -250,7 +256,7 @@ const BacktestHistoryDrawer: React.FC<Props> = ({
             pagination={{
               current: page, pageSize, total,
               showSizeChanger: true, showQuickJumper: true,
-              showTotal: (t: number) => `${t} runs`,
+              showTotal: (total: number) => t(COMMON_TOTAL_ITEMS_KEY, { total }),
               pageSizeOptions: ['10', '20', '50'],
               onChange: onPageChange,
             }}

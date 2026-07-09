@@ -256,6 +256,9 @@
     "workflow_runs_hints_select_to_view_detail": "workflowRuns.hints.selectToViewDetail",
     "workflow_runs_messages_load_detail_failed": "workflowRuns.messages.loadDetailFailed",
     "workflow_runs_messages_load_list_failed": "workflowRuns.messages.loadListFailed",
-    "workflow_runs_title": "workflowRuns.title"
+    "workflow_runs_title": "workflowRuns.title",
+    "gateway_group_my_keys": "gateway.groupMyKeys",
+    "gateway_group_gateway": "gateway.groupGateway",
+    "gateway_group_current": "gateway.groupCurrent"
   }
 }

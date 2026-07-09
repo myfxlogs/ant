@@ -157,7 +157,14 @@ const Trading = {
     "time": "時間",
     "title": "取引",
     "type": "タイプ",
-    "volume": "数量"
+    "volume": "数量",
+    "platform": "プラットフォーム",
+    "broker": "ブローカー",
+    "server": "サーバー",
+    "permission": "権限",
+    "investor": "インベスター",
+    "master": "マスター",
+    "leverage": "レバレッジ"
   },
   "algo": {
     "actions": {

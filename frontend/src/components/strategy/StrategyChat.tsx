@@ -15,9 +15,9 @@ import { AI_GATEWAY_SETTINGS_KEY, NEW_CONVERSATION_KEY, SELECT_MODEL_KEY, SELECT
 
 import type { ValidateExtendedResult } from '@/client/codeAssist';
 
-interface Props { symbol?: string; timeframe?: string; accountId?: string; onApplyCode: (code: string) => void; onValidateResult?: (result: ValidateExtendedResult) => void; onRunBacktest?: () => void; backtestStatus?: string; }
+interface Props { symbol?: string; timeframe?: string; accountId?: string; onApplyCode: (code: string) => void; onValidateResult?: (result: ValidateExtendedResult) => void; onRunBacktest?: () => void; backtestStatus?: string; currentCode?: string; }
 
-export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode, onValidateResult, onRunBacktest, backtestStatus }: Props) {
+export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode, onValidateResult, onRunBacktest, backtestStatus, currentCode }: Props) {
   const { t } = useTranslation();
   const [modelOptions, setModelOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [selectedModel, setSelectedModel] = useState('');
@@ -82,7 +82,8 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
     const turns: ChatTurn[] = [];
     try {
       const detail = await aiApi.getConversation(id);
-      const { AgentGenerateStrategyChunk } = await import('@/gen/ant/v1/agent_gateway_pb');
+      const { AgentGenerateStrategyChunkSchema } = await import('@/gen/ant/v1/agent_gateway_pb');
+      const { fromBinary } = await import('@bufbuild/protobuf');
       for (const m of (detail.messages || [])) {
         if (m.role === 'user') {
           turns.push({ id: crypto.randomUUID(), role: 'user', message: m.content });
@@ -90,7 +91,7 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
           let turn: ChatTurn | null = null;
           if (m.turnData && m.turnData.length > 0) {
             try {
-              const chunk = AgentGenerateStrategyChunk.fromBinary(m.turnData);
+              const chunk = fromBinary(AgentGenerateStrategyChunkSchema, m.turnData);
               turn = {
                 id: crypto.randomUUID(), role: 'ai', message: '',
                 phase: 'done' as const,
@@ -163,6 +164,7 @@ function extractCodeFromContent(content: string): string | undefined {
           onApply={onApplyCode}
           onDone={fetchConversations}
           initialTurnsRef={initialTurnsRef}
+          currentCode={currentCode}
         />
       </div>
 

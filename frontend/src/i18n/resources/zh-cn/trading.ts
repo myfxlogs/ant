@@ -157,7 +157,14 @@ const Trading = {
     "time": "时间",
     "title": "交易",
     "type": "类型",
-    "volume": "数量"
+    "volume": "数量",
+    "platform": "平台",
+    "broker": "经纪商",
+    "server": "服务器",
+    "permission": "权限",
+    "investor": "观察者",
+    "master": "交易者",
+    "leverage": "杠杆"
   },
   "algo": {
     "actions": {

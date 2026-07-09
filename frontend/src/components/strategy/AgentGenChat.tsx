@@ -6,6 +6,7 @@ import type { StrategyProfile } from '@/gen/ant/v1/agent_profile_pb';
 import type { BacktestAnalysis } from '@/gen/ant/v1/agent_analysis_pb';
 import ChatHistory, { type ChatTurn, type Phase } from './ChatHistory';
 import ChatInput from './ChatInput';
+import { RETURN_LABEL_KEY as GEN_RETURN_KEY, MAX_DRAWDOWN_KEY as GEN_MAX_DRAWDOWN_KEY, SHARPE_KEY as GEN_SHARPE_KEY, WIN_RATE_KEY as GEN_WIN_RATE_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 
 interface Props {
   symbol?: string;
@@ -15,11 +16,12 @@ interface Props {
   onApply: (pythonCode: string) => void;
   onDone?: () => void;
   initialTurnsRef?: React.MutableRefObject<ChatTurn[]>;
+  currentCode?: string;
 }
 
 const NO_DATA_RE = /insufficient market data|0 bars|need.*≥.*2/i;
 
-export default function AgentGenChat({ symbol, timeframe, accountId, conversationId, onApply, onDone, initialTurnsRef }: Props) {
+export default function AgentGenChat({ symbol, timeframe, accountId, conversationId, onApply, onDone, initialTurnsRef, currentCode }: Props) {
   const { t } = useTranslation();
   const [turns, setTurns] = useState<ChatTurn[]>(initialTurnsRef?.current ?? []);
   const [userInput, setUserInput] = useState('');
@@ -40,10 +42,10 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
   const nowTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const metricsFromResult = (r: AgentBacktestResult) => [
-    { label: t('strategy.gen.return', 'Return'), value: `${r.totalReturn.toFixed(1)}%`, positive: r.totalReturn >= 0 },
-    { label: t('strategy.gen.maxDrawdown', 'Max DD'), value: `${r.maxDrawdown.toFixed(1)}%`, positive: r.maxDrawdown <= 0 },
-    { label: t('strategy.gen.sharpe', 'Sharpe'), value: r.sharpeRatio.toFixed(2), positive: r.sharpeRatio >= 1 },
-    { label: t('strategy.gen.winRate', 'Win'), value: `${r.winRate.toFixed(1)}%` },
+    { label: t(GEN_RETURN_KEY), value: `${r.totalReturn.toFixed(1)}%`, positive: r.totalReturn >= 0 },
+    { label: t(GEN_MAX_DRAWDOWN_KEY), value: `${r.maxDrawdown.toFixed(1)}%`, positive: r.maxDrawdown <= 0 },
+    { label: t(GEN_SHARPE_KEY), value: r.sharpeRatio.toFixed(2), positive: r.sharpeRatio >= 1 },
+    { label: t(GEN_WIN_RATE_KEY), value: `${r.winRate.toFixed(1)}%` },
   ];
 
   const updateCurrentTurn = useCallback((patch: Partial<ChatTurn>) => {
@@ -120,9 +122,9 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
     currentTurnIdRef.current = aiTurn.id;
     setTurns((prev) => [...prev, aiTurn]);
 
-    const abort = agentGenerateStrategyStream({ ...input, conversationId: conversationIdRef.current, accountId }, makeCallbacks());
+    const abort = agentGenerateStrategyStream({ ...input, conversationId: conversationIdRef.current, accountId, currentCode }, makeCallbacks());
     abortRef.current = abort;
-  }, [makeCallbacks]);
+  }, [makeCallbacks, accountId, currentCode]);
 
   const handleSend = useCallback(() => {
     const msg = userInput.trim();

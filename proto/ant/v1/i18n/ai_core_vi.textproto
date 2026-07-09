@@ -250,3 +250,6 @@ workflow_runs_hints_select_to_view_detail: '从左侧选择运行记录查看详
 workflow_runs_messages_load_detail_failed: '加载详情失败'
 workflow_runs_messages_load_list_failed: 'Tải danh sách lần chạy thất bại'
 workflow_runs_title: 'Quy trình AI'
+gateway_group_my_keys: 'Khóa API của tôi'
+gateway_group_gateway: 'AI Gateway'
+gateway_group_current: 'Đang chọn'

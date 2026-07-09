@@ -46,6 +46,22 @@ const StrategyWorkspace = {
         "selectPlaceholder": "选择模板...",
         "title": "模板"
       },
+      "memory": {
+        "saveSuccess": "已保存",
+        "saveFailed": "保存失败",
+        "name": "名称",
+        "content": "内容",
+        "confirmDelete": "删除？",
+        "category": "分类",
+        "templates": "用户策略模板",
+        "add": "添加",
+        "empty": "暂无数据",
+        "experiences": "Agent 经验",
+        "addTemplate": "添加策略模板",
+        "save": "保存",
+        "namePlaceholder": "模板名称",
+        "contentPlaceholder": "策略描述、偏好、规则..."
+      },
       "account": "账号",
       "accountPlaceholder": "账户 ID",
       "ai": "AI 助手",
@@ -96,7 +112,27 @@ const StrategyWorkspace = {
       "validateBeforeSave": "保存前请先验证代码",
       "validateFailed": "代码验证失败",
       "validatePass": "代码验证通过",
-      "watchlist": "自选"
+      "watchlist": "自选",
+      "sendToAI": "发送给AI",
+      "browseIndicators": "浏览指标",
+      "noCode": "没有代码可验证",
+      "compileError": "编译错误",
+      "validateFirst": "请先验证代码",
+      "codeValid": "代码验证通过",
+      "aiAssistant": "AI 助手",
+      "mobileTitle": "需要桌面设备",
+      "mobileSubtitle": "策略工作区需要更大的屏幕。请切换到桌面设备，或浏览策略模板。",
+      "mobileCta": "前往策略模板",
+      "positions": "持仓",
+      "history": "历史",
+      "templates": "策略管理",
+      "manage": "管理",
+      "tuningInteractive": "交互式",
+      "tuningBatch": "批量",
+      "noResults": "暂无结果",
+      "noHistory": "暂无历史",
+      "untitledDraft": "未命名草稿",
+      "name": "名称"
     }
   }
 } as const;

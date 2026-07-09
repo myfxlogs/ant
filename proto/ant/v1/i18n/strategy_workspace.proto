@@ -127,4 +127,40 @@ message StrategyWorkspaceI18n {
   string quick_trade_cross = 138;
   string quick_trade_isolated = 139;
   string quick_trade_mt4_cross_only = 140;
+
+  // ── Workspace actions & status (141-160) ──
+  string send_to_ai = 141;
+  string browse_indicators = 142;
+  string no_code = 143;
+  string compile_error = 144;
+  string validate_first = 145;
+  string code_valid = 146;
+  string ai_assistant = 147;
+  string mobile_title = 148;
+  string mobile_subtitle = 149;
+  string mobile_cta = 150;
+  string positions = 151;
+  string history = 152;
+  string templates = 153;
+  string manage = 154;
+  string tuning_interactive = 155;
+  string tuning_batch = 156;
+  string no_results = 157;
+  string no_history = 158;
+  string untitled_draft = 159;
+  string name = 160;
+  string memory_save_success = 161;
+  string memory_save_failed = 162;
+  string memory_name = 163;
+  string memory_content = 164;
+  string memory_confirm_delete = 165;
+  string memory_category = 166;
+  string memory_templates = 167;
+  string memory_add = 168;
+  string memory_empty = 169;
+  string memory_experiences = 170;
+  string memory_add_template = 171;
+  string memory_save = 172;
+  string memory_name_placeholder = 173;
+  string memory_content_placeholder = 174;
 }

@@ -6,6 +6,7 @@ import type { StrategyPlan } from '@/gen/ant/v1/agent_gateway_pb';
 import type { StrategyProfile } from '@/gen/ant/v1/agent_profile_pb';
 import type { BacktestAnalysis } from '@/gen/ant/v1/agent_analysis_pb';
 import { CHAT_BOX_THINKING_KEY } from '@/gen/ant/v1/i18n/ai_core_keys';
+import { BACKTEST_ERROR_KEY, FAILED_KEY, DONE_KEY, NO_MARKET_DATA_KEY, NO_MARKET_DATA_HINT_KEY, PLAN_KEY, COMPILE_ERROR_KEY, FINAL_CODE_KEY, COPY_KEY, APPLY_TO_EDITOR_KEY, COVERAGE_KEY, PROFILE_KEY, ANALYSIS_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 import PlanCard from './PlanCard';
 import CollapsibleBlock from './CollapsibleBlock';
 import { StreamContent, phaseLabels, isNoMarketData } from './chatUtils';
@@ -114,9 +115,9 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
               {turn.phase === 'done' && (
                 <div style={{ marginBottom: 6, fontSize: 11, color: 'var(--ant-color-text-tertiary)' }}>
                   {(turn.error || turn.compileError || turn.backtestError) && !turn.metrics ? (
-                    <span style={{ color: 'var(--ant-color-error)' }}>✕ {t('strategy.gen.failed', 'Failed')}</span>
+                    <span style={{ color: 'var(--ant-color-error)' }}>✕ {t(FAILED_KEY)}</span>
                   ) : (
-                    <span style={{ color: 'var(--ant-color-success)' }}>✓ {t('strategy.gen.done', 'Done')}</span>
+                    <span style={{ color: 'var(--ant-color-success)' }}>✓ {t(DONE_KEY)}</span>
                   )}
                   {turn.timestamp && ` · ${turn.timestamp}`}
                 </div>
@@ -125,8 +126,8 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
               {noData && (
                 <Alert
                   type="warning" showIcon
-                  message={t('strategy.gen.noMarketData', 'No market data available')}
-                  description={t('strategy.gen.noMarketDataHint', 'Please select a trading account and a symbol so the chart can load market data, then try again.')}
+                  message={t(NO_MARKET_DATA_KEY)}
+                  description={t(NO_MARKET_DATA_HINT_KEY)}
                   style={{ marginBottom: 8, fontSize: 12 }}
                 />
               )}
@@ -134,7 +135,7 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
               {turn.plan && (
                 <CollapsibleBlock
                   icon={<span style={{ fontSize: 12 }}>📋</span>}
-                  title={t('strategy.gen.plan', 'Strategy Plan')}
+                  title={t(PLAN_KEY)}
                   subtitle={turn.plan.type || turn.plan.entry}
                   defaultOpen={activePlanId === turn.id}
                 >
@@ -149,13 +150,13 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
 
               {turn.compileError && !noData && (
                 <Alert type="error" showIcon style={{ marginBottom: 8, fontSize: 12 }}
-                  message={t('strategy.gen.compileError', 'Compile Error')}
+                  message={t(COMPILE_ERROR_KEY)}
                   description={<pre style={{ fontSize: 11, whiteSpace: 'pre-wrap', margin: 0 }}>{turn.compileError}</pre>}
                 />
               )}
               {turn.backtestError && !noData && (
                 <Alert type="error" showIcon style={{ marginBottom: 8, fontSize: 12 }}
-                  message={t('strategy.gen.backtestError', 'Backtest Error')}
+                  message={t(BACKTEST_ERROR_KEY)}
                   description={<pre style={{ fontSize: 11, whiteSpace: 'pre-wrap', margin: 0 }}>{turn.backtestError}</pre>}
                 />
               )}
@@ -187,16 +188,16 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
               {turn.generatedCode && (
                 <div style={{ marginBottom: 8, background: 'var(--ant-color-bg-container)', borderRadius: 8, padding: 12, border: '1px solid var(--ant-color-border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, gap: 8 }}>
-                    <strong>{t('strategy.gen.finalCode', 'Final Strategy Code')}</strong>
+                    <strong>{t(FINAL_CODE_KEY)}</strong>
                     <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                       <Button size="small" icon={<CopyOutlined />}
                         onClick={() => handleCopy(turn.id, turn.generatedCode!)}>
-                        {copiedId === turn.id ? '✓' : t('strategy.gen.copy', 'Copy')}
+                        {copiedId === turn.id ? '✓' : t(COPY_KEY)}
                       </Button>
                       <Button size="small" type="primary"
                         disabled={turn.phase !== 'done' || !!(turn.compileError || turn.backtestError || turn.error)}
                         onClick={() => onApplyCode?.(turn.generatedCode!)}>
-                        {t('strategy.gen.applyToEditor', 'Apply to Editor')}
+                        {t(APPLY_TO_EDITOR_KEY)}
                       </Button>
                     </div>
                   </div>
@@ -225,7 +226,7 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
                 <Progress
                   percent={turn.coverageScore * 100}
                   size="small"
-                  format={(p) => `${t('strategy.gen.coverage', 'Coverage')}: ${(p || 0).toFixed(0)}%`}
+                  format={(p) => `${t(COVERAGE_KEY)}: ${(p || 0).toFixed(0)}%`}
                   style={{ marginBottom: 8, maxWidth: 200 }}
                 />
               )}
@@ -233,7 +234,7 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
               {turn.profile && (
                 <CollapsibleBlock
                   icon={<span style={{ fontSize: 12 }}>📊</span>}
-                  title={turn.profile.strategyType || t('strategy.gen.profile', 'Strategy Profile')}
+                  title={turn.profile.strategyType || t(PROFILE_KEY)}
                   subtitle={turn.profile.description}
                 >
                   {turn.profile.entryLogic && <div><strong>Entry:</strong> {turn.profile.entryLogic}</div>}
@@ -248,7 +249,7 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
               {turn.analysis?.summary && (
                 <CollapsibleBlock
                   icon={<span style={{ fontSize: 12 }}>📝</span>}
-                  title={t('strategy.gen.analysis', 'Backtest Analysis')}
+                  title={t(ANALYSIS_KEY)}
                   subtitle={turn.analysis.summary}
                 />
               )}

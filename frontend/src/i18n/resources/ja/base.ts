@@ -514,7 +514,9 @@ const Base = {
     "viewOriginal": "原文を見る",
     "viewTranslation": "翻訳を見る",
     "yes": "是",
-    "you": "你"
+    "you": "你",
+    "unsaved": "未保存",
+    "saved": "保存済み"
   },
   "errors": {
     "ai": {

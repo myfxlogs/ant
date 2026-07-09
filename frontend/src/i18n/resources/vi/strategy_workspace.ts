@@ -46,6 +46,22 @@ const StrategyWorkspace = {
         "selectPlaceholder": "Chọn mẫu...",
         "title": "Mẫu"
       },
+      "memory": {
+        "saveSuccess": "Đã lưu",
+        "saveFailed": "Lưu thất bại",
+        "name": "Tên",
+        "content": "Nội dung",
+        "confirmDelete": "Xóa?",
+        "category": "Danh mục",
+        "templates": "Mẫu chiến lược người dùng",
+        "add": "Thêm",
+        "empty": "Không có dữ liệu",
+        "experiences": "Kinh nghiệm Agent",
+        "addTemplate": "Thêm mẫu chiến lược",
+        "save": "Lưu",
+        "namePlaceholder": "Tên mẫu",
+        "contentPlaceholder": "Mô tả chiến lược, tùy chọn, quy tắc..."
+      },
       "account": "Tài khoản",
       "accountPlaceholder": "ID Tài Khoản",
       "ai": "AI 助手",
@@ -96,7 +112,27 @@ const StrategyWorkspace = {
       "validateBeforeSave": "Vui lòng xác thực code trước khi lưu",
       "validateFailed": "Xác thực thất bại",
       "validatePass": "Xác thực thành công",
-      "watchlist": "Danh Sách Theo Dõi"
+      "watchlist": "Danh Sách Theo Dõi",
+      "sendToAI": "Gửi cho AI",
+      "browseIndicators": "Duyệt chỉ báo",
+      "noCode": "Không có mã để xác thực",
+      "compileError": "Lỗi biên dịch",
+      "validateFirst": "Vui lòng xác thực mã trước",
+      "codeValid": "Mã hợp lệ",
+      "aiAssistant": "Trợ lý AI",
+      "mobileTitle": "Cần thiết bị desktop",
+      "mobileSubtitle": "Không gian chiến lược cần màn hình lớn hơn. Vui lòng chuyển sang thiết bị desktop, hoặc duyệt mẫu chiến lược.",
+      "mobileCta": "Đi tới mẫu chiến lược",
+      "positions": "Vị thế",
+      "history": "Lịch sử",
+      "templates": "Quản lý chiến lược",
+      "manage": "Quản lý",
+      "tuningInteractive": "Tương tác",
+      "tuningBatch": "Hàng loạt",
+      "noResults": "Không có kết quả",
+      "noHistory": "Không có lịch sử",
+      "untitledDraft": "Bản nháp chưa đặt tên",
+      "name": "Tên"
     }
   }
 } as const;

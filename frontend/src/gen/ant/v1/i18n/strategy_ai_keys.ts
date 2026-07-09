@@ -10,10 +10,14 @@ export const REFRESH_FAILED_KEY = 'strategy.ai.refreshFailed' as const;
 /** settings */
 export const SETTINGS_KEY = 'strategy.ai.settings' as const;
 
+/** agentMemory */
+export const AGENT_MEMORY_KEY = 'strategy.ai.agentMemory' as const;
+
 export const STRATEGYAI_KEYS = {
   check_settings: 'strategy.ai.checkSettings',
   refresh_failed: 'strategy.ai.refreshFailed',
   settings: 'strategy.ai.settings',
+  agent_memory: 'strategy.ai.agentMemory',
 } as const;
 
 export type StrategyAiKey = typeof STRATEGYAI_KEYS[keyof typeof STRATEGYAI_KEYS];

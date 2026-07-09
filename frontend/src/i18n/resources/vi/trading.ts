@@ -157,7 +157,14 @@ const Trading = {
     "time": "Thời gian",
     "title": "Giao dịch",
     "type": "Loại",
-    "volume": "Khối Lượng"
+    "volume": "Khối Lượng",
+    "platform": "Nền Tảng",
+    "broker": "Môi Giới",
+    "server": "Máy Chủ",
+    "permission": "Quyền",
+    "investor": "Nhà Đầu Tư",
+    "master": "Chủ Giao Dịch",
+    "leverage": "Đòn Bẩy"
   },
   "algo": {
     "actions": {

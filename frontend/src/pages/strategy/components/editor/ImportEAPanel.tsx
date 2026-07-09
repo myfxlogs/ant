@@ -49,9 +49,9 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
   const handleConfirmImport = () => {
     if (!analysis) return;
     setEaTranslating(true);
-    strategyImportApi.confirmImport({ analysisId: analysis.analysisId, source: eaCode.trim() })
+    strategyImportApi.importStrategy({ sourceCode: eaCode.trim(), sourceName: analysis.strategyName || 'Imported EA', sourceLang: analysis.mqlVersion || 'mql4' })
       .then((res) => {
-        setEaResult(res.code || '');
+        setEaResult(res.goCode || '');
         if (res.strategyId) { setEaStrategyId(res.strategyId); onStrategyIdChange?.(res.strategyId); }
       })
       .catch((e) => { message.error(String(e?.message || t('common.unknownError', 'Unknown error'))); })

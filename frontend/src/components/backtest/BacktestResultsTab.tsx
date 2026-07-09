@@ -1,7 +1,7 @@
-import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin } from 'antd';
+import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table } from 'antd';
 import { RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import {
   BACKTEST_COMPLETED_KEY, BACKTEST_EMPTY_KEY, BACKTEST_ERROR_KEY, BACKTEST_RUNNING_KEY,
   EXEC_ASSUMPTIONS_KEY, EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY,
@@ -13,8 +13,12 @@ import {
 import {
   ANNUAL_RETURN_KEY, EQUITY_CURVE_KEY, MAX_DRAWDOWN_KEY, SHARPE_KEY,
   TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, WIN_RATE_KEY,
+  TRADE_PRICE_KEY, TRADE_SIDE_KEY, TRADE_VOLUME_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
-import type { BacktestStatus, BacktestMetrics } from './useBacktestRunner';
+import {
+  CLOSE_PRICE_KEY, LONG_KEY, PNL_KEY, SHORT_KEY,
+} from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
+import type { BacktestStatus, BacktestMetrics, ChartTrade } from './useBacktestRunner';
 
 const _ASSUMPTION_MAP: Record<string, string> = {
   MT_LIVE: 'strategy.backtest.assumptions.mtLive',
@@ -44,17 +48,22 @@ interface Props {
   executionAssumptions: any;
   errorMsg: string;
   onAIOptimize?: () => void;
+  trades: ChartTrade[];
+  panelHeight: number;
 }
 
-export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize }: Props) {
+export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, trades, panelHeight }: Props) {
   const { t } = useTranslation();
+
+  const buys = trades.filter((tr) => tr.side === 'buy');
+  const sells = trades.filter((tr) => tr.side === 'sell');
+  const buyPnl = buys.reduce((s, tr) => s + (tr.pnl || 0), 0);
+  const sellPnl = sells.reduce((s, tr) => s + (tr.pnl || 0), 0);
+  const buyVol = buys.reduce((s, tr) => s + (tr.volume || 0), 0);
+  const sellVol = sells.reduce((s, tr) => s + (tr.volume || 0), 0);
 
   return (
     <div>
-      {status === 'idle' && (
-        <Empty description={t(BACKTEST_EMPTY_KEY, 'Run a backtest to see results')} style={{ padding: 24 }} />
-      )}
-
       <div style={{ marginBottom: 8 }}>
         {status === 'running' && (
           <Tag color="processing" icon={<Spin size="small" />}>{t(BACKTEST_RUNNING_KEY)}</Tag>
@@ -71,6 +80,10 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
           <Tag color="error">{errorMsg || t(BACKTEST_ERROR_KEY, 'Backtest failed')}</Tag>
         )}
       </div>
+
+      {status === 'idle' && !metrics && (
+        <Empty description={t(BACKTEST_EMPTY_KEY, 'Run a backtest to see results')} style={{ padding: 24 }} />
+      )}
 
       {/* Execution Assumptions */}
       {executionAssumptions && status === 'completed' && (
@@ -138,13 +151,40 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
                 <LineChart data={metrics.equityCurve}>
                   <XAxis dataKey="time" hide />
                   <YAxis width={60} tick={{ fontSize: 11 }} />
-                  <Tooltip />
+                  <RechartsTooltip />
                   <Line type="monotone" dataKey="equity" stroke="#1890ff" dot={false} strokeWidth={1.5} />
                 </LineChart>
               </ResponsiveContainer>
             </Card>
           )}
         </>
+      )}
+
+      {/* Trade detail table */}
+      {trades.length > 0 && (
+        <div style={{ marginTop: 12 }}>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 10, fontSize: 12 }}>
+            <span>🟢 {t(LONG_KEY)}: <b>{buys.length}</b> {t(TRADE_VOLUME_KEY)} <b>{buyVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: buyPnl >= 0 ? '#26a69a' : '#e57373' }}>{buyPnl >= 0 ? '+' : ''}{buyPnl.toFixed(2)}</b></span>
+            <span>🔴 {t(SHORT_KEY)}: <b>{sells.length}</b> {t(TRADE_VOLUME_KEY)} <b>{sellVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: sellPnl >= 0 ? '#26a69a' : '#e57373' }}>{sellPnl >= 0 ? '+' : ''}{sellPnl.toFixed(2)}</b></span>
+          </div>
+          <Table dataSource={trades.map((tr, i) => ({ ...tr, key: i }))}
+            pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: panelHeight - 180 }}
+            columns={[
+              { title: '#', dataIndex: 'key', width: 40 },
+              { title: t(TRADE_SIDE_KEY, 'Side'), dataIndex: 'side', width: 60,
+                render: (v: string) => <span style={{ color: v === 'buy' ? '#26a69a' : '#e57373' }}>{v?.toUpperCase()}</span> },
+              { title: t(TRADE_VOLUME_KEY, 'Volume'), dataIndex: 'volume', width: 70,
+                render: (v: number) => v?.toFixed(2) },
+              { title: t(TRADE_PRICE_KEY, 'Price'), dataIndex: 'openPrice', width: 80,
+                render: (v: number) => v?.toFixed(2) },
+              { title: t(CLOSE_PRICE_KEY), dataIndex: 'closePrice', width: 80,
+                render: (v: number) => v?.toFixed(2) ?? '—' },
+              { title: t(PNL_KEY), dataIndex: 'pnl', width: 80,
+                render: (v: number) => v != null ? (
+                  <span style={{ color: v >= 0 ? '#26a69a' : '#ef5350' }}>{v >= 0 ? '+' : ''}{v.toFixed(2)}</span>
+                ) : '-' },
+            ]} />
+        </div>
       )}
     </div>
   );

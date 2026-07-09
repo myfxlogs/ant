@@ -250,3 +250,6 @@ workflow_runs_hints_select_to_view_detail: '从左侧選擇執行记录查看詳
 workflow_runs_messages_load_detail_failed: '載入詳情失敗'
 workflow_runs_messages_load_list_failed: '載入執行列表失敗'
 workflow_runs_title: 'AI工作流程'
+gateway_group_my_keys: '我的 API 金鑰'
+gateway_group_gateway: 'AI 閘道'
+gateway_group_current: '目前選擇'

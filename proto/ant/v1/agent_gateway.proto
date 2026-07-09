@@ -275,6 +275,7 @@ message AgentGenerateStrategyRequest {
   string locale = 9;                       // Accept-Language header value for i18n prompts
   string conversation_id = 10;              // session ID for multi-turn conversation history
   string account_id = 11;                   // selected MT account for symbol/balance context
+  string current_code = 12;                  // user's current strategy code for AI modification context
 }
 
 message AgentGenerateStrategyChunk {

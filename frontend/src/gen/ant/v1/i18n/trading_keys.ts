@@ -427,6 +427,27 @@ export const TRADING_TYPE_KEY = 'trading.type' as const;
 /** trading.volume */
 export const TRADING_VOLUME_KEY = 'trading.volume' as const;
 
+/** trading.platform */
+export const TRADING_PLATFORM_KEY = 'trading.platform' as const;
+
+/** trading.broker */
+export const TRADING_BROKER_KEY = 'trading.broker' as const;
+
+/** trading.server */
+export const TRADING_SERVER_KEY = 'trading.server' as const;
+
+/** trading.permission */
+export const TRADING_PERMISSION_KEY = 'trading.permission' as const;
+
+/** trading.investor */
+export const TRADING_INVESTOR_KEY = 'trading.investor' as const;
+
+/** trading.master */
+export const TRADING_MASTER_KEY = 'trading.master' as const;
+
+/** trading.leverage */
+export const TRADING_LEVERAGE_KEY = 'trading.leverage' as const;
+
 /** algo.twap.name */
 export const ALGO_TWAP_NAME_KEY = 'algo.twap.name' as const;
 
@@ -606,6 +627,13 @@ export const TRADING_KEYS = {
   trading_title: '__root__.trading.title',
   trading_type: '__root__.trading.type',
   trading_volume: '__root__.trading.volume',
+  trading_platform: '__root__.trading.platform',
+  trading_broker: '__root__.trading.broker',
+  trading_server: '__root__.trading.server',
+  trading_permission: '__root__.trading.permission',
+  trading_investor: '__root__.trading.investor',
+  trading_master: '__root__.trading.master',
+  trading_leverage: '__root__.trading.leverage',
   algo_twap_name: '__root__.algo.twap.name',
   algo_twap_description: '__root__.algo.twap.description',
   algo_vwap_name: '__root__.algo.vwap.name',

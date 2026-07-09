@@ -5,7 +5,8 @@ const StrategyAi = {
     "ai": {
       "checkSettings": "Kiểm Tra Cài Đặt AI",
       "refreshFailed": "Làm mới thất bại",
-      "settings": "Cài Đặt AI"
+      "settings": "Cài Đặt AI",
+      "agentMemory": "Bộ Nhớ Agent"
     }
   }
 } as const;

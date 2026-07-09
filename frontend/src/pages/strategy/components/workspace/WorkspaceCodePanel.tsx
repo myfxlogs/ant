@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { CODE_KEY, COPY_KEY, RUNTIME_MODE_KEY, SAVE_FAILED_KEY, SAVE_KEY, VALIDATE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { AGENT_FIELDS_MODEL_PROFILE_EMPTY_KEY, PRIMARY_PLACEHOLDER_KEY } from '@/gen/ant/v1/i18n/ai_settings_keys';
 import { CHECK_SETTINGS_KEY, REFRESH_FAILED_KEY, SETTINGS_KEY } from '@/gen/ant/v1/i18n/strategy_ai_keys';
+import { GATEWAY_GROUP_MY_KEYS_KEY, GATEWAY_GROUP_GATEWAY_KEY, GATEWAY_GROUP_CURRENT_KEY } from '@/gen/ant/v1/i18n/ai_core_keys';
 import { EVENT_DRIVEN_MODE_KEY, VECTORIZED_MODE_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 
 ;
@@ -112,7 +113,7 @@ export default function WorkspaceCodePanel({
         }
       });
     if (ownItems.length > 0) {
-      groups.push({ label: <span style={{ fontSize: 11, color: '#1677ff', fontWeight: 600 }}><KeyOutlined style={{ fontSize: 11 }} /> {t('ai.gateway.groupMyKeys', 'My API Keys')}</span>, title: 'My Keys', options: ownItems });
+      groups.push({ label: <span style={{ fontSize: 11, color: '#1677ff', fontWeight: 600 }}><KeyOutlined style={{ fontSize: 11 }} /> {t(GATEWAY_GROUP_MY_KEYS_KEY)}</span>, title: 'My Keys', options: ownItems });
     }
     // Gateway models (platform-provided).
     const gwItems: Array<{ value: string; label: React.ReactNode; searchLabel: string }> = [];
@@ -128,14 +129,14 @@ export default function WorkspaceCodePanel({
       }
     });
     if (gwItems.length > 0) {
-      groups.push({ label: <span style={{ fontSize: 11, color: '#722ed1', fontWeight: 600 }}><ThunderboltOutlined style={{ fontSize: 11 }} /> {t('ai.gateway.groupGateway', 'AI Gateway')}</span>, title: 'Gateway', options: gwItems });
+      groups.push({ label: <span style={{ fontSize: 11, color: '#722ed1', fontWeight: 600 }}><ThunderboltOutlined style={{ fontSize: 11 }} /> {t(GATEWAY_GROUP_GATEWAY_KEY)}</span>, title: 'Gateway', options: gwItems });
     }
     // Always include the currently saved primary if not in any group.
     if (primaryValue && !seen.has(primaryValue)) {
       const [pid, mdl] = primaryValue.split('|');
       if (pid && mdl) {
         groups.unshift({
-          label: <span style={{ fontSize: 11, color: '#faad14', fontWeight: 600 }}>{t('ai.gateway.groupCurrent', 'Currently Selected')}</span>, title: 'Current', options: [{
+          label: <span style={{ fontSize: 11, color: '#faad14', fontWeight: 600 }}>{t(GATEWAY_GROUP_CURRENT_KEY)}</span>, title: 'Current', options: [{
             value: primaryValue,
             label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{mdl}</span>,
             searchLabel: mdl,

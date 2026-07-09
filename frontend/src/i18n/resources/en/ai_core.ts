@@ -374,7 +374,10 @@ const AiCore = {
       "useGatewayDesc": "Wallet billing · Pay per token",
       "useOwnKey": "My API Key",
       "useOwnKeyDesc": "Direct billing · Self-managed",
-      "useOwnKeyHint": "Use your own API key to pay the provider directly. Select a provider card below to configure."
+      "useOwnKeyHint": "Use your own API key to pay the provider directly. Select a provider card below to configure.",
+      "groupMyKeys": "My API Keys",
+      "groupGateway": "AI Gateway",
+      "groupCurrent": "Currently Selected"
     },
     "riskEval": {
       "failed": "Risk evaluation failed"

@@ -157,7 +157,14 @@ const Trading = {
     "time": "Time",
     "title": "Trading",
     "type": "Type",
-    "volume": "Volume"
+    "volume": "Volume",
+    "platform": "Platform",
+    "broker": "Broker",
+    "server": "Server",
+    "permission": "Permission",
+    "investor": "Investor",
+    "master": "Master",
+    "leverage": "Leverage"
   },
   "algo": {
     "actions": {

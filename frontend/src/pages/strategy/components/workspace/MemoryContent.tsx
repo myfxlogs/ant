@@ -3,6 +3,13 @@ import { Card, Table, Button, Modal, Input, Space, Tag, Popconfirm, message } fr
 import { PlusOutlined, DeleteOutlined, ExperimentOutlined, BookOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import {
+  MEMORY_SAVE_SUCCESS_KEY, MEMORY_SAVE_FAILED_KEY, MEMORY_NAME_KEY,
+  MEMORY_CONTENT_KEY, MEMORY_CONFIRM_DELETE_KEY, MEMORY_CATEGORY_KEY,
+  MEMORY_TEMPLATES_KEY, MEMORY_ADD_KEY, MEMORY_EMPTY_KEY,
+  MEMORY_EXPERIENCES_KEY, MEMORY_ADD_TEMPLATE_KEY, MEMORY_SAVE_KEY,
+  MEMORY_NAME_PLACEHOLDER_KEY, MEMORY_CONTENT_PLACEHOLDER_KEY,
+} from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import {
   listMemory,
   saveUserTemplate,
   deleteUserTemplate,
@@ -39,16 +46,16 @@ export default function MemoryContent() {
     try {
       const ok = await saveUserTemplate(tplName.trim(), tplContent.trim(), '{}');
       if (ok) {
-        message.success(t('strategy.memory.saveSuccess', 'Saved'));
+        message.success(t(MEMORY_SAVE_SUCCESS_KEY));
         setModalOpen(false);
         setTplName('');
         setTplContent('');
         fetchMemory();
       } else {
-        message.error(t('strategy.memory.saveFailed', 'Save failed'));
+        message.error(t(MEMORY_SAVE_FAILED_KEY));
       }
     } catch {
-      message.error(t('strategy.memory.saveFailed', 'Save failed'));
+      message.error(t(MEMORY_SAVE_FAILED_KEY));
     }
   };
 
@@ -61,12 +68,12 @@ export default function MemoryContent() {
   };
 
   const tplColumns = [
-    { title: t('strategy.memory.name', 'Name'), dataIndex: 'name', key: 'name', width: 200 },
-    { title: t('strategy.memory.content', 'Content'), dataIndex: 'content', key: 'content', ellipsis: true },
+    { title: t(MEMORY_NAME_KEY), dataIndex: 'name', key: 'name', width: 200 },
+    { title: t(MEMORY_CONTENT_KEY), dataIndex: 'content', key: 'content', ellipsis: true },
     {
       title: '', key: 'action', width: 80,
       render: (_: unknown, record: UserTemplateEntry) => (
-        <Popconfirm title={t('strategy.memory.confirmDelete', 'Delete?')} onConfirm={() => handleDeleteTemplate(record.id)}>
+        <Popconfirm title={t(MEMORY_CONFIRM_DELETE_KEY)} onConfirm={() => handleDeleteTemplate(record.id)}>
           <Button size="small" type="text" icon={<DeleteOutlined />} danger />
         </Popconfirm>
       ),
@@ -74,12 +81,12 @@ export default function MemoryContent() {
   ];
 
   const expColumns = [
-    { title: t('strategy.memory.category', 'Category'), dataIndex: 'category', key: 'category', width: 160, render: (cat: string) => <Tag>{cat}</Tag> },
-    { title: t('strategy.memory.content', 'Content'), dataIndex: 'content', key: 'content', ellipsis: true },
+    { title: t(MEMORY_CATEGORY_KEY), dataIndex: 'category', key: 'category', width: 160, render: (cat: string) => <Tag>{cat}</Tag> },
+    { title: t(MEMORY_CONTENT_KEY), dataIndex: 'content', key: 'content', ellipsis: true },
     {
       title: '', key: 'action', width: 80,
       render: (_: unknown, record: ExperienceEntry) => (
-        <Popconfirm title={t('strategy.memory.confirmDelete', 'Delete?')} onConfirm={() => handleDeleteExperience(record.id)}>
+        <Popconfirm title={t(MEMORY_CONFIRM_DELETE_KEY)} onConfirm={() => handleDeleteExperience(record.id)}>
           <Button size="small" type="text" icon={<DeleteOutlined />} danger />
         </Popconfirm>
       ),
@@ -90,23 +97,23 @@ export default function MemoryContent() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <Card
         size="small"
-        title={<Space><BookOutlined /><span>{t('strategy.memory.templates', 'User Strategy Templates')}</span></Space>}
-        extra={<Button size="small" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>{t('strategy.memory.add', 'Add')}</Button>}
+        title={<Space><BookOutlined /><span>{t(MEMORY_TEMPLATES_KEY)}</span></Space>}
+        extra={<Button size="small" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>{t(MEMORY_ADD_KEY)}</Button>}
       >
-        <Table dataSource={templates} columns={tplColumns} rowKey="id" size="small" loading={loading} pagination={false} locale={{ emptyText: t('strategy.memory.empty', 'No data') }} />
+        <Table dataSource={templates} columns={tplColumns} rowKey="id" size="small" loading={loading} pagination={false} locale={{ emptyText: t(MEMORY_EMPTY_KEY) }} />
       </Card>
 
       <Card
         size="small"
-        title={<Space><ExperimentOutlined /><span>{t('strategy.memory.experiences', 'Agent Experiences')}</span></Space>}
+        title={<Space><ExperimentOutlined /><span>{t(MEMORY_EXPERIENCES_KEY)}</span></Space>}
       >
-        <Table dataSource={experiences} columns={expColumns} rowKey="id" size="small" loading={loading} pagination={false} locale={{ emptyText: t('strategy.memory.empty', 'No data') }} />
+        <Table dataSource={experiences} columns={expColumns} rowKey="id" size="small" loading={loading} pagination={false} locale={{ emptyText: t(MEMORY_EMPTY_KEY) }} />
       </Card>
 
-      <Modal title={t('strategy.memory.addTemplate', 'Add Strategy Template')} open={modalOpen} onOk={handleSaveTemplate} onCancel={() => setModalOpen(false)} okText={t('strategy.memory.save', 'Save')}>
+      <Modal title={t(MEMORY_ADD_TEMPLATE_KEY)} open={modalOpen} onOk={handleSaveTemplate} onCancel={() => setModalOpen(false)} okText={t(MEMORY_SAVE_KEY)}>
         <Space direction="vertical" style={{ width: '100%' }}>
-          <Input placeholder={t('strategy.memory.namePlaceholder', 'Template name')} value={tplName} onChange={(e) => setTplName(e.target.value)} />
-          <Input.TextArea rows={4} placeholder={t('strategy.memory.contentPlaceholder', 'Strategy description, preferences, rules...')} value={tplContent} onChange={(e) => setTplContent(e.target.value)} />
+          <Input placeholder={t(MEMORY_NAME_PLACEHOLDER_KEY)} value={tplName} onChange={(e) => setTplName(e.target.value)} />
+          <Input.TextArea rows={4} placeholder={t(MEMORY_CONTENT_PLACEHOLDER_KEY)} value={tplContent} onChange={(e) => setTplContent(e.target.value)} />
         </Space>
       </Modal>
     </div>

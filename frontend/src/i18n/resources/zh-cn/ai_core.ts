@@ -374,7 +374,10 @@ const AiCore = {
       "useGatewayDesc": "扣钱包余额 · 按 Token 计费",
       "useOwnKey": "我的 API Key",
       "useOwnKeyDesc": "直付厂商 · 自行管理",
-      "useOwnKeyHint": "使用你自己的 API Key，直接向所选厂商付费。在下方选择厂商卡片进行配置。"
+      "useOwnKeyHint": "使用你自己的 API Key，直接向所选厂商付费。在下方选择厂商卡片进行配置。",
+      "groupMyKeys": "我的 API 密钥",
+      "groupGateway": "AI 网关",
+      "groupCurrent": "当前选择"
     },
     "riskEval": {
       "failed": "风险评估失败"

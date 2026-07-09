@@ -1,3 +1,4 @@
 check_settings: 'AI設定を確認'
 refresh_failed: '更新失敗'
 settings: 'AI設定'
+agent_memory: 'エージェントメモリー'

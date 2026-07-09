@@ -116,4 +116,11 @@ message TradingI18n {
   string title = 110;  // Trading
   string type = 111;  // Type
   string volume = 112;  // Volume
+  string platform = 113;  // Platform
+  string broker = 114;  // Broker
+  string server = 115;  // Server
+  string permission = 116;  // Permission
+  string investor = 117;  // Investor
+  string master = 118;  // Master
+  string leverage = 119;  // Leverage
 }

@@ -260,4 +260,7 @@ message AiCoreI18n {
   string workflow_runs_messages_load_detail_failed = 254;  // Failed to load details
   string workflow_runs_messages_load_list_failed = 255;  // Failed to load run list
   string workflow_runs_title = 256;  // AI Workflow
+  string gateway_group_my_keys = 257;  // My API Keys
+  string gateway_group_gateway = 258;  // AI Gateway
+  string gateway_group_current = 259;  // Currently Selected
 }

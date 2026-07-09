@@ -1,7 +1,14 @@
-import { Button, Tooltip, Empty } from 'antd';
-import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { Button, Tooltip } from 'antd';
+import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { CHART_ERROR_KEY, SELECT_SYMBOL_HINT_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import {
+  CHART_ERROR_KEY, SELECT_SYMBOL_HINT_KEY,
+  SEND_TO_AI_KEY, BROWSE_INDICATORS_KEY,
+  CHART_WINDOW_KEY, CODE_KEY, SAVE_KEY, COPY_KEY, RUN_BACKTEST_KEY,
+  BACKTEST_KEY as WS_BACKTEST_KEY, QUICK_TRADE_KEY,
+} from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import { BACKTEST_KEY as GEN_BACKTEST_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
+import { COMMON_UNSAVED_KEY, COMMON_SAVED_KEY, COMMON_SAVE_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import { useWorkspaceStore, type CenterTab } from '@/stores/workspaceStore';
 import PriceChart from '@/components/chart/PriceChart';
 import BacktestPanel from '@/components/backtest/BacktestPanel';
@@ -29,9 +36,9 @@ export default function WorkspaceCenterColumn({ ws, btModalOpen, setBtModalOpen,
   const saveStatus: 'modified' | 'saved' | 'none' = ws.code.code && ws.code.lastValidatedCode && ws.code.code !== ws.code.lastValidatedCode ? 'modified' : ws.code.lastSavedId ? 'saved' : 'none';
 
   const CTABS: { key: CenterTab; icon: string; label: string }[] = [
-    { key: 'design', icon: '📈', label: t('strategy.workspace.chartWindow') },
-    { key: 'code', icon: '📄', label: t('strategy.workspace.code') },
-    { key: 'backtest', icon: '📊', label: t('strategy.gen.backtest') },
+    { key: 'design', icon: '📈', label: t(CHART_WINDOW_KEY) },
+    { key: 'code', icon: '📄', label: t(CODE_KEY) },
+    { key: 'backtest', icon: '📊', label: t(GEN_BACKTEST_KEY) },
   ];
 
   const handleCopy = () => {
@@ -67,26 +74,32 @@ export default function WorkspaceCenterColumn({ ws, btModalOpen, setBtModalOpen,
         {centerTab === 'code' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', fontSize: 11 }}>
             {strategyName && <span style={{ fontWeight: 600, color: 'var(--ant-color-text)' }}>{strategyName}</span>}
-            {saveStatus === 'modified' && <span style={{ color: '#d29922' }}>● {t('common.unsaved')}</span>}
-            {saveStatus === 'saved' && <span style={{ color: '#3fb950' }}>✓ {t('common.saved')}</span>}
-            <Tooltip title={t('strategy.workspace.save')}>
+            {saveStatus === 'modified' && <span style={{ color: '#d29922' }}>● {t(COMMON_UNSAVED_KEY)}</span>}
+            {saveStatus === 'saved' && <span style={{ color: '#3fb950' }}>✓ {t(COMMON_SAVED_KEY)}</span>}
+            <Tooltip title={t(SAVE_KEY)}>
               <Button size="small" icon={<SaveOutlined />}
                 onClick={() => ws.code.setSaveModalOpen(true)}
                 style={{ background: '#58a6ff', borderColor: '#58a6ff', color: '#fff' }}>
-                {t('common.save')}
+                {t(COMMON_SAVE_KEY)}
               </Button>
             </Tooltip>
-            <Tooltip title={t('strategy.workspace.runBacktest')}>
+            <Tooltip title={t(RUN_BACKTEST_KEY)}>
               <Button size="small" type="primary" icon={<PlayCircleOutlined />}
                 onClick={() => setBtModalOpen(true)}
                 style={{ background: '#3fb950', borderColor: '#3fb950' }}>
-                {t('strategy.workspace.backtest')}
+                {t(WS_BACKTEST_KEY)}
               </Button>
             </Tooltip>
-            <Tooltip title={t('strategy.workspace.copy')}>
+            <Tooltip title={t(COPY_KEY)}>
               <Button size="small" icon={<CopyOutlined />} onClick={handleCopy} />
             </Tooltip>
-            <Tooltip title={t('strategy.workspace.browseIndicators')}>
+            <Tooltip title={t(SEND_TO_AI_KEY)}>
+              <Button size="small" icon={<RobotOutlined />} onClick={() => ws.layout.setRightTab('chat')}
+                style={{ background: '#722ed1', borderColor: '#722ed1', color: '#fff' }}>
+                {t(SEND_TO_AI_KEY)}
+              </Button>
+            </Tooltip>
+            <Tooltip title={t(BROWSE_INDICATORS_KEY)}>
               <Button size="small" icon={<QuestionCircleOutlined />} onClick={() => setIndicatorDrawerOpen(true)} />
             </Tooltip>
           </div>
@@ -112,17 +125,11 @@ export default function WorkspaceCenterColumn({ ws, btModalOpen, setBtModalOpen,
 
       {/* Code */}
       <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'code' ? 'flex' : 'none', flexDirection: 'column' }}>
-        {ws.code.code ? (
-          <StrategyCodeEditor
-            value={ws.code.code}
-            onChange={ws.code.setCode}
-            style={{ flex: 1, borderRadius: 0, border: 'none', minHeight: 0 }}
-          />
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12 }}>
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.workspace.noCode')} />
-          </div>
-        )}
+        <StrategyCodeEditor
+          value={ws.code.code}
+          onChange={ws.code.setCode}
+          style={{ flex: 1, borderRadius: 0, border: 'none', minHeight: 0 }}
+        />
       </div>
 
       {/* Backtest */}
@@ -143,12 +150,14 @@ export default function WorkspaceCenterColumn({ ws, btModalOpen, setBtModalOpen,
             selectedId: ws.templates.selectedId,
             onSelect: ws.templates.onSelect,
           }}
-          collapsed={false}
-          onToggleCollapsed={() => {}}
-          onOpenHistory={() => ws.history.open()}
+          onOpenHistory={(templateId?: string) => ws.history.open(templateId)}
           onAIOptimize={() => ws.ai.optimize()}
           code={ws.code.code}
           onApplyTunedParams={ws.code.setCode}
+          onRunBacktest={() => setBtModalOpen(true)}
+          onSaveAs={() => ws.code.setSaveModalOpen(true)}
+          hasUnsavedDraft={saveStatus === 'modified'}
+          draftName={strategyName}
         />
       </div>
 
@@ -190,7 +199,7 @@ export default function WorkspaceCenterColumn({ ws, btModalOpen, setBtModalOpen,
                 background: 'var(--ant-color-bg-layout)',
                 display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
               }}>
-                ⚡ {t('strategy.workspace.quickTrade')}
+                ⚡ {t(QUICK_TRADE_KEY)}
               </div>
               <div style={{ flex: 1, overflowY: 'auto', padding: '4px 10px' }}>
                 <QuickTradePanel

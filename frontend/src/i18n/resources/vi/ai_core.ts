@@ -374,7 +374,10 @@ const AiCore = {
       "useGatewayDesc": "Trừ ví · Tính theo token",
       "useOwnKey": "API Key của tôi",
       "useOwnKeyDesc": "Thanh toán trực tiếp · Tự quản lý",
-      "useOwnKeyHint": "Sử dụng API Key của bạn để thanh toán trực tiếp cho nhà cung cấp. Chọn thẻ nhà cung cấp bên dưới để cấu hình."
+      "useOwnKeyHint": "Sử dụng API Key của bạn để thanh toán trực tiếp cho nhà cung cấp. Chọn thẻ nhà cung cấp bên dưới để cấu hình.",
+      "groupMyKeys": "Khóa API của tôi",
+      "groupGateway": "AI Gateway",
+      "groupCurrent": "Đang chọn"
     },
     "riskEval": {
       "failed": "风险评估失败"

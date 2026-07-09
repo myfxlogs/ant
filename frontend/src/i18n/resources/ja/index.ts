@@ -48,6 +48,7 @@ import Admin from './admin';
 import Logs from './logs';
 import Errors from './errors';
 import Marketplace from './marketplace';
+import IndicatorCatalog from './indicator_catalog';
 import { mergeResources } from '../merge';
 
 const ja = mergeResources(
@@ -89,6 +90,7 @@ const ja = mergeResources(
   admin,
   AiCore,
   Marketplace,
+  IndicatorCatalog,
 ) as const;
 
 export default ja;

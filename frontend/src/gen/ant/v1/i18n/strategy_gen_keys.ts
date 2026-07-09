@@ -181,6 +181,84 @@ export const EXEC_SKIP_NO_CODE_KEY = 'strategy.gen.execSkipNoCode' as const;
 /** validating */
 export const VALIDATING_KEY = 'strategy.gen.validating' as const;
 
+/** backtest */
+export const BACKTEST_KEY = 'strategy.gen.backtest' as const;
+
+/** backtesting */
+export const BACKTESTING_KEY = 'strategy.gen.backtesting' as const;
+
+/** backtestError */
+export const BACKTEST_ERROR_KEY = 'strategy.gen.backtestError' as const;
+
+/** compiling */
+export const COMPILING_KEY = 'strategy.gen.compiling' as const;
+
+/** compileError */
+export const COMPILE_ERROR_KEY = 'strategy.gen.compileError' as const;
+
+/** totalReturn */
+export const TOTAL_RETURN_KEY = 'strategy.gen.totalReturn' as const;
+
+/** maxDrawdown */
+export const MAX_DRAWDOWN_KEY = 'strategy.gen.maxDrawdown' as const;
+
+/** sharpe */
+export const SHARPE_KEY = 'strategy.gen.sharpe' as const;
+
+/** winRate */
+export const WIN_RATE_KEY = 'strategy.gen.winRate' as const;
+
+/** return */
+export const RETURN_LABEL_KEY = 'strategy.gen.return' as const;
+
+/** totalTrades */
+export const TOTAL_TRADES_KEY = 'strategy.gen.totalTrades' as const;
+
+/** failed */
+export const FAILED_KEY = 'strategy.gen.failed' as const;
+
+/** noMarketData */
+export const NO_MARKET_DATA_KEY = 'strategy.gen.noMarketData' as const;
+
+/** noMarketDataHint */
+export const NO_MARKET_DATA_HINT_KEY = 'strategy.gen.noMarketDataHint' as const;
+
+/** plan */
+export const PLAN_KEY = 'strategy.gen.plan' as const;
+
+/** finalCode */
+export const FINAL_CODE_KEY = 'strategy.gen.finalCode' as const;
+
+/** copy */
+export const COPY_KEY = 'strategy.gen.copy' as const;
+
+/** applyToEditor */
+export const APPLY_TO_EDITOR_KEY = 'strategy.gen.applyToEditor' as const;
+
+/** coverage */
+export const COVERAGE_KEY = 'strategy.gen.coverage' as const;
+
+/** profile */
+export const PROFILE_KEY = 'strategy.gen.profile' as const;
+
+/** analysis */
+export const ANALYSIS_KEY = 'strategy.gen.analysis' as const;
+
+/** planType */
+export const PLAN_TYPE_KEY = 'strategy.gen.planType' as const;
+
+/** planEntry */
+export const PLAN_ENTRY_KEY = 'strategy.gen.planEntry' as const;
+
+/** planExit */
+export const PLAN_EXIT_KEY = 'strategy.gen.planExit' as const;
+
+/** planRisk */
+export const PLAN_RISK_KEY = 'strategy.gen.planRisk' as const;
+
+/** planMarket */
+export const PLAN_MARKET_KEY = 'strategy.gen.planMarket' as const;
+
 export const STRATEGYGEN_KEYS = {
   backtest_msg: 'strategy.gen.backtestMsg',
   backtest_started: 'strategy.gen.backtestStarted',
@@ -242,6 +320,32 @@ export const STRATEGYGEN_KEYS = {
   exec_skip_no_symbol: 'strategy.gen.execSkipNoSymbol',
   exec_skip_no_code: 'strategy.gen.execSkipNoCode',
   validating: 'strategy.gen.validating',
+  backtest: 'strategy.gen.backtest',
+  backtesting: 'strategy.gen.backtesting',
+  backtest_error: 'strategy.gen.backtestError',
+  compiling: 'strategy.gen.compiling',
+  compile_error: 'strategy.gen.compileError',
+  total_return: 'strategy.gen.totalReturn',
+  max_drawdown: 'strategy.gen.maxDrawdown',
+  sharpe: 'strategy.gen.sharpe',
+  win_rate: 'strategy.gen.winRate',
+  return_label: 'strategy.gen.return',
+  total_trades: 'strategy.gen.totalTrades',
+  failed: 'strategy.gen.failed',
+  no_market_data: 'strategy.gen.noMarketData',
+  no_market_data_hint: 'strategy.gen.noMarketDataHint',
+  plan: 'strategy.gen.plan',
+  final_code: 'strategy.gen.finalCode',
+  copy: 'strategy.gen.copy',
+  apply_to_editor: 'strategy.gen.applyToEditor',
+  coverage: 'strategy.gen.coverage',
+  profile: 'strategy.gen.profile',
+  analysis: 'strategy.gen.analysis',
+  plan_type: 'strategy.gen.planType',
+  plan_entry: 'strategy.gen.planEntry',
+  plan_exit: 'strategy.gen.planExit',
+  plan_risk: 'strategy.gen.planRisk',
+  plan_market: 'strategy.gen.planMarket',
 } as const;
 
 export type StrategyGenKey = typeof STRATEGYGEN_KEYS[keyof typeof STRATEGYGEN_KEYS];

@@ -48,6 +48,7 @@ const SECTIONS = [
   'strategy_paper',
   'strategy_default_templates',
   // non-strategy sections
+  'indicator_catalog',
   'accounts',
   'ai_core',
   'ai_settings',

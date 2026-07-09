@@ -46,6 +46,22 @@ const StrategyWorkspace = {
         "selectPlaceholder": "テンプレートを選択...",
         "title": "テンプレート"
       },
+      "memory": {
+        "saveSuccess": "保存しました",
+        "saveFailed": "保存に失敗しました",
+        "name": "名前",
+        "content": "内容",
+        "confirmDelete": "削除しますか？",
+        "category": "カテゴリ",
+        "templates": "ユーザー戦略テンプレート",
+        "add": "追加",
+        "empty": "データなし",
+        "experiences": "Agent エクスペリエンス",
+        "addTemplate": "戦略テンプレートを追加",
+        "save": "保存",
+        "namePlaceholder": "テンプレート名",
+        "contentPlaceholder": "戦略の説明、設定、ルール..."
+      },
       "account": "口座",
       "accountPlaceholder": "アカウントID",
       "ai": "AI 助手",
@@ -96,7 +112,27 @@ const StrategyWorkspace = {
       "validateBeforeSave": "保存前にコードを検証してください",
       "validateFailed": "検証に失敗しました",
       "validatePass": "検証に成功しました",
-      "watchlist": "ウォッチリスト"
+      "watchlist": "ウォッチリスト",
+      "sendToAI": "AIに送信",
+      "browseIndicators": "インジケーター一覧",
+      "noCode": "検証するコードがありません",
+      "compileError": "コンパイルエラー",
+      "validateFirst": "先にコードを検証してください",
+      "codeValid": "コードは有効です",
+      "aiAssistant": "AIアシスタント",
+      "mobileTitle": "デスクトップが必要です",
+      "mobileSubtitle": "ストラテジーワークスペースはより大きな画面が必要です。デスクトップデバイスに切り替えるか、ストラテジーテンプレートを参照してください。",
+      "mobileCta": "ストラテジーテンプレートへ",
+      "positions": "ポジション",
+      "history": "履歴",
+      "templates": "戦略管理",
+      "manage": "管理",
+      "tuningInteractive": "インタラクティブ",
+      "tuningBatch": "バッチ",
+      "noResults": "結果なし",
+      "noHistory": "履歴なし",
+      "untitledDraft": "無題の下書き",
+      "name": "名前"
     }
   }
 } as const;

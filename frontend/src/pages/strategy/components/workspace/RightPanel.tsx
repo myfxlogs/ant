@@ -4,6 +4,8 @@ import { BulbOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import StrategyChat from '@/components/strategy/StrategyChat';
 import MemoryContent from './MemoryContent';
+import { AI_ASSISTANT_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import { AGENT_MEMORY_KEY } from '@/gen/ant/v1/i18n/strategy_ai_keys';
 
 interface Props {
   symbol?: string;
@@ -12,6 +14,7 @@ interface Props {
   onApplyCode: (code: string) => void;
   onValidateResult?: (result: import('@/client/codeAssist').ValidateExtendedResult) => void;
   width?: number;
+  currentCode?: string;
 }
 
 export default function RightPanel(props: Props) {
@@ -33,8 +36,8 @@ export default function RightPanel(props: Props) {
         borderBottom: '1px solid var(--ant-color-border)',
         fontSize: 11, fontWeight: 700, color: 'var(--ant-color-text-tertiary)',
       }}>
-        <span>🤖 {t('strategy.workspace.aiAssistant')}</span>
-        <Tooltip title={t('strategy.memory.title', 'Agent Memory')}>
+        <span>🤖 {t(AI_ASSISTANT_KEY)}</span>
+        <Tooltip title={t(AGENT_MEMORY_KEY)}>
           <Button size="small" type="text" icon={<BulbOutlined />} onClick={() => setMemoryOpen(true)} />
         </Tooltip>
       </div>
@@ -47,11 +50,12 @@ export default function RightPanel(props: Props) {
           accountId={props.accountId}
           onApplyCode={props.onApplyCode}
           onValidateResult={props.onValidateResult}
+          currentCode={props.currentCode}
         />
       </div>
 
       <Drawer
-        title={t('strategy.memory.title', 'Agent Memory')}
+        title={t(AGENT_MEMORY_KEY)}
         open={memoryOpen}
         onClose={() => setMemoryOpen(false)}
         width={560}

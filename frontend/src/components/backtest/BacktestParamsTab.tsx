@@ -8,6 +8,7 @@ import {
   MORE_KEY, SHORT_KEY, SLIPPAGE_KEY, START_DATE_KEY, STRATEGY_KEY, STRATEGY_PARAMS_KEY, STRICT_MODE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import { VALIDATE_TO_SEE_PARAMS_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
+import { COMMON_EDIT_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import StrategyParamsModal from './StrategyParamsModal';
 import { paramLabel } from '@/utils/paramLabel';
 import { DATE_PRESETS, PRESETS } from '@/pages/strategy/hooks/backtestParamHelpers';
@@ -153,7 +154,7 @@ export default function BacktestParamsTab({ runner, inputs, templates }: Props) 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <span style={S.sectionLabel}>{t(STRATEGY_PARAMS_KEY)} ({runner.extractedParams.length})</span>
               <Button size="small" onClick={() => runner.setStrategyParamsModalOpen(true)}>
-                {t('common.edit')}
+                {t(COMMON_EDIT_KEY)}
               </Button>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 12px' }}>

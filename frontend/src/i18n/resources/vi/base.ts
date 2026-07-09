@@ -514,7 +514,9 @@ const Base = {
     "viewOriginal": "Xem nguyên văn",
     "viewTranslation": "Xem bản dịch",
     "yes": "Có",
-    "you": "Bạn"
+    "you": "Bạn",
+    "unsaved": "Chưa lưu",
+    "saved": "Đã lưu"
   },
   "errors": {
     "ai": {

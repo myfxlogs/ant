@@ -118,11 +118,11 @@ export function useStrategyWorkspaceState() {
   const [historySelectedKeys, setHistorySelectedKeys] = useState<React.Key[]>([]);
   const [historyDeleting, setHistoryDeleting] = useState(false);
 
-  const fetchHistoryRuns = useCallback(async (page: number, pageSize: number) => {
+  const fetchHistoryRuns = useCallback(async (page: number, pageSize: number, templateId?: string) => {
     setHistoryLoading(true);
     try {
       const { strategyRuntimeApi } = await import('@/client/strategyRuntime');
-      const resp = await strategyRuntimeApi.listBacktestRuns({ accountId: accountId || undefined, limit: pageSize, offset: (page - 1) * pageSize });
+      const resp = await strategyRuntimeApi.listBacktestRuns({ accountId: accountId || undefined, templateId: templateId || undefined, limit: pageSize, offset: (page - 1) * pageSize });
       const runs = resp.runs ?? [];
       setHistoryRuns(runs);
       // API has no total field — infer from returned count
@@ -134,10 +134,10 @@ export function useStrategyWorkspaceState() {
     finally { setHistoryLoading(false); }
   }, [accountId]);
 
-  const handleOpenHistory = useCallback(() => {
+  const handleOpenHistory = useCallback((templateId?: string) => {
     setHistoryModalOpen(true);
     setHistoryPage(1); setHistoryPageSize(20); setHistorySelectedKeys([]);
-    fetchHistoryRuns(1, 20);
+    fetchHistoryRuns(1, 20, templateId);
   }, [fetchHistoryRuns]);
 
   const handleCloseHistory = useCallback(() => { setHistoryDrawerOpen(false); setHistoryRunId(''); }, []);

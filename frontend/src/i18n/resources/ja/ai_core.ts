@@ -374,7 +374,10 @@ const AiCore = {
       "useGatewayDesc": "ウォレット課金 · トークン単位",
       "useOwnKey": "自分の API Key",
       "useOwnKeyDesc": "直接課金 · 自己管理",
-      "useOwnKeyHint": "自分の API Key を使用してプロバイダーに直接支払います。下のプロバイダーカードを選択して設定してください。"
+      "useOwnKeyHint": "自分の API Key を使用してプロバイダーに直接支払います。下のプロバイダーカードを選択して設定してください。",
+      "groupMyKeys": "マイ API キー",
+      "groupGateway": "AI ゲートウェイ",
+      "groupCurrent": "現在選択中"
     },
     "riskEval": {
       "failed": "风险评估失败"

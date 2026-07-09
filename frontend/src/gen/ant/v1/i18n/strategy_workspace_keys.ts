@@ -292,6 +292,108 @@ export const VALIDATE_PASS_KEY = 'strategy.workspace.validatePass' as const;
 /** watchlist */
 export const WATCHLIST_KEY = 'strategy.workspace.watchlist' as const;
 
+/** sendToAI */
+export const SEND_TO_AI_KEY = 'strategy.workspace.sendToAI' as const;
+
+/** browseIndicators */
+export const BROWSE_INDICATORS_KEY = 'strategy.workspace.browseIndicators' as const;
+
+/** noCode */
+export const NO_CODE_KEY = 'strategy.workspace.noCode' as const;
+
+/** compileError */
+export const COMPILE_ERROR_KEY = 'strategy.workspace.compileError' as const;
+
+/** validateFirst */
+export const VALIDATE_FIRST_KEY = 'strategy.workspace.validateFirst' as const;
+
+/** codeValid */
+export const CODE_VALID_KEY = 'strategy.workspace.codeValid' as const;
+
+/** aiAssistant */
+export const AI_ASSISTANT_KEY = 'strategy.workspace.aiAssistant' as const;
+
+/** mobileTitle */
+export const MOBILE_TITLE_KEY = 'strategy.workspace.mobileTitle' as const;
+
+/** mobileSubtitle */
+export const MOBILE_SUBTITLE_KEY = 'strategy.workspace.mobileSubtitle' as const;
+
+/** mobileCta */
+export const MOBILE_CTA_KEY = 'strategy.workspace.mobileCta' as const;
+
+/** positions */
+export const POSITIONS_KEY = 'strategy.workspace.positions' as const;
+
+/** history */
+export const HISTORY_KEY = 'strategy.workspace.history' as const;
+
+/** templates */
+export const TEMPLATES_KEY = 'strategy.workspace.templates' as const;
+
+/** manage */
+export const MANAGE_KEY = 'strategy.workspace.manage' as const;
+
+/** tuningInteractive */
+export const TUNING_INTERACTIVE_KEY = 'strategy.workspace.tuningInteractive' as const;
+
+/** tuningBatch */
+export const TUNING_BATCH_KEY = 'strategy.workspace.tuningBatch' as const;
+
+/** noResults */
+export const NO_RESULTS_KEY = 'strategy.workspace.noResults' as const;
+
+/** noHistory */
+export const NO_HISTORY_KEY = 'strategy.workspace.noHistory' as const;
+
+/** untitledDraft */
+export const UNTITLED_DRAFT_KEY = 'strategy.workspace.untitledDraft' as const;
+
+/** name */
+export const NAME_KEY = 'strategy.workspace.name' as const;
+
+/** memory.saveSuccess */
+export const MEMORY_SAVE_SUCCESS_KEY = 'strategy.workspace.memory.saveSuccess' as const;
+
+/** memory.saveFailed */
+export const MEMORY_SAVE_FAILED_KEY = 'strategy.workspace.memory.saveFailed' as const;
+
+/** memory.name */
+export const MEMORY_NAME_KEY = 'strategy.workspace.memory.name' as const;
+
+/** memory.content */
+export const MEMORY_CONTENT_KEY = 'strategy.workspace.memory.content' as const;
+
+/** memory.confirmDelete */
+export const MEMORY_CONFIRM_DELETE_KEY = 'strategy.workspace.memory.confirmDelete' as const;
+
+/** memory.category */
+export const MEMORY_CATEGORY_KEY = 'strategy.workspace.memory.category' as const;
+
+/** memory.templates */
+export const MEMORY_TEMPLATES_KEY = 'strategy.workspace.memory.templates' as const;
+
+/** memory.add */
+export const MEMORY_ADD_KEY = 'strategy.workspace.memory.add' as const;
+
+/** memory.empty */
+export const MEMORY_EMPTY_KEY = 'strategy.workspace.memory.empty' as const;
+
+/** memory.experiences */
+export const MEMORY_EXPERIENCES_KEY = 'strategy.workspace.memory.experiences' as const;
+
+/** memory.addTemplate */
+export const MEMORY_ADD_TEMPLATE_KEY = 'strategy.workspace.memory.addTemplate' as const;
+
+/** memory.save */
+export const MEMORY_SAVE_KEY = 'strategy.workspace.memory.save' as const;
+
+/** memory.namePlaceholder */
+export const MEMORY_NAME_PLACEHOLDER_KEY = 'strategy.workspace.memory.namePlaceholder' as const;
+
+/** memory.contentPlaceholder */
+export const MEMORY_CONTENT_PLACEHOLDER_KEY = 'strategy.workspace.memory.contentPlaceholder' as const;
+
 export const STRATEGYWORKSPACE_KEYS = {
   account: 'strategy.workspace.account',
   account_placeholder: 'strategy.workspace.accountPlaceholder',
@@ -390,6 +492,40 @@ export const STRATEGYWORKSPACE_KEYS = {
   validate_failed: 'strategy.workspace.validateFailed',
   validate_pass: 'strategy.workspace.validatePass',
   watchlist: 'strategy.workspace.watchlist',
+  send_to_ai: 'strategy.workspace.sendToAI',
+  browse_indicators: 'strategy.workspace.browseIndicators',
+  no_code: 'strategy.workspace.noCode',
+  compile_error: 'strategy.workspace.compileError',
+  validate_first: 'strategy.workspace.validateFirst',
+  code_valid: 'strategy.workspace.codeValid',
+  ai_assistant: 'strategy.workspace.aiAssistant',
+  mobile_title: 'strategy.workspace.mobileTitle',
+  mobile_subtitle: 'strategy.workspace.mobileSubtitle',
+  mobile_cta: 'strategy.workspace.mobileCta',
+  positions: 'strategy.workspace.positions',
+  history: 'strategy.workspace.history',
+  templates: 'strategy.workspace.templates',
+  manage: 'strategy.workspace.manage',
+  tuning_interactive: 'strategy.workspace.tuningInteractive',
+  tuning_batch: 'strategy.workspace.tuningBatch',
+  no_results: 'strategy.workspace.noResults',
+  no_history: 'strategy.workspace.noHistory',
+  untitled_draft: 'strategy.workspace.untitledDraft',
+  name: 'strategy.workspace.name',
+  memory_save_success: 'strategy.workspace.memory.saveSuccess',
+  memory_save_failed: 'strategy.workspace.memory.saveFailed',
+  memory_name: 'strategy.workspace.memory.name',
+  memory_content: 'strategy.workspace.memory.content',
+  memory_confirm_delete: 'strategy.workspace.memory.confirmDelete',
+  memory_category: 'strategy.workspace.memory.category',
+  memory_templates: 'strategy.workspace.memory.templates',
+  memory_add: 'strategy.workspace.memory.add',
+  memory_empty: 'strategy.workspace.memory.empty',
+  memory_experiences: 'strategy.workspace.memory.experiences',
+  memory_add_template: 'strategy.workspace.memory.addTemplate',
+  memory_save: 'strategy.workspace.memory.save',
+  memory_name_placeholder: 'strategy.workspace.memory.namePlaceholder',
+  memory_content_placeholder: 'strategy.workspace.memory.contentPlaceholder',
 } as const;
 
 export type StrategyWorkspaceKey = typeof STRATEGYWORKSPACE_KEYS[keyof typeof STRATEGYWORKSPACE_KEYS];

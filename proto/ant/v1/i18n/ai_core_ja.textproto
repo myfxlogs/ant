@@ -250,3 +250,6 @@ workflow_runs_hints_select_to_view_detail: '从左侧选择运行记录查看详
 workflow_runs_messages_load_detail_failed: '加载详情失败'
 workflow_runs_messages_load_list_failed: '実行一覧の読み込みに失敗しました'
 workflow_runs_title: 'AIワークフロー'
+gateway_group_my_keys: 'マイ API キー'
+gateway_group_gateway: 'AI ゲートウェイ'
+gateway_group_current: '現在選択中'

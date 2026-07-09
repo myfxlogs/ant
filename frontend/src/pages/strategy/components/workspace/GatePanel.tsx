@@ -2,7 +2,7 @@ import { Button, Steps, Alert, Select, Tag } from 'antd';
 import { ThunderboltOutlined, CheckCircleFilled, CloseCircleFilled, LoadingOutlined, ClockCircleFilled, MinusCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { BACKTEST_RUN_ID_LABEL_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
-import { GATE_ALL_PASSED_KEY, GATE_EVALUATING_KEY, GATE_FAIL_KEY, GATE_NO_DATA_KEY, GATE_PASS_KEY, GATE_RUN_HINT_KEY, GATE_RUN_PIPELINE_KEY, GATE_SKIPPED_KEY, GATE_UNKNOWN_KEY } from '@/gen/ant/v1/i18n/ai_core_keys';
+import { GATE_ALL_PASSED_KEY, GATE_EVALUATING_KEY, GATE_FAIL_KEY, GATE_FAILED_KEY, GATE_NO_DATA_KEY, GATE_PASS_KEY, GATE_RUN_HINT_KEY, GATE_RUN_PIPELINE_KEY, GATE_SKIPPED_KEY, GATE_UNKNOWN_KEY } from '@/gen/ant/v1/i18n/ai_core_keys';
 
 ;
 import type { GateResult, GatePipelineSummary } from '@/gen/ant/v1/ai_gate_pb';
@@ -97,7 +97,7 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
           style={{ marginTop: 12 }}
           message={summary.passed
             ? t(GATE_ALL_PASSED_KEY, 'All 6 gates passed — strategy eligible for live deployment')
-            : t('ai.gate.failed', { defaultValue: `Failed at ${summary.firstFail}` })}
+            : t(GATE_FAILED_KEY, { defaultValue: `Failed at ${summary.firstFail}` })}
           description={!summary.passed ? summary.summary : undefined} />
       )}
     </div>

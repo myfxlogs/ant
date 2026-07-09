@@ -769,6 +769,15 @@ export const WORKFLOW_RUNS_MESSAGES_LOAD_LIST_FAILED_KEY = 'ai.workflowRuns.mess
 /** workflowRuns.title */
 export const WORKFLOW_RUNS_TITLE_KEY = 'ai.workflowRuns.title' as const;
 
+/** gateway.groupMyKeys */
+export const GATEWAY_GROUP_MY_KEYS_KEY = 'ai.gateway.groupMyKeys' as const;
+
+/** gateway.groupGateway */
+export const GATEWAY_GROUP_GATEWAY_KEY = 'ai.gateway.groupGateway' as const;
+
+/** gateway.groupCurrent */
+export const GATEWAY_GROUP_CURRENT_KEY = 'ai.gateway.groupCurrent' as const;
+
 export const AICORE_KEYS = {
   agent_prompts_code_prompt: 'ai.agentPrompts.code.prompt',
   agent_prompts_code_title: 'ai.agentPrompts.code.title',
@@ -1026,6 +1035,9 @@ export const AICORE_KEYS = {
   workflow_runs_messages_load_detail_failed: 'ai.workflowRuns.messages.loadDetailFailed',
   workflow_runs_messages_load_list_failed: 'ai.workflowRuns.messages.loadListFailed',
   workflow_runs_title: 'ai.workflowRuns.title',
+  gateway_group_my_keys: 'ai.gateway.groupMyKeys',
+  gateway_group_gateway: 'ai.gateway.groupGateway',
+  gateway_group_current: 'ai.gateway.groupCurrent',
 } as const;
 
 export type AiCoreKey = typeof AICORE_KEYS[keyof typeof AICORE_KEYS];

@@ -305,3 +305,6 @@ workflow_runs_hints_select_to_view_detail: 'Select a run from the left to view d
 workflow_runs_messages_load_detail_failed: 'Failed to load details'
 workflow_runs_messages_load_list_failed: 'Failed to load run list'
 workflow_runs_title: 'AI Workflow'
+gateway_group_my_keys: 'My API Keys'
+gateway_group_gateway: 'AI Gateway'
+gateway_group_current: 'Currently Selected'

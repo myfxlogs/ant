@@ -514,7 +514,9 @@ const Base = {
     "viewOriginal": "View original",
     "viewTranslation": "View translation",
     "yes": "Yes",
-    "you": "You"
+    "you": "You",
+    "unsaved": "Unsaved",
+    "saved": "Saved"
   },
   "errors": {
     "ai": {

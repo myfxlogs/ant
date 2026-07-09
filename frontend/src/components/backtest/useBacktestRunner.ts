@@ -66,7 +66,7 @@ export function useBacktestRunner() {
   const [strategyDirectives, setStrategyDirectives] = useState<StrategyDirective[]>([]);
 
   // ── UI state ──────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<string>('params');
+  const [activeTab, setActiveTab] = useState<string>('results');
   const [panelHeight, setPanelHeight] = useState(280);
   const [dragging, setDragging] = useState(false);
   const [strategyParamsModalOpen, setStrategyParamsModalOpen] = useState(false);

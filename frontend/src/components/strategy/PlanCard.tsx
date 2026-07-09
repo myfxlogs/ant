@@ -12,6 +12,7 @@ import {
   PLAN_SEND_BTN_KEY,
   PLAN_CARD_TITLE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_gen_keys';
+import { PLAN_TYPE_KEY, PLAN_ENTRY_KEY, PLAN_EXIT_KEY, PLAN_RISK_KEY, PLAN_MARKET_KEY, PLAN_ANALYZING_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 
 interface Props {
   plan: StrategyPlan;
@@ -34,11 +35,11 @@ export default function PlanCard({ plan, onConfirm, onRefine, refining }: Props)
   }, [feedback, onRefine]);
 
   const fields: Array<{ label: string; value: string }> = [
-    { label: t('strategy.gen.planType', 'Type'), value: plan.type },
-    { label: t('strategy.gen.planEntry', 'Entry'), value: plan.entry },
-    { label: t('strategy.gen.planExit', 'Exit'), value: plan.exit },
-    { label: t('strategy.gen.planRisk', 'Risk'), value: plan.risk },
-    { label: t('strategy.gen.planMarket', 'Market'), value: plan.market },
+    { label: t(PLAN_TYPE_KEY), value: plan.type },
+    { label: t(PLAN_ENTRY_KEY), value: plan.entry },
+    { label: t(PLAN_EXIT_KEY), value: plan.exit },
+    { label: t(PLAN_RISK_KEY), value: plan.risk },
+    { label: t(PLAN_MARKET_KEY), value: plan.market },
   ];
 
   return (
@@ -118,7 +119,7 @@ export default function PlanCard({ plan, onConfirm, onRefine, refining }: Props)
 
       {refining && !editing && (
         <Tag color="processing" style={{ marginTop: 8 }}>
-          {t('strategy.gen.planAnalyzing', 'Updating plan...')}
+          {t(PLAN_ANALYZING_KEY)}
         </Tag>
       )}
     </Card>

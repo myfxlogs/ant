@@ -46,6 +46,22 @@ const StrategyWorkspace = {
         "selectPlaceholder": "選擇範本...",
         "title": "模板"
       },
+      "memory": {
+        "saveSuccess": "已儲存",
+        "saveFailed": "儲存失敗",
+        "name": "名稱",
+        "content": "內容",
+        "confirmDelete": "刪除？",
+        "category": "分類",
+        "templates": "使用者策略範本",
+        "add": "新增",
+        "empty": "暫無資料",
+        "experiences": "Agent 經驗",
+        "addTemplate": "新增策略範本",
+        "save": "儲存",
+        "namePlaceholder": "範本名稱",
+        "contentPlaceholder": "策略描述、偏好、規則..."
+      },
       "account": "帳號",
       "accountPlaceholder": "帳戶 ID",
       "ai": "AI 助手",
@@ -96,7 +112,27 @@ const StrategyWorkspace = {
       "validateBeforeSave": "儲存前请先驗證程式碼",
       "validateFailed": "代碼驗證失敗",
       "validatePass": "代碼驗證通過",
-      "watchlist": "自选"
+      "watchlist": "自选",
+      "sendToAI": "發送給AI",
+      "browseIndicators": "瀏覽指標",
+      "noCode": "沒有代碼可驗證",
+      "compileError": "編譯錯誤",
+      "validateFirst": "請先驗證代碼",
+      "codeValid": "代碼驗證通過",
+      "aiAssistant": "AI 助手",
+      "mobileTitle": "需要桌面設備",
+      "mobileSubtitle": "策略工作區需要更大的螢幕。請切換到桌面設備，或瀏覽策略模板。",
+      "mobileCta": "前往策略模板",
+      "positions": "持倉",
+      "history": "歷史",
+      "templates": "策略管理",
+      "manage": "管理",
+      "tuningInteractive": "互動式",
+      "tuningBatch": "批次",
+      "noResults": "暫無結果",
+      "noHistory": "暫無歷史",
+      "untitledDraft": "未命名草稿",
+      "name": "名稱"
     }
   }
 } as const;

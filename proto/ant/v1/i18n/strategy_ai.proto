@@ -9,4 +9,5 @@ message AiI18n {
   string check_settings = 1;  // Check AI Settings
   string refresh_failed = 2;  // Refresh failed
   string settings = 3;  // AI Settings
+  string agent_memory = 4;  // Agent Memory
 }

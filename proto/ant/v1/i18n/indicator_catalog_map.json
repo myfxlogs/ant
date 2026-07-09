@@ -1,0 +1,16 @@
+{
+  "prefix": "indicatorCatalog",
+  "fields": {
+    "title": "title",
+    "param_key": "paramKey",
+    "param_label": "paramLabel",
+    "param_type": "paramType",
+    "param_default": "paramDefault",
+    "param_range": "paramRange",
+    "param_description": "paramDescription",
+    "risk_params_title": "riskParamsTitle",
+    "risk_params_desc": "riskParamsDesc",
+    "indicators_title": "indicatorsTitle",
+    "risk_section_title": "riskSectionTitle"
+  }
+}

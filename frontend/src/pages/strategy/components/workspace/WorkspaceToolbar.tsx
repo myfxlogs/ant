@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next';
 import {
   TRADING_BALANCE_KEY, TRADING_EQUITY_KEY, TRADING_PROFIT_KEY,
   TRADING_FREE_MARGIN_KEY, TRADING_POSITIONS_KEY,
+  TRADING_MARGIN_LEVEL_KEY, TRADING_PLATFORM_KEY, TRADING_BROKER_KEY,
+  TRADING_SERVER_KEY, TRADING_PERMISSION_KEY, TRADING_INVESTOR_KEY,
+  TRADING_MASTER_KEY, TRADING_LEVERAGE_KEY,
 } from '@/gen/ant/v1/i18n/trading_keys';
 import { NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
 import { SELECT_ACCOUNT_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
@@ -104,7 +107,7 @@ export default function WorkspaceToolbar({
           />
           <SummaryChip label={t(TRADING_FREE_MARGIN_KEY)} value={`$${fmtCompact(accountInfo!.freeMargin)}`} />
           {accountInfo!.marginLevel > 0 && (
-            <SummaryChip label={t('trading.marginLevel')} value={`${accountInfo!.marginLevel.toFixed(0)}%`} />
+            <SummaryChip label={t(TRADING_MARGIN_LEVEL_KEY)} value={`${accountInfo!.marginLevel.toFixed(0)}%`} />
           )}
         </div>
       )}
@@ -120,15 +123,15 @@ export default function WorkspaceToolbar({
       {/* Account Metadata — SummaryChip cards for consistent rounded borders */}
       {selectedAccount && (
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <SummaryChip label={t('trading.platform')} value={selectedAccount.mtType}
+          <SummaryChip label={t(TRADING_PLATFORM_KEY)} value={selectedAccount.mtType}
             color={selectedAccount.mtType === 'MT5' ? '#1677ff' : '#fa8c16'} />
-          <SummaryChip label={t('trading.broker')} value={selectedAccount.brokerCompany} />
-          <SummaryChip label={t('trading.server')} value={selectedAccount.brokerServer} />
-          <SummaryChip label={t('trading.permission')}
-            value={selectedAccount.isInvestor ? t('trading.investor') : t('trading.master')}
+          <SummaryChip label={t(TRADING_BROKER_KEY)} value={selectedAccount.brokerCompany} />
+          <SummaryChip label={t(TRADING_SERVER_KEY)} value={selectedAccount.brokerServer} />
+          <SummaryChip label={t(TRADING_PERMISSION_KEY)}
+            value={selectedAccount.isInvestor ? t(TRADING_INVESTOR_KEY) : t(TRADING_MASTER_KEY)}
             color={selectedAccount.isInvestor ? '#fa8c16' : '#52c41a'} />
           {selectedAccount.leverage && selectedAccount.leverage > 0 && (
-            <SummaryChip label={t('trading.leverage')} value={`1:${selectedAccount.leverage}`} />
+            <SummaryChip label={t(TRADING_LEVERAGE_KEY)} value={`1:${selectedAccount.leverage}`} />
           )}
         </div>
       )}

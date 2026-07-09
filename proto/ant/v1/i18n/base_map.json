@@ -628,6 +628,8 @@
     "wallet_tx_type_fee": "wallet.txType.fee",
     "wallet_tx_type_reversal": "wallet.txType.reversal",
     "wallet_tx_type_withdrawal": "wallet.txType.withdrawal",
-    "wallet_withdraw": "wallet.withdraw"
+    "wallet_withdraw": "wallet.withdraw",
+    "common_unsaved": "common.unsaved",
+    "common_saved": "common.saved"
   }
 }

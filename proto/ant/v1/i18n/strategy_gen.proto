@@ -64,4 +64,31 @@ message GenI18n {
   string exec_apply_code = 56;      // Apply Code to Editor
   string exec_skip_no_symbol = 57;  // Backtest skipped: no symbol selected
   string exec_skip_no_code = 58;    // Backtest skipped: no code
+
+  string backtest = 59;             // Backtest
+  string backtesting = 60;          // Backtesting...
+  string backtest_error = 61;       // Backtest Error
+  string compiling = 62;            // Compiling...
+  string compile_error = 63;        // Compile Error
+  string total_return = 64;         // Total Return
+  string max_drawdown = 65;         // Max Drawdown
+  string sharpe = 66;               // Sharpe
+  string win_rate = 67;             // Win Rate
+  string return_label = 68;         // Return
+  string total_trades = 69;         // Total Trades
+  string failed = 70;               // Failed
+  string no_market_data = 71;       // No market data available
+  string no_market_data_hint = 72;  // Please select a trading account and a symbol...
+  string plan = 73;                 // Strategy Plan
+  string final_code = 74;           // Final Strategy Code
+  string copy = 75;                 // Copy
+  string apply_to_editor = 76;      // Apply to Editor
+  string coverage = 77;             // Coverage
+  string profile = 78;              // Strategy Profile
+  string analysis = 79;             // Backtest Analysis
+  string plan_type = 80;            // Type
+  string plan_entry = 81;           // Entry
+  string plan_exit = 82;            // Exit
+  string plan_risk = 83;            // Risk
+  string plan_market = 84;          // Market
 }

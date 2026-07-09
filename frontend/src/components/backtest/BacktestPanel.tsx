@@ -1,27 +1,25 @@
 import { useCallback, useRef, useState } from 'react';
-import { Button, Tabs, Tooltip, Dropdown, Radio } from 'antd';
+import { Tabs, Radio } from 'antd';
 import {
-  PlayCircleOutlined, SettingOutlined, CaretDownOutlined,
-  HistoryOutlined, DoubleRightOutlined,
+  PlayCircleOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import {
-  RUN_KEY, EXECUTION_KEY, HISTORY_KEY, TITLE_KEY,
+  TITLE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
-import { RUN_DISABLED_HINT_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import {
-  BACKTEST_TAB_KEY, GATE_TAB_KEY, TUNING_TAB_KEY,
+  BACKTEST_TAB_KEY, GATE_TAB_KEY, TUNING_TAB_KEY, TEMPLATES_KEY,
+  TUNING_INTERACTIVE_KEY, TUNING_BATCH_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import {
-  BACKTEST_RECORDS_KEY, MAX_DRAWDOWN_KEY, PROFIT_FACTOR_KEY, SHARPE_KEY,
+  MAX_DRAWDOWN_KEY, PROFIT_FACTOR_KEY, SHARPE_KEY,
   TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, WIN_RATE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import SmartTuningPanel from '@/pages/strategy/components/workspace/SmartTuningPanel';
 import BatchTuningPanel from '@/pages/strategy/components/workspace/BatchTuningPanel';
 import GatePanel from '@/pages/strategy/components/workspace/GatePanel';
 import BacktestResultsTab from './BacktestResultsTab';
-import BacktestTradesTab from './BacktestTradesTab';
-import BacktestParamsTab from './BacktestParamsTab';
+import StrategiesTab from './StrategiesTab';
 import type { useBacktestRunner, BacktestRunnerInputs } from './useBacktestRunner';
 import type { StrategyTemplate } from '@/client/strategy';
 
@@ -36,11 +34,14 @@ interface Props {
   runner: ReturnType<typeof useBacktestRunner>;
   inputs: BacktestRunnerInputs;
   templates: TemplatesProp;
-  collapsed: boolean; onToggleCollapsed: () => void;
-  onOpenHistory?: () => void;
+  onOpenHistory?: (templateId?: string) => void;
   onAIOptimize?: () => void;
   code?: string;
   onApplyTunedParams?: (code: string) => void;
+  onRunBacktest?: () => void;
+  onSaveAs?: () => void;
+  hasUnsavedDraft?: boolean;
+  draftName?: string;
 }
 
 function MetricsRow({ m, t }: { m: any; t: any }) {
@@ -59,8 +60,9 @@ function MetricsRow({ m, t }: { m: any; t: any }) {
 
 export default function BacktestPanel(props: Props) {
   const {
-    runner, inputs, templates, collapsed, onToggleCollapsed,
+    runner, inputs, templates,
     onOpenHistory, onAIOptimize, code, onApplyTunedParams,
+    onRunBacktest, onSaveAs, hasUnsavedDraft, draftName,
   } = props;
   const { t } = useTranslation();
   const [tuningMode, setTuningMode] = useState<'interactive' | 'batch'>('interactive');
@@ -88,26 +90,6 @@ export default function BacktestPanel(props: Props) {
     document.addEventListener('mouseup', onUp);
   }, [runner]);
 
-  // ── Collapsed state ───────────────────────────────────────────────────
-  if (collapsed) {
-    return (
-      <div style={{
-        borderTop: '2px solid #e8e8e8', background: '#fafbfc',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '6px 14px', cursor: 'pointer', userSelect: 'none',
-      }} onClick={onToggleCollapsed}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <DoubleRightOutlined style={{ fontSize: 12, color: '#1890ff', transform: 'rotate(-90deg)' }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#262626' }}>{t(TITLE_KEY)}</span>
-          <MetricsRow m={runner.metrics} t={t} />
-        </div>
-        <Button size="small" type="primary" loading={runner.submitting}
-          disabled={!canRun} onClick={(e) => { e.stopPropagation(); handleRun(); }}
-          style={{ borderRadius: 6, fontWeight: 600 }}>{t(RUN_KEY)}</Button>
-      </div>
-    );
-  }
-
   // ── Expanded state ────────────────────────────────────────────────────
   return (
     <div style={{
@@ -123,7 +105,7 @@ export default function BacktestPanel(props: Props) {
 
       {/* Tab bar */}
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        display: 'flex', alignItems: 'center',
         padding: '4px 14px 0', flexShrink: 0,
         background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
       }}>
@@ -133,43 +115,17 @@ export default function BacktestPanel(props: Props) {
           <Tabs size="small" activeKey={runner.activeTab} onChange={runner.setActiveTab}
             tabBarStyle={{ marginBottom: 0, borderBottom: 'none' }}
             items={[
-              { key: 'params', label: t(EXECUTION_KEY) },
               { key: 'results', label: t(BACKTEST_TAB_KEY, 'Results') },
               { key: 'tuning', label: t(TUNING_TAB_KEY, 'Tuning') },
               { key: 'gate', label: t(GATE_TAB_KEY, 'Gate') },
-              { key: 'trades', label: `${t(BACKTEST_RECORDS_KEY, 'Records')}${runner.metrics?.totalTrades ? ` (${runner.metrics.totalTrades})` : ''}` },
+              { key: 'strategies', label: t(TEMPLATES_KEY) },
             ]}
           />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          {onOpenHistory && (
-            <Tooltip title={t(HISTORY_KEY)}>
-              <Button size="small" type="text" icon={<HistoryOutlined />} onClick={onOpenHistory} style={{ borderRadius: 6 }} />
-            </Tooltip>
-          )}
-          <Dropdown menu={{ items: runner.settingsItems }} trigger={['click']} placement="bottomRight">
-            <Button size="small" type="text" icon={<SettingOutlined />} style={{ borderRadius: 6 }} />
-          </Dropdown>
-          <Tooltip title={!canRun ? t(RUN_DISABLED_HINT_KEY) : undefined}>
-            <Button type="primary" size="small" loading={runner.submitting} disabled={!canRun}
-              onClick={handleRun} style={{ borderRadius: 6, fontWeight: 600, boxShadow: '0 2px 8px rgba(24,144,255,0.25)' }}>
-              {t(RUN_KEY)}
-            </Button>
-          </Tooltip>
-          <span onClick={(e) => { e.stopPropagation(); onToggleCollapsed(); }}
-            style={{ fontSize: 12, color: '#8c8c8c', cursor: 'pointer' }}>
-            <CaretDownOutlined />
-          </span>
         </div>
       </div>
 
       {/* Tab content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px' }}>
-        {/* ── Params Tab ──────────────────────────────────────────────── */}
-        {runner.activeTab === 'params' && (
-          <BacktestParamsTab runner={runner} inputs={inputs} templates={templates} />
-        )}
-
         {/* ── Results Tab ─────────────────────────────────────────────── */}
         {runner.activeTab === 'results' && (
           <BacktestResultsTab
@@ -178,6 +134,23 @@ export default function BacktestPanel(props: Props) {
             executionAssumptions={runner.executionAssumptions}
             errorMsg={runner.errorMsg}
             onAIOptimize={onAIOptimize}
+            trades={runner.chartTrades}
+            panelHeight={runner.panelHeight}
+          />
+        )}
+
+        {/* ── Strategies Tab ─────────────────────────────────────────── */}
+        {runner.activeTab === 'strategies' && (
+          <StrategiesTab
+            templates={templates.list}
+            loading={templates.loading}
+            selectedId={templates.selectedId}
+            hasUnsavedDraft={hasUnsavedDraft ?? false}
+            draftName={draftName ?? ''}
+            onSelect={templates.onSelect}
+            onRunBacktest={() => onRunBacktest?.()}
+            onOpenHistory={(templateId?: string) => onOpenHistory?.(templateId)}
+            onSaveAs={() => onSaveAs?.()}
           />
         )}
 
@@ -186,8 +159,8 @@ export default function BacktestPanel(props: Props) {
           <>
             <Radio.Group value={tuningMode} onChange={e => setTuningMode(e.target.value)} size="small"
               buttonStyle="solid" style={{ marginBottom: 8 }}>
-              <Radio.Button value="interactive">{t('strategy.workspace.tuningInteractive')}</Radio.Button>
-              <Radio.Button value="batch">{t('strategy.workspace.tuningBatch')}</Radio.Button>
+              <Radio.Button value="interactive">{t(TUNING_INTERACTIVE_KEY)}</Radio.Button>
+              <Radio.Button value="batch">{t(TUNING_BATCH_KEY)}</Radio.Button>
             </Radio.Group>
             {tuningMode === 'interactive' ? (
               <SmartTuningPanel
@@ -218,9 +191,6 @@ export default function BacktestPanel(props: Props) {
         )}
 
         {/* ── Trades Tab ──────────────────────────────────────────────── */}
-        {runner.activeTab === 'trades' && (
-          <BacktestTradesTab trades={runner.chartTrades} panelHeight={runner.panelHeight} />
-        )}
       </div>
     </div>
   );

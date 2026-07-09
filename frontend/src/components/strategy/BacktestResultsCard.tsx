@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { BACKTEST_KEY as WS_BACKTEST_KEY, BACKTEST_RESULTS_LABEL_KEY, NO_RESULTS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import { BACKTESTING_KEY, TOTAL_RETURN_KEY as GEN_TOTAL_RETURN_KEY, MAX_DRAWDOWN_KEY as GEN_MAX_DRAWDOWN_KEY, SHARPE_KEY as GEN_SHARPE_KEY, WIN_RATE_KEY as GEN_WIN_RATE_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 
 interface BacktestMetrics {
   totalReturn?: number;
@@ -32,10 +34,10 @@ export default function BacktestResultsCard({ metrics, status }: Props) {
     return (
       <div style={{ margin: '8px 10px', background: 'var(--ant-color-bg-base)', border: '1px solid var(--ant-color-border)', borderRadius: 8, padding: 12 }}>
         <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', marginBottom: 8 }}>
-          {t('strategy.workspace.backtest')}
+          {t(WS_BACKTEST_KEY)}
         </div>
         <div style={{ textAlign: 'center', padding: 12, color: 'var(--ant-color-text-secondary)', fontSize: 12 }}>
-          {t('strategy.gen.backtesting')}
+          {t(BACKTESTING_KEY)}
         </div>
       </div>
     );
@@ -45,26 +47,26 @@ export default function BacktestResultsCard({ metrics, status }: Props) {
     return (
       <div style={{ margin: '8px 10px', background: 'var(--ant-color-bg-base)', border: '1px solid var(--ant-color-border)', borderRadius: 8, padding: 12 }}>
         <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', marginBottom: 8 }}>
-          {t('strategy.workspace.backtest')}
+          {t(WS_BACKTEST_KEY)}
         </div>
         <div style={{ textAlign: 'center', padding: 12, color: 'var(--ant-color-text-tertiary)', fontSize: 12 }}>
-          {t('strategy.workspace.noResults')}
+          {t(NO_RESULTS_KEY)}
         </div>
       </div>
     );
   }
 
   const cells = [
-    { label: t('strategy.gen.totalReturn'), value: fmtPct(metrics.totalReturn), positive: (metrics.totalReturn ?? 0) >= 0 },
-    { label: t('strategy.gen.maxDrawdown'), value: fmtPct(metrics.maxDrawdown), positive: false },
-    { label: t('strategy.gen.sharpe'), value: fmtNum(metrics.sharpeRatio), positive: (metrics.sharpeRatio ?? 0) >= 1 },
-    { label: t('strategy.gen.winRate'), value: fmtPct(metrics.winRate), positive: undefined },
+    { label: t(GEN_TOTAL_RETURN_KEY), value: fmtPct(metrics.totalReturn), positive: (metrics.totalReturn ?? 0) >= 0 },
+    { label: t(GEN_MAX_DRAWDOWN_KEY), value: fmtPct(metrics.maxDrawdown), positive: false },
+    { label: t(GEN_SHARPE_KEY), value: fmtNum(metrics.sharpeRatio), positive: (metrics.sharpeRatio ?? 0) >= 1 },
+    { label: t(GEN_WIN_RATE_KEY), value: fmtPct(metrics.winRate), positive: undefined },
   ];
 
   return (
     <div style={{ margin: '8px 10px', background: 'var(--ant-color-bg-base)', border: '1px solid var(--ant-color-border)', borderRadius: 8, padding: 12 }}>
       <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ant-color-text-tertiary)', textTransform: 'uppercase', marginBottom: 8 }}>
-        {t('strategy.workspace.backtestResultsLabel')}
+        {t(BACKTEST_RESULTS_LABEL_KEY)}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
         {cells.map((c, i) => (

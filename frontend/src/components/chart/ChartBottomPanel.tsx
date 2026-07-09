@@ -3,6 +3,8 @@ import { Table, Tag, Button, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { CloseOutlined } from '@ant-design/icons';
 import type { QuickTradePosition, RecentTrade } from '@/pages/strategy/hooks/useStrategyWorkspaceState';
+import { POSITIONS_KEY, HISTORY_KEY, BACKTEST_KEY as WS_BACKTEST_KEY, NO_RESULTS_KEY, NO_HISTORY_KEY, NO_OPEN_POSITIONS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import { RETURN_LABEL_KEY as GEN_RETURN_KEY, MAX_DRAWDOWN_KEY as GEN_MAX_DRAWDOWN_KEY, SHARPE_KEY as GEN_SHARPE_KEY, WIN_RATE_KEY as GEN_WIN_RATE_KEY, TOTAL_TRADES_KEY as GEN_TOTAL_TRADES_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 
 interface Props {
   positions: QuickTradePosition[];
@@ -44,11 +46,11 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
           fontSize: 11, color: 'var(--ant-color-text-secondary)', userSelect: 'none',
         }}
       >
-        <span>▲ {t('strategy.workspace.positions')} ({positions.length})</span>
+        <span>▲ {t(POSITIONS_KEY)} ({positions.length})</span>
         <span>·</span>
-        <span>{t('strategy.workspace.history')} ({recentTrades.length})</span>
+        <span>{t(HISTORY_KEY)} ({recentTrades.length})</span>
         <span>·</span>
-        <span>{t('strategy.workspace.backtest')}</span>
+        <span>{t(WS_BACKTEST_KEY)}</span>
       </div>
     );
   }
@@ -137,7 +139,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
             borderBottom: tab === 'positions' ? '2px solid #58a6ff' : 'none',
           }}
         >
-          {t('strategy.workspace.positions')}
+          {t(POSITIONS_KEY)}
           {positions.length > 0 && <span style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>({positions.length})</span>}
         </div>
         <div
@@ -149,7 +151,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
             borderBottom: tab === 'history' ? '2px solid #58a6ff' : 'none',
           }}
         >
-          {t('strategy.workspace.history')}
+          {t(HISTORY_KEY)}
           {recentTrades.length > 0 && <span style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>({recentTrades.length})</span>}
         </div>
         <div
@@ -161,7 +163,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
             borderBottom: tab === 'backtest' ? '2px solid #58a6ff' : 'none',
           }}
         >
-          {t('strategy.workspace.backtest')}
+          {t(WS_BACKTEST_KEY)}
         </div>
         <div style={{ flex: 1 }} />
         <div
@@ -185,7 +187,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
               style={{ fontSize: 11 }}
             />
           ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.workspace.noOpenPositions')}
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t(NO_OPEN_POSITIONS_KEY)}
               style={{ margin: '20px 0' }} />
           )
         ) : tab === 'history' ? (
@@ -199,7 +201,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
               style={{ fontSize: 11 }}
             />
           ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.workspace.noHistory')}
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t(NO_HISTORY_KEY)}
               style={{ margin: '20px 0' }} />
           )
         ) : (
@@ -207,11 +209,11 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
             {backtestMetrics ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                 {[
-                  { label: t('strategy.gen.return'), value: backtestMetrics.totalReturn != null ? `${backtestMetrics.totalReturn.toFixed(1)}%` : '—', color: (backtestMetrics.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149' },
-                  { label: t('strategy.gen.maxDrawdown'), value: backtestMetrics.maxDrawdown != null ? `${backtestMetrics.maxDrawdown.toFixed(1)}%` : '—', color: '#f85149' },
-                  { label: t('strategy.gen.sharpe'), value: backtestMetrics.sharpeRatio != null ? backtestMetrics.sharpeRatio.toFixed(2) : '—' },
-                  { label: t('strategy.gen.winRate'), value: backtestMetrics.winRate != null ? `${backtestMetrics.winRate.toFixed(1)}%` : '—' },
-                  { label: t('strategy.gen.totalTrades'), value: backtestMetrics.totalTrades != null ? String(backtestMetrics.totalTrades) : '—' },
+                  { label: t(GEN_RETURN_KEY), value: backtestMetrics.totalReturn != null ? `${backtestMetrics.totalReturn.toFixed(1)}%` : '—', color: (backtestMetrics.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149' },
+                  { label: t(GEN_MAX_DRAWDOWN_KEY), value: backtestMetrics.maxDrawdown != null ? `${backtestMetrics.maxDrawdown.toFixed(1)}%` : '—', color: '#f85149' },
+                  { label: t(GEN_SHARPE_KEY), value: backtestMetrics.sharpeRatio != null ? backtestMetrics.sharpeRatio.toFixed(2) : '—' },
+                  { label: t(GEN_WIN_RATE_KEY), value: backtestMetrics.winRate != null ? `${backtestMetrics.winRate.toFixed(1)}%` : '—' },
+                  { label: t(GEN_TOTAL_TRADES_KEY), value: backtestMetrics.totalTrades != null ? String(backtestMetrics.totalTrades) : '—' },
                 ].map((m, i) => (
                   <div key={i} style={{ background: 'var(--ant-color-fill-quaternary)', borderRadius: 6, padding: '8px 12px', textAlign: 'center' }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: m.color }}>{m.value}</div>
@@ -220,7 +222,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
                 ))}
               </div>
             ) : (
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.workspace.noResults')} />
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t(NO_RESULTS_KEY)} />
             )}
           </div>
         )}

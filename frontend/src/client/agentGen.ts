@@ -14,6 +14,7 @@ export interface AgentGenInput {
   confirmedPlan?: StrategyPlan; // confirmed plan for code generation
   conversationId?: string;     // multi-turn conversation session ID
   accountId?: string;          // selected MT account for workspace context
+  currentCode?: string;        // user's current strategy code for AI modification
   backtestConfig?: {
     symbol?: string;
     timeframe?: string;
@@ -62,6 +63,7 @@ export function agentGenerateStrategyStream(
         confirmedPlan: input.confirmedPlan,
         conversationId: input.conversationId || '',
         accountId: input.accountId || '',
+        currentCode: input.currentCode || '',
         locale: i18n.language || 'en',
         backtestConfig: input.backtestConfig ? {
           symbol: input.backtestConfig.symbol || '',

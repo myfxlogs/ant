@@ -61,6 +61,9 @@ func (g *Generator) runAgentLoop(
 
 	// ── User prompt ──
 	userPrompt := msg.Message
+	if msg.CurrentCode != "" {
+		userPrompt += "\n\n## Current Strategy Code\n```\n" + msg.CurrentCode + "\n```"
+	}
 
 	// ── Conversation history ──
 	var convID uuid.UUID

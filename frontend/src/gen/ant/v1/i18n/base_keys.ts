@@ -1885,6 +1885,12 @@ export const WALLET_TX_TYPE_WITHDRAWAL_KEY = 'wallet.txType.withdrawal' as const
 /** wallet.withdraw */
 export const WALLET_WITHDRAW_KEY = 'wallet.withdraw' as const;
 
+/** common.unsaved */
+export const COMMON_UNSAVED_KEY = 'common.unsaved' as const;
+
+/** common.saved */
+export const COMMON_SAVED_KEY = 'common.saved' as const;
+
 export const BASE_KEYS = {
   admin_config_ai_provider_catalog: '__root__.admin.config.aiProviderCatalog',
   admin_config_base_url_label: '__root__.admin.config.baseUrlLabel',
@@ -2514,6 +2520,8 @@ export const BASE_KEYS = {
   wallet_tx_type_reversal: '__root__.wallet.txType.reversal',
   wallet_tx_type_withdrawal: '__root__.wallet.txType.withdrawal',
   wallet_withdraw: '__root__.wallet.withdraw',
+  common_unsaved: '__root__.common.unsaved',
+  common_saved: '__root__.common.saved',
 } as const;
 
 export type BaseKey = typeof BASE_KEYS[keyof typeof BASE_KEYS];

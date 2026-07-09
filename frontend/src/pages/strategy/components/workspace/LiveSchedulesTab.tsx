@@ -18,6 +18,12 @@ import { parseParametersToForm, buildParametersFromForm } from '../../StrategySc
 import { DEFAULT_TEMPLATES } from '../../StrategyLibrary.defaults';
 import type { DefaultTemplateItem } from '../../StrategyLibrary.defaults';
 import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
+import {
+  COMMON_UPDATED_KEY, COMMON_CREATED_KEY, COMMON_SAVE_FAILED_KEY,
+  COMMON_ENABLED_KEY, COMMON_DISABLED_KEY, COMMON_OPERATION_FAILED_KEY,
+  COMMON_DELETED_KEY, COMMON_DELETE_FAILED_KEY,
+} from '@/gen/ant/v1/i18n/base_keys';
+import { MESSAGES_ORDER_SUBMITTED_KEY, CREATE_SCHEDULE_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
 
 function formatTime(v: unknown): string {
   if (!v) return '-';
@@ -127,7 +133,7 @@ export default function LiveSchedulesTab() {
         stopLoss: Number(raw?.stopLoss || 0), takeProfit: Number(raw?.takeProfit || 0), comment: String(raw?.comment || ''),
       });
       if (res.error) { message.error(getTradingRiskToastMessage({ riskCode: res.riskError?.code, error: res.error, message: res.message, fallback: res.error })); return; }
-      message.success(t('strategy.schedules.orderSubmitted', 'Order submitted'));
+      message.success(t(MESSAGES_ORDER_SUBMITTED_KEY));
       setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null);
     } catch (e: any) { message.error(e?.message || 'Order failed'); }
   }, [triggerContext, triggerResult, t]);
@@ -177,24 +183,24 @@ export default function LiveSchedulesTab() {
     try {
       if (editing?.id) {
         await strategyScheduleV2Api.update({ id: editing.id, name: v.name, symbol: v.symbol, timeframe: v.timeframe, scheduleType: backendType, scheduleConfig: scheduleConfig as any, parameters: merged });
-        message.success(t('common.updated'));
+        message.success(t(COMMON_UPDATED_KEY));
       } else {
         const created: any = await strategyScheduleV2Api.create({ templateId: v.templateId, accountId: v.accountId, name: v.name, symbol: v.symbol, timeframe: v.timeframe, scheduleType: backendType, scheduleConfig: scheduleConfig as any, parameters: merged });
         if (v.isActive && created?.id) await strategyScheduleV2Api.toggle(created.id, true);
-        message.success(t('common.created'));
+        message.success(t(COMMON_CREATED_KEY));
       }
       setOpenEdit(false); setEditing(null); form.resetFields(); await refresh();
-    } catch (e: any) { message.error(e?.message || t('common.saveFailed')); } finally { setLoading(false); }
+    } catch (e: any) { message.error(e?.message || t(COMMON_SAVE_FAILED_KEY)); } finally { setLoading(false); }
   }, [editing, form, refresh, t]);
 
   const onToggleActive = useCallback(async (row: ScheduleRow, next: boolean) => {
-    try { await strategyScheduleV2Api.toggle(row.id, next); message.success(next ? t('common.enabled') : t('common.disabled')); await refresh(); }
-    catch (e: any) { message.error(e?.message || t('common.operationFailed')); }
+    try { await strategyScheduleV2Api.toggle(row.id, next); message.success(next ? t(COMMON_ENABLED_KEY) : t(COMMON_DISABLED_KEY)); await refresh(); }
+    catch (e: any) { message.error(e?.message || t(COMMON_OPERATION_FAILED_KEY)); }
   }, [refresh, t]);
 
   const onDelete = useCallback(async (row: ScheduleRow) => {
-    try { await strategyScheduleV2Api.delete(row.id); message.success(t('common.deleted')); await refresh(); }
-    catch (e: any) { message.error(e?.message || t('common.deleteFailed')); }
+    try { await strategyScheduleV2Api.delete(row.id); message.success(t(COMMON_DELETED_KEY)); await refresh(); }
+    catch (e: any) { message.error(e?.message || t(COMMON_DELETE_FAILED_KEY)); }
   }, [refresh, t]);
 
   useEffect(() => {
@@ -206,7 +212,7 @@ export default function LiveSchedulesTab() {
     <div>
       <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-end' }}>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-          {t('strategy.schedules.create', 'Create Schedule')}
+          {t(CREATE_SCHEDULE_KEY)}
         </Button>
       </div>
 
