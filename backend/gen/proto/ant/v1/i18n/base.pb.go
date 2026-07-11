@@ -651,6 +651,8 @@ type BaseI18N struct {
 	WalletTxTypeReversal                                                          string                 `protobuf:"bytes,626,opt,name=wallet_tx_type_reversal,json=walletTxTypeReversal,proto3" json:"wallet_tx_type_reversal,omitempty"`                                                                                                                                                                                            // Reversal
 	WalletTxTypeWithdrawal                                                        string                 `protobuf:"bytes,627,opt,name=wallet_tx_type_withdrawal,json=walletTxTypeWithdrawal,proto3" json:"wallet_tx_type_withdrawal,omitempty"`                                                                                                                                                                                      // Withdrawal
 	WalletWithdraw                                                                string                 `protobuf:"bytes,628,opt,name=wallet_withdraw,json=walletWithdraw,proto3" json:"wallet_withdraw,omitempty"`                                                                                                                                                                                                                  // Withdraw
+	CommonUnsaved                                                                 string                 `protobuf:"bytes,629,opt,name=common_unsaved,json=commonUnsaved,proto3" json:"common_unsaved,omitempty"`                                                                                                                                                                                                                     // Unsaved
+	CommonSaved                                                                   string                 `protobuf:"bytes,630,opt,name=common_saved,json=commonSaved,proto3" json:"common_saved,omitempty"`                                                                                                                                                                                                                           // Saved
 	unknownFields                                                                 protoimpl.UnknownFields
 	sizeCache                                                                     protoimpl.SizeCache
 }
@@ -5081,11 +5083,25 @@ func (x *BaseI18N) GetWalletWithdraw() string {
 	return ""
 }
 
+func (x *BaseI18N) GetCommonUnsaved() string {
+	if x != nil {
+		return x.CommonUnsaved
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetCommonSaved() string {
+	if x != nil {
+		return x.CommonSaved
+	}
+	return ""
+}
+
 var File_i18n_base_proto protoreflect.FileDescriptor
 
 const file_i18n_base_proto_rawDesc = "" +
 	"\n" +
-	"\x0fi18n/base.proto\x12\vant.v1.i18n\"\x8c\xc4\x02\n" +
+	"\x0fi18n/base.proto\x12\vant.v1.i18n\"\xd8\xc4\x02\n" +
 	"\bBaseI18n\x12F\n" +
 	" admin_config_ai_provider_catalog\x18\x01 \x01(\tR\x1cadminConfigAiProviderCatalog\x12<\n" +
 	"\x1badmin_config_base_url_label\x18\x02 \x01(\tR\x17adminConfigBaseUrlLabel\x127\n" +
@@ -5735,7 +5751,9 @@ const file_i18n_base_proto_rawDesc = "" +
 	"\x12wallet_tx_type_fee\x18\xf1\x04 \x01(\tR\x0fwalletTxTypeFee\x126\n" +
 	"\x17wallet_tx_type_reversal\x18\xf2\x04 \x01(\tR\x14walletTxTypeReversal\x12:\n" +
 	"\x19wallet_tx_type_withdrawal\x18\xf3\x04 \x01(\tR\x16walletTxTypeWithdrawal\x12(\n" +
-	"\x0fwallet_withdraw\x18\xf4\x04 \x01(\tR\x0ewalletWithdrawB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x0fwallet_withdraw\x18\xf4\x04 \x01(\tR\x0ewalletWithdraw\x12&\n" +
+	"\x0ecommon_unsaved\x18\xf5\x04 \x01(\tR\rcommonUnsaved\x12\"\n" +
+	"\fcommon_saved\x18\xf6\x04 \x01(\tR\vcommonSavedB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_base_proto_rawDescOnce sync.Once

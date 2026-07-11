@@ -279,6 +279,9 @@ type AiCoreI18N struct {
 	WorkflowRunsMessagesLoadDetailFailed          string                 `protobuf:"bytes,254,opt,name=workflow_runs_messages_load_detail_failed,json=workflowRunsMessagesLoadDetailFailed,proto3" json:"workflow_runs_messages_load_detail_failed,omitempty"`                           // Failed to load details
 	WorkflowRunsMessagesLoadListFailed            string                 `protobuf:"bytes,255,opt,name=workflow_runs_messages_load_list_failed,json=workflowRunsMessagesLoadListFailed,proto3" json:"workflow_runs_messages_load_list_failed,omitempty"`                                 // Failed to load run list
 	WorkflowRunsTitle                             string                 `protobuf:"bytes,256,opt,name=workflow_runs_title,json=workflowRunsTitle,proto3" json:"workflow_runs_title,omitempty"`                                                                                          // AI Workflow
+	GatewayGroupMyKeys                            string                 `protobuf:"bytes,257,opt,name=gateway_group_my_keys,json=gatewayGroupMyKeys,proto3" json:"gateway_group_my_keys,omitempty"`                                                                                     // My API Keys
+	GatewayGroupGateway                           string                 `protobuf:"bytes,258,opt,name=gateway_group_gateway,json=gatewayGroupGateway,proto3" json:"gateway_group_gateway,omitempty"`                                                                                    // AI Gateway
+	GatewayGroupCurrent                           string                 `protobuf:"bytes,259,opt,name=gateway_group_current,json=gatewayGroupCurrent,proto3" json:"gateway_group_current,omitempty"`                                                                                    // Currently Selected
 	unknownFields                                 protoimpl.UnknownFields
 	sizeCache                                     protoimpl.SizeCache
 }
@@ -2105,11 +2108,32 @@ func (x *AiCoreI18N) GetWorkflowRunsTitle() string {
 	return ""
 }
 
+func (x *AiCoreI18N) GetGatewayGroupMyKeys() string {
+	if x != nil {
+		return x.GatewayGroupMyKeys
+	}
+	return ""
+}
+
+func (x *AiCoreI18N) GetGatewayGroupGateway() string {
+	if x != nil {
+		return x.GatewayGroupGateway
+	}
+	return ""
+}
+
+func (x *AiCoreI18N) GetGatewayGroupCurrent() string {
+	if x != nil {
+		return x.GatewayGroupCurrent
+	}
+	return ""
+}
+
 var File_i18n_ai_core_proto protoreflect.FileDescriptor
 
 const file_i18n_ai_core_proto_rawDesc = "" +
 	"\n" +
-	"\x12i18n/ai_core.proto\x12\vant.v1.i18n\"Ȇ\x01\n" +
+	"\x12i18n/ai_core.proto\x12\vant.v1.i18n\"\xe6\x87\x01\n" +
 	"\n" +
 	"AiCoreI18n\x129\n" +
 	"\x19agent_prompts_code_prompt\x18\x01 \x01(\tR\x16agentPromptsCodePrompt\x127\n" +
@@ -2372,7 +2396,10 @@ const file_i18n_ai_core_proto_rawDesc = "" +
 	")workflow_runs_hints_select_to_view_detail\x18\xfd\x01 \x01(\tR#workflowRunsHintsSelectToViewDetail\x12X\n" +
 	")workflow_runs_messages_load_detail_failed\x18\xfe\x01 \x01(\tR$workflowRunsMessagesLoadDetailFailed\x12T\n" +
 	"'workflow_runs_messages_load_list_failed\x18\xff\x01 \x01(\tR\"workflowRunsMessagesLoadListFailed\x12/\n" +
-	"\x13workflow_runs_title\x18\x80\x02 \x01(\tR\x11workflowRunsTitleB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x13workflow_runs_title\x18\x80\x02 \x01(\tR\x11workflowRunsTitle\x122\n" +
+	"\x15gateway_group_my_keys\x18\x81\x02 \x01(\tR\x12gatewayGroupMyKeys\x123\n" +
+	"\x15gateway_group_gateway\x18\x82\x02 \x01(\tR\x13gatewayGroupGateway\x123\n" +
+	"\x15gateway_group_current\x18\x83\x02 \x01(\tR\x13gatewayGroupCurrentB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_ai_core_proto_rawDescOnce sync.Once

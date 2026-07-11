@@ -135,6 +135,13 @@ type TradingI18N struct {
 	Title                                        string                 `protobuf:"bytes,110,opt,name=title,proto3" json:"title,omitempty"`                                                                                                                                                                                            // Trading
 	Type                                         string                 `protobuf:"bytes,111,opt,name=type,proto3" json:"type,omitempty"`                                                                                                                                                                                              // Type
 	Volume                                       string                 `protobuf:"bytes,112,opt,name=volume,proto3" json:"volume,omitempty"`                                                                                                                                                                                          // Volume
+	Platform                                     string                 `protobuf:"bytes,113,opt,name=platform,proto3" json:"platform,omitempty"`                                                                                                                                                                                      // Platform
+	Broker                                       string                 `protobuf:"bytes,114,opt,name=broker,proto3" json:"broker,omitempty"`                                                                                                                                                                                          // Broker
+	Server                                       string                 `protobuf:"bytes,115,opt,name=server,proto3" json:"server,omitempty"`                                                                                                                                                                                          // Server
+	Permission                                   string                 `protobuf:"bytes,116,opt,name=permission,proto3" json:"permission,omitempty"`                                                                                                                                                                                  // Permission
+	Investor                                     string                 `protobuf:"bytes,117,opt,name=investor,proto3" json:"investor,omitempty"`                                                                                                                                                                                      // Investor
+	Master                                       string                 `protobuf:"bytes,118,opt,name=master,proto3" json:"master,omitempty"`                                                                                                                                                                                          // Master
+	Leverage                                     string                 `protobuf:"bytes,119,opt,name=leverage,proto3" json:"leverage,omitempty"`                                                                                                                                                                                      // Leverage
 	unknownFields                                protoimpl.UnknownFields
 	sizeCache                                    protoimpl.SizeCache
 }
@@ -953,11 +960,60 @@ func (x *TradingI18N) GetVolume() string {
 	return ""
 }
 
+func (x *TradingI18N) GetPlatform() string {
+	if x != nil {
+		return x.Platform
+	}
+	return ""
+}
+
+func (x *TradingI18N) GetBroker() string {
+	if x != nil {
+		return x.Broker
+	}
+	return ""
+}
+
+func (x *TradingI18N) GetServer() string {
+	if x != nil {
+		return x.Server
+	}
+	return ""
+}
+
+func (x *TradingI18N) GetPermission() string {
+	if x != nil {
+		return x.Permission
+	}
+	return ""
+}
+
+func (x *TradingI18N) GetInvestor() string {
+	if x != nil {
+		return x.Investor
+	}
+	return ""
+}
+
+func (x *TradingI18N) GetMaster() string {
+	if x != nil {
+		return x.Master
+	}
+	return ""
+}
+
+func (x *TradingI18N) GetLeverage() string {
+	if x != nil {
+		return x.Leverage
+	}
+	return ""
+}
+
 var File_i18n_trading_proto protoreflect.FileDescriptor
 
 const file_i18n_trading_proto_rawDesc = "" +
 	"\n" +
-	"\x12i18n/trading.proto\x12\vant.v1.i18n\"\x869\n" +
+	"\x12i18n/trading.proto\x12\vant.v1.i18n\"\xc2:\n" +
 	"\vTradingI18n\x12\x18\n" +
 	"\aaccount\x18\x01 \x01(\tR\aaccount\x12J\n" +
 	"\"auto_trade_confirm_disable_confirm\x18\x02 \x01(\tR\x1eautoTradeConfirmDisableConfirm\x12[\n" +
@@ -1076,7 +1132,16 @@ const file_i18n_trading_proto_rawDesc = "" +
 	"\x04time\x18m \x01(\tR\x04time\x12\x14\n" +
 	"\x05title\x18n \x01(\tR\x05title\x12\x12\n" +
 	"\x04type\x18o \x01(\tR\x04type\x12\x16\n" +
-	"\x06volume\x18p \x01(\tR\x06volumeB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x06volume\x18p \x01(\tR\x06volume\x12\x1a\n" +
+	"\bplatform\x18q \x01(\tR\bplatform\x12\x16\n" +
+	"\x06broker\x18r \x01(\tR\x06broker\x12\x16\n" +
+	"\x06server\x18s \x01(\tR\x06server\x12\x1e\n" +
+	"\n" +
+	"permission\x18t \x01(\tR\n" +
+	"permission\x12\x1a\n" +
+	"\binvestor\x18u \x01(\tR\binvestor\x12\x16\n" +
+	"\x06master\x18v \x01(\tR\x06master\x12\x1a\n" +
+	"\bleverage\x18w \x01(\tR\bleverageB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_trading_proto_rawDescOnce sync.Once

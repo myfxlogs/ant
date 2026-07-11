@@ -81,6 +81,32 @@ type GenI18N struct {
 	ExecApplyCode            string                 `protobuf:"bytes,56,opt,name=exec_apply_code,json=execApplyCode,proto3" json:"exec_apply_code,omitempty"`                                  // Apply Code to Editor
 	ExecSkipNoSymbol         string                 `protobuf:"bytes,57,opt,name=exec_skip_no_symbol,json=execSkipNoSymbol,proto3" json:"exec_skip_no_symbol,omitempty"`                       // Backtest skipped: no symbol selected
 	ExecSkipNoCode           string                 `protobuf:"bytes,58,opt,name=exec_skip_no_code,json=execSkipNoCode,proto3" json:"exec_skip_no_code,omitempty"`                             // Backtest skipped: no code
+	Backtest                 string                 `protobuf:"bytes,59,opt,name=backtest,proto3" json:"backtest,omitempty"`                                                                   // Backtest
+	Backtesting              string                 `protobuf:"bytes,60,opt,name=backtesting,proto3" json:"backtesting,omitempty"`                                                             // Backtesting...
+	BacktestError            string                 `protobuf:"bytes,61,opt,name=backtest_error,json=backtestError,proto3" json:"backtest_error,omitempty"`                                    // Backtest Error
+	Compiling                string                 `protobuf:"bytes,62,opt,name=compiling,proto3" json:"compiling,omitempty"`                                                                 // Compiling...
+	CompileError             string                 `protobuf:"bytes,63,opt,name=compile_error,json=compileError,proto3" json:"compile_error,omitempty"`                                       // Compile Error
+	TotalReturn              string                 `protobuf:"bytes,64,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`                                          // Total Return
+	MaxDrawdown              string                 `protobuf:"bytes,65,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`                                          // Max Drawdown
+	Sharpe                   string                 `protobuf:"bytes,66,opt,name=sharpe,proto3" json:"sharpe,omitempty"`                                                                       // Sharpe
+	WinRate                  string                 `protobuf:"bytes,67,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`                                                      // Win Rate
+	ReturnLabel              string                 `protobuf:"bytes,68,opt,name=return_label,json=returnLabel,proto3" json:"return_label,omitempty"`                                          // Return
+	TotalTrades              string                 `protobuf:"bytes,69,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`                                          // Total Trades
+	Failed                   string                 `protobuf:"bytes,70,opt,name=failed,proto3" json:"failed,omitempty"`                                                                       // Failed
+	NoMarketData             string                 `protobuf:"bytes,71,opt,name=no_market_data,json=noMarketData,proto3" json:"no_market_data,omitempty"`                                     // No market data available
+	NoMarketDataHint         string                 `protobuf:"bytes,72,opt,name=no_market_data_hint,json=noMarketDataHint,proto3" json:"no_market_data_hint,omitempty"`                       // Please select a trading account and a symbol...
+	Plan                     string                 `protobuf:"bytes,73,opt,name=plan,proto3" json:"plan,omitempty"`                                                                           // Strategy Plan
+	FinalCode                string                 `protobuf:"bytes,74,opt,name=final_code,json=finalCode,proto3" json:"final_code,omitempty"`                                                // Final Strategy Code
+	Copy                     string                 `protobuf:"bytes,75,opt,name=copy,proto3" json:"copy,omitempty"`                                                                           // Copy
+	ApplyToEditor            string                 `protobuf:"bytes,76,opt,name=apply_to_editor,json=applyToEditor,proto3" json:"apply_to_editor,omitempty"`                                  // Apply to Editor
+	Coverage                 string                 `protobuf:"bytes,77,opt,name=coverage,proto3" json:"coverage,omitempty"`                                                                   // Coverage
+	Profile                  string                 `protobuf:"bytes,78,opt,name=profile,proto3" json:"profile,omitempty"`                                                                     // Strategy Profile
+	Analysis                 string                 `protobuf:"bytes,79,opt,name=analysis,proto3" json:"analysis,omitempty"`                                                                   // Backtest Analysis
+	PlanType                 string                 `protobuf:"bytes,80,opt,name=plan_type,json=planType,proto3" json:"plan_type,omitempty"`                                                   // Type
+	PlanEntry                string                 `protobuf:"bytes,81,opt,name=plan_entry,json=planEntry,proto3" json:"plan_entry,omitempty"`                                                // Entry
+	PlanExit                 string                 `protobuf:"bytes,82,opt,name=plan_exit,json=planExit,proto3" json:"plan_exit,omitempty"`                                                   // Exit
+	PlanRisk                 string                 `protobuf:"bytes,83,opt,name=plan_risk,json=planRisk,proto3" json:"plan_risk,omitempty"`                                                   // Risk
+	PlanMarket               string                 `protobuf:"bytes,84,opt,name=plan_market,json=planMarket,proto3" json:"plan_market,omitempty"`                                             // Market
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -521,11 +547,193 @@ func (x *GenI18N) GetExecSkipNoCode() string {
 	return ""
 }
 
+func (x *GenI18N) GetBacktest() string {
+	if x != nil {
+		return x.Backtest
+	}
+	return ""
+}
+
+func (x *GenI18N) GetBacktesting() string {
+	if x != nil {
+		return x.Backtesting
+	}
+	return ""
+}
+
+func (x *GenI18N) GetBacktestError() string {
+	if x != nil {
+		return x.BacktestError
+	}
+	return ""
+}
+
+func (x *GenI18N) GetCompiling() string {
+	if x != nil {
+		return x.Compiling
+	}
+	return ""
+}
+
+func (x *GenI18N) GetCompileError() string {
+	if x != nil {
+		return x.CompileError
+	}
+	return ""
+}
+
+func (x *GenI18N) GetTotalReturn() string {
+	if x != nil {
+		return x.TotalReturn
+	}
+	return ""
+}
+
+func (x *GenI18N) GetMaxDrawdown() string {
+	if x != nil {
+		return x.MaxDrawdown
+	}
+	return ""
+}
+
+func (x *GenI18N) GetSharpe() string {
+	if x != nil {
+		return x.Sharpe
+	}
+	return ""
+}
+
+func (x *GenI18N) GetWinRate() string {
+	if x != nil {
+		return x.WinRate
+	}
+	return ""
+}
+
+func (x *GenI18N) GetReturnLabel() string {
+	if x != nil {
+		return x.ReturnLabel
+	}
+	return ""
+}
+
+func (x *GenI18N) GetTotalTrades() string {
+	if x != nil {
+		return x.TotalTrades
+	}
+	return ""
+}
+
+func (x *GenI18N) GetFailed() string {
+	if x != nil {
+		return x.Failed
+	}
+	return ""
+}
+
+func (x *GenI18N) GetNoMarketData() string {
+	if x != nil {
+		return x.NoMarketData
+	}
+	return ""
+}
+
+func (x *GenI18N) GetNoMarketDataHint() string {
+	if x != nil {
+		return x.NoMarketDataHint
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlan() string {
+	if x != nil {
+		return x.Plan
+	}
+	return ""
+}
+
+func (x *GenI18N) GetFinalCode() string {
+	if x != nil {
+		return x.FinalCode
+	}
+	return ""
+}
+
+func (x *GenI18N) GetCopy() string {
+	if x != nil {
+		return x.Copy
+	}
+	return ""
+}
+
+func (x *GenI18N) GetApplyToEditor() string {
+	if x != nil {
+		return x.ApplyToEditor
+	}
+	return ""
+}
+
+func (x *GenI18N) GetCoverage() string {
+	if x != nil {
+		return x.Coverage
+	}
+	return ""
+}
+
+func (x *GenI18N) GetProfile() string {
+	if x != nil {
+		return x.Profile
+	}
+	return ""
+}
+
+func (x *GenI18N) GetAnalysis() string {
+	if x != nil {
+		return x.Analysis
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanType() string {
+	if x != nil {
+		return x.PlanType
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanEntry() string {
+	if x != nil {
+		return x.PlanEntry
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanExit() string {
+	if x != nil {
+		return x.PlanExit
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanRisk() string {
+	if x != nil {
+		return x.PlanRisk
+	}
+	return ""
+}
+
+func (x *GenI18N) GetPlanMarket() string {
+	if x != nil {
+		return x.PlanMarket
+	}
+	return ""
+}
+
 var File_i18n_strategy_gen_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_gen_proto_rawDesc = "" +
 	"\n" +
-	"\x17i18n/strategy_gen.proto\x12\vant.v1.i18n\"\xe9\x11\n" +
+	"\x17i18n/strategy_gen.proto\x12\vant.v1.i18n\"\x95\x18\n" +
 	"\aGenI18n\x12!\n" +
 	"\fbacktest_msg\x18\x01 \x01(\tR\vbacktestMsg\x12)\n" +
 	"\x10backtest_started\x18\x02 \x01(\tR\x0fbacktestStarted\x12!\n" +
@@ -597,7 +805,36 @@ const file_i18n_strategy_gen_proto_rawDesc = "" +
 	"exec_clear\x187 \x01(\tR\texecClear\x12&\n" +
 	"\x0fexec_apply_code\x188 \x01(\tR\rexecApplyCode\x12-\n" +
 	"\x13exec_skip_no_symbol\x189 \x01(\tR\x10execSkipNoSymbol\x12)\n" +
-	"\x11exec_skip_no_code\x18: \x01(\tR\x0eexecSkipNoCodeB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x11exec_skip_no_code\x18: \x01(\tR\x0eexecSkipNoCode\x12\x1a\n" +
+	"\bbacktest\x18; \x01(\tR\bbacktest\x12 \n" +
+	"\vbacktesting\x18< \x01(\tR\vbacktesting\x12%\n" +
+	"\x0ebacktest_error\x18= \x01(\tR\rbacktestError\x12\x1c\n" +
+	"\tcompiling\x18> \x01(\tR\tcompiling\x12#\n" +
+	"\rcompile_error\x18? \x01(\tR\fcompileError\x12!\n" +
+	"\ftotal_return\x18@ \x01(\tR\vtotalReturn\x12!\n" +
+	"\fmax_drawdown\x18A \x01(\tR\vmaxDrawdown\x12\x16\n" +
+	"\x06sharpe\x18B \x01(\tR\x06sharpe\x12\x19\n" +
+	"\bwin_rate\x18C \x01(\tR\awinRate\x12!\n" +
+	"\freturn_label\x18D \x01(\tR\vreturnLabel\x12!\n" +
+	"\ftotal_trades\x18E \x01(\tR\vtotalTrades\x12\x16\n" +
+	"\x06failed\x18F \x01(\tR\x06failed\x12$\n" +
+	"\x0eno_market_data\x18G \x01(\tR\fnoMarketData\x12-\n" +
+	"\x13no_market_data_hint\x18H \x01(\tR\x10noMarketDataHint\x12\x12\n" +
+	"\x04plan\x18I \x01(\tR\x04plan\x12\x1d\n" +
+	"\n" +
+	"final_code\x18J \x01(\tR\tfinalCode\x12\x12\n" +
+	"\x04copy\x18K \x01(\tR\x04copy\x12&\n" +
+	"\x0fapply_to_editor\x18L \x01(\tR\rapplyToEditor\x12\x1a\n" +
+	"\bcoverage\x18M \x01(\tR\bcoverage\x12\x18\n" +
+	"\aprofile\x18N \x01(\tR\aprofile\x12\x1a\n" +
+	"\banalysis\x18O \x01(\tR\banalysis\x12\x1b\n" +
+	"\tplan_type\x18P \x01(\tR\bplanType\x12\x1d\n" +
+	"\n" +
+	"plan_entry\x18Q \x01(\tR\tplanEntry\x12\x1b\n" +
+	"\tplan_exit\x18R \x01(\tR\bplanExit\x12\x1b\n" +
+	"\tplan_risk\x18S \x01(\tR\bplanRisk\x12\x1f\n" +
+	"\vplan_market\x18T \x01(\tR\n" +
+	"planMarketB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_gen_proto_rawDescOnce sync.Once

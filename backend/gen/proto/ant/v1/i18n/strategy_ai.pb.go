@@ -26,6 +26,7 @@ type AiI18N struct {
 	CheckSettings string                 `protobuf:"bytes,1,opt,name=check_settings,json=checkSettings,proto3" json:"check_settings,omitempty"` // Check AI Settings
 	RefreshFailed string                 `protobuf:"bytes,2,opt,name=refresh_failed,json=refreshFailed,proto3" json:"refresh_failed,omitempty"` // Refresh failed
 	Settings      string                 `protobuf:"bytes,3,opt,name=settings,proto3" json:"settings,omitempty"`                                // AI Settings
+	AgentMemory   string                 `protobuf:"bytes,4,opt,name=agent_memory,json=agentMemory,proto3" json:"agent_memory,omitempty"`       // Agent Memory
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -81,15 +82,23 @@ func (x *AiI18N) GetSettings() string {
 	return ""
 }
 
+func (x *AiI18N) GetAgentMemory() string {
+	if x != nil {
+		return x.AgentMemory
+	}
+	return ""
+}
+
 var File_i18n_strategy_ai_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_ai_proto_rawDesc = "" +
 	"\n" +
-	"\x16i18n/strategy_ai.proto\x12\vant.v1.i18n\"r\n" +
+	"\x16i18n/strategy_ai.proto\x12\vant.v1.i18n\"\x95\x01\n" +
 	"\x06AiI18n\x12%\n" +
 	"\x0echeck_settings\x18\x01 \x01(\tR\rcheckSettings\x12%\n" +
 	"\x0erefresh_failed\x18\x02 \x01(\tR\rrefreshFailed\x12\x1a\n" +
-	"\bsettings\x18\x03 \x01(\tR\bsettingsB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\bsettings\x18\x03 \x01(\tR\bsettings\x12!\n" +
+	"\fagent_memory\x18\x04 \x01(\tR\vagentMemoryB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_ai_proto_rawDescOnce sync.Once

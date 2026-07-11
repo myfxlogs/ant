@@ -130,8 +130,43 @@ type StrategyWorkspaceI18N struct {
 	QuickTradeCross         string `protobuf:"bytes,138,opt,name=quick_trade_cross,json=quickTradeCross,proto3" json:"quick_trade_cross,omitempty"`
 	QuickTradeIsolated      string `protobuf:"bytes,139,opt,name=quick_trade_isolated,json=quickTradeIsolated,proto3" json:"quick_trade_isolated,omitempty"`
 	QuickTradeMt4CrossOnly  string `protobuf:"bytes,140,opt,name=quick_trade_mt4_cross_only,json=quickTradeMt4CrossOnly,proto3" json:"quick_trade_mt4_cross_only,omitempty"`
-	unknownFields           protoimpl.UnknownFields
-	sizeCache               protoimpl.SizeCache
+	// ── Workspace actions & status (141-160) ──
+	SendToAi                 string `protobuf:"bytes,141,opt,name=send_to_ai,json=sendToAi,proto3" json:"send_to_ai,omitempty"`
+	BrowseIndicators         string `protobuf:"bytes,142,opt,name=browse_indicators,json=browseIndicators,proto3" json:"browse_indicators,omitempty"`
+	NoCode                   string `protobuf:"bytes,143,opt,name=no_code,json=noCode,proto3" json:"no_code,omitempty"`
+	CompileError             string `protobuf:"bytes,144,opt,name=compile_error,json=compileError,proto3" json:"compile_error,omitempty"`
+	ValidateFirst            string `protobuf:"bytes,145,opt,name=validate_first,json=validateFirst,proto3" json:"validate_first,omitempty"`
+	CodeValid                string `protobuf:"bytes,146,opt,name=code_valid,json=codeValid,proto3" json:"code_valid,omitempty"`
+	AiAssistant              string `protobuf:"bytes,147,opt,name=ai_assistant,json=aiAssistant,proto3" json:"ai_assistant,omitempty"`
+	MobileTitle              string `protobuf:"bytes,148,opt,name=mobile_title,json=mobileTitle,proto3" json:"mobile_title,omitempty"`
+	MobileSubtitle           string `protobuf:"bytes,149,opt,name=mobile_subtitle,json=mobileSubtitle,proto3" json:"mobile_subtitle,omitempty"`
+	MobileCta                string `protobuf:"bytes,150,opt,name=mobile_cta,json=mobileCta,proto3" json:"mobile_cta,omitempty"`
+	Positions                string `protobuf:"bytes,151,opt,name=positions,proto3" json:"positions,omitempty"`
+	History                  string `protobuf:"bytes,152,opt,name=history,proto3" json:"history,omitempty"`
+	Templates                string `protobuf:"bytes,153,opt,name=templates,proto3" json:"templates,omitempty"`
+	Manage                   string `protobuf:"bytes,154,opt,name=manage,proto3" json:"manage,omitempty"`
+	TuningInteractive        string `protobuf:"bytes,155,opt,name=tuning_interactive,json=tuningInteractive,proto3" json:"tuning_interactive,omitempty"`
+	TuningBatch              string `protobuf:"bytes,156,opt,name=tuning_batch,json=tuningBatch,proto3" json:"tuning_batch,omitempty"`
+	NoResults                string `protobuf:"bytes,157,opt,name=no_results,json=noResults,proto3" json:"no_results,omitempty"`
+	NoHistory                string `protobuf:"bytes,158,opt,name=no_history,json=noHistory,proto3" json:"no_history,omitempty"`
+	UntitledDraft            string `protobuf:"bytes,159,opt,name=untitled_draft,json=untitledDraft,proto3" json:"untitled_draft,omitempty"`
+	Name                     string `protobuf:"bytes,160,opt,name=name,proto3" json:"name,omitempty"`
+	MemorySaveSuccess        string `protobuf:"bytes,161,opt,name=memory_save_success,json=memorySaveSuccess,proto3" json:"memory_save_success,omitempty"`
+	MemorySaveFailed         string `protobuf:"bytes,162,opt,name=memory_save_failed,json=memorySaveFailed,proto3" json:"memory_save_failed,omitempty"`
+	MemoryName               string `protobuf:"bytes,163,opt,name=memory_name,json=memoryName,proto3" json:"memory_name,omitempty"`
+	MemoryContent            string `protobuf:"bytes,164,opt,name=memory_content,json=memoryContent,proto3" json:"memory_content,omitempty"`
+	MemoryConfirmDelete      string `protobuf:"bytes,165,opt,name=memory_confirm_delete,json=memoryConfirmDelete,proto3" json:"memory_confirm_delete,omitempty"`
+	MemoryCategory           string `protobuf:"bytes,166,opt,name=memory_category,json=memoryCategory,proto3" json:"memory_category,omitempty"`
+	MemoryTemplates          string `protobuf:"bytes,167,opt,name=memory_templates,json=memoryTemplates,proto3" json:"memory_templates,omitempty"`
+	MemoryAdd                string `protobuf:"bytes,168,opt,name=memory_add,json=memoryAdd,proto3" json:"memory_add,omitempty"`
+	MemoryEmpty              string `protobuf:"bytes,169,opt,name=memory_empty,json=memoryEmpty,proto3" json:"memory_empty,omitempty"`
+	MemoryExperiences        string `protobuf:"bytes,170,opt,name=memory_experiences,json=memoryExperiences,proto3" json:"memory_experiences,omitempty"`
+	MemoryAddTemplate        string `protobuf:"bytes,171,opt,name=memory_add_template,json=memoryAddTemplate,proto3" json:"memory_add_template,omitempty"`
+	MemorySave               string `protobuf:"bytes,172,opt,name=memory_save,json=memorySave,proto3" json:"memory_save,omitempty"`
+	MemoryNamePlaceholder    string `protobuf:"bytes,173,opt,name=memory_name_placeholder,json=memoryNamePlaceholder,proto3" json:"memory_name_placeholder,omitempty"`
+	MemoryContentPlaceholder string `protobuf:"bytes,174,opt,name=memory_content_placeholder,json=memoryContentPlaceholder,proto3" json:"memory_content_placeholder,omitempty"`
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
 }
 
 func (x *StrategyWorkspaceI18N) Reset() {
@@ -836,11 +871,249 @@ func (x *StrategyWorkspaceI18N) GetQuickTradeMt4CrossOnly() string {
 	return ""
 }
 
+func (x *StrategyWorkspaceI18N) GetSendToAi() string {
+	if x != nil {
+		return x.SendToAi
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetBrowseIndicators() string {
+	if x != nil {
+		return x.BrowseIndicators
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetNoCode() string {
+	if x != nil {
+		return x.NoCode
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetCompileError() string {
+	if x != nil {
+		return x.CompileError
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetValidateFirst() string {
+	if x != nil {
+		return x.ValidateFirst
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetCodeValid() string {
+	if x != nil {
+		return x.CodeValid
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetAiAssistant() string {
+	if x != nil {
+		return x.AiAssistant
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMobileTitle() string {
+	if x != nil {
+		return x.MobileTitle
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMobileSubtitle() string {
+	if x != nil {
+		return x.MobileSubtitle
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMobileCta() string {
+	if x != nil {
+		return x.MobileCta
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetPositions() string {
+	if x != nil {
+		return x.Positions
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetHistory() string {
+	if x != nil {
+		return x.History
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTemplates() string {
+	if x != nil {
+		return x.Templates
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetManage() string {
+	if x != nil {
+		return x.Manage
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTuningInteractive() string {
+	if x != nil {
+		return x.TuningInteractive
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTuningBatch() string {
+	if x != nil {
+		return x.TuningBatch
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetNoResults() string {
+	if x != nil {
+		return x.NoResults
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetNoHistory() string {
+	if x != nil {
+		return x.NoHistory
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetUntitledDraft() string {
+	if x != nil {
+		return x.UntitledDraft
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemorySaveSuccess() string {
+	if x != nil {
+		return x.MemorySaveSuccess
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemorySaveFailed() string {
+	if x != nil {
+		return x.MemorySaveFailed
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemoryName() string {
+	if x != nil {
+		return x.MemoryName
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemoryContent() string {
+	if x != nil {
+		return x.MemoryContent
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemoryConfirmDelete() string {
+	if x != nil {
+		return x.MemoryConfirmDelete
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemoryCategory() string {
+	if x != nil {
+		return x.MemoryCategory
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemoryTemplates() string {
+	if x != nil {
+		return x.MemoryTemplates
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemoryAdd() string {
+	if x != nil {
+		return x.MemoryAdd
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemoryEmpty() string {
+	if x != nil {
+		return x.MemoryEmpty
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemoryExperiences() string {
+	if x != nil {
+		return x.MemoryExperiences
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemoryAddTemplate() string {
+	if x != nil {
+		return x.MemoryAddTemplate
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemorySave() string {
+	if x != nil {
+		return x.MemorySave
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemoryNamePlaceholder() string {
+	if x != nil {
+		return x.MemoryNamePlaceholder
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMemoryContentPlaceholder() string {
+	if x != nil {
+		return x.MemoryContentPlaceholder
+	}
+	return ""
+}
+
 var File_i18n_strategy_workspace_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_workspace_proto_rawDesc = "" +
 	"\n" +
-	"\x1di18n/strategy_workspace.proto\x12\vant.v1.i18n\"\xda\x1e\n" +
+	"\x1di18n/strategy_workspace.proto\x12\vant.v1.i18n\"\xf8(\n" +
 	"\x15StrategyWorkspaceI18n\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12%\n" +
 	"\x0eselect_account\x18\x02 \x01(\tR\rselectAccount\x12#\n" +
@@ -945,7 +1218,49 @@ const file_i18n_strategy_workspace_proto_rawDesc = "" +
 	"\x17quick_trade_margin_mode\x18\x89\x01 \x01(\tR\x14quickTradeMarginMode\x12+\n" +
 	"\x11quick_trade_cross\x18\x8a\x01 \x01(\tR\x0fquickTradeCross\x121\n" +
 	"\x14quick_trade_isolated\x18\x8b\x01 \x01(\tR\x12quickTradeIsolated\x12;\n" +
-	"\x1aquick_trade_mt4_cross_only\x18\x8c\x01 \x01(\tR\x16quickTradeMt4CrossOnlyB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x1aquick_trade_mt4_cross_only\x18\x8c\x01 \x01(\tR\x16quickTradeMt4CrossOnly\x12\x1d\n" +
+	"\n" +
+	"send_to_ai\x18\x8d\x01 \x01(\tR\bsendToAi\x12,\n" +
+	"\x11browse_indicators\x18\x8e\x01 \x01(\tR\x10browseIndicators\x12\x18\n" +
+	"\ano_code\x18\x8f\x01 \x01(\tR\x06noCode\x12$\n" +
+	"\rcompile_error\x18\x90\x01 \x01(\tR\fcompileError\x12&\n" +
+	"\x0evalidate_first\x18\x91\x01 \x01(\tR\rvalidateFirst\x12\x1e\n" +
+	"\n" +
+	"code_valid\x18\x92\x01 \x01(\tR\tcodeValid\x12\"\n" +
+	"\fai_assistant\x18\x93\x01 \x01(\tR\vaiAssistant\x12\"\n" +
+	"\fmobile_title\x18\x94\x01 \x01(\tR\vmobileTitle\x12(\n" +
+	"\x0fmobile_subtitle\x18\x95\x01 \x01(\tR\x0emobileSubtitle\x12\x1e\n" +
+	"\n" +
+	"mobile_cta\x18\x96\x01 \x01(\tR\tmobileCta\x12\x1d\n" +
+	"\tpositions\x18\x97\x01 \x01(\tR\tpositions\x12\x19\n" +
+	"\ahistory\x18\x98\x01 \x01(\tR\ahistory\x12\x1d\n" +
+	"\ttemplates\x18\x99\x01 \x01(\tR\ttemplates\x12\x17\n" +
+	"\x06manage\x18\x9a\x01 \x01(\tR\x06manage\x12.\n" +
+	"\x12tuning_interactive\x18\x9b\x01 \x01(\tR\x11tuningInteractive\x12\"\n" +
+	"\ftuning_batch\x18\x9c\x01 \x01(\tR\vtuningBatch\x12\x1e\n" +
+	"\n" +
+	"no_results\x18\x9d\x01 \x01(\tR\tnoResults\x12\x1e\n" +
+	"\n" +
+	"no_history\x18\x9e\x01 \x01(\tR\tnoHistory\x12&\n" +
+	"\x0euntitled_draft\x18\x9f\x01 \x01(\tR\runtitledDraft\x12\x13\n" +
+	"\x04name\x18\xa0\x01 \x01(\tR\x04name\x12/\n" +
+	"\x13memory_save_success\x18\xa1\x01 \x01(\tR\x11memorySaveSuccess\x12-\n" +
+	"\x12memory_save_failed\x18\xa2\x01 \x01(\tR\x10memorySaveFailed\x12 \n" +
+	"\vmemory_name\x18\xa3\x01 \x01(\tR\n" +
+	"memoryName\x12&\n" +
+	"\x0ememory_content\x18\xa4\x01 \x01(\tR\rmemoryContent\x123\n" +
+	"\x15memory_confirm_delete\x18\xa5\x01 \x01(\tR\x13memoryConfirmDelete\x12(\n" +
+	"\x0fmemory_category\x18\xa6\x01 \x01(\tR\x0ememoryCategory\x12*\n" +
+	"\x10memory_templates\x18\xa7\x01 \x01(\tR\x0fmemoryTemplates\x12\x1e\n" +
+	"\n" +
+	"memory_add\x18\xa8\x01 \x01(\tR\tmemoryAdd\x12\"\n" +
+	"\fmemory_empty\x18\xa9\x01 \x01(\tR\vmemoryEmpty\x12.\n" +
+	"\x12memory_experiences\x18\xaa\x01 \x01(\tR\x11memoryExperiences\x12/\n" +
+	"\x13memory_add_template\x18\xab\x01 \x01(\tR\x11memoryAddTemplate\x12 \n" +
+	"\vmemory_save\x18\xac\x01 \x01(\tR\n" +
+	"memorySave\x127\n" +
+	"\x17memory_name_placeholder\x18\xad\x01 \x01(\tR\x15memoryNamePlaceholder\x12=\n" +
+	"\x1amemory_content_placeholder\x18\xae\x01 \x01(\tR\x18memoryContentPlaceholderB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_workspace_proto_rawDescOnce sync.Once

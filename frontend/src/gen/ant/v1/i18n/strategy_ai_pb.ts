@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file i18n/strategy_ai.proto.
  */
 export const file_i18n_strategy_ai: GenFile = /*@__PURE__*/
-  fileDesc("ChZpMThuL3N0cmF0ZWd5X2FpLnByb3RvEgthbnQudjEuaTE4biJKCgZBaUkxOG4SFgoOY2hlY2tfc2V0dGluZ3MYASABKAkSFgoOcmVmcmVzaF9mYWlsZWQYAiABKAkSEAoIc2V0dGluZ3MYAyABKAlCIVofYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjEvaTE4bmIGcHJvdG8z");
+  fileDesc("ChZpMThuL3N0cmF0ZWd5X2FpLnByb3RvEgthbnQudjEuaTE4biJgCgZBaUkxOG4SFgoOY2hlY2tfc2V0dGluZ3MYASABKAkSFgoOcmVmcmVzaF9mYWlsZWQYAiABKAkSEAoIc2V0dGluZ3MYAyABKAkSFAoMYWdlbnRfbWVtb3J5GAQgASgJQiFaH2FudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxL2kxOG5iBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.i18n.AiI18n
@@ -36,6 +36,13 @@ export type AiI18n = Message<"ant.v1.i18n.AiI18n"> & {
    * @generated from field: string settings = 3;
    */
   settings: string;
+
+  /**
+   * Agent Memory
+   *
+   * @generated from field: string agent_memory = 4;
+   */
+  agentMemory: string;
 };
 
 /**

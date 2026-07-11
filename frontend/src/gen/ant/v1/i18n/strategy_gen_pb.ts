@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file i18n/strategy_gen.proto.
  */
 export const file_i18n_strategy_gen: GenFile = /*@__PURE__*/
-  fileDesc("ChdpMThuL3N0cmF0ZWd5X2dlbi5wcm90bxILYW50LnYxLmkxOG4iiwsKB0dlbkkxOG4SFAoMYmFja3Rlc3RfbXNnGAEgASgJEhgKEGJhY2t0ZXN0X3N0YXJ0ZWQYAiABKAkSFAoMY2hhdF9kaXNjdXNzGAMgASgJEhUKDWNoYXRfZ2VuZXJhdGUYBCABKAkSEwoLY2hhdF9yZXBhaXIYBSABKAkSEwoLY2hhdF9yZXZpc2UYBiABKAkSFQoNY2xhcmlmeV90aXRsZRgHIAEoCRIMCgRkb25lGAggASgJEhgKEGZlZWRiYWNrX2hlYWRpbmcYCSABKAkSHAoUZmVlZGJhY2tfcGxhY2Vob2xkZXIYCiABKAkSEgoKZ2VuZXJhdGluZxgLIAEoCRIcChRtZXRyaWNzX21heF9kcmF3ZG93bhgMIAEoCRIWCg5tZXRyaWNzX3JldHVybhgNIAEoCRIWCg5tZXRyaWNzX3NoYXJwZRgOIAEoCRIWCg5tZXRyaWNzX3RyYWRlcxgPIAEoCRIYChBtZXRyaWNzX3dpbl9yYXRlGBAgASgJEhMKC3BsYWNlaG9sZGVyGBEgASgJEhIKCnJlZ2VuZXJhdGUYEiABKAkSDQoFcmVzZXQYEyABKAkSDAoEc2VuZBgUIAEoCRIQCgh0ZW1wbGF0ZRgVIAEoCRINCgV0aXRsZRgWIAEoCRIUCgx1c2VfZGVmYXVsdHMYFyABKAkSEgoKdmFsaWRhdGluZxgYIAEoCRIZChF1c2VfZGVmYXVsdHNfaGludBgZIAEoCRIiChpmZWVkYmFja19pbnB1dF9wbGFjZWhvbGRlchgaIAEoCRISCgpwbGFuX3RpdGxlGBsgASgJEhYKDnBsYW5fYW5hbHl6aW5nGBwgASgJEhYKDnBsYW5fZXJyb3JfdGFnGB0gASgJEhIKCnBsYW5fcmVzZXQYHiABKAkSFwoPcGxhbl9jYXJkX3RpdGxlGB8gASgJEhEKCXBsYW5fZWRpdBggIAEoCRIYChBwbGFuX2VkaXRfY2FuY2VsGCEgASgJEhgKEHBsYW5fY29uZmlybV9idG4YIiABKAkSFQoNcGxhbl9zZW5kX2J0bhgjIAEoCRIYChBwbGFuX3N5bWJvbF93YXJuGCQgASgJEhYKDnBsYW5fc3ltYm9sX29rGCUgASgJEh0KFXBsYW5fcHJlcmVxdWlzaXRlX21zZxgmIAEoCRISCgpleGVjX3RpdGxlGCcgASgJEhQKDGV4ZWNfcnVubmluZxgoIAEoCRIRCglleGVjX2RvbmUYKSABKAkSGQoRZXhlY19iYWNrX3RvX3BsYW4YKiABKAkSFwoPZXhlY19wbGFuX2xhYmVsGCsgASgJEhwKFGV4ZWNfY29tcGxpYW5jZV90b29sGCwgASgJEhoKEmV4ZWNfYmFja3Rlc3RfdG9vbBgtIAEoCRIZChFleGVjX3Rvb2xfcnVubmluZxguIAEoCRIbChNleGVjX2ZlZWRiYWNrX3RpdGxlGC8gASgJEhoKEmV4ZWNfZmVlZGJhY2tfaGludBgwIAEoCRIhChlleGVjX2ZlZWRiYWNrX3BsYWNlaG9sZGVyGDEgASgJEhoKEmV4ZWNfY2hpcF9sb3dlcl9kZBgyIAEoCRIeChZleGVjX2NoaXBfcmFpc2VfcmV0dXJuGDMgASgJEhwKFGV4ZWNfY2hpcF90aWdodGVuX3NsGDQgASgJEhsKE2V4ZWNfY2hpcF9sb25nX29ubHkYNSABKAkSGgoSZXhlY19zZW5kX2ZlZWRiYWNrGDYgASgJEhIKCmV4ZWNfY2xlYXIYNyABKAkSFwoPZXhlY19hcHBseV9jb2RlGDggASgJEhsKE2V4ZWNfc2tpcF9ub19zeW1ib2wYOSABKAkSGQoRZXhlY19za2lwX25vX2NvZGUYOiABKAlCIVofYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjEvaTE4bmIGcHJvdG8z");
+  fileDesc("ChdpMThuL3N0cmF0ZWd5X2dlbi5wcm90bxILYW50LnYxLmkxOG4ikw8KB0dlbkkxOG4SFAoMYmFja3Rlc3RfbXNnGAEgASgJEhgKEGJhY2t0ZXN0X3N0YXJ0ZWQYAiABKAkSFAoMY2hhdF9kaXNjdXNzGAMgASgJEhUKDWNoYXRfZ2VuZXJhdGUYBCABKAkSEwoLY2hhdF9yZXBhaXIYBSABKAkSEwoLY2hhdF9yZXZpc2UYBiABKAkSFQoNY2xhcmlmeV90aXRsZRgHIAEoCRIMCgRkb25lGAggASgJEhgKEGZlZWRiYWNrX2hlYWRpbmcYCSABKAkSHAoUZmVlZGJhY2tfcGxhY2Vob2xkZXIYCiABKAkSEgoKZ2VuZXJhdGluZxgLIAEoCRIcChRtZXRyaWNzX21heF9kcmF3ZG93bhgMIAEoCRIWCg5tZXRyaWNzX3JldHVybhgNIAEoCRIWCg5tZXRyaWNzX3NoYXJwZRgOIAEoCRIWCg5tZXRyaWNzX3RyYWRlcxgPIAEoCRIYChBtZXRyaWNzX3dpbl9yYXRlGBAgASgJEhMKC3BsYWNlaG9sZGVyGBEgASgJEhIKCnJlZ2VuZXJhdGUYEiABKAkSDQoFcmVzZXQYEyABKAkSDAoEc2VuZBgUIAEoCRIQCgh0ZW1wbGF0ZRgVIAEoCRINCgV0aXRsZRgWIAEoCRIUCgx1c2VfZGVmYXVsdHMYFyABKAkSEgoKdmFsaWRhdGluZxgYIAEoCRIZChF1c2VfZGVmYXVsdHNfaGludBgZIAEoCRIiChpmZWVkYmFja19pbnB1dF9wbGFjZWhvbGRlchgaIAEoCRISCgpwbGFuX3RpdGxlGBsgASgJEhYKDnBsYW5fYW5hbHl6aW5nGBwgASgJEhYKDnBsYW5fZXJyb3JfdGFnGB0gASgJEhIKCnBsYW5fcmVzZXQYHiABKAkSFwoPcGxhbl9jYXJkX3RpdGxlGB8gASgJEhEKCXBsYW5fZWRpdBggIAEoCRIYChBwbGFuX2VkaXRfY2FuY2VsGCEgASgJEhgKEHBsYW5fY29uZmlybV9idG4YIiABKAkSFQoNcGxhbl9zZW5kX2J0bhgjIAEoCRIYChBwbGFuX3N5bWJvbF93YXJuGCQgASgJEhYKDnBsYW5fc3ltYm9sX29rGCUgASgJEh0KFXBsYW5fcHJlcmVxdWlzaXRlX21zZxgmIAEoCRISCgpleGVjX3RpdGxlGCcgASgJEhQKDGV4ZWNfcnVubmluZxgoIAEoCRIRCglleGVjX2RvbmUYKSABKAkSGQoRZXhlY19iYWNrX3RvX3BsYW4YKiABKAkSFwoPZXhlY19wbGFuX2xhYmVsGCsgASgJEhwKFGV4ZWNfY29tcGxpYW5jZV90b29sGCwgASgJEhoKEmV4ZWNfYmFja3Rlc3RfdG9vbBgtIAEoCRIZChFleGVjX3Rvb2xfcnVubmluZxguIAEoCRIbChNleGVjX2ZlZWRiYWNrX3RpdGxlGC8gASgJEhoKEmV4ZWNfZmVlZGJhY2tfaGludBgwIAEoCRIhChlleGVjX2ZlZWRiYWNrX3BsYWNlaG9sZGVyGDEgASgJEhoKEmV4ZWNfY2hpcF9sb3dlcl9kZBgyIAEoCRIeChZleGVjX2NoaXBfcmFpc2VfcmV0dXJuGDMgASgJEhwKFGV4ZWNfY2hpcF90aWdodGVuX3NsGDQgASgJEhsKE2V4ZWNfY2hpcF9sb25nX29ubHkYNSABKAkSGgoSZXhlY19zZW5kX2ZlZWRiYWNrGDYgASgJEhIKCmV4ZWNfY2xlYXIYNyABKAkSFwoPZXhlY19hcHBseV9jb2RlGDggASgJEhsKE2V4ZWNfc2tpcF9ub19zeW1ib2wYOSABKAkSGQoRZXhlY19za2lwX25vX2NvZGUYOiABKAkSEAoIYmFja3Rlc3QYOyABKAkSEwoLYmFja3Rlc3RpbmcYPCABKAkSFgoOYmFja3Rlc3RfZXJyb3IYPSABKAkSEQoJY29tcGlsaW5nGD4gASgJEhUKDWNvbXBpbGVfZXJyb3IYPyABKAkSFAoMdG90YWxfcmV0dXJuGEAgASgJEhQKDG1heF9kcmF3ZG93bhhBIAEoCRIOCgZzaGFycGUYQiABKAkSEAoId2luX3JhdGUYQyABKAkSFAoMcmV0dXJuX2xhYmVsGEQgASgJEhQKDHRvdGFsX3RyYWRlcxhFIAEoCRIOCgZmYWlsZWQYRiABKAkSFgoObm9fbWFya2V0X2RhdGEYRyABKAkSGwoTbm9fbWFya2V0X2RhdGFfaGludBhIIAEoCRIMCgRwbGFuGEkgASgJEhIKCmZpbmFsX2NvZGUYSiABKAkSDAoEY29weRhLIAEoCRIXCg9hcHBseV90b19lZGl0b3IYTCABKAkSEAoIY292ZXJhZ2UYTSABKAkSDwoHcHJvZmlsZRhOIAEoCRIQCghhbmFseXNpcxhPIAEoCRIRCglwbGFuX3R5cGUYUCABKAkSEgoKcGxhbl9lbnRyeRhRIAEoCRIRCglwbGFuX2V4aXQYUiABKAkSEQoJcGxhbl9yaXNrGFMgASgJEhMKC3BsYW5fbWFya2V0GFQgASgJQiFaH2FudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxL2kxOG5iBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.i18n.GenI18n
@@ -421,6 +421,188 @@ export type GenI18n = Message<"ant.v1.i18n.GenI18n"> & {
    * @generated from field: string exec_skip_no_code = 58;
    */
   execSkipNoCode: string;
+
+  /**
+   * Backtest
+   *
+   * @generated from field: string backtest = 59;
+   */
+  backtest: string;
+
+  /**
+   * Backtesting...
+   *
+   * @generated from field: string backtesting = 60;
+   */
+  backtesting: string;
+
+  /**
+   * Backtest Error
+   *
+   * @generated from field: string backtest_error = 61;
+   */
+  backtestError: string;
+
+  /**
+   * Compiling...
+   *
+   * @generated from field: string compiling = 62;
+   */
+  compiling: string;
+
+  /**
+   * Compile Error
+   *
+   * @generated from field: string compile_error = 63;
+   */
+  compileError: string;
+
+  /**
+   * Total Return
+   *
+   * @generated from field: string total_return = 64;
+   */
+  totalReturn: string;
+
+  /**
+   * Max Drawdown
+   *
+   * @generated from field: string max_drawdown = 65;
+   */
+  maxDrawdown: string;
+
+  /**
+   * Sharpe
+   *
+   * @generated from field: string sharpe = 66;
+   */
+  sharpe: string;
+
+  /**
+   * Win Rate
+   *
+   * @generated from field: string win_rate = 67;
+   */
+  winRate: string;
+
+  /**
+   * Return
+   *
+   * @generated from field: string return_label = 68;
+   */
+  returnLabel: string;
+
+  /**
+   * Total Trades
+   *
+   * @generated from field: string total_trades = 69;
+   */
+  totalTrades: string;
+
+  /**
+   * Failed
+   *
+   * @generated from field: string failed = 70;
+   */
+  failed: string;
+
+  /**
+   * No market data available
+   *
+   * @generated from field: string no_market_data = 71;
+   */
+  noMarketData: string;
+
+  /**
+   * Please select a trading account and a symbol...
+   *
+   * @generated from field: string no_market_data_hint = 72;
+   */
+  noMarketDataHint: string;
+
+  /**
+   * Strategy Plan
+   *
+   * @generated from field: string plan = 73;
+   */
+  plan: string;
+
+  /**
+   * Final Strategy Code
+   *
+   * @generated from field: string final_code = 74;
+   */
+  finalCode: string;
+
+  /**
+   * Copy
+   *
+   * @generated from field: string copy = 75;
+   */
+  copy: string;
+
+  /**
+   * Apply to Editor
+   *
+   * @generated from field: string apply_to_editor = 76;
+   */
+  applyToEditor: string;
+
+  /**
+   * Coverage
+   *
+   * @generated from field: string coverage = 77;
+   */
+  coverage: string;
+
+  /**
+   * Strategy Profile
+   *
+   * @generated from field: string profile = 78;
+   */
+  profile: string;
+
+  /**
+   * Backtest Analysis
+   *
+   * @generated from field: string analysis = 79;
+   */
+  analysis: string;
+
+  /**
+   * Type
+   *
+   * @generated from field: string plan_type = 80;
+   */
+  planType: string;
+
+  /**
+   * Entry
+   *
+   * @generated from field: string plan_entry = 81;
+   */
+  planEntry: string;
+
+  /**
+   * Exit
+   *
+   * @generated from field: string plan_exit = 82;
+   */
+  planExit: string;
+
+  /**
+   * Risk
+   *
+   * @generated from field: string plan_risk = 83;
+   */
+  planRisk: string;
+
+  /**
+   * Market
+   *
+   * @generated from field: string plan_market = 84;
+   */
+  planMarket: string;
 };
 
 /**
