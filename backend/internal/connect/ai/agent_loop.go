@@ -249,7 +249,7 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		// Loop continues — LLM sees tool results and decides next action.
 	}
 	// unreachable: loop exits via return when LLM has no more tool calls.
-	return fullBuf.String(), nil
+	panic("unreachable: agent loop should never reach here")
 }
 
 // parseToolArguments parses the JSON arguments string from an LLM tool call
