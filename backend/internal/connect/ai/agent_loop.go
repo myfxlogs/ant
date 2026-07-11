@@ -72,7 +72,7 @@ func (a *AgentLoop) Run(ctx context.Context, systemPrompt, userPrompt string, us
 func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, userID uuid.UUID) (string, error) {
 	var fullBuf strings.Builder
 
-	for round := 0; ; round++ { // no hard limit — aligned with Claude Code
+	for round := 0; round < 1000; round++ { // no practical hard limit — aligned with Claude Code
 		// Context compression: if total estimated tokens exceed budget,
 		// keep system + first user + last 12 messages, drop middle.
 		if len(messages) > 16 {
@@ -248,8 +248,8 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		}
 		// Loop continues — LLM sees tool results and decides next action.
 	}
-	// unreachable: loop exits via return when LLM has no more tool calls.
-	panic("unreachable: agent loop should never reach here")
+	// Fallback: loop exhausted without LLM convergence.
+	return fullBuf.String(), nil
 }
 
 // parseToolArguments parses the JSON arguments string from an LLM tool call
