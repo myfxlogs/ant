@@ -160,7 +160,7 @@ const AiWizard = {
         },
         "summary": {
           "codeTitle": "Code:",
-          "intro": "You are a quantitative strategy explanation assistant. Concisely explain (bullet points, max 12 lines) the core idea of this AntTrader Python strategy code to help users judge if it matches expectations.",
+          "intro": "You are a quantitative strategy explanation assistant. Concisely explain (bullet points, max 12 lines) the core idea of this AlphaForge Python strategy code to help users judge if it matches expectations.",
           "mustInclude1": "1) Strategy type/paradigm (trend/mean/breakout/momentum/grid/etc.; state \"uncertain\" if unclear)",
           "mustInclude2": "2) Main entry conditions (2-4 bullet points)",
           "mustInclude3": "3) Main exit/SL/TP/risk controls (2-4 bullet points)",

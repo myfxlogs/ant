@@ -445,8 +445,9 @@ const Base = {
   },
   "common": {
     "months": {
-      "jan": "1月",
-      "jul": "7月"
+      "jan": "1月", "feb": "2月", "mar": "3月", "apr": "4月",
+      "may": "5月", "jun": "6月", "jul": "7月", "aug": "8月",
+      "sep": "9月", "oct": "10月", "nov": "11月", "dec": "12月"
     },
     "time": {
       "day": "{{n}}天",
@@ -677,7 +678,7 @@ const Base = {
     "withdraw": "提取"
   },
   "app": {
-    "name": "AntTrader"
+    "name": "AlphaForge"
   },
   "language": {
     "english": "English",
@@ -763,7 +764,7 @@ const Base = {
     "disclaimer": "过往业绩不代表未来表现。",
     "equityCurve": "净值曲线",
     "expired": "该分享链接已过期",
-    "footer": "由 AntTrader 生成",
+    "footer": "由 AlphaForge 生成",
     "language": "语言",
     "loadFailed": "加载分享数据失败",
     "losingTrades": "亏损笔数",

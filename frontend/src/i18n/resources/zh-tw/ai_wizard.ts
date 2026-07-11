@@ -160,7 +160,7 @@ const AiWizard = {
         },
         "summary": {
           "codeTitle": "程式碼如下：",
-          "intro": "你是量化策略解釋助手。請用簡潔中文（要點形式，最多 12 行）解釋這段 AntTrader Python 策略程式碼的核心思路。",
+          "intro": "你是量化策略解釋助手。請用簡潔中文（要點形式，最多 12 行）解釋這段 AlphaForge Python 策略程式碼的核心思路。",
           "mustInclude1": "1) 策略類型/範式",
           "mustInclude2": "2) 主要入場條件（2~4 條要點）",
           "mustInclude3": "3) 主要出場/止損止盈/風控約束（2~4 條要點）",

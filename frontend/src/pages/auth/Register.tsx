@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import i18n, { normalizeLanguage, setLanguage, type SupportedLanguage } from '@/i18n';
+import Seo from '@/components/common/Seo';
 
 export default function Register() {
   const { t } = useTranslation();
@@ -46,7 +47,9 @@ export default function Register() {
   };
 
   return (
-    <div 
+    <>
+    <Seo title="Register" description="Create a free AlphaForge account to start backtesting and auto-trading MT4/MT5 strategies." path="/register" />
+    <div
       className="min-h-screen flex flex-col items-center justify-center p-4"
       style={{ background: 'var(--color-bg-secondary)' }}
     >
@@ -226,5 +229,6 @@ export default function Register() {
         </div>
       </div>
     </div>
+    </>
   );
 }

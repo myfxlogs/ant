@@ -21,7 +21,7 @@ const AiStore = {
           "noImport": "- 禁止任何 import / from ... import ..."
         },
         "allowedGlobals": "允许使用的全局对象/模块：np, math, datetime, calculate_rsi（不要 import）。",
-        "title": "你在编写 AntTrader Python 策略程式碼时，必须严格遵守以下驗證规则："
+        "title": "你在編寫 AlphaForge Python 策略程式碼時，必須嚴格遵守以下驗證規則："
       },
       "conversations": {
         "newConversationTitle": "新對話"

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d1117"/>
+      <stop offset="100%" style="stop-color:#161b22"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#D4AF37"/>
+      <stop offset="100%" style="stop-color:#B8960B"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- Logo icon -->
+  <rect x="80" y="80" width="60" height="60" rx="12" fill="url(#gold)"/>
+  <text x="110" y="122" font-family="Arial,sans-serif" font-size="32" font-weight="bold" fill="#0d1117" text-anchor="middle">ΛF</text>
+  <text x="160" y="120" font-family="Arial,sans-serif" font-size="32" font-weight="bold" fill="#D4AF37">AlphaForge</text>
+  <!-- Main title -->
+  <text x="80" y="240" font-family="Arial,sans-serif" font-size="52" font-weight="bold" fill="#ffffff">AI-Powered MT4/MT5</text>
+  <text x="80" y="300" font-family="Arial,sans-serif" font-size="52" font-weight="bold" fill="#ffffff">Strategy Platform</text>
+  <!-- Subtitle -->
+  <text x="80" y="370" font-family="Arial,sans-serif" font-size="24" fill="#8b949e">Backtest · Optimize · Deploy · Auto-Trade</text>
+  <!-- Feature pills -->
+  <rect x="80" y="420" width="180" height="44" rx="22" fill="#21262d" stroke="#30363d"/>
+  <text x="170" y="448" font-family="Arial,sans-serif" font-size="16" fill="#c9d1d9" text-anchor="middle">Strategy Backtesting</text>
+  <rect x="280" y="420" width="160" height="44" rx="22" fill="#21262d" stroke="#30363d"/>
+  <text x="360" y="448" font-family="Arial,sans-serif" font-size="16" fill="#c9d1d9" text-anchor="middle">AI Optimization</text>
+  <rect x="460" y="420" width="180" height="44" rx="22" fill="#21262d" stroke="#30363d"/>
+  <text x="550" y="448" font-family="Arial,sans-serif" font-size="16" fill="#c9d1d9" text-anchor="middle">Automated Trading</text>
+  <rect x="660" y="420" width="160" height="44" rx="22" fill="#21262d" stroke="#30363d"/>
+  <text x="740" y="448" font-family="Arial,sans-serif" font-size="16" fill="#c9d1d9" text-anchor="middle">Risk Management</text>
+  <!-- Chart decoration -->
+  <polyline points="80,560 180,540 280,550 380,520 480,530 580,490 680,500 780,470 880,480 980,450" fill="none" stroke="#D4AF37" stroke-width="3" opacity="0.6"/>
+  <polyline points="80,580 180,570 280,575 380,560 480,565 580,545 680,550 780,535 880,540 980,525" fill="none" stroke="#58a6ff" stroke-width="2" opacity="0.4"/>
+  <!-- URL -->
+  <text x="80" y="600" font-family="Arial,sans-serif" font-size="18" fill="#6e7681">alfq.org</text>
+</svg>

@@ -21,7 +21,7 @@ const AiStore = {
           "noImport": "- Không được phép import / from ... import ..."
         },
         "allowedGlobals": "Toàn cục/mô-đun được phép: np, math, datetime, calculate_rsi (không import).",
-        "title": "Khi viết mã chiến lược Python AntTrader, bạn phải tuân thủ nghiêm ngặt các quy tắc xác thực sau:"
+        "title": "Khi viết mã chiến lược Python AlphaForge, bạn phải tuân thủ nghiêm ngặt các quy tắc xác thực sau:"
       },
       "conversations": {
         "newConversationTitle": "Hội thoại mới"

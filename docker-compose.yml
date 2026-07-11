@@ -214,6 +214,39 @@ services:
     networks:
       - ant-network
 
+  umami:
+    container_name: ant-umami
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
+    ports:
+      - "${UMAMI_PORT:-3001}:3000"
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-ant}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-ant}_umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_APP_SECRET:?UMAMI_APP_SECRET must be set in .env (32+ chars)}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - ant-network
+
 networks:
   ant-network:
     driver: bridge

@@ -6,6 +6,7 @@ import type { LoginRequest } from '@/types/auth';
 import { useTranslation } from 'react-i18next';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import i18n, { normalizeLanguage, setLanguage, type SupportedLanguage } from '@/i18n';
+import Seo from '@/components/common/Seo';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -44,7 +45,9 @@ export default function Login() {
   };
 
   return (
-    <div 
+    <>
+    <Seo title="Login" description="Log in to AlphaForge to manage your MT4/MT5 trading strategies." path="/login" />
+    <div
       className="min-h-screen flex flex-col items-center justify-center p-4"
       style={{ background: 'var(--color-bg-secondary)' }}
     >
@@ -174,5 +177,6 @@ export default function Login() {
         </div>
       </div>
     </div>
+    </>
   );
 }

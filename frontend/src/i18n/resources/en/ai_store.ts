@@ -21,7 +21,7 @@ const AiStore = {
           "noImport": "- No import / from ... import ... allowed"
         },
         "allowedGlobals": "Allowed globals/modules: np, math, datetime, calculate_rsi (do not import).",
-        "title": "When writing AntTrader Python strategy code, you must strictly follow these validation rules:"
+        "title": "When writing AlphaForge Python strategy code, you must strictly follow these validation rules:"
       },
       "conversations": {
         "newConversationTitle": "New conversation"

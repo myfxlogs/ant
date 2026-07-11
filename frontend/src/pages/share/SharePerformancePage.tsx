@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { normalizeLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import ShareChart from './ShareChart';
+import Seo from '@/components/common/Seo';
 import {
   LANGUAGE_LABELS, BrandLogo, toNum, fmt, avgHoldingText,
   type ShareData, computeMaxDrawdownPct, aggregateBySymbol,
@@ -42,7 +43,7 @@ export default function SharePerformancePage() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  const appName = t('app.name', { defaultValue: 'AntTrader' });
+  const appName = t('app.name', { defaultValue: 'AlphaForge' });
   const langSelector = (
     <Select
       size="small"
@@ -113,6 +114,7 @@ export default function SharePerformancePage() {
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: 'clamp(10px, 3vw, 24px)', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+      <Seo title="Shared Performance Report" description="View shared trading performance report on AlphaForge." path={`/share/${token}`} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 'clamp(14px, 3vw, 20px)' }}>
         <BrandLogo name={appName} />
         {langSelector}

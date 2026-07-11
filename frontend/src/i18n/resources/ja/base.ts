@@ -445,8 +445,9 @@ const Base = {
   },
   "common": {
     "months": {
-      "jan": "1月",
-      "jul": "7月"
+      "jan": "1月", "feb": "2月", "mar": "3月", "apr": "4月",
+      "may": "5月", "jun": "6月", "jul": "7月", "aug": "8月",
+      "sep": "9月", "oct": "10月", "nov": "11月", "dec": "12月"
     },
     "time": {
       "day": "{{n}}天",
@@ -677,7 +678,7 @@ const Base = {
     "withdraw": "出金"
   },
   "app": {
-    "name": "AntTrader"
+    "name": "AlphaForge"
   },
   "language": {
     "english": "English",
@@ -763,7 +764,7 @@ const Base = {
     "disclaimer": "過去の実績は将来の成果を保証するものではありません。",
     "equityCurve": "資産曲線",
     "expired": "この共有リンクは期限切れです",
-    "footer": "AntTrader により生成",
+    "footer": "AlphaForge により生成",
     "language": "言語",
     "loadFailed": "共有データの読み込みに失敗しました",
     "losingTrades": "負けトレード数",

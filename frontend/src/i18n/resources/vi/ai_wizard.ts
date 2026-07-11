@@ -160,7 +160,7 @@ const AiWizard = {
         },
         "summary": {
           "codeTitle": "Mã:",
-          "intro": "Bạn là trợ lý giải thích chiến lược định lượng. Hãy giải thích ý tưởng cốt lõi của đoạn mã chiến lược AntTrader Python dưới đây bằng các gạch đầu dòng ngắn gọn (tối đa 12 dòng) để giúp người dùng đánh giá có đúng kỳ vọng hay không.",
+          "intro": "Bạn là trợ lý giải thích chiến lược định lượng. Hãy giải thích ý tưởng cốt lõi của đoạn mã chiến lược AlphaForge Python dưới đây bằng các gạch đầu dòng ngắn gọn (tối đa 12 dòng) để giúp người dùng đánh giá có đúng kỳ vọng hay không.",
           "mustInclude1": "1) Loại/kiểu chiến lược (trend/mean-reversion/breakout/momentum/grid... nếu không chắc hãy ghi “Không rõ”)",
           "mustInclude2": "2) Điều kiện vào lệnh chính (2-4 ý)",
           "mustInclude3": "3) Điều kiện thoát/SL/TP/ràng buộc rủi ro chính (2-4 ý)",

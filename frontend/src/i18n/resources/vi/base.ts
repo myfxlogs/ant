@@ -445,8 +445,9 @@ const Base = {
   },
   "common": {
     "months": {
-      "jan": "1月",
-      "jul": "7月"
+      "jan": "Th1", "feb": "Th2", "mar": "Th3", "apr": "Th4",
+      "may": "Th5", "jun": "Th6", "jul": "Th7", "aug": "Th8",
+      "sep": "Th9", "oct": "Th10", "nov": "Th11", "dec": "Th12"
     },
     "time": {
       "day": "{{n}}ngày",
@@ -677,7 +678,7 @@ const Base = {
     "withdraw": "Rút Tiền"
   },
   "app": {
-    "name": "AntTrader"
+    "name": "AlphaForge"
   },
   "language": {
     "english": "English",
@@ -763,7 +764,7 @@ const Base = {
     "disclaimer": "Hiệu suất trong quá khứ không đảm bảo kết quả tương lai.",
     "equityCurve": "Đường Cong Vốn",
     "expired": "Liên kết chia sẻ này đã hết hạn",
-    "footer": "Được tạo bởi AntTrader",
+    "footer": "Được tạo bởi AlphaForge",
     "language": "Ngôn ngữ",
     "loadFailed": "Không tải được dữ liệu chia sẻ",
     "losingTrades": "Lệnh Thua",

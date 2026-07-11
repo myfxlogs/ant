@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Tabs, Typography, Drawer } from 'antd';
 import { ShopOutlined, BookOutlined, UserOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import Seo from '@/components/common/Seo';
 import { useMarketplace } from './hooks/useMarketplace';
 import { MarketplaceProvider } from './MarketplaceContext';
 import MarketTab from './components/MarketTab';
@@ -23,6 +24,7 @@ function MarketplaceUI() {
 
   return (
     <MarketplaceProvider value={m}>
+      <Seo title="Strategy Marketplace" description="Discover and purchase trading strategies for MT4/MT5. Backtest, optimize, and deploy with AlphaForge." path="/marketplace" />
       <div style={{ padding: '24px 24px 80px', background: 'var(--color-bg-secondary)', minHeight: '100vh' }}>
         <div className="max-w-7xl mx-auto">
           <div style={{ marginBottom: 20 }}>

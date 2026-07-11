@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /register
+Allow: /marketplace
+Allow: /share/
+
+# Private app pages — noindex for crawlers
+Disallow: /admin/
+Disallow: /accounts/
+Disallow: /strategy/
+Disallow: /analytics
+Disallow: /wallet
+Disallow: /profile
+Disallow: /logs
+Disallow: /auto-trading
+Disallow: /trading/
+
+Sitemap: https://alfq.org/sitemap.xml
