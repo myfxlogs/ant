@@ -77,8 +77,8 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 	sysPrompt := "You are an expert trading strategy translator. " +
 		langHint +
 		"Translate the following MetaTrader EA/indicator code (MQL4 or MQL5) into a " +
-		"Go strategy for the AntTrader platform.\n\n" +
-		"AntTrader uses the Go strategy SDK (package anttrader/strategy/sdk). " +
+		"Go strategy for the AlphaForge platform.\n\n" +
+		"AlphaForge uses the Go strategy SDK (package anttrader/strategy/sdk). " +
 		"Generate idiomatic Go code with proper Decimal handling via shopspring/decimal.\n\n" +
 		"Return ONLY the Go code inside ```go ... ``` fence."
 

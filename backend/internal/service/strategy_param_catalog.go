@@ -1,7 +1,7 @@
 // Package service — strategy parameter catalog.
 //
 // Single source of truth for which technical indicators and which risk-management
-// parameters the AntTrader sandbox exposes to generated strategy code. Both the
+// parameters the AlphaForge sandbox exposes to generated strategy code. Both the
 // LLM prompt builder and (eventually) the frontend param-selection UI read from
 // this file, so there is no place where a rogue `sma_period` vs `ma_period`
 // naming drift can sneak in.
