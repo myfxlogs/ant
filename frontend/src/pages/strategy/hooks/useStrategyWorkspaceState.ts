@@ -56,6 +56,7 @@ export function useStrategyWorkspaceState() {
       return;
     }
     setSelectedTemplateId(templateId);
+    wsStore.setCenterTab('code');
     const tpl = await codeCtx.handleLoadTemplate(templateId);
     if (!tpl) { setSelectedTemplateId(''); return; }
     // Populate strategy params from stored template metadata.

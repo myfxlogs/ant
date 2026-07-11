@@ -14,6 +14,7 @@ import { ACCOUNT_OVERVIEW_KEY, BIND_ACCOUNT_KEY, DEFAULT_NAME_KEY, QUICK_ACTIONS
 import DashboardStatCards from './DashboardStatCards';
 import DashboardAccountList from './DashboardAccountList';
 import { createQuickActions } from './quickActions';
+import Seo from '@/components/common/Seo';
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -54,6 +55,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      <Seo title="Dashboard" noindex />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ fontFamily: 'Poppins, sans-serif', color: 'var(--color-text)' }}>

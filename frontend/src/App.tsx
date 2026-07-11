@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { LocaleProvider } from '@/providers/LocaleProvider';
 import { AppRoutes } from '@/routes/AppRoutes';
@@ -19,12 +20,14 @@ export default function App() {
   }, []);
 
   return (
-    <LocaleProvider>
-      <QueryProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </QueryProvider>
-    </LocaleProvider>
+    <HelmetProvider>
+      <LocaleProvider>
+        <QueryProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </QueryProvider>
+      </LocaleProvider>
+    </HelmetProvider>
   );
 }

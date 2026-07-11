@@ -1,11 +1,13 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { message } from 'antd';
+import { message, notification } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
   BACKTEST_FAILED_KEY, ENTER_CODE_AND_SYMBOL_KEY,
   DEFAULTS_SAVED_KEY, DEFAULTS_LOADED_KEY, DEFAULTS_RESET_KEY,
   SETTINGS_SAVE_KEY, SETTINGS_LOAD_KEY, SETTINGS_RESET_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
+import { BACKTEST_COMPLETED_KEY, BACKTEST_ERROR_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import { TOTAL_RETURN_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import { backtestRunsApi, type BacktestTrade } from '@/client/backtestRuns';
 import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
@@ -198,6 +200,7 @@ export function useBacktestRunner() {
           setErrorMsg(update.run?.error ?? ''); stopWatching();
           watchRef.current = null;
           if (ok) {
+            notification.success({ message: t(BACKTEST_COMPLETED_KEY), description: t(TOTAL_RETURN_KEY) + ': ' + ((update.metrics?.totalReturn ?? 0) * 100).toFixed(2) + '%', placement: 'bottomRight', duration: 4 });
             backtestRunsApi.getTrades(result.runId).then((tr) => {
               setChartTrades(tr.trades.map((t: BacktestTrade) => ({
                 side: t.side,
@@ -207,6 +210,9 @@ export function useBacktestRunner() {
               })));
             }).catch(() => setChartTrades([]));
           } else { setChartTrades([]); }
+          if (!ok) {
+            notification.error({ message: t(BACKTEST_ERROR_KEY), description: update.run?.error || '', placement: 'bottomRight', duration: 6 });
+          }
         } else { setMetrics(update.metrics || null); }
       });
       watchRef.current = stopWatching;
@@ -217,6 +223,20 @@ export function useBacktestRunner() {
   }, [initialCapital, commission, slippage, leverage, lotSize, tradeDirection, strictMode, startDate, endDate, t]);
 
   // ── Return ────────────────────────────────────────────────────────────
+
+  const cancelRun = useCallback(async () => {
+    if (!runId) return;
+    try {
+      await strategyRuntimeApi.cancelBacktestRun(runId);
+      watchRef.current?.();
+      watchRef.current = null;
+      setStatus('idle');
+      setRunId('');
+      message.info(t('strategy.backtest.canceled', { defaultValue: 'Backtest canceled' }));
+    } catch (e: any) {
+      message.error(e?.message || 'Cancel failed');
+    }
+  }, [runId, t]);
 
   return {
     // Standard params
@@ -233,6 +253,7 @@ export function useBacktestRunner() {
     // Run
     run, submitting, status, metrics, executionAssumptions, errorMsg,
     runId, chartTrades, resetStatus,
+    cancelRun,
     // Directives
     strategyDirectives,
     // UI

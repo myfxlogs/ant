@@ -1,5 +1,5 @@
-import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table } from 'antd';
-import { RiseOutlined, FallOutlined } from '@ant-design/icons';
+import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table, Skeleton, Progress } from 'antd';
+import { RiseOutlined, FallOutlined, StopOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import {
@@ -50,9 +50,10 @@ interface Props {
   onAIOptimize?: () => void;
   trades: ChartTrade[];
   panelHeight: number;
+  onCancel?: () => void;
 }
 
-export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, trades, panelHeight }: Props) {
+export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, trades, panelHeight, onCancel }: Props) {
   const { t } = useTranslation();
 
   const buys = trades.filter((tr) => tr.side === 'buy');
@@ -64,22 +65,36 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
 
   return (
     <div>
-      <div style={{ marginBottom: 8 }}>
-        {status === 'running' && (
-          <Tag color="processing" icon={<Spin size="small" />}>{t(BACKTEST_RUNNING_KEY)}</Tag>
-        )}
-        {status === 'completed' && (
-          <Tag color="success">{t(BACKTEST_COMPLETED_KEY)}</Tag>
-        )}
-        {status === 'completed' && onAIOptimize && metrics && (
-          <Button size="small" type="dashed" onClick={onAIOptimize} style={{ marginLeft: 8, fontSize: 11 }}>
-            🤖 AI Optimize
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {status === 'running' && (
+            <Tag color="processing" icon={<Spin size="small" />}>{t(BACKTEST_RUNNING_KEY)}</Tag>
+          )}
+          {status === 'completed' && (
+            <Tag color="success">{t(BACKTEST_COMPLETED_KEY)}</Tag>
+          )}
+          {status === 'completed' && onAIOptimize && metrics && (
+            <Button size="small" type="dashed" onClick={onAIOptimize} style={{ fontSize: 11 }}>
+              🤖 AI Optimize
+            </Button>
+          )}
+          {status === 'error' && (
+            <Tag color="error">{errorMsg || t(BACKTEST_ERROR_KEY, 'Backtest failed')}</Tag>
+          )}
+        </div>
+        {status === 'running' && onCancel && (
+          <Button size="small" danger icon={<StopOutlined />} onClick={onCancel}>
+            {t('common.cancel', { defaultValue: 'Cancel' })}
           </Button>
         )}
-        {status === 'error' && (
-          <Tag color="error">{errorMsg || t(BACKTEST_ERROR_KEY, 'Backtest failed')}</Tag>
-        )}
       </div>
+
+      {status === 'running' && (
+        <div style={{ padding: '12px 0' }}>
+          <Progress strokeColor={{ from: '#108ee9', to: '#87d068' }} percent={100} status="active" showInfo={false} />
+          <Skeleton active paragraph={{ rows: 4 }} style={{ marginTop: 12 }} />
+        </div>
+      )}
 
       {status === 'idle' && !metrics && (
         <Empty description={t(BACKTEST_EMPTY_KEY, 'Run a backtest to see results')} style={{ padding: 24 }} />

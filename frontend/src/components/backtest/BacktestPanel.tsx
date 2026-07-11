@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { Tabs, Radio } from 'antd';
+import { Tabs, Radio, Badge } from 'antd';
 import {
   PlayCircleOutlined,
 } from '@ant-design/icons';
@@ -119,7 +119,25 @@ export default function BacktestPanel(props: Props) {
               { key: 'tuning', label: t(TUNING_TAB_KEY, 'Tuning') },
               { key: 'gate', label: t(GATE_TAB_KEY, 'Gate') },
               { key: 'strategies', label: t(TEMPLATES_KEY) },
-            ]}
+            ].map(item => ({
+              ...item,
+              label: item.key === 'results' && runner.status === 'running'
+                ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    {item.label}
+                    <Badge status="processing" />
+                  </span>
+                : item.key === 'results' && runner.status === 'completed'
+                  ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      {item.label}
+                      <Badge status="success" />
+                    </span>
+                : item.key === 'results' && runner.status === 'error'
+                  ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      {item.label}
+                      <Badge status="error" />
+                    </span>
+                : item.label,
+            }))}
           />
         </div>
       </div>
@@ -136,6 +154,7 @@ export default function BacktestPanel(props: Props) {
             onAIOptimize={onAIOptimize}
             trades={runner.chartTrades}
             panelHeight={runner.panelHeight}
+            onCancel={runner.cancelRun}
           />
         )}
 
