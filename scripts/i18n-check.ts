@@ -113,7 +113,7 @@ function checkSection(section: string): CheckResult {
       'Cron', 'LIVE', 'ERROR', 'STATIC',
       'Shared', 'by',
       // Brand / provider names
-      'AntTrader', 'OpenAI', 'Anthropic Claude', 'DeepSeek', 'Groq',
+      'AlphaForge', 'OpenAI', 'Anthropic Claude', 'DeepSeek', 'Groq',
       'Mistral', 'OpenRouter', 'OpenAI Compatible',
       // Language names (each locale keeps its own name)
       'English', 'Tiếng Việt', '繁體中文', '简体中文', '日本語',

@@ -201,7 +201,7 @@ const file_system_ai_query_proto_rawDesc = "" +
 	"\vprovider_id\x18\x01 \x01(\tR\n" +
 	"providerId\"G\n" +
 	"\x19GetSystemAIConfigResponse\x12*\n" +
-	"\x04item\x18\x01 \x01(\v2\x16.ant.v1.SystemAIConfigR\x04itemB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x04item\x18\x01 \x01(\v2\x16.ant.v1.SystemAIConfigR\x04itemB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_system_ai_query_proto_rawDescOnce sync.Once

@@ -165,7 +165,7 @@ const file_i18n_indicator_catalog_proto_rawDesc = "" +
 	"\x10risk_params_desc\x18\t \x01(\tR\x0eriskParamsDesc\x12)\n" +
 	"\x10indicators_title\x18\n" +
 	" \x01(\tR\x0findicatorsTitle\x12,\n" +
-	"\x12risk_section_title\x18\v \x01(\tR\x10riskSectionTitleB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x12risk_section_title\x18\v \x01(\tR\x10riskSectionTitleB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_indicator_catalog_proto_rawDescOnce sync.Once

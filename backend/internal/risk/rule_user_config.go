@@ -11,7 +11,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	antv1 "anttrader/gen/proto/ant/v1"
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 // UserRiskConfig holds per-account limits set by the user via the frontend.

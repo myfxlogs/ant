@@ -8,7 +8,7 @@ import (
 	"github.com/shopspring/decimal"
 	"golang.org/x/sync/errgroup"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 // monthlyDetailBaseFilter is the common WHERE clause excluding non-trade order types

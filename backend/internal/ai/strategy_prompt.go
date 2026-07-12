@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"strings"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 // PromptParams holds all inputs for building the generation prompt.

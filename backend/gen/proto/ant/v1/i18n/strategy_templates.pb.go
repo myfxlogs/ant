@@ -1786,7 +1786,7 @@ const file_i18n_strategy_templates_proto_rawDesc = "" +
 	"\ttabs_user\x18\xbc\x01 \x01(\tR\btabsUser\x12\x15\n" +
 	"\x05title\x18\xbd\x01 \x01(\tR\x05title\x12.\n" +
 	"\x12visibility_private\x18\xbe\x01 \x01(\tR\x11visibilityPrivate\x12,\n" +
-	"\x11visibility_public\x18\xbf\x01 \x01(\tR\x10visibilityPublicB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x11visibility_public\x18\xbf\x01 \x01(\tR\x10visibilityPublicB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_templates_proto_rawDescOnce sync.Once

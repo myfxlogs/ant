@@ -456,7 +456,7 @@ const file_admin_trading_proto_rawDesc = "" +
 	"\x06orders\x18\x02 \x01(\x03R\x06orders\x12\x16\n" +
 	"\x06volume\x18\x03 \x01(\tR\x06volume2d\n" +
 	"\x13AdminTradingService\x12M\n" +
-	"\x11GetTradingSummary\x12 .ant.v1.GetTradingSummaryRequest\x1a\x16.ant.v1.TradingSummaryB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x11GetTradingSummary\x12 .ant.v1.GetTradingSummaryRequest\x1a\x16.ant.v1.TradingSummaryB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_admin_trading_proto_rawDescOnce sync.Once

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ant.v1;
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 message CheckRiskLimitsRequest { string account_id = 1; string symbol = 2; string volume = 3; string current_balance = 4; string current_equity = 5; int32 open_positions = 6; }
 message CheckRiskLimitsResponse { bool allowed = 1; bool is_within_limits = 2; string reason = 3; int32 max_positions = 4; int32 position_count = 5; string daily_loss_limit = 6; string daily_loss_used = 7; string max_drawdown_percent = 8; string drawdown_percent = 9; }

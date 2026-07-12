@@ -7,8 +7,8 @@ import (
 	"go.uber.org/zap"
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/service"
 )
 
 // Register implements the ConnectRPC handler for user registration.
@@ -33,5 +33,6 @@ func (s *AuthServer) Register(ctx context.Context, req *connect.Request[antv1.Re
 	}
 	return connect.NewResponse(&antv1.RegisterResponse{
 		User: &antv1.User{Id: user.ID.String(), Email: m.Email, AccountNumber: acctNum},
+		EmailVerificationSent: s.emailVerifSvc != nil,
 	}), nil
 }

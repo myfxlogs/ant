@@ -1200,7 +1200,7 @@ const file_strategy_experiment_proto_rawDesc = "" +
 	"\x18ListExperimentCandidates\x12'.ant.v1.ListExperimentCandidatesRequest\x1a(.ant.v1.ListExperimentCandidatesResponse\x12d\n" +
 	"\x16GetExperimentCandidate\x12%.ant.v1.GetExperimentCandidateRequest\x1a#.ant.v1.StrategyExperimentCandidate\x12j\n" +
 	"\x17PromoteCandidateToDraft\x12&.ant.v1.PromoteCandidateToDraftRequest\x1a'.ant.v1.PromoteCandidateToDraftResponse\x12Q\n" +
-	"\x0fWatchExperiment\x12\x1e.ant.v1.WatchExperimentRequest\x1a\x1c.ant.v1.WatchExperimentEvent0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x0fWatchExperiment\x12\x1e.ant.v1.WatchExperimentRequest\x1a\x1c.ant.v1.WatchExperimentEvent0\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_experiment_proto_rawDescOnce sync.Once

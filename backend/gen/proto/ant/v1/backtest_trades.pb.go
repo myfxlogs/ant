@@ -333,7 +333,7 @@ const file_backtest_trades_proto_rawDesc = "" +
 	"\x06losses\x18\x03 \x01(\x05R\x06losses\x12\x17\n" +
 	"\anet_pnl\x18\x04 \x01(\tR\x06netPnl2}\n" +
 	"\x15BacktestTradesService\x12d\n" +
-	"\x15ListBacktestRunTrades\x12$.ant.v1.ListBacktestRunTradesRequest\x1a%.ant.v1.ListBacktestRunTradesResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x15ListBacktestRunTrades\x12$.ant.v1.ListBacktestRunTradesRequest\x1a%.ant.v1.ListBacktestRunTradesResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_backtest_trades_proto_rawDescOnce sync.Once

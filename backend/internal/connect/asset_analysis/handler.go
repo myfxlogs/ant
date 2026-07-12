@@ -10,12 +10,12 @@ import (
 	"go.uber.org/zap"
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/analysis"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/service"
-	"anttrader/internal/service/systemai"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/analysis"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/service"
+	"alphaforge/internal/service/systemai"
 )
 
 // AssetAnalysisServer implements the AssetAnalysisService ConnectRPC handler.

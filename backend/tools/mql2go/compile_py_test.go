@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // TestCompilePython_BasicStrategy verifies that a simple Python strategy compiles to IR and bytecode.

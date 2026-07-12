@@ -47,7 +47,7 @@ const file_strategy_proto_rawDesc = "" +
 	"\vListSignals\x12\x1a.ant.v1.ListSignalsRequest\x1a\x1b.ant.v1.ListSignalsResponse\x12L\n" +
 	"\rExecuteSignal\x12\x1c.ant.v1.ExecuteSignalRequest\x1a\x1d.ant.v1.ExecuteSignalResponse\x12E\n" +
 	"\rConfirmSignal\x12\x1c.ant.v1.ConfirmSignalRequest\x1a\x16.google.protobuf.Empty\x12C\n" +
-	"\fCancelSignal\x12\x1b.ant.v1.CancelSignalRequest\x1a\x16.google.protobuf.EmptyB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\fCancelSignal\x12\x1b.ant.v1.CancelSignalRequest\x1a\x16.google.protobuf.EmptyB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var file_strategy_proto_goTypes = []any{
 	(*ListTemplatesRequest)(nil),        // 0: ant.v1.ListTemplatesRequest

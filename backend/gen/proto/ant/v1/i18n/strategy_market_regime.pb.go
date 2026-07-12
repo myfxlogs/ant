@@ -264,7 +264,7 @@ const file_i18n_strategy_market_regime_proto_rawDesc = "" +
 	"\fresult_title\x18\x13 \x01(\tR\vresultTitle\x12,\n" +
 	"\x12rule_version_alert\x18\x14 \x01(\tR\x10ruleVersionAlert\x12\x1a\n" +
 	"\bsubtitle\x18\x15 \x01(\tR\bsubtitle\x12\x14\n" +
-	"\x05title\x18\x16 \x01(\tR\x05titleB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x05title\x18\x16 \x01(\tR\x05titleB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_market_regime_proto_rawDescOnce sync.Once

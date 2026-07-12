@@ -425,7 +425,21 @@ const Base = {
       "loginSuccess": "Signed in",
       "logoutSuccess": "Signed out",
       "registerFailed": "Registration failed. Please try again later.",
-      "registerSuccess": "Registered successfully. Please sign in."
+      "registerSuccess": "Registration successful! Please check your email to verify your account."
+    },
+    "verify": {
+      "verifying": "Verifying your email...",
+      "successTitle": "Email Verified!",
+      "successDesc": "Your email has been verified successfully. You can now sign in.",
+      "failedTitle": "Verification Failed",
+      "failedDesc": "The verification link is invalid or has expired.",
+      "failed": "Verification failed. Please try again.",
+      "pendingTitle": "Check Your Email",
+      "pendingDesc": "We've sent a verification link to your email. Please click it to verify your account.",
+      "didntReceive": "Didn't receive the email?",
+      "resend": "Resend verification email",
+      "resendFailed": "Failed to resend verification email. Please try again later.",
+      "goLogin": "Go to Sign In"
     },
     "register": {
       "haveAccount": "Already have an account?",
@@ -441,6 +455,26 @@ const Base = {
       "passwordMin8": "Password must be at least 8 characters",
       "passwordMismatch": "Passwords do not match",
       "passwordRequired": "Password is required"
+    }
+  },
+  "onboarding": {
+    "welcome": "Welcome to AlphaForge, {{name}}!",
+    "subtitle": "Get started in 3 simple steps",
+    "dismiss": "Got it, dismiss",
+    "step1": {
+      "title": "Connect Your Account",
+      "desc": "Link your MT4/MT5 trading account to start.",
+      "action": "Bind Account"
+    },
+    "step2": {
+      "title": "Create Your First Strategy",
+      "desc": "Use AI to generate a trading strategy from natural language.",
+      "action": "Open Workspace"
+    },
+    "step3": {
+      "title": "Upgrade Your Plan",
+      "desc": "Unlock more AI tokens, strategies, and live trading with Pro.",
+      "action": "View Plans"
     }
   },
   "common": {

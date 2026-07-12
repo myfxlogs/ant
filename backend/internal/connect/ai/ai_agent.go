@@ -6,8 +6,8 @@ import (
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/repository"
 )
 
 var defaultAgents = []*antv1.AIAgentDefinition{

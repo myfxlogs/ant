@@ -530,14 +530,14 @@ if err := chmigrate.Run(ctx, ch, log); err != nil {
 
 ```bash
 # 启动 CH
-docker compose up -d ant-clickhouse
+docker compose up -d alphaforge-clickhouse
 sleep 5
 
 # 跑迁移
-docker exec ant-backend /app/ant-server migrate-ch  # 或 make migrate-ch
+docker exec alphaforge-backend /app/ant-server migrate-ch  # 或 make migrate-ch
 
 # 检查表
-docker exec ant-clickhouse clickhouse-client --query "
+docker exec alphaforge-clickhouse clickhouse-client --query "
   SELECT name FROM system.tables WHERE database='ant' ORDER BY name
 " | sort > /tmp/ch_tables.txt
 
@@ -550,12 +550,12 @@ signals
 EOF
 
 # 检查 TTL
-docker exec ant-clickhouse clickhouse-client --query "
+docker exec alphaforge-clickhouse clickhouse-client --query "
   SELECT name, ttl FROM system.tables WHERE database='ant' AND name IN ('md_ticks','factor_values','signals')
 " | grep -E "INTERVAL.*(90|2 YEAR)" || exit 1
 
 # 检查 ReplacingMergeTree
-docker exec ant-clickhouse clickhouse-client --query "
+docker exec alphaforge-clickhouse clickhouse-client --query "
   SELECT name, engine FROM system.tables WHERE database='ant' AND name IN ('md_ticks','md_bars')
 " | grep -c ReplacingMergeTree | grep -q 2 || exit 1
 ```

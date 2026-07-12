@@ -3,7 +3,7 @@ package agent
 import (
 	"testing"
 
-	"anttrader/tools/mql2go"
+	"alphaforge/tools/mql2go"
 )
 
 // TestBridge_TranslateBlindSpot verifies the bridge LLM prompt construction and response parsing.

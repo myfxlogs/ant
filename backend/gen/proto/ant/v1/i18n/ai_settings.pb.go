@@ -1553,7 +1553,7 @@ const file_i18n_ai_settings_proto_rawDesc = "" +
 	"\x1cvalidation_base_url_required\x18\xa2\x01 \x01(\tR\x19validationBaseUrlRequired\x127\n" +
 	"\x17validation_model_format\x18\xa3\x01 \x01(\tR\x15validationModelFormat\x12;\n" +
 	"\x19validation_model_required\x18\xa4\x01 \x01(\tR\x17validationModelRequired\x129\n" +
-	"\x18validation_name_required\x18\xa5\x01 \x01(\tR\x16validationNameRequiredB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x18validation_name_required\x18\xa5\x01 \x01(\tR\x16validationNameRequiredB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_ai_settings_proto_rawDescOnce sync.Once

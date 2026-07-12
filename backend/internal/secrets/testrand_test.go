@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"anttrader/internal/secrets"
+	"alphaforge/internal/secrets"
 )
 
 // deterministicRand is a concurrency-safe io.Reader that never fails, producing

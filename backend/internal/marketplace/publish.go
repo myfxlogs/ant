@@ -18,9 +18,9 @@ type publishedCacheEntry struct {
 }
 
 var (
-	publishedCacheMap   = make(map[string]publishedCacheEntry)
-	publishedCacheMu    sync.RWMutex
-	publishedCacheTTL   = 60 * time.Second
+	publishedCacheMap = make(map[string]publishedCacheEntry)
+	publishedCacheMu  sync.RWMutex
+	publishedCacheTTL = 60 * time.Second
 )
 
 func publishedCacheKey(userID, assetClass, keyword, sortBy string, limit, offset int) string {
@@ -160,7 +160,7 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 		return "", fmt.Errorf("marketplace: insert publish: %w", err)
 	}
 
-	_, err = tx.Exec(ctx, `INSERT INTO marketplace_strategies (id, strategy_id, publisher_id, title, description, price_model, price_amount, asset_class, symbols, timeframe, risk_level, tags, code_snippet, backtest_snapshot, platform_fee_rate, status, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'published',now(),now())`,
+	_, err = tx.Exec(ctx, `INSERT INTO marketplace_strategies (id, strategy_id, publisher_id, title, description, price_model, price_amount, asset_class, symbols, timeframe, risk_level, tags, code_snippet, backtest_snapshot, platform_fee_rate, status, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7::numeric,$8,$9,$10,$11,$12,$13,$14,$15::numeric,'published',now(),now())`,
 		stratID, params.StrategyID, params.UserID, params.Title, params.Description,
 		params.PriceModel, params.PriceAmount, params.AssetClass,
 		pgTextArray(params.Symbols), params.Timeframe, params.RiskLevel, pgTextArray(params.Tags),
@@ -237,7 +237,7 @@ func (s *Service) ListPublished(ctx context.Context, userID string, limit int, o
 func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit, offset int) (string, []interface{}) {
 	query := `SELECT usp.id, usp.platform_strategy_id, COALESCE(ms.title,st.name,usp.platform_strategy_id::text),
 			COALESCE(u.email, u.nickname, usp.user_id::text), usp.published_at, COALESCE(ms.title,''), COALESCE(ms.description,''),
-			COALESCE(ms.price_model,''), ms.price_amount, COALESCE(ms.asset_class,''),
+			COALESCE(ms.price_model,''), ms.price_amount::text, COALESCE(ms.asset_class,''),
 			COALESCE(ms.symbols::text,'{}'), ms.timeframe, COALESCE(ms.risk_level,''),
 			COALESCE(ms.tags::text,'{}'), COALESCE(ms.total_subscribers,0), ms.win_rate, ms.total_pnl,
 			COALESCE(r.avg_rating,0), COALESCE(r.rating_count,0),

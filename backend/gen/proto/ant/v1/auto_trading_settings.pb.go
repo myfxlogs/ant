@@ -530,7 +530,7 @@ const file_auto_trading_settings_proto_rawDesc = "" +
 	"\x11active_strategies\x18\x02 \x01(\x05R\x10activeStrategies\x12'\n" +
 	"\x0fpending_signals\x18\x03 \x01(\x05R\x0ependingSignals\x12)\n" +
 	"\x10today_executions\x18\x04 \x01(\x05R\x0ftodayExecutions\x12!\n" +
-	"\ftoday_profit\x18\x05 \x01(\tR\vtodayProfitB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\ftoday_profit\x18\x05 \x01(\tR\vtodayProfitB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_auto_trading_settings_proto_rawDescOnce sync.Once

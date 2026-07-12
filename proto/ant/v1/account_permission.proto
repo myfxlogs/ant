@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ant.v1;
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 message VerifyTradePermissionRequest { string id = 1; }
 message VerifyTradePermissionResponse { bool has_trade_permission = 1; bool is_investor = 2; bool verified = 3; string message = 4; }

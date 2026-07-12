@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Dropdown, Form, Input } from 'antd';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
@@ -10,7 +10,6 @@ import Seo from '@/components/common/Seo';
 export default function Register() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
   const { register } = useAuth();
 
   const languages: { key: SupportedLanguage; labelKey: string }[] = [
@@ -34,13 +33,10 @@ export default function Register() {
   const onFinish = async (values: any) => {
     setLoading(true);
     try {
-      const success = await register({
+      await register({
         password: values.password,
         email: values.email,
       });
-      if (success) {
-        navigate('/login');
-      }
     } finally {
       setLoading(false);
     }

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/repository"
 )
 
 // RowToProto converts a repository row into the protobuf config message.

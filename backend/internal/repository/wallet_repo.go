@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 // WalletRepository provides database access for user wallets and transactions.
@@ -36,6 +36,26 @@ func (r *WalletRepository) GetByUserID(ctx context.Context, userID uuid.UUID) (*
 			return nil, nil
 		}
 		return nil, fmt.Errorf("wallet repo: get by user id: %w", err)
+	}
+	return &w, nil
+}
+
+// GetByUserIDTx returns the wallet for a given user within a transaction, or nil if not found.
+func (r *WalletRepository) GetByUserIDTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID) (*model.Wallet, error) {
+	var w model.Wallet
+	err := tx.QueryRow(ctx, `
+		SELECT w.id, w.user_id, w.balance::text, w.frozen_balance::text, w.currency,
+		       w.created_at, w.updated_at
+		FROM user_wallets w
+		WHERE w.user_id = $1
+		FOR UPDATE
+	`, userID).Scan(&w.ID, &w.UserID, &w.Balance, &w.FrozenBalance, &w.Currency,
+		&w.CreatedAt, &w.UpdatedAt)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("wallet repo: get by user id (tx): %w", err)
 	}
 	return &w, nil
 }
@@ -89,10 +109,12 @@ func (r *WalletRepository) AdjustBalanceTx(ctx context.Context, tx pgx.Tx, walle
 	}
 
 	// Record transaction.
-	_, err = tx.Exec(ctx, `
+	var txID uuid.UUID
+	err = tx.QueryRow(ctx, `
 		INSERT INTO wallet_transactions (wallet_id, user_id, tx_type, amount, balance_before, balance_after, description, operator_id)
 		VALUES ($1, $2, $3, $4::numeric, $5::numeric, $6::numeric, $7, $8)
-	`, walletID, userID, txType, amount, balanceBefore, balanceAfter, description, operatorID)
+		RETURNING id
+	`, walletID, userID, txType, amount, balanceBefore, balanceAfter, description, operatorID).Scan(&txID)
 	if err != nil {
 		return nil, fmt.Errorf("wallet repo: insert transaction: %w", err)
 	}
@@ -110,6 +132,7 @@ func (r *WalletRepository) AdjustBalanceTx(ctx context.Context, tx pgx.Tx, walle
 	if err != nil {
 		return nil, fmt.Errorf("wallet repo: re-query after adjust: %w", err)
 	}
+	w.LastTransactionID = &txID
 	return &w, nil
 }
 

@@ -470,7 +470,7 @@ const file_i18n_strategy_backtest_run_proto_rawDesc = "" +
 	"\x0etrades_summary\x18* \x01(\tR\rtradesSummary\x12#\n" +
 	"\rtrades_ticket\x18+ \x01(\tR\ftradesTicket\x12!\n" +
 	"\ftrades_title\x18, \x01(\tR\vtradesTitle\x12#\n" +
-	"\rtrades_volume\x18- \x01(\tR\ftradesVolumeB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\rtrades_volume\x18- \x01(\tR\ftradesVolumeB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_backtest_run_proto_rawDescOnce sync.Once

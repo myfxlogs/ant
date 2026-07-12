@@ -6,7 +6,7 @@ import (
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 func TestRunBacktest_MockFallback(t *testing.T) {

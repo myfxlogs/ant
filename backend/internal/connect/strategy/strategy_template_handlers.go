@@ -10,8 +10,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/service"
 )
 
 // templateRowToProto converts a service.TemplateRow to a proto StrategyTemplate.

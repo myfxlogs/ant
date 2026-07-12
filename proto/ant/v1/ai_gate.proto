@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ant.v1;
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 // GateService evaluates AI-generated strategies through the 6-gate pipeline.
 // Only strategies that pass all 6 gates are eligible for PromoteToLive.

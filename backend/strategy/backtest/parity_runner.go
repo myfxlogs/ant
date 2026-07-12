@@ -7,7 +7,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/sdk"
 )
 
 // ParityTestInput holds all inputs for a parity test run.

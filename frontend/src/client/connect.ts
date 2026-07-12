@@ -45,6 +45,9 @@ import { AgentGatewayService } from "../gen/ant/v1/agent_gateway_pb";
 import { AdminAgentSettingsService } from "../gen/ant/v1/admin_settings_pb";
 import { AgentHooksService } from "../gen/ant/v1/agent_hooks_pb";
 import { ShareService } from "../gen/ant/v1/share_pb";
+import { AdminBillingService } from "../gen/ant/v1/admin_billing_pb";
+import { AdminMonitorService } from "../gen/ant/v1/admin_monitor_pb";
+import { SubscriptionService } from "../gen/ant/v1/subscription_pb";
 import { streamTransport, transport } from "./transport";
 
 export const walletClient = createClient(WalletService, transport);
@@ -110,3 +113,6 @@ export const adminAgentSettingsClient = createClient(AdminAgentSettingsService, 
 export const agentHooksClient = createClient(AgentHooksService, transport);
 const publicTransport = createConnectTransport({ baseUrl: (import.meta as any).env?.VITE_API_URL || (typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:8080"), useBinaryFormat: true });
 export const shareClient = createClient(ShareService, publicTransport);
+export const adminBillingClient = createClient(AdminBillingService, transport);
+export const adminMonitorStreamClient = createClient(AdminMonitorService, streamTransport);
+export const subscriptionClient = createClient(SubscriptionService, transport);

@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	systemai "anttrader/internal/service/systemai"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 // ── Agent Loop ──

@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 func (r *LogRepository) CreateOperationLog(ctx context.Context, log *model.SystemOperationLog) error {

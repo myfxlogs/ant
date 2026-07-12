@@ -10,11 +10,11 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"anttrader/internal/model"
-	"anttrader/internal/mthub"
-	"anttrader/internal/notification"
-	"anttrader/internal/notifier"
-	"anttrader/internal/repository"
+	"alphaforge/internal/model"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/notification"
+	"alphaforge/internal/notifier"
+	"alphaforge/internal/repository"
 )
 
 // MarginLevel represents severity levels for margin call detection (B-2.3).

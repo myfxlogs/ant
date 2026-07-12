@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 // Subscriber receives notification rows pushed by SendNotification.

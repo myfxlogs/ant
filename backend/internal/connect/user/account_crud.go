@@ -11,9 +11,9 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/service"
 )
 
 // CreateAccount inserts a new MT account, verifies credentials by connecting to MT,

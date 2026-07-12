@@ -245,7 +245,7 @@ const file_common_proto_rawDesc = "" +
 	"\areasons\x18\x03 \x03(\tR\areasons\x12\x1a\n" +
 	"\bwarnings\x18\x04 \x03(\tR\bwarnings\x12\x1f\n" +
 	"\vis_reliable\x18\x05 \x01(\bR\n" +
-	"isReliableB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"isReliableB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_common_proto_rawDescOnce sync.Once

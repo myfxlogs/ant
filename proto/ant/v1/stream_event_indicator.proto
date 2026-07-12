@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ant.v1;
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 // IndicatorSeries holds one named line of indicator output values.
 // Multi-line indicators (MACD, BOLL, KDJ) produce one series per line.

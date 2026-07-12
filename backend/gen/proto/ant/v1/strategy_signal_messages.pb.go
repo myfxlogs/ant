@@ -528,7 +528,7 @@ const file_strategy_signal_messages_proto_rawDesc = "" +
 	"\x14ConfirmSignalRequest\x12\x1b\n" +
 	"\tsignal_id\x18\x01 \x01(\tR\bsignalId\"2\n" +
 	"\x13CancelSignalRequest\x12\x1b\n" +
-	"\tsignal_id\x18\x01 \x01(\tR\bsignalIdB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\tsignal_id\x18\x01 \x01(\tR\bsignalIdB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_signal_messages_proto_rawDescOnce sync.Once

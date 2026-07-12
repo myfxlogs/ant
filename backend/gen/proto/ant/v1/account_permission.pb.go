@@ -477,7 +477,7 @@ const file_account_permission_proto_rawDesc = "" +
 	"freeMargin\x12\x1a\n" +
 	"\bleverage\x18\a \x01(\x05R\bleverage\x12\x1a\n" +
 	"\bcurrency\x18\b \x01(\tR\bcurrency\x12!\n" +
-	"\faccount_type\x18\t \x01(\tR\vaccountTypeB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\faccount_type\x18\t \x01(\tR\vaccountTypeB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_account_permission_proto_rawDescOnce sync.Once

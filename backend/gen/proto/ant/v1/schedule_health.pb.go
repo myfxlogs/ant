@@ -540,7 +540,7 @@ const file_schedule_health_proto_rawDesc = "" +
 	"\n" +
 	"close_time\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcloseTime2q\n" +
 	"\x15ScheduleHealthService\x12X\n" +
-	"\x11GetScheduleHealth\x12 .ant.v1.GetScheduleHealthRequest\x1a!.ant.v1.GetScheduleHealthResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x11GetScheduleHealth\x12 .ant.v1.GetScheduleHealthRequest\x1a!.ant.v1.GetScheduleHealthResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_schedule_health_proto_rawDescOnce sync.Once

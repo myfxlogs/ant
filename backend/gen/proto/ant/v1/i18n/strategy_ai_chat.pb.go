@@ -165,7 +165,7 @@ const file_i18n_strategy_ai_chat_proto_rawDesc = "" +
 	"\tstreaming\x18\t \x01(\tR\tstreaming\x12\x14\n" +
 	"\x05title\x18\n" +
 	" \x01(\tR\x05title\x12\x10\n" +
-	"\x03you\x18\v \x01(\tR\x03youB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x03you\x18\v \x01(\tR\x03youB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_ai_chat_proto_rawDescOnce sync.Once

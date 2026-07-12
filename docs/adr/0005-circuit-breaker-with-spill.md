@@ -218,22 +218,22 @@ func TestChaos_CHDownAndUp_NoDataLoss(t *testing.T) { ... }
 
 ```bash
 # 模拟 CH 重启 60s
-docker stop ant-clickhouse
+docker stop alphaforge-clickhouse
 sleep 60
-docker start ant-clickhouse
+docker start alphaforge-clickhouse
 
 # 等待 30s 让 SpillReplay 处理
 sleep 30
 
 # 验证：spill 目录已清空 / processed 子目录有归档
-SPILL_FILES=$(docker exec ant-backend find /var/lib/ant/spill -maxdepth 1 -name "*.jsonl" | wc -l)
+SPILL_FILES=$(docker exec alphaforge-backend find /var/lib/ant/spill -maxdepth 1 -name "*.jsonl" | wc -l)
 test "$SPILL_FILES" -eq 0
 
-PROCESSED=$(docker exec ant-backend find /var/lib/ant/spill/processed -name "*.jsonl" | wc -l)
+PROCESSED=$(docker exec alphaforge-backend find /var/lib/ant/spill/processed -name "*.jsonl" | wc -l)
 test "$PROCESSED" -gt 0
 
 # 验证 CH 数据连续
-docker exec ant-clickhouse clickhouse-client --query "
+docker exec alphaforge-clickhouse clickhouse-client --query "
   SELECT
     count() AS total,
     countIf(arrived_unix_ms BETWEEN $START AND $END) AS during_outage

@@ -6,7 +6,7 @@ import (
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/proto"
 
-	antv1 "anttrader/gen/proto/ant/v1"
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 // paramsProtoToMap converts proto binary StrategyParams to a map for ExecuteBacktestRequest.

@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"anttrader/internal/costsvc"
+	"alphaforge/internal/costsvc"
 )
 
 func newTestEngine(bars []Bar, capital float64, cm *costsvc.CostModel) *Engine {

@@ -44,7 +44,7 @@ linters-settings:
       - (io.Writer).Write
       - (github.com/ClickHouse/clickhouse-go/v2/lib/driver.Batch).Send
       - (connectrpc.com/connect.Stream).Send
-      - (*anttrader/internal/trace.Tracer).Shutdown
+      - (*alphaforge/internal/trace.Tracer).Shutdown
       - (*go.opentelemetry.io/otel/sdk/trace.TracerProvider).Shutdown
       - os.MkdirAll
       - os.Rename

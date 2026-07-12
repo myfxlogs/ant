@@ -515,7 +515,7 @@ const file_i18n_strategy_schedule_logs_proto_rawDesc = "" +
 	"\vtabs_orders\x180 \x01(\tR\n" +
 	"tabsOrders\x12\x14\n" +
 	"\x05title\x181 \x01(\tR\x05title\x12&\n" +
-	"\x0ftitle_with_name\x182 \x01(\tR\rtitleWithNameB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x0ftitle_with_name\x182 \x01(\tR\rtitleWithNameB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_schedule_logs_proto_rawDescOnce sync.Once

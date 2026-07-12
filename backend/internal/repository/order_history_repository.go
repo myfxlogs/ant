@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 func (r *LogRepository) CreateOrderHistory(ctx context.Context, order *model.OrderHistory) error {

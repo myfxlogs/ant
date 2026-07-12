@@ -8,14 +8,15 @@ import (
 
 // Wallet represents a user's platform wallet.
 type Wallet struct {
-	ID            uuid.UUID  `json:"id" db:"id"`
-	UserID        uuid.UUID  `json:"user_id" db:"user_id"`
-	Balance       string     `json:"balance" db:"balance"`
-	FrozenBalance string     `json:"frozen_balance" db:"frozen_balance"`
-	Currency      string     `json:"currency" db:"currency"`
-	CreatedAt     time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt     time.Time  `json:"updated_at" db:"updated_at"`
-	AccountNumber *string    `json:"account_number,omitempty" db:"-"`
+	ID                uuid.UUID  `json:"id" db:"id"`
+	UserID            uuid.UUID  `json:"user_id" db:"user_id"`
+	Balance           string     `json:"balance" db:"balance"`
+	FrozenBalance     string     `json:"frozen_balance" db:"frozen_balance"`
+	Currency          string     `json:"currency" db:"currency"`
+	CreatedAt         time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt         time.Time  `json:"updated_at" db:"updated_at"`
+	AccountNumber     *string    `json:"account_number,omitempty" db:"-"`
+	LastTransactionID *uuid.UUID `json:"last_transaction_id,omitempty" db:"-"`
 }
 
 // WalletTransaction is an immutable record of a balance change.

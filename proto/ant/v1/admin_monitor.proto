@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package ant.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
+
+// AdminMonitorService — real-time system monitoring via SSE.
+// Pushes runtime metrics every 5 seconds to admin UI.
+service AdminMonitorService {
+  rpc SubscribeMetrics(SubscribeMetricsRequest) returns (stream MonitorSnapshot);
+}
+
+message SubscribeMetricsRequest {}
+
+message MonitorSnapshot {
+  google.protobuf.Timestamp timestamp = 1;
+  int64 uptime_seconds = 2;
+
+  // Go runtime
+  uint32 goroutines = 3;
+  uint64 heap_alloc_bytes = 4;
+  uint64 heap_sys_bytes = 5;
+  uint64 stack_inuse_bytes = 6;
+  uint64 num_gc = 7;
+  double gc_pause_avg_ns = 8;
+  double cpu_percent = 9;
+
+  // Service health
+  string db_status = 10;
+  string redis_status = 11;
+  string nats_status = 12;
+  int32 db_pool_total = 13;
+  int32 db_pool_idle = 14;
+  int32 db_pool_acquired = 15;
+
+  // mdgateway metrics
+  int64 spill_pending_files = 16;
+  int64 dlq_parse_errors = 17;
+  int64 dlq_bid_gt_ask = 18;
+  int64 dlq_non_positive = 19;
+  int64 bar_dropped_total = 20;
+  int64 signal_dropped_total = 21;
+  int64 stale_accounts = 22;
+  int64 dead_accounts = 23;
+  double md_gap_avg_seconds = 24;
+  double md_gap_max_seconds = 25;
+  int64 consumer_lag = 26;
+
+  // SSE connections
+  int32 sse_active_streams = 27;
+}

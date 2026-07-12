@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	antv1 "anttrader/gen/proto/ant/v1"
+	antv1 "alphaforge/gen/proto/ant/v1"
 
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	"anttrader/internal/usermgr"
+	"alphaforge/internal/usermgr"
 )
 
 // CloseOrder closes an existing position.

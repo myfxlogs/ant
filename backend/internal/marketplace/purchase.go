@@ -55,20 +55,28 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 
 	// 1. Look up strategy price, publisher, and platform fee (source of truth from DB).
 	var priceModel string
-	var priceAmount float64
+	var priceAmountStr string
 	var strategyTitle string
 	var dbPublisherID string
-	var platformFeeRate float64
+	var platformFeeRateStr string
 	err = tx.QueryRow(ctx,
-		`SELECT price_model, COALESCE(price_amount, 0), title, publisher_id::text,
-		        COALESCE(platform_fee_rate, 0)
+		`SELECT price_model, COALESCE(price_amount::text, '0'), title, publisher_id::text,
+		        COALESCE(platform_fee_rate::text, '0')
 		 FROM marketplace_strategies WHERE strategy_id = $1 AND status = 'published'`,
 		sid,
-	).Scan(&priceModel, &priceAmount, &strategyTitle, &dbPublisherID, &platformFeeRate)
+	).Scan(&priceModel, &priceAmountStr, &strategyTitle, &dbPublisherID, &platformFeeRateStr)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: strategy not published")
 	}
-	if (priceModel != PriceModelOnce && priceModel != PriceModelSubscription) || priceAmount <= 0 {
+	priceDec, err := decimal.NewFromString(priceAmountStr)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: invalid price_amount in DB: %w", err)
+	}
+	feeRateDec, err := decimal.NewFromString(platformFeeRateStr)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: invalid platform_fee_rate in DB: %w", err)
+	}
+	if (priceModel != PriceModelOnce && priceModel != PriceModelSubscription) || !priceDec.IsPositive() {
 		return nil, fmt.Errorf("marketplace: strategy is not purchasable")
 	}
 
@@ -116,8 +124,8 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 		return nil, fmt.Errorf("marketplace: wallet balance unavailable")
 	}
 
-	amountStr := fmt.Sprintf("%.2f", priceAmount)
-	negAmountStr := fmt.Sprintf("-%.2f", priceAmount)
+	amountStr := priceDec.StringFixed(2)
+	negAmountStr := "-" + amountStr
 
 	// 5. Deduct buyer balance (DB enforces non-negative via CHECK constraint).
 	var buyerBalanceAfter string
@@ -135,7 +143,7 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 	buyerTxID := uuid.New()
 	buyerDesc := fmt.Sprintf("Purchase strategy: %s", strategyTitle)
 	err = tx.QueryRow(ctx,
-	`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+		`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
 			 VALUES ($1, $2, $3, $4, $5::numeric, $6::numeric, $7::numeric, $8)
 			 RETURNING id`,
 		buyerTxID, buyerWalletID, uid, TxTypePurchase, negAmountStr, buyerBalanceBefore, buyerBalanceAfter, buyerDesc,
@@ -145,16 +153,9 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 	}
 
 	// 7. Credit publisher wallet (minus platform fee). Use decimal for precise arithmetic.
-	priceDec := decimal.NewFromFloat(priceAmount)
-	publisherAmount := priceAmount
-	platformFee := 0.0
-	if platformFeeRate > 0 {
-		feeDec := priceDec.Mul(decimal.NewFromFloat(platformFeeRate))
-		platformFee, _ = feeDec.Float64()
-		publisherDec := priceDec.Sub(feeDec)
-		publisherAmount, _ = publisherDec.Float64()
-	}
-	pubAmountStr := fmt.Sprintf("%.2f", publisherAmount)
+	feeDec := priceDec.Mul(feeRateDec)
+	pubDec := priceDec.Sub(feeDec)
+	pubAmountStr := pubDec.StringFixed(2)
 	var pubWalletID uuid.UUID
 	var pubBalanceBefore string
 	err = tx.QueryRow(ctx,
@@ -188,11 +189,11 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 	// 8. Record publisher wallet_transaction (sale credit).
 	pubTxID := uuid.New()
 	saleDesc := fmt.Sprintf("Strategy sale: %s", strategyTitle)
-	if platformFee > 0 {
-		saleDesc += fmt.Sprintf(" (platform fee: %.2f)", platformFee)
+	if feeDec.GreaterThan(decimal.Zero) {
+		saleDesc += fmt.Sprintf(" (platform fee: %s)", feeDec.StringFixed(2))
 	}
 	_, err = tx.Exec(ctx,
-	`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+		`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
 			 VALUES ($1, $2, $3, $4, $5::numeric, $6::numeric, $7::numeric, $8)`,
 		pubTxID, pubWalletID, pid, TxTypeSale, pubAmountStr, pubBalanceBefore, pubBalanceAfter, saleDesc,
 	)
@@ -201,8 +202,8 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 	}
 
 	// 8b. Credit platform fee to system wallet with full balance tracking.
-	if platformFee > 0 {
-		feeStr := fmt.Sprintf("%.2f", platformFee)
+	if feeDec.GreaterThan(decimal.Zero) {
+		feeStr := feeDec.StringFixed(2)
 
 		// Ensure system wallet exists.
 		var sysWalletID uuid.UUID
@@ -298,13 +299,13 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 // ── Admin Pricing ─────────────────────────────────────────────────────────────
 
 // SetPricing updates the pricing model, amount, and platform fee rate for a published strategy.
-func (s *Service) SetPricing(ctx context.Context, strategyID, priceModel string, priceAmount, platformFeeRate float64) error {
+func (s *Service) SetPricing(ctx context.Context, strategyID, priceModel, priceAmount, platformFeeRate string) error {
 	sid, err := uuid.Parse(strategyID)
 	if err != nil {
 		return fmt.Errorf("marketplace: invalid strategy_id: %w", err)
 	}
 	_, err = s.pg.Exec(ctx,
-		`UPDATE marketplace_strategies SET price_model=$2, price_amount=$3, platform_fee_rate=$4, updated_at=now() WHERE strategy_id=$1`,
+		`UPDATE marketplace_strategies SET price_model=$2, price_amount=$3::numeric, platform_fee_rate=$4::numeric, updated_at=now() WHERE strategy_id=$1`,
 		sid, priceModel, priceAmount, platformFeeRate)
 	if err == nil {
 		publishedCacheClear()

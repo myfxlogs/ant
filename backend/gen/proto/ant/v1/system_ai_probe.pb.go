@@ -250,7 +250,7 @@ const file_system_ai_probe_proto_rawDesc = "" +
 	"providerId\x12\x0e\n" +
 	"\x02ok\x18\x02 \x01(\bR\x02ok\x12\x1f\n" +
 	"\vmodel_count\x18\x03 \x01(\x05R\n" +
-	"modelCountB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"modelCountB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_system_ai_probe_proto_rawDescOnce sync.Once

@@ -8,10 +8,10 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/service"
 )
 
 // WalletServer implements ant.v1.WalletServiceHandler.

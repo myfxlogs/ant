@@ -195,7 +195,7 @@ config.LegacyFallback = true（默认 ON，M9 删除）
 | `/readyz` | 准备好接流量 | PG/CH/Redis/NATS 任一不通 |
 | `/metrics` | Prometheus 抓取 | — |
 
-**已废弃**：原计划的 `/livez/account/{id}` per-account 端点 — k8s liveness 哲学只关心进程级；账户级健康是观测问题（Prometheus），非健康检查问题。改为 `mt_account_connected{account_id, broker}` Gauge，由 Grafana alert（决策见 BACKLOG RV-C4）。
+**已废弃**：原计划的 `/livez/account/{id}` per-account 端点 — k8s liveness 哲学只关心进程级；账户级健康是观测问题（Prometheus），非健康检查问题。改为 `mt_account_connected{account_id, broker}` Gauge，由 AlertManager 告警（决策见 BACKLOG RV-C4）。
 
 ### 5.2 readyz 检查项
 

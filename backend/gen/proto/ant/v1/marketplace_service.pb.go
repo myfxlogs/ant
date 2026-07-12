@@ -1083,6 +1083,7 @@ type SubscriptionItem struct {
 	Kind           string                 `protobuf:"bytes,4,opt,name=kind,proto3" json:"kind,omitempty"`
 	Active         bool                   `protobuf:"varint,5,opt,name=active,proto3" json:"active,omitempty"`
 	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	ExpiresAt      *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"` // null = permanent (one-time purchase)
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -1155,6 +1156,13 @@ func (x *SubscriptionItem) GetActive() bool {
 func (x *SubscriptionItem) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *SubscriptionItem) GetExpiresAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ExpiresAt
 	}
 	return nil
 }
@@ -2300,7 +2308,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x18ListSubscriptionsRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"[\n" +
 	"\x19ListSubscriptionsResponse\x12>\n" +
-	"\rsubscriptions\x18\x01 \x03(\v2\x18.ant.v1.SubscriptionItemR\rsubscriptions\"\xe9\x01\n" +
+	"\rsubscriptions\x18\x01 \x03(\v2\x18.ant.v1.SubscriptionItemR\rsubscriptions\"\xa4\x02\n" +
 	"\x10SubscriptionItem\x12'\n" +
 	"\x0fsubscription_id\x18\x01 \x01(\tR\x0esubscriptionId\x12$\n" +
 	"\x0etarget_user_id\x18\x02 \x01(\tR\ftargetUserId\x12\x1f\n" +
@@ -2309,7 +2317,9 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x04kind\x18\x04 \x01(\tR\x04kind\x12\x16\n" +
 	"\x06active\x18\x05 \x01(\bR\x06active\x129\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"g\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"expires_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\"g\n" +
 	"\x13RateStrategyRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1f\n" +
 	"\vstrategy_id\x18\x02 \x01(\tR\n" +
@@ -2411,7 +2421,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x12SetStrategyPricing\x12!.ant.v1.SetStrategyPricingRequest\x1a\".ant.v1.SetStrategyPricingResponse\x12d\n" +
 	"\x11UnpublishStrategy\x12&.ant.v1.UnpublishMarketStrategyRequest\x1a'.ant.v1.UnpublishMarketStrategyResponse\x12X\n" +
 	"\x11GetPublisherStats\x12 .ant.v1.GetPublisherStatsRequest\x1a!.ant.v1.GetPublisherStatsResponse\x12R\n" +
-	"\x11RunMarketBacktest\x12 .ant.v1.RunMarketBacktestRequest\x1a\x19.ant.v1.BacktestRunUpdate0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x11RunMarketBacktest\x12 .ant.v1.RunMarketBacktestRequest\x1a\x19.ant.v1.BacktestRunUpdate0\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_marketplace_service_proto_rawDescOnce sync.Once
@@ -2471,44 +2481,45 @@ var file_marketplace_service_proto_depIdxs = []int32{
 	1,  // 4: ant.v1.PublishedStrategy.backtest_snapshot:type_name -> ant.v1.BacktestSnapshot
 	14, // 5: ant.v1.ListSubscriptionsResponse.subscriptions:type_name -> ant.v1.SubscriptionItem
 	32, // 6: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
-	19, // 7: ant.v1.ListRatingsResponse.ratings:type_name -> ant.v1.RatingItem
-	32, // 8: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
-	24, // 9: ant.v1.ListCommentsResponse.comments:type_name -> ant.v1.CommentItem
-	32, // 10: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
-	33, // 11: ant.v1.RunMarketBacktestRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
-	0,  // 12: ant.v1.MarketplaceService.PublishStrategy:input_type -> ant.v1.PublishStrategyRequest
-	3,  // 13: ant.v1.MarketplaceService.Subscribe:input_type -> ant.v1.SubscribeRequest
-	5,  // 14: ant.v1.MarketplaceService.Unsubscribe:input_type -> ant.v1.UnsubscribeRequest
-	7,  // 15: ant.v1.MarketplaceService.PurchaseStrategy:input_type -> ant.v1.PurchaseStrategyRequest
-	9,  // 16: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
-	12, // 17: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
-	15, // 18: ant.v1.MarketplaceService.RateStrategy:input_type -> ant.v1.RateStrategyRequest
-	17, // 19: ant.v1.MarketplaceService.ListRatings:input_type -> ant.v1.ListRatingsRequest
-	20, // 20: ant.v1.MarketplaceService.CommentOnStrategy:input_type -> ant.v1.CommentOnStrategyRequest
-	22, // 21: ant.v1.MarketplaceService.ListComments:input_type -> ant.v1.ListCommentsRequest
-	25, // 22: ant.v1.MarketplaceService.SetStrategyPricing:input_type -> ant.v1.SetStrategyPricingRequest
-	27, // 23: ant.v1.MarketplaceService.UnpublishStrategy:input_type -> ant.v1.UnpublishMarketStrategyRequest
-	29, // 24: ant.v1.MarketplaceService.GetPublisherStats:input_type -> ant.v1.GetPublisherStatsRequest
-	31, // 25: ant.v1.MarketplaceService.RunMarketBacktest:input_type -> ant.v1.RunMarketBacktestRequest
-	2,  // 26: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
-	4,  // 27: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
-	6,  // 28: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
-	8,  // 29: ant.v1.MarketplaceService.PurchaseStrategy:output_type -> ant.v1.PurchaseStrategyResponse
-	10, // 30: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
-	13, // 31: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
-	16, // 32: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
-	18, // 33: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
-	21, // 34: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
-	23, // 35: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
-	26, // 36: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
-	28, // 37: ant.v1.MarketplaceService.UnpublishStrategy:output_type -> ant.v1.UnpublishMarketStrategyResponse
-	30, // 38: ant.v1.MarketplaceService.GetPublisherStats:output_type -> ant.v1.GetPublisherStatsResponse
-	34, // 39: ant.v1.MarketplaceService.RunMarketBacktest:output_type -> ant.v1.BacktestRunUpdate
-	26, // [26:40] is the sub-list for method output_type
-	12, // [12:26] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	32, // 7: ant.v1.SubscriptionItem.expires_at:type_name -> google.protobuf.Timestamp
+	19, // 8: ant.v1.ListRatingsResponse.ratings:type_name -> ant.v1.RatingItem
+	32, // 9: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
+	24, // 10: ant.v1.ListCommentsResponse.comments:type_name -> ant.v1.CommentItem
+	32, // 11: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
+	33, // 12: ant.v1.RunMarketBacktestRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
+	0,  // 13: ant.v1.MarketplaceService.PublishStrategy:input_type -> ant.v1.PublishStrategyRequest
+	3,  // 14: ant.v1.MarketplaceService.Subscribe:input_type -> ant.v1.SubscribeRequest
+	5,  // 15: ant.v1.MarketplaceService.Unsubscribe:input_type -> ant.v1.UnsubscribeRequest
+	7,  // 16: ant.v1.MarketplaceService.PurchaseStrategy:input_type -> ant.v1.PurchaseStrategyRequest
+	9,  // 17: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
+	12, // 18: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
+	15, // 19: ant.v1.MarketplaceService.RateStrategy:input_type -> ant.v1.RateStrategyRequest
+	17, // 20: ant.v1.MarketplaceService.ListRatings:input_type -> ant.v1.ListRatingsRequest
+	20, // 21: ant.v1.MarketplaceService.CommentOnStrategy:input_type -> ant.v1.CommentOnStrategyRequest
+	22, // 22: ant.v1.MarketplaceService.ListComments:input_type -> ant.v1.ListCommentsRequest
+	25, // 23: ant.v1.MarketplaceService.SetStrategyPricing:input_type -> ant.v1.SetStrategyPricingRequest
+	27, // 24: ant.v1.MarketplaceService.UnpublishStrategy:input_type -> ant.v1.UnpublishMarketStrategyRequest
+	29, // 25: ant.v1.MarketplaceService.GetPublisherStats:input_type -> ant.v1.GetPublisherStatsRequest
+	31, // 26: ant.v1.MarketplaceService.RunMarketBacktest:input_type -> ant.v1.RunMarketBacktestRequest
+	2,  // 27: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
+	4,  // 28: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
+	6,  // 29: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
+	8,  // 30: ant.v1.MarketplaceService.PurchaseStrategy:output_type -> ant.v1.PurchaseStrategyResponse
+	10, // 31: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
+	13, // 32: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
+	16, // 33: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
+	18, // 34: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
+	21, // 35: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
+	23, // 36: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
+	26, // 37: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
+	28, // 38: ant.v1.MarketplaceService.UnpublishStrategy:output_type -> ant.v1.UnpublishMarketStrategyResponse
+	30, // 39: ant.v1.MarketplaceService.GetPublisherStats:output_type -> ant.v1.GetPublisherStatsResponse
+	34, // 40: ant.v1.MarketplaceService.RunMarketBacktest:output_type -> ant.v1.BacktestRunUpdate
+	27, // [27:41] is the sub-list for method output_type
+	13, // [13:27] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_marketplace_service_proto_init() }

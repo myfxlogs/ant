@@ -834,7 +834,7 @@ const file_i18n_strategy_gen_proto_rawDesc = "" +
 	"\tplan_exit\x18R \x01(\tR\bplanExit\x12\x1b\n" +
 	"\tplan_risk\x18S \x01(\tR\bplanRisk\x12\x1f\n" +
 	"\vplan_market\x18T \x01(\tR\n" +
-	"planMarketB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"planMarketB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_gen_proto_rawDescOnce sync.Once

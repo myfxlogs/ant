@@ -8,7 +8,7 @@
 
 ## 1. 概述
 
-Strategy Pipeline 是 AntTrader 平台中 **从 MQL 源码到实盘执行** 的完整管线。它取代 MetaTrader EA 运行时，用进程内 Bytecode VM 执行 MQL 策略，实现：
+Strategy Pipeline 是 AlphaForge 平台中 **从 MQL 源码到实盘执行** 的完整管线。它取代 MetaTrader EA 运行时，用进程内 Bytecode VM 执行 MQL 策略，实现：
 
 - MQL4/MQL5 EA → tree-sitter 解析 → AST → Bytecode 编译 → VM 执行（进程内，无 WASM）
 - MQL 源码是唯一真实来源（`imported_strategies.source_code`），不再生成或存储 Go 代码

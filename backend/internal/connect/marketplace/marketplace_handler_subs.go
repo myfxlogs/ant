@@ -12,9 +12,9 @@ import (
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/marketplace"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/marketplace"
 )
 
 func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Request[antv1.PublishStrategyRequest]) (*connect.Response[antv1.PublishStrategyResponse], error) {
@@ -36,7 +36,7 @@ func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Re
 		Title:                m.Title,
 		Description:          m.Description,
 		PriceModel:           m.PriceModel,
-		PriceAmount:          parseFloat64(m.PriceAmount),
+		PriceAmount:          m.PriceAmount,
 		AssetClass:           m.AssetClass,
 		Symbols:              m.Symbols,
 		Timeframe:            m.Timeframe,
@@ -44,7 +44,7 @@ func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Re
 		Tags:                 m.Tags,
 		CodeSnippet:          m.CodeSnippet,
 		BacktestSnapshotJSON: snapshotJSON,
-		PlatformFeeRate:      0,
+		PlatformFeeRate:      s.svc.GetPlatformFeeRate(ctx),
 	})
 	if err != nil {
 		s.log.Error("PublishStrategy", zap.Error(err))
@@ -140,7 +140,7 @@ func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Requ
 			TotalSubscribers: int32(p.TotalSubscribers),
 		}
 		if p.PriceAmount != nil {
-			item.PriceAmount = strconv.FormatFloat(*p.PriceAmount, 'f', -1, 64)
+			item.PriceAmount = *p.PriceAmount
 		}
 		if p.Timeframe != nil {
 			item.Timeframe = *p.Timeframe
@@ -185,11 +185,15 @@ func (s *MarketplaceServer) ListSubscriptions(ctx context.Context, req *connect.
 	}
 	resp := &antv1.ListSubscriptionsResponse{}
 	for _, sub := range list {
-		resp.Subscriptions = append(resp.Subscriptions, &antv1.SubscriptionItem{
+		item := &antv1.SubscriptionItem{
 			SubscriptionId: sub.SubscriptionID, TargetUserId: sub.TargetUserID,
 			StrategyId: sub.StrategyID, Kind: sub.Kind,
 			Active: sub.Active, CreatedAt: timestamppb.New(sub.CreatedAt),
-		})
+		}
+		if sub.ExpiresAt != nil {
+			item.ExpiresAt = timestamppb.New(*sub.ExpiresAt)
+		}
+		resp.Subscriptions = append(resp.Subscriptions, item)
 	}
 	return connect.NewResponse(resp), nil
 }

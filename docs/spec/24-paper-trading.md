@@ -189,7 +189,7 @@ ANT_PAPER_PARTIAL_FILL_PROB=0.05
 grep -q "OrderExecutor" backend/internal/paper/executor.go
 
 # 2. 仿真数据隔离
-docker exec ant-postgres psql -U ant -c "\dt paper_*"
+docker exec alphaforge-postgres psql -U ant -c "\dt paper_*"
 
 # 3. 回归测试：仿真 7 天 P&L vs 理论 P&L 偏差 < 5%
 go test -tags=regression ./tests/regression/ -run TestPaperParity -v

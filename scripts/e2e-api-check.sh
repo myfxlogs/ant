@@ -40,7 +40,7 @@ api() {
     -d "$data" 2>/dev/null
 }
 
-psqlq() { docker exec ant-postgres psql -U ant -d ant -tAc "$1" 2>/dev/null; }
+psqlq() { docker exec alphaforge-postgres psql -U ant -d ant -tAc "$1" 2>/dev/null; }
 
 echo "═══════════════════════════════════════"
 echo "  Ant E2E API Check"

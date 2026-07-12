@@ -17,6 +17,7 @@ const Dashboard = {
       "accounts": "口座",
       "analytics": "分析",
       "bindAccount": "連携",
+      "aiStrategy": "AI戦略",
       "closePosition": "平仓",
       "library": "ライブラリ",
       "logs": "ログ",

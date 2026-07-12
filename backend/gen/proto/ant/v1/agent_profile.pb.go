@@ -179,7 +179,7 @@ const file_agent_profile_proto_rawDesc = "" +
 	"weaknesses\x12%\n" +
 	"\x0ecoverage_score\x18\v \x01(\x01R\rcoverageScore\x12\x1f\n" +
 	"\vblind_spots\x18\f \x03(\tR\n" +
-	"blindSpotsB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"blindSpotsB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_agent_profile_proto_rawDescOnce sync.Once

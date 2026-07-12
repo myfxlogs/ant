@@ -10,11 +10,11 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
 
-	mt4adapter "anttrader/internal/mdgateway/adapter/mt4"
-	"anttrader/internal/mdgateway"
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/secrets"
-	pb4 "anttrader/mt4"
+	mt4adapter "alphaforge/internal/mdgateway/adapter/mt4"
+	"alphaforge/internal/mdgateway"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/secrets"
+	pb4 "alphaforge/mt4"
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

@@ -156,7 +156,7 @@ func TestSeen_DifferentSymbol_Independent(t *testing.T) { ... }
 
 ```bash
 # 24h 运行后
-docker exec ant-clickhouse clickhouse-client --query "
+docker exec alphaforge-clickhouse clickhouse-client --query "
   SELECT
     sum(if(arrived_unix_ms = max_arrived OVER (PARTITION BY broker, canonical, ts_unix_ms, bid, ask), 0, 1)) AS dups
   FROM md_ticks

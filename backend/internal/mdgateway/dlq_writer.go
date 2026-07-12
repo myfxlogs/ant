@@ -6,7 +6,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // DLQWriter logs dropped ticks with reason-based sampling.

@@ -5,8 +5,8 @@ import (
 	"sync"
 
 	"github.com/shopspring/decimal"
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/repository"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/repository"
 )
 
 var Periods = []struct{ Name string; Ms int64 }{

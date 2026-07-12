@@ -11,10 +11,10 @@ import (
 
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/ai"
-	systemai "anttrader/internal/service/systemai"
-	"anttrader/strategy/sdk"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/ai"
+	systemai "alphaforge/internal/service/systemai"
+	"alphaforge/strategy/sdk"
 )
 
 func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[antv1.ReviseCodeRequest]) (*connect.Response[antv1.ReviseCodeResponse], error) {

@@ -3,8 +3,8 @@ package mql2go
 import (
 	"github.com/shopspring/decimal"
 
-	"anttrader/strategy/sdk"
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/strategy/sdk"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // intToTF converts an MQL period int to a timeframe string.

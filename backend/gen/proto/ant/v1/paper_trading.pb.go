@@ -780,7 +780,7 @@ const file_paper_trading_proto_rawDesc = "" +
 	"\x11ListPaperAccounts\x12 .ant.v1.ListPaperAccountsRequest\x1a!.ant.v1.ListPaperAccountsResponse\x12[\n" +
 	"\x12StartPaperStrategy\x12!.ant.v1.StartPaperStrategyRequest\x1a\".ant.v1.StartPaperStrategyResponse\x12X\n" +
 	"\x11StopPaperStrategy\x12 .ant.v1.StopPaperStrategyRequest\x1a!.ant.v1.StopPaperStrategyResponse\x12S\n" +
-	"\x11WatchPaperAccount\x12 .ant.v1.WatchPaperAccountRequest\x1a\x1a.ant.v1.PaperAccountUpdate0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x11WatchPaperAccount\x12 .ant.v1.WatchPaperAccountRequest\x1a\x1a.ant.v1.PaperAccountUpdate0\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_paper_trading_proto_rawDescOnce sync.Once

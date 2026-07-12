@@ -8,11 +8,11 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/mdgateway/indicator"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/indicator"
+	"alphaforge/internal/repository"
 )
 
 // SetMarketDataRepo injects the market data repository for indicator streaming.

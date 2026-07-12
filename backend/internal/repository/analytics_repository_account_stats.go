@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 func (r *AnalyticsRepository) GetSymbolStats(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*model.SymbolStats, error) {

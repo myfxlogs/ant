@@ -10,11 +10,11 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/model"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/model"
+	"alphaforge/internal/service"
 )
 
 // LogServiceServer implements ant.v1.LogServiceHandler.

@@ -4,7 +4,7 @@ package ant.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 service AdminJurisdictionService {
   rpc GetJurisdictionStatus(GetJurisdictionStatusRequest) returns (GetJurisdictionStatusResponse);

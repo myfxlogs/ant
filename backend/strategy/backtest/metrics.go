@@ -5,7 +5,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	antv1 "anttrader/gen/proto/ant/v1"
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 // CalculateMetrics produces antv1.BacktestMetrics from equity curve and trades.
@@ -26,7 +26,14 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 	if initial.IsPositive() {
 		tr, _ := final.Sub(initial).Div(initial).Float64()
 		m.TotalReturn = tr
-		m.AnnualReturn = tr // simplified; real calc needs date range
+		// Annualize: (1 + total_return)^(365/days) - 1
+		duration := equity[len(equity)-1].Time.Sub(equity[0].Time)
+		days := duration.Hours() / 24
+		if days > 0 {
+			m.AnnualReturn = math.Pow(1+tr, 365.0/days) - 1
+		} else {
+			m.AnnualReturn = tr
+		}
 	}
 
 	// Max drawdown
@@ -47,15 +54,22 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 
 	// Trade analysis
 	var totalProfit, totalLoss decimal.Decimal
+	var totalCommission, totalSwap decimal.Decimal
 	for _, t := range trades {
-		if t.Profit.IsPositive() {
+		totalCommission = totalCommission.Add(t.Commission)
+		totalSwap = totalSwap.Add(t.Swap)
+		// Net profit = gross profit - commission - swap
+		netProfit := t.Profit.Sub(t.Commission).Sub(t.Swap)
+		if netProfit.IsPositive() {
 			m.WinningTrades++
-			totalProfit = totalProfit.Add(t.Profit)
+			totalProfit = totalProfit.Add(netProfit)
 		} else {
 			m.LosingTrades++
-			totalLoss = totalLoss.Add(t.Profit.Neg())
+			totalLoss = totalLoss.Add(netProfit.Neg())
 		}
 	}
+	_ = totalCommission
+	_ = totalSwap
 
 	if m.TotalTrades > 0 {
 		m.WinRate = float64(m.WinningTrades) / float64(m.TotalTrades)
@@ -68,7 +82,17 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 		m.ProfitFactor = math.Inf(1)
 	}
 
-	// Sharpe ratio (simplified: based on trade returns)
+	// Average profit/loss
+	if m.WinningTrades > 0 {
+		avgProfit := totalProfit.Div(decimal.NewFromInt(int64(m.WinningTrades)))
+		m.AverageProfit = avgProfit.String()
+	}
+	if m.LosingTrades > 0 {
+		avgLoss := totalLoss.Div(decimal.NewFromInt(int64(m.LosingTrades)))
+		m.AverageLoss = avgLoss.String()
+	}
+
+	// Sharpe ratio (annualized: based on trade returns, scaled by trades per year)
 	if len(trades) > 1 {
 		returns := make([]float64, len(trades))
 		for i, t := range trades {
@@ -77,7 +101,15 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 		mean := meanFloat(returns)
 		std := stdFloat(returns, mean)
 		if std > 0 {
-			m.SharpeRatio = mean / std * math.Sqrt(float64(len(trades)))
+			// Annualize: Sharpe = mean/std * sqrt(trades_per_year)
+			duration := equity[len(equity)-1].Time.Sub(equity[0].Time)
+			days := duration.Hours() / 24
+			if days > 0 {
+				tradesPerYear := float64(len(trades)) * 365.0 / days
+				m.SharpeRatio = mean / std * math.Sqrt(tradesPerYear)
+			} else {
+				m.SharpeRatio = mean / std * math.Sqrt(float64(len(trades)))
+			}
 		}
 	}
 

@@ -22,4 +22,4 @@ strategy_rules_rules_no_dunder_access: '- 禁止访问任何 dunder 属性（形
 strategy_rules_rules_no_dunder_name: '- 禁止使用 dunder 名称（形如 __xxx__）'
 strategy_rules_rules_no_global: '- 禁止 global / nonlocal'
 strategy_rules_rules_no_import: '- 禁止任何 import / from ... import ...'
-strategy_rules_title: '你在编写 AntTrader Python 策略代码时，必须严格遵守以下验证规则：'
+strategy_rules_title: '你在编写 AlphaForge Python 策略代码时，必须严格遵守以下验证规则：'

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	sitter "github.com/smacker/go-tree-sitter"
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // CompileToIR parses MQL source and compiles it to a pure Go IR

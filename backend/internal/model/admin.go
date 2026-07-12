@@ -56,6 +56,14 @@ type DashboardStats struct {
 	TodayVolume    decimal.Decimal `json:"today_volume"`
 	TodayProfit    decimal.Decimal `json:"today_profit"`
 	SystemLoad     decimal.Decimal `json:"system_load"`
+	// P3.5: Subscription & revenue metrics
+	ActiveSubscriptions   int64           `json:"active_subscriptions"`
+	MonthlyRevenue        decimal.Decimal `json:"monthly_revenue"`
+	TotalRevenue          decimal.Decimal `json:"total_revenue"`
+	MarketplaceStrategies int64           `json:"marketplace_strategies"`
+	MarketplaceSales      int64           `json:"marketplace_sales"`
+	MarketplaceRevenue    decimal.Decimal `json:"marketplace_revenue"`
+	VerifiedUsers         int64           `json:"verified_users"`
 }
 
 type UserListParams struct {

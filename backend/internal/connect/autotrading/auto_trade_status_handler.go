@@ -9,8 +9,8 @@ import (
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/model"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/model"
 )
 
 // GetAutoTradingStatus returns a summary of the user's auto-trading state.

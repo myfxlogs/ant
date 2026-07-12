@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 func (r *AdminRepository) GetConfig(ctx context.Context, key string) (*model.SystemConfig, error) {

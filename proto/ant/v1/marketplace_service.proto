@@ -1,6 +1,6 @@
 syntax = "proto3";
 package ant.v1;
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 import "google/protobuf/timestamp.proto";
 import "backtest_execution_config.proto";
 import "backtest_run_query.proto";
@@ -145,6 +145,7 @@ message SubscriptionItem {
   string kind = 4;
   bool active = 5;
   google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp expires_at = 7;  // null = permanent (one-time purchase)
 }
 
 // --- Rating ---

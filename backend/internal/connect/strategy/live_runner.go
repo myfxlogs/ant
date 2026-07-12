@@ -18,7 +18,7 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"anttrader/internal/mthub"
+	"alphaforge/internal/mthub"
 )
 
 const maxContextBars = 500

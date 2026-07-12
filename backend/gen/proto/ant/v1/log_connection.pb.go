@@ -316,7 +316,7 @@ const file_log_connection_proto_rawDesc = "" +
 	"\x1bconnection_duration_seconds\x18\n" +
 	" \x01(\x03R\x19connectionDurationSeconds\x129\n" +
 	"\n" +
-	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_log_connection_proto_rawDescOnce sync.Once

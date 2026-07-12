@@ -232,7 +232,7 @@ const file_system_ai_entity_proto_rawDesc = "" +
 	"\n" +
 	"updated_by\x18\x10 \x01(\tR\tupdatedBy\x12\x19\n" +
 	"\bdocs_url\x18\x11 \x01(\tR\adocsUrl\x12\x1b\n" +
-	"\tapply_url\x18\x12 \x01(\tR\bapplyUrlB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\tapply_url\x18\x12 \x01(\tR\bapplyUrlB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_system_ai_entity_proto_rawDescOnce sync.Once

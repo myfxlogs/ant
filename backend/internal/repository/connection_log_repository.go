@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 func (r *LogRepository) CreateConnectionLog(ctx context.Context, log *model.AccountConnectionLog) error {

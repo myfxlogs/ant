@@ -91,7 +91,7 @@ const interceptors: Interceptor[] = [
     }
 
     const lang = (() => {
-      try { const v = localStorage.getItem('anttrader_lang'); if (v) return v; } catch {}
+      try { const v = localStorage.getItem('alphaforge_lang'); if (v) return v; } catch {}
       return i18n.language || 'en';
     })();
     if (lang) {

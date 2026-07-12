@@ -4,7 +4,7 @@ package ant.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 // AdminAgentSettingsService manages ADR-0025 §5 tiered agent settings.
 // Admins manage the Managed tier (model whitelist, risk gates, permission rules, kill switch).

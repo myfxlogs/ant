@@ -2586,7 +2586,7 @@ const file_i18n_accounts_proto_rawDesc = "" +
 	"\x15trade_tabs_table_side\x18\x94\x02 \x01(\tR\x12tradeTabsTableSide\x126\n" +
 	"\x17trade_tabs_table_symbol\x18\x95\x02 \x01(\tR\x14tradeTabsTableSymbol\x122\n" +
 	"\x15trade_tabs_table_type\x18\x96\x02 \x01(\tR\x12tradeTabsTableType\x126\n" +
-	"\x17trade_tabs_table_volume\x18\x97\x02 \x01(\tR\x14tradeTabsTableVolumeB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x17trade_tabs_table_volume\x18\x97\x02 \x01(\tR\x14tradeTabsTableVolumeB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_accounts_proto_rawDescOnce sync.Once

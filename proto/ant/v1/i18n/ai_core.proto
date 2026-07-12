@@ -1,10 +1,10 @@
 syntax = "proto3";
 
 package ant.v1.i18n;
-option go_package = "anttrader/gen/proto/ant/v1/i18n";
+option go_package = "alphaforge/gen/proto/ant/v1/i18n";
 
 message AiCoreI18n {
-  string agent_prompts_code_prompt = 1;  // You are an AntTrader Python strategy code engineer. Generate
+  string agent_prompts_code_prompt = 1;  // You are an AlphaForge Python strategy code engineer. Generate
   string agent_prompts_code_title = 2;  // Code generation agent
   string agent_prompts_risk_prompt = 3;  // You are a trading risk and execution expert. Based on the fo
   string agent_prompts_risk_title = 4;  // Risk control and execution constraints

@@ -1,5 +1,5 @@
 # Old binaries and test files
-anttrader-server
+alphaforge-server
 coverage.out
 coverage_unit.out
 *.exe

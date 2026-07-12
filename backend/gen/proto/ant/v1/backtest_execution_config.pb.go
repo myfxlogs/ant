@@ -743,7 +743,7 @@ const file_backtest_execution_config_proto_rawDesc = "" +
 	"\x1bTRADE_DIRECTION_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14TRADE_DIRECTION_LONG\x10\x01\x12\x19\n" +
 	"\x15TRADE_DIRECTION_SHORT\x10\x02\x12\x18\n" +
-	"\x14TRADE_DIRECTION_BOTH\x10\x03B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x14TRADE_DIRECTION_BOTH\x10\x03B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_backtest_execution_config_proto_rawDescOnce sync.Once

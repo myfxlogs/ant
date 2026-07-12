@@ -3460,7 +3460,7 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"\x10GetAgentSettings\x12\x1f.ant.v1.GetAgentSettingsRequest\x1a .ant.v1.GetAgentSettingsResponse\x12O\n" +
 	"\x0eSetUserSetting\x12\x1d.ant.v1.SetUserSettingRequest\x1a\x1e.ant.v1.SetUserSettingResponse\x12X\n" +
 	"\x11DeleteUserSetting\x12 .ant.v1.DeleteUserSettingRequest\x1a!.ant.v1.DeleteUserSettingResponse\x12R\n" +
-	"\x0fGetCapabilities\x12\x1e.ant.v1.GetCapabilitiesRequest\x1a\x1f.ant.v1.GetCapabilitiesResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x0fGetCapabilities\x12\x1e.ant.v1.GetCapabilitiesRequest\x1a\x1f.ant.v1.GetCapabilitiesResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_agent_gateway_proto_rawDescOnce sync.Once

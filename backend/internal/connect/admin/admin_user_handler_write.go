@@ -11,12 +11,12 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/model"
-	"anttrader/internal/pkg/hash"
-	"anttrader/internal/repository"
-	"anttrader/internal/service"
-	usersvc "anttrader/internal/service/user"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/model"
+	"alphaforge/internal/pkg/hash"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
+	usersvc "alphaforge/internal/service/user"
 )
 
 func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[antv1.CreateUserRequest]) (*connect.Response[antv1.CreateUserResponse], error) {

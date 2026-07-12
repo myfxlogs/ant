@@ -10,9 +10,9 @@ import (
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/model"
-	"anttrader/internal/risksvc"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/model"
+	"alphaforge/internal/risksvc"
 )
 
 // GetRiskConfig returns the risk configuration for the given account.

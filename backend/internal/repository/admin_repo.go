@@ -8,7 +8,7 @@ import (
 	"time"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 var (
@@ -26,11 +26,16 @@ func NewAdminRepository(db *pgxpool.Pool) *AdminRepository {
 	return &AdminRepository{db: db}
 }
 
+// DB returns the underlying connection pool (used by billing handler for complex queries).
+func (r *AdminRepository) DB() *pgxpool.Pool { return r.db }
+
 func (r *AdminRepository) GetDashboardStats(ctx context.Context) (*model.DashboardStats, error) {
 	stats := &model.DashboardStats{SystemLoad: decimal.Zero}
 	if err := r.fetchDashboardUsers(ctx, stats); err != nil { return nil, err }
 	if err := r.fetchDashboardAccounts(ctx, stats); err != nil { return nil, err }
 	if err := r.fetchDashboardToday(ctx, stats); err != nil { return nil, err }
+	if err := r.fetchDashboardBilling(ctx, stats); err != nil { return nil, err }
+	if err := r.fetchDashboardMarketplace(ctx, stats); err != nil { return nil, err }
 	return stats, nil
 }
 
@@ -52,16 +57,71 @@ func (r *AdminRepository) fetchDashboardToday(ctx context.Context, s *model.Dash
 		return err
 	}
 	qDec := func(query string, dest *decimal.Decimal) error {
-		var v float64
+		var v string
 		err := r.db.QueryRow(ctx, query, today).Scan(&v)
 		if errors.Is(err, sql.ErrNoRows) { return nil }
 		if err != nil { return err }
-		*dest = decimal.NewFromFloat(v)
+		*dest, _ = decimal.NewFromString(v)
 		return nil
 	}
 	if err := qInt(`SELECT COUNT(*) FROM trade_records WHERE DATE(close_time)=$1`, &s.TodayTrades); err != nil { return err }
-	if err := qDec(`SELECT COALESCE(SUM(volume),0) FROM trade_records WHERE DATE(close_time)=$1`, &s.TodayVolume); err != nil { return err }
-	if err := qDec(`SELECT COALESCE(SUM(profit),0) FROM trade_records WHERE DATE(close_time)=$1`, &s.TodayProfit); err != nil { return err }
+	if err := qDec(`SELECT COALESCE(SUM(volume),0)::text FROM trade_records WHERE DATE(close_time)=$1`, &s.TodayVolume); err != nil { return err }
+	if err := qDec(`SELECT COALESCE(SUM(profit),0)::text FROM trade_records WHERE DATE(close_time)=$1`, &s.TodayProfit); err != nil { return err }
+	return nil
+}
+
+func (r *AdminRepository) fetchDashboardBilling(ctx context.Context, s *model.DashboardStats) error {
+	// Verified users
+	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users WHERE email_verified_at IS NOT NULL`).Scan(&s.VerifiedUsers)
+
+	// Active platform subscriptions
+	_ = r.db.QueryRow(ctx,
+		`SELECT COUNT(*) FROM user_platform_subscriptions WHERE status = 'active'`,
+	).Scan(&s.ActiveSubscriptions)
+
+	// Monthly revenue: sum of subscription payments in the current calendar month
+	var monthlyRev string
+	_ = r.db.QueryRow(ctx,
+		`SELECT COALESCE(SUM(-amount::numeric), 0)::text FROM wallet_transactions
+		 WHERE tx_type = 'purchase' AND description LIKE 'Platform subscription:%'
+		 AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', now())`,
+	).Scan(&monthlyRev)
+	if monthlyRev != "" {
+		s.MonthlyRevenue, _ = decimal.NewFromString(monthlyRev)
+	}
+
+	// Total revenue: all subscription payments
+	var totalRev string
+	_ = r.db.QueryRow(ctx,
+		`SELECT COALESCE(SUM(-amount::numeric), 0)::text FROM wallet_transactions
+		 WHERE tx_type = 'purchase' AND description LIKE 'Platform subscription:%'`,
+	).Scan(&totalRev)
+	if totalRev != "" {
+		s.TotalRevenue, _ = decimal.NewFromString(totalRev)
+	}
+	return nil
+}
+
+func (r *AdminRepository) fetchDashboardMarketplace(ctx context.Context, s *model.DashboardStats) error {
+	// Published marketplace strategies
+	_ = r.db.QueryRow(ctx,
+		`SELECT COUNT(*) FROM strategies WHERE marketplace_status = 'published'`,
+	).Scan(&s.MarketplaceStrategies)
+
+	// Total marketplace sales (purchases + subscriptions)
+	_ = r.db.QueryRow(ctx,
+		`SELECT COUNT(*) FROM user_subscriptions`,
+	).Scan(&s.MarketplaceSales)
+
+	// Marketplace revenue (platform fees from marketplace transactions)
+	var mktRev string
+	_ = r.db.QueryRow(ctx,
+		`SELECT COALESCE(SUM(amount::numeric), 0)::text FROM wallet_transactions
+		 WHERE tx_type = 'platform_fee'`,
+	).Scan(&mktRev)
+	if mktRev != "" {
+		s.MarketplaceRevenue, _ = decimal.NewFromString(mktRev)
+	}
 	return nil
 }
 

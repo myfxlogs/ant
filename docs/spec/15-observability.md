@@ -196,11 +196,11 @@ HTTP 503 Service Unavailable
    ```
    { account_id, broker, platform, state, last_tick_at, circuit_state, tick_rate_1m, subscribed_symbols }
    ```
-2. **SRE / Grafana** → Prometheus Gauge：
+2. **SRE / Prometheus** → Prometheus Gauge：
    - `mt_account_connected{account_id, broker, platform}` ∈ {0,1}
    - `md_tick_total{broker, canonical}` 以 rate(1m) 求 tick rate
-   - `md_circuit_state{broker, mtapi_endpoint}` 看熝断
-3. **告警**：在 Grafana 设 `mt_account_connected == 0 for 60s` 规则
+   - `md_circuit_state{broker, mtapi_endpoint}` 看熔断
+3. **告警**：在 AlertManager 设 `mt_account_connected == 0 for 60s` 规则
 
 `state` 状态机：
 
@@ -346,21 +346,15 @@ groups:
 | `md_bar_skipped_finalized_total` | Counter | broker, canonical, period | bar finality 跳过计数 |
 | `md_backfill_*` | 多 | — | 见 spec/18 §7 |
 
-## 7. Grafana dashboard（必要面板）
+## 7. SSE 监控面板（Admin UI）
 
-`deploy/grafana/dashboards/mt-foundation.json` 包含：
+Admin 监控页通过 `AdminMonitorService.SubscribeMetrics` SSE 流实时推送以下面板数据：
 
-1. **行情接入**：tick rate per (broker, canonical) | drop reasons | bar flushes
-2. **CH 健康**：write errors | spill writes | replay status
-3. **熔断**：per account state matrix
-4. **mthub**：order placed rate / reject rate / latency p50/p95/p99
-5. **资源**：goroutines / memory / pool conns
-6. **NATS**：subjects rate / pending messages
-7. **订单状态机**：reconciliation mismatches | idempotency hits | ghost/orphan counts
-8. **回测**：run duration | signal divergence ratio | bar replay rate
-9. **仿真交易**：fill slippage distribution | promotion success rate
-10. **AI 策略生成**：generation success rate | clarification rounds | compliance violations
-11. **信号延迟 SLO**：e2e latency heatmap (P50/P95/P99) | per-stage attribution | error budget burn gauge
+1. **服务健康**：运行时间 | DB/Redis/NATS 状态
+2. **Go 运行时**：goroutines | heap/stack memory | GC 次数与平均暂停
+3. **数据库连接池**：总连接 / 空闲 / 已获取
+4. **行情网关**：堆积文件 | 丢弃 Bar/信号 | 消费者延迟 | 过期/死账户 | 间隔统计
+5. **死信队列**：解析错误 | Bid>Ask | 非正数
 
 ## 8. 验收命令
 
@@ -377,7 +371,7 @@ curl -sf http://localhost:8080/metrics \
   | head -1 | grep -q 'mt_account_connected'
 
 # 日志含必填字段
-docker logs ant-backend 2>&1 | head -100 | jq -e \
+docker logs alphaforge-backend 2>&1 | head -100 | jq -e \
   'select(.trace_id != null and .level != null and .timestamp != null)' \
   | head -1 | grep -q .
 

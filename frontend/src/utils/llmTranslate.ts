@@ -2,7 +2,7 @@ import i18n, { normalizeLanguage } from '@/i18n';
 import { aiApi } from '@/client/ai';
 import { listSystemAIConfigs } from '@/pages/ai/systemai/api';
 
-const CACHE_PREFIX = 'anttrader_llm_translate_cache_v1:';
+const CACHE_PREFIX = 'alphaforge_llm_translate_cache_v1:';
 
 function redactSensitive(text: string): string {
   let t = String(text || '');

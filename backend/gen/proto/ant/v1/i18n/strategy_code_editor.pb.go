@@ -433,7 +433,7 @@ const file_i18n_strategy_code_editor_proto_rawDesc = "" +
 	"\x1bplaceholders_select_account\x18& \x01(\tR\x19placeholdersSelectAccount\x12I\n" +
 	"!placeholders_select_account_first\x18' \x01(\tR\x1eplaceholdersSelectAccountFirst\x12<\n" +
 	"\x1aplaceholders_select_symbol\x18( \x01(\tR\x18placeholdersSelectSymbol\x12\x14\n" +
-	"\x05title\x18) \x01(\tR\x05titleB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x05title\x18) \x01(\tR\x05titleB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_code_editor_proto_rawDescOnce sync.Once

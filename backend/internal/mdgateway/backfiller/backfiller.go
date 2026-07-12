@@ -9,7 +9,7 @@ import (
 
 	"golang.org/x/time/rate"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // Source fetches historical bars from the MT API.

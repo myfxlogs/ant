@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/repository"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/repository"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )

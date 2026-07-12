@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file i18n/strategy_ai.proto.
  */
 export const file_i18n_strategy_ai: GenFile = /*@__PURE__*/
-  fileDesc("ChZpMThuL3N0cmF0ZWd5X2FpLnByb3RvEgthbnQudjEuaTE4biJgCgZBaUkxOG4SFgoOY2hlY2tfc2V0dGluZ3MYASABKAkSFgoOcmVmcmVzaF9mYWlsZWQYAiABKAkSEAoIc2V0dGluZ3MYAyABKAkSFAoMYWdlbnRfbWVtb3J5GAQgASgJQiFaH2FudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxL2kxOG5iBnByb3RvMw");
+  fileDesc("ChZpMThuL3N0cmF0ZWd5X2FpLnByb3RvEgthbnQudjEuaTE4biJgCgZBaUkxOG4SFgoOY2hlY2tfc2V0dGluZ3MYASABKAkSFgoOcmVmcmVzaF9mYWlsZWQYAiABKAkSEAoIc2V0dGluZ3MYAyABKAkSFAoMYWdlbnRfbWVtb3J5GAQgASgJQiJaIGFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MS9pMThuYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.i18n.AiI18n

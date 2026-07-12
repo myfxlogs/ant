@@ -10,8 +10,8 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"go.uber.org/zap"
 
-	anttrace "anttrader/internal/trace"
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	anttrace "alphaforge/internal/trace"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // TestHandleTickCreatesSixSpans verifies the ADR-0010 §2.3 requirement:

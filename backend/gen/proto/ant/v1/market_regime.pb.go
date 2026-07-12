@@ -427,7 +427,7 @@ const file_market_regime_proto_rawDesc = "" +
 	"created_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt2\xc6\x01\n" +
 	"\x13MarketRegimeService\x12[\n" +
 	"\x12DetectMarketRegime\x12!.ant.v1.DetectMarketRegimeRequest\x1a\".ant.v1.DetectMarketRegimeResponse\x12R\n" +
-	"\x0fGetMarketRegime\x12\x1e.ant.v1.GetMarketRegimeRequest\x1a\x1f.ant.v1.GetMarketRegimeResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x0fGetMarketRegime\x12\x1e.ant.v1.GetMarketRegimeRequest\x1a\x1f.ant.v1.GetMarketRegimeResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_market_regime_proto_rawDescOnce sync.Once

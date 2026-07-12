@@ -7,8 +7,8 @@ import (
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/mthub"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/mthub"
 )
 
 // --- Channel forwarders (fan-in from per-account subscriptions) ---

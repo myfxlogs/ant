@@ -14,12 +14,12 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/model"
-	"anttrader/internal/mthub"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/model"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/repository"
 )
 
 type ShareServer struct {

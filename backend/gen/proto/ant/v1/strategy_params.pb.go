@@ -492,7 +492,7 @@ const file_strategy_params_proto_rawDesc = "" +
 	"\achoices\x18\b \x03(\tR\achoices\x12 \n" +
 	"\vdescription\x18\t \x01(\tR\vdescription\"M\n" +
 	"\x16TemplateParameterSlots\x123\n" +
-	"\x05slots\x18\x01 \x03(\v2\x1d.ant.v1.TemplateParameterSlotR\x05slotsB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x05slots\x18\x01 \x03(\v2\x1d.ant.v1.TemplateParameterSlotR\x05slotsB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_params_proto_rawDescOnce sync.Once

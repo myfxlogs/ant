@@ -3,8 +3,8 @@ package backtest
 import (
 	"github.com/shopspring/decimal"
 
-	"anttrader/strategy/indicators"
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/indicators"
+	"alphaforge/strategy/sdk"
 )
 
 // ── Indicators (backtest implementation) ──────────────────────────

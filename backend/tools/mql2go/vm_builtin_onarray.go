@@ -5,7 +5,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // ── *OnArray indicator variants ──────────────────────────────────────

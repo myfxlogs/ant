@@ -15,11 +15,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/pkg/secretbox"
-	"anttrader/internal/repository"
-	systemai "anttrader/internal/service/systemai"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/pkg/secretbox"
+	"alphaforge/internal/repository"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 // ── test infra ──

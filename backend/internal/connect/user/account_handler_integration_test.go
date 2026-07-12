@@ -16,11 +16,11 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/mdgateway/adapter/brokersearch"
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/mdgateway/adapter/brokersearch"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/service"
 )
 
 // mockMTTester implements MTConnectionTester for integration tests.

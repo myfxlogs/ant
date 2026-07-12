@@ -3,7 +3,7 @@ package mdgateway
 import (
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // HandleTick processes a tick through the full 6-stage pipeline:

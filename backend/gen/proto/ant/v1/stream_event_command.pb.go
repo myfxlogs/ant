@@ -231,7 +231,7 @@ const file_stream_event_command_proto_rawDesc = "" +
 	"\aretcode\x18\x14 \x01(\x05R\aretcode\x12\x18\n" +
 	"\amessage\x18\x15 \x01(\tR\amessage\x12\x14\n" +
 	"\x05error\x18\x16 \x01(\tR\x05error\x12\x16\n" +
-	"\x06ticket\x18\x1e \x01(\x03R\x06ticketB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x06ticket\x18\x1e \x01(\x03R\x06ticketB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_stream_event_command_proto_rawDescOnce sync.Once

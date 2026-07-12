@@ -30,10 +30,10 @@ curl -s http://localhost:8080/readyz | jq '.'
 
 | check 失败 | 命令 | 修复 |
 |---|---|---|
-| `postgres` | `docker exec ant-postgres pg_isready` | 重启 ant-postgres；查 disk |
-| `clickhouse` | `docker exec ant-clickhouse clickhouse-client --query 'SELECT 1'` | 见 §4 |
-| `redis` | `docker exec ant-redis redis-cli PING` | 重启 ant-redis |
-| `nats` | `docker exec ant-nats nats account info` | 重启 ant-nats |
+| `postgres` | `docker exec alphaforge-postgres pg_isready` | 重启 alphaforge-postgres；查 disk |
+| `clickhouse` | `docker exec alphaforge-clickhouse clickhouse-client --query 'SELECT 1'` | 见 §4 |
+| `redis` | `docker exec alphaforge-redis redis-cli PING` | 重启 alphaforge-redis |
+| `nats` | `docker exec alphaforge-nats nats account info` | 重启 alphaforge-nats |
 | `mdgateway.ratio < 0.5` | 见 §5 | |
 
 ---
@@ -63,8 +63,8 @@ grpcurl -plaintext -d "{\"account_id\":\"$ACCOUNT_ID\"}" \
 
 ### 3.3 触发原因
 
-- 账户 password 错误（broker 拒登）→ `docker logs ant-backend | grep $ACCOUNT_ID | grep -i 'login\|auth'`
-- mtapi 网关不可达 → `docker logs ant-backend | grep $ACCOUNT_ID | grep -i 'dial\|connection refused'`
+- 账户 password 错误（broker 拒登）→ `docker logs alphaforge-backend | grep $ACCOUNT_ID | grep -i 'login\|auth'`
+- mtapi 网关不可达 → `docker logs alphaforge-backend | grep $ACCOUNT_ID | grep -i 'dial\|connection refused'`
 - broker 服务器升级中 → 30s 后自动 half_open 尝试
 
 ### 3.4 手动修复
@@ -83,28 +83,28 @@ curl -X POST http://localhost:8080/admin/v1/restart-account \
 ### 4.1 验证 CH 状态
 
 ```bash
-docker exec ant-clickhouse clickhouse-client --query "SELECT 1"
-docker exec ant-clickhouse df -h /var/lib/clickhouse
-docker logs ant-clickhouse --tail 200
+docker exec alphaforge-clickhouse clickhouse-client --query "SELECT 1"
+docker exec alphaforge-clickhouse df -h /var/lib/clickhouse
+docker logs alphaforge-clickhouse --tail 200
 ```
 
 ### 4.2 常见原因
 
 | 症状 | 修复 |
 |---|---|
-| `Table is in readonly mode` | `docker exec ant-clickhouse clickhouse-client --query "SYSTEM ENABLE TABLE WRITES"` |
+| `Table is in readonly mode` | `docker exec alphaforge-clickhouse clickhouse-client --query "SYSTEM ENABLE TABLE WRITES"` |
 | `Disk full` | 清理 `clickhouse_data` 卷；缩 TTL；扩盘 |
-| `Connection refused` | `docker compose restart ant-clickhouse` |
+| `Connection refused` | `docker compose restart alphaforge-clickhouse` |
 | `Memory limit exceeded` | 调整 `max_memory_usage` 配置 |
 
 ### 4.3 spill 验证
 
 ```bash
 # spill 文件数
-docker exec ant-backend ls /var/lib/ant/spill/*.jsonl 2>/dev/null | wc -l
+docker exec alphaforge-backend ls /var/lib/ant/spill/*.jsonl 2>/dev/null | wc -l
 
 # 待 replay 大小
-docker exec ant-backend du -sh /var/lib/ant/spill/
+docker exec alphaforge-backend du -sh /var/lib/ant/spill/
 
 # 等 CH 恢复后强制 replay
 curl -X POST http://localhost:8080/admin/v1/spill-replay \
@@ -133,7 +133,7 @@ grpcurl -plaintext -d "{\"account_id\":\"$ACCOUNT_ID\"}" \
 
 ```bash
 # 看最近 10 条 broker 推送日志
-docker logs ant-backend --tail 1000 \
+docker logs alphaforge-backend --tail 1000 \
   | jq -c "select(.account_id == \"$ACCOUNT_ID\")" \
   | tail -10
 ```
@@ -189,8 +189,8 @@ mthub_event_dropped_total{reason="chan_full"}
 ### 8.1 查 failed 目录
 
 ```bash
-docker exec ant-backend ls -la /var/lib/ant/spill/failed/
-docker exec ant-backend cat /var/lib/ant/spill/failed/*/*.errors.jsonl | head
+docker exec alphaforge-backend ls -la /var/lib/ant/spill/failed/
+docker exec alphaforge-backend cat /var/lib/ant/spill/failed/*/*.errors.jsonl | head
 ```
 
 ### 8.2 常见错误
@@ -205,7 +205,7 @@ docker exec ant-backend cat /var/lib/ant/spill/failed/*/*.errors.jsonl | head
 
 ```bash
 # 把 failed 文件移回主目录
-docker exec ant-backend sh -c "
+docker exec alphaforge-backend sh -c "
   mv /var/lib/ant/spill/failed/*/*.jsonl /var/lib/ant/spill/
 "
 
@@ -241,11 +241,11 @@ curl -X PATCH http://localhost:8080/admin/v1/config \
 
 ```bash
 # 1. 停 backend
-docker compose stop ant-backend
+docker compose stop alphaforge-backend
 
 # 2. 切回上一镜像（前提：用 tag）
-export ANT_BACKEND_IMAGE=ant-backend:v1.X.Y-1
-docker compose up -d ant-backend
+export ANT_BACKEND_IMAGE=alphaforge-backend:v1.X.Y-1
+docker compose up -d alphaforge-backend
 
 # 3. 验证
 sleep 30
@@ -258,12 +258,12 @@ curl -sf http://localhost:8080/readyz | jq '.status'
 
 ```bash
 # 某账户最近 1h 所有日志
-docker logs ant-backend --since 1h \
+docker logs alphaforge-backend --since 1h \
   | jq -c "select(.account_id == \"$ACCOUNT_ID\")" \
   | head -200
 
 # 某 trace_id 全链路
 TRACE=...
-docker logs ant-backend \
+docker logs alphaforge-backend \
   | jq -c "select(.trace_id == \"$TRACE\")"
 ```

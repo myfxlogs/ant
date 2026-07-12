@@ -7,7 +7,7 @@ import (
 	"time"
 
 	sitter "github.com/smacker/go-tree-sitter"
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // ── MQL5 class/struct compilation ───────────────────────────────────

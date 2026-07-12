@@ -7,10 +7,10 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/mthub"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/repository"
 )
 
 // dispatchLiveSignal routes the strategy signal to the appropriate destination.

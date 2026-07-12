@@ -324,7 +324,7 @@ const file_strategy_template_entity_proto_rawDesc = "" +
 	"\x04step\x18\x06 \x01(\tR\x04step\x12\x14\n" +
 	"\x05label\x18\a \x01(\tR\x05label\x12 \n" +
 	"\vdescription\x18\b \x01(\tR\vdescription\x12\x18\n" +
-	"\aoptions\x18\t \x03(\tR\aoptionsB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\aoptions\x18\t \x03(\tR\aoptionsB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_template_entity_proto_rawDescOnce sync.Once

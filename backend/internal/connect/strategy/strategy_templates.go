@@ -1,6 +1,6 @@
 package strategy
 
-import antv1 "anttrader/gen/proto/ant/v1"
+import antv1 "alphaforge/gen/proto/ant/v1"
 
 // builtinTemplates returns the built-in Go strategy templates.
 func builtinTemplates() []*antv1.StrategyTemplateInfo {
@@ -18,7 +18,7 @@ func tplMACrossover() *antv1.StrategyTemplateInfo {
 	Code: `package main
 
 import (
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/sdk"
 	"github.com/shopspring/decimal"
 )
 
@@ -115,7 +115,7 @@ func tplRSIMeanReversion() *antv1.StrategyTemplateInfo {
 	Code: `package main
 
 import (
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/sdk"
 	"github.com/shopspring/decimal"
 )
 
@@ -210,7 +210,7 @@ func tplBollingerBreakout() *antv1.StrategyTemplateInfo {
 	Code: `package main
 
 import (
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/sdk"
 	"github.com/shopspring/decimal"
 )
 

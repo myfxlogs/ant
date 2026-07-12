@@ -7,8 +7,8 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/strategy/backtest"
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/backtest"
+	"alphaforge/strategy/sdk"
 )
 
 // TestE2E_VMRunner_Backtest verifies the full pipeline:

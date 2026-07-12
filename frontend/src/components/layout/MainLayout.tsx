@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Layout } from 'antd';
-import { HomeOutlined, HistoryOutlined, CodeOutlined, ShopOutlined, SettingOutlined, RadarChartOutlined, DashboardOutlined, PieChartOutlined, WalletOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { HomeOutlined, HistoryOutlined, CodeOutlined, ShopOutlined, SettingOutlined, RadarChartOutlined, DashboardOutlined, PieChartOutlined, WalletOutlined, ThunderboltOutlined, CrownOutlined } from '@ant-design/icons';
 import { Outlet } from 'react-router-dom';
 import ContentContainer from '@/components/layout/ContentContainer';
 import { useTranslation } from 'react-i18next';
@@ -48,6 +48,7 @@ export default function MainLayout() {
       ],
     },
     { key: '/wallet', icon: <WalletOutlined size={20} stroke={1.5} />, label: t('menu.wallet') },
+    { key: '/subscription', icon: <CrownOutlined size={20} stroke={1.5} />, label: t('menu.subscription', { defaultValue: 'Subscription' }) },
     { key: '/trading/algos', icon: <DashboardOutlined size={20} stroke={1.5} />, label: t('menu.algoDashboard') },
     { key: '/auto-trading', icon: <SettingOutlined size={20} stroke={1.5} />, label: t('menu.autoTrading') },
     { key: '/analytics', icon: <PieChartOutlined size={20} stroke={1.5} />, label: t('menu.analytics') },

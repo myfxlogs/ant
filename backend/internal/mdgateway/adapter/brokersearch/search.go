@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"strings"
 
-	mt4pb "anttrader/mt4"
-	mt5pb "anttrader/mt5"
-	antv1 "anttrader/gen/proto/ant/v1"
+	mt4pb "alphaforge/mt4"
+	mt5pb "alphaforge/mt5"
+	antv1 "alphaforge/gen/proto/ant/v1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

@@ -10,12 +10,12 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/pkg/secretbox"
-	"anttrader/internal/repository"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/pkg/secretbox"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
 )
 
 // AIGatewayServer implements AIGatewayServiceHandler.

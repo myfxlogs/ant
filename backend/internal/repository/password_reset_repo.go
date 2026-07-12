@@ -11,7 +11,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"anttrader/internal/pkg/hash"
+	"alphaforge/internal/pkg/hash"
 
 	"github.com/google/uuid"
 )

@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 // dailyTradeStat holds raw daily PnL data from a single query row.

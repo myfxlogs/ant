@@ -106,7 +106,7 @@ package mdgateway
 
 import (
     "context"
-    "anttrader/internal/mdgateway/adapter/mdtick"
+    "alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // Gateway 是 adapter 必须实现的契约。
@@ -154,8 +154,8 @@ import (
     "sync"
     "time"
 
-    pb "anttrader/mt4"  // mtapi proto (v2: separate module)
-    "anttrader/internal/mdgateway/adapter/mdtick"
+    pb "alphaforge/mt4"  // mtapi proto (v2: separate module)
+    "alphaforge/internal/mdgateway/adapter/mdtick"
     "github.com/shopspring/decimal"
     "go.uber.org/zap"
     "google.golang.org/grpc"
@@ -289,7 +289,7 @@ func (g *Gateway) Connect(ctx context.Context) error {
 ## 6. MT5 实现规范（`adapter/mt5/gateway.go`）
 
 与 mt4 同构，差异：
-- proto: `anttrader/mt5`（v2：独立 Go module）
+- proto: `alphaforge/mt5`（v2：独立 Go module）
 - `OnTick` 返回 `Bid/Ask/Last/Volume`（含 volume）
 - 时间戳已是毫秒（无需 `*1000`）
 - `BidVolume/AskVolume` 可填实际值

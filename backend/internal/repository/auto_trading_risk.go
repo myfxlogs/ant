@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 func (r *AutoTradingRepository) CreateRiskConfig(ctx context.Context, config *model.RiskConfig) error {

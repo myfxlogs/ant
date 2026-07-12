@@ -10,10 +10,10 @@ import (
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/proto"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/ai"
-	"anttrader/internal/pkg/ptr"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/ai"
+	"alphaforge/internal/pkg/ptr"
+	"alphaforge/internal/repository"
 )
 
 // runSingleBacktest executes one backtest with the given time window,

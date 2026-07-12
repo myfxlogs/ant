@@ -929,7 +929,7 @@ const file_ai_chat_requests_proto_rawDesc = "" +
 	"session_id\x18\x01 \x01(\tR\tsessionId\x12!\n" +
 	"\fstrategy_key\x18\x02 \x01(\tR\vstrategyKey\"<\n" +
 	" UpdateSessionStrategyKeyResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccessB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\asuccess\x18\x01 \x01(\bR\asuccessB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_ai_chat_requests_proto_rawDescOnce sync.Once

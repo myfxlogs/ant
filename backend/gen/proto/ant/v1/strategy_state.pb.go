@@ -368,7 +368,7 @@ const file_strategy_state_proto_rawDesc = "" +
 	"\tgross_pnl\x18\x05 \x01(\tR\bgrossPnl\x12!\n" +
 	"\fmax_drawdown\x18\x06 \x01(\x01R\vmaxDrawdown\x12\x1d\n" +
 	"\n" +
-	"total_cost\x18\a \x01(\tR\ttotalCostB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"total_cost\x18\a \x01(\tR\ttotalCostB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_state_proto_rawDescOnce sync.Once

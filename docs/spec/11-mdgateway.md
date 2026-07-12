@@ -515,7 +515,7 @@ Manager 在调用 adapter 前调 `breakers[brokerKey].Allow()`，失败时 `OnFa
 | `md_circuit_state` | Gauge | broker, mtapi_endpoint（per-broker，非 per-account；见 §11）|
 | `md_tick_anomaly_total` | Counter | broker, canonical, kind={outlier,gap,clock_skew}（见 §5）|
 | `md_gateway_connected` | Gauge | account_id, broker, platform |
-| `mt_account_connected` | Gauge | account_id, broker, platform（同 md_gateway_connected 别名；前端/Grafana 用此名查询，决策 RV-C4）|
+| `mt_account_connected` | Gauge | account_id, broker, platform（同 md_gateway_connected 别名；前端/Prometheus 用此名查询，决策 RV-C4）|
 | `md_clock_skew_seconds` | Gauge | broker |
 | `md_canonical_fallback_total` | Counter | broker |
 
@@ -640,11 +640,11 @@ for f in manager.go runner.go normalizer.go quality.go tick_dedup.go \
 done
 
 # 不许 import mt4client/mt5client
-! grep -rE "anttrader/internal/mt[45]client" backend/internal/mdgateway/ \
+! grep -rE "alphaforge/internal/mt[45]client" backend/internal/mdgateway/ \
   || { echo "FAIL: mdgateway imports legacy mt[45]client"; exit 1; }
 
 # 启动 docker 后跑数据流端到端
-docker exec ant-clickhouse clickhouse-client --query \
+docker exec alphaforge-clickhouse clickhouse-client --query \
   "SELECT count() FROM md_ticks WHERE arrived_unix_ms > $(date -d '5 minutes ago' +%s%3N)" \
   | awk '$1<10{exit 1}'  # 5 分钟内至少 10 条 tick
 ```

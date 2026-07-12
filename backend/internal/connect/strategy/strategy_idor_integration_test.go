@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
-	"anttrader/internal/service"
+	"alphaforge/internal/service"
 )
 
 func idorTestPG(t *testing.T) *pgxpool.Pool {

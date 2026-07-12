@@ -1,6 +1,6 @@
 package ai
 
-import internalai "anttrader/internal/ai"
+import internalai "alphaforge/internal/ai"
 
 // LangFromAccept normalizes an Accept-Language header value to a canonical lang code.
 func LangFromAccept(acceptLang string) string {

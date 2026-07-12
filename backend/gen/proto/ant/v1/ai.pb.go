@@ -38,7 +38,7 @@ const file_ai_proto_rawDesc = "" +
 	"ListAgents\x12\x19.ant.v1.ListAgentsRequest\x1a\x1a.ant.v1.ListAgentsResponse\x12O\n" +
 	"\x0eBatchSetAgents\x12\x1d.ant.v1.BatchSetAgentsRequest\x1a\x1e.ant.v1.BatchSetAgentsResponse\x12O\n" +
 	"\x0eResolveSession\x12\x1d.ant.v1.ResolveSessionRequest\x1a\x1e.ant.v1.ResolveSessionResponse\x12m\n" +
-	"\x18UpdateSessionStrategyKey\x12'.ant.v1.UpdateSessionStrategyKeyRequest\x1a(.ant.v1.UpdateSessionStrategyKeyResponseB\"Z anttrader/gen/proto/ant/v1;antv1P\x00P\x01b\x06proto3"
+	"\x18UpdateSessionStrategyKey\x12'.ant.v1.UpdateSessionStrategyKeyRequest\x1a(.ant.v1.UpdateSessionStrategyKeyResponseB#Z!alphaforge/gen/proto/ant/v1;antv1P\x00P\x01b\x06proto3"
 
 var file_ai_proto_goTypes = []any{
 	(*ChatRequest)(nil),                      // 0: ant.v1.ChatRequest

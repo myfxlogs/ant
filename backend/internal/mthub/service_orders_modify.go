@@ -9,7 +9,7 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	"anttrader/internal/usermgr"
+	"alphaforge/internal/usermgr"
 )
 
 // ModifyOrder modifies stop-loss and/or take-profit on an open position

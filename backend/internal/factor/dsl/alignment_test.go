@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"anttrader/internal/factor/dsl"
+	"alphaforge/internal/factor/dsl"
 )
 
 // ── Expression templates ──────────────────────────────────────────────

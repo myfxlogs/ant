@@ -2012,7 +2012,7 @@ const file_mthub_service_proto_rawDesc = "" +
 	"\x10GetAccountStatus\x12\x1f.ant.v1.GetAccountStatusRequest\x1a\x15.ant.v1.AccountStatus\x12K\n" +
 	"\x11StreamOrderEvents\x12 .ant.v1.StreamOrderEventsRequest\x1a\x12.ant.v1.OrderEvent0\x01\x12U\n" +
 	"\x10SyncOrderHistory\x12\x1f.ant.v1.SyncOrderHistoryRequest\x1a .ant.v1.SyncOrderHistoryResponse\x12L\n" +
-	"\rSubscribeBars\x12\x1c.ant.v1.SubscribeBarsRequest\x1a\x1d.ant.v1.SubscribeBarsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\rSubscribeBars\x12\x1c.ant.v1.SubscribeBarsRequest\x1a\x1d.ant.v1.SubscribeBarsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_mthub_service_proto_rawDescOnce sync.Once

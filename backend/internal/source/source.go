@@ -5,7 +5,7 @@ package source
 import (
 	"context"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // BarSource subscribes to OHLC bar data for a symbol/period pair.

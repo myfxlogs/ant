@@ -10,24 +10,24 @@ import (
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/config"
-	"anttrader/internal/ai"
-	"anttrader/internal/connect/admin"
-	mktplace "anttrader/internal/connect/marketplace"
-	"anttrader/internal/connect/strategy"
-	"anttrader/internal/connect/system"
-	"anttrader/internal/connect/user"
-	"anttrader/internal/controlplane"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/mdgateway"
-	"anttrader/internal/mthub"
-	"anttrader/internal/notifier"
-	"anttrader/internal/pglisten"
-	"anttrader/internal/repository"
-	"anttrader/internal/service"
-	systemai "anttrader/internal/service/systemai"
-	antredis "anttrader/internal/storage/redis"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/config"
+	"alphaforge/internal/ai"
+	"alphaforge/internal/connect/admin"
+	mktplace "alphaforge/internal/connect/marketplace"
+	"alphaforge/internal/connect/strategy"
+	"alphaforge/internal/connect/system"
+	"alphaforge/internal/connect/user"
+	"alphaforge/internal/controlplane"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/mdgateway"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/notifier"
+	"alphaforge/internal/pglisten"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
+	systemai "alphaforge/internal/service/systemai"
+	antredis "alphaforge/internal/storage/redis"
 
 	connectrpc "connectrpc.com/connect"
 )
@@ -53,20 +53,13 @@ func registerSREHandlers(
 	aiSvc *systemai.Service,
 	backtestRunRepo *repository.BacktestRunRepository,
 	pgListen *pglisten.Listener,
+	emailNotifier *notifier.EmailNotifier,
 ) (*notifier.EmailNotifier, func()) {
 	// --- SRE control plane ---
 	sreKillSwitch := controlplane.NewKillSwitch()
 	mthubSvc.SetKillSwitch(sreKillSwitch) // V3-R-5: PlaceOrder blocked when kill switch engaged
 	sreBreakers := controlplane.NewBreakerRegistry(controlplane.DefaultBreakerConfig())
 	sreCanary := controlplane.NewCanaryManager()
-	emailNotifier := notifier.NewEmailNotifier(notifier.EmailConfig{
-		Host:     cfg.SMTPHost,
-		Port:     cfg.SMTPPort,
-		User:     cfg.SMTPUser,
-		Password: cfg.SMTPPassword,
-		From:     cfg.SMTPFrom,
-		To:       splitAndTrim(cfg.SMTPTo, ","),
-	}, log)
 	sreHandler := admin.NewSREHandler(sreKillSwitch, sreBreakers, sreCanary, platformSvc, emailNotifier, log)
 	// AdminSRE — ConnectRPC (proto binary)
 	mux.Handle(antv1c.NewAdminSREServiceHandler(sreHandler, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))

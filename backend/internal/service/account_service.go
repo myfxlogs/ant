@@ -14,7 +14,7 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 // ErrAccountAlreadyBound is returned when an MT account is already bound to another user.

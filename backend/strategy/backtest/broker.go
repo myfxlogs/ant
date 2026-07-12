@@ -6,7 +6,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/sdk"
 )
 
 // SimBroker implements sdk.Broker for backtesting.
@@ -24,6 +24,7 @@ type SimBroker struct {
 	balance     decimal.Decimal
 	currentBar  int
 	currentBarTime time.Time // timestamp of the bar being processed
+	currentPrice   decimal.Decimal // current bar's close price for floating P&L
 }
 
 // NewSimBroker creates a simulated broker for backtesting.
@@ -41,6 +42,39 @@ func (b *SimBroker) SetBar(index int) { b.currentBar = index }
 
 // SetBarTime updates the current bar timestamp for order time tracking.
 func (b *SimBroker) SetBarTime(t time.Time) { b.currentBarTime = t }
+
+// SetBarPrice sets the current bar's close price for floating P&L calculation.
+func (b *SimBroker) SetBarPrice(price decimal.Decimal) { b.currentPrice = price }
+
+// Trades returns all completed round-trip trades recorded by the broker.
+func (b *SimBroker) Trades() []Trade { return b.trades }
+
+// recordTrade creates a Trade record from a closed OrderRecord.
+func (b *SimBroker) recordTrade(rec *OrderRecord) {
+	var profitPct float64
+	if rec.Price.IsPositive() {
+		diff := rec.ClosePrice.Sub(rec.Price)
+		if rec.Side == sdk.SideSell {
+			diff = diff.Neg()
+		}
+		profitPct, _ = diff.Div(rec.Price).Float64()
+		profitPct *= 100
+	}
+	b.trades = append(b.trades, Trade{
+		Symbol:     rec.Symbol,
+		Side:       rec.Side,
+		EntryTime:  rec.OpenTime,
+		ExitTime:   rec.CloseTime,
+		EntryPrice: rec.Price,
+		ExitPrice:  rec.ClosePrice,
+		Volume:     rec.Volume,
+		Profit:     rec.Profit,
+		ProfitPct:  profitPct,
+		Commission: rec.Commission,
+		Swap:       rec.Swap,
+		Comment:    rec.Comment,
+	})
+}
 
 // ── Order execution ────────────────────────────────────────────────
 
@@ -112,8 +146,11 @@ func (b *SimBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.Ord
 			if closeVol.IsZero() || closeVol.Equal(pos.Volume) {
 				closeVol = pos.Volume
 			}
-			// Calculate P&L for the closed volume.
+			// Use SL/TP close price if set, otherwise use current market price.
 			closePrice := pos.ClosePrice
+			if closePrice.IsZero() {
+				closePrice = b.currentPrice
+			}
 			if closePrice.IsZero() {
 				closePrice = pos.Price
 			}
@@ -132,9 +169,11 @@ func (b *SimBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.Ord
 				// Close full position
 				pos.State = OrderClosed
 				pos.CloseTime = b.currentBarTime
+				pos.ClosePrice = closePrice
 				pos.Profit = profit
 				b.history = append(b.history, pos)
 				b.recordDeal(pos, closeVol, profit, pos.CloseTime)
+				b.recordTrade(pos)
 				b.positions = append(b.positions[:i], b.positions[i+1:]...)
 			} else {
 				// Partial close — reduce volume, keep position open
@@ -206,6 +245,7 @@ func (b *SimBroker) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, er
 		pos1.Profit = profit1
 		b.history = append(b.history, pos1)
 		b.recordDeal(pos1, closeVol, profit1, now)
+		b.recordTrade(pos1)
 	} else {
 		pos1.Volume = pos1.Volume.Sub(closeVol)
 		b.recordDealPartial(pos1, closeVol, profit1, now)
@@ -218,6 +258,7 @@ func (b *SimBroker) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, er
 		pos2.Profit = profit2
 		b.history = append(b.history, pos2)
 		b.recordDeal(pos2, closeVol, profit2, now)
+		b.recordTrade(pos2)
 	} else {
 		pos2.Volume = pos2.Volume.Sub(closeVol)
 		b.recordDealPartial(pos2, closeVol, profit2, now)
@@ -414,6 +455,7 @@ func (b *SimBroker) applyCommission(rec *OrderRecord) {
 	commission := notional.Mul(b.config.Commission)
 	rec.Commission = commission
 	b.equity = b.equity.Sub(commission)
+	b.balance = b.balance.Sub(commission)
 }
 
 // applySwap calculates overnight swap for a position.
@@ -429,6 +471,7 @@ func (b *SimBroker) applySwap(rec *OrderRecord, days int) {
 	swap := rec.Volume.Mul(contractSize).Mul(swapRate).Mul(decimal.NewFromInt(int64(days)))
 	rec.Swap = rec.Swap.Add(swap)
 	b.equity = b.equity.Sub(swap)
+	b.balance = b.balance.Sub(swap)
 }
 
 func (b *SimBroker) recordDeal(rec *OrderRecord, vol decimal.Decimal, profit decimal.Decimal, now time.Time) {
@@ -487,10 +530,13 @@ func (b *SimBroker) Account() sdk.AccountInfo {
 	floatingProfit := decimal.Zero
 	marginUsed := decimal.Zero
 	for _, pos := range b.positions {
-		// Calculate unrealized P&L using current close price
+		// Calculate unrealized P&L using current market price
 		closePrice := pos.ClosePrice
 		if closePrice.IsZero() {
-			closePrice = pos.Price
+			closePrice = b.currentPrice
+			if closePrice.IsZero() {
+				closePrice = pos.Price
+			}
 		}
 		profit := closePrice.Sub(pos.Price).Mul(pos.Volume).Mul(contractSize)
 		if pos.Side == sdk.SideSell {
@@ -501,6 +547,7 @@ func (b *SimBroker) Account() sdk.AccountInfo {
 		notional := pos.Volume.Mul(contractSize).Mul(pos.Price)
 		marginUsed = marginUsed.Add(notional.Div(decimal.NewFromInt(int64(b.config.Leverage))))
 	}
+	// equity = balance + floating P&L (commission already deducted from balance at open)
 	equity := b.balance.Add(floatingProfit)
 	return sdk.AccountInfo{
 		Balance:    b.balance,

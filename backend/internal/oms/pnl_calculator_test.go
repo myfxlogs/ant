@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"anttrader/internal/costsvc"
+	"alphaforge/internal/costsvc"
 )
 
 func TestPnLCalculator_Buy_Profitable(t *testing.T) {

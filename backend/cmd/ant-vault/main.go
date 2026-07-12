@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"os"
 
-	"anttrader/internal/secrets"
+	"alphaforge/internal/secrets"
 )
 
 func main() {

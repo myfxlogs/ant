@@ -257,7 +257,7 @@ const file_strategy_schedule_backtest_proto_rawDesc = "" +
 	"\x05error\x18\b \x01(\tR\x05error\x12\"\n" +
 	"\n" +
 	"dataset_id\x18\t \x01(\tH\x00R\tdatasetId\x88\x01\x01B\r\n" +
-	"\v_dataset_idB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\v_dataset_idB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_schedule_backtest_proto_rawDescOnce sync.Once

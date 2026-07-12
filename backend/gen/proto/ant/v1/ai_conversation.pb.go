@@ -193,7 +193,7 @@ const file_ai_conversation_proto_rawDesc = "" +
 	"\acontent\x18\x03 \x01(\tR\acontent\x129\n" +
 	"\n" +
 	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1b\n" +
-	"\tturn_data\x18\x05 \x01(\fR\bturnDataB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\tturn_data\x18\x05 \x01(\fR\bturnDataB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_ai_conversation_proto_rawDescOnce sync.Once

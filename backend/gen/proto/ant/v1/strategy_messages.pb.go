@@ -24,7 +24,7 @@ var File_strategy_messages_proto protoreflect.FileDescriptor
 
 const file_strategy_messages_proto_rawDesc = "" +
 	"\n" +
-	"\x17strategy_messages.proto\x12\x06ant.v1\x1a strategy_template_messages.proto\x1a strategy_schedule_messages.proto\x1a\x1estrategy_signal_messages.protoB\"Z anttrader/gen/proto/ant/v1;antv1P\x00P\x01P\x02b\x06proto3"
+	"\x17strategy_messages.proto\x12\x06ant.v1\x1a strategy_template_messages.proto\x1a strategy_schedule_messages.proto\x1a\x1estrategy_signal_messages.protoB#Z!alphaforge/gen/proto/ant/v1;antv1P\x00P\x01P\x02b\x06proto3"
 
 var file_strategy_messages_proto_goTypes = []any{}
 var file_strategy_messages_proto_depIdxs = []int32{

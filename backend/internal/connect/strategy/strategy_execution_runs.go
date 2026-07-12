@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/repository"
 )
 
 // ListStrategyRuns returns recent live/paper strategy run records for the authenticated user.

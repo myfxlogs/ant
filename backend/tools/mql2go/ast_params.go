@@ -1,7 +1,7 @@
 package mql2go
 
 import (
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // ExtractParams returns the parameter declarations from a compiled Bytecode.

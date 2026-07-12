@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 var ErrAccountNotFound = errors.New("account not found")

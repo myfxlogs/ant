@@ -12,13 +12,13 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/mdgateway"
-	"anttrader/internal/mdgateway/adapter/brokersearch"
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/mdgateway"
+	"alphaforge/internal/mdgateway/adapter/brokersearch"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/service"
 )
 
 // MTConnectionTester validates MT account credentials by connecting to the broker.

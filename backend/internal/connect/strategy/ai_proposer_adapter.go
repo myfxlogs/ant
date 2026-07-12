@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"anttrader/internal/ai"
-	systemai "anttrader/internal/service/systemai"
+	"alphaforge/internal/ai"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 var _ ai.AIProposer = (*systemAIAdapter)(nil)

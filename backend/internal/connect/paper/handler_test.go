@@ -10,11 +10,11 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/connect/strategy"
-	"anttrader/internal/interceptor"
-	papereng "anttrader/internal/paper"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/connect/strategy"
+	"alphaforge/internal/interceptor"
+	papereng "alphaforge/internal/paper"
+	"alphaforge/internal/repository"
 )
 
 // ── Test stubs ──

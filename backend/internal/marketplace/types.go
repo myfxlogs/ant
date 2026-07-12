@@ -1,6 +1,7 @@
 package marketplace
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -25,6 +26,19 @@ var SystemUserID = uuid.Nil
 // New creates a marketplace service.
 func New(pg *pgxpool.Pool, log *zap.Logger) *Service {
 	return &Service{pg: pg, log: log}
+}
+
+// GetPlatformFeeRate reads the marketplace platform fee rate from system_config.
+// Returns "0" if not configured or disabled.
+func (s *Service) GetPlatformFeeRate(ctx context.Context) string {
+	var rate string
+	err := s.pg.QueryRow(ctx,
+		`SELECT value FROM system_config WHERE key = 'marketplace.platform_fee_rate' AND enabled = true`,
+	).Scan(&rate)
+	if err != nil || rate == "" {
+		return "0"
+	}
+	return rate
 }
 
 // ── Price model constants ────────────────────────────────────────────────────
@@ -57,20 +71,20 @@ const (
 
 // PublishParams carries the full strategy metadata for publishing.
 type PublishParams struct {
-	UserID              string
-	StrategyID          string
-	Title               string
-	Description         string
-	PriceModel          string
-	PriceAmount         float64
-	AssetClass          string
-	Symbols             []string
-	Timeframe           string
-	RiskLevel           string
-	Tags                []string
+	UserID               string
+	StrategyID           string
+	Title                string
+	Description          string
+	PriceModel           string
+	PriceAmount          string // decimal string
+	AssetClass           string
+	Symbols              []string
+	Timeframe            string
+	RiskLevel            string
+	Tags                 []string
 	CodeSnippet          string  // optional public code preview set by publisher
 	BacktestSnapshotJSON *string // optional JSON-serialized backtest snapshot (nil → SQL NULL)
-	PlatformFeeRate      float64 // platform commission rate (0.0–1.0)
+	PlatformFeeRate      string  // decimal string, platform commission rate (0.0–1.0)
 }
 
 // BacktestSnapshot holds key backtest metrics at publish time.
@@ -88,27 +102,27 @@ type BacktestSnapshot struct {
 // PublishedStrategy represents a strategy listed in the marketplace
 // with full metadata from marketplace_strategies (M12-B1).
 type PublishedStrategy struct {
-	PublishID          string
-	StrategyID         string
-	StrategyName       string
-	PublisherUserID    string
-	PublishedAt        time.Time
-	Title              string
-	Description        string
-	PriceModel         string
-	PriceAmount        *float64
-	AssetClass         string
-	Symbols            []string
-	Timeframe          *string
-	RiskLevel          string
-	Tags               []string
-	TotalSubscribers   int
-	WinRate            *float64
-	TotalPnL           *float64
-	AvgRating          float64
-	RatingCount        int32
-	CodeSnippet        string            // publisher-provided code preview
-	BacktestSnapshot   *BacktestSnapshot // optional backtest snapshot
+	PublishID        string
+	StrategyID       string
+	StrategyName     string
+	PublisherUserID  string
+	PublishedAt      time.Time
+	Title            string
+	Description      string
+	PriceModel       string
+	PriceAmount      *string // decimal string
+	AssetClass       string
+	Symbols          []string
+	Timeframe        *string
+	RiskLevel        string
+	Tags             []string
+	TotalSubscribers int
+	WinRate          *float64
+	TotalPnL         *float64
+	AvgRating        float64
+	RatingCount      int32
+	CodeSnippet      string            // publisher-provided code preview
+	BacktestSnapshot *BacktestSnapshot // optional backtest snapshot
 }
 
 // BacktestRunSnapshot is a lightweight read of a single backtest_runs row.
@@ -125,29 +139,29 @@ type BacktestRunSnapshot struct {
 
 // StartBacktestParams carries the parameters for marketplace backtest execution.
 type StartBacktestParams struct {
-	UserID             string
-	StrategyID         string
-	Symbol             string
-	Timeframe          string
-	StartDateMs        int64
-	EndDateMs          int64
-	InitialCapital     decimal.Decimal
-	Commission         decimal.Decimal
-	Slippage           decimal.Decimal
-	Leverage           decimal.Decimal
-	TradeDirection     string
+	UserID         string
+	StrategyID     string
+	Symbol         string
+	Timeframe      string
+	StartDateMs    int64
+	EndDateMs      int64
+	InitialCapital decimal.Decimal
+	Commission     decimal.Decimal
+	Slippage       decimal.Decimal
+	Leverage       decimal.Decimal
+	TradeDirection string
 }
 
 // PublisherStats holds aggregated dashboard statistics for a strategy publisher.
 type PublisherStats struct {
-	TotalPublished    int32
-	TotalSubscribers  int32
-	TotalRevenue      string  // decimal string
-	MonthlyRevenue    string  // decimal string (last 30 days)
-	AvgRating         float64
-	TopStrategyID     string
-	TopStrategyTitle  string
-	TopStrategySubs   int32
+	TotalPublished   int32
+	TotalSubscribers int32
+	TotalRevenue     string // decimal string
+	MonthlyRevenue   string // decimal string (last 30 days)
+	AvgRating        float64
+	TopStrategyID    string
+	TopStrategyTitle string
+	TopStrategySubs  int32
 }
 
 // PurchaseResult holds the outcome of a paid strategy purchase.

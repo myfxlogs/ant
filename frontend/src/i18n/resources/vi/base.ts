@@ -425,7 +425,21 @@ const Base = {
       "loginSuccess": "Đăng nhập thành công",
       "logoutSuccess": "Đã đăng xuất",
       "registerFailed": "Đăng ký thất bại. Vui lòng thử lại sau.",
-      "registerSuccess": "Đăng ký thành công. Vui lòng đăng nhập."
+      "registerSuccess": "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản."
+    },
+    "verify": {
+      "verifying": "Đang xác thực email...",
+      "successTitle": "Xác thực email thành công!",
+      "successDesc": "Email của bạn đã được xác thực. Bạn có thể đăng nhập ngay bây giờ.",
+      "failedTitle": "Xác thực thất bại",
+      "failedDesc": "Liên kết xác thực không hợp lệ hoặc đã hết hạn.",
+      "failed": "Xác thực thất bại. Vui lòng thử lại.",
+      "pendingTitle": "Kiểm tra email của bạn",
+      "pendingDesc": "Chúng tôi đã gửi liên kết xác thực đến email của bạn. Vui lòng nhấp vào liên kết để xác thực tài khoản.",
+      "didntReceive": "Không nhận được email?",
+      "resend": "Gửi lại email xác thực",
+      "resendFailed": "Gửi lại thất bại. Vui lòng thử lại sau.",
+      "goLogin": "Đi đến đăng nhập"
     },
     "register": {
       "haveAccount": "Đã có tài khoản?",
@@ -441,6 +455,26 @@ const Base = {
       "passwordMin8": "Mật khẩu phải có ít nhất 8 ký tự",
       "passwordMismatch": "Mật khẩu không khớp",
       "passwordRequired": "Vui lòng nhập mật khẩu"
+    }
+  },
+  "onboarding": {
+    "welcome": "Chào mừng đến AlphaForge, {{name}}!",
+    "subtitle": "Bắt đầu trong 3 bước đơn giản",
+    "dismiss": "Đã hiểu, đóng",
+    "step1": {
+      "title": "Kết nối tài khoản",
+      "desc": "Liên kết tài khoản giao dịch MT4/MT5 để bắt đầu.",
+      "action": "Liên kết tài khoản"
+    },
+    "step2": {
+      "title": "Tạo chiến lược đầu tiên",
+      "desc": "Mô tả ý tưởng giao dịch bằng ngôn ngữ tự nhiên, AI tự động tạo mã chiến lược.",
+      "action": "Mở không gian làm việc"
+    },
+    "step3": {
+      "title": "Nâng cấp gói",
+      "desc": "Nâng cấp lên Pro để mở khóa thêm AI token, chiến lược và giao dịch trực tiếp.",
+      "action": "Xem gói"
     }
   },
   "common": {

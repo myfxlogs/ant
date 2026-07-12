@@ -154,7 +154,7 @@ const file_strategy_schedule_query_proto_rawDesc = "" +
 	"\x15ListSchedulesResponse\x126\n" +
 	"\tschedules\x18\x01 \x03(\v2\x18.ant.v1.StrategyScheduleR\tschedules\"$\n" +
 	"\x12GetScheduleRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02idB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x02id\x18\x01 \x01(\tR\x02idB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_schedule_query_proto_rawDescOnce sync.Once

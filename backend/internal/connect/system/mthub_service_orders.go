@@ -13,10 +13,10 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/model"
-	"anttrader/internal/mthub"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/model"
+	"alphaforge/internal/mthub"
 )
 
 // StreamOrderEvents streams real-time order events for the authenticated user.

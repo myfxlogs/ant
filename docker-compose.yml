@@ -1,6 +1,6 @@
 services:
   frontend:
-    container_name: ant-frontend
+    container_name: alphaforge-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -9,7 +9,7 @@ services:
         NODE_BUILD_IMAGE: ${NODE_BUILD_IMAGE:-docker.io/library/node:22-alpine}
         VITE_API_URL: ${VITE_API_URL:-}
         VITE_STREAM_URL: ${VITE_STREAM_URL:-}
-    image: ant-prod-frontend
+    image: alphaforge-prod-frontend
     restart: always
     logging:
       driver: json-file
@@ -33,14 +33,14 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - ant-network
+      - alphaforge-network
 
   backend:
-    container_name: ant-backend
+    container_name: alphaforge-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: ant-prod-backend
+    image: alphaforge-prod-backend
     restart: always
     logging:
       driver: json-file
@@ -87,10 +87,10 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - ant-network
+      - alphaforge-network
 
   postgres:
-    container_name: ant-postgres
+    container_name: alphaforge-postgres
     image: postgres:18-alpine
     ports:
       - "5433:5432"
@@ -119,12 +119,12 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - ant-network
+      - alphaforge-network
 
   # ClickHouse read replica — optional analytical query engine for 200+ accounts.
   # Enable with: docker compose --profile scale up -d
   clickhouse:
-    container_name: ant-clickhouse
+    container_name: alphaforge-clickhouse
     image: clickhouse/clickhouse-server:24.12-alpine
     restart: always
     profiles: [scale]
@@ -153,10 +153,10 @@ services:
       retries: 10
       start_period: 30s
     networks:
-      - ant-network
+      - alphaforge-network
 
   redis:
-    container_name: ant-redis
+    container_name: alphaforge-redis
     image: redis:8-alpine
     ports:
       - "6379:6379"
@@ -181,10 +181,10 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - ant-network
+      - alphaforge-network
 
   nats:
-    container_name: ant-nats
+    container_name: alphaforge-nats
     image: nats:2.10-alpine
     restart: always
     logging:
@@ -212,10 +212,10 @@ services:
       retries: 10
       start_period: 10s
     networks:
-      - ant-network
+      - alphaforge-network
 
   umami:
-    container_name: ant-umami
+    container_name: alphaforge-umami
     image: ghcr.io/umami-software/umami:postgresql-latest
     restart: always
     logging:
@@ -245,10 +245,110 @@ services:
       retries: 5
       start_period: 15s
     networks:
-      - ant-network
+      - alphaforge-network
+
+  # ── Monitoring Stack (P4-5) ──────────────────────────────────────────────
+  prometheus:
+    container_name: alphaforge-prometheus
+    image: prom/prometheus:v3.4.1
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "2"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/prometheus/rules.yml:/etc/prometheus/rules.yml:ro
+      - ./deploy/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    networks:
+      - alphaforge-network
+
+  alertmanager:
+    container_name: alphaforge-alertmanager
+    image: prom/alertmanager:v0.28.1
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "2"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 32M
+    ports:
+      - "${ALERTMANAGER_PORT:-9093}:9093"
+    volumes:
+      - ./deploy/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    networks:
+      - alphaforge-network
+
+  postgres-exporter:
+    container_name: alphaforge-pg-exporter
+    image: prometheuscommunity/postgres-exporter:v0.17.1
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "2"
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+        reservations:
+          memory: 16M
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${DB_USER:-ant}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-ant}?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - alphaforge-network
+
+  redis-exporter:
+    container_name: alphaforge-redis-exporter
+    image: oliver006/redis_exporter:v1.73.0
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "2"
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+        reservations:
+          memory: 16M
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - alphaforge-network
 
 networks:
-  ant-network:
+  alphaforge-network:
     driver: bridge
 
 volumes:
@@ -260,3 +360,7 @@ volumes:
     name: ant_clickhouse_data
   nats_data:
     name: ant_nats_data
+  prometheus_data:
+    name: alphaforge_prometheus_data
+  alertmanager_data:
+    name: alphaforge_alertmanager_data

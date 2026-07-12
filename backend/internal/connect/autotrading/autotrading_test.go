@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"anttrader/internal/interceptor"
+	"alphaforge/internal/interceptor"
 )
 
 func TestUserID_Authenticated(t *testing.T) {

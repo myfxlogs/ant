@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	sitter "github.com/smacker/go-tree-sitter"
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 func (c *pyCompiler) compilePyComparison(n *sitter.Node) *interp.Expr {

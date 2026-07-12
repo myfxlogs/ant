@@ -24,7 +24,7 @@ var File_strategy_schedule_requests_proto protoreflect.FileDescriptor
 
 const file_strategy_schedule_requests_proto_rawDesc = "" +
 	"\n" +
-	" strategy_schedule_requests.proto\x12\x06ant.v1\x1a\x1dstrategy_schedule_query.proto\x1a\x1fstrategy_schedule_control.proto\x1a strategy_schedule_backtest.protoB\"Z anttrader/gen/proto/ant/v1;antv1P\x00P\x01P\x02b\x06proto3"
+	" strategy_schedule_requests.proto\x12\x06ant.v1\x1a\x1dstrategy_schedule_query.proto\x1a\x1fstrategy_schedule_control.proto\x1a strategy_schedule_backtest.protoB#Z!alphaforge/gen/proto/ant/v1;antv1P\x00P\x01P\x02b\x06proto3"
 
 var file_strategy_schedule_requests_proto_goTypes = []any{}
 var file_strategy_schedule_requests_proto_depIdxs = []int32{

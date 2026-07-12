@@ -182,7 +182,7 @@ return content, msg.ToolCalls, cr.Usage, nil
 ## §4 验收标准
 
 1. 用户原始复杂 prompt（"四小时放量大跌…加仓…出场 200 倍"）→ agent 不再报 empty response，能产出策略代码。
-2. `docker logs ant-backend | grep "loop done"` → `raw_len > 0`。
+2. `docker logs alphaforge-backend | grep "loop done"` → `raw_len > 0`。
 3. 回归: 短 prompt（deepseek-chat 走 content 通道）行为不变。
 4. 若仍空 → 新错误信息带 `finish_reason=...`，据此判断是否 max_tokens 截断（改调 §5 备选）。
 

@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	pb "anttrader/mt4"
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/mthub"
+	pb "alphaforge/mt4"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mthub"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"

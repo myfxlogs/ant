@@ -399,7 +399,7 @@ const file_admin_config_proto_rawDesc = "" +
 	"\x12AdminConfigService\x12F\n" +
 	"\vListConfigs\x12\x1a.ant.v1.ListConfigsRequest\x1a\x1b.ant.v1.ListConfigsResponse\x12@\n" +
 	"\tSetConfig\x12\x18.ant.v1.SetConfigRequest\x1a\x19.ant.v1.SetConfigResponse\x12^\n" +
-	"\x13ToggleConfigEnabled\x12\".ant.v1.ToggleConfigEnabledRequest\x1a#.ant.v1.ToggleConfigEnabledResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x13ToggleConfigEnabled\x12\".ant.v1.ToggleConfigEnabledRequest\x1a#.ant.v1.ToggleConfigEnabledResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_admin_config_proto_rawDescOnce sync.Once

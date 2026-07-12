@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"anttrader/internal/secrets"
+	"alphaforge/internal/secrets"
 )
 
 func TestEnvelopeRoundTrip(t *testing.T) {

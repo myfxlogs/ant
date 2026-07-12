@@ -12,5 +12,5 @@ import { file_system_ai_probe } from "./system_ai_probe_pb";
  * Describes the file system_ai_requests.proto.
  */
 export const file_system_ai_requests: GenFile = /*@__PURE__*/
-  fileDesc("ChhzeXN0ZW1fYWlfcmVxdWVzdHMucHJvdG8SBmFudC52MUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MVAAUAFQAmIGcHJvdG8z", [file_system_ai_query, file_system_ai_update, file_system_ai_probe]);
+  fileDesc("ChhzeXN0ZW1fYWlfcmVxdWVzdHMucHJvdG8SBmFudC52MUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFQAFABUAJiBnByb3RvMw", [file_system_ai_query, file_system_ai_update, file_system_ai_probe]);
 

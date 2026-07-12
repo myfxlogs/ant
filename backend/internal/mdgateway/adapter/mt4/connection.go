@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	pb "anttrader/mt4"
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	pb "alphaforge/mt4"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

@@ -17,7 +17,7 @@ func TestExtractCodeFromRepair_FencedCode(t *testing.T) {
 }
 
 func TestExtractCodeFromRepair_Heuristic(t *testing.T) {
-	raw := "package main\n\nimport (\n    \"anttrader/strategy/sdk\"\n)\n\nfunc (s *MyStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error) {\n    return nil, nil\n}\n\n以上是修正后的代码"
+	raw := "package main\n\nimport (\n    \"alphaforge/strategy/sdk\"\n)\n\nfunc (s *MyStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error) {\n    return nil, nil\n}\n\n以上是修正后的代码"
 	code := extractCodeFromRepair(raw, false)
 	if code == "" {
 		t.Fatal("expected heuristic extraction")

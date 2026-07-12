@@ -10,10 +10,10 @@ import (
 
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/repository"
-	systemai "anttrader/internal/service/systemai"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/repository"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 // SystemAIServer implements ant.v1.SystemAIServiceHandler.

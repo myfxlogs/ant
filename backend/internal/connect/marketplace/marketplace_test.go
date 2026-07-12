@@ -11,9 +11,9 @@ import (
 
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/marketplace"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/marketplace"
 )
 
 // ── Stubs ──
@@ -65,23 +65,33 @@ func (s *stubMarketplaceSvc) PurchaseStrategy(_ context.Context, _, _, _ string)
 func (s *stubMarketplaceSvc) ListSubscriptions(_ context.Context, _ string) ([]marketplace.SubscriptionItem, error) {
 	return s.subs, s.err
 }
-func (s *stubMarketplaceSvc) SetPricing(_ context.Context, _, _ string, _, _ float64) error { return s.err }
+func (s *stubMarketplaceSvc) SetPricing(_ context.Context, _, _, _, _ string) error  { return s.err }
 func (s *stubMarketplaceSvc) Unpublish(_ context.Context, _, _ string, _ bool) error { return s.err }
 func (s *stubMarketplaceSvc) GetPublisherStats(_ context.Context, _ string) (*marketplace.PublisherStats, error) {
-	if s.err != nil { return nil, s.err }
+	if s.err != nil {
+		return nil, s.err
+	}
 	return &marketplace.PublisherStats{TotalPublished: 3, TotalSubscribers: 10}, nil
 }
 func (s *stubMarketplaceSvc) StartMarketBacktest(_ context.Context, _ marketplace.StartBacktestParams) (string, error) {
 	return "run-1", s.err
 }
 func (s *stubMarketplaceSvc) QueryBacktestRun(_ context.Context, _ uuid.UUID) (*marketplace.BacktestRunSnapshot, error) {
-	if s.err != nil { return nil, s.err }
+	if s.err != nil {
+		return nil, s.err
+	}
 	return &marketplace.BacktestRunSnapshot{Status: "RUNNING"}, nil
+}
+
+func (s *stubMarketplaceSvc) GetPlatformFeeRate(_ context.Context) string {
+	return "0"
 }
 
 type stubAdminChecker struct{ isAdmin bool }
 
-func (a *stubAdminChecker) IsAdmin(_ context.Context, _ uuid.UUID) (bool, error) { return a.isAdmin, nil }
+func (a *stubAdminChecker) IsAdmin(_ context.Context, _ uuid.UUID) (bool, error) {
+	return a.isAdmin, nil
+}
 
 func testMarketplaceHandler(svc marketplaceSvc) *MarketplaceServer {
 	return &MarketplaceServer{svc: svc, admin: &stubAdminChecker{isAdmin: true}, log: zap.NewNop()}

@@ -12,8 +12,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/service"
 )
 
 // --- Schedules ---

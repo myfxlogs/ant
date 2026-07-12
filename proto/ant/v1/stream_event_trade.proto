@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ant.v1;
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 message OrderUpdateEvent { string account_id = 1; int64 ticket = 2; string symbol = 3; string type = 4; string volume = 5; string open_price = 6; string profit = 7; string action = 8; string stop_loss = 9; string take_profit = 10; string close_price = 11; int64 open_time = 12; int64 close_time = 13; string swap = 14; string commission = 15; string comment = 16; }
 message DealUpdateEvent { string account_id = 1; int64 deal_ticket = 2; int64 position_ticket = 3; string symbol = 4; string deal_type = 5; string direction = 6; string volume = 7; string price = 8; string profit = 9; string swap = 10; string commission = 11; int64 time = 12; string comment = 13; int64 expert_id = 14; }

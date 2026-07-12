@@ -9,13 +9,13 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
 
-	aigates "anttrader/internal/ai"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/notification"
-	"anttrader/internal/repository"
+	aigates "alphaforge/internal/ai"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/notification"
+	"alphaforge/internal/repository"
 
 	"connectrpc.com/connect"
 )

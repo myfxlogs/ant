@@ -351,7 +351,7 @@ const file_log_operation_proto_rawDesc = "" +
 	"\vduration_ms\x18\f \x01(\x03R\n" +
 	"durationMs\x129\n" +
 	"\n" +
-	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_log_operation_proto_rawDescOnce sync.Once

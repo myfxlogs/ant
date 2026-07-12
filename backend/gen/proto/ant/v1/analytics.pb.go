@@ -3144,7 +3144,7 @@ const file_analytics_proto_rawDesc = "" +
 	"\x10GetMonthlyDetail\x12\x1f.ant.v1.GetMonthlyDetailRequest\x1a .ant.v1.GetMonthlyDetailResponse\x12g\n" +
 	"\x16GetAttributionAnalysis\x12%.ant.v1.GetAttributionAnalysisRequest\x1a&.ant.v1.GetAttributionAnalysisResponse\x12X\n" +
 	"\x11GetRollingMetrics\x12 .ant.v1.GetRollingMetricsRequest\x1a!.ant.v1.GetRollingMetricsResponse\x12N\n" +
-	"\x0eGenerateReport\x12\x1d.ant.v1.GenerateReportRequest\x1a\x1b.ant.v1.GenerateReportChunk0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x0eGenerateReport\x12\x1d.ant.v1.GenerateReportRequest\x1a\x1b.ant.v1.GenerateReportChunk0\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_analytics_proto_rawDescOnce sync.Once

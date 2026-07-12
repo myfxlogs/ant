@@ -1,0 +1,114 @@
+syntax = "proto3";
+package ant.v1;
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
+import "google/protobuf/timestamp.proto";
+
+// SubscriptionService manages platform subscription plans (Free/Pro/Enterprise).
+// Separate from marketplace strategy subscriptions.
+service SubscriptionService {
+  // List all active plans (public, no auth required for listing).
+  rpc ListPlans(ListPlansRequest) returns (ListPlansResponse);
+  // Get the caller's current subscription status.
+  rpc GetMySubscription(GetMySubscriptionRequest) returns (GetMySubscriptionResponse);
+  // Subscribe to a plan (charges wallet, creates/updates subscription).
+  rpc Subscribe(SubscribePlanRequest) returns (SubscribePlanResponse);
+  // Cancel auto-renewal (subscription remains active until period end).
+  rpc CancelSubscription(CancelSubscriptionRequest) returns (CancelSubscriptionResponse);
+  // Change plan (prorated charge/credit, updates subscription).
+  rpc ChangePlan(ChangePlanRequest) returns (ChangePlanResponse);
+  // Get current month usage summary (AI tokens, strategy runtime, costs).
+  rpc GetUsageSummary(GetUsageSummaryRequest) returns (GetUsageSummaryResponse);
+}
+
+message Plan {
+  string id = 1;
+  string name = 2;           // free / pro / enterprise
+  string display_name = 3;
+  string price_monthly = 4;  // decimal string
+  string price_yearly = 5;   // decimal string
+  int32 max_ai_tokens_monthly = 6;
+  int32 max_strategies = 7;
+  int32 max_backtests_daily = 8;
+  int32 max_live_strategies = 9;
+  int32 max_symbols_per_strategy = 10;
+  int32 capability_tier = 11;
+  string features_json = 12;  // JSONB feature flags as string
+  int32 sort_order = 13;
+}
+
+message ListPlansRequest {}
+message ListPlansResponse {
+  repeated Plan plans = 1;
+}
+
+message UserSubscription {
+  string id = 1;
+  string plan_id = 2;
+  string plan_name = 3;
+  string plan_display_name = 4;
+  string status = 5;          // active / expired / cancelled
+  string billing_cycle = 6;   // monthly / yearly
+  google.protobuf.Timestamp current_period_start = 7;
+  google.protobuf.Timestamp current_period_end = 8;
+  bool auto_renew = 9;
+  google.protobuf.Timestamp cancelled_at = 10;
+  google.protobuf.Timestamp created_at = 11;
+}
+
+message GetMySubscriptionRequest {}
+message GetMySubscriptionResponse {
+  UserSubscription subscription = 1;  // nil if no active subscription (free tier)
+  Plan plan = 2;                       // resolved plan details
+}
+
+message SubscribePlanRequest {
+  string plan_name = 1;       // free / pro / enterprise
+  string billing_cycle = 2;   // monthly / yearly
+  bool auto_renew = 3;
+}
+message SubscribePlanResponse {
+  UserSubscription subscription = 1;
+  string transaction_id = 2;   // wallet transaction if charged
+  string amount_charged = 3;   // decimal string
+  string balance_after = 4;    // decimal string
+}
+
+message CancelSubscriptionRequest {}
+message CancelSubscriptionResponse {
+  UserSubscription subscription = 1;
+}
+
+message ChangePlanRequest {
+  string new_plan_name = 1;
+  string billing_cycle = 2;   // monthly / yearly (can change cycle too)
+}
+message ChangePlanResponse {
+  UserSubscription subscription = 1;
+  string transaction_id = 2;
+  string amount_charged = 3;   // prorated charge (positive) or credit (negative)
+  string balance_after = 4;
+}
+
+message GetUsageSummaryRequest {}
+
+message UsageSummary {
+  // AI token usage for current month.
+  int32 ai_tokens_used = 1;
+  int32 ai_tokens_limit = 2;      // 0 = unlimited
+  string ai_cost = 3;             // decimal string, monthly cost
+  map<string, int32> tokens_by_feature = 4;  // e.g. {"chat": 5000, "agent": 3000}
+
+  // Strategy runtime for current month (minutes).
+  int32 strategy_runtime_minutes = 5;
+  int32 active_strategies = 6;
+  int32 max_strategies = 7;
+  int32 max_live_strategies = 8;
+
+  // Wallet.
+  string wallet_balance = 9;      // decimal string
+}
+
+message GetUsageSummaryResponse {
+  UsageSummary summary = 1;
+  Plan plan = 2;                  // current plan for context
+}

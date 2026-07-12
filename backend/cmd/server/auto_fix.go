@@ -14,11 +14,11 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	internalai "anttrader/internal/ai"
-	"anttrader/internal/connect/ai"
-	notifpubsub "anttrader/internal/notification"
-	"anttrader/internal/repository"
-	systemai "anttrader/internal/service/systemai"
+	internalai "alphaforge/internal/ai"
+	"alphaforge/internal/connect/ai"
+	notifpubsub "alphaforge/internal/notification"
+	"alphaforge/internal/repository"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 // autoFixCode generates improved strategy code via LLM when a gate evaluation fails,

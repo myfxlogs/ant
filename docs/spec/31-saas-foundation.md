@@ -180,7 +180,7 @@ ORDER BY (bucket_5m_ts, user_id, metric_name)
 TTL toDateTime(bucket_5m_ts / 1000) + INTERVAL 90 DAY;
 ```
 
-每 5min 由后台 goroutine 从 NATS event stream 流式聚合写入。Grafana 用户级仪表盘走 CH，平台级仪表盘走 Prometheus。
+每 5min 由后台 goroutine 从 NATS event stream 流式聚合写入。用户级仪表盘走 CH，平台级仪表盘走 Prometheus + SSE 监控页。
 
 ---
 

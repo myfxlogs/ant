@@ -139,18 +139,18 @@ type PlatformScope interface {
 
 ```bash
 # (1) per-user 官方副本清零
-docker exec ant-postgres psql -U ant -d ant -tAc \
+docker exec alphaforge-postgres psql -U ant -d ant -tAc \
   "SELECT count(*) FROM strategy_templates WHERE is_official=true GROUP BY user_id" \
   | awk '$1>0{exit 1}'
 
 # (2) platform_* 表存在且非空
 for t in platform_strategies platform_factors platform_ai_agents admins; do
-  docker exec ant-postgres psql -U ant -d ant -tAc \
+  docker exec alphaforge-postgres psql -U ant -d ant -tAc \
     "SELECT count(*) FROM $t" | awk '$1<1{exit 1}'
 done
 
 # (3) admin 鉴权独立
-! docker exec ant-postgres psql -U ant -d ant -tAc \
+! docker exec alphaforge-postgres psql -U ant -d ant -tAc \
     "SELECT count(*) FROM users WHERE role='admin'" \
   | awk '$1>0{exit 1}'
 

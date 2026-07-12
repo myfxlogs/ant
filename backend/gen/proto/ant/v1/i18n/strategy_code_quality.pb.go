@@ -116,7 +116,7 @@ const file_i18n_strategy_code_quality_proto_rawDesc = "" +
 	".category_n_d_a_r_r_a_y_p_a_n_d_a_s_m_i_s_u_s_e\x18\x03 \x01(\tR\x1bcategoryNDARRAYPANDASMISUSE\x128\n" +
 	"\x1ccategory_n_o_e_n_t_r_y_p_c_t\x18\x04 \x01(\tR\x12categoryNOENTRYPCT\x12S\n" +
 	".category_n_o_s_t_o_p_a_n_d_t_a_k_e_p_r_o_f_i_t\x18\x05 \x01(\tR\x1bcategoryNOSTOPANDTAKEPROFIT\x12;\n" +
-	"\x1ecategory_u_n_r_e_a_d_p_a_r_a_m\x18\x06 \x01(\tR\x13categoryUNREADPARAMB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x1ecategory_u_n_r_e_a_d_p_a_r_a_m\x18\x06 \x01(\tR\x13categoryUNREADPARAMB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_code_quality_proto_rawDescOnce sync.Once

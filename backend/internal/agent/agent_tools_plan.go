@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	connectai "anttrader/internal/connect/ai"
-	systemai "anttrader/internal/service/systemai"
+	connectai "alphaforge/internal/connect/ai"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 // updatePlanTool allows the LLM to track and display a multi-step strategy plan.

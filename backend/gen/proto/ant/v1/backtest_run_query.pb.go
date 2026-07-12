@@ -415,7 +415,7 @@ const file_backtest_run_query_proto_rawDesc = "" +
 	"\v_account_idB\x0e\n" +
 	"\f_template_id\"C\n" +
 	"\x18ListBacktestRunsResponse\x12'\n" +
-	"\x04runs\x18\x01 \x03(\v2\x13.ant.v1.BacktestRunR\x04runsB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x04runs\x18\x01 \x03(\v2\x13.ant.v1.BacktestRunR\x04runsB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_backtest_run_query_proto_rawDescOnce sync.Once

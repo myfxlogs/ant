@@ -720,7 +720,7 @@ const file_stream_proto_rawDesc = "" +
 	"\x15SubscribeOrderUpdates\x12$.ant.v1.SubscribeOrderUpdatesRequest\x1a\x18.ant.v1.OrderUpdateEvent0\x01\x12\\\n" +
 	"\x16SubscribeProfitUpdates\x12%.ant.v1.SubscribeProfitUpdatesRequest\x1a\x19.ant.v1.ProfitUpdateEvent0\x01\x12J\n" +
 	"\x14SubscribeUserSummary\x12\x16.google.protobuf.Empty\x1a\x18.ant.v1.UserSummaryEvent0\x01\x12Y\n" +
-	"\x13SubscribeIndicators\x12\".ant.v1.SubscribeIndicatorsRequest\x1a\x1c.ant.v1.IndicatorUpdateEvent0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x13SubscribeIndicators\x12\".ant.v1.SubscribeIndicatorsRequest\x1a\x1c.ant.v1.IndicatorUpdateEvent0\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_stream_proto_rawDescOnce sync.Once

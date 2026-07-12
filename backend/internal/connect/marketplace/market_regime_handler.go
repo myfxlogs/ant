@@ -13,12 +13,12 @@ import (
 
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/ai"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/repository"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/ai"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
 )
 
 type MarketRegimeServer struct {

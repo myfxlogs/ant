@@ -8,9 +8,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/mdgateway/backfiller"
-	"anttrader/internal/repository"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/backfiller"
+	"alphaforge/internal/repository"
 )
 
 // loadFinalizedBars queries the MarketDataStore for existing close_ts values per key.

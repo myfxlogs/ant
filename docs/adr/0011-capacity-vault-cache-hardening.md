@@ -141,7 +141,7 @@ grep -E 'QueueSize.*50000|MaxBatchSize.*10000|FlushInterval.*500' \
   backend/internal/mdgateway/clickhouse_writer.go
 
 # 2. Buffer engine 表存在
-docker exec ant-clickhouse clickhouse-client --query \
+docker exec alphaforge-clickhouse clickhouse-client --query \
   "SELECT engine FROM system.tables WHERE database='ant' AND name='md_ticks_buffer'" \
   | grep -q '^Buffer$'
 

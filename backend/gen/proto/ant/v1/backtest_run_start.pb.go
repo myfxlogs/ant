@@ -253,7 +253,7 @@ const file_backtest_run_start_proto_rawDesc = "" +
 	"\x12_template_draft_idB\x0e\n" +
 	"\f_strategy_id\"1\n" +
 	"\x18StartBacktestRunResponse\x12\x15\n" +
-	"\x06run_id\x18\x01 \x01(\tR\x05runIdB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x06run_id\x18\x01 \x01(\tR\x05runIdB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_backtest_run_start_proto_rawDescOnce sync.Once

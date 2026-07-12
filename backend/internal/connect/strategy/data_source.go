@@ -17,9 +17,9 @@ import (
 	"strconv"
 	"time"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/mthub"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/repository"
 )
 
 // BarSource provides K-line bars for strategy execution.

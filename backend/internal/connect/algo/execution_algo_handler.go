@@ -15,11 +15,11 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/execalgo"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/mthub"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/execalgo"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/mthub"
 )
 
 // ExecutionAlgoServer implements ant.v1.ExecutionAlgoServiceHandler.

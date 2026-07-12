@@ -39,7 +39,7 @@ const file_account_proto_rawDesc = "" +
 	"\fSearchBroker\x12\x1b.ant.v1.SearchBrokerRequest\x1a\x1c.ant.v1.SearchBrokerResponse\x12d\n" +
 	"\x15VerifyTradePermission\x12$.ant.v1.VerifyTradePermissionRequest\x1a%.ant.v1.VerifyTradePermissionResponse\x12d\n" +
 	"\x15UpdateTradingPassword\x12$.ant.v1.UpdateTradingPasswordRequest\x1a%.ant.v1.UpdateTradingPasswordResponse\x12L\n" +
-	"\rVerifyAccount\x12\x1c.ant.v1.VerifyAccountRequest\x1a\x1d.ant.v1.VerifyAccountResponseB\"Z anttrader/gen/proto/ant/v1;antv1P\x01P\x02P\x03P\x04b\x06proto3"
+	"\rVerifyAccount\x12\x1c.ant.v1.VerifyAccountRequest\x1a\x1d.ant.v1.VerifyAccountResponseB#Z!alphaforge/gen/proto/ant/v1;antv1P\x01P\x02P\x03P\x04b\x06proto3"
 
 var file_account_proto_goTypes = []any{
 	(*ListAccountsRequest)(nil),           // 0: ant.v1.ListAccountsRequest

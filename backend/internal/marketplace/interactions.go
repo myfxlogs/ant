@@ -116,4 +116,3 @@ func (s *Service) ListComments(ctx context.Context, strategyID string, limit, of
 	}
 	return items, total, rows.Err()
 }
-

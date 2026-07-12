@@ -17,6 +17,7 @@ const Dashboard = {
       "accounts": "Tài khoản",
       "analytics": "Phân tích",
       "bindAccount": "Liên kết",
+      "aiStrategy": "Chiến lược AI",
       "closePosition": "平仓",
       "library": "Thư viện",
       "logs": "Nhật ký",

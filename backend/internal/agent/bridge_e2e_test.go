@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"anttrader/tools/mql2go"
+	"alphaforge/tools/mql2go"
 )
 
 // validPythonSubset is a Python subset strategy with trading calls that compiles successfully.

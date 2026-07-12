@@ -11,10 +11,10 @@ import (
 
 // RefundResult holds the outcome of a refund operation.
 type RefundResult struct {
-	SubscriptionID  string
-	RefundTxID      string
-	AmountRefunded  string
-	BalanceAfter    string
+	SubscriptionID string
+	RefundTxID     string
+	AmountRefunded string
+	BalanceAfter   string
 }
 
 // RefundPurchase reverses a paid strategy purchase: credits the buyer back,

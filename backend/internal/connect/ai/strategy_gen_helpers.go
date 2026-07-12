@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
-	"anttrader/internal/pkg/ptr"
-	"anttrader/internal/repository"
+	"alphaforge/internal/pkg/ptr"
+	"alphaforge/internal/repository"
 )
 
 // ExtractCode extracts Go code from an LLM response string.

@@ -1649,7 +1649,7 @@ const file_admin_strategy_proto_rawDesc = "" +
 	"\x0fPublishStrategy\x12#.ant.v1.AdminPublishStrategyRequest\x1a$.ant.v1.AdminPublishStrategyResponse\x12R\n" +
 	"\x0fDisableStrategy\x12\x1e.ant.v1.DisableStrategyRequest\x1a\x1f.ant.v1.DisableStrategyResponse\x12O\n" +
 	"\x0eEnableStrategy\x12\x1d.ant.v1.EnableStrategyRequest\x1a\x1e.ant.v1.EnableStrategyResponse\x12R\n" +
-	"\x0fArchiveStrategy\x12\x1e.ant.v1.ArchiveStrategyRequest\x1a\x1f.ant.v1.ArchiveStrategyResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x0fArchiveStrategy\x12\x1e.ant.v1.ArchiveStrategyRequest\x1a\x1f.ant.v1.ArchiveStrategyResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_admin_strategy_proto_rawDescOnce sync.Once

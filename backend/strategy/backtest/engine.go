@@ -9,7 +9,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/sdk"
 )
 
 // Engine runs a backtest of a strategy on historical data.
@@ -63,6 +63,14 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 	}
 	btCtx.ind = &btIndicators{bars: e.bars, barIdx: &btCtx.barIndex}
 
+	// Validate bar ordering — unsorted bars produce silent garbage.
+	for i := 1; i < len(e.bars); i++ {
+		if e.bars[i].Timestamp < e.bars[i-1].Timestamp {
+			return nil, fmt.Errorf("bars are not chronologically ordered at index %d: %d < %d",
+				i, e.bars[i].Timestamp, e.bars[i-1].Timestamp)
+		}
+	}
+
 	// OnInit
 	if err := e.strategy.OnInit(btCtx); err != nil {
 		return nil, err
@@ -76,6 +84,7 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		bar := e.bars[i]
 		e.broker.SetBar(i)
 		e.broker.SetBarTime(time.UnixMilli(bar.Timestamp))
+		e.broker.SetBarPrice(bar.Close)
 
 		// Update context with current bar slice
 		btCtx.barIndex = i
@@ -132,12 +141,16 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		// Update equity with floating P&L from open positions
 		equity := e.broker.balance
 		closePrice := bar.Close
+		contractSize := e.config.ContractSize
+		if contractSize.IsZero() {
+			contractSize = decimal.NewFromInt(100000)
+		}
 		for _, pos := range e.broker.positions {
-			floating := closePrice.Sub(pos.Price).Mul(pos.Volume)
+			floating := closePrice.Sub(pos.Price).Mul(pos.Volume).Mul(contractSize)
 			if pos.Side == sdk.SideSell {
 				floating = floating.Neg()
 			}
-			equity = equity.Add(floating).Sub(pos.Commission).Sub(pos.Swap)
+			equity = equity.Add(floating)
 		}
 		e.equity = append(e.equity, EquityPoint{
 			Time:   time.UnixMilli(bar.Timestamp),
@@ -149,14 +162,17 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 	// OnDeinit
 	e.strategy.OnDeinit(btCtx, "backtest_complete")
 
+	// Merge trades from broker (strategy-closed) and engine (SL/TP-closed)
+	allTrades := append(e.trades, e.broker.Trades()...)
+
 	// Calculate metrics (uses existing antv1.BacktestMetrics)
-	metrics := CalculateMetrics(e.config.InitialCapital, e.equity, e.trades)
+	metrics := CalculateMetrics(e.config.InitialCapital, e.equity, allTrades)
 
 	return &Result{
 		Config:     e.config,
 		Metrics:    metrics,
 		Equity:     e.equity,
-		Trades:     e.trades,
+		Trades:     allTrades,
 		StartedAt:  startedAt,
 		FinishedAt: time.Now(),
 	}, nil
@@ -288,20 +304,9 @@ func (e *Engine) checkSLTP(bar sdk.Bar) {
 			pos.CloseTime = time.UnixMilli(bar.Timestamp)
 			e.broker.history = append(e.broker.history, pos)
 			e.broker.recordDeal(pos, pos.Volume, pos.Profit, pos.CloseTime)
-			e.trades = append(e.trades, Trade{
-				Symbol:     pos.Symbol,
-				Side:       pos.Side,
-				EntryTime:  pos.OpenTime,
-				ExitTime:   pos.CloseTime,
-				EntryPrice: pos.Price,
-				ExitPrice:  pos.ClosePrice,
-				Volume:     pos.Volume,
-				Profit:     pos.Profit,
-				Commission: pos.Commission,
-				Comment:    pos.Comment,
-			})
-			e.broker.equity = e.broker.equity.Add(pos.Profit)
-			e.broker.balance = e.broker.balance.Add(pos.Profit)
+			e.broker.recordTrade(pos)
+			e.broker.equity = e.broker.equity.Add(pos.Profit).Sub(pos.Swap)
+			e.broker.balance = e.broker.balance.Add(pos.Profit).Sub(pos.Swap)
 			e.broker.positions = append(e.broker.positions[:i], e.broker.positions[i+1:]...)
 			i--
 		}

@@ -10,10 +10,10 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/ai"
-	connectai "anttrader/internal/connect/ai"
-	systemai "anttrader/internal/service/systemai"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/ai"
+	connectai "alphaforge/internal/connect/ai"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 // runAgentLoop is the single unified entry point for all Generator requests.

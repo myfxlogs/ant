@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 // HookEvent identifies a lifecycle hook point (ADR-0025 §8).

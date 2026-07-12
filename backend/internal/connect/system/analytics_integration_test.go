@@ -16,10 +16,10 @@ import (
 	goredis "github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/repository"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
 )
 
 // --- test helpers ---

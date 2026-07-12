@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 )

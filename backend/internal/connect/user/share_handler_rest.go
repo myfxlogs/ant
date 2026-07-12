@@ -18,8 +18,8 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"anttrader/internal/interceptor"
-	"anttrader/internal/repository"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/repository"
 )
 
 // parseAuthUser extracts and validates the Bearer JWT from an HTTP request,

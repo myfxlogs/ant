@@ -24,7 +24,7 @@ var File_system_ai_requests_proto protoreflect.FileDescriptor
 
 const file_system_ai_requests_proto_rawDesc = "" +
 	"\n" +
-	"\x18system_ai_requests.proto\x12\x06ant.v1\x1a\x15system_ai_query.proto\x1a\x16system_ai_update.proto\x1a\x15system_ai_probe.protoB\"Z anttrader/gen/proto/ant/v1;antv1P\x00P\x01P\x02b\x06proto3"
+	"\x18system_ai_requests.proto\x12\x06ant.v1\x1a\x15system_ai_query.proto\x1a\x16system_ai_update.proto\x1a\x15system_ai_probe.protoB#Z!alphaforge/gen/proto/ant/v1;antv1P\x00P\x01P\x02b\x06proto3"
 
 var file_system_ai_requests_proto_goTypes = []any{}
 var file_system_ai_requests_proto_depIdxs = []int32{

@@ -7,11 +7,11 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/repository"
-	"anttrader/strategy/backtest"
-	"anttrader/strategy/sdk"
-	"anttrader/tools/mql2go"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/repository"
+	"alphaforge/strategy/backtest"
+	"alphaforge/strategy/sdk"
+	"alphaforge/tools/mql2go"
 )
 
 // executeVMBacktest runs a backtest via the in-process Bytecode VM:

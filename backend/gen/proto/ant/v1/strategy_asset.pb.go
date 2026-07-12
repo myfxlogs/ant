@@ -886,7 +886,7 @@ const file_strategy_asset_proto_rawDesc = "" +
 	"\x12CloneStrategyAsset\x12!.ant.v1.CloneStrategyAssetRequest\x1a\".ant.v1.CloneStrategyAssetResponse\x12O\n" +
 	"\x10CheckAssetUpdate\x12\x1f.ant.v1.CheckAssetUpdateRequest\x1a\x1a.ant.v1.StrategyAssetClone\x12Q\n" +
 	"\x11SyncStrategyAsset\x12 .ant.v1.SyncStrategyAssetRequest\x1a\x1a.ant.v1.StrategyAssetClone\x12R\n" +
-	"\x0fListAssetClones\x12\x1e.ant.v1.ListAssetClonesRequest\x1a\x1f.ant.v1.ListAssetClonesResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x0fListAssetClones\x12\x1e.ant.v1.ListAssetClonesRequest\x1a\x1f.ant.v1.ListAssetClonesResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_asset_proto_rawDescOnce sync.Once

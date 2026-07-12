@@ -6,9 +6,9 @@ import (
 
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/repository"
-	"anttrader/tools/mql2go"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/repository"
+	"alphaforge/tools/mql2go"
 )
 
 // executePythonVMBacktest runs a backtest via the in-process Bytecode VM for Python subset:

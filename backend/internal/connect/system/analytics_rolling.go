@@ -11,9 +11,9 @@ import (
 
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/model"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/model"
+	"alphaforge/internal/repository"
 )
 
 // ── GetRollingMetrics ──

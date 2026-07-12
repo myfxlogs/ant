@@ -249,7 +249,7 @@ const file_i18n_strategy_asset_analysis_proto_rawDesc = "" +
 	"vol_normal\x18\x13 \x01(\tR\tvolNormal\x12\x1e\n" +
 	"\n" +
 	"volatility\x18\x14 \x01(\tR\n" +
-	"volatilityB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"volatilityB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_asset_analysis_proto_rawDescOnce sync.Once

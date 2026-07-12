@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/ai"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/ai"
 )
 
 // pythonSubsetRules is the shared Python subset language rules block.

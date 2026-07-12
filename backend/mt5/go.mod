@@ -1,3 +1,3 @@
-module anttrader/mt5
+module alphaforge/mt5
 
 go 1.25.6

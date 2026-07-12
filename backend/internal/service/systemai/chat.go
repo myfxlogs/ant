@@ -218,7 +218,8 @@ func (s *Service) ChatCompletionWithUsage(
 		if err == nil {
 			// Bill before returning — user must pay to receive the result.
 			if s.postCallBiller != nil && usage != nil {
-				if billErr := s.postCallBiller(ctx, userID, p.providerID, p.model, usage.PromptTokens, usage.CompletionTokens); billErr != nil {
+				feature := aiFeatureFromCtx(ctx)
+				if billErr := s.postCallBiller(ctx, userID, p.providerID, p.model, feature, usage.PromptTokens, usage.CompletionTokens); billErr != nil {
 					return nil, billErr
 				}
 			}
@@ -278,16 +279,6 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 				return "", nil, nil, fmt.Errorf("chat completion: empty choices")
 			}
 			s.recordProviderSuccess(ctx, p.userID, p.providerID)
-			if s.tokenRecorder != nil && cr.Usage != nil {
-				feature := "chat"
-				if v := ctx.Value(aiFeatureKey{}); v != nil {
-					feature = v.(string)
-				}
-				s.tokenRecorder(ctx, TokenRecord{
-					UserID: p.userID, ProviderID: p.providerID, Model: p.model,
-					Feature: feature, InputTokens: cr.Usage.PromptTokens, OutputTokens: cr.Usage.CompletionTokens,
-				})
-			}
 			msg := cr.Choices[0].Message
 			content := strings.TrimSpace(msg.Content)
 			return content, msg.ToolCalls, cr.Usage, nil

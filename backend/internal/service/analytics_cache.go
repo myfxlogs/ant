@@ -9,7 +9,7 @@ import (
 	goredis "github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 // AnalyticsSnapshot holds a pre-computed analytics summary for caching.

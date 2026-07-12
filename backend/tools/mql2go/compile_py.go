@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	sitter "github.com/smacker/go-tree-sitter"
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // CompilePythonToIR parses Python subset source and compiles it to interp.IR.

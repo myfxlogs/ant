@@ -6,7 +6,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	antv1 "anttrader/gen/proto/ant/v1"
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 // mockConfigStore implements a simple in-memory config for testing.

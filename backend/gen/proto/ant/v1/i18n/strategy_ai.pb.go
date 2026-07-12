@@ -98,7 +98,7 @@ const file_i18n_strategy_ai_proto_rawDesc = "" +
 	"\x0echeck_settings\x18\x01 \x01(\tR\rcheckSettings\x12%\n" +
 	"\x0erefresh_failed\x18\x02 \x01(\tR\rrefreshFailed\x12\x1a\n" +
 	"\bsettings\x18\x03 \x01(\tR\bsettings\x12!\n" +
-	"\fagent_memory\x18\x04 \x01(\tR\vagentMemoryB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\fagent_memory\x18\x04 \x01(\tR\vagentMemoryB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_ai_proto_rawDescOnce sync.Once

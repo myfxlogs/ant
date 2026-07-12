@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // fakeGateway implements Gateway for testing Add/Remove/Health lifecycle.

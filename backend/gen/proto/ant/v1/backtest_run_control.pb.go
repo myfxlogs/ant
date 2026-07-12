@@ -310,7 +310,7 @@ const file_backtest_run_control_proto_rawDesc = "" +
 	"\arun_ids\x18\x01 \x03(\tR\x06runIds\"d\n" +
 	"\x1aDeleteBacktestRunsResponse\x12#\n" +
 	"\rdeleted_count\x18\x01 \x01(\x05R\fdeletedCount\x12!\n" +
-	"\ffailed_count\x18\x02 \x01(\x05R\vfailedCountB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\ffailed_count\x18\x02 \x01(\x05R\vfailedCountB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_backtest_run_control_proto_rawDescOnce sync.Once

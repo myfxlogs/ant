@@ -59,7 +59,7 @@ bak260421/
 _nonproduction_archive/
 backups/
 
-# Local experiments / upstream mirrors — not part of AntTrader product repo
+# Local experiments / upstream mirrors — not part of AlphaForge product repo
 Emulator/
 mtproto/
 test/

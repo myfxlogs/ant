@@ -6,7 +6,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // TestCompileAST_SimpleEA verifies that a simple MQL EA compiles to bytecode

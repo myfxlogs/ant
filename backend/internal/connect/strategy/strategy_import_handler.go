@@ -10,10 +10,10 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/repository"
-	"anttrader/tools/mql2go"
-	"anttrader/tools/mql2go/interp"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/repository"
+	"alphaforge/tools/mql2go"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // paramGroup guesses a parameter group from its name.

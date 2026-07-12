@@ -290,7 +290,7 @@ const file_admin_system_proto_rawDesc = "" +
 	"\x12AdminSystemService\x12F\n" +
 	"\vHealthCheck\x12\x1a.ant.v1.HealthCheckRequest\x1a\x1b.ant.v1.HealthCheckResponse\x12C\n" +
 	"\n" +
-	"GetMetrics\x12\x19.ant.v1.GetMetricsRequest\x1a\x1a.ant.v1.GetMetricsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"GetMetrics\x12\x19.ant.v1.GetMetricsRequest\x1a\x1a.ant.v1.GetMetricsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_admin_system_proto_rawDescOnce sync.Once

@@ -15,6 +15,7 @@ import DashboardStatCards from './DashboardStatCards';
 import DashboardAccountList from './DashboardAccountList';
 import { createQuickActions } from './quickActions';
 import Seo from '@/components/common/Seo';
+import WelcomeModal from '@/components/onboarding/WelcomeModal';
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -56,6 +57,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <Seo title="Dashboard" noindex />
+      <WelcomeModal hasAccounts={accts.length > 0} hasStrategies={false} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ fontFamily: 'Poppins, sans-serif', color: 'var(--color-text)' }}>

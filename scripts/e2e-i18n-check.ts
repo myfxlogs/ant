@@ -104,7 +104,7 @@ async function main() {
       allIssues.push({ page: 'SETUP', lang: '-', type: 'LOGIN_FAIL', detail: 'on login' });
     } else {
       for (const lang of LANGS) {
-        await page.evaluate((c: string) => localStorage.setItem('anttrader_lang', c), lang.code);
+        await page.evaluate((c: string) => localStorage.setItem('alphaforge_lang', c), lang.code);
         console.log(`\n${lang.name} (${lang.code})`);
         for (const { path, name } of PAGES) {
           checks++;

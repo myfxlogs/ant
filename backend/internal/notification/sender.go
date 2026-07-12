@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 // Sender creates notifications and broadcasts them to active SSE subscribers.

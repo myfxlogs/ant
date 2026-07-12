@@ -447,7 +447,7 @@ const file_market_service_proto_rawDesc = "" +
 	"\rMarketService\x12@\n" +
 	"\tGetKlines\x12\x18.ant.v1.GetKlinesRequest\x1a\x19.ant.v1.GetKlinesResponse\x12O\n" +
 	"\x0eGetSymbolStats\x12\x1d.ant.v1.GetSymbolStatsRequest\x1a\x1e.ant.v1.GetSymbolStatsResponse\x12<\n" +
-	"\vStreamTicks\x12\x1a.ant.v1.StreamTicksRequest\x1a\x0f.ant.v1.TickMsg0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\vStreamTicks\x12\x1a.ant.v1.StreamTicksRequest\x1a\x0f.ant.v1.TickMsg0\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_market_service_proto_rawDescOnce sync.Once

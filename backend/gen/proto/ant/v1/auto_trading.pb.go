@@ -35,7 +35,7 @@ const file_auto_trading_proto_rawDesc = "" +
 	"\x15CalculatePositionSize\x12$.ant.v1.CalculatePositionSizeRequest\x1a%.ant.v1.CalculatePositionSizeResponse\x12V\n" +
 	"\x14GetAutoTradingStatus\x12#.ant.v1.GetAutoTradingStatusRequest\x1a\x19.ant.v1.AutoTradingStatus\x12O\n" +
 	"\x0eGetTradingLogs\x12\x1d.ant.v1.GetTradingLogsRequest\x1a\x1e.ant.v1.GetTradingLogsResponse\x12a\n" +
-	"\x14GetRecentTradingLogs\x12#.ant.v1.GetRecentTradingLogsRequest\x1a$.ant.v1.GetRecentTradingLogsResponseB\"Z anttrader/gen/proto/ant/v1;antv1P\x00P\x01P\x02b\x06proto3"
+	"\x14GetRecentTradingLogs\x12#.ant.v1.GetRecentTradingLogsRequest\x1a$.ant.v1.GetRecentTradingLogsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1P\x00P\x01P\x02b\x06proto3"
 
 var file_auto_trading_proto_goTypes = []any{
 	(*GetGlobalSettingsRequest)(nil),      // 0: ant.v1.GetGlobalSettingsRequest

@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	systemai "anttrader/internal/service/systemai"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 // loadHistory loads recent conversation messages as context for the AgentLoop.

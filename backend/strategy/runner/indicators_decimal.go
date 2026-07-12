@@ -3,8 +3,8 @@ package runner
 import (
 	"github.com/shopspring/decimal"
 
-	"anttrader/strategy/indicators"
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/indicators"
+	"alphaforge/strategy/sdk"
 )
 
 // indicatorSet implements sdk.IndicatorSet backed by the runner's bar data.

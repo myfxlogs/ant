@@ -16,8 +16,8 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	"anttrader/internal/mthub"
-	"anttrader/internal/risksvc"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/risksvc"
 )
 
 // CopyTradeEngine replicates publisher strategy signals to subscriber accounts.
@@ -241,7 +241,6 @@ func (e *CopyTradeEngine) buildAllocInput(accounts []subAccount, result *CopyTra
 	return allocInput, validAccounts
 }
 
-
 func (e *CopyTradeEngine) submitCopyOrders(
 	ctx context.Context, signal CopySignalEvent, validAccounts []subAccount,
 	allocation map[string]float64, result *CopyTradeResult,
@@ -260,15 +259,19 @@ func (e *CopyTradeEngine) submitCopyOrders(
 		go func(acc subAccount, volume float64) {
 			defer submitWg.Done()
 			side := mthub.SideBuy
-			if signal.Side == "sell" { side = mthub.SideSell }
+			if signal.Side == "sell" {
+				side = mthub.SideSell
+			}
 			req := &mthub.OrderRequest{
 				AccountID: acc.sub.TargetUserID, Canonical: signal.Symbol, Side: side, OrderType: mthub.OrderMarket,
 				Volume: decimal.NewFromFloat(volume), Price: decimal.NewFromFloat(signal.Price),
 				StopLoss: decimal.NewFromFloat(signal.StopLoss), TakeProfit: decimal.NewFromFloat(signal.TakeProfit),
-				Comment: fmt.Sprintf("copytrade:%s:%s", truncID(signal.StrategyID, 8), signal.Comment),
+				Comment:  fmt.Sprintf("copytrade:%s:%s", truncID(signal.StrategyID, 8), signal.Comment),
 				ClientID: fmt.Sprintf("copytrade-%s-%s", signal.SignalID, truncID(acc.sub.TargetUserID, 8)),
 			}
-			if signal.Price > 0 { req.OrderType = mthub.OrderLimit }
+			if signal.Price > 0 {
+				req.OrderType = mthub.OrderLimit
+			}
 			_, err := e.mthub.PlaceOrder(ctx, req)
 			resultMu.Lock()
 			defer resultMu.Unlock()

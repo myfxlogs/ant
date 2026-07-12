@@ -3,7 +3,7 @@ package mql2go
 import (
 	"strings"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // MQL4/MQL5 String functions — complete implementation.

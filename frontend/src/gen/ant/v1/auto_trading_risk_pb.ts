@@ -12,5 +12,5 @@ import { file_auto_trading_position_size } from "./auto_trading_position_size_pb
  * Describes the file auto_trading_risk.proto.
  */
 export const file_auto_trading_risk: GenFile = /*@__PURE__*/
-  fileDesc("ChdhdXRvX3RyYWRpbmdfcmlzay5wcm90bxIGYW50LnYxQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxUABQAVACYgZwcm90bzM", [file_auto_trading_risk_config, file_auto_trading_risk_check, file_auto_trading_position_size]);
+  fileDesc("ChdhdXRvX3RyYWRpbmdfcmlzay5wcm90bxIGYW50LnYxQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MVAAUAFQAmIGcHJvdG8z", [file_auto_trading_risk_config, file_auto_trading_risk_check, file_auto_trading_position_size]);
 

@@ -43,7 +43,7 @@ func TestIsMQLStrategy(t *testing.T) {
 		want bool
 	}{
 		{"", false},
-		{"package main\nimport \"anttrader/strategy/sdk\"\nfunc OnInit() {}", false},
+		{"package main\nimport \"alphaforge/strategy/sdk\"\nfunc OnInit() {}", false},
 		{"int OnInit() { return 0; }\nvoid OnBar() {}", true},
 		{"void OnTick() { }", true},
 		{"void OnTimer() { }", true},

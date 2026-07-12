@@ -429,7 +429,7 @@ const file_account_connection_proto_rawDesc = "" +
 	"\aservers\x18\x02 \x03(\v2\x14.ant.v1.BrokerServerR\aservers\":\n" +
 	"\fBrokerServer\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x16\n" +
-	"\x06access\x18\x02 \x03(\tR\x06accessB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x06access\x18\x02 \x03(\tR\x06accessB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_account_connection_proto_rawDescOnce sync.Once

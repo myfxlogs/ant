@@ -193,7 +193,7 @@ const file_auto_trading_position_size_proto_rawDesc = "" +
 	"\n" +
 	"min_volume\x18\x04 \x01(\tR\tminVolume\x12\x1d\n" +
 	"\n" +
-	"max_volume\x18\x05 \x01(\tR\tmaxVolumeB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"max_volume\x18\x05 \x01(\tR\tmaxVolumeB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_auto_trading_position_size_proto_rawDescOnce sync.Once

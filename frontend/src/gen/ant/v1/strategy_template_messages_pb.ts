@@ -11,5 +11,5 @@ import { file_strategy_template_requests } from "./strategy_template_requests_pb
  * Describes the file strategy_template_messages.proto.
  */
 export const file_strategy_template_messages: GenFile = /*@__PURE__*/
-  fileDesc("CiBzdHJhdGVneV90ZW1wbGF0ZV9tZXNzYWdlcy5wcm90bxIGYW50LnYxQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxUABQAWIGcHJvdG8z", [file_strategy_template_entity, file_strategy_template_requests]);
+  fileDesc("CiBzdHJhdGVneV90ZW1wbGF0ZV9tZXNzYWdlcy5wcm90bxIGYW50LnYxQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MVAAUAFiBnByb3RvMw", [file_strategy_template_entity, file_strategy_template_requests]);
 

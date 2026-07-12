@@ -3,8 +3,8 @@ package brokersearch
 import (
 	"testing"
 
-	mt4pb "anttrader/mt4"
-	mt5pb "anttrader/mt5"
+	mt4pb "alphaforge/mt4"
+	mt5pb "alphaforge/mt5"
 )
 
 func TestNew_Defaults(t *testing.T) {

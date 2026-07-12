@@ -141,9 +141,13 @@ func MetricsHandler() http.Handler {
 		writeLegacyMetrics(&b)
 
 		// Append promhttp metrics (go_gc_duration_seconds, process_cpu_seconds_total, etc.)
+		// Strip Accept-Encoding to prevent promhttp from gzip-encoding its output,
+		// which would corrupt the combined plain-text metrics response.
+		r2 := r.Clone(r.Context())
+		r2.Header.Set("Accept-Encoding", "identity")
 		var buf bytes.Buffer
 		cw := &captureWriter{headers: make(http.Header), buf: &buf}
-		promhttp.Handler().ServeHTTP(cw, r)
+		promhttp.Handler().ServeHTTP(cw, r2)
 		b.Write(buf.Bytes())
 
 		w.Write([]byte(b.String()))

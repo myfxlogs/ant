@@ -12,12 +12,12 @@ import (
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/mthub"
-	"anttrader/internal/repository"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
 )
 
 // MtHubServer implements ant.v1.MtHubServiceHandler.

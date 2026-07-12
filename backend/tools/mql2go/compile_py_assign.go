@@ -2,7 +2,7 @@ package mql2go
 
 import (
 	sitter "github.com/smacker/go-tree-sitter"
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 func (c *pyCompiler) compilePyAssignment(n *sitter.Node) *interp.Expr {

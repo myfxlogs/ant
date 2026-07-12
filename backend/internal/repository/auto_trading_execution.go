@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/shopspring/decimal"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 func (r *AutoTradingRepository) CreateExecution(ctx context.Context, execution *model.StrategyExecution) error {

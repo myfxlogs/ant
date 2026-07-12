@@ -1,7 +1,7 @@
 package mql2go
 
 import (
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // BuiltinFunc is a VM builtin function handler.

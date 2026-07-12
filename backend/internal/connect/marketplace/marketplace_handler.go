@@ -6,10 +6,10 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/marketplace"
-	"anttrader/internal/pglisten"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/marketplace"
+	"alphaforge/internal/pglisten"
 )
 
 // marketplaceSvc is the local interface for marketplace business logic.
@@ -25,11 +25,12 @@ type marketplaceSvc interface {
 	Unsubscribe(ctx context.Context, userID, subscriptionID string) error
 	PurchaseStrategy(ctx context.Context, userID, strategyID, idempotencyKey string) (*marketplace.PurchaseResult, error)
 	ListSubscriptions(ctx context.Context, userID string) ([]marketplace.SubscriptionItem, error)
-	SetPricing(ctx context.Context, strategyID, priceModel string, priceAmount, platformFeeRate float64) error
+	SetPricing(ctx context.Context, strategyID, priceModel, priceAmount, platformFeeRate string) error
 	Unpublish(ctx context.Context, strategyID, userID string, isAdmin bool) error
 	GetPublisherStats(ctx context.Context, userID string) (*marketplace.PublisherStats, error)
 	StartMarketBacktest(ctx context.Context, params marketplace.StartBacktestParams) (string, error)
 	QueryBacktestRun(ctx context.Context, runID uuid.UUID) (*marketplace.BacktestRunSnapshot, error)
+	GetPlatformFeeRate(ctx context.Context) string
 }
 
 // MarketplaceServer implements ant.v1.MarketplaceServiceHandler.

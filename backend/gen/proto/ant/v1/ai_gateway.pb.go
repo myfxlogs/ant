@@ -1262,7 +1262,7 @@ const file_ai_gateway_proto_rawDesc = "" +
 	"\n" +
 	"ListModels\x12\x19.ant.v1.ListModelsRequest\x1a\x1a.ant.v1.ListModelsResponse\x12F\n" +
 	"\vUpsertModel\x12\x1a.ant.v1.UpsertModelRequest\x1a\x1b.ant.v1.UpsertModelResponse\x12F\n" +
-	"\vDeleteModel\x12\x1a.ant.v1.DeleteModelRequest\x1a\x1b.ant.v1.DeleteModelResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\vDeleteModel\x12\x1a.ant.v1.DeleteModelRequest\x1a\x1b.ant.v1.DeleteModelResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_ai_gateway_proto_rawDescOnce sync.Once

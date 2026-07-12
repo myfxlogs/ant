@@ -12,7 +12,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	antv1 "anttrader/gen/proto/ant/v1"
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 // ── Helper: parse volume from proto string ─────────────────────────────

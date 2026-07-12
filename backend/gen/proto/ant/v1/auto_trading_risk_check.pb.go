@@ -235,7 +235,7 @@ const file_auto_trading_risk_check_proto_rawDesc = "" +
 	"\x10daily_loss_limit\x18\x06 \x01(\tR\x0edailyLossLimit\x12&\n" +
 	"\x0fdaily_loss_used\x18\a \x01(\tR\rdailyLossUsed\x120\n" +
 	"\x14max_drawdown_percent\x18\b \x01(\tR\x12maxDrawdownPercent\x12)\n" +
-	"\x10drawdown_percent\x18\t \x01(\tR\x0fdrawdownPercentB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x10drawdown_percent\x18\t \x01(\tR\x0fdrawdownPercentB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_auto_trading_risk_check_proto_rawDescOnce sync.Once

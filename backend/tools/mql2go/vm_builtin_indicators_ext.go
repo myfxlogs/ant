@@ -1,7 +1,7 @@
 package mql2go
 
 import (
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // VM indicator builtins for the 24 shared/MQL5 indicators that have SDK methods

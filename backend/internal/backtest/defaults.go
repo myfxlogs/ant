@@ -5,7 +5,7 @@ package backtest
 import (
 	"github.com/shopspring/decimal"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 // Defaults for backtest parameters.

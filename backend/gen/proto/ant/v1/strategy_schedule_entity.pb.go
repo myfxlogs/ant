@@ -459,7 +459,7 @@ const file_strategy_schedule_entity_proto_rawDesc = "" +
 	"\x0ehf_cooldown_ms\x18\x06 \x01(\x03R\fhfCooldownMs\"\x17\n" +
 	"\x15WatchSchedulesRequest\"M\n" +
 	"\x13WatchSchedulesEvent\x126\n" +
-	"\tschedules\x18\x01 \x03(\v2\x18.ant.v1.StrategyScheduleR\tschedulesB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\tschedules\x18\x01 \x03(\v2\x18.ant.v1.StrategyScheduleR\tschedulesB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_schedule_entity_proto_rawDescOnce sync.Once

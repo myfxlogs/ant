@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 func periodSeconds(period string) int64 {

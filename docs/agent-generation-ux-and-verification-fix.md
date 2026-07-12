@@ -174,5 +174,5 @@ err := a.llmStream(ctx, messages, a.toolDefs, func(chunk systemai.ChatStreamChun
 - ❌ 不新增 REST/WebSocket/JSON 持久化；价格/盈亏用 `decimal.Decimal`。
 - ✅ 提交前: `go build ./...` + `cd backend && go run ./tools/check-file-lines --strict` + 前端 `pnpm build`（或项目对应命令）。
 - ✅ 后端部署: `docker compose build backend && docker compose up -d backend`
-- ✅ 前端部署: `docker cp frontend/dist/. ant-frontend:/usr/share/nginx/html/ && docker exec ant-frontend nginx -s reload`
+- ✅ 前端部署: `docker cp frontend/dist/. alphaforge-frontend:/usr/share/nginx/html/ && docker exec alphaforge-frontend nginx -s reload`
 - ✅ 每个新 file/function 标注 `REUSE:` 或 `NEW:`（Part B 已给出 REUSE 目标）。

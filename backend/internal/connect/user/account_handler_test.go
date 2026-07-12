@@ -6,8 +6,8 @@ import (
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/mdgateway"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/mdgateway"
 )
 
 func TestSearchBroker_NilSearcher(t *testing.T) {

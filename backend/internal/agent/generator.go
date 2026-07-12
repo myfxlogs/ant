@@ -6,9 +6,9 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/repository"
-	"anttrader/internal/service/systemai"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service/systemai"
 )
 
 

@@ -442,7 +442,7 @@ const file_i18n_strategy_experiment_proto_rawDesc = "" +
 	"\x12submit_form_submit\x18' \x01(\tR\x10submitFormSubmit\x12*\n" +
 	"\x11submit_form_title\x18( \x01(\tR\x0fsubmitFormTitle\x12\x1a\n" +
 	"\bsubtitle\x18) \x01(\tR\bsubtitle\x12\x14\n" +
-	"\x05title\x18* \x01(\tR\x05titleB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x05title\x18* \x01(\tR\x05titleB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_experiment_proto_rawDescOnce sync.Once

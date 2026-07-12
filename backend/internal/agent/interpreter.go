@@ -10,8 +10,8 @@ import (
 
 	"github.com/google/uuid"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/service/systemai"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/service/systemai"
 )
 
 //go:embed prompts/analysis_user.prompt

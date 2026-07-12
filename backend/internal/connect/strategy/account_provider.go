@@ -15,8 +15,8 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	"anttrader/internal/mthub"
-	"anttrader/internal/risk"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/risk"
 )
 
 // ── MT-backed AccountStateProvider ─────────────────────────────────────

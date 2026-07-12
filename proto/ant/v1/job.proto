@@ -5,7 +5,7 @@ package ant.v1;
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 service JobService {
   rpc GetJob(GetJobRequest) returns (Job);

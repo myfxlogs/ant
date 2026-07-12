@@ -395,7 +395,7 @@ const file_backtest_run_proto_rawDesc = "" +
 	"\x1dBACKTEST_RUN_STATUS_SUCCEEDED\x10\x03\x12\x1e\n" +
 	"\x1aBACKTEST_RUN_STATUS_FAILED\x10\x04\x12(\n" +
 	"$BACKTEST_RUN_STATUS_CANCEL_REQUESTED\x10\x05\x12 \n" +
-	"\x1cBACKTEST_RUN_STATUS_CANCELED\x10\x06B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x1cBACKTEST_RUN_STATUS_CANCELED\x10\x06B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_backtest_run_proto_rawDescOnce sync.Once

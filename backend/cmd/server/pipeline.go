@@ -11,15 +11,15 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway"
-	"anttrader/internal/mdgateway/adapter"
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/mthub"
-	"anttrader/internal/notifier"
-	"anttrader/internal/repository"
-	"anttrader/internal/risksvc"
-	"anttrader/internal/secrets"
-	"anttrader/internal/service"
+	"alphaforge/internal/mdgateway"
+	"alphaforge/internal/mdgateway/adapter"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/notifier"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/risksvc"
+	"alphaforge/internal/secrets"
+	"alphaforge/internal/service"
 )
 
 func startMdGatewayPipeline(

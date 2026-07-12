@@ -17,8 +17,8 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/risksvc"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/risksvc"
 )
 
 // --- KycJurisdictionGateRule ---

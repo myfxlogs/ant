@@ -47,7 +47,7 @@ type AiStoreI18N struct {
 	StrategyRulesRulesNoDunderName    string                 `protobuf:"bytes,22,opt,name=strategy_rules_rules_no_dunder_name,json=strategyRulesRulesNoDunderName,proto3" json:"strategy_rules_rules_no_dunder_name,omitempty"`          // - No dunder names (__xxx__)
 	StrategyRulesRulesNoGlobal        string                 `protobuf:"bytes,23,opt,name=strategy_rules_rules_no_global,json=strategyRulesRulesNoGlobal,proto3" json:"strategy_rules_rules_no_global,omitempty"`                        // - No global / nonlocal
 	StrategyRulesRulesNoImport        string                 `protobuf:"bytes,24,opt,name=strategy_rules_rules_no_import,json=strategyRulesRulesNoImport,proto3" json:"strategy_rules_rules_no_import,omitempty"`                        // - No import / from ... import ... allowed
-	StrategyRulesTitle                string                 `protobuf:"bytes,25,opt,name=strategy_rules_title,json=strategyRulesTitle,proto3" json:"strategy_rules_title,omitempty"`                                                    // When writing AntTrader Python strategy code, you must strict
+	StrategyRulesTitle                string                 `protobuf:"bytes,25,opt,name=strategy_rules_title,json=strategyRulesTitle,proto3" json:"strategy_rules_title,omitempty"`                                                    // When writing AlphaForge Python strategy code, you must strict
 	unknownFields                     protoimpl.UnknownFields
 	sizeCache                         protoimpl.SizeCache
 }
@@ -288,7 +288,7 @@ const file_i18n_ai_store_proto_rawDesc = "" +
 	"#strategy_rules_rules_no_dunder_name\x18\x16 \x01(\tR\x1estrategyRulesRulesNoDunderName\x12B\n" +
 	"\x1estrategy_rules_rules_no_global\x18\x17 \x01(\tR\x1astrategyRulesRulesNoGlobal\x12B\n" +
 	"\x1estrategy_rules_rules_no_import\x18\x18 \x01(\tR\x1astrategyRulesRulesNoImport\x120\n" +
-	"\x14strategy_rules_title\x18\x19 \x01(\tR\x12strategyRulesTitleB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x14strategy_rules_title\x18\x19 \x01(\tR\x12strategyRulesTitleB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_ai_store_proto_rawDescOnce sync.Once

@@ -13,11 +13,11 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	antdecimal "anttrader/internal/pkg/decimal"
-	"anttrader/internal/repository"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	antdecimal "alphaforge/internal/pkg/decimal"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
 )
 
 // MarketServer implements ant.v1.MarketServiceHandler.

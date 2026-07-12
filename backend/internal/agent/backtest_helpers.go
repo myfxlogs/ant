@@ -7,10 +7,10 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/strategy/backtest"
-	"anttrader/strategy/sdk"
-	"anttrader/tools/mql2go"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/strategy/backtest"
+	"alphaforge/strategy/sdk"
+	"alphaforge/tools/mql2go"
 )
 
 // runVMBacktest executes a VM backtest with the given runner and config.

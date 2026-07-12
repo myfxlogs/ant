@@ -13,11 +13,11 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/pglisten"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/pglisten"
+	"alphaforge/internal/repository"
 )
 
 // jsonbToStruct converts JSONB bytes to a proto Struct.

@@ -11,12 +11,12 @@ import (
 
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/ai"
-	systemai "anttrader/internal/service/systemai"
-	"anttrader/strategy/sdk"
-	"anttrader/tools/mql2go"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/ai"
+	systemai "alphaforge/internal/service/systemai"
+	"alphaforge/strategy/sdk"
+	"alphaforge/tools/mql2go"
 )
 
 const maxCodeLen = 100 * 1024

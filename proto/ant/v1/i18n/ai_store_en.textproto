@@ -22,4 +22,4 @@ strategy_rules_rules_no_dunder_access: '- No access to dunder attributes (obj.__
 strategy_rules_rules_no_dunder_name: '- No dunder names (__xxx__)'
 strategy_rules_rules_no_global: '- No global / nonlocal'
 strategy_rules_rules_no_import: '- No import / from ... import ... allowed'
-strategy_rules_title: 'When writing AntTrader Python strategy code, you must strictly follow these validation rules:'
+strategy_rules_title: 'When writing AlphaForge Python strategy code, you must strictly follow these validation rules:'

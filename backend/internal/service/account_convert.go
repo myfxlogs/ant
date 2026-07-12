@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/shopspring/decimal"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 // --- type conversion helpers (sqlc pgtype <-> Go native) ---

@@ -425,7 +425,21 @@ const Base = {
       "loginSuccess": "ログインしました",
       "logoutSuccess": "ログアウトしました",
       "registerFailed": "登録に失敗しました。しばらくしてから再試行してください。",
-      "registerSuccess": "登録が完了しました。ログインしてください。"
+      "registerSuccess": "登録成功！メールを確認して認証を完了してください。"
+    },
+    "verify": {
+      "verifying": "メールを認証中...",
+      "successTitle": "メール認証完了！",
+      "successDesc": "メール認証が完了しました。ログインできます。",
+      "failedTitle": "認証失敗",
+      "failedDesc": "認証リンクが無効または期限切れです。",
+      "failed": "認証に失敗しました。再試行してください。",
+      "pendingTitle": "メールを確認してください",
+      "pendingDesc": "認証リンクをメールに送信しました。リンクをクリックして認証を完了してください。",
+      "didntReceive": "メールが届きませんか？",
+      "resend": "認証メールを再送信",
+      "resendFailed": "再送信に失敗しました。しばらくしてから再試行してください。",
+      "goLogin": "ログインへ"
     },
     "register": {
       "haveAccount": "すでにアカウントをお持ちですか？",
@@ -441,6 +455,26 @@ const Base = {
       "passwordMin8": "パスワードは8文字以上必要です",
       "passwordMismatch": "パスワードが一致しません",
       "passwordRequired": "パスワードを入力してください"
+    }
+  },
+  "onboarding": {
+    "welcome": "AlphaForgeへようこそ、{{name}}さん！",
+    "subtitle": "3つのステップで始めましょう",
+    "dismiss": "閉じる",
+    "step1": {
+      "title": "取引アカウントを連携",
+      "desc": "MT4/MT5取引アカウントを連携して始めましょう。",
+      "action": "アカウント連携"
+    },
+    "step2": {
+      "title": "最初の戦略を作成",
+      "desc": "自然言語で取引アイデアを記述し、AIが戦略コードを自動生成します。",
+      "action": "ワークスペースを開く"
+    },
+    "step3": {
+      "title": "プランをアップグレード",
+      "desc": "Proにアップグレードして、AIトークン、戦略、ライブ取引を追加。",
+      "action": "プランを見る"
     }
   },
   "common": {

@@ -8,8 +8,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
-	"anttrader/internal/model"
-	"anttrader/internal/repository"
+	"alphaforge/internal/model"
+	"alphaforge/internal/repository"
 )
 
 // WalletService is the service layer for user wallet operations.
@@ -23,6 +23,9 @@ type WalletService struct {
 func NewWalletService(repo *repository.WalletRepository, pg *pgxpool.Pool, log *zap.Logger) *WalletService {
 	return &WalletService{repo: repo, pg: pg, log: log}
 }
+
+// Repo returns the underlying WalletRepository for transactional access by other services.
+func (s *WalletService) Repo() *repository.WalletRepository { return s.repo }
 
 // GetOrCreateWallet returns the wallet for a user, auto-creating one if missing (legacy users).
 func (s *WalletService) GetOrCreateWallet(ctx context.Context, userID uuid.UUID) (*model.Wallet, error) {

@@ -11,12 +11,12 @@ import (
 
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/connect/strategy"
-	"anttrader/internal/interceptor"
-	papereng "anttrader/internal/paper"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/connect/strategy"
+	"alphaforge/internal/interceptor"
+	papereng "alphaforge/internal/paper"
+	"alphaforge/internal/repository"
 )
 
 // StrategyRunner is the paper package's local interface for launching live/paper strategy goroutines.

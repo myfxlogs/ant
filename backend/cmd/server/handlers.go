@@ -3,48 +3,50 @@ package main
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	internalai "anttrader/internal/ai"
-	"anttrader/internal/agent"
-	"anttrader/internal/analysis"
-	"anttrader/internal/config"
-	"anttrader/internal/connect/ai"
-	"anttrader/internal/connect/admin"
-	algo "anttrader/internal/connect/algo"
-	assetanalysis "anttrader/internal/connect/asset_analysis"
-	"anttrader/internal/connect/gateway"
-	"anttrader/internal/connect/autotrading"
-	mktplace "anttrader/internal/connect/marketplace"
-	"anttrader/internal/connect/notification"
-	"anttrader/internal/connect/strategy"
-	"anttrader/internal/usermgr"
-	"anttrader/internal/connect/system"
-	"anttrader/internal/connect/user"
-	paperhdr "anttrader/internal/connect/paper"
-	papereng "anttrader/internal/paper"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/marketplace"
-	"anttrader/internal/mdgateway"
-	"anttrader/internal/mdgateway/adapter"
-	"anttrader/internal/mdgateway/adapter/brokersearch"
-	"anttrader/internal/mthub"
-	notifpubsub "anttrader/internal/notification"
-	"anttrader/internal/notifier"
-	"anttrader/internal/pglisten"
-	"anttrader/internal/pkg/secretbox"
-	"anttrader/internal/repository"
-	"anttrader/internal/risk"
-	"anttrader/internal/risksvc"
-	"anttrader/internal/service"
-	usersvc "anttrader/internal/service/user"
-	systemai "anttrader/internal/service/systemai"
-	antredis "anttrader/internal/storage/redis"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/agent"
+	internalai "alphaforge/internal/ai"
+	"alphaforge/internal/analysis"
+	"alphaforge/internal/config"
+	"alphaforge/internal/connect/admin"
+	"alphaforge/internal/connect/ai"
+	algo "alphaforge/internal/connect/algo"
+	assetanalysis "alphaforge/internal/connect/asset_analysis"
+	"alphaforge/internal/connect/autotrading"
+	"alphaforge/internal/connect/gateway"
+	mktplace "alphaforge/internal/connect/marketplace"
+	"alphaforge/internal/connect/notification"
+	paperhdr "alphaforge/internal/connect/paper"
+	"alphaforge/internal/connect/strategy"
+	subscriptionhdr "alphaforge/internal/connect/subscription"
+	"alphaforge/internal/connect/system"
+	"alphaforge/internal/connect/user"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/marketplace"
+	"alphaforge/internal/mdgateway"
+	"alphaforge/internal/mdgateway/adapter"
+	"alphaforge/internal/mdgateway/adapter/brokersearch"
+	"alphaforge/internal/mthub"
+	notifpubsub "alphaforge/internal/notification"
+	"alphaforge/internal/notifier"
+	papereng "alphaforge/internal/paper"
+	"alphaforge/internal/pglisten"
+	"alphaforge/internal/pkg/secretbox"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/risk"
+	"alphaforge/internal/risksvc"
+	"alphaforge/internal/service"
+	systemai "alphaforge/internal/service/systemai"
+	usersvc "alphaforge/internal/service/user"
+	antredis "alphaforge/internal/storage/redis"
+	"alphaforge/internal/usermgr"
 
 	connectrpc "connectrpc.com/connect"
 )
@@ -89,18 +91,48 @@ func registerHandlers(
 	accountNumberSvc := usersvc.NewAccountNumberService(pool)
 	registrationSvc := service.NewRegistrationService(userRepo, accountNumberSvc, walletSvc, log)
 
+	// Create email notifier early so it can be shared between auth and SRE handlers.
+	emailNotifier := notifier.NewEmailNotifier(notifier.EmailConfig{
+		Host:     cfg.SMTPHost,
+		Port:     cfg.SMTPPort,
+		User:     cfg.SMTPUser,
+		Password: cfg.SMTPPassword,
+		From:     cfg.SMTPFrom,
+		To:       splitAndTrim(cfg.SMTPTo, ","),
+	}, log)
+
 	authServer := user.NewAuthServer(userRepo, jwtSecret, log)
 	authServer.SetInsecureCookies(true) // no TLS in Docker deployment
 	authServer.WithRegistration(registrationSvc)
-	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(otelInterceptor,rateLimitInterceptor, authInterceptor)))
+	// Wire email verification if SMTP is configured.
+	if emailNotifier != nil {
+		emailVerifSvc := service.NewEmailVerificationService(pool, emailNotifier, cfg.AppURL, log)
+		authServer.WithEmailVerification(emailVerifSvc)
+		registrationSvc.SetEmailVerification(emailVerifSvc)
+	}
+	authServer.SetRequireEmailVerification(cfg.RequireEmailVerification)
+	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(otelInterceptor, rateLimitInterceptor, authInterceptor)))
 
 	walletServer := user.NewWalletServer(walletSvc, platformSvc, log)
-	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+
+	// P3.1: Subscription service (Free/Pro/Enterprise plans).
+	subscriptionRepo := repository.NewSubscriptionRepository(pool)
+	subscriptionSvc := service.NewSubscriptionService(subscriptionRepo, walletSvc, pool, log)
+	subscriptionSvc.SetUsageRepos(repository.NewAITokenUsageRepository(pool), repository.NewStrategyRunRepository(pool))
+	registrationSvc.SetSubscriptionEnsurer(subscriptionSvc)
+	subscriptionServer := subscriptionhdr.NewServer(subscriptionSvc, subscriptionSvc, log)
+	mux.Handle(antv1c.NewSubscriptionServiceHandler(subscriptionServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+
+	// P3.1: QuotaChecker — in-memory cache for fast quota lookups.
+	quotaChecker := service.NewQuotaChecker(subscriptionRepo, pool, log)
+	quotaChecker.LoadAll(ctx)
+	quotaChecker.StartRefreshLoop(ctx, 5*time.Minute)
 
 	reconLoop := mthub.NewReconciliationLoop(hub, pool, rdb.Client(), log, reconcileGate)
 
 	mthubServer := system.NewMtHubServer(mthubSvc, platformSvc, marketDataRepo, tradeRecordRepo, log)
-	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	searcher := brokersearch.New("", "")
 	accountEventPub := mdgateway.NewAccountEventPublisher(js, log)
@@ -108,22 +140,23 @@ func registerHandlers(
 	accountServer := user.NewAccountServer(accountSvc, searcher, accountEventPub, mtTester, log).
 		WithSessionWaiter(hub).
 		WithStopGateway(hub.RemoveGateway)
-	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	mktServer := mktplace.NewMarketServer(platformSvc, marketDataRepo, nc, log)
-	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	mktplaceSvc := marketplace.New(pool, log)
 	mktplaceHandler := mktplace.NewMarketplaceServer(mktplaceSvc, platformSvc, log)
-	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	mktplaceSvc.StartRenewalLoop(ctx, log) // daily subscription renewal (background goroutine)
+	subscriptionSvc.StartPlatformRenewalLoop(ctx) // daily platform subscription auto-renewal/expiry
 
 	// M12-A2: Execution Algo handler (TWAP/VWAP/POV/Shortfall).
 	// brokerReg is created in main.go before the pipeline starts; gateways register
 	// via adapter.RegisterDefaults inside the mdgateway runner after connection.
 	algoServer := algo.NewExecutionAlgoServer(brokerReg, log)
-	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	logRepo := repository.NewLogRepository(pool)
 	logSvc := service.NewLogService(logRepo)
@@ -142,14 +175,14 @@ func registerHandlers(
 	agentDefRepo := repository.NewAIAgentDefinitionRepository(pool)
 	aiServer := ai.NewAIServer(aiSvc, convRepo, session, log)
 	aiServer.SetAgentDefRepo(agentDefRepo)
-	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	// Agent definition CRUD (no proto RPC yet — raw HTTP).
-	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	// P3: AI Asset Analysis — MTF outlook, S/R levels, volatility, AI recommendation.
 	assetAnalyzer := analysis.NewAnalyzer(marketDataRepo, log)
 	assetAnalysisServer := assetanalysis.NewAssetAnalysisServer(assetAnalyzer, aiSvc, platformSvc, log)
-	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	// Share performance: generate expiring public links for trading results.
 	registerShareHandlers(mux, pool, log, tradeRecordRepo, userRepo, mthubSvc, platformSvc,
@@ -160,12 +193,12 @@ func registerHandlers(
 	gatewayModelRepo := repository.NewAIModelRepository(pool)
 	gatewayTokenUsageRepo := repository.NewAITokenUsageRepository(pool)
 	gatewayServer := gateway.NewAIGatewayServer(gatewayProviderRepo, gatewayModelRepo, gatewayTokenUsageRepo, walletSvc, aiBox, log)
-	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	// Wire AI Gateway fallback: if user has no own API key, use system providers.
 	aiSvc.SetGatewayProviderRepo(gatewayProviderRepo)
 
-	wireAIBilling(aiSvc, walletSvc, gatewayServer, gatewayModelRepo, log)
+	wireAIBilling(aiSvc, walletSvc, gatewayServer, gatewayModelRepo, quotaChecker, gatewayTokenUsageRepo)
 
 	// ADR-0024: Agent Gateway — strategy submission → compile → backtest → LLM analysis.
 	agentGateway := agent.NewGatewayServer(pool, marketDataRepo, aiSvc, log)
@@ -202,7 +235,7 @@ func registerHandlers(
 
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
 	streamServer.SetMarketDataRepo(marketDataRepo)
-	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	strategySvc := service.NewStrategySvc(pool)
 	strategyServer := strategy.NewStrategyServer(strategySvc, log)
@@ -210,7 +243,7 @@ func registerHandlers(
 	pgListen := pglisten.New(pool, log)
 	strategyServer.SetPgListen(pgListen)
 	mktplaceHandler.SetPgListen(pgListen) // marketplace SSE streaming
-	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	// Paper trading + notification deps created early — both needed by strategy execution config.
 	paperRepo := repository.NewPaperRepo(pool)
@@ -225,7 +258,7 @@ func registerHandlers(
 
 	jurisGate, capStore, platformAgg := initRiskPipeline(pool, log, mthubSvc, hub, eventStore, cfg, guard)
 	strategyExecServer := configureStrategyExecution(pool, backtestRunRepo, marketDataRepo, mthubSvc, hub,
-		paperEngine, notifSender, aiSvc, pgListen, jurisGate, capStore, cfg, log)
+		paperEngine, notifSender, aiSvc, pgListen, jurisGate, capStore, quotaChecker, cfg, log)
 	mux.Handle(antv1c.NewStrategyRuntimeServiceHandler(strategyExecServer,
 		connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
@@ -246,41 +279,50 @@ func registerHandlers(
 		connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	codeAssistServer := ai.NewCodeAssistServer(aiSvc, session, log)
 	// CodeAssist uses LLM-only code analysis and generation.
-	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	systemAIServer := ai.NewSystemAIServer(aiSvc, log)
-	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	aiPrimaryServer := ai.NewAIPrimaryServer(aiSvc, log)
-	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	backtestTradesServer := strategy.NewBacktestTradesServer(backtestRunRepo, log)
-	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	gateEvalServer := ai.NewGateEvalServer(backtestRunRepo, log)
-	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	// Claude Code style: separated plan → execute pipeline
 	strategyPlanServer := ai.NewStrategyPlanServer(aiSvc, backtestRunRepo, convRepo, marketDataRepo, log)
 	strategyPlanServer.SetPoolAdapter(
-		func(ctx context.Context, sql string, args ...any) error { _, e := pool.Exec(ctx, sql, args...); return e },
-		func(ctx context.Context, sql string, args ...any) (string, error) { var v string; row := pool.QueryRow(ctx, sql, args...); err := row.Scan(&v); return v, err },
+		func(ctx context.Context, sql string, args ...any) error {
+			_, e := pool.Exec(ctx, sql, args...)
+			return e
+		},
+		func(ctx context.Context, sql string, args ...any) (string, error) {
+			var v string
+			row := pool.QueryRow(ctx, sql, args...)
+			err := row.Scan(&v)
+			return v, err
+		},
 	)
 	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	economicDataServer := system.NewEconomicDataServer(log)
-	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	jobServer := system.NewJobServer(jobRepo, log)
 	jobServer.SetPgListen(pgListen)
-	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	logServiceServer := system.NewLogServiceServer(logSvc, log)
-	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	notifServer := notification.NewNotificationServer(notifRepo, notifSub, log)
-	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	gateEvalServer.SetNotificationSender(notifSender)
 
-		gate := risk.NewDefaultGate()
+	gate := risk.NewDefaultGate()
 	gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
 	gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
 
 	registerAdminHandlers(mux, pool, log, walletSvc, accountNumberSvc, strategySvc,
 		agentGateway.SettingsStore(), agentGateway.HookEngine(),
 		accountEventPub,
+		rdb, nc,
 		otelInterceptor, authInterceptor, adminInterceptor)
 
 	// S1.1-S1.3: Wire SignalPipeline, rate limiter, cost estimator, OMS writer.
@@ -300,9 +342,9 @@ func registerHandlers(
 		if rc, err := autoTradingRepo.GetRiskConfigByAccountID(ctx, aid); err == nil && rc != nil {
 			return &risk.UserRiskConfig{
 				MaxLotSize: rc.MaxLotSize, MaxPositions: rc.MaxPositions,
-				MaxDailyLoss: rc.MaxDailyLoss,
+				MaxDailyLoss:       rc.MaxDailyLoss,
 				MaxDrawdownPercent: rc.MaxDrawdownPercent,
-				MaxRiskPercent: rc.MaxRiskPercent,
+				MaxRiskPercent:     rc.MaxRiskPercent,
 			}, nil
 		}
 		// 2. Fall back to user-level GlobalSettings.
@@ -311,9 +353,9 @@ func registerHandlers(
 			if gs, err := autoTradingRepo.GetGlobalSettingsByUserID(ctx, uid); err == nil && gs != nil {
 				return &risk.UserRiskConfig{
 					MaxLotSize: gs.MaxLotSize, MaxPositions: int(gs.MaxPositions),
-					MaxDailyLoss: gs.MaxDailyLoss,
+					MaxDailyLoss:       gs.MaxDailyLoss,
 					MaxDrawdownPercent: gs.MaxDrawdownPercent,
-					MaxRiskPercent: gs.MaxRiskPercent,
+					MaxRiskPercent:     gs.MaxRiskPercent,
 				}, nil
 			}
 		}
@@ -346,6 +388,7 @@ func registerHandlers(
 		aiSvc,
 		backtestRunRepo,
 		pgListen,
+		emailNotifier,
 	)
 
 	go startHardDeleteCleanup(ctx, pool, log)

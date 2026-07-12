@@ -5,7 +5,7 @@
 package antv1connect
 
 import (
-	v1 "anttrader/gen/proto/ant/v1"
+	v1 "alphaforge/gen/proto/ant/v1"
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
@@ -45,6 +45,11 @@ const (
 	AuthServiceGetMeProcedure = "/ant.v1.AuthService/GetMe"
 	// AuthServiceRegisterProcedure is the fully-qualified name of the AuthService's Register RPC.
 	AuthServiceRegisterProcedure = "/ant.v1.AuthService/Register"
+	// AuthServiceVerifyEmailProcedure is the fully-qualified name of the AuthService's VerifyEmail RPC.
+	AuthServiceVerifyEmailProcedure = "/ant.v1.AuthService/VerifyEmail"
+	// AuthServiceResendVerificationProcedure is the fully-qualified name of the AuthService's
+	// ResendVerification RPC.
+	AuthServiceResendVerificationProcedure = "/ant.v1.AuthService/ResendVerification"
 )
 
 // AuthServiceClient is a client for the ant.v1.AuthService service.
@@ -54,6 +59,8 @@ type AuthServiceClient interface {
 	RefreshToken(context.Context, *connect.Request[v1.RefreshTokenRequest]) (*connect.Response[v1.RefreshTokenResponse], error)
 	GetMe(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetMeResponse], error)
 	Register(context.Context, *connect.Request[v1.RegisterRequest]) (*connect.Response[v1.RegisterResponse], error)
+	VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error)
+	ResendVerification(context.Context, *connect.Request[v1.ResendVerificationRequest]) (*connect.Response[v1.ResendVerificationResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the ant.v1.AuthService service. By default, it uses
@@ -97,16 +104,30 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("Register")),
 			connect.WithClientOptions(opts...),
 		),
+		verifyEmail: connect.NewClient[v1.VerifyEmailRequest, v1.VerifyEmailResponse](
+			httpClient,
+			baseURL+AuthServiceVerifyEmailProcedure,
+			connect.WithSchema(authServiceMethods.ByName("VerifyEmail")),
+			connect.WithClientOptions(opts...),
+		),
+		resendVerification: connect.NewClient[v1.ResendVerificationRequest, v1.ResendVerificationResponse](
+			httpClient,
+			baseURL+AuthServiceResendVerificationProcedure,
+			connect.WithSchema(authServiceMethods.ByName("ResendVerification")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // authServiceClient implements AuthServiceClient.
 type authServiceClient struct {
-	login        *connect.Client[v1.LoginRequest, v1.LoginResponse]
-	logout       *connect.Client[emptypb.Empty, emptypb.Empty]
-	refreshToken *connect.Client[v1.RefreshTokenRequest, v1.RefreshTokenResponse]
-	getMe        *connect.Client[emptypb.Empty, v1.GetMeResponse]
-	register     *connect.Client[v1.RegisterRequest, v1.RegisterResponse]
+	login              *connect.Client[v1.LoginRequest, v1.LoginResponse]
+	logout             *connect.Client[emptypb.Empty, emptypb.Empty]
+	refreshToken       *connect.Client[v1.RefreshTokenRequest, v1.RefreshTokenResponse]
+	getMe              *connect.Client[emptypb.Empty, v1.GetMeResponse]
+	register           *connect.Client[v1.RegisterRequest, v1.RegisterResponse]
+	verifyEmail        *connect.Client[v1.VerifyEmailRequest, v1.VerifyEmailResponse]
+	resendVerification *connect.Client[v1.ResendVerificationRequest, v1.ResendVerificationResponse]
 }
 
 // Login calls ant.v1.AuthService.Login.
@@ -134,6 +155,16 @@ func (c *authServiceClient) Register(ctx context.Context, req *connect.Request[v
 	return c.register.CallUnary(ctx, req)
 }
 
+// VerifyEmail calls ant.v1.AuthService.VerifyEmail.
+func (c *authServiceClient) VerifyEmail(ctx context.Context, req *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error) {
+	return c.verifyEmail.CallUnary(ctx, req)
+}
+
+// ResendVerification calls ant.v1.AuthService.ResendVerification.
+func (c *authServiceClient) ResendVerification(ctx context.Context, req *connect.Request[v1.ResendVerificationRequest]) (*connect.Response[v1.ResendVerificationResponse], error) {
+	return c.resendVerification.CallUnary(ctx, req)
+}
+
 // AuthServiceHandler is an implementation of the ant.v1.AuthService service.
 type AuthServiceHandler interface {
 	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
@@ -141,6 +172,8 @@ type AuthServiceHandler interface {
 	RefreshToken(context.Context, *connect.Request[v1.RefreshTokenRequest]) (*connect.Response[v1.RefreshTokenResponse], error)
 	GetMe(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetMeResponse], error)
 	Register(context.Context, *connect.Request[v1.RegisterRequest]) (*connect.Response[v1.RegisterResponse], error)
+	VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error)
+	ResendVerification(context.Context, *connect.Request[v1.ResendVerificationRequest]) (*connect.Response[v1.ResendVerificationResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -180,6 +213,18 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("Register")),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServiceVerifyEmailHandler := connect.NewUnaryHandler(
+		AuthServiceVerifyEmailProcedure,
+		svc.VerifyEmail,
+		connect.WithSchema(authServiceMethods.ByName("VerifyEmail")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceResendVerificationHandler := connect.NewUnaryHandler(
+		AuthServiceResendVerificationProcedure,
+		svc.ResendVerification,
+		connect.WithSchema(authServiceMethods.ByName("ResendVerification")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServiceLoginProcedure:
@@ -192,6 +237,10 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceGetMeHandler.ServeHTTP(w, r)
 		case AuthServiceRegisterProcedure:
 			authServiceRegisterHandler.ServeHTTP(w, r)
+		case AuthServiceVerifyEmailProcedure:
+			authServiceVerifyEmailHandler.ServeHTTP(w, r)
+		case AuthServiceResendVerificationProcedure:
+			authServiceResendVerificationHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -219,4 +268,12 @@ func (UnimplementedAuthServiceHandler) GetMe(context.Context, *connect.Request[e
 
 func (UnimplementedAuthServiceHandler) Register(context.Context, *connect.Request[v1.RegisterRequest]) (*connect.Response[v1.RegisterResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AuthService.Register is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AuthService.VerifyEmail is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) ResendVerification(context.Context, *connect.Request[v1.ResendVerificationRequest]) (*connect.Response[v1.ResendVerificationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AuthService.ResendVerification is not implemented"))
 }

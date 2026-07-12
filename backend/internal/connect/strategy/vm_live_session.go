@@ -6,9 +6,9 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/strategy/runner"
-	"anttrader/tools/mql2go"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/strategy/runner"
+	"alphaforge/tools/mql2go"
 )
 
 // Session is the interface for live strategy sessions.

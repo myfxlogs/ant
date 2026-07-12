@@ -1406,7 +1406,7 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\x0fBacktestService\x12N\n" +
 	"\vRunBacktest\x12\x1e.ant.v1.ExecuteBacktestRequest\x1a\x1f.ant.v1.ExecuteBacktestResponse\x12Q\n" +
 	"\x10ValidateStrategy\x12\x1d.ant.v1.EngineValidateRequest\x1a\x1e.ant.v1.EngineValidateResponse\x12R\n" +
-	"\vRunStrategy\x12 .ant.v1.EngineRunStrategyRequest\x1a!.ant.v1.EngineRunStrategyResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\vRunStrategy\x12 .ant.v1.EngineRunStrategyRequest\x1a!.ant.v1.EngineRunStrategyResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_backtest_service_proto_rawDescOnce sync.Once

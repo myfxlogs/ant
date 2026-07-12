@@ -10,9 +10,9 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/mthub"
-	"anttrader/internal/risk"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/risk"
 )
 
 // mockMtHub records calls to verify gate integration.

@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 type TradeRecordRepository struct {

@@ -690,7 +690,7 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"\x05_i18nB\x0e\n" +
 	"\f_strategy_id\"'\n" +
 	"\x15DeleteTemplateRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02idB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x02id\x18\x01 \x01(\tR\x02idB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_template_requests_proto_rawDescOnce sync.Once

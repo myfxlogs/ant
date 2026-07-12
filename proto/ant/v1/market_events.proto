@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ant.v1;
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 // Market data events published via NATS (replaces JSON payloads).
 // Price fields are string-encoded decimal to maintain precision (NUMERIC(20,8)).

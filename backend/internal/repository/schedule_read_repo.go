@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 // GetByID retrieves a single schedule by its primary key.

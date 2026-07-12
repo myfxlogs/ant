@@ -174,7 +174,7 @@ const file_agent_analysis_proto_rawDesc = "" +
 	"\x10overfitting_risk\x18\n" +
 	" \x01(\tR\x0foverfittingRisk\x12-\n" +
 	"\x12recommended_action\x18\v \x01(\tR\x11recommendedAction\x12+\n" +
-	"\x11detailed_analysis\x18\f \x01(\tR\x10detailedAnalysisB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x11detailed_analysis\x18\f \x01(\tR\x10detailedAnalysisB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_agent_analysis_proto_rawDescOnce sync.Once

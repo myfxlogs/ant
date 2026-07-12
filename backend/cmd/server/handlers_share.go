@@ -6,12 +6,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/connect/user"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/mthub"
-	"anttrader/internal/repository"
-	"anttrader/internal/service"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/connect/user"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
 
 	connectrpc "connectrpc.com/connect"
 )

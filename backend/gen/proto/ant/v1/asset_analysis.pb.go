@@ -434,7 +434,7 @@ const file_asset_analysis_proto_rawDesc = "" +
 	"\bstrength\x18\x03 \x01(\tR\bstrength\x12\x18\n" +
 	"\atouches\x18\x04 \x01(\x05R\atouches2c\n" +
 	"\x14AssetAnalysisService\x12K\n" +
-	"\fAnalyzeAsset\x12\x1b.ant.v1.AnalyzeAssetRequest\x1a\x1c.ant.v1.AnalyzeAssetResponse0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\fAnalyzeAsset\x12\x1b.ant.v1.AnalyzeAssetRequest\x1a\x1c.ant.v1.AnalyzeAssetResponse0\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_asset_analysis_proto_rawDescOnce sync.Once

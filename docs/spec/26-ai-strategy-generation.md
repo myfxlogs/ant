@@ -569,7 +569,7 @@ go test -tags=e2e ./tests/e2e/ -run TestSmartTuning -v
 grep -c "rule_" backend/internal/ai/code_compliance.go | grep -q "13"
 
 # 4. 模板库至少 5 个模板
-docker exec ant-postgres psql -U ant -t -c \
+docker exec alphaforge-postgres psql -U ant -t -c \
   "SELECT COUNT(*) FROM platform_strategies WHERE is_active=true" | grep -E "[5-9]|[1-9][0-9]"
 
 # 5. 优化引擎 4 种模式

@@ -22,6 +22,7 @@ const LiveStrategyPage = lazy(() => import('@/pages/strategy/LiveStrategyPage'))
 const MarketplacePage = lazy(() => import('@/pages/marketplace/MarketplacePage'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const WalletPage = lazy(() => import('@/pages/wallet/WalletPage'));
+const SubscriptionPage = lazy(() => import('@/pages/subscription/SubscriptionPage'));
 const LogManagement = lazy(() => import('@/pages/logs/LogManagement'));
 const AutoTradingSettings = lazy(() => import('@/pages/auto-trading/AutoTradingSettings'));
 const MarketToolsPage = lazy(() => import('@/pages/strategy/MarketToolsPage'));
@@ -42,17 +43,22 @@ const ShareManagement = lazy(() => import('@/pages/admin/ShareManagement'));
 const SRECanary = lazy(() => import('@/pages/admin/sre/CanaryPage'));
 const AIGatewayManagement = lazy(() => import('@/pages/admin/AIGatewayManagement'));
 const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage'));
+const BillingManagement = lazy(() => import('@/pages/admin/BillingManagement'));
+const MonitoringPage = lazy(() => import('@/pages/admin/MonitoringPage'));
 const SRELayout = lazy(() => import('@/pages/admin/sre/SRELayout'));
 const SharePerformancePage = lazy(() => import('@/pages/share/SharePerformancePage'));
 
 // ── Route helpers ──
 const wrap = (el: React.ReactNode) => <PageWrapper>{el}</PageWrapper>;
 
+const VerifyEmail = lazy(() => import('@/pages/auth/VerifyEmail'));
+
 // ── Public routes ──
 const publicRoutes = (
   <>
     <Route path="/login" element={<PublicRoute>{wrap(<Login />)}</PublicRoute>} />
     <Route path="/register" element={<PublicRoute>{wrap(<Register />)}</PublicRoute>} />
+    <Route path="/verify-email" element={<PublicRoute>{wrap(<VerifyEmail />)}</PublicRoute>} />
     <Route path="/forgot-password" element={<PublicRoute>{wrap(<ForgotPassword />)}</PublicRoute>} />
   </>
 );
@@ -66,6 +72,7 @@ const mainRoutes = (
     <Route path="accounts/bind" element={wrap(<BindAccount />)} />
     <Route path="profile" element={wrap(<ProfilePage />)} />
     <Route path="wallet" element={wrap(<WalletPage />)} />
+    <Route path="subscription" element={wrap(<SubscriptionPage />)} />
     <Route path="strategy/templates" element={<Navigate to="/strategy/workspace" replace />} />
     <Route path="strategy/schedules" element={<Navigate to="/strategy/live" replace />} />
     <Route path="strategy/schedules/:id/logs" element={wrap(<StrategyScheduleLogsPage />)} />
@@ -92,6 +99,7 @@ const adminRoutes = (
     <Route index element={wrap(<AdminDashboard />)} />
     <Route path="users" element={wrap(<UserManagement />)} />
     <Route path="wallet" element={wrap(<WalletManagement />)} />
+    <Route path="billing" element={wrap(<BillingManagement />)} />
     <Route path="accounts" element={wrap(<AccountManagement />)} />
     <Route path="trading" element={wrap(<TradingMonitor />)} />
     <Route path="logs" element={wrap(<OperationLogs />)} />
@@ -100,6 +108,7 @@ const adminRoutes = (
     <Route path="strategies" element={wrap(<StrategyManagement />)} />
     <Route path="shares" element={wrap(<ShareManagement />)} />
     <Route path="ai-gateway" element={wrap(<AIGatewayManagement />)} />
+    <Route path="monitoring" element={wrap(<MonitoringPage />)} />
     <Route path="agent-settings" element={wrap(<AdminSettingsPage />)} />
     <Route path="sre" element={<SRELayout />}>
       <Route index element={<Navigate to="/admin/sre/killswitch" replace />} />

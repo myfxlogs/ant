@@ -7,9 +7,9 @@ import (
 
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	internalai "anttrader/internal/ai"
-	systemai "anttrader/internal/service/systemai"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	internalai "alphaforge/internal/ai"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 // ── Diagnose: analysis only, no code generation ──

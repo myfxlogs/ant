@@ -260,7 +260,7 @@ const file_indicator_catalog_proto_rawDesc = "" +
 	"\x03max\x18\x06 \x01(\x01R\x03max\x12 \n" +
 	"\vdescription\x18\a \x01(\tR\vdescription2j\n" +
 	"\x17IndicatorCatalogService\x12O\n" +
-	"\x13GetIndicatorCatalog\x12\x16.google.protobuf.Empty\x1a .ant.v1.IndicatorCatalogResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x13GetIndicatorCatalog\x12\x16.google.protobuf.Empty\x1a .ant.v1.IndicatorCatalogResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_indicator_catalog_proto_rawDescOnce sync.Once

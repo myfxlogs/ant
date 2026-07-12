@@ -892,7 +892,7 @@ const file_market_events_proto_rawDesc = "" +
 	"\rslippage_cost\x18\x03 \x01(\tR\fslippageCost\x12\x1b\n" +
 	"\tswap_cost\x18\x04 \x01(\tR\bswapCost\x12\x1d\n" +
 	"\n" +
-	"total_cost\x18\x05 \x01(\tR\ttotalCostB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"total_cost\x18\x05 \x01(\tR\ttotalCostB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_market_events_proto_rawDescOnce sync.Once

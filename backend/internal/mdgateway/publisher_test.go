@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 func TestPublishReplayHeader(t *testing.T) {

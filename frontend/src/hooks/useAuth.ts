@@ -17,7 +17,13 @@ export function useAuth() {
       showSuccess(i18n.t('auth.messages.loginSuccess'));
       navigate('/');
       return true;
-    } catch (error) {
+    } catch (error: any) {
+      const msg = error?.message || '';
+      if (msg.includes('email not verified')) {
+        showError(i18n.t('auth.verify.failedDesc'));
+        navigate('/verify-email?email=' + encodeURIComponent(data.login));
+        return false;
+      }
       showError(getErrorMessage(error, i18n.t('auth.messages.loginFailed')));
       return false;
     }
@@ -25,9 +31,14 @@ export function useAuth() {
 
   const register = useCallback(async (data: { email: string; password: string; username?: string }) => {
     try {
-      await authApi.register(data.email, data.password, data.username);
-      showSuccess(i18n.t('auth.messages.registerSuccess'));
-      navigate('/login');
+      const result = await authApi.register(data.email, data.password, data.username);
+      if (result.emailVerificationSent) {
+        showSuccess(i18n.t('auth.messages.registerSuccess'));
+        navigate('/verify-email?email=' + encodeURIComponent(data.email));
+      } else {
+        showSuccess(i18n.t('auth.messages.registerSuccess'));
+        navigate('/login');
+      }
       return true;
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('auth.messages.registerFailed')));

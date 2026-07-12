@@ -9,15 +9,15 @@ import (
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 
-	anttrace "anttrader/internal/trace"
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/mdgateway/adapter"
-	"anttrader/internal/mdgateway/adapter/mt4"
-	"anttrader/internal/mdgateway/adapter/mt5"
-	"anttrader/internal/mdgateway/backfiller"
-	"anttrader/internal/mthub"
-	"anttrader/internal/repository"
-	"anttrader/internal/secrets"
+	anttrace "alphaforge/internal/trace"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter"
+	"alphaforge/internal/mdgateway/adapter/mt4"
+	"alphaforge/internal/mdgateway/adapter/mt5"
+	"alphaforge/internal/mdgateway/backfiller"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/secrets"
 )
 
 // RunnerDeps collects all infrastructure needed to start mdgateway.

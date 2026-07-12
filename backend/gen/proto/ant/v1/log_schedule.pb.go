@@ -267,7 +267,7 @@ const file_log_schedule_proto_rawDesc = "" +
 	"signalType\x12#\n" +
 	"\rsignal_volume\x18\b \x01(\x01R\fsignalVolume\x129\n" +
 	"\n" +
-	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_log_schedule_proto_rawDescOnce sync.Once

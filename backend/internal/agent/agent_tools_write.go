@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	connectai "anttrader/internal/connect/ai"
-	"anttrader/internal/repository"
-	systemai "anttrader/internal/service/systemai"
-	sdk "anttrader/strategy/sdk"
-	"anttrader/tools/mql2go"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	connectai "alphaforge/internal/connect/ai"
+	"alphaforge/internal/repository"
+	systemai "alphaforge/internal/service/systemai"
+	sdk "alphaforge/strategy/sdk"
+	"alphaforge/tools/mql2go"
 )
 
 // writeStrategyTool is the single entry point for strategy code submission (I1).

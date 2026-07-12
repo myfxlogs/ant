@@ -11,5 +11,5 @@ import { file_ai_chat_requests } from "./ai_chat_requests_pb";
  * Describes the file ai_chat.proto.
  */
 export const file_ai_chat: GenFile = /*@__PURE__*/
-  fileDesc("Cg1haV9jaGF0LnByb3RvEgZhbnQudjFCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFQAFABYgZwcm90bzM", [file_ai_conversation, file_ai_chat_requests]);
+  fileDesc("Cg1haV9jaGF0LnByb3RvEgZhbnQudjFCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxUABQAWIGcHJvdG8z", [file_ai_conversation, file_ai_chat_requests]);
 

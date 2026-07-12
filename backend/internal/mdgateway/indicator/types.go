@@ -6,7 +6,7 @@ package indicator
 import (
 	"github.com/shopspring/decimal"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // Kind classifies an indicator for frontend rendering.

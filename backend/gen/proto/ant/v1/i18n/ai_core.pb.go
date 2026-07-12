@@ -23,7 +23,7 @@ const (
 
 type AiCoreI18N struct {
 	state                                         protoimpl.MessageState `protogen:"open.v1"`
-	AgentPromptsCodePrompt                        string                 `protobuf:"bytes,1,opt,name=agent_prompts_code_prompt,json=agentPromptsCodePrompt,proto3" json:"agent_prompts_code_prompt,omitempty"`                                                                           // You are an AntTrader Python strategy code engineer. Generate
+	AgentPromptsCodePrompt                        string                 `protobuf:"bytes,1,opt,name=agent_prompts_code_prompt,json=agentPromptsCodePrompt,proto3" json:"agent_prompts_code_prompt,omitempty"`                                                                           // You are an AlphaForge Python strategy code engineer. Generate
 	AgentPromptsCodeTitle                         string                 `protobuf:"bytes,2,opt,name=agent_prompts_code_title,json=agentPromptsCodeTitle,proto3" json:"agent_prompts_code_title,omitempty"`                                                                              // Code generation agent
 	AgentPromptsRiskPrompt                        string                 `protobuf:"bytes,3,opt,name=agent_prompts_risk_prompt,json=agentPromptsRiskPrompt,proto3" json:"agent_prompts_risk_prompt,omitempty"`                                                                           // You are a trading risk and execution expert. Based on the fo
 	AgentPromptsRiskTitle                         string                 `protobuf:"bytes,4,opt,name=agent_prompts_risk_title,json=agentPromptsRiskTitle,proto3" json:"agent_prompts_risk_title,omitempty"`                                                                              // Risk control and execution constraints
@@ -2399,7 +2399,7 @@ const file_i18n_ai_core_proto_rawDesc = "" +
 	"\x13workflow_runs_title\x18\x80\x02 \x01(\tR\x11workflowRunsTitle\x122\n" +
 	"\x15gateway_group_my_keys\x18\x81\x02 \x01(\tR\x12gatewayGroupMyKeys\x123\n" +
 	"\x15gateway_group_gateway\x18\x82\x02 \x01(\tR\x13gatewayGroupGateway\x123\n" +
-	"\x15gateway_group_current\x18\x83\x02 \x01(\tR\x13gatewayGroupCurrentB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x15gateway_group_current\x18\x83\x02 \x01(\tR\x13gatewayGroupCurrentB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_ai_core_proto_rawDescOnce sync.Once

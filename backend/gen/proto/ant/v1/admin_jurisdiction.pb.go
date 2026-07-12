@@ -1021,7 +1021,7 @@ const file_admin_jurisdiction_proto_rawDesc = "" +
 	"\x14AddSanctionedCountry\x12#.ant.v1.AddSanctionedCountryRequest\x1a$.ant.v1.AddSanctionedCountryResponse\x12j\n" +
 	"\x17RemoveSanctionedCountry\x12&.ant.v1.RemoveSanctionedCountryRequest\x1a'.ant.v1.RemoveSanctionedCountryResponse\x12a\n" +
 	"\x14ListUsersByKYCStatus\x12#.ant.v1.ListUsersByKYCStatusRequest\x1a$.ant.v1.ListUsersByKYCStatusResponse\x12d\n" +
-	"\x15SetSanctionedOverride\x12$.ant.v1.SetSanctionedOverrideRequest\x1a%.ant.v1.SetSanctionedOverrideResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x15SetSanctionedOverride\x12$.ant.v1.SetSanctionedOverrideRequest\x1a%.ant.v1.SetSanctionedOverrideResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_admin_jurisdiction_proto_rawDescOnce sync.Once

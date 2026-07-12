@@ -7,8 +7,8 @@ import (
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/mthub"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/mthub"
 )
 
 // setupProfitSubscriptions subscribes to account profit updates for the user.

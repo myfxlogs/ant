@@ -527,7 +527,7 @@ const file_economic_data_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\x01R\x05value2\xe4\x01\n" +
 	"\x13EconomicDataService\x12s\n" +
 	"\x1aListEconomicCalendarEvents\x12).ant.v1.ListEconomicCalendarEventsRequest\x1a*.ant.v1.ListEconomicCalendarEventsResponse\x12X\n" +
-	"\x16ListEconomicIndicators\x12\x16.google.protobuf.Empty\x1a&.ant.v1.ListEconomicIndicatorsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x16ListEconomicIndicators\x12\x16.google.protobuf.Empty\x1a&.ant.v1.ListEconomicIndicatorsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_economic_data_proto_rawDescOnce sync.Once

@@ -34,7 +34,7 @@ alfq 的做法（参考）：
 **v2 删除 `internal/mt4client` 与 `internal/mt5client`，adapter 直接调用 mtapi gRPC**。
 
 具体：
-- `internal/mdgateway/adapter/mt4/gateway.go` 直接 `import pb "anttrader/gen/proto/mt4"` (mtapi proto)
+- `internal/mdgateway/adapter/mt4/gateway.go` 直接 `import pb "alphaforge/gen/proto/mt4"` (mtapi proto)
 - 同 `internal/mdgateway/adapter/mt5/gateway.go`
 - mtapi gRPC 连接生命周期由 adapter 内部管理（`grpc.ClientConn`）
 - 连接池逻辑由 `mdgateway/manager.go` 统一处理（每账户一个 connection）
@@ -73,7 +73,7 @@ alfq 的做法（参考）：
 ```bash
 # CI 校验：mtapi proto 只在 adapter 中 import
 ALLOWED='backend/internal/mdgateway/adapter/(mt4|mt5)'
-git grep -l 'anttrader/gen/proto/mt[45]' backend/ \
+git grep -l 'alphaforge/gen/proto/mt[45]' backend/ \
   | grep -vE "$ALLOWED" \
   && { echo "FAIL: mtapi proto leaked outside adapter"; exit 1; } || true
 ```
@@ -82,7 +82,7 @@ git grep -l 'anttrader/gen/proto/mt[45]' backend/ \
 
 ```bash
 # CI 校验
-! grep -rE 'anttrader/internal/(mt4|mt5)client' \
+! grep -rE 'alphaforge/internal/(mt4|mt5)client' \
     backend/internal/{ai,marketplace,oms,risk,connect,service,quantengine,factorsvc,mthub}/ \
   || { echo "FAIL: legacy mt[45]client imported"; exit 1; }
 ```
@@ -113,7 +113,7 @@ test "$LOC" -le 400  # 与 spec/10 §1 + AGENT.md §5 一致
 
 # (2) 无重复 mtapi import
 ALLOWED='backend/internal/mdgateway/adapter/(mt4|mt5)'
-test -z "$(git grep -l 'anttrader/gen/proto/mt[45]' backend/ | grep -vE "$ALLOWED")"
+test -z "$(git grep -l 'alphaforge/gen/proto/mt[45]' backend/ | grep -vE "$ALLOWED")"
 
 # (3) quirks 至少 5 条
 grep -cE '^## Q-[0-9]+' docs/spec/16-mtapi-quirks-register.md | awk '$1<5{exit 1}'

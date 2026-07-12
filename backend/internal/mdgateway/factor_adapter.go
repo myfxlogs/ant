@@ -1,7 +1,7 @@
 package mdgateway
 
 import (
-	"anttrader/internal/factor"
+	"alphaforge/internal/factor"
 )
 
 // factorMarketStateAdapter adapts mdgateway.MarketStateTracker to factor.MarketStateReader.

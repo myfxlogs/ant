@@ -5,7 +5,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 func makeBars(prices ...[2]float64) []repository.KlineBar {

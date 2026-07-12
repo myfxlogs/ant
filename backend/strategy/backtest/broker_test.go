@@ -6,7 +6,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/sdk"
 )
 
 func TestSimBroker_PositionClosePartial(t *testing.T) {

@@ -10,8 +10,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/repository"
 )
 
 // ListActiveStrategies returns currently running strategy sessions.
@@ -172,6 +172,22 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 	mode := req.Msg.GetMode()
 	if mode == "" {
 		mode = "paper"
+	}
+
+	// P3.2: Enforce subscription plan strategy limits.
+	if s.quotaChecker != nil && s.runRepo != nil {
+		activeCount, _ := s.runRepo.CountActiveByUser(ctx, uid)
+		if !s.quotaChecker.CheckStrategyLimit(uid, activeCount) {
+			return nil, connect.NewError(connect.CodeResourceExhausted,
+				fmt.Errorf("strategy limit reached for your plan (%d active)", activeCount))
+		}
+		if mode == "live" {
+			liveCount, _ := s.runRepo.CountActiveLiveByUser(ctx, uid)
+			if !s.quotaChecker.CheckLiveStrategyLimit(uid, liveCount) {
+				return nil, connect.NewError(connect.CodeResourceExhausted,
+					fmt.Errorf("live strategy limit reached for your plan"))
+			}
+		}
 	}
 
 	cfg := LiveStrategyConfig{

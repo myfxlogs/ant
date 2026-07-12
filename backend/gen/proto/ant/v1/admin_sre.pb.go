@@ -564,7 +564,7 @@ const file_admin_sre_proto_rawDesc = "" +
 	"\fListBreakers\x12\x1b.ant.v1.ListBreakersRequest\x1a\x1c.ant.v1.ListBreakersResponse\x12B\n" +
 	"\fResetBreaker\x12\x1b.ant.v1.ResetBreakerRequest\x1a\x15.ant.v1.BreakerStatus\x12;\n" +
 	"\tGetCanary\x12\x18.ant.v1.GetCanaryRequest\x1a\x14.ant.v1.CanaryStatus\x12;\n" +
-	"\tSetCanary\x12\x18.ant.v1.SetCanaryRequest\x1a\x14.ant.v1.CanaryStatusB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\tSetCanary\x12\x18.ant.v1.SetCanaryRequest\x1a\x14.ant.v1.CanaryStatusB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_admin_sre_proto_rawDescOnce sync.Once

@@ -6,7 +6,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // --- F1: MarketState Tests ---

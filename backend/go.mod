@@ -1,15 +1,15 @@
-module anttrader
+module alphaforge
 
 go 1.26.0
 
 replace (
-	anttrader/mt4 => ./mt4
-	anttrader/mt5 => ./mt5
+	alphaforge/mt4 => ./mt4
+	alphaforge/mt5 => ./mt5
 )
 
 require (
-	anttrader/mt4 v0.0.0-00010101000000-000000000000
-	anttrader/mt5 v0.0.0-00010101000000-000000000000
+	alphaforge/mt4 v0.0.0-00010101000000-000000000000
+	alphaforge/mt5 v0.0.0-00010101000000-000000000000
 	connectrpc.com/connect v1.19.1
 	connectrpc.com/otelconnect v0.9.0
 	github.com/ClickHouse/clickhouse-go/v2 v2.46.0

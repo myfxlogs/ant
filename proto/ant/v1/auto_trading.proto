@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ant.v1;
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 // AutoTradingService — auto-trading configuration, risk, and status.
 // Schedule RPCs are handled exclusively by StrategyService (strategy.proto).

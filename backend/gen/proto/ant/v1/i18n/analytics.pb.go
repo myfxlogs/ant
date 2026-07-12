@@ -549,7 +549,7 @@ const file_i18n_analytics_proto_rawDesc = "" +
 	" summary_trade_stats_total_trades\x183 \x01(\tR\x1csummaryTradeStatsTotalTrades\x12>\n" +
 	"\x1csummary_trade_stats_win_rate\x184 \x01(\tR\x18summaryTradeStatsWinRate\x127\n" +
 	"\x18summary_trade_stats_wins\x185 \x01(\tR\x15summaryTradeStatsWins\x12.\n" +
-	"\x13summary_year_option\x186 \x01(\tR\x11summaryYearOptionB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x13summary_year_option\x186 \x01(\tR\x11summaryYearOptionB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_analytics_proto_rawDescOnce sync.Once

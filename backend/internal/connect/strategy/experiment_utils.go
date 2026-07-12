@@ -11,9 +11,9 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/ai"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/ai"
+	"alphaforge/internal/repository"
 )
 
 func marshalOverrides(overrides map[string]interface{}) ([]byte, error) {

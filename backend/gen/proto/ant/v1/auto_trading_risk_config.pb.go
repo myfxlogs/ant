@@ -331,7 +331,7 @@ const file_auto_trading_risk_config_proto_rawDesc = "" +
 	"\r_max_lot_sizeB\x11\n" +
 	"\x0f_max_daily_lossB\x17\n" +
 	"\x15_max_drawdown_percentB\x13\n" +
-	"\x11_max_risk_percentB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x11_max_risk_percentB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_auto_trading_risk_config_proto_rawDescOnce sync.Once

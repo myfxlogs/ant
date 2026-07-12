@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"sync"
 
-	"anttrader/internal/mdgateway/adapter/mt4"
-	"anttrader/internal/mdgateway/adapter/mt5"
-	"anttrader/internal/mthub"
-	"anttrader/internal/oms"
+	"alphaforge/internal/mdgateway/adapter/mt4"
+	"alphaforge/internal/mdgateway/adapter/mt5"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/oms"
 
 	"github.com/shopspring/decimal"
 )

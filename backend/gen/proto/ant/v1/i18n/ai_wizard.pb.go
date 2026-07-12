@@ -1999,7 +1999,7 @@ const file_i18n_ai_wizard_proto_rawDesc = "" +
 	"\bsubtitle\x18\xd4\x01 \x01(\tR\bsubtitle\x12A\n" +
 	"\x1ctemplate_default_description\x18\xd5\x01 \x01(\tR\x1atemplateDefaultDescription\x123\n" +
 	"\x15template_default_name\x18\xd6\x01 \x01(\tR\x13templateDefaultName\x12\x15\n" +
-	"\x05title\x18\xd7\x01 \x01(\tR\x05titleB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x05title\x18\xd7\x01 \x01(\tR\x05titleB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_ai_wizard_proto_rawDescOnce sync.Once

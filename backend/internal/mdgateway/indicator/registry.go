@@ -3,7 +3,7 @@ package indicator
 import (
 	"fmt"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // Registry maps indicator ID → {Def, ComputeFunc}.

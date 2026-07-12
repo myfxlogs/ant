@@ -17,7 +17,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"fmt"
 	"sync"
-	antv1 "anttrader/gen/proto/ant/v1"
+	antv1 "alphaforge/gen/proto/ant/v1"
 	"time"
 
 	goredis "github.com/redis/go-redis/v9"

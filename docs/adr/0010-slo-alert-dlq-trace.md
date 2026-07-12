@@ -129,7 +129,7 @@ test -f docs/spec/20-slo.md
 grep -E '可用性|延迟 P99|数据完整性|降级耗时' docs/spec/20-slo.md | wc -l | grep -q '^4$'
 
 # 2. DLQ 表存在
-docker exec ant-clickhouse clickhouse-client --query "DESCRIBE ant.md_ticks_dlq" | grep -q reason
+docker exec alphaforge-clickhouse clickhouse-client --query "DESCRIBE ant.md_ticks_dlq" | grep -q reason
 
 # 3. parse_error 100% 入 DLQ
 go test -tags=integration ./internal/mdgateway/ -run TestDLQParseError -v

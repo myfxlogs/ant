@@ -953,7 +953,7 @@ const file_code_assist_proto_rawDesc = "" +
 	"\vExplainCode\x12\x1a.ant.v1.ExplainCodeRequest\x1a\x1b.ant.v1.ExplainCodeResponse\x12m\n" +
 	"\x18ValidateStrategyExtended\x12'.ant.v1.ValidateStrategyExtendedRequest\x1a(.ant.v1.ValidateStrategyExtendedResponse\x12L\n" +
 	"\rTransformCode\x12\x1c.ant.v1.TransformCodeRequest\x1a\x1d.ant.v1.TransformCodeResponse\x12a\n" +
-	"\x14TranslateParamLabels\x12#.ant.v1.TranslateParamLabelsRequest\x1a$.ant.v1.TranslateParamLabelsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x14TranslateParamLabels\x12#.ant.v1.TranslateParamLabelsRequest\x1a$.ant.v1.TranslateParamLabelsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_code_assist_proto_rawDescOnce sync.Once

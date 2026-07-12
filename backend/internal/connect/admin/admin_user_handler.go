@@ -9,13 +9,13 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	antinterceptor "anttrader/internal/interceptor"
-	"anttrader/internal/model"
-	"anttrader/internal/repository"
-	"anttrader/internal/service"
-	usersvc "anttrader/internal/service/user"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	antinterceptor "alphaforge/internal/interceptor"
+	"alphaforge/internal/model"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
+	usersvc "alphaforge/internal/service/user"
 )
 
 type AdminUserServer struct {
@@ -73,6 +73,13 @@ func (s *AdminUserServer) GetDashboard(ctx context.Context, _ *connect.Request[a
 			TodayVolume:    stats.TodayVolume.String(),
 			TodayProfit:    stats.TodayProfit.String(),
 			SystemLoad:     stats.SystemLoad.InexactFloat64(),
+			ActiveSubscriptions:   stats.ActiveSubscriptions,
+			MonthlyRevenue:        stats.MonthlyRevenue.String(),
+			TotalRevenue:          stats.TotalRevenue.String(),
+			MarketplaceStrategies: stats.MarketplaceStrategies,
+			MarketplaceSales:      stats.MarketplaceSales,
+			MarketplaceRevenue:    stats.MarketplaceRevenue.String(),
+			VerifiedUsers:         stats.VerifiedUsers,
 		},
 	}), nil
 }

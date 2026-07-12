@@ -108,13 +108,13 @@ case "$MILESTONE" in
 esac
 
 # (2) 业务代码 0 处直调（service/ 是 deprecation 区，豁免至 M9）
-! grep -rE 'anttrader/internal/(mt4|mt5)client' backend/internal/{ai,marketplace,oms,risk,connect,quantengine,factorsvc,mthub}/
+! grep -rE 'alphaforge/internal/(mt4|mt5)client' backend/internal/{ai,marketplace,oms,risk,connect,quantengine,factorsvc,mthub}/
 
 # (3) 生产路径零 Python
 ! grep -rE 'exec\(|eval\(|subprocess|sandbox' backend/internal/{quantengine,oms}/
 
 # (4) ClickHouse 实写
-docker exec ant-clickhouse clickhouse-client --query \
+docker exec alphaforge-clickhouse clickhouse-client --query \
   "SELECT count() FROM md_ticks WHERE arrived_unix_ms > now64()*1000 - 60000" \
   | awk '$1<10{exit 1}'
 ```

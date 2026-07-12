@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ant.v1;
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 // BacktestAnalysis is the LLM-generated interpretation of backtest results
 // (injection point [4]). Produced after backtest by analyzing results + profile.

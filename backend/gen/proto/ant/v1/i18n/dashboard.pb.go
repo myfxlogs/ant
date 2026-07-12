@@ -371,7 +371,7 @@ const file_i18n_dashboard_proto_rawDesc = "" +
 	"\bsubtitle\x18\x1f \x01(\tR\bsubtitle\x12\x1c\n" +
 	"\ttemplates\x18  \x01(\tR\ttemplates\x12\x19\n" +
 	"\bview_all\x18! \x01(\tR\aviewAll\x12\x18\n" +
-	"\awelcome\x18\" \x01(\tR\awelcomeB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\awelcome\x18\" \x01(\tR\awelcomeB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_dashboard_proto_rawDescOnce sync.Once

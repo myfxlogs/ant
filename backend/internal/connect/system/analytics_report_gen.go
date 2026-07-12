@@ -15,9 +15,9 @@ import (
 
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/interceptor"
-	systemai "anttrader/internal/service/systemai"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/interceptor"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 // ── GenerateReport (SSE streaming) ──

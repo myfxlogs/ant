@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file strategy_schedule_query.proto.
  */
 export const file_strategy_schedule_query: GenFile = /*@__PURE__*/
-  fileDesc("Ch1zdHJhdGVneV9zY2hlZHVsZV9xdWVyeS5wcm90bxIGYW50LnYxIhYKFExpc3RTY2hlZHVsZXNSZXF1ZXN0IkQKFUxpc3RTY2hlZHVsZXNSZXNwb25zZRIrCglzY2hlZHVsZXMYASADKAsyGC5hbnQudjEuU3RyYXRlZ3lTY2hlZHVsZSIgChJHZXRTY2hlZHVsZVJlcXVlc3QSCgoCaWQYASABKAlCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_strategy_schedule_entity]);
+  fileDesc("Ch1zdHJhdGVneV9zY2hlZHVsZV9xdWVyeS5wcm90bxIGYW50LnYxIhYKFExpc3RTY2hlZHVsZXNSZXF1ZXN0IkQKFUxpc3RTY2hlZHVsZXNSZXNwb25zZRIrCglzY2hlZHVsZXMYASADKAsyGC5hbnQudjEuU3RyYXRlZ3lTY2hlZHVsZSIgChJHZXRTY2hlZHVsZVJlcXVlc3QSCgoCaWQYASABKAlCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_strategy_schedule_entity]);
 
 /**
  * @generated from message ant.v1.ListSchedulesRequest

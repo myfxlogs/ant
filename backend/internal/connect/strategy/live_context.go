@@ -7,8 +7,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/mthub"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/mthub"
 )
 
 // buildTickContext creates a TickContext proto from a tick update.

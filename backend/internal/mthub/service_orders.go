@@ -8,10 +8,10 @@ import (
 
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/costsvc"
-	"anttrader/internal/risk"
-	"anttrader/internal/usermgr"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/costsvc"
+	"alphaforge/internal/risk"
+	"alphaforge/internal/usermgr"
 )
 
 // PlaceOrder places an order on the account's broker via the registered executor.

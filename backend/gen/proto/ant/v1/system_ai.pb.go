@@ -31,7 +31,7 @@ const file_system_ai_proto_rawDesc = "" +
 	"\x14UpdateSystemAIConfig\x12#.ant.v1.UpdateSystemAIConfigRequest\x1a$.ant.v1.UpdateSystemAIConfigResponse\x12a\n" +
 	"\x14UpdateSystemAISecret\x12#.ant.v1.UpdateSystemAISecretRequest\x1a$.ant.v1.UpdateSystemAISecretResponse\x12g\n" +
 	"\x16DiscoverSystemAIModels\x12%.ant.v1.DiscoverSystemAIModelsRequest\x1a&.ant.v1.DiscoverSystemAIModelsResponse\x12s\n" +
-	"\x1aValidateSystemAIConnection\x12).ant.v1.ValidateSystemAIConnectionRequest\x1a*.ant.v1.ValidateSystemAIConnectionResponseB\"Z anttrader/gen/proto/ant/v1;antv1P\x00P\x01b\x06proto3"
+	"\x1aValidateSystemAIConnection\x12).ant.v1.ValidateSystemAIConnectionRequest\x1a*.ant.v1.ValidateSystemAIConnectionResponseB#Z!alphaforge/gen/proto/ant/v1;antv1P\x00P\x01b\x06proto3"
 
 var file_system_ai_proto_goTypes = []any{
 	(*ListSystemAIConfigsRequest)(nil),         // 0: ant.v1.ListSystemAIConfigsRequest

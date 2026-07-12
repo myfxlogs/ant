@@ -144,11 +144,11 @@ ORDER BY (broker, canonical, period, close_ts_unix_ms);
 
 ```bash
 # 1. version 列存在
-docker exec ant-clickhouse clickhouse-client --query \
+docker exec alphaforge-clickhouse clickhouse-client --query \
   "SELECT name FROM system.columns WHERE database='ant' AND table='md_bars' AND name='version'"
 
 # 2. bar_revision_log 表存在
-docker exec ant-clickhouse clickhouse-client --query \
+docker exec alphaforge-clickhouse clickhouse-client --query \
   "EXISTS TABLE ant.bar_revision_log"
 
 # 3. 集成测试：注入修订 bar → 验证级联

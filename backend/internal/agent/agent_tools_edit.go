@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	connectai "anttrader/internal/connect/ai"
-	systemai "anttrader/internal/service/systemai"
-	"anttrader/tools/mql2go"
+	connectai "alphaforge/internal/connect/ai"
+	systemai "alphaforge/internal/service/systemai"
+	"alphaforge/tools/mql2go"
 )
 
 // readCurrentCodeTool returns the workspace strategy code with line numbers.

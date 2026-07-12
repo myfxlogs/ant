@@ -1194,7 +1194,7 @@ const file_strategy_execution_proto_rawDesc = "" +
 	"\bDiagnose\x12\x17.ant.v1.DiagnoseRequest\x1a\x18.ant.v1.AnalyzePlanChunk0\x01\x12E\n" +
 	"\vExecutePlan\x12\x1a.ant.v1.ExecutePlanRequest\x1a\x18.ant.v1.ExecutePlanChunk0\x01\x12B\n" +
 	"\n" +
-	"Conversate\x12\x19.ant.v1.ConversateRequest\x1a\x17.ant.v1.ConversateChunk0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"Conversate\x12\x19.ant.v1.ConversateRequest\x1a\x17.ant.v1.ConversateChunk0\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_execution_proto_rawDescOnce sync.Once

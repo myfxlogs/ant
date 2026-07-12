@@ -16,7 +16,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 // Analyzer performs comprehensive asset analysis using OHLC k-line data.

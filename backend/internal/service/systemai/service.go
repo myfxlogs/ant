@@ -14,8 +14,8 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 
-	"anttrader/internal/pkg/secretbox"
-	"anttrader/internal/repository"
+	"alphaforge/internal/pkg/secretbox"
+	"alphaforge/internal/repository"
 )
 
 // defaultProviderSeeds 描述每个用户首次进 /ai/settings 时应自动创建的
@@ -56,22 +56,9 @@ func WrapAIError(err error) error {
 	return err
 }
 
-// TokenRecord is passed to the recorder after each successful AI call.
-type TokenRecord struct {
-	UserID        uuid.UUID
-	ProviderID    string
-	Model         string
-	Feature       string
-	InputTokens   int
-	OutputTokens  int
-}
-
-// TokenRecorder is called after each successful ChatCompletion / ChatCompletionStream.
-type TokenRecorder func(ctx context.Context, r TokenRecord)
-
-// PostCallBiller is called after a successful AI call, before returning the result.
+// PostCallBiller is called after a successful AI call (streaming or non-streaming).
 // If it returns an error, the result is discarded — ensuring users cannot use AI without paying.
-type PostCallBiller func(ctx context.Context, userID uuid.UUID, providerID, modelName string, inputTokens, outputTokens int) error
+type PostCallBiller func(ctx context.Context, userID uuid.UUID, providerID, modelName, feature string, inputTokens, outputTokens int) error
 
 // Service exposes high-level operations consumed by the connect handler.
 type Service struct {
@@ -79,11 +66,10 @@ type Service struct {
 	userRepo            *repository.UserRepository
 	box                 *secretbox.Box
 	secretCache         sync.Map
-	tokenRecorder       TokenRecorder
 	postCallBiller      PostCallBiller
-	walletChecker       func(ctx context.Context, userID uuid.UUID) error // pre-check before API call
-	gatewayProviderRepo *repository.SystemAIProviderRepository // optional: fallback for AI Gateway
-	cbDB                cbExecutor                             // optional: PG pool for persistent circuit breaker
+	walletChecker       func(ctx context.Context, userID uuid.UUID) error              // pre-check before API call
+	gatewayProviderRepo *repository.SystemAIProviderRepository                         // optional: fallback for AI Gateway
+	cbDB                cbExecutor                                                     // optional: PG pool for persistent circuit breaker
 	modelFilter         func(ctx context.Context, userID uuid.UUID, model string) bool // optional: ADR-0025 §5.2 model whitelist
 }
 
@@ -100,11 +86,6 @@ type secretCacheEntry struct {
 
 func NewService(repo *repository.SystemAIConfigRepository, box *secretbox.Box) *Service {
 	return &Service{repo: repo, box: box}
-}
-
-// SetTokenRecorder sets a callback invoked after each successful AI call.
-func (s *Service) SetTokenRecorder(fn TokenRecorder) {
-	s.tokenRecorder = fn
 }
 
 // SetWalletChecker sets a pre-check called before each AI API call.
@@ -138,6 +119,14 @@ type aiFeatureKey struct{}
 // Callers pass this ctx to ChatCompletion / ChatCompletionStream for billing attribution.
 func WithAIFeature(ctx context.Context, feature string) context.Context {
 	return context.WithValue(ctx, aiFeatureKey{}, feature)
+}
+
+// aiFeatureFromCtx extracts the AI feature tag from context, defaulting to "chat".
+func aiFeatureFromCtx(ctx context.Context) string {
+	if v := ctx.Value(aiFeatureKey{}); v != nil {
+		return v.(string)
+	}
+	return "chat"
 }
 
 // EnsureSeed 为用户补齐缺失的默认 provider 空行（幂等）。
@@ -285,4 +274,3 @@ func (s *Service) DiscoverModels(ctx context.Context, userID uuid.UUID, provider
 	}
 	return fetchOpenAIModels(ctx, base, secret)
 }
-

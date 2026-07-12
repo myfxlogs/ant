@@ -7,7 +7,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/sdk"
 )
 
 func TestParseMTTime(t *testing.T) {

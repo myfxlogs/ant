@@ -68,9 +68,9 @@ PG 在百万行 OHLCV 查询上仍可接受（毫秒级），但：
 `docker-compose.yml`:
 
 ```yaml
-ant-clickhouse:
+alphaforge-clickhouse:
   image: clickhouse/clickhouse-server:24-alpine
-  container_name: ant-clickhouse
+  container_name: alphaforge-clickhouse
   environment:
     CLICKHOUSE_DB: ant
     CLICKHOUSE_USER: ${CH_USER:-default}
@@ -86,7 +86,7 @@ ant-clickhouse:
     interval: 10s
     timeout: 3s
     retries: 5
-  networks: [ant-network]
+  networks: [alphaforge-network]
 
 volumes:
   clickhouse_data:
@@ -96,7 +96,7 @@ volumes:
 ### 5.2 `.env.example`
 
 ```
-CH_HOST=ant-clickhouse
+CH_HOST=alphaforge-clickhouse
 CH_PORT=9000
 CH_USER=default
 CH_PASSWORD=clickhouse
@@ -118,14 +118,14 @@ CH_POOL_SIZE=10
 
 ```bash
 # 容器健康
-docker inspect -f '{{.State.Health.Status}}' ant-clickhouse | grep -q healthy
+docker inspect -f '{{.State.Health.Status}}' alphaforge-clickhouse | grep -q healthy
 
 # 表存在
-docker exec ant-clickhouse clickhouse-client --query \
+docker exec alphaforge-clickhouse clickhouse-client --query \
   "SELECT count() FROM system.tables WHERE database='ant'" | grep -q "^[5-9]"  # ≥5 表
 
 # TTL 生效
-docker exec ant-clickhouse clickhouse-client --query \
+docker exec alphaforge-clickhouse clickhouse-client --query \
   "SELECT engine, ttl FROM system.tables WHERE database='ant' AND name='md_ticks'" \
   | grep -q "INTERVAL 90 DAY"
 

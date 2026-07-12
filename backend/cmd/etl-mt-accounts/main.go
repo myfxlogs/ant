@@ -11,8 +11,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
-	"anttrader/internal/config"
-	"anttrader/internal/secrets"
+	"alphaforge/internal/config"
+	"alphaforge/internal/secrets"
 )
 
 func main() {

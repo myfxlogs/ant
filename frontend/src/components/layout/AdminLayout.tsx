@@ -12,9 +12,11 @@ import {
   MenuOutlined,
   ArrowLeftOutlined,
   WalletOutlined,
+  DollarOutlined,
   CodeOutlined,
   ThunderboltOutlined,
   ShareAltOutlined,
+  MonitorOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -58,6 +60,7 @@ export default function AdminLayout() {
     { key: '/admin', icon: <DashboardOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.dashboard') },
     { key: '/admin/users', icon: <TeamOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.userManagement') },
     { key: '/admin/wallet', icon: <WalletOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.walletManagement', { defaultValue: 'Wallets' }) },
+    { key: '/admin/billing', icon: <DollarOutlined size={20} stroke={1.5} />, label: '计费管理' },
     { key: '/admin/accounts', icon: <BankOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.accountManagement') },
     { key: '/admin/trading', icon: <LineChartOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.tradingMonitor') },
     { key: '/admin/logs', icon: <FileTextOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.operationLogs') },
@@ -66,6 +69,7 @@ export default function AdminLayout() {
     { key: '/admin/strategies', icon: <CodeOutlined size={20} stroke={1.5} />, label: 'Strategies' },
     { key: '/admin/shares', icon: <ShareAltOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.shareManagement', { defaultValue: '分享统计' }) },
     { key: '/admin/ai-gateway', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: 'AI Gateway' },
+    { key: '/admin/monitoring', icon: <MonitorOutlined size={20} stroke={1.5} />, label: '监控告警' },
     { key: '/admin/agent-settings', icon: <SafetyOutlined size={20} stroke={1.5} />, label: 'Agent 管理' },
     { key: '/admin/sre', icon: <SafetyOutlined size={20} stroke={1.5} />, label: 'SRE 控制' },
   ];

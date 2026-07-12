@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "agent_profile.proto";
 import "agent_analysis.proto";
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 // AgentService manages agent tokens, audit logs, and capabilities.
 service AgentService {

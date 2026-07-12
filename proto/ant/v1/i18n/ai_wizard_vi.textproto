@@ -81,7 +81,7 @@ prompts_base_user_intent: 'User strategy goal (natural language):\\\\\\\\n{{inte
 prompts_data_spec_dataset: 'Sử dụng dataset đã đóng băng datasetId={{datasetId}}'
 prompts_data_spec_kline_range: 'Sử dụng phạm vi nến lịch sử from={{from}} to={{to}}'
 prompts_summary_code_title: 'Mã:'
-prompts_summary_intro: 'Bạn là trợ lý giải thích chiến lược định lượng. Hãy giải thích ý tưởng cốt lõi của đoạn mã chiến lược AntTrader Python dưới đây bằng các gạch đầu dòng ngắn gọn (tối đa 12 dòng) để giúp người dùng đánh giá có đúng kỳ vọng hay không.'
+prompts_summary_intro: 'Bạn là trợ lý giải thích chiến lược định lượng. Hãy giải thích ý tưởng cốt lõi của đoạn mã chiến lược AlphaForge Python dưới đây bằng các gạch đầu dòng ngắn gọn (tối đa 12 dòng) để giúp người dùng đánh giá có đúng kỳ vọng hay không.'
 prompts_summary_must_include1: '1) Loại/kiểu chiến lược (trend/mean-reversion/breakout/momentum/grid... nếu không chắc hãy ghi “Không rõ”)'
 prompts_summary_must_include2: '2) Điều kiện vào lệnh chính (2-4 ý)'
 prompts_summary_must_include3: '3) Điều kiện thoát/SL/TP/ràng buộc rủi ro chính (2-4 ý)'

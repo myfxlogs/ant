@@ -5,7 +5,7 @@
 package antv1connect
 
 import (
-	v1 "anttrader/gen/proto/ant/v1"
+	v1 "alphaforge/gen/proto/ant/v1"
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"

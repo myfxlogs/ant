@@ -12,7 +12,7 @@ import "strings"
 // by all agent prompts and the contract text. Single source of truth.
 const goStrategyCodeExample = "```go\n" +
 	"import (\n" +
-	"    \"anttrader/strategy/sdk\"\n" +
+	"    \"alphaforge/strategy/sdk\"\n" +
 	"    \"github.com/shopspring/decimal\"\n" +
 	")\n\n" +
 	"type MyStrategy struct {\n" +
@@ -114,7 +114,7 @@ func goStrategyContractText() string {
 	sb.WriteString("### 铁律 1：每个参数必须在 OnInit 中通过 ctx.Param() 读取，禁止硬编码\n")
 	sb.WriteString("```go\n")
 	sb.WriteString("import (\n")
-	sb.WriteString("    \"anttrader/strategy/sdk\"\n")
+	sb.WriteString("    \"alphaforge/strategy/sdk\"\n")
 	sb.WriteString("    \"github.com/shopspring/decimal\"\n")
 	sb.WriteString(")\n\n")
 	sb.WriteString("type MyStrategy struct {\n")

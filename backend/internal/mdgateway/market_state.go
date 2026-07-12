@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // SessionPhase describes the current trading session phase.

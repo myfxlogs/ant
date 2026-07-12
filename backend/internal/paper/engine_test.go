@@ -7,7 +7,7 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 // stubPaperRepo implements paperRepository for tests.

@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 func (r *AnalyticsRepository) GetDailyReturns(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]float64, error) {

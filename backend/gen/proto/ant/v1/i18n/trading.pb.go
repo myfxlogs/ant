@@ -1141,7 +1141,7 @@ const file_i18n_trading_proto_rawDesc = "" +
 	"permission\x12\x1a\n" +
 	"\binvestor\x18u \x01(\tR\binvestor\x12\x16\n" +
 	"\x06master\x18v \x01(\tR\x06master\x12\x1a\n" +
-	"\bleverage\x18w \x01(\tR\bleverageB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\bleverage\x18w \x01(\tR\bleverageB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_trading_proto_rawDescOnce sync.Once

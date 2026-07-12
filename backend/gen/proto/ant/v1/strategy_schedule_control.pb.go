@@ -352,7 +352,7 @@ const file_strategy_schedule_control_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"?\n" +
 	"\x15ToggleScheduleRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
-	"\x06active\x18\x02 \x01(\bR\x06activeB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x06active\x18\x02 \x01(\bR\x06activeB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_schedule_control_proto_rawDescOnce sync.Once

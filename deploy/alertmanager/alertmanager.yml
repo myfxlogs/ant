@@ -1,0 +1,17 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'default'
+
+receivers:
+  - name: 'default'
+    # No external notification configured — alerts visible in AlertManager UI only.
+    # To enable email/webhook, add webhook_configs or email_configs here.
+    # Example:
+    # webhook_configs:
+    #   - url: 'http://localhost:9093/api/v2/alerts'

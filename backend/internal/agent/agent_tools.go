@@ -1,9 +1,9 @@
 package agent
 
 import (
-	antv1 "anttrader/gen/proto/ant/v1"
-	connectai "anttrader/internal/connect/ai"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	connectai "alphaforge/internal/connect/ai"
+	"alphaforge/internal/repository"
 )
 
 // buildPythonToolRegistry creates a ToolRegistry with all agent tools.

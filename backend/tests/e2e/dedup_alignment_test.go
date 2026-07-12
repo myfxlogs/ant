@@ -2,7 +2,7 @@
 // +build e2e
 
 // Package e2e_test contains end-to-end integration tests that require
-// a running ClickHouse + NATS + ant-backend environment.
+// a running ClickHouse + NATS + alphaforge-backend environment.
 package e2e_test
 
 import (
@@ -18,8 +18,8 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/shopspring/decimal"
 
-	"anttrader/internal/mdgateway"
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // TestDedupAlignment verifies that after injecting 100k ticks with known

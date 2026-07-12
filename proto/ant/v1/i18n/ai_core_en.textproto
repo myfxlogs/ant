@@ -1,4 +1,4 @@
-agent_prompts_code_prompt: 'You are an AntTrader Python strategy code engineer. Generate runnable AntTrader Python strategy code that:
+agent_prompts_code_prompt: 'You are an AlphaForge Python strategy code engineer. Generate runnable AlphaForge Python strategy code that:
 - Passes validate checks (no import, no dunder, sandbox constraints)
 - Uses platform APIs like on_tick / on_kline (no custom network/file access)
 - run() must receive exactly one parameter: context (must be named context; no run(ctx), run(context, data), etc.)

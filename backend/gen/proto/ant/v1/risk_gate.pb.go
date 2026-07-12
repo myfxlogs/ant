@@ -378,7 +378,7 @@ const file_risk_gate_proto_rawDesc = "" +
 	"\x11OrderIntentSource\x12#\n" +
 	"\x1fORDER_INTENT_SOURCE_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17ORDER_INTENT_SOURCE_SIM\x10\x01\x12\x1c\n" +
-	"\x18ORDER_INTENT_SOURCE_LIVE\x10\x02B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x18ORDER_INTENT_SOURCE_LIVE\x10\x02B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_risk_gate_proto_rawDescOnce sync.Once

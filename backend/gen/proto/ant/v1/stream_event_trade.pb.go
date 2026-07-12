@@ -702,7 +702,7 @@ const file_stream_event_trade_proto_rawDesc = "" +
 	"\x15PositionSnapshotEvent\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x126\n" +
-	"\tpositions\x18\x02 \x03(\v2\x18.ant.v1.OrderUpdateEventR\tpositionsB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\tpositions\x18\x02 \x03(\v2\x18.ant.v1.OrderUpdateEventR\tpositionsB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_stream_event_trade_proto_rawDescOnce sync.Once

@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"anttrader/internal/secrets"
+	"alphaforge/internal/secrets"
 )
 
 func TestEnvMasterKey_Empty(t *testing.T) {

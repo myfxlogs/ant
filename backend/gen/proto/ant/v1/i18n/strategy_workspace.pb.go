@@ -1260,7 +1260,7 @@ const file_i18n_strategy_workspace_proto_rawDesc = "" +
 	"\vmemory_save\x18\xac\x01 \x01(\tR\n" +
 	"memorySave\x127\n" +
 	"\x17memory_name_placeholder\x18\xad\x01 \x01(\tR\x15memoryNamePlaceholder\x12=\n" +
-	"\x1amemory_content_placeholder\x18\xae\x01 \x01(\tR\x18memoryContentPlaceholderB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x1amemory_content_placeholder\x18\xae\x01 \x01(\tR\x18memoryContentPlaceholderB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_workspace_proto_rawDescOnce sync.Once

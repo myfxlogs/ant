@@ -415,7 +415,7 @@ const file_share_proto_rawDesc = "" +
 	"\rclose_time_ms\x18\x05 \x01(\x03R\vcloseTimeMs2\xc8\x01\n" +
 	"\fShareService\x12U\n" +
 	"\x10CreateShareToken\x12\x1f.ant.v1.CreateShareTokenRequest\x1a .ant.v1.CreateShareTokenResponse\x12a\n" +
-	"\x14GetSharedPerformance\x12#.ant.v1.GetSharedPerformanceRequest\x1a$.ant.v1.GetSharedPerformanceResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x14GetSharedPerformance\x12#.ant.v1.GetSharedPerformanceRequest\x1a$.ant.v1.GetSharedPerformanceResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_share_proto_rawDescOnce sync.Once

@@ -7,7 +7,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // This file wires VM builtin IDs to actual implementations that call the SDK context.

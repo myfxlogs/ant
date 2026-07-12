@@ -463,7 +463,7 @@ const file_backtest_dataset_proto_rawDesc = "" +
 	"\x16BacktestDatasetService\x12a\n" +
 	"\x14ListBacktestDatasets\x12#.ant.v1.ListBacktestDatasetsRequest\x1a$.ant.v1.ListBacktestDatasetsResponse\x12v\n" +
 	"\x1bCreateFrozenBacktestDataset\x12*.ant.v1.CreateFrozenBacktestDatasetRequest\x1a+.ant.v1.CreateFrozenBacktestDatasetResponse\x12U\n" +
-	"\x15DeleteBacktestDataset\x12$.ant.v1.DeleteBacktestDatasetRequest\x1a\x16.google.protobuf.EmptyB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x15DeleteBacktestDataset\x12$.ant.v1.DeleteBacktestDatasetRequest\x1a\x16.google.protobuf.EmptyB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_backtest_dataset_proto_rawDescOnce sync.Once

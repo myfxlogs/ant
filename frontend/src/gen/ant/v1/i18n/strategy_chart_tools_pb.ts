@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file i18n/strategy_chart_tools.proto.
  */
 export const file_i18n_strategy_chart_tools: GenFile = /*@__PURE__*/
-  fileDesc("Ch9pMThuL3N0cmF0ZWd5X2NoYXJ0X3Rvb2xzLnByb3RvEgthbnQudjEuaTE4biJmCg5DaGFydFRvb2xzSTE4bhIWCg5jbGVhcl9kcmF3aW5ncxgBIAEoCRIMCgRoaWRlGAIgASgJEg4KBnJlbW92ZRgDIAEoCRIQCghzZXR0aW5ncxgEIAEoCRIMCgRzaG93GAUgASgJQiFaH2FudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxL2kxOG5iBnByb3RvMw");
+  fileDesc("Ch9pMThuL3N0cmF0ZWd5X2NoYXJ0X3Rvb2xzLnByb3RvEgthbnQudjEuaTE4biJmCg5DaGFydFRvb2xzSTE4bhIWCg5jbGVhcl9kcmF3aW5ncxgBIAEoCRIMCgRoaWRlGAIgASgJEg4KBnJlbW92ZRgDIAEoCRIQCghzZXR0aW5ncxgEIAEoCRIMCgRzaG93GAUgASgJQiJaIGFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MS9pMThuYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.i18n.ChartToolsI18n

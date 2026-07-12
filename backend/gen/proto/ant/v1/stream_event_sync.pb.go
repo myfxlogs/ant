@@ -151,7 +151,7 @@ const file_stream_event_sync_proto_rawDesc = "" +
 	"\tSyncPhase\x12\x1a\n" +
 	"\x16SYNC_PHASE_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12SYNC_PHASE_STARTED\x10\x01\x12\x18\n" +
-	"\x14SYNC_PHASE_COMPLETED\x10\x02B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x14SYNC_PHASE_COMPLETED\x10\x02B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_stream_event_sync_proto_rawDescOnce sync.Once

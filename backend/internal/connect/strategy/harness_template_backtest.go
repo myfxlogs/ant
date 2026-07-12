@@ -20,9 +20,9 @@ import (
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/proto"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/strategy/backtest"
-	"anttrader/strategy/sdk"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/strategy/backtest"
+	"alphaforge/strategy/sdk"
 	` + extraImport + `
 )
 

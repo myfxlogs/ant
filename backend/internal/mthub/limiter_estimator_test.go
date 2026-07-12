@@ -7,8 +7,8 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/internal/costsvc"
-	"anttrader/internal/usermgr"
+	"alphaforge/internal/costsvc"
+	"alphaforge/internal/usermgr"
 )
 
 func TestUserLimiterEffective(t *testing.T) {

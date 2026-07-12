@@ -8,10 +8,10 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/model"
-	"anttrader/internal/mthub"
-	"anttrader/internal/repository"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/model"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/repository"
 )
 
 // buildOnOrderUpdate creates the OnOrderUpdate callback for the mdgateway pipeline.

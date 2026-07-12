@@ -537,7 +537,7 @@ const file_ai_agent_proto_rawDesc = "" +
 	"\x06agents\x18\x01 \x03(\v2\x19.ant.v1.AIAgentDefinitionR\x06agents2\xb7\x01\n" +
 	"\x16AgentDefinitionService\x12O\n" +
 	"\x0eBatchSetAgents\x12\x1d.ant.v1.BatchSetAgentsRequest\x1a\x1e.ant.v1.BatchSetAgentsResponse\x12L\n" +
-	"\rListAgentDefs\x12\x1c.ant.v1.ListAgentDefsRequest\x1a\x1d.ant.v1.ListAgentDefsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\rListAgentDefs\x12\x1c.ant.v1.ListAgentDefsRequest\x1a\x1d.ant.v1.ListAgentDefsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_ai_agent_proto_rawDescOnce sync.Once

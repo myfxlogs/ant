@@ -425,7 +425,21 @@ const Base = {
       "loginSuccess": "登录成功",
       "logoutSuccess": "已退出登录",
       "registerFailed": "注册失败，请稍后重试",
-      "registerSuccess": "注册成功，请登录"
+      "registerSuccess": "注册成功！请检查邮箱完成验证。"
+    },
+    "verify": {
+      "verifying": "正在验证您的邮箱...",
+      "successTitle": "邮箱验证成功！",
+      "successDesc": "您的邮箱已验证成功，现在可以登录了。",
+      "failedTitle": "验证失败",
+      "failedDesc": "验证链接无效或已过期。",
+      "failed": "验证失败，请重试。",
+      "pendingTitle": "请检查您的邮箱",
+      "pendingDesc": "我们已向您的邮箱发送了验证链接，请点击链接完成验证。",
+      "didntReceive": "没有收到邮件？",
+      "resend": "重新发送验证邮件",
+      "resendFailed": "重新发送失败，请稍后重试。",
+      "goLogin": "前往登录"
     },
     "register": {
       "haveAccount": "已有账号？",
@@ -441,6 +455,26 @@ const Base = {
       "passwordMin8": "密码至少8位",
       "passwordMismatch": "两次密码不一致",
       "passwordRequired": "请输入密码"
+    }
+  },
+  "onboarding": {
+    "welcome": "欢迎使用 AlphaForge，{{name}}！",
+    "subtitle": "3 步即可开始",
+    "dismiss": "知道了",
+    "step1": {
+      "title": "连接交易账户",
+      "desc": "绑定您的 MT4/MT5 交易账户以开始使用。",
+      "action": "绑定账户"
+    },
+    "step2": {
+      "title": "创建首个策略",
+      "desc": "用自然语言描述交易想法，AI 自动生成策略代码。",
+      "action": "打开工作区"
+    },
+    "step3": {
+      "title": "升级套餐",
+      "desc": "升级到 Pro 解锁更多 AI 额度、策略和实盘交易。",
+      "action": "查看套餐"
     }
   },
   "common": {

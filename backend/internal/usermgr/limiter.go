@@ -10,7 +10,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"anttrader/internal/clock"
+	"alphaforge/internal/clock"
 )
 
 // Clk is the package-level clock for deterministic testing (M10-BASE-A5).

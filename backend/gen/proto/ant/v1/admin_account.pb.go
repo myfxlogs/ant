@@ -826,7 +826,7 @@ const file_admin_account_proto_rawDesc = "" +
 	"\x11ListAccountsAdmin\x12 .ant.v1.ListAccountsAdminRequest\x1a!.ant.v1.ListAccountsAdminResponse\x12L\n" +
 	"\rFreezeAccount\x12\x1c.ant.v1.FreezeAccountRequest\x1a\x1d.ant.v1.FreezeAccountResponse\x12R\n" +
 	"\x0fUnfreezeAccount\x12\x1e.ant.v1.UnfreezeAccountRequest\x1a\x1f.ant.v1.UnfreezeAccountResponse\x12^\n" +
-	"\x13GetAccountAuditLogs\x12\".ant.v1.GetAccountAuditLogsRequest\x1a#.ant.v1.GetAccountAuditLogsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x13GetAccountAuditLogs\x12\".ant.v1.GetAccountAuditLogsRequest\x1a#.ant.v1.GetAccountAuditLogsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_admin_account_proto_rawDescOnce sync.Once

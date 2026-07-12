@@ -105,22 +105,22 @@ RENAME TABLE md_ticks_v2 TO md_ticks_legacy;
 
 ```bash
 # 1. ORDER BY 含全部 dedup 字段
-docker exec ant-clickhouse clickhouse-client --query "
+docker exec alphaforge-clickhouse clickhouse-client --query "
   SELECT sorting_key FROM system.tables WHERE database='ant' AND name='md_ticks'
 " | grep -E 'ts_unix_ms.*bid.*ask.*bid_volume.*ask_volume'
 
 # 2. PARTITION/TTL 用 arrived_unix_ms
-docker exec ant-clickhouse clickhouse-client --query "
+docker exec alphaforge-clickhouse clickhouse-client --query "
   SELECT partition_key, engine_full FROM system.tables WHERE database='ant' AND name='md_ticks'
 " | grep -E 'arrived_unix_ms'
 
 # 3. 端到端对账：metric 与 CH 计数差 < 0.01%
 TICK_METRIC=$(curl -s localhost:8080/metrics | grep '^md_tick_total' | awk '{s+=$NF} END{print s}')
-TICK_CH=$(docker exec ant-clickhouse clickhouse-client --query "SELECT count() FROM ant.md_ticks WHERE arrived_unix_ms > now64()*1000 - 600000")
+TICK_CH=$(docker exec alphaforge-clickhouse clickhouse-client --query "SELECT count() FROM ant.md_ticks WHERE arrived_unix_ms > now64()*1000 - 600000")
 python3 -c "import sys; m,c=$TICK_METRIC,$TICK_CH; sys.exit(abs(m-c)/max(m,1) > 0.0001)"
 
 # 4. 历史数据完整迁移（_legacy 表与新表行数一致）
-OLD=$(docker exec ant-clickhouse clickhouse-client --query "SELECT count() FROM ant.md_ticks_legacy")
-NEW=$(docker exec ant-clickhouse clickhouse-client --query "SELECT count() FROM ant.md_ticks")
+OLD=$(docker exec alphaforge-clickhouse clickhouse-client --query "SELECT count() FROM ant.md_ticks_legacy")
+NEW=$(docker exec alphaforge-clickhouse clickhouse-client --query "SELECT count() FROM ant.md_ticks")
 test "$NEW" -ge "$OLD"
 ```

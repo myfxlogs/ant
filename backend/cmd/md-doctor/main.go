@@ -10,7 +10,7 @@ import (
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/nats-io/nats.go"
 
-	"anttrader/internal/config"
+	"alphaforge/internal/config"
 )
 
 var (

@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file auth.proto.
  */
 export const file_auth: GenFile = /*@__PURE__*/
-  fileDesc("CgphdXRoLnByb3RvEgZhbnQudjEiPgoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWxvZ2luGAMgASgJImwKDUxvZ2luUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSEgoKZXhwaXJlc19hdBgDIAEoAxIaCgR1c2VyGAQgASgLMgwuYW50LnYxLlVzZXIiLAoTUmVmcmVzaFRva2VuUmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJIlcKFFJlZnJlc2hUb2tlblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhIKCmV4cGlyZXNfYXQYAyABKAMiKwoNR2V0TWVSZXNwb25zZRIaCgR1c2VyGAEgASgLMgwuYW50LnYxLlVzZXIiRAoPUmVnaXN0ZXJSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWVtYWlsGAMgASgJIi4KEFJlZ2lzdGVyUmVzcG9uc2USGgoEdXNlchgBIAEoCzIMLmFudC52MS5Vc2VyIucBCgRVc2VyEgoKAmlkGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJEg0KBWVtYWlsGAMgASgJEgwKBHJvbGUYBCABKAkSLgoKY3JlYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLcGVybWlzc2lvbnMYByADKAkSFwoPY2FwYWJpbGl0eV90aWVyGAggASgFEhYKDmFjY291bnRfbnVtYmVyGAkgASgJMr8CCgtBdXRoU2VydmljZRI0CgVMb2dpbhIULmFudC52MS5Mb2dpblJlcXVlc3QaFS5hbnQudjEuTG9naW5SZXNwb25zZRI4CgZMb2dvdXQSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSSQoMUmVmcmVzaFRva2VuEhsuYW50LnYxLlJlZnJlc2hUb2tlblJlcXVlc3QaHC5hbnQudjEuUmVmcmVzaFRva2VuUmVzcG9uc2USNgoFR2V0TWUSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFS5hbnQudjEuR2V0TWVSZXNwb25zZRI9CghSZWdpc3RlchIXLmFudC52MS5SZWdpc3RlclJlcXVlc3QaGC5hbnQudjEuUmVnaXN0ZXJSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_google_protobuf_empty]);
+  fileDesc("CgphdXRoLnByb3RvEgZhbnQudjEiPgoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWxvZ2luGAMgASgJImwKDUxvZ2luUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSEgoKZXhwaXJlc19hdBgDIAEoAxIaCgR1c2VyGAQgASgLMgwuYW50LnYxLlVzZXIiLAoTUmVmcmVzaFRva2VuUmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJIlcKFFJlZnJlc2hUb2tlblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhIKCmV4cGlyZXNfYXQYAyABKAMiKwoNR2V0TWVSZXNwb25zZRIaCgR1c2VyGAEgASgLMgwuYW50LnYxLlVzZXIiRAoPUmVnaXN0ZXJSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWVtYWlsGAMgASgJIk8KEFJlZ2lzdGVyUmVzcG9uc2USGgoEdXNlchgBIAEoCzIMLmFudC52MS5Vc2VyEh8KF2VtYWlsX3ZlcmlmaWNhdGlvbl9zZW50GAIgASgIIv8BCgRVc2VyEgoKAmlkGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJEg0KBWVtYWlsGAMgASgJEgwKBHJvbGUYBCABKAkSLgoKY3JlYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLcGVybWlzc2lvbnMYByADKAkSFwoPY2FwYWJpbGl0eV90aWVyGAggASgFEhYKDmFjY291bnRfbnVtYmVyGAkgASgJEhYKDmVtYWlsX3ZlcmlmaWVkGAogASgIIiMKElZlcmlmeUVtYWlsUmVxdWVzdBINCgV0b2tlbhgBIAEoCSI3ChNWZXJpZnlFbWFpbFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCSIqChlSZXNlbmRWZXJpZmljYXRpb25SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJIj4KGlJlc2VuZFZlcmlmaWNhdGlvblJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCTLkAwoLQXV0aFNlcnZpY2USNAoFTG9naW4SFC5hbnQudjEuTG9naW5SZXF1ZXN0GhUuYW50LnYxLkxvZ2luUmVzcG9uc2USOAoGTG9nb3V0EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkkKDFJlZnJlc2hUb2tlbhIbLmFudC52MS5SZWZyZXNoVG9rZW5SZXF1ZXN0GhwuYW50LnYxLlJlZnJlc2hUb2tlblJlc3BvbnNlEjYKBUdldE1lEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhUuYW50LnYxLkdldE1lUmVzcG9uc2USPQoIUmVnaXN0ZXISFy5hbnQudjEuUmVnaXN0ZXJSZXF1ZXN0GhguYW50LnYxLlJlZ2lzdGVyUmVzcG9uc2USRgoLVmVyaWZ5RW1haWwSGi5hbnQudjEuVmVyaWZ5RW1haWxSZXF1ZXN0GhsuYW50LnYxLlZlcmlmeUVtYWlsUmVzcG9uc2USWwoSUmVzZW5kVmVyaWZpY2F0aW9uEiEuYW50LnYxLlJlc2VuZFZlcmlmaWNhdGlvblJlcXVlc3QaIi5hbnQudjEuUmVzZW5kVmVyaWZpY2F0aW9uUmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_google_protobuf_empty]);
 
 /**
  * @generated from message ant.v1.LoginRequest
@@ -173,6 +173,11 @@ export type RegisterResponse = Message<"ant.v1.RegisterResponse"> & {
    * @generated from field: ant.v1.User user = 1;
    */
   user?: User | undefined;
+
+  /**
+   * @generated from field: bool email_verification_sent = 2;
+   */
+  emailVerificationSent: boolean;
 };
 
 /**
@@ -230,6 +235,11 @@ export type User = Message<"ant.v1.User"> & {
    * @generated from field: string account_number = 9;
    */
   accountNumber: string;
+
+  /**
+   * @generated from field: bool email_verified = 10;
+   */
+  emailVerified: boolean;
 };
 
 /**
@@ -238,6 +248,84 @@ export type User = Message<"ant.v1.User"> & {
  */
 export const UserSchema: GenMessage<User> = /*@__PURE__*/
   messageDesc(file_auth, 7);
+
+/**
+ * @generated from message ant.v1.VerifyEmailRequest
+ */
+export type VerifyEmailRequest = Message<"ant.v1.VerifyEmailRequest"> & {
+  /**
+   * @generated from field: string token = 1;
+   */
+  token: string;
+};
+
+/**
+ * Describes the message ant.v1.VerifyEmailRequest.
+ * Use `create(VerifyEmailRequestSchema)` to create a new message.
+ */
+export const VerifyEmailRequestSchema: GenMessage<VerifyEmailRequest> = /*@__PURE__*/
+  messageDesc(file_auth, 8);
+
+/**
+ * @generated from message ant.v1.VerifyEmailResponse
+ */
+export type VerifyEmailResponse = Message<"ant.v1.VerifyEmailResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+
+  /**
+   * @generated from field: string message = 2;
+   */
+  message: string;
+};
+
+/**
+ * Describes the message ant.v1.VerifyEmailResponse.
+ * Use `create(VerifyEmailResponseSchema)` to create a new message.
+ */
+export const VerifyEmailResponseSchema: GenMessage<VerifyEmailResponse> = /*@__PURE__*/
+  messageDesc(file_auth, 9);
+
+/**
+ * @generated from message ant.v1.ResendVerificationRequest
+ */
+export type ResendVerificationRequest = Message<"ant.v1.ResendVerificationRequest"> & {
+  /**
+   * @generated from field: string email = 1;
+   */
+  email: string;
+};
+
+/**
+ * Describes the message ant.v1.ResendVerificationRequest.
+ * Use `create(ResendVerificationRequestSchema)` to create a new message.
+ */
+export const ResendVerificationRequestSchema: GenMessage<ResendVerificationRequest> = /*@__PURE__*/
+  messageDesc(file_auth, 10);
+
+/**
+ * @generated from message ant.v1.ResendVerificationResponse
+ */
+export type ResendVerificationResponse = Message<"ant.v1.ResendVerificationResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+
+  /**
+   * @generated from field: string message = 2;
+   */
+  message: string;
+};
+
+/**
+ * Describes the message ant.v1.ResendVerificationResponse.
+ * Use `create(ResendVerificationResponseSchema)` to create a new message.
+ */
+export const ResendVerificationResponseSchema: GenMessage<ResendVerificationResponse> = /*@__PURE__*/
+  messageDesc(file_auth, 11);
 
 /**
  * @generated from service ant.v1.AuthService
@@ -282,6 +370,22 @@ export const AuthService: GenService<{
     methodKind: "unary";
     input: typeof RegisterRequestSchema;
     output: typeof RegisterResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.AuthService.VerifyEmail
+   */
+  verifyEmail: {
+    methodKind: "unary";
+    input: typeof VerifyEmailRequestSchema;
+    output: typeof VerifyEmailResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.AuthService.ResendVerification
+   */
+  resendVerification: {
+    methodKind: "unary";
+    input: typeof ResendVerificationRequestSchema;
+    output: typeof ResendVerificationResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_auth, 0);

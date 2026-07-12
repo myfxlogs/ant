@@ -333,7 +333,7 @@ const file_system_ai_update_proto_rawDesc = "" +
 	"\x1cUpdateSystemAISecretResponse\x12\x1f\n" +
 	"\vprovider_id\x18\x01 \x01(\tR\n" +
 	"providerId\x12%\n" +
-	"\x0esecret_updated\x18\x02 \x01(\bR\rsecretUpdatedB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x0esecret_updated\x18\x02 \x01(\bR\rsecretUpdatedB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_system_ai_update_proto_rawDescOnce sync.Once

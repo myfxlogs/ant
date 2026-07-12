@@ -6,7 +6,7 @@ import (
 	"io"
 	"sync"
 
-	pb "anttrader/mt5"
+	pb "alphaforge/mt5"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )

@@ -1,7 +1,7 @@
 package ai
 
 import (
-	"anttrader/internal/ai"
+	"alphaforge/internal/ai"
 	"context"
 	"fmt"
 	"strings"
@@ -11,10 +11,10 @@ import (
 
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/repository"
-	systemai "anttrader/internal/service/systemai"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/repository"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 // pythonAgentPrompt and chatDiscipline have been moved to internal/ai as i18n functions:

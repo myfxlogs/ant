@@ -6,15 +6,17 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/agent"
-	"anttrader/internal/connect/admin"
-	"anttrader/internal/mdgateway"
-	"anttrader/internal/repository"
-	"anttrader/internal/service"
-	usersvc "anttrader/internal/service/user"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/agent"
+	"alphaforge/internal/connect/admin"
+	"alphaforge/internal/mdgateway"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
+	usersvc "alphaforge/internal/service/user"
+	antredis "alphaforge/internal/storage/redis"
 
 	connectrpc "connectrpc.com/connect"
 )
@@ -30,6 +32,8 @@ func registerAdminHandlers(
 	settingsStore *agent.SettingsStore,
 	hookEngine *agent.HookEngine,
 	accountEventPub *mdgateway.AccountEventPublisher,
+	rdb *antredis.Client,
+	nc *nats.Conn,
 	otelInterceptor, authInterceptor, adminInterceptor connectrpc.Interceptor,
 ) {
 	adminRepo := repository.NewAdminRepository(pool)
@@ -60,6 +64,10 @@ func registerAdminHandlers(
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
 
+	// P3.5: Admin billing service (subscription + revenue + wallet transactions)
+	adminBillingServer := admin.NewAdminBillingServer(adminRepo, log)
+	mux.Handle(antv1c.NewAdminBillingServiceHandler(adminBillingServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+
 	// ADR-0025 §5.4 + §8: Agent settings + hooks management.
 	if settingsStore != nil {
 		adminAgentSettingsServer := admin.NewAdminAgentSettingsServer(settingsStore, log)
@@ -69,6 +77,10 @@ func registerAdminHandlers(
 		agentHooksServer := admin.NewAgentHooksServer(pool, hookEngine, log)
 		mux.Handle(antv1c.NewAgentHooksServiceHandler(agentHooksServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
 	}
+
+	// Admin monitor — real-time SSE system metrics
+	adminMonitorServer := admin.NewAdminMonitorServer(pool, rdb, nc, log)
+	mux.Handle(antv1c.NewAdminMonitorServiceHandler(adminMonitorServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
 }
 
 // startHardDeleteCleanup periodically hard-deletes expired soft-deleted users (30-day retention).

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // MQL4/MQL5 Conversion functions — complete implementation.

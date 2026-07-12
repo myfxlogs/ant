@@ -5,8 +5,8 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/strategy/sdk"
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/strategy/sdk"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // MaxTicks is the maximum number of instructions the VM will execute

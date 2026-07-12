@@ -22,4 +22,4 @@ strategy_rules_rules_no_dunder_access: '- Không được truy cập thuộc tí
 strategy_rules_rules_no_dunder_name: '- Không được dùng tên dunder (__xxx__)'
 strategy_rules_rules_no_global: '- Không được dùng global / nonlocal'
 strategy_rules_rules_no_import: '- Không được phép import / from ... import ...'
-strategy_rules_title: 'Khi viết mã chiến lược Python AntTrader, bạn phải tuân thủ nghiêm ngặt các quy tắc xác thực sau:'
+strategy_rules_title: 'Khi viết mã chiến lược Python AlphaForge, bạn phải tuân thủ nghiêm ngặt các quy tắc xác thực sau:'

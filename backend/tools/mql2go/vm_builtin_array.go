@@ -1,7 +1,7 @@
 package mql2go
 
 import (
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // MQL4/MQL5 Array functions — additions to existing implementations.

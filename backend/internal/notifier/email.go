@@ -59,7 +59,22 @@ func (n *EmailNotifier) Send(subject, body string) error {
 		n.log.Debug("no recipients configured, skipping email")
 		return nil
 	}
+	return n.sendToRecipients(to, subject, body)
+}
 
+// SendTo sends an email to a specific recipient address.
+func (n *EmailNotifier) SendTo(recipient, subject, body string) error {
+	if n == nil {
+		return nil
+	}
+	recipient = strings.TrimSpace(recipient)
+	if recipient == "" {
+		return fmt.Errorf("empty recipient")
+	}
+	return n.sendToRecipients([]string{recipient}, subject, body)
+}
+
+func (n *EmailNotifier) sendToRecipients(to []string, subject, body string) error {
 	msg := fmt.Sprintf(
 		"From: %s\r\nTo: %s\r\nSubject: %s\r\nDate: %s\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n%s",
 		n.cfg.From,

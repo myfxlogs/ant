@@ -322,20 +322,20 @@ ant-server (单进程)
 - alfq 拆为 4 个服务（mdgateway / mthub / quantengine / strategysvc）是为多机扩展，ant 当前不需要
 
 外部辅助进程：
-- `ant-frontend`（Nginx 静态托管）
+- `alphaforge-frontend`（Nginx 静态托管）
 
 ## 6. 端口/网络规范
 
 | 容器 | 容器内端口 | 宿主端口 | 用途 |
 |---|---|---|---|
-| ant-frontend | 8080 | `${ANT_FRONTEND_PORT:-8022}` | Nginx，唯一对外端口 |
-| ant-backend | 8080 | — | ConnectRPC + SSE |
-| ant-postgres | 5432 | — | PG |
-| ant-redis | 6379 | — | Redis |
-| ant-clickhouse | 9000 / 8123 | — | CH native + HTTP |
-| ant-nats | 4222 | — | NATS |
+| alphaforge-frontend | 8080 | `${ANT_FRONTEND_PORT:-8022}` | Nginx，唯一对外端口 |
+| alphaforge-backend | 8080 | — | ConnectRPC + SSE |
+| alphaforge-postgres | 5432 | — | PG |
+| alphaforge-redis | 6379 | — | Redis |
+| alphaforge-clickhouse | 9000 / 8123 | — | CH native + HTTP |
+| alphaforge-nats | 4222 | — | NATS |
 
-所有内部通信走 `ant-network` Docker bridge。**只有 frontend 暴露宿主端口**。
+所有内部通信走 `alphaforge-network` Docker bridge。**只有 frontend 暴露宿主端口**。
 
 ## 7. 与 alfq 的差异（必须明白）
 

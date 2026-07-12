@@ -6,7 +6,7 @@ import (
 
 	"github.com/shopspring/decimal"
 	sitter "github.com/smacker/go-tree-sitter"
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // compileExpr converts a Python CST expression node into interp.Expr.

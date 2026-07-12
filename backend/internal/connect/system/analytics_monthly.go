@@ -1,7 +1,7 @@
 package system
 
 import (
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 	"context"
 	"google.golang.org/protobuf/proto"
 	"fmt"
@@ -11,7 +11,7 @@ import (
 
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 func (s *AnalyticsServer) GetMonthlyPnL(ctx context.Context, req *connect.Request[antv1.GetMonthlyPnLRequest]) (*connect.Response[antv1.GetMonthlyPnLResponse], error) {

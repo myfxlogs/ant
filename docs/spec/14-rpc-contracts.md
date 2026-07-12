@@ -22,7 +22,7 @@ proto/ant/v1/
 syntax = "proto3";
 package ant.v1;
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 import "ant/v1/common.proto";
 import "google/protobuf/timestamp.proto";
@@ -218,7 +218,7 @@ message OHLCV {
 syntax = "proto3";
 package ant.v1;
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 import "ant/v1/common.proto";
 import "google/protobuf/timestamp.proto";
@@ -285,10 +285,10 @@ import (
     "context"
     "connectrpc.com/connect"
     "github.com/shopspring/decimal"
-    antv1 "anttrader/gen/proto/ant/v1"
-    antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-    "anttrader/internal/mthub"
-    "anttrader/internal/errs"
+    antv1 "alphaforge/gen/proto/ant/v1"
+    antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+    "alphaforge/internal/mthub"
+    "alphaforge/internal/errs"
 )
 
 type MtHubServer struct {

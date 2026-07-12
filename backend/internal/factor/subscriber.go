@@ -12,7 +12,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // MarketStateReader is the interface factor/subscriber needs from mdgateway.MarketStateTracker.

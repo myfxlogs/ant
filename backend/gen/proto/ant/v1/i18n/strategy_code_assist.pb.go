@@ -390,7 +390,7 @@ const file_i18n_strategy_code_assist_proto_rawDesc = "" +
 	"\tsuggested\x18\" \x01(\tR\tsuggested\x12\x16\n" +
 	"\atab_a_i\x18# \x01(\tR\x05tabAI\x12\x1f\n" +
 	"\vtab_explain\x18$ \x01(\tR\n" +
-	"tabExplainB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"tabExplainB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_code_assist_proto_rawDescOnce sync.Once

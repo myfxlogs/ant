@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	pb "anttrader/mt5"
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	pb "alphaforge/mt5"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/metadata"
 )

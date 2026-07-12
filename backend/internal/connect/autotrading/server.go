@@ -6,10 +6,10 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/repository"
-	"anttrader/internal/risksvc"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/risksvc"
 )
 
 // AutoTradingServer implements the AutoTradingService ConnectRPC handler.

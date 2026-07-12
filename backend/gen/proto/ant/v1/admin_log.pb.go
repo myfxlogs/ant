@@ -345,7 +345,7 @@ const file_admin_log_proto_rawDesc = "" +
 	"\x04logs\x18\x01 \x03(\v2\x10.ant.v1.AdminLogR\x04logs\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total2P\n" +
 	"\x0fAdminLogService\x12=\n" +
-	"\bListLogs\x12\x17.ant.v1.ListLogsRequest\x1a\x18.ant.v1.ListLogsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\bListLogs\x12\x17.ant.v1.ListLogsRequest\x1a\x18.ant.v1.ListLogsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_admin_log_proto_rawDescOnce sync.Once

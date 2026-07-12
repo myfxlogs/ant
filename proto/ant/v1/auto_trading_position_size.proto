@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ant.v1;
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 message CalculatePositionSizeRequest { string account_id = 1; string symbol = 2; string account_balance = 3; string stop_loss_pips = 4; string risk_percent = 5; }
 message CalculatePositionSizeResponse { string volume = 1; string risk_amount = 2; string pip_value = 3; string min_volume = 4; string max_volume = 5; }

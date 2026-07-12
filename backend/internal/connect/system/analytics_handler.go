@@ -10,13 +10,13 @@ import (
 
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/model"
-	"anttrader/internal/repository"
-	"anttrader/internal/service"
-	systemai "anttrader/internal/service/systemai"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/model"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 type AnalyticsServer struct {

@@ -4,7 +4,7 @@ import (
 	"math"
 	"math/rand"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // MQL4/MQL5 Math functions — complete implementation.

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	pb "anttrader/mt4"
-	"anttrader/internal/mthub"
+	pb "alphaforge/mt4"
+	"alphaforge/internal/mthub"
 	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/metadata"
 )

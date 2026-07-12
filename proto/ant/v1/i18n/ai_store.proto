@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package ant.v1.i18n;
-option go_package = "anttrader/gen/proto/ant/v1/i18n";
+option go_package = "alphaforge/gen/proto/ant/v1/i18n";
 
 message AiStoreI18n {
   string context_output_rules_no_import = 1;  // - Do not output any import statements
@@ -28,5 +28,5 @@ message AiStoreI18n {
   string strategy_rules_rules_no_dunder_name = 22;  // - No dunder names (__xxx__)
   string strategy_rules_rules_no_global = 23;  // - No global / nonlocal
   string strategy_rules_rules_no_import = 24;  // - No import / from ... import ... allowed
-  string strategy_rules_title = 25;  // When writing AntTrader Python strategy code, you must strict
+  string strategy_rules_title = 25;  // When writing AlphaForge Python strategy code, you must strict
 }

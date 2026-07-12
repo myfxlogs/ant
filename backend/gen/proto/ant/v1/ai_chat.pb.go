@@ -24,7 +24,7 @@ var File_ai_chat_proto protoreflect.FileDescriptor
 
 const file_ai_chat_proto_rawDesc = "" +
 	"\n" +
-	"\rai_chat.proto\x12\x06ant.v1\x1a\x15ai_conversation.proto\x1a\x16ai_chat_requests.protoB\"Z anttrader/gen/proto/ant/v1;antv1P\x00P\x01b\x06proto3"
+	"\rai_chat.proto\x12\x06ant.v1\x1a\x15ai_conversation.proto\x1a\x16ai_chat_requests.protoB#Z!alphaforge/gen/proto/ant/v1;antv1P\x00P\x01b\x06proto3"
 
 var file_ai_chat_proto_goTypes = []any{}
 var file_ai_chat_proto_depIdxs = []int32{

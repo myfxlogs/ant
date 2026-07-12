@@ -24,7 +24,7 @@ var File_auto_trading_risk_proto protoreflect.FileDescriptor
 
 const file_auto_trading_risk_proto_rawDesc = "" +
 	"\n" +
-	"\x17auto_trading_risk.proto\x12\x06ant.v1\x1a\x1eauto_trading_risk_config.proto\x1a\x1dauto_trading_risk_check.proto\x1a auto_trading_position_size.protoB\"Z anttrader/gen/proto/ant/v1;antv1P\x00P\x01P\x02b\x06proto3"
+	"\x17auto_trading_risk.proto\x12\x06ant.v1\x1a\x1eauto_trading_risk_config.proto\x1a\x1dauto_trading_risk_check.proto\x1a auto_trading_position_size.protoB#Z!alphaforge/gen/proto/ant/v1;antv1P\x00P\x01P\x02b\x06proto3"
 
 var file_auto_trading_risk_proto_goTypes = []any{}
 var file_auto_trading_risk_proto_depIdxs = []int32{

@@ -12,5 +12,5 @@ import { file_strategy_schedule_backtest } from "./strategy_schedule_backtest_pb
  * Describes the file strategy_schedule_requests.proto.
  */
 export const file_strategy_schedule_requests: GenFile = /*@__PURE__*/
-  fileDesc("CiBzdHJhdGVneV9zY2hlZHVsZV9yZXF1ZXN0cy5wcm90bxIGYW50LnYxQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxUABQAVACYgZwcm90bzM", [file_strategy_schedule_query, file_strategy_schedule_control, file_strategy_schedule_backtest]);
+  fileDesc("CiBzdHJhdGVneV9zY2hlZHVsZV9yZXF1ZXN0cy5wcm90bxIGYW50LnYxQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MVAAUAFQAmIGcHJvdG8z", [file_strategy_schedule_query, file_strategy_schedule_control, file_strategy_schedule_backtest]);
 

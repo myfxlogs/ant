@@ -4,8 +4,8 @@ import (
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/model"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/model"
 )
 
 // --- GlobalSettings ---

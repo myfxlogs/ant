@@ -11,12 +11,12 @@ import (
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/proto"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/backtest"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/pkg/ptr"
-	"anttrader/internal/repository"
-	"anttrader/tools/mql2go/interp"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/backtest"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/pkg/ptr"
+	"alphaforge/internal/repository"
+	"alphaforge/tools/mql2go/interp"
 )
 
 

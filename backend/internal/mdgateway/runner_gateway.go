@@ -7,10 +7,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/mdgateway/adapter/mt4"
-	"anttrader/internal/mdgateway/adapter/mt5"
-	"anttrader/internal/mthub"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mt4"
+	"alphaforge/internal/mdgateway/adapter/mt5"
+	"alphaforge/internal/mthub"
 )
 
 // startGatewayForAccount creates a gateway for a single account,

@@ -7,9 +7,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"anttrader/internal/costsvc"
-	"anttrader/internal/risk"
-	"anttrader/internal/usermgr"
+	"alphaforge/internal/costsvc"
+	"alphaforge/internal/risk"
+	"alphaforge/internal/usermgr"
 )
 
 // KillSwitchGate is checked before every order placement.

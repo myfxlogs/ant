@@ -1,7 +1,7 @@
 package mql2go
 
 import (
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // MQL5 market info additions and account info functions.

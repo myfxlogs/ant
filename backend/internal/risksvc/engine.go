@@ -3,7 +3,7 @@ package risksvc
 import (
 	"context"
 
-	"anttrader/internal/usermgr"
+	"alphaforge/internal/usermgr"
 )
 
 // Engine evaluates registered risk rules in order.

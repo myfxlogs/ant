@@ -389,7 +389,7 @@ const file_account_crud_proto_rawDesc = "" +
 	"\f_is_disabled\"B\n" +
 	"\x14DeleteAccountRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpasswordB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\bpassword\x18\x02 \x01(\tR\bpasswordB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_account_crud_proto_rawDescOnce sync.Once

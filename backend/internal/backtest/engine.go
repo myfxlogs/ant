@@ -4,8 +4,8 @@ import (
 	"math/rand"
 	"sort"
 
-	"anttrader/internal/costsvc"
-	"anttrader/internal/oms"
+	"alphaforge/internal/costsvc"
+	"alphaforge/internal/oms"
 )
 
 // Bar represents an OHLCV bar for backtesting.

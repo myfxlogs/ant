@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 // ── Circuit breaker (PG-backed, shared across instances) ──

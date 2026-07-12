@@ -7,9 +7,9 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/mthub"
-	"anttrader/strategy/sdk"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/mthub"
+	"alphaforge/strategy/sdk"
 )
 
 func (s *StrategyExecutionServer) handleBar(

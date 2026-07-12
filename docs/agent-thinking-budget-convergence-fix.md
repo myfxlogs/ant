@@ -109,7 +109,7 @@ Fix 1+3 大概率就解决问题；Fix 2 是"无论如何都要拿到代码"的�
 ## §5 验收标准
 
 1. 用户那条复杂 prompt → 不再出现"整段思考被截断、无代码"。
-2. `docker logs ant-backend | grep "loop done"` → `raw_len > 0` 且提取到 `class MyStrategy`。
+2. `docker logs alphaforge-backend | grep "loop done"` → `raw_len > 0` 且提取到 `class MyStrategy`。
 3. 若模型仍想太久 → 收敛守卫触发，日志可见强制重试，最终产出代码。
 4. 对话里模型对 `5美金空间`/`200倍` 用默认值 + 注释说明，而非反复权衡。
 

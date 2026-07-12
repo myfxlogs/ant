@@ -447,7 +447,7 @@ const file_i18n_logs_proto_rawDesc = "" +
 	"\asuccess\x18' \x01(\tR\asuccess\x12\x16\n" +
 	"\x06symbol\x18( \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04time\x18) \x01(\tR\x04time\x12%\n" +
-	"\x0etrigger_source\x18* \x01(\tR\rtriggerSourceB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x0etrigger_source\x18* \x01(\tR\rtriggerSourceB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_logs_proto_rawDescOnce sync.Once

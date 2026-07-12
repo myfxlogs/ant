@@ -177,7 +177,7 @@ const file_ai_primary_proto_rawDesc = "" +
 	"\x05model\x18\x02 \x01(\tR\x05model2\xa2\x01\n" +
 	"\x10AIPrimaryService\x12F\n" +
 	"\fGetAIPrimary\x12\x1b.ant.v1.GetAIPrimaryRequest\x1a\x19.ant.v1.AIPrimaryResponse\x12F\n" +
-	"\fSetAIPrimary\x12\x1b.ant.v1.SetAIPrimaryRequest\x1a\x19.ant.v1.AIPrimaryResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\fSetAIPrimary\x12\x1b.ant.v1.SetAIPrimaryRequest\x1a\x19.ant.v1.AIPrimaryResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_ai_primary_proto_rawDescOnce sync.Once

@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/interceptor"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/interceptor"
 )
 
 // authenticatedUser extracts and validates the user ID from the ConnectRPC context.

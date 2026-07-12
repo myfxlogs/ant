@@ -3,9 +3,9 @@ package strategy
 import (
 	"context"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/strategy/runner"
-	"anttrader/strategy/sdk"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/strategy/runner"
+	"alphaforge/strategy/sdk"
 )
 
 // vmHandleBar processes a bar event.

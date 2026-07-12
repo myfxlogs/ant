@@ -593,7 +593,7 @@ const file_notification_service_proto_rawDesc = "" +
 	"\bMarkRead\x12\x17.ant.v1.MarkReadRequest\x1a\x18.ant.v1.MarkReadResponse\x12F\n" +
 	"\vMarkAllRead\x12\x1a.ant.v1.MarkAllReadRequest\x1a\x1b.ant.v1.MarkAllReadResponse\x12Q\n" +
 	"\x13StreamNotifications\x12\".ant.v1.StreamNotificationsRequest\x1a\x14.ant.v1.Notification0\x01\x12U\n" +
-	"\x10SendNotification\x12\x1f.ant.v1.SendNotificationRequest\x1a .ant.v1.SendNotificationResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x10SendNotification\x12\x1f.ant.v1.SendNotificationRequest\x1a .ant.v1.SendNotificationResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_notification_service_proto_rawDescOnce sync.Once

@@ -371,7 +371,7 @@ const file_admin_settings_proto_rawDesc = "" +
 	"\x19AdminAgentSettingsService\x12[\n" +
 	"\x12GetManagedSettings\x12!.ant.v1.GetManagedSettingsRequest\x1a\".ant.v1.GetManagedSettingsResponse\x12X\n" +
 	"\x11SetManagedSetting\x12 .ant.v1.SetManagedSettingRequest\x1a!.ant.v1.SetManagedSettingResponse\x12a\n" +
-	"\x14DeleteManagedSetting\x12#.ant.v1.DeleteManagedSettingRequest\x1a$.ant.v1.DeleteManagedSettingResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x14DeleteManagedSetting\x12#.ant.v1.DeleteManagedSettingRequest\x1a$.ant.v1.DeleteManagedSettingResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_admin_settings_proto_rawDescOnce sync.Once

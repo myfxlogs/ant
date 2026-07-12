@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"anttrader/internal/backtest"
-	"anttrader/internal/repository"
+	"alphaforge/internal/backtest"
+	"alphaforge/internal/repository"
 )
 
 // StartMarketBacktest creates a pending backtest run for a marketplace-published

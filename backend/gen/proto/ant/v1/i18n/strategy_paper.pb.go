@@ -262,7 +262,7 @@ const file_i18n_strategy_paper_proto_rawDesc = "" +
 	"\x06symbol\x18\x13 \x01(\tR\x06symbol\x12\x1c\n" +
 	"\ttimeframe\x18\x14 \x01(\tR\ttimeframe\x12\x14\n" +
 	"\x05title\x18\x15 \x01(\tR\x05title\x12\x14\n" +
-	"\x05watch\x18\x16 \x01(\tR\x05watchB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x05watch\x18\x16 \x01(\tR\x05watchB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_paper_proto_rawDescOnce sync.Once

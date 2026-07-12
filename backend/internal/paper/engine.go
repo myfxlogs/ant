@@ -19,9 +19,9 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	"anttrader/internal/mthub"
-	"anttrader/internal/risk"
-	"anttrader/internal/repository"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/risk"
+	"alphaforge/internal/repository"
 )
 
 // paperRepository is the local interface for paper account persistence.

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
 
@@ -18,6 +19,7 @@ type SubscriptionItem struct {
 	Kind           string
 	Active         bool
 	CreatedAt      time.Time
+	ExpiresAt      *time.Time
 }
 
 // Subscribe subscribes a user to a published strategy. Only free strategies
@@ -33,18 +35,19 @@ func (s *Service) Subscribe(ctx context.Context, userID, publisherUserID, strate
 	// client-supplied value only when the strategy is not in the marketplace
 	// (e.g. internal subscriptions).
 	var priceModel string
-	var priceAmount float64
+	var priceAmountStr string
 	var dbPublisherID string
 	err := s.pg.QueryRow(ctx,
-		`SELECT price_model, COALESCE(price_amount, 0), publisher_id::text FROM marketplace_strategies WHERE strategy_id = $1 AND status = 'published'`,
+		`SELECT price_model, COALESCE(price_amount::text, '0'), publisher_id::text FROM marketplace_strategies WHERE strategy_id = $1 AND status = 'published'`,
 		strategyID,
-	).Scan(&priceModel, &priceAmount, &dbPublisherID)
+	).Scan(&priceModel, &priceAmountStr, &dbPublisherID)
 	if err == nil {
 		// Strategy is published — use DB publisher as source of truth.
 		publisherUserID = dbPublisherID
 
 		// Guard: any priced strategy (once, subscription, etc.) must go through PurchaseStrategy.
-		if priceModel != PriceModelFree && priceAmount > 0 {
+		priceDec, _ := decimal.NewFromString(priceAmountStr)
+		if priceModel != PriceModelFree && priceDec.IsPositive() {
 			return "", fmt.Errorf("marketplace: paid strategies require purchase, not subscribe")
 		}
 	}
@@ -133,7 +136,7 @@ func (s *Service) Unsubscribe(ctx context.Context, userID, subscriptionID string
 // ListSubscriptions returns active subscriptions for a user.
 func (s *Service) ListSubscriptions(ctx context.Context, userID string) ([]SubscriptionItem, error) {
 	rows, err := s.pg.Query(ctx, `
-		SELECT id, target_user_id, target_strategy_id, kind, active, created_at
+		SELECT id, target_user_id, target_strategy_id, kind, active, created_at, expires_at
 		FROM user_subscriptions
 		WHERE subscriber_user_id::text = $1 AND active = true
 		ORDER BY created_at DESC
@@ -145,7 +148,7 @@ func (s *Service) ListSubscriptions(ctx context.Context, userID string) ([]Subsc
 	var out []SubscriptionItem
 	for rows.Next() {
 		var sub SubscriptionItem
-		if err := rows.Scan(&sub.SubscriptionID, &sub.TargetUserID, &sub.StrategyID, &sub.Kind, &sub.Active, &sub.CreatedAt); err != nil {
+		if err := rows.Scan(&sub.SubscriptionID, &sub.TargetUserID, &sub.StrategyID, &sub.Kind, &sub.Active, &sub.CreatedAt, &sub.ExpiresAt); err != nil {
 			return nil, err
 		}
 		out = append(out, sub)
@@ -156,11 +159,13 @@ func (s *Service) ListSubscriptions(ctx context.Context, userID string) ([]Subsc
 // RenewSubscriptions finds active subscription-model subscriptions that have
 // expired and attempts to charge for another period. Successful renewals get
 // a 30-day extension; failed ones (insufficient balance) are deactivated.
+// Revenue is split between publisher and platform, mirroring PurchaseStrategy.
 // Returns the number of renewed and failed subscriptions.
 func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, err error) {
 	rows, qErr := s.pg.Query(ctx, `
-		SELECT us.id, us.subscriber_user_id::text, us.target_strategy_id::text,
-		       ms.price_amount, ms.title, ms.platform_fee_rate
+		SELECT us.id, us.subscriber_user_id::text, us.target_user_id::text,
+		       us.target_strategy_id::text, ms.price_amount::text, ms.title,
+		       ms.platform_fee_rate::text
 		FROM user_subscriptions us
 		JOIN marketplace_strategies ms ON ms.strategy_id = us.target_strategy_id
 		WHERE us.kind = $1 AND us.active = true
@@ -172,13 +177,13 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 	defer rows.Close()
 
 	type renewalItem struct {
-		subID, userID, strategyID, title string
-		priceAmount, platformFeeRate     float64
+		subID, userID, publisherID, strategyID, title string
+		priceAmount, platformFeeRate                  string
 	}
 	var renewals []renewalItem
 	for rows.Next() {
 		var r renewalItem
-		if err := rows.Scan(&r.subID, &r.userID, &r.strategyID, &r.priceAmount, &r.title, &r.platformFeeRate); err != nil {
+		if err := rows.Scan(&r.subID, &r.userID, &r.publisherID, &r.strategyID, &r.priceAmount, &r.title, &r.platformFeeRate); err != nil {
 			continue
 		}
 		renewals = append(renewals, r)
@@ -192,45 +197,165 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 			continue
 		}
 
-		amountStr := fmt.Sprintf("%.2f", p.priceAmount)
-		var balAfter string
-		chargeErr := tx.QueryRow(ctx,
-			`UPDATE user_wallets SET balance = balance - $1::numeric, updated_at = now()
-			 WHERE user_id = $2 AND balance >= $1::numeric
-			 RETURNING balance::text`,
-			amountStr, p.userID,
-		).Scan(&balAfter)
+		// Parse amounts as decimal for precise arithmetic.
+		priceDec, decErr := decimal.NewFromString(p.priceAmount)
+		if decErr != nil {
+			tx.Rollback(ctx)
+			failed++
+			continue
+		}
+		feeRateDec, _ := decimal.NewFromString(p.platformFeeRate)
+		feeDec := priceDec.Mul(feeRateDec)
+		pubDec := priceDec.Sub(feeDec)
 
-		if chargeErr != nil {
-			// Insufficient balance — deactivate.
-			if _, dErr := tx.Exec(ctx, `UPDATE user_subscriptions SET active = false WHERE id = $1`, p.subID); dErr != nil {
-				s.log.Warn("renewal: deactivate failed", zap.String("subID", p.subID), zap.Error(dErr))
-			}
+		amountStr := priceDec.StringFixed(2)
+		negAmountStr := "-" + amountStr
+
+		// 1. Lock buyer wallet and deduct.
+		uid, _ := uuid.Parse(p.userID)
+		var buyerWalletID uuid.UUID
+		var buyerBalBefore string
+		if err := tx.QueryRow(ctx,
+			`SELECT id, balance::text FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
+			uid,
+		).Scan(&buyerWalletID, &buyerBalBefore); err != nil {
 			tx.Rollback(ctx)
 			failed++
 			continue
 		}
 
-		// Extend subscription by 30 days.
+		var buyerBalAfter string
+		chargeErr := tx.QueryRow(ctx,
+			`UPDATE user_wallets SET balance = balance - $1::numeric, updated_at = now()
+			 WHERE user_id = $2 AND balance >= $1::numeric
+			 RETURNING balance::text`,
+			amountStr, uid,
+		).Scan(&buyerBalAfter)
+
+		if chargeErr != nil {
+			// Insufficient balance — deactivate and commit (not rollback,
+			// otherwise the deactivation is lost and we retry forever).
+			if _, dErr := tx.Exec(ctx, `UPDATE user_subscriptions SET active = false WHERE id = $1`, p.subID); dErr != nil {
+				s.log.Warn("renewal: deactivate failed", zap.String("subID", p.subID), zap.Error(dErr))
+				tx.Rollback(ctx)
+				failed++
+				continue
+			}
+			if cErr := tx.Commit(ctx); cErr != nil {
+				s.log.Warn("renewal: deactivate commit failed", zap.String("subID", p.subID), zap.Error(cErr))
+			}
+			failed++
+			continue
+		}
+
+		// 2. Record buyer renewal transaction.
+		buyerTxID := uuid.New()
+		if _, iErr := tx.Exec(ctx,
+			`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+			 VALUES ($1, $2, $3, $4, $5::numeric, $6::numeric, $7::numeric, $8)`,
+			buyerTxID, buyerWalletID, uid, TxTypePurchase, negAmountStr, buyerBalBefore, buyerBalAfter,
+			fmt.Sprintf("Subscription renewal: %s", p.title),
+		); iErr != nil {
+			s.log.Warn("renewal: insert buyer tx failed", zap.String("subID", p.subID), zap.Error(iErr))
+			tx.Rollback(ctx)
+			failed++
+			continue
+		}
+
+		// 3. Credit publisher wallet (minus platform fee). Hard-fail on error to
+		// avoid revenue leak — buyer is charged but publisher goes unpaid.
+		pubID, _ := uuid.Parse(p.publisherID)
+		pubAmountStr := pubDec.StringFixed(2)
+		var pubWalletID uuid.UUID
+		var pubBalBefore string
+		if err := tx.QueryRow(ctx,
+			`SELECT id, balance::text FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
+			pubID,
+		).Scan(&pubWalletID, &pubBalBefore); err != nil {
+			// Publisher may not have a wallet — create one (upsert always returns a row).
+			if err := tx.QueryRow(ctx,
+				`INSERT INTO user_wallets (user_id) VALUES ($1)
+				 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
+				 RETURNING id, balance::text`,
+				pubID,
+			).Scan(&pubWalletID, &pubBalBefore); err != nil {
+				s.log.Warn("renewal: publisher wallet failed", zap.String("subID", p.subID), zap.Error(err))
+				tx.Rollback(ctx)
+				failed++
+				continue
+			}
+		}
+		var pubBalAfter string
+		if err := tx.QueryRow(ctx,
+			`UPDATE user_wallets SET balance = balance + $1::numeric, updated_at = now()
+			 WHERE user_id = $2 RETURNING balance::text`,
+			pubAmountStr, pubID,
+		).Scan(&pubBalAfter); err != nil {
+			s.log.Warn("renewal: credit publisher failed", zap.String("subID", p.subID), zap.Error(err))
+			tx.Rollback(ctx)
+			failed++
+			continue
+		}
+		pubTxID := uuid.New()
+		saleDesc := fmt.Sprintf("Strategy renewal sale: %s", p.title)
+		if _, err := tx.Exec(ctx,
+			`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+			 VALUES ($1, $2, $3, $4, $5::numeric, $6::numeric, $7::numeric, $8)`,
+			pubTxID, pubWalletID, pubID, TxTypeSale, pubAmountStr, pubBalBefore, pubBalAfter, saleDesc,
+		); err != nil {
+			s.log.Warn("renewal: publisher tx failed", zap.String("subID", p.subID), zap.Error(err))
+			tx.Rollback(ctx)
+			failed++
+			continue
+		}
+
+		// 4. Credit platform fee to system wallet. Hard-fail on error.
+		if feeDec.GreaterThan(decimal.Zero) {
+			feeStr := feeDec.StringFixed(2)
+			var sysWalletID uuid.UUID
+			var sysBalBefore string
+			if err := tx.QueryRow(ctx,
+				`INSERT INTO user_wallets (user_id) VALUES ($1)
+				 ON CONFLICT (user_id) DO UPDATE SET user_id = $1
+				 RETURNING id, balance::text`,
+				SystemUserID,
+			).Scan(&sysWalletID, &sysBalBefore); err != nil {
+				s.log.Warn("renewal: system wallet failed", zap.String("subID", p.subID), zap.Error(err))
+				tx.Rollback(ctx)
+				failed++
+				continue
+			}
+			var sysBalAfter string
+			if err := tx.QueryRow(ctx,
+				`UPDATE user_wallets SET balance = balance + $1::numeric, updated_at = now()
+				 WHERE id = $2 RETURNING balance::text`,
+				feeStr, sysWalletID,
+			).Scan(&sysBalAfter); err != nil {
+				s.log.Warn("renewal: credit system wallet failed", zap.String("subID", p.subID), zap.Error(err))
+				tx.Rollback(ctx)
+				failed++
+				continue
+			}
+			feeTxID := uuid.New()
+			feeDesc := fmt.Sprintf("Platform fee from renewal: %s", p.title)
+			if _, err := tx.Exec(ctx,
+				`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+				 VALUES ($1, $2, $3, $4, $5::numeric, $6::numeric, $7::numeric, $8)`,
+				feeTxID, sysWalletID, SystemUserID, TxTypePlatformFee, feeStr, sysBalBefore, sysBalAfter, feeDesc,
+			); err != nil {
+				s.log.Warn("renewal: platform fee tx failed", zap.String("subID", p.subID), zap.Error(err))
+				tx.Rollback(ctx)
+				failed++
+				continue
+			}
+		}
+
+		// 5. Extend subscription by 30 days.
 		if _, eErr := tx.Exec(ctx,
 			`UPDATE user_subscriptions SET expires_at = now() + INTERVAL '30 days' WHERE id = $1`,
 			p.subID,
 		); eErr != nil {
 			s.log.Warn("renewal: extend failed", zap.String("subID", p.subID), zap.Error(eErr))
-			tx.Rollback(ctx)
-			failed++
-			continue
-		}
-
-		// Record renewal transaction. balance_before = balAfter + amount (pre-deduction balance).
-		uid, _ := uuid.Parse(p.userID)
-		if _, iErr := tx.Exec(ctx,
-			`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
-			 VALUES ($1, (SELECT id FROM user_wallets WHERE user_id = $2), $2, $3, $4::numeric + $5::numeric, $6, $7)`,
-			uuid.New(), uid, TxTypePurchase, amountStr, amountStr, balAfter,
-			fmt.Sprintf("Subscription renewal: %s", p.title),
-		); iErr != nil {
-			s.log.Warn("renewal: insert tx failed", zap.String("subID", p.subID), zap.Error(iErr))
 			tx.Rollback(ctx)
 			failed++
 			continue

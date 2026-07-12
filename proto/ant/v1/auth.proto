@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ant.v1;
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
@@ -13,6 +13,8 @@ service AuthService {
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
   rpc GetMe(google.protobuf.Empty) returns (GetMeResponse);
   rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse);
+  rpc ResendVerification(ResendVerificationRequest) returns (ResendVerificationResponse);
 }
 
 message LoginRequest {
@@ -50,6 +52,7 @@ message RegisterRequest {
 
 message RegisterResponse {
   User user = 1;
+  bool email_verification_sent = 2;
 }
 
 message User {
@@ -62,4 +65,23 @@ message User {
   repeated string permissions = 7;
   int32 capability_tier = 8;
   string account_number = 9;
+  bool email_verified = 10;
+}
+
+message VerifyEmailRequest {
+  string token = 1;
+}
+
+message VerifyEmailResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ResendVerificationRequest {
+  string email = 1;
+}
+
+message ResendVerificationResponse {
+  bool success = 1;
+  string message = 2;
 }

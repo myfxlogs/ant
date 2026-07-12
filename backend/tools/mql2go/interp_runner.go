@@ -7,8 +7,8 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/strategy/sdk"
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/strategy/sdk"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // VMRunner wraps a Bytecode VM to implement sdk.Strategy.

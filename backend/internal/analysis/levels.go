@@ -4,7 +4,7 @@ import (
 	"math"
 	"sort"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 // detectSRLevels finds support and resistance levels using swing-point clustering.

@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"anttrader/internal/model"
-	"anttrader/internal/pkg/hash"
+	"alphaforge/internal/model"
+	"alphaforge/internal/pkg/hash"
 )
 
 // RegistrationService orchestrates the user registration flow:
@@ -17,10 +17,12 @@ import (
 //
 // Keeps AuthServer focused on authentication and avoids mixing concerns.
 type RegistrationService struct {
-	users           UserCreator
-	accountNumber   AccountNumberAssigner
-	wallet          WalletCreator
-	log             *zap.Logger
+	users         UserCreator
+	accountNumber AccountNumberAssigner
+	wallet        WalletCreator
+	subscription  SubscriptionEnsurer
+	emailVerif    EmailVerificationSender
+	log           *zap.Logger
 }
 
 // UserCreator is the subset of UserRepository needed during registration.
@@ -40,8 +42,28 @@ type WalletCreator interface {
 	CreateWallet(ctx context.Context, userID uuid.UUID) (*model.Wallet, error)
 }
 
+// SubscriptionEnsurer creates a free-tier subscription for new users (optional).
+type SubscriptionEnsurer interface {
+	EnsureFreeSubscription(ctx context.Context, userID uuid.UUID) error
+}
+
 func NewRegistrationService(users UserCreator, acctSvc AccountNumberAssigner, wallet WalletCreator, log *zap.Logger) *RegistrationService {
 	return &RegistrationService{users: users, accountNumber: acctSvc, wallet: wallet, log: log}
+}
+
+// EmailVerificationSender sends a verification email to a newly registered user.
+type EmailVerificationSender interface {
+	GenerateAndSend(ctx context.Context, userID uuid.UUID, userEmail string) error
+}
+
+// SetEmailVerification wires the email verification service.
+func (s *RegistrationService) SetEmailVerification(ev EmailVerificationSender) {
+	s.emailVerif = ev
+}
+
+// SetSubscriptionEnsurer wires the subscription service for auto-creating free plans.
+func (s *RegistrationService) SetSubscriptionEnsurer(se SubscriptionEnsurer) {
+	s.subscription = se
 }
 
 // RegisterUser creates a user, assigns an account number, and creates a wallet.
@@ -95,6 +117,22 @@ func (s *RegistrationService) RegisterUser(ctx context.Context, email, password,
 	if s.wallet != nil {
 		if _, err := s.wallet.CreateWallet(ctx, user.ID); err != nil {
 			s.log.Warn("RegisterUser: create wallet failed",
+				zap.String("userID", user.ID.String()), zap.Error(err))
+		}
+	}
+
+	// Ensure free-tier subscription (best-effort).
+	if s.subscription != nil {
+		if err := s.subscription.EnsureFreeSubscription(ctx, user.ID); err != nil {
+			s.log.Warn("RegisterUser: ensure free subscription failed",
+				zap.String("userID", user.ID.String()), zap.Error(err))
+		}
+	}
+
+	// Send email verification (best-effort).
+	if s.emailVerif != nil {
+		if err := s.emailVerif.GenerateAndSend(ctx, user.ID, user.Email); err != nil {
+			s.log.Warn("RegisterUser: send verification email failed",
 				zap.String("userID", user.ID.String()), zap.Error(err))
 		}
 	}

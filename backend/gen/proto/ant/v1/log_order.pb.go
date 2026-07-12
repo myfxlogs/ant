@@ -336,7 +336,7 @@ const file_log_order_proto_rawDesc = "" +
 	"\topen_time\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\bopenTime\x129\n" +
 	"\n" +
-	"close_time\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcloseTimeB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"close_time\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcloseTimeB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_log_order_proto_rawDescOnce sync.Once

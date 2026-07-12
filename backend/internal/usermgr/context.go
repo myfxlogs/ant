@@ -7,7 +7,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 
-	"anttrader/internal/interceptor"
+	"alphaforge/internal/interceptor"
 )
 
 // GetUserID extracts the user ID from context using the existing auth interceptor.

@@ -9,8 +9,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/mthub"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/mthub"
 )
 
 func orderRecordToUpdateEvent(rec *mthub.OrderRecord, accountID string, eventType string, ticket int64) *antv1.OrderUpdateEvent {

@@ -8,11 +8,11 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
 	"github.com/google/uuid"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/repository"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/repository"
 )
 
 type AdminJurisdictionServer struct {

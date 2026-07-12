@@ -5,8 +5,8 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/repository"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/repository"
 )
 
 func TestBarFinality(t *testing.T) {

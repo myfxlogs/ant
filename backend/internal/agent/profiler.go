@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/uuid"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/service/systemai"
-	"anttrader/tools/mql2go"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/service/systemai"
+	"alphaforge/tools/mql2go"
 )
 
 // Profiler generates strategy profiles via LLM (injection point [1]).

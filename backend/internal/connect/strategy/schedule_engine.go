@@ -18,8 +18,8 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"anttrader/internal/model"
-	"anttrader/internal/repository"
+	"alphaforge/internal/model"
+	"alphaforge/internal/repository"
 )
 
 type runHandle struct {

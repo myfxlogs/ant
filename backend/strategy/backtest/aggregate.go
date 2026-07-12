@@ -3,7 +3,7 @@ package backtest
 import (
 	"time"
 
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/sdk"
 )
 
 // tfDuration converts a timeframe string to a duration.

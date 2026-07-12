@@ -576,7 +576,7 @@ const file_agent_hooks_proto_rawDesc = "" +
 	"\x11AgentHooksService\x12R\n" +
 	"\x0fListHookConfigs\x12\x1e.ant.v1.ListHookConfigsRequest\x1a\x1f.ant.v1.ListHookConfigsResponse\x12L\n" +
 	"\rSetHookConfig\x12\x1c.ant.v1.SetHookConfigRequest\x1a\x1d.ant.v1.SetHookConfigResponse\x12U\n" +
-	"\x10DeleteHookConfig\x12\x1f.ant.v1.DeleteHookConfigRequest\x1a .ant.v1.DeleteHookConfigResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x10DeleteHookConfig\x12\x1f.ant.v1.DeleteHookConfigRequest\x1a .ant.v1.DeleteHookConfigResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_agent_hooks_proto_rawDescOnce sync.Once

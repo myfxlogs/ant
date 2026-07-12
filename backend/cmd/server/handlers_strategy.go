@@ -6,19 +6,20 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
-	internalai "anttrader/internal/ai"
-	"anttrader/internal/config"
-	"anttrader/internal/connect/strategy"
-	"anttrader/internal/mthub"
-	notifpubsub "anttrader/internal/notification"
-	"anttrader/internal/paper"
-	"anttrader/internal/pglisten"
-	"anttrader/internal/repository"
-	"anttrader/internal/risk"
-	"anttrader/internal/risksvc"
-	"anttrader/internal/connect/ai"
-	systemai "anttrader/internal/service/systemai"
-	"anttrader/internal/usermgr"
+	internalai "alphaforge/internal/ai"
+	"alphaforge/internal/config"
+	"alphaforge/internal/connect/ai"
+	"alphaforge/internal/connect/strategy"
+	"alphaforge/internal/mthub"
+	notifpubsub "alphaforge/internal/notification"
+	"alphaforge/internal/paper"
+	"alphaforge/internal/pglisten"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/risk"
+	"alphaforge/internal/risksvc"
+	"alphaforge/internal/service"
+	systemai "alphaforge/internal/service/systemai"
+	"alphaforge/internal/usermgr"
 )
 
 // configureStrategyExecution creates the StrategyExecutionServer with all dependencies
@@ -36,6 +37,7 @@ func configureStrategyExecution(
 	pgListen *pglisten.Listener,
 	jurisGate *risksvc.JurisdictionGate,
 	capStore *risksvc.CapabilityStore,
+	quotaChecker *service.QuotaChecker,
 	cfg *config.Config,
 	log *zap.Logger,
 ) *strategy.StrategyExecutionServer {
@@ -50,6 +52,7 @@ func configureStrategyExecution(
 	srv.SetImportedRepo(repository.NewImportedStrategyRepository(pool))
 	srv.SetVersionRepo(repository.NewStrategyVersionRepository(pool))
 	srv.SetSessionRegistry(strategy.NewSessionRegistry())
+	srv.SetQuotaChecker(quotaChecker)
 
 	// Clean up runs orphaned by a previous crash/restart.
 	if n, err := strategyRunRepo.CleanupStaleRuns(context.Background()); err != nil {
@@ -90,8 +93,8 @@ func configureStrategyExecution(
 	if capStore != nil {
 		gate.AddRule(risk.NewCapabilityTierRule(capStore))
 	}
-	srv.SetGate(gate)       // live_runner startup guard only (gate runs in mthub now)
-	mthubSvc.SetGate(gate)   // D6-A single chokepoint: all orders through mthub
+	srv.SetGate(gate)      // live_runner startup guard only (gate runs in mthub now)
+	mthubSvc.SetGate(gate) // D6-A single chokepoint: all orders through mthub
 	// Push-first: PositionCache subscribes to PositionSnapshotBroker (no per-bar polling).
 	posCache := strategy.NewPositionCache(log)
 	srv.SetPositionCache(posCache)

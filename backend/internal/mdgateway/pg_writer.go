@@ -10,9 +10,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/repository"
-	"anttrader/internal/usermgr"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/usermgr"
 )
 
 // PgWriterConfig mirrors CHWriterConfig for drop-in replacement.

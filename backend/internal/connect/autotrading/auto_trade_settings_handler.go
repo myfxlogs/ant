@@ -8,8 +8,8 @@ import (
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/model"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/model"
 )
 
 // GetGlobalSettings returns the current user's global auto-trading settings.

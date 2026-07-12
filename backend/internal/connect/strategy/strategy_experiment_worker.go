@@ -9,10 +9,10 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
-	"anttrader/internal/ai"
-	"anttrader/internal/pglisten"
-	"anttrader/internal/repository"
-	systemai "anttrader/internal/service/systemai"
+	"alphaforge/internal/ai"
+	"alphaforge/internal/pglisten"
+	"alphaforge/internal/repository"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 // ExperimentWorker polls for PENDING experiments and processes them.

@@ -3,7 +3,7 @@ package mql2go
 import (
 	"testing"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // sampleMQL4EA is a representative MQL4 EA for testing the IR pipeline.

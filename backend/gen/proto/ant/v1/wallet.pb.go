@@ -551,7 +551,7 @@ const file_wallet_proto_rawDesc = "" +
 	"\rWalletService\x12@\n" +
 	"\tGetWallet\x12\x18.ant.v1.GetWalletRequest\x1a\x19.ant.v1.GetWalletResponse\x12a\n" +
 	"\x10ListTransactions\x12%.ant.v1.ListWalletTransactionsRequest\x1a&.ant.v1.ListWalletTransactionsResponse\x12L\n" +
-	"\rAdjustBalance\x12\x1c.ant.v1.AdjustBalanceRequest\x1a\x1d.ant.v1.AdjustBalanceResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\rAdjustBalance\x12\x1c.ant.v1.AdjustBalanceRequest\x1a\x1d.ant.v1.AdjustBalanceResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_wallet_proto_rawDescOnce sync.Once

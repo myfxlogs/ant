@@ -3,7 +3,7 @@ package mql2go
 import (
 	"fmt"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // CompileAST takes a parsed IR (which is our AST) and compiles it to Bytecode.

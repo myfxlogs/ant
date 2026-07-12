@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
-	"anttrader/internal/model"
-	"anttrader/internal/repository"
+	"alphaforge/internal/model"
+	"alphaforge/internal/repository"
 )
 
 type LogService struct {

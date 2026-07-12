@@ -372,7 +372,7 @@ const file_ai_gate_proto_rawDesc = "" +
 	"\asummary\x18\x03 \x01(\tR\asummary\x12*\n" +
 	"\x11total_duration_ms\x18\x04 \x01(\x03R\x0ftotalDurationMs2`\n" +
 	"\vGateService\x12Q\n" +
-	"\rRunEvaluation\x12 .ant.v1.RunGateEvaluationRequest\x1a\x1c.ant.v1.GateEvaluationUpdate0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\rRunEvaluation\x12 .ant.v1.RunGateEvaluationRequest\x1a\x1c.ant.v1.GateEvaluationUpdate0\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_ai_gate_proto_rawDescOnce sync.Once

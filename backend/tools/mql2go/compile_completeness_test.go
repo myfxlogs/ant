@@ -3,7 +3,7 @@ package mql2go
 import (
 	"testing"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 func TestCompileToIR_UserFunction(t *testing.T) {

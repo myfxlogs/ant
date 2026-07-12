@@ -10,9 +10,9 @@ import (
 
 	"connectrpc.com/connect"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	systemai "anttrader/internal/service/systemai"
-	"anttrader/strategy/sdk"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	systemai "alphaforge/internal/service/systemai"
+	"alphaforge/strategy/sdk"
 )
 
 func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request[antv1.ExplainCodeRequest]) (*connect.Response[antv1.ExplainCodeResponse], error) {
@@ -78,7 +78,7 @@ func (s *CodeAssistServer) TransformCode(ctx context.Context, req *connect.Reque
 		langHint +
 		"Translate the following MetaTrader EA/indicator code (MQL4 or MQL5) into a " +
 		"Go strategy for the AlphaForge platform.\n\n" +
-		"AlphaForge uses the Go strategy SDK (package anttrader/strategy/sdk). " +
+		"AlphaForge uses the Go strategy SDK (package alphaforge/strategy/sdk). " +
 		"Generate idiomatic Go code with proper Decimal handling via shopspring/decimal.\n\n" +
 		"Return ONLY the Go code inside ```go ... ``` fence."
 

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // runLoop is the main VM execution loop.

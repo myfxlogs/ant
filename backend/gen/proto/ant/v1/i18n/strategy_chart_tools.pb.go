@@ -107,7 +107,7 @@ const file_i18n_strategy_chart_tools_proto_rawDesc = "" +
 	"\x04hide\x18\x02 \x01(\tR\x04hide\x12\x16\n" +
 	"\x06remove\x18\x03 \x01(\tR\x06remove\x12\x1a\n" +
 	"\bsettings\x18\x04 \x01(\tR\bsettings\x12\x12\n" +
-	"\x04show\x18\x05 \x01(\tR\x04showB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x04show\x18\x05 \x01(\tR\x04showB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_chart_tools_proto_rawDescOnce sync.Once

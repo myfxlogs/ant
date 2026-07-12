@@ -2,7 +2,7 @@ package mql2go
 
 import (
 	sitter "github.com/smacker/go-tree-sitter"
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // ── Statement compilation (Python CST → interp.Statement) ──────────

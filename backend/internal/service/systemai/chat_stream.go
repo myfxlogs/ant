@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 
@@ -217,16 +218,16 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 	if totalContentLen == 0 && totalReasoningLen == 0 && len(toolCallAcc) == 0 {
 		return &failoverErr{msg: fmt.Sprintf("[%s] chat stream empty (finish_reason=%q)", p.providerID, lastFinishReason), transient: true}
 	}
-	// Record token usage from streaming response.
-	if s.tokenRecorder != nil && streamUsage != nil {
-		feature := "chat"
-		if v := ctx.Value(aiFeatureKey{}); v != nil {
-			feature = v.(string)
+	// Bill after successful stream — content already delivered, so log billing failures
+	// instead of returning an error (can't un-deliver streamed content).
+	if s.postCallBiller != nil && streamUsage != nil {
+		feature := aiFeatureFromCtx(ctx)
+		if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, streamUsage.PromptTokens, streamUsage.CompletionTokens); billErr != nil {
+			// Log to stderr — the stream is already delivered, but billing failed.
+			// The wallet may be overdrawn; next call's pre-check will block.
+			fmt.Fprintf(os.Stderr, "[systemai] post-stream billing failed: user=%s provider=%s err=%v\n",
+				p.userID, p.providerID, billErr)
 		}
-		s.tokenRecorder(ctx, TokenRecord{
-			UserID: p.userID, ProviderID: p.providerID, Model: p.model,
-			Feature: feature, InputTokens: streamUsage.PromptTokens, OutputTokens: streamUsage.CompletionTokens,
-		})
 	}
 	return nil
 }
@@ -255,16 +256,13 @@ func (s *Service) fallbackNonStream(ctx context.Context, p chatProvider, message
 	if err := onChunk(ChatStreamChunk{Content: result, Done: true, FinishReason: finishReason, ToolCalls: streamToolCalls}); err != nil {
 		return err
 	}
-	// Record token usage from the non-streaming fallback.
-	if s.tokenRecorder != nil && usage != nil {
-		feature := "chat"
-		if v := ctx.Value(aiFeatureKey{}); v != nil {
-			feature = v.(string)
+	// Bill after successful fallback — content already delivered via onChunk.
+	if s.postCallBiller != nil && usage != nil {
+		feature := aiFeatureFromCtx(ctx)
+		if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, usage.PromptTokens, usage.CompletionTokens); billErr != nil {
+			fmt.Fprintf(os.Stderr, "[systemai] post-fallback billing failed: user=%s provider=%s err=%v\n",
+				p.userID, p.providerID, billErr)
 		}
-		s.tokenRecorder(ctx, TokenRecord{
-			UserID: p.userID, ProviderID: p.providerID, Model: p.model,
-			Feature: feature, InputTokens: usage.PromptTokens, OutputTokens: usage.CompletionTokens,
-		})
 	}
 	return nil
 }

@@ -11,8 +11,8 @@ import (
 
 	"github.com/google/uuid"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/service"
 )
 
 // ConnectAccount connects an account to the broker and publishes a NATS event

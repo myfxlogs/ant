@@ -8,9 +8,9 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	"anttrader/strategy/backtest"
-	"anttrader/strategy/sdk"
-	"anttrader/tools/mql2go"
+	"alphaforge/strategy/backtest"
+	"alphaforge/strategy/sdk"
+	"alphaforge/tools/mql2go"
 )
 
 // ShadowVerifier runs a shadow backtest alongside a live strategy session

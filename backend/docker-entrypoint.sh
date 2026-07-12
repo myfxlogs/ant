@@ -96,4 +96,4 @@ if [ -n "$missing_tables" ] && [ "$missing_tables" != "" ]; then
 fi
 
 echo "Migrations completed, starting server..."
-exec /app/antrader -config /app/configs/config.yaml
+exec /app/alphaforge -config /app/configs/config.yaml

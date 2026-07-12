@@ -3,7 +3,7 @@ package mql2go
 import (
 	"time"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // MQL4/MQL5 Checkup / Platform functions — complete implementation.

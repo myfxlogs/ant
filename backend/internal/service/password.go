@@ -5,7 +5,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"anttrader/internal/pkg/hash"
+	"alphaforge/internal/pkg/hash"
 )
 
 // VerifyPassword verifies a password against a stored hash, auto-detecting the format.

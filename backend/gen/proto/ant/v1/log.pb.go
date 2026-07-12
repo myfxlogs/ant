@@ -30,7 +30,7 @@ const file_log_proto_rawDesc = "" +
 	"\x11GetConnectionLogs\x12 .ant.v1.GetConnectionLogsRequest\x1a!.ant.v1.GetConnectionLogsResponse\x12[\n" +
 	"\x12GetOrderLogHistory\x12!.ant.v1.GetOrderLogHistoryRequest\x1a\".ant.v1.GetOrderLogHistoryResponse\x12U\n" +
 	"\x10GetOperationLogs\x12\x1f.ant.v1.GetOperationLogsRequest\x1a .ant.v1.GetOperationLogsResponse\x12[\n" +
-	"\x12GetScheduleRunLogs\x12!.ant.v1.GetScheduleRunLogsRequest\x1a\".ant.v1.GetScheduleRunLogsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x12GetScheduleRunLogs\x12!.ant.v1.GetScheduleRunLogsRequest\x1a\".ant.v1.GetScheduleRunLogsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var file_log_proto_goTypes = []any{
 	(*GetConnectionLogsRequest)(nil),   // 0: ant.v1.GetConnectionLogsRequest

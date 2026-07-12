@@ -13,32 +13,32 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/mthub"
-	"anttrader/internal/notification"
-	"anttrader/internal/repository"
-	"anttrader/internal/pglisten"
-	"anttrader/internal/risk"
-	"anttrader/internal/ai"
-	"anttrader/strategy/runner"
-	"anttrader/strategy/sdk"
-	"anttrader/tools/mql2go"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/ai"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/notification"
+	"alphaforge/internal/pglisten"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/risk"
+	"alphaforge/strategy/runner"
+	"alphaforge/strategy/sdk"
+	"alphaforge/tools/mql2go"
 )
 
 // StrategyExecutionServer implements ant.v1c.StrategyRuntimeServiceHandler.
 // Handles strategy execution via in-process Bytecode VM (MQL) and legacy GoExecutor (Go).
 type StrategyExecutionServer struct {
-	backtestRepo        *repository.BacktestRunRepository
-	log                 *zap.Logger
-	marketDataRepo      repository.MarketDataStore
-	barSource           BarSource // unified bar data source (backtest or live)
-	mtHub               *mthub.MtHubService // for live order submission
-	paperEngine         PaperOrderExecutor  // for paper trading simulated fills
-	pgListen            *pglisten.Listener
-	notifSender         *notification.Sender
-	onBacktestComplete  func(ctx context.Context, run *repository.BacktestRun) // auto-gate hook
+	backtestRepo       *repository.BacktestRunRepository
+	log                *zap.Logger
+	marketDataRepo     repository.MarketDataStore
+	barSource          BarSource           // unified bar data source (backtest or live)
+	mtHub              *mthub.MtHubService // for live order submission
+	paperEngine        PaperOrderExecutor  // for paper trading simulated fills
+	pgListen           *pglisten.Listener
+	notifSender        *notification.Sender
+	onBacktestComplete func(ctx context.Context, run *repository.BacktestRun) // auto-gate hook
 
 	// D6-A: Gate is the single authoritative risk evaluator.  Injected at
 	// construction — if nil, live order dispatch panics (fail-stop, non-bypassable).
@@ -74,6 +74,9 @@ type StrategyExecutionServer struct {
 	// PositionCache holds push-based position snapshots from PositionSnapshotBroker.
 	// Eliminates per-bar OpenedOrders polling (push-first architecture).
 	posCache *PositionCache
+
+	// QuotaChecker enforces subscription plan limits (max strategies, live strategies).
+	quotaChecker QuotaChecker
 }
 
 // AccountStateProvider supplies live account state for gate evaluation (T3.2b).
@@ -96,16 +99,31 @@ type PaperOrderExecutor interface {
 	CancelPaperOrder(ctx context.Context, accountID, symbol string) error
 }
 
-func (s *StrategyExecutionServer) SetBarSource(bs BarSource)                 { s.barSource = bs }
-func (s *StrategyExecutionServer) SetMtHub(h *mthub.MtHubService)            { s.mtHub = h }
-func (s *StrategyExecutionServer) SetPaperEngine(pe PaperOrderExecutor)      { s.paperEngine = pe }
-func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)              { s.goExecutor = ge }
+func (s *StrategyExecutionServer) SetBarSource(bs BarSource)                      { s.barSource = bs }
+func (s *StrategyExecutionServer) SetMtHub(h *mthub.MtHubService)                 { s.mtHub = h }
+func (s *StrategyExecutionServer) SetPaperEngine(pe PaperOrderExecutor)           { s.paperEngine = pe }
+func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)                   { s.goExecutor = ge }
 func (s *StrategyExecutionServer) SetRunRepo(r *repository.StrategyRunRepository) { s.runRepo = r }
-func (s *StrategyExecutionServer) SetImportedRepo(r *repository.ImportedStrategyRepository) { s.importedRepo = r }
-func (s *StrategyExecutionServer) SetVersionRepo(r *repository.StrategyVersionRepository)   { s.versionRepo = r }
-func (s *StrategyExecutionServer) SetSessionRegistry(r *SessionRegistry)           { s.sessionRegistry = r }
-func (s *StrategyExecutionServer) SetAccountLookup(f func(ctx context.Context, userID string) string) { s.accountLookup = f }
-func (s *StrategyExecutionServer) SetPositionCache(pc *PositionCache)                                  { s.posCache = pc }
+func (s *StrategyExecutionServer) SetImportedRepo(r *repository.ImportedStrategyRepository) {
+	s.importedRepo = r
+}
+func (s *StrategyExecutionServer) SetVersionRepo(r *repository.StrategyVersionRepository) {
+	s.versionRepo = r
+}
+func (s *StrategyExecutionServer) SetSessionRegistry(r *SessionRegistry) { s.sessionRegistry = r }
+func (s *StrategyExecutionServer) SetAccountLookup(f func(ctx context.Context, userID string) string) {
+	s.accountLookup = f
+}
+func (s *StrategyExecutionServer) SetPositionCache(pc *PositionCache) { s.posCache = pc }
+
+// QuotaChecker provides subscription plan limit checks.
+// Implemented by service.QuotaChecker.
+type QuotaChecker interface {
+	CheckStrategyLimit(userID uuid.UUID, currentCount int) bool
+	CheckLiveStrategyLimit(userID uuid.UUID, currentLive int) bool
+}
+
+func (s *StrategyExecutionServer) SetQuotaChecker(qc QuotaChecker) { s.quotaChecker = qc }
 
 // SetGate injects the risk gate (D6-A: mandatory, non-optional).
 // Must be called before RunLiveStrategy.
@@ -128,7 +146,9 @@ func NewStrategyExecutionServer(backtestRepo *repository.BacktestRunRepository, 
 }
 
 func (s *StrategyExecutionServer) SetNotificationSender(ns *notification.Sender) { s.notifSender = ns }
-func (s *StrategyExecutionServer) SetOnBacktestComplete(fn func(context.Context, *repository.BacktestRun)) { s.onBacktestComplete = fn }
+func (s *StrategyExecutionServer) SetOnBacktestComplete(fn func(context.Context, *repository.BacktestRun)) {
+	s.onBacktestComplete = fn
+}
 
 // userIDRequire extracts and validates the authenticated user ID from context.
 func userIDRequire(ctx context.Context) (uuid.UUID, error) {
@@ -337,4 +357,3 @@ func isMQLStrategy(code string) bool {
 func isPythonStrategy(code string) bool {
 	return sdk.IsPython(code)
 }
-

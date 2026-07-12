@@ -15,11 +15,11 @@ const (
 // DetectLanguage classifies strategy source code as MQL, Python subset, or Go.
 // Detection order: Go → MQL → Python → Unknown.
 //
-// Go: contains "package " + "anttrader/strategy/sdk" import path.
+// Go: contains "package " + "alphaforge/strategy/sdk" import path.
 // MQL: contains MQL lifecycle hooks (OnTick/OnBar/OnInit/OnDeinit/OnTimer) or
 //      MQL declarations (#property, extern, input) and NOT Go package/import.
 // Python: contains Python subset markers (StrategyBase, def on_init/on_bar/on_tick/on_deinit,
-//         "from anttrader") and NOT Go or MQL.
+//         "from alphaforge") and NOT Go or MQL.
 func DetectLanguage(code string) StrategyLanguage {
 	if code == "" {
 		return LangUnknown
@@ -46,7 +46,7 @@ func IsPython(code string) bool { return DetectLanguage(code) == LangPython }
 func IsGo(code string) bool { return DetectLanguage(code) == LangGo }
 
 func isGoSource(code string) bool {
-	return strings.Contains(code, "package ") && strings.Contains(code, "anttrader/strategy/sdk")
+	return strings.Contains(code, "package ") && strings.Contains(code, "alphaforge/strategy/sdk")
 }
 
 func isMQLSource(code string) bool {
@@ -59,7 +59,7 @@ func isMQLSource(code string) bool {
 
 func isPythonSource(code string) bool {
 	return strings.Contains(code, "StrategyBase") ||
-		strings.Contains(code, "from anttrader") ||
+		strings.Contains(code, "from alphaforge") ||
 		strings.Contains(code, "def on_init") || strings.Contains(code, "def on_bar") ||
 		strings.Contains(code, "def on_tick") || strings.Contains(code, "def on_deinit")
 }

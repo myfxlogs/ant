@@ -10,13 +10,13 @@ import (
 	"connectrpc.com/connect"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/repository"
-	"anttrader/internal/service/systemai"
-	"anttrader/strategy/sdk"
-	"anttrader/tools/mql2go"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service/systemai"
+	"alphaforge/strategy/sdk"
+	"alphaforge/tools/mql2go"
 )
 
 // GatewayServer implements ant.v1.AgentGatewayServiceHandler.

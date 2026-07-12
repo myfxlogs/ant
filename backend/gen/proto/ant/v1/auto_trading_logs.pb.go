@@ -433,7 +433,7 @@ const file_auto_trading_logs_proto_rawDesc = "" +
 	"\x06ticket\x18\v \x01(\x03R\x06ticket\x12\x16\n" +
 	"\x06profit\x18\f \x01(\tR\x06profit\x129\n" +
 	"\n" +
-	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_auto_trading_logs_proto_rawDescOnce sync.Once

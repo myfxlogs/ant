@@ -373,7 +373,7 @@ const file_i18n_strategy_library_proto_rawDesc = "" +
 	"\tunpublish\x18\x1f \x01(\tR\tunpublish\x12'\n" +
 	"\x0funpublish_short\x18  \x01(\tR\x0eunpublishShort\x12+\n" +
 	"\x11unpublish_success\x18! \x01(\tR\x10unpublishSuccess\x12\x1b\n" +
-	"\tview_code\x18\" \x01(\tR\bviewCodeB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\tview_code\x18\" \x01(\tR\bviewCodeB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_library_proto_rawDescOnce sync.Once

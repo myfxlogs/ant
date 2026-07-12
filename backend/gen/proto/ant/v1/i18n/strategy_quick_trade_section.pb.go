@@ -155,7 +155,7 @@ const file_i18n_strategy_quick_trade_section_proto_rawDesc = "" +
 	"\x0eprice_required\x18\b \x01(\tR\rpriceRequired\x12#\n" +
 	"\rselect_symbol\x18\t \x01(\tR\fselectSymbol\x12!\n" +
 	"\fvalid_volume\x18\n" +
-	" \x01(\tR\vvalidVolumeB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	" \x01(\tR\vvalidVolumeB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_quick_trade_section_proto_rawDescOnce sync.Once

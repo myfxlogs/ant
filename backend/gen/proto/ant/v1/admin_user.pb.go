@@ -32,8 +32,16 @@ type DashboardStats struct {
 	TodayVolume    string                 `protobuf:"bytes,6,opt,name=today_volume,json=todayVolume,proto3" json:"today_volume,omitempty"`
 	TodayProfit    string                 `protobuf:"bytes,7,opt,name=today_profit,json=todayProfit,proto3" json:"today_profit,omitempty"`
 	SystemLoad     float64                `protobuf:"fixed64,8,opt,name=system_load,json=systemLoad,proto3" json:"system_load,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// P3.5: Subscription & revenue metrics
+	ActiveSubscriptions   int64  `protobuf:"varint,9,opt,name=active_subscriptions,json=activeSubscriptions,proto3" json:"active_subscriptions,omitempty"`
+	MonthlyRevenue        string `protobuf:"bytes,10,opt,name=monthly_revenue,json=monthlyRevenue,proto3" json:"monthly_revenue,omitempty"`
+	TotalRevenue          string `protobuf:"bytes,11,opt,name=total_revenue,json=totalRevenue,proto3" json:"total_revenue,omitempty"`
+	MarketplaceStrategies int64  `protobuf:"varint,12,opt,name=marketplace_strategies,json=marketplaceStrategies,proto3" json:"marketplace_strategies,omitempty"`
+	MarketplaceSales      int64  `protobuf:"varint,13,opt,name=marketplace_sales,json=marketplaceSales,proto3" json:"marketplace_sales,omitempty"`
+	MarketplaceRevenue    string `protobuf:"bytes,14,opt,name=marketplace_revenue,json=marketplaceRevenue,proto3" json:"marketplace_revenue,omitempty"`
+	VerifiedUsers         int64  `protobuf:"varint,15,opt,name=verified_users,json=verifiedUsers,proto3" json:"verified_users,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *DashboardStats) Reset() {
@@ -118,6 +126,55 @@ func (x *DashboardStats) GetTodayProfit() string {
 func (x *DashboardStats) GetSystemLoad() float64 {
 	if x != nil {
 		return x.SystemLoad
+	}
+	return 0
+}
+
+func (x *DashboardStats) GetActiveSubscriptions() int64 {
+	if x != nil {
+		return x.ActiveSubscriptions
+	}
+	return 0
+}
+
+func (x *DashboardStats) GetMonthlyRevenue() string {
+	if x != nil {
+		return x.MonthlyRevenue
+	}
+	return ""
+}
+
+func (x *DashboardStats) GetTotalRevenue() string {
+	if x != nil {
+		return x.TotalRevenue
+	}
+	return ""
+}
+
+func (x *DashboardStats) GetMarketplaceStrategies() int64 {
+	if x != nil {
+		return x.MarketplaceStrategies
+	}
+	return 0
+}
+
+func (x *DashboardStats) GetMarketplaceSales() int64 {
+	if x != nil {
+		return x.MarketplaceSales
+	}
+	return 0
+}
+
+func (x *DashboardStats) GetMarketplaceRevenue() string {
+	if x != nil {
+		return x.MarketplaceRevenue
+	}
+	return ""
+}
+
+func (x *DashboardStats) GetVerifiedUsers() int64 {
+	if x != nil {
+		return x.VerifiedUsers
 	}
 	return 0
 }
@@ -1318,7 +1375,7 @@ var File_admin_user_proto protoreflect.FileDescriptor
 
 const file_admin_user_proto_rawDesc = "" +
 	"\n" +
-	"\x10admin_user.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xae\x02\n" +
+	"\x10admin_user.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xeb\x04\n" +
 	"\x0eDashboardStats\x12\x1f\n" +
 	"\vtotal_users\x18\x01 \x01(\x03R\n" +
 	"totalUsers\x12!\n" +
@@ -1329,7 +1386,15 @@ const file_admin_user_proto_rawDesc = "" +
 	"\ftoday_volume\x18\x06 \x01(\tR\vtodayVolume\x12!\n" +
 	"\ftoday_profit\x18\a \x01(\tR\vtodayProfit\x12\x1f\n" +
 	"\vsystem_load\x18\b \x01(\x01R\n" +
-	"systemLoad\"\x15\n" +
+	"systemLoad\x121\n" +
+	"\x14active_subscriptions\x18\t \x01(\x03R\x13activeSubscriptions\x12'\n" +
+	"\x0fmonthly_revenue\x18\n" +
+	" \x01(\tR\x0emonthlyRevenue\x12#\n" +
+	"\rtotal_revenue\x18\v \x01(\tR\ftotalRevenue\x125\n" +
+	"\x16marketplace_strategies\x18\f \x01(\x03R\x15marketplaceStrategies\x12+\n" +
+	"\x11marketplace_sales\x18\r \x01(\x03R\x10marketplaceSales\x12/\n" +
+	"\x13marketplace_revenue\x18\x0e \x01(\tR\x12marketplaceRevenue\x12%\n" +
+	"\x0everified_users\x18\x0f \x01(\x03R\rverifiedUsers\"\x15\n" +
 	"\x13GetDashboardRequest\"D\n" +
 	"\x14GetDashboardResponse\x12,\n" +
 	"\x05stats\x18\x01 \x01(\v2\x16.ant.v1.DashboardStatsR\x05stats\"\xa1\x01\n" +
@@ -1420,7 +1485,7 @@ const file_admin_user_proto_rawDesc = "" +
 	"\n" +
 	"EnableUser\x12\x19.ant.v1.EnableUserRequest\x1a\x1a.ant.v1.EnableUserResponse\x12X\n" +
 	"\x11ResetUserPassword\x12 .ant.v1.ResetUserPasswordRequest\x1a!.ant.v1.ResetUserPasswordResponse\x12F\n" +
-	"\vRestoreUser\x12\x1a.ant.v1.RestoreUserRequest\x1a\x1b.ant.v1.RestoreUserResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\vRestoreUser\x12\x1a.ant.v1.RestoreUserRequest\x1a\x1b.ant.v1.RestoreUserResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_admin_user_proto_rawDescOnce sync.Once

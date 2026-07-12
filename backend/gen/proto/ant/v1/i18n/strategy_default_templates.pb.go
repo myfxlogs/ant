@@ -134,7 +134,7 @@ const file_i18n_strategy_default_templates_proto_rawDesc = "" +
 	"\x10macd_description\x18\x05 \x01(\tR\x0fmacdDescription\x12\x1b\n" +
 	"\tmacd_name\x18\x06 \x01(\tR\bmacdName\x12'\n" +
 	"\x0frsi_description\x18\a \x01(\tR\x0ersiDescription\x12\x19\n" +
-	"\brsi_name\x18\b \x01(\tR\arsiNameB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\brsi_name\x18\b \x01(\tR\arsiNameB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_default_templates_proto_rawDescOnce sync.Once

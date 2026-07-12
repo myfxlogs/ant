@@ -11,7 +11,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 // ConversationSession manages AI chat sessions bound to strategies.

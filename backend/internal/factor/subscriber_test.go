@@ -6,7 +6,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 func TestSubscriber_Push(t *testing.T) {

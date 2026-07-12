@@ -411,7 +411,7 @@ const file_i18n_strategy_tuning_proto_rawDesc = "" +
 	"switchToDE\x12\x1c\n" +
 	"\ttruncated\x18$ \x01(\tR\ttruncated\x12\x16\n" +
 	"\x06tuning\x18% \x01(\tR\x06tuning\x12\x18\n" +
-	"\awaiting\x18& \x01(\tR\awaitingB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\awaiting\x18& \x01(\tR\awaitingB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_tuning_proto_rawDescOnce sync.Once

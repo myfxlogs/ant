@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"anttrader/internal/secrets"
+	"alphaforge/internal/secrets"
 )
 
 func TestNew_InvalidVersion(t *testing.T) {

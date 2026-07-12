@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package ant.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
+
+service AdminBillingService {
+  // List all user subscriptions with plan details
+  rpc ListSubscriptions(ListAdminSubscriptionsRequest) returns (ListAdminSubscriptionsResponse);
+  // Get revenue breakdown by plan
+  rpc GetRevenueSummary(GetRevenueSummaryRequest) returns (GetRevenueSummaryResponse);
+  // List all wallet transactions (platform-wide)
+  rpc ListAdminWalletTransactions(ListAdminWalletTransactionsRequest) returns (ListAdminWalletTransactionsResponse);
+}
+
+message ListAdminSubscriptionsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string plan = 3;
+  string status = 4;
+}
+
+message AdminSubscriptionDetail {
+  string id = 1;
+  string user_id = 2;
+  string user_email = 3;
+  string plan_name = 4;
+  string plan_display_name = 5;
+  string status = 6;
+  string billing_cycle = 7;
+  google.protobuf.Timestamp current_period_start = 8;
+  google.protobuf.Timestamp current_period_end = 9;
+  bool auto_renew = 10;
+  string price = 11;
+  google.protobuf.Timestamp created_at = 12;
+}
+
+message ListAdminSubscriptionsResponse {
+  repeated AdminSubscriptionDetail subscriptions = 1;
+  int64 total = 2;
+}
+
+message GetRevenueSummaryRequest {}
+
+message PlanRevenue {
+  string plan_name = 1;
+  string display_name = 2;
+  int64 active_count = 3;
+  string monthly_revenue = 4;
+  string total_revenue = 5;
+}
+
+message GetRevenueSummaryResponse {
+  repeated PlanRevenue plans = 1;
+  string total_monthly_revenue = 2;
+  string total_revenue = 3;
+}
+
+message ListAdminWalletTransactionsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string tx_type = 3;
+  string user_id = 4;
+}
+
+message AdminWalletTransactionDetail {
+  string id = 1;
+  string user_id = 2;
+  string user_email = 3;
+  string tx_type = 4;
+  string amount = 5;
+  string balance_before = 6;
+  string balance_after = 7;
+  string description = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message ListAdminWalletTransactionsResponse {
+  repeated AdminWalletTransactionDetail transactions = 1;
+  int64 total = 2;
+}

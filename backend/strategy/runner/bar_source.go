@@ -1,8 +1,8 @@
 package runner
 
 import (
-	"anttrader/strategy/indicators"
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/indicators"
+	"alphaforge/strategy/sdk"
 	"github.com/shopspring/decimal"
 )
 

@@ -8,7 +8,7 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/google/uuid"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 type snapPoint struct {

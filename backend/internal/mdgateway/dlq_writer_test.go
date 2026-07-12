@@ -7,7 +7,7 @@ import (
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 func TestDLQParseError(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // BarAggregatorTarget is the interface that bar_aggregator provides for

@@ -1,7 +1,7 @@
 # 16 · mtapi 暗坑寄存器（quirks register）
 
 > **强制阅读**：实现 `adapter/mt[45]/` 与 `mdgateway/` 之前必须读完本文档。
-> 每条 quirk 都来自 alfq 或 anttrader 的真实生产 fix，不是猜测。
+> 每条 quirk 都来自 alfq 或 alphaforge 的真实生产 fix，不是猜测。
 > **代码引用 quirk 必须用注释 `// QUIRK Q-NNN: <一句话> See docs/spec/16-mtapi-quirks-register.md#q-nnn`**。
 
 ## 索引
@@ -19,7 +19,7 @@
 | Q-009 | MT5 QuoteHistory TimeFrame 用分钟数而非 PERIOD enum | MT5 | 🟠 中 | mtapi 文档 |
 | Q-010 | broker 重连后会重发最近 N 条历史 quote | MT4/5 | 🟠 中 | 经验 |
 | Q-011 | 网关搜索 broker 要求关键词 ≥2 字符 | MT4/5 | 🟡 低 | alfq `4c73728` |
-| Q-012 | broker_host 切换需触发 reconnect | MT4/5 | 🟡 低 | anttrader `8d7aa32` |
+| Q-012 | broker_host 切换需触发 reconnect | MT4/5 | 🟡 低 | alphaforge `8d7aa32` |
 | Q-013 | mtapi.io max gRPC msg size 默认 4MB | MT4/5 | 🟡 低 | 经验 |
 | Q-014 | session token 不主动续期会过期 | MT4/5 | 🟠 中 | 经验 |
 | Q-015 | bid/ask 字符串可能为 "0" 或空（symbol 未交易时段） | MT4/5 | 🟠 中 | 经验 |

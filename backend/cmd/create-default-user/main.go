@@ -15,7 +15,7 @@ func main() {
 
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		dsn = "postgres://postgres:postgres@localhost:5432/anttrader?sslmode=disable"
+		dsn = "postgres://postgres:postgres@localhost:5432/alphaforge?sslmode=disable"
 	}
 
 	pool, err := pgxpool.New(ctx, dsn)

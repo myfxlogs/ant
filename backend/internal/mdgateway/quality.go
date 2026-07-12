@@ -6,7 +6,7 @@ import (
 	"sort"
 	"sync"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // QualityConfig tunes tick quality checks.

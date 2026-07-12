@@ -4921,7 +4921,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x12GetStrategyVersion\x12!.ant.v1.GetStrategyVersionRequest\x1a\".ant.v1.GetStrategyVersionResponse\x12j\n" +
 	"\x17RollbackStrategyVersion\x12&.ant.v1.RollbackStrategyVersionRequest\x1a'.ant.v1.RollbackStrategyVersionResponse\x12a\n" +
 	"\x14DiffStrategyVersions\x12#.ant.v1.DiffStrategyVersionsRequest\x1a$.ant.v1.DiffStrategyVersionsResponse\x12[\n" +
-	"\x12UpdateStrategyCode\x12!.ant.v1.UpdateStrategyCodeRequest\x1a\".ant.v1.UpdateStrategyCodeResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x12UpdateStrategyCode\x12!.ant.v1.UpdateStrategyCodeRequest\x1a\".ant.v1.UpdateStrategyCodeResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_runtime_proto_rawDescOnce sync.Once

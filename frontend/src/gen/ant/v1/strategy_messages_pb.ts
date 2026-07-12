@@ -12,5 +12,5 @@ import { file_strategy_signal_messages } from "./strategy_signal_messages_pb";
  * Describes the file strategy_messages.proto.
  */
 export const file_strategy_messages: GenFile = /*@__PURE__*/
-  fileDesc("ChdzdHJhdGVneV9tZXNzYWdlcy5wcm90bxIGYW50LnYxQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxUABQAVACYgZwcm90bzM", [file_strategy_template_messages, file_strategy_schedule_messages, file_strategy_signal_messages]);
+  fileDesc("ChdzdHJhdGVneV9tZXNzYWdlcy5wcm90bxIGYW50LnYxQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MVAAUAFQAmIGcHJvdG8z", [file_strategy_template_messages, file_strategy_schedule_messages, file_strategy_signal_messages]);
 

@@ -686,7 +686,7 @@ const file_execution_algo_proto_rawDesc = "" +
 	"\rGetAlgoStatus\x12\x1c.ant.v1.GetAlgoStatusRequest\x1a\x1d.ant.v1.GetAlgoStatusResponse\x12C\n" +
 	"\n" +
 	"CancelAlgo\x12\x19.ant.v1.CancelAlgoRequest\x1a\x1a.ant.v1.CancelAlgoResponse\x12@\n" +
-	"\tListAlgos\x12\x18.ant.v1.ListAlgosRequest\x1a\x19.ant.v1.ListAlgosResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\tListAlgos\x12\x18.ant.v1.ListAlgosRequest\x1a\x19.ant.v1.ListAlgosResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_execution_algo_proto_rawDescOnce sync.Once

@@ -3,7 +3,7 @@ package mdgateway
 import (
 	"context"
 	"google.golang.org/protobuf/proto"
-	antv1 "anttrader/gen/proto/ant/v1"
+	antv1 "alphaforge/gen/proto/ant/v1"
 	"sync/atomic"
 	"time"
 

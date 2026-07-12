@@ -192,7 +192,7 @@ const file_i18n_strategy_backtest_proto_rawDesc = "" +
 	"\ftrade_volume\x18\v \x01(\tR\vtradeVolume\x12\x19\n" +
 	"\bwin_rate\x18\f \x01(\tR\awinRate\x12)\n" +
 	"\x10backtest_records\x18( \x01(\tR\x0fbacktestRecords\x12#\n" +
-	"\rprofit_factor\x18) \x01(\tR\fprofitFactorB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\rprofit_factor\x18) \x01(\tR\fprofitFactorB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_backtest_proto_rawDescOnce sync.Once

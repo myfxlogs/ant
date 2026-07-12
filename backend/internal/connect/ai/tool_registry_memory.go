@@ -3,7 +3,7 @@ package ai
 import (
 	"context"
 
-	systemai "anttrader/internal/service/systemai"
+	systemai "alphaforge/internal/service/systemai"
 )
 
 // ── remember tool ──

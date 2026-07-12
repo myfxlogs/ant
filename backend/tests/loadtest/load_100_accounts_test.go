@@ -15,8 +15,8 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway"
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // Test100AccountsNoSpill (M10.5-12): 100 mock brokers × 250 tick/s × 5min.

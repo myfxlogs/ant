@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"anttrader/internal/secrets"
+	"alphaforge/internal/secrets"
 )
 
 // TestRotateKey verifies the L-3 multi-key rotation:

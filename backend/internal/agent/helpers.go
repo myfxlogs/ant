@@ -7,8 +7,8 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/tools/mql2go"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/tools/mql2go"
 )
 
 func parseDecimalDefault(s, defaultVal string) decimal.Decimal {

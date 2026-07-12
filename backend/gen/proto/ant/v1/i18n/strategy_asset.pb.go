@@ -275,7 +275,7 @@ const file_i18n_strategy_asset_proto_rawDesc = "" +
 	"\aversion\x18\x16 \x01(\tR\aversion\x12\x1e\n" +
 	"\n" +
 	"visibility\x18\x17 \x01(\tR\n" +
-	"visibilityB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"visibilityB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_asset_proto_rawDescOnce sync.Once

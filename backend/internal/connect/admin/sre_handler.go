@@ -6,11 +6,11 @@ import (
 
 	"go.uber.org/zap"
 
-	"anttrader/internal/controlplane"
-	"anttrader/internal/interceptor"
+	"alphaforge/internal/controlplane"
+	"alphaforge/internal/interceptor"
 	"connectrpc.com/connect"
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/notifier"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/notifier"
 )
 
 // SREHandler exposes the control-plane over ConnectRPC for the admin UI.

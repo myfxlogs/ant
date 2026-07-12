@@ -7,7 +7,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 
-	"anttrader/internal/interceptor"
+	"alphaforge/internal/interceptor"
 )
 
 // userIDFromCtx extracts the authenticated user ID from the ConnectRPC context.

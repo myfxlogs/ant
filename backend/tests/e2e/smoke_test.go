@@ -16,9 +16,9 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway"
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	natscli "anttrader/internal/storage/nats"
+	"alphaforge/internal/mdgateway"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	natscli "alphaforge/internal/storage/nats"
 )
 
 // TestE2ESmoke (M10.5-11): inject ticks through the mdgateway data pipeline

@@ -110,9 +110,9 @@
 
 | 任务 | 优先级 | 说明 |
 |------|--------|------|
-| Go module path 重命名 | 低 | `anttrader/` → `alphaforge/`（影响大，需全量 import 重写） |
-| Proto i18n 品牌同步 | 中 | proto 源文件中的 AntTrader → AlphaForge，重新 buf generate |
-| Docker 容器名统一 | 低 | `ant-backend` → `alphaforge-backend` 等 |
+| Go module path 重命名 | 低 | ✅ 完成 — `anttrader/` → `alphaforge/`（全量 import 重写 + binary rename + buf regenerate） |
+| Proto i18n 品牌同步 | 中 | ✅ 完成 — textproto/proto 源文件 AntTrader → AlphaForge，buf regenerate |
+| Docker 容器名统一 | 低 | ✅ 完成 — `ant-backend` → `alphaforge-backend` 等（volume 名保留，需数据迁移时再改） |
 | E2E 测试覆盖 | 中 | Playwright 回归测试（登录 + 策略生成 + 回测 + 实盘） |
 | 监控告警 | 中 | Prometheus + AlertManager + 运营通知 |
 

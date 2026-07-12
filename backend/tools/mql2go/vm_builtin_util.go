@@ -6,7 +6,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // VM builtin helper functions and utility builtins.

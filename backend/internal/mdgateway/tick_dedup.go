@@ -6,7 +6,7 @@ import (
 
 	"github.com/cespare/xxhash/v2"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // TickDedup detects duplicate ticks within a sliding window to protect

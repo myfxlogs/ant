@@ -1,8 +1,8 @@
 package main
 
 import (
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/mthub"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mthub"
 )
 
 // convertProfitPositions converts mdtick.ProfitPosition slice to mthub.AccountProfitPosition slice.

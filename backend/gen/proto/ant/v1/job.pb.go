@@ -486,7 +486,7 @@ const file_job_proto_rawDesc = "" +
 	"JobService\x12,\n" +
 	"\x06GetJob\x12\x15.ant.v1.GetJobRequest\x1a\v.ant.v1.Job\x122\n" +
 	"\tCancelJob\x12\x18.ant.v1.CancelJobRequest\x1a\v.ant.v1.Job\x12?\n" +
-	"\fSubscribeJob\x12\x1b.ant.v1.SubscribeJobRequest\x1a\x10.ant.v1.JobEvent0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\fSubscribeJob\x12\x1b.ant.v1.SubscribeJobRequest\x1a\x10.ant.v1.JobEvent0\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_job_proto_rawDescOnce sync.Once

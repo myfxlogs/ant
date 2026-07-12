@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 // Create inserts a new strategy schedule.

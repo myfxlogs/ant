@@ -12,6 +12,7 @@ export interface LoginResult {
 
 export interface RegisterResult {
   user: User;
+  emailVerificationSent: boolean;
 }
 
 export interface RefreshTokenResult {
@@ -34,6 +35,7 @@ export const authApi = {
     const response: any = await authClient.register({ email, password, username: username || email });
     return {
       user: response.user,
+      emailVerificationSent: response.emailVerificationSent ?? false,
     };
   },
 
@@ -44,6 +46,16 @@ export const authApi = {
   getMe: async () => {
     const response: any = await authClient.getMe({});
     return response.user;
+  },
+
+  verifyEmail: async (token: string): Promise<{ success: boolean; message: string }> => {
+    const response: any = await authClient.verifyEmail({ token });
+    return { success: response.success, message: response.message };
+  },
+
+  resendVerification: async (email: string): Promise<{ success: boolean; message: string }> => {
+    const response: any = await authClient.resendVerification({ email });
+    return { success: response.success, message: response.message };
   },
 
   refreshToken: async (refreshToken: string): Promise<RefreshTokenResult> => {

@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 type UserRepository struct {
@@ -39,7 +39,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.User
 	user := &model.User{}
 	query := `
 		SELECT id, email, password_hash, nickname, avatar, role, status,
-		       account_number, last_login_at, created_at, updated_at
+		       account_number, email_verified_at, last_login_at, created_at, updated_at
 		FROM users WHERE id = $1 AND deleted_at IS NULL
 	`
 	err := r.db.QueryRow(ctx, query, id).Scan(
@@ -51,6 +51,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.User
 		&user.Role,
 		&user.Status,
 		&user.AccountNumber,
+		&user.EmailVerifiedAt,
 		&user.LastLoginAt,
 		&user.CreatedAt,
 		&user.UpdatedAt,
@@ -65,7 +66,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.U
 	user := &model.User{}
 	query := `
 		SELECT id, email, password_hash, nickname, avatar, role, status,
-		       account_number, last_login_at, created_at, updated_at
+		       account_number, email_verified_at, last_login_at, created_at, updated_at
 		FROM users WHERE email = $1 AND deleted_at IS NULL
 	`
 	err := r.db.QueryRow(ctx, query, email).Scan(
@@ -77,6 +78,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.U
 		&user.Role,
 		&user.Status,
 		&user.AccountNumber,
+		&user.EmailVerifiedAt,
 		&user.LastLoginAt,
 		&user.CreatedAt,
 		&user.UpdatedAt,
@@ -92,7 +94,7 @@ func (r *UserRepository) GetByLogin(ctx context.Context, login string) (*model.U
 	user := &model.User{}
 	query := `
 		SELECT id, email, password_hash, nickname, avatar, role, status,
-		       account_number, last_login_at, created_at, updated_at
+		       account_number, email_verified_at, last_login_at, created_at, updated_at
 		FROM users WHERE (email = $1 OR account_number = $1) AND deleted_at IS NULL
 	`
 	err := r.db.QueryRow(ctx, query, login).Scan(
@@ -104,6 +106,7 @@ func (r *UserRepository) GetByLogin(ctx context.Context, login string) (*model.U
 		&user.Role,
 		&user.Status,
 		&user.AccountNumber,
+		&user.EmailVerifiedAt,
 		&user.LastLoginAt,
 		&user.CreatedAt,
 		&user.UpdatedAt,
@@ -119,7 +122,7 @@ func (r *UserRepository) GetByAccountNumber(ctx context.Context, accountNumber s
 	user := &model.User{}
 	query := `
 		SELECT id, email, password_hash, nickname, avatar, role, status,
-		       account_number, last_login_at, created_at, updated_at
+		       account_number, email_verified_at, last_login_at, created_at, updated_at
 		FROM users WHERE account_number = $1 AND deleted_at IS NULL
 	`
 	err := r.db.QueryRow(ctx, query, accountNumber).Scan(
@@ -131,6 +134,7 @@ func (r *UserRepository) GetByAccountNumber(ctx context.Context, accountNumber s
 		&user.Role,
 		&user.Status,
 		&user.AccountNumber,
+		&user.EmailVerifiedAt,
 		&user.LastLoginAt,
 		&user.CreatedAt,
 		&user.UpdatedAt,
@@ -226,4 +230,20 @@ func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool,
 	query := `SELECT EXISTS(SELECT 1 FROM users WHERE email = $1 AND deleted_at IS NULL)`
 	err := r.db.QueryRow(ctx, query, email).Scan(&exists)
 	return exists, err
+}
+
+// SetEmailVerified marks a user's email as verified at the current time.
+func (r *UserRepository) SetEmailVerified(ctx context.Context, id uuid.UUID) error {
+	_, err := r.db.Exec(ctx,
+		`UPDATE users SET email_verified_at = now(), updated_at = now() WHERE id = $1`, id)
+	return err
+}
+
+// IsEmailVerified returns true if the user has verified their email.
+func (r *UserRepository) IsEmailVerified(ctx context.Context, id uuid.UUID) (bool, error) {
+	var verified bool
+	err := r.db.QueryRow(ctx,
+		`SELECT email_verified_at IS NOT NULL FROM users WHERE id = $1`, id,
+	).Scan(&verified)
+	return verified, err
 }

@@ -8,7 +8,7 @@ package ai
 import (
 	"strings"
 
-	"anttrader/internal/repository"
+	"alphaforge/internal/repository"
 )
 
 // categoryKeywords maps strategy categories to Chinese keywords for matching.

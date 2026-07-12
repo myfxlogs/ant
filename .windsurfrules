@@ -22,4 +22,4 @@
 - Internal: in-process 或 NATS JetStream
 - MT access: mtapi gRPC（adapter/mt4/ 和 mt5/ 不共享代码）
 - Build: multi-stage Docker（golang:alpine → alpine runtime）
-- Binary name: `/app/antrader`（不是 ant-backend / server）
+- Binary name: `/app/alphaforge`（不是 alphaforge-backend / server）

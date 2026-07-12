@@ -447,7 +447,7 @@ const file_i18n_strategy_backtest_params_proto_rawDesc = "" +
 	"\x0fvectorized_mode\x18% \x01(\tR\x0evectorizedMode\x12\x1f\n" +
 	"\vclose_price\x181 \x01(\tR\n" +
 	"closePrice\x12\x10\n" +
-	"\x03pnl\x182 \x01(\tR\x03pnlB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x03pnl\x182 \x01(\tR\x03pnlB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_backtest_params_proto_rawDescOnce sync.Once

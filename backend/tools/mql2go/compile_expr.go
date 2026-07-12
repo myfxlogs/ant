@@ -3,7 +3,7 @@ package mql2go
 import (
 	"strings"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // isSeriesName returns true for MQL predefined time-series names.

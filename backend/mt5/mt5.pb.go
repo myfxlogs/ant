@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v3.21.12
-// source: mt5.proto
+// source: mt5/mt5.proto
 
 package mt5
 
@@ -63,11 +63,11 @@ func (x ProxyTypes) String() string {
 }
 
 func (ProxyTypes) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[0].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[0].Descriptor()
 }
 
 func (ProxyTypes) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[0]
+	return &file_mt5_mt5_proto_enumTypes[0]
 }
 
 func (x ProxyTypes) Number() protoreflect.EnumNumber {
@@ -76,7 +76,7 @@ func (x ProxyTypes) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ProxyTypes.Descriptor instead.
 func (ProxyTypes) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{0}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{0}
 }
 
 // Netting or Hedging
@@ -113,11 +113,11 @@ func (x AccMethod) String() string {
 }
 
 func (AccMethod) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[1].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[1].Descriptor()
 }
 
 func (AccMethod) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[1]
+	return &file_mt5_mt5_proto_enumTypes[1]
 }
 
 func (x AccMethod) Number() protoreflect.EnumNumber {
@@ -126,7 +126,7 @@ func (x AccMethod) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use AccMethod.Descriptor instead.
 func (AccMethod) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{1}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{1}
 }
 
 type OrderSort int32
@@ -159,11 +159,11 @@ func (x OrderSort) String() string {
 }
 
 func (OrderSort) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[2].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[2].Descriptor()
 }
 
 func (OrderSort) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[2]
+	return &file_mt5_mt5_proto_enumTypes[2]
 }
 
 func (x OrderSort) Number() protoreflect.EnumNumber {
@@ -172,7 +172,7 @@ func (x OrderSort) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use OrderSort.Descriptor instead.
 func (OrderSort) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{2}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{2}
 }
 
 // Expiration type
@@ -212,11 +212,11 @@ func (x ExpirationType) String() string {
 }
 
 func (ExpirationType) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[3].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[3].Descriptor()
 }
 
 func (ExpirationType) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[3]
+	return &file_mt5_mt5_proto_enumTypes[3]
 }
 
 func (x ExpirationType) Number() protoreflect.EnumNumber {
@@ -225,7 +225,7 @@ func (x ExpirationType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ExpirationType.Descriptor instead.
 func (ExpirationType) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{3}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{3}
 }
 
 // Fill policy
@@ -265,11 +265,11 @@ func (x FillPolicy) String() string {
 }
 
 func (FillPolicy) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[4].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[4].Descriptor()
 }
 
 func (FillPolicy) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[4]
+	return &file_mt5_mt5_proto_enumTypes[4]
 }
 
 func (x FillPolicy) Number() protoreflect.EnumNumber {
@@ -278,7 +278,7 @@ func (x FillPolicy) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FillPolicy.Descriptor instead.
 func (FillPolicy) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{4}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{4}
 }
 
 // Placed manually or ByExpert
@@ -363,11 +363,11 @@ func (x PlacedType) String() string {
 }
 
 func (PlacedType) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[5].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[5].Descriptor()
 }
 
 func (PlacedType) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[5]
+	return &file_mt5_mt5_proto_enumTypes[5]
 }
 
 func (x PlacedType) Number() protoreflect.EnumNumber {
@@ -376,7 +376,7 @@ func (x PlacedType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PlacedType.Descriptor instead.
 func (PlacedType) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{5}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{5}
 }
 
 // Order type
@@ -437,11 +437,11 @@ func (x OrderType) String() string {
 }
 
 func (OrderType) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[6].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[6].Descriptor()
 }
 
 func (OrderType) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[6]
+	return &file_mt5_mt5_proto_enumTypes[6]
 }
 
 func (x OrderType) Number() protoreflect.EnumNumber {
@@ -450,7 +450,7 @@ func (x OrderType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use OrderType.Descriptor instead.
 func (OrderType) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{6}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{6}
 }
 
 // Deal type
@@ -523,11 +523,11 @@ func (x DealType) String() string {
 }
 
 func (DealType) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[7].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[7].Descriptor()
 }
 
 func (DealType) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[7]
+	return &file_mt5_mt5_proto_enumTypes[7]
 }
 
 func (x DealType) Number() protoreflect.EnumNumber {
@@ -536,7 +536,7 @@ func (x DealType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use DealType.Descriptor instead.
 func (DealType) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{7}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{7}
 }
 
 // Order state
@@ -594,11 +594,11 @@ func (x OrderState) String() string {
 }
 
 func (OrderState) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[8].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[8].Descriptor()
 }
 
 func (OrderState) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[8]
+	return &file_mt5_mt5_proto_enumTypes[8]
 }
 
 func (x OrderState) Number() protoreflect.EnumNumber {
@@ -607,7 +607,7 @@ func (x OrderState) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use OrderState.Descriptor instead.
 func (OrderState) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{8}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{8}
 }
 
 // Direction of the deal
@@ -647,11 +647,11 @@ func (x Direction) String() string {
 }
 
 func (Direction) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[9].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[9].Descriptor()
 }
 
 func (Direction) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[9]
+	return &file_mt5_mt5_proto_enumTypes[9]
 }
 
 func (x Direction) Number() protoreflect.EnumNumber {
@@ -660,7 +660,7 @@ func (x Direction) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Direction.Descriptor instead.
 func (Direction) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{9}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{9}
 }
 
 // GTC mode
@@ -697,11 +697,11 @@ func (x GTCMode) String() string {
 }
 
 func (GTCMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[10].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[10].Descriptor()
 }
 
 func (GTCMode) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[10]
+	return &file_mt5_mt5_proto_enumTypes[10]
 }
 
 func (x GTCMode) Number() protoreflect.EnumNumber {
@@ -710,7 +710,7 @@ func (x GTCMode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GTCMode.Descriptor instead.
 func (GTCMode) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{10}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{10}
 }
 
 // Profit calculation mode
@@ -777,11 +777,11 @@ func (x CalculationMode) String() string {
 }
 
 func (CalculationMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[11].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[11].Descriptor()
 }
 
 func (CalculationMode) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[11]
+	return &file_mt5_mt5_proto_enumTypes[11]
 }
 
 func (x CalculationMode) Number() protoreflect.EnumNumber {
@@ -790,7 +790,7 @@ func (x CalculationMode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CalculationMode.Descriptor instead.
 func (CalculationMode) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{11}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{11}
 }
 
 // Trade mode
@@ -833,11 +833,11 @@ func (x TradeMode) String() string {
 }
 
 func (TradeMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[12].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[12].Descriptor()
 }
 
 func (TradeMode) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[12]
+	return &file_mt5_mt5_proto_enumTypes[12]
 }
 
 func (x TradeMode) Number() protoreflect.EnumNumber {
@@ -846,7 +846,7 @@ func (x TradeMode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use TradeMode.Descriptor instead.
 func (TradeMode) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{12}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{12}
 }
 
 // Execution type
@@ -886,11 +886,11 @@ func (x ExecutionType) String() string {
 }
 
 func (ExecutionType) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[13].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[13].Descriptor()
 }
 
 func (ExecutionType) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[13]
+	return &file_mt5_mt5_proto_enumTypes[13]
 }
 
 func (x ExecutionType) Number() protoreflect.EnumNumber {
@@ -899,7 +899,7 @@ func (x ExecutionType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ExecutionType.Descriptor instead.
 func (ExecutionType) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{13}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{13}
 }
 
 type FillingFlags int32
@@ -938,11 +938,11 @@ func (x FillingFlags) String() string {
 }
 
 func (FillingFlags) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[14].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[14].Descriptor()
 }
 
 func (FillingFlags) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[14]
+	return &file_mt5_mt5_proto_enumTypes[14]
 }
 
 func (x FillingFlags) Number() protoreflect.EnumNumber {
@@ -951,7 +951,7 @@ func (x FillingFlags) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FillingFlags.Descriptor instead.
 func (FillingFlags) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{14}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{14}
 }
 
 type ExpirationFlags int32
@@ -996,11 +996,11 @@ func (x ExpirationFlags) String() string {
 }
 
 func (ExpirationFlags) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[15].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[15].Descriptor()
 }
 
 func (ExpirationFlags) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[15]
+	return &file_mt5_mt5_proto_enumTypes[15]
 }
 
 func (x ExpirationFlags) Number() protoreflect.EnumNumber {
@@ -1009,7 +1009,7 @@ func (x ExpirationFlags) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ExpirationFlags.Descriptor instead.
 func (ExpirationFlags) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{15}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{15}
 }
 
 // Swap type
@@ -1064,11 +1064,11 @@ func (x SwapType) String() string {
 }
 
 func (SwapType) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[16].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[16].Descriptor()
 }
 
 func (SwapType) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[16]
+	return &file_mt5_mt5_proto_enumTypes[16]
 }
 
 func (x SwapType) Number() protoreflect.EnumNumber {
@@ -1077,7 +1077,7 @@ func (x SwapType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SwapType.Descriptor instead.
 func (SwapType) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{16}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{16}
 }
 
 // Swap day
@@ -1126,11 +1126,11 @@ func (x V3DaysSwap) String() string {
 }
 
 func (V3DaysSwap) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[17].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[17].Descriptor()
 }
 
 func (V3DaysSwap) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[17]
+	return &file_mt5_mt5_proto_enumTypes[17]
 }
 
 func (x V3DaysSwap) Number() protoreflect.EnumNumber {
@@ -1139,7 +1139,7 @@ func (x V3DaysSwap) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use V3DaysSwap.Descriptor instead.
 func (V3DaysSwap) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{17}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{17}
 }
 
 type UpdateType int32
@@ -1220,11 +1220,11 @@ func (x UpdateType) String() string {
 }
 
 func (UpdateType) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[18].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[18].Descriptor()
 }
 
 func (UpdateType) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[18]
+	return &file_mt5_mt5_proto_enumTypes[18]
 }
 
 func (x UpdateType) Number() protoreflect.EnumNumber {
@@ -1233,7 +1233,7 @@ func (x UpdateType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use UpdateType.Descriptor instead.
 func (UpdateType) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{18}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{18}
 }
 
 type ErrorCode int32
@@ -1738,11 +1738,11 @@ func (x ErrorCode) String() string {
 }
 
 func (ErrorCode) Descriptor() protoreflect.EnumDescriptor {
-	return file_mt5_proto_enumTypes[19].Descriptor()
+	return file_mt5_mt5_proto_enumTypes[19].Descriptor()
 }
 
 func (ErrorCode) Type() protoreflect.EnumType {
-	return &file_mt5_proto_enumTypes[19]
+	return &file_mt5_mt5_proto_enumTypes[19]
 }
 
 func (x ErrorCode) Number() protoreflect.EnumNumber {
@@ -1751,7 +1751,7 @@ func (x ErrorCode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ErrorCode.Descriptor instead.
 func (ErrorCode) EnumDescriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{19}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{19}
 }
 
 type Error struct {
@@ -1765,7 +1765,7 @@ type Error struct {
 
 func (x *Error) Reset() {
 	*x = Error{}
-	mi := &file_mt5_proto_msgTypes[0]
+	mi := &file_mt5_mt5_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1777,7 +1777,7 @@ func (x *Error) String() string {
 func (*Error) ProtoMessage() {}
 
 func (x *Error) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[0]
+	mi := &file_mt5_mt5_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1790,7 +1790,7 @@ func (x *Error) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Error.ProtoReflect.Descriptor instead.
 func (*Error) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{0}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Error) GetCode() ErrorCode {
@@ -1842,7 +1842,7 @@ type ConnectRequest struct {
 
 func (x *ConnectRequest) Reset() {
 	*x = ConnectRequest{}
-	mi := &file_mt5_proto_msgTypes[1]
+	mi := &file_mt5_mt5_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1854,7 +1854,7 @@ func (x *ConnectRequest) String() string {
 func (*ConnectRequest) ProtoMessage() {}
 
 func (x *ConnectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[1]
+	mi := &file_mt5_mt5_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1867,7 +1867,7 @@ func (x *ConnectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConnectRequest.ProtoReflect.Descriptor instead.
 func (*ConnectRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{1}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ConnectRequest) GetUser() uint64 {
@@ -1922,7 +1922,7 @@ type ConnectReply struct {
 
 func (x *ConnectReply) Reset() {
 	*x = ConnectReply{}
-	mi := &file_mt5_proto_msgTypes[2]
+	mi := &file_mt5_mt5_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1934,7 +1934,7 @@ func (x *ConnectReply) String() string {
 func (*ConnectReply) ProtoMessage() {}
 
 func (x *ConnectReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[2]
+	mi := &file_mt5_mt5_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1947,7 +1947,7 @@ func (x *ConnectReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConnectReply.ProtoReflect.Descriptor instead.
 func (*ConnectReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{2}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ConnectReply) GetResult() string {
@@ -1989,7 +1989,7 @@ type ConnectExRequest struct {
 
 func (x *ConnectExRequest) Reset() {
 	*x = ConnectExRequest{}
-	mi := &file_mt5_proto_msgTypes[3]
+	mi := &file_mt5_mt5_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2001,7 +2001,7 @@ func (x *ConnectExRequest) String() string {
 func (*ConnectExRequest) ProtoMessage() {}
 
 func (x *ConnectExRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[3]
+	mi := &file_mt5_mt5_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2014,7 +2014,7 @@ func (x *ConnectExRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConnectExRequest.ProtoReflect.Descriptor instead.
 func (*ConnectExRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{3}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ConnectExRequest) GetUser() uint64 {
@@ -2062,7 +2062,7 @@ type ConnectExReply struct {
 
 func (x *ConnectExReply) Reset() {
 	*x = ConnectExReply{}
-	mi := &file_mt5_proto_msgTypes[4]
+	mi := &file_mt5_mt5_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2074,7 +2074,7 @@ func (x *ConnectExReply) String() string {
 func (*ConnectExReply) ProtoMessage() {}
 
 func (x *ConnectExReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[4]
+	mi := &file_mt5_mt5_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2087,7 +2087,7 @@ func (x *ConnectExReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConnectExReply.ProtoReflect.Descriptor instead.
 func (*ConnectExReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{4}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ConnectExReply) GetResult() string {
@@ -2112,7 +2112,7 @@ type VersionRequest struct {
 
 func (x *VersionRequest) Reset() {
 	*x = VersionRequest{}
-	mi := &file_mt5_proto_msgTypes[5]
+	mi := &file_mt5_mt5_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2124,7 +2124,7 @@ func (x *VersionRequest) String() string {
 func (*VersionRequest) ProtoMessage() {}
 
 func (x *VersionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[5]
+	mi := &file_mt5_mt5_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2137,7 +2137,7 @@ func (x *VersionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VersionRequest.ProtoReflect.Descriptor instead.
 func (*VersionRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{5}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{5}
 }
 
 type VersionReply struct {
@@ -2150,7 +2150,7 @@ type VersionReply struct {
 
 func (x *VersionReply) Reset() {
 	*x = VersionReply{}
-	mi := &file_mt5_proto_msgTypes[6]
+	mi := &file_mt5_mt5_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2162,7 +2162,7 @@ func (x *VersionReply) String() string {
 func (*VersionReply) ProtoMessage() {}
 
 func (x *VersionReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[6]
+	mi := &file_mt5_mt5_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2175,7 +2175,7 @@ func (x *VersionReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VersionReply.ProtoReflect.Descriptor instead.
 func (*VersionReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{6}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *VersionReply) GetResult() string {
@@ -2217,7 +2217,7 @@ type PriceHistoryExRequest struct {
 
 func (x *PriceHistoryExRequest) Reset() {
 	*x = PriceHistoryExRequest{}
-	mi := &file_mt5_proto_msgTypes[7]
+	mi := &file_mt5_mt5_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2229,7 +2229,7 @@ func (x *PriceHistoryExRequest) String() string {
 func (*PriceHistoryExRequest) ProtoMessage() {}
 
 func (x *PriceHistoryExRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[7]
+	mi := &file_mt5_mt5_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2242,7 +2242,7 @@ func (x *PriceHistoryExRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryExRequest.ProtoReflect.Descriptor instead.
 func (*PriceHistoryExRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{7}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *PriceHistoryExRequest) GetId() string {
@@ -2290,7 +2290,7 @@ type PriceHistoryExReply struct {
 
 func (x *PriceHistoryExReply) Reset() {
 	*x = PriceHistoryExReply{}
-	mi := &file_mt5_proto_msgTypes[8]
+	mi := &file_mt5_mt5_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2302,7 +2302,7 @@ func (x *PriceHistoryExReply) String() string {
 func (*PriceHistoryExReply) ProtoMessage() {}
 
 func (x *PriceHistoryExReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[8]
+	mi := &file_mt5_mt5_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2315,7 +2315,7 @@ func (x *PriceHistoryExReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryExReply.ProtoReflect.Descriptor instead.
 func (*PriceHistoryExReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{8}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *PriceHistoryExReply) GetResult() []*Bar {
@@ -2356,7 +2356,7 @@ type PriceHistoryExManyRequest struct {
 
 func (x *PriceHistoryExManyRequest) Reset() {
 	*x = PriceHistoryExManyRequest{}
-	mi := &file_mt5_proto_msgTypes[9]
+	mi := &file_mt5_mt5_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2368,7 +2368,7 @@ func (x *PriceHistoryExManyRequest) String() string {
 func (*PriceHistoryExManyRequest) ProtoMessage() {}
 
 func (x *PriceHistoryExManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[9]
+	mi := &file_mt5_mt5_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2381,7 +2381,7 @@ func (x *PriceHistoryExManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryExManyRequest.ProtoReflect.Descriptor instead.
 func (*PriceHistoryExManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{9}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *PriceHistoryExManyRequest) GetId() string {
@@ -2429,7 +2429,7 @@ type PriceHistoryExManyReply struct {
 
 func (x *PriceHistoryExManyReply) Reset() {
 	*x = PriceHistoryExManyReply{}
-	mi := &file_mt5_proto_msgTypes[10]
+	mi := &file_mt5_mt5_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2441,7 +2441,7 @@ func (x *PriceHistoryExManyReply) String() string {
 func (*PriceHistoryExManyReply) ProtoMessage() {}
 
 func (x *PriceHistoryExManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[10]
+	mi := &file_mt5_mt5_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2454,7 +2454,7 @@ func (x *PriceHistoryExManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryExManyReply.ProtoReflect.Descriptor instead.
 func (*PriceHistoryExManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{10}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *PriceHistoryExManyReply) GetResult() []*BarsForSymbol {
@@ -2481,7 +2481,7 @@ type PriceHistoryMonthManyReply struct {
 
 func (x *PriceHistoryMonthManyReply) Reset() {
 	*x = PriceHistoryMonthManyReply{}
-	mi := &file_mt5_proto_msgTypes[11]
+	mi := &file_mt5_mt5_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2493,7 +2493,7 @@ func (x *PriceHistoryMonthManyReply) String() string {
 func (*PriceHistoryMonthManyReply) ProtoMessage() {}
 
 func (x *PriceHistoryMonthManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[11]
+	mi := &file_mt5_mt5_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2506,7 +2506,7 @@ func (x *PriceHistoryMonthManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryMonthManyReply.ProtoReflect.Descriptor instead.
 func (*PriceHistoryMonthManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{11}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *PriceHistoryMonthManyReply) GetResult() []*QuoteHistoryEventArgs {
@@ -2536,7 +2536,7 @@ type QuoteHistoryEventArgs struct {
 
 func (x *QuoteHistoryEventArgs) Reset() {
 	*x = QuoteHistoryEventArgs{}
-	mi := &file_mt5_proto_msgTypes[12]
+	mi := &file_mt5_mt5_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2548,7 +2548,7 @@ func (x *QuoteHistoryEventArgs) String() string {
 func (*QuoteHistoryEventArgs) ProtoMessage() {}
 
 func (x *QuoteHistoryEventArgs) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[12]
+	mi := &file_mt5_mt5_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2561,7 +2561,7 @@ func (x *QuoteHistoryEventArgs) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QuoteHistoryEventArgs.ProtoReflect.Descriptor instead.
 func (*QuoteHistoryEventArgs) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{12}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *QuoteHistoryEventArgs) GetSymbol() string {
@@ -2603,7 +2603,7 @@ type PriceHistoryManyRequest struct {
 
 func (x *PriceHistoryManyRequest) Reset() {
 	*x = PriceHistoryManyRequest{}
-	mi := &file_mt5_proto_msgTypes[13]
+	mi := &file_mt5_mt5_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2615,7 +2615,7 @@ func (x *PriceHistoryManyRequest) String() string {
 func (*PriceHistoryManyRequest) ProtoMessage() {}
 
 func (x *PriceHistoryManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[13]
+	mi := &file_mt5_mt5_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2628,7 +2628,7 @@ func (x *PriceHistoryManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryManyRequest.ProtoReflect.Descriptor instead.
 func (*PriceHistoryManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{13}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *PriceHistoryManyRequest) GetId() string {
@@ -2677,7 +2677,7 @@ type BarsForSymbol struct {
 
 func (x *BarsForSymbol) Reset() {
 	*x = BarsForSymbol{}
-	mi := &file_mt5_proto_msgTypes[14]
+	mi := &file_mt5_mt5_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2689,7 +2689,7 @@ func (x *BarsForSymbol) String() string {
 func (*BarsForSymbol) ProtoMessage() {}
 
 func (x *BarsForSymbol) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[14]
+	mi := &file_mt5_mt5_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2702,7 +2702,7 @@ func (x *BarsForSymbol) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BarsForSymbol.ProtoReflect.Descriptor instead.
 func (*BarsForSymbol) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{14}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *BarsForSymbol) GetSymbol() string {
@@ -2736,7 +2736,7 @@ type PriceHistoryManyReply struct {
 
 func (x *PriceHistoryManyReply) Reset() {
 	*x = PriceHistoryManyReply{}
-	mi := &file_mt5_proto_msgTypes[15]
+	mi := &file_mt5_mt5_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2748,7 +2748,7 @@ func (x *PriceHistoryManyReply) String() string {
 func (*PriceHistoryManyReply) ProtoMessage() {}
 
 func (x *PriceHistoryManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[15]
+	mi := &file_mt5_mt5_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2761,7 +2761,7 @@ func (x *PriceHistoryManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryManyReply.ProtoReflect.Descriptor instead.
 func (*PriceHistoryManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{15}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *PriceHistoryManyReply) GetResult() []*BarsForSymbol {
@@ -2793,7 +2793,7 @@ type SymbolListRequest struct {
 
 func (x *SymbolListRequest) Reset() {
 	*x = SymbolListRequest{}
-	mi := &file_mt5_proto_msgTypes[16]
+	mi := &file_mt5_mt5_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2805,7 +2805,7 @@ func (x *SymbolListRequest) String() string {
 func (*SymbolListRequest) ProtoMessage() {}
 
 func (x *SymbolListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[16]
+	mi := &file_mt5_mt5_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2818,7 +2818,7 @@ func (x *SymbolListRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolListRequest.ProtoReflect.Descriptor instead.
 func (*SymbolListRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{16}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *SymbolListRequest) GetId() string {
@@ -2838,7 +2838,7 @@ type SymbolListReply struct {
 
 func (x *SymbolListReply) Reset() {
 	*x = SymbolListReply{}
-	mi := &file_mt5_proto_msgTypes[17]
+	mi := &file_mt5_mt5_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2850,7 +2850,7 @@ func (x *SymbolListReply) String() string {
 func (*SymbolListReply) ProtoMessage() {}
 
 func (x *SymbolListReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[17]
+	mi := &file_mt5_mt5_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2863,7 +2863,7 @@ func (x *SymbolListReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolListReply.ProtoReflect.Descriptor instead.
 func (*SymbolListReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{17}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *SymbolListReply) GetResult() []string {
@@ -2921,7 +2921,7 @@ type ConnectProxyRequest struct {
 
 func (x *ConnectProxyRequest) Reset() {
 	*x = ConnectProxyRequest{}
-	mi := &file_mt5_proto_msgTypes[18]
+	mi := &file_mt5_mt5_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2933,7 +2933,7 @@ func (x *ConnectProxyRequest) String() string {
 func (*ConnectProxyRequest) ProtoMessage() {}
 
 func (x *ConnectProxyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[18]
+	mi := &file_mt5_mt5_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2946,7 +2946,7 @@ func (x *ConnectProxyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConnectProxyRequest.ProtoReflect.Descriptor instead.
 func (*ConnectProxyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{18}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ConnectProxyRequest) GetUser() uint64 {
@@ -3029,7 +3029,7 @@ type ConnectProxyReply struct {
 
 func (x *ConnectProxyReply) Reset() {
 	*x = ConnectProxyReply{}
-	mi := &file_mt5_proto_msgTypes[19]
+	mi := &file_mt5_mt5_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3041,7 +3041,7 @@ func (x *ConnectProxyReply) String() string {
 func (*ConnectProxyReply) ProtoMessage() {}
 
 func (x *ConnectProxyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[19]
+	mi := &file_mt5_mt5_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3054,7 +3054,7 @@ func (x *ConnectProxyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConnectProxyReply.ProtoReflect.Descriptor instead.
 func (*ConnectProxyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{19}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ConnectProxyReply) GetResult() string {
@@ -3086,7 +3086,7 @@ type CheckConnectRequest struct {
 
 func (x *CheckConnectRequest) Reset() {
 	*x = CheckConnectRequest{}
-	mi := &file_mt5_proto_msgTypes[20]
+	mi := &file_mt5_mt5_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3098,7 +3098,7 @@ func (x *CheckConnectRequest) String() string {
 func (*CheckConnectRequest) ProtoMessage() {}
 
 func (x *CheckConnectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[20]
+	mi := &file_mt5_mt5_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3111,7 +3111,7 @@ func (x *CheckConnectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckConnectRequest.ProtoReflect.Descriptor instead.
 func (*CheckConnectRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{20}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *CheckConnectRequest) GetId() string {
@@ -3131,7 +3131,7 @@ type CheckConnectReply struct {
 
 func (x *CheckConnectReply) Reset() {
 	*x = CheckConnectReply{}
-	mi := &file_mt5_proto_msgTypes[21]
+	mi := &file_mt5_mt5_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3143,7 +3143,7 @@ func (x *CheckConnectReply) String() string {
 func (*CheckConnectReply) ProtoMessage() {}
 
 func (x *CheckConnectReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[21]
+	mi := &file_mt5_mt5_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3156,7 +3156,7 @@ func (x *CheckConnectReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckConnectReply.ProtoReflect.Descriptor instead.
 func (*CheckConnectReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{21}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *CheckConnectReply) GetResult() string {
@@ -3188,7 +3188,7 @@ type DisconnectRequest struct {
 
 func (x *DisconnectRequest) Reset() {
 	*x = DisconnectRequest{}
-	mi := &file_mt5_proto_msgTypes[22]
+	mi := &file_mt5_mt5_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3200,7 +3200,7 @@ func (x *DisconnectRequest) String() string {
 func (*DisconnectRequest) ProtoMessage() {}
 
 func (x *DisconnectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[22]
+	mi := &file_mt5_mt5_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3213,7 +3213,7 @@ func (x *DisconnectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisconnectRequest.ProtoReflect.Descriptor instead.
 func (*DisconnectRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{22}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *DisconnectRequest) GetId() string {
@@ -3233,7 +3233,7 @@ type DisconnectReply struct {
 
 func (x *DisconnectReply) Reset() {
 	*x = DisconnectReply{}
-	mi := &file_mt5_proto_msgTypes[23]
+	mi := &file_mt5_mt5_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3245,7 +3245,7 @@ func (x *DisconnectReply) String() string {
 func (*DisconnectReply) ProtoMessage() {}
 
 func (x *DisconnectReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[23]
+	mi := &file_mt5_mt5_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3258,7 +3258,7 @@ func (x *DisconnectReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisconnectReply.ProtoReflect.Descriptor instead.
 func (*DisconnectReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{23}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *DisconnectReply) GetResult() string {
@@ -3290,7 +3290,7 @@ type AccountRequest struct {
 
 func (x *AccountRequest) Reset() {
 	*x = AccountRequest{}
-	mi := &file_mt5_proto_msgTypes[24]
+	mi := &file_mt5_mt5_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3302,7 +3302,7 @@ func (x *AccountRequest) String() string {
 func (*AccountRequest) ProtoMessage() {}
 
 func (x *AccountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[24]
+	mi := &file_mt5_mt5_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3315,7 +3315,7 @@ func (x *AccountRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccountRequest.ProtoReflect.Descriptor instead.
 func (*AccountRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{24}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *AccountRequest) GetId() string {
@@ -3349,7 +3349,7 @@ type AccountRec struct {
 
 func (x *AccountRec) Reset() {
 	*x = AccountRec{}
-	mi := &file_mt5_proto_msgTypes[25]
+	mi := &file_mt5_mt5_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3361,7 +3361,7 @@ func (x *AccountRec) String() string {
 func (*AccountRec) ProtoMessage() {}
 
 func (x *AccountRec) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[25]
+	mi := &file_mt5_mt5_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3374,7 +3374,7 @@ func (x *AccountRec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccountRec.ProtoReflect.Descriptor instead.
 func (*AccountRec) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{25}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *AccountRec) GetLogin() uint64 {
@@ -3492,7 +3492,7 @@ type AccountReply struct {
 
 func (x *AccountReply) Reset() {
 	*x = AccountReply{}
-	mi := &file_mt5_proto_msgTypes[26]
+	mi := &file_mt5_mt5_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3504,7 +3504,7 @@ func (x *AccountReply) String() string {
 func (*AccountReply) ProtoMessage() {}
 
 func (x *AccountReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[26]
+	mi := &file_mt5_mt5_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3517,7 +3517,7 @@ func (x *AccountReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccountReply.ProtoReflect.Descriptor instead.
 func (*AccountReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{26}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *AccountReply) GetResult() *AccountRec {
@@ -3549,7 +3549,7 @@ type AccountSummaryRequest struct {
 
 func (x *AccountSummaryRequest) Reset() {
 	*x = AccountSummaryRequest{}
-	mi := &file_mt5_proto_msgTypes[27]
+	mi := &file_mt5_mt5_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3561,7 +3561,7 @@ func (x *AccountSummaryRequest) String() string {
 func (*AccountSummaryRequest) ProtoMessage() {}
 
 func (x *AccountSummaryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[27]
+	mi := &file_mt5_mt5_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3574,7 +3574,7 @@ func (x *AccountSummaryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccountSummaryRequest.ProtoReflect.Descriptor instead.
 func (*AccountSummaryRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{27}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *AccountSummaryRequest) GetId() string {
@@ -3617,7 +3617,7 @@ type AccountSummary struct {
 
 func (x *AccountSummary) Reset() {
 	*x = AccountSummary{}
-	mi := &file_mt5_proto_msgTypes[28]
+	mi := &file_mt5_mt5_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3629,7 +3629,7 @@ func (x *AccountSummary) String() string {
 func (*AccountSummary) ProtoMessage() {}
 
 func (x *AccountSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[28]
+	mi := &file_mt5_mt5_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3642,7 +3642,7 @@ func (x *AccountSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccountSummary.ProtoReflect.Descriptor instead.
 func (*AccountSummary) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{28}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *AccountSummary) GetBalance() float64 {
@@ -3739,7 +3739,7 @@ type AccountSummaryReply struct {
 
 func (x *AccountSummaryReply) Reset() {
 	*x = AccountSummaryReply{}
-	mi := &file_mt5_proto_msgTypes[29]
+	mi := &file_mt5_mt5_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3751,7 +3751,7 @@ func (x *AccountSummaryReply) String() string {
 func (*AccountSummaryReply) ProtoMessage() {}
 
 func (x *AccountSummaryReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[29]
+	mi := &file_mt5_mt5_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3764,7 +3764,7 @@ func (x *AccountSummaryReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccountSummaryReply.ProtoReflect.Descriptor instead.
 func (*AccountSummaryReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{29}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *AccountSummaryReply) GetResult() *AccountSummary {
@@ -3802,7 +3802,7 @@ type OpenedOrdersRequest struct {
 
 func (x *OpenedOrdersRequest) Reset() {
 	*x = OpenedOrdersRequest{}
-	mi := &file_mt5_proto_msgTypes[30]
+	mi := &file_mt5_mt5_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3814,7 +3814,7 @@ func (x *OpenedOrdersRequest) String() string {
 func (*OpenedOrdersRequest) ProtoMessage() {}
 
 func (x *OpenedOrdersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[30]
+	mi := &file_mt5_mt5_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3827,7 +3827,7 @@ func (x *OpenedOrdersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OpenedOrdersRequest.ProtoReflect.Descriptor instead.
 func (*OpenedOrdersRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{30}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *OpenedOrdersRequest) GetId() string {
@@ -3897,7 +3897,7 @@ type Order struct {
 
 func (x *Order) Reset() {
 	*x = Order{}
-	mi := &file_mt5_proto_msgTypes[31]
+	mi := &file_mt5_mt5_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3909,7 +3909,7 @@ func (x *Order) String() string {
 func (*Order) ProtoMessage() {}
 
 func (x *Order) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[31]
+	mi := &file_mt5_mt5_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3922,7 +3922,7 @@ func (x *Order) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Order.ProtoReflect.Descriptor instead.
 func (*Order) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{31}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *Order) GetCloseVolume() uint64 {
@@ -4256,7 +4256,7 @@ type DealInternal struct {
 
 func (x *DealInternal) Reset() {
 	*x = DealInternal{}
-	mi := &file_mt5_proto_msgTypes[32]
+	mi := &file_mt5_mt5_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4268,7 +4268,7 @@ func (x *DealInternal) String() string {
 func (*DealInternal) ProtoMessage() {}
 
 func (x *DealInternal) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[32]
+	mi := &file_mt5_mt5_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4281,7 +4281,7 @@ func (x *DealInternal) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DealInternal.ProtoReflect.Descriptor instead.
 func (*DealInternal) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{32}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *DealInternal) GetOpenTimeAsDateTime() *timestamppb.Timestamp {
@@ -4581,7 +4581,7 @@ type OrderInternal struct {
 
 func (x *OrderInternal) Reset() {
 	*x = OrderInternal{}
-	mi := &file_mt5_proto_msgTypes[33]
+	mi := &file_mt5_mt5_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4593,7 +4593,7 @@ func (x *OrderInternal) String() string {
 func (*OrderInternal) ProtoMessage() {}
 
 func (x *OrderInternal) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[33]
+	mi := &file_mt5_mt5_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4606,7 +4606,7 @@ func (x *OrderInternal) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderInternal.ProtoReflect.Descriptor instead.
 func (*OrderInternal) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{33}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *OrderInternal) GetTicket() int64 {
@@ -4850,7 +4850,7 @@ type OpenedOrdersReply struct {
 
 func (x *OpenedOrdersReply) Reset() {
 	*x = OpenedOrdersReply{}
-	mi := &file_mt5_proto_msgTypes[34]
+	mi := &file_mt5_mt5_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4862,7 +4862,7 @@ func (x *OpenedOrdersReply) String() string {
 func (*OpenedOrdersReply) ProtoMessage() {}
 
 func (x *OpenedOrdersReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[34]
+	mi := &file_mt5_mt5_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4875,7 +4875,7 @@ func (x *OpenedOrdersReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OpenedOrdersReply.ProtoReflect.Descriptor instead.
 func (*OpenedOrdersReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{34}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *OpenedOrdersReply) GetResult() []*Order {
@@ -4910,7 +4910,7 @@ type OpenedOrderRequest struct {
 
 func (x *OpenedOrderRequest) Reset() {
 	*x = OpenedOrderRequest{}
-	mi := &file_mt5_proto_msgTypes[35]
+	mi := &file_mt5_mt5_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4922,7 +4922,7 @@ func (x *OpenedOrderRequest) String() string {
 func (*OpenedOrderRequest) ProtoMessage() {}
 
 func (x *OpenedOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[35]
+	mi := &file_mt5_mt5_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4935,7 +4935,7 @@ func (x *OpenedOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OpenedOrderRequest.ProtoReflect.Descriptor instead.
 func (*OpenedOrderRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{35}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *OpenedOrderRequest) GetId() string {
@@ -4962,7 +4962,7 @@ type OpenedOrderReply struct {
 
 func (x *OpenedOrderReply) Reset() {
 	*x = OpenedOrderReply{}
-	mi := &file_mt5_proto_msgTypes[36]
+	mi := &file_mt5_mt5_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4974,7 +4974,7 @@ func (x *OpenedOrderReply) String() string {
 func (*OpenedOrderReply) ProtoMessage() {}
 
 func (x *OpenedOrderReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[36]
+	mi := &file_mt5_mt5_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4987,7 +4987,7 @@ func (x *OpenedOrderReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OpenedOrderReply.ProtoReflect.Descriptor instead.
 func (*OpenedOrderReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{36}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *OpenedOrderReply) GetResult() *Order {
@@ -5019,7 +5019,7 @@ type OpenedOrdersTicketsRequest struct {
 
 func (x *OpenedOrdersTicketsRequest) Reset() {
 	*x = OpenedOrdersTicketsRequest{}
-	mi := &file_mt5_proto_msgTypes[37]
+	mi := &file_mt5_mt5_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5031,7 +5031,7 @@ func (x *OpenedOrdersTicketsRequest) String() string {
 func (*OpenedOrdersTicketsRequest) ProtoMessage() {}
 
 func (x *OpenedOrdersTicketsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[37]
+	mi := &file_mt5_mt5_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5044,7 +5044,7 @@ func (x *OpenedOrdersTicketsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OpenedOrdersTicketsRequest.ProtoReflect.Descriptor instead.
 func (*OpenedOrdersTicketsRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{37}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *OpenedOrdersTicketsRequest) GetId() string {
@@ -5064,7 +5064,7 @@ type OpenedOrdersTicketsReply struct {
 
 func (x *OpenedOrdersTicketsReply) Reset() {
 	*x = OpenedOrdersTicketsReply{}
-	mi := &file_mt5_proto_msgTypes[38]
+	mi := &file_mt5_mt5_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5076,7 +5076,7 @@ func (x *OpenedOrdersTicketsReply) String() string {
 func (*OpenedOrdersTicketsReply) ProtoMessage() {}
 
 func (x *OpenedOrdersTicketsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[38]
+	mi := &file_mt5_mt5_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5089,7 +5089,7 @@ func (x *OpenedOrdersTicketsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OpenedOrdersTicketsReply.ProtoReflect.Descriptor instead.
 func (*OpenedOrdersTicketsReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{38}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *OpenedOrdersTicketsReply) GetResult() []int64 {
@@ -5135,7 +5135,7 @@ type OrderHistoryRequest struct {
 
 func (x *OrderHistoryRequest) Reset() {
 	*x = OrderHistoryRequest{}
-	mi := &file_mt5_proto_msgTypes[39]
+	mi := &file_mt5_mt5_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5147,7 +5147,7 @@ func (x *OrderHistoryRequest) String() string {
 func (*OrderHistoryRequest) ProtoMessage() {}
 
 func (x *OrderHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[39]
+	mi := &file_mt5_mt5_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5160,7 +5160,7 @@ func (x *OrderHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderHistoryRequest.ProtoReflect.Descriptor instead.
 func (*OrderHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{39}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *OrderHistoryRequest) GetId() string {
@@ -5215,7 +5215,7 @@ type OrderHistoryReply struct {
 
 func (x *OrderHistoryReply) Reset() {
 	*x = OrderHistoryReply{}
-	mi := &file_mt5_proto_msgTypes[40]
+	mi := &file_mt5_mt5_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5227,7 +5227,7 @@ func (x *OrderHistoryReply) String() string {
 func (*OrderHistoryReply) ProtoMessage() {}
 
 func (x *OrderHistoryReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[40]
+	mi := &file_mt5_mt5_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5240,7 +5240,7 @@ func (x *OrderHistoryReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderHistoryReply.ProtoReflect.Descriptor instead.
 func (*OrderHistoryReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{40}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *OrderHistoryReply) GetResult() []*Order {
@@ -5281,7 +5281,7 @@ type PendingOrderHistoryRequest struct {
 
 func (x *PendingOrderHistoryRequest) Reset() {
 	*x = PendingOrderHistoryRequest{}
-	mi := &file_mt5_proto_msgTypes[41]
+	mi := &file_mt5_mt5_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5293,7 +5293,7 @@ func (x *PendingOrderHistoryRequest) String() string {
 func (*PendingOrderHistoryRequest) ProtoMessage() {}
 
 func (x *PendingOrderHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[41]
+	mi := &file_mt5_mt5_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5306,7 +5306,7 @@ func (x *PendingOrderHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PendingOrderHistoryRequest.ProtoReflect.Descriptor instead.
 func (*PendingOrderHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{41}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *PendingOrderHistoryRequest) GetId() string {
@@ -5347,7 +5347,7 @@ type PendingOrderHistoryReply struct {
 
 func (x *PendingOrderHistoryReply) Reset() {
 	*x = PendingOrderHistoryReply{}
-	mi := &file_mt5_proto_msgTypes[42]
+	mi := &file_mt5_mt5_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5359,7 +5359,7 @@ func (x *PendingOrderHistoryReply) String() string {
 func (*PendingOrderHistoryReply) ProtoMessage() {}
 
 func (x *PendingOrderHistoryReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[42]
+	mi := &file_mt5_mt5_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5372,7 +5372,7 @@ func (x *PendingOrderHistoryReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PendingOrderHistoryReply.ProtoReflect.Descriptor instead.
 func (*PendingOrderHistoryReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{42}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *PendingOrderHistoryReply) GetResult() []*OrderInternal {
@@ -5430,7 +5430,7 @@ type OrderHistoryPaginationRequest struct {
 
 func (x *OrderHistoryPaginationRequest) Reset() {
 	*x = OrderHistoryPaginationRequest{}
-	mi := &file_mt5_proto_msgTypes[43]
+	mi := &file_mt5_mt5_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5442,7 +5442,7 @@ func (x *OrderHistoryPaginationRequest) String() string {
 func (*OrderHistoryPaginationRequest) ProtoMessage() {}
 
 func (x *OrderHistoryPaginationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[43]
+	mi := &file_mt5_mt5_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5455,7 +5455,7 @@ func (x *OrderHistoryPaginationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderHistoryPaginationRequest.ProtoReflect.Descriptor instead.
 func (*OrderHistoryPaginationRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{43}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *OrderHistoryPaginationRequest) GetId() string {
@@ -5543,7 +5543,7 @@ type PaginationReply struct {
 
 func (x *PaginationReply) Reset() {
 	*x = PaginationReply{}
-	mi := &file_mt5_proto_msgTypes[44]
+	mi := &file_mt5_mt5_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5555,7 +5555,7 @@ func (x *PaginationReply) String() string {
 func (*PaginationReply) ProtoMessage() {}
 
 func (x *PaginationReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[44]
+	mi := &file_mt5_mt5_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5568,7 +5568,7 @@ func (x *PaginationReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PaginationReply.ProtoReflect.Descriptor instead.
 func (*PaginationReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{44}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *PaginationReply) GetPagesCount() int32 {
@@ -5602,7 +5602,7 @@ type OrderHistoryPaginationReply struct {
 
 func (x *OrderHistoryPaginationReply) Reset() {
 	*x = OrderHistoryPaginationReply{}
-	mi := &file_mt5_proto_msgTypes[45]
+	mi := &file_mt5_mt5_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5614,7 +5614,7 @@ func (x *OrderHistoryPaginationReply) String() string {
 func (*OrderHistoryPaginationReply) ProtoMessage() {}
 
 func (x *OrderHistoryPaginationReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[45]
+	mi := &file_mt5_mt5_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5627,7 +5627,7 @@ func (x *OrderHistoryPaginationReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderHistoryPaginationReply.ProtoReflect.Descriptor instead.
 func (*OrderHistoryPaginationReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{45}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *OrderHistoryPaginationReply) GetResult() *PaginationReply {
@@ -5659,7 +5659,7 @@ type SymbolsRequest struct {
 
 func (x *SymbolsRequest) Reset() {
 	*x = SymbolsRequest{}
-	mi := &file_mt5_proto_msgTypes[46]
+	mi := &file_mt5_mt5_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5671,7 +5671,7 @@ func (x *SymbolsRequest) String() string {
 func (*SymbolsRequest) ProtoMessage() {}
 
 func (x *SymbolsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[46]
+	mi := &file_mt5_mt5_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5684,7 +5684,7 @@ func (x *SymbolsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolsRequest.ProtoReflect.Descriptor instead.
 func (*SymbolsRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{46}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *SymbolsRequest) GetId() string {
@@ -5758,7 +5758,7 @@ type SymbolInfo struct {
 
 func (x *SymbolInfo) Reset() {
 	*x = SymbolInfo{}
-	mi := &file_mt5_proto_msgTypes[47]
+	mi := &file_mt5_mt5_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5770,7 +5770,7 @@ func (x *SymbolInfo) String() string {
 func (*SymbolInfo) ProtoMessage() {}
 
 func (x *SymbolInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[47]
+	mi := &file_mt5_mt5_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5783,7 +5783,7 @@ func (x *SymbolInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolInfo.ProtoReflect.Descriptor instead.
 func (*SymbolInfo) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{47}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *SymbolInfo) GetUpdateTime() int64 {
@@ -5999,7 +5999,7 @@ type SymbolsReply struct {
 
 func (x *SymbolsReply) Reset() {
 	*x = SymbolsReply{}
-	mi := &file_mt5_proto_msgTypes[48]
+	mi := &file_mt5_mt5_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6011,7 +6011,7 @@ func (x *SymbolsReply) String() string {
 func (*SymbolsReply) ProtoMessage() {}
 
 func (x *SymbolsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[48]
+	mi := &file_mt5_mt5_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6024,7 +6024,7 @@ func (x *SymbolsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolsReply.ProtoReflect.Descriptor instead.
 func (*SymbolsReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{48}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *SymbolsReply) GetResult() []*SymbolInfo {
@@ -6062,7 +6062,7 @@ type GetQuoteRequest struct {
 
 func (x *GetQuoteRequest) Reset() {
 	*x = GetQuoteRequest{}
-	mi := &file_mt5_proto_msgTypes[49]
+	mi := &file_mt5_mt5_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6074,7 +6074,7 @@ func (x *GetQuoteRequest) String() string {
 func (*GetQuoteRequest) ProtoMessage() {}
 
 func (x *GetQuoteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[49]
+	mi := &file_mt5_mt5_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6087,7 +6087,7 @@ func (x *GetQuoteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetQuoteRequest.ProtoReflect.Descriptor instead.
 func (*GetQuoteRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{49}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *GetQuoteRequest) GetId() string {
@@ -6132,7 +6132,7 @@ type Quote struct {
 
 func (x *Quote) Reset() {
 	*x = Quote{}
-	mi := &file_mt5_proto_msgTypes[50]
+	mi := &file_mt5_mt5_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6144,7 +6144,7 @@ func (x *Quote) String() string {
 func (*Quote) ProtoMessage() {}
 
 func (x *Quote) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[50]
+	mi := &file_mt5_mt5_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6157,7 +6157,7 @@ func (x *Quote) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Quote.ProtoReflect.Descriptor instead.
 func (*Quote) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{50}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *Quote) GetSymbol() string {
@@ -6212,7 +6212,7 @@ type GetQuoteReply struct {
 
 func (x *GetQuoteReply) Reset() {
 	*x = GetQuoteReply{}
-	mi := &file_mt5_proto_msgTypes[51]
+	mi := &file_mt5_mt5_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6224,7 +6224,7 @@ func (x *GetQuoteReply) String() string {
 func (*GetQuoteReply) ProtoMessage() {}
 
 func (x *GetQuoteReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[51]
+	mi := &file_mt5_mt5_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6237,7 +6237,7 @@ func (x *GetQuoteReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetQuoteReply.ProtoReflect.Descriptor instead.
 func (*GetQuoteReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{51}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *GetQuoteReply) GetResult() *Quote {
@@ -6274,7 +6274,7 @@ type GetQuoteManyRequest struct {
 
 func (x *GetQuoteManyRequest) Reset() {
 	*x = GetQuoteManyRequest{}
-	mi := &file_mt5_proto_msgTypes[52]
+	mi := &file_mt5_mt5_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6286,7 +6286,7 @@ func (x *GetQuoteManyRequest) String() string {
 func (*GetQuoteManyRequest) ProtoMessage() {}
 
 func (x *GetQuoteManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[52]
+	mi := &file_mt5_mt5_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6299,7 +6299,7 @@ func (x *GetQuoteManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetQuoteManyRequest.ProtoReflect.Descriptor instead.
 func (*GetQuoteManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{52}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *GetQuoteManyRequest) GetId() string {
@@ -6333,7 +6333,7 @@ type GetQuoteManyReply struct {
 
 func (x *GetQuoteManyReply) Reset() {
 	*x = GetQuoteManyReply{}
-	mi := &file_mt5_proto_msgTypes[53]
+	mi := &file_mt5_mt5_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6345,7 +6345,7 @@ func (x *GetQuoteManyReply) String() string {
 func (*GetQuoteManyReply) ProtoMessage() {}
 
 func (x *GetQuoteManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[53]
+	mi := &file_mt5_mt5_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6358,7 +6358,7 @@ func (x *GetQuoteManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetQuoteManyReply.ProtoReflect.Descriptor instead.
 func (*GetQuoteManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{53}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *GetQuoteManyReply) GetResult() []*Quote {
@@ -6392,7 +6392,7 @@ type MarketWatchManyRequest struct {
 
 func (x *MarketWatchManyRequest) Reset() {
 	*x = MarketWatchManyRequest{}
-	mi := &file_mt5_proto_msgTypes[54]
+	mi := &file_mt5_mt5_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6404,7 +6404,7 @@ func (x *MarketWatchManyRequest) String() string {
 func (*MarketWatchManyRequest) ProtoMessage() {}
 
 func (x *MarketWatchManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[54]
+	mi := &file_mt5_mt5_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6417,7 +6417,7 @@ func (x *MarketWatchManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarketWatchManyRequest.ProtoReflect.Descriptor instead.
 func (*MarketWatchManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{54}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *MarketWatchManyRequest) GetId() string {
@@ -6452,7 +6452,7 @@ type MarketWatch struct {
 
 func (x *MarketWatch) Reset() {
 	*x = MarketWatch{}
-	mi := &file_mt5_proto_msgTypes[55]
+	mi := &file_mt5_mt5_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6464,7 +6464,7 @@ func (x *MarketWatch) String() string {
 func (*MarketWatch) ProtoMessage() {}
 
 func (x *MarketWatch) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[55]
+	mi := &file_mt5_mt5_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6477,7 +6477,7 @@ func (x *MarketWatch) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarketWatch.ProtoReflect.Descriptor instead.
 func (*MarketWatch) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{55}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *MarketWatch) GetSymbol() string {
@@ -6560,7 +6560,7 @@ type MarketWatchManyReply struct {
 
 func (x *MarketWatchManyReply) Reset() {
 	*x = MarketWatchManyReply{}
-	mi := &file_mt5_proto_msgTypes[56]
+	mi := &file_mt5_mt5_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6572,7 +6572,7 @@ func (x *MarketWatchManyReply) String() string {
 func (*MarketWatchManyReply) ProtoMessage() {}
 
 func (x *MarketWatchManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[56]
+	mi := &file_mt5_mt5_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6585,7 +6585,7 @@ func (x *MarketWatchManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarketWatchManyReply.ProtoReflect.Descriptor instead.
 func (*MarketWatchManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{56}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *MarketWatchManyReply) GetResult() []*MarketWatch {
@@ -6620,7 +6620,7 @@ type SymbolParamsRequest struct {
 
 func (x *SymbolParamsRequest) Reset() {
 	*x = SymbolParamsRequest{}
-	mi := &file_mt5_proto_msgTypes[57]
+	mi := &file_mt5_mt5_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6632,7 +6632,7 @@ func (x *SymbolParamsRequest) String() string {
 func (*SymbolParamsRequest) ProtoMessage() {}
 
 func (x *SymbolParamsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[57]
+	mi := &file_mt5_mt5_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6645,7 +6645,7 @@ func (x *SymbolParamsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolParamsRequest.ProtoReflect.Descriptor instead.
 func (*SymbolParamsRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{57}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *SymbolParamsRequest) GetId() string {
@@ -6677,7 +6677,7 @@ type SymbolParams struct {
 
 func (x *SymbolParams) Reset() {
 	*x = SymbolParams{}
-	mi := &file_mt5_proto_msgTypes[58]
+	mi := &file_mt5_mt5_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6689,7 +6689,7 @@ func (x *SymbolParams) String() string {
 func (*SymbolParams) ProtoMessage() {}
 
 func (x *SymbolParams) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[58]
+	mi := &file_mt5_mt5_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6702,7 +6702,7 @@ func (x *SymbolParams) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolParams.ProtoReflect.Descriptor instead.
 func (*SymbolParams) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{58}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *SymbolParams) GetSymbol() string {
@@ -6763,7 +6763,7 @@ type SymGroup struct {
 
 func (x *SymGroup) Reset() {
 	*x = SymGroup{}
-	mi := &file_mt5_proto_msgTypes[59]
+	mi := &file_mt5_mt5_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6775,7 +6775,7 @@ func (x *SymGroup) String() string {
 func (*SymGroup) ProtoMessage() {}
 
 func (x *SymGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[59]
+	mi := &file_mt5_mt5_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6788,7 +6788,7 @@ func (x *SymGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymGroup.ProtoReflect.Descriptor instead.
 func (*SymGroup) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{59}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *SymGroup) GetMinLots() float64 {
@@ -6997,7 +6997,7 @@ type SymbolParamsReply struct {
 
 func (x *SymbolParamsReply) Reset() {
 	*x = SymbolParamsReply{}
-	mi := &file_mt5_proto_msgTypes[60]
+	mi := &file_mt5_mt5_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7009,7 +7009,7 @@ func (x *SymbolParamsReply) String() string {
 func (*SymbolParamsReply) ProtoMessage() {}
 
 func (x *SymbolParamsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[60]
+	mi := &file_mt5_mt5_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7022,7 +7022,7 @@ func (x *SymbolParamsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolParamsReply.ProtoReflect.Descriptor instead.
 func (*SymbolParamsReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{60}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *SymbolParamsReply) GetResult() *SymbolParams {
@@ -7059,7 +7059,7 @@ type SymbolParamsManyRequest struct {
 
 func (x *SymbolParamsManyRequest) Reset() {
 	*x = SymbolParamsManyRequest{}
-	mi := &file_mt5_proto_msgTypes[61]
+	mi := &file_mt5_mt5_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7071,7 +7071,7 @@ func (x *SymbolParamsManyRequest) String() string {
 func (*SymbolParamsManyRequest) ProtoMessage() {}
 
 func (x *SymbolParamsManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[61]
+	mi := &file_mt5_mt5_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7084,7 +7084,7 @@ func (x *SymbolParamsManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolParamsManyRequest.ProtoReflect.Descriptor instead.
 func (*SymbolParamsManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{61}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *SymbolParamsManyRequest) GetId() string {
@@ -7118,7 +7118,7 @@ type SymbolParamsManyReply struct {
 
 func (x *SymbolParamsManyReply) Reset() {
 	*x = SymbolParamsManyReply{}
-	mi := &file_mt5_proto_msgTypes[62]
+	mi := &file_mt5_mt5_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7130,7 +7130,7 @@ func (x *SymbolParamsManyReply) String() string {
 func (*SymbolParamsManyReply) ProtoMessage() {}
 
 func (x *SymbolParamsManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[62]
+	mi := &file_mt5_mt5_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7143,7 +7143,7 @@ func (x *SymbolParamsManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolParamsManyReply.ProtoReflect.Descriptor instead.
 func (*SymbolParamsManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{62}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *SymbolParamsManyReply) GetResult() []*SymbolParams {
@@ -7178,7 +7178,7 @@ type SymbolSessionsExRequest struct {
 
 func (x *SymbolSessionsExRequest) Reset() {
 	*x = SymbolSessionsExRequest{}
-	mi := &file_mt5_proto_msgTypes[63]
+	mi := &file_mt5_mt5_proto_msgTypes[63]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7190,7 +7190,7 @@ func (x *SymbolSessionsExRequest) String() string {
 func (*SymbolSessionsExRequest) ProtoMessage() {}
 
 func (x *SymbolSessionsExRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[63]
+	mi := &file_mt5_mt5_proto_msgTypes[63]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7203,7 +7203,7 @@ func (x *SymbolSessionsExRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolSessionsExRequest.ProtoReflect.Descriptor instead.
 func (*SymbolSessionsExRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{63}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *SymbolSessionsExRequest) GetId() string {
@@ -7235,7 +7235,7 @@ type SymbolSessionsEx struct {
 
 func (x *SymbolSessionsEx) Reset() {
 	*x = SymbolSessionsEx{}
-	mi := &file_mt5_proto_msgTypes[64]
+	mi := &file_mt5_mt5_proto_msgTypes[64]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7247,7 +7247,7 @@ func (x *SymbolSessionsEx) String() string {
 func (*SymbolSessionsEx) ProtoMessage() {}
 
 func (x *SymbolSessionsEx) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[64]
+	mi := &file_mt5_mt5_proto_msgTypes[64]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7260,7 +7260,7 @@ func (x *SymbolSessionsEx) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolSessionsEx.ProtoReflect.Descriptor instead.
 func (*SymbolSessionsEx) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{64}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *SymbolSessionsEx) GetSymbol() string {
@@ -7295,7 +7295,7 @@ type SessionsForDay struct {
 
 func (x *SessionsForDay) Reset() {
 	*x = SessionsForDay{}
-	mi := &file_mt5_proto_msgTypes[65]
+	mi := &file_mt5_mt5_proto_msgTypes[65]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7307,7 +7307,7 @@ func (x *SessionsForDay) String() string {
 func (*SessionsForDay) ProtoMessage() {}
 
 func (x *SessionsForDay) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[65]
+	mi := &file_mt5_mt5_proto_msgTypes[65]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7320,7 +7320,7 @@ func (x *SessionsForDay) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SessionsForDay.ProtoReflect.Descriptor instead.
 func (*SessionsForDay) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{65}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *SessionsForDay) GetSessions() []*Session {
@@ -7343,7 +7343,7 @@ type Session struct {
 
 func (x *Session) Reset() {
 	*x = Session{}
-	mi := &file_mt5_proto_msgTypes[66]
+	mi := &file_mt5_mt5_proto_msgTypes[66]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7355,7 +7355,7 @@ func (x *Session) String() string {
 func (*Session) ProtoMessage() {}
 
 func (x *Session) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[66]
+	mi := &file_mt5_mt5_proto_msgTypes[66]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7368,7 +7368,7 @@ func (x *Session) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Session.ProtoReflect.Descriptor instead.
 func (*Session) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{66}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *Session) GetStartTime() int32 {
@@ -7395,7 +7395,7 @@ type SymbolSessionsExReply struct {
 
 func (x *SymbolSessionsExReply) Reset() {
 	*x = SymbolSessionsExReply{}
-	mi := &file_mt5_proto_msgTypes[67]
+	mi := &file_mt5_mt5_proto_msgTypes[67]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7407,7 +7407,7 @@ func (x *SymbolSessionsExReply) String() string {
 func (*SymbolSessionsExReply) ProtoMessage() {}
 
 func (x *SymbolSessionsExReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[67]
+	mi := &file_mt5_mt5_proto_msgTypes[67]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7420,7 +7420,7 @@ func (x *SymbolSessionsExReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolSessionsExReply.ProtoReflect.Descriptor instead.
 func (*SymbolSessionsExReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{67}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{67}
 }
 
 func (x *SymbolSessionsExReply) GetResult() *SymbolSessionsEx {
@@ -7454,7 +7454,7 @@ type SymbolSessionsExManyRequest struct {
 
 func (x *SymbolSessionsExManyRequest) Reset() {
 	*x = SymbolSessionsExManyRequest{}
-	mi := &file_mt5_proto_msgTypes[68]
+	mi := &file_mt5_mt5_proto_msgTypes[68]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7466,7 +7466,7 @@ func (x *SymbolSessionsExManyRequest) String() string {
 func (*SymbolSessionsExManyRequest) ProtoMessage() {}
 
 func (x *SymbolSessionsExManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[68]
+	mi := &file_mt5_mt5_proto_msgTypes[68]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7479,7 +7479,7 @@ func (x *SymbolSessionsExManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolSessionsExManyRequest.ProtoReflect.Descriptor instead.
 func (*SymbolSessionsExManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{68}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{68}
 }
 
 func (x *SymbolSessionsExManyRequest) GetId() string {
@@ -7506,7 +7506,7 @@ type SymbolSessionsExManyReply struct {
 
 func (x *SymbolSessionsExManyReply) Reset() {
 	*x = SymbolSessionsExManyReply{}
-	mi := &file_mt5_proto_msgTypes[69]
+	mi := &file_mt5_mt5_proto_msgTypes[69]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7518,7 +7518,7 @@ func (x *SymbolSessionsExManyReply) String() string {
 func (*SymbolSessionsExManyReply) ProtoMessage() {}
 
 func (x *SymbolSessionsExManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[69]
+	mi := &file_mt5_mt5_proto_msgTypes[69]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7531,7 +7531,7 @@ func (x *SymbolSessionsExManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolSessionsExManyReply.ProtoReflect.Descriptor instead.
 func (*SymbolSessionsExManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{69}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *SymbolSessionsExManyReply) GetResult() []*SymbolSessionsEx {
@@ -7563,7 +7563,7 @@ type ServerTimezoneRequest struct {
 
 func (x *ServerTimezoneRequest) Reset() {
 	*x = ServerTimezoneRequest{}
-	mi := &file_mt5_proto_msgTypes[70]
+	mi := &file_mt5_mt5_proto_msgTypes[70]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7575,7 +7575,7 @@ func (x *ServerTimezoneRequest) String() string {
 func (*ServerTimezoneRequest) ProtoMessage() {}
 
 func (x *ServerTimezoneRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[70]
+	mi := &file_mt5_mt5_proto_msgTypes[70]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7588,7 +7588,7 @@ func (x *ServerTimezoneRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerTimezoneRequest.ProtoReflect.Descriptor instead.
 func (*ServerTimezoneRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{70}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{70}
 }
 
 func (x *ServerTimezoneRequest) GetId() string {
@@ -7608,7 +7608,7 @@ type ServerTimezoneReply struct {
 
 func (x *ServerTimezoneReply) Reset() {
 	*x = ServerTimezoneReply{}
-	mi := &file_mt5_proto_msgTypes[71]
+	mi := &file_mt5_mt5_proto_msgTypes[71]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7620,7 +7620,7 @@ func (x *ServerTimezoneReply) String() string {
 func (*ServerTimezoneReply) ProtoMessage() {}
 
 func (x *ServerTimezoneReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[71]
+	mi := &file_mt5_mt5_proto_msgTypes[71]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7633,7 +7633,7 @@ func (x *ServerTimezoneReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerTimezoneReply.ProtoReflect.Descriptor instead.
 func (*ServerTimezoneReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{71}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *ServerTimezoneReply) GetResult() float64 {
@@ -7668,7 +7668,7 @@ type IsTradeSessionRequest struct {
 
 func (x *IsTradeSessionRequest) Reset() {
 	*x = IsTradeSessionRequest{}
-	mi := &file_mt5_proto_msgTypes[72]
+	mi := &file_mt5_mt5_proto_msgTypes[72]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7680,7 +7680,7 @@ func (x *IsTradeSessionRequest) String() string {
 func (*IsTradeSessionRequest) ProtoMessage() {}
 
 func (x *IsTradeSessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[72]
+	mi := &file_mt5_mt5_proto_msgTypes[72]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7693,7 +7693,7 @@ func (x *IsTradeSessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsTradeSessionRequest.ProtoReflect.Descriptor instead.
 func (*IsTradeSessionRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{72}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{72}
 }
 
 func (x *IsTradeSessionRequest) GetId() string {
@@ -7720,7 +7720,7 @@ type IsTradeSessionReply struct {
 
 func (x *IsTradeSessionReply) Reset() {
 	*x = IsTradeSessionReply{}
-	mi := &file_mt5_proto_msgTypes[73]
+	mi := &file_mt5_mt5_proto_msgTypes[73]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7732,7 +7732,7 @@ func (x *IsTradeSessionReply) String() string {
 func (*IsTradeSessionReply) ProtoMessage() {}
 
 func (x *IsTradeSessionReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[73]
+	mi := &file_mt5_mt5_proto_msgTypes[73]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7745,7 +7745,7 @@ func (x *IsTradeSessionReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsTradeSessionReply.ProtoReflect.Descriptor instead.
 func (*IsTradeSessionReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{73}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *IsTradeSessionReply) GetResult() bool {
@@ -7779,7 +7779,7 @@ type IsTradeSessionManyRequest struct {
 
 func (x *IsTradeSessionManyRequest) Reset() {
 	*x = IsTradeSessionManyRequest{}
-	mi := &file_mt5_proto_msgTypes[74]
+	mi := &file_mt5_mt5_proto_msgTypes[74]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7791,7 +7791,7 @@ func (x *IsTradeSessionManyRequest) String() string {
 func (*IsTradeSessionManyRequest) ProtoMessage() {}
 
 func (x *IsTradeSessionManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[74]
+	mi := &file_mt5_mt5_proto_msgTypes[74]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7804,7 +7804,7 @@ func (x *IsTradeSessionManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsTradeSessionManyRequest.ProtoReflect.Descriptor instead.
 func (*IsTradeSessionManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{74}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *IsTradeSessionManyRequest) GetId() string {
@@ -7834,7 +7834,7 @@ type SessionState struct {
 
 func (x *SessionState) Reset() {
 	*x = SessionState{}
-	mi := &file_mt5_proto_msgTypes[75]
+	mi := &file_mt5_mt5_proto_msgTypes[75]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7846,7 +7846,7 @@ func (x *SessionState) String() string {
 func (*SessionState) ProtoMessage() {}
 
 func (x *SessionState) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[75]
+	mi := &file_mt5_mt5_proto_msgTypes[75]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7859,7 +7859,7 @@ func (x *SessionState) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SessionState.ProtoReflect.Descriptor instead.
 func (*SessionState) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{75}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{75}
 }
 
 func (x *SessionState) GetSymbol() string {
@@ -7886,7 +7886,7 @@ type IsTradeSessionManyReply struct {
 
 func (x *IsTradeSessionManyReply) Reset() {
 	*x = IsTradeSessionManyReply{}
-	mi := &file_mt5_proto_msgTypes[76]
+	mi := &file_mt5_mt5_proto_msgTypes[76]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7898,7 +7898,7 @@ func (x *IsTradeSessionManyReply) String() string {
 func (*IsTradeSessionManyReply) ProtoMessage() {}
 
 func (x *IsTradeSessionManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[76]
+	mi := &file_mt5_mt5_proto_msgTypes[76]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7911,7 +7911,7 @@ func (x *IsTradeSessionManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsTradeSessionManyReply.ProtoReflect.Descriptor instead.
 func (*IsTradeSessionManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{76}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{76}
 }
 
 func (x *IsTradeSessionManyReply) GetResult() []*SessionState {
@@ -7946,7 +7946,7 @@ type IsQuoteSessionRequest struct {
 
 func (x *IsQuoteSessionRequest) Reset() {
 	*x = IsQuoteSessionRequest{}
-	mi := &file_mt5_proto_msgTypes[77]
+	mi := &file_mt5_mt5_proto_msgTypes[77]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7958,7 +7958,7 @@ func (x *IsQuoteSessionRequest) String() string {
 func (*IsQuoteSessionRequest) ProtoMessage() {}
 
 func (x *IsQuoteSessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[77]
+	mi := &file_mt5_mt5_proto_msgTypes[77]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7971,7 +7971,7 @@ func (x *IsQuoteSessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsQuoteSessionRequest.ProtoReflect.Descriptor instead.
 func (*IsQuoteSessionRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{77}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{77}
 }
 
 func (x *IsQuoteSessionRequest) GetId() string {
@@ -7998,7 +7998,7 @@ type IsQuoteSessionReply struct {
 
 func (x *IsQuoteSessionReply) Reset() {
 	*x = IsQuoteSessionReply{}
-	mi := &file_mt5_proto_msgTypes[78]
+	mi := &file_mt5_mt5_proto_msgTypes[78]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8010,7 +8010,7 @@ func (x *IsQuoteSessionReply) String() string {
 func (*IsQuoteSessionReply) ProtoMessage() {}
 
 func (x *IsQuoteSessionReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[78]
+	mi := &file_mt5_mt5_proto_msgTypes[78]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8023,7 +8023,7 @@ func (x *IsQuoteSessionReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsQuoteSessionReply.ProtoReflect.Descriptor instead.
 func (*IsQuoteSessionReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{78}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{78}
 }
 
 func (x *IsQuoteSessionReply) GetResult() bool {
@@ -8057,7 +8057,7 @@ type IsQuoteSessionManyRequest struct {
 
 func (x *IsQuoteSessionManyRequest) Reset() {
 	*x = IsQuoteSessionManyRequest{}
-	mi := &file_mt5_proto_msgTypes[79]
+	mi := &file_mt5_mt5_proto_msgTypes[79]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8069,7 +8069,7 @@ func (x *IsQuoteSessionManyRequest) String() string {
 func (*IsQuoteSessionManyRequest) ProtoMessage() {}
 
 func (x *IsQuoteSessionManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[79]
+	mi := &file_mt5_mt5_proto_msgTypes[79]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8082,7 +8082,7 @@ func (x *IsQuoteSessionManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsQuoteSessionManyRequest.ProtoReflect.Descriptor instead.
 func (*IsQuoteSessionManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{79}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{79}
 }
 
 func (x *IsQuoteSessionManyRequest) GetId() string {
@@ -8109,7 +8109,7 @@ type IsQuoteSessionManyReply struct {
 
 func (x *IsQuoteSessionManyReply) Reset() {
 	*x = IsQuoteSessionManyReply{}
-	mi := &file_mt5_proto_msgTypes[80]
+	mi := &file_mt5_mt5_proto_msgTypes[80]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8121,7 +8121,7 @@ func (x *IsQuoteSessionManyReply) String() string {
 func (*IsQuoteSessionManyReply) ProtoMessage() {}
 
 func (x *IsQuoteSessionManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[80]
+	mi := &file_mt5_mt5_proto_msgTypes[80]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8134,7 +8134,7 @@ func (x *IsQuoteSessionManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsQuoteSessionManyReply.ProtoReflect.Descriptor instead.
 func (*IsQuoteSessionManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{80}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *IsQuoteSessionManyReply) GetResult() []*SessionState {
@@ -8168,7 +8168,7 @@ type GetTickValueManyRequest struct {
 
 func (x *GetTickValueManyRequest) Reset() {
 	*x = GetTickValueManyRequest{}
-	mi := &file_mt5_proto_msgTypes[81]
+	mi := &file_mt5_mt5_proto_msgTypes[81]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8180,7 +8180,7 @@ func (x *GetTickValueManyRequest) String() string {
 func (*GetTickValueManyRequest) ProtoMessage() {}
 
 func (x *GetTickValueManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[81]
+	mi := &file_mt5_mt5_proto_msgTypes[81]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8193,7 +8193,7 @@ func (x *GetTickValueManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTickValueManyRequest.ProtoReflect.Descriptor instead.
 func (*GetTickValueManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{81}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{81}
 }
 
 func (x *GetTickValueManyRequest) GetId() string {
@@ -8220,7 +8220,7 @@ type GetTickValueManyReply struct {
 
 func (x *GetTickValueManyReply) Reset() {
 	*x = GetTickValueManyReply{}
-	mi := &file_mt5_proto_msgTypes[82]
+	mi := &file_mt5_mt5_proto_msgTypes[82]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8232,7 +8232,7 @@ func (x *GetTickValueManyReply) String() string {
 func (*GetTickValueManyReply) ProtoMessage() {}
 
 func (x *GetTickValueManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[82]
+	mi := &file_mt5_mt5_proto_msgTypes[82]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8245,7 +8245,7 @@ func (x *GetTickValueManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTickValueManyReply.ProtoReflect.Descriptor instead.
 func (*GetTickValueManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{82}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{82}
 }
 
 func (x *GetTickValueManyReply) GetResult() []float64 {
@@ -8279,7 +8279,7 @@ type TickValueWithSizeRequest struct {
 
 func (x *TickValueWithSizeRequest) Reset() {
 	*x = TickValueWithSizeRequest{}
-	mi := &file_mt5_proto_msgTypes[83]
+	mi := &file_mt5_mt5_proto_msgTypes[83]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8291,7 +8291,7 @@ func (x *TickValueWithSizeRequest) String() string {
 func (*TickValueWithSizeRequest) ProtoMessage() {}
 
 func (x *TickValueWithSizeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[83]
+	mi := &file_mt5_mt5_proto_msgTypes[83]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8304,7 +8304,7 @@ func (x *TickValueWithSizeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TickValueWithSizeRequest.ProtoReflect.Descriptor instead.
 func (*TickValueWithSizeRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{83}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{83}
 }
 
 func (x *TickValueWithSizeRequest) GetId() string {
@@ -8336,7 +8336,7 @@ type TickValueWithSize struct {
 
 func (x *TickValueWithSize) Reset() {
 	*x = TickValueWithSize{}
-	mi := &file_mt5_proto_msgTypes[84]
+	mi := &file_mt5_mt5_proto_msgTypes[84]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8348,7 +8348,7 @@ func (x *TickValueWithSize) String() string {
 func (*TickValueWithSize) ProtoMessage() {}
 
 func (x *TickValueWithSize) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[84]
+	mi := &file_mt5_mt5_proto_msgTypes[84]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8361,7 +8361,7 @@ func (x *TickValueWithSize) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TickValueWithSize.ProtoReflect.Descriptor instead.
 func (*TickValueWithSize) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{84}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{84}
 }
 
 func (x *TickValueWithSize) GetTickValue() float64 {
@@ -8395,7 +8395,7 @@ type TickValueWithSizeReply struct {
 
 func (x *TickValueWithSizeReply) Reset() {
 	*x = TickValueWithSizeReply{}
-	mi := &file_mt5_proto_msgTypes[85]
+	mi := &file_mt5_mt5_proto_msgTypes[85]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8407,7 +8407,7 @@ func (x *TickValueWithSizeReply) String() string {
 func (*TickValueWithSizeReply) ProtoMessage() {}
 
 func (x *TickValueWithSizeReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[85]
+	mi := &file_mt5_mt5_proto_msgTypes[85]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8420,7 +8420,7 @@ func (x *TickValueWithSizeReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TickValueWithSizeReply.ProtoReflect.Descriptor instead.
 func (*TickValueWithSizeReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{85}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{85}
 }
 
 func (x *TickValueWithSizeReply) GetResult() []*TickValueWithSize {
@@ -8452,7 +8452,7 @@ type ClusterDetailsRequest struct {
 
 func (x *ClusterDetailsRequest) Reset() {
 	*x = ClusterDetailsRequest{}
-	mi := &file_mt5_proto_msgTypes[86]
+	mi := &file_mt5_mt5_proto_msgTypes[86]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8464,7 +8464,7 @@ func (x *ClusterDetailsRequest) String() string {
 func (*ClusterDetailsRequest) ProtoMessage() {}
 
 func (x *ClusterDetailsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[86]
+	mi := &file_mt5_mt5_proto_msgTypes[86]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8477,7 +8477,7 @@ func (x *ClusterDetailsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClusterDetailsRequest.ProtoReflect.Descriptor instead.
 func (*ClusterDetailsRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{86}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{86}
 }
 
 func (x *ClusterDetailsRequest) GetId() string {
@@ -8500,7 +8500,7 @@ type ServerRec struct {
 
 func (x *ServerRec) Reset() {
 	*x = ServerRec{}
-	mi := &file_mt5_proto_msgTypes[87]
+	mi := &file_mt5_mt5_proto_msgTypes[87]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8512,7 +8512,7 @@ func (x *ServerRec) String() string {
 func (*ServerRec) ProtoMessage() {}
 
 func (x *ServerRec) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[87]
+	mi := &file_mt5_mt5_proto_msgTypes[87]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8525,7 +8525,7 @@ func (x *ServerRec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerRec.ProtoReflect.Descriptor instead.
 func (*ServerRec) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{87}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{87}
 }
 
 func (x *ServerRec) GetServerName() string {
@@ -8577,7 +8577,7 @@ type ChangePasswordRequest struct {
 
 func (x *ChangePasswordRequest) Reset() {
 	*x = ChangePasswordRequest{}
-	mi := &file_mt5_proto_msgTypes[88]
+	mi := &file_mt5_mt5_proto_msgTypes[88]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8589,7 +8589,7 @@ func (x *ChangePasswordRequest) String() string {
 func (*ChangePasswordRequest) ProtoMessage() {}
 
 func (x *ChangePasswordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[88]
+	mi := &file_mt5_mt5_proto_msgTypes[88]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8602,7 +8602,7 @@ func (x *ChangePasswordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChangePasswordRequest.ProtoReflect.Descriptor instead.
 func (*ChangePasswordRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{88}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{88}
 }
 
 func (x *ChangePasswordRequest) GetId() string {
@@ -8636,7 +8636,7 @@ type ChangePasswordReply struct {
 
 func (x *ChangePasswordReply) Reset() {
 	*x = ChangePasswordReply{}
-	mi := &file_mt5_proto_msgTypes[89]
+	mi := &file_mt5_mt5_proto_msgTypes[89]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8648,7 +8648,7 @@ func (x *ChangePasswordReply) String() string {
 func (*ChangePasswordReply) ProtoMessage() {}
 
 func (x *ChangePasswordReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[89]
+	mi := &file_mt5_mt5_proto_msgTypes[89]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8661,7 +8661,7 @@ func (x *ChangePasswordReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChangePasswordReply.ProtoReflect.Descriptor instead.
 func (*ChangePasswordReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{89}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{89}
 }
 
 func (x *ChangePasswordReply) GetResult() string {
@@ -8693,7 +8693,7 @@ type MailsRequest struct {
 
 func (x *MailsRequest) Reset() {
 	*x = MailsRequest{}
-	mi := &file_mt5_proto_msgTypes[90]
+	mi := &file_mt5_mt5_proto_msgTypes[90]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8705,7 +8705,7 @@ func (x *MailsRequest) String() string {
 func (*MailsRequest) ProtoMessage() {}
 
 func (x *MailsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[90]
+	mi := &file_mt5_mt5_proto_msgTypes[90]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8718,7 +8718,7 @@ func (x *MailsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MailsRequest.ProtoReflect.Descriptor instead.
 func (*MailsRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{90}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{90}
 }
 
 func (x *MailsRequest) GetId() string {
@@ -8742,7 +8742,7 @@ type MailMessage struct {
 
 func (x *MailMessage) Reset() {
 	*x = MailMessage{}
-	mi := &file_mt5_proto_msgTypes[91]
+	mi := &file_mt5_mt5_proto_msgTypes[91]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8754,7 +8754,7 @@ func (x *MailMessage) String() string {
 func (*MailMessage) ProtoMessage() {}
 
 func (x *MailMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[91]
+	mi := &file_mt5_mt5_proto_msgTypes[91]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8767,7 +8767,7 @@ func (x *MailMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MailMessage.ProtoReflect.Descriptor instead.
 func (*MailMessage) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{91}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{91}
 }
 
 func (x *MailMessage) GetId() int64 {
@@ -8822,7 +8822,7 @@ type MailsReply struct {
 
 func (x *MailsReply) Reset() {
 	*x = MailsReply{}
-	mi := &file_mt5_proto_msgTypes[92]
+	mi := &file_mt5_mt5_proto_msgTypes[92]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8834,7 +8834,7 @@ func (x *MailsReply) String() string {
 func (*MailsReply) ProtoMessage() {}
 
 func (x *MailsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[92]
+	mi := &file_mt5_mt5_proto_msgTypes[92]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8847,7 +8847,7 @@ func (x *MailsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MailsReply.ProtoReflect.Descriptor instead.
 func (*MailsReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{92}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{92}
 }
 
 func (x *MailsReply) GetResult() []*MailMessage {
@@ -8891,7 +8891,7 @@ type RequiredMarginRequest struct {
 
 func (x *RequiredMarginRequest) Reset() {
 	*x = RequiredMarginRequest{}
-	mi := &file_mt5_proto_msgTypes[93]
+	mi := &file_mt5_mt5_proto_msgTypes[93]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8903,7 +8903,7 @@ func (x *RequiredMarginRequest) String() string {
 func (*RequiredMarginRequest) ProtoMessage() {}
 
 func (x *RequiredMarginRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[93]
+	mi := &file_mt5_mt5_proto_msgTypes[93]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8916,7 +8916,7 @@ func (x *RequiredMarginRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequiredMarginRequest.ProtoReflect.Descriptor instead.
 func (*RequiredMarginRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{93}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{93}
 }
 
 func (x *RequiredMarginRequest) GetId() string {
@@ -8964,7 +8964,7 @@ type RequiredMarginReply struct {
 
 func (x *RequiredMarginReply) Reset() {
 	*x = RequiredMarginReply{}
-	mi := &file_mt5_proto_msgTypes[94]
+	mi := &file_mt5_mt5_proto_msgTypes[94]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8976,7 +8976,7 @@ func (x *RequiredMarginReply) String() string {
 func (*RequiredMarginReply) ProtoMessage() {}
 
 func (x *RequiredMarginReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[94]
+	mi := &file_mt5_mt5_proto_msgTypes[94]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8989,7 +8989,7 @@ func (x *RequiredMarginReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequiredMarginReply.ProtoReflect.Descriptor instead.
 func (*RequiredMarginReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{94}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{94}
 }
 
 func (x *RequiredMarginReply) GetResult() float64 {
@@ -9032,7 +9032,7 @@ type PriceHistoryMonthRequest struct {
 
 func (x *PriceHistoryMonthRequest) Reset() {
 	*x = PriceHistoryMonthRequest{}
-	mi := &file_mt5_proto_msgTypes[95]
+	mi := &file_mt5_mt5_proto_msgTypes[95]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9044,7 +9044,7 @@ func (x *PriceHistoryMonthRequest) String() string {
 func (*PriceHistoryMonthRequest) ProtoMessage() {}
 
 func (x *PriceHistoryMonthRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[95]
+	mi := &file_mt5_mt5_proto_msgTypes[95]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9057,7 +9057,7 @@ func (x *PriceHistoryMonthRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryMonthRequest.ProtoReflect.Descriptor instead.
 func (*PriceHistoryMonthRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{95}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{95}
 }
 
 func (x *PriceHistoryMonthRequest) GetId() string {
@@ -9119,7 +9119,7 @@ type Bar struct {
 
 func (x *Bar) Reset() {
 	*x = Bar{}
-	mi := &file_mt5_proto_msgTypes[96]
+	mi := &file_mt5_mt5_proto_msgTypes[96]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9131,7 +9131,7 @@ func (x *Bar) String() string {
 func (*Bar) ProtoMessage() {}
 
 func (x *Bar) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[96]
+	mi := &file_mt5_mt5_proto_msgTypes[96]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9144,7 +9144,7 @@ func (x *Bar) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Bar.ProtoReflect.Descriptor instead.
 func (*Bar) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{96}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{96}
 }
 
 func (x *Bar) GetTime() *timestamppb.Timestamp {
@@ -9213,7 +9213,7 @@ type PriceHistoryMonthReply struct {
 
 func (x *PriceHistoryMonthReply) Reset() {
 	*x = PriceHistoryMonthReply{}
-	mi := &file_mt5_proto_msgTypes[97]
+	mi := &file_mt5_mt5_proto_msgTypes[97]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9225,7 +9225,7 @@ func (x *PriceHistoryMonthReply) String() string {
 func (*PriceHistoryMonthReply) ProtoMessage() {}
 
 func (x *PriceHistoryMonthReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[97]
+	mi := &file_mt5_mt5_proto_msgTypes[97]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9238,7 +9238,7 @@ func (x *PriceHistoryMonthReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryMonthReply.ProtoReflect.Descriptor instead.
 func (*PriceHistoryMonthReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{97}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{97}
 }
 
 func (x *PriceHistoryMonthReply) GetResult() []*Bar {
@@ -9280,7 +9280,7 @@ type PriceHistoryMonthManyRequest struct {
 
 func (x *PriceHistoryMonthManyRequest) Reset() {
 	*x = PriceHistoryMonthManyRequest{}
-	mi := &file_mt5_proto_msgTypes[98]
+	mi := &file_mt5_mt5_proto_msgTypes[98]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9292,7 +9292,7 @@ func (x *PriceHistoryMonthManyRequest) String() string {
 func (*PriceHistoryMonthManyRequest) ProtoMessage() {}
 
 func (x *PriceHistoryMonthManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[98]
+	mi := &file_mt5_mt5_proto_msgTypes[98]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9305,7 +9305,7 @@ func (x *PriceHistoryMonthManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryMonthManyRequest.ProtoReflect.Descriptor instead.
 func (*PriceHistoryMonthManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{98}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{98}
 }
 
 func (x *PriceHistoryMonthManyRequest) GetId() string {
@@ -9370,7 +9370,7 @@ type PriceHistoryTodayRequest struct {
 
 func (x *PriceHistoryTodayRequest) Reset() {
 	*x = PriceHistoryTodayRequest{}
-	mi := &file_mt5_proto_msgTypes[99]
+	mi := &file_mt5_mt5_proto_msgTypes[99]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9382,7 +9382,7 @@ func (x *PriceHistoryTodayRequest) String() string {
 func (*PriceHistoryTodayRequest) ProtoMessage() {}
 
 func (x *PriceHistoryTodayRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[99]
+	mi := &file_mt5_mt5_proto_msgTypes[99]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9395,7 +9395,7 @@ func (x *PriceHistoryTodayRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryTodayRequest.ProtoReflect.Descriptor instead.
 func (*PriceHistoryTodayRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{99}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{99}
 }
 
 func (x *PriceHistoryTodayRequest) GetId() string {
@@ -9429,7 +9429,7 @@ type PriceHistoryTodayReply struct {
 
 func (x *PriceHistoryTodayReply) Reset() {
 	*x = PriceHistoryTodayReply{}
-	mi := &file_mt5_proto_msgTypes[100]
+	mi := &file_mt5_mt5_proto_msgTypes[100]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9441,7 +9441,7 @@ func (x *PriceHistoryTodayReply) String() string {
 func (*PriceHistoryTodayReply) ProtoMessage() {}
 
 func (x *PriceHistoryTodayReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[100]
+	mi := &file_mt5_mt5_proto_msgTypes[100]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9454,7 +9454,7 @@ func (x *PriceHistoryTodayReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryTodayReply.ProtoReflect.Descriptor instead.
 func (*PriceHistoryTodayReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{100}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{100}
 }
 
 func (x *PriceHistoryTodayReply) GetResult() []*Bar {
@@ -9490,7 +9490,7 @@ type PriceHistoryTodayManyRequest struct {
 
 func (x *PriceHistoryTodayManyRequest) Reset() {
 	*x = PriceHistoryTodayManyRequest{}
-	mi := &file_mt5_proto_msgTypes[101]
+	mi := &file_mt5_mt5_proto_msgTypes[101]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9502,7 +9502,7 @@ func (x *PriceHistoryTodayManyRequest) String() string {
 func (*PriceHistoryTodayManyRequest) ProtoMessage() {}
 
 func (x *PriceHistoryTodayManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[101]
+	mi := &file_mt5_mt5_proto_msgTypes[101]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9515,7 +9515,7 @@ func (x *PriceHistoryTodayManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryTodayManyRequest.ProtoReflect.Descriptor instead.
 func (*PriceHistoryTodayManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{101}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{101}
 }
 
 func (x *PriceHistoryTodayManyRequest) GetId() string {
@@ -9549,7 +9549,7 @@ type PriceHistoryTodayManyReply struct {
 
 func (x *PriceHistoryTodayManyReply) Reset() {
 	*x = PriceHistoryTodayManyReply{}
-	mi := &file_mt5_proto_msgTypes[102]
+	mi := &file_mt5_mt5_proto_msgTypes[102]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9561,7 +9561,7 @@ func (x *PriceHistoryTodayManyReply) String() string {
 func (*PriceHistoryTodayManyReply) ProtoMessage() {}
 
 func (x *PriceHistoryTodayManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[102]
+	mi := &file_mt5_mt5_proto_msgTypes[102]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9574,7 +9574,7 @@ func (x *PriceHistoryTodayManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryTodayManyReply.ProtoReflect.Descriptor instead.
 func (*PriceHistoryTodayManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{102}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{102}
 }
 
 func (x *PriceHistoryTodayManyReply) GetResult() []*QuoteHistoryEventArgs {
@@ -9617,7 +9617,7 @@ type PriceHistoryRequest struct {
 
 func (x *PriceHistoryRequest) Reset() {
 	*x = PriceHistoryRequest{}
-	mi := &file_mt5_proto_msgTypes[103]
+	mi := &file_mt5_mt5_proto_msgTypes[103]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9629,7 +9629,7 @@ func (x *PriceHistoryRequest) String() string {
 func (*PriceHistoryRequest) ProtoMessage() {}
 
 func (x *PriceHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[103]
+	mi := &file_mt5_mt5_proto_msgTypes[103]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9642,7 +9642,7 @@ func (x *PriceHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryRequest.ProtoReflect.Descriptor instead.
 func (*PriceHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{103}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{103}
 }
 
 func (x *PriceHistoryRequest) GetId() string {
@@ -9690,7 +9690,7 @@ type PriceHistoryReply struct {
 
 func (x *PriceHistoryReply) Reset() {
 	*x = PriceHistoryReply{}
-	mi := &file_mt5_proto_msgTypes[104]
+	mi := &file_mt5_mt5_proto_msgTypes[104]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9702,7 +9702,7 @@ func (x *PriceHistoryReply) String() string {
 func (*PriceHistoryReply) ProtoMessage() {}
 
 func (x *PriceHistoryReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[104]
+	mi := &file_mt5_mt5_proto_msgTypes[104]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9715,7 +9715,7 @@ func (x *PriceHistoryReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryReply.ProtoReflect.Descriptor instead.
 func (*PriceHistoryReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{104}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{104}
 }
 
 func (x *PriceHistoryReply) GetResult() []*Bar {
@@ -9758,7 +9758,7 @@ type PriceHistoryHighLowRequest struct {
 
 func (x *PriceHistoryHighLowRequest) Reset() {
 	*x = PriceHistoryHighLowRequest{}
-	mi := &file_mt5_proto_msgTypes[105]
+	mi := &file_mt5_mt5_proto_msgTypes[105]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9770,7 +9770,7 @@ func (x *PriceHistoryHighLowRequest) String() string {
 func (*PriceHistoryHighLowRequest) ProtoMessage() {}
 
 func (x *PriceHistoryHighLowRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[105]
+	mi := &file_mt5_mt5_proto_msgTypes[105]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9783,7 +9783,7 @@ func (x *PriceHistoryHighLowRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryHighLowRequest.ProtoReflect.Descriptor instead.
 func (*PriceHistoryHighLowRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{105}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{105}
 }
 
 func (x *PriceHistoryHighLowRequest) GetId() string {
@@ -9831,7 +9831,7 @@ type PriceHistoryHighLowReply struct {
 
 func (x *PriceHistoryHighLowReply) Reset() {
 	*x = PriceHistoryHighLowReply{}
-	mi := &file_mt5_proto_msgTypes[106]
+	mi := &file_mt5_mt5_proto_msgTypes[106]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9843,7 +9843,7 @@ func (x *PriceHistoryHighLowReply) String() string {
 func (*PriceHistoryHighLowReply) ProtoMessage() {}
 
 func (x *PriceHistoryHighLowReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[106]
+	mi := &file_mt5_mt5_proto_msgTypes[106]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9856,7 +9856,7 @@ func (x *PriceHistoryHighLowReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryHighLowReply.ProtoReflect.Descriptor instead.
 func (*PriceHistoryHighLowReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{106}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{106}
 }
 
 func (x *PriceHistoryHighLowReply) GetResult() *Bar {
@@ -9881,7 +9881,7 @@ type PingRequest struct {
 
 func (x *PingRequest) Reset() {
 	*x = PingRequest{}
-	mi := &file_mt5_proto_msgTypes[107]
+	mi := &file_mt5_mt5_proto_msgTypes[107]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9893,7 +9893,7 @@ func (x *PingRequest) String() string {
 func (*PingRequest) ProtoMessage() {}
 
 func (x *PingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[107]
+	mi := &file_mt5_mt5_proto_msgTypes[107]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9906,7 +9906,7 @@ func (x *PingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PingRequest.ProtoReflect.Descriptor instead.
 func (*PingRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{107}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{107}
 }
 
 type PingReply struct {
@@ -9919,7 +9919,7 @@ type PingReply struct {
 
 func (x *PingReply) Reset() {
 	*x = PingReply{}
-	mi := &file_mt5_proto_msgTypes[108]
+	mi := &file_mt5_mt5_proto_msgTypes[108]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9931,7 +9931,7 @@ func (x *PingReply) String() string {
 func (*PingReply) ProtoMessage() {}
 
 func (x *PingReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[108]
+	mi := &file_mt5_mt5_proto_msgTypes[108]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9944,7 +9944,7 @@ func (x *PingReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PingReply.ProtoReflect.Descriptor instead.
 func (*PingReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{108}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{108}
 }
 
 func (x *PingReply) GetResult() string {
@@ -9969,7 +9969,7 @@ type HealthRequest struct {
 
 func (x *HealthRequest) Reset() {
 	*x = HealthRequest{}
-	mi := &file_mt5_proto_msgTypes[109]
+	mi := &file_mt5_mt5_proto_msgTypes[109]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9981,7 +9981,7 @@ func (x *HealthRequest) String() string {
 func (*HealthRequest) ProtoMessage() {}
 
 func (x *HealthRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[109]
+	mi := &file_mt5_mt5_proto_msgTypes[109]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9994,7 +9994,7 @@ func (x *HealthRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthRequest.ProtoReflect.Descriptor instead.
 func (*HealthRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{109}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{109}
 }
 
 type HealthReply struct {
@@ -10007,7 +10007,7 @@ type HealthReply struct {
 
 func (x *HealthReply) Reset() {
 	*x = HealthReply{}
-	mi := &file_mt5_proto_msgTypes[110]
+	mi := &file_mt5_mt5_proto_msgTypes[110]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10019,7 +10019,7 @@ func (x *HealthReply) String() string {
 func (*HealthReply) ProtoMessage() {}
 
 func (x *HealthReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[110]
+	mi := &file_mt5_mt5_proto_msgTypes[110]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10032,7 +10032,7 @@ func (x *HealthReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthReply.ProtoReflect.Descriptor instead.
 func (*HealthReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{110}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{110}
 }
 
 func (x *HealthReply) GetResult() string {
@@ -10067,7 +10067,7 @@ type PingHostRequest struct {
 
 func (x *PingHostRequest) Reset() {
 	*x = PingHostRequest{}
-	mi := &file_mt5_proto_msgTypes[111]
+	mi := &file_mt5_mt5_proto_msgTypes[111]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10079,7 +10079,7 @@ func (x *PingHostRequest) String() string {
 func (*PingHostRequest) ProtoMessage() {}
 
 func (x *PingHostRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[111]
+	mi := &file_mt5_mt5_proto_msgTypes[111]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10092,7 +10092,7 @@ func (x *PingHostRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PingHostRequest.ProtoReflect.Descriptor instead.
 func (*PingHostRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{111}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{111}
 }
 
 func (x *PingHostRequest) GetHost() string {
@@ -10119,7 +10119,7 @@ type PingHostReply struct {
 
 func (x *PingHostReply) Reset() {
 	*x = PingHostReply{}
-	mi := &file_mt5_proto_msgTypes[112]
+	mi := &file_mt5_mt5_proto_msgTypes[112]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10131,7 +10131,7 @@ func (x *PingHostReply) String() string {
 func (*PingHostReply) ProtoMessage() {}
 
 func (x *PingHostReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[112]
+	mi := &file_mt5_mt5_proto_msgTypes[112]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10144,7 +10144,7 @@ func (x *PingHostReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PingHostReply.ProtoReflect.Descriptor instead.
 func (*PingHostReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{112}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{112}
 }
 
 func (x *PingHostReply) GetResult() int32 {
@@ -10179,7 +10179,7 @@ type PingHostManyRequest struct {
 
 func (x *PingHostManyRequest) Reset() {
 	*x = PingHostManyRequest{}
-	mi := &file_mt5_proto_msgTypes[113]
+	mi := &file_mt5_mt5_proto_msgTypes[113]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10191,7 +10191,7 @@ func (x *PingHostManyRequest) String() string {
 func (*PingHostManyRequest) ProtoMessage() {}
 
 func (x *PingHostManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[113]
+	mi := &file_mt5_mt5_proto_msgTypes[113]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10204,7 +10204,7 @@ func (x *PingHostManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PingHostManyRequest.ProtoReflect.Descriptor instead.
 func (*PingHostManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{113}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{113}
 }
 
 func (x *PingHostManyRequest) GetHost() []string {
@@ -10231,7 +10231,7 @@ type PingHostManyReply struct {
 
 func (x *PingHostManyReply) Reset() {
 	*x = PingHostManyReply{}
-	mi := &file_mt5_proto_msgTypes[114]
+	mi := &file_mt5_mt5_proto_msgTypes[114]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10243,7 +10243,7 @@ func (x *PingHostManyReply) String() string {
 func (*PingHostManyReply) ProtoMessage() {}
 
 func (x *PingHostManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[114]
+	mi := &file_mt5_mt5_proto_msgTypes[114]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10256,7 +10256,7 @@ func (x *PingHostManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PingHostManyReply.ProtoReflect.Descriptor instead.
 func (*PingHostManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{114}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{114}
 }
 
 func (x *PingHostManyReply) GetResult() []int32 {
@@ -10281,7 +10281,7 @@ type MemorySnapshotRequest struct {
 
 func (x *MemorySnapshotRequest) Reset() {
 	*x = MemorySnapshotRequest{}
-	mi := &file_mt5_proto_msgTypes[115]
+	mi := &file_mt5_mt5_proto_msgTypes[115]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10293,7 +10293,7 @@ func (x *MemorySnapshotRequest) String() string {
 func (*MemorySnapshotRequest) ProtoMessage() {}
 
 func (x *MemorySnapshotRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[115]
+	mi := &file_mt5_mt5_proto_msgTypes[115]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10306,7 +10306,7 @@ func (x *MemorySnapshotRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MemorySnapshotRequest.ProtoReflect.Descriptor instead.
 func (*MemorySnapshotRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{115}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{115}
 }
 
 type MemorySnapshotReply struct {
@@ -10319,7 +10319,7 @@ type MemorySnapshotReply struct {
 
 func (x *MemorySnapshotReply) Reset() {
 	*x = MemorySnapshotReply{}
-	mi := &file_mt5_proto_msgTypes[116]
+	mi := &file_mt5_mt5_proto_msgTypes[116]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10331,7 +10331,7 @@ func (x *MemorySnapshotReply) String() string {
 func (*MemorySnapshotReply) ProtoMessage() {}
 
 func (x *MemorySnapshotReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[116]
+	mi := &file_mt5_mt5_proto_msgTypes[116]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10344,7 +10344,7 @@ func (x *MemorySnapshotReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MemorySnapshotReply.ProtoReflect.Descriptor instead.
 func (*MemorySnapshotReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{116}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{116}
 }
 
 func (x *MemorySnapshotReply) GetResult() string {
@@ -10376,7 +10376,7 @@ type SearchRequest struct {
 
 func (x *SearchRequest) Reset() {
 	*x = SearchRequest{}
-	mi := &file_mt5_proto_msgTypes[117]
+	mi := &file_mt5_mt5_proto_msgTypes[117]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10388,7 +10388,7 @@ func (x *SearchRequest) String() string {
 func (*SearchRequest) ProtoMessage() {}
 
 func (x *SearchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[117]
+	mi := &file_mt5_mt5_proto_msgTypes[117]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10401,7 +10401,7 @@ func (x *SearchRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchRequest.ProtoReflect.Descriptor instead.
 func (*SearchRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{117}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{117}
 }
 
 func (x *SearchRequest) GetCompany() string {
@@ -10421,7 +10421,7 @@ type Company struct {
 
 func (x *Company) Reset() {
 	*x = Company{}
-	mi := &file_mt5_proto_msgTypes[118]
+	mi := &file_mt5_mt5_proto_msgTypes[118]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10433,7 +10433,7 @@ func (x *Company) String() string {
 func (*Company) ProtoMessage() {}
 
 func (x *Company) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[118]
+	mi := &file_mt5_mt5_proto_msgTypes[118]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10446,7 +10446,7 @@ func (x *Company) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Company.ProtoReflect.Descriptor instead.
 func (*Company) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{118}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{118}
 }
 
 func (x *Company) GetCompanyName() string {
@@ -10473,7 +10473,7 @@ type Result struct {
 
 func (x *Result) Reset() {
 	*x = Result{}
-	mi := &file_mt5_proto_msgTypes[119]
+	mi := &file_mt5_mt5_proto_msgTypes[119]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10485,7 +10485,7 @@ func (x *Result) String() string {
 func (*Result) ProtoMessage() {}
 
 func (x *Result) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[119]
+	mi := &file_mt5_mt5_proto_msgTypes[119]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10498,7 +10498,7 @@ func (x *Result) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Result.ProtoReflect.Descriptor instead.
 func (*Result) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{119}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{119}
 }
 
 func (x *Result) GetName() string {
@@ -10525,7 +10525,7 @@ type SearchReply struct {
 
 func (x *SearchReply) Reset() {
 	*x = SearchReply{}
-	mi := &file_mt5_proto_msgTypes[120]
+	mi := &file_mt5_mt5_proto_msgTypes[120]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10537,7 +10537,7 @@ func (x *SearchReply) String() string {
 func (*SearchReply) ProtoMessage() {}
 
 func (x *SearchReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[120]
+	mi := &file_mt5_mt5_proto_msgTypes[120]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10550,7 +10550,7 @@ func (x *SearchReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchReply.ProtoReflect.Descriptor instead.
 func (*SearchReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{120}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{120}
 }
 
 func (x *SearchReply) GetResult() []*Company {
@@ -10575,7 +10575,7 @@ type GetClientsRequest struct {
 
 func (x *GetClientsRequest) Reset() {
 	*x = GetClientsRequest{}
-	mi := &file_mt5_proto_msgTypes[121]
+	mi := &file_mt5_mt5_proto_msgTypes[121]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10587,7 +10587,7 @@ func (x *GetClientsRequest) String() string {
 func (*GetClientsRequest) ProtoMessage() {}
 
 func (x *GetClientsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[121]
+	mi := &file_mt5_mt5_proto_msgTypes[121]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10600,7 +10600,7 @@ func (x *GetClientsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetClientsRequest.ProtoReflect.Descriptor instead.
 func (*GetClientsRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{121}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{121}
 }
 
 // Client ID with connection status
@@ -10624,7 +10624,7 @@ type ClientStatus struct {
 
 func (x *ClientStatus) Reset() {
 	*x = ClientStatus{}
-	mi := &file_mt5_proto_msgTypes[122]
+	mi := &file_mt5_mt5_proto_msgTypes[122]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10636,7 +10636,7 @@ func (x *ClientStatus) String() string {
 func (*ClientStatus) ProtoMessage() {}
 
 func (x *ClientStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[122]
+	mi := &file_mt5_mt5_proto_msgTypes[122]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10649,7 +10649,7 @@ func (x *ClientStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClientStatus.ProtoReflect.Descriptor instead.
 func (*ClientStatus) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{122}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{122}
 }
 
 func (x *ClientStatus) GetId() string {
@@ -10704,7 +10704,7 @@ type GetClientsReply struct {
 
 func (x *GetClientsReply) Reset() {
 	*x = GetClientsReply{}
-	mi := &file_mt5_proto_msgTypes[123]
+	mi := &file_mt5_mt5_proto_msgTypes[123]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10716,7 +10716,7 @@ func (x *GetClientsReply) String() string {
 func (*GetClientsReply) ProtoMessage() {}
 
 func (x *GetClientsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[123]
+	mi := &file_mt5_mt5_proto_msgTypes[123]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10729,7 +10729,7 @@ func (x *GetClientsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetClientsReply.ProtoReflect.Descriptor instead.
 func (*GetClientsReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{123}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{123}
 }
 
 func (x *GetClientsReply) GetResult() []*ClientStatus {
@@ -10764,7 +10764,7 @@ type GetDemoRequest struct {
 
 func (x *GetDemoRequest) Reset() {
 	*x = GetDemoRequest{}
-	mi := &file_mt5_proto_msgTypes[124]
+	mi := &file_mt5_mt5_proto_msgTypes[124]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10776,7 +10776,7 @@ func (x *GetDemoRequest) String() string {
 func (*GetDemoRequest) ProtoMessage() {}
 
 func (x *GetDemoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[124]
+	mi := &file_mt5_mt5_proto_msgTypes[124]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10789,7 +10789,7 @@ func (x *GetDemoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDemoRequest.ProtoReflect.Descriptor instead.
 func (*GetDemoRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{124}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{124}
 }
 
 func (x *GetDemoRequest) GetHost() string {
@@ -10817,7 +10817,7 @@ type AccountAnswer struct {
 
 func (x *AccountAnswer) Reset() {
 	*x = AccountAnswer{}
-	mi := &file_mt5_proto_msgTypes[125]
+	mi := &file_mt5_mt5_proto_msgTypes[125]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10829,7 +10829,7 @@ func (x *AccountAnswer) String() string {
 func (*AccountAnswer) ProtoMessage() {}
 
 func (x *AccountAnswer) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[125]
+	mi := &file_mt5_mt5_proto_msgTypes[125]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10842,7 +10842,7 @@ func (x *AccountAnswer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccountAnswer.ProtoReflect.Descriptor instead.
 func (*AccountAnswer) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{125}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{125}
 }
 
 func (x *AccountAnswer) GetLogin() uint64 {
@@ -10876,7 +10876,7 @@ type GetDemoReply struct {
 
 func (x *GetDemoReply) Reset() {
 	*x = GetDemoReply{}
-	mi := &file_mt5_proto_msgTypes[126]
+	mi := &file_mt5_mt5_proto_msgTypes[126]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10888,7 +10888,7 @@ func (x *GetDemoReply) String() string {
 func (*GetDemoReply) ProtoMessage() {}
 
 func (x *GetDemoReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[126]
+	mi := &file_mt5_mt5_proto_msgTypes[126]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10901,7 +10901,7 @@ func (x *GetDemoReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDemoReply.ProtoReflect.Descriptor instead.
 func (*GetDemoReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{126}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{126}
 }
 
 func (x *GetDemoReply) GetResult() *AccountAnswer {
@@ -10939,7 +10939,7 @@ type SubscribeRequest struct {
 
 func (x *SubscribeRequest) Reset() {
 	*x = SubscribeRequest{}
-	mi := &file_mt5_proto_msgTypes[127]
+	mi := &file_mt5_mt5_proto_msgTypes[127]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10951,7 +10951,7 @@ func (x *SubscribeRequest) String() string {
 func (*SubscribeRequest) ProtoMessage() {}
 
 func (x *SubscribeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[127]
+	mi := &file_mt5_mt5_proto_msgTypes[127]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10964,7 +10964,7 @@ func (x *SubscribeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{127}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{127}
 }
 
 func (x *SubscribeRequest) GetId() string {
@@ -10998,7 +10998,7 @@ type SubscribeReply struct {
 
 func (x *SubscribeReply) Reset() {
 	*x = SubscribeReply{}
-	mi := &file_mt5_proto_msgTypes[128]
+	mi := &file_mt5_mt5_proto_msgTypes[128]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11010,7 +11010,7 @@ func (x *SubscribeReply) String() string {
 func (*SubscribeReply) ProtoMessage() {}
 
 func (x *SubscribeReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[128]
+	mi := &file_mt5_mt5_proto_msgTypes[128]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11023,7 +11023,7 @@ func (x *SubscribeReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeReply.ProtoReflect.Descriptor instead.
 func (*SubscribeReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{128}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{128}
 }
 
 func (x *SubscribeReply) GetResult() string {
@@ -11060,7 +11060,7 @@ type SubscribeManyRequest struct {
 
 func (x *SubscribeManyRequest) Reset() {
 	*x = SubscribeManyRequest{}
-	mi := &file_mt5_proto_msgTypes[129]
+	mi := &file_mt5_mt5_proto_msgTypes[129]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11072,7 +11072,7 @@ func (x *SubscribeManyRequest) String() string {
 func (*SubscribeManyRequest) ProtoMessage() {}
 
 func (x *SubscribeManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[129]
+	mi := &file_mt5_mt5_proto_msgTypes[129]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11085,7 +11085,7 @@ func (x *SubscribeManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeManyRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{129}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{129}
 }
 
 func (x *SubscribeManyRequest) GetId() string {
@@ -11119,7 +11119,7 @@ type SubscribeManyReply struct {
 
 func (x *SubscribeManyReply) Reset() {
 	*x = SubscribeManyReply{}
-	mi := &file_mt5_proto_msgTypes[130]
+	mi := &file_mt5_mt5_proto_msgTypes[130]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11131,7 +11131,7 @@ func (x *SubscribeManyReply) String() string {
 func (*SubscribeManyReply) ProtoMessage() {}
 
 func (x *SubscribeManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[130]
+	mi := &file_mt5_mt5_proto_msgTypes[130]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11144,7 +11144,7 @@ func (x *SubscribeManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeManyReply.ProtoReflect.Descriptor instead.
 func (*SubscribeManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{130}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{130}
 }
 
 func (x *SubscribeManyReply) GetResult() string {
@@ -11179,7 +11179,7 @@ type UnSubscribeRequest struct {
 
 func (x *UnSubscribeRequest) Reset() {
 	*x = UnSubscribeRequest{}
-	mi := &file_mt5_proto_msgTypes[131]
+	mi := &file_mt5_mt5_proto_msgTypes[131]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11191,7 +11191,7 @@ func (x *UnSubscribeRequest) String() string {
 func (*UnSubscribeRequest) ProtoMessage() {}
 
 func (x *UnSubscribeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[131]
+	mi := &file_mt5_mt5_proto_msgTypes[131]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11204,7 +11204,7 @@ func (x *UnSubscribeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnSubscribeRequest.ProtoReflect.Descriptor instead.
 func (*UnSubscribeRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{131}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{131}
 }
 
 func (x *UnSubscribeRequest) GetId() string {
@@ -11231,7 +11231,7 @@ type UnSubscribeReply struct {
 
 func (x *UnSubscribeReply) Reset() {
 	*x = UnSubscribeReply{}
-	mi := &file_mt5_proto_msgTypes[132]
+	mi := &file_mt5_mt5_proto_msgTypes[132]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11243,7 +11243,7 @@ func (x *UnSubscribeReply) String() string {
 func (*UnSubscribeReply) ProtoMessage() {}
 
 func (x *UnSubscribeReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[132]
+	mi := &file_mt5_mt5_proto_msgTypes[132]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11256,7 +11256,7 @@ func (x *UnSubscribeReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnSubscribeReply.ProtoReflect.Descriptor instead.
 func (*UnSubscribeReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{132}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{132}
 }
 
 func (x *UnSubscribeReply) GetResult() string {
@@ -11290,7 +11290,7 @@ type UnSubscribeManyRequest struct {
 
 func (x *UnSubscribeManyRequest) Reset() {
 	*x = UnSubscribeManyRequest{}
-	mi := &file_mt5_proto_msgTypes[133]
+	mi := &file_mt5_mt5_proto_msgTypes[133]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11302,7 +11302,7 @@ func (x *UnSubscribeManyRequest) String() string {
 func (*UnSubscribeManyRequest) ProtoMessage() {}
 
 func (x *UnSubscribeManyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[133]
+	mi := &file_mt5_mt5_proto_msgTypes[133]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11315,7 +11315,7 @@ func (x *UnSubscribeManyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnSubscribeManyRequest.ProtoReflect.Descriptor instead.
 func (*UnSubscribeManyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{133}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{133}
 }
 
 func (x *UnSubscribeManyRequest) GetId() string {
@@ -11342,7 +11342,7 @@ type UnSubscribeManyReply struct {
 
 func (x *UnSubscribeManyReply) Reset() {
 	*x = UnSubscribeManyReply{}
-	mi := &file_mt5_proto_msgTypes[134]
+	mi := &file_mt5_mt5_proto_msgTypes[134]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11354,7 +11354,7 @@ func (x *UnSubscribeManyReply) String() string {
 func (*UnSubscribeManyReply) ProtoMessage() {}
 
 func (x *UnSubscribeManyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[134]
+	mi := &file_mt5_mt5_proto_msgTypes[134]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11367,7 +11367,7 @@ func (x *UnSubscribeManyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnSubscribeManyReply.ProtoReflect.Descriptor instead.
 func (*UnSubscribeManyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{134}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{134}
 }
 
 func (x *UnSubscribeManyReply) GetResult() string {
@@ -11399,7 +11399,7 @@ type SubscribeOrderProfitRequest struct {
 
 func (x *SubscribeOrderProfitRequest) Reset() {
 	*x = SubscribeOrderProfitRequest{}
-	mi := &file_mt5_proto_msgTypes[135]
+	mi := &file_mt5_mt5_proto_msgTypes[135]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11411,7 +11411,7 @@ func (x *SubscribeOrderProfitRequest) String() string {
 func (*SubscribeOrderProfitRequest) ProtoMessage() {}
 
 func (x *SubscribeOrderProfitRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[135]
+	mi := &file_mt5_mt5_proto_msgTypes[135]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11424,7 +11424,7 @@ func (x *SubscribeOrderProfitRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeOrderProfitRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeOrderProfitRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{135}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{135}
 }
 
 func (x *SubscribeOrderProfitRequest) GetId() string {
@@ -11444,7 +11444,7 @@ type SubscribeOrderProfitReply struct {
 
 func (x *SubscribeOrderProfitReply) Reset() {
 	*x = SubscribeOrderProfitReply{}
-	mi := &file_mt5_proto_msgTypes[136]
+	mi := &file_mt5_mt5_proto_msgTypes[136]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11456,7 +11456,7 @@ func (x *SubscribeOrderProfitReply) String() string {
 func (*SubscribeOrderProfitReply) ProtoMessage() {}
 
 func (x *SubscribeOrderProfitReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[136]
+	mi := &file_mt5_mt5_proto_msgTypes[136]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11469,7 +11469,7 @@ func (x *SubscribeOrderProfitReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeOrderProfitReply.ProtoReflect.Descriptor instead.
 func (*SubscribeOrderProfitReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{136}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{136}
 }
 
 func (x *SubscribeOrderProfitReply) GetResult() []*Order {
@@ -11507,7 +11507,7 @@ type SubscribeTickValueRequest struct {
 
 func (x *SubscribeTickValueRequest) Reset() {
 	*x = SubscribeTickValueRequest{}
-	mi := &file_mt5_proto_msgTypes[137]
+	mi := &file_mt5_mt5_proto_msgTypes[137]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11519,7 +11519,7 @@ func (x *SubscribeTickValueRequest) String() string {
 func (*SubscribeTickValueRequest) ProtoMessage() {}
 
 func (x *SubscribeTickValueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[137]
+	mi := &file_mt5_mt5_proto_msgTypes[137]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11532,7 +11532,7 @@ func (x *SubscribeTickValueRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeTickValueRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeTickValueRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{137}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{137}
 }
 
 func (x *SubscribeTickValueRequest) GetId() string {
@@ -11566,7 +11566,7 @@ type SubscribeTickValueReply struct {
 
 func (x *SubscribeTickValueReply) Reset() {
 	*x = SubscribeTickValueReply{}
-	mi := &file_mt5_proto_msgTypes[138]
+	mi := &file_mt5_mt5_proto_msgTypes[138]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11578,7 +11578,7 @@ func (x *SubscribeTickValueReply) String() string {
 func (*SubscribeTickValueReply) ProtoMessage() {}
 
 func (x *SubscribeTickValueReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[138]
+	mi := &file_mt5_mt5_proto_msgTypes[138]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11591,7 +11591,7 @@ func (x *SubscribeTickValueReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeTickValueReply.ProtoReflect.Descriptor instead.
 func (*SubscribeTickValueReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{138}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{138}
 }
 
 func (x *SubscribeTickValueReply) GetResult() string {
@@ -11623,7 +11623,7 @@ type SubscribeOrderUpdateRequest struct {
 
 func (x *SubscribeOrderUpdateRequest) Reset() {
 	*x = SubscribeOrderUpdateRequest{}
-	mi := &file_mt5_proto_msgTypes[139]
+	mi := &file_mt5_mt5_proto_msgTypes[139]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11635,7 +11635,7 @@ func (x *SubscribeOrderUpdateRequest) String() string {
 func (*SubscribeOrderUpdateRequest) ProtoMessage() {}
 
 func (x *SubscribeOrderUpdateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[139]
+	mi := &file_mt5_mt5_proto_msgTypes[139]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11648,7 +11648,7 @@ func (x *SubscribeOrderUpdateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeOrderUpdateRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeOrderUpdateRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{139}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{139}
 }
 
 func (x *SubscribeOrderUpdateRequest) GetId() string {
@@ -11668,7 +11668,7 @@ type SubscribeOrderUpdateReply struct {
 
 func (x *SubscribeOrderUpdateReply) Reset() {
 	*x = SubscribeOrderUpdateReply{}
-	mi := &file_mt5_proto_msgTypes[140]
+	mi := &file_mt5_mt5_proto_msgTypes[140]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11680,7 +11680,7 @@ func (x *SubscribeOrderUpdateReply) String() string {
 func (*SubscribeOrderUpdateReply) ProtoMessage() {}
 
 func (x *SubscribeOrderUpdateReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[140]
+	mi := &file_mt5_mt5_proto_msgTypes[140]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11693,7 +11693,7 @@ func (x *SubscribeOrderUpdateReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeOrderUpdateReply.ProtoReflect.Descriptor instead.
 func (*SubscribeOrderUpdateReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{140}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{140}
 }
 
 func (x *SubscribeOrderUpdateReply) GetResult() []*Order {
@@ -11725,7 +11725,7 @@ type SubscribeMarketWatchRequest struct {
 
 func (x *SubscribeMarketWatchRequest) Reset() {
 	*x = SubscribeMarketWatchRequest{}
-	mi := &file_mt5_proto_msgTypes[141]
+	mi := &file_mt5_mt5_proto_msgTypes[141]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11737,7 +11737,7 @@ func (x *SubscribeMarketWatchRequest) String() string {
 func (*SubscribeMarketWatchRequest) ProtoMessage() {}
 
 func (x *SubscribeMarketWatchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[141]
+	mi := &file_mt5_mt5_proto_msgTypes[141]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11750,7 +11750,7 @@ func (x *SubscribeMarketWatchRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeMarketWatchRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeMarketWatchRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{141}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{141}
 }
 
 func (x *SubscribeMarketWatchRequest) GetId() string {
@@ -11770,7 +11770,7 @@ type SubscribeMarketWatchReply struct {
 
 func (x *SubscribeMarketWatchReply) Reset() {
 	*x = SubscribeMarketWatchReply{}
-	mi := &file_mt5_proto_msgTypes[142]
+	mi := &file_mt5_mt5_proto_msgTypes[142]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11782,7 +11782,7 @@ func (x *SubscribeMarketWatchReply) String() string {
 func (*SubscribeMarketWatchReply) ProtoMessage() {}
 
 func (x *SubscribeMarketWatchReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[142]
+	mi := &file_mt5_mt5_proto_msgTypes[142]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11795,7 +11795,7 @@ func (x *SubscribeMarketWatchReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeMarketWatchReply.ProtoReflect.Descriptor instead.
 func (*SubscribeMarketWatchReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{142}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{142}
 }
 
 func (x *SubscribeMarketWatchReply) GetResult() string {
@@ -11830,7 +11830,7 @@ type SubscribeOpenedOrdersTicketsRequest struct {
 
 func (x *SubscribeOpenedOrdersTicketsRequest) Reset() {
 	*x = SubscribeOpenedOrdersTicketsRequest{}
-	mi := &file_mt5_proto_msgTypes[143]
+	mi := &file_mt5_mt5_proto_msgTypes[143]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11842,7 +11842,7 @@ func (x *SubscribeOpenedOrdersTicketsRequest) String() string {
 func (*SubscribeOpenedOrdersTicketsRequest) ProtoMessage() {}
 
 func (x *SubscribeOpenedOrdersTicketsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[143]
+	mi := &file_mt5_mt5_proto_msgTypes[143]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11855,7 +11855,7 @@ func (x *SubscribeOpenedOrdersTicketsRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use SubscribeOpenedOrdersTicketsRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeOpenedOrdersTicketsRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{143}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{143}
 }
 
 func (x *SubscribeOpenedOrdersTicketsRequest) GetId() string {
@@ -11882,7 +11882,7 @@ type SubscribeOpenedOrdersTicketsReply struct {
 
 func (x *SubscribeOpenedOrdersTicketsReply) Reset() {
 	*x = SubscribeOpenedOrdersTicketsReply{}
-	mi := &file_mt5_proto_msgTypes[144]
+	mi := &file_mt5_mt5_proto_msgTypes[144]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11894,7 +11894,7 @@ func (x *SubscribeOpenedOrdersTicketsReply) String() string {
 func (*SubscribeOpenedOrdersTicketsReply) ProtoMessage() {}
 
 func (x *SubscribeOpenedOrdersTicketsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[144]
+	mi := &file_mt5_mt5_proto_msgTypes[144]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11907,7 +11907,7 @@ func (x *SubscribeOpenedOrdersTicketsReply) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use SubscribeOpenedOrdersTicketsReply.ProtoReflect.Descriptor instead.
 func (*SubscribeOpenedOrdersTicketsReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{144}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{144}
 }
 
 func (x *SubscribeOpenedOrdersTicketsReply) GetResult() string {
@@ -11948,7 +11948,7 @@ type TickHistoryRequestRequest struct {
 
 func (x *TickHistoryRequestRequest) Reset() {
 	*x = TickHistoryRequestRequest{}
-	mi := &file_mt5_proto_msgTypes[145]
+	mi := &file_mt5_mt5_proto_msgTypes[145]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11960,7 +11960,7 @@ func (x *TickHistoryRequestRequest) String() string {
 func (*TickHistoryRequestRequest) ProtoMessage() {}
 
 func (x *TickHistoryRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[145]
+	mi := &file_mt5_mt5_proto_msgTypes[145]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11973,7 +11973,7 @@ func (x *TickHistoryRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TickHistoryRequestRequest.ProtoReflect.Descriptor instead.
 func (*TickHistoryRequestRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{145}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{145}
 }
 
 func (x *TickHistoryRequestRequest) GetId() string {
@@ -12021,7 +12021,7 @@ type TickHistoryRequestReply struct {
 
 func (x *TickHistoryRequestReply) Reset() {
 	*x = TickHistoryRequestReply{}
-	mi := &file_mt5_proto_msgTypes[146]
+	mi := &file_mt5_mt5_proto_msgTypes[146]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12033,7 +12033,7 @@ func (x *TickHistoryRequestReply) String() string {
 func (*TickHistoryRequestReply) ProtoMessage() {}
 
 func (x *TickHistoryRequestReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[146]
+	mi := &file_mt5_mt5_proto_msgTypes[146]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12046,7 +12046,7 @@ func (x *TickHistoryRequestReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TickHistoryRequestReply.ProtoReflect.Descriptor instead.
 func (*TickHistoryRequestReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{146}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{146}
 }
 
 func (x *TickHistoryRequestReply) GetResult() string {
@@ -12081,7 +12081,7 @@ type TickHistoryStopRequest struct {
 
 func (x *TickHistoryStopRequest) Reset() {
 	*x = TickHistoryStopRequest{}
-	mi := &file_mt5_proto_msgTypes[147]
+	mi := &file_mt5_mt5_proto_msgTypes[147]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12093,7 +12093,7 @@ func (x *TickHistoryStopRequest) String() string {
 func (*TickHistoryStopRequest) ProtoMessage() {}
 
 func (x *TickHistoryStopRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[147]
+	mi := &file_mt5_mt5_proto_msgTypes[147]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12106,7 +12106,7 @@ func (x *TickHistoryStopRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TickHistoryStopRequest.ProtoReflect.Descriptor instead.
 func (*TickHistoryStopRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{147}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{147}
 }
 
 func (x *TickHistoryStopRequest) GetId() string {
@@ -12133,7 +12133,7 @@ type TickHistoryStopReply struct {
 
 func (x *TickHistoryStopReply) Reset() {
 	*x = TickHistoryStopReply{}
-	mi := &file_mt5_proto_msgTypes[148]
+	mi := &file_mt5_mt5_proto_msgTypes[148]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12145,7 +12145,7 @@ func (x *TickHistoryStopReply) String() string {
 func (*TickHistoryStopReply) ProtoMessage() {}
 
 func (x *TickHistoryStopReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[148]
+	mi := &file_mt5_mt5_proto_msgTypes[148]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12158,7 +12158,7 @@ func (x *TickHistoryStopReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TickHistoryStopReply.ProtoReflect.Descriptor instead.
 func (*TickHistoryStopReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{148}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{148}
 }
 
 func (x *TickHistoryStopReply) GetResult() string {
@@ -12227,7 +12227,7 @@ type OrderSendRequest struct {
 
 func (x *OrderSendRequest) Reset() {
 	*x = OrderSendRequest{}
-	mi := &file_mt5_proto_msgTypes[149]
+	mi := &file_mt5_mt5_proto_msgTypes[149]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12239,7 +12239,7 @@ func (x *OrderSendRequest) String() string {
 func (*OrderSendRequest) ProtoMessage() {}
 
 func (x *OrderSendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[149]
+	mi := &file_mt5_mt5_proto_msgTypes[149]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12252,7 +12252,7 @@ func (x *OrderSendRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderSendRequest.ProtoReflect.Descriptor instead.
 func (*OrderSendRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{149}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{149}
 }
 
 func (x *OrderSendRequest) GetId() string {
@@ -12363,7 +12363,7 @@ type OrderSendReply struct {
 
 func (x *OrderSendReply) Reset() {
 	*x = OrderSendReply{}
-	mi := &file_mt5_proto_msgTypes[150]
+	mi := &file_mt5_mt5_proto_msgTypes[150]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12375,7 +12375,7 @@ func (x *OrderSendReply) String() string {
 func (*OrderSendReply) ProtoMessage() {}
 
 func (x *OrderSendReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[150]
+	mi := &file_mt5_mt5_proto_msgTypes[150]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12388,7 +12388,7 @@ func (x *OrderSendReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderSendReply.ProtoReflect.Descriptor instead.
 func (*OrderSendReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{150}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{150}
 }
 
 func (x *OrderSendReply) GetResult() *Order {
@@ -12437,7 +12437,7 @@ type OrderModifyRequest struct {
 
 func (x *OrderModifyRequest) Reset() {
 	*x = OrderModifyRequest{}
-	mi := &file_mt5_proto_msgTypes[151]
+	mi := &file_mt5_mt5_proto_msgTypes[151]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12449,7 +12449,7 @@ func (x *OrderModifyRequest) String() string {
 func (*OrderModifyRequest) ProtoMessage() {}
 
 func (x *OrderModifyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[151]
+	mi := &file_mt5_mt5_proto_msgTypes[151]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12462,7 +12462,7 @@ func (x *OrderModifyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderModifyRequest.ProtoReflect.Descriptor instead.
 func (*OrderModifyRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{151}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{151}
 }
 
 func (x *OrderModifyRequest) GetId() string {
@@ -12524,7 +12524,7 @@ type OrderModifyReply struct {
 
 func (x *OrderModifyReply) Reset() {
 	*x = OrderModifyReply{}
-	mi := &file_mt5_proto_msgTypes[152]
+	mi := &file_mt5_mt5_proto_msgTypes[152]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12536,7 +12536,7 @@ func (x *OrderModifyReply) String() string {
 func (*OrderModifyReply) ProtoMessage() {}
 
 func (x *OrderModifyReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[152]
+	mi := &file_mt5_mt5_proto_msgTypes[152]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12549,7 +12549,7 @@ func (x *OrderModifyReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderModifyReply.ProtoReflect.Descriptor instead.
 func (*OrderModifyReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{152}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{152}
 }
 
 func (x *OrderModifyReply) GetResult() *Order {
@@ -12593,7 +12593,7 @@ type OrderCloseRequest struct {
 
 func (x *OrderCloseRequest) Reset() {
 	*x = OrderCloseRequest{}
-	mi := &file_mt5_proto_msgTypes[153]
+	mi := &file_mt5_mt5_proto_msgTypes[153]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12605,7 +12605,7 @@ func (x *OrderCloseRequest) String() string {
 func (*OrderCloseRequest) ProtoMessage() {}
 
 func (x *OrderCloseRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[153]
+	mi := &file_mt5_mt5_proto_msgTypes[153]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12618,7 +12618,7 @@ func (x *OrderCloseRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderCloseRequest.ProtoReflect.Descriptor instead.
 func (*OrderCloseRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{153}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{153}
 }
 
 func (x *OrderCloseRequest) GetId() string {
@@ -12666,7 +12666,7 @@ type OrderCloseReply struct {
 
 func (x *OrderCloseReply) Reset() {
 	*x = OrderCloseReply{}
-	mi := &file_mt5_proto_msgTypes[154]
+	mi := &file_mt5_mt5_proto_msgTypes[154]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12678,7 +12678,7 @@ func (x *OrderCloseReply) String() string {
 func (*OrderCloseReply) ProtoMessage() {}
 
 func (x *OrderCloseReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[154]
+	mi := &file_mt5_mt5_proto_msgTypes[154]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12691,7 +12691,7 @@ func (x *OrderCloseReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderCloseReply.ProtoReflect.Descriptor instead.
 func (*OrderCloseReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{154}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{154}
 }
 
 func (x *OrderCloseReply) GetResult() *Order {
@@ -12723,7 +12723,7 @@ type EventsRequest struct {
 
 func (x *EventsRequest) Reset() {
 	*x = EventsRequest{}
-	mi := &file_mt5_proto_msgTypes[155]
+	mi := &file_mt5_mt5_proto_msgTypes[155]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12735,7 +12735,7 @@ func (x *EventsRequest) String() string {
 func (*EventsRequest) ProtoMessage() {}
 
 func (x *EventsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[155]
+	mi := &file_mt5_mt5_proto_msgTypes[155]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12748,7 +12748,7 @@ func (x *EventsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventsRequest.ProtoReflect.Descriptor instead.
 func (*EventsRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{155}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{155}
 }
 
 func (x *EventsRequest) GetId() string {
@@ -12768,7 +12768,7 @@ type EventsReply struct {
 
 func (x *EventsReply) Reset() {
 	*x = EventsReply{}
-	mi := &file_mt5_proto_msgTypes[156]
+	mi := &file_mt5_mt5_proto_msgTypes[156]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12780,7 +12780,7 @@ func (x *EventsReply) String() string {
 func (*EventsReply) ProtoMessage() {}
 
 func (x *EventsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[156]
+	mi := &file_mt5_mt5_proto_msgTypes[156]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12793,7 +12793,7 @@ func (x *EventsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventsReply.ProtoReflect.Descriptor instead.
 func (*EventsReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{156}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{156}
 }
 
 func (x *EventsReply) GetResult() string {
@@ -12825,7 +12825,7 @@ type OnOrderUpdateRequest struct {
 
 func (x *OnOrderUpdateRequest) Reset() {
 	*x = OnOrderUpdateRequest{}
-	mi := &file_mt5_proto_msgTypes[157]
+	mi := &file_mt5_mt5_proto_msgTypes[157]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12837,7 +12837,7 @@ func (x *OnOrderUpdateRequest) String() string {
 func (*OnOrderUpdateRequest) ProtoMessage() {}
 
 func (x *OnOrderUpdateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[157]
+	mi := &file_mt5_mt5_proto_msgTypes[157]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12850,7 +12850,7 @@ func (x *OnOrderUpdateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnOrderUpdateRequest.ProtoReflect.Descriptor instead.
 func (*OnOrderUpdateRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{157}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{157}
 }
 
 func (x *OnOrderUpdateRequest) GetId() string {
@@ -12887,7 +12887,7 @@ type OrderUpdateSummary struct {
 
 func (x *OrderUpdateSummary) Reset() {
 	*x = OrderUpdateSummary{}
-	mi := &file_mt5_proto_msgTypes[158]
+	mi := &file_mt5_mt5_proto_msgTypes[158]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12899,7 +12899,7 @@ func (x *OrderUpdateSummary) String() string {
 func (*OrderUpdateSummary) ProtoMessage() {}
 
 func (x *OrderUpdateSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[158]
+	mi := &file_mt5_mt5_proto_msgTypes[158]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12912,7 +12912,7 @@ func (x *OrderUpdateSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderUpdateSummary.ProtoReflect.Descriptor instead.
 func (*OrderUpdateSummary) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{158}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{158}
 }
 
 func (x *OrderUpdateSummary) GetUpdate() *OrderUpdate {
@@ -12994,7 +12994,7 @@ type OrderUpdate struct {
 
 func (x *OrderUpdate) Reset() {
 	*x = OrderUpdate{}
-	mi := &file_mt5_proto_msgTypes[159]
+	mi := &file_mt5_mt5_proto_msgTypes[159]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13006,7 +13006,7 @@ func (x *OrderUpdate) String() string {
 func (*OrderUpdate) ProtoMessage() {}
 
 func (x *OrderUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[159]
+	mi := &file_mt5_mt5_proto_msgTypes[159]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13019,7 +13019,7 @@ func (x *OrderUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderUpdate.ProtoReflect.Descriptor instead.
 func (*OrderUpdate) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{159}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{159}
 }
 
 func (x *OrderUpdate) GetTrans() *TransactionInfo {
@@ -13107,7 +13107,7 @@ type TransactionInfo struct {
 
 func (x *TransactionInfo) Reset() {
 	*x = TransactionInfo{}
-	mi := &file_mt5_proto_msgTypes[160]
+	mi := &file_mt5_mt5_proto_msgTypes[160]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13119,7 +13119,7 @@ func (x *TransactionInfo) String() string {
 func (*TransactionInfo) ProtoMessage() {}
 
 func (x *TransactionInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[160]
+	mi := &file_mt5_mt5_proto_msgTypes[160]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13132,7 +13132,7 @@ func (x *TransactionInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransactionInfo.ProtoReflect.Descriptor instead.
 func (*TransactionInfo) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{160}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{160}
 }
 
 func (x *TransactionInfo) GetUpdateId() int32 {
@@ -13243,7 +13243,7 @@ type OnOrderUpdateReply struct {
 
 func (x *OnOrderUpdateReply) Reset() {
 	*x = OnOrderUpdateReply{}
-	mi := &file_mt5_proto_msgTypes[161]
+	mi := &file_mt5_mt5_proto_msgTypes[161]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13255,7 +13255,7 @@ func (x *OnOrderUpdateReply) String() string {
 func (*OnOrderUpdateReply) ProtoMessage() {}
 
 func (x *OnOrderUpdateReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[161]
+	mi := &file_mt5_mt5_proto_msgTypes[161]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13268,7 +13268,7 @@ func (x *OnOrderUpdateReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnOrderUpdateReply.ProtoReflect.Descriptor instead.
 func (*OnOrderUpdateReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{161}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{161}
 }
 
 func (x *OnOrderUpdateReply) GetResult() *OrderUpdateSummary {
@@ -13300,7 +13300,7 @@ type OnQuoteRequest struct {
 
 func (x *OnQuoteRequest) Reset() {
 	*x = OnQuoteRequest{}
-	mi := &file_mt5_proto_msgTypes[162]
+	mi := &file_mt5_mt5_proto_msgTypes[162]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13312,7 +13312,7 @@ func (x *OnQuoteRequest) String() string {
 func (*OnQuoteRequest) ProtoMessage() {}
 
 func (x *OnQuoteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[162]
+	mi := &file_mt5_mt5_proto_msgTypes[162]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13325,7 +13325,7 @@ func (x *OnQuoteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnQuoteRequest.ProtoReflect.Descriptor instead.
 func (*OnQuoteRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{162}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{162}
 }
 
 func (x *OnQuoteRequest) GetId() string {
@@ -13345,7 +13345,7 @@ type OnQuoteReply struct {
 
 func (x *OnQuoteReply) Reset() {
 	*x = OnQuoteReply{}
-	mi := &file_mt5_proto_msgTypes[163]
+	mi := &file_mt5_mt5_proto_msgTypes[163]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13357,7 +13357,7 @@ func (x *OnQuoteReply) String() string {
 func (*OnQuoteReply) ProtoMessage() {}
 
 func (x *OnQuoteReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[163]
+	mi := &file_mt5_mt5_proto_msgTypes[163]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13370,7 +13370,7 @@ func (x *OnQuoteReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnQuoteReply.ProtoReflect.Descriptor instead.
 func (*OnQuoteReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{163}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{163}
 }
 
 func (x *OnQuoteReply) GetResult() *Quote {
@@ -13402,7 +13402,7 @@ type OnTickValueRequest struct {
 
 func (x *OnTickValueRequest) Reset() {
 	*x = OnTickValueRequest{}
-	mi := &file_mt5_proto_msgTypes[164]
+	mi := &file_mt5_mt5_proto_msgTypes[164]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13414,7 +13414,7 @@ func (x *OnTickValueRequest) String() string {
 func (*OnTickValueRequest) ProtoMessage() {}
 
 func (x *OnTickValueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[164]
+	mi := &file_mt5_mt5_proto_msgTypes[164]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13427,7 +13427,7 @@ func (x *OnTickValueRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnTickValueRequest.ProtoReflect.Descriptor instead.
 func (*OnTickValueRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{164}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{164}
 }
 
 func (x *OnTickValueRequest) GetId() string {
@@ -13450,7 +13450,7 @@ type SymbolTickValue struct {
 
 func (x *SymbolTickValue) Reset() {
 	*x = SymbolTickValue{}
-	mi := &file_mt5_proto_msgTypes[165]
+	mi := &file_mt5_mt5_proto_msgTypes[165]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13462,7 +13462,7 @@ func (x *SymbolTickValue) String() string {
 func (*SymbolTickValue) ProtoMessage() {}
 
 func (x *SymbolTickValue) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[165]
+	mi := &file_mt5_mt5_proto_msgTypes[165]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13475,7 +13475,7 @@ func (x *SymbolTickValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolTickValue.ProtoReflect.Descriptor instead.
 func (*SymbolTickValue) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{165}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{165}
 }
 
 func (x *SymbolTickValue) GetSymbol() string {
@@ -13502,7 +13502,7 @@ type OnTickValueReply struct {
 
 func (x *OnTickValueReply) Reset() {
 	*x = OnTickValueReply{}
-	mi := &file_mt5_proto_msgTypes[166]
+	mi := &file_mt5_mt5_proto_msgTypes[166]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13514,7 +13514,7 @@ func (x *OnTickValueReply) String() string {
 func (*OnTickValueReply) ProtoMessage() {}
 
 func (x *OnTickValueReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[166]
+	mi := &file_mt5_mt5_proto_msgTypes[166]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13527,7 +13527,7 @@ func (x *OnTickValueReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnTickValueReply.ProtoReflect.Descriptor instead.
 func (*OnTickValueReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{166}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{166}
 }
 
 func (x *OnTickValueReply) GetResult() *SymbolTickValue {
@@ -13559,7 +13559,7 @@ type OnOrderProfitRequest struct {
 
 func (x *OnOrderProfitRequest) Reset() {
 	*x = OnOrderProfitRequest{}
-	mi := &file_mt5_proto_msgTypes[167]
+	mi := &file_mt5_mt5_proto_msgTypes[167]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13571,7 +13571,7 @@ func (x *OnOrderProfitRequest) String() string {
 func (*OnOrderProfitRequest) ProtoMessage() {}
 
 func (x *OnOrderProfitRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[167]
+	mi := &file_mt5_mt5_proto_msgTypes[167]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13584,7 +13584,7 @@ func (x *OnOrderProfitRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnOrderProfitRequest.ProtoReflect.Descriptor instead.
 func (*OnOrderProfitRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{167}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{167}
 }
 
 func (x *OnOrderProfitRequest) GetId() string {
@@ -13613,7 +13613,7 @@ type ProfitUpdate struct {
 	MarginLevel float64 `protobuf:"fixed64,7,opt,name=MarginLevel,proto3" json:"MarginLevel,omitempty"`
 	// Account number
 	User uint64 `protobuf:"varint,8,opt,name=User,proto3" json:"User,omitempty"`
-	// Credit (non-withdrawable bonus). optional = same OnOrderProfit frame as Balance/Equity/Profit (gateway must set for frame-perfect credit).
+	// Credit (non-withdrawable bonus)
 	Credit        *float64 `protobuf:"fixed64,9,opt,name=Credit,proto3,oneof" json:"Credit,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -13621,7 +13621,7 @@ type ProfitUpdate struct {
 
 func (x *ProfitUpdate) Reset() {
 	*x = ProfitUpdate{}
-	mi := &file_mt5_proto_msgTypes[168]
+	mi := &file_mt5_mt5_proto_msgTypes[168]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13633,7 +13633,7 @@ func (x *ProfitUpdate) String() string {
 func (*ProfitUpdate) ProtoMessage() {}
 
 func (x *ProfitUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[168]
+	mi := &file_mt5_mt5_proto_msgTypes[168]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13646,7 +13646,7 @@ func (x *ProfitUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProfitUpdate.ProtoReflect.Descriptor instead.
 func (*ProfitUpdate) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{168}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{168}
 }
 
 func (x *ProfitUpdate) GetBalance() float64 {
@@ -13722,7 +13722,7 @@ type OnOrderProfitReply struct {
 
 func (x *OnOrderProfitReply) Reset() {
 	*x = OnOrderProfitReply{}
-	mi := &file_mt5_proto_msgTypes[169]
+	mi := &file_mt5_mt5_proto_msgTypes[169]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13734,7 +13734,7 @@ func (x *OnOrderProfitReply) String() string {
 func (*OnOrderProfitReply) ProtoMessage() {}
 
 func (x *OnOrderProfitReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[169]
+	mi := &file_mt5_mt5_proto_msgTypes[169]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13747,7 +13747,7 @@ func (x *OnOrderProfitReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnOrderProfitReply.ProtoReflect.Descriptor instead.
 func (*OnOrderProfitReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{169}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{169}
 }
 
 func (x *OnOrderProfitReply) GetResult() *ProfitUpdate {
@@ -13779,7 +13779,7 @@ type OnMarketWatchRequest struct {
 
 func (x *OnMarketWatchRequest) Reset() {
 	*x = OnMarketWatchRequest{}
-	mi := &file_mt5_proto_msgTypes[170]
+	mi := &file_mt5_mt5_proto_msgTypes[170]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13791,7 +13791,7 @@ func (x *OnMarketWatchRequest) String() string {
 func (*OnMarketWatchRequest) ProtoMessage() {}
 
 func (x *OnMarketWatchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[170]
+	mi := &file_mt5_mt5_proto_msgTypes[170]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13804,7 +13804,7 @@ func (x *OnMarketWatchRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnMarketWatchRequest.ProtoReflect.Descriptor instead.
 func (*OnMarketWatchRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{170}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{170}
 }
 
 func (x *OnMarketWatchRequest) GetId() string {
@@ -13824,7 +13824,7 @@ type OnMarketWatchReply struct {
 
 func (x *OnMarketWatchReply) Reset() {
 	*x = OnMarketWatchReply{}
-	mi := &file_mt5_proto_msgTypes[171]
+	mi := &file_mt5_mt5_proto_msgTypes[171]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13836,7 +13836,7 @@ func (x *OnMarketWatchReply) String() string {
 func (*OnMarketWatchReply) ProtoMessage() {}
 
 func (x *OnMarketWatchReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[171]
+	mi := &file_mt5_mt5_proto_msgTypes[171]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13849,7 +13849,7 @@ func (x *OnMarketWatchReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnMarketWatchReply.ProtoReflect.Descriptor instead.
 func (*OnMarketWatchReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{171}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{171}
 }
 
 func (x *OnMarketWatchReply) GetResult() *MarketWatch {
@@ -13881,7 +13881,7 @@ type OnTickHistoryRequest struct {
 
 func (x *OnTickHistoryRequest) Reset() {
 	*x = OnTickHistoryRequest{}
-	mi := &file_mt5_proto_msgTypes[172]
+	mi := &file_mt5_mt5_proto_msgTypes[172]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13893,7 +13893,7 @@ func (x *OnTickHistoryRequest) String() string {
 func (*OnTickHistoryRequest) ProtoMessage() {}
 
 func (x *OnTickHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[172]
+	mi := &file_mt5_mt5_proto_msgTypes[172]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13906,7 +13906,7 @@ func (x *OnTickHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnTickHistoryRequest.ProtoReflect.Descriptor instead.
 func (*OnTickHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{172}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{172}
 }
 
 func (x *OnTickHistoryRequest) GetId() string {
@@ -13926,7 +13926,7 @@ type TickHistoryEventArgs struct {
 
 func (x *TickHistoryEventArgs) Reset() {
 	*x = TickHistoryEventArgs{}
-	mi := &file_mt5_proto_msgTypes[173]
+	mi := &file_mt5_mt5_proto_msgTypes[173]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13938,7 +13938,7 @@ func (x *TickHistoryEventArgs) String() string {
 func (*TickHistoryEventArgs) ProtoMessage() {}
 
 func (x *TickHistoryEventArgs) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[173]
+	mi := &file_mt5_mt5_proto_msgTypes[173]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13951,7 +13951,7 @@ func (x *TickHistoryEventArgs) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TickHistoryEventArgs.ProtoReflect.Descriptor instead.
 func (*TickHistoryEventArgs) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{173}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{173}
 }
 
 func (x *TickHistoryEventArgs) GetSymbol() string {
@@ -13981,7 +13981,7 @@ type TickBar struct {
 
 func (x *TickBar) Reset() {
 	*x = TickBar{}
-	mi := &file_mt5_proto_msgTypes[174]
+	mi := &file_mt5_mt5_proto_msgTypes[174]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13993,7 +13993,7 @@ func (x *TickBar) String() string {
 func (*TickBar) ProtoMessage() {}
 
 func (x *TickBar) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[174]
+	mi := &file_mt5_mt5_proto_msgTypes[174]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14006,7 +14006,7 @@ func (x *TickBar) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TickBar.ProtoReflect.Descriptor instead.
 func (*TickBar) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{174}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{174}
 }
 
 func (x *TickBar) GetTime() *timestamppb.Timestamp {
@@ -14054,7 +14054,7 @@ type OnTickHistoryReply struct {
 
 func (x *OnTickHistoryReply) Reset() {
 	*x = OnTickHistoryReply{}
-	mi := &file_mt5_proto_msgTypes[175]
+	mi := &file_mt5_mt5_proto_msgTypes[175]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14066,7 +14066,7 @@ func (x *OnTickHistoryReply) String() string {
 func (*OnTickHistoryReply) ProtoMessage() {}
 
 func (x *OnTickHistoryReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[175]
+	mi := &file_mt5_mt5_proto_msgTypes[175]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14079,7 +14079,7 @@ func (x *OnTickHistoryReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnTickHistoryReply.ProtoReflect.Descriptor instead.
 func (*OnTickHistoryReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{175}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{175}
 }
 
 func (x *OnTickHistoryReply) GetResult() *TickHistoryEventArgs {
@@ -14111,7 +14111,7 @@ type OnMailRequest struct {
 
 func (x *OnMailRequest) Reset() {
 	*x = OnMailRequest{}
-	mi := &file_mt5_proto_msgTypes[176]
+	mi := &file_mt5_mt5_proto_msgTypes[176]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14123,7 +14123,7 @@ func (x *OnMailRequest) String() string {
 func (*OnMailRequest) ProtoMessage() {}
 
 func (x *OnMailRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[176]
+	mi := &file_mt5_mt5_proto_msgTypes[176]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14136,7 +14136,7 @@ func (x *OnMailRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnMailRequest.ProtoReflect.Descriptor instead.
 func (*OnMailRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{176}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{176}
 }
 
 func (x *OnMailRequest) GetId() string {
@@ -14156,7 +14156,7 @@ type OnMailReply struct {
 
 func (x *OnMailReply) Reset() {
 	*x = OnMailReply{}
-	mi := &file_mt5_proto_msgTypes[177]
+	mi := &file_mt5_mt5_proto_msgTypes[177]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14168,7 +14168,7 @@ func (x *OnMailReply) String() string {
 func (*OnMailReply) ProtoMessage() {}
 
 func (x *OnMailReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[177]
+	mi := &file_mt5_mt5_proto_msgTypes[177]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14181,7 +14181,7 @@ func (x *OnMailReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnMailReply.ProtoReflect.Descriptor instead.
 func (*OnMailReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{177}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{177}
 }
 
 func (x *OnMailReply) GetResult() *MailMessage {
@@ -14216,7 +14216,7 @@ type OnOpenedOrdersTicketsRequest struct {
 
 func (x *OnOpenedOrdersTicketsRequest) Reset() {
 	*x = OnOpenedOrdersTicketsRequest{}
-	mi := &file_mt5_proto_msgTypes[178]
+	mi := &file_mt5_mt5_proto_msgTypes[178]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14228,7 +14228,7 @@ func (x *OnOpenedOrdersTicketsRequest) String() string {
 func (*OnOpenedOrdersTicketsRequest) ProtoMessage() {}
 
 func (x *OnOpenedOrdersTicketsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[178]
+	mi := &file_mt5_mt5_proto_msgTypes[178]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14241,7 +14241,7 @@ func (x *OnOpenedOrdersTicketsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnOpenedOrdersTicketsRequest.ProtoReflect.Descriptor instead.
 func (*OnOpenedOrdersTicketsRequest) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{178}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{178}
 }
 
 func (x *OnOpenedOrdersTicketsRequest) GetId() string {
@@ -14268,7 +14268,7 @@ type OnOpenedOrdersTicketsReply struct {
 
 func (x *OnOpenedOrdersTicketsReply) Reset() {
 	*x = OnOpenedOrdersTicketsReply{}
-	mi := &file_mt5_proto_msgTypes[179]
+	mi := &file_mt5_mt5_proto_msgTypes[179]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14280,7 +14280,7 @@ func (x *OnOpenedOrdersTicketsReply) String() string {
 func (*OnOpenedOrdersTicketsReply) ProtoMessage() {}
 
 func (x *OnOpenedOrdersTicketsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_mt5_proto_msgTypes[179]
+	mi := &file_mt5_mt5_proto_msgTypes[179]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14293,7 +14293,7 @@ func (x *OnOpenedOrdersTicketsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnOpenedOrdersTicketsReply.ProtoReflect.Descriptor instead.
 func (*OnOpenedOrdersTicketsReply) Descriptor() ([]byte, []int) {
-	return file_mt5_proto_rawDescGZIP(), []int{179}
+	return file_mt5_mt5_proto_rawDescGZIP(), []int{179}
 }
 
 func (x *OnOpenedOrdersTicketsReply) GetResult() *MailMessage {
@@ -14310,11 +14310,11 @@ func (x *OnOpenedOrdersTicketsReply) GetError() *Error {
 	return nil
 }
 
-var File_mt5_proto protoreflect.FileDescriptor
+var File_mt5_mt5_proto protoreflect.FileDescriptor
 
-const file_mt5_proto_rawDesc = "" +
+const file_mt5_mt5_proto_rawDesc = "" +
 	"\n" +
-	"\tmt5.proto\x12\amt5grpc\x1a\x1fgoogle/protobuf/timestamp.proto\"i\n" +
+	"\rmt5/mt5.proto\x12\amt5grpc\x1a\x1fgoogle/protobuf/timestamp.proto\"i\n" +
 	"\x05Error\x12&\n" +
 	"\x04code\x18\x01 \x01(\x0e2\x12.mt5grpc.ErrorCodeR\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1e\n" +
@@ -15750,23 +15750,23 @@ const file_mt5_proto_rawDesc = "" +
 	"\rOnMarketWatch\x12\x1d.mt5grpc.OnMarketWatchRequest\x1a\x1b.mt5grpc.OnMarketWatchReply0\x01\x12M\n" +
 	"\rOnTickHistory\x12\x1d.mt5grpc.OnTickHistoryRequest\x1a\x1b.mt5grpc.OnTickHistoryReply0\x01\x128\n" +
 	"\x06OnMail\x12\x16.mt5grpc.OnMailRequest\x1a\x14.mt5grpc.OnMailReply0\x01\x12e\n" +
-	"\x15OnOpenedOrdersTickets\x12%.mt5grpc.OnOpenedOrdersTicketsRequest\x1a#.mt5grpc.OnOpenedOrdersTicketsReply0\x01B\x13Z\x11anttrader/mt5;mt5b\x06proto3"
+	"\x15OnOpenedOrdersTickets\x12%.mt5grpc.OnOpenedOrdersTicketsRequest\x1a#.mt5grpc.OnOpenedOrdersTicketsReply0\x01B\x14Z\x12alphaforge/mt5;mt5b\x06proto3"
 
 var (
-	file_mt5_proto_rawDescOnce sync.Once
-	file_mt5_proto_rawDescData []byte
+	file_mt5_mt5_proto_rawDescOnce sync.Once
+	file_mt5_mt5_proto_rawDescData []byte
 )
 
-func file_mt5_proto_rawDescGZIP() []byte {
-	file_mt5_proto_rawDescOnce.Do(func() {
-		file_mt5_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_mt5_proto_rawDesc), len(file_mt5_proto_rawDesc)))
+func file_mt5_mt5_proto_rawDescGZIP() []byte {
+	file_mt5_mt5_proto_rawDescOnce.Do(func() {
+		file_mt5_mt5_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_mt5_mt5_proto_rawDesc), len(file_mt5_mt5_proto_rawDesc)))
 	})
-	return file_mt5_proto_rawDescData
+	return file_mt5_mt5_proto_rawDescData
 }
 
-var file_mt5_proto_enumTypes = make([]protoimpl.EnumInfo, 20)
-var file_mt5_proto_msgTypes = make([]protoimpl.MessageInfo, 180)
-var file_mt5_proto_goTypes = []any{
+var file_mt5_mt5_proto_enumTypes = make([]protoimpl.EnumInfo, 20)
+var file_mt5_mt5_proto_msgTypes = make([]protoimpl.MessageInfo, 180)
+var file_mt5_mt5_proto_goTypes = []any{
 	(ProxyTypes)(0),                             // 0: mt5grpc.ProxyTypes
 	(AccMethod)(0),                              // 1: mt5grpc.AccMethod
 	(OrderSort)(0),                              // 2: mt5grpc.OrderSort
@@ -15969,7 +15969,7 @@ var file_mt5_proto_goTypes = []any{
 	(*OnOpenedOrdersTicketsReply)(nil),          // 199: mt5grpc.OnOpenedOrdersTicketsReply
 	(*timestamppb.Timestamp)(nil),               // 200: google.protobuf.Timestamp
 }
-var file_mt5_proto_depIdxs = []int32{
+var file_mt5_mt5_proto_depIdxs = []int32{
 	19,  // 0: mt5grpc.Error.code:type_name -> mt5grpc.ErrorCode
 	20,  // 1: mt5grpc.ConnectReply.error:type_name -> mt5grpc.Error
 	20,  // 2: mt5grpc.ConnectExReply.error:type_name -> mt5grpc.Error
@@ -16314,50 +16314,50 @@ var file_mt5_proto_depIdxs = []int32{
 	0,   // [0:189] is the sub-list for field type_name
 }
 
-func init() { file_mt5_proto_init() }
-func file_mt5_proto_init() {
-	if File_mt5_proto != nil {
+func init() { file_mt5_mt5_proto_init() }
+func file_mt5_mt5_proto_init() {
+	if File_mt5_mt5_proto != nil {
 		return
 	}
-	file_mt5_proto_msgTypes[1].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[3].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[18].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[30].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[35].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[39].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[41].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[43].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[49].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[52].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[61].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[88].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[93].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[111].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[127].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[129].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[137].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[143].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[149].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[151].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[153].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[168].OneofWrappers = []any{}
-	file_mt5_proto_msgTypes[178].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[1].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[3].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[18].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[30].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[35].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[39].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[41].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[43].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[49].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[52].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[61].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[88].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[93].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[111].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[127].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[129].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[137].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[143].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[149].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[151].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[153].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[168].OneofWrappers = []any{}
+	file_mt5_mt5_proto_msgTypes[178].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mt5_proto_rawDesc), len(file_mt5_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mt5_mt5_proto_rawDesc), len(file_mt5_mt5_proto_rawDesc)),
 			NumEnums:      20,
 			NumMessages:   180,
 			NumExtensions: 0,
 			NumServices:   8,
 		},
-		GoTypes:           file_mt5_proto_goTypes,
-		DependencyIndexes: file_mt5_proto_depIdxs,
-		EnumInfos:         file_mt5_proto_enumTypes,
-		MessageInfos:      file_mt5_proto_msgTypes,
+		GoTypes:           file_mt5_mt5_proto_goTypes,
+		DependencyIndexes: file_mt5_mt5_proto_depIdxs,
+		EnumInfos:         file_mt5_mt5_proto_enumTypes,
+		MessageInfos:      file_mt5_mt5_proto_msgTypes,
 	}.Build()
-	File_mt5_proto = out.File
-	file_mt5_proto_goTypes = nil
-	file_mt5_proto_depIdxs = nil
+	File_mt5_mt5_proto = out.File
+	file_mt5_mt5_proto_goTypes = nil
+	file_mt5_mt5_proto_depIdxs = nil
 }

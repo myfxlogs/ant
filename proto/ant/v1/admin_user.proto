@@ -4,7 +4,7 @@ package ant.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 service AdminUserService {
   rpc GetDashboard(GetDashboardRequest) returns (GetDashboardResponse);
@@ -28,6 +28,14 @@ message DashboardStats {
   string today_volume = 6;
   string today_profit = 7;
   double system_load = 8;
+  // P3.5: Subscription & revenue metrics
+  int64 active_subscriptions = 9;
+  string monthly_revenue = 10;
+  string total_revenue = 11;
+  int64 marketplace_strategies = 12;
+  int64 marketplace_sales = 13;
+  string marketplace_revenue = 14;
+  int64 verified_users = 15;
 }
 
 message GetDashboardRequest {}

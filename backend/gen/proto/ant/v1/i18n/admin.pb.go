@@ -630,7 +630,7 @@ const file_i18n_admin_proto_rawDesc = "" +
 	"\x14strategy_preset_edit\x18< \x01(\tR\x12strategyPresetEdit\x12?\n" +
 	"\x1cstrategy_tabs_all_strategies\x18= \x01(\tR\x19strategyTabsAllStrategies\x120\n" +
 	"\x14strategy_tabs_preset\x18> \x01(\tR\x12strategyTabsPreset\x12%\n" +
-	"\x0estrategy_title\x18? \x01(\tR\rstrategyTitleB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x0estrategy_title\x18? \x01(\tR\rstrategyTitleB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_admin_proto_rawDescOnce sync.Once

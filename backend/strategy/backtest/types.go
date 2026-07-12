@@ -5,8 +5,8 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/strategy/sdk"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/strategy/sdk"
 )
 
 // Config holds backtest parameters.
@@ -71,6 +71,7 @@ type Trade struct {
 	Profit     decimal.Decimal
 	ProfitPct  float64
 	Commission decimal.Decimal
+	Swap       decimal.Decimal
 	Comment    string
 }
 

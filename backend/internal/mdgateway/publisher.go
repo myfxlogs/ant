@@ -1,14 +1,14 @@
 package mdgateway
 
 import (
-	antv1 "anttrader/gen/proto/ant/v1"
+	antv1 "alphaforge/gen/proto/ant/v1"
 	"context"
 	"google.golang.org/protobuf/proto"
 	"fmt"
 	"regexp"
 	natsgo "github.com/nats-io/nats.go"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // sanitizeNATSSubject replaces characters that are invalid in NATS subjects.

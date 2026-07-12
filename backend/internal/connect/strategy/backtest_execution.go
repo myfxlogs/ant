@@ -8,8 +8,8 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/repository"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/repository"
 )
 
 // startBacktestWatchers starts lease heartbeat and cancel watcher goroutines.

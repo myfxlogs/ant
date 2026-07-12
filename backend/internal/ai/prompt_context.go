@@ -135,7 +135,7 @@ All strategies MUST implement the sdk.Strategy interface (OnInit/OnBar/OnDeinit)
 ### Rule 1: EVERY configurable value MUST be read via ctx.Param() in OnInit
 ` + "```go" + `
 import (
-    "anttrader/strategy/sdk"
+    "alphaforge/strategy/sdk"
     "github.com/shopspring/decimal"
 )
 
@@ -200,7 +200,7 @@ func (s *MyStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, erro
 ## Complete minimal strategy skeleton
 ` + "```go" + `
 import (
-    "anttrader/strategy/sdk"
+    "alphaforge/strategy/sdk"
     "github.com/shopspring/decimal"
 )
 

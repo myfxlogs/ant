@@ -187,3 +187,35 @@ func (r *StrategyRunRepository) CleanupStaleRuns(ctx context.Context) (int64, er
 	}
 	return tag.RowsAffected(), nil
 }
+
+// MonthlyRuntimeMinutes returns total runtime minutes for the current month.
+// Running strategies count from started_at to now; stopped ones use stopped_at.
+func (r *StrategyRunRepository) MonthlyRuntimeMinutes(ctx context.Context, userID uuid.UUID) (int, error) {
+	var minutes int
+	err := r.db.QueryRow(ctx, `
+		SELECT COALESCE(SUM(
+			EXTRACT(EPOCH FROM (COALESCE(stopped_at, NOW()) - started_at)) / 60
+		)::int, 0)
+		FROM strategy_runs
+		WHERE user_id = $1 AND started_at >= date_trunc('month', NOW())
+	`, userID).Scan(&minutes)
+	return minutes, err
+}
+
+// CountActiveByUser returns the number of currently running strategies for a user.
+func (r *StrategyRunRepository) CountActiveByUser(ctx context.Context, userID uuid.UUID) (int, error) {
+	var count int
+	err := r.db.QueryRow(ctx, `
+		SELECT COUNT(*) FROM strategy_runs WHERE user_id = $1 AND status = 'running'
+	`, userID).Scan(&count)
+	return count, err
+}
+
+// CountActiveLiveByUser returns the number of currently running live strategies for a user.
+func (r *StrategyRunRepository) CountActiveLiveByUser(ctx context.Context, userID uuid.UUID) (int, error) {
+	var count int
+	err := r.db.QueryRow(ctx, `
+		SELECT COUNT(*) FROM strategy_runs WHERE user_id = $1 AND status = 'running' AND mode = 'live'
+	`, userID).Scan(&count)
+	return count, err
+}

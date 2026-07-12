@@ -81,7 +81,7 @@ prompts_base_user_intent: 'User strategy goal (natural language):\\\\\\\\n{{inte
 prompts_data_spec_dataset: '使用冻结数据集 datasetId={{datasetId}}'
 prompts_data_spec_kline_range: '使用历史K线范围 from={{from}} to={{to}}'
 prompts_summary_code_title: '代码如下：'
-prompts_summary_intro: '你是量化策略解释助手。请用简洁中文（要点形式，最多 12 行）解释下面这段 AntTrader Python 策略代码的核心思路，帮助用户判断是否符合预期。'
+prompts_summary_intro: '你是量化策略解释助手。请用简洁中文（要点形式，最多 12 行）解释下面这段 AlphaForge Python 策略代码的核心思路，帮助用户判断是否符合预期。'
 prompts_summary_must_include1: '1) 策略类型/范式（趋势/均值/突破/动量/网格等，若无法判断则写"无法确定"）'
 prompts_summary_must_include2: '2) 主要入场条件（用 2~4 条要点）'
 prompts_summary_must_include3: '3) 主要出场/止损止盈/风控约束（用 2~4 条要点）'

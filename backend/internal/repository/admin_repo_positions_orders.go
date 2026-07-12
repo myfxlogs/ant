@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"anttrader/internal/model"
+	"alphaforge/internal/model"
 )
 
 func (r *AdminRepository) ListPositions(ctx context.Context, userID, accountID, symbol string, page, pageSize int) ([]*model.Position, int64, error) {

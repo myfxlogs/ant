@@ -341,6 +341,6 @@ for f in service.go hub.go events.go executor.go session.go types.go metrics.go;
 done
 
 # 不许 import mtapi proto（应通过 OrderExecutor 接口隔离）
-! grep -rE 'anttrader/gen/proto/(mt4|mt5)' backend/internal/mthub/ \
+! grep -rE 'alphaforge/gen/proto/(mt4|mt5)' backend/internal/mthub/ \
   || { echo "FAIL: mthub imports mtapi proto directly"; exit 1; }
 ```

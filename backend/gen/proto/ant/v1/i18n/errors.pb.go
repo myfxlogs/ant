@@ -649,7 +649,7 @@ const file_i18n_errors_proto_rawDesc = "" +
 	"\x15unsubscription_failed\x18> \x01(\tR\x14unsubscriptionFailed\x12.\n" +
 	"\x13user_already_exists\x18? \x01(\tR\x11userAlreadyExists\x12#\n" +
 	"\ruser_disabled\x18@ \x01(\tR\fuserDisabled\x12$\n" +
-	"\x0euser_not_found\x18A \x01(\tR\fuserNotFoundB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x0euser_not_found\x18A \x01(\tR\fuserNotFoundB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_errors_proto_rawDescOnce sync.Once

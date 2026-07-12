@@ -673,7 +673,7 @@ const file_stream_event_account_proto_rawDesc = "" +
 	"alert_type\x18\x02 \x01(\tR\talertType\x12\x18\n" +
 	"\amessage\x18\x03 \x01(\tR\amessage\x12\x14\n" +
 	"\x05value\x18\x04 \x01(\tR\x05value\x12\x1c\n" +
-	"\tthreshold\x18\x05 \x01(\tR\tthresholdB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\tthreshold\x18\x05 \x01(\tR\tthresholdB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_stream_event_account_proto_rawDescOnce sync.Once

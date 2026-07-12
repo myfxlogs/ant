@@ -10,8 +10,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"anttrader/internal/mthub"
-	"anttrader/internal/risksvc"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/risksvc"
 )
 
 // ── parseJSONStringArray + splitJSONArray tests ──

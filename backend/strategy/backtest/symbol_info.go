@@ -5,7 +5,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/sdk"
 )
 
 // DeriveSymbolInfoFromBars infers SymbolDigits, SymbolPoint, and Spread

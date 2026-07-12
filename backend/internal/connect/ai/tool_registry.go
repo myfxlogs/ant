@@ -7,9 +7,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"anttrader/internal/repository"
-	systemai "anttrader/internal/service/systemai"
-	"anttrader/tools/mql2go"
+	"alphaforge/internal/repository"
+	systemai "alphaforge/internal/service/systemai"
+	"alphaforge/tools/mql2go"
 )
 
 // ── Tool interface ──

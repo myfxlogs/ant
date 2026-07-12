@@ -9,12 +9,12 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
-	"anttrader/internal/config"
-	"anttrader/internal/costsvc"
-	"anttrader/internal/mthub"
-	"anttrader/internal/risk"
-	"anttrader/internal/risksvc"
-	"anttrader/internal/usermgr"
+	"alphaforge/internal/config"
+	"alphaforge/internal/costsvc"
+	"alphaforge/internal/mthub"
+	"alphaforge/internal/risk"
+	"alphaforge/internal/risksvc"
+	"alphaforge/internal/usermgr"
 )
 
 // initRiskPipeline creates and wires the SignalPipeline for pre-trade risk checks.

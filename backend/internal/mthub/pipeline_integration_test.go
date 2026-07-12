@@ -6,7 +6,7 @@ import (
 	"context"
 	"testing"
 
-	"anttrader/internal/risksvc"
+	"alphaforge/internal/risksvc"
 )
 
 func TestPlaceOrderViaRiskPipeline(t *testing.T) {

@@ -8,8 +8,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"anttrader/internal/factor/dsl"
-	"anttrader/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/factor/dsl"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 )
 
 // FactorSpec defines a DSL factor expression to evaluate on bar events.

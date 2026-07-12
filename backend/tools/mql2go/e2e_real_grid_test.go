@@ -8,9 +8,9 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"anttrader/strategy/backtest"
-	"anttrader/strategy/sdk"
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/strategy/backtest"
+	"alphaforge/strategy/sdk"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // Real-world MQL4 grid EA source — stripped of Object*/Button* UI functions

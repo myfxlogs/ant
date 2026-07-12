@@ -1,7 +1,7 @@
 package backtest
 
 import (
-	"anttrader/strategy/sdk"
+	"alphaforge/strategy/sdk"
 )
 
 // BarsForSymbol returns bar series for a specific symbol and timeframe in multi-symbol strategies.

@@ -19,8 +19,8 @@ import (
 	natsgo "github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/interceptor"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/interceptor"
 )
 
 // sanitizeUTF8 replaces invalid UTF-8 bytes with the replacement character.

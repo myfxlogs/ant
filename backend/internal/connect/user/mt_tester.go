@@ -8,9 +8,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
-	"anttrader/internal/mdgateway/adapter/mt4"
-	"anttrader/internal/mdgateway/adapter/mt5"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mt4"
+	"alphaforge/internal/mdgateway/adapter/mt5"
 )
 
 // mtConnectionTester implements MTConnectionTester using mt4/mt5 gateway adapters.

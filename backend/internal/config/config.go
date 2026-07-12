@@ -74,6 +74,12 @@ type Config struct {
 	SMTPPassword string
 	SMTPFrom     string
 	SMTPTo       string // comma-separated admin email addresses
+
+	// AppURL is the public base URL for email links (e.g. https://alfq.org)
+	AppURL string
+
+	// RequireEmailVerification blocks login until email is verified (enable after SMTP is configured)
+	RequireEmailVerification bool
 }
 
 // Load reads all configuration from environment variables with defaults.
@@ -126,6 +132,10 @@ func Load() *Config {
 		SMTPPassword: getenv("SMTP_PASSWORD", ""),
 		SMTPFrom:     getenv("SMTP_FROM", "ant@localhost"),
 		SMTPTo:       getenv("SMTP_TO", ""),
+
+		AppURL: getenv("APP_URL", "https://alfq.org"),
+
+		RequireEmailVerification: getenvBool("REQUIRE_EMAIL_VERIFICATION", false),
 
 		RiskGateEnabled:          getenvBool("ALPHAFORGE_RISK_GATE_ENABLED", true),
 		RiskGateKillSwitch:       getenvBool("ALPHAFORGE_RISK_GATE_KILLSWITCH_DEFAULT", false),

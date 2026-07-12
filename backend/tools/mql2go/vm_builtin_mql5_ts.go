@@ -1,8 +1,8 @@
 package mql2go
 
 import (
-	"anttrader/strategy/sdk"
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/strategy/sdk"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // MQL5 timeseries access functions.

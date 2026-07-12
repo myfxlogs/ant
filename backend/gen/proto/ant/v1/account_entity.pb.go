@@ -323,7 +323,7 @@ const file_account_entity_proto_rawDesc = "" +
 	"isInvestor\x12\x14\n" +
 	"\x05alias\x18\x1a \x01(\tR\x05alias\x12\x16\n" +
 	"\x06profit\x18\x1b \x01(\tR\x06profit\x12%\n" +
-	"\x0eprofit_percent\x18\x1c \x01(\x01R\rprofitPercentB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x0eprofit_percent\x18\x1c \x01(\x01R\rprofitPercentB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_account_entity_proto_rawDescOnce sync.Once

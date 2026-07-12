@@ -1181,7 +1181,7 @@ const file_i18n_strategy_schedules_proto_rawDesc = "" +
 	"\x1ctrigger_modal_summary_symbol\x18y \x01(\tR\x19triggerModalSummarySymbol\x12E\n" +
 	"\x1ftrigger_modal_summary_timeframe\x18z \x01(\tR\x1ctriggerModalSummaryTimeframe\x12.\n" +
 	"\x13trigger_modal_title\x18{ \x01(\tR\x11triggerModalTitle\x12W\n" +
-	")validation_parameters_must_be_json_object\x18| \x01(\tR$validationParametersMustBeJsonObjectB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	")validation_parameters_must_be_json_object\x18| \x01(\tR$validationParametersMustBeJsonObjectB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_schedules_proto_rawDescOnce sync.Once

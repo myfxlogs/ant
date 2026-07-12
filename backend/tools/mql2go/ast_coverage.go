@@ -3,7 +3,7 @@ package mql2go
 import (
 	"sort"
 
-	"anttrader/tools/mql2go/interp"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // CoverageResult combines static analysis (from interp.Analyze) with

@@ -10,11 +10,11 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	"anttrader/internal/repository"
-	"anttrader/internal/service"
+	antv1 "alphaforge/gen/proto/ant/v1"
+	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
+	"alphaforge/internal/interceptor"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
 )
 
 // AuthServer implements ant.v1.AuthServiceHandler.
@@ -22,6 +22,8 @@ import (
 type AuthServer struct {
 	users           *repository.UserRepository
 	registrationSvc *service.RegistrationService // nil if registration is not wired
+	emailVerifSvc   *service.EmailVerificationService // nil if email verification is not wired
+	requireEmailVerif bool                          // block login until email verified
 	jwtSecret       string
 	log             *zap.Logger
 	insecure        bool // disables Secure cookie flag for non-TLS dev deployments
@@ -38,6 +40,15 @@ func (s *AuthServer) WithRegistration(regSvc *service.RegistrationService) *Auth
 	s.registrationSvc = regSvc
 	return s
 }
+
+// WithEmailVerification wires the EmailVerificationService for email verification.
+func (s *AuthServer) WithEmailVerification(evSvc *service.EmailVerificationService) *AuthServer {
+	s.emailVerifSvc = evSvc
+	return s
+}
+
+// SetRequireEmailVerification blocks login for unverified users.
+func (s *AuthServer) SetRequireEmailVerification(v bool) { s.requireEmailVerif = v }
 
 // SetInsecureCookies disables the Secure flag on refresh_token cookies for
 // local/dev deployments without TLS.
@@ -61,6 +72,9 @@ func (s *AuthServer) Login(ctx context.Context, req *connect.Request[antv1.Login
 	}
 	if user.Status != "active" {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account is disabled"))
+	}
+	if s.requireEmailVerif && user.EmailVerifiedAt == nil {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("email not verified — please check your inbox for the verification link"))
 	}
 	if !service.VerifyPassword(user.PasswordHash, m.Password) {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid credentials"))
@@ -94,6 +108,7 @@ func (s *AuthServer) Login(ctx context.Context, req *connect.Request[antv1.Login
 		User: &antv1.User{
 			Id: user.ID.String(), Email: user.Email, Username: nickname, Role: user.Role,
 			Permissions: perms, CapabilityTier: int32(capTier), AccountNumber: acctNum,
+			EmailVerified: user.EmailVerifiedAt != nil,
 		},
 	})
 	resp.Header().Set("Set-Cookie", s.makeRefreshCookie(refreshToken))
@@ -134,6 +149,7 @@ func (s *AuthServer) GetMe(ctx context.Context, req *connect.Request[emptypb.Emp
 		User: &antv1.User{
 			Id: userID, Email: user.Email, Username: nickname, Role: user.Role,
 			Permissions: perms, CapabilityTier: int32(capTier), AccountNumber: acctNum,
+			EmailVerified: user.EmailVerifiedAt != nil,
 		},
 	}), nil
 }
