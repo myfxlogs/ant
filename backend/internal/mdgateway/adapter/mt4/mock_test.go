@@ -213,6 +213,9 @@ type mockConnCli struct{}
 func (m *mockConnCli) Connect(ctx context.Context, in *pb.ConnectRequest, opts ...grpc.CallOption) (*pb.ConnectReply, error) {
 	return nil, fmt.Errorf("mock: not implemented")
 }
+func (m *mockConnCli) ConnectEx(ctx context.Context, in *pb.ConnectExRequest, opts ...grpc.CallOption) (*pb.ConnectExReply, error) {
+	return nil, fmt.Errorf("mock: not implemented")
+}
 func (m *mockConnCli) ConnectProxy(ctx context.Context, in *pb.ConnectProxyRequest, opts ...grpc.CallOption) (*pb.ConnectProxyReply, error) {
 	return nil, fmt.Errorf("mock: not implemented")
 }
