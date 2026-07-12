@@ -1,6 +1,6 @@
 .PHONY: all build run test clean migrate
 
-APP_NAME=antrader
+APP_NAME=alphaforge
 BUILD_DIR=bin
 CMD_DIR=cmd/server
 
@@ -164,7 +164,7 @@ rtk-test:
 	@cd backend && $(RTK) test go test ./...
 
 rtk-build:
-	@cd backend && $(RTK) err go build -o ../bin/antrader ./cmd/server
+	@cd backend && $(RTK) err go build -o ../bin/alphaforge ./cmd/server
 
 rtk-lint:
 	@cd backend && $(RTK) err go vet ./...

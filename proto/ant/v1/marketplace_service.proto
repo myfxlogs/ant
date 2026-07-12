@@ -49,11 +49,11 @@ message PublishStrategyRequest {
 
 // BacktestSnapshot holds key backtest metrics at publish time.
 message BacktestSnapshot {
-  double total_return = 1;
-  double annual_return = 2;
-  double max_drawdown = 3;
-  double sharpe_ratio = 4;
-  double win_rate = 5;
+  string total_return = 1;
+  string annual_return = 2;
+  string max_drawdown = 3;
+  string sharpe_ratio = 4;
+  string win_rate = 5;
   int32 total_trades = 6;
   string symbol = 7;
   string timeframe = 8;

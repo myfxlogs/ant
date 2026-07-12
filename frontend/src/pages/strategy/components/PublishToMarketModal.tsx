@@ -145,8 +145,8 @@ export default function PublishToMarketModal({ open, template, backtestSnapshot,
             </div>
             {includeSnapshot && (
               <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
-                <Tag color="blue">{t('marketplace.publish.return', { defaultValue: 'Return' })}: {((backtestSnapshot.totalReturn ?? 0) * 100).toFixed(2)}%</Tag>
-                <Tag>{t('marketplace.publish.winRate', { defaultValue: 'Win Rate' })}: {((backtestSnapshot.winRate ?? 0) * 100).toFixed(0)}%</Tag>
+                <Tag color="blue">{t('marketplace.publish.return', { defaultValue: 'Return' })}: {(Number(backtestSnapshot.totalReturn ?? 0) * 100).toFixed(2)}%</Tag>
+                <Tag>{t('marketplace.publish.winRate', { defaultValue: 'Win Rate' })}: {(Number(backtestSnapshot.winRate ?? 0) * 100).toFixed(0)}%</Tag>
                 <Tag>{t('marketplace.publish.trades', { defaultValue: 'Trades' })}: {backtestSnapshot.totalTrades}</Tag>
               </div>
             )}

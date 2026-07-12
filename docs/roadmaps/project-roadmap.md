@@ -155,8 +155,3 @@
 | 0024 | Agent-Native 策略平台 | Accepted |
 | 0025 | Agent UX 与自我进化 | Accepted |
 
-P0 上线准备：Google Search Console、Cloudflare 缓存、域名切换（你手动）
-P1 用户体验：分享页优化、i18n 审计、账户绑定 UX、错误提示
-P2 策略能力：Python SDK 完善、回测增强、多品种、版本管理
-P3 商业化：计费体系、订阅计划、策略市场交易、注册流程、管理后台
-P4 技术债务：module path 重命名、proto 同步、E2E 测试、监控告警

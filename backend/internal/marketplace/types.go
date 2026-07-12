@@ -89,14 +89,14 @@ type PublishParams struct {
 
 // BacktestSnapshot holds key backtest metrics at publish time.
 type BacktestSnapshot struct {
-	TotalReturn  float64 `json:"total_return"`
-	AnnualReturn float64 `json:"annual_return"`
-	MaxDrawdown  float64 `json:"max_drawdown"`
-	SharpeRatio  float64 `json:"sharpe_ratio"`
-	WinRate      float64 `json:"win_rate"`
-	TotalTrades  int32   `json:"total_trades"`
-	Symbol       string  `json:"symbol"`
-	Timeframe    string  `json:"timeframe"`
+	TotalReturn  string `json:"total_return"`
+	AnnualReturn string `json:"annual_return"`
+	MaxDrawdown  string `json:"max_drawdown"`
+	SharpeRatio  string `json:"sharpe_ratio"`
+	WinRate      string `json:"win_rate"`
+	TotalTrades  int32  `json:"total_trades"`
+	Symbol       string `json:"symbol"`
+	Timeframe    string `json:"timeframe"`
 }
 
 // PublishedStrategy represents a strategy listed in the marketplace

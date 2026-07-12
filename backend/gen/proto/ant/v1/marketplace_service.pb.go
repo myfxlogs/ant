@@ -167,11 +167,11 @@ func (x *PublishStrategyRequest) GetBacktestSnapshot() *BacktestSnapshot {
 // BacktestSnapshot holds key backtest metrics at publish time.
 type BacktestSnapshot struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TotalReturn   float64                `protobuf:"fixed64,1,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
-	AnnualReturn  float64                `protobuf:"fixed64,2,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"`
-	MaxDrawdown   float64                `protobuf:"fixed64,3,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
-	SharpeRatio   float64                `protobuf:"fixed64,4,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
-	WinRate       float64                `protobuf:"fixed64,5,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	TotalReturn   string                 `protobuf:"bytes,1,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
+	AnnualReturn  string                 `protobuf:"bytes,2,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"`
+	MaxDrawdown   string                 `protobuf:"bytes,3,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
+	SharpeRatio   string                 `protobuf:"bytes,4,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
+	WinRate       string                 `protobuf:"bytes,5,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
 	TotalTrades   int32                  `protobuf:"varint,6,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
 	Symbol        string                 `protobuf:"bytes,7,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Timeframe     string                 `protobuf:"bytes,8,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
@@ -210,39 +210,39 @@ func (*BacktestSnapshot) Descriptor() ([]byte, []int) {
 	return file_marketplace_service_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *BacktestSnapshot) GetTotalReturn() float64 {
+func (x *BacktestSnapshot) GetTotalReturn() string {
 	if x != nil {
 		return x.TotalReturn
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestSnapshot) GetAnnualReturn() float64 {
+func (x *BacktestSnapshot) GetAnnualReturn() string {
 	if x != nil {
 		return x.AnnualReturn
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestSnapshot) GetMaxDrawdown() float64 {
+func (x *BacktestSnapshot) GetMaxDrawdown() string {
 	if x != nil {
 		return x.MaxDrawdown
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestSnapshot) GetSharpeRatio() float64 {
+func (x *BacktestSnapshot) GetSharpeRatio() string {
 	if x != nil {
 		return x.SharpeRatio
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestSnapshot) GetWinRate() float64 {
+func (x *BacktestSnapshot) GetWinRate() string {
 	if x != nil {
 		return x.WinRate
 	}
-	return 0
+	return ""
 }
 
 func (x *BacktestSnapshot) GetTotalTrades() int32 {
@@ -2228,11 +2228,11 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\fcode_snippet\x18\x10 \x01(\tR\vcodeSnippet\x12E\n" +
 	"\x11backtest_snapshot\x18\x11 \x01(\v2\x18.ant.v1.BacktestSnapshotR\x10backtestSnapshot\"\xd1\x02\n" +
 	"\x10BacktestSnapshot\x12!\n" +
-	"\ftotal_return\x18\x01 \x01(\x01R\vtotalReturn\x12#\n" +
-	"\rannual_return\x18\x02 \x01(\x01R\fannualReturn\x12!\n" +
-	"\fmax_drawdown\x18\x03 \x01(\x01R\vmaxDrawdown\x12!\n" +
-	"\fsharpe_ratio\x18\x04 \x01(\x01R\vsharpeRatio\x12\x19\n" +
-	"\bwin_rate\x18\x05 \x01(\x01R\awinRate\x12!\n" +
+	"\ftotal_return\x18\x01 \x01(\tR\vtotalReturn\x12#\n" +
+	"\rannual_return\x18\x02 \x01(\tR\fannualReturn\x12!\n" +
+	"\fmax_drawdown\x18\x03 \x01(\tR\vmaxDrawdown\x12!\n" +
+	"\fsharpe_ratio\x18\x04 \x01(\tR\vsharpeRatio\x12\x19\n" +
+	"\bwin_rate\x18\x05 \x01(\tR\awinRate\x12!\n" +
 	"\ftotal_trades\x18\x06 \x01(\x05R\vtotalTrades\x12\x16\n" +
 	"\x06symbol\x18\a \x01(\tR\x06symbol\x12\x1c\n" +
 	"\ttimeframe\x18\b \x01(\tR\ttimeframe\x12;\n" +

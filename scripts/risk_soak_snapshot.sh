@@ -23,7 +23,7 @@ SQL_COMMON_FILTER="module = 'trading_risk' AND action = 'pre_trade_validate' AND
 
 run_sql() {
   local sql="$1"
-  docker compose exec -T postgres psql -U antuser -d antrader -At -F $'\t' -c "$sql"
+  docker compose exec -T postgres psql -U antuser -d ant -At -F $'\t' -c "$sql"
 }
 
 TOTAL="$(run_sql "SELECT COUNT(*) FROM system_operation_logs WHERE ${SQL_COMMON_FILTER};")"
