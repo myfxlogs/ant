@@ -4,10 +4,10 @@ package ant.v1;
 
 option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
-// GateService evaluates AI-generated strategies through the 6-gate pipeline.
-// Only strategies that pass all 6 gates are eligible for PromoteToLive.
+// GateService evaluates AI-generated strategies through the 7-gate pipeline.
+// Only strategies that pass all 7 gates are eligible for PromoteToLive.
 service GateService {
-  // RunEvaluation runs the 6-gate pipeline and streams progress via SSE.
+  // RunEvaluation runs the 7-gate pipeline and streams progress via SSE.
   rpc RunEvaluation(RunGateEvaluationRequest) returns (stream GateEvaluationUpdate);
 }
 
@@ -32,14 +32,14 @@ message RunGateEvaluationRequest {
 
 // GateEvaluationUpdate streams one gate result at a time, then the final summary.
 message GateEvaluationUpdate {
-  // Single gate result (sent for each of the 6 gates).
+  // Single gate result (sent for each of the 7 gates).
   GateResult gate = 1;
   // Pipeline summary (sent as the final event; gate is nil for this event).
   GatePipelineSummary completed = 2;
 }
 
 message GateResult {
-  string gate = 1;         // compliance | lookahead | walkforward | deflated_sharpe | paper | correlation
+  string gate = 1;         // compliance | lookahead | walkforward | deflated_sharpe | monte_carlo | paper | correlation
   bool passed = 2;
   string reason = 3;       // failure reason (empty if passed)
   double score = 4;        // numeric score (DSR, correlation coeff, etc.)

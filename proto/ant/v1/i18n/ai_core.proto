@@ -86,7 +86,7 @@ message AiCoreI18n {
   string consensus_signals_rsi_value = 80;  // RSI
   string consensus_title = 81;  // Consensus & Discussion
   string conversation_default_title = 82;  // New Conversation
-  string gate_all_passed = 83;  // All 6 gates passed — strategy eligible for PromoteToLive eva
+  string gate_all_passed = 83;  // All 7 gates passed — strategy eligible for PromoteToLive eva
   string gate_backtest_gross_return = 84;  // Backtest Gross Return
   string gate_backtest_net_return = 85;  // Backtest Net Return
   string gate_daily_returns = 86;  // Daily Returns (comma or newline separated)
@@ -263,4 +263,5 @@ message AiCoreI18n {
   string gateway_group_my_keys = 257;  // My API Keys
   string gateway_group_gateway = 258;  // AI Gateway
   string gateway_group_current = 259;  // Currently Selected
+  string gate_descriptions_monte_carlo = 260;  // Bootstrap resampling Monte Carlo simulation
 }

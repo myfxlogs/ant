@@ -130,6 +130,7 @@ const AiCore = {
         "correlation": "与现有策略的信号相关性检查",
         "deflated_sharpe": "Lopez de Prado 収縮シャープレシオ",
         "lookahead": "未来関数参照のスキャン（close[t+N]、ref負のオフセット）",
+        "monte_carlo": "ブートストラップリサンプリング・モンテカルロシミュレーション",
         "paper": "14日以上のペーパートレーディング検証",
         "walkforward": "パージド・ウォークフォワード交差検証"
       },
@@ -138,13 +139,14 @@ const AiCore = {
         "correlation": "相关性",
         "deflated_sharpe": "収縮シャープレシオ",
         "lookahead": "先読みバイアス",
+        "monte_carlo": "モンテカルロ",
         "paper": "ペーパートレーディング",
         "walkforward": "ウォークフォワード"
       },
       "status": {
         "evaluating": "评估中..."
       },
-      "allPassed": "全6ゲートを通過 — ストラテジーは本番昇格評価の対象です",
+      "allPassed": "全7ゲートを通過 — ストラテジーは本番昇格評価の対象です",
       "backtestGrossReturn": "バックテスト総収益率",
       "backtestNetReturn": "バックテスト純収益率",
       "dailyReturns": "日次リターン（カンマまたは改行区切り）",
@@ -162,7 +164,7 @@ const AiCore = {
       "paperNetReturn": "ペーパー純収益率",
       "paperTradeCount": "ペーパー取引回数",
       "pass": "通过",
-      "pipelineDesc": "6段階ゲートパイプライン：コンプライアンス → 先読みバイアス → ウォークフォワード → 収縮シャープ → ペーパー → 相関",
+      "pipelineDesc": "7段階ゲートパイプライン：コンプライアンス → 先読みバイアス → ウォークフォワード → 収縮シャープ → モンテカルロ → ペーパー → 相関",
       "pipelineResult": "パイプライン結果",
       "retry": "再試行",
       "runHint": "请先运行回测，然后点击\"运行质量门\"评估策略质量。",

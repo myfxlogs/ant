@@ -73,7 +73,7 @@ func SendGateNotification(
 }
 
 // RunEvaluation fetches the backtest run, converts equity_curve to daily returns,
-// runs the 6-gate pipeline, and streams each gate result via SSE.
+// runs the 7-gate pipeline, and streams each gate result via SSE.
 func (s *GateEvalServer) RunEvaluation(
 	ctx context.Context,
 	req *connect.Request[antv1.RunGateEvaluationRequest],

@@ -1,11 +1,11 @@
-// Package ai provides the 6-Gate Pipeline (M10-BASE-E6).
+// Package ai provides the 7-Gate Pipeline (M10-BASE-E6).
 //
-// The gate pipeline evaluates AI-generated strategies through six sequential gates:
+// The gate pipeline evaluates AI-generated strategies through seven sequential gates:
 //
-//	Compliance → LookAhead → Walk-Forward+CPCV → DeflatedSharpe → Paper(14d) → Correlation
+//	Compliance → LookAhead → Walk-Forward+CPCV → DeflatedSharpe → MonteCarlo → Paper(14d) → Correlation
 //
-// Only strategies that pass all 6 gates are eligible for PromoteToLive.
-// PromoteToLive conditions: Sharpe > 0, DSR >= 0.95, Paper ≥ 14d Net P&L > 0, Correlation < 0.7.
+// Only strategies that pass all 7 gates are eligible for PromoteToLive.
+// PromoteToLive conditions: Sharpe > 0, DSR >= 0.95, MC P(+) >= 0.95, Paper ≥ 14d Net P&L > 0, Correlation < 0.7.
 
 package ai
 
@@ -25,16 +25,18 @@ const (
 	GateLookAhead      GateName = "lookahead"
 	GateWalkForward    GateName = "walkforward"
 	GateDeflatedSharpe GateName = "deflated_sharpe"
+	GateMonteCarlo     GateName = "monte_carlo"
 	GatePaper          GateName = "paper"
 	GateCorrelation    GateName = "correlation"
 )
 
-// GateOrder is the canonical 6-gate evaluation order.
+// GateOrder is the canonical 7-gate evaluation order.
 var GateOrder = []GateName{
 	GateCompliance,
 	GateLookAhead,
 	GateWalkForward,
 	GateDeflatedSharpe,
+	GateMonteCarlo,
 	GatePaper,
 	GateCorrelation,
 }
@@ -49,7 +51,7 @@ type GateStatus struct {
 	Duration int64    `json:"duration_ms"`
 }
 
-// PipelineResult is the aggregate result of running the full 6-gate pipeline.
+// PipelineResult is the aggregate result of running the full 7-gate pipeline.
 type PipelineResult struct {
 	Passed        bool         `json:"passed"`
 	Gates         []GateStatus `json:"gates"`
@@ -68,7 +70,7 @@ type PipelineInput struct {
 	ExistingSignals map[string][]SignalDirection  // existing live strategies' signals
 }
 
-// Pipeline evaluates a strategy through all 6 gates in order.
+// Pipeline evaluates a strategy through all 7 gates in order.
 // Stops at the first failing (non-skipped) gate.
 func Pipeline(input PipelineInput) PipelineResult {
 	startedAt := time.Now()
@@ -87,6 +89,8 @@ func Pipeline(input PipelineInput) PipelineResult {
 			status = evalWalkForward(input.DailyReturns)
 		case GateDeflatedSharpe:
 			status = evalDeflatedSharpe(input.DailyReturns, input.NumAttempts)
+		case GateMonteCarlo:
+			status = evalMonteCarlo(input.DailyReturns)
 		case GatePaper:
 			status = evalPaper(input.PaperMetrics)
 		case GateCorrelation:
@@ -106,7 +110,7 @@ func Pipeline(input PipelineInput) PipelineResult {
 		}
 	}
 
-	result.Summary = "all 6 gates passed"
+	result.Summary = "all 7 gates passed"
 	result.TotalDuration = time.Since(startedAt).Milliseconds()
 	return result
 }
@@ -205,6 +209,22 @@ func evalDeflatedSharpe(dailyReturns []float64, numAttempts int) GateStatus {
 	return GateStatus{
 		Gate: GateDeflatedSharpe, Passed: true,
 		Score: dsr,
+	}
+}
+
+func evalMonteCarlo(dailyReturns []float64) GateStatus {
+	cfg := DefaultMonteCarloConfig()
+	result := MonteCarlo(dailyReturns, cfg)
+	if !result.Passed {
+		return GateStatus{
+			Gate: GateMonteCarlo, Passed: false,
+			Reason: result.Reason,
+			Score:  result.ProbPositive,
+		}
+	}
+	return GateStatus{
+		Gate: GateMonteCarlo, Passed: true,
+		Score: result.SharpeMedian,
 	}
 }
 

@@ -130,6 +130,7 @@ const AiCore = {
         "correlation": "Signal correlation check with existing strategies",
         "deflated_sharpe": "Lopez de Prado Deflated Sharpe Ratio",
         "lookahead": "Future function reference scan (close[t+N], ref negative offset)",
+        "monte_carlo": "Bootstrap resampling Monte Carlo simulation",
         "paper": "≥14 days paper trading validation",
         "walkforward": "Purged Walk-Forward cross-validation"
       },
@@ -138,13 +139,14 @@ const AiCore = {
         "correlation": "Correlation",
         "deflated_sharpe": "Deflated Sharpe",
         "lookahead": "Look-Ahead Bias",
+        "monte_carlo": "Monte Carlo",
         "paper": "Paper Trading",
         "walkforward": "Walk-Forward"
       },
       "status": {
         "evaluating": "Evaluating..."
       },
-      "allPassed": "All 6 gates passed — strategy eligible for PromoteToLive evaluation",
+      "allPassed": "All 7 gates passed — strategy eligible for PromoteToLive evaluation",
       "backtestGrossReturn": "Backtest Gross Return",
       "backtestNetReturn": "Backtest Net Return",
       "dailyReturns": "Daily Returns (comma or newline separated)",
@@ -162,7 +164,7 @@ const AiCore = {
       "paperNetReturn": "Paper Net Return",
       "paperTradeCount": "Paper Trade Count",
       "pass": "PASS",
-      "pipelineDesc": "6-stage Gate pipeline: Compliance → LookAhead → Walk-Forward → DeflatedSharpe → Paper → Correlation",
+      "pipelineDesc": "7-stage Gate pipeline: Compliance → LookAhead → Walk-Forward → DeflatedSharpe → MonteCarlo → Paper → Correlation",
       "pipelineResult": "Pipeline Result",
       "retry": "Retry",
       "runHint": "Run a backtest first, then click \"Run Gate\" to evaluate strategy quality.",

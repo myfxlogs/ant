@@ -105,7 +105,7 @@ type AiCoreI18N struct {
 	ConsensusSignalsRsiValue                      string                 `protobuf:"bytes,80,opt,name=consensus_signals_rsi_value,json=consensusSignalsRsiValue,proto3" json:"consensus_signals_rsi_value,omitempty"`                                                                    // RSI
 	ConsensusTitle                                string                 `protobuf:"bytes,81,opt,name=consensus_title,json=consensusTitle,proto3" json:"consensus_title,omitempty"`                                                                                                      // Consensus & Discussion
 	ConversationDefaultTitle                      string                 `protobuf:"bytes,82,opt,name=conversation_default_title,json=conversationDefaultTitle,proto3" json:"conversation_default_title,omitempty"`                                                                      // New Conversation
-	GateAllPassed                                 string                 `protobuf:"bytes,83,opt,name=gate_all_passed,json=gateAllPassed,proto3" json:"gate_all_passed,omitempty"`                                                                                                       // All 6 gates passed — strategy eligible for PromoteToLive eva
+	GateAllPassed                                 string                 `protobuf:"bytes,83,opt,name=gate_all_passed,json=gateAllPassed,proto3" json:"gate_all_passed,omitempty"`                                                                                                       // All 7 gates passed — strategy eligible for PromoteToLive eva
 	GateBacktestGrossReturn                       string                 `protobuf:"bytes,84,opt,name=gate_backtest_gross_return,json=gateBacktestGrossReturn,proto3" json:"gate_backtest_gross_return,omitempty"`                                                                       // Backtest Gross Return
 	GateBacktestNetReturn                         string                 `protobuf:"bytes,85,opt,name=gate_backtest_net_return,json=gateBacktestNetReturn,proto3" json:"gate_backtest_net_return,omitempty"`                                                                             // Backtest Net Return
 	GateDailyReturns                              string                 `protobuf:"bytes,86,opt,name=gate_daily_returns,json=gateDailyReturns,proto3" json:"gate_daily_returns,omitempty"`                                                                                              // Daily Returns (comma or newline separated)
@@ -282,6 +282,7 @@ type AiCoreI18N struct {
 	GatewayGroupMyKeys                            string                 `protobuf:"bytes,257,opt,name=gateway_group_my_keys,json=gatewayGroupMyKeys,proto3" json:"gateway_group_my_keys,omitempty"`                                                                                     // My API Keys
 	GatewayGroupGateway                           string                 `protobuf:"bytes,258,opt,name=gateway_group_gateway,json=gatewayGroupGateway,proto3" json:"gateway_group_gateway,omitempty"`                                                                                    // AI Gateway
 	GatewayGroupCurrent                           string                 `protobuf:"bytes,259,opt,name=gateway_group_current,json=gatewayGroupCurrent,proto3" json:"gateway_group_current,omitempty"`                                                                                    // Currently Selected
+	GateDescriptionsMonteCarlo                    string                 `protobuf:"bytes,260,opt,name=gate_descriptions_monte_carlo,json=gateDescriptionsMonteCarlo,proto3" json:"gate_descriptions_monte_carlo,omitempty"`                                                             // Bootstrap resampling Monte Carlo simulation
 	unknownFields                                 protoimpl.UnknownFields
 	sizeCache                                     protoimpl.SizeCache
 }
@@ -2129,11 +2130,18 @@ func (x *AiCoreI18N) GetGatewayGroupCurrent() string {
 	return ""
 }
 
+func (x *AiCoreI18N) GetGateDescriptionsMonteCarlo() string {
+	if x != nil {
+		return x.GateDescriptionsMonteCarlo
+	}
+	return ""
+}
+
 var File_i18n_ai_core_proto protoreflect.FileDescriptor
 
 const file_i18n_ai_core_proto_rawDesc = "" +
 	"\n" +
-	"\x12i18n/ai_core.proto\x12\vant.v1.i18n\"\xe6\x87\x01\n" +
+	"\x12i18n/ai_core.proto\x12\vant.v1.i18n\"\xaa\x88\x01\n" +
 	"\n" +
 	"AiCoreI18n\x129\n" +
 	"\x19agent_prompts_code_prompt\x18\x01 \x01(\tR\x16agentPromptsCodePrompt\x127\n" +
@@ -2399,7 +2407,8 @@ const file_i18n_ai_core_proto_rawDesc = "" +
 	"\x13workflow_runs_title\x18\x80\x02 \x01(\tR\x11workflowRunsTitle\x122\n" +
 	"\x15gateway_group_my_keys\x18\x81\x02 \x01(\tR\x12gatewayGroupMyKeys\x123\n" +
 	"\x15gateway_group_gateway\x18\x82\x02 \x01(\tR\x13gatewayGroupGateway\x123\n" +
-	"\x15gateway_group_current\x18\x83\x02 \x01(\tR\x13gatewayGroupCurrentB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x15gateway_group_current\x18\x83\x02 \x01(\tR\x13gatewayGroupCurrent\x12B\n" +
+	"\x1dgate_descriptions_monte_carlo\x18\x84\x02 \x01(\tR\x1agateDescriptionsMonteCarloB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_ai_core_proto_rawDescOnce sync.Once

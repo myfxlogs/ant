@@ -130,6 +130,7 @@ const AiCore = {
         "correlation": "与现有策略的信号相关性检查",
         "deflated_sharpe": "Tỷ lệ Sharpe đã giảm phát của Lopez de Prado",
         "lookahead": "Quét tham chiếu hàm tương lai (close[t+N], ref offset âm)",
+        "monte_carlo": "Mô phỏng Monte Carlo lấy mẫu lại bootstrap",
         "paper": "Xác thực giao dịch giấy >=14 ngày",
         "walkforward": "Xác thực chéo Walk-Forward đã thanh lọc"
       },
@@ -138,13 +139,14 @@ const AiCore = {
         "correlation": "相关性",
         "deflated_sharpe": "通缩夏普比率",
         "lookahead": "Độ chệch nhìn về phía trước",
+        "monte_carlo": "Monte Carlo",
         "paper": "Giao dịch giấy",
         "walkforward": "前向分析"
       },
       "status": {
         "evaluating": "Đang đánh giá..."
       },
-      "allPassed": "Cả 6 cổng đều vượt qua — chiến lược đủ điều kiện đánh giá PromoteToLive",
+      "allPassed": "Cả 7 cổng đều vượt qua — chiến lược đủ điều kiện đánh giá PromoteToLive",
       "backtestGrossReturn": "Lợi nhuận gộp backtest",
       "backtestNetReturn": "Lợi nhuận ròng backtest",
       "dailyReturns": "Lợi nhuận hàng ngày (phân cách bằng dấu phẩy hoặc xuống dòng)",
@@ -162,7 +164,7 @@ const AiCore = {
       "paperNetReturn": "Lợi nhuận ròng giấy",
       "paperTradeCount": "Số giao dịch giấy",
       "pass": "通过",
-      "pipelineDesc": "Quy trình 6 cổng: Tuân thủ -> Nhìn về phía trước -> Walk-Forward -> Deflated Sharpe -> Giấy -> Tương quan",
+      "pipelineDesc": "Quy trình 7 cổng: Tuân thủ -> Nhìn về phía trước -> Walk-Forward -> Deflated Sharpe -> Monte Carlo -> Giấy -> Tương quan",
       "pipelineResult": "Kết quả quy trình",
       "retry": "Thử lại",
       "runHint": "请先运行回测，然后点击\"运行质量门\"评估策略质量。",

@@ -1,4 +1,4 @@
-// Package ai — E6 Gate Pipeline + PromoteToLive tests.
+// Package ai — E6 Gate Pipeline + PromoteToLive tests (now 7 gates with Monte Carlo).
 package ai
 
 import "testing"
@@ -38,8 +38,8 @@ func TestAIGatePipeline_AllPass(t *testing.T) {
 	if !result.Passed {
 		t.Fatalf("clean strategy should pass all gates, failed at: %s", result.FirstFail)
 	}
-	if len(result.Gates) != 6 {
-		t.Fatalf("should evaluate all 6 gates, got %d", len(result.Gates))
+	if len(result.Gates) != 7 {
+		t.Fatalf("should evaluate all 7 gates, got %d", len(result.Gates))
 	}
 }
 

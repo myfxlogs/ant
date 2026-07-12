@@ -40,7 +40,7 @@ const (
 
 // GateServiceClient is a client for the ant.v1.GateService service.
 type GateServiceClient interface {
-	// RunEvaluation runs the 6-gate pipeline and streams progress via SSE.
+	// RunEvaluation runs the 7-gate pipeline and streams progress via SSE.
 	RunEvaluation(context.Context, *connect.Request[v1.RunGateEvaluationRequest]) (*connect.ServerStreamForClient[v1.GateEvaluationUpdate], error)
 }
 
@@ -76,7 +76,7 @@ func (c *gateServiceClient) RunEvaluation(ctx context.Context, req *connect.Requ
 
 // GateServiceHandler is an implementation of the ant.v1.GateService service.
 type GateServiceHandler interface {
-	// RunEvaluation runs the 6-gate pipeline and streams progress via SSE.
+	// RunEvaluation runs the 7-gate pipeline and streams progress via SSE.
 	RunEvaluation(context.Context, *connect.Request[v1.RunGateEvaluationRequest], *connect.ServerStream[v1.GateEvaluationUpdate]) error
 }
 

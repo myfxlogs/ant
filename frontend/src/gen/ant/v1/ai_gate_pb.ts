@@ -87,7 +87,7 @@ export const RunGateEvaluationRequestSchema: GenMessage<RunGateEvaluationRequest
  */
 export type GateEvaluationUpdate = Message<"ant.v1.GateEvaluationUpdate"> & {
   /**
-   * Single gate result (sent for each of the 6 gates).
+   * Single gate result (sent for each of the 7 gates).
    *
    * @generated from field: ant.v1.GateResult gate = 1;
    */
@@ -113,7 +113,7 @@ export const GateEvaluationUpdateSchema: GenMessage<GateEvaluationUpdate> = /*@_
  */
 export type GateResult = Message<"ant.v1.GateResult"> & {
   /**
-   * compliance | lookahead | walkforward | deflated_sharpe | paper | correlation
+   * compliance | lookahead | walkforward | deflated_sharpe | monte_carlo | paper | correlation
    *
    * @generated from field: string gate = 1;
    */
@@ -199,14 +199,14 @@ export const GatePipelineSummarySchema: GenMessage<GatePipelineSummary> = /*@__P
   messageDesc(file_ai_gate, 3);
 
 /**
- * GateService evaluates AI-generated strategies through the 6-gate pipeline.
- * Only strategies that pass all 6 gates are eligible for PromoteToLive.
+ * GateService evaluates AI-generated strategies through the 7-gate pipeline.
+ * Only strategies that pass all 7 gates are eligible for PromoteToLive.
  *
  * @generated from service ant.v1.GateService
  */
 export const GateService: GenService<{
   /**
-   * RunEvaluation runs the 6-gate pipeline and streams progress via SSE.
+   * RunEvaluation runs the 7-gate pipeline and streams progress via SSE.
    *
    * @generated from rpc ant.v1.GateService.RunEvaluation
    */

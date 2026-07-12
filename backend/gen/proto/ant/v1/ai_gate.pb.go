@@ -132,7 +132,7 @@ func (x *RunGateEvaluationRequest) GetPaperTradeCount() int32 {
 // GateEvaluationUpdate streams one gate result at a time, then the final summary.
 type GateEvaluationUpdate struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Single gate result (sent for each of the 6 gates).
+	// Single gate result (sent for each of the 7 gates).
 	Gate *GateResult `protobuf:"bytes,1,opt,name=gate,proto3" json:"gate,omitempty"`
 	// Pipeline summary (sent as the final event; gate is nil for this event).
 	Completed     *GatePipelineSummary `protobuf:"bytes,2,opt,name=completed,proto3" json:"completed,omitempty"`
@@ -186,7 +186,7 @@ func (x *GateEvaluationUpdate) GetCompleted() *GatePipelineSummary {
 
 type GateResult struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Gate          string                 `protobuf:"bytes,1,opt,name=gate,proto3" json:"gate,omitempty"` // compliance | lookahead | walkforward | deflated_sharpe | paper | correlation
+	Gate          string                 `protobuf:"bytes,1,opt,name=gate,proto3" json:"gate,omitempty"` // compliance | lookahead | walkforward | deflated_sharpe | monte_carlo | paper | correlation
 	Passed        bool                   `protobuf:"varint,2,opt,name=passed,proto3" json:"passed,omitempty"`
 	Reason        string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`                            // failure reason (empty if passed)
 	Score         float64                `protobuf:"fixed64,4,opt,name=score,proto3" json:"score,omitempty"`                            // numeric score (DSR, correlation coeff, etc.)

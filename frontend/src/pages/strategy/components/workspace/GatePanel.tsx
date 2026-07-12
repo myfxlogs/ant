@@ -16,11 +16,12 @@ interface Props {
   onSelectRun?: (runId: string) => void;
 }
 
-const GATE_ORDER = ['compliance', 'lookahead', 'walkforward', 'deflated_sharpe', 'paper', 'correlation'];
+const GATE_ORDER = ['compliance', 'lookahead', 'walkforward', 'deflated_sharpe', 'monte_carlo', 'paper', 'correlation'];
 
 const GATE_KEY: Record<string, string> = {
   compliance: 'ai.gate.labels.compliance', lookahead: 'ai.gate.labels.lookahead',
   walkforward: 'ai.gate.labels.walkforward', deflated_sharpe: 'ai.gate.labels.deflated_sharpe',
+  monte_carlo: 'ai.gate.labels.monte_carlo',
   paper: 'ai.gate.labels.paper', correlation: 'ai.gate.labels.correlation',
 };
 
@@ -96,7 +97,7 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
         <Alert type={summary.passed ? 'success' : 'error'} showIcon
           style={{ marginTop: 12 }}
           message={summary.passed
-            ? t(GATE_ALL_PASSED_KEY, 'All 6 gates passed — strategy eligible for live deployment')
+            ? t(GATE_ALL_PASSED_KEY, 'All 7 gates passed — strategy eligible for live deployment')
             : t(GATE_FAILED_KEY, { defaultValue: `Failed at ${summary.firstFail}` })}
           description={!summary.passed ? summary.summary : undefined} />
       )}

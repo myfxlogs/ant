@@ -1,7 +1,7 @@
 // Package ai provides strategy promotion criteria (M10-BASE-E6).
 //
 // PromoteToLive evaluates whether a strategy meets all conditions for live deployment
-// after passing the 6-gate pipeline.
+// after passing the 7-gate pipeline.
 
 package ai
 

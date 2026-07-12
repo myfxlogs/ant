@@ -130,6 +130,7 @@ const AiCore = {
         "correlation": "与现有策略的信号相关性检查",
         "deflated_sharpe": "Lopez de Prado 紧缩夏普比率",
         "lookahead": "扫描未来函数引用 (close[t+N], ref 负偏移)",
+        "monte_carlo": "Bootstrap 重采样蒙特卡洛模拟",
         "paper": "≥14 天模拟交易验证",
         "walkforward": "Purged Walk-Forward 交叉验证"
       },
@@ -138,13 +139,14 @@ const AiCore = {
         "correlation": "相关性",
         "deflated_sharpe": "通缩夏普比率",
         "lookahead": "前视偏差",
+        "monte_carlo": "蒙特卡洛",
         "paper": "模拟交易",
         "walkforward": "前向分析"
       },
       "status": {
         "evaluating": "评估中..."
       },
-      "allPassed": "所有 6 个 Gate 通过，策略可进入 PromoteToLive 评估",
+      "allPassed": "所有 7 个 Gate 通过，策略可进入 PromoteToLive 评估",
       "backtestGrossReturn": "回测毛收益",
       "backtestNetReturn": "回测净收益",
       "dailyReturns": "日收益率 (逗号或换行分隔)",
@@ -162,7 +164,7 @@ const AiCore = {
       "paperNetReturn": "模拟净收益",
       "paperTradeCount": "模拟交易数",
       "pass": "通过",
-      "pipelineDesc": "6 级 Gate 管道: Compliance → LookAhead → Walk-Forward → DeflatedSharpe → Paper → Correlation",
+      "pipelineDesc": "7 级 Gate 管道: Compliance → LookAhead → Walk-Forward → DeflatedSharpe → MonteCarlo → Paper → Correlation",
       "pipelineResult": "管道结果",
       "retry": "重试",
       "runHint": "请先运行回测，然后点击\"运行质量门\"评估策略质量。",
