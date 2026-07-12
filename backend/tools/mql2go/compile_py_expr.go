@@ -219,6 +219,22 @@ func (c *pyCompiler) compilePyMethodCall(callNode, attrNode *sitter.Node) *inter
 						return &interp.Expr{Kind: interp.ExprCall, Name: mappedName, Args: combined}
 					}
 				}
+				// Higher timeframe: ctx.bars_tf("H4").close(0)
+				// iClose("", 240, shift) — symbol="" (primary), timeframe from TF string
+				if strings.Contains(cleanPath, "bars_tf.") {
+					innerArgs := c.extractInnerCallArgs(attrNode)
+					if len(innerArgs) > 0 {
+						tfInt := int32(0)
+						if innerArgs[0].Kind == interp.ExprLiteral && innerArgs[0].Val.Kind == interp.ValString {
+							tfInt = tfStringToInt(innerArgs[0].Val.Str)
+						}
+						combined := make([]interp.Expr, 0, 2+len(args))
+						combined = append(combined, interp.Expr{Kind: interp.ExprLiteral, Val: interp.StringVal("")})
+						combined = append(combined, interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(tfInt)})
+						combined = append(combined, args...)
+						return &interp.Expr{Kind: interp.ExprCall, Name: mappedName, Args: combined}
+					}
+				}
 			}
 			return &interp.Expr{Kind: interp.ExprCall, Name: mappedName, Args: args}
 		}

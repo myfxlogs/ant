@@ -170,6 +170,25 @@ func mapPythonMethod(method, fullPath string) string {
 			return "Time"
 		}
 	}
+	// Higher timeframe bar access: ctx.bars_tf("H4").close(0)
+	// Maps to iClose("", 240, shift) — symbol="" means primary symbol, 240=H4.
+	// The compiler injects symbol="" + converts the TF string to MQL period int.
+	if strings.Contains(fullPath, "bars_tf.") {
+		switch method {
+		case "close":
+			return "iClose"
+		case "open":
+			return "iOpen"
+		case "high":
+			return "iHigh"
+		case "low":
+			return "iLow"
+		case "volume":
+			return "iVolume"
+		case "time":
+			return "iTime"
+		}
+	}
 	// Multi-symbol bar access: ctx.bars_for_symbol("EURUSD").close(0)
 	// Maps to iClose(symbol, 0, shift) — timeframe=0 means PERIOD_CURRENT.
 	// The compiler prepends the inner call's symbol arg + injects timeframe=0.
@@ -223,6 +242,57 @@ func mapPythonMethod(method, fullPath string) string {
 		}
 	}
 	return ""
+}
+
+// tfStringToInt converts a timeframe string (e.g. "H4", "M15") to its MQL period int.
+// Returns 0 (PERIOD_CURRENT) for unknown strings.
+func tfStringToInt(tf string) int32 {
+	switch tf {
+	case "M1":
+		return 1
+	case "M2":
+		return 2
+	case "M3":
+		return 3
+	case "M4":
+		return 4
+	case "M5":
+		return 5
+	case "M6":
+		return 6
+	case "M10":
+		return 10
+	case "M12":
+		return 12
+	case "M15":
+		return 15
+	case "M20":
+		return 20
+	case "M30":
+		return 30
+	case "H1":
+		return 60
+	case "H2":
+		return 120
+	case "H3":
+		return 180
+	case "H4":
+		return 240
+	case "H6":
+		return 360
+	case "H8":
+		return 480
+	case "H12":
+		return 720
+	case "D1":
+		return 1440
+	case "W1":
+		return 10080
+	case "MN1":
+		return 43200
+	default:
+		return 0
+	}
 }
 
 // pythonMethodParamOrder returns the canonical parameter names for a Python

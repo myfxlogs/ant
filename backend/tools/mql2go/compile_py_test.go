@@ -878,6 +878,53 @@ class S:
 	}
 }
 
+func TestCompilePython_HigherTimeframeBars(t *testing.T) {
+	source := `from decimal import Decimal
+class S:
+    def on_bar(self) -> None:
+        c: float = ctx.bars_tf("H4").close(0)
+        h: float = ctx.bars_tf("M15").high(1)
+`
+	ir, err := CompilePythonToIR(source)
+	if err != nil {
+		t.Fatalf("CompilePythonToIR failed: %v", err)
+	}
+	if len(ir.OnBar) != 2 {
+		t.Fatalf("expected 2 statements, got %d", len(ir.OnBar))
+	}
+	// First statement: c = iClose("", 240, 0) — symbol="" (primary), timeframe=240 (H4), shift=0
+	stmt0 := ir.OnBar[0]
+	if stmt0.Expr == nil || stmt0.Expr.Name != "c" {
+		t.Fatalf("stmt[0]: expected name c, got %v", stmt0.Expr)
+	}
+	call0 := stmt0.Expr.Args[0]
+	if call0.Name != "iClose" {
+		t.Errorf("stmt[0]: expected iClose, got %s", call0.Name)
+	}
+	if len(call0.Args) != 3 {
+		t.Fatalf("stmt[0]: expected 3 args, got %d", len(call0.Args))
+	}
+	// arg[0] = "" (primary symbol), arg[1] = 240 (H4), arg[2] = 0 (shift)
+	if call0.Args[0].Kind != interp.ExprLiteral || call0.Args[0].Val.Kind != interp.ValString || call0.Args[0].Val.Str != "" {
+		t.Errorf("stmt[0]: expected arg[0] = \"\", got %v", call0.Args[0])
+	}
+	if call0.Args[1].Kind != interp.ExprLiteral || call0.Args[1].Val.Kind != interp.ValInt || call0.Args[1].Val.ToInt() != 240 {
+		t.Errorf("stmt[0]: expected arg[1] = 240 (H4), got %v", call0.Args[1])
+	}
+	// Second statement: h = iHigh("", 15, 1) — timeframe=15 (M15), shift=1
+	stmt1 := ir.OnBar[1]
+	call1 := stmt1.Expr.Args[0]
+	if call1.Name != "iHigh" {
+		t.Errorf("stmt[1]: expected iHigh, got %s", call1.Name)
+	}
+	if len(call1.Args) != 3 {
+		t.Fatalf("stmt[1]: expected 3 args, got %d", len(call1.Args))
+	}
+	if call1.Args[1].Kind != interp.ExprLiteral || call1.Args[1].Val.Kind != interp.ValInt || call1.Args[1].Val.ToInt() != 15 {
+		t.Errorf("stmt[1]: expected arg[1] = 15 (M15), got %v", call1.Args[1])
+	}
+}
+
 func TestCompilePython_BooleanOperatorInIf(t *testing.T) {
 	source := `from decimal import Decimal
 class S:
