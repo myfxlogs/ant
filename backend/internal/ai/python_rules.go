@@ -66,8 +66,9 @@ class MyStrategy(StrategyBase):
 - Digits → ctx.digits()
 - Spread → ctx.spread()
 - Symbol() → ctx.symbol()
-- Higher TF bars → ctx.bars_tf("H4").close(0)
-- Other symbol bars → ctx.bars_for_symbol("EURUSD").close(0)
+- Period → ctx.period()
+- Higher TF bars → ctx.bars_tf("H4").close(0), .open(0), .high(0), .low(0), .volume(0), .time(0)
+- Other symbol bars → ctx.bars_for_symbol("EURUSD").close(0), .open(0), .high(0), .low(0), .volume(0), .time(0)
 
 ### Indicators (all map to ctx.indicators().<name>(ctx.symbol(), period, shift))
 - iMA → ctx.indicators().ima(ctx.symbol(), period, shift)
@@ -120,14 +121,23 @@ class MyStrategy(StrategyBase):
 - Sell Limit → ctx.broker().sell_limit(lot, price, sl, tp)
 - Buy Stop → ctx.broker().buy_stop(lot, price, sl, tp)
 - Sell Stop → ctx.broker().sell_stop(lot, price, sl, tp)
+- Partial close → ctx.broker().close_partial(ticket, volume)
+- Hedging close → ctx.broker().close_by(ticket, by_ticket)
 - Position count → ctx.positions().count()
-- Iterate positions → for pos in ctx.positions: pos.ticket, pos.profit, pos.volume, pos.sl, pos.tp
+- Iterate positions → for pos in ctx.positions: pos.ticket, pos.profit, pos.volume, pos.sl, pos.tp, pos.open_price, pos.open_time, pos.symbol, pos.magic, pos.side, pos.swap, pos.commission, pos.comment
 - AccountBalance() → ctx.account().balance()
 - AccountEquity() → ctx.account().equity()
 - AccountMargin() → ctx.account().margin()
 - AccountFreeMargin() → ctx.account().free_margin()
 - AccountProfit() → ctx.account().profit()
 - AccountLeverage() → ctx.account().leverage()
+
+### Event Methods (optional, only define if needed)
+- on_bar(self, ctx: BarContext) -> None — called on each bar (REQUIRED)
+- on_tick(self, ctx: BarContext) -> None — called on each tick
+- on_timer(self, ctx: BarContext) -> None — called on timer event
+- on_trade(self, ctx: BarContext) -> None — called on trade event
+- on_deinit(self, ctx: BarContext, reason: str) -> None — called on strategy stop
 
 ## ⚠️ PRE-OUTPUT SELF-CHECK — run this checklist BEFORE you output code ⚠️
 If your code violates ANY of these, FIX IT before outputting. No exceptions.
