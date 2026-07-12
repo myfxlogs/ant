@@ -240,7 +240,7 @@ export default function WorkspaceCodePanel({
               notFoundContent={t(AGENT_FIELDS_MODEL_PROFILE_EMPTY_KEY, { defaultValue: 'No model — configure in AI Settings' })}
             />
           )}
-          {primarySaving && <span style={{ fontSize: 11, color: '#1677ff' }}>saving...</span>}
+          {primarySaving && <span style={{ fontSize: 11, color: '#1677ff' }}>{t('common.saving', { defaultValue: 'saving...' })}</span>}
         </div>
 
         {/* Model refresh warnings */}

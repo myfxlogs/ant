@@ -149,21 +149,21 @@ export default function ProtectedBacktestPanel({ strategyId, defaultSymbol = 'EU
 
       <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
         <Col span={6}>
-          <Text type="secondary" style={{ fontSize: 11 }}>Capital</Text>
+          <Text type="secondary" style={{ fontSize: 11 }}>{t('marketplace.backtest.capital', { defaultValue: 'Capital' })}</Text>
           <InputNumber value={initialCapital} onChange={v => setInitialCapital(v || 10000)} min={100} step={1000} style={{ width: '100%' }} size="small" />
         </Col>
         <Col span={6}>
-          <Text type="secondary" style={{ fontSize: 11 }}>Commission</Text>
+          <Text type="secondary" style={{ fontSize: 11 }}>{t('marketplace.backtest.commission', { defaultValue: 'Commission' })}</Text>
           <InputNumber value={commission} onChange={v => setCommission(v || 0)} min={0} step={0.0001} style={{ width: '100%' }} size="small" />
         </Col>
         <Col span={6}>
-          <Text type="secondary" style={{ fontSize: 11 }}>Leverage</Text>
+          <Text type="secondary" style={{ fontSize: 11 }}>{t('marketplace.backtest.leverage', { defaultValue: 'Leverage' })}</Text>
           <InputNumber value={leverage} onChange={v => setLeverage(v || 1)} min={1} max={500} step={1} style={{ width: '100%' }} size="small" />
         </Col>
       </Row>
 
       {status === 'running' && <Tag color="processing" style={{ marginBottom: 12 }}>{progress}</Tag>}
-      {status === 'completed' && <Tag color="success" style={{ marginBottom: 12 }}>Completed</Tag>}
+      {status === 'completed' && <Tag color="success" style={{ marginBottom: 12 }}>{t('marketplace.backtest.completed', { defaultValue: 'Completed' })}</Tag>}
       {status === 'error' && <Tag color="error" style={{ marginBottom: 12 }}>{errorMsg}</Tag>}
       {status === 'idle' && <Empty description={t('marketplace.backtest.idle', 'Set parameters and run a backtest')} style={{ padding: 16 }} />}
 
@@ -171,30 +171,30 @@ export default function ProtectedBacktestPanel({ strategyId, defaultSymbol = 'EU
         <>
           <Row gutter={[8, 8]}>
             <Col span={8}>
-              <Card size="small"><Statistic title="Total Return" value={pct(metrics.totalReturn)}
+              <Card size="small"><Statistic title={t('marketplace.backtest.totalReturn', { defaultValue: 'Total Return' })} value={pct(metrics.totalReturn)}
                 prefix={metrics.totalReturn != null && metrics.totalReturn >= 0 ? <RiseOutlined style={{ color: '#26a69a' }} /> : <FallOutlined style={{ color: '#ef5350' }} />}
                 valueStyle={{ fontSize: 16, fontFamily: 'monospace' }} /></Card>
             </Col>
             <Col span={8}>
-              <Card size="small"><Statistic title="Max Drawdown" value={pct(metrics.maxDrawdown)}
+              <Card size="small"><Statistic title={t('marketplace.backtest.maxDrawdown', { defaultValue: 'Max Drawdown' })} value={pct(metrics.maxDrawdown)}
                 valueStyle={{ fontSize: 16, fontFamily: 'monospace', color: '#ef5350' }} /></Card>
             </Col>
             <Col span={8}>
-              <Card size="small"><Statistic title="Sharpe" value={metrics.sharpeRatio?.toFixed(2) ?? '-'}
+              <Card size="small"><Statistic title={t('marketplace.backtest.sharpe', { defaultValue: 'Sharpe' })} value={metrics.sharpeRatio?.toFixed(2) ?? '-'}
                 valueStyle={{ fontSize: 16, fontFamily: 'monospace' }} /></Card>
             </Col>
             <Col span={8}>
-              <Card size="small"><Statistic title="Win Rate" value={pct(metrics.winRate)}
+              <Card size="small"><Statistic title={t('marketplace.backtest.winRate', { defaultValue: 'Win Rate' })} value={pct(metrics.winRate)}
                 valueStyle={{ fontSize: 16, fontFamily: 'monospace' }} /></Card>
             </Col>
             <Col span={8}>
-              <Card size="small"><Statistic title="Total Trades" value={metrics.totalTrades ?? '-'}
+              <Card size="small"><Statistic title={t('marketplace.backtest.totalTrades', { defaultValue: 'Total Trades' })} value={metrics.totalTrades ?? '-'}
                 valueStyle={{ fontSize: 16, fontFamily: 'monospace' }} /></Card>
             </Col>
           </Row>
 
           {metrics.equityCurve && metrics.equityCurve.length > 0 && (
-            <Card size="small" title="Equity Curve" style={{ marginTop: 8 }}>
+            <Card size="small" title={t('marketplace.backtest.equityCurve', { defaultValue: 'Equity Curve' })} style={{ marginTop: 8 }}>
               <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={metrics.equityCurve}>
                   <XAxis dataKey="time" hide />

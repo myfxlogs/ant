@@ -101,7 +101,7 @@ export default function BacktestParamsExpanded(props: ExpandedProps) {
           </Row>
           <Row gutter={8} style={{ marginBottom: 8 }}>
             <Col span={12}>
-              <div style={fieldLabel}>Lot Size</div>
+              <div style={fieldLabel}>{t('strategy.backtest.lotSize', { defaultValue: 'Lot Size' })}</div>
               <InputNumber size="small" style={narrow} min={0.01} max={100} step={0.01}
                 value={lotSize} onChange={onLotSizeChange} />
             </Col>
@@ -176,7 +176,7 @@ export default function BacktestParamsExpanded(props: ExpandedProps) {
 
       {strategyParams.length > 0 && (
         <div style={{ marginTop: 12, borderTop: '1px solid #f0f0f0', paddingTop: 12 }}>
-          <div style={sectionLabel}>Strategy Parameters</div>
+          <div style={sectionLabel}>{t('strategy.backtest.strategyParameters', { defaultValue: 'Strategy Parameters' })}</div>
           <Row gutter={8}>
             {strategyParams.map((p) => {
               const value = strategyParamValues[p.name] ?? p.default;

@@ -4,7 +4,7 @@ import { Card, Spin, Tag, Typography, Empty, Row, Col, Table, Statistic, Select,
 import { RiseOutlined, FallOutlined, TrophyOutlined, ClockCircleOutlined, BarChartOutlined, GlobalOutlined, EyeOutlined, LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { normalizeLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import ShareChart from './ShareChart';
 import Seo from '@/components/common/Seo';
 import {
@@ -196,6 +196,7 @@ export default function SharePerformancePage() {
                 <Pie data={bySymbol} dataKey="net" nameKey="symbol" cx="50%" cy="50%" innerRadius={30} outerRadius={48} paddingAngle={2} isAnimationActive={false}>
                   {bySymbol.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                 </Pie>
+                <Tooltip formatter={(v: number, n: string) => [signed(v), n]} />
               </PieChart>
             </ResponsiveContainer>
             <div style={{ flex: 1, minWidth: 160, fontSize: 'clamp(11px, 2vw, 13px)' }}>
@@ -224,6 +225,7 @@ export default function SharePerformancePage() {
             columns={columns}
             rowKey={(_, i) => String(i)}
             size="small"
+            scroll={{ x: 500 }}
             pagination={{ pageSize: 20, size: 'small', showSizeChanger: true, pageSizeOptions: ['10', '20', '50'] }}
           />
         )}
