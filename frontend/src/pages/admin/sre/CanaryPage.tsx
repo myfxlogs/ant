@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, Table, Button, Modal, Form, Input, InputNumber, Space, Typography, Tag, Popconfirm } from 'antd';
 import { PlusOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { sreApi, type CanaryConfig } from './sreApi';
 
 const { Text, Title } = Typography;
 
 export default function CanaryPage() {
+  const { t } = useTranslation();
   const [canaries, setCanaries] = useState<CanaryConfig[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -36,22 +38,22 @@ export default function CanaryPage() {
   };
 
   const columns = [
-    { title: '策略 ID', dataIndex: 'strategy_id', key: 'id', width: 180, render: (v: string) => <Text code>{v}</Text> },
-    { title: '版本 Tag', dataIndex: 'version_tag', key: 'version', width: 100 },
+    { title: t('sre.canary.columns.strategyId', { defaultValue: 'Strategy ID' }), dataIndex: 'strategy_id', key: 'id', width: 180, render: (v: string) => <Text code>{v}</Text> },
+    { title: t('sre.canary.columns.versionTag', { defaultValue: 'Version Tag' }), dataIndex: 'version_tag', key: 'version', width: 100 },
     {
-      title: '灰度账户', dataIndex: 'account_ids', key: 'accounts',
+      title: t('sre.canary.columns.accounts', { defaultValue: 'Canary Accounts' }), dataIndex: 'account_ids', key: 'accounts',
       render: (v: string[]) => v?.length ? v.map(id => <Tag key={id}>{id}</Tag>) : '-',
     },
-    { title: '开始时间', dataIndex: 'start_at', key: 'start', width: 160 },
-    { title: '天数', dataIndex: 'duration_days', key: 'days', width: 70, render: (v: number) => `${v}d` },
+    { title: t('sre.canary.columns.startAt', { defaultValue: 'Start At' }), dataIndex: 'start_at', key: 'start', width: 160 },
+    { title: t('sre.canary.columns.days', { defaultValue: 'Days' }), dataIndex: 'duration_days', key: 'days', width: 70, render: (v: number) => `${v}d` },
     {
-      title: '状态', dataIndex: 'promoted', key: 'promoted', width: 90,
-      render: (v: boolean) => v ? <Tag color="green">已推广</Tag> : <Tag color="blue">灰度中</Tag>,
+      title: t('sre.canary.columns.status', { defaultValue: 'Status' }), dataIndex: 'promoted', key: 'promoted', width: 90,
+      render: (v: boolean) => v ? <Tag color="green">{t('sre.canary.promoted', { defaultValue: 'Promoted' })}</Tag> : <Tag color="blue">{t('sre.canary.canarying', { defaultValue: 'Canary' })}</Tag>,
     },
     {
       title: '', key: 'actions', width: 80,
       render: (_: unknown, record: CanaryConfig) => (
-        <Popconfirm title="确认删除此灰度配置？" onConfirm={() => handleDelete(record.strategy_id)} okText="确认" cancelText="取消">
+        <Popconfirm title={t('sre.canary.confirmDelete', { defaultValue: 'Delete this canary config?' })} onConfirm={() => handleDelete(record.strategy_id)} okText={t('common.confirm', { defaultValue: 'Confirm' })} cancelText={t('common.cancel', { defaultValue: 'Cancel' })}>
           <Button size="small" danger icon={<DeleteOutlined />} />
         </Popconfirm>
       ),
@@ -60,37 +62,37 @@ export default function CanaryPage() {
 
   return (
     <div style={{ maxWidth: 960 }}>
-      <Title level={4}><ExperimentOutlined style={{ marginRight: 8 }} />Canary 灰度配置</Title>
+      <Title level={4}><ExperimentOutlined style={{ marginRight: 8 }} />{t('sre.canary.title', { defaultValue: 'Canary Configuration' })}</Title>
       <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-        新策略版本在少量账户上试运行 N 天后推广至全量
+        {t('sre.canary.description', { defaultValue: 'New strategy versions run on a few accounts for N days before promotion to all' })}
       </Text>
 
       <Card size="small" extra={
         <Space>
-          <Button icon={<ReloadOutlined />} onClick={fetchCanaries} loading={loading}>刷新</Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>新建灰度</Button>
+          <Button icon={<ReloadOutlined />} onClick={fetchCanaries} loading={loading}>{t('common.refresh', { defaultValue: 'Refresh' })}</Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>{t('sre.canary.newCanary', { defaultValue: 'New Canary' })}</Button>
         </Space>
       }>
         <Table dataSource={canaries} columns={columns} rowKey="strategy_id"
           loading={loading} size="small" pagination={false}
-          locale={{ emptyText: '暂无灰度配置' }}
+          locale={{ emptyText: t('sre.canary.noCanaries', { defaultValue: 'No canary configs' }) }}
         />
       </Card>
 
-      <Modal title="新建 Canary 灰度" open={modalOpen}
+      <Modal title={t('sre.canary.newCanaryTitle', { defaultValue: 'New Canary' })} open={modalOpen}
         onOk={handleSet} onCancel={() => setModalOpen(false)} confirmLoading={submitLoading}
       >
         <Form form={form} layout="vertical" size="small">
-          <Form.Item name="strategy_id" label="策略 ID" rules={[{ required: true }]}>
+          <Form.Item name="strategy_id" label={t('sre.canary.columns.strategyId', { defaultValue: 'Strategy ID' })} rules={[{ required: true }]}>
             <Input placeholder="strategy-uuid" />
           </Form.Item>
-          <Form.Item name="version_tag" label="版本 Tag" rules={[{ required: true }]}>
+          <Form.Item name="version_tag" label={t('sre.canary.columns.versionTag', { defaultValue: 'Version Tag' })} rules={[{ required: true }]}>
             <Input placeholder="v1.2.0-canary" />
           </Form.Item>
-          <Form.Item name="accountIds" label="灰度账户 ID (逗号或换行分隔)" rules={[{ required: true }]}>
+          <Form.Item name="accountIds" label={t('sre.canary.accountIdsLabel', { defaultValue: 'Canary Account IDs (comma or newline separated)' })} rules={[{ required: true }]}>
             <Input.TextArea rows={2} placeholder="account-1, account-2" />
           </Form.Item>
-          <Form.Item name="duration_days" label="灰度天数" rules={[{ required: true }]}>
+          <Form.Item name="duration_days" label={t('sre.canary.durationDays', { defaultValue: 'Canary Days' })} rules={[{ required: true }]}>
             <InputNumber min={1} max={90} style={{ width: '100%' }} />
           </Form.Item>
         </Form>

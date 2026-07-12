@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Input, Modal, Space, Typography, Alert, Descriptions, Tag } from 'antd';
 import { StopOutlined, PlayCircleOutlined, ReloadOutlined, UndoOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { sreApi, type KillSwitchStatus } from './sreApi';
 
 const { Text, Title } = Typography;
 const UNDO_WINDOW_MS = 5 * 60 * 1000; // 5-minute undo window
 
 export default function KillSwitchPage() {
+  const { t } = useTranslation();
   const [status, setStatus] = useState<KillSwitchStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -71,25 +73,25 @@ export default function KillSwitchPage() {
     <div style={{ maxWidth: 720 }}>
       <Title level={4}><StopOutlined style={{ marginRight: 8 }} />Kill Switch</Title>
       <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-        一键停止所有交易 — 激活需输入 KILL 确认；激活后 5 分钟内可撤销
+        {t('sre.killSwitch.description', { defaultValue: 'One-click stop all trading — requires KILL confirmation; undo within 5 minutes' })}
       </Text>
 
       <Card size="small" loading={loading}>
         {status && (
           <>
             {status.engaged
-              ? <Alert type="error" message="Kill Switch 已激活 — 所有交易已停止" showIcon style={{ marginBottom: 16 }} />
-              : <Alert type="success" message="Kill Switch 未激活 — 交易正常运行" showIcon style={{ marginBottom: 16 }} />
+              ? <Alert type="error" message={t('sre.killSwitch.engaged', { defaultValue: 'Kill Switch engaged — all trading stopped' })} showIcon style={{ marginBottom: 16 }} />
+              : <Alert type="success" message={t('sre.killSwitch.disarmed', { defaultValue: 'Kill Switch disarmed — trading normal' })} showIcon style={{ marginBottom: 16 }} />
             }
             <Descriptions size="small" column={2}>
-              <Descriptions.Item label="状态">
+              <Descriptions.Item label={t('sre.killSwitch.status', { defaultValue: 'Status' })}>
                 <Tag color={status.engaged ? 'red' : 'green'}>{status.engaged ? 'ENGAGED' : 'DISARMED'}</Tag>
               </Descriptions.Item>
               {status.engaged && (
                 <>
-                  <Descriptions.Item label="原因">{status.reason}</Descriptions.Item>
-                  <Descriptions.Item label="操作人">{status.operator}</Descriptions.Item>
-                  <Descriptions.Item label="激活时间">{status.engaged_at}</Descriptions.Item>
+                  <Descriptions.Item label={t('sre.killSwitch.reason', { defaultValue: 'Reason' })}>{status.reason}</Descriptions.Item>
+                  <Descriptions.Item label={t('sre.killSwitch.operator', { defaultValue: 'Operator' })}>{status.operator}</Descriptions.Item>
+                  <Descriptions.Item label={t('sre.killSwitch.engagedAt', { defaultValue: 'Engaged At' })}>{status.engaged_at}</Descriptions.Item>
                 </>
               )}
             </Descriptions>
@@ -98,10 +100,10 @@ export default function KillSwitchPage() {
                 type="warning"
                 showIcon
                 style={{ marginTop: 12 }}
-                message={`撤销窗口：${Math.floor(undoRemaining / 60)}分${undoRemaining % 60}秒后关闭`}
+                message={t('sre.killSwitch.undoWindow', { m: Math.floor(undoRemaining / 60), s: undoRemaining % 60, defaultValue: `Undo window: ${Math.floor(undoRemaining / 60)}m ${undoRemaining % 60}s remaining` })}
                 action={
                   <Button size="small" icon={<UndoOutlined />} onClick={handleUndo} loading={undoLoading}>
-                    撤销 Kill Switch
+                    {t('sre.killSwitch.undo', { defaultValue: 'Undo Kill Switch' })}
                   </Button>
                 }
               />
@@ -109,47 +111,47 @@ export default function KillSwitchPage() {
           </>
         )}
         <Space style={{ marginTop: 16 }}>
-          <Button icon={<ReloadOutlined />} onClick={fetchStatus} loading={loading}>刷新</Button>
+          <Button icon={<ReloadOutlined />} onClick={fetchStatus} loading={loading}>{t('common.refresh', { defaultValue: 'Refresh' })}</Button>
           {status?.engaged ? (
             <Button type="primary" icon={<PlayCircleOutlined />} onClick={handleDisengage} loading={actionLoading}>
-              解除 Kill Switch
+              {t('sre.killSwitch.disengage', { defaultValue: 'Disengage Kill Switch' })}
             </Button>
           ) : (
             <Button type="primary" danger icon={<StopOutlined />} onClick={() => { setConfirmText(''); setReason(''); setModalOpen(true); }} loading={actionLoading}>
-              激活 Kill Switch
+              {t('sre.killSwitch.engage', { defaultValue: 'Engage Kill Switch' })}
             </Button>
           )}
         </Space>
       </Card>
 
       <Modal
-        title="激活 Kill Switch — 二次确认"
+        title={t('sre.killSwitch.confirmTitle', { defaultValue: 'Engage Kill Switch — Confirmation' })}
         open={modalOpen}
         onOk={handleEngage}
         onCancel={() => { setModalOpen(false); setConfirmText(''); }}
         confirmLoading={actionLoading}
-        okText="确认激活"
+        okText={t('sre.killSwitch.confirmEngage', { defaultValue: 'Confirm Engage' })}
         okButtonProps={{ danger: true, disabled: !canConfirm }}
       >
         <Alert
           type="error"
           showIcon
           style={{ marginBottom: 16 }}
-          message="此操作将立即停止所有账户的所有交易活动，包括挂单和已提交订单。请确认后输入原因并键入 KILL。"
+          message={t('sre.killSwitch.confirmWarning', { defaultValue: 'This will immediately stop all trading activity for all accounts, including pending and submitted orders. Enter a reason and type KILL to confirm.' })}
         />
-        <Text strong style={{ display: 'block', marginBottom: 8 }}>激活原因（必填）</Text>
+        <Text strong style={{ display: 'block', marginBottom: 8 }}>{t('sre.killSwitch.reasonLabel', { defaultValue: 'Reason (required)' })}</Text>
         <Input.TextArea
           rows={3}
           value={reason}
           onChange={e => setReason(e.target.value)}
-          placeholder="例如：检测到异常行情波动，紧急停止所有交易"
+          placeholder={t('sre.killSwitch.reasonPlaceholder', { defaultValue: 'e.g.: Detected abnormal market volatility, emergency stop all trading' })}
           style={{ marginBottom: 12 }}
         />
-        <Text strong style={{ display: 'block', marginBottom: 8 }}>键入 KILL 确认激活</Text>
+        <Text strong style={{ display: 'block', marginBottom: 8 }}>{t('sre.killSwitch.typeKill', { defaultValue: 'Type KILL to confirm' })}</Text>
         <Input
           value={confirmText}
           onChange={e => setConfirmText(e.target.value)}
-          placeholder='请输入 KILL（大写）'
+          placeholder={t('sre.killSwitch.typeKillPlaceholder', { defaultValue: 'Type KILL (uppercase)' })}
           status={confirmText.length > 0 && confirmText !== 'KILL' ? 'error' : undefined}
         />
       </Modal>
