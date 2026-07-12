@@ -65,15 +65,18 @@
 
 ## 进行中 / 近期
 
-### P0：上线准备（你手动操作）
+### P0：上线准备 ✅ 已完成
 
-| 任务 | 说明 | 谁做 |
+| 任务 | 状态 | 说明 |
 |------|------|------|
-| Google Search Console | 注册 alfq.org，提交 sitemap，拿验证码加 meta 标签 | 你注册 + 我加代码 |
-| Cloudflare 缓存策略 | 确认 index.html 不被 CDN 缓存 | 你 |
-| 域名切换 | DNS 从 anttrader.io 切到 alfq.org，Cloudflare tunnel 更新 | 你 |
-| Umami 验证 | 访问 alfq.org 检查 Realtime 数据 | 你 |
-| OG image 实测 | 社交分享工具测试 og-image.svg 渲染 | 你 |
+| Google Search Console | ✅ | 域名级验证通过，sitemap 已提交 |
+| Cloudflare 缓存策略 | ✅ | index.html DYNAMIC，不被 CDN 缓存 |
+| 域名切换 | ✅ | alfq.org 通过 Cloudflare 正常访问 |
+| Umami 验证 | ✅ | /umami/script.js 正常返回 JS |
+| OG image | ✅ | /og-image.svg 返回 image/svg+xml |
+| robots.txt | ✅ | 正常返回 |
+| sitemap.xml | ✅ | 正常返回，5 个 URL |
+| SEO meta 标签 | ✅ | og/twitter/keywords 全部正确 |
 
 ### P1：用户体验完善
 
