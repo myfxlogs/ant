@@ -2,6 +2,7 @@
 import { UNKNOWN_KEY } from '@/gen/ant/v1/i18n/errors_keys';
 
 import i18n from '@/i18n';
+import { Code } from '@connectrpc/connect';
 
 interface ApiErrorResponse {
   code: number;
@@ -99,6 +100,27 @@ export function getErrorMessageByCode(code: number, fallback?: string): string {
   const key = errorCodeToKey[code];
   if (key) {
     const translated = i18n.t(key);
+    if (translated && translated !== key) return translated;
+  }
+  return fallback ?? i18n.t(UNKNOWN_KEY);
+}
+
+// Maps ConnectRPC Code enum values to i18n keys for user-friendly messages.
+export const connectCodeToI18nKey: Partial<Record<Code, string>> = {
+  [Code.DeadlineExceeded]: 'errors.request_timeout',
+  [Code.NotFound]: 'errors.not_found',
+  [Code.PermissionDenied]: 'errors.forbidden',
+  [Code.ResourceExhausted]: 'errors.rate_limited',
+  [Code.Internal]: 'errors.internal',
+  [Code.Unavailable]: 'errors.service_unavailable',
+  [Code.DataLoss]: 'errors.internal',
+};
+
+/** Translate a ConnectRPC Code into a user-friendly, localized message. */
+export function getConnectErrorMessage(code: Code, fallback?: string): string {
+  const key = connectCodeToI18nKey[code];
+  if (key) {
+    const translated = i18n.t(key, { defaultValue: fallback });
     if (translated && translated !== key) return translated;
   }
   return fallback ?? i18n.t(UNKNOWN_KEY);

@@ -8,7 +8,7 @@ import i18n from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
 import { isLikelyStreamTransportFailure, isStreamAuthFailure, isStreamServiceProcedure } from '@/utils/streamErrors';
 import { AI_INSUFFICIENT_BALANCE } from '@/utils/aiErrorCodes';
-import { translateMaybeI18nKey } from '@/utils/error';
+import { translateMaybeI18nKey, getConnectErrorMessage, connectCodeToI18nKey } from '@/utils/error';
 import { ensureFreshToken, refreshAccessToken } from '@/utils/tokenLifecycle';
 
 const envApiUrl = import.meta.env.VITE_API_URL as string | undefined;
@@ -165,7 +165,10 @@ const interceptors: Interceptor[] = [
           const translated = translateMaybeI18nKey(rawMsg, '')
             || translateMaybeI18nKey(msgPart, '')
             || msgPart;
-          const content = translated.trim();
+          // For known ConnectRPC codes, prefer user-friendly localized message.
+          const content = (error instanceof ConnectError && connectCodeToI18nKey[error.code])
+            ? getConnectErrorMessage(error.code, translated.trim())
+            : translated.trim();
           if (content) {
             message.error(procName ? `${procName}: ${content}` : content);
           }
