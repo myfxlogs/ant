@@ -76,9 +76,9 @@ export default function MonitoringPage() {
   }, []);
 
   const snap = snapshot;
-  const heapUsagePct = snap && snap.heapSysBytes > 0
-    ? Math.round((Number(snap.heapAllocBytes) / Number(snap.heapSysBytes)) * 100)
-    : 0;
+  const heapAlloc = snap ? Number(snap.heapAllocBytes) : 0;
+  const heapSys = snap ? Number(snap.heapSysBytes) : 0;
+  const heapUsagePct = heapSys > 0 ? Math.round((heapAlloc / heapSys) * 100) : 0;
 
   return (
     <div className="space-y-4">
@@ -114,7 +114,7 @@ export default function MonitoringPage() {
           <Card title={<span><ThunderboltOutlined /> Go 运行时</span>} size="small">
             <Row gutter={[16, 12]}>
               <Col xs={12} sm={8} md={6}>
-                <Statistic title="Goroutines" value={snap.goroutines} />
+                <Statistic title="Goroutines" value={Number(snap.goroutines)} />
               </Col>
               <Col xs={12} sm={8} md={6}>
                 <Statistic title="GC 次数" value={Number(snap.numGc)} />
@@ -128,7 +128,7 @@ export default function MonitoringPage() {
               <Col xs={24} md={12}>
                 <div className="mb-1" style={{ color: 'var(--color-text-secondary)', fontSize: 12 }}>堆内存</div>
                 <Space>
-                  <span>{formatBytes(snap.heapAllocBytes)} / {formatBytes(snap.heapSysBytes)}</span>
+                  <span>{formatBytes(heapAlloc)} / {formatBytes(heapSys)}</span>
                   <Progress percent={heapUsagePct} size="small" style={{ width: 120 }} />
                 </Space>
               </Col>
@@ -138,13 +138,13 @@ export default function MonitoringPage() {
           <Card title={<span><DatabaseOutlined /> 数据库连接池</span>} size="small">
             <Row gutter={[16, 12]}>
               <Col xs={8}>
-                <Statistic title="总连接" value={snap.dbPoolTotal} />
+                <Statistic title="总连接" value={Number(snap.dbPoolTotal)} />
               </Col>
               <Col xs={8}>
-                <Statistic title="空闲" value={snap.dbPoolIdle} valueStyle={{ color: '#52c41a' }} />
+                <Statistic title="空闲" value={Number(snap.dbPoolIdle)} valueStyle={{ color: '#52c41a' }} />
               </Col>
               <Col xs={8}>
-                <Statistic title="已获取" value={snap.dbPoolAcquired} valueStyle={{ color: snap.dbPoolAcquired > 20 ? '#ff4d4f' : '#1677ff' }} />
+                <Statistic title="已获取" value={Number(snap.dbPoolAcquired)} valueStyle={{ color: Number(snap.dbPoolAcquired) > 20 ? '#ff4d4f' : '#1677ff' }} />
               </Col>
             </Row>
           </Card>
@@ -152,13 +152,13 @@ export default function MonitoringPage() {
           <Card title={<span><ApiOutlined /> 行情网关</span>} size="small">
             <Row gutter={[16, 12]}>
               <Col xs={12} sm={6}>
-                <Statistic title="堆积文件" value={Number(snap.spillPendingFiles)} valueStyle={{ color: snap.spillPendingFiles > 0 ? '#ff4d4f' : undefined }} />
+                <Statistic title="堆积文件" value={Number(snap.spillPendingFiles)} valueStyle={{ color: Number(snap.spillPendingFiles) > 0 ? '#ff4d4f' : undefined }} />
               </Col>
               <Col xs={12} sm={6}>
-                <Statistic title="丢弃 Bar" value={Number(snap.barDroppedTotal)} valueStyle={{ color: snap.barDroppedTotal > 0 ? '#faad14' : undefined }} />
+                <Statistic title="丢弃 Bar" value={Number(snap.barDroppedTotal)} valueStyle={{ color: Number(snap.barDroppedTotal) > 0 ? '#faad14' : undefined }} />
               </Col>
               <Col xs={12} sm={6}>
-                <Statistic title="丢弃信号" value={Number(snap.signalDroppedTotal)} valueStyle={{ color: snap.signalDroppedTotal > 0 ? '#faad14' : undefined }} />
+                <Statistic title="丢弃信号" value={Number(snap.signalDroppedTotal)} valueStyle={{ color: Number(snap.signalDroppedTotal) > 0 ? '#faad14' : undefined }} />
               </Col>
               <Col xs={12} sm={6}>
                 <Statistic title="消费者延迟" value={Number(snap.consumerLag)} />
@@ -167,7 +167,7 @@ export default function MonitoringPage() {
                 <Statistic title="过期账户" value={Number(snap.staleAccounts)} />
               </Col>
               <Col xs={12} sm={6}>
-                <Statistic title="死账户" value={Number(snap.deadAccounts)} valueStyle={{ color: snap.deadAccounts > 0 ? '#ff4d4f' : undefined }} />
+                <Statistic title="死账户" value={Number(snap.deadAccounts)} valueStyle={{ color: Number(snap.deadAccounts) > 0 ? '#ff4d4f' : undefined }} />
               </Col>
               <Col xs={12} sm={6}>
                 <Statistic title="平均间隔(s)" value={snap.mdGapAvgSeconds.toFixed(2)} />
