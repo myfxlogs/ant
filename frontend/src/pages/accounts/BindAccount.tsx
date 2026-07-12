@@ -120,19 +120,29 @@ export default function BindAccount() {
     } finally { setLoading(false); }
   };
 
-  const renderStepIndicator = () => (
-    <div className="flex items-center justify-center gap-4 mb-8">
-      {[1, 2, 3].map((s) => (
-        <div key={s} className="flex items-center">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center font-medium"
-            style={{ background: step >= s ? PRIMARY_GRADIENT : 'var(--color-bg-tertiary)', color: step >= s ? '#FFFFFF' : 'var(--color-text-muted)' }}>
-            {step > s ? <CheckOutlined style={{ fontSize: 16 }} /> : s}
+  const renderStepIndicator = () => {
+    const stepLabels = [
+      t('common.step1Label', { defaultValue: 'Broker' }),
+      t('common.step2Label', { defaultValue: 'Credentials' }),
+      t('common.step3Label', { defaultValue: 'Confirm' }),
+    ];
+    return (
+      <div className="flex items-center justify-center gap-2 mb-8 sm:gap-4">
+        {[1, 2, 3].map((s) => (
+          <div key={s} className="flex items-center">
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center font-medium"
+                style={{ background: step >= s ? PRIMARY_GRADIENT : 'var(--color-bg-tertiary)', color: step >= s ? '#FFFFFF' : 'var(--color-text-muted)' }}>
+                {step > s ? <CheckOutlined style={{ fontSize: 16 }} /> : s}
+              </div>
+              <span className="text-xs hidden sm:block" style={{ color: step >= s ? 'var(--color-text)' : 'var(--color-text-muted)' }}>{stepLabels[s - 1]}</span>
+            </div>
+            {s < 3 && <div className="w-8 h-0.5 mx-1 sm:w-16 sm:mx-2" style={{ background: step > s ? '#D4AF37' : '#E8ECF0' }} />}
           </div>
-          {s < 3 && <div className="w-16 h-0.5 mx-2" style={{ background: step > s ? '#D4AF37' : '#E8ECF0' }} />}
-        </div>
-      ))}
-    </div>
-  );
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-bg-secondary)' }}>
