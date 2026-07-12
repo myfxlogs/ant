@@ -104,7 +104,7 @@ export default function MonitoringPage() {
         <>
           <Card title={<span><CloudServerOutlined /> 服务健康</span>} size="small">
             <Descriptions column={4} size="small" bordered>
-              <Descriptions.Item label="运行时间">{formatUptime(snap.uptimeSeconds)}</Descriptions.Item>
+              <Descriptions.Item label="运行时间">{formatUptime(Number(snap.uptimeSeconds))}</Descriptions.Item>
               <Descriptions.Item label="数据库"><StatusTag status={snap.dbStatus} /></Descriptions.Item>
               <Descriptions.Item label="Redis"><StatusTag status={snap.redisStatus} /></Descriptions.Item>
               <Descriptions.Item label="NATS"><StatusTag status={snap.natsStatus} /></Descriptions.Item>
