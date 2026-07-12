@@ -52,6 +52,15 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		point:  e.config.SymbolPoint,
 		digits: e.config.SymbolDigits,
 	}
+	// Initialize multi-symbol bar data
+	if len(e.config.ExtraSymbolBars) > 0 {
+		btCtx.extraBars = make(map[string][]sdk.Bar, len(e.config.ExtraSymbolBars))
+		btCtx.extraBarIndex = make(map[string]int, len(e.config.ExtraSymbolBars))
+		for sym, symBars := range e.config.ExtraSymbolBars {
+			btCtx.extraBars[sym] = symBars
+			btCtx.extraBarIndex[sym] = -1
+		}
+	}
 	btCtx.ind = &btIndicators{bars: e.bars, barIdx: &btCtx.barIndex}
 
 	// OnInit
@@ -71,6 +80,17 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		// Update context with current bar slice
 		btCtx.barIndex = i
 		btCtx.currentBar = bar
+
+		// Advance extra symbol bar indices to the bar closest to (but not after) the current bar's timestamp.
+		// This ensures no future data leakage — secondary symbols only see bars up to the current time.
+		currentTs := bar.Timestamp
+		for sym, symBars := range btCtx.extraBars {
+			idx := btCtx.extraBarIndex[sym]
+			for idx+1 < len(symBars) && symBars[idx+1].Timestamp <= currentTs {
+				idx++
+			}
+			btCtx.extraBarIndex[sym] = idx
+		}
 
 		// Check pending orders for fills
 		e.checkPendingOrders(bar)
@@ -301,9 +321,13 @@ type backtestContext struct {
 	params     map[string]string
 	point      decimal.Decimal
 	digits     int32
+
+	// Multi-symbol support: extra symbol bar data and their current bar indices.
+	extraBars     map[string][]sdk.Bar
+	extraBarIndex map[string]int
 }
 
-func (c *backtestContext) Bars() sdk.BarSeries { return &btBarSeries{bars: c.bars[:c.barIndex+1]} }
+func (c *backtestContext) Bars() sdk.BarSeries { return sdk.BarsToSlice(c.bars[:c.barIndex+1]) }
 
 func (c *backtestContext) BarsTF(tf string) sdk.BarSeries {
 	if tf == "" || tf == c.tf {
@@ -314,8 +338,9 @@ func (c *backtestContext) BarsTF(tf string) sdk.BarSeries {
 	// lower-TF bar, with OHLCV accumulated only from bars seen so far.
 	visible := c.bars[:c.barIndex+1]
 	aggregated := aggregateBars(visible, tf)
-	return &btBarSeries{bars: aggregated}
+	return sdk.BarsToSlice(aggregated)
 }
+
 func (c *backtestContext) Symbol() string    { return c.symbol }
 func (c *backtestContext) Timeframe() string { return c.tf }
 func (c *backtestContext) Point() decimal.Decimal {
@@ -402,60 +427,5 @@ func (c *backtestContext) ParamBool(name string, d bool) bool {
 	return d
 }
 
-// ── Bar series ────────────────────────────────────────────────────
-
-type btBarSeries struct{ bars []sdk.Bar }
-
-func (b *btBarSeries) Open(shift int) decimal.Decimal {
-	idx := len(b.bars) - 1 - shift
-	if idx < 0 || idx >= len(b.bars) {
-		return decimal.Zero
-	}
-	return b.bars[idx].Open
-}
-func (b *btBarSeries) High(shift int) decimal.Decimal {
-	idx := len(b.bars) - 1 - shift
-	if idx < 0 || idx >= len(b.bars) {
-		return decimal.Zero
-	}
-	return b.bars[idx].High
-}
-func (b *btBarSeries) Low(shift int) decimal.Decimal {
-	idx := len(b.bars) - 1 - shift
-	if idx < 0 || idx >= len(b.bars) {
-		return decimal.Zero
-	}
-	return b.bars[idx].Low
-}
-func (b *btBarSeries) Close(shift int) decimal.Decimal {
-	idx := len(b.bars) - 1 - shift
-	if idx < 0 || idx >= len(b.bars) {
-		return decimal.Zero
-	}
-	return b.bars[idx].Close
-}
-func (b *btBarSeries) Volume(shift int) int64 {
-	idx := len(b.bars) - 1 - shift
-	if idx < 0 || idx >= len(b.bars) {
-		return 0
-	}
-	return b.bars[idx].Volume
-}
-func (b *btBarSeries) Time(shift int) int64 {
-	idx := len(b.bars) - 1 - shift
-	if idx < 0 || idx >= len(b.bars) {
-		return 0
-	}
-	return b.bars[idx].Timestamp
-}
-func (b *btBarSeries) Len() int { return len(b.bars) }
-func (b *btBarSeries) Slice(n int) sdk.BarSeries {
-	if n >= len(b.bars) {
-		return &btBarSeries{bars: b.bars}
-	}
-	return &btBarSeries{bars: b.bars[len(b.bars)-n:]}
-}
-func (b *btBarSeries) Timeframe() string { return "" }
-func (b *btBarSeries) Symbol() string    { return "" }
-
+// BarsForSymbol moved to bars.go.
 // btIndicators implementations moved to indicators_decimal.go.

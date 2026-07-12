@@ -72,6 +72,39 @@ func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql
 		StrictMode:     params.strictMode,
 		Params:         paramsProtoToMap(run.ParameterOverrides),
 	}
+
+	// Fetch klines for extra symbols (multi-symbol strategies)
+	if len(run.ExtraSymbols) > 0 && s.marketDataRepo != nil {
+		cfg.ExtraSymbolBars = make(map[string][]sdk.Bar, len(run.ExtraSymbols))
+		for _, sym := range run.ExtraSymbols {
+			if sym == "" || sym == run.Symbol {
+				continue
+			}
+			extraKlines, err := s.fetchExtraSymbolKlines(ctx, sym, run)
+			if err != nil {
+				s.log.Warn("fetch extra symbol klines failed",
+					zap.String("symbol", sym), zap.Error(err))
+				continue
+			}
+			if len(extraKlines) == 0 {
+				continue
+			}
+			symBars := make([]sdk.Bar, len(extraKlines))
+			for i, k := range extraKlines {
+				symBars[i] = sdk.Bar{
+					Open:      parseDecimal(k.Open),
+					High:      parseDecimal(k.High),
+					Low:       parseDecimal(k.Low),
+					Close:     parseDecimal(k.Close),
+					Volume:    parseInt64(k.Volume),
+					Timestamp: k.OpenTimeMs,
+				}
+			}
+			cfg.ExtraSymbolBars[sym] = symBars
+			s.log.Info("loaded extra symbol bars",
+				zap.String("symbol", sym), zap.Int("bars", len(symBars)))
+		}
+	}
 	if run.FromTs != nil {
 		cfg.StartDate = *run.FromTs
 	}

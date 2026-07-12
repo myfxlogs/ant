@@ -58,6 +58,9 @@ type StrategyExecutionServer struct {
 	// Imported strategy persistence (raw MQL source of truth).
 	importedRepo *repository.ImportedStrategyRepository
 
+	// Strategy version history (snapshots, diff, rollback).
+	versionRepo *repository.StrategyVersionRepository
+
 	// Active session registry for monitoring + control.
 	sessionRegistry *SessionRegistry
 
@@ -99,6 +102,7 @@ func (s *StrategyExecutionServer) SetPaperEngine(pe PaperOrderExecutor)      { s
 func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)              { s.goExecutor = ge }
 func (s *StrategyExecutionServer) SetRunRepo(r *repository.StrategyRunRepository) { s.runRepo = r }
 func (s *StrategyExecutionServer) SetImportedRepo(r *repository.ImportedStrategyRepository) { s.importedRepo = r }
+func (s *StrategyExecutionServer) SetVersionRepo(r *repository.StrategyVersionRepository)   { s.versionRepo = r }
 func (s *StrategyExecutionServer) SetSessionRegistry(r *SessionRegistry)           { s.sessionRegistry = r }
 func (s *StrategyExecutionServer) SetAccountLookup(f func(ctx context.Context, userID string) string) { s.accountLookup = f }
 func (s *StrategyExecutionServer) SetPositionCache(pc *PositionCache)                                  { s.posCache = pc }

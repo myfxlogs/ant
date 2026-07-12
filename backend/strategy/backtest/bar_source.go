@@ -8,7 +8,7 @@ import (
 )
 
 // btBarSource adapts []sdk.Bar to indicators.BarSource.
-// Index 0 = most recent bar (matches btBarSeries convention).
+// Index 0 = most recent bar (matches sdk.BarSeries inverse-indexing convention).
 type btBarSource struct {
 	bars []sdk.Bar
 }

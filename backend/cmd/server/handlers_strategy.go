@@ -48,6 +48,7 @@ func configureStrategyExecution(
 	strategyRunRepo := repository.NewStrategyRunRepository(pool)
 	srv.SetRunRepo(strategyRunRepo)
 	srv.SetImportedRepo(repository.NewImportedStrategyRepository(pool))
+	srv.SetVersionRepo(repository.NewStrategyVersionRepository(pool))
 	srv.SetSessionRegistry(strategy.NewSessionRegistry())
 
 	// Clean up runs orphaned by a previous crash/restart.

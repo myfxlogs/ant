@@ -34,6 +34,12 @@ type Context interface {
 	// E.g. BarsTF("H4") for higher-timeframe confirmation.
 	BarsTF(timeframe string) BarSeries
 
+	// BarsForSymbol returns the bar series for a specific symbol and timeframe.
+	// Used in multi-symbol strategies to access data for symbols other than the primary.
+	// timeframe="" means the primary timeframe.
+	// Returns an empty series if the symbol is not available.
+	BarsForSymbol(symbol, timeframe string) BarSeries
+
 	// Symbol returns the primary trading symbol.
 	Symbol() string
 

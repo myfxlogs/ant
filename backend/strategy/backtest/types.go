@@ -35,6 +35,10 @@ type Config struct {
 	ContractSize  decimal.Decimal // typically 100000 for forex
 	StopsLevel    int32           // minimum stop distance in points
 	TickValue     decimal.Decimal // value of one tick in account currency
+
+	// ExtraSymbolBars holds bar data for secondary symbols (multi-symbol strategies).
+	// Keyed by symbol name; bars are chronologically ordered (oldest first).
+	ExtraSymbolBars map[string][]sdk.Bar
 }
 
 // Result holds the complete backtest output.

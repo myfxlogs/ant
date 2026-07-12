@@ -170,6 +170,25 @@ func mapPythonMethod(method, fullPath string) string {
 			return "Time"
 		}
 	}
+	// Multi-symbol bar access: ctx.bars_for_symbol("EURUSD").close(0)
+	// Maps to iClose(symbol, 0, shift) — timeframe=0 means PERIOD_CURRENT.
+	// The compiler prepends the inner call's symbol arg + injects timeframe=0.
+	if strings.Contains(fullPath, "bars_for_symbol.") {
+		switch method {
+		case "close":
+			return "iClose"
+		case "open":
+			return "iOpen"
+		case "high":
+			return "iHigh"
+		case "low":
+			return "iLow"
+		case "volume":
+			return "iVolume"
+		case "time":
+			return "iTime"
+		}
+	}
 	if strings.Contains(fullPath, "account.") {
 		switch method {
 		case "balance":

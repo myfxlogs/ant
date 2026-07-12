@@ -835,6 +835,49 @@ class S:
 	}
 }
 
+func TestCompilePython_MultiSymbolBars(t *testing.T) {
+	source := `from decimal import Decimal
+class S:
+    def on_bar(self) -> None:
+        c: float = ctx.bars_for_symbol("EURUSD").close(0)
+        h: float = ctx.bars_for_symbol("GBPUSD").high(1)
+`
+	ir, err := CompilePythonToIR(source)
+	if err != nil {
+		t.Fatalf("CompilePythonToIR failed: %v", err)
+	}
+	if len(ir.OnBar) != 2 {
+		t.Fatalf("expected 2 statements, got %d", len(ir.OnBar))
+	}
+	// First statement: c = iClose("EURUSD", 0, 0) — symbol, timeframe=0 (PERIOD_CURRENT), shift
+	stmt0 := ir.OnBar[0]
+	if stmt0.Expr == nil || stmt0.Expr.Name != "c" {
+		t.Fatalf("stmt[0]: expected name c, got %v", stmt0.Expr)
+	}
+	if len(stmt0.Expr.Args) == 0 {
+		t.Fatalf("stmt[0]: expected args")
+	}
+	call0 := stmt0.Expr.Args[0]
+	if call0.Name != "iClose" {
+		t.Errorf("stmt[0]: expected iClose, got %s", call0.Name)
+	}
+	if len(call0.Args) != 3 {
+		t.Errorf("stmt[0]: expected 3 args (symbol + timeframe + shift), got %d", len(call0.Args))
+	}
+	// Second statement: h = iHigh("GBPUSD", 0, 1)
+	stmt1 := ir.OnBar[1]
+	if stmt1.Expr == nil || stmt1.Expr.Name != "h" {
+		t.Fatalf("stmt[1]: expected name h, got %v", stmt1.Expr)
+	}
+	call1 := stmt1.Expr.Args[0]
+	if call1.Name != "iHigh" {
+		t.Errorf("stmt[1]: expected iHigh, got %s", call1.Name)
+	}
+	if len(call1.Args) != 3 {
+		t.Errorf("stmt[1]: expected 3 args, got %d", len(call1.Args))
+	}
+}
+
 func TestCompilePython_BooleanOperatorInIf(t *testing.T) {
 	source := `from decimal import Decimal
 class S:

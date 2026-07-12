@@ -195,7 +195,81 @@ func (c *pyCompiler) compilePyMethodCall(callNode, attrNode *sitter.Node) *inter
 	if mappedName != "" {
 		return &interp.Expr{Kind: interp.ExprCall, Name: mappedName, Args: args}
 	}
+	// Try clean chain path for chained calls like ctx.bars_for_symbol("X").close(0)
+	cleanPath := c.extractAttrChain(attrNode)
+	if cleanPath != fullPath && cleanPath != "" {
+		mappedName = mapPythonMethod(methodName, cleanPath)
+		if mappedName != "" {
+			// For multi-symbol bar access via bars_for_symbol, prepend symbol arg
+			// and inject timeframe=0 (PERIOD_CURRENT) between symbol and shift.
+			// iClose(symbol, timeframe, shift) ← ctx.bars_for_symbol("EURUSD").close(0)
+			if strings.HasPrefix(mappedName, "iClose") ||
+				strings.HasPrefix(mappedName, "iOpen") ||
+				strings.HasPrefix(mappedName, "iHigh") ||
+				strings.HasPrefix(mappedName, "iLow") ||
+				strings.HasPrefix(mappedName, "iVolume") ||
+				strings.HasPrefix(mappedName, "iTime") {
+				if strings.Contains(cleanPath, "bars_for_symbol.") {
+					innerArgs := c.extractInnerCallArgs(attrNode)
+					if len(innerArgs) > 0 {
+						combined := make([]interp.Expr, 0, len(innerArgs)+1+len(args))
+						combined = append(combined, innerArgs...)
+						combined = append(combined, interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(0)})
+						combined = append(combined, args...)
+						return &interp.Expr{Kind: interp.ExprCall, Name: mappedName, Args: combined}
+					}
+				}
+			}
+			return &interp.Expr{Kind: interp.ExprCall, Name: mappedName, Args: args}
+		}
+	}
 	return &interp.Expr{Kind: interp.ExprCall, Name: fullPath, Args: args}
+}
+
+// extractInnerCallArgs extracts the arguments from the inner call of a chained expression.
+// For ctx.bars_for_symbol("EURUSD").close(0), it returns ["EURUSD"] from the inner call.
+func (c *pyCompiler) extractInnerCallArgs(attrNode *sitter.Node) []interp.Expr {
+	if attrNode == nil || attrNode.Type() != "attribute" {
+		return nil
+	}
+	obj := attrNode.NamedChild(0)
+	if obj == nil || obj.Type() != "call" {
+		return nil
+	}
+	return c.compileArgs(obj)
+}
+
+// extractAttrChain builds a clean "obj.method.field" chain from an attribute node,
+// stripping out call argument text. e.g. ctx.bars_for_symbol("EURUSD").close → ctx.bars_for_symbol.close
+func (c *pyCompiler) extractAttrChain(n *sitter.Node) string {
+	if n == nil {
+		return ""
+	}
+	if n.Type() == "identifier" {
+		return c.text(n)
+	}
+	if n.Type() == "attribute" {
+		obj := n.NamedChild(0)
+		field := n.NamedChild(1)
+		if obj == nil || field == nil {
+			return c.text(n)
+		}
+		objPath := c.extractAttrChain(obj)
+		fieldName := c.text(field)
+		if objPath != "" {
+			return objPath + "." + fieldName
+		}
+		return fieldName
+	}
+	if n.Type() == "call" {
+		// Strip arguments — just return the chain of the function
+		fn := n.NamedChild(0)
+		if fn == nil {
+			return c.text(n)
+		}
+		return c.extractAttrChain(fn)
+	}
+	return c.text(n)
 }
 
 func (c *pyCompiler) compilePyBinary(n *sitter.Node) *interp.Expr {

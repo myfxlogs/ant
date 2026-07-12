@@ -66,6 +66,8 @@ class MyStrategy(StrategyBase):
 - Digits → ctx.digits()
 - Spread → ctx.spread()
 - Symbol() → ctx.symbol()
+- Higher TF bars → ctx.bars_tf("H4").close(0)
+- Other symbol bars → ctx.bars_for_symbol("EURUSD").close(0)
 
 ### Indicators (all map to ctx.indicators().<name>(ctx.symbol(), period, shift))
 - iMA → ctx.indicators().ima(ctx.symbol(), period, shift)

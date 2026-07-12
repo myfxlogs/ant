@@ -97,6 +97,19 @@ func (s *StrategyExecutionServer) fetchBacktestKlines(ctx context.Context, run *
 	return klineBarsToProto(chBars), nil
 }
 
+// fetchExtraSymbolKlines retrieves K-line data for a secondary symbol in multi-symbol backtests.
+// Uses the same timeframe and time range as the primary symbol.
+func (s *StrategyExecutionServer) fetchExtraSymbolKlines(ctx context.Context, symbol string, run *repository.BacktestRun) ([]*antv1.ExecuteKlineBar, error) {
+	if s.marketDataRepo == nil || symbol == "" || run.Timeframe == "" {
+		return nil, nil
+	}
+	chBars, err := s.marketDataRepo.GetKlines(ctx, symbol, "", run.Timeframe, run.FromTs, run.ToTs, 100000)
+	if err != nil {
+		return nil, fmt.Errorf("fetch klines for %s: %w", symbol, err)
+	}
+	return klineBarsToProto(chBars), nil
+}
+
 // fetchSymbolInfo queries the MT gateway for live contract metadata.
 // Returns nil when no MT session is connected — the engine will
 // fall back to K-line data derivation.

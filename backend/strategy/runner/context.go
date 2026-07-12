@@ -96,6 +96,18 @@ func (c *contextImpl) BarsTF(timeframe string) sdk.BarSeries {
 	return c.Bars()
 }
 
+func (c *contextImpl) BarsForSymbol(symbol, timeframe string) sdk.BarSeries {
+	// Live multi-symbol bar data requires multi-symbol subscription (Phase B2).
+	// For now, return the primary bars if the symbol matches, otherwise empty.
+	if symbol == c.symbol {
+		if timeframe == "" || timeframe == c.timeframe {
+			return c.Bars()
+		}
+		return c.BarsTF(timeframe)
+	}
+	return sdk.BarsToSlice(nil)
+}
+
 func (c *contextImpl) Symbol() string   { return c.symbol }
 func (c *contextImpl) Timeframe() string { return c.timeframe }
 

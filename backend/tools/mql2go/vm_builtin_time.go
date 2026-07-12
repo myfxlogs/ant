@@ -93,54 +93,8 @@ func tfDurationSeconds(tf string) int {
 	}
 }
 
-func periodToTimeframe(period int32) string {
-	switch period {
-	case 1:
-		return "M1"
-	case 2:
-		return "M2"
-	case 3:
-		return "M3"
-	case 4:
-		return "M4"
-	case 5:
-		return "M5"
-	case 6:
-		return "M6"
-	case 10:
-		return "M10"
-	case 12:
-		return "M12"
-	case 15:
-		return "M15"
-	case 20:
-		return "M20"
-	case 30:
-		return "M30"
-	case 60:
-		return "H1"
-	case 120:
-		return "H2"
-	case 180:
-		return "H3"
-	case 240:
-		return "H4"
-	case 360:
-		return "H6"
-	case 480:
-		return "H8"
-	case 720:
-		return "H12"
-	case 1440:
-		return "D1"
-	case 10080:
-		return "W1"
-	case 43200:
-		return "MN1"
-	default:
-		return "H1"
-	}
-}
+// periodToTimeframe is an alias for intToTF (same package, unified conversion).
+func periodToTimeframe(period int32) string { return intToTF(period) }
 
 // builtinTimeToStruct converts a datetime to an MqlDateTime struct.
 // MQL5: struct MqlDateTime { int year; int mon; int day; int hour; int min; int sec; int day_of_week; int day_of_year; }

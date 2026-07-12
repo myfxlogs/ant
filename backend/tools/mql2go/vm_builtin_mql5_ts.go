@@ -13,37 +13,25 @@ func builtinBars(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil {
 		return interp.IntVal(0), nil
 	}
-	sym := argS(args, 0)
-	tf := periodToTimeframe(argI(args, 1))
-	_ = sym // current symbol only in backtest
-	if tf == "" || tf == vm.ctx.Timeframe() {
-		return interp.IntVal(int32(vm.ctx.Bars().Len())), nil
+	series, ok := resolveSeries(vm, 0, 1, args)
+	if !ok || series == nil {
+		return interp.IntVal(0), nil
 	}
-	return interp.IntVal(int32(vm.ctx.BarsTF(tf).Len())), nil
+	return interp.IntVal(int32(series.Len())), nil
 }
 
 func builtinIBarShift(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil {
 		return interp.IntVal(-1), nil
 	}
-	sym := argS(args, 0)
-	_ = sym
-	tf := periodToTimeframe(argI(args, 1))
-	ts := int64(argI(args,2)) * 1000
-	// Find the bar whose timestamp <= ts
-	if tf == "" || tf == vm.ctx.Timeframe() {
-		series := vm.ctx.Bars()
-		for i := 0; i < series.Len(); i++ {
-			if series.Time(i) <= ts {
-				return interp.IntVal(int32(i)), nil
-			}
-		}
-	} else {
-		series := vm.ctx.BarsTF(tf)
-		for i := 0; i < series.Len(); i++ {
-			if series.Time(i) <= ts {
-				return interp.IntVal(int32(i)), nil
-			}
+	series, ok := resolveSeries(vm, 0, 1, args)
+	if !ok || series == nil {
+		return interp.IntVal(-1), nil
+	}
+	ts := int64(argI(args, 2)) * 1000
+	for i := 0; i < series.Len(); i++ {
+		if series.Time(i) <= ts {
+			return interp.IntVal(int32(i)), nil
 		}
 	}
 	return interp.IntVal(-1), nil
@@ -53,23 +41,23 @@ func builtinIHighest(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil {
 		return interp.IntVal(-1), nil
 	}
-	sym := argS(args, 0)
-	_ = sym
+	series, ok := resolveSeries(vm, 0, 1, args)
+	if !ok || series == nil {
+		return interp.IntVal(-1), nil
+	}
 	_ = argI(args, 2) // type: MODE_HIGH, MODE_LOW, etc. — unused, we always search High
 	count := int(argI(args, 3))
 	start := int(argI(args, 4))
-	// Simplified: search in current timeframe bars
-	bs := vm.ctx.Bars()
 	if count <= 0 {
-		count = bs.Len()
+		count = series.Len()
 	}
 	if start < 0 {
 		start = 0
 	}
 	maxIdx := start
-	maxVal := bs.High(start)
-	for i := start + 1; i < start+count && i < bs.Len(); i++ {
-		h := bs.High(i)
+	maxVal := series.High(start)
+	for i := start + 1; i < start+count && i < series.Len(); i++ {
+		h := series.High(i)
 		if h.GreaterThan(maxVal) {
 			maxVal = h
 			maxIdx = i
@@ -82,23 +70,23 @@ func builtinILowest(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil {
 		return interp.IntVal(-1), nil
 	}
-	sym := argS(args, 0)
-	_ = sym
-	_ = argI(args, 1) // timeframe — simplified to current TF
+	series, ok := resolveSeries(vm, 0, 1, args)
+	if !ok || series == nil {
+		return interp.IntVal(-1), nil
+	}
 	_ = argI(args, 2)
 	count := int(argI(args, 3))
 	start := int(argI(args, 4))
-	bs := vm.ctx.Bars()
 	if count <= 0 {
-		count = bs.Len()
+		count = series.Len()
 	}
 	if start < 0 {
 		start = 0
 	}
 	minIdx := start
-	minVal := bs.Low(start)
-	for i := start + 1; i < start+count && i < bs.Len(); i++ {
-		l := bs.Low(i)
+	minVal := series.Low(start)
+	for i := start + 1; i < start+count && i < series.Len(); i++ {
+		l := series.Low(i)
 		if l.LessThan(minVal) {
 			minVal = l
 			minIdx = i
@@ -111,14 +99,12 @@ func builtinITickVolume(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil {
 		return interp.DecimalVal(decimalZero), nil
 	}
-	sym := argS(args, 0)
-	_ = sym
-	tf := periodToTimeframe(argI(args, 1))
-	shift := int(argI(args, 2))
-	if tf == "" || tf == vm.ctx.Timeframe() {
-		return interp.IntVal(int32(vm.ctx.Bars().Volume(shift))), nil
+	series, ok := resolveSeries(vm, 0, 1, args)
+	if !ok || series == nil {
+		return interp.DecimalVal(decimalZero), nil
 	}
-	return interp.IntVal(int32(vm.ctx.BarsTF(tf).Volume(shift))), nil
+	shift := int(argI(args, 2))
+	return interp.IntVal(int32(series.Volume(shift))), nil
 }
 
 func builtinIRealVolume(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -143,17 +129,14 @@ func builtinISpread(vm *VM, args []interp.Value) (interp.Value, error) {
 // (chronological order: oldest first when count > 0).
 
 // resolveSeries returns the BarSeries for the given symbol/timeframe args.
+// Delegates to resolveBarSeries for unified resolution logic.
 func resolveSeries(vm *VM, symArgIdx, tfArgIdx int, args []interp.Value) (sdk.BarSeries, bool) {
 	if vm.ctx == nil {
 		return nil, false
 	}
 	sym := argS(args, symArgIdx)
-	_ = sym // current symbol only in backtest
-	tf := periodToTimeframe(argI(args, tfArgIdx))
-	if tf == "" || tf == vm.ctx.Timeframe() {
-		return vm.ctx.Bars(), true
-	}
-	return vm.ctx.BarsTF(tf), true
+	tf := intToTF(argI(args, tfArgIdx))
+	return resolveBarSeries(vm, sym, tf), true
 }
 
 // copyBarData fills the array argument (last arg) with bar data from the series.

@@ -134,6 +134,12 @@ func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *conne
 			s.log.Warn("ImportStrategy: persist failed", zap.Error(err))
 		} else {
 			strategyID = row.ID.String()
+			// Create initial version snapshot
+			if s.versionRepo != nil {
+				if _, vErr := s.versionRepo.CreateVersion(ctx, row.ID, uid, source, rep.Version, "Initial import"); vErr != nil {
+					s.log.Warn("ImportStrategy: create version snapshot failed", zap.Error(vErr))
+				}
+			}
 		}
 	}
 

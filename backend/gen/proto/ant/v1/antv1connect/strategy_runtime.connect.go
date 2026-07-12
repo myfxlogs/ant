@@ -106,6 +106,21 @@ const (
 	// StrategyRuntimeServiceWatchActiveStrategiesProcedure is the fully-qualified name of the
 	// StrategyRuntimeService's WatchActiveStrategies RPC.
 	StrategyRuntimeServiceWatchActiveStrategiesProcedure = "/ant.v1.StrategyRuntimeService/WatchActiveStrategies"
+	// StrategyRuntimeServiceListStrategyVersionsProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's ListStrategyVersions RPC.
+	StrategyRuntimeServiceListStrategyVersionsProcedure = "/ant.v1.StrategyRuntimeService/ListStrategyVersions"
+	// StrategyRuntimeServiceGetStrategyVersionProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's GetStrategyVersion RPC.
+	StrategyRuntimeServiceGetStrategyVersionProcedure = "/ant.v1.StrategyRuntimeService/GetStrategyVersion"
+	// StrategyRuntimeServiceRollbackStrategyVersionProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's RollbackStrategyVersion RPC.
+	StrategyRuntimeServiceRollbackStrategyVersionProcedure = "/ant.v1.StrategyRuntimeService/RollbackStrategyVersion"
+	// StrategyRuntimeServiceDiffStrategyVersionsProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's DiffStrategyVersions RPC.
+	StrategyRuntimeServiceDiffStrategyVersionsProcedure = "/ant.v1.StrategyRuntimeService/DiffStrategyVersions"
+	// StrategyRuntimeServiceUpdateStrategyCodeProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's UpdateStrategyCode RPC.
+	StrategyRuntimeServiceUpdateStrategyCodeProcedure = "/ant.v1.StrategyRuntimeService/UpdateStrategyCode"
 )
 
 // StrategyRuntimeServiceClient is a client for the ant.v1.StrategyRuntimeService service.
@@ -149,6 +164,16 @@ type StrategyRuntimeServiceClient interface {
 	// WatchActiveStrategies streams the active strategy list, pushing updates
 	// whenever sessions are registered, deregistered, or change state.
 	WatchActiveStrategies(context.Context, *connect.Request[v1.WatchActiveStrategiesRequest]) (*connect.ServerStreamForClient[v1.WatchActiveStrategiesEvent], error)
+	// ListStrategyVersions returns version history for a strategy.
+	ListStrategyVersions(context.Context, *connect.Request[v1.ListStrategyVersionsRequest]) (*connect.Response[v1.ListStrategyVersionsResponse], error)
+	// GetStrategyVersion retrieves a specific version snapshot.
+	GetStrategyVersion(context.Context, *connect.Request[v1.GetStrategyVersionRequest]) (*connect.Response[v1.GetStrategyVersionResponse], error)
+	// RollbackStrategyVersion restores strategy code from a specific version.
+	RollbackStrategyVersion(context.Context, *connect.Request[v1.RollbackStrategyVersionRequest]) (*connect.Response[v1.RollbackStrategyVersionResponse], error)
+	// DiffStrategyVersions returns two version snapshots for client-side diffing.
+	DiffStrategyVersions(context.Context, *connect.Request[v1.DiffStrategyVersionsRequest]) (*connect.Response[v1.DiffStrategyVersionsResponse], error)
+	// UpdateStrategyCode updates the source code of an existing strategy and creates a version snapshot.
+	UpdateStrategyCode(context.Context, *connect.Request[v1.UpdateStrategyCodeRequest]) (*connect.Response[v1.UpdateStrategyCodeResponse], error)
 }
 
 // NewStrategyRuntimeServiceClient constructs a client for the ant.v1.StrategyRuntimeService
@@ -306,35 +331,70 @@ func NewStrategyRuntimeServiceClient(httpClient connect.HTTPClient, baseURL stri
 			connect.WithSchema(strategyRuntimeServiceMethods.ByName("WatchActiveStrategies")),
 			connect.WithClientOptions(opts...),
 		),
+		listStrategyVersions: connect.NewClient[v1.ListStrategyVersionsRequest, v1.ListStrategyVersionsResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceListStrategyVersionsProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("ListStrategyVersions")),
+			connect.WithClientOptions(opts...),
+		),
+		getStrategyVersion: connect.NewClient[v1.GetStrategyVersionRequest, v1.GetStrategyVersionResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceGetStrategyVersionProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("GetStrategyVersion")),
+			connect.WithClientOptions(opts...),
+		),
+		rollbackStrategyVersion: connect.NewClient[v1.RollbackStrategyVersionRequest, v1.RollbackStrategyVersionResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceRollbackStrategyVersionProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("RollbackStrategyVersion")),
+			connect.WithClientOptions(opts...),
+		),
+		diffStrategyVersions: connect.NewClient[v1.DiffStrategyVersionsRequest, v1.DiffStrategyVersionsResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceDiffStrategyVersionsProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("DiffStrategyVersions")),
+			connect.WithClientOptions(opts...),
+		),
+		updateStrategyCode: connect.NewClient[v1.UpdateStrategyCodeRequest, v1.UpdateStrategyCodeResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceUpdateStrategyCodeProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("UpdateStrategyCode")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // strategyRuntimeServiceClient implements StrategyRuntimeServiceClient.
 type strategyRuntimeServiceClient struct {
-	execute               *connect.Client[v1.ExecuteStrategyRequest, v1.ExecuteStrategyResponse]
-	validate              *connect.Client[v1.ValidateStrategyRequest, v1.ValidateStrategyResponse]
-	backtest              *connect.Client[v1.BacktestStrategyRequest, v1.BacktestStrategyResponse]
-	startBacktestRun      *connect.Client[v1.StartBacktestRunRequest, v1.StartBacktestRunResponse]
-	getBacktestRun        *connect.Client[v1.GetBacktestRunRequest, v1.GetBacktestRunResponse]
-	listBacktestRuns      *connect.Client[v1.ListBacktestRunsRequest, v1.ListBacktestRunsResponse]
-	watchBacktestRun      *connect.Client[v1.WatchBacktestRunRequest, v1.BacktestRunUpdate]
-	cancelBacktestRun     *connect.Client[v1.CancelBacktestRunRequest, v1.CancelBacktestRunResponse]
-	deleteBacktestRun     *connect.Client[v1.DeleteBacktestRunRequest, v1.DeleteBacktestRunResponse]
-	deleteBacktestRuns    *connect.Client[v1.DeleteBacktestRunsRequest, v1.DeleteBacktestRunsResponse]
-	getTemplates          *connect.Client[emptypb.Empty, v1.GetStrategyTemplatesResponse]
-	executeLive           *connect.Client[v1.ExecuteLiveRequest, v1.ExecuteLiveResponse]
-	analyzeImportCode     *connect.Client[v1.AnalyzeImportCodeRequest, v1.AnalyzeImportCodeResponse]
-	generateImportCode    *connect.Client[v1.GenerateImportCodeRequest, v1.GenerateImportCodeResponse]
-	importStrategy        *connect.Client[v1.ImportStrategyRequest, v1.ImportStrategyResponse]
-	getImportedStrategy   *connect.Client[v1.GetImportedStrategyRequest, v1.GetImportedStrategyResponse]
-	listStrategyRuns      *connect.Client[v1.ListStrategyRunsRequest, v1.ListStrategyRunsResponse]
-	getStrategyRun        *connect.Client[v1.GetStrategyRunRequest, v1.GetStrategyRunResponse]
-	listActiveStrategies  *connect.Client[v1.ListActiveStrategiesRequest, v1.ListActiveStrategiesResponse]
-	getActiveStrategy     *connect.Client[v1.GetActiveStrategyRequest, v1.GetActiveStrategyResponse]
-	stopStrategy          *connect.Client[v1.StopStrategyRequest, v1.StopStrategyResponse]
-	watchStrategySignals  *connect.Client[v1.WatchStrategySignalsRequest, v1.StrategySignalEvent]
-	startStrategy         *connect.Client[v1.StartStrategyRequest, v1.StartStrategyResponse]
-	watchActiveStrategies *connect.Client[v1.WatchActiveStrategiesRequest, v1.WatchActiveStrategiesEvent]
+	execute                 *connect.Client[v1.ExecuteStrategyRequest, v1.ExecuteStrategyResponse]
+	validate                *connect.Client[v1.ValidateStrategyRequest, v1.ValidateStrategyResponse]
+	backtest                *connect.Client[v1.BacktestStrategyRequest, v1.BacktestStrategyResponse]
+	startBacktestRun        *connect.Client[v1.StartBacktestRunRequest, v1.StartBacktestRunResponse]
+	getBacktestRun          *connect.Client[v1.GetBacktestRunRequest, v1.GetBacktestRunResponse]
+	listBacktestRuns        *connect.Client[v1.ListBacktestRunsRequest, v1.ListBacktestRunsResponse]
+	watchBacktestRun        *connect.Client[v1.WatchBacktestRunRequest, v1.BacktestRunUpdate]
+	cancelBacktestRun       *connect.Client[v1.CancelBacktestRunRequest, v1.CancelBacktestRunResponse]
+	deleteBacktestRun       *connect.Client[v1.DeleteBacktestRunRequest, v1.DeleteBacktestRunResponse]
+	deleteBacktestRuns      *connect.Client[v1.DeleteBacktestRunsRequest, v1.DeleteBacktestRunsResponse]
+	getTemplates            *connect.Client[emptypb.Empty, v1.GetStrategyTemplatesResponse]
+	executeLive             *connect.Client[v1.ExecuteLiveRequest, v1.ExecuteLiveResponse]
+	analyzeImportCode       *connect.Client[v1.AnalyzeImportCodeRequest, v1.AnalyzeImportCodeResponse]
+	generateImportCode      *connect.Client[v1.GenerateImportCodeRequest, v1.GenerateImportCodeResponse]
+	importStrategy          *connect.Client[v1.ImportStrategyRequest, v1.ImportStrategyResponse]
+	getImportedStrategy     *connect.Client[v1.GetImportedStrategyRequest, v1.GetImportedStrategyResponse]
+	listStrategyRuns        *connect.Client[v1.ListStrategyRunsRequest, v1.ListStrategyRunsResponse]
+	getStrategyRun          *connect.Client[v1.GetStrategyRunRequest, v1.GetStrategyRunResponse]
+	listActiveStrategies    *connect.Client[v1.ListActiveStrategiesRequest, v1.ListActiveStrategiesResponse]
+	getActiveStrategy       *connect.Client[v1.GetActiveStrategyRequest, v1.GetActiveStrategyResponse]
+	stopStrategy            *connect.Client[v1.StopStrategyRequest, v1.StopStrategyResponse]
+	watchStrategySignals    *connect.Client[v1.WatchStrategySignalsRequest, v1.StrategySignalEvent]
+	startStrategy           *connect.Client[v1.StartStrategyRequest, v1.StartStrategyResponse]
+	watchActiveStrategies   *connect.Client[v1.WatchActiveStrategiesRequest, v1.WatchActiveStrategiesEvent]
+	listStrategyVersions    *connect.Client[v1.ListStrategyVersionsRequest, v1.ListStrategyVersionsResponse]
+	getStrategyVersion      *connect.Client[v1.GetStrategyVersionRequest, v1.GetStrategyVersionResponse]
+	rollbackStrategyVersion *connect.Client[v1.RollbackStrategyVersionRequest, v1.RollbackStrategyVersionResponse]
+	diffStrategyVersions    *connect.Client[v1.DiffStrategyVersionsRequest, v1.DiffStrategyVersionsResponse]
+	updateStrategyCode      *connect.Client[v1.UpdateStrategyCodeRequest, v1.UpdateStrategyCodeResponse]
 }
 
 // Execute calls ant.v1.StrategyRuntimeService.Execute.
@@ -457,6 +517,31 @@ func (c *strategyRuntimeServiceClient) WatchActiveStrategies(ctx context.Context
 	return c.watchActiveStrategies.CallServerStream(ctx, req)
 }
 
+// ListStrategyVersions calls ant.v1.StrategyRuntimeService.ListStrategyVersions.
+func (c *strategyRuntimeServiceClient) ListStrategyVersions(ctx context.Context, req *connect.Request[v1.ListStrategyVersionsRequest]) (*connect.Response[v1.ListStrategyVersionsResponse], error) {
+	return c.listStrategyVersions.CallUnary(ctx, req)
+}
+
+// GetStrategyVersion calls ant.v1.StrategyRuntimeService.GetStrategyVersion.
+func (c *strategyRuntimeServiceClient) GetStrategyVersion(ctx context.Context, req *connect.Request[v1.GetStrategyVersionRequest]) (*connect.Response[v1.GetStrategyVersionResponse], error) {
+	return c.getStrategyVersion.CallUnary(ctx, req)
+}
+
+// RollbackStrategyVersion calls ant.v1.StrategyRuntimeService.RollbackStrategyVersion.
+func (c *strategyRuntimeServiceClient) RollbackStrategyVersion(ctx context.Context, req *connect.Request[v1.RollbackStrategyVersionRequest]) (*connect.Response[v1.RollbackStrategyVersionResponse], error) {
+	return c.rollbackStrategyVersion.CallUnary(ctx, req)
+}
+
+// DiffStrategyVersions calls ant.v1.StrategyRuntimeService.DiffStrategyVersions.
+func (c *strategyRuntimeServiceClient) DiffStrategyVersions(ctx context.Context, req *connect.Request[v1.DiffStrategyVersionsRequest]) (*connect.Response[v1.DiffStrategyVersionsResponse], error) {
+	return c.diffStrategyVersions.CallUnary(ctx, req)
+}
+
+// UpdateStrategyCode calls ant.v1.StrategyRuntimeService.UpdateStrategyCode.
+func (c *strategyRuntimeServiceClient) UpdateStrategyCode(ctx context.Context, req *connect.Request[v1.UpdateStrategyCodeRequest]) (*connect.Response[v1.UpdateStrategyCodeResponse], error) {
+	return c.updateStrategyCode.CallUnary(ctx, req)
+}
+
 // StrategyRuntimeServiceHandler is an implementation of the ant.v1.StrategyRuntimeService service.
 type StrategyRuntimeServiceHandler interface {
 	Execute(context.Context, *connect.Request[v1.ExecuteStrategyRequest]) (*connect.Response[v1.ExecuteStrategyResponse], error)
@@ -498,6 +583,16 @@ type StrategyRuntimeServiceHandler interface {
 	// WatchActiveStrategies streams the active strategy list, pushing updates
 	// whenever sessions are registered, deregistered, or change state.
 	WatchActiveStrategies(context.Context, *connect.Request[v1.WatchActiveStrategiesRequest], *connect.ServerStream[v1.WatchActiveStrategiesEvent]) error
+	// ListStrategyVersions returns version history for a strategy.
+	ListStrategyVersions(context.Context, *connect.Request[v1.ListStrategyVersionsRequest]) (*connect.Response[v1.ListStrategyVersionsResponse], error)
+	// GetStrategyVersion retrieves a specific version snapshot.
+	GetStrategyVersion(context.Context, *connect.Request[v1.GetStrategyVersionRequest]) (*connect.Response[v1.GetStrategyVersionResponse], error)
+	// RollbackStrategyVersion restores strategy code from a specific version.
+	RollbackStrategyVersion(context.Context, *connect.Request[v1.RollbackStrategyVersionRequest]) (*connect.Response[v1.RollbackStrategyVersionResponse], error)
+	// DiffStrategyVersions returns two version snapshots for client-side diffing.
+	DiffStrategyVersions(context.Context, *connect.Request[v1.DiffStrategyVersionsRequest]) (*connect.Response[v1.DiffStrategyVersionsResponse], error)
+	// UpdateStrategyCode updates the source code of an existing strategy and creates a version snapshot.
+	UpdateStrategyCode(context.Context, *connect.Request[v1.UpdateStrategyCodeRequest]) (*connect.Response[v1.UpdateStrategyCodeResponse], error)
 }
 
 // NewStrategyRuntimeServiceHandler builds an HTTP handler from the service implementation. It
@@ -651,6 +746,36 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 		connect.WithSchema(strategyRuntimeServiceMethods.ByName("WatchActiveStrategies")),
 		connect.WithHandlerOptions(opts...),
 	)
+	strategyRuntimeServiceListStrategyVersionsHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceListStrategyVersionsProcedure,
+		svc.ListStrategyVersions,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("ListStrategyVersions")),
+		connect.WithHandlerOptions(opts...),
+	)
+	strategyRuntimeServiceGetStrategyVersionHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceGetStrategyVersionProcedure,
+		svc.GetStrategyVersion,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("GetStrategyVersion")),
+		connect.WithHandlerOptions(opts...),
+	)
+	strategyRuntimeServiceRollbackStrategyVersionHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceRollbackStrategyVersionProcedure,
+		svc.RollbackStrategyVersion,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("RollbackStrategyVersion")),
+		connect.WithHandlerOptions(opts...),
+	)
+	strategyRuntimeServiceDiffStrategyVersionsHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceDiffStrategyVersionsProcedure,
+		svc.DiffStrategyVersions,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("DiffStrategyVersions")),
+		connect.WithHandlerOptions(opts...),
+	)
+	strategyRuntimeServiceUpdateStrategyCodeHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceUpdateStrategyCodeProcedure,
+		svc.UpdateStrategyCode,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("UpdateStrategyCode")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.StrategyRuntimeService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case StrategyRuntimeServiceExecuteProcedure:
@@ -701,6 +826,16 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 			strategyRuntimeServiceStartStrategyHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceWatchActiveStrategiesProcedure:
 			strategyRuntimeServiceWatchActiveStrategiesHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceListStrategyVersionsProcedure:
+			strategyRuntimeServiceListStrategyVersionsHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceGetStrategyVersionProcedure:
+			strategyRuntimeServiceGetStrategyVersionHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceRollbackStrategyVersionProcedure:
+			strategyRuntimeServiceRollbackStrategyVersionHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceDiffStrategyVersionsProcedure:
+			strategyRuntimeServiceDiffStrategyVersionsHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceUpdateStrategyCodeProcedure:
+			strategyRuntimeServiceUpdateStrategyCodeHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -804,4 +939,24 @@ func (UnimplementedStrategyRuntimeServiceHandler) StartStrategy(context.Context,
 
 func (UnimplementedStrategyRuntimeServiceHandler) WatchActiveStrategies(context.Context, *connect.Request[v1.WatchActiveStrategiesRequest], *connect.ServerStream[v1.WatchActiveStrategiesEvent]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.WatchActiveStrategies is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) ListStrategyVersions(context.Context, *connect.Request[v1.ListStrategyVersionsRequest]) (*connect.Response[v1.ListStrategyVersionsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.ListStrategyVersions is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) GetStrategyVersion(context.Context, *connect.Request[v1.GetStrategyVersionRequest]) (*connect.Response[v1.GetStrategyVersionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.GetStrategyVersion is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) RollbackStrategyVersion(context.Context, *connect.Request[v1.RollbackStrategyVersionRequest]) (*connect.Response[v1.RollbackStrategyVersionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.RollbackStrategyVersion is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) DiffStrategyVersions(context.Context, *connect.Request[v1.DiffStrategyVersionsRequest]) (*connect.Response[v1.DiffStrategyVersionsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.DiffStrategyVersions is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) UpdateStrategyCode(context.Context, *connect.Request[v1.UpdateStrategyCodeRequest]) (*connect.Response[v1.UpdateStrategyCodeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.UpdateStrategyCode is not implemented"))
 }
