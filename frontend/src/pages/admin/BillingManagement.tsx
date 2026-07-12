@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Card, Table, Select, Row, Col, Statistic, Tag, Tabs } from 'antd';
 import { CrownOutlined, DollarOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { adminBillingApi } from '@/client/adminBilling';
 import { formatDateTime } from '@/utils/date';
 
 const { TabPane } = Tabs;
 
 export default function BillingManagement() {
+  const { t } = useTranslation();
   const [subPage, setSubPage] = useState(1);
   const [subPlan, setSubPlan] = useState('');
   const [subStatus, setSubStatus] = useState('');
@@ -30,48 +32,48 @@ export default function BillingManagement() {
   });
 
   const subColumns = [
-    { title: '用户', dataIndex: 'userEmail', key: 'userEmail', width: 200 },
-    { title: '计划', dataIndex: 'planDisplayName', key: 'planDisplayName', width: 120,
+    { title: t('admin.billing.columns.user', { defaultValue: 'User' }), dataIndex: 'userEmail', key: 'userEmail', width: 200 },
+    { title: t('admin.billing.columns.plan', { defaultValue: 'Plan' }), dataIndex: 'planDisplayName', key: 'planDisplayName', width: 120,
       render: (v: string) => <Tag color="gold">{v}</Tag> },
-    { title: '状态', dataIndex: 'status', key: 'status', width: 100,
+    { title: t('admin.billing.columns.status', { defaultValue: 'Status' }), dataIndex: 'status', key: 'status', width: 100,
       render: (v: string) => <Tag color={v === 'active' ? 'green' : 'default'}>{v}</Tag> },
-    { title: '周期', dataIndex: 'billingCycle', key: 'billingCycle', width: 80 },
-    { title: '价格', dataIndex: 'price', key: 'price', width: 80 },
-    { title: '自动续费', dataIndex: 'autoRenew', key: 'autoRenew', width: 80,
-      render: (v: boolean) => v ? <Tag color="blue">是</Tag> : <Tag>否</Tag> },
-    { title: '当前周期开始', key: 'periodStart', width: 160,
+    { title: t('admin.billing.columns.cycle', { defaultValue: 'Cycle' }), dataIndex: 'billingCycle', key: 'billingCycle', width: 80 },
+    { title: t('admin.billing.columns.price', { defaultValue: 'Price' }), dataIndex: 'price', key: 'price', width: 80 },
+    { title: t('admin.billing.columns.autoRenew', { defaultValue: 'Auto Renew' }), dataIndex: 'autoRenew', key: 'autoRenew', width: 80,
+      render: (v: boolean) => v ? <Tag color="blue">{t('common.yes', { defaultValue: 'Yes' })}</Tag> : <Tag>{t('common.no', { defaultValue: 'No' })}</Tag> },
+    { title: t('admin.billing.columns.periodStart', { defaultValue: 'Period Start' }), key: 'periodStart', width: 160,
       render: (_: any, r: any) => r.currentPeriodStart ? formatDateTime(r.currentPeriodStart) : '-' },
-    { title: '当前周期结束', key: 'periodEnd', width: 160,
+    { title: t('admin.billing.columns.periodEnd', { defaultValue: 'Period End' }), key: 'periodEnd', width: 160,
       render: (_: any, r: any) => r.currentPeriodEnd ? formatDateTime(r.currentPeriodEnd) : '-' },
-    { title: '创建时间', key: 'createdAt', width: 160,
+    { title: t('admin.billing.columns.createdAt', { defaultValue: 'Created At' }), key: 'createdAt', width: 160,
       render: (_: any, r: any) => r.createdAt ? formatDateTime(r.createdAt) : '-' },
   ];
 
   const txColumns = [
-    { title: '用户', dataIndex: 'userEmail', key: 'userEmail', width: 200 },
-    { title: '类型', dataIndex: 'txType', key: 'txType', width: 100,
+    { title: t('admin.billing.columns.user', { defaultValue: 'User' }), dataIndex: 'userEmail', key: 'userEmail', width: 200 },
+    { title: t('admin.billing.columns.type', { defaultValue: 'Type' }), dataIndex: 'txType', key: 'txType', width: 100,
       render: (v: string) => {
         const colors: Record<string, string> = { purchase: 'blue', sale: 'green', platform_fee: 'orange', deposit: 'cyan', withdrawal: 'red' };
         return <Tag color={colors[v] || 'default'}>{v}</Tag>;
       } },
-    { title: '金额', dataIndex: 'amount', key: 'amount', width: 100,
+    { title: t('admin.billing.columns.amount', { defaultValue: 'Amount' }), dataIndex: 'amount', key: 'amount', width: 100,
       render: (v: string) => <span style={{ fontWeight: 600 }}>{v}</span> },
-    { title: '交易前余额', dataIndex: 'balanceBefore', key: 'balanceBefore', width: 120 },
-    { title: '交易后余额', dataIndex: 'balanceAfter', key: 'balanceAfter', width: 120 },
-    { title: '描述', dataIndex: 'description', key: 'description', ellipsis: true },
-    { title: '时间', key: 'createdAt', width: 160,
+    { title: t('admin.billing.columns.balanceBefore', { defaultValue: 'Balance Before' }), dataIndex: 'balanceBefore', key: 'balanceBefore', width: 120 },
+    { title: t('admin.billing.columns.balanceAfter', { defaultValue: 'Balance After' }), dataIndex: 'balanceAfter', key: 'balanceAfter', width: 120 },
+    { title: t('admin.billing.columns.description', { defaultValue: 'Description' }), dataIndex: 'description', key: 'description', ellipsis: true },
+    { title: t('admin.billing.columns.time', { defaultValue: 'Time' }), key: 'createdAt', width: 160,
       render: (_: any, r: any) => r.createdAt ? formatDateTime(r.createdAt) : '-' },
   ];
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>计费管理</h1>
+      <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{t('admin.billing.title', { defaultValue: 'Billing Management' })}</h1>
 
       <Row gutter={[16, 16]}>
         <Col xs={12} sm={8} lg={6}>
           <Card>
             <Statistic
-              title="月度收入"
+              title={t('admin.billing.monthlyRevenue', { defaultValue: 'Monthly Revenue' })}
               value={revenueData?.totalMonthlyRevenue || '0'}
               prefix={<DollarOutlined style={{ color: '#52c41a' }} />}
             />
@@ -80,7 +82,7 @@ export default function BillingManagement() {
         <Col xs={12} sm={8} lg={6}>
           <Card>
             <Statistic
-              title="总收入"
+              title={t('admin.billing.totalRevenue', { defaultValue: 'Total Revenue' })}
               value={revenueData?.totalRevenue || '0'}
               prefix={<DollarOutlined style={{ color: '#13c2c2' }} />}
             />
@@ -89,7 +91,7 @@ export default function BillingManagement() {
         <Col xs={12} sm={8} lg={6}>
           <Card>
             <Statistic
-              title="活跃订阅"
+              title={t('admin.billing.activeSubs', { defaultValue: 'Active Subscriptions' })}
               value={subData?.total || 0}
               prefix={<CrownOutlined style={{ color: '#D4AF37' }} />}
             />
@@ -98,7 +100,7 @@ export default function BillingManagement() {
         <Col xs={12} sm={8} lg={6}>
           <Card>
             <Statistic
-              title="交易记录"
+              title={t('admin.billing.txRecords', { defaultValue: 'Transactions' })}
               value={txData?.total || 0}
             />
           </Card>
@@ -106,29 +108,29 @@ export default function BillingManagement() {
       </Row>
 
       {revenueData && revenueData.plans.length > 0 && (
-        <Card title="各计划收入明细" size="small">
+        <Card title={t('admin.billing.planRevenue', { defaultValue: 'Plan Revenue Details' })} size="small">
           <Table
             dataSource={revenueData.plans}
             rowKey="planName"
             pagination={false}
             size="small"
             columns={[
-              { title: '计划', dataIndex: 'displayName', key: 'displayName', render: (v: string) => <Tag color="gold">{v}</Tag> },
-              { title: '活跃数', dataIndex: 'activeCount', key: 'activeCount' },
-              { title: '月度收入', dataIndex: 'monthlyRevenue', key: 'monthlyRevenue' },
-              { title: '总收入', dataIndex: 'totalRevenue', key: 'totalRevenue' },
+              { title: t('admin.billing.columns.plan', { defaultValue: 'Plan' }), dataIndex: 'displayName', key: 'displayName', render: (v: string) => <Tag color="gold">{v}</Tag> },
+              { title: t('admin.billing.activeCount', { defaultValue: 'Active' }), dataIndex: 'activeCount', key: 'activeCount' },
+              { title: t('admin.billing.monthlyRevenue', { defaultValue: 'Monthly Revenue' }), dataIndex: 'monthlyRevenue', key: 'monthlyRevenue' },
+              { title: t('admin.billing.totalRevenue', { defaultValue: 'Total Revenue' }), dataIndex: 'totalRevenue', key: 'totalRevenue' },
             ]}
           />
         </Card>
       )}
 
       <Tabs defaultActiveKey="subscriptions">
-        <TabPane tab="订阅管理" key="subscriptions">
+        <TabPane tab={t('admin.billing.subscriptions', { defaultValue: 'Subscriptions' })} key="subscriptions">
           <Card>
             <Row gutter={16} className="mb-4">
               <Col>
                 <Select
-                  placeholder="按计划筛选"
+                  placeholder={t('admin.billing.filterByPlan', { defaultValue: 'Filter by plan' })}
                   allowClear
                   style={{ width: 150 }}
                   value={subPlan || undefined}
@@ -142,7 +144,7 @@ export default function BillingManagement() {
               </Col>
               <Col>
                 <Select
-                  placeholder="按状态筛选"
+                  placeholder={t('admin.billing.filterByStatus', { defaultValue: 'Filter by status' })}
                   allowClear
                   style={{ width: 150 }}
                   value={subStatus || undefined}
@@ -167,17 +169,17 @@ export default function BillingManagement() {
                 total: subData?.total || 0,
                 pageSize: 20,
                 onChange: setSubPage,
-                showTotal: (t) => `共 ${t} 条`,
+                showTotal: (total) => t('common.total', { total, defaultValue: `${total} total` }),
               }}
             />
           </Card>
         </TabPane>
-        <TabPane tab="钱包交易" key="transactions">
+        <TabPane tab={t('admin.billing.walletTransactions', { defaultValue: 'Wallet Transactions' })} key="transactions">
           <Card>
             <Row gutter={16} className="mb-4">
               <Col>
                 <Select
-                  placeholder="按类型筛选"
+                  placeholder={t('admin.billing.filterByType', { defaultValue: 'Filter by type' })}
                   allowClear
                   style={{ width: 150 }}
                   value={txType || undefined}
@@ -204,7 +206,7 @@ export default function BillingManagement() {
                 total: txData?.total || 0,
                 pageSize: 20,
                 onChange: setTxPage,
-                showTotal: (t) => `共 ${t} 条`,
+                showTotal: (total) => t('common.total', { total, defaultValue: `${total} total` }),
               }}
             />
           </Card>

@@ -4,10 +4,12 @@ import { adminApi, type AdminLog, type LogListParams } from '@/client/admin';
 import { formatDateTime } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import { StatusResult } from '@/components/common/StatusResult';
+import { useTranslation } from 'react-i18next';
 
 const { RangePicker } = DatePicker;
 
 export default function OperationLogs() {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState<AdminLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +24,7 @@ export default function OperationLogs() {
       setLogs(result.logs);
       setTotal(result.total);
     } catch (err) {
-      const msg = getErrorMessage(err, '加载日志失败');
+      const msg = getErrorMessage(err, t('admin.logs.errors.loadFailed', { defaultValue: 'Failed to load logs' }));
       setError(msg);
       message.error(msg);
     } finally {
@@ -45,35 +47,35 @@ export default function OperationLogs() {
   };
 
   const moduleMap: Record<string, string> = {
-    user_management: '用户管理',
-    account_management: '账户管理',
-    trading: '交易',
-    system_config: '系统配置',
+    user_management: t('admin.logs.modules.userManagement', { defaultValue: 'User Management' }),
+    account_management: t('admin.logs.modules.accountManagement', { defaultValue: 'Account Management' }),
+    trading: t('admin.logs.modules.trading', { defaultValue: 'Trading' }),
+    system_config: t('admin.logs.modules.systemConfig', { defaultValue: 'System Config' }),
   };
 
   const columns = [
     {
-      title: '时间',
+      title: t('admin.logs.columns.time', { defaultValue: 'Time' }),
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 180,
       render: (_text: unknown, record: AdminLog) => formatDateTime(record.createdAt),
     },
     {
-      title: 'IP地址',
+      title: t('admin.logs.columns.ip', { defaultValue: 'IP Address' }),
       dataIndex: 'ip',
       key: 'ip',
       width: 130,
     },
     {
-      title: '操作',
+      title: t('admin.logs.columns.action', { defaultValue: 'Action' }),
       dataIndex: 'action',
       key: 'action',
       width: 140,
       render: (text: string) => moduleMap[text] || text,
     },
     {
-      title: '详情',
+      title: t('admin.logs.columns.details', { defaultValue: 'Details' }),
       dataIndex: 'details',
       key: 'details',
       ellipsis: true,
@@ -83,37 +85,37 @@ export default function OperationLogs() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>操作日志</h1>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{t('admin.logs.title', { defaultValue: 'Operation Logs' })}</h1>
       </div>
 
       <Card>
         <div className="mb-4 flex gap-4 flex-wrap">
           <RangePicker onChange={(dates) => handleDateChange(dates as [Date | null, Date | null] | null)} />
           <Select
-            placeholder="模块筛选"
+            placeholder={t('admin.logs.filterModule', { defaultValue: 'Filter by module' })}
             allowClear
             style={{ width: 120 }}
             onChange={(value) => setParams({ ...params, module: value, page: 1 })}
             options={[
-              { label: '用户管理', value: 'user_management' },
-              { label: '账户管理', value: 'account_management' },
-              { label: '交易', value: 'trading' },
-              { label: '系统配置', value: 'system_config' },
+              { label: t('admin.logs.modules.userManagement', { defaultValue: 'User Management' }), value: 'user_management' },
+              { label: t('admin.logs.modules.accountManagement', { defaultValue: 'Account Management' }), value: 'account_management' },
+              { label: t('admin.logs.modules.trading', { defaultValue: 'Trading' }), value: 'trading' },
+              { label: t('admin.logs.modules.systemConfig', { defaultValue: 'System Config' }), value: 'system_config' },
             ]}
           />
           <Select
-            placeholder="操作类型"
+            placeholder={t('admin.logs.filterAction', { defaultValue: 'Filter by action' })}
             allowClear
             style={{ width: 120 }}
             onChange={(value) => setParams({ ...params, actionType: value, page: 1 })}
             options={[
-              { label: '创建', value: 'create' },
-              { label: '更新', value: 'update' },
-              { label: '删除', value: 'delete' },
-              { label: '禁用', value: 'disable' },
-              { label: '启用', value: 'enable' },
-              { label: '冻结', value: 'freeze' },
-              { label: '解冻', value: 'unfreeze' },
+              { label: t('admin.logs.actions.create', { defaultValue: 'Create' }), value: 'create' },
+              { label: t('admin.logs.actions.update', { defaultValue: 'Update' }), value: 'update' },
+              { label: t('admin.logs.actions.delete', { defaultValue: 'Delete' }), value: 'delete' },
+              { label: t('admin.logs.actions.disable', { defaultValue: 'Disable' }), value: 'disable' },
+              { label: t('admin.logs.actions.enable', { defaultValue: 'Enable' }), value: 'enable' },
+              { label: t('admin.logs.actions.freeze', { defaultValue: 'Freeze' }), value: 'freeze' },
+              { label: t('admin.logs.actions.unfreeze', { defaultValue: 'Unfreeze' }), value: 'unfreeze' },
             ]}
           />
         </div>
@@ -130,7 +132,7 @@ export default function OperationLogs() {
             pageSize: params.pageSize,
             total,
             showSizeChanger: true,
-            showTotal: (total) => `共 ${total} 条`,
+            showTotal: (total) => t('common.total', { total, defaultValue: `${total} total` }),
             onChange: (page, pageSize) => setParams({ ...params, page, pageSize }),
           }}
         />
