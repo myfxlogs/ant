@@ -173,6 +173,7 @@ export default function SharePerformancePage() {
               rowKey={(_, i) => String(i)}
               size="small"
               pagination={false}
+              scroll={{ x: 400 }}
             />
           </Card>
         ) : (
@@ -226,7 +227,7 @@ export default function SharePerformancePage() {
             rowKey={(_, i) => String(i)}
             size="small"
             scroll={{ x: 500 }}
-            pagination={{ pageSize: 20, size: 'small', showSizeChanger: true, pageSizeOptions: ['10', '20', '50'] }}
+            pagination={{ pageSize: 20, size: 'small', showSizeChanger: true, pageSizeOptions: ['10', '20', '50'], simple: true }}
           />
         )}
       </Card>

@@ -18,16 +18,29 @@ export default function ShareChart({ data, timesMs }: ShareChartProps) {
 
   const hasTimeAxis = !!timesMs && timesMs.length > 0;
 
+  // Handle flat equity curve: if all values are the same, expand the YAxis domain
+  // so the chart doesn't render as a flat line at the top/bottom edge.
+  const allSame = chartData.length > 0 && chartData.every(d => d.value === firstValue);
+  const padding = allSame ? Math.max(Math.abs(firstValue) * 0.01, 1) : 0;
+  const yDomain: [number | string, number | string] = allSame
+    ? [firstValue - padding, firstValue + padding]
+    : ['auto', 'auto'];
+
+  // Single data point: recharts needs at least 2 points to draw an area.
+  const renderData = chartData.length === 1
+    ? [chartData[0], { ...chartData[0], x: chartData[0].x + 1 }]
+    : chartData;
+
   return (
     <ResponsiveContainer width="100%" height={260}>
-      <AreaChart data={chartData} margin={{ top: 4, right: 8, bottom: 4, left: 4 }}>
+      <AreaChart data={renderData} margin={{ top: 4, right: 8, bottom: 4, left: 4 }}>
         <defs>
           <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity={0.3} />
             <stop offset="100%" stopColor={color} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <YAxis hide domain={['auto', 'auto']} />
+        <YAxis hide domain={yDomain} />
         {hasTimeAxis && (
           <XAxis
             dataKey="x"
@@ -45,7 +58,7 @@ export default function ShareChart({ data, timesMs }: ShareChartProps) {
           />
         )}
         <Tooltip
-          formatter={(v: number) => v.toFixed(2)}
+          formatter={(v: number | undefined) => (v ?? 0).toFixed(2)}
           labelFormatter={(label: unknown) => {
             if (hasTimeAxis && typeof label === 'number') {
               return new Date(label).toLocaleDateString();
