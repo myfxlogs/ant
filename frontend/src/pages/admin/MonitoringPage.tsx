@@ -3,8 +3,8 @@ import { Card, Col, Row, Statistic, Tag, Progress, Space, Alert, Descriptions } 
 import { MonitorOutlined, DatabaseOutlined, CloudServerOutlined, ApiOutlined, ThunderboltOutlined, WarningOutlined } from '@ant-design/icons';
 import { adminMonitorStreamClient } from '@/client/connect';
 import { create } from '@bufbuild/protobuf';
-import { SubscribeMetricsRequestSchema } from '../gen/ant/v1/admin_monitor_pb';
-import type { MonitorSnapshot } from '../gen/ant/v1/admin_monitor_pb';
+import { SubscribeMetricsRequestSchema } from '@/gen/ant/v1/admin_monitor_pb';
+import type { MonitorSnapshot } from '@/gen/ant/v1/admin_monitor_pb';
 
 function formatBytes(bytes: bigint | number): string {
   const b = Number(bytes);
