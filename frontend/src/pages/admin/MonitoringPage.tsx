@@ -193,7 +193,7 @@ export default function MonitoringPage() {
           </Card>
 
           <div className="text-center" style={{ color: 'var(--color-text-tertiary)', fontSize: 12 }}>
-            数据推送间隔: 5 秒 · 最后更新: {snap.timestamp ? new Date(snap.timestamp.toDate()).toLocaleTimeString('zh-CN') : '-'}
+            数据推送间隔: 5 秒 · 最后更新: {snap.timestamp ? new Date(Number(snap.timestamp.seconds) * 1000 + Math.floor(Number(snap.timestamp.nanos) / 1e6)).toLocaleTimeString('zh-CN') : '-'}
           </div>
         </>
       )}
