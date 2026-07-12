@@ -63,24 +63,24 @@ export default function AdminSettingsPage() {
     try {
       const ok = await setManagedSetting(editKey.trim(), editValue.trim());
       if (ok) {
-        message.success('保存成功');
+        message.success(t('admin.settings.saveSuccess', { defaultValue: 'Saved successfully' }));
         setModalOpen(false);
         fetchSettings();
       } else {
-        message.error('保存失败');
+        message.error(t('admin.settings.saveFailed', { defaultValue: 'Save failed' }));
       }
     } catch {
-      message.error('保存失败');
+      message.error(t('admin.settings.saveFailed', { defaultValue: 'Save failed' }));
     }
   };
 
   const handleDelete = async (key: string) => {
     try {
       await deleteManagedSetting(key);
-      message.success('已删除');
+      message.success(t('admin.settings.deleted', { defaultValue: 'Deleted' }));
       fetchSettings();
     } catch {
-      message.error('删除失败');
+      message.error(t('admin.settings.deleteFailed', { defaultValue: 'Delete failed' }));
     }
   };
 
@@ -90,13 +90,13 @@ export default function AdminSettingsPage() {
       await setManagedSetting(key, newVal);
       fetchSettings();
     } catch {
-      message.error('操作失败');
+      message.error(t('admin.settings.actionFailed', { defaultValue: 'Action failed' }));
     }
   };
 
   const columns = [
     {
-      title: '设置项',
+      title: t('admin.settings.columns.key', { defaultValue: 'Setting Key' }),
       dataIndex: 'key',
       key: 'key',
       width: 240,
@@ -105,7 +105,7 @@ export default function AdminSettingsPage() {
       ),
     },
     {
-      title: '值',
+      title: t('admin.settings.columns.value', { defaultValue: 'Value' }),
       dataIndex: 'value',
       key: 'value',
       render: (value: string, record: ManagedSettingEntry) => {
@@ -114,8 +114,8 @@ export default function AdminSettingsPage() {
             <Switch
               checked={value === 'true'}
               onChange={() => handleToggleBool(record.key, value)}
-              checkedChildren="开启"
-              unCheckedChildren="关闭"
+              checkedChildren={t('common.on', { defaultValue: 'On' })}
+              unCheckedChildren={t('common.off', { defaultValue: 'Off' })}
             />
           );
         }
@@ -123,17 +123,17 @@ export default function AdminSettingsPage() {
       },
     },
     {
-      title: '操作',
+      title: t('admin.settings.columns.action', { defaultValue: 'Action' }),
       key: 'action',
       width: 160,
       render: (_: unknown, record: ManagedSettingEntry) => (
         <Space>
           <Button size="small" icon={<SettingOutlined />} onClick={() => handleEdit(record)}>
-            编辑
+            {t('common.edit', { defaultValue: 'Edit' })}
           </Button>
-          <Popconfirm title="确认删除?" onConfirm={() => handleDelete(record.key)}>
+          <Popconfirm title={t('admin.settings.confirmDelete', { defaultValue: 'Confirm delete?' })} onConfirm={() => handleDelete(record.key)}>
             <Button size="small" danger icon={<DeleteOutlined />}>
-              删除
+              {t('common.delete', { defaultValue: 'Delete' })}
             </Button>
           </Popconfirm>
         </Space>
@@ -145,10 +145,10 @@ export default function AdminSettingsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Title level={4} style={{ margin: 0 }}>
-          <SafetyOutlined /> Agent 管理设置
+          <SafetyOutlined /> {t('admin.settings.title', { defaultValue: 'Agent Management Settings' })}
         </Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-          新增设置
+          {t('admin.settings.addSetting', { defaultValue: 'Add Setting' })}
         </Button>
       </div>
 
@@ -163,36 +163,36 @@ export default function AdminSettingsPage() {
         />
       </Card>
 
-      <Card title="权限规则 (permission.rule.N)" size="small">
+      <Card title={t('admin.settings.permissionRules', { defaultValue: 'Permission Rules (permission.rule.N)' })} size="small">
         <Text type="secondary">
-          权限规则格式: <code>ALLOW|DENY action(resource:selector)</code>
+          {t('admin.settings.permissionFormat', { defaultValue: 'Format: ' })}<code>ALLOW|DENY action(resource:selector)</code>
           <br />
-          示例: <code>DENY live_trading(*:leverage&gt;100)</code>
+          {t('admin.settings.permissionExample', { defaultValue: 'Example: ' })}<code>DENY live_trading(*:leverage&gt;100)</code>
           <br />
-          添加规则: 新增设置项，key 填 <code>permission.rule.1</code>, <code>permission.rule.2</code> 等
+          {t('admin.settings.permissionAddRule', { defaultValue: 'Add rule: create setting with key ' })}<code>permission.rule.1</code>, <code>permission.rule.2</code>
         </Text>
       </Card>
 
       <Modal
-        title={isNew ? '新增 Managed 设置' : `编辑: ${SETTING_LABELS[editKey] || editKey}`}
+        title={isNew ? t('admin.settings.addManagedSetting', { defaultValue: 'Add Managed Setting' }) : t('admin.settings.editSetting', { setting: SETTING_LABELS[editKey] || editKey, defaultValue: `Edit: ${SETTING_LABELS[editKey] || editKey}` })}
         open={modalOpen}
         onOk={handleSave}
         onCancel={() => setModalOpen(false)}
-        okText="保存"
-        cancelText="取消"
+        okText={t('common.save', { defaultValue: 'Save' })}
+        cancelText={t('common.cancel', { defaultValue: 'Cancel' })}
       >
         <Space direction="vertical" className="w-full" size="middle">
           <div>
-            <Text type="secondary">设置项 Key</Text>
+            <Text type="secondary">{t('admin.settings.settingKey', { defaultValue: 'Setting Key' })}</Text>
             <Input
               value={editKey}
               onChange={(e) => setEditKey(e.target.value)}
               disabled={!isNew}
-              placeholder="例如: allowed_models, disable_live_trading, permission.rule.1"
+              placeholder={t('admin.settings.keyPlaceholder', { defaultValue: 'e.g.: allowed_models, disable_live_trading, permission.rule.1' })}
             />
           </div>
           <div>
-            <Text type="secondary">值</Text>
+            <Text type="secondary">{t('admin.settings.columns.value', { defaultValue: 'Value' })}</Text>
             {BOOL_KEYS.has(editKey) ? (
               <Select
                 value={editValue}
@@ -208,7 +208,7 @@ export default function AdminSettingsPage() {
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 rows={3}
-                placeholder="例如: claude-sonnet-5,deepseek-v4"
+                placeholder={t('admin.settings.valuePlaceholder', { defaultValue: 'e.g.: claude-sonnet-5,deepseek-v4' })}
               />
             )}
           </div>
