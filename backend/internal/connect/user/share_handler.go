@@ -83,8 +83,14 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 	end := time.Now()
 	equityPoints, _ := s.eqRepo.GetEquityCurve(ctx, aid, start, end)
 	equityVals := make([]string, 0, len(equityPoints))
+	equityTimesMs := make([]int64, 0, len(equityPoints))
 	for _, p := range equityPoints {
 		equityVals = append(equityVals, p.Equity.String())
+		if t, err := time.Parse("2006-01-02", p.Date); err == nil {
+			equityTimesMs = append(equityTimesMs, t.UnixMilli())
+		} else {
+			equityTimesMs = append(equityTimesMs, 0)
+		}
 	}
 
 	// Recent trades + stats from trade_records.
@@ -103,7 +109,7 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 	resp := connect.NewResponse(&antv1.GetSharedPerformanceResponse{
 		UserName: userName, TotalTrades: int32(len(trades)),
 		TotalReturn: stats.totalReturn(), WinRate: stats.winRate(), MaxDrawdown: stats.maxDrawdown(),
-		EquityCurve: equityVals, Trades: pbTrades,
+		EquityCurve: equityVals, EquityTimesMs: equityTimesMs, Trades: pbTrades,
 	})
 	resp.Header().Set("X-Total-Volume", fmt.Sprintf("%.2f", stats.totalVol()))
 	resp.Header().Set("X-Profit-Factor", fmt.Sprintf("%.2f", stats.profitFactor()))

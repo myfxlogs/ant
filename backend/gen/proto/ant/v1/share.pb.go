@@ -197,6 +197,7 @@ type GetSharedPerformanceResponse struct {
 	EquityCurve   []string               `protobuf:"bytes,8,rep,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
 	Trades        []*SharedTrade         `protobuf:"bytes,9,rep,name=trades,proto3" json:"trades,omitempty"`
 	Expired       bool                   `protobuf:"varint,10,opt,name=expired,proto3" json:"expired,omitempty"`
+	EquityTimesMs []int64                `protobuf:"varint,11,rep,packed,name=equity_times_ms,json=equityTimesMs,proto3" json:"equity_times_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -301,6 +302,13 @@ func (x *GetSharedPerformanceResponse) GetExpired() bool {
 	return false
 }
 
+func (x *GetSharedPerformanceResponse) GetEquityTimesMs() []int64 {
+	if x != nil {
+		return x.EquityTimesMs
+	}
+	return nil
+}
+
 type SharedTrade struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
@@ -394,7 +402,7 @@ const file_share_proto_rawDesc = "" +
 	"\n" +
 	"expires_at\x18\x03 \x01(\tR\texpiresAt\"3\n" +
 	"\x1bGetSharedPerformanceRequest\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\"\xef\x02\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"\x97\x03\n" +
 	"\x1cGetSharedPerformanceResponse\x12\x1b\n" +
 	"\tuser_name\x18\x01 \x01(\tR\buserName\x12!\n" +
 	"\faccount_info\x18\x02 \x01(\tR\vaccountInfo\x12!\n" +
@@ -406,7 +414,8 @@ const file_share_proto_rawDesc = "" +
 	"\fequity_curve\x18\b \x03(\tR\vequityCurve\x12+\n" +
 	"\x06trades\x18\t \x03(\v2\x13.ant.v1.SharedTradeR\x06trades\x12\x18\n" +
 	"\aexpired\x18\n" +
-	" \x01(\bR\aexpired\"\x8d\x01\n" +
+	" \x01(\bR\aexpired\x12&\n" +
+	"\x0fequity_times_ms\x18\v \x03(\x03R\requityTimesMs\"\x8d\x01\n" +
 	"\vSharedTrade\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +

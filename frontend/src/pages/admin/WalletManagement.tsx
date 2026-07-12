@@ -4,6 +4,7 @@ import {
 } from 'antd';
 import { WalletOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { walletApi } from '@/client/wallet';
 import { formatDateTime } from '@/utils/date';
 import WalletCalculator from './WalletCalculator';
@@ -11,6 +12,7 @@ import WalletCalculator from './WalletCalculator';
 const { Title, Text } = Typography;
 
 export default function WalletManagement() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -41,19 +43,19 @@ export default function WalletManagement() {
 
   const adjustMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedUserId) throw new Error('未选择用户');
+      if (!selectedUserId) throw new Error(t('admin.wallet.errors.noUserSelected', { defaultValue: 'No user selected' }));
       const amount = adjustType === 'add' ? String(adjustAmount) : `-${adjustAmount}`;
       return walletApi.adjustBalance(selectedUserId, amount, adjustDesc);
     },
     onSuccess: () => {
-      message.success('余额调整成功');
+      message.success(t('admin.wallet.messages.adjustSuccess', { defaultValue: 'Balance adjusted successfully' }));
       setAdjustOpen(false);
       setAdjustAmount(0);
       setAdjustDesc('');
       queryClient.invalidateQueries({ queryKey: ['admin', 'wallet'] });
     },
     onError: (err: Error) => {
-      message.error(err.message || '调整失败');
+      message.error(err.message || t('admin.wallet.messages.adjustFailed', { defaultValue: 'Adjustment failed' }));
     },
   });
 
@@ -64,28 +66,28 @@ export default function WalletManagement() {
 
   const handleFillAdjust = (usd: string, tokens: string, modelLabel: string) => {
     setAdjustAmount(parseFloat(usd) || 0);
-    const t = parseInt(tokens) || 0;
-    setAdjustDesc(`${t >= 1000 ? (t / 1000).toFixed(0) + 'K' : t} tokens (${modelLabel})`);
+    const tokenCount = parseInt(tokens) || 0;
+    setAdjustDesc(`${tokenCount >= 1000 ? (tokenCount / 1000).toFixed(0) + 'K' : tokenCount} tokens (${modelLabel})`);
   };
 
   const userColumns = [
     {
-      title: '钱包号',
+      title: t('admin.wallet.columns.walletNumber', { defaultValue: 'Wallet No.' }),
       dataIndex: 'accountNumber',
       key: 'accountNumber',
       width: 120,
       render: (v: string | undefined) =>
-        v ? <Tag color="blue" style={{ fontFamily: 'monospace' }}>{v}</Tag> : <Tag color="default">未分配</Tag>,
+        v ? <Tag color="blue" style={{ fontFamily: 'monospace' }}>{v}</Tag> : <Tag color="default">{t('admin.wallet.unassigned', { defaultValue: 'Unassigned' })}</Tag>,
     },
     {
-      title: '邮箱',
+      title: t('admin.wallet.columns.email', { defaultValue: 'Email' }),
       dataIndex: 'email',
       key: 'email',
       ellipsis: true,
       render: (v: string) => <Text>{v}</Text>,
     },
     {
-      title: '昵称',
+      title: t('admin.wallet.columns.nickname', { defaultValue: 'Nickname' }),
       dataIndex: 'nickname',
       key: 'nickname',
       width: 120,
@@ -94,18 +96,18 @@ export default function WalletManagement() {
   ];
 
   const txColumns = [
-    { title: '类型', dataIndex: 'txType', key: 'txType', width: 100,
+    { title: t('admin.wallet.columns.type', { defaultValue: 'Type' }), dataIndex: 'txType', key: 'txType', width: 100,
       render: (v: string) => {
         const m: Record<string, string> = { deposit: 'green', withdrawal: 'red', adjustment: 'blue', ai_usage: 'purple', fee: 'orange' };
         return <Tag color={m[v] || 'default'}>{v}</Tag>;
       },
     },
-    { title: '金额', dataIndex: 'amount', key: 'amount', width: 140,
+    { title: t('admin.wallet.columns.amount', { defaultValue: 'Amount' }), dataIndex: 'amount', key: 'amount', width: 140,
       render: (v: string) => <span style={{ color: v.startsWith('-') ? '#ef4444' : '#22c55e', fontWeight: 500 }}>{v.startsWith('-') ? v : `+${v}`}</span>,
     },
-    { title: '变动后余额', dataIndex: 'balanceAfter', key: 'balanceAfter', width: 140 },
-    { title: '描述', dataIndex: 'description', key: 'description', ellipsis: true },
-    { title: '时间', dataIndex: 'createdAtTsMs', key: 'createdAtTsMs', width: 170,
+    { title: t('admin.wallet.columns.balanceAfter', { defaultValue: 'Balance After' }), dataIndex: 'balanceAfter', key: 'balanceAfter', width: 140 },
+    { title: t('admin.wallet.columns.description', { defaultValue: 'Description' }), dataIndex: 'description', key: 'description', ellipsis: true },
+    { title: t('admin.wallet.columns.time', { defaultValue: 'Time' }), dataIndex: 'createdAtTsMs', key: 'createdAtTsMs', width: 170,
       render: (v: unknown) => formatDateTime(String(v || '')),
     },
   ];
@@ -113,13 +115,13 @@ export default function WalletManagement() {
   return (
     <div className="space-y-4">
       <Title level={4}>
-        <WalletOutlined /> 钱包管理
+        <WalletOutlined /> {t('admin.wallet.title', { defaultValue: 'Wallet Management' })}
       </Title>
 
-      <Card size="small" title="用户列表">
+      <Card size="small" title={t('admin.wallet.userList', { defaultValue: 'User List' })}>
         <Input
           prefix={<SearchOutlined />}
-          placeholder="搜索钱包号 / 邮箱 / 昵称"
+          placeholder={t('admin.wallet.searchPlaceholder', { defaultValue: 'Search wallet / email / nickname' })}
           value={search}
           onChange={(e) => { setSearch(e.target.value); setSelectedUserId(null); }}
           style={{ width: 360, marginBottom: 12 }}
@@ -131,7 +133,7 @@ export default function WalletManagement() {
           rowKey="id"
           loading={searching}
           size="small"
-          pagination={{ pageSize: 15, showTotal: (t) => `${t} 个用户` }}
+          pagination={{ pageSize: 15, showTotal: (total) => t('admin.wallet.totalUsers', { total, defaultValue: `${total} users` }) }}
           onRow={(record) => ({
             onClick: () => selectUser(record),
             style: {
@@ -139,7 +141,7 @@ export default function WalletManagement() {
               background: selectedUserId === record.id ? '#e6f4ff' : undefined,
             },
           })}
-          locale={{ emptyText: search ? '未找到匹配用户' : '暂无用户' }}
+          locale={{ emptyText: search ? t('admin.wallet.noMatch', { defaultValue: 'No matching users' }) : t('admin.wallet.noUsers', { defaultValue: 'No users' }) }}
         />
       </Card>
 
@@ -147,20 +149,20 @@ export default function WalletManagement() {
         <>
           <Card
             size="small"
-            title={`钱包详情: ${selectedUserInfo.accountNumber ? selectedUserInfo.accountNumber + ' · ' : ''}${selectedUserInfo.email}`}
+            title={t('admin.wallet.walletDetail', { defaultValue: 'Wallet Detail' }) + `: ${selectedUserInfo.accountNumber ? selectedUserInfo.accountNumber + ' · ' : ''}${selectedUserInfo.email}`}
             loading={walletLoading}
           >
             <Descriptions column={4} size="small">
-              <Descriptions.Item label="钱包号">
+              <Descriptions.Item label={t('admin.wallet.columns.walletNumber', { defaultValue: 'Wallet No.' })}>
                 {wallet?.accountNumber ? <Tag color="blue">{wallet.accountNumber}</Tag> : '—'}
               </Descriptions.Item>
-              <Descriptions.Item label="余额">
+              <Descriptions.Item label={t('admin.wallet.columns.balance', { defaultValue: 'Balance' })}>
                 <Text strong style={{ color: '#22c55e', fontSize: 16 }}>{wallet?.balance || '0'}</Text>
               </Descriptions.Item>
-              <Descriptions.Item label="冻结">
+              <Descriptions.Item label={t('admin.wallet.columns.frozen', { defaultValue: 'Frozen' })}>
                 <Text type="secondary">{wallet?.frozenBalance || '0'}</Text>
               </Descriptions.Item>
-              <Descriptions.Item label="币种">
+              <Descriptions.Item label={t('admin.wallet.columns.currency', { defaultValue: 'Currency' })}>
                 {wallet?.currency || 'USD'}
               </Descriptions.Item>
             </Descriptions>
@@ -170,11 +172,11 @@ export default function WalletManagement() {
               onClick={() => setAdjustOpen(true)}
               style={{ marginTop: 12 }}
             >
-              调整余额（赠送 / 扣除）
+              {t('admin.wallet.adjustBalance', { defaultValue: 'Adjust Balance (Add / Deduct)' })}
             </Button>
           </Card>
 
-          <Card size="small" title="交易记录">
+          <Card size="small" title={t('admin.wallet.transactions', { defaultValue: 'Transactions' })}>
             <Table
               columns={txColumns}
               dataSource={txData?.transactions || []}
@@ -189,12 +191,12 @@ export default function WalletManagement() {
 
       <Modal
         open={adjustOpen}
-        title="调整余额"
+        title={t('admin.wallet.adjustBalance', { defaultValue: 'Adjust Balance' })}
         onCancel={() => setAdjustOpen(false)}
         onOk={() => adjustMutation.mutate()}
         confirmLoading={adjustMutation.isPending}
-        okText="确认"
-        cancelText="取消"
+        okText={t('common.confirm', { defaultValue: 'Confirm' })}
+        cancelText={t('common.cancel', { defaultValue: 'Cancel' })}
         width={520}
       >
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
@@ -205,8 +207,8 @@ export default function WalletManagement() {
               onChange={(v) => setAdjustType(v)}
               style={{ width: 100 }}
               options={[
-                { label: '赠送', value: 'add' },
-                { label: '扣除', value: 'deduct' },
+                { label: t('admin.wallet.add', { defaultValue: 'Add' }), value: 'add' },
+                { label: t('admin.wallet.deduct', { defaultValue: 'Deduct' }), value: 'deduct' },
               ]}
             />
             <InputNumber
@@ -220,7 +222,7 @@ export default function WalletManagement() {
             />
           </Space>
           <Input
-            placeholder="调整原因"
+            placeholder={t('admin.wallet.adjustReason', { defaultValue: 'Reason' })}
             value={adjustDesc}
             onChange={(e) => setAdjustDesc(e.target.value)}
           />

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { InputNumber, Select, Space, Divider, Typography, Button } from 'antd';
 import { CalculatorOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { aiGatewayApi } from '@/client/aiGateway';
 
 const { Text } = Typography;
@@ -11,6 +12,7 @@ interface CalculatorProps {
 }
 
 export default function WalletCalculator({ onFillAdjust }: CalculatorProps) {
+  const { t } = useTranslation();
   const [calcModel, setCalcModel] = useState<string | undefined>();
   const [calcUSD, setCalcUSD] = useState<number>(0.10);
   const [calcTokens, setCalcTokens] = useState<number>(714285);
@@ -66,14 +68,14 @@ export default function WalletCalculator({ onFillAdjust }: CalculatorProps) {
   return (
     <div style={{ background: '#f6ffed', borderRadius: 8, padding: 12, border: '1px solid #b7eb8f' }}>
       <div style={{ fontSize: 12, color: '#52c41a', marginBottom: 8, fontWeight: 500 }}>
-        <CalculatorOutlined /> Token ↔ USD 换算
+        <CalculatorOutlined /> {t('admin.walletCalculator.title', { defaultValue: 'Token ↔ USD Calculator' })}
       </div>
       <Select
         showSearch
         value={calcModel}
         onChange={handleModelChange}
         style={{ width: '100%', marginBottom: 12 }}
-        placeholder="选择模型（定价基准）"
+        placeholder={t('admin.walletCalculator.selectModel', { defaultValue: 'Select model (pricing basis)' })}
         options={modelOptions}
         filterOption={(input, option) =>
           (option?.label as string || '').toLowerCase().includes(input.toLowerCase())
@@ -82,7 +84,7 @@ export default function WalletCalculator({ onFillAdjust }: CalculatorProps) {
       {selectedModel && (
         <Space style={{ width: '100%' }} size={12}>
           <div style={{ flex: 1 }}>
-            <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>USD 金额</Text>
+            <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>{t('admin.walletCalculator.usdAmount', { defaultValue: 'USD Amount' })}</Text>
             <InputNumber
               value={calcUSD}
               onChange={(v) => handleUSDChange(v || 0)}
@@ -97,7 +99,7 @@ export default function WalletCalculator({ onFillAdjust }: CalculatorProps) {
             <Text type="secondary">⇄</Text>
           </div>
           <div style={{ flex: 1 }}>
-            <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>Token 数量</Text>
+            <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>{t('admin.walletCalculator.tokenAmount', { defaultValue: 'Token Amount' })}</Text>
             <InputNumber
               value={calcTokens}
               onChange={(v) => handleTokensChange(v || 0)}
@@ -111,7 +113,7 @@ export default function WalletCalculator({ onFillAdjust }: CalculatorProps) {
       )}
       <Divider style={{ margin: '12px 0 0' }} />
       <Button size="small" icon={<CalculatorOutlined />} onClick={fillAdjust} style={{ marginTop: 12 }}>
-        填入换算结果
+        {t('admin.walletCalculator.fillResult', { defaultValue: 'Fill Result' })}
       </Button>
     </div>
   );

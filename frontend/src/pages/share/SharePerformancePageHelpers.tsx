@@ -50,6 +50,7 @@ export interface ShareData {
   avgHoldingMs: number;
   sharpeRatio: number;
   equityCurve: number[];
+  equityTimesMs?: number[];
   trades: Array<{ symbol: string; side: string; volume: number; profit: number; closeTimeMs: number }>;
   positions?: Array<{ symbol: string; type: string; volume: number; openPrice: number; currentPrice: number; profit: number; openTimeMs: number }> | null;
   showPositions?: boolean;

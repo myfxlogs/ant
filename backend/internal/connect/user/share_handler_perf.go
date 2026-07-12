@@ -45,9 +45,15 @@ func (s *ShareServer) HandleGetSharedPerformanceJSON(w http.ResponseWriter, r *h
 
 	equityPoints, _ := s.eqRepo.GetEquityCurve(r.Context(), aid, start, end)
 	equityVals := make([]float64, 0, len(equityPoints))
+	equityTimesMs := make([]int64, 0, len(equityPoints))
 	for _, p := range equityPoints {
 		f, _ := p.Equity.Float64()
 		equityVals = append(equityVals, f)
+		if t, err := time.Parse("2006-01-02", p.Date); err == nil {
+			equityTimesMs = append(equityTimesMs, t.UnixMilli())
+		} else {
+			equityTimesMs = append(equityTimesMs, 0)
+		}
 	}
 
 	trades, _ := s.tradeRecords.GetByAccountID(r.Context(), st.UserID, aid, start, end, 100)
@@ -148,6 +154,7 @@ func (s *ShareServer) HandleGetSharedPerformanceJSON(w http.ResponseWriter, r *h
 		"avgHoldingMs":    avgHoldingMs,
 		"sharpeRatio":     sharpe,
 		"equityCurve":     equityVals,
+		"equityTimesMs":   equityTimesMs,
 		"trades":          tradesOut,
 		"showPositions":   st.ShowPositions,
 		"positions":       positionsOut,

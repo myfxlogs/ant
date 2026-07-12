@@ -28,7 +28,7 @@ export function useUserManagement() {
       setUsers(result.users);
       setTotal(result.total);
     } catch (err) {
-      const msg = getErrorMessage(err, '加载用户列表失败');
+      const msg = getErrorMessage(err, t('admin.userManagement.messages.loadUsersFailed', { defaultValue: 'Failed to load users' }));
       setError(msg);
       message.error(msg);
     } finally {
