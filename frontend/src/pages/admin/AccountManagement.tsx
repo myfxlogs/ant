@@ -4,10 +4,12 @@ import { adminApi, type AccountWithUser, type AccountListParams } from '@/client
 import { formatDateTime } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import { StatusResult } from '@/components/common/StatusResult';
+import { useTranslation } from 'react-i18next';
 
 const { Search } = Input;
 
 export default function AccountManagement() {
+  const { t } = useTranslation();
   const [accounts, setAccounts] = useState<AccountWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +37,7 @@ export default function AccountManagement() {
       setTotal(result.total);
       setError(null);
     } catch (err) {
-      const msg = getErrorMessage(err, '加载账户列表失败');
+      const msg = getErrorMessage(err, t('admin.account.errors.loadFailed', { defaultValue: 'Failed to load accounts' }));
       setError(msg);
       message.error(msg);
     } finally {
@@ -51,49 +53,49 @@ export default function AccountManagement() {
   const handleFreeze = async (account: AccountWithUser) => {
     try {
       await adminApi.freezeAccount(account.id);
-      message.success('账户已冻结');
+      message.success(t('admin.account.frozen', { defaultValue: 'Account frozen' }));
       fetchAccounts(true);
     } catch (error) {
-      message.error(getErrorMessage(error, '冻结失败'));
+      message.error(getErrorMessage(error, t('admin.account.errors.freezeFailed', { defaultValue: 'Freeze failed' })));
     }
   };
 
   const handleUnfreeze = async (account: AccountWithUser) => {
     try {
       await adminApi.unfreezeAccount(account.id);
-      message.success('账户已解冻');
+      message.success(t('admin.account.unfrozen', { defaultValue: 'Account unfrozen' }));
       fetchAccounts(true);
     } catch (error) {
-      message.error(getErrorMessage(error, '解冻失败'));
+      message.error(getErrorMessage(error, t('admin.account.errors.unfreezeFailed', { defaultValue: 'Unfreeze failed' })));
     }
   };
 
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 100, ellipsis: true },
-    { title: '用户', dataIndex: 'userEmail', key: 'userEmail', width: 150 },
-    { title: '账号', dataIndex: 'login', key: 'login', width: 100 },
-    { title: '类型', dataIndex: 'mtType', key: 'mtType', width: 80, render: (v: string) => <Tag color={v === 'MT5' ? 'blue' : 'green'}>{v}</Tag> },
-    { title: '经纪商', dataIndex: 'brokerCompany', key: 'brokerCompany', width: 150 },
-    { title: '状态', dataIndex: 'accountStatus', key: 'accountStatus', width: 100, render: (v: string) => {
+    { title: t('admin.account.columns.user', { defaultValue: 'User' }), dataIndex: 'userEmail', key: 'userEmail', width: 150 },
+    { title: t('admin.account.columns.login', { defaultValue: 'Login' }), dataIndex: 'login', key: 'login', width: 100 },
+    { title: t('admin.account.columns.type', { defaultValue: 'Type' }), dataIndex: 'mtType', key: 'mtType', width: 80, render: (v: string) => <Tag color={v === 'MT5' ? 'blue' : 'green'}>{v}</Tag> },
+    { title: t('admin.account.columns.broker', { defaultValue: 'Broker' }), dataIndex: 'brokerCompany', key: 'brokerCompany', width: 150 },
+    { title: t('admin.account.columns.status', { defaultValue: 'Status' }), dataIndex: 'accountStatus', key: 'accountStatus', width: 100, render: (v: string) => {
       const color = v === 'online' ? 'success' : v === 'offline' ? 'error' : 'warning';
       return <Tag color={color}>{v}</Tag>;
     }},
-    { title: '余额', dataIndex: 'balance', key: 'balance', width: 100, render: (v: number) => v?.toFixed(2) },
-    { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 150, render: (_v: unknown, record: AccountWithUser) => formatDateTime(record.createdAt) },
+    { title: t('admin.account.columns.balance', { defaultValue: 'Balance' }), dataIndex: 'balance', key: 'balance', width: 100, render: (v: number) => v?.toFixed(2) },
+    { title: t('admin.account.columns.createdAt', { defaultValue: 'Created At' }), dataIndex: 'createdAt', key: 'createdAt', width: 150, render: (_v: unknown, record: AccountWithUser) => formatDateTime(record.createdAt) },
     {
-      title: '操作',
+      title: t('admin.account.columns.action', { defaultValue: 'Action' }),
       key: 'action',
       width: 150,
       render: (_: unknown, record: AccountWithUser) => (
         <Space>
           <Button size="small" onClick={() => { setCurrentAccount(record); setDetailDrawerVisible(true); fetchAuditLogs(record.id); }}>
-            详情
+            {t('admin.account.detail', { defaultValue: 'Detail' })}
           </Button>
           {record.accountStatus === 'frozen' ? (
-            <Button size="small" onClick={() => handleUnfreeze(record)}>解冻</Button>
+            <Button size="small" onClick={() => handleUnfreeze(record)}>{t('admin.account.unfreeze', { defaultValue: 'Unfreeze' })}</Button>
           ) : (
-            <Popconfirm title="确定冻结该账户？" onConfirm={() => handleFreeze(record)}>
-              <Button size="small" danger>冻结</Button>
+            <Popconfirm title={t('admin.account.confirmFreeze', { defaultValue: 'Freeze this account?' })} onConfirm={() => handleFreeze(record)}>
+              <Button size="small" danger>{t('admin.account.freeze', { defaultValue: 'Freeze' })}</Button>
             </Popconfirm>
           )}
         </Space>
@@ -102,22 +104,22 @@ export default function AccountManagement() {
   ];
 
   return (
-    <Card title="账户管理">
+    <Card title={t('admin.account.title', { defaultValue: 'Account Management' })}>
       <div className="mb-4">
         <Space>
           <Search
-            placeholder="搜索账户"
+            placeholder={t('admin.account.searchPlaceholder', { defaultValue: 'Search accounts' })}
             onSearch={(value) => setParams({ ...params, search: value, page: 1 })}
             style={{ width: 200 }}
           />
           <Select
-            placeholder="状态"
+            placeholder={t('admin.account.status', { defaultValue: 'Status' })}
             allowClear
             style={{ width: 120 }}
             onChange={(v) => setParams({ ...params, status: v, page: 1 })}
           >
-            <Select.Option value="online">在线</Select.Option>
-            <Select.Option value="offline">离线</Select.Option>
+            <Select.Option value="online">{t('admin.account.online', { defaultValue: 'Online' })}</Select.Option>
+            <Select.Option value="offline">{t('admin.account.offline', { defaultValue: 'Offline' })}</Select.Option>
           </Select>
         </Space>
       </div>
@@ -137,7 +139,7 @@ export default function AccountManagement() {
         />
       </StatusResult>
       <Drawer
-        title="账户详情"
+        title={t('admin.account.detail', { defaultValue: 'Account Detail' })}
         open={detailDrawerVisible}
         onClose={() => setDetailDrawerVisible(false)}
         width={500}
@@ -145,21 +147,21 @@ export default function AccountManagement() {
         {currentAccount && (
           <Descriptions column={1}>
             <Descriptions.Item label="ID">{currentAccount.id}</Descriptions.Item>
-            <Descriptions.Item label="用户">{currentAccount.userEmail}</Descriptions.Item>
-            <Descriptions.Item label="账号">{currentAccount.login}</Descriptions.Item>
-            <Descriptions.Item label="类型">{currentAccount.mtType}</Descriptions.Item>
-            <Descriptions.Item label="经纪商">{currentAccount.brokerCompany}</Descriptions.Item>
-            <Descriptions.Item label="服务器">{currentAccount.brokerServer}</Descriptions.Item>
-            <Descriptions.Item label="状态">{currentAccount.accountStatus}</Descriptions.Item>
-            <Descriptions.Item label="余额">{currentAccount.balance}</Descriptions.Item>
-            <Descriptions.Item label="净值">{currentAccount.equity}</Descriptions.Item>
-            <Descriptions.Item label="保证金">{currentAccount.margin}</Descriptions.Item>
-            <Descriptions.Item label="创建时间">{formatDateTime(currentAccount.createdAt)}</Descriptions.Item>
+            <Descriptions.Item label={t('admin.account.columns.user', { defaultValue: 'User' })}>{currentAccount.userEmail}</Descriptions.Item>
+            <Descriptions.Item label={t('admin.account.columns.login', { defaultValue: 'Login' })}>{currentAccount.login}</Descriptions.Item>
+            <Descriptions.Item label={t('admin.account.columns.type', { defaultValue: 'Type' })}>{currentAccount.mtType}</Descriptions.Item>
+            <Descriptions.Item label={t('admin.account.columns.broker', { defaultValue: 'Broker' })}>{currentAccount.brokerCompany}</Descriptions.Item>
+            <Descriptions.Item label={t('admin.account.columns.server', { defaultValue: 'Server' })}>{currentAccount.brokerServer}</Descriptions.Item>
+            <Descriptions.Item label={t('admin.account.columns.status', { defaultValue: 'Status' })}>{currentAccount.accountStatus}</Descriptions.Item>
+            <Descriptions.Item label={t('admin.account.columns.balance', { defaultValue: 'Balance' })}>{currentAccount.balance}</Descriptions.Item>
+            <Descriptions.Item label={t('admin.account.columns.equity', { defaultValue: 'Equity' })}>{currentAccount.equity}</Descriptions.Item>
+            <Descriptions.Item label={t('admin.account.columns.margin', { defaultValue: 'Margin' })}>{currentAccount.margin}</Descriptions.Item>
+            <Descriptions.Item label={t('admin.account.columns.createdAt', { defaultValue: 'Created At' })}>{formatDateTime(currentAccount.createdAt)}</Descriptions.Item>
           </Descriptions>
         )}
         {currentAccount && (
           <div style={{ marginTop: 16 }}>
-            <h4 style={{ marginBottom: 8 }}>操作日志</h4>
+            <h4 style={{ marginBottom: 8 }}>{t('admin.account.auditLogs', { defaultValue: 'Audit Logs' })}</h4>
             <Table
               dataSource={auditLogs}
               loading={auditLoading}
@@ -167,9 +169,9 @@ export default function AccountManagement() {
               size="small"
               pagination={false}
               columns={[
-                { title: '时间', dataIndex: 'created_at', width: 160, render: (v: string) => v?.slice(0, 19).replace('T', ' ') },
-                { title: '操作', dataIndex: 'action', width: 80 },
-                { title: '详情', dataIndex: 'detail' },
+                { title: t('admin.account.columns.time', { defaultValue: 'Time' }), dataIndex: 'created_at', width: 160, render: (v: string) => v?.slice(0, 19).replace('T', ' ') },
+                { title: t('admin.account.columns.action', { defaultValue: 'Action' }), dataIndex: 'action', width: 80 },
+                { title: t('admin.account.columns.detail', { defaultValue: 'Detail' }), dataIndex: 'detail' },
               ]}
             />
           </div>

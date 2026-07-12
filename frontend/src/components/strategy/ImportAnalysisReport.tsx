@@ -10,6 +10,7 @@ import {
   DollarOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import type { AnalyzeImportCodeResponse, BlindSpot, ParamField, ParamGroupInfo } from '@/gen/ant/v1/strategy_runtime_pb';
 
 const { Text, Title } = Typography;
@@ -73,29 +74,30 @@ const severityIcon = (s: string) => {
   }
 };
 
-const executionLabel = (kind: string): string => {
+const executionLabel = (kind: string, t: (k: string, o?: any) => string): string => {
   switch (kind) {
-    case 'on_bar': return 'Bar close 事件驱动';
-    case 'on_tick': return 'Tick 驱动';
-    case 'on_init_grid': return '初始化网格';
+    case 'on_bar': return t('importAnalysis.execution.onBar', { defaultValue: 'Bar close event-driven' });
+    case 'on_tick': return t('importAnalysis.execution.onTick', { defaultValue: 'Tick-driven' });
+    case 'on_init_grid': return t('importAnalysis.execution.onInitGrid', { defaultValue: 'Init grid' });
     default: return kind;
   }
 };
 
-const sizingLabel = (kind: string): string => {
+const sizingLabel = (kind: string, t: (k: string, o?: any) => string): string => {
   switch (kind) {
-    case 'fixed': return '固定手数';
-    case 'martingale': return '马丁格尔';
-    case 'percent_balance': return '账户百分比';
+    case 'fixed': return t('importAnalysis.sizing.fixed', { defaultValue: 'Fixed lots' });
+    case 'martingale': return t('importAnalysis.sizing.martingale', { defaultValue: 'Martingale' });
+    case 'percent_balance': return t('importAnalysis.sizing.percentBalance', { defaultValue: 'Percent of balance' });
     default: return kind;
   }
 };
 
 export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => {
+  const { t } = useTranslation();
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: 32 }}>
-        <Spin tip="正在分析策略结构..." />
+        <Spin tip={t('importAnalysis.analyzing', { defaultValue: 'Analyzing strategy structure...' })} />
       </div>
     );
   }
@@ -120,40 +122,40 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
       {/* ── Triage Verdict ── */}
       {isPureGuiNoise && (
         <Alert type="success" showIcon icon={<CheckCircleOutlined />}
-          message="交易逻辑已完整识别"
-          description="以下盲区均为图表显示/按钮功能，服务端自动运行时会跳过，不影响交易结果。可以确认导入。"
+          message={t('importAnalysis.tradeLogicComplete', { defaultValue: 'Trading logic fully recognized' })}
+          description={t('importAnalysis.guiNoiseDesc', { defaultValue: 'The following blind spots are chart display/button features that are skipped during server-side execution and do not affect trading results. Safe to import.' })}
           style={{ marginBottom: 12 }} />
       )}
       {hasRealGaps && triageLevel === 'block' && (
         <Alert type="error" showIcon icon={<CloseCircleOutlined />}
-          message="无法自动导入"
-          description={`核心交易逻辑仅识别 ${coverage}%，未识别部分包含入场/出场/风控等关键逻辑。建议使用 AI 翻译重试，或简化 EA 后重新提交。`}
+          message={t('importAnalysis.cannotImport', { defaultValue: 'Cannot auto-import' })}
+          description={t('importAnalysis.cannotImportDesc', { coverage, defaultValue: `Core trading logic only ${coverage}% recognized. Unrecognized parts include entry/exit/risk logic. Try AI translation or simplify the EA and resubmit.` })}
           style={{ marginBottom: 12 }} />
       )}
       {hasRealGaps && triageLevel === 'warn' && (
         <Alert type="warning" showIcon icon={<WarningOutlined />}
-          message="交易逻辑覆盖不完整"
-          description={`已识别 ${coverage}% 代码逻辑（不含 GUI 显示功能）。未识别部分可能影响交易行为，建议 AI 翻译补充或人工审查。`}
+          message={t('importAnalysis.incompleteCoverage', { defaultValue: 'Trading logic coverage incomplete' })}
+          description={t('importAnalysis.incompleteCoverageDesc', { coverage, defaultValue: `${coverage}% code logic recognized (excluding GUI display). Unrecognized parts may affect trading behavior. Consider AI translation or manual review.` })}
           style={{ marginBottom: 12 }} />
       )}
       {!hasRealGaps && !isPureGuiNoise && triageLevel === 'pass' && (
         <Alert type="success" showIcon icon={<CheckCircleOutlined />}
-          message="导入完整度良好"
-          description="策略已识别主要逻辑，可确认导入。建议检查参数列表后使用。"
+          message={t('importAnalysis.goodCoverage', { defaultValue: 'Import coverage is good' })}
+          description={t('importAnalysis.goodCoverageDesc', { defaultValue: 'Strategy main logic recognized. Safe to import. Check parameter list before use.' })}
           style={{ marginBottom: 12 }} />
       )}
 
       {/* ── Coverage ── */}
       <Card size="small" style={{ marginBottom: 12 }}>
         <Space direction="vertical" style={{ width: '100%' }} size="small">
-          <Text strong>导入完整度</Text>
+          <Text strong>{t('importAnalysis.coverageTitle', { defaultValue: 'Import Coverage' })}</Text>
           <Progress
             percent={coverage}
             status={coverage >= 70 || isPureGuiNoise ? 'success' : coverage >= 40 ? 'active' : 'exception'}
-            format={(p) => isPureGuiNoise ? `交易逻辑已完整识别` : `已识别 ${p}% 策略逻辑`}
+            format={(p) => isPureGuiNoise ? t('importAnalysis.tradeLogicComplete', { defaultValue: 'Trading logic fully recognized' }) : t('importAnalysis.recognizedPct', { p, defaultValue: `${p}% strategy logic recognized` })}
           />
           <Text type="secondary">
-            共 {a.totalBlocks} 个逻辑块，{a.recognizedBlocks} 个已识别
+            {t('importAnalysis.blocksSummary', { total: a.totalBlocks, recognized: a.recognizedBlocks, defaultValue: `${a.totalBlocks} logic blocks, ${a.recognizedBlocks} recognized` })}
           </Text>
         </Space>
       </Card>
@@ -162,19 +164,19 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
       <Card size="small" style={{ marginBottom: 12 }}>
         <Space wrap size="small">
           <Tag icon={<ThunderboltOutlined />} color="blue">
-            {a.entryRulesCount} 入场规则
+            {t('importAnalysis.entryRules', { count: a.entryRulesCount, defaultValue: `${a.entryRulesCount} entry rules` })}
           </Tag>
           <Tag icon={<SwapOutlined />} color="purple">
-            {a.exitRulesCount} 出场规则
+            {t('importAnalysis.exitRules', { count: a.exitRulesCount, defaultValue: `${a.exitRulesCount} exit rules` })}
           </Tag>
           <Tag icon={<DollarOutlined />} color="green">
-            {sizingLabel(a.sizingKind)}
+            {sizingLabel(a.sizingKind, t)}
           </Tag>
           <Tag icon={<SettingOutlined />} color="orange">
-            {executionLabel(a.executionKind)}
+            {executionLabel(a.executionKind, t)}
           </Tag>
           {a.riskChecksCount > 0 && (
-            <Tag color="red">{a.riskChecksCount} 风控检查</Tag>
+            <Tag color="red">{t('importAnalysis.riskChecks', { count: a.riskChecksCount, defaultValue: `${a.riskChecksCount} risk checks` })}</Tag>
           )}
           {a.indicatorNames.length > 0 && (
             <Tag color="cyan">{a.indicatorNames.join(', ')}</Tag>
@@ -184,7 +186,7 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
 
       {/* ── Parameters ── */}
       {a.params.length > 0 && (
-        <Card size="small" title={`策略参数 (${a.params.length})`} style={{ marginBottom: 12 }}>
+        <Card size="small" title={t('importAnalysis.params', { count: a.params.length, defaultValue: `Strategy Parameters (${a.params.length})` })} style={{ marginBottom: 12 }}>
           {a.groups.map((g: ParamGroupInfo) => {
             const groupParams = a.params.filter((p: ParamField) => p.group === g.name);
             if (!groupParams.length) return null;
@@ -211,7 +213,7 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
           title={
             <Space>
               <WarningOutlined />
-              <span>以下逻辑需要确认 ({realBlindSpots.length})</span>
+              <span>{t('importAnalysis.needsConfirmation', { count: realBlindSpots.length, defaultValue: `Logic needs confirmation (${realBlindSpots.length})` })}</span>
             </Space>
           }
           style={{ marginBottom: 12, borderColor: criticalBlindSpots.length > 0 ? '#ff4d4f' : '#faad14' }}
@@ -227,8 +229,8 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
                   <Text strong style={{ color: '#ff4d4f' }}>{b.category}</Text>
                   <Text>{b.description}</Text>
                   <Text type="secondary" style={{ fontSize: 12 }}>
-                    位置: {b.location} | 处理: {b.handling}
-                    {b.userActionRequired && ' | ⚠️ 需要您的操作'}
+                    {t('importAnalysis.location', { defaultValue: 'Location' })}: {b.location} | {t('importAnalysis.handling', { defaultValue: 'Handling' })}: {b.handling}
+                    {b.userActionRequired && ` | ⚠️ ${t('importAnalysis.userActionRequired', { defaultValue: 'Your action required' })}`}
                   </Text>
                 </Space>
               }
@@ -261,7 +263,7 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
           title={
             <Space>
               <InfoCircleOutlined style={{ color: '#1890ff' }} />
-              <span>已跳过的客户端功能 ({infoBlindSpots.length})</span>
+              <span>{t('importAnalysis.skippedClientFeatures', { count: infoBlindSpots.length, defaultValue: `Skipped client features (${infoBlindSpots.length})` })}</span>
             </Space>
           }
         >
@@ -281,8 +283,8 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
           type="success"
           showIcon
           icon={<CheckCircleOutlined />}
-          message="未发现需要确认的逻辑"
-          description="所有策略逻辑已自动识别，可以确认导入。"
+          message={t('importAnalysis.noBlindSpots', { defaultValue: 'No logic needs confirmation' })}
+          description={t('importAnalysis.noBlindSpotsDesc', { defaultValue: 'All strategy logic auto-recognized. Safe to import.' })}
           style={{ marginBottom: 12 }}
         />
       )}
