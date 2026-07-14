@@ -2,10 +2,12 @@ package strategy
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -47,6 +49,9 @@ func (s *StrategyExecutionServer) backtestWorker(ctx context.Context, workerID i
 		leaseUntil := time.Now().Add(leaseFor)
 		run, err := s.backtestRepo.ClaimNextForWork(ctx, leaseUntil)
 		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				continue // no pending work — normal on fallback ticker
+			}
 			s.log.Warn("backtest worker: ClaimNextForWork",
 				zap.Int("worker", workerID), zap.Error(err))
 			continue
