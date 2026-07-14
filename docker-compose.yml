@@ -70,10 +70,6 @@ services:
       - CH_USER=${CH_USER:-default}
       - CH_PASSWORD=${CH_PASSWORD:-clickhouse}
       - CH_DATABASE=${CH_DATABASE:-ant}
-      - FMP_API_KEY=${FMP_API_KEY:-}
-      - ALPHAFORGE_SEED_DEFAULT_STRATEGY_TEMPLATES=true
-      - ALPHAFORGE_SCHEDULE_EVENT_DRIVEN_ENABLED=true
-      - ALPHAFORGE_SCHEDULE_WATCHDOG_INTERVAL=30s
       - ANT_MASTER_KEY=${ANT_MASTER_KEY}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/healthz || exit 1"]

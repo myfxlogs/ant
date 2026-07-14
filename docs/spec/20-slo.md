@@ -1,5 +1,8 @@
 # 20 · SLO 与 Error Budget 规范
 
+> **⚠️ 部分过时**：Prometheus/AlertManager 栈及 `slo-report` CLI 已于 2026-07-14 移除。
+> SLO 指标定义仍然有效，但 Prometheus recording rules 和 `deploy/prometheus/` 配置已删除。
+> 系统监控现由自研 `AdminMonitorService`（SSE + 管理后台 MonitoringPage）承担。
 > 关联 ADR：ADR-0010
 > 关联 spec：`docs/spec/15-observability.md` §6（alert）
 

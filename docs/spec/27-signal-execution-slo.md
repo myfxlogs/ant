@@ -1,5 +1,7 @@
 # 27 · 信号→执行延迟 SLO 规范
 
+> **⚠️ 部分过时**：Prometheus/AlertManager 栈已于 2026-07-14 移除。
+> SLO 指标定义仍然有效，但 `deploy/prometheus/alerts.yml` 配置已删除。
 > **关联 ADR**：ADR-0018
 > **关联 spec**：`docs/spec/20-slo.md`、`docs/spec/15-observability.md`
 

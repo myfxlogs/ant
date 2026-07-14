@@ -196,16 +196,12 @@ rtk-env:
 rtk-grep:
 	@$(RTK) grep
 
-# ── v2 ClickHouse ─────────────────────────────────────────────────────
-.PHONY: migrate-ch
+# ── sqlc ─────────────────────────────────────────────────────────────
+.PHONY: sqlc
 
 sqlc:
 	@echo "Generating sqlc code..."
 	@cd backend && sqlc generate 2>/dev/null || echo "sqlc: generate skipped (tool not installed)"
-
-migrate-ch:
-	@echo "Running ClickHouse migrations..."
-	@cd backend && go run ./cmd/migrate-ch/.
 
 # ── Card verification ─────────────────────────────────────────────────
 .PHONY: verify-card
@@ -292,29 +288,14 @@ detect-all: detect-stubs detect-deadcode detect-layering detect-spec-drift
 # ── Help ──────────────────────────────────────────────────────────────
 .PHONY: help
 
-# ── CI Nightly (M10-BASE-A3) ───────────────────────────────────────────
-.PHONY: ci-nightly
-
-ci-nightly:
-	@echo "=== ci-nightly: md-doctor + slo-report ==="
-	@cd backend && go build -o /tmp/md-doctor ./cmd/md-doctor/
-	@cd backend && go build -o /tmp/slo-report ./cmd/slo-report/
-	@echo "--- md-doctor all (24h) ---"
-	@/tmp/md-doctor all --window 24h --strict --output json 2>&1 || echo "md-doctor: WARNING (see above)"
-	@echo "--- slo-report (24h) ---"
-	@/tmp/slo-report --window 24h --strict 2>&1 || echo "slo-report: WARNING (see above)"
-	@echo "=== ci-nightly complete ==="
-
 help:
 	@echo "ant Makefile targets:"
-	@echo "  ci-nightly     run md-doctor + slo-report (daily cron)"
 	@echo "  coverage       run tests with coverage summary"
 	@echo "  coverage-html  generate coverage HTML report"
 	@echo "  security-scan  run gosec + trivy filesystem scan"
 	@echo "  build          compile backend binary"
 	@echo "  test           run all tests"
 	@echo "  migrate        run PostgreSQL migrations"
-	@echo "  migrate-ch     run ClickHouse migrations (v2)"
 	@echo "  verify-card    verify a ROADMAP card (set CARD_ID=M7.X-Y)"
 	@echo "  proto          generate protobuf (Go + TS)"
 	@echo "  docker-up      start all containers"
