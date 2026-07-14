@@ -116,6 +116,15 @@
 | E2E 测试覆盖 | 中 | ✅ 新增 4 个测试文件：login-bind-account（登录+绑定向导 5 步）、i18n-language-switch（语言切换+登录页 i18n）、error-i18n（ConnectRPC 错误码→用户提示）、share-page（分享页面渲染+无效 token） |
 | 监控告警 | 中 | ✅ 完成 — Prometheus /metrics 端点 + promauto counters/histograms + MonitoringPage SSE 实时面板 |
 
+### P5：代码质量加固
+
+| 任务 | 优先级 | 说明 |
+|------|--------|------|
+| float64 清理 | 高 | ✅ 完成 — strategy_templates.go 3 个策略模板（MA/RSI/Bollinger）全部改用 decimal.Decimal，移除 InexactFloat64() |
+| E2E 测试实跑验证 | 高 | ✅ 完成 — 31/33 passed（1 pre-existing backtest-venus UI 选择器问题，1 flaky share-page 单独跑通过） |
+| TODO/FIXME 清零 | 中 | ✅ 完成 — 唯一真实 TODO（feedbackSystemTemplate i18n）已修复：添加英文模板 + Locale 字段 + 本地化 hints/gate failure/user message |
+| PG LISTEN 连接池 | 中 | ✅ 已实现 — pglisten.Listener shared-listener fan-out：每 channel 一个 PG 连接，多 SSE 订阅者共享，无需修改 |
+
 ---
 
 ## 技术架构概览

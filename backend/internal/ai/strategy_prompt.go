@@ -37,6 +37,7 @@ type FeedbackPromptParams struct {
 	StrategyType       string           // detected from previous code: "run_dataframe" or "run_context"
 	GateFailureReason  string           // e.g. "lookahead", "deflated_sharpe" — empty if N/A
 	GateFailureDetails string           // human-readable reason from gate pipeline
+	Locale             string           // user locale for prompt language selection (default: zh)
 }
 
 // StrategyPromptBuilder constructs system + user prompts for strategy generation.
@@ -112,14 +113,22 @@ func (b *StrategyPromptBuilder) BuildFeedbackPrompt(p *FeedbackPromptParams) (st
 	}
 	hints := p.FeedbackHints
 	if hints == "" {
-		hints = "用户对回测结果不满意，请根据反馈优化策略"
+		if NormalizeLocale(p.Locale) == "en" {
+			hints = "The user is not satisfied with the backtest results. Please optimize the strategy based on the feedback."
+		} else {
+			hints = "用户对回测结果不满意，请根据反馈优化策略"
+		}
 	}
 	// Detect strategy type from previous code if not explicitly set.
 	st := p.StrategyType
 	if st == "" {
 		st = DetectCodeStrategyType(p.PreviousCode)
 	}
-	system := fmt.Sprintf(feedbackSystemTemplate,
+	tmpl := feedbackSystemTemplateZH
+	if NormalizeLocale(p.Locale) == "en" {
+		tmpl = feedbackSystemTemplateEN
+	}
+	system := fmt.Sprintf(tmpl,
 		contractText(st),
 		p.PreviousCode,
 		metricsCtx,
@@ -132,14 +141,24 @@ func (b *StrategyPromptBuilder) BuildFeedbackPrompt(p *FeedbackPromptParams) (st
 		if details == "" {
 			details = "no additional details"
 		}
-		system += fmt.Sprintf("\n\n## Gate 评估失败信息\n"+
-			"上一次策略在 Gate '%s' 失败: %s\n"+
-			"请在修复代码时针对此问题进行改进，确保策略能通过此次 Gate 检查。",
-			p.GateFailureReason, details)
+		if NormalizeLocale(p.Locale) == "en" {
+			system += fmt.Sprintf("\n\n## Gate Evaluation Failure\n"+
+				"The previous strategy failed at Gate '%s': %s\n"+
+				"Please address this issue when fixing the code to ensure the strategy passes this Gate check.",
+				p.GateFailureReason, details)
+		} else {
+			system += fmt.Sprintf("\n\n## Gate 评估失败信息\n"+
+				"上一次策略在 Gate '%s' 失败: %s\n"+
+				"请在修复代码时针对此问题进行改进，确保策略能通过此次 Gate 检查。",
+				p.GateFailureReason, details)
+		}
 	}
 
-	user := fmt.Sprintf("【用户反馈】%s\n\n请分析回测结果，给出建议，并生成优化后的代码。", p.FeedbackMessage)
-	return system, user
+	userMsg := fmt.Sprintf("【用户反馈】%s\n\n请分析回测结果，给出建议，并生成优化后的代码。", p.FeedbackMessage)
+	if NormalizeLocale(p.Locale) == "en" {
+		userMsg = fmt.Sprintf("[User Feedback] %s\n\nPlease analyze the backtest results, provide suggestions, and generate optimized code.", p.FeedbackMessage)
+	}
+	return system, userMsg
 }
 
 // DetectCodeStrategyType heuristically detects the strategy type from code.

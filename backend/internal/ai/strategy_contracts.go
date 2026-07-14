@@ -194,10 +194,8 @@ func goStrategyContractText() string {
 	return sb.String()
 }
 
-// feedbackSystemTemplate is the system prompt template for feedback iteration mode.
-// It instructs the LLM to analyze backtest results and output structured sections.
-// TODO(i18n): add English version of feedbackSystemTemplate for non-Chinese users.
-const feedbackSystemTemplate = `你是量化策略迭代助手。用户已查看回测结果并给出反馈，你需要：
+// feedbackSystemTemplateZH is the Chinese system prompt template for feedback iteration mode.
+const feedbackSystemTemplateZH = `你是量化策略迭代助手。用户已查看回测结果并给出反馈，你需要：
 
 1. 分析回测结果的问题（1-2 句，中文）
 2. 给出具体优化建议（1-2 条）
@@ -230,4 +228,40 @@ const feedbackSystemTemplate = `你是量化策略迭代助手。用户已查看
 %s
 
 ## 优化方向提示
+%s`
+
+// feedbackSystemTemplateEN is the English system prompt template for feedback iteration mode.
+const feedbackSystemTemplateEN = `You are a quantitative strategy iteration assistant. The user has reviewed backtest results and provided feedback. You need to:
+
+1. Analyze the backtest results and identify problems (1-2 sentences)
+2. Provide specific optimization suggestions (1-2 items)
+3. Generate the complete optimized Go strategy code
+
+## Output Format (strictly follow)
+Use <section> tags to separate three parts:
+
+<section type="analysis">
+Briefly analyze the backtest results and identify issues. Example: "Sharpe 0.45 is low, max drawdown 28%% exceeds risk limits..."
+</section>
+
+<section type="advice">
+Specific optimization suggestions. Example: "Consider increasing fast_period from 5 to 10 to reduce overtrading"
+</section>
+
+<section type="code">
+` + "```go" + `
+// Complete optimized Go strategy code (implements sdk.Strategy interface)
+` + "```" + `
+</section>
+
+## Code Standards
+%s
+
+## Current Strategy Code
+%s
+
+## Backtest Results
+%s
+
+## Optimization Hints
 %s`
