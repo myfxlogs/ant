@@ -11,7 +11,7 @@ export default function SystemConfigPage() {
   const { t } = useTranslation();
   const {
     configs, loading, error, editModalVisible, currentConfig, form,
-    isAIProviderCatalog, isEconAIConfig, isStrategyHealthConfig,
+    isAIProviderCatalog, isEconAIConfig, isStrategyHealthConfig, isJSONConfig,
     fetchConfigs, handleEdit, handleSave, handleFormatJson,
     handleUseStrategyHealthTemplate, handleToggleEnabled, getKeyLabel,
     setEditModalVisible,
@@ -32,11 +32,7 @@ export default function SystemConfigPage() {
       width: 150,
       ellipsis: true,
       render: (text: string, record: AdminConfigType) => {
-        if (
-          record.key === 'ai.provider_catalog' ||
-          record.key === 'econ.translation.ai_config' ||
-          record.key === 'strategy.schedule.health_grading_config'
-        ) {
+        if (record.value_type === 'json') {
           return <Tag color="processing">JSON</Tag>;
         }
         return text;
@@ -118,6 +114,7 @@ export default function SystemConfigPage() {
         isAIProviderCatalog={isAIProviderCatalog}
         isEconAIConfig={isEconAIConfig}
         isStrategyHealthConfig={isStrategyHealthConfig}
+        isJSONConfig={isJSONConfig}
         onSave={handleSave}
         onCancel={() => setEditModalVisible(false)}
         onFormatJson={handleFormatJson}

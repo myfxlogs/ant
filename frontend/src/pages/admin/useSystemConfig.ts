@@ -13,9 +13,10 @@ export function useSystemConfig() {
   const [currentConfig, setCurrentConfig] = useState<AdminConfigType | null>(null);
   const [form] = Form.useForm();
 
-  const isAIProviderCatalog = currentConfig?.key === 'ai.provider_catalog';
+  const isAIProviderCatalog = currentConfig?.value_type === 'json' && currentConfig?.key === 'ai.provider_catalog';
   const isEconAIConfig = currentConfig?.key === 'econ.translation.ai_config';
-  const isStrategyHealthConfig = currentConfig?.key === 'strategy.schedule.health_grading_config';
+  const isStrategyHealthConfig = currentConfig?.value_type === 'json' && currentConfig?.key === 'strategy.schedule.health_grading_config';
+  const isJSONConfig = currentConfig?.value_type === 'json';
 
   const strategyHealthConfigTemplate = {
     green_success_rate: 90,
@@ -84,7 +85,7 @@ export function useSystemConfig() {
   const handleSave = async (values: Record<string, unknown>) => {
     if (!currentConfig) return;
     try {
-      if (isAIProviderCatalog) {
+      if (isStrategyHealthConfig) {
         const raw = (values.value || '').trim();
         if (!raw) {
           message.error(t('admin.config.validation.jsonEmpty'));
@@ -158,6 +159,17 @@ export function useSystemConfig() {
           value: JSON.stringify(cfg),
           description: values.description || currentConfig.description || '',
         });
+      } else if (isJSONConfig) {
+        const raw = (values.value || '').toString().trim();
+        if (raw) {
+          try {
+            JSON.parse(raw);
+          } catch {
+            message.error(t('admin.config.validation.jsonInvalid'));
+            return;
+          }
+        }
+        await adminApi.setConfig(currentConfig.key, values);
       } else {
         await adminApi.setConfig(currentConfig.key, values);
       }
@@ -170,7 +182,7 @@ export function useSystemConfig() {
   };
 
   const handleFormatJson = () => {
-    if (!currentConfig || (!isAIProviderCatalog && !isStrategyHealthConfig)) return;
+    if (!currentConfig || !isJSONConfig) return;
     const raw = (form.getFieldValue('value') || '').toString().trim();
     if (!raw) return;
     try {
@@ -210,7 +222,7 @@ export function useSystemConfig() {
 
   return {
     configs, loading, error, editModalVisible, currentConfig, form,
-    isAIProviderCatalog, isEconAIConfig, isStrategyHealthConfig,
+    isAIProviderCatalog, isEconAIConfig, isStrategyHealthConfig, isJSONConfig,
     fetchConfigs, handleEdit, handleSave, handleFormatJson,
     handleUseStrategyHealthTemplate, handleToggleEnabled, getKeyLabel,
     setEditModalVisible,

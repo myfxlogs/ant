@@ -44,6 +44,7 @@ type SystemConfig struct {
 	Description  string    `json:"description" db:"description"`
 	Enabled      *bool     `json:"enabled" db:"enabled"`
 	AdminVisible bool      `json:"admin_visible" db:"admin_visible"`
+	ValueType    string    `json:"value_type" db:"value_type"`
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 }

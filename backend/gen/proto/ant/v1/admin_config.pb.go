@@ -30,6 +30,7 @@ type SystemConfig struct {
 	Enabled       bool                   `protobuf:"varint,4,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	ValueType     string                 `protobuf:"bytes,7,opt,name=value_type,json=valueType,proto3" json:"value_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -104,6 +105,13 @@ func (x *SystemConfig) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *SystemConfig) GetValueType() string {
+	if x != nil {
+		return x.ValueType
+	}
+	return ""
 }
 
 type ListConfigsRequest struct {
@@ -374,7 +382,7 @@ var File_admin_config_proto protoreflect.FileDescriptor
 
 const file_admin_config_proto_rawDesc = "" +
 	"\n" +
-	"\x12admin_config.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe8\x01\n" +
+	"\x12admin_config.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x87\x02\n" +
 	"\fSystemConfig\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value\x12 \n" +
@@ -383,7 +391,9 @@ const file_admin_config_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x14\n" +
+	"updated_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1d\n" +
+	"\n" +
+	"value_type\x18\a \x01(\tR\tvalueType\"\x14\n" +
 	"\x12ListConfigsRequest\"E\n" +
 	"\x13ListConfigsResponse\x12.\n" +
 	"\aconfigs\x18\x01 \x03(\v2\x14.ant.v1.SystemConfigR\aconfigs\"\\\n" +

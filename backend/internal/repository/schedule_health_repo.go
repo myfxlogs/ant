@@ -79,12 +79,12 @@ type ScheduleHealthOrder struct {
 	CloseTime *time.Time
 }
 
-// GetGradingConfig reads the health grading configuration from system_configs.
+// GetGradingConfig reads the health grading configuration from system_config.
 func (r *ScheduleHealthRepository) GetGradingConfig(ctx context.Context) HealthGradingConfig {
 	cfg := DefaultHealthGradingConfig()
 	var raw string
 	err := r.db.QueryRow(ctx,
-		"SELECT value FROM system_configs WHERE key = 'strategy.schedule.health_grading_config' AND enabled = TRUE",
+		"SELECT value FROM system_config WHERE key = 'strategy.schedule.health_grading_config' AND enabled = TRUE",
 	).Scan(&raw)
 	if err != nil || raw == "" {
 		return cfg

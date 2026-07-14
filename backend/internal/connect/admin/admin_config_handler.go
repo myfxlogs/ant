@@ -31,6 +31,7 @@ func configToProto(c *model.SystemConfig) *antv1.SystemConfig {
 		Key:         c.Key,
 		Value:       c.Value,
 		Description: c.Description,
+		ValueType:   c.ValueType,
 		CreatedAt:   timestamppb.New(c.CreatedAt),
 		UpdatedAt:   timestamppb.New(c.UpdatedAt),
 	}
@@ -53,7 +54,11 @@ func (s *AdminConfigServer) ListConfigs(ctx context.Context, _ *connect.Request[
 }
 
 func (s *AdminConfigServer) SetConfig(ctx context.Context, req *connect.Request[antv1.SetConfigRequest]) (*connect.Response[antv1.SetConfigResponse], error) {
-	if !validConfigKey(req.Msg.Key) {
+	exists, err := s.repo.ConfigKeyExists(ctx, req.Msg.Key)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if !exists {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("unknown config key: %s", req.Msg.Key))
 	}
 	if err := s.repo.SetConfig(ctx, req.Msg.Key, req.Msg.Value, req.Msg.Description); err != nil {
@@ -66,18 +71,15 @@ func (s *AdminConfigServer) SetConfig(ctx context.Context, req *connect.Request[
 }
 
 func (s *AdminConfigServer) ToggleConfigEnabled(ctx context.Context, req *connect.Request[antv1.ToggleConfigEnabledRequest]) (*connect.Response[antv1.ToggleConfigEnabledResponse], error) {
+	exists, err := s.repo.ConfigKeyExists(ctx, req.Msg.Key)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if !exists {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("unknown config key: %s", req.Msg.Key))
+	}
 	if err := s.repo.SetConfigEnabled(ctx, req.Msg.Key, req.Msg.Enabled); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.ToggleConfigEnabledResponse{}), nil
-}
-
-// validConfigKey returns true for recognized configuration keys.
-func validConfigKey(key string) bool {
-	switch key {
-	case "maintenance_mode", "session_timeout_minutes",
-		"usdt_receiving_address", "usdt_network", "usdt_exchange_rate":
-		return true
-	}
-	return false
 }

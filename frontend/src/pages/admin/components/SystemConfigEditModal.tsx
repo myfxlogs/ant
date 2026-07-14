@@ -9,6 +9,7 @@ interface Props {
   isAIProviderCatalog: boolean;
   isEconAIConfig: boolean;
   isStrategyHealthConfig: boolean;
+  isJSONConfig: boolean;
   onSave: (values: Record<string, unknown>) => void;
   onCancel: () => void;
   onFormatJson: () => void;
@@ -17,7 +18,7 @@ interface Props {
 
 export default function SystemConfigEditModal({
   visible, currentConfig, form, isAIProviderCatalog,
-  isEconAIConfig, isStrategyHealthConfig,
+  isEconAIConfig, isStrategyHealthConfig, isJSONConfig,
   onSave, onCancel, onFormatJson, onUseTemplate,
 }: Props) {
   const { t } = useTranslation();
@@ -30,7 +31,7 @@ export default function SystemConfigEditModal({
       footer={null}
     >
       <Form form={form} onFinish={onSave} layout="vertical">
-        {(isAIProviderCatalog || isStrategyHealthConfig) && (
+        {isJSONConfig && !isEconAIConfig && (
           <Form.Item name="value" label={t('admin.config.value')} rules={[{ required: true }]}>
             <Input.TextArea
               placeholder={t('admin.config.placeholders.json')}
@@ -73,7 +74,7 @@ export default function SystemConfigEditModal({
             </Form.Item>
           </>
         )}
-        {!isAIProviderCatalog && !isEconAIConfig && !isStrategyHealthConfig && (
+        {!isJSONConfig && !isEconAIConfig && (
           <Form.Item name="value" label={t('admin.config.value')} rules={[{ required: true }]}>
             <Input placeholder={t('admin.config.placeholders.configValue')} />
           </Form.Item>
@@ -83,7 +84,7 @@ export default function SystemConfigEditModal({
         </Form.Item>
         <Form.Item>
           <Space>
-            {isAIProviderCatalog && (
+            {isJSONConfig && !isEconAIConfig && !isStrategyHealthConfig && (
               <Button onClick={onFormatJson}>{t('admin.config.formatJson')}</Button>
             )}
             {isStrategyHealthConfig && (
