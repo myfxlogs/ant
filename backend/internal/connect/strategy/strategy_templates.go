@@ -25,17 +25,17 @@ import (
 type MACrossStrategy struct {
 	fastPeriod int
 	slowPeriod int
-	entryPct   float64
-	slPct      float64
-	tpPct      float64
+	entryPct   decimal.Decimal
+	slPct      decimal.Decimal
+	tpPct      decimal.Decimal
 }
 
 func (s *MACrossStrategy) OnInit(ctx sdk.Context) error {
 	s.fastPeriod = ctx.ParamInt("fast_period", 10)
 	s.slowPeriod = ctx.ParamInt("slow_period", 30)
-	s.entryPct = ctx.ParamDecimal("entryPct", decimal.NewFromFloat(0.25)).InexactFloat64()
-	s.slPct = ctx.ParamDecimal("stopLossPct", decimal.NewFromFloat(0.03)).InexactFloat64()
-	s.tpPct = ctx.ParamDecimal("takeProfitPct", decimal.NewFromFloat(0.06)).InexactFloat64()
+	s.entryPct = ctx.ParamDecimal("entryPct", decimal.NewFromFloat(0.25))
+	s.slPct = ctx.ParamDecimal("stopLossPct", decimal.NewFromFloat(0.03))
+	s.tpPct = ctx.ParamDecimal("takeProfitPct", decimal.NewFromFloat(0.06))
 	return nil
 }
 
@@ -64,9 +64,10 @@ func (s *MACrossStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal,
 	}
 
 	balance := ctx.Broker().Account().Balance
-	volume := balance.Mul(decimal.NewFromFloat(s.entryPct)).Div(price)
+	volume := balance.Mul(s.entryPct).Div(price)
+	one := decimal.NewFromInt(1)
 
-	if fastNow > slowNow && fastPrev <= slowPrev {
+	if fastNow.GreaterThan(slowNow) && fastPrev.LessThanOrEqual(slowPrev) {
 		if hasShort {
 			return &sdk.Signal{Action: sdk.ActionClose, Symbol: ctx.Symbol()}, nil
 		}
@@ -76,13 +77,13 @@ func (s *MACrossStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal,
 				Symbol:     ctx.Symbol(),
 				Volume:     volume,
 				Price:      price,
-				StopLoss:   price.Mul(decimal.NewFromFloat(1 - s.slPct)),
-				TakeProfit: price.Mul(decimal.NewFromFloat(1 + s.tpPct)),
+				StopLoss:   price.Mul(one.Sub(s.slPct)),
+				TakeProfit: price.Mul(one.Add(s.tpPct)),
 			}, nil
 		}
 	}
 
-	if fastNow < slowNow && fastPrev >= slowPrev {
+	if fastNow.LessThan(slowNow) && fastPrev.GreaterThanOrEqual(slowPrev) {
 		if hasLong {
 			return &sdk.Signal{Action: sdk.ActionClose, Symbol: ctx.Symbol()}, nil
 		}
@@ -92,8 +93,8 @@ func (s *MACrossStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal,
 				Symbol:     ctx.Symbol(),
 				Volume:     volume,
 				Price:      price,
-				StopLoss:   price.Mul(decimal.NewFromFloat(1 + s.slPct)),
-				TakeProfit: price.Mul(decimal.NewFromFloat(1 - s.tpPct)),
+				StopLoss:   price.Mul(one.Add(s.slPct)),
+				TakeProfit: price.Mul(one.Sub(s.tpPct)),
 			}, nil
 		}
 	}
@@ -121,20 +122,20 @@ import (
 
 type RSIStrategy struct {
 	rsiPeriod  int
-	oversold   float64
-	overbought float64
-	entryPct   float64
-	slPct      float64
-	tpPct      float64
+	oversold   decimal.Decimal
+	overbought decimal.Decimal
+	entryPct   decimal.Decimal
+	slPct      decimal.Decimal
+	tpPct      decimal.Decimal
 }
 
 func (s *RSIStrategy) OnInit(ctx sdk.Context) error {
 	s.rsiPeriod = ctx.ParamInt("rsi_period", 14)
-	s.oversold = ctx.ParamDecimal("oversold", decimal.NewFromInt(30)).InexactFloat64()
-	s.overbought = ctx.ParamDecimal("overbought", decimal.NewFromInt(70)).InexactFloat64()
-	s.entryPct = ctx.ParamDecimal("entryPct", decimal.NewFromFloat(0.25)).InexactFloat64()
-	s.slPct = ctx.ParamDecimal("stopLossPct", decimal.NewFromFloat(0.02)).InexactFloat64()
-	s.tpPct = ctx.ParamDecimal("takeProfitPct", decimal.NewFromFloat(0.04)).InexactFloat64()
+	s.oversold = ctx.ParamDecimal("oversold", decimal.NewFromInt(30))
+	s.overbought = ctx.ParamDecimal("overbought", decimal.NewFromInt(70))
+	s.entryPct = ctx.ParamDecimal("entryPct", decimal.NewFromFloat(0.25))
+	s.slPct = ctx.ParamDecimal("stopLossPct", decimal.NewFromFloat(0.02))
+	s.tpPct = ctx.ParamDecimal("takeProfitPct", decimal.NewFromFloat(0.04))
 	return nil
 }
 
@@ -159,9 +160,10 @@ func (s *RSIStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, err
 	}
 
 	balance := ctx.Broker().Account().Balance
-	volume := balance.Mul(decimal.NewFromFloat(s.entryPct)).Div(price)
+	volume := balance.Mul(s.entryPct).Div(price)
+	one := decimal.NewFromInt(1)
 
-	if rsiVal < s.oversold {
+	if rsiVal.LessThan(s.oversold) {
 		if hasShort {
 			return &sdk.Signal{Action: sdk.ActionClose, Symbol: ctx.Symbol()}, nil
 		}
@@ -171,13 +173,13 @@ func (s *RSIStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, err
 				Symbol:     ctx.Symbol(),
 				Volume:     volume,
 				Price:      price,
-				StopLoss:   price.Mul(decimal.NewFromFloat(1 - s.slPct)),
-				TakeProfit: price.Mul(decimal.NewFromFloat(1 + s.tpPct)),
+				StopLoss:   price.Mul(one.Sub(s.slPct)),
+				TakeProfit: price.Mul(one.Add(s.tpPct)),
 			}, nil
 		}
 	}
 
-	if rsiVal > s.overbought {
+	if rsiVal.GreaterThan(s.overbought) {
 		if hasLong {
 			return &sdk.Signal{Action: sdk.ActionClose, Symbol: ctx.Symbol()}, nil
 		}
@@ -187,8 +189,8 @@ func (s *RSIStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, err
 				Symbol:     ctx.Symbol(),
 				Volume:     volume,
 				Price:      price,
-				StopLoss:   price.Mul(decimal.NewFromFloat(1 + s.slPct)),
-				TakeProfit: price.Mul(decimal.NewFromFloat(1 - s.tpPct)),
+				StopLoss:   price.Mul(one.Add(s.slPct)),
+				TakeProfit: price.Mul(one.Sub(s.tpPct)),
 			}, nil
 		}
 	}
@@ -216,18 +218,18 @@ import (
 
 type BollingerStrategy struct {
 	bbPeriod int
-	bbStd    float64
-	entryPct float64
-	slPct    float64
-	tpPct    float64
+	bbStd    decimal.Decimal
+	entryPct decimal.Decimal
+	slPct    decimal.Decimal
+	tpPct    decimal.Decimal
 }
 
 func (s *BollingerStrategy) OnInit(ctx sdk.Context) error {
 	s.bbPeriod = ctx.ParamInt("bb_period", 20)
-	s.bbStd = ctx.ParamDecimal("bb_std", decimal.NewFromFloat(2.0)).InexactFloat64()
-	s.entryPct = ctx.ParamDecimal("entryPct", decimal.NewFromFloat(0.25)).InexactFloat64()
-	s.slPct = ctx.ParamDecimal("stopLossPct", decimal.NewFromFloat(0.03)).InexactFloat64()
-	s.tpPct = ctx.ParamDecimal("takeProfitPct", decimal.NewFromFloat(0.06)).InexactFloat64()
+	s.bbStd = ctx.ParamDecimal("bb_std", decimal.NewFromFloat(2.0))
+	s.entryPct = ctx.ParamDecimal("entryPct", decimal.NewFromFloat(0.25))
+	s.slPct = ctx.ParamDecimal("stopLossPct", decimal.NewFromFloat(0.03))
+	s.tpPct = ctx.ParamDecimal("takeProfitPct", decimal.NewFromFloat(0.06))
 	return nil
 }
 
@@ -252,9 +254,10 @@ func (s *BollingerStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signa
 	}
 
 	balance := ctx.Broker().Account().Balance
-	volume := balance.Mul(decimal.NewFromFloat(s.entryPct)).Div(price)
+	volume := balance.Mul(s.entryPct).Div(price)
+	one := decimal.NewFromInt(1)
 
-	if price.GreaterThan(decimal.NewFromFloat(upper)) {
+	if price.GreaterThan(upper) {
 		if hasShort {
 			return &sdk.Signal{Action: sdk.ActionClose, Symbol: ctx.Symbol()}, nil
 		}
@@ -264,13 +267,13 @@ func (s *BollingerStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signa
 				Symbol:     ctx.Symbol(),
 				Volume:     volume,
 				Price:      price,
-				StopLoss:   price.Mul(decimal.NewFromFloat(1 - s.slPct)),
-				TakeProfit: price.Mul(decimal.NewFromFloat(1 + s.tpPct)),
+				StopLoss:   price.Mul(one.Sub(s.slPct)),
+				TakeProfit: price.Mul(one.Add(s.tpPct)),
 			}, nil
 		}
 	}
 
-	if price.LessThan(decimal.NewFromFloat(lower)) {
+	if price.LessThan(lower) {
 		if hasLong {
 			return &sdk.Signal{Action: sdk.ActionClose, Symbol: ctx.Symbol()}, nil
 		}
@@ -280,8 +283,8 @@ func (s *BollingerStrategy) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signa
 				Symbol:     ctx.Symbol(),
 				Volume:     volume,
 				Price:      price,
-				StopLoss:   price.Mul(decimal.NewFromFloat(1 + s.slPct)),
-				TakeProfit: price.Mul(decimal.NewFromFloat(1 - s.tpPct)),
+				StopLoss:   price.Mul(one.Add(s.slPct)),
+				TakeProfit: price.Mul(one.Sub(s.tpPct)),
 			}, nil
 		}
 	}

@@ -16,6 +16,13 @@ test.describe('E2E: i18n Language Switch', () => {
     await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 15_000 });
     await page.waitForTimeout(2000);
 
+    // Dismiss WelcomeModal if present (intercepts clicks)
+    const dismissBtn = page.locator('.ant-modal button').filter({ hasText: /dismiss|Got it/i }).first();
+    if (await dismissBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await dismissBtn.click();
+      await page.waitForTimeout(500);
+    }
+
     // Find the language dropdown trigger (GlobalOutlined icon)
     const langTrigger = page.locator('.anticon-global').first();
     await expect(langTrigger).toBeVisible({ timeout: 10_000 });
