@@ -2,6 +2,7 @@ package admin
 
 import (
 	"context"
+	"errors"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -74,7 +75,7 @@ func (s *AdminStrategyServer) UpdateSystemStrategy(ctx context.Context, req *con
 	}
 	row, err := s.svc.UpdateSystemStrategy(ctx, id, m.Name, m.Description, m.Code, m.Tags)
 	if err != nil {
-		if err == service.ErrTemplateNotFound {
+		if errors.Is(err, service.ErrTemplateNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -98,7 +99,7 @@ func (s *AdminStrategyServer) DeleteSystemStrategy(ctx context.Context, req *con
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if err := s.svc.DeleteSystemStrategy(ctx, id); err != nil {
-		if err == service.ErrTemplateNotFound {
+		if errors.Is(err, service.ErrTemplateNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -169,7 +170,7 @@ func (s *AdminStrategyServer) GetStrategyDetail(ctx context.Context, req *connec
 	}
 	row, userEmail, err := s.svc.GetTemplateDetail(ctx, id)
 	if err != nil {
-		if err == service.ErrTemplateNotFound {
+		if errors.Is(err, service.ErrTemplateNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -218,7 +219,7 @@ func (s *AdminStrategyServer) FlagStrategy(ctx context.Context, req *connect.Req
 	}
 	adminID := getActorID(ctx)
 	if err := s.svc.FlagTemplate(ctx, id, m.Reason, adminID); err != nil {
-		if err == service.ErrTemplateNotFound {
+		if errors.Is(err, service.ErrTemplateNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -234,7 +235,7 @@ func (s *AdminStrategyServer) UnflagStrategy(ctx context.Context, req *connect.R
 	}
 	adminID := getActorID(ctx)
 	if err := s.svc.UnflagTemplate(ctx, id); err != nil {
-		if err == service.ErrTemplateNotFound {
+		if errors.Is(err, service.ErrTemplateNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -249,7 +250,7 @@ func (s *AdminStrategyServer) UnpublishStrategy(ctx context.Context, req *connec
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if err := s.svc.UnpublishTemplate(ctx, id); err != nil {
-		if err == service.ErrTemplateNotFound {
+		if errors.Is(err, service.ErrTemplateNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -264,7 +265,7 @@ func (s *AdminStrategyServer) PublishStrategy(ctx context.Context, req *connect.
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if err := s.svc.PublishTemplate(ctx, id); err != nil {
-		if err == service.ErrTemplateNotFound {
+		if errors.Is(err, service.ErrTemplateNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -279,7 +280,7 @@ func (s *AdminStrategyServer) DisableStrategy(ctx context.Context, req *connect.
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if err := s.svc.DisableTemplate(ctx, id); err != nil {
-		if err == service.ErrTemplateNotFound {
+		if errors.Is(err, service.ErrTemplateNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -294,7 +295,7 @@ func (s *AdminStrategyServer) EnableStrategy(ctx context.Context, req *connect.R
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if err := s.svc.EnableTemplate(ctx, id); err != nil {
-		if err == service.ErrTemplateNotFound {
+		if errors.Is(err, service.ErrTemplateNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -309,7 +310,7 @@ func (s *AdminStrategyServer) ArchiveStrategy(ctx context.Context, req *connect.
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if err := s.svc.ArchiveTemplate(ctx, id); err != nil {
-		if err == service.ErrTemplateNotFound {
+		if errors.Is(err, service.ErrTemplateNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)

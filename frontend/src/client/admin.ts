@@ -1,4 +1,8 @@
 import { adminAccountClient, adminConfigClient, adminLogClient, adminStrategyClient, adminSystemClient, adminTradingClient, adminUserClient } from './connect';
+import type { ListLogsResponse } from '../gen/ant/v1/admin_log_pb';
+import type { ListUsersResponse, ResetUserPasswordResponse } from '../gen/ant/v1/admin_user_pb';
+import type { ListAccountsAdminResponse } from '../gen/ant/v1/admin_account_pb';
+import type { ListConfigsResponse } from '../gen/ant/v1/admin_config_pb';
 
 // Note: getDashboard is defined in AdminUserService, not AdminSystemService
 
@@ -65,7 +69,7 @@ export const adminApi = {
   },
 
   listLogs: async (params?: LogListParams) => {
-    const response: any = await adminLogClient.listLogs({
+    const msg = await adminLogClient.listLogs({
       page: params?.page || 1,
       pageSize: params?.pageSize || 10,
       userId: params?.userId,
@@ -74,10 +78,10 @@ export const adminApi = {
       endDate: params?.endDate,
       module: params?.module,
       actionType: params?.actionType,
-    });
+    }) as ListLogsResponse;
     return {
-      logs: response.logs,
-      total: Number(response.total),
+      logs: msg.logs,
+      total: Number(msg.total),
     };
   },
 
@@ -86,16 +90,16 @@ export const adminApi = {
   },
 
   listUsers: async (params?: UserListParams) => {
-    const response: any = await adminUserClient.listUsers({
+    const msg = await adminUserClient.listUsers({
       page: params?.page || 1,
       pageSize: params?.pageSize || 10,
       search: params?.search,
       status: params?.status,
       role: params?.role,
-    });
+    }) as ListUsersResponse;
     return {
-      users: response.users,
-      total: Number(response.total),
+      users: msg.users,
+      total: Number(msg.total),
     };
   },
 
@@ -141,22 +145,22 @@ export const adminApi = {
   },
 
   resetUserPassword: async (id: string) => {
-    const response: any = await adminUserClient.resetUserPassword({ id });
-    return { newPassword: response.newPassword };
+    const msg = await adminUserClient.resetUserPassword({ id }) as ResetUserPasswordResponse;
+    return { newPassword: msg.newPassword };
   },
 
   listAccounts: async (params?: AccountListParams) => {
-    const response: any = await adminAccountClient.listAccountsAdmin({
+    const msg = await adminAccountClient.listAccountsAdmin({
       page: params?.page || 1,
       pageSize: params?.pageSize || 10,
       userId: params?.userId,
       search: params?.search,
       status: params?.status,
       mtType: params?.mtType,
-    });
+    }) as ListAccountsAdminResponse;
     return {
-      accounts: response.accounts,
-      total: Number(response.total),
+      accounts: msg.accounts,
+      total: Number(msg.total),
     };
   },
 
@@ -180,8 +184,7 @@ export const adminApi = {
   },
 
   listConfigs: async () => {
-    const response: any = await adminConfigClient.listConfigs({});
-    return response.configs;
+    return (await adminConfigClient.listConfigs({}) as ListConfigsResponse).configs;
   },
 
   getConfig: async () => {

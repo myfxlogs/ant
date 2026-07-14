@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"connectrpc.com/connect"
@@ -149,7 +150,7 @@ func (s *WalletServer) AdjustBalance(ctx context.Context, req *connect.Request[a
 
 	w, err := s.svc.AdjustBalance(ctx, userID, r.Amount, txType, r.Description, &operatorID)
 	if err != nil {
-		if err == service.ErrWalletNotFound {
+		if errors.Is(err, service.ErrWalletNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("wallet not found"))
 		}
 		s.log.Error("AdjustBalance: service error", zap.Error(err))

@@ -1,51 +1,52 @@
 import { subscriptionClient } from './connect';
+import type { ListPlansResponse, GetMySubscriptionResponse, SubscribePlanResponse, CancelSubscriptionResponse, ChangePlanResponse, GetUsageSummaryResponse, Plan } from '../gen/ant/v1/subscription_pb';
 
 export type { Plan, UserSubscription, UsageSummary } from '../gen/ant/v1/subscription_pb';
 
 export const subscriptionApi = {
   listPlans: async () => {
-    const response: any = await subscriptionClient.listPlans({});
-    return (response.plans || []) as any[];
+    const msg = await subscriptionClient.listPlans({}) as ListPlansResponse;
+    return (msg.plans || []) as Plan[];
   },
 
   getMySubscription: async () => {
-    const response: any = await subscriptionClient.getMySubscription({});
+    const msg = await subscriptionClient.getMySubscription({}) as GetMySubscriptionResponse;
     return {
-      subscription: response.subscription || null,
-      plan: response.plan || null,
+      subscription: msg.subscription || null,
+      plan: msg.plan || null,
     };
   },
 
   subscribe: async (planName: string, billingCycle: string, autoRenew: boolean) => {
-    const response: any = await subscriptionClient.subscribe({ planName, billingCycle, autoRenew });
+    const msg = await subscriptionClient.subscribe({ planName, billingCycle, autoRenew }) as SubscribePlanResponse;
     return {
-      subscription: response.subscription || null,
-      transactionId: response.transactionId || '',
-      amountCharged: response.amountCharged || '0',
-      balanceAfter: response.balanceAfter || '0',
+      subscription: msg.subscription || null,
+      transactionId: msg.transactionId || '',
+      amountCharged: msg.amountCharged || '0',
+      balanceAfter: msg.balanceAfter || '0',
     };
   },
 
   cancelSubscription: async () => {
-    const response: any = await subscriptionClient.cancelSubscription({});
-    return { subscription: response.subscription || null };
+    const msg = await subscriptionClient.cancelSubscription({}) as CancelSubscriptionResponse;
+    return { subscription: msg.subscription || null };
   },
 
   changePlan: async (newPlanName: string, billingCycle: string) => {
-    const response: any = await subscriptionClient.changePlan({ newPlanName, billingCycle });
+    const msg = await subscriptionClient.changePlan({ newPlanName, billingCycle }) as ChangePlanResponse;
     return {
-      subscription: response.subscription || null,
-      transactionId: response.transactionId || '',
-      amountCharged: response.amountCharged || '0',
-      balanceAfter: response.balanceAfter || '0',
+      subscription: msg.subscription || null,
+      transactionId: msg.transactionId || '',
+      amountCharged: msg.amountCharged || '0',
+      balanceAfter: msg.balanceAfter || '0',
     };
   },
 
   getUsageSummary: async () => {
-    const response: any = await subscriptionClient.getUsageSummary({});
+    const msg = await subscriptionClient.getUsageSummary({}) as GetUsageSummaryResponse;
     return {
-      summary: response.summary || null,
-      plan: response.plan || null,
+      summary: msg.summary || null,
+      plan: msg.plan || null,
     };
   },
 };

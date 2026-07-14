@@ -17,6 +17,7 @@ import {
   DeleteBacktestRunRequestSchema,
   DeleteBacktestRunsRequestSchema,
 } from '../gen/ant/v1/backtest_run_control_pb';
+import type { ExecuteStrategyResponse, ValidateStrategyResponse, BacktestStrategyResponse, GetStrategyTemplatesResponse } from '../gen/ant/v1/strategy_runtime_pb';
 
 export interface ExecuteStrategyResult {
   success: boolean;
@@ -62,17 +63,17 @@ export const strategyRuntimeApi = {
     symbol: string;
     timeframe?: string
   }): Promise<ExecuteStrategyResult> => {
-    const response: any = await strategyRuntimeService.execute({
+    const msg = await strategyRuntimeService.execute({
       code: params.code,
       accountId: params.accountId,
       symbol: params.symbol,
       timeframe: params.timeframe || '',
-    });
+    }) as ExecuteStrategyResponse;
     return {
-      success: response.success,
-      signal: response.signal,
-      logs: response.logs || [],
-      error: response.error,
+      success: msg.success,
+      signal: msg.signal,
+      logs: msg.logs || [],
+      error: msg.error,
     };
   },
 
@@ -83,7 +84,7 @@ export const strategyRuntimeApi = {
     timeframe: string;
     initialCapital?: number
   }): Promise<BacktestResult> => {
-    const response: any = await strategyRuntimeService.backtest(
+    const msg = await strategyRuntimeService.backtest(
       {
         code: params.code,
         accountId: params.accountId,
@@ -94,18 +95,18 @@ export const strategyRuntimeApi = {
       {
         timeoutMs: 300_000,
       },
-    );
+    ) as BacktestStrategyResponse;
     return {
-      success: response.success,
-      metrics: response.metrics,
-      equityCurve: response.equityCurve || [],
-      error: response.error,
+      success: msg.success,
+      metrics: msg.metrics,
+      equityCurve: msg.equityCurve || [],
+      error: msg.error,
     };
   },
 
   getTemplates: async (): Promise<StrategyTemplateInfo[]> => {
-    const response: any = await strategyRuntimeService.getTemplates({});
-    return (response.templates || []).map((t: any) => ({
+    const msg = await strategyRuntimeService.getTemplates({}) as GetStrategyTemplatesResponse;
+    return (msg.templates || []).map((t) => ({
       name: t.name,
       description: t.description,
       code: t.code,
@@ -113,11 +114,11 @@ export const strategyRuntimeApi = {
   },
 
   validate: async (code: string): Promise<ValidateStrategyResult> => {
-    const response: any = await strategyRuntimeService.validate({ code });
+    const msg = await strategyRuntimeService.validate({ code }) as ValidateStrategyResponse;
     return {
-      valid: response.valid || false,
-      errors: response.errors || [],
-      warnings: response.warnings || [],
+      valid: msg.valid || false,
+      errors: msg.errors || [],
+      warnings: msg.warnings || [],
     };
   },
 

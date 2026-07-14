@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go.uber.org/zap"
@@ -25,7 +26,7 @@ func (s *AuthServer) Register(ctx context.Context, req *connect.Request[antv1.Re
 	}
 	user, acctNum, err := s.registrationSvc.RegisterUser(ctx, m.Email, m.Password, username)
 	if err != nil {
-		if err == service.ErrEmailAlreadyRegistered {
+		if errors.Is(err, service.ErrEmailAlreadyRegistered) {
 			return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("email already registered"))
 		}
 		s.log.Error("Register: registration failed", zap.Error(err))

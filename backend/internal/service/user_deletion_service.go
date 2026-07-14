@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -172,7 +173,7 @@ func (s *UserDeletionService) RestoreUser(ctx context.Context, actorID, targetID
 	defer tx.Rollback(ctx)
 
 	if err := s.repo.RestoreUserTx(ctx, tx, targetID); err != nil {
-		if err == repository.ErrUserNotFound {
+		if errors.Is(err, repository.ErrUserNotFound) {
 			return ErrUserNotDeleted
 		}
 		return fmt.Errorf("restore user: %w", err)
