@@ -93,7 +93,7 @@ services:
     container_name: alphaforge-postgres
     image: postgres:18-alpine
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     restart: always
     logging:
       driver: json-file
@@ -139,8 +139,8 @@ services:
       - CLICKHOUSE_PASSWORD=${CH_PASSWORD:-clickhouse}
       - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
     ports:
-      - "${CH_HTTP_PORT:-8123}:8123"
-      - "${CH_NATIVE_PORT:-9000}:9000"
+      - "127.0.0.1:${CH_HTTP_PORT:-8123}:8123"
+      - "127.0.0.1:${CH_NATIVE_PORT:-9000}:9000"
     volumes:
       - clickhouse_data:/var/lib/clickhouse
       - ./deploy/clickhouse/config.d:/etc/clickhouse-server/config.d:ro
@@ -159,7 +159,7 @@ services:
     container_name: alphaforge-redis
     image: redis:8-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     restart: always
     logging:
       driver: json-file
@@ -200,8 +200,8 @@ services:
           memory: 48M
     command: ["-c", "/etc/nats/nats.conf", "-js"]
     ports:
-      - "${NATS_PORT:-4222}:4222"
-      - "${NATS_HTTP_PORT:-8222}:8222"
+      - "127.0.0.1:${NATS_PORT:-4222}:4222"
+      - "127.0.0.1:${NATS_HTTP_PORT:-8222}:8222"
     volumes:
       - nats_data:/data
       - ./deploy/nats/nats.conf:/etc/nats/nats.conf:ro
@@ -230,7 +230,7 @@ services:
         reservations:
           memory: 64M
     ports:
-      - "${UMAMI_PORT:-3001}:3000"
+      - "127.0.0.1:${UMAMI_PORT:-3001}:3000"
     environment:
       DATABASE_URL: postgresql://${DB_USER:-ant}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-ant}_umami
       DATABASE_TYPE: postgresql
@@ -264,7 +264,7 @@ services:
         reservations:
           memory: 64M
     ports:
-      - "${PROMETHEUS_PORT:-9090}:9090"
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
     volumes:
       - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./deploy/prometheus/rules.yml:/etc/prometheus/rules.yml:ro
@@ -294,7 +294,7 @@ services:
         reservations:
           memory: 32M
     ports:
-      - "${ALERTMANAGER_PORT:-9093}:9093"
+      - "127.0.0.1:${ALERTMANAGER_PORT:-9093}:9093"
     volumes:
       - ./deploy/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
       - alertmanager_data:/alertmanager
