@@ -559,8 +559,8 @@ var permanentBlindSpots = map[string]string{
 	"TesterWithdrawal":       "Strategy tester only",
 	// Misc client-only
 	"TranslateKey":           "Client UI: keyboard input, not applicable server-side",
-	// Custom indicators — requires loading .ex4/.ex5 compiled indicator binaries
-	"iCustom":                "Custom indicator: requires MT4/MT5 terminal to load .ex4/.ex5 binary",
+	// Custom indicators — source-based execution not yet implemented
+	"iCustom":                "Custom indicator: OnCalculate execution model + indicator source registration not implemented. VM returns 0.",
 }
 
 // isPermanentBlindSpot returns true if the function is a known permanent blind spot.
