@@ -142,6 +142,7 @@ const Accounts = {
       "messages": {
         "bindFailed": "帳戶綁定失敗",
         "bindSuccess": "帳戶綁定成功",
+        "changeCredentials": "修改憑證",
         "enterBrokerName": "請輸入經紀商名稱",
         "enterPassword": "請輸入密碼",
         "enterTradingAccount": "請輸入交易帳號",
@@ -158,7 +159,8 @@ const Accounts = {
         "company": "請選擇經紀商公司",
         "password": "輸入密碼",
         "server": "請選擇伺服器",
-        "tradingAccount": "輸入交易帳號"
+        "tradingAccount": "輸入交易帳號",
+        "alias": "可選自訂名稱"
       },
       "step1": {
         "subtitle": "選擇您的交易平台并搜尋经纪商",

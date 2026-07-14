@@ -23,7 +23,7 @@ import {
   COMMON_ENABLED_KEY, COMMON_DISABLED_KEY, COMMON_OPERATION_FAILED_KEY,
   COMMON_DELETED_KEY, COMMON_DELETE_FAILED_KEY,
 } from '@/gen/ant/v1/i18n/base_keys';
-import { MESSAGES_ORDER_SUBMITTED_KEY, CREATE_SCHEDULE_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
+import { MESSAGES_ORDER_SUBMITTED_KEY, MESSAGES_ORDER_FAILED_KEY, MESSAGES_PARAMETERS_PARSE_FAILED_KEY, CREATE_SCHEDULE_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
 
 function formatTime(v: unknown): string {
   if (!v) return '-';
@@ -135,7 +135,7 @@ export default function LiveSchedulesTab() {
       if (res.error) { message.error(getTradingRiskToastMessage({ riskCode: res.riskError?.code, error: res.error, message: res.message, fallback: res.error })); return; }
       message.success(t(MESSAGES_ORDER_SUBMITTED_KEY));
       setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null);
-    } catch (e: any) { message.error(e?.message || 'Order failed'); }
+    } catch (e: any) { message.error(e?.message || t(MESSAGES_ORDER_FAILED_KEY)); }
   }, [triggerContext, triggerResult, t]);
 
   const openCreate = useCallback(() => {
@@ -168,7 +168,7 @@ export default function LiveSchedulesTab() {
   const submitEdit = useCallback(async () => {
     const v = await form.validateFields();
     let params: Record<string, string> = {};
-    try { params = v.parametersJson?.trim() ? JSON.parse(v.parametersJson) : {}; } catch { message.error('Parameters parse failed'); return; }
+    try { params = v.parametersJson?.trim() ? JSON.parse(v.parametersJson) : {}; } catch { message.error(t(MESSAGES_PARAMETERS_PARSE_FAILED_KEY)); return; }
     const merged = { ...params, ...buildParametersFromForm(v) };
     const sType: ScheduleType = (v.scheduleType || 'kline_close') as ScheduleType;
     const scheduleConfig: Record<string, unknown> = {

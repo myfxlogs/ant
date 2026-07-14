@@ -50,10 +50,10 @@ export function AIGatewayModals({
           <Form.Item name="name" label={t('admin.aiGateway.displayName', { defaultValue: 'Display Name' })} rules={[{ required: true, message: t('admin.aiGateway.displayNameRequired', { defaultValue: 'Please enter display name' }) }]}>
             <Input placeholder="DeepSeek" />
           </Form.Item>
-          <Form.Item name="baseUrl" label="Base URL" rules={[{ required: true, message: t('admin.aiGateway.baseUrlRequired', { defaultValue: 'Please enter Base URL' }) }]}>
+          <Form.Item name="baseUrl" label={t('admin.aiGateway.baseUrl', { defaultValue: 'Base URL' })} rules={[{ required: true, message: t('admin.aiGateway.baseUrlRequired', { defaultValue: 'Please enter Base URL' }) }]}>
             <Input placeholder="https://api.deepseek.com/v1" />
           </Form.Item>
-          <Form.Item name="apiKey" label="API Key" extra={editingProvider ? t('admin.aiGateway.apiKeyEditHint', { defaultValue: 'Leave empty to keep existing key' }) : t('admin.aiGateway.apiKeyHint', { defaultValue: 'API key, encrypted at rest' })}>
+          <Form.Item name="apiKey" label={t('admin.aiGateway.apiKeyLabel', { defaultValue: 'API Key' })} extra={editingProvider ? t('admin.aiGateway.apiKeyEditHint', { defaultValue: 'Leave empty to keep existing key' }) : t('admin.aiGateway.apiKeyHint', { defaultValue: 'API key, encrypted at rest' })}>
             <Input placeholder={editingProvider ? t('admin.aiGateway.apiKeyEditPlaceholder', { defaultValue: 'Leave empty to keep' }) : 'sk-...'} />
           </Form.Item>
         </Form>

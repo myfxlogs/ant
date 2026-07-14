@@ -572,6 +572,8 @@ const Base = {
       "probe_ok_no_models": "OK（model が返されませんでした）",
       "provider_required": "プロバイダを選択してください",
       "provider_returned_empty_message": "AI プロバイダが空のメッセージを返しました",
+      "insufficient_balance": "AI 残高不足です。続行するにはチャージしてください。",
+      "insufficient_balance_title": "残高不足",
       "rate_limited": "AI サービスがレート制限/クォータ不足（429/資源枯渇）。しばらく待つか、利用可能な API Key/model に切り替えてください。",
       "request_failed": "API リクエストに失敗しました"
     },

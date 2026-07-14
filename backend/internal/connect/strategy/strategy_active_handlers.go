@@ -191,13 +191,14 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 	}
 
 	cfg := LiveStrategyConfig{
-		AccountID: req.Msg.GetAccountId(),
-		Symbol:    req.Msg.GetSymbol(),
-		Timeframe: req.Msg.GetTimeframe(),
-		Code:      req.Msg.GetStrategyCode(),
-		Mode:      mode,
-		Params:    req.Msg.GetParams(),
-		UserID:    uid.String(),
+		AccountID:    req.Msg.GetAccountId(),
+		Symbol:       req.Msg.GetSymbol(),
+		Timeframe:    req.Msg.GetTimeframe(),
+		Code:         req.Msg.GetStrategyCode(),
+		Mode:         mode,
+		Params:       req.Msg.GetParams(),
+		UserID:       uid.String(),
+		ExtraSymbols: req.Msg.GetExtraSymbols(),
 	}
 
 	// Live mode: use MT4 account ID for order routing.

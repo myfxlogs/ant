@@ -504,6 +504,7 @@ message StartStrategyRequest {
   string timeframe = 4;
   string mode = 5;                 // "live" | "paper"
   map<string, string> params = 6;  // strategy params
+  repeated string extra_symbols = 7;  // secondary symbols for multi-symbol strategies
 }
 
 message StartStrategyResponse {

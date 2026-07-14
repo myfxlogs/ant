@@ -146,7 +146,7 @@ func (s *StrategyExecutionServer) dispatchFromBytes(ctx context.Context, cfg Liv
 }
 
 // buildLiveContext creates a full OHLCV bar context from the bar window.
-func (s *StrategyExecutionServer) buildLiveContext(ctx context.Context, cfg LiveStrategyConfig, bars []liveBar) *antv1.LiveStrategyContext {
+func (s *StrategyExecutionServer) buildLiveContext(ctx context.Context, cfg LiveStrategyConfig, bars []liveBar, extraBars map[string][]liveBar) *antv1.LiveStrategyContext {
 	n := len(bars)
 	closeVals := make([]string, n)
 	openVals := make([]string, n)
@@ -178,11 +178,12 @@ func (s *StrategyExecutionServer) buildLiveContext(ctx context.Context, cfg Live
 		lctx.CurrentPrice = closeVals[n-1]
 	}
 	s.backfillContextStrings(ctx, cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Positions)
+	lctx.Symbols = buildSymbolSeries(extraBars)
 	return lctx
 }
 
 // buildDeltaContext creates a delta-bar context with only the latest bar.
-func (s *StrategyExecutionServer) buildDeltaContext(ctx context.Context, cfg LiveStrategyConfig, bars []liveBar) *antv1.LiveStrategyContext {
+func (s *StrategyExecutionServer) buildDeltaContext(ctx context.Context, cfg LiveStrategyConfig, bars []liveBar, extraBars map[string][]liveBar) *antv1.LiveStrategyContext {
 	n := len(bars)
 	if n == 0 {
 		return &antv1.LiveStrategyContext{Symbol: cfg.Symbol, Timeframe: cfg.Timeframe, Mode: cfg.Mode, Params: buildLiveParams(cfg.Params)}
@@ -194,6 +195,7 @@ func (s *StrategyExecutionServer) buildDeltaContext(ctx context.Context, cfg Liv
 		CurrentPrice: last.close,
 	}
 	s.backfillContextStrings(ctx, cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Positions)
+	lctx.Symbols = buildSymbolSeries(extraBars)
 	return lctx
 }
 
@@ -204,6 +206,40 @@ func buildLiveParams(params map[string]string) []*antv1.LiveParam {
 	out := make([]*antv1.LiveParam, 0, len(params))
 	for k, v := range params {
 		out = append(out, &antv1.LiveParam{Key: k, Value: v})
+	}
+	return out
+}
+
+func buildSymbolSeries(extraBars map[string][]liveBar) []*antv1.LiveSymbolSeries {
+	if len(extraBars) == 0 {
+		return nil
+	}
+	out := make([]*antv1.LiveSymbolSeries, 0, len(extraBars))
+	for sym, bars := range extraBars {
+		if len(bars) == 0 {
+			continue
+		}
+		n := len(bars)
+		closeVals := make([]string, n)
+		openVals := make([]string, n)
+		highVals := make([]string, n)
+		lowVals := make([]string, n)
+		volVals := make([]string, n)
+		for i, b := range bars {
+			closeVals[i] = b.close
+			openVals[i] = b.open
+			highVals[i] = b.high
+			lowVals[i] = b.low
+			volVals[i] = b.volume
+		}
+		out = append(out, &antv1.LiveSymbolSeries{
+			Symbol: sym,
+			Close:  closeVals,
+			Open:   openVals,
+			High:   highVals,
+			Low:    lowVals,
+			Volume: volVals,
+		})
 	}
 	return out
 }

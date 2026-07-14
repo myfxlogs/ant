@@ -59,7 +59,7 @@ export default function SystemConfigEditModal({
                 ]}
               />
             </Form.Item>
-            <Form.Item name="api_key" label="API Key" rules={[{ required: true }]}>
+            <Form.Item name="api_key" label={t('admin.config.apiKey', { defaultValue: 'API Key' })} rules={[{ required: true }]}>
               <Input.Password placeholder={t('admin.config.placeholders.apiKey')} />
             </Form.Item>
             <Form.Item name="model" label={t('admin.config.modelName')} rules={[{ required: true }]}>

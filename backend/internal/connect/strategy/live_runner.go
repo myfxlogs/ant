@@ -14,6 +14,7 @@ package strategy
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -49,6 +50,10 @@ type LiveStrategyConfig struct {
 	// Models specifies which execution callbacks the strategy implements.
 	// Default (0) = Bar only.
 	Models ExecutionModels
+
+	// ExtraSymbols are secondary symbols whose bars are fetched and exposed
+	// to the strategy via BarsForSymbol. Trading still targets Symbol.
+	ExtraSymbols []string
 
 	// RunID must be pre-set by caller (run record pre-created in DB).
 	RunID uuid.UUID
@@ -200,6 +205,16 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 	var session Session
 	var firstBar bool = true
 
+	// Extra symbol bar windows for multi-symbol strategies.
+	extraBars := make(map[string][]liveBar, len(cfg.ExtraSymbols))
+	extraSymbolSet := make(map[string]bool, len(cfg.ExtraSymbols))
+	for _, sym := range cfg.ExtraSymbols {
+		if sym != "" && sym != cfg.Symbol {
+			extraSymbolSet[sym] = true
+			extraBars[sym] = make([]liveBar, 0, maxContextBars)
+		}
+	}
+
 	defer func() {
 		if session != nil {
 			session.Close()
@@ -217,10 +232,27 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 				s.log.Warn("LiveStrategyRunner: bar channel closed, exiting")
 				return nil
 			}
+			// Accept bars for extra symbols (same timeframe) — accumulate without triggering.
+			if extraSymbolSet[bar.Symbol] && bar.Period == cfg.Timeframe {
+				ew := extraBars[bar.Symbol]
+				ew = append(ew, liveBar{
+					open:     bar.Open.String(),
+					high:     bar.High.String(),
+					low:      bar.Low.String(),
+					close:    bar.Close.String(),
+					volume:   strconv.FormatFloat(bar.Volume, 'f', -1, 64),
+					openTime: bar.OpenTime,
+				})
+				if len(ew) > maxContextBars {
+					ew = ew[len(ew)-maxContextBars:]
+				}
+				extraBars[bar.Symbol] = ew
+				continue
+			}
 			if bar.Symbol != cfg.Symbol || bar.Period != cfg.Timeframe {
 				continue
 			}
-			s.handleBar(runCtx, cfg, bar, &bars, &session, &firstBar, activeSess)
+			s.handleBar(runCtx, cfg, bar, &bars, &session, &firstBar, activeSess, extraBars)
 
 		case tick, ok := <-tickCh:
 			if !ok {

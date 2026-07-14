@@ -229,6 +229,7 @@ export const strategyActiveApi = {
     timeframe: string;
     mode?: string;
     params?: Record<string, string>;
+    extraSymbols?: string[];
   }) => {
     return await strategyRuntimeClient.startStrategy({
       accountId: params.accountId,
@@ -237,6 +238,7 @@ export const strategyActiveApi = {
       timeframe: params.timeframe,
       mode: params.mode || 'paper',
       params: params.params || {},
+      extraSymbols: params.extraSymbols ?? [],
     });
   },
 
@@ -261,4 +263,36 @@ export const strategyActiveApi = {
 
   watchActive: (accountId: string, signal?: AbortSignal) =>
     strategyRuntimeStreamClient.watchActiveStrategies({ accountId }, { signal }),
+};
+
+// ── Strategy version history ────────────────────────────────────────
+
+export const strategyVersionApi = {
+  list: async (strategyId: string, limit = 50, offset = 0) => {
+    const r = await strategyRuntimeClient.listStrategyVersions({ strategyId, limit, offset });
+    return { versions: r.versions, total: r.total };
+  },
+
+  get: async (strategyId: string, versionNumber: number) => {
+    const r = await strategyRuntimeClient.getStrategyVersion({ strategyId, versionNumber });
+    return { version: r.version, sourceCode: r.sourceCode };
+  },
+
+  rollback: async (strategyId: string, versionNumber: number) => {
+    const r = await strategyRuntimeClient.rollbackStrategyVersion({ strategyId, versionNumber });
+    return { newVersion: r.newVersion, restoredSourceCode: r.restoredSourceCode };
+  },
+
+  diff: async (strategyId: string, fromVersion: number, toVersion: number) => {
+    const r = await strategyRuntimeClient.diffStrategyVersions({ strategyId, fromVersion, toVersion });
+    return {
+      fromVersion: r.fromVersion, fromSourceCode: r.fromSourceCode,
+      toVersion: r.toVersion, toSourceCode: r.toSourceCode,
+    };
+  },
+
+  updateCode: async (strategyId: string, sourceCode: string, changeSummary: string) => {
+    const r = await strategyRuntimeClient.updateStrategyCode({ strategyId, sourceCode, changeSummary });
+    return { newVersion: r.newVersion };
+  },
 };

@@ -3,7 +3,7 @@ import { Button, Space, Tooltip, Select, message, Segmented, Tag } from 'antd';
 import {
   CheckCircleOutlined, CopyOutlined,
   SaveOutlined, SettingOutlined, RobotOutlined,
-  ThunderboltOutlined, KeyOutlined,
+  ThunderboltOutlined, KeyOutlined, HistoryOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { CODE_KEY, COPY_KEY, RUNTIME_MODE_KEY, SAVE_FAILED_KEY, SAVE_KEY, VALIDATE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
@@ -35,6 +35,7 @@ interface Props {
   autoFixing?: boolean;
   autoFixDebug?: AutoFixDebug | null;
   onDismissDebug?: () => void;
+  onShowHistory?: () => void;
 }
 
 const btnStyle: React.CSSProperties = { width: 30, height: 30, borderRadius: 6, padding: 0,
@@ -52,6 +53,7 @@ export default function WorkspaceCodePanel({
   validating, onValidate, validationResult,
   onRunBacktest, backtestSubmitting, canSave, onSave, onCopy,
   onAskAI, onAutoFix, autoFixing, autoFixDebug, onDismissDebug,
+  onShowHistory,
 }: Props) {
   const { t } = useTranslation();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -204,6 +206,11 @@ export default function WorkspaceCodePanel({
             <Tooltip title={t(SAVE_KEY, 'Save')}>
               <Button size="small" type="primary" icon={<SaveOutlined />} onClick={onSave} disabled={!canSave} style={btnStyle} />
             </Tooltip>
+            {onShowHistory && (
+              <Tooltip title={t('strategy.version.history', { defaultValue: 'Version History' })}>
+                <Button size="small" icon={<HistoryOutlined />} onClick={onShowHistory} style={btnStyle} />
+              </Tooltip>
+            )}
             <Tooltip title={t(SETTINGS_KEY, 'AI Settings')}>
               <Button size="small" icon={<SettingOutlined />} onClick={() => setSettingsOpen(true)} style={btnStyle} />
             </Tooltip>

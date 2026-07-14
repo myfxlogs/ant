@@ -1,5 +1,5 @@
 import { Button, Tooltip } from 'antd';
-import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined, RobotOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined, RobotOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import {
   CHART_ERROR_KEY, SELECT_SYMBOL_HINT_KEY,
@@ -25,9 +25,10 @@ interface Props {
   btModalOpen: boolean;
   setBtModalOpen: (v: boolean) => void;
   setIndicatorDrawerOpen: (v: boolean) => void;
+  onShowVersionHistory?: () => void;
 }
 
-export default function WorkspaceCenterColumn({ ws, btModalOpen, setBtModalOpen, setIndicatorDrawerOpen }: Props) {
+export default function WorkspaceCenterColumn({ ws, btModalOpen, setBtModalOpen, setIndicatorDrawerOpen, onShowVersionHistory }: Props) {
   const { t } = useTranslation();
   const centerTab = useWorkspaceStore(s => s.centerTab);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
@@ -102,6 +103,11 @@ export default function WorkspaceCenterColumn({ ws, btModalOpen, setBtModalOpen,
             <Tooltip title={t(BROWSE_INDICATORS_KEY)}>
               <Button size="small" icon={<QuestionCircleOutlined />} onClick={() => setIndicatorDrawerOpen(true)} />
             </Tooltip>
+            {onShowVersionHistory && ws.code.strategyId && (
+              <Tooltip title={t('strategy.version.history', { defaultValue: 'Version History' })}>
+                <Button size="small" icon={<HistoryOutlined />} onClick={onShowVersionHistory} />
+              </Tooltip>
+            )}
           </div>
         )}
       </div>

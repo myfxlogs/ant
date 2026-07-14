@@ -29,12 +29,21 @@ type contextImpl struct {
 	// Tick-level prices (harness mode — set on TICK requests).
 	tickBid decimal.Decimal
 	tickAsk decimal.Decimal
+
+	// Multi-symbol bar windows for BarsForSymbol (live/paper mode).
+	extraBars map[string][]sdk.Bar
 }
 
 func (c *contextImpl) setBars(b sdk.BarSeries) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.bars = b
+}
+
+func (c *contextImpl) setExtraBars(extra map[string][]sdk.Bar) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.extraBars = extra
 }
 
 func (c *contextImpl) setTick(bid, ask decimal.Decimal) {
@@ -97,15 +106,22 @@ func (c *contextImpl) BarsTF(timeframe string) sdk.BarSeries {
 }
 
 func (c *contextImpl) BarsForSymbol(symbol, timeframe string) sdk.BarSeries {
-	// Live multi-symbol bar data requires multi-symbol subscription (Phase B2).
-	// For now, return the primary bars if the symbol matches, otherwise empty.
-	if symbol == c.symbol {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	if symbol == c.symbol || symbol == "" {
 		if timeframe == "" || timeframe == c.timeframe {
-			return c.Bars()
+			return c.bars
 		}
 		return c.BarsTF(timeframe)
 	}
-	return sdk.BarsToSlice(nil)
+	if c.extraBars == nil {
+		return sdk.BarsToSlice(nil)
+	}
+	bars, ok := c.extraBars[symbol]
+	if !ok || len(bars) == 0 {
+		return sdk.BarsToSlice(nil)
+	}
+	return sdk.BarsToSlice(bars)
 }
 
 func (c *contextImpl) Symbol() string   { return c.symbol }

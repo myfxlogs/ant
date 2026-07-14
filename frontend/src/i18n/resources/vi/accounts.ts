@@ -142,6 +142,7 @@ const Accounts = {
       "messages": {
         "bindFailed": "Liên kết tài khoản thất bại",
         "bindSuccess": "Liên kết tài khoản thành công",
+        "changeCredentials": "Thay đổi thông tin đăng nhập",
         "enterBrokerName": "Vui lòng nhập tên môi giới",
         "enterPassword": "Vui lòng nhập mật khẩu",
         "enterTradingAccount": "Vui lòng nhập tài khoản giao dịch",
@@ -158,7 +159,8 @@ const Accounts = {
         "company": "Chọn công ty môi giới",
         "password": "输入密码",
         "server": "Chọn máy chủ",
-        "tradingAccount": "Nhập tài khoản giao dịch"
+        "tradingAccount": "Nhập tài khoản giao dịch",
+        "alias": "Tên tùy chọn (không bắt buộc)"
       },
       "step1": {
         "subtitle": "选择您的交易平台并搜索经纪商",

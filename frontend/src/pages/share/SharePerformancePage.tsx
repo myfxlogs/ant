@@ -21,11 +21,20 @@ export default function SharePerformancePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lang, setLang] = useState<SupportedLanguage>(normalizeLanguage(navigator.language));
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     const dev = normalizeLanguage(navigator.language);
     setLang(dev);
     setLanguage(dev);
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDark(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
   }, []);
 
   const changeLang = (l: SupportedLanguage) => { setLang(l); setLanguage(l); };
@@ -86,7 +95,7 @@ export default function SharePerformancePage() {
 
   const kpiCards = [
     { label: t('sharePage.winRate'), value: `${fmt(toNum(data.winRate), 1)}%`, color: '#1677ff', icon: null },
-    { label: t('sharePage.profitFactor'), value: fmt(toNum(data.profitFactor), 2), color: '#eb2f96', icon: <TrophyOutlined /> },
+    { label: t('sharePage.profitFactor'), value: toNum(data.profitFactor) > 0 ? fmt(toNum(data.profitFactor), 2) : 'N/A', color: '#eb2f96', icon: <TrophyOutlined /> },
     { label: t('sharePage.maxDrawdown'), value: `${fmt(maxDrawdownPct, 2)}%`, color: '#fa8c16', icon: null },
     { label: t('sharePage.sharpeRatio'), value: fmt(toNum(data.sharpeRatio), 2), color: '#a0d911', icon: <BarChartOutlined /> },
     { label: t('sharePage.totalTrades'), value: String(data.totalTrades || 0), color: '#722ed1', icon: null },
@@ -112,11 +121,15 @@ export default function SharePerformancePage() {
       render: (v: unknown) => { const ms = toNum(v); return ms ? new Date(ms).toLocaleDateString(i18n.language) : '-'; } },
   ];
 
+  const pageBg = isDark ? '#141414' : '#fff';
+  const pageColor = isDark ? '#e0e0e0' : '#333';
+  const cardBg = isDark ? '#1f1f1f' : '#fff';
+
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto', padding: 'clamp(10px, 3vw, 24px)', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: 'clamp(10px, 3vw, 24px)', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', background: pageBg, color: pageColor, minHeight: '100vh' }}>
       <Seo title="Shared Performance Report" description="View shared trading performance report on AlphaForge." path={`/share/${token}`} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 'clamp(14px, 3vw, 20px)' }}>
-        <BrandLogo name={appName} />
+        <BrandLogo name={appName} dark={isDark} />
         {langSelector}
       </div>
 
@@ -138,7 +151,7 @@ export default function SharePerformancePage() {
       <Row gutter={[8, 8]} style={{ marginBottom: 16 }}>
         {kpiCards.map(({ label, value, color, icon }, i) => (
           <Col xs={12} sm={6} md={6} key={i}>
-            <Card size="small" style={{ textAlign: 'center', borderRadius: 10 }}>
+            <Card size="small" style={{ textAlign: 'center', borderRadius: 10, background: cardBg }}>
               <Statistic
                 title={<span style={{ fontSize: 'clamp(10px, 2vw, 12px)', color: '#8c8c8c' }}>{label}</span>}
                 value={value}
@@ -151,14 +164,14 @@ export default function SharePerformancePage() {
       </Row>
 
       {equity.length > 0 && (
-        <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>{t('sharePage.equityCurve')}</span>} style={{ marginBottom: 16, borderRadius: 10 }}>
+        <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>{t('sharePage.equityCurve')}</span>} style={{ marginBottom: 16, borderRadius: 10, background: cardBg }}>
           <ShareChart data={equity} timesMs={data.equityTimesMs} />
         </Card>
       )}
 
       {data.showPositions && data.positions != null ? (
         data.positions.length > 0 ? (
-          <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}><EyeOutlined /> {t('sharePage.positions', { defaultValue: 'Open Positions' })} ({data.positions.length})</span>} style={{ marginBottom: 16, borderRadius: 10 }}>
+          <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}><EyeOutlined /> {t('sharePage.positions', { defaultValue: 'Open Positions' })} ({data.positions.length})</span>} style={{ marginBottom: 16, borderRadius: 10, background: cardBg }}>
             <Table
               dataSource={data.positions}
               columns={[
@@ -177,20 +190,20 @@ export default function SharePerformancePage() {
             />
           </Card>
         ) : (
-          <Card size="small" style={{ marginBottom: 16, borderRadius: 10, textAlign: 'center' }}>
+          <Card size="small" style={{ marginBottom: 16, borderRadius: 10, textAlign: 'center', background: cardBg }}>
             <EyeOutlined style={{ fontSize: 18, color: '#8c8c8c', marginBottom: 4 }} />
             <div style={{ fontSize: 12, color: '#8c8c8c' }}>{t('sharePage.noPositions', { defaultValue: 'No open positions' })}</div>
           </Card>
         )
       ) : (
-        <Card size="small" style={{ marginBottom: 16, borderRadius: 10, textAlign: 'center', opacity: 0.6 }}>
+        <Card size="small" style={{ marginBottom: 16, borderRadius: 10, textAlign: 'center', opacity: 0.6, background: cardBg }}>
           <LockOutlined style={{ fontSize: 24, color: '#bbb', marginBottom: 4 }} />
           <div style={{ fontSize: 12, color: '#bbb' }}>{t('sharePage.positionsLocked', { defaultValue: 'Positions hidden by creator' })}</div>
         </Card>
       )}
 
       {bySymbol.length > 0 && (
-        <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>{t('sharePage.bySymbol')}</span>} style={{ marginBottom: 16, borderRadius: 10 }}>
+        <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>{t('sharePage.bySymbol')}</span>} style={{ marginBottom: 16, borderRadius: 10, background: cardBg }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
             <ResponsiveContainer width={110} height={110}>
               <PieChart>
@@ -205,7 +218,7 @@ export default function SharePerformancePage() {
                 <div key={s.symbol} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: PIE_COLORS[i % PIE_COLORS.length] }} />
-                    <span style={{ color: 'var(--color-text, #333)' }}>{s.symbol}</span>
+                    <span style={{ color: pageColor }}>{s.symbol}</span>
                     <span style={{ color: '#8c8c8c', fontSize: '0.9em' }}>{s.count}{t('sharePage.countUnit', { defaultValue: '笔' })}</span>
                   </div>
                   <span style={{ fontWeight: 500, color: s.net >= 0 ? green : red }}>{signed(s.net)}</span>
@@ -217,7 +230,7 @@ export default function SharePerformancePage() {
         </Card>
       )}
 
-      <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>{t('sharePage.tradeRecords')} ({trades.length})</span>} style={{ borderRadius: 10 }}>
+      <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>{t('sharePage.tradeRecords')} ({trades.length})</span>} style={{ borderRadius: 10, background: cardBg }}>
         {trades.length === 0 ? (
           <Empty description={t('sharePage.noTrades')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
         ) : (

@@ -116,7 +116,7 @@ export default function MonitoringPage() {
           <Card title={<span><ThunderboltOutlined /> {t('monitoring.goRuntime', { defaultValue: 'Go Runtime' })}</span>} size="small">
             <Row gutter={[16, 12]}>
               <Col xs={12} sm={8} md={6}>
-                <Statistic title="Goroutines" value={Number(snap.goroutines)} />
+                <Statistic title={t('monitoring.goroutines', { defaultValue: 'Goroutines' })} value={Number(snap.goroutines)} />
               </Col>
               <Col xs={12} sm={8} md={6}>
                 <Statistic title={t('monitoring.gcCount', { defaultValue: 'GC Count' })} value={Number(snap.numGc)} />
@@ -186,7 +186,7 @@ export default function MonitoringPage() {
                 <Statistic title={t('monitoring.parseErrors', { defaultValue: 'Parse Errors' })} value={Number(snap.dlqParseErrors)} />
               </Col>
               <Col xs={8}>
-                <Statistic title="Bid>Ask" value={Number(snap.dlqBidGtAsk)} />
+                <Statistic title={t('monitoring.bidGtAsk', { defaultValue: 'Bid>Ask' })} value={Number(snap.dlqBidGtAsk)} />
               </Col>
               <Col xs={8}>
                 <Statistic title={t('monitoring.nonPositive', { defaultValue: 'Non-Positive' })} value={Number(snap.dlqNonPositive)} />

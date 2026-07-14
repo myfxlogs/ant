@@ -16,6 +16,7 @@ func (s *StrategyExecutionServer) handleBar(
 	ctx context.Context, cfg LiveStrategyConfig,
 	bar *mthub.BarUpdate, bars *[]liveBar,
 	session *Session, firstBar *bool, activeSess *ActiveSession,
+	extraBars map[string][]liveBar,
 ) {
 	*bars = append(*bars, liveBar{
 		open:     bar.Open.String(),
@@ -43,9 +44,9 @@ func (s *StrategyExecutionServer) handleBar(
 
 	var lctx *antv1.LiveStrategyContext
 	if *firstBar {
-		lctx = s.buildLiveContext(ctx, cfg, *bars)
+		lctx = s.buildLiveContext(ctx, cfg, *bars, extraBars)
 	} else {
-		lctx = s.buildDeltaContext(ctx, cfg, *bars)
+		lctx = s.buildDeltaContext(ctx, cfg, *bars, extraBars)
 	}
 
 	req := &antv1.ExecuteLiveRequest{

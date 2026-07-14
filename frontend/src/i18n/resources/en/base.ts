@@ -572,6 +572,8 @@ const Base = {
       "probe_ok_no_models": "OK (no models returned)",
       "provider_required": "Please select a provider first",
       "provider_returned_empty_message": "AI provider returned an empty response",
+      "insufficient_balance": "Your AI wallet balance is insufficient. Please top up before continuing.",
+      "insufficient_balance_title": "Insufficient Balance",
       "rate_limited": "Rate limited. Please try again later.",
       "request_failed": "API request failed"
     },

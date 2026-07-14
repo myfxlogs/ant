@@ -2,7 +2,7 @@ import { Button, Input, Select, Tag } from 'antd';
 import { CloudServerOutlined, CheckOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import GradientButton, { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useTranslation } from 'react-i18next'
-import { BIND_ACTIONS_CONFIRM_BIND_KEY, BIND_ACTIONS_SEARCH_KEY, BIND_FIELDS_BROKER_NAME_KEY, BIND_FIELDS_COMPANY_KEY, BIND_FIELDS_PASSWORD_KEY, BIND_FIELDS_PLATFORM_KEY, BIND_FIELDS_SERVER_KEY, BIND_FIELDS_TRADING_ACCOUNT_KEY, BIND_LABELS_SERVER_COUNT_KEY, BIND_MESSAGES_LOGIN_DIGITS_ONLY_KEY, BIND_PASSWORD_HINT_KEY, BIND_PLACEHOLDERS_BROKER_NAME_KEY, BIND_PLACEHOLDERS_COMPANY_KEY, BIND_PLACEHOLDERS_PASSWORD_KEY, BIND_PLACEHOLDERS_SERVER_KEY, BIND_PLACEHOLDERS_TRADING_ACCOUNT_KEY, BIND_STEP1_SUBTITLE_KEY, BIND_STEP1_TITLE_KEY, BIND_STEP2_SUBTITLE_KEY, BIND_STEP2_TITLE_KEY, BIND_STEP3_SUBTITLE_KEY, BIND_STEP3_TITLE_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+import { BIND_ACTIONS_CONFIRM_BIND_KEY, BIND_ACTIONS_SEARCH_KEY, BIND_FIELDS_BROKER_NAME_KEY, BIND_FIELDS_COMPANY_KEY, BIND_FIELDS_PASSWORD_KEY, BIND_FIELDS_PLATFORM_KEY, BIND_FIELDS_SERVER_KEY, BIND_FIELDS_TRADING_ACCOUNT_KEY, BIND_LABELS_SERVER_COUNT_KEY, BIND_MESSAGES_LOGIN_DIGITS_ONLY_KEY, BIND_PASSWORD_HINT_KEY, BIND_PLACEHOLDERS_BROKER_NAME_KEY, BIND_PLACEHOLDERS_COMPANY_KEY, BIND_PLACEHOLDERS_PASSWORD_KEY, BIND_PLACEHOLDERS_SERVER_KEY, BIND_PLACEHOLDERS_TRADING_ACCOUNT_KEY, BIND_STEP1_SUBTITLE_KEY, BIND_STEP1_TITLE_KEY, BIND_STEP2_SUBTITLE_KEY, BIND_STEP2_TITLE_KEY, BIND_STEP3_SUBTITLE_KEY, BIND_STEP3_TITLE_KEY, BIND_SUMMARY_SERVER_KEY, BIND_SUMMARY_BROKER_KEY, BIND_SUMMARY_PLATFORM_KEY, BIND_SUMMARY_TRADING_ACCOUNT_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 import type { BrokerSearchResult, BrokerServer } from './BindAccount';
 
 export function Step1SearchBroker({
@@ -101,7 +101,7 @@ export function Step1SearchBroker({
 }
 
 export function Step2Credentials({
-  mtType, selectedServer, selectedCompany, login, setLogin, password, setPassword, onBack, onNext,
+  mtType, selectedServer, selectedCompany, login, setLogin, password, setPassword, alias, setAlias, onBack, onNext,
 }: {
   mtType: 'MT4' | 'MT5';
   selectedServer: BrokerServer | null;
@@ -110,6 +110,8 @@ export function Step2Credentials({
   setLogin: (v: string) => void;
   password: string;
   setPassword: (v: string) => void;
+  alias: string;
+  setAlias: (v: string) => void;
   onBack: () => void;
   onNext: () => void;
 }) {
@@ -144,6 +146,12 @@ export function Step2Credentials({
           style={{ background: 'var(--color-bg-card)', border: '1px solid rgba(185, 201, 223, 0.4)', borderRadius: '10px', padding: '14px 16px', fontSize: '16px', color: 'var(--color-text)', height: '48px' }} />
         <p className="mt-2 text-sm" style={{ color: 'var(--color-text-muted)' }}>{t(BIND_PASSWORD_HINT_KEY)}</p>
       </div>
+      <div>
+        <label className="block mb-2 font-medium" style={{ color: 'var(--color-text)' }}>{t('accounts.bind.fields.alias', { defaultValue: 'Account Alias' })}</label>
+        <input type="text" value={alias} onChange={(e) => setAlias(e.target.value)}
+          placeholder={t('accounts.bind.placeholders.alias', { defaultValue: 'Optional custom name' })} className="w-full outline-none transition-all"
+          style={{ background: 'var(--color-bg-card)', border: '1px solid rgba(185, 201, 223, 0.4)', borderRadius: '10px', padding: '14px 16px', fontSize: '16px', color: 'var(--color-text)', height: '48px' }} />
+      </div>
       <div className="flex justify-between pt-4">
         <Button onClick={onBack} style={{ borderRadius: '10px' }}>{t('common.previous')}</Button>
         <GradientButton disabled={!login.trim() || !password.trim()} onClick={onNext} style={{ padding: '0 32px' }}>{t('common.next')}</GradientButton>
@@ -172,18 +180,26 @@ export function Step3Bind({
         <p className="mt-2" style={{ color: 'var(--color-text-muted)' }}>{t(BIND_STEP3_SUBTITLE_KEY)}</p>
       </div>
 
-      <div className="p-4 rounded-xl" style={{ background: 'var(--color-bg-secondary)' }}>
+      <div className="p-4 rounded-xl space-y-2" style={{ background: 'var(--color-bg-secondary)' }}>
         <div className="flex items-center gap-3">
           <CloudServerOutlined style={{ fontSize: 20, color: '#D4AF37' }} />
           <div><div className="font-medium" style={{ color: 'var(--color-text)' }}>{selectedServer?.name}</div>
             <div className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{selectedCompany?.companyName} · {mtType} · {login}</div></div>
         </div>
+        {selectedServer && selectedServer.access.length > 0 && (
+          <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            {selectedServer.access.join(', ')}
+          </div>
+        )}
       </div>
 
       {bindError && (
         <div className="p-3 rounded-xl text-center" style={{ background: 'rgba(229, 57, 53, 0.05)', border: '1px solid rgba(229, 57, 53, 0.15)' }}>
           <ExclamationCircleOutlined style={{ fontSize: 16, color: '#E53935' }} />
           <p className="mt-1 text-sm" style={{ color: '#E53935' }}>{bindError}</p>
+          <button onClick={onBack} className="mt-2 text-xs underline" style={{ color: '#E53935' }}>
+            {t('accounts.bind.messages.changeCredentials', { defaultValue: 'Change credentials' })}
+          </button>
         </div>
       )}
 

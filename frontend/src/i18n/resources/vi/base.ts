@@ -572,6 +572,8 @@ const Base = {
       "probe_ok_no_models": "OK (không trả về models)",
       "provider_required": "Vui lòng chọn nhà cung cấp",
       "provider_returned_empty_message": "Nhà cung cấp AI trả về thông điệp rỗng",
+      "insufficient_balance": "Số dư AI không đủ. Vui lòng nạp tiền trước khi tiếp tục.",
+      "insufficient_balance_title": "Số dư không đủ",
       "rate_limited": "AI bị giới hạn tốc độ hoặc hết hạn mức (429/resource exhausted). Vui lòng thử lại sau.",
       "request_failed": "Yêu cầu API thất bại"
     },

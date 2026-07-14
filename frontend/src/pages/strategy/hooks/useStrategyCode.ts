@@ -3,7 +3,7 @@ import { Form, message } from 'antd';
 import { useTranslation } from 'react-i18next'
 import { COPY_FAILED_KEY, COPY_SUCCESS_KEY, SAVE_SUCCESS_KEY, VALIDATE_BEFORE_SAVE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
-import { strategyApi, type StrategyTemplate } from '@/client/strategy';
+import { strategyApi, strategyVersionApi, type StrategyTemplate } from '@/client/strategy';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
 import { buildParamI18n } from '@/utils/paramLabel';
 import type { TemplateParameter } from '@/gen/ant/v1/strategy_template_entity_pb';
@@ -100,11 +100,14 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
           parameters: _validatedParams(),
           i18n: i18n || undefined,
         });
+        if (strategyId) {
+          await strategyVersionApi.updateCode(strategyId, code, 'Updated from workspace');
+        }
         message.success(t(SAVE_SUCCESS_KEY)); loadTemplates();
       } catch (e: unknown) { message.error((e as Error)?.message || 'Save failed'); }
       finally { setSaveLoading(false); }
     } else { setSaveModalOpen(true); }
-  }, [code, canSave, loadedTemplate, t, loadTemplates, _validatedParams, validationResult]);
+  }, [code, canSave, loadedTemplate, strategyId, t, loadTemplates, _validatedParams, validationResult]);
 
   const handleSaveAs = useCallback(() => { saveForm.resetFields(); setSaveModalOpen(true); }, [saveForm]);
   const handleSaveModalOk = useCallback(async () => {

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ResponsiveContainer, AreaChart, Area, Tooltip, YAxis, XAxis, ReferenceLine } from 'recharts';
 
 interface ShareChartProps {
@@ -6,6 +7,15 @@ interface ShareChartProps {
 }
 
 export default function ShareChart({ data, timesMs }: ShareChartProps) {
+  const [chartHeight, setChartHeight] = useState(260);
+
+  useEffect(() => {
+    const update = () => setChartHeight(window.innerWidth < 480 ? 200 : 260);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
   const chartData = data.map((v, i) => ({
     x: timesMs && timesMs[i] ? timesMs[i] : i,
     value: typeof v === 'bigint' ? Number(v) : v,
@@ -32,7 +42,7 @@ export default function ShareChart({ data, timesMs }: ShareChartProps) {
     : chartData;
 
   return (
-    <ResponsiveContainer width="100%" height={260}>
+    <ResponsiveContainer width="100%" height={chartHeight}>
       <AreaChart data={renderData} margin={{ top: 4, right: 8, bottom: 4, left: 4 }}>
         <defs>
           <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">

@@ -154,7 +154,7 @@ export default function BindAccount() {
         <div className="rounded-2xl p-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
           {renderStepIndicator()}
           {step === 1 && <Step1SearchBroker mtType={mtType} setMtType={setMtType} companySearch={companySearch} setCompanySearch={setCompanySearch} searching={searching} searchResults={searchResults} setSearchResults={setSearchResults} selectedCompany={selectedCompany} selectedServer={selectedServer} setSelectedCompany={setSelectedCompany} setSelectedServer={setSelectedServer} alias={alias} setAlias={setAlias} handleSearch={handleSearch} handleCompanyChange={handleCompanyChange} handleServerChange={handleServerChange} onNext={() => setStep(2)} />}
-          {step === 2 && <Step2Credentials mtType={mtType} selectedServer={selectedServer} selectedCompany={selectedCompany} login={login} setLogin={setLogin} password={password} setPassword={setPassword} onBack={() => setStep(1)} onNext={() => { setBindError(''); setStep(3); }} />}
+          {step === 2 && <Step2Credentials mtType={mtType} selectedServer={selectedServer} selectedCompany={selectedCompany} login={login} setLogin={setLogin} password={password} setPassword={setPassword} alias={alias} setAlias={setAlias} onBack={() => setStep(1)} onNext={() => { setBindError(''); setStep(3); }} />}
           {step === 3 && <Step3Bind mtType={mtType} selectedServer={selectedServer} selectedCompany={selectedCompany} login={login} loading={loading} bindError={bindError} handleBind={handleBind} onBack={() => { setBindError(''); setStep(2); }} />}
         </div>
       </div>

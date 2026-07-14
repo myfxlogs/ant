@@ -6,6 +6,7 @@ import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
 import { TITLE_KEY as INDICATOR_CATALOG_TITLE_KEY } from '@/gen/ant/v1/i18n/indicator_catalog_keys';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import BacktestHistoryDrawer from './components/workspace/BacktestHistoryDrawer';
+import VersionHistoryDrawer from './components/workspace/VersionHistoryDrawer';
 import MobileGuard from './components/workspace/MobileGuard';
 import RightPanel from './components/workspace/RightPanel';
 import { SaveTemplateWrapper } from './WorkspaceLayout';
@@ -22,6 +23,7 @@ export default function StrategyWorkspacePage() {
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
   const [btModalOpen, setBtModalOpen] = useState(false);
   const [indicatorDrawerOpen, setIndicatorDrawerOpen] = useState(false);
+  const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
 
   const startResize = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -64,6 +66,7 @@ export default function StrategyWorkspacePage() {
           btModalOpen={btModalOpen}
           setBtModalOpen={setBtModalOpen}
           setIndicatorDrawerOpen={setIndicatorDrawerOpen}
+          onShowVersionHistory={() => setVersionHistoryOpen(true)}
         />
 
         {/* ── Resize handle ── */}
@@ -136,6 +139,12 @@ export default function StrategyWorkspacePage() {
         onRefresh={ws.history.onRefresh}
         onClose={ws.history.runId ? ws.history.close : ws.history.closeModal}
         runId={ws.history.runId}
+      />
+      <VersionHistoryDrawer
+        open={versionHistoryOpen}
+        strategyId={ws.code.strategyId}
+        onClose={() => setVersionHistoryOpen(false)}
+        onRollback={(sourceCode) => { ws.code.setCode(sourceCode); }}
       />
     </div>
   );

@@ -157,7 +157,8 @@ export default function ShareAccountButton({ accountId }: Props) {
         title={t('share.title', { defaultValue: 'Share Management' })}
         open={open}
         onCancel={() => setOpen(false)}
-        width={700}
+        width="90vw"
+        style={{ maxWidth: 700 }}
         footer={null}
       >
         <div className="mb-4">

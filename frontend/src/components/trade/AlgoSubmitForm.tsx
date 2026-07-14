@@ -74,7 +74,7 @@ export default function AlgoSubmitForm({ onStarted }: Props) {
       onStarted?.(resp.executionId);
       form.resetFields();
     } catch (e: unknown) {
-      message.error(String((e as { message?: string })?.message || e));
+      message.error(String((e as { message?: string })?.message || t('common.unknownError', { defaultValue: 'Unknown error' })));
     } finally {
       setSubmitting(false);
     }

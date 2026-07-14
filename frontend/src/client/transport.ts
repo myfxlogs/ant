@@ -106,8 +106,8 @@ const interceptors: Interceptor[] = [
         if (!hasShownBalanceError) {
           hasShownBalanceError = true;
           Modal.error({
-            title: i18n.t('errors.ai.insufficient_balance_title', { defaultValue: '余额不足' }),
-            content: i18n.t('errors.ai.insufficient_balance', { defaultValue: 'AI 余额不足，请先充值后再使用。' }),
+            title: i18n.t('errors.ai.insufficient_balance_title', { defaultValue: 'Insufficient Balance' }),
+            content: i18n.t('errors.ai.insufficient_balance', { defaultValue: 'Your AI wallet balance is insufficient. Please top up before continuing.' }),
             onOk: () => { hasShownBalanceError = false; },
           });
         }

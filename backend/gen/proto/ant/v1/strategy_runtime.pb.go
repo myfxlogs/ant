@@ -3609,6 +3609,7 @@ type StartStrategyRequest struct {
 	Timeframe     string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
 	Mode          string                 `protobuf:"bytes,5,opt,name=mode,proto3" json:"mode,omitempty"`                                                                               // "live" | "paper"
 	Params        map[string]string      `protobuf:"bytes,6,rep,name=params,proto3" json:"params,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // strategy params
+	ExtraSymbols  []string               `protobuf:"bytes,7,rep,name=extra_symbols,json=extraSymbols,proto3" json:"extra_symbols,omitempty"`                                           // secondary symbols for multi-symbol strategies
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3681,6 +3682,13 @@ func (x *StartStrategyRequest) GetMode() string {
 func (x *StartStrategyRequest) GetParams() map[string]string {
 	if x != nil {
 		return x.Params
+	}
+	return nil
+}
+
+func (x *StartStrategyRequest) GetExtraSymbols() []string {
+	if x != nil {
+		return x.ExtraSymbols
 	}
 	return nil
 }
@@ -4808,7 +4816,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"takeProfit\x12\x16\n" +
 	"\x06reason\x18\t \x01(\tR\x06reason\x128\n" +
 	"\ttimestamp\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\"\xa1\x02\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\"\xc6\x02\n" +
 	"\x14StartStrategyRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12#\n" +
@@ -4816,7 +4824,8 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x06symbol\x18\x03 \x01(\tR\x06symbol\x12\x1c\n" +
 	"\ttimeframe\x18\x04 \x01(\tR\ttimeframe\x12\x12\n" +
 	"\x04mode\x18\x05 \x01(\tR\x04mode\x12@\n" +
-	"\x06params\x18\x06 \x03(\v2(.ant.v1.StartStrategyRequest.ParamsEntryR\x06params\x1a9\n" +
+	"\x06params\x18\x06 \x03(\v2(.ant.v1.StartStrategyRequest.ParamsEntryR\x06params\x12#\n" +
+	"\rextra_symbols\x18\a \x03(\tR\fextraSymbols\x1a9\n" +
 	"\vParamsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"^\n" +

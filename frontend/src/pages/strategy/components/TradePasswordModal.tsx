@@ -38,7 +38,7 @@ const TradePasswordModal: React.FC<TradePasswordModalProps> = ({ open, accountId
       }
       onSuccess(res);
     } catch (e: unknown) {
-      message.error(String((e as any)?.message || e));
+      message.error(String((e as any)?.message || t('common.unknownError', { defaultValue: 'Unknown error' })));
     } finally {
       setSubmitting(false);
     }

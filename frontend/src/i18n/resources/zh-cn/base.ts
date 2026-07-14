@@ -572,6 +572,8 @@ const Base = {
       "probe_ok_no_models": "正常（未返回 models）",
       "provider_required": "请先选择服务商",
       "provider_returned_empty_message": "AI 服务返回空消息",
+      "insufficient_balance": "AI 余额不足，请先充值后再使用。",
+      "insufficient_balance_title": "余额不足",
       "rate_limited": "AI 服务触发限流/额度不足（429/资源耗尽）。请稍后重试或更换可用的 API Key/模型配置。",
       "request_failed": "API 请求失败"
     },

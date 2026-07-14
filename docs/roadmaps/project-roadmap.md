@@ -82,29 +82,29 @@
 
 | 任务 | 优先级 | 说明 |
 |------|--------|------|
-| 策略分享页优化 | 高 | SharePerformancePage 性能图表渲染 + 移动端适配 |
-| 前端 i18n 完整性审计 | 中 | 检查所有页面是否有未翻译的硬编码字符串 |
-| 账户连接向导 UX | 中 | MT4/MT5 账户绑定的引导流程优化 |
-| 错误提示友好化 | 中 | ConnectRPC 错误码 → 用户可读的多语言提示 |
+| 策略分享页优化 | 高 | ✅ 完成 — 暗色模式适配 + 响应式图表高度 + profitFactor 边界修复 + 分享管理弹窗移动端适配 |
+| 前端 i18n 完整性审计 | 中 | ✅ 完成 — 修复 8 个文件的硬编码字符串：VersionHistoryDrawer/LiveSchedulesTab/AICodeReviseChat/AlgoSubmitForm/TradePasswordModal/AIGatewayModals/SystemConfigEditModal/MarketplacePage/MonitoringPage |
+| 账户连接向导 UX | 中 | ✅ 完成 — Step2 增加别名输入框、Step3 增加服务器地址显示 + 错误恢复"修改凭据"链接、5 语言 i18n 键补全 |
+| 错误提示友好化 | 中 | ✅ 完成 — 补全 ConnectRPC Code→i18n 映射（6 个新增）、添加 wallet 余额不足 i18n 键（5 语言）、修复 transport.ts 中文 defaultValue→英文、getErrorMessage 增加 ConnectError code fallback |
 
 ### P2：策略能力扩展
 
 | 任务 | 优先级 | 说明 |
 |------|--------|------|
-| Python 策略 SDK 完善 | 高 | Agent 生成的 Python 策略需要更完整的 SDK 支持 |
-| 策略回测增强 | 中 | 参数优化、蒙特卡洛模拟、walk-forward 分析 |
-| 多品种策略支持 | 中 | 当前策略单品种，扩展到多品种组合 |
-| 策略版本管理 | 低 | Git-like 版本历史 + diff + 回滚 |
+| Python 策略 SDK 完善 | 高 | ✅ 完成 |
+| 策略回测增强 | 中 | ✅ 完成 |
+| 多品种策略支持 | 中 | ✅ 完成 |
+| 策略版本管理 | 低 | ✅ 完成 |
 
 ### P3：平台商业化
 
 | 任务 | 优先级 | 说明 |
 |------|--------|------|
-| 用户计费体系 | 高 | AI token 用量计费 + 策略运行时长计费 |
-| 订阅计划 | 高 | Free / Pro / Enterprise 分层 |
-| 策略市场交易 | 中 | 策略创作者经济（付费策略 + 分成） |
-| 用户注册流程完善 | 中 | 邮箱验证 + 欢迎引导 + 首策略创建向导 |
-| 管理后台完善 | 中 | 用户管理 + 系统监控 + 运营数据看板 |
+| 用户计费体系 | 高 | ✅ 完成 — WalletService 扣费 + AITokenUsageRepository token 用量统计 + MonthlyCost/MonthlyRuntimeMinutes |
+| 订阅计划 | 高 | ✅ 完成 — SubscriptionService: Free/Pro/Enterprise、月付/年付、自动续费、按比例退款换计划 |
+| 策略市场交易 | 中 | ✅ 完成 — MarketplaceService: 发布/订阅/购买策略、免费/付费模式 |
+| 用户注册流程完善 | 中 | ✅ 完成 — email_verification.go + VerifyEmail 前端页 + WelcomeModal 3 步引导 |
+| 管理后台完善 | 中 | ✅ 完成 — UserManagement + BillingManagement + StrategyManagement + ShareManagement + MonitoringPage(SSE) + AdminSettingsPage |
 
 ### P4：技术债务 & 可靠性
 
@@ -113,8 +113,8 @@
 | Go module path 重命名 | 低 | ✅ 完成 — `anttrader/` → `alphaforge/`（全量 import 重写 + binary rename + buf regenerate） |
 | Proto i18n 品牌同步 | 中 | ✅ 完成 — textproto/proto 源文件 AntTrader → AlphaForge，buf regenerate |
 | Docker 容器名统一 | 低 | ✅ 完成 — `ant-backend` → `alphaforge-backend` 等（volume 名保留，需数据迁移时再改） |
-| E2E 测试覆盖 | 中 | Playwright 回归测试（登录 + 策略生成 + 回测 + 实盘） |
-| 监控告警 | 中 | Prometheus + AlertManager + 运营通知 |
+| E2E 测试覆盖 | 中 | ✅ 新增 4 个测试文件：login-bind-account（登录+绑定向导 5 步）、i18n-language-switch（语言切换+登录页 i18n）、error-i18n（ConnectRPC 错误码→用户提示）、share-page（分享页面渲染+无效 token） |
+| 监控告警 | 中 | ✅ 完成 — Prometheus /metrics 端点 + promauto counters/histograms + MonitoringPage SSE 实时面板 |
 
 ---
 

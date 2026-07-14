@@ -46,7 +46,7 @@ function MarketplaceUI() {
             onRunBacktest={m.handleRunBacktest}
           />
           <Drawer
-            title="Strategy Backtest"
+            title={t('marketplace.backtestTitle', { defaultValue: 'Strategy Backtest' })}
             open={m.backtestDrawerOpen}
             onClose={() => m.setBacktestDrawerOpen(false)}
             width={680}

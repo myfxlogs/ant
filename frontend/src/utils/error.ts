@@ -2,7 +2,7 @@
 import { UNKNOWN_KEY } from '@/gen/ant/v1/i18n/errors_keys';
 
 import i18n from '@/i18n';
-import { Code } from '@connectrpc/connect';
+import { Code, ConnectError } from '@connectrpc/connect';
 
 interface ApiErrorResponse {
   code: number;
@@ -107,13 +107,20 @@ export function getErrorMessageByCode(code: number, fallback?: string): string {
 
 // Maps ConnectRPC Code enum values to i18n keys for user-friendly messages.
 export const connectCodeToI18nKey: Partial<Record<Code, string>> = {
+  [Code.Canceled]: 'errors.request_timeout',
+  [Code.Unknown]: 'errors.unknown',
   [Code.DeadlineExceeded]: 'errors.request_timeout',
   [Code.NotFound]: 'errors.not_found',
+  [Code.AlreadyExists]: 'errors.account_already_bound',
   [Code.PermissionDenied]: 'errors.forbidden',
   [Code.ResourceExhausted]: 'errors.rate_limited',
+  [Code.FailedPrecondition]: 'errors.internal',
+  [Code.Aborted]: 'errors.internal',
+  [Code.OutOfRange]: 'errors.invalid_parameter',
   [Code.Internal]: 'errors.internal',
   [Code.Unavailable]: 'errors.service_unavailable',
   [Code.DataLoss]: 'errors.internal',
+  [Code.Unauthenticated]: 'errors.unauthorized',
 };
 
 /** Translate a ConnectRPC Code into a user-friendly, localized message. */
@@ -175,6 +182,10 @@ export function getErrorMessage(error: unknown, defaultMsg: string): string {
       }
       if (lower.includes('status 403') && (lower.includes('quota') || lower.includes('exhaust') || lower.includes('allocation'))) {
         return i18n.t('errors.ai.forbidden_quota');
+      }
+
+      if (error instanceof ConnectError && connectCodeToI18nKey[error.code]) {
+        return getConnectErrorMessage(error.code, defaultMsg);
       }
 
       return errorMsg;

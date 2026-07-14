@@ -64,6 +64,11 @@ func (r *Runner) UpdateLiveState(balance, equity string, positions []sdk.Positio
 	r.ctx.livePositions = positions
 }
 
+// UpdateExtraBars sets the extra symbol bar windows for multi-symbol strategies.
+func (r *Runner) UpdateExtraBars(extra map[string][]sdk.Bar) {
+	r.ctx.setExtraBars(extra)
+}
+
 // Init calls the strategy's OnInit.
 func (r *Runner) Init(ctx context.Context) error {
 	if r.strategy == nil {

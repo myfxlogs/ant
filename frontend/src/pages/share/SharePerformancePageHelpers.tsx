@@ -9,7 +9,7 @@ export const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   vi: 'Tiếng Việt',
 };
 
-export function BrandLogo({ name }: { name: string }) {
+export function BrandLogo({ name, dark }: { name: string; dark?: boolean }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
       <span style={{ width: 40, height: 40, borderRadius: 12, background: PRIMARY_GRADIENT, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -17,7 +17,7 @@ export function BrandLogo({ name }: { name: string }) {
           <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
         </svg>
       </span>
-      <span style={{ fontWeight: 700, fontSize: 'clamp(16px, 4vw, 20px)', fontFamily: 'Poppins, sans-serif' }}>{name}</span>
+      <span style={{ fontWeight: 700, fontSize: 'clamp(16px, 4vw, 20px)', fontFamily: 'Poppins, sans-serif', color: dark ? '#e0e0e0' : 'inherit' }}>{name}</span>
     </div>
   );
 }

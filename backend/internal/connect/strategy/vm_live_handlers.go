@@ -43,6 +43,30 @@ func vmHandleBar(r *runner.Runner, lctx *antv1.LiveStrategyContext) *antv1.Execu
 	}
 
 	barSeries := sdk.BarsToSlice(barWindow)
+
+	// Convert multi-symbol series from the live context.
+	if len(lctx.Symbols) > 0 {
+		extra := make(map[string][]sdk.Bar, len(lctx.Symbols))
+		for _, ss := range lctx.Symbols {
+			n := len(ss.Close)
+			if n == 0 {
+				continue
+			}
+			bars := make([]sdk.Bar, n)
+			for i := 0; i < n; i++ {
+				bars[i] = sdk.Bar{
+					Open:      parseDecimal(ss.Open[i]),
+					High:      parseDecimal(ss.High[i]),
+					Low:       parseDecimal(ss.Low[i]),
+					Close:     parseDecimal(ss.Close[i]),
+					Volume:    parseInt64(ss.Volume[i]),
+				}
+			}
+			extra[ss.Symbol] = bars
+		}
+		r.UpdateExtraBars(extra)
+	}
+
 	sig, err := r.OnBar(context.Background(), barSeries, lctx.Timeframe)
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
