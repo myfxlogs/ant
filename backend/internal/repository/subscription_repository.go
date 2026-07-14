@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -61,7 +62,7 @@ func (r *SubscriptionRepository) GetPlanByName(ctx context.Context, name string)
 			&p.MaxSymbolsPerStrategy, &p.CapabilityTier, &p.Features, &p.SortOrder, &p.IsActive,
 			&p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("subscription repo: get plan by name: %w", err)
@@ -83,7 +84,7 @@ func (r *SubscriptionRepository) GetPlanByID(ctx context.Context, id uuid.UUID) 
 			&p.MaxSymbolsPerStrategy, &p.CapabilityTier, &p.Features, &p.SortOrder, &p.IsActive,
 			&p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("subscription repo: get plan by id: %w", err)
@@ -105,7 +106,7 @@ func (r *SubscriptionRepository) GetActiveSubscription(ctx context.Context, user
 			&s.CurrentPeriodStart, &s.CurrentPeriodEnd, &s.AutoRenew, &s.CancelledAt,
 			&s.WalletTransactionID, &s.CreatedAt, &s.UpdatedAt)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("subscription repo: get active: %w", err)
@@ -128,7 +129,7 @@ func (r *SubscriptionRepository) GetActiveSubscriptionTx(ctx context.Context, tx
 			&s.CurrentPeriodStart, &s.CurrentPeriodEnd, &s.AutoRenew, &s.CancelledAt,
 			&s.WalletTransactionID, &s.CreatedAt, &s.UpdatedAt)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("subscription repo: get active (tx): %w", err)

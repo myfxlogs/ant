@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -32,7 +33,7 @@ func (r *WalletRepository) GetByUserID(ctx context.Context, userID uuid.UUID) (*
 	`, userID).Scan(&w.ID, &w.UserID, &w.Balance, &w.FrozenBalance, &w.Currency,
 		&w.CreatedAt, &w.UpdatedAt, &w.AccountNumber)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("wallet repo: get by user id: %w", err)
@@ -52,7 +53,7 @@ func (r *WalletRepository) GetByUserIDTx(ctx context.Context, tx pgx.Tx, userID 
 	`, userID).Scan(&w.ID, &w.UserID, &w.Balance, &w.FrozenBalance, &w.Currency,
 		&w.CreatedAt, &w.UpdatedAt)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("wallet repo: get by user id (tx): %w", err)
@@ -73,7 +74,7 @@ func (r *WalletRepository) CreateWallet(ctx context.Context, userID uuid.UUID) (
 		&w.CreatedAt, &w.UpdatedAt)
 	if err != nil {
 		// If no row returned (ON CONFLICT DO NOTHING), the wallet already exists — re-query.
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return r.GetByUserID(ctx, userID)
 		}
 		return nil, fmt.Errorf("wallet repo: create: %w", err)
