@@ -1,7 +1,7 @@
 # AlphaForge — 项目总路线图
 
-> **最后更新**：2026-07-11
-> **状态**：M11 完成，M12 进行中
+> **最后更新**：2026-07-14
+> **状态**：M12 完成，P0-P7 全部完成，生产已部署
 
 ---
 
@@ -136,6 +136,16 @@
 | Sentry 错误追踪 | 中 | ✅ 完成 — 后端 sentry-go（HTTP panic recovery + ConnectRPC error interceptor），前端 @sentry/react，env: SENTRY_DSN/SENTRY_ENVIRONMENT/SENTRY_RELEASE |
 | API rate limiting | 中 | ✅ 完成 — RateLimitInterceptor 扩展至 6 端点（Login/Register/GenerateStrategy/Plan/Analyze/Complete），per-IP token bucket |
 | 前端 Vitest 测试 | 中 | ✅ 完成 — 73 测试覆盖 amount/price/streamErrors/accountStatus/paramLabel 核心工具模块 |
+
+---
+
+### P7：生产安全加固
+
+| 任务 | 优先级 | 说明 |
+|------|--------|------|
+| 端口暴露修复 | 🔴 高 | ✅ 完成 — PG/Redis/NATS/Umami/Prometheus/AlertManager 从 0.0.0.0 改为 127.0.0.1 绑定，仅前端 8022 对外（经 Cloudflare tunnel） |
+| Umami healthcheck 修复 | 中 | ✅ 完成 — localhost → 127.0.0.1（IPv6 解析导致 wget 连接失败） |
+| Sentry DSN 配置 | 低 | ⏳ 待配置 — 代码已就绪，需在 .env 设置 SENTRY_DSN 后重建后端激活 |
 
 ---
 
