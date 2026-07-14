@@ -8,7 +8,7 @@ set -euo pipefail
 KEEP_DAYS=7
 BACKUP_DIR="${BACKUP_DIR:-/opt/ant/backups}"
 COMPOSE_FILE="${COMPOSE_FILE:-/opt/ant/docker-compose.yml}"
-CONTAINER="${CONTAINER:-alphaforge-postgres-1}"
+CONTAINER="${CONTAINER:-postgres}"
 DB_NAME="${DB_NAME:-ant}"
 DB_USER="${DB_USER:-ant}"
 TIMESTAMP=$(date -u +%Y%m%d_%H%M%S)

@@ -998,6 +998,7 @@ type ExecuteLiveRequest struct {
 	TickContext   *TickContext         `protobuf:"bytes,4,opt,name=tick_context,json=tickContext,proto3" json:"tick_context,omitempty"`    // REQUEST_TYPE_TICK
 	TradeContext  *TradeContext        `protobuf:"bytes,5,opt,name=trade_context,json=tradeContext,proto3" json:"trade_context,omitempty"` // REQUEST_TYPE_TRADE
 	TimerContext  *TimerContext        `protobuf:"bytes,6,opt,name=timer_context,json=timerContext,proto3" json:"timer_context,omitempty"` // REQUEST_TYPE_TIMER
+	StrategyId    string               `protobuf:"bytes,7,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`       // imported strategy ID for bytecode cache
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1072,6 +1073,13 @@ func (x *ExecuteLiveRequest) GetTimerContext() *TimerContext {
 		return x.TimerContext
 	}
 	return nil
+}
+
+func (x *ExecuteLiveRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
 }
 
 type ExecuteLiveResponse struct {
@@ -4557,7 +4565,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x14StrategyTemplateInfo\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x12\n" +
-	"\x04code\x18\x03 \x01(\tR\x04code\"\xdd\x02\n" +
+	"\x04code\x18\x03 \x01(\tR\x04code\"\xfe\x02\n" +
 	"\x12ExecuteLiveRequest\x12#\n" +
 	"\rstrategy_code\x18\x01 \x01(\tR\fstrategyCode\x126\n" +
 	"\frequest_type\x18\x02 \x01(\x0e2\x13.ant.v1.RequestTypeR\vrequestType\x12<\n" +
@@ -4565,7 +4573,9 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"barContext\x126\n" +
 	"\ftick_context\x18\x04 \x01(\v2\x13.ant.v1.TickContextR\vtickContext\x129\n" +
 	"\rtrade_context\x18\x05 \x01(\v2\x14.ant.v1.TradeContextR\ftradeContext\x129\n" +
-	"\rtimer_context\x18\x06 \x01(\v2\x14.ant.v1.TimerContextR\ftimerContext\"\xcc\x01\n" +
+	"\rtimer_context\x18\x06 \x01(\v2\x14.ant.v1.TimerContextR\ftimerContext\x12\x1f\n" +
+	"\vstrategy_id\x18\a \x01(\tR\n" +
+	"strategyId\"\xcc\x01\n" +
 	"\x13ExecuteLiveResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12.\n" +
 	"\x06signal\x18\x02 \x01(\v2\x16.ant.v1.StrategySignalR\x06signal\x12\x14\n" +

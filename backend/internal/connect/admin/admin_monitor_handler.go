@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+	"syscall"
 	"time"
 
 	"connectrpc.com/connect"
@@ -138,6 +139,16 @@ func (s *AdminMonitorServer) collect(ctx context.Context) *antv1.MonitorSnapshot
 	snap.MdGapAvgSeconds = mdgateway.GapAvgSeconds()
 	snap.MdGapMaxSeconds = mdgateway.GapMaxSeconds()
 	snap.ConsumerLag = mdgateway.ConsumerLag()
+
+	// Disk usage (root partition)
+	var stat syscall.Statfs_t
+	if err := syscall.Statfs("/", &stat); err == nil {
+		snap.DiskTotalBytes = stat.Blocks * uint64(stat.Bsize)
+		snap.DiskUsedBytes = (stat.Blocks - stat.Bavail) * uint64(stat.Bsize)
+		if snap.DiskTotalBytes > 0 {
+			snap.DiskUsagePct = float64(snap.DiskUsedBytes) / float64(snap.DiskTotalBytes) * 100
+		}
+	}
 
 	return snap
 }

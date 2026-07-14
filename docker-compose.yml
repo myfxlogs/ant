@@ -63,6 +63,7 @@ services:
       - NATS_URL=nats://nats:4222
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
       - TZ=Asia/Shanghai
       - GIN_MODE=release
       - CH_HOST=clickhouse
@@ -168,11 +169,13 @@ services:
           memory: 256M
         reservations:
           memory: 128M
-    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "200mb", "--maxmemory-policy", "allkeys-lru"]
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "200mb", "--maxmemory-policy", "allkeys-lru", "--requirepass", "${REDIS_PASSWORD}"]
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD:-}\" ping | grep PONG"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -704,8 +704,8 @@ assert.True(t, report.Passed)
 | ~~AccountService 仍用 float64~~ | ~~`UpdateAccountMetrics` 等接受 `float64`~~ → 已全链路迁移至 `decimal.Decimal` | P2 | ✅ 已完成 |
 | ~~MTAccountInfo 仍用 float64~~ | ~~`mdtick.MTAccountInfo` 的 Balance/Equity 等仍为 `float64`~~ → 已迁移至 `decimal.Decimal` | P2 | ✅ 已完成 |
 | **实盘一致性验证** | VM 信号与回测结果一致 (同码不变量) | P1 | ❌ 未验证 |
-| **iCustom 自定义指标** | 需 OnCalculate + buffer 模型 + 指标加载机制 | P3 | ❌ 未实现 |
-| **Bytecode 缓存持久化** | 跨重启持久化 bytecode 到 DB，用源码 hash 做 cache key | P3 | ❌ 未实现 |
+| **iCustom 自定义指标** | 永久盲区：需加载 .ex4/.ex5 编译指标二进制文件，服务端无法实现。已归类为 permanentBlindSpot（info 级别），VM 返回 0 | P3 | ✅ 已归类 |
+| **Bytecode 缓存持久化** | 跨重启持久化 bytecode 到 DB，用源码 hash 做 cache key。回测路径已用 `CompileMQLCached` + `imported_strategies.bytecode_cache`；实时路径已用 `NewVMLiveSessionCached` + `ExecuteLiveRequest.strategy_id` | P3 | ✅ 已完成 |
 
 ## 9. 验证方式
 

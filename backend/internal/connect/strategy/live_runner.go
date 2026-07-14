@@ -47,6 +47,7 @@ type LiveStrategyConfig struct {
 	Code                string
 	Mode                string // "live" | "paper"
 	Params              map[string]string
+	StrategyID          string // imported strategy ID for bytecode cache (optional)
 	// Models specifies which execution callbacks the strategy implements.
 	// Default (0) = Bar only.
 	Models ExecutionModels

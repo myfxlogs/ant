@@ -274,11 +274,28 @@ func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.
 }
 
 // executeVMLive runs a single live event via the in-process Bytecode VM.
-// MQL source → CompileMQL → VMRunner → runner.Runner → dispatch event → ExecuteLiveResponse.
+// MQL source → CompileMQLCached → VMRunner → runner.Runner → dispatch event → ExecuteLiveResponse.
+// Uses bytecode cache from imported_strategies when strategy_id is available.
 func (s *StrategyExecutionServer) executeVMLive(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
-	strategy, err := mql2go.CompileMQL(req.StrategyCode)
+	var cachedBytecode []byte
+	if req.StrategyId != "" && s.importedRepo != nil {
+		if sid, parseErr := uuid.Parse(req.StrategyId); parseErr == nil {
+		cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, sid)
+	}
+	}
+
+	strategy, bcData, err := mql2go.CompileMQLCached(req.StrategyCode, cachedBytecode)
 	if err != nil {
 		return nil, fmt.Errorf("compile MQL: %w", err)
+	}
+
+	// Persist newly compiled bytecode for future runs.
+	if bcData != nil && req.StrategyId != "" && s.importedRepo != nil {
+		if sid, parseErr := uuid.Parse(req.StrategyId); parseErr == nil && sid != uuid.Nil {
+			if saveErr := s.importedRepo.SaveBytecode(ctx, sid, bcData); saveErr != nil {
+				s.log.Warn("executeVMLive: save bytecode cache failed", zap.Error(saveErr))
+			}
+		}
 	}
 
 	// Build runner config from bar context (first request must have bar_context).

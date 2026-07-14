@@ -50,4 +50,9 @@ message MonitorSnapshot {
 
   // SSE connections
   int32 sse_active_streams = 27;
+
+  // Disk usage
+  uint64 disk_total_bytes = 28;
+  uint64 disk_used_bytes = 29;
+  double disk_usage_pct = 30;
 }

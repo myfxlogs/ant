@@ -91,8 +91,12 @@ type MonitorSnapshot struct {
 	ConsumerLag        int64   `protobuf:"varint,26,opt,name=consumer_lag,json=consumerLag,proto3" json:"consumer_lag,omitempty"`
 	// SSE connections
 	SseActiveStreams int32 `protobuf:"varint,27,opt,name=sse_active_streams,json=sseActiveStreams,proto3" json:"sse_active_streams,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// Disk usage
+	DiskTotalBytes uint64  `protobuf:"varint,28,opt,name=disk_total_bytes,json=diskTotalBytes,proto3" json:"disk_total_bytes,omitempty"`
+	DiskUsedBytes  uint64  `protobuf:"varint,29,opt,name=disk_used_bytes,json=diskUsedBytes,proto3" json:"disk_used_bytes,omitempty"`
+	DiskUsagePct   float64 `protobuf:"fixed64,30,opt,name=disk_usage_pct,json=diskUsagePct,proto3" json:"disk_usage_pct,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *MonitorSnapshot) Reset() {
@@ -314,12 +318,33 @@ func (x *MonitorSnapshot) GetSseActiveStreams() int32 {
 	return 0
 }
 
+func (x *MonitorSnapshot) GetDiskTotalBytes() uint64 {
+	if x != nil {
+		return x.DiskTotalBytes
+	}
+	return 0
+}
+
+func (x *MonitorSnapshot) GetDiskUsedBytes() uint64 {
+	if x != nil {
+		return x.DiskUsedBytes
+	}
+	return 0
+}
+
+func (x *MonitorSnapshot) GetDiskUsagePct() float64 {
+	if x != nil {
+		return x.DiskUsagePct
+	}
+	return 0
+}
+
 var File_admin_monitor_proto protoreflect.FileDescriptor
 
 const file_admin_monitor_proto_rawDesc = "" +
 	"\n" +
 	"\x13admin_monitor.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x19\n" +
-	"\x17SubscribeMetricsRequest\"\xbc\b\n" +
+	"\x17SubscribeMetricsRequest\"\xb4\t\n" +
 	"\x0fMonitorSnapshot\x128\n" +
 	"\ttimestamp\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12%\n" +
 	"\x0euptime_seconds\x18\x02 \x01(\x03R\ruptimeSeconds\x12\x1e\n" +
@@ -353,7 +378,10 @@ const file_admin_monitor_proto_rawDesc = "" +
 	"\x12md_gap_avg_seconds\x18\x18 \x01(\x01R\x0fmdGapAvgSeconds\x12+\n" +
 	"\x12md_gap_max_seconds\x18\x19 \x01(\x01R\x0fmdGapMaxSeconds\x12!\n" +
 	"\fconsumer_lag\x18\x1a \x01(\x03R\vconsumerLag\x12,\n" +
-	"\x12sse_active_streams\x18\x1b \x01(\x05R\x10sseActiveStreams2e\n" +
+	"\x12sse_active_streams\x18\x1b \x01(\x05R\x10sseActiveStreams\x12(\n" +
+	"\x10disk_total_bytes\x18\x1c \x01(\x04R\x0ediskTotalBytes\x12&\n" +
+	"\x0fdisk_used_bytes\x18\x1d \x01(\x04R\rdiskUsedBytes\x12$\n" +
+	"\x0edisk_usage_pct\x18\x1e \x01(\x01R\fdiskUsagePct2e\n" +
 	"\x13AdminMonitorService\x12N\n" +
 	"\x10SubscribeMetrics\x12\x1f.ant.v1.SubscribeMetricsRequest\x1a\x17.ant.v1.MonitorSnapshot0\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 

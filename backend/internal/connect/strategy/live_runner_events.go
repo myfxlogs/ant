@@ -4,12 +4,14 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/mthub"
 	"alphaforge/strategy/sdk"
+	"alphaforge/tools/mql2go"
 )
 
 func (s *StrategyExecutionServer) handleBar(
@@ -51,6 +53,7 @@ func (s *StrategyExecutionServer) handleBar(
 
 	req := &antv1.ExecuteLiveRequest{
 		StrategyCode: cfg.Code,
+		StrategyId:   cfg.StrategyID,
 		RequestType:  antv1.RequestType_REQUEST_TYPE_BAR,
 		BarContext:   lctx,
 	}
@@ -59,10 +62,26 @@ func (s *StrategyExecutionServer) handleBar(
 	var respBytes []byte
 	var err error
 	if *firstBar {
-		vmSess, vmErr := NewVMLiveSession(cfg.Code)
+		var cachedBytecode []byte
+		if cfg.StrategyID != "" && s.importedRepo != nil {
+			if sid, parseErr := uuid.Parse(cfg.StrategyID); parseErr == nil {
+				cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, sid)
+			}
+		}
+		vmSess, vmErr := NewVMLiveSessionCached(cfg.Code, cachedBytecode)
 		if vmErr != nil {
 			s.log.Error("LiveStrategyRunner: compile MQL failed", zap.Error(vmErr))
 			return
+		}
+		// Persist newly compiled bytecode.
+		if cfg.StrategyID != "" && s.importedRepo != nil {
+			if sid, parseErr := uuid.Parse(cfg.StrategyID); parseErr == nil && sid != uuid.Nil {
+				if bcData, mErr := mql2go.MarshalBytecode(vmSess.strategy.Bytecode()); mErr == nil {
+					if saveErr := s.importedRepo.SaveBytecode(ctx, sid, bcData); saveErr != nil {
+						s.log.Warn("LiveStrategyRunner: save bytecode cache failed", zap.Error(saveErr))
+					}
+				}
+			}
 		}
 		*session = vmSess
 		respBytes, err = (*session).Start(ctx, reqBytes)
@@ -100,6 +119,7 @@ func (s *StrategyExecutionServer) handleTick(
 
 	req := &antv1.ExecuteLiveRequest{
 		StrategyCode: cfg.Code,
+		StrategyId:   cfg.StrategyID,
 		RequestType:  antv1.RequestType_REQUEST_TYPE_TICK,
 		TickContext:  tctx,
 	}
@@ -129,6 +149,7 @@ func (s *StrategyExecutionServer) handleTrade(
 
 	req := &antv1.ExecuteLiveRequest{
 		StrategyCode:  cfg.Code,
+		StrategyId:    cfg.StrategyID,
 		RequestType:   antv1.RequestType_REQUEST_TYPE_TRADE,
 		TradeContext:  tctx,
 	}

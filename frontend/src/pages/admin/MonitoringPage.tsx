@@ -111,6 +111,17 @@ export default function MonitoringPage() {
               <Descriptions.Item label="Redis"><StatusTag status={snap.redisStatus} t={t} /></Descriptions.Item>
               <Descriptions.Item label="NATS"><StatusTag status={snap.natsStatus} t={t} /></Descriptions.Item>
             </Descriptions>
+            <div className="mt-3">
+              <div className="mb-1 flex items-center justify-between" style={{ color: 'var(--color-text-secondary)', fontSize: 12 }}>
+                <span>{t('monitoring.diskUsage', { defaultValue: 'Disk Usage' })}</span>
+                <span>{formatBytes(snap.diskUsedBytes)} / {formatBytes(snap.diskTotalBytes)} ({snap.diskUsagePct.toFixed(1)}%)</span>
+              </div>
+              <Progress
+                percent={Math.round(snap.diskUsagePct)}
+                status={snap.diskUsagePct > 90 ? 'exception' : snap.diskUsagePct > 75 ? 'active' : 'normal'}
+                size="small"
+              />
+            </div>
           </Card>
 
           <Card title={<span><ThunderboltOutlined /> {t('monitoring.goRuntime', { defaultValue: 'Go Runtime' })}</span>} size="small">
