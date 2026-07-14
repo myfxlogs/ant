@@ -29,6 +29,12 @@ func TestNewRateLimitInterceptor(t *testing.T) {
 	if !i.protectedPaths["/ant.v1.AuthService/Register"] {
 		t.Error("expected /Register in protected paths")
 	}
+	if !i.protectedPaths["/ant.v1.AIService/GenerateStrategy"] {
+		t.Error("expected /GenerateStrategy in protected paths")
+	}
+	if !i.protectedPaths["/ant.v1.AIGatewayService/Complete"] {
+		t.Error("expected /Complete in protected paths")
+	}
 }
 
 func TestRateLimitInterceptor_Disabled(t *testing.T) {

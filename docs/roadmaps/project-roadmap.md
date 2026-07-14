@@ -127,6 +127,18 @@
 
 ---
 
+### P6：工程级加固
+
+| 任务 | 优先级 | 说明 |
+|------|--------|------|
+| connect/ 层单元测试 | 高 | ✅ 完成 — marketplace/user/strategy 38+ 测试覆盖 auth 验证、错误码映射、边界条件、parseDecimal |
+| golangci-lint v2 + ESLint | 高 | ✅ 完成 — golangci-lint v2.12.2 CI 集成，ESLint flat config CI 集成 |
+| Sentry 错误追踪 | 中 | ✅ 完成 — 后端 sentry-go（HTTP panic recovery + ConnectRPC error interceptor），前端 @sentry/react，env: SENTRY_DSN/SENTRY_ENVIRONMENT/SENTRY_RELEASE |
+| API rate limiting | 中 | ✅ 完成 — RateLimitInterceptor 扩展至 6 端点（Login/Register/GenerateStrategy/Plan/Analyze/Complete），per-IP token bucket |
+| 前端 Vitest 测试 | 中 | ✅ 完成 — 73 测试覆盖 amount/price/streamErrors/accountStatus/paramLabel 核心工具模块 |
+
+---
+
 ## 技术架构概览
 
 ```

@@ -62,19 +62,19 @@ func registerSREHandlers(
 	sreCanary := controlplane.NewCanaryManager()
 	sreHandler := admin.NewSREHandler(sreKillSwitch, sreBreakers, sreCanary, platformSvc, emailNotifier, log)
 	// AdminSRE — ConnectRPC (proto binary)
-	mux.Handle(antv1c.NewAdminSREServiceHandler(sreHandler, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewAdminSREServiceHandler(sreHandler, withSency(otelInterceptor,authInterceptor)))
 
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
 	analyticsServer := system.NewAnalyticsServer(analyticsRepo, platformSvc, analyticsCache, aiSvc, log)
-	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, withSency(otelInterceptor,authInterceptor)))
 
 	marketRegimeRepo := repository.NewMarketRegimeRepository(pool)
 	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, store, platformSvc, log)
-	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, withSency(otelInterceptor,authInterceptor)))
 
 	strategyExperimentServer := strategy.NewStrategyExperimentServer(strategyExperimentRepo, log)
 	strategyExperimentServer.SetPgListen(pgListen)
-	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, withSency(otelInterceptor,authInterceptor)))
 	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, backtestRunRepo, store, log)
 	experimentWorker.SetPgListen(pgListen)
 	if aiSvc != nil {
@@ -88,11 +88,11 @@ func registerSREHandlers(
 	reflectionWorker := ai.NewReflectionWorker(calSvc, store, log)
 	reflectionWorker.Start(context.Background())
 	strategyAssetServer := strategy.NewStrategyAssetServer(strategyAssetRepo, userRepo, log)
-	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, withSency(otelInterceptor,authInterceptor)))
 	scheduleHealthServer := system.NewScheduleHealthServer(schedHealthRepo, log)
-	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, withSency(otelInterceptor,authInterceptor)))
 	indicatorCatalogServer := mktplace.NewIndicatorCatalogServer(log)
-	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, withSency(otelInterceptor,authInterceptor)))
 
 	// Catch-all: return 404 for unknown routes.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

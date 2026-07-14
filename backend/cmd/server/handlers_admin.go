@@ -40,47 +40,47 @@ func registerAdminHandlers(
 	passwordResetRepo := repository.NewPasswordResetRepo(pool)
 
 	adminTradingServer := admin.NewAdminTradingServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 
 	adminConfigServer := admin.NewAdminConfigServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminConfigServiceHandler(adminConfigServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+	mux.Handle(antv1c.NewAdminConfigServiceHandler(adminConfigServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 
 	adminLogServer := admin.NewAdminLogServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 
 	adminAccountServer := admin.NewAdminAccountServer(adminRepo, log).WithPublisher(accountEventPub)
-	mux.Handle(antv1c.NewAdminAccountServiceHandler(adminAccountServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+	mux.Handle(antv1c.NewAdminAccountServiceHandler(adminAccountServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 
 	deletionSvc := service.NewUserDeletionService(adminRepo, log)
 	adminUserServer := admin.NewAdminUserServer(adminRepo, passwordResetRepo, walletSvc, accountNumberSvc, deletionSvc, log)
-	mux.Handle(antv1c.NewAdminUserServiceHandler(adminUserServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+	mux.Handle(antv1c.NewAdminUserServiceHandler(adminUserServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 
 	adminSystemServer := admin.NewAdminSystemServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 
 	adminStrategyServer := admin.NewAdminStrategyServer(strategySvc, log)
-	mux.Handle(antv1c.NewAdminStrategyServiceHandler(adminStrategyServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+	mux.Handle(antv1c.NewAdminStrategyServiceHandler(adminStrategyServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 
 	// P3.5: Admin billing service (subscription + revenue + wallet transactions)
 	adminBillingServer := admin.NewAdminBillingServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminBillingServiceHandler(adminBillingServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+	mux.Handle(antv1c.NewAdminBillingServiceHandler(adminBillingServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 
 	// ADR-0025 §5.4 + §8: Agent settings + hooks management.
 	if settingsStore != nil {
 		adminAgentSettingsServer := admin.NewAdminAgentSettingsServer(settingsStore, log)
-		mux.Handle(antv1c.NewAdminAgentSettingsServiceHandler(adminAgentSettingsServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+		mux.Handle(antv1c.NewAdminAgentSettingsServiceHandler(adminAgentSettingsServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 	}
 	if pool != nil {
 		agentHooksServer := admin.NewAgentHooksServer(pool, hookEngine, log)
-		mux.Handle(antv1c.NewAgentHooksServiceHandler(agentHooksServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+		mux.Handle(antv1c.NewAgentHooksServiceHandler(agentHooksServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 	}
 
 	// Admin monitor — real-time SSE system metrics
 	adminMonitorServer := admin.NewAdminMonitorServer(pool, rdb, nc, log)
-	mux.Handle(antv1c.NewAdminMonitorServiceHandler(adminMonitorServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor, adminInterceptor)))
+	mux.Handle(antv1c.NewAdminMonitorServiceHandler(adminMonitorServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 }
 
 // startHardDeleteCleanup periodically hard-deletes expired soft-deleted users (30-day retention).

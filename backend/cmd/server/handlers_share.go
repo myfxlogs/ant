@@ -32,7 +32,7 @@ func registerShareHandlers(
 	shareRepo := repository.NewShareRepository(pool)
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
 	shareServer := user.NewShareServer(shareRepo, tradeRecordRepo, analyticsRepo, userRepo, mthubSvc, pool, jwtSecret, log)
-	mux.Handle(antv1c.NewShareServiceHandler(shareServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+	mux.Handle(antv1c.NewShareServiceHandler(shareServer, withSency(otelInterceptor, authInterceptor)))
 
 	mux.HandleFunc("/api/shares/create", shareServer.HandleCreateShareTokenREST)
 	mux.HandleFunc("/api/shares/update", shareServer.HandleUpdateShareToken)

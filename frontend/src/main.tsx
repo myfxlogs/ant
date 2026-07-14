@@ -1,8 +1,11 @@
 import { createRoot } from 'react-dom/client';
+import { initSentry } from './sentry';
 import './i18n';
 import i18n from './i18n';
 import './index.css';
 import './styles/message.css';
+
+initSentry();
 
 // Ensure i18n is fully initialized before React renders.
 // Without this, lazy-loaded components using useTranslation()

@@ -1,197 +1,216 @@
-# golangci-lint configuration for ant backend
-# M0.3: complexity limits + baseline waiver strategy
-#
-# CI usage:
-#   golangci-lint run --new-from-rev=origin/main   # only check changed code
-#   golangci-lint run ./...                          # full check (baseline in tools/lint/)
-#
-# Baseline: tools/lint/baseline.json freezes existing 281 violations.
-# Any PR touching a baseline-listed file must reduce it below the limit,
-# or CI will fail.
-
+version: "2"
 run:
-  timeout: 5m
   tests: false
-
 linters:
   enable:
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
-    - revive
-    - gocyclo
+    - bodyclose
+    - forbidigo
     - funlen
     - gocognit
-    - gosec
-    - bodyclose
-    - noctx
     - goconst
+    - gocyclo
+    - gosec
+    - misspell
+    - noctx
+    - revive
     - unconvert
     - unparam
-    - misspell
-    - forbidigo
-
-linters-settings:
-  errcheck:
-    exclude-functions:
-      - (*database/sql.Tx).Rollback
-      - (*github.com/jackc/pgx/v5.Tx).Rollback
-      - (*github.com/jackc/pgx/v5.Tx).Commit
-      - (github.com/ClickHouse/clickhouse-go/v2/lib/driver.Batch).Abort
-      - (io.Writer).Write
-      - (github.com/ClickHouse/clickhouse-go/v2/lib/driver.Batch).Send
-      - (connectrpc.com/connect.Stream).Send
-      - (*alphaforge/internal/trace.Tracer).Shutdown
-      - (*go.opentelemetry.io/otel/sdk/trace.TracerProvider).Shutdown
-      - os.MkdirAll
-      - os.Rename
-      - encoding/json.Unmarshal
-      - fmt.Sscanf
-      - crypto/rand.Read
-      - (*go.uber.org/zap.Logger).Sync
-      - (*github.com/jackc/pgx/v5/pgxpool.Pool).Exec
-      - (net/http.ResponseWriter).Write
-  forbidigo:
-    # M10-BASE-A5: Clock abstraction — ban raw time calls.
-    # Only clock package, main, and _test files are exempt.
-    forbid:
-      - p: ^time\.Now$
-        msg: "use clock.Now() instead of time.Now() (M10-BASE-A5)"
-      - p: ^time\.Sleep$
-        msg: "use clock.Sleep() instead of time.Sleep() (M10-BASE-A5)"
-      - p: ^time\.NewTicker$
-        msg: "use clock.NewTicker() instead of time.NewTicker() (M10-BASE-A5)"
-      - p: ^time\.NewTimer$
-        msg: "use clock.NewTimer() instead of time.NewTimer() (M10-BASE-A5)"
-      - p: ^time\.AfterFunc$
-        msg: "use clock.AfterFunc() instead of time.AfterFunc() (M10-BASE-A5)"
-    exclude-godoc-examples: false
-  revive:
+  settings:
+    errcheck:
+      exclude-functions:
+        - (*database/sql.Tx).Rollback
+        - (*github.com/jackc/pgx/v5.Tx).Rollback
+        - (*github.com/jackc/pgx/v5.Tx).Commit
+        - (github.com/ClickHouse/clickhouse-go/v2/lib/driver.Batch).Abort
+        - (io.Writer).Write
+        - (github.com/ClickHouse/clickhouse-go/v2/lib/driver.Batch).Send
+        - (connectrpc.com/connect.Stream).Send
+        - (*alphaforge/internal/trace.Tracer).Shutdown
+        - (*go.opentelemetry.io/otel/sdk/trace.TracerProvider).Shutdown
+        - os.MkdirAll
+        - os.Rename
+        - encoding/json.Unmarshal
+        - fmt.Sscanf
+        - crypto/rand.Read
+        - (*go.uber.org/zap.Logger).Sync
+        - (*github.com/jackc/pgx/v5/pgxpool.Pool).Exec
+        - (net/http.ResponseWriter).Write
+    forbidigo:
+      forbid:
+        - pattern: ^time\.Now$
+          msg: use clock.Now() instead of time.Now() (M10-BASE-A5)
+        - pattern: ^time\.Sleep$
+          msg: use clock.Sleep() instead of time.Sleep() (M10-BASE-A5)
+        - pattern: ^time\.NewTicker$
+          msg: use clock.NewTicker() instead of time.NewTicker() (M10-BASE-A5)
+        - pattern: ^time\.NewTimer$
+          msg: use clock.NewTimer() instead of time.NewTimer() (M10-BASE-A5)
+        - pattern: ^time\.AfterFunc$
+          msg: use clock.AfterFunc() instead of time.AfterFunc() (M10-BASE-A5)
+      exclude-godoc-examples: false
+    funlen:
+      lines: 120
+      statements: 75
+    gocognit:
+      min-complexity: 35
+    goconst:
+      min-occurrences: 5
+    gocyclo:
+      min-complexity: 30
+    gosec:
+      excludes:
+        - G115
+        - G404
+        - G101
+        - G402
+    revive:
+      rules:
+        - name: argument-limit
+          arguments:
+            - 10
+          severity: warning
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
     rules:
-      - name: argument-limit
-        severity: warning
-        arguments: [10]
-
-  gocyclo:
-    min-complexity: 30  # Relaxed for P0 baseline (was 11)
-
-  funlen:
-    lines: 120     # Relaxed for P0 baseline (was 50)
-    statements: 75 # Relaxed for P0 baseline (was 40)
-
-  gocognit:
-    min-complexity: 35  # Relaxed for P0 baseline (was 11)
-
-  goconst:
-    min-occurrences: 5  # Relaxed for P0 baseline (default 3)
-
-  gosec:
-    excludes:
-      - G115  # integer overflow (intentional conversions)
-      - G404  # weak random (backtest uses math/rand intentionally)
-      - G101  # hardcoded credentials (false positives)
-      - G402  # TLS MinVersion (legacy MT adapters)
-
-issues:
-  exclude-dirs:
-    # Tier 3 permanent exemptions (M0.3-5)
-    - backend/gen
-    - backend/mt4
-    - backend/mt5
-    - frontend
-
-  exclude-files:
-    # Proto generated code
-    - ".*\\.pb\\.go$"
-    - ".*_grpc\\.pb\\.go$"
-    # Constants / defaults
-    - ".*const.*\\.go$"
-
-  exclude-rules:
-    # Allow long files for well-known patterns in existing code
-    # (CI enforces: --new-from-rev to only gate new/changed code)
-    - path: "backend/internal/model/models\\.go"
-      linters: [funlen]
-
-    # M10-BASE-A5: Clock abstraction — allow time.* calls in clock pkg, main, tests.
-    - path: "internal/clock/"
-      linters: [forbidigo]
-    - path: "cmd/"
-      linters: [forbidigo, errcheck, staticcheck]
-    - path: "internal/connect/"
-      linters: [forbidigo, errcheck]
-    - path: "internal/marketplace/"
-      linters: [forbidigo]
-    - path: "internal/model/"
-      linters: [forbidigo, errcheck]
-    - path: "internal/dataquality/"
-      linters: [forbidigo]
-    - path: "internal/strategy/"
-      linters: [forbidigo]
-    - path: "internal/tenant/"
-      linters: [forbidigo]
-    - path: "internal/repository/"
-      linters: [forbidigo]
-    - path: "internal/service/"
-      linters: [forbidigo]
-    - path: "internal/marketstate/"
-      linters: [forbidigo]
-    - path: "internal/controlplane/"
-      linters: [forbidigo]
-    - path: "internal/ai/"
-      linters: [forbidigo]
-    - path: "pkg/faultisol/"
-      linters: [forbidigo]
-    - path: "internal/pkg/jwt/"
-      linters: [forbidigo]
-    - path: "tools/mql2go/"
-      linters: [forbidigo]
-
-    # Complexity exemptions for inherently complex files
-    - path: "internal/risksvc/jurisdiction\\.go"
-      linters: [gocognit]
-    - path: "internal/connect/stream_handler\\.go"
-      linters: [gocognit, gocyclo, funlen]
-    - path: "cmd/server/main\\.go"
-      linters: [gocognit, funlen]
-    - path: "internal/mdgateway/runner\\.go"
-      linters: [funlen]
-    - path: "internal/connect/schedule_health_handler\\.go"
-      linters: [funlen]
-    - path: "internal/mdgateway/adapter/mt4/"
-      linters: [funlen]
-    - path: "internal/mdgateway/adapter/mt5/"
-      linters: [funlen]
-    - path: "internal/factor/dsl/compile\\.go"
-      linters: [gocyclo, funlen]
-    - path: "_test\\.go$"
-      linters: [forbidigo]
-
-    # Legacy MT adapters — suppress deprecation warnings
-    - path: "internal/mdgateway/adapter/mt4/"
-      linters: [staticcheck]
-    - path: "internal/mdgateway/adapter/mt5/"
-      linters: [staticcheck]
-    - path: "internal/mthub/"
-      linters: [staticcheck]
-    - path: "internal/secrets/vault_legacy\\.go"
-      linters: [staticcheck]
-
-    # Unparam false positives / intentionally unused params
-    - path: "internal/mdgateway/spill_replay\\.go"
-      linters: [unparam]
-    - path: "internal/repository/admin_repo_users\\.go"
-      linters: [unparam]
-    - path: "internal/qualitygate/backtest_gate\\.go"
-      linters: [unparam]
-    - path: "pkg/logger/logger\\.go"
-      linters: [unparam]
-    - path: "internal/mdgateway/manager\\.go"
-      linters: [unparam]
-    - path: "internal/factor/dsl/parser\\.go"
-      linters: [unparam]
-    - path: "internal/mdgateway/quality\\.go"
-      linters: [unused]
+      - linters:
+          - funlen
+        path: backend/internal/model/models\.go
+      - linters:
+          - forbidigo
+        path: internal/clock/
+      - linters:
+          - errcheck
+          - forbidigo
+          - staticcheck
+        path: cmd/
+      - linters:
+          - errcheck
+          - forbidigo
+        path: internal/connect/
+      - linters:
+          - forbidigo
+        path: internal/marketplace/
+      - linters:
+          - errcheck
+          - forbidigo
+        path: internal/model/
+      - linters:
+          - forbidigo
+        path: internal/dataquality/
+      - linters:
+          - forbidigo
+        path: internal/strategy/
+      - linters:
+          - forbidigo
+        path: internal/tenant/
+      - linters:
+          - forbidigo
+        path: internal/repository/
+      - linters:
+          - forbidigo
+        path: internal/service/
+      - linters:
+          - forbidigo
+        path: internal/marketstate/
+      - linters:
+          - forbidigo
+        path: internal/controlplane/
+      - linters:
+          - forbidigo
+        path: internal/ai/
+      - linters:
+          - forbidigo
+        path: pkg/faultisol/
+      - linters:
+          - forbidigo
+        path: internal/pkg/jwt/
+      - linters:
+          - forbidigo
+        path: tools/mql2go/
+      - linters:
+          - gocognit
+        path: internal/risksvc/jurisdiction\.go
+      - linters:
+          - funlen
+          - gocognit
+          - gocyclo
+        path: internal/connect/stream_handler\.go
+      - linters:
+          - funlen
+          - gocognit
+        path: cmd/server/main\.go
+      - linters:
+          - funlen
+        path: internal/mdgateway/runner\.go
+      - linters:
+          - funlen
+        path: internal/connect/schedule_health_handler\.go
+      - linters:
+          - funlen
+        path: internal/mdgateway/adapter/mt4/
+      - linters:
+          - funlen
+        path: internal/mdgateway/adapter/mt5/
+      - linters:
+          - funlen
+          - gocyclo
+        path: internal/factor/dsl/compile\.go
+      - linters:
+          - forbidigo
+        path: _test\.go$
+      - linters:
+          - staticcheck
+        path: internal/mdgateway/adapter/mt4/
+      - linters:
+          - staticcheck
+        path: internal/mdgateway/adapter/mt5/
+      - linters:
+          - staticcheck
+        path: internal/mthub/
+      - linters:
+          - staticcheck
+        path: internal/secrets/vault_legacy\.go
+      - linters:
+          - unparam
+        path: internal/mdgateway/spill_replay\.go
+      - linters:
+          - unparam
+        path: internal/repository/admin_repo_users\.go
+      - linters:
+          - unparam
+        path: internal/qualitygate/backtest_gate\.go
+      - linters:
+          - unparam
+        path: pkg/logger/logger\.go
+      - linters:
+          - unparam
+        path: internal/mdgateway/manager\.go
+      - linters:
+          - unparam
+        path: internal/factor/dsl/parser\.go
+      - linters:
+          - unused
+        path: internal/mdgateway/quality\.go
+    paths:
+      - .*\.pb\.go$
+      - .*_grpc\.pb\.go$
+      - .*const.*\.go$
+      - backend/gen
+      - backend/mt4
+      - backend/mt5
+      - frontend
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

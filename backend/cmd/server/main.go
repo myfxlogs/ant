@@ -13,6 +13,7 @@ import (
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 
@@ -30,6 +31,7 @@ import (
 	"alphaforge/internal/repository"
 	"alphaforge/internal/risksvc"
 	"alphaforge/internal/secrets"
+	alphasentry "alphaforge/internal/sentry"
 	"alphaforge/internal/server"
 	"alphaforge/internal/service"
 	antredis "alphaforge/internal/storage/redis"
@@ -52,6 +54,10 @@ func main() {
 		panic(err)
 	}
 	defer log.Sync()
+
+	// ── Sentry: error tracking for production observability ──
+	sentryCleanup := alphasentry.Init(log)
+	defer sentryCleanup()
 
 	cfg := config.Load()
 	if err := cfg.Validate(); err != nil {
@@ -282,8 +288,12 @@ func main() {
 		pipelineCancel()
 	}()
 
+	// Wrap with Sentry panic recovery — captures panics in all HTTP handlers.
+	sentryHandler := sentryhttp.New(sentryhttp.Options{Repanic: false, WaitForDelivery: true})
+	sentryWrapped := sentryHandler.Handle(mux)
+
 	// Wrap with SSE keepalive to prevent Cloudflare/nginx from closing idle streams.
-	keepaliveHandler := interceptor.SSEKeepaliveMiddleware(10 * time.Second)(mux)
+	keepaliveHandler := interceptor.SSEKeepaliveMiddleware(10 * time.Second)(sentryWrapped)
 	if err := server.Run(ctx, keepaliveHandler, port, log); err != nil {
 		log.Fatal("server failed", zap.Error(err))
 	}
