@@ -71,7 +71,7 @@ export default function AccountManagement() {
   };
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', key: 'id', width: 100, ellipsis: true },
+    { title: t('admin.account.columns.id', { defaultValue: 'ID' }), dataIndex: 'id', key: 'id', width: 100, ellipsis: true },
     { title: t('admin.account.columns.user', { defaultValue: 'User' }), dataIndex: 'userEmail', key: 'userEmail', width: 150 },
     { title: t('admin.account.columns.login', { defaultValue: 'Login' }), dataIndex: 'login', key: 'login', width: 100 },
     { title: t('admin.account.columns.type', { defaultValue: 'Type' }), dataIndex: 'mtType', key: 'mtType', width: 80, render: (v: string) => <Tag color={v === 'MT5' ? 'blue' : 'green'}>{v}</Tag> },

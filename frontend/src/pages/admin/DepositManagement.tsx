@@ -141,9 +141,9 @@ export default function DepositManagement() {
             style={{ width: 150 }}
             options={[
               { value: '', label: t('admin.deposit.allStatuses', { defaultValue: 'All Statuses' }) },
-              { value: 'PENDING', label: 'Pending' },
-              { value: 'APPROVED', label: 'Approved' },
-              { value: 'REJECTED', label: 'Rejected' },
+              { value: 'PENDING', label: t('admin.deposit.statusPending', { defaultValue: 'Pending' }) },
+              { value: 'APPROVED', label: t('admin.deposit.statusApproved', { defaultValue: 'Approved' }) },
+              { value: 'REJECTED', label: t('admin.deposit.statusRejected', { defaultValue: 'Rejected' }) },
             ]}
           />
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>

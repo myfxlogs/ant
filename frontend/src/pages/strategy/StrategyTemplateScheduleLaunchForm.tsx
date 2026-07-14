@@ -146,7 +146,7 @@ export const StrategyTemplateScheduleLaunchForm: React.FC<Props> = ({
           <InputNumber style={{ width: '100%' }} min={0} step={0.01} placeholder="0.01" />
         </Form.Item>
         <Form.Item label={<Tooltip title={t(SCHEDULE_LAUNCH_FORM_MAX_POSITIONS_TIP_KEY, '同一品种上允许同时持有的最多持仓数；达到后本次信号跳过。')}><span>{t(SCHEDULE_LAUNCH_FORM_MAX_POSITIONS_KEY, '最大持仓数')}</span></Tooltip>} name="maxPositions">
-          <InputNumber style={{ width: '100%' }} min={1} step={1} placeholder="不限" />
+          <InputNumber style={{ width: '100%' }} min={1} step={1} placeholder={t('strategy.schedule.maxPositionsPlaceholder', { defaultValue: 'Unlimited' })} />
         </Form.Item>
 
         <Space style={{ width: '100%' }} size="large">

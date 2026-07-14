@@ -107,7 +107,10 @@ export default function BatchTuningPanel() {
           </Form.Item>
           <Space size="small" wrap>
             <Form.Item name="searchMethod" label={t(SUBMIT_FORM_SEARCH_METHOD_KEY)}>
-              <Select style={{ width: 120 }} options={[{ value: 'grid', label: 'Grid' }, { value: 'random', label: 'Random' }]} />
+              <Select style={{ width: 120 }} options={[
+                { value: 'grid', label: t('strategy.tuning.searchMethod.grid', { defaultValue: 'Grid' }) },
+                { value: 'random', label: t('strategy.tuning.searchMethod.random', { defaultValue: 'Random' }) },
+              ]} />
             </Form.Item>
             <Form.Item name="maxCandidates" label={t(SUBMIT_FORM_MAX_CANDIDATES_KEY)}>
               <InputNumber min={1} max={50} />

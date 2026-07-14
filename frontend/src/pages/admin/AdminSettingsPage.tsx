@@ -8,15 +8,15 @@ import type { ManagedSettingEntry } from '@/gen/ant/v1/admin_settings_pb';
 const { TextArea } = Input;
 const { Title, Text } = Typography;
 
-const SETTING_LABELS: Record<string, string> = {
-  allowed_models: '模型白名单 (逗号分隔)',
-  enforce_allowed_models: '强制模型白名单',
-  max_cost_ceiling_usd: '单策略成本上限 (USD)',
-  max_iterations_per_strategy: '单策略最大迭代次数',
-  disable_live_trading: '全局禁如实盘交易',
-  required_risk_gates: '必需风控门 (逗号分隔)',
-  audit_retention_days: '审计日志保留天数',
-  allow_managed_rules_only: '仅允许 Managed 层权限规则',
+const SETTING_LABEL_KEYS: Record<string, { key: string; defaultValue: string }> = {
+  allowed_models: { key: 'admin.settings.labels.allowed_models', defaultValue: 'Allowed Models (comma-separated)' },
+  enforce_allowed_models: { key: 'admin.settings.labels.enforce_allowed_models', defaultValue: 'Enforce Allowed Models' },
+  max_cost_ceiling_usd: { key: 'admin.settings.labels.max_cost_ceiling_usd', defaultValue: 'Max Cost Ceiling per Strategy (USD)' },
+  max_iterations_per_strategy: { key: 'admin.settings.labels.max_iterations_per_strategy', defaultValue: 'Max Iterations per Strategy' },
+  disable_live_trading: { key: 'admin.settings.labels.disable_live_trading', defaultValue: 'Disable Live Trading (Global)' },
+  required_risk_gates: { key: 'admin.settings.labels.required_risk_gates', defaultValue: 'Required Risk Gates (comma-separated)' },
+  audit_retention_days: { key: 'admin.settings.labels.audit_retention_days', defaultValue: 'Audit Log Retention (days)' },
+  allow_managed_rules_only: { key: 'admin.settings.labels.allow_managed_rules_only', defaultValue: 'Allow Managed Rules Only' },
 };
 
 const BOOL_KEYS = new Set(['enforce_allowed_models', 'disable_live_trading', 'allow_managed_rules_only']);
@@ -101,7 +101,7 @@ export default function AdminSettingsPage() {
       key: 'key',
       width: 240,
       render: (key: string) => (
-        <span className="font-medium">{SETTING_LABELS[key] || key}</span>
+        <span className="font-medium">{SETTING_LABEL_KEYS[key] ? t(SETTING_LABEL_KEYS[key].key, { defaultValue: SETTING_LABEL_KEYS[key].defaultValue }) : key}</span>
       ),
     },
     {
@@ -199,8 +199,8 @@ export default function AdminSettingsPage() {
                 onChange={setEditValue}
                 className="w-full"
                 options={[
-                  { value: 'true', label: 'true' },
-                  { value: 'false', label: 'false' },
+                  { value: 'true', label: t('common.true', { defaultValue: 'true' }) },
+                  { value: 'false', label: t('common.false', { defaultValue: 'false' }) },
                 ]}
               />
             ) : (

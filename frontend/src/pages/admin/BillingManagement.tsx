@@ -136,9 +136,9 @@ export default function BillingManagement() {
                   value={subPlan || undefined}
                   onChange={(v) => { setSubPlan(v || ''); setSubPage(1); }}
                   options={[
-                    { value: 'free', label: 'Free' },
-                    { value: 'pro', label: 'Pro' },
-                    { value: 'enterprise', label: 'Enterprise' },
+                    { value: 'free', label: t('admin.billing.planFree', { defaultValue: 'Free' }) },
+                    { value: 'pro', label: t('admin.billing.planPro', { defaultValue: 'Pro' }) },
+                    { value: 'enterprise', label: t('admin.billing.planEnterprise', { defaultValue: 'Enterprise' }) },
                   ]}
                 />
               </Col>
@@ -150,9 +150,9 @@ export default function BillingManagement() {
                   value={subStatus || undefined}
                   onChange={(v) => { setSubStatus(v || ''); setSubPage(1); }}
                   options={[
-                    { value: 'active', label: 'Active' },
-                    { value: 'cancelled', label: 'Cancelled' },
-                    { value: 'expired', label: 'Expired' },
+                    { value: 'active', label: t('admin.billing.statusActive', { defaultValue: 'Active' }) },
+                    { value: 'cancelled', label: t('admin.billing.statusCancelled', { defaultValue: 'Cancelled' }) },
+                    { value: 'expired', label: t('admin.billing.statusExpired', { defaultValue: 'Expired' }) },
                   ]}
                 />
               </Col>
@@ -185,11 +185,11 @@ export default function BillingManagement() {
                   value={txType || undefined}
                   onChange={(v) => { setTxType(v || ''); setTxPage(1); }}
                   options={[
-                    { value: 'purchase', label: 'Purchase' },
-                    { value: 'sale', label: 'Sale' },
-                    { value: 'platform_fee', label: 'Platform Fee' },
-                    { value: 'deposit', label: 'Deposit' },
-                    { value: 'withdrawal', label: 'Withdrawal' },
+                    { value: 'purchase', label: t('admin.billing.txPurchase', { defaultValue: 'Purchase' }) },
+                    { value: 'sale', label: t('admin.billing.txSale', { defaultValue: 'Sale' }) },
+                    { value: 'platform_fee', label: t('admin.billing.txPlatformFee', { defaultValue: 'Platform Fee' }) },
+                    { value: 'deposit', label: t('admin.billing.txDeposit', { defaultValue: 'Deposit' }) },
+                    { value: 'withdrawal', label: t('admin.billing.txWithdrawal', { defaultValue: 'Withdrawal' }) },
                   ]}
                 />
               </Col>

@@ -33,7 +33,7 @@ export default function EditScheduleRiskFields() {
             }
             name="maxPositions"
           >
-            <InputNumber style={{ width: '100%' }} min={1} step={1} placeholder="不限" />
+            <InputNumber style={{ width: '100%' }} min={1} step={1} placeholder={t('strategy.schedule.maxPositionsPlaceholder', { defaultValue: 'Unlimited' })} />
           </Form.Item>
         </Col>
         <Col span={8}>

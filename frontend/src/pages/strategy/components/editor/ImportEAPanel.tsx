@@ -110,7 +110,7 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
                 <Button type="primary" size="small" icon={<ImportOutlined />} onClick={handleConfirmImport} loading={eaTranslating}>
                   {t('strategy.importEA.confirmImport', { defaultValue: '确认导入' })}</Button>
                 {analysis.coverageScore < 0.7 && (analysis.blindSpots || []).some((b) =>
-                  b.category !== '不支持的API调用' || (!b.description?.includes('ObjectCreate') && !b.description?.includes('ObjectDelete'))
+                  b.category !== 'Unsupported API Call' || (!b.description?.includes('ObjectCreate') && !b.description?.includes('ObjectDelete'))
                 ) && (
                   <Button size="small" onClick={() => { setImportMethod('ai'); handleImportEA(); }}>
                     <RobotOutlined /> {t('strategy.importEA.tryAI', { defaultValue: 'AI 翻译补充' })}</Button>

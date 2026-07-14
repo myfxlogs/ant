@@ -175,9 +175,9 @@ export default function AIGatewayManagement() {
               <Text strong>{r.name}</Text>
             </Space>,
           },
-          { title: 'Base URL', dataIndex: 'baseUrl', key: 'baseUrl', ellipsis: true, width: 280,
+          { title: t('admin.aiGateway.columns.baseUrl', { defaultValue: 'Base URL' }), dataIndex: 'baseUrl', key: 'baseUrl', ellipsis: true, width: 280,
             render: (v: string) => <Text code style={{ fontSize: 11 }}>{v}</Text> },
-          { title: 'API Key', dataIndex: 'hasApiKey', key: 'hasApiKey', width: 120,
+          { title: t('admin.aiGateway.columns.apiKey', { defaultValue: 'API Key' }), dataIndex: 'hasApiKey', key: 'hasApiKey', width: 120,
             render: (v: boolean) => v ? <Tag color="green">{t('admin.aiGateway.configured', { defaultValue: 'Configured' })}</Tag> : <Tag color="default">{t('admin.aiGateway.notConfigured', { defaultValue: 'Not configured' })}</Tag>,
           },
           { title: t('admin.aiGateway.models', { defaultValue: 'Models' }), key: 'models', width: 80,

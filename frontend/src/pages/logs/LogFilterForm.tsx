@@ -62,11 +62,18 @@ export default function LogFilterForm({
             </Form.Item>
             <Form.Item label={t(TRIGGER_SOURCE_KEY)}>
               <Select allowClear style={{ width: 130 }} value={opTriggerSource || undefined} onChange={(v) => onTriggerSourceChange(v || '')}
-                options={[{ label: 'manual', value: 'manual' }, { label: 'strategy', value: 'strategy' }, { label: 'recovery', value: 'recovery' }]} />
+                options={[
+                  { label: t('logs.triggerSource.manual', { defaultValue: 'Manual' }), value: 'manual' },
+                  { label: t('logs.triggerSource.strategy', { defaultValue: 'Strategy' }), value: 'strategy' },
+                  { label: t('logs.triggerSource.recovery', { defaultValue: 'Recovery' }), value: 'recovery' },
+                ]} />
             </Form.Item>
             <Form.Item label={t(RESULT_KEY)}>
               <Select allowClear style={{ width: 120 }} value={opResult || undefined} onChange={(v) => onResultChange(v || '')}
-                options={[{ label: 'PASS', value: 'pass' }, { label: 'REJECT', value: 'reject' }]} />
+                options={[
+                  { label: t('logs.result.pass', { defaultValue: 'PASS' }), value: 'pass' },
+                  { label: t('logs.result.reject', { defaultValue: 'REJECT' }), value: 'reject' },
+                ]} />
             </Form.Item>
           </>
         )}
