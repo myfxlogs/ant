@@ -58,4 +58,9 @@ export const queryKeys = {
     all: ['wallet'] as const,
     transactions: () => [...queryKeys.wallet.all, 'transactions'] as const,
   },
+  deposit: {
+    info: ['deposit', 'info'] as const,
+    myDeposits: ['deposit', 'my'] as const,
+    all: ['deposit', 'all'] as const,
+  },
 };

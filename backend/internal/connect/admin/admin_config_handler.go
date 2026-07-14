@@ -75,7 +75,8 @@ func (s *AdminConfigServer) ToggleConfigEnabled(ctx context.Context, req *connec
 // validConfigKey returns true for recognized configuration keys.
 func validConfigKey(key string) bool {
 	switch key {
-	case "maintenance_mode", "session_timeout_minutes":
+	case "maintenance_mode", "session_timeout_minutes",
+		"usdt_receiving_address", "usdt_network", "usdt_exchange_rate":
 		return true
 	}
 	return false

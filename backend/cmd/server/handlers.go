@@ -124,6 +124,13 @@ func registerHandlers(
 	walletServer := user.NewWalletServer(walletSvc, platformSvc, log)
 	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, withSency(otelInterceptor, authInterceptor)))
 
+	// USDT deposit service: user creates deposit requests, admin approves/rejects.
+	adminRepo := repository.NewAdminRepository(pool)
+	depositRepo := repository.NewDepositRepository(pool)
+	depositSvc := service.NewDepositService(depositRepo, walletSvc, adminRepo, pool, log)
+	depositServer := user.NewDepositServer(depositSvc, platformSvc, log)
+	mux.Handle(antv1c.NewDepositServiceHandler(depositServer, withSency(otelInterceptor, authInterceptor)))
+
 	// P3.1: Subscription service (Free/Pro/Enterprise plans).
 	subscriptionRepo := repository.NewSubscriptionRepository(pool)
 	subscriptionSvc := service.NewSubscriptionService(subscriptionRepo, walletSvc, pool, log)
