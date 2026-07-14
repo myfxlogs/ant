@@ -172,6 +172,14 @@ func (s *DepositService) ApproveDeposit(ctx context.Context, depositID, reviewer
 
 // RejectDeposit marks a deposit as REJECTED. No wallet credit occurs.
 func (s *DepositService) RejectDeposit(ctx context.Context, depositID, reviewerID uuid.UUID, reviewNote string) (*model.DepositRequest, error) {
+	deposit, err := s.depositRepo.GetByID(ctx, depositID)
+	if err != nil {
+		return nil, err
+	}
+	if deposit.Status != "PENDING" {
+		return nil, repository.ErrDepositAlreadyProcessed
+	}
+
 	tx, err := s.pg.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("begin tx: %w", err)

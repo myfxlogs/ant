@@ -176,41 +176,52 @@ export default function WalletPage() {
       </StatusResult>
 
       {/* USDT Deposit Section */}
-      {depositInfo?.receivingAddress && (
-        <Card
-          size="small"
-          style={{ marginBottom: 24, borderColor: '#D4AF37', borderWidth: 1 }}
-          title={<span style={{ color: '#D4AF37' }}>USDT {t('wallet.deposit.title', { defaultValue: 'Deposit' })}</span>}
-          extra={
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setDepositModalOpen(true)}>
-              {t('wallet.deposit.button', { defaultValue: 'New Deposit' })}
-            </Button>
-          }
-        >
+      <Card
+        size="small"
+        style={{ marginBottom: 24, borderColor: '#D4AF37', borderWidth: 1 }}
+        title={<span style={{ color: '#D4AF37' }}>USDT {t('wallet.deposit.title', { defaultValue: 'Deposit' })}</span>}
+        extra={
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setDepositModalOpen(true)} disabled={!depositInfo?.receivingAddress}>
+            {t('wallet.deposit.button', { defaultValue: 'New Deposit' })}
+          </Button>
+        }
+      >
           <Descriptions column={2} size="small">
             <Descriptions.Item label={t('wallet.deposit.network', { defaultValue: 'Network' })}>
-              <Tag color="gold">{depositInfo.network}</Tag>
+              <Tag color="gold">{depositInfo?.network || 'TRC20'}</Tag>
             </Descriptions.Item>
             <Descriptions.Item label={t('wallet.deposit.exchangeRate', { defaultValue: 'Exchange Rate' })}>
-              1 USDT = {depositInfo.exchangeRate} USD
+              1 USDT = {depositInfo?.exchangeRate || '1'} USD
             </Descriptions.Item>
             <Descriptions.Item label={t('wallet.deposit.address', { defaultValue: 'Receiving Address' })} span={2}>
-              <span style={{ fontFamily: 'monospace', fontSize: 14, wordBreak: 'break-all' }}>
-                {depositInfo.receivingAddress}
-              </span>
-              <Tooltip title={t('wallet.deposit.copy', { defaultValue: 'Copy' })}>
-                <Button type="text" size="small" icon={<CopyOutlined />} onClick={copyAddress} style={{ marginLeft: 8 }} />
-              </Tooltip>
+              {depositInfo?.receivingAddress ? (
+                <>
+                  <span style={{ fontFamily: 'monospace', fontSize: 14, wordBreak: 'break-all' }}>
+                    {depositInfo.receivingAddress}
+                  </span>
+                  <Tooltip title={t('wallet.deposit.copy', { defaultValue: 'Copy' })}>
+                    <Button type="text" size="small" icon={<CopyOutlined />} onClick={copyAddress} style={{ marginLeft: 8 }} />
+                  </Tooltip>
+                </>
+              ) : (
+                <Alert
+                  type="info"
+                  message={t('wallet.deposit.notConfigured', { defaultValue: 'USDT deposit is not yet configured. Please contact support.' })}
+                  showIcon
+                  style={{ marginTop: 0 }}
+                />
+              )}
             </Descriptions.Item>
           </Descriptions>
-          <Alert
-            type="warning"
-            message={t('wallet.deposit.notice', { defaultValue: 'Only send USDT via the specified network. Sending other tokens or using a different network may result in permanent loss. After sending, submit a deposit request with the amount and optional tx hash for admin review.' })}
-            style={{ marginTop: 12 }}
-            showIcon
-          />
-        </Card>
-      )}
+          {depositInfo?.receivingAddress && (
+            <Alert
+              type="warning"
+              message={t('wallet.deposit.notice', { defaultValue: 'Only send USDT via the specified network. Sending other tokens or using a different network may result in permanent loss. After sending, submit a deposit request with the amount and optional tx hash for admin review.' })}
+              style={{ marginTop: 12 }}
+              showIcon
+            />
+          )}
+      </Card>
 
       {/* Deposit History */}
       {myDeposits?.deposits?.length > 0 && (

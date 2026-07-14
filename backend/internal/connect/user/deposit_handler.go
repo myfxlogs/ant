@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"connectrpc.com/connect"
@@ -150,10 +151,10 @@ func (s *DepositServer) ApproveDeposit(ctx context.Context, req *connect.Request
 	}
 	dep, err := s.svc.ApproveDeposit(ctx, depositID, reviewerID, req.Msg.ReviewNote)
 	if err != nil {
-		if err == repository.ErrDepositAlreadyProcessed {
+		if errors.Is(err, repository.ErrDepositAlreadyProcessed) {
 			return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("deposit already processed"))
 		}
-		if err == repository.ErrDepositNotFound {
+		if errors.Is(err, repository.ErrDepositNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("deposit not found"))
 		}
 		s.log.Error("ApproveDeposit", zap.Error(err))
@@ -173,10 +174,10 @@ func (s *DepositServer) RejectDeposit(ctx context.Context, req *connect.Request[
 	}
 	dep, err := s.svc.RejectDeposit(ctx, depositID, reviewerID, req.Msg.ReviewNote)
 	if err != nil {
-		if err == repository.ErrDepositAlreadyProcessed {
+		if errors.Is(err, repository.ErrDepositAlreadyProcessed) {
 			return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("deposit already processed"))
 		}
-		if err == repository.ErrDepositNotFound {
+		if errors.Is(err, repository.ErrDepositNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("deposit not found"))
 		}
 		s.log.Error("RejectDeposit", zap.Error(err))
