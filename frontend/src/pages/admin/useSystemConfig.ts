@@ -29,14 +29,7 @@ export function useSystemConfig() {
     setError(null);
     try {
       const result = await adminApi.listConfigs();
-      setConfigs(
-        (result || []).filter((c) =>
-          c?.key === 'max_accounts_per_user' ||
-          c?.key === 'ai.provider_catalog' ||
-          c?.key === 'econ.translation.ai_config' ||
-          c?.key === 'strategy.schedule.health_grading_config'
-        ),
-      );
+      setConfigs(result || []);
     } catch (err) {
       const msg = getErrorMessage(err, t('admin.config.messages.loadFailed'));
       setError(msg);

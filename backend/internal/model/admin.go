@@ -39,12 +39,13 @@ type RolePermission struct {
 }
 
 type SystemConfig struct {
-	Key         string    `json:"key" db:"key"`
-	Value       string    `json:"value" db:"value"`
-	Description string    `json:"description" db:"description"`
-	Enabled     *bool     `json:"enabled" db:"enabled"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
+	Key          string    `json:"key" db:"key"`
+	Value        string    `json:"value" db:"value"`
+	Description  string    `json:"description" db:"description"`
+	Enabled      *bool     `json:"enabled" db:"enabled"`
+	AdminVisible bool      `json:"admin_visible" db:"admin_visible"`
+	CreatedAt    time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 }
 
 type DashboardStats struct {
