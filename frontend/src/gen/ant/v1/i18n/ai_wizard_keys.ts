@@ -487,8 +487,20 @@ export const SETUP_VALIDATIONS_SELECT_SYMBOL_KEY = 'ai.wizard.setup.validations.
 /** setup.validations.selectTimeframe */
 export const SETUP_VALIDATIONS_SELECT_TIMEFRAME_KEY = 'ai.wizard.setup.validations.selectTimeframe' as const;
 
+/** steps.analyze */
+export const STEPS_ANALYZE_KEY = 'ai.wizard.steps.analyze' as const;
+
+/** steps.backtest */
+export const STEPS_BACKTEST_KEY = 'ai.wizard.steps.backtest' as const;
+
+/** steps.compliance */
+export const STEPS_COMPLIANCE_KEY = 'ai.wizard.steps.compliance' as const;
+
 /** steps.generate */
 export const STEPS_GENERATE_KEY = 'ai.wizard.steps.generate' as const;
+
+/** steps.plan */
+export const STEPS_PLAN_KEY = 'ai.wizard.steps.plan' as const;
 
 /** steps.publishBacktest */
 export const STEPS_PUBLISH_BACKTEST_KEY = 'ai.wizard.steps.publishBacktest' as const;
@@ -809,7 +821,11 @@ export const AIWIZARD_KEYS = {
   setup_validations_select_dataset: 'ai.wizard.setup.validations.selectDataset',
   setup_validations_select_symbol: 'ai.wizard.setup.validations.selectSymbol',
   setup_validations_select_timeframe: 'ai.wizard.setup.validations.selectTimeframe',
+  steps_analyze: 'ai.wizard.steps.analyze',
+  steps_backtest: 'ai.wizard.steps.backtest',
+  steps_compliance: 'ai.wizard.steps.compliance',
   steps_generate: 'ai.wizard.steps.generate',
+  steps_plan: 'ai.wizard.steps.plan',
   steps_publish_backtest: 'ai.wizard.steps.publishBacktest',
   steps_publish_code: 'ai.wizard.steps.publishCode',
   steps_publish_launch: 'ai.wizard.steps.publishLaunch',

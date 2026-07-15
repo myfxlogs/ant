@@ -313,7 +313,11 @@ const AiWizard = {
         "defaultName": "AI Schedule {{symbol}} {{timeframe}}"
       },
       "steps": {
+        "analyze": "Analyze",
+        "backtest": "Backtest",
+        "compliance": "Compliance",
         "generate": "Generate Strategy",
+        "plan": "Plan",
         "publishBacktest": "Backtest & Live - Backtest",
         "publishCode": "Backtest & Live - Code",
         "publishLaunch": "Backtest & Live - Launch",

@@ -313,7 +313,11 @@ const AiWizard = {
         "defaultName": "Lịch AI {{symbol}} {{timeframe}}"
       },
       "steps": {
+        "analyze": "Phân tích",
+        "backtest": "Backtest",
+        "compliance": "Tuân thủ",
         "generate": "Tạo chiến lược",
+        "plan": "Kế hoạch",
         "publishBacktest": "Triển khai - Backtest",
         "publishCode": "Triển khai - Mã",
         "publishLaunch": "Triển khai - Khởi chạy",

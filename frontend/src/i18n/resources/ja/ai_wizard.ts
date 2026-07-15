@@ -313,7 +313,11 @@ const AiWizard = {
         "defaultName": "AIスケジュール {{symbol}} {{timeframe}}"
       },
       "steps": {
+        "analyze": "分析",
+        "backtest": "バックテスト",
+        "compliance": "コンプライアンス",
         "generate": "戦略生成",
+        "plan": "計画",
         "publishBacktest": "バックテスト・公開-バックテスト",
         "publishCode": "バックテスト・公開-コード",
         "publishLaunch": "バックテスト・公開-公開",

@@ -313,7 +313,11 @@ const AiWizard = {
         "defaultName": "AI 排程 {{symbol}} {{timeframe}}"
       },
       "steps": {
+        "analyze": "分析",
+        "backtest": "回測",
+        "compliance": "合規",
         "generate": "生成策略",
+        "plan": "規劃",
         "publishBacktest": "回測上線-回測",
         "publishCode": "回測上線-程式碼",
         "publishLaunch": "回測上線-上線",

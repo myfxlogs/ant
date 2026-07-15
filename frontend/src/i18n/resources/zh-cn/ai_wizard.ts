@@ -313,7 +313,11 @@ const AiWizard = {
         "defaultName": "AI 调度 {{symbol}} {{timeframe}}"
       },
       "steps": {
+        "analyze": "分析",
+        "backtest": "回测",
+        "compliance": "合规",
         "generate": "生成策略",
+        "plan": "规划",
         "publishBacktest": "回测上线-回测",
         "publishCode": "回测上线-代码",
         "publishLaunch": "回测上线-上线",
