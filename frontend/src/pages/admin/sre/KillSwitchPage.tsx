@@ -71,7 +71,7 @@ export default function KillSwitchPage() {
 
   return (
     <div style={{ maxWidth: 720 }}>
-      <Title level={4}><StopOutlined style={{ marginRight: 8 }} />Kill Switch</Title>
+      <Title level={4}><StopOutlined style={{ marginRight: 8 }} />{t('sre.killSwitch', { defaultValue: 'Kill Switch' })}</Title>
       <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
         {t('sre.killSwitch.description', { defaultValue: 'One-click stop all trading — requires KILL confirmation; undo within 5 minutes' })}
       </Text>

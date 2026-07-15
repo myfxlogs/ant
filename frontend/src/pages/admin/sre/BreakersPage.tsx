@@ -55,7 +55,7 @@ export default function BreakersPage() {
 
   return (
     <div style={{ maxWidth: 960 }}>
-      <Title level={4}><ThunderboltOutlined style={{ marginRight: 8 }} />Strategy Breakers</Title>
+      <Title level={4}><ThunderboltOutlined style={{ marginRight: 8 }} />{t('sre.breakers.title', { defaultValue: 'Strategy Breakers' })}</Title>
       <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
         {t('sre.breakers.description', { defaultValue: 'Strategy breaker status overview — auto-detects abnormal losses and trips' })}
       </Text>

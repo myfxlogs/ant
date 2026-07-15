@@ -44,6 +44,9 @@ const Base = {
         "validateReject": "拒否",
         "validateTotal": "合計"
       },
+      "errors": {
+        "loadFailed": "ダッシュボードデータの読み込みに失敗しました"
+      },
       "activeUsers": "アクティブユーザー",
       "loadFailed": "ダッシュボードデータの読み込みに失敗しました",
       "mtAccounts": "MTアカウント",
@@ -52,7 +55,23 @@ const Base = {
       "title": "管理ダッシュボード",
       "todayProfit": "本日の損益",
       "todayTrades": "本日の取引",
-      "totalUsers": "総ユーザー数"
+      "totalUsers": "総ユーザー数",
+      "verifiedUsers": "認証済みユーザー",
+      "activeSubs": "有効なサブスクリプション",
+      "monthlyRevenue": "月間収益",
+      "totalRevenue": "総収益",
+      "marketStrategies": "マーケットストラテジー",
+      "marketSales": "マーケット販売",
+      "marketRevenue": "マーケット収益",
+      "validateTotal": "検証合計",
+      "validatePass": "検証合格",
+      "validateReject": "検証却下",
+      "validateError": "検証エラー",
+      "orderSendSuccess": "注文送信成功",
+      "orderSendFailed": "注文送信失敗",
+      "orderCloseSuccess": "注文決済成功",
+      "orderCloseFailed": "注文決済失敗",
+      "rejectCount": "却下数"
     },
     "userManagement": {
       "drawer": {
@@ -126,7 +145,8 @@ const Base = {
         "userDisabled": "ユーザーを無効化しました",
         "userEnabled": "ユーザーを有効化しました",
         "userUpdateFailed": "ユーザー更新に失敗しました",
-        "userUpdatedSuccess": "ユーザーを更新しました"
+        "userUpdatedSuccess": "ユーザーを更新しました",
+        "loadUsersFailed": "ユーザーの読み込みに失敗しました"
       },
       "modals": {
         "createTitle": "ユーザー作成",
@@ -214,7 +234,8 @@ const Base = {
       "title": "系统配置",
       "toggle": "切换",
       "updatedAt": "更新时间",
-      "value": "值"
+      "value": "值",
+      "apiKey": "APIキー"
     },
     "jurisdiction": {
       "messages": {
@@ -260,6 +281,244 @@ const Base = {
       "userKYCStatus": "ユーザーKYCステータス",
       "verified": "確認済み"
     },
+    "aiGateway": {
+      "errors": {
+        "loadProviders": "プロバイダーの読み込みに失敗しました",
+        "toggleFailed": "切り替えに失敗しました",
+        "loadModels": "モデルの読み込みに失敗しました"
+      },
+      "columns": {
+        "baseUrl": "ベースURL",
+        "apiKey": "APIキー"
+      },
+      "addProviderPending": "プロバイダー追加機能はバックエンドのサポート待ちです",
+      "title": "AIゲートウェイ管理",
+      "description": "AIプロバイダー、モデル、料金を管理します。ユーザーは利用可能なモデルから選択し、ウォレットのトークンで課金されます。",
+      "addProvider": "プロバイダーを追加",
+      "provider": "プロバイダー",
+      "configured": "設定済み",
+      "notConfigured": "未設定",
+      "models": "モデル",
+      "editProvider": "プロバイダーを編集",
+      "providerId": "プロバイダーID",
+      "providerIdRequired": "プロバイダーIDを入力してください",
+      "displayName": "表示名",
+      "displayNameRequired": "表示名を入力してください",
+      "baseUrl": "ベースURL",
+      "baseUrlRequired": "ベースURLを入力してください",
+      "apiKeyLabel": "APIキー",
+      "apiKeyEditHint": "既存のキーを保持するには空のままにしてください",
+      "apiKeyHint": "APIキー、保存時は暗号化されます",
+      "apiKeyEditPlaceholder": "空のままで保持",
+      "editModel": "モデルを編集",
+      "addModel": "モデルを追加",
+      "modelName": "モデル名",
+      "modelNameRequired": "モデル名を入力してください",
+      "priceInput": "入力価格 ($/1M)",
+      "priceOutput": "出力価格 ($/1M)",
+      "confirmDeleteModel": "このモデルを削除しますか？",
+      "noModels": "モデルがありません"
+    },
+    "account": {
+      "errors": {
+        "loadFailed": "アカウントの読み込みに失敗しました",
+        "freezeFailed": "凍結に失敗しました",
+        "unfreezeFailed": "凍結解除に失敗しました"
+      },
+      "columns": {
+        "id": "ID",
+        "user": "ユーザー",
+        "login": "ログイン",
+        "type": "タイプ",
+        "broker": "ブローカー",
+        "status": "ステータス",
+        "balance": "残高",
+        "createdAt": "作成日時",
+        "action": "操作",
+        "server": "サーバー",
+        "equity": "有効証拠金",
+        "margin": "証拠金",
+        "time": "時間",
+        "detail": "詳細"
+      },
+      "frozen": "アカウントは凍結されています",
+      "unfrozen": "アカウントの凍結が解除されました",
+      "detail": "詳細",
+      "unfreeze": "凍結解除",
+      "confirmFreeze": "このアカウントを凍結しますか？",
+      "freeze": "凍結",
+      "title": "アカウント管理",
+      "searchPlaceholder": "アカウントを検索",
+      "status": "ステータス",
+      "online": "オンライン",
+      "offline": "オフライン",
+      "auditLogs": "監査ログ"
+    },
+    "settings": {
+      "columns": {
+        "key": "設定キー",
+        "value": "値",
+        "action": "操作"
+      },
+      "saveSuccess": "保存に成功しました",
+      "saveFailed": "保存に失敗しました",
+      "deleted": "削除しました",
+      "deleteFailed": "削除に失敗しました",
+      "actionFailed": "操作に失敗しました",
+      "confirmDelete": "削除してよろしいですか？",
+      "title": "エージェント管理設定",
+      "addSetting": "設定の追加",
+      "permissionRules": "パーミッションルール (permission.rule.N)",
+      "permissionFormat": "形式:",
+      "permissionExample": "例:",
+      "permissionAddRule": "ルールの追加: キーを使って設定を作成します",
+      "addManagedSetting": "管理設定の追加",
+      "settingKey": "設定キー",
+      "keyPlaceholder": "例: allowed_models, disable_live_trading, permission.rule.1",
+      "valuePlaceholder": "例: claude-sonnet-5,deepseek-v4"
+    },
+    "billing": {
+      "columns": {
+        "user": "ユーザー",
+        "plan": "プラン",
+        "status": "ステータス",
+        "cycle": "サイクル",
+        "price": "価格",
+        "autoRenew": "自動更新",
+        "periodStart": "期間開始",
+        "periodEnd": "期間終了",
+        "createdAt": "作成日時",
+        "type": "種別",
+        "amount": "金額",
+        "balanceBefore": "変更前の残高",
+        "balanceAfter": "変更後の残高",
+        "description": "説明",
+        "time": "日時"
+      },
+      "title": "課金管理",
+      "monthlyRevenue": "月間収益",
+      "totalRevenue": "総収益",
+      "activeSubs": "アクティブなサブスクリプション",
+      "txRecords": "取引",
+      "planRevenue": "プラン別収益詳細",
+      "activeCount": "アクティブ",
+      "subscriptions": "サブスクリプション",
+      "filterByPlan": "プランでフィルター",
+      "planFree": "無料",
+      "planPro": "プロ",
+      "planEnterprise": "エンタープライズ",
+      "filterByStatus": "ステータスでフィルター",
+      "statusActive": "アクティブ",
+      "statusCancelled": "キャンセル済み",
+      "statusExpired": "期限切れ",
+      "walletTransactions": "ウォレット取引",
+      "filterByType": "タイプでフィルター",
+      "txPurchase": "購入",
+      "txSale": "販売",
+      "txPlatformFee": "プラットフォーム手数料",
+      "txDeposit": "入金",
+      "txWithdrawal": "出金"
+    },
+    "logs": {
+      "columns": {
+        "time": "時刻",
+        "module": "モジュール",
+        "actionType": "アクションタイプ",
+        "target": "ターゲット",
+        "status": "ステータス",
+        "ip": "IPアドレス",
+        "action": "操作",
+        "details": "詳細"
+      },
+      "modules": {
+        "userManagement": "ユーザー管理",
+        "accountManagement": "アカウント管理",
+        "trading": "トレーディング",
+        "systemConfig": "システム設定"
+      },
+      "errors": {
+        "loadFailed": "ログの読み込みに失敗しました"
+      },
+      "actions": {
+        "create": "作成",
+        "update": "更新",
+        "delete": "削除",
+        "disable": "無効化",
+        "enable": "有効化",
+        "freeze": "凍結",
+        "unfreeze": "凍結解除"
+      },
+      "title": "操作ログ",
+      "filterModule": "モジュールで絞り込み",
+      "filterAction": "操作で絞り込み"
+    },
+    "deposit": {
+      "table": {
+        "user": "ユーザー",
+        "amount": "USDT額",
+        "amountUsd": "USDクレジット",
+        "txHash": "Txハッシュ",
+        "status": "ステータス",
+        "reviewNote": "レビューノート",
+        "time": "時間",
+        "action": "操作"
+      },
+      "approved": "入金が承認され、ウォレットに反映されました。",
+      "approveFailed": "入金の承認に失敗しました。",
+      "rejected": "入金が却下されました。",
+      "rejectFailed": "入金の却下に失敗しました。",
+      "approve": "承認",
+      "reject": "拒否",
+      "title": "入金管理",
+      "allStatuses": "全ステータス",
+      "statusPending": "保留中",
+      "statusApproved": "承認済み",
+      "statusRejected": "拒否済み",
+      "approveTitle": "入金を承認",
+      "rejectTitle": "入金を拒否",
+      "reviewNoteLabel": "審査メモ（任意）",
+      "reviewNotePlaceholder": "この審査に関するメモを追加...",
+      "approveWarning": "承認すると、すぐにユーザーのウォレットに入金されます。"
+    },
+    "wallet": {
+      "errors": {
+        "noUserSelected": "ユーザーが選択されていません"
+      },
+      "messages": {
+        "adjustSuccess": "残高の調整に成功しました",
+        "adjustFailed": "調整に失敗しました"
+      },
+      "columns": {
+        "walletNumber": "ウォレット番号",
+        "email": "メールアドレス",
+        "nickname": "ニックネーム",
+        "type": "種類",
+        "amount": "金額",
+        "balanceAfter": "調整後残高",
+        "description": "説明",
+        "time": "日時",
+        "balance": "残高",
+        "frozen": "凍結額",
+        "currency": "通貨"
+      },
+      "accountNumber": "口座番号",
+      "add": "追加",
+      "adjustBalance": "残高調整",
+      "adjustFailed": "調整に失敗しました",
+      "adjustSuccess": "残高を調整しました",
+      "deduct": "控除",
+      "noUsers": "ユーザーが見つかりません",
+      "reason": "調整理由...",
+      "searchPlaceholder": "メールまたは口座番号で検索...",
+      "title": "ウォレット管理",
+      "walletFor": "ウォレット -",
+      "unassigned": "未割り当て",
+      "userList": "ユーザー一覧",
+      "noMatch": "該当するユーザーが見つかりません",
+      "walletDetail": "ウォレット詳細",
+      "transactions": "取引履歴",
+      "adjustReason": "理由"
+    },
     "header": {
       "admin": "管理",
       "adminMode": "管理员模式",
@@ -269,10 +528,17 @@ const Base = {
     },
     "sidebar": {
       "accountManagement": "アカウント管理",
+      "agentSettings": "エージェント設定",
+      "aiGateway": "AIゲートウェイ",
+      "billing": "課金管理",
       "dashboard": "ダッシュボード",
+      "deposits": "入金管理",
       "jurisdiction": "管轄権管理",
+      "monitoring": "監視・アラート",
       "operationLogs": "操作ログ",
       "shareManagement": "シェア分析",
+      "sre": "SREコントロール",
+      "strategies": "戦略管理",
       "systemConfig": "システム設定",
       "tradingMonitor": "取引監視",
       "userManagement": "ユーザー管理",
@@ -299,18 +565,12 @@ const Base = {
       "totalVolume": "総取引量",
       "volume": "数量"
     },
-    "wallet": {
-      "accountNumber": "口座番号",
-      "add": "追加",
-      "adjustBalance": "残高調整",
-      "adjustFailed": "調整に失敗しました",
-      "adjustSuccess": "残高を調整しました",
-      "deduct": "控除",
-      "noUsers": "ユーザーが見つかりません",
-      "reason": "調整理由...",
-      "searchPlaceholder": "メールまたは口座番号で検索...",
-      "title": "ウォレット管理",
-      "walletFor": "ウォレット -"
+    "walletCalculator": {
+      "title": "トークン ↔ USD 計算機",
+      "selectModel": "モデルを選択（価格基準）",
+      "usdAmount": "USD金額",
+      "tokenAmount": "トークン数量",
+      "fillResult": "結果を入力"
     }
   },
   "autoTrading": {
@@ -350,8 +610,8 @@ const Base = {
       "activeStrategies": "アクティブ戦略",
       "disabled": "自動取引が無効です",
       "enabled": "自動取引が有効です",
-      "todayExecutions": "Today's Executions",
-      "todayProfit": "Today's Profit"
+      "todayExecutions": "本日の約定",
+      "todayProfit": "本日の損益"
     },
     "title": "自動取引"
   },
@@ -371,7 +631,7 @@ const Base = {
         "title": "戦略実行"
       },
       "strategySignal": {
-        "message": "{{symbol}} triggered {{signalType}}",
+        "message": "{{symbol}} が {{signalType}} をトリガーしました",
         "title": "戦略シグナル"
       }
     },
@@ -400,7 +660,32 @@ const Base = {
     "unread": "未読"
   },
   "wallet": {
-    "deposit": "入金",
+    "deposit": {
+      "table": {
+        "amount": "USDT 金額",
+        "amountUsd": "USD クレジット",
+        "status": "ステータス",
+        "time": "時間",
+        "txHash": "TXハッシュ"
+      },
+      "address": "受取アドレス",
+      "addressCopied": "アドレスをコピーしました",
+      "amountLabel": "USDT 金額",
+      "button": "新規入金",
+      "copy": "コピー",
+      "exchangeRate": "為替レート",
+      "failed": "入金リクエストの送信に失敗しました。",
+      "history": "入金履歴",
+      "modalTitle": "入金リクエストを送信",
+      "network": "ネットワーク",
+      "notConfigured": "USDT入金はまだ設定されていません。サポートにお問い合わせください。",
+      "notice": "指定されたネットワーク経由でのみUSDTを送信してください。他のトークンの送信や異なるネットワークの使用は永久に失われる可能性があります。送金後、金額とオプションのTXハッシュを入力して入金リクエストを送信し、管理者の審査をお待ちください。",
+      "submit": "送信",
+      "success": "入金リクエストが送信されました。管理者の審査をお待ちください。",
+      "title": "入金",
+      "txHashLabel": "トランザクションハッシュ（任意）",
+      "willCredit": "クレジット予定"
+    },
     "table": {
       "amount": "金額",
       "balanceAfter": "調整後残高",
@@ -425,11 +710,369 @@ const Base = {
     "transactions": "取引履歴",
     "withdraw": "出金"
   },
+  "strategy": {
+    "workspace": {
+      "chartIndicators": {
+        "overlay": "オーバーレイ（メインチャート）",
+        "subPane": "サブペインインジケーター"
+      }
+    },
+    "tuning": {
+      "searchMethod": {
+        "grid": "グリッド",
+        "random": "ランダム"
+      }
+    },
+    "backtest": {
+      "canceled": "バックテストがキャンセルされました",
+      "lotSize": "ロットサイズ",
+      "strategyParameters": "戦略パラメータ"
+    },
+    "chat": {
+      "executionPlan": "執行計画",
+      "codeGenerated": "コードが生成されました。下のボタンで戦略レビューとバックテストを実行してください。"
+    },
+    "aiChat": {
+      "historyTab": "履歴",
+      "strategiesTab": "ストラテジー"
+    },
+    "templates": {
+      "title": "ストラテジーテンプレート",
+      "saveCurrent": "現在のストラテジーを保存",
+      "lines": "行",
+      "chatEdit": "チャット編集",
+      "source": "ソース",
+      "rename": "名前変更",
+      "confirmDelete": "このストラテジーを削除しますか？",
+      "noTemplates": "保存済み��トラテジーテンプレートがありません",
+      "sourceCode": "ストラテジーソース",
+      "copyAll": "すべてコピー"
+    },
+    "live": {
+      "stopSuccess": "ストラテジーが停止しました",
+      "stopFailed": "停止に失敗しました",
+      "runId": "実行ID",
+      "account": "口座",
+      "symbol": "銘柄",
+      "timeframe": "TF",
+      "mode": "モード",
+      "signals": "シグナル",
+      "errors": "エラー",
+      "startedAt": "開始時刻",
+      "watchSignals": "シグナル監視",
+      "confirmStop": "このストラテジーを停止しますか？",
+      "status": "ステータス",
+      "totalSignals": "総シグナル数",
+      "stoppedAt": "停止時刻",
+      "error": "エラー",
+      "title": "ライブストラテジーモニター",
+      "activeTab": "アクティブな実行",
+      "noActive": "アクティブなストラテジーはありません",
+      "historyTab": "実行履歴",
+      "noRuns": "ストラテジーの実行はありません",
+      "schedulesTab": "スケジュール",
+      "time": "時刻",
+      "signalType": "タイプ",
+      "volume": "数量",
+      "price": "価格",
+      "sl": "SL",
+      "tp": "TP",
+      "reason": "理由",
+      "signalLog": "シグナルログ",
+      "waitingSignals": "シグナルを待機中..."
+    },
+    "schedule": {
+      "maxPositionsPlaceholder": "無制限"
+    },
+    "ai": {
+      "reviseHint": "まずコードを書いてから、AIに改善を依頼してください",
+      "explainHint": "コードを書くとAIの説明が表示されます",
+      "settingsHint": "AIプロバイダーとモデルを設定"
+    },
+    "validate": {
+      "running": "検証を実行中...",
+      "errors": "エラー",
+      "warnings": "警告",
+      "fixWithAI": "エラーをAI修正に送信",
+      "parameters": "パラメータ",
+      "hints": "提案",
+      "allClear": "すべてのチェックを通過しました — 問題は見つかりませんでした。",
+      "passed": "検証に合格しました — 保存のロックが解除されました。"
+    },
+    "importEA": {
+      "writeTab": "ストラテジーコード",
+      "importTab": "EAのインポート",
+      "codeTooShort": "完全なEA/インジケーターのソースコードを貼り付けてください",
+      "pastePlaceholder": "MQL4/MQL5のEAコードを貼り付けてください...",
+      "migration": "ストラテジーインポート",
+      "aiTranslate": "AI翻訳",
+      "bridge": "盲点ブリッジ",
+      "analyze": "ストラテジー構造を分析",
+      "confirmImport": "インポートを確認",
+      "tryAI": "AI翻訳を試す",
+      "apply": "エディターに適用",
+      "importSuccess": "MQLソースコードがインポートされました。「エディターに適用」をクリックしてエディターに書き込んでください。",
+      "hint": "MQL4/MQL5コードを貼り付け、「分析」をクリックしてください。",
+      "translate": "Goに翻訳",
+      "translating": "AI翻訳中...",
+      "bridgeBtn": "盲点ブリッジ翻訳",
+      "bridgeSuccess": "ブリッジ成功",
+      "bridgeFailedTag": "ブリッジ失敗",
+      "bridging": "AIが盲点をブリッジ中...",
+      "bridgeFailedMsg": "エージェントが全ての盲点を自動でブリッジできません",
+      "noBridgeNeeded": "カバレッジ100%、ブリッジ不要",
+      "bridgeHint": "MQL4/MQL5 EAコードを貼り付けると、AIが盲点を自動的にPythonサブセットに翻訳します"
+    },
+    "version": {
+      "loadFailed": "バージョンの読み込みに失敗しました",
+      "rollbackFailed": "ロールバックに失敗しました",
+      "loadVersionFailed": "バージョンの読み込みに失敗しました",
+      "loadDiffFailed": "差分の読み込みに失敗しました",
+      "colVersion": "バージョン",
+      "colSummary": "変更概要",
+      "colLang": "言語",
+      "colHash": "ハッシュ",
+      "colDate": "日付",
+      "colActions": "操作",
+      "title": "バージョン履歴",
+      "diff": "差分",
+      "empty": "まだバージョン履歴がありません",
+      "history": "バージョン履歴"
+    }
+  },
+  "accounts": {
+    "bind": {
+      "fields": {
+        "alias": "アカウントエイリアス"
+      },
+      "placeholders": {
+        "alias": "任意のカスタム名"
+      },
+      "messages": {
+        "changeCredentials": "認証情報を変更する"
+      }
+    },
+    "messages": {
+      "shareLinkCopied": "共有リンクがクリップボードにコピーされました",
+      "shareLinkFailed": "共有リンクの作成に失敗しました"
+    }
+  },
+  "sre": {
+    "breakers": {
+      "columns": {
+        "strategyId": "ストラテジーID",
+        "state": "状態",
+        "totalPnl": "総損益",
+        "lossPercent": "損失率",
+        "tradeCount": "取引回数",
+        "trippedAt": "遮断日時",
+        "tripReason": "遮断理由"
+      },
+      "title": "戦略ブレーカー",
+      "stateClosed": "正常",
+      "stateOpen": "遮断",
+      "stateHalfOpen": "半開（確認中）",
+      "confirmReset": "このブレーカーをリセットしますか？",
+      "description": "戦略ブレーカーの状態概要 — 異常な損失を自動検出し、トリップします。",
+      "noBreakers": "登録されたブレーカーはありません"
+    },
+    "canary": {
+      "columns": {
+        "strategyId": "戦略ID",
+        "versionTag": "バージョンタグ",
+        "accounts": "カナリアアカウント",
+        "startAt": "開始日時",
+        "days": "日数",
+        "status": "ステータス"
+      },
+      "promoted": "昇格済み",
+      "canarying": "カナリア中",
+      "confirmDelete": "このカナリア設定を削除しますか？",
+      "title": "カナリア設定",
+      "description": "新しい戦略バージョンは、数個のアカウントで N 日間実行された後、全体に昇格されます。",
+      "newCanary": "新規カナリア",
+      "noCanaries": "カナリア設定がありません",
+      "newCanaryTitle": "新規カナリア",
+      "accountIdsLabel": "カナリアアカウントID（カンマまたは改行で区切り）",
+      "durationDays": "カナリア日数"
+    },
+    "killSwitch": {
+      "description": "ワンクリックで全取引を停止 — KILL 確認が必要。5 分以内に取り消し可能です。",
+      "engaged": "キルスイッチ作動中 — 全取引が停止されています",
+      "disarmed": "キルスイッチ解除済み — 取引は正常です",
+      "status": "ステータス",
+      "reason": "理由",
+      "operator": "操作者",
+      "engagedAt": "作動日時",
+      "undo": "キルスイッチ取消",
+      "disengage": "キルスイッチ解除",
+      "engage": "キルスイッチ作動",
+      "confirmTitle": "キルスイッチ作動 — 確認",
+      "confirmEngage": "作動確認",
+      "confirmWarning": "これにより、保留中や送信済みの注文を含むすべてのアカウントの取引活動が即座に停止されます。理由を入力し、確認のため「KILL」と入力してください。",
+      "reasonLabel": "理由（必須）",
+      "reasonPlaceholder": "例：異常な市場変動を検出し、全取引を緊急停止",
+      "typeKill": "確認のために「KILL」と入力",
+      "typeKillPlaceholder": "KILL と入力（大文字）"
+    }
+  },
+  "marketplace": {
+    "publish": {
+      "priceModel": {
+        "free": "無料",
+        "monthly": "月額サブスクリプション",
+        "once": "買い切り",
+        "label": "価格設定"
+      },
+      "assetClass": {
+        "label": "資産クラス"
+      },
+      "riskLevel": {
+        "label": "リスクレベル"
+      },
+      "return": "リターン",
+      "winRate": "勝率",
+      "trades": "トレード",
+      "title": "マーケットプレイスに公開",
+      "titleLabel": "タイトル",
+      "titlePlaceholder": "例: ゴールデンクロスストラテジー",
+      "descriptionLabel": "説明",
+      "descriptionPlaceholder": "ストラテジーのロジック、エントリー/エグジットルールを説明してください...",
+      "priceAmount": "金額",
+      "tags": "タグ",
+      "tagsPlaceholder": "タグを入力してEnterキーを押すと追加されます",
+      "codeSnippet": "ストラテジープレビュー（公開）",
+      "codeSnippetPlaceholder": "任意: ストラテジーのスニペットや概要を共有してください（全員に表示されます）",
+      "includeBacktestSnapshot": "最新のバックテスト結果を含める"
+    },
+    "author": {
+      "avgRating": "平均評価",
+      "empty": "公開された戦略はまだありません。戦略ライブラリで公開してください。",
+      "published": "公開済み",
+      "myStrategies": "公開済み戦略",
+      "publishNew": "新規戦略を公開",
+      "monthlyRevenue": "月間収益",
+      "totalRevenue": "総収益",
+      "goToLibrary": "ストラテジーライブラリへ"
+    },
+    "card": {
+      "by": "by",
+      "free": "無料",
+      "owned": "購入日",
+      "subscribers": "購読者",
+      "winRate": "勝率",
+      "yourStrategy": "あなたのストラテジー"
+    },
+    "detail": {
+      "assetClass": "資産クラス",
+      "author": "作成者",
+      "commentPlaceholder": "コメントを書く...",
+      "comments": "コメント",
+      "description": "説明",
+      "getFree": "無料で入手",
+      "rentPrice": "¥{{amount}} / 月",
+      "subscribers": "購読者",
+      "yourRating": "あなたの評価",
+      "runBacktest": "バックテスト実行"
+    },
+    "messages": {
+      "commentFailed": "コメントに失敗しました",
+      "commentPosted": "コメントを投稿しました",
+      "loginFirst": "先にログインしてください",
+      "paymentComingSoon": "決済機能は近日公開",
+      "rateFailed": "評価に失敗しました",
+      "rated": "評価を送信しました",
+      "subscribeFailed": "失敗",
+      "subscribed": "購入に追加しました",
+      "published": "ストラテジーがマーケットプレイスに公開されました！",
+      "publishFailed": "ストラテジーの公開に失敗しました"
+    },
+    "payment": {
+      "alreadyPurchased": "この戦略は既に購入済みです。",
+      "balanceAfter": "購入後残高",
+      "cancel": "キャンセル",
+      "confirm": "購入確定",
+      "depositPrompt": "続行するには入金してください。",
+      "goToDeposit": "入金",
+      "insufficientBalance": "残高不足",
+      "oneTimePurchase": "¥{{amount}} 買い切り",
+      "price": "価格",
+      "purchaseFailed": "購入に失敗しました。もう一度お試しください。",
+      "purchaseSuccess": "購入完了！戦略がライブラリに追加されました。",
+      "purchasing": "処理中...",
+      "strategyName": "戦略",
+      "title": "購入確定",
+      "walletBalance": "残高"
+    },
+    "purchases": {
+      "empty": "購入履歴はまだありません。マーケットで戦略を見つけましょう。",
+      "status": "ステータス",
+      "strategy": "戦略",
+      "runBacktest": "バックテスト実行"
+    },
+    "sort": {
+      "newest": "新着順",
+      "performance": "パフォーマンス順",
+      "popular": "人気順",
+      "priceAsc": "価格：安い順",
+      "priceDesc": "価格：高い順",
+      "rating": "評価順",
+      "score": "総合スコア"
+    },
+    "tabs": {
+      "author": "作成者センター",
+      "marketplace": "マーケット",
+      "purchases": "購入履歴",
+      "subscriptions": "マイ購読"
+    },
+    "backtest": {
+      "title": "ストラテジーバックテスト",
+      "capital": "資金",
+      "commission": "手数料",
+      "leverage": "レバレッジ",
+      "completed": "完了",
+      "totalReturn": "トータルリターン",
+      "maxDrawdown": "最大ドローダウン",
+      "sharpe": "シャープレシオ",
+      "winRate": "勝率",
+      "totalTrades": "総トレード数",
+      "equityCurve": "エクイティカーブ",
+      "protected": "ストラテジーコードは保護されています。バックテストは当社サーバーで実行されます。",
+      "run": "バックテスト実行",
+      "idle": "パラメータを設定してバックテストを実行してください"
+    },
+    "empty": "公開された戦略はまだありません",
+    "filterByClass": "資産クラスで絞り込む",
+    "noSubscriptions": "購読はまだありません",
+    "searchPlaceholder": "戦略を検索...",
+    "subtitle": "コミュニティ戦略を発見、購入、利用",
+    "title": "ストラテジーマーケット"
+  },
+  "onboarding": {
+    "step1": {
+      "title": "アカウントを連携",
+      "desc": "MT4/MT5 取引アカウントを連携して開始。",
+      "action": "アカウント連携"
+    },
+    "step2": {
+      "title": "最初の戦略を作成",
+      "desc": "AI を使って自然言語から取引戦略を生成。",
+      "action": "ワークスペースを開く"
+    },
+    "step3": {
+      "title": "プランをアップグレード",
+      "desc": "より多くの AI トークン、戦略、ライブ取引をアンロック。",
+      "action": "プランを見る"
+    },
+    "subtitle": "3つの簡単なステップで始めましょう",
+    "dismiss": "了解、閉じる"
+  },
   "auth": {
     "fields": {
       "confirmPassword": "确认密码",
       "email": "メール",
-      "password": "パスワード"
+      "password": "パスワード",
+      "login": "メールアドレス / 口座番号"
     },
     "forgotPassword": {
       "backToLogin": "返回登录",
@@ -466,7 +1109,8 @@ const Base = {
       "emailRequired": "メールアドレスを入力してください",
       "passwordMin8": "パスワードは8文字以上必要です",
       "passwordMismatch": "パスワードが一致しません",
-      "passwordRequired": "パスワードを入力してください"
+      "passwordRequired": "パスワードを入力してください",
+      "loginRequired": "メールアドレスまたは口座番号を入力してください"
     }
   },
   "common": {
@@ -542,7 +1186,22 @@ const Base = {
     "yes": "是",
     "you": "你",
     "unsaved": "未保存",
-    "saved": "保存済み"
+    "saved": "保存済み",
+    "unknownError": "不明なエラー",
+    "duplicateName": "名前が重複しています",
+    "step1Label": "ブローカー",
+    "step2Label": "認証情報",
+    "step3Label": "確認",
+    "unit": "単位",
+    "action": "操作",
+    "on": "オン",
+    "off": "オフ",
+    "true": "はい",
+    "false": "いいえ",
+    "success": "成功",
+    "failed": "失敗",
+    "reset": "リセット",
+    "saving": "保存中..."
   },
   "errors": {
     "ai": {
@@ -564,7 +1223,9 @@ const Base = {
       "provider_required": "プロバイダを選択してください",
       "provider_returned_empty_message": "AI プロバイダが空のメッセージを返しました",
       "rate_limited": "AI サービスがレート制限/クォータ不足（429/資源枯渇）。しばらく待つか、利用可能な API Key/model に切り替えてください。",
-      "request_failed": "API リクエストに失敗しました"
+      "request_failed": "API リクエストに失敗しました",
+      "insufficient_balance_title": "残高不足",
+      "insufficient_balance": "AIウォレットの残高が不足しています。続行する前にチャージしてください。"
     },
     "connection_failed": {
       "content": "无法连接到服务器，请检查网络后重试。",
@@ -582,85 +1243,6 @@ const Base = {
     "schedule_service_not_available": "スケジュールサービスは利用できません",
     "translate_failed": "翻訳に失敗しました",
     "user_not_found": "ユーザーが見つかりません"
-  },
-  "marketplace": {
-    "author": {
-      "avgRating": "平均評価",
-      "empty": "公開された戦略はまだありません。戦略ライブラリで公開してください。",
-      "published": "公開済み"
-    },
-    "card": {
-      "by": "by",
-      "free": "無料",
-      "owned": "購入日",
-      "subscribers": "購読者",
-      "winRate": "勝率"
-    },
-    "detail": {
-      "assetClass": "資産クラス",
-      "author": "作成者",
-      "commentPlaceholder": "コメントを書く...",
-      "comments": "コメント",
-      "description": "説明",
-      "getFree": "無料で入手",
-      "rentPrice": "¥{{amount}} / 月",
-      "subscribers": "購読者",
-      "yourRating": "あなたの評価"
-    },
-    "messages": {
-      "commentFailed": "コメントに失敗しました",
-      "commentPosted": "コメントを投稿しました",
-      "loginFirst": "先にログインしてください",
-      "paymentComingSoon": "決済機能は近日公開",
-      "rateFailed": "評価に失敗しました",
-      "rated": "評価を送信しました",
-      "subscribeFailed": "失敗",
-      "subscribed": "購入に追加しました"
-    },
-    "payment": {
-      "alreadyPurchased": "この戦略は既に購入済みです。",
-      "balanceAfter": "購入後残高",
-      "cancel": "キャンセル",
-      "confirm": "購入確定",
-      "depositPrompt": "続行するには入金してください。",
-      "goToDeposit": "入金",
-      "insufficientBalance": "残高不足",
-      "oneTimePurchase": "¥{{amount}} 買い切り",
-      "price": "価格",
-      "purchaseFailed": "購入に失敗しました。もう一度お試しください。",
-      "purchaseSuccess": "購入完了！戦略がライブラリに追加されました。",
-      "purchasing": "処理中...",
-      "strategyName": "戦略",
-      "title": "購入確定",
-      "walletBalance": "残高"
-    },
-    "purchases": {
-      "empty": "購入履歴はまだありません。マーケットで戦略を見つけましょう。",
-      "status": "ステータス",
-      "strategy": "戦略"
-    },
-    "sort": {
-      "newest": "新着順",
-      "performance": "パフォーマンス順",
-      "popular": "人気順",
-      "priceAsc": "価格：安い順",
-      "priceDesc": "価格：高い順",
-      "rating": "評価順",
-      "score": "総合スコア"
-    },
-    "tabs": {
-      "author": "作成者センター",
-      "marketplace": "マーケット",
-      "purchases": "購入履歴",
-      "subscriptions": "マイ購読"
-    },
-    "empty": "公開された戦略はまだありません",
-    "filterByClass": "資産クラスで絞り込む",
-    "noSubscriptions": "購読はまだありません",
-    "publish": "戦略を公開",
-    "searchPlaceholder": "戦略を検索...",
-    "subtitle": "コミュニティ戦略を発見、購入、利用",
-    "title": "ストラテジーマーケット"
   },
   "symbolDetection": {
     "tradeMode": {
@@ -715,14 +1297,86 @@ const Base = {
     "yearly": "年額",
     "chargeNotice": "有料プランはウォレットから引き落としされます。無料プランは課金されません。"
   },
+  "agent": {
+    "analysis": {
+      "title": "バックテスト分析",
+      "sharpe": "シャープレシオ",
+      "drawdown": "DD",
+      "winrate": "勝率",
+      "consistency": "一貫性",
+      "risk_adj": "リスク調整リターン",
+      "overfitting": "過学習リスク",
+      "observations": "主要な観察",
+      "suggestions": "改善提案",
+      "detailed": "詳細分析"
+    },
+    "semantic_diff": {
+      "title": "ストラテジーの変更点",
+      "effect": "影響"
+    },
+    "profile": {
+      "title": "ストラテジープロフィール",
+      "timeframe": "時間足",
+      "regime": "市場レジーム",
+      "indicators": "インジケーター",
+      "entry": "エントリー",
+      "exit": "決済",
+      "risk": "リスク管理",
+      "coverage": "カバレッジ",
+      "strengths": "強み",
+      "weaknesses": "弱み",
+      "blind_spots": "盲点"
+    }
+  },
+  "importAnalysis": {
+    "execution": {
+      "onBar": "バー終了時イベント駆動",
+      "onTick": "ティック駆動",
+      "onInitGrid": "グリッド初期化"
+    },
+    "sizing": {
+      "fixed": "固定ロット",
+      "martingale": "マーチンゲール",
+      "percentBalance": "残高に対する割合"
+    },
+    "analyzing": "戦略構造を分析中...",
+    "tradeLogicComplete": "取引ロジックを完全に認識しました",
+    "guiNoiseDesc": "以下の盲点はチャート表示/ボタン機能で、サーバー側の実行ではスキップされ、取引結果に影響しません。安全にインポートできます。",
+    "cannotImport": "自動インポート不可",
+    "incompleteCoverage": "取引ロジックのカバレッジが不完全",
+    "goodCoverage": "インポートカバレッジは良好です",
+    "goodCoverageDesc": "戦略のメインロジックを認識。安全にインポートできます。使用前にパラメータリストを確認してください。",
+    "coverageTitle": "インポートカバレッジ",
+    "location": "位置",
+    "handling": "ハンドリング",
+    "userActionRequired": "操作が必要です",
+    "noBlindSpots": "確認不要のロジック",
+    "noBlindSpotsDesc": "すべてのストラテジーロジックが自動認識されました。安全にインポートできます。"
+  },
+  "dashboard": {
+    "quickActions": {
+      "aiStrategy": "AI戦略"
+    }
+  },
+  "logs": {
+    "triggerSource": {
+      "manual": "手動",
+      "strategy": "戦略",
+      "recovery": "リカバリー"
+    },
+    "result": {
+      "pass": "合格",
+      "reject": "却下"
+    }
+  },
   "app": {
     "name": "AlphaForge"
   },
   "language": {
     "english": "English",
     "japanese": "日本語",
-    "simplifiedChinese": "简体中文",
-    "traditionalChinese": "繁體中文",
+    "simplifiedChinese": "簡体中国語",
+    "traditionalChinese": "繁体中国語",
     "vietnamese": "Tiếng Việt"
   },
   "market": {
@@ -766,7 +1420,9 @@ const Base = {
     "strategies": "戦略管理",
     "strategy": "戦略",
     "strategyLibrary": "戦略ライブラリ",
+    "strategyLive": "ライブ監視",
     "strategyWorkspace": "戦略ワークスペース",
+    "subscription": "サブスクリプション",
     "trading": "取引",
     "wallet": "ウォレット"
   },
@@ -829,7 +1485,8 @@ const Base = {
     "volume": "数量",
     "winRate": "勝率",
     "winningTrades": "勝ちトレード数",
-    "worstTrade": "ワーストトレード"
+    "worstTrade": "ワーストトレード",
+    "countUnit": "件"
   },
   "topbar": {
     "logout": "ログアウト",
@@ -838,6 +1495,48 @@ const Base = {
     "switchToAdmin": "管理画面へ切替",
     "systemOk": "システムは正常に稼働中",
     "user": "ユーザー"
+  },
+  "theme": {
+    "switchToDark": "ダークモードに切替",
+    "switchToLight": "ライトモードに切替"
+  },
+  "monitoring": {
+    "unknown": "不明",
+    "healthy": "OK",
+    "title": "システム監視",
+    "sseConnected": "SSE接続済み",
+    "disconnected": "切断",
+    "streamError": "ストリームエラー",
+    "waitingData": "データ待機中...",
+    "serviceHealth": "サービス健全性",
+    "uptime": "稼働時間",
+    "database": "データベース",
+    "diskUsage": "ディスク使用量",
+    "goRuntime": "Goランタイム",
+    "goroutines": "Goroutine",
+    "gcCount": "GC回数",
+    "gcPauseAvg": "GC停止平均",
+    "stackUsage": "スタック使用量",
+    "heapMemory": "ヒープメモリ",
+    "dbPool": "DB接続プール",
+    "totalConns": "合計",
+    "idle": "アイドル",
+    "acquired": "取得済み",
+    "mdGateway": "MDゲートウェイ",
+    "spillFiles": "スピルファイル",
+    "droppedBars": "ドロップされたバー",
+    "droppedSignals": "ドロップされたシグナル",
+    "consumerLag": "コンシューマーラグ",
+    "staleAccounts": "滞留アカウント",
+    "deadAccounts": "停止アカウント",
+    "avgGapSec": "平均ギャップ (秒)",
+    "maxGapSec": "最大ギャップ (秒)",
+    "dlq": "デッドレターキュー (DLQ)",
+    "parseErrors": "解析エラー",
+    "bidGtAsk": "Bid>Ask",
+    "nonPositive": "非正",
+    "pushInterval": "プッシュ間隔: 5秒",
+    "lastUpdate": "最終更新"
   }
 } as const;
 export default Base;

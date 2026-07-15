@@ -46,10 +46,6 @@ const StrategyWorkspace = {
         "selectPlaceholder": "テンプレートを選択...",
         "title": "テンプレート"
       },
-      "chartIndicators": {
-        "overlay": "オーバーレイ（メインチャート）",
-        "subPane": "サブペイン指標"
-      },
       "memory": {
         "saveSuccess": "保存しました",
         "saveFailed": "保存に失敗しました",
@@ -119,6 +115,8 @@ const StrategyWorkspace = {
       "watchlist": "ウォッチリスト",
       "sendToAI": "AIに送信",
       "browseIndicators": "インジケーター一覧",
+      "chartIndicatorsOverlay": "オーバーレイ（メインチャート）",
+      "chartIndicatorsSubPane": "サブペイン指標",
       "noCode": "検証するコードがありません",
       "compileError": "コンパイルエラー",
       "validateFirst": "先にコードを検証してください",

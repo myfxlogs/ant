@@ -298,11 +298,11 @@ export const SEND_TO_AI_KEY = 'strategy.workspace.sendToAI' as const;
 /** browseIndicators */
 export const BROWSE_INDICATORS_KEY = 'strategy.workspace.browseIndicators' as const;
 
-/** chartIndicators.overlay */
-export const CHART_INDICATORS_OVERLAY_KEY = 'strategy.workspace.chartIndicators.overlay' as const;
+/** chartIndicatorsOverlay */
+export const CHART_INDICATORS_OVERLAY_KEY = 'strategy.workspace.chartIndicatorsOverlay' as const;
 
-/** chartIndicators.subPane */
-export const CHART_INDICATORS_SUB_PANE_KEY = 'strategy.workspace.chartIndicators.subPane' as const;
+/** chartIndicatorsSubPane */
+export const CHART_INDICATORS_SUB_PANE_KEY = 'strategy.workspace.chartIndicatorsSubPane' as const;
 
 /** noCode */
 export const NO_CODE_KEY = 'strategy.workspace.noCode' as const;
@@ -500,8 +500,8 @@ export const STRATEGYWORKSPACE_KEYS = {
   watchlist: 'strategy.workspace.watchlist',
   send_to_ai: 'strategy.workspace.sendToAI',
   browse_indicators: 'strategy.workspace.browseIndicators',
-  chart_indicators_overlay: 'strategy.workspace.chartIndicators.overlay',
-  chart_indicators_sub_pane: 'strategy.workspace.chartIndicators.subPane',
+  chart_indicators_overlay: 'strategy.workspace.chartIndicatorsOverlay',
+  chart_indicators_sub_pane: 'strategy.workspace.chartIndicatorsSubPane',
   no_code: 'strategy.workspace.noCode',
   compile_error: 'strategy.workspace.compileError',
   validate_first: 'strategy.workspace.validateFirst',

@@ -10,3 +10,4 @@
 
  commit and push it, then deploy
 prompt
+playwright

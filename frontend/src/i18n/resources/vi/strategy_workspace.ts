@@ -46,10 +46,6 @@ const StrategyWorkspace = {
         "selectPlaceholder": "Chọn mẫu...",
         "title": "Mẫu"
       },
-      "chartIndicators": {
-        "overlay": "Chỉ báo chồng (biểu đồ chính)",
-        "subPane": "Chỉ báo phụ"
-      },
       "memory": {
         "saveSuccess": "Đã lưu",
         "saveFailed": "Lưu thất bại",
@@ -119,6 +115,8 @@ const StrategyWorkspace = {
       "watchlist": "Danh Sách Theo Dõi",
       "sendToAI": "Gửi cho AI",
       "browseIndicators": "Duyệt chỉ báo",
+      "chartIndicatorsOverlay": "Chỉ báo chồng (biểu đồ chính)",
+      "chartIndicatorsSubPane": "Chỉ báo phụ",
       "noCode": "Không có mã để xác thực",
       "compileError": "Lỗi biên dịch",
       "validateFirst": "Vui lòng xác thực mã trước",

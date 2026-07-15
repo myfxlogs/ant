@@ -44,6 +44,9 @@ const Base = {
         "validateReject": "拒绝",
         "validateTotal": "总计"
       },
+      "errors": {
+        "loadFailed": "失败 to load dashboard data"
+      },
       "activeUsers": "活跃用户",
       "loadFailed": "加载仪表盘数据失败",
       "mtAccounts": "MT账户数",
@@ -52,7 +55,23 @@ const Base = {
       "title": "管理仪表盘",
       "todayProfit": "今日盈亏",
       "todayTrades": "今日交易",
-      "totalUsers": "总用户数"
+      "totalUsers": "总用户数",
+      "verifiedUsers": "已验证用户",
+      "activeSubs": "活跃订阅",
+      "monthlyRevenue": "月度收入",
+      "totalRevenue": "总收入",
+      "marketStrategies": "Market 策略",
+      "marketSales": "市场销售额",
+      "marketRevenue": "市场收入",
+      "validateTotal": "Validate 总计",
+      "validatePass": "验证通过",
+      "validateReject": "验证拒绝",
+      "validateError": "验证错误",
+      "orderSendSuccess": "下单成功",
+      "orderSendFailed": "下单失败",
+      "orderCloseSuccess": "平仓成功",
+      "orderCloseFailed": "平仓失败",
+      "rejectCount": "拒绝次数"
     },
     "userManagement": {
       "drawer": {
@@ -126,7 +145,8 @@ const Base = {
         "userDisabled": "用户已禁用",
         "userEnabled": "用户已启用",
         "userUpdateFailed": "更新用户失败",
-        "userUpdatedSuccess": "用户更新成功"
+        "userUpdatedSuccess": "用户更新成功",
+        "loadUsersFailed": "失败 to load users"
       },
       "modals": {
         "createTitle": "新建用户",
@@ -214,7 +234,8 @@ const Base = {
       "title": "系统配置",
       "toggle": "切换",
       "updatedAt": "更新时间",
-      "value": "值"
+      "value": "值",
+      "apiKey": "API 密钥"
     },
     "jurisdiction": {
       "messages": {
@@ -260,6 +281,244 @@ const Base = {
       "userKYCStatus": "用户KYC状态",
       "verified": "已验证"
     },
+    "aiGateway": {
+      "errors": {
+        "loadProviders": "失败 to load providers",
+        "toggleFailed": "切换失败",
+        "loadModels": "失败 to load models"
+      },
+      "columns": {
+        "baseUrl": "基础 URL",
+        "apiKey": "API 密钥"
+      },
+      "addProviderPending": "添加 provider feature pending backend support",
+      "title": "AI 网关管理",
+      "description": "管理 AI 提供商、模型和定价。用户从可用模型中选择，按 token 从钱包扣费。",
+      "addProvider": "添加提供商",
+      "provider": "提供商",
+      "configured": "已配置",
+      "notConfigured": "未配置",
+      "models": "模型",
+      "editProvider": "编辑提供商",
+      "providerId": "提供商 ID",
+      "providerIdRequired": "请输入提供商ID",
+      "displayName": "显示名称",
+      "displayNameRequired": "请输入显示名称",
+      "baseUrl": "基础 URL",
+      "baseUrlRequired": "Please enter 基础 URL",
+      "apiKeyLabel": "API 密钥",
+      "apiKeyEditHint": "留空则保留现有密钥",
+      "apiKeyHint": "API密钥，静态加密存储",
+      "apiKeyEditPlaceholder": "留空则保留",
+      "editModel": "编辑模型",
+      "addModel": "添加模型",
+      "modelName": "模型名称",
+      "modelNameRequired": "请输入模型名称",
+      "priceInput": "Input 价格 ($/1M)",
+      "priceOutput": "Output 价格 ($/1M)",
+      "confirmDeleteModel": "删除 this model?",
+      "noModels": "无模型"
+    },
+    "account": {
+      "errors": {
+        "loadFailed": "失败 to load accounts",
+        "freezeFailed": "冻结失败",
+        "unfreezeFailed": "解冻失败"
+      },
+      "columns": {
+        "id": "ID",
+        "user": "用户",
+        "login": "登录",
+        "type": "类型",
+        "broker": "经纪商",
+        "status": "状态",
+        "balance": "余额",
+        "createdAt": "创建时间",
+        "action": "操作",
+        "server": "服务器",
+        "equity": "净值",
+        "margin": "保证金",
+        "time": "时间",
+        "detail": "详情"
+      },
+      "frozen": "账户 frozen",
+      "unfrozen": "账户 unfrozen",
+      "detail": "详情",
+      "unfreeze": "解冻",
+      "confirmFreeze": "冻结此账户？",
+      "freeze": "冻结",
+      "title": "账户管理",
+      "searchPlaceholder": "搜索 accounts",
+      "status": "状态",
+      "online": "在线",
+      "offline": "离线",
+      "auditLogs": "Audit 日志"
+    },
+    "settings": {
+      "columns": {
+        "key": "设置键",
+        "value": "值",
+        "action": "操作"
+      },
+      "saveSuccess": "保存成功",
+      "saveFailed": "保存 failed",
+      "deleted": "已删除",
+      "deleteFailed": "删除 failed",
+      "actionFailed": "操作失败",
+      "confirmDelete": "确认 delete?",
+      "title": "Agent 管理 设置",
+      "addSetting": "添加 Setting",
+      "permissionRules": "权限规则 (permission.rule.N)",
+      "permissionFormat": "格式：",
+      "permissionExample": "示例：",
+      "permissionAddRule": "添加 rule: create setting with key ",
+      "addManagedSetting": "添加 Managed Setting",
+      "settingKey": "设置键",
+      "keyPlaceholder": "例如：allowed_models, disable_live_trading, permission.rule.1",
+      "valuePlaceholder": "例如：claude-sonnet-5,deepseek-v4"
+    },
+    "billing": {
+      "columns": {
+        "user": "用户",
+        "plan": "方案",
+        "status": "状态",
+        "cycle": "周期",
+        "price": "价格",
+        "autoRenew": "自动续费",
+        "periodStart": "周期开始",
+        "periodEnd": "周期结束",
+        "createdAt": "创建时间",
+        "type": "类型",
+        "amount": "金额",
+        "balanceBefore": "余额 Before",
+        "balanceAfter": "余额 After",
+        "description": "描述",
+        "time": "时间"
+      },
+      "title": "计费管理",
+      "monthlyRevenue": "月度收入",
+      "totalRevenue": "总收入",
+      "activeSubs": "活跃订阅",
+      "txRecords": "交易记录",
+      "planRevenue": "方案收入明细",
+      "activeCount": "活跃",
+      "subscriptions": "订阅",
+      "filterByPlan": "按方案筛选",
+      "planFree": "免费",
+      "planPro": "专业版",
+      "planEnterprise": "企业版",
+      "filterByStatus": "按状态筛选",
+      "statusActive": "活跃",
+      "statusCancelled": "已取消",
+      "statusExpired": "已过期",
+      "walletTransactions": "钱包交易",
+      "filterByType": "筛选 by type",
+      "txPurchase": "购买",
+      "txSale": "销售",
+      "txPlatformFee": "平台费用",
+      "txDeposit": "充值",
+      "txWithdrawal": "提现"
+    },
+    "logs": {
+      "columns": {
+        "time": "时间",
+        "module": "模块",
+        "actionType": "操作类型",
+        "target": "目标",
+        "status": "状态",
+        "ip": "IP地址",
+        "action": "操作",
+        "details": "详情"
+      },
+      "modules": {
+        "userManagement": "用户 管理",
+        "accountManagement": "账户管理",
+        "trading": "交易",
+        "systemConfig": "系统配置"
+      },
+      "errors": {
+        "loadFailed": "失败 to load logs"
+      },
+      "actions": {
+        "create": "创建",
+        "update": "更新",
+        "delete": "删除",
+        "disable": "禁用",
+        "enable": "启用",
+        "freeze": "冻结",
+        "unfreeze": "解冻"
+      },
+      "title": "操作日志",
+      "filterModule": "按模块筛选",
+      "filterAction": "筛选 by action"
+    },
+    "deposit": {
+      "table": {
+        "user": "用户",
+        "amount": "USDT 金额",
+        "amountUsd": "USD 到账",
+        "txHash": "交易哈希",
+        "status": "状态",
+        "reviewNote": "审核备注",
+        "time": "时间",
+        "action": "操作"
+      },
+      "approved": "充值 approved and wallet credited.",
+      "approveFailed": "失败 to approve deposit.",
+      "rejected": "充值 rejected.",
+      "rejectFailed": "失败 to reject deposit.",
+      "approve": "通过",
+      "reject": "拒绝",
+      "title": "充值管理",
+      "allStatuses": "全部状态",
+      "statusPending": "待处理",
+      "statusApproved": "已通过",
+      "statusRejected": "已拒绝",
+      "approveTitle": "Approve 充值",
+      "rejectTitle": "Reject 充值",
+      "reviewNoteLabel": "审核备注 (optional)",
+      "reviewNotePlaceholder": "添加 a note for this review...",
+      "approveWarning": "通过后用户钱包将立即到账。"
+    },
+    "wallet": {
+      "errors": {
+        "noUserSelected": "未选择用户"
+      },
+      "messages": {
+        "adjustSuccess": "余额 adjusted successfully",
+        "adjustFailed": "调整失败"
+      },
+      "columns": {
+        "walletNumber": "钱包号",
+        "email": "邮箱",
+        "nickname": "昵称",
+        "type": "类型",
+        "amount": "金额",
+        "balanceAfter": "余额 After",
+        "description": "描述",
+        "time": "时间",
+        "balance": "余额",
+        "frozen": "冻结",
+        "currency": "币种"
+      },
+      "accountNumber": "钱包号",
+      "add": "增加",
+      "adjustBalance": "调整余额",
+      "adjustFailed": "调整失败",
+      "adjustSuccess": "余额已调整",
+      "deduct": "扣除",
+      "noUsers": "未找到用户",
+      "reason": "调整原因...",
+      "searchPlaceholder": "搜索邮箱或钱包号...",
+      "title": "钱包管理",
+      "walletFor": "钱包 -",
+      "unassigned": "未分配",
+      "userList": "用户列表",
+      "noMatch": "无匹配用户",
+      "walletDetail": "钱包详情",
+      "transactions": "交易记录",
+      "adjustReason": "原因"
+    },
     "header": {
       "admin": "管理",
       "adminMode": "管理员模式",
@@ -269,10 +528,17 @@ const Base = {
     },
     "sidebar": {
       "accountManagement": "账户管理",
+      "agentSettings": "Agent 设置",
+      "aiGateway": "AI 网关",
+      "billing": "计费管理",
       "dashboard": "仪表盘",
+      "deposits": "充值管理",
       "jurisdiction": "管辖权管理",
+      "monitoring": "监控与告警",
       "operationLogs": "操作日志",
       "shareManagement": "分享分析",
+      "sre": "SRE 控制",
+      "strategies": "策略管理",
       "systemConfig": "系统配置",
       "tradingMonitor": "交易监控",
       "userManagement": "用户管理",
@@ -299,18 +565,12 @@ const Base = {
       "totalVolume": "总交易量",
       "volume": "数量"
     },
-    "wallet": {
-      "accountNumber": "钱包号",
-      "add": "增加",
-      "adjustBalance": "调整余额",
-      "adjustFailed": "调整失败",
-      "adjustSuccess": "余额已调整",
-      "deduct": "扣除",
-      "noUsers": "未找到用户",
-      "reason": "调整原因...",
-      "searchPlaceholder": "搜索邮箱或钱包号...",
-      "title": "钱包管理",
-      "walletFor": "钱包 -"
+    "walletCalculator": {
+      "title": "Token ↔ USD计算器",
+      "selectModel": "选择模型（定价基准）",
+      "usdAmount": "USD 金额",
+      "tokenAmount": "Token 金额",
+      "fillResult": "填入结果"
     }
   },
   "autoTrading": {
@@ -350,8 +610,8 @@ const Base = {
       "activeStrategies": "活跃策略",
       "disabled": "自动交易已关闭",
       "enabled": "自动交易已开启",
-      "todayExecutions": "Today's Executions",
-      "todayProfit": "Today's Profit"
+      "todayExecutions": "今日成交",
+      "todayProfit": "今日盈亏"
     },
     "title": "自动交易"
   },
@@ -371,7 +631,7 @@ const Base = {
         "title": "策略执行"
       },
       "strategySignal": {
-        "message": "{{symbol}} triggered {{signalType}}",
+        "message": "{{symbol}} 触发 {{signalType}}",
         "title": "策略信号"
       }
     },
@@ -400,7 +660,32 @@ const Base = {
     "unread": "未读"
   },
   "wallet": {
-    "deposit": "充值",
+    "deposit": {
+      "table": {
+        "amount": "USDT 金额",
+        "amountUsd": "USD 到账",
+        "status": "状态",
+        "time": "时间",
+        "txHash": "交易哈希"
+      },
+      "address": "收款地址",
+      "addressCopied": "地址已复制到剪贴板",
+      "amountLabel": "USDT 金额",
+      "button": "新建充值",
+      "copy": "复制",
+      "exchangeRate": "汇率",
+      "failed": "提交充值请求失败。",
+      "history": "充值记录",
+      "modalTitle": "提交充值请求",
+      "network": "网络",
+      "notConfigured": "USDT 充值尚未配置，请联系客服。",
+      "notice": "请仅通过指定网络发送 USDT。发送其他代币或使用不同网络可能导致永久丢失。发送后，请提交充值请求并填写金额和可选的交易哈希，等待管理员审核。",
+      "submit": "提交",
+      "success": "充值请求已提交，请等待管理员审核。",
+      "title": "充值",
+      "txHashLabel": "交易哈希（可选）",
+      "willCredit": "预计到账"
+    },
     "table": {
       "amount": "金额",
       "balanceAfter": "调整后余额",
@@ -425,11 +710,369 @@ const Base = {
     "transactions": "交易记录",
     "withdraw": "提取"
   },
+  "strategy": {
+    "workspace": {
+      "chartIndicators": {
+        "overlay": "主图叠加",
+        "subPane": "副图指标"
+      }
+    },
+    "tuning": {
+      "searchMethod": {
+        "grid": "网格",
+        "random": "随机"
+      }
+    },
+    "backtest": {
+      "canceled": "回测已取消",
+      "lotSize": "手数",
+      "strategyParameters": "策略 Parameters"
+    },
+    "chat": {
+      "executionPlan": "Execution 方案",
+      "codeGenerated": "代码已生成，使用下方按钮进行策略审查和回测。"
+    },
+    "aiChat": {
+      "historyTab": "历史",
+      "strategiesTab": "策略"
+    },
+    "templates": {
+      "title": "策略 Templates",
+      "saveCurrent": "保存 Current 策略",
+      "lines": "条数",
+      "chatEdit": "Chat 编辑",
+      "source": "来源",
+      "rename": "重命名",
+      "confirmDelete": "删除 this strategy?",
+      "noTemplates": "无已保存策略模板",
+      "sourceCode": "策略 Source",
+      "copyAll": "复制 All"
+    },
+    "live": {
+      "stopSuccess": "策略 stopped",
+      "stopFailed": "失败 to stop",
+      "runId": "运行 ID",
+      "account": "账户",
+      "symbol": "品种",
+      "timeframe": "周期",
+      "mode": "模式",
+      "signals": "信号",
+      "errors": "错误",
+      "startedAt": "已启动",
+      "watchSignals": "Watch 信号",
+      "confirmStop": "确定停止此策略？",
+      "status": "状态",
+      "totalSignals": "总计 信号",
+      "stoppedAt": "已停止",
+      "error": "错误",
+      "title": "实盘策略监控",
+      "activeTab": "活跃运行",
+      "noActive": "无活跃策略",
+      "historyTab": "运行历史",
+      "noRuns": "无策略运行记录",
+      "schedulesTab": "调度",
+      "time": "时间",
+      "signalType": "类型",
+      "volume": "交易量",
+      "price": "价格",
+      "sl": "SL",
+      "tp": "TP",
+      "reason": "原因",
+      "signalLog": "信号日志",
+      "waitingSignals": "等待信号..."
+    },
+    "schedule": {
+      "maxPositionsPlaceholder": "不限"
+    },
+    "ai": {
+      "reviseHint": "先编写代码，然后让AI优化。",
+      "explainHint": "编写代码以查看AI解释。",
+      "settingsHint": "配置 AI 提供商和模型"
+    },
+    "validate": {
+      "running": "校验运行中...",
+      "errors": "错误",
+      "warnings": "警告",
+      "fixWithAI": "提交错误至 AI 修正",
+      "parameters": "参数",
+      "hints": "建议",
+      "allClear": "所有检查通过 — 未发现问题。",
+      "passed": "Validation passed — 保存 is now unlocked."
+    },
+    "importEA": {
+      "writeTab": "策略 Code",
+      "importTab": "导入EA",
+      "codeTooShort": "请粘贴完整的EA/指标源码。",
+      "pastePlaceholder": "粘贴MQL4/MQL5 EA代码...",
+      "migration": "策略导入",
+      "aiTranslate": "AI 翻译",
+      "bridge": "盲区桥接",
+      "analyze": "分析策略结构",
+      "confirmImport": "确认导入",
+      "tryAI": "AI 翻译补充",
+      "apply": "应用到编辑器",
+      "importSuccess": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
+      "hint": "粘贴MQL4/MQL5代码并点击分析",
+      "translate": "翻译为Go",
+      "translating": "AI翻译中...",
+      "bridgeBtn": "盲区桥接翻译",
+      "bridgeSuccess": "桥接成功",
+      "bridgeFailedTag": "桥接失败",
+      "bridging": "AI 正在桥接盲区…",
+      "bridgeFailedMsg": "Agent 无法自动桥接所有盲区",
+      "noBridgeNeeded": "覆盖率 100%，无需桥接",
+      "bridgeHint": "粘贴 MQL4/MQL5 EA 代码，AI 将自动翻译盲区为 Python 子集"
+    },
+    "version": {
+      "loadFailed": "失败 to load versions",
+      "rollbackFailed": "回滚失败",
+      "loadVersionFailed": "失败 to load version",
+      "loadDiffFailed": "失败 to load diff",
+      "colVersion": "版本",
+      "colSummary": "变更摘要",
+      "colLang": "语言",
+      "colHash": "哈希",
+      "colDate": "日期",
+      "colActions": "操作",
+      "title": "Version 历史",
+      "diff": "差异",
+      "empty": "暂无版本历史",
+      "history": "Version 历史"
+    }
+  },
+  "accounts": {
+    "bind": {
+      "fields": {
+        "alias": "账户 Alias"
+      },
+      "placeholders": {
+        "alias": "可选自定义名称"
+      },
+      "messages": {
+        "changeCredentials": "修改凭证"
+      }
+    },
+    "messages": {
+      "shareLinkCopied": "分享链接已复制到剪贴板",
+      "shareLinkFailed": "失败 to create share link"
+    }
+  },
+  "sre": {
+    "breakers": {
+      "columns": {
+        "strategyId": "策略 ID",
+        "state": "状态",
+        "totalPnl": "总盈亏",
+        "lossPercent": "亏损率",
+        "tradeCount": "交易数",
+        "trippedAt": "熔断时间",
+        "tripReason": "熔断原因"
+      },
+      "title": "策略断路器",
+      "stateClosed": "正常",
+      "stateOpen": "已熔断",
+      "stateHalfOpen": "半开（探测中）",
+      "confirmReset": "重置此断路器？",
+      "description": "策略 breaker status overview — auto-detects abnormal losses and trips",
+      "noBreakers": "无已注册断路器"
+    },
+    "canary": {
+      "columns": {
+        "strategyId": "策略 ID",
+        "versionTag": "版本标签",
+        "accounts": "金丝雀账户",
+        "startAt": "开始时间",
+        "days": "天数",
+        "status": "状态"
+      },
+      "promoted": "已晋升",
+      "canarying": "金丝雀",
+      "confirmDelete": "删除 this canary config?",
+      "title": "金丝雀 Configuration",
+      "description": "新策略版本先在少量账户上运行N天，再晋升至全部",
+      "newCanary": "新建金丝雀",
+      "noCanaries": "无金丝雀配置",
+      "newCanaryTitle": "新建金丝雀",
+      "accountIdsLabel": "金丝雀 账户 IDs (comma or newline separated)",
+      "durationDays": "金丝雀 天数"
+    },
+    "killSwitch": {
+      "description": "一键停止所有交易 — 需要输入 KILL 确认；5 分钟内可撤销",
+      "engaged": "熔断开关 engaged — all trading stopped",
+      "disarmed": "熔断开关 disarmed — trading normal",
+      "status": "状态",
+      "reason": "原因",
+      "operator": "操作人",
+      "engagedAt": "启用时间",
+      "undo": "Undo 熔断开关",
+      "disengage": "Disengage 熔断开关",
+      "engage": "启用熔断开关",
+      "confirmTitle": "启用 熔断开关 — Confirmation",
+      "confirmEngage": "确认 启用",
+      "confirmWarning": "此操作将立即停止所有账户的所有交易活动，包括挂单和已提交订单。输入原因并键入 KILL 确认。",
+      "reasonLabel": "原因（必填）",
+      "reasonPlaceholder": "例如：检测到市场异常波动，紧急停止所有交易",
+      "typeKill": "键入 KILL 确认",
+      "typeKillPlaceholder": "键入 KILL（大写）"
+    }
+  },
+  "marketplace": {
+    "publish": {
+      "priceModel": {
+        "free": "免费",
+        "monthly": "按月订阅",
+        "once": "One-时间 Purchase",
+        "label": "定价方式"
+      },
+      "assetClass": {
+        "label": "资产类别"
+      },
+      "riskLevel": {
+        "label": "风险等级"
+      },
+      "return": "收益率",
+      "winRate": "胜率",
+      "trades": "交易数",
+      "title": "发布到市场",
+      "titleLabel": "标题",
+      "titlePlaceholder": "e.g. Golden Cross 策略",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "描述策略逻辑、开平仓规则...",
+      "priceAmount": "金额",
+      "tags": "标签",
+      "tagsPlaceholder": "输���后按回车添加标签",
+      "codeSnippet": "策略 Preview (public)",
+      "codeSnippetPlaceholder": "可选：分享策略代码片段或思路（所有人可见）",
+      "includeBacktestSnapshot": "包含最新回测结果"
+    },
+    "author": {
+      "avgRating": "平均评分",
+      "empty": "暂无已发布策略。前往策略库发布一个。",
+      "published": "已发布",
+      "myStrategies": "My Published 策略",
+      "publishNew": "Publish New 策略",
+      "monthlyRevenue": "月度收入",
+      "totalRevenue": "总收入",
+      "goToLibrary": "Go to 策略 Library"
+    },
+    "card": {
+      "by": "由",
+      "free": "免费",
+      "owned": "购买日期",
+      "subscribers": "订阅者",
+      "winRate": "胜率",
+      "yourStrategy": "Your 策略"
+    },
+    "detail": {
+      "assetClass": "资产类别",
+      "author": "作者",
+      "commentPlaceholder": "写评论...",
+      "comments": "评论",
+      "description": "描述",
+      "getFree": "免费获取",
+      "rentPrice": "¥{{amount}} / 月",
+      "subscribers": "订阅者",
+      "yourRating": "我的评分",
+      "runBacktest": "运行回测"
+    },
+    "messages": {
+      "commentFailed": "评论失败",
+      "commentPosted": "评论已发布",
+      "loginFirst": "请先登录",
+      "paymentComingSoon": "支付功能即将上线",
+      "rateFailed": "评分失败",
+      "rated": "评分已提交",
+      "subscribeFailed": "失败",
+      "subscribed": "已添加到您的购买",
+      "published": "策略 published to marketplace!",
+      "publishFailed": "失败 to publish strategy"
+    },
+    "payment": {
+      "alreadyPurchased": "您已拥有此策略。",
+      "balanceAfter": "购买后余额",
+      "cancel": "取消",
+      "confirm": "确认购买",
+      "depositPrompt": "请先充值后再继续。",
+      "goToDeposit": "充值",
+      "insufficientBalance": "余额不足",
+      "oneTimePurchase": "¥{{amount}} 一次性买断",
+      "price": "价格",
+      "purchaseFailed": "购买失败，请重试。",
+      "purchaseSuccess": "购买成功！策略已添加到您的库中。",
+      "purchasing": "处理中...",
+      "strategyName": "策略",
+      "title": "确认购买",
+      "walletBalance": "我的余额"
+    },
+    "purchases": {
+      "empty": "暂无购买记录。前往市场发现策略。",
+      "status": "状态",
+      "strategy": "策略",
+      "runBacktest": "运行回测"
+    },
+    "sort": {
+      "newest": "最新",
+      "performance": "最佳表现",
+      "popular": "最热门",
+      "priceAsc": "价格：从低到高",
+      "priceDesc": "价格：从高到低",
+      "rating": "最高评分",
+      "score": "综合评分"
+    },
+    "tabs": {
+      "author": "作者中心",
+      "marketplace": "策略市场",
+      "purchases": "我的购买",
+      "subscriptions": "我的订阅"
+    },
+    "backtest": {
+      "title": "策略 Backtest",
+      "capital": "资金",
+      "commission": "佣金",
+      "leverage": "杠杆",
+      "completed": "已完成",
+      "totalReturn": "总计 Return",
+      "maxDrawdown": "最大回撤",
+      "sharpe": "夏普比率",
+      "winRate": "胜率",
+      "totalTrades": "总计 交易数",
+      "equityCurve": "权益曲线",
+      "protected": "策略 code is protected. Backtest runs on our servers.",
+      "run": "运行回测",
+      "idle": "设置参数并运行回测"
+    },
+    "empty": "暂无已发布策略",
+    "filterByClass": "按资产类别筛选",
+    "noSubscriptions": "暂无订阅",
+    "searchPlaceholder": "搜索策略...",
+    "subtitle": "发现、购买和使用社区策略",
+    "title": "策略市场"
+  },
+  "onboarding": {
+    "step1": {
+      "title": "连接您的账户",
+      "desc": "绑定您的 MT4/MT5 交易账户以开始。",
+      "action": "Bind 账户"
+    },
+    "step2": {
+      "title": "创建您的第一个策略",
+      "desc": "使用 AI 从自然语言生成交易策略。",
+      "action": "打开工作区"
+    },
+    "step3": {
+      "title": "升级您的计划",
+      "desc": "解锁更多 AI 代币、策略和实盘交易功能。",
+      "action": "查看方案"
+    },
+    "subtitle": "3 个简单步骤即可开始",
+    "dismiss": "知道了，忽略"
+  },
   "auth": {
     "fields": {
       "confirmPassword": "确认密码",
       "email": "邮箱",
-      "password": "密码"
+      "password": "密码",
+      "login": "邮箱/账号"
     },
     "forgotPassword": {
       "backToLogin": "返回登录",
@@ -466,7 +1109,8 @@ const Base = {
       "emailRequired": "请输入邮箱",
       "passwordMin8": "密码至少8位",
       "passwordMismatch": "两次密码不一致",
-      "passwordRequired": "请输入密码"
+      "passwordRequired": "请输入密码",
+      "loginRequired": "请输入邮箱或账号"
     }
   },
   "common": {
@@ -515,7 +1159,7 @@ const Base = {
     "noData": "暂无数据",
     "noOpenPositionsForSymbol": "{{symbol}} 暂无持仓",
     "none": "无",
-    "ok": "OK",
+    "ok": "确定",
     "operationFailed": "操作失败",
     "pageError": "页面错误",
     "pageUnderDevelopment": "此页面开发中",
@@ -542,7 +1186,22 @@ const Base = {
     "yes": "是",
     "you": "你",
     "unsaved": "未保存",
-    "saved": "已保存"
+    "saved": "已保存",
+    "unknownError": "未知错误",
+    "duplicateName": "名称已存在",
+    "step1Label": "经纪商",
+    "step2Label": "凭证",
+    "step3Label": "确认",
+    "unit": "单位",
+    "action": "操作",
+    "on": "开",
+    "off": "关",
+    "true": "是",
+    "false": "否",
+    "success": "成功",
+    "failed": "失败",
+    "reset": "重置",
+    "saving": "保存中…"
   },
   "errors": {
     "ai": {
@@ -559,12 +1218,14 @@ const Base = {
       "invalid_provider": "服务商无效",
       "no_trade_data_available": "暂无可用交易数据",
       "not_configured": "AI 未配置：请先到 AI 设置中启用并配置。",
-      "probe_ok": "OK",
+      "probe_ok": "正常",
       "probe_ok_no_models": "正常（未返回 models）",
       "provider_required": "请先选择服务商",
       "provider_returned_empty_message": "AI 服务返回空消息",
       "rate_limited": "AI 服务触发限流/额度不足（429/资源耗尽）。请稍后重试或更换可用的 API Key/模型配置。",
-      "request_failed": "API 请求失败"
+      "request_failed": "API 请求失败",
+      "insufficient_balance_title": "Insufficient 余额",
+      "insufficient_balance": "AI钱包余额不足，请充值后继续。"
     },
     "connection_failed": {
       "content": "无法连接到服务器，请检查网络后重试。",
@@ -582,85 +1243,6 @@ const Base = {
     "schedule_service_not_available": "调度服务不可用",
     "translate_failed": "翻译失败",
     "user_not_found": "用户不存在"
-  },
-  "marketplace": {
-    "author": {
-      "avgRating": "平均评分",
-      "empty": "暂无已发布策略。前往策略库发布一个。",
-      "published": "已发布"
-    },
-    "card": {
-      "by": "by",
-      "free": "免费",
-      "owned": "购买日期",
-      "subscribers": "订阅者",
-      "winRate": "胜率"
-    },
-    "detail": {
-      "assetClass": "资产类别",
-      "author": "作者",
-      "commentPlaceholder": "写评论...",
-      "comments": "评论",
-      "description": "描述",
-      "getFree": "免费获取",
-      "rentPrice": "¥{{amount}} / 月",
-      "subscribers": "订阅者",
-      "yourRating": "我的评分"
-    },
-    "messages": {
-      "commentFailed": "评论失败",
-      "commentPosted": "评论已发布",
-      "loginFirst": "请先登录",
-      "paymentComingSoon": "支付功能即将上线",
-      "rateFailed": "评分失败",
-      "rated": "评分已提交",
-      "subscribeFailed": "失败",
-      "subscribed": "已添加到您的购买"
-    },
-    "payment": {
-      "alreadyPurchased": "您已拥有此策略。",
-      "balanceAfter": "购买后余额",
-      "cancel": "取消",
-      "confirm": "确认购买",
-      "depositPrompt": "请先充值后再继续。",
-      "goToDeposit": "充值",
-      "insufficientBalance": "余额不足",
-      "oneTimePurchase": "¥{{amount}} 一次性买断",
-      "price": "价格",
-      "purchaseFailed": "购买失败，请重试。",
-      "purchaseSuccess": "购买成功！策略已添加到您的库中。",
-      "purchasing": "处理中...",
-      "strategyName": "策略",
-      "title": "确认购买",
-      "walletBalance": "我的余额"
-    },
-    "purchases": {
-      "empty": "暂无购买记录。前往市场发现策略。",
-      "status": "状态",
-      "strategy": "策略"
-    },
-    "sort": {
-      "newest": "最新",
-      "performance": "最佳表现",
-      "popular": "最热门",
-      "priceAsc": "价格：从低到高",
-      "priceDesc": "价格：从高到低",
-      "rating": "最高评分",
-      "score": "综合评分"
-    },
-    "tabs": {
-      "author": "作者中心",
-      "marketplace": "策略市场",
-      "purchases": "我的购买",
-      "subscriptions": "我的订阅"
-    },
-    "empty": "暂无已发布策略",
-    "filterByClass": "按资产类别筛选",
-    "noSubscriptions": "暂无订阅",
-    "publish": "发布策略",
-    "searchPlaceholder": "搜索策略...",
-    "subtitle": "发现、购买和使用社区策略",
-    "title": "策略市场"
   },
   "symbolDetection": {
     "tradeMode": {
@@ -715,6 +1297,78 @@ const Base = {
     "yearly": "年付",
     "chargeNotice": "付费方案将从钱包扣款。免费方案不扣费。"
   },
+  "agent": {
+    "analysis": {
+      "title": "回测分析",
+      "sharpe": "夏普",
+      "drawdown": "最大回撤",
+      "winrate": "胜率",
+      "consistency": "一致性",
+      "risk_adj": "风险调整收益",
+      "overfitting": "过拟合风险",
+      "observations": "关键观察",
+      "suggestions": "改进建议",
+      "detailed": "详细分析"
+    },
+    "semantic_diff": {
+      "title": "策略 Changes",
+      "effect": "影响"
+    },
+    "profile": {
+      "title": "策略 Profile",
+      "timeframe": "时间周期",
+      "regime": "市场状态",
+      "indicators": "指标",
+      "entry": "入场",
+      "exit": "出场",
+      "risk": "Risk 管理",
+      "coverage": "覆盖范围",
+      "strengths": "优势",
+      "weaknesses": "劣势",
+      "blind_spots": "盲点"
+    }
+  },
+  "importAnalysis": {
+    "execution": {
+      "onBar": "K线收盘驱动",
+      "onTick": "逐笔驱动",
+      "onInitGrid": "初始化网格"
+    },
+    "sizing": {
+      "fixed": "固定手数",
+      "martingale": "马丁格尔",
+      "percentBalance": "余额百分比"
+    },
+    "analyzing": "正在分析策略结构...",
+    "tradeLogicComplete": "交易逻辑已全部识别",
+    "guiNoiseDesc": "以下盲区属于图表显示/按钮功能，服务端执行时跳过，不影响交易结果。可以安全导入。",
+    "cannotImport": "无法自动导入",
+    "incompleteCoverage": "交易逻辑覆盖不完整",
+    "goodCoverage": "导入覆盖率良好",
+    "goodCoverageDesc": "策略 main logic recognized. Safe to import. Check parameter list before use.",
+    "coverageTitle": "导入覆盖率",
+    "location": "位置",
+    "handling": "处理方式",
+    "userActionRequired": "需要您操作",
+    "noBlindSpots": "无需确认逻辑",
+    "noBlindSpotsDesc": "所有策略逻辑已自动识别，可以安全导入。"
+  },
+  "dashboard": {
+    "quickActions": {
+      "aiStrategy": "AI 策略"
+    }
+  },
+  "logs": {
+    "triggerSource": {
+      "manual": "手动",
+      "strategy": "策略",
+      "recovery": "恢复"
+    },
+    "result": {
+      "pass": "PASS",
+      "reject": "REJECT"
+    }
+  },
   "app": {
     "name": "AlphaForge"
   },
@@ -766,7 +1420,9 @@ const Base = {
     "strategies": "策略管理",
     "strategy": "策略",
     "strategyLibrary": "策略库",
+    "strategyLive": "实盘监控",
     "strategyWorkspace": "策略工作台",
+    "subscription": "订阅",
     "trading": "交易",
     "wallet": "钱包"
   },
@@ -829,7 +1485,8 @@ const Base = {
     "volume": "数量",
     "winRate": "胜率",
     "winningTrades": "盈利笔数",
-    "worstTrade": "最差交易"
+    "worstTrade": "最差交易",
+    "countUnit": "笔"
   },
   "topbar": {
     "logout": "退出登录",
@@ -838,6 +1495,48 @@ const Base = {
     "switchToAdmin": "切换到管理",
     "systemOk": "系统正常运行",
     "user": "普通用户"
+  },
+  "theme": {
+    "switchToDark": "切换到深色模式",
+    "switchToLight": "切换到浅色模式"
+  },
+  "monitoring": {
+    "unknown": "未知",
+    "healthy": "正常",
+    "title": "系统监控",
+    "sseConnected": "SSE 已连接",
+    "disconnected": "已断开",
+    "streamError": "Stream 错误",
+    "waitingData": "等待数据...",
+    "serviceHealth": "服务健康",
+    "uptime": "运行时长",
+    "database": "数据库",
+    "diskUsage": "磁盘使用",
+    "goRuntime": "Go运行时",
+    "goroutines": "Goroutines",
+    "gcCount": "GC次数",
+    "gcPauseAvg": "GC平均暂停",
+    "stackUsage": "栈使用",
+    "heapMemory": "堆内存",
+    "dbPool": "数据库连接池",
+    "totalConns": "总计",
+    "idle": "空闲",
+    "acquired": "已获取",
+    "mdGateway": "行情网关",
+    "spillFiles": "溢出文件",
+    "droppedBars": "丢弃 K 线",
+    "droppedSignals": "丢弃信号",
+    "consumerLag": "消费者延迟",
+    "staleAccounts": "过期账户",
+    "deadAccounts": "死账户",
+    "avgGapSec": "平均间隔 (秒)",
+    "maxGapSec": "最大间隔 (秒)",
+    "dlq": "死信队列 (DLQ)",
+    "parseErrors": "解析错误",
+    "bidGtAsk": "买价>卖价",
+    "nonPositive": "非正数",
+    "pushInterval": "推送间隔：5秒",
+    "lastUpdate": "最后更新"
   }
 } as const;
 export default Base;

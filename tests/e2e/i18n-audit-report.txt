@@ -1,0 +1,15 @@
+========== i18n AUDIT REPORT ==========
+Date: 2026-07-15T02:38:27.264Z
+Pages scanned: 31
+Issues found: 2
+========================================
+
+Hardcoded English strings found in zh-cn mode:
+
+  [Subscription] "Free" — context: "0
+钱包余额
+99.51504299
+Free
+0.00 / 月
+10,000 AI"
+  [Admin System Config] "Strategy" — context: "min_sample_size":1}	Strategy health grading thre"

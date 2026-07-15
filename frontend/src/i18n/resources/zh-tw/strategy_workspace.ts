@@ -46,10 +46,6 @@ const StrategyWorkspace = {
         "selectPlaceholder": "選擇範本...",
         "title": "模板"
       },
-      "chartIndicators": {
-        "overlay": "疊加指標（主圖）",
-        "subPane": "副圖指標"
-      },
       "memory": {
         "saveSuccess": "已儲存",
         "saveFailed": "儲存失敗",
@@ -119,6 +115,8 @@ const StrategyWorkspace = {
       "watchlist": "自选",
       "sendToAI": "發送給AI",
       "browseIndicators": "瀏覽指標",
+      "chartIndicatorsOverlay": "疊加指標（主圖）",
+      "chartIndicatorsSubPane": "副圖指標",
       "noCode": "沒有代碼可驗證",
       "compileError": "編譯錯誤",
       "validateFirst": "請先驗證代碼",

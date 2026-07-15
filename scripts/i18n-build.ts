@@ -104,12 +104,31 @@ function buildI18nextResource(
   const sortedFields = Object.entries(fieldMap.fields)
     .sort(([, a], [, b]) => (b.match(/\./g) || []).length - (a.match(/\./g) || []).length);
 
+  // Collect all paths that will be set, to detect conflicts
+  const allPaths = new Set<string>();
+  for (const [, i18nRelPath] of sortedFields) {
+    if (fieldMap.prefix === '__root__') {
+      allPaths.add(i18nRelPath);
+    } else {
+      allPaths.add(`${fieldMap.prefix}.${i18nRelPath}`);
+    }
+  }
+
   if (fieldMap.prefix === '__root__') {
     // Root-level keys (base.ts) — no prefix nesting
     const resource: Record<string, unknown> = {};
     for (const [protoField, i18nRelPath] of sortedFields) {
       const value = fields.get(protoField);
       if (value !== undefined) {
+        // Skip if this path is a prefix of another path (would overwrite nested object)
+        let isParentOfNested = false;
+        for (const p of allPaths) {
+          if (p !== i18nRelPath && p.startsWith(i18nRelPath + '.')) {
+            isParentOfNested = true;
+            break;
+          }
+        }
+        if (isParentOfNested) continue;
         setNested(resource, i18nRelPath, value);
       }
     }
@@ -129,6 +148,16 @@ function buildI18nextResource(
   for (const [protoField, i18nRelPath] of sortedFields) {
     const value = fields.get(protoField);
     if (value !== undefined) {
+      const fullPath = `${fieldMap.prefix}.${i18nRelPath}`;
+      // Skip if this path is a prefix of another path (would overwrite nested object)
+      let isParentOfNested = false;
+      for (const p of allPaths) {
+        if (p !== fullPath && p.startsWith(fullPath + '.')) {
+          isParentOfNested = true;
+          break;
+        }
+      }
+      if (isParentOfNested) continue;
       setNested(current, i18nRelPath, value);
     }
   }

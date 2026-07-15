@@ -46,10 +46,6 @@ const StrategyWorkspace = {
         "selectPlaceholder": "Select a template...",
         "title": "Template"
       },
-      "chartIndicators": {
-        "overlay": "Overlay (main chart)",
-        "subPane": "Sub-pane indicators"
-      },
       "memory": {
         "saveSuccess": "Saved",
         "saveFailed": "Save failed",
@@ -119,6 +115,8 @@ const StrategyWorkspace = {
       "watchlist": "Watchlist",
       "sendToAI": "Send to AI",
       "browseIndicators": "Browse Indicators",
+      "chartIndicatorsOverlay": "Overlay (main chart)",
+      "chartIndicatorsSubPane": "Sub-pane indicators",
       "noCode": "No code to validate",
       "compileError": "Compile error",
       "validateFirst": "Please validate code first",

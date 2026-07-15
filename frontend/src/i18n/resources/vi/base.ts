@@ -44,6 +44,9 @@ const Base = {
         "validateReject": "拒绝",
         "validateTotal": "总计"
       },
+      "errors": {
+        "loadFailed": "Tải dữ liệu bảng điều khiển thất bại"
+      },
       "activeUsers": "Người Dùng Hoạt Động",
       "loadFailed": "Tải dữ liệu bảng điều khiển thất bại",
       "mtAccounts": "TK MT",
@@ -52,7 +55,23 @@ const Base = {
       "title": "Bảng Điều Khiển Quản Trị",
       "todayProfit": "Lợi Nhuận Hôm Nay",
       "todayTrades": "Giao Dịch Hôm Nay",
-      "totalUsers": "Tổng Người Dùng"
+      "totalUsers": "Tổng Người Dùng",
+      "verifiedUsers": "Người dùng đã xác minh",
+      "activeSubs": "Gói đang hoạt động",
+      "monthlyRevenue": "Doanh thu hàng tháng",
+      "totalRevenue": "Tổng doanh thu",
+      "marketStrategies": "Chiến lược thị trường",
+      "marketSales": "Doanh số thị trường",
+      "marketRevenue": "Doanh thu thị trường",
+      "validateTotal": "Tổng xác thực",
+      "validatePass": "Xác thực đạt",
+      "validateReject": "Xác thực từ chối",
+      "validateError": "Lỗi xác thực",
+      "orderSendSuccess": "Gửi lệnh thành công",
+      "orderSendFailed": "Gửi lệnh thất bại",
+      "orderCloseSuccess": "Đóng lệnh thành công",
+      "orderCloseFailed": "Đóng lệnh thất bại",
+      "rejectCount": "Số lần từ chối"
     },
     "userManagement": {
       "drawer": {
@@ -126,7 +145,8 @@ const Base = {
         "userDisabled": "Đã vô hiệu người dùng",
         "userEnabled": "Đã kích hoạt người dùng",
         "userUpdateFailed": "Cập nhật người dùng thất bại",
-        "userUpdatedSuccess": "Đã cập nhật người dùng"
+        "userUpdatedSuccess": "Đã cập nhật người dùng",
+        "loadUsersFailed": "Không tải được người dùng"
       },
       "modals": {
         "createTitle": "Tạo Người Dùng",
@@ -214,7 +234,8 @@ const Base = {
       "title": "系统配置",
       "toggle": "切换",
       "updatedAt": "更新时间",
-      "value": "值"
+      "value": "值",
+      "apiKey": "API Key"
     },
     "jurisdiction": {
       "messages": {
@@ -260,6 +281,244 @@ const Base = {
       "userKYCStatus": "用户KYC状态",
       "verified": "Đã Xác Minh"
     },
+    "aiGateway": {
+      "errors": {
+        "loadProviders": "Không thể tải nhà cung cấp",
+        "toggleFailed": "Chuyển đổi thất bại",
+        "loadModels": "Không thể tải mô hình"
+      },
+      "columns": {
+        "baseUrl": "URL cơ sở",
+        "apiKey": "API Key"
+      },
+      "addProviderPending": "Tính năng thêm nhà cung cấp đang chờ backend hỗ trợ",
+      "title": "Quản lý AI Gateway",
+      "description": "Quản lý nhà cung cấp AI, mô hình và giá. Người dùng chọn mô hình có sẵn, tính phí token từ ví.",
+      "addProvider": "Thêm nhà cung cấp",
+      "provider": "Nhà cung cấp",
+      "configured": "Đã cấu hình",
+      "notConfigured": "Chưa cấu hình",
+      "models": "Mô hình",
+      "editProvider": "Sửa nhà cung cấp",
+      "providerId": "ID nhà cung cấp",
+      "providerIdRequired": "Vui lòng nhập Provider ID",
+      "displayName": "Tên hiển thị",
+      "displayNameRequired": "Vui lòng nhập tên hiển thị",
+      "baseUrl": "URL cơ sở",
+      "baseUrlRequired": "Vui lòng nhập Base URL",
+      "apiKeyLabel": "API Key",
+      "apiKeyEditHint": "Để trống để giữ khóa hiện tại",
+      "apiKeyHint": "API key, được mã hóa khi lưu trữ",
+      "apiKeyEditPlaceholder": "Để trống để giữ nguyên",
+      "editModel": "Sửa mô hình",
+      "addModel": "Thêm mô hình",
+      "modelName": "Tên mô hình",
+      "modelNameRequired": "Vui lòng nhập tên mô hình",
+      "priceInput": "Giá đầu vào ($/1M)",
+      "priceOutput": "Giá đầu ra ($/1M)",
+      "confirmDeleteModel": "Xóa mô hình này?",
+      "noModels": "Không có mô hình"
+    },
+    "account": {
+      "errors": {
+        "loadFailed": "Không thể tải tài khoản",
+        "freezeFailed": "Đóng băng thất bại",
+        "unfreezeFailed": "Mở khóa thất bại"
+      },
+      "columns": {
+        "id": "ID",
+        "user": "Người dùng",
+        "login": "Tên đăng nhập",
+        "type": "Loại",
+        "broker": "Môi giới",
+        "status": "Trạng thái",
+        "balance": "Số dư",
+        "createdAt": "Thời gian tạo",
+        "action": "Hành động",
+        "server": "Máy chủ",
+        "equity": "Vốn",
+        "margin": "Ký quỹ",
+        "time": "Thời gian",
+        "detail": "Chi tiết"
+      },
+      "frozen": "Tài khoản bị đóng băng",
+      "unfrozen": "Tài khoản đã được mở khóa",
+      "detail": "Chi tiết",
+      "unfreeze": "Mở khóa",
+      "confirmFreeze": "Đóng băng tài khoản này?",
+      "freeze": "Đóng băng",
+      "title": "Quản lý tài khoản",
+      "searchPlaceholder": "Tìm kiếm tài khoản",
+      "status": "Trạng thái",
+      "online": "Trực tuyến",
+      "offline": "Ngoại tuyến",
+      "auditLogs": "Nhật ký kiểm toán"
+    },
+    "settings": {
+      "columns": {
+        "key": "Khóa cài đặt",
+        "value": "Giá trị",
+        "action": "Hành động"
+      },
+      "saveSuccess": "Lưu thành công",
+      "saveFailed": "Lưu thất bại",
+      "deleted": "Đã xóa",
+      "deleteFailed": "Xóa thất bại",
+      "actionFailed": "Hành động thất bại",
+      "confirmDelete": "Xác nhận xóa?",
+      "title": "Cài đặt quản lý Agent",
+      "addSetting": "Thêm cài đặt",
+      "permissionRules": "Quy tắc quyền (permission.rule.N)",
+      "permissionFormat": "Định dạng:",
+      "permissionExample": "Ví dụ:",
+      "permissionAddRule": "Thêm quy tắc: tạo cài đặt với khóa",
+      "addManagedSetting": "Thêm cài đặt được quản lý",
+      "settingKey": "Khóa cài đặt",
+      "keyPlaceholder": "VD: allowed_models, disable_live_trading, permission.rule.1",
+      "valuePlaceholder": "VD: claude-sonnet-5,deepseek-v4"
+    },
+    "billing": {
+      "columns": {
+        "user": "Người dùng",
+        "plan": "Gói",
+        "status": "Trạng thái",
+        "cycle": "Chu kỳ",
+        "price": "Giá",
+        "autoRenew": "Tự động gia hạn",
+        "periodStart": "Bắt đầu kỳ",
+        "periodEnd": "Kết thúc kỳ",
+        "createdAt": "Ngày tạo",
+        "type": "Loại",
+        "amount": "Số tiền",
+        "balanceBefore": "Số dư trước",
+        "balanceAfter": "Số dư sau",
+        "description": "Mô tả",
+        "time": "Thời gian"
+      },
+      "title": "Quản lý thanh toán",
+      "monthlyRevenue": "Doanh thu hàng tháng",
+      "totalRevenue": "Tổng doanh thu",
+      "activeSubs": "Đăng ký đang hoạt động",
+      "txRecords": "Giao dịch",
+      "planRevenue": "Chi tiết doanh thu gói",
+      "activeCount": "Đang hoạt động",
+      "subscriptions": "Đăng ký",
+      "filterByPlan": "Lọc theo gói",
+      "planFree": "Miễn phí",
+      "planPro": "Pro",
+      "planEnterprise": "Doanh nghiệp",
+      "filterByStatus": "Lọc theo trạng thái",
+      "statusActive": "Đang hoạt động",
+      "statusCancelled": "Đã hủy",
+      "statusExpired": "Đã hết hạn",
+      "walletTransactions": "Giao dịch ví",
+      "filterByType": "Lọc theo loại",
+      "txPurchase": "Mua",
+      "txSale": "Bán",
+      "txPlatformFee": "Phí nền tảng",
+      "txDeposit": "Nạp tiền",
+      "txWithdrawal": "Rút tiền"
+    },
+    "logs": {
+      "columns": {
+        "time": "Thời gian",
+        "module": "Mô-đun",
+        "actionType": "Loại hành động",
+        "target": "Mục tiêu",
+        "status": "Trạng thái",
+        "ip": "Địa chỉ IP",
+        "action": "Hành động",
+        "details": "Chi tiết"
+      },
+      "modules": {
+        "userManagement": "Quản lý người dùng",
+        "accountManagement": "Quản lý tài khoản",
+        "trading": "Giao dịch",
+        "systemConfig": "Cấu hình hệ thống"
+      },
+      "errors": {
+        "loadFailed": "Tải nhật ký thất bại"
+      },
+      "actions": {
+        "create": "Tạo",
+        "update": "Cập nhật",
+        "delete": "Xóa",
+        "disable": "Vô hiệu hóa",
+        "enable": "Kích hoạt",
+        "freeze": "Đóng băng",
+        "unfreeze": "Bỏ đóng băng"
+      },
+      "title": "Nhật ký hoạt động",
+      "filterModule": "Lọc theo mô-đun",
+      "filterAction": "Lọc theo hành động"
+    },
+    "deposit": {
+      "table": {
+        "user": "Người dùng",
+        "amount": "Số tiền USDT",
+        "amountUsd": "Tín dụng USD",
+        "txHash": "Tx Hash",
+        "status": "Trạng thái",
+        "reviewNote": "Ghi chú duyệt",
+        "time": "Thời gian",
+        "action": "Hành động"
+      },
+      "approved": "Nạp tiền đã được phê duyệt và ví đã được ghi có.",
+      "approveFailed": "Phê duyệt nạp tiền thất bại.",
+      "rejected": "Nạp tiền đã bị từ chối.",
+      "rejectFailed": "Từ chối nạp tiền thất bại.",
+      "approve": "Phê duyệt",
+      "reject": "Từ chối",
+      "title": "Quản lý nạp tiền",
+      "allStatuses": "Tất cả trạng thái",
+      "statusPending": "Đang chờ",
+      "statusApproved": "Đã phê duyệt",
+      "statusRejected": "Đã từ chối",
+      "approveTitle": "Phê duyệt nạp tiền",
+      "rejectTitle": "Từ chối nạp tiền",
+      "reviewNoteLabel": "Ghi chú duyệt (tùy chọn)",
+      "reviewNotePlaceholder": "Thêm ghi chú cho lần duyệt này...",
+      "approveWarning": "Phê duyệt sẽ cộng tiền vào ví người dùng ngay lập tức."
+    },
+    "wallet": {
+      "errors": {
+        "noUserSelected": "Chưa chọn người dùng"
+      },
+      "messages": {
+        "adjustSuccess": "Điều chỉnh số dư thành công",
+        "adjustFailed": "Điều chỉnh thất bại"
+      },
+      "columns": {
+        "walletNumber": "Số Ví",
+        "email": "Email",
+        "nickname": "Biệt danh",
+        "type": "Loại",
+        "amount": "Số tiền",
+        "balanceAfter": "Số dư sau",
+        "description": "Mô tả",
+        "time": "Thời gian",
+        "balance": "Số dư",
+        "frozen": "Đã đóng băng",
+        "currency": "Tiền tệ"
+      },
+      "accountNumber": "Số TK",
+      "add": "Thêm",
+      "adjustBalance": "Điều Chỉnh Số Dư",
+      "adjustFailed": "Điều chỉnh thất bại",
+      "adjustSuccess": "Đã điều chỉnh số dư",
+      "deduct": "Trừ",
+      "noUsers": "Không tìm thấy người dùng",
+      "reason": "Lý do điều chỉnh...",
+      "searchPlaceholder": "Tìm theo email hoặc số tài khoản...",
+      "title": "Quản Lý Ví",
+      "walletFor": "Ví của",
+      "unassigned": "Chưa gán",
+      "userList": "Danh sách người dùng",
+      "noMatch": "Không có người dùng khớp",
+      "walletDetail": "Chi tiết ví",
+      "transactions": "Giao dịch",
+      "adjustReason": "Lý do"
+    },
     "header": {
       "admin": "管理",
       "adminMode": "管理员模式",
@@ -269,10 +528,17 @@ const Base = {
     },
     "sidebar": {
       "accountManagement": "Quản Lý Tài Khoản",
+      "agentSettings": "Cài Đặt Agent",
+      "aiGateway": "Cổng AI",
+      "billing": "Quản Lý Thanh Toán",
       "dashboard": "Bảng điều khiển",
+      "deposits": "Quản Lý Nạp Tiền",
       "jurisdiction": "Kiểm Soát Quyền Hạn",
+      "monitoring": "Giám Sát & Cảnh Báo",
       "operationLogs": "Nhật Ký Thao Tác",
       "shareManagement": "Phân Tích Chia Sẻ",
+      "sre": "Điều Khiển SRE",
+      "strategies": "Quản Lý Chiến Lược",
       "systemConfig": "Cấu Hình Hệ Thống",
       "tradingMonitor": "Giám Sát Giao Dịch",
       "userManagement": "Quản Lý Người Dùng",
@@ -299,18 +565,12 @@ const Base = {
       "totalVolume": "Tổng Khối Lượng",
       "volume": "Khối Lượng"
     },
-    "wallet": {
-      "accountNumber": "Số TK",
-      "add": "Thêm",
-      "adjustBalance": "Điều Chỉnh Số Dư",
-      "adjustFailed": "Điều chỉnh thất bại",
-      "adjustSuccess": "Đã điều chỉnh số dư",
-      "deduct": "Trừ",
-      "noUsers": "Không tìm thấy người dùng",
-      "reason": "Lý do điều chỉnh...",
-      "searchPlaceholder": "Tìm theo email hoặc số tài khoản...",
-      "title": "Quản Lý Ví",
-      "walletFor": "Ví của"
+    "walletCalculator": {
+      "title": "Máy tính Token ↔ USD",
+      "selectModel": "Chọn mô hình (cơ sở định giá)",
+      "usdAmount": "Số tiền USD",
+      "tokenAmount": "Số lượng Token",
+      "fillResult": "Điền kết quả"
     }
   },
   "autoTrading": {
@@ -350,8 +610,8 @@ const Base = {
       "activeStrategies": "Chiến Lược Đang Hoạt Động",
       "disabled": "Giao Dịch Tự Động Đã Tắt",
       "enabled": "Giao Dịch Tự Động Đã Bật",
-      "todayExecutions": "Today's Executions",
-      "todayProfit": "Today's Profit"
+      "todayExecutions": "Lệnh hôm nay",
+      "todayProfit": "Lợi nhuận hôm nay"
     },
     "title": "Giao Dịch Tự Động"
   },
@@ -371,7 +631,7 @@ const Base = {
         "title": "Thực thi Chiến lược"
       },
       "strategySignal": {
-        "message": "{{symbol}} triggered {{signalType}}",
+        "message": "{{symbol}} kích hoạt {{signalType}}",
         "title": "Tín hiệu Chiến lược"
       }
     },
@@ -400,7 +660,32 @@ const Base = {
     "unread": "Chưa đọc"
   },
   "wallet": {
-    "deposit": "Nạp Tiền",
+    "deposit": {
+      "table": {
+        "amount": "Số Tiền USDT",
+        "amountUsd": "USD Nhận",
+        "status": "Trạng Thái",
+        "time": "Thời Gian",
+        "txHash": "Mã GD"
+      },
+      "address": "Địa Chỉ Nhận",
+      "addressCopied": "Đã sao chép địa chỉ vào clipboard",
+      "amountLabel": "Số Tiền USDT",
+      "button": "Nạp Tiền Mới",
+      "copy": "Sao Chép",
+      "exchangeRate": "Tỷ Giá",
+      "failed": "Gửi yêu cầu nạp tiền thất bại.",
+      "history": "Lịch Sử Nạp",
+      "modalTitle": "Gửi Yêu Cầu Nạp Tiền",
+      "network": "Mạng",
+      "notConfigured": "Nạp USDT chưa được cấu hình. Vui lòng liên hệ hỗ trợ.",
+      "notice": "Chỉ gửi USDT qua mạng được chỉ định. Gửi token khác hoặc sử dụng mạng khác có thể gây mất vĩnh viễn. Sau khi gửi, hãy gửi yêu cầu nạp tiền với số tiền và mã giao dịch tùy chọn để quản trị viên xem xét.",
+      "submit": "Gửi",
+      "success": "Yêu cầu nạp tiền đã được gửi. Vui lòng chờ quản trị viên xem xét.",
+      "title": "Nạp Tiền",
+      "txHashLabel": "Mã giao dịch (tùy chọn)",
+      "willCredit": "Sẽ nhận"
+    },
     "table": {
       "amount": "Số Tiền",
       "balanceAfter": "Số Dư Sau",
@@ -425,11 +710,369 @@ const Base = {
     "transactions": "Giao Dịch",
     "withdraw": "Rút Tiền"
   },
+  "strategy": {
+    "workspace": {
+      "chartIndicators": {
+        "overlay": "Chỉ báo chồng (biểu đồ chính)",
+        "subPane": "Chỉ báo khung phụ"
+      }
+    },
+    "tuning": {
+      "searchMethod": {
+        "grid": "Lưới",
+        "random": "Ngẫu nhiên"
+      }
+    },
+    "backtest": {
+      "canceled": "Backtest bị hủy",
+      "lotSize": "Khối lượng lô",
+      "strategyParameters": "Tham số chiến lược"
+    },
+    "chat": {
+      "executionPlan": "Kế hoạch thực hiện",
+      "codeGenerated": "Đã tạo mã. Sử dụng các nút bên dưới để chạy đánh giá chiến lược và backtest."
+    },
+    "aiChat": {
+      "historyTab": "Lịch sử",
+      "strategiesTab": "Chiến lược"
+    },
+    "templates": {
+      "title": "Mẫu Chiến lược",
+      "saveCurrent": "Lưu Chiến lược Hiện tại",
+      "lines": "dòng",
+      "chatEdit": "Chỉnh sửa Chat",
+      "source": "Nguồn",
+      "rename": "Đổi tên",
+      "confirmDelete": "Xóa chiến lược này?",
+      "noTemplates": "Không có mẫu chiến lược đã lưu",
+      "sourceCode": "Mã nguồn Chiến lược",
+      "copyAll": "Sao chép tất cả"
+    },
+    "live": {
+      "stopSuccess": "Chiến lược đã dừng",
+      "stopFailed": "Dừng thất bại",
+      "runId": "ID Lần chạy",
+      "account": "Tài khoản",
+      "symbol": "Mã giao dịch",
+      "timeframe": "Khung thời gian",
+      "mode": "Chế độ",
+      "signals": "Tín hiệu",
+      "errors": "Lỗi",
+      "startedAt": "Bắt đầu",
+      "watchSignals": "Xem Tín hiệu",
+      "confirmStop": "Dừng chiến lược này?",
+      "status": "Trạng thái",
+      "totalSignals": "Tổng Tín hiệu",
+      "stoppedAt": "Thời gian dừng",
+      "error": "Lỗi",
+      "title": "Giám sát Chiến lược Trực tiếp",
+      "activeTab": "Các lần chạy Đang hoạt động",
+      "noActive": "Không có chiến lược đang hoạt động",
+      "historyTab": "Lịch sử Chạy",
+      "noRuns": "Không có lần chạy chiến lược nào",
+      "schedulesTab": "Lịch trình",
+      "time": "Thời gian",
+      "signalType": "Loại",
+      "volume": "Khối lượng",
+      "price": "Giá",
+      "sl": "SL",
+      "tp": "TP",
+      "reason": "Lý do",
+      "signalLog": "Nhật ký tín hiệu",
+      "waitingSignals": "Đang chờ tín hiệu..."
+    },
+    "schedule": {
+      "maxPositionsPlaceholder": "Không giới hạn"
+    },
+    "ai": {
+      "reviseHint": "Viết mã trước, sau đó yêu cầu AI cải thiện.",
+      "explainHint": "Viết mã để xem giải thích từ AI.",
+      "settingsHint": "Cấu hình nhà cung cấp AI và mô hình"
+    },
+    "validate": {
+      "running": "Đang xác thực...",
+      "errors": "Lỗi",
+      "warnings": "Cảnh báo",
+      "fixWithAI": "Gửi lỗi cho AI Sửa đổi",
+      "parameters": "Tham số",
+      "hints": "Gợi ý",
+      "allClear": "Tất cả kiểm tra đã thông qua — không tìm thấy vấn đề",
+      "passed": "Xác nhận thành công — Chức năng Lưu đã được mở khóa"
+    },
+    "importEA": {
+      "writeTab": "Mã Chiến lược",
+      "importTab": "Nhập EA",
+      "codeTooShort": "Vui lòng dán mã nguồn EA/chỉ báo đầy đủ.",
+      "pastePlaceholder": "Dán mã EA MQL4/MQL5...",
+      "migration": "Nhập chiến lược",
+      "aiTranslate": "AI Dịch",
+      "bridge": "Cầu nối điểm mù",
+      "analyze": "Phân tích cấu trúc chiến lược",
+      "confirmImport": "Xác nhận nhập",
+      "tryAI": "Bổ sung bản dịch AI",
+      "apply": "Áp dụng vào Trình soạn thảo",
+      "importSuccess": "'Mã nguồn MQL đã được nhập, nhấp vào「Apply to Editor」để ghi vào trình soạn thảo'",
+      "hint": "Dán mã MQL4/MQL5 và nhấp Phân tích",
+      "translate": "Dịch sang Go",
+      "translating": "AI đang dịch...",
+      "bridgeBtn": "Dịch cầu nối điểm mù",
+      "bridgeSuccess": "Cầu nối thành công",
+      "bridgeFailedTag": "Cầu nối thất bại",
+      "bridging": "AI đang bắc cầu điểm mù...",
+      "bridgeFailedMsg": "Agent không thể tự động bắc cầu tất cả điểm mù",
+      "noBridgeNeeded": "Độ phủ 100%, không cần bridge",
+      "bridgeHint": "Dán mã EA MQL4/MQL5, AI sẽ tự động chuyển vùng mù thành tập con Python"
+    },
+    "version": {
+      "loadFailed": "Không tải được các phiên bản",
+      "rollbackFailed": "Khôi phục thất bại",
+      "loadVersionFailed": "Không thể tải phiên bản",
+      "loadDiffFailed": "Không thể tải sự khác biệt (diff)",
+      "colVersion": "Phiên bản",
+      "colSummary": "Tóm tắt thay đổi",
+      "colLang": "Ngôn ngữ",
+      "colHash": "Hash",
+      "colDate": "Ngày",
+      "colActions": "Hành động",
+      "title": "Lịch sử phiên bản",
+      "diff": "Khác biệt",
+      "empty": "Chưa có lịch sử phiên bản",
+      "history": "Lịch sử phiên bản"
+    }
+  },
+  "accounts": {
+    "bind": {
+      "fields": {
+        "alias": "Bí danh Tài khoản"
+      },
+      "placeholders": {
+        "alias": "Tên tùy chỉnh (tùy chọn)"
+      },
+      "messages": {
+        "changeCredentials": "Thay đổi thông tin đăng nhập"
+      }
+    },
+    "messages": {
+      "shareLinkCopied": "Đã sao chép liên kết chia sẻ",
+      "shareLinkFailed": "Tạo liên kết chia sẻ thất bại"
+    }
+  },
+  "sre": {
+    "breakers": {
+      "columns": {
+        "strategyId": "ID Chiến lược",
+        "state": "Trạng thái",
+        "totalPnl": "Tổng P&L",
+        "lossPercent": "Tỷ lệ lỗ %",
+        "tradeCount": "Số giao dịch",
+        "trippedAt": "Ngắt lúc",
+        "tripReason": "Lý do ngắt"
+      },
+      "title": "Bộ ngắt mạch chiến lược",
+      "stateClosed": "Bình thường",
+      "stateOpen": "Ngắt",
+      "stateHalfOpen": "Bán mở (đang thăm dò)",
+      "confirmReset": "Đặt lại bộ ngắt này?",
+      "description": "Tổng quan trạng thái bộ ngắt chiến lược — tự động phát hiện thua lỗ bất thường và ngắt",
+      "noBreakers": "Không có bộ ngắt nào được đăng ký"
+    },
+    "canary": {
+      "columns": {
+        "strategyId": "ID chiến lược",
+        "versionTag": "Tag phiên bản",
+        "accounts": "Tài khoản Canary",
+        "startAt": "Bắt đầu lúc",
+        "days": "Ngày",
+        "status": "Trạng thái"
+      },
+      "promoted": "Đã phát hành",
+      "canarying": "Đang Canary",
+      "confirmDelete": "Xóa cấu hình canary này?",
+      "title": "Cấu hình Canary",
+      "description": "Phiên bản chiến lược mới chạy trên một số tài khoản trong N ngày trước khi triển khai cho tất cả",
+      "newCanary": "Canary mới",
+      "noCanaries": "Không có cấu hình canary nào",
+      "newCanaryTitle": "Canary mới",
+      "accountIdsLabel": "ID tài khoản Canary (phân cách bằng dấu phẩy hoặc xuống dòng)",
+      "durationDays": "Số ngày Canary"
+    },
+    "killSwitch": {
+      "description": "Dừng tất cả giao dịch chỉ bằng một cú nhấp — yêu cầu xác nhận KILL; có thể hoàn tác trong 5 phút",
+      "engaged": "Công tắc khẩn cấp đã kích hoạt — tất cả giao dịch đã dừng",
+      "disarmed": "Công tắc khẩn cấp đã tắt — giao dịch bình thường",
+      "status": "Trạng thái",
+      "reason": "Lý do",
+      "operator": "Người vận hành",
+      "engagedAt": "Kích hoạt lúc",
+      "undo": "Hoàn tác công tắc khẩn cấp",
+      "disengage": "Tắt công tắc khẩn cấp",
+      "engage": "Kích hoạt công tắc khẩn cấp",
+      "confirmTitle": "Kích hoạt Công tắc Khẩn cấp — Xác nhận",
+      "confirmEngage": "Xác nhận kích hoạt",
+      "confirmWarning": "Hành động này sẽ ngay lập tức dừng mọi hoạt động giao dịch cho tất cả tài khoản, bao gồm các lệnh đang chờ và đã gửi. Nhập lý do và gõ KILL để xác nhận.",
+      "reasonLabel": "Lý do (bắt buộc)",
+      "reasonPlaceholder": "v.d.: Phát hiện biến động thị trường bất thường, dừng khẩn cấp tất cả giao dịch",
+      "typeKill": "Gõ KILL để xác nhận",
+      "typeKillPlaceholder": "Gõ KILL (chữ hoa)"
+    }
+  },
+  "marketplace": {
+    "publish": {
+      "priceModel": {
+        "free": "Miễn phí",
+        "monthly": "Đăng ký hàng tháng",
+        "once": "Mua một lần",
+        "label": "Giá cả"
+      },
+      "assetClass": {
+        "label": "Loại tài sản"
+      },
+      "riskLevel": {
+        "label": "Mức độ rủi ro"
+      },
+      "return": "Lợi nhuận",
+      "winRate": "Tỷ lệ thắng",
+      "trades": "Giao dịch",
+      "title": "Xuất bản lên Thị trường",
+      "titleLabel": "Tiêu đề",
+      "titlePlaceholder": "ví dụ: Chiến lược Golden Cross",
+      "descriptionLabel": "Mô tả",
+      "descriptionPlaceholder": "Mô tả logic chiến lược, quy tắc vào/ra lệnh...",
+      "priceAmount": "Số tiền",
+      "tags": "Thẻ",
+      "tagsPlaceholder": "Nhập và nhấn Enter để thêm thẻ",
+      "codeSnippet": "Xem trước Chiến lược (công khai)",
+      "codeSnippetPlaceholder": "'Tùy chọn: chia sẻ đoạn mã hoặc ý tưởng cấp cao về chiến lược (hiển thị cho tất cả)'",
+      "includeBacktestSnapshot": "Bao gồm kết quả backtest gần nhất"
+    },
+    "author": {
+      "avgRating": "Đánh Giá TB",
+      "empty": "Chưa có chiến lược nào được xuất bản. Vào Thư Viện Chiến Lược để xuất bản.",
+      "published": "Đã Xuất Bản",
+      "myStrategies": "Chiến lược Đã Phát hành",
+      "publishNew": "Phát hành Chiến lược Mới",
+      "monthlyRevenue": "Doanh thu Hàng tháng",
+      "totalRevenue": "Tổng Doanh thu",
+      "goToLibrary": "Đến Thư viện Chiến lược"
+    },
+    "card": {
+      "by": "của",
+      "free": "Miễn Phí",
+      "owned": "Ngày Mua",
+      "subscribers": "Người Đăng Ký",
+      "winRate": "Tỷ Lệ Thắng",
+      "yourStrategy": "Chiến lược của Bạn"
+    },
+    "detail": {
+      "assetClass": "Loại Tài Sản",
+      "author": "Tác Giả",
+      "commentPlaceholder": "Viết bình luận...",
+      "comments": "Bình Luận",
+      "description": "Mô Tả",
+      "getFree": "Nhận Miễn Phí",
+      "rentPrice": "¥{{amount}} / tháng",
+      "subscribers": "Người Đăng Ký",
+      "yourRating": "Đánh Giá Của Bạn",
+      "runBacktest": "Chạy Backtest"
+    },
+    "messages": {
+      "commentFailed": "Bình luận thất bại",
+      "commentPosted": "Đã đăng bình luận",
+      "loginFirst": "Vui lòng đăng nhập trước",
+      "paymentComingSoon": "Thanh toán sắp ra mắt",
+      "rateFailed": "Đánh giá thất bại",
+      "rated": "Đã gửi đánh giá",
+      "subscribeFailed": "Thất Bại",
+      "subscribed": "Đã thêm vào mục đã mua",
+      "published": "Chiến lược đã được xuất bản lên thị trường!",
+      "publishFailed": "Xuất bản chiến lược thất bại"
+    },
+    "payment": {
+      "alreadyPurchased": "Bạn đã sở hữu chiến lược này.",
+      "balanceAfter": "Số dư sau khi mua",
+      "cancel": "Hủy",
+      "confirm": "Xác Nhận Mua",
+      "depositPrompt": "Vui lòng nạp tiền để tiếp tục.",
+      "goToDeposit": "Nạp Tiền",
+      "insufficientBalance": "Số dư không đủ",
+      "oneTimePurchase": "¥{{amount}} mua đứt",
+      "price": "Giá",
+      "purchaseFailed": "Mua thất bại. Vui lòng thử lại.",
+      "purchaseSuccess": "Mua thành công! Chiến lược đã được thêm vào thư viện.",
+      "purchasing": "Đang xử lý...",
+      "strategyName": "Chiến Lược",
+      "title": "Xác Nhận Mua",
+      "walletBalance": "Số Dư Của Bạn"
+    },
+    "purchases": {
+      "empty": "Chưa có giao dịch mua nào. Duyệt chợ để tìm chiến lược.",
+      "status": "Trạng Thái",
+      "strategy": "Chiến Lược",
+      "runBacktest": "Chạy Backtest"
+    },
+    "sort": {
+      "newest": "Mới Nhất",
+      "performance": "Hiệu Suất Tốt Nhất",
+      "popular": "Phổ Biến Nhất",
+      "priceAsc": "Giá: Thấp đến Cao",
+      "priceDesc": "Giá: Cao đến Thấp",
+      "rating": "Đánh Giá Cao Nhất",
+      "score": "Điểm Tổng Hợp"
+    },
+    "tabs": {
+      "author": "Trung Tâm Tác Giả",
+      "marketplace": "Chợ",
+      "purchases": "Đã Mua",
+      "subscriptions": "Đăng Ký"
+    },
+    "backtest": {
+      "title": "Backtest Chiến lược",
+      "capital": "Vốn",
+      "commission": "Hoa hồng",
+      "leverage": "Đòn bẩy",
+      "completed": "Đã hoàn thành",
+      "totalReturn": "Tổng Lợi nhuận",
+      "maxDrawdown": "Sụt giảm Tối đa",
+      "sharpe": "Sharpe",
+      "winRate": "Tỷ lệ Thắng",
+      "totalTrades": "Tổng số Giao dịch",
+      "equityCurve": "Đường cong Vốn",
+      "protected": "Mã chiến lược được bảo vệ. Backtest chạy trên máy chủ của chúng tôi.",
+      "run": "Chạy Backtest",
+      "idle": "Thiết lập tham số và chạy backtest"
+    },
+    "empty": "Chưa có chiến lược nào được xuất bản",
+    "filterByClass": "Lọc theo loại tài sản",
+    "noSubscriptions": "Chưa có đăng ký nào",
+    "searchPlaceholder": "Tìm kiếm chiến lược...",
+    "subtitle": "Khám phá, mua và sử dụng chiến lược cộng đồng",
+    "title": "Chợ Chiến Lược"
+  },
+  "onboarding": {
+    "step1": {
+      "title": "Liên kết tài khoản",
+      "desc": "Liên kết tài khoản giao dịch MT4/MT5 để bắt đầu.",
+      "action": "Liên kết tài khoản"
+    },
+    "step2": {
+      "title": "Tạo chiến lược đầu tiên",
+      "desc": "Sử dụng AI để tạo chiến lược giao dịch từ ngôn ngữ tự nhiên.",
+      "action": "Mở không gian làm việc"
+    },
+    "step3": {
+      "title": "Nâng cấp gói",
+      "desc": "Mở khóa thêm AI tokens, chiến lược và giao dịch trực tiếp.",
+      "action": "Xem các gói"
+    },
+    "subtitle": "Bắt đầu chỉ với 3 bước đơn giản",
+    "dismiss": "Đã hiểu, bỏ qua"
+  },
   "auth": {
     "fields": {
       "confirmPassword": "确认密码",
       "email": "用户邮箱",
-      "password": "Mật Khẩu"
+      "password": "Mật Khẩu",
+      "login": "Email/Tài khoản"
     },
     "forgotPassword": {
       "backToLogin": "返回登录",
@@ -466,7 +1109,8 @@ const Base = {
       "emailRequired": "Vui lòng nhập email",
       "passwordMin8": "Mật khẩu phải có ít nhất 8 ký tự",
       "passwordMismatch": "Mật khẩu không khớp",
-      "passwordRequired": "Vui lòng nhập mật khẩu"
+      "passwordRequired": "Vui lòng nhập mật khẩu",
+      "loginRequired": "Vui lòng nhập email hoặc số tài khoản của bạn"
     }
   },
   "common": {
@@ -515,7 +1159,7 @@ const Base = {
     "noData": "Không có dữ liệu",
     "noOpenPositionsForSymbol": "Không có vị thế mở cho {{symbol}}",
     "none": "Không có",
-    "ok": "OK",
+    "ok": "Đồng ý",
     "operationFailed": "操作失败",
     "pageError": "Lỗi trang",
     "pageUnderDevelopment": "此页面开发中",
@@ -542,7 +1186,22 @@ const Base = {
     "yes": "Có",
     "you": "Bạn",
     "unsaved": "Chưa lưu",
-    "saved": "Đã lưu"
+    "saved": "Đã lưu",
+    "unknownError": "Lỗi không xác định",
+    "duplicateName": "Tên đã tồn tại",
+    "step1Label": "Sàn giao dịch",
+    "step2Label": "Thông tin đăng nhập",
+    "step3Label": "Xác nhận",
+    "unit": "đơn vị",
+    "action": "Hành động",
+    "on": "Bật",
+    "off": "Tắt",
+    "true": "Đúng",
+    "false": "Sai",
+    "success": "Thành công",
+    "failed": "Thất bại",
+    "reset": "Đặt lại",
+    "saving": "Đang lưu..."
   },
   "errors": {
     "ai": {
@@ -564,7 +1223,9 @@ const Base = {
       "provider_required": "Vui lòng chọn nhà cung cấp",
       "provider_returned_empty_message": "Nhà cung cấp AI trả về thông điệp rỗng",
       "rate_limited": "AI bị giới hạn tốc độ hoặc hết hạn mức (429/resource exhausted). Vui lòng thử lại sau.",
-      "request_failed": "Yêu cầu API thất bại"
+      "request_failed": "Yêu cầu API thất bại",
+      "insufficient_balance_title": "Số dư không đủ",
+      "insufficient_balance": "Số dư ví AI của bạn không đủ. Vui lòng nạp thêm trước khi tiếp tục."
     },
     "connection_failed": {
       "content": "无法连接到服务器，请检查网络后重试。",
@@ -582,85 +1243,6 @@ const Base = {
     "schedule_service_not_available": "Dịch vụ lịch biểu không khả dụng",
     "translate_failed": "Dịch thất bại",
     "user_not_found": "Không tìm thấy người dùng"
-  },
-  "marketplace": {
-    "author": {
-      "avgRating": "Đánh Giá TB",
-      "empty": "Chưa có chiến lược nào được xuất bản. Vào Thư Viện Chiến Lược để xuất bản.",
-      "published": "Đã Xuất Bản"
-    },
-    "card": {
-      "by": "by",
-      "free": "Miễn Phí",
-      "owned": "Ngày Mua",
-      "subscribers": "Người Đăng Ký",
-      "winRate": "Tỷ Lệ Thắng"
-    },
-    "detail": {
-      "assetClass": "Loại Tài Sản",
-      "author": "Tác Giả",
-      "commentPlaceholder": "Viết bình luận...",
-      "comments": "Bình Luận",
-      "description": "Mô Tả",
-      "getFree": "Nhận Miễn Phí",
-      "rentPrice": "¥{{amount}} / tháng",
-      "subscribers": "Người Đăng Ký",
-      "yourRating": "Đánh Giá Của Bạn"
-    },
-    "messages": {
-      "commentFailed": "Bình luận thất bại",
-      "commentPosted": "Đã đăng bình luận",
-      "loginFirst": "Vui lòng đăng nhập trước",
-      "paymentComingSoon": "Thanh toán sắp ra mắt",
-      "rateFailed": "Đánh giá thất bại",
-      "rated": "Đã gửi đánh giá",
-      "subscribeFailed": "Thất Bại",
-      "subscribed": "Đã thêm vào mục đã mua"
-    },
-    "payment": {
-      "alreadyPurchased": "Bạn đã sở hữu chiến lược này.",
-      "balanceAfter": "Số dư sau khi mua",
-      "cancel": "Hủy",
-      "confirm": "Xác Nhận Mua",
-      "depositPrompt": "Vui lòng nạp tiền để tiếp tục.",
-      "goToDeposit": "Nạp Tiền",
-      "insufficientBalance": "Số dư không đủ",
-      "oneTimePurchase": "¥{{amount}} mua đứt",
-      "price": "Giá",
-      "purchaseFailed": "Mua thất bại. Vui lòng thử lại.",
-      "purchaseSuccess": "Mua thành công! Chiến lược đã được thêm vào thư viện.",
-      "purchasing": "Đang xử lý...",
-      "strategyName": "Chiến Lược",
-      "title": "Xác Nhận Mua",
-      "walletBalance": "Số Dư Của Bạn"
-    },
-    "purchases": {
-      "empty": "Chưa có giao dịch mua nào. Duyệt chợ để tìm chiến lược.",
-      "status": "Trạng Thái",
-      "strategy": "Chiến Lược"
-    },
-    "sort": {
-      "newest": "Mới Nhất",
-      "performance": "Hiệu Suất Tốt Nhất",
-      "popular": "Phổ Biến Nhất",
-      "priceAsc": "Giá: Thấp đến Cao",
-      "priceDesc": "Giá: Cao đến Thấp",
-      "rating": "Đánh Giá Cao Nhất",
-      "score": "Điểm Tổng Hợp"
-    },
-    "tabs": {
-      "author": "Trung Tâm Tác Giả",
-      "marketplace": "Chợ",
-      "purchases": "Đã Mua",
-      "subscriptions": "Đăng Ký"
-    },
-    "empty": "Chưa có chiến lược nào được xuất bản",
-    "filterByClass": "Lọc theo loại tài sản",
-    "noSubscriptions": "Chưa có đăng ký nào",
-    "publish": "Xuất Bản Chiến Lược",
-    "searchPlaceholder": "Tìm kiếm chiến lược...",
-    "subtitle": "Khám phá, mua và sử dụng chiến lược cộng đồng",
-    "title": "Chợ Chiến Lược"
   },
   "symbolDetection": {
     "tradeMode": {
@@ -715,14 +1297,86 @@ const Base = {
     "yearly": "Hàng Năm",
     "chargeNotice": "Gói trả phí sẽ được trừ từ ví. Gói miễn phí không tính phí."
   },
+  "agent": {
+    "analysis": {
+      "title": "Phân tích Backtest",
+      "sharpe": "Sharpe",
+      "drawdown": "DD",
+      "winrate": "Tỷ lệ thắng",
+      "consistency": "Tính nhất quán",
+      "risk_adj": "Lợi nhuận điều chỉnh rủi ro",
+      "overfitting": "Rủi ro quá khớp",
+      "observations": "Quan sát chính",
+      "suggestions": "Đề xuất cải thiện",
+      "detailed": "Phân tích chi tiết"
+    },
+    "semantic_diff": {
+      "title": "Thay đổi Chiến lược",
+      "effect": "Tác động"
+    },
+    "profile": {
+      "title": "Hồ sơ Chiến lược",
+      "timeframe": "Khung thời gian",
+      "regime": "Chế độ thị trường",
+      "indicators": "Chỉ báo",
+      "entry": "Điểm vào",
+      "exit": "Điểm thoát",
+      "risk": "Quản lý rủi ro",
+      "coverage": "Mức bao phủ",
+      "strengths": "Điểm mạnh",
+      "weaknesses": "Điểm yếu",
+      "blind_spots": "Điểm mù"
+    }
+  },
+  "importAnalysis": {
+    "execution": {
+      "onBar": "Thực thi khi nến đóng",
+      "onTick": "Thực thi theo tick",
+      "onInitGrid": "Khởi tạo lưới"
+    },
+    "sizing": {
+      "fixed": "Khối lượng cố định",
+      "martingale": "Martingale",
+      "percentBalance": "% số dư"
+    },
+    "analyzing": "Đang phân tích cấu trúc chiến lược...",
+    "tradeLogicComplete": "Logic giao dịch đã được nhận diện đầy đủ",
+    "guiNoiseDesc": "Các điểm mù sau là các tính năng hiển thị biểu đồ/nút được bỏ qua khi chạy phía máy chủ và không ảnh hưởng đến kết quả giao dịch. An toàn để nhập.",
+    "cannotImport": "Không thể tự động nhập",
+    "incompleteCoverage": "Phạm vi logic giao dịch chưa đầy đủ",
+    "goodCoverage": "Phạm vi nhập khẩu tốt",
+    "goodCoverageDesc": "Logic chính của chiến lược đã được nhận diện. An toàn để nhập. Kiểm tra danh sách tham số trước khi sử dụng.",
+    "coverageTitle": "Phạm vi Nhập",
+    "location": "Vị trí",
+    "handling": "Xử lý",
+    "userActionRequired": "Cần thao tác",
+    "noBlindSpots": "Không cần xác nhận logic",
+    "noBlindSpotsDesc": "Tất cả logic chiến lược đã được nhận dạng tự động. An toàn để nhập."
+  },
+  "dashboard": {
+    "quickActions": {
+      "aiStrategy": "Chiến lược AI"
+    }
+  },
+  "logs": {
+    "triggerSource": {
+      "manual": "Thủ công",
+      "strategy": "Chiến lược",
+      "recovery": "Phục hồi"
+    },
+    "result": {
+      "pass": "PASS",
+      "reject": "REJECT"
+    }
+  },
   "app": {
     "name": "AlphaForge"
   },
   "language": {
     "english": "English",
     "japanese": "日本語",
-    "simplifiedChinese": "简体中文",
-    "traditionalChinese": "繁體中文",
+    "simplifiedChinese": "Tiếng Trung giản thể",
+    "traditionalChinese": "Tiếng Trung phồn thể",
     "vietnamese": "Tiếng Việt"
   },
   "market": {
@@ -766,7 +1420,9 @@ const Base = {
     "strategies": "Quản lý chiến lược",
     "strategy": "Chiến Lược",
     "strategyLibrary": "Thư viện chiến lược",
+    "strategyLive": "Giám Sát Live",
     "strategyWorkspace": "Không gian chiến lược",
+    "subscription": "Đăng Ký",
     "trading": "Giao Dịch",
     "wallet": "Ví"
   },
@@ -829,7 +1485,8 @@ const Base = {
     "volume": "Khối Lượng",
     "winRate": "Tỷ Lệ Thắng",
     "winningTrades": "Lệnh Thắng",
-    "worstTrade": "Lệnh Tệ Nhất"
+    "worstTrade": "Lệnh Tệ Nhất",
+    "countUnit": "giao dịch"
   },
   "topbar": {
     "logout": "Đăng xuất",
@@ -838,6 +1495,48 @@ const Base = {
     "switchToAdmin": "Chuyển sang quản trị",
     "systemOk": "Hệ thống đang hoạt động bình thường",
     "user": "Người Dùng"
+  },
+  "theme": {
+    "switchToDark": "Chuyển sang chế độ tối",
+    "switchToLight": "Chuyển sang chế độ sáng"
+  },
+  "monitoring": {
+    "unknown": "Không xác định",
+    "healthy": "OK",
+    "title": "Giám sát hệ thống",
+    "sseConnected": "SSE đã kết nối",
+    "disconnected": "Đã ngắt kết nối",
+    "streamError": "Lỗi luồng",
+    "waitingData": "Đang chờ dữ liệu...",
+    "serviceHealth": "Tình trạng dịch vụ",
+    "uptime": "Thời gian hoạt động",
+    "database": "Cơ sở dữ liệu",
+    "diskUsage": "Dung lượng đĩa",
+    "goRuntime": "Go Runtime",
+    "goroutines": "Goroutines",
+    "gcCount": "Số lần GC",
+    "gcPauseAvg": "Thời gian dừng GC TB",
+    "stackUsage": "Sử dụng Stack",
+    "heapMemory": "Bộ nhớ Heap",
+    "dbPool": "Pool kết nối DB",
+    "totalConns": "Tổng số",
+    "idle": "Nhàn rỗi",
+    "acquired": "Đang dùng",
+    "mdGateway": "MD Gateway",
+    "spillFiles": "Spill Files",
+    "droppedBars": "Nến bị bỏ lỡ",
+    "droppedSignals": "Tín hiệu bị bỏ lỡ",
+    "consumerLag": "Độ trễ Consumer",
+    "staleAccounts": "Tài khoản trễ",
+    "deadAccounts": "Tài khoản chết",
+    "avgGapSec": "Khoảng cách TB (s)",
+    "maxGapSec": "Khoảng cách tối đa (s)",
+    "dlq": "Hàng đợi thư chết (DLQ)",
+    "parseErrors": "Lỗi phân tích",
+    "bidGtAsk": "Giá mua > Giá bán",
+    "nonPositive": "Không dương",
+    "pushInterval": "Khoảng thời gian đẩy: 5s",
+    "lastUpdate": "Cập nhật lần cuối"
   }
 } as const;
 export default Base;

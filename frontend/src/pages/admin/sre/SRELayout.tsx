@@ -1,15 +1,17 @@
 import { Tabs } from 'antd';
 import { StopOutlined, ThunderboltOutlined, ExperimentOutlined } from '@ant-design/icons';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function SRELayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const items = [
-    { key: '/admin/sre/killswitch', label: <span><StopOutlined /> Kill Switch</span> },
-    { key: '/admin/sre/breakers', label: <span><ThunderboltOutlined /> Breakers</span> },
-    { key: '/admin/sre/canary', label: <span><ExperimentOutlined /> Canary</span> },
+    { key: '/admin/sre/killswitch', label: <span><StopOutlined /> {t('sre.killSwitch', { defaultValue: 'Kill Switch' })}</span> },
+    { key: '/admin/sre/breakers', label: <span><ThunderboltOutlined /> {t('sre.breakers', { defaultValue: 'Breakers' })}</span> },
+    { key: '/admin/sre/canary', label: <span><ExperimentOutlined /> {t('sre.canary', { defaultValue: 'Canary' })}</span> },
   ];
 
   const activeKey = (() => {
