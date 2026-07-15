@@ -3,6 +3,18 @@
 const StrategyChartTools = {
   "strategy": {
     "chartTools": {
+      "drawing": {
+        "extendedLine": "Đường Kéo Dài",
+        "fibonacci": "Fibonacci Retracement",
+        "horizontalLine": "Đường Ngang",
+        "measure": "Đo lường (Shift+kéo)",
+        "parallelChannel": "Kênh Song Song",
+        "priceChannel": "Kênh Giá",
+        "priceLine": "Đường Giá",
+        "ray": "Tia",
+        "trendLine": "Đường Xu hướng",
+        "verticalLine": "Đường Dọc"
+      },
       "clearDrawings": "Xóa Tất Cả Bản Vẽ",
       "hide": "Ẩn",
       "remove": "Xóa",

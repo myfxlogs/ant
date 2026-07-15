@@ -46,6 +46,10 @@ const StrategyWorkspace = {
         "selectPlaceholder": "选择模板...",
         "title": "模板"
       },
+      "chartIndicators": {
+        "overlay": "叠加指标（主图）",
+        "subPane": "副图指标"
+      },
       "memory": {
         "saveSuccess": "已保存",
         "saveFailed": "保存失败",

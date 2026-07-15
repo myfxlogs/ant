@@ -399,6 +399,32 @@ const Base = {
     "title": "Notifications",
     "unread": "Unread"
   },
+  "wallet": {
+    "deposit": "Deposit",
+    "table": {
+      "amount": "Amount",
+      "balanceAfter": "Balance After",
+      "description": "Description",
+      "time": "Time",
+      "type": "Type"
+    },
+    "txType": {
+      "adjustment": "Adjustment",
+      "deposit": "Deposit",
+      "fee": "Fee",
+      "reversal": "Reversal",
+      "withdrawal": "Withdrawal"
+    },
+    "accountNumber": "Account",
+    "balance": "Balance",
+    "currency": "Currency",
+    "frozen": "Frozen",
+    "frozenBalance": "Frozen",
+    "history": "History",
+    "title": "My Wallet",
+    "transactions": "Transactions",
+    "withdraw": "Withdraw"
+  },
   "auth": {
     "fields": {
       "confirmPassword": "Confirm password",
@@ -650,31 +676,44 @@ const Base = {
     "resolvedTooltip": "broker: {{broker}} | mode: {{mode}}",
     "unresolvedTooltip": "No trading account bound yet, unable to resolve"
   },
-  "wallet": {
-    "table": {
-      "amount": "Amount",
-      "balanceAfter": "Balance After",
-      "description": "Description",
-      "time": "Time",
-      "type": "Type"
+  "subscription": {
+    "feature": {
+      "aiTokens": "{{count}} AI tokens/mo",
+      "strategies": "{{count}} strategies",
+      "backtests": "{{count}} backtests/day",
+      "liveStrategies": "{{count}} live strategies",
+      "symbols": "{{count}} symbols/strategy"
     },
-    "txType": {
-      "adjustment": "Adjustment",
-      "deposit": "Deposit",
-      "fee": "Fee",
-      "reversal": "Reversal",
-      "withdrawal": "Withdrawal"
-    },
-    "accountNumber": "Account",
-    "balance": "Balance",
-    "currency": "Currency",
-    "deposit": "Deposit",
-    "frozen": "Frozen",
-    "frozenBalance": "Frozen",
-    "history": "History",
-    "title": "My Wallet",
-    "transactions": "Transactions",
-    "withdraw": "Withdraw"
+    "title": "Subscription Plans",
+    "subscribeSuccess": "Subscription activated successfully!",
+    "charged": "Charged: {{amount}}, Balance: {{balance}}",
+    "insufficientBalance": "Insufficient wallet balance. Please top up your wallet first.",
+    "subscribeFailed": "Subscription failed. Please try again.",
+    "cancelSuccess": "Auto-renewal cancelled. Your subscription remains active until the period ends.",
+    "cancelFailed": "Failed to cancel. Please try again.",
+    "changeSuccess": "Plan changed successfully!",
+    "changeFailed": "Plan change failed. Please try again.",
+    "billingCycle": "Billing",
+    "autoRenew": "Auto-renew",
+    "period": "Current period",
+    "cancelAutoRenew": "Cancel Auto-renew",
+    "usageTitle": "Current Month Usage",
+    "aiTokens": "AI Tokens",
+    "activeStrategies": "Active Strategies",
+    "runtimeMinutes": "Runtime (min)",
+    "walletBalance": "Wallet Balance",
+    "month": "mo",
+    "year": "yr",
+    "freeForever": "Free forever",
+    "currentPlan": "Current Plan",
+    "choosePlan": "Choose Plan",
+    "noPlans": "No plans available",
+    "changePlanTitle": "Change Plan",
+    "subscribeTitle": "Subscribe to Plan",
+    "selectBillingCycle": "Billing Cycle",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "chargeNotice": "Your wallet will be charged for paid plans. Free plans have no charge."
   },
   "app": {
     "name": "AlphaForge"
@@ -694,6 +733,7 @@ const Base = {
     "emptyWatchlist": "No symbols in watchlist",
     "loadingSymbols": "Loading...",
     "mid": "Mid",
+    "mtSessionLost": "⚠ MT session lost — reconnecting…",
     "noSymbolSelected": "Select a symbol to view market data",
     "noSymbolsFound": "No symbols found",
     "popularSymbols": "Popular Symbols",

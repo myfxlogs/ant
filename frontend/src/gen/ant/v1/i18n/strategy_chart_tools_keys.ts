@@ -4,6 +4,36 @@
 /** clearDrawings */
 export const CLEAR_DRAWINGS_KEY = 'strategy.chartTools.clearDrawings' as const;
 
+/** drawing.extendedLine */
+export const DRAWING_EXTENDED_LINE_KEY = 'strategy.chartTools.drawing.extendedLine' as const;
+
+/** drawing.fibonacci */
+export const DRAWING_FIBONACCI_KEY = 'strategy.chartTools.drawing.fibonacci' as const;
+
+/** drawing.horizontalLine */
+export const DRAWING_HORIZONTAL_LINE_KEY = 'strategy.chartTools.drawing.horizontalLine' as const;
+
+/** drawing.measure */
+export const DRAWING_MEASURE_KEY = 'strategy.chartTools.drawing.measure' as const;
+
+/** drawing.parallelChannel */
+export const DRAWING_PARALLEL_CHANNEL_KEY = 'strategy.chartTools.drawing.parallelChannel' as const;
+
+/** drawing.priceChannel */
+export const DRAWING_PRICE_CHANNEL_KEY = 'strategy.chartTools.drawing.priceChannel' as const;
+
+/** drawing.priceLine */
+export const DRAWING_PRICE_LINE_KEY = 'strategy.chartTools.drawing.priceLine' as const;
+
+/** drawing.ray */
+export const DRAWING_RAY_KEY = 'strategy.chartTools.drawing.ray' as const;
+
+/** drawing.trendLine */
+export const DRAWING_TREND_LINE_KEY = 'strategy.chartTools.drawing.trendLine' as const;
+
+/** drawing.verticalLine */
+export const DRAWING_VERTICAL_LINE_KEY = 'strategy.chartTools.drawing.verticalLine' as const;
+
 /** hide */
 export const HIDE_KEY = 'strategy.chartTools.hide' as const;
 
@@ -18,6 +48,16 @@ export const SHOW_KEY = 'strategy.chartTools.show' as const;
 
 export const STRATEGYCHARTTOOLS_KEYS = {
   clear_drawings: 'strategy.chartTools.clearDrawings',
+  drawing_extended_line: 'strategy.chartTools.drawing.extendedLine',
+  drawing_fibonacci: 'strategy.chartTools.drawing.fibonacci',
+  drawing_horizontal_line: 'strategy.chartTools.drawing.horizontalLine',
+  drawing_measure: 'strategy.chartTools.drawing.measure',
+  drawing_parallel_channel: 'strategy.chartTools.drawing.parallelChannel',
+  drawing_price_channel: 'strategy.chartTools.drawing.priceChannel',
+  drawing_price_line: 'strategy.chartTools.drawing.priceLine',
+  drawing_ray: 'strategy.chartTools.drawing.ray',
+  drawing_trend_line: 'strategy.chartTools.drawing.trendLine',
+  drawing_vertical_line: 'strategy.chartTools.drawing.verticalLine',
   hide: 'strategy.chartTools.hide',
   remove: 'strategy.chartTools.remove',
   settings: 'strategy.chartTools.settings',

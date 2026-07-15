@@ -1252,6 +1252,9 @@ export const MARKET_LOADING_SYMBOLS_KEY = 'market.loadingSymbols' as const;
 /** market.mid */
 export const MARKET_MID_KEY = 'market.mid' as const;
 
+/** market.mtSessionLost */
+export const MARKET_MT_SESSION_LOST_KEY = 'market.mtSessionLost' as const;
+
 /** market.noSymbolSelected */
 export const MARKET_NO_SYMBOL_SELECTED_KEY = 'market.noSymbolSelected' as const;
 
@@ -1837,6 +1840,72 @@ export const WALLET_CURRENCY_KEY = 'wallet.currency' as const;
 /** wallet.deposit */
 export const WALLET_DEPOSIT_KEY = 'wallet.deposit' as const;
 
+/** wallet.deposit.address */
+export const WALLET_DEPOSIT_ADDRESS_KEY = 'wallet.deposit.address' as const;
+
+/** wallet.deposit.addressCopied */
+export const WALLET_DEPOSIT_ADDRESS_COPIED_KEY = 'wallet.deposit.addressCopied' as const;
+
+/** wallet.deposit.amountLabel */
+export const WALLET_DEPOSIT_AMOUNT_LABEL_KEY = 'wallet.deposit.amountLabel' as const;
+
+/** wallet.deposit.button */
+export const WALLET_DEPOSIT_BUTTON_KEY = 'wallet.deposit.button' as const;
+
+/** wallet.deposit.copy */
+export const WALLET_DEPOSIT_COPY_KEY = 'wallet.deposit.copy' as const;
+
+/** wallet.deposit.exchangeRate */
+export const WALLET_DEPOSIT_EXCHANGE_RATE_KEY = 'wallet.deposit.exchangeRate' as const;
+
+/** wallet.deposit.failed */
+export const WALLET_DEPOSIT_FAILED_KEY = 'wallet.deposit.failed' as const;
+
+/** wallet.deposit.history */
+export const WALLET_DEPOSIT_HISTORY_KEY = 'wallet.deposit.history' as const;
+
+/** wallet.deposit.modalTitle */
+export const WALLET_DEPOSIT_MODAL_TITLE_KEY = 'wallet.deposit.modalTitle' as const;
+
+/** wallet.deposit.network */
+export const WALLET_DEPOSIT_NETWORK_KEY = 'wallet.deposit.network' as const;
+
+/** wallet.deposit.notConfigured */
+export const WALLET_DEPOSIT_NOT_CONFIGURED_KEY = 'wallet.deposit.notConfigured' as const;
+
+/** wallet.deposit.notice */
+export const WALLET_DEPOSIT_NOTICE_KEY = 'wallet.deposit.notice' as const;
+
+/** wallet.deposit.submit */
+export const WALLET_DEPOSIT_SUBMIT_KEY = 'wallet.deposit.submit' as const;
+
+/** wallet.deposit.success */
+export const WALLET_DEPOSIT_SUCCESS_KEY = 'wallet.deposit.success' as const;
+
+/** wallet.deposit.table.amount */
+export const WALLET_DEPOSIT_TABLE_AMOUNT_KEY = 'wallet.deposit.table.amount' as const;
+
+/** wallet.deposit.table.amountUsd */
+export const WALLET_DEPOSIT_TABLE_AMOUNT_USD_KEY = 'wallet.deposit.table.amountUsd' as const;
+
+/** wallet.deposit.table.status */
+export const WALLET_DEPOSIT_TABLE_STATUS_KEY = 'wallet.deposit.table.status' as const;
+
+/** wallet.deposit.table.time */
+export const WALLET_DEPOSIT_TABLE_TIME_KEY = 'wallet.deposit.table.time' as const;
+
+/** wallet.deposit.table.txHash */
+export const WALLET_DEPOSIT_TABLE_TX_HASH_KEY = 'wallet.deposit.table.txHash' as const;
+
+/** wallet.deposit.title */
+export const WALLET_DEPOSIT_TITLE_KEY = 'wallet.deposit.title' as const;
+
+/** wallet.deposit.txHashLabel */
+export const WALLET_DEPOSIT_TX_HASH_LABEL_KEY = 'wallet.deposit.txHashLabel' as const;
+
+/** wallet.deposit.willCredit */
+export const WALLET_DEPOSIT_WILL_CREDIT_KEY = 'wallet.deposit.willCredit' as const;
+
 /** wallet.frozen */
 export const WALLET_FROZEN_KEY = 'wallet.frozen' as const;
 
@@ -1884,6 +1953,111 @@ export const WALLET_TX_TYPE_WITHDRAWAL_KEY = 'wallet.txType.withdrawal' as const
 
 /** wallet.withdraw */
 export const WALLET_WITHDRAW_KEY = 'wallet.withdraw' as const;
+
+/** subscription.title */
+export const SUBSCRIPTION_TITLE_KEY = 'subscription.title' as const;
+
+/** subscription.subscribeSuccess */
+export const SUBSCRIPTION_SUBSCRIBE_SUCCESS_KEY = 'subscription.subscribeSuccess' as const;
+
+/** subscription.charged */
+export const SUBSCRIPTION_CHARGED_KEY = 'subscription.charged' as const;
+
+/** subscription.insufficientBalance */
+export const SUBSCRIPTION_INSUFFICIENT_BALANCE_KEY = 'subscription.insufficientBalance' as const;
+
+/** subscription.subscribeFailed */
+export const SUBSCRIPTION_SUBSCRIBE_FAILED_KEY = 'subscription.subscribeFailed' as const;
+
+/** subscription.cancelSuccess */
+export const SUBSCRIPTION_CANCEL_SUCCESS_KEY = 'subscription.cancelSuccess' as const;
+
+/** subscription.cancelFailed */
+export const SUBSCRIPTION_CANCEL_FAILED_KEY = 'subscription.cancelFailed' as const;
+
+/** subscription.changeSuccess */
+export const SUBSCRIPTION_CHANGE_SUCCESS_KEY = 'subscription.changeSuccess' as const;
+
+/** subscription.changeFailed */
+export const SUBSCRIPTION_CHANGE_FAILED_KEY = 'subscription.changeFailed' as const;
+
+/** subscription.billingCycle */
+export const SUBSCRIPTION_BILLING_CYCLE_KEY = 'subscription.billingCycle' as const;
+
+/** subscription.autoRenew */
+export const SUBSCRIPTION_AUTO_RENEW_KEY = 'subscription.autoRenew' as const;
+
+/** subscription.period */
+export const SUBSCRIPTION_PERIOD_KEY = 'subscription.period' as const;
+
+/** subscription.cancelAutoRenew */
+export const SUBSCRIPTION_CANCEL_AUTO_RENEW_KEY = 'subscription.cancelAutoRenew' as const;
+
+/** subscription.usageTitle */
+export const SUBSCRIPTION_USAGE_TITLE_KEY = 'subscription.usageTitle' as const;
+
+/** subscription.aiTokens */
+export const SUBSCRIPTION_AI_TOKENS_KEY = 'subscription.aiTokens' as const;
+
+/** subscription.activeStrategies */
+export const SUBSCRIPTION_ACTIVE_STRATEGIES_KEY = 'subscription.activeStrategies' as const;
+
+/** subscription.runtimeMinutes */
+export const SUBSCRIPTION_RUNTIME_MINUTES_KEY = 'subscription.runtimeMinutes' as const;
+
+/** subscription.walletBalance */
+export const SUBSCRIPTION_WALLET_BALANCE_KEY = 'subscription.walletBalance' as const;
+
+/** subscription.month */
+export const SUBSCRIPTION_MONTH_KEY = 'subscription.month' as const;
+
+/** subscription.year */
+export const SUBSCRIPTION_YEAR_KEY = 'subscription.year' as const;
+
+/** subscription.freeForever */
+export const SUBSCRIPTION_FREE_FOREVER_KEY = 'subscription.freeForever' as const;
+
+/** subscription.currentPlan */
+export const SUBSCRIPTION_CURRENT_PLAN_KEY = 'subscription.currentPlan' as const;
+
+/** subscription.choosePlan */
+export const SUBSCRIPTION_CHOOSE_PLAN_KEY = 'subscription.choosePlan' as const;
+
+/** subscription.noPlans */
+export const SUBSCRIPTION_NO_PLANS_KEY = 'subscription.noPlans' as const;
+
+/** subscription.changePlanTitle */
+export const SUBSCRIPTION_CHANGE_PLAN_TITLE_KEY = 'subscription.changePlanTitle' as const;
+
+/** subscription.subscribeTitle */
+export const SUBSCRIPTION_SUBSCRIBE_TITLE_KEY = 'subscription.subscribeTitle' as const;
+
+/** subscription.selectBillingCycle */
+export const SUBSCRIPTION_SELECT_BILLING_CYCLE_KEY = 'subscription.selectBillingCycle' as const;
+
+/** subscription.monthly */
+export const SUBSCRIPTION_MONTHLY_KEY = 'subscription.monthly' as const;
+
+/** subscription.yearly */
+export const SUBSCRIPTION_YEARLY_KEY = 'subscription.yearly' as const;
+
+/** subscription.chargeNotice */
+export const SUBSCRIPTION_CHARGE_NOTICE_KEY = 'subscription.chargeNotice' as const;
+
+/** subscription.feature.aiTokens */
+export const SUBSCRIPTION_FEATURE_AI_TOKENS_KEY = 'subscription.feature.aiTokens' as const;
+
+/** subscription.feature.strategies */
+export const SUBSCRIPTION_FEATURE_STRATEGIES_KEY = 'subscription.feature.strategies' as const;
+
+/** subscription.feature.backtests */
+export const SUBSCRIPTION_FEATURE_BACKTESTS_KEY = 'subscription.feature.backtests' as const;
+
+/** subscription.feature.liveStrategies */
+export const SUBSCRIPTION_FEATURE_LIVE_STRATEGIES_KEY = 'subscription.feature.liveStrategies' as const;
+
+/** subscription.feature.symbols */
+export const SUBSCRIPTION_FEATURE_SYMBOLS_KEY = 'subscription.feature.symbols' as const;
 
 /** common.unsaved */
 export const COMMON_UNSAVED_KEY = 'common.unsaved' as const;
@@ -2309,6 +2483,7 @@ export const BASE_KEYS = {
   market_empty_watchlist: '__root__.market.emptyWatchlist',
   market_loading_symbols: '__root__.market.loadingSymbols',
   market_mid: '__root__.market.mid',
+  market_mt_session_lost: '__root__.market.mtSessionLost',
   market_no_symbol_selected: '__root__.market.noSymbolSelected',
   market_no_symbols_found: '__root__.market.noSymbolsFound',
   market_popular_symbols: '__root__.market.popularSymbols',
@@ -2504,6 +2679,28 @@ export const BASE_KEYS = {
   wallet_balance: '__root__.wallet.balance',
   wallet_currency: '__root__.wallet.currency',
   wallet_deposit: '__root__.wallet.deposit',
+  wallet_deposit_address: '__root__.wallet.deposit.address',
+  wallet_deposit_address_copied: '__root__.wallet.deposit.addressCopied',
+  wallet_deposit_amount_label: '__root__.wallet.deposit.amountLabel',
+  wallet_deposit_button: '__root__.wallet.deposit.button',
+  wallet_deposit_copy: '__root__.wallet.deposit.copy',
+  wallet_deposit_exchange_rate: '__root__.wallet.deposit.exchangeRate',
+  wallet_deposit_failed: '__root__.wallet.deposit.failed',
+  wallet_deposit_history: '__root__.wallet.deposit.history',
+  wallet_deposit_modal_title: '__root__.wallet.deposit.modalTitle',
+  wallet_deposit_network: '__root__.wallet.deposit.network',
+  wallet_deposit_not_configured: '__root__.wallet.deposit.notConfigured',
+  wallet_deposit_notice: '__root__.wallet.deposit.notice',
+  wallet_deposit_submit: '__root__.wallet.deposit.submit',
+  wallet_deposit_success: '__root__.wallet.deposit.success',
+  wallet_deposit_table_amount: '__root__.wallet.deposit.table.amount',
+  wallet_deposit_table_amount_usd: '__root__.wallet.deposit.table.amountUsd',
+  wallet_deposit_table_status: '__root__.wallet.deposit.table.status',
+  wallet_deposit_table_time: '__root__.wallet.deposit.table.time',
+  wallet_deposit_table_tx_hash: '__root__.wallet.deposit.table.txHash',
+  wallet_deposit_title: '__root__.wallet.deposit.title',
+  wallet_deposit_tx_hash_label: '__root__.wallet.deposit.txHashLabel',
+  wallet_deposit_will_credit: '__root__.wallet.deposit.willCredit',
   wallet_frozen: '__root__.wallet.frozen',
   wallet_frozen_balance: '__root__.wallet.frozenBalance',
   wallet_history: '__root__.wallet.history',
@@ -2520,6 +2717,41 @@ export const BASE_KEYS = {
   wallet_tx_type_reversal: '__root__.wallet.txType.reversal',
   wallet_tx_type_withdrawal: '__root__.wallet.txType.withdrawal',
   wallet_withdraw: '__root__.wallet.withdraw',
+  subscription_title: '__root__.subscription.title',
+  subscription_subscribe_success: '__root__.subscription.subscribeSuccess',
+  subscription_charged: '__root__.subscription.charged',
+  subscription_insufficient_balance: '__root__.subscription.insufficientBalance',
+  subscription_subscribe_failed: '__root__.subscription.subscribeFailed',
+  subscription_cancel_success: '__root__.subscription.cancelSuccess',
+  subscription_cancel_failed: '__root__.subscription.cancelFailed',
+  subscription_change_success: '__root__.subscription.changeSuccess',
+  subscription_change_failed: '__root__.subscription.changeFailed',
+  subscription_billing_cycle: '__root__.subscription.billingCycle',
+  subscription_auto_renew: '__root__.subscription.autoRenew',
+  subscription_period: '__root__.subscription.period',
+  subscription_cancel_auto_renew: '__root__.subscription.cancelAutoRenew',
+  subscription_usage_title: '__root__.subscription.usageTitle',
+  subscription_ai_tokens: '__root__.subscription.aiTokens',
+  subscription_active_strategies: '__root__.subscription.activeStrategies',
+  subscription_runtime_minutes: '__root__.subscription.runtimeMinutes',
+  subscription_wallet_balance: '__root__.subscription.walletBalance',
+  subscription_month: '__root__.subscription.month',
+  subscription_year: '__root__.subscription.year',
+  subscription_free_forever: '__root__.subscription.freeForever',
+  subscription_current_plan: '__root__.subscription.currentPlan',
+  subscription_choose_plan: '__root__.subscription.choosePlan',
+  subscription_no_plans: '__root__.subscription.noPlans',
+  subscription_change_plan_title: '__root__.subscription.changePlanTitle',
+  subscription_subscribe_title: '__root__.subscription.subscribeTitle',
+  subscription_select_billing_cycle: '__root__.subscription.selectBillingCycle',
+  subscription_monthly: '__root__.subscription.monthly',
+  subscription_yearly: '__root__.subscription.yearly',
+  subscription_charge_notice: '__root__.subscription.chargeNotice',
+  subscription_feature_ai_tokens: '__root__.subscription.feature.aiTokens',
+  subscription_feature_strategies: '__root__.subscription.feature.strategies',
+  subscription_feature_backtests: '__root__.subscription.feature.backtests',
+  subscription_feature_live_strategies: '__root__.subscription.feature.liveStrategies',
+  subscription_feature_symbols: '__root__.subscription.feature.symbols',
   common_unsaved: '__root__.common.unsaved',
   common_saved: '__root__.common.saved',
 } as const;

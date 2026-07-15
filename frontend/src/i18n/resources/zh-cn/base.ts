@@ -399,6 +399,32 @@ const Base = {
     "title": "通知中心",
     "unread": "未读"
   },
+  "wallet": {
+    "deposit": "充值",
+    "table": {
+      "amount": "金额",
+      "balanceAfter": "调整后余额",
+      "description": "描述",
+      "time": "时间",
+      "type": "类型"
+    },
+    "txType": {
+      "adjustment": "余额调整",
+      "deposit": "充值",
+      "fee": "手续费",
+      "reversal": "冲正",
+      "withdrawal": "提取"
+    },
+    "accountNumber": "钱包号",
+    "balance": "余额",
+    "currency": "币种",
+    "frozen": "冻结",
+    "frozenBalance": "冻结",
+    "history": "历史记录",
+    "title": "我的钱包",
+    "transactions": "交易记录",
+    "withdraw": "提取"
+  },
   "auth": {
     "fields": {
       "confirmPassword": "确认密码",
@@ -650,31 +676,44 @@ const Base = {
     "resolvedTooltip": "broker: {{broker}} | 模式: {{mode}}",
     "unresolvedTooltip": "尚未绑定交易账户，无法解析"
   },
-  "wallet": {
-    "table": {
-      "amount": "金额",
-      "balanceAfter": "调整后余额",
-      "description": "描述",
-      "time": "时间",
-      "type": "类型"
+  "subscription": {
+    "feature": {
+      "aiTokens": "{{count}} AI Token/月",
+      "strategies": "{{count}} 个策略",
+      "backtests": "{{count}} 次回测/天",
+      "liveStrategies": "{{count}} 个实盘策略",
+      "symbols": "{{count}} 个品种/策略"
     },
-    "txType": {
-      "adjustment": "余额调整",
-      "deposit": "充值",
-      "fee": "手续费",
-      "reversal": "冲正",
-      "withdrawal": "提取"
-    },
-    "accountNumber": "钱包号",
-    "balance": "余额",
-    "currency": "币种",
-    "deposit": "充值",
-    "frozen": "冻结",
-    "frozenBalance": "冻结",
-    "history": "历史记录",
-    "title": "我的钱包",
-    "transactions": "交易记录",
-    "withdraw": "提取"
+    "title": "订阅方案",
+    "subscribeSuccess": "订阅激活成功！",
+    "charged": "已扣费: {{amount}}, 余额: {{balance}}",
+    "insufficientBalance": "钱包余额不足，请先充值。",
+    "subscribeFailed": "订阅失败，请重试。",
+    "cancelSuccess": "自动续订已取消。您的订阅在当前周期结束前仍然有效。",
+    "cancelFailed": "取消失败，请重试。",
+    "changeSuccess": "方案切换成功！",
+    "changeFailed": "方案切换失败，请重试。",
+    "billingCycle": "计费",
+    "autoRenew": "自动续订",
+    "period": "当前周期",
+    "cancelAutoRenew": "取消自动续订",
+    "usageTitle": "本月使用量",
+    "aiTokens": "AI Token",
+    "activeStrategies": "活跃策略",
+    "runtimeMinutes": "运行时长（分钟）",
+    "walletBalance": "钱包余额",
+    "month": "月",
+    "year": "年",
+    "freeForever": "永久免费",
+    "currentPlan": "当前方案",
+    "choosePlan": "选择方案",
+    "noPlans": "暂无可用方案",
+    "changePlanTitle": "切换方案",
+    "subscribeTitle": "订阅方案",
+    "selectBillingCycle": "计费周期",
+    "monthly": "月付",
+    "yearly": "年付",
+    "chargeNotice": "付费方案将从钱包扣款。免费方案不扣费。"
   },
   "app": {
     "name": "AlphaForge"
@@ -694,6 +733,7 @@ const Base = {
     "emptyWatchlist": "暂无自选",
     "loadingSymbols": "加载中...",
     "mid": "中间价",
+    "mtSessionLost": "⚠ MT 会话丢失 — 正在重连…",
     "noSymbolSelected": "选择一个品种以查看行情数据",
     "noSymbolsFound": "未找到品种",
     "popularSymbols": "热门品种",

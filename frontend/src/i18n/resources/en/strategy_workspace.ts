@@ -46,6 +46,10 @@ const StrategyWorkspace = {
         "selectPlaceholder": "Select a template...",
         "title": "Template"
       },
+      "chartIndicators": {
+        "overlay": "Overlay (main chart)",
+        "subPane": "Sub-pane indicators"
+      },
       "memory": {
         "saveSuccess": "Saved",
         "saveFailed": "Save failed",

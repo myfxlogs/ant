@@ -399,6 +399,32 @@ const Base = {
     "title": "通知",
     "unread": "未読"
   },
+  "wallet": {
+    "deposit": "入金",
+    "table": {
+      "amount": "金額",
+      "balanceAfter": "調整後残高",
+      "description": "説明",
+      "time": "時間",
+      "type": "種類"
+    },
+    "txType": {
+      "adjustment": "残高調整",
+      "deposit": "入金",
+      "fee": "手数料",
+      "reversal": "取消",
+      "withdrawal": "出金"
+    },
+    "accountNumber": "口座番号",
+    "balance": "残高",
+    "currency": "通貨",
+    "frozen": "凍結",
+    "frozenBalance": "凍結",
+    "history": "履歴",
+    "title": "マイウォレット",
+    "transactions": "取引履歴",
+    "withdraw": "出金"
+  },
   "auth": {
     "fields": {
       "confirmPassword": "确认密码",
@@ -650,31 +676,44 @@ const Base = {
     "resolvedTooltip": "ブローカー：{{broker}} | モード：{{mode}}",
     "unresolvedTooltip": "取引口座が未バインドのため、解決できません"
   },
-  "wallet": {
-    "table": {
-      "amount": "金額",
-      "balanceAfter": "調整後残高",
-      "description": "説明",
-      "time": "時間",
-      "type": "種類"
+  "subscription": {
+    "feature": {
+      "aiTokens": "{{count}} AIトークン/月",
+      "strategies": "{{count}} 戦略",
+      "backtests": "{{count}} バックテスト/日",
+      "liveStrategies": "{{count}} ライブ戦略",
+      "symbols": "{{count}} シンボル/戦略"
     },
-    "txType": {
-      "adjustment": "残高調整",
-      "deposit": "入金",
-      "fee": "手数料",
-      "reversal": "取消",
-      "withdrawal": "出金"
-    },
-    "accountNumber": "口座番号",
-    "balance": "残高",
-    "currency": "通貨",
-    "deposit": "入金",
-    "frozen": "凍結",
-    "frozenBalance": "凍結",
-    "history": "履歴",
-    "title": "マイウォレット",
-    "transactions": "取引履歴",
-    "withdraw": "出金"
+    "title": "サブスクリプションプラン",
+    "subscribeSuccess": "サブスクリプションが有効になりました！",
+    "charged": "引き落とし: {{amount}}, 残高: {{balance}}",
+    "insufficientBalance": "ウォレット残高が不足しています。先にチャージしてください。",
+    "subscribeFailed": "サブスクリプションに失敗しました。再試行してください。",
+    "cancelSuccess": "自動更新がキャンセルされました。現在の期間終了までサブスクリプションは有効です。",
+    "cancelFailed": "キャンセルに失敗しました。再試行してください。",
+    "changeSuccess": "プラン変更成功！",
+    "changeFailed": "プラン変更に失敗しました。再試行してください。",
+    "billingCycle": "請求",
+    "autoRenew": "自動更新",
+    "period": "現在の期間",
+    "cancelAutoRenew": "自動更新をキャンセル",
+    "usageTitle": "今月の使用量",
+    "aiTokens": "AIトークン",
+    "activeStrategies": "アクティブ戦略",
+    "runtimeMinutes": "実行時間（分）",
+    "walletBalance": "ウォレット残高",
+    "month": "月",
+    "year": "年",
+    "freeForever": "永久無料",
+    "currentPlan": "現在のプラン",
+    "choosePlan": "プランを選択",
+    "noPlans": "利用可能なプランがありません",
+    "changePlanTitle": "プラン変更",
+    "subscribeTitle": "プランに登録",
+    "selectBillingCycle": "請求サイクル",
+    "monthly": "月額",
+    "yearly": "年額",
+    "chargeNotice": "有料プランはウォレットから引き落としされます。無料プランは課金されません。"
   },
   "app": {
     "name": "AlphaForge"
@@ -694,6 +733,7 @@ const Base = {
     "emptyWatchlist": "暂无自选",
     "loadingSymbols": "読み込み中...",
     "mid": "仲値",
+    "mtSessionLost": "⚠ MT セッション切断 — 再接続中…",
     "noSymbolSelected": "銘柄を選択してマーケットデータを表示",
     "noSymbolsFound": "銘柄が見つかりません",
     "popularSymbols": "人気銘柄",

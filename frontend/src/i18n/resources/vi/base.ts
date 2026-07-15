@@ -399,6 +399,32 @@ const Base = {
     "title": "Thông báo",
     "unread": "Chưa đọc"
   },
+  "wallet": {
+    "deposit": "Nạp Tiền",
+    "table": {
+      "amount": "Số Tiền",
+      "balanceAfter": "Số Dư Sau",
+      "description": "Mô Tả",
+      "time": "Thời Gian",
+      "type": "Loại"
+    },
+    "txType": {
+      "adjustment": "Điều Chỉnh",
+      "deposit": "Nạp Tiền",
+      "fee": "Phí",
+      "reversal": "Hoàn Tác",
+      "withdrawal": "Rút Tiền"
+    },
+    "accountNumber": "Số TK",
+    "balance": "Số Dư",
+    "currency": "Tiền Tệ",
+    "frozen": "Đóng Băng",
+    "frozenBalance": "Đóng Băng",
+    "history": "Lịch Sử",
+    "title": "Ví Của Tôi",
+    "transactions": "Giao Dịch",
+    "withdraw": "Rút Tiền"
+  },
   "auth": {
     "fields": {
       "confirmPassword": "确认密码",
@@ -650,31 +676,44 @@ const Base = {
     "resolvedTooltip": "môi giới: {{broker}} | chế độ: {{mode}}",
     "unresolvedTooltip": "Chưa liên kết tài khoản giao dịch, không thể phân giải"
   },
-  "wallet": {
-    "table": {
-      "amount": "Số Tiền",
-      "balanceAfter": "Số Dư Sau",
-      "description": "Mô Tả",
-      "time": "Thời Gian",
-      "type": "Loại"
+  "subscription": {
+    "feature": {
+      "aiTokens": "{{count}} AI token/tháng",
+      "strategies": "{{count}} chiến lược",
+      "backtests": "{{count}} backtest/ngày",
+      "liveStrategies": "{{count}} chiến lược live",
+      "symbols": "{{count}} cặp/chiến lược"
     },
-    "txType": {
-      "adjustment": "Điều Chỉnh",
-      "deposit": "Nạp Tiền",
-      "fee": "Phí",
-      "reversal": "Hoàn Tác",
-      "withdrawal": "Rút Tiền"
-    },
-    "accountNumber": "Số TK",
-    "balance": "Số Dư",
-    "currency": "Tiền Tệ",
-    "deposit": "Nạp Tiền",
-    "frozen": "Đóng Băng",
-    "frozenBalance": "Đóng Băng",
-    "history": "Lịch Sử",
-    "title": "Ví Của Tôi",
-    "transactions": "Giao Dịch",
-    "withdraw": "Rút Tiền"
+    "title": "Gói Đăng Ký",
+    "subscribeSuccess": "Đăng ký kích hoạt thành công!",
+    "charged": "Đã tính phí: {{amount}}, Số dư: {{balance}}",
+    "insufficientBalance": "Số dư ví không đủ. Vui lòng nạp tiền trước.",
+    "subscribeFailed": "Đăng ký thất bại. Vui lòng thử lại.",
+    "cancelSuccess": "Tự động gia hạn đã hủy. Đăng ký của bạn vẫn hiệu lực đến hết kỳ hiện tại.",
+    "cancelFailed": "Hủy thất bại. Vui lòng thử lại.",
+    "changeSuccess": "Đổi gói thành công!",
+    "changeFailed": "Đổi gói thất bại. Vui lòng thử lại.",
+    "billingCycle": "Thanh Toán",
+    "autoRenew": "Tự động gia hạn",
+    "period": "Kỳ hiện tại",
+    "cancelAutoRenew": "Hủy tự động gia hạn",
+    "usageTitle": "Sử Dụng Tháng Này",
+    "aiTokens": "AI Token",
+    "activeStrategies": "Chiến Lược Hoạt Động",
+    "runtimeMinutes": "Thời Gian Chạy (phút)",
+    "walletBalance": "Số Dư Ví",
+    "month": "tháng",
+    "year": "năm",
+    "freeForever": "Miễn Phí Mãi Mãi",
+    "currentPlan": "Gói Hiện Tại",
+    "choosePlan": "Chọn Gói",
+    "noPlans": "Không có gói nào",
+    "changePlanTitle": "Đổi Gói",
+    "subscribeTitle": "Đăng Ký Gói",
+    "selectBillingCycle": "Chu Kỳ Thanh Toán",
+    "monthly": "Hàng Tháng",
+    "yearly": "Hàng Năm",
+    "chargeNotice": "Gói trả phí sẽ được trừ từ ví. Gói miễn phí không tính phí."
   },
   "app": {
     "name": "AlphaForge"
@@ -694,6 +733,7 @@ const Base = {
     "emptyWatchlist": "Danh sách trống",
     "loadingSymbols": "Đang tải...",
     "mid": "Giá trung bình",
+    "mtSessionLost": "⚠ MT mất phiên — đang kết nối lại…",
     "noSymbolSelected": "Chọn một mã để xem dữ liệu thị trường",
     "noSymbolsFound": "Không tìm thấy mã nào",
     "popularSymbols": "Mã phổ biến",

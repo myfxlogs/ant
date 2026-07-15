@@ -3,6 +3,18 @@
 const StrategyChartTools = {
   "strategy": {
     "chartTools": {
+      "drawing": {
+        "extendedLine": "Extended Line",
+        "fibonacci": "Fibonacci Retracement",
+        "horizontalLine": "Horizontal Line",
+        "measure": "Measure (Shift+drag)",
+        "parallelChannel": "Parallel Channel",
+        "priceChannel": "Price Channel",
+        "priceLine": "Price Line",
+        "ray": "Ray",
+        "trendLine": "Trend Line",
+        "verticalLine": "Vertical Line"
+      },
       "clearDrawings": "Clear All Drawings",
       "hide": "Hide",
       "remove": "Remove",

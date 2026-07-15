@@ -46,6 +46,10 @@ const StrategyWorkspace = {
         "selectPlaceholder": "Chọn mẫu...",
         "title": "Mẫu"
       },
+      "chartIndicators": {
+        "overlay": "Chỉ báo chồng (biểu đồ chính)",
+        "subPane": "Chỉ báo phụ"
+      },
       "memory": {
         "saveSuccess": "Đã lưu",
         "saveFailed": "Lưu thất bại",
