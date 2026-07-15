@@ -23,7 +23,6 @@ import { useAuth } from '@/hooks/useAuth';
 import ContentContainer from '@/components/layout/ContentContainer';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useTranslation } from 'react-i18next';
-import i18n, { LANGUAGE_STORAGE_KEY, setLanguage } from '@/i18n';
 
 const { Header, Content, Sider } = Layout;
 
@@ -46,16 +45,6 @@ export default function AdminLayout() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Admin section is Chinese-only. Save the user's language on entry,
-  // force zh-cn, and restore their choice on exit.
-  useEffect(() => {
-    const prevLang = localStorage.getItem(LANGUAGE_STORAGE_KEY) || i18n.language || 'zh-cn';
-    setLanguage('zh-cn');
-    return () => {
-      setLanguage(prevLang as any);
-    };
-  }, []);
-
   const menuItems = [
     { key: '/admin', icon: <DashboardOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.dashboard') },
     { key: '/admin/users', icon: <TeamOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.userManagement') },
@@ -67,9 +56,9 @@ export default function AdminLayout() {
     { key: '/admin/logs', icon: <FileTextOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.operationLogs') },
     { key: '/admin/config', icon: <SettingOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.systemConfig') },
     { key: '/admin/jurisdiction', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.jurisdiction') },
-    { key: '/admin/strategies', icon: <CodeOutlined size={20} stroke={1.5} />, label: 'Strategies' },
-    { key: '/admin/shares', icon: <ShareAltOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.shareManagement', { defaultValue: '分享统计' }) },
-    { key: '/admin/ai-gateway', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: 'AI Gateway' },
+    { key: '/admin/strategies', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.strategies', { defaultValue: 'Strategies' }) },
+    { key: '/admin/shares', icon: <ShareAltOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.shareManagement', { defaultValue: 'Share Analytics' }) },
+    { key: '/admin/ai-gateway', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.aiGateway', { defaultValue: 'AI Gateway' }) },
     { key: '/admin/monitoring', icon: <MonitorOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.monitoring', { defaultValue: 'Monitoring & Alerts' }) },
     { key: '/admin/agent-settings', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.agentSettings', { defaultValue: 'Agent Settings' }) },
     { key: '/admin/sre', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.sre', { defaultValue: 'SRE Controls' }) },

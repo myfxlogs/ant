@@ -142,7 +142,6 @@ const Accounts = {
       "messages": {
         "bindFailed": "口座の連携に失敗しました",
         "bindSuccess": "口座を連携しました",
-        "changeCredentials": "認証情報を変更",
         "enterBrokerName": "ブローカー名を入力してください",
         "enterPassword": "パスワードを入力してください",
         "enterTradingAccount": "取引口座を入力してください",
@@ -159,8 +158,7 @@ const Accounts = {
         "company": "会社を選択",
         "password": "输入密码",
         "server": "サーバーを選択",
-        "tradingAccount": "取引口座を入力",
-        "alias": "任意のカスタム名"
+        "tradingAccount": "取引口座を入力"
       },
       "step1": {
         "subtitle": "选择您的交易平台并搜索经纪商",

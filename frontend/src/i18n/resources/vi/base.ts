@@ -271,12 +271,12 @@ const Base = {
       "accountManagement": "Quản Lý Tài Khoản",
       "dashboard": "Bảng điều khiển",
       "jurisdiction": "Kiểm Soát Quyền Hạn",
-      "operationLogs": "操作日志",
-      "shareManagement": "分享分析",
+      "operationLogs": "Nhật Ký Thao Tác",
+      "shareManagement": "Phân Tích Chia Sẻ",
       "systemConfig": "Cấu Hình Hệ Thống",
       "tradingMonitor": "Giám Sát Giao Dịch",
       "userManagement": "Quản Lý Người Dùng",
-      "walletManagement": "钱包管理"
+      "walletManagement": "Quản Lý Ví"
     },
     "trading": {
       "accounts": "Tài Khoản",
@@ -425,21 +425,7 @@ const Base = {
       "loginSuccess": "Đăng nhập thành công",
       "logoutSuccess": "Đã đăng xuất",
       "registerFailed": "Đăng ký thất bại. Vui lòng thử lại sau.",
-      "registerSuccess": "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản."
-    },
-    "verify": {
-      "verifying": "Đang xác thực email...",
-      "successTitle": "Xác thực email thành công!",
-      "successDesc": "Email của bạn đã được xác thực. Bạn có thể đăng nhập ngay bây giờ.",
-      "failedTitle": "Xác thực thất bại",
-      "failedDesc": "Liên kết xác thực không hợp lệ hoặc đã hết hạn.",
-      "failed": "Xác thực thất bại. Vui lòng thử lại.",
-      "pendingTitle": "Kiểm tra email của bạn",
-      "pendingDesc": "Chúng tôi đã gửi liên kết xác thực đến email của bạn. Vui lòng nhấp vào liên kết để xác thực tài khoản.",
-      "didntReceive": "Không nhận được email?",
-      "resend": "Gửi lại email xác thực",
-      "resendFailed": "Gửi lại thất bại. Vui lòng thử lại sau.",
-      "goLogin": "Đi đến đăng nhập"
+      "registerSuccess": "Đăng ký thành công. Vui lòng đăng nhập."
     },
     "register": {
       "haveAccount": "Đã có tài khoản?",
@@ -457,31 +443,10 @@ const Base = {
       "passwordRequired": "Vui lòng nhập mật khẩu"
     }
   },
-  "onboarding": {
-    "welcome": "Chào mừng đến AlphaForge, {{name}}!",
-    "subtitle": "Bắt đầu trong 3 bước đơn giản",
-    "dismiss": "Đã hiểu, đóng",
-    "step1": {
-      "title": "Kết nối tài khoản",
-      "desc": "Liên kết tài khoản giao dịch MT4/MT5 để bắt đầu.",
-      "action": "Liên kết tài khoản"
-    },
-    "step2": {
-      "title": "Tạo chiến lược đầu tiên",
-      "desc": "Mô tả ý tưởng giao dịch bằng ngôn ngữ tự nhiên, AI tự động tạo mã chiến lược.",
-      "action": "Mở không gian làm việc"
-    },
-    "step3": {
-      "title": "Nâng cấp gói",
-      "desc": "Nâng cấp lên Pro để mở khóa thêm AI token, chiến lược và giao dịch trực tiếp.",
-      "action": "Xem gói"
-    }
-  },
   "common": {
     "months": {
-      "jan": "Th1", "feb": "Th2", "mar": "Th3", "apr": "Th4",
-      "may": "Th5", "jun": "Th6", "jul": "Th7", "aug": "Th8",
-      "sep": "Th9", "oct": "Th10", "nov": "Th11", "dec": "Th12"
+      "jan": "1月",
+      "jul": "7月"
     },
     "time": {
       "day": "{{n}}ngày",
@@ -572,8 +537,6 @@ const Base = {
       "probe_ok_no_models": "OK (không trả về models)",
       "provider_required": "Vui lòng chọn nhà cung cấp",
       "provider_returned_empty_message": "Nhà cung cấp AI trả về thông điệp rỗng",
-      "insufficient_balance": "Số dư AI không đủ. Vui lòng nạp tiền trước khi tiếp tục.",
-      "insufficient_balance_title": "Số dư không đủ",
       "rate_limited": "AI bị giới hạn tốc độ hoặc hết hạn mức (429/resource exhausted). Vui lòng thử lại sau.",
       "request_failed": "Yêu cầu API thất bại"
     },

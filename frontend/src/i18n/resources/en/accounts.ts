@@ -142,7 +142,6 @@ const Accounts = {
       "messages": {
         "bindFailed": "Failed to bind account",
         "bindSuccess": "Account bound successfully",
-        "changeCredentials": "Change credentials",
         "enterBrokerName": "Please enter broker name",
         "enterPassword": "Please enter password",
         "enterTradingAccount": "Please enter trading account",
@@ -159,8 +158,7 @@ const Accounts = {
         "company": "Select company",
         "password": "Enter password",
         "server": "Select server",
-        "tradingAccount": "Enter trading account",
-        "alias": "Optional custom name"
+        "tradingAccount": "Enter trading account"
       },
       "step1": {
         "subtitle": "Select your trading platform and search for your broker",

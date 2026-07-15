@@ -142,7 +142,6 @@ const Accounts = {
       "messages": {
         "bindFailed": "账户绑定失败",
         "bindSuccess": "账户绑定成功",
-        "changeCredentials": "修改凭据",
         "enterBrokerName": "请输入经纪商名称",
         "enterPassword": "请输入密码",
         "enterTradingAccount": "请输入交易账号",
@@ -159,8 +158,7 @@ const Accounts = {
         "company": "请选择经纪商公司",
         "password": "输入密码",
         "server": "请选择服务器",
-        "tradingAccount": "输入交易账号",
-        "alias": "可选自定义名称"
+        "tradingAccount": "输入交易账号"
       },
       "step1": {
         "subtitle": "选择您的交易平台并搜索经纪商",

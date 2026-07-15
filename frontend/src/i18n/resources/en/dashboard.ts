@@ -17,7 +17,6 @@ const Dashboard = {
       "accounts": "Accounts",
       "analytics": "Analytics",
       "bindAccount": "Bind",
-      "aiStrategy": "AI Strategy",
       "closePosition": "Close",
       "library": "Library",
       "logs": "Logs",

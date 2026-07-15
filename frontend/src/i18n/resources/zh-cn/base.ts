@@ -425,21 +425,7 @@ const Base = {
       "loginSuccess": "登录成功",
       "logoutSuccess": "已退出登录",
       "registerFailed": "注册失败，请稍后重试",
-      "registerSuccess": "注册成功！请检查邮箱完成验证。"
-    },
-    "verify": {
-      "verifying": "正在验证您的邮箱...",
-      "successTitle": "邮箱验证成功！",
-      "successDesc": "您的邮箱已验证成功，现在可以登录了。",
-      "failedTitle": "验证失败",
-      "failedDesc": "验证链接无效或已过期。",
-      "failed": "验证失败，请重试。",
-      "pendingTitle": "请检查您的邮箱",
-      "pendingDesc": "我们已向您的邮箱发送了验证链接，请点击链接完成验证。",
-      "didntReceive": "没有收到邮件？",
-      "resend": "重新发送验证邮件",
-      "resendFailed": "重新发送失败，请稍后重试。",
-      "goLogin": "前往登录"
+      "registerSuccess": "注册成功，请登录"
     },
     "register": {
       "haveAccount": "已有账号？",
@@ -457,31 +443,10 @@ const Base = {
       "passwordRequired": "请输入密码"
     }
   },
-  "onboarding": {
-    "welcome": "欢迎使用 AlphaForge，{{name}}！",
-    "subtitle": "3 步即可开始",
-    "dismiss": "知道了",
-    "step1": {
-      "title": "连接交易账户",
-      "desc": "绑定您的 MT4/MT5 交易账户以开始使用。",
-      "action": "绑定账户"
-    },
-    "step2": {
-      "title": "创建首个策略",
-      "desc": "用自然语言描述交易想法，AI 自动生成策略代码。",
-      "action": "打开工作区"
-    },
-    "step3": {
-      "title": "升级套餐",
-      "desc": "升级到 Pro 解锁更多 AI 额度、策略和实盘交易。",
-      "action": "查看套餐"
-    }
-  },
   "common": {
     "months": {
-      "jan": "1月", "feb": "2月", "mar": "3月", "apr": "4月",
-      "may": "5月", "jun": "6月", "jul": "7月", "aug": "8月",
-      "sep": "9月", "oct": "10月", "nov": "11月", "dec": "12月"
+      "jan": "1月",
+      "jul": "7月"
     },
     "time": {
       "day": "{{n}}天",
@@ -572,8 +537,6 @@ const Base = {
       "probe_ok_no_models": "正常（未返回 models）",
       "provider_required": "请先选择服务商",
       "provider_returned_empty_message": "AI 服务返回空消息",
-      "insufficient_balance": "AI 余额不足，请先充值后再使用。",
-      "insufficient_balance_title": "余额不足",
       "rate_limited": "AI 服务触发限流/额度不足（429/资源耗尽）。请稍后重试或更换可用的 API Key/模型配置。",
       "request_failed": "API 请求失败"
     },

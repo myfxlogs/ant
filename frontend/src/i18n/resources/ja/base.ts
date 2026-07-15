@@ -271,12 +271,12 @@ const Base = {
       "accountManagement": "アカウント管理",
       "dashboard": "ダッシュボード",
       "jurisdiction": "管轄権管理",
-      "operationLogs": "操作日志",
-      "shareManagement": "分享分析",
+      "operationLogs": "操作ログ",
+      "shareManagement": "シェア分析",
       "systemConfig": "システム設定",
       "tradingMonitor": "取引監視",
       "userManagement": "ユーザー管理",
-      "walletManagement": "钱包管理"
+      "walletManagement": "ウォレット管理"
     },
     "trading": {
       "accounts": "アカウント",
@@ -425,21 +425,7 @@ const Base = {
       "loginSuccess": "ログインしました",
       "logoutSuccess": "ログアウトしました",
       "registerFailed": "登録に失敗しました。しばらくしてから再試行してください。",
-      "registerSuccess": "登録成功！メールを確認して認証を完了してください。"
-    },
-    "verify": {
-      "verifying": "メールを認証中...",
-      "successTitle": "メール認証完了！",
-      "successDesc": "メール認証が完了しました。ログインできます。",
-      "failedTitle": "認証失敗",
-      "failedDesc": "認証リンクが無効または期限切れです。",
-      "failed": "認証に失敗しました。再試行してください。",
-      "pendingTitle": "メールを確認してください",
-      "pendingDesc": "認証リンクをメールに送信しました。リンクをクリックして認証を完了してください。",
-      "didntReceive": "メールが届きませんか？",
-      "resend": "認証メールを再送信",
-      "resendFailed": "再送信に失敗しました。しばらくしてから再試行してください。",
-      "goLogin": "ログインへ"
+      "registerSuccess": "登録が完了しました。ログインしてください。"
     },
     "register": {
       "haveAccount": "すでにアカウントをお持ちですか？",
@@ -457,31 +443,10 @@ const Base = {
       "passwordRequired": "パスワードを入力してください"
     }
   },
-  "onboarding": {
-    "welcome": "AlphaForgeへようこそ、{{name}}さん！",
-    "subtitle": "3つのステップで始めましょう",
-    "dismiss": "閉じる",
-    "step1": {
-      "title": "取引アカウントを連携",
-      "desc": "MT4/MT5取引アカウントを連携して始めましょう。",
-      "action": "アカウント連携"
-    },
-    "step2": {
-      "title": "最初の戦略を作成",
-      "desc": "自然言語で取引アイデアを記述し、AIが戦略コードを自動生成します。",
-      "action": "ワークスペースを開く"
-    },
-    "step3": {
-      "title": "プランをアップグレード",
-      "desc": "Proにアップグレードして、AIトークン、戦略、ライブ取引を追加。",
-      "action": "プランを見る"
-    }
-  },
   "common": {
     "months": {
-      "jan": "1月", "feb": "2月", "mar": "3月", "apr": "4月",
-      "may": "5月", "jun": "6月", "jul": "7月", "aug": "8月",
-      "sep": "9月", "oct": "10月", "nov": "11月", "dec": "12月"
+      "jan": "1月",
+      "jul": "7月"
     },
     "time": {
       "day": "{{n}}天",
@@ -572,8 +537,6 @@ const Base = {
       "probe_ok_no_models": "OK（model が返されませんでした）",
       "provider_required": "プロバイダを選択してください",
       "provider_returned_empty_message": "AI プロバイダが空のメッセージを返しました",
-      "insufficient_balance": "AI 残高不足です。続行するにはチャージしてください。",
-      "insufficient_balance_title": "残高不足",
       "rate_limited": "AI サービスがレート制限/クォータ不足（429/資源枯渇）。しばらく待つか、利用可能な API Key/model に切り替えてください。",
       "request_failed": "API リクエストに失敗しました"
     },
