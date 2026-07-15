@@ -236,31 +236,31 @@ export default function SubscriptionPage() {
                   {plan.maxAiTokensMonthly > 0 && (
                     <div className="flex items-center gap-2 text-sm">
                       <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                      {plan.maxAiTokensMonthly.toLocaleString()} AI tokens/mo
+                      {t('subscription.feature.aiTokens', { count: plan.maxAiTokensMonthly.toLocaleString(), defaultValue: '{{count}} AI tokens/mo' })}
                     </div>
                   )}
                   {plan.maxStrategies > 0 && (
                     <div className="flex items-center gap-2 text-sm">
                       <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                      {plan.maxStrategies} strategies
+                      {t('subscription.feature.strategies', { count: plan.maxStrategies, defaultValue: '{{count}} strategies' })}
                     </div>
                   )}
                   {plan.maxBacktestsDaily > 0 && (
                     <div className="flex items-center gap-2 text-sm">
                       <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                      {plan.maxBacktestsDaily} backtests/day
+                      {t('subscription.feature.backtests', { count: plan.maxBacktestsDaily, defaultValue: '{{count}} backtests/day' })}
                     </div>
                   )}
                   {plan.maxLiveStrategies > 0 && (
                     <div className="flex items-center gap-2 text-sm">
                       <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                      {plan.maxLiveStrategies} live strategies
+                      {t('subscription.feature.liveStrategies', { count: plan.maxLiveStrategies, defaultValue: '{{count}} live strategies' })}
                     </div>
                   )}
                   {plan.maxSymbolsPerStrategy > 0 && (
                     <div className="flex items-center gap-2 text-sm">
                       <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                      {plan.maxSymbolsPerStrategy} symbols/strategy
+                      {t('subscription.feature.symbols', { count: plan.maxSymbolsPerStrategy, defaultValue: '{{count}} symbols/strategy' })}
                     </div>
                   )}
                   {plan.name === 'free' && (

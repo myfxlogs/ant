@@ -2,16 +2,19 @@ import { Dropdown, Button, Checkbox, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useChartIndicatorsStore } from '@/stores/chartIndicatorsStore';
 import type { MenuProps } from 'antd';
+import { useTranslation } from 'react-i18next';
+import { BROWSE_INDICATORS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
 interface Props {
   style?: React.CSSProperties;
 }
 
 export default function IndicatorPicker({ style }: Props) {
+  const { t } = useTranslation();
   const { registry, active, addIndicator } = useChartIndicatorsStore();
 
   const menuItems: MenuProps['items'] = [
-    { key: 'overlay-header', label: 'Overlay (main chart)', type: 'group' as const, className: 'indicator-menu-group' },
+    { key: 'overlay-header', label: t('strategy.workspace.chartIndicators.overlay', { defaultValue: 'Overlay (main chart)' }), type: 'group' as const, className: 'indicator-menu-group' },
     ...registry.filter((d) => d.kind === 'overlay').map((d) => ({
       key: d.id,
       label: (
@@ -21,7 +24,7 @@ export default function IndicatorPicker({ style }: Props) {
       ),
       onClick: () => addIndicator(d.id),
     })),
-    { key: 'sub-header', label: 'Sub-pane indicators', type: 'group' as const, className: 'indicator-menu-group' },
+    { key: 'sub-header', label: t('strategy.workspace.chartIndicators.subPane', { defaultValue: 'Sub-pane indicators' }), type: 'group' as const, className: 'indicator-menu-group' },
     ...registry.filter((d) => d.kind === 'sub').map((d) => ({
       key: d.id,
       label: <span>{d.name}</span>,
@@ -32,7 +35,7 @@ export default function IndicatorPicker({ style }: Props) {
   return (
     <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
       <Button size="small" icon={<PlusOutlined />} style={style}>
-        Indicators
+        {t(BROWSE_INDICATORS_KEY, 'Indicators')}
       </Button>
     </Dropdown>
   );

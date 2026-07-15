@@ -3,6 +3,7 @@ import { RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { BACKTEST_COMPLETED_KEY, BACKTEST_EMPTY_KEY, BACKTEST_ERROR_KEY, BACKTEST_RUNNING_KEY, BACKTEST_TAB_KEY, EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY, EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY, EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY, EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY, EXEC_ASSUMPTIONS_FIELDS_MODE_KEY, EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY, EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY, EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY, EXEC_ASSUMPTIONS_KEY, GATE_TAB_KEY, TUNING_TAB_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { ANNUAL_RETURN_KEY, EQUITY_CURVE_KEY, MAX_DRAWDOWN_KEY, SHARPE_KEY, TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, TRADE_LOG_KEY, TRADE_PRICE_KEY, TRADE_SIDE_KEY, TRADE_TIME_KEY, TRADE_VOLUME_KEY, WIN_RATE_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
+import { TRADING_PNL_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 
 ;
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -217,7 +218,7 @@ export default function WorkspaceBacktestPanel({
                       { title: t(TRADE_PRICE_KEY, 'Price'), dataIndex: 'price', width: 80 },
                       { title: t(TRADE_VOLUME_KEY, 'Volume'), dataIndex: 'volume', width: 80,
                         render: (v: number) => v?.toFixed(2) },
-                      { title: 'PnL', dataIndex: 'pnl', width: 80,
+                      { title: t(TRADING_PNL_KEY, 'PnL'), dataIndex: 'pnl', width: 80,
                         render: (v: number) => v != null ? (
                           <span style={{ color: v >= 0 ? '#26a69a' : '#ef5350' }}>{v >= 0 ? '+' : ''}{v.toFixed(2)}</span>
                         ) : '-' },

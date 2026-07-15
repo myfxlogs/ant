@@ -16,20 +16,21 @@ interface ToolDef {
   key: string;
   overlayName: string;
   icon: React.ReactNode;
-  label: string;
+  labelKey: string;
+  defaultLabel: string;
 }
 
 const DRAWING_TOOLS: ToolDef[] = [
-  { key: 'measure', overlayName: 'priceRangeMeasure', icon: <ExpandOutlined />, label: 'Measure (Shift+drag)' },
-  { key: 'segment', overlayName: 'segment', icon: <ItalicOutlined />, label: 'Trend Line' },
-  { key: 'horizontalLine', overlayName: 'horizontalStraightLine', icon: <MinusOutlined />, label: 'Horizontal Line' },
-  { key: 'verticalLine', overlayName: 'verticalStraightLine', icon: <ColumnWidthOutlined />, label: 'Vertical Line' },
-  { key: 'ray', overlayName: 'rayLine', icon: <ArrowUpOutlined />, label: 'Ray' },
-  { key: 'straightLine', overlayName: 'straightLine', icon: <DashOutlined />, label: 'Extended Line' },
-  { key: 'parallelLine', overlayName: 'parallelStraightLine', icon: <BorderOuterOutlined />, label: 'Parallel Channel' },
-  { key: 'priceLine', overlayName: 'priceLine', icon: <DollarOutlined />, label: 'Price Line' },
-  { key: 'priceChannel', overlayName: 'priceChannelLine', icon: <VerticalAlignMiddleOutlined />, label: 'Price Channel' },
-  { key: 'fibonacci', overlayName: 'fibonacciLine', icon: <LineChartOutlined />, label: 'Fibonacci Retracement' },
+  { key: 'measure', overlayName: 'priceRangeMeasure', icon: <ExpandOutlined />, labelKey: 'strategy.chartTools.drawing.measure', defaultLabel: 'Measure (Shift+drag)' },
+  { key: 'segment', overlayName: 'segment', icon: <ItalicOutlined />, labelKey: 'strategy.chartTools.drawing.trendLine', defaultLabel: 'Trend Line' },
+  { key: 'horizontalLine', overlayName: 'horizontalStraightLine', icon: <MinusOutlined />, labelKey: 'strategy.chartTools.drawing.horizontalLine', defaultLabel: 'Horizontal Line' },
+  { key: 'verticalLine', overlayName: 'verticalStraightLine', icon: <ColumnWidthOutlined />, labelKey: 'strategy.chartTools.drawing.verticalLine', defaultLabel: 'Vertical Line' },
+  { key: 'ray', overlayName: 'rayLine', icon: <ArrowUpOutlined />, labelKey: 'strategy.chartTools.drawing.ray', defaultLabel: 'Ray' },
+  { key: 'straightLine', overlayName: 'straightLine', icon: <DashOutlined />, labelKey: 'strategy.chartTools.drawing.extendedLine', defaultLabel: 'Extended Line' },
+  { key: 'parallelLine', overlayName: 'parallelStraightLine', icon: <BorderOuterOutlined />, labelKey: 'strategy.chartTools.drawing.parallelChannel', defaultLabel: 'Parallel Channel' },
+  { key: 'priceLine', overlayName: 'priceLine', icon: <DollarOutlined />, labelKey: 'strategy.chartTools.drawing.priceLine', defaultLabel: 'Price Line' },
+  { key: 'priceChannel', overlayName: 'priceChannelLine', icon: <VerticalAlignMiddleOutlined />, labelKey: 'strategy.chartTools.drawing.priceChannel', defaultLabel: 'Price Channel' },
+  { key: 'fibonacci', overlayName: 'fibonacciLine', icon: <LineChartOutlined />, labelKey: 'strategy.chartTools.drawing.fibonacci', defaultLabel: 'Fibonacci Retracement' },
 ];
 
 interface Props {
@@ -78,7 +79,7 @@ export default function DrawingToolbar({ chart }: Props) {
       position: 'absolute', top: 8, left: 8, zIndex: 20,
     }}>
       {DRAWING_TOOLS.map((tool) => (
-        <Tooltip key={tool.key} title={tool.label} placement="right">
+        <Tooltip key={tool.key} title={t(tool.labelKey as any, { defaultValue: tool.defaultLabel })} placement="right">
           <div
             onClick={() => handleToolClick(tool)}
             style={{

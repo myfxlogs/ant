@@ -1,7 +1,7 @@
 import { Table, Button, Popconfirm, Tag } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
-import { TRADING_CLOSE_POSITION_CONFIRM_KEY, TRADING_CLOSE_POSITION_KEY, TRADING_NO_POSITIONS_KEY, TRADING_OPEN_TIME_KEY, TRADING_PRICE_KEY, TRADING_SIDE_KEY, TRADING_STOP_LOSS_KEY, TRADING_SYMBOL_KEY, TRADING_TAKE_PROFIT_KEY, TRADING_VOLUME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADING_CLOSE_POSITION_CONFIRM_KEY, TRADING_CLOSE_POSITION_KEY, TRADING_NO_POSITIONS_KEY, TRADING_OPEN_TIME_KEY, TRADING_PNL_KEY, TRADING_PRICE_KEY, TRADING_SIDE_KEY, TRADING_STOP_LOSS_KEY, TRADING_SYMBOL_KEY, TRADING_TAKE_PROFIT_KEY, TRADING_VOLUME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 ;
 import { useMemo, useCallback } from 'react';
 import { useTradingStore } from '@/stores/tradingStore';
@@ -104,7 +104,7 @@ export default function PositionsTable() {
         render: (v: number | undefined) => fmtTime(v),
       },
       {
-        title: 'P&L',
+        title: t(TRADING_PNL_KEY, 'P&L'),
         dataIndex: 'profit',
         key: 'profit',
         width: 100,

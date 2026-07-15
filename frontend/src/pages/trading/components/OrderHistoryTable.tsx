@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, useMemo } from 'react';
 import { Table, Tag, Card, Pagination } from 'antd';
 import { HistoryOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
-import { TRADING_NO_ORDERS_KEY, TRADING_ORDER_HISTORY_KEY, TRADING_PRICE_KEY, TRADING_SYMBOL_KEY, TRADING_TYPE_KEY, TRADING_VOLUME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADING_NO_ORDERS_KEY, TRADING_ORDER_HISTORY_KEY, TRADING_PNL_KEY, TRADING_PRICE_KEY, TRADING_SYMBOL_KEY, TRADING_TIME_KEY, TRADING_TYPE_KEY, TRADING_VOLUME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 ;
 import { useTradingStore } from '@/stores/tradingStore';
 import { useTrading } from '@/hooks/useTrading';
@@ -64,7 +64,7 @@ export default function OrderHistoryTable() {
     { title: t(TRADING_VOLUME_KEY, 'Volume'), dataIndex: 'volume', key: 'volume', width: 80, render: (v: unknown) => Number(v ?? 0).toFixed(2) },
     { title: t(TRADING_PRICE_KEY, 'Price'), dataIndex: 'openPrice', key: 'openPrice', width: 90, render: (v: unknown) => Number(v ?? 0).toFixed(5) },
     {
-      title: 'P&L',
+      title: t(TRADING_PNL_KEY, 'P&L'),
       dataIndex: 'profit',
       key: 'profit',
       width: 90,
@@ -74,7 +74,7 @@ export default function OrderHistoryTable() {
         return <span style={{ color, fontWeight: 600 }}>{n.toFixed(2)}</span>;
       },
     },
-    { title: 'Time', dataIndex: 'openTime', key: 'openTime', width: 160, render: (v: unknown) => fmtTime(v) },
+    { title: t(TRADING_TIME_KEY, 'Time'), dataIndex: 'openTime', key: 'openTime', width: 160, render: (v: unknown) => fmtTime(v) },
   ], [t]);
 
   return (

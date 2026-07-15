@@ -2,6 +2,8 @@ import { Radio, Tooltip, Button, Space, Tag } from 'antd';
 import { BarChartOutlined, AreaChartOutlined, StockOutlined, SettingOutlined, CloseOutlined } from '@ant-design/icons';
 import IndicatorPicker from './IndicatorPicker';
 import type { IndicatorDef } from '@/stores/chartIndicatorsStore';
+import { useTranslation } from 'react-i18next';
+import { CHART_TOOLS_AREA_KEY, CHART_TOOLS_CANDLE_KEY, CHART_TOOLS_ERROR_KEY, CHART_TOOLS_LIVE_KEY, CHART_TOOLS_OHLC_KEY, CHART_TOOLS_STATIC_KEY, CHART_TOOLS_STREAM_ACTIVE_KEY, CHART_TOOLS_STREAM_UNAVAILABLE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
 export const TIMEFRAMES = [
   { label: '1m', value: '1m' }, { label: '5m', value: '5m' },
@@ -36,6 +38,12 @@ export default function ChartToolbar({
   activeIndicators, getDef,
   onTimeframeChange, applyChartType, onSettingsClick, onRemoveIndicator,
 }: ChartToolbarProps) {
+  const { t } = useTranslation();
+  const chartTypeLabels: Record<ChartType, string> = {
+    candle_solid: t(CHART_TOOLS_CANDLE_KEY, 'Candle'),
+    ohlc: t(CHART_TOOLS_OHLC_KEY, 'OHLC'),
+    area: t(CHART_TOOLS_AREA_KEY, 'Area'),
+  };
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 4, flexShrink: 0 }}>
@@ -46,16 +54,16 @@ export default function ChartToolbar({
         </div>
         <Space size={4}>
           {CHART_TYPES.map(ct => (
-            <Tooltip key={ct.key} title={ct.label}>
+            <Tooltip key={ct.key} title={chartTypeLabels[ct.key]}>
               <Button size="small" type={chartType === ct.key ? 'primary' : 'default'} icon={ct.icon} onClick={() => applyChartType(ct.key)} />
             </Tooltip>
           ))}
-          <Tooltip title={streamActive ? 'Live bar stream active' : error || 'Stream unavailable'}>
+          <Tooltip title={streamActive ? t(CHART_TOOLS_STREAM_ACTIVE_KEY, 'Live bar stream active') : error || t(CHART_TOOLS_STREAM_UNAVAILABLE_KEY, 'Stream unavailable')}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, marginLeft: 4 }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: streamActive ? '#22c55e' : '#ef5350',
                 boxShadow: streamActive ? '0 0 4px #22c55e' : '0 0 4px #ef5350' }} />
               <span style={{ color: streamActive ? '#22c55e' : '#ef5350', fontWeight: 600 }}>
-                {streamActive ? 'LIVE' : error ? 'ERROR' : 'STATIC'}
+                {streamActive ? t(CHART_TOOLS_LIVE_KEY, 'LIVE') : error ? t(CHART_TOOLS_ERROR_KEY, 'ERROR') : t(CHART_TOOLS_STATIC_KEY, 'STATIC')}
               </span>
             </span>
           </Tooltip>

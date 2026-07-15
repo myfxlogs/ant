@@ -3,6 +3,7 @@ import { Select } from 'antd';
 import type { SelectProps } from 'antd';
 import { StarFilled } from '@ant-design/icons';
 import { marketApi, isMTSessionError, type SymbolInfo } from '@/client/market';
+import { useTranslation } from 'react-i18next';
 
 const WATCHLIST_KEY = 'ant_watchlist_symbols';
 
@@ -24,7 +25,8 @@ interface SymbolPickerProps {
   style?: React.CSSProperties;
 }
 
-export default function SymbolPicker({ value, onChange, onDropdownVisibleChange, accountId, placeholder = 'Select symbol', style }: SymbolPickerProps) {
+export default function SymbolPicker({ value, onChange, onDropdownVisibleChange, accountId, placeholder, style }: SymbolPickerProps) {
+  const { t } = useTranslation();
   const [symbols, setSymbols] = useState<SymbolInfo[]>([]);
   const [watchlist, setWatchlist] = useState<string[]>(loadWatchlist);
   const [loading, setLoading] = useState(false);
@@ -68,7 +70,7 @@ export default function SymbolPicker({ value, onChange, onDropdownVisibleChange,
 
     if (watchlistSymbols.length > 0) {
       groups.push({
-        label: 'Watchlist',
+        label: t('market.watchlist', { defaultValue: 'Watchlist' }),
         options: watchlistSymbols.map((s) => ({
           value: s.symbol,
           label: (
@@ -88,7 +90,7 @@ export default function SymbolPicker({ value, onChange, onDropdownVisibleChange,
 
     if (otherSymbols.length > 0) {
       groups.push({
-        label: 'All Symbols',
+        label: t('market.allSymbols', { defaultValue: 'All Symbols' }),
         options: otherSymbols.map((s) => ({
           value: s.symbol,
           label: (
@@ -113,14 +115,14 @@ export default function SymbolPicker({ value, onChange, onDropdownVisibleChange,
       onChange={(v) => onChange?.(v)}
       onDropdownVisibleChange={onDropdownVisibleChange}
       loading={loading}
-      placeholder={placeholder}
+      placeholder={placeholder || t('market.selectSymbol', { defaultValue: 'Select symbol' })}
       style={{ minWidth: 120, ...style }}
       filterOption={(input, option) => {
         if (!option?.value) return false;
         return String(option.value).toLowerCase().includes(input.toLowerCase());
       }}
       options={options}
-      notFoundContent={loading ? 'Loading...' : mtError ? '⚠ MT session lost — reconnecting…' : 'No symbols found'}
+      notFoundContent={loading ? t('market.loadingSymbols', { defaultValue: 'Loading...' }) : mtError ? t('market.mtSessionLost', { defaultValue: '⚠ MT session lost — reconnecting…' }) : t('market.noSymbolsFound', { defaultValue: 'No symbols found' })}
     />
   );
 }
