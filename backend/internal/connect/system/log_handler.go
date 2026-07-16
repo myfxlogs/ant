@@ -2,9 +2,9 @@ package system
 
 import (
 	"context"
-	"encoding/json"
 
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"connectrpc.com/connect"
@@ -71,13 +71,16 @@ func orderHistoryToProto(o *model.OrderHistory) *antv1.OrderHistoryRecord {
 }
 
 func operationLogToProto(l *model.SystemOperationLog) *antv1.OperationLog {
-	details, _ := json.Marshal(l.NewValue)
+	var details *structpb.Struct
+	if m, ok := l.NewValue.(map[string]interface{}); ok {
+		details, _ = structpb.NewStruct(m)
+	}
 	return &antv1.OperationLog{
 		Id:           l.ID.String(),
 		UserId:       l.UserID.String(),
 		Module:       l.Module,
 		Action:       l.Action,
-		Details:      string(details),
+		Details:      details,
 		Ip:           l.IPAddress,
 		UserAgent:    l.UserAgent,
 		Status:       string(l.Status),
@@ -172,7 +175,7 @@ func (s *LogServiceServer) GetScheduleRunLogs(ctx context.Context, req *connect.
 			DurationMs:   l.DurationMs,
 			ErrorMessage: l.ErrorMessage,
 			SignalType:   l.SignalType,
-			SignalVolume: l.SignalVolume,
+			SignalVolume: l.SignalVolume.InexactFloat64(),
 			CreatedAt:    timestamppb.New(l.CreatedAt),
 		}
 	}

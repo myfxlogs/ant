@@ -17,11 +17,12 @@
  *   4. Reactive 401 interceptor (kept in transport.ts) — last-resort safety
  *      net for unanticipated invalidation (e.g. server restart, secret rotation).
  *
- * The refresh itself is a single-flight POST to /api/auth/refresh that reads
- * the httpOnly refresh_token cookie and returns a new access token.
+ * The refresh itself is a single-flight ConnectRPC call to RefreshTokenFromCookie
+ * that reads the httpOnly refresh_token cookie and returns a new access token.
  */
 
 import { useAuthStore } from '@/stores/authStore';
+import { authClient } from '@/client/connect';
 
 // Refresh as soon as the access token has less than this many ms left.
 const EARLY_REFRESH_MS = 2 * 60 * 1000; // 2 minutes
@@ -68,13 +69,6 @@ export function getTokenExpiryMs(token: string | null): number {
   }
 }
 
-/** Resolve the URL for the cookie-based refresh endpoint. */
-function refreshUrl(): string {
-  const envApi = import.meta.env.VITE_API_URL as string | undefined;
-  const base = (envApi || (typeof window !== 'undefined' ? window.location.origin : '')).replace(/\/+$/, '');
-  return `${base}/api/auth/refresh`;
-}
-
 /**
  * Single-flight refresh. All concurrent callers share one network round-trip.
  * Returns the new access token, or null on failure (cookie missing/expired).
@@ -83,10 +77,8 @@ export function refreshAccessToken(): Promise<string | null> {
   if (refreshPromise) return refreshPromise;
   refreshPromise = (async () => {
     try {
-      const res = await fetch(refreshUrl(), { method: 'POST', credentials: 'include' });
-      if (!res.ok) return null;
-      const data = await res.json();
-      const newAccess: string | undefined = data?.access_token;
+      const res = await authClient.refreshTokenFromCookie({});
+      const newAccess: string | undefined = res?.accessToken;
       if (!newAccess) return null;
       useAuthStore.getState().setAccessToken(newAccess);
       return newAccess;

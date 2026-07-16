@@ -17,9 +17,11 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	"alphaforge/internal/mthub"
+	"alphaforge/strategy/backtest"
 )
 
 const maxContextBars = 500
@@ -177,13 +179,25 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 		s.log.Info("LiveStrategyRunner: session registered", zap.String("run_id", runID.String()))
 	}
 
-	// Ensure run record is closed + session deregistered on exit.
-	// Stop shadow verifier if active.
+	// Auto-create shadow verifier for live consistency checking.
+	// Compares live VM signals with shadow backtest signals every 5 minutes.
+	if cfg.ShadowVerifier == nil && cfg.Code != "" {
+		btCfg := backtest.Config{
+			Symbol:         cfg.Symbol,
+			Timeframe:      cfg.Timeframe,
+			Params:         cfg.Params,
+			InitialCapital: decimal.NewFromInt(10000),
+		}
+		cfg.ShadowVerifier = NewShadowVerifier(cfg.Code, btCfg, s.log)
+	}
 	if cfg.ShadowVerifier != nil {
-		cfg.ShadowVerifier.Stop()
+		cfg.ShadowVerifier.Start(runCtx)
 	}
 
 	defer func() {
+		if cfg.ShadowVerifier != nil {
+			cfg.ShadowVerifier.Stop()
+		}
 		if s.sessionRegistry != nil && runID != uuid.Nil {
 			s.sessionRegistry.Deregister(runID)
 		}

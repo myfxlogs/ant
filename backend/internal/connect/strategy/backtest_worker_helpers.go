@@ -60,14 +60,19 @@ func assessRisk(m *antv1.BacktestMetrics) *antv1.ExecuteRiskAssessment {
 	score := 50
 	var reasons, warnings []string
 
+	maxDD := decimal.RequireFromString(m.MaxDrawdown)
+	sharpe := decimal.RequireFromString(m.SharpeRatio)
+	winRate := decimal.RequireFromString(m.WinRate)
+	profitFactor := decimal.RequireFromString(m.ProfitFactor)
+
 	switch {
-	case m.MaxDrawdown > 0.5:
+	case maxDD.GreaterThan(decimal.NewFromFloat(0.5)):
 		score -= 25
 		warnings = append(warnings, "Max drawdown exceeds 50%")
-	case m.MaxDrawdown > 0.3:
+	case maxDD.GreaterThan(decimal.NewFromFloat(0.3)):
 		score -= 15
 		reasons = append(reasons, "High drawdown (30-50%)")
-	case m.MaxDrawdown > 0.15:
+	case maxDD.GreaterThan(decimal.NewFromFloat(0.15)):
 		score -= 8
 		reasons = append(reasons, "Moderate drawdown (15-30%)")
 	default:
@@ -75,13 +80,13 @@ func assessRisk(m *antv1.BacktestMetrics) *antv1.ExecuteRiskAssessment {
 	}
 
 	switch {
-	case m.SharpeRatio >= 2.0:
+	case sharpe.GreaterThanOrEqual(decimal.NewFromFloat(2.0)):
 		score += 20
 		reasons = append(reasons, "Excellent Sharpe ratio (≥2.0)")
-	case m.SharpeRatio >= 1.0:
+	case sharpe.GreaterThanOrEqual(decimal.NewFromFloat(1.0)):
 		score += 10
 		reasons = append(reasons, "Good Sharpe ratio (≥1.0)")
-	case m.SharpeRatio < 0:
+	case sharpe.LessThan(decimal.Zero):
 		score -= 15
 		warnings = append(warnings, "Negative Sharpe ratio")
 	default:
@@ -89,9 +94,9 @@ func assessRisk(m *antv1.BacktestMetrics) *antv1.ExecuteRiskAssessment {
 		reasons = append(reasons, "Low Sharpe ratio (<1.0)")
 	}
 
-	if m.WinRate >= 0.6 {
+	if winRate.GreaterThanOrEqual(decimal.NewFromFloat(0.6)) {
 		score += 10
-	} else if m.WinRate < 0.3 {
+	} else if winRate.LessThan(decimal.NewFromFloat(0.3)) {
 		score -= 10
 		warnings = append(warnings, "Low win rate (<30%)")
 	}
@@ -100,7 +105,7 @@ func assessRisk(m *antv1.BacktestMetrics) *antv1.ExecuteRiskAssessment {
 		warnings = append(warnings, "Insufficient trades for reliable assessment")
 	}
 
-	if m.ProfitFactor > 0 && m.ProfitFactor < 1.0 {
+	if profitFactor.GreaterThan(decimal.Zero) && profitFactor.LessThan(decimal.NewFromFloat(1.0)) {
 		score -= 10
 		warnings = append(warnings, "Profit factor below 1.0 (unprofitable)")
 	}

@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
+
+// ParameterEntry represents a single strategy parameter extracted from code analysis.
+// Shared by code_assist.proto, backtest_service.proto, and strategy_runtime.proto.
+message ParameterEntry {
+  string name = 1;
+  string type = 2;
+  string default = 3;
+  string label = 4;
+}
+
+// ParamLabelMap holds parameter name → translated label mappings for a single locale.
+// Shared by code_assist.proto and strategy_template_entity.proto.
+message ParamLabelMap {
+  map<string, string> labels = 1;
+}

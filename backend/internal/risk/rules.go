@@ -33,6 +33,15 @@ func parsePrice(s string) decimal.Decimal {
 	return d
 }
 
+// contractSize returns the per-symbol contract multiplier from AccountState,
+// falling back to 100000 (standard FX lot) when not populated.
+func contractSize(state *AccountState) decimal.Decimal {
+	if state != nil && state.ContractSize.GreaterThan(decimal.Zero) {
+		return state.ContractSize
+	}
+	return decimal.NewFromInt(100000)
+}
+
 // ── R1: Max Lot Size ──────────────────────────────────────────────────
 
 type MaxLotSize struct {
@@ -92,7 +101,7 @@ func (r *MaxExposure) Check(_ context.Context, intent *antv1.OrderIntent, state 
 		// Market order — use current_price from state (approximate).
 		return &RuleResult{Allowed: true}
 	}
-	notional := vol.Mul(price).Mul(decimal.NewFromInt(100000)) // vol × price × contract_size
+	notional := vol.Mul(price).Mul(contractSize(state)) // vol × price × contract_size
 	maxAllowed := state.Balance.Mul(r.MaxRatio)
 	if notional.GreaterThan(maxAllowed) {
 		return &RuleResult{
@@ -197,7 +206,7 @@ type OrderFrequencyLimit struct {
 	MaxOrders int
 	Window    time.Duration
 	mu        sync.Mutex
-	timestamps []time.Time
+	timestamps map[string][]time.Time // per-userID
 }
 
 func (r *OrderFrequencyLimit) Name() string { return "order_frequency" }
@@ -206,25 +215,43 @@ func (r *OrderFrequencyLimit) Check(_ context.Context, intent *antv1.OrderIntent
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	uid := intent.GetUserId()
+	if r.timestamps == nil {
+		r.timestamps = make(map[string][]time.Time)
+	}
+
 	now := time.Now()
-	// Prune old timestamps.
 	cutoff := now.Add(-r.Window)
-	recent := make([]time.Time, 0, len(r.timestamps))
-	for _, ts := range r.timestamps {
+
+	// Prune old timestamps for this user.
+	old := r.timestamps[uid]
+	recent := make([]time.Time, 0, len(old))
+	for _, ts := range old {
 		if ts.After(cutoff) {
 			recent = append(recent, ts)
 		}
 	}
-	r.timestamps = recent
 
-	if len(r.timestamps) >= r.MaxOrders {
+	if len(recent) >= r.MaxOrders {
+		r.timestamps[uid] = recent
 		return &RuleResult{
 			Allowed: false,
 			Reason:  fmt.Sprintf("order frequency limit: %d orders in %v", r.MaxOrders, r.Window),
 		}
 	}
 
-	r.timestamps = append(r.timestamps, now)
+	recent = append(recent, now)
+	r.timestamps[uid] = recent
+
+	// Lazy cleanup: purge inactive users when map grows large.
+	if len(r.timestamps) > 1000 {
+		for u, stamps := range r.timestamps {
+			if len(stamps) == 0 || stamps[len(stamps)-1].Before(cutoff) {
+				delete(r.timestamps, u)
+			}
+		}
+	}
+
 	return &RuleResult{Allowed: true}
 }
 
@@ -297,7 +324,7 @@ func (r *MarginPreCheck) Check(_ context.Context, intent *antv1.OrderIntent, sta
 	}
 
 	// required = volume × price × contract_size / leverage
-	requiredMargin := vol.Mul(price).Mul(decimal.NewFromInt(100000)).Div(leverage)
+	requiredMargin := vol.Mul(price).Mul(contractSize(state)).Div(leverage)
 	totalMargin := state.UsedMargin.Add(requiredMargin)
 	ratio := totalMargin.Div(state.Equity)
 

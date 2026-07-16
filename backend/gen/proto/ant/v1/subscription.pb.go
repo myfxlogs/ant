@@ -9,6 +9,7 @@ package antv1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -35,7 +36,7 @@ type Plan struct {
 	MaxLiveStrategies     int32                  `protobuf:"varint,9,opt,name=max_live_strategies,json=maxLiveStrategies,proto3" json:"max_live_strategies,omitempty"`
 	MaxSymbolsPerStrategy int32                  `protobuf:"varint,10,opt,name=max_symbols_per_strategy,json=maxSymbolsPerStrategy,proto3" json:"max_symbols_per_strategy,omitempty"`
 	CapabilityTier        int32                  `protobuf:"varint,11,opt,name=capability_tier,json=capabilityTier,proto3" json:"capability_tier,omitempty"`
-	FeaturesJson          string                 `protobuf:"bytes,12,opt,name=features_json,json=featuresJson,proto3" json:"features_json,omitempty"` // JSONB feature flags as string
+	Features              *structpb.Struct       `protobuf:"bytes,12,opt,name=features,proto3" json:"features,omitempty"` // feature flags
 	SortOrder             int32                  `protobuf:"varint,13,opt,name=sort_order,json=sortOrder,proto3" json:"sort_order,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
@@ -148,11 +149,11 @@ func (x *Plan) GetCapabilityTier() int32 {
 	return 0
 }
 
-func (x *Plan) GetFeaturesJson() string {
+func (x *Plan) GetFeatures() *structpb.Struct {
 	if x != nil {
-		return x.FeaturesJson
+		return x.Features
 	}
-	return ""
+	return nil
 }
 
 func (x *Plan) GetSortOrder() int32 {
@@ -985,7 +986,7 @@ var File_subscription_proto protoreflect.FileDescriptor
 
 const file_subscription_proto_rawDesc = "" +
 	"\n" +
-	"\x12subscription.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf5\x03\n" +
+	"\x12subscription.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x85\x04\n" +
 	"\x04Plan\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12!\n" +
@@ -998,8 +999,8 @@ const file_subscription_proto_rawDesc = "" +
 	"\x13max_live_strategies\x18\t \x01(\x05R\x11maxLiveStrategies\x127\n" +
 	"\x18max_symbols_per_strategy\x18\n" +
 	" \x01(\x05R\x15maxSymbolsPerStrategy\x12'\n" +
-	"\x0fcapability_tier\x18\v \x01(\x05R\x0ecapabilityTier\x12#\n" +
-	"\rfeatures_json\x18\f \x01(\tR\ffeaturesJson\x12\x1d\n" +
+	"\x0fcapability_tier\x18\v \x01(\x05R\x0ecapabilityTier\x123\n" +
+	"\bfeatures\x18\f \x01(\v2\x17.google.protobuf.StructR\bfeatures\x12\x1d\n" +
 	"\n" +
 	"sort_order\x18\r \x01(\x05R\tsortOrder\"\x12\n" +
 	"\x10ListPlansRequest\"7\n" +
@@ -1101,39 +1102,41 @@ var file_subscription_proto_goTypes = []any{
 	(*UsageSummary)(nil),               // 13: ant.v1.UsageSummary
 	(*GetUsageSummaryResponse)(nil),    // 14: ant.v1.GetUsageSummaryResponse
 	nil,                                // 15: ant.v1.UsageSummary.TokensByFeatureEntry
-	(*timestamppb.Timestamp)(nil),      // 16: google.protobuf.Timestamp
+	(*structpb.Struct)(nil),            // 16: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil),      // 17: google.protobuf.Timestamp
 }
 var file_subscription_proto_depIdxs = []int32{
-	0,  // 0: ant.v1.ListPlansResponse.plans:type_name -> ant.v1.Plan
-	16, // 1: ant.v1.UserSubscription.current_period_start:type_name -> google.protobuf.Timestamp
-	16, // 2: ant.v1.UserSubscription.current_period_end:type_name -> google.protobuf.Timestamp
-	16, // 3: ant.v1.UserSubscription.cancelled_at:type_name -> google.protobuf.Timestamp
-	16, // 4: ant.v1.UserSubscription.created_at:type_name -> google.protobuf.Timestamp
-	3,  // 5: ant.v1.GetMySubscriptionResponse.subscription:type_name -> ant.v1.UserSubscription
-	0,  // 6: ant.v1.GetMySubscriptionResponse.plan:type_name -> ant.v1.Plan
-	3,  // 7: ant.v1.SubscribePlanResponse.subscription:type_name -> ant.v1.UserSubscription
-	3,  // 8: ant.v1.CancelSubscriptionResponse.subscription:type_name -> ant.v1.UserSubscription
-	3,  // 9: ant.v1.ChangePlanResponse.subscription:type_name -> ant.v1.UserSubscription
-	15, // 10: ant.v1.UsageSummary.tokens_by_feature:type_name -> ant.v1.UsageSummary.TokensByFeatureEntry
-	13, // 11: ant.v1.GetUsageSummaryResponse.summary:type_name -> ant.v1.UsageSummary
-	0,  // 12: ant.v1.GetUsageSummaryResponse.plan:type_name -> ant.v1.Plan
-	1,  // 13: ant.v1.SubscriptionService.ListPlans:input_type -> ant.v1.ListPlansRequest
-	4,  // 14: ant.v1.SubscriptionService.GetMySubscription:input_type -> ant.v1.GetMySubscriptionRequest
-	6,  // 15: ant.v1.SubscriptionService.Subscribe:input_type -> ant.v1.SubscribePlanRequest
-	8,  // 16: ant.v1.SubscriptionService.CancelSubscription:input_type -> ant.v1.CancelSubscriptionRequest
-	10, // 17: ant.v1.SubscriptionService.ChangePlan:input_type -> ant.v1.ChangePlanRequest
-	12, // 18: ant.v1.SubscriptionService.GetUsageSummary:input_type -> ant.v1.GetUsageSummaryRequest
-	2,  // 19: ant.v1.SubscriptionService.ListPlans:output_type -> ant.v1.ListPlansResponse
-	5,  // 20: ant.v1.SubscriptionService.GetMySubscription:output_type -> ant.v1.GetMySubscriptionResponse
-	7,  // 21: ant.v1.SubscriptionService.Subscribe:output_type -> ant.v1.SubscribePlanResponse
-	9,  // 22: ant.v1.SubscriptionService.CancelSubscription:output_type -> ant.v1.CancelSubscriptionResponse
-	11, // 23: ant.v1.SubscriptionService.ChangePlan:output_type -> ant.v1.ChangePlanResponse
-	14, // 24: ant.v1.SubscriptionService.GetUsageSummary:output_type -> ant.v1.GetUsageSummaryResponse
-	19, // [19:25] is the sub-list for method output_type
-	13, // [13:19] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	16, // 0: ant.v1.Plan.features:type_name -> google.protobuf.Struct
+	0,  // 1: ant.v1.ListPlansResponse.plans:type_name -> ant.v1.Plan
+	17, // 2: ant.v1.UserSubscription.current_period_start:type_name -> google.protobuf.Timestamp
+	17, // 3: ant.v1.UserSubscription.current_period_end:type_name -> google.protobuf.Timestamp
+	17, // 4: ant.v1.UserSubscription.cancelled_at:type_name -> google.protobuf.Timestamp
+	17, // 5: ant.v1.UserSubscription.created_at:type_name -> google.protobuf.Timestamp
+	3,  // 6: ant.v1.GetMySubscriptionResponse.subscription:type_name -> ant.v1.UserSubscription
+	0,  // 7: ant.v1.GetMySubscriptionResponse.plan:type_name -> ant.v1.Plan
+	3,  // 8: ant.v1.SubscribePlanResponse.subscription:type_name -> ant.v1.UserSubscription
+	3,  // 9: ant.v1.CancelSubscriptionResponse.subscription:type_name -> ant.v1.UserSubscription
+	3,  // 10: ant.v1.ChangePlanResponse.subscription:type_name -> ant.v1.UserSubscription
+	15, // 11: ant.v1.UsageSummary.tokens_by_feature:type_name -> ant.v1.UsageSummary.TokensByFeatureEntry
+	13, // 12: ant.v1.GetUsageSummaryResponse.summary:type_name -> ant.v1.UsageSummary
+	0,  // 13: ant.v1.GetUsageSummaryResponse.plan:type_name -> ant.v1.Plan
+	1,  // 14: ant.v1.SubscriptionService.ListPlans:input_type -> ant.v1.ListPlansRequest
+	4,  // 15: ant.v1.SubscriptionService.GetMySubscription:input_type -> ant.v1.GetMySubscriptionRequest
+	6,  // 16: ant.v1.SubscriptionService.Subscribe:input_type -> ant.v1.SubscribePlanRequest
+	8,  // 17: ant.v1.SubscriptionService.CancelSubscription:input_type -> ant.v1.CancelSubscriptionRequest
+	10, // 18: ant.v1.SubscriptionService.ChangePlan:input_type -> ant.v1.ChangePlanRequest
+	12, // 19: ant.v1.SubscriptionService.GetUsageSummary:input_type -> ant.v1.GetUsageSummaryRequest
+	2,  // 20: ant.v1.SubscriptionService.ListPlans:output_type -> ant.v1.ListPlansResponse
+	5,  // 21: ant.v1.SubscriptionService.GetMySubscription:output_type -> ant.v1.GetMySubscriptionResponse
+	7,  // 22: ant.v1.SubscriptionService.Subscribe:output_type -> ant.v1.SubscribePlanResponse
+	9,  // 23: ant.v1.SubscriptionService.CancelSubscription:output_type -> ant.v1.CancelSubscriptionResponse
+	11, // 24: ant.v1.SubscriptionService.ChangePlan:output_type -> ant.v1.ChangePlanResponse
+	14, // 25: ant.v1.SubscriptionService.GetUsageSummary:output_type -> ant.v1.GetUsageSummaryResponse
+	20, // [20:26] is the sub-list for method output_type
+	14, // [14:20] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_subscription_proto_init() }

@@ -2,16 +2,18 @@ package risksvc
 
 import (
 	"testing"
+
+	"github.com/shopspring/decimal"
 )
 
 func TestPlatformLimits_AllPass(t *testing.T) {
 	t.Parallel()
 	limits := DefaultPlatformLimits()
 	exposure := &PlatformExposure{
-		NetExposureBySymbol: map[string]float64{"EURUSD": 1.0},
-		TotalGrossExposure:  500_000,
-		TotalNetExposure:    200_000,
-		TotalMarginUsed:     50_000,
+		NetExposureBySymbol: map[string]decimal.Decimal{"EURUSD": decF(1.0)},
+		TotalGrossExposure:  decF(500_000),
+		TotalNetExposure:    decF(200_000),
+		TotalMarginUsed:     decF(50_000),
 	}
 	result := limits.Check(exposure)
 	if !result.Allowed {
@@ -21,9 +23,9 @@ func TestPlatformLimits_AllPass(t *testing.T) {
 
 func TestPlatformLimits_GrossExposureBlocked(t *testing.T) {
 	t.Parallel()
-	limits := &PlatformLimits{MaxTotalGrossExposure: 1_000_000}
+	limits := &PlatformLimits{MaxTotalGrossExposure: decF(1_000_000)}
 	exposure := &PlatformExposure{
-		TotalGrossExposure: 1_500_000,
+		TotalGrossExposure: decF(1_500_000),
 	}
 	result := limits.Check(exposure)
 	if result.Allowed {
@@ -36,9 +38,9 @@ func TestPlatformLimits_GrossExposureBlocked(t *testing.T) {
 
 func TestPlatformLimits_NetExposureBlocked(t *testing.T) {
 	t.Parallel()
-	limits := &PlatformLimits{MaxTotalNetExposure: 500_000}
+	limits := &PlatformLimits{MaxTotalNetExposure: decF(500_000)}
 	exposure := &PlatformExposure{
-		TotalNetExposure: -800_000,
+		TotalNetExposure: decF(-800_000),
 	}
 	result := limits.Check(exposure)
 	if result.Allowed {
@@ -48,9 +50,9 @@ func TestPlatformLimits_NetExposureBlocked(t *testing.T) {
 
 func TestPlatformLimits_SymbolNetExposureBlocked(t *testing.T) {
 	t.Parallel()
-	limits := &PlatformLimits{MaxNetExposurePerSymbol: 1_000_000}
+	limits := &PlatformLimits{MaxNetExposurePerSymbol: decF(1_000_000)}
 	exposure := &PlatformExposure{
-		NetExposureBySymbol: map[string]float64{"EURUSD": 1_500_000},
+		NetExposureBySymbol: map[string]decimal.Decimal{"EURUSD": decF(1_500_000)},
 	}
 	result := limits.Check(exposure)
 	if result.Allowed {
@@ -63,9 +65,9 @@ func TestPlatformLimits_SymbolNetExposureBlocked(t *testing.T) {
 
 func TestPlatformLimits_MarginBlocked(t *testing.T) {
 	t.Parallel()
-	limits := &PlatformLimits{MaxTotalMarginUsed: 100_000}
+	limits := &PlatformLimits{MaxTotalMarginUsed: decF(100_000)}
 	exposure := &PlatformExposure{
-		TotalMarginUsed: 150_000,
+		TotalMarginUsed: decF(150_000),
 	}
 	result := limits.Check(exposure)
 	if result.Allowed {
@@ -76,7 +78,7 @@ func TestPlatformLimits_MarginBlocked(t *testing.T) {
 func TestPlatformLimits_NilLimits(t *testing.T) {
 	t.Parallel()
 	var limits *PlatformLimits
-	exposure := &PlatformExposure{TotalGrossExposure: 100_000_000}
+	exposure := &PlatformExposure{TotalGrossExposure: decF(100_000_000)}
 	result := limits.Check(exposure)
 	if !result.Allowed {
 		t.Fatal("nil limits should always pass")
@@ -86,7 +88,7 @@ func TestPlatformLimits_NilLimits(t *testing.T) {
 func TestPlatformLimits_ZeroLimits(t *testing.T) {
 	t.Parallel()
 	limits := &PlatformLimits{}
-	exposure := &PlatformExposure{TotalGrossExposure: 100_000_000}
+	exposure := &PlatformExposure{TotalGrossExposure: decF(100_000_000)}
 	result := limits.Check(exposure)
 	if !result.Allowed {
 		t.Fatal("zero-value limits should pass (disabled)")

@@ -36,7 +36,18 @@ type ScheduleEngine struct {
 	notifyCh         chan struct{} // 1-buffered, external events → recomputeTimer
 	mu               sync.Mutex
 	log              *zap.Logger
+
+	// D6: TTL cache for autoTradeEnabled results to avoid PG query per schedule check.
+	autoTradeCache   map[uuid.UUID]autoTradeEntry
+	autoTradeCacheMu sync.Mutex
 }
+
+type autoTradeEntry struct {
+	enabled  bool
+	expireAt time.Time
+}
+
+const autoTradeCacheTTL = 30 * time.Second
 
 const (
 	backoffDelay = 30 * time.Second
@@ -59,6 +70,7 @@ func NewScheduleEngine(
 		activeRuns:       make(map[uuid.UUID]*runHandle),
 		notifyCh:         make(chan struct{}, 1),
 		log:              log,
+		autoTradeCache:   make(map[uuid.UUID]autoTradeEntry),
 	}
 }
 
@@ -172,7 +184,7 @@ func (e *ScheduleEngine) executeLoop(ctx context.Context) {
 		if e.isRunning(s.ID) {
 			continue
 		}
-		if e.autoTradeEnabled != nil && !e.autoTradeEnabled(s.UserID) {
+		if !e.isAutoTradeEnabled(s.UserID) {
 			continue
 		}
 		select {
@@ -182,6 +194,28 @@ func (e *ScheduleEngine) executeLoop(ctx context.Context) {
 		}
 		e.dispatch(ctx, s)
 	}
+}
+
+// isAutoTradeEnabled checks the per-user autotrade setting with a TTL cache
+// to avoid querying PG on every schedule dispatch cycle.
+func (e *ScheduleEngine) isAutoTradeEnabled(userID uuid.UUID) bool {
+	if e.autoTradeEnabled == nil {
+		return true
+	}
+	now := time.Now()
+	e.autoTradeCacheMu.Lock()
+	if entry, ok := e.autoTradeCache[userID]; ok && now.Before(entry.expireAt) {
+		e.autoTradeCacheMu.Unlock()
+		return entry.enabled
+	}
+	e.autoTradeCacheMu.Unlock()
+
+	enabled := e.autoTradeEnabled(userID)
+
+	e.autoTradeCacheMu.Lock()
+	e.autoTradeCache[userID] = autoTradeEntry{enabled: enabled, expireAt: now.Add(autoTradeCacheTTL)}
+	e.autoTradeCacheMu.Unlock()
+	return enabled
 }
 
 func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategySchedule) {
@@ -198,11 +232,7 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 		return
 	}
 
-	params, _ := schedule.GetParameters()
-	strParams := make(map[string]string, len(params))
-	for k, v := range params {
-		strParams[k] = fmt.Sprintf("%v", v)
-	}
+	strParams, _ := schedule.GetParameters()
 
 	runCtx, cancel := context.WithCancel(context.Background())
 	handle := &runHandle{cancel: cancel}

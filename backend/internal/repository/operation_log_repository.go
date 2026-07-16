@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -23,17 +22,9 @@ func (r *LogRepository) CreateOperationLog(ctx context.Context, log *model.Syste
 			new_value = EXCLUDED.new_value,
 			created_at = EXCLUDED.created_at`
 
-	var oldValue, newValue []byte
-	if log.OldValue != nil {
-		oldValue, _ = json.Marshal(log.OldValue)
-	}
-	if log.NewValue != nil {
-		newValue, _ = json.Marshal(log.NewValue)
-	}
-
 	_, err := r.db.Exec(ctx, query,
 		log.ID, log.UserID, log.OperationType, log.Module, log.ResourceType, log.ResourceID, log.Action,
-		oldValue, newValue, log.IPAddress, log.UserAgent, log.Status, log.ErrorMessage, log.DurationMs, log.CreatedAt)
+		log.OldValue, log.NewValue, log.IPAddress, log.UserAgent, log.Status, log.ErrorMessage, log.DurationMs, log.CreatedAt)
 	return fmt.Errorf("create operation log: %w", err)
 }
 

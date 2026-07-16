@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 )
 
 type LogRepository struct {
@@ -25,7 +26,7 @@ type ScheduleRunLogRow struct {
 	DurationMs   int64     `db:"duration_ms"`
 	ErrorMessage string    `db:"error_message"`
 	SignalType   string    `db:"signal_type"`
-	SignalVolume float64   `db:"signal_volume"`
+	SignalVolume decimal.Decimal `db:"signal_volume"`
 	CreatedAt    time.Time `db:"created_at"`
 }
 

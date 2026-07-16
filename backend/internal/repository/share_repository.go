@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/protobuf/proto"
+
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 type ShareToken struct {
@@ -81,7 +83,7 @@ func (r *ShareRepository) UpdateShowPositions(ctx context.Context, userID uuid.U
 	return err
 }
 
-func (r *ShareRepository) GetPositionsSnapshot(ctx context.Context, token string) (interface{}, error) {
+func (r *ShareRepository) GetPositionsSnapshot(ctx context.Context, token string) ([]*antv1.SharedPosition, error) {
 	var data []byte
 	var updatedAt time.Time
 	err := r.db.QueryRow(ctx,
@@ -90,19 +92,18 @@ func (r *ShareRepository) GetPositionsSnapshot(ctx context.Context, token string
 	if err != nil || data == nil {
 		return nil, err
 	}
-	// Refresh cache every 60s so positions stay reasonably current.
 	if time.Since(updatedAt) > 60*time.Second {
-		return nil, nil // signal caller to refresh
+		return nil, nil
 	}
-	var result interface{}
-	if err := json.Unmarshal(data, &result); err != nil {
+	var snap antv1.SharedPositionList
+	if err := proto.Unmarshal(data, &snap); err != nil {
 		return nil, err
 	}
-	return result, nil
+	return snap.Positions, nil
 }
 
-func (r *ShareRepository) SetPositionsSnapshot(ctx context.Context, token string, snapshot interface{}) error {
-	data, err := json.Marshal(snapshot)
+func (r *ShareRepository) SetPositionsSnapshot(ctx context.Context, token string, positions []*antv1.SharedPosition) error {
+	data, err := proto.Marshal(&antv1.SharedPositionList{Positions: positions})
 	if err != nil {
 		return err
 	}

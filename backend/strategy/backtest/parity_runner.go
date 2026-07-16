@@ -78,15 +78,15 @@ func RunParityTest(ctx context.Context, input ParityTestInput) (*ParityReport, e
 
 // ParitySummary is a condensed result for API responses.
 type ParitySummary struct {
-	Passed        bool   `json:"passed"`
-	GoTrades      int    `json:"go_trades"`
-	MTTrades      int    `json:"mt_trades"`
-	Matched       int    `json:"matched"`
-	FatalCount    int    `json:"fatal_count"`
-	WarningCount  int    `json:"warning_count"`
-	GoProfit      string `json:"go_profit"`
-	MTProfit      string `json:"mt_profit"`
-	ProfitDiff    string `json:"profit_diff"`
+	Passed       bool
+	GoTrades     int
+	MTTrades     int
+	Matched      int
+	FatalCount   int
+	WarningCount int
+	GoProfit     string
+	MTProfit     string
+	ProfitDiff   string
 }
 
 // Summarize produces a concise summary from a ParityReport.

@@ -68,7 +68,7 @@ func (s *NotificationServer) ListNotifications(
 			Type:      r.Type,
 			Title:     r.Title,
 			Message:   r.Message,
-			DataJson:  r.DataJSON,
+			Data:      r.Data,
 			IsRead:    r.IsRead,
 			CreatedAt: r.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		}
@@ -144,7 +144,7 @@ func (s *NotificationServer) StreamNotifications(
 				Type:      n.Type,
 				Title:     n.Title,
 				Message:   n.Message,
-				DataJson:  n.DataJSON,
+				Data:      n.Data,
 				IsRead:    n.IsRead,
 				CreatedAt: n.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 			}); err != nil {
@@ -165,7 +165,7 @@ func (s *NotificationServer) SendNotification(
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	row, err := s.repo.Insert(ctx, uid,
-		req.Msg.Type, req.Msg.Title, req.Msg.Message, req.Msg.DataJson)
+		req.Msg.Type, req.Msg.Title, req.Msg.Message, req.Msg.Data)
 	if err != nil {
 		s.log.Error("send notification insert failed", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)

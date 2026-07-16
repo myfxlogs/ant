@@ -9,6 +9,7 @@ package antv1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -28,7 +29,7 @@ type TradeCommandEvent struct {
 	Operation      string                 `protobuf:"bytes,3,opt,name=operation,proto3" json:"operation,omitempty"`
 	AccountId      string                 `protobuf:"bytes,10,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	Symbol         string                 `protobuf:"bytes,11,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	PayloadJson    string                 `protobuf:"bytes,20,opt,name=payload_json,json=payloadJson,proto3" json:"payload_json,omitempty"`
+	Payload        *structpb.Struct       `protobuf:"bytes,20,opt,name=payload,proto3" json:"payload,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -98,11 +99,11 @@ func (x *TradeCommandEvent) GetSymbol() string {
 	return ""
 }
 
-func (x *TradeCommandEvent) GetPayloadJson() string {
+func (x *TradeCommandEvent) GetPayload() *structpb.Struct {
 	if x != nil {
-		return x.PayloadJson
+		return x.Payload
 	}
-	return ""
+	return nil
 }
 
 type TradeReceiptEvent struct {
@@ -209,7 +210,7 @@ var File_stream_event_command_proto protoreflect.FileDescriptor
 
 const file_stream_event_command_proto_rawDesc = "" +
 	"\n" +
-	"\x1astream_event_command.proto\x12\x06ant.v1\"\xd3\x01\n" +
+	"\x1astream_event_command.proto\x12\x06ant.v1\x1a\x1cgoogle/protobuf/struct.proto\"\xe3\x01\n" +
 	"\x11TradeCommandEvent\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12'\n" +
@@ -218,8 +219,8 @@ const file_stream_event_command_proto_rawDesc = "" +
 	"\n" +
 	"account_id\x18\n" +
 	" \x01(\tR\taccountId\x12\x16\n" +
-	"\x06symbol\x18\v \x01(\tR\x06symbol\x12!\n" +
-	"\fpayload_json\x18\x14 \x01(\tR\vpayloadJson\"\xfa\x01\n" +
+	"\x06symbol\x18\v \x01(\tR\x06symbol\x121\n" +
+	"\apayload\x18\x14 \x01(\v2\x17.google.protobuf.StructR\apayload\"\xfa\x01\n" +
 	"\x11TradeReceiptEvent\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12'\n" +
@@ -249,13 +250,15 @@ var file_stream_event_command_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_stream_event_command_proto_goTypes = []any{
 	(*TradeCommandEvent)(nil), // 0: ant.v1.TradeCommandEvent
 	(*TradeReceiptEvent)(nil), // 1: ant.v1.TradeReceiptEvent
+	(*structpb.Struct)(nil),   // 2: google.protobuf.Struct
 }
 var file_stream_event_command_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	2, // 0: ant.v1.TradeCommandEvent.payload:type_name -> google.protobuf.Struct
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_stream_event_command_proto_init() }

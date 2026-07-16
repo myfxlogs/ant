@@ -69,7 +69,7 @@ func computeTradeStats(trades []*repository.TradeStatsRecord) *model.TradeStats 
 
 	if s.TotalTrades > 0 {
 		s.WinRate = decimal.NewFromFloat(float64(winCount) / float64(s.TotalTrades) * 100)
-		s.AverageTrade = s.NetProfit.InexactFloat64() / float64(s.TotalTrades)
+		s.AverageTrade = s.NetProfit.Div(decimal.NewFromInt(int64(s.TotalTrades)))
 	}
 	if winCount > 0 {
 		s.AverageProfit = totalProfit.Div(decimal.NewFromInt(int64(winCount)))
@@ -281,9 +281,9 @@ func dailyPnLToProto(items []*model.DailyPnL) []*antv1.DailyPnL {
 			Balance:                 d.Balance.String(),
 			ProfitFactor:            d.ProfitFactor.InexactFloat64(),
 			MaxFloatingLossAmount:   d.MaxFloatingLossAmount.StringFixed(2),
-			MaxFloatingLossRatio:    d.MaxFloatingLossRatio,
+			MaxFloatingLossRatio:    d.MaxFloatingLossRatio.InexactFloat64(),
 			MaxFloatingProfitAmount: d.MaxFloatingProfitAmount.StringFixed(2),
-			MaxFloatingProfitRatio:  d.MaxFloatingProfitRatio,
+			MaxFloatingProfitRatio:  d.MaxFloatingProfitRatio.InexactFloat64(),
 		})
 	}
 	return result

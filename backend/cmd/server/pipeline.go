@@ -53,11 +53,12 @@ func startMdGatewayPipeline(
 	var marginCallMu sync.Mutex
 	marginCallLastSent := make(map[string]map[int]time.Time)
 	// Per-account broker thresholds loaded from mt_accounts.
-	marginCallThresholds := make(map[string]float64) // accountID → broker_margin_call_pct
-	var snapshotMu sync.Mutex
+	marginCallThresholds := make(map[string]decimal.Decimal) // accountID → broker_margin_call_pct
+	var thresholdMu sync.RWMutex
 	lastSnapshot := make(map[string]time.Time) // throttle: 1 snapshot/hour/account
-	var metricsMu sync.Mutex
+	var snapshotMu sync.Mutex
 	lastMetricsWrite := make(map[string]time.Time) // throttle: 5s between PG metric writes
+	var metricsMu sync.Mutex
 
 	// Load per-account broker margin call thresholds (default 100.0 from migration 122).
 	func() {
@@ -69,7 +70,7 @@ func startMdGatewayPipeline(
 		defer rows.Close()
 		for rows.Next() {
 			var aid string
-			var pct float64
+			var pct decimal.Decimal
 			if err := rows.Scan(&aid, &pct); err != nil {
 				log.Warn("B-2.3: scan margin threshold failed", zap.Error(err))
 				continue
@@ -111,7 +112,7 @@ func startMdGatewayPipeline(
 					writeNow = true
 				}
 			}()
-			if writeNow {
+			if writeNow && userUID != uuid.Nil {
 				if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.MarginLevel); err != nil {
 					log.Warn("OnAccountProfit: pg update failed", zap.String("account", accountID), zap.Error(err))
 				}
@@ -143,11 +144,13 @@ func startMdGatewayPipeline(
 			accountSvc.UpdateSummaryCache(userID, accountID, p.Balance, p.Equity, "connected")
 			// B-2.3: 3-level margin call detection with per-broker thresholds.
 			if p.MarginLevel.GreaterThan(decimal.Zero) {
+				thresholdMu.RLock()
 				callPct := marginCallThresholds[accountID]
-				if callPct <= 0 {
-					callPct = 100.0
+				thresholdMu.RUnlock()
+				if !callPct.GreaterThan(decimal.Zero) {
+					callPct = decimal.NewFromInt(100)
 				}
-				accountSyncSvc.CheckMarginCall(accountID, userID, p.MarginLevel.InexactFloat64(), p.Margin.InexactFloat64(), p.Equity.InexactFloat64(), callPct, &marginCallMu, marginCallLastSent, eventStore, *emailNotifier)
+				accountSyncSvc.CheckMarginCall(accountID, userID, p.MarginLevel, p.Margin, p.Equity, callPct, &marginCallMu, marginCallLastSent, eventStore, *emailNotifier)
 			}
 		},
 		OnOrderUpdate: buildOnOrderUpdate(log, snapshotBroker, tradeRecordRepo),
@@ -155,7 +158,8 @@ func startMdGatewayPipeline(
 			var uid string
 			if userID, err := getUserIDFromPool(context.Background(), pool, accountID); err == nil {
 				uid = userID
-				accountSyncSvc.SyncAccountHistory(accountID, userID)
+				// D4: Run sync in background to avoid blocking the disconnect handler.
+				go accountSyncSvc.SyncAccountHistory(accountID, userID)
 			}
 			(*platformAgg).ClearAccount(accountID)
 			hub.RemoveSession(accountID) // BUG-2: clean Hub executors map on disconnect
@@ -210,14 +214,20 @@ func startMdGatewayPipeline(
 			stop := info.StopOutPct
 			// Zero values mean "proto doesn't expose these yet" — keep the schema DEFAULTs.
 			if pct > 0 || stop > 0 {
-				if err := accountSvc.UpdateBrokerThresholds(ctx, accountID, pct, stop); err != nil {
+				pctDec := decimal.NewFromFloat(pct)
+				stopDec := decimal.NewFromFloat(stop)
+				if err := accountSvc.UpdateBrokerThresholds(ctx, accountID, pctDec, stopDec); err != nil {
 					log.Warn("failed to persist broker margin info",
 						zap.String("account", accountID), zap.Error(err))
 				} else {
+					// D1: Update in-memory thresholds so margin call detection uses fresh values.
+					thresholdMu.Lock()
+					marginCallThresholds[accountID] = pctDec
+					thresholdMu.Unlock()
 					log.Info("broker margin thresholds updated",
 						zap.String("account", accountID),
-						zap.Float64("margin_call_pct", pct),
-						zap.Float64("stop_out_pct", stop))
+						zap.String("margin_call_pct", pctDec.String()),
+						zap.String("stop_out_pct", stopDec.String()))
 				}
 			}
 		},

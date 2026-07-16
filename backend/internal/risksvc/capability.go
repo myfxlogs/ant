@@ -10,6 +10,8 @@ import (
 	"context"
 	"fmt"
 	"sync"
+
+	"github.com/shopspring/decimal"
 )
 
 // CapabilityTier defines the permission level for an account.
@@ -50,9 +52,9 @@ type Capability struct {
 	UserID           string
 	Tier             CapabilityTier
 	OrderTypes       []string // allowed order types; nil = all
-	LotPerOrderMax   float64  // 0 = unlimited
+	LotPerOrderMax   decimal.Decimal // zero = unlimited
 	DailyOrderMax    int      // 0 = unlimited
-	LeverageMax      float64  // 0 = broker default
+	LeverageMax      float64  // 0 = broker default (ratio, not monetary)
 	SymbolWhitelist  []string // nil = all symbols allowed
 	KillSwitchOn     bool
 }
@@ -121,7 +123,7 @@ func (s *CapabilityStore) LoadFromPG(ctx context.Context, rows interface{ Scan(d
 			userID          string
 			tier            int
 			orderTypes      []string
-			lotPerOrderMax  *float64
+			lotPerOrderMax  *decimal.Decimal
 			dailyOrderMax   *int
 			leverageMax     *float64
 			symbolWhitelist []string

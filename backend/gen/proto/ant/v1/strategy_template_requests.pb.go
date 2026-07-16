@@ -153,8 +153,8 @@ type CreateTemplateRequest struct {
 	Parameters  []*TemplateParameter   `protobuf:"bytes,4,rep,name=parameters,proto3" json:"parameters,omitempty"`
 	IsPublic    bool                   `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
 	Tags        []string               `protobuf:"bytes,6,rep,name=tags,proto3" json:"tags,omitempty"`
-	// I18n data for parameter labels (JSON-encoded TemplateI18n).
-	I18N string `protobuf:"bytes,7,opt,name=i18n,proto3" json:"i18n,omitempty"`
+	// I18n data for parameter labels.
+	I18N *TemplateI18N `protobuf:"bytes,7,opt,name=i18n,proto3" json:"i18n,omitempty"`
 	// FK to imported_strategies.id (ADR-0023).
 	StrategyId    string `protobuf:"bytes,8,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -233,11 +233,11 @@ func (x *CreateTemplateRequest) GetTags() []string {
 	return nil
 }
 
-func (x *CreateTemplateRequest) GetI18N() string {
+func (x *CreateTemplateRequest) GetI18N() *TemplateI18N {
 	if x != nil {
 		return x.I18N
 	}
-	return ""
+	return nil
 }
 
 func (x *CreateTemplateRequest) GetStrategyId() string {
@@ -481,8 +481,8 @@ type UpdateTemplateRequest struct {
 	Parameters  []*TemplateParameter   `protobuf:"bytes,5,rep,name=parameters,proto3" json:"parameters,omitempty"`
 	IsPublic    *bool                  `protobuf:"varint,6,opt,name=is_public,json=isPublic,proto3,oneof" json:"is_public,omitempty"`
 	Tags        []string               `protobuf:"bytes,7,rep,name=tags,proto3" json:"tags,omitempty"`
-	// I18n data for parameter labels (JSON-encoded TemplateI18n).
-	I18N *string `protobuf:"bytes,8,opt,name=i18n,proto3,oneof" json:"i18n,omitempty"`
+	// I18n data for parameter labels.
+	I18N *TemplateI18N `protobuf:"bytes,8,opt,name=i18n,proto3,oneof" json:"i18n,omitempty"`
 	// FK to imported_strategies.id (ADR-0023).
 	StrategyId    *string `protobuf:"bytes,9,opt,name=strategy_id,json=strategyId,proto3,oneof" json:"strategy_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -568,11 +568,11 @@ func (x *UpdateTemplateRequest) GetTags() []string {
 	return nil
 }
 
-func (x *UpdateTemplateRequest) GetI18N() string {
-	if x != nil && x.I18N != nil {
-		return *x.I18N
+func (x *UpdateTemplateRequest) GetI18N() *TemplateI18N {
+	if x != nil {
+		return x.I18N
 	}
-	return ""
+	return nil
 }
 
 func (x *UpdateTemplateRequest) GetStrategyId() string {
@@ -635,7 +635,7 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"\x15ListTemplatesResponse\x126\n" +
 	"\ttemplates\x18\x01 \x03(\v2\x18.ant.v1.StrategyTemplateR\ttemplates\"$\n" +
 	"\x12GetTemplateRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\x82\x02\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x98\x02\n" +
 	"\x15CreateTemplateRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x12\n" +
@@ -644,8 +644,8 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"parameters\x18\x04 \x03(\v2\x19.ant.v1.TemplateParameterR\n" +
 	"parameters\x12\x1b\n" +
 	"\tis_public\x18\x05 \x01(\bR\bisPublic\x12\x12\n" +
-	"\x04tags\x18\x06 \x03(\tR\x04tags\x12\x12\n" +
-	"\x04i18n\x18\a \x01(\tR\x04i18n\x12\x1f\n" +
+	"\x04tags\x18\x06 \x03(\tR\x04tags\x12(\n" +
+	"\x04i18n\x18\a \x01(\v2\x14.ant.v1.TemplateI18nR\x04i18n\x12\x1f\n" +
 	"\vstrategy_id\x18\b \x01(\tR\n" +
 	"strategyId\"0\n" +
 	"\x1aCreateTemplateDraftRequest\x12\x12\n" +
@@ -668,7 +668,7 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"\x1bPublishTemplateDraftRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\",\n" +
 	"\x1aCancelTemplateDraftRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xf9\x02\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x8f\x03\n" +
 	"\x15UpdateTemplateRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12%\n" +
@@ -678,8 +678,8 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"parameters\x18\x05 \x03(\v2\x19.ant.v1.TemplateParameterR\n" +
 	"parameters\x12 \n" +
 	"\tis_public\x18\x06 \x01(\bH\x03R\bisPublic\x88\x01\x01\x12\x12\n" +
-	"\x04tags\x18\a \x03(\tR\x04tags\x12\x17\n" +
-	"\x04i18n\x18\b \x01(\tH\x04R\x04i18n\x88\x01\x01\x12$\n" +
+	"\x04tags\x18\a \x03(\tR\x04tags\x12-\n" +
+	"\x04i18n\x18\b \x01(\v2\x14.ant.v1.TemplateI18nH\x04R\x04i18n\x88\x01\x01\x12$\n" +
 	"\vstrategy_id\x18\t \x01(\tH\x05R\n" +
 	"strategyId\x88\x01\x01B\a\n" +
 	"\x05_nameB\x0e\n" +
@@ -718,17 +718,20 @@ var file_strategy_template_requests_proto_goTypes = []any{
 	(*DeleteTemplateRequest)(nil),       // 9: ant.v1.DeleteTemplateRequest
 	(*StrategyTemplate)(nil),            // 10: ant.v1.StrategyTemplate
 	(*TemplateParameter)(nil),           // 11: ant.v1.TemplateParameter
+	(*TemplateI18N)(nil),                // 12: ant.v1.TemplateI18n
 }
 var file_strategy_template_requests_proto_depIdxs = []int32{
 	10, // 0: ant.v1.ListTemplatesResponse.templates:type_name -> ant.v1.StrategyTemplate
 	11, // 1: ant.v1.CreateTemplateRequest.parameters:type_name -> ant.v1.TemplateParameter
-	11, // 2: ant.v1.UpdateTemplateDraftRequest.parameters:type_name -> ant.v1.TemplateParameter
-	11, // 3: ant.v1.UpdateTemplateRequest.parameters:type_name -> ant.v1.TemplateParameter
-	4,  // [4:4] is the sub-list for method output_type
-	4,  // [4:4] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	12, // 2: ant.v1.CreateTemplateRequest.i18n:type_name -> ant.v1.TemplateI18n
+	11, // 3: ant.v1.UpdateTemplateDraftRequest.parameters:type_name -> ant.v1.TemplateParameter
+	11, // 4: ant.v1.UpdateTemplateRequest.parameters:type_name -> ant.v1.TemplateParameter
+	12, // 5: ant.v1.UpdateTemplateRequest.i18n:type_name -> ant.v1.TemplateI18n
+	6,  // [6:6] is the sub-list for method output_type
+	6,  // [6:6] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_strategy_template_requests_proto_init() }

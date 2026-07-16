@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"alphaforge/internal/repository"
 )
@@ -29,9 +30,10 @@ func NewSender(repo *repository.NotificationRepository, sub *Subscriber, log *za
 func (s *Sender) Send(
 	ctx context.Context,
 	userID uuid.UUID,
-	typ, title, message, dataJSON string,
+	typ, title, message string,
+	data *structpb.Struct,
 ) (repository.NotificationRow, error) {
-	row, err := s.repo.Insert(ctx, userID, typ, title, message, dataJSON)
+	row, err := s.repo.Insert(ctx, userID, typ, title, message, data)
 	if err != nil {
 		s.log.Error("notification sender: insert failed",
 			zap.String("userID", userID.String()),

@@ -25,6 +25,8 @@ package risksvc
 import (
 	"context"
 	"math"
+
+	"github.com/shopspring/decimal"
 )
 
 // VolTargetSizer sizes positions based on volatility targeting.
@@ -34,10 +36,10 @@ type VolTargetSizer struct {
 	RiskBudgetPct float64
 
 	// MaxLots caps the position size.
-	MaxLots float64
+	MaxLots decimal.Decimal
 
 	// MinLots is the minimum lot size (sizer returns 0 if below this).
-	MinLots float64
+	MinLots decimal.Decimal
 }
 
 func (s *VolTargetSizer) Name() string { return "vol_target" }
@@ -48,30 +50,30 @@ func (s *VolTargetSizer) Size(_ context.Context, req *SizerRequest) (*SizerResul
 		riskBudgetPct = 0.01 // default 1% risk per trade
 	}
 	maxLots := s.MaxLots
-	if maxLots <= 0 {
-		maxLots = 100 // generous cap
+	if !maxLots.GreaterThan(decimal.Zero) {
+		maxLots = decimal.NewFromInt(100) // generous cap
 	}
 
 	// Compute ATR in account currency terms: ATR × contract_size.
 	atrValue := req.ATR
-	if atrValue <= 0 {
+	if atrValue.LessThanOrEqual(decimal.Zero) {
 		// Fallback: use price × annual_vol / √252 as daily vol proxy, then as ATR proxy.
 		if req.AnnualVol > 0 {
-			atrValue = req.Price * req.AnnualVol / math.Sqrt(252)
+			atrValue = req.Price.Mul(decimal.NewFromFloat(req.AnnualVol / math.Sqrt(252)))
 		} else {
-			atrValue = req.Price * 0.01 // 1% daily vol default
+			atrValue = req.Price.Mul(decimal.NewFromFloat(0.01)) // 1% daily vol default
 		}
 	}
 
 	contractSize := req.ContractSize
-	if contractSize <= 0 {
-		contractSize = 1 // spot-like or unit-less; use raw ATR
+	if contractSize.LessThanOrEqual(decimal.Zero) {
+		contractSize = decimal.NewFromInt(1) // spot-like or unit-less; use raw ATR
 	}
 
 	// Target risk in account currency.
-	targetRisk := req.Equity * riskBudgetPct
-	if targetRisk <= 0 {
-		return &SizerResult{Lots: 0, RiskUsed: 0, Method: s.Name()}, nil
+	targetRisk := req.Equity.Mul(decimal.NewFromFloat(riskBudgetPct))
+	if targetRisk.LessThanOrEqual(decimal.Zero) {
+		return &SizerResult{Lots: decimal.Zero, RiskUsed: 0, Method: s.Name()}, nil
 	}
 
 	// Position risk per lot: ATR × contract_size × √holding_days.
@@ -79,25 +81,26 @@ func (s *VolTargetSizer) Size(_ context.Context, req *SizerRequest) (*SizerResul
 	if holdingDays <= 0 {
 		holdingDays = 5 // default 5-day holding period
 	}
-	riskPerLot := atrValue * contractSize * math.Sqrt(holdingDays)
-	if riskPerLot <= 0 {
-		return &SizerResult{Lots: 0, RiskUsed: 0, Method: s.Name()}, nil
+	sqrtHolding := math.Sqrt(holdingDays)
+	riskPerLot := atrValue.Mul(contractSize).Mul(decimal.NewFromFloat(sqrtHolding))
+	if riskPerLot.LessThanOrEqual(decimal.Zero) {
+		return &SizerResult{Lots: decimal.Zero, RiskUsed: 0, Method: s.Name()}, nil
 	}
 
-	lots := targetRisk / riskPerLot
+	lots := targetRisk.Div(riskPerLot)
 
 	// Clamp to limits.
-	if lots < s.MinLots {
-		lots = 0
+	if s.MinLots.GreaterThan(decimal.Zero) && lots.LessThan(s.MinLots) {
+		lots = decimal.Zero
 	}
-	if lots > maxLots {
+	if lots.GreaterThan(maxLots) {
 		lots = maxLots
 	}
 
-	if req.Equity <= 0 {
-		return &SizerResult{Lots: 0, RiskUsed: 0, Method: s.Name()}, nil
+	if req.Equity.LessThanOrEqual(decimal.Zero) {
+		return &SizerResult{Lots: decimal.Zero, RiskUsed: 0, Method: s.Name()}, nil
 	}
-	riskUsed := lots * riskPerLot / req.Equity
+	riskUsed := lots.Mul(riskPerLot).Div(req.Equity).InexactFloat64()
 
 	return &SizerResult{
 		Lots:     lots,

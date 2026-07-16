@@ -141,7 +141,7 @@ type CapabilityStore interface {
 // CapabilityTier defines limits for a user tier.
 type CapabilityTier struct {
 	Name           string
-	MaxVolume      float64
+	MaxVolume      decimal.Decimal
 	MaxLeverage    int
 	MaxPositions   int
 	AllowedSymbols []string
@@ -185,9 +185,9 @@ func (r *CapabilityTierRule) Check(ctx context.Context, intent *antv1.OrderInten
 		return passResult(r.Name()) // no tier assigned = no restriction
 	}
 	vol := parseDecimal(intent.GetVolume())
-	if tier.MaxVolume > 0 && vol.GreaterThan(decimal.NewFromFloat(tier.MaxVolume)) {
+	if tier.MaxVolume.GreaterThan(decimal.Zero) && vol.GreaterThan(tier.MaxVolume) {
 		return blockResult(r.Name(),
-			fmt.Sprintf("volume %s exceeds tier max %.2f (tier: %s)", vol.String(), tier.MaxVolume, tier.Name))
+			fmt.Sprintf("volume %s exceeds tier max %s (tier: %s)", vol.String(), tier.MaxVolume.String(), tier.Name))
 	}
 	if len(tier.AllowedSymbols) > 0 {
 		sym := intent.GetSymbol()

@@ -48,6 +48,7 @@ type AccountState struct {
 	DailyPnL       decimal.Decimal
 	PeakEquity     decimal.Decimal
 	SymbolLeverage int
+	ContractSize   decimal.Decimal // per-symbol contract multiplier (e.g. 100000 for standard FX, 1 for spot crypto)
 }
 
 // ── Rule interface ────────────────────────────────────────────────────

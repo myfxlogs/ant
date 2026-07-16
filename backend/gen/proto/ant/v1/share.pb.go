@@ -24,8 +24,9 @@ const (
 type CreateShareTokenRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`                  // optional label
-	ExpireDays    int32                  `protobuf:"varint,3,opt,name=expire_days,json=expireDays,proto3" json:"expire_days,omitempty"` // default 7
+	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	ExpireDays    int32                  `protobuf:"varint,3,opt,name=expire_days,json=expireDays,proto3" json:"expire_days,omitempty"`
+	ShowPositions bool                   `protobuf:"varint,4,opt,name=show_positions,json=showPositions,proto3" json:"show_positions,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -79,6 +80,13 @@ func (x *CreateShareTokenRequest) GetExpireDays() int32 {
 		return x.ExpireDays
 	}
 	return 0
+}
+
+func (x *CreateShareTokenRequest) GetShowPositions() bool {
+	if x != nil {
+		return x.ShowPositions
+	}
+	return false
 }
 
 type CreateShareTokenResponse struct {
@@ -188,16 +196,21 @@ func (x *GetSharedPerformanceRequest) GetToken() string {
 type GetSharedPerformanceResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserName      string                 `protobuf:"bytes,1,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
-	AccountInfo   string                 `protobuf:"bytes,2,opt,name=account_info,json=accountInfo,proto3" json:"account_info,omitempty"` // broker server + login
-	TotalReturn   float64                `protobuf:"fixed64,3,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
-	WinRate       float64                `protobuf:"fixed64,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
-	MaxDrawdown   float64                `protobuf:"fixed64,5,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
-	SharpeRatio   float64                `protobuf:"fixed64,6,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
+	AccountInfo   string                 `protobuf:"bytes,2,opt,name=account_info,json=accountInfo,proto3" json:"account_info,omitempty"`
+	TotalReturn   string                 `protobuf:"bytes,3,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
+	WinRate       string                 `protobuf:"bytes,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	MaxDrawdown   string                 `protobuf:"bytes,5,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
+	SharpeRatio   string                 `protobuf:"bytes,6,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
 	TotalTrades   int32                  `protobuf:"varint,7,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
 	EquityCurve   []string               `protobuf:"bytes,8,rep,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
 	Trades        []*SharedTrade         `protobuf:"bytes,9,rep,name=trades,proto3" json:"trades,omitempty"`
 	Expired       bool                   `protobuf:"varint,10,opt,name=expired,proto3" json:"expired,omitempty"`
 	EquityTimesMs []int64                `protobuf:"varint,11,rep,packed,name=equity_times_ms,json=equityTimesMs,proto3" json:"equity_times_ms,omitempty"`
+	TotalVolume   string                 `protobuf:"bytes,12,opt,name=total_volume,json=totalVolume,proto3" json:"total_volume,omitempty"`
+	ProfitFactor  string                 `protobuf:"bytes,13,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
+	AvgHoldingMs  int64                  `protobuf:"varint,14,opt,name=avg_holding_ms,json=avgHoldingMs,proto3" json:"avg_holding_ms,omitempty"`
+	ShowPositions bool                   `protobuf:"varint,15,opt,name=show_positions,json=showPositions,proto3" json:"show_positions,omitempty"`
+	Positions     []*SharedPosition      `protobuf:"bytes,16,rep,name=positions,proto3" json:"positions,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -246,32 +259,32 @@ func (x *GetSharedPerformanceResponse) GetAccountInfo() string {
 	return ""
 }
 
-func (x *GetSharedPerformanceResponse) GetTotalReturn() float64 {
+func (x *GetSharedPerformanceResponse) GetTotalReturn() string {
 	if x != nil {
 		return x.TotalReturn
 	}
-	return 0
+	return ""
 }
 
-func (x *GetSharedPerformanceResponse) GetWinRate() float64 {
+func (x *GetSharedPerformanceResponse) GetWinRate() string {
 	if x != nil {
 		return x.WinRate
 	}
-	return 0
+	return ""
 }
 
-func (x *GetSharedPerformanceResponse) GetMaxDrawdown() float64 {
+func (x *GetSharedPerformanceResponse) GetMaxDrawdown() string {
 	if x != nil {
 		return x.MaxDrawdown
 	}
-	return 0
+	return ""
 }
 
-func (x *GetSharedPerformanceResponse) GetSharpeRatio() float64 {
+func (x *GetSharedPerformanceResponse) GetSharpeRatio() string {
 	if x != nil {
 		return x.SharpeRatio
 	}
-	return 0
+	return ""
 }
 
 func (x *GetSharedPerformanceResponse) GetTotalTrades() int32 {
@@ -305,6 +318,41 @@ func (x *GetSharedPerformanceResponse) GetExpired() bool {
 func (x *GetSharedPerformanceResponse) GetEquityTimesMs() []int64 {
 	if x != nil {
 		return x.EquityTimesMs
+	}
+	return nil
+}
+
+func (x *GetSharedPerformanceResponse) GetTotalVolume() string {
+	if x != nil {
+		return x.TotalVolume
+	}
+	return ""
+}
+
+func (x *GetSharedPerformanceResponse) GetProfitFactor() string {
+	if x != nil {
+		return x.ProfitFactor
+	}
+	return ""
+}
+
+func (x *GetSharedPerformanceResponse) GetAvgHoldingMs() int64 {
+	if x != nil {
+		return x.AvgHoldingMs
+	}
+	return 0
+}
+
+func (x *GetSharedPerformanceResponse) GetShowPositions() bool {
+	if x != nil {
+		return x.ShowPositions
+	}
+	return false
+}
+
+func (x *GetSharedPerformanceResponse) GetPositions() []*SharedPosition {
+	if x != nil {
+		return x.Positions
 	}
 	return nil
 }
@@ -385,46 +433,786 @@ func (x *SharedTrade) GetCloseTimeMs() int64 {
 	return 0
 }
 
+type SharedPosition struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Type          string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	Volume        string                 `protobuf:"bytes,3,opt,name=volume,proto3" json:"volume,omitempty"`
+	OpenPrice     string                 `protobuf:"bytes,4,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`
+	Profit        string                 `protobuf:"bytes,5,opt,name=profit,proto3" json:"profit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SharedPosition) Reset() {
+	*x = SharedPosition{}
+	mi := &file_share_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SharedPosition) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SharedPosition) ProtoMessage() {}
+
+func (x *SharedPosition) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SharedPosition.ProtoReflect.Descriptor instead.
+func (*SharedPosition) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *SharedPosition) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *SharedPosition) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *SharedPosition) GetVolume() string {
+	if x != nil {
+		return x.Volume
+	}
+	return ""
+}
+
+func (x *SharedPosition) GetOpenPrice() string {
+	if x != nil {
+		return x.OpenPrice
+	}
+	return ""
+}
+
+func (x *SharedPosition) GetProfit() string {
+	if x != nil {
+		return x.Profit
+	}
+	return ""
+}
+
+type SharedPositionList struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Positions     []*SharedPosition      `protobuf:"bytes,1,rep,name=positions,proto3" json:"positions,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SharedPositionList) Reset() {
+	*x = SharedPositionList{}
+	mi := &file_share_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SharedPositionList) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SharedPositionList) ProtoMessage() {}
+
+func (x *SharedPositionList) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SharedPositionList.ProtoReflect.Descriptor instead.
+func (*SharedPositionList) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *SharedPositionList) GetPositions() []*SharedPosition {
+	if x != nil {
+		return x.Positions
+	}
+	return nil
+}
+
+type UpdateShareTokenRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	ShowPositions bool                   `protobuf:"varint,2,opt,name=show_positions,json=showPositions,proto3" json:"show_positions,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateShareTokenRequest) Reset() {
+	*x = UpdateShareTokenRequest{}
+	mi := &file_share_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateShareTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateShareTokenRequest) ProtoMessage() {}
+
+func (x *UpdateShareTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateShareTokenRequest.ProtoReflect.Descriptor instead.
+func (*UpdateShareTokenRequest) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *UpdateShareTokenRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *UpdateShareTokenRequest) GetShowPositions() bool {
+	if x != nil {
+		return x.ShowPositions
+	}
+	return false
+}
+
+type UpdateShareTokenResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateShareTokenResponse) Reset() {
+	*x = UpdateShareTokenResponse{}
+	mi := &file_share_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateShareTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateShareTokenResponse) ProtoMessage() {}
+
+func (x *UpdateShareTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateShareTokenResponse.ProtoReflect.Descriptor instead.
+func (*UpdateShareTokenResponse) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{8}
+}
+
+type ListShareTokensRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListShareTokensRequest) Reset() {
+	*x = ListShareTokensRequest{}
+	mi := &file_share_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListShareTokensRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListShareTokensRequest) ProtoMessage() {}
+
+func (x *ListShareTokensRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListShareTokensRequest.ProtoReflect.Descriptor instead.
+func (*ListShareTokensRequest) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{9}
+}
+
+type ListShareTokensResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*ShareTokenItem      `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListShareTokensResponse) Reset() {
+	*x = ListShareTokensResponse{}
+	mi := &file_share_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListShareTokensResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListShareTokensResponse) ProtoMessage() {}
+
+func (x *ListShareTokensResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListShareTokensResponse.ProtoReflect.Descriptor instead.
+func (*ListShareTokensResponse) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ListShareTokensResponse) GetItems() []*ShareTokenItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type ShareTokenItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	ShareUrl      string                 `protobuf:"bytes,2,opt,name=share_url,json=shareUrl,proto3" json:"share_url,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	ShowPositions bool                   `protobuf:"varint,4,opt,name=show_positions,json=showPositions,proto3" json:"show_positions,omitempty"`
+	ViewCount     int32                  `protobuf:"varint,5,opt,name=view_count,json=viewCount,proto3" json:"view_count,omitempty"`
+	ExpiresAt     string                 `protobuf:"bytes,6,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ShareTokenItem) Reset() {
+	*x = ShareTokenItem{}
+	mi := &file_share_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ShareTokenItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ShareTokenItem) ProtoMessage() {}
+
+func (x *ShareTokenItem) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ShareTokenItem.ProtoReflect.Descriptor instead.
+func (*ShareTokenItem) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ShareTokenItem) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *ShareTokenItem) GetShareUrl() string {
+	if x != nil {
+		return x.ShareUrl
+	}
+	return ""
+}
+
+func (x *ShareTokenItem) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *ShareTokenItem) GetShowPositions() bool {
+	if x != nil {
+		return x.ShowPositions
+	}
+	return false
+}
+
+func (x *ShareTokenItem) GetViewCount() int32 {
+	if x != nil {
+		return x.ViewCount
+	}
+	return 0
+}
+
+func (x *ShareTokenItem) GetExpiresAt() string {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return ""
+}
+
+func (x *ShareTokenItem) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+type DeleteShareTokenRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteShareTokenRequest) Reset() {
+	*x = DeleteShareTokenRequest{}
+	mi := &file_share_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteShareTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteShareTokenRequest) ProtoMessage() {}
+
+func (x *DeleteShareTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteShareTokenRequest.ProtoReflect.Descriptor instead.
+func (*DeleteShareTokenRequest) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *DeleteShareTokenRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+type DeleteShareTokenResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteShareTokenResponse) Reset() {
+	*x = DeleteShareTokenResponse{}
+	mi := &file_share_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteShareTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteShareTokenResponse) ProtoMessage() {}
+
+func (x *DeleteShareTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteShareTokenResponse.ProtoReflect.Descriptor instead.
+func (*DeleteShareTokenResponse) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{13}
+}
+
+type ListAllShareTokensRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAllShareTokensRequest) Reset() {
+	*x = ListAllShareTokensRequest{}
+	mi := &file_share_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAllShareTokensRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAllShareTokensRequest) ProtoMessage() {}
+
+func (x *ListAllShareTokensRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAllShareTokensRequest.ProtoReflect.Descriptor instead.
+func (*ListAllShareTokensRequest) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *ListAllShareTokensRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListAllShareTokensRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type ListAllShareTokensResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*AdminShareTokenItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAllShareTokensResponse) Reset() {
+	*x = ListAllShareTokensResponse{}
+	mi := &file_share_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAllShareTokensResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAllShareTokensResponse) ProtoMessage() {}
+
+func (x *ListAllShareTokensResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAllShareTokensResponse.ProtoReflect.Descriptor instead.
+func (*ListAllShareTokensResponse) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ListAllShareTokensResponse) GetItems() []*AdminShareTokenItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *ListAllShareTokensResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *ListAllShareTokensResponse) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListAllShareTokensResponse) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type AdminShareTokenItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	ShareUrl      string                 `protobuf:"bytes,2,opt,name=share_url,json=shareUrl,proto3" json:"share_url,omitempty"`
+	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	ShowPositions bool                   `protobuf:"varint,5,opt,name=show_positions,json=showPositions,proto3" json:"show_positions,omitempty"`
+	ViewCount     int32                  `protobuf:"varint,6,opt,name=view_count,json=viewCount,proto3" json:"view_count,omitempty"`
+	ExpiresAt     string                 `protobuf:"bytes,7,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminShareTokenItem) Reset() {
+	*x = AdminShareTokenItem{}
+	mi := &file_share_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminShareTokenItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminShareTokenItem) ProtoMessage() {}
+
+func (x *AdminShareTokenItem) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminShareTokenItem.ProtoReflect.Descriptor instead.
+func (*AdminShareTokenItem) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *AdminShareTokenItem) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *AdminShareTokenItem) GetShareUrl() string {
+	if x != nil {
+		return x.ShareUrl
+	}
+	return ""
+}
+
+func (x *AdminShareTokenItem) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *AdminShareTokenItem) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *AdminShareTokenItem) GetShowPositions() bool {
+	if x != nil {
+		return x.ShowPositions
+	}
+	return false
+}
+
+func (x *AdminShareTokenItem) GetViewCount() int32 {
+	if x != nil {
+		return x.ViewCount
+	}
+	return 0
+}
+
+func (x *AdminShareTokenItem) GetExpiresAt() string {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return ""
+}
+
+func (x *AdminShareTokenItem) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
 var File_share_proto protoreflect.FileDescriptor
 
 const file_share_proto_rawDesc = "" +
 	"\n" +
-	"\vshare.proto\x12\x06ant.v1\"{\n" +
+	"\vshare.proto\x12\x06ant.v1\"\xa2\x01\n" +
 	"\x17CreateShareTokenRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1f\n" +
 	"\vexpire_days\x18\x03 \x01(\x05R\n" +
-	"expireDays\"l\n" +
+	"expireDays\x12%\n" +
+	"\x0eshow_positions\x18\x04 \x01(\bR\rshowPositions\"l\n" +
 	"\x18CreateShareTokenResponse\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x12\x1b\n" +
 	"\tshare_url\x18\x02 \x01(\tR\bshareUrl\x12\x1d\n" +
 	"\n" +
 	"expires_at\x18\x03 \x01(\tR\texpiresAt\"3\n" +
 	"\x1bGetSharedPerformanceRequest\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\"\x97\x03\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"\xe2\x04\n" +
 	"\x1cGetSharedPerformanceResponse\x12\x1b\n" +
 	"\tuser_name\x18\x01 \x01(\tR\buserName\x12!\n" +
 	"\faccount_info\x18\x02 \x01(\tR\vaccountInfo\x12!\n" +
-	"\ftotal_return\x18\x03 \x01(\x01R\vtotalReturn\x12\x19\n" +
-	"\bwin_rate\x18\x04 \x01(\x01R\awinRate\x12!\n" +
-	"\fmax_drawdown\x18\x05 \x01(\x01R\vmaxDrawdown\x12!\n" +
-	"\fsharpe_ratio\x18\x06 \x01(\x01R\vsharpeRatio\x12!\n" +
+	"\ftotal_return\x18\x03 \x01(\tR\vtotalReturn\x12\x19\n" +
+	"\bwin_rate\x18\x04 \x01(\tR\awinRate\x12!\n" +
+	"\fmax_drawdown\x18\x05 \x01(\tR\vmaxDrawdown\x12!\n" +
+	"\fsharpe_ratio\x18\x06 \x01(\tR\vsharpeRatio\x12!\n" +
 	"\ftotal_trades\x18\a \x01(\x05R\vtotalTrades\x12!\n" +
 	"\fequity_curve\x18\b \x03(\tR\vequityCurve\x12+\n" +
 	"\x06trades\x18\t \x03(\v2\x13.ant.v1.SharedTradeR\x06trades\x12\x18\n" +
 	"\aexpired\x18\n" +
 	" \x01(\bR\aexpired\x12&\n" +
-	"\x0fequity_times_ms\x18\v \x03(\x03R\requityTimesMs\"\x8d\x01\n" +
+	"\x0fequity_times_ms\x18\v \x03(\x03R\requityTimesMs\x12!\n" +
+	"\ftotal_volume\x18\f \x01(\tR\vtotalVolume\x12#\n" +
+	"\rprofit_factor\x18\r \x01(\tR\fprofitFactor\x12$\n" +
+	"\x0eavg_holding_ms\x18\x0e \x01(\x03R\favgHoldingMs\x12%\n" +
+	"\x0eshow_positions\x18\x0f \x01(\bR\rshowPositions\x124\n" +
+	"\tpositions\x18\x10 \x03(\v2\x16.ant.v1.SharedPositionR\tpositions\"\x8d\x01\n" +
 	"\vSharedTrade\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +
 	"\x06volume\x18\x03 \x01(\tR\x06volume\x12\x16\n" +
 	"\x06profit\x18\x04 \x01(\tR\x06profit\x12\"\n" +
-	"\rclose_time_ms\x18\x05 \x01(\x03R\vcloseTimeMs2\xc8\x01\n" +
+	"\rclose_time_ms\x18\x05 \x01(\x03R\vcloseTimeMs\"\x8b\x01\n" +
+	"\x0eSharedPosition\x12\x16\n" +
+	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x12\n" +
+	"\x04type\x18\x02 \x01(\tR\x04type\x12\x16\n" +
+	"\x06volume\x18\x03 \x01(\tR\x06volume\x12\x1d\n" +
+	"\n" +
+	"open_price\x18\x04 \x01(\tR\topenPrice\x12\x16\n" +
+	"\x06profit\x18\x05 \x01(\tR\x06profit\"J\n" +
+	"\x12SharedPositionList\x124\n" +
+	"\tpositions\x18\x01 \x03(\v2\x16.ant.v1.SharedPositionR\tpositions\"V\n" +
+	"\x17UpdateShareTokenRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12%\n" +
+	"\x0eshow_positions\x18\x02 \x01(\bR\rshowPositions\"\x1a\n" +
+	"\x18UpdateShareTokenResponse\"\x18\n" +
+	"\x16ListShareTokensRequest\"G\n" +
+	"\x17ListShareTokensResponse\x12,\n" +
+	"\x05items\x18\x01 \x03(\v2\x16.ant.v1.ShareTokenItemR\x05items\"\xe9\x01\n" +
+	"\x0eShareTokenItem\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12\x1b\n" +
+	"\tshare_url\x18\x02 \x01(\tR\bshareUrl\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12%\n" +
+	"\x0eshow_positions\x18\x04 \x01(\bR\rshowPositions\x12\x1d\n" +
+	"\n" +
+	"view_count\x18\x05 \x01(\x05R\tviewCount\x12\x1d\n" +
+	"\n" +
+	"expires_at\x18\x06 \x01(\tR\texpiresAt\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\a \x01(\tR\tcreatedAt\"/\n" +
+	"\x17DeleteShareTokenRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"\x1a\n" +
+	"\x18DeleteShareTokenResponse\"L\n" +
+	"\x19ListAllShareTokensRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"\x96\x01\n" +
+	"\x1aListAllShareTokensResponse\x121\n" +
+	"\x05items\x18\x01 \x03(\v2\x1b.ant.v1.AdminShareTokenItemR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
+	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"\x87\x02\n" +
+	"\x13AdminShareTokenItem\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12\x1b\n" +
+	"\tshare_url\x18\x02 \x01(\tR\bshareUrl\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\x12%\n" +
+	"\x0eshow_positions\x18\x05 \x01(\bR\rshowPositions\x12\x1d\n" +
+	"\n" +
+	"view_count\x18\x06 \x01(\x05R\tviewCount\x12\x1d\n" +
+	"\n" +
+	"expires_at\x18\a \x01(\tR\texpiresAt\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\b \x01(\tR\tcreatedAt2\xa7\x04\n" +
 	"\fShareService\x12U\n" +
 	"\x10CreateShareToken\x12\x1f.ant.v1.CreateShareTokenRequest\x1a .ant.v1.CreateShareTokenResponse\x12a\n" +
-	"\x14GetSharedPerformance\x12#.ant.v1.GetSharedPerformanceRequest\x1a$.ant.v1.GetSharedPerformanceResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x14GetSharedPerformance\x12#.ant.v1.GetSharedPerformanceRequest\x1a$.ant.v1.GetSharedPerformanceResponse\x12U\n" +
+	"\x10UpdateShareToken\x12\x1f.ant.v1.UpdateShareTokenRequest\x1a .ant.v1.UpdateShareTokenResponse\x12R\n" +
+	"\x0fListShareTokens\x12\x1e.ant.v1.ListShareTokensRequest\x1a\x1f.ant.v1.ListShareTokensResponse\x12U\n" +
+	"\x10DeleteShareToken\x12\x1f.ant.v1.DeleteShareTokenRequest\x1a .ant.v1.DeleteShareTokenResponse\x12[\n" +
+	"\x12ListAllShareTokens\x12!.ant.v1.ListAllShareTokensRequest\x1a\".ant.v1.ListAllShareTokensResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_share_proto_rawDescOnce sync.Once
@@ -438,25 +1226,49 @@ func file_share_proto_rawDescGZIP() []byte {
 	return file_share_proto_rawDescData
 }
 
-var file_share_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_share_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_share_proto_goTypes = []any{
 	(*CreateShareTokenRequest)(nil),      // 0: ant.v1.CreateShareTokenRequest
 	(*CreateShareTokenResponse)(nil),     // 1: ant.v1.CreateShareTokenResponse
 	(*GetSharedPerformanceRequest)(nil),  // 2: ant.v1.GetSharedPerformanceRequest
 	(*GetSharedPerformanceResponse)(nil), // 3: ant.v1.GetSharedPerformanceResponse
 	(*SharedTrade)(nil),                  // 4: ant.v1.SharedTrade
+	(*SharedPosition)(nil),               // 5: ant.v1.SharedPosition
+	(*SharedPositionList)(nil),           // 6: ant.v1.SharedPositionList
+	(*UpdateShareTokenRequest)(nil),      // 7: ant.v1.UpdateShareTokenRequest
+	(*UpdateShareTokenResponse)(nil),     // 8: ant.v1.UpdateShareTokenResponse
+	(*ListShareTokensRequest)(nil),       // 9: ant.v1.ListShareTokensRequest
+	(*ListShareTokensResponse)(nil),      // 10: ant.v1.ListShareTokensResponse
+	(*ShareTokenItem)(nil),               // 11: ant.v1.ShareTokenItem
+	(*DeleteShareTokenRequest)(nil),      // 12: ant.v1.DeleteShareTokenRequest
+	(*DeleteShareTokenResponse)(nil),     // 13: ant.v1.DeleteShareTokenResponse
+	(*ListAllShareTokensRequest)(nil),    // 14: ant.v1.ListAllShareTokensRequest
+	(*ListAllShareTokensResponse)(nil),   // 15: ant.v1.ListAllShareTokensResponse
+	(*AdminShareTokenItem)(nil),          // 16: ant.v1.AdminShareTokenItem
 }
 var file_share_proto_depIdxs = []int32{
-	4, // 0: ant.v1.GetSharedPerformanceResponse.trades:type_name -> ant.v1.SharedTrade
-	0, // 1: ant.v1.ShareService.CreateShareToken:input_type -> ant.v1.CreateShareTokenRequest
-	2, // 2: ant.v1.ShareService.GetSharedPerformance:input_type -> ant.v1.GetSharedPerformanceRequest
-	1, // 3: ant.v1.ShareService.CreateShareToken:output_type -> ant.v1.CreateShareTokenResponse
-	3, // 4: ant.v1.ShareService.GetSharedPerformance:output_type -> ant.v1.GetSharedPerformanceResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	4,  // 0: ant.v1.GetSharedPerformanceResponse.trades:type_name -> ant.v1.SharedTrade
+	5,  // 1: ant.v1.GetSharedPerformanceResponse.positions:type_name -> ant.v1.SharedPosition
+	5,  // 2: ant.v1.SharedPositionList.positions:type_name -> ant.v1.SharedPosition
+	11, // 3: ant.v1.ListShareTokensResponse.items:type_name -> ant.v1.ShareTokenItem
+	16, // 4: ant.v1.ListAllShareTokensResponse.items:type_name -> ant.v1.AdminShareTokenItem
+	0,  // 5: ant.v1.ShareService.CreateShareToken:input_type -> ant.v1.CreateShareTokenRequest
+	2,  // 6: ant.v1.ShareService.GetSharedPerformance:input_type -> ant.v1.GetSharedPerformanceRequest
+	7,  // 7: ant.v1.ShareService.UpdateShareToken:input_type -> ant.v1.UpdateShareTokenRequest
+	9,  // 8: ant.v1.ShareService.ListShareTokens:input_type -> ant.v1.ListShareTokensRequest
+	12, // 9: ant.v1.ShareService.DeleteShareToken:input_type -> ant.v1.DeleteShareTokenRequest
+	14, // 10: ant.v1.ShareService.ListAllShareTokens:input_type -> ant.v1.ListAllShareTokensRequest
+	1,  // 11: ant.v1.ShareService.CreateShareToken:output_type -> ant.v1.CreateShareTokenResponse
+	3,  // 12: ant.v1.ShareService.GetSharedPerformance:output_type -> ant.v1.GetSharedPerformanceResponse
+	8,  // 13: ant.v1.ShareService.UpdateShareToken:output_type -> ant.v1.UpdateShareTokenResponse
+	10, // 14: ant.v1.ShareService.ListShareTokens:output_type -> ant.v1.ListShareTokensResponse
+	13, // 15: ant.v1.ShareService.DeleteShareToken:output_type -> ant.v1.DeleteShareTokenResponse
+	15, // 16: ant.v1.ShareService.ListAllShareTokens:output_type -> ant.v1.ListAllShareTokensResponse
+	11, // [11:17] is the sub-list for method output_type
+	5,  // [5:11] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_share_proto_init() }
@@ -470,7 +1282,7 @@ func file_share_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_share_proto_rawDesc), len(file_share_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

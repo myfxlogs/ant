@@ -42,3 +42,10 @@ message ToggleConfigEnabledRequest {
 }
 
 message ToggleConfigEnabledResponse {}
+
+message HealthGradingConfig {
+  double green_success_rate = 1;
+  int32 green_max_failed_runs = 2;
+  double yellow_success_rate = 3;
+  int32 min_sample_size = 4;
+}

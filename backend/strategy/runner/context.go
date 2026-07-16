@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"context"
 	"log"
 	"sync"
 
@@ -20,6 +21,10 @@ type contextImpl struct {
 	symbol    string
 	timeframe string
 	timerSet  bool
+
+	// goCtx is the Go context.Context for the current event dispatch.
+	// Set by Runner before calling strategy methods; read by VM via GoContext().
+	goCtx context.Context
 
 	// Live state from parent process (harness mode — no RPC).
 	liveBalance   string
@@ -201,4 +206,19 @@ func (c *contextImpl) ServerTime() int64 {
 		return c.bars.Time(0)
 	}
 	return 0
+}
+
+func (c *contextImpl) GoContext() context.Context {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	if c.goCtx != nil {
+		return c.goCtx
+	}
+	return context.Background()
+}
+
+func (c *contextImpl) setGoContext(ctx context.Context) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.goCtx = ctx
 }

@@ -68,10 +68,10 @@ func (g *Guard) Check(ctx context.Context, req *GuardRequest) *GuardResult {
 		)}
 	}
 
-	// 3. Duplicate protection: same (symbol|side|volume|type) within dedup window.
+	// 3. Duplicate protection: same (symbol|side|volume|type|price) within dedup window.
 	g.dedupMu.Lock()
 	now := time.Now()
-	key := fmt.Sprintf("%s|%s|%s|%s", req.Symbol, req.Side, req.Volume, req.OrderType)
+	key := fmt.Sprintf("%s|%s|%s|%s|%s", req.Symbol, req.Side, req.Volume, req.OrderType, req.Price)
 	if last, ok := g.dedup[key]; ok && now.Sub(last) < g.dedupWin {
 		g.dedupMu.Unlock()
 		return &GuardResult{Allowed: false, Reason: "duplicate order within dedup window"}
@@ -96,4 +96,5 @@ type GuardRequest struct {
 	Side      string
 	Volume    decimal.Decimal
 	OrderType string
+	Price     decimal.Decimal
 }

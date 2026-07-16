@@ -9,6 +9,7 @@ package antv1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -1270,12 +1271,12 @@ type AgentBacktestResult struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	Success          bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Error            string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
-	TotalReturn      float64                `protobuf:"fixed64,3,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
-	AnnualReturn     float64                `protobuf:"fixed64,4,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"`
-	MaxDrawdown      float64                `protobuf:"fixed64,5,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
-	SharpeRatio      float64                `protobuf:"fixed64,6,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
-	WinRate          float64                `protobuf:"fixed64,7,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
-	ProfitFactor     float64                `protobuf:"fixed64,8,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
+	TotalReturn      string                 `protobuf:"bytes,3,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
+	AnnualReturn     string                 `protobuf:"bytes,4,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"`
+	MaxDrawdown      string                 `protobuf:"bytes,5,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
+	SharpeRatio      string                 `protobuf:"bytes,6,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
+	WinRate          string                 `protobuf:"bytes,7,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	ProfitFactor     string                 `protobuf:"bytes,8,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
 	TotalTrades      int32                  `protobuf:"varint,9,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
 	WinningTrades    int32                  `protobuf:"varint,10,opt,name=winning_trades,json=winningTrades,proto3" json:"winning_trades,omitempty"`
 	LosingTrades     int32                  `protobuf:"varint,11,opt,name=losing_trades,json=losingTrades,proto3" json:"losing_trades,omitempty"`
@@ -1331,46 +1332,46 @@ func (x *AgentBacktestResult) GetError() string {
 	return ""
 }
 
-func (x *AgentBacktestResult) GetTotalReturn() float64 {
+func (x *AgentBacktestResult) GetTotalReturn() string {
 	if x != nil {
 		return x.TotalReturn
 	}
-	return 0
+	return ""
 }
 
-func (x *AgentBacktestResult) GetAnnualReturn() float64 {
+func (x *AgentBacktestResult) GetAnnualReturn() string {
 	if x != nil {
 		return x.AnnualReturn
 	}
-	return 0
+	return ""
 }
 
-func (x *AgentBacktestResult) GetMaxDrawdown() float64 {
+func (x *AgentBacktestResult) GetMaxDrawdown() string {
 	if x != nil {
 		return x.MaxDrawdown
 	}
-	return 0
+	return ""
 }
 
-func (x *AgentBacktestResult) GetSharpeRatio() float64 {
+func (x *AgentBacktestResult) GetSharpeRatio() string {
 	if x != nil {
 		return x.SharpeRatio
 	}
-	return 0
+	return ""
 }
 
-func (x *AgentBacktestResult) GetWinRate() float64 {
+func (x *AgentBacktestResult) GetWinRate() string {
 	if x != nil {
 		return x.WinRate
 	}
-	return 0
+	return ""
 }
 
-func (x *AgentBacktestResult) GetProfitFactor() float64 {
+func (x *AgentBacktestResult) GetProfitFactor() string {
 	if x != nil {
 		return x.ProfitFactor
 	}
-	return 0
+	return ""
 }
 
 func (x *AgentBacktestResult) GetTotalTrades() int32 {
@@ -1790,7 +1791,7 @@ type StoreExperienceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Category      string                 `protobuf:"bytes,1,opt,name=category,proto3" json:"category,omitempty"`       // strategy_pattern / market_regime / optimization_result
 	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`         // natural language description
-	Fingerprint   string                 `protobuf:"bytes,3,opt,name=fingerprint,proto3" json:"fingerprint,omitempty"` // JSON string of structural fingerprint
+	Fingerprint   *structpb.Struct       `protobuf:"bytes,3,opt,name=fingerprint,proto3" json:"fingerprint,omitempty"` // structural fingerprint
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1839,11 +1840,11 @@ func (x *StoreExperienceRequest) GetContent() string {
 	return ""
 }
 
-func (x *StoreExperienceRequest) GetFingerprint() string {
+func (x *StoreExperienceRequest) GetFingerprint() *structpb.Struct {
 	if x != nil {
 		return x.Fingerprint
 	}
-	return ""
+	return nil
 }
 
 type StoreExperienceResponse struct {
@@ -2425,7 +2426,7 @@ type SaveUserTemplateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
-	ScopeJson     string                 `protobuf:"bytes,3,opt,name=scope_json,json=scopeJson,proto3" json:"scope_json,omitempty"` // JSON string of scope (symbols, timeframes)
+	Scope         *TemplateScope         `protobuf:"bytes,3,opt,name=scope,proto3" json:"scope,omitempty"` // scope (symbols, timeframes)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2474,11 +2475,11 @@ func (x *SaveUserTemplateRequest) GetContent() string {
 	return ""
 }
 
-func (x *SaveUserTemplateRequest) GetScopeJson() string {
+func (x *SaveUserTemplateRequest) GetScope() *TemplateScope {
 	if x != nil {
-		return x.ScopeJson
+		return x.Scope
 	}
-	return ""
+	return nil
 }
 
 type SaveUserTemplateResponse struct {
@@ -3157,11 +3158,64 @@ func (x *GetCapabilitiesResponse) GetCapabilities() []*CapabilityEntry {
 	return nil
 }
 
+// TemplateScope defines the applicability scope of a user template.
+type TemplateScope struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Symbols       []string               `protobuf:"bytes,1,rep,name=symbols,proto3" json:"symbols,omitempty"`
+	Timeframes    []string               `protobuf:"bytes,2,rep,name=timeframes,proto3" json:"timeframes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TemplateScope) Reset() {
+	*x = TemplateScope{}
+	mi := &file_agent_gateway_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TemplateScope) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TemplateScope) ProtoMessage() {}
+
+func (x *TemplateScope) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TemplateScope.ProtoReflect.Descriptor instead.
+func (*TemplateScope) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *TemplateScope) GetSymbols() []string {
+	if x != nil {
+		return x.Symbols
+	}
+	return nil
+}
+
+func (x *TemplateScope) GetTimeframes() []string {
+	if x != nil {
+		return x.Timeframes
+	}
+	return nil
+}
+
 var File_agent_gateway_proto protoreflect.FileDescriptor
 
 const file_agent_gateway_proto_rawDesc = "" +
 	"\n" +
-	"\x13agent_gateway.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13agent_profile.proto\x1a\x14agent_analysis.proto\"\xaf\x04\n" +
+	"\x13agent_gateway.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x13agent_profile.proto\x1a\x14agent_analysis.proto\"\xaf\x04\n" +
 	"\n" +
 	"AgentToken\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
@@ -3284,12 +3338,12 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"\x13AgentBacktestResult\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x14\n" +
 	"\x05error\x18\x02 \x01(\tR\x05error\x12!\n" +
-	"\ftotal_return\x18\x03 \x01(\x01R\vtotalReturn\x12#\n" +
-	"\rannual_return\x18\x04 \x01(\x01R\fannualReturn\x12!\n" +
-	"\fmax_drawdown\x18\x05 \x01(\x01R\vmaxDrawdown\x12!\n" +
-	"\fsharpe_ratio\x18\x06 \x01(\x01R\vsharpeRatio\x12\x19\n" +
-	"\bwin_rate\x18\a \x01(\x01R\awinRate\x12#\n" +
-	"\rprofit_factor\x18\b \x01(\x01R\fprofitFactor\x12!\n" +
+	"\ftotal_return\x18\x03 \x01(\tR\vtotalReturn\x12#\n" +
+	"\rannual_return\x18\x04 \x01(\tR\fannualReturn\x12!\n" +
+	"\fmax_drawdown\x18\x05 \x01(\tR\vmaxDrawdown\x12!\n" +
+	"\fsharpe_ratio\x18\x06 \x01(\tR\vsharpeRatio\x12\x19\n" +
+	"\bwin_rate\x18\a \x01(\tR\awinRate\x12#\n" +
+	"\rprofit_factor\x18\b \x01(\tR\fprofitFactor\x12!\n" +
 	"\ftotal_trades\x18\t \x01(\x05R\vtotalTrades\x12%\n" +
 	"\x0ewinning_trades\x18\n" +
 	" \x01(\x05R\rwinningTrades\x12#\n" +
@@ -3336,11 +3390,11 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"M\n" +
 	"\x18SearchExperienceResponse\x121\n" +
-	"\aentries\x18\x01 \x03(\v2\x17.ant.v1.ExperienceEntryR\aentries\"p\n" +
+	"\aentries\x18\x01 \x03(\v2\x17.ant.v1.ExperienceEntryR\aentries\"\x89\x01\n" +
 	"\x16StoreExperienceRequest\x12\x1a\n" +
 	"\bcategory\x18\x01 \x01(\tR\bcategory\x12\x18\n" +
-	"\acontent\x18\x02 \x01(\tR\acontent\x12 \n" +
-	"\vfingerprint\x18\x03 \x01(\tR\vfingerprint\"C\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\x129\n" +
+	"\vfingerprint\x18\x03 \x01(\v2\x17.google.protobuf.StructR\vfingerprint\"C\n" +
 	"\x17StoreExperienceResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\asuccess\x18\x02 \x01(\bR\asuccess\"x\n" +
@@ -3396,12 +3450,11 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"\x11ListMemoryRequest\"\x88\x01\n" +
 	"\x12ListMemoryResponse\x127\n" +
 	"\ttemplates\x18\x01 \x03(\v2\x19.ant.v1.UserTemplateEntryR\ttemplates\x129\n" +
-	"\vexperiences\x18\x02 \x03(\v2\x17.ant.v1.ExperienceEntryR\vexperiences\"f\n" +
+	"\vexperiences\x18\x02 \x03(\v2\x17.ant.v1.ExperienceEntryR\vexperiences\"t\n" +
 	"\x17SaveUserTemplateRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\acontent\x18\x02 \x01(\tR\acontent\x12\x1d\n" +
-	"\n" +
-	"scope_json\x18\x03 \x01(\tR\tscopeJson\"4\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\x12+\n" +
+	"\x05scope\x18\x03 \x01(\v2\x15.ant.v1.TemplateScopeR\x05scope\"4\n" +
 	"\x18SaveUserTemplateResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"+\n" +
 	"\x19DeleteUserTemplateRequest\x12\x0e\n" +
@@ -3435,7 +3488,12 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"capability\x12\x18\n" +
 	"\aallowed\x18\x02 \x01(\bR\aallowed\"V\n" +
 	"\x17GetCapabilitiesResponse\x12;\n" +
-	"\fcapabilities\x18\x01 \x03(\v2\x17.ant.v1.CapabilityEntryR\fcapabilities*V\n" +
+	"\fcapabilities\x18\x01 \x03(\v2\x17.ant.v1.CapabilityEntryR\fcapabilities\"I\n" +
+	"\rTemplateScope\x12\x18\n" +
+	"\asymbols\x18\x01 \x03(\tR\asymbols\x12\x1e\n" +
+	"\n" +
+	"timeframes\x18\x02 \x03(\tR\n" +
+	"timeframes*V\n" +
 	"\n" +
 	"SubmitMode\x12\x1b\n" +
 	"\x17SUBMIT_MODE_UNSPECIFIED\x10\x00\x12\x14\n" +
@@ -3475,7 +3533,7 @@ func file_agent_gateway_proto_rawDescGZIP() []byte {
 }
 
 var file_agent_gateway_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_agent_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 48)
+var file_agent_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 49)
 var file_agent_gateway_proto_goTypes = []any{
 	(SubmitMode)(0),                       // 0: ant.v1.SubmitMode
 	(*AgentToken)(nil),                    // 1: ant.v1.AgentToken
@@ -3524,86 +3582,90 @@ var file_agent_gateway_proto_goTypes = []any{
 	(*GetCapabilitiesRequest)(nil),        // 44: ant.v1.GetCapabilitiesRequest
 	(*CapabilityEntry)(nil),               // 45: ant.v1.CapabilityEntry
 	(*GetCapabilitiesResponse)(nil),       // 46: ant.v1.GetCapabilitiesResponse
-	nil,                                   // 47: ant.v1.SubmitStrategyRequest.ParamsEntry
-	nil,                                   // 48: ant.v1.AgentGenerateStrategyRequest.ParamsEntry
-	(*timestamppb.Timestamp)(nil),         // 49: google.protobuf.Timestamp
-	(*StrategyProfile)(nil),               // 50: ant.v1.StrategyProfile
-	(*BacktestAnalysis)(nil),              // 51: ant.v1.BacktestAnalysis
+	(*TemplateScope)(nil),                 // 47: ant.v1.TemplateScope
+	nil,                                   // 48: ant.v1.SubmitStrategyRequest.ParamsEntry
+	nil,                                   // 49: ant.v1.AgentGenerateStrategyRequest.ParamsEntry
+	(*timestamppb.Timestamp)(nil),         // 50: google.protobuf.Timestamp
+	(*StrategyProfile)(nil),               // 51: ant.v1.StrategyProfile
+	(*BacktestAnalysis)(nil),              // 52: ant.v1.BacktestAnalysis
+	(*structpb.Struct)(nil),               // 53: google.protobuf.Struct
 }
 var file_agent_gateway_proto_depIdxs = []int32{
-	49, // 0: ant.v1.AgentToken.expires_at:type_name -> google.protobuf.Timestamp
-	49, // 1: ant.v1.AgentToken.last_used_at:type_name -> google.protobuf.Timestamp
-	49, // 2: ant.v1.AgentToken.created_at:type_name -> google.protobuf.Timestamp
-	49, // 3: ant.v1.AgentToken.updated_at:type_name -> google.protobuf.Timestamp
-	49, // 4: ant.v1.AgentAuditEntry.created_at:type_name -> google.protobuf.Timestamp
-	49, // 5: ant.v1.IssueAgentTokenRequest.expires_at:type_name -> google.protobuf.Timestamp
+	50, // 0: ant.v1.AgentToken.expires_at:type_name -> google.protobuf.Timestamp
+	50, // 1: ant.v1.AgentToken.last_used_at:type_name -> google.protobuf.Timestamp
+	50, // 2: ant.v1.AgentToken.created_at:type_name -> google.protobuf.Timestamp
+	50, // 3: ant.v1.AgentToken.updated_at:type_name -> google.protobuf.Timestamp
+	50, // 4: ant.v1.AgentAuditEntry.created_at:type_name -> google.protobuf.Timestamp
+	50, // 5: ant.v1.IssueAgentTokenRequest.expires_at:type_name -> google.protobuf.Timestamp
 	1,  // 6: ant.v1.IssueAgentTokenResponse.token:type_name -> ant.v1.AgentToken
 	1,  // 7: ant.v1.ListAgentTokensResponse.tokens:type_name -> ant.v1.AgentToken
 	2,  // 8: ant.v1.ListAgentAuditResponse.entries:type_name -> ant.v1.AgentAuditEntry
-	47, // 9: ant.v1.SubmitStrategyRequest.params:type_name -> ant.v1.SubmitStrategyRequest.ParamsEntry
+	48, // 9: ant.v1.SubmitStrategyRequest.params:type_name -> ant.v1.SubmitStrategyRequest.ParamsEntry
 	13, // 10: ant.v1.SubmitStrategyRequest.backtest_config:type_name -> ant.v1.AgentBacktestConfig
 	0,  // 11: ant.v1.SubmitStrategyRequest.mode:type_name -> ant.v1.SubmitMode
 	17, // 12: ant.v1.SubmitStrategyResponse.result:type_name -> ant.v1.AgentBacktestResult
-	50, // 13: ant.v1.SubmitStrategyResponse.profile:type_name -> ant.v1.StrategyProfile
-	51, // 14: ant.v1.SubmitStrategyResponse.analysis:type_name -> ant.v1.BacktestAnalysis
+	51, // 13: ant.v1.SubmitStrategyResponse.profile:type_name -> ant.v1.StrategyProfile
+	52, // 14: ant.v1.SubmitStrategyResponse.analysis:type_name -> ant.v1.BacktestAnalysis
 	19, // 15: ant.v1.SubmitStrategyResponse.blind_spots:type_name -> ant.v1.AgentBlindSpot
 	0,  // 16: ant.v1.SubmitStrategyResponse.mode:type_name -> ant.v1.SubmitMode
 	15, // 17: ant.v1.SubmitStrategyResponse.semantic_diff:type_name -> ant.v1.SemanticDiff
 	16, // 18: ant.v1.SemanticDiff.changes:type_name -> ant.v1.SemanticChange
 	18, // 19: ant.v1.AgentBacktestResult.trades:type_name -> ant.v1.AgentTrade
-	49, // 20: ant.v1.ExperienceEntry.created_at:type_name -> google.protobuf.Timestamp
+	50, // 20: ant.v1.ExperienceEntry.created_at:type_name -> google.protobuf.Timestamp
 	21, // 21: ant.v1.SearchExperienceResponse.entries:type_name -> ant.v1.ExperienceEntry
-	48, // 22: ant.v1.AgentGenerateStrategyRequest.params:type_name -> ant.v1.AgentGenerateStrategyRequest.ParamsEntry
-	13, // 23: ant.v1.AgentGenerateStrategyRequest.backtest_config:type_name -> ant.v1.AgentBacktestConfig
-	25, // 24: ant.v1.AgentGenerateStrategyRequest.confirmed_plan:type_name -> ant.v1.StrategyPlan
-	17, // 25: ant.v1.AgentGenerateStrategyChunk.result:type_name -> ant.v1.AgentBacktestResult
-	50, // 26: ant.v1.AgentGenerateStrategyChunk.profile:type_name -> ant.v1.StrategyProfile
-	51, // 27: ant.v1.AgentGenerateStrategyChunk.analysis:type_name -> ant.v1.BacktestAnalysis
-	19, // 28: ant.v1.AgentGenerateStrategyChunk.blind_spots:type_name -> ant.v1.AgentBlindSpot
-	25, // 29: ant.v1.AgentGenerateStrategyChunk.plan:type_name -> ant.v1.StrategyPlan
-	28, // 30: ant.v1.ListMemoryResponse.templates:type_name -> ant.v1.UserTemplateEntry
-	21, // 31: ant.v1.ListMemoryResponse.experiences:type_name -> ant.v1.ExperienceEntry
-	38, // 32: ant.v1.GetAgentSettingsResponse.settings:type_name -> ant.v1.AgentSettingEntry
-	45, // 33: ant.v1.GetCapabilitiesResponse.capabilities:type_name -> ant.v1.CapabilityEntry
-	3,  // 34: ant.v1.AgentService.IssueAgentToken:input_type -> ant.v1.IssueAgentTokenRequest
-	5,  // 35: ant.v1.AgentService.ListAgentTokens:input_type -> ant.v1.ListAgentTokensRequest
-	7,  // 36: ant.v1.AgentService.RevokeAgentToken:input_type -> ant.v1.RevokeAgentTokenRequest
-	8,  // 37: ant.v1.AgentService.ListAgentAudit:input_type -> ant.v1.ListAgentAuditRequest
-	10, // 38: ant.v1.AgentService.GetAgentCapabilities:input_type -> ant.v1.GetAgentCapabilitiesRequest
-	12, // 39: ant.v1.AgentGatewayService.SubmitStrategy:input_type -> ant.v1.SubmitStrategyRequest
-	26, // 40: ant.v1.AgentGatewayService.GenerateStrategy:input_type -> ant.v1.AgentGenerateStrategyRequest
-	20, // 41: ant.v1.AgentGatewayService.SearchExperience:input_type -> ant.v1.SearchExperienceRequest
-	23, // 42: ant.v1.AgentGatewayService.StoreExperience:input_type -> ant.v1.StoreExperienceRequest
-	29, // 43: ant.v1.AgentGatewayService.ListMemory:input_type -> ant.v1.ListMemoryRequest
-	31, // 44: ant.v1.AgentGatewayService.SaveUserTemplate:input_type -> ant.v1.SaveUserTemplateRequest
-	33, // 45: ant.v1.AgentGatewayService.DeleteUserTemplate:input_type -> ant.v1.DeleteUserTemplateRequest
-	35, // 46: ant.v1.AgentGatewayService.DeleteAgentExperience:input_type -> ant.v1.DeleteAgentExperienceRequest
-	37, // 47: ant.v1.AgentGatewayService.GetAgentSettings:input_type -> ant.v1.GetAgentSettingsRequest
-	40, // 48: ant.v1.AgentGatewayService.SetUserSetting:input_type -> ant.v1.SetUserSettingRequest
-	42, // 49: ant.v1.AgentGatewayService.DeleteUserSetting:input_type -> ant.v1.DeleteUserSettingRequest
-	44, // 50: ant.v1.AgentGatewayService.GetCapabilities:input_type -> ant.v1.GetCapabilitiesRequest
-	4,  // 51: ant.v1.AgentService.IssueAgentToken:output_type -> ant.v1.IssueAgentTokenResponse
-	6,  // 52: ant.v1.AgentService.ListAgentTokens:output_type -> ant.v1.ListAgentTokensResponse
-	1,  // 53: ant.v1.AgentService.RevokeAgentToken:output_type -> ant.v1.AgentToken
-	9,  // 54: ant.v1.AgentService.ListAgentAudit:output_type -> ant.v1.ListAgentAuditResponse
-	11, // 55: ant.v1.AgentService.GetAgentCapabilities:output_type -> ant.v1.AgentCapabilities
-	14, // 56: ant.v1.AgentGatewayService.SubmitStrategy:output_type -> ant.v1.SubmitStrategyResponse
-	27, // 57: ant.v1.AgentGatewayService.GenerateStrategy:output_type -> ant.v1.AgentGenerateStrategyChunk
-	22, // 58: ant.v1.AgentGatewayService.SearchExperience:output_type -> ant.v1.SearchExperienceResponse
-	24, // 59: ant.v1.AgentGatewayService.StoreExperience:output_type -> ant.v1.StoreExperienceResponse
-	30, // 60: ant.v1.AgentGatewayService.ListMemory:output_type -> ant.v1.ListMemoryResponse
-	32, // 61: ant.v1.AgentGatewayService.SaveUserTemplate:output_type -> ant.v1.SaveUserTemplateResponse
-	34, // 62: ant.v1.AgentGatewayService.DeleteUserTemplate:output_type -> ant.v1.DeleteUserTemplateResponse
-	36, // 63: ant.v1.AgentGatewayService.DeleteAgentExperience:output_type -> ant.v1.DeleteAgentExperienceResponse
-	39, // 64: ant.v1.AgentGatewayService.GetAgentSettings:output_type -> ant.v1.GetAgentSettingsResponse
-	41, // 65: ant.v1.AgentGatewayService.SetUserSetting:output_type -> ant.v1.SetUserSettingResponse
-	43, // 66: ant.v1.AgentGatewayService.DeleteUserSetting:output_type -> ant.v1.DeleteUserSettingResponse
-	46, // 67: ant.v1.AgentGatewayService.GetCapabilities:output_type -> ant.v1.GetCapabilitiesResponse
-	51, // [51:68] is the sub-list for method output_type
-	34, // [34:51] is the sub-list for method input_type
-	34, // [34:34] is the sub-list for extension type_name
-	34, // [34:34] is the sub-list for extension extendee
-	0,  // [0:34] is the sub-list for field type_name
+	53, // 22: ant.v1.StoreExperienceRequest.fingerprint:type_name -> google.protobuf.Struct
+	49, // 23: ant.v1.AgentGenerateStrategyRequest.params:type_name -> ant.v1.AgentGenerateStrategyRequest.ParamsEntry
+	13, // 24: ant.v1.AgentGenerateStrategyRequest.backtest_config:type_name -> ant.v1.AgentBacktestConfig
+	25, // 25: ant.v1.AgentGenerateStrategyRequest.confirmed_plan:type_name -> ant.v1.StrategyPlan
+	17, // 26: ant.v1.AgentGenerateStrategyChunk.result:type_name -> ant.v1.AgentBacktestResult
+	51, // 27: ant.v1.AgentGenerateStrategyChunk.profile:type_name -> ant.v1.StrategyProfile
+	52, // 28: ant.v1.AgentGenerateStrategyChunk.analysis:type_name -> ant.v1.BacktestAnalysis
+	19, // 29: ant.v1.AgentGenerateStrategyChunk.blind_spots:type_name -> ant.v1.AgentBlindSpot
+	25, // 30: ant.v1.AgentGenerateStrategyChunk.plan:type_name -> ant.v1.StrategyPlan
+	28, // 31: ant.v1.ListMemoryResponse.templates:type_name -> ant.v1.UserTemplateEntry
+	21, // 32: ant.v1.ListMemoryResponse.experiences:type_name -> ant.v1.ExperienceEntry
+	47, // 33: ant.v1.SaveUserTemplateRequest.scope:type_name -> ant.v1.TemplateScope
+	38, // 34: ant.v1.GetAgentSettingsResponse.settings:type_name -> ant.v1.AgentSettingEntry
+	45, // 35: ant.v1.GetCapabilitiesResponse.capabilities:type_name -> ant.v1.CapabilityEntry
+	3,  // 36: ant.v1.AgentService.IssueAgentToken:input_type -> ant.v1.IssueAgentTokenRequest
+	5,  // 37: ant.v1.AgentService.ListAgentTokens:input_type -> ant.v1.ListAgentTokensRequest
+	7,  // 38: ant.v1.AgentService.RevokeAgentToken:input_type -> ant.v1.RevokeAgentTokenRequest
+	8,  // 39: ant.v1.AgentService.ListAgentAudit:input_type -> ant.v1.ListAgentAuditRequest
+	10, // 40: ant.v1.AgentService.GetAgentCapabilities:input_type -> ant.v1.GetAgentCapabilitiesRequest
+	12, // 41: ant.v1.AgentGatewayService.SubmitStrategy:input_type -> ant.v1.SubmitStrategyRequest
+	26, // 42: ant.v1.AgentGatewayService.GenerateStrategy:input_type -> ant.v1.AgentGenerateStrategyRequest
+	20, // 43: ant.v1.AgentGatewayService.SearchExperience:input_type -> ant.v1.SearchExperienceRequest
+	23, // 44: ant.v1.AgentGatewayService.StoreExperience:input_type -> ant.v1.StoreExperienceRequest
+	29, // 45: ant.v1.AgentGatewayService.ListMemory:input_type -> ant.v1.ListMemoryRequest
+	31, // 46: ant.v1.AgentGatewayService.SaveUserTemplate:input_type -> ant.v1.SaveUserTemplateRequest
+	33, // 47: ant.v1.AgentGatewayService.DeleteUserTemplate:input_type -> ant.v1.DeleteUserTemplateRequest
+	35, // 48: ant.v1.AgentGatewayService.DeleteAgentExperience:input_type -> ant.v1.DeleteAgentExperienceRequest
+	37, // 49: ant.v1.AgentGatewayService.GetAgentSettings:input_type -> ant.v1.GetAgentSettingsRequest
+	40, // 50: ant.v1.AgentGatewayService.SetUserSetting:input_type -> ant.v1.SetUserSettingRequest
+	42, // 51: ant.v1.AgentGatewayService.DeleteUserSetting:input_type -> ant.v1.DeleteUserSettingRequest
+	44, // 52: ant.v1.AgentGatewayService.GetCapabilities:input_type -> ant.v1.GetCapabilitiesRequest
+	4,  // 53: ant.v1.AgentService.IssueAgentToken:output_type -> ant.v1.IssueAgentTokenResponse
+	6,  // 54: ant.v1.AgentService.ListAgentTokens:output_type -> ant.v1.ListAgentTokensResponse
+	1,  // 55: ant.v1.AgentService.RevokeAgentToken:output_type -> ant.v1.AgentToken
+	9,  // 56: ant.v1.AgentService.ListAgentAudit:output_type -> ant.v1.ListAgentAuditResponse
+	11, // 57: ant.v1.AgentService.GetAgentCapabilities:output_type -> ant.v1.AgentCapabilities
+	14, // 58: ant.v1.AgentGatewayService.SubmitStrategy:output_type -> ant.v1.SubmitStrategyResponse
+	27, // 59: ant.v1.AgentGatewayService.GenerateStrategy:output_type -> ant.v1.AgentGenerateStrategyChunk
+	22, // 60: ant.v1.AgentGatewayService.SearchExperience:output_type -> ant.v1.SearchExperienceResponse
+	24, // 61: ant.v1.AgentGatewayService.StoreExperience:output_type -> ant.v1.StoreExperienceResponse
+	30, // 62: ant.v1.AgentGatewayService.ListMemory:output_type -> ant.v1.ListMemoryResponse
+	32, // 63: ant.v1.AgentGatewayService.SaveUserTemplate:output_type -> ant.v1.SaveUserTemplateResponse
+	34, // 64: ant.v1.AgentGatewayService.DeleteUserTemplate:output_type -> ant.v1.DeleteUserTemplateResponse
+	36, // 65: ant.v1.AgentGatewayService.DeleteAgentExperience:output_type -> ant.v1.DeleteAgentExperienceResponse
+	39, // 66: ant.v1.AgentGatewayService.GetAgentSettings:output_type -> ant.v1.GetAgentSettingsResponse
+	41, // 67: ant.v1.AgentGatewayService.SetUserSetting:output_type -> ant.v1.SetUserSettingResponse
+	43, // 68: ant.v1.AgentGatewayService.DeleteUserSetting:output_type -> ant.v1.DeleteUserSettingResponse
+	46, // 69: ant.v1.AgentGatewayService.GetCapabilities:output_type -> ant.v1.GetCapabilitiesResponse
+	53, // [53:70] is the sub-list for method output_type
+	36, // [36:53] is the sub-list for method input_type
+	36, // [36:36] is the sub-list for extension type_name
+	36, // [36:36] is the sub-list for extension extendee
+	0,  // [0:36] is the sub-list for field type_name
 }
 
 func init() { file_agent_gateway_proto_init() }
@@ -3619,7 +3681,7 @@ func file_agent_gateway_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_agent_gateway_proto_rawDesc), len(file_agent_gateway_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   48,
+			NumMessages:   49,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

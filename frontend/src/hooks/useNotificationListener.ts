@@ -9,10 +9,8 @@ const TRANSPORT_FAILURE_CAP = 12;
 
 function toNotification(pb: ProtoNotification): Notification {
   let data: Record<string, unknown> | undefined;
-  try {
-    data = pb.dataJson ? JSON.parse(pb.dataJson) : undefined;
-  } catch {
-    data = undefined;
+  if (pb.data) {
+    data = pb.data.toJson() as Record<string, unknown>;
   }
   return {
     id: pb.id,

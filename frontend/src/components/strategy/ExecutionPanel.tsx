@@ -123,7 +123,7 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
             <span>{toolIcon(tr.name)} <b>{toolLabel(tr.name)}</b></span>
             {tr.error && <span style={{ color: '#cf1322' }}>{tr.error}</span>}
           </Space>
-          {tr.name === 'analyze_strategy' && tr.success && tr.outputJson && <CoverageReportView json={tr.outputJson} />}
+          {tr.name === 'analyze_strategy' && tr.success && tr.output && <CoverageReportView json={tr.output} />}
         </div>
       ))}
 

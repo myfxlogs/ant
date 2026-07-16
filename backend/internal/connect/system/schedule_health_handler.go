@@ -34,8 +34,8 @@ func (s *ScheduleHealthServer) userID(ctx context.Context) uuid.UUID {
 	return id
 }
 
-func computeGrade(successRate float64, failedRuns int, cfg repository.HealthGradingConfig) (level, color, noteCode string) {
-	if failedRuns <= cfg.GreenMaxFailedRuns && successRate >= cfg.GreenSuccessRate {
+func computeGrade(successRate float64, failedRuns int, cfg *repository.HealthGradingConfig) (level, color, noteCode string) {
+	if failedRuns <= int(cfg.GreenMaxFailedRuns) && successRate >= cfg.GreenSuccessRate {
 		return "green", "#52c41a", "all_clear"
 	}
 	if successRate >= cfg.YellowSuccessRate {
@@ -106,15 +106,15 @@ func (s *ScheduleHealthServer) buildHealthSummary(ctx context.Context, uid, sche
 		LastRunAt:            ts(lastRunAt),
 		LatestError:          latestError,
 		LatestOrderTicket:    strconv.FormatInt(latestOrderTicket, 10),
-		LatestOrderProfit:    strconv.FormatFloat(latestOrderProfit, 'f', -1, 64),
+		LatestOrderProfit:    latestOrderProfit.String(),
 		HasLatestOrderProfit: hasLatestOrderProfit,
 		GradeLevel:           gradeLevel,
 		GradeColor:           gradeColor,
 		GradeNoteCode:        gradeNoteCode,
 		GreenSuccessRate:     cfg.GreenSuccessRate,
-		GreenMaxFailedRuns:   int32(cfg.GreenMaxFailedRuns),
+		GreenMaxFailedRuns:   cfg.GreenMaxFailedRuns,
 		YellowSuccessRate:    cfg.YellowSuccessRate,
-		MinSampleSize:        int32(cfg.MinSampleSize),
+		MinSampleSize:        cfg.MinSampleSize,
 	}, nil
 }
 
@@ -143,7 +143,7 @@ func (s *ScheduleHealthServer) fetchHealthOrders(ctx context.Context, uid, sched
 	for _, o := range orders {
 		out = append(out, &antv1.ScheduleHealthOrder{
 			Id: o.ID, Ticket: o.Ticket, OrderType: o.OrderType,
-			Symbol: o.Symbol, Profit: strconv.FormatFloat(o.Profit, 'f', -1, 64),
+			Symbol: o.Symbol, Profit: o.Profit.String(),
 			OpenTime: ts(o.OpenTime), CloseTime: ts(o.CloseTime),
 		})
 	}

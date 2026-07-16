@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -194,8 +193,10 @@ func (r *AdminRepository) GetAffectedTableCounts(ctx context.Context, userID uui
 // retentionDays ago. At this point, CASCADE/SET NULL FKs from migrations
 // 149/150 take effect, cleaning up all dependent data.
 func (r *AdminRepository) HardDeleteExpiredUsers(ctx context.Context, retentionDays int) (int64, error) {
-	query := fmt.Sprintf(`DELETE FROM users WHERE deleted_at IS NOT NULL AND deleted_at < NOW() - INTERVAL '%d days'`, retentionDays)
-	ct, err := r.db.Exec(ctx, query)
+	ct, err := r.db.Exec(ctx,
+		`DELETE FROM users WHERE deleted_at IS NOT NULL AND deleted_at < NOW() - make_interval(days => $1)`,
+		retentionDays,
+	)
 	if err != nil {
 		return 0, fmt.Errorf("hard delete expired users: %w", err)
 	}
@@ -217,14 +218,10 @@ type execer interface {
 }
 
 func insertAuditLog(ctx context.Context, exec execer, actorID uuid.UUID, action, targetID, targetEmail string, affectedData map[string]int64) error {
-	dataJSON, err := json.Marshal(affectedData)
-	if err != nil {
-		return fmt.Errorf("marshal affected data: %w", err)
-	}
-	_, err = exec.Exec(ctx,
+	_, err := exec.Exec(ctx,
 		`INSERT INTO admin_audit_log (actor_id, action, target_id, target_email, affected_data)
 		 VALUES ($1, $2, $3, $4, $5)`,
-		actorID, action, targetID, targetEmail, dataJSON)
+		actorID, action, targetID, targetEmail, affectedData)
 	if err != nil {
 		return fmt.Errorf("insert audit log: %w", err)
 	}

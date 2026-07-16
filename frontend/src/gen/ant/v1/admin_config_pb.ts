@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file admin_config.proto.
  */
 export const file_admin_config: GenFile = /*@__PURE__*/
-  fileDesc("ChJhZG1pbl9jb25maWcucHJvdG8SBmFudC52MSLEAQoMU3lzdGVtQ29uZmlnEgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIPCgdlbmFibGVkGAQgASgIEi4KCmNyZWF0ZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhIKCnZhbHVlX3R5cGUYByABKAkiFAoSTGlzdENvbmZpZ3NSZXF1ZXN0IjwKE0xpc3RDb25maWdzUmVzcG9uc2USJQoHY29uZmlncxgBIAMoCzIULmFudC52MS5TeXN0ZW1Db25maWciQwoQU2V0Q29uZmlnUmVxdWVzdBILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAkSEwoLZGVzY3JpcHRpb24YAyABKAkiEwoRU2V0Q29uZmlnUmVzcG9uc2UiOgoaVG9nZ2xlQ29uZmlnRW5hYmxlZFJlcXVlc3QSCwoDa2V5GAEgASgJEg8KB2VuYWJsZWQYAiABKAgiHQobVG9nZ2xlQ29uZmlnRW5hYmxlZFJlc3BvbnNlMv4BChJBZG1pbkNvbmZpZ1NlcnZpY2USRgoLTGlzdENvbmZpZ3MSGi5hbnQudjEuTGlzdENvbmZpZ3NSZXF1ZXN0GhsuYW50LnYxLkxpc3RDb25maWdzUmVzcG9uc2USQAoJU2V0Q29uZmlnEhguYW50LnYxLlNldENvbmZpZ1JlcXVlc3QaGS5hbnQudjEuU2V0Q29uZmlnUmVzcG9uc2USXgoTVG9nZ2xlQ29uZmlnRW5hYmxlZBIiLmFudC52MS5Ub2dnbGVDb25maWdFbmFibGVkUmVxdWVzdBojLmFudC52MS5Ub2dnbGVDb25maWdFbmFibGVkUmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChJhZG1pbl9jb25maWcucHJvdG8SBmFudC52MSLEAQoMU3lzdGVtQ29uZmlnEgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIPCgdlbmFibGVkGAQgASgIEi4KCmNyZWF0ZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhIKCnZhbHVlX3R5cGUYByABKAkiFAoSTGlzdENvbmZpZ3NSZXF1ZXN0IjwKE0xpc3RDb25maWdzUmVzcG9uc2USJQoHY29uZmlncxgBIAMoCzIULmFudC52MS5TeXN0ZW1Db25maWciQwoQU2V0Q29uZmlnUmVxdWVzdBILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAkSEwoLZGVzY3JpcHRpb24YAyABKAkiEwoRU2V0Q29uZmlnUmVzcG9uc2UiOgoaVG9nZ2xlQ29uZmlnRW5hYmxlZFJlcXVlc3QSCwoDa2V5GAEgASgJEg8KB2VuYWJsZWQYAiABKAgiHQobVG9nZ2xlQ29uZmlnRW5hYmxlZFJlc3BvbnNlIoYBChNIZWFsdGhHcmFkaW5nQ29uZmlnEhoKEmdyZWVuX3N1Y2Nlc3NfcmF0ZRgBIAEoARIdChVncmVlbl9tYXhfZmFpbGVkX3J1bnMYAiABKAUSGwoTeWVsbG93X3N1Y2Nlc3NfcmF0ZRgDIAEoARIXCg9taW5fc2FtcGxlX3NpemUYBCABKAUy/gEKEkFkbWluQ29uZmlnU2VydmljZRJGCgtMaXN0Q29uZmlncxIaLmFudC52MS5MaXN0Q29uZmlnc1JlcXVlc3QaGy5hbnQudjEuTGlzdENvbmZpZ3NSZXNwb25zZRJACglTZXRDb25maWcSGC5hbnQudjEuU2V0Q29uZmlnUmVxdWVzdBoZLmFudC52MS5TZXRDb25maWdSZXNwb25zZRJeChNUb2dnbGVDb25maWdFbmFibGVkEiIuYW50LnYxLlRvZ2dsZUNvbmZpZ0VuYWJsZWRSZXF1ZXN0GiMuYW50LnYxLlRvZ2dsZUNvbmZpZ0VuYWJsZWRSZXNwb25zZUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.SystemConfig
@@ -165,6 +165,38 @@ export type ToggleConfigEnabledResponse = Message<"ant.v1.ToggleConfigEnabledRes
  */
 export const ToggleConfigEnabledResponseSchema: GenMessage<ToggleConfigEnabledResponse> = /*@__PURE__*/
   messageDesc(file_admin_config, 6);
+
+/**
+ * @generated from message ant.v1.HealthGradingConfig
+ */
+export type HealthGradingConfig = Message<"ant.v1.HealthGradingConfig"> & {
+  /**
+   * @generated from field: double green_success_rate = 1;
+   */
+  greenSuccessRate: number;
+
+  /**
+   * @generated from field: int32 green_max_failed_runs = 2;
+   */
+  greenMaxFailedRuns: number;
+
+  /**
+   * @generated from field: double yellow_success_rate = 3;
+   */
+  yellowSuccessRate: number;
+
+  /**
+   * @generated from field: int32 min_sample_size = 4;
+   */
+  minSampleSize: number;
+};
+
+/**
+ * Describes the message ant.v1.HealthGradingConfig.
+ * Use `create(HealthGradingConfigSchema)` to create a new message.
+ */
+export const HealthGradingConfigSchema: GenMessage<HealthGradingConfig> = /*@__PURE__*/
+  messageDesc(file_admin_config, 7);
 
 /**
  * @generated from service ant.v1.AdminConfigService

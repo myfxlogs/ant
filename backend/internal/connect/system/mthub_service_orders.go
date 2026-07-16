@@ -110,27 +110,27 @@ func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request
 	return connect.NewResponse(&antv1.SyncOrderHistoryResponse{SyncedRecords: int64(len(tradeRecs))}), nil
 }
 
-func (s *MtHubServer) WriteClosedTrade(ctx context.Context, accountID, platform, updateOrderType, updateSymbol, updateComment string, updateTicket int64, updateVolume, updateOpenPrice, updateClosePrice, updateProfit, updateSwap, updateCommission, updateSL, updateTP float64, updateOpenTime, updateCloseTime int64) error {
+func (s *MtHubServer) WriteClosedTrade(ctx context.Context, accountID, platform, updateOrderType, updateSymbol, updateComment string, updateTicket int64, updateVolume, updateOpenPrice, updateClosePrice, updateProfit, updateSwap, updateCommission, updateSL, updateTP decimal.Decimal, updateOpenTime, updateCloseTime int64) error {
 	uid, err := uuid.Parse(accountID)
 	if err != nil {
 		return err
 	}
 	rec := &model.TradeRecord{
-		UserID:		uuid.Nil,
+		UserID:     uuid.Nil,
 		AccountID:    uid,
 		Ticket:       updateTicket,
 		Symbol:       updateSymbol,
 		OrderType:    updateOrderType,
-		Volume:       decimal.NewFromFloat(updateVolume),
-		OpenPrice:    decimal.NewFromFloat(updateOpenPrice),
-		ClosePrice:   decimal.NewFromFloat(updateClosePrice),
-		Profit:       decimal.NewFromFloat(updateProfit),
-		Swap:         decimal.NewFromFloat(updateSwap),
-		Commission:   decimal.NewFromFloat(updateCommission),
+		Volume:       updateVolume,
+		OpenPrice:    updateOpenPrice,
+		ClosePrice:   updateClosePrice,
+		Profit:       updateProfit,
+		Swap:         updateSwap,
+		Commission:   updateCommission,
 		OpenTime:     time.Unix(updateOpenTime, 0),
 		CloseTime:    time.Unix(updateCloseTime, 0),
-		StopLoss:     decimal.NewFromFloat(updateSL),
-		TakeProfit:   decimal.NewFromFloat(updateTP),
+		StopLoss:     updateSL,
+		TakeProfit:   updateTP,
 		OrderComment: updateComment,
 		Platform:     platform,
 	}
@@ -140,44 +140,25 @@ func (s *MtHubServer) WriteClosedTrade(ctx context.Context, accountID, platform,
 func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID, userID uuid.UUID, platform string) (*model.TradeRecord, []string) {
 	orderType := mthubSideOrderTypeToString(r.Side, r.OrderType)
 
-	var warnings []string
-	collect := func(f float64, exact bool, field string) float64 {
-		if !exact {
-			warnings = append(warnings, field)
-		}
-		return f
-	}
-
-	vol, vexact := decimalToFloat64(r.Volume)
-	op, oexact := decimalToFloat64(r.OpenPrice)
-	cp, cexact := decimalToFloat64(r.ClosePrice)
-	pr, pexact := decimalToFloat64(r.Profit)
-	sw, sexact := decimalToFloat64(r.Swap)
-	cm, cmexact := decimalToFloat64(r.Commission)
-
 	rec := &model.TradeRecord{
-		UserID:		userID,
+		UserID:     userID,
 		AccountID:    accountID,
 		Ticket:       r.Ticket,
 		Symbol:       r.SymbolRaw,
 		OrderType:    orderType,
-		Volume:       decimal.NewFromFloat(collect(vol, vexact, "volume")),
-		OpenPrice:    decimal.NewFromFloat(collect(op, oexact, "openPrice")),
-		ClosePrice:   decimal.NewFromFloat(collect(cp, cexact, "closePrice")),
-		Profit:       decimal.NewFromFloat(collect(pr, pexact, "profit")),
-		Swap:         decimal.NewFromFloat(collect(sw, sexact, "swap")),
-		Commission:   decimal.NewFromFloat(collect(cm, cmexact, "commission")),
+		Volume:       r.Volume,
+		OpenPrice:    r.OpenPrice,
+		ClosePrice:   r.ClosePrice,
+		Profit:       r.Profit,
+		Swap:         r.Swap,
+		Commission:   r.Commission,
 		OpenTime:     r.OpenTime,
 		CloseTime:    r.CloseTime,
 		OrderComment: r.Comment,
 		MagicNumber:  int(r.Magic),
 		Platform:     platform,
 	}
-	return rec, warnings
-}
-
-func decimalToFloat64(d decimal.Decimal) (float64, bool) {
-	return d.Float64()
+	return rec, nil
 }
 
 func mthubSideOrderTypeToString(side mthub.Side, ot mthub.OrderType) string {

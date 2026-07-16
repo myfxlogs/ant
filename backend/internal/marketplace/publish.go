@@ -2,12 +2,14 @@ package marketplace
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/proto"
+
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 // ── Published listing cache ─────────────────────────────────────────────────
@@ -164,7 +166,7 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 		stratID, params.StrategyID, params.UserID, params.Title, params.Description,
 		params.PriceModel, params.PriceAmount, params.AssetClass,
 		pgTextArray(params.Symbols), params.Timeframe, params.RiskLevel, pgTextArray(params.Tags),
-		params.CodeSnippet, params.BacktestSnapshotJSON, params.PlatformFeeRate)
+		params.CodeSnippet, params.BacktestSnapshotProto, params.PlatformFeeRate)
 	if err != nil {
 		return "", fmt.Errorf("marketplace: insert listing: %w", err)
 	}
@@ -206,7 +208,7 @@ func (s *Service) ListPublished(ctx context.Context, userID string, limit int, o
 	for rows.Next() {
 		var p PublishedStrategy
 		var symbolsRaw, tagsRaw string
-		var snapshotRaw *string
+		var snapshotRaw []byte
 		if err := rows.Scan(&p.PublishID, &p.StrategyID, &p.StrategyName, &p.PublisherUserID, &p.PublishedAt,
 			&p.Title, &p.Description, &p.PriceModel, &p.PriceAmount,
 			&p.AssetClass, &symbolsRaw, &p.Timeframe, &p.RiskLevel, &tagsRaw,
@@ -216,10 +218,10 @@ func (s *Service) ListPublished(ctx context.Context, userID string, limit int, o
 		}
 		p.Symbols = parseJSONStringArray(symbolsRaw)
 		p.Tags = parseJSONStringArray(tagsRaw)
-		if snapshotRaw != nil && *snapshotRaw != "" {
-			var snap BacktestSnapshot
-			if err := json.Unmarshal([]byte(*snapshotRaw), &snap); err == nil {
-				p.BacktestSnapshot = &snap
+		if len(snapshotRaw) > 0 {
+			var snap antv1.BacktestSnapshot
+			if err := proto.Unmarshal(snapshotRaw, &snap); err == nil {
+				p.BacktestSnapshotProto = &snap
 			}
 		}
 		out = append(out, p)

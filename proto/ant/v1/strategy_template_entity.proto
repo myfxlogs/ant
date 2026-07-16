@@ -5,6 +5,7 @@ package ant.v1;
 option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 import "google/protobuf/timestamp.proto";
+import "parameter_entry.proto";
 
 message StrategyTemplate {
   string id = 1;
@@ -20,8 +21,8 @@ message StrategyTemplate {
   google.protobuf.Timestamp created_at = 10;
   google.protobuf.Timestamp updated_at = 11;
   bool is_system = 13;
-  // I18n data for parameter labels (JSON-encoded TemplateI18n).
-  string i18n = 14;
+  // I18n data for parameter labels.
+  TemplateI18n i18n = 14;
   // FK to imported_strategies.id (ADR-0023: MQL source of truth).
   string strategy_id = 15;
 }
@@ -36,4 +37,10 @@ message TemplateParameter {
   string label = 7;
   string description = 8;
   repeated string options = 9;
+}
+
+// TemplateI18n holds parameter label translations per locale.
+message TemplateI18n {
+  // Map of locale code → (param name → translated label)
+  map<string, ParamLabelMap> locales = 1;
 }

@@ -15,6 +15,8 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // HardLimit is a binary deny gate. Returns nil if the order is allowed,
@@ -34,11 +36,11 @@ type HardLimitRequest struct {
 	Broker         string
 	Symbol         string
 	Side           string
-	Volume         float64
-	Price          float64
-	Balance        float64
-	Equity         float64
-	FreeMargin     float64
+	Volume         decimal.Decimal
+	Price          decimal.Decimal
+	Balance        decimal.Decimal
+	Equity         decimal.Decimal
+	FreeMargin     decimal.Decimal
 	ContractExpiry time.Time // zero if not applicable
 	ClientIP       string    // extracted from X-Forwarded-For / X-Real-IP
 }
@@ -77,18 +79,19 @@ func (r *MarginFloorRule) Check(_ context.Context, req *HardLimitRequest) error 
 		ratio = 1.0
 	}
 	// Free margin must be >= floor ratio * notional exposure.
-		// Skip check when price is unknown (MARKET orders): the broker determines
-		// fill price, and the sizer already validated account equity.
-		if req.Price <= 0 {
-			return nil
-		}
+	// Skip check when price is unknown (MARKET orders): the broker determines
+	// fill price, and the sizer already validated account equity.
+	if req.Price.LessThanOrEqual(decimal.Zero) {
+		return nil
+	}
 
-	required := req.Volume * req.Price
-	if req.FreeMargin < ratio*required {
+	required := req.Volume.Mul(req.Price)
+	floor := required.Mul(decimal.NewFromFloat(ratio))
+	if req.FreeMargin.LessThan(floor) {
 		return &HardLimitError{
 			Rule:    r.Name(),
 			Reason:  "insufficient free margin",
-			Details: fmt.Sprintf("free_margin=%.2f required=%.2f floor_ratio=%.2f", req.FreeMargin, required, ratio),
+			Details: fmt.Sprintf("free_margin=%s required=%s floor_ratio=%.2f", req.FreeMargin.String(), required.String(), ratio),
 		}
 	}
 	return nil

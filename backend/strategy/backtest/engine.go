@@ -383,6 +383,7 @@ func (c *backtestContext) SetTimer(int)                 {}
 func (c *backtestContext) KillTimer()                   {}
 func (c *backtestContext) Log(string)                   {}
 func (c *backtestContext) ServerTime() int64            { return c.currentBar.Timestamp }
+func (c *backtestContext) GoContext() context.Context   { return context.Background() }
 
 func (c *backtestContext) Param(name string, defaultVal interface{}) interface{} {
 	if c.params != nil {

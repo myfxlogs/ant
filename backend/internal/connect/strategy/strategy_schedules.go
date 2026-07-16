@@ -243,35 +243,11 @@ func scheduleRowToProto(r *service.ScheduleRow) *antv1.StrategySchedule {
 }
 
 func scheduleParamsToProto(params map[string]string) []byte {
-	if len(params) == 0 {
-		return []byte("{}")
-	}
-	var b strings.Builder
-	b.WriteByte('{')
-	first := true
-	for k, v := range params {
-		if !first {
-			b.WriteByte(',')
-		}
-		first = false
-		b.WriteString(fmt.Sprintf(`"%s":"%s"`, k, v))
-	}
-	b.WriteByte('}')
-	return []byte(b.String())
+	data, _ := proto.Marshal(&antv1.StrategyParams{Values: params})
+	return data
 }
 
 func stringListToProto(list []string) []byte {
-	if len(list) == 0 {
-		return []byte("[]")
-	}
-	var b strings.Builder
-	b.WriteByte('[')
-	for i, s := range list {
-		if i > 0 {
-			b.WriteByte(',')
-		}
-		b.WriteString(fmt.Sprintf(`"%s"`, s))
-	}
-	b.WriteByte(']')
-	return []byte(b.String())
+	data, _ := proto.Marshal(&antv1.BacktestRisk{Reasons: list})
+	return data
 }

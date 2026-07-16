@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"math"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -61,11 +60,11 @@ func (r *AnalyticsRepository) GetMonthlyDetailMetrics(ctx context.Context, accou
 		 WHERE account_id = $1 AND date_trunc('month', ts) = make_date($2, $3, 1)
 		 ORDER BY ts ASC LIMIT 1`, accountID, year, month).Scan(&startingBalance)
 	if startingBalance.IsPositive() {
-		m.ReturnPercent, _ = m.NetReturn.Div(startingBalance).Mul(decimal.NewFromInt(100)).Float64()
+		m.ReturnPercent = m.NetReturn.Div(startingBalance).Mul(decimal.NewFromInt(100))
 	}
-	// Ratio fields still float64 — round for display consistency.
-	m.WinRate = math.Round(m.WinRate*100) / 100
-	m.ProfitFactor = math.Round(m.ProfitFactor*100) / 100
+	// Round for display consistency.
+	m.WinRate = m.WinRate.Round(2)
+	m.ProfitFactor = m.ProfitFactor.Round(2)
 	return m, nil
 }
 
@@ -99,7 +98,7 @@ func (r *AnalyticsRepository) GetMonthlySymbolPnL(ctx context.Context, accountID
 			return nil, err
 		}
 		s.NetProfit = s.NetProfit.Round(2)
-		s.WinRate = math.Round(s.WinRate*100) / 100
+		s.WinRate = s.WinRate.Round(2)
 		results = append(results, s)
 	}
 	return results, rows.Err()
@@ -129,10 +128,10 @@ func (r *AnalyticsRepository) GetMonthlyHoldingStats(ctx context.Context, accoun
 	if err != nil {
 		return nil, err
 	}
-	s.AverageHours = math.Round(s.AverageHours*100) / 100
-	s.MedianHours = math.Round(s.MedianHours*100) / 100
-	s.MaxHours = math.Round(s.MaxHours*100) / 100
-	s.MinHours = math.Round(s.MinHours*100) / 100
+	s.AverageHours = s.AverageHours.Round(2)
+	s.MedianHours = s.MedianHours.Round(2)
+	s.MaxHours = s.MaxHours.Round(2)
+	s.MinHours = s.MinHours.Round(2)
 	return s, nil
 }
 
@@ -173,7 +172,7 @@ func (r *AnalyticsRepository) GetMonthlyBonus(ctx context.Context, accountID uui
 			if err := rows.Scan(&row.Symbol, &row.RiskRatio); err != nil {
 				return err
 			}
-			row.RiskRatio = math.Round(row.RiskRatio*100) / 100
+			row.RiskRatio = row.RiskRatio.Round(2)
 			bonus.SymbolRisks = append(bonus.SymbolRisks, row)
 		}
 		return rows.Err()
@@ -234,8 +233,8 @@ func (r *AnalyticsRepository) GetMonthlyBonus(ctx context.Context, accountID uui
 			if err := rows.Scan(&row.Symbol, &row.BullsSeconds, &row.ShortTermSeconds); err != nil {
 				return err
 			}
-			row.BullsSeconds = math.Round(row.BullsSeconds*100) / 100
-			row.ShortTermSeconds = math.Round(row.ShortTermSeconds*100) / 100
+			row.BullsSeconds = row.BullsSeconds.Round(2)
+			row.ShortTermSeconds = row.ShortTermSeconds.Round(2)
 			bonus.SymbolHoldings = append(bonus.SymbolHoldings, row)
 		}
 		return rows.Err()

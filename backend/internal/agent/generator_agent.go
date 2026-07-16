@@ -8,7 +8,9 @@ import (
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/ai"
@@ -131,11 +133,11 @@ func (g *Generator) runAgentLoop(
 				PythonSource: result.PythonSource,
 			})
 		case "read_kline":
-			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "reading", Delta: tr.OutputJson})
+			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "reading", Delta: structToJSON(tr.Output)})
 		case "read_current_code":
 			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "reading"})
 		case "update_plan":
-			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "planning", Delta: tr.OutputJson})
+			return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "planning", Delta: structToJSON(tr.Output)})
 		}
 		return nil
 	}
@@ -203,7 +205,7 @@ func (g *Generator) runAgentLoop(
 		if tf == "" && msg.BacktestConfig != nil {
 			tf = msg.BacktestConfig.Timeframe
 		}
-		summary := fmt.Sprintf("%s %s: %d trades, %.1f%% win, %.2f%% return",
+		summary := fmt.Sprintf("%s %s: %d trades, %s%% win, %s%% return",
 			symbol, tf,
 			result.LastBacktest.TotalTrades,
 			result.LastBacktest.WinRate,
@@ -225,4 +227,13 @@ func (g *Generator) runAgentLoop(
 
 	_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", PythonSource: result.PythonSource})
 	return nil
+}
+
+// structToJSON converts a *structpb.Struct to a JSON string for display.
+func structToJSON(s *structpb.Struct) string {
+	if s == nil {
+		return ""
+	}
+	b, _ := protojson.Marshal(s)
+	return string(b)
 }

@@ -2,7 +2,11 @@
 // All broker implementations (MT4, MT5, Binance, OKX, etc.) must implement this interface.
 package oms
 
-import "context"
+import (
+	"context"
+
+	"github.com/shopspring/decimal"
+)
 
 // OrderRequest is the canonical order request passed to the broker adapter.
 type OrderRequest struct {
@@ -10,10 +14,10 @@ type OrderRequest struct {
 	Symbol          string  `json:"symbol"`           // canonical symbol
 	BrokerSymbolRaw string  `json:"broker_symbol_raw"` // resolved broker-native symbol
 	Side            string  `json:"side"`             // buy / sell
-	Volume          float64 `json:"volume"`
-	Price           float64 `json:"price"`            // 0 for market orders
-	StopLoss        float64 `json:"stop_loss"`
-	TakeProfit      float64 `json:"take_profit"`
+	Volume          decimal.Decimal `json:"volume"`
+	Price           decimal.Decimal `json:"price"`            // 0 for market orders
+	StopLoss        decimal.Decimal `json:"stop_loss"`
+	TakeProfit      decimal.Decimal `json:"take_profit"`
 	StrategyID      string  `json:"strategy_id"`
 	Comment         string  `json:"comment"`
 }
@@ -22,8 +26,8 @@ type OrderRequest struct {
 type BrokerResp struct {
 	Ticket    string     `json:"ticket"`
 	State     OrderState `json:"state"`
-	FilledQty float64    `json:"filled_qty"`
-	FillPrice float64    `json:"fill_price"`
+	FilledQty decimal.Decimal `json:"filled_qty"`
+	FillPrice decimal.Decimal `json:"fill_price"`
 	ErrorCode int32      `json:"error_code"`
 	ErrorMsg  string     `json:"error_msg"`
 }
@@ -38,7 +42,7 @@ type BrokerAdapter interface {
 	Cancel(ctx context.Context, ticket string) error
 
 	// Modify adjusts price and/or stop-loss of an existing order.
-	Modify(ctx context.Context, ticket string, price, stopPrice float64) error
+	Modify(ctx context.Context, ticket string, price, stopPrice decimal.Decimal) error
 
 	// Query retrieves the current state of an order from the broker.
 	Query(ctx context.Context, ticket string) (*Order, error)
@@ -53,9 +57,9 @@ type Order struct {
 	Symbol          string     `db:"symbol" json:"symbol"`
 	BrokerSymbolRaw string     `db:"broker_symbol_raw" json:"broker_symbol_raw"`
 	OrderType       int16      `db:"order_type" json:"order_type"`
-	Volume          float64    `db:"volume" json:"volume"`
-	Price           float64    `db:"price" json:"price"`
-	StopLoss        float64    `db:"stop_loss" json:"stop_loss"`
-	TakeProfit      float64    `db:"take_profit" json:"take_profit"`
+	Volume          decimal.Decimal `db:"volume" json:"volume"`
+	Price           decimal.Decimal `db:"price" json:"price"`
+	StopLoss        decimal.Decimal `db:"stop_loss" json:"stop_loss"`
+	TakeProfit      decimal.Decimal `db:"take_profit" json:"take_profit"`
 	State           OrderState `db:"state" json:"state"`
 }

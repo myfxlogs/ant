@@ -7,6 +7,7 @@ import { normalizeLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLang
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import ShareChart from './ShareChart';
 import Seo from '@/components/common/Seo';
+import { sharePublicClient } from '@/client/connect';
 import {
   LANGUAGE_LABELS, BrandLogo, toNum, fmt, avgHoldingText,
   type ShareData, computeMaxDrawdownPct, aggregateBySymbol,
@@ -42,11 +43,31 @@ export default function SharePerformancePage() {
   useEffect(() => {
     if (!token) return;
     setLoading(true);
-    fetch(`/api/share/performance?token=${encodeURIComponent(token)}`)
-      .then(r => r.json())
-      .then(d => {
-        if (d.expired) setError('expired');
-        else setData(d);
+    sharePublicClient.getSharedPerformance({ token })
+      .then(resp => {
+        if (resp.expired) { setError('expired'); return; }
+        setData({
+          userName: resp.userName,
+          totalReturn: resp.totalReturn,
+          winRate: resp.winRate,
+          maxDrawdown: resp.maxDrawdown,
+          totalTrades: resp.totalTrades,
+          totalVolume: resp.totalVolume,
+          profitFactor: resp.profitFactor,
+          avgHoldingMs: resp.avgHoldingMs,
+          sharpeRatio: resp.sharpeRatio,
+          equityCurve: resp.equityCurve,
+          equityTimesMs: resp.equityTimesMs,
+          trades: resp.trades.map(t => ({
+            symbol: t.symbol, side: t.side, volume: t.volume,
+            profit: t.profit, closeTimeMs: t.closeTimeMs,
+          })),
+          positions: resp.positions.map(p => ({
+            symbol: p.symbol, type: p.type, volume: p.volume,
+            openPrice: p.openPrice, profit: p.profit,
+          })),
+          showPositions: resp.showPositions,
+        });
       })
       .catch(() => setError('loadFailed'))
       .finally(() => setLoading(false));

@@ -6,6 +6,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // NotificationRow mirrors the notifications table.
@@ -15,7 +17,7 @@ type NotificationRow struct {
 	Type      string
 	Title     string
 	Message   string
-	DataJSON  string
+	Data      *structpb.Struct
 	IsRead    bool
 	CreatedAt time.Time
 }
@@ -43,7 +45,7 @@ func (r *NotificationRepository) ListByUser(
 		where += " AND is_read = false"
 	}
 	rows, err := r.pool.Query(ctx,
-		`SELECT id, user_id, type, title, message, data_json, is_read, created_at
+		`SELECT id, user_id, type, title, message, data_proto, is_read, created_at
 		 FROM notifications `+where+` ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
 		args[0], limit, offset,
 	)
@@ -55,9 +57,16 @@ func (r *NotificationRepository) ListByUser(
 	var out []NotificationRow
 	for rows.Next() {
 		var n NotificationRow
+		var rawBytes []byte
 		if err := rows.Scan(&n.ID, &n.UserID, &n.Type, &n.Title,
-			&n.Message, &n.DataJSON, &n.IsRead, &n.CreatedAt); err != nil {
+			&n.Message, &rawBytes, &n.IsRead, &n.CreatedAt); err != nil {
 			return nil, 0, err
+		}
+		if len(rawBytes) > 0 {
+			var s structpb.Struct
+			if proto.Unmarshal(rawBytes, &s) == nil {
+				n.Data = &s
+			}
 		}
 		out = append(out, n)
 	}
@@ -92,14 +101,28 @@ func (r *NotificationRepository) MarkAllRead(ctx context.Context, userID uuid.UU
 
 // Insert creates a new notification and returns the row.
 func (r *NotificationRepository) Insert(
-	ctx context.Context, userID uuid.UUID, typ, title, message, dataJSON string,
+	ctx context.Context, userID uuid.UUID, typ, title, message string, data *structpb.Struct,
 ) (NotificationRow, error) {
+	var dataBytes []byte
+	if data != nil {
+		dataBytes, _ = proto.Marshal(data)
+	}
 	var n NotificationRow
+	var rawBytes []byte
 	err := r.pool.QueryRow(ctx,
-		`INSERT INTO notifications (user_id, type, title, message, data_json)
+		`INSERT INTO notifications (user_id, type, title, message, data_proto)
 		 VALUES ($1,$2,$3,$4,$5)
-		 RETURNING id, user_id, type, title, message, data_json, is_read, created_at`,
-		userID, typ, title, message, dataJSON,
-	).Scan(&n.ID, &n.UserID, &n.Type, &n.Title, &n.Message, &n.DataJSON, &n.IsRead, &n.CreatedAt)
-	return n, err
+		 RETURNING id, user_id, type, title, message, data_proto, is_read, created_at`,
+		userID, typ, title, message, dataBytes,
+	).Scan(&n.ID, &n.UserID, &n.Type, &n.Title, &n.Message, &rawBytes, &n.IsRead, &n.CreatedAt)
+	if err != nil {
+		return n, err
+	}
+	if len(rawBytes) > 0 {
+		var s structpb.Struct
+		if proto.Unmarshal(rawBytes, &s) == nil {
+			n.Data = &s
+		}
+	}
+	return n, nil
 }

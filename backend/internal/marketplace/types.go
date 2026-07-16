@@ -10,6 +10,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
+
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 // Service implements the C2C marketplace (strategy publish + subscribe).
@@ -83,11 +85,12 @@ type PublishParams struct {
 	RiskLevel            string
 	Tags                 []string
 	CodeSnippet          string  // optional public code preview set by publisher
-	BacktestSnapshotJSON *string // optional JSON-serialized backtest snapshot (nil → SQL NULL)
+	BacktestSnapshotProto []byte  // optional proto-serialized BacktestSnapshot (nil → SQL NULL)
 	PlatformFeeRate      string  // decimal string, platform commission rate (0.0–1.0)
 }
 
 // BacktestSnapshot holds key backtest metrics at publish time.
+// Deprecated: use antv1.BacktestSnapshot proto message for new code.
 type BacktestSnapshot struct {
 	TotalReturn  string `json:"total_return"`
 	AnnualReturn string `json:"annual_return"`
@@ -121,8 +124,8 @@ type PublishedStrategy struct {
 	TotalPnL         *float64
 	AvgRating        float64
 	RatingCount      int32
-	CodeSnippet      string            // publisher-provided code preview
-	BacktestSnapshot *BacktestSnapshot // optional backtest snapshot
+	CodeSnippet          string              // publisher-provided code preview
+	BacktestSnapshotProto *antv1.BacktestSnapshot // optional backtest snapshot (proto)
 }
 
 // BacktestRunSnapshot is a lightweight read of a single backtest_runs row.

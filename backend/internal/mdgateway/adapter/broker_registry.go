@@ -36,10 +36,10 @@ func (a *brokerAdapter) Submit(ctx context.Context, req *oms.OrderRequest) (*oms
 		AccountID:  req.AccountID,
 		Side:       side,
 		OrderType:  mthub.OrderMarket,
-		Volume:     decimal.NewFromFloat(req.Volume),
-		Price:      decimal.NewFromFloat(req.Price),
-		StopLoss:   decimal.NewFromFloat(req.StopLoss),
-		TakeProfit: decimal.NewFromFloat(req.TakeProfit),
+		Volume:     req.Volume,
+		Price:      req.Price,
+		StopLoss:   req.StopLoss,
+		TakeProfit: req.TakeProfit,
 		Comment:    req.Comment,
 	}
 	ticket, err := a.gw.PlaceOrder(ctx, mreq)
@@ -57,12 +57,12 @@ func (a *brokerAdapter) Cancel(ctx context.Context, ticket string) error {
 	return a.gw.CloseOrder(ctx, tid, decimal.Zero)
 }
 
-func (a *brokerAdapter) Modify(ctx context.Context, ticket string, price, stopPrice float64) error {
+func (a *brokerAdapter) Modify(ctx context.Context, ticket string, price, stopPrice decimal.Decimal) error {
 	tid, err := strconv.ParseInt(ticket, 10, 64)
 	if err != nil {
 		return fmt.Errorf("%s modify: invalid ticket %q: %w", a.platform, ticket, err)
 	}
-	return a.gw.ModifyOrder(ctx, tid, decimal.NewFromFloat(stopPrice), decimal.Zero, decimal.NewFromFloat(price))
+	return a.gw.ModifyOrder(ctx, tid, stopPrice, decimal.Zero, price)
 }
 
 func (a *brokerAdapter) Query(ctx context.Context, ticket string) (*oms.Order, error) {
@@ -75,8 +75,8 @@ func (a *brokerAdapter) Query(ctx context.Context, ticket string) (*oms.Order, e
 			return &oms.Order{
 				Ticket: ticket,
 				Symbol: o.SymbolRaw,
-				Volume: o.Volume.InexactFloat64(),
-				Price:  o.OpenPrice.InexactFloat64(),
+				Volume: o.Volume,
+				Price:  o.OpenPrice,
 				State:  oms.StateWorking,
 			}, nil
 		}
@@ -103,10 +103,10 @@ func (b *brokerExec) SubmitOrder(ctx context.Context, req *mthub.OrderRequest) (
 		AccountID:  req.AccountID,
 		Symbol:     req.Canonical,
 		Side:       side,
-		Volume:     req.Volume.InexactFloat64(),
-		Price:      req.Price.InexactFloat64(),
-		StopLoss:   req.StopLoss.InexactFloat64(),
-		TakeProfit: req.TakeProfit.InexactFloat64(),
+		Volume:     req.Volume,
+		Price:      req.Price,
+		StopLoss:   req.StopLoss,
+		TakeProfit: req.TakeProfit,
 		StrategyID: "",
 		Comment:    req.Comment,
 	}

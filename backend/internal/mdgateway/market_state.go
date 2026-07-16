@@ -27,29 +27,29 @@ const (
 
 // MarketState aggregates quality signals into a tradability declaration per symbol.
 type MarketState struct {
-	Symbol     string `json:"symbol"`
-	Broker     string `json:"broker"`
+	Symbol string
+	Broker string
 
 	// Quote freshness.
-	LastQuote   time.Time `json:"last_quote"`
-	QuoteAgeMs  int64     `json:"quote_age_ms"`
+	LastQuote  time.Time
+	QuoteAgeMs int64
 
 	// Quality Z-scores (> 3 means anomalous).
-	SpreadZscore     float64 `json:"spread_zscore"`
-	TickRateZscore   float64 `json:"tick_rate_zscore"`
-	GapMarker        bool    `json:"gap_marker"`
+	SpreadZscore   float64
+	TickRateZscore float64
+	GapMarker      bool
 
 	// Session awareness.
-	SwapWindow   bool        `json:"swap_window"`   // within swap rollover period
-	SessionPhase SessionPhase `json:"session_phase"`
-	HolidayMarker bool       `json:"holiday_marker"`
+	SwapWindow    bool
+	SessionPhase  SessionPhase
+	HolidayMarker bool
 
 	// Triangulation delta (cross-rate consistency check).
-	TriangulationDelta float64 `json:"triangulation_delta"`
+	TriangulationDelta float64
 
 	// Derived verdict.
-	IsTradeable bool   `json:"is_tradeable"`
-	FreezeReason string `json:"freeze_reason,omitempty"`
+	IsTradeable  bool
+	FreezeReason string
 }
 
 // MarketStateConfig tunes MarketState evaluation.

@@ -41,7 +41,7 @@ type JobEvent struct {
 	Progress  float64   `db:"progress"`
 	Stage     string    `db:"stage"`
 	Message   string    `db:"message"`
-	Payload   []byte    `db:"payload"`
+	Payload   map[string]any `db:"payload"`
 	CreatedAt time.Time `db:"created_at"`
 }
 
@@ -115,8 +115,8 @@ func (r *JobRepository) AddEvent(ctx context.Context, event *JobEvent) error {
 			return fmt.Errorf("add job event: %w", err)
 		}
 	}
-	if len(event.Payload) == 0 {
-		event.Payload = []byte(`{}`)
+	if event.Payload == nil {
+		event.Payload = map[string]any{}
 	}
 	_, err := r.db.Exec(ctx, `
 		INSERT INTO job_events (id, job_id, seq, type, status, progress, stage, message, payload, created_at)

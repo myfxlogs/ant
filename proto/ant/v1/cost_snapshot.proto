@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package ant.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
+
+// CostSnapshot is a frozen copy of a cost model for deterministic backtest replay.
+// Stored as proto binary in backtest_runs.cost_model_snapshot (BYTEA).
+message CostSnapshot {
+  string symbol = 1;
+  string broker = 2;
+  double spread_pips = 3;
+  double pip_size = 4;
+  double pip_value = 5;
+  double commission_per_lot = 6;
+  double commission_bps = 7;
+  double swap_long = 8;
+  double swap_short = 9;
+  double funding_rate = 10;
+  int64  funding_interval_ns = 11;
+  double slippage_bps = 12;
+  double min_commission = 13;
+  google.protobuf.Timestamp frozen_at = 14;
+}
+
+// CostSnapshotMap is a map of symbol → CostSnapshot, serialized as a unit.
+message CostSnapshotMap {
+  map<string, CostSnapshot> entries = 1;
+}

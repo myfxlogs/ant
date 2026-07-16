@@ -5,6 +5,7 @@ import { formatDateTime } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import { StatusResult } from '@/components/common/StatusResult';
 import { useTranslation } from 'react-i18next';
+import { adminAccountClient } from '@/client/connect';
 
 const { Search } = Input;
 
@@ -16,14 +17,19 @@ export default function AccountManagement() {
   const [total, setTotal] = useState(0);
   const [params, setParams] = useState<AccountListParams>({ page: 1, pageSize: 20 });
   const [detailDrawerVisible, setDetailDrawerVisible] = useState(false);
-  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<Array<{ id: string; action: string; detail: string; created_at: string }>>([]);
   const [auditLoading, setAuditLoading] = useState(false);
 
   const fetchAuditLogs = async (accountId: string) => {
     setAuditLoading(true);
     try {
-      const res = await fetch(`/api/admin/audit-logs?account_id=${accountId}`);
-      if (res.ok) setAuditLogs(await res.json());
+      const resp = await adminAccountClient.getAccountAuditLogs({ accountId });
+      setAuditLogs(resp.entries.map(e => ({
+        id: e.id,
+        action: e.action,
+        detail: e.detail,
+        created_at: e.createdAt ? e.createdAt.toDate().toISOString() : '',
+      })));
     } catch { setAuditLogs([]); }
     finally { setAuditLoading(false); }
   };

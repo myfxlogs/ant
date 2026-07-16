@@ -15,6 +15,8 @@ package risksvc
 import (
 	"context"
 	"math"
+
+	"github.com/shopspring/decimal"
 )
 
 // KellyFractionSizer sizes positions using the Kelly Criterion.
@@ -33,10 +35,10 @@ type KellyFractionSizer struct {
 	KellyMax float64
 
 	// MaxLots caps absolute position size.
-	MaxLots float64
+	MaxLots decimal.Decimal
 
 	// MinLots floors position size (returns 0 if below).
-	MinLots float64
+	MinLots decimal.Decimal
 }
 
 func (s *KellyFractionSizer) Name() string { return "kelly_fraction" }
@@ -53,19 +55,19 @@ func (s *KellyFractionSizer) Size(_ context.Context, req *SizerRequest) (*SizerR
 
 	p := s.WinProb
 	if p <= 0 || p > 1 {
-		return &SizerResult{Lots: 0, RiskUsed: 0, Method: s.Name()}, nil
+		return &SizerResult{Lots: decimal.Zero, RiskUsed: 0, Method: s.Name()}, nil
 	}
 	q := 1.0 - p
 	b := s.WinLossRatio
 	if b <= 0 {
-		return &SizerResult{Lots: 0, RiskUsed: 0, Method: s.Name()}, nil
+		return &SizerResult{Lots: decimal.Zero, RiskUsed: 0, Method: s.Name()}, nil
 	}
 
 	// Kelly formula: f* = (p·b - q) / b
 	fStar := (p*b - q) / b
 	if fStar <= 0 {
 		// Negative or zero edge — don't bet.
-		return &SizerResult{Lots: 0, RiskUsed: 0, Method: s.Name()}, nil
+		return &SizerResult{Lots: decimal.Zero, RiskUsed: 0, Method: s.Name()}, nil
 	}
 
 	// Apply half-Kelly fraction.
@@ -77,27 +79,27 @@ func (s *KellyFractionSizer) Size(_ context.Context, req *SizerRequest) (*SizerR
 	}
 
 	// Convert fraction of equity to lots.
-	riskCapital := req.Equity * fStar
-	if riskCapital <= 0 {
-		return &SizerResult{Lots: 0, RiskUsed: 0, Method: s.Name()}, nil
+	riskCapital := req.Equity.Mul(decimal.NewFromFloat(fStar))
+	if riskCapital.LessThanOrEqual(decimal.Zero) {
+		return &SizerResult{Lots: decimal.Zero, RiskUsed: 0, Method: s.Name()}, nil
 	}
 
 	price := req.Price
-	if price <= 0 {
-		price = 1.0
+	if price.LessThanOrEqual(decimal.Zero) {
+		price = decimal.NewFromInt(1)
 	}
 
 	// Lots = risk_capital / (price × contract_size).
 	contractSize := req.ContractSize
-	if contractSize <= 0 {
-		contractSize = 1
+	if contractSize.LessThanOrEqual(decimal.Zero) {
+		contractSize = decimal.NewFromInt(1)
 	}
-	lots := riskCapital / (price * contractSize)
+	lots := riskCapital.Div(price.Mul(contractSize))
 
-	if lots < s.MinLots {
-		lots = 0
+	if s.MinLots.GreaterThan(decimal.Zero) && lots.LessThan(s.MinLots) {
+		lots = decimal.Zero
 	}
-	if s.MaxLots > 0 && lots > s.MaxLots {
+	if s.MaxLots.GreaterThan(decimal.Zero) && lots.GreaterThan(s.MaxLots) {
 		lots = s.MaxLots
 	}
 

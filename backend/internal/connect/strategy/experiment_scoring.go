@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -151,15 +152,20 @@ func extractBacktestMetrics(protoResp []byte) *ai.BacktestMetrics {
 	}
 	m := resp.GetMetrics(); eq := resp.GetEquityCurve()
 	return &ai.BacktestMetrics{
-		TotalReturn:  m.GetTotalReturn(),
-		AnnualReturn: m.GetAnnualReturn(),
-		SharpeRatio:  m.GetSharpeRatio(),
-		MaxDrawdown:  m.GetMaxDrawdown(),
-		WinRate:      m.GetWinRate(),
-		ProfitFactor: m.GetProfitFactor(),
+		TotalReturn:  parseFloat(m.GetTotalReturn()),
+		AnnualReturn: parseFloat(m.GetAnnualReturn()),
+		SharpeRatio:  parseFloat(m.GetSharpeRatio()),
+		MaxDrawdown:  parseFloat(m.GetMaxDrawdown()),
+		WinRate:      parseFloat(m.GetWinRate()),
+		ProfitFactor: parseFloat(m.GetProfitFactor()),
 		TotalTrades:  int(m.GetTotalTrades()),
 		Stability:    computeStability(equityCurveToFloat64(eq)),
 	}
+}
+
+func parseFloat(s string) float64 {
+	f, _ := strconv.ParseFloat(s, 64)
+	return f
 }
 
 // detectRegime fetches K-lines for the backtest run and detects market regime.

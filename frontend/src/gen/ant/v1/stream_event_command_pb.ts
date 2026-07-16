@@ -4,13 +4,14 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Message } from "@bufbuild/protobuf";
+import { file_google_protobuf_struct } from "@bufbuild/protobuf/wkt";
+import type { JsonObject, Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file stream_event_command.proto.
  */
 export const file_stream_event_command: GenFile = /*@__PURE__*/
-  fileDesc("ChpzdHJlYW1fZXZlbnRfY29tbWFuZC5wcm90bxIGYW50LnYxIo0BChFUcmFkZUNvbW1hbmRFdmVudBISCgpyZXF1ZXN0X2lkGAEgASgJEhcKD2lkZW1wb3RlbmN5X2tleRgCIAEoCRIRCglvcGVyYXRpb24YAyABKAkSEgoKYWNjb3VudF9pZBgKIAEoCRIOCgZzeW1ib2wYCyABKAkSFAoMcGF5bG9hZF9qc29uGBQgASgJIqgBChFUcmFkZVJlY2VpcHRFdmVudBISCgpyZXF1ZXN0X2lkGAEgASgJEhcKD2lkZW1wb3RlbmN5X2tleRgCIAEoCRIRCglvcGVyYXRpb24YAyABKAkSEgoKYWNjb3VudF9pZBgKIAEoCRIPCgdyZXRjb2RlGBQgASgFEg8KB21lc3NhZ2UYFSABKAkSDQoFZXJyb3IYFiABKAkSDgoGdGlja2V0GB4gASgDQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
+  fileDesc("ChpzdHJlYW1fZXZlbnRfY29tbWFuZC5wcm90bxIGYW50LnYxIqEBChFUcmFkZUNvbW1hbmRFdmVudBISCgpyZXF1ZXN0X2lkGAEgASgJEhcKD2lkZW1wb3RlbmN5X2tleRgCIAEoCRIRCglvcGVyYXRpb24YAyABKAkSEgoKYWNjb3VudF9pZBgKIAEoCRIOCgZzeW1ib2wYCyABKAkSKAoHcGF5bG9hZBgUIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QiqAEKEVRyYWRlUmVjZWlwdEV2ZW50EhIKCnJlcXVlc3RfaWQYASABKAkSFwoPaWRlbXBvdGVuY3lfa2V5GAIgASgJEhEKCW9wZXJhdGlvbhgDIAEoCRISCgphY2NvdW50X2lkGAogASgJEg8KB3JldGNvZGUYFCABKAUSDwoHbWVzc2FnZRgVIAEoCRINCgVlcnJvchgWIAEoCRIOCgZ0aWNrZXQYHiABKANCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_struct]);
 
 /**
  * @generated from message ant.v1.TradeCommandEvent
@@ -42,9 +43,9 @@ export type TradeCommandEvent = Message<"ant.v1.TradeCommandEvent"> & {
   symbol: string;
 
   /**
-   * @generated from field: string payload_json = 20;
+   * @generated from field: google.protobuf.Struct payload = 20;
    */
-  payloadJson: string;
+  payload?: JsonObject | undefined;
 };
 
 /**

@@ -3,6 +3,7 @@ syntax = "proto3";
 package ant.v1;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
 import "agent_profile.proto";
 import "agent_analysis.proto";
 
@@ -186,12 +187,12 @@ message SemanticChange {
 message AgentBacktestResult {
   bool success = 1;
   string error = 2;
-  double total_return = 3;
-  double annual_return = 4;
-  double max_drawdown = 5;
-  double sharpe_ratio = 6;
-  double win_rate = 7;
-  double profit_factor = 8;
+  string total_return = 3;
+  string annual_return = 4;
+  string max_drawdown = 5;
+  string sharpe_ratio = 6;
+  string win_rate = 7;
+  string profit_factor = 8;
   int32 total_trades = 9;
   int32 winning_trades = 10;
   int32 losing_trades = 11;
@@ -242,7 +243,7 @@ message SearchExperienceResponse {
 message StoreExperienceRequest {
   string category = 1;                // strategy_pattern / market_regime / optimization_result
   string content = 2;                 // natural language description
-  string fingerprint = 3;             // JSON string of structural fingerprint
+  google.protobuf.Struct fingerprint = 3;  // structural fingerprint
 }
 
 message StoreExperienceResponse {
@@ -316,7 +317,7 @@ message ListMemoryResponse {
 message SaveUserTemplateRequest {
   string name = 1;
   string content = 2;
-  string scope_json = 3;              // JSON string of scope (symbols, timeframes)
+  TemplateScope scope = 3;              // scope (symbols, timeframes)
 }
 
 message SaveUserTemplateResponse {
@@ -381,4 +382,10 @@ message CapabilityEntry {
 
 message GetCapabilitiesResponse {
   repeated CapabilityEntry capabilities = 1;
+}
+
+// TemplateScope defines the applicability scope of a user template.
+message TemplateScope {
+  repeated string symbols = 1;
+  repeated string timeframes = 2;
 }

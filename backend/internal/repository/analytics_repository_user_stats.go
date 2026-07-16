@@ -5,14 +5,15 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type UserDailyPnL struct {
 	Date time.Time `db:"date"`
-	PnL  float64   `db:"pnl"`
+	PnL  decimal.Decimal `db:"pnl"`
 }
 
-func (r *AnalyticsRepository) GetUserPnLTradesWinLoss(ctx context.Context, userID uuid.UUID, start, end time.Time, enabledOnly bool) (pnl float64, trades int, winTrades int, lossTrades int, sumProfitPos float64, sumLossAbs float64, err error) {
+func (r *AnalyticsRepository) GetUserPnLTradesWinLoss(ctx context.Context, userID uuid.UUID, start, end time.Time, enabledOnly bool) (pnl decimal.Decimal, trades int, winTrades int, lossTrades int, sumProfitPos decimal.Decimal, sumLossAbs decimal.Decimal, err error) {
 	query := `
 		SELECT
 			COALESCE(SUM(CASE WHEN tr.order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit') THEN tr.profit ELSE 0 END), 0) AS pnl,

@@ -9,6 +9,7 @@ package antv1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -247,8 +248,8 @@ type MarketRegime struct {
 	Timeframe        string                 `protobuf:"bytes,5,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
 	Regime           string                 `protobuf:"bytes,6,opt,name=regime,proto3" json:"regime,omitempty"`
 	Confidence       float64                `protobuf:"fixed64,7,opt,name=confidence,proto3" json:"confidence,omitempty"`
-	Features         string                 `protobuf:"bytes,8,opt,name=features,proto3" json:"features,omitempty"`
-	Segments         string                 `protobuf:"bytes,9,opt,name=segments,proto3" json:"segments,omitempty"`
+	Features         *structpb.Struct       `protobuf:"bytes,8,opt,name=features,proto3" json:"features,omitempty"`
+	Segments         []string               `protobuf:"bytes,9,rep,name=segments,proto3" json:"segments,omitempty"`
 	StrategyFamilies []string               `protobuf:"bytes,10,rep,name=strategy_families,json=strategyFamilies,proto3" json:"strategy_families,omitempty"`
 	FromTime         *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=from_time,json=fromTime,proto3" json:"from_time,omitempty"`
 	ToTime           *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=to_time,json=toTime,proto3" json:"to_time,omitempty"`
@@ -337,18 +338,18 @@ func (x *MarketRegime) GetConfidence() float64 {
 	return 0
 }
 
-func (x *MarketRegime) GetFeatures() string {
+func (x *MarketRegime) GetFeatures() *structpb.Struct {
 	if x != nil {
 		return x.Features
 	}
-	return ""
+	return nil
 }
 
-func (x *MarketRegime) GetSegments() string {
+func (x *MarketRegime) GetSegments() []string {
 	if x != nil {
 		return x.Segments
 	}
-	return ""
+	return nil
 }
 
 func (x *MarketRegime) GetStrategyFamilies() []string {
@@ -390,7 +391,7 @@ var File_market_regime_proto protoreflect.FileDescriptor
 
 const file_market_regime_proto_rawDesc = "" +
 	"\n" +
-	"\x13market_regime.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe2\x01\n" +
+	"\x13market_regime.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xe2\x01\n" +
 	"\x19DetectMarketRegimeRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
@@ -404,7 +405,7 @@ const file_market_regime_proto_rawDesc = "" +
 	"\x16GetMarketRegimeRequest\x12\x1b\n" +
 	"\tregime_id\x18\x01 \x01(\tR\bregimeId\"G\n" +
 	"\x17GetMarketRegimeResponse\x12,\n" +
-	"\x06regime\x18\x01 \x01(\v2\x14.ant.v1.MarketRegimeR\x06regime\"\xf7\x03\n" +
+	"\x06regime\x18\x01 \x01(\v2\x14.ant.v1.MarketRegimeR\x06regime\"\x90\x04\n" +
 	"\fMarketRegime\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1d\n" +
@@ -415,9 +416,9 @@ const file_market_regime_proto_rawDesc = "" +
 	"\x06regime\x18\x06 \x01(\tR\x06regime\x12\x1e\n" +
 	"\n" +
 	"confidence\x18\a \x01(\x01R\n" +
-	"confidence\x12\x1a\n" +
-	"\bfeatures\x18\b \x01(\tR\bfeatures\x12\x1a\n" +
-	"\bsegments\x18\t \x01(\tR\bsegments\x12+\n" +
+	"confidence\x123\n" +
+	"\bfeatures\x18\b \x01(\v2\x17.google.protobuf.StructR\bfeatures\x12\x1a\n" +
+	"\bsegments\x18\t \x03(\tR\bsegments\x12+\n" +
 	"\x11strategy_families\x18\n" +
 	" \x03(\tR\x10strategyFamilies\x127\n" +
 	"\tfrom_time\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\bfromTime\x123\n" +
@@ -449,24 +450,26 @@ var file_market_regime_proto_goTypes = []any{
 	(*GetMarketRegimeResponse)(nil),    // 3: ant.v1.GetMarketRegimeResponse
 	(*MarketRegime)(nil),               // 4: ant.v1.MarketRegime
 	(*timestamppb.Timestamp)(nil),      // 5: google.protobuf.Timestamp
+	(*structpb.Struct)(nil),            // 6: google.protobuf.Struct
 }
 var file_market_regime_proto_depIdxs = []int32{
-	5, // 0: ant.v1.DetectMarketRegimeRequest.from:type_name -> google.protobuf.Timestamp
-	5, // 1: ant.v1.DetectMarketRegimeRequest.to:type_name -> google.protobuf.Timestamp
-	4, // 2: ant.v1.DetectMarketRegimeResponse.regime:type_name -> ant.v1.MarketRegime
-	4, // 3: ant.v1.GetMarketRegimeResponse.regime:type_name -> ant.v1.MarketRegime
-	5, // 4: ant.v1.MarketRegime.from_time:type_name -> google.protobuf.Timestamp
-	5, // 5: ant.v1.MarketRegime.to_time:type_name -> google.protobuf.Timestamp
-	5, // 6: ant.v1.MarketRegime.created_at:type_name -> google.protobuf.Timestamp
-	0, // 7: ant.v1.MarketRegimeService.DetectMarketRegime:input_type -> ant.v1.DetectMarketRegimeRequest
-	2, // 8: ant.v1.MarketRegimeService.GetMarketRegime:input_type -> ant.v1.GetMarketRegimeRequest
-	1, // 9: ant.v1.MarketRegimeService.DetectMarketRegime:output_type -> ant.v1.DetectMarketRegimeResponse
-	3, // 10: ant.v1.MarketRegimeService.GetMarketRegime:output_type -> ant.v1.GetMarketRegimeResponse
-	9, // [9:11] is the sub-list for method output_type
-	7, // [7:9] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	5,  // 0: ant.v1.DetectMarketRegimeRequest.from:type_name -> google.protobuf.Timestamp
+	5,  // 1: ant.v1.DetectMarketRegimeRequest.to:type_name -> google.protobuf.Timestamp
+	4,  // 2: ant.v1.DetectMarketRegimeResponse.regime:type_name -> ant.v1.MarketRegime
+	4,  // 3: ant.v1.GetMarketRegimeResponse.regime:type_name -> ant.v1.MarketRegime
+	6,  // 4: ant.v1.MarketRegime.features:type_name -> google.protobuf.Struct
+	5,  // 5: ant.v1.MarketRegime.from_time:type_name -> google.protobuf.Timestamp
+	5,  // 6: ant.v1.MarketRegime.to_time:type_name -> google.protobuf.Timestamp
+	5,  // 7: ant.v1.MarketRegime.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 8: ant.v1.MarketRegimeService.DetectMarketRegime:input_type -> ant.v1.DetectMarketRegimeRequest
+	2,  // 9: ant.v1.MarketRegimeService.GetMarketRegime:input_type -> ant.v1.GetMarketRegimeRequest
+	1,  // 10: ant.v1.MarketRegimeService.DetectMarketRegime:output_type -> ant.v1.DetectMarketRegimeResponse
+	3,  // 11: ant.v1.MarketRegimeService.GetMarketRegime:output_type -> ant.v1.GetMarketRegimeResponse
+	10, // [10:12] is the sub-list for method output_type
+	8,  // [8:10] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_market_regime_proto_init() }

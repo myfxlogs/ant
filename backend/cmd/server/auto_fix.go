@@ -9,10 +9,10 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	internalai "alphaforge/internal/ai"
 	"alphaforge/internal/connect/ai"
@@ -103,7 +103,7 @@ func autoFixCode(
 
 	// 5. Send notification.
 	if notifSender != nil {
-		data, _ := json.Marshal(map[string]interface{}{
+		data, _ := structpb.NewStruct(map[string]interface{}{
 			"original_run_id": run.ID.String(),
 			"new_run_id":      newRun.ID.String(),
 			"failed_gate":     string(gateResult.FirstFail),
@@ -111,6 +111,6 @@ func autoFixCode(
 		_, _ = notifSender.Send(ctx, run.UserID, "auto_fix_started",
 			"Auto-Fix: Code Repair Triggered",
 			fmt.Sprintf("Gate '%s' failure triggered automatic code repair. A new backtest has started.", gateResult.FirstFail),
-			string(data))
+			data)
 	}
 }

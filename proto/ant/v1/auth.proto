@@ -11,6 +11,7 @@ service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc Logout(google.protobuf.Empty) returns (google.protobuf.Empty);
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc RefreshTokenFromCookie(google.protobuf.Empty) returns (RefreshTokenResponse);
   rpc GetMe(google.protobuf.Empty) returns (GetMeResponse);
   rpc Register(RegisterRequest) returns (RegisterResponse);
   rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse);

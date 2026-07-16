@@ -2,9 +2,9 @@ package strategy
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
@@ -39,16 +39,16 @@ func extractTradeSummary(protoResp []byte) *antv1.BacktestTradeSummary {
 	}
 	m := resp.GetMetrics()
 	trades := resp.GetTrades()
-	var netPnL float64
+	netPnL := decimal.Zero
 	for _, t := range trades {
-		f, _ := strconv.ParseFloat(t.GetPnl(), 64)
-		netPnL += f
+		d, _ := decimal.NewFromString(t.GetPnl())
+		netPnL = netPnL.Add(d)
 	}
 	return &antv1.BacktestTradeSummary{
 		Count:  m.GetTotalTrades(),
 		Wins:   m.GetWinningTrades(),
 		Losses: m.GetLosingTrades(),
-		NetPnl: strconv.FormatFloat(netPnL, 'f', -1, 64),
+		NetPnl: netPnL.String(),
 	}
 }
 

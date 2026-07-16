@@ -6,6 +6,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -29,7 +30,7 @@ func templateRowToProto(r *service.TemplateRow) *antv1.StrategyTemplate {
 		Tags:        r.Tags,
 		UseCount:    r.UseCount,
 		Status:      r.Status,
-		I18N:        string(r.I18n),
+		I18N:        parseI18nBytes(r.I18n),
 		CreatedAt:   timestamppb.New(r.CreatedAt),
 		UpdatedAt:   timestamppb.New(r.UpdatedAt),
 	}
@@ -87,7 +88,7 @@ func (s *StrategyServer) CreateTemplate(ctx context.Context, req *connect.Reques
 		Status:      "published",
 		IsPublic:    req.Msg.GetIsPublic(),
 		Tags:        req.Msg.GetTags(),
-		I18n:        []byte(req.Msg.GetI18N()),
+		I18n:        i18nToBytes(req.Msg.GetI18N()),
 	}
 	if sid := req.Msg.GetStrategyId(); sid != "" {
 		if parsed, err := uuid.Parse(sid); err == nil {
@@ -133,7 +134,7 @@ func (s *StrategyServer) UpdateTemplate(ctx context.Context, req *connect.Reques
 		existing.Tags = req.Msg.Tags
 	}
 	if v := req.Msg.I18N; v != nil {
-		existing.I18n = []byte(*v)
+		existing.I18n = i18nToBytes(v)
 	}
 	if v := req.Msg.StrategyId; v != nil && *v != "" {
 		if parsed, err := uuid.Parse(*v); err == nil {
@@ -236,4 +237,25 @@ func (s *StrategyServer) PublishTemplateDraft(ctx context.Context, req *connect.
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(templateRowToProto(row)), nil
+}
+
+// parseI18nBytes parses JSON bytes from DB JSONB into a TemplateI18n proto.
+func parseI18nBytes(b []byte) *antv1.TemplateI18N {
+	if len(b) == 0 {
+		return nil
+	}
+	var i18n antv1.TemplateI18N
+	if err := protojson.Unmarshal(b, &i18n); err != nil {
+		return nil
+	}
+	return &i18n
+}
+
+// i18nToBytes converts a TemplateI18n proto to JSON bytes for DB storage.
+func i18nToBytes(i18n *antv1.TemplateI18N) []byte {
+	if i18n == nil {
+		return nil
+	}
+	b, _ := protojson.Marshal(i18n)
+	return b
 }

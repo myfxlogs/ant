@@ -108,21 +108,21 @@ func (r *AnalyticsRepository) GetDailyEquity(ctx context.Context, accountID uuid
 			Profit:   dp.Profit,
 			Balance:  runningBalance,
 			Equity:   runningBalance,
-			Drawdown: 0,
+			Drawdown: decimal.Zero,
 		})
 	}
 
 	return result, nil
 }
 
-func (r *AnalyticsRepository) GetAccountBalance(ctx context.Context, accountID uuid.UUID) (float64, error) {
+func (r *AnalyticsRepository) GetAccountBalance(ctx context.Context, accountID uuid.UUID) (decimal.Decimal, error) {
 	query := `SELECT balance FROM mt_accounts WHERE deleted_at IS NULL AND id = $1`
-	var balance float64
+	var balance decimal.Decimal
 	err := r.db.QueryRow(ctx, query, accountID).Scan(&balance)
 	return balance, err
 }
 
-func (r *AnalyticsRepository) GetAccountInitialBalance(ctx context.Context, accountID uuid.UUID) (float64, error) {
+func (r *AnalyticsRepository) GetAccountInitialBalance(ctx context.Context, accountID uuid.UUID) (decimal.Decimal, error) {
 	query := `
 		SELECT COALESCE(
 			(SELECT balance FROM account_balance_history
@@ -132,7 +132,7 @@ func (r *AnalyticsRepository) GetAccountInitialBalance(ctx context.Context, acco
 			(SELECT balance FROM mt_accounts WHERE deleted_at IS NULL AND id = $1)
 		) as initial_balance
 	`
-	var balance float64
+	var balance decimal.Decimal
 	err := r.db.QueryRow(ctx, query, accountID).Scan(&balance)
 	return balance, err
 }

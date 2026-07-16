@@ -1,12 +1,14 @@
 package model
 
 import (
-	"github.com/shopspring/decimal"
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
+	"google.golang.org/protobuf/proto"
+
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 type StrategySchedule struct {
@@ -68,17 +70,19 @@ const (
 	RiskLevelUnknown = "unknown"
 )
 
-func (s *StrategySchedule) GetParameters() (map[string]interface{}, error) {
+func (s *StrategySchedule) GetParameters() (map[string]string, error) {
 	if len(s.Parameters) == 0 {
-		return make(map[string]interface{}), nil
+		return make(map[string]string), nil
 	}
-	var params map[string]interface{}
-	err := json.Unmarshal(s.Parameters, &params)
-	return params, err
+	var params antv1.StrategyParams
+	if err := proto.Unmarshal(s.Parameters, &params); err != nil {
+		return make(map[string]string), nil
+	}
+	return params.GetValues(), nil
 }
 
-func (s *StrategySchedule) SetParameters(params map[string]interface{}) error {
-	data, err := json.Marshal(params)
+func (s *StrategySchedule) SetParameters(params map[string]string) error {
+	data, err := proto.Marshal(&antv1.StrategyParams{Values: params})
 	if err != nil {
 		return fmt.Errorf("marshal strategy schedule parameters: %w", err)
 	}
@@ -90,9 +94,23 @@ func (s *StrategySchedule) GetBacktestMetrics() (*BacktestMetrics, error) {
 	if len(s.BacktestMetrics) == 0 {
 		return nil, nil
 	}
-	var metrics BacktestMetrics
-	err := json.Unmarshal(s.BacktestMetrics, &metrics)
-	return &metrics, err
+	var m antv1.BacktestMetrics
+	if err := proto.Unmarshal(s.BacktestMetrics, &m); err != nil {
+		return nil, err
+	}
+	return &BacktestMetrics{
+		TotalReturn:   decimal.RequireFromString(m.GetTotalReturn()),
+		AnnualReturn:  decimal.RequireFromString(m.GetAnnualReturn()),
+		MaxDrawdown:   decimal.RequireFromString(m.GetMaxDrawdown()),
+		SharpeRatio:   decimal.RequireFromString(m.GetSharpeRatio()),
+		WinRate:       decimal.RequireFromString(m.GetWinRate()),
+		ProfitFactor:  decimal.RequireFromString(m.GetProfitFactor()),
+		TotalTrades:   int(m.GetTotalTrades()),
+		WinningTrades: int(m.GetWinningTrades()),
+		LosingTrades:  int(m.GetLosingTrades()),
+		AverageProfit: decimal.RequireFromString(m.GetAverageProfit()),
+		AverageLoss:   decimal.RequireFromString(m.GetAverageLoss()),
+	}, nil
 }
 
 func (s *StrategySchedule) SetBacktestMetrics(metrics *BacktestMetrics) error {
@@ -100,7 +118,19 @@ func (s *StrategySchedule) SetBacktestMetrics(metrics *BacktestMetrics) error {
 		s.BacktestMetrics = nil
 		return nil
 	}
-	data, err := json.Marshal(metrics)
+	data, err := proto.Marshal(&antv1.BacktestMetrics{
+		TotalReturn:   metrics.TotalReturn.String(),
+		AnnualReturn:  metrics.AnnualReturn.String(),
+		MaxDrawdown:   metrics.MaxDrawdown.String(),
+		SharpeRatio:   metrics.SharpeRatio.String(),
+		WinRate:       metrics.WinRate.String(),
+		ProfitFactor:  metrics.ProfitFactor.String(),
+		TotalTrades:   int32(metrics.TotalTrades),
+		WinningTrades: int32(metrics.WinningTrades),
+		LosingTrades:  int32(metrics.LosingTrades),
+		AverageProfit: metrics.AverageProfit.String(),
+		AverageLoss:   metrics.AverageLoss.String(),
+	})
 	if err != nil {
 		return fmt.Errorf("marshal backtest metrics: %w", err)
 	}
@@ -112,13 +142,15 @@ func (s *StrategySchedule) GetRiskReasons() ([]string, error) {
 	if len(s.RiskReasons) == 0 {
 		return []string{}, nil
 	}
-	var reasons []string
-	err := json.Unmarshal(s.RiskReasons, &reasons)
-	return reasons, err
+	var lst antv1.BacktestRisk
+	if err := proto.Unmarshal(s.RiskReasons, &lst); err != nil {
+		return []string{}, nil
+	}
+	return lst.GetReasons(), nil
 }
 
 func (s *StrategySchedule) SetRiskReasons(reasons []string) error {
-	data, err := json.Marshal(reasons)
+	data, err := proto.Marshal(&antv1.BacktestRisk{Reasons: reasons})
 	if err != nil {
 		return fmt.Errorf("marshal risk reasons: %w", err)
 	}
@@ -130,13 +162,15 @@ func (s *StrategySchedule) GetRiskWarnings() ([]string, error) {
 	if len(s.RiskWarnings) == 0 {
 		return []string{}, nil
 	}
-	var warnings []string
-	err := json.Unmarshal(s.RiskWarnings, &warnings)
-	return warnings, err
+	var lst antv1.BacktestRisk
+	if err := proto.Unmarshal(s.RiskWarnings, &lst); err != nil {
+		return []string{}, nil
+	}
+	return lst.GetWarnings(), nil
 }
 
 func (s *StrategySchedule) SetRiskWarnings(warnings []string) error {
-	data, err := json.Marshal(warnings)
+	data, err := proto.Marshal(&antv1.BacktestRisk{Warnings: warnings})
 	if err != nil {
 		return fmt.Errorf("marshal risk warnings: %w", err)
 	}
@@ -144,17 +178,19 @@ func (s *StrategySchedule) SetRiskWarnings(warnings []string) error {
 	return nil
 }
 
-func (s *StrategySchedule) GetScheduleConfig() (map[string]interface{}, error) {
+func (s *StrategySchedule) GetScheduleConfig() (*antv1.ScheduleConfig, error) {
 	if len(s.ScheduleConfig) == 0 {
-		return make(map[string]interface{}), nil
+		return &antv1.ScheduleConfig{}, nil
 	}
-	var config map[string]interface{}
-	err := json.Unmarshal(s.ScheduleConfig, &config)
-	return config, err
+	var cfg antv1.ScheduleConfig
+	if err := proto.Unmarshal(s.ScheduleConfig, &cfg); err != nil {
+		return &antv1.ScheduleConfig{}, nil
+	}
+	return &cfg, nil
 }
 
-func (s *StrategySchedule) SetScheduleConfig(config map[string]interface{}) error {
-	data, err := json.Marshal(config)
+func (s *StrategySchedule) SetScheduleConfig(cfg *antv1.ScheduleConfig) error {
+	data, err := proto.Marshal(cfg)
 	if err != nil {
 		return fmt.Errorf("marshal schedule config: %w", err)
 	}
@@ -168,58 +204,38 @@ func (s *StrategySchedule) ComputeNextRunAt() (time.Time, error) {
 	return ComputeNextRunAtFromConfig(s.ScheduleType, s.ScheduleConfig)
 }
 
-// getInt64FromConfig extracts an int64 value from a decoded JSONB config map.
-// Handles float64 (JSON default), int64 (proto), and bigint (frontend via BigInt(n)).
-func getInt64FromConfig(cfg map[string]interface{}, key string) int64 {
-	v, ok := cfg[key]
-	if !ok {
-		return 0
-	}
-	switch n := v.(type) {
-	case float64:
-		return int64(n)
-	case int64:
-		return n
-	case int:
-		return int64(n)
-	default:
-		return 0
-	}
-}
-
 // ComputeNextRunAtFromConfig is a standalone helper for computing next_run_at from raw fields.
 // Used by both the model (StrategySchedule.ComputeNextRunAt) and the service layer (ScheduleRow).
+// Accepts proto-encoded ScheduleConfig bytes.
 func ComputeNextRunAtFromConfig(scheduleType string, scheduleConfig []byte) (time.Time, error) {
-	var cfg map[string]interface{}
+	var cfg antv1.ScheduleConfig
 	if len(scheduleConfig) > 0 {
-		if err := json.Unmarshal(scheduleConfig, &cfg); err != nil {
+		if err := proto.Unmarshal(scheduleConfig, &cfg); err != nil {
 			return time.Time{}, fmt.Errorf("compute next_run_at: parse config: %w", err)
 		}
-	}
-	if cfg == nil {
-		cfg = make(map[string]interface{})
 	}
 
 	switch scheduleType {
 	case ScheduleTypeInterval:
-		ms := getInt64FromConfig(cfg, "intervalMs")
+		ms := cfg.GetIntervalMs()
 		if ms == 0 {
-			ms = getInt64FromConfig(cfg, "interval_seconds") * 1000 // legacy
+			ms = 3600_000 // default: 1 hour
 		}
 		if ms < 1000 {
-			ms = 3600_000 // default: 1 hour
+			ms = 3600_000
 		}
 		return time.Now().Add(time.Duration(ms) * time.Millisecond), nil
 
 	case ScheduleTypeCron:
 		// Backward compat: old records mapped kline_close/hf_quote as "cron" with triggerMode.
-		if triggerMode, _ := cfg["triggerMode"].(string); triggerMode == "stable_kline" || triggerMode == "hf_quote_stream" {
+		triggerMode := cfg.GetTriggerMode()
+		if triggerMode == "stable_kline" || triggerMode == "hf_quote_stream" {
 			return time.Time{}, nil // event-driven, no next_run_at
 		}
 		// Cron expression — for now fallback to interval mode.
-		ms := getInt64FromConfig(cfg, "intervalMs")
+		ms := cfg.GetIntervalMs()
 		if ms == 0 {
-			ms = getInt64FromConfig(cfg, "interval_seconds") * 1000
+			ms = 3600_000
 		}
 		if ms < 1000 {
 			ms = 3600_000
@@ -236,6 +252,9 @@ func ComputeNextRunAtFromConfig(scheduleType string, scheduleConfig []byte) (tim
 
 func NewStrategySchedule(userID, templateID, accountID uuid.UUID, symbol, timeframe string) *StrategySchedule {
 	now := time.Now()
+	defaultParams, _ := proto.Marshal(&antv1.StrategyParams{Values: map[string]string{}})
+	defaultCfg, _ := proto.Marshal(&antv1.ScheduleConfig{IntervalMs: 3600_000})
+	defaultReasons, _ := proto.Marshal(&antv1.BacktestRisk{})
 	return &StrategySchedule{
 		ID:             uuid.New(),
 		UserID:         userID,
@@ -243,11 +262,11 @@ func NewStrategySchedule(userID, templateID, accountID uuid.UUID, symbol, timefr
 		AccountID:      accountID,
 		Symbol:         symbol,
 		Timeframe:      timeframe,
-		Parameters:     []byte("{}"),
+		Parameters:     defaultParams,
 		ScheduleType:   ScheduleTypeInterval,
-		ScheduleConfig: []byte(`{"interval_seconds": 3600}`),
-		RiskReasons:    []byte("[]"),
-		RiskWarnings:   []byte("[]"),
+		ScheduleConfig: defaultCfg,
+		RiskReasons:    defaultReasons,
+		RiskWarnings:   defaultReasons,
 		RiskLevel:      RiskLevelUnknown,
 		IsActive:       false,
 		RunCount:       0,

@@ -4,13 +4,14 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Message } from "@bufbuild/protobuf";
+import { file_google_protobuf_struct } from "@bufbuild/protobuf/wkt";
+import type { JsonObject, Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file strategy_execution.proto.
  */
 export const file_strategy_execution: GenFile = /*@__PURE__*/
-  fileDesc("ChhzdHJhdGVneV9leGVjdXRpb24ucHJvdG8SBmFudC52MSKjAQoRQ29udmVyc2F0ZVJlcXVlc3QSDwoHbWVzc2FnZRgBIAEoCRIXCg9jb252ZXJzYXRpb25faWQYAiABKAkSDgoGc3ltYm9sGAMgASgJEhEKCXRpbWVmcmFtZRgEIAEoCRIMCgRwbGFuGAUgASgJEhQKDGN1cnJlbnRfY29kZRgGIAEoCRIdChViYWNrdGVzdF9tZXRyaWNzX2pzb24YByABKAki0QEKD0NvbnZlcnNhdGVDaHVuaxINCgVwaGFzZRgBIAEoCRINCgVkZWx0YRgCIAEoCRIMCgRwbGFuGAMgASgJEgwKBGNvZGUYBCABKAkSFQoNcHJldmlvdXNfY29kZRgFIAEoCRIQCghhbmFseXNpcxgGIAEoCRIjCgl0b29sX2NhbGwYByABKAsyEC5hbnQudjEuVG9vbENhbGwSJwoLdG9vbF9yZXN1bHQYCCABKAsyEi5hbnQudjEuVG9vbFJlc3VsdBINCgVlcnJvchgJIAEoCSKHAQoPRGlhZ25vc2VSZXF1ZXN0EgwKBHBsYW4YASABKAkSFwoPY29udmVyc2F0aW9uX2lkGAIgASgJEhgKEGZlZWRiYWNrX21lc3NhZ2UYAyABKAkSFAoMY3VycmVudF9jb2RlGAQgASgJEh0KFWJhY2t0ZXN0X21ldHJpY3NfanNvbhgFIAEoCSJhChJBbmFseXplUGxhblJlcXVlc3QSDwoHbWVzc2FnZRgBIAEoCRIXCg9jb252ZXJzYXRpb25faWQYAiABKAkSDgoGc3ltYm9sGAMgASgJEhEKCXRpbWVmcmFtZRgEIAEoCSJNChBBbmFseXplUGxhbkNodW5rEg0KBXBoYXNlGAEgASgJEg0KBWRlbHRhGAIgASgJEgwKBHBsYW4YAyABKAkSDQoFZXJyb3IYBCABKAkirgEKEkV4ZWN1dGVQbGFuUmVxdWVzdBIMCgRwbGFuGAEgASgJEhcKD2NvbnZlcnNhdGlvbl9pZBgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJEhUKDXByZXZpb3VzX2NvZGUYBSABKAkSGAoQZmVlZGJhY2tfbWVzc2FnZRgGIAEoCRIdChViYWNrdGVzdF9tZXRyaWNzX2pzb24YByABKAkixAEKEEV4ZWN1dGVQbGFuQ2h1bmsSDQoFcGhhc2UYASABKAkSDQoFZGVsdGEYAiABKAkSDAoEY29kZRgDIAEoCRIVCg1wcmV2aW91c19jb2RlGAQgASgJEiMKCXRvb2xfY2FsbBgFIAEoCzIQLmFudC52MS5Ub29sQ2FsbBInCgt0b29sX3Jlc3VsdBgGIAEoCzISLmFudC52MS5Ub29sUmVzdWx0Eg0KBWVycm9yGAcgASgJEhAKCGFuYWx5c2lzGAggASgJInMKE0V4ZWN1dGVQbGFuUmVzcG9uc2USDAoEY29kZRgBIAEoCRIVCg1wcmV2aW91c19jb2RlGAIgASgJEigKDHRvb2xfcmVzdWx0cxgDIAMoCzISLmFudC52MS5Ub29sUmVzdWx0Eg0KBWVycm9yGAQgASgJIj4KCFRvb2xDYWxsEg8KB2NhbGxfaWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtwYXJhbXNfanNvbhgDIAEoCSJgCgpUb29sUmVzdWx0Eg8KB2NhbGxfaWQYASABKAkSDAoEbmFtZRgCIAEoCRIPCgdzdWNjZXNzGAMgASgIEhMKC291dHB1dF9qc29uGAQgASgJEg0KBWVycm9yGAUgASgJIlAKD0NvbXBsaWFuY2VJc3N1ZRIMCgRydWxlGAEgASgJEg8KB21lc3NhZ2UYAiABKAkSEAoIc2V2ZXJpdHkYAyABKAkSDAoEbGluZRgEIAEoBSJLChBDb21wbGlhbmNlUmVzdWx0Eg4KBnBhc3NlZBgBIAEoCBInCgZpc3N1ZXMYAiADKAsyFy5hbnQudjEuQ29tcGxpYW5jZUlzc3VlIpUBChJCYWNrdGVzdE1ldHJpY3NNc2cSFAoMdG90YWxfcmV0dXJuGAEgASgBEhQKDHNoYXJwZV9yYXRpbxgCIAEoARIUCgxtYXhfZHJhd2Rvd24YAyABKAESEAoId2luX3JhdGUYBCABKAESFQoNcHJvZml0X2ZhY3RvchgFIAEoARIUCgx0b3RhbF90cmFkZXMYBiABKAUiSwoUR2F0ZUV2YWx1YXRpb25SZXN1bHQSDgoGcGFzc2VkGAEgASgIEhMKC2ZhaWxlZF9nYXRlGAIgASgJEg4KBnJlYXNvbhgDIAEoCTKoAgoTU3RyYXRlZ3lQbGFuU2VydmljZRJFCgtBbmFseXplUGxhbhIaLmFudC52MS5BbmFseXplUGxhblJlcXVlc3QaGC5hbnQudjEuQW5hbHl6ZVBsYW5DaHVuazABEj8KCERpYWdub3NlEhcuYW50LnYxLkRpYWdub3NlUmVxdWVzdBoYLmFudC52MS5BbmFseXplUGxhbkNodW5rMAESRQoLRXhlY3V0ZVBsYW4SGi5hbnQudjEuRXhlY3V0ZVBsYW5SZXF1ZXN0GhguYW50LnYxLkV4ZWN1dGVQbGFuQ2h1bmswARJCCgpDb252ZXJzYXRlEhkuYW50LnYxLkNvbnZlcnNhdGVSZXF1ZXN0GhcuYW50LnYxLkNvbnZlcnNhdGVDaHVuazABQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
+  fileDesc("ChhzdHJhdGVneV9leGVjdXRpb24ucHJvdG8SBmFudC52MSK6AQoRQ29udmVyc2F0ZVJlcXVlc3QSDwoHbWVzc2FnZRgBIAEoCRIXCg9jb252ZXJzYXRpb25faWQYAiABKAkSDgoGc3ltYm9sGAMgASgJEhEKCXRpbWVmcmFtZRgEIAEoCRIMCgRwbGFuGAUgASgJEhQKDGN1cnJlbnRfY29kZRgGIAEoCRI0ChBiYWNrdGVzdF9tZXRyaWNzGAcgASgLMhouYW50LnYxLkJhY2t0ZXN0TWV0cmljc01zZyLRAQoPQ29udmVyc2F0ZUNodW5rEg0KBXBoYXNlGAEgASgJEg0KBWRlbHRhGAIgASgJEgwKBHBsYW4YAyABKAkSDAoEY29kZRgEIAEoCRIVCg1wcmV2aW91c19jb2RlGAUgASgJEhAKCGFuYWx5c2lzGAYgASgJEiMKCXRvb2xfY2FsbBgHIAEoCzIQLmFudC52MS5Ub29sQ2FsbBInCgt0b29sX3Jlc3VsdBgIIAEoCzISLmFudC52MS5Ub29sUmVzdWx0Eg0KBWVycm9yGAkgASgJIp4BCg9EaWFnbm9zZVJlcXVlc3QSDAoEcGxhbhgBIAEoCRIXCg9jb252ZXJzYXRpb25faWQYAiABKAkSGAoQZmVlZGJhY2tfbWVzc2FnZRgDIAEoCRIUCgxjdXJyZW50X2NvZGUYBCABKAkSNAoQYmFja3Rlc3RfbWV0cmljcxgFIAEoCzIaLmFudC52MS5CYWNrdGVzdE1ldHJpY3NNc2ciYQoSQW5hbHl6ZVBsYW5SZXF1ZXN0Eg8KB21lc3NhZ2UYASABKAkSFwoPY29udmVyc2F0aW9uX2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkiTQoQQW5hbHl6ZVBsYW5DaHVuaxINCgVwaGFzZRgBIAEoCRINCgVkZWx0YRgCIAEoCRIMCgRwbGFuGAMgASgJEg0KBWVycm9yGAQgASgJIsUBChJFeGVjdXRlUGxhblJlcXVlc3QSDAoEcGxhbhgBIAEoCRIXCg9jb252ZXJzYXRpb25faWQYAiABKAkSDgoGc3ltYm9sGAMgASgJEhEKCXRpbWVmcmFtZRgEIAEoCRIVCg1wcmV2aW91c19jb2RlGAUgASgJEhgKEGZlZWRiYWNrX21lc3NhZ2UYBiABKAkSNAoQYmFja3Rlc3RfbWV0cmljcxgHIAEoCzIaLmFudC52MS5CYWNrdGVzdE1ldHJpY3NNc2cixAEKEEV4ZWN1dGVQbGFuQ2h1bmsSDQoFcGhhc2UYASABKAkSDQoFZGVsdGEYAiABKAkSDAoEY29kZRgDIAEoCRIVCg1wcmV2aW91c19jb2RlGAQgASgJEiMKCXRvb2xfY2FsbBgFIAEoCzIQLmFudC52MS5Ub29sQ2FsbBInCgt0b29sX3Jlc3VsdBgGIAEoCzISLmFudC52MS5Ub29sUmVzdWx0Eg0KBWVycm9yGAcgASgJEhAKCGFuYWx5c2lzGAggASgJInMKE0V4ZWN1dGVQbGFuUmVzcG9uc2USDAoEY29kZRgBIAEoCRIVCg1wcmV2aW91c19jb2RlGAIgASgJEigKDHRvb2xfcmVzdWx0cxgDIAMoCzISLmFudC52MS5Ub29sUmVzdWx0Eg0KBWVycm9yGAQgASgJIlIKCFRvb2xDYWxsEg8KB2NhbGxfaWQYASABKAkSDAoEbmFtZRgCIAEoCRInCgZwYXJhbXMYAyABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0InQKClRvb2xSZXN1bHQSDwoHY2FsbF9pZBgBIAEoCRIMCgRuYW1lGAIgASgJEg8KB3N1Y2Nlc3MYAyABKAgSJwoGb3V0cHV0GAQgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBINCgVlcnJvchgFIAEoCSJQCg9Db21wbGlhbmNlSXNzdWUSDAoEcnVsZRgBIAEoCRIPCgdtZXNzYWdlGAIgASgJEhAKCHNldmVyaXR5GAMgASgJEgwKBGxpbmUYBCABKAUiSwoQQ29tcGxpYW5jZVJlc3VsdBIOCgZwYXNzZWQYASABKAgSJwoGaXNzdWVzGAIgAygLMhcuYW50LnYxLkNvbXBsaWFuY2VJc3N1ZSKVAQoSQmFja3Rlc3RNZXRyaWNzTXNnEhQKDHRvdGFsX3JldHVybhgBIAEoCRIUCgxzaGFycGVfcmF0aW8YAiABKAkSFAoMbWF4X2RyYXdkb3duGAMgASgJEhAKCHdpbl9yYXRlGAQgASgJEhUKDXByb2ZpdF9mYWN0b3IYBSABKAkSFAoMdG90YWxfdHJhZGVzGAYgASgFIksKFEdhdGVFdmFsdWF0aW9uUmVzdWx0Eg4KBnBhc3NlZBgBIAEoCBITCgtmYWlsZWRfZ2F0ZRgCIAEoCRIOCgZyZWFzb24YAyABKAkyqAIKE1N0cmF0ZWd5UGxhblNlcnZpY2USRQoLQW5hbHl6ZVBsYW4SGi5hbnQudjEuQW5hbHl6ZVBsYW5SZXF1ZXN0GhguYW50LnYxLkFuYWx5emVQbGFuQ2h1bmswARI/CghEaWFnbm9zZRIXLmFudC52MS5EaWFnbm9zZVJlcXVlc3QaGC5hbnQudjEuQW5hbHl6ZVBsYW5DaHVuazABEkUKC0V4ZWN1dGVQbGFuEhouYW50LnYxLkV4ZWN1dGVQbGFuUmVxdWVzdBoYLmFudC52MS5FeGVjdXRlUGxhbkNodW5rMAESQgoKQ29udmVyc2F0ZRIZLmFudC52MS5Db252ZXJzYXRlUmVxdWVzdBoXLmFudC52MS5Db252ZXJzYXRlQ2h1bmswAUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_struct]);
 
 /**
  * @generated from message ant.v1.ConversateRequest
@@ -51,9 +52,9 @@ export type ConversateRequest = Message<"ant.v1.ConversateRequest"> & {
   currentCode: string;
 
   /**
-   * @generated from field: string backtest_metrics_json = 7;
+   * @generated from field: ant.v1.BacktestMetricsMsg backtest_metrics = 7;
    */
-  backtestMetricsJson: string;
+  backtestMetrics?: BacktestMetricsMsg | undefined;
 };
 
 /**
@@ -159,9 +160,9 @@ export type DiagnoseRequest = Message<"ant.v1.DiagnoseRequest"> & {
   /**
    * latest metrics
    *
-   * @generated from field: string backtest_metrics_json = 5;
+   * @generated from field: ant.v1.BacktestMetricsMsg backtest_metrics = 5;
    */
-  backtestMetricsJson: string;
+  backtestMetrics?: BacktestMetricsMsg | undefined;
 };
 
 /**
@@ -286,9 +287,9 @@ export type ExecutePlanRequest = Message<"ant.v1.ExecutePlanRequest"> & {
   /**
    * for diagnosis: latest backtest results
    *
-   * @generated from field: string backtest_metrics_json = 7;
+   * @generated from field: ant.v1.BacktestMetricsMsg backtest_metrics = 7;
    */
-  backtestMetricsJson: string;
+  backtestMetrics?: BacktestMetricsMsg | undefined;
 };
 
 /**
@@ -413,11 +414,11 @@ export type ToolCall = Message<"ant.v1.ToolCall"> & {
   name: string;
 
   /**
-   * tool-specific parameters as JSON
+   * tool-specific parameters
    *
-   * @generated from field: string params_json = 3;
+   * @generated from field: google.protobuf.Struct params = 3;
    */
-  paramsJson: string;
+  params?: JsonObject | undefined;
 };
 
 /**
@@ -447,11 +448,11 @@ export type ToolResult = Message<"ant.v1.ToolResult"> & {
   success: boolean;
 
   /**
-   * tool-specific output as JSON
+   * tool-specific output
    *
-   * @generated from field: string output_json = 4;
+   * @generated from field: google.protobuf.Struct output = 4;
    */
-  outputJson: string;
+  output?: JsonObject | undefined;
 
   /**
    * @generated from field: string error = 5;
@@ -527,29 +528,29 @@ export const ComplianceResultSchema: GenMessage<ComplianceResult> = /*@__PURE__*
  */
 export type BacktestMetricsMsg = Message<"ant.v1.BacktestMetricsMsg"> & {
   /**
-   * @generated from field: double total_return = 1;
+   * @generated from field: string total_return = 1;
    */
-  totalReturn: number;
+  totalReturn: string;
 
   /**
-   * @generated from field: double sharpe_ratio = 2;
+   * @generated from field: string sharpe_ratio = 2;
    */
-  sharpeRatio: number;
+  sharpeRatio: string;
 
   /**
-   * @generated from field: double max_drawdown = 3;
+   * @generated from field: string max_drawdown = 3;
    */
-  maxDrawdown: number;
+  maxDrawdown: string;
 
   /**
-   * @generated from field: double win_rate = 4;
+   * @generated from field: string win_rate = 4;
    */
-  winRate: number;
+  winRate: string;
 
   /**
-   * @generated from field: double profit_factor = 5;
+   * @generated from field: string profit_factor = 5;
    */
-  profitFactor: number;
+  profitFactor: string;
 
   /**
    * @generated from field: int32 total_trades = 6;

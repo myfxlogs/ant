@@ -1,7 +1,6 @@
 package mql2go
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 
@@ -183,7 +182,7 @@ func (r *VMRunner) OnInit(ctx sdk.Context) error {
 	r.injectParams(ctx)
 
 	// Run OnInit bytecode
-	return safeRun(func() error { return r.vm.RunOnInit(context.Background()) })
+	return safeRun(func() error { return r.vm.RunOnInit(ctx.GoContext()) })
 }
 
 // OnBar implements sdk.Strategy.
@@ -192,7 +191,7 @@ func (r *VMRunner) OnInit(ctx sdk.Context) error {
 func (r *VMRunner) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
 	r.vm.SetContext(ctx)
 
-	if err := safeRun(func() error { return r.vm.RunOnBar(context.Background()) }); err != nil {
+	if err := safeRun(func() error { return r.vm.RunOnBar(ctx.GoContext()) }); err != nil {
 		return nil, fmt.Errorf("VM OnBar: %w", err)
 	}
 
@@ -207,7 +206,7 @@ func (r *VMRunner) OnTick(ctx sdk.Context, bid, ask decimal.Decimal) (*sdk.Signa
 	r.vm.SetContext(ctx)
 
 	if r.vm.bc.OnTick >= 0 {
-		if err := safeRun(func() error { return r.vm.RunOnTick(context.Background()) }); err != nil {
+		if err := safeRun(func() error { return r.vm.RunOnTick(ctx.GoContext()) }); err != nil {
 			return nil, fmt.Errorf("VM OnTick: %w", err)
 		}
 	}
@@ -224,7 +223,7 @@ func (r *VMRunner) HasOnTick() bool {
 func (r *VMRunner) OnTrade(ctx sdk.Context, event sdk.TradeEvent) (*sdk.Signal, error) {
 	r.vm.SetContext(ctx)
 
-	if err := safeRun(func() error { return r.vm.RunOnTrade(context.Background()) }); err != nil {
+	if err := safeRun(func() error { return r.vm.RunOnTrade(ctx.GoContext()) }); err != nil {
 		return nil, fmt.Errorf("VM OnTrade: %w", err)
 	}
 
@@ -235,7 +234,7 @@ func (r *VMRunner) OnTrade(ctx sdk.Context, event sdk.TradeEvent) (*sdk.Signal, 
 func (r *VMRunner) OnTradeTransaction(ctx sdk.Context) (*sdk.Signal, error) {
 	r.vm.SetContext(ctx)
 
-	if err := safeRun(func() error { return r.vm.RunOnTradeTransaction(context.Background()) }); err != nil {
+	if err := safeRun(func() error { return r.vm.RunOnTradeTransaction(ctx.GoContext()) }); err != nil {
 		return nil, fmt.Errorf("VM OnTradeTransaction: %w", err)
 	}
 
@@ -246,7 +245,7 @@ func (r *VMRunner) OnTradeTransaction(ctx sdk.Context) (*sdk.Signal, error) {
 func (r *VMRunner) OnBookEvent(ctx sdk.Context) (*sdk.Signal, error) {
 	r.vm.SetContext(ctx)
 
-	if err := safeRun(func() error { return r.vm.RunOnBookEvent(context.Background()) }); err != nil {
+	if err := safeRun(func() error { return r.vm.RunOnBookEvent(ctx.GoContext()) }); err != nil {
 		return nil, fmt.Errorf("VM OnBookEvent: %w", err)
 	}
 
@@ -266,14 +265,14 @@ func (r *VMRunner) HasOnBookEvent() bool {
 // OnDeinit implements sdk.Strategy.
 func (r *VMRunner) OnDeinit(ctx sdk.Context, reason string) error {
 	r.vm.SetContext(ctx)
-	return safeRun(func() error { return r.vm.RunOnDeinit(context.Background()) })
+	return safeRun(func() error { return r.vm.RunOnDeinit(ctx.GoContext()) })
 }
 
 // OnTimer implements sdk.TimerStrategy (optional).
 func (r *VMRunner) OnTimer(ctx sdk.Context) (*sdk.Signal, error) {
 	r.vm.SetContext(ctx)
 
-	if err := safeRun(func() error { return r.vm.RunOnTimer(context.Background()) }); err != nil {
+	if err := safeRun(func() error { return r.vm.RunOnTimer(ctx.GoContext()) }); err != nil {
 		return nil, fmt.Errorf("VM OnTimer: %w", err)
 	}
 

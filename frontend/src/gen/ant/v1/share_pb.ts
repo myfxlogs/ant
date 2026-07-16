@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file share.proto.
  */
 export const file_share: GenFile = /*@__PURE__*/
-  fileDesc("CgtzaGFyZS5wcm90bxIGYW50LnYxIlcKF0NyZWF0ZVNoYXJlVG9rZW5SZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSEwoLZGVzY3JpcHRpb24YAiABKAkSEwoLZXhwaXJlX2RheXMYAyABKAUiUAoYQ3JlYXRlU2hhcmVUb2tlblJlc3BvbnNlEg0KBXRva2VuGAEgASgJEhEKCXNoYXJlX3VybBgCIAEoCRISCgpleHBpcmVzX2F0GAMgASgJIiwKG0dldFNoYXJlZFBlcmZvcm1hbmNlUmVxdWVzdBINCgV0b2tlbhgBIAEoCSKWAgocR2V0U2hhcmVkUGVyZm9ybWFuY2VSZXNwb25zZRIRCgl1c2VyX25hbWUYASABKAkSFAoMYWNjb3VudF9pbmZvGAIgASgJEhQKDHRvdGFsX3JldHVybhgDIAEoARIQCgh3aW5fcmF0ZRgEIAEoARIUCgxtYXhfZHJhd2Rvd24YBSABKAESFAoMc2hhcnBlX3JhdGlvGAYgASgBEhQKDHRvdGFsX3RyYWRlcxgHIAEoBRIUCgxlcXVpdHlfY3VydmUYCCADKAkSIwoGdHJhZGVzGAkgAygLMhMuYW50LnYxLlNoYXJlZFRyYWRlEg8KB2V4cGlyZWQYCiABKAgSFwoPZXF1aXR5X3RpbWVzX21zGAsgAygDImIKC1NoYXJlZFRyYWRlEg4KBnN5bWJvbBgBIAEoCRIMCgRzaWRlGAIgASgJEg4KBnZvbHVtZRgDIAEoCRIOCgZwcm9maXQYBCABKAkSFQoNY2xvc2VfdGltZV9tcxgFIAEoAzLIAQoMU2hhcmVTZXJ2aWNlElUKEENyZWF0ZVNoYXJlVG9rZW4SHy5hbnQudjEuQ3JlYXRlU2hhcmVUb2tlblJlcXVlc3QaIC5hbnQudjEuQ3JlYXRlU2hhcmVUb2tlblJlc3BvbnNlEmEKFEdldFNoYXJlZFBlcmZvcm1hbmNlEiMuYW50LnYxLkdldFNoYXJlZFBlcmZvcm1hbmNlUmVxdWVzdBokLmFudC52MS5HZXRTaGFyZWRQZXJmb3JtYW5jZVJlc3BvbnNlQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
+  fileDesc("CgtzaGFyZS5wcm90bxIGYW50LnYxIm8KF0NyZWF0ZVNoYXJlVG9rZW5SZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSEwoLZGVzY3JpcHRpb24YAiABKAkSEwoLZXhwaXJlX2RheXMYAyABKAUSFgoOc2hvd19wb3NpdGlvbnMYBCABKAgiUAoYQ3JlYXRlU2hhcmVUb2tlblJlc3BvbnNlEg0KBXRva2VuGAEgASgJEhEKCXNoYXJlX3VybBgCIAEoCRISCgpleHBpcmVzX2F0GAMgASgJIiwKG0dldFNoYXJlZFBlcmZvcm1hbmNlUmVxdWVzdBINCgV0b2tlbhgBIAEoCSKeAwocR2V0U2hhcmVkUGVyZm9ybWFuY2VSZXNwb25zZRIRCgl1c2VyX25hbWUYASABKAkSFAoMYWNjb3VudF9pbmZvGAIgASgJEhQKDHRvdGFsX3JldHVybhgDIAEoCRIQCgh3aW5fcmF0ZRgEIAEoCRIUCgxtYXhfZHJhd2Rvd24YBSABKAkSFAoMc2hhcnBlX3JhdGlvGAYgASgJEhQKDHRvdGFsX3RyYWRlcxgHIAEoBRIUCgxlcXVpdHlfY3VydmUYCCADKAkSIwoGdHJhZGVzGAkgAygLMhMuYW50LnYxLlNoYXJlZFRyYWRlEg8KB2V4cGlyZWQYCiABKAgSFwoPZXF1aXR5X3RpbWVzX21zGAsgAygDEhQKDHRvdGFsX3ZvbHVtZRgMIAEoCRIVCg1wcm9maXRfZmFjdG9yGA0gASgJEhYKDmF2Z19ob2xkaW5nX21zGA4gASgDEhYKDnNob3dfcG9zaXRpb25zGA8gASgIEikKCXBvc2l0aW9ucxgQIAMoCzIWLmFudC52MS5TaGFyZWRQb3NpdGlvbiJiCgtTaGFyZWRUcmFkZRIOCgZzeW1ib2wYASABKAkSDAoEc2lkZRgCIAEoCRIOCgZ2b2x1bWUYAyABKAkSDgoGcHJvZml0GAQgASgJEhUKDWNsb3NlX3RpbWVfbXMYBSABKAMiYgoOU2hhcmVkUG9zaXRpb24SDgoGc3ltYm9sGAEgASgJEgwKBHR5cGUYAiABKAkSDgoGdm9sdW1lGAMgASgJEhIKCm9wZW5fcHJpY2UYBCABKAkSDgoGcHJvZml0GAUgASgJIj8KElNoYXJlZFBvc2l0aW9uTGlzdBIpCglwb3NpdGlvbnMYASADKAsyFi5hbnQudjEuU2hhcmVkUG9zaXRpb24iQAoXVXBkYXRlU2hhcmVUb2tlblJlcXVlc3QSDQoFdG9rZW4YASABKAkSFgoOc2hvd19wb3NpdGlvbnMYAiABKAgiGgoYVXBkYXRlU2hhcmVUb2tlblJlc3BvbnNlIhgKFkxpc3RTaGFyZVRva2Vuc1JlcXVlc3QiQAoXTGlzdFNoYXJlVG9rZW5zUmVzcG9uc2USJQoFaXRlbXMYASADKAsyFi5hbnQudjEuU2hhcmVUb2tlbkl0ZW0imwEKDlNoYXJlVG9rZW5JdGVtEg0KBXRva2VuGAEgASgJEhEKCXNoYXJlX3VybBgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIWCg5zaG93X3Bvc2l0aW9ucxgEIAEoCBISCgp2aWV3X2NvdW50GAUgASgFEhIKCmV4cGlyZXNfYXQYBiABKAkSEgoKY3JlYXRlZF9hdBgHIAEoCSIoChdEZWxldGVTaGFyZVRva2VuUmVxdWVzdBINCgV0b2tlbhgBIAEoCSIaChhEZWxldGVTaGFyZVRva2VuUmVzcG9uc2UiPAoZTGlzdEFsbFNoYXJlVG9rZW5zUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJ4ChpMaXN0QWxsU2hhcmVUb2tlbnNSZXNwb25zZRIqCgVpdGVtcxgBIAMoCzIbLmFudC52MS5BZG1pblNoYXJlVG9rZW5JdGVtEg0KBXRvdGFsGAIgASgFEgwKBHBhZ2UYAyABKAUSEQoJcGFnZV9zaXplGAQgASgFIrEBChNBZG1pblNoYXJlVG9rZW5JdGVtEg0KBXRva2VuGAEgASgJEhEKCXNoYXJlX3VybBgCIAEoCRIPCgd1c2VyX2lkGAMgASgJEhMKC2Rlc2NyaXB0aW9uGAQgASgJEhYKDnNob3dfcG9zaXRpb25zGAUgASgIEhIKCnZpZXdfY291bnQYBiABKAUSEgoKZXhwaXJlc19hdBgHIAEoCRISCgpjcmVhdGVkX2F0GAggASgJMqcECgxTaGFyZVNlcnZpY2USVQoQQ3JlYXRlU2hhcmVUb2tlbhIfLmFudC52MS5DcmVhdGVTaGFyZVRva2VuUmVxdWVzdBogLmFudC52MS5DcmVhdGVTaGFyZVRva2VuUmVzcG9uc2USYQoUR2V0U2hhcmVkUGVyZm9ybWFuY2USIy5hbnQudjEuR2V0U2hhcmVkUGVyZm9ybWFuY2VSZXF1ZXN0GiQuYW50LnYxLkdldFNoYXJlZFBlcmZvcm1hbmNlUmVzcG9uc2USVQoQVXBkYXRlU2hhcmVUb2tlbhIfLmFudC52MS5VcGRhdGVTaGFyZVRva2VuUmVxdWVzdBogLmFudC52MS5VcGRhdGVTaGFyZVRva2VuUmVzcG9uc2USUgoPTGlzdFNoYXJlVG9rZW5zEh4uYW50LnYxLkxpc3RTaGFyZVRva2Vuc1JlcXVlc3QaHy5hbnQudjEuTGlzdFNoYXJlVG9rZW5zUmVzcG9uc2USVQoQRGVsZXRlU2hhcmVUb2tlbhIfLmFudC52MS5EZWxldGVTaGFyZVRva2VuUmVxdWVzdBogLmFudC52MS5EZWxldGVTaGFyZVRva2VuUmVzcG9uc2USWwoSTGlzdEFsbFNoYXJlVG9rZW5zEiEuYW50LnYxLkxpc3RBbGxTaGFyZVRva2Vuc1JlcXVlc3QaIi5hbnQudjEuTGlzdEFsbFNoYXJlVG9rZW5zUmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.CreateShareTokenRequest
@@ -22,18 +22,19 @@ export type CreateShareTokenRequest = Message<"ant.v1.CreateShareTokenRequest"> 
   accountId: string;
 
   /**
-   * optional label
-   *
    * @generated from field: string description = 2;
    */
   description: string;
 
   /**
-   * default 7
-   *
    * @generated from field: int32 expire_days = 3;
    */
   expireDays: number;
+
+  /**
+   * @generated from field: bool show_positions = 4;
+   */
+  showPositions: boolean;
 };
 
 /**
@@ -97,31 +98,29 @@ export type GetSharedPerformanceResponse = Message<"ant.v1.GetSharedPerformanceR
   userName: string;
 
   /**
-   * broker server + login
-   *
    * @generated from field: string account_info = 2;
    */
   accountInfo: string;
 
   /**
-   * @generated from field: double total_return = 3;
+   * @generated from field: string total_return = 3;
    */
-  totalReturn: number;
+  totalReturn: string;
 
   /**
-   * @generated from field: double win_rate = 4;
+   * @generated from field: string win_rate = 4;
    */
-  winRate: number;
+  winRate: string;
 
   /**
-   * @generated from field: double max_drawdown = 5;
+   * @generated from field: string max_drawdown = 5;
    */
-  maxDrawdown: number;
+  maxDrawdown: string;
 
   /**
-   * @generated from field: double sharpe_ratio = 6;
+   * @generated from field: string sharpe_ratio = 6;
    */
-  sharpeRatio: number;
+  sharpeRatio: string;
 
   /**
    * @generated from field: int32 total_trades = 7;
@@ -147,6 +146,31 @@ export type GetSharedPerformanceResponse = Message<"ant.v1.GetSharedPerformanceR
    * @generated from field: repeated int64 equity_times_ms = 11;
    */
   equityTimesMs: bigint[];
+
+  /**
+   * @generated from field: string total_volume = 12;
+   */
+  totalVolume: string;
+
+  /**
+   * @generated from field: string profit_factor = 13;
+   */
+  profitFactor: string;
+
+  /**
+   * @generated from field: int64 avg_holding_ms = 14;
+   */
+  avgHoldingMs: bigint;
+
+  /**
+   * @generated from field: bool show_positions = 15;
+   */
+  showPositions: boolean;
+
+  /**
+   * @generated from field: repeated ant.v1.SharedPosition positions = 16;
+   */
+  positions: SharedPosition[];
 };
 
 /**
@@ -194,12 +218,312 @@ export const SharedTradeSchema: GenMessage<SharedTrade> = /*@__PURE__*/
   messageDesc(file_share, 4);
 
 /**
+ * @generated from message ant.v1.SharedPosition
+ */
+export type SharedPosition = Message<"ant.v1.SharedPosition"> & {
+  /**
+   * @generated from field: string symbol = 1;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: string type = 2;
+   */
+  type: string;
+
+  /**
+   * @generated from field: string volume = 3;
+   */
+  volume: string;
+
+  /**
+   * @generated from field: string open_price = 4;
+   */
+  openPrice: string;
+
+  /**
+   * @generated from field: string profit = 5;
+   */
+  profit: string;
+};
+
+/**
+ * Describes the message ant.v1.SharedPosition.
+ * Use `create(SharedPositionSchema)` to create a new message.
+ */
+export const SharedPositionSchema: GenMessage<SharedPosition> = /*@__PURE__*/
+  messageDesc(file_share, 5);
+
+/**
+ * @generated from message ant.v1.SharedPositionList
+ */
+export type SharedPositionList = Message<"ant.v1.SharedPositionList"> & {
+  /**
+   * @generated from field: repeated ant.v1.SharedPosition positions = 1;
+   */
+  positions: SharedPosition[];
+};
+
+/**
+ * Describes the message ant.v1.SharedPositionList.
+ * Use `create(SharedPositionListSchema)` to create a new message.
+ */
+export const SharedPositionListSchema: GenMessage<SharedPositionList> = /*@__PURE__*/
+  messageDesc(file_share, 6);
+
+/**
+ * @generated from message ant.v1.UpdateShareTokenRequest
+ */
+export type UpdateShareTokenRequest = Message<"ant.v1.UpdateShareTokenRequest"> & {
+  /**
+   * @generated from field: string token = 1;
+   */
+  token: string;
+
+  /**
+   * @generated from field: bool show_positions = 2;
+   */
+  showPositions: boolean;
+};
+
+/**
+ * Describes the message ant.v1.UpdateShareTokenRequest.
+ * Use `create(UpdateShareTokenRequestSchema)` to create a new message.
+ */
+export const UpdateShareTokenRequestSchema: GenMessage<UpdateShareTokenRequest> = /*@__PURE__*/
+  messageDesc(file_share, 7);
+
+/**
+ * @generated from message ant.v1.UpdateShareTokenResponse
+ */
+export type UpdateShareTokenResponse = Message<"ant.v1.UpdateShareTokenResponse"> & {
+};
+
+/**
+ * Describes the message ant.v1.UpdateShareTokenResponse.
+ * Use `create(UpdateShareTokenResponseSchema)` to create a new message.
+ */
+export const UpdateShareTokenResponseSchema: GenMessage<UpdateShareTokenResponse> = /*@__PURE__*/
+  messageDesc(file_share, 8);
+
+/**
+ * @generated from message ant.v1.ListShareTokensRequest
+ */
+export type ListShareTokensRequest = Message<"ant.v1.ListShareTokensRequest"> & {
+};
+
+/**
+ * Describes the message ant.v1.ListShareTokensRequest.
+ * Use `create(ListShareTokensRequestSchema)` to create a new message.
+ */
+export const ListShareTokensRequestSchema: GenMessage<ListShareTokensRequest> = /*@__PURE__*/
+  messageDesc(file_share, 9);
+
+/**
+ * @generated from message ant.v1.ListShareTokensResponse
+ */
+export type ListShareTokensResponse = Message<"ant.v1.ListShareTokensResponse"> & {
+  /**
+   * @generated from field: repeated ant.v1.ShareTokenItem items = 1;
+   */
+  items: ShareTokenItem[];
+};
+
+/**
+ * Describes the message ant.v1.ListShareTokensResponse.
+ * Use `create(ListShareTokensResponseSchema)` to create a new message.
+ */
+export const ListShareTokensResponseSchema: GenMessage<ListShareTokensResponse> = /*@__PURE__*/
+  messageDesc(file_share, 10);
+
+/**
+ * @generated from message ant.v1.ShareTokenItem
+ */
+export type ShareTokenItem = Message<"ant.v1.ShareTokenItem"> & {
+  /**
+   * @generated from field: string token = 1;
+   */
+  token: string;
+
+  /**
+   * @generated from field: string share_url = 2;
+   */
+  shareUrl: string;
+
+  /**
+   * @generated from field: string description = 3;
+   */
+  description: string;
+
+  /**
+   * @generated from field: bool show_positions = 4;
+   */
+  showPositions: boolean;
+
+  /**
+   * @generated from field: int32 view_count = 5;
+   */
+  viewCount: number;
+
+  /**
+   * @generated from field: string expires_at = 6;
+   */
+  expiresAt: string;
+
+  /**
+   * @generated from field: string created_at = 7;
+   */
+  createdAt: string;
+};
+
+/**
+ * Describes the message ant.v1.ShareTokenItem.
+ * Use `create(ShareTokenItemSchema)` to create a new message.
+ */
+export const ShareTokenItemSchema: GenMessage<ShareTokenItem> = /*@__PURE__*/
+  messageDesc(file_share, 11);
+
+/**
+ * @generated from message ant.v1.DeleteShareTokenRequest
+ */
+export type DeleteShareTokenRequest = Message<"ant.v1.DeleteShareTokenRequest"> & {
+  /**
+   * @generated from field: string token = 1;
+   */
+  token: string;
+};
+
+/**
+ * Describes the message ant.v1.DeleteShareTokenRequest.
+ * Use `create(DeleteShareTokenRequestSchema)` to create a new message.
+ */
+export const DeleteShareTokenRequestSchema: GenMessage<DeleteShareTokenRequest> = /*@__PURE__*/
+  messageDesc(file_share, 12);
+
+/**
+ * @generated from message ant.v1.DeleteShareTokenResponse
+ */
+export type DeleteShareTokenResponse = Message<"ant.v1.DeleteShareTokenResponse"> & {
+};
+
+/**
+ * Describes the message ant.v1.DeleteShareTokenResponse.
+ * Use `create(DeleteShareTokenResponseSchema)` to create a new message.
+ */
+export const DeleteShareTokenResponseSchema: GenMessage<DeleteShareTokenResponse> = /*@__PURE__*/
+  messageDesc(file_share, 13);
+
+/**
+ * @generated from message ant.v1.ListAllShareTokensRequest
+ */
+export type ListAllShareTokensRequest = Message<"ant.v1.ListAllShareTokensRequest"> & {
+  /**
+   * @generated from field: int32 page = 1;
+   */
+  page: number;
+
+  /**
+   * @generated from field: int32 page_size = 2;
+   */
+  pageSize: number;
+};
+
+/**
+ * Describes the message ant.v1.ListAllShareTokensRequest.
+ * Use `create(ListAllShareTokensRequestSchema)` to create a new message.
+ */
+export const ListAllShareTokensRequestSchema: GenMessage<ListAllShareTokensRequest> = /*@__PURE__*/
+  messageDesc(file_share, 14);
+
+/**
+ * @generated from message ant.v1.ListAllShareTokensResponse
+ */
+export type ListAllShareTokensResponse = Message<"ant.v1.ListAllShareTokensResponse"> & {
+  /**
+   * @generated from field: repeated ant.v1.AdminShareTokenItem items = 1;
+   */
+  items: AdminShareTokenItem[];
+
+  /**
+   * @generated from field: int32 total = 2;
+   */
+  total: number;
+
+  /**
+   * @generated from field: int32 page = 3;
+   */
+  page: number;
+
+  /**
+   * @generated from field: int32 page_size = 4;
+   */
+  pageSize: number;
+};
+
+/**
+ * Describes the message ant.v1.ListAllShareTokensResponse.
+ * Use `create(ListAllShareTokensResponseSchema)` to create a new message.
+ */
+export const ListAllShareTokensResponseSchema: GenMessage<ListAllShareTokensResponse> = /*@__PURE__*/
+  messageDesc(file_share, 15);
+
+/**
+ * @generated from message ant.v1.AdminShareTokenItem
+ */
+export type AdminShareTokenItem = Message<"ant.v1.AdminShareTokenItem"> & {
+  /**
+   * @generated from field: string token = 1;
+   */
+  token: string;
+
+  /**
+   * @generated from field: string share_url = 2;
+   */
+  shareUrl: string;
+
+  /**
+   * @generated from field: string user_id = 3;
+   */
+  userId: string;
+
+  /**
+   * @generated from field: string description = 4;
+   */
+  description: string;
+
+  /**
+   * @generated from field: bool show_positions = 5;
+   */
+  showPositions: boolean;
+
+  /**
+   * @generated from field: int32 view_count = 6;
+   */
+  viewCount: number;
+
+  /**
+   * @generated from field: string expires_at = 7;
+   */
+  expiresAt: string;
+
+  /**
+   * @generated from field: string created_at = 8;
+   */
+  createdAt: string;
+};
+
+/**
+ * Describes the message ant.v1.AdminShareTokenItem.
+ * Use `create(AdminShareTokenItemSchema)` to create a new message.
+ */
+export const AdminShareTokenItemSchema: GenMessage<AdminShareTokenItem> = /*@__PURE__*/
+  messageDesc(file_share, 16);
+
+/**
  * @generated from service ant.v1.ShareService
  */
 export const ShareService: GenService<{
   /**
-   * CreateShareToken generates a new sharing link for account performance.
-   *
    * @generated from rpc ant.v1.ShareService.CreateShareToken
    */
   createShareToken: {
@@ -208,14 +532,44 @@ export const ShareService: GenService<{
     output: typeof CreateShareTokenResponseSchema;
   },
   /**
-   * GetSharedPerformance returns account performance by token (public, no auth).
-   *
    * @generated from rpc ant.v1.ShareService.GetSharedPerformance
    */
   getSharedPerformance: {
     methodKind: "unary";
     input: typeof GetSharedPerformanceRequestSchema;
     output: typeof GetSharedPerformanceResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.ShareService.UpdateShareToken
+   */
+  updateShareToken: {
+    methodKind: "unary";
+    input: typeof UpdateShareTokenRequestSchema;
+    output: typeof UpdateShareTokenResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.ShareService.ListShareTokens
+   */
+  listShareTokens: {
+    methodKind: "unary";
+    input: typeof ListShareTokensRequestSchema;
+    output: typeof ListShareTokensResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.ShareService.DeleteShareToken
+   */
+  deleteShareToken: {
+    methodKind: "unary";
+    input: typeof DeleteShareTokenRequestSchema;
+    output: typeof DeleteShareTokenResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.ShareService.ListAllShareTokens
+   */
+  listAllShareTokens: {
+    methodKind: "unary";
+    input: typeof ListAllShareTokensRequestSchema;
+    output: typeof ListAllShareTokensResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_share, 0);

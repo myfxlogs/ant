@@ -378,6 +378,74 @@ func (*ToggleConfigEnabledResponse) Descriptor() ([]byte, []int) {
 	return file_admin_config_proto_rawDescGZIP(), []int{6}
 }
 
+type HealthGradingConfig struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	GreenSuccessRate   float64                `protobuf:"fixed64,1,opt,name=green_success_rate,json=greenSuccessRate,proto3" json:"green_success_rate,omitempty"`
+	GreenMaxFailedRuns int32                  `protobuf:"varint,2,opt,name=green_max_failed_runs,json=greenMaxFailedRuns,proto3" json:"green_max_failed_runs,omitempty"`
+	YellowSuccessRate  float64                `protobuf:"fixed64,3,opt,name=yellow_success_rate,json=yellowSuccessRate,proto3" json:"yellow_success_rate,omitempty"`
+	MinSampleSize      int32                  `protobuf:"varint,4,opt,name=min_sample_size,json=minSampleSize,proto3" json:"min_sample_size,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *HealthGradingConfig) Reset() {
+	*x = HealthGradingConfig{}
+	mi := &file_admin_config_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HealthGradingConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HealthGradingConfig) ProtoMessage() {}
+
+func (x *HealthGradingConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_admin_config_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HealthGradingConfig.ProtoReflect.Descriptor instead.
+func (*HealthGradingConfig) Descriptor() ([]byte, []int) {
+	return file_admin_config_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *HealthGradingConfig) GetGreenSuccessRate() float64 {
+	if x != nil {
+		return x.GreenSuccessRate
+	}
+	return 0
+}
+
+func (x *HealthGradingConfig) GetGreenMaxFailedRuns() int32 {
+	if x != nil {
+		return x.GreenMaxFailedRuns
+	}
+	return 0
+}
+
+func (x *HealthGradingConfig) GetYellowSuccessRate() float64 {
+	if x != nil {
+		return x.YellowSuccessRate
+	}
+	return 0
+}
+
+func (x *HealthGradingConfig) GetMinSampleSize() int32 {
+	if x != nil {
+		return x.MinSampleSize
+	}
+	return 0
+}
+
 var File_admin_config_proto protoreflect.FileDescriptor
 
 const file_admin_config_proto_rawDesc = "" +
@@ -405,7 +473,12 @@ const file_admin_config_proto_rawDesc = "" +
 	"\x1aToggleConfigEnabledRequest\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x18\n" +
 	"\aenabled\x18\x02 \x01(\bR\aenabled\"\x1d\n" +
-	"\x1bToggleConfigEnabledResponse2\xfe\x01\n" +
+	"\x1bToggleConfigEnabledResponse\"\xce\x01\n" +
+	"\x13HealthGradingConfig\x12,\n" +
+	"\x12green_success_rate\x18\x01 \x01(\x01R\x10greenSuccessRate\x121\n" +
+	"\x15green_max_failed_runs\x18\x02 \x01(\x05R\x12greenMaxFailedRuns\x12.\n" +
+	"\x13yellow_success_rate\x18\x03 \x01(\x01R\x11yellowSuccessRate\x12&\n" +
+	"\x0fmin_sample_size\x18\x04 \x01(\x05R\rminSampleSize2\xfe\x01\n" +
 	"\x12AdminConfigService\x12F\n" +
 	"\vListConfigs\x12\x1a.ant.v1.ListConfigsRequest\x1a\x1b.ant.v1.ListConfigsResponse\x12@\n" +
 	"\tSetConfig\x12\x18.ant.v1.SetConfigRequest\x1a\x19.ant.v1.SetConfigResponse\x12^\n" +
@@ -423,7 +496,7 @@ func file_admin_config_proto_rawDescGZIP() []byte {
 	return file_admin_config_proto_rawDescData
 }
 
-var file_admin_config_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_admin_config_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_admin_config_proto_goTypes = []any{
 	(*SystemConfig)(nil),                // 0: ant.v1.SystemConfig
 	(*ListConfigsRequest)(nil),          // 1: ant.v1.ListConfigsRequest
@@ -432,11 +505,12 @@ var file_admin_config_proto_goTypes = []any{
 	(*SetConfigResponse)(nil),           // 4: ant.v1.SetConfigResponse
 	(*ToggleConfigEnabledRequest)(nil),  // 5: ant.v1.ToggleConfigEnabledRequest
 	(*ToggleConfigEnabledResponse)(nil), // 6: ant.v1.ToggleConfigEnabledResponse
-	(*timestamppb.Timestamp)(nil),       // 7: google.protobuf.Timestamp
+	(*HealthGradingConfig)(nil),         // 7: ant.v1.HealthGradingConfig
+	(*timestamppb.Timestamp)(nil),       // 8: google.protobuf.Timestamp
 }
 var file_admin_config_proto_depIdxs = []int32{
-	7, // 0: ant.v1.SystemConfig.created_at:type_name -> google.protobuf.Timestamp
-	7, // 1: ant.v1.SystemConfig.updated_at:type_name -> google.protobuf.Timestamp
+	8, // 0: ant.v1.SystemConfig.created_at:type_name -> google.protobuf.Timestamp
+	8, // 1: ant.v1.SystemConfig.updated_at:type_name -> google.protobuf.Timestamp
 	0, // 2: ant.v1.ListConfigsResponse.configs:type_name -> ant.v1.SystemConfig
 	1, // 3: ant.v1.AdminConfigService.ListConfigs:input_type -> ant.v1.ListConfigsRequest
 	3, // 4: ant.v1.AdminConfigService.SetConfig:input_type -> ant.v1.SetConfigRequest
@@ -462,7 +536,7 @@ func file_admin_config_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_admin_config_proto_rawDesc), len(file_admin_config_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

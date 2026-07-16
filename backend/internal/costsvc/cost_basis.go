@@ -1,9 +1,10 @@
 package costsvc
 
 import (
-	"math"
 	"sort"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // CostBasisMethod defines the matching strategy for closing positions.
@@ -19,20 +20,20 @@ const (
 type OpeningPosition struct {
 	Ticket          string
 	Timestamp       time.Time
-	Volume          float64
-	Price           float64
+	Volume          decimal.Decimal
+	Price           decimal.Decimal
 	Side            string // "buy" (long open) or "sell" (short open)
-	RemainingVolume float64
+	RemainingVolume decimal.Decimal
 }
 
 // ClosedLot records a matched portion of an opening position closed by a closing trade.
 type ClosedLot struct {
 	OpeningTicket string
 	ClosingTicket string
-	Volume        float64
-	OpenPrice     float64
-	ClosePrice    float64
-	RealizedPnL   float64
+	Volume        decimal.Decimal
+	OpenPrice     decimal.Decimal
+	ClosePrice    decimal.Decimal
+	RealizedPnL   decimal.Decimal
 }
 
 // CostBasisTracker manages opening positions and matches closing trades
@@ -48,7 +49,7 @@ func NewCostBasisTracker(method CostBasisMethod) *CostBasisTracker {
 }
 
 // AddOpening registers a new opening position.
-func (t *CostBasisTracker) AddOpening(ticket string, ts time.Time, volume, price float64, side string) {
+func (t *CostBasisTracker) AddOpening(ticket string, ts time.Time, volume, price decimal.Decimal, side string) {
 	t.openings = append(t.openings, &OpeningPosition{
 		Ticket:          ticket,
 		Timestamp:       ts,
@@ -61,7 +62,7 @@ func (t *CostBasisTracker) AddOpening(ticket string, ts time.Time, volume, price
 
 // Match matches a closing trade against open positions and returns closed lots.
 // closeSide is the side of the closing trade: "sell" closes longs, "buy" closes shorts.
-func (t *CostBasisTracker) Match(closeTicket string, closeVolume float64, closePrice float64, closeSide string) []ClosedLot {
+func (t *CostBasisTracker) Match(closeTicket string, closeVolume, closePrice decimal.Decimal, closeSide string) []ClosedLot {
 	candidates := t.eligibleOpenings(closeSide)
 	t.sortByMethod(candidates, closeSide)
 
@@ -69,15 +70,18 @@ func (t *CostBasisTracker) Match(closeTicket string, closeVolume float64, closeP
 	var lots []ClosedLot
 
 	for _, pos := range candidates {
-		if remaining <= 0 {
+		if remaining.LessThanOrEqual(decimal.Zero) {
 			break
 		}
-		if pos.RemainingVolume <= 0 {
+		if pos.RemainingVolume.LessThanOrEqual(decimal.Zero) {
 			continue
 		}
-		matched := math.Min(pos.RemainingVolume, remaining)
-		pos.RemainingVolume -= matched
-		remaining -= matched
+		matched := pos.RemainingVolume
+		if remaining.LessThan(matched) {
+			matched = remaining
+		}
+		pos.RemainingVolume = pos.RemainingVolume.Sub(matched)
+		remaining = remaining.Sub(matched)
 		pnl := realizedPnL(pos.Side, pos.Price, closePrice, matched)
 		lots = append(lots, ClosedLot{
 			OpeningTicket: pos.Ticket,
@@ -93,10 +97,10 @@ func (t *CostBasisTracker) Match(closeTicket string, closeVolume float64, closeP
 }
 
 // RemainingVolume returns the total remaining volume across all opening positions.
-func (t *CostBasisTracker) RemainingVolume() float64 {
-	var total float64
+func (t *CostBasisTracker) RemainingVolume() decimal.Decimal {
+	total := decimal.Zero
 	for _, pos := range t.openings {
-		total += pos.RemainingVolume
+		total = total.Add(pos.RemainingVolume)
 	}
 	return total
 }
@@ -105,7 +109,7 @@ func (t *CostBasisTracker) RemainingVolume() float64 {
 func (t *CostBasisTracker) OpenPositionCount() int {
 	count := 0
 	for _, pos := range t.openings {
-		if pos.RemainingVolume > 0 {
+		if pos.RemainingVolume.GreaterThan(decimal.Zero) {
 			count++
 		}
 	}
@@ -121,7 +125,7 @@ func (t *CostBasisTracker) eligibleOpenings(closeSide string) []*OpeningPosition
 	}
 	var result []*OpeningPosition
 	for _, pos := range t.openings {
-		if pos.Side == openSide && pos.RemainingVolume > 0 {
+		if pos.Side == openSide && pos.RemainingVolume.GreaterThan(decimal.Zero) {
 			result = append(result, pos)
 		}
 	}
@@ -143,19 +147,19 @@ func (t *CostBasisTracker) sortByMethod(positions []*OpeningPosition, closeSide 
 		// For shorts (closeSide="buy"): lower open price = higher cost basis → first
 		if closeSide == "sell" {
 			sort.Slice(positions, func(i, j int) bool {
-				return positions[i].Price > positions[j].Price
+				return positions[i].Price.GreaterThan(positions[j].Price)
 			})
 		} else {
 			sort.Slice(positions, func(i, j int) bool {
-				return positions[i].Price < positions[j].Price
+				return positions[i].Price.LessThan(positions[j].Price)
 			})
 		}
 	}
 }
 
-func realizedPnL(openSide string, openPrice, closePrice, volume float64) float64 {
+func realizedPnL(openSide string, openPrice, closePrice, volume decimal.Decimal) decimal.Decimal {
 	if openSide == "buy" {
-		return (closePrice - openPrice) * volume
+		return closePrice.Sub(openPrice).Mul(volume)
 	}
-	return (openPrice - closePrice) * volume
+	return openPrice.Sub(closePrice).Mul(volume)
 }

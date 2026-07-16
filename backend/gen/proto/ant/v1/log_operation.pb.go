@@ -9,6 +9,7 @@ package antv1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -180,7 +181,7 @@ type OperationLog struct {
 	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Module        string                 `protobuf:"bytes,3,opt,name=module,proto3" json:"module,omitempty"`
 	Action        string                 `protobuf:"bytes,4,opt,name=action,proto3" json:"action,omitempty"`
-	Details       string                 `protobuf:"bytes,5,opt,name=details,proto3" json:"details,omitempty"`
+	Details       *structpb.Struct       `protobuf:"bytes,5,opt,name=details,proto3" json:"details,omitempty"`
 	Ip            string                 `protobuf:"bytes,6,opt,name=ip,proto3" json:"ip,omitempty"`
 	UserAgent     string                 `protobuf:"bytes,7,opt,name=user_agent,json=userAgent,proto3" json:"user_agent,omitempty"`
 	Status        string                 `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
@@ -251,11 +252,11 @@ func (x *OperationLog) GetAction() string {
 	return ""
 }
 
-func (x *OperationLog) GetDetails() string {
+func (x *OperationLog) GetDetails() *structpb.Struct {
 	if x != nil {
 		return x.Details
 	}
-	return ""
+	return nil
 }
 
 func (x *OperationLog) GetIp() string {
@@ -318,7 +319,7 @@ var File_log_operation_proto protoreflect.FileDescriptor
 
 const file_log_operation_proto_rawDesc = "" +
 	"\n" +
-	"\x13log_operation.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfa\x01\n" +
+	"\x13log_operation.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xfa\x01\n" +
 	"\x17GetOperationLogsRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x16\n" +
@@ -332,13 +333,13 @@ const file_log_operation_proto_rawDesc = "" +
 	"\bend_date\x18\b \x01(\tR\aendDate\"Z\n" +
 	"\x18GetOperationLogsResponse\x12(\n" +
 	"\x04logs\x18\x01 \x03(\v2\x14.ant.v1.OperationLogR\x04logs\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\"\x8f\x03\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\xa8\x03\n" +
 	"\fOperationLog\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x16\n" +
 	"\x06module\x18\x03 \x01(\tR\x06module\x12\x16\n" +
-	"\x06action\x18\x04 \x01(\tR\x06action\x12\x18\n" +
-	"\adetails\x18\x05 \x01(\tR\adetails\x12\x0e\n" +
+	"\x06action\x18\x04 \x01(\tR\x06action\x121\n" +
+	"\adetails\x18\x05 \x01(\v2\x17.google.protobuf.StructR\adetails\x12\x0e\n" +
 	"\x02ip\x18\x06 \x01(\tR\x02ip\x12\x1d\n" +
 	"\n" +
 	"user_agent\x18\a \x01(\tR\tuserAgent\x12\x16\n" +
@@ -370,16 +371,18 @@ var file_log_operation_proto_goTypes = []any{
 	(*GetOperationLogsRequest)(nil),  // 0: ant.v1.GetOperationLogsRequest
 	(*GetOperationLogsResponse)(nil), // 1: ant.v1.GetOperationLogsResponse
 	(*OperationLog)(nil),             // 2: ant.v1.OperationLog
-	(*timestamppb.Timestamp)(nil),    // 3: google.protobuf.Timestamp
+	(*structpb.Struct)(nil),          // 3: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil),    // 4: google.protobuf.Timestamp
 }
 var file_log_operation_proto_depIdxs = []int32{
 	2, // 0: ant.v1.GetOperationLogsResponse.logs:type_name -> ant.v1.OperationLog
-	3, // 1: ant.v1.OperationLog.created_at:type_name -> google.protobuf.Timestamp
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	3, // 1: ant.v1.OperationLog.details:type_name -> google.protobuf.Struct
+	4, // 2: ant.v1.OperationLog.created_at:type_name -> google.protobuf.Timestamp
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_log_operation_proto_init() }

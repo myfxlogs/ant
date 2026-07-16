@@ -10,41 +10,41 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file common.proto.
  */
 export const file_common: GenFile = /*@__PURE__*/
-  fileDesc("Cgxjb21tb24ucHJvdG8SBmFudC52MSKGAgoPQmFja3Rlc3RNZXRyaWNzEhQKDHRvdGFsX3JldHVybhgBIAEoARIVCg1hbm51YWxfcmV0dXJuGAIgASgBEhQKDG1heF9kcmF3ZG93bhgDIAEoARIUCgxzaGFycGVfcmF0aW8YBCABKAESEAoId2luX3JhdGUYBSABKAESFQoNcHJvZml0X2ZhY3RvchgGIAEoARIUCgx0b3RhbF90cmFkZXMYByABKAUSFgoOd2lubmluZ190cmFkZXMYCCABKAUSFQoNbG9zaW5nX3RyYWRlcxgJIAEoBRIWCg5hdmVyYWdlX3Byb2ZpdBgKIAEoCRIUCgxhdmVyYWdlX2xvc3MYCyABKAkiZAoMQmFja3Rlc3RSaXNrEg0KBXNjb3JlGAEgASgFEg0KBWxldmVsGAIgASgJEg8KB3JlYXNvbnMYAyADKAkSEAoId2FybmluZ3MYBCADKAkSEwoLaXNfcmVsaWFibGUYBSABKAhCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("Cgxjb21tb24ucHJvdG8SBmFudC52MSKGAgoPQmFja3Rlc3RNZXRyaWNzEhQKDHRvdGFsX3JldHVybhgBIAEoCRIVCg1hbm51YWxfcmV0dXJuGAIgASgJEhQKDG1heF9kcmF3ZG93bhgDIAEoCRIUCgxzaGFycGVfcmF0aW8YBCABKAkSEAoId2luX3JhdGUYBSABKAkSFQoNcHJvZml0X2ZhY3RvchgGIAEoCRIUCgx0b3RhbF90cmFkZXMYByABKAUSFgoOd2lubmluZ190cmFkZXMYCCABKAUSFQoNbG9zaW5nX3RyYWRlcxgJIAEoBRIWCg5hdmVyYWdlX3Byb2ZpdBgKIAEoCRIUCgxhdmVyYWdlX2xvc3MYCyABKAkiZAoMQmFja3Rlc3RSaXNrEg0KBXNjb3JlGAEgASgFEg0KBWxldmVsGAIgASgJEg8KB3JlYXNvbnMYAyADKAkSEAoId2FybmluZ3MYBCADKAkSEwoLaXNfcmVsaWFibGUYBSABKAhCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.BacktestMetrics
  */
 export type BacktestMetrics = Message<"ant.v1.BacktestMetrics"> & {
   /**
-   * @generated from field: double total_return = 1;
+   * @generated from field: string total_return = 1;
    */
-  totalReturn: number;
+  totalReturn: string;
 
   /**
-   * @generated from field: double annual_return = 2;
+   * @generated from field: string annual_return = 2;
    */
-  annualReturn: number;
+  annualReturn: string;
 
   /**
-   * @generated from field: double max_drawdown = 3;
+   * @generated from field: string max_drawdown = 3;
    */
-  maxDrawdown: number;
+  maxDrawdown: string;
 
   /**
-   * @generated from field: double sharpe_ratio = 4;
+   * @generated from field: string sharpe_ratio = 4;
    */
-  sharpeRatio: number;
+  sharpeRatio: string;
 
   /**
-   * @generated from field: double win_rate = 5;
+   * @generated from field: string win_rate = 5;
    */
-  winRate: number;
+  winRate: string;
 
   /**
-   * @generated from field: double profit_factor = 6;
+   * @generated from field: string profit_factor = 6;
    */
-  profitFactor: number;
+  profitFactor: string;
 
   /**
    * @generated from field: int32 total_trades = 7;

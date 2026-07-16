@@ -5,7 +5,11 @@
 
 package oms
 
-import "alphaforge/internal/costsvc"
+import (
+	"github.com/shopspring/decimal"
+
+	"alphaforge/internal/costsvc"
+)
 
 // PnLCalculator computes both gross and net P&L for closed trades.
 type PnLCalculator struct {
@@ -19,12 +23,12 @@ func NewPnLCalculator(fm *FillModel) *PnLCalculator {
 
 // PnLResult contains both gross and net P&L for a closed position.
 type PnLResult struct {
-	GrossPnL    float64 `json:"gross_pnl"`
-	SpreadCost  float64 `json:"spread_cost"`
-	Commission  float64 `json:"commission"`
-	SwapCost    float64 `json:"swap_cost"`
-	SlippageCost float64 `json:"slippage_cost"`
-	NetPnL      float64 `json:"net_pnl"`
+	GrossPnL     decimal.Decimal `json:"gross_pnl"`
+	SpreadCost   decimal.Decimal `json:"spread_cost"`
+	Commission   decimal.Decimal `json:"commission"`
+	SwapCost     decimal.Decimal `json:"swap_cost"`
+	SlippageCost decimal.Decimal `json:"slippage_cost"`
+	NetPnL       decimal.Decimal `json:"net_pnl"`
 }
 
 // Calculate computes P&L for a round-trip trade (entry + exit).
@@ -32,18 +36,18 @@ type PnLResult struct {
 // openPrice/closePrice: gross fill prices
 // lots/contractSize: position size
 // holdingDays: how long the position was held (for swap)
-func (c *PnLCalculator) Calculate(side string, openPrice, closePrice, lots, contractSize float64, holdingDays float64) PnLResult {
-	notional := lots * contractSize
-	grossPnL := 0.0
+func (c *PnLCalculator) Calculate(side string, openPrice, closePrice, lots, contractSize, holdingDays decimal.Decimal) PnLResult {
+	notional := lots.Mul(contractSize)
+	grossPnL := decimal.Zero
 	if side == "buy" {
-		grossPnL = (closePrice - openPrice) * notional / openPrice
+		grossPnL = closePrice.Sub(openPrice).Mul(notional).Div(openPrice)
 	} else {
-		grossPnL = (openPrice - closePrice) * notional / openPrice
+		grossPnL = openPrice.Sub(closePrice).Mul(notional).Div(openPrice)
 	}
 
 	// Entry costs
 	entryBreakdown := c.fillModel.costModel.Estimate(costsvc.EstimateParams{
-		Side: side, Lots: lots, Price: openPrice, ContractSize: contractSize, HoldingDays: 0,
+		Side: side, Lots: lots, Price: openPrice, ContractSize: contractSize, HoldingDays: decimal.Zero,
 	})
 	// Exit costs
 	exitSide := "sell"
@@ -51,20 +55,20 @@ func (c *PnLCalculator) Calculate(side string, openPrice, closePrice, lots, cont
 		exitSide = "buy"
 	}
 	exitBreakdown := c.fillModel.costModel.Estimate(costsvc.EstimateParams{
-		Side: exitSide, Lots: lots, Price: closePrice, ContractSize: contractSize, HoldingDays: 0,
+		Side: exitSide, Lots: lots, Price: closePrice, ContractSize: contractSize, HoldingDays: decimal.Zero,
 	})
 
 	swapCost := c.fillModel.costModel.SwapCost(side, lots, closePrice, contractSize, holdingDays)
-	spreadCost := entryBreakdown.SpreadCost + exitBreakdown.SpreadCost
+	spreadCost := entryBreakdown.SpreadCost.Add(exitBreakdown.SpreadCost)
 	commission := entryBreakdown.Commission.Add(exitBreakdown.Commission)
-	slippage := entryBreakdown.SlippageCost + exitBreakdown.SlippageCost
+	slippage := entryBreakdown.SlippageCost.Add(exitBreakdown.SlippageCost)
 
-	netPnL := grossPnL - spreadCost - commission.InexactFloat64() - swapCost - slippage
+	netPnL := grossPnL.Sub(spreadCost).Sub(commission).Sub(swapCost).Sub(slippage)
 
 	return PnLResult{
 		GrossPnL:     grossPnL,
 		SpreadCost:   spreadCost,
-		Commission:   commission.InexactFloat64(),
+		Commission:   commission,
 		SwapCost:     swapCost,
 		SlippageCost: slippage,
 		NetPnL:       netPnL,

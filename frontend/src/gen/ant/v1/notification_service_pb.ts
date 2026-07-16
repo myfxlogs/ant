@@ -4,13 +4,14 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Message } from "@bufbuild/protobuf";
+import { file_google_protobuf_struct } from "@bufbuild/protobuf/wkt";
+import type { JsonObject, Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file notification_service.proto.
  */
 export const file_notification_service: GenFile = /*@__PURE__*/
-  fileDesc("Chpub3RpZmljYXRpb25fc2VydmljZS5wcm90bxIGYW50LnYxIjEKGlN0cmVhbU5vdGlmaWNhdGlvbnNSZXF1ZXN0EhMKC3VucmVhZF9vbmx5GAEgASgIIpEBCgxOb3RpZmljYXRpb24SCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIMCgR0eXBlGAMgASgJEg0KBXRpdGxlGAQgASgJEg8KB21lc3NhZ2UYBSABKAkSEQoJZGF0YV9qc29uGAYgASgJEg8KB2lzX3JlYWQYByABKAgSEgoKY3JlYXRlZF9hdBgIIAEoCSJOChhMaXN0Tm90aWZpY2F0aW9uc1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGb2Zmc2V0GAIgASgFEhMKC3VucmVhZF9vbmx5GAMgASgIIl4KGUxpc3ROb3RpZmljYXRpb25zUmVzcG9uc2USKwoNbm90aWZpY2F0aW9ucxgBIAMoCzIULmFudC52MS5Ob3RpZmljYXRpb24SFAoMdG90YWxfdW5yZWFkGAIgASgFIh0KD01hcmtSZWFkUmVxdWVzdBIKCgJpZBgBIAEoCSISChBNYXJrUmVhZFJlc3BvbnNlIhQKEk1hcmtBbGxSZWFkUmVxdWVzdCIVChNNYXJrQWxsUmVhZFJlc3BvbnNlImsKF1NlbmROb3RpZmljYXRpb25SZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSDAoEdHlwZRgCIAEoCRINCgV0aXRsZRgDIAEoCRIPCgdtZXNzYWdlGAQgASgJEhEKCWRhdGFfanNvbhgFIAEoCSImChhTZW5kTm90aWZpY2F0aW9uUmVzcG9uc2USCgoCaWQYASABKAkyoAMKE05vdGlmaWNhdGlvblNlcnZpY2USWAoRTGlzdE5vdGlmaWNhdGlvbnMSIC5hbnQudjEuTGlzdE5vdGlmaWNhdGlvbnNSZXF1ZXN0GiEuYW50LnYxLkxpc3ROb3RpZmljYXRpb25zUmVzcG9uc2USPQoITWFya1JlYWQSFy5hbnQudjEuTWFya1JlYWRSZXF1ZXN0GhguYW50LnYxLk1hcmtSZWFkUmVzcG9uc2USRgoLTWFya0FsbFJlYWQSGi5hbnQudjEuTWFya0FsbFJlYWRSZXF1ZXN0GhsuYW50LnYxLk1hcmtBbGxSZWFkUmVzcG9uc2USUQoTU3RyZWFtTm90aWZpY2F0aW9ucxIiLmFudC52MS5TdHJlYW1Ob3RpZmljYXRpb25zUmVxdWVzdBoULmFudC52MS5Ob3RpZmljYXRpb24wARJVChBTZW5kTm90aWZpY2F0aW9uEh8uYW50LnYxLlNlbmROb3RpZmljYXRpb25SZXF1ZXN0GiAuYW50LnYxLlNlbmROb3RpZmljYXRpb25SZXNwb25zZUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
+  fileDesc("Chpub3RpZmljYXRpb25fc2VydmljZS5wcm90bxIGYW50LnYxIjEKGlN0cmVhbU5vdGlmaWNhdGlvbnNSZXF1ZXN0EhMKC3VucmVhZF9vbmx5GAEgASgIIqUBCgxOb3RpZmljYXRpb24SCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIMCgR0eXBlGAMgASgJEg0KBXRpdGxlGAQgASgJEg8KB21lc3NhZ2UYBSABKAkSJQoEZGF0YRgGIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHaXNfcmVhZBgHIAEoCBISCgpjcmVhdGVkX2F0GAggASgJIk4KGExpc3ROb3RpZmljYXRpb25zUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZvZmZzZXQYAiABKAUSEwoLdW5yZWFkX29ubHkYAyABKAgiXgoZTGlzdE5vdGlmaWNhdGlvbnNSZXNwb25zZRIrCg1ub3RpZmljYXRpb25zGAEgAygLMhQuYW50LnYxLk5vdGlmaWNhdGlvbhIUCgx0b3RhbF91bnJlYWQYAiABKAUiHQoPTWFya1JlYWRSZXF1ZXN0EgoKAmlkGAEgASgJIhIKEE1hcmtSZWFkUmVzcG9uc2UiFAoSTWFya0FsbFJlYWRSZXF1ZXN0IhUKE01hcmtBbGxSZWFkUmVzcG9uc2UifwoXU2VuZE5vdGlmaWNhdGlvblJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCRIMCgR0eXBlGAIgASgJEg0KBXRpdGxlGAMgASgJEg8KB21lc3NhZ2UYBCABKAkSJQoEZGF0YRgFIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QiJgoYU2VuZE5vdGlmaWNhdGlvblJlc3BvbnNlEgoKAmlkGAEgASgJMqADChNOb3RpZmljYXRpb25TZXJ2aWNlElgKEUxpc3ROb3RpZmljYXRpb25zEiAuYW50LnYxLkxpc3ROb3RpZmljYXRpb25zUmVxdWVzdBohLmFudC52MS5MaXN0Tm90aWZpY2F0aW9uc1Jlc3BvbnNlEj0KCE1hcmtSZWFkEhcuYW50LnYxLk1hcmtSZWFkUmVxdWVzdBoYLmFudC52MS5NYXJrUmVhZFJlc3BvbnNlEkYKC01hcmtBbGxSZWFkEhouYW50LnYxLk1hcmtBbGxSZWFkUmVxdWVzdBobLmFudC52MS5NYXJrQWxsUmVhZFJlc3BvbnNlElEKE1N0cmVhbU5vdGlmaWNhdGlvbnMSIi5hbnQudjEuU3RyZWFtTm90aWZpY2F0aW9uc1JlcXVlc3QaFC5hbnQudjEuTm90aWZpY2F0aW9uMAESVQoQU2VuZE5vdGlmaWNhdGlvbhIfLmFudC52MS5TZW5kTm90aWZpY2F0aW9uUmVxdWVzdBogLmFudC52MS5TZW5kTm90aWZpY2F0aW9uUmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_struct]);
 
 /**
  * @generated from message ant.v1.StreamNotificationsRequest
@@ -63,11 +64,11 @@ export type Notification = Message<"ant.v1.Notification"> & {
   message: string;
 
   /**
-   * JSONB as string for proto compatibility
+   * structured metadata
    *
-   * @generated from field: string data_json = 6;
+   * @generated from field: google.protobuf.Struct data = 6;
    */
-  dataJson: string;
+  data?: JsonObject | undefined;
 
   /**
    * @generated from field: bool is_read = 7;
@@ -227,11 +228,11 @@ export type SendNotificationRequest = Message<"ant.v1.SendNotificationRequest"> 
   message: string;
 
   /**
-   * optional JSON metadata
+   * optional structured metadata
    *
-   * @generated from field: string data_json = 5;
+   * @generated from field: google.protobuf.Struct data = 5;
    */
-  dataJson: string;
+  data?: JsonObject | undefined;
 };
 
 /**

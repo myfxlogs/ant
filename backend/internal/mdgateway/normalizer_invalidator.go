@@ -2,7 +2,7 @@ package mdgateway
 
 import (
 	"context"
-	"encoding/json"
+	"strings"
 	"sync"
 	"time"
 
@@ -85,10 +85,8 @@ func (ni *NormalizerInvalidator) Start(ctx context.Context, pgListener PGListene
 	ctx, ni.cancel = context.WithCancel(ctx)
 
 	if pgListener != nil {
-		// #nosec G118 — listenLoop runs for full pipeline lifetime
 		go ni.listenLoop(ctx, pgListener)
 	} else {
-		// #nosec G118 — tickerLoop runs for full pipeline lifetime
 		go ni.tickerLoop(ctx)
 	}
 }
@@ -104,9 +102,18 @@ func (ni *NormalizerInvalidator) Stop() {
 	ni.running = false
 }
 
+// notifyPayload is parsed from the PG NOTIFY payload string "broker|symbol_raw".
 type notifyPayload struct {
-	Broker    string `json:"broker"`
-	SymbolRaw string `json:"symbol_raw"`
+	Broker    string
+	SymbolRaw string
+}
+
+func parseNotifyPayload(payload string) notifyPayload {
+	parts := strings.SplitN(payload, "|", 2)
+	if len(parts) == 2 {
+		return notifyPayload{Broker: parts[0], SymbolRaw: parts[1]}
+	}
+	return notifyPayload{}
 }
 
 func (ni *NormalizerInvalidator) listenLoop(ctx context.Context, listener PGListener) {
@@ -119,7 +126,6 @@ func (ni *NormalizerInvalidator) listenLoop(ctx context.Context, listener PGList
 			ni.log.Warn("normalizer_invalidator: LISTEN lost, falling back to ticker", zap.Error(err))
 			ni.mu.Lock()
 			if ni.running {
-				// #nosec G118 — tickerLoop fallback runs for pipeline lifetime
 				go ni.tickerLoop(ctx)
 			}
 			ni.mu.Unlock()
@@ -127,10 +133,7 @@ func (ni *NormalizerInvalidator) listenLoop(ctx context.Context, listener PGList
 		}
 
 		var np notifyPayload
-		if err := json.Unmarshal([]byte(payload), &np); err != nil {
-			ni.log.Debug("normalizer_invalidator: bad payload", zap.Error(err))
-			continue
-		}
+		np = parseNotifyPayload(payload)
 		if np.Broker != "" && np.SymbolRaw != "" {
 			ni.onInvalidate(np.Broker, np.SymbolRaw)
 		}

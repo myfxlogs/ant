@@ -20,9 +20,9 @@ const (
 
 // AccountEvent is published on account lifecycle changes.
 type AccountEvent struct {
-	AccountID string    `json:"account_id"`
-	UserID    string    `json:"user_id"`
-	Timestamp time.Time `json:"timestamp"`
+	AccountID string
+	UserID    string
+	Timestamp time.Time
 }
 
 // AccountEventPublisher publishes account lifecycle events to NATS JetStream.

@@ -39,14 +39,28 @@ const (
 	// ShareServiceGetSharedPerformanceProcedure is the fully-qualified name of the ShareService's
 	// GetSharedPerformance RPC.
 	ShareServiceGetSharedPerformanceProcedure = "/ant.v1.ShareService/GetSharedPerformance"
+	// ShareServiceUpdateShareTokenProcedure is the fully-qualified name of the ShareService's
+	// UpdateShareToken RPC.
+	ShareServiceUpdateShareTokenProcedure = "/ant.v1.ShareService/UpdateShareToken"
+	// ShareServiceListShareTokensProcedure is the fully-qualified name of the ShareService's
+	// ListShareTokens RPC.
+	ShareServiceListShareTokensProcedure = "/ant.v1.ShareService/ListShareTokens"
+	// ShareServiceDeleteShareTokenProcedure is the fully-qualified name of the ShareService's
+	// DeleteShareToken RPC.
+	ShareServiceDeleteShareTokenProcedure = "/ant.v1.ShareService/DeleteShareToken"
+	// ShareServiceListAllShareTokensProcedure is the fully-qualified name of the ShareService's
+	// ListAllShareTokens RPC.
+	ShareServiceListAllShareTokensProcedure = "/ant.v1.ShareService/ListAllShareTokens"
 )
 
 // ShareServiceClient is a client for the ant.v1.ShareService service.
 type ShareServiceClient interface {
-	// CreateShareToken generates a new sharing link for account performance.
 	CreateShareToken(context.Context, *connect.Request[v1.CreateShareTokenRequest]) (*connect.Response[v1.CreateShareTokenResponse], error)
-	// GetSharedPerformance returns account performance by token (public, no auth).
 	GetSharedPerformance(context.Context, *connect.Request[v1.GetSharedPerformanceRequest]) (*connect.Response[v1.GetSharedPerformanceResponse], error)
+	UpdateShareToken(context.Context, *connect.Request[v1.UpdateShareTokenRequest]) (*connect.Response[v1.UpdateShareTokenResponse], error)
+	ListShareTokens(context.Context, *connect.Request[v1.ListShareTokensRequest]) (*connect.Response[v1.ListShareTokensResponse], error)
+	DeleteShareToken(context.Context, *connect.Request[v1.DeleteShareTokenRequest]) (*connect.Response[v1.DeleteShareTokenResponse], error)
+	ListAllShareTokens(context.Context, *connect.Request[v1.ListAllShareTokensRequest]) (*connect.Response[v1.ListAllShareTokensResponse], error)
 }
 
 // NewShareServiceClient constructs a client for the ant.v1.ShareService service. By default, it
@@ -72,6 +86,30 @@ func NewShareServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(shareServiceMethods.ByName("GetSharedPerformance")),
 			connect.WithClientOptions(opts...),
 		),
+		updateShareToken: connect.NewClient[v1.UpdateShareTokenRequest, v1.UpdateShareTokenResponse](
+			httpClient,
+			baseURL+ShareServiceUpdateShareTokenProcedure,
+			connect.WithSchema(shareServiceMethods.ByName("UpdateShareToken")),
+			connect.WithClientOptions(opts...),
+		),
+		listShareTokens: connect.NewClient[v1.ListShareTokensRequest, v1.ListShareTokensResponse](
+			httpClient,
+			baseURL+ShareServiceListShareTokensProcedure,
+			connect.WithSchema(shareServiceMethods.ByName("ListShareTokens")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteShareToken: connect.NewClient[v1.DeleteShareTokenRequest, v1.DeleteShareTokenResponse](
+			httpClient,
+			baseURL+ShareServiceDeleteShareTokenProcedure,
+			connect.WithSchema(shareServiceMethods.ByName("DeleteShareToken")),
+			connect.WithClientOptions(opts...),
+		),
+		listAllShareTokens: connect.NewClient[v1.ListAllShareTokensRequest, v1.ListAllShareTokensResponse](
+			httpClient,
+			baseURL+ShareServiceListAllShareTokensProcedure,
+			connect.WithSchema(shareServiceMethods.ByName("ListAllShareTokens")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -79,6 +117,10 @@ func NewShareServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 type shareServiceClient struct {
 	createShareToken     *connect.Client[v1.CreateShareTokenRequest, v1.CreateShareTokenResponse]
 	getSharedPerformance *connect.Client[v1.GetSharedPerformanceRequest, v1.GetSharedPerformanceResponse]
+	updateShareToken     *connect.Client[v1.UpdateShareTokenRequest, v1.UpdateShareTokenResponse]
+	listShareTokens      *connect.Client[v1.ListShareTokensRequest, v1.ListShareTokensResponse]
+	deleteShareToken     *connect.Client[v1.DeleteShareTokenRequest, v1.DeleteShareTokenResponse]
+	listAllShareTokens   *connect.Client[v1.ListAllShareTokensRequest, v1.ListAllShareTokensResponse]
 }
 
 // CreateShareToken calls ant.v1.ShareService.CreateShareToken.
@@ -91,12 +133,34 @@ func (c *shareServiceClient) GetSharedPerformance(ctx context.Context, req *conn
 	return c.getSharedPerformance.CallUnary(ctx, req)
 }
 
+// UpdateShareToken calls ant.v1.ShareService.UpdateShareToken.
+func (c *shareServiceClient) UpdateShareToken(ctx context.Context, req *connect.Request[v1.UpdateShareTokenRequest]) (*connect.Response[v1.UpdateShareTokenResponse], error) {
+	return c.updateShareToken.CallUnary(ctx, req)
+}
+
+// ListShareTokens calls ant.v1.ShareService.ListShareTokens.
+func (c *shareServiceClient) ListShareTokens(ctx context.Context, req *connect.Request[v1.ListShareTokensRequest]) (*connect.Response[v1.ListShareTokensResponse], error) {
+	return c.listShareTokens.CallUnary(ctx, req)
+}
+
+// DeleteShareToken calls ant.v1.ShareService.DeleteShareToken.
+func (c *shareServiceClient) DeleteShareToken(ctx context.Context, req *connect.Request[v1.DeleteShareTokenRequest]) (*connect.Response[v1.DeleteShareTokenResponse], error) {
+	return c.deleteShareToken.CallUnary(ctx, req)
+}
+
+// ListAllShareTokens calls ant.v1.ShareService.ListAllShareTokens.
+func (c *shareServiceClient) ListAllShareTokens(ctx context.Context, req *connect.Request[v1.ListAllShareTokensRequest]) (*connect.Response[v1.ListAllShareTokensResponse], error) {
+	return c.listAllShareTokens.CallUnary(ctx, req)
+}
+
 // ShareServiceHandler is an implementation of the ant.v1.ShareService service.
 type ShareServiceHandler interface {
-	// CreateShareToken generates a new sharing link for account performance.
 	CreateShareToken(context.Context, *connect.Request[v1.CreateShareTokenRequest]) (*connect.Response[v1.CreateShareTokenResponse], error)
-	// GetSharedPerformance returns account performance by token (public, no auth).
 	GetSharedPerformance(context.Context, *connect.Request[v1.GetSharedPerformanceRequest]) (*connect.Response[v1.GetSharedPerformanceResponse], error)
+	UpdateShareToken(context.Context, *connect.Request[v1.UpdateShareTokenRequest]) (*connect.Response[v1.UpdateShareTokenResponse], error)
+	ListShareTokens(context.Context, *connect.Request[v1.ListShareTokensRequest]) (*connect.Response[v1.ListShareTokensResponse], error)
+	DeleteShareToken(context.Context, *connect.Request[v1.DeleteShareTokenRequest]) (*connect.Response[v1.DeleteShareTokenResponse], error)
+	ListAllShareTokens(context.Context, *connect.Request[v1.ListAllShareTokensRequest]) (*connect.Response[v1.ListAllShareTokensResponse], error)
 }
 
 // NewShareServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -118,12 +182,44 @@ func NewShareServiceHandler(svc ShareServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(shareServiceMethods.ByName("GetSharedPerformance")),
 		connect.WithHandlerOptions(opts...),
 	)
+	shareServiceUpdateShareTokenHandler := connect.NewUnaryHandler(
+		ShareServiceUpdateShareTokenProcedure,
+		svc.UpdateShareToken,
+		connect.WithSchema(shareServiceMethods.ByName("UpdateShareToken")),
+		connect.WithHandlerOptions(opts...),
+	)
+	shareServiceListShareTokensHandler := connect.NewUnaryHandler(
+		ShareServiceListShareTokensProcedure,
+		svc.ListShareTokens,
+		connect.WithSchema(shareServiceMethods.ByName("ListShareTokens")),
+		connect.WithHandlerOptions(opts...),
+	)
+	shareServiceDeleteShareTokenHandler := connect.NewUnaryHandler(
+		ShareServiceDeleteShareTokenProcedure,
+		svc.DeleteShareToken,
+		connect.WithSchema(shareServiceMethods.ByName("DeleteShareToken")),
+		connect.WithHandlerOptions(opts...),
+	)
+	shareServiceListAllShareTokensHandler := connect.NewUnaryHandler(
+		ShareServiceListAllShareTokensProcedure,
+		svc.ListAllShareTokens,
+		connect.WithSchema(shareServiceMethods.ByName("ListAllShareTokens")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.ShareService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case ShareServiceCreateShareTokenProcedure:
 			shareServiceCreateShareTokenHandler.ServeHTTP(w, r)
 		case ShareServiceGetSharedPerformanceProcedure:
 			shareServiceGetSharedPerformanceHandler.ServeHTTP(w, r)
+		case ShareServiceUpdateShareTokenProcedure:
+			shareServiceUpdateShareTokenHandler.ServeHTTP(w, r)
+		case ShareServiceListShareTokensProcedure:
+			shareServiceListShareTokensHandler.ServeHTTP(w, r)
+		case ShareServiceDeleteShareTokenProcedure:
+			shareServiceDeleteShareTokenHandler.ServeHTTP(w, r)
+		case ShareServiceListAllShareTokensProcedure:
+			shareServiceListAllShareTokensHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -139,4 +235,20 @@ func (UnimplementedShareServiceHandler) CreateShareToken(context.Context, *conne
 
 func (UnimplementedShareServiceHandler) GetSharedPerformance(context.Context, *connect.Request[v1.GetSharedPerformanceRequest]) (*connect.Response[v1.GetSharedPerformanceResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.ShareService.GetSharedPerformance is not implemented"))
+}
+
+func (UnimplementedShareServiceHandler) UpdateShareToken(context.Context, *connect.Request[v1.UpdateShareTokenRequest]) (*connect.Response[v1.UpdateShareTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.ShareService.UpdateShareToken is not implemented"))
+}
+
+func (UnimplementedShareServiceHandler) ListShareTokens(context.Context, *connect.Request[v1.ListShareTokensRequest]) (*connect.Response[v1.ListShareTokensResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.ShareService.ListShareTokens is not implemented"))
+}
+
+func (UnimplementedShareServiceHandler) DeleteShareToken(context.Context, *connect.Request[v1.DeleteShareTokenRequest]) (*connect.Response[v1.DeleteShareTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.ShareService.DeleteShareToken is not implemented"))
+}
+
+func (UnimplementedShareServiceHandler) ListAllShareTokens(context.Context, *connect.Request[v1.ListAllShareTokensRequest]) (*connect.Response[v1.ListAllShareTokensResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.ShareService.ListAllShareTokens is not implemented"))
 }

@@ -303,7 +303,7 @@ func (s *AccountService) UpdateAccountMetrics(ctx context.Context, userID uuid.U
 // UpdateBrokerThresholds updates broker margin_call/stop_out thresholds on an account.
 // This is a system callback (called from the gateway pipeline where only accountID
 // is available). Do not expose via ConnectRPC without adding a user_id check.
-func (s *AccountService) UpdateBrokerThresholds(ctx context.Context, id string, marginCallPct, stopOutPct float64) error {
+func (s *AccountService) UpdateBrokerThresholds(ctx context.Context, id string, marginCallPct, stopOutPct decimal.Decimal) error {
 	_, err := s.db.Exec(ctx,
 		`UPDATE mt_accounts SET broker_margin_call_pct=$1, broker_stop_out_pct=$2,
 		 updated_at=CURRENT_TIMESTAMP WHERE id=$3 AND deleted_at IS NULL`, marginCallPct, stopOutPct, id)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 )
 
 type TickDatasetRepository struct {
@@ -28,8 +29,8 @@ type TickDataset struct {
 type TickDatasetTick struct {
 	DatasetID uuid.UUID `db:"dataset_id"`
 	Time      time.Time `db:"time"`
-	Bid       float64   `db:"bid"`
-	Ask       float64   `db:"ask"`
+	Bid       decimal.Decimal `db:"bid"`
+	Ask       decimal.Decimal `db:"ask"`
 	CreatedAt time.Time `db:"created_at"`
 }
 

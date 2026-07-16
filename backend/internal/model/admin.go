@@ -120,7 +120,7 @@ type TradingSummary struct {
 }
 
 type PlatformSummary struct {
-	Accounts int64   `json:"accounts"`
-	Orders   int64   `json:"orders"`
-	Volume   float64 `json:"volume"`
+	Accounts int64           `json:"accounts"`
+	Orders   int64           `json:"orders"`
+	Volume   decimal.Decimal `json:"volume"`
 }

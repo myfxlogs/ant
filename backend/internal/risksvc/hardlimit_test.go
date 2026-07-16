@@ -10,9 +10,9 @@ func TestHardLimit_MarginFloor_Allowed(t *testing.T) {
 	t.Parallel()
 	rule := &MarginFloorRule{FloorRatio: 1.0}
 	req := &HardLimitRequest{
-		Volume:     0.1,
-		Price:      1.0850,
-		FreeMargin: 5000,
+		Volume:     decF(0.1),
+		Price:      decF(1.0850),
+		FreeMargin: decF(5000),
 	}
 	if err := rule.Check(context.Background(), req); err != nil {
 		t.Fatalf("expected pass, got: %v", err)
@@ -23,9 +23,9 @@ func TestHardLimit_MarginFloor_Blocked(t *testing.T) {
 	t.Parallel()
 	rule := &MarginFloorRule{FloorRatio: 1.0}
 	req := &HardLimitRequest{
-		Volume:     10.0,
-		Price:      1.0850,
-		FreeMargin: 5,
+		Volume:     decF(10.0),
+		Price:      decF(1.0850),
+		FreeMargin: decF(5),
 	}
 	err := rule.Check(context.Background(), req)
 	if err == nil {
@@ -42,9 +42,9 @@ func TestHardLimit_MarginFloor_DefaultRatio(t *testing.T) {
 	t.Parallel()
 	rule := &MarginFloorRule{} // FloorRatio defaults to 1.0
 	req := &HardLimitRequest{
-		Volume:     0.01,
-		Price:      1.0850,
-		FreeMargin: 100,
+		Volume:     decF(0.01),
+		Price:      decF(1.0850),
+		FreeMargin: decF(100),
 	}
 	if err := rule.Check(context.Background(), req); err != nil {
 		t.Fatalf("expected pass with default ratio, got: %v", err)
@@ -108,9 +108,9 @@ func TestHardLimitEvaluator_AllPass(t *testing.T) {
 		&ContractExpiryRule{CoolingOffHours: 24},
 	)
 	req := &HardLimitRequest{
-		Volume:         0.1,
-		Price:          1.0850,
-		FreeMargin:     5000,
+		Volume:         decF(0.1),
+		Price:          decF(1.0850),
+		FreeMargin:     decF(5000),
 		ContractExpiry: time.Now().Add(30 * 24 * time.Hour),
 	}
 	if err := e.Evaluate(context.Background(), req); err != nil {
@@ -125,9 +125,9 @@ func TestHardLimitEvaluator_FirstBlocks(t *testing.T) {
 		&ContractExpiryRule{CoolingOffHours: 24},
 	)
 	req := &HardLimitRequest{
-		Volume:         10.0,
-		Price:          1.0850,
-		FreeMargin:     5,
+		Volume:         decF(10.0),
+		Price:          decF(1.0850),
+		FreeMargin:     decF(5),
 		ContractExpiry: time.Now().Add(1 * time.Hour),
 	}
 	err := e.Evaluate(context.Background(), req)

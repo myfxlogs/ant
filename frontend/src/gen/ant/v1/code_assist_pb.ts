@@ -6,13 +6,15 @@ import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegen
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { CodeQualityHint, StrategyDirective, SweepDimension } from "./strategy_runtime_pb";
 import { file_strategy_runtime } from "./strategy_runtime_pb";
+import type { ParameterEntry, ParamLabelMap } from "./parameter_entry_pb";
+import { file_parameter_entry } from "./parameter_entry_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file code_assist.proto.
  */
 export const file_code_assist: GenFile = /*@__PURE__*/
-  fileDesc("ChFjb2RlX2Fzc2lzdC5wcm90bxIGYW50LnYxIjIKG1RyYW5zbGF0ZVBhcmFtTGFiZWxzUmVxdWVzdBITCgtwYXJhbV9uYW1lcxgBIAMoCSK4AQocVHJhbnNsYXRlUGFyYW1MYWJlbHNSZXNwb25zZRJMCgx0cmFuc2xhdGlvbnMYASADKAsyNi5hbnQudjEuVHJhbnNsYXRlUGFyYW1MYWJlbHNSZXNwb25zZS5UcmFuc2xhdGlvbnNFbnRyeRpKChFUcmFuc2xhdGlvbnNFbnRyeRILCgNrZXkYASABKAkSJAoFdmFsdWUYAiABKAsyFS5hbnQudjEuUGFyYW1MYWJlbE1hcDoCOAEicQoNUGFyYW1MYWJlbE1hcBIxCgZsYWJlbHMYASADKAsyIS5hbnQudjEuUGFyYW1MYWJlbE1hcC5MYWJlbHNFbnRyeRotCgtMYWJlbHNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIjAKD0NvZGVDaGF0TWVzc2FnZRIMCgRyb2xlGAEgASgJEg8KB2NvbnRlbnQYAiABKAkihAEKEVJldmlzZUNvZGVSZXF1ZXN0EgwKBGNvZGUYASABKAkSEwoLaW5zdHJ1Y3Rpb24YAiABKAkSKAoHaGlzdG9yeRgDIAMoCzIXLmFudC52MS5Db2RlQ2hhdE1lc3NhZ2USDgoGbG9jYWxlGAQgASgJEhIKCnNlc3Npb25faWQYBSABKAkiMgoSUmV2aXNlQ29kZVJlc3BvbnNlEgwKBHRleHQYASABKAkSDgoGcHl0aG9uGAIgASgJIkQKFVJldmlzZUNvZGVTdHJlYW1DaHVuaxINCgVkZWx0YRgBIAEoCRIOCgZweXRob24YAiABKAkSDAoEZG9uZRgDIAEoCCIyChJFeHBsYWluQ29kZVJlcXVlc3QSDAoEY29kZRgBIAEoCRIOCgZsb2NhbGUYAiABKAkiKgoTRXhwbGFpbkNvZGVSZXNwb25zZRITCgtleHBsYW5hdGlvbhgBIAEoCSIvCh9WYWxpZGF0ZVN0cmF0ZWd5RXh0ZW5kZWRSZXF1ZXN0EgwKBGNvZGUYASABKAkitQIKIFZhbGlkYXRlU3RyYXRlZ3lFeHRlbmRlZFJlc3BvbnNlEg0KBXZhbGlkGAEgASgIEg4KBmVycm9ycxgCIAMoCRIQCgh3YXJuaW5ncxgDIAMoCRItCgpwYXJhbWV0ZXJzGAQgAygLMhkuYW50LnYxLlJlcXVpcmVkUGFyYW1TcGVjEi4KDXF1YWxpdHlfaGludHMYBSADKAsyFy5hbnQudjEuQ29kZVF1YWxpdHlIaW50EjAKEHN3ZWVwX2RpbWVuc2lvbnMYBiADKAsyFi5hbnQudjEuU3dlZXBEaW1lbnNpb24SNgoTc3RyYXRlZ3lfZGlyZWN0aXZlcxgHIAMoCzIZLmFudC52MS5TdHJhdGVneURpcmVjdGl2ZRIXCg9wYXJhbWV0ZXJzX2pzb24YCCABKAkicAoRUmVxdWlyZWRQYXJhbVNwZWMSCwoDa2V5GAEgASgJEhAKCHJlcXVpcmVkGAIgASgIEhUKDWRlZmF1bHRfdmFsdWUYAyABKAkSDAoEdHlwZRgEIAEoCRIXCg9zdWdnZXN0ZWRfdmFsdWUYBSABKAkiVQoUVHJhbnNmb3JtQ29kZVJlcXVlc3QSEwoLc291cmNlX2NvZGUYASABKAkSEwoLc291cmNlX2xhbmcYAiABKAkSEwoLdGFyZ2V0X2xhbmcYAyABKAkipwEKFVRyYW5zZm9ybUNvZGVSZXNwb25zZRITCgt0YXJnZXRfY29kZRgBIAEoCRITCgtleHBsYW5hdGlvbhgCIAEoCRIVCg1kZXRlY3RlZF9sYW5nGAMgASgJEhIKCmNvbmZpZGVuY2UYBCABKAISFgoOdG90YWxfcGF0dGVybnMYBSABKAUSDAoEZ2FwcxgGIAEoBRITCgtnYXBfc2FtcGxlcxgHIAMoCTKQBAoRQ29kZUFzc2lzdFNlcnZpY2USQwoKUmV2aXNlQ29kZRIZLmFudC52MS5SZXZpc2VDb2RlUmVxdWVzdBoaLmFudC52MS5SZXZpc2VDb2RlUmVzcG9uc2USTgoQUmV2aXNlQ29kZVN0cmVhbRIZLmFudC52MS5SZXZpc2VDb2RlUmVxdWVzdBodLmFudC52MS5SZXZpc2VDb2RlU3RyZWFtQ2h1bmswARJGCgtFeHBsYWluQ29kZRIaLmFudC52MS5FeHBsYWluQ29kZVJlcXVlc3QaGy5hbnQudjEuRXhwbGFpbkNvZGVSZXNwb25zZRJtChhWYWxpZGF0ZVN0cmF0ZWd5RXh0ZW5kZWQSJy5hbnQudjEuVmFsaWRhdGVTdHJhdGVneUV4dGVuZGVkUmVxdWVzdBooLmFudC52MS5WYWxpZGF0ZVN0cmF0ZWd5RXh0ZW5kZWRSZXNwb25zZRJMCg1UcmFuc2Zvcm1Db2RlEhwuYW50LnYxLlRyYW5zZm9ybUNvZGVSZXF1ZXN0Gh0uYW50LnYxLlRyYW5zZm9ybUNvZGVSZXNwb25zZRJhChRUcmFuc2xhdGVQYXJhbUxhYmVscxIjLmFudC52MS5UcmFuc2xhdGVQYXJhbUxhYmVsc1JlcXVlc3QaJC5hbnQudjEuVHJhbnNsYXRlUGFyYW1MYWJlbHNSZXNwb25zZUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_strategy_runtime]);
+  fileDesc("ChFjb2RlX2Fzc2lzdC5wcm90bxIGYW50LnYxIjIKG1RyYW5zbGF0ZVBhcmFtTGFiZWxzUmVxdWVzdBITCgtwYXJhbV9uYW1lcxgBIAMoCSK4AQocVHJhbnNsYXRlUGFyYW1MYWJlbHNSZXNwb25zZRJMCgx0cmFuc2xhdGlvbnMYASADKAsyNi5hbnQudjEuVHJhbnNsYXRlUGFyYW1MYWJlbHNSZXNwb25zZS5UcmFuc2xhdGlvbnNFbnRyeRpKChFUcmFuc2xhdGlvbnNFbnRyeRILCgNrZXkYASABKAkSJAoFdmFsdWUYAiABKAsyFS5hbnQudjEuUGFyYW1MYWJlbE1hcDoCOAEiMAoPQ29kZUNoYXRNZXNzYWdlEgwKBHJvbGUYASABKAkSDwoHY29udGVudBgCIAEoCSKEAQoRUmV2aXNlQ29kZVJlcXVlc3QSDAoEY29kZRgBIAEoCRITCgtpbnN0cnVjdGlvbhgCIAEoCRIoCgdoaXN0b3J5GAMgAygLMhcuYW50LnYxLkNvZGVDaGF0TWVzc2FnZRIOCgZsb2NhbGUYBCABKAkSEgoKc2Vzc2lvbl9pZBgFIAEoCSIyChJSZXZpc2VDb2RlUmVzcG9uc2USDAoEdGV4dBgBIAEoCRIOCgZweXRob24YAiABKAkiRAoVUmV2aXNlQ29kZVN0cmVhbUNodW5rEg0KBWRlbHRhGAEgASgJEg4KBnB5dGhvbhgCIAEoCRIMCgRkb25lGAMgASgIIjIKEkV4cGxhaW5Db2RlUmVxdWVzdBIMCgRjb2RlGAEgASgJEg4KBmxvY2FsZRgCIAEoCSIqChNFeHBsYWluQ29kZVJlc3BvbnNlEhMKC2V4cGxhbmF0aW9uGAEgASgJIi8KH1ZhbGlkYXRlU3RyYXRlZ3lFeHRlbmRlZFJlcXVlc3QSDAoEY29kZRgBIAEoCSLPAgogVmFsaWRhdGVTdHJhdGVneUV4dGVuZGVkUmVzcG9uc2USDQoFdmFsaWQYASABKAgSDgoGZXJyb3JzGAIgAygJEhAKCHdhcm5pbmdzGAMgAygJEi0KCnBhcmFtZXRlcnMYBCADKAsyGS5hbnQudjEuUmVxdWlyZWRQYXJhbVNwZWMSLgoNcXVhbGl0eV9oaW50cxgFIAMoCzIXLmFudC52MS5Db2RlUXVhbGl0eUhpbnQSMAoQc3dlZXBfZGltZW5zaW9ucxgGIAMoCzIWLmFudC52MS5Td2VlcERpbWVuc2lvbhI2ChNzdHJhdGVneV9kaXJlY3RpdmVzGAcgAygLMhkuYW50LnYxLlN0cmF0ZWd5RGlyZWN0aXZlEjEKEXBhcmFtZXRlcl9lbnRyaWVzGAggAygLMhYuYW50LnYxLlBhcmFtZXRlckVudHJ5InAKEVJlcXVpcmVkUGFyYW1TcGVjEgsKA2tleRgBIAEoCRIQCghyZXF1aXJlZBgCIAEoCBIVCg1kZWZhdWx0X3ZhbHVlGAMgASgJEgwKBHR5cGUYBCABKAkSFwoPc3VnZ2VzdGVkX3ZhbHVlGAUgASgJIlUKFFRyYW5zZm9ybUNvZGVSZXF1ZXN0EhMKC3NvdXJjZV9jb2RlGAEgASgJEhMKC3NvdXJjZV9sYW5nGAIgASgJEhMKC3RhcmdldF9sYW5nGAMgASgJIqcBChVUcmFuc2Zvcm1Db2RlUmVzcG9uc2USEwoLdGFyZ2V0X2NvZGUYASABKAkSEwoLZXhwbGFuYXRpb24YAiABKAkSFQoNZGV0ZWN0ZWRfbGFuZxgDIAEoCRISCgpjb25maWRlbmNlGAQgASgCEhYKDnRvdGFsX3BhdHRlcm5zGAUgASgFEgwKBGdhcHMYBiABKAUSEwoLZ2FwX3NhbXBsZXMYByADKAkykAQKEUNvZGVBc3Npc3RTZXJ2aWNlEkMKClJldmlzZUNvZGUSGS5hbnQudjEuUmV2aXNlQ29kZVJlcXVlc3QaGi5hbnQudjEuUmV2aXNlQ29kZVJlc3BvbnNlEk4KEFJldmlzZUNvZGVTdHJlYW0SGS5hbnQudjEuUmV2aXNlQ29kZVJlcXVlc3QaHS5hbnQudjEuUmV2aXNlQ29kZVN0cmVhbUNodW5rMAESRgoLRXhwbGFpbkNvZGUSGi5hbnQudjEuRXhwbGFpbkNvZGVSZXF1ZXN0GhsuYW50LnYxLkV4cGxhaW5Db2RlUmVzcG9uc2USbQoYVmFsaWRhdGVTdHJhdGVneUV4dGVuZGVkEicuYW50LnYxLlZhbGlkYXRlU3RyYXRlZ3lFeHRlbmRlZFJlcXVlc3QaKC5hbnQudjEuVmFsaWRhdGVTdHJhdGVneUV4dGVuZGVkUmVzcG9uc2USTAoNVHJhbnNmb3JtQ29kZRIcLmFudC52MS5UcmFuc2Zvcm1Db2RlUmVxdWVzdBodLmFudC52MS5UcmFuc2Zvcm1Db2RlUmVzcG9uc2USYQoUVHJhbnNsYXRlUGFyYW1MYWJlbHMSIy5hbnQudjEuVHJhbnNsYXRlUGFyYW1MYWJlbHNSZXF1ZXN0GiQuYW50LnYxLlRyYW5zbGF0ZVBhcmFtTGFiZWxzUmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_strategy_runtime, file_parameter_entry]);
 
 /**
  * @generated from message ant.v1.TranslateParamLabelsRequest
@@ -54,23 +56,6 @@ export const TranslateParamLabelsResponseSchema: GenMessage<TranslateParamLabels
   messageDesc(file_code_assist, 1);
 
 /**
- * @generated from message ant.v1.ParamLabelMap
- */
-export type ParamLabelMap = Message<"ant.v1.ParamLabelMap"> & {
-  /**
-   * @generated from field: map<string, string> labels = 1;
-   */
-  labels: { [key: string]: string };
-};
-
-/**
- * Describes the message ant.v1.ParamLabelMap.
- * Use `create(ParamLabelMapSchema)` to create a new message.
- */
-export const ParamLabelMapSchema: GenMessage<ParamLabelMap> = /*@__PURE__*/
-  messageDesc(file_code_assist, 2);
-
-/**
  * @generated from message ant.v1.CodeChatMessage
  */
 export type CodeChatMessage = Message<"ant.v1.CodeChatMessage"> & {
@@ -90,7 +75,7 @@ export type CodeChatMessage = Message<"ant.v1.CodeChatMessage"> & {
  * Use `create(CodeChatMessageSchema)` to create a new message.
  */
 export const CodeChatMessageSchema: GenMessage<CodeChatMessage> = /*@__PURE__*/
-  messageDesc(file_code_assist, 3);
+  messageDesc(file_code_assist, 2);
 
 /**
  * @generated from message ant.v1.ReviseCodeRequest
@@ -127,7 +112,7 @@ export type ReviseCodeRequest = Message<"ant.v1.ReviseCodeRequest"> & {
  * Use `create(ReviseCodeRequestSchema)` to create a new message.
  */
 export const ReviseCodeRequestSchema: GenMessage<ReviseCodeRequest> = /*@__PURE__*/
-  messageDesc(file_code_assist, 4);
+  messageDesc(file_code_assist, 3);
 
 /**
  * @generated from message ant.v1.ReviseCodeResponse
@@ -149,7 +134,7 @@ export type ReviseCodeResponse = Message<"ant.v1.ReviseCodeResponse"> & {
  * Use `create(ReviseCodeResponseSchema)` to create a new message.
  */
 export const ReviseCodeResponseSchema: GenMessage<ReviseCodeResponse> = /*@__PURE__*/
-  messageDesc(file_code_assist, 5);
+  messageDesc(file_code_assist, 4);
 
 /**
  * @generated from message ant.v1.ReviseCodeStreamChunk
@@ -182,7 +167,7 @@ export type ReviseCodeStreamChunk = Message<"ant.v1.ReviseCodeStreamChunk"> & {
  * Use `create(ReviseCodeStreamChunkSchema)` to create a new message.
  */
 export const ReviseCodeStreamChunkSchema: GenMessage<ReviseCodeStreamChunk> = /*@__PURE__*/
-  messageDesc(file_code_assist, 6);
+  messageDesc(file_code_assist, 5);
 
 /**
  * @generated from message ant.v1.ExplainCodeRequest
@@ -204,7 +189,7 @@ export type ExplainCodeRequest = Message<"ant.v1.ExplainCodeRequest"> & {
  * Use `create(ExplainCodeRequestSchema)` to create a new message.
  */
 export const ExplainCodeRequestSchema: GenMessage<ExplainCodeRequest> = /*@__PURE__*/
-  messageDesc(file_code_assist, 7);
+  messageDesc(file_code_assist, 6);
 
 /**
  * @generated from message ant.v1.ExplainCodeResponse
@@ -221,7 +206,7 @@ export type ExplainCodeResponse = Message<"ant.v1.ExplainCodeResponse"> & {
  * Use `create(ExplainCodeResponseSchema)` to create a new message.
  */
 export const ExplainCodeResponseSchema: GenMessage<ExplainCodeResponse> = /*@__PURE__*/
-  messageDesc(file_code_assist, 8);
+  messageDesc(file_code_assist, 7);
 
 /**
  * @generated from message ant.v1.ValidateStrategyExtendedRequest
@@ -238,7 +223,7 @@ export type ValidateStrategyExtendedRequest = Message<"ant.v1.ValidateStrategyEx
  * Use `create(ValidateStrategyExtendedRequestSchema)` to create a new message.
  */
 export const ValidateStrategyExtendedRequestSchema: GenMessage<ValidateStrategyExtendedRequest> = /*@__PURE__*/
-  messageDesc(file_code_assist, 9);
+  messageDesc(file_code_assist, 8);
 
 /**
  * @generated from message ant.v1.ValidateStrategyExtendedResponse
@@ -286,11 +271,11 @@ export type ValidateStrategyExtendedResponse = Message<"ant.v1.ValidateStrategyE
   strategyDirectives: StrategyDirective[];
 
   /**
-   * Extracted self.ctx.param() calls as JSON array of {name, type, default, label}.
+   * Extracted self.ctx.param() calls as structured parameter entries.
    *
-   * @generated from field: string parameters_json = 8;
+   * @generated from field: repeated ant.v1.ParameterEntry parameter_entries = 8;
    */
-  parametersJson: string;
+  parameterEntries: ParameterEntry[];
 };
 
 /**
@@ -298,7 +283,7 @@ export type ValidateStrategyExtendedResponse = Message<"ant.v1.ValidateStrategyE
  * Use `create(ValidateStrategyExtendedResponseSchema)` to create a new message.
  */
 export const ValidateStrategyExtendedResponseSchema: GenMessage<ValidateStrategyExtendedResponse> = /*@__PURE__*/
-  messageDesc(file_code_assist, 10);
+  messageDesc(file_code_assist, 9);
 
 /**
  * @generated from message ant.v1.RequiredParamSpec
@@ -335,7 +320,7 @@ export type RequiredParamSpec = Message<"ant.v1.RequiredParamSpec"> & {
  * Use `create(RequiredParamSpecSchema)` to create a new message.
  */
 export const RequiredParamSpecSchema: GenMessage<RequiredParamSpec> = /*@__PURE__*/
-  messageDesc(file_code_assist, 11);
+  messageDesc(file_code_assist, 10);
 
 /**
  * @generated from message ant.v1.TransformCodeRequest
@@ -368,7 +353,7 @@ export type TransformCodeRequest = Message<"ant.v1.TransformCodeRequest"> & {
  * Use `create(TransformCodeRequestSchema)` to create a new message.
  */
 export const TransformCodeRequestSchema: GenMessage<TransformCodeRequest> = /*@__PURE__*/
-  messageDesc(file_code_assist, 12);
+  messageDesc(file_code_assist, 11);
 
 /**
  * @generated from message ant.v1.TransformCodeResponse
@@ -429,7 +414,7 @@ export type TransformCodeResponse = Message<"ant.v1.TransformCodeResponse"> & {
  * Use `create(TransformCodeResponseSchema)` to create a new message.
  */
 export const TransformCodeResponseSchema: GenMessage<TransformCodeResponse> = /*@__PURE__*/
-  messageDesc(file_code_assist, 13);
+  messageDesc(file_code_assist, 12);
 
 /**
  * @generated from service ant.v1.CodeAssistService

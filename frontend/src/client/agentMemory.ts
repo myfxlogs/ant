@@ -6,6 +6,7 @@ import {
   SaveUserTemplateRequestSchema,
   DeleteUserTemplateRequestSchema,
   DeleteAgentExperienceRequestSchema,
+  type TemplateScope,
 } from '../gen/ant/v1/agent_gateway_pb';
 
 export async function listMemory(): Promise<ListMemoryResponse> {
@@ -17,10 +18,10 @@ export async function listMemory(): Promise<ListMemoryResponse> {
 export async function saveUserTemplate(
   name: string,
   content: string,
-  scopeJson: string,
+  scope?: TemplateScope,
 ): Promise<boolean> {
   const res = await agentGatewayClient.saveUserTemplate(
-    create(SaveUserTemplateRequestSchema, { name, content, scopeJson }),
+    create(SaveUserTemplateRequestSchema, { name, content, scope }),
   );
   return res.success;
 }

@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	systemai "alphaforge/internal/service/systemai"
@@ -71,8 +73,12 @@ func (a *AgentLoop) Run(ctx context.Context, systemPrompt, userPrompt string, us
 
 func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, userID uuid.UUID) (string, error) {
 	var fullBuf strings.Builder
+	deadline := time.Now().Add(10 * time.Minute)
 
 	for round := 0; round < 1000; round++ { // no practical hard limit — aligned with Claude Code
+		if time.Now().After(deadline) {
+			return fullBuf.String(), fmt.Errorf("agent: total time budget exceeded (10m)")
+		}
 		// Context compression: if total estimated tokens exceed budget,
 		// keep system + first user + last 12 messages, drop middle.
 		if len(messages) > 16 {
@@ -240,9 +246,17 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 
 			// Stream tool event to frontend.
 			if a.toolStream != nil {
+				var paramsStruct *structpb.Struct
+				if s, err := structpb.NewStruct(parseJSONToMap(tc.Function.Arguments)); err == nil {
+					paramsStruct = s
+				}
+				var outputStruct *structpb.Struct
+				if s, err := structpb.NewStruct(parseJSONToMap(resultContent)); err == nil {
+					outputStruct = s
+				}
 				_ = a.toolStream(
-					&antv1.ToolCall{CallId: callID, Name: tc.Function.Name, ParamsJson: tc.Function.Arguments},
-					&antv1.ToolResult{CallId: callID, Name: tc.Function.Name, Success: result.Success, OutputJson: resultContent, Error: result.Error},
+					&antv1.ToolCall{CallId: callID, Name: tc.Function.Name, Params: paramsStruct},
+					&antv1.ToolResult{CallId: callID, Name: tc.Function.Name, Success: result.Success, Output: outputStruct, Error: result.Error},
 				)
 			}
 		}
@@ -346,6 +360,19 @@ func parseTextToolCalls(text string) []textToolCall {
 		calls = append(calls, tc)
 	}
 	return calls
+}
+
+// parseJSONToMap parses a JSON string into a map[string]any.
+// Used to convert LLM JSON output to structpb.Struct for proto fields.
+func parseJSONToMap(s string) map[string]any {
+	if s == "" {
+		return nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal([]byte(s), &m); err != nil {
+		return nil
+	}
+	return m
 }
 
 // hasWriteStrategyCall checks whether the LLM invoked write_strategy,

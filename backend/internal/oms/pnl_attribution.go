@@ -11,7 +11,8 @@ package oms
 
 import (
 	"fmt"
-	"math"
+
+	"github.com/shopspring/decimal"
 
 	"alphaforge/internal/costsvc"
 )
@@ -19,74 +20,75 @@ import (
 // PnLAttribution decomposes Net P&L into three independently measurable dimensions.
 type PnLAttribution struct {
 	// Dimension 1: Signal — gross P&L before any costs
-	GrossPnL float64 `json:"gross_pnl"`
+	GrossPnL decimal.Decimal `json:"gross_pnl"`
 
 	// Dimension 2: Execution — costs incurred at order fill
-	SlippageCost float64 `json:"slippage_cost"`
-	SpreadCost   float64 `json:"spread_cost"`
+	SlippageCost decimal.Decimal `json:"slippage_cost"`
+	SpreadCost   decimal.Decimal `json:"spread_cost"`
 
 	// Dimension 3: Holding — costs from carrying the position
-	Commission  float64 `json:"commission"`
-	SwapCost    float64 `json:"swap_cost"`
-	FundingCost float64 `json:"funding_cost"`
+	Commission  decimal.Decimal `json:"commission"`
+	SwapCost    decimal.Decimal `json:"swap_cost"`
+	FundingCost decimal.Decimal `json:"funding_cost"`
 
 	// Context
-	Notional float64 `json:"notional"`
-	Side     string  `json:"side"`
+	Notional decimal.Decimal `json:"notional"`
+	Side     string          `json:"side"`
 }
 
 // SignalPnL returns the signal dimension (gross P&L).
-func (a PnLAttribution) SignalPnL() float64 { return a.GrossPnL }
+func (a PnLAttribution) SignalPnL() decimal.Decimal { return a.GrossPnL }
 
 // ExecutionCost returns the execution dimension total.
-func (a PnLAttribution) ExecutionCost() float64 { return a.SlippageCost + a.SpreadCost }
+func (a PnLAttribution) ExecutionCost() decimal.Decimal { return a.SlippageCost.Add(a.SpreadCost) }
 
 // HoldingCost returns the holding dimension total.
-func (a PnLAttribution) HoldingCost() float64 { return a.Commission + a.SwapCost + a.FundingCost }
+func (a PnLAttribution) HoldingCost() decimal.Decimal { return a.Commission.Add(a.SwapCost).Add(a.FundingCost) }
 
 // NetPnL computes the bottom-line P&L after all costs.
-func (a PnLAttribution) NetPnL() float64 {
-	return a.GrossPnL - a.ExecutionCost() - a.HoldingCost()
+func (a PnLAttribution) NetPnL() decimal.Decimal {
+	return a.GrossPnL.Sub(a.ExecutionCost()).Sub(a.HoldingCost())
 }
 
 // SignalBps returns the signal alpha in basis points of notional.
-func (a PnLAttribution) SignalBps() float64 {
-	if a.Notional == 0 {
-		return 0
+func (a PnLAttribution) SignalBps() decimal.Decimal {
+	if a.Notional.Equal(decimal.Zero) {
+		return decimal.Zero
 	}
-	return a.GrossPnL / a.Notional * 10000.0
+	return a.GrossPnL.Div(a.Notional).Mul(decimal.NewFromInt(10000))
 }
 
 // ExecutionBps returns the execution cost in basis points of notional.
-func (a PnLAttribution) ExecutionBps() float64 {
-	if a.Notional == 0 {
-		return 0
+func (a PnLAttribution) ExecutionBps() decimal.Decimal {
+	if a.Notional.Equal(decimal.Zero) {
+		return decimal.Zero
 	}
-	return a.ExecutionCost() / a.Notional * 10000.0
+	return a.ExecutionCost().Div(a.Notional).Mul(decimal.NewFromInt(10000))
 }
 
 // HoldingBps returns the holding cost in basis points of notional.
-func (a PnLAttribution) HoldingBps() float64 {
-	if a.Notional == 0 {
-		return 0
+func (a PnLAttribution) HoldingBps() decimal.Decimal {
+	if a.Notional.Equal(decimal.Zero) {
+		return decimal.Zero
 	}
-	return a.HoldingCost() / a.Notional * 10000.0
+	return a.HoldingCost().Div(a.Notional).Mul(decimal.NewFromInt(10000))
 }
 
 // NetBps returns net P&L in basis points of notional.
-func (a PnLAttribution) NetBps() float64 {
-	if a.Notional == 0 {
-		return 0
+func (a PnLAttribution) NetBps() decimal.Decimal {
+	if a.Notional.Equal(decimal.Zero) {
+		return decimal.Zero
 	}
-	return a.NetPnL() / a.Notional * 10000.0
+	return a.NetPnL().Div(a.Notional).Mul(decimal.NewFromInt(10000))
 }
 
 // Validate checks the P&L identity: Net = Gross - Spread - Slippage - Commission - Swap - Funding.
 func (a PnLAttribution) Validate() error {
-	expected := a.GrossPnL - a.SpreadCost - a.SlippageCost - a.Commission - a.SwapCost - a.FundingCost
+	expected := a.GrossPnL.Sub(a.SpreadCost).Sub(a.SlippageCost).Sub(a.Commission).Sub(a.SwapCost).Sub(a.FundingCost)
 	actual := a.NetPnL()
-	if math.Abs(expected-actual) > 0.005 {
-		return fmt.Errorf("PnL identity violated: %.4f != %.4f (diff=%.6f)", expected, actual, expected-actual)
+	diff := expected.Sub(actual).Abs()
+	if diff.GreaterThan(decimal.NewFromFloat(0.005)) {
+		return fmt.Errorf("PnL identity violated: %s != %s (diff=%s)", expected.String(), actual.String(), diff.String())
 	}
 	return nil
 }
@@ -94,13 +96,13 @@ func (a PnLAttribution) Validate() error {
 // Add aggregates two attributions (e.g., entry + exit legs).
 func (a PnLAttribution) Add(b PnLAttribution) PnLAttribution {
 	return PnLAttribution{
-		GrossPnL:     a.GrossPnL + b.GrossPnL,
-		SlippageCost: a.SlippageCost + b.SlippageCost,
-		SpreadCost:   a.SpreadCost + b.SpreadCost,
-		Commission:   a.Commission + b.Commission,
-		SwapCost:     a.SwapCost + b.SwapCost,
-		FundingCost:  a.FundingCost + b.FundingCost,
-		Notional:     a.Notional + b.Notional,
+		GrossPnL:     a.GrossPnL.Add(b.GrossPnL),
+		SlippageCost: a.SlippageCost.Add(b.SlippageCost),
+		SpreadCost:   a.SpreadCost.Add(b.SpreadCost),
+		Commission:   a.Commission.Add(b.Commission),
+		SwapCost:     a.SwapCost.Add(b.SwapCost),
+		FundingCost:  a.FundingCost.Add(b.FundingCost),
+		Notional:     a.Notional.Add(b.Notional),
 		Side:         a.Side,
 	}
 }
@@ -121,26 +123,26 @@ func NewPnLAttributor(fm *FillModel) *PnLAttributor {
 // openPrice/closePrice: gross fill prices at entry and exit
 // lots/contractSize: position size
 // holdingDays: number of overnight rolls (for swap cost)
-func (at *PnLAttributor) Attribute(side string, openPrice, closePrice, lots, contractSize, holdingDays float64) PnLAttribution {
+func (at *PnLAttributor) Attribute(side string, openPrice, closePrice, lots, contractSize, holdingDays decimal.Decimal) PnLAttribution {
 	cm := at.fillModel.costModel
-	notional := lots * contractSize * openPrice
+	notional := lots.Mul(contractSize).Mul(openPrice)
 
 	// Gross P&L (signal dimension)
-	grossPnL := 0.0
+	grossPnL := decimal.Zero
 	if side == "buy" {
-		grossPnL = (closePrice - openPrice) * lots * contractSize
+		grossPnL = closePrice.Sub(openPrice).Mul(lots).Mul(contractSize)
 	} else {
-		grossPnL = (openPrice - closePrice) * lots * contractSize
+		grossPnL = openPrice.Sub(closePrice).Mul(lots).Mul(contractSize)
 	}
 
 	// Entry leg costs
-	entryNotional := lots * contractSize * openPrice
+	entryNotional := lots.Mul(contractSize).Mul(openPrice)
 	entrySpread := cm.SpreadCost(lots)
 	entryComm := cm.Commission(lots, entryNotional)
 	entrySlip := cm.SlippageCost(lots, openPrice, contractSize)
 
 	// Exit leg costs
-	exitNotional := lots * contractSize * closePrice
+	exitNotional := lots.Mul(contractSize).Mul(closePrice)
 	exitSpread := cm.SpreadCost(lots)
 	exitComm := cm.Commission(lots, exitNotional)
 	exitSlip := cm.SlippageCost(lots, closePrice, contractSize)
@@ -151,9 +153,9 @@ func (at *PnLAttributor) Attribute(side string, openPrice, closePrice, lots, con
 
 	return PnLAttribution{
 		GrossPnL:     grossPnL,
-		SlippageCost: entrySlip + exitSlip,
-		SpreadCost:   entrySpread + exitSpread,
-		Commission:   entryComm + exitComm,
+		SlippageCost: entrySlip.Add(exitSlip),
+		SpreadCost:   entrySpread.Add(exitSpread),
+		Commission:   entryComm.Add(exitComm),
 		SwapCost:     swap,
 		FundingCost:  funding,
 		Notional:     notional,

@@ -65,22 +65,22 @@ func New(repo paperRepository, mtHub *mthub.MtHubService, log *zap.Logger) *Pape
 func (e *PaperEngine) PlacePaperOrder(ctx context.Context, accountID, symbol, side string,
 	volume, bid, ask decimal.Decimal) error {
 
-	// Guard: mandatory safety net before any order reaches the broker.
-	if e.guard != nil {
-		if result := e.guard.Check(ctx, &risk.GuardRequest{
-			Symbol: symbol, Side: side,
-			Volume: volume, OrderType: "market",
-		}); !result.Allowed {
-			return fmt.Errorf("paper: guard blocked: %s", result.Reason)
-		}
-	}
-
 	// Determine simulated fill price: buy → Ask, sell → Bid, fallback to mid.
 	fillPrice := bid.Add(ask).Div(decimal.NewFromInt(2))
 	if side == "buy" && ask.GreaterThan(decimal.Zero) {
 		fillPrice = ask
 	} else if side == "sell" && bid.GreaterThan(decimal.Zero) {
 		fillPrice = bid
+	}
+
+	// Guard: mandatory safety net before any order reaches the broker.
+	if e.guard != nil {
+		if result := e.guard.Check(ctx, &risk.GuardRequest{
+			Symbol: symbol, Side: side,
+			Volume: volume, OrderType: "market", Price: fillPrice,
+		}); !result.Allowed {
+			return fmt.Errorf("paper: guard blocked: %s", result.Reason)
+		}
 	}
 
 	now := time.Now()

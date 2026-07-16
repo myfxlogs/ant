@@ -5,6 +5,8 @@ package mthub
 import (
 	"testing"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 func TestDerivedQuantities(t *testing.T) {
@@ -41,11 +43,11 @@ func TestDerivedQuantities(t *testing.T) {
 	if len(accs) != 2 {
 		t.Fatalf("want 2 accounts, got %d", len(accs))
 	}
-	if totalExposure <= 0 {
-		t.Fatalf("totalExposure should be > 0, got %f", totalExposure)
+	if !totalExposure.GreaterThan(decimal.Zero) {
+		t.Fatalf("totalExposure should be > 0, got %s", totalExposure.String())
 	}
-	if totalMargin <= 0 {
-		t.Fatalf("totalMargin should be > 0, got %f", totalMargin)
+	if !totalMargin.GreaterThan(decimal.Zero) {
+		t.Fatalf("totalMargin should be > 0, got %s", totalMargin.String())
 	}
 	if lastUpdated.IsZero() {
 		t.Fatal("lastUpdated should not be zero")
@@ -59,8 +61,8 @@ func TestDerivedQuantities(t *testing.T) {
 	// EURUSD: 1.0 * 1.085 = 1.085 notional
 	// GBPUSD: 0.5 * 1.265 = 0.6325 notional
 	// Total: ~1.7175
-	if acc1.Exposure <= 0 {
-		t.Fatalf("acc-1 exposure should be > 0, got %f", acc1.Exposure)
+	if !acc1.Exposure.GreaterThan(decimal.Zero) {
+		t.Fatalf("acc-1 exposure should be > 0, got %s", acc1.Exposure.String())
 	}
 
 	acc2 := state.GetAccount("acc-2")
@@ -68,6 +70,6 @@ func TestDerivedQuantities(t *testing.T) {
 		t.Fatal("acc-2 should exist")
 	}
 
-	t.Logf("DerivedQuantities: acc-1 exposure=%.4f margin=%.4f | acc-2 exposure=%.4f | total exposure=%.4f margin=%.4f",
-		acc1.Exposure, acc1.MarginUsed, acc2.Exposure, totalExposure, totalMargin)
+	t.Logf("DerivedQuantities: acc-1 exposure=%s margin=%s | acc-2 exposure=%s | total exposure=%s margin=%s",
+		acc1.Exposure.String(), acc1.MarginUsed.String(), acc2.Exposure.String(), totalExposure.String(), totalMargin.String())
 }

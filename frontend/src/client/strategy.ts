@@ -2,9 +2,9 @@ import type { PartialMessage } from '@bufbuild/protobuf';
 import { timestampDate } from '@bufbuild/protobuf/wkt';
 import { strategyClient } from './connect';
 import type { BacktestMetrics } from '../gen/ant/v1/common_pb';
-import type { TemplateParameter } from '../gen/ant/v1/strategy_template_entity_pb';
+import type { TemplateParameter, TemplateI18n } from '../gen/ant/v1/strategy_template_entity_pb';
 
-export type { StrategyTemplate, TemplateParameter } from '../gen/ant/v1/strategy_template_entity_pb';
+export type { StrategyTemplate, TemplateParameter, TemplateI18n } from '../gen/ant/v1/strategy_template_entity_pb';
 export type { StrategySchedule, ScheduleConfig } from '../gen/ant/v1/strategy_schedule_entity_pb';
 export type { StrategySignal } from '../gen/ant/v1/strategy_signal_messages_pb';
 export type { BacktestMetrics };
@@ -47,7 +47,7 @@ export const strategyApi = {
     parameters?: PartialMessage<TemplateParameter>[];
     isPublic?: boolean;
     tags?: string[];
-    i18n?: string;
+    i18n?: TemplateI18n;
   }) => {
     return await strategyClient.createTemplate({
       name: params.name,
@@ -56,7 +56,7 @@ export const strategyApi = {
       parameters: params.parameters || [],
       isPublic: params.isPublic || false,
       tags: params.tags || [],
-      i18n: params.i18n || '',
+      i18n: params.i18n,
     });
   },
 
@@ -68,7 +68,7 @@ export const strategyApi = {
     parameters?: PartialMessage<TemplateParameter>[];
     isPublic?: boolean;
     tags?: string[];
-    i18n?: string;
+    i18n?: TemplateI18n;
   }) => {
     return await strategyClient.updateTemplate({
       id: params.id,

@@ -2,12 +2,12 @@ package ai
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
@@ -50,26 +50,26 @@ func SendGateNotification(
 		return
 	}
 	if result.Passed {
-		data, _ := json.Marshal(map[string]interface{}{
+		data, _ := structpb.NewStruct(map[string]interface{}{
 			"run_id": run.ID.String(), "symbol": run.Symbol, "gates": len(result.Gates),
 		})
 		_, _ = sender.Send(ctx, userID, "gate_passed",
 			fmt.Sprintf("Gate Passed: %s", run.Symbol),
 			fmt.Sprintf("Strategy for %s passed all %d gates", run.Symbol, len(result.Gates)),
-			string(data))
+			data)
 		return
 	}
 	firstFail := string(result.FirstFail)
 	if firstFail == "" {
 		firstFail = "unknown"
 	}
-	data, _ := json.Marshal(map[string]interface{}{
+	data, _ := structpb.NewStruct(map[string]interface{}{
 		"run_id": run.ID.String(), "symbol": run.Symbol, "failed_at": firstFail,
 	})
 	_, _ = sender.Send(ctx, userID, "gate_failed",
 		fmt.Sprintf("Gate Failed: %s", run.Symbol),
 		fmt.Sprintf("Strategy for %s failed at gate: %s", run.Symbol, firstFail),
-		string(data))
+		data)
 }
 
 // RunEvaluation fetches the backtest run, converts equity_curve to daily returns,

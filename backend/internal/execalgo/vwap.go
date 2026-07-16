@@ -2,8 +2,9 @@ package execalgo
 
 import (
 	"errors"
-	"math"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // VwapAlgo implements Volume-Weighted Average Price execution.
@@ -31,7 +32,7 @@ func NewVwap(profile VolumeProfile, numBuckets int) *VwapAlgo {
 func (a *VwapAlgo) Name() string { return "VWAP" }
 
 func (a *VwapAlgo) Schedule(parent ParentOrder) (*Schedule, error) {
-	if parent.TotalVolume <= 0 {
+	if !parent.TotalVolume.GreaterThan(decimal.Zero) {
 		return nil, errors.New("vwap: total volume must be positive")
 	}
 	dur := parent.Duration()
@@ -65,13 +66,14 @@ func (a *VwapAlgo) Schedule(parent ParentOrder) (*Schedule, error) {
 	// Normalize
 	slices := make([]ChildOrder, n)
 	for i := 0; i < n; i++ {
-		vol := 0.0
+		var vol decimal.Decimal
 		if totalFrac > 0 {
-			vol = parent.TotalVolume * fracs[i] / totalFrac
+			vol = parent.TotalVolume.Mul(decimal.NewFromFloat(fracs[i])).Div(decimal.NewFromFloat(totalFrac))
 		} else {
-			vol = parent.TotalVolume / float64(n)
+			vol = parent.TotalVolume.Div(decimal.NewFromInt(int64(n)))
 		}
-		vol = math.Round(vol*10000) / 10000 // avoid float noise
+		// Round to 4 decimal places to avoid noise
+		vol = vol.Round(4)
 		slices[i] = ChildOrder{
 			Sequence:   i,
 			Volume:     vol,

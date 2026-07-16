@@ -4,6 +4,8 @@ package ant.v1;
 
 option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
+import "google/protobuf/struct.proto";
+
 // ── Claude Code style: Understanding phase ──
 // Plans are discussed collaboratively, no code is generated.
 
@@ -21,7 +23,7 @@ message ConversateRequest {
   string timeframe = 4;
   string plan = 5;                // current plan (empty on first message)
   string current_code = 6;        // current strategy code
-  string backtest_metrics_json = 7;
+  BacktestMetricsMsg backtest_metrics = 7;
 }
 
 message ConversateChunk {
@@ -41,7 +43,7 @@ message DiagnoseRequest {
   string conversation_id = 2;
   string feedback_message = 3;       // user's feedback
   string current_code = 4;           // current strategy code for context
-  string backtest_metrics_json = 5;  // latest metrics
+  BacktestMetricsMsg backtest_metrics = 5;  // latest metrics
 }
 
 message AnalyzePlanRequest {
@@ -68,7 +70,7 @@ message ExecutePlanRequest {
   string timeframe = 4;
   string previous_code = 5;      // for iteration: old code for diff
   string feedback_message = 6;   // for iteration: user's adjustment request
-  string backtest_metrics_json = 7; // for diagnosis: latest backtest results
+  BacktestMetricsMsg backtest_metrics = 7; // for diagnosis: latest backtest results
 }
 
 message ExecutePlanChunk {
@@ -94,14 +96,14 @@ message ExecutePlanResponse {
 message ToolCall {
   string call_id = 1;
   string name = 2;               // "compliance_check" | "backtest" | "gate_eval" | "walkforward"
-  string params_json = 3;        // tool-specific parameters as JSON
+  google.protobuf.Struct params = 3;  // tool-specific parameters
 }
 
 message ToolResult {
   string call_id = 1;
   string name = 2;
   bool success = 3;
-  string output_json = 4;        // tool-specific output as JSON
+  google.protobuf.Struct output = 4;  // tool-specific output
   string error = 5;
 }
 
@@ -122,11 +124,11 @@ message ComplianceResult {
 // ── Tool: Backtest Run ──
 
 message BacktestMetricsMsg {
-  double total_return = 1;
-  double sharpe_ratio = 2;
-  double max_drawdown = 3;
-  double win_rate = 4;
-  double profit_factor = 5;
+  string total_return = 1;
+  string sharpe_ratio = 2;
+  string max_drawdown = 3;
+  string win_rate = 4;
+  string profit_factor = 5;
   int32 total_trades = 6;
 }
 

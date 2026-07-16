@@ -188,15 +188,15 @@ func computeDailyPnLResult(stats []dailyTradeStat, initialBalance decimal.Decima
 		// Merge max intraday floating data.
 		dateKey := s.Date.Format("2006-01-02")
 		lossAmt := decimal.Zero
-		lossRatio := 0.0
+		lossRatio := decimal.Zero
 		profitAmt := decimal.Zero
-		profitRatio := 0.0
+		profitRatio := decimal.Zero
 		if mf, ok := maxFloating[dateKey]; ok {
 			lossAmt = mf.MaxFloatingLoss
 			profitAmt = mf.MaxFloatingProfit
 			if s.Balance.IsPositive() {
-				lossRatio, _ = lossAmt.Div(s.Balance).Mul(decimal.NewFromInt(100)).Float64()
-				profitRatio, _ = profitAmt.Div(s.Balance).Mul(decimal.NewFromInt(100)).Float64()
+				lossRatio = lossAmt.Div(s.Balance).Mul(decimal.NewFromInt(100))
+				profitRatio = profitAmt.Div(s.Balance).Mul(decimal.NewFromInt(100))
 			}
 		}
 

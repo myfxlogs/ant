@@ -330,7 +330,7 @@ func TestPGTrigger_Run_WithNotifier(t *testing.T) {
 	})
 
 	mn := &mockNotifier{
-		payloads: []string{`{"account_id":"acct-42"}`},
+		payloads: []string{"acct-42"},
 	}
 	err := trig.Run(ctx, mn)
 	if err != nil {
@@ -352,7 +352,7 @@ func TestPGTrigger_Run_BadPayload(t *testing.T) {
 	})
 
 	mn := &mockNotifier{
-		payloads: []string{`not-json`, `{"account_id":"ok"}`},
+		payloads: []string{"", "ok"},
 	}
 	err := trig.Run(ctx, mn)
 	if err != nil {
@@ -373,7 +373,7 @@ func TestPGTrigger_Run_EmptyAccountID(t *testing.T) {
 	})
 
 	mn := &mockNotifier{
-		payloads: []string{`{"account_id":""}`, `{"account_id":"real"}`},
+		payloads: []string{"", "real"},
 	}
 	err := trig.Run(ctx, mn)
 	if err != nil {

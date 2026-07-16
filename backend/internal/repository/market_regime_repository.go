@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var ErrMarketRegimeNotFound = errors.New("market regime not found")
@@ -21,8 +22,8 @@ type MarketRegime struct {
 	Timeframe        string     `db:"timeframe"`
 	Regime           string     `db:"regime"`
 	Confidence       float64    `db:"confidence"`
-	Features         []byte     `db:"features"`
-	Segments         []byte     `db:"segments"`
+	Features         *structpb.Struct `db:"features"`
+	Segments         []string         `db:"segments"`
 	StrategyFamilies []string   `db:"strategy_families"`
 	FromTime         *time.Time `db:"from_time"`
 	ToTime           *time.Time `db:"to_time"`
@@ -45,11 +46,11 @@ func (r *MarketRegimeRepository) Create(ctx context.Context, row *MarketRegime) 
 	if row.CreatedAt.IsZero() {
 		row.CreatedAt = time.Now().UTC()
 	}
-	if len(row.Features) == 0 {
-		row.Features = []byte(`{}`)
+	if row.Features == nil {
+		row.Features, _ = structpb.NewStruct(map[string]any{})
 	}
-	if len(row.Segments) == 0 {
-		row.Segments = []byte(`[]`)
+	if row.Segments == nil {
+		row.Segments = []string{}
 	}
 	if row.StrategyFamilies == nil {
 		row.StrategyFamilies = []string{}

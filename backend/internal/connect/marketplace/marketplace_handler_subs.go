@@ -2,12 +2,12 @@ package marketplace
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -19,12 +19,9 @@ import (
 
 func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Request[antv1.PublishStrategyRequest]) (*connect.Response[antv1.PublishStrategyResponse], error) {
 	m := req.Msg
-	var snapshotJSON *string
+	var snapshotProto []byte
 	if m.BacktestSnapshot != nil {
-		if b, err := json.Marshal(m.BacktestSnapshot); err == nil {
-			s := string(b)
-			snapshotJSON = &s
-		}
+		snapshotProto, _ = proto.Marshal(m.BacktestSnapshot)
 	}
 	userID := interceptor.GetUserID(ctx)
 	if userID == "" {
@@ -43,7 +40,7 @@ func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Re
 		RiskLevel:            m.RiskLevel,
 		Tags:                 m.Tags,
 		CodeSnippet:          m.CodeSnippet,
-		BacktestSnapshotJSON: snapshotJSON,
+		BacktestSnapshotProto: snapshotProto,
 		PlatformFeeRate:      s.svc.GetPlatformFeeRate(ctx),
 	})
 	if err != nil {
@@ -154,17 +151,8 @@ func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Requ
 		if p.CodeSnippet != "" {
 			item.CodeSnippet = p.CodeSnippet
 		}
-		if p.BacktestSnapshot != nil {
-			item.BacktestSnapshot = &antv1.BacktestSnapshot{
-				TotalReturn:  p.BacktestSnapshot.TotalReturn,
-				AnnualReturn: p.BacktestSnapshot.AnnualReturn,
-				MaxDrawdown:  p.BacktestSnapshot.MaxDrawdown,
-				SharpeRatio:  p.BacktestSnapshot.SharpeRatio,
-				WinRate:      p.BacktestSnapshot.WinRate,
-				TotalTrades:  p.BacktestSnapshot.TotalTrades,
-				Symbol:       p.BacktestSnapshot.Symbol,
-				Timeframe:    p.BacktestSnapshot.Timeframe,
-			}
+		if p.BacktestSnapshotProto != nil {
+			item.BacktestSnapshot = p.BacktestSnapshotProto
 		}
 		item.AvgRating = p.AvgRating
 		item.RatingCount = p.RatingCount

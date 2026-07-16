@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"math"
 	"strconv"
 	"time"
 
@@ -51,7 +52,7 @@ func (s *ShareServer) CreateShareToken(ctx context.Context, req *connect.Request
 	token := hex.EncodeToString(b)
 	st := &repository.ShareToken{
 		UserID: uid, AccountID: req.Msg.AccountId, Token: token,
-		Description: req.Msg.Description,
+		Description: req.Msg.Description, ShowPositions: req.Msg.ShowPositions,
 		ExpiresAt:   time.Now().Add(time.Duration(expireDays) * 24 * time.Hour),
 	}
 	if err := s.repo.Create(ctx, st); err != nil {
@@ -98,22 +99,82 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 	stats := summarizeTrades(trades)
 	pbTrades := make([]*antv1.SharedTrade, 0, len(trades))
 	for _, t := range trades {
-		vol, _ := t.Volume.Float64()
-		prof, _ := t.Profit.Float64()
 		pbTrades = append(pbTrades, &antv1.SharedTrade{
-			Symbol: t.Symbol, Side: t.OrderType, Volume: strconv.FormatFloat(vol, 'f', -1, 64), Profit: strconv.FormatFloat(prof, 'f', -1, 64),
+			Symbol: t.Symbol, Side: t.OrderType, Volume: t.Volume.String(), Profit: t.Profit.String(),
 			CloseTimeMs: t.CloseTime.UnixMilli(),
 		})
 	}
 
+	// Sharpe ratio from equity curve.
+	sharpeStr := "0"
+	if len(equityVals) > 1 {
+		var sum, sumSq decimal.Decimal
+		dailyReturns := make([]decimal.Decimal, 0, len(equityVals)-1)
+		for i := 1; i < len(equityVals); i++ {
+			prev, err := decimal.NewFromString(equityVals[i-1])
+			if err != nil || prev.IsZero() {
+				continue
+			}
+			curr, err := decimal.NewFromString(equityVals[i])
+			if err != nil {
+				continue
+			}
+			r := curr.Sub(prev).Div(prev)
+			dailyReturns = append(dailyReturns, r)
+			sum = sum.Add(r)
+		}
+		if len(dailyReturns) > 1 {
+			n := decimal.NewFromInt(int64(len(dailyReturns)))
+			mean := sum.Div(n)
+			for _, r := range dailyReturns {
+				diff := r.Sub(mean)
+				sumSq = sumSq.Add(diff.Mul(diff))
+			}
+			variance := sumSq.Div(n.Sub(decimal.NewFromInt(1)))
+			if variance.IsPositive() {
+				vFloat, _ := variance.Float64()
+				std := math.Sqrt(vFloat)
+				if std > 0 {
+					meanFloat, _ := mean.Float64()
+					sharpe := meanFloat / std * math.Sqrt(252)
+					sharpeStr = strconv.FormatFloat(sharpe, 'f', 4, 64)
+				}
+			}
+		}
+	}
+
+	// Positions — only if the share token allows it.
+	var pbPositions []*antv1.SharedPosition
+	if st.ShowPositions {
+		if cached, _ := s.repo.GetPositionsSnapshot(ctx, st.Token); cached != nil {
+			pbPositions = cached
+		} else if s.mthub != nil {
+			if orders, err := s.mthub.OpenedOrders(ctx, st.AccountID); err == nil {
+				pbPositions = make([]*antv1.SharedPosition, 0, len(orders))
+				for _, o := range orders {
+					side := "BUY"
+					if o.Side == -1 {
+						side = "SELL"
+					}
+					pbPositions = append(pbPositions, &antv1.SharedPosition{
+						Symbol: o.SymbolRaw, Type: side,
+						Volume: o.Volume.String(), OpenPrice: o.OpenPrice.String(), Profit: o.Profit.String(),
+					})
+				}
+				_ = s.repo.SetPositionsSnapshot(ctx, st.Token, pbPositions)
+			}
+		}
+	}
+
 	resp := connect.NewResponse(&antv1.GetSharedPerformanceResponse{
 		UserName: userName, TotalTrades: int32(len(trades)),
-		TotalReturn: stats.totalReturn(), WinRate: stats.winRate(), MaxDrawdown: stats.maxDrawdown(),
+		TotalReturn: stats.totalReturnStr(), WinRate: stats.winRateStr(), MaxDrawdown: stats.maxDrawdownStr(),
+		SharpeRatio: sharpeStr,
 		EquityCurve: equityVals, EquityTimesMs: equityTimesMs, Trades: pbTrades,
+		TotalVolume: stats.totalVolStr(), ProfitFactor: stats.profitFactorStr(),
+		AvgHoldingMs: stats.avgHoldingMs(), ShowPositions: st.ShowPositions,
+		Positions: pbPositions,
 	})
-	resp.Header().Set("X-Total-Volume", fmt.Sprintf("%.2f", stats.totalVol()))
-	resp.Header().Set("X-Profit-Factor", fmt.Sprintf("%.2f", stats.profitFactor()))
-	resp.Header().Set("X-Avg-Holding-Ms", fmt.Sprintf("%d", stats.avgHoldingMs()))
 	return resp, nil
 }
 
@@ -145,39 +206,115 @@ func summarizeTrades(trades []*model.TradeRecord) tradeSummary {
 	return s
 }
 
-func (s tradeSummary) totalReturn() float64 {
-	v, _ := s.totalProfit.Float64()
-	return v
+func (s tradeSummary) totalReturnStr() string {
+	return s.totalProfit.String()
 }
 
-func (s tradeSummary) winRate() float64 {
+func (s tradeSummary) winRateStr() string {
 	if s.wins+s.losses == 0 {
-		return 0
+		return "0"
 	}
-	return float64(s.wins) / float64(s.wins+s.losses) * 100
+	return decimal.NewFromInt(int64(s.wins)).Div(decimal.NewFromInt(int64(s.wins+s.losses))).Mul(decimal.NewFromInt(100)).String()
 }
 
-func (s tradeSummary) maxDrawdown() float64 {
-	v, _ := s.maxDD.Float64()
-	return v
+func (s tradeSummary) maxDrawdownStr() string {
+	return s.maxDD.String()
 }
 
-func (s tradeSummary) profitFactor() float64 {
+func (s tradeSummary) profitFactorStr() string {
 	if !s.grossLoss.IsPositive() {
-		return 0
+		return "0"
 	}
-	pf, _ := s.grossProfit.Div(s.grossLoss).Float64()
-	return pf
+	return s.grossProfit.Div(s.grossLoss).String()
+}
+
+func (s tradeSummary) totalVolStr() string {
+	return s.totalVolume.String()
 }
 
 func (s tradeSummary) avgHoldingMs() int64 {
-	if len := s.wins + s.losses; len > 0 {
-		return s.openTimeSum / int64(len)
+	if n := s.wins + s.losses; n > 0 {
+		return s.openTimeSum / int64(n)
 	}
 	return 0
 }
 
-func (s tradeSummary) totalVol() float64 {
-	v, _ := s.totalVolume.Float64()
-	return v
+func (s *ShareServer) UpdateShareToken(ctx context.Context, req *connect.Request[antv1.UpdateShareTokenRequest]) (*connect.Response[antv1.UpdateShareTokenResponse], error) {
+	uid, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	if uid == uuid.Nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("login required"))
+	}
+	if err := s.repo.UpdateShowPositions(ctx, uid, req.Msg.Token, req.Msg.ShowPositions); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.UpdateShareTokenResponse{}), nil
+}
+
+func (s *ShareServer) ListShareTokens(ctx context.Context, req *connect.Request[antv1.ListShareTokensRequest]) (*connect.Response[antv1.ListShareTokensResponse], error) {
+	uid, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	if uid == uuid.Nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("login required"))
+	}
+	tokens, err := s.repo.ListByUser(ctx, uid)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	items := make([]*antv1.ShareTokenItem, 0, len(tokens))
+	for _, t := range tokens {
+		items = append(items, &antv1.ShareTokenItem{
+			Token: t.Token, ShareUrl: fmt.Sprintf("/share/%s", t.Token),
+			Description: t.Description, ShowPositions: t.ShowPositions,
+			ViewCount: int32(t.ViewCount),
+			ExpiresAt: t.ExpiresAt.Format(time.RFC3339),
+			CreatedAt: t.CreatedAt.Format(time.RFC3339),
+		})
+	}
+	return connect.NewResponse(&antv1.ListShareTokensResponse{Items: items}), nil
+}
+
+func (s *ShareServer) DeleteShareToken(ctx context.Context, req *connect.Request[antv1.DeleteShareTokenRequest]) (*connect.Response[antv1.DeleteShareTokenResponse], error) {
+	uid, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	if uid == uuid.Nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("login required"))
+	}
+	if err := s.repo.DeleteByUser(ctx, uid, req.Msg.Token); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.DeleteShareTokenResponse{}), nil
+}
+
+func (s *ShareServer) ListAllShareTokens(ctx context.Context, req *connect.Request[antv1.ListAllShareTokensRequest]) (*connect.Response[antv1.ListAllShareTokensResponse], error) {
+	uid, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	if uid == uuid.Nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("login required"))
+	}
+	page := int(req.Msg.Page)
+	pageSize := int(req.Msg.PageSize)
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+	limit, offset := pageSize, (page-1)*pageSize
+	tokens, total, err := s.repo.ListAll(ctx, limit, offset)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	items := make([]*antv1.AdminShareTokenItem, 0, len(tokens))
+	for _, t := range tokens {
+		items = append(items, &antv1.AdminShareTokenItem{
+			Token: t.Token, ShareUrl: fmt.Sprintf("/share/%s", t.Token),
+			UserId: t.UserID.String(), Description: t.Description,
+			ShowPositions: t.ShowPositions, ViewCount: int32(t.ViewCount),
+			ExpiresAt: t.ExpiresAt.Format(time.RFC3339),
+			CreatedAt: t.CreatedAt.Format(time.RFC3339),
+		})
+	}
+	return connect.NewResponse(&antv1.ListAllShareTokensResponse{
+		Items: items, Total: int32(total), Page: int32(page), PageSize: int32(pageSize),
+	}), nil
 }

@@ -3,6 +3,8 @@ package risksvc
 import (
 	"context"
 	"testing"
+
+	"github.com/shopspring/decimal"
 )
 
 func TestKellySizer_PositiveEdge(t *testing.T) {
@@ -16,7 +18,7 @@ func TestKellySizer_PositiveEdge(t *testing.T) {
 		KellyMax:     0.25,
 	}
 	req := &SizerRequest{
-		Symbol: "EURUSD", Price: 1.0850, ContractSize: 100000, Equity: 100000,
+		Symbol: "EURUSD", Price: decF(1.0850), ContractSize: decF(100000), Equity: decF(100000),
 	}
 	res, err := s.Size(context.Background(), req)
 	if err != nil {
@@ -24,13 +26,13 @@ func TestKellySizer_PositiveEdge(t *testing.T) {
 	}
 	// riskCapital = 100000 * 0.2 = 20000
 	// lots = 20000 / (1.085 * 100000) = 0.1843
-	if res.Lots < 0.15 || res.Lots > 0.22 {
-		t.Fatalf("lots should be ~0.184, got %.4f", res.Lots)
+	if res.Lots.LessThan(decF(0.15)) || res.Lots.GreaterThan(decF(0.22)) {
+		t.Fatalf("lots should be ~0.184, got %s", res.Lots.String())
 	}
 	if res.RiskUsed < 0.19 || res.RiskUsed > 0.21 {
 		t.Fatalf("risk used should be ~0.20, got %.4f", res.RiskUsed)
 	}
-	t.Logf("Positive edge: lots=%.4f risk_used=%.4f", res.Lots, res.RiskUsed)
+	t.Logf("Positive edge: lots=%s risk_used=%.4f", res.Lots.String(), res.RiskUsed)
 }
 
 func TestKellySizer_NegativeEdge(t *testing.T) {
@@ -40,13 +42,13 @@ func TestKellySizer_NegativeEdge(t *testing.T) {
 		WinProb:      0.4,
 		WinLossRatio: 1.0,
 	}
-	req := &SizerRequest{Price: 1.0850, Equity: 100000}
+	req := &SizerRequest{Price: decF(1.0850), Equity: decF(100000)}
 	res, err := s.Size(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if res.Lots != 0 {
-		t.Fatalf("negative edge should give zero lots, got %.4f", res.Lots)
+	if !res.Lots.Equal(decimal.Zero) {
+		t.Fatalf("negative edge should give zero lots, got %s", res.Lots.String())
 	}
 }
 
@@ -57,13 +59,13 @@ func TestKellySizer_ZeroEdge(t *testing.T) {
 		WinProb:      0.5,
 		WinLossRatio: 1.0,
 	}
-	req := &SizerRequest{Price: 1.0850, Equity: 100000}
+	req := &SizerRequest{Price: decF(1.0850), Equity: decF(100000)}
 	res, err := s.Size(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if res.Lots != 0 {
-		t.Fatalf("zero edge should give zero lots, got %.4f", res.Lots)
+	if !res.Lots.Equal(decimal.Zero) {
+		t.Fatalf("zero edge should give zero lots, got %s", res.Lots.String())
 	}
 }
 
@@ -76,9 +78,9 @@ func TestKellySizer_MaxCap(t *testing.T) {
 		WinLossRatio: 5.0,
 		Fraction:     0.5,
 		KellyMax:     0.25,
-		MaxLots:      100,
+		MaxLots:      decF(100),
 	}
-	req := &SizerRequest{Price: 1.0850, Equity: 100000}
+	req := &SizerRequest{Price: decF(1.0850), Equity: decF(100000)}
 	res, err := s.Size(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -95,7 +97,7 @@ func TestKellySizer_DefaultFraction(t *testing.T) {
 		WinProb:      0.6,
 		WinLossRatio: 2.0,
 	}
-	req := &SizerRequest{Price: 1.0850, ContractSize: 100000, Equity: 100000}
+	req := &SizerRequest{Price: decF(1.0850), ContractSize: decF(100000), Equity: decF(100000)}
 	res, err := s.Size(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -109,12 +111,12 @@ func TestKellySizer_DefaultFraction(t *testing.T) {
 func TestKellySizer_InvalidWinProb(t *testing.T) {
 	t.Parallel()
 	s := &KellyFractionSizer{WinProb: 0, WinLossRatio: 2.0}
-	req := &SizerRequest{Price: 1.0850, Equity: 100000}
+	req := &SizerRequest{Price: decF(1.0850), Equity: decF(100000)}
 	res, err := s.Size(context.Background(), req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if res.Lots != 0 {
+	if !res.Lots.Equal(decimal.Zero) {
 		t.Fatalf("zero win prob should give zero lots")
 	}
 }

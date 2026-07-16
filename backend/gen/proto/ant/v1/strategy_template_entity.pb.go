@@ -37,8 +37,8 @@ type StrategyTemplate struct {
 	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt   *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	IsSystem    bool                   `protobuf:"varint,13,opt,name=is_system,json=isSystem,proto3" json:"is_system,omitempty"`
-	// I18n data for parameter labels (JSON-encoded TemplateI18n).
-	I18N string `protobuf:"bytes,14,opt,name=i18n,proto3" json:"i18n,omitempty"`
+	// I18n data for parameter labels.
+	I18N *TemplateI18N `protobuf:"bytes,14,opt,name=i18n,proto3" json:"i18n,omitempty"`
 	// FK to imported_strategies.id (ADR-0023: MQL source of truth).
 	StrategyId    string `protobuf:"bytes,15,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -166,11 +166,11 @@ func (x *StrategyTemplate) GetIsSystem() bool {
 	return false
 }
 
-func (x *StrategyTemplate) GetI18N() string {
+func (x *StrategyTemplate) GetI18N() *TemplateI18N {
 	if x != nil {
 		return x.I18N
 	}
-	return ""
+	return nil
 }
 
 func (x *StrategyTemplate) GetStrategyId() string {
@@ -288,11 +288,57 @@ func (x *TemplateParameter) GetOptions() []string {
 	return nil
 }
 
+// TemplateI18n holds parameter label translations per locale.
+type TemplateI18N struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Map of locale code → (param name → translated label)
+	Locales       map[string]*ParamLabelMap `protobuf:"bytes,1,rep,name=locales,proto3" json:"locales,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TemplateI18N) Reset() {
+	*x = TemplateI18N{}
+	mi := &file_strategy_template_entity_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TemplateI18N) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TemplateI18N) ProtoMessage() {}
+
+func (x *TemplateI18N) ProtoReflect() protoreflect.Message {
+	mi := &file_strategy_template_entity_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TemplateI18N.ProtoReflect.Descriptor instead.
+func (*TemplateI18N) Descriptor() ([]byte, []int) {
+	return file_strategy_template_entity_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *TemplateI18N) GetLocales() map[string]*ParamLabelMap {
+	if x != nil {
+		return x.Locales
+	}
+	return nil
+}
+
 var File_strategy_template_entity_proto protoreflect.FileDescriptor
 
 const file_strategy_template_entity_proto_rawDesc = "" +
 	"\n" +
-	"\x1estrategy_template_entity.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xee\x03\n" +
+	"\x1estrategy_template_entity.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x15parameter_entry.proto\"\x84\x04\n" +
 	"\x10StrategyTemplate\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
@@ -311,8 +357,8 @@ const file_strategy_template_entity_proto_rawDesc = "" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1b\n" +
-	"\tis_system\x18\r \x01(\bR\bisSystem\x12\x12\n" +
-	"\x04i18n\x18\x0e \x01(\tR\x04i18n\x12\x1f\n" +
+	"\tis_system\x18\r \x01(\bR\bisSystem\x12(\n" +
+	"\x04i18n\x18\x0e \x01(\v2\x14.ant.v1.TemplateI18nR\x04i18n\x12\x1f\n" +
 	"\vstrategy_id\x18\x0f \x01(\tR\n" +
 	"strategyId\"\xdf\x01\n" +
 	"\x11TemplateParameter\x12\x12\n" +
@@ -324,7 +370,12 @@ const file_strategy_template_entity_proto_rawDesc = "" +
 	"\x04step\x18\x06 \x01(\tR\x04step\x12\x14\n" +
 	"\x05label\x18\a \x01(\tR\x05label\x12 \n" +
 	"\vdescription\x18\b \x01(\tR\vdescription\x12\x18\n" +
-	"\aoptions\x18\t \x03(\tR\aoptionsB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\aoptions\x18\t \x03(\tR\aoptions\"\x9e\x01\n" +
+	"\fTemplateI18n\x12;\n" +
+	"\alocales\x18\x01 \x03(\v2!.ant.v1.TemplateI18n.LocalesEntryR\alocales\x1aQ\n" +
+	"\fLocalesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12+\n" +
+	"\x05value\x18\x02 \x01(\v2\x15.ant.v1.ParamLabelMapR\x05value:\x028\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_template_entity_proto_rawDescOnce sync.Once
@@ -338,21 +389,27 @@ func file_strategy_template_entity_proto_rawDescGZIP() []byte {
 	return file_strategy_template_entity_proto_rawDescData
 }
 
-var file_strategy_template_entity_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_strategy_template_entity_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_strategy_template_entity_proto_goTypes = []any{
 	(*StrategyTemplate)(nil),      // 0: ant.v1.StrategyTemplate
 	(*TemplateParameter)(nil),     // 1: ant.v1.TemplateParameter
-	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
+	(*TemplateI18N)(nil),          // 2: ant.v1.TemplateI18n
+	nil,                           // 3: ant.v1.TemplateI18n.LocalesEntry
+	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
+	(*ParamLabelMap)(nil),         // 5: ant.v1.ParamLabelMap
 }
 var file_strategy_template_entity_proto_depIdxs = []int32{
 	1, // 0: ant.v1.StrategyTemplate.parameters:type_name -> ant.v1.TemplateParameter
-	2, // 1: ant.v1.StrategyTemplate.created_at:type_name -> google.protobuf.Timestamp
-	2, // 2: ant.v1.StrategyTemplate.updated_at:type_name -> google.protobuf.Timestamp
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	4, // 1: ant.v1.StrategyTemplate.created_at:type_name -> google.protobuf.Timestamp
+	4, // 2: ant.v1.StrategyTemplate.updated_at:type_name -> google.protobuf.Timestamp
+	2, // 3: ant.v1.StrategyTemplate.i18n:type_name -> ant.v1.TemplateI18n
+	3, // 4: ant.v1.TemplateI18n.locales:type_name -> ant.v1.TemplateI18n.LocalesEntry
+	5, // 5: ant.v1.TemplateI18n.LocalesEntry.value:type_name -> ant.v1.ParamLabelMap
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_strategy_template_entity_proto_init() }
@@ -360,13 +417,14 @@ func file_strategy_template_entity_proto_init() {
 	if File_strategy_template_entity_proto != nil {
 		return
 	}
+	file_parameter_entry_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_strategy_template_entity_proto_rawDesc), len(file_strategy_template_entity_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

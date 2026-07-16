@@ -233,10 +233,11 @@ func TestMetrics_ProfitPctNotZero(t *testing.T) {
 	}
 
 	metrics := CalculateMetrics(decimal.NewFromInt(10000), equity, trades)
-	if metrics.SharpeRatio == 0 {
+	sharpe, _ := decimal.NewFromString(metrics.SharpeRatio)
+	if !sharpe.GreaterThan(decimal.Zero) {
 		t.Error("SharpeRatio is 0 — ProfitPct values may not be used correctly")
 	}
-	t.Logf("SharpeRatio = %.4f", metrics.SharpeRatio)
+	t.Logf("SharpeRatio = %s", metrics.SharpeRatio)
 }
 
 // TestMetrics_AnnualReturnNotEqualToTotalReturn verifies that AnnualReturn
@@ -255,13 +256,14 @@ func TestMetrics_AnnualReturnNotEqualToTotalReturn(t *testing.T) {
 	metrics := CalculateMetrics(decimal.NewFromInt(10000), equity, nil)
 
 	if metrics.AnnualReturn == metrics.TotalReturn {
-		t.Errorf("AnnualReturn (%f) == TotalReturn (%f) — should be annualized",
+		t.Errorf("AnnualReturn (%s) == TotalReturn (%s) — should be annualized",
 			metrics.AnnualReturn, metrics.TotalReturn)
 	}
 	// 6 months, 10% return → annualized ~21% (1.1^2 - 1)
 	expected := 1.1*1.1 - 1
-	if math.Abs(metrics.AnnualReturn-expected) > 0.01 {
-		t.Errorf("AnnualReturn = %.4f, expected ~%.4f", metrics.AnnualReturn, expected)
+	ar, _ := decimal.NewFromString(metrics.AnnualReturn)
+	if math.Abs(ar.InexactFloat64()-expected) > 0.01 {
+		t.Errorf("AnnualReturn = %s, expected ~%.4f", metrics.AnnualReturn, expected)
 	}
 }
 

@@ -53,9 +53,9 @@ export function useExecutionPanel({ plan, symbol, timeframe, sessionId, previous
         onToolResult: (tr: ToolResult) => {
           setPhase('tool_result'); setCurrentTool('');
           setToolResults(prev => [...prev, tr]);
-          if (tr.name === 'backtest' && tr.success && tr.outputJson) {
+          if (tr.name === 'backtest' && tr.success && tr.output) {
             try {
-              const out = JSON.parse(tr.outputJson) as { run_id: string };
+              const out = tr.output as { run_id?: string };
               if (out.run_id) {
                 watchRef.current?.();
                 watchRef.current = strategyRuntimeApi.watchBacktestRun(out.run_id, (update: BacktestRunUpdate) => {
@@ -92,7 +92,7 @@ export function useExecutionPanel({ plan, symbol, timeframe, sessionId, previous
     const abort = diagnosePlan(
       { plan, conversationId: sessionId, feedbackMessage: msg,
         currentCode: code || streamCode,
-        backtestMetricsJson: metrics ? JSON.stringify(metrics) : '' },
+        backtestMetrics: metrics || undefined },
       {
         onDelta: () => {},
         onPlan: (p) => { setDiagnosis(p); setPhase('done'); },
@@ -112,7 +112,7 @@ export function useExecutionPanel({ plan, symbol, timeframe, sessionId, previous
 
     const abort = executePlan(
       { plan, conversationId: sessionId, symbol, timeframe, previousCode: currentCode,
-        feedbackMessage: msg, backtestMetricsJson: metrics ? JSON.stringify(metrics) : '' },
+        feedbackMessage: msg, backtestMetrics: metrics || undefined },
       {
         onPhase: (p) => setCurrentPhase(p),
         onAnalysis: (a) => setAnalysis(a),

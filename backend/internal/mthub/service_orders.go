@@ -3,9 +3,8 @@ package mthub
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"google.golang.org/protobuf/proto"
 
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
@@ -30,7 +29,7 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		}
 		if result := s.guard.Check(ctx, &risk.GuardRequest{
 			Symbol: req.Canonical, Side: side,
-			Volume: req.Volume, OrderType: "market",
+			Volume: req.Volume, OrderType: "market", Price: req.Price,
 		}); !result.Allowed {
 			return nil, fmt.Errorf("guard: %s", result.Reason)
 		}
@@ -97,9 +96,9 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	}
 
 	// Pre-trade cost estimation (M10-BASE-D2).
-	var costJSON string
+	var costEstimate *antv1.CostEstimate
 	if s.costEstimator != nil {
-		costJSON = s.estimateOrderCost(ctx, req)
+		costEstimate = s.estimateOrderCost(ctx, req)
 	}
 
 	// Submit to broker executor.
@@ -120,7 +119,7 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	}
 
 	// Write ORDER_CREATED event to NATS JetStream (Tier-0).
-	s.publishOrderCreatedEvent(ctx, req, ticket, costJSON)
+	s.publishOrderCreatedEvent(ctx, req, ticket, costEstimate)
 
 	return &OrderRecord{Ticket: ticket, AccountID: req.AccountID, State: OrderStatePending}, nil
 }
@@ -183,24 +182,20 @@ func orderTypeToString(ot OrderType) string {
 	}
 }
 
-// estimateOrderCost runs pre-trade cost estimation and returns a JSON representation.
-func (s *MtHubService) estimateOrderCost(ctx context.Context, req *OrderRequest) string {
+// estimateOrderCost runs pre-trade cost estimation and returns a CostEstimate proto.
+func (s *MtHubService) estimateOrderCost(ctx context.Context, req *OrderRequest) *antv1.CostEstimate {
 	est := s.costEstimator.Estimate(ctx, costsvc.EstimateParams{
 		Symbol:       req.Canonical,
 		Side:         sideToString(req.Side),
-		Lots:         req.Volume.InexactFloat64(),
-		Price:        req.Price.InexactFloat64(),
-		ContractSize: 100000,
+		Lots:         req.Volume,
+		Price:        req.Price,
+		ContractSize: decimal.NewFromInt(100000),
 	})
-	b, err := proto.Marshal(costToProto(&est))
-	if err != nil {
-		return ""
-	}
-	return string(b)
+	return costToProto(&est)
 }
 
 // publishOrderCreatedEvent emits an ORDER_CREATED event to the event store (Tier-0).
-func (s *MtHubService) publishOrderCreatedEvent(ctx context.Context, req *OrderRequest, ticket int64, costJSON string) {
+func (s *MtHubService) publishOrderCreatedEvent(ctx context.Context, req *OrderRequest, ticket int64, costEstimate *antv1.CostEstimate) {
 	if s.eventStore == nil {
 		return
 	}
@@ -221,7 +216,7 @@ func (s *MtHubService) publishOrderCreatedEvent(ctx context.Context, req *OrderR
 		FromState:         string(OMSStateRiskApproved),
 		Timestamp:         Clk.Now(),
 		Version:           1,
-		CostBreakdownJSON: costJSON,
+		CostEstimate:     costEstimate,
 	}
 	if err := s.eventStore.Publish(ctx, ev); err != nil {
 		s.logger.Error("event store publish failed",
@@ -252,8 +247,10 @@ func (s *MtHubService) omsTransition(ctx context.Context, orderID, accountID str
 // Precision loss is detected but not rejected — the MT proto requires float64.
 func costToProto(est *costsvc.CostBreakdown) *antv1.CostEstimate {
 	return &antv1.CostEstimate{
-		SpreadCost: strconv.FormatFloat(est.SpreadCost, 'f', -1, 64), Commission: est.Commission.String(),
-		SlippageCost: strconv.FormatFloat(est.SlippageCost, 'f', -1, 64), SwapCost: strconv.FormatFloat(est.SwapCost, 'f', -1, 64),
-		TotalCost: strconv.FormatFloat(est.TotalCost, 'f', -1, 64),
+		SpreadCost:   est.SpreadCost.String(),
+		Commission:   est.Commission.String(),
+		SlippageCost: est.SlippageCost.String(),
+		SwapCost:     est.SwapCost.String(),
+		TotalCost:    est.TotalCost.String(),
 	}
 }

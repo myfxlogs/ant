@@ -124,7 +124,6 @@ func (f *UserMetricsFlusher) Start(ctx context.Context) {
 	}
 	f.running = true
 	ctx, f.cancel = context.WithCancel(ctx)
-	// #nosec G118 — flusher loop runs for the full pipeline lifetime, not request-scoped
 	go f.loop(ctx)
 }
 

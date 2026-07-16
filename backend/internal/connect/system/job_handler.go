@@ -2,7 +2,6 @@ package system
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"time"
 
@@ -20,15 +19,9 @@ import (
 	"alphaforge/internal/repository"
 )
 
-// jsonbToStruct converts JSONB bytes to a proto Struct.
-// structpb.NewStruct requires map[string]any — this is the canonical
-// conversion point, encapsulated to contain the dynamic type boundary.
-func jsonbToStruct(raw []byte) *structpb.Struct {
-	if len(raw) == 0 {
-		return nil
-	}
-	var m map[string]any
-	if err := json.Unmarshal(raw, &m); err != nil {
+// payloadToStruct converts a map[string]any (from pgx JSONB decode) to a proto Struct.
+func payloadToStruct(m map[string]any) *structpb.Struct {
+	if len(m) == 0 {
 		return nil
 	}
 	s, _ := structpb.NewStruct(m)
@@ -102,7 +95,7 @@ func (s *JobServer) SubscribeJob(ctx context.Context, req *connect.Request[antv1
 		if err := stream.Send(&antv1.JobEvent{
 			JobId: ev.JobID.String(), Seq: ev.Seq, Type: ev.Type,
 			Status: ev.Status, Progress: ev.Progress, Stage: ev.Stage,
-			Message: payloadToMsg(ev), Payload: jsonbToStruct(ev.Payload),
+			Message: payloadToMsg(ev), Payload: payloadToStruct(ev.Payload),
 			CreatedAt: timestamppb.New(ev.CreatedAt),
 		}); err != nil {
 			return err
@@ -149,7 +142,7 @@ func (s *JobServer) SubscribeJob(ctx context.Context, req *connect.Request[antv1
 			if err := stream.Send(&antv1.JobEvent{
 				JobId: ev.JobID.String(), Seq: ev.Seq, Type: ev.Type,
 				Status: ev.Status, Progress: ev.Progress, Stage: ev.Stage,
-				Message: payloadToMsg(ev), Payload: jsonbToStruct(ev.Payload),
+				Message: payloadToMsg(ev), Payload: payloadToStruct(ev.Payload),
 				CreatedAt: timestamppb.New(ev.CreatedAt),
 			}); err != nil {
 				return err

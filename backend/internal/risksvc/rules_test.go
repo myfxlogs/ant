@@ -14,8 +14,8 @@ func TestEngine_AllPass(t *testing.T) {
 	req := &CheckRequest{
 		Symbol:    "EURUSD",
 		Positions: 3,
-		Equity:    10000,
-		Margin:    2000,
+		Equity:    decF(10000),
+		Margin:    decF(2000),
 	}
 	result := engine.Evaluate(context.Background(), req)
 	if !result.Passed {
@@ -39,7 +39,7 @@ func TestEngine_MaxPositionBlocked(t *testing.T) {
 func TestEngine_MarginBlocked(t *testing.T) {
 	t.Parallel()
 	engine := NewEngine(&Margin{MinLevel: 1.5})
-	req := &CheckRequest{Symbol: "EURUSD", Equity: 1000, Margin: 2000}
+	req := &CheckRequest{Symbol: "EURUSD", Equity: decF(1000), Margin: decF(2000)}
 	result := engine.Evaluate(context.Background(), req)
 	if result.Passed {
 		t.Error("expected BLOCK from margin")
@@ -71,8 +71,8 @@ func TestEngine_CanonicalAuthAllowed(t *testing.T) {
 
 func TestEngine_DrawdownBlocked(t *testing.T) {
 	t.Parallel()
-	engine := NewEngine(&Drawdown{MaxPct: 10, PeakEquity: 10000})
-	req := &CheckRequest{Equity: 8000} // 20% drawdown
+	engine := NewEngine(&Drawdown{MaxPct: 10, PeakEquity: decF(10000)})
+	req := &CheckRequest{Equity: decF(8000)} // 20% drawdown
 	result := engine.Evaluate(context.Background(), req)
 	if result.Passed {
 		t.Error("expected BLOCK from drawdown")
@@ -81,8 +81,8 @@ func TestEngine_DrawdownBlocked(t *testing.T) {
 
 func TestEngine_DrawdownAllowed(t *testing.T) {
 	t.Parallel()
-	engine := NewEngine(&Drawdown{MaxPct: 20, PeakEquity: 10000})
-	req := &CheckRequest{Equity: 9500} // 5% drawdown
+	engine := NewEngine(&Drawdown{MaxPct: 20, PeakEquity: decF(10000)})
+	req := &CheckRequest{Equity: decF(9500)} // 5% drawdown
 	result := engine.Evaluate(context.Background(), req)
 	if !result.Passed {
 		t.Errorf("expected pass, got %s: %s", result.Rule, result.Reason)

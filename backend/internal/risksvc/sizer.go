@@ -7,29 +7,33 @@
 
 package risksvc
 
-import "context"
+import (
+	"context"
+
+	"github.com/shopspring/decimal"
+)
 
 // SizerRequest contains all inputs needed to compute a position size.
 type SizerRequest struct {
 	Symbol       string
-	Price        float64
-	ATR          float64 // Average True Range over lookback period
-	AnnualVol    float64 // annualized volatility (e.g. 0.20 = 20%)
-	ContractSize float64 // contract multiplier (e.g. 100000 for standard forex lot)
-	HoldingDays  float64 // expected holding period in days
+	Price        decimal.Decimal
+	ATR          decimal.Decimal // Average True Range over lookback period
+	AnnualVol    float64         // annualized volatility (e.g. 0.20 = 20%)
+	ContractSize decimal.Decimal // contract multiplier (e.g. 100000 for standard forex lot)
+	HoldingDays  float64         // expected holding period in days
 
 	// Account context
 	AccountID  string
-	Balance    float64
-	Equity     float64
-	FreeMargin float64
+	Balance    decimal.Decimal
+	Equity     decimal.Decimal
+	FreeMargin decimal.Decimal
 }
 
 // SizerResult is the output of a PositionSizer.
 type SizerResult struct {
-	Lots       float64 // computed position size in lots
-	RiskUsed   float64 // fraction of risk budget consumed
-	Method     string  // sizer name
+	Lots     decimal.Decimal // computed position size in lots
+	RiskUsed float64         // fraction of risk budget consumed
+	Method   string          // sizer name
 }
 
 // PositionSizer computes the optimal position size for a trade.

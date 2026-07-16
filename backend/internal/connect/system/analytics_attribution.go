@@ -104,11 +104,11 @@ func buildDirectionBreakdown(stats []*repository.DirectionStat) *antv1.Direction
 		}
 		switch s.Direction {
 		case "BUY":
-			dir.LongProfit = fmt.Sprintf("%.2f", s.Profit)
+			dir.LongProfit = s.Profit.String()
 			dir.LongTrades = int64(s.Trades)
 			dir.LongWinRate = math.Round(wr*100) / 100
 		case "SELL":
-			dir.ShortProfit = fmt.Sprintf("%.2f", s.Profit)
+			dir.ShortProfit = s.Profit.String()
 			dir.ShortTrades = int64(s.Trades)
 			dir.ShortWinRate = math.Round(wr*100) / 100
 		}

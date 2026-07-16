@@ -23,12 +23,12 @@ const (
 
 type BacktestMetrics struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TotalReturn   float64                `protobuf:"fixed64,1,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
-	AnnualReturn  float64                `protobuf:"fixed64,2,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"`
-	MaxDrawdown   float64                `protobuf:"fixed64,3,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
-	SharpeRatio   float64                `protobuf:"fixed64,4,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
-	WinRate       float64                `protobuf:"fixed64,5,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
-	ProfitFactor  float64                `protobuf:"fixed64,6,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
+	TotalReturn   string                 `protobuf:"bytes,1,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
+	AnnualReturn  string                 `protobuf:"bytes,2,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"`
+	MaxDrawdown   string                 `protobuf:"bytes,3,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
+	SharpeRatio   string                 `protobuf:"bytes,4,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
+	WinRate       string                 `protobuf:"bytes,5,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	ProfitFactor  string                 `protobuf:"bytes,6,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
 	TotalTrades   int32                  `protobuf:"varint,7,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
 	WinningTrades int32                  `protobuf:"varint,8,opt,name=winning_trades,json=winningTrades,proto3" json:"winning_trades,omitempty"`
 	LosingTrades  int32                  `protobuf:"varint,9,opt,name=losing_trades,json=losingTrades,proto3" json:"losing_trades,omitempty"`
@@ -68,46 +68,46 @@ func (*BacktestMetrics) Descriptor() ([]byte, []int) {
 	return file_common_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *BacktestMetrics) GetTotalReturn() float64 {
+func (x *BacktestMetrics) GetTotalReturn() string {
 	if x != nil {
 		return x.TotalReturn
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestMetrics) GetAnnualReturn() float64 {
+func (x *BacktestMetrics) GetAnnualReturn() string {
 	if x != nil {
 		return x.AnnualReturn
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestMetrics) GetMaxDrawdown() float64 {
+func (x *BacktestMetrics) GetMaxDrawdown() string {
 	if x != nil {
 		return x.MaxDrawdown
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestMetrics) GetSharpeRatio() float64 {
+func (x *BacktestMetrics) GetSharpeRatio() string {
 	if x != nil {
 		return x.SharpeRatio
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestMetrics) GetWinRate() float64 {
+func (x *BacktestMetrics) GetWinRate() string {
 	if x != nil {
 		return x.WinRate
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestMetrics) GetProfitFactor() float64 {
+func (x *BacktestMetrics) GetProfitFactor() string {
 	if x != nil {
 		return x.ProfitFactor
 	}
-	return 0
+	return ""
 }
 
 func (x *BacktestMetrics) GetTotalTrades() int32 {
@@ -227,12 +227,12 @@ const file_common_proto_rawDesc = "" +
 	"\n" +
 	"\fcommon.proto\x12\x06ant.v1\"\x98\x03\n" +
 	"\x0fBacktestMetrics\x12!\n" +
-	"\ftotal_return\x18\x01 \x01(\x01R\vtotalReturn\x12#\n" +
-	"\rannual_return\x18\x02 \x01(\x01R\fannualReturn\x12!\n" +
-	"\fmax_drawdown\x18\x03 \x01(\x01R\vmaxDrawdown\x12!\n" +
-	"\fsharpe_ratio\x18\x04 \x01(\x01R\vsharpeRatio\x12\x19\n" +
-	"\bwin_rate\x18\x05 \x01(\x01R\awinRate\x12#\n" +
-	"\rprofit_factor\x18\x06 \x01(\x01R\fprofitFactor\x12!\n" +
+	"\ftotal_return\x18\x01 \x01(\tR\vtotalReturn\x12#\n" +
+	"\rannual_return\x18\x02 \x01(\tR\fannualReturn\x12!\n" +
+	"\fmax_drawdown\x18\x03 \x01(\tR\vmaxDrawdown\x12!\n" +
+	"\fsharpe_ratio\x18\x04 \x01(\tR\vsharpeRatio\x12\x19\n" +
+	"\bwin_rate\x18\x05 \x01(\tR\awinRate\x12#\n" +
+	"\rprofit_factor\x18\x06 \x01(\tR\fprofitFactor\x12!\n" +
 	"\ftotal_trades\x18\a \x01(\x05R\vtotalTrades\x12%\n" +
 	"\x0ewinning_trades\x18\b \x01(\x05R\rwinningTrades\x12#\n" +
 	"\rlosing_trades\x18\t \x01(\x05R\flosingTrades\x12%\n" +

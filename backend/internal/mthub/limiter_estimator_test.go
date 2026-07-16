@@ -43,10 +43,10 @@ func TestCostEstimator_Wired(t *testing.T) {
 
 	model := &costsvc.CostModel{
 		Symbol:           "EURUSD",
-		SpreadPips:       1.5,
-		PipSize:          0.0001,
-		PipValue:         10.0,
-		CommissionPerLot: 7.0,
+		SpreadPips:       decimal.NewFromFloat(1.5),
+		PipSize:          decimal.NewFromFloat(0.0001),
+		PipValue:         decimal.NewFromFloat(10.0),
+		CommissionPerLot: decimal.NewFromFloat(7.0),
 	}
 	estimator := &costsvc.StaticEstimator{Model: model}
 	svc.SetCostEstimator(estimator)

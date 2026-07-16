@@ -1,13 +1,17 @@
 package risksvc
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/shopspring/decimal"
+)
 
 // PlatformLimits defines aggregate risk boundaries across all accounts.
 type PlatformLimits struct {
-	MaxTotalGrossExposure float64
-	MaxTotalNetExposure   float64
-	MaxNetExposurePerSymbol float64
-	MaxTotalMarginUsed    float64
+	MaxTotalGrossExposure decimal.Decimal
+	MaxTotalNetExposure   decimal.Decimal
+	MaxNetExposurePerSymbol decimal.Decimal
+	MaxTotalMarginUsed    decimal.Decimal
 }
 
 // DefaultPlatformLimits returns liberal platform-wide defaults.
@@ -15,10 +19,10 @@ type PlatformLimits struct {
 // Individual account limits are enforced by the broker (MT5).
 func DefaultPlatformLimits() *PlatformLimits {
 	return &PlatformLimits{
-		MaxTotalGrossExposure:   500_000_000,
-		MaxTotalNetExposure:     250_000_000,
-		MaxNetExposurePerSymbol: 100_000_000,
-		MaxTotalMarginUsed:      10_000_000,
+		MaxTotalGrossExposure:   decimal.NewFromInt(500_000_000),
+		MaxTotalNetExposure:     decimal.NewFromInt(250_000_000),
+		MaxNetExposurePerSymbol: decimal.NewFromInt(100_000_000),
+		MaxTotalMarginUsed:      decimal.NewFromInt(10_000_000),
 	}
 }
 
@@ -27,8 +31,8 @@ type PlatformLimitResult struct {
 	Allowed  bool
 	Rule     string
 	Reason   string
-	Current  float64
-	Limit    float64
+	Current  decimal.Decimal
+	Limit    decimal.Decimal
 }
 
 // Check evaluates platform exposure against configured limits.
@@ -36,35 +40,35 @@ func (l *PlatformLimits) Check(exposure *PlatformExposure) *PlatformLimitResult 
 	if l == nil {
 		return &PlatformLimitResult{Allowed: true, Rule: "no_limits"}
 	}
-	if l.MaxTotalGrossExposure > 0 && exposure.TotalGrossExposure > l.MaxTotalGrossExposure {
+	if l.MaxTotalGrossExposure.GreaterThan(decimal.Zero) && exposure.TotalGrossExposure.GreaterThan(l.MaxTotalGrossExposure) {
 		return &PlatformLimitResult{
 			Allowed: false, Rule: "platform_gross_exposure",
-			Reason:  fmt.Sprintf("total gross %.0f > limit %.0f", exposure.TotalGrossExposure, l.MaxTotalGrossExposure),
+			Reason:  fmt.Sprintf("total gross %s > limit %s", exposure.TotalGrossExposure.String(), l.MaxTotalGrossExposure.String()),
 			Current: exposure.TotalGrossExposure, Limit: l.MaxTotalGrossExposure,
 		}
 	}
-	if l.MaxTotalNetExposure > 0 && abs(exposure.TotalNetExposure) > l.MaxTotalNetExposure {
+	if l.MaxTotalNetExposure.GreaterThan(decimal.Zero) && abs(exposure.TotalNetExposure).GreaterThan(l.MaxTotalNetExposure) {
 		return &PlatformLimitResult{
 			Allowed: false, Rule: "platform_net_exposure",
-			Reason:  fmt.Sprintf("total net %.0f > limit %.0f", abs(exposure.TotalNetExposure), l.MaxTotalNetExposure),
+			Reason:  fmt.Sprintf("total net %s > limit %s", abs(exposure.TotalNetExposure).String(), l.MaxTotalNetExposure.String()),
 			Current: abs(exposure.TotalNetExposure), Limit: l.MaxTotalNetExposure,
 		}
 	}
-	if l.MaxNetExposurePerSymbol > 0 {
+	if l.MaxNetExposurePerSymbol.GreaterThan(decimal.Zero) {
 		for sym, net := range exposure.NetExposureBySymbol {
-			if abs(net) > l.MaxNetExposurePerSymbol {
+			if abs(net).GreaterThan(l.MaxNetExposurePerSymbol) {
 				return &PlatformLimitResult{
 					Allowed: false, Rule: "platform_symbol_net_exposure",
-					Reason:  fmt.Sprintf("%s net %.4f > limit %.0f", sym, abs(net), l.MaxNetExposurePerSymbol),
+					Reason:  fmt.Sprintf("%s net %s > limit %s", sym, abs(net).String(), l.MaxNetExposurePerSymbol.String()),
 					Current: abs(net), Limit: l.MaxNetExposurePerSymbol,
 				}
 			}
 		}
 	}
-	if l.MaxTotalMarginUsed > 0 && exposure.TotalMarginUsed > l.MaxTotalMarginUsed {
+	if l.MaxTotalMarginUsed.GreaterThan(decimal.Zero) && exposure.TotalMarginUsed.GreaterThan(l.MaxTotalMarginUsed) {
 		return &PlatformLimitResult{
 			Allowed: false, Rule: "platform_margin",
-			Reason:  fmt.Sprintf("total margin %.0f > limit %.0f", exposure.TotalMarginUsed, l.MaxTotalMarginUsed),
+			Reason:  fmt.Sprintf("total margin %s > limit %s", exposure.TotalMarginUsed.String(), l.MaxTotalMarginUsed.String()),
 			Current: exposure.TotalMarginUsed, Limit: l.MaxTotalMarginUsed,
 		}
 	}

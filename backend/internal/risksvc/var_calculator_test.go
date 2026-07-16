@@ -1,9 +1,10 @@
 package risksvc
 
 import (
-	"github.com/shopspring/decimal"
 	"math"
 	"testing"
+
+	"github.com/shopspring/decimal"
 )
 
 func TestVaR(t *testing.T) {
@@ -11,10 +12,10 @@ func TestVaR(t *testing.T) {
 	returns := []float64{100, -50, 75, -30, 20, -10, 15, -25, 50, -100}
 	cfg := DefaultVaRConfig()
 	result := ComputeVaR(returns, cfg)
-	if result.VaR > 0 {
-		t.Fatalf("VaR should be negative, got %.2f", result.VaR)
+	if result.VaR.GreaterThan(decimal.Zero) {
+		t.Fatalf("VaR should be negative, got %s", result.VaR.String())
 	}
-	t.Logf("VaR result: daily_vol=%.4f annual_vol=%s var_95=%.2f max_drawdown=%s", result.DailyVol, result.AnnualVol, result.VaR, result.MaxDrawdown)
+	t.Logf("VaR result: daily_vol=%s annual_vol=%s var_95=%s max_drawdown=%s", result.DailyVol.String(), result.AnnualVol.String(), result.VaR.String(), result.MaxDrawdown.String())
 }
 
 func TestStressTest(t *testing.T) {
@@ -23,7 +24,7 @@ func TestStressTest(t *testing.T) {
 	if len(scenarios) != 4 {
 		t.Fatalf("want 4 scenarios, got %d", len(scenarios))
 	}
-	results := RunStressTests(100000, 50000)
+	results := RunStressTests(decF(100000), decF(50000))
 	for _, r := range results {
 		if !r.Passed {
 			t.Fatalf("%s: should pass with 100k equity", r.Scenario.Name)
@@ -48,14 +49,14 @@ func TestComputeVaR_NormalReturns(t *testing.T) {
 		t.Fatalf("confidence: want 0.95, got %.2f", result.Confidence)
 	}
 	// VaR at 95%: 5% * 20 = 1 → index 0 of sorted = -100
-	if result.VaR > 0 {
-		t.Fatalf("VaR should be negative (loss), got %.2f", result.VaR)
+	if result.VaR.GreaterThan(decimal.Zero) {
+		t.Fatalf("VaR should be negative (loss), got %s", result.VaR.String())
 	}
 	// CVaR should be <= VaR (more extreme).
-	if result.CVaR > result.VaR {
-		t.Fatalf("CVaR %.2f should be <= VaR %.2f", result.CVaR, result.VaR)
+	if result.CVaR.GreaterThan(result.VaR) {
+		t.Fatalf("CVaR %s should be <= VaR %s", result.CVaR.String(), result.VaR.String())
 	}
-	if result.DailyVol <= 0 {
+	if result.DailyVol.LessThanOrEqual(decimal.Zero) {
 		t.Fatal("daily vol should be positive")
 	}
 	if result.AnnualVol.LessThanOrEqual(decimal.Zero) {
@@ -65,7 +66,7 @@ func TestComputeVaR_NormalReturns(t *testing.T) {
 		t.Fatal("max drawdown should be >= 0")
 	}
 
-	t.Logf("VaR result: daily_vol=%.4f annual_vol=%s var_95=%.2f max_drawdown=%s", result.DailyVol, result.AnnualVol, result.VaR, result.MaxDrawdown)
+	t.Logf("VaR result: daily_vol=%s annual_vol=%s var_95=%s max_drawdown=%s", result.DailyVol.String(), result.AnnualVol.String(), result.VaR.String(), result.MaxDrawdown.String())
 }
 
 func TestComputeVaR_Empty(t *testing.T) {
@@ -85,8 +86,8 @@ func TestComputeVaR_AllPositive(t *testing.T) {
 	result := ComputeVaR(returns, cfg)
 
 	// All returns positive, VaR should be the lowest value.
-	if result.VaR <= 0 {
-		t.Fatalf("all positive: VaR should be positive, got %.2f", result.VaR)
+	if result.VaR.LessThanOrEqual(decimal.Zero) {
+		t.Fatalf("all positive: VaR should be positive, got %s", result.VaR.String())
 	}
 }
 
@@ -109,17 +110,17 @@ func TestPredefinedScenarios_Count(t *testing.T) {
 
 func TestRunStressTests_AllPass(t *testing.T) {
 	t.Parallel()
-	results := RunStressTests(100000, 50000) // 100k equity, 50k minimum
+	results := RunStressTests(decF(100000), decF(50000)) // 100k equity, 50k minimum
 
 	for _, r := range results {
-		if r.StartingEquity != 100000 {
+		if !r.StartingEquity.Equal(decF(100000)) {
 			t.Fatalf("%s: starting equity wrong", r.Scenario.Name)
 		}
 		if !r.Passed {
-			t.Fatalf("%s: should pass with 100k equity vs 50k minimum, shocked=%.0f",
-				r.Scenario.Name, r.ShockedEquity)
+			t.Fatalf("%s: should pass with 100k equity vs 50k minimum, shocked=%s",
+				r.Scenario.Name, r.ShockedEquity.String())
 		}
-		if r.LossAmount < 0 {
+		if r.LossAmount.LessThan(decimal.Zero) {
 			t.Fatalf("%s: loss amount should be >= 0", r.Scenario.Name)
 		}
 	}
@@ -127,7 +128,7 @@ func TestRunStressTests_AllPass(t *testing.T) {
 
 func TestRunStressTests_SomeFail(t *testing.T) {
 	t.Parallel()
-	results := RunStressTests(100000, 95000) // tight margin
+	results := RunStressTests(decF(100000), decF(95000)) // tight margin
 
 	failed := 0
 	for _, r := range results {
@@ -144,7 +145,7 @@ func TestRunStressTests_SomeFail(t *testing.T) {
 func TestRunStressTests_CustomScenario(t *testing.T) {
 	t.Parallel()
 	custom := StressScenario{Name: "apocalypse", Description: "total collapse", Shock: -0.90}
-	results := RunStressTests(100000, 50000, custom)
+	results := RunStressTests(decF(100000), decF(50000), custom)
 
 	last := results[len(results)-1]
 	if last.Scenario.Name != "apocalypse" {

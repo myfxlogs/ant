@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/repository"
@@ -60,19 +61,24 @@ func (s *StrategyExecutionServer) saveBacktestResult(ctx context.Context, run *r
 	s.syncMarketplacePerformance(ctx, run, result)
 
 	s.log.Info("backtest worker: run completed", zap.String("runID", run.ID.String()),
-		zap.Float64("total_return", result.GetMetrics().GetTotalReturn()),
-		zap.Float64("sharpe", result.GetMetrics().GetSharpeRatio()))
+		zap.String("total_return", result.GetMetrics().GetTotalReturn()),
+		zap.String("sharpe", result.GetMetrics().GetSharpeRatio()))
 
 	// Emit notification for completed backtest.
 	if s.notifSender != nil {
 		totalReturn := result.GetMetrics().GetTotalReturn()
 		sharpe := result.GetMetrics().GetSharpeRatio()
-		data := fmt.Sprintf(`{"run_id":"%s","symbol":"%s","timeframe":"%s","total_return":%v,"sharpe":%v}`,
-			run.ID.String(), run.Symbol, run.Timeframe, totalReturn, sharpe)
+		data, _ := structpb.NewStruct(map[string]interface{}{
+			"run_id":       run.ID.String(),
+			"symbol":       run.Symbol,
+			"timeframe":    run.Timeframe,
+			"total_return": totalReturn,
+			"sharpe":       sharpe,
+		})
 		_, _ = s.notifSender.Send(ctx, run.UserID, "backtest_completed",
 			fmt.Sprintf("Backtest Complete: %s %s", run.Symbol, run.Timeframe),
-			fmt.Sprintf("Strategy on %s %s: return %.2f%%, Sharpe %.2f", run.Symbol, run.Timeframe, totalReturn, sharpe),
-			string(data))
+			fmt.Sprintf("Strategy on %s %s: return %s%%, Sharpe %s", run.Symbol, run.Timeframe, totalReturn, sharpe),
+			data)
 	}
 
 	// Trigger auto-gate evaluation after backtest completes.
@@ -92,12 +98,16 @@ func (s *StrategyExecutionServer) failRun(ctx context.Context, run *repository.B
 
 	// Emit notification for failed backtest.
 	if s.notifSender != nil {
-		data := fmt.Sprintf(`{"run_id":"%s","symbol":"%s","timeframe":"%s","error":"%s"}`,
-			run.ID.String(), run.Symbol, run.Timeframe, errMsg)
+		data, _ := structpb.NewStruct(map[string]interface{}{
+			"run_id":    run.ID.String(),
+			"symbol":    run.Symbol,
+			"timeframe": run.Timeframe,
+			"error":     errMsg,
+		})
 		_, _ = s.notifSender.Send(ctx, run.UserID, "backtest_failed",
 			fmt.Sprintf("Backtest Failed: %s %s", run.Symbol, run.Timeframe),
 			errMsg,
-			string(data))
+			data)
 	}
 }
 
@@ -112,12 +122,13 @@ func (s *StrategyExecutionServer) syncMarketplacePerformance(ctx context.Context
 	pnlStr := m.GetTotalPnlAbsolute()
 	pnlF, _ := strconv.ParseFloat(pnlStr, 64)
 	if pnlF == 0 {
-		pnlF = m.GetTotalReturn() // legacy: percentage as proxy
+		pnlF, _ = strconv.ParseFloat(m.GetTotalReturn(), 64) // legacy: percentage as proxy
 	}
+	winRateF, _ := strconv.ParseFloat(m.GetWinRate(), 64)
 	_, err := s.backtestRepo.DB().Exec(ctx,
 		`UPDATE marketplace_strategies SET win_rate = $1, total_pnl = $2, updated_at = now()
 		 WHERE strategy_id = $3`,
-		m.GetWinRate(), pnlF, *run.TemplateID,
+		winRateF, pnlF, *run.TemplateID,
 	)
 	if err != nil {
 		s.log.Debug("marketplace sync: template not published or update failed",

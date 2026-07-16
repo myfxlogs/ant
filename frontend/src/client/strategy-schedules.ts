@@ -2,7 +2,7 @@ import type { PartialMessage } from '@bufbuild/protobuf';
 import { create } from '@bufbuild/protobuf';
 import { strategyClient } from './connect';
 import { ScheduleConfigSchema, type ScheduleConfig } from '../gen/ant/v1/strategy_schedule_entity_pb';
-import type { TemplateParameter } from '../gen/ant/v1/strategy_template_entity_pb';
+import type { TemplateParameter, TemplateI18n } from '../gen/ant/v1/strategy_template_entity_pb';
 import { strategyApi } from './strategy';
 import type { RunBacktestResult } from './strategy';
 
@@ -144,5 +144,5 @@ export interface CreateTemplateRequest {
   parameters?: PartialMessage<TemplateParameter>[];
   isPublic?: boolean;
   tags?: string[];
-  i18n?: string;
+  i18n?: TemplateI18n;
 }

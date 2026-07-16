@@ -76,7 +76,7 @@ type TradeEvent struct {
 	Timestamp         time.Time      `json:"timestamp"`
 	ArrivedUnixMs     int64          `json:"arrived_unix_ms"`
 	Version           int64          `json:"version"`
-	CostBreakdownJSON string         `json:"cost_breakdown,omitempty"` // M10-BASE-D2: pre-trade cost estimate
+	CostEstimate     *antv1.CostEstimate `json:"-"` // M10-BASE-D2: pre-trade cost estimate
 }
 
 // TradeEventStore publishes order events to NATS JetStream (Tier-0).
@@ -107,7 +107,6 @@ func (s *TradeEventStore) Publish(ctx context.Context, ev *TradeEvent) error {
 		ev.Canonical = sanitizeUTF8(ev.Canonical)
 		ev.Broker = sanitizeUTF8(ev.Broker)
 		ev.ClientID = sanitizeUTF8(ev.ClientID)
-		ev.CostBreakdownJSON = sanitizeUTF8(ev.CostBreakdownJSON)
 		payload, err = proto.Marshal(eventToPayload(ev))
 		if err != nil {
 			return fmt.Errorf("trade_event_store: marshal: %w", err)
@@ -140,6 +139,6 @@ func eventToPayload(ev *TradeEvent) *antv1.TradeEventPayload {
 		Volume: ev.Volume.String(), Price: ev.Price.String(),
 		StopLoss: ev.StopLoss.String(), TakeProfit: ev.TakeProfit.String(),
 		FromState: ev.FromState, ToState: ev.ToState,
-		CostJson: ev.CostBreakdownJSON, TsUnixMs: ev.Timestamp.UnixMilli(),
+		Cost: ev.CostEstimate, TsUnixMs: ev.Timestamp.UnixMilli(),
 	}
 }

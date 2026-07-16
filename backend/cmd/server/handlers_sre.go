@@ -106,11 +106,6 @@ func registerSREHandlers(
 		w.Write([]byte(`{"status":"ant-v2"}`))
 	})
 
-	// Auth cookie endpoints — refresh token via httpOnly cookie.
-	mux.HandleFunc("/api/auth/refresh", authServer.HandleTokenRefresh)
-	mux.HandleFunc("/api/auth/logout", authServer.HandleLogout)
-
-
 	// Prometheus /metrics endpoint (M10 ADR-0010 §2.4).
 	mux.Handle("/metrics", mdgateway.MetricsHandler())
 

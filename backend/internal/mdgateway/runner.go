@@ -75,7 +75,6 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	if deps.ChStore != nil {
 		pgWriter.SetCHStore(deps.ChStore)
 	}
-	// #nosec G118 — pipeline ctx is the correct lifecycle scope for PgWriter
 	go pgWriter.Start(ctx)
 
 	// --- Normalizer + Quality + Dedup ---
@@ -125,11 +124,9 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	}
 
 	// --- Open bar ticker (500ms) for real-time price updates ---
-	// #nosec G118 — pipeline ctx is the correct lifecycle scope for open bar ticker
 	go mgr.StartOpenBarTicker(ctx)
 
 	// --- Health monitor (start before gateways so accounts with no ticks are caught) ---
-	// #nosec G118 — pipeline ctx is the correct lifecycle scope for health monitor
 	go healthMonitor(ctx, mgr, nil, log, deps.OnAccountDisconnect)
 
 	// --- Load active accounts and start gateways ---

@@ -37,7 +37,6 @@ func (g *Gateway) Subscribe(ctx context.Context, syms []string, handler mdtick.T
 			g.log.Info("mt4: subscribed symbols", zap.Strings("syms", syms))
 		}
 	}
-	// #nosec G118 — recvLoop runs for the gateway's full connection lifetime
 	go g.recvLoop(ctx, handler)
 	return nil
 }
@@ -181,7 +180,6 @@ func (g *Gateway) SubscribeProfit(ctx context.Context, handler mdtick.ProfitHand
 	if sc == nil {
 		return fmt.Errorf("mt4: not connected")
 	}
-	// #nosec G118 — profitRecvLoop runs for the gateway's full connection lifetime
 	go g.profitRecvLoop(ctx, handler)
 	return nil
 }

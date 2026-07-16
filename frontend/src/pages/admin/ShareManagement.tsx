@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Table, Tag, Typography } from 'antd';
 import { LinkOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { getAccessToken } from '@/utils/getAccessToken';
+import { shareClient } from '@/client/connect';
 
 interface ShareItem {
   token: string;
@@ -21,18 +21,19 @@ export default function ShareManagement() {
   const [loading, setLoading] = useState(false);
 
   const fetchData = async (page = 1, pageSize = 20) => {
-    const token = getAccessToken();
-    if (!token) return;
     setLoading(true);
     try {
-      const resp = await fetch(`/api/admin/shares/list?page=${page}&pageSize=${pageSize}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      const json = await resp.json();
-      if (json?.items) {
-        setData(json.items);
-        setTotal(json.total || 0);
-      }
+      const resp = await shareClient.listAllShareTokens({ page, pageSize });
+      setData(resp.items.map(item => ({
+        token: item.token,
+        shareUrl: item.shareUrl,
+        userId: item.userId,
+        description: item.description,
+        viewCount: item.viewCount,
+        expiresAt: item.expiresAt,
+        createdAt: item.createdAt,
+      })));
+      setTotal(resp.total || 0);
     } catch { /* ignore */ }
     finally { setLoading(false); }
   };

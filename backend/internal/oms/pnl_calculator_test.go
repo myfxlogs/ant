@@ -1,11 +1,18 @@
 package oms
 
 import (
-	"math"
 	"testing"
+
+	"github.com/shopspring/decimal"
 
 	"alphaforge/internal/costsvc"
 )
+
+func decFCalc(v float64) decimal.Decimal { return decimal.NewFromFloat(v) }
+
+func decCloseCalc(a, b decimal.Decimal) bool {
+	return a.Sub(b).Abs().LessThan(decFCalc(0.01))
+}
 
 func TestPnLCalculator_Buy_Profitable(t *testing.T) {
 	t.Parallel()
@@ -13,23 +20,23 @@ func TestPnLCalculator_Buy_Profitable(t *testing.T) {
 	fm := NewFillModel(cm)
 	calc := NewPnLCalculator(fm)
 
-	result := calc.Calculate("buy", 1.0850, 1.0950, 1.0, 100000, 1)
+	result := calc.Calculate("buy", decFCalc(1.0850), decFCalc(1.0950), decFCalc(1.0), decFCalc(100000), decFCalc(1))
 
 	// Gross P&L: (1.0950 - 1.0850) * 100000 / 1.0850 = 921.66
-	if result.GrossPnL <= 0 {
-		t.Fatalf("profitable buy should have positive gross P&L, got %.2f", result.GrossPnL)
+	if result.GrossPnL.LessThanOrEqual(decimal.Zero) {
+		t.Fatalf("profitable buy should have positive gross P&L, got %s", result.GrossPnL.String())
 	}
 	// Net should be lower than gross due to costs.
-	if result.NetPnL >= result.GrossPnL {
-		t.Fatalf("net P&L %.2f should be < gross P&L %.2f", result.NetPnL, result.GrossPnL)
+	if result.NetPnL.GreaterThanOrEqual(result.GrossPnL) {
+		t.Fatalf("net P&L %s should be < gross P&L %s", result.NetPnL.String(), result.GrossPnL.String())
 	}
 	// Both must be reported.
-	if result.GrossPnL == 0 || result.NetPnL == 0 {
+	if result.GrossPnL.Equal(decimal.Zero) || result.NetPnL.Equal(decimal.Zero) {
 		t.Fatal("dual-track: both gross and net P&L must be non-zero")
 	}
 
-	t.Logf("Buy trade: gross=%.2f net=%.2f (costs: spread=%.2f comm=%.2f swap=%.2f slip=%.2f)",
-		result.GrossPnL, result.NetPnL, result.SpreadCost, result.Commission, result.SwapCost, result.SlippageCost)
+	t.Logf("Buy trade: gross=%s net=%s (costs: spread=%s comm=%s swap=%s slip=%s)",
+		result.GrossPnL.String(), result.NetPnL.String(), result.SpreadCost.String(), result.Commission.String(), result.SwapCost.String(), result.SlippageCost.String())
 }
 
 func TestPnLCalculator_Sell_Profitable(t *testing.T) {
@@ -39,13 +46,13 @@ func TestPnLCalculator_Sell_Profitable(t *testing.T) {
 	calc := NewPnLCalculator(fm)
 
 	// Sell at 1.0950, buy back at 1.0850 = profit
-	result := calc.Calculate("sell", 1.0950, 1.0850, 1.0, 100000, 1)
+	result := calc.Calculate("sell", decFCalc(1.0950), decFCalc(1.0850), decFCalc(1.0), decFCalc(100000), decFCalc(1))
 
-	if result.GrossPnL <= 0 {
-		t.Fatalf("profitable sell should have positive gross P&L, got %.2f", result.GrossPnL)
+	if result.GrossPnL.LessThanOrEqual(decimal.Zero) {
+		t.Fatalf("profitable sell should have positive gross P&L, got %s", result.GrossPnL.String())
 	}
-	if result.NetPnL >= result.GrossPnL {
-		t.Fatalf("net P&L %.2f should be < gross P&L %.2f", result.NetPnL, result.GrossPnL)
+	if result.NetPnL.GreaterThanOrEqual(result.GrossPnL) {
+		t.Fatalf("net P&L %s should be < gross P&L %s", result.NetPnL.String(), result.GrossPnL.String())
 	}
 }
 
@@ -55,13 +62,13 @@ func TestPnLCalculator_Losing(t *testing.T) {
 	fm := NewFillModel(cm)
 	calc := NewPnLCalculator(fm)
 
-	result := calc.Calculate("buy", 1.0950, 1.0850, 1.0, 100000, 1)
+	result := calc.Calculate("buy", decFCalc(1.0950), decFCalc(1.0850), decFCalc(1.0), decFCalc(100000), decFCalc(1))
 
-	if result.GrossPnL >= 0 {
-		t.Fatalf("losing trade should have negative gross P&L, got %.2f", result.GrossPnL)
+	if result.GrossPnL.GreaterThanOrEqual(decimal.Zero) {
+		t.Fatalf("losing trade should have negative gross P&L, got %s", result.GrossPnL.String())
 	}
 	// Net loss should be larger (more negative) than gross due to costs.
-	if result.NetPnL >= result.GrossPnL {
+	if result.NetPnL.GreaterThanOrEqual(result.GrossPnL) {
 		t.Fatalf("net should be more negative than gross for losing trade")
 	}
 }
@@ -72,12 +79,12 @@ func TestPnLCalculator_ZeroHoldingDays(t *testing.T) {
 	fm := NewFillModel(cm)
 	calc := NewPnLCalculator(fm)
 
-	result := calc.Calculate("buy", 1.0850, 1.0900, 1.0, 100000, 0)
+	result := calc.Calculate("buy", decFCalc(1.0850), decFCalc(1.0900), decFCalc(1.0), decFCalc(100000), decFCalc(0))
 
-	if math.Abs(result.SwapCost) > 0.01 {
-		t.Fatalf("zero holding days: swap cost should be 0, got %.4f", result.SwapCost)
+	if result.SwapCost.Abs().GreaterThan(decFCalc(0.01)) {
+		t.Fatalf("zero holding days: swap cost should be 0, got %s", result.SwapCost.String())
 	}
-	if result.GrossPnL <= 0 {
+	if result.GrossPnL.LessThanOrEqual(decimal.Zero) {
 		t.Fatal("should be profitable")
 	}
 }
@@ -89,11 +96,11 @@ func TestPnLCalculator_GrossNetSeparation(t *testing.T) {
 	fm := NewFillModel(cm)
 	calc := NewPnLCalculator(fm)
 
-	result := calc.Calculate("buy", 1.0850, 1.0900, 0.5, 100000, 2)
+	result := calc.Calculate("buy", decFCalc(1.0850), decFCalc(1.0900), decFCalc(0.5), decFCalc(100000), decFCalc(2))
 
-	calculatedNet := result.GrossPnL - result.SpreadCost - result.Commission - result.SwapCost - result.SlippageCost
-	if math.Abs(calculatedNet-result.NetPnL) > 0.01 {
-		t.Fatalf("Net = Gross - costs: calculated=%.2f actual=%.2f", calculatedNet, result.NetPnL)
+	calculatedNet := result.GrossPnL.Sub(result.SpreadCost).Sub(result.Commission).Sub(result.SwapCost).Sub(result.SlippageCost)
+	if !decCloseCalc(calculatedNet, result.NetPnL) {
+		t.Fatalf("Net = Gross - costs: calculated=%s actual=%s", calculatedNet.String(), result.NetPnL.String())
 	}
 }
 
@@ -103,16 +110,16 @@ func TestDualTrackPnL(t *testing.T) {
 	fm := NewFillModel(cm)
 	calc := NewPnLCalculator(fm)
 
-	result := calc.Calculate("buy", 1.0850, 1.0950, 1.0, 100000, 1)
+	result := calc.Calculate("buy", decFCalc(1.0850), decFCalc(1.0950), decFCalc(1.0), decFCalc(100000), decFCalc(1))
 
 	// Both Gross and Net P&L must be present.
-	if result.GrossPnL == result.NetPnL {
+	if result.GrossPnL.Equal(result.NetPnL) {
 		t.Fatal("Gross P&L must differ from Net P&L due to trading costs")
 	}
 	// Net P&L = Gross - all costs
-	expectedNet := result.GrossPnL - result.SpreadCost - result.Commission - result.SwapCost - result.SlippageCost
-	if math.Abs(expectedNet-result.NetPnL) > 0.01 {
-		t.Fatalf("Net P&L mismatch: expected %.2f got %.2f", expectedNet, result.NetPnL)
+	expectedNet := result.GrossPnL.Sub(result.SpreadCost).Sub(result.Commission).Sub(result.SwapCost).Sub(result.SlippageCost)
+	if !decCloseCalc(expectedNet, result.NetPnL) {
+		t.Fatalf("Net P&L mismatch: expected %s got %s", expectedNet.String(), result.NetPnL.String())
 	}
-	t.Logf("Gross=%.2f Net=%.2f", result.GrossPnL, result.NetPnL)
+	t.Logf("Gross=%s Net=%s", result.GrossPnL.String(), result.NetPnL.String())
 }

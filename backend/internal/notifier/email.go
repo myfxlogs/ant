@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
 
@@ -136,11 +137,11 @@ func (n *EmailNotifier) sendToRecipients(to []string, subject, body string) erro
 // --- Alert constructors for specific triggers ---
 
 // MarginCallAlert sends a margin call notification.
-func (n *EmailNotifier) MarginCallAlert(accountID, userID string, margin float64, equity float64) {
+func (n *EmailNotifier) MarginCallAlert(accountID, userID string, margin, equity decimal.Decimal) {
 	subject := fmt.Sprintf("[ANT ALERT] Margin Call — account %s", accountID)
 	body := fmt.Sprintf(
-		"Account: %s\nUser: %s\nMargin: %.2f\nEquity: %.2f\nTime: %s\n\nAction required: deposit funds or reduce positions immediately.",
-		accountID, userID, margin, equity, time.Now().Format(time.RFC3339),
+		"Account: %s\nUser: %s\nMargin: %s\nEquity: %s\nTime: %s\n\nAction required: deposit funds or reduce positions immediately.",
+		accountID, userID, margin.String(), equity.String(), time.Now().Format(time.RFC3339),
 	)
 	if err := n.Send(subject, body); err != nil {
 		n.log.Error("margin call email failed", zap.Error(err))

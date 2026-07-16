@@ -2,6 +2,7 @@ syntax = "proto3";
 package ant.v1;
 option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
 
 // SubscriptionService manages platform subscription plans (Free/Pro/Enterprise).
 // Separate from marketplace strategy subscriptions.
@@ -32,7 +33,7 @@ message Plan {
   int32 max_live_strategies = 9;
   int32 max_symbols_per_strategy = 10;
   int32 capability_tier = 11;
-  string features_json = 12;  // JSONB feature flags as string
+  google.protobuf.Struct features = 12;  // feature flags
   int32 sort_order = 13;
 }
 

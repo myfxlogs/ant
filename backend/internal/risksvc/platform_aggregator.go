@@ -17,15 +17,17 @@ import (
 	"sync/atomic"
 	"time"
 	"unsafe"
+
+	"github.com/shopspring/decimal"
 )
 
 // PlatformExposure holds the aggregated platform-wide risk metrics.
 type PlatformExposure struct {
-	NetExposureBySymbol map[string]float64 // canonical -> net volume (long+ short-)
-	TotalGrossExposure  float64             // sum of absolute exposure
-	TotalNetExposure    float64             // sum of signed exposure
-	TotalMarginUsed     float64
-	BrokerLimitUsage    map[string]float64 // broker -> margin_used / limit
+	NetExposureBySymbol map[string]decimal.Decimal // canonical -> net volume (long+ short-)
+	TotalGrossExposure  decimal.Decimal             // sum of absolute exposure
+	TotalNetExposure    decimal.Decimal             // sum of signed exposure
+	TotalMarginUsed     decimal.Decimal
+	BrokerLimitUsage    map[string]float64 // broker -> margin_used / limit (ratio, stays float64)
 	AccountCount        int
 	UpdatedAt           time.Time
 }
@@ -39,29 +41,29 @@ type PlatformAggregator struct {
 
 	snapshot unsafe.Pointer // *PlatformExposure — atomically swapped by refresh loop
 
-	brokerLimits map[string]float64
+	brokerLimits map[string]decimal.Decimal
 	stopCh       chan struct{}
 }
 
 // AggregatorPosition is the position data needed for aggregation.
 type AggregatorPosition struct {
 	Canonical string
-	NetVolume float64
-	Notional  float64
-	Margin    float64
+	NetVolume decimal.Decimal
+	Notional  decimal.Decimal
+	Margin    decimal.Decimal
 	Broker    string // broker name for per-broker limit usage tracking
 }
 
 // NewPlatformAggregator creates an aggregator.
 func NewPlatformAggregator() *PlatformAggregator {
 	initial := &PlatformExposure{
-		NetExposureBySymbol: map[string]float64{},
+		NetExposureBySymbol: map[string]decimal.Decimal{},
 		BrokerLimitUsage:    map[string]float64{},
 	}
 	a := &PlatformAggregator{
 		exposure:     initial,
 		positions:    map[string]map[string]*AggregatorPosition{},
-		brokerLimits: map[string]float64{},
+		brokerLimits: map[string]decimal.Decimal{},
 		stopCh:       make(chan struct{}),
 	}
 	atomic.StorePointer(&a.snapshot, unsafe.Pointer(initial))
@@ -90,7 +92,7 @@ func (a *PlatformAggregator) ClearAccount(accountID string) {
 }
 
 // SetBrokerLimits replaces the broker limit map used by the refresh loop.
-func (a *PlatformAggregator) SetBrokerLimits(limits map[string]float64) {
+func (a *PlatformAggregator) SetBrokerLimits(limits map[string]decimal.Decimal) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	a.brokerLimits = limits
@@ -102,29 +104,29 @@ func (a *PlatformAggregator) SetBrokerLimits(limits map[string]float64) {
 func (a *PlatformAggregator) Recalculate() *PlatformExposure {
 	limits := a.brokerLimits
 	exposure := &PlatformExposure{
-		NetExposureBySymbol: map[string]float64{},
+		NetExposureBySymbol: map[string]decimal.Decimal{},
 		BrokerLimitUsage:    map[string]float64{},
 		AccountCount:        len(a.positions),
 		UpdatedAt:           Clk.Now(),
 	}
 
-	brokerMargins := map[string]float64{}
+	brokerMargins := map[string]decimal.Decimal{}
 
 	for _, positions := range a.positions {
 		for _, pos := range positions {
-			exposure.NetExposureBySymbol[pos.Canonical] += pos.NetVolume
-			exposure.TotalGrossExposure += abs(pos.Notional)
-			exposure.TotalNetExposure += pos.Notional
-			exposure.TotalMarginUsed += pos.Margin
+			exposure.NetExposureBySymbol[pos.Canonical] = exposure.NetExposureBySymbol[pos.Canonical].Add(pos.NetVolume)
+			exposure.TotalGrossExposure = exposure.TotalGrossExposure.Add(pos.Notional.Abs())
+			exposure.TotalNetExposure = exposure.TotalNetExposure.Add(pos.Notional)
+			exposure.TotalMarginUsed = exposure.TotalMarginUsed.Add(pos.Margin)
 			if pos.Broker != "" {
-				brokerMargins[pos.Broker] += pos.Margin
+				brokerMargins[pos.Broker] = brokerMargins[pos.Broker].Add(pos.Margin)
 			}
 		}
 	}
 
 	for broker, limit := range limits {
-		if limit > 0 {
-			exposure.BrokerLimitUsage[broker] = brokerMargins[broker] / limit
+		if limit.GreaterThan(decimal.Zero) {
+			exposure.BrokerLimitUsage[broker] = brokerMargins[broker].Div(limit).InexactFloat64()
 		}
 	}
 
@@ -140,10 +142,10 @@ func (a *PlatformAggregator) GetSnapshot() *PlatformExposure {
 }
 
 // NetExposureForSymbol returns the net exposure for a given symbol (lock-free).
-func (a *PlatformAggregator) NetExposureForSymbol(canonical string) float64 {
+func (a *PlatformAggregator) NetExposureForSymbol(canonical string) decimal.Decimal {
 	snap := a.GetSnapshot()
 	if snap == nil {
-		return 0
+		return decimal.Zero
 	}
 	return snap.NetExposureBySymbol[canonical]
 }
@@ -182,9 +184,6 @@ func (a *PlatformAggregator) Shutdown() {
 	}
 }
 
-func abs(f float64) float64 {
-	if f < 0 {
-		return -f
-	}
-	return f
+func abs(d decimal.Decimal) decimal.Decimal {
+	return d.Abs()
 }

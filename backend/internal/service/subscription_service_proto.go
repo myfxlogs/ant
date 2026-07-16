@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
@@ -62,7 +64,7 @@ func planToProto(p *model.SubscriptionPlan) *antv1.Plan {
 		MaxLiveStrategies:     int32(p.MaxLiveStrategies),
 		MaxSymbolsPerStrategy: int32(p.MaxSymbolsPerStrategy),
 		CapabilityTier:        int32(p.CapabilityTier),
-		FeaturesJson:          p.Features,
+		Features:              parseFeaturesToStruct(p.Features),
 		SortOrder:             int32(p.SortOrder),
 	}
 }
@@ -173,4 +175,19 @@ func (s *SubscriptionService) GetUsageSummaryProto(ctx context.Context, userID u
 	}
 
 	return summary, pbPlan, nil
+}
+
+// parseFeaturesToStruct converts a JSON string (from DB JSONB) to *structpb.Struct.
+func parseFeaturesToStruct(s string) *structpb.Struct {
+	if s == "" || s == "{}" {
+		st, _ := structpb.NewStruct(map[string]any{})
+		return st
+	}
+	var m map[string]any
+	if err := json.Unmarshal([]byte(s), &m); err != nil {
+		st, _ := structpb.NewStruct(map[string]any{})
+		return st
+	}
+	st, _ := structpb.NewStruct(m)
+	return st
 }

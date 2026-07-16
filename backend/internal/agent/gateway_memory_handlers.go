@@ -7,6 +7,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/interceptor"
@@ -64,7 +65,12 @@ func (s *GatewayServer) StoreExperience(
 		}), nil
 	}
 
-	id, err := s.memory.StoreExperience(ctx, uid, req.Msg.Category, req.Msg.Content, req.Msg.Fingerprint, nil, "")
+	fingerprintJSON := ""
+	if req.Msg.Fingerprint != nil {
+		b, _ := protojson.Marshal(req.Msg.Fingerprint)
+		fingerprintJSON = string(b)
+	}
+	id, err := s.memory.StoreExperience(ctx, uid, req.Msg.Category, req.Msg.Content, fingerprintJSON, nil, "")
 	if err != nil {
 		s.log.Warn("StoreExperience failed", zap.Error(err))
 		return connect.NewResponse(&antv1.StoreExperienceResponse{
@@ -119,7 +125,12 @@ func (s *GatewayServer) SaveUserTemplate(
 		return connect.NewResponse(&antv1.SaveUserTemplateResponse{Success: false}), nil
 	}
 
-	err = s.memory.SaveUserTemplate(ctx, uid, req.Msg.Name, req.Msg.Content, req.Msg.ScopeJson)
+	scopeJSON := ""
+	if req.Msg.Scope != nil {
+		b, _ := protojson.Marshal(req.Msg.Scope)
+		scopeJSON = string(b)
+	}
+	err = s.memory.SaveUserTemplate(ctx, uid, req.Msg.Name, req.Msg.Content, scopeJSON)
 	if err != nil {
 		s.log.Warn("SaveUserTemplate failed", zap.Error(err))
 		return connect.NewResponse(&antv1.SaveUserTemplateResponse{Success: false}), nil

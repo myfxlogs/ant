@@ -108,7 +108,7 @@ export default function LogManagement() {
     return logs.filter((r) => {
       const op = r as OperationLog;
       let d: Record<string, unknown> = {};
-      try { if (op?.details) { const p = JSON.parse(op.details); if (p && typeof p === 'object') d = p as Record<string, unknown>; } } catch { /* ignore */ }
+      if (op?.details && typeof op.details === 'object') d = op.details as Record<string, unknown>;
       if (opRiskCode && !String(d?.risk_code || '').toLowerCase().includes(opRiskCode.toLowerCase())) return false;
       if (opRequestId && !String(d?.request_id || '').toLowerCase().includes(opRequestId.toLowerCase())) return false;
       if (opTriggerSource && String(d?.trigger_source || '').toLowerCase() !== opTriggerSource.toLowerCase()) return false;

@@ -324,20 +324,20 @@ func (s *StrategyExecutionServer) executeVMLive(ctx context.Context, req *antv1.
 	// Dispatch based on request type
 	switch req.GetRequestType() {
 	case antv1.RequestType_REQUEST_TYPE_BAR:
-		return vmHandleBar(r, bctx), nil
+		return vmHandleBar(ctx, r, bctx), nil
 
 	case antv1.RequestType_REQUEST_TYPE_TICK:
-		return vmHandleTick(r, req.GetTickContext()), nil
+		return vmHandleTick(ctx, r, req.GetTickContext()), nil
 
 	case antv1.RequestType_REQUEST_TYPE_TRADE:
-		return vmHandleTrade(r, req.GetTradeContext()), nil
+		return vmHandleTrade(ctx, r, req.GetTradeContext()), nil
 
 	case antv1.RequestType_REQUEST_TYPE_TIMER:
-		return vmHandleTimer(r, req.GetTimerContext()), nil
+		return vmHandleTimer(ctx, r, req.GetTimerContext()), nil
 
 	default:
 		if bctx != nil {
-			return vmHandleBar(r, bctx), nil
+			return vmHandleBar(ctx, r, bctx), nil
 		}
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "unknown request type"}, nil
 	}

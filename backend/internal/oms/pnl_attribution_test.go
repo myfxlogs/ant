@@ -1,14 +1,17 @@
 package oms
 
 import (
-	"math"
 	"testing"
+
+	"github.com/shopspring/decimal"
 
 	"alphaforge/internal/costsvc"
 )
 
-func closeEnoughAttribution(a, b float64) bool {
-	return math.Abs(a-b) < 0.02
+func decFAttr(v float64) decimal.Decimal { return decimal.NewFromFloat(v) }
+
+func decCloseAttr(a, b decimal.Decimal) bool {
+	return a.Sub(b).Abs().LessThan(decFAttr(0.02))
 }
 
 func TestPnLAttribution_BuyProfitable(t *testing.T) {
@@ -17,37 +20,37 @@ func TestPnLAttribution_BuyProfitable(t *testing.T) {
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
 
-	a := attr.Attribute("buy", 1.0850, 1.0950, 1.0, 100000, 1)
+	a := attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0950), decFAttr(1.0), decFAttr(100000), decFAttr(1))
 
 	// Gross P&L should be positive
-	if a.GrossPnL <= 0 {
-		t.Fatalf("profitable buy: GrossPnL=%.2f, want >0", a.GrossPnL)
+	if a.GrossPnL.LessThanOrEqual(decimal.Zero) {
+		t.Fatalf("profitable buy: GrossPnL=%s, want >0", a.GrossPnL.String())
 	}
 	// All cost dimensions should be non-zero
-	if a.SpreadCost <= 0 {
-		t.Errorf("SpreadCost=%.4f, want >0", a.SpreadCost)
+	if a.SpreadCost.LessThanOrEqual(decimal.Zero) {
+		t.Errorf("SpreadCost=%s, want >0", a.SpreadCost.String())
 	}
-	if a.Commission <= 0 {
-		t.Errorf("Commission=%.4f, want >0", a.Commission)
+	if a.Commission.LessThanOrEqual(decimal.Zero) {
+		t.Errorf("Commission=%s, want >0", a.Commission.String())
 	}
-	if a.SlippageCost <= 0 {
-		t.Errorf("SlippageCost=%.4f, want >0", a.SlippageCost)
+	if a.SlippageCost.LessThanOrEqual(decimal.Zero) {
+		t.Errorf("SlippageCost=%s, want >0", a.SlippageCost.String())
 	}
 	// Swap may be zero for short holding, but for 1 day it should exist
-	if a.SwapCost >= 0 {
-		t.Logf("SwapCost=%.4f (long swap is negative for EURUSD default)", a.SwapCost)
+	if a.SwapCost.GreaterThanOrEqual(decimal.Zero) {
+		t.Logf("SwapCost=%s (long swap is negative for EURUSD default)", a.SwapCost.String())
 	}
 
 	// Net = Gross - Execution - Holding
 	net := a.NetPnL()
-	expected := a.GrossPnL - a.ExecutionCost() - a.HoldingCost()
-	if !closeEnoughAttribution(net, expected) {
-		t.Errorf("NetPnL=%.4f, want %.4f", net, expected)
+	expected := a.GrossPnL.Sub(a.ExecutionCost()).Sub(a.HoldingCost())
+	if !decCloseAttr(net, expected) {
+		t.Errorf("NetPnL=%s, want %s", net.String(), expected.String())
 	}
 
 	// Execution cost should be positive (costs reduce P&L)
-	if a.ExecutionCost() <= 0 {
-		t.Errorf("ExecutionCost=%.4f, want >0", a.ExecutionCost())
+	if a.ExecutionCost().LessThanOrEqual(decimal.Zero) {
+		t.Errorf("ExecutionCost=%s, want >0", a.ExecutionCost().String())
 	}
 
 	// Validate identity
@@ -55,9 +58,9 @@ func TestPnLAttribution_BuyProfitable(t *testing.T) {
 		t.Errorf("Validate failed: %v", err)
 	}
 
-	t.Logf("Buy: Gross=%.2f Exec=%.2f Hold=%.2f Net=%.2f | Signal=%.1fbps Exec=%.1fbps Hold=%.1fbps Net=%.1fbps",
-		a.GrossPnL, a.ExecutionCost(), a.HoldingCost(), a.NetPnL(),
-		a.SignalBps(), a.ExecutionBps(), a.HoldingBps(), a.NetBps())
+	t.Logf("Buy: Gross=%s Exec=%s Hold=%s Net=%s | Signal=%sbps Exec=%sbps Hold=%sbps Net=%sbps",
+		a.GrossPnL.String(), a.ExecutionCost().String(), a.HoldingCost().String(), a.NetPnL().String(),
+		a.SignalBps().String(), a.ExecutionBps().String(), a.HoldingBps().String(), a.NetBps().String())
 }
 
 func TestPnLAttribution_SellProfitable(t *testing.T) {
@@ -66,22 +69,22 @@ func TestPnLAttribution_SellProfitable(t *testing.T) {
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
 
-	a := attr.Attribute("sell", 1.0950, 1.0850, 1.0, 100000, 1)
+	a := attr.Attribute("sell", decFAttr(1.0950), decFAttr(1.0850), decFAttr(1.0), decFAttr(100000), decFAttr(1))
 
-	if a.GrossPnL <= 0 {
-		t.Fatalf("profitable sell: GrossPnL=%.2f, want >0", a.GrossPnL)
+	if a.GrossPnL.LessThanOrEqual(decimal.Zero) {
+		t.Fatalf("profitable sell: GrossPnL=%s, want >0", a.GrossPnL.String())
 	}
 	if err := a.Validate(); err != nil {
 		t.Errorf("Validate failed: %v", err)
 	}
 
 	// Net should be less than Gross (costs eat into profit)
-	if a.NetPnL() >= a.GrossPnL {
-		t.Errorf("Net %.4f >= Gross %.4f — costs not applied", a.NetPnL(), a.GrossPnL)
+	if a.NetPnL().GreaterThanOrEqual(a.GrossPnL) {
+		t.Errorf("Net %s >= Gross %s — costs not applied", a.NetPnL().String(), a.GrossPnL.String())
 	}
 
-	t.Logf("Sell: Gross=%.2f Exec=%.2f Hold=%.2f Net=%.2f",
-		a.GrossPnL, a.ExecutionCost(), a.HoldingCost(), a.NetPnL())
+	t.Logf("Sell: Gross=%s Exec=%s Hold=%s Net=%s",
+		a.GrossPnL.String(), a.ExecutionCost().String(), a.HoldingCost().String(), a.NetPnL().String())
 }
 
 func TestPnLAttribution_LosingTrade(t *testing.T) {
@@ -90,26 +93,26 @@ func TestPnLAttribution_LosingTrade(t *testing.T) {
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
 
-	a := attr.Attribute("buy", 1.0950, 1.0850, 1.0, 100000, 1)
+	a := attr.Attribute("buy", decFAttr(1.0950), decFAttr(1.0850), decFAttr(1.0), decFAttr(100000), decFAttr(1))
 
-	if a.GrossPnL >= 0 {
-		t.Fatalf("losing trade: GrossPnL=%.2f, want <0", a.GrossPnL)
+	if a.GrossPnL.GreaterThanOrEqual(decimal.Zero) {
+		t.Fatalf("losing trade: GrossPnL=%s, want <0", a.GrossPnL.String())
 	}
 	// Net loss should be larger (more negative) than gross
-	if a.NetPnL() >= a.GrossPnL {
-		t.Errorf("Net %.4f >= Gross %.4f — costs should deepen the loss", a.NetPnL(), a.GrossPnL)
+	if a.NetPnL().GreaterThanOrEqual(a.GrossPnL) {
+		t.Errorf("Net %s >= Gross %s — costs should deepen the loss", a.NetPnL().String(), a.GrossPnL.String())
 	}
 	// Signal bps should be negative for losing trade
-	if a.SignalBps() >= 0 {
-		t.Errorf("SignalBps=%.2f, want <0", a.SignalBps())
+	if a.SignalBps().GreaterThanOrEqual(decimal.Zero) {
+		t.Errorf("SignalBps=%s, want <0", a.SignalBps().String())
 	}
 	if err := a.Validate(); err != nil {
 		t.Errorf("Validate failed: %v", err)
 	}
 
-	t.Logf("Loss: Gross=%.2f Exec=%.2f Hold=%.2f Net=%.2f | Signal=%.1fbps Net=%.1fbps",
-		a.GrossPnL, a.ExecutionCost(), a.HoldingCost(), a.NetPnL(),
-		a.SignalBps(), a.NetBps())
+	t.Logf("Loss: Gross=%s Exec=%s Hold=%s Net=%s | Signal=%sbps Net=%sbps",
+		a.GrossPnL.String(), a.ExecutionCost().String(), a.HoldingCost().String(), a.NetPnL().String(),
+		a.SignalBps().String(), a.NetBps().String())
 }
 
 func TestPnLAttribution_FlatTrade(t *testing.T) {
@@ -119,39 +122,33 @@ func TestPnLAttribution_FlatTrade(t *testing.T) {
 	attr := NewPnLAttributor(fm)
 
 	// Open and close at same price
-	a := attr.Attribute("buy", 1.0850, 1.0850, 1.0, 100000, 0)
+	a := attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0850), decFAttr(1.0), decFAttr(100000), decFAttr(0))
 
-	if math.Abs(a.GrossPnL) > 0.01 {
-		t.Errorf("flat trade: GrossPnL=%.4f, want 0", a.GrossPnL)
+	if a.GrossPnL.Abs().GreaterThan(decFAttr(0.01)) {
+		t.Errorf("flat trade: GrossPnL=%s, want 0", a.GrossPnL.String())
 	}
 	// Costs still exist even on flat trade
-	if a.ExecutionCost() <= 0 {
-		t.Errorf("flat trade: ExecutionCost=%.4f, want >0", a.ExecutionCost())
+	if a.ExecutionCost().LessThanOrEqual(decimal.Zero) {
+		t.Errorf("flat trade: ExecutionCost=%s, want >0", a.ExecutionCost().String())
 	}
 	// Net should be negative (costs without alpha)
-	if a.NetPnL() >= 0 {
-		t.Errorf("flat trade: NetPnL=%.4f, want <0", a.NetPnL())
+	if a.NetPnL().GreaterThanOrEqual(decimal.Zero) {
+		t.Errorf("flat trade: NetPnL=%s, want <0", a.NetPnL().String())
 	}
 	// Signal bps should be near zero
-	if math.Abs(a.SignalBps()) > 0.1 {
-		t.Errorf("flat trade: SignalBps=%.2f, want ~0", a.SignalBps())
+	if a.SignalBps().Abs().GreaterThan(decFAttr(0.1)) {
+		t.Errorf("flat trade: SignalBps=%s, want ~0", a.SignalBps().String())
 	}
 	if err := a.Validate(); err != nil {
 		t.Errorf("Validate failed: %v", err)
 	}
 
-	t.Logf("Flat: Gross=%.2f Exec=%.2f Hold=%.2f Net=%.2f",
-		a.GrossPnL, a.ExecutionCost(), a.HoldingCost(), a.NetPnL())
+	t.Logf("Flat: Gross=%s Exec=%s Hold=%s Net=%s",
+		a.GrossPnL.String(), a.ExecutionCost().String(), a.HoldingCost().String(), a.NetPnL().String())
 }
 
 func TestPnLAttribution_ValidateIdentityHolds(t *testing.T) {
 	t.Parallel()
-	// Validate checks the arithmetic identity:
-	//   NetPnL = GrossPnL - Spread - Slippage - Commission - Swap - Funding
-	// Since NetPnL() is computed from fields, this is tautological for
-	// properly-constructed attributions. The test verifies Validate passes
-	// for a variety of realistic attributions.
-
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -160,12 +157,12 @@ func TestPnLAttribution_ValidateIdentityHolds(t *testing.T) {
 		name string
 		a    PnLAttribution
 	}{
-		{"profitable buy", attr.Attribute("buy", 1.0850, 1.0950, 1.0, 100000, 1)},
-		{"profitable sell", attr.Attribute("sell", 1.0950, 1.0850, 1.0, 100000, 1)},
-		{"losing buy", attr.Attribute("buy", 1.0950, 1.0850, 1.0, 100000, 1)},
-		{"flat trade", attr.Attribute("buy", 1.0850, 1.0850, 1.0, 100000, 0)},
-		{"micro size", attr.Attribute("buy", 1.0850, 1.0950, 0.01, 100000, 1)},
-		{"long hold", attr.Attribute("sell", 1.0850, 1.0900, 2.0, 100000, 30)},
+		{"profitable buy", attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0950), decFAttr(1.0), decFAttr(100000), decFAttr(1))},
+		{"profitable sell", attr.Attribute("sell", decFAttr(1.0950), decFAttr(1.0850), decFAttr(1.0), decFAttr(100000), decFAttr(1))},
+		{"losing buy", attr.Attribute("buy", decFAttr(1.0950), decFAttr(1.0850), decFAttr(1.0), decFAttr(100000), decFAttr(1))},
+		{"flat trade", attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0850), decFAttr(1.0), decFAttr(100000), decFAttr(0))},
+		{"micro size", attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0950), decFAttr(0.01), decFAttr(100000), decFAttr(1))},
+		{"long hold", attr.Attribute("sell", decFAttr(1.0850), decFAttr(1.0900), decFAttr(2.0), decFAttr(100000), decFAttr(30))},
 	}
 
 	for _, tc := range cases {
@@ -183,22 +180,22 @@ func TestPnLAttribution_AddAggregation(t *testing.T) {
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
 
-	a1 := attr.Attribute("buy", 1.0850, 1.0900, 0.5, 100000, 1)
-	a2 := attr.Attribute("buy", 1.0900, 1.0950, 0.5, 100000, 1)
+	a1 := attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0900), decFAttr(0.5), decFAttr(100000), decFAttr(1))
+	a2 := attr.Attribute("buy", decFAttr(1.0900), decFAttr(1.0950), decFAttr(0.5), decFAttr(100000), decFAttr(1))
 
 	combined := a1.Add(a2)
 
-	if !closeEnoughAttribution(combined.GrossPnL, a1.GrossPnL+a2.GrossPnL) {
-		t.Errorf("GrossPnL: combined=%.4f, sum=%.4f", combined.GrossPnL, a1.GrossPnL+a2.GrossPnL)
+	if !decCloseAttr(combined.GrossPnL, a1.GrossPnL.Add(a2.GrossPnL)) {
+		t.Errorf("GrossPnL: combined=%s, sum=%s", combined.GrossPnL.String(), a1.GrossPnL.Add(a2.GrossPnL).String())
 	}
-	if !closeEnoughAttribution(combined.Commission, a1.Commission+a2.Commission) {
-		t.Errorf("Commission: combined=%.4f, sum=%.4f", combined.Commission, a1.Commission+a2.Commission)
+	if !decCloseAttr(combined.Commission, a1.Commission.Add(a2.Commission)) {
+		t.Errorf("Commission: combined=%s, sum=%s", combined.Commission.String(), a1.Commission.Add(a2.Commission).String())
 	}
-	if !closeEnoughAttribution(combined.SlippageCost, a1.SlippageCost+a2.SlippageCost) {
-		t.Errorf("SlippageCost: combined=%.4f, sum=%.4f", combined.SlippageCost, a1.SlippageCost+a2.SlippageCost)
+	if !decCloseAttr(combined.SlippageCost, a1.SlippageCost.Add(a2.SlippageCost)) {
+		t.Errorf("SlippageCost: combined=%s, sum=%s", combined.SlippageCost.String(), a1.SlippageCost.Add(a2.SlippageCost).String())
 	}
-	if !closeEnoughAttribution(combined.SpreadCost, a1.SpreadCost+a2.SpreadCost) {
-		t.Errorf("SpreadCost: combined=%.4f, sum=%.4f", combined.SpreadCost, a1.SpreadCost+a2.SpreadCost)
+	if !decCloseAttr(combined.SpreadCost, a1.SpreadCost.Add(a2.SpreadCost)) {
+		t.Errorf("SpreadCost: combined=%s, sum=%s", combined.SpreadCost.String(), a1.SpreadCost.Add(a2.SpreadCost).String())
 	}
 
 	// Validate the combined result
@@ -206,7 +203,7 @@ func TestPnLAttribution_AddAggregation(t *testing.T) {
 		t.Errorf("combined Validate failed: %v", err)
 	}
 
-	t.Logf("Combined: Gross=%.2f Net=%.2f", combined.GrossPnL, combined.NetPnL())
+	t.Logf("Combined: Gross=%s Net=%s", combined.GrossPnL.String(), combined.NetPnL().String())
 }
 
 func TestPnLAttribution_ThreeDimensionsIndependent(t *testing.T) {
@@ -215,36 +212,36 @@ func TestPnLAttribution_ThreeDimensionsIndependent(t *testing.T) {
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
 
-	a := attr.Attribute("buy", 1.0850, 1.0950, 1.0, 100000, 5)
+	a := attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0950), decFAttr(1.0), decFAttr(100000), decFAttr(5))
 
 	// Each dimension must be independently non-zero for a typical trade
-	dims := map[string]float64{
+	dims := map[string]decimal.Decimal{
 		"Signal":    a.SignalPnL(),
 		"Execution": a.ExecutionCost(),
 		"Holding":   a.HoldingCost(),
 	}
 	for name, val := range dims {
-		if math.Abs(val) < 0.001 {
+		if val.Abs().LessThan(decFAttr(0.001)) {
 			t.Errorf("dimension %s is zero — each dimension should be independently measurable", name)
 		}
 	}
 
 	// Holding cost must grow with holding days
-	a1 := attr.Attribute("buy", 1.0850, 1.0950, 1.0, 100000, 1)
-	a5 := attr.Attribute("buy", 1.0850, 1.0950, 1.0, 100000, 5)
+	a1 := attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0950), decFAttr(1.0), decFAttr(100000), decFAttr(1))
+	a5 := attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0950), decFAttr(1.0), decFAttr(100000), decFAttr(5))
 
-	if closeEnoughAttribution(a1.HoldingCost(), a5.HoldingCost()) {
-		t.Errorf("HoldingCost should differ by day count: day1=%.4f day5=%.4f", a1.HoldingCost(), a5.HoldingCost())
+	if decCloseAttr(a1.HoldingCost(), a5.HoldingCost()) {
+		t.Errorf("HoldingCost should differ by day count: day1=%s day5=%s", a1.HoldingCost().String(), a5.HoldingCost().String())
 	}
 
 	// Execution costs should be independent of holding days
-	if !closeEnoughAttribution(a1.ExecutionCost(), a5.ExecutionCost()) {
-		t.Errorf("ExecutionCost should be independent of holding: day1=%.4f day5=%.4f",
-			a1.ExecutionCost(), a5.ExecutionCost())
+	if !decCloseAttr(a1.ExecutionCost(), a5.ExecutionCost()) {
+		t.Errorf("ExecutionCost should be independent of holding: day1=%s day5=%s",
+			a1.ExecutionCost().String(), a5.ExecutionCost().String())
 	}
 
-	t.Logf("Signal=%.2f Exec=%.4f Hold=%.4f Net=%.2f",
-		a.SignalPnL(), a.ExecutionCost(), a.HoldingCost(), a.NetPnL())
+	t.Logf("Signal=%s Exec=%s Hold=%s Net=%s",
+		a.SignalPnL().String(), a.ExecutionCost().String(), a.HoldingCost().String(), a.NetPnL().String())
 }
 
 func TestPnLAttribution_SwapScalesWithHoldingDays(t *testing.T) {
@@ -253,13 +250,13 @@ func TestPnLAttribution_SwapScalesWithHoldingDays(t *testing.T) {
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
 
-	var prevSwap float64
+	var prevSwap decimal.Decimal
 	for _, days := range []float64{0, 1, 3, 7} {
-		a := attr.Attribute("buy", 1.0850, 1.0950, 1.0, 100000, days)
+		a := attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0950), decFAttr(1.0), decFAttr(100000), decFAttr(days))
 		if days > 0 {
 			// Swap cost should grow (in absolute value) with more days
-			if math.Abs(a.SwapCost) <= math.Abs(prevSwap) && prevSwap != 0 {
-				t.Errorf("day %.0f: |SwapCost|=%.4f should exceed previous |%.4f|", days, math.Abs(a.SwapCost), math.Abs(prevSwap))
+			if a.SwapCost.Abs().LessThanOrEqual(prevSwap.Abs()) && !prevSwap.Equal(decimal.Zero) {
+				t.Errorf("day %.0f: |SwapCost|=%s should exceed previous |%s|", days, a.SwapCost.Abs().String(), prevSwap.Abs().String())
 			}
 		}
 		prevSwap = a.SwapCost
@@ -272,16 +269,16 @@ func TestPnLAttribution_ZeroHoldingDays(t *testing.T) {
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
 
-	a := attr.Attribute("buy", 1.0850, 1.0900, 1.0, 100000, 0)
+	a := attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0900), decFAttr(1.0), decFAttr(100000), decFAttr(0))
 
-	if math.Abs(a.SwapCost) > 0.01 {
-		t.Errorf("zero holding: SwapCost=%.4f, want 0", a.SwapCost)
+	if a.SwapCost.Abs().GreaterThan(decFAttr(0.01)) {
+		t.Errorf("zero holding: SwapCost=%s, want 0", a.SwapCost.String())
 	}
 	// Execution and commission still apply (entry + exit)
-	if a.ExecutionCost() <= 0 {
+	if a.ExecutionCost().LessThanOrEqual(decimal.Zero) {
 		t.Errorf("Execution should be non-zero even with zero holding")
 	}
-	if a.Commission <= 0 {
+	if a.Commission.LessThanOrEqual(decimal.Zero) {
 		t.Errorf("Commission should be non-zero (entry + exit)")
 	}
 	if err := a.Validate(); err != nil {
@@ -295,12 +292,12 @@ func TestPnLAttribution_BpsConsistency(t *testing.T) {
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
 
-	a := attr.Attribute("buy", 1.0850, 1.0950, 1.0, 100000, 1)
+	a := attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0950), decFAttr(1.0), decFAttr(100000), decFAttr(1))
 
 	// NetBps = SignalBps - ExecutionBps - HoldingBps
-	expected := a.SignalBps() - a.ExecutionBps() - a.HoldingBps()
-	if !closeEnoughAttribution(a.NetBps(), expected) {
-		t.Errorf("NetBps=%.2f, Signal-Exec-Hold=%.2f", a.NetBps(), expected)
+	expected := a.SignalBps().Sub(a.ExecutionBps()).Sub(a.HoldingBps())
+	if !decCloseAttr(a.NetBps(), expected) {
+		t.Errorf("NetBps=%s, Signal-Exec-Hold=%s", a.NetBps().String(), expected.String())
 	}
 }
 
@@ -311,17 +308,17 @@ func TestPnLAttribution_SmallSize(t *testing.T) {
 	attr := NewPnLAttributor(fm)
 
 	// 0.01 lot micro trade
-	a := attr.Attribute("buy", 1.0850, 1.0950, 0.01, 100000, 1)
+	a := attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0950), decFAttr(0.01), decFAttr(100000), decFAttr(1))
 
 	if err := a.Validate(); err != nil {
 		t.Errorf("Validate failed on micro trade: %v", err)
 	}
 	// Costs should be proportionally smaller
-	if a.ExecutionCost() <= 0 {
-		t.Errorf("micro trade: ExecutionCost=%.4f, want >0", a.ExecutionCost())
+	if a.ExecutionCost().LessThanOrEqual(decimal.Zero) {
+		t.Errorf("micro trade: ExecutionCost=%s, want >0", a.ExecutionCost().String())
 	}
-	t.Logf("Micro: Gross=%.4f Exec=%.4f Hold=%.4f Net=%.4f | NetBps=%.2f",
-		a.GrossPnL, a.ExecutionCost(), a.HoldingCost(), a.NetPnL(), a.NetBps())
+	t.Logf("Micro: Gross=%s Exec=%s Hold=%s Net=%s | NetBps=%s",
+		a.GrossPnL.String(), a.ExecutionCost().String(), a.HoldingCost().String(), a.NetPnL().String(), a.NetBps().String())
 }
 
 func TestPnLAttribution_ValidateAllCostsNonNegative(t *testing.T) {
@@ -330,16 +327,16 @@ func TestPnLAttribution_ValidateAllCostsNonNegative(t *testing.T) {
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
 
-	a := attr.Attribute("buy", 1.0850, 1.0950, 1.0, 100000, 1)
+	a := attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0950), decFAttr(1.0), decFAttr(100000), decFAttr(1))
 
 	// Spread, commission, slippage must never be negative
-	for name, val := range map[string]float64{
+	for name, val := range map[string]decimal.Decimal{
 		"SpreadCost":   a.SpreadCost,
 		"Commission":   a.Commission,
 		"SlippageCost": a.SlippageCost,
 	} {
-		if val < 0 {
-			t.Errorf("%s=%.4f, costs must be non-negative", name, val)
+		if val.LessThan(decimal.Zero) {
+			t.Errorf("%s=%s, costs must be non-negative", name, val.String())
 		}
 	}
 	// Swap and Funding can be negative (you receive it)
@@ -353,17 +350,17 @@ func TestPnLAttribution_LongHoldingSwap(t *testing.T) {
 	attr := NewPnLAttributor(fm)
 
 	// 30-day hold — swap cost should dominate holding dimension
-	a := attr.Attribute("sell", 1.0850, 1.0900, 1.0, 100000, 30)
+	a := attr.Attribute("sell", decFAttr(1.0850), decFAttr(1.0900), decFAttr(1.0), decFAttr(100000), decFAttr(30))
 
 	if err := a.Validate(); err != nil {
 		t.Errorf("Validate failed: %v", err)
 	}
 	// Holding cost for 30 days should be significant
-	if math.Abs(a.HoldingCost()) < 1.0 {
-		t.Errorf("30-day hold: HoldingCost=%.4f, want >1.0", a.HoldingCost())
+	if a.HoldingCost().Abs().LessThan(decFAttr(1.0)) {
+		t.Errorf("30-day hold: HoldingCost=%s, want >1.0", a.HoldingCost().String())
 	}
-	t.Logf("30d hold: Gross=%.2f Exec=%.2f Hold=%.2f (swap=%.2f) Net=%.2f",
-		a.GrossPnL, a.ExecutionCost(), a.HoldingCost(), a.SwapCost, a.NetPnL())
+	t.Logf("30d hold: Gross=%s Exec=%s Hold=%s (swap=%s) Net=%s",
+		a.GrossPnL.String(), a.ExecutionCost().String(), a.HoldingCost().String(), a.SwapCost.String(), a.NetPnL().String())
 }
 
 func TestPnLAttribution_SideIsPreserved(t *testing.T) {
@@ -372,12 +369,12 @@ func TestPnLAttribution_SideIsPreserved(t *testing.T) {
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
 
-	aBuy := attr.Attribute("buy", 1.0850, 1.0950, 1.0, 100000, 1)
+	aBuy := attr.Attribute("buy", decFAttr(1.0850), decFAttr(1.0950), decFAttr(1.0), decFAttr(100000), decFAttr(1))
 	if aBuy.Side != "buy" {
 		t.Errorf("Side = %s, want buy", aBuy.Side)
 	}
 
-	aSell := attr.Attribute("sell", 1.0950, 1.0850, 1.0, 100000, 1)
+	aSell := attr.Attribute("sell", decFAttr(1.0950), decFAttr(1.0850), decFAttr(1.0), decFAttr(100000), decFAttr(1))
 	if aSell.Side != "sell" {
 		t.Errorf("Side = %s, want sell", aSell.Side)
 	}
@@ -403,18 +400,18 @@ func TestPnLAttribution_ValidateErrorFormat(t *testing.T) {
 	// Manually construct an attribution to verify Validate passes
 	// and the arithmetic identity holds.
 	a := PnLAttribution{
-		GrossPnL:     100.0,
-		SlippageCost: 5.0,
-		SpreadCost:   5.0,
-		Commission:   7.0,
-		SwapCost:     -3.5,
-		Notional:     100000,
+		GrossPnL:     decFAttr(100.0),
+		SlippageCost: decFAttr(5.0),
+		SpreadCost:   decFAttr(5.0),
+		Commission:   decFAttr(7.0),
+		SwapCost:     decFAttr(-3.5),
+		Notional:     decFAttr(100000),
 		Side:         "buy",
 	}
 	// Net = 100 - 10 - 3.5 = 86.5
-	expectedNet := 86.5
-	if !closeEnoughAttribution(a.NetPnL(), expectedNet) {
-		t.Errorf("NetPnL() = %.4f, want %.4f", a.NetPnL(), expectedNet)
+	expectedNet := decFAttr(86.5)
+	if !decCloseAttr(a.NetPnL(), expectedNet) {
+		t.Errorf("NetPnL() = %s, want %s", a.NetPnL().String(), expectedNet.String())
 	}
 	if err := a.Validate(); err != nil {
 		t.Errorf("Validate should pass for consistent attribution: %v", err)

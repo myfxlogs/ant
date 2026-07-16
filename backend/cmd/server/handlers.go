@@ -200,8 +200,8 @@ func registerHandlers(
 	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, withSency(otelInterceptor, authInterceptor)))
 
 	// Share performance: generate expiring public links for trading results.
-	registerShareHandlers(mux, pool, log, tradeRecordRepo, userRepo, mthubSvc, platformSvc,
-		jwtSecret, otelInterceptor, authInterceptor, authInterceptor)
+	registerShareHandlers(mux, pool, log, tradeRecordRepo, userRepo, mthubSvc,
+		jwtSecret, otelInterceptor, authInterceptor)
 
 	// AI Gateway: platform-operated AI model relay with token billing.
 	gatewayProviderRepo := repository.NewSystemAIProviderRepository(pool)

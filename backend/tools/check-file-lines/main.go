@@ -209,7 +209,7 @@ func collectFiles(root string) []string {
 }
 
 func countLines(path string) int {
-	data, err := os.ReadFile(path) // #nosec G304 -- path from filepath.Walk, not user input
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return 0
 	}
@@ -222,7 +222,7 @@ func countLines(path string) int {
 }
 
 func isText(path string) bool {
-	data, err := os.ReadFile(path) // #nosec G304 -- path from filepath.Walk, not user input
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return false
 	}

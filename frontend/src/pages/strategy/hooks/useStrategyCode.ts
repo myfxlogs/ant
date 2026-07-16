@@ -56,10 +56,8 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
   // Parse extracted parameters from the last validation result into the format
   // accepted by createTemplate / updateTemplate (TemplateParameter proto).
   const _validatedParams = useCallback((): TemplateParameter[] => {
-    if (!validationResult?.parametersJson) return [];
-    try {
-      return JSON.parse(validationResult.parametersJson) as TemplateParameter[];
-    } catch { return []; }
+    if (!validationResult?.parameterEntries) return [];
+    return validationResult.parameterEntries.map(e => ({ key: e.name, type: e.type as TemplateParameter['type'] || 'string', defaultValue: e.default }));
   }, [validationResult]);
 
   const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
@@ -94,7 +92,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
     if (loadedTemplate) {
       setSaveLoading(true);
       try {
-        const i18n = await buildParamI18n(validationResult?.parametersJson || '');
+        const i18n = await buildParamI18n(validationResult?.parameterEntries || []);
         await strategyApi.updateTemplate({
           id: loadedTemplate.id, code,
           parameters: _validatedParams(),
@@ -113,7 +111,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
   const handleSaveModalOk = useCallback(async () => {
     try {
       const values = await saveForm.validateFields(); setSaveLoading(true);
-      const i18n = await buildParamI18n(validationResult?.parametersJson || '');
+      const i18n = await buildParamI18n(validationResult?.parameterEntries || []);
       const tpl = await strategyApi.createTemplate({
         name: values.name, description: values.description || '', code,
         parameters: _validatedParams(),

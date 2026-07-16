@@ -23,8 +23,8 @@ message CreateTemplateRequest {
   repeated TemplateParameter parameters = 4;
   bool is_public = 5;
   repeated string tags = 6;
-  // I18n data for parameter labels (JSON-encoded TemplateI18n).
-  string i18n = 7;
+  // I18n data for parameter labels.
+  TemplateI18n i18n = 7;
   // FK to imported_strategies.id (ADR-0023).
   string strategy_id = 8;
 }
@@ -60,8 +60,8 @@ message UpdateTemplateRequest {
   repeated TemplateParameter parameters = 5;
   optional bool is_public = 6;
   repeated string tags = 7;
-  // I18n data for parameter labels (JSON-encoded TemplateI18n).
-  optional string i18n = 8;
+  // I18n data for parameter labels.
+  optional TemplateI18n i18n = 8;
   // FK to imported_strategies.id (ADR-0023).
   optional string strategy_id = 9;
 }

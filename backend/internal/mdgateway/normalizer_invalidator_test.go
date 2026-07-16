@@ -76,7 +76,7 @@ func TestNormalizerListenerFallback(t *testing.T) {
 	t.Log("ticker fallback ran cleanly with zero spurious invalidations")
 }
 
-// TestNormalizerListenerPgListen verifies the LISTEN path: a JSON payload
+// TestNormalizerListenerPgListen verifies the LISTEN path: a delimited payload
 // arriving via PGListener.WaitForNotification triggers onInvalidate(broker,
 // symbol_raw) exactly once with the parsed fields.
 func TestNormalizerListenerPgListen(t *testing.T) {
@@ -87,10 +87,10 @@ func TestNormalizerListenerPgListen(t *testing.T) {
 	})
 
 	listener := newFakePGListener(4)
-	listener.payloads <- `{"broker":"ic_markets","symbol_raw":"EURUSDm"}`
-	listener.payloads <- `not-json`                                 // bad payload, must be skipped
-	listener.payloads <- `{"broker":"","symbol_raw":""}`            // empty fields, must be skipped
-	listener.payloads <- `{"broker":"oanda","symbol_raw":"GBPUSD"}`
+	listener.payloads <- "ic_markets|EURUSDm"
+	listener.payloads <- "badpayload"                       // no delimiter, must be skipped
+	listener.payloads <- "|"                                // empty fields, must be skipped
+	listener.payloads <- "oanda|GBPUSD"
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

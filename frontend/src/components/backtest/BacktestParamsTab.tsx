@@ -39,8 +39,7 @@ export default function BacktestParamsTab({ runner, inputs, templates }: Props) 
   const tplList = templates?.list || [];
   const selectedTpl = tplList.find((tpl: StrategyTemplate) => tpl.id === templates?.selectedId);
   const i18nData = useMemo(() => {
-    if (!selectedTpl?.i18n) return null;
-    try { return JSON.parse(selectedTpl.i18n as string); } catch { return null; }
+    return selectedTpl?.i18n ?? null;
   }, [selectedTpl?.i18n]);
 
   const slippagePct = (runner.slippage * 100).toFixed(4).replace(/\.?0+$/, '');

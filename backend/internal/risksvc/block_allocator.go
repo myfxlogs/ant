@@ -3,20 +3,22 @@ package risksvc
 import (
 	"context"
 	"sort"
+
+	"github.com/shopspring/decimal"
 )
 
 // AllocAccount represents an account available for block trade allocation.
 type AllocAccount struct {
-	AccountID string
-	Equity    float64
-	FreeMargin float64
-	Priority  int // lower = higher priority for FIFO
+	AccountID  string
+	Equity     decimal.Decimal
+	FreeMargin decimal.Decimal
+	Priority   int // lower = higher priority for FIFO
 }
 
 // BlockAllocator distributes a total volume across accounts.
 type BlockAllocator interface {
 	Name() string
-	Allocate(ctx context.Context, totalVolume float64, accounts []AllocAccount) map[string]float64
+	Allocate(ctx context.Context, totalVolume decimal.Decimal, accounts []AllocAccount) map[string]decimal.Decimal
 }
 
 // ProRataAllocator allocates volume proportional to each account's equity.
@@ -24,37 +26,37 @@ type ProRataAllocator struct{}
 
 func (a *ProRataAllocator) Name() string { return "pro_rata" }
 
-func (a *ProRataAllocator) Allocate(_ context.Context, totalVolume float64, accounts []AllocAccount) map[string]float64 {
-	result := make(map[string]float64, len(accounts))
-	totalEquity := 0.0
+func (a *ProRataAllocator) Allocate(_ context.Context, totalVolume decimal.Decimal, accounts []AllocAccount) map[string]decimal.Decimal {
+	result := make(map[string]decimal.Decimal, len(accounts))
+	totalEquity := decimal.Zero
 	for _, acc := range accounts {
-		if acc.Equity > 0 {
-			totalEquity += acc.Equity
+		if acc.Equity.GreaterThan(decimal.Zero) {
+			totalEquity = totalEquity.Add(acc.Equity)
 		}
 	}
-	if totalEquity <= 0 || totalVolume <= 0 {
+	if totalEquity.LessThanOrEqual(decimal.Zero) || totalVolume.LessThanOrEqual(decimal.Zero) {
 		return result
 	}
 	remaining := totalVolume
 	sorted := make([]AllocAccount, len(accounts))
 	copy(sorted, accounts)
-	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Equity > sorted[j].Equity })
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Equity.GreaterThan(sorted[j].Equity) })
 	for i, acc := range sorted {
-		if acc.Equity <= 0 {
+		if acc.Equity.LessThanOrEqual(decimal.Zero) {
 			continue
 		}
-		share := totalVolume * (acc.Equity / totalEquity)
-		if share > acc.FreeMargin && acc.FreeMargin > 0 {
+		share := totalVolume.Mul(acc.Equity).Div(totalEquity)
+		if share.GreaterThan(acc.FreeMargin) && acc.FreeMargin.GreaterThan(decimal.Zero) {
 			share = acc.FreeMargin
 		}
 		if i == len(sorted)-1 {
 			share = remaining
 		}
-		if share > remaining {
+		if share.GreaterThan(remaining) {
 			share = remaining
 		}
 		result[acc.AccountID] = share
-		remaining -= share
+		remaining = remaining.Sub(share)
 	}
 	return result
 }
@@ -64,9 +66,9 @@ type FIFOAllocator struct{}
 
 func (a *FIFOAllocator) Name() string { return "fifo" }
 
-func (a *FIFOAllocator) Allocate(_ context.Context, totalVolume float64, accounts []AllocAccount) map[string]float64 {
-	result := make(map[string]float64, len(accounts))
-	if totalVolume <= 0 || len(accounts) == 0 {
+func (a *FIFOAllocator) Allocate(_ context.Context, totalVolume decimal.Decimal, accounts []AllocAccount) map[string]decimal.Decimal {
+	result := make(map[string]decimal.Decimal, len(accounts))
+	if totalVolume.LessThanOrEqual(decimal.Zero) || len(accounts) == 0 {
 		return result
 	}
 	sorted := make([]AllocAccount, len(accounts))
@@ -76,19 +78,19 @@ func (a *FIFOAllocator) Allocate(_ context.Context, totalVolume float64, account
 	for i, acc := range sorted {
 		share := remaining
 		if i < len(sorted)-1 {
-			if acc.FreeMargin > 0 && acc.FreeMargin < share {
+			if acc.FreeMargin.GreaterThan(decimal.Zero) && acc.FreeMargin.LessThan(share) {
 				share = acc.FreeMargin
 			}
 		}
-		if share <= 0 {
+		if share.LessThanOrEqual(decimal.Zero) {
 			continue
 		}
-		if share > remaining {
+		if share.GreaterThan(remaining) {
 			share = remaining
 		}
 		result[acc.AccountID] = share
-		remaining -= share
-		if remaining <= 0 {
+		remaining = remaining.Sub(share)
+		if remaining.LessThanOrEqual(decimal.Zero) {
 			break
 		}
 	}
@@ -100,37 +102,37 @@ type VWAPAllocator struct{}
 
 func (a *VWAPAllocator) Name() string { return "vwap" }
 
-func (a *VWAPAllocator) Allocate(_ context.Context, totalVolume float64, accounts []AllocAccount) map[string]float64 {
-	result := make(map[string]float64, len(accounts))
-	totalCapacity := 0.0
+func (a *VWAPAllocator) Allocate(_ context.Context, totalVolume decimal.Decimal, accounts []AllocAccount) map[string]decimal.Decimal {
+	result := make(map[string]decimal.Decimal, len(accounts))
+	totalCapacity := decimal.Zero
 	for _, acc := range accounts {
-		if acc.FreeMargin > 0 {
-			totalCapacity += acc.FreeMargin
+		if acc.FreeMargin.GreaterThan(decimal.Zero) {
+			totalCapacity = totalCapacity.Add(acc.FreeMargin)
 		}
 	}
-	if totalCapacity <= 0 || totalVolume <= 0 {
+	if totalCapacity.LessThanOrEqual(decimal.Zero) || totalVolume.LessThanOrEqual(decimal.Zero) {
 		return result
 	}
 	remaining := totalVolume
 	sorted := make([]AllocAccount, len(accounts))
 	copy(sorted, accounts)
-	sort.Slice(sorted, func(i, j int) bool { return sorted[i].FreeMargin > sorted[j].FreeMargin })
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].FreeMargin.GreaterThan(sorted[j].FreeMargin) })
 	for i, acc := range sorted {
-		if acc.FreeMargin <= 0 {
+		if acc.FreeMargin.LessThanOrEqual(decimal.Zero) {
 			continue
 		}
-		share := totalVolume * (acc.FreeMargin / totalCapacity)
-		if share > acc.FreeMargin {
+		share := totalVolume.Mul(acc.FreeMargin).Div(totalCapacity)
+		if share.GreaterThan(acc.FreeMargin) {
 			share = acc.FreeMargin
 		}
 		if i == len(sorted)-1 {
 			share = remaining
 		}
-		if share > remaining {
+		if share.GreaterThan(remaining) {
 			share = remaining
 		}
 		result[acc.AccountID] = share
-		remaining -= share
+		remaining = remaining.Sub(share)
 	}
 	return result
 }

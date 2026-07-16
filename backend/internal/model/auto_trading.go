@@ -2,8 +2,6 @@ package model
 
 import (
 	"github.com/shopspring/decimal"
-	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,59 +21,6 @@ type StrategyExecution struct {
 	CompletedAt  *time.Time `json:"completed_at" db:"completed_at"`
 }
 
-type ExecutionSignal struct {
-	SignalID   uuid.UUID        `json:"signal_id"`
-	Symbol     string           `json:"symbol"`
-	Type       string           `json:"type"`
-	Volume     decimal.Decimal          `json:"volume"`
-	Price      decimal.Decimal          `json:"price"`
-	StopLoss   decimal.Decimal          `json:"stop_loss"`
-	TakeProfit decimal.Decimal          `json:"take_profit"`
-	Result     *ExecutionResult `json:"result,omitempty"`
-}
-
-type ExecutionResult struct {
-	Ticket int64   `json:"ticket"`
-	Profit decimal.Decimal `json:"profit"`
-	Error  string  `json:"error,omitempty"`
-}
-
-func (e *StrategyExecution) GetSignals() ([]ExecutionSignal, error) {
-	if len(e.Signals) == 0 {
-		return nil, nil
-	}
-	var signals []ExecutionSignal
-	err := json.Unmarshal(e.Signals, &signals)
-	return signals, err
-}
-
-func (e *StrategyExecution) SetSignals(signals []ExecutionSignal) error {
-	data, err := json.Marshal(signals)
-	if err != nil {
-		return fmt.Errorf("marshal execution signals: %w", err)
-	}
-	e.Signals = data
-	return nil
-}
-
-func (e *StrategyExecution) GetOrders() ([]ExecutionResult, error) {
-	if len(e.Orders) == 0 {
-		return nil, nil
-	}
-	var orders []ExecutionResult
-	err := json.Unmarshal(e.Orders, &orders)
-	return orders, err
-}
-
-func (e *StrategyExecution) SetOrders(orders []ExecutionResult) error {
-	data, err := json.Marshal(orders)
-	if err != nil {
-		return fmt.Errorf("marshal execution orders: %w", err)
-	}
-	e.Orders = data
-	return nil
-}
-
 type RiskConfig struct {
 	ID                  uuid.UUID `json:"id" db:"id"`
 	UserID              uuid.UUID `json:"user_id" db:"user_id"`
@@ -86,8 +31,8 @@ type RiskConfig struct {
 	MaxPositions        int       `json:"max_positions" db:"max_positions"`
 	MaxLotSize          decimal.Decimal `json:"max_lot_size" db:"max_lot_size"`
 	DailyLossUsed       decimal.Decimal   `json:"daily_loss_used" db:"daily_loss_used"`
-	TrailingStopEnabled bool      `json:"trailing_stop_enabled" db:"trailing_stop_enabled"`
-	TrailingStopPips    float64   `json:"trailing_stop_pips" db:"trailing_stop_pips"`
+	TrailingStopEnabled bool            `json:"trailing_stop_enabled" db:"trailing_stop_enabled"`
+	TrailingStopPips    decimal.Decimal `json:"trailing_stop_pips" db:"trailing_stop_pips"`
 	CreatedAt           time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at" db:"updated_at"`
 }
@@ -138,63 +83,63 @@ func NewTradingLog(userID uuid.UUID, logType, action, symbol, message string) *T
 }
 
 type PositionSizingRequest struct {
-	AccountID      uuid.UUID `json:"account_id"`
-	Symbol         string    `json:"symbol"`
-	StopLossPips   float64   `json:"stop_loss_pips"`
-	RiskPercent    float64   `json:"risk_percent"`
-	AccountBalance float64   `json:"account_balance"`
+	AccountID      uuid.UUID
+	Symbol         string
+	StopLossPips   decimal.Decimal
+	RiskPercent    decimal.Decimal
+	AccountBalance decimal.Decimal
 }
 
 type PositionSizingResult struct {
-	Volume     decimal.Decimal `json:"volume"`
-	RiskAmount float64 `json:"risk_amount"`
-	PipValue   float64 `json:"pip_value"`
-	LotSize    float64 `json:"lot_size"`
-	MaxVolume  float64 `json:"max_volume"`
-	MinVolume  float64 `json:"min_volume"`
+	Volume     decimal.Decimal
+	RiskAmount decimal.Decimal
+	PipValue   decimal.Decimal
+	LotSize    decimal.Decimal
+	MaxVolume  decimal.Decimal
+	MinVolume  decimal.Decimal
 }
 
 type RiskCheckRequest struct {
-	AccountID      uuid.UUID `json:"account_id"`
-	Symbol         string    `json:"symbol"`
-	Volume         decimal.Decimal   `json:"volume"`
-	CurrentBalance float64   `json:"current_balance"`
-	CurrentEquity  float64   `json:"current_equity"`
-	OpenPositions  int       `json:"open_positions"`
+	AccountID      uuid.UUID
+	Symbol         string
+	Volume         decimal.Decimal
+	CurrentBalance decimal.Decimal
+	CurrentEquity  decimal.Decimal
+	OpenPositions  int
 }
 
 type RiskCheckResult struct {
-	Allowed            bool          `json:"allowed"`
-	Reason             string        `json:"reason,omitempty"`
-	CurrentRisk        float64       `json:"current_risk"`
-	MaxAllowedRisk     float64       `json:"max_allowed_risk"`
-	DailyLossUsed      decimal.Decimal       `json:"daily_loss_used"`
-	DailyLossLimit     float64       `json:"daily_loss_limit"`
-	PositionCount      int           `json:"position_count"`
-	MaxPositions       int           `json:"max_positions"`
-	DrawdownPercent    float64       `json:"drawdown_percent"`
-	MaxDrawdownPercent float64       `json:"max_drawdown_percent"`
-	IsWithinLimits     bool          `json:"is_within_limits"`
-	Decision           *RiskDecision `json:"decision,omitempty"`
+	Allowed            bool
+	Reason             string
+	CurrentRisk        decimal.Decimal
+	MaxAllowedRisk     decimal.Decimal
+	DailyLossUsed      decimal.Decimal
+	DailyLossLimit     decimal.Decimal
+	PositionCount      int
+	MaxPositions       int
+	DrawdownPercent    decimal.Decimal
+	MaxDrawdownPercent decimal.Decimal
+	IsWithinLimits     bool
+	Decision           *RiskDecision
 }
 
 type AutoTradingStatus struct {
-	GlobalEnabled    bool               `json:"global_enabled"`
-	ActiveStrategies int                `json:"active_strategies"`
-	PendingSignals   int                `json:"pending_signals"`
-	TodayExecutions  int                `json:"today_executions"`
-	TodayProfit      float64            `json:"today_profit"`
-	RiskStatus       *RiskStatusSummary `json:"risk_status,omitempty"`
+	GlobalEnabled    bool
+	ActiveStrategies int
+	PendingSignals   int
+	TodayExecutions  int
+	TodayProfit      decimal.Decimal
+	RiskStatus       *RiskStatusSummary
 }
 
 type RiskStatusSummary struct {
-	DailyLossUsed      decimal.Decimal `json:"daily_loss_used"`
-	DailyLossLimit     float64 `json:"daily_loss_limit"`
-	DrawdownPercent    float64 `json:"drawdown_percent"`
-	MaxDrawdownPercent float64 `json:"max_drawdown_percent"`
-	PositionCount      int     `json:"position_count"`
-	MaxPositions       int     `json:"max_positions"`
-	IsWithinLimits     bool    `json:"is_within_limits"`
+	DailyLossUsed      decimal.Decimal
+	DailyLossLimit     decimal.Decimal
+	DrawdownPercent    decimal.Decimal
+	MaxDrawdownPercent decimal.Decimal
+	PositionCount      int
+	MaxPositions       int
+	IsWithinLimits     bool
 }
 
 const (
@@ -202,10 +147,7 @@ const (
 	ScheduleTypeInterval = "interval"
 	ScheduleTypeEvent    = "event"
 
-	ExecutionStatusRunning   = "running"
-	ExecutionStatusCompleted = "completed"
-	ExecutionStatusFailed    = "failed"
-	ExecutionStatusCancelled = "cancelled"
+	ExecutionStatusRunning = "running"
 
 	LogTypeTrade  = "trade"
 	LogTypeSignal = "signal"

@@ -66,13 +66,13 @@ func (x *EngineValidateRequest) GetStrategyCode() string {
 }
 
 type EngineValidateResponse struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Valid          bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
-	Errors         []string               `protobuf:"bytes,2,rep,name=errors,proto3" json:"errors,omitempty"`
-	Warnings       []string               `protobuf:"bytes,3,rep,name=warnings,proto3" json:"warnings,omitempty"`
-	ParametersJson string                 `protobuf:"bytes,4,opt,name=parameters_json,json=parametersJson,proto3" json:"parameters_json,omitempty"` // JSON array of {name, type, default, label}
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Valid         bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
+	Errors        []string               `protobuf:"bytes,2,rep,name=errors,proto3" json:"errors,omitempty"`
+	Warnings      []string               `protobuf:"bytes,3,rep,name=warnings,proto3" json:"warnings,omitempty"`
+	Parameters    []*ParameterEntry      `protobuf:"bytes,4,rep,name=parameters,proto3" json:"parameters,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *EngineValidateResponse) Reset() {
@@ -126,11 +126,11 @@ func (x *EngineValidateResponse) GetWarnings() []string {
 	return nil
 }
 
-func (x *EngineValidateResponse) GetParametersJson() string {
+func (x *EngineValidateResponse) GetParameters() []*ParameterEntry {
 	if x != nil {
-		return x.ParametersJson
+		return x.Parameters
 	}
-	return ""
+	return nil
 }
 
 type EngineRunStrategyRequest struct {
@@ -1049,12 +1049,12 @@ func (x *ExecuteBacktestResponse) GetEquityTimesMs() []int64 {
 
 type ExecuteBacktestMetrics struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
-	TotalReturn      float64                `protobuf:"fixed64,1,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
-	AnnualReturn     float64                `protobuf:"fixed64,2,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"`
-	MaxDrawdown      float64                `protobuf:"fixed64,3,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
-	SharpeRatio      float64                `protobuf:"fixed64,4,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
-	WinRate          float64                `protobuf:"fixed64,5,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
-	ProfitFactor     float64                `protobuf:"fixed64,6,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
+	TotalReturn      string                 `protobuf:"bytes,1,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
+	AnnualReturn     string                 `protobuf:"bytes,2,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"`
+	MaxDrawdown      string                 `protobuf:"bytes,3,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
+	SharpeRatio      string                 `protobuf:"bytes,4,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
+	WinRate          string                 `protobuf:"bytes,5,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	ProfitFactor     string                 `protobuf:"bytes,6,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
 	TotalTrades      int32                  `protobuf:"varint,7,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
 	WinningTrades    int32                  `protobuf:"varint,8,opt,name=winning_trades,json=winningTrades,proto3" json:"winning_trades,omitempty"`
 	LosingTrades     int32                  `protobuf:"varint,9,opt,name=losing_trades,json=losingTrades,proto3" json:"losing_trades,omitempty"`
@@ -1095,46 +1095,46 @@ func (*ExecuteBacktestMetrics) Descriptor() ([]byte, []int) {
 	return file_backtest_service_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *ExecuteBacktestMetrics) GetTotalReturn() float64 {
+func (x *ExecuteBacktestMetrics) GetTotalReturn() string {
 	if x != nil {
 		return x.TotalReturn
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteBacktestMetrics) GetAnnualReturn() float64 {
+func (x *ExecuteBacktestMetrics) GetAnnualReturn() string {
 	if x != nil {
 		return x.AnnualReturn
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteBacktestMetrics) GetMaxDrawdown() float64 {
+func (x *ExecuteBacktestMetrics) GetMaxDrawdown() string {
 	if x != nil {
 		return x.MaxDrawdown
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteBacktestMetrics) GetSharpeRatio() float64 {
+func (x *ExecuteBacktestMetrics) GetSharpeRatio() string {
 	if x != nil {
 		return x.SharpeRatio
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteBacktestMetrics) GetWinRate() float64 {
+func (x *ExecuteBacktestMetrics) GetWinRate() string {
 	if x != nil {
 		return x.WinRate
 	}
-	return 0
+	return ""
 }
 
-func (x *ExecuteBacktestMetrics) GetProfitFactor() float64 {
+func (x *ExecuteBacktestMetrics) GetProfitFactor() string {
 	if x != nil {
 		return x.ProfitFactor
 	}
-	return 0
+	return ""
 }
 
 func (x *ExecuteBacktestMetrics) GetTotalTrades() int32 {
@@ -1259,14 +1259,16 @@ var File_backtest_service_proto protoreflect.FileDescriptor
 
 const file_backtest_service_proto_rawDesc = "" +
 	"\n" +
-	"\x16backtest_service.proto\x12\x06ant.v1\x1a\x1fbacktest_execution_config.proto\"<\n" +
+	"\x16backtest_service.proto\x12\x06ant.v1\x1a\x1fbacktest_execution_config.proto\x1a\x15parameter_entry.proto\"<\n" +
 	"\x15EngineValidateRequest\x12#\n" +
-	"\rstrategy_code\x18\x01 \x01(\tR\fstrategyCode\"\x8b\x01\n" +
+	"\rstrategy_code\x18\x01 \x01(\tR\fstrategyCode\"\x9a\x01\n" +
 	"\x16EngineValidateResponse\x12\x14\n" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x16\n" +
 	"\x06errors\x18\x02 \x03(\tR\x06errors\x12\x1a\n" +
-	"\bwarnings\x18\x03 \x03(\tR\bwarnings\x12'\n" +
-	"\x0fparameters_json\x18\x04 \x01(\tR\x0eparametersJson\"\xc7\x01\n" +
+	"\bwarnings\x18\x03 \x03(\tR\bwarnings\x126\n" +
+	"\n" +
+	"parameters\x18\x04 \x03(\v2\x16.ant.v1.ParameterEntryR\n" +
+	"parameters\"\xc7\x01\n" +
 	"\x18EngineRunStrategyRequest\x12\x1f\n" +
 	"\vstrategy_id\x18\x01 \x01(\tR\n" +
 	"strategyId\x12#\n" +
@@ -1383,12 +1385,12 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\x15execution_assumptions\x18\a \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptions\x12&\n" +
 	"\x0fequity_times_ms\x18\b \x03(\x03R\requityTimesMs\"\xcd\x03\n" +
 	"\x16ExecuteBacktestMetrics\x12!\n" +
-	"\ftotal_return\x18\x01 \x01(\x01R\vtotalReturn\x12#\n" +
-	"\rannual_return\x18\x02 \x01(\x01R\fannualReturn\x12!\n" +
-	"\fmax_drawdown\x18\x03 \x01(\x01R\vmaxDrawdown\x12!\n" +
-	"\fsharpe_ratio\x18\x04 \x01(\x01R\vsharpeRatio\x12\x19\n" +
-	"\bwin_rate\x18\x05 \x01(\x01R\awinRate\x12#\n" +
-	"\rprofit_factor\x18\x06 \x01(\x01R\fprofitFactor\x12!\n" +
+	"\ftotal_return\x18\x01 \x01(\tR\vtotalReturn\x12#\n" +
+	"\rannual_return\x18\x02 \x01(\tR\fannualReturn\x12!\n" +
+	"\fmax_drawdown\x18\x03 \x01(\tR\vmaxDrawdown\x12!\n" +
+	"\fsharpe_ratio\x18\x04 \x01(\tR\vsharpeRatio\x12\x19\n" +
+	"\bwin_rate\x18\x05 \x01(\tR\awinRate\x12#\n" +
+	"\rprofit_factor\x18\x06 \x01(\tR\fprofitFactor\x12!\n" +
 	"\ftotal_trades\x18\a \x01(\x05R\vtotalTrades\x12%\n" +
 	"\x0ewinning_trades\x18\b \x01(\x05R\rwinningTrades\x12#\n" +
 	"\rlosing_trades\x18\t \x01(\x05R\flosingTrades\x12%\n" +
@@ -1435,33 +1437,35 @@ var file_backtest_service_proto_goTypes = []any{
 	(*ExecuteBacktestMetrics)(nil),    // 10: ant.v1.ExecuteBacktestMetrics
 	(*ExecuteRiskAssessment)(nil),     // 11: ant.v1.ExecuteRiskAssessment
 	nil,                               // 12: ant.v1.ExecuteBacktestRequest.StrategyParamsEntry
-	(TradeDirection)(0),               // 13: ant.v1.TradeDirection
-	(*StrategyConfig)(nil),            // 14: ant.v1.StrategyConfig
-	(*ExecutionAssumptions)(nil),      // 15: ant.v1.ExecutionAssumptions
+	(*ParameterEntry)(nil),            // 13: ant.v1.ParameterEntry
+	(TradeDirection)(0),               // 14: ant.v1.TradeDirection
+	(*StrategyConfig)(nil),            // 15: ant.v1.StrategyConfig
+	(*ExecutionAssumptions)(nil),      // 16: ant.v1.ExecutionAssumptions
 }
 var file_backtest_service_proto_depIdxs = []int32{
-	5,  // 0: ant.v1.EngineRunStrategyRequest.klines:type_name -> ant.v1.ExecuteKlineBar
-	4,  // 1: ant.v1.EngineRunStrategyResponse.signal:type_name -> ant.v1.EngineTradeSignal
-	5,  // 2: ant.v1.ExecuteBacktestRequest.klines:type_name -> ant.v1.ExecuteKlineBar
-	12, // 3: ant.v1.ExecuteBacktestRequest.strategy_params:type_name -> ant.v1.ExecuteBacktestRequest.StrategyParamsEntry
-	13, // 4: ant.v1.ExecuteBacktestRequest.trade_direction:type_name -> ant.v1.TradeDirection
-	14, // 5: ant.v1.ExecuteBacktestRequest.strategy_config:type_name -> ant.v1.StrategyConfig
-	7,  // 6: ant.v1.ExecuteBacktestRequest.symbol_info:type_name -> ant.v1.SymbolInfo
-	10, // 7: ant.v1.ExecuteBacktestResponse.metrics:type_name -> ant.v1.ExecuteBacktestMetrics
-	11, // 8: ant.v1.ExecuteBacktestResponse.risk:type_name -> ant.v1.ExecuteRiskAssessment
-	8,  // 9: ant.v1.ExecuteBacktestResponse.trades:type_name -> ant.v1.ExecuteBacktestTrade
-	15, // 10: ant.v1.ExecuteBacktestResponse.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
-	6,  // 11: ant.v1.BacktestService.RunBacktest:input_type -> ant.v1.ExecuteBacktestRequest
-	0,  // 12: ant.v1.BacktestService.ValidateStrategy:input_type -> ant.v1.EngineValidateRequest
-	2,  // 13: ant.v1.BacktestService.RunStrategy:input_type -> ant.v1.EngineRunStrategyRequest
-	9,  // 14: ant.v1.BacktestService.RunBacktest:output_type -> ant.v1.ExecuteBacktestResponse
-	1,  // 15: ant.v1.BacktestService.ValidateStrategy:output_type -> ant.v1.EngineValidateResponse
-	3,  // 16: ant.v1.BacktestService.RunStrategy:output_type -> ant.v1.EngineRunStrategyResponse
-	14, // [14:17] is the sub-list for method output_type
-	11, // [11:14] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	13, // 0: ant.v1.EngineValidateResponse.parameters:type_name -> ant.v1.ParameterEntry
+	5,  // 1: ant.v1.EngineRunStrategyRequest.klines:type_name -> ant.v1.ExecuteKlineBar
+	4,  // 2: ant.v1.EngineRunStrategyResponse.signal:type_name -> ant.v1.EngineTradeSignal
+	5,  // 3: ant.v1.ExecuteBacktestRequest.klines:type_name -> ant.v1.ExecuteKlineBar
+	12, // 4: ant.v1.ExecuteBacktestRequest.strategy_params:type_name -> ant.v1.ExecuteBacktestRequest.StrategyParamsEntry
+	14, // 5: ant.v1.ExecuteBacktestRequest.trade_direction:type_name -> ant.v1.TradeDirection
+	15, // 6: ant.v1.ExecuteBacktestRequest.strategy_config:type_name -> ant.v1.StrategyConfig
+	7,  // 7: ant.v1.ExecuteBacktestRequest.symbol_info:type_name -> ant.v1.SymbolInfo
+	10, // 8: ant.v1.ExecuteBacktestResponse.metrics:type_name -> ant.v1.ExecuteBacktestMetrics
+	11, // 9: ant.v1.ExecuteBacktestResponse.risk:type_name -> ant.v1.ExecuteRiskAssessment
+	8,  // 10: ant.v1.ExecuteBacktestResponse.trades:type_name -> ant.v1.ExecuteBacktestTrade
+	16, // 11: ant.v1.ExecuteBacktestResponse.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
+	6,  // 12: ant.v1.BacktestService.RunBacktest:input_type -> ant.v1.ExecuteBacktestRequest
+	0,  // 13: ant.v1.BacktestService.ValidateStrategy:input_type -> ant.v1.EngineValidateRequest
+	2,  // 14: ant.v1.BacktestService.RunStrategy:input_type -> ant.v1.EngineRunStrategyRequest
+	9,  // 15: ant.v1.BacktestService.RunBacktest:output_type -> ant.v1.ExecuteBacktestResponse
+	1,  // 16: ant.v1.BacktestService.ValidateStrategy:output_type -> ant.v1.EngineValidateResponse
+	3,  // 17: ant.v1.BacktestService.RunStrategy:output_type -> ant.v1.EngineRunStrategyResponse
+	15, // [15:18] is the sub-list for method output_type
+	12, // [12:15] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_backtest_service_proto_init() }
@@ -1470,6 +1474,7 @@ func file_backtest_service_proto_init() {
 		return
 	}
 	file_backtest_execution_config_proto_init()
+	file_parameter_entry_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

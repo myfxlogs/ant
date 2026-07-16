@@ -8,11 +8,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	"alphaforge/internal/mthub"
 	"alphaforge/internal/risksvc"
 )
+
+func decF(v float64) decimal.Decimal { return decimal.NewFromFloat(v) }
 
 // ── parseJSONStringArray + splitJSONArray tests ──
 
@@ -111,19 +114,19 @@ func (m *mockAccountInfo) GetAccountInfo(_ context.Context, accountID string) (*
 }
 
 type mockBlockAllocator struct {
-	alloc map[string]float64
+	alloc map[string]decimal.Decimal
 }
 
 func (m *mockBlockAllocator) Name() string { return "mock" }
 
-func (m *mockBlockAllocator) Allocate(_ context.Context, totalVolume float64, accounts []risksvc.AllocAccount) map[string]float64 {
+func (m *mockBlockAllocator) Allocate(_ context.Context, totalVolume decimal.Decimal, accounts []risksvc.AllocAccount) map[string]decimal.Decimal {
 	if m.alloc != nil {
 		return m.alloc
 	}
 	// Default: equal split.
-	result := make(map[string]float64, len(accounts))
+	result := make(map[string]decimal.Decimal, len(accounts))
 	if len(accounts) > 0 {
-		share := totalVolume / float64(len(accounts))
+		share := totalVolume.Div(decimal.NewFromInt(int64(len(accounts))))
 		for _, a := range accounts {
 			result[a.AccountID] = share
 		}
@@ -187,12 +190,12 @@ func TestCopyTradeEngine_NewCopyTradeEngine(t *testing.T) {
 
 func TestAccountInfoStruct(t *testing.T) {
 	info := AccountInfo{
-		Equity:     10000.0,
-		FreeMargin: 5000.0,
-		Balance:    10000.0,
+		Equity:     decF(10000.0),
+		FreeMargin: decF(5000.0),
+		Balance:    decF(10000.0),
 		Status:     "connected",
 	}
-	if info.Equity != 10000.0 {
+	if !info.Equity.Equal(decF(10000.0)) {
 		t.Error("Equity field mismatch")
 	}
 	if info.Status != "connected" {
@@ -206,10 +209,10 @@ func TestCopySignalEventStruct(t *testing.T) {
 		PublisherUserID: "u1",
 		Symbol:          "EURUSD",
 		Side:            "buy",
-		Volume:          1.0,
-		Price:           1.0850,
-		StopLoss:        1.0800,
-		TakeProfit:      1.0900,
+		Volume:          decF(1.0),
+		Price:           decF(1.0850),
+		StopLoss:        decF(1.0800),
+		TakeProfit:      decF(1.0900),
 		Comment:         "test",
 		SignalID:        "sig-1",
 	}
@@ -256,14 +259,14 @@ func TestCopyTradeEngine_processSync_AllocatesOrders(t *testing.T) {
 	orderPlacer := &mockOrderPlacer{}
 	accountInfo := &mockAccountInfo{
 		accounts: map[string]*AccountInfo{
-			"sub-1": {Equity: 10000, FreeMargin: 5000, Balance: 10000, Status: "connected"},
-			"sub-2": {Equity: 20000, FreeMargin: 8000, Balance: 20000, Status: "connected"},
+			"sub-1": {Equity: decF(10000), FreeMargin: decF(5000), Balance: decF(10000), Status: "connected"},
+			"sub-2": {Equity: decF(20000), FreeMargin: decF(8000), Balance: decF(20000), Status: "connected"},
 		},
 	}
 	allocator := &mockBlockAllocator{
-		alloc: map[string]float64{
-			"sub-1": 0.5,
-			"sub-2": 0.5,
+		alloc: map[string]decimal.Decimal{
+			"sub-1": decF(0.5),
+			"sub-2": decF(0.5),
 		},
 	}
 
@@ -304,7 +307,7 @@ func TestCopyTradeEngine_processSync_AllocatesOrders(t *testing.T) {
 			skipped++
 			continue
 		}
-		if a.account.Equity <= 0 {
+		if a.account.Equity.LessThanOrEqual(decimal.Zero) {
 			skipped++
 			continue
 		}
@@ -323,12 +326,12 @@ func TestCopyTradeEngine_processSync_AllocatesOrders(t *testing.T) {
 		t.Fatalf("allocInput len = %d, want 2", len(allocInput))
 	}
 
-	allocation := allocator.Allocate(context.Background(), 1.0, allocInput)
+	allocation := allocator.Allocate(context.Background(), decF(1.0), allocInput)
 
 	// Place orders.
 	for _, a := range validAccounts {
 		vol, ok := allocation[a.sub.TargetUserID]
-		if !ok || vol <= 0 {
+		if !ok || vol.LessThanOrEqual(decimal.Zero) {
 			continue
 		}
 		_, err := orderPlacer.PlaceOrder(context.Background(), &mthub.OrderRequest{
@@ -355,8 +358,8 @@ func TestCopyTradeEngine_processSync_SkipsDisconnected(t *testing.T) {
 	orderPlacer := &mockOrderPlacer{}
 	accountInfo := &mockAccountInfo{
 		accounts: map[string]*AccountInfo{
-			"sub-1": {Equity: 10000, FreeMargin: 5000, Status: "connected"},
-			"sub-2": {Equity: 5000, FreeMargin: 2000, Status: "disconnected"},
+			"sub-1": {Equity: decF(10000), FreeMargin: decF(5000), Status: "connected"},
+			"sub-2": {Equity: decF(5000), FreeMargin: decF(2000), Status: "disconnected"},
 		},
 	}
 
@@ -376,7 +379,7 @@ func TestCopyTradeEngine_processSync_SkipsDisconnected(t *testing.T) {
 			skipped++
 			continue
 		}
-		if info.Equity <= 0 {
+		if info.Equity.LessThanOrEqual(decimal.Zero) {
 			skipped++
 			continue
 		}
@@ -398,8 +401,8 @@ func TestCopyTradeEngine_processSync_SkipsDisconnected(t *testing.T) {
 func TestCopyTradeEngine_processSync_SkipsZeroEquity(t *testing.T) {
 	accountInfo := &mockAccountInfo{
 		accounts: map[string]*AccountInfo{
-			"sub-1": {Equity: 10000, FreeMargin: 5000, Status: "connected"},
-			"sub-2": {Equity: 0, FreeMargin: 0, Status: "connected"},
+			"sub-1": {Equity: decF(10000), FreeMargin: decF(5000), Status: "connected"},
+			"sub-2": {Equity: decimal.Zero, FreeMargin: decimal.Zero, Status: "connected"},
 		},
 	}
 
@@ -419,7 +422,7 @@ func TestCopyTradeEngine_processSync_SkipsZeroEquity(t *testing.T) {
 			skipped++
 			continue
 		}
-		if info.Equity <= 0 {
+		if info.Equity.LessThanOrEqual(decimal.Zero) {
 			skipped++
 			continue
 		}
@@ -441,11 +444,11 @@ func TestCopyTradeEngine_LimitOrderWhenPriceSet(t *testing.T) {
 	orderPlacer := &mockOrderPlacer{}
 	accountInfo := &mockAccountInfo{
 		accounts: map[string]*AccountInfo{
-			"sub-1": {Equity: 10000, FreeMargin: 5000, Balance: 10000, Status: "connected"},
+			"sub-1": {Equity: decF(10000), FreeMargin: decF(5000), Balance: decF(10000), Status: "connected"},
 		},
 	}
 	allocator := &mockBlockAllocator{
-		alloc: map[string]float64{"sub-1": 1.0},
+		alloc: map[string]decimal.Decimal{"sub-1": decF(1.0)},
 	}
 
 	engine := &CopyTradeEngine{
@@ -462,8 +465,8 @@ func TestCopyTradeEngine_LimitOrderWhenPriceSet(t *testing.T) {
 	signal := CopySignalEvent{
 		Symbol: "EURUSD",
 		Side:   "buy",
-		Volume: 1.0,
-		Price:  1.0850,
+		Volume: decF(1.0),
+		Price:  decF(1.0850),
 	}
 
 	side := mthub.SideBuy
@@ -471,7 +474,7 @@ func TestCopyTradeEngine_LimitOrderWhenPriceSet(t *testing.T) {
 		side = mthub.SideSell
 	}
 	orderType := mthub.OrderMarket
-	if signal.Price > 0 {
+	if signal.Price.GreaterThan(decimal.Zero) {
 		orderType = mthub.OrderLimit
 	}
 
@@ -516,11 +519,11 @@ func TestCopyTradeEngine_OrderFailure(t *testing.T) {
 func TestCopyTradeEngine_ZeroAllocation(t *testing.T) {
 	orderPlacer := &mockOrderPlacer{}
 	allocator := &mockBlockAllocator{
-		alloc: map[string]float64{}, // empty: no volume allocated
+		alloc: map[string]decimal.Decimal{}, // empty: no volume allocated
 	}
 
-	allocation := allocator.Allocate(context.Background(), 1.0, []risksvc.AllocAccount{
-		{AccountID: "sub-1", Equity: 10000, FreeMargin: 5000},
+	allocation := allocator.Allocate(context.Background(), decF(1.0), []risksvc.AllocAccount{
+		{AccountID: "sub-1", Equity: decF(10000), FreeMargin: decF(5000)},
 	})
 
 	if len(allocation) != 0 {

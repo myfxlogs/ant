@@ -116,20 +116,17 @@ export function useLibraryTemplates() {
       setCodeValidating(true);
       const code = String(values.code || '');
       // Re-validate if code changed; otherwise reuse stored validation result.
-      let params: Record<string, unknown>[] = [];
-      let validatedJson = validationResult?.parametersJson || '';
+      let paramEntries = validationResult?.parameterEntries || [];
       if (code !== lastValidatedCode) {
         const ext = await codeAssistApi.validateExtended(code);
         if (!ext.valid) { message.error(ext.errors?.[0] || ext.warnings?.[0] || t(MESSAGES_CODE_VALIDATION_NOT_PASSED_KEY)); return; }
         setLastValidatedCode(code);
-        if (ext.parametersJson) { validatedJson = ext.parametersJson; try { params = JSON.parse(ext.parametersJson); } catch { /* ignore */ } }
-      } else if (validationResult?.parametersJson) {
-        try { params = JSON.parse(validationResult.parametersJson); } catch { /* ignore */ }
+        if (ext.parameterEntries) { paramEntries = ext.parameterEntries; }
       }
       // Build i18n from extracted params (best-effort, never blocks save).
-      const i18n = params.length > 0 ? await buildParamI18n(validatedJson) : '';
+      const i18n = paramEntries.length > 0 ? await buildParamI18n(paramEntries) : null;
 
-      const data: CreateTemplateRequest = { name: String(values.name || ''), description: String(values.description || ''), code, parameters: params as any[], isPublic: Boolean(values.isPublic) || false, tags: [], i18n };
+      const data: CreateTemplateRequest = { name: String(values.name || ''), description: String(values.description || ''), code, parameters: paramEntries.map(e => ({ key: e.name, type: e.type as any || 'string', defaultValue: e.default })) as any[], isPublic: Boolean(values.isPublic) || false, tags: [], i18n: i18n || undefined };
       if (editing) { await strategyTemplateApi.update({ id: editing.id, ...data }); message.success(t(MESSAGES_TEMPLATE_UPDATED_KEY)); }
       else { await strategyTemplateApi.create(data); message.success(t(MESSAGES_TEMPLATE_CREATED_KEY)); setFilter('user'); }
       setEditOpen(false); fetchTemplates();

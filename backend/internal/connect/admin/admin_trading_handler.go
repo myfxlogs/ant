@@ -2,7 +2,6 @@ package admin
 
 import (
 	"context"
-	"strconv"
 
 	"go.uber.org/zap"
 
@@ -36,7 +35,7 @@ func (s *AdminTradingServer) GetTradingSummary(ctx context.Context, req *connect
 		byPlatform[k] = &antv1.PlatformSummary{
 			Accounts: v.Accounts,
 			Orders:   v.Orders,
-			Volume:   strconv.FormatFloat(v.Volume, 'f', -1, 64),
+			Volume:   v.Volume.String(),
 		}
 	}
 

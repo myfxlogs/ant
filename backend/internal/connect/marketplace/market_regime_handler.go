@@ -2,13 +2,13 @@ package marketplace
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"connectrpc.com/connect"
@@ -48,7 +48,8 @@ func NewMarketRegimeServer(
 type detectResult struct {
 	regime     string
 	confidence float64
-	features   []byte
+	features   *structpb.Struct
+	segments   []string
 }
 
 func (s *MarketRegimeServer) DetectMarketRegime(ctx context.Context, req *connect.Request[antv1.DetectMarketRegimeRequest]) (*connect.Response[antv1.DetectMarketRegimeResponse], error) {
@@ -109,7 +110,7 @@ func (s *MarketRegimeServer) DetectMarketRegime(ctx context.Context, req *connec
 		Regime:           det.regime,
 		Confidence:       det.confidence,
 		Features:         det.features,
-		Segments:         []byte(`[]`),
+		Segments:         det.segments,
 		StrategyFamilies: []string{},
 		FromTime:         fromTime,
 		ToTime:           toTime,
@@ -170,15 +171,21 @@ func (s *MarketRegimeServer) detectRegime(ctx context.Context, symbol, broker, t
 	}
 	result := ai.DetectRegime(ohlc)
 
-	features := []byte(`{}`)
-	if featJSON, err := json.Marshal(result.Features); err == nil {
-		features = featJSON
+	featMap := map[string]any{
+		"price_change_pct":        result.Features.PriceChangePct,
+		"ema_gap_pct":             result.Features.EMAGapPct,
+		"realized_vol_pct":        result.Features.RealizedVolPct,
+		"atr_pct":                 result.Features.ATRPct,
+		"directional_efficiency":  result.Features.DirectionalEfficiency,
+		"volume_ratio":            result.Features.VolumeRatio,
 	}
+	features, _ := structpb.NewStruct(featMap)
 
 	return &detectResult{
 		regime:     result.Regime.String(),
 		confidence: result.Confidence,
 		features:   features,
+		segments:   []string{},
 	}, nil
 }
 
@@ -191,8 +198,8 @@ func marketRegimeToProto(r *repository.MarketRegime) *antv1.MarketRegime {
 		Timeframe:        r.Timeframe,
 		Regime:           r.Regime,
 		Confidence:       r.Confidence,
-		Features:         string(r.Features),
-		Segments:         string(r.Segments),
+		Features:         r.Features,
+		Segments:         r.Segments,
 		StrategyFamilies: r.StrategyFamilies,
 		ModelVersion:     r.ModelVersion,
 		CreatedAt:        timestamppb.New(r.CreatedAt),

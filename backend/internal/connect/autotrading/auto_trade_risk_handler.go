@@ -3,7 +3,6 @@ package autotrading
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -72,8 +71,8 @@ func (s *AutoTradingServer) CheckRiskLimits(
 		return nil, connect.NewError(connect.CodeUnavailable,
 			fmt.Errorf("risk pipeline not configured"))
 	}
-	balance, _ := strconv.ParseFloat(m.CurrentBalance, 64)
-	equity, _ := strconv.ParseFloat(m.CurrentEquity, 64)
+	balance := decimal.RequireFromString(m.CurrentBalance)
+	equity := decimal.RequireFromString(m.CurrentEquity)
 	sig := &risksvc.SignalRequest{
 		AccountID: m.AccountId,
 		Symbol:    m.Symbol,

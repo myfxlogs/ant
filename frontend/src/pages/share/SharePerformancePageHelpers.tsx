@@ -41,23 +41,23 @@ export function avgHoldingText(ms: number) {
 
 export interface ShareData {
   userName: string;
-  totalReturn: number;
-  winRate: number;
-  maxDrawdown: number;
+  totalReturn: string;
+  winRate: string;
+  maxDrawdown: string;
   totalTrades: number;
-  totalVolume: number;
-  profitFactor: number;
+  totalVolume: string;
+  profitFactor: string;
   avgHoldingMs: number;
-  sharpeRatio: number;
-  equityCurve: number[];
+  sharpeRatio: string;
+  equityCurve: string[];
   equityTimesMs?: number[];
-  trades: Array<{ symbol: string; side: string; volume: number; profit: number; closeTimeMs: number }>;
-  positions?: Array<{ symbol: string; type: string; volume: number; openPrice: number; currentPrice: number; profit: number; openTimeMs: number }> | null;
+  trades: Array<{ symbol: string; side: string; volume: string; profit: string; closeTimeMs: number }>;
+  positions?: Array<{ symbol: string; type: string; volume: string; openPrice: string; profit: string }> | null;
   showPositions?: boolean;
   expired?: boolean;
 }
 
-export function computeMaxDrawdownPct(equity: number[], fallback: number): number {
+export function computeMaxDrawdownPct(equity: Array<string | number>, fallback: number): number {
   if (equity.length > 1) {
     let peak = -Infinity, maxDD = 0;
     for (const raw of equity) {

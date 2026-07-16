@@ -6,7 +6,6 @@ package algo
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
@@ -67,9 +67,9 @@ func (s *ExecutionAlgoServer) StartAlgo(ctx context.Context, req *connect.Reques
 	}
 
 	startTime, endTime := m.StartTime.AsTime(), m.EndTime.AsTime()
-	totalVol, _ := strconv.ParseFloat(m.TotalVolume, 64)
-	limitPx, _ := strconv.ParseFloat(m.LimitPrice, 64)
-	arrivalPx, _ := strconv.ParseFloat(m.ArrivalPrice, 64)
+	totalVol, _ := decimal.NewFromString(m.TotalVolume)
+	limitPx, _ := decimal.NewFromString(m.LimitPrice)
+	arrivalPx, _ := decimal.NewFromString(m.ArrivalPrice)
 	parent := execalgo.ParentOrder{
 		Symbol: m.Symbol, Side: m.Side, TotalVolume: totalVol,
 		StartTime: startTime, EndTime: endTime,
@@ -101,8 +101,8 @@ func validateStartAlgoRequest(m *antv1.StartAlgoRequest) error {
 	if m.AccountId == "" { return fmt.Errorf("account_id is required") }
 	if m.Symbol == "" { return fmt.Errorf("symbol is required") }
 	if m.Side != "buy" && m.Side != "sell" { return fmt.Errorf("side must be 'buy' or 'sell'") }
-	v, _ := strconv.ParseFloat(m.TotalVolume, 64)
-	if m.TotalVolume == "" || v <= 0 { return fmt.Errorf("total_volume must be positive") }
+	v, _ := decimal.NewFromString(m.TotalVolume)
+	if m.TotalVolume == "" || !v.GreaterThan(decimal.Zero) { return fmt.Errorf("total_volume must be positive") }
 	if m.StartTime == nil || m.EndTime == nil { return fmt.Errorf("start_time and end_time are required") }
 	startTime, endTime := m.StartTime.AsTime(), m.EndTime.AsTime()
 	if !endTime.After(startTime) { return fmt.Errorf("end_time must be after start_time") }
@@ -179,7 +179,7 @@ func (s *ExecutionAlgoServer) GetAlgoStatus(ctx context.Context, req *connect.Re
 		TotalSlices:     int32(total),
 		ParentSymbol:    ex.parent.Symbol,
 		ParentSide:      ex.parent.Side,
-		ParentVolume:    strconv.FormatFloat(ex.parent.TotalVolume, 'f', -1, 64),
+		ParentVolume:    ex.parent.TotalVolume.String(),
 	}
 
 	return connect.NewResponse(resp), nil

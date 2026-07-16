@@ -47,15 +47,15 @@ func TestExecutorFullSchedule(t *testing.T) {
 		Parent: ParentOrder{
 			Symbol:      "EURUSD",
 			Side:        "buy",
-			TotalVolume: 1.0,
+			TotalVolume: decFromFloat(1.0),
 			StartTime:   time.Now(),
 			EndTime:     time.Now().Add(10 * time.Second),
 		},
 		Slices: []ChildOrder{
-			{Sequence: 0, Volume: 0.25, TargetTime: time.Now().Add(100 * time.Millisecond)},
-			{Sequence: 1, Volume: 0.25, TargetTime: time.Now().Add(200 * time.Millisecond)},
-			{Sequence: 2, Volume: 0.25, TargetTime: time.Now().Add(300 * time.Millisecond)},
-			{Sequence: 3, Volume: 0.25, TargetTime: time.Now().Add(400 * time.Millisecond)},
+			{Sequence: 0, Volume: decFromFloat(0.25), TargetTime: time.Now().Add(100 * time.Millisecond)},
+			{Sequence: 1, Volume: decFromFloat(0.25), TargetTime: time.Now().Add(200 * time.Millisecond)},
+			{Sequence: 2, Volume: decFromFloat(0.25), TargetTime: time.Now().Add(300 * time.Millisecond)},
+			{Sequence: 3, Volume: decFromFloat(0.25), TargetTime: time.Now().Add(400 * time.Millisecond)},
 		},
 	}
 
@@ -99,12 +99,12 @@ func TestExecutorCancel(t *testing.T) {
 	schedule := &Schedule{
 		Algo: "twap",
 		Parent: ParentOrder{
-			Symbol: "EURUSD", Side: "buy", TotalVolume: 1.0,
+			Symbol: "EURUSD", Side: "buy", TotalVolume: decFromFloat(1.0),
 			StartTime: time.Now(), EndTime: time.Now().Add(30 * time.Second),
 		},
 		Slices: []ChildOrder{
-			{Sequence: 0, Volume: 0.5, TargetTime: time.Now().Add(50 * time.Millisecond)},
-			{Sequence: 1, Volume: 0.5, TargetTime: time.Now().Add(10 * time.Second)}, // far future
+			{Sequence: 0, Volume: decFromFloat(0.5), TargetTime: time.Now().Add(50 * time.Millisecond)},
+			{Sequence: 1, Volume: decFromFloat(0.5), TargetTime: time.Now().Add(10 * time.Second)}, // far future
 		},
 	}
 
@@ -140,12 +140,12 @@ func TestExecutorPauseResume(t *testing.T) {
 	schedule := &Schedule{
 		Algo: "twap",
 		Parent: ParentOrder{
-			Symbol: "EURUSD", Side: "sell", TotalVolume: 1.0,
+			Symbol: "EURUSD", Side: "sell", TotalVolume: decFromFloat(1.0),
 			StartTime: time.Now(), EndTime: time.Now().Add(5 * time.Second),
 		},
 		Slices: []ChildOrder{
-			{Sequence: 0, Volume: 0.5, TargetTime: time.Now().Add(100 * time.Millisecond)},
-			{Sequence: 1, Volume: 0.5, TargetTime: time.Now().Add(200 * time.Millisecond)},
+			{Sequence: 0, Volume: decFromFloat(0.5), TargetTime: time.Now().Add(100 * time.Millisecond)},
+			{Sequence: 1, Volume: decFromFloat(0.5), TargetTime: time.Now().Add(200 * time.Millisecond)},
 		},
 	}
 
@@ -189,12 +189,12 @@ func TestExecutorLimitOrderSlice(t *testing.T) {
 	schedule := &Schedule{
 		Algo: "twap",
 		Parent: ParentOrder{
-			Symbol: "EURUSD", Side: "buy", TotalVolume: 1.0,
+			Symbol: "EURUSD", Side: "buy", TotalVolume: decFromFloat(1.0),
 			StartTime: time.Now(), EndTime: time.Now().Add(2 * time.Second),
-			LimitPrice: 1.1050,
+			LimitPrice: decFromFloat(1.1050),
 		},
 		Slices: []ChildOrder{
-			{Sequence: 0, Volume: 1.0, TargetTime: time.Now().Add(100 * time.Millisecond), LimitPrice: 1.1050},
+			{Sequence: 0, Volume: decFromFloat(1.0), TargetTime: time.Now().Add(100 * time.Millisecond), LimitPrice: decFromFloat(1.1050)},
 		},
 	}
 
@@ -222,6 +222,6 @@ func TestExecutorLimitOrderSlice(t *testing.T) {
 		t.Errorf("expected OrderLimit, got %v", order.OrderType)
 	}
 	if order.Price.InexactFloat64() != 1.1050 {
-		t.Errorf("expected price 1.1050, got %v", order.Price)
+		t.Errorf("expected price 1.1050, got %s", order.Price.String())
 	}
 }

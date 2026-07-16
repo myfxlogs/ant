@@ -1,6 +1,10 @@
 package sdk
 
-import "github.com/shopspring/decimal"
+import (
+	"context"
+
+	"github.com/shopspring/decimal"
+)
 
 // Context provides the strategy with runtime services.
 // It is passed to OnInit, OnBar, OnDeinit, and optional callbacks
@@ -93,4 +97,9 @@ type Context interface {
 
 	// ServerTime returns the current broker server time (UTC).
 	ServerTime() int64 // unix_ms
+
+	// GoContext returns the Go context.Context associated with the current
+	// event dispatch. Used by the Bytecode VM for cancellation/timeout checks.
+	// Returns context.Background() if no context is set (e.g. backtest).
+	GoContext() context.Context
 }

@@ -25,15 +25,17 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 	// Total return
 	if initial.IsPositive() {
 		tr, _ := final.Sub(initial).Div(initial).Float64()
-		m.TotalReturn = tr
+		m.TotalReturn = decimal.NewFromFloat(tr).String()
 		// Annualize: (1 + total_return)^(365/days) - 1
 		duration := equity[len(equity)-1].Time.Sub(equity[0].Time)
 		days := duration.Hours() / 24
+		var annualReturn float64
 		if days > 0 {
-			m.AnnualReturn = math.Pow(1+tr, 365.0/days) - 1
+			annualReturn = math.Pow(1+tr, 365.0/days) - 1
 		} else {
-			m.AnnualReturn = tr
+			annualReturn = tr
 		}
+		m.AnnualReturn = decimal.NewFromFloat(annualReturn).String()
 	}
 
 	// Max drawdown
@@ -49,7 +51,7 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 		}
 	}
 	if peak.IsPositive() {
-		m.MaxDrawdown, _ = maxDD.Div(peak).Float64()
+		m.MaxDrawdown = maxDD.Div(peak).String()
 	}
 
 	// Trade analysis
@@ -72,14 +74,14 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 	_ = totalSwap
 
 	if m.TotalTrades > 0 {
-		m.WinRate = float64(m.WinningTrades) / float64(m.TotalTrades)
+		m.WinRate = decimal.NewFromFloat(float64(m.WinningTrades) / float64(m.TotalTrades)).String()
 	}
 
 	// Profit factor
 	if totalLoss.IsPositive() {
-		m.ProfitFactor, _ = totalProfit.Div(totalLoss).Float64()
+		m.ProfitFactor = totalProfit.Div(totalLoss).String()
 	} else if totalProfit.IsPositive() {
-		m.ProfitFactor = math.Inf(1)
+		m.ProfitFactor = "Infinity"
 	}
 
 	// Average profit/loss
@@ -104,12 +106,14 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 			// Annualize: Sharpe = mean/std * sqrt(trades_per_year)
 			duration := equity[len(equity)-1].Time.Sub(equity[0].Time)
 			days := duration.Hours() / 24
+			var sharpe float64
 			if days > 0 {
 				tradesPerYear := float64(len(trades)) * 365.0 / days
-				m.SharpeRatio = mean / std * math.Sqrt(tradesPerYear)
+				sharpe = mean / std * math.Sqrt(tradesPerYear)
 			} else {
-				m.SharpeRatio = mean / std * math.Sqrt(float64(len(trades)))
+				sharpe = mean / std * math.Sqrt(float64(len(trades)))
 			}
+			m.SharpeRatio = decimal.NewFromFloat(sharpe).String()
 		}
 	}
 

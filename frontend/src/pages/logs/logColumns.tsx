@@ -1,4 +1,5 @@
 import { Tag } from 'antd';
+import type { JsonObject } from '@bufbuild/protobuf';
 import type { ConnectionLog } from '@/gen/ant/v1/log_connection_pb';
 import type { ExecutionLog } from '@/gen/ant/v1/log_execution_pb';
 import type { OrderHistoryRecord } from '@/gen/ant/v1/log_order_pb';
@@ -10,9 +11,9 @@ import { ACTION_KEY, COST_KEY, DETAILS_KEY, DURATION_KEY, ERROR_KEY, EVENT_TYPE_
 interface AccountLike { id: string; brokerServer?: string; brokerHost?: string; brokerCompany?: string; [key: string]: unknown; }
 interface OperationDetails { result?: string; risk_code?: string; request_id?: string; trigger_source?: string; [key: string]: unknown; }
 
-export function parseOperationDetails(raw?: string): OperationDetails {
-  if (!raw) return {};
-  try { const p = JSON.parse(raw); return p && typeof p === 'object' ? p : {}; } catch { return {}; }
+export function parseOperationDetails(details?: JsonObject): OperationDetails {
+  if (!details || typeof details !== 'object') return {};
+  return details as OperationDetails;
 }
 
 export function getStatusTag(status: string | undefined, t: TFunction) {
@@ -98,7 +99,7 @@ export function buildOperationColumns({ t, formatTime }: ColumnOpts) {
     { title: t(RISK_CODE_KEY), key: 'riskCode', width: 220, render: (_: unknown, r: OperationLog) => { const d = parseOperationDetails(r?.details); return d?.risk_code || '-'; } },
     { title: t(REQUEST_ID_KEY), key: 'requestId', width: 220, render: (_: unknown, r: OperationLog) => { const d = parseOperationDetails(r?.details); return d?.request_id || '-'; } },
     { title: t(TRIGGER_SOURCE_KEY), key: 'triggerSource', width: 120, render: (_: unknown, r: OperationLog) => { const d = parseOperationDetails(r?.details); return d?.trigger_source || '-'; } },
-    { title: t(DETAILS_KEY), dataIndex: 'details', key: 'details', ellipsis: true },
+    { title: t(DETAILS_KEY), key: 'details', ellipsis: true, render: (_: unknown, r: OperationLog) => r.details ? JSON.stringify(r.details) : '-' },
     { title: t(IP_KEY), dataIndex: 'ip', key: 'ip', width: 120 },
   ];
 }

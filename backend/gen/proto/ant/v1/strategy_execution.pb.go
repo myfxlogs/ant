@@ -9,6 +9,7 @@ package antv1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -22,16 +23,16 @@ const (
 )
 
 type ConversateRequest struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	Message             string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
-	ConversationId      string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
-	Symbol              string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	Timeframe           string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
-	Plan                string                 `protobuf:"bytes,5,opt,name=plan,proto3" json:"plan,omitempty"`                                  // current plan (empty on first message)
-	CurrentCode         string                 `protobuf:"bytes,6,opt,name=current_code,json=currentCode,proto3" json:"current_code,omitempty"` // current strategy code
-	BacktestMetricsJson string                 `protobuf:"bytes,7,opt,name=backtest_metrics_json,json=backtestMetricsJson,proto3" json:"backtest_metrics_json,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Message         string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	ConversationId  string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	Symbol          string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Timeframe       string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
+	Plan            string                 `protobuf:"bytes,5,opt,name=plan,proto3" json:"plan,omitempty"`                                  // current plan (empty on first message)
+	CurrentCode     string                 `protobuf:"bytes,6,opt,name=current_code,json=currentCode,proto3" json:"current_code,omitempty"` // current strategy code
+	BacktestMetrics *BacktestMetricsMsg    `protobuf:"bytes,7,opt,name=backtest_metrics,json=backtestMetrics,proto3" json:"backtest_metrics,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ConversateRequest) Reset() {
@@ -106,11 +107,11 @@ func (x *ConversateRequest) GetCurrentCode() string {
 	return ""
 }
 
-func (x *ConversateRequest) GetBacktestMetricsJson() string {
+func (x *ConversateRequest) GetBacktestMetrics() *BacktestMetricsMsg {
 	if x != nil {
-		return x.BacktestMetricsJson
+		return x.BacktestMetrics
 	}
-	return ""
+	return nil
 }
 
 type ConversateChunk struct {
@@ -222,14 +223,14 @@ func (x *ConversateChunk) GetError() string {
 }
 
 type DiagnoseRequest struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	Plan                string                 `protobuf:"bytes,1,opt,name=plan,proto3" json:"plan,omitempty"`
-	ConversationId      string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
-	FeedbackMessage     string                 `protobuf:"bytes,3,opt,name=feedback_message,json=feedbackMessage,proto3" json:"feedback_message,omitempty"`               // user's feedback
-	CurrentCode         string                 `protobuf:"bytes,4,opt,name=current_code,json=currentCode,proto3" json:"current_code,omitempty"`                           // current strategy code for context
-	BacktestMetricsJson string                 `protobuf:"bytes,5,opt,name=backtest_metrics_json,json=backtestMetricsJson,proto3" json:"backtest_metrics_json,omitempty"` // latest metrics
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Plan            string                 `protobuf:"bytes,1,opt,name=plan,proto3" json:"plan,omitempty"`
+	ConversationId  string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	FeedbackMessage string                 `protobuf:"bytes,3,opt,name=feedback_message,json=feedbackMessage,proto3" json:"feedback_message,omitempty"` // user's feedback
+	CurrentCode     string                 `protobuf:"bytes,4,opt,name=current_code,json=currentCode,proto3" json:"current_code,omitempty"`             // current strategy code for context
+	BacktestMetrics *BacktestMetricsMsg    `protobuf:"bytes,5,opt,name=backtest_metrics,json=backtestMetrics,proto3" json:"backtest_metrics,omitempty"` // latest metrics
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *DiagnoseRequest) Reset() {
@@ -290,11 +291,11 @@ func (x *DiagnoseRequest) GetCurrentCode() string {
 	return ""
 }
 
-func (x *DiagnoseRequest) GetBacktestMetricsJson() string {
+func (x *DiagnoseRequest) GetBacktestMetrics() *BacktestMetricsMsg {
 	if x != nil {
-		return x.BacktestMetricsJson
+		return x.BacktestMetrics
 	}
-	return ""
+	return nil
 }
 
 type AnalyzePlanRequest struct {
@@ -434,16 +435,16 @@ func (x *AnalyzePlanChunk) GetError() string {
 }
 
 type ExecutePlanRequest struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	Plan                string                 `protobuf:"bytes,1,opt,name=plan,proto3" json:"plan,omitempty"` // confirmed plan text
-	ConversationId      string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
-	Symbol              string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	Timeframe           string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
-	PreviousCode        string                 `protobuf:"bytes,5,opt,name=previous_code,json=previousCode,proto3" json:"previous_code,omitempty"`                        // for iteration: old code for diff
-	FeedbackMessage     string                 `protobuf:"bytes,6,opt,name=feedback_message,json=feedbackMessage,proto3" json:"feedback_message,omitempty"`               // for iteration: user's adjustment request
-	BacktestMetricsJson string                 `protobuf:"bytes,7,opt,name=backtest_metrics_json,json=backtestMetricsJson,proto3" json:"backtest_metrics_json,omitempty"` // for diagnosis: latest backtest results
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Plan            string                 `protobuf:"bytes,1,opt,name=plan,proto3" json:"plan,omitempty"` // confirmed plan text
+	ConversationId  string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	Symbol          string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Timeframe       string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
+	PreviousCode    string                 `protobuf:"bytes,5,opt,name=previous_code,json=previousCode,proto3" json:"previous_code,omitempty"`          // for iteration: old code for diff
+	FeedbackMessage string                 `protobuf:"bytes,6,opt,name=feedback_message,json=feedbackMessage,proto3" json:"feedback_message,omitempty"` // for iteration: user's adjustment request
+	BacktestMetrics *BacktestMetricsMsg    `protobuf:"bytes,7,opt,name=backtest_metrics,json=backtestMetrics,proto3" json:"backtest_metrics,omitempty"` // for diagnosis: latest backtest results
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ExecutePlanRequest) Reset() {
@@ -518,11 +519,11 @@ func (x *ExecutePlanRequest) GetFeedbackMessage() string {
 	return ""
 }
 
-func (x *ExecutePlanRequest) GetBacktestMetricsJson() string {
+func (x *ExecutePlanRequest) GetBacktestMetrics() *BacktestMetricsMsg {
 	if x != nil {
-		return x.BacktestMetricsJson
+		return x.BacktestMetrics
 	}
-	return ""
+	return nil
 }
 
 type ExecutePlanChunk struct {
@@ -696,8 +697,8 @@ func (x *ExecutePlanResponse) GetError() string {
 type ToolCall struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CallId        string                 `protobuf:"bytes,1,opt,name=call_id,json=callId,proto3" json:"call_id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                               // "compliance_check" | "backtest" | "gate_eval" | "walkforward"
-	ParamsJson    string                 `protobuf:"bytes,3,opt,name=params_json,json=paramsJson,proto3" json:"params_json,omitempty"` // tool-specific parameters as JSON
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`     // "compliance_check" | "backtest" | "gate_eval" | "walkforward"
+	Params        *structpb.Struct       `protobuf:"bytes,3,opt,name=params,proto3" json:"params,omitempty"` // tool-specific parameters
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -746,11 +747,11 @@ func (x *ToolCall) GetName() string {
 	return ""
 }
 
-func (x *ToolCall) GetParamsJson() string {
+func (x *ToolCall) GetParams() *structpb.Struct {
 	if x != nil {
-		return x.ParamsJson
+		return x.Params
 	}
-	return ""
+	return nil
 }
 
 type ToolResult struct {
@@ -758,7 +759,7 @@ type ToolResult struct {
 	CallId        string                 `protobuf:"bytes,1,opt,name=call_id,json=callId,proto3" json:"call_id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Success       bool                   `protobuf:"varint,3,opt,name=success,proto3" json:"success,omitempty"`
-	OutputJson    string                 `protobuf:"bytes,4,opt,name=output_json,json=outputJson,proto3" json:"output_json,omitempty"` // tool-specific output as JSON
+	Output        *structpb.Struct       `protobuf:"bytes,4,opt,name=output,proto3" json:"output,omitempty"` // tool-specific output
 	Error         string                 `protobuf:"bytes,5,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -815,11 +816,11 @@ func (x *ToolResult) GetSuccess() bool {
 	return false
 }
 
-func (x *ToolResult) GetOutputJson() string {
+func (x *ToolResult) GetOutput() *structpb.Struct {
 	if x != nil {
-		return x.OutputJson
+		return x.Output
 	}
-	return ""
+	return nil
 }
 
 func (x *ToolResult) GetError() string {
@@ -951,11 +952,11 @@ func (x *ComplianceResult) GetIssues() []*ComplianceIssue {
 
 type BacktestMetricsMsg struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TotalReturn   float64                `protobuf:"fixed64,1,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
-	SharpeRatio   float64                `protobuf:"fixed64,2,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
-	MaxDrawdown   float64                `protobuf:"fixed64,3,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
-	WinRate       float64                `protobuf:"fixed64,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
-	ProfitFactor  float64                `protobuf:"fixed64,5,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
+	TotalReturn   string                 `protobuf:"bytes,1,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
+	SharpeRatio   string                 `protobuf:"bytes,2,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
+	MaxDrawdown   string                 `protobuf:"bytes,3,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
+	WinRate       string                 `protobuf:"bytes,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	ProfitFactor  string                 `protobuf:"bytes,5,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
 	TotalTrades   int32                  `protobuf:"varint,6,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -991,39 +992,39 @@ func (*BacktestMetricsMsg) Descriptor() ([]byte, []int) {
 	return file_strategy_execution_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *BacktestMetricsMsg) GetTotalReturn() float64 {
+func (x *BacktestMetricsMsg) GetTotalReturn() string {
 	if x != nil {
 		return x.TotalReturn
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestMetricsMsg) GetSharpeRatio() float64 {
+func (x *BacktestMetricsMsg) GetSharpeRatio() string {
 	if x != nil {
 		return x.SharpeRatio
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestMetricsMsg) GetMaxDrawdown() float64 {
+func (x *BacktestMetricsMsg) GetMaxDrawdown() string {
 	if x != nil {
 		return x.MaxDrawdown
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestMetricsMsg) GetWinRate() float64 {
+func (x *BacktestMetricsMsg) GetWinRate() string {
 	if x != nil {
 		return x.WinRate
 	}
-	return 0
+	return ""
 }
 
-func (x *BacktestMetricsMsg) GetProfitFactor() float64 {
+func (x *BacktestMetricsMsg) GetProfitFactor() string {
 	if x != nil {
 		return x.ProfitFactor
 	}
-	return 0
+	return ""
 }
 
 func (x *BacktestMetricsMsg) GetTotalTrades() int32 {
@@ -1097,15 +1098,15 @@ var File_strategy_execution_proto protoreflect.FileDescriptor
 
 const file_strategy_execution_proto_rawDesc = "" +
 	"\n" +
-	"\x18strategy_execution.proto\x12\x06ant.v1\"\xf7\x01\n" +
+	"\x18strategy_execution.proto\x12\x06ant.v1\x1a\x1cgoogle/protobuf/struct.proto\"\x8a\x02\n" +
 	"\x11ConversateRequest\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\x12'\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationId\x12\x16\n" +
 	"\x06symbol\x18\x03 \x01(\tR\x06symbol\x12\x1c\n" +
 	"\ttimeframe\x18\x04 \x01(\tR\ttimeframe\x12\x12\n" +
 	"\x04plan\x18\x05 \x01(\tR\x04plan\x12!\n" +
-	"\fcurrent_code\x18\x06 \x01(\tR\vcurrentCode\x122\n" +
-	"\x15backtest_metrics_json\x18\a \x01(\tR\x13backtestMetricsJson\"\xa0\x02\n" +
+	"\fcurrent_code\x18\x06 \x01(\tR\vcurrentCode\x12E\n" +
+	"\x10backtest_metrics\x18\a \x01(\v2\x1a.ant.v1.BacktestMetricsMsgR\x0fbacktestMetrics\"\xa0\x02\n" +
 	"\x0fConversateChunk\x12\x14\n" +
 	"\x05phase\x18\x01 \x01(\tR\x05phase\x12\x14\n" +
 	"\x05delta\x18\x02 \x01(\tR\x05delta\x12\x12\n" +
@@ -1116,13 +1117,13 @@ const file_strategy_execution_proto_rawDesc = "" +
 	"\ttool_call\x18\a \x01(\v2\x10.ant.v1.ToolCallR\btoolCall\x123\n" +
 	"\vtool_result\x18\b \x01(\v2\x12.ant.v1.ToolResultR\n" +
 	"toolResult\x12\x14\n" +
-	"\x05error\x18\t \x01(\tR\x05error\"\xd0\x01\n" +
+	"\x05error\x18\t \x01(\tR\x05error\"\xe3\x01\n" +
 	"\x0fDiagnoseRequest\x12\x12\n" +
 	"\x04plan\x18\x01 \x01(\tR\x04plan\x12'\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationId\x12)\n" +
 	"\x10feedback_message\x18\x03 \x01(\tR\x0ffeedbackMessage\x12!\n" +
-	"\fcurrent_code\x18\x04 \x01(\tR\vcurrentCode\x122\n" +
-	"\x15backtest_metrics_json\x18\x05 \x01(\tR\x13backtestMetricsJson\"\x8d\x01\n" +
+	"\fcurrent_code\x18\x04 \x01(\tR\vcurrentCode\x12E\n" +
+	"\x10backtest_metrics\x18\x05 \x01(\v2\x1a.ant.v1.BacktestMetricsMsgR\x0fbacktestMetrics\"\x8d\x01\n" +
 	"\x12AnalyzePlanRequest\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\x12'\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationId\x12\x16\n" +
@@ -1132,15 +1133,15 @@ const file_strategy_execution_proto_rawDesc = "" +
 	"\x05phase\x18\x01 \x01(\tR\x05phase\x12\x14\n" +
 	"\x05delta\x18\x02 \x01(\tR\x05delta\x12\x12\n" +
 	"\x04plan\x18\x03 \x01(\tR\x04plan\x12\x14\n" +
-	"\x05error\x18\x04 \x01(\tR\x05error\"\x8b\x02\n" +
+	"\x05error\x18\x04 \x01(\tR\x05error\"\x9e\x02\n" +
 	"\x12ExecutePlanRequest\x12\x12\n" +
 	"\x04plan\x18\x01 \x01(\tR\x04plan\x12'\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationId\x12\x16\n" +
 	"\x06symbol\x18\x03 \x01(\tR\x06symbol\x12\x1c\n" +
 	"\ttimeframe\x18\x04 \x01(\tR\ttimeframe\x12#\n" +
 	"\rprevious_code\x18\x05 \x01(\tR\fpreviousCode\x12)\n" +
-	"\x10feedback_message\x18\x06 \x01(\tR\x0ffeedbackMessage\x122\n" +
-	"\x15backtest_metrics_json\x18\a \x01(\tR\x13backtestMetricsJson\"\x8d\x02\n" +
+	"\x10feedback_message\x18\x06 \x01(\tR\x0ffeedbackMessage\x12E\n" +
+	"\x10backtest_metrics\x18\a \x01(\v2\x1a.ant.v1.BacktestMetricsMsgR\x0fbacktestMetrics\"\x8d\x02\n" +
 	"\x10ExecutePlanChunk\x12\x14\n" +
 	"\x05phase\x18\x01 \x01(\tR\x05phase\x12\x14\n" +
 	"\x05delta\x18\x02 \x01(\tR\x05delta\x12\x12\n" +
@@ -1155,19 +1156,17 @@ const file_strategy_execution_proto_rawDesc = "" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12#\n" +
 	"\rprevious_code\x18\x02 \x01(\tR\fpreviousCode\x125\n" +
 	"\ftool_results\x18\x03 \x03(\v2\x12.ant.v1.ToolResultR\vtoolResults\x12\x14\n" +
-	"\x05error\x18\x04 \x01(\tR\x05error\"X\n" +
+	"\x05error\x18\x04 \x01(\tR\x05error\"h\n" +
 	"\bToolCall\x12\x17\n" +
 	"\acall_id\x18\x01 \x01(\tR\x06callId\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1f\n" +
-	"\vparams_json\x18\x03 \x01(\tR\n" +
-	"paramsJson\"\x8a\x01\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12/\n" +
+	"\x06params\x18\x03 \x01(\v2\x17.google.protobuf.StructR\x06params\"\x9a\x01\n" +
 	"\n" +
 	"ToolResult\x12\x17\n" +
 	"\acall_id\x18\x01 \x01(\tR\x06callId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
-	"\asuccess\x18\x03 \x01(\bR\asuccess\x12\x1f\n" +
-	"\voutput_json\x18\x04 \x01(\tR\n" +
-	"outputJson\x12\x14\n" +
+	"\asuccess\x18\x03 \x01(\bR\asuccess\x12/\n" +
+	"\x06output\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06output\x12\x14\n" +
 	"\x05error\x18\x05 \x01(\tR\x05error\"o\n" +
 	"\x0fComplianceIssue\x12\x12\n" +
 	"\x04rule\x18\x01 \x01(\tR\x04rule\x12\x18\n" +
@@ -1178,11 +1177,11 @@ const file_strategy_execution_proto_rawDesc = "" +
 	"\x06passed\x18\x01 \x01(\bR\x06passed\x12/\n" +
 	"\x06issues\x18\x02 \x03(\v2\x17.ant.v1.ComplianceIssueR\x06issues\"\xe0\x01\n" +
 	"\x12BacktestMetricsMsg\x12!\n" +
-	"\ftotal_return\x18\x01 \x01(\x01R\vtotalReturn\x12!\n" +
-	"\fsharpe_ratio\x18\x02 \x01(\x01R\vsharpeRatio\x12!\n" +
-	"\fmax_drawdown\x18\x03 \x01(\x01R\vmaxDrawdown\x12\x19\n" +
-	"\bwin_rate\x18\x04 \x01(\x01R\awinRate\x12#\n" +
-	"\rprofit_factor\x18\x05 \x01(\x01R\fprofitFactor\x12!\n" +
+	"\ftotal_return\x18\x01 \x01(\tR\vtotalReturn\x12!\n" +
+	"\fsharpe_ratio\x18\x02 \x01(\tR\vsharpeRatio\x12!\n" +
+	"\fmax_drawdown\x18\x03 \x01(\tR\vmaxDrawdown\x12\x19\n" +
+	"\bwin_rate\x18\x04 \x01(\tR\awinRate\x12#\n" +
+	"\rprofit_factor\x18\x05 \x01(\tR\fprofitFactor\x12!\n" +
 	"\ftotal_trades\x18\x06 \x01(\x05R\vtotalTrades\"g\n" +
 	"\x14GateEvaluationResult\x12\x16\n" +
 	"\x06passed\x18\x01 \x01(\bR\x06passed\x12\x1f\n" +
@@ -1224,27 +1223,33 @@ var file_strategy_execution_proto_goTypes = []any{
 	(*ComplianceResult)(nil),     // 11: ant.v1.ComplianceResult
 	(*BacktestMetricsMsg)(nil),   // 12: ant.v1.BacktestMetricsMsg
 	(*GateEvaluationResult)(nil), // 13: ant.v1.GateEvaluationResult
+	(*structpb.Struct)(nil),      // 14: google.protobuf.Struct
 }
 var file_strategy_execution_proto_depIdxs = []int32{
-	8,  // 0: ant.v1.ConversateChunk.tool_call:type_name -> ant.v1.ToolCall
-	9,  // 1: ant.v1.ConversateChunk.tool_result:type_name -> ant.v1.ToolResult
-	8,  // 2: ant.v1.ExecutePlanChunk.tool_call:type_name -> ant.v1.ToolCall
-	9,  // 3: ant.v1.ExecutePlanChunk.tool_result:type_name -> ant.v1.ToolResult
-	9,  // 4: ant.v1.ExecutePlanResponse.tool_results:type_name -> ant.v1.ToolResult
-	10, // 5: ant.v1.ComplianceResult.issues:type_name -> ant.v1.ComplianceIssue
-	3,  // 6: ant.v1.StrategyPlanService.AnalyzePlan:input_type -> ant.v1.AnalyzePlanRequest
-	2,  // 7: ant.v1.StrategyPlanService.Diagnose:input_type -> ant.v1.DiagnoseRequest
-	5,  // 8: ant.v1.StrategyPlanService.ExecutePlan:input_type -> ant.v1.ExecutePlanRequest
-	0,  // 9: ant.v1.StrategyPlanService.Conversate:input_type -> ant.v1.ConversateRequest
-	4,  // 10: ant.v1.StrategyPlanService.AnalyzePlan:output_type -> ant.v1.AnalyzePlanChunk
-	4,  // 11: ant.v1.StrategyPlanService.Diagnose:output_type -> ant.v1.AnalyzePlanChunk
-	6,  // 12: ant.v1.StrategyPlanService.ExecutePlan:output_type -> ant.v1.ExecutePlanChunk
-	1,  // 13: ant.v1.StrategyPlanService.Conversate:output_type -> ant.v1.ConversateChunk
-	10, // [10:14] is the sub-list for method output_type
-	6,  // [6:10] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	12, // 0: ant.v1.ConversateRequest.backtest_metrics:type_name -> ant.v1.BacktestMetricsMsg
+	8,  // 1: ant.v1.ConversateChunk.tool_call:type_name -> ant.v1.ToolCall
+	9,  // 2: ant.v1.ConversateChunk.tool_result:type_name -> ant.v1.ToolResult
+	12, // 3: ant.v1.DiagnoseRequest.backtest_metrics:type_name -> ant.v1.BacktestMetricsMsg
+	12, // 4: ant.v1.ExecutePlanRequest.backtest_metrics:type_name -> ant.v1.BacktestMetricsMsg
+	8,  // 5: ant.v1.ExecutePlanChunk.tool_call:type_name -> ant.v1.ToolCall
+	9,  // 6: ant.v1.ExecutePlanChunk.tool_result:type_name -> ant.v1.ToolResult
+	9,  // 7: ant.v1.ExecutePlanResponse.tool_results:type_name -> ant.v1.ToolResult
+	14, // 8: ant.v1.ToolCall.params:type_name -> google.protobuf.Struct
+	14, // 9: ant.v1.ToolResult.output:type_name -> google.protobuf.Struct
+	10, // 10: ant.v1.ComplianceResult.issues:type_name -> ant.v1.ComplianceIssue
+	3,  // 11: ant.v1.StrategyPlanService.AnalyzePlan:input_type -> ant.v1.AnalyzePlanRequest
+	2,  // 12: ant.v1.StrategyPlanService.Diagnose:input_type -> ant.v1.DiagnoseRequest
+	5,  // 13: ant.v1.StrategyPlanService.ExecutePlan:input_type -> ant.v1.ExecutePlanRequest
+	0,  // 14: ant.v1.StrategyPlanService.Conversate:input_type -> ant.v1.ConversateRequest
+	4,  // 15: ant.v1.StrategyPlanService.AnalyzePlan:output_type -> ant.v1.AnalyzePlanChunk
+	4,  // 16: ant.v1.StrategyPlanService.Diagnose:output_type -> ant.v1.AnalyzePlanChunk
+	6,  // 17: ant.v1.StrategyPlanService.ExecutePlan:output_type -> ant.v1.ExecutePlanChunk
+	1,  // 18: ant.v1.StrategyPlanService.Conversate:output_type -> ant.v1.ConversateChunk
+	15, // [15:19] is the sub-list for method output_type
+	11, // [11:15] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_strategy_execution_proto_init() }

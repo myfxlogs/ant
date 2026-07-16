@@ -47,9 +47,9 @@ type AccountInfoProvider interface {
 
 // AccountInfo holds the data needed for copy-trade allocation decisions.
 type AccountInfo struct {
-	Equity     float64
-	FreeMargin float64
-	Balance    float64
+	Equity     decimal.Decimal
+	FreeMargin decimal.Decimal
+	Balance    decimal.Decimal
 	Status     string // "connected", "disconnected", etc.
 }
 
@@ -65,12 +65,12 @@ type CopySignalEvent struct {
 	// Side is "buy" or "sell".
 	Side string
 	// Volume is the publisher's original order volume (lots).
-	Volume float64
+	Volume decimal.Decimal
 	// Price is the execution price (0 for market orders).
-	Price float64
+	Price decimal.Decimal
 	// StopLoss and TakeProfit are optional protective levels.
-	StopLoss   float64
-	TakeProfit float64
+	StopLoss   decimal.Decimal
+	TakeProfit decimal.Decimal
 	// Comment is appended to each subscriber's order.
 	Comment string
 	// SignalID is a unique identifier for idempotency.
@@ -229,7 +229,7 @@ func (e *CopyTradeEngine) buildAllocInput(accounts []subAccount, result *CopyTra
 	var allocInput []risksvc.AllocAccount
 	var validAccounts []subAccount
 	for _, a := range accounts {
-		if a.account == nil || a.account.Status != "connected" || a.account.Equity <= 0 {
+		if a.account == nil || a.account.Status != "connected" || a.account.Equity.LessThanOrEqual(decimal.Zero) {
 			result.SkippedCount++
 			continue
 		}
@@ -243,20 +243,20 @@ func (e *CopyTradeEngine) buildAllocInput(accounts []subAccount, result *CopyTra
 
 func (e *CopyTradeEngine) submitCopyOrders(
 	ctx context.Context, signal CopySignalEvent, validAccounts []subAccount,
-	allocation map[string]float64, result *CopyTradeResult,
+	allocation map[string]decimal.Decimal, result *CopyTradeResult,
 ) {
 	var submitWg sync.WaitGroup
 	var resultMu sync.Mutex
 	for _, a := range validAccounts {
 		vol, ok := allocation[a.sub.TargetUserID]
-		if !ok || vol <= 0 {
+		if !ok || vol.LessThanOrEqual(decimal.Zero) {
 			resultMu.Lock()
 			result.SkippedCount++
 			resultMu.Unlock()
 			continue
 		}
 		submitWg.Add(1)
-		go func(acc subAccount, volume float64) {
+		go func(acc subAccount, volume decimal.Decimal) {
 			defer submitWg.Done()
 			side := mthub.SideBuy
 			if signal.Side == "sell" {
@@ -264,12 +264,12 @@ func (e *CopyTradeEngine) submitCopyOrders(
 			}
 			req := &mthub.OrderRequest{
 				AccountID: acc.sub.TargetUserID, Canonical: signal.Symbol, Side: side, OrderType: mthub.OrderMarket,
-				Volume: decimal.NewFromFloat(volume), Price: decimal.NewFromFloat(signal.Price),
-				StopLoss: decimal.NewFromFloat(signal.StopLoss), TakeProfit: decimal.NewFromFloat(signal.TakeProfit),
+				Volume: volume, Price: signal.Price,
+				StopLoss: signal.StopLoss, TakeProfit: signal.TakeProfit,
 				Comment:  fmt.Sprintf("copytrade:%s:%s", truncID(signal.StrategyID, 8), signal.Comment),
 				ClientID: fmt.Sprintf("copytrade-%s-%s", signal.SignalID, truncID(acc.sub.TargetUserID, 8)),
 			}
-			if signal.Price > 0 {
+			if signal.Price.GreaterThan(decimal.Zero) {
 				req.OrderType = mthub.OrderLimit
 			}
 			_, err := e.mthub.PlaceOrder(ctx, req)

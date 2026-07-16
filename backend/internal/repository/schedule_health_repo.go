@@ -2,12 +2,15 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
 	"math"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
+	"google.golang.org/protobuf/encoding/prototext"
+
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 // ScheduleHealthRepository provides read access to schedule execution logs and order history.
@@ -21,16 +24,11 @@ func NewScheduleHealthRepository(db *pgxpool.Pool) *ScheduleHealthRepository {
 }
 
 // HealthGradingConfig defines thresholds for health grading.
-type HealthGradingConfig struct {
-	GreenSuccessRate   float64 `json:"green_success_rate"`
-	GreenMaxFailedRuns int     `json:"green_max_failed_runs"`
-	YellowSuccessRate  float64 `json:"yellow_success_rate"`
-	MinSampleSize      int     `json:"min_sample_size"`
-}
+type HealthGradingConfig = antv1.HealthGradingConfig
 
 // DefaultHealthGradingConfig returns sensible defaults.
-func DefaultHealthGradingConfig() HealthGradingConfig {
-	return HealthGradingConfig{
+func DefaultHealthGradingConfig() *HealthGradingConfig {
+	return &HealthGradingConfig{
 		GreenSuccessRate:   90,
 		GreenMaxFailedRuns: 1,
 		YellowSuccessRate:  60,
@@ -47,7 +45,7 @@ type ScheduleHealthSummary struct {
 	LastRunAt            *time.Time
 	LatestError          string
 	LatestOrderTicket    int64
-	LatestOrderProfit    float64
+	LatestOrderProfit    decimal.Decimal
 	HasLatestOrderProfit bool
 	GradeLevel           string
 	GradeColor           string
@@ -74,13 +72,13 @@ type ScheduleHealthOrder struct {
 	Ticket    int64
 	OrderType string
 	Symbol    string
-	Profit    float64
+	Profit    decimal.Decimal
 	OpenTime  *time.Time
 	CloseTime *time.Time
 }
 
 // GetGradingConfig reads the health grading configuration from system_config.
-func (r *ScheduleHealthRepository) GetGradingConfig(ctx context.Context) HealthGradingConfig {
+func (r *ScheduleHealthRepository) GetGradingConfig(ctx context.Context) *HealthGradingConfig {
 	cfg := DefaultHealthGradingConfig()
 	var raw string
 	err := r.db.QueryRow(ctx,
@@ -89,20 +87,22 @@ func (r *ScheduleHealthRepository) GetGradingConfig(ctx context.Context) HealthG
 	if err != nil || raw == "" {
 		return cfg
 	}
-	var parsed HealthGradingConfig
-	if json.Unmarshal([]byte(raw), &parsed) == nil {
-		if parsed.GreenSuccessRate > 0 {
-			cfg.GreenSuccessRate = parsed.GreenSuccessRate
-		}
-		if parsed.GreenMaxFailedRuns > 0 {
-			cfg.GreenMaxFailedRuns = parsed.GreenMaxFailedRuns
-		}
-		if parsed.YellowSuccessRate > 0 {
-			cfg.YellowSuccessRate = parsed.YellowSuccessRate
-		}
-		if parsed.MinSampleSize > 0 {
-			cfg.MinSampleSize = parsed.MinSampleSize
-		}
+	var parsed antv1.HealthGradingConfig
+	if err := prototext.Unmarshal([]byte(raw), &parsed); err != nil {
+		// Legacy JSON fallback for old DB records.
+		return cfg
+	}
+	if parsed.GreenSuccessRate > 0 {
+		cfg.GreenSuccessRate = parsed.GreenSuccessRate
+	}
+	if parsed.GreenMaxFailedRuns > 0 {
+		cfg.GreenMaxFailedRuns = parsed.GreenMaxFailedRuns
+	}
+	if parsed.YellowSuccessRate > 0 {
+		cfg.YellowSuccessRate = parsed.YellowSuccessRate
+	}
+	if parsed.MinSampleSize > 0 {
+		cfg.MinSampleSize = parsed.MinSampleSize
 	}
 	return cfg
 }
@@ -131,7 +131,7 @@ func (r *ScheduleHealthRepository) GetScheduleStats(ctx context.Context, userID,
 }
 
 // GetLatestOrderProfit returns the most recent closed order's ticket and profit.
-func (r *ScheduleHealthRepository) GetLatestOrderProfit(ctx context.Context, userID, scheduleID uuid.UUID) (ticket int64, profit float64, hasData bool) {
+func (r *ScheduleHealthRepository) GetLatestOrderProfit(ctx context.Context, userID, scheduleID uuid.UUID) (ticket int64, profit decimal.Decimal, hasData bool) {
 	err := r.db.QueryRow(ctx,
 		"SELECT COALESCE(ticket, 0), COALESCE(profit, 0) FROM order_history WHERE user_id = $1 AND schedule_id = $2 AND close_time IS NOT NULL ORDER BY close_time DESC LIMIT 1",
 		userID, scheduleID,

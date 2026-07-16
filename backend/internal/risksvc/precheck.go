@@ -3,13 +3,15 @@ package risksvc
 import (
 	"context"
 	"fmt"
+
+	"github.com/shopspring/decimal"
 )
 
 // RiskLimits defines pre-trade risk boundaries for an account (ADR-0014).
 type RiskLimits struct {
 	MaxPositionsPerSymbol  int
 	MaxTotalPositions      int
-	MaxExposurePerAccount  float64
+	MaxExposurePerAccount  decimal.Decimal
 	MaxMarginUtilizationPct float64
 }
 
@@ -25,7 +27,7 @@ type PreCheckResult struct {
 //  2. Total exposure — aggregate position count across all symbols
 //  3. Cross-account net exposure — checks net direction across accounts
 //  4. Margin utilization — ensures sufficient free margin
-func PreCheck(ctx context.Context, req *CheckRequest, limits *RiskLimits, currentPositions int, freeMargin, requiredMargin float64) *PreCheckResult {
+func PreCheck(ctx context.Context, req *CheckRequest, limits *RiskLimits, currentPositions int, freeMargin, requiredMargin decimal.Decimal) *PreCheckResult {
 	// 1. Symbol position limit
 	if limits != nil && limits.MaxPositionsPerSymbol > 0 && currentPositions >= limits.MaxPositionsPerSymbol {
 		return &PreCheckResult{
@@ -45,17 +47,17 @@ func PreCheck(ctx context.Context, req *CheckRequest, limits *RiskLimits, curren
 	}
 
 	// 3. Cross-account net exposure — check if adding this position would create excessive directional bias.
-	if limits != nil && limits.MaxExposurePerAccount > 0 && req.Volume > limits.MaxExposurePerAccount {
+	if limits != nil && limits.MaxExposurePerAccount.GreaterThan(decimal.Zero) && req.Volume.GreaterThan(limits.MaxExposurePerAccount) {
 		return &PreCheckResult{
 			Allowed: false,
 			Rule:    "account_exposure",
-			Reason:  fmt.Sprintf("volume %.2f exceeds account exposure limit %.2f", req.Volume, limits.MaxExposurePerAccount),
+			Reason:  fmt.Sprintf("volume %s exceeds account exposure limit %s", req.Volume.String(), limits.MaxExposurePerAccount.String()),
 		}
 	}
 
 	// 4. Margin utilization
-	if limits != nil && limits.MaxMarginUtilizationPct > 0 && freeMargin > 0 {
-		utilizationPct := (requiredMargin / freeMargin) * 100
+	if limits != nil && limits.MaxMarginUtilizationPct > 0 && freeMargin.GreaterThan(decimal.Zero) {
+		utilizationPct := requiredMargin.Div(freeMargin).Mul(decimal.NewFromInt(100)).InexactFloat64()
 		if utilizationPct > limits.MaxMarginUtilizationPct {
 			return &PreCheckResult{
 				Allowed: false,
@@ -73,7 +75,7 @@ func DefaultRiskLimits() *RiskLimits {
 	return &RiskLimits{
 		MaxPositionsPerSymbol:   5,
 		MaxTotalPositions:       20,
-		MaxExposurePerAccount:   100000, // 1 standard lot
+		MaxExposurePerAccount:   decimal.NewFromInt(100000), // 1 standard lot
 		MaxMarginUtilizationPct: 80,
 	}
 }

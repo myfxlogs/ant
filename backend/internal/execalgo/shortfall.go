@@ -4,6 +4,8 @@ import (
 	"errors"
 	"math"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // ShortfallAlgo implements Implementation Shortfall execution.
@@ -38,7 +40,7 @@ func NewShortfall(urgency float64, numSlices int) *ShortfallAlgo {
 func (a *ShortfallAlgo) Name() string { return "ImplementationShortfall" }
 
 func (a *ShortfallAlgo) Schedule(parent ParentOrder) (*Schedule, error) {
-	if parent.TotalVolume <= 0 {
+	if !parent.TotalVolume.GreaterThan(decimal.Zero) {
 		return nil, errors.New("shortfall: total volume must be positive")
 	}
 	dur := parent.Duration()
@@ -72,23 +74,23 @@ func (a *ShortfallAlgo) Schedule(parent ParentOrder) (*Schedule, error) {
 	remaining := parent.TotalVolume
 	slices := make([]ChildOrder, 0, n)
 	for i := 0; i < n; i++ {
-		var vol float64
+		var vol decimal.Decimal
 		if i == n-1 {
-			// Last slice takes the remainder to avoid float accumulation gaps.
+			// Last slice takes the remainder to avoid accumulation gaps.
 			vol = remaining
 		} else {
-			vol = math.Round(parent.TotalVolume*weights[i]/totalWeight*10000) / 10000
+			vol = parent.TotalVolume.Mul(decimal.NewFromFloat(weights[i])).Div(decimal.NewFromFloat(totalWeight)).Round(4)
 		}
-		if vol <= 0 {
+		if !vol.GreaterThan(decimal.Zero) {
 			continue
 		}
-		vol = math.Min(vol, remaining)
+		vol = decimal.Min(vol, remaining)
 		slices = append(slices, ChildOrder{
 			Sequence:   i,
 			Volume:     vol,
 			TargetTime: parent.StartTime.Add(sliceDur * time.Duration(i+1)),
 		})
-		remaining -= vol
+		remaining = remaining.Sub(vol)
 	}
 
 	return &Schedule{

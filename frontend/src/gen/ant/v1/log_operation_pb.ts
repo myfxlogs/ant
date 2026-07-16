@@ -5,14 +5,14 @@
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
-import type { Message } from "@bufbuild/protobuf";
+import { file_google_protobuf_struct, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { JsonObject, Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file log_operation.proto.
  */
 export const file_log_operation: GenFile = /*@__PURE__*/
-  fileDesc("ChNsb2dfb3BlcmF0aW9uLnByb3RvEgZhbnQudjEirAEKF0dldE9wZXJhdGlvbkxvZ3NSZXF1ZXN0EgwKBHBhZ2UYASABKAUSEQoJcGFnZV9zaXplGAIgASgFEg4KBm1vZHVsZRgDIAEoCRIOCgZhY3Rpb24YBCABKAkSFQoNcmVzb3VyY2VfdHlwZRgFIAEoCRITCgtyZXNvdXJjZV9pZBgGIAEoCRISCgpzdGFydF9kYXRlGAcgASgJEhAKCGVuZF9kYXRlGAggASgJIk0KGEdldE9wZXJhdGlvbkxvZ3NSZXNwb25zZRIiCgRsb2dzGAEgAygLMhQuYW50LnYxLk9wZXJhdGlvbkxvZxINCgV0b3RhbBgCIAEoBSKUAgoMT3BlcmF0aW9uTG9nEgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSDgoGbW9kdWxlGAMgASgJEg4KBmFjdGlvbhgEIAEoCRIPCgdkZXRhaWxzGAUgASgJEgoKAmlwGAYgASgJEhIKCnVzZXJfYWdlbnQYByABKAkSDgoGc3RhdHVzGAggASgJEhUKDWVycm9yX21lc3NhZ2UYCSABKAkSFQoNcmVzb3VyY2VfdHlwZRgKIAEoCRITCgtyZXNvdXJjZV9pZBgLIAEoCRITCgtkdXJhdGlvbl9tcxgMIAEoAxIuCgpjcmVhdGVkX2F0GA0gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChNsb2dfb3BlcmF0aW9uLnByb3RvEgZhbnQudjEirAEKF0dldE9wZXJhdGlvbkxvZ3NSZXF1ZXN0EgwKBHBhZ2UYASABKAUSEQoJcGFnZV9zaXplGAIgASgFEg4KBm1vZHVsZRgDIAEoCRIOCgZhY3Rpb24YBCABKAkSFQoNcmVzb3VyY2VfdHlwZRgFIAEoCRITCgtyZXNvdXJjZV9pZBgGIAEoCRISCgpzdGFydF9kYXRlGAcgASgJEhAKCGVuZF9kYXRlGAggASgJIk0KGEdldE9wZXJhdGlvbkxvZ3NSZXNwb25zZRIiCgRsb2dzGAEgAygLMhQuYW50LnYxLk9wZXJhdGlvbkxvZxINCgV0b3RhbBgCIAEoBSKtAgoMT3BlcmF0aW9uTG9nEgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSDgoGbW9kdWxlGAMgASgJEg4KBmFjdGlvbhgEIAEoCRIoCgdkZXRhaWxzGAUgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIKCgJpcBgGIAEoCRISCgp1c2VyX2FnZW50GAcgASgJEg4KBnN0YXR1cxgIIAEoCRIVCg1lcnJvcl9tZXNzYWdlGAkgASgJEhUKDXJlc291cmNlX3R5cGUYCiABKAkSEwoLcmVzb3VyY2VfaWQYCyABKAkSEwoLZHVyYXRpb25fbXMYDCABKAMSLgoKY3JlYXRlZF9hdBgNIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_google_protobuf_struct]);
 
 /**
  * @generated from message ant.v1.GetOperationLogsRequest
@@ -113,9 +113,9 @@ export type OperationLog = Message<"ant.v1.OperationLog"> & {
   action: string;
 
   /**
-   * @generated from field: string details = 5;
+   * @generated from field: google.protobuf.Struct details = 5;
    */
-  details: string;
+  details?: JsonObject | undefined;
 
   /**
    * @generated from field: string ip = 6;

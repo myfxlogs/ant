@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ant.v1;
 
+import "google/protobuf/struct.proto";
+
 option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 // NotificationService is the user-facing in-app notification inbox.
@@ -24,7 +26,7 @@ message Notification {
   string type = 3;          // margin_call | risk_alert | system | trade
   string title = 4;
   string message = 5;
-  string data_json = 6;     // JSONB as string for proto compatibility
+  google.protobuf.Struct data = 6;  // structured metadata
   bool is_read = 7;
   string created_at = 8;    // RFC 3339
 }
@@ -55,7 +57,7 @@ message SendNotificationRequest {
   string type = 2;     // backtest_completed | tuning_completed | gate_passed | signal_triggered | system_alert
   string title = 3;
   string message = 4;
-  string data_json = 5; // optional JSON metadata
+  google.protobuf.Struct data = 5;  // optional structured metadata
 }
 
 message SendNotificationResponse {

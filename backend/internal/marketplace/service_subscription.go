@@ -376,18 +376,29 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 // goroutine. Call during server startup.
 func (s *Service) StartRenewalLoop(ctx context.Context, log *zap.Logger) {
 	go func() {
-		ticker := time.NewTicker(24 * time.Hour)
-		defer ticker.Stop()
+		// D5: Align first tick to next midnight UTC + jitter (0-5min) to avoid
+		// thundering herd on startup and make renewal timing deterministic.
+		now := time.Now().UTC()
+		nextMidnight := now.Truncate(24 * time.Hour).Add(24 * time.Hour)
+		initialDelay := time.Until(nextMidnight) + time.Duration(time.Now().UnixNano()%int64(5*time.Minute))
+		if initialDelay < 0 {
+			initialDelay = 0
+		}
+
 		// Run once at startup to catch overdue renewals.
 		renewed, failed, _ := s.RenewSubscriptions(ctx)
 		if renewed+failed > 0 {
 			log.Info("subscription renewal startup run", zap.Int("renewed", renewed), zap.Int("failed", failed))
 		}
+
+		// Wait until first aligned tick, then switch to 24h ticker.
+		timer := time.NewTimer(initialDelay)
+		defer timer.Stop()
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case <-ticker.C:
+			case <-timer.C:
 				runCtx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 				renewed, failed, err := s.RenewSubscriptions(runCtx)
 				cancel()
@@ -396,6 +407,7 @@ func (s *Service) StartRenewalLoop(ctx context.Context, log *zap.Logger) {
 				} else if renewed+failed > 0 {
 					log.Info("subscription renewal complete", zap.Int("renewed", renewed), zap.Int("failed", failed))
 				}
+				timer.Reset(24 * time.Hour)
 			}
 		}
 	}()

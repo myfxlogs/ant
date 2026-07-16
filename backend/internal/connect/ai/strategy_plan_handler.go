@@ -273,8 +273,8 @@ func buildExecuteUserPrompt(m *antv1.ExecutePlanRequest) string {
 		if m.PreviousCode != "" {
 			p += "## 当前的策略代码\n```go\n" + m.PreviousCode + "\n```\n\n"
 		}
-		if m.BacktestMetricsJson != "" {
-			p += "## 回测数据\n" + m.BacktestMetricsJson + "\n"
+		if m.BacktestMetrics != nil {
+			p += "## 回测数据\n" + formatBacktestMetrics(m.BacktestMetrics) + "\n"
 		}
 		return p
 	}

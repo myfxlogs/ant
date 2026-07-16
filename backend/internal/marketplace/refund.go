@@ -58,10 +58,10 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 	var purchaseAmount string
 	var purchaseTxID string
 	err = tx.QueryRow(ctx,
-		fmt.Sprintf(`SELECT amount::text, id::text FROM wallet_transactions
-		 WHERE user_id = $1 AND tx_type = '%s'
-		 ORDER BY created_at DESC LIMIT 1`, TxTypePurchase),
-		uid,
+		`SELECT amount::text, id::text FROM wallet_transactions
+		 WHERE user_id = $1 AND tx_type = $2
+		 ORDER BY created_at DESC LIMIT 1`,
+		uid, TxTypePurchase,
 	).Scan(&purchaseAmount, &purchaseTxID)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: original purchase transaction not found")

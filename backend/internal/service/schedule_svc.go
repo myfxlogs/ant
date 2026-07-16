@@ -8,7 +8,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"google.golang.org/protobuf/proto"
 
+	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/model"
 )
 
@@ -80,16 +82,16 @@ func (s *StrategySvc) CreateSchedule(ctx context.Context, r *ScheduleRow) error 
 	r.CreatedAt = now
 	r.UpdatedAt = now
 	if r.Parameters == nil {
-		r.Parameters = []byte("{}")
+		r.Parameters, _ = proto.Marshal(&antv1.StrategyParams{Values: map[string]string{}})
 	}
 	if r.ScheduleConfig == nil {
-		r.ScheduleConfig = []byte("{}")
+		r.ScheduleConfig, _ = proto.Marshal(&antv1.ScheduleConfig{})
 	}
 	if r.RiskReasons == nil {
-		r.RiskReasons = []byte("[]")
+		r.RiskReasons, _ = proto.Marshal(&antv1.BacktestRisk{})
 	}
 	if r.RiskWarnings == nil {
-		r.RiskWarnings = []byte("[]")
+		r.RiskWarnings, _ = proto.Marshal(&antv1.BacktestRisk{})
 	}
 	// Compute next_run_at for timer-based schedules.
 	if r.NextRunAt == nil {

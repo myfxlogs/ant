@@ -48,7 +48,7 @@ message TradeEventPayload {
   string from_state = 15;
   string to_state = 16;
   string error = 17;
-  string cost_json = 18; // temporary — until CostEstimate proto
+  CostEstimate cost = 18; // pre-trade cost breakdown
   int64 ts_unix_ms = 19;
 }
 

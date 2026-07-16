@@ -5,6 +5,7 @@ package ant.v1;
 option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 import "strategy_runtime.proto";
+import "parameter_entry.proto";
 
 service CodeAssistService {
   rpc ReviseCode(ReviseCodeRequest) returns (ReviseCodeResponse);
@@ -26,10 +27,6 @@ message TranslateParamLabelsResponse {
   // translations[locale][param_name] = translated_label
   // Top-level keys are locale codes: "en", "zh-cn", "zh-tw", "ja", "vi"
   map<string, ParamLabelMap> translations = 1;
-}
-
-message ParamLabelMap {
-  map<string, string> labels = 1;
 }
 
 message CodeChatMessage {
@@ -80,8 +77,8 @@ message ValidateStrategyExtendedResponse {
   repeated SweepDimension sweep_dimensions = 6;
   // Strategy directives from @strategy annotations (zero-trust).
   repeated StrategyDirective strategy_directives = 7;
-  // Extracted self.ctx.param() calls as JSON array of {name, type, default, label}.
-  string parameters_json = 8;
+  // Extracted self.ctx.param() calls as structured parameter entries.
+  repeated ParameterEntry parameter_entries = 8;
 }
 
 message RequiredParamSpec {

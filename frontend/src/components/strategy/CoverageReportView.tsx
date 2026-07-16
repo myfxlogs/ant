@@ -20,13 +20,8 @@ interface CoverageData {
   error?: string;
 }
 
-export default function CoverageReportView({ json }: { json: string }) {
-  let data: CoverageData;
-  try {
-    data = JSON.parse(json);
-  } catch {
-    return <Text type="secondary" style={{ fontSize: 10 }}>Invalid coverage data</Text>;
-  }
+export default function CoverageReportView({ json }: { json: Record<string, unknown> }) {
+  const data = json as unknown as CoverageData;
 
   if (!data.compiles) {
     return (

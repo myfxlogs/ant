@@ -3,18 +3,9 @@ import { paramLabel } from './paramLabel'
 
 describe('paramLabel', () => {
   const i18nData = {
-    params: {
-      'MAPeriod': {
-        label: {
-          'en': 'MA Period',
-          'zh-cn': '均线周期',
-        },
-      },
-      'RSIPeriod': {
-        label: {
-          'en': 'RSI Period',
-        },
-      },
+    locales: {
+      'en': { labels: { 'MAPeriod': 'MA Period', 'RSIPeriod': 'RSI Period' } },
+      'zh-cn': { labels: { 'MAPeriod': '均线周期' } },
     },
   }
 
@@ -50,16 +41,12 @@ describe('paramLabel', () => {
     expect(paramLabel('MAPeriod', 'en', undefined)).toBe('MAPeriod')
   })
 
-  it('returns raw name when params is empty', () => {
-    expect(paramLabel('MAPeriod', 'en', { params: {} })).toBe('MAPeriod')
+  it('returns raw name when locales is empty', () => {
+    expect(paramLabel('MAPeriod', 'en', { locales: {} })).toBe('MAPeriod')
   })
 
-  it('returns raw name when param has no label', () => {
-    expect(paramLabel('NoLabel', 'en', { params: { NoLabel: {} } })).toBe('NoLabel')
-  })
-
-  it('returns raw name when label map is empty', () => {
-    expect(paramLabel('Empty', 'en', { params: { Empty: { label: {} } } })).toBe('Empty')
+  it('returns raw name when locale has no labels for the param', () => {
+    expect(paramLabel('NoLabel', 'en', { locales: { 'en': { labels: {} } } })).toBe('NoLabel')
   })
 
   it('handles locale with region suffix fallback', () => {

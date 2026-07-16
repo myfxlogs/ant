@@ -11,6 +11,7 @@ import "strategy_messages.proto";
 import "backtest_run_start.proto";
 import "backtest_run_query.proto";
 import "backtest_run_control.proto";
+import "parameter_entry.proto";
 
 service StrategyRuntimeService {
   rpc Execute(ExecuteStrategyRequest) returns (ExecuteStrategyResponse);
@@ -105,9 +106,9 @@ message ValidateStrategyResponse {
   // Auto-detected strategy type from code analysis.
   // "run_context" = event-driven OnInit/OnBar | "run_dataframe" = vectorized
   string strategy_type = 7;
-  // Extracted ctx.Param() calls as JSON array of {name, type, default, label}.
+  // Extracted ctx.Param() calls as structured parameter entries.
   // Frontend uses this to render parameter input fields in the backtest card.
-  string parameters_json = 8;
+  repeated ParameterEntry parameters = 8;
 }
 
 // CodeQualityHint reports a single code quality issue found by static analysis.

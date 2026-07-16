@@ -16,6 +16,8 @@ package mthub
 import (
 	"sync"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // DerivedState holds the latest Tier-2 computed values.
@@ -27,26 +29,26 @@ type DerivedState struct {
 	AccountPnL map[string]*AccountDerivedState
 
 	// Platform-wide aggregates
-	TotalExposure     float64
-	TotalMarginUsed   float64
-	TotalGrossPnL     float64
-	TotalNetPnL       float64
-	VaR95             float64 // 95% confidence, 1-day VaR
+	TotalExposure   decimal.Decimal
+	TotalMarginUsed decimal.Decimal
+	TotalGrossPnL   decimal.Decimal
+	TotalNetPnL     decimal.Decimal
+	VaR95           float64 // 95% confidence, 1-day VaR (statistical estimate)
 
 	LastUpdated time.Time
 }
 
 // AccountDerivedState holds Tier-2 values for a single account.
 type AccountDerivedState struct {
-	AccountID    string
-	GrossPnL     float64
-	NetPnL       float64
-	Commission   float64
-	Swap         float64
-	Slippage     float64
-	MarginUsed   float64
-	Exposure     float64
-	VaR95        float64
+	AccountID  string
+	GrossPnL   decimal.Decimal
+	NetPnL     decimal.Decimal
+	Commission decimal.Decimal
+	Swap       decimal.Decimal
+	Slippage   decimal.Decimal
+	MarginUsed decimal.Decimal
+	Exposure   decimal.Decimal
+	VaR95      float64
 }
 
 // NewDerivedState creates an empty derived state container.
@@ -57,7 +59,7 @@ func NewDerivedState() *DerivedState {
 }
 
 // Update replaces the internal state with freshly computed values.
-func (d *DerivedState) Update(accounts map[string]*AccountDerivedState, totalExposure, totalMargin, grossPnL, netPnL, var95 float64) {
+func (d *DerivedState) Update(accounts map[string]*AccountDerivedState, totalExposure, totalMargin, grossPnL, netPnL decimal.Decimal, var95 float64) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -71,7 +73,7 @@ func (d *DerivedState) Update(accounts map[string]*AccountDerivedState, totalExp
 }
 
 // Get returns a snapshot of the current derived state.
-func (d *DerivedState) Get() (accounts map[string]*AccountDerivedState, totalExposure, totalMargin, grossPnL, netPnL, var95 float64, lastUpdated time.Time) {
+func (d *DerivedState) Get() (accounts map[string]*AccountDerivedState, totalExposure, totalMargin, grossPnL, netPnL decimal.Decimal, var95 float64, lastUpdated time.Time) {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	return d.AccountPnL, d.TotalExposure, d.TotalMarginUsed, d.TotalGrossPnL, d.TotalNetPnL, d.VaR95, d.LastUpdated
@@ -145,25 +147,25 @@ func (dc *DerivedComputer) recalculate() {
 	cache.mu.RUnlock()
 
 	accounts := make(map[string]*AccountDerivedState)
-	var totalExposure, totalMargin, totalGross, totalNet float64
+	var totalExposure, totalMargin, totalGross, totalNet decimal.Decimal
 
 	for accountID := range accountSet {
 		ads := &AccountDerivedState{AccountID: accountID}
 		positions := cache.GetPositionsByAccount(accountID)
 		for _, pos := range positions {
-			notional := pos.NetVolume.Mul(pos.AvgPrice).Abs().InexactFloat64()
-			ads.Exposure += notional
-			ads.GrossPnL += pos.PnL.InexactFloat64()
+			notional := pos.NetVolume.Mul(pos.AvgPrice).Abs()
+			ads.Exposure = ads.Exposure.Add(notional)
+			ads.GrossPnL = ads.GrossPnL.Add(pos.PnL)
 			// Net = Gross - commissions - swap (accumulated from order fills).
-			ads.NetPnL = ads.GrossPnL - ads.Commission - ads.Swap
+			ads.NetPnL = ads.GrossPnL.Sub(ads.Commission).Sub(ads.Swap)
 			// Simplified margin: 1% of notional as initial margin proxy.
-			ads.MarginUsed += notional * 0.01
+			ads.MarginUsed = ads.MarginUsed.Add(notional.Mul(decimal.NewFromFloat(0.01)))
 		}
 		accounts[accountID] = ads
-		totalExposure += ads.Exposure
-		totalMargin += ads.MarginUsed
-		totalGross += ads.GrossPnL
-		totalNet += ads.NetPnL
+		totalExposure = totalExposure.Add(ads.Exposure)
+		totalMargin = totalMargin.Add(ads.MarginUsed)
+		totalGross = totalGross.Add(ads.GrossPnL)
+		totalNet = totalNet.Add(ads.NetPnL)
 	}
 
 	// Parametric VaR (95% confidence, 1-day horizon).
@@ -177,20 +179,20 @@ func (dc *DerivedComputer) recalculate() {
 	dailyVol := 0.01 // 1% daily vol for major FX
 	concentration := 1.0
 	if len(accountSet) > 0 {
-		largestExp := 0.0
+		largestExp := decimal.Zero
 		for _, ads := range accounts {
-			if ads.Exposure > largestExp {
+			if ads.Exposure.GreaterThan(largestExp) {
 				largestExp = ads.Exposure
 			}
 		}
-		if totalExposure > 0 {
-			ratio := largestExp / totalExposure
+		if totalExposure.GreaterThan(decimal.Zero) {
+			ratio := largestExp.Div(totalExposure).InexactFloat64()
 			if ratio > 0.5 {
 				concentration = 1.0 + (ratio - 0.5) * 2.0 // max 2x penalty
 			}
 		}
 	}
-	var95 := zScore * totalExposure * dailyVol * concentration
+	var95 := zScore * totalExposure.InexactFloat64() * dailyVol * concentration
 
 	dc.state.Update(accounts, totalExposure, totalMargin, totalGross, totalNet, var95)
 }

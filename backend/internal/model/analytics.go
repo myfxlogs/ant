@@ -16,8 +16,8 @@ type TradeStats struct {
 	ProfitFactor         decimal.Decimal `json:"profit_factor"`
 	AverageProfit        decimal.Decimal `json:"average_profit"`
 	AverageLoss          decimal.Decimal `json:"average_loss"`
-	AverageTrade         float64         `json:"average_trade"`
-	AverageVolume        float64         `json:"average_volume"`
+	AverageTrade         decimal.Decimal `json:"average_trade"`
+	AverageVolume        decimal.Decimal `json:"average_volume"`
 	LargestWin           decimal.Decimal `json:"largest_win"`
 	LargestLoss          decimal.Decimal `json:"largest_loss"`
 	TotalVolume          decimal.Decimal `json:"total_volume"`
@@ -31,17 +31,17 @@ type TradeStats struct {
 
 type RiskMetrics struct {
 	MaxDrawdown        decimal.Decimal `json:"max_drawdown"`
-	MaxDrawdownPercent float64 `json:"max_drawdown_percent"`
+	MaxDrawdownPercent decimal.Decimal `json:"max_drawdown_percent"`
 	SharpeRatio        decimal.Decimal `json:"sharpe_ratio"`
-	SortinoRatio       float64 `json:"sortino_ratio"`
-	CalmarRatio        float64 `json:"calmar_ratio"`
-	Volatility         float64 `json:"volatility"`
-	ValueAtRisk95      float64 `json:"value_at_risk_95"`
-	ExpectedShortfall  float64 `json:"expected_shortfall"`
-	MaxDailyLoss       float64 `json:"max_daily_loss"`
-	MaxWeeklyLoss      float64 `json:"max_weekly_loss"`
-	AverageDailyReturn float64 `json:"average_daily_return"`
-	ReturnStdDev       float64 `json:"return_std_dev"`
+	SortinoRatio       decimal.Decimal `json:"sortino_ratio"`
+	CalmarRatio        decimal.Decimal `json:"calmar_ratio"`
+	Volatility         decimal.Decimal `json:"volatility"`
+	ValueAtRisk95      decimal.Decimal `json:"value_at_risk_95"`
+	ExpectedShortfall  decimal.Decimal `json:"expected_shortfall"`
+	MaxDailyLoss       decimal.Decimal `json:"max_daily_loss"`
+	MaxWeeklyLoss      decimal.Decimal `json:"max_weekly_loss"`
+	AverageDailyReturn decimal.Decimal `json:"average_daily_return"`
+	ReturnStdDev       decimal.Decimal `json:"return_std_dev"`
 }
 
 type SymbolStats struct {
@@ -67,7 +67,7 @@ type DailyEquity struct {
 	Equity   decimal.Decimal `json:"equity"`
 	Balance  decimal.Decimal `json:"balance"`
 	Profit   decimal.Decimal `json:"profit"`
-	Drawdown float64 `json:"drawdown"`
+	Drawdown decimal.Decimal `json:"drawdown"`
 }
 
 type TradeReport struct {
@@ -78,8 +78,8 @@ type TradeReport struct {
 	RiskMetrics   RiskMetrics    `json:"risk_metrics"`
 	SymbolStats   []*SymbolStats `json:"symbol_stats"`
 	DailyEquity   []*DailyEquity `json:"daily_equity"`
-	EquityCurve   []float64      `json:"equity_curve"`
-	DrawdownCurve []float64      `json:"drawdown_curve"`
+	EquityCurve   []decimal.Decimal `json:"equity_curve"`
+	DrawdownCurve []decimal.Decimal `json:"drawdown_curve"`
 }
 
 type MonthlyPnL struct {
@@ -101,9 +101,9 @@ type DailyPnL struct {
 	Balance                decimal.Decimal `json:"balance"`
 	ProfitFactor           decimal.Decimal `json:"profit_factor"`
 	MaxFloatingLossAmount   decimal.Decimal `json:"max_floating_loss_amount"`
-	MaxFloatingLossRatio    float64         `json:"max_floating_loss_ratio"`
+	MaxFloatingLossRatio    decimal.Decimal `json:"max_floating_loss_ratio"`
 	MaxFloatingProfitAmount decimal.Decimal `json:"max_floating_profit_amount"`
-	MaxFloatingProfitRatio  float64         `json:"max_floating_profit_ratio"`
+	MaxFloatingProfitRatio  decimal.Decimal `json:"max_floating_profit_ratio"`
 }
 
 type HourlyStats struct {
@@ -112,21 +112,21 @@ type HourlyStats struct {
 	Trades    int     `json:"trades"`
 	Profit    decimal.Decimal `json:"profit"`
 	WinRate   decimal.Decimal `json:"win_rate"`
-	AvgPnL    float64 `json:"avg_pnl"`
+	AvgPnL    decimal.Decimal `json:"avg_pnl"`
 	Lots                   decimal.Decimal `json:"lots"`
 	Balance                decimal.Decimal `json:"balance"`
 	ProfitFactor           decimal.Decimal `json:"profit_factor"`
 	MaxFloatingLossAmount   decimal.Decimal `json:"max_floating_loss_amount"`
-	MaxFloatingLossRatio    float64         `json:"max_floating_loss_ratio"`
+	MaxFloatingLossRatio    decimal.Decimal `json:"max_floating_loss_ratio"`
 	MaxFloatingProfitAmount decimal.Decimal `json:"max_floating_profit_amount"`
-	MaxFloatingProfitRatio  float64         `json:"max_floating_profit_ratio"`
+	MaxFloatingProfitRatio  decimal.Decimal `json:"max_floating_profit_ratio"`
 }
 
 // WeekdayPnL aggregates closed trades by ISO weekday (1=Monday … 7=Sunday).
 type WeekdayPnL struct {
-	Weekday int     `json:"weekday"`
-	PnL     float64 `json:"pnl"`
-	Trades  int     `json:"trades"`
+	Weekday int             `json:"weekday"`
+	PnL     decimal.Decimal `json:"pnl"`
+	Trades  int             `json:"trades"`
 }
 
 type EquityPoint struct {
@@ -149,22 +149,22 @@ type MonthlyAnalysisPoint struct {
 type MonthlyBonusSymbol struct {
 	Symbol       string  `json:"symbol"`
 	Trades       int     `json:"trades"`
-	SharePercent float64 `json:"share_percent"` // lot-volume share for pie, 0–100
+	SharePercent decimal.Decimal `json:"share_percent"` // lot-volume share for pie, 0–100
 }
 
 type MonthlyBonusRiskRow struct {
-	Symbol    string  `json:"symbol"`
-	RiskRatio float64 `json:"risk_ratio"`
+	Symbol    string          `json:"symbol"`
+	RiskRatio decimal.Decimal `json:"risk_ratio"`
 }
 
 type MonthlyBonusHoldingRow struct {
-	Symbol           string  `json:"symbol"`
-	BullsSeconds     float64 `json:"bulls_seconds"`
-	ShortTermSeconds float64 `json:"short_term_seconds"`
+	Symbol           string          `json:"symbol"`
+	BullsSeconds     decimal.Decimal `json:"bulls_seconds"`
+	ShortTermSeconds decimal.Decimal `json:"short_term_seconds"`
 }
 
 type MonthlyAnalysisBonus struct {
-	RiskRatio         float64                   `json:"risk_ratio"`
+	RiskRatio         decimal.Decimal             `json:"risk_ratio"`
 	SymbolPopularity  []*MonthlyBonusSymbol     `json:"symbol_popularity"`
 	SymbolRisks       []*MonthlyBonusRiskRow    `json:"symbol_risks"`
 	SymbolHoldings    []*MonthlyBonusHoldingRow `json:"symbol_holdings"`
@@ -187,10 +187,10 @@ type AccountAnalytics struct {
 // MonthlyDetailMetrics holds aggregated metrics for a single month.
 type MonthlyDetailMetrics struct {
 	NetReturn     decimal.Decimal `json:"net_return"`
-	ReturnPercent float64         `json:"return_percent"` // NetReturn / startingBalance * 100, sourced from account_balance_history
+	ReturnPercent decimal.Decimal `json:"return_percent"` // NetReturn / startingBalance * 100, sourced from account_balance_history
 	TotalTrades   int             `json:"total_trades"`
-	WinRate       float64         `json:"win_rate"`
-	ProfitFactor  float64         `json:"profit_factor"`
+	WinRate       decimal.Decimal `json:"win_rate"`
+	ProfitFactor  decimal.Decimal `json:"profit_factor"`
 	BestTrade     decimal.Decimal `json:"best_trade"`
 	WorstTrade    decimal.Decimal `json:"worst_trade"`
 }
@@ -200,13 +200,13 @@ type MonthlySymbolPnL struct {
 	Symbol    string          `json:"symbol"`
 	NetProfit decimal.Decimal `json:"net_profit"`
 	Trades    int             `json:"trades"`
-	WinRate   float64         `json:"win_rate"`
+	WinRate   decimal.Decimal `json:"win_rate"`
 }
 
 // MonthlyHoldingStats holds holding time statistics for a single month.
 type MonthlyHoldingStats struct {
-	AverageHours float64 `json:"average_hours"`
-	MedianHours  float64 `json:"median_hours"`
-	MaxHours     float64 `json:"max_hours"`
-	MinHours     float64 `json:"min_hours"`
+	AverageHours decimal.Decimal `json:"average_hours"`
+	MedianHours  decimal.Decimal `json:"median_hours"`
+	MaxHours     decimal.Decimal `json:"max_hours"`
+	MinHours     decimal.Decimal `json:"min_hours"`
 }

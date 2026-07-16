@@ -6,13 +6,15 @@ import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { ParamLabelMap } from "./parameter_entry_pb";
+import { file_parameter_entry } from "./parameter_entry_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file strategy_template_entity.proto.
  */
 export const file_strategy_template_entity: GenFile = /*@__PURE__*/
-  fileDesc("Ch5zdHJhdGVneV90ZW1wbGF0ZV9lbnRpdHkucHJvdG8SBmFudC52MSLpAgoQU3RyYXRlZ3lUZW1wbGF0ZRIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEgwKBG5hbWUYAyABKAkSEwoLZGVzY3JpcHRpb24YBCABKAkSDAoEY29kZRgFIAEoCRItCgpwYXJhbWV0ZXJzGAYgAygLMhkuYW50LnYxLlRlbXBsYXRlUGFyYW1ldGVyEhEKCWlzX3B1YmxpYxgHIAEoCBIMCgR0YWdzGAggAygJEhEKCXVzZV9jb3VudBgJIAEoBRIOCgZzdGF0dXMYDCABKAkSLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEQoJaXNfc3lzdGVtGA0gASgIEgwKBGkxOG4YDiABKAkSEwoLc3RyYXRlZ3lfaWQYDyABKAkinQEKEVRlbXBsYXRlUGFyYW1ldGVyEgwKBG5hbWUYASABKAkSDAoEdHlwZRgCIAEoCRIPCgdkZWZhdWx0GAMgASgJEgsKA21pbhgEIAEoCRILCgNtYXgYBSABKAkSDAoEc3RlcBgGIAEoCRINCgVsYWJlbBgHIAEoCRITCgtkZXNjcmlwdGlvbhgIIAEoCRIPCgdvcHRpb25zGAkgAygJQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("Ch5zdHJhdGVneV90ZW1wbGF0ZV9lbnRpdHkucHJvdG8SBmFudC52MSL/AgoQU3RyYXRlZ3lUZW1wbGF0ZRIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEgwKBG5hbWUYAyABKAkSEwoLZGVzY3JpcHRpb24YBCABKAkSDAoEY29kZRgFIAEoCRItCgpwYXJhbWV0ZXJzGAYgAygLMhkuYW50LnYxLlRlbXBsYXRlUGFyYW1ldGVyEhEKCWlzX3B1YmxpYxgHIAEoCBIMCgR0YWdzGAggAygJEhEKCXVzZV9jb3VudBgJIAEoBRIOCgZzdGF0dXMYDCABKAkSLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEQoJaXNfc3lzdGVtGA0gASgIEiIKBGkxOG4YDiABKAsyFC5hbnQudjEuVGVtcGxhdGVJMThuEhMKC3N0cmF0ZWd5X2lkGA8gASgJIp0BChFUZW1wbGF0ZVBhcmFtZXRlchIMCgRuYW1lGAEgASgJEgwKBHR5cGUYAiABKAkSDwoHZGVmYXVsdBgDIAEoCRILCgNtaW4YBCABKAkSCwoDbWF4GAUgASgJEgwKBHN0ZXAYBiABKAkSDQoFbGFiZWwYByABKAkSEwoLZGVzY3JpcHRpb24YCCABKAkSDwoHb3B0aW9ucxgJIAMoCSKJAQoMVGVtcGxhdGVJMThuEjIKB2xvY2FsZXMYASADKAsyIS5hbnQudjEuVGVtcGxhdGVJMThuLkxvY2FsZXNFbnRyeRpFCgxMb2NhbGVzRW50cnkSCwoDa2V5GAEgASgJEiQKBXZhbHVlGAIgASgLMhUuYW50LnYxLlBhcmFtTGFiZWxNYXA6AjgBQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_parameter_entry]);
 
 /**
  * @generated from message ant.v1.StrategyTemplate
@@ -84,11 +86,11 @@ export type StrategyTemplate = Message<"ant.v1.StrategyTemplate"> & {
   isSystem: boolean;
 
   /**
-   * I18n data for parameter labels (JSON-encoded TemplateI18n).
+   * I18n data for parameter labels.
    *
-   * @generated from field: string i18n = 14;
+   * @generated from field: ant.v1.TemplateI18n i18n = 14;
    */
-  i18n: string;
+  i18n?: TemplateI18n | undefined;
 
   /**
    * FK to imported_strategies.id (ADR-0023: MQL source of truth).
@@ -161,4 +163,25 @@ export type TemplateParameter = Message<"ant.v1.TemplateParameter"> & {
  */
 export const TemplateParameterSchema: GenMessage<TemplateParameter> = /*@__PURE__*/
   messageDesc(file_strategy_template_entity, 1);
+
+/**
+ * TemplateI18n holds parameter label translations per locale.
+ *
+ * @generated from message ant.v1.TemplateI18n
+ */
+export type TemplateI18n = Message<"ant.v1.TemplateI18n"> & {
+  /**
+   * Map of locale code → (param name → translated label)
+   *
+   * @generated from field: map<string, ant.v1.ParamLabelMap> locales = 1;
+   */
+  locales: { [key: string]: ParamLabelMap };
+};
+
+/**
+ * Describes the message ant.v1.TemplateI18n.
+ * Use `create(TemplateI18nSchema)` to create a new message.
+ */
+export const TemplateI18nSchema: GenMessage<TemplateI18n> = /*@__PURE__*/
+  messageDesc(file_strategy_template_entity, 2);
 

@@ -28,14 +28,14 @@ func DefaultVaRConfig() VaRConfig {
 
 // VaRResult holds the computed risk metrics.
 type VaRResult struct {
-	VaR          float64 `json:"var"`
-	CVaR         float64 `json:"cvar"`
-	MaxDrawdown  decimal.Decimal `json:"max_drawdown"`
-	DailyVol     float64 `json:"daily_vol"`
-	AnnualVol    decimal.Decimal `json:"annual_vol"`
-	Confidence   float64 `json:"confidence"`
-	WindowDays   int     `json:"window_days"`
-	NumReturns   int     `json:"num_returns"`
+	VaR          decimal.Decimal
+	CVaR         decimal.Decimal
+	MaxDrawdown  decimal.Decimal
+	DailyVol     decimal.Decimal
+	AnnualVol    decimal.Decimal
+	Confidence   float64
+	WindowDays   int
+	NumReturns   int
 }
 
 // ComputeVaR runs historical simulation VaR on daily returns.
@@ -88,10 +88,10 @@ func ComputeVaR(dailyReturns []float64, cfg VaRConfig) VaRResult {
 	maxDD := computeMaxDrawdown(dailyReturns)
 
 	return VaRResult{
-		VaR:         vr,
-		CVaR:        cvar,
+		VaR:         decimal.NewFromFloat(vr),
+		CVaR:        decimal.NewFromFloat(cvar),
 		MaxDrawdown: decimal.NewFromFloat(maxDD),
-		DailyVol:    dailyVol,
+		DailyVol:    decimal.NewFromFloat(dailyVol),
 		AnnualVol:   decimal.NewFromFloat(dailyVol * math.Sqrt(252)),
 		Confidence:  cfg.ConfidenceLevel,
 		WindowDays:  cfg.WindowDays,
@@ -118,18 +118,18 @@ func computeMaxDrawdown(returns []float64) float64 {
 
 // StressScenario defines a historical stress event for portfolio testing.
 type StressScenario struct {
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Shock       float64 `json:"shock"` // P&L shock fraction (e.g., -0.20 = -20%)
+	Name        string
+	Description string
+	Shock       float64 // P&L shock fraction (e.g., -0.20 = -20%)
 }
 
 // StressTestResult holds the outcome of applying a stress scenario to a portfolio.
 type StressTestResult struct {
-	Scenario       StressScenario `json:"scenario"`
-	StartingEquity float64        `json:"starting_equity"`
-	ShockedEquity  float64        `json:"shocked_equity"`
-	LossAmount     float64        `json:"loss_amount"`
-	Passed         bool           `json:"passed"` // true if equity stays above min_equity
+	Scenario       StressScenario
+	StartingEquity decimal.Decimal
+	ShockedEquity  decimal.Decimal
+	LossAmount     decimal.Decimal
+	Passed         bool // true if equity stays above min_equity
 }
 
 // PredefinedScenarios returns the standard stress test catalog.
@@ -143,19 +143,20 @@ func PredefinedScenarios() []StressScenario {
 }
 
 // RunStressTests applies all predefined scenarios plus any custom ones to a portfolio.
-func RunStressTests(equity float64, minEquity float64, extra ...StressScenario) []StressTestResult {
+func RunStressTests(equity, minEquity decimal.Decimal, extra ...StressScenario) []StressTestResult {
 	scenarios := PredefinedScenarios()
 	scenarios = append(scenarios, extra...)
 
 	results := make([]StressTestResult, len(scenarios))
 	for i, s := range scenarios {
-		shocked := equity * (1 + s.Shock)
+		shockMul := decimal.NewFromFloat(1 + s.Shock)
+		shocked := equity.Mul(shockMul)
 		results[i] = StressTestResult{
 			Scenario:       s,
 			StartingEquity: equity,
 			ShockedEquity:  shocked,
-			LossAmount:     equity - shocked,
-			Passed:         shocked >= minEquity,
+			LossAmount:     equity.Sub(shocked),
+			Passed:         shocked.GreaterThanOrEqual(minEquity),
 		}
 	}
 	return results

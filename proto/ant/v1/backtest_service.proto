@@ -5,6 +5,7 @@ package ant.v1;
 option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 import "backtest_execution_config.proto";
+import "parameter_entry.proto";
 
 // BacktestService runs strategy backtests via the Go backtest engine.
 // Python strategy engine has been retired (see ADR-0021).
@@ -19,7 +20,7 @@ message EngineValidateResponse {
   bool valid = 1;
   repeated string errors = 2;
   repeated string warnings = 3;
-  string parameters_json = 4;  // JSON array of {name, type, default, label}
+  repeated ParameterEntry parameters = 4;
 }
 
 message EngineRunStrategyRequest {
@@ -116,12 +117,12 @@ message ExecuteBacktestResponse {
 }
 
 message ExecuteBacktestMetrics {
-  double total_return = 1;
-  double annual_return = 2;
-  double max_drawdown = 3;
-  double sharpe_ratio = 4;
-  double win_rate = 5;
-  double profit_factor = 6;
+  string total_return = 1;
+  string annual_return = 2;
+  string max_drawdown = 3;
+  string sharpe_ratio = 4;
+  string win_rate = 5;
+  string profit_factor = 6;
   int32 total_trades = 7;
   int32 winning_trades = 8;
   int32 losing_trades = 9;

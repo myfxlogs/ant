@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 func TestPipeline_FullPass(t *testing.T) {
@@ -16,7 +18,7 @@ func TestPipeline_FullPass(t *testing.T) {
 		&ContractExpiryRule{CoolingOffHours: 1},
 	)
 
-	sizer := &VolTargetSizer{RiskBudgetPct: 0.01, MaxLots: 100}
+	sizer := &VolTargetSizer{RiskBudgetPct: 0.01, MaxLots: decF(100)}
 
 	p := NewSignalPipeline(PipelineConfig{
 		CapStore:  capStore,
@@ -26,20 +28,20 @@ func TestPipeline_FullPass(t *testing.T) {
 
 	sig := &SignalRequest{
 		UserID: "u1", AccountID: "a1", Symbol: "EURUSD", Side: "buy",
-		Price: 1.0850, ATR: 0.0035, ContractSize: 100000, HoldingDays: 5,
-		Equity: 100000, FreeMargin: 50000,
+		Price: decF(1.0850), ATR: decF(0.0035), ContractSize: decF(100000), HoldingDays: 5,
+		Equity: decF(100000), FreeMargin: decF(50000),
 	}
 	result := p.Process(context.Background(), sig)
 	if !result.Allowed {
 		t.Fatalf("expected pass, got blocked at %s: %s", result.Stage, result.Reason)
 	}
-	if result.Lots <= 0 {
-		t.Fatalf("expected non-zero lots, got %.4f", result.Lots)
+	if result.Lots.LessThanOrEqual(decimal.Zero) {
+		t.Fatalf("expected non-zero lots, got %s", result.Lots.String())
 	}
 	if result.Stage != "complete" {
 		t.Fatalf("expected stage complete, got %s", result.Stage)
 	}
-	t.Logf("Full pass: lots=%.4f risk=%.4f method=%s", result.Lots, result.RiskUsed, result.Method)
+	t.Logf("Full pass: lots=%s risk=%.4f method=%s", result.Lots.String(), result.RiskUsed, result.Method)
 }
 
 func TestPipeline_CapabilityBlocks(t *testing.T) {
@@ -85,8 +87,8 @@ func TestPipeline_HardLimitBlocks_MarginFloor(t *testing.T) {
 
 	sig := &SignalRequest{
 		UserID: "u1", AccountID: "a1", Symbol: "EURUSD", Side: "buy",
-		SignalStrength: 10.0, Price: 1.0850,
-		FreeMargin: 5, // 5 < 10*1.085*1.0 = 10.85 → blocked
+		SignalStrength: 10.0, Price: decF(1.0850),
+		FreeMargin: decF(5), // 5 < 10*1.085*1.0 = 10.85 → blocked
 	}
 	result := p.Process(context.Background(), sig)
 	if result.Allowed {
@@ -108,9 +110,9 @@ func TestPipeline_HardLimitBlocks_ContractExpiry(t *testing.T) {
 
 	sig := &SignalRequest{
 		UserID: "u1", AccountID: "a1", Symbol: "ESM6", Side: "buy",
-		SignalStrength: 1.0, Price: 4500,
+		SignalStrength: 1.0, Price: decF(4500),
 		ContractExpiry: time.Now().Add(1 * time.Hour), // expires in 1h, window is 48h
-		FreeMargin: 100000,
+		FreeMargin: decF(100000),
 	}
 	result := p.Process(context.Background(), sig)
 	if result.Allowed {
@@ -124,10 +126,10 @@ func TestPipeline_PlatformLimitsBlocks(t *testing.T) {
 	capStore.Set(&Capability{UserID: "u1", Tier: Tier2LiveLimited})
 
 	agg := NewPlatformAggregator()
-	agg.UpdatePosition("a1", &AggregatorPosition{Canonical: "EURUSD", NetVolume: 10, Notional: 15_000_000, Margin: 2_000_000})
+	agg.UpdatePosition("a1", &AggregatorPosition{Canonical: "EURUSD", NetVolume: decF(10), Notional: decF(15_000_000), Margin: decF(2_000_000)})
 	agg.Recalculate()
 
-	limits := &PlatformLimits{MaxTotalGrossExposure: 10_000_000}
+	limits := &PlatformLimits{MaxTotalGrossExposure: decF(10_000_000)}
 
 	p := NewSignalPipeline(PipelineConfig{
 		CapStore: capStore,
@@ -189,14 +191,14 @@ func TestPipeline_ZeroLotsFromSizer(t *testing.T) {
 	capStore := NewCapabilityStore()
 	capStore.Set(&Capability{UserID: "u1", Tier: Tier2LiveLimited})
 
-	sizer := &VolTargetSizer{RiskBudgetPct: 0.01, MinLots: 100} // min lots > what we can afford
+	sizer := &VolTargetSizer{RiskBudgetPct: 0.01, MinLots: decF(100)} // min lots > what we can afford
 
 	p := NewSignalPipeline(PipelineConfig{CapStore: capStore, Sizer: sizer})
 
 	sig := &SignalRequest{
 		UserID: "u1", AccountID: "a1", Symbol: "EURUSD",
-		Price: 1.0850, ATR: 0.0035, ContractSize: 100000, HoldingDays: 5,
-		Equity: 1000, FreeMargin: 500,
+		Price: decF(1.0850), ATR: decF(0.0035), ContractSize: decF(100000), HoldingDays: 5,
+		Equity: decF(1000), FreeMargin: decF(500),
 	}
 		result := p.Process(context.Background(), sig)
 		if !result.Allowed {
@@ -209,7 +211,7 @@ func TestPipeline_BlockAllocation_MultiAccount(t *testing.T) {
 	capStore := NewCapabilityStore()
 	capStore.Set(&Capability{UserID: "u1", Tier: Tier2LiveLimited})
 
-	sizer := &VolTargetSizer{RiskBudgetPct: 0.01, MaxLots: 100}
+	sizer := &VolTargetSizer{RiskBudgetPct: 0.01, MaxLots: decF(100)}
 	alloc := &ProRataAllocator{}
 
 	p := NewSignalPipeline(PipelineConfig{
@@ -220,11 +222,11 @@ func TestPipeline_BlockAllocation_MultiAccount(t *testing.T) {
 
 	sig := &SignalRequest{
 		UserID: "u1", AccountID: "a1", Symbol: "EURUSD",
-		Price: 1.0850, ATR: 0.0035, ContractSize: 100000, HoldingDays: 5,
-		Equity: 100000, FreeMargin: 50000,
+		Price: decF(1.0850), ATR: decF(0.0035), ContractSize: decF(100000), HoldingDays: 5,
+		Equity: decF(100000), FreeMargin: decF(50000),
 		TargetAccounts: []AllocAccount{
-			{AccountID: "a1", Equity: 60_000, FreeMargin: 30_000},
-			{AccountID: "a2", Equity: 40_000, FreeMargin: 20_000},
+			{AccountID: "a1", Equity: decF(60_000), FreeMargin: decF(30_000)},
+			{AccountID: "a2", Equity: decF(40_000), FreeMargin: decF(20_000)},
 		},
 	}
 	result := p.Process(context.Background(), sig)
@@ -237,7 +239,7 @@ func TestPipeline_BlockAllocation_MultiAccount(t *testing.T) {
 	if len(result.Allocations) != 2 {
 		t.Fatalf("want 2 allocations, got %d", len(result.Allocations))
 	}
-	t.Logf("Block alloc: lots=%.4f allocs=%v", result.Lots, result.Allocations)
+	t.Logf("Block alloc: lots=%s allocs=%v", result.Lots.String(), result.Allocations)
 }
 
 func TestPipeline_MinimalConfig(t *testing.T) {
@@ -248,14 +250,14 @@ func TestPipeline_MinimalConfig(t *testing.T) {
 
 	sig := &SignalRequest{
 		AccountID: "a1", Symbol: "EURUSD",
-		Price: 1.0850, ATR: 0.0035, ContractSize: 100000, HoldingDays: 5,
-		Equity: 100000,
+		Price: decF(1.0850), ATR: decF(0.0035), ContractSize: decF(100000), HoldingDays: 5,
+		Equity: decF(100000),
 	}
 	result := p.Process(context.Background(), sig)
 	if !result.Allowed {
 		t.Fatalf("minimal config should pass, got %s: %s", result.Stage, result.Reason)
 	}
-	if result.Lots <= 0 {
+	if result.Lots.LessThanOrEqual(decimal.Zero) {
 		t.Fatal("expected non-zero lots")
 	}
 }
@@ -276,8 +278,8 @@ func TestPipeline_KellySizerIntegration(t *testing.T) {
 
 	sig := &SignalRequest{
 		UserID: "u1", AccountID: "a1", Symbol: "EURUSD",
-		Price: 1.0850, ContractSize: 100000,
-		Equity: 100000,
+		Price: decF(1.0850), ContractSize: decF(100000),
+		Equity: decF(100000),
 	}
 	result := p.Process(context.Background(), sig)
 	if !result.Allowed {
@@ -286,7 +288,7 @@ func TestPipeline_KellySizerIntegration(t *testing.T) {
 	if result.Method != "kelly_fraction" {
 		t.Fatalf("want kelly_fraction, got %s", result.Method)
 	}
-	t.Logf("Kelly pipeline: lots=%.4f risk=%.4f", result.Lots, result.RiskUsed)
+	t.Logf("Kelly pipeline: lots=%s risk=%.4f", result.Lots.String(), result.RiskUsed)
 }
 
 // maxPositionRule is a test helper that blocks if positions >= limit.

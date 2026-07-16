@@ -113,7 +113,7 @@ export function useBacktestRunner() {
     if (result.sweepDimensions?.length > 0) tuning.updateSweepFromCode(result.sweepDimensions);
     if (result.strategyDirectives?.length > 0) updateDirectivesFromCode(result.strategyDirectives);
     updateExtractedParams(
-      result.parametersJson || result.parameters_json || (result as any).parameters || null
+      result.parameterEntries?.map((e: { name: string; type: string; default: string; label?: string }) => ({ name: e.name, type: e.type, default: e.default, label: e.label || '' })) || null
     );
   }, [tuning.updateSweepFromCode, updateDirectivesFromCode, updateExtractedParams]);
 

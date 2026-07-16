@@ -1,8 +1,9 @@
 package costsvc
 
 import (
-	"math"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // EffectiveSwapDays returns the number of swap charges accounting for
@@ -25,68 +26,71 @@ func EffectiveSwapDays(start time.Time, holdingDays int) int {
 }
 
 // SwapCostDate computes swap cost with Wednesday triple-swap convention.
-func (m *CostModel) SwapCostDate(side string, lots float64, start time.Time, holdingDays int) float64 {
+func (m *CostModel) SwapCostDate(side string, lots decimal.Decimal, start time.Time, holdingDays int) decimal.Decimal {
 	effective := EffectiveSwapDays(start, holdingDays)
-	return m.SwapCost(side, lots, 0, 0, float64(effective))
+	return m.SwapCost(side, lots, decimal.Zero, decimal.Zero, decimal.NewFromInt(int64(effective)))
 }
 
 // SpreadCost computes the half-spread cost for a trade.
 // For a buy, you cross the spread to the ask (pay half spread).
 // For a sell, you cross the spread to the bid (receive half spread less).
 // Returns the cost in account currency.
-func (m *CostModel) SpreadCost(lots float64) float64 {
-	if m.SpreadPips <= 0 || m.PipValue <= 0 {
-		return 0
+func (m *CostModel) SpreadCost(lots decimal.Decimal) decimal.Decimal {
+	if m.SpreadPips.LessThanOrEqual(decimal.Zero) || m.PipValue.LessThanOrEqual(decimal.Zero) {
+		return decimal.Zero
 	}
-	return (m.SpreadPips / 2.0) * m.PipValue * lots
+	return m.SpreadPips.Div(decimal.NewFromInt(2)).Mul(m.PipValue).Mul(lots)
 }
 
 // Commission computes the broker commission for a trade.
 // Uses per-lot rate or per-notional (bps) rate, whichever produces the higher cost.
 // The result is capped at MinCommission as a floor.
-func (m *CostModel) Commission(lots, notional float64) float64 {
-	cost := 0.0
-	if m.CommissionPerLot > 0 {
-		cost = m.CommissionPerLot * lots
+func (m *CostModel) Commission(lots, notional decimal.Decimal) decimal.Decimal {
+	cost := decimal.Zero
+	if m.CommissionPerLot.GreaterThan(decimal.Zero) {
+		cost = m.CommissionPerLot.Mul(lots)
 	}
-	if m.CommissionBps > 0 {
-		bpsCost := notional * m.CommissionBps / 10000.0
-		if bpsCost > cost {
+	if m.CommissionBps.GreaterThan(decimal.Zero) {
+		bpsCost := notional.Mul(m.CommissionBps).Div(decimal.NewFromInt(10000))
+		if bpsCost.GreaterThan(cost) {
 			cost = bpsCost
 		}
 	}
-	return math.Max(cost, m.MinCommission)
+	if cost.LessThan(m.MinCommission) {
+		cost = m.MinCommission
+	}
+	return cost
 }
 
 // SwapCost computes the overnight holding cost for holding days.
 // Side: "buy" uses SwapLong rate, "sell" uses SwapShort rate.
-func (m *CostModel) SwapCost(side string, lots, price, contractSize float64, holdingDays float64) float64 {
+func (m *CostModel) SwapCost(side string, lots, price, contractSize, holdingDays decimal.Decimal) decimal.Decimal {
 	rate := m.SwapLong
 	if side == "sell" {
 		rate = m.SwapShort
 	}
-	if rate == 0 || holdingDays <= 0 {
-		return 0
+	if rate.Equal(decimal.Zero) || holdingDays.LessThanOrEqual(decimal.Zero) {
+		return decimal.Zero
 	}
-	return rate * lots * holdingDays
+	return rate.Mul(lots).Mul(holdingDays)
 }
 
 // FundingCost computes the periodic funding payment for perpetual instruments.
 // fundingRate is applied to the notional position value at each funding interval.
-func (m *CostModel) FundingCost(lots, price, contractSize float64, holdingDuration time.Duration) float64 {
-	if m.FundingRate <= 0 || m.FundingInterval <= 0 || holdingDuration <= 0 {
-		return 0
+func (m *CostModel) FundingCost(lots, price, contractSize decimal.Decimal, holdingDuration time.Duration) decimal.Decimal {
+	if m.FundingRate.LessThanOrEqual(decimal.Zero) || m.FundingInterval <= 0 || holdingDuration <= 0 {
+		return decimal.Zero
 	}
-	intervals := float64(holdingDuration) / float64(m.FundingInterval)
-	notional := lots * contractSize * price
-	return m.FundingRate * notional * intervals
+	intervals := decimal.NewFromFloat(float64(holdingDuration) / float64(m.FundingInterval))
+	notional := lots.Mul(contractSize).Mul(price)
+	return m.FundingRate.Mul(notional).Mul(intervals)
 }
 
 // SlippageCost estimates execution slippage for a trade.
-func (m *CostModel) SlippageCost(lots, price, contractSize float64) float64 {
-	if m.SlippageBps <= 0 {
-		return 0
+func (m *CostModel) SlippageCost(lots, price, contractSize decimal.Decimal) decimal.Decimal {
+	if m.SlippageBps.LessThanOrEqual(decimal.Zero) {
+		return decimal.Zero
 	}
-	notional := lots * contractSize * price
-	return notional * m.SlippageBps / 10000.0
+	notional := lots.Mul(contractSize).Mul(price)
+	return notional.Mul(m.SlippageBps).Div(decimal.NewFromInt(10000))
 }

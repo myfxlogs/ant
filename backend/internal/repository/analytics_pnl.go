@@ -101,12 +101,12 @@ func (r *AnalyticsRepository) GetMonthlyPnL(ctx context.Context, accountID uuid.
 }
 
 type monthStat struct {
-	MonthNum   int     `db:"month_num"`
-	Month      string  `db:"month"`
-	Profit     float64 `db:"profit"`
-	Trades     int     `db:"trades"`
-	WinTrades  int     `db:"win_trades"`
-	LossTrades int     `db:"loss_trades"`
+	MonthNum   int             `db:"month_num"`
+	Month      string          `db:"month"`
+	Profit     decimal.Decimal `db:"profit"`
+	Trades     int             `db:"trades"`
+	WinTrades  int             `db:"win_trades"`
+	LossTrades int             `db:"loss_trades"`
 }
 
 func scanMonthlyPnLStats(rows interface{ Scan(...interface{}) error; Next() bool; Err() error }) ([]*monthStat, error) {
@@ -136,7 +136,7 @@ func buildMonthlyPnLResult(stats []*monthStat) []*model.MonthlyPnL {
 	}
 	for _, s := range stats {
 		idx := s.MonthNum - 1
-		result[idx].Profit = decimal.NewFromFloat(s.Profit)
+		result[idx].Profit = s.Profit
 		result[idx].Trades = s.Trades
 		result[idx].WinTrades = s.WinTrades
 		result[idx].LossTrades = s.LossTrades
@@ -170,9 +170,9 @@ func (r *AnalyticsRepository) GetWeekdayPnL(ctx context.Context, accountID uuid.
 }
 
 type weekdayStat struct {
-	Weekday int     `db:"weekday"`
-	PnL     float64 `db:"pnl"`
-	Trades  int     `db:"trades"`
+	Weekday int             `db:"weekday"`
+	PnL     decimal.Decimal `db:"pnl"`
+	Trades  int             `db:"trades"`
 }
 
 func scanWeekdayPnLStats(rows interface{ Scan(...interface{}) error; Next() bool; Err() error }) ([]*weekdayStat, error) {
@@ -189,10 +189,10 @@ func scanWeekdayPnLStats(rows interface{ Scan(...interface{}) error; Next() bool
 
 // DirectionStat holds P&L stats grouped by order direction.
 type DirectionStat struct {
-	Direction   string  `db:"direction"`
-	Profit      float64 `db:"profit"`
-	Trades      int     `db:"trades"`
-	WinTrades   int     `db:"win_trades"`
+	Direction   string          `db:"direction"`
+	Profit      decimal.Decimal `db:"profit"`
+	Trades      int             `db:"trades"`
+	WinTrades   int             `db:"win_trades"`
 }
 
 // GetPnLByDirection returns profit aggregated by trade direction (BUY/SELL).
@@ -257,7 +257,7 @@ func (r *AnalyticsRepository) GetTradeProfitValues(ctx context.Context, accountI
 func buildWeekdayPnLResult(stats []*weekdayStat) []*model.WeekdayPnL {
 	out := make([]*model.WeekdayPnL, 7)
 	for i := 0; i < 7; i++ {
-		out[i] = &model.WeekdayPnL{Weekday: i + 1, PnL: 0, Trades: 0}
+		out[i] = &model.WeekdayPnL{Weekday: i + 1, PnL: decimal.Zero, Trades: 0}
 	}
 	for _, s := range stats {
 		if s.Weekday >= 1 && s.Weekday <= 7 {

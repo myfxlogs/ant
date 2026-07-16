@@ -15,25 +15,27 @@ import (
 	"fmt"
 	"math"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // ParentOrder is the original large order to be sliced.
 type ParentOrder struct {
 	Symbol       string
-	Side         string  // "buy" or "sell"
-	TotalVolume  float64
+	Side         string // "buy" or "sell"
+	TotalVolume  decimal.Decimal
 	StartTime    time.Time
 	EndTime      time.Time
-	LimitPrice   float64
-	ArrivalPrice float64 // price at decision time (used by Shortfall)
+	LimitPrice   decimal.Decimal
+	ArrivalPrice decimal.Decimal // price at decision time (used by Shortfall)
 }
 
 // ChildOrder is a single slice of a parent order.
 type ChildOrder struct {
 	Sequence   int
-	Volume     float64
+	Volume     decimal.Decimal
 	TargetTime time.Time
-	LimitPrice float64
+	LimitPrice decimal.Decimal
 }
 
 // Schedule is the execution plan produced by an algo.
@@ -44,10 +46,10 @@ type Schedule struct {
 }
 
 // TotalScheduledVolume returns the sum of all child order volumes.
-func (s *Schedule) TotalScheduledVolume() float64 {
-	var total float64
+func (s *Schedule) TotalScheduledVolume() decimal.Decimal {
+	total := decimal.Zero
 	for _, c := range s.Slices {
-		total += c.Volume
+		total = total.Add(c.Volume)
 	}
 	return total
 }
@@ -58,12 +60,12 @@ func (s *Schedule) Validate() error {
 		return nil // empty schedule is valid
 	}
 	total := s.TotalScheduledVolume()
-	if total > s.Parent.TotalVolume+0.0001 {
-		return fmt.Errorf("scheduled volume %.4f exceeds parent volume %.4f", total, s.Parent.TotalVolume)
+	if total.GreaterThan(s.Parent.TotalVolume.Add(decimal.NewFromFloat(0.0001))) {
+		return fmt.Errorf("scheduled volume %s exceeds parent volume %s", total.String(), s.Parent.TotalVolume.String())
 	}
 	for i, c := range s.Slices {
-		if c.Volume <= 0 {
-			return fmt.Errorf("slice %d has non-positive volume %.4f", i, c.Volume)
+		if !c.Volume.GreaterThan(decimal.Zero) {
+			return fmt.Errorf("slice %d has non-positive volume %s", i, c.Volume.String())
 		}
 		if c.TargetTime.Before(s.Parent.StartTime) {
 			return fmt.Errorf("slice %d target %v before start %v", i, c.TargetTime, s.Parent.StartTime)
@@ -108,8 +110,8 @@ func numSlicesFromInterval(dur, interval time.Duration) int {
 
 // spreadSlices evenly distributes total volume across n buckets starting from startTime.
 // Returns slices spaced by interval.
-func spreadSlices(totalVol float64, startTime time.Time, interval time.Duration, n int) []ChildOrder {
-	volPerSlice := totalVol / float64(n)
+func spreadSlices(totalVol decimal.Decimal, startTime time.Time, interval time.Duration, n int) []ChildOrder {
+	volPerSlice := totalVol.Div(decimal.NewFromInt(int64(n)))
 	slices := make([]ChildOrder, n)
 	for i := 0; i < n; i++ {
 		slices[i] = ChildOrder{

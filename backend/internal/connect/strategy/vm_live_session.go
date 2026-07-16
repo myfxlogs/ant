@@ -15,7 +15,7 @@ import (
 // VMLiveSession (in-process Bytecode VM) implements it.
 type Session interface {
 	Start(ctx context.Context, reqBytes []byte) ([]byte, error)
-	SendBar(reqBytes []byte) ([]byte, error)
+	SendBar(ctx context.Context, reqBytes []byte) ([]byte, error)
 	Close() error
 }
 
@@ -85,7 +85,7 @@ func (s *VMLiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, err
 	return proto.Marshal(resp)
 }
 
-func (s *VMLiveSession) SendBar(reqBytes []byte) ([]byte, error) {
+func (s *VMLiveSession) SendBar(ctx context.Context, reqBytes []byte) ([]byte, error) {
 	if !s.started {
 		return nil, fmt.Errorf("vm live session not started")
 	}
@@ -95,7 +95,7 @@ func (s *VMLiveSession) SendBar(reqBytes []byte) ([]byte, error) {
 		return nil, fmt.Errorf("unmarshal request: %w", err)
 	}
 
-	resp := s.dispatch(context.Background(), &req)
+	resp := s.dispatch(ctx, &req)
 	return proto.Marshal(resp)
 }
 
@@ -113,20 +113,20 @@ func (s *VMLiveSession) Close() error {
 func (s *VMLiveSession) dispatch(ctx context.Context, req *antv1.ExecuteLiveRequest) *antv1.ExecuteLiveResponse {
 	switch req.GetRequestType() {
 	case antv1.RequestType_REQUEST_TYPE_BAR:
-		return vmHandleBar(s.runner, req.GetBarContext())
+		return vmHandleBar(ctx, s.runner, req.GetBarContext())
 
 	case antv1.RequestType_REQUEST_TYPE_TICK:
-		return vmHandleTick(s.runner, req.GetTickContext())
+		return vmHandleTick(ctx, s.runner, req.GetTickContext())
 
 	case antv1.RequestType_REQUEST_TYPE_TRADE:
-		return vmHandleTrade(s.runner, req.GetTradeContext())
+		return vmHandleTrade(ctx, s.runner, req.GetTradeContext())
 
 	case antv1.RequestType_REQUEST_TYPE_TIMER:
-		return vmHandleTimer(s.runner, req.GetTimerContext())
+		return vmHandleTimer(ctx, s.runner, req.GetTimerContext())
 
 	default:
 		if bctx := req.GetBarContext(); bctx != nil {
-			return vmHandleBar(s.runner, bctx)
+			return vmHandleBar(ctx, s.runner, bctx)
 		}
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "unknown request type"}
 	}

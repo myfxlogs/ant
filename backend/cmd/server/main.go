@@ -110,6 +110,14 @@ func main() {
 	defer pool.Close()
 	log.Info("pg pool configured", zap.Int32("max_conns", poolCfg.MaxConns))
 
+	// One-time migration: convert legacy JSON BYTEA columns to proto binary.
+	if err := repository.MigrateScheduleProtoColumns(context.Background(), pool); err != nil {
+		log.Warn("schedule proto migration skipped", zap.Error(err))
+	}
+	if err := repository.MigrateNotificationDataProto(context.Background(), pool); err != nil {
+		log.Warn("notification data proto migration skipped", zap.Error(err))
+	}
+
 	// PG is the system of record for market data.
 	pgStore := repository.NewPgMarketDataStore(pool, log)
 
@@ -238,7 +246,6 @@ func main() {
 	factorSub := factor.NewSubscriber(factor.DefaultSubscriberConfig(), log)
 	factorRegistry := factor.NewFactorRegistry(log)
 	factorEvaluator := factor.NewFactorEvaluator(factorSub, factorRegistry, log)
-	// #nosec G118 — factor evaluator runs for pipeline lifetime
 	go factorEvaluator.Start(pipelineCtx)
 	factorSub.Start(pipelineCtx)
 	var factorPusher func(bar *mdtick.Bar)

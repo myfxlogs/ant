@@ -4,7 +4,7 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { StrategyTemplate, TemplateParameter } from "./strategy_template_entity_pb";
+import type { StrategyTemplate, TemplateI18n, TemplateParameter } from "./strategy_template_entity_pb";
 import { file_strategy_template_entity } from "./strategy_template_entity_pb";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file strategy_template_requests.proto.
  */
 export const file_strategy_template_requests: GenFile = /*@__PURE__*/
-  fileDesc("CiBzdHJhdGVneV90ZW1wbGF0ZV9yZXF1ZXN0cy5wcm90bxIGYW50LnYxIhYKFExpc3RUZW1wbGF0ZXNSZXF1ZXN0IkQKFUxpc3RUZW1wbGF0ZXNSZXNwb25zZRIrCgl0ZW1wbGF0ZXMYASADKAsyGC5hbnQudjEuU3RyYXRlZ3lUZW1wbGF0ZSIgChJHZXRUZW1wbGF0ZVJlcXVlc3QSCgoCaWQYASABKAkiuwEKFUNyZWF0ZVRlbXBsYXRlUmVxdWVzdBIMCgRuYW1lGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJEgwKBGNvZGUYAyABKAkSLQoKcGFyYW1ldGVycxgEIAMoCzIZLmFudC52MS5UZW1wbGF0ZVBhcmFtZXRlchIRCglpc19wdWJsaWMYBSABKAgSDAoEdGFncxgGIAMoCRIMCgRpMThuGAcgASgJEhMKC3N0cmF0ZWd5X2lkGAggASgJIioKGkNyZWF0ZVRlbXBsYXRlRHJhZnRSZXF1ZXN0EgwKBG5hbWUYASABKAki8QEKGlVwZGF0ZVRlbXBsYXRlRHJhZnRSZXF1ZXN0EgoKAmlkGAEgASgJEhEKBG5hbWUYAiABKAlIAIgBARIYCgtkZXNjcmlwdGlvbhgDIAEoCUgBiAEBEhEKBGNvZGUYBCABKAlIAogBARItCgpwYXJhbWV0ZXJzGAUgAygLMhkuYW50LnYxLlRlbXBsYXRlUGFyYW1ldGVyEgwKBHRhZ3MYBiADKAkSGAoLc3RyYXRlZ3lfaWQYByABKAlIA4gBAUIHCgVfbmFtZUIOCgxfZGVzY3JpcHRpb25CBwoFX2NvZGVCDgoMX3N0cmF0ZWd5X2lkIikKG1B1Ymxpc2hUZW1wbGF0ZURyYWZ0UmVxdWVzdBIKCgJpZBgBIAEoCSIoChpDYW5jZWxUZW1wbGF0ZURyYWZ0UmVxdWVzdBIKCgJpZBgBIAEoCSKuAgoVVXBkYXRlVGVtcGxhdGVSZXF1ZXN0EgoKAmlkGAEgASgJEhEKBG5hbWUYAiABKAlIAIgBARIYCgtkZXNjcmlwdGlvbhgDIAEoCUgBiAEBEhEKBGNvZGUYBCABKAlIAogBARItCgpwYXJhbWV0ZXJzGAUgAygLMhkuYW50LnYxLlRlbXBsYXRlUGFyYW1ldGVyEhYKCWlzX3B1YmxpYxgGIAEoCEgDiAEBEgwKBHRhZ3MYByADKAkSEQoEaTE4bhgIIAEoCUgEiAEBEhgKC3N0cmF0ZWd5X2lkGAkgASgJSAWIAQFCBwoFX25hbWVCDgoMX2Rlc2NyaXB0aW9uQgcKBV9jb2RlQgwKCl9pc19wdWJsaWNCBwoFX2kxOG5CDgoMX3N0cmF0ZWd5X2lkIiMKFURlbGV0ZVRlbXBsYXRlUmVxdWVzdBIKCgJpZBgBIAEoCUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_strategy_template_entity]);
+  fileDesc("CiBzdHJhdGVneV90ZW1wbGF0ZV9yZXF1ZXN0cy5wcm90bxIGYW50LnYxIhYKFExpc3RUZW1wbGF0ZXNSZXF1ZXN0IkQKFUxpc3RUZW1wbGF0ZXNSZXNwb25zZRIrCgl0ZW1wbGF0ZXMYASADKAsyGC5hbnQudjEuU3RyYXRlZ3lUZW1wbGF0ZSIgChJHZXRUZW1wbGF0ZVJlcXVlc3QSCgoCaWQYASABKAki0QEKFUNyZWF0ZVRlbXBsYXRlUmVxdWVzdBIMCgRuYW1lGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJEgwKBGNvZGUYAyABKAkSLQoKcGFyYW1ldGVycxgEIAMoCzIZLmFudC52MS5UZW1wbGF0ZVBhcmFtZXRlchIRCglpc19wdWJsaWMYBSABKAgSDAoEdGFncxgGIAMoCRIiCgRpMThuGAcgASgLMhQuYW50LnYxLlRlbXBsYXRlSTE4bhITCgtzdHJhdGVneV9pZBgIIAEoCSIqChpDcmVhdGVUZW1wbGF0ZURyYWZ0UmVxdWVzdBIMCgRuYW1lGAEgASgJIvEBChpVcGRhdGVUZW1wbGF0ZURyYWZ0UmVxdWVzdBIKCgJpZBgBIAEoCRIRCgRuYW1lGAIgASgJSACIAQESGAoLZGVzY3JpcHRpb24YAyABKAlIAYgBARIRCgRjb2RlGAQgASgJSAKIAQESLQoKcGFyYW1ldGVycxgFIAMoCzIZLmFudC52MS5UZW1wbGF0ZVBhcmFtZXRlchIMCgR0YWdzGAYgAygJEhgKC3N0cmF0ZWd5X2lkGAcgASgJSAOIAQFCBwoFX25hbWVCDgoMX2Rlc2NyaXB0aW9uQgcKBV9jb2RlQg4KDF9zdHJhdGVneV9pZCIpChtQdWJsaXNoVGVtcGxhdGVEcmFmdFJlcXVlc3QSCgoCaWQYASABKAkiKAoaQ2FuY2VsVGVtcGxhdGVEcmFmdFJlcXVlc3QSCgoCaWQYASABKAkixAIKFVVwZGF0ZVRlbXBsYXRlUmVxdWVzdBIKCgJpZBgBIAEoCRIRCgRuYW1lGAIgASgJSACIAQESGAoLZGVzY3JpcHRpb24YAyABKAlIAYgBARIRCgRjb2RlGAQgASgJSAKIAQESLQoKcGFyYW1ldGVycxgFIAMoCzIZLmFudC52MS5UZW1wbGF0ZVBhcmFtZXRlchIWCglpc19wdWJsaWMYBiABKAhIA4gBARIMCgR0YWdzGAcgAygJEicKBGkxOG4YCCABKAsyFC5hbnQudjEuVGVtcGxhdGVJMThuSASIAQESGAoLc3RyYXRlZ3lfaWQYCSABKAlIBYgBAUIHCgVfbmFtZUIOCgxfZGVzY3JpcHRpb25CBwoFX2NvZGVCDAoKX2lzX3B1YmxpY0IHCgVfaTE4bkIOCgxfc3RyYXRlZ3lfaWQiIwoVRGVsZXRlVGVtcGxhdGVSZXF1ZXN0EgoKAmlkGAEgASgJQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_strategy_template_entity]);
 
 /**
  * @generated from message ant.v1.ListTemplatesRequest
@@ -96,11 +96,11 @@ export type CreateTemplateRequest = Message<"ant.v1.CreateTemplateRequest"> & {
   tags: string[];
 
   /**
-   * I18n data for parameter labels (JSON-encoded TemplateI18n).
+   * I18n data for parameter labels.
    *
-   * @generated from field: string i18n = 7;
+   * @generated from field: ant.v1.TemplateI18n i18n = 7;
    */
-  i18n: string;
+  i18n?: TemplateI18n | undefined;
 
   /**
    * FK to imported_strategies.id (ADR-0023).
@@ -257,11 +257,11 @@ export type UpdateTemplateRequest = Message<"ant.v1.UpdateTemplateRequest"> & {
   tags: string[];
 
   /**
-   * I18n data for parameter labels (JSON-encoded TemplateI18n).
+   * I18n data for parameter labels.
    *
-   * @generated from field: optional string i18n = 8;
+   * @generated from field: optional ant.v1.TemplateI18n i18n = 8;
    */
-  i18n?: string | undefined;
+  i18n?: TemplateI18n | undefined;
 
   /**
    * FK to imported_strategies.id (ADR-0023).

@@ -17,6 +17,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
 
@@ -194,7 +195,7 @@ func (s *PgMarketDataStore) FetchActualReturn(ctx context.Context, symbol string
 	start := predictedAt
 	end := predictedAt.Add(7 * 24 * time.Hour)
 
-	var openPrice, closePrice float64
+	var openPrice, closePrice decimal.Decimal
 	err := s.pool.QueryRow(ctx,
 		`SELECT
 			COALESCE((SELECT open FROM md_bars
@@ -212,10 +213,10 @@ func (s *PgMarketDataStore) FetchActualReturn(ctx context.Context, symbol string
 	if err != nil {
 		return 0, err
 	}
-	if openPrice <= 0 {
+	if !openPrice.GreaterThan(decimal.Zero) {
 		return 0, fmt.Errorf("no price data for %s", symbol)
 	}
-	return (closePrice - openPrice) / openPrice, nil
+	return closePrice.Sub(openPrice).Div(openPrice).InexactFloat64(), nil
 }
 
 // ── Write paths ──────────────────────────────────────────────────────────────

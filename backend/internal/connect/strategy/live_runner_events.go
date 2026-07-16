@@ -91,7 +91,7 @@ func (s *StrategyExecutionServer) handleBar(
 			s.log.Error("LiveStrategyRunner: session lost before bar event")
 			return
 		}
-		respBytes, err = (*session).SendBar(reqBytes)
+		respBytes, err = (*session).SendBar(ctx, reqBytes)
 	}
 	if err != nil {
 		s.log.Error("LiveStrategyRunner: bar request failed", zap.Error(err))
@@ -124,7 +124,7 @@ func (s *StrategyExecutionServer) handleTick(
 		TickContext:  tctx,
 	}
 	reqBytes, _ := proto.Marshal(req)
-	respBytes, err := (*session).SendBar(reqBytes)
+	respBytes, err := (*session).SendBar(ctx, reqBytes)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: tick request failed", zap.Error(err))
 		if activeSess != nil {
@@ -154,7 +154,7 @@ func (s *StrategyExecutionServer) handleTrade(
 		TradeContext:  tctx,
 	}
 	reqBytes, _ := proto.Marshal(req)
-	respBytes, err := (*session).SendBar(reqBytes)
+	respBytes, err := (*session).SendBar(ctx, reqBytes)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: trade request failed", zap.Error(err))
 		if activeSess != nil {

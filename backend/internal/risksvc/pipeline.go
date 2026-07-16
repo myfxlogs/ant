@@ -11,6 +11,8 @@ package risksvc
 import (
 	"context"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // SignalRequest represents an incoming trade signal from the strategy/quant engine.
@@ -22,19 +24,19 @@ type SignalRequest struct {
 	SignalStrength float64 // 0–1, how strong the signal is
 
 	// Market data for sizing
-	Price         float64
-	ATR           float64
-	AnnualVol     float64
-	ContractSize  float64
-	HoldingDays   float64
+	Price          decimal.Decimal
+	ATR            decimal.Decimal
+	AnnualVol      float64
+	ContractSize   decimal.Decimal
+	HoldingDays    float64
 	ContractExpiry time.Time // zero if spot
 
 	// Account state
-	Balance    float64
-	Equity     float64
-	FreeMargin float64
-	Margin     float64 // currently used margin
-	Positions  int     // current open position count
+	Balance    decimal.Decimal
+	Equity     decimal.Decimal
+	FreeMargin decimal.Decimal
+	Margin     decimal.Decimal // currently used margin
+	Positions  int             // current open position count
 
 	// Multi-account block trade (optional)
 	TargetAccounts []AllocAccount
@@ -49,8 +51,8 @@ type SignalResult struct {
 	Reason  string
 	Stage   string // which stage produced the result
 
-	Lots        float64
-	Allocations map[string]float64 // accountID → lots (multi-account only)
+	Lots        decimal.Decimal
+	Allocations map[string]decimal.Decimal // accountID → lots (multi-account only)
 	RiskUsed    float64
 	Method      string // sizer name
 }
@@ -111,7 +113,7 @@ func (p *SignalPipeline) checkHardLimit(ctx context.Context, sig *SignalRequest)
 	if p.hardLimit == nil { return &SignalResult{Allowed: true} }
 	req := &HardLimitRequest{
 		UserID: sig.UserID, AccountID: sig.AccountID, Symbol: sig.Symbol,
-		Side: sig.Side, Volume: sig.SignalStrength, Price: sig.Price,
+		Side: sig.Side, Volume: decimal.NewFromFloat(sig.SignalStrength), Price: sig.Price,
 		Balance: sig.Balance, Equity: sig.Equity, FreeMargin: sig.FreeMargin,
 		ContractExpiry: sig.ContractExpiry, ClientIP: sig.ClientIP,
 	}
@@ -134,7 +136,7 @@ func (p *SignalPipeline) checkRiskEngine(ctx context.Context, sig *SignalRequest
 	if p.engine == nil { return &SignalResult{Allowed: true} }
 	check := &CheckRequest{
 		UserID: sig.UserID, AccountID: sig.AccountID, Symbol: sig.Symbol,
-		Side: sig.Side, Volume: sig.SignalStrength, Price: sig.Price,
+		Side: sig.Side, Volume: decimal.NewFromFloat(sig.SignalStrength), Price: sig.Price,
 		Balance: sig.Balance, Equity: sig.Equity, Margin: sig.Margin,
 		Positions: sig.Positions,
 	}
@@ -154,7 +156,7 @@ func (p *SignalPipeline) sizePosition(ctx context.Context, sig *SignalRequest) *
 	}
 	sres, err := p.sizer.Size(ctx, sreq)
 	if err != nil { return &SignalResult{Allowed: false, Reason: err.Error(), Stage: "sizer"} }
-	if sres.Lots <= 0 {
+	if sres.Lots.LessThanOrEqual(decimal.Zero) {
 		return &SignalResult{Allowed: true, Reason: "sizer passthrough (manual order)", Stage: "sizer", RiskUsed: sres.RiskUsed, Method: sres.Method}
 	}
 	if p.allocator != nil && len(sig.TargetAccounts) > 0 {

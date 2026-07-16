@@ -80,11 +80,11 @@ func (e *Executor) run(ctx context.Context) {
 			Canonical: e.cfg.Schedule.Parent.Symbol,
 			Side:      sideToMthub(e.cfg.Schedule.Parent.Side),
 			OrderType: mthub.OrderMarket,
-			Volume:    decimal.NewFromFloat(slice.Volume),
+			Volume:    slice.Volume,
 		}
-		if slice.LimitPrice > 0 {
+		if slice.LimitPrice.GreaterThan(decimal.Zero) {
 			req.OrderType = mthub.OrderLimit
-			req.Price = decimal.NewFromFloat(slice.LimitPrice)
+			req.Price = slice.LimitPrice
 		}
 
 		ticket, err := e.cfg.Broker.SubmitOrder(ctx, req)

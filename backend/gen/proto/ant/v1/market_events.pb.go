@@ -248,7 +248,7 @@ type TradeEventPayload struct {
 	FromState     string                 `protobuf:"bytes,15,opt,name=from_state,json=fromState,proto3" json:"from_state,omitempty"`
 	ToState       string                 `protobuf:"bytes,16,opt,name=to_state,json=toState,proto3" json:"to_state,omitempty"`
 	Error         string                 `protobuf:"bytes,17,opt,name=error,proto3" json:"error,omitempty"`
-	CostJson      string                 `protobuf:"bytes,18,opt,name=cost_json,json=costJson,proto3" json:"cost_json,omitempty"` // temporary — until CostEstimate proto
+	Cost          *CostEstimate          `protobuf:"bytes,18,opt,name=cost,proto3" json:"cost,omitempty"` // pre-trade cost breakdown
 	TsUnixMs      int64                  `protobuf:"varint,19,opt,name=ts_unix_ms,json=tsUnixMs,proto3" json:"ts_unix_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -403,11 +403,11 @@ func (x *TradeEventPayload) GetError() string {
 	return ""
 }
 
-func (x *TradeEventPayload) GetCostJson() string {
+func (x *TradeEventPayload) GetCost() *CostEstimate {
 	if x != nil {
-		return x.CostJson
+		return x.Cost
 	}
-	return ""
+	return nil
 }
 
 func (x *TradeEventPayload) GetTsUnixMs() int64 {
@@ -827,7 +827,7 @@ const file_market_events_proto_rawDesc = "" +
 	" \x01(\x01R\x06volume\x12\x1d\n" +
 	"\n" +
 	"tick_count\x18\v \x01(\rR\ttickCount\x12\x1b\n" +
-	"\tis_replay\x18\f \x01(\bR\bisReplay\"\x9a\x04\n" +
+	"\tis_replay\x18\f \x01(\bR\bisReplay\"\xa7\x04\n" +
 	"\x11TradeEventPayload\x12\x19\n" +
 	"\bevent_id\x18\x01 \x01(\tR\aeventId\x12\x1d\n" +
 	"\n" +
@@ -851,8 +851,8 @@ const file_market_events_proto_rawDesc = "" +
 	"\n" +
 	"from_state\x18\x0f \x01(\tR\tfromState\x12\x19\n" +
 	"\bto_state\x18\x10 \x01(\tR\atoState\x12\x14\n" +
-	"\x05error\x18\x11 \x01(\tR\x05error\x12\x1b\n" +
-	"\tcost_json\x18\x12 \x01(\tR\bcostJson\x12\x1c\n" +
+	"\x05error\x18\x11 \x01(\tR\x05error\x12(\n" +
+	"\x04cost\x18\x12 \x01(\v2\x14.ant.v1.CostEstimateR\x04cost\x12\x1c\n" +
 	"\n" +
 	"ts_unix_ms\x18\x13 \x01(\x03R\btsUnixMs\"\x8a\x01\n" +
 	"\x13AccountEventPayload\x12\x1d\n" +
@@ -918,12 +918,13 @@ var file_market_events_proto_goTypes = []any{
 	(*CostEstimate)(nil),          // 7: ant.v1.CostEstimate
 }
 var file_market_events_proto_depIdxs = []int32{
-	4, // 0: ant.v1.MonthlyAnalysisPoints.points:type_name -> ant.v1.MonthlyAnalysisPoint
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	7, // 0: ant.v1.TradeEventPayload.cost:type_name -> ant.v1.CostEstimate
+	4, // 1: ant.v1.MonthlyAnalysisPoints.points:type_name -> ant.v1.MonthlyAnalysisPoint
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_market_events_proto_init() }

@@ -8,7 +8,11 @@
 
 package oms
 
-import "alphaforge/internal/costsvc"
+import (
+	"github.com/shopspring/decimal"
+
+	"alphaforge/internal/costsvc"
+)
 
 // FillModel computes the net fill price from a gross price after all costs.
 // Commission/spread/slippage are always applied; backtest paths enforce non-zero defaults.
@@ -23,35 +27,35 @@ func NewFillModel(cm *costsvc.CostModel) *FillModel {
 
 // FillResult contains the decomposed fill price components.
 type FillResult struct {
-	GrossPrice     float64 `json:"gross_price"`
-	SpreadCost     float64 `json:"spread_cost"`
-	Commission     float64 `json:"commission"`
-	SlippageCost   float64 `json:"slippage_cost"`
-	SwapCost       float64 `json:"swap_cost"`
-	FundingCost    float64 `json:"funding_cost"`
-	NetFillPrice   float64 `json:"net_fill_price"`
-	TotalCost      float64 `json:"total_cost"`
-	FilledVolume   float64 `json:"filled_volume"`
+	GrossPrice   decimal.Decimal `json:"gross_price"`
+	SpreadCost   decimal.Decimal `json:"spread_cost"`
+	Commission   decimal.Decimal `json:"commission"`
+	SlippageCost decimal.Decimal `json:"slippage_cost"`
+	SwapCost     decimal.Decimal `json:"swap_cost"`
+	FundingCost  decimal.Decimal `json:"funding_cost"`
+	NetFillPrice decimal.Decimal `json:"net_fill_price"`
+	TotalCost    decimal.Decimal `json:"total_cost"`
+	FilledVolume decimal.Decimal `json:"filled_volume"`
 }
 
 // Compute calculates the net fill price from the gross price.
 // For backtest mode (isBacktest=true), commission/slippage/spread are forced to non-zero defaults.
 // The receiver's costModel is never mutated — backtest defaults are applied to a local copy.
-func (f *FillModel) Compute(grossPrice float64, p costsvc.EstimateParams, isBacktest bool) FillResult {
+func (f *FillModel) Compute(grossPrice decimal.Decimal, p costsvc.EstimateParams, isBacktest bool) FillResult {
 	if f == nil || f.costModel == nil {
 		return FillResult{GrossPrice: grossPrice, NetFillPrice: grossPrice, FilledVolume: p.Lots}
 	}
 	cm := f.costModel // use directly for live; clone for backtest to avoid mutating shared state
 	if isBacktest {
 		cloned := *f.costModel
-		if cloned.CommissionPerLot == 0 && cloned.CommissionBps == 0 {
-			cloned.CommissionBps = 1.0
+		if cloned.CommissionPerLot.Equal(decimal.Zero) && cloned.CommissionBps.Equal(decimal.Zero) {
+			cloned.CommissionBps = decimal.NewFromInt(1)
 		}
-		if cloned.SlippageBps == 0 {
-			cloned.SlippageBps = 1.0
+		if cloned.SlippageBps.Equal(decimal.Zero) {
+			cloned.SlippageBps = decimal.NewFromInt(1)
 		}
-		if cloned.SpreadPips == 0 {
-			cloned.SpreadPips = 1.0
+		if cloned.SpreadPips.Equal(decimal.Zero) {
+			cloned.SpreadPips = decimal.NewFromInt(1)
 		}
 		cm = &cloned
 	}
@@ -60,22 +64,22 @@ func (f *FillModel) Compute(grossPrice float64, p costsvc.EstimateParams, isBack
 	lots := p.Lots
 	contractSize := p.ContractSize
 
-	costPerUnit := 0.0
-	if lots > 0 && contractSize > 0 {
-		costPerUnit = breakdown.TotalCost / (lots * contractSize)
+	costPerUnit := decimal.Zero
+	if lots.GreaterThan(decimal.Zero) && contractSize.GreaterThan(decimal.Zero) {
+		costPerUnit = breakdown.TotalCost.Div(lots.Mul(contractSize))
 	}
 
-	var netPrice float64
+	var netPrice decimal.Decimal
 	if p.Side == "buy" {
-		netPrice = grossPrice + costPerUnit
+		netPrice = grossPrice.Add(costPerUnit)
 	} else {
-		netPrice = grossPrice - costPerUnit
+		netPrice = grossPrice.Sub(costPerUnit)
 	}
 
 	return FillResult{
 		GrossPrice:   grossPrice,
 		SpreadCost:   breakdown.SpreadCost,
-		Commission:   breakdown.Commission.InexactFloat64(),
+		Commission:   breakdown.Commission,
 		SlippageCost: breakdown.SlippageCost,
 		SwapCost:     breakdown.SwapCost,
 		FundingCost:  breakdown.FundingCost,
@@ -86,6 +90,6 @@ func (f *FillModel) Compute(grossPrice float64, p costsvc.EstimateParams, isBack
 }
 
 // ComputeNet is a convenience method that returns only the net fill price.
-func (f *FillModel) ComputeNet(grossPrice float64, p costsvc.EstimateParams, isBacktest bool) float64 {
+func (f *FillModel) ComputeNet(grossPrice decimal.Decimal, p costsvc.EstimateParams, isBacktest bool) decimal.Decimal {
 	return f.Compute(grossPrice, p, isBacktest).NetFillPrice
 }

@@ -4,7 +4,11 @@
 package risksvc
 
 
-import "context"
+import (
+	"context"
+
+	"github.com/shopspring/decimal"
+)
 
 // RiskRule is a single risk check rule. Name must be unique.
 type RiskRule interface {
@@ -14,24 +18,24 @@ type RiskRule interface {
 
 // CheckRequest is the input to a risk rule evaluation.
 type CheckRequest struct {
-	UserID    string  `json:"user_id"`
-	AccountID string  `json:"account_id"`
-	Symbol    string  `json:"symbol"`
-	Side      string  `json:"side"`   // buy / sell
-	Volume    float64 `json:"volume"`
-	Price     float64 `json:"price"`
+	UserID    string
+	AccountID string
+	Symbol    string
+	Side      string // buy / sell
+	Volume    decimal.Decimal
+	Price     decimal.Decimal
 
 	// Account state for margin / position checks
-	Balance  float64 `json:"balance"`
-	Equity   float64 `json:"equity"`
-	Margin   float64 `json:"margin"`
-	Positions int    `json:"positions"` // current open position count
+	Balance   decimal.Decimal
+	Equity    decimal.Decimal
+	Margin    decimal.Decimal
+	Positions int // current open position count
 }
 
 // CheckResult is the output of a risk rule evaluation.
 type CheckResult struct {
-	Passed bool   `json:"passed"`
-	Reason string `json:"reason,omitempty"`
-	Rule   string `json:"rule"`
-	Detail string `json:"detail,omitempty"`
+	Passed bool
+	Reason string
+	Rule   string
+	Detail string
 }

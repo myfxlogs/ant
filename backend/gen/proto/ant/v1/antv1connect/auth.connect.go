@@ -41,6 +41,9 @@ const (
 	// AuthServiceRefreshTokenProcedure is the fully-qualified name of the AuthService's RefreshToken
 	// RPC.
 	AuthServiceRefreshTokenProcedure = "/ant.v1.AuthService/RefreshToken"
+	// AuthServiceRefreshTokenFromCookieProcedure is the fully-qualified name of the AuthService's
+	// RefreshTokenFromCookie RPC.
+	AuthServiceRefreshTokenFromCookieProcedure = "/ant.v1.AuthService/RefreshTokenFromCookie"
 	// AuthServiceGetMeProcedure is the fully-qualified name of the AuthService's GetMe RPC.
 	AuthServiceGetMeProcedure = "/ant.v1.AuthService/GetMe"
 	// AuthServiceRegisterProcedure is the fully-qualified name of the AuthService's Register RPC.
@@ -57,6 +60,7 @@ type AuthServiceClient interface {
 	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
 	Logout(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
 	RefreshToken(context.Context, *connect.Request[v1.RefreshTokenRequest]) (*connect.Response[v1.RefreshTokenResponse], error)
+	RefreshTokenFromCookie(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.RefreshTokenResponse], error)
 	GetMe(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetMeResponse], error)
 	Register(context.Context, *connect.Request[v1.RegisterRequest]) (*connect.Response[v1.RegisterResponse], error)
 	VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error)
@@ -92,6 +96,12 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("RefreshToken")),
 			connect.WithClientOptions(opts...),
 		),
+		refreshTokenFromCookie: connect.NewClient[emptypb.Empty, v1.RefreshTokenResponse](
+			httpClient,
+			baseURL+AuthServiceRefreshTokenFromCookieProcedure,
+			connect.WithSchema(authServiceMethods.ByName("RefreshTokenFromCookie")),
+			connect.WithClientOptions(opts...),
+		),
 		getMe: connect.NewClient[emptypb.Empty, v1.GetMeResponse](
 			httpClient,
 			baseURL+AuthServiceGetMeProcedure,
@@ -121,13 +131,14 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // authServiceClient implements AuthServiceClient.
 type authServiceClient struct {
-	login              *connect.Client[v1.LoginRequest, v1.LoginResponse]
-	logout             *connect.Client[emptypb.Empty, emptypb.Empty]
-	refreshToken       *connect.Client[v1.RefreshTokenRequest, v1.RefreshTokenResponse]
-	getMe              *connect.Client[emptypb.Empty, v1.GetMeResponse]
-	register           *connect.Client[v1.RegisterRequest, v1.RegisterResponse]
-	verifyEmail        *connect.Client[v1.VerifyEmailRequest, v1.VerifyEmailResponse]
-	resendVerification *connect.Client[v1.ResendVerificationRequest, v1.ResendVerificationResponse]
+	login                  *connect.Client[v1.LoginRequest, v1.LoginResponse]
+	logout                 *connect.Client[emptypb.Empty, emptypb.Empty]
+	refreshToken           *connect.Client[v1.RefreshTokenRequest, v1.RefreshTokenResponse]
+	refreshTokenFromCookie *connect.Client[emptypb.Empty, v1.RefreshTokenResponse]
+	getMe                  *connect.Client[emptypb.Empty, v1.GetMeResponse]
+	register               *connect.Client[v1.RegisterRequest, v1.RegisterResponse]
+	verifyEmail            *connect.Client[v1.VerifyEmailRequest, v1.VerifyEmailResponse]
+	resendVerification     *connect.Client[v1.ResendVerificationRequest, v1.ResendVerificationResponse]
 }
 
 // Login calls ant.v1.AuthService.Login.
@@ -143,6 +154,11 @@ func (c *authServiceClient) Logout(ctx context.Context, req *connect.Request[emp
 // RefreshToken calls ant.v1.AuthService.RefreshToken.
 func (c *authServiceClient) RefreshToken(ctx context.Context, req *connect.Request[v1.RefreshTokenRequest]) (*connect.Response[v1.RefreshTokenResponse], error) {
 	return c.refreshToken.CallUnary(ctx, req)
+}
+
+// RefreshTokenFromCookie calls ant.v1.AuthService.RefreshTokenFromCookie.
+func (c *authServiceClient) RefreshTokenFromCookie(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[v1.RefreshTokenResponse], error) {
+	return c.refreshTokenFromCookie.CallUnary(ctx, req)
 }
 
 // GetMe calls ant.v1.AuthService.GetMe.
@@ -170,6 +186,7 @@ type AuthServiceHandler interface {
 	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
 	Logout(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
 	RefreshToken(context.Context, *connect.Request[v1.RefreshTokenRequest]) (*connect.Response[v1.RefreshTokenResponse], error)
+	RefreshTokenFromCookie(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.RefreshTokenResponse], error)
 	GetMe(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetMeResponse], error)
 	Register(context.Context, *connect.Request[v1.RegisterRequest]) (*connect.Response[v1.RegisterResponse], error)
 	VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error)
@@ -199,6 +216,12 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		AuthServiceRefreshTokenProcedure,
 		svc.RefreshToken,
 		connect.WithSchema(authServiceMethods.ByName("RefreshToken")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceRefreshTokenFromCookieHandler := connect.NewUnaryHandler(
+		AuthServiceRefreshTokenFromCookieProcedure,
+		svc.RefreshTokenFromCookie,
+		connect.WithSchema(authServiceMethods.ByName("RefreshTokenFromCookie")),
 		connect.WithHandlerOptions(opts...),
 	)
 	authServiceGetMeHandler := connect.NewUnaryHandler(
@@ -233,6 +256,8 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceLogoutHandler.ServeHTTP(w, r)
 		case AuthServiceRefreshTokenProcedure:
 			authServiceRefreshTokenHandler.ServeHTTP(w, r)
+		case AuthServiceRefreshTokenFromCookieProcedure:
+			authServiceRefreshTokenFromCookieHandler.ServeHTTP(w, r)
 		case AuthServiceGetMeProcedure:
 			authServiceGetMeHandler.ServeHTTP(w, r)
 		case AuthServiceRegisterProcedure:
@@ -260,6 +285,10 @@ func (UnimplementedAuthServiceHandler) Logout(context.Context, *connect.Request[
 
 func (UnimplementedAuthServiceHandler) RefreshToken(context.Context, *connect.Request[v1.RefreshTokenRequest]) (*connect.Response[v1.RefreshTokenResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AuthService.RefreshToken is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) RefreshTokenFromCookie(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.RefreshTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AuthService.RefreshTokenFromCookie is not implemented"))
 }
 
 func (UnimplementedAuthServiceHandler) GetMe(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetMeResponse], error) {

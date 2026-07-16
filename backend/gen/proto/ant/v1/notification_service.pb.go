@@ -9,6 +9,7 @@ package antv1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -72,7 +73,7 @@ type Notification struct {
 	Type          string                 `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"` // margin_call | risk_alert | system | trade
 	Title         string                 `protobuf:"bytes,4,opt,name=title,proto3" json:"title,omitempty"`
 	Message       string                 `protobuf:"bytes,5,opt,name=message,proto3" json:"message,omitempty"`
-	DataJson      string                 `protobuf:"bytes,6,opt,name=data_json,json=dataJson,proto3" json:"data_json,omitempty"` // JSONB as string for proto compatibility
+	Data          *structpb.Struct       `protobuf:"bytes,6,opt,name=data,proto3" json:"data,omitempty"` // structured metadata
 	IsRead        bool                   `protobuf:"varint,7,opt,name=is_read,json=isRead,proto3" json:"is_read,omitempty"`
 	CreatedAt     string                 `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"` // RFC 3339
 	unknownFields protoimpl.UnknownFields
@@ -144,11 +145,11 @@ func (x *Notification) GetMessage() string {
 	return ""
 }
 
-func (x *Notification) GetDataJson() string {
+func (x *Notification) GetData() *structpb.Struct {
 	if x != nil {
-		return x.DataJson
+		return x.Data
 	}
-	return ""
+	return nil
 }
 
 func (x *Notification) GetIsRead() bool {
@@ -435,7 +436,7 @@ type SendNotificationRequest struct {
 	Type          string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"` // backtest_completed | tuning_completed | gate_passed | signal_triggered | system_alert
 	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
 	Message       string                 `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
-	DataJson      string                 `protobuf:"bytes,5,opt,name=data_json,json=dataJson,proto3" json:"data_json,omitempty"` // optional JSON metadata
+	Data          *structpb.Struct       `protobuf:"bytes,5,opt,name=data,proto3" json:"data,omitempty"` // optional structured metadata
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -498,11 +499,11 @@ func (x *SendNotificationRequest) GetMessage() string {
 	return ""
 }
 
-func (x *SendNotificationRequest) GetDataJson() string {
+func (x *SendNotificationRequest) GetData() *structpb.Struct {
 	if x != nil {
-		return x.DataJson
+		return x.Data
 	}
-	return ""
+	return nil
 }
 
 type SendNotificationResponse struct {
@@ -553,17 +554,17 @@ var File_notification_service_proto protoreflect.FileDescriptor
 
 const file_notification_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1anotification_service.proto\x12\x06ant.v1\"=\n" +
+	"\x1anotification_service.proto\x12\x06ant.v1\x1a\x1cgoogle/protobuf/struct.proto\"=\n" +
 	"\x1aStreamNotificationsRequest\x12\x1f\n" +
 	"\vunread_only\x18\x01 \x01(\bR\n" +
-	"unreadOnly\"\xd0\x01\n" +
+	"unreadOnly\"\xe0\x01\n" +
 	"\fNotification\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
 	"\x04type\x18\x03 \x01(\tR\x04type\x12\x14\n" +
 	"\x05title\x18\x04 \x01(\tR\x05title\x12\x18\n" +
-	"\amessage\x18\x05 \x01(\tR\amessage\x12\x1b\n" +
-	"\tdata_json\x18\x06 \x01(\tR\bdataJson\x12\x17\n" +
+	"\amessage\x18\x05 \x01(\tR\amessage\x12+\n" +
+	"\x04data\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x04data\x12\x17\n" +
 	"\ais_read\x18\a \x01(\bR\x06isRead\x12\x1d\n" +
 	"\n" +
 	"created_at\x18\b \x01(\tR\tcreatedAt\"i\n" +
@@ -579,13 +580,13 @@ const file_notification_service_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x12\n" +
 	"\x10MarkReadResponse\"\x14\n" +
 	"\x12MarkAllReadRequest\"\x15\n" +
-	"\x13MarkAllReadResponse\"\x93\x01\n" +
+	"\x13MarkAllReadResponse\"\xa3\x01\n" +
 	"\x17SendNotificationRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12\x18\n" +
-	"\amessage\x18\x04 \x01(\tR\amessage\x12\x1b\n" +
-	"\tdata_json\x18\x05 \x01(\tR\bdataJson\"*\n" +
+	"\amessage\x18\x04 \x01(\tR\amessage\x12+\n" +
+	"\x04data\x18\x05 \x01(\v2\x17.google.protobuf.StructR\x04data\"*\n" +
 	"\x18SendNotificationResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id2\xa0\x03\n" +
 	"\x13NotificationService\x12X\n" +
@@ -619,24 +620,27 @@ var file_notification_service_proto_goTypes = []any{
 	(*MarkAllReadResponse)(nil),        // 7: ant.v1.MarkAllReadResponse
 	(*SendNotificationRequest)(nil),    // 8: ant.v1.SendNotificationRequest
 	(*SendNotificationResponse)(nil),   // 9: ant.v1.SendNotificationResponse
+	(*structpb.Struct)(nil),            // 10: google.protobuf.Struct
 }
 var file_notification_service_proto_depIdxs = []int32{
-	1, // 0: ant.v1.ListNotificationsResponse.notifications:type_name -> ant.v1.Notification
-	2, // 1: ant.v1.NotificationService.ListNotifications:input_type -> ant.v1.ListNotificationsRequest
-	4, // 2: ant.v1.NotificationService.MarkRead:input_type -> ant.v1.MarkReadRequest
-	6, // 3: ant.v1.NotificationService.MarkAllRead:input_type -> ant.v1.MarkAllReadRequest
-	0, // 4: ant.v1.NotificationService.StreamNotifications:input_type -> ant.v1.StreamNotificationsRequest
-	8, // 5: ant.v1.NotificationService.SendNotification:input_type -> ant.v1.SendNotificationRequest
-	3, // 6: ant.v1.NotificationService.ListNotifications:output_type -> ant.v1.ListNotificationsResponse
-	5, // 7: ant.v1.NotificationService.MarkRead:output_type -> ant.v1.MarkReadResponse
-	7, // 8: ant.v1.NotificationService.MarkAllRead:output_type -> ant.v1.MarkAllReadResponse
-	1, // 9: ant.v1.NotificationService.StreamNotifications:output_type -> ant.v1.Notification
-	9, // 10: ant.v1.NotificationService.SendNotification:output_type -> ant.v1.SendNotificationResponse
-	6, // [6:11] is the sub-list for method output_type
-	1, // [1:6] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	10, // 0: ant.v1.Notification.data:type_name -> google.protobuf.Struct
+	1,  // 1: ant.v1.ListNotificationsResponse.notifications:type_name -> ant.v1.Notification
+	10, // 2: ant.v1.SendNotificationRequest.data:type_name -> google.protobuf.Struct
+	2,  // 3: ant.v1.NotificationService.ListNotifications:input_type -> ant.v1.ListNotificationsRequest
+	4,  // 4: ant.v1.NotificationService.MarkRead:input_type -> ant.v1.MarkReadRequest
+	6,  // 5: ant.v1.NotificationService.MarkAllRead:input_type -> ant.v1.MarkAllReadRequest
+	0,  // 6: ant.v1.NotificationService.StreamNotifications:input_type -> ant.v1.StreamNotificationsRequest
+	8,  // 7: ant.v1.NotificationService.SendNotification:input_type -> ant.v1.SendNotificationRequest
+	3,  // 8: ant.v1.NotificationService.ListNotifications:output_type -> ant.v1.ListNotificationsResponse
+	5,  // 9: ant.v1.NotificationService.MarkRead:output_type -> ant.v1.MarkReadResponse
+	7,  // 10: ant.v1.NotificationService.MarkAllRead:output_type -> ant.v1.MarkAllReadResponse
+	1,  // 11: ant.v1.NotificationService.StreamNotifications:output_type -> ant.v1.Notification
+	9,  // 12: ant.v1.NotificationService.SendNotification:output_type -> ant.v1.SendNotificationResponse
+	8,  // [8:13] is the sub-list for method output_type
+	3,  // [3:8] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_notification_service_proto_init() }

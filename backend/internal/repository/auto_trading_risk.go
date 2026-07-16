@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/shopspring/decimal"
 
 	"alphaforge/internal/model"
 )
@@ -118,7 +119,7 @@ func (r *AutoTradingRepository) UpdateRiskConfig(ctx context.Context, config *mo
 	return nil
 }
 
-func (r *AutoTradingRepository) UpdateDailyLossUsed(ctx context.Context, id uuid.UUID, dailyLossUsed float64) error {
+func (r *AutoTradingRepository) UpdateDailyLossUsed(ctx context.Context, id uuid.UUID, dailyLossUsed decimal.Decimal) error {
 	query := `UPDATE risk_configs SET daily_loss_used = $2, updated_at = $3 WHERE id = $1`
 	_, err := r.db.Exec(ctx, query, id, dailyLossUsed, time.Now())
 	if err != nil {

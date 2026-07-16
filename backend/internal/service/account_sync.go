@@ -2,13 +2,14 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"alphaforge/internal/model"
 	"alphaforge/internal/mthub"
@@ -30,7 +31,7 @@ const (
 // events + sends emails at 3 severity levels with independent cooldowns.
 func (s *AccountSyncService) CheckMarginCall(
 	accountID, userID string,
-	marginLevel, margin, equity, callPct float64,
+	marginLevel, margin, equity, callPct decimal.Decimal,
 	mu *sync.Mutex,
 	lastSent map[string]map[int]time.Time,
 	eventStore *mthub.TradeEventStore,
@@ -48,11 +49,11 @@ func (s *AccountSyncService) CheckMarginCall(
 	// Determine current severity level.
 	var curLevel int
 	switch {
-	case marginLevel <= callPct*0.7:
+	case marginLevel.LessThanOrEqual(callPct.Mul(decimal.NewFromFloat(0.7))):
 		curLevel = int(MLevelCrit)
-	case marginLevel <= callPct:
+	case marginLevel.LessThanOrEqual(callPct):
 		curLevel = int(MLevelCall)
-	case marginLevel <= callPct*1.5:
+	case marginLevel.LessThanOrEqual(callPct.Mul(decimal.NewFromFloat(1.5))):
 		curLevel = int(MLevelWarn)
 	default:
 		delete(lastSent, accountID)
@@ -90,16 +91,16 @@ func (s *AccountSyncService) CheckMarginCall(
 			} else if curLevel == int(MLevelCall) {
 				levelLabel = "Margin Call"
 			}
-			data, _ := json.Marshal(map[string]interface{}{
+			data, _ := structpb.NewStruct(map[string]interface{}{
 				"account_id":   accountID,
-				"margin_level": marginLevel,
-				"call_pct":     callPct,
+				"margin_level": marginLevel.InexactFloat64(),
+				"call_pct":     callPct.InexactFloat64(),
 				"severity":     curLevel,
 			})
 			_, _ = s.notifSender.Send(context.Background(), uid, "risk_alert",
 				fmt.Sprintf("Margin %s: %s", levelLabel, accountID),
-				fmt.Sprintf("Margin level %.1f%% (call level: %.1f%%)", marginLevel, callPct),
-				string(data))
+				fmt.Sprintf("Margin level %.1f%% (call level: %.1f%%)", marginLevel.InexactFloat64(), callPct.InexactFloat64()),
+				data)
 		}
 	}
 }

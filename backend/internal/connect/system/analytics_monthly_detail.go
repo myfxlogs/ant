@@ -72,10 +72,10 @@ func (s *AnalyticsServer) computeMonthlyDetailCore(ctx context.Context, accountI
 		}
 		metrics = &antv1.MonthlyDetailMetrics{
 			NetReturn:     m.NetReturn.StringFixed(2),
-			ReturnPercent: m.ReturnPercent,
+			ReturnPercent: m.ReturnPercent.InexactFloat64(),
 			TotalTrades:   int64(m.TotalTrades),
-			WinRate:       m.WinRate,
-			ProfitFactor:  m.ProfitFactor,
+			WinRate:       m.WinRate.InexactFloat64(),
+			ProfitFactor:  m.ProfitFactor.InexactFloat64(),
 			BestTrade:     m.BestTrade.StringFixed(2),
 			WorstTrade:    m.WorstTrade.StringFixed(2),
 		}
@@ -94,7 +94,7 @@ func (s *AnalyticsServer) computeMonthlyDetailCore(ctx context.Context, accountI
 				Symbol:    r.Symbol,
 				NetProfit: r.NetProfit.StringFixed(2), // already rounded in repo
 				Trades:    int64(r.Trades),
-				WinRate:   r.WinRate, // already rounded in repo
+				WinRate:   r.WinRate.InexactFloat64(), // already rounded in repo
 			})
 		}
 		return nil
@@ -107,10 +107,10 @@ func (s *AnalyticsServer) computeMonthlyDetailCore(ctx context.Context, accountI
 			return nil
 		}
 		holding = &antv1.HoldingTimeStats{
-			AverageHours: h.AverageHours,
-			MedianHours:  h.MedianHours,
-			MaxHours:     h.MaxHours,
-			MinHours:     h.MinHours,
+			AverageHours: h.AverageHours.InexactFloat64(),
+			MedianHours:  h.MedianHours.InexactFloat64(),
+			MaxHours:     h.MaxHours.InexactFloat64(),
+			MinHours:     h.MinHours.InexactFloat64(),
 		}
 		return nil
 	})
@@ -129,20 +129,20 @@ func (s *AnalyticsServer) computeMonthlyDetailCore(ctx context.Context, accountI
 			bonus.SymbolPopularity = append(bonus.SymbolPopularity, &antv1.SymbolPopularityItem{
 				Symbol:       s.Symbol,
 				Trades:       int64(s.Trades),
-				SharePercent: s.SharePercent,
+				SharePercent: s.SharePercent.InexactFloat64(),
 			})
 		}
 		for _, r := range b.SymbolRisks {
 			bonus.SymbolRisks = append(bonus.SymbolRisks, &antv1.SymbolRiskItem{
 				Symbol:    r.Symbol,
-				RiskRatio: r.RiskRatio,
+				RiskRatio: r.RiskRatio.InexactFloat64(),
 			})
 		}
 		for _, h := range b.SymbolHoldings {
 			bonus.SymbolHoldingSplit = append(bonus.SymbolHoldingSplit, &antv1.SymbolHoldingSplit{
 				Symbol:           h.Symbol,
-				BullsSeconds:     h.BullsSeconds,
-				ShortTermSeconds: h.ShortTermSeconds,
+				BullsSeconds:     h.BullsSeconds.InexactFloat64(),
+				ShortTermSeconds: h.ShortTermSeconds.InexactFloat64(),
 			})
 		}
 		return nil

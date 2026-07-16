@@ -81,7 +81,7 @@ func (r *AnalyticsRepository) GetMonthlyAnalysisYears(ctx context.Context, accou
 type hourlyRawStat struct {
 	HourStart, Trades int
 	Lots, Profit, GrossProfit, GrossLoss decimal.Decimal
-	WinRate float64
+	WinRate decimal.Decimal
 }
 
 func (r *AnalyticsRepository) GetHourlyStats(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*model.HourlyStats, error) {
@@ -96,7 +96,7 @@ func (r *AnalyticsRepository) queryHourlyStats(ctx context.Context, accountID uu
 		        COALESCE(SUM(volume),0), COALESCE(SUM(profit),0),
 		        COALESCE(SUM(CASE WHEN profit>0 THEN profit ELSE 0 END),0),
 		        COALESCE(SUM(CASE WHEN profit<0 THEN ABS(profit) ELSE 0 END),0),
-		        CASE WHEN COUNT(*)>0 THEN SUM(CASE WHEN profit>0 THEN 1 ELSE 0 END)::float/COUNT(*)*100 ELSE 0 END
+		        CASE WHEN COUNT(*)>0 THEN SUM(CASE WHEN profit>0 THEN 1 ELSE 0 END)::numeric/COUNT(*)*100 ELSE 0 END
 		 FROM trade_records WHERE account_id=$1 AND close_time>=$2 AND close_time<=$3
 		   AND order_type NOT IN ('balance','credit','BALANCE','CREDIT','Balance','Credit')
 		 GROUP BY hour_start ORDER BY hour_start`,
@@ -128,8 +128,8 @@ func buildHourlyStatsResult(raw []*hourlyRawStat) []*model.HourlyStats {
 		result[s.HourStart].Trades = s.Trades
 		result[s.HourStart].Lots = s.Lots
 		result[s.HourStart].Profit = s.Profit
-		result[s.HourStart].WinRate = decimal.NewFromFloat(s.WinRate)
-		if s.Trades > 0 { result[s.HourStart].AvgPnL = s.Profit.InexactFloat64() / float64(s.Trades) }
+		result[s.HourStart].WinRate = s.WinRate
+		if s.Trades > 0 { result[s.HourStart].AvgPnL = s.Profit.Div(decimal.NewFromInt(int64(s.Trades))) }
 		if s.GrossLoss.IsPositive() { result[s.HourStart].ProfitFactor = s.GrossProfit.Div(s.GrossLoss) }
 	}
 	return result

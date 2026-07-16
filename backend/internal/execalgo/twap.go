@@ -3,6 +3,8 @@ package execalgo
 import (
 	"errors"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // TwapAlgo implements Time-Weighted Average Price execution.
@@ -24,7 +26,7 @@ func NewTwap(interval time.Duration) *TwapAlgo {
 func (a *TwapAlgo) Name() string { return "TWAP" }
 
 func (a *TwapAlgo) Schedule(parent ParentOrder) (*Schedule, error) {
-	if parent.TotalVolume <= 0 {
+	if !parent.TotalVolume.GreaterThan(decimal.Zero) {
 		return nil, errors.New("twap: total volume must be positive")
 	}
 	dur := parent.Duration()

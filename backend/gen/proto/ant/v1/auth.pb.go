@@ -774,11 +774,12 @@ const file_auth_proto_rawDesc = "" +
 	"\x05email\x18\x01 \x01(\tR\x05email\"P\n" +
 	"\x1aResendVerificationResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage2\xe4\x03\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage2\xb4\x04\n" +
 	"\vAuthService\x124\n" +
 	"\x05Login\x12\x14.ant.v1.LoginRequest\x1a\x15.ant.v1.LoginResponse\x128\n" +
 	"\x06Logout\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12I\n" +
-	"\fRefreshToken\x12\x1b.ant.v1.RefreshTokenRequest\x1a\x1c.ant.v1.RefreshTokenResponse\x126\n" +
+	"\fRefreshToken\x12\x1b.ant.v1.RefreshTokenRequest\x1a\x1c.ant.v1.RefreshTokenResponse\x12N\n" +
+	"\x16RefreshTokenFromCookie\x12\x16.google.protobuf.Empty\x1a\x1c.ant.v1.RefreshTokenResponse\x126\n" +
 	"\x05GetMe\x12\x16.google.protobuf.Empty\x1a\x15.ant.v1.GetMeResponse\x12=\n" +
 	"\bRegister\x12\x17.ant.v1.RegisterRequest\x1a\x18.ant.v1.RegisterResponse\x12F\n" +
 	"\vVerifyEmail\x12\x1a.ant.v1.VerifyEmailRequest\x1a\x1b.ant.v1.VerifyEmailResponse\x12[\n" +
@@ -822,19 +823,21 @@ var file_auth_proto_depIdxs = []int32{
 	0,  // 5: ant.v1.AuthService.Login:input_type -> ant.v1.LoginRequest
 	13, // 6: ant.v1.AuthService.Logout:input_type -> google.protobuf.Empty
 	2,  // 7: ant.v1.AuthService.RefreshToken:input_type -> ant.v1.RefreshTokenRequest
-	13, // 8: ant.v1.AuthService.GetMe:input_type -> google.protobuf.Empty
-	5,  // 9: ant.v1.AuthService.Register:input_type -> ant.v1.RegisterRequest
-	8,  // 10: ant.v1.AuthService.VerifyEmail:input_type -> ant.v1.VerifyEmailRequest
-	10, // 11: ant.v1.AuthService.ResendVerification:input_type -> ant.v1.ResendVerificationRequest
-	1,  // 12: ant.v1.AuthService.Login:output_type -> ant.v1.LoginResponse
-	13, // 13: ant.v1.AuthService.Logout:output_type -> google.protobuf.Empty
-	3,  // 14: ant.v1.AuthService.RefreshToken:output_type -> ant.v1.RefreshTokenResponse
-	4,  // 15: ant.v1.AuthService.GetMe:output_type -> ant.v1.GetMeResponse
-	6,  // 16: ant.v1.AuthService.Register:output_type -> ant.v1.RegisterResponse
-	9,  // 17: ant.v1.AuthService.VerifyEmail:output_type -> ant.v1.VerifyEmailResponse
-	11, // 18: ant.v1.AuthService.ResendVerification:output_type -> ant.v1.ResendVerificationResponse
-	12, // [12:19] is the sub-list for method output_type
-	5,  // [5:12] is the sub-list for method input_type
+	13, // 8: ant.v1.AuthService.RefreshTokenFromCookie:input_type -> google.protobuf.Empty
+	13, // 9: ant.v1.AuthService.GetMe:input_type -> google.protobuf.Empty
+	5,  // 10: ant.v1.AuthService.Register:input_type -> ant.v1.RegisterRequest
+	8,  // 11: ant.v1.AuthService.VerifyEmail:input_type -> ant.v1.VerifyEmailRequest
+	10, // 12: ant.v1.AuthService.ResendVerification:input_type -> ant.v1.ResendVerificationRequest
+	1,  // 13: ant.v1.AuthService.Login:output_type -> ant.v1.LoginResponse
+	13, // 14: ant.v1.AuthService.Logout:output_type -> google.protobuf.Empty
+	3,  // 15: ant.v1.AuthService.RefreshToken:output_type -> ant.v1.RefreshTokenResponse
+	3,  // 16: ant.v1.AuthService.RefreshTokenFromCookie:output_type -> ant.v1.RefreshTokenResponse
+	4,  // 17: ant.v1.AuthService.GetMe:output_type -> ant.v1.GetMeResponse
+	6,  // 18: ant.v1.AuthService.Register:output_type -> ant.v1.RegisterResponse
+	9,  // 19: ant.v1.AuthService.VerifyEmail:output_type -> ant.v1.VerifyEmailResponse
+	11, // 20: ant.v1.AuthService.ResendVerification:output_type -> ant.v1.ResendVerificationResponse
+	13, // [13:21] is the sub-list for method output_type
+	5,  // [5:13] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
 	5,  // [5:5] is the sub-list for extension extendee
 	0,  // [0:5] is the sub-list for field type_name

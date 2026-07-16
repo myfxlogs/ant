@@ -5,6 +5,7 @@ package ant.v1;
 option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
 
 service MarketRegimeService {
   rpc DetectMarketRegime(DetectMarketRegimeRequest) returns (DetectMarketRegimeResponse);
@@ -40,8 +41,8 @@ message MarketRegime {
   string timeframe = 5;
   string regime = 6;
   double confidence = 7;
-  string features = 8;
-  string segments = 9;
+  google.protobuf.Struct features = 8;
+  repeated string segments = 9;
   repeated string strategy_families = 10;
   google.protobuf.Timestamp from_time = 11;
   google.protobuf.Timestamp to_time = 12;

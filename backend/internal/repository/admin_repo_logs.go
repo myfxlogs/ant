@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"alphaforge/internal/model"
@@ -37,19 +36,10 @@ func (r *AdminRepository) CreateLog(ctx context.Context, log *model.AdminLog) er
 		RETURNING id, created_at
 	`
 
-	var detailsJSON []byte
-	var err error
-	if log.Details != nil {
-		detailsJSON, err = json.Marshal(log.Details)
-		if err != nil {
-			return fmt.Errorf("marshal log details: %w", err)
-		}
-	}
-
 	return r.db.QueryRow(ctx, query,
 		log.AdminID, log.Module, log.ActionType, log.TargetType, log.TargetID,
 		log.IPAddress, log.UserAgent, log.RequestMethod, log.RequestPath,
-		detailsJSON, log.Success, log.ErrorMessage,
+		log.Details, log.Success, log.ErrorMessage,
 	).Scan(&log.ID, &log.CreatedAt)
 }
 
@@ -66,13 +56,11 @@ func (r *AdminRepository) ListLogs(ctx context.Context, p *model.LogListParams) 
 	var logs []*model.AdminLog
 	for rows.Next() {
 		var l model.AdminLog
-		var detailsJSON []byte
 		if err := rows.Scan(&l.ID, &l.AdminID, &l.Module, &l.ActionType, &l.TargetType,
 			&l.TargetID, &l.IPAddress, &l.UserAgent, &l.RequestMethod,
-			&l.RequestPath, &detailsJSON, &l.Success, &l.ErrorMessage, &l.CreatedAt); err != nil {
+			&l.RequestPath, &l.Details, &l.Success, &l.ErrorMessage, &l.CreatedAt); err != nil {
 			return nil, 0, err
 		}
-		if detailsJSON != nil { json.Unmarshal(detailsJSON, &l.Details) }
 		logs = append(logs, &l)
 	}
 	return logs, total, nil

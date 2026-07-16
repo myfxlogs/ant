@@ -9,7 +9,7 @@ import (
 )
 
 // vmHandleBar processes a bar event.
-func vmHandleBar(r *runner.Runner, lctx *antv1.LiveStrategyContext) *antv1.ExecuteLiveResponse {
+func vmHandleBar(ctx context.Context, r *runner.Runner, lctx *antv1.LiveStrategyContext) *antv1.ExecuteLiveResponse {
 	if lctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "bar_context missing"}
 	}
@@ -67,7 +67,7 @@ func vmHandleBar(r *runner.Runner, lctx *antv1.LiveStrategyContext) *antv1.Execu
 		r.UpdateExtraBars(extra)
 	}
 
-	sig, err := r.OnBar(context.Background(), barSeries, lctx.Timeframe)
+	sig, err := r.OnBar(ctx, barSeries, lctx.Timeframe)
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
 	}
@@ -75,7 +75,7 @@ func vmHandleBar(r *runner.Runner, lctx *antv1.LiveStrategyContext) *antv1.Execu
 }
 
 // vmHandleTick processes a tick event.
-func vmHandleTick(r *runner.Runner, tctx *antv1.TickContext) *antv1.ExecuteLiveResponse {
+func vmHandleTick(ctx context.Context, r *runner.Runner, tctx *antv1.TickContext) *antv1.ExecuteLiveResponse {
 	if tctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "tick_context missing"}
 	}
@@ -83,7 +83,7 @@ func vmHandleTick(r *runner.Runner, tctx *antv1.TickContext) *antv1.ExecuteLiveR
 	bid := parseDecimal(tctx.Bid)
 	ask := parseDecimal(tctx.Ask)
 	r.UpdateTickState(bid, ask)
-	sig, err := r.OnTick(context.Background(), bid, ask)
+	sig, err := r.OnTick(ctx, bid, ask)
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
 	}
@@ -93,7 +93,7 @@ func vmHandleTick(r *runner.Runner, tctx *antv1.TickContext) *antv1.ExecuteLiveR
 // vmHandleTrade processes a trade event.
 // If the strategy also implements OnTradeTransaction (MQL5), it is dispatched
 // immediately after OnTrade, and signals from both are combined.
-func vmHandleTrade(r *runner.Runner, evctx *antv1.TradeContext) *antv1.ExecuteLiveResponse {
+func vmHandleTrade(ctx context.Context, r *runner.Runner, evctx *antv1.TradeContext) *antv1.ExecuteLiveResponse {
 	if evctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "trade_context missing"}
 	}
@@ -116,7 +116,7 @@ func vmHandleTrade(r *runner.Runner, evctx *antv1.TradeContext) *antv1.ExecuteLi
 		Commission: parseDecimal(evctx.Commission),
 		Swap:       parseDecimal(evctx.Swap),
 	}
-	sig, err := r.OnTrade(context.Background(), event)
+	sig, err := r.OnTrade(ctx, event)
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
 	}
@@ -124,7 +124,7 @@ func vmHandleTrade(r *runner.Runner, evctx *antv1.TradeContext) *antv1.ExecuteLi
 
 	// Dispatch OnTradeTransaction (MQL5) if the strategy implements it.
 	if r.HasOnTradeTransaction() {
-		ttSig, ttErr := r.OnTradeTransaction(context.Background())
+		ttSig, ttErr := r.OnTradeTransaction(ctx)
 		if ttErr != nil {
 			return resp
 		}
@@ -140,12 +140,12 @@ func vmHandleTrade(r *runner.Runner, evctx *antv1.TradeContext) *antv1.ExecuteLi
 }
 
 // vmHandleTimer processes a timer event.
-func vmHandleTimer(r *runner.Runner, tmctx *antv1.TimerContext) *antv1.ExecuteLiveResponse {
+func vmHandleTimer(ctx context.Context, r *runner.Runner, tmctx *antv1.TimerContext) *antv1.ExecuteLiveResponse {
 	if tmctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "timer_context missing"}
 	}
 	r.UpdateLiveState(tmctx.Balance, tmctx.Equity, vmPositionsToSdk(tmctx.Positions))
-	sig, err := r.OnTimerTick(context.Background())
+	sig, err := r.OnTimerTick(ctx)
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
 	}

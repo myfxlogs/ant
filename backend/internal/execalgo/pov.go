@@ -2,8 +2,9 @@ package execalgo
 
 import (
 	"errors"
-	"math"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // PovAlgo implements Percentage-of-Volume execution.
@@ -37,7 +38,7 @@ func NewPov(rate float64, interval time.Duration, expectedVolPerSlice float64) *
 func (a *PovAlgo) Name() string { return "POV" }
 
 func (a *PovAlgo) Schedule(parent ParentOrder) (*Schedule, error) {
-	if parent.TotalVolume <= 0 {
+	if !parent.TotalVolume.GreaterThan(decimal.Zero) {
 		return nil, errors.New("pov: total volume must be positive")
 	}
 	dur := parent.Duration()
@@ -55,17 +56,17 @@ func (a *PovAlgo) Schedule(parent ParentOrder) (*Schedule, error) {
 	n := numSlicesFromInterval(dur, interval)
 
 	// Target volume per slice = participation rate × expected market volume
-	targetPerSlice := a.ParticipationRate * a.ExpectedVolumePerSlice
+	targetPerSlice := decimal.NewFromFloat(a.ParticipationRate * a.ExpectedVolumePerSlice)
 	remaining := parent.TotalVolume
 
 	slices := make([]ChildOrder, 0, n)
 	for i := 0; i < n; i++ {
-		if remaining <= 0 {
+		if !remaining.GreaterThan(decimal.Zero) {
 			break
 		}
-		vol := math.Min(targetPerSlice, remaining)
-		vol = math.Round(vol*10000) / 10000
-		if vol <= 0 {
+		vol := decimal.Min(targetPerSlice, remaining)
+		vol = vol.Round(4)
+		if !vol.GreaterThan(decimal.Zero) {
 			continue
 		}
 		slices = append(slices, ChildOrder{
@@ -73,7 +74,7 @@ func (a *PovAlgo) Schedule(parent ParentOrder) (*Schedule, error) {
 			Volume:     vol,
 			TargetTime: parent.StartTime.Add(interval * time.Duration(i+1)),
 		})
-		remaining -= vol
+		remaining = remaining.Sub(vol)
 	}
 
 	return &Schedule{

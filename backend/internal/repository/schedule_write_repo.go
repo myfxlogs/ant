@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -67,16 +66,23 @@ func (r *StrategyScheduleRepository) Update(ctx context.Context, s *model.Strate
 func (r *StrategyScheduleRepository) UpdateRiskAssessment(ctx context.Context, id uuid.UUID, a *model.RiskAssessment, m *model.BacktestMetrics) error {
 	now := time.Now()
 
-	metricsJSON, _ := json.Marshal(m)
-	reasonsJSON, _ := json.Marshal(a.Reasons)
-	warningsJSON, _ := json.Marshal(a.Warnings)
+	tmp := &model.StrategySchedule{}
+	if err := tmp.SetBacktestMetrics(m); err != nil {
+		return fmt.Errorf("encode backtest metrics: %w", err)
+	}
+	if err := tmp.SetRiskReasons(a.Reasons); err != nil {
+		return fmt.Errorf("encode risk reasons: %w", err)
+	}
+	if err := tmp.SetRiskWarnings(a.Warnings); err != nil {
+		return fmt.Errorf("encode risk warnings: %w", err)
+	}
 
 	_, err := r.db.Exec(ctx,
 		`UPDATE strategy_schedules SET
 			backtest_metrics = $2, risk_score = $3, risk_level = $4,
 			risk_reasons = $5, risk_warnings = $6, last_backtest_at = $7, updated_at = $8
 		WHERE id = $1`,
-		id, metricsJSON, a.Score, a.Level, reasonsJSON, warningsJSON, now, now,
+		id, tmp.BacktestMetrics, a.Score, a.Level, tmp.RiskReasons, tmp.RiskWarnings, now, now,
 	)
 	if err != nil {
 		return fmt.Errorf("update risk assessment: %w", err)

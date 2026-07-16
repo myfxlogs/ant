@@ -33,10 +33,10 @@ func (a *MTBrokerAdapter) Submit(ctx context.Context, req *OrderRequest) (*Broke
 		Canonical:  req.Symbol,
 		Side:       side,
 		OrderType:  mthub.OrderMarket,
-		Volume:     decimal.NewFromFloat(req.Volume),
-		Price:      decimal.NewFromFloat(req.Price),
-		StopLoss:   decimal.NewFromFloat(req.StopLoss),
-		TakeProfit: decimal.NewFromFloat(req.TakeProfit),
+		Volume:     req.Volume,
+		Price:      req.Price,
+		StopLoss:   req.StopLoss,
+		TakeProfit: req.TakeProfit,
 		Comment:    req.Comment,
 	}
 
@@ -76,12 +76,12 @@ func (a *MTBrokerAdapter) Cancel(ctx context.Context, ticket string) error {
 }
 
 // Modify adjusts price and/or stop-loss of an order by ticket.
-func (a *MTBrokerAdapter) Modify(ctx context.Context, ticket string, price, stopPrice float64) error {
+func (a *MTBrokerAdapter) Modify(ctx context.Context, ticket string, price, stopPrice decimal.Decimal) error {
 	t, err := strconv.ParseInt(ticket, 10, 64)
 	if err != nil {
 		return fmt.Errorf("adapter_mt: invalid ticket %q: %w", ticket, err)
 	}
-	return a.executor.ModifyOrder(ctx, t, decimal.NewFromFloat(stopPrice), decimal.Zero, decimal.NewFromFloat(price))
+	return a.executor.ModifyOrder(ctx, t, stopPrice, decimal.Zero, price)
 }
 
 // Query retrieves the current broker-side state of an order by ticket.
@@ -95,10 +95,10 @@ func (a *MTBrokerAdapter) Query(ctx context.Context, ticket string) (*Order, err
 			return &Order{
 				Ticket:    ticket,
 				Symbol:    o.Canonical,
-				Volume:    o.Volume.InexactFloat64(),
-				Price:     o.OpenPrice.InexactFloat64(),
-				StopLoss:  0,  // OrderRecord lacks SL/TP; add to DTO
-				TakeProfit: 0,
+				Volume:    o.Volume,
+				Price:     o.OpenPrice,
+				StopLoss:  decimal.Zero,  // OrderRecord lacks SL/TP; add to DTO
+				TakeProfit: decimal.Zero,
 		State:     mtStateToOMS(o.State),
 				AccountID: o.AccountID,
 			}, nil

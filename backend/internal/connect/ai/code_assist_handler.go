@@ -72,15 +72,15 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	}
 	warnings = append(warnings, structWarns...)
 
-	parametersJson := extractParamsJSON(code)
+	parameterEntries := extractParams(code)
 
 	valid := len(errors) == 0
 
 	return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
-		Valid:          valid,
-		Errors:         errors,
-		Warnings:       warnings,
-		ParametersJson: parametersJson,
+		Valid:             valid,
+		Errors:            errors,
+		Warnings:          warnings,
+		ParameterEntries:  parameterEntries,
 	}), nil
 }
 
@@ -96,12 +96,7 @@ func (s *CodeAssistServer) validateMQL(_ context.Context, code string) (*connect
 
 	paramInfos := mql2go.ExtractParamInfos(runner.Bytecode())
 	params := make([]*antv1.RequiredParamSpec, 0, len(paramInfos))
-	type paramEntry struct {
-		Name    string `json:"name"`
-		Type    string `json:"type"`
-		Default string `json:"default"`
-	}
-	var entries []paramEntry
+	var entries []*antv1.ParameterEntry
 	for _, p := range paramInfos {
 		pType := mqlTypeToProtoType(p.Type)
 		params = append(params, &antv1.RequiredParamSpec{
@@ -110,14 +105,13 @@ func (s *CodeAssistServer) validateMQL(_ context.Context, code string) (*connect
 			Type:        pType,
 			DefaultValue: p.Default,
 		})
-		entries = append(entries, paramEntry{Name: p.Name, Type: pType, Default: p.Default})
+		entries = append(entries, &antv1.ParameterEntry{Name: p.Name, Type: pType, Default: p.Default})
 	}
-	parametersJson, _ := json.Marshal(entries)
 
 	return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
-		Valid:          true,
-		Parameters:     params,
-		ParametersJson: string(parametersJson),
+		Valid:             true,
+		Parameters:        params,
+		ParameterEntries:  entries,
 	}), nil
 }
 
@@ -133,12 +127,7 @@ func (s *CodeAssistServer) validatePython(_ context.Context, code string) (*conn
 
 	paramInfos := mql2go.ExtractParamInfos(runner.Bytecode())
 	params := make([]*antv1.RequiredParamSpec, 0, len(paramInfos))
-	type paramEntry struct {
-		Name    string `json:"name"`
-		Type    string `json:"type"`
-		Default string `json:"default"`
-	}
-	var entries []paramEntry
+	var entries []*antv1.ParameterEntry
 	for _, p := range paramInfos {
 		pType := mqlTypeToProtoType(p.Type)
 		params = append(params, &antv1.RequiredParamSpec{
@@ -147,14 +136,13 @@ func (s *CodeAssistServer) validatePython(_ context.Context, code string) (*conn
 			Type:         pType,
 			DefaultValue: p.Default,
 		})
-		entries = append(entries, paramEntry{Name: p.Name, Type: pType, Default: p.Default})
+		entries = append(entries, &antv1.ParameterEntry{Name: p.Name, Type: pType, Default: p.Default})
 	}
-	parametersJson, _ := json.Marshal(entries)
 
 	return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
-		Valid:          true,
-		Parameters:     params,
-		ParametersJson: string(parametersJson),
+		Valid:             true,
+		Parameters:        params,
+		ParameterEntries:  entries,
 	}), nil
 }
 
@@ -238,34 +226,27 @@ var paramType = map[string]string{
 	"String":  "str",
 }
 
-// extractParamsJSON statically extracts ctx.Param*() calls and returns a JSON array.
-// Each element: {"name": "...", "type": "int|float|str|bool", "default": "..."}
-func extractParamsJSON(code string) string {
+// extractParams statically extracts ctx.Param*() calls and returns structured entries.
+func extractParams(code string) []*antv1.ParameterEntry {
 	matches := paramPattern.FindAllStringSubmatch(code, -1)
 	if len(matches) == 0 {
-		return ""
+		return nil
 	}
 	seen := make(map[string]bool)
-	type paramEntry struct {
-		Name    string `json:"name"`
-		Type    string `json:"type"`
-		Default string `json:"default"`
-	}
-	var entries []paramEntry
+	var entries []*antv1.ParameterEntry
 	for _, m := range matches {
 		name := m[2]
 		if seen[name] {
 			continue
 		}
 		seen[name] = true
-		entries = append(entries, paramEntry{
+		entries = append(entries, &antv1.ParameterEntry{
 			Name:    name,
 			Type:    paramType[m[1]],
 			Default: strings.TrimSpace(m[3]),
 		})
 	}
-	b, _ := json.Marshal(entries)
-	return string(b)
+	return entries
 }
 
 // extractCodeFromRepair attempts to salvage code from an LLM response

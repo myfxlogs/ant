@@ -12,17 +12,6 @@ import (
 	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
-// AnalyticsSnapshot holds a pre-computed analytics summary for caching.
-type AnalyticsSnapshot struct {
-	TotalTrades    int32   `json:"total_trades"`
-	WinRate        float64 `json:"win_rate"`
-	ProfitFactor   float64 `json:"profit_factor"`
-	NetProfit      float64 `json:"net_profit"`
-	MaxDrawdownPct float64 `json:"max_drawdown_pct"`
-	SharpeRatio    float64 `json:"sharpe_ratio"`
-	UpdatedAt      int64   `json:"updated_at"`
-}
-
 // AnalyticsCache caches full AccountAnalyticsResponse values keyed by account ID,
 // backed by Redis with a 30‑minute TTL.
 type AnalyticsCache struct {

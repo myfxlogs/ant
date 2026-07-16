@@ -115,33 +115,30 @@ func paramsToCostModel(canonical string, params []*SymbolParam) *costsvc.CostMod
 		return nil
 	}
 
-	pointVal, _ := best.PointValue.Float64()
-	if pointVal <= 0 {
-		pointVal = 0.10
+	pointVal := best.PointValue
+	if pointVal.LessThanOrEqual(decimal.Zero) {
+		pointVal = decimal.NewFromFloat(0.10)
 	}
 
 	// Pip size: 10 points for 5-digit, 1 point for 4-digit.
-	pipInPoints := 1.0
+	pipInPoints := decimal.NewFromInt(1)
 	if best.Digits >= 5 {
-		pipInPoints = 10.0
+		pipInPoints = decimal.NewFromInt(10)
 	} else if best.Digits == 3 {
-		pipInPoints = 10.0 // JPY pairs: 3 digits
+		pipInPoints = decimal.NewFromInt(10) // JPY pairs: 3 digits
 	}
 
-	pipSize := mathPow10(float64(-best.Digits)) * pipInPoints
-	pipValue := pointVal * pipInPoints
+	pow10 := decimal.NewFromInt(10).Pow(decimal.NewFromInt(int64(-best.Digits)))
+	pipSize := pow10.Mul(pipInPoints)
+	pipValue := pointVal.Mul(pipInPoints)
 
 	return &costsvc.CostModel{
 		Symbol:           canonical,
-		SpreadPips:       1.0,
+		SpreadPips:       decimal.NewFromInt(1),
 		PipSize:          pipSize,
 		PipValue:         pipValue,
-		CommissionPerLot: 0,
+		CommissionPerLot: decimal.Zero,
 	}
-}
-
-func mathPow10(n float64) float64 {
-	return float64(decimal.NewFromFloat(10).Pow(decimal.NewFromFloat(n)).InexactFloat64())
 }
 
 func symbolVariants(symbol string) []string {

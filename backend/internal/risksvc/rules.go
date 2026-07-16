@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // ── Rule 1: MaxPosition — reject if open positions exceed limit ─────
@@ -24,9 +26,9 @@ func (r *MaxPosition) Check(_ context.Context, req *CheckRequest) *CheckResult {
 
 type DailyLoss struct {
 	mu        sync.Mutex
-	Limit     float64
+	Limit     decimal.Decimal
 	DayStart  time.Time
-	DailyPL   float64
+	DailyPL   decimal.Decimal
 }
 
 func (r *DailyLoss) Name() string { return "daily_loss" }
@@ -35,11 +37,11 @@ func (r *DailyLoss) Check(_ context.Context, req *CheckRequest) *CheckResult {
 	defer r.mu.Unlock()
 	if time.Since(r.DayStart) > 24*time.Hour {
 		r.DayStart = Clk.Now()
-		r.DailyPL = 0
+		r.DailyPL = decimal.Zero
 	}
-	if r.Limit > 0 && r.DailyPL < -r.Limit {
+	if r.Limit.GreaterThan(decimal.Zero) && r.DailyPL.LessThan(r.Limit.Neg()) {
 		return &CheckResult{Passed: false, Rule: r.Name(),
-			Reason: fmt.Sprintf("daily loss %.2f exceeds limit %.2f", r.DailyPL, r.Limit)}
+			Reason: fmt.Sprintf("daily loss %s exceeds limit %s", r.DailyPL.String(), r.Limit.String())}
 	}
 	return &CheckResult{Passed: true, Rule: r.Name()}
 }
@@ -49,7 +51,7 @@ func (r *DailyLoss) Check(_ context.Context, req *CheckRequest) *CheckResult {
 type Drawdown struct {
 	mu          sync.Mutex
 	MaxPct      float64
-	PeakEquity  float64
+	PeakEquity  decimal.Decimal
 }
 
 func (r *Drawdown) Name() string { return "drawdown" }
@@ -57,14 +59,14 @@ func (r *Drawdown) Name() string { return "drawdown" }
 func (r *Drawdown) Check(_ context.Context, req *CheckRequest) *CheckResult {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if req.Equity > r.PeakEquity {
+	if req.Equity.GreaterThan(r.PeakEquity) {
 		r.PeakEquity = req.Equity
 	}
-	if r.MaxPct > 0 && r.PeakEquity > 0 {
-		dd := (r.PeakEquity - req.Equity) / r.PeakEquity * 100
-		if dd > r.MaxPct {
+	if r.MaxPct > 0 && r.PeakEquity.GreaterThan(decimal.Zero) {
+		dd := r.PeakEquity.Sub(req.Equity).Div(r.PeakEquity).Mul(decimal.NewFromInt(100))
+		if dd.InexactFloat64() > r.MaxPct {
 			return &CheckResult{Passed: false, Rule: r.Name(),
-				Reason: fmt.Sprintf("drawdown %.2f%% exceeds limit %.2f%%", dd, r.MaxPct)}
+				Reason: fmt.Sprintf("drawdown %s%% exceeds limit %.2f%%", dd.StringFixed(2), r.MaxPct)}
 		}
 	}
 	return &CheckResult{Passed: true, Rule: r.Name()}
@@ -89,10 +91,10 @@ type Margin struct{ MinLevel float64 }
 
 func (r *Margin) Name() string { return "margin" }
 func (r *Margin) Check(_ context.Context, req *CheckRequest) *CheckResult {
-	if req.Margin <= 0 || req.Equity <= 0 {
+	if req.Margin.LessThanOrEqual(decimal.Zero) || req.Equity.LessThanOrEqual(decimal.Zero) {
 		return &CheckResult{Passed: true, Rule: r.Name()}
 	}
-	level := req.Equity / req.Margin
+	level := req.Equity.Div(req.Margin).InexactFloat64()
 	if level < r.MinLevel {
 		return &CheckResult{Passed: false, Rule: r.Name(),
 			Reason: fmt.Sprintf("margin level %.2f below minimum %.2f", level, r.MinLevel)}

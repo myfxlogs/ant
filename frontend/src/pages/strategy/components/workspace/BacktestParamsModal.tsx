@@ -75,8 +75,7 @@ export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, 
         setValidationError('');
         // Parse extracted strategy params from validation result
         try {
-          const pj = result.parametersJson || '[]';
-          const list = JSON.parse(pj) as Array<{ name: string; type: string; default: string; label: string }>;
+          const list = (result.parameterEntries || []).map(e => ({ name: e.name, type: e.type, default: e.default, label: e.label || '' }));
           setExtractedParams(list || []);
           const vals: Record<string, string> = {};
           for (const p of (list || [])) vals[p.name] = strategyParamValues[p.name] ?? p.default;

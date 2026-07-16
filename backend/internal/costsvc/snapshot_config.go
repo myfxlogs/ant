@@ -2,13 +2,17 @@
 package costsvc
 
 import (
-	"encoding/json"
 	"sort"
+
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 // SnapshotConfig freezes a set of cost models indexed by symbol for deterministic backtest replay.
-// The result is a JSON-serializable map[string]CostSnapshot suitable for storage in
-// backtest_run.cost_model_snapshot.
+// The result is a proto-serialized CostSnapshotMap suitable for storage in
+// backtest_run.cost_model_snapshot (BYTEA).
 func SnapshotConfig(broker string, models map[string]*CostModel) ([]byte, error) {
 	symbols := make([]string, 0, len(models))
 	for sym := range models {
@@ -16,14 +20,29 @@ func SnapshotConfig(broker string, models map[string]*CostModel) ([]byte, error)
 	}
 	sort.Strings(symbols)
 
-	snap := make(map[string]CostSnapshot, len(symbols))
+	m := &antv1.CostSnapshotMap{Entries: make(map[string]*antv1.CostSnapshot, len(symbols))}
 	for _, sym := range symbols {
-		m := models[sym]
-		m.Broker = broker
-		s := m.Snapshot()
-		snap[sym] = s
+		model := models[sym]
+		model.Broker = broker
+		s := model.Snapshot()
+		m.Entries[sym] = &antv1.CostSnapshot{
+			Symbol:            s.Symbol,
+			Broker:            s.Broker,
+			SpreadPips:        s.SpreadPips.InexactFloat64(),
+			PipSize:           s.PipSize.InexactFloat64(),
+			PipValue:          s.PipValue.InexactFloat64(),
+			CommissionPerLot:  s.CommissionPerLot.InexactFloat64(),
+			CommissionBps:     s.CommissionBps.InexactFloat64(),
+			SwapLong:          s.SwapLong.InexactFloat64(),
+			SwapShort:         s.SwapShort.InexactFloat64(),
+			FundingRate:       s.FundingRate.InexactFloat64(),
+			FundingIntervalNs: s.FundingInterval,
+			SlippageBps:       s.SlippageBps.InexactFloat64(),
+			MinCommission:     s.MinCommission.InexactFloat64(),
+			FrozenAt:          timestamppb.New(s.FrozenAt),
+		}
 	}
-	return json.Marshal(snap)
+	return proto.Marshal(m)
 }
 
 // SnapshotFromList freezes cost models from a slice.

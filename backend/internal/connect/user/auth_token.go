@@ -1,16 +1,13 @@
-// Package user (auth_token.go) — plain HTTP handlers for token refresh and logout.
-// These are intentional exceptions to the ConnectRPC-only rule:
-// browser cookie-based OAuth2 flows require reading/writing cookies, which
-// ConnectRPC unary calls cannot do. The handlers return JSON to match the
-// OAuth2 token endpoint convention expected by web clients.
+// Package user (auth_token.go) — ConnectRPC handlers for token refresh and logout.
+// RefreshTokenFromCookie reads the refresh_token from the httpOnly cookie,
+// replacing the former REST /api/auth/refresh endpoint.
 
 package user
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -21,6 +18,8 @@ import (
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/interceptor"
+
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 const (
@@ -98,58 +97,51 @@ func (s *AuthServer) RefreshToken(ctx context.Context, req *connect.Request[antv
 	return resp, nil
 }
 
-// HandleTokenRefresh is a plain HTTP handler that reads the refresh_token cookie,
-// validates it, issues new tokens, sets a new cookie, and returns JSON.
-func (s *AuthServer) HandleTokenRefresh(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
-		return
+// RefreshTokenFromCookie reads the refresh_token from the httpOnly cookie,
+// validates it, issues new tokens, and sets a new cookie via response header.
+func (s *AuthServer) RefreshTokenFromCookie(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[antv1.RefreshTokenResponse], error) {
+	cookieStr := req.Header().Get("Cookie")
+	if cookieStr == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("missing refresh token"))
 	}
-	cookie, err := r.Cookie(refreshCookie)
-	if err != nil {
-		http.Error(w, `{"error":"missing refresh token"}`, http.StatusUnauthorized)
-		return
+	var refreshTokenStr string
+	for _, part := range strings.Split(cookieStr, ";") {
+		part = strings.TrimSpace(part)
+		if strings.HasPrefix(part, refreshCookie+"=") {
+			refreshTokenStr = strings.TrimPrefix(part, refreshCookie+"=")
+			break
+		}
 	}
-	claims, err := interceptor.ValidateToken(cookie.Value, s.jwtSecret)
+	if refreshTokenStr == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("missing refresh token"))
+	}
+	claims, err := interceptor.ValidateToken(refreshTokenStr, s.jwtSecret)
 	if err != nil {
-		http.Error(w, `{"error":"invalid refresh token"}`, http.StatusUnauthorized)
-		return
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid refresh token"))
 	}
 	uid, err := uuid.Parse(claims.UserID)
 	if err != nil {
-		http.Error(w, `{"error":"invalid token claims"}`, http.StatusUnauthorized)
-		return
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid token claims"))
 	}
-	user, err := s.users.GetByID(r.Context(), uid)
+	user, err := s.users.GetByID(ctx, uid)
 	if err != nil {
-		http.Error(w, `{"error":"user not found"}`, http.StatusUnauthorized)
-		return
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("user not found"))
 	}
 	accessToken, err := s.issueAccessToken(claims.UserID, user.Email)
 	if err != nil {
-		s.log.Error("HandleTokenRefresh: issue access token", zap.Error(err))
-		http.Error(w, `{"error":"internal"}`, http.StatusInternalServerError)
-		return
+		s.log.Error("RefreshTokenFromCookie: issue access token", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	refreshToken, err := s.issueRefreshToken(claims.UserID, user.Email)
 	if err != nil {
-		s.log.Error("HandleTokenRefresh: issue refresh token", zap.Error(err))
-		http.Error(w, `{"error":"internal"}`, http.StatusInternalServerError)
-		return
+		s.log.Error("RefreshTokenFromCookie: issue refresh token", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	w.Header().Set("Set-Cookie", s.makeRefreshCookie(refreshToken))
-	w.Header().Set("Content-Type", "application/json")
-	// Use json.NewEncoder to satisfy gosec G705.
-	_ = json.NewEncoder(w).Encode(map[string]string{"access_token": accessToken})
-}
-
-// HandleLogout is a plain HTTP handler that clears the refresh token cookie.
-func (s *AuthServer) HandleLogout(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
-		return
-	}
-	w.Header().Set("Set-Cookie", s.clearRefreshCookie())
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"ok":true}`))
+	resp := connect.NewResponse(&antv1.RefreshTokenResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		ExpiresAt:    time.Now().Add(accessTokenTTL).Unix(),
+	})
+	resp.Header().Set("Set-Cookie", s.makeRefreshCookie(refreshToken))
+	return resp, nil
 }

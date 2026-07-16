@@ -95,10 +95,10 @@ func (t *writeStrategyTool) Run(ctx context.Context, in connectai.ToolInput) con
 			t.result.LastBacktest = btSummary // captured for persistent cross-conversation memory
 			result["tier"] = tier
 			result["total_trades"] = fmt.Sprintf("%d", btSummary.TotalTrades)
-			result["win_rate"] = fmt.Sprintf("%.1f%%", btSummary.WinRate)
-			result["total_return"] = fmt.Sprintf("%.2f%%", btSummary.TotalReturn)
-			result["max_drawdown"] = fmt.Sprintf("%.2f%%", btSummary.MaxDrawdown)
-			result["sharpe"] = fmt.Sprintf("%.2f", btSummary.SharpeRatio)
+			result["win_rate"] = fmt.Sprintf("%s%%", btSummary.WinRate)
+			result["total_return"] = fmt.Sprintf("%s%%", btSummary.TotalReturn)
+			result["max_drawdown"] = fmt.Sprintf("%s%%", btSummary.MaxDrawdown)
+			result["sharpe"] = btSummary.SharpeRatio
 			// I4: transparent inputs alongside results (§3.2c).
 			result["symbol"] = t.cfg.Symbol
 			result["timeframe"] = t.cfg.Timeframe
@@ -192,9 +192,9 @@ func fetchBarsForBacktest(ctx context.Context, mkt repository.MarketDataStore, c
 
 type backtestSummary struct {
 	TotalTrades int
-	WinRate     float64
-	TotalReturn float64
-	MaxDrawdown float64
-	SharpeRatio float64
+	WinRate     string
+	TotalReturn string
+	MaxDrawdown string
+	SharpeRatio string
 }
 

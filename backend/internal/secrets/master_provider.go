@@ -102,7 +102,6 @@ func (FileMasterKey) MasterKey(_ context.Context) ([]byte, error) {
 	if path == "" {
 		return nil, &SecretError{Msg: "ANT_MASTER_KEY_FILE not set"}
 	}
-	// #nosec G304 G703 — path is from env ANT_MASTER_KEY_FILE (admin-controlled config)
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, &SecretError{Msg: "read master key file: " + err.Error()}

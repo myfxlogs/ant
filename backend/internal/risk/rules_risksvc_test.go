@@ -133,7 +133,7 @@ func TestCapabilityTierRule_NoTierUserPasses(t *testing.T) {
 func TestCapabilityTierRule_BlocksOverVolume(t *testing.T) {
 	store := &testCapStore{tier: CapabilityTier{
 		Name:      "basic",
-		MaxVolume: 1.0,
+		MaxVolume: decimal.NewFromFloat(1.0),
 	}}
 	rule := &CapabilityTierRule{Store: store}
 	result := rule.Check(context.Background(),
@@ -146,7 +146,7 @@ func TestCapabilityTierRule_BlocksOverVolume(t *testing.T) {
 func TestCapabilityTierRule_BlocksDisallowedSymbol(t *testing.T) {
 	store := &testCapStore{tier: CapabilityTier{
 		Name:           "basic",
-		MaxVolume:      10.0,
+		MaxVolume:      decimal.NewFromFloat(10.0),
 		AllowedSymbols: []string{"EURUSD", "GBPUSD"},
 	}}
 	rule := &CapabilityTierRule{Store: store}
@@ -160,7 +160,7 @@ func TestCapabilityTierRule_BlocksDisallowedSymbol(t *testing.T) {
 func TestCapabilityTierRule_PassesAllowedSymbol(t *testing.T) {
 	store := &testCapStore{tier: CapabilityTier{
 		Name:           "basic",
-		MaxVolume:      10.0,
+		MaxVolume:      decimal.NewFromFloat(10.0),
 		AllowedSymbols: []string{"EURUSD", "GBPUSD"},
 	}}
 	rule := &CapabilityTierRule{Store: store}

@@ -163,10 +163,10 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 		pid,
 	).Scan(&pubWalletID, &pubBalanceBefore)
 	if err != nil {
-		// Publisher may not have a wallet yet — create one.
+		// Publisher may not have a wallet yet — create one (upsert always returns a row).
 		err = tx.QueryRow(ctx,
 			`INSERT INTO user_wallets (user_id) VALUES ($1)
-			 ON CONFLICT (user_id) DO NOTHING
+			 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
 			 RETURNING id, balance::text`,
 			pid,
 		).Scan(&pubWalletID, &pubBalanceBefore)
@@ -245,10 +245,10 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 	// 9. Insert subscription row (target_user_id = publisher from DB).
 	subID := uuid.New()
 	err = tx.QueryRow(ctx,
-		fmt.Sprintf(`INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active, idempotency_key, expires_at)
-			 VALUES ($1, $2, $3, $4, '%s', true, $5, $6)
-			 RETURNING id`, subKind),
-		subID, uid, pid, sid, idempotencyKey, expiresAt,
+		`INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active, idempotency_key, expires_at)
+			 VALUES ($1, $2, $3, $4, $5, true, $6, $7)
+			 RETURNING id`,
+		subID, uid, pid, sid, subKind, idempotencyKey, expiresAt,
 	).Scan(&subID)
 	if err != nil {
 		// If unique violation on idempotency_key, another request won the race.

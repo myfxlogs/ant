@@ -5,20 +5,24 @@ package ant.v1;
 option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 service ShareService {
-  // CreateShareToken generates a new sharing link for account performance.
   rpc CreateShareToken(CreateShareTokenRequest) returns (CreateShareTokenResponse);
-  // GetSharedPerformance returns account performance by token (public, no auth).
   rpc GetSharedPerformance(GetSharedPerformanceRequest) returns (GetSharedPerformanceResponse);
+  rpc UpdateShareToken(UpdateShareTokenRequest) returns (UpdateShareTokenResponse);
+  rpc ListShareTokens(ListShareTokensRequest) returns (ListShareTokensResponse);
+  rpc DeleteShareToken(DeleteShareTokenRequest) returns (DeleteShareTokenResponse);
+  rpc ListAllShareTokens(ListAllShareTokensRequest) returns (ListAllShareTokensResponse);
 }
 
 message CreateShareTokenRequest {
   string account_id = 1;
-  string description = 2;   // optional label
-  int32 expire_days = 3;    // default 7
+  string description = 2;
+  int32 expire_days = 3;
+  bool show_positions = 4;
 }
 
 message CreateShareTokenResponse {
   string token = 1;
+  
   string share_url = 2;
   string expires_at = 3;
 }
@@ -29,16 +33,21 @@ message GetSharedPerformanceRequest {
 
 message GetSharedPerformanceResponse {
   string user_name = 1;
-  string account_info = 2;     // broker server + login
-  double total_return = 3;
-  double win_rate = 4;
-  double max_drawdown = 5;
-  double sharpe_ratio = 6;
+  string account_info = 2;
+  string total_return = 3;
+  string win_rate = 4;
+  string max_drawdown = 5;
+  string sharpe_ratio = 6;
   int32 total_trades = 7;
   repeated string equity_curve = 8;
   repeated SharedTrade trades = 9;
   bool expired = 10;
   repeated int64 equity_times_ms = 11;
+  string total_volume = 12;
+  string profit_factor = 13;
+  int64 avg_holding_ms = 14;
+  bool show_positions = 15;
+  repeated SharedPosition positions = 16;
 }
 
 message SharedTrade {
@@ -47,4 +56,68 @@ message SharedTrade {
   string volume = 3;
   string profit = 4;
   int64 close_time_ms = 5;
+}
+
+message SharedPosition {
+  string symbol = 1;
+  string type = 2;
+  string volume = 3;
+  string open_price = 4;
+  string profit = 5;
+}
+
+message SharedPositionList {
+  repeated SharedPosition positions = 1;
+}
+
+message UpdateShareTokenRequest {
+  string token = 1;
+  bool show_positions = 2;
+}
+
+message UpdateShareTokenResponse {}
+
+message ListShareTokensRequest {}
+
+message ListShareTokensResponse {
+  repeated ShareTokenItem items = 1;
+}
+
+message ShareTokenItem {
+  string token = 1;
+  string share_url = 2;
+  string description = 3;
+  bool show_positions = 4;
+  int32 view_count = 5;
+  string expires_at = 6;
+  string created_at = 7;
+}
+
+message DeleteShareTokenRequest {
+  string token = 1;
+}
+
+message DeleteShareTokenResponse {}
+
+message ListAllShareTokensRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message ListAllShareTokensResponse {
+  repeated AdminShareTokenItem items = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message AdminShareTokenItem {
+  string token = 1;
+  string share_url = 2;
+  string user_id = 3;
+  string description = 4;
+  bool show_positions = 5;
+  int32 view_count = 6;
+  string expires_at = 7;
+  string created_at = 8;
 }

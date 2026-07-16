@@ -19,7 +19,6 @@ func (g *Gateway) SubscribeOrderUpdate(ctx context.Context, handler mdtick.Order
 	if sc == nil {
 		return fmt.Errorf("mt5: not connected")
 	}
-	// #nosec G118 — orderUpdateRecvLoop runs for the gateway full connection lifetime
 	go g.orderUpdateRecvLoop(ctx, handler)
 	return nil
 }

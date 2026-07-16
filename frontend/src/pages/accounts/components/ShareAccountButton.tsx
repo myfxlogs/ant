@@ -3,7 +3,7 @@ import { Button, Modal, Table, message, Tag, Space, Typography, Popconfirm, Swit
 import { ShareAltOutlined, CopyOutlined, LinkOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { SHARE_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
-import { useAuthStore } from '@/stores/authStore';
+import { shareClient } from '@/client/connect';
 
 interface ShareItem {
   token: string;
@@ -24,42 +24,32 @@ export default function ShareAccountButton({ accountId }: Props) {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<ShareItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const accessToken = useAuthStore(s => s.accessToken);
-  const authHeaders = useCallback(() => {
-    return accessToken ? { 'Content-Type': 'application/json' as const, 'Authorization': `Bearer ${accessToken}` } : null;
-  }, [accessToken]);
 
   const fetchList = useCallback(async () => {
-    const h = authHeaders();
-    if (!h) return;
     setLoading(true);
     try {
-      const resp = await fetch('/api/shares/list', { headers: h });
-      const data = await resp.json();
-      if (Array.isArray(data)) setItems(data);
+      const resp = await shareClient.listShareTokens({});
+      setItems(resp.items.map(item => ({
+        token: item.token,
+        shareUrl: item.shareUrl,
+        description: item.description,
+        showPositions: item.showPositions,
+        viewCount: item.viewCount,
+        expiresAt: item.expiresAt,
+        createdAt: item.createdAt,
+      })));
     } catch { /* ignore */ }
     finally { setLoading(false); }
-  }, [authHeaders]);
+  }, []);
 
   useEffect(() => {
     if (open) fetchList();
   }, [open, fetchList]);
 
   const handleCreate = async () => {
-    const h = authHeaders();
-    if (!h) return;
     try {
-      const resp = await fetch('/api/shares/create', {
-        method: 'POST',
-        headers: h,
-        body: JSON.stringify({ account_id: accountId, expire_days: 7 }),
-      });
-      if (!resp.ok) {
-        const text = await resp.text().catch(() => 'Unknown error');
-        throw new Error(text);
-      }
-      const data = await resp.json();
-      const url = `${window.location.origin}${data.shareUrl}`;
+      const resp = await shareClient.createShareToken({ accountId, expireDays: 7 });
+      const url = `${window.location.origin}${resp.shareUrl}`;
       await navigator.clipboard.writeText(url);
       message.success(t('accounts.messages.shareLinkCopied', { defaultValue: 'Share link copied to clipboard' }));
       fetchList();
@@ -74,15 +64,8 @@ export default function ShareAccountButton({ accountId }: Props) {
   };
 
   const handleDelete = async (shareToken: string) => {
-    const h = authHeaders();
-    if (!h) return;
     try {
-      const resp = await fetch('/api/shares/delete', {
-        method: 'POST',
-        headers: h,
-        body: JSON.stringify({ token: shareToken }),
-      });
-      if (!resp.ok) throw new Error('Failed');
+      await shareClient.deleteShareToken({ token: shareToken });
       message.success(t('common.deleted', { defaultValue: 'Deleted' }));
       fetchList();
     } catch {
@@ -91,15 +74,8 @@ export default function ShareAccountButton({ accountId }: Props) {
   };
 
   const handleTogglePositions = async (shareToken: string, show: boolean) => {
-    const h = authHeaders();
-    if (!h) return;
     try {
-      const resp = await fetch('/api/shares/update', {
-        method: 'POST',
-        headers: h,
-        body: JSON.stringify({ token: shareToken, show_positions: show }),
-      });
-      if (!resp.ok) throw new Error('Failed');
+      await shareClient.updateShareToken({ token: shareToken, showPositions: show });
       setItems(prev => prev.map(item => item.token === shareToken ? { ...item, showPositions: show } : item));
     } catch {
       message.error(t('common.operationFailed', { defaultValue: 'Operation failed' }));

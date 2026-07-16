@@ -64,26 +64,27 @@ func loadCapabilityStore(pool *pgxpool.Pool, log *zap.Logger) *risksvc.Capabilit
 
 func wireMthubServices(pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHubService, hub *mthub.Hub, eventStore *mthub.TradeEventStore, guard *risk.Guard) {
 	mthubSvc.SetAccountStateProvider(func(ctx context.Context, accountID string) (*risk.AccountState, error) {
-		var balance, equity, freeMargin, margin, positions float64
+		var balance, equity, freeMargin, margin decimal.Decimal
+		var positions int
 		err := pool.QueryRow(ctx,
-			`SELECT balance, equity, free_margin, COALESCE(margin,0)::float8,
-			        COALESCE((SELECT count(*) FROM positions WHERE mt_account_id=$1),0)::int
+			`SELECT balance, equity, free_margin, COALESCE(margin,0),
+			        COALESCE((SELECT count(*) FROM positions WHERE mt_account_id=$1),0)
 			 FROM accounts WHERE id=$2`, accountID, accountID).
 			Scan(&balance, &equity, &freeMargin, &margin, &positions)
 		if err != nil {
 			return nil, fmt.Errorf("account state query: %w", err)
 		}
 		return &risk.AccountState{
-			Balance:       decimal.NewFromFloat(balance),
-			Equity:        decimal.NewFromFloat(equity),
-			FreeMargin:    decimal.NewFromFloat(freeMargin),
-			UsedMargin:    decimal.NewFromFloat(margin),
-			OpenPositions: int(positions),
+			Balance:       balance,
+			Equity:        equity,
+			FreeMargin:    freeMargin,
+			UsedMargin:    margin,
+			OpenPositions: positions,
 		}, nil
 	})
 	mthubSvc.SetUserLimiter(usermgr.NewUserLimiter(usermgr.DefaultConfig()))
 	mthubSvc.SetCostEstimator(mthub.NewHubCostEstimator(hub, &costsvc.CostModel{
-		Symbol: "DEFAULT", SpreadPips: 1.0, PipSize: 0.00001, PipValue: 1.0, CommissionPerLot: 0,
+		Symbol: "DEFAULT", SpreadPips: decimal.NewFromInt(1), PipSize: decimal.NewFromFloat(0.00001), PipValue: decimal.NewFromInt(1), CommissionPerLot: decimal.Zero,
 	}, log))
 	mthubSvc.SetOmsWriter(mthub.NewOmsWriter(pool, eventStore))
 	mthubSvc.SetGuard(guard)

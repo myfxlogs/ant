@@ -262,9 +262,9 @@ func hourlyStatsToProto(stats []*model.HourlyStats) []*antv1.HourlyStat {
 			Balance:                 h.Balance.String(),
 			ProfitFactor:            h.ProfitFactor.InexactFloat64(),
 			MaxFloatingLossAmount:   h.MaxFloatingLossAmount.StringFixed(2),
-			MaxFloatingLossRatio:    h.MaxFloatingLossRatio,
+			MaxFloatingLossRatio:    h.MaxFloatingLossRatio.InexactFloat64(),
 			MaxFloatingProfitAmount: h.MaxFloatingProfitAmount.StringFixed(2),
-			MaxFloatingProfitRatio:  h.MaxFloatingProfitRatio,
+			MaxFloatingProfitRatio:  h.MaxFloatingProfitRatio.InexactFloat64(),
 		})
 	}
 	return result

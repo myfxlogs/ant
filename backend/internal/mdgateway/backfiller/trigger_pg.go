@@ -2,7 +2,6 @@ package backfiller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"go.uber.org/zap"
@@ -20,8 +19,17 @@ type PGNotifier interface {
 // triggers an immediate BackfillAccount(accountID) without waiting for the 6h cron.
 type BackfillCallback func(ctx context.Context, accountID string) error
 
+// notifyPayload is parsed from the PG NOTIFY payload string.
+// For new_subscription, the payload is the account_id directly.
 type notifyPayload struct {
-	AccountID string `json:"account_id"`
+	AccountID string
+}
+
+func parseNotifyPayload(payload string) notifyPayload {
+	if payload == "" {
+		return notifyPayload{}
+	}
+	return notifyPayload{AccountID: payload}
 }
 
 // PGTrigger is a long-running listener that maps PG NOTIFY events to backfill calls.
@@ -52,11 +60,7 @@ func (t *PGTrigger) Run(ctx context.Context, notifier PGNotifier) error {
 			}
 			return fmt.Errorf("wait for PG notification: %w", err)
 		}
-		var np notifyPayload
-		if jerr := json.Unmarshal([]byte(payload), &np); jerr != nil {
-			t.log.Debug("backfiller: bad NOTIFY payload", zap.String("payload", payload), zap.Error(jerr))
-			continue
-		}
+		np := parseNotifyPayload(payload)
 		if np.AccountID == "" {
 			continue
 		}
