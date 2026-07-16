@@ -46,7 +46,6 @@ jobs:
         with:
           version: v2.12.2
           working-directory: backend
-          install-mode: goinstall
           args: --timeout=5m --out-format=colored-line-number --new-from-rev=origin/main
 
   # ── M0.1-3: backend test + build ──
