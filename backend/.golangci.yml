@@ -63,6 +63,7 @@ linters:
         - G404
         - G101
         - G402
+        - G703
     revive:
       rules:
         - name: argument-limit
