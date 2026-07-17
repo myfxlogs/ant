@@ -141,6 +141,10 @@ func (s *StrategyExecutionServer) executeBacktestRun(ctx context.Context, run *r
 		s.failRun(ctx, run, fmt.Sprintf("fetch bars: %v", err))
 		return
 	}
+	if len(klines) == 0 {
+		s.failRun(ctx, run, "no K-line data available for the specified symbol/timeframe/range")
+		return
+	}
 
 	// Go-native backtest engine execution.
 	result, err := s.executeGoBacktest(execCtx, run, params, klines)

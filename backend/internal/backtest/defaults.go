@@ -31,6 +31,10 @@ func ApplyDefaults(run *repository.BacktestRun) {
 	if run.Commission != nil && (run.Commission.LessThan(decimal.Zero) || run.Commission.GreaterThan(decimal.NewFromInt(10))) {
 		run.Commission = &DefaultCommission
 	}
+	if run.Slippage == nil {
+		zero := decimal.Zero
+		run.Slippage = &zero
+	}
 	if run.Slippage != nil && (run.Slippage.LessThan(decimal.Zero) || run.Slippage.GreaterThan(decimal.NewFromInt(10))) {
 		zero := decimal.Zero
 		run.Slippage = &zero

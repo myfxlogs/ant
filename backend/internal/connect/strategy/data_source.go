@@ -82,7 +82,7 @@ func klineBarsToProto(chBars []repository.KlineBar) []*antv1.ExecuteKlineBar {
 			High:        b.High.String(),
 			Low:         b.Low.String(),
 			Close:       b.Close.String(),
-			Volume:      strconv.FormatFloat(b.Volume, 'f', -1, 64),
+			Volume:      strconv.FormatInt(int64(b.Volume), 10),
 		})
 	}
 	return klines

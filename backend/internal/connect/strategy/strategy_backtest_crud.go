@@ -26,7 +26,27 @@ func validateBacktestRun(run *repository.BacktestRun) {
 }
 
 func (s *StrategyExecutionServer) StartBacktestRun(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) (*connect.Response[antv1.StartBacktestRunResponse], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+	}
+
+	// Verify account ownership — prevent cross-user backtest execution.
+	accountID, err := uuid.Parse(req.Msg.AccountId)
+	if err != nil || accountID == uuid.Nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id"))
+	}
+	var owns bool
+	if err := s.backtestRepo.DB().QueryRow(ctx,
+		"SELECT EXISTS(SELECT 1 FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL)",
+		accountID, userID,
+	).Scan(&owns); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("account ownership check: %w", err))
+	}
+	if !owns {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account not found or not owned by user"))
+	}
+
 	run := buildBacktestRunFromRequest(userID, req.Msg)
 
 	// If strategy_id is provided, fetch source code + params from imported_strategies.
@@ -103,7 +123,10 @@ func buildBacktestRunFromRequest(userID uuid.UUID, msg *antv1.StartBacktestRunRe
 }
 
 func (s *StrategyExecutionServer) GetBacktestRun(ctx context.Context, req *connect.Request[antv1.GetBacktestRunRequest]) (*connect.Response[antv1.GetBacktestRunResponse], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+	}
 	runID, err := uuid.Parse(req.Msg.RunId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -122,7 +145,10 @@ func (s *StrategyExecutionServer) GetBacktestRun(ctx context.Context, req *conne
 }
 
 func (s *StrategyExecutionServer) ListBacktestRuns(ctx context.Context, req *connect.Request[antv1.ListBacktestRunsRequest]) (*connect.Response[antv1.ListBacktestRunsResponse], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+	}
 	var accountID *uuid.UUID
 	if req.Msg.AccountId != nil && *req.Msg.AccountId != "" {
 		id, err := uuid.Parse(*req.Msg.AccountId)
@@ -159,7 +185,10 @@ func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *con
 	if err != nil {
 		return err
 	}
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil {
+		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+	}
 
 	// Send current state immediately so the client doesn't time out waiting
 	// for the first ticker/notification (which can take up to 30s).
@@ -227,7 +256,10 @@ func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *con
 }
 
 func (s *StrategyExecutionServer) CancelBacktestRun(ctx context.Context, req *connect.Request[antv1.CancelBacktestRunRequest]) (*connect.Response[antv1.CancelBacktestRunResponse], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+	}
 	runID, err := uuid.Parse(req.Msg.RunId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -236,7 +268,10 @@ func (s *StrategyExecutionServer) CancelBacktestRun(ctx context.Context, req *co
 		s.log.Error("CancelBacktestRun", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	run, _ := s.backtestRepo.GetByID(ctx, userID, runID)
+	run, err := s.backtestRepo.GetByID(ctx, userID, runID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("query run after cancel: %w", err))
+	}
 	return connect.NewResponse(&antv1.CancelBacktestRunResponse{
 		Run: toProtoBacktestRun(run),
 	}), nil
@@ -245,7 +280,10 @@ func (s *StrategyExecutionServer) CancelBacktestRun(ctx context.Context, req *co
 func (s *StrategyExecutionServer) DeleteBacktestRun(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunRequest]) (*connect.Response[antv1.DeleteBacktestRunResponse], error) {
 	uid := interceptor.GetUserID(ctx)
 	s.log.Info("DeleteBacktestRun called", zap.String("raw_user_id", uid), zap.String("run_id", req.Msg.RunId))
-	userID, _ := uuid.Parse(uid)
+	userID, err := uuid.Parse(uid)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+	}
 	runID, err := uuid.Parse(req.Msg.RunId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -261,7 +299,10 @@ func (s *StrategyExecutionServer) DeleteBacktestRun(ctx context.Context, req *co
 
 // DeleteBacktestRuns implements the batch-delete RPC for backtest runs.
 func (s *StrategyExecutionServer) DeleteBacktestRuns(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunsRequest]) (*connect.Response[antv1.DeleteBacktestRunsResponse], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+	}
 	ids := req.Msg.RunIds
 	if len(ids) == 0 {
 		return connect.NewResponse(&antv1.DeleteBacktestRunsResponse{}), nil

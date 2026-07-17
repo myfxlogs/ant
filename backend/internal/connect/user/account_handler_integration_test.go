@@ -98,7 +98,7 @@ func authCtx(userID uuid.UUID) context.Context {
 // and a mock MT tester.
 func newTestAccountServer(t *testing.T, pool *pgxpool.Pool, tester MTConnectionTester) *AccountServer {
 	t.Helper()
-	svc := service.NewAccountService(pool)
+	svc := service.NewAccountService(pool, service.NewTestSecretsClient(t))
 	searcher := brokersearch.New("", "")
 	return NewAccountServer(svc, searcher, nil, tester, zap.NewNop())
 }
@@ -130,7 +130,7 @@ func TestAccountLifecycle(t *testing.T) {
 		},
 	}
 
-	svc := service.NewAccountService(pool)
+	svc := service.NewAccountService(pool, service.NewTestSecretsClient(t))
 	searcher := brokersearch.New("", "")
 	srv := NewAccountServer(svc, searcher, nil, mockTester, log)
 

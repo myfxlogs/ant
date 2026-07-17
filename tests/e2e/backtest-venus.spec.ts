@@ -279,6 +279,13 @@ return(li_8);
 
 bool CheckTime() {
    if(!Use_Time) return(1);
+   int Time10 = TimeLocal();
+   int StartTime1 = StrToTime(TimeToStr(Time10,TIME_DATE) + " " + DoubleToStr(StartHour,0) + ":" + DoubleToStr(StartMinit,0));
+   int EndTime1 = StrToTime(TimeToStr(Time10,TIME_DATE) + " " +DoubleToStr(EndHour,0) + ":" + DoubleToStr(EndMinit,0));
+   if(StartTime1 < EndTime1 && Time10 > StartTime1 && Time10 < EndTime1) return(1);
+   if(StartTime1 > EndTime1) {
+     if(Time10 > StartTime1 || Time10 < EndTime1) return(1);
+   }
    return(0);
 }
 
@@ -320,12 +327,17 @@ void CountOrders() {
 }
 `;
 
+const _env = (globalThis as any).process?.env ?? {};
+const TEST_USER = _env.TEST_USER || 'admin@1.com';
+const TEST_PASSWORD = _env.TEST_PASSWORD || '12345678';
+const TEST_ACCOUNT_ID = _env.TEST_ACCOUNT_ID || 'fcca3414-d691-4a41-a1dc-53d914655059';
+
 async function login(page: Page) {
   await page.goto('/login', { waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
   // Ant Design Form generates IDs as {formName}_{fieldName}
-  await page.locator('#login_login').fill('admin@1.com');
-  await page.locator('#login_password').fill('12345678');
+  await page.locator('#login_login').fill(TEST_USER);
+  await page.locator('#login_password').fill(TEST_PASSWORD);
   // Submit button is inside the form
   await page.locator('form button[type="submit"]').click();
   // Wait for navigation away from /login
@@ -336,7 +348,7 @@ async function loginViaAPI(): Promise<string> {
   const resp = await fetch('http://localhost:8022/ant.v1.AuthService/Login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ login: 'admin@1.com', password: '12345678' }),
+    body: JSON.stringify({ login: TEST_USER, password: TEST_PASSWORD }),
   });
   if (!resp.ok) throw new Error(`Login API failed: ${resp.status}`);
   const data = await resp.json();
@@ -357,7 +369,6 @@ async function createTemplateViaAPI(token: string, code: string, name: string): 
       parameters: [],
       isPublic: false,
       tags: [],
-      i18n: '',
     }),
   });
   if (!resp.ok) {
@@ -379,135 +390,114 @@ test('backtest Venus EA on BTCUSDm 15m', async ({ page }) => {
   const templateId = await createTemplateViaAPI(token, MQL_SOURCE, 'Venus EA Backtest Test');
   console.log('Created template:', templateId);
 
-  // ── 3. Login via UI (for browser session) ──
-  await login(page);
+  // ── 3. Start backtest via ConnectRPC API (StrategyRuntimeService.StartBacktestRun) ──
+  // Using API directly is more reliable than UI clicks for the backtest trigger.
+  const ACCOUNT_ID = TEST_ACCOUNT_ID; // 95172262 MT4 Exness
+  const SYMBOL = 'BTCUSDm';
+  const TIMEFRAME = '15m';
 
-  // ── 4. Navigate to workspace with templateId to auto-load code ──
-  await page.goto(`/strategy/workspace?templateId=${templateId}`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(3000);
+  const startResp = await fetch('http://localhost:8022/ant.v1.StrategyRuntimeService/StartBacktestRun', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      code: MQL_SOURCE,
+      accountId: ACCOUNT_ID,
+      symbol: SYMBOL,
+      timeframe: TIMEFRAME,
+      initialCapital: '10000',
+      mode: 'BACKTEST_RUN_MODE_KLINE_RANGE',
+      from: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
+      to: new Date().toISOString(),
+      templateId,
+      executionConfig: {
+        commission: '0.001',
+        slippage: '0.0005',
+        leverage: '1',
+        tradeDirection: 'TRADE_DIRECTION_BOTH',
+        strictMode: false,
+      },
+    }),
+  });
+  if (!startResp.ok) {
+    const errText = await startResp.text().catch(() => 'unknown');
+    throw new Error(`StartBacktestRun API failed: ${startResp.status} ${errText}`);
+  }
+  const startData = await startResp.json();
+  const runId = startData.runId;
+  console.log('Backtest started, runId:', runId);
 
-  // ── 5. Select trading account 95172262 ──
-  // Account selector is in the toolbar — look for a Select with account-related placeholder
-  const accountSelect = page.locator('.ant-select').first();
-  await accountSelect.waitFor({ state: 'visible', timeout: 10_000 });
-  await accountSelect.click();
-  await page.waitForTimeout(800);
-  // Type to filter the dropdown
-  await page.keyboard.type('95172262');
-  await page.waitForTimeout(800);
-  // Click the matching option
-  const accountOption = page.locator('.ant-select-item-option').filter({ hasText: '95172262' }).first();
-  await accountOption.waitFor({ state: 'visible', timeout: 5000 });
-  await accountOption.click();
-  await page.waitForTimeout(1500);
-
-  // ── 6. Select symbol BTCUSDm ──
-  // The symbol picker is another Select in the toolbar
-  const symbolSelect = page.locator('.ant-select').nth(1);
-  await symbolSelect.waitFor({ state: 'visible', timeout: 10_000 });
-  await symbolSelect.click();
-  await page.waitForTimeout(800);
-  await page.keyboard.type('BTCUSD');
-  await page.waitForTimeout(1000);
-  // Look for BTCUSDm in the dropdown
-  const symbolOption = page.locator('.ant-select-item-option').filter({ hasText: /BTCUSDm/i }).first();
-  await symbolOption.waitFor({ state: 'visible', timeout: 5000 });
-  await symbolOption.click();
-  await page.waitForTimeout(1500);
-
-  // ── 7. Set timeframe to 15m ──
-  const tf15m = page.locator('.ant-radio-button-wrapper').filter({ hasText: '15m' }).first();
-  await tf15m.click();
-  await page.waitForTimeout(500);
-
-  // ── 8. Click Run backtest ──
-  // The Run button is in the backtest panel — find by primary button with Run text
-  const runButton = page.locator('button.ant-btn-primary').filter({ hasText: /Run|运行/ }).last();
-  await runButton.waitFor({ state: 'visible', timeout: 10_000 });
-  await runButton.click();
-
-  // ── 9. Wait for backtest to complete ──
-  // The "Completed" tag uses ant-tag with color="success" — text is "Completed"
-  // The "Running" tag uses ant-tag with color="processing" — text is "Running"
-  // The "Error" tag uses ant-tag with color="error"
-  // Poll for completion (up to 100 seconds)
+  // ── 4. Poll GetBacktestRun for completion (up to 120 seconds) ──
   let completed = false;
   let errored = false;
-  for (let i = 0; i < 50; i++) {
-    await page.waitForTimeout(2000);
-    // Check for Completed tag (green/success)
-    const completedTag = page.locator('.ant-tag').filter({ hasText: /^Completed$/ });
-    if (await completedTag.first().isVisible().catch(() => false)) {
+  let runStatus = '';
+  let runError = '';
+  let metrics: Record<string, unknown> | null = null;
+
+  for (let i = 0; i < 60; i++) {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    const pollResp = await fetch('http://localhost:8022/ant.v1.StrategyRuntimeService/GetBacktestRun', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ runId }),
+    });
+    if (!pollResp.ok) {
+      console.log(`Poll attempt ${i + 1}: HTTP ${pollResp.status}`);
+      continue;
+    }
+    const pollData = await pollResp.json();
+    const run = pollData.run || {};
+    // Protojson returns enum values as strings, e.g. "BACKTEST_RUN_STATUS_SUCCEEDED"
+    const statusStr = String(run.status || '');
+    runStatus = statusStr;
+    console.log(`Poll attempt ${i + 1}: status=${runStatus}`, run.error ? `error=${run.error}` : '');
+
+    if (statusStr === 'BACKTEST_RUN_STATUS_SUCCEEDED') {
       completed = true;
+      metrics = pollData.metrics || null;
       break;
     }
-    // Check for error tag
-    const errorTag = page.locator('.ant-tag-error, .ant-tag').filter({ hasText: /failed|error/i });
-    if (await errorTag.first().isVisible().catch(() => false)) {
+    if (statusStr === 'BACKTEST_RUN_STATUS_FAILED' || statusStr === 'BACKTEST_RUN_STATUS_CANCELED') {
       errored = true;
-      break;
-    }
-    // Also check if statistic values are present (metrics rendered = completed)
-    const stats = page.locator('.ant-statistic-content-value');
-    if (await stats.first().isVisible().catch(() => false)) {
-      completed = true;
+      runError = run.error || 'Unknown error';
       break;
     }
   }
 
-  // ── 10. Capture backtest report ──
-  const report: Record<string, string> = {};
-
-  // Extract metric values from Statistic components
-  const metrics = page.locator('.ant-statistic');
-  const metricCount = await metrics.count();
-  for (let i = 0; i < metricCount; i++) {
-    const title = await metrics.nth(i).locator('.ant-statistic-title').textContent().catch(() => '');
-    const value = await metrics.nth(i).locator('.ant-statistic-content-value').textContent().catch(() => '');
-    if (title && value) {
-      report[title.trim()] = value.trim();
-    }
-  }
-
-  // Also capture the collapsed metrics row if visible
-  const collapsedMetrics = page.locator('div').filter({ hasText: /Total Return|总收益/ }).filter({ has: page.locator('b') });
-  if (await collapsedMetrics.first().isVisible().catch(() => false)) {
-    const text = await collapsedMetrics.first().textContent();
-    if (text) report['collapsedMetrics'] = text.trim();
-  }
-
-  // Capture execution assumptions if visible
-  const assumptions = page.locator('div').filter({ hasText: /Execution Assumptions|执行假设/ }).first();
-  if (await assumptions.isVisible().catch(() => false)) {
-    const text = await assumptions.textContent();
-    if (text) report['executionAssumptions'] = text.trim();
-  }
-
-  // Capture error message if errored
-  if (errored) {
-    const errorTagEl = page.locator('.ant-tag-error').first();
-    const errorText = await errorTagEl.textContent().catch(() => 'Unknown error');
-    report['error'] = errorText?.trim() || 'Unknown error';
-  }
-
-  // ── 11. Output report ──
+  // ── 5. Output report ──
   console.log('\n========== BACKTEST REPORT ==========');
   console.log(`Status: ${completed ? 'COMPLETED' : errored ? 'ERROR' : 'TIMEOUT'}`);
-  console.log(`Symbol: BTCUSDm | Timeframe: 15m`);
-  console.log('---');
-  for (const [key, value] of Object.entries(report)) {
-    if (key === 'collapsedMetrics' || key === 'executionAssumptions') {
-      console.log(`${key}: ${value}`);
-    } else {
-      console.log(`${key}: ${value}`);
-    }
+  console.log(`Run ID: ${runId}`);
+  console.log(`Symbol: ${SYMBOL} | Timeframe: ${TIMEFRAME}`);
+  console.log(`Final status: ${runStatus}`);
+  if (runError) console.log(`Error: ${runError}`);
+  if (metrics) {
+    console.log('---');
+    console.log('Metrics:', JSON.stringify(metrics, null, 2));
   }
   console.log('=====================================\n');
 
-  // Take a screenshot for the record
+  // ── 6. Login via UI and navigate to workspace to verify ──
+  await login(page);
+  await page.evaluate((t) => {
+    const authKey = 'auth-storage';
+    const authRaw = localStorage.getItem(authKey);
+    const authParsed = authRaw ? JSON.parse(authRaw) : { state: {}, version: 0 };
+    authParsed.state.accessToken = t;
+    authParsed.state.isAuthenticated = true;
+    localStorage.setItem(authKey, JSON.stringify(authParsed));
+  }, token);
+
+  await page.goto(`/strategy/workspace?templateId=${templateId}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(3000);
   await page.screenshot({ path: 'backtest-result.png', fullPage: true });
 
-  // Assert that we got some result
+  // Assert that we got a terminal status
   if (errored) {
     console.log('Backtest returned an error — this may indicate a compilation or runtime issue with the MQL code.');
   }

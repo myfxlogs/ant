@@ -63,7 +63,7 @@ func (q *Queries) GetAccount(ctx context.Context, arg GetAccountParams) (MtAccou
 }
 
 const getAccountCredentials = `-- name: GetAccountCredentials :one
-SELECT login, password, mt_type, broker_host FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
+SELECT login, password_encrypted, mt_type, broker_host FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
 `
 
 type GetAccountCredentialsParams struct {
@@ -72,10 +72,10 @@ type GetAccountCredentialsParams struct {
 }
 
 type GetAccountCredentialsRow struct {
-	Login      string
-	Password   string
-	MtType     string
-	BrokerHost string
+	Login              string
+	PasswordEncrypted  []byte
+	MtType             string
+	BrokerHost         string
 }
 
 func (q *Queries) GetAccountCredentials(ctx context.Context, arg GetAccountCredentialsParams) (GetAccountCredentialsRow, error) {
@@ -83,7 +83,7 @@ func (q *Queries) GetAccountCredentials(ctx context.Context, arg GetAccountCrede
 	var i GetAccountCredentialsRow
 	err := row.Scan(
 		&i.Login,
-		&i.Password,
+		&i.PasswordEncrypted,
 		&i.MtType,
 		&i.BrokerHost,
 	)

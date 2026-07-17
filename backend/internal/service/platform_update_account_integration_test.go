@@ -28,7 +28,7 @@ func updateAccountTestPG(t *testing.T) *pgxpool.Pool {
 func TestUpdateAccountParamsCorrect(t *testing.T) {
 	pool := updateAccountTestPG(t)
 	ctx := context.Background()
-	svc := NewAccountService(pool)
+	svc := NewAccountService(pool, NewTestSecretsClient(t))
 
 	userID := uuid.New()
 	accID := uuid.New()

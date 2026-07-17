@@ -183,8 +183,13 @@ func main() {
 	}
 
 	// Services
-	accountSvc := service.NewAccountService(pool)
+	accountSvc := service.NewAccountService(pool, secClient)
 	accountSvc.SetLogger(log)
+	if n, err := accountSvc.BackfillPlaintextCredentials(context.Background()); err != nil {
+		log.Warn("account backfill failed", zap.Error(err))
+	} else if n > 0 {
+		log.Info("account backfill migrated plaintext credentials", zap.Int("count", n))
+	}
 	platformSvc := service.NewPlatformService(pool, accountSvc)
 	platformSvc.SetLogger(log)
 	jwtSecret := cfg.JWTSecret

@@ -197,7 +197,7 @@ func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql
 		ActualCommission: cfg.Commission.String(),
 		ActualSlippage:  cfg.Slippage.String(),
 		ActualLeverage:  fmt.Sprintf("%d", cfg.Leverage),
-		TradeDirection:  "both",
+		TradeDirection:  tradeDirectionToString(params.tradeDir),
 	}
 	if cfg.StrictMode {
 		resp.ExecutionAssumptions.SignalTiming = "next_bar_open"

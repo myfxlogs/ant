@@ -3,10 +3,10 @@ package strategy
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -120,15 +120,21 @@ func (s *StrategyExecutionServer) syncMarketplacePerformance(ctx context.Context
 	m := result.GetMetrics()
 	// Use total_pnl_absolute (correct absolute PnL), fall back to total_return percentage.
 	pnlStr := m.GetTotalPnlAbsolute()
-	pnlF, _ := strconv.ParseFloat(pnlStr, 64)
-	if pnlF == 0 {
-		pnlF, _ = strconv.ParseFloat(m.GetTotalReturn(), 64) // legacy: percentage as proxy
+	if pnlStr == "" {
+		pnlStr = m.GetTotalReturn()
 	}
-	winRateF, _ := strconv.ParseFloat(m.GetWinRate(), 64)
-	_, err := s.backtestRepo.DB().Exec(ctx,
+	pnl, err := decimal.NewFromString(pnlStr)
+	if err != nil {
+		pnl = decimal.Zero
+	}
+	winRate, err := decimal.NewFromString(m.GetWinRate())
+	if err != nil {
+		winRate = decimal.Zero
+	}
+	_, err = s.backtestRepo.DB().Exec(ctx,
 		`UPDATE marketplace_strategies SET win_rate = $1, total_pnl = $2, updated_at = now()
 		 WHERE strategy_id = $3`,
-		winRateF, pnlF, *run.TemplateID,
+		winRate.String(), pnl.String(), *run.TemplateID,
 	)
 	if err != nil {
 		s.log.Debug("marketplace sync: template not published or update failed",

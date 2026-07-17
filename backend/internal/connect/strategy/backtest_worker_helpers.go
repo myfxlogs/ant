@@ -1,6 +1,7 @@
 package strategy
 
 import (
+	"log"
 	"strconv"
 
 	"github.com/shopspring/decimal"
@@ -29,6 +30,7 @@ func parseFloat64(s string) float64 {
 func parseDecimal(s string) decimal.Decimal {
 	d, err := decimal.NewFromString(s)
 	if err != nil {
+		log.Printf("parseDecimal: invalid value %q: %v", s, err)
 		return decimal.Zero
 	}
 	return d

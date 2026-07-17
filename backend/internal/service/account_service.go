@@ -15,6 +15,7 @@ import (
 	"go.uber.org/zap"
 
 	"alphaforge/internal/repository"
+	"alphaforge/internal/secrets"
 )
 
 // ErrAccountAlreadyBound is returned when an MT account is already bound to another user.
@@ -25,9 +26,10 @@ var ErrAccountPasswordMismatch = errors.New("old password does not match")
 
 // AccountService provides account CRUD and lifecycle operations.
 type AccountService struct {
-	db     *pgxpool.Pool
+	db      *pgxpool.Pool
 	queries *repository.Queries
-	log    *zap.Logger
+	sec     secrets.Client
+	log     *zap.Logger
 	// Snapshot/cache fields (used by lifecycle methods, wired by NewAccountService).
 	summaryMu          sync.RWMutex
 	summaryCache       map[string]*userSummaryCacheEntry
@@ -48,10 +50,11 @@ type accountSummaryItem struct {
 }
 
 // NewAccountService creates an account service backed by the given pool.
-func NewAccountService(db *pgxpool.Pool) *AccountService {
+func NewAccountService(db *pgxpool.Pool, sec secrets.Client) *AccountService {
 	return &AccountService{
 		db:                db,
 		queries:           repository.New(db),
+		sec:               sec,
 		summaryCache:      make(map[string]*userSummaryCacheEntry),
 		snapshotThrottle:  make(map[string]time.Time),
 	}
@@ -138,13 +141,21 @@ func (s *AccountService) BeginTx(ctx context.Context) (pgx.Tx, error) {
 }
 
 // CreateAccountTx inserts a new MT account row within a transaction.
+// The password is encrypted via secrets.Client before storage.
 func (s *AccountService) CreateAccountTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID, login, password, mtType, brokerCompany, brokerServer, brokerHost string) (string, error) {
+	if s.sec == nil {
+		return "", fmt.Errorf("service: create account: secrets client not configured")
+	}
+	encPwd, err := s.sec.Encrypt(ctx, secrets.PurposeMTPassword, []byte(password))
+	if err != nil {
+		return "", fmt.Errorf("service: create account: encrypt password: %w", err)
+	}
 	var id string
-	err := tx.QueryRow(ctx, `
-		INSERT INTO mt_accounts (user_id, login, password, mt_type, broker_company, broker_server, broker_host, account_status)
+	err = tx.QueryRow(ctx, `
+		INSERT INTO mt_accounts (user_id, login, password_encrypted, mt_type, broker_company, broker_server, broker_host, account_status)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		RETURNING id::text
-	`, userID, login, password, mtType, brokerCompany, brokerServer, brokerHost, string(StatusConnecting)).Scan(&id)
+	`, userID, login, encPwd, mtType, brokerCompany, brokerServer, brokerHost, string(StatusConnecting)).Scan(&id)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
@@ -195,7 +206,7 @@ func (s *AccountService) UpdateAccount(ctx context.Context, userID uuid.UUID, id
 // DeleteAccount soft-deletes an MT account by setting deleted_at.
 func (s *AccountService) DeleteAccount(ctx context.Context, userID uuid.UUID, id string) error {
 	tag, err := s.db.Exec(ctx,
-		`UPDATE mt_accounts SET deleted_at = NOW(), account_status = 'disconnected', password = '' WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL`,
+		`UPDATE mt_accounts SET deleted_at = NOW(), account_status = 'disconnected', password_encrypted = NULL WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL`,
 		id, userID)
 	if err != nil {
 		return fmt.Errorf("service: delete account: %w", err)
@@ -211,6 +222,7 @@ func (s *AccountService) DeleteAccount(ctx context.Context, userID uuid.UUID, id
 // ── Account Info ──
 
 // GetAccountCredentials returns the credentials needed for MT password verification.
+// Does NOT return the decrypted password — callers verify against the broker directly.
 func (s *AccountService) GetAccountCredentials(ctx context.Context, userID uuid.UUID, id string) (*AccountCredentials, error) {
 	pgID, err := stringToPgUUID(id)
 	if err != nil {
@@ -333,6 +345,78 @@ func (s *AccountService) UserOwnsAccount(ctx context.Context, userID, accountID 
 		return false, fmt.Errorf("service: user owns account: invalid account id: %w", err)
 	}
 	return s.queries.UserOwnsAccount(ctx, repository.UserOwnsAccountParams{ID: pgAccountID, UserID: pgUserID})
+}
+
+// GetDecryptedPassword returns the decrypted MT password for internal use (mdgateway connection).
+// The plaintext is never logged or persisted.
+func (s *AccountService) GetDecryptedPassword(ctx context.Context, accountID string) (string, error) {
+	if s.sec == nil {
+		return "", fmt.Errorf("service: get decrypted password: secrets client not configured")
+	}
+	var encPwd []byte
+	err := s.db.QueryRow(ctx,
+		`SELECT password_encrypted FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+		accountID).Scan(&encPwd)
+	if err != nil {
+		return "", fmt.Errorf("service: get decrypted password: %w", err)
+	}
+	if encPwd == nil {
+		return "", fmt.Errorf("service: get decrypted password: no encrypted password stored")
+	}
+	plain, err := s.sec.Decrypt(ctx, secrets.PurposeMTPassword, encPwd)
+	if err != nil {
+		return "", fmt.Errorf("service: get decrypted password: decrypt: %w", err)
+	}
+	return string(plain), nil
+}
+
+// BackfillPlaintextCredentials encrypts plaintext passwords for existing accounts.
+// Called once on startup to migrate legacy data before dropping plaintext columns.
+func (s *AccountService) BackfillPlaintextCredentials(ctx context.Context) (int, error) {
+	if s.sec == nil {
+		return 0, fmt.Errorf("service: backfill: secrets client not configured")
+	}
+	if s.log != nil {
+		s.log.Info("service: starting plaintext credential backfill")
+	}
+	rows, err := s.db.Query(ctx,
+		`SELECT id::text, password FROM mt_accounts
+		 WHERE password_encrypted IS NULL AND password IS NOT NULL AND password <> '' AND deleted_at IS NULL`)
+	if err != nil {
+		return 0, fmt.Errorf("service: backfill: query: %w", err)
+	}
+	defer rows.Close()
+	count := 0
+	for rows.Next() {
+		var id, plaintext string
+		if err := rows.Scan(&id, &plaintext); err != nil {
+			if s.log != nil {
+				s.log.Warn("service: backfill: scan failed", zap.Error(err))
+			}
+			continue
+		}
+		enc, err := s.sec.Encrypt(ctx, secrets.PurposeMTPassword, []byte(plaintext))
+		if err != nil {
+			if s.log != nil {
+				s.log.Error("service: backfill: encrypt failed", zap.String("account", id), zap.Error(err))
+			}
+			continue
+		}
+		_, err = s.db.Exec(ctx,
+			`UPDATE mt_accounts SET password_encrypted = $2 WHERE id = $1::uuid AND password_encrypted IS NULL`,
+			id, enc)
+		if err != nil {
+			if s.log != nil {
+				s.log.Error("service: backfill: update failed", zap.String("account", id), zap.Error(err))
+			}
+			continue
+		}
+		count++
+	}
+	if s.log != nil {
+		s.log.Info("service: plaintext credential backfill complete", zap.Int("migrated", count))
+	}
+	return count, rows.Err()
 }
 
 // GetUserAccountIDs returns all account IDs belonging to a user.

@@ -5,7 +5,7 @@ SELECT * FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL;
 SELECT * FROM mt_accounts WHERE user_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC;
 
 -- name: GetAccountCredentials :one
-SELECT login, password, mt_type, broker_host FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL;
+SELECT login, password_encrypted, mt_type, broker_host FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL;
 
 -- name: UserOwnsAccount :one
 SELECT EXISTS(SELECT 1 FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL) AS owns;

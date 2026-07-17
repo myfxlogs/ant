@@ -188,7 +188,7 @@ func newMtHubTestHarness(t *testing.T) *mtHubTestHarness {
 	}
 
 	// Build services.
-	accountSvc := service.NewAccountService(pool)
+	accountSvc := service.NewAccountService(pool, service.NewTestSecretsClient(t))
 	platformSvc := service.NewPlatformService(pool, accountSvc)
 
 	hub := mthub.NewHub()
@@ -433,7 +433,7 @@ func TestMtHub_OpenedOrdersEmptyForNewAccount(t *testing.T) {
 		t.Fatalf("insert test account: %v", err)
 	}
 
-	accountSvc := service.NewAccountService(pool)
+	accountSvc := service.NewAccountService(pool, service.NewTestSecretsClient(t))
 	platformSvc := service.NewPlatformService(pool, accountSvc)
 
 	hub := mthub.NewHub()

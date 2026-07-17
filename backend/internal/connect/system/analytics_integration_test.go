@@ -159,7 +159,7 @@ func buildTestAnalyticsServer(t *testing.T, pool *pgxpool.Pool, redisClient *gor
 	t.Helper()
 	log := zap.NewNop()
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
-	accountSvc := service.NewAccountService(pool)
+	accountSvc := service.NewAccountService(pool, service.NewTestSecretsClient(t))
 	platformSvc := service.NewPlatformService(pool, accountSvc)
 	var cache *service.AnalyticsCache
 	if redisClient != nil {

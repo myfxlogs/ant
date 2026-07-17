@@ -88,7 +88,7 @@ func (s *StrategyExecutionServer) fetchBars(ctx context.Context, run *repository
 // fetchBacktestKlines retrieves K-line data from ClickHouse and converts to proto format.
 func (s *StrategyExecutionServer) fetchBacktestKlines(ctx context.Context, run *repository.BacktestRun) ([]*antv1.ExecuteKlineBar, error) {
 	if s.marketDataRepo == nil || run.Symbol == "" || run.Timeframe == "" {
-		return nil, nil
+		return nil, fmt.Errorf("cannot fetch klines: marketDataRepo=%v symbol=%q timeframe=%q", s.marketDataRepo != nil, run.Symbol, run.Timeframe)
 	}
 	chBars, err := s.marketDataRepo.GetKlines(ctx, run.Symbol, "", run.Timeframe, run.FromTs, run.ToTs, 100000)
 	if err != nil {
