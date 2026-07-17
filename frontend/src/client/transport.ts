@@ -48,8 +48,11 @@ function procedureHint(req: unknown): { key: string; label: string } {
     url?: string;
     spec?: { procedure?: string };
   };
-  const label = String(r.service?.typeName || r.method?.name || '').trim();
-  const key = String(r.service?.typeName || r.method?.name || r.url || r.spec?.procedure || '').toLowerCase();
+  const svc = String(r.service?.typeName || '').trim();
+  const method = String(r.method?.name || '').trim();
+  const label = (svc && method ? `${svc}.${method}` : svc || method).trim();
+  const fallback = String(r.url || r.spec?.procedure || '').toLowerCase();
+  const key = (label || fallback).toLowerCase();
   return { key, label };
 }
 
@@ -77,7 +80,7 @@ const interceptors: Interceptor[] = [
   },
   (next) => async (req) => {
     const proc = procedureHint(req).key;
-    const isAuthFree = proc.includes('authservice') && (proc.includes('login') || proc.includes('register'));
+    const isAuthFree = proc.includes('authservice') && (proc.includes('login') || proc.includes('register') || proc.includes('refreshtoken'));
 
     // Proactive preflight: refresh if token is missing (page reload) or about to expire.
     // Always call ensureFreshToken() for non-auth requests so it can attempt

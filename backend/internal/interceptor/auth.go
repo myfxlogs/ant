@@ -42,6 +42,10 @@ func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 		procedure := req.Spec().Procedure
 		procLower := strings.ToLower(procedure)
 		if strings.HasSuffix(procLower, "/login") || strings.HasSuffix(procLower, "/register") ||
+			strings.HasSuffix(procLower, "/refreshtoken") ||
+			strings.HasSuffix(procLower, "/refreshtokenfromcookie") ||
+			strings.HasSuffix(procLower, "/verifyemail") ||
+			strings.HasSuffix(procLower, "/resendverification") ||
 			strings.HasSuffix(procLower, "/getsharedperformance") {
 			return next(ctx, req)
 		}

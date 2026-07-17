@@ -106,10 +106,11 @@ export async function ensureFreshToken(): Promise<string | null> {
   await waitForHydration();
 
   const current = useAuthStore.getState().accessToken;
+  const isAuth = useAuthStore.getState().isAuthenticated;
   if (!current) {
     // Page reload: user profile persisted but accessToken was not.
     // Attempt a cookie-based refresh to get a new token without a 401 round-trip.
-    if (useAuthStore.getState().isAuthenticated) {
+    if (isAuth) {
       return refreshAccessToken();
     }
     return null;
