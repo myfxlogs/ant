@@ -15,7 +15,6 @@ type MTAccount struct {
 	BrokerServer    string     `json:"broker_server" db:"broker_server"`
 	BrokerHost      string     `json:"broker_host" db:"broker_host"`
 	Login           string     `json:"login" db:"login"`
-	Password        string     `json:"-" db:"password"`
 	Alias           string     `json:"alias" db:"alias"`
 	Balance         decimal.Decimal    `json:"balance" db:"balance"`
 	Credit          decimal.Decimal    `json:"credit" db:"credit"`
@@ -29,7 +28,6 @@ type MTAccount struct {
 	AccountType     string     `json:"account_type" db:"account_type"`
 	IsInvestor      bool       `json:"is_investor" db:"is_investor"`
 	AccountStatus   string     `json:"account_status" db:"account_status"`
-	MTToken              string     `json:"-" db:"mt_token"`
 	BrokerMarginCallPct  decimal.Decimal    `json:"broker_margin_call_pct" db:"broker_margin_call_pct"`
 	BrokerStopOutPct     decimal.Decimal    `json:"broker_stop_out_pct" db:"broker_stop_out_pct"`
 	LastError            string     `json:"last_error" db:"last_error"`

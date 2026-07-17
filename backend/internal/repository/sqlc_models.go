@@ -16,7 +16,6 @@ type MtAccount struct {
 	BrokerServer               pgtype.Text
 	BrokerHost                 string
 	Login                      string
-	Password                   string
 	Alias                      pgtype.Text
 	Balance                    pgtype.Numeric
 	Credit                     pgtype.Numeric
@@ -29,7 +28,6 @@ type MtAccount struct {
 	AccountMethod              pgtype.Text
 	IsInvestor                 pgtype.Bool
 	AccountStatus              string
-	MtToken                    pgtype.Text
 	LastError                  pgtype.Text
 	LastConnectedAt            pgtype.Timestamp
 	LastCheckedAt              pgtype.Timestamp

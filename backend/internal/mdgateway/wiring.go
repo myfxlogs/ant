@@ -11,6 +11,7 @@ import (
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"alphaforge/internal/mdgateway/backfiller"
 	"alphaforge/internal/repository"
+	"alphaforge/internal/secrets"
 )
 
 // loadFinalizedBars queries the MarketDataStore for existing close_ts values per key.
@@ -30,11 +31,11 @@ func loadFinalizedBars(ctx context.Context, store repository.MarketDataStore, lo
 }
 
 // loadAccountConfigs queries PG for active accounts.
-// Passwords are stored as plaintext per user requirement.
+// Passwords are encrypted in DB; decrypted here via secrets client.
 func loadAccountConfigs(ctx context.Context, deps RunnerDeps) ([]mdtick.AccountConfig, error) {
 	rows, err := deps.PG.Query(ctx, `
 		SELECT id, user_id, platform, broker, mtapi_host, mtapi_port,
-		       login, password, COALESCE(mt_token, ''), broker_host, server,
+		       login, password_encrypted, COALESCE(mtapi_token_encrypted, '\x'::bytea), broker_host, server,
 		       canonical_subscribed_symbols
 		FROM mt_accounts_v2 WHERE is_active = true
 	`)
@@ -47,17 +48,32 @@ func loadAccountConfigs(ctx context.Context, deps RunnerDeps) ([]mdtick.AccountC
 	for rows.Next() {
 		var (
 			id, userID, platform, broker, mtapiHost, mtapiPort, login, brokerHost, server string
-			password, mtToken string
+			passwordEnc, mtTokenEnc []byte
 			symbols                     []string
 		)
 		if err := rows.Scan(&id, &userID, &platform, &broker, &mtapiHost, &mtapiPort,
-			&login, &password, &mtToken, &brokerHost, &server, &symbols); err != nil {
+			&login, &passwordEnc, &mtTokenEnc, &brokerHost, &server, &symbols); err != nil {
 			deps.Log.Error("mdgateway: scan account config failed, skipping row", zap.Error(err))
 			continue
 		}
 
-		// password and mt_token are plaintext from DB.
-		mtapiToken := mtToken
+		var password, mtapiToken string
+		if len(passwordEnc) > 0 && deps.Secrets != nil {
+			plain, err := deps.Secrets.Decrypt(ctx, secrets.PurposeMTPassword, passwordEnc)
+			if err != nil {
+				deps.Log.Error("mdgateway: decrypt password failed, skipping account", zap.String("account", id), zap.Error(err))
+				continue
+			}
+			password = string(plain)
+		}
+		if len(mtTokenEnc) > 0 && deps.Secrets != nil {
+			plain, err := deps.Secrets.Decrypt(ctx, secrets.PurposeMTAPIToken, mtTokenEnc)
+			if err != nil {
+				deps.Log.Warn("mdgateway: decrypt mtapi token failed", zap.String("account", id), zap.Error(err))
+			} else {
+				mtapiToken = string(plain)
+			}
+		}
 
 		cfgs = append(cfgs, mdtick.AccountConfig{
 			AccountID:  id,
@@ -175,21 +191,35 @@ func (c *storeMaxCloseTs) MaxCloseTs(ctx context.Context, broker, canonical, per
 
 // loadSingleAccountConfig queries PG for a single account by ID.
 // Returns nil if not found or inactive.
-func loadSingleAccountConfig(ctx context.Context, pg *pgxpool.Pool, accountID string) (*mdtick.AccountConfig, error) {
+func loadSingleAccountConfig(ctx context.Context, pg *pgxpool.Pool, sec secrets.Client, accountID string) (*mdtick.AccountConfig, error) {
 	var (
 		id, userID, platform, broker, mtapiHost, mtapiPort, login, brokerHost, server string
-		password, mtToken string
+		passwordEnc, mtTokenEnc []byte
 		symbols           []string
 	)
 	err := pg.QueryRow(ctx, `
 		SELECT id, user_id, platform, broker, mtapi_host, mtapi_port,
-		       login, password, COALESCE(mt_token, ''), broker_host, server,
+		       login, password_encrypted, COALESCE(mtapi_token_encrypted, '\x'::bytea), broker_host, server,
 		       canonical_subscribed_symbols
 		FROM mt_accounts_v2 WHERE id = $1 AND is_active = true
 	`, accountID).Scan(&id, &userID, &platform, &broker, &mtapiHost, &mtapiPort,
-		&login, &password, &mtToken, &brokerHost, &server, &symbols)
+		&login, &passwordEnc, &mtTokenEnc, &brokerHost, &server, &symbols)
 	if err != nil {
 		return nil, err
+	}
+	var password, mtapiToken string
+	if len(passwordEnc) > 0 && sec != nil {
+		plain, err := sec.Decrypt(ctx, secrets.PurposeMTPassword, passwordEnc)
+		if err != nil {
+			return nil, fmt.Errorf("decrypt password: %w", err)
+		}
+		password = string(plain)
+	}
+	if len(mtTokenEnc) > 0 && sec != nil {
+		plain, err := sec.Decrypt(ctx, secrets.PurposeMTAPIToken, mtTokenEnc)
+		if err == nil {
+			mtapiToken = string(plain)
+		}
 	}
 	return &mdtick.AccountConfig{
 		AccountID:  id,
@@ -202,7 +232,7 @@ func loadSingleAccountConfig(ctx context.Context, pg *pgxpool.Pool, accountID st
 		BrokerHost: brokerHost,
 		MtapiHost:  mtapiHost,
 		MtapiPort:  mtapiPort,
-		MtapiToken: mtToken,
+		MtapiToken: mtapiToken,
 		Symbols:    symbols,
 	}, nil
 }

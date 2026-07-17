@@ -372,9 +372,23 @@ func (s *AccountService) GetDecryptedPassword(ctx context.Context, accountID str
 
 // BackfillPlaintextCredentials encrypts plaintext passwords for existing accounts.
 // Called once on startup to migrate legacy data before dropping plaintext columns.
+// No-ops if the plaintext password column has already been dropped.
 func (s *AccountService) BackfillPlaintextCredentials(ctx context.Context) (int, error) {
 	if s.sec == nil {
 		return 0, fmt.Errorf("service: backfill: secrets client not configured")
+	}
+	// Check if the password column still exists before querying it.
+	var hasCol bool
+	err := s.db.QueryRow(ctx,
+		`SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name = 'mt_accounts' AND column_name = 'password')`).Scan(&hasCol)
+	if err != nil {
+		return 0, fmt.Errorf("service: backfill: check column: %w", err)
+	}
+	if !hasCol {
+		if s.log != nil {
+			s.log.Info("service: plaintext credential backfill skipped (password column already dropped)")
+		}
+		return 0, nil
 	}
 	if s.log != nil {
 		s.log.Info("service: starting plaintext credential backfill")

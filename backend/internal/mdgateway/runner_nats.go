@@ -54,7 +54,7 @@ func startAccountEventSubscriber(ctx context.Context, deps RunnerDeps, mgr *Mana
 					zap.String("account", accountID))
 				return
 			}
-			cfg, err := loadSingleAccountConfig(ctx, deps.PG, accountID)
+			cfg, err := loadSingleAccountConfig(ctx, deps.PG, deps.Secrets, accountID)
 			if err != nil || cfg == nil {
 				log.Warn("mdgateway: load account config failed",
 					zap.String("account", accountID), zap.Error(err))
