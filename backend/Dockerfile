@@ -15,7 +15,7 @@ RUN if [ -n "$ALPINE_MIRROR" ]; then \
         sed -i "s|dl-cdn.alpinelinux.org|$ALPINE_MIRROR|g" /etc/apk/repositories; \
     fi && \
     apk update && \
-    apk add --no-cache git ca-certificates tzdata gcc musl-dev
+    apk add --no-cache git ca-certificates tzdata gcc musl-dev linux-headers
 
 COPY go.mod go.sum ./
 
