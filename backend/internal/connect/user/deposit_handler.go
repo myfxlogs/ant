@@ -112,6 +112,53 @@ func (s *DepositServer) ListManualReviewDeposits(ctx context.Context, req *conne
 	return connect.NewResponse(&antv1.ListManualReviewDepositsResponse{Deposits: items, Total: total}), nil
 }
 
+func (s *DepositServer) ListDepositAddresses(ctx context.Context, req *connect.Request[antv1.ListDepositAddressesRequest]) (*connect.Response[antv1.ListDepositAddressesResponse], error) {
+	if _, err := s.requireAdmin(ctx); err != nil {
+		return nil, err
+	}
+	page := int(req.Msg.Page)
+	if page < 1 {
+		page = 1
+	}
+	pageSize := int(req.Msg.PageSize)
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+	addrs, total, available, err := s.svc.ListDepositAddresses(ctx, req.Msg.Status, page, pageSize)
+	if err != nil {
+		s.log.Error("ListDepositAddresses", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	items := make([]*antv1.DepositAddress, len(addrs))
+	for i, a := range addrs {
+		items[i] = depositAddressToProto(&a)
+	}
+	return connect.NewResponse(&antv1.ListDepositAddressesResponse{
+		Addresses:       items,
+		Total:           total,
+		AvailableCount:  int32(available),
+	}), nil
+}
+
+func depositAddressToProto(a *model.DepositAddress) *antv1.DepositAddress {
+	out := &antv1.DepositAddress{
+		Id:              a.ID.String(),
+		Address:         a.Address,
+		DerivationIndex: int32(a.DerivationIndex),
+		Network:         a.Network,
+		Status:          a.Status,
+		HasReceivedUsdt: a.HasReceivedUSDT,
+		CreatedAt:       timestamppb.New(a.CreatedAt),
+	}
+	if a.UserID != nil {
+		out.UserId = a.UserID.String()
+	}
+	if a.AssignedAt != nil {
+		out.AssignedAt = timestamppb.New(*a.AssignedAt)
+	}
+	return out
+}
+
 // requireAdmin extracts the current user ID and verifies admin status.
 func (s *DepositServer) requireAdmin(ctx context.Context) (uuid.UUID, error) {
 	actorStr := interceptor.GetUserID(ctx)

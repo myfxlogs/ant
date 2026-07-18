@@ -15,6 +15,8 @@ service DepositService {
   rpc ListMyDeposits(ListMyDepositsRequest) returns (ListMyDepositsResponse);
   // Admin: list deposits requiring manual review.
   rpc ListManualReviewDeposits(ListManualReviewDepositsRequest) returns (ListManualReviewDepositsResponse);
+  // Admin: list all deposit addresses (assigned + available pool).
+  rpc ListDepositAddresses(ListDepositAddressesRequest) returns (ListDepositAddressesResponse);
 }
 
 message Deposit {
@@ -52,4 +54,28 @@ message ListManualReviewDepositsRequest {
 message ListManualReviewDepositsResponse {
   repeated Deposit deposits = 1;
   int64 total = 2;
+}
+
+message DepositAddress {
+  string id = 1;
+  string user_id = 2;          // empty if AVAILABLE
+  string address = 3;          // TRC20 Base58
+  int32 derivation_index = 4;
+  string network = 5;
+  string status = 6;           // AVAILABLE / ASSIGNED / RETIRED
+  bool has_received_usdt = 7;
+  google.protobuf.Timestamp assigned_at = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message ListDepositAddressesRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string status = 3;           // filter by status, empty = all
+}
+
+message ListDepositAddressesResponse {
+  repeated DepositAddress addresses = 1;
+  int64 total = 2;
+  int32 available_count = 3;   // total AVAILABLE in pool
 }

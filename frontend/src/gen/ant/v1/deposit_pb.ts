@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file deposit.proto.
  */
 export const file_deposit: GenFile = /*@__PURE__*/
-  fileDesc("Cg1kZXBvc2l0LnByb3RvEgZhbnQudjEiggIKB0RlcG9zaXQSCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIaChJkZXBvc2l0X2FkZHJlc3NfaWQYAyABKAkSDwoHdHhfaGFzaBgEIAEoCRIOCgZhbW91bnQYBSABKAkSFAoMYmxvY2tfbnVtYmVyGAYgASgDEhUKDWNvbmZpcm1hdGlvbnMYByABKAUSDgoGc3RhdHVzGAggASgJEjAKDGNvbmZpcm1lZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiGgoYR2V0RGVwb3NpdEFkZHJlc3NSZXF1ZXN0Ij0KGUdldERlcG9zaXRBZGRyZXNzUmVzcG9uc2USDwoHYWRkcmVzcxgBIAEoCRIPCgduZXR3b3JrGAIgASgJIjgKFUxpc3RNeURlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJKChZMaXN0TXlEZXBvc2l0c1Jlc3BvbnNlEiEKCGRlcG9zaXRzGAEgAygLMg8uYW50LnYxLkRlcG9zaXQSDQoFdG90YWwYAiABKAMiQgofTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJUCiBMaXN0TWFudWFsUmV2aWV3RGVwb3NpdHNSZXNwb25zZRIhCghkZXBvc2l0cxgBIAMoCzIPLmFudC52MS5EZXBvc2l0Eg0KBXRvdGFsGAIgASgDMqoCCg5EZXBvc2l0U2VydmljZRJYChFHZXREZXBvc2l0QWRkcmVzcxIgLmFudC52MS5HZXREZXBvc2l0QWRkcmVzc1JlcXVlc3QaIS5hbnQudjEuR2V0RGVwb3NpdEFkZHJlc3NSZXNwb25zZRJPCg5MaXN0TXlEZXBvc2l0cxIdLmFudC52MS5MaXN0TXlEZXBvc2l0c1JlcXVlc3QaHi5hbnQudjEuTGlzdE15RGVwb3NpdHNSZXNwb25zZRJtChhMaXN0TWFudWFsUmV2aWV3RGVwb3NpdHMSJy5hbnQudjEuTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzUmVxdWVzdBooLmFudC52MS5MaXN0TWFudWFsUmV2aWV3RGVwb3NpdHNSZXNwb25zZUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("Cg1kZXBvc2l0LnByb3RvEgZhbnQudjEiggIKB0RlcG9zaXQSCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIaChJkZXBvc2l0X2FkZHJlc3NfaWQYAyABKAkSDwoHdHhfaGFzaBgEIAEoCRIOCgZhbW91bnQYBSABKAkSFAoMYmxvY2tfbnVtYmVyGAYgASgDEhUKDWNvbmZpcm1hdGlvbnMYByABKAUSDgoGc3RhdHVzGAggASgJEjAKDGNvbmZpcm1lZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiGgoYR2V0RGVwb3NpdEFkZHJlc3NSZXF1ZXN0Ij0KGUdldERlcG9zaXRBZGRyZXNzUmVzcG9uc2USDwoHYWRkcmVzcxgBIAEoCRIPCgduZXR3b3JrGAIgASgJIjgKFUxpc3RNeURlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJKChZMaXN0TXlEZXBvc2l0c1Jlc3BvbnNlEiEKCGRlcG9zaXRzGAEgAygLMg8uYW50LnYxLkRlcG9zaXQSDQoFdG90YWwYAiABKAMiQgofTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJUCiBMaXN0TWFudWFsUmV2aWV3RGVwb3NpdHNSZXNwb25zZRIhCghkZXBvc2l0cxgBIAMoCzIPLmFudC52MS5EZXBvc2l0Eg0KBXRvdGFsGAIgASgDIvUBCg5EZXBvc2l0QWRkcmVzcxIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEg8KB2FkZHJlc3MYAyABKAkSGAoQZGVyaXZhdGlvbl9pbmRleBgEIAEoBRIPCgduZXR3b3JrGAUgASgJEg4KBnN0YXR1cxgGIAEoCRIZChFoYXNfcmVjZWl2ZWRfdXNkdBgHIAEoCBIvCgthc3NpZ25lZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiTgobTGlzdERlcG9zaXRBZGRyZXNzZXNSZXF1ZXN0EgwKBHBhZ2UYASABKAUSEQoJcGFnZV9zaXplGAIgASgFEg4KBnN0YXR1cxgDIAEoCSJxChxMaXN0RGVwb3NpdEFkZHJlc3Nlc1Jlc3BvbnNlEikKCWFkZHJlc3NlcxgBIAMoCzIWLmFudC52MS5EZXBvc2l0QWRkcmVzcxINCgV0b3RhbBgCIAEoAxIXCg9hdmFpbGFibGVfY291bnQYAyABKAUyjQMKDkRlcG9zaXRTZXJ2aWNlElgKEUdldERlcG9zaXRBZGRyZXNzEiAuYW50LnYxLkdldERlcG9zaXRBZGRyZXNzUmVxdWVzdBohLmFudC52MS5HZXREZXBvc2l0QWRkcmVzc1Jlc3BvbnNlEk8KDkxpc3RNeURlcG9zaXRzEh0uYW50LnYxLkxpc3RNeURlcG9zaXRzUmVxdWVzdBoeLmFudC52MS5MaXN0TXlEZXBvc2l0c1Jlc3BvbnNlEm0KGExpc3RNYW51YWxSZXZpZXdEZXBvc2l0cxInLmFudC52MS5MaXN0TWFudWFsUmV2aWV3RGVwb3NpdHNSZXF1ZXN0GiguYW50LnYxLkxpc3RNYW51YWxSZXZpZXdEZXBvc2l0c1Jlc3BvbnNlEmEKFExpc3REZXBvc2l0QWRkcmVzc2VzEiMuYW50LnYxLkxpc3REZXBvc2l0QWRkcmVzc2VzUmVxdWVzdBokLmFudC52MS5MaXN0RGVwb3NpdEFkZHJlc3Nlc1Jlc3BvbnNlQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.Deposit
@@ -208,6 +208,127 @@ export const ListManualReviewDepositsResponseSchema: GenMessage<ListManualReview
   messageDesc(file_deposit, 6);
 
 /**
+ * @generated from message ant.v1.DepositAddress
+ */
+export type DepositAddress = Message<"ant.v1.DepositAddress"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * empty if AVAILABLE
+   *
+   * @generated from field: string user_id = 2;
+   */
+  userId: string;
+
+  /**
+   * TRC20 Base58
+   *
+   * @generated from field: string address = 3;
+   */
+  address: string;
+
+  /**
+   * @generated from field: int32 derivation_index = 4;
+   */
+  derivationIndex: number;
+
+  /**
+   * @generated from field: string network = 5;
+   */
+  network: string;
+
+  /**
+   * AVAILABLE / ASSIGNED / RETIRED
+   *
+   * @generated from field: string status = 6;
+   */
+  status: string;
+
+  /**
+   * @generated from field: bool has_received_usdt = 7;
+   */
+  hasReceivedUsdt: boolean;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp assigned_at = 8;
+   */
+  assignedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 9;
+   */
+  createdAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message ant.v1.DepositAddress.
+ * Use `create(DepositAddressSchema)` to create a new message.
+ */
+export const DepositAddressSchema: GenMessage<DepositAddress> = /*@__PURE__*/
+  messageDesc(file_deposit, 7);
+
+/**
+ * @generated from message ant.v1.ListDepositAddressesRequest
+ */
+export type ListDepositAddressesRequest = Message<"ant.v1.ListDepositAddressesRequest"> & {
+  /**
+   * @generated from field: int32 page = 1;
+   */
+  page: number;
+
+  /**
+   * @generated from field: int32 page_size = 2;
+   */
+  pageSize: number;
+
+  /**
+   * filter by status, empty = all
+   *
+   * @generated from field: string status = 3;
+   */
+  status: string;
+};
+
+/**
+ * Describes the message ant.v1.ListDepositAddressesRequest.
+ * Use `create(ListDepositAddressesRequestSchema)` to create a new message.
+ */
+export const ListDepositAddressesRequestSchema: GenMessage<ListDepositAddressesRequest> = /*@__PURE__*/
+  messageDesc(file_deposit, 8);
+
+/**
+ * @generated from message ant.v1.ListDepositAddressesResponse
+ */
+export type ListDepositAddressesResponse = Message<"ant.v1.ListDepositAddressesResponse"> & {
+  /**
+   * @generated from field: repeated ant.v1.DepositAddress addresses = 1;
+   */
+  addresses: DepositAddress[];
+
+  /**
+   * @generated from field: int64 total = 2;
+   */
+  total: bigint;
+
+  /**
+   * total AVAILABLE in pool
+   *
+   * @generated from field: int32 available_count = 3;
+   */
+  availableCount: number;
+};
+
+/**
+ * Describes the message ant.v1.ListDepositAddressesResponse.
+ * Use `create(ListDepositAddressesResponseSchema)` to create a new message.
+ */
+export const ListDepositAddressesResponseSchema: GenMessage<ListDepositAddressesResponse> = /*@__PURE__*/
+  messageDesc(file_deposit, 9);
+
+/**
  * DepositService manages USDT deposits via HD wallet.
  * Users get a personal TRC20 address; deposits are auto-confirmed by chain monitor.
  *
@@ -243,6 +364,16 @@ export const DepositService: GenService<{
     methodKind: "unary";
     input: typeof ListManualReviewDepositsRequestSchema;
     output: typeof ListManualReviewDepositsResponseSchema;
+  },
+  /**
+   * Admin: list all deposit addresses (assigned + available pool).
+   *
+   * @generated from rpc ant.v1.DepositService.ListDepositAddresses
+   */
+  listDepositAddresses: {
+    methodKind: "unary";
+    input: typeof ListDepositAddressesRequestSchema;
+    output: typeof ListDepositAddressesResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_deposit, 0);

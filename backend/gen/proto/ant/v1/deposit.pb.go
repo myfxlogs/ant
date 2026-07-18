@@ -434,6 +434,234 @@ func (x *ListManualReviewDepositsResponse) GetTotal() int64 {
 	return 0
 }
 
+type DepositAddress struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId          string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // empty if AVAILABLE
+	Address         string                 `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`             // TRC20 Base58
+	DerivationIndex int32                  `protobuf:"varint,4,opt,name=derivation_index,json=derivationIndex,proto3" json:"derivation_index,omitempty"`
+	Network         string                 `protobuf:"bytes,5,opt,name=network,proto3" json:"network,omitempty"`
+	Status          string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"` // AVAILABLE / ASSIGNED / RETIRED
+	HasReceivedUsdt bool                   `protobuf:"varint,7,opt,name=has_received_usdt,json=hasReceivedUsdt,proto3" json:"has_received_usdt,omitempty"`
+	AssignedAt      *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=assigned_at,json=assignedAt,proto3" json:"assigned_at,omitempty"`
+	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *DepositAddress) Reset() {
+	*x = DepositAddress{}
+	mi := &file_deposit_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DepositAddress) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DepositAddress) ProtoMessage() {}
+
+func (x *DepositAddress) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DepositAddress.ProtoReflect.Descriptor instead.
+func (*DepositAddress) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *DepositAddress) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *DepositAddress) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *DepositAddress) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *DepositAddress) GetDerivationIndex() int32 {
+	if x != nil {
+		return x.DerivationIndex
+	}
+	return 0
+}
+
+func (x *DepositAddress) GetNetwork() string {
+	if x != nil {
+		return x.Network
+	}
+	return ""
+}
+
+func (x *DepositAddress) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *DepositAddress) GetHasReceivedUsdt() bool {
+	if x != nil {
+		return x.HasReceivedUsdt
+	}
+	return false
+}
+
+func (x *DepositAddress) GetAssignedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.AssignedAt
+	}
+	return nil
+}
+
+func (x *DepositAddress) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+type ListDepositAddressesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"` // filter by status, empty = all
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListDepositAddressesRequest) Reset() {
+	*x = ListDepositAddressesRequest{}
+	mi := &file_deposit_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListDepositAddressesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListDepositAddressesRequest) ProtoMessage() {}
+
+func (x *ListDepositAddressesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListDepositAddressesRequest.ProtoReflect.Descriptor instead.
+func (*ListDepositAddressesRequest) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ListDepositAddressesRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListDepositAddressesRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListDepositAddressesRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type ListDepositAddressesResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Addresses      []*DepositAddress      `protobuf:"bytes,1,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Total          int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	AvailableCount int32                  `protobuf:"varint,3,opt,name=available_count,json=availableCount,proto3" json:"available_count,omitempty"` // total AVAILABLE in pool
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ListDepositAddressesResponse) Reset() {
+	*x = ListDepositAddressesResponse{}
+	mi := &file_deposit_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListDepositAddressesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListDepositAddressesResponse) ProtoMessage() {}
+
+func (x *ListDepositAddressesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListDepositAddressesResponse.ProtoReflect.Descriptor instead.
+func (*ListDepositAddressesResponse) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ListDepositAddressesResponse) GetAddresses() []*DepositAddress {
+	if x != nil {
+		return x.Addresses
+	}
+	return nil
+}
+
+func (x *ListDepositAddressesResponse) GetTotal() int64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *ListDepositAddressesResponse) GetAvailableCount() int32 {
+	if x != nil {
+		return x.AvailableCount
+	}
+	return 0
+}
+
 var File_deposit_proto protoreflect.FileDescriptor
 
 const file_deposit_proto_rawDesc = "" +
@@ -467,11 +695,32 @@ const file_deposit_proto_rawDesc = "" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"e\n" +
 	" ListManualReviewDepositsResponse\x12+\n" +
 	"\bdeposits\x18\x01 \x03(\v2\x0f.ant.v1.DepositR\bdeposits\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x03R\x05total2\xaa\x02\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\"\xd4\x02\n" +
+	"\x0eDepositAddress\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x18\n" +
+	"\aaddress\x18\x03 \x01(\tR\aaddress\x12)\n" +
+	"\x10derivation_index\x18\x04 \x01(\x05R\x0fderivationIndex\x12\x18\n" +
+	"\anetwork\x18\x05 \x01(\tR\anetwork\x12\x16\n" +
+	"\x06status\x18\x06 \x01(\tR\x06status\x12*\n" +
+	"\x11has_received_usdt\x18\a \x01(\bR\x0fhasReceivedUsdt\x12;\n" +
+	"\vassigned_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"assignedAt\x129\n" +
+	"\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"f\n" +
+	"\x1bListDepositAddressesRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\tR\x06status\"\x93\x01\n" +
+	"\x1cListDepositAddressesResponse\x124\n" +
+	"\taddresses\x18\x01 \x03(\v2\x16.ant.v1.DepositAddressR\taddresses\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\x12'\n" +
+	"\x0favailable_count\x18\x03 \x01(\x05R\x0eavailableCount2\x8d\x03\n" +
 	"\x0eDepositService\x12X\n" +
 	"\x11GetDepositAddress\x12 .ant.v1.GetDepositAddressRequest\x1a!.ant.v1.GetDepositAddressResponse\x12O\n" +
 	"\x0eListMyDeposits\x12\x1d.ant.v1.ListMyDepositsRequest\x1a\x1e.ant.v1.ListMyDepositsResponse\x12m\n" +
-	"\x18ListManualReviewDeposits\x12'.ant.v1.ListManualReviewDepositsRequest\x1a(.ant.v1.ListManualReviewDepositsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x18ListManualReviewDeposits\x12'.ant.v1.ListManualReviewDepositsRequest\x1a(.ant.v1.ListManualReviewDepositsResponse\x12a\n" +
+	"\x14ListDepositAddresses\x12#.ant.v1.ListDepositAddressesRequest\x1a$.ant.v1.ListDepositAddressesResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_deposit_proto_rawDescOnce sync.Once
@@ -485,7 +734,7 @@ func file_deposit_proto_rawDescGZIP() []byte {
 	return file_deposit_proto_rawDescData
 }
 
-var file_deposit_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_deposit_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_deposit_proto_goTypes = []any{
 	(*Deposit)(nil),                          // 0: ant.v1.Deposit
 	(*GetDepositAddressRequest)(nil),         // 1: ant.v1.GetDepositAddressRequest
@@ -494,24 +743,32 @@ var file_deposit_proto_goTypes = []any{
 	(*ListMyDepositsResponse)(nil),           // 4: ant.v1.ListMyDepositsResponse
 	(*ListManualReviewDepositsRequest)(nil),  // 5: ant.v1.ListManualReviewDepositsRequest
 	(*ListManualReviewDepositsResponse)(nil), // 6: ant.v1.ListManualReviewDepositsResponse
-	(*timestamppb.Timestamp)(nil),            // 7: google.protobuf.Timestamp
+	(*DepositAddress)(nil),                   // 7: ant.v1.DepositAddress
+	(*ListDepositAddressesRequest)(nil),      // 8: ant.v1.ListDepositAddressesRequest
+	(*ListDepositAddressesResponse)(nil),     // 9: ant.v1.ListDepositAddressesResponse
+	(*timestamppb.Timestamp)(nil),            // 10: google.protobuf.Timestamp
 }
 var file_deposit_proto_depIdxs = []int32{
-	7, // 0: ant.v1.Deposit.confirmed_at:type_name -> google.protobuf.Timestamp
-	7, // 1: ant.v1.Deposit.created_at:type_name -> google.protobuf.Timestamp
-	0, // 2: ant.v1.ListMyDepositsResponse.deposits:type_name -> ant.v1.Deposit
-	0, // 3: ant.v1.ListManualReviewDepositsResponse.deposits:type_name -> ant.v1.Deposit
-	1, // 4: ant.v1.DepositService.GetDepositAddress:input_type -> ant.v1.GetDepositAddressRequest
-	3, // 5: ant.v1.DepositService.ListMyDeposits:input_type -> ant.v1.ListMyDepositsRequest
-	5, // 6: ant.v1.DepositService.ListManualReviewDeposits:input_type -> ant.v1.ListManualReviewDepositsRequest
-	2, // 7: ant.v1.DepositService.GetDepositAddress:output_type -> ant.v1.GetDepositAddressResponse
-	4, // 8: ant.v1.DepositService.ListMyDeposits:output_type -> ant.v1.ListMyDepositsResponse
-	6, // 9: ant.v1.DepositService.ListManualReviewDeposits:output_type -> ant.v1.ListManualReviewDepositsResponse
-	7, // [7:10] is the sub-list for method output_type
-	4, // [4:7] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	10, // 0: ant.v1.Deposit.confirmed_at:type_name -> google.protobuf.Timestamp
+	10, // 1: ant.v1.Deposit.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 2: ant.v1.ListMyDepositsResponse.deposits:type_name -> ant.v1.Deposit
+	0,  // 3: ant.v1.ListManualReviewDepositsResponse.deposits:type_name -> ant.v1.Deposit
+	10, // 4: ant.v1.DepositAddress.assigned_at:type_name -> google.protobuf.Timestamp
+	10, // 5: ant.v1.DepositAddress.created_at:type_name -> google.protobuf.Timestamp
+	7,  // 6: ant.v1.ListDepositAddressesResponse.addresses:type_name -> ant.v1.DepositAddress
+	1,  // 7: ant.v1.DepositService.GetDepositAddress:input_type -> ant.v1.GetDepositAddressRequest
+	3,  // 8: ant.v1.DepositService.ListMyDeposits:input_type -> ant.v1.ListMyDepositsRequest
+	5,  // 9: ant.v1.DepositService.ListManualReviewDeposits:input_type -> ant.v1.ListManualReviewDepositsRequest
+	8,  // 10: ant.v1.DepositService.ListDepositAddresses:input_type -> ant.v1.ListDepositAddressesRequest
+	2,  // 11: ant.v1.DepositService.GetDepositAddress:output_type -> ant.v1.GetDepositAddressResponse
+	4,  // 12: ant.v1.DepositService.ListMyDeposits:output_type -> ant.v1.ListMyDepositsResponse
+	6,  // 13: ant.v1.DepositService.ListManualReviewDeposits:output_type -> ant.v1.ListManualReviewDepositsResponse
+	9,  // 14: ant.v1.DepositService.ListDepositAddresses:output_type -> ant.v1.ListDepositAddressesResponse
+	11, // [11:15] is the sub-list for method output_type
+	7,  // [7:11] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_deposit_proto_init() }
@@ -525,7 +782,7 @@ func file_deposit_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_deposit_proto_rawDesc), len(file_deposit_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

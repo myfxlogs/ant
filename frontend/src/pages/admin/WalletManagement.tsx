@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import {
-  Card, Table, Input, Button, Select, InputNumber, message, Space, Tag, Descriptions, Modal, Typography
+  Card, Table, Input, Button, Select, InputNumber, message, Space, Tag, Descriptions, Modal, Typography, Tabs
 } from 'antd';
 import { WalletOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
+import DepositAddressesTab from './DepositAddressesTab';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { walletApi } from '@/client/wallet';
@@ -118,6 +119,14 @@ export default function WalletManagement() {
         <WalletOutlined /> {t('admin.wallet.title', { defaultValue: 'Wallet Management' })}
       </Title>
 
+      <Tabs
+        defaultActiveKey="wallets"
+        items={[
+          {
+            key: 'wallets',
+            label: t('admin.wallet.tabWallets', { defaultValue: 'User Wallets' }),
+            children: (
+              <>
       <Card size="small" title={t('admin.wallet.userList', { defaultValue: 'User List' })}>
         <Input
           prefix={<SearchOutlined />}
@@ -228,6 +237,16 @@ export default function WalletManagement() {
           />
         </Space>
       </Modal>
+              </>
+            ),
+          },
+          {
+            key: 'deposit-addresses',
+            label: t('admin.wallet.tabDepositAddresses', { defaultValue: 'Deposit Addresses' }),
+            children: <DepositAddressesTab />,
+          },
+        ]}
+      />
     </div>
   );
 }

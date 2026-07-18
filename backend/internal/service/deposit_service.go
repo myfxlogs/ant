@@ -75,6 +75,20 @@ func (s *DepositService) ListManualReviewDeposits(ctx context.Context, page, pag
 	return s.depositRepo.ListManualReview(ctx, page, pageSize)
 }
 
+// ListDepositAddresses returns paginated deposit addresses with pool stats (admin).
+func (s *DepositService) ListDepositAddresses(ctx context.Context, status string, page, pageSize int) ([]model.DepositAddress, int64, int, error) {
+	addrs, total, err := s.addrRepo.ListAllAddresses(ctx, status, page, pageSize)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+	available, err := s.addrRepo.CountAvailable(ctx)
+	if err != nil {
+		s.log.Warn("deposit service: count available", zap.Error(err))
+		available = 0
+	}
+	return addrs, total, available, nil
+}
+
 // ConfirmDeposit creates a deposit record and credits the user's wallet atomically.
 // Called by the chain monitor after on-chain verification.
 func (s *DepositService) ConfirmDeposit(ctx context.Context, userID uuid.UUID, addrID uuid.UUID, txHash string, amount string, blockNumber int64, confirmations int) error {

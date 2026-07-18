@@ -206,4 +206,64 @@ func (r *DepositAddressRepository) MarkReceivedUSDT(ctx context.Context, id uuid
 	return nil
 }
 
+// ListAllAddresses returns paginated deposit addresses with optional status filter.
+func (r *DepositAddressRepository) ListAllAddresses(ctx context.Context, status string, page, pageSize int) ([]model.DepositAddress, int64, error) {
+	offset := (page - 1) * pageSize
+	if status != "" {
+		var total int64
+		err := r.db.QueryRow(ctx,
+			`SELECT count(*) FROM user_deposit_addresses WHERE status = $1`, status).Scan(&total)
+		if err != nil {
+			return nil, 0, fmt.Errorf("deposit address repo: count all: %w", err)
+		}
+		rows, err := r.db.Query(ctx, `
+			SELECT id, user_id, address, derivation_index, encrypted_privkey,
+			       network, status, has_received_usdt, created_at, updated_at, assigned_at
+			FROM user_deposit_addresses
+			WHERE status = $1
+			ORDER BY derivation_index
+			LIMIT $2 OFFSET $3
+		`, status, pageSize, offset)
+		if err != nil {
+			return nil, 0, fmt.Errorf("deposit address repo: list all: %w", err)
+		}
+		defer rows.Close()
+		return scanAddresses(rows, total)
+	}
+
+	var total int64
+	err := r.db.QueryRow(ctx,
+		`SELECT count(*) FROM user_deposit_addresses`).Scan(&total)
+	if err != nil {
+		return nil, 0, fmt.Errorf("deposit address repo: count all: %w", err)
+	}
+	rows, err := r.db.Query(ctx, `
+		SELECT id, user_id, address, derivation_index, encrypted_privkey,
+		       network, status, has_received_usdt, created_at, updated_at, assigned_at
+		FROM user_deposit_addresses
+		ORDER BY derivation_index
+		LIMIT $1 OFFSET $2
+	`, pageSize, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("deposit address repo: list all: %w", err)
+	}
+	defer rows.Close()
+	return scanAddresses(rows, total)
+}
+
+func scanAddresses(rows pgx.Rows, total int64) ([]model.DepositAddress, int64, error) {
+	var addrs []model.DepositAddress
+	for rows.Next() {
+		var a model.DepositAddress
+		if err := rows.Scan(
+			&a.ID, &a.UserID, &a.Address, &a.DerivationIndex, &a.EncryptedPrivkey,
+			&a.Network, &a.Status, &a.HasReceivedUSDT, &a.CreatedAt, &a.UpdatedAt, &a.AssignedAt,
+		); err != nil {
+			return nil, 0, fmt.Errorf("deposit address repo: scan: %w", err)
+		}
+		addrs = append(addrs, a)
+	}
+	return addrs, total, rows.Err()
+}
+
 var ErrAddressPoolEmpty = errors.New("address pool empty: no available addresses")
