@@ -33,40 +33,25 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// DepositServiceCreateDepositProcedure is the fully-qualified name of the DepositService's
-	// CreateDeposit RPC.
-	DepositServiceCreateDepositProcedure = "/ant.v1.DepositService/CreateDeposit"
+	// DepositServiceGetDepositAddressProcedure is the fully-qualified name of the DepositService's
+	// GetDepositAddress RPC.
+	DepositServiceGetDepositAddressProcedure = "/ant.v1.DepositService/GetDepositAddress"
 	// DepositServiceListMyDepositsProcedure is the fully-qualified name of the DepositService's
 	// ListMyDeposits RPC.
 	DepositServiceListMyDepositsProcedure = "/ant.v1.DepositService/ListMyDeposits"
-	// DepositServiceGetDepositInfoProcedure is the fully-qualified name of the DepositService's
-	// GetDepositInfo RPC.
-	DepositServiceGetDepositInfoProcedure = "/ant.v1.DepositService/GetDepositInfo"
-	// DepositServiceListDepositsProcedure is the fully-qualified name of the DepositService's
-	// ListDeposits RPC.
-	DepositServiceListDepositsProcedure = "/ant.v1.DepositService/ListDeposits"
-	// DepositServiceApproveDepositProcedure is the fully-qualified name of the DepositService's
-	// ApproveDeposit RPC.
-	DepositServiceApproveDepositProcedure = "/ant.v1.DepositService/ApproveDeposit"
-	// DepositServiceRejectDepositProcedure is the fully-qualified name of the DepositService's
-	// RejectDeposit RPC.
-	DepositServiceRejectDepositProcedure = "/ant.v1.DepositService/RejectDeposit"
+	// DepositServiceListManualReviewDepositsProcedure is the fully-qualified name of the
+	// DepositService's ListManualReviewDeposits RPC.
+	DepositServiceListManualReviewDepositsProcedure = "/ant.v1.DepositService/ListManualReviewDeposits"
 )
 
 // DepositServiceClient is a client for the ant.v1.DepositService service.
 type DepositServiceClient interface {
-	// User: create a deposit request.
-	CreateDeposit(context.Context, *connect.Request[v1.CreateDepositRequest]) (*connect.Response[v1.CreateDepositResponse], error)
-	// User: list own deposit history.
+	// User: get or claim a deposit address (idempotent).
+	GetDepositAddress(context.Context, *connect.Request[v1.GetDepositAddressRequest]) (*connect.Response[v1.GetDepositAddressResponse], error)
+	// User: list own deposit history (auto-confirmed by chain monitor).
 	ListMyDeposits(context.Context, *connect.Request[v1.ListMyDepositsRequest]) (*connect.Response[v1.ListMyDepositsResponse], error)
-	// User: get current USDT receiving address + network + exchange rate.
-	GetDepositInfo(context.Context, *connect.Request[v1.GetDepositInfoRequest]) (*connect.Response[v1.GetDepositInfoResponse], error)
-	// Admin: list all deposit requests (filterable by status).
-	ListDeposits(context.Context, *connect.Request[v1.ListDepositsRequest]) (*connect.Response[v1.ListDepositsResponse], error)
-	// Admin: approve a deposit request (credits user wallet).
-	ApproveDeposit(context.Context, *connect.Request[v1.ApproveDepositRequest]) (*connect.Response[v1.ApproveDepositResponse], error)
-	// Admin: reject a deposit request.
-	RejectDeposit(context.Context, *connect.Request[v1.RejectDepositRequest]) (*connect.Response[v1.RejectDepositResponse], error)
+	// Admin: list deposits requiring manual review.
+	ListManualReviewDeposits(context.Context, *connect.Request[v1.ListManualReviewDepositsRequest]) (*connect.Response[v1.ListManualReviewDepositsResponse], error)
 }
 
 // NewDepositServiceClient constructs a client for the ant.v1.DepositService service. By default, it
@@ -80,10 +65,10 @@ func NewDepositServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 	baseURL = strings.TrimRight(baseURL, "/")
 	depositServiceMethods := v1.File_deposit_proto.Services().ByName("DepositService").Methods()
 	return &depositServiceClient{
-		createDeposit: connect.NewClient[v1.CreateDepositRequest, v1.CreateDepositResponse](
+		getDepositAddress: connect.NewClient[v1.GetDepositAddressRequest, v1.GetDepositAddressResponse](
 			httpClient,
-			baseURL+DepositServiceCreateDepositProcedure,
-			connect.WithSchema(depositServiceMethods.ByName("CreateDeposit")),
+			baseURL+DepositServiceGetDepositAddressProcedure,
+			connect.WithSchema(depositServiceMethods.ByName("GetDepositAddress")),
 			connect.WithClientOptions(opts...),
 		),
 		listMyDeposits: connect.NewClient[v1.ListMyDepositsRequest, v1.ListMyDepositsResponse](
@@ -92,28 +77,10 @@ func NewDepositServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(depositServiceMethods.ByName("ListMyDeposits")),
 			connect.WithClientOptions(opts...),
 		),
-		getDepositInfo: connect.NewClient[v1.GetDepositInfoRequest, v1.GetDepositInfoResponse](
+		listManualReviewDeposits: connect.NewClient[v1.ListManualReviewDepositsRequest, v1.ListManualReviewDepositsResponse](
 			httpClient,
-			baseURL+DepositServiceGetDepositInfoProcedure,
-			connect.WithSchema(depositServiceMethods.ByName("GetDepositInfo")),
-			connect.WithClientOptions(opts...),
-		),
-		listDeposits: connect.NewClient[v1.ListDepositsRequest, v1.ListDepositsResponse](
-			httpClient,
-			baseURL+DepositServiceListDepositsProcedure,
-			connect.WithSchema(depositServiceMethods.ByName("ListDeposits")),
-			connect.WithClientOptions(opts...),
-		),
-		approveDeposit: connect.NewClient[v1.ApproveDepositRequest, v1.ApproveDepositResponse](
-			httpClient,
-			baseURL+DepositServiceApproveDepositProcedure,
-			connect.WithSchema(depositServiceMethods.ByName("ApproveDeposit")),
-			connect.WithClientOptions(opts...),
-		),
-		rejectDeposit: connect.NewClient[v1.RejectDepositRequest, v1.RejectDepositResponse](
-			httpClient,
-			baseURL+DepositServiceRejectDepositProcedure,
-			connect.WithSchema(depositServiceMethods.ByName("RejectDeposit")),
+			baseURL+DepositServiceListManualReviewDepositsProcedure,
+			connect.WithSchema(depositServiceMethods.ByName("ListManualReviewDeposits")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -121,17 +88,14 @@ func NewDepositServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 
 // depositServiceClient implements DepositServiceClient.
 type depositServiceClient struct {
-	createDeposit  *connect.Client[v1.CreateDepositRequest, v1.CreateDepositResponse]
-	listMyDeposits *connect.Client[v1.ListMyDepositsRequest, v1.ListMyDepositsResponse]
-	getDepositInfo *connect.Client[v1.GetDepositInfoRequest, v1.GetDepositInfoResponse]
-	listDeposits   *connect.Client[v1.ListDepositsRequest, v1.ListDepositsResponse]
-	approveDeposit *connect.Client[v1.ApproveDepositRequest, v1.ApproveDepositResponse]
-	rejectDeposit  *connect.Client[v1.RejectDepositRequest, v1.RejectDepositResponse]
+	getDepositAddress        *connect.Client[v1.GetDepositAddressRequest, v1.GetDepositAddressResponse]
+	listMyDeposits           *connect.Client[v1.ListMyDepositsRequest, v1.ListMyDepositsResponse]
+	listManualReviewDeposits *connect.Client[v1.ListManualReviewDepositsRequest, v1.ListManualReviewDepositsResponse]
 }
 
-// CreateDeposit calls ant.v1.DepositService.CreateDeposit.
-func (c *depositServiceClient) CreateDeposit(ctx context.Context, req *connect.Request[v1.CreateDepositRequest]) (*connect.Response[v1.CreateDepositResponse], error) {
-	return c.createDeposit.CallUnary(ctx, req)
+// GetDepositAddress calls ant.v1.DepositService.GetDepositAddress.
+func (c *depositServiceClient) GetDepositAddress(ctx context.Context, req *connect.Request[v1.GetDepositAddressRequest]) (*connect.Response[v1.GetDepositAddressResponse], error) {
+	return c.getDepositAddress.CallUnary(ctx, req)
 }
 
 // ListMyDeposits calls ant.v1.DepositService.ListMyDeposits.
@@ -139,40 +103,19 @@ func (c *depositServiceClient) ListMyDeposits(ctx context.Context, req *connect.
 	return c.listMyDeposits.CallUnary(ctx, req)
 }
 
-// GetDepositInfo calls ant.v1.DepositService.GetDepositInfo.
-func (c *depositServiceClient) GetDepositInfo(ctx context.Context, req *connect.Request[v1.GetDepositInfoRequest]) (*connect.Response[v1.GetDepositInfoResponse], error) {
-	return c.getDepositInfo.CallUnary(ctx, req)
-}
-
-// ListDeposits calls ant.v1.DepositService.ListDeposits.
-func (c *depositServiceClient) ListDeposits(ctx context.Context, req *connect.Request[v1.ListDepositsRequest]) (*connect.Response[v1.ListDepositsResponse], error) {
-	return c.listDeposits.CallUnary(ctx, req)
-}
-
-// ApproveDeposit calls ant.v1.DepositService.ApproveDeposit.
-func (c *depositServiceClient) ApproveDeposit(ctx context.Context, req *connect.Request[v1.ApproveDepositRequest]) (*connect.Response[v1.ApproveDepositResponse], error) {
-	return c.approveDeposit.CallUnary(ctx, req)
-}
-
-// RejectDeposit calls ant.v1.DepositService.RejectDeposit.
-func (c *depositServiceClient) RejectDeposit(ctx context.Context, req *connect.Request[v1.RejectDepositRequest]) (*connect.Response[v1.RejectDepositResponse], error) {
-	return c.rejectDeposit.CallUnary(ctx, req)
+// ListManualReviewDeposits calls ant.v1.DepositService.ListManualReviewDeposits.
+func (c *depositServiceClient) ListManualReviewDeposits(ctx context.Context, req *connect.Request[v1.ListManualReviewDepositsRequest]) (*connect.Response[v1.ListManualReviewDepositsResponse], error) {
+	return c.listManualReviewDeposits.CallUnary(ctx, req)
 }
 
 // DepositServiceHandler is an implementation of the ant.v1.DepositService service.
 type DepositServiceHandler interface {
-	// User: create a deposit request.
-	CreateDeposit(context.Context, *connect.Request[v1.CreateDepositRequest]) (*connect.Response[v1.CreateDepositResponse], error)
-	// User: list own deposit history.
+	// User: get or claim a deposit address (idempotent).
+	GetDepositAddress(context.Context, *connect.Request[v1.GetDepositAddressRequest]) (*connect.Response[v1.GetDepositAddressResponse], error)
+	// User: list own deposit history (auto-confirmed by chain monitor).
 	ListMyDeposits(context.Context, *connect.Request[v1.ListMyDepositsRequest]) (*connect.Response[v1.ListMyDepositsResponse], error)
-	// User: get current USDT receiving address + network + exchange rate.
-	GetDepositInfo(context.Context, *connect.Request[v1.GetDepositInfoRequest]) (*connect.Response[v1.GetDepositInfoResponse], error)
-	// Admin: list all deposit requests (filterable by status).
-	ListDeposits(context.Context, *connect.Request[v1.ListDepositsRequest]) (*connect.Response[v1.ListDepositsResponse], error)
-	// Admin: approve a deposit request (credits user wallet).
-	ApproveDeposit(context.Context, *connect.Request[v1.ApproveDepositRequest]) (*connect.Response[v1.ApproveDepositResponse], error)
-	// Admin: reject a deposit request.
-	RejectDeposit(context.Context, *connect.Request[v1.RejectDepositRequest]) (*connect.Response[v1.RejectDepositResponse], error)
+	// Admin: list deposits requiring manual review.
+	ListManualReviewDeposits(context.Context, *connect.Request[v1.ListManualReviewDepositsRequest]) (*connect.Response[v1.ListManualReviewDepositsResponse], error)
 }
 
 // NewDepositServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -182,10 +125,10 @@ type DepositServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewDepositServiceHandler(svc DepositServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	depositServiceMethods := v1.File_deposit_proto.Services().ByName("DepositService").Methods()
-	depositServiceCreateDepositHandler := connect.NewUnaryHandler(
-		DepositServiceCreateDepositProcedure,
-		svc.CreateDeposit,
-		connect.WithSchema(depositServiceMethods.ByName("CreateDeposit")),
+	depositServiceGetDepositAddressHandler := connect.NewUnaryHandler(
+		DepositServiceGetDepositAddressProcedure,
+		svc.GetDepositAddress,
+		connect.WithSchema(depositServiceMethods.ByName("GetDepositAddress")),
 		connect.WithHandlerOptions(opts...),
 	)
 	depositServiceListMyDepositsHandler := connect.NewUnaryHandler(
@@ -194,44 +137,20 @@ func NewDepositServiceHandler(svc DepositServiceHandler, opts ...connect.Handler
 		connect.WithSchema(depositServiceMethods.ByName("ListMyDeposits")),
 		connect.WithHandlerOptions(opts...),
 	)
-	depositServiceGetDepositInfoHandler := connect.NewUnaryHandler(
-		DepositServiceGetDepositInfoProcedure,
-		svc.GetDepositInfo,
-		connect.WithSchema(depositServiceMethods.ByName("GetDepositInfo")),
-		connect.WithHandlerOptions(opts...),
-	)
-	depositServiceListDepositsHandler := connect.NewUnaryHandler(
-		DepositServiceListDepositsProcedure,
-		svc.ListDeposits,
-		connect.WithSchema(depositServiceMethods.ByName("ListDeposits")),
-		connect.WithHandlerOptions(opts...),
-	)
-	depositServiceApproveDepositHandler := connect.NewUnaryHandler(
-		DepositServiceApproveDepositProcedure,
-		svc.ApproveDeposit,
-		connect.WithSchema(depositServiceMethods.ByName("ApproveDeposit")),
-		connect.WithHandlerOptions(opts...),
-	)
-	depositServiceRejectDepositHandler := connect.NewUnaryHandler(
-		DepositServiceRejectDepositProcedure,
-		svc.RejectDeposit,
-		connect.WithSchema(depositServiceMethods.ByName("RejectDeposit")),
+	depositServiceListManualReviewDepositsHandler := connect.NewUnaryHandler(
+		DepositServiceListManualReviewDepositsProcedure,
+		svc.ListManualReviewDeposits,
+		connect.WithSchema(depositServiceMethods.ByName("ListManualReviewDeposits")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/ant.v1.DepositService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case DepositServiceCreateDepositProcedure:
-			depositServiceCreateDepositHandler.ServeHTTP(w, r)
+		case DepositServiceGetDepositAddressProcedure:
+			depositServiceGetDepositAddressHandler.ServeHTTP(w, r)
 		case DepositServiceListMyDepositsProcedure:
 			depositServiceListMyDepositsHandler.ServeHTTP(w, r)
-		case DepositServiceGetDepositInfoProcedure:
-			depositServiceGetDepositInfoHandler.ServeHTTP(w, r)
-		case DepositServiceListDepositsProcedure:
-			depositServiceListDepositsHandler.ServeHTTP(w, r)
-		case DepositServiceApproveDepositProcedure:
-			depositServiceApproveDepositHandler.ServeHTTP(w, r)
-		case DepositServiceRejectDepositProcedure:
-			depositServiceRejectDepositHandler.ServeHTTP(w, r)
+		case DepositServiceListManualReviewDepositsProcedure:
+			depositServiceListManualReviewDepositsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -241,26 +160,14 @@ func NewDepositServiceHandler(svc DepositServiceHandler, opts ...connect.Handler
 // UnimplementedDepositServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedDepositServiceHandler struct{}
 
-func (UnimplementedDepositServiceHandler) CreateDeposit(context.Context, *connect.Request[v1.CreateDepositRequest]) (*connect.Response[v1.CreateDepositResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.CreateDeposit is not implemented"))
+func (UnimplementedDepositServiceHandler) GetDepositAddress(context.Context, *connect.Request[v1.GetDepositAddressRequest]) (*connect.Response[v1.GetDepositAddressResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.GetDepositAddress is not implemented"))
 }
 
 func (UnimplementedDepositServiceHandler) ListMyDeposits(context.Context, *connect.Request[v1.ListMyDepositsRequest]) (*connect.Response[v1.ListMyDepositsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.ListMyDeposits is not implemented"))
 }
 
-func (UnimplementedDepositServiceHandler) GetDepositInfo(context.Context, *connect.Request[v1.GetDepositInfoRequest]) (*connect.Response[v1.GetDepositInfoResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.GetDepositInfo is not implemented"))
-}
-
-func (UnimplementedDepositServiceHandler) ListDeposits(context.Context, *connect.Request[v1.ListDepositsRequest]) (*connect.Response[v1.ListDepositsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.ListDeposits is not implemented"))
-}
-
-func (UnimplementedDepositServiceHandler) ApproveDeposit(context.Context, *connect.Request[v1.ApproveDepositRequest]) (*connect.Response[v1.ApproveDepositResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.ApproveDeposit is not implemented"))
-}
-
-func (UnimplementedDepositServiceHandler) RejectDeposit(context.Context, *connect.Request[v1.RejectDepositRequest]) (*connect.Response[v1.RejectDepositResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.RejectDeposit is not implemented"))
+func (UnimplementedDepositServiceHandler) ListManualReviewDeposits(context.Context, *connect.Request[v1.ListManualReviewDepositsRequest]) (*connect.Response[v1.ListManualReviewDepositsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.ListManualReviewDeposits is not implemented"))
 }

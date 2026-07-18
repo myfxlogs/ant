@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"connectrpc.com/connect"
@@ -14,7 +13,6 @@ import (
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
 	"alphaforge/internal/interceptor"
 	"alphaforge/internal/model"
-	"alphaforge/internal/repository"
 	"alphaforge/internal/service"
 )
 
@@ -31,51 +29,38 @@ func NewDepositServer(svc *service.DepositService, platformSvc *service.Platform
 	return &DepositServer{svc: svc, platformSvc: platformSvc, log: log}
 }
 
-func depositToProto(d *model.DepositRequest) *antv1.DepositRequest {
-	p := &antv1.DepositRequest{
-		Id:        d.ID.String(),
-		UserId:    d.UserID.String(),
-		Amount:    d.Amount,
-		AmountUsd: d.AmountUSD,
-		Status:    d.Status,
-		CreatedAt: timestamppb.New(d.CreatedAt),
-		UpdatedAt: timestamppb.New(d.UpdatedAt),
+func depositToProto(d *model.Deposit) *antv1.Deposit {
+	out := &antv1.Deposit{
+		Id:               d.ID.String(),
+		UserId:           d.UserID.String(),
+		DepositAddressId: d.DepositAddressID.String(),
+		TxHash:           d.TxHash,
+		Amount:           d.Amount,
+		BlockNumber:      d.BlockNumber,
+		Confirmations:    int32(d.Confirmations),
+		Status:           d.Status,
+		CreatedAt:        timestamppb.New(d.CreatedAt),
 	}
-	if d.TxHash != nil {
-		p.TxHash = *d.TxHash
+	if d.ConfirmedAt != nil {
+		out.ConfirmedAt = timestamppb.New(*d.ConfirmedAt)
 	}
-	if d.ReviewerID != nil {
-		p.ReviewerId = d.ReviewerID.String()
-	}
-	if d.ReviewNote != nil {
-		p.ReviewNote = *d.ReviewNote
-	}
-	if d.ReviewedAt != nil {
-		p.ReviewedAt = timestamppb.New(*d.ReviewedAt)
-	}
-	if d.WalletTxID != nil {
-		p.WalletTxId = d.WalletTxID.String()
-	}
-	if d.UserEmail != nil {
-		p.UserEmail = *d.UserEmail
-	}
-	return p
+	return out
 }
 
-func (s *DepositServer) CreateDeposit(ctx context.Context, req *connect.Request[antv1.CreateDepositRequest]) (*connect.Response[antv1.CreateDepositResponse], error) {
+func (s *DepositServer) GetDepositAddress(ctx context.Context, _ *connect.Request[antv1.GetDepositAddressRequest]) (*connect.Response[antv1.GetDepositAddressResponse], error) {
 	uid, err := parseUserID(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if req.Msg.Amount == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("amount is required"))
-	}
-	dep, err := s.svc.CreateDeposit(ctx, uid, req.Msg.Amount, req.Msg.TxHash)
+	addr, network, err := s.svc.GetOrClaimAddress(ctx, uid)
 	if err != nil {
-		s.log.Error("CreateDeposit", zap.Error(err))
+		s.log.Error("GetDepositAddress", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&antv1.CreateDepositResponse{Deposit: depositToProto(dep)}), nil
+	return connect.NewResponse(&antv1.GetDepositAddressResponse{
+		Address: addr,
+		Network: network,
+	}), nil
 }
 
 func (s *DepositServer) ListMyDeposits(ctx context.Context, req *connect.Request[antv1.ListMyDepositsRequest]) (*connect.Response[antv1.ListMyDepositsResponse], error) {
@@ -96,27 +81,14 @@ func (s *DepositServer) ListMyDeposits(ctx context.Context, req *connect.Request
 		s.log.Error("ListMyDeposits", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	items := make([]*antv1.DepositRequest, len(deps))
+	items := make([]*antv1.Deposit, len(deps))
 	for i, d := range deps {
 		items[i] = depositToProto(&d)
 	}
 	return connect.NewResponse(&antv1.ListMyDepositsResponse{Deposits: items, Total: total}), nil
 }
 
-func (s *DepositServer) GetDepositInfo(ctx context.Context, _ *connect.Request[antv1.GetDepositInfoRequest]) (*connect.Response[antv1.GetDepositInfoResponse], error) {
-	addr, network, rate, err := s.svc.GetDepositInfo(ctx)
-	if err != nil {
-		s.log.Error("GetDepositInfo", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	return connect.NewResponse(&antv1.GetDepositInfoResponse{
-		ReceivingAddress: addr,
-		Network:          network,
-		ExchangeRate:     rate,
-	}), nil
-}
-
-func (s *DepositServer) ListDeposits(ctx context.Context, req *connect.Request[antv1.ListDepositsRequest]) (*connect.Response[antv1.ListDepositsResponse], error) {
+func (s *DepositServer) ListManualReviewDeposits(ctx context.Context, req *connect.Request[antv1.ListManualReviewDepositsRequest]) (*connect.Response[antv1.ListManualReviewDepositsResponse], error) {
 	if _, err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
@@ -128,62 +100,16 @@ func (s *DepositServer) ListDeposits(ctx context.Context, req *connect.Request[a
 	if pageSize < 1 || pageSize > 100 {
 		pageSize = 20
 	}
-	deps, total, err := s.svc.ListDeposits(ctx, page, pageSize, req.Msg.Status)
+	deps, total, err := s.svc.ListManualReviewDeposits(ctx, page, pageSize)
 	if err != nil {
-		s.log.Error("ListDeposits", zap.Error(err))
+		s.log.Error("ListManualReviewDeposits", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	items := make([]*antv1.DepositRequest, len(deps))
+	items := make([]*antv1.Deposit, len(deps))
 	for i, d := range deps {
 		items[i] = depositToProto(&d)
 	}
-	return connect.NewResponse(&antv1.ListDepositsResponse{Deposits: items, Total: total}), nil
-}
-
-func (s *DepositServer) ApproveDeposit(ctx context.Context, req *connect.Request[antv1.ApproveDepositRequest]) (*connect.Response[antv1.ApproveDepositResponse], error) {
-	reviewerID, err := s.requireAdmin(ctx)
-	if err != nil {
-		return nil, err
-	}
-	depositID, err := uuid.Parse(req.Msg.DepositId)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid deposit_id"))
-	}
-	dep, err := s.svc.ApproveDeposit(ctx, depositID, reviewerID, req.Msg.ReviewNote)
-	if err != nil {
-		if errors.Is(err, repository.ErrDepositAlreadyProcessed) {
-			return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("deposit already processed"))
-		}
-		if errors.Is(err, repository.ErrDepositNotFound) {
-			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("deposit not found"))
-		}
-		s.log.Error("ApproveDeposit", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	return connect.NewResponse(&antv1.ApproveDepositResponse{Deposit: depositToProto(dep)}), nil
-}
-
-func (s *DepositServer) RejectDeposit(ctx context.Context, req *connect.Request[antv1.RejectDepositRequest]) (*connect.Response[antv1.RejectDepositResponse], error) {
-	reviewerID, err := s.requireAdmin(ctx)
-	if err != nil {
-		return nil, err
-	}
-	depositID, err := uuid.Parse(req.Msg.DepositId)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid deposit_id"))
-	}
-	dep, err := s.svc.RejectDeposit(ctx, depositID, reviewerID, req.Msg.ReviewNote)
-	if err != nil {
-		if errors.Is(err, repository.ErrDepositAlreadyProcessed) {
-			return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("deposit already processed"))
-		}
-		if errors.Is(err, repository.ErrDepositNotFound) {
-			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("deposit not found"))
-		}
-		s.log.Error("RejectDeposit", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	return connect.NewResponse(&antv1.RejectDepositResponse{Deposit: depositToProto(dep)}), nil
+	return connect.NewResponse(&antv1.ListManualReviewDepositsResponse{Deposits: items, Total: total}), nil
 }
 
 // requireAdmin extracts the current user ID and verifies admin status.

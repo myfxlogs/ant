@@ -30,6 +30,7 @@
 | 0023 | AST 树遍历解释器 + MQL 源码为唯一真实来源 | Accepted |
 | 0024 | Agent-Native 策略平台 — 双前端编译 + Python Agent 层 | Accepted |
 | 0025 | Agent-Native 交互体验与自我进化设计 | Accepted |
+| 0026 | HD 钱包充值系统 — 每用户独立地址 + 自动到账确认 | Proposed |
 
 ## 编号规则
 

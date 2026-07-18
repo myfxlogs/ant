@@ -1,22 +1,19 @@
 import { useTranslation } from 'react-i18next';
-import { Card, Table, Tag, Typography, Descriptions, Button, Modal, Input, InputNumber, Alert, message, Tooltip } from 'antd';
-import { WalletOutlined, TransactionOutlined, PlusOutlined, CopyOutlined } from '@ant-design/icons';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Card, Table, Tag, Typography, Descriptions, Button, Alert, message, Tooltip, Spin } from 'antd';
+import { WalletOutlined, TransactionOutlined, CopyOutlined } from '@ant-design/icons';
+import { useQuery } from '@tanstack/react-query';
+import { QRCodeSVG } from 'qrcode.react';
 import { walletApi } from '@/client/wallet';
 import { depositApi } from '@/client/deposit';
 import { queryKeys } from '@/queries/queryKeys';
 import { StatusResult } from '@/components/common/StatusResult';
 import { formatAmount } from '@/utils/amount';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 export default function WalletPage() {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
-  const [depositModalOpen, setDepositModalOpen] = useState(false);
-  const [depositAmount, setDepositAmount] = useState<number | null>(null);
-  const [depositTxHash, setDepositTxHash] = useState('');
 
   const { data: wallet, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.wallet.all,
@@ -28,9 +25,9 @@ export default function WalletPage() {
     queryFn: () => walletApi.listTransactions(1, 50),
   });
 
-  const { data: depositInfo } = useQuery({
-    queryKey: queryKeys.deposit.info,
-    queryFn: () => depositApi.getDepositInfo(),
+  const { data: depositAddr, isLoading: addrLoading } = useQuery({
+    queryKey: queryKeys.deposit.address,
+    queryFn: () => depositApi.getDepositAddress(),
   });
 
   const { data: myDeposits } = useQuery({
@@ -38,23 +35,9 @@ export default function WalletPage() {
     queryFn: () => depositApi.listMyDeposits(1, 20),
   });
 
-  const createDepositMutation = useMutation({
-    mutationFn: () => depositApi.createDeposit(String(depositAmount || 0), depositTxHash),
-    onSuccess: () => {
-      message.success(t('wallet.deposit.success', { defaultValue: 'Deposit request submitted. Please wait for admin review.' }));
-      queryClient.invalidateQueries({ queryKey: queryKeys.deposit.myDeposits });
-      setDepositModalOpen(false);
-      setDepositAmount(null);
-      setDepositTxHash('');
-    },
-    onError: (err: Error) => {
-      message.error(err.message || t('wallet.deposit.failed', { defaultValue: 'Failed to submit deposit request.' }));
-    },
-  });
-
   const copyAddress = () => {
-    if (depositInfo?.receivingAddress) {
-      navigator.clipboard.writeText(depositInfo.receivingAddress);
+    if (depositAddr?.address) {
+      navigator.clipboard.writeText(depositAddr.address);
       message.success(t('wallet.deposit.addressCopied', { defaultValue: 'Address copied to clipboard' }));
     }
   };
@@ -109,12 +92,6 @@ export default function WalletPage() {
       dataIndex: 'amount',
       key: 'amount',
       width: 120,
-    },
-    {
-      title: t('wallet.deposit.table.amountUsd', { defaultValue: 'USD Credit' }),
-      dataIndex: 'amountUsd',
-      key: 'amountUsd',
-      width: 120,
       render: (v: string) => <span style={{ color: '#00A651', fontWeight: 500 }}>+{formatAmount(v)}</span>,
     },
     {
@@ -126,19 +103,25 @@ export default function WalletPage() {
       render: (v: string) => v ? <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{v.slice(0, 20)}...</span> : '-',
     },
     {
+      title: t('wallet.deposit.table.confirmations', { defaultValue: 'Confirmations' }),
+      dataIndex: 'confirmations',
+      key: 'confirmations',
+      width: 120,
+    },
+    {
       title: t('wallet.deposit.table.status', { defaultValue: 'Status' }),
       dataIndex: 'status',
       key: 'status',
-      width: 100,
+      width: 120,
       render: (v: string) => {
-        const colors: Record<string, string> = { PENDING: 'orange', APPROVED: 'green', REJECTED: 'red' };
+        const colors: Record<string, string> = { CONFIRMED: 'green', MANUAL_REVIEW: 'orange' };
         return <Tag color={colors[v] || 'default'}>{v}</Tag>;
       },
     },
     {
       title: t('wallet.deposit.table.time', { defaultValue: 'Time' }),
-      dataIndex: 'createdAt',
-      key: 'createdAt',
+      dataIndex: 'confirmedAt',
+      key: 'confirmedAt',
       width: 180,
       render: (v: any) => v ? new Date(v.seconds * 1000).toLocaleString() : '-',
     },
@@ -175,52 +158,55 @@ export default function WalletPage() {
         )}
       </StatusResult>
 
-      {/* USDT Deposit Section */}
+      {/* USDT Deposit Section — HD wallet per-user address */}
       <Card
         size="small"
         style={{ marginBottom: 24, borderColor: '#D4AF37', borderWidth: 1 }}
         title={<span style={{ color: '#D4AF37' }}>USDT {t('wallet.deposit.title', { defaultValue: 'Deposit' })}</span>}
-        extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setDepositModalOpen(true)} disabled={!depositInfo?.receivingAddress}>
-            {t('wallet.deposit.button', { defaultValue: 'New Deposit' })}
-          </Button>
-        }
       >
-          <Descriptions column={2} size="small">
-            <Descriptions.Item label={t('wallet.deposit.network', { defaultValue: 'Network' })}>
-              <Tag color="gold">{depositInfo?.network || 'TRC20'}</Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label={t('wallet.deposit.exchangeRate', { defaultValue: 'Exchange Rate' })}>
-              1 USDT = {depositInfo?.exchangeRate || '1'} USD
-            </Descriptions.Item>
-            <Descriptions.Item label={t('wallet.deposit.address', { defaultValue: 'Receiving Address' })} span={2}>
-              {depositInfo?.receivingAddress ? (
-                <>
-                  <span style={{ fontFamily: 'monospace', fontSize: 14, wordBreak: 'break-all' }}>
-                    {depositInfo.receivingAddress}
-                  </span>
-                  <Tooltip title={t('wallet.deposit.copy', { defaultValue: 'Copy' })}>
-                    <Button type="text" size="small" icon={<CopyOutlined />} onClick={copyAddress} style={{ marginLeft: 8 }} />
-                  </Tooltip>
-                </>
-              ) : (
-                <Alert
-                  type="info"
-                  message={t('wallet.deposit.notConfigured', { defaultValue: 'USDT deposit is not yet configured. Please contact support.' })}
-                  showIcon
-                  style={{ marginTop: 0 }}
+        <Spin spinning={addrLoading}>
+          {depositAddr?.address ? (
+            <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              <div style={{ flexShrink: 0 }}>
+                <QRCodeSVG
+                  value={depositAddr.address}
+                  size={160}
+                  level="M"
+                  includeMargin
                 />
-              )}
-            </Descriptions.Item>
-          </Descriptions>
-          {depositInfo?.receivingAddress && (
+              </div>
+              <div style={{ flex: 1, minWidth: 250 }}>
+                <Descriptions column={1} size="small">
+                  <Descriptions.Item label={t('wallet.deposit.network', { defaultValue: 'Network' })}>
+                    <Tag color="gold">{depositAddr.network || 'TRC20'}</Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item label={t('wallet.deposit.address', { defaultValue: 'Your Deposit Address' })}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontFamily: 'monospace', fontSize: 14, wordBreak: 'break-all' }}>
+                        {depositAddr.address}
+                      </span>
+                      <Tooltip title={t('wallet.deposit.copy', { defaultValue: 'Copy' })}>
+                        <Button type="text" size="small" icon={<CopyOutlined />} onClick={copyAddress} />
+                      </Tooltip>
+                    </div>
+                  </Descriptions.Item>
+                </Descriptions>
+                <Alert
+                  type="warning"
+                  message={t('wallet.deposit.notice', { defaultValue: 'Only send USDT (TRC20) to this address. Sending other tokens or using a different network may result in permanent loss. Deposits are automatically confirmed after 20 block confirmations.' })}
+                  style={{ marginTop: 12 }}
+                  showIcon
+                />
+              </div>
+            </div>
+          ) : !addrLoading && (
             <Alert
-              type="warning"
-              message={t('wallet.deposit.notice', { defaultValue: 'Only send USDT via the specified network. Sending other tokens or using a different network may result in permanent loss. After sending, submit a deposit request with the amount and optional tx hash for admin review.' })}
-              style={{ marginTop: 12 }}
+              type="info"
+              message={t('wallet.deposit.notConfigured', { defaultValue: 'Unable to assign a deposit address. Please contact support.' })}
               showIcon
             />
           )}
+        </Spin>
       </Card>
 
       {/* Deposit History */}
@@ -254,59 +240,6 @@ export default function WalletPage() {
           />
         </StatusResult>
       </Card>
-
-      {/* Deposit Modal */}
-      <Modal
-        title={t('wallet.deposit.modalTitle', { defaultValue: 'Submit Deposit Request' })}
-        open={depositModalOpen}
-        onCancel={() => setDepositModalOpen(false)}
-        onOk={() => createDepositMutation.mutate()}
-        confirmLoading={createDepositMutation.isPending}
-        okText={t('wallet.deposit.submit', { defaultValue: 'Submit' })}
-      >
-        <Descriptions column={1} size="small" style={{ marginBottom: 16 }}>
-          <Descriptions.Item label={t('wallet.deposit.network', { defaultValue: 'Network' })}>
-            <Tag color="gold">{depositInfo?.network || 'TRC20'}</Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label={t('wallet.deposit.address', { defaultValue: 'Receiving Address' })}>
-            <Text style={{ fontFamily: 'monospace', fontSize: 12, wordBreak: 'break-all' }}>
-              {depositInfo?.receivingAddress || '-'}
-            </Text>
-          </Descriptions.Item>
-        </Descriptions>
-        <div style={{ marginBottom: 12 }}>
-          <label style={{ display: 'block', marginBottom: 4, fontWeight: 500 }}>
-            {t('wallet.deposit.amountLabel', { defaultValue: 'USDT Amount' })}
-          </label>
-          <InputNumber
-            value={depositAmount}
-            onChange={setDepositAmount}
-            min={0.01}
-            step={0.01}
-            precision={8}
-            style={{ width: '100%' }}
-            placeholder="0.00"
-          />
-        </div>
-        <div style={{ marginBottom: 12 }}>
-          <label style={{ display: 'block', marginBottom: 4, fontWeight: 500 }}>
-            {t('wallet.deposit.txHashLabel', { defaultValue: 'Transaction Hash (optional)' })}
-          </label>
-          <Input
-            value={depositTxHash}
-            onChange={(e) => setDepositTxHash(e.target.value)}
-            placeholder="0x..."
-            style={{ fontFamily: 'monospace' }}
-          />
-        </div>
-        {depositAmount && depositInfo?.exchangeRate && (
-          <Alert
-            type="info"
-            message={`${t('wallet.deposit.willCredit', { defaultValue: 'Will credit' })}: +$${(depositAmount * parseFloat(depositInfo.exchangeRate)).toFixed(2)} USD`}
-            style={{ marginTop: 8 }}
-          />
-        )}
-      </Modal>
     </div>
   );
 }

@@ -6,47 +6,34 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
-// DepositService manages USDT deposit requests.
-// Users create deposit requests; admins approve/reject them.
-// On approval, the user's wallet is credited with the USD amount.
+// DepositService manages USDT deposits via HD wallet.
+// Users get a personal TRC20 address; deposits are auto-confirmed by chain monitor.
 service DepositService {
-  // User: create a deposit request.
-  rpc CreateDeposit(CreateDepositRequest) returns (CreateDepositResponse);
-  // User: list own deposit history.
+  // User: get or claim a deposit address (idempotent).
+  rpc GetDepositAddress(GetDepositAddressRequest) returns (GetDepositAddressResponse);
+  // User: list own deposit history (auto-confirmed by chain monitor).
   rpc ListMyDeposits(ListMyDepositsRequest) returns (ListMyDepositsResponse);
-  // User: get current USDT receiving address + network + exchange rate.
-  rpc GetDepositInfo(GetDepositInfoRequest) returns (GetDepositInfoResponse);
-  // Admin: list all deposit requests (filterable by status).
-  rpc ListDeposits(ListDepositsRequest) returns (ListDepositsResponse);
-  // Admin: approve a deposit request (credits user wallet).
-  rpc ApproveDeposit(ApproveDepositRequest) returns (ApproveDepositResponse);
-  // Admin: reject a deposit request.
-  rpc RejectDeposit(RejectDepositRequest) returns (RejectDepositResponse);
+  // Admin: list deposits requiring manual review.
+  rpc ListManualReviewDeposits(ListManualReviewDepositsRequest) returns (ListManualReviewDepositsResponse);
 }
 
-message DepositRequest {
+message Deposit {
   string id = 1;
   string user_id = 2;
-  string amount = 3;       // USDT amount (decimal string)
-  string amount_usd = 4;   // USD amount to credit (decimal string)
-  string tx_hash = 5;      // optional on-chain tx hash
-  string status = 6;       // PENDING / APPROVED / REJECTED
-  string reviewer_id = 7;  // admin user id
-  string review_note = 8;
-  google.protobuf.Timestamp reviewed_at = 9;
-  string wallet_tx_id = 10;
-  google.protobuf.Timestamp created_at = 11;
-  google.protobuf.Timestamp updated_at = 12;
-  // Joined fields for admin view
-  string user_email = 13;
+  string deposit_address_id = 3;
+  string tx_hash = 4;
+  string amount = 5;               // USDT amount (decimal string)
+  int64 block_number = 6;
+  int32 confirmations = 7;
+  string status = 8;               // CONFIRMED / MANUAL_REVIEW
+  google.protobuf.Timestamp confirmed_at = 9;
+  google.protobuf.Timestamp created_at = 10;
 }
 
-message CreateDepositRequest {
-  string amount = 1;       // USDT amount
-  string tx_hash = 2;      // optional on-chain tx hash
-}
-message CreateDepositResponse {
-  DepositRequest deposit = 1;
+message GetDepositAddressRequest {}
+message GetDepositAddressResponse {
+  string address = 1;       // TRC20 address (Base58)
+  string network = 2;       // "TRC20"
 }
 
 message ListMyDepositsRequest {
@@ -54,39 +41,15 @@ message ListMyDepositsRequest {
   int32 page_size = 2;
 }
 message ListMyDepositsResponse {
-  repeated DepositRequest deposits = 1;
+  repeated Deposit deposits = 1;
   int64 total = 2;
 }
 
-message GetDepositInfoRequest {}
-message GetDepositInfoResponse {
-  string receiving_address = 1;
-  string network = 2;         // TRC20 / ERC20
-  string exchange_rate = 3;   // USD per 1 USDT
-}
-
-message ListDepositsRequest {
+message ListManualReviewDepositsRequest {
   int32 page = 1;
   int32 page_size = 2;
-  string status = 3;  // optional filter: PENDING / APPROVED / REJECTED
 }
-message ListDepositsResponse {
-  repeated DepositRequest deposits = 1;
+message ListManualReviewDepositsResponse {
+  repeated Deposit deposits = 1;
   int64 total = 2;
-}
-
-message ApproveDepositRequest {
-  string deposit_id = 1;
-  string review_note = 2;
-}
-message ApproveDepositResponse {
-  DepositRequest deposit = 1;
-}
-
-message RejectDepositRequest {
-  string deposit_id = 1;
-  string review_note = 2;
-}
-message RejectDepositResponse {
-  DepositRequest deposit = 1;
 }

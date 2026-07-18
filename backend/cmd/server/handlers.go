@@ -14,6 +14,7 @@ import (
 	"alphaforge/internal/agent"
 	internalai "alphaforge/internal/ai"
 	"alphaforge/internal/analysis"
+	"alphaforge/internal/chain"
 	"alphaforge/internal/config"
 	"alphaforge/internal/connect/admin"
 	"alphaforge/internal/connect/ai"
@@ -28,6 +29,7 @@ import (
 	subscriptionhdr "alphaforge/internal/connect/subscription"
 	"alphaforge/internal/connect/system"
 	"alphaforge/internal/connect/user"
+	"alphaforge/internal/reconcile"
 	"alphaforge/internal/interceptor"
 	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mdgateway"
@@ -42,6 +44,7 @@ import (
 	"alphaforge/internal/repository"
 	"alphaforge/internal/risk"
 	"alphaforge/internal/risksvc"
+	"alphaforge/internal/sweeper"
 	"alphaforge/internal/service"
 	systemai "alphaforge/internal/service/systemai"
 	usersvc "alphaforge/internal/service/user"
@@ -49,6 +52,7 @@ import (
 	"alphaforge/internal/usermgr"
 
 	alphasentry "alphaforge/internal/sentry"
+	"alphaforge/internal/secrets"
 
 	connectrpc "connectrpc.com/connect"
 )
@@ -83,7 +87,8 @@ func registerHandlers(
 	reconcileGate *mthub.ReconcileGate,
 	analyticsCache *service.AnalyticsCache,
 	brokerReg *adapter.BrokerRegistry,
-) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator, *notifpubsub.Sender, *strategy.ScheduleEngine, func()) {
+	secClient secrets.Client,
+) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator, *notifpubsub.Sender, *strategy.ScheduleEngine, func(), *chain.Monitor, *sweeper.Sweeper, *reconcile.Reconciler) {
 
 	// ConnectRPC handlers
 	// Repositories for handler→service→repository layering (P1-2).
@@ -124,12 +129,33 @@ func registerHandlers(
 	walletServer := user.NewWalletServer(walletSvc, platformSvc, log)
 	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, withSency(otelInterceptor, authInterceptor)))
 
-	// USDT deposit service: user creates deposit requests, admin approves/rejects.
-	adminRepo := repository.NewAdminRepository(pool)
+	// USDT deposit service: HD wallet with per-user addresses + auto-confirmation.
+	depositAddrRepo := repository.NewDepositAddressRepository(pool)
 	depositRepo := repository.NewDepositRepository(pool)
-	depositSvc := service.NewDepositService(depositRepo, walletSvc, adminRepo, pool, log)
+	depositSvc := service.NewDepositService(depositAddrRepo, depositRepo, walletSvc, pool, log)
 	depositServer := user.NewDepositServer(depositSvc, platformSvc, log)
 	mux.Handle(antv1c.NewDepositServiceHandler(depositServer, withSency(otelInterceptor, authInterceptor)))
+
+	// Chain monitor: scans TronGrid for USDT transfers to user deposit addresses.
+	adminRepo := repository.NewAdminRepository(pool)
+	tronGrid := chain.NewTronGridClient(cfg.TrongridAPIKey)
+	tronScan := chain.NewTronScanClient(cfg.TronscanAPIKey)
+	chainMonitor := chain.NewMonitor(tronGrid, tronScan, depositAddrRepo, adminRepo, depositSvc, depositRepo, log)
+	depositSvc.OnAddressClaimed = chainMonitor.RegisterAddress
+
+	// Sweeper: consolidates USDT from deposit addresses to hot wallet.
+	sweepRepo := repository.NewSweepLogRepository(pool)
+	tronClient := sweeper.NewTronClient("grpc.trongrid.io:50051", cfg.TrongridAPIKey)
+	var sweeperInst *sweeper.Sweeper
+	if err := tronClient.Start(); err != nil {
+		log.Error("sweeper: tron client start failed — sweeper will not start", zap.Error(err))
+	} else {
+		sweeperInst = sweeper.NewSweeper(sweepRepo, depositAddrRepo, adminRepo, depositRepo, tronClient, secClient, log)
+	}
+
+	// Reconciler: two-phase deposit reconciliation (internal 6h + on-chain 24h).
+	reconcileRepo := repository.NewReconcileRepository(pool)
+	reconcilerInst := reconcile.NewReconciler(reconcileRepo, adminRepo, depositAddrRepo, tronGrid, log)
 
 	// P3.1: Subscription service (Free/Pro/Enterprise plans).
 	subscriptionRepo := repository.NewSubscriptionRepository(pool)
@@ -408,5 +434,14 @@ func registerHandlers(
 
 	go startHardDeleteCleanup(ctx, pool, log)
 
-	return reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup
+	// Wrap workerCleanup to also close tronClient on shutdown.
+	origCleanup := workerCleanup
+	workerCleanup = func() {
+		tronClient.Close()
+		if origCleanup != nil {
+			origCleanup()
+		}
+	}
+
+	return reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup, chainMonitor, sweeperInst, reconcilerInst
 }

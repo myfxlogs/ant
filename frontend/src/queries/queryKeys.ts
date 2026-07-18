@@ -59,8 +59,9 @@ export const queryKeys = {
     transactions: () => [...queryKeys.wallet.all, 'transactions'] as const,
   },
   deposit: {
-    info: ['deposit', 'info'] as const,
+    address: ['deposit', 'address'] as const,
     myDeposits: ['deposit', 'my'] as const,
+    manualReview: ['deposit', 'manualReview'] as const,
     all: ['deposit', 'all'] as const,
   },
 };

@@ -12,12 +12,12 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file deposit.proto.
  */
 export const file_deposit: GenFile = /*@__PURE__*/
-  fileDesc("Cg1kZXBvc2l0LnByb3RvEgZhbnQudjEi1wIKDkRlcG9zaXRSZXF1ZXN0EgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSDgoGYW1vdW50GAMgASgJEhIKCmFtb3VudF91c2QYBCABKAkSDwoHdHhfaGFzaBgFIAEoCRIOCgZzdGF0dXMYBiABKAkSEwoLcmV2aWV3ZXJfaWQYByABKAkSEwoLcmV2aWV3X25vdGUYCCABKAkSLwoLcmV2aWV3ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhQKDHdhbGxldF90eF9pZBgKIAEoCRIuCgpjcmVhdGVkX2F0GAsgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBISCgp1c2VyX2VtYWlsGA0gASgJIjcKFENyZWF0ZURlcG9zaXRSZXF1ZXN0Eg4KBmFtb3VudBgBIAEoCRIPCgd0eF9oYXNoGAIgASgJIkAKFUNyZWF0ZURlcG9zaXRSZXNwb25zZRInCgdkZXBvc2l0GAEgASgLMhYuYW50LnYxLkRlcG9zaXRSZXF1ZXN0IjgKFUxpc3RNeURlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJRChZMaXN0TXlEZXBvc2l0c1Jlc3BvbnNlEigKCGRlcG9zaXRzGAEgAygLMhYuYW50LnYxLkRlcG9zaXRSZXF1ZXN0Eg0KBXRvdGFsGAIgASgDIhcKFUdldERlcG9zaXRJbmZvUmVxdWVzdCJbChZHZXREZXBvc2l0SW5mb1Jlc3BvbnNlEhkKEXJlY2VpdmluZ19hZGRyZXNzGAEgASgJEg8KB25ldHdvcmsYAiABKAkSFQoNZXhjaGFuZ2VfcmF0ZRgDIAEoCSJGChNMaXN0RGVwb3NpdHNSZXF1ZXN0EgwKBHBhZ2UYASABKAUSEQoJcGFnZV9zaXplGAIgASgFEg4KBnN0YXR1cxgDIAEoCSJPChRMaXN0RGVwb3NpdHNSZXNwb25zZRIoCghkZXBvc2l0cxgBIAMoCzIWLmFudC52MS5EZXBvc2l0UmVxdWVzdBINCgV0b3RhbBgCIAEoAyJAChVBcHByb3ZlRGVwb3NpdFJlcXVlc3QSEgoKZGVwb3NpdF9pZBgBIAEoCRITCgtyZXZpZXdfbm90ZRgCIAEoCSJBChZBcHByb3ZlRGVwb3NpdFJlc3BvbnNlEicKB2RlcG9zaXQYASABKAsyFi5hbnQudjEuRGVwb3NpdFJlcXVlc3QiPwoUUmVqZWN0RGVwb3NpdFJlcXVlc3QSEgoKZGVwb3NpdF9pZBgBIAEoCRITCgtyZXZpZXdfbm90ZRgCIAEoCSJAChVSZWplY3REZXBvc2l0UmVzcG9uc2USJwoHZGVwb3NpdBgBIAEoCzIWLmFudC52MS5EZXBvc2l0UmVxdWVzdDLqAwoORGVwb3NpdFNlcnZpY2USTAoNQ3JlYXRlRGVwb3NpdBIcLmFudC52MS5DcmVhdGVEZXBvc2l0UmVxdWVzdBodLmFudC52MS5DcmVhdGVEZXBvc2l0UmVzcG9uc2USTwoOTGlzdE15RGVwb3NpdHMSHS5hbnQudjEuTGlzdE15RGVwb3NpdHNSZXF1ZXN0Gh4uYW50LnYxLkxpc3RNeURlcG9zaXRzUmVzcG9uc2USTwoOR2V0RGVwb3NpdEluZm8SHS5hbnQudjEuR2V0RGVwb3NpdEluZm9SZXF1ZXN0Gh4uYW50LnYxLkdldERlcG9zaXRJbmZvUmVzcG9uc2USSQoMTGlzdERlcG9zaXRzEhsuYW50LnYxLkxpc3REZXBvc2l0c1JlcXVlc3QaHC5hbnQudjEuTGlzdERlcG9zaXRzUmVzcG9uc2USTwoOQXBwcm92ZURlcG9zaXQSHS5hbnQudjEuQXBwcm92ZURlcG9zaXRSZXF1ZXN0Gh4uYW50LnYxLkFwcHJvdmVEZXBvc2l0UmVzcG9uc2USTAoNUmVqZWN0RGVwb3NpdBIcLmFudC52MS5SZWplY3REZXBvc2l0UmVxdWVzdBodLmFudC52MS5SZWplY3REZXBvc2l0UmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("Cg1kZXBvc2l0LnByb3RvEgZhbnQudjEiggIKB0RlcG9zaXQSCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIaChJkZXBvc2l0X2FkZHJlc3NfaWQYAyABKAkSDwoHdHhfaGFzaBgEIAEoCRIOCgZhbW91bnQYBSABKAkSFAoMYmxvY2tfbnVtYmVyGAYgASgDEhUKDWNvbmZpcm1hdGlvbnMYByABKAUSDgoGc3RhdHVzGAggASgJEjAKDGNvbmZpcm1lZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiGgoYR2V0RGVwb3NpdEFkZHJlc3NSZXF1ZXN0Ij0KGUdldERlcG9zaXRBZGRyZXNzUmVzcG9uc2USDwoHYWRkcmVzcxgBIAEoCRIPCgduZXR3b3JrGAIgASgJIjgKFUxpc3RNeURlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJKChZMaXN0TXlEZXBvc2l0c1Jlc3BvbnNlEiEKCGRlcG9zaXRzGAEgAygLMg8uYW50LnYxLkRlcG9zaXQSDQoFdG90YWwYAiABKAMiQgofTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJUCiBMaXN0TWFudWFsUmV2aWV3RGVwb3NpdHNSZXNwb25zZRIhCghkZXBvc2l0cxgBIAMoCzIPLmFudC52MS5EZXBvc2l0Eg0KBXRvdGFsGAIgASgDMqoCCg5EZXBvc2l0U2VydmljZRJYChFHZXREZXBvc2l0QWRkcmVzcxIgLmFudC52MS5HZXREZXBvc2l0QWRkcmVzc1JlcXVlc3QaIS5hbnQudjEuR2V0RGVwb3NpdEFkZHJlc3NSZXNwb25zZRJPCg5MaXN0TXlEZXBvc2l0cxIdLmFudC52MS5MaXN0TXlEZXBvc2l0c1JlcXVlc3QaHi5hbnQudjEuTGlzdE15RGVwb3NpdHNSZXNwb25zZRJtChhMaXN0TWFudWFsUmV2aWV3RGVwb3NpdHMSJy5hbnQudjEuTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzUmVxdWVzdBooLmFudC52MS5MaXN0TWFudWFsUmV2aWV3RGVwb3NpdHNSZXNwb25zZUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
- * @generated from message ant.v1.DepositRequest
+ * @generated from message ant.v1.Deposit
  */
-export type DepositRequest = Message<"ant.v1.DepositRequest"> & {
+export type Deposit = Message<"ant.v1.Deposit"> & {
   /**
    * @generated from field: string id = 1;
    */
@@ -29,121 +29,94 @@ export type DepositRequest = Message<"ant.v1.DepositRequest"> & {
   userId: string;
 
   /**
-   * USDT amount (decimal string)
-   *
-   * @generated from field: string amount = 3;
+   * @generated from field: string deposit_address_id = 3;
    */
-  amount: string;
+  depositAddressId: string;
 
   /**
-   * USD amount to credit (decimal string)
-   *
-   * @generated from field: string amount_usd = 4;
-   */
-  amountUsd: string;
-
-  /**
-   * optional on-chain tx hash
-   *
-   * @generated from field: string tx_hash = 5;
+   * @generated from field: string tx_hash = 4;
    */
   txHash: string;
 
   /**
-   * PENDING / APPROVED / REJECTED
+   * USDT amount (decimal string)
    *
-   * @generated from field: string status = 6;
+   * @generated from field: string amount = 5;
+   */
+  amount: string;
+
+  /**
+   * @generated from field: int64 block_number = 6;
+   */
+  blockNumber: bigint;
+
+  /**
+   * @generated from field: int32 confirmations = 7;
+   */
+  confirmations: number;
+
+  /**
+   * CONFIRMED / MANUAL_REVIEW
+   *
+   * @generated from field: string status = 8;
    */
   status: string;
 
   /**
-   * admin user id
-   *
-   * @generated from field: string reviewer_id = 7;
+   * @generated from field: google.protobuf.Timestamp confirmed_at = 9;
    */
-  reviewerId: string;
+  confirmedAt?: Timestamp | undefined;
 
   /**
-   * @generated from field: string review_note = 8;
-   */
-  reviewNote: string;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp reviewed_at = 9;
-   */
-  reviewedAt?: Timestamp | undefined;
-
-  /**
-   * @generated from field: string wallet_tx_id = 10;
-   */
-  walletTxId: string;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 11;
+   * @generated from field: google.protobuf.Timestamp created_at = 10;
    */
   createdAt?: Timestamp | undefined;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 12;
-   */
-  updatedAt?: Timestamp | undefined;
-
-  /**
-   * Joined fields for admin view
-   *
-   * @generated from field: string user_email = 13;
-   */
-  userEmail: string;
 };
 
 /**
- * Describes the message ant.v1.DepositRequest.
- * Use `create(DepositRequestSchema)` to create a new message.
+ * Describes the message ant.v1.Deposit.
+ * Use `create(DepositSchema)` to create a new message.
  */
-export const DepositRequestSchema: GenMessage<DepositRequest> = /*@__PURE__*/
+export const DepositSchema: GenMessage<Deposit> = /*@__PURE__*/
   messageDesc(file_deposit, 0);
 
 /**
- * @generated from message ant.v1.CreateDepositRequest
+ * @generated from message ant.v1.GetDepositAddressRequest
  */
-export type CreateDepositRequest = Message<"ant.v1.CreateDepositRequest"> & {
-  /**
-   * USDT amount
-   *
-   * @generated from field: string amount = 1;
-   */
-  amount: string;
-
-  /**
-   * optional on-chain tx hash
-   *
-   * @generated from field: string tx_hash = 2;
-   */
-  txHash: string;
+export type GetDepositAddressRequest = Message<"ant.v1.GetDepositAddressRequest"> & {
 };
 
 /**
- * Describes the message ant.v1.CreateDepositRequest.
- * Use `create(CreateDepositRequestSchema)` to create a new message.
+ * Describes the message ant.v1.GetDepositAddressRequest.
+ * Use `create(GetDepositAddressRequestSchema)` to create a new message.
  */
-export const CreateDepositRequestSchema: GenMessage<CreateDepositRequest> = /*@__PURE__*/
+export const GetDepositAddressRequestSchema: GenMessage<GetDepositAddressRequest> = /*@__PURE__*/
   messageDesc(file_deposit, 1);
 
 /**
- * @generated from message ant.v1.CreateDepositResponse
+ * @generated from message ant.v1.GetDepositAddressResponse
  */
-export type CreateDepositResponse = Message<"ant.v1.CreateDepositResponse"> & {
+export type GetDepositAddressResponse = Message<"ant.v1.GetDepositAddressResponse"> & {
   /**
-   * @generated from field: ant.v1.DepositRequest deposit = 1;
+   * TRC20 address (Base58)
+   *
+   * @generated from field: string address = 1;
    */
-  deposit?: DepositRequest | undefined;
+  address: string;
+
+  /**
+   * "TRC20"
+   *
+   * @generated from field: string network = 2;
+   */
+  network: string;
 };
 
 /**
- * Describes the message ant.v1.CreateDepositResponse.
- * Use `create(CreateDepositResponseSchema)` to create a new message.
+ * Describes the message ant.v1.GetDepositAddressResponse.
+ * Use `create(GetDepositAddressResponseSchema)` to create a new message.
  */
-export const CreateDepositResponseSchema: GenMessage<CreateDepositResponse> = /*@__PURE__*/
+export const GetDepositAddressResponseSchema: GenMessage<GetDepositAddressResponse> = /*@__PURE__*/
   messageDesc(file_deposit, 2);
 
 /**
@@ -173,9 +146,9 @@ export const ListMyDepositsRequestSchema: GenMessage<ListMyDepositsRequest> = /*
  */
 export type ListMyDepositsResponse = Message<"ant.v1.ListMyDepositsResponse"> & {
   /**
-   * @generated from field: repeated ant.v1.DepositRequest deposits = 1;
+   * @generated from field: repeated ant.v1.Deposit deposits = 1;
    */
-  deposits: DepositRequest[];
+  deposits: Deposit[];
 
   /**
    * @generated from field: int64 total = 2;
@@ -191,53 +164,9 @@ export const ListMyDepositsResponseSchema: GenMessage<ListMyDepositsResponse> = 
   messageDesc(file_deposit, 4);
 
 /**
- * @generated from message ant.v1.GetDepositInfoRequest
+ * @generated from message ant.v1.ListManualReviewDepositsRequest
  */
-export type GetDepositInfoRequest = Message<"ant.v1.GetDepositInfoRequest"> & {
-};
-
-/**
- * Describes the message ant.v1.GetDepositInfoRequest.
- * Use `create(GetDepositInfoRequestSchema)` to create a new message.
- */
-export const GetDepositInfoRequestSchema: GenMessage<GetDepositInfoRequest> = /*@__PURE__*/
-  messageDesc(file_deposit, 5);
-
-/**
- * @generated from message ant.v1.GetDepositInfoResponse
- */
-export type GetDepositInfoResponse = Message<"ant.v1.GetDepositInfoResponse"> & {
-  /**
-   * @generated from field: string receiving_address = 1;
-   */
-  receivingAddress: string;
-
-  /**
-   * TRC20 / ERC20
-   *
-   * @generated from field: string network = 2;
-   */
-  network: string;
-
-  /**
-   * USD per 1 USDT
-   *
-   * @generated from field: string exchange_rate = 3;
-   */
-  exchangeRate: string;
-};
-
-/**
- * Describes the message ant.v1.GetDepositInfoResponse.
- * Use `create(GetDepositInfoResponseSchema)` to create a new message.
- */
-export const GetDepositInfoResponseSchema: GenMessage<GetDepositInfoResponse> = /*@__PURE__*/
-  messageDesc(file_deposit, 6);
-
-/**
- * @generated from message ant.v1.ListDepositsRequest
- */
-export type ListDepositsRequest = Message<"ant.v1.ListDepositsRequest"> & {
+export type ListManualReviewDepositsRequest = Message<"ant.v1.ListManualReviewDepositsRequest"> & {
   /**
    * @generated from field: int32 page = 1;
    */
@@ -247,30 +176,23 @@ export type ListDepositsRequest = Message<"ant.v1.ListDepositsRequest"> & {
    * @generated from field: int32 page_size = 2;
    */
   pageSize: number;
-
-  /**
-   * optional filter: PENDING / APPROVED / REJECTED
-   *
-   * @generated from field: string status = 3;
-   */
-  status: string;
 };
 
 /**
- * Describes the message ant.v1.ListDepositsRequest.
- * Use `create(ListDepositsRequestSchema)` to create a new message.
+ * Describes the message ant.v1.ListManualReviewDepositsRequest.
+ * Use `create(ListManualReviewDepositsRequestSchema)` to create a new message.
  */
-export const ListDepositsRequestSchema: GenMessage<ListDepositsRequest> = /*@__PURE__*/
-  messageDesc(file_deposit, 7);
+export const ListManualReviewDepositsRequestSchema: GenMessage<ListManualReviewDepositsRequest> = /*@__PURE__*/
+  messageDesc(file_deposit, 5);
 
 /**
- * @generated from message ant.v1.ListDepositsResponse
+ * @generated from message ant.v1.ListManualReviewDepositsResponse
  */
-export type ListDepositsResponse = Message<"ant.v1.ListDepositsResponse"> & {
+export type ListManualReviewDepositsResponse = Message<"ant.v1.ListManualReviewDepositsResponse"> & {
   /**
-   * @generated from field: repeated ant.v1.DepositRequest deposits = 1;
+   * @generated from field: repeated ant.v1.Deposit deposits = 1;
    */
-  deposits: DepositRequest[];
+  deposits: Deposit[];
 
   /**
    * @generated from field: int64 total = 2;
@@ -279,110 +201,31 @@ export type ListDepositsResponse = Message<"ant.v1.ListDepositsResponse"> & {
 };
 
 /**
- * Describes the message ant.v1.ListDepositsResponse.
- * Use `create(ListDepositsResponseSchema)` to create a new message.
+ * Describes the message ant.v1.ListManualReviewDepositsResponse.
+ * Use `create(ListManualReviewDepositsResponseSchema)` to create a new message.
  */
-export const ListDepositsResponseSchema: GenMessage<ListDepositsResponse> = /*@__PURE__*/
-  messageDesc(file_deposit, 8);
+export const ListManualReviewDepositsResponseSchema: GenMessage<ListManualReviewDepositsResponse> = /*@__PURE__*/
+  messageDesc(file_deposit, 6);
 
 /**
- * @generated from message ant.v1.ApproveDepositRequest
- */
-export type ApproveDepositRequest = Message<"ant.v1.ApproveDepositRequest"> & {
-  /**
-   * @generated from field: string deposit_id = 1;
-   */
-  depositId: string;
-
-  /**
-   * @generated from field: string review_note = 2;
-   */
-  reviewNote: string;
-};
-
-/**
- * Describes the message ant.v1.ApproveDepositRequest.
- * Use `create(ApproveDepositRequestSchema)` to create a new message.
- */
-export const ApproveDepositRequestSchema: GenMessage<ApproveDepositRequest> = /*@__PURE__*/
-  messageDesc(file_deposit, 9);
-
-/**
- * @generated from message ant.v1.ApproveDepositResponse
- */
-export type ApproveDepositResponse = Message<"ant.v1.ApproveDepositResponse"> & {
-  /**
-   * @generated from field: ant.v1.DepositRequest deposit = 1;
-   */
-  deposit?: DepositRequest | undefined;
-};
-
-/**
- * Describes the message ant.v1.ApproveDepositResponse.
- * Use `create(ApproveDepositResponseSchema)` to create a new message.
- */
-export const ApproveDepositResponseSchema: GenMessage<ApproveDepositResponse> = /*@__PURE__*/
-  messageDesc(file_deposit, 10);
-
-/**
- * @generated from message ant.v1.RejectDepositRequest
- */
-export type RejectDepositRequest = Message<"ant.v1.RejectDepositRequest"> & {
-  /**
-   * @generated from field: string deposit_id = 1;
-   */
-  depositId: string;
-
-  /**
-   * @generated from field: string review_note = 2;
-   */
-  reviewNote: string;
-};
-
-/**
- * Describes the message ant.v1.RejectDepositRequest.
- * Use `create(RejectDepositRequestSchema)` to create a new message.
- */
-export const RejectDepositRequestSchema: GenMessage<RejectDepositRequest> = /*@__PURE__*/
-  messageDesc(file_deposit, 11);
-
-/**
- * @generated from message ant.v1.RejectDepositResponse
- */
-export type RejectDepositResponse = Message<"ant.v1.RejectDepositResponse"> & {
-  /**
-   * @generated from field: ant.v1.DepositRequest deposit = 1;
-   */
-  deposit?: DepositRequest | undefined;
-};
-
-/**
- * Describes the message ant.v1.RejectDepositResponse.
- * Use `create(RejectDepositResponseSchema)` to create a new message.
- */
-export const RejectDepositResponseSchema: GenMessage<RejectDepositResponse> = /*@__PURE__*/
-  messageDesc(file_deposit, 12);
-
-/**
- * DepositService manages USDT deposit requests.
- * Users create deposit requests; admins approve/reject them.
- * On approval, the user's wallet is credited with the USD amount.
+ * DepositService manages USDT deposits via HD wallet.
+ * Users get a personal TRC20 address; deposits are auto-confirmed by chain monitor.
  *
  * @generated from service ant.v1.DepositService
  */
 export const DepositService: GenService<{
   /**
-   * User: create a deposit request.
+   * User: get or claim a deposit address (idempotent).
    *
-   * @generated from rpc ant.v1.DepositService.CreateDeposit
+   * @generated from rpc ant.v1.DepositService.GetDepositAddress
    */
-  createDeposit: {
+  getDepositAddress: {
     methodKind: "unary";
-    input: typeof CreateDepositRequestSchema;
-    output: typeof CreateDepositResponseSchema;
+    input: typeof GetDepositAddressRequestSchema;
+    output: typeof GetDepositAddressResponseSchema;
   },
   /**
-   * User: list own deposit history.
+   * User: list own deposit history (auto-confirmed by chain monitor).
    *
    * @generated from rpc ant.v1.DepositService.ListMyDeposits
    */
@@ -392,44 +235,14 @@ export const DepositService: GenService<{
     output: typeof ListMyDepositsResponseSchema;
   },
   /**
-   * User: get current USDT receiving address + network + exchange rate.
+   * Admin: list deposits requiring manual review.
    *
-   * @generated from rpc ant.v1.DepositService.GetDepositInfo
+   * @generated from rpc ant.v1.DepositService.ListManualReviewDeposits
    */
-  getDepositInfo: {
+  listManualReviewDeposits: {
     methodKind: "unary";
-    input: typeof GetDepositInfoRequestSchema;
-    output: typeof GetDepositInfoResponseSchema;
-  },
-  /**
-   * Admin: list all deposit requests (filterable by status).
-   *
-   * @generated from rpc ant.v1.DepositService.ListDeposits
-   */
-  listDeposits: {
-    methodKind: "unary";
-    input: typeof ListDepositsRequestSchema;
-    output: typeof ListDepositsResponseSchema;
-  },
-  /**
-   * Admin: approve a deposit request (credits user wallet).
-   *
-   * @generated from rpc ant.v1.DepositService.ApproveDeposit
-   */
-  approveDeposit: {
-    methodKind: "unary";
-    input: typeof ApproveDepositRequestSchema;
-    output: typeof ApproveDepositResponseSchema;
-  },
-  /**
-   * Admin: reject a deposit request.
-   *
-   * @generated from rpc ant.v1.DepositService.RejectDeposit
-   */
-  rejectDeposit: {
-    methodKind: "unary";
-    input: typeof RejectDepositRequestSchema;
-    output: typeof RejectDepositResponseSchema;
+    input: typeof ListManualReviewDepositsRequestSchema;
+    output: typeof ListManualReviewDepositsResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_deposit, 0);

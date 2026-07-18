@@ -81,3 +81,29 @@ func (r *AdminRepository) ConfigKeyExists(ctx context.Context, key string) (bool
 	).Scan(&exists)
 	return exists, err
 }
+
+// SetConfigValue updates the value of an existing config key.
+func (r *AdminRepository) SetConfigValue(ctx context.Context, key, value string) error {
+	_, err := r.db.Exec(ctx,
+		`UPDATE system_config SET value = $2, updated_at = NOW() WHERE key = $1`, key, value)
+	if err != nil {
+		return fmt.Errorf("set config value: %w", err)
+	}
+	return nil
+}
+
+// GetHotWalletKey returns the encrypted private key for the active hot wallet
+// from the wallet_secrets table. The caller is responsible for decrypting it.
+func (r *AdminRepository) GetHotWalletKey(ctx context.Context) ([]byte, error) {
+	var encryptedData []byte
+	err := r.db.QueryRow(ctx,
+		`SELECT encrypted_data FROM wallet_secrets WHERE purpose = 'hot-wallet' AND is_active = true LIMIT 1`,
+	).Scan(&encryptedData)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("admin repo: no active hot wallet key found in wallet_secrets")
+		}
+		return nil, fmt.Errorf("admin repo: get hot wallet key: %w", err)
+	}
+	return encryptedData, nil
+}

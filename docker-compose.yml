@@ -42,6 +42,7 @@ services:
       dockerfile: Dockerfile
     image: alphaforge-prod-backend
     restart: always
+    stop_grace_period: 35s
     logging:
       driver: json-file
       options:
@@ -72,6 +73,8 @@ services:
       - CH_PASSWORD=${CH_PASSWORD:-clickhouse}
       - CH_DATABASE=${CH_DATABASE:-ant}
       - ANT_MASTER_KEY=${ANT_MASTER_KEY}
+      - TRONGRID_API_KEY=${TRONGRID_API_KEY:-}
+      - TRONSCAN_API_KEY=${TRONSCAN_API_KEY:-}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/healthz || exit 1"]
       interval: 10s

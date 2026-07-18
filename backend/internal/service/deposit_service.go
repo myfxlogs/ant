@@ -7,206 +7,123 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	"alphaforge/internal/model"
 	"alphaforge/internal/repository"
 )
 
-// DepositService manages USDT deposit requests.
-// Users create requests; admins approve (credits wallet) or reject.
+// DepositService manages HD wallet deposits.
+// Users claim a personal TRC20 address; deposits are auto-confirmed by chain monitor.
 type DepositService struct {
+	addrRepo    *repository.DepositAddressRepository
 	depositRepo *repository.DepositRepository
 	walletSvc   *WalletService
-	adminRepo   *repository.AdminRepository
 	pg          *pgxpool.Pool
 	log         *zap.Logger
+
+	// OnAddressClaimed is called after a successful address claim.
+	// Used by chain monitor to register the new address immediately.
+	OnAddressClaimed func(addr string, userID uuid.UUID, addrID uuid.UUID)
 }
 
 func NewDepositService(
+	addrRepo *repository.DepositAddressRepository,
 	depositRepo *repository.DepositRepository,
 	walletSvc *WalletService,
-	adminRepo *repository.AdminRepository,
 	pg *pgxpool.Pool,
 	log *zap.Logger,
 ) *DepositService {
 	return &DepositService{
+		addrRepo:    addrRepo,
 		depositRepo: depositRepo,
 		walletSvc:   walletSvc,
-		adminRepo:   adminRepo,
 		pg:          pg,
 		log:         log,
 	}
 }
 
-// CreateDeposit creates a new PENDING deposit request for the user.
-func (s *DepositService) CreateDeposit(ctx context.Context, userID uuid.UUID, amount, txHash string) (*model.DepositRequest, error) {
-	amt, err := decimal.NewFromString(amount)
+// GetOrClaimAddress returns the user's assigned deposit address, claiming one from the pool if needed.
+func (s *DepositService) GetOrClaimAddress(ctx context.Context, userID uuid.UUID) (addr, network string, err error) {
+	a, err := s.addrRepo.ClaimAddress(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("invalid amount: %w", err)
-	}
-	if amt.LessThanOrEqual(decimal.Zero) {
-		return nil, errors.New("amount must be positive")
-	}
-
-	// Get exchange rate from system_config.
-	rateStr, err := s.getConfigValue(ctx, "usdt_exchange_rate")
-	if err != nil || rateStr == "" {
-		rateStr = "1"
-	}
-	rate, err := decimal.NewFromString(rateStr)
-	if err != nil || rate.LessThanOrEqual(decimal.Zero) {
-		rate = decimal.NewFromInt(1)
-	}
-	amountUSD := amt.Mul(rate)
-
-	req := &model.DepositRequest{
-		ID:        uuid.New(),
-		UserID:    userID,
-		Amount:    amount,
-		AmountUSD: amountUSD.String(),
-		Status:    "PENDING",
-	}
-	if txHash != "" {
-		req.TxHash = &txHash
+		if errors.Is(err, repository.ErrAddressPoolEmpty) {
+			return "", "", fmt.Errorf("deposit service: address pool exhausted, please contact support")
+		}
+		return "", "", fmt.Errorf("deposit service: claim address: %w", err)
 	}
 
-	if err := s.depositRepo.Create(ctx, req); err != nil {
-		return nil, fmt.Errorf("create deposit: %w", err)
+	available, err := s.addrRepo.CountAvailable(ctx)
+	if err == nil && available < 100 {
+		s.log.Warn("address pool running low", zap.Int("available", available))
 	}
-	s.log.Info("deposit request created",
-		zap.String("user_id", userID.String()),
-		zap.String("amount", amount),
-		zap.String("amount_usd", amountUSD.String()))
-	return req, nil
+
+	if s.OnAddressClaimed != nil {
+		s.OnAddressClaimed(a.Address, userID, a.ID)
+	}
+
+	return a.Address, a.Network, nil
 }
 
 // ListMyDeposits returns paginated deposit history for a user.
-func (s *DepositService) ListMyDeposits(ctx context.Context, userID uuid.UUID, page, pageSize int) ([]model.DepositRequest, int64, error) {
+func (s *DepositService) ListMyDeposits(ctx context.Context, userID uuid.UUID, page, pageSize int) ([]model.Deposit, int64, error) {
 	return s.depositRepo.ListByUser(ctx, userID, page, pageSize)
 }
 
-// GetDepositInfo returns the current USDT receiving address, network, and exchange rate.
-func (s *DepositService) GetDepositInfo(ctx context.Context) (addr, network, rate string, err error) {
-	addr, err = s.getConfigValue(ctx, "usdt_receiving_address")
-	if err != nil {
-		return "", "", "", fmt.Errorf("get receiving address: %w", err)
-	}
-	network, err = s.getConfigValue(ctx, "usdt_network")
-	if err != nil || network == "" {
-		network = "TRC20"
-	}
-	rate, err = s.getConfigValue(ctx, "usdt_exchange_rate")
-	if err != nil || rate == "" {
-		rate = "1"
-	}
-	return addr, network, rate, nil
+// ListManualReviewDeposits returns deposits requiring manual review (admin).
+func (s *DepositService) ListManualReviewDeposits(ctx context.Context, page, pageSize int) ([]model.Deposit, int64, error) {
+	return s.depositRepo.ListManualReview(ctx, page, pageSize)
 }
 
-// ListDeposits returns paginated deposit requests for admin (optionally filtered by status).
-func (s *DepositService) ListDeposits(ctx context.Context, page, pageSize int, status string) ([]model.DepositRequest, int64, error) {
-	return s.depositRepo.ListAll(ctx, page, pageSize, status)
-}
-
-// ApproveDeposit marks a deposit as APPROVED and credits the user's wallet.
-// Uses a transaction to ensure atomicity: deposit status update + wallet credit.
-func (s *DepositService) ApproveDeposit(ctx context.Context, depositID, reviewerID uuid.UUID, reviewNote string) (*model.DepositRequest, error) {
-	// Fetch the deposit first to get user_id and amount_usd.
-	deposit, err := s.depositRepo.GetByID(ctx, depositID)
-	if err != nil {
-		return nil, err
-	}
-	if deposit.Status != "PENDING" {
-		return nil, repository.ErrDepositAlreadyProcessed
-	}
-
+// ConfirmDeposit creates a deposit record and credits the user's wallet atomically.
+// Called by the chain monitor after on-chain verification.
+func (s *DepositService) ConfirmDeposit(ctx context.Context, userID uuid.UUID, addrID uuid.UUID, txHash string, amount string, blockNumber int64, confirmations int) error {
 	tx, err := s.pg.Begin(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("begin tx: %w", err)
+		return fmt.Errorf("deposit service: begin tx: %w", err)
 	}
 	defer tx.Rollback(ctx)
 
-	// Credit wallet within the transaction.
-	walletRepo := s.walletSvc.Repo()
-	wallet, err := walletRepo.GetByUserIDTx(ctx, tx, deposit.UserID)
+	depositID := uuid.New()
+	tag, err := tx.Exec(ctx, `
+		INSERT INTO deposits (id, user_id, deposit_address_id, tx_hash, amount, block_number, confirmations, status, confirmed_at)
+		VALUES ($1, $2, $3, $4, $5::numeric, $6, $7, 'CONFIRMED', NOW())
+		ON CONFLICT (tx_hash) DO NOTHING
+	`, depositID, userID, addrID, txHash, amount, blockNumber, confirmations)
 	if err != nil {
-		return nil, fmt.Errorf("get wallet: %w", err)
+		return fmt.Errorf("deposit service: insert deposit: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		// Deposit already exists (concurrent call), skip wallet credit.
+		return nil
+	}
+
+	walletRepo := s.walletSvc.Repo()
+	wallet, err := walletRepo.GetByUserIDTx(ctx, tx, userID)
+	if err != nil {
+		return fmt.Errorf("deposit service: get wallet: %w", err)
 	}
 	if wallet == nil {
-		return nil, ErrWalletNotFound
+		return ErrWalletNotFound
 	}
 
-	updated, err := walletRepo.AdjustBalanceTx(ctx, tx, wallet.ID, deposit.UserID,
-		deposit.AmountUSD, "deposit",
-		fmt.Sprintf("USDT deposit approved (deposit_id=%s)", depositID),
-		&reviewerID)
+	_, err = walletRepo.AdjustBalanceTx(ctx, tx, wallet.ID, userID,
+		amount, "deposit",
+		fmt.Sprintf("USDT deposit confirmed (tx=%s)", txHash),
+		nil)
 	if err != nil {
-		return nil, fmt.Errorf("credit wallet: %w", err)
-	}
-
-	// Link the wallet transaction ID.
-	var walletTxID *uuid.UUID
-	if updated.LastTransactionID != nil {
-		walletTxID = updated.LastTransactionID
-	}
-
-	// Update deposit status.
-	if err := s.depositRepo.UpdateStatusTx(ctx, tx, depositID, "APPROVED", reviewerID, reviewNote, walletTxID); err != nil {
-		return nil, err
+		return fmt.Errorf("deposit service: credit wallet: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return nil, fmt.Errorf("commit: %w", err)
+		return fmt.Errorf("deposit service: commit: %w", err)
 	}
 
-	s.log.Info("deposit approved",
-		zap.String("deposit_id", depositID.String()),
-		zap.String("user_id", deposit.UserID.String()),
-		zap.String("amount_usd", deposit.AmountUSD),
-		zap.String("reviewer", reviewerID.String()))
+	s.log.Info("deposit confirmed",
+		zap.String("user_id", userID.String()),
+		zap.String("tx_hash", txHash),
+		zap.String("amount", amount),
+		zap.Int64("block", blockNumber))
 
-	// Re-fetch to return updated state.
-	return s.depositRepo.GetByID(ctx, depositID)
-}
-
-// RejectDeposit marks a deposit as REJECTED. No wallet credit occurs.
-func (s *DepositService) RejectDeposit(ctx context.Context, depositID, reviewerID uuid.UUID, reviewNote string) (*model.DepositRequest, error) {
-	deposit, err := s.depositRepo.GetByID(ctx, depositID)
-	if err != nil {
-		return nil, err
-	}
-	if deposit.Status != "PENDING" {
-		return nil, repository.ErrDepositAlreadyProcessed
-	}
-
-	tx, err := s.pg.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("begin tx: %w", err)
-	}
-	defer tx.Rollback(ctx)
-
-	if err := s.depositRepo.UpdateStatusTx(ctx, tx, depositID, "REJECTED", reviewerID, reviewNote, nil); err != nil {
-		return nil, err
-	}
-	if err := tx.Commit(ctx); err != nil {
-		return nil, fmt.Errorf("commit: %w", err)
-	}
-
-	s.log.Info("deposit rejected",
-		zap.String("deposit_id", depositID.String()),
-		zap.String("reviewer", reviewerID.String()))
-
-	return s.depositRepo.GetByID(ctx, depositID)
-}
-
-func (s *DepositService) getConfigValue(ctx context.Context, key string) (string, error) {
-	cfg, err := s.adminRepo.GetConfig(ctx, key)
-	if err != nil {
-		if errors.Is(err, repository.ErrConfigNotFound) {
-			return "", nil
-		}
-		return "", err
-	}
-	return cfg.Value, nil
+	return nil
 }

@@ -18,6 +18,7 @@ import (
 	"go.uber.org/zap"
 
 	"connectrpc.com/otelconnect"
+	"alphaforge/internal/chain"
 	"alphaforge/internal/config"
 	"alphaforge/internal/connect/strategy"
 	"alphaforge/internal/factor"
@@ -28,12 +29,14 @@ import (
 	"alphaforge/internal/mthub"
 	notifpubsub "alphaforge/internal/notification"
 	"alphaforge/internal/notifier"
+	"alphaforge/internal/reconcile"
 	"alphaforge/internal/repository"
 	"alphaforge/internal/risksvc"
 	"alphaforge/internal/secrets"
 	alphasentry "alphaforge/internal/sentry"
 	"alphaforge/internal/server"
 	"alphaforge/internal/service"
+	"alphaforge/internal/sweeper"
 	antredis "alphaforge/internal/storage/redis"
 )
 
@@ -241,6 +244,9 @@ func main() {
 	var notifSender *notifpubsub.Sender                   // set after creation; referenced by CheckMarginCall closure
 	var workerCleanup func()                               // set after creation; calls worker.Stop() on shutdown
 	var scheduleEngine *strategy.ScheduleEngine              // set after creation; started below
+	var chainMonitor *chain.Monitor                          // set after creation; started below
+	var sweeperInst *sweeper.Sweeper                         // set after creation; started below
+	var reconcilerInst *reconcile.Reconciler                 // set after creation; started below
 
 	// M12-C2: multi-broker registry created early so both handler wiring
 	// and the mdgateway pipeline can reference the same instance.
@@ -266,7 +272,7 @@ func main() {
 	defer stop()
 
 	mux := http.NewServeMux()
-	reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup = registerHandlers(ctx, mux, log, pool, mdStore, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, otelInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
+	reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup, chainMonitor, sweeperInst, reconcilerInst = registerHandlers(ctx, mux, log, pool, mdStore, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, otelInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg, secClient)
 	accountSyncSvc.SetNotificationSender(notifSender)
 
 	go scheduleEngine.Start(ctx)
@@ -274,6 +280,19 @@ func main() {
 
 	// Start reconciliation loop (cancelled on shutdown)
 	go reconLoop.Start(ctx)
+
+	// Start chain monitor for USDT deposit detection (cancelled on shutdown).
+	go chainMonitor.Run(ctx)
+
+	// Start sweeper for USDT fund consolidation (cancelled on shutdown).
+	if sweeperInst != nil {
+		go sweeperInst.Run(ctx)
+	} else {
+		log.Warn("sweeper not started — tron client initialization failed")
+	}
+
+	// Start deposit reconciler (cancelled on shutdown).
+	go reconcilerInst.Run(ctx)
 
 	// Daily data retention cleanup — prevents unbounded disk growth.
 	go func() {

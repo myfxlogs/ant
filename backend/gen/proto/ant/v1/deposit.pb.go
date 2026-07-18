@@ -22,40 +22,36 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type DepositRequest struct {
-	state      protoimpl.MessageState `protogen:"open.v1"`
-	Id         string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId     string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Amount     string                 `protobuf:"bytes,3,opt,name=amount,proto3" json:"amount,omitempty"`                           // USDT amount (decimal string)
-	AmountUsd  string                 `protobuf:"bytes,4,opt,name=amount_usd,json=amountUsd,proto3" json:"amount_usd,omitempty"`    // USD amount to credit (decimal string)
-	TxHash     string                 `protobuf:"bytes,5,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`             // optional on-chain tx hash
-	Status     string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`                           // PENDING / APPROVED / REJECTED
-	ReviewerId string                 `protobuf:"bytes,7,opt,name=reviewer_id,json=reviewerId,proto3" json:"reviewer_id,omitempty"` // admin user id
-	ReviewNote string                 `protobuf:"bytes,8,opt,name=review_note,json=reviewNote,proto3" json:"review_note,omitempty"`
-	ReviewedAt *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=reviewed_at,json=reviewedAt,proto3" json:"reviewed_at,omitempty"`
-	WalletTxId string                 `protobuf:"bytes,10,opt,name=wallet_tx_id,json=walletTxId,proto3" json:"wallet_tx_id,omitempty"`
-	CreatedAt  *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt  *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	// Joined fields for admin view
-	UserEmail     string `protobuf:"bytes,13,opt,name=user_email,json=userEmail,proto3" json:"user_email,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+type Deposit struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId           string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	DepositAddressId string                 `protobuf:"bytes,3,opt,name=deposit_address_id,json=depositAddressId,proto3" json:"deposit_address_id,omitempty"`
+	TxHash           string                 `protobuf:"bytes,4,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
+	Amount           string                 `protobuf:"bytes,5,opt,name=amount,proto3" json:"amount,omitempty"` // USDT amount (decimal string)
+	BlockNumber      int64                  `protobuf:"varint,6,opt,name=block_number,json=blockNumber,proto3" json:"block_number,omitempty"`
+	Confirmations    int32                  `protobuf:"varint,7,opt,name=confirmations,proto3" json:"confirmations,omitempty"`
+	Status           string                 `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"` // CONFIRMED / MANUAL_REVIEW
+	ConfirmedAt      *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=confirmed_at,json=confirmedAt,proto3" json:"confirmed_at,omitempty"`
+	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
-func (x *DepositRequest) Reset() {
-	*x = DepositRequest{}
+func (x *Deposit) Reset() {
+	*x = Deposit{}
 	mi := &file_deposit_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *DepositRequest) String() string {
+func (x *Deposit) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DepositRequest) ProtoMessage() {}
+func (*Deposit) ProtoMessage() {}
 
-func (x *DepositRequest) ProtoReflect() protoreflect.Message {
+func (x *Deposit) ProtoReflect() protoreflect.Message {
 	mi := &file_deposit_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -67,124 +63,101 @@ func (x *DepositRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DepositRequest.ProtoReflect.Descriptor instead.
-func (*DepositRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use Deposit.ProtoReflect.Descriptor instead.
+func (*Deposit) Descriptor() ([]byte, []int) {
 	return file_deposit_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *DepositRequest) GetId() string {
+func (x *Deposit) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *DepositRequest) GetUserId() string {
+func (x *Deposit) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
 	return ""
 }
 
-func (x *DepositRequest) GetAmount() string {
+func (x *Deposit) GetDepositAddressId() string {
 	if x != nil {
-		return x.Amount
+		return x.DepositAddressId
 	}
 	return ""
 }
 
-func (x *DepositRequest) GetAmountUsd() string {
-	if x != nil {
-		return x.AmountUsd
-	}
-	return ""
-}
-
-func (x *DepositRequest) GetTxHash() string {
+func (x *Deposit) GetTxHash() string {
 	if x != nil {
 		return x.TxHash
 	}
 	return ""
 }
 
-func (x *DepositRequest) GetStatus() string {
+func (x *Deposit) GetAmount() string {
+	if x != nil {
+		return x.Amount
+	}
+	return ""
+}
+
+func (x *Deposit) GetBlockNumber() int64 {
+	if x != nil {
+		return x.BlockNumber
+	}
+	return 0
+}
+
+func (x *Deposit) GetConfirmations() int32 {
+	if x != nil {
+		return x.Confirmations
+	}
+	return 0
+}
+
+func (x *Deposit) GetStatus() string {
 	if x != nil {
 		return x.Status
 	}
 	return ""
 }
 
-func (x *DepositRequest) GetReviewerId() string {
+func (x *Deposit) GetConfirmedAt() *timestamppb.Timestamp {
 	if x != nil {
-		return x.ReviewerId
-	}
-	return ""
-}
-
-func (x *DepositRequest) GetReviewNote() string {
-	if x != nil {
-		return x.ReviewNote
-	}
-	return ""
-}
-
-func (x *DepositRequest) GetReviewedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.ReviewedAt
+		return x.ConfirmedAt
 	}
 	return nil
 }
 
-func (x *DepositRequest) GetWalletTxId() string {
-	if x != nil {
-		return x.WalletTxId
-	}
-	return ""
-}
-
-func (x *DepositRequest) GetCreatedAt() *timestamppb.Timestamp {
+func (x *Deposit) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
 	return nil
 }
 
-func (x *DepositRequest) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
-}
-
-func (x *DepositRequest) GetUserEmail() string {
-	if x != nil {
-		return x.UserEmail
-	}
-	return ""
-}
-
-type CreateDepositRequest struct {
+type GetDepositAddressRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Amount        string                 `protobuf:"bytes,1,opt,name=amount,proto3" json:"amount,omitempty"`               // USDT amount
-	TxHash        string                 `protobuf:"bytes,2,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"` // optional on-chain tx hash
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateDepositRequest) Reset() {
-	*x = CreateDepositRequest{}
+func (x *GetDepositAddressRequest) Reset() {
+	*x = GetDepositAddressRequest{}
 	mi := &file_deposit_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateDepositRequest) String() string {
+func (x *GetDepositAddressRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateDepositRequest) ProtoMessage() {}
+func (*GetDepositAddressRequest) ProtoMessage() {}
 
-func (x *CreateDepositRequest) ProtoReflect() protoreflect.Message {
+func (x *GetDepositAddressRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_deposit_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -196,46 +169,33 @@ func (x *CreateDepositRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateDepositRequest.ProtoReflect.Descriptor instead.
-func (*CreateDepositRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetDepositAddressRequest.ProtoReflect.Descriptor instead.
+func (*GetDepositAddressRequest) Descriptor() ([]byte, []int) {
 	return file_deposit_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *CreateDepositRequest) GetAmount() string {
-	if x != nil {
-		return x.Amount
-	}
-	return ""
-}
-
-func (x *CreateDepositRequest) GetTxHash() string {
-	if x != nil {
-		return x.TxHash
-	}
-	return ""
-}
-
-type CreateDepositResponse struct {
+type GetDepositAddressResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Deposit       *DepositRequest        `protobuf:"bytes,1,opt,name=deposit,proto3" json:"deposit,omitempty"`
+	Address       string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"` // TRC20 address (Base58)
+	Network       string                 `protobuf:"bytes,2,opt,name=network,proto3" json:"network,omitempty"` // "TRC20"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateDepositResponse) Reset() {
-	*x = CreateDepositResponse{}
+func (x *GetDepositAddressResponse) Reset() {
+	*x = GetDepositAddressResponse{}
 	mi := &file_deposit_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateDepositResponse) String() string {
+func (x *GetDepositAddressResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateDepositResponse) ProtoMessage() {}
+func (*GetDepositAddressResponse) ProtoMessage() {}
 
-func (x *CreateDepositResponse) ProtoReflect() protoreflect.Message {
+func (x *GetDepositAddressResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_deposit_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -247,16 +207,23 @@ func (x *CreateDepositResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateDepositResponse.ProtoReflect.Descriptor instead.
-func (*CreateDepositResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetDepositAddressResponse.ProtoReflect.Descriptor instead.
+func (*GetDepositAddressResponse) Descriptor() ([]byte, []int) {
 	return file_deposit_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *CreateDepositResponse) GetDeposit() *DepositRequest {
+func (x *GetDepositAddressResponse) GetAddress() string {
 	if x != nil {
-		return x.Deposit
+		return x.Address
 	}
-	return nil
+	return ""
+}
+
+func (x *GetDepositAddressResponse) GetNetwork() string {
+	if x != nil {
+		return x.Network
+	}
+	return ""
 }
 
 type ListMyDepositsRequest struct {
@@ -313,7 +280,7 @@ func (x *ListMyDepositsRequest) GetPageSize() int32 {
 
 type ListMyDepositsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Deposits      []*DepositRequest      `protobuf:"bytes,1,rep,name=deposits,proto3" json:"deposits,omitempty"`
+	Deposits      []*Deposit             `protobuf:"bytes,1,rep,name=deposits,proto3" json:"deposits,omitempty"`
 	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -349,7 +316,7 @@ func (*ListMyDepositsResponse) Descriptor() ([]byte, []int) {
 	return file_deposit_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *ListMyDepositsResponse) GetDeposits() []*DepositRequest {
+func (x *ListMyDepositsResponse) GetDeposits() []*Deposit {
 	if x != nil {
 		return x.Deposits
 	}
@@ -363,126 +330,29 @@ func (x *ListMyDepositsResponse) GetTotal() int64 {
 	return 0
 }
 
-type GetDepositInfoRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetDepositInfoRequest) Reset() {
-	*x = GetDepositInfoRequest{}
-	mi := &file_deposit_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetDepositInfoRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetDepositInfoRequest) ProtoMessage() {}
-
-func (x *GetDepositInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetDepositInfoRequest.ProtoReflect.Descriptor instead.
-func (*GetDepositInfoRequest) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{5}
-}
-
-type GetDepositInfoResponse struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	ReceivingAddress string                 `protobuf:"bytes,1,opt,name=receiving_address,json=receivingAddress,proto3" json:"receiving_address,omitempty"`
-	Network          string                 `protobuf:"bytes,2,opt,name=network,proto3" json:"network,omitempty"`                               // TRC20 / ERC20
-	ExchangeRate     string                 `protobuf:"bytes,3,opt,name=exchange_rate,json=exchangeRate,proto3" json:"exchange_rate,omitempty"` // USD per 1 USDT
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
-}
-
-func (x *GetDepositInfoResponse) Reset() {
-	*x = GetDepositInfoResponse{}
-	mi := &file_deposit_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetDepositInfoResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetDepositInfoResponse) ProtoMessage() {}
-
-func (x *GetDepositInfoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetDepositInfoResponse.ProtoReflect.Descriptor instead.
-func (*GetDepositInfoResponse) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *GetDepositInfoResponse) GetReceivingAddress() string {
-	if x != nil {
-		return x.ReceivingAddress
-	}
-	return ""
-}
-
-func (x *GetDepositInfoResponse) GetNetwork() string {
-	if x != nil {
-		return x.Network
-	}
-	return ""
-}
-
-func (x *GetDepositInfoResponse) GetExchangeRate() string {
-	if x != nil {
-		return x.ExchangeRate
-	}
-	return ""
-}
-
-type ListDepositsRequest struct {
+type ListManualReviewDepositsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"` // optional filter: PENDING / APPROVED / REJECTED
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListDepositsRequest) Reset() {
-	*x = ListDepositsRequest{}
-	mi := &file_deposit_proto_msgTypes[7]
+func (x *ListManualReviewDepositsRequest) Reset() {
+	*x = ListManualReviewDepositsRequest{}
+	mi := &file_deposit_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListDepositsRequest) String() string {
+func (x *ListManualReviewDepositsRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListDepositsRequest) ProtoMessage() {}
+func (*ListManualReviewDepositsRequest) ProtoMessage() {}
 
-func (x *ListDepositsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[7]
+func (x *ListManualReviewDepositsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -493,55 +363,48 @@ func (x *ListDepositsRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListDepositsRequest.ProtoReflect.Descriptor instead.
-func (*ListDepositsRequest) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{7}
+// Deprecated: Use ListManualReviewDepositsRequest.ProtoReflect.Descriptor instead.
+func (*ListManualReviewDepositsRequest) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *ListDepositsRequest) GetPage() int32 {
+func (x *ListManualReviewDepositsRequest) GetPage() int32 {
 	if x != nil {
 		return x.Page
 	}
 	return 0
 }
 
-func (x *ListDepositsRequest) GetPageSize() int32 {
+func (x *ListManualReviewDepositsRequest) GetPageSize() int32 {
 	if x != nil {
 		return x.PageSize
 	}
 	return 0
 }
 
-func (x *ListDepositsRequest) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-type ListDepositsResponse struct {
+type ListManualReviewDepositsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Deposits      []*DepositRequest      `protobuf:"bytes,1,rep,name=deposits,proto3" json:"deposits,omitempty"`
+	Deposits      []*Deposit             `protobuf:"bytes,1,rep,name=deposits,proto3" json:"deposits,omitempty"`
 	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListDepositsResponse) Reset() {
-	*x = ListDepositsResponse{}
-	mi := &file_deposit_proto_msgTypes[8]
+func (x *ListManualReviewDepositsResponse) Reset() {
+	*x = ListManualReviewDepositsResponse{}
+	mi := &file_deposit_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListDepositsResponse) String() string {
+func (x *ListManualReviewDepositsResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListDepositsResponse) ProtoMessage() {}
+func (*ListManualReviewDepositsResponse) ProtoMessage() {}
 
-func (x *ListDepositsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[8]
+func (x *ListManualReviewDepositsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -552,289 +415,63 @@ func (x *ListDepositsResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListDepositsResponse.ProtoReflect.Descriptor instead.
-func (*ListDepositsResponse) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{8}
+// Deprecated: Use ListManualReviewDepositsResponse.ProtoReflect.Descriptor instead.
+func (*ListManualReviewDepositsResponse) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *ListDepositsResponse) GetDeposits() []*DepositRequest {
+func (x *ListManualReviewDepositsResponse) GetDeposits() []*Deposit {
 	if x != nil {
 		return x.Deposits
 	}
 	return nil
 }
 
-func (x *ListDepositsResponse) GetTotal() int64 {
+func (x *ListManualReviewDepositsResponse) GetTotal() int64 {
 	if x != nil {
 		return x.Total
 	}
 	return 0
 }
 
-type ApproveDepositRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DepositId     string                 `protobuf:"bytes,1,opt,name=deposit_id,json=depositId,proto3" json:"deposit_id,omitempty"`
-	ReviewNote    string                 `protobuf:"bytes,2,opt,name=review_note,json=reviewNote,proto3" json:"review_note,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ApproveDepositRequest) Reset() {
-	*x = ApproveDepositRequest{}
-	mi := &file_deposit_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ApproveDepositRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ApproveDepositRequest) ProtoMessage() {}
-
-func (x *ApproveDepositRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ApproveDepositRequest.ProtoReflect.Descriptor instead.
-func (*ApproveDepositRequest) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *ApproveDepositRequest) GetDepositId() string {
-	if x != nil {
-		return x.DepositId
-	}
-	return ""
-}
-
-func (x *ApproveDepositRequest) GetReviewNote() string {
-	if x != nil {
-		return x.ReviewNote
-	}
-	return ""
-}
-
-type ApproveDepositResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Deposit       *DepositRequest        `protobuf:"bytes,1,opt,name=deposit,proto3" json:"deposit,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ApproveDepositResponse) Reset() {
-	*x = ApproveDepositResponse{}
-	mi := &file_deposit_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ApproveDepositResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ApproveDepositResponse) ProtoMessage() {}
-
-func (x *ApproveDepositResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ApproveDepositResponse.ProtoReflect.Descriptor instead.
-func (*ApproveDepositResponse) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *ApproveDepositResponse) GetDeposit() *DepositRequest {
-	if x != nil {
-		return x.Deposit
-	}
-	return nil
-}
-
-type RejectDepositRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DepositId     string                 `protobuf:"bytes,1,opt,name=deposit_id,json=depositId,proto3" json:"deposit_id,omitempty"`
-	ReviewNote    string                 `protobuf:"bytes,2,opt,name=review_note,json=reviewNote,proto3" json:"review_note,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RejectDepositRequest) Reset() {
-	*x = RejectDepositRequest{}
-	mi := &file_deposit_proto_msgTypes[11]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RejectDepositRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RejectDepositRequest) ProtoMessage() {}
-
-func (x *RejectDepositRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[11]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RejectDepositRequest.ProtoReflect.Descriptor instead.
-func (*RejectDepositRequest) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *RejectDepositRequest) GetDepositId() string {
-	if x != nil {
-		return x.DepositId
-	}
-	return ""
-}
-
-func (x *RejectDepositRequest) GetReviewNote() string {
-	if x != nil {
-		return x.ReviewNote
-	}
-	return ""
-}
-
-type RejectDepositResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Deposit       *DepositRequest        `protobuf:"bytes,1,opt,name=deposit,proto3" json:"deposit,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RejectDepositResponse) Reset() {
-	*x = RejectDepositResponse{}
-	mi := &file_deposit_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RejectDepositResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RejectDepositResponse) ProtoMessage() {}
-
-func (x *RejectDepositResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RejectDepositResponse.ProtoReflect.Descriptor instead.
-func (*RejectDepositResponse) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *RejectDepositResponse) GetDeposit() *DepositRequest {
-	if x != nil {
-		return x.Deposit
-	}
-	return nil
-}
-
 var File_deposit_proto protoreflect.FileDescriptor
 
 const file_deposit_proto_rawDesc = "" +
 	"\n" +
-	"\rdeposit.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd7\x03\n" +
-	"\x0eDepositRequest\x12\x0e\n" +
+	"\rdeposit.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xec\x02\n" +
+	"\aDeposit\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x16\n" +
-	"\x06amount\x18\x03 \x01(\tR\x06amount\x12\x1d\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12,\n" +
+	"\x12deposit_address_id\x18\x03 \x01(\tR\x10depositAddressId\x12\x17\n" +
+	"\atx_hash\x18\x04 \x01(\tR\x06txHash\x12\x16\n" +
+	"\x06amount\x18\x05 \x01(\tR\x06amount\x12!\n" +
+	"\fblock_number\x18\x06 \x01(\x03R\vblockNumber\x12$\n" +
+	"\rconfirmations\x18\a \x01(\x05R\rconfirmations\x12\x16\n" +
+	"\x06status\x18\b \x01(\tR\x06status\x12=\n" +
+	"\fconfirmed_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\vconfirmedAt\x129\n" +
 	"\n" +
-	"amount_usd\x18\x04 \x01(\tR\tamountUsd\x12\x17\n" +
-	"\atx_hash\x18\x05 \x01(\tR\x06txHash\x12\x16\n" +
-	"\x06status\x18\x06 \x01(\tR\x06status\x12\x1f\n" +
-	"\vreviewer_id\x18\a \x01(\tR\n" +
-	"reviewerId\x12\x1f\n" +
-	"\vreview_note\x18\b \x01(\tR\n" +
-	"reviewNote\x12;\n" +
-	"\vreviewed_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"reviewedAt\x12 \n" +
-	"\fwallet_tx_id\x18\n" +
-	" \x01(\tR\n" +
-	"walletTxId\x129\n" +
-	"\n" +
-	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1d\n" +
-	"\n" +
-	"user_email\x18\r \x01(\tR\tuserEmail\"G\n" +
-	"\x14CreateDepositRequest\x12\x16\n" +
-	"\x06amount\x18\x01 \x01(\tR\x06amount\x12\x17\n" +
-	"\atx_hash\x18\x02 \x01(\tR\x06txHash\"I\n" +
-	"\x15CreateDepositResponse\x120\n" +
-	"\adeposit\x18\x01 \x01(\v2\x16.ant.v1.DepositRequestR\adeposit\"H\n" +
+	"created_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x1a\n" +
+	"\x18GetDepositAddressRequest\"O\n" +
+	"\x19GetDepositAddressResponse\x12\x18\n" +
+	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x18\n" +
+	"\anetwork\x18\x02 \x01(\tR\anetwork\"H\n" +
 	"\x15ListMyDepositsRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"b\n" +
-	"\x16ListMyDepositsResponse\x122\n" +
-	"\bdeposits\x18\x01 \x03(\v2\x16.ant.v1.DepositRequestR\bdeposits\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x03R\x05total\"\x17\n" +
-	"\x15GetDepositInfoRequest\"\x84\x01\n" +
-	"\x16GetDepositInfoResponse\x12+\n" +
-	"\x11receiving_address\x18\x01 \x01(\tR\x10receivingAddress\x12\x18\n" +
-	"\anetwork\x18\x02 \x01(\tR\anetwork\x12#\n" +
-	"\rexchange_rate\x18\x03 \x01(\tR\fexchangeRate\"^\n" +
-	"\x13ListDepositsRequest\x12\x12\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"[\n" +
+	"\x16ListMyDepositsResponse\x12+\n" +
+	"\bdeposits\x18\x01 \x03(\v2\x0f.ant.v1.DepositR\bdeposits\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\"R\n" +
+	"\x1fListManualReviewDepositsRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\tR\x06status\"`\n" +
-	"\x14ListDepositsResponse\x122\n" +
-	"\bdeposits\x18\x01 \x03(\v2\x16.ant.v1.DepositRequestR\bdeposits\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x03R\x05total\"W\n" +
-	"\x15ApproveDepositRequest\x12\x1d\n" +
-	"\n" +
-	"deposit_id\x18\x01 \x01(\tR\tdepositId\x12\x1f\n" +
-	"\vreview_note\x18\x02 \x01(\tR\n" +
-	"reviewNote\"J\n" +
-	"\x16ApproveDepositResponse\x120\n" +
-	"\adeposit\x18\x01 \x01(\v2\x16.ant.v1.DepositRequestR\adeposit\"V\n" +
-	"\x14RejectDepositRequest\x12\x1d\n" +
-	"\n" +
-	"deposit_id\x18\x01 \x01(\tR\tdepositId\x12\x1f\n" +
-	"\vreview_note\x18\x02 \x01(\tR\n" +
-	"reviewNote\"I\n" +
-	"\x15RejectDepositResponse\x120\n" +
-	"\adeposit\x18\x01 \x01(\v2\x16.ant.v1.DepositRequestR\adeposit2\xea\x03\n" +
-	"\x0eDepositService\x12L\n" +
-	"\rCreateDeposit\x12\x1c.ant.v1.CreateDepositRequest\x1a\x1d.ant.v1.CreateDepositResponse\x12O\n" +
-	"\x0eListMyDeposits\x12\x1d.ant.v1.ListMyDepositsRequest\x1a\x1e.ant.v1.ListMyDepositsResponse\x12O\n" +
-	"\x0eGetDepositInfo\x12\x1d.ant.v1.GetDepositInfoRequest\x1a\x1e.ant.v1.GetDepositInfoResponse\x12I\n" +
-	"\fListDeposits\x12\x1b.ant.v1.ListDepositsRequest\x1a\x1c.ant.v1.ListDepositsResponse\x12O\n" +
-	"\x0eApproveDeposit\x12\x1d.ant.v1.ApproveDepositRequest\x1a\x1e.ant.v1.ApproveDepositResponse\x12L\n" +
-	"\rRejectDeposit\x12\x1c.ant.v1.RejectDepositRequest\x1a\x1d.ant.v1.RejectDepositResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"e\n" +
+	" ListManualReviewDepositsResponse\x12+\n" +
+	"\bdeposits\x18\x01 \x03(\v2\x0f.ant.v1.DepositR\bdeposits\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total2\xaa\x02\n" +
+	"\x0eDepositService\x12X\n" +
+	"\x11GetDepositAddress\x12 .ant.v1.GetDepositAddressRequest\x1a!.ant.v1.GetDepositAddressResponse\x12O\n" +
+	"\x0eListMyDeposits\x12\x1d.ant.v1.ListMyDepositsRequest\x1a\x1e.ant.v1.ListMyDepositsResponse\x12m\n" +
+	"\x18ListManualReviewDeposits\x12'.ant.v1.ListManualReviewDepositsRequest\x1a(.ant.v1.ListManualReviewDepositsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_deposit_proto_rawDescOnce sync.Once
@@ -848,49 +485,33 @@ func file_deposit_proto_rawDescGZIP() []byte {
 	return file_deposit_proto_rawDescData
 }
 
-var file_deposit_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_deposit_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_deposit_proto_goTypes = []any{
-	(*DepositRequest)(nil),         // 0: ant.v1.DepositRequest
-	(*CreateDepositRequest)(nil),   // 1: ant.v1.CreateDepositRequest
-	(*CreateDepositResponse)(nil),  // 2: ant.v1.CreateDepositResponse
-	(*ListMyDepositsRequest)(nil),  // 3: ant.v1.ListMyDepositsRequest
-	(*ListMyDepositsResponse)(nil), // 4: ant.v1.ListMyDepositsResponse
-	(*GetDepositInfoRequest)(nil),  // 5: ant.v1.GetDepositInfoRequest
-	(*GetDepositInfoResponse)(nil), // 6: ant.v1.GetDepositInfoResponse
-	(*ListDepositsRequest)(nil),    // 7: ant.v1.ListDepositsRequest
-	(*ListDepositsResponse)(nil),   // 8: ant.v1.ListDepositsResponse
-	(*ApproveDepositRequest)(nil),  // 9: ant.v1.ApproveDepositRequest
-	(*ApproveDepositResponse)(nil), // 10: ant.v1.ApproveDepositResponse
-	(*RejectDepositRequest)(nil),   // 11: ant.v1.RejectDepositRequest
-	(*RejectDepositResponse)(nil),  // 12: ant.v1.RejectDepositResponse
-	(*timestamppb.Timestamp)(nil),  // 13: google.protobuf.Timestamp
+	(*Deposit)(nil),                          // 0: ant.v1.Deposit
+	(*GetDepositAddressRequest)(nil),         // 1: ant.v1.GetDepositAddressRequest
+	(*GetDepositAddressResponse)(nil),        // 2: ant.v1.GetDepositAddressResponse
+	(*ListMyDepositsRequest)(nil),            // 3: ant.v1.ListMyDepositsRequest
+	(*ListMyDepositsResponse)(nil),           // 4: ant.v1.ListMyDepositsResponse
+	(*ListManualReviewDepositsRequest)(nil),  // 5: ant.v1.ListManualReviewDepositsRequest
+	(*ListManualReviewDepositsResponse)(nil), // 6: ant.v1.ListManualReviewDepositsResponse
+	(*timestamppb.Timestamp)(nil),            // 7: google.protobuf.Timestamp
 }
 var file_deposit_proto_depIdxs = []int32{
-	13, // 0: ant.v1.DepositRequest.reviewed_at:type_name -> google.protobuf.Timestamp
-	13, // 1: ant.v1.DepositRequest.created_at:type_name -> google.protobuf.Timestamp
-	13, // 2: ant.v1.DepositRequest.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 3: ant.v1.CreateDepositResponse.deposit:type_name -> ant.v1.DepositRequest
-	0,  // 4: ant.v1.ListMyDepositsResponse.deposits:type_name -> ant.v1.DepositRequest
-	0,  // 5: ant.v1.ListDepositsResponse.deposits:type_name -> ant.v1.DepositRequest
-	0,  // 6: ant.v1.ApproveDepositResponse.deposit:type_name -> ant.v1.DepositRequest
-	0,  // 7: ant.v1.RejectDepositResponse.deposit:type_name -> ant.v1.DepositRequest
-	1,  // 8: ant.v1.DepositService.CreateDeposit:input_type -> ant.v1.CreateDepositRequest
-	3,  // 9: ant.v1.DepositService.ListMyDeposits:input_type -> ant.v1.ListMyDepositsRequest
-	5,  // 10: ant.v1.DepositService.GetDepositInfo:input_type -> ant.v1.GetDepositInfoRequest
-	7,  // 11: ant.v1.DepositService.ListDeposits:input_type -> ant.v1.ListDepositsRequest
-	9,  // 12: ant.v1.DepositService.ApproveDeposit:input_type -> ant.v1.ApproveDepositRequest
-	11, // 13: ant.v1.DepositService.RejectDeposit:input_type -> ant.v1.RejectDepositRequest
-	2,  // 14: ant.v1.DepositService.CreateDeposit:output_type -> ant.v1.CreateDepositResponse
-	4,  // 15: ant.v1.DepositService.ListMyDeposits:output_type -> ant.v1.ListMyDepositsResponse
-	6,  // 16: ant.v1.DepositService.GetDepositInfo:output_type -> ant.v1.GetDepositInfoResponse
-	8,  // 17: ant.v1.DepositService.ListDeposits:output_type -> ant.v1.ListDepositsResponse
-	10, // 18: ant.v1.DepositService.ApproveDeposit:output_type -> ant.v1.ApproveDepositResponse
-	12, // 19: ant.v1.DepositService.RejectDeposit:output_type -> ant.v1.RejectDepositResponse
-	14, // [14:20] is the sub-list for method output_type
-	8,  // [8:14] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	7, // 0: ant.v1.Deposit.confirmed_at:type_name -> google.protobuf.Timestamp
+	7, // 1: ant.v1.Deposit.created_at:type_name -> google.protobuf.Timestamp
+	0, // 2: ant.v1.ListMyDepositsResponse.deposits:type_name -> ant.v1.Deposit
+	0, // 3: ant.v1.ListManualReviewDepositsResponse.deposits:type_name -> ant.v1.Deposit
+	1, // 4: ant.v1.DepositService.GetDepositAddress:input_type -> ant.v1.GetDepositAddressRequest
+	3, // 5: ant.v1.DepositService.ListMyDeposits:input_type -> ant.v1.ListMyDepositsRequest
+	5, // 6: ant.v1.DepositService.ListManualReviewDeposits:input_type -> ant.v1.ListManualReviewDepositsRequest
+	2, // 7: ant.v1.DepositService.GetDepositAddress:output_type -> ant.v1.GetDepositAddressResponse
+	4, // 8: ant.v1.DepositService.ListMyDeposits:output_type -> ant.v1.ListMyDepositsResponse
+	6, // 9: ant.v1.DepositService.ListManualReviewDeposits:output_type -> ant.v1.ListManualReviewDepositsResponse
+	7, // [7:10] is the sub-list for method output_type
+	4, // [4:7] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_deposit_proto_init() }
@@ -904,7 +525,7 @@ func file_deposit_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_deposit_proto_rawDesc), len(file_deposit_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

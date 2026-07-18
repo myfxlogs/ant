@@ -80,6 +80,10 @@ type Config struct {
 
 	// RequireEmailVerification blocks login until email is verified (enable after SMTP is configured)
 	RequireEmailVerification bool
+
+	// Tron chain monitoring (USDT deposit)
+	TrongridAPIKey string
+	TronscanAPIKey string
 }
 
 // Load reads all configuration from environment variables with defaults.
@@ -136,6 +140,9 @@ func Load() *Config {
 		AppURL: getenv("APP_URL", "https://alfq.org"),
 
 		RequireEmailVerification: getenvBool("REQUIRE_EMAIL_VERIFICATION", false),
+
+		TrongridAPIKey: getenv("TRONGRID_API_KEY", ""),
+		TronscanAPIKey: getenv("TRONSCAN_API_KEY", ""),
 
 		RiskGateEnabled:          getenvBool("ALPHAFORGE_RISK_GATE_ENABLED", true),
 		RiskGateKillSwitch:       getenvBool("ALPHAFORGE_RISK_GATE_KILLSWITCH_DEFAULT", false),
