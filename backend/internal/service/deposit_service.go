@@ -100,13 +100,20 @@ func (s *DepositService) ImportDepositAddresses(ctx context.Context, batchData [
 	if len(batch.Entries) == 0 {
 		return 0, 0, errors.New("deposit service: empty batch")
 	}
+	if len(batch.Entries) > 5000 {
+		return 0, 0, fmt.Errorf("deposit service: batch too large: %d entries (max 5000), split into multiple files", len(batch.Entries))
+	}
 	addrs := make([]model.DepositAddress, 0, len(batch.Entries))
 	for _, e := range batch.Entries {
+		network := e.Network
+		if network == "" {
+			network = "TRC20"
+		}
 		addrs = append(addrs, model.DepositAddress{
 			Address:          e.Address,
 			DerivationIndex:  int(e.DerivationIndex),
 			EncryptedPrivkey: e.EncryptedPrivkey,
-			Network:          e.Network,
+			Network:          network,
 			Status:           "AVAILABLE",
 		})
 	}

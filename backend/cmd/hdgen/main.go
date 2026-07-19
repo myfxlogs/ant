@@ -3,12 +3,15 @@
 //
 // Usage (one command, all you need):
 //
-//	hdgen -count 100 -kek-base64 "<ANT_MASTER_KEY>"
-//	hdgen -count 100 -kek-base64 "<ANT_MASTER_KEY>" -mnemonic "existing 24 words"
-//	hdgen -count 100 -kek-base64 "<ANT_MASTER_KEY>" -out deposit_addresses.bin
+//	hdgen -count 100 -kek-file /path/to/kek.txt
+//	hdgen -count 100 -kek-file /path/to/kek.txt -mnemonic "existing 24 words"
+//	hdgen -count 100 -kek-file /path/to/kek.txt -out deposit_addresses.bin
 //
 // The output .bin file contains serialized AddressBatch proto (NOT JSON).
 // Upload it via Admin → Wallet Management → Deposit Addresses → Import button.
+//
+// KEK should be provided via -kek-file (a file containing the base64 key) to avoid
+// exposing it in process arguments. -kek-base64 is kept for backwards compat.
 package main
 
 import (
@@ -16,6 +19,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/hdwallet"
@@ -28,14 +32,23 @@ func main() {
 	start := flag.Int("start", 0, "Starting derivation index")
 	count := flag.Int("count", 100, "Number of addresses to generate")
 	out := flag.String("out", "deposit_addresses.bin", "Output file (proto binary)")
-	kekB64 := flag.String("kek-base64", "", "Base64-encoded KEK (must match server's ANT_MASTER_KEY)")
+	kekB64 := flag.String("kek-base64", "", "Base64-encoded KEK (insecure: visible in process list). Prefer -kek-file.")
+	kekFile := flag.String("kek-file", "", "Path to file containing base64-encoded KEK (recommended).")
 	flag.Parse()
 
 	if *count <= 0 {
 		fatal("count must be positive")
 	}
-	if *kekB64 == "" {
-		fatal("-kek-base64 is required (use the same value as server's ANT_MASTER_KEY env)")
+
+	kekValue := *kekB64
+	if *kekFile != "" {
+		data, err := os.ReadFile(*kekFile)
+		if err != nil {
+			fatal("read kek file: %v", err)
+		}
+		kekValue = strings.TrimSpace(string(data))
+	} else if kekValue == "" {
+		fatal("either -kek-file or -kek-base64 is required (prefer -kek-file for security)")
 	}
 
 	mnemonicPhrase := *mnemonic
@@ -50,7 +63,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "======================================================\n\n")
 	}
 
-	sec, err := secrets.New(*kekB64, 1)
+	sec, err := secrets.New(kekValue, 1)
 	if err != nil {
 		fatal("create secrets client: %v", err)
 	}

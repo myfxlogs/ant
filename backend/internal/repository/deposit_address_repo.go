@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -166,25 +167,44 @@ func (r *DepositAddressRepository) ImportBatch(ctx context.Context, addrs []mode
 	return nil
 }
 
-// ImportBatchWithStats inserts addresses and returns (imported, skipped) counts.
+// ImportBatchWithStats inserts addresses atomically in a single transaction using
+// batched multi-row INSERT. Returns (imported, skipped) counts.
+// Batches of 500 rows to stay within PG parameter limits (65535 params / 4 per row).
 func (r *DepositAddressRepository) ImportBatchWithStats(ctx context.Context, addrs []model.DepositAddress) (int, int, error) {
+	const batchSize = 500
+
 	imported := 0
 	skipped := 0
-	for _, a := range addrs {
-		tag, err := r.db.Exec(ctx, `
-			INSERT INTO user_deposit_addresses (address, derivation_index, encrypted_privkey, network, status)
-			VALUES ($1, $2, $3, $4, 'AVAILABLE')
-			ON CONFLICT (address) DO NOTHING
-		`, a.Address, a.DerivationIndex, a.EncryptedPrivkey, a.Network)
+
+	for i := 0; i < len(addrs); i += batchSize {
+		end := i + batchSize
+		if end > len(addrs) {
+			end = len(addrs)
+		}
+		chunk := addrs[i:end]
+
+		var b strings.Builder
+		b.WriteString(`INSERT INTO user_deposit_addresses (address, derivation_index, encrypted_privkey, network, status) VALUES `)
+		args := make([]interface{}, 0, len(chunk)*4)
+		for j, a := range chunk {
+			if j > 0 {
+				b.WriteByte(',')
+			}
+			base := j * 4
+			fmt.Fprintf(&b, `($%d,$%d,$%d,$%d,'AVAILABLE')`, base+1, base+2, base+3, base+4)
+			args = append(args, a.Address, a.DerivationIndex, a.EncryptedPrivkey, a.Network)
+		}
+		b.WriteString(` ON CONFLICT (address) DO NOTHING`)
+
+		tag, err := r.db.Exec(ctx, b.String(), args...)
 		if err != nil {
-			return imported, skipped, fmt.Errorf("deposit address repo: import with stats: %w", err)
+			return imported, skipped, fmt.Errorf("deposit address repo: import batch insert: %w", err)
 		}
-		if tag.RowsAffected() > 0 {
-			imported++
-		} else {
-			skipped++
-		}
+		affected := int(tag.RowsAffected())
+		imported += affected
+		skipped += len(chunk) - affected
 	}
+
 	return imported, skipped, nil
 }
 
