@@ -45,6 +45,9 @@ const (
 	// DepositServiceListDepositAddressesProcedure is the fully-qualified name of the DepositService's
 	// ListDepositAddresses RPC.
 	DepositServiceListDepositAddressesProcedure = "/ant.v1.DepositService/ListDepositAddresses"
+	// DepositServiceImportDepositAddressesProcedure is the fully-qualified name of the DepositService's
+	// ImportDepositAddresses RPC.
+	DepositServiceImportDepositAddressesProcedure = "/ant.v1.DepositService/ImportDepositAddresses"
 )
 
 // DepositServiceClient is a client for the ant.v1.DepositService service.
@@ -57,6 +60,8 @@ type DepositServiceClient interface {
 	ListManualReviewDeposits(context.Context, *connect.Request[v1.ListManualReviewDepositsRequest]) (*connect.Response[v1.ListManualReviewDepositsResponse], error)
 	// Admin: list all deposit addresses (assigned + available pool).
 	ListDepositAddresses(context.Context, *connect.Request[v1.ListDepositAddressesRequest]) (*connect.Response[v1.ListDepositAddressesResponse], error)
+	// Admin: import a batch of offline-generated addresses (proto binary).
+	ImportDepositAddresses(context.Context, *connect.Request[v1.ImportDepositAddressesRequest]) (*connect.Response[v1.ImportDepositAddressesResponse], error)
 }
 
 // NewDepositServiceClient constructs a client for the ant.v1.DepositService service. By default, it
@@ -94,6 +99,12 @@ func NewDepositServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(depositServiceMethods.ByName("ListDepositAddresses")),
 			connect.WithClientOptions(opts...),
 		),
+		importDepositAddresses: connect.NewClient[v1.ImportDepositAddressesRequest, v1.ImportDepositAddressesResponse](
+			httpClient,
+			baseURL+DepositServiceImportDepositAddressesProcedure,
+			connect.WithSchema(depositServiceMethods.ByName("ImportDepositAddresses")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -103,6 +114,7 @@ type depositServiceClient struct {
 	listMyDeposits           *connect.Client[v1.ListMyDepositsRequest, v1.ListMyDepositsResponse]
 	listManualReviewDeposits *connect.Client[v1.ListManualReviewDepositsRequest, v1.ListManualReviewDepositsResponse]
 	listDepositAddresses     *connect.Client[v1.ListDepositAddressesRequest, v1.ListDepositAddressesResponse]
+	importDepositAddresses   *connect.Client[v1.ImportDepositAddressesRequest, v1.ImportDepositAddressesResponse]
 }
 
 // GetDepositAddress calls ant.v1.DepositService.GetDepositAddress.
@@ -125,6 +137,11 @@ func (c *depositServiceClient) ListDepositAddresses(ctx context.Context, req *co
 	return c.listDepositAddresses.CallUnary(ctx, req)
 }
 
+// ImportDepositAddresses calls ant.v1.DepositService.ImportDepositAddresses.
+func (c *depositServiceClient) ImportDepositAddresses(ctx context.Context, req *connect.Request[v1.ImportDepositAddressesRequest]) (*connect.Response[v1.ImportDepositAddressesResponse], error) {
+	return c.importDepositAddresses.CallUnary(ctx, req)
+}
+
 // DepositServiceHandler is an implementation of the ant.v1.DepositService service.
 type DepositServiceHandler interface {
 	// User: get or claim a deposit address (idempotent).
@@ -135,6 +152,8 @@ type DepositServiceHandler interface {
 	ListManualReviewDeposits(context.Context, *connect.Request[v1.ListManualReviewDepositsRequest]) (*connect.Response[v1.ListManualReviewDepositsResponse], error)
 	// Admin: list all deposit addresses (assigned + available pool).
 	ListDepositAddresses(context.Context, *connect.Request[v1.ListDepositAddressesRequest]) (*connect.Response[v1.ListDepositAddressesResponse], error)
+	// Admin: import a batch of offline-generated addresses (proto binary).
+	ImportDepositAddresses(context.Context, *connect.Request[v1.ImportDepositAddressesRequest]) (*connect.Response[v1.ImportDepositAddressesResponse], error)
 }
 
 // NewDepositServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -168,6 +187,12 @@ func NewDepositServiceHandler(svc DepositServiceHandler, opts ...connect.Handler
 		connect.WithSchema(depositServiceMethods.ByName("ListDepositAddresses")),
 		connect.WithHandlerOptions(opts...),
 	)
+	depositServiceImportDepositAddressesHandler := connect.NewUnaryHandler(
+		DepositServiceImportDepositAddressesProcedure,
+		svc.ImportDepositAddresses,
+		connect.WithSchema(depositServiceMethods.ByName("ImportDepositAddresses")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.DepositService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DepositServiceGetDepositAddressProcedure:
@@ -178,6 +203,8 @@ func NewDepositServiceHandler(svc DepositServiceHandler, opts ...connect.Handler
 			depositServiceListManualReviewDepositsHandler.ServeHTTP(w, r)
 		case DepositServiceListDepositAddressesProcedure:
 			depositServiceListDepositAddressesHandler.ServeHTTP(w, r)
+		case DepositServiceImportDepositAddressesProcedure:
+			depositServiceImportDepositAddressesHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -201,4 +228,8 @@ func (UnimplementedDepositServiceHandler) ListManualReviewDeposits(context.Conte
 
 func (UnimplementedDepositServiceHandler) ListDepositAddresses(context.Context, *connect.Request[v1.ListDepositAddressesRequest]) (*connect.Response[v1.ListDepositAddressesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.ListDepositAddresses is not implemented"))
+}
+
+func (UnimplementedDepositServiceHandler) ImportDepositAddresses(context.Context, *connect.Request[v1.ImportDepositAddressesRequest]) (*connect.Response[v1.ImportDepositAddressesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.ImportDepositAddresses is not implemented"))
 }

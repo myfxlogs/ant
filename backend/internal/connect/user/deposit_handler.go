@@ -159,6 +159,25 @@ func depositAddressToProto(a *model.DepositAddress) *antv1.DepositAddress {
 	return out
 }
 
+func (s *DepositServer) ImportDepositAddresses(ctx context.Context, req *connect.Request[antv1.ImportDepositAddressesRequest]) (*connect.Response[antv1.ImportDepositAddressesResponse], error) {
+	if _, err := s.requireAdmin(ctx); err != nil {
+		return nil, err
+	}
+	if len(req.Msg.BatchData) == 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("empty batch data"))
+	}
+	imported, skipped, err := s.svc.ImportDepositAddresses(ctx, req.Msg.BatchData)
+	if err != nil {
+		s.log.Error("ImportDepositAddresses", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	s.log.Info("ImportDepositAddresses", zap.Int("imported", imported), zap.Int("skipped", skipped))
+	return connect.NewResponse(&antv1.ImportDepositAddressesResponse{
+		Imported: int32(imported),
+		Skipped:  int32(skipped),
+	}), nil
+}
+
 // requireAdmin extracts the current user ID and verifies admin status.
 func (s *DepositServer) requireAdmin(ctx context.Context) (uuid.UUID, error) {
 	actorStr := interceptor.GetUserID(ctx)

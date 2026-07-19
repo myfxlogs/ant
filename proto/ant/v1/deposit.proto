@@ -17,6 +17,8 @@ service DepositService {
   rpc ListManualReviewDeposits(ListManualReviewDepositsRequest) returns (ListManualReviewDepositsResponse);
   // Admin: list all deposit addresses (assigned + available pool).
   rpc ListDepositAddresses(ListDepositAddressesRequest) returns (ListDepositAddressesResponse);
+  // Admin: import a batch of offline-generated addresses (proto binary).
+  rpc ImportDepositAddresses(ImportDepositAddressesRequest) returns (ImportDepositAddressesResponse);
 }
 
 message Deposit {
@@ -78,4 +80,26 @@ message ListDepositAddressesResponse {
   repeated DepositAddress addresses = 1;
   int64 total = 2;
   int32 available_count = 3;   // total AVAILABLE in pool
+}
+
+// AddressBatchEntry is a single offline-generated address with encrypted private key.
+// Used by hdgen tool and ImportDepositAddresses RPC.
+message AddressBatchEntry {
+  string address = 1;              // TRC20 Base58
+  int32 derivation_index = 2;
+  bytes encrypted_privkey = 3;     // AES-256-GCM ciphertext
+  string network = 4;             // "TRC20"
+}
+
+message AddressBatch {
+  repeated AddressBatchEntry entries = 1;
+}
+
+message ImportDepositAddressesRequest {
+  bytes batch_data = 1;   // serialized AddressBatch proto
+}
+
+message ImportDepositAddressesResponse {
+  int32 imported = 1;     // number of addresses actually inserted
+  int32 skipped = 2;      // number of duplicates skipped
 }

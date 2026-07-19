@@ -8,7 +8,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 
+	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/model"
 	"alphaforge/internal/repository"
 )
@@ -87,6 +89,28 @@ func (s *DepositService) ListDepositAddresses(ctx context.Context, status string
 		available = 0
 	}
 	return addrs, total, available, nil
+}
+
+// ImportDepositAddresses deserializes an AddressBatch proto and imports addresses into the pool.
+func (s *DepositService) ImportDepositAddresses(ctx context.Context, batchData []byte) (int, int, error) {
+	var batch antv1.AddressBatch
+	if err := proto.Unmarshal(batchData, &batch); err != nil {
+		return 0, 0, fmt.Errorf("deposit service: unmarshal batch: %w", err)
+	}
+	if len(batch.Entries) == 0 {
+		return 0, 0, errors.New("deposit service: empty batch")
+	}
+	addrs := make([]model.DepositAddress, 0, len(batch.Entries))
+	for _, e := range batch.Entries {
+		addrs = append(addrs, model.DepositAddress{
+			Address:          e.Address,
+			DerivationIndex:  int(e.DerivationIndex),
+			EncryptedPrivkey: e.EncryptedPrivkey,
+			Network:          e.Network,
+			Status:           "AVAILABLE",
+		})
+	}
+	return s.addrRepo.ImportBatchWithStats(ctx, addrs)
 }
 
 // ConfirmDeposit creates a deposit record and credits the user's wallet atomically.

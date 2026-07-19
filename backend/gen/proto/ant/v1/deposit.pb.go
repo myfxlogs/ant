@@ -662,6 +662,216 @@ func (x *ListDepositAddressesResponse) GetAvailableCount() int32 {
 	return 0
 }
 
+// AddressBatchEntry is a single offline-generated address with encrypted private key.
+// Used by hdgen tool and ImportDepositAddresses RPC.
+type AddressBatchEntry struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Address          string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"` // TRC20 Base58
+	DerivationIndex  int32                  `protobuf:"varint,2,opt,name=derivation_index,json=derivationIndex,proto3" json:"derivation_index,omitempty"`
+	EncryptedPrivkey []byte                 `protobuf:"bytes,3,opt,name=encrypted_privkey,json=encryptedPrivkey,proto3" json:"encrypted_privkey,omitempty"` // AES-256-GCM ciphertext
+	Network          string                 `protobuf:"bytes,4,opt,name=network,proto3" json:"network,omitempty"`                                           // "TRC20"
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *AddressBatchEntry) Reset() {
+	*x = AddressBatchEntry{}
+	mi := &file_deposit_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddressBatchEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddressBatchEntry) ProtoMessage() {}
+
+func (x *AddressBatchEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddressBatchEntry.ProtoReflect.Descriptor instead.
+func (*AddressBatchEntry) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *AddressBatchEntry) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *AddressBatchEntry) GetDerivationIndex() int32 {
+	if x != nil {
+		return x.DerivationIndex
+	}
+	return 0
+}
+
+func (x *AddressBatchEntry) GetEncryptedPrivkey() []byte {
+	if x != nil {
+		return x.EncryptedPrivkey
+	}
+	return nil
+}
+
+func (x *AddressBatchEntry) GetNetwork() string {
+	if x != nil {
+		return x.Network
+	}
+	return ""
+}
+
+type AddressBatch struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Entries       []*AddressBatchEntry   `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddressBatch) Reset() {
+	*x = AddressBatch{}
+	mi := &file_deposit_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddressBatch) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddressBatch) ProtoMessage() {}
+
+func (x *AddressBatch) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddressBatch.ProtoReflect.Descriptor instead.
+func (*AddressBatch) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *AddressBatch) GetEntries() []*AddressBatchEntry {
+	if x != nil {
+		return x.Entries
+	}
+	return nil
+}
+
+type ImportDepositAddressesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	BatchData     []byte                 `protobuf:"bytes,1,opt,name=batch_data,json=batchData,proto3" json:"batch_data,omitempty"` // serialized AddressBatch proto
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ImportDepositAddressesRequest) Reset() {
+	*x = ImportDepositAddressesRequest{}
+	mi := &file_deposit_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ImportDepositAddressesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImportDepositAddressesRequest) ProtoMessage() {}
+
+func (x *ImportDepositAddressesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImportDepositAddressesRequest.ProtoReflect.Descriptor instead.
+func (*ImportDepositAddressesRequest) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ImportDepositAddressesRequest) GetBatchData() []byte {
+	if x != nil {
+		return x.BatchData
+	}
+	return nil
+}
+
+type ImportDepositAddressesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Imported      int32                  `protobuf:"varint,1,opt,name=imported,proto3" json:"imported,omitempty"` // number of addresses actually inserted
+	Skipped       int32                  `protobuf:"varint,2,opt,name=skipped,proto3" json:"skipped,omitempty"`   // number of duplicates skipped
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ImportDepositAddressesResponse) Reset() {
+	*x = ImportDepositAddressesResponse{}
+	mi := &file_deposit_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ImportDepositAddressesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImportDepositAddressesResponse) ProtoMessage() {}
+
+func (x *ImportDepositAddressesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImportDepositAddressesResponse.ProtoReflect.Descriptor instead.
+func (*ImportDepositAddressesResponse) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ImportDepositAddressesResponse) GetImported() int32 {
+	if x != nil {
+		return x.Imported
+	}
+	return 0
+}
+
+func (x *ImportDepositAddressesResponse) GetSkipped() int32 {
+	if x != nil {
+		return x.Skipped
+	}
+	return 0
+}
+
 var File_deposit_proto protoreflect.FileDescriptor
 
 const file_deposit_proto_rawDesc = "" +
@@ -715,12 +925,26 @@ const file_deposit_proto_rawDesc = "" +
 	"\x1cListDepositAddressesResponse\x124\n" +
 	"\taddresses\x18\x01 \x03(\v2\x16.ant.v1.DepositAddressR\taddresses\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\x12'\n" +
-	"\x0favailable_count\x18\x03 \x01(\x05R\x0eavailableCount2\x8d\x03\n" +
+	"\x0favailable_count\x18\x03 \x01(\x05R\x0eavailableCount\"\x9f\x01\n" +
+	"\x11AddressBatchEntry\x12\x18\n" +
+	"\aaddress\x18\x01 \x01(\tR\aaddress\x12)\n" +
+	"\x10derivation_index\x18\x02 \x01(\x05R\x0fderivationIndex\x12+\n" +
+	"\x11encrypted_privkey\x18\x03 \x01(\fR\x10encryptedPrivkey\x12\x18\n" +
+	"\anetwork\x18\x04 \x01(\tR\anetwork\"C\n" +
+	"\fAddressBatch\x123\n" +
+	"\aentries\x18\x01 \x03(\v2\x19.ant.v1.AddressBatchEntryR\aentries\">\n" +
+	"\x1dImportDepositAddressesRequest\x12\x1d\n" +
+	"\n" +
+	"batch_data\x18\x01 \x01(\fR\tbatchData\"V\n" +
+	"\x1eImportDepositAddressesResponse\x12\x1a\n" +
+	"\bimported\x18\x01 \x01(\x05R\bimported\x12\x18\n" +
+	"\askipped\x18\x02 \x01(\x05R\askipped2\xf6\x03\n" +
 	"\x0eDepositService\x12X\n" +
 	"\x11GetDepositAddress\x12 .ant.v1.GetDepositAddressRequest\x1a!.ant.v1.GetDepositAddressResponse\x12O\n" +
 	"\x0eListMyDeposits\x12\x1d.ant.v1.ListMyDepositsRequest\x1a\x1e.ant.v1.ListMyDepositsResponse\x12m\n" +
 	"\x18ListManualReviewDeposits\x12'.ant.v1.ListManualReviewDepositsRequest\x1a(.ant.v1.ListManualReviewDepositsResponse\x12a\n" +
-	"\x14ListDepositAddresses\x12#.ant.v1.ListDepositAddressesRequest\x1a$.ant.v1.ListDepositAddressesResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x14ListDepositAddresses\x12#.ant.v1.ListDepositAddressesRequest\x1a$.ant.v1.ListDepositAddressesResponse\x12g\n" +
+	"\x16ImportDepositAddresses\x12%.ant.v1.ImportDepositAddressesRequest\x1a&.ant.v1.ImportDepositAddressesResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_deposit_proto_rawDescOnce sync.Once
@@ -734,7 +958,7 @@ func file_deposit_proto_rawDescGZIP() []byte {
 	return file_deposit_proto_rawDescData
 }
 
-var file_deposit_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_deposit_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_deposit_proto_goTypes = []any{
 	(*Deposit)(nil),                          // 0: ant.v1.Deposit
 	(*GetDepositAddressRequest)(nil),         // 1: ant.v1.GetDepositAddressRequest
@@ -746,29 +970,36 @@ var file_deposit_proto_goTypes = []any{
 	(*DepositAddress)(nil),                   // 7: ant.v1.DepositAddress
 	(*ListDepositAddressesRequest)(nil),      // 8: ant.v1.ListDepositAddressesRequest
 	(*ListDepositAddressesResponse)(nil),     // 9: ant.v1.ListDepositAddressesResponse
-	(*timestamppb.Timestamp)(nil),            // 10: google.protobuf.Timestamp
+	(*AddressBatchEntry)(nil),                // 10: ant.v1.AddressBatchEntry
+	(*AddressBatch)(nil),                     // 11: ant.v1.AddressBatch
+	(*ImportDepositAddressesRequest)(nil),    // 12: ant.v1.ImportDepositAddressesRequest
+	(*ImportDepositAddressesResponse)(nil),   // 13: ant.v1.ImportDepositAddressesResponse
+	(*timestamppb.Timestamp)(nil),            // 14: google.protobuf.Timestamp
 }
 var file_deposit_proto_depIdxs = []int32{
-	10, // 0: ant.v1.Deposit.confirmed_at:type_name -> google.protobuf.Timestamp
-	10, // 1: ant.v1.Deposit.created_at:type_name -> google.protobuf.Timestamp
+	14, // 0: ant.v1.Deposit.confirmed_at:type_name -> google.protobuf.Timestamp
+	14, // 1: ant.v1.Deposit.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: ant.v1.ListMyDepositsResponse.deposits:type_name -> ant.v1.Deposit
 	0,  // 3: ant.v1.ListManualReviewDepositsResponse.deposits:type_name -> ant.v1.Deposit
-	10, // 4: ant.v1.DepositAddress.assigned_at:type_name -> google.protobuf.Timestamp
-	10, // 5: ant.v1.DepositAddress.created_at:type_name -> google.protobuf.Timestamp
+	14, // 4: ant.v1.DepositAddress.assigned_at:type_name -> google.protobuf.Timestamp
+	14, // 5: ant.v1.DepositAddress.created_at:type_name -> google.protobuf.Timestamp
 	7,  // 6: ant.v1.ListDepositAddressesResponse.addresses:type_name -> ant.v1.DepositAddress
-	1,  // 7: ant.v1.DepositService.GetDepositAddress:input_type -> ant.v1.GetDepositAddressRequest
-	3,  // 8: ant.v1.DepositService.ListMyDeposits:input_type -> ant.v1.ListMyDepositsRequest
-	5,  // 9: ant.v1.DepositService.ListManualReviewDeposits:input_type -> ant.v1.ListManualReviewDepositsRequest
-	8,  // 10: ant.v1.DepositService.ListDepositAddresses:input_type -> ant.v1.ListDepositAddressesRequest
-	2,  // 11: ant.v1.DepositService.GetDepositAddress:output_type -> ant.v1.GetDepositAddressResponse
-	4,  // 12: ant.v1.DepositService.ListMyDeposits:output_type -> ant.v1.ListMyDepositsResponse
-	6,  // 13: ant.v1.DepositService.ListManualReviewDeposits:output_type -> ant.v1.ListManualReviewDepositsResponse
-	9,  // 14: ant.v1.DepositService.ListDepositAddresses:output_type -> ant.v1.ListDepositAddressesResponse
-	11, // [11:15] is the sub-list for method output_type
-	7,  // [7:11] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	10, // 7: ant.v1.AddressBatch.entries:type_name -> ant.v1.AddressBatchEntry
+	1,  // 8: ant.v1.DepositService.GetDepositAddress:input_type -> ant.v1.GetDepositAddressRequest
+	3,  // 9: ant.v1.DepositService.ListMyDeposits:input_type -> ant.v1.ListMyDepositsRequest
+	5,  // 10: ant.v1.DepositService.ListManualReviewDeposits:input_type -> ant.v1.ListManualReviewDepositsRequest
+	8,  // 11: ant.v1.DepositService.ListDepositAddresses:input_type -> ant.v1.ListDepositAddressesRequest
+	12, // 12: ant.v1.DepositService.ImportDepositAddresses:input_type -> ant.v1.ImportDepositAddressesRequest
+	2,  // 13: ant.v1.DepositService.GetDepositAddress:output_type -> ant.v1.GetDepositAddressResponse
+	4,  // 14: ant.v1.DepositService.ListMyDeposits:output_type -> ant.v1.ListMyDepositsResponse
+	6,  // 15: ant.v1.DepositService.ListManualReviewDeposits:output_type -> ant.v1.ListManualReviewDepositsResponse
+	9,  // 16: ant.v1.DepositService.ListDepositAddresses:output_type -> ant.v1.ListDepositAddressesResponse
+	13, // 17: ant.v1.DepositService.ImportDepositAddresses:output_type -> ant.v1.ImportDepositAddressesResponse
+	13, // [13:18] is the sub-list for method output_type
+	8,  // [8:13] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_deposit_proto_init() }
@@ -782,7 +1013,7 @@ func file_deposit_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_deposit_proto_rawDesc), len(file_deposit_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

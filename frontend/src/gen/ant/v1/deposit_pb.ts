@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file deposit.proto.
  */
 export const file_deposit: GenFile = /*@__PURE__*/
-  fileDesc("Cg1kZXBvc2l0LnByb3RvEgZhbnQudjEiggIKB0RlcG9zaXQSCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIaChJkZXBvc2l0X2FkZHJlc3NfaWQYAyABKAkSDwoHdHhfaGFzaBgEIAEoCRIOCgZhbW91bnQYBSABKAkSFAoMYmxvY2tfbnVtYmVyGAYgASgDEhUKDWNvbmZpcm1hdGlvbnMYByABKAUSDgoGc3RhdHVzGAggASgJEjAKDGNvbmZpcm1lZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiGgoYR2V0RGVwb3NpdEFkZHJlc3NSZXF1ZXN0Ij0KGUdldERlcG9zaXRBZGRyZXNzUmVzcG9uc2USDwoHYWRkcmVzcxgBIAEoCRIPCgduZXR3b3JrGAIgASgJIjgKFUxpc3RNeURlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJKChZMaXN0TXlEZXBvc2l0c1Jlc3BvbnNlEiEKCGRlcG9zaXRzGAEgAygLMg8uYW50LnYxLkRlcG9zaXQSDQoFdG90YWwYAiABKAMiQgofTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJUCiBMaXN0TWFudWFsUmV2aWV3RGVwb3NpdHNSZXNwb25zZRIhCghkZXBvc2l0cxgBIAMoCzIPLmFudC52MS5EZXBvc2l0Eg0KBXRvdGFsGAIgASgDIvUBCg5EZXBvc2l0QWRkcmVzcxIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEg8KB2FkZHJlc3MYAyABKAkSGAoQZGVyaXZhdGlvbl9pbmRleBgEIAEoBRIPCgduZXR3b3JrGAUgASgJEg4KBnN0YXR1cxgGIAEoCRIZChFoYXNfcmVjZWl2ZWRfdXNkdBgHIAEoCBIvCgthc3NpZ25lZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiTgobTGlzdERlcG9zaXRBZGRyZXNzZXNSZXF1ZXN0EgwKBHBhZ2UYASABKAUSEQoJcGFnZV9zaXplGAIgASgFEg4KBnN0YXR1cxgDIAEoCSJxChxMaXN0RGVwb3NpdEFkZHJlc3Nlc1Jlc3BvbnNlEikKCWFkZHJlc3NlcxgBIAMoCzIWLmFudC52MS5EZXBvc2l0QWRkcmVzcxINCgV0b3RhbBgCIAEoAxIXCg9hdmFpbGFibGVfY291bnQYAyABKAUyjQMKDkRlcG9zaXRTZXJ2aWNlElgKEUdldERlcG9zaXRBZGRyZXNzEiAuYW50LnYxLkdldERlcG9zaXRBZGRyZXNzUmVxdWVzdBohLmFudC52MS5HZXREZXBvc2l0QWRkcmVzc1Jlc3BvbnNlEk8KDkxpc3RNeURlcG9zaXRzEh0uYW50LnYxLkxpc3RNeURlcG9zaXRzUmVxdWVzdBoeLmFudC52MS5MaXN0TXlEZXBvc2l0c1Jlc3BvbnNlEm0KGExpc3RNYW51YWxSZXZpZXdEZXBvc2l0cxInLmFudC52MS5MaXN0TWFudWFsUmV2aWV3RGVwb3NpdHNSZXF1ZXN0GiguYW50LnYxLkxpc3RNYW51YWxSZXZpZXdEZXBvc2l0c1Jlc3BvbnNlEmEKFExpc3REZXBvc2l0QWRkcmVzc2VzEiMuYW50LnYxLkxpc3REZXBvc2l0QWRkcmVzc2VzUmVxdWVzdBokLmFudC52MS5MaXN0RGVwb3NpdEFkZHJlc3Nlc1Jlc3BvbnNlQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("Cg1kZXBvc2l0LnByb3RvEgZhbnQudjEiggIKB0RlcG9zaXQSCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIaChJkZXBvc2l0X2FkZHJlc3NfaWQYAyABKAkSDwoHdHhfaGFzaBgEIAEoCRIOCgZhbW91bnQYBSABKAkSFAoMYmxvY2tfbnVtYmVyGAYgASgDEhUKDWNvbmZpcm1hdGlvbnMYByABKAUSDgoGc3RhdHVzGAggASgJEjAKDGNvbmZpcm1lZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiGgoYR2V0RGVwb3NpdEFkZHJlc3NSZXF1ZXN0Ij0KGUdldERlcG9zaXRBZGRyZXNzUmVzcG9uc2USDwoHYWRkcmVzcxgBIAEoCRIPCgduZXR3b3JrGAIgASgJIjgKFUxpc3RNeURlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJKChZMaXN0TXlEZXBvc2l0c1Jlc3BvbnNlEiEKCGRlcG9zaXRzGAEgAygLMg8uYW50LnYxLkRlcG9zaXQSDQoFdG90YWwYAiABKAMiQgofTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJUCiBMaXN0TWFudWFsUmV2aWV3RGVwb3NpdHNSZXNwb25zZRIhCghkZXBvc2l0cxgBIAMoCzIPLmFudC52MS5EZXBvc2l0Eg0KBXRvdGFsGAIgASgDIvUBCg5EZXBvc2l0QWRkcmVzcxIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEg8KB2FkZHJlc3MYAyABKAkSGAoQZGVyaXZhdGlvbl9pbmRleBgEIAEoBRIPCgduZXR3b3JrGAUgASgJEg4KBnN0YXR1cxgGIAEoCRIZChFoYXNfcmVjZWl2ZWRfdXNkdBgHIAEoCBIvCgthc3NpZ25lZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiTgobTGlzdERlcG9zaXRBZGRyZXNzZXNSZXF1ZXN0EgwKBHBhZ2UYASABKAUSEQoJcGFnZV9zaXplGAIgASgFEg4KBnN0YXR1cxgDIAEoCSJxChxMaXN0RGVwb3NpdEFkZHJlc3Nlc1Jlc3BvbnNlEikKCWFkZHJlc3NlcxgBIAMoCzIWLmFudC52MS5EZXBvc2l0QWRkcmVzcxINCgV0b3RhbBgCIAEoAxIXCg9hdmFpbGFibGVfY291bnQYAyABKAUiagoRQWRkcmVzc0JhdGNoRW50cnkSDwoHYWRkcmVzcxgBIAEoCRIYChBkZXJpdmF0aW9uX2luZGV4GAIgASgFEhkKEWVuY3J5cHRlZF9wcml2a2V5GAMgASgMEg8KB25ldHdvcmsYBCABKAkiOgoMQWRkcmVzc0JhdGNoEioKB2VudHJpZXMYASADKAsyGS5hbnQudjEuQWRkcmVzc0JhdGNoRW50cnkiMwodSW1wb3J0RGVwb3NpdEFkZHJlc3Nlc1JlcXVlc3QSEgoKYmF0Y2hfZGF0YRgBIAEoDCJDCh5JbXBvcnREZXBvc2l0QWRkcmVzc2VzUmVzcG9uc2USEAoIaW1wb3J0ZWQYASABKAUSDwoHc2tpcHBlZBgCIAEoBTL2AwoORGVwb3NpdFNlcnZpY2USWAoRR2V0RGVwb3NpdEFkZHJlc3MSIC5hbnQudjEuR2V0RGVwb3NpdEFkZHJlc3NSZXF1ZXN0GiEuYW50LnYxLkdldERlcG9zaXRBZGRyZXNzUmVzcG9uc2USTwoOTGlzdE15RGVwb3NpdHMSHS5hbnQudjEuTGlzdE15RGVwb3NpdHNSZXF1ZXN0Gh4uYW50LnYxLkxpc3RNeURlcG9zaXRzUmVzcG9uc2USbQoYTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzEicuYW50LnYxLkxpc3RNYW51YWxSZXZpZXdEZXBvc2l0c1JlcXVlc3QaKC5hbnQudjEuTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzUmVzcG9uc2USYQoUTGlzdERlcG9zaXRBZGRyZXNzZXMSIy5hbnQudjEuTGlzdERlcG9zaXRBZGRyZXNzZXNSZXF1ZXN0GiQuYW50LnYxLkxpc3REZXBvc2l0QWRkcmVzc2VzUmVzcG9uc2USZwoWSW1wb3J0RGVwb3NpdEFkZHJlc3NlcxIlLmFudC52MS5JbXBvcnREZXBvc2l0QWRkcmVzc2VzUmVxdWVzdBomLmFudC52MS5JbXBvcnREZXBvc2l0QWRkcmVzc2VzUmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.Deposit
@@ -329,6 +329,109 @@ export const ListDepositAddressesResponseSchema: GenMessage<ListDepositAddresses
   messageDesc(file_deposit, 9);
 
 /**
+ * AddressBatchEntry is a single offline-generated address with encrypted private key.
+ * Used by hdgen tool and ImportDepositAddresses RPC.
+ *
+ * @generated from message ant.v1.AddressBatchEntry
+ */
+export type AddressBatchEntry = Message<"ant.v1.AddressBatchEntry"> & {
+  /**
+   * TRC20 Base58
+   *
+   * @generated from field: string address = 1;
+   */
+  address: string;
+
+  /**
+   * @generated from field: int32 derivation_index = 2;
+   */
+  derivationIndex: number;
+
+  /**
+   * AES-256-GCM ciphertext
+   *
+   * @generated from field: bytes encrypted_privkey = 3;
+   */
+  encryptedPrivkey: Uint8Array;
+
+  /**
+   * "TRC20"
+   *
+   * @generated from field: string network = 4;
+   */
+  network: string;
+};
+
+/**
+ * Describes the message ant.v1.AddressBatchEntry.
+ * Use `create(AddressBatchEntrySchema)` to create a new message.
+ */
+export const AddressBatchEntrySchema: GenMessage<AddressBatchEntry> = /*@__PURE__*/
+  messageDesc(file_deposit, 10);
+
+/**
+ * @generated from message ant.v1.AddressBatch
+ */
+export type AddressBatch = Message<"ant.v1.AddressBatch"> & {
+  /**
+   * @generated from field: repeated ant.v1.AddressBatchEntry entries = 1;
+   */
+  entries: AddressBatchEntry[];
+};
+
+/**
+ * Describes the message ant.v1.AddressBatch.
+ * Use `create(AddressBatchSchema)` to create a new message.
+ */
+export const AddressBatchSchema: GenMessage<AddressBatch> = /*@__PURE__*/
+  messageDesc(file_deposit, 11);
+
+/**
+ * @generated from message ant.v1.ImportDepositAddressesRequest
+ */
+export type ImportDepositAddressesRequest = Message<"ant.v1.ImportDepositAddressesRequest"> & {
+  /**
+   * serialized AddressBatch proto
+   *
+   * @generated from field: bytes batch_data = 1;
+   */
+  batchData: Uint8Array;
+};
+
+/**
+ * Describes the message ant.v1.ImportDepositAddressesRequest.
+ * Use `create(ImportDepositAddressesRequestSchema)` to create a new message.
+ */
+export const ImportDepositAddressesRequestSchema: GenMessage<ImportDepositAddressesRequest> = /*@__PURE__*/
+  messageDesc(file_deposit, 12);
+
+/**
+ * @generated from message ant.v1.ImportDepositAddressesResponse
+ */
+export type ImportDepositAddressesResponse = Message<"ant.v1.ImportDepositAddressesResponse"> & {
+  /**
+   * number of addresses actually inserted
+   *
+   * @generated from field: int32 imported = 1;
+   */
+  imported: number;
+
+  /**
+   * number of duplicates skipped
+   *
+   * @generated from field: int32 skipped = 2;
+   */
+  skipped: number;
+};
+
+/**
+ * Describes the message ant.v1.ImportDepositAddressesResponse.
+ * Use `create(ImportDepositAddressesResponseSchema)` to create a new message.
+ */
+export const ImportDepositAddressesResponseSchema: GenMessage<ImportDepositAddressesResponse> = /*@__PURE__*/
+  messageDesc(file_deposit, 13);
+
+/**
  * DepositService manages USDT deposits via HD wallet.
  * Users get a personal TRC20 address; deposits are auto-confirmed by chain monitor.
  *
@@ -374,6 +477,16 @@ export const DepositService: GenService<{
     methodKind: "unary";
     input: typeof ListDepositAddressesRequestSchema;
     output: typeof ListDepositAddressesResponseSchema;
+  },
+  /**
+   * Admin: import a batch of offline-generated addresses (proto binary).
+   *
+   * @generated from rpc ant.v1.DepositService.ImportDepositAddresses
+   */
+  importDepositAddresses: {
+    methodKind: "unary";
+    input: typeof ImportDepositAddressesRequestSchema;
+    output: typeof ImportDepositAddressesResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_deposit, 0);

@@ -1,21 +1,40 @@
 import { useState, useMemo } from 'react';
-import { Table, Tag, Select, Space, Typography, Card, Statistic } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
-import { useQuery } from '@tanstack/react-query';
+import { Table, Tag, Select, Space, Statistic, Button, Upload, message, Alert } from 'antd';
+import { ReloadOutlined, UploadOutlined } from '@ant-design/icons';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { depositApi } from '@/client/deposit';
 
-const { Title } = Typography;
-
 export default function DepositAddressesTab() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [importing, setImporting] = useState(false);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['admin', 'deposit-addresses', page, statusFilter],
     queryFn: () => depositApi.listDepositAddresses({ page, pageSize: 20, status: statusFilter }),
   });
+
+  const handleImport = async (file: File) => {
+    setImporting(true);
+    try {
+      const buf = new Uint8Array(await file.arrayBuffer());
+      const result = await depositApi.importDepositAddresses(buf);
+      message.success(t('admin.depositAddresses.importSuccess', {
+        imported: result.imported,
+        skipped: result.skipped,
+        defaultValue: `Imported ${result.imported} addresses${result.skipped > 0 ? `, skipped ${result.skipped} duplicates` : ''}`,
+      }));
+      queryClient.invalidateQueries({ queryKey: ['admin', 'deposit-addresses'] });
+    } catch (err: any) {
+      message.error(err?.message || t('admin.depositAddresses.importFailed', { defaultValue: 'Import failed' }));
+    } finally {
+      setImporting(false);
+    }
+    return false;
+  };
 
   const columns = useMemo(() => [
     {
@@ -75,6 +94,13 @@ export default function DepositAddressesTab() {
 
   return (
     <div className="space-y-4">
+      <Alert
+        type="info"
+        showIcon
+        message={t('admin.depositAddresses.importHint', { defaultValue: 'Use hdgen tool on an offline machine to generate deposit_addresses.bin, then upload it here.' })}
+        style={{ marginBottom: 16 }}
+      />
+
       <Space style={{ marginBottom: 16 }}>
         <Select
           value={statusFilter}
@@ -87,18 +113,30 @@ export default function DepositAddressesTab() {
             { label: 'Retired', value: 'RETIRED' },
           ]}
         />
-        <ReloadOutlined onClick={() => refetch()} style={{ cursor: 'pointer', fontSize: 16 }} />
+        <Upload
+          accept=".bin"
+          showUploadList={false}
+          beforeUpload={(file) => { handleImport(file); return false; }}
+          disabled={importing}
+        >
+          <Button icon={<UploadOutlined />} loading={importing}>
+            {t('admin.depositAddresses.import', { defaultValue: 'Import Addresses' })}
+          </Button>
+        </Upload>
+        <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
+          {t('common.refresh', { defaultValue: 'Refresh' })}
+        </Button>
       </Space>
 
       <Space size="large" style={{ marginBottom: 16 }}>
         <Statistic
           title={t('admin.depositAddresses.availablePool', { defaultValue: 'Available in Pool' })}
-          value={data?.availableCount ?? 0}
+          value={Number(data?.availableCount ?? 0)}
           valueStyle={{ color: '#1677ff' }}
         />
         <Statistic
           title={t('admin.depositAddresses.total', { defaultValue: 'Total Addresses' })}
-          value={data?.total ?? 0}
+          value={Number(data?.total ?? 0)}
         />
       </Space>
 

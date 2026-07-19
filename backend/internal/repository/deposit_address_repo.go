@@ -166,6 +166,28 @@ func (r *DepositAddressRepository) ImportBatch(ctx context.Context, addrs []mode
 	return nil
 }
 
+// ImportBatchWithStats inserts addresses and returns (imported, skipped) counts.
+func (r *DepositAddressRepository) ImportBatchWithStats(ctx context.Context, addrs []model.DepositAddress) (int, int, error) {
+	imported := 0
+	skipped := 0
+	for _, a := range addrs {
+		tag, err := r.db.Exec(ctx, `
+			INSERT INTO user_deposit_addresses (address, derivation_index, encrypted_privkey, network, status)
+			VALUES ($1, $2, $3, $4, 'AVAILABLE')
+			ON CONFLICT (address) DO NOTHING
+		`, a.Address, a.DerivationIndex, a.EncryptedPrivkey, a.Network)
+		if err != nil {
+			return imported, skipped, fmt.Errorf("deposit address repo: import with stats: %w", err)
+		}
+		if tag.RowsAffected() > 0 {
+			imported++
+		} else {
+			skipped++
+		}
+	}
+	return imported, skipped, nil
+}
+
 // AddressInfo holds the user ID and address ID for an assigned deposit address.
 type AddressInfo struct {
 	UserID uuid.UUID

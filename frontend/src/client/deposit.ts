@@ -1,5 +1,5 @@
 import { depositClient } from './connect';
-import type { GetDepositAddressResponse, ListMyDepositsResponse, ListManualReviewDepositsResponse, ListDepositAddressesResponse } from '../gen/ant/v1/deposit_pb';
+import type { GetDepositAddressResponse, ListMyDepositsResponse, ListManualReviewDepositsResponse, ListDepositAddressesResponse, ImportDepositAddressesResponse } from '../gen/ant/v1/deposit_pb';
 
 export type { Deposit, DepositAddress } from '../gen/ant/v1/deposit_pb';
 
@@ -36,6 +36,14 @@ export const depositApi = {
       addresses: msg.addresses || [],
       total: msg.total || 0,
       availableCount: msg.availableCount || 0,
+    };
+  },
+
+  importDepositAddresses: async (batchData: Uint8Array) => {
+    const msg = await depositClient.importDepositAddresses({ batchData }) as ImportDepositAddressesResponse;
+    return {
+      imported: msg.imported || 0,
+      skipped: msg.skipped || 0,
     };
   },
 };
