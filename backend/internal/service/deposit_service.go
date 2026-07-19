@@ -13,6 +13,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/hdwallet"
 	"alphaforge/internal/model"
 	"alphaforge/internal/repository"
 	"alphaforge/internal/secrets"
@@ -99,7 +100,8 @@ func (s *DepositService) ListDepositAddresses(ctx context.Context, status string
 
 // ImportDepositAddresses deserializes an AddressBatch proto and imports addresses into the pool.
 // It validates:
-//   - KEK correctness: decrypts the first entry's private key to verify the server's KEK matches
+//   - KEK correctness: decrypts each entry's private key to verify the server's KEK matches
+//   - Address-privkey match: derives address from decrypted privkey and compares to claimed address
 //   - TRON address format: each address must be a valid Base58 TRC20 address (T...)
 //   - Encrypted privkey non-empty: each entry must have a non-nil ciphertext
 func (s *DepositService) ImportDepositAddresses(ctx context.Context, batchData []byte) (int, int, error) {
@@ -113,25 +115,11 @@ func (s *DepositService) ImportDepositAddresses(ctx context.Context, batchData [
 	if len(batch.Entries) > 5000 {
 		return 0, 0, fmt.Errorf("deposit service: batch too large: %d entries (max 5000), split into multiple files", len(batch.Entries))
 	}
-
-	// Verify KEK: decrypt the first entry to confirm server's KEK matches the one used by hdgen.
-	// This prevents importing addresses whose private keys can never be decrypted by the sweeper.
-	first := batch.Entries[0]
-	if len(first.EncryptedPrivkey) == 0 {
-		return 0, 0, errors.New("deposit service: first entry has empty encrypted_privkey")
-	}
 	if s.sec == nil {
 		return 0, 0, errors.New("deposit service: secrets client not configured — cannot verify KEK")
 	}
-	decrypted, err := s.sec.Decrypt(ctx, secrets.PurposeDepositPrivKey, first.EncryptedPrivkey)
-	if err != nil {
-		return 0, 0, fmt.Errorf("deposit service: KEK verification failed — server KEK does not match the one used to generate this batch: %w", err)
-	}
-	if len(decrypted) != 32 {
-		return 0, 0, fmt.Errorf("deposit service: KEK verification failed — decrypted private key is %d bytes, expected 32", len(decrypted))
-	}
 
-	// Validate all entries: address format + non-empty encrypted privkey.
+	// Validate and verify every entry: address format, KEK decryption, address-privkey match.
 	addrs := make([]model.DepositAddress, 0, len(batch.Entries))
 	for i, e := range batch.Entries {
 		if e.Address == "" || !strings.HasPrefix(e.Address, "T") {
@@ -143,6 +131,27 @@ func (s *DepositService) ImportDepositAddresses(ctx context.Context, batchData [
 		if len(e.EncryptedPrivkey) == 0 {
 			return 0, 0, fmt.Errorf("deposit service: entry %d has empty encrypted_privkey", i)
 		}
+
+		// Decrypt private key and verify it matches the claimed address.
+		// This catches both wrong KEK and tampered .bin files (address swapped but privkey unchanged).
+		privKey, err := s.sec.Decrypt(ctx, secrets.PurposeDepositPrivKey, e.EncryptedPrivkey)
+		if err != nil {
+			return 0, 0, fmt.Errorf("deposit service: entry %d KEK decryption failed — server KEK does not match: %w", i, err)
+		}
+		if len(privKey) != 32 {
+			return 0, 0, fmt.Errorf("deposit service: entry %d decrypted private key is %d bytes, expected 32", i, len(privKey))
+		}
+		derivedAddr, err := hdwallet.AddressFromPrivateKey(privKey)
+		for j := range privKey {
+			privKey[j] = 0
+		}
+		if err != nil {
+			return 0, 0, fmt.Errorf("deposit service: entry %d derive address from privkey: %w", i, err)
+		}
+		if derivedAddr != e.Address {
+			return 0, 0, fmt.Errorf("deposit service: entry %d address mismatch: claimed %s but privkey derives to %s (tampered batch?)", i, e.Address, derivedAddr)
+		}
+
 		network := e.Network
 		if network == "" {
 			network = "TRC20"
