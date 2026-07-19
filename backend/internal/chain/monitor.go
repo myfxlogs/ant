@@ -200,7 +200,7 @@ func (m *Monitor) scanBlocks(ctx context.Context, lastBlock *int64) error {
 		}
 
 		if err := m.saveCheckpoint(ctx, nextBlock); err != nil {
-			m.log.Error("save checkpoint", zap.Error(err), zap.Int64("block", nextBlock))
+			return fmt.Errorf("save checkpoint for block %d: %w", nextBlock, err)
 		}
 		*lastBlock = nextBlock
 		scanned++
@@ -289,7 +289,22 @@ func (m *Monitor) processEvent(ctx context.Context, evt TransferEvent) {
 
 	if err := m.depositSvc.ConfirmDeposit(ctx, info.UserID, info.AddrID,
 		evt.TxHash, evt.AmountString, evt.BlockNumber, m.minConfirms); err != nil {
-		m.log.Error("confirm deposit", zap.Error(err), zap.String("tx_hash", evt.TxHash))
+		m.log.Error("confirm deposit failed — falling back to MANUAL_REVIEW",
+			zap.Error(err), zap.String("tx_hash", evt.TxHash))
+		d := &model.Deposit{
+			ID:               uuid.New(),
+			UserID:           info.UserID,
+			DepositAddressID: info.AddrID,
+			TxHash:           evt.TxHash,
+			Amount:           evt.AmountString,
+			BlockNumber:      evt.BlockNumber,
+			Confirmations:    m.minConfirms,
+			Status:           "MANUAL_REVIEW",
+		}
+		if err := m.depositRepo.Create(ctx, d); err != nil {
+			m.log.Error("insert manual review fallback deposit",
+				zap.Error(err), zap.String("tx_hash", evt.TxHash))
+		}
 		return
 	}
 
