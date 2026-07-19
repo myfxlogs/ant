@@ -132,7 +132,7 @@ func registerHandlers(
 	// USDT deposit service: HD wallet with per-user addresses + auto-confirmation.
 	depositAddrRepo := repository.NewDepositAddressRepository(pool)
 	depositRepo := repository.NewDepositRepository(pool)
-	depositSvc := service.NewDepositService(depositAddrRepo, depositRepo, walletSvc, pool, log)
+	depositSvc := service.NewDepositService(depositAddrRepo, depositRepo, walletSvc, pool, secClient, log)
 	depositServer := user.NewDepositServer(depositSvc, platformSvc, log)
 	mux.Handle(antv1c.NewDepositServiceHandler(depositServer, withSency(otelInterceptor, authInterceptor)))
 

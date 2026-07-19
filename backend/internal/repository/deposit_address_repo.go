@@ -167,8 +167,10 @@ func (r *DepositAddressRepository) ImportBatch(ctx context.Context, addrs []mode
 	return nil
 }
 
-// ImportBatchWithStats inserts addresses atomically in a single transaction using
-// batched multi-row INSERT. Returns (imported, skipped) counts.
+// ImportBatchWithStats inserts addresses using batched multi-row INSERT.
+// Returns (imported, skipped) counts. Not wrapped in a transaction —
+// ON CONFLICT DO NOTHING makes re-imports idempotent, so partial failures
+// can be safely retried by re-uploading the same file.
 // Batches of 500 rows to stay within PG parameter limits (65535 params / 4 per row).
 func (r *DepositAddressRepository) ImportBatchWithStats(ctx context.Context, addrs []model.DepositAddress) (int, int, error) {
 	const batchSize = 500

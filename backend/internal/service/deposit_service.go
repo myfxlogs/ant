@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
+	"github.com/fbsobreira/gotron-sdk/pkg/address"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -13,6 +15,7 @@ import (
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/model"
 	"alphaforge/internal/repository"
+	"alphaforge/internal/secrets"
 )
 
 // DepositService manages HD wallet deposits.
@@ -22,6 +25,7 @@ type DepositService struct {
 	depositRepo *repository.DepositRepository
 	walletSvc   *WalletService
 	pg          *pgxpool.Pool
+	sec         secrets.Client
 	log         *zap.Logger
 
 	// OnAddressClaimed is called after a successful address claim.
@@ -34,6 +38,7 @@ func NewDepositService(
 	depositRepo *repository.DepositRepository,
 	walletSvc *WalletService,
 	pg *pgxpool.Pool,
+	sec secrets.Client,
 	log *zap.Logger,
 ) *DepositService {
 	return &DepositService{
@@ -41,6 +46,7 @@ func NewDepositService(
 		depositRepo: depositRepo,
 		walletSvc:   walletSvc,
 		pg:          pg,
+		sec:         sec,
 		log:         log,
 	}
 }
@@ -92,6 +98,10 @@ func (s *DepositService) ListDepositAddresses(ctx context.Context, status string
 }
 
 // ImportDepositAddresses deserializes an AddressBatch proto and imports addresses into the pool.
+// It validates:
+//   - KEK correctness: decrypts the first entry's private key to verify the server's KEK matches
+//   - TRON address format: each address must be a valid Base58 TRC20 address (T...)
+//   - Encrypted privkey non-empty: each entry must have a non-nil ciphertext
 func (s *DepositService) ImportDepositAddresses(ctx context.Context, batchData []byte) (int, int, error) {
 	var batch antv1.AddressBatch
 	if err := proto.Unmarshal(batchData, &batch); err != nil {
@@ -103,8 +113,36 @@ func (s *DepositService) ImportDepositAddresses(ctx context.Context, batchData [
 	if len(batch.Entries) > 5000 {
 		return 0, 0, fmt.Errorf("deposit service: batch too large: %d entries (max 5000), split into multiple files", len(batch.Entries))
 	}
+
+	// Verify KEK: decrypt the first entry to confirm server's KEK matches the one used by hdgen.
+	// This prevents importing addresses whose private keys can never be decrypted by the sweeper.
+	first := batch.Entries[0]
+	if len(first.EncryptedPrivkey) == 0 {
+		return 0, 0, errors.New("deposit service: first entry has empty encrypted_privkey")
+	}
+	if s.sec == nil {
+		return 0, 0, errors.New("deposit service: secrets client not configured — cannot verify KEK")
+	}
+	decrypted, err := s.sec.Decrypt(ctx, secrets.PurposeDepositPrivKey, first.EncryptedPrivkey)
+	if err != nil {
+		return 0, 0, fmt.Errorf("deposit service: KEK verification failed — server KEK does not match the one used to generate this batch: %w", err)
+	}
+	if len(decrypted) != 32 {
+		return 0, 0, fmt.Errorf("deposit service: KEK verification failed — decrypted private key is %d bytes, expected 32", len(decrypted))
+	}
+
+	// Validate all entries: address format + non-empty encrypted privkey.
 	addrs := make([]model.DepositAddress, 0, len(batch.Entries))
-	for _, e := range batch.Entries {
+	for i, e := range batch.Entries {
+		if e.Address == "" || !strings.HasPrefix(e.Address, "T") {
+			return 0, 0, fmt.Errorf("deposit service: entry %d invalid address: %q (must be TRON Base58 starting with T)", i, e.Address)
+		}
+		if _, err := address.Base58ToAddress(e.Address); err != nil {
+			return 0, 0, fmt.Errorf("deposit service: entry %d invalid TRON address: %w", i, err)
+		}
+		if len(e.EncryptedPrivkey) == 0 {
+			return 0, 0, fmt.Errorf("deposit service: entry %d has empty encrypted_privkey", i)
+		}
 		network := e.Network
 		if network == "" {
 			network = "TRC20"
