@@ -1,7 +1,7 @@
 # ADR-0026 · HD 钱包充值系统 — 每用户独立地址 + 自动到账确认
 
-- **状态**：Proposed
-- **日期**：2026-07-17
+- **状态**：Accepted
+- **日期**：2026-07-17 (Proposed) / 2026-07-19 (Accepted, post-audit)
 - **决策者**：Team
 - **关联 spec**：无
 
@@ -190,12 +190,13 @@ CREATE INDEX idx_deposits_status ON deposits(status);
 CREATE TABLE sweep_logs (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     deposit_address_id UUID NOT NULL REFERENCES user_deposit_addresses(id),
-    tx_hash         VARCHAR(64) NOT NULL UNIQUE,      -- 归集交易 hash
+    tx_hash         VARCHAR(64) UNIQUE,                -- 归集交易 hash (NULL 直到广播成功)
     amount          NUMERIC(20,8) NOT NULL,            -- 归集 USDT 金额
     energy_used     BIGINT NOT NULL,                   -- 实际消耗 Energy
-    status          VARCHAR(16) NOT NULL DEFAULT 'PENDING',  -- PENDING / SWEEPING / DONE / FAILED
+    status          VARCHAR(16) NOT NULL DEFAULT 'PENDING',  -- PENDING / SWEEPING / DONE / FAILED / MANUAL_REVIEW
     error_message   TEXT,                              -- 失败原因
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     completed_at    TIMESTAMPTZ
 );
 
@@ -239,6 +240,18 @@ CREATE TABLE wallet_secrets (
   归集时: KMS 解密私钥 → 内存签名 → crypto.ZeroBytes 清零
 ```
 
+**导入时地址-私钥匹配验证：**
+
+导入 .bin 文件时，服务器对**每条**记录执行确定性验证：
+1. 用 KEK 解密 encrypted_privkey → 得到 32 字节私钥
+2. 从私钥派生 TRON 地址 (`AddressFromPrivateKey`)
+3. 比对派生地址与声明地址是否一致
+4. 不一致 → 拒绝整个批次（防止篡改 .bin 文件注入地址-私钥不匹配的条目）
+5. 验证完毕立即清零私钥字节
+
+这确保即使 .bin 文件被篡改（地址被替换但私钥未换），也无法导入——
+因为用户存入的资金将永远无法归集（私钥不匹配地址）。
+
 | 层级 | 措施 | 实现方式 |
 |---|---|---|
 | **生成** | 离线生成 | 空气隔离机器生成 24 词助记词，永不联网 |
@@ -270,6 +283,8 @@ CREATE TABLE wallet_secrets (
    → 命中: 记录到待确认队列
 
 3. 记录 last_scanned_block 到 DB → 重启后从断点继续, 不遗漏
+   **checkpoint 安全**: 如果 saveCheckpoint 失败, 不推进 *lastBlock,
+   下一轮重试同一区块。避免因 checkpoint 写入失败而永久跳过区块。
 
 4. 等待区块确认 (≥20 确认, ~1 分钟):
    - only_confirmed=true 已经过 TronGrid 确认 (~19 solidified blocks)
@@ -293,6 +308,9 @@ CREATE TABLE wallet_secrets (
      UPDATE user_wallets SET balance = balance + amount_usd
      INSERT wallet_transactions (tx_type='deposit', ...)
    COMMIT
+   **失败安全**: 如果 ConfirmDeposit 因任何原因失败 (DB 连接闪断、wallet not found 等),
+   插入一条 status='MANUAL_REVIEW' 的 deposit 记录作为降级, 确保资金不丢失,
+   admin 可后续人工补账。绝不静默丢弃。
 
 8. 触发归集:
    - NATS 发布归集任务
@@ -365,12 +383,28 @@ if !addr.HasReceivedUSDT {
   10. 在 sweep_logs 中记录归集结果 (状态机: PENDING→SWEEPING→DONE/FAILED)
 ```
 
-**归集幂等与重试安全：**
-- sweep_logs 记录状态: PENDING → SWEEPING → DONE / FAILED
-- Tron 没有 Ethereum 式 nonce 机制, 幂等性由状态机 + 链上交易状态检查保证：
-  - SWEEPING 状态记录链上 tx_hash
-  - 重试前先查询 tx_hash 状态: SUCCESS → 标记 DONE, FAILED → 重新签名, PENDING → 等待
+**归集幂等与重试安全（确定性验证 — 第一性原理）：**
+- sweep_logs 记录状态: PENDING → SWEEPING → DONE / FAILED / MANUAL_REVIEW
+- Tron 没有 Ethereum 式 nonce 机制, 幂等性由状态机 + 链上交易状态检查保证
+- **核心原则: 永不猜测, 基于链上事实确定性验证**
+
+广播后的三种链上状态:
+  - SUCCESS → 标记 DONE (确定性)
+  - FAILED → 标记 FAILED, 可安全重新签名归集 (确定性)
+  - 未知 (超时) → **保持 SWEEPING**, 不标 DONE 也不标 FAILED
+
+超时处理 (reconfirmation checker):
+  - 每轮 scanAndSweep 开始时, 查询所有 SWEEPING + tx_hash 的记录
+  - 调用 GetTransactionInfoByID 查询链上最终状态
+  - SUCCESS → DONE / FAILED → FAILED / 仍未找到 → 继续保持 SWEEPING
+  - SWEEPING 状态阻止 ListUnsweptAddresses 重复归集同一地址
   - 绝不盲目重新广播, 避免双花
+
+卡死恢复 (MarkStuckSweepingAsFailed, 5 分钟超时):
+  - SWEEPING + tx_hash → MANUAL_REVIEW (广播已成功, 资金可能已转移, 人工核实)
+  - SWEEPING 无 tx_hash → FAILED (广播前卡死, 可安全重试)
+  - PENDING → FAILED (未开始, 可安全重试)
+
 - DONE 状态不再重复归集
 
 **批量归集优化：**
