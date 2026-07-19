@@ -186,6 +186,12 @@ func (s *Sweeper) loadConfig(ctx context.Context) error {
 // Uses ListUnsweptAddresses which correctly tracks (total_deposits - total_swept) per address,
 // supporting multiple deposits to the same address across multiple sweep cycles.
 func (s *Sweeper) scanAndSweep(ctx context.Context) error {
+	// Reconfirm SWEEPING records that have a tx_hash (broadcast succeeded but
+	// confirmation timed out in a previous cycle). Query chain for final status.
+	if err := s.reconfirmSweeping(ctx); err != nil {
+		s.log.Error("sweeper: reconfirm sweeping", zap.Error(err))
+	}
+
 	// Recover sweep_logs stuck in SWEEPING or PENDING state from previous process crashes.
 	if stuck, err := s.sweepRepo.MarkStuckSweepingAsFailed(ctx, 5*time.Minute); err != nil {
 		s.log.Error("sweeper: mark stuck", zap.Error(err))
@@ -222,6 +228,50 @@ func (s *Sweeper) scanAndSweep(ctx context.Context) error {
 		cancel()
 	}
 
+	return nil
+}
+
+// reconfirmSweeping checks SWEEPING sweep_logs that have a tx_hash (broadcast succeeded
+// but confirmation timed out). For each, queries the chain for final status:
+//   - SUCCESS → mark DONE
+//   - FAILED → mark FAILED (funds did not move, will be re-swept)
+//   - not found yet → leave SWEEPING (will check again next cycle)
+func (s *Sweeper) reconfirmSweeping(ctx context.Context) error {
+	pending, err := s.sweepRepo.ListSweepingWithTxHash(ctx)
+	if err != nil {
+		return fmt.Errorf("list sweeping with tx_hash: %w", err)
+	}
+	if len(pending) == 0 {
+		return nil
+	}
+
+	for _, sl := range pending {
+		err := s.tron.WaitForConfirmation(ctx, sl.TxHash, 10*time.Second)
+		if err == nil {
+			if err := s.sweepRepo.UpdateToDone(ctx, sl.ID); err != nil {
+				s.log.Error("sweeper: reconfirm update to done", zap.Error(err), zap.String("sweep_id", sl.ID.String()))
+			} else {
+				s.log.Info("sweeper: reconfirmed SWEEPING → DONE",
+					zap.String("sweep_id", sl.ID.String()),
+					zap.String("transfer_tx", sl.TxHash))
+			}
+			continue
+		}
+		if errors.Is(err, ErrConfirmationTimeout) {
+			s.log.Debug("sweeper: reconfirm still pending",
+				zap.String("sweep_id", sl.ID.String()),
+				zap.String("transfer_tx", sl.TxHash))
+			continue
+		}
+		if err := s.sweepRepo.UpdateToFailed(ctx, sl.ID, "reconfirm: on-chain failure: "+err.Error()); err != nil {
+			s.log.Error("sweeper: reconfirm update to failed", zap.Error(err), zap.String("sweep_id", sl.ID.String()))
+		} else {
+			s.log.Warn("sweeper: reconfirmed SWEEPING → FAILED",
+				zap.String("sweep_id", sl.ID.String()),
+				zap.String("transfer_tx", sl.TxHash),
+				zap.Error(err))
+		}
+	}
 	return nil
 }
 
@@ -327,20 +377,20 @@ func (s *Sweeper) executeSweep(ctx context.Context, sweepLog *model.SweepLog, ad
 	}
 
 	// Step 8b: Wait for confirmation (up to 60s).
-	// Two failure modes:
-	//   - ErrConfirmationTimeout: tx broadcast but not yet in a block → mark DONE
-	//     (funds have likely moved, re-sweep would waste energy on empty address)
-	//   - On-chain failure: tx in block but execution failed → return error → FAILED
-	//     (funds did NOT move, re-sweep is needed)
+	// Three outcomes:
+	//   - nil: tx confirmed SUCCESS → proceed to DONE
+	//   - ErrConfirmationTimeout: tx broadcast but not yet in block → return nil
+	//     (leave SWEEPING, reconfirmation checker will resolve next cycle)
+	//   - other error: tx in block but FAILED, or context cancelled → return error
+	//     (→ FAILED → re-sweep, funds did NOT move)
 	if err := s.tron.WaitForConfirmation(ctx, transferTxHash, 60*time.Second); err != nil {
 		if errors.Is(err, ErrConfirmationTimeout) {
-			s.log.Warn("sweeper: confirmation timeout — tx was broadcast, marking DONE",
+			s.log.Warn("sweeper: confirmation timeout — leaving SWEEPING for reconfirmation",
 				zap.String("sweep_id", sweepLog.ID.String()),
-				zap.String("transfer_tx", transferTxHash),
-				zap.Error(err))
-		} else {
-			return fmt.Errorf("wait for confirmation: %w", err)
+				zap.String("transfer_tx", transferTxHash))
+			return nil
 		}
+		return fmt.Errorf("wait for confirmation: %w", err)
 	}
 
 	// Step 9: Update sweep_log to DONE.

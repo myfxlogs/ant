@@ -91,13 +91,16 @@ func (r *SweepLogRepository) UpdateToFailed(ctx context.Context, id uuid.UUID, e
 	return nil
 }
 
-// MarkStuckSweepingAsFailed transitions SWEEPING or PENDING sweep_logs older than the given threshold to FAILED.
-// This recovers from process crashes mid-sweep that leave records stuck in SWEEPING or PENDING state.
-// PENDING uses a shorter threshold (2 min) since the window between CreatePending and UpdateToSweeping is tiny.
+// MarkStuckSweepingAsFailed transitions SWEEPING or PENDING sweep_logs older than the given threshold.
+// - SWEEPING with tx_hash: set to MANUAL_REVIEW (broadcast succeeded, funds may have moved — not safe to re-sweep)
+// - SWEEPING without tx_hash: set to FAILED (stuck before broadcast — safe to re-sweep)
+// - PENDING: set to FAILED (stuck before broadcast — safe to re-sweep)
 func (r *SweepLogRepository) MarkStuckSweepingAsFailed(ctx context.Context, maxAge time.Duration) (int64, error) {
 	result, err := r.db.Exec(ctx, `
 		UPDATE sweep_logs
-		SET status = 'FAILED', error_message = 'sweep timed out (stuck in ' || status || ')', completed_at = NOW(), updated_at = NOW()
+		SET status = CASE WHEN tx_hash IS NOT NULL AND tx_hash != '' THEN 'MANUAL_REVIEW' ELSE 'FAILED' END,
+		    error_message = 'sweep timed out (stuck in ' || status || ')',
+		    completed_at = NOW(), updated_at = NOW()
 		WHERE (status = 'SWEEPING' AND updated_at < NOW() - make_interval(secs => $1))
 		   OR (status = 'PENDING' AND updated_at < NOW() - make_interval(secs => $2))
 	`, int64(maxAge.Seconds()), int64((2 * time.Minute).Seconds()))
@@ -105,4 +108,30 @@ func (r *SweepLogRepository) MarkStuckSweepingAsFailed(ctx context.Context, maxA
 		return 0, fmt.Errorf("sweep log repo: mark stuck: %w", err)
 	}
 	return result.RowsAffected(), nil
+}
+
+// ListSweepingWithTxHash returns SWEEPING sweep_logs that have a tx_hash.
+// These are sweeps where broadcast succeeded but confirmation timed out.
+// The reconfirmation checker queries the chain for their final status.
+func (r *SweepLogRepository) ListSweepingWithTxHash(ctx context.Context) ([]model.SweepLog, error) {
+	rows, err := r.db.Query(ctx, `
+		SELECT id, deposit_address_id, tx_hash, amount::text, energy_used, status, error_message, created_at, updated_at, completed_at
+		FROM sweep_logs
+		WHERE status = 'SWEEPING' AND tx_hash IS NOT NULL AND tx_hash != ''
+		ORDER BY created_at
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("sweep log repo: list sweeping with tx_hash: %w", err)
+	}
+	defer rows.Close()
+	var out []model.SweepLog
+	for rows.Next() {
+		var sl model.SweepLog
+		if err := rows.Scan(&sl.ID, &sl.DepositAddressID, &sl.TxHash, &sl.Amount,
+			&sl.EnergyUsed, &sl.Status, &sl.ErrorMessage, &sl.CreatedAt, &sl.UpdatedAt, &sl.CompletedAt); err != nil {
+			return nil, fmt.Errorf("sweep log repo: scan sweeping: %w", err)
+		}
+		out = append(out, sl)
+	}
+	return out, rows.Err()
 }
