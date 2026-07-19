@@ -79,6 +79,9 @@ func main() {
 		if err != nil {
 			fatal("encrypt private key for index %d: %v", a.Index, err)
 		}
+		for i := range a.PrivateKey {
+			a.PrivateKey[i] = 0
+		}
 		batch.Entries = append(batch.Entries, &antv1.AddressBatchEntry{
 			Address:          a.Address,
 			DerivationIndex:  int32(a.Index),

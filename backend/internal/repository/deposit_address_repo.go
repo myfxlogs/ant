@@ -22,32 +22,36 @@ func NewDepositAddressRepository(db DBTX) *DepositAddressRepository {
 }
 
 // ClaimAddress atomically assigns an AVAILABLE address to a user.
-// Uses FOR UPDATE SKIP LOCKED for concurrency safety.
-// If the user already has an ASSIGNED address, returns it instead.
+// Uses a single CTE to check for existing assignment AND claim a new one,
+// eliminating the TOCTOU race where concurrent calls could assign two
+// different addresses to the same user.
 func (r *DepositAddressRepository) ClaimAddress(ctx context.Context, userID uuid.UUID) (*model.DepositAddress, error) {
-	// First check if user already has an assigned address.
-	existing, err := r.GetByUserID(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-	if existing != nil {
-		return existing, nil
-	}
-
-	// Atomically claim an available address.
 	var a model.DepositAddress
-	err = r.db.QueryRow(ctx, `
-		UPDATE user_deposit_addresses
-		SET user_id = $1, status = 'ASSIGNED', assigned_at = NOW(), updated_at = NOW()
-		WHERE id = (
+	err := r.db.QueryRow(ctx, `
+		WITH existing AS (
 			SELECT id FROM user_deposit_addresses
-			WHERE status = 'AVAILABLE'
-			ORDER BY derivation_index
-			FOR UPDATE SKIP LOCKED
+			WHERE user_id = $1 AND status = 'ASSIGNED'
 			LIMIT 1
+		),
+		claimed AS (
+			UPDATE user_deposit_addresses
+			SET user_id = $1, status = 'ASSIGNED', assigned_at = NOW(), updated_at = NOW()
+			WHERE id = (
+				SELECT id FROM user_deposit_addresses
+				WHERE status = 'AVAILABLE'
+				ORDER BY derivation_index
+				FOR UPDATE SKIP LOCKED
+				LIMIT 1
+			)
+			AND NOT EXISTS (SELECT 1 FROM existing)
+			RETURNING id
 		)
-		RETURNING id, user_id, address, derivation_index, encrypted_privkey,
-		          network, status, has_received_usdt, created_at, updated_at, assigned_at
+		SELECT uda.id, uda.user_id, uda.address, uda.derivation_index, uda.encrypted_privkey,
+		       uda.network, uda.status, uda.has_received_usdt, uda.created_at, uda.updated_at, uda.assigned_at
+		FROM user_deposit_addresses uda
+		WHERE uda.id = (SELECT id FROM existing)
+		   OR uda.id = (SELECT id FROM claimed)
+		LIMIT 1
 	`, userID).Scan(
 		&a.ID, &a.UserID, &a.Address, &a.DerivationIndex, &a.EncryptedPrivkey,
 		&a.Network, &a.Status, &a.HasReceivedUSDT, &a.CreatedAt, &a.UpdatedAt, &a.AssignedAt,
@@ -145,7 +149,7 @@ func (r *DepositAddressRepository) ImportBatch(ctx context.Context, addrs []mode
 			_, err := r.db.Exec(ctx, `
 				INSERT INTO user_deposit_addresses (address, derivation_index, encrypted_privkey, network, status)
 				VALUES ($1, $2, $3, $4, 'AVAILABLE')
-				ON CONFLICT (address) DO NOTHING
+				ON CONFLICT DO NOTHING
 			`, a.Address, a.DerivationIndex, a.EncryptedPrivkey, a.Network)
 			if err != nil {
 				return fmt.Errorf("deposit address repo: import batch: %w", err)
@@ -158,7 +162,7 @@ func (r *DepositAddressRepository) ImportBatch(ctx context.Context, addrs []mode
 		_, err := tx.Exec(ctx, `
 			INSERT INTO user_deposit_addresses (address, derivation_index, encrypted_privkey, network, status)
 			VALUES ($1, $2, $3, $4, 'AVAILABLE')
-			ON CONFLICT (address) DO NOTHING
+			ON CONFLICT DO NOTHING
 		`, a.Address, a.DerivationIndex, a.EncryptedPrivkey, a.Network)
 		if err != nil {
 			return fmt.Errorf("deposit address repo: import batch: %w", err)
@@ -196,7 +200,7 @@ func (r *DepositAddressRepository) ImportBatchWithStats(ctx context.Context, add
 			fmt.Fprintf(&b, `($%d,$%d,$%d,$%d,'AVAILABLE')`, base+1, base+2, base+3, base+4)
 			args = append(args, a.Address, a.DerivationIndex, a.EncryptedPrivkey, a.Network)
 		}
-		b.WriteString(` ON CONFLICT (address) DO NOTHING`)
+		b.WriteString(` ON CONFLICT DO NOTHING`)
 
 		tag, err := r.db.Exec(ctx, b.String(), args...)
 		if err != nil {

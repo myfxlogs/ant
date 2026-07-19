@@ -300,7 +300,7 @@ func (s *Sweeper) executeSweep(ctx context.Context, sweepLog *model.SweepLog, ad
 	if err != nil {
 		return fmt.Errorf("parse sweep amount: %w", err)
 	}
-	amountSun := amountDecimal.Mul(decimal.NewFromInt(1000000)).IntPart()
+	amountSun := amountDecimal.Mul(decimal.NewFromInt(1000000)).RoundDown(0).IntPart()
 	if amountSun <= 0 {
 		return fmt.Errorf("sweep amount too small: %s USDT = %d sun", sweepLog.Amount, amountSun)
 	}
