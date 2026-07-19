@@ -4,6 +4,7 @@ package sweeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"runtime"
 	"strconv"
@@ -326,16 +327,20 @@ func (s *Sweeper) executeSweep(ctx context.Context, sweepLog *model.SweepLog, ad
 	}
 
 	// Step 8b: Wait for confirmation (up to 60s).
-	// If this times out, the tx was still broadcast successfully — the funds have
-	// moved on-chain. We mark DONE with a warning rather than FAILED, because:
-	//   - FAILED would cause ListUnsweptAddresses to re-sweep the same address
-	//   - The re-sweep would waste energy on an already-empty address
-	//   - The on-chain tx will eventually confirm regardless of our polling
+	// Two failure modes:
+	//   - ErrConfirmationTimeout: tx broadcast but not yet in a block → mark DONE
+	//     (funds have likely moved, re-sweep would waste energy on empty address)
+	//   - On-chain failure: tx in block but execution failed → return error → FAILED
+	//     (funds did NOT move, re-sweep is needed)
 	if err := s.tron.WaitForConfirmation(ctx, transferTxHash, 60*time.Second); err != nil {
-		s.log.Warn("sweeper: confirmation timeout — tx was broadcast, marking DONE",
-			zap.String("sweep_id", sweepLog.ID.String()),
-			zap.String("transfer_tx", transferTxHash),
-			zap.Error(err))
+		if errors.Is(err, ErrConfirmationTimeout) {
+			s.log.Warn("sweeper: confirmation timeout — tx was broadcast, marking DONE",
+				zap.String("sweep_id", sweepLog.ID.String()),
+				zap.String("transfer_tx", transferTxHash),
+				zap.Error(err))
+		} else {
+			return fmt.Errorf("wait for confirmation: %w", err)
+		}
 	}
 
 	// Step 9: Update sweep_log to DONE.

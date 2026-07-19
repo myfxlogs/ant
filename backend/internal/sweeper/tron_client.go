@@ -2,6 +2,7 @@ package sweeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -211,7 +212,14 @@ func (t *TronClient) UndelegateEnergy(ctx context.Context, ownerAddr, receiverAd
 	return txHash, nil
 }
 
+// ErrConfirmationTimeout indicates the transaction was broadcast but not yet
+// confirmed within the timeout period. The tx may still confirm later — funds
+// have likely moved on-chain. Caller should treat this as "probably done" not "failed".
+var ErrConfirmationTimeout = errors.New("confirmation timeout")
+
 // WaitForConfirmation polls the TRON node until the transaction is confirmed or timeout.
+// Returns nil on success, ErrConfirmationTimeout if the tx is not yet in a block,
+// or a regular error if the tx is in a block but failed on-chain.
 func (t *TronClient) WaitForConfirmation(ctx context.Context, txHash string, timeout time.Duration) error {
 	if t.conn == nil {
 		return fmt.Errorf("tron client: not started")
@@ -241,7 +249,7 @@ func (t *TronClient) WaitForConfirmation(ctx context.Context, txHash string, tim
 		}
 	}
 
-	return fmt.Errorf("tron client: tx %s not confirmed within %s", txHash, timeout)
+	return fmt.Errorf("%w: tx %s not confirmed within %s", ErrConfirmationTimeout, txHash, timeout)
 }
 
 // buildTRC20TransferData builds the calldata for transfer(address,uint256).
