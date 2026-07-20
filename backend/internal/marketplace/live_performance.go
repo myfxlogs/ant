@@ -109,7 +109,7 @@ func (s *Service) GetLivePerformance(ctx context.Context, strategyID string, lim
 	}
 
 	rows, err := s.pg.Query(ctx,
-		`SELECT date, daily_pnl::text, daily_return::text, equity::text, drawdown::text,
+		`SELECT date, daily_pnl, daily_return, equity, drawdown,
 		        total_trades, winning_trades
 		 FROM marketplace_live_performance
 		 WHERE strategy_id = $1
@@ -123,14 +123,9 @@ func (s *Service) GetLivePerformance(ctx context.Context, strategyID string, lim
 	var points []LivePerformancePoint
 	for rows.Next() {
 		var p LivePerformancePoint
-		var pnlStr, retStr, eqStr, ddStr string
-		if err := rows.Scan(&p.Date, &pnlStr, &retStr, &eqStr, &ddStr, &p.TotalTrades, &p.WinningTrades); err != nil {
+		if err := rows.Scan(&p.Date, &p.DailyPnL, &p.DailyReturn, &p.Equity, &p.Drawdown, &p.TotalTrades, &p.WinningTrades); err != nil {
 			return nil, nil, err
 		}
-		p.DailyPnL, _ = decimal.NewFromString(pnlStr)
-		p.DailyReturn, _ = decimal.NewFromString(retStr)
-		p.Equity, _ = decimal.NewFromString(eqStr)
-		p.Drawdown, _ = decimal.NewFromString(ddStr)
 		points = append(points, p)
 	}
 	if err := rows.Err(); err != nil {
@@ -138,49 +133,36 @@ func (s *Service) GetLivePerformance(ctx context.Context, strategyID string, lim
 	}
 
 	var summary *LivePerformanceSummary
-	var trStr, arStr, mdStr, srStr, wrStr, amrStr string
+	var totalReturn, maxDrawdown decimal.Decimal
+	var annualReturn, sharpeRatio, winRate, avgMonthlyReturn *decimal.Decimal
 	var totalTrades int32
 	var trackingSince, lastUpdated time.Time
 	err = s.pg.QueryRow(ctx,
-		`SELECT total_return::text, COALESCE(annual_return::text, ''), max_drawdown::text,
-		        COALESCE(sharpe_ratio::text, ''), COALESCE(win_rate::text, ''),
-		        total_trades, COALESCE(avg_monthly_return::text, ''),
+		`SELECT total_return, annual_return, max_drawdown,
+		        sharpe_ratio, win_rate,
+		        total_trades, avg_monthly_return,
 		        tracking_since, last_updated
 		 FROM marketplace_live_performance_summary WHERE strategy_id = $1`,
 		strategyID,
-	).Scan(&trStr, &arStr, &mdStr, &srStr, &wrStr, &totalTrades, &amrStr, &trackingSince, &lastUpdated)
+	).Scan(&totalReturn, &annualReturn, &maxDrawdown,
+		&sharpeRatio, &winRate,
+		&totalTrades, &avgMonthlyReturn,
+		&trackingSince, &lastUpdated)
 	if err == nil {
 		summary = &LivePerformanceSummary{
-			TotalReturn:   parseDecSafe(trStr),
-			MaxDrawdown:   parseDecSafe(mdStr),
-			TotalTrades:   totalTrades,
-			TrackingSince: trackingSince,
-			LastUpdated:   lastUpdated,
-		}
-		if arStr != "" {
-			d := parseDecSafe(arStr)
-			summary.AnnualReturn = &d
-		}
-		if srStr != "" {
-			d := parseDecSafe(srStr)
-			summary.SharpeRatio = &d
-		}
-		if wrStr != "" {
-			d := parseDecSafe(wrStr)
-			summary.WinRate = &d
-		}
-		if amrStr != "" {
-			d := parseDecSafe(amrStr)
-			summary.AvgMonthlyReturn = &d
+			TotalReturn:      totalReturn,
+			MaxDrawdown:      maxDrawdown,
+			TotalTrades:      totalTrades,
+			TrackingSince:    trackingSince,
+			LastUpdated:      lastUpdated,
+			AnnualReturn:     annualReturn,
+			SharpeRatio:      sharpeRatio,
+			WinRate:          winRate,
+			AvgMonthlyReturn: avgMonthlyReturn,
 		}
 	}
 
 	return points, summary, nil
-}
-
-func parseDecSafe(s string) decimal.Decimal {
-	d, _ := decimal.NewFromString(s)
-	return d
 }
 
 // UpsertDailyPerformance records or updates a day's live performance for a strategy.
@@ -205,14 +187,13 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 	defer tx.Rollback(ctx)
 
 	// Get yesterday's closing equity to compute daily PnL and return.
-	var prevEquityStr string
+	var prevEquity decimal.Decimal
 	err = tx.QueryRow(ctx,
-		`SELECT equity::text FROM marketplace_live_performance
+		`SELECT equity FROM marketplace_live_performance
 			WHERE strategy_id = $1 AND account_id = $2 AND date < $3
 			ORDER BY date DESC LIMIT 1`,
 		sid, aid, today,
-	).Scan(&prevEquityStr)
-	prevEquity := parseDecSafe(prevEquityStr)
+	).Scan(&prevEquity)
 	if err != nil {
 		prevEquity = equity // first record: no PnL for day 0
 	}
@@ -224,13 +205,12 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 	}
 
 	// Get running peak equity for drawdown calculation.
-	var peakStr string
+	var peak decimal.Decimal
 	err = tx.QueryRow(ctx,
-		`SELECT MAX(equity)::text FROM marketplace_live_performance
+		`SELECT MAX(equity) FROM marketplace_live_performance
 			WHERE strategy_id = $1 AND account_id = $2`,
 		sid, aid,
-	).Scan(&peakStr)
-	peak := parseDecSafe(peakStr)
+	).Scan(&peak)
 	if equity.GreaterThan(peak) {
 		peak = equity
 	}
@@ -265,25 +245,23 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 	}
 
 	// Recompute summary from all daily records.
-	var totalReturnStr, maxDDStr string
+	var totalReturn, maxDrawdown decimal.Decimal
 	var allTrades, allWins int32
 	var firstDate, lastDate time.Time
 	err = tx.QueryRow(ctx,
 		`SELECT
-			   COALESCE(SUM(daily_pnl), 0)::text,
-			   COALESCE(MAX(drawdown), 0)::text,
+			   COALESCE(SUM(daily_pnl), 0),
+			   COALESCE(MAX(drawdown), 0),
 			   COALESCE(SUM(total_trades), 0)::int,
 			   COALESCE(SUM(winning_trades), 0)::int,
 			   MIN(date), MAX(date)
 			 FROM marketplace_live_performance
 			 WHERE strategy_id = $1 AND account_id = $2`,
 		sid, aid,
-	).Scan(&totalReturnStr, &maxDDStr, &allTrades, &allWins, &firstDate, &lastDate)
+	).Scan(&totalReturn, &maxDrawdown, &allTrades, &allWins, &firstDate, &lastDate)
 	if err != nil {
 		return fmt.Errorf("marketplace: recompute summary: %w", err)
 	}
-	totalReturn := parseDecSafe(totalReturnStr)
-	maxDrawdown := parseDecSafe(maxDDStr)
 
 	// Compute win rate.
 	var winRate *decimal.Decimal
@@ -300,18 +278,16 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 		annualReturn = &ar
 
 		// Sharpe: mean(dailyReturn) / stddev(dailyReturn) * sqrt(252)
-		var meanRet, stdRet string
+		var meanRet, stdRet decimal.Decimal
 		err = tx.QueryRow(ctx,
-			`SELECT COALESCE(AVG(daily_return), 0)::text, COALESCE(STDDEV(daily_return), 0)::text
+			`SELECT COALESCE(AVG(daily_return), 0), COALESCE(STDDEV(daily_return), 0)
 				 FROM marketplace_live_performance
 				 WHERE strategy_id = $1 AND account_id = $2 AND daily_return != 0`,
 			sid, aid,
 		).Scan(&meanRet, &stdRet)
 		if err == nil {
-			mean := parseDecSafe(meanRet)
-			std := parseDecSafe(stdRet)
-			if std.GreaterThan(decimal.Zero) {
-				sr := mean.Div(std).Mul(decimal.NewFromFloat(15.8745)) // sqrt(252)
+			if stdRet.GreaterThan(decimal.Zero) {
+				sr := meanRet.Div(stdRet).Mul(decimal.NewFromFloat(15.8745)) // sqrt(252)
 				sharpeRatio = &sr
 			}
 		}
