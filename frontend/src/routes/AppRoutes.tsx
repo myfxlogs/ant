@@ -45,6 +45,7 @@ const ShareManagement = lazy(() => import('@/pages/admin/ShareManagement'));
 const SRECanary = lazy(() => import('@/pages/admin/sre/CanaryPage'));
 const AIGatewayManagement = lazy(() => import('@/pages/admin/AIGatewayManagement'));
 const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage'));
+const AutoGenTaskReview = lazy(() => import('@/pages/admin/AutoGenTaskReview'));
 const BillingManagement = lazy(() => import('@/pages/admin/BillingManagement'));
 const DepositManagement = lazy(() => import('@/pages/admin/DepositManagement'));
 const MonitoringPage = lazy(() => import('@/pages/admin/MonitoringPage'));
@@ -114,6 +115,7 @@ const adminRoutes = (
     <Route path="ai-gateway" element={wrap(<AIGatewayManagement />)} />
     <Route path="monitoring" element={wrap(<MonitoringPage />)} />
     <Route path="agent-settings" element={wrap(<AdminSettingsPage />)} />
+    <Route path="autogen-tasks" element={wrap(<AutoGenTaskReview />)} />
     <Route path="sre" element={<SRELayout />}>
       <Route index element={<Navigate to="/admin/sre/killswitch" replace />} />
       <Route path="killswitch" element={wrap(<SREKillSwitch />)} />

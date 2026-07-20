@@ -1,10 +1,10 @@
 import { useState, useRef, useCallback } from 'react';
-import { Card, Input, Select, Button, Steps, Alert, Typography, Space, Tag, Statistic, Row, Col, Progress, Segmented, message } from 'antd';
-import { RobotOutlined, RocketOutlined, CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, AppstoreOutlined, EditOutlined } from '@ant-design/icons';
+import { Card, Input, Select, Button, Steps, Alert, Typography, Space, Tag, Statistic, Row, Col, Progress, Segmented, Modal, message } from 'antd';
+import { RobotOutlined, RocketOutlined, CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, AppstoreOutlined, EditOutlined, DollarOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
 import { create } from '@bufbuild/protobuf';
-import { GenerateAndPublishRequestSchema, GenerateFromTemplateRequestSchema } from '@/gen/ant/v1/marketplace_service_pb';
+import { GenerateAndPublishRequestSchema, GenerateFromTemplateRequestSchema, SetStrategyPricingRequestSchema } from '@/gen/ant/v1/marketplace_service_pb';
 import TemplateSelector from './TemplateSelector';
 
 const { TextArea } = Input;
@@ -44,8 +44,30 @@ export default function AutoGeneratePanel() {
   const [result, setResult] = useState<{ strategyId: string; publishId: string; backtest: any } | null>(null);
   const [violations, setViolations] = useState<any[]>([]);
   const abortRef = useRef<AbortController | null>(null);
+  const [pricingModalOpen, setPricingModalOpen] = useState(false);
+  const [priceModel, setPriceModel] = useState('free');
+  const [priceAmount, setPriceAmount] = useState('0');
+  const [pricingSaving, setPricingSaving] = useState(false);
 
   const isRunning = stage !== 'idle' && stage !== 'completed' && stage !== 'failed';
+
+  const handleSavePricing = useCallback(async () => {
+    if (!result?.strategyId) return;
+    setPricingSaving(true);
+    try {
+      await marketplaceClient.setStrategyPricing(create(SetStrategyPricingRequestSchema, {
+        strategyId: result.strategyId,
+        priceModel,
+        priceAmount,
+      }));
+      message.success(t('marketplace.autogen.pricingSaved', { defaultValue: 'Pricing updated' }));
+      setPricingModalOpen(false);
+    } catch (e: any) {
+      message.error(e?.message || 'Failed to update pricing');
+    } finally {
+      setPricingSaving(false);
+    }
+  }, [result, priceModel, priceAmount, t]);
 
   const handleTemplateGenerate = useCallback(async (templateId: string, paramsJson: string) => {
     const ac = new AbortController();
@@ -371,6 +393,9 @@ export default function AutoGeneratePanel() {
               <Button type="primary" href={`#/marketplace?strategy=${result.strategyId}`}>
                 {t('marketplace.autogen.viewDetail', { defaultValue: 'View Strategy' })}
               </Button>
+              <Button icon={<DollarOutlined />} onClick={() => setPricingModalOpen(true)}>
+                {t('marketplace.autogen.editPricing', { defaultValue: 'Edit Pricing' })}
+              </Button>
               <Button onClick={handleReset}>{t('marketplace.autogen.generateAnother', { defaultValue: 'Generate Another' })}</Button>
             </Space>
           )}
@@ -382,6 +407,33 @@ export default function AutoGeneratePanel() {
           )}
         </div>
       )}
+      <Modal
+        title={t('marketplace.autogen.editPricing', { defaultValue: 'Edit Pricing' })}
+        open={pricingModalOpen}
+        onCancel={() => setPricingModalOpen(false)}
+        onOk={handleSavePricing}
+        confirmLoading={pricingSaving}
+        okText={t('marketplace.autogen.save', { defaultValue: 'Save' })}
+      >
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <div>
+            <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.priceModel', { defaultValue: 'Price Model' })}</Text>
+            <Select value={priceModel} onChange={setPriceModel} style={{ width: '100%' }}
+              options={[
+                { value: 'free', label: t('marketplace.autogen.pricingFree', { defaultValue: 'Free' }) },
+                { value: 'once', label: t('marketplace.autogen.pricingOnce', { defaultValue: 'One-time Purchase' }) },
+                { value: 'subscription', label: t('marketplace.autogen.pricingSubscription', { defaultValue: 'Monthly Subscription' }) },
+              ]}
+            />
+          </div>
+          {priceModel !== 'free' && (
+            <div>
+              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.priceAmount', { defaultValue: 'Amount (USD)' })}</Text>
+              <Input value={priceAmount} onChange={e => setPriceAmount(e.target.value)} type="number" prefix="$" />
+            </div>
+          )}
+        </Space>
+      </Modal>
     </Card>
   );
 }

@@ -17,6 +17,7 @@ import {
   ThunderboltOutlined,
   ShareAltOutlined,
   MonitorOutlined,
+  RobotOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -61,6 +62,7 @@ export default function AdminLayout() {
     { key: '/admin/ai-gateway', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.aiGateway', { defaultValue: 'AI Gateway' }) },
     { key: '/admin/monitoring', icon: <MonitorOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.monitoring', { defaultValue: 'Monitoring & Alerts' }) },
     { key: '/admin/agent-settings', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.agentSettings', { defaultValue: 'Agent Settings' }) },
+    { key: '/admin/autogen-tasks', icon: <RobotOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.autogenTasks', { defaultValue: 'AI Gen Tasks' }) },
     { key: '/admin/sre', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.sre', { defaultValue: 'SRE Controls' }) },
   ];
 

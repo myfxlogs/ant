@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-07-20 13:20 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-07-20 17:31 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -97,6 +97,7 @@ AnalyzeImportCode	backend/internal/connect/strategy/strategy_import_handler.go:4
 AnalyzeImportCode	proto/ant/v1/strategy_runtime.proto:32
 AnalyzePlan	proto/ant/v1/strategy_execution.proto:13
 ApplyEvent	backend/internal/mthub/state_cache.go:117
+ApproveAutoGenTask	proto/ant/v1/marketplace_service.proto:43
 ArchiveStrategy	proto/ant/v1/admin_strategy.proto:29
 ArchiveTemplate	backend/internal/service/template_svc_admin.go:330
 AssignAccountNumber	backend/internal/service/user/account_number.go:215
@@ -321,7 +322,9 @@ FlagTemplate	backend/internal/service/template_svc_admin.go:249
 FreezeAccount	proto/ant/v1/admin_account.proto:11
 FreezeForWithdrawal	backend/internal/service/wallet_service.go:91
 GenerateAccountNumber	backend/internal/service/user/account_number.go:45
+GenerateAndPublish	proto/ant/v1/marketplace_service.proto:35
 GenerateAndSend	backend/internal/service/email_verification.go:35
+GenerateFromTemplate	proto/ant/v1/marketplace_service.proto:37
 GenerateImportCode	backend/internal/connect/strategy/strategy_import_handler.go:74
 GenerateImportCode	proto/ant/v1/strategy_runtime.proto:34
 GenerateReport	proto/ant/v1/analytics.proto:15
@@ -508,6 +511,7 @@ ListAllStrategies	backend/internal/service/template_svc_admin.go:175
 ListAllStrategies	proto/ant/v1/admin_strategy.proto:19
 ListAssetClones	backend/internal/connect/strategy/strategy_asset_handler.go:203
 ListAssetClones	proto/ant/v1/strategy_asset.proto:17
+ListAutoGenTasks	proto/ant/v1/marketplace_service.proto:41
 ListBacktestDatasets	proto/ant/v1/backtest_dataset.proto:11
 ListBacktestRuns	backend/internal/connect/strategy/strategy_backtest_crud.go:147
 ListBacktestRuns	proto/ant/v1/strategy_runtime.proto:22
@@ -558,6 +562,7 @@ ListStrategyExperiments	backend/internal/connect/strategy/strategy_experiment_ha
 ListStrategyExperiments	proto/ant/v1/strategy_experiment.proto:13
 ListStrategyRuns	backend/internal/connect/strategy/strategy_execution_runs.go:16
 ListStrategyRuns	proto/ant/v1/strategy_runtime.proto:40
+ListStrategyTemplates	proto/ant/v1/marketplace_service.proto:39
 ListStrategyVersions	backend/internal/connect/strategy/strategy_version_handler.go:17
 ListStrategyVersions	proto/ant/v1/strategy_runtime.proto:57
 ListSubscriptions	backend/internal/service/platform_service.go:79
@@ -746,6 +751,7 @@ Register	backend/internal/connect/strategy/session_registry.go:100
 Register	backend/internal/mthub/types.go:43
 Register	proto/ant/v1/auth.proto:16
 RegisterUser	backend/internal/service/registration_service.go:71
+RejectAutoGenTask	proto/ant/v1/marketplace_service.proto:45
 RemoveAccount	backend/internal/risk/canary.go:134
 RemoveCredential	backend/internal/service/webauthn_registration.go:135
 RemoveCredential	proto/ant/v1/webauthn.proto:21
@@ -998,6 +1004,7 @@ ToggleSchedule	proto/ant/v1/strategy.proto:27
 TransformCode	proto/ant/v1/code_assist.proto:16
 Transition	backend/internal/mthub/oms_writer.go:133
 TranslateParamLabels	proto/ant/v1/code_assist.proto:18
+TriggerBatchGeneration	proto/ant/v1/marketplace_service.proto:47
 TriggerReconcile	backend/internal/mthub/reconciliation.go:55
 UnflagStrategy	proto/ant/v1/admin_strategy.proto:24
 UnflagTemplate	backend/internal/service/template_svc_admin.go:263
@@ -1279,6 +1286,13 @@ proto/ant/v1/marketplace_service.proto:25:  rpc GetPublisherStats(GetPublisherSt
 proto/ant/v1/marketplace_service.proto:29:  rpc RunMarketBacktest(RunMarketBacktestRequest) returns (stream BacktestRunUpdate);
 proto/ant/v1/marketplace_service.proto:31:  rpc GetLivePerformance(GetLivePerformanceRequest) returns (GetLivePerformanceResponse);
 proto/ant/v1/marketplace_service.proto:32:  rpc LinkLiveAccount(LinkLiveAccountRequest) returns (LinkLiveAccountResponse);
+proto/ant/v1/marketplace_service.proto:35:  rpc GenerateAndPublish(GenerateAndPublishRequest) returns (stream GenerateAndPublishEvent);
+proto/ant/v1/marketplace_service.proto:37:  rpc GenerateFromTemplate(GenerateFromTemplateRequest) returns (stream GenerateAndPublishEvent);
+proto/ant/v1/marketplace_service.proto:39:  rpc ListStrategyTemplates(ListStrategyTemplatesRequest) returns (ListStrategyTemplatesResponse);
+proto/ant/v1/marketplace_service.proto:41:  rpc ListAutoGenTasks(ListAutoGenTasksRequest) returns (ListAutoGenTasksResponse);
+proto/ant/v1/marketplace_service.proto:43:  rpc ApproveAutoGenTask(ApproveAutoGenTaskRequest) returns (ApproveAutoGenTaskResponse);
+proto/ant/v1/marketplace_service.proto:45:  rpc RejectAutoGenTask(RejectAutoGenTaskRequest) returns (RejectAutoGenTaskResponse);
+proto/ant/v1/marketplace_service.proto:47:  rpc TriggerBatchGeneration(TriggerBatchGenerationRequest) returns (TriggerBatchGenerationResponse);
 proto/ant/v1/marketplace_service.proto:9:  rpc PublishStrategy(PublishStrategyRequest) returns (PublishStrategyResponse);
 proto/ant/v1/mthub_service.proto:10:  rpc OrderHistory(OrderHistoryRequest) returns (OrderHistoryResponse);
 proto/ant/v1/mthub_service.proto:11:  rpc SymbolParams(SymbolParamsRequest) returns (SymbolParamsResponse);
@@ -2108,35 +2122,35 @@ backend/internal/service/withdrawal_builder.go:64:func (b *WithdrawalBuilder) Bu
 > 在此列表 = 真正可被调用；只在某 *_test.go 出现而不在此 = 货架闲置（shelf-ware）。
 
 ```
-backend/cmd/server/handlers.go:127:	mux.Handle(antv1c.NewAuthServiceHandler(authServer, withSency(otelInterceptor, rateLimitInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:130:	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:169:	mux.Handle(antv1c.NewDepositServiceHandler(depositServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:177:	mux.Handle(antv1c.NewSubscriptionServiceHandler(subscriptionServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:187:	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:195:	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:198:	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:202:	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:211:	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:230:	mux.Handle(antv1c.NewAIServiceHandler(aiServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:232:	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:237:	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:248:	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:257:	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:290:	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:298:	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:314:	mux.Handle(antv1c.NewStrategyRuntimeServiceHandler(strategyExecServer,
-backend/cmd/server/handlers.go:330:	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler,
-backend/cmd/server/handlers.go:334:	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:336:	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:338:	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:340:	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:342:	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:357:	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:360:	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:363:	mux.Handle(antv1c.NewJobServiceHandler(jobServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:365:	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:367:	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, withSency(otelInterceptor, authInterceptor)))
-backend/cmd/server/handlers.go:416:	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
+backend/cmd/server/handlers.go:128:	mux.Handle(antv1c.NewAuthServiceHandler(authServer, withSency(otelInterceptor, rateLimitInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:131:	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:170:	mux.Handle(antv1c.NewDepositServiceHandler(depositServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:178:	mux.Handle(antv1c.NewSubscriptionServiceHandler(subscriptionServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:188:	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:196:	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:199:	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:203:	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:212:	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:231:	mux.Handle(antv1c.NewAIServiceHandler(aiServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:233:	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:238:	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:249:	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:258:	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:294:	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:311:	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:327:	mux.Handle(antv1c.NewStrategyRuntimeServiceHandler(strategyExecServer,
+backend/cmd/server/handlers.go:343:	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler,
+backend/cmd/server/handlers.go:347:	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:349:	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:351:	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:353:	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:355:	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:370:	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:373:	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:376:	mux.Handle(antv1c.NewJobServiceHandler(jobServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:378:	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:380:	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, withSency(otelInterceptor, authInterceptor)))
+backend/cmd/server/handlers.go:429:	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
 backend/cmd/server/handlers_admin.go:43:	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 backend/cmd/server/handlers_admin.go:46:	mux.Handle(antv1c.NewAdminConfigServiceHandler(adminConfigServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
 backend/cmd/server/handlers_admin.go:49:	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, withSency(otelInterceptor, authInterceptor, adminInterceptor)))
