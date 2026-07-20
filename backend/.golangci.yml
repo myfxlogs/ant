@@ -204,8 +204,6 @@ linters:
       - backend/gen
       - backend/mt4
       - backend/mt5
-      - backend/cmd/coldsign-gui
-      - backend/cmd/hdgen-gui
       - frontend
       - third_party$
       - builtin$
