@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
@@ -106,19 +105,6 @@ type PublishParams struct {
 	Disclaimer           string  // optional risk disclaimer
 }
 
-// BacktestSnapshot holds key backtest metrics at publish time.
-// Deprecated: use antv1.BacktestSnapshot proto message for new code.
-type BacktestSnapshot struct {
-	TotalReturn  string `json:"total_return"`
-	AnnualReturn string `json:"annual_return"`
-	MaxDrawdown  string `json:"max_drawdown"`
-	SharpeRatio  string `json:"sharpe_ratio"`
-	WinRate      string `json:"win_rate"`
-	TotalTrades  int32  `json:"total_trades"`
-	Symbol       string `json:"symbol"`
-	Timeframe    string `json:"timeframe"`
-}
-
 // PublishedStrategy represents a strategy listed in the marketplace
 // with full metadata from marketplace_strategies (M12-B1).
 type PublishedStrategy struct {
@@ -212,46 +198,10 @@ type CommentItem struct {
 	CreatedAt time.Time
 }
 
-// ── PostgreSQL helpers ────────────────────────────────────────────────────────
-
-// pgTextArray formats a string slice as a PostgreSQL TEXT[] literal: {a,b,c}.
-// Special characters in values (commas, braces, quotes) are backslash-escaped.
-func pgTextArray(items []string) string {
-	if len(items) == 0 {
-		return "{}"
-	}
-	out := "{"
-	for i, s := range items {
-		if i > 0 {
-			out += ","
-		}
-		out += pgEscape(s)
-	}
-	return out + "}"
-}
-
-func pgEscape(s string) string {
-	b := make([]byte, 0, len(s)+4)
-	for _, c := range []byte(s) {
-		switch c {
-		case '"', '\\', '{', '}', ',':
-			b = append(b, '\\', c)
-		default:
-			b = append(b, c)
-		}
-	}
-	return string(b)
-}
-
 // isUniqueViolation checks whether err is a PostgreSQL unique constraint violation.
 func isUniqueViolation(err error) bool {
-	var pgErr *pgconn.PgError
-	if err != nil {
-		// pgx wraps the PgError — unwrap to find it.
-		if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique") {
-			return true
-		}
-		_ = pgErr // silence unused
+	if err == nil {
+		return false
 	}
-	return false
+	return strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique")
 }

@@ -186,7 +186,7 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 	_, err = tx.Exec(ctx, `INSERT INTO marketplace_strategies (id, strategy_id, publisher_id, title, description, price_model, price_amount, asset_class, symbols, timeframe, risk_level, tags, code_snippet, backtest_snapshot, platform_fee_rate, disclaimer, status, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7::numeric,$8,$9,$10,$11,$12,$13,$14,$15::numeric,$16,'published',now(),now())`,
 		stratID, params.StrategyID, params.UserID, params.Title, params.Description,
 		params.PriceModel, params.PriceAmount, params.AssetClass,
-		pgTextArray(params.Symbols), params.Timeframe, params.RiskLevel, pgTextArray(params.Tags),
+		params.Symbols, params.Timeframe, params.RiskLevel, params.Tags,
 		params.CodeSnippet, params.BacktestSnapshotProto, params.PlatformFeeRate, params.Disclaimer)
 	if err != nil {
 		return "", fmt.Errorf("marketplace: insert listing: %w", err)
