@@ -31,6 +31,6 @@ func registerShareHandlers(
 	mux.Handle(antv1c.NewShareServiceHandler(shareServer, withSency(otelInterceptor, authInterceptor)))
 
 	// OG image endpoint for social media crawlers (HTTP GET, not ConnectRPC).
-	ogServer := user.NewOGImageServer(shareRepo, tradeRecordRepo, analyticsRepo, userRepo, pool, log)
+	ogServer := user.NewOGImageServer(shareRepo, tradeRecordRepo, analyticsRepo, userRepo, log)
 	mux.Handle("/share/", ogServer)
 }
