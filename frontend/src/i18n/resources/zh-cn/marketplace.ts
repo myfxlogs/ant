@@ -33,6 +33,19 @@ const Marketplace = {
     "autogen": {
       "title": "AI 策略生成",
       "subtitle": "用自然语言描述策略需求 — AI 自动生成、编译、回测并上架。",
+      "modes": {
+        "freeform": "自由描述",
+        "template": "模板"
+      },
+      "templates": {
+        "title": "策略模板",
+        "subtitle": "选择模板快速生成策略，参数可自定义。",
+        "empty": "暂无可用模板。",
+        "loadError": "加载模板失败",
+        "backToList": "返回模板列表",
+        "parameters": "参数",
+        "generateFromTemplate": "从模板生成"
+      },
       "description": "描述你的策略",
       "placeholder": "如：EURUSD H1 趋势跟踪，EMA 交叉信号，止损 50 点，止盈 100 点...",
       "assetClass": "资产类别",

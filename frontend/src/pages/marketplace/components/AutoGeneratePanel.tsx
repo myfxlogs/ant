@@ -1,10 +1,11 @@
 import { useState, useRef, useCallback } from 'react';
-import { Card, Input, Select, Button, Steps, Alert, Typography, Space, Tag, Statistic, Row, Col, Progress, message } from 'antd';
-import { RobotOutlined, RocketOutlined, CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Card, Input, Select, Button, Steps, Alert, Typography, Space, Tag, Statistic, Row, Col, Progress, Segmented, message } from 'antd';
+import { RobotOutlined, RocketOutlined, CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, AppstoreOutlined, EditOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
 import { create } from '@bufbuild/protobuf';
-import { GenerateAndPublishRequestSchema } from '@/gen/ant/v1/marketplace_service_pb';
+import { GenerateAndPublishRequestSchema, GenerateFromTemplateRequestSchema } from '@/gen/ant/v1/marketplace_service_pb';
+import TemplateSelector from './TemplateSelector';
 
 const { TextArea } = Input;
 const { Text, Title } = Typography;
@@ -26,6 +27,7 @@ function stageToStepIndex(stage: Stage): number {
 
 export default function AutoGeneratePanel() {
   const { t } = useTranslation();
+  const [mode, setMode] = useState<'freeform' | 'template'>('freeform');
   const [description, setDescription] = useState('');
   const [assetClass, setAssetClass] = useState('forex');
   const [symbol, setSymbol] = useState('EURUSD');
@@ -44,6 +46,58 @@ export default function AutoGeneratePanel() {
   const abortRef = useRef<AbortController | null>(null);
 
   const isRunning = stage !== 'idle' && stage !== 'completed' && stage !== 'failed';
+
+  const handleTemplateGenerate = useCallback(async (templateId: string, paramsJson: string) => {
+    const ac = new AbortController();
+    abortRef.current = ac;
+
+    setStage('generating');
+    setProgress(0);
+    setDelta('');
+    setErrorStage('');
+    setErrorDetail('');
+    setRetryable(false);
+    setResult(null);
+    setViolations([]);
+
+    try {
+      const msg = create(GenerateFromTemplateRequestSchema, {
+        templateId,
+        parametersJson: paramsJson,
+        symbol,
+        timeframe,
+        autoPublish,
+      });
+
+      const stream = marketplaceClient.generateFromTemplate(msg, { signal: ac.signal });
+      for await (const ev of stream) {
+        const s = (ev.stage || 'generating') as Stage;
+        setStage(s);
+        if (ev.progress) setProgress(ev.progress);
+        if (ev.delta) setDelta(prev => prev + ev.delta);
+        if (ev.message) setDelta(prev => prev + ev.message + '\n');
+
+        if (s === 'failed') {
+          setErrorStage(ev.errorStage || '');
+          setErrorDetail(ev.errorDetail || '');
+          setRetryable(ev.retryable);
+        } else if (s === 'completed') {
+          if (ev.strategyId || ev.publishId) {
+            setResult({ strategyId: ev.strategyId || '', publishId: ev.publishId || '', backtest: ev.backtest });
+          }
+          if (ev.violations && ev.violations.length > 0) {
+            setViolations(ev.violations);
+          }
+        }
+      }
+    } catch (e: any) {
+      if (e?.name === 'AbortError') return;
+      setStage('failed');
+      setErrorStage('generating');
+      setErrorDetail(e?.message || 'Generation failed');
+      setRetryable(true);
+    }
+  }, [symbol, timeframe, autoPublish]);
 
   const handleGenerate = useCallback(async () => {
     if (!description.trim()) {
@@ -146,6 +200,27 @@ export default function AutoGeneratePanel() {
 
       {stage === 'idle' && (
         <>
+          <Segmented
+            value={mode}
+            onChange={v => setMode(v as 'freeform' | 'template')}
+            options={[
+              { value: 'freeform', label: <><EditOutlined /> {t('marketplace.autogen.modes.freeform', { defaultValue: 'Free Description' })}</>, icon: <EditOutlined /> },
+              { value: 'template', label: <><AppstoreOutlined /> {t('marketplace.autogen.modes.template', { defaultValue: 'Templates' })}</>, icon: <AppstoreOutlined /> },
+            ]}
+            style={{ marginBottom: 16 }}
+          />
+
+          {mode === 'template' ? (
+            <TemplateSelector
+              symbol={symbol}
+              timeframe={timeframe}
+              autoPublish={autoPublish}
+              onGenerate={handleTemplateGenerate}
+              onSymbolChange={setSymbol}
+              onTimeframeChange={setTimeframe}
+            />
+          ) : (
+            <>
           <div style={{ marginBottom: 12 }}>
             <Text strong>{t('marketplace.autogen.description', { defaultValue: 'Describe your strategy' })}</Text>
             <TextArea
@@ -210,6 +285,8 @@ export default function AutoGeneratePanel() {
               {autoPublish ? t('marketplace.autogen.autoPublishOn', { defaultValue: 'Auto-publish: ON' }) : t('marketplace.autogen.autoPublishOff', { defaultValue: 'Auto-publish: OFF' })}
             </Button>
           </Space>
+            </>
+          )}
         </>
       )}
 

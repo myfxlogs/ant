@@ -88,6 +88,19 @@ const Marketplace = {
     "autogen": {
       "title": "AI Strategy Generation",
       "subtitle": "Describe your strategy in natural language — AI will generate, compile, backtest, and publish it.",
+      "modes": {
+        "freeform": "Free Description",
+        "template": "Templates"
+      },
+      "templates": {
+        "title": "Strategy Templates",
+        "subtitle": "Pick a template to quickly generate a strategy with preset parameters.",
+        "empty": "No templates available yet.",
+        "loadError": "Failed to load templates",
+        "backToList": "Back to templates",
+        "parameters": "Parameters",
+        "generateFromTemplate": "Generate from Template"
+      },
       "description": "Describe your strategy",
       "placeholder": "e.g. Trend following on EURUSD H1 using EMA crossover, 50 pip stop loss, 100 pip take profit...",
       "assetClass": "Asset Class",
