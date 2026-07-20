@@ -29,7 +29,7 @@ export default function PublishToMarketModal({ open, template, backtestSnapshot,
   }));
   const priceModelOptions = [
     { value: 'free', label: t('marketplace.publish.priceModel.free', { defaultValue: 'Free' }) },
-    { value: 'monthly', label: t('marketplace.publish.priceModel.monthly', { defaultValue: 'Monthly Subscription' }) },
+    { value: 'subscription', label: t('marketplace.publish.priceModel.subscription', { defaultValue: 'Subscription' }) },
     { value: 'once', label: t('marketplace.publish.priceModel.once', { defaultValue: 'One-Time Purchase' }) },
   ];
   const [form] = Form.useForm();

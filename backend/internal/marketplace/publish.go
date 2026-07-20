@@ -149,6 +149,11 @@ func (s *Service) GetPublisherStats(ctx context.Context, userID string) (*Publis
 // user_strategy_publishes (ownership tracking) and marketplace_strategies
 // (rich listing metadata). Uses a transaction for atomicity.
 func (s *Service) Publish(ctx context.Context, params PublishParams) (string, error) {
+	switch params.PriceModel {
+	case PriceModelFree, PriceModelOnce, PriceModelSubscription:
+	default:
+		return "", fmt.Errorf("marketplace: unsupported price_model %q", params.PriceModel)
+	}
 	tx, err := s.pg.Begin(ctx)
 	if err != nil {
 		return "", fmt.Errorf("marketplace: publish begin tx: %w", err)

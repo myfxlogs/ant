@@ -249,6 +249,11 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 
 // SetPricing updates the pricing model, amount, and platform fee rate for a published strategy.
 func (s *Service) SetPricing(ctx context.Context, strategyID, priceModel, priceAmount, platformFeeRate string) error {
+	switch priceModel {
+	case PriceModelFree, PriceModelOnce, PriceModelSubscription:
+	default:
+		return fmt.Errorf("marketplace: unsupported price_model %q", priceModel)
+	}
 	sid, err := uuid.Parse(strategyID)
 	if err != nil {
 		return fmt.Errorf("marketplace: invalid strategy_id: %w", err)
