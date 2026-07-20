@@ -142,7 +142,7 @@ export function useMarketplace(): MarketplaceCtx {
         userId,
         publisherUserId: strategy.publisherUserId,
         strategyId: strategy.strategyId,
-        kind: 'copy_trade',
+        kind: 'subscription',
       });
       message.success(t('marketplace.messages.subscribed'));
       refetchPurchases();

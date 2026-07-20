@@ -58,7 +58,6 @@ const (
 const (
 	SubKindPurchase     = "purchase"
 	SubKindSubscription = "subscription"
-	SubKindCopyTrade    = "copy_trade"
 )
 
 // ── Wallet transaction type constants ────────────────────────────────────────

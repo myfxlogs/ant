@@ -70,32 +70,6 @@ func (s *Service) Subscribe(ctx context.Context, userID, publisherUserID, strate
 	return id, nil
 }
 
-// ListActiveSubscribers returns active subscriptions for a specific strategy.
-// Used by CopyTradeEngine to efficiently find subscribers for signal replication.
-// NOTE: TargetUserID is populated with subscriber_user_id (the account to copy TO).
-func (s *Service) ListActiveSubscribers(ctx context.Context, strategyID string) ([]SubscriptionItem, error) {
-	rows, err := s.pg.Query(ctx, `
-		SELECT id, subscriber_user_id, target_strategy_id, kind, active, created_at
-		FROM user_subscriptions
-		WHERE target_strategy_id = $1 AND active = true
-		  AND (expires_at IS NULL OR expires_at > now())
-		ORDER BY created_at DESC
-	`, strategyID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var out []SubscriptionItem
-	for rows.Next() {
-		var sub SubscriptionItem
-		if err := rows.Scan(&sub.SubscriptionID, &sub.TargetUserID, &sub.StrategyID, &sub.Kind, &sub.Active, &sub.CreatedAt); err != nil {
-			return nil, err
-		}
-		out = append(out, sub)
-	}
-	return out, rows.Err()
-}
-
 // Unsubscribe deactivates a subscription and decrements the subscriber counter.
 func (s *Service) Unsubscribe(ctx context.Context, userID, subscriptionID string) error {
 	tx, err := s.pg.Begin(ctx)

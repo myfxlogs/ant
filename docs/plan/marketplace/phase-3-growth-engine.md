@@ -377,9 +377,75 @@ cd frontend && npm run build
 bash scripts/gen_capability_map.sh
 ```
 
+---
+
+## 模块 S2 · 策略详情页 SEO
+
+> 详见：`docs/plan/marketplace/seo-strategy.md` 模块 S2
+
+- [ ] **S2a 动态 title + description**
+
+  **文件**：`frontend/src/pages/share/SharePerformancePage.tsx`
+
+  title: `"{策略名} — {品种} {周期} | AlphaForge"`
+  description: `"{策略名} 实盘收益率 {total_return}，夏普 {sharpe}，最大回撤 {max_dd}%。支持 IC Markets, Pepperstone, XM 等 30+ MT4/MT5 broker。"`
+
+  keywords: 策略名 + 品种 + 周期 + broker 名列表前十 + "trading strategy, verified performance"
+
+- [ ] **S2b 策略分享页 JSON-LD**
+
+  **文件**：`frontend/src/pages/share/SharePerformancePage.tsx`
+
+  嵌入 `Product` schema：
+  ```json
+  {
+    "@type": "Product",
+    "name": "策略名",
+    "description": "策略描述",
+    "offers": { "@type": "Offer", "price": "价格", "priceCurrency": "USD" },
+    "aggregateRating": { "ratingValue": "4.5", "reviewCount": "23" }
+  }
+  ```
+
+- [ ] **S2c 策略详情页 OG 标签**
+
+  使用 Phase 1 S1c 预生成的定制 og-image（含策略指标）。
+
+---
+
+## 模块 S4 · Sitemap + 结构化数据
+
+> 详见：`docs/plan/marketplace/seo-strategy.md` 模块 S4
+
+- [ ] **S4a 动态 Sitemap 端点**
+
+  **文件**：后端新增 `/sitemap.xml` 动态生成接口
+  包含：首页 + marketplace + 所有公开策略分享页（`/share/:token`）+ `/brokers`
+
+- [ ] **S4b 清理 prerendered HTML 重定向**
+
+  删除 `public/landing.html` 等重定向文件，或改为不重定向的真正 prerender 快照。
+
+- [ ] **S4c JSON-LD 补全**
+
+  Marketplace 页嵌入 `ItemList` schema（策略列表）；策略分享页嵌入 `Product` schema（S2b）。
+
+---
+
+## Phase 3 完成检验
+
+```bash
+go build ./...
+buf generate
+go test ./internal/marketplace/...
+cd frontend && npm run build
+bash scripts/gen_capability_map.sh
+```
+
 **关键验收场景**：
 1. 排行榜切换类型/周期/资产类别 → 数据正确排序
 2. 免费试用 → 7 天后自动过期 → 代码访问恢复限制
 3. 策略对比 → 选 3 个策略 → 并排展示 → 最优值高亮
 4. 通知触发 → Bell 红点 → 点击查看 → 标记已读
-5. 分享链接 → 打开 → OG 标签正确 → 非登录用户看到 CTA
+5. 分享链接 → 打开 → **定制 og-image 含策略指标** → JSON-LD 正确
+6. Sitemap 包含 `/share/:token` 链接 → Google Search Console 可提交
