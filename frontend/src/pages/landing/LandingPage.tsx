@@ -55,7 +55,11 @@ export default function LandingPage() {
 
   return (
     <>
-      <Seo title={t('landing.heroTitle')} description={t('landing.heroSubtitle')} path="/" />
+      <Seo title={t('landing.heroTitle')} description={t('landing.heroSubtitle')} path="/" keywords={[
+        'AI trading', 'MT4', 'MT5', 'MetaTrader', 'algorithmic trading', 'automated trading',
+        'forex EA', 'IC Markets', 'Pepperstone', 'XM', 'Exness', 'OANDA',
+        'strategy marketplace', 'backtesting', 'MQL4', 'MQL5',
+      ]} />
       <div style={{ background: 'var(--color-bg-primary, #f6f8fa)', minHeight: '100vh' }}>
         {/* ── Hero ── */}
         <section

@@ -24,7 +24,11 @@ function MarketplaceUI() {
 
   return (
     <MarketplaceProvider value={m}>
-      <Seo title="Strategy Marketplace" description="Discover and purchase trading strategies for MT4/MT5. Backtest, optimize, and deploy with AlphaForge." path="/marketplace" />
+      <Seo title="Strategy Marketplace" description="Discover and purchase MT4/MT5 trading strategies. Supports IC Markets, Pepperstone, XM and 30+ brokers. AI-assisted strategy generation and optimization. Backtest verified, live performance tracked." path="/marketplace" keywords={[
+        'strategy marketplace', 'buy forex EA', 'MT4 strategies', 'MT5 strategies',
+        'trading robots', 'AI trading strategies', 'IC Markets', 'Pepperstone', 'XM',
+        'Exness', 'OANDA', 'automated trading', 'algorithmic trading',
+      ]} />
       <div style={{ padding: '24px 24px 80px', background: 'var(--color-bg-secondary)', minHeight: '100vh' }}>
         <div className="max-w-7xl mx-auto">
           <div style={{ marginBottom: 20 }}>

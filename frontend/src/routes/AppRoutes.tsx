@@ -14,6 +14,7 @@ const Register = lazy(() => import('@/pages/auth/Register'));
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
 const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
 const LandingPage = lazy(() => import('@/pages/landing/LandingPage'));
+const BrokersPage = lazy(() => import('@/pages/landing/BrokersPage'));
 const AccountDetail = lazy(() => import('@/pages/accounts/AccountDetail'));
 const BindAccount = lazy(() => import('@/pages/accounts/BindAccount'));
 const AccountReport = lazy(() => import('@/pages/accounts/AccountReport'));
@@ -136,6 +137,8 @@ export function AppRoutes() {
       {!isAuthenticated && <Route path="/" element={<LandingPage />} />}
       {/* Public marketplace — unauthenticated only; authenticated uses mainRoutes version with layout */}
       {!isAuthenticated && <Route path="/marketplace" element={wrap(<MarketplacePage />)} />}
+      {/* Public brokers page — SEO landing page, always accessible */}
+      <Route path="/brokers" element={<BrokersPage />} />
       {/* Everything else inside StreamProvider */}
       <Route path="*" element={
         <StreamProvider>

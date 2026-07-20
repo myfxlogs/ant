@@ -12,10 +12,11 @@
 | 4 | `agent-engine` | Agent引擎 | `backend/internal/{agent,ai}/` | 策略生成, 盲区桥接, 画像, 解读, 记忆, 回溯 |
 | 5 | `backtest-engine` | 回测引擎 | `backend/internal/backtest/` `backend/strategy/backtest/` | SimBroker, 撮合, 滑点, 手续费, 净值曲线 |
 | 6 | `risk-gate` | 实盘风控 | `backend/internal/{risk,risksvc,paper,oms}/` | 6门管线, 仿真交易, 订单管理, 熔断 |
-| 7 | `account-mgmt` | 账户管理 | `backend/internal/connect/{gateway,marketplace,user}/` | MT账户CRUD, 经纪商搜索, 用户体系 |
+| 7 | `account-mgmt` | 账户管理 | `backend/internal/connect/{gateway,user}/` | MT账户CRUD, 经纪商搜索, 用户体系 |
 | 8 | `market-data` | 市场数据 | `backend/internal/{mdgateway,source,symbol}/` | K线/Tick存储(CH+PG), 实时报价流 |
 | 9 | `frontend` | 前端界面 | `frontend/src/` | React, 策略工作区, 回测面板, Agent聊天 |
 | 10 | `api-gateway` | API层 | `backend/internal/connect/*/` `proto/ant/v1/` | ConnectRPC handlers, SSE, proto定义 |
+| 11 | `strategy-marketplace` | 策略市场 | `backend/internal/marketplace/` `backend/internal/connect/marketplace/` `frontend/src/pages/marketplace/` | 策略发布/发现/购买/冻结结算/AI迭代, 双边市场 |
 
 **怎么用**：对话中提块名即可。"agent-engine 生成策略超时" → AI 定位 `backend/internal/agent/generator.go`。"mql-compiler IR 不兼容" → AI 定位 `backend/tools/mql2go/compile_py.go`。
 
@@ -29,6 +30,7 @@
 | Agent循环 | `frontend(用户输入) → api-gateway(SSE) → agent-engine(generate/revise) → mql-compiler(compile) → backtest-engine(SimBroker) → agent-engine(分析/迭代)` |
 | 回测 | `frontend(参数) → api-gateway → backtest-engine(VMRunner+SimBroker) → PG(结果) → SSE(通知)` |
 | 实盘调度 | `frontend(计划) → api-gateway → strategy-runtime(LiveRunner) → market-data(实时bar) → mt-gateway(下单)` |
+| 策略市场 | `frontend(市场页) → api-gateway → strategy-marketplace(发布/购买/冻结结算) → backtest-engine(回测验证) ‖ agent-engine(AI生成/迭代策略)` |
 
 **常用调试入口**："净值曲线为空" → 追 策略执行 线，从 `frontend` filter 到 `CH` 逐层查。"Agent生成超时" → 追 Agent循环 线，看是 LLM 推理卡了还是回测卡了。
 

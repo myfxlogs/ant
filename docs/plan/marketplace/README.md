@@ -12,10 +12,9 @@
 docs/roadmaps/strategy-marketplace.md          ← 📐 设计文档（产品边界、收入模型、风险、Phase 摘要）
 docs/plan/marketplace/
   ├── README.md                                ← 🚪 你在这里
-  ├── seo-strategy.md                          ← 🔍 SEO 策略（30+ broker 关键词、20+ AI 词、5 模块）
-  ├── phase-1-trust-infrastructure.md          ← 📋 Phase 1: 5+2 模块（信任 + SEO）
+  ├── phase-1-trust-infrastructure.md          ← 📋 Phase 1: 5 模块（信任 + SEO）
   ├── phase-2-ai-strategy-supply.md            ← 📋 Phase 2: 4 模块（AI 生成管线）
-  ├── phase-3-growth-engine.md                 ← 📋 Phase 3: 5+2 模块（增长 + SEO）
+  ├── phase-3-growth-engine.md                 ← 📋 Phase 3: 5 模块（增长 + SEO）
   ├── phase-4-platform-ops.md                  ← 📋 Phase 4: 6 模块（运营）
   └── phase-5-moat.md                          ← 📋 Phase 5: 3 模块（AI 迭代+捆绑包+阶梯费率）
 ```
