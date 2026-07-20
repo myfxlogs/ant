@@ -226,17 +226,14 @@ func (s *Service) ListPublished(ctx context.Context, userID string, limit int, o
 	var out []PublishedStrategy
 	for rows.Next() {
 		var p PublishedStrategy
-		var symbolsRaw, tagsRaw string
 		var snapshotRaw []byte
 		if err := rows.Scan(&p.PublishID, &p.StrategyID, &p.StrategyName, &p.PublisherUserID, &p.PublishedAt,
 			&p.Title, &p.Description, &p.PriceModel, &p.PriceAmount,
-			&p.AssetClass, &symbolsRaw, &p.Timeframe, &p.RiskLevel, &tagsRaw,
+			&p.AssetClass, &p.Symbols, &p.Timeframe, &p.RiskLevel, &p.Tags,
 			&p.TotalSubscribers, &p.WinRate, &p.TotalPnL, &p.AvgRating, &p.RatingCount,
 			&p.CodeSnippet, &snapshotRaw, &p.ProviderVerified, &p.ProviderType, &p.Disclaimer); err != nil {
 			return nil, err
 		}
-		p.Symbols = parseJSONStringArray(symbolsRaw)
-		p.Tags = parseJSONStringArray(tagsRaw)
 		if len(snapshotRaw) > 0 {
 			var snap antv1.BacktestSnapshot
 			if err := proto.Unmarshal(snapshotRaw, &snap); err == nil {
@@ -259,10 +256,10 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit, offs
 	query := `SELECT usp.id, usp.platform_strategy_id, COALESCE(ms.title,st.name,usp.platform_strategy_id::text),
 			COALESCE(u.email, u.nickname, usp.user_id::text), usp.published_at, COALESCE(ms.title,''), COALESCE(ms.description,''),
 			COALESCE(ms.price_model,''), ms.price_amount::text, COALESCE(ms.asset_class,''),
-			COALESCE(ms.symbols::text,'{}'), ms.timeframe, COALESCE(ms.risk_level,''),
-			COALESCE(ms.tags::text,'{}'), COALESCE(ms.total_subscribers,0), ms.win_rate, ms.total_pnl,
+			ms.symbols, ms.timeframe, COALESCE(ms.risk_level,''),
+			ms.tags, COALESCE(ms.total_subscribers,0), ms.win_rate, ms.total_pnl,
 			COALESCE(r.avg_rating,0), COALESCE(r.rating_count,0),
-			COALESCE(ms.code_snippet,''), ms.backtest_snapshot::text,
+			COALESCE(ms.code_snippet,''), ms.backtest_snapshot,
 			COALESCE(u.verified_provider,false), COALESCE(u.provider_type,'human'),
 			COALESCE(ms.disclaimer,'')
 		 FROM user_strategy_publishes usp

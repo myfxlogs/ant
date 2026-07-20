@@ -3,7 +3,6 @@ package marketplace
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"go.uber.org/zap"
@@ -148,10 +147,10 @@ func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Requ
 			item.Timeframe = *p.Timeframe
 		}
 		if p.WinRate != nil {
-			item.WinRate = *p.WinRate
+			item.WinRate = p.WinRate.InexactFloat64()
 		}
 		if p.TotalPnL != nil {
-			item.TotalPnl = strconv.FormatFloat(*p.TotalPnL, 'f', -1, 64)
+			item.TotalPnl = p.TotalPnL.StringFixed(2)
 		}
 		if p.CodeSnippet != "" {
 			item.CodeSnippet = p.CodeSnippet

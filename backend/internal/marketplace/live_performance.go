@@ -77,6 +77,12 @@ func (s *Service) LinkLiveAccount(ctx context.Context, strategyID, accountID, us
 	if err != nil {
 		return fmt.Errorf("marketplace: link live account: %w", err)
 	}
+
+	// Refresh the in-memory collector cache so OnProfitUpdate picks up the new linkage immediately.
+	if s.livePerfCollector != nil {
+		s.livePerfCollector.RefreshCache()
+	}
+
 	return nil
 }
 

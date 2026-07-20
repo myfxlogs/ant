@@ -269,6 +269,7 @@ func main() {
 	mktplaceSvc := marketplace.New(pool, nil, log)
 
 	livePerfCollector := marketplace.NewLivePerformanceCollector(mktplaceSvc, log)
+	mktplaceSvc.SetLivePerfCollector(livePerfCollector)
 	go startMdGatewayPipeline(pipelineCtx, log, pool, mdStore, chStore, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg, factorPusher, livePerfCollector)
 
 	// Graceful shutdown context — created before registerHandlers so background

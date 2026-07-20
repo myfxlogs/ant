@@ -19,9 +19,10 @@ import (
 // M12-B1: unified model — Publish writes to both user_strategy_publishes
 // and marketplace_strategies; ListPublished JOINs both for rich metadata.
 type Service struct {
-	pg         *pgxpool.Pool
-	walletRepo *repository.WalletRepository
-	log        *zap.Logger
+	pg                *pgxpool.Pool
+	walletRepo        *repository.WalletRepository
+	log               *zap.Logger
+	livePerfCollector *LivePerformanceCollector
 }
 
 // SystemUserID is the designated platform system account for fee collection.
@@ -30,6 +31,12 @@ var SystemUserID = uuid.Nil
 // New creates a marketplace service.
 func New(pg *pgxpool.Pool, walletRepo *repository.WalletRepository, log *zap.Logger) *Service {
 	return &Service{pg: pg, walletRepo: walletRepo, log: log}
+}
+
+// SetLivePerfCollector binds the live performance collector after construction.
+// Called after NewLivePerformanceCollector creates the collector with this Service.
+func (s *Service) SetLivePerfCollector(c *LivePerformanceCollector) {
+	s.livePerfCollector = c
 }
 
 // SetWalletRepo binds the wallet repository after construction.
@@ -129,8 +136,8 @@ type PublishedStrategy struct {
 	RiskLevel        string
 	Tags             []string
 	TotalSubscribers int
-	WinRate          *float64
-	TotalPnL         *float64
+	WinRate          *decimal.Decimal
+	TotalPnL         *decimal.Decimal
 	AvgRating        float64
 	RatingCount      int32
 	CodeSnippet          string              // publisher-provided code preview
@@ -233,65 +240,6 @@ func pgEscape(s string) string {
 		}
 	}
 	return string(b)
-}
-
-// parseJSONStringArray parses a PostgreSQL JSON array string like ["a","b"]
-// into a Go []string. Returns empty slice on parse failure.
-func parseJSONStringArray(raw string) []string {
-	if raw == "" || raw == "[]" || raw == "{}" || raw == "null" {
-		return nil
-	}
-	// Simple parser: strip brackets, split by comma, strip quotes.
-	// Handles both JSON array ["a","b"] and PostgreSQL array {a,b} formats.
-	inner := raw
-	if len(inner) >= 2 {
-		first, last := inner[0], inner[len(inner)-1]
-		if (first == '[' && last == ']') || (first == '{' && last == '}') {
-			inner = inner[1 : len(inner)-1]
-		}
-	}
-	if inner == "" {
-		return nil
-	}
-	var result []string
-	for _, part := range splitJSONArray(inner) {
-		s := part
-		// Strip surrounding quotes.
-		if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
-			s = s[1 : len(s)-1]
-		}
-		if s != "" {
-			result = append(result, s)
-		}
-	}
-	return result
-}
-
-// splitJSONArray splits a JSON array body by commas, respecting quoted strings.
-func splitJSONArray(s string) []string {
-	var parts []string
-	var current string
-	inQuote := false
-	for _, c := range s {
-		switch c {
-		case '"':
-			inQuote = !inQuote
-			current += string(c)
-		case ',':
-			if inQuote {
-				current += string(c)
-			} else {
-				parts = append(parts, current)
-				current = ""
-			}
-		default:
-			current += string(c)
-		}
-	}
-	if current != "" {
-		parts = append(parts, current)
-	}
-	return parts
 }
 
 // isUniqueViolation checks whether err is a PostgreSQL unique constraint violation.
