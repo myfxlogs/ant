@@ -62,12 +62,20 @@ func (s *ogImageServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	st, err := s.repo.GetByToken(ctx, token)
-	if err != nil || st == nil || time.Now().After(st.ExpiresAt) {
+	if err != nil {
+		s.log.Warn("og-image: GetByToken", zap.String("token", token), zap.Error(err))
+		http.NotFound(w, r)
+		return
+	}
+	if st == nil || time.Now().After(st.ExpiresAt) {
 		http.NotFound(w, r)
 		return
 	}
 
-	user, _ := s.userRepo.GetByID(ctx, st.UserID)
+	user, err := s.userRepo.GetByID(ctx, st.UserID)
+	if err != nil {
+		s.log.Warn("og-image: GetByID", zap.String("user_id", st.UserID.String()), zap.Error(err))
+	}
 	userName := "Anonymous"
 	if user != nil {
 		if user.Nickname != nil && *user.Nickname != "" {
@@ -81,9 +89,15 @@ func (s *ogImageServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	aid, _ := uuid.Parse(st.AccountID)
 	start := time.Now().AddDate(-1, 0, 0)
 	end := time.Now()
-	equityPoints, _ := s.eqRepo.GetEquityCurve(ctx, aid, start, end)
+	equityPoints, err := s.eqRepo.GetEquityCurve(ctx, aid, start, end)
+	if err != nil {
+		s.log.Warn("og-image: GetEquityCurve", zap.String("account_id", st.AccountID), zap.Error(err))
+	}
 
-	trades, _ := s.tradeRecords.GetByAccountID(ctx, st.UserID, aid, start, end, 50)
+	trades, err := s.tradeRecords.GetByAccountID(ctx, st.UserID, aid, start, end, 50)
+	if err != nil {
+		s.log.Warn("og-image: GetByAccountID", zap.String("account_id", st.AccountID), zap.Error(err))
+	}
 	stats := summarizeTrades(trades)
 
 	// Build PNG.

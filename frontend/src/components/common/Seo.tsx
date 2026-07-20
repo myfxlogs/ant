@@ -14,7 +14,7 @@ interface SeoProps {
 const SITE_NAME = 'AlphaForge';
 const BASE_URL = 'https://alfq.org';
 const DEFAULT_DESCRIPTION = 'AI-powered platform for MT4/MT5 strategy backtesting, optimization, and automated trading.';
-const DEFAULT_OG_IMAGE = '/og-image.svg';
+const DEFAULT_OG_IMAGE = '/og-image.png';
 
 export default function Seo({
   title,
