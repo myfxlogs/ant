@@ -3,8 +3,12 @@
 -- Red lines R7 (idempotent), R8 (hash chain + append-only), R9 (balance >= 0).
 
 -- 1. Balance non-negative constraint (R9).
-ALTER TABLE user_wallets ADD CONSTRAINT chk_balance_nonneg CHECK (balance >= 0);
-ALTER TABLE user_wallets ADD CONSTRAINT chk_frozen_nonneg CHECK (frozen_balance >= 0);
+DO $$ BEGIN
+  ALTER TABLE user_wallets ADD CONSTRAINT chk_balance_nonneg CHECK (balance >= 0);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE user_wallets ADD CONSTRAINT chk_frozen_nonneg CHECK (frozen_balance >= 0);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- 2. Hash chain columns on wallet_transactions (R8).
 ALTER TABLE wallet_transactions
@@ -31,10 +35,10 @@ CREATE OR REPLACE FUNCTION wt_no_mutate() RETURNS trigger AS $$
     -- and all other columns are unchanged.
     IF OLD.entry_hash IS NOT NULL THEN
       RAISE EXCEPTION 'wallet_transactions is append-only (R8): entry_hash already set';
-    END IF
+    END IF;
     IF NEW.entry_hash IS NULL THEN
       RAISE EXCEPTION 'wallet_transactions is append-only (R8): cannot clear entry_hash';
-    END IF
+    END IF;
     IF NEW.id <> OLD.id
        OR NEW.wallet_id <> OLD.wallet_id
        OR NEW.user_id <> OLD.user_id
