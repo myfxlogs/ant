@@ -143,7 +143,7 @@ func (s *stubMarketplaceSvc) GetLivePerformance(_ context.Context, _ string, _ i
 	return nil, nil, s.err
 }
 
-func (s *stubMarketplaceSvc) LinkLiveAccount(_ context.Context, _, _ string) error {
+func (s *stubMarketplaceSvc) LinkLiveAccount(_ context.Context, _, _, _ string) error {
 	return s.err
 }
 

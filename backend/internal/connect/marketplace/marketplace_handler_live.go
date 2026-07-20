@@ -3,6 +3,7 @@ package marketplace
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
@@ -71,8 +72,12 @@ func (s *MarketplaceServer) LinkLiveAccount(ctx context.Context, req *connect.Re
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("strategy_id and account_id are required"))
 	}
 
-	if err := s.svc.LinkLiveAccount(ctx, m.StrategyId, m.AccountId); err != nil {
+	if err := s.svc.LinkLiveAccount(ctx, m.StrategyId, m.AccountId, userID); err != nil {
 		s.log.Error("LinkLiveAccount", zap.Error(err))
+		msg := err.Error()
+		if strings.Contains(msg, "owner") || strings.Contains(msg, "already linked") {
+			return nil, connect.NewError(connect.CodePermissionDenied, err)
+		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 

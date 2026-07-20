@@ -3,6 +3,7 @@ import { Card, Row, Col, Statistic, Empty, Spin, Typography, Button, Select } fr
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
+import { accountApi } from '@/client/account';
 
 const { Text } = Typography;
 
@@ -71,6 +72,16 @@ export default function LivePerformanceTab({ strategyId, isOwner }: Props) {
   }, [strategyId]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!isOwner) return;
+    accountApi.list().then(accs => {
+      setAccounts(accs.map(a => ({
+        label: `${a.login} (${a.brokerCompany || a.mtType})`,
+        value: a.id,
+      })));
+    }).catch(() => {});
+  }, [isOwner]);
 
   const handleLink = useCallback(async () => {
     if (!selectedAccount) return;

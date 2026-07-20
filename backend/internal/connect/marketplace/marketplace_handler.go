@@ -32,7 +32,7 @@ type marketplaceSvc interface {
 	QueryBacktestRun(ctx context.Context, runID uuid.UUID) (*marketplace.BacktestRunSnapshot, error)
 	GetPlatformFeeRate(ctx context.Context) string
 	GetLivePerformance(ctx context.Context, strategyID string, limit int) ([]marketplace.LivePerformancePoint, *marketplace.LivePerformanceSummary, error)
-	LinkLiveAccount(ctx context.Context, strategyID, accountID string) error
+	LinkLiveAccount(ctx context.Context, strategyID, accountID, userID string) error
 }
 
 // MarketplaceServer implements ant.v1.MarketplaceServiceHandler.

@@ -32,6 +32,13 @@ func New(pg *pgxpool.Pool, walletRepo *repository.WalletRepository, log *zap.Log
 	return &Service{pg: pg, walletRepo: walletRepo, log: log}
 }
 
+// SetWalletRepo binds the wallet repository after construction.
+// Used when the Service is created early (for pipeline integration) but
+// the wallet repo is only available later (inside registerHandlers).
+func (s *Service) SetWalletRepo(w *repository.WalletRepository) {
+	s.walletRepo = w
+}
+
 // GetPlatformFeeRate reads the marketplace platform fee rate from system_config.
 // Returns "0" if not configured or disabled.
 func (s *Service) GetPlatformFeeRate(ctx context.Context) string {

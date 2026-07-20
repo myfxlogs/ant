@@ -88,6 +88,7 @@ func registerHandlers(
 	analyticsCache *service.AnalyticsCache,
 	brokerReg *adapter.BrokerRegistry,
 	secClient secrets.Client,
+	mktplaceSvc *marketplace.Service,
 ) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator, *notifpubsub.Sender, *strategy.ScheduleEngine, func(), *chain.Monitor, *reconcile.Reconciler, *sweep.Worker) {
 
 	// ConnectRPC handlers
@@ -197,7 +198,7 @@ func registerHandlers(
 	mktServer := mktplace.NewMarketServer(platformSvc, marketDataRepo, nc, log)
 	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, withSency(otelInterceptor, authInterceptor)))
 
-	mktplaceSvc := marketplace.New(pool, walletRepo, log)
+	mktplaceSvc.SetWalletRepo(walletRepo)
 	mktplaceHandler := mktplace.NewMarketplaceServer(mktplaceSvc, platformSvc, log)
 	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, withSency(otelInterceptor, authInterceptor)))
 
