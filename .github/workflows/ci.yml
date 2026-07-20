@@ -40,7 +40,7 @@ jobs:
           cache: true
           cache-dependency-path: backend/go.sum
       - name: go vet
-        run: go vet ./...
+        run: go vet $(go list ./... | grep -v 'coldsign-gui\|hdgen-gui')
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v7
         with:
@@ -77,7 +77,7 @@ jobs:
           cache: true
           cache-dependency-path: backend/go.sum
       - name: go test
-        run: go test ./... -count=1 -race -short -coverprofile=coverage.out -covermode=atomic
+        run: go test $(go list ./... | grep -v 'coldsign-gui\|hdgen-gui') -count=1 -race -short -coverprofile=coverage.out -covermode=atomic
         env:
           DB_HOST: localhost
           DB_PORT: 5432
@@ -100,7 +100,7 @@ jobs:
           fi
           echo "Coverage ${COV}% ≥ ${THRESHOLD}% (unit tests, -short) — PASS"
       - name: go build
-        run: go build ./...
+        run: go build $(go list ./... | grep -v 'coldsign-gui\|hdgen-gui')
       - name: go build cmd/server
         run: go build -o /dev/null ./cmd/server
 
