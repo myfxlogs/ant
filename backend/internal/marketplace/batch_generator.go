@@ -57,6 +57,7 @@ type AutoGenTask struct {
 	StrategyID     *uuid.UUID
 	QualityPassed  *bool
 	ErrorMessage   *string
+	SourceCode     string
 	CreatedAt      time.Time
 	StartedAt      *time.Time
 	FinishedAt     *time.Time
@@ -302,7 +303,7 @@ func (b *BatchGenerator) processTask(ctx context.Context, task *AutoGenTask) {
 		}
 	}
 
-	b.completeTask(ctx, task.ID, snapshotBytes, qualityPassed)
+	b.completeTask(ctx, task.ID, snapshotBytes, qualityPassed, finalSource)
 }
 
 func (b *BatchGenerator) failTask(ctx context.Context, taskID uuid.UUID, errMsg string) {
@@ -317,12 +318,12 @@ func (b *BatchGenerator) failTask(ctx context.Context, taskID uuid.UUID, errMsg 
 	b.log.Warn("batch: task failed", zap.String("task", taskID.String()), zap.String("error", errMsg))
 }
 
-func (b *BatchGenerator) completeTask(ctx context.Context, taskID uuid.UUID, snapshot []byte, qualityPassed bool) {
+func (b *BatchGenerator) completeTask(ctx context.Context, taskID uuid.UUID, snapshot []byte, qualityPassed bool, sourceCode string) {
 	_, err := b.pg.Exec(ctx,
 		`UPDATE auto_generation_tasks
-		 SET status='awaiting_review', result_backtest_snapshot=$2, quality_passed=$3, finished_at=now()
+		 SET status='awaiting_review', result_backtest_snapshot=$2, quality_passed=$3, source_code=$4, finished_at=now()
 		 WHERE id=$1`,
-		taskID, snapshot, qualityPassed)
+		taskID, snapshot, qualityPassed, sourceCode)
 	if err != nil {
 		b.log.Error("batch: completeTask DB error", zap.Error(err))
 	}
@@ -331,94 +332,3 @@ func (b *BatchGenerator) completeTask(ctx context.Context, taskID uuid.UUID, sna
 		zap.Bool("quality_passed", qualityPassed))
 }
 
-// ListTasks returns tasks filtered by status with pagination.
-func (b *BatchGenerator) ListTasks(ctx context.Context, status string, limit, offset int) ([]AutoGenTask, error) {
-	rows, err := b.pg.Query(ctx,
-		`SELECT id, symbol, timeframe, strategy_type, risk_level, status,
-		        strategy_id, quality_passed, error_message, created_at, started_at, finished_at
-		 FROM auto_generation_tasks
-		 WHERE ($1 = '' OR status = $1)
-		 ORDER BY created_at DESC
-		 LIMIT $2 OFFSET $3`,
-		status, limit, offset)
-	if err != nil {
-		return nil, fmt.Errorf("batch: list tasks: %w", err)
-	}
-	defer rows.Close()
-
-	var tasks []AutoGenTask
-	for rows.Next() {
-		var t AutoGenTask
-		var strategyID *uuid.UUID
-		var qualityPassed *bool
-		var errMsg *string
-		var startedAt, finishedAt *time.Time
-		if err := rows.Scan(&t.ID, &t.Symbol, &t.Timeframe, &t.StrategyType, &t.RiskLevel, &t.Status,
-			&strategyID, &qualityPassed, &errMsg, &t.CreatedAt, &startedAt, &finishedAt); err != nil {
-			return nil, fmt.Errorf("batch: scan task: %w", err)
-		}
-		t.StrategyID = strategyID
-		t.QualityPassed = qualityPassed
-		t.ErrorMessage = errMsg
-		t.StartedAt = startedAt
-		t.FinishedAt = finishedAt
-		tasks = append(tasks, t)
-	}
-	return tasks, nil
-}
-
-// ApproveTask publishes a task's strategy to the marketplace.
-func (b *BatchGenerator) ApproveTask(ctx context.Context, taskID uuid.UUID, pub TaskPublisher) error {
-	var symbol, timeframe, strategyType, riskLevel string
-	var snapshot []byte
-	err := b.pg.QueryRow(ctx,
-		`SELECT symbol, timeframe, strategy_type, risk_level, result_backtest_snapshot
-		 FROM auto_generation_tasks WHERE id=$1 AND status='awaiting_review'`,
-		taskID).Scan(&symbol, &timeframe, &strategyType, &riskLevel, &snapshot)
-	if err != nil {
-		return fmt.Errorf("batch: approve: task not found or not in review: %w", err)
-	}
-
-	stratID := uuid.New().String()
-	if pub != nil {
-		_, err = pub.Publish(ctx, PublishParams{
-			StrategyID:            stratID,
-			UserID:                uuid.Nil.String(), // system-generated
-			Title:                 fmt.Sprintf("%s %s %s", strategyType, symbol, timeframe),
-			Description:           fmt.Sprintf("AI-generated %s strategy for %s on %s", strategyType, symbol, timeframe),
-			PriceModel:            PriceModelFree,
-			PriceAmount:           "0",
-			AssetClass:            "forex",
-			Symbols:               []string{symbol},
-			Timeframe:             timeframe,
-			RiskLevel:             riskLevel,
-			BacktestSnapshotProto: snapshot,
-		})
-		if err != nil {
-			return fmt.Errorf("batch: approve: publish failed: %w", err)
-		}
-	}
-
-	_, err = b.pg.Exec(ctx,
-		`UPDATE auto_generation_tasks
-		 SET status='published', strategy_id=$2, finished_at=now()
-		 WHERE id=$1`,
-		taskID, stratID)
-	if err != nil {
-		return fmt.Errorf("batch: approve: update task: %w", err)
-	}
-	return nil
-}
-
-// RejectTask marks a task as rejected.
-func (b *BatchGenerator) RejectTask(ctx context.Context, taskID uuid.UUID, reason string) error {
-	_, err := b.pg.Exec(ctx,
-		`UPDATE auto_generation_tasks
-		 SET status='rejected', error_message=$2, finished_at=now()
-		 WHERE id=$1 AND status='awaiting_review'`,
-		taskID, reason)
-	if err != nil {
-		return fmt.Errorf("batch: reject: %w", err)
-	}
-	return nil
-}

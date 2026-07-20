@@ -260,9 +260,22 @@ func (s *MarketplaceServer) runGeneratePipeline(
 
 	title := generateTitle(description)
 
+	// 1. Persist source code into strategy_templates so the strategy is executable.
+	var templateID string
+	if qErr := s.pgPool.QueryRow(ctx,
+		`INSERT INTO strategy_templates (user_id, name, description, code, is_public, is_system, tags, use_count)
+		 VALUES ($1, $2, $3, $4, true, false, '{}', 0)
+		 RETURNING id`,
+		uid, title, description, finalSource,
+	).Scan(&templateID); qErr != nil {
+		s.log.Warn("autogen: create strategy_template failed", zap.Error(qErr))
+		_ = sendErr("publishing", fmt.Sprintf("failed to save strategy code: %v", qErr), true)
+		return nil
+	}
+
 	publishParams := marketplace.PublishParams{
 		UserID:               uid.String(),
-		StrategyID:           uuid.New().String(),
+		StrategyID:           templateID,
 		Title:                title,
 		Description:          description,
 		PriceModel:           marketplace.PriceModelFree,
