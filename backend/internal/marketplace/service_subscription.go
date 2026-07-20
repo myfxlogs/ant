@@ -103,7 +103,7 @@ func (s *Service) Unsubscribe(ctx context.Context, userID, subscriptionID string
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("marketplace: unsubscribe commit: %w", err)
 	}
-	publishedCacheClear()
+	s.pubCache.clear()
 	return nil
 }
 

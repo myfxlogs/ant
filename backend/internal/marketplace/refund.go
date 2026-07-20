@@ -156,7 +156,7 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("marketplace: commit refund: %w", err)
 	}
-	publishedCacheClear()
+	s.pubCache.clear()
 
 	return &RefundResult{
 		SubscriptionID: subscriptionID,

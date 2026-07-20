@@ -235,7 +235,7 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("marketplace: commit purchase: %w", err)
 	}
-	publishedCacheClear()
+	s.pubCache.clear()
 
 	return &PurchaseResult{
 		SubscriptionID: subID.String(),
@@ -262,7 +262,7 @@ func (s *Service) SetPricing(ctx context.Context, strategyID, priceModel, priceA
 		`UPDATE marketplace_strategies SET price_model=$2, price_amount=$3::numeric, platform_fee_rate=$4::numeric, updated_at=now() WHERE strategy_id=$1`,
 		sid, priceModel, priceAmount, platformFeeRate)
 	if err == nil {
-		publishedCacheClear()
+		s.pubCache.clear()
 	}
 	return err
 }

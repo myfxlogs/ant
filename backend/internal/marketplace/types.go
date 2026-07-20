@@ -23,6 +23,7 @@ type Service struct {
 	walletRepo        *repository.WalletRepository
 	log               *zap.Logger
 	livePerfCollector *LivePerformanceCollector
+	pubCache          *publishedCache
 }
 
 // SystemUserID is the designated platform system account for fee collection.
@@ -30,7 +31,7 @@ var SystemUserID = uuid.Nil
 
 // New creates a marketplace service.
 func New(pg *pgxpool.Pool, walletRepo *repository.WalletRepository, log *zap.Logger) *Service {
-	return &Service{pg: pg, walletRepo: walletRepo, log: log}
+	return &Service{pg: pg, walletRepo: walletRepo, log: log, pubCache: newPublishedCache()}
 }
 
 // SetLivePerfCollector binds the live performance collector after construction.

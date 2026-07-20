@@ -239,7 +239,7 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		 ON CONFLICT (strategy_id, account_id, date)
 		 DO UPDATE SET daily_pnl = $4, daily_return = $5, equity = $6, drawdown = $7, total_trades = $8, winning_trades = $9`,
-		sid, aid, today, dailyPnL.StringFixed(8), dailyReturn.StringFixed(6), equity.StringFixed(8), drawdown.StringFixed(6), totalTrades, winningTrades)
+		sid, aid, today, dailyPnL, dailyReturn, equity, drawdown, totalTrades, winningTrades)
 	if err != nil {
 		return fmt.Errorf("marketplace: upsert daily perf: %w", err)
 	}
@@ -301,8 +301,8 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 		 ON CONFLICT (strategy_id) DO UPDATE SET
 		   total_return = $3, annual_return = $4, max_drawdown = $5, sharpe_ratio = $6, win_rate = $7,
 		   total_trades = $8, tracking_since = $9, last_updated = $10, updated_at = now()`,
-		sid, aid, totalReturn.StringFixed(6),
-		nullDec(annualReturn), maxDrawdown.StringFixed(6),
+		sid, aid, totalReturn,
+		nullDec(annualReturn), maxDrawdown,
 		nullDec(sharpeRatio), nullDec(winRate),
 		allTrades, firstDate, today)
 	if err != nil {
@@ -316,7 +316,7 @@ func nullDec(d *decimal.Decimal) interface{} {
 	if d == nil {
 		return nil
 	}
-	return d.StringFixed(6)
+	return *d
 }
 
 // LivePerformanceCollector receives push-based profit updates for linked accounts

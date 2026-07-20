@@ -32,70 +32,43 @@ type qualityGates struct {
 	EnforceSnapshot      bool
 }
 
-// loadQualityGates reads thresholds from system_config. Disabled or missing
-// keys are treated as "no gate" (zero value = always passes).
+// loadQualityGates reads thresholds from system_config in a single query.
+// Disabled or missing keys are treated as "no gate" (zero value = always passes).
 func (s *Service) loadQualityGates(ctx context.Context) (qualityGates, error) {
+	rows, err := s.pg.Query(ctx,
+		`SELECT key, value FROM system_config
+		 WHERE key LIKE 'marketplace.quality.%' AND enabled = true`)
+	if err != nil {
+		return qualityGates{}, nil // table missing or error = no gates
+	}
+	defer rows.Close()
+
+	m := make(map[string]string, 8)
+	for rows.Next() {
+		var k, v string
+		if err := rows.Scan(&k, &v); err != nil {
+			continue
+		}
+		m[k] = v
+	}
+
 	var g qualityGates
-
-	getDec := func(key string) (decimal.Decimal, error) {
-		var raw string
-		err := s.pg.QueryRow(ctx,
-			`SELECT value FROM system_config WHERE key = $1 AND enabled = true`, key,
-		).Scan(&raw)
-		if err != nil {
-			return decimal.Zero, nil // missing/disabled = no gate
+	for k, v := range m {
+		switch k {
+		case "marketplace.quality.min_sharpe_ratio":
+			g.MinSharpeRatio, _ = decimal.NewFromString(v)
+		case "marketplace.quality.max_drawdown_pct":
+			g.MaxDrawdownPct, _ = decimal.NewFromString(v)
+		case "marketplace.quality.min_total_trades":
+			n, _ := strconv.ParseInt(v, 10, 32)
+			g.MinTotalTrades = int32(n)
+		case "marketplace.quality.min_win_rate":
+			g.MinWinRate, _ = decimal.NewFromString(v)
+		case "marketplace.quality.max_is_oos_degradation":
+			g.MaxIsOosDegradation, _ = decimal.NewFromString(v)
+		case "marketplace.quality.enforce_backtest_snapshot":
+			g.EnforceSnapshot = v == "true" || v == "1"
 		}
-		d, err := decimal.NewFromString(raw)
-		if err != nil {
-			return decimal.Zero, fmt.Errorf("marketplace: invalid config %s: %w", key, err)
-		}
-		return d, nil
-	}
-
-	getInt := func(key string) (int32, error) {
-		var raw string
-		err := s.pg.QueryRow(ctx,
-			`SELECT value FROM system_config WHERE key = $1 AND enabled = true`, key,
-		).Scan(&raw)
-		if err != nil {
-			return 0, nil
-		}
-		n, err := strconv.ParseInt(raw, 10, 32)
-		if err != nil {
-			return 0, fmt.Errorf("marketplace: invalid config %s: %w", key, err)
-		}
-		return int32(n), nil
-	}
-
-	getBool := func(key string) (bool, error) {
-		var raw string
-		err := s.pg.QueryRow(ctx,
-			`SELECT value FROM system_config WHERE key = $1 AND enabled = true`, key,
-		).Scan(&raw)
-		if err != nil {
-			return false, nil
-		}
-		return raw == "true" || raw == "1", nil
-	}
-
-	var err error
-	if g.MinSharpeRatio, err = getDec("marketplace.quality.min_sharpe_ratio"); err != nil {
-		return g, err
-	}
-	if g.MaxDrawdownPct, err = getDec("marketplace.quality.max_drawdown_pct"); err != nil {
-		return g, err
-	}
-	if g.MinTotalTrades, err = getInt("marketplace.quality.min_total_trades"); err != nil {
-		return g, err
-	}
-	if g.MinWinRate, err = getDec("marketplace.quality.min_win_rate"); err != nil {
-		return g, err
-	}
-	if g.MaxIsOosDegradation, err = getDec("marketplace.quality.max_is_oos_degradation"); err != nil {
-		return g, err
-	}
-	if g.EnforceSnapshot, err = getBool("marketplace.quality.enforce_backtest_snapshot"); err != nil {
-		return g, err
 	}
 	return g, nil
 }
