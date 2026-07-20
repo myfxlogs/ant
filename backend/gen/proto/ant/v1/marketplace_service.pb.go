@@ -3203,6 +3203,586 @@ func (x *StrategyParameterTemplate) GetIcon() string {
 	return ""
 }
 
+type ListAutoGenTasksRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"` // filter by status (empty = all)
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset        int32                  `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAutoGenTasksRequest) Reset() {
+	*x = ListAutoGenTasksRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[45]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAutoGenTasksRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAutoGenTasksRequest) ProtoMessage() {}
+
+func (x *ListAutoGenTasksRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[45]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAutoGenTasksRequest.ProtoReflect.Descriptor instead.
+func (*ListAutoGenTasksRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *ListAutoGenTasksRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *ListAutoGenTasksRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListAutoGenTasksRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type ListAutoGenTasksResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tasks         []*AutoGenTaskInfo     `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAutoGenTasksResponse) Reset() {
+	*x = ListAutoGenTasksResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAutoGenTasksResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAutoGenTasksResponse) ProtoMessage() {}
+
+func (x *ListAutoGenTasksResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAutoGenTasksResponse.ProtoReflect.Descriptor instead.
+func (*ListAutoGenTasksResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *ListAutoGenTasksResponse) GetTasks() []*AutoGenTaskInfo {
+	if x != nil {
+		return x.Tasks
+	}
+	return nil
+}
+
+func (x *ListAutoGenTasksResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type AutoGenTaskInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Symbol        string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Timeframe     string                 `protobuf:"bytes,3,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
+	StrategyType  string                 `protobuf:"bytes,4,opt,name=strategy_type,json=strategyType,proto3" json:"strategy_type,omitempty"`
+	RiskLevel     string                 `protobuf:"bytes,5,opt,name=risk_level,json=riskLevel,proto3" json:"risk_level,omitempty"`
+	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
+	StrategyId    string                 `protobuf:"bytes,7,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
+	QualityPassed bool                   `protobuf:"varint,8,opt,name=quality_passed,json=qualityPassed,proto3" json:"quality_passed,omitempty"`
+	ErrorMessage  string                 `protobuf:"bytes,9,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
+	CreatedAtMs   int64                  `protobuf:"varint,10,opt,name=created_at_ms,json=createdAtMs,proto3" json:"created_at_ms,omitempty"`
+	FinishedAtMs  int64                  `protobuf:"varint,11,opt,name=finished_at_ms,json=finishedAtMs,proto3" json:"finished_at_ms,omitempty"`
+	Backtest      *BacktestSnapshot      `protobuf:"bytes,12,opt,name=backtest,proto3" json:"backtest,omitempty"` // snapshot if available
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AutoGenTaskInfo) Reset() {
+	*x = AutoGenTaskInfo{}
+	mi := &file_marketplace_service_proto_msgTypes[47]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AutoGenTaskInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AutoGenTaskInfo) ProtoMessage() {}
+
+func (x *AutoGenTaskInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[47]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AutoGenTaskInfo.ProtoReflect.Descriptor instead.
+func (*AutoGenTaskInfo) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{47}
+}
+
+func (x *AutoGenTaskInfo) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *AutoGenTaskInfo) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *AutoGenTaskInfo) GetTimeframe() string {
+	if x != nil {
+		return x.Timeframe
+	}
+	return ""
+}
+
+func (x *AutoGenTaskInfo) GetStrategyType() string {
+	if x != nil {
+		return x.StrategyType
+	}
+	return ""
+}
+
+func (x *AutoGenTaskInfo) GetRiskLevel() string {
+	if x != nil {
+		return x.RiskLevel
+	}
+	return ""
+}
+
+func (x *AutoGenTaskInfo) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *AutoGenTaskInfo) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *AutoGenTaskInfo) GetQualityPassed() bool {
+	if x != nil {
+		return x.QualityPassed
+	}
+	return false
+}
+
+func (x *AutoGenTaskInfo) GetErrorMessage() string {
+	if x != nil {
+		return x.ErrorMessage
+	}
+	return ""
+}
+
+func (x *AutoGenTaskInfo) GetCreatedAtMs() int64 {
+	if x != nil {
+		return x.CreatedAtMs
+	}
+	return 0
+}
+
+func (x *AutoGenTaskInfo) GetFinishedAtMs() int64 {
+	if x != nil {
+		return x.FinishedAtMs
+	}
+	return 0
+}
+
+func (x *AutoGenTaskInfo) GetBacktest() *BacktestSnapshot {
+	if x != nil {
+		return x.Backtest
+	}
+	return nil
+}
+
+type ApproveAutoGenTaskRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TaskId        string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	PriceModel    string                 `protobuf:"bytes,2,opt,name=price_model,json=priceModel,proto3" json:"price_model,omitempty"` // optional override
+	PriceAmount   string                 `protobuf:"bytes,3,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApproveAutoGenTaskRequest) Reset() {
+	*x = ApproveAutoGenTaskRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[48]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApproveAutoGenTaskRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApproveAutoGenTaskRequest) ProtoMessage() {}
+
+func (x *ApproveAutoGenTaskRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[48]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApproveAutoGenTaskRequest.ProtoReflect.Descriptor instead.
+func (*ApproveAutoGenTaskRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{48}
+}
+
+func (x *ApproveAutoGenTaskRequest) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
+func (x *ApproveAutoGenTaskRequest) GetPriceModel() string {
+	if x != nil {
+		return x.PriceModel
+	}
+	return ""
+}
+
+func (x *ApproveAutoGenTaskRequest) GetPriceAmount() string {
+	if x != nil {
+		return x.PriceAmount
+	}
+	return ""
+}
+
+type ApproveAutoGenTaskResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	PublishId     string                 `protobuf:"bytes,2,opt,name=publish_id,json=publishId,proto3" json:"publish_id,omitempty"`
+	Error         string                 `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApproveAutoGenTaskResponse) Reset() {
+	*x = ApproveAutoGenTaskResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[49]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApproveAutoGenTaskResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApproveAutoGenTaskResponse) ProtoMessage() {}
+
+func (x *ApproveAutoGenTaskResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[49]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApproveAutoGenTaskResponse.ProtoReflect.Descriptor instead.
+func (*ApproveAutoGenTaskResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{49}
+}
+
+func (x *ApproveAutoGenTaskResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *ApproveAutoGenTaskResponse) GetPublishId() string {
+	if x != nil {
+		return x.PublishId
+	}
+	return ""
+}
+
+func (x *ApproveAutoGenTaskResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+type RejectAutoGenTaskRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TaskId        string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RejectAutoGenTaskRequest) Reset() {
+	*x = RejectAutoGenTaskRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RejectAutoGenTaskRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RejectAutoGenTaskRequest) ProtoMessage() {}
+
+func (x *RejectAutoGenTaskRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RejectAutoGenTaskRequest.ProtoReflect.Descriptor instead.
+func (*RejectAutoGenTaskRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *RejectAutoGenTaskRequest) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
+func (x *RejectAutoGenTaskRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type RejectAutoGenTaskResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RejectAutoGenTaskResponse) Reset() {
+	*x = RejectAutoGenTaskResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RejectAutoGenTaskResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RejectAutoGenTaskResponse) ProtoMessage() {}
+
+func (x *RejectAutoGenTaskResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RejectAutoGenTaskResponse.ProtoReflect.Descriptor instead.
+func (*RejectAutoGenTaskResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{51}
+}
+
+func (x *RejectAutoGenTaskResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type TriggerBatchGenerationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Symbols       []string               `protobuf:"bytes,1,rep,name=symbols,proto3" json:"symbols,omitempty"`
+	Timeframes    []string               `protobuf:"bytes,2,rep,name=timeframes,proto3" json:"timeframes,omitempty"`
+	StrategyTypes []string               `protobuf:"bytes,3,rep,name=strategy_types,json=strategyTypes,proto3" json:"strategy_types,omitempty"`
+	RiskLevel     string                 `protobuf:"bytes,4,opt,name=risk_level,json=riskLevel,proto3" json:"risk_level,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TriggerBatchGenerationRequest) Reset() {
+	*x = TriggerBatchGenerationRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TriggerBatchGenerationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TriggerBatchGenerationRequest) ProtoMessage() {}
+
+func (x *TriggerBatchGenerationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TriggerBatchGenerationRequest.ProtoReflect.Descriptor instead.
+func (*TriggerBatchGenerationRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{52}
+}
+
+func (x *TriggerBatchGenerationRequest) GetSymbols() []string {
+	if x != nil {
+		return x.Symbols
+	}
+	return nil
+}
+
+func (x *TriggerBatchGenerationRequest) GetTimeframes() []string {
+	if x != nil {
+		return x.Timeframes
+	}
+	return nil
+}
+
+func (x *TriggerBatchGenerationRequest) GetStrategyTypes() []string {
+	if x != nil {
+		return x.StrategyTypes
+	}
+	return nil
+}
+
+func (x *TriggerBatchGenerationRequest) GetRiskLevel() string {
+	if x != nil {
+		return x.RiskLevel
+	}
+	return ""
+}
+
+type TriggerBatchGenerationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Enqueued      int32                  `protobuf:"varint,1,opt,name=enqueued,proto3" json:"enqueued,omitempty"`
+	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TriggerBatchGenerationResponse) Reset() {
+	*x = TriggerBatchGenerationResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[53]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TriggerBatchGenerationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TriggerBatchGenerationResponse) ProtoMessage() {}
+
+func (x *TriggerBatchGenerationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[53]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TriggerBatchGenerationResponse.ProtoReflect.Descriptor instead.
+func (*TriggerBatchGenerationResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{53}
+}
+
+func (x *TriggerBatchGenerationResponse) GetEnqueued() int32 {
+	if x != nil {
+		return x.Enqueued
+	}
+	return 0
+}
+
+func (x *TriggerBatchGenerationResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
 var File_marketplace_service_proto protoreflect.FileDescriptor
 
 const file_marketplace_service_proto_rawDesc = "" +
@@ -3501,7 +4081,56 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\vdescription\x18\x05 \x01(\tR\vdescription\x12+\n" +
 	"\x11parameters_schema\x18\x06 \x01(\tR\x10parametersSchema\x12,\n" +
 	"\x12default_risk_level\x18\a \x01(\tR\x10defaultRiskLevel\x12\x12\n" +
-	"\x04icon\x18\b \x01(\tR\x04icon2\xed\f\n" +
+	"\x04icon\x18\b \x01(\tR\x04icon\"_\n" +
+	"\x17ListAutoGenTasksRequest\x12\x16\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x03 \x01(\x05R\x06offset\"_\n" +
+	"\x18ListAutoGenTasksResponse\x12-\n" +
+	"\x05tasks\x18\x01 \x03(\v2\x17.ant.v1.AutoGenTaskInfoR\x05tasks\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\xa0\x03\n" +
+	"\x0fAutoGenTaskInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x1c\n" +
+	"\ttimeframe\x18\x03 \x01(\tR\ttimeframe\x12#\n" +
+	"\rstrategy_type\x18\x04 \x01(\tR\fstrategyType\x12\x1d\n" +
+	"\n" +
+	"risk_level\x18\x05 \x01(\tR\triskLevel\x12\x16\n" +
+	"\x06status\x18\x06 \x01(\tR\x06status\x12\x1f\n" +
+	"\vstrategy_id\x18\a \x01(\tR\n" +
+	"strategyId\x12%\n" +
+	"\x0equality_passed\x18\b \x01(\bR\rqualityPassed\x12#\n" +
+	"\rerror_message\x18\t \x01(\tR\ferrorMessage\x12\"\n" +
+	"\rcreated_at_ms\x18\n" +
+	" \x01(\x03R\vcreatedAtMs\x12$\n" +
+	"\x0efinished_at_ms\x18\v \x01(\x03R\ffinishedAtMs\x124\n" +
+	"\bbacktest\x18\f \x01(\v2\x18.ant.v1.BacktestSnapshotR\bbacktest\"x\n" +
+	"\x19ApproveAutoGenTaskRequest\x12\x17\n" +
+	"\atask_id\x18\x01 \x01(\tR\x06taskId\x12\x1f\n" +
+	"\vprice_model\x18\x02 \x01(\tR\n" +
+	"priceModel\x12!\n" +
+	"\fprice_amount\x18\x03 \x01(\tR\vpriceAmount\"k\n" +
+	"\x1aApproveAutoGenTaskResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1d\n" +
+	"\n" +
+	"publish_id\x18\x02 \x01(\tR\tpublishId\x12\x14\n" +
+	"\x05error\x18\x03 \x01(\tR\x05error\"K\n" +
+	"\x18RejectAutoGenTaskRequest\x12\x17\n" +
+	"\atask_id\x18\x01 \x01(\tR\x06taskId\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"5\n" +
+	"\x19RejectAutoGenTaskResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x9f\x01\n" +
+	"\x1dTriggerBatchGenerationRequest\x12\x18\n" +
+	"\asymbols\x18\x01 \x03(\tR\asymbols\x12\x1e\n" +
+	"\n" +
+	"timeframes\x18\x02 \x03(\tR\n" +
+	"timeframes\x12%\n" +
+	"\x0estrategy_types\x18\x03 \x03(\tR\rstrategyTypes\x12\x1d\n" +
+	"\n" +
+	"risk_level\x18\x04 \x01(\tR\triskLevel\"R\n" +
+	"\x1eTriggerBatchGenerationResponse\x12\x1a\n" +
+	"\benqueued\x18\x01 \x01(\x05R\benqueued\x12\x14\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error2\xe4\x0f\n" +
 	"\x12MarketplaceService\x12R\n" +
 	"\x0fPublishStrategy\x12\x1e.ant.v1.PublishStrategyRequest\x1a\x1f.ant.v1.PublishStrategyResponse\x12@\n" +
 	"\tSubscribe\x12\x18.ant.v1.SubscribeRequest\x1a\x19.ant.v1.SubscribeResponse\x12F\n" +
@@ -3521,7 +4150,11 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x0fLinkLiveAccount\x12\x1e.ant.v1.LinkLiveAccountRequest\x1a\x1f.ant.v1.LinkLiveAccountResponse\x12Z\n" +
 	"\x12GenerateAndPublish\x12!.ant.v1.GenerateAndPublishRequest\x1a\x1f.ant.v1.GenerateAndPublishEvent0\x01\x12^\n" +
 	"\x14GenerateFromTemplate\x12#.ant.v1.GenerateFromTemplateRequest\x1a\x1f.ant.v1.GenerateAndPublishEvent0\x01\x12d\n" +
-	"\x15ListStrategyTemplates\x12$.ant.v1.ListStrategyTemplatesRequest\x1a%.ant.v1.ListStrategyTemplatesResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x15ListStrategyTemplates\x12$.ant.v1.ListStrategyTemplatesRequest\x1a%.ant.v1.ListStrategyTemplatesResponse\x12U\n" +
+	"\x10ListAutoGenTasks\x12\x1f.ant.v1.ListAutoGenTasksRequest\x1a .ant.v1.ListAutoGenTasksResponse\x12[\n" +
+	"\x12ApproveAutoGenTask\x12!.ant.v1.ApproveAutoGenTaskRequest\x1a\".ant.v1.ApproveAutoGenTaskResponse\x12X\n" +
+	"\x11RejectAutoGenTask\x12 .ant.v1.RejectAutoGenTaskRequest\x1a!.ant.v1.RejectAutoGenTaskResponse\x12g\n" +
+	"\x16TriggerBatchGeneration\x12%.ant.v1.TriggerBatchGenerationRequest\x1a&.ant.v1.TriggerBatchGenerationResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_marketplace_service_proto_rawDescOnce sync.Once
@@ -3535,7 +4168,7 @@ func file_marketplace_service_proto_rawDescGZIP() []byte {
 	return file_marketplace_service_proto_rawDescData
 }
 
-var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 45)
+var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 54)
 var file_marketplace_service_proto_goTypes = []any{
 	(*PublishStrategyRequest)(nil),          // 0: ant.v1.PublishStrategyRequest
 	(*BacktestSnapshot)(nil),                // 1: ant.v1.BacktestSnapshot
@@ -3582,72 +4215,91 @@ var file_marketplace_service_proto_goTypes = []any{
 	(*ListStrategyTemplatesRequest)(nil),    // 42: ant.v1.ListStrategyTemplatesRequest
 	(*ListStrategyTemplatesResponse)(nil),   // 43: ant.v1.ListStrategyTemplatesResponse
 	(*StrategyParameterTemplate)(nil),       // 44: ant.v1.StrategyParameterTemplate
-	(*timestamppb.Timestamp)(nil),           // 45: google.protobuf.Timestamp
-	(*BacktestExecutionConfig)(nil),         // 46: ant.v1.BacktestExecutionConfig
-	(*BacktestRunUpdate)(nil),               // 47: ant.v1.BacktestRunUpdate
+	(*ListAutoGenTasksRequest)(nil),         // 45: ant.v1.ListAutoGenTasksRequest
+	(*ListAutoGenTasksResponse)(nil),        // 46: ant.v1.ListAutoGenTasksResponse
+	(*AutoGenTaskInfo)(nil),                 // 47: ant.v1.AutoGenTaskInfo
+	(*ApproveAutoGenTaskRequest)(nil),       // 48: ant.v1.ApproveAutoGenTaskRequest
+	(*ApproveAutoGenTaskResponse)(nil),      // 49: ant.v1.ApproveAutoGenTaskResponse
+	(*RejectAutoGenTaskRequest)(nil),        // 50: ant.v1.RejectAutoGenTaskRequest
+	(*RejectAutoGenTaskResponse)(nil),       // 51: ant.v1.RejectAutoGenTaskResponse
+	(*TriggerBatchGenerationRequest)(nil),   // 52: ant.v1.TriggerBatchGenerationRequest
+	(*TriggerBatchGenerationResponse)(nil),  // 53: ant.v1.TriggerBatchGenerationResponse
+	(*timestamppb.Timestamp)(nil),           // 54: google.protobuf.Timestamp
+	(*BacktestExecutionConfig)(nil),         // 55: ant.v1.BacktestExecutionConfig
+	(*BacktestRunUpdate)(nil),               // 56: ant.v1.BacktestRunUpdate
 }
 var file_marketplace_service_proto_depIdxs = []int32{
 	1,  // 0: ant.v1.PublishStrategyRequest.backtest_snapshot:type_name -> ant.v1.BacktestSnapshot
-	45, // 1: ant.v1.BacktestSnapshot.snapshot_at:type_name -> google.protobuf.Timestamp
+	54, // 1: ant.v1.BacktestSnapshot.snapshot_at:type_name -> google.protobuf.Timestamp
 	11, // 2: ant.v1.ListPublishedResponse.strategies:type_name -> ant.v1.PublishedStrategy
-	45, // 3: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
+	54, // 3: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
 	1,  // 4: ant.v1.PublishedStrategy.backtest_snapshot:type_name -> ant.v1.BacktestSnapshot
 	14, // 5: ant.v1.ListSubscriptionsResponse.subscriptions:type_name -> ant.v1.SubscriptionItem
-	45, // 6: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
-	45, // 7: ant.v1.SubscriptionItem.expires_at:type_name -> google.protobuf.Timestamp
+	54, // 6: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
+	54, // 7: ant.v1.SubscriptionItem.expires_at:type_name -> google.protobuf.Timestamp
 	19, // 8: ant.v1.ListRatingsResponse.ratings:type_name -> ant.v1.RatingItem
-	45, // 9: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
+	54, // 9: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
 	24, // 10: ant.v1.ListCommentsResponse.comments:type_name -> ant.v1.CommentItem
-	45, // 11: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
-	46, // 12: ant.v1.RunMarketBacktestRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
+	54, // 11: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
+	55, // 12: ant.v1.RunMarketBacktestRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
 	34, // 13: ant.v1.GetLivePerformanceResponse.points:type_name -> ant.v1.LivePerformancePoint
 	35, // 14: ant.v1.GetLivePerformanceResponse.summary:type_name -> ant.v1.LivePerformanceSummary
 	1,  // 15: ant.v1.GenerateAndPublishEvent.backtest:type_name -> ant.v1.BacktestSnapshot
 	40, // 16: ant.v1.GenerateAndPublishEvent.violations:type_name -> ant.v1.QualityViolationInfo
 	44, // 17: ant.v1.ListStrategyTemplatesResponse.templates:type_name -> ant.v1.StrategyParameterTemplate
-	0,  // 18: ant.v1.MarketplaceService.PublishStrategy:input_type -> ant.v1.PublishStrategyRequest
-	3,  // 19: ant.v1.MarketplaceService.Subscribe:input_type -> ant.v1.SubscribeRequest
-	5,  // 20: ant.v1.MarketplaceService.Unsubscribe:input_type -> ant.v1.UnsubscribeRequest
-	7,  // 21: ant.v1.MarketplaceService.PurchaseStrategy:input_type -> ant.v1.PurchaseStrategyRequest
-	9,  // 22: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
-	12, // 23: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
-	15, // 24: ant.v1.MarketplaceService.RateStrategy:input_type -> ant.v1.RateStrategyRequest
-	17, // 25: ant.v1.MarketplaceService.ListRatings:input_type -> ant.v1.ListRatingsRequest
-	20, // 26: ant.v1.MarketplaceService.CommentOnStrategy:input_type -> ant.v1.CommentOnStrategyRequest
-	22, // 27: ant.v1.MarketplaceService.ListComments:input_type -> ant.v1.ListCommentsRequest
-	25, // 28: ant.v1.MarketplaceService.SetStrategyPricing:input_type -> ant.v1.SetStrategyPricingRequest
-	27, // 29: ant.v1.MarketplaceService.UnpublishStrategy:input_type -> ant.v1.UnpublishMarketStrategyRequest
-	29, // 30: ant.v1.MarketplaceService.GetPublisherStats:input_type -> ant.v1.GetPublisherStatsRequest
-	31, // 31: ant.v1.MarketplaceService.RunMarketBacktest:input_type -> ant.v1.RunMarketBacktestRequest
-	32, // 32: ant.v1.MarketplaceService.GetLivePerformance:input_type -> ant.v1.GetLivePerformanceRequest
-	36, // 33: ant.v1.MarketplaceService.LinkLiveAccount:input_type -> ant.v1.LinkLiveAccountRequest
-	38, // 34: ant.v1.MarketplaceService.GenerateAndPublish:input_type -> ant.v1.GenerateAndPublishRequest
-	41, // 35: ant.v1.MarketplaceService.GenerateFromTemplate:input_type -> ant.v1.GenerateFromTemplateRequest
-	42, // 36: ant.v1.MarketplaceService.ListStrategyTemplates:input_type -> ant.v1.ListStrategyTemplatesRequest
-	2,  // 37: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
-	4,  // 38: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
-	6,  // 39: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
-	8,  // 40: ant.v1.MarketplaceService.PurchaseStrategy:output_type -> ant.v1.PurchaseStrategyResponse
-	10, // 41: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
-	13, // 42: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
-	16, // 43: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
-	18, // 44: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
-	21, // 45: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
-	23, // 46: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
-	26, // 47: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
-	28, // 48: ant.v1.MarketplaceService.UnpublishStrategy:output_type -> ant.v1.UnpublishMarketStrategyResponse
-	30, // 49: ant.v1.MarketplaceService.GetPublisherStats:output_type -> ant.v1.GetPublisherStatsResponse
-	47, // 50: ant.v1.MarketplaceService.RunMarketBacktest:output_type -> ant.v1.BacktestRunUpdate
-	33, // 51: ant.v1.MarketplaceService.GetLivePerformance:output_type -> ant.v1.GetLivePerformanceResponse
-	37, // 52: ant.v1.MarketplaceService.LinkLiveAccount:output_type -> ant.v1.LinkLiveAccountResponse
-	39, // 53: ant.v1.MarketplaceService.GenerateAndPublish:output_type -> ant.v1.GenerateAndPublishEvent
-	39, // 54: ant.v1.MarketplaceService.GenerateFromTemplate:output_type -> ant.v1.GenerateAndPublishEvent
-	43, // 55: ant.v1.MarketplaceService.ListStrategyTemplates:output_type -> ant.v1.ListStrategyTemplatesResponse
-	37, // [37:56] is the sub-list for method output_type
-	18, // [18:37] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	47, // 18: ant.v1.ListAutoGenTasksResponse.tasks:type_name -> ant.v1.AutoGenTaskInfo
+	1,  // 19: ant.v1.AutoGenTaskInfo.backtest:type_name -> ant.v1.BacktestSnapshot
+	0,  // 20: ant.v1.MarketplaceService.PublishStrategy:input_type -> ant.v1.PublishStrategyRequest
+	3,  // 21: ant.v1.MarketplaceService.Subscribe:input_type -> ant.v1.SubscribeRequest
+	5,  // 22: ant.v1.MarketplaceService.Unsubscribe:input_type -> ant.v1.UnsubscribeRequest
+	7,  // 23: ant.v1.MarketplaceService.PurchaseStrategy:input_type -> ant.v1.PurchaseStrategyRequest
+	9,  // 24: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
+	12, // 25: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
+	15, // 26: ant.v1.MarketplaceService.RateStrategy:input_type -> ant.v1.RateStrategyRequest
+	17, // 27: ant.v1.MarketplaceService.ListRatings:input_type -> ant.v1.ListRatingsRequest
+	20, // 28: ant.v1.MarketplaceService.CommentOnStrategy:input_type -> ant.v1.CommentOnStrategyRequest
+	22, // 29: ant.v1.MarketplaceService.ListComments:input_type -> ant.v1.ListCommentsRequest
+	25, // 30: ant.v1.MarketplaceService.SetStrategyPricing:input_type -> ant.v1.SetStrategyPricingRequest
+	27, // 31: ant.v1.MarketplaceService.UnpublishStrategy:input_type -> ant.v1.UnpublishMarketStrategyRequest
+	29, // 32: ant.v1.MarketplaceService.GetPublisherStats:input_type -> ant.v1.GetPublisherStatsRequest
+	31, // 33: ant.v1.MarketplaceService.RunMarketBacktest:input_type -> ant.v1.RunMarketBacktestRequest
+	32, // 34: ant.v1.MarketplaceService.GetLivePerformance:input_type -> ant.v1.GetLivePerformanceRequest
+	36, // 35: ant.v1.MarketplaceService.LinkLiveAccount:input_type -> ant.v1.LinkLiveAccountRequest
+	38, // 36: ant.v1.MarketplaceService.GenerateAndPublish:input_type -> ant.v1.GenerateAndPublishRequest
+	41, // 37: ant.v1.MarketplaceService.GenerateFromTemplate:input_type -> ant.v1.GenerateFromTemplateRequest
+	42, // 38: ant.v1.MarketplaceService.ListStrategyTemplates:input_type -> ant.v1.ListStrategyTemplatesRequest
+	45, // 39: ant.v1.MarketplaceService.ListAutoGenTasks:input_type -> ant.v1.ListAutoGenTasksRequest
+	48, // 40: ant.v1.MarketplaceService.ApproveAutoGenTask:input_type -> ant.v1.ApproveAutoGenTaskRequest
+	50, // 41: ant.v1.MarketplaceService.RejectAutoGenTask:input_type -> ant.v1.RejectAutoGenTaskRequest
+	52, // 42: ant.v1.MarketplaceService.TriggerBatchGeneration:input_type -> ant.v1.TriggerBatchGenerationRequest
+	2,  // 43: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
+	4,  // 44: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
+	6,  // 45: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
+	8,  // 46: ant.v1.MarketplaceService.PurchaseStrategy:output_type -> ant.v1.PurchaseStrategyResponse
+	10, // 47: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
+	13, // 48: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
+	16, // 49: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
+	18, // 50: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
+	21, // 51: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
+	23, // 52: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
+	26, // 53: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
+	28, // 54: ant.v1.MarketplaceService.UnpublishStrategy:output_type -> ant.v1.UnpublishMarketStrategyResponse
+	30, // 55: ant.v1.MarketplaceService.GetPublisherStats:output_type -> ant.v1.GetPublisherStatsResponse
+	56, // 56: ant.v1.MarketplaceService.RunMarketBacktest:output_type -> ant.v1.BacktestRunUpdate
+	33, // 57: ant.v1.MarketplaceService.GetLivePerformance:output_type -> ant.v1.GetLivePerformanceResponse
+	37, // 58: ant.v1.MarketplaceService.LinkLiveAccount:output_type -> ant.v1.LinkLiveAccountResponse
+	39, // 59: ant.v1.MarketplaceService.GenerateAndPublish:output_type -> ant.v1.GenerateAndPublishEvent
+	39, // 60: ant.v1.MarketplaceService.GenerateFromTemplate:output_type -> ant.v1.GenerateAndPublishEvent
+	43, // 61: ant.v1.MarketplaceService.ListStrategyTemplates:output_type -> ant.v1.ListStrategyTemplatesResponse
+	46, // 62: ant.v1.MarketplaceService.ListAutoGenTasks:output_type -> ant.v1.ListAutoGenTasksResponse
+	49, // 63: ant.v1.MarketplaceService.ApproveAutoGenTask:output_type -> ant.v1.ApproveAutoGenTaskResponse
+	51, // 64: ant.v1.MarketplaceService.RejectAutoGenTask:output_type -> ant.v1.RejectAutoGenTaskResponse
+	53, // 65: ant.v1.MarketplaceService.TriggerBatchGeneration:output_type -> ant.v1.TriggerBatchGenerationResponse
+	43, // [43:66] is the sub-list for method output_type
+	20, // [20:43] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_marketplace_service_proto_init() }
@@ -3663,7 +4315,7 @@ func file_marketplace_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_marketplace_service_proto_rawDesc), len(file_marketplace_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   45,
+			NumMessages:   54,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

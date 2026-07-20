@@ -299,6 +299,15 @@ func registerHandlers(
 	pgListen := pglisten.New(pool, log)
 	strategyServer.SetPgListen(pgListen)
 	mktplaceHandler.SetPgListen(pgListen) // marketplace SSE streaming
+
+	// Phase 2.2: Batch generator — PG NOTIFY-driven AI strategy generation queue.
+	if agentGateway.Generator() != nil {
+		batchGen := marketplace.NewBatchGenerator(pool, log, agentGateway.Generator(), pgListen)
+		mktplaceHandler.SetBatchGenerator(batchGen)
+		batchGen.Start(ctx) // background consumer goroutine
+	}
+	// Phase 2.3: PgPool for template queries.
+	mktplaceHandler.SetPgPool(pool)
 	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, withSency(otelInterceptor, authInterceptor)))
 
 	// Paper trading + notification deps created early — both needed by strategy execution config.

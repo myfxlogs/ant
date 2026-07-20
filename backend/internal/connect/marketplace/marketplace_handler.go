@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
@@ -52,6 +53,8 @@ type MarketplaceServer struct {
 	gen         agentGenerator     // Phase 2: AI strategy generator
 	autoLimiter *autoGenerateLimiter
 	limiterOnce sync.Once
+	batch       *marketplace.BatchGenerator // Phase 2.2: batch generation queue
+	pgPool      *pgxpool.Pool               // Phase 2.3: template queries
 }
 
 var _ antv1c.MarketplaceServiceHandler = (*MarketplaceServer)(nil)
@@ -65,3 +68,9 @@ func (s *MarketplaceServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
 
 // SetGenerator injects the AI strategy generator for Phase 2 GenerateAndPublish.
 func (s *MarketplaceServer) SetGenerator(g agentGenerator) { s.gen = g }
+
+// SetBatchGenerator injects the batch generator for Phase 2.2 admin operations.
+func (s *MarketplaceServer) SetBatchGenerator(b *marketplace.BatchGenerator) { s.batch = b }
+
+// SetPgPool injects the pool for Phase 2.3 template queries.
+func (s *MarketplaceServer) SetPgPool(p *pgxpool.Pool) { s.pgPool = p }

@@ -37,6 +37,14 @@ service MarketplaceService {
   rpc GenerateFromTemplate(GenerateFromTemplateRequest) returns (stream GenerateAndPublishEvent);
   // Phase 2: List available strategy parameter templates.
   rpc ListStrategyTemplates(ListStrategyTemplatesRequest) returns (ListStrategyTemplatesResponse);
+  // Phase 2 Admin: List auto-generation tasks.
+  rpc ListAutoGenTasks(ListAutoGenTasksRequest) returns (ListAutoGenTasksResponse);
+  // Phase 2 Admin: Approve an auto-generated task → publish to marketplace.
+  rpc ApproveAutoGenTask(ApproveAutoGenTaskRequest) returns (ApproveAutoGenTaskResponse);
+  // Phase 2 Admin: Reject an auto-generated task.
+  rpc RejectAutoGenTask(RejectAutoGenTaskRequest) returns (RejectAutoGenTaskResponse);
+  // Phase 2 Admin: Trigger batch generation (enqueue tasks).
+  rpc TriggerBatchGeneration(TriggerBatchGenerationRequest) returns (TriggerBatchGenerationResponse);
 }
 
 message PublishStrategyRequest {
@@ -384,4 +392,65 @@ message StrategyParameterTemplate {
   string parameters_schema = 6;     // JSON string for frontend dynamic form rendering
   string default_risk_level = 7;
   string icon = 8;
+}
+
+// ── Phase 2 Admin: Batch Generation ──────────────────────────────────────────
+
+message ListAutoGenTasksRequest {
+  string status = 1;               // filter by status (empty = all)
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListAutoGenTasksResponse {
+  repeated AutoGenTaskInfo tasks = 1;
+  int32 total = 2;
+}
+
+message AutoGenTaskInfo {
+  string id = 1;
+  string symbol = 2;
+  string timeframe = 3;
+  string strategy_type = 4;
+  string risk_level = 5;
+  string status = 6;
+  string strategy_id = 7;
+  bool quality_passed = 8;
+  string error_message = 9;
+  int64 created_at_ms = 10;
+  int64 finished_at_ms = 11;
+  BacktestSnapshot backtest = 12;  // snapshot if available
+}
+
+message ApproveAutoGenTaskRequest {
+  string task_id = 1;
+  string price_model = 2;          // optional override
+  string price_amount = 3;
+}
+
+message ApproveAutoGenTaskResponse {
+  bool success = 1;
+  string publish_id = 2;
+  string error = 3;
+}
+
+message RejectAutoGenTaskRequest {
+  string task_id = 1;
+  string reason = 2;
+}
+
+message RejectAutoGenTaskResponse {
+  bool success = 1;
+}
+
+message TriggerBatchGenerationRequest {
+  repeated string symbols = 1;
+  repeated string timeframes = 2;
+  repeated string strategy_types = 3;
+  string risk_level = 4;
+}
+
+message TriggerBatchGenerationResponse {
+  int32 enqueued = 1;
+  string error = 2;
 }

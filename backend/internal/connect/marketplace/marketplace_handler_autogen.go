@@ -61,6 +61,16 @@ func (l *autoGenerateLimiter) release() {
 	<-l.globalSem
 }
 
+// limiter returns the auto-generate rate limiter, lazily initialized.
+func (s *MarketplaceServer) limiter() *autoGenerateLimiter {
+	s.limiterOnce.Do(func() {
+		if s.autoLimiter == nil {
+			s.autoLimiter = newAutoGenerateLimiter(4, 10)
+		}
+	})
+	return s.autoLimiter
+}
+
 // ── GenerateAndPublish handler ───────────────────────────────────────────────
 
 func (s *MarketplaceServer) GenerateAndPublish(
@@ -92,6 +102,37 @@ func (s *MarketplaceServer) GenerateAndPublish(
 	}
 	defer s.limiter().release()
 
+	symbol := ""
+	if len(msg.Symbols) > 0 {
+		symbol = msg.Symbols[0]
+	}
+	agentReq := &antv1.AgentGenerateStrategyRequest{
+		Message:   msg.Description,
+		Symbol:    symbol,
+		Timeframe: msg.Timeframe,
+		Locale:    msg.Language,
+		BacktestConfig: &antv1.AgentBacktestConfig{
+			Symbol:    symbol,
+			Timeframe: msg.Timeframe,
+		},
+	}
+
+	return s.runGeneratePipeline(ctx, uid, agentReq, msg.Description, msg.RiskLevel, symbol, msg.Timeframe, msg.AutoPublish, stream)
+}
+
+// runGeneratePipeline is the shared generation → quality → publish pipeline
+// used by both GenerateAndPublish and GenerateFromTemplate.
+func (s *MarketplaceServer) runGeneratePipeline(
+	ctx context.Context,
+	uid uuid.UUID,
+	agentReq *antv1.AgentGenerateStrategyRequest,
+	description string,
+	riskLevel string,
+	symbol string,
+	timeframe string,
+	autoPublish bool,
+	stream *connect.ServerStream[antv1.GenerateAndPublishEvent],
+) error {
 	send := func(stage, message string, progress float64) error {
 		return stream.Send(&antv1.GenerateAndPublishEvent{
 			Stage:    stage,
@@ -102,69 +143,44 @@ func (s *MarketplaceServer) GenerateAndPublish(
 
 	sendErr := func(stage, detail string, retryable bool) error {
 		return stream.Send(&antv1.GenerateAndPublishEvent{
-			Stage:        "failed",
-			ErrorStage:   stage,
-			ErrorDetail:  detail,
-			Retryable:    retryable,
+			Stage:       "failed",
+			ErrorStage:  stage,
+			ErrorDetail: detail,
+			Retryable:   retryable,
 		})
 	}
 
-	// ── Stage 1: AI generation (reuses existing Generator.Generate) ──
+	// ── Stage 1: AI generation ──
 	if err := send("generating", "AI is generating strategy code...", 0.05); err != nil {
 		return nil
 	}
 
-	// Build the agent request from the marketplace request.
-	symbol := ""
-	if len(msg.Symbols) > 0 {
-		symbol = msg.Symbols[0]
-	}
-	agentReq := &antv1.AgentGenerateStrategyRequest{
-		Message: msg.Description,
-		Symbol:  symbol,
-		Timeframe: msg.Timeframe,
-		Locale:  msg.Language,
-		BacktestConfig: &antv1.AgentBacktestConfig{
-			Symbol:    symbol,
-			Timeframe: msg.Timeframe,
-			StartDateMs: 0, // default range
-			EndDateMs:   0,
-		},
-	}
-
-	// Capture the final state from the agent stream.
 	var finalSource string
 	var finalResult *antv1.AgentBacktestResult
 	var genErr error
 
 	genStream := func(chunk *antv1.AgentGenerateStrategyChunk) error {
-		// Forward generating deltas to the client.
 		if chunk.Delta != "" && (chunk.Phase == "generating" || chunk.Phase == "thinking") {
 			if err := stream.Send(&antv1.GenerateAndPublishEvent{
-				Stage:   "generating",
-				Delta:   chunk.Delta,
+				Stage:    "generating",
+				Delta:    chunk.Delta,
 				Progress: 0.1,
 			}); err != nil {
 				return err
 			}
 		}
-		// Capture backtest progress.
 		if chunk.Phase == "backtesting" && chunk.Result != nil {
 			finalResult = chunk.Result
 		}
-		// Capture compile errors.
 		if chunk.CompileError != "" {
 			genErr = fmt.Errorf("compile failed: %s", chunk.CompileError)
 		}
-		// Capture backtest errors.
 		if chunk.BacktestError != "" {
 			genErr = fmt.Errorf("backtest failed: %s", chunk.BacktestError)
 		}
-		// Capture final source.
 		if chunk.PythonSource != "" {
 			finalSource = chunk.PythonSource
 		}
-		// On done phase, capture final result.
 		if chunk.Phase == "done" {
 			if chunk.PythonSource != "" {
 				finalSource = chunk.PythonSource
@@ -180,7 +196,7 @@ func (s *MarketplaceServer) GenerateAndPublish(
 	}
 
 	if err := s.gen.Generate(ctx, uid, agentReq, genStream); err != nil {
-		s.log.Warn("GenerateAndPublish: generation failed", zap.Error(err))
+		s.log.Warn("autogen: generation failed", zap.Error(err))
 		_ = sendErr("generating", err.Error(), true)
 		return nil
 	}
@@ -200,11 +216,10 @@ func (s *MarketplaceServer) GenerateAndPublish(
 		return nil
 	}
 
-	// Build BacktestSnapshot proto from the agent result.
 	snapshotProto := buildSnapshotProto(finalResult)
 	violations, qErr := s.svc.ValidateBacktestQuality(ctx, snapshotProto, "")
 	if qErr != nil {
-		s.log.Warn("GenerateAndPublish: quality validation error", zap.Error(qErr))
+		s.log.Warn("autogen: quality validation error", zap.Error(qErr))
 	}
 
 	var violationInfos []*antv1.QualityViolationInfo
@@ -217,20 +232,18 @@ func (s *MarketplaceServer) GenerateAndPublish(
 	}
 
 	if len(violations) > 0 {
-		// Quality gate failed — return completed with violations, do not publish.
 		_ = stream.Send(&antv1.GenerateAndPublishEvent{
-			Stage:      "completed",
-			Message:    "Strategy generated but did not pass quality gates",
-			Progress:   1.0,
+			Stage:        "completed",
+			Message:      "Strategy generated but did not pass quality gates",
+			Progress:     1.0,
 			PythonSource: finalSource,
-			Violations: violationInfos,
+			Violations:   violationInfos,
 		})
 		return nil
 	}
 
 	// ── Stage 3: Auto-publish ──
-	if !msg.AutoPublish {
-		// User wants to review before publishing.
+	if !autoPublish {
 		_ = stream.Send(&antv1.GenerateAndPublishEvent{
 			Stage:        "completed",
 			Message:      "Strategy generated successfully, ready for review",
@@ -245,28 +258,25 @@ func (s *MarketplaceServer) GenerateAndPublish(
 		return nil
 	}
 
-	title := msg.TitleOverride
-	if title == "" {
-		title = generateTitle(msg.Description)
-	}
+	title := generateTitle(description)
 
 	publishParams := marketplace.PublishParams{
-		UserID:               userID,
+		UserID:               uid.String(),
 		StrategyID:           uuid.New().String(),
 		Title:                title,
-		Description:          msg.Description,
+		Description:          description,
 		PriceModel:           marketplace.PriceModelFree,
 		PriceAmount:          "0",
-		AssetClass:           msg.AssetClass,
-		Symbols:              msg.Symbols,
-		Timeframe:            msg.Timeframe,
-		RiskLevel:            msg.RiskLevel,
+		AssetClass:           "forex",
+		Symbols:              []string{symbol},
+		Timeframe:            timeframe,
+		RiskLevel:            riskLevel,
 		BacktestSnapshotProto: snapshotProto,
 	}
 
 	publishID, pErr := s.svc.Publish(ctx, publishParams)
 	if pErr != nil {
-		s.log.Warn("GenerateAndPublish: publish failed", zap.Error(pErr))
+		s.log.Warn("autogen: publish failed", zap.Error(pErr))
 		_ = sendErr("publishing", pErr.Error(), true)
 		return nil
 	}
@@ -290,31 +300,68 @@ func (s *MarketplaceServer) GenerateFromTemplate(
 	req *connect.Request[antv1.GenerateFromTemplateRequest],
 	stream *connect.ServerStream[antv1.GenerateAndPublishEvent],
 ) error {
-	// TODO: implement template-based generation in 2.3
-	return connect.NewError(connect.CodeUnimplemented, fmt.Errorf("GenerateFromTemplate not yet implemented"))
-}
+	if s.gen == nil {
+		return connect.NewError(connect.CodeUnavailable, fmt.Errorf("AI strategy generation is not available"))
+	}
+	if s.pgPool == nil {
+		return connect.NewError(connect.CodeUnavailable, fmt.Errorf("database not configured"))
+	}
 
-// ── ListStrategyTemplates handler ────────────────────────────────────────────
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id: %w", err))
+	}
 
-func (s *MarketplaceServer) ListStrategyTemplates(
-	ctx context.Context,
-	req *connect.Request[antv1.ListStrategyTemplatesRequest],
-) (*connect.Response[antv1.ListStrategyTemplatesResponse], error) {
-	// TODO: implement in 2.3
-	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("ListStrategyTemplates not yet implemented"))
+	msg := req.Msg
+	if msg.TemplateId == "" {
+		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("template_id is required"))
+	}
+
+	// Look up template.
+	var templateKey, templateType, nameI18n, descI18n, riskLevel string
+	err = s.pgPool.QueryRow(ctx,
+		`SELECT template_key, template_type, name_i18n, description_i18n, default_risk_level
+		 FROM strategy_parameter_templates WHERE id=$1 AND enabled=true`,
+		msg.TemplateId).Scan(&templateKey, &templateType, &nameI18n, &descI18n, &riskLevel)
+	if err != nil {
+		return connect.NewError(connect.CodeNotFound, fmt.Errorf("template not found: %w", err))
+	}
+
+	lang := langFromAccept(req.Header().Get("Accept-Language"))
+	tmplName := pickLocalized(nameI18n, lang)
+	tmplDesc := pickLocalized(descI18n, lang)
+
+	// Build natural language description from template + parameters.
+	description := fmt.Sprintf("Generate a %s strategy using the '%s' template (%s). Parameters: %s. Symbol: %s, Timeframe: %s.",
+		templateType, tmplName, tmplDesc, msg.ParametersJson, msg.Symbol, msg.Timeframe)
+
+	// Rate limit.
+	if !s.limiter().acquire(userID) {
+		return connect.NewError(connect.CodeResourceExhausted, fmt.Errorf("rate limit exceeded"))
+	}
+	defer s.limiter().release()
+
+	// Build agent request.
+	agentReq := &antv1.AgentGenerateStrategyRequest{
+		Message:   description,
+		Symbol:    msg.Symbol,
+		Timeframe: msg.Timeframe,
+		Locale:    lang,
+		BacktestConfig: &antv1.AgentBacktestConfig{
+			Symbol:    msg.Symbol,
+			Timeframe: msg.Timeframe,
+		},
+	}
+
+	// Reuse the same generation → quality → publish pipeline.
+	return s.runGeneratePipeline(ctx, uid, agentReq, description, riskLevel, msg.Symbol, msg.Timeframe, msg.AutoPublish, stream)
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-// limiter returns the auto-generate rate limiter, lazily initialized.
-func (s *MarketplaceServer) limiter() *autoGenerateLimiter {
-	s.limiterOnce.Do(func() {
-		if s.autoLimiter == nil {
-			s.autoLimiter = newAutoGenerateLimiter(4, 10)
-		}
-	})
-	return s.autoLimiter
-}
 
 func buildSnapshotProto(result *antv1.AgentBacktestResult) []byte {
 	if result == nil {

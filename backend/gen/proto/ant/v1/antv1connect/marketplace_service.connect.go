@@ -90,6 +90,18 @@ const (
 	// MarketplaceServiceListStrategyTemplatesProcedure is the fully-qualified name of the
 	// MarketplaceService's ListStrategyTemplates RPC.
 	MarketplaceServiceListStrategyTemplatesProcedure = "/ant.v1.MarketplaceService/ListStrategyTemplates"
+	// MarketplaceServiceListAutoGenTasksProcedure is the fully-qualified name of the
+	// MarketplaceService's ListAutoGenTasks RPC.
+	MarketplaceServiceListAutoGenTasksProcedure = "/ant.v1.MarketplaceService/ListAutoGenTasks"
+	// MarketplaceServiceApproveAutoGenTaskProcedure is the fully-qualified name of the
+	// MarketplaceService's ApproveAutoGenTask RPC.
+	MarketplaceServiceApproveAutoGenTaskProcedure = "/ant.v1.MarketplaceService/ApproveAutoGenTask"
+	// MarketplaceServiceRejectAutoGenTaskProcedure is the fully-qualified name of the
+	// MarketplaceService's RejectAutoGenTask RPC.
+	MarketplaceServiceRejectAutoGenTaskProcedure = "/ant.v1.MarketplaceService/RejectAutoGenTask"
+	// MarketplaceServiceTriggerBatchGenerationProcedure is the fully-qualified name of the
+	// MarketplaceService's TriggerBatchGeneration RPC.
+	MarketplaceServiceTriggerBatchGenerationProcedure = "/ant.v1.MarketplaceService/TriggerBatchGeneration"
 )
 
 // MarketplaceServiceClient is a client for the ant.v1.MarketplaceService service.
@@ -125,6 +137,14 @@ type MarketplaceServiceClient interface {
 	GenerateFromTemplate(context.Context, *connect.Request[v1.GenerateFromTemplateRequest]) (*connect.ServerStreamForClient[v1.GenerateAndPublishEvent], error)
 	// Phase 2: List available strategy parameter templates.
 	ListStrategyTemplates(context.Context, *connect.Request[v1.ListStrategyTemplatesRequest]) (*connect.Response[v1.ListStrategyTemplatesResponse], error)
+	// Phase 2 Admin: List auto-generation tasks.
+	ListAutoGenTasks(context.Context, *connect.Request[v1.ListAutoGenTasksRequest]) (*connect.Response[v1.ListAutoGenTasksResponse], error)
+	// Phase 2 Admin: Approve an auto-generated task → publish to marketplace.
+	ApproveAutoGenTask(context.Context, *connect.Request[v1.ApproveAutoGenTaskRequest]) (*connect.Response[v1.ApproveAutoGenTaskResponse], error)
+	// Phase 2 Admin: Reject an auto-generated task.
+	RejectAutoGenTask(context.Context, *connect.Request[v1.RejectAutoGenTaskRequest]) (*connect.Response[v1.RejectAutoGenTaskResponse], error)
+	// Phase 2 Admin: Trigger batch generation (enqueue tasks).
+	TriggerBatchGeneration(context.Context, *connect.Request[v1.TriggerBatchGenerationRequest]) (*connect.Response[v1.TriggerBatchGenerationResponse], error)
 }
 
 // NewMarketplaceServiceClient constructs a client for the ant.v1.MarketplaceService service. By
@@ -252,30 +272,58 @@ func NewMarketplaceServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(marketplaceServiceMethods.ByName("ListStrategyTemplates")),
 			connect.WithClientOptions(opts...),
 		),
+		listAutoGenTasks: connect.NewClient[v1.ListAutoGenTasksRequest, v1.ListAutoGenTasksResponse](
+			httpClient,
+			baseURL+MarketplaceServiceListAutoGenTasksProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("ListAutoGenTasks")),
+			connect.WithClientOptions(opts...),
+		),
+		approveAutoGenTask: connect.NewClient[v1.ApproveAutoGenTaskRequest, v1.ApproveAutoGenTaskResponse](
+			httpClient,
+			baseURL+MarketplaceServiceApproveAutoGenTaskProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("ApproveAutoGenTask")),
+			connect.WithClientOptions(opts...),
+		),
+		rejectAutoGenTask: connect.NewClient[v1.RejectAutoGenTaskRequest, v1.RejectAutoGenTaskResponse](
+			httpClient,
+			baseURL+MarketplaceServiceRejectAutoGenTaskProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("RejectAutoGenTask")),
+			connect.WithClientOptions(opts...),
+		),
+		triggerBatchGeneration: connect.NewClient[v1.TriggerBatchGenerationRequest, v1.TriggerBatchGenerationResponse](
+			httpClient,
+			baseURL+MarketplaceServiceTriggerBatchGenerationProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("TriggerBatchGeneration")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // marketplaceServiceClient implements MarketplaceServiceClient.
 type marketplaceServiceClient struct {
-	publishStrategy       *connect.Client[v1.PublishStrategyRequest, v1.PublishStrategyResponse]
-	subscribe             *connect.Client[v1.SubscribeRequest, v1.SubscribeResponse]
-	unsubscribe           *connect.Client[v1.UnsubscribeRequest, v1.UnsubscribeResponse]
-	purchaseStrategy      *connect.Client[v1.PurchaseStrategyRequest, v1.PurchaseStrategyResponse]
-	listPublished         *connect.Client[v1.ListPublishedRequest, v1.ListPublishedResponse]
-	listSubscriptions     *connect.Client[v1.ListSubscriptionsRequest, v1.ListSubscriptionsResponse]
-	rateStrategy          *connect.Client[v1.RateStrategyRequest, v1.RateStrategyResponse]
-	listRatings           *connect.Client[v1.ListRatingsRequest, v1.ListRatingsResponse]
-	commentOnStrategy     *connect.Client[v1.CommentOnStrategyRequest, v1.CommentOnStrategyResponse]
-	listComments          *connect.Client[v1.ListCommentsRequest, v1.ListCommentsResponse]
-	setStrategyPricing    *connect.Client[v1.SetStrategyPricingRequest, v1.SetStrategyPricingResponse]
-	unpublishStrategy     *connect.Client[v1.UnpublishMarketStrategyRequest, v1.UnpublishMarketStrategyResponse]
-	getPublisherStats     *connect.Client[v1.GetPublisherStatsRequest, v1.GetPublisherStatsResponse]
-	runMarketBacktest     *connect.Client[v1.RunMarketBacktestRequest, v1.BacktestRunUpdate]
-	getLivePerformance    *connect.Client[v1.GetLivePerformanceRequest, v1.GetLivePerformanceResponse]
-	linkLiveAccount       *connect.Client[v1.LinkLiveAccountRequest, v1.LinkLiveAccountResponse]
-	generateAndPublish    *connect.Client[v1.GenerateAndPublishRequest, v1.GenerateAndPublishEvent]
-	generateFromTemplate  *connect.Client[v1.GenerateFromTemplateRequest, v1.GenerateAndPublishEvent]
-	listStrategyTemplates *connect.Client[v1.ListStrategyTemplatesRequest, v1.ListStrategyTemplatesResponse]
+	publishStrategy        *connect.Client[v1.PublishStrategyRequest, v1.PublishStrategyResponse]
+	subscribe              *connect.Client[v1.SubscribeRequest, v1.SubscribeResponse]
+	unsubscribe            *connect.Client[v1.UnsubscribeRequest, v1.UnsubscribeResponse]
+	purchaseStrategy       *connect.Client[v1.PurchaseStrategyRequest, v1.PurchaseStrategyResponse]
+	listPublished          *connect.Client[v1.ListPublishedRequest, v1.ListPublishedResponse]
+	listSubscriptions      *connect.Client[v1.ListSubscriptionsRequest, v1.ListSubscriptionsResponse]
+	rateStrategy           *connect.Client[v1.RateStrategyRequest, v1.RateStrategyResponse]
+	listRatings            *connect.Client[v1.ListRatingsRequest, v1.ListRatingsResponse]
+	commentOnStrategy      *connect.Client[v1.CommentOnStrategyRequest, v1.CommentOnStrategyResponse]
+	listComments           *connect.Client[v1.ListCommentsRequest, v1.ListCommentsResponse]
+	setStrategyPricing     *connect.Client[v1.SetStrategyPricingRequest, v1.SetStrategyPricingResponse]
+	unpublishStrategy      *connect.Client[v1.UnpublishMarketStrategyRequest, v1.UnpublishMarketStrategyResponse]
+	getPublisherStats      *connect.Client[v1.GetPublisherStatsRequest, v1.GetPublisherStatsResponse]
+	runMarketBacktest      *connect.Client[v1.RunMarketBacktestRequest, v1.BacktestRunUpdate]
+	getLivePerformance     *connect.Client[v1.GetLivePerformanceRequest, v1.GetLivePerformanceResponse]
+	linkLiveAccount        *connect.Client[v1.LinkLiveAccountRequest, v1.LinkLiveAccountResponse]
+	generateAndPublish     *connect.Client[v1.GenerateAndPublishRequest, v1.GenerateAndPublishEvent]
+	generateFromTemplate   *connect.Client[v1.GenerateFromTemplateRequest, v1.GenerateAndPublishEvent]
+	listStrategyTemplates  *connect.Client[v1.ListStrategyTemplatesRequest, v1.ListStrategyTemplatesResponse]
+	listAutoGenTasks       *connect.Client[v1.ListAutoGenTasksRequest, v1.ListAutoGenTasksResponse]
+	approveAutoGenTask     *connect.Client[v1.ApproveAutoGenTaskRequest, v1.ApproveAutoGenTaskResponse]
+	rejectAutoGenTask      *connect.Client[v1.RejectAutoGenTaskRequest, v1.RejectAutoGenTaskResponse]
+	triggerBatchGeneration *connect.Client[v1.TriggerBatchGenerationRequest, v1.TriggerBatchGenerationResponse]
 }
 
 // PublishStrategy calls ant.v1.MarketplaceService.PublishStrategy.
@@ -373,6 +421,26 @@ func (c *marketplaceServiceClient) ListStrategyTemplates(ctx context.Context, re
 	return c.listStrategyTemplates.CallUnary(ctx, req)
 }
 
+// ListAutoGenTasks calls ant.v1.MarketplaceService.ListAutoGenTasks.
+func (c *marketplaceServiceClient) ListAutoGenTasks(ctx context.Context, req *connect.Request[v1.ListAutoGenTasksRequest]) (*connect.Response[v1.ListAutoGenTasksResponse], error) {
+	return c.listAutoGenTasks.CallUnary(ctx, req)
+}
+
+// ApproveAutoGenTask calls ant.v1.MarketplaceService.ApproveAutoGenTask.
+func (c *marketplaceServiceClient) ApproveAutoGenTask(ctx context.Context, req *connect.Request[v1.ApproveAutoGenTaskRequest]) (*connect.Response[v1.ApproveAutoGenTaskResponse], error) {
+	return c.approveAutoGenTask.CallUnary(ctx, req)
+}
+
+// RejectAutoGenTask calls ant.v1.MarketplaceService.RejectAutoGenTask.
+func (c *marketplaceServiceClient) RejectAutoGenTask(ctx context.Context, req *connect.Request[v1.RejectAutoGenTaskRequest]) (*connect.Response[v1.RejectAutoGenTaskResponse], error) {
+	return c.rejectAutoGenTask.CallUnary(ctx, req)
+}
+
+// TriggerBatchGeneration calls ant.v1.MarketplaceService.TriggerBatchGeneration.
+func (c *marketplaceServiceClient) TriggerBatchGeneration(ctx context.Context, req *connect.Request[v1.TriggerBatchGenerationRequest]) (*connect.Response[v1.TriggerBatchGenerationResponse], error) {
+	return c.triggerBatchGeneration.CallUnary(ctx, req)
+}
+
 // MarketplaceServiceHandler is an implementation of the ant.v1.MarketplaceService service.
 type MarketplaceServiceHandler interface {
 	PublishStrategy(context.Context, *connect.Request[v1.PublishStrategyRequest]) (*connect.Response[v1.PublishStrategyResponse], error)
@@ -406,6 +474,14 @@ type MarketplaceServiceHandler interface {
 	GenerateFromTemplate(context.Context, *connect.Request[v1.GenerateFromTemplateRequest], *connect.ServerStream[v1.GenerateAndPublishEvent]) error
 	// Phase 2: List available strategy parameter templates.
 	ListStrategyTemplates(context.Context, *connect.Request[v1.ListStrategyTemplatesRequest]) (*connect.Response[v1.ListStrategyTemplatesResponse], error)
+	// Phase 2 Admin: List auto-generation tasks.
+	ListAutoGenTasks(context.Context, *connect.Request[v1.ListAutoGenTasksRequest]) (*connect.Response[v1.ListAutoGenTasksResponse], error)
+	// Phase 2 Admin: Approve an auto-generated task → publish to marketplace.
+	ApproveAutoGenTask(context.Context, *connect.Request[v1.ApproveAutoGenTaskRequest]) (*connect.Response[v1.ApproveAutoGenTaskResponse], error)
+	// Phase 2 Admin: Reject an auto-generated task.
+	RejectAutoGenTask(context.Context, *connect.Request[v1.RejectAutoGenTaskRequest]) (*connect.Response[v1.RejectAutoGenTaskResponse], error)
+	// Phase 2 Admin: Trigger batch generation (enqueue tasks).
+	TriggerBatchGeneration(context.Context, *connect.Request[v1.TriggerBatchGenerationRequest]) (*connect.Response[v1.TriggerBatchGenerationResponse], error)
 }
 
 // NewMarketplaceServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -529,6 +605,30 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 		connect.WithSchema(marketplaceServiceMethods.ByName("ListStrategyTemplates")),
 		connect.WithHandlerOptions(opts...),
 	)
+	marketplaceServiceListAutoGenTasksHandler := connect.NewUnaryHandler(
+		MarketplaceServiceListAutoGenTasksProcedure,
+		svc.ListAutoGenTasks,
+		connect.WithSchema(marketplaceServiceMethods.ByName("ListAutoGenTasks")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceApproveAutoGenTaskHandler := connect.NewUnaryHandler(
+		MarketplaceServiceApproveAutoGenTaskProcedure,
+		svc.ApproveAutoGenTask,
+		connect.WithSchema(marketplaceServiceMethods.ByName("ApproveAutoGenTask")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceRejectAutoGenTaskHandler := connect.NewUnaryHandler(
+		MarketplaceServiceRejectAutoGenTaskProcedure,
+		svc.RejectAutoGenTask,
+		connect.WithSchema(marketplaceServiceMethods.ByName("RejectAutoGenTask")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceTriggerBatchGenerationHandler := connect.NewUnaryHandler(
+		MarketplaceServiceTriggerBatchGenerationProcedure,
+		svc.TriggerBatchGeneration,
+		connect.WithSchema(marketplaceServiceMethods.ByName("TriggerBatchGeneration")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.MarketplaceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case MarketplaceServicePublishStrategyProcedure:
@@ -569,6 +669,14 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 			marketplaceServiceGenerateFromTemplateHandler.ServeHTTP(w, r)
 		case MarketplaceServiceListStrategyTemplatesProcedure:
 			marketplaceServiceListStrategyTemplatesHandler.ServeHTTP(w, r)
+		case MarketplaceServiceListAutoGenTasksProcedure:
+			marketplaceServiceListAutoGenTasksHandler.ServeHTTP(w, r)
+		case MarketplaceServiceApproveAutoGenTaskProcedure:
+			marketplaceServiceApproveAutoGenTaskHandler.ServeHTTP(w, r)
+		case MarketplaceServiceRejectAutoGenTaskProcedure:
+			marketplaceServiceRejectAutoGenTaskHandler.ServeHTTP(w, r)
+		case MarketplaceServiceTriggerBatchGenerationProcedure:
+			marketplaceServiceTriggerBatchGenerationHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -652,4 +760,20 @@ func (UnimplementedMarketplaceServiceHandler) GenerateFromTemplate(context.Conte
 
 func (UnimplementedMarketplaceServiceHandler) ListStrategyTemplates(context.Context, *connect.Request[v1.ListStrategyTemplatesRequest]) (*connect.Response[v1.ListStrategyTemplatesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ListStrategyTemplates is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) ListAutoGenTasks(context.Context, *connect.Request[v1.ListAutoGenTasksRequest]) (*connect.Response[v1.ListAutoGenTasksResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ListAutoGenTasks is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) ApproveAutoGenTask(context.Context, *connect.Request[v1.ApproveAutoGenTaskRequest]) (*connect.Response[v1.ApproveAutoGenTaskResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ApproveAutoGenTask is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) RejectAutoGenTask(context.Context, *connect.Request[v1.RejectAutoGenTaskRequest]) (*connect.Response[v1.RejectAutoGenTaskResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.RejectAutoGenTask is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) TriggerBatchGeneration(context.Context, *connect.Request[v1.TriggerBatchGenerationRequest]) (*connect.Response[v1.TriggerBatchGenerationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.TriggerBatchGeneration is not implemented"))
 }
