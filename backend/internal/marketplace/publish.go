@@ -3,6 +3,7 @@ package marketplace
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -154,6 +155,19 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 	default:
 		return "", fmt.Errorf("marketplace: unsupported price_model %q", params.PriceModel)
 	}
+
+	violations, err := s.ValidateBacktestQuality(ctx, params.BacktestSnapshotProto, params.StrategyID)
+	if err != nil {
+		return "", fmt.Errorf("marketplace: quality gate check: %w", err)
+	}
+	if len(violations) > 0 {
+		msgs := make([]string, len(violations))
+		for i, v := range violations {
+			msgs[i] = v.String()
+		}
+		return "", fmt.Errorf("marketplace: backtest quality gate failed: %s", strings.Join(msgs, "; "))
+	}
+
 	tx, err := s.pg.Begin(ctx)
 	if err != nil {
 		return "", fmt.Errorf("marketplace: publish begin tx: %w", err)

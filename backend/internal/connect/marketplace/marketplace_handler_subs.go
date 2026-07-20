@@ -45,6 +45,10 @@ func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Re
 	})
 	if err != nil {
 		s.log.Error("PublishStrategy", zap.Error(err))
+		msg := err.Error()
+		if strings.Contains(msg, "quality gate") {
+			return nil, connect.NewError(connect.CodeFailedPrecondition, err)
+		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.PublishStrategyResponse{PublishId: id}), nil
