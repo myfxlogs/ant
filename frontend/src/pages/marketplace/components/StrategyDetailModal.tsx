@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Modal, Descriptions, Tag, Button, Typography, Space, Divider, Input, List, Spin, Rate, Tabs } from 'antd';
-import { ShoppingCartOutlined, DownloadOutlined, UserOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { Modal, Descriptions, Tag, Button, Typography, Space, Divider, Input, List, Spin, Rate, Tabs, Alert, Empty } from 'antd';
+import { ShoppingCartOutlined, DownloadOutlined, UserOutlined, ThunderboltOutlined, WarningOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useStrategyDiscussion } from '../hooks/useStrategyDiscussion';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
@@ -123,6 +123,18 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
             {strategy.description}
           </Paragraph>
         </div>
+      )}
+
+      {/* Risk disclaimer */}
+      {strategy.disclaimer && (
+        <Alert
+          type="warning"
+          showIcon
+          icon={<WarningOutlined />}
+          style={{ marginBottom: 16 }}
+          message={t('marketplace.detail.riskDisclaimer', { defaultValue: 'Risk Disclaimer' })}
+          description={strategy.disclaimer}
+        />
       )}
 
       {/* Tags */}

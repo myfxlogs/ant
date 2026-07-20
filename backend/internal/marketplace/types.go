@@ -88,6 +88,7 @@ type PublishParams struct {
 	CodeSnippet          string  // optional public code preview set by publisher
 	BacktestSnapshotProto []byte  // optional proto-serialized BacktestSnapshot (nil → SQL NULL)
 	PlatformFeeRate      string  // decimal string, platform commission rate (0.0–1.0)
+	Disclaimer           string  // optional risk disclaimer
 }
 
 // BacktestSnapshot holds key backtest metrics at publish time.
@@ -129,6 +130,7 @@ type PublishedStrategy struct {
 	BacktestSnapshotProto *antv1.BacktestSnapshot // optional backtest snapshot (proto)
 	ProviderVerified     bool                // provider identity verified
 	ProviderType         string              // human | ai | hybrid
+	Disclaimer           string              // risk disclaimer
 }
 
 // BacktestRunSnapshot is a lightweight read of a single backtest_runs row.

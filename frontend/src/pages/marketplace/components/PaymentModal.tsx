@@ -1,7 +1,8 @@
-import { Modal, Descriptions, Tag, Typography, Button, Space, Alert } from 'antd';
-import { WalletOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import { Modal, Descriptions, Tag, Typography, Button, Space, Alert, Checkbox } from 'antd';
+import { WalletOutlined, ShoppingCartOutlined, WarningOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
 
 const { Text } = Typography;
@@ -22,6 +23,7 @@ function parseBalance(s: string): number {
 export default function PaymentModal({ strategy, walletBalance, open, loading, onConfirm, onCancel }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [riskAcknowledged, setRiskAcknowledged] = useState(false);
   if (!strategy) return null;
 
   const name = strategy.strategyName || strategy.title || 'Unknown';
@@ -82,6 +84,28 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
         />
       )}
 
+      {/* Risk disclaimer */}
+      {strategy.disclaimer && (
+        <Alert
+          type="warning"
+          showIcon
+          icon={<WarningOutlined />}
+          style={{ marginBottom: 16 }}
+          message={t('marketplace.payment.riskWarning', { defaultValue: 'Risk Disclaimer' })}
+          description={strategy.disclaimer}
+        />
+      )}
+
+      {/* Risk acknowledgment checkbox */}
+      <div style={{ marginBottom: 16 }}>
+        <Checkbox
+          checked={riskAcknowledged}
+          onChange={e => setRiskAcknowledged(e.target.checked)}
+        >
+          {t('marketplace.payment.riskAck', { defaultValue: 'I understand the risks associated with trading strategies and accept full responsibility for my investment decisions.' })}
+        </Checkbox>
+      </div>
+
       <div style={{ textAlign: 'right' }}>
         <Space>
           <Button onClick={onCancel}>{t('marketplace.payment.cancel', '取消')}</Button>
@@ -89,7 +113,7 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
             type="primary"
             icon={<ShoppingCartOutlined />}
             loading={loading}
-            disabled={!sufficient && !isFree}
+            disabled={(!sufficient && !isFree) || !riskAcknowledged}
             onClick={onConfirm}
           >
             {loading

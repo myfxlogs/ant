@@ -181,11 +181,11 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 		return "", fmt.Errorf("marketplace: insert publish: %w", err)
 	}
 
-	_, err = tx.Exec(ctx, `INSERT INTO marketplace_strategies (id, strategy_id, publisher_id, title, description, price_model, price_amount, asset_class, symbols, timeframe, risk_level, tags, code_snippet, backtest_snapshot, platform_fee_rate, status, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7::numeric,$8,$9,$10,$11,$12,$13,$14,$15::numeric,'published',now(),now())`,
+	_, err = tx.Exec(ctx, `INSERT INTO marketplace_strategies (id, strategy_id, publisher_id, title, description, price_model, price_amount, asset_class, symbols, timeframe, risk_level, tags, code_snippet, backtest_snapshot, platform_fee_rate, disclaimer, status, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7::numeric,$8,$9,$10,$11,$12,$13,$14,$15::numeric,$16,'published',now(),now())`,
 		stratID, params.StrategyID, params.UserID, params.Title, params.Description,
 		params.PriceModel, params.PriceAmount, params.AssetClass,
 		pgTextArray(params.Symbols), params.Timeframe, params.RiskLevel, pgTextArray(params.Tags),
-		params.CodeSnippet, params.BacktestSnapshotProto, params.PlatformFeeRate)
+		params.CodeSnippet, params.BacktestSnapshotProto, params.PlatformFeeRate, params.Disclaimer)
 	if err != nil {
 		return "", fmt.Errorf("marketplace: insert listing: %w", err)
 	}
@@ -232,7 +232,7 @@ func (s *Service) ListPublished(ctx context.Context, userID string, limit int, o
 			&p.Title, &p.Description, &p.PriceModel, &p.PriceAmount,
 			&p.AssetClass, &symbolsRaw, &p.Timeframe, &p.RiskLevel, &tagsRaw,
 			&p.TotalSubscribers, &p.WinRate, &p.TotalPnL, &p.AvgRating, &p.RatingCount,
-			&p.CodeSnippet, &snapshotRaw, &p.ProviderVerified, &p.ProviderType); err != nil {
+			&p.CodeSnippet, &snapshotRaw, &p.ProviderVerified, &p.ProviderType, &p.Disclaimer); err != nil {
 			return nil, err
 		}
 		p.Symbols = parseJSONStringArray(symbolsRaw)
@@ -263,7 +263,8 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit, offs
 			COALESCE(ms.tags::text,'{}'), COALESCE(ms.total_subscribers,0), ms.win_rate, ms.total_pnl,
 			COALESCE(r.avg_rating,0), COALESCE(r.rating_count,0),
 			COALESCE(ms.code_snippet,''), ms.backtest_snapshot::text,
-			COALESCE(u.verified_provider,false), COALESCE(u.provider_type,'human')
+			COALESCE(u.verified_provider,false), COALESCE(u.provider_type,'human'),
+			COALESCE(ms.disclaimer,'')
 		 FROM user_strategy_publishes usp
 		 LEFT JOIN marketplace_strategies ms ON ms.strategy_id=usp.platform_strategy_id
 		 LEFT JOIN strategy_templates st ON st.id::text=usp.platform_strategy_id::text

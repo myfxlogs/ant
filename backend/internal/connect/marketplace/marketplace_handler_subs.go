@@ -42,6 +42,7 @@ func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Re
 		CodeSnippet:          m.CodeSnippet,
 		BacktestSnapshotProto: snapshotProto,
 		PlatformFeeRate:      s.svc.GetPlatformFeeRate(ctx),
+		Disclaimer:           m.Disclaimer,
 	})
 	if err != nil {
 		s.log.Error("PublishStrategy", zap.Error(err))
@@ -162,6 +163,7 @@ func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Requ
 		item.RatingCount = p.RatingCount
 		item.ProviderVerified = p.ProviderVerified
 		item.ProviderType = p.ProviderType
+		item.Disclaimer = p.Disclaimer
 		resp.Strategies = append(resp.Strategies, item)
 	}
 	return connect.NewResponse(resp), nil

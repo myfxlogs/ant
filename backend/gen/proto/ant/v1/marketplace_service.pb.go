@@ -39,6 +39,7 @@ type PublishStrategyRequest struct {
 	// Code protection: publisher-visible only.
 	CodeSnippet      string            `protobuf:"bytes,16,opt,name=code_snippet,json=codeSnippet,proto3" json:"code_snippet,omitempty"`                // optional public code preview set by publisher
 	BacktestSnapshot *BacktestSnapshot `protobuf:"bytes,17,opt,name=backtest_snapshot,json=backtestSnapshot,proto3" json:"backtest_snapshot,omitempty"` // snapshot of backtest results at publish time
+	Disclaimer       string            `protobuf:"bytes,18,opt,name=disclaimer,proto3" json:"disclaimer,omitempty"`                                     // optional risk disclaimer shown to buyers
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -162,6 +163,13 @@ func (x *PublishStrategyRequest) GetBacktestSnapshot() *BacktestSnapshot {
 		return x.BacktestSnapshot
 	}
 	return nil
+}
+
+func (x *PublishStrategyRequest) GetDisclaimer() string {
+	if x != nil {
+		return x.Disclaimer
+	}
+	return ""
 }
 
 // BacktestSnapshot holds key backtest metrics at publish time.
@@ -808,6 +816,7 @@ type PublishedStrategy struct {
 	BacktestSnapshot *BacktestSnapshot `protobuf:"bytes,23,opt,name=backtest_snapshot,json=backtestSnapshot,proto3" json:"backtest_snapshot,omitempty"`  // snapshot of backtest results
 	ProviderVerified bool              `protobuf:"varint,24,opt,name=provider_verified,json=providerVerified,proto3" json:"provider_verified,omitempty"` // provider identity verified badge
 	ProviderType     string            `protobuf:"bytes,25,opt,name=provider_type,json=providerType,proto3" json:"provider_type,omitempty"`              // human | ai | hybrid
+	Disclaimer       string            `protobuf:"bytes,26,opt,name=disclaimer,proto3" json:"disclaimer,omitempty"`                                      // risk disclaimer shown to buyers
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -999,6 +1008,13 @@ func (x *PublishedStrategy) GetProviderVerified() bool {
 func (x *PublishedStrategy) GetProviderType() string {
 	if x != nil {
 		return x.ProviderType
+	}
+	return ""
+}
+
+func (x *PublishedStrategy) GetDisclaimer() string {
+	if x != nil {
+		return x.Disclaimer
 	}
 	return ""
 }
@@ -2623,7 +2639,7 @@ var File_marketplace_service_proto protoreflect.FileDescriptor
 
 const file_marketplace_service_proto_rawDesc = "" +
 	"\n" +
-	"\x19marketplace_service.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fbacktest_execution_config.proto\x1a\x18backtest_run_query.proto\"\xc4\x03\n" +
+	"\x19marketplace_service.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fbacktest_execution_config.proto\x1a\x18backtest_run_query.proto\"\xe4\x03\n" +
 	"\x16PublishStrategyRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1f\n" +
 	"\vstrategy_id\x18\x02 \x01(\tR\n" +
@@ -2642,7 +2658,10 @@ const file_marketplace_service_proto_rawDesc = "" +
 	" \x01(\tR\triskLevel\x12\x12\n" +
 	"\x04tags\x18\v \x03(\tR\x04tags\x12!\n" +
 	"\fcode_snippet\x18\x10 \x01(\tR\vcodeSnippet\x12E\n" +
-	"\x11backtest_snapshot\x18\x11 \x01(\v2\x18.ant.v1.BacktestSnapshotR\x10backtestSnapshot\"\xd1\x02\n" +
+	"\x11backtest_snapshot\x18\x11 \x01(\v2\x18.ant.v1.BacktestSnapshotR\x10backtestSnapshot\x12\x1e\n" +
+	"\n" +
+	"disclaimer\x18\x12 \x01(\tR\n" +
+	"disclaimer\"\xd1\x02\n" +
 	"\x10BacktestSnapshot\x12!\n" +
 	"\ftotal_return\x18\x01 \x01(\tR\vtotalReturn\x12#\n" +
 	"\rannual_return\x18\x02 \x01(\tR\fannualReturn\x12!\n" +
@@ -2691,7 +2710,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x15ListPublishedResponse\x129\n" +
 	"\n" +
 	"strategies\x18\x01 \x03(\v2\x19.ant.v1.PublishedStrategyR\n" +
-	"strategies\"\xce\x06\n" +
+	"strategies\"\xee\x06\n" +
 	"\x11PublishedStrategy\x12\x1d\n" +
 	"\n" +
 	"publish_id\x18\x01 \x01(\tR\tpublishId\x12\x1f\n" +
@@ -2722,7 +2741,10 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\fcode_snippet\x18\x16 \x01(\tR\vcodeSnippet\x12E\n" +
 	"\x11backtest_snapshot\x18\x17 \x01(\v2\x18.ant.v1.BacktestSnapshotR\x10backtestSnapshot\x12+\n" +
 	"\x11provider_verified\x18\x18 \x01(\bR\x10providerVerified\x12#\n" +
-	"\rprovider_type\x18\x19 \x01(\tR\fproviderType\"3\n" +
+	"\rprovider_type\x18\x19 \x01(\tR\fproviderType\x12\x1e\n" +
+	"\n" +
+	"disclaimer\x18\x1a \x01(\tR\n" +
+	"disclaimer\"3\n" +
 	"\x18ListSubscriptionsRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"[\n" +
 	"\x19ListSubscriptionsResponse\x12>\n" +

@@ -48,6 +48,7 @@ message PublishStrategyRequest {
   // Code protection: publisher-visible only.
   string code_snippet = 16;  // optional public code preview set by publisher
   BacktestSnapshot backtest_snapshot = 17;  // snapshot of backtest results at publish time
+  string disclaimer = 18;  // optional risk disclaimer shown to buyers
 }
 
 // BacktestSnapshot holds key backtest metrics at publish time.
@@ -134,6 +135,7 @@ message PublishedStrategy {
   BacktestSnapshot backtest_snapshot = 23;  // snapshot of backtest results
   bool provider_verified = 24;     // provider identity verified badge
   string provider_type = 25;       // human | ai | hybrid
+  string disclaimer = 26;          // risk disclaimer shown to buyers
 }
 
 message ListSubscriptionsRequest {
