@@ -14,6 +14,7 @@ import (
 	"alphaforge/internal/mdgateway"
 	"alphaforge/internal/mdgateway/adapter"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mthub"
 	"alphaforge/internal/notifier"
 	"alphaforge/internal/repository"
@@ -45,6 +46,7 @@ func startMdGatewayPipeline(
 	reconLoop **mthub.ReconciliationLoop,
 	brokerReg *adapter.BrokerRegistry,
 	factorPusher func(bar *mdtick.Bar),
+	livePerfCollector *marketplace.LivePerformanceCollector,
 ) error {
 	// B-2.3: Per-broker 3-level margin call detection.
 	// Level 1 (预警): margin_level <= call_pct * 1.5 → SSE only
@@ -151,6 +153,10 @@ func startMdGatewayPipeline(
 					callPct = decimal.NewFromInt(100)
 				}
 				accountSyncSvc.CheckMarginCall(accountID, userID, p.MarginLevel, p.Margin, p.Equity, callPct, &marginCallMu, marginCallLastSent, eventStore, *emailNotifier)
+			}
+			// Live performance tracking for marketplace strategies.
+			if livePerfCollector != nil {
+				livePerfCollector.OnProfitUpdate(accountID, p.Equity, p.Balance)
 			}
 		},
 		OnOrderUpdate: buildOnOrderUpdate(log, snapshotBroker, tradeRecordRepo),

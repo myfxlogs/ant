@@ -75,6 +75,12 @@ const (
 	// MarketplaceServiceRunMarketBacktestProcedure is the fully-qualified name of the
 	// MarketplaceService's RunMarketBacktest RPC.
 	MarketplaceServiceRunMarketBacktestProcedure = "/ant.v1.MarketplaceService/RunMarketBacktest"
+	// MarketplaceServiceGetLivePerformanceProcedure is the fully-qualified name of the
+	// MarketplaceService's GetLivePerformance RPC.
+	MarketplaceServiceGetLivePerformanceProcedure = "/ant.v1.MarketplaceService/GetLivePerformance"
+	// MarketplaceServiceLinkLiveAccountProcedure is the fully-qualified name of the
+	// MarketplaceService's LinkLiveAccount RPC.
+	MarketplaceServiceLinkLiveAccountProcedure = "/ant.v1.MarketplaceService/LinkLiveAccount"
 )
 
 // MarketplaceServiceClient is a client for the ant.v1.MarketplaceService service.
@@ -100,6 +106,9 @@ type MarketplaceServiceClient interface {
 	// Strategy code is resolved server-side; client never sees it.
 	// Returns a server stream of BacktestRunUpdate for real-time progress.
 	RunMarketBacktest(context.Context, *connect.Request[v1.RunMarketBacktestRequest]) (*connect.ServerStreamForClient[v1.BacktestRunUpdate], error)
+	// Live performance tracking
+	GetLivePerformance(context.Context, *connect.Request[v1.GetLivePerformanceRequest]) (*connect.Response[v1.GetLivePerformanceResponse], error)
+	LinkLiveAccount(context.Context, *connect.Request[v1.LinkLiveAccountRequest]) (*connect.Response[v1.LinkLiveAccountResponse], error)
 }
 
 // NewMarketplaceServiceClient constructs a client for the ant.v1.MarketplaceService service. By
@@ -197,6 +206,18 @@ func NewMarketplaceServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(marketplaceServiceMethods.ByName("RunMarketBacktest")),
 			connect.WithClientOptions(opts...),
 		),
+		getLivePerformance: connect.NewClient[v1.GetLivePerformanceRequest, v1.GetLivePerformanceResponse](
+			httpClient,
+			baseURL+MarketplaceServiceGetLivePerformanceProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("GetLivePerformance")),
+			connect.WithClientOptions(opts...),
+		),
+		linkLiveAccount: connect.NewClient[v1.LinkLiveAccountRequest, v1.LinkLiveAccountResponse](
+			httpClient,
+			baseURL+MarketplaceServiceLinkLiveAccountProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("LinkLiveAccount")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -216,6 +237,8 @@ type marketplaceServiceClient struct {
 	unpublishStrategy  *connect.Client[v1.UnpublishMarketStrategyRequest, v1.UnpublishMarketStrategyResponse]
 	getPublisherStats  *connect.Client[v1.GetPublisherStatsRequest, v1.GetPublisherStatsResponse]
 	runMarketBacktest  *connect.Client[v1.RunMarketBacktestRequest, v1.BacktestRunUpdate]
+	getLivePerformance *connect.Client[v1.GetLivePerformanceRequest, v1.GetLivePerformanceResponse]
+	linkLiveAccount    *connect.Client[v1.LinkLiveAccountRequest, v1.LinkLiveAccountResponse]
 }
 
 // PublishStrategy calls ant.v1.MarketplaceService.PublishStrategy.
@@ -288,6 +311,16 @@ func (c *marketplaceServiceClient) RunMarketBacktest(ctx context.Context, req *c
 	return c.runMarketBacktest.CallServerStream(ctx, req)
 }
 
+// GetLivePerformance calls ant.v1.MarketplaceService.GetLivePerformance.
+func (c *marketplaceServiceClient) GetLivePerformance(ctx context.Context, req *connect.Request[v1.GetLivePerformanceRequest]) (*connect.Response[v1.GetLivePerformanceResponse], error) {
+	return c.getLivePerformance.CallUnary(ctx, req)
+}
+
+// LinkLiveAccount calls ant.v1.MarketplaceService.LinkLiveAccount.
+func (c *marketplaceServiceClient) LinkLiveAccount(ctx context.Context, req *connect.Request[v1.LinkLiveAccountRequest]) (*connect.Response[v1.LinkLiveAccountResponse], error) {
+	return c.linkLiveAccount.CallUnary(ctx, req)
+}
+
 // MarketplaceServiceHandler is an implementation of the ant.v1.MarketplaceService service.
 type MarketplaceServiceHandler interface {
 	PublishStrategy(context.Context, *connect.Request[v1.PublishStrategyRequest]) (*connect.Response[v1.PublishStrategyResponse], error)
@@ -311,6 +344,9 @@ type MarketplaceServiceHandler interface {
 	// Strategy code is resolved server-side; client never sees it.
 	// Returns a server stream of BacktestRunUpdate for real-time progress.
 	RunMarketBacktest(context.Context, *connect.Request[v1.RunMarketBacktestRequest], *connect.ServerStream[v1.BacktestRunUpdate]) error
+	// Live performance tracking
+	GetLivePerformance(context.Context, *connect.Request[v1.GetLivePerformanceRequest]) (*connect.Response[v1.GetLivePerformanceResponse], error)
+	LinkLiveAccount(context.Context, *connect.Request[v1.LinkLiveAccountRequest]) (*connect.Response[v1.LinkLiveAccountResponse], error)
 }
 
 // NewMarketplaceServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -404,6 +440,18 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 		connect.WithSchema(marketplaceServiceMethods.ByName("RunMarketBacktest")),
 		connect.WithHandlerOptions(opts...),
 	)
+	marketplaceServiceGetLivePerformanceHandler := connect.NewUnaryHandler(
+		MarketplaceServiceGetLivePerformanceProcedure,
+		svc.GetLivePerformance,
+		connect.WithSchema(marketplaceServiceMethods.ByName("GetLivePerformance")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceLinkLiveAccountHandler := connect.NewUnaryHandler(
+		MarketplaceServiceLinkLiveAccountProcedure,
+		svc.LinkLiveAccount,
+		connect.WithSchema(marketplaceServiceMethods.ByName("LinkLiveAccount")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.MarketplaceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case MarketplaceServicePublishStrategyProcedure:
@@ -434,6 +482,10 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 			marketplaceServiceGetPublisherStatsHandler.ServeHTTP(w, r)
 		case MarketplaceServiceRunMarketBacktestProcedure:
 			marketplaceServiceRunMarketBacktestHandler.ServeHTTP(w, r)
+		case MarketplaceServiceGetLivePerformanceProcedure:
+			marketplaceServiceGetLivePerformanceHandler.ServeHTTP(w, r)
+		case MarketplaceServiceLinkLiveAccountProcedure:
+			marketplaceServiceLinkLiveAccountHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -497,4 +549,12 @@ func (UnimplementedMarketplaceServiceHandler) GetPublisherStats(context.Context,
 
 func (UnimplementedMarketplaceServiceHandler) RunMarketBacktest(context.Context, *connect.Request[v1.RunMarketBacktestRequest], *connect.ServerStream[v1.BacktestRunUpdate]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.RunMarketBacktest is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) GetLivePerformance(context.Context, *connect.Request[v1.GetLivePerformanceRequest]) (*connect.Response[v1.GetLivePerformanceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.GetLivePerformance is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) LinkLiveAccount(context.Context, *connect.Request[v1.LinkLiveAccountRequest]) (*connect.Response[v1.LinkLiveAccountResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.LinkLiveAccount is not implemented"))
 }

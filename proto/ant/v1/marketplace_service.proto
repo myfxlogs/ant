@@ -27,6 +27,9 @@ service MarketplaceService {
   // Strategy code is resolved server-side; client never sees it.
   // Returns a server stream of BacktestRunUpdate for real-time progress.
   rpc RunMarketBacktest(RunMarketBacktestRequest) returns (stream BacktestRunUpdate);
+  // Live performance tracking
+  rpc GetLivePerformance(GetLivePerformanceRequest) returns (GetLivePerformanceResponse);
+  rpc LinkLiveAccount(LinkLiveAccountRequest) returns (LinkLiveAccountResponse);
 }
 
 message PublishStrategyRequest {
@@ -261,4 +264,47 @@ message RunMarketBacktestRequest {
   int64 end_date_ms = 5;    // Unix milliseconds
   string initial_capital = 6;
   BacktestExecutionConfig execution_config = 7;
+}
+
+// --- Live Performance ---
+
+message GetLivePerformanceRequest {
+  string strategy_id = 1;
+  int32 limit = 2;   // max data points (default 90)
+}
+
+message GetLivePerformanceResponse {
+  repeated LivePerformancePoint points = 1;
+  LivePerformanceSummary summary = 2;
+}
+
+message LivePerformancePoint {
+  string date = 1;           // YYYY-MM-DD
+  string daily_pnl = 2;      // decimal string
+  string daily_return = 3;   // decimal string
+  string equity = 4;         // decimal string
+  string drawdown = 5;       // decimal string
+  int32 total_trades = 6;
+  int32 winning_trades = 7;
+}
+
+message LivePerformanceSummary {
+  string total_return = 1;
+  string annual_return = 2;
+  string max_drawdown = 3;
+  string sharpe_ratio = 4;
+  string win_rate = 5;
+  int32 total_trades = 6;
+  string avg_monthly_return = 7;
+  string tracking_since = 8;
+  string last_updated = 9;
+}
+
+message LinkLiveAccountRequest {
+  string strategy_id = 1;
+  string account_id = 2;
+}
+
+message LinkLiveAccountResponse {
+  bool success = 1;
 }

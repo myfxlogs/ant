@@ -139,6 +139,14 @@ func (s *stubMarketplaceSvc) GetPlatformFeeRate(_ context.Context) string {
 	return "0"
 }
 
+func (s *stubMarketplaceSvc) GetLivePerformance(_ context.Context, _ string, _ int) ([]marketplace.LivePerformancePoint, *marketplace.LivePerformanceSummary, error) {
+	return nil, nil, s.err
+}
+
+func (s *stubMarketplaceSvc) LinkLiveAccount(_ context.Context, _, _ string) error {
+	return s.err
+}
+
 type stubAdminChecker struct{ isAdmin bool }
 
 func (a *stubAdminChecker) IsAdmin(_ context.Context, _ uuid.UUID) (bool, error) {

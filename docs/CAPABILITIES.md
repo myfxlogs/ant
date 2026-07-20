@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-07-20 12:45 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-07-20 12:55 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -380,6 +380,7 @@ GetJurisdictionStatus	proto/ant/v1/admin_jurisdiction.proto:10
 GetKillSwitch	proto/ant/v1/admin_sre.proto:6
 GetKlines	proto/ant/v1/market_service.proto:8
 GetLedgerSummary	proto/ant/v1/admin_billing.proto:17
+GetLivePerformance	proto/ant/v1/marketplace_service.proto:31
 GetLogs	reference/grpc/mt4.proto:200
 GetLogsByUser	reference/grpc/mt4.proto:207
 GetManagedSettings	proto/ant/v1/admin_settings.proto:13
@@ -488,6 +489,7 @@ IsSanctioned	backend/internal/risksvc/jurisdiction_store.go:125
 IssueAgentToken	proto/ant/v1/agent_gateway.proto:14
 IsTradeSession	reference/grpc/mt5.proto:191
 IsTradeSessionMany	reference/grpc/mt5.proto:197
+LinkLiveAccount	proto/ant/v1/marketplace_service.proto:32
 List	backend/internal/service/systemai/service.go:166
 ListAccounts	backend/internal/service/account_service.go:112
 ListAccounts	proto/ant/v1/account.proto:14
@@ -1275,6 +1277,8 @@ proto/ant/v1/marketplace_service.proto:21:  rpc SetStrategyPricing(SetStrategyPr
 proto/ant/v1/marketplace_service.proto:23:  rpc UnpublishStrategy(UnpublishMarketStrategyRequest) returns (UnpublishMarketStrategyResponse);
 proto/ant/v1/marketplace_service.proto:25:  rpc GetPublisherStats(GetPublisherStatsRequest) returns (GetPublisherStatsResponse);
 proto/ant/v1/marketplace_service.proto:29:  rpc RunMarketBacktest(RunMarketBacktestRequest) returns (stream BacktestRunUpdate);
+proto/ant/v1/marketplace_service.proto:31:  rpc GetLivePerformance(GetLivePerformanceRequest) returns (GetLivePerformanceResponse);
+proto/ant/v1/marketplace_service.proto:32:  rpc LinkLiveAccount(LinkLiveAccountRequest) returns (LinkLiveAccountResponse);
 proto/ant/v1/marketplace_service.proto:9:  rpc PublishStrategy(PublishStrategyRequest) returns (PublishStrategyResponse);
 proto/ant/v1/mthub_service.proto:10:  rpc OrderHistory(OrderHistoryRequest) returns (OrderHistoryResponse);
 proto/ant/v1/mthub_service.proto:11:  rpc SymbolParams(SymbolParamsRequest) returns (SymbolParamsResponse);

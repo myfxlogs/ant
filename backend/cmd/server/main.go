@@ -24,6 +24,7 @@ import (
 	"alphaforge/internal/factor"
 	"alphaforge/internal/hdwallet"
 	"alphaforge/internal/interceptor"
+	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mdgateway/adapter"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	anttrace "alphaforge/internal/trace"
@@ -265,7 +266,8 @@ func main() {
 		factorSub.Push(bar)
 	}
 
-	go startMdGatewayPipeline(pipelineCtx, log, pool, mdStore, chStore, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg, factorPusher)
+	livePerfCollector := marketplace.NewLivePerformanceCollector(marketplace.New(pool, nil, log), log)
+	go startMdGatewayPipeline(pipelineCtx, log, pool, mdStore, chStore, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg, factorPusher, livePerfCollector)
 
 	// Graceful shutdown context — created before registerHandlers so background
 	// goroutines spawned there can observe shutdown.

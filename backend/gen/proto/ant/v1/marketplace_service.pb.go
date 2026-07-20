@@ -2203,6 +2203,406 @@ func (x *RunMarketBacktestRequest) GetExecutionConfig() *BacktestExecutionConfig
 	return nil
 }
 
+type GetLivePerformanceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId    string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"` // max data points (default 90)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLivePerformanceRequest) Reset() {
+	*x = GetLivePerformanceRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLivePerformanceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLivePerformanceRequest) ProtoMessage() {}
+
+func (x *GetLivePerformanceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLivePerformanceRequest.ProtoReflect.Descriptor instead.
+func (*GetLivePerformanceRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *GetLivePerformanceRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *GetLivePerformanceRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type GetLivePerformanceResponse struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Points        []*LivePerformancePoint `protobuf:"bytes,1,rep,name=points,proto3" json:"points,omitempty"`
+	Summary       *LivePerformanceSummary `protobuf:"bytes,2,opt,name=summary,proto3" json:"summary,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLivePerformanceResponse) Reset() {
+	*x = GetLivePerformanceResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLivePerformanceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLivePerformanceResponse) ProtoMessage() {}
+
+func (x *GetLivePerformanceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLivePerformanceResponse.ProtoReflect.Descriptor instead.
+func (*GetLivePerformanceResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *GetLivePerformanceResponse) GetPoints() []*LivePerformancePoint {
+	if x != nil {
+		return x.Points
+	}
+	return nil
+}
+
+func (x *GetLivePerformanceResponse) GetSummary() *LivePerformanceSummary {
+	if x != nil {
+		return x.Summary
+	}
+	return nil
+}
+
+type LivePerformancePoint struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Date          string                 `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`                                  // YYYY-MM-DD
+	DailyPnl      string                 `protobuf:"bytes,2,opt,name=daily_pnl,json=dailyPnl,proto3" json:"daily_pnl,omitempty"`          // decimal string
+	DailyReturn   string                 `protobuf:"bytes,3,opt,name=daily_return,json=dailyReturn,proto3" json:"daily_return,omitempty"` // decimal string
+	Equity        string                 `protobuf:"bytes,4,opt,name=equity,proto3" json:"equity,omitempty"`                              // decimal string
+	Drawdown      string                 `protobuf:"bytes,5,opt,name=drawdown,proto3" json:"drawdown,omitempty"`                          // decimal string
+	TotalTrades   int32                  `protobuf:"varint,6,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
+	WinningTrades int32                  `protobuf:"varint,7,opt,name=winning_trades,json=winningTrades,proto3" json:"winning_trades,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LivePerformancePoint) Reset() {
+	*x = LivePerformancePoint{}
+	mi := &file_marketplace_service_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LivePerformancePoint) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LivePerformancePoint) ProtoMessage() {}
+
+func (x *LivePerformancePoint) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LivePerformancePoint.ProtoReflect.Descriptor instead.
+func (*LivePerformancePoint) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *LivePerformancePoint) GetDate() string {
+	if x != nil {
+		return x.Date
+	}
+	return ""
+}
+
+func (x *LivePerformancePoint) GetDailyPnl() string {
+	if x != nil {
+		return x.DailyPnl
+	}
+	return ""
+}
+
+func (x *LivePerformancePoint) GetDailyReturn() string {
+	if x != nil {
+		return x.DailyReturn
+	}
+	return ""
+}
+
+func (x *LivePerformancePoint) GetEquity() string {
+	if x != nil {
+		return x.Equity
+	}
+	return ""
+}
+
+func (x *LivePerformancePoint) GetDrawdown() string {
+	if x != nil {
+		return x.Drawdown
+	}
+	return ""
+}
+
+func (x *LivePerformancePoint) GetTotalTrades() int32 {
+	if x != nil {
+		return x.TotalTrades
+	}
+	return 0
+}
+
+func (x *LivePerformancePoint) GetWinningTrades() int32 {
+	if x != nil {
+		return x.WinningTrades
+	}
+	return 0
+}
+
+type LivePerformanceSummary struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	TotalReturn      string                 `protobuf:"bytes,1,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
+	AnnualReturn     string                 `protobuf:"bytes,2,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"`
+	MaxDrawdown      string                 `protobuf:"bytes,3,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
+	SharpeRatio      string                 `protobuf:"bytes,4,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
+	WinRate          string                 `protobuf:"bytes,5,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	TotalTrades      int32                  `protobuf:"varint,6,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
+	AvgMonthlyReturn string                 `protobuf:"bytes,7,opt,name=avg_monthly_return,json=avgMonthlyReturn,proto3" json:"avg_monthly_return,omitempty"`
+	TrackingSince    string                 `protobuf:"bytes,8,opt,name=tracking_since,json=trackingSince,proto3" json:"tracking_since,omitempty"`
+	LastUpdated      string                 `protobuf:"bytes,9,opt,name=last_updated,json=lastUpdated,proto3" json:"last_updated,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *LivePerformanceSummary) Reset() {
+	*x = LivePerformanceSummary{}
+	mi := &file_marketplace_service_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LivePerformanceSummary) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LivePerformanceSummary) ProtoMessage() {}
+
+func (x *LivePerformanceSummary) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LivePerformanceSummary.ProtoReflect.Descriptor instead.
+func (*LivePerformanceSummary) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *LivePerformanceSummary) GetTotalReturn() string {
+	if x != nil {
+		return x.TotalReturn
+	}
+	return ""
+}
+
+func (x *LivePerformanceSummary) GetAnnualReturn() string {
+	if x != nil {
+		return x.AnnualReturn
+	}
+	return ""
+}
+
+func (x *LivePerformanceSummary) GetMaxDrawdown() string {
+	if x != nil {
+		return x.MaxDrawdown
+	}
+	return ""
+}
+
+func (x *LivePerformanceSummary) GetSharpeRatio() string {
+	if x != nil {
+		return x.SharpeRatio
+	}
+	return ""
+}
+
+func (x *LivePerformanceSummary) GetWinRate() string {
+	if x != nil {
+		return x.WinRate
+	}
+	return ""
+}
+
+func (x *LivePerformanceSummary) GetTotalTrades() int32 {
+	if x != nil {
+		return x.TotalTrades
+	}
+	return 0
+}
+
+func (x *LivePerformanceSummary) GetAvgMonthlyReturn() string {
+	if x != nil {
+		return x.AvgMonthlyReturn
+	}
+	return ""
+}
+
+func (x *LivePerformanceSummary) GetTrackingSince() string {
+	if x != nil {
+		return x.TrackingSince
+	}
+	return ""
+}
+
+func (x *LivePerformanceSummary) GetLastUpdated() string {
+	if x != nil {
+		return x.LastUpdated
+	}
+	return ""
+}
+
+type LinkLiveAccountRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId    string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
+	AccountId     string                 `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LinkLiveAccountRequest) Reset() {
+	*x = LinkLiveAccountRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LinkLiveAccountRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LinkLiveAccountRequest) ProtoMessage() {}
+
+func (x *LinkLiveAccountRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LinkLiveAccountRequest.ProtoReflect.Descriptor instead.
+func (*LinkLiveAccountRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *LinkLiveAccountRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *LinkLiveAccountRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+type LinkLiveAccountResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LinkLiveAccountResponse) Reset() {
+	*x = LinkLiveAccountResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LinkLiveAccountResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LinkLiveAccountResponse) ProtoMessage() {}
+
+func (x *LinkLiveAccountResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LinkLiveAccountResponse.ProtoReflect.Descriptor instead.
+func (*LinkLiveAccountResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *LinkLiveAccountResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_marketplace_service_proto protoreflect.FileDescriptor
 
 const file_marketplace_service_proto_rawDesc = "" +
@@ -2406,7 +2806,40 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\rstart_date_ms\x18\x04 \x01(\x03R\vstartDateMs\x12\x1e\n" +
 	"\vend_date_ms\x18\x05 \x01(\x03R\tendDateMs\x12'\n" +
 	"\x0finitial_capital\x18\x06 \x01(\tR\x0einitialCapital\x12J\n" +
-	"\x10execution_config\x18\a \x01(\v2\x1f.ant.v1.BacktestExecutionConfigR\x0fexecutionConfig2\x9a\t\n" +
+	"\x10execution_config\x18\a \x01(\v2\x1f.ant.v1.BacktestExecutionConfigR\x0fexecutionConfig\"R\n" +
+	"\x19GetLivePerformanceRequest\x12\x1f\n" +
+	"\vstrategy_id\x18\x01 \x01(\tR\n" +
+	"strategyId\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\"\x8c\x01\n" +
+	"\x1aGetLivePerformanceResponse\x124\n" +
+	"\x06points\x18\x01 \x03(\v2\x1c.ant.v1.LivePerformancePointR\x06points\x128\n" +
+	"\asummary\x18\x02 \x01(\v2\x1e.ant.v1.LivePerformanceSummaryR\asummary\"\xe8\x01\n" +
+	"\x14LivePerformancePoint\x12\x12\n" +
+	"\x04date\x18\x01 \x01(\tR\x04date\x12\x1b\n" +
+	"\tdaily_pnl\x18\x02 \x01(\tR\bdailyPnl\x12!\n" +
+	"\fdaily_return\x18\x03 \x01(\tR\vdailyReturn\x12\x16\n" +
+	"\x06equity\x18\x04 \x01(\tR\x06equity\x12\x1a\n" +
+	"\bdrawdown\x18\x05 \x01(\tR\bdrawdown\x12!\n" +
+	"\ftotal_trades\x18\x06 \x01(\x05R\vtotalTrades\x12%\n" +
+	"\x0ewinning_trades\x18\a \x01(\x05R\rwinningTrades\"\xdc\x02\n" +
+	"\x16LivePerformanceSummary\x12!\n" +
+	"\ftotal_return\x18\x01 \x01(\tR\vtotalReturn\x12#\n" +
+	"\rannual_return\x18\x02 \x01(\tR\fannualReturn\x12!\n" +
+	"\fmax_drawdown\x18\x03 \x01(\tR\vmaxDrawdown\x12!\n" +
+	"\fsharpe_ratio\x18\x04 \x01(\tR\vsharpeRatio\x12\x19\n" +
+	"\bwin_rate\x18\x05 \x01(\tR\awinRate\x12!\n" +
+	"\ftotal_trades\x18\x06 \x01(\x05R\vtotalTrades\x12,\n" +
+	"\x12avg_monthly_return\x18\a \x01(\tR\x10avgMonthlyReturn\x12%\n" +
+	"\x0etracking_since\x18\b \x01(\tR\rtrackingSince\x12!\n" +
+	"\flast_updated\x18\t \x01(\tR\vlastUpdated\"X\n" +
+	"\x16LinkLiveAccountRequest\x12\x1f\n" +
+	"\vstrategy_id\x18\x01 \x01(\tR\n" +
+	"strategyId\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x02 \x01(\tR\taccountId\"3\n" +
+	"\x17LinkLiveAccountResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xcb\n" +
+	"\n" +
 	"\x12MarketplaceService\x12R\n" +
 	"\x0fPublishStrategy\x12\x1e.ant.v1.PublishStrategyRequest\x1a\x1f.ant.v1.PublishStrategyResponse\x12@\n" +
 	"\tSubscribe\x12\x18.ant.v1.SubscribeRequest\x1a\x19.ant.v1.SubscribeResponse\x12F\n" +
@@ -2421,7 +2854,9 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x12SetStrategyPricing\x12!.ant.v1.SetStrategyPricingRequest\x1a\".ant.v1.SetStrategyPricingResponse\x12d\n" +
 	"\x11UnpublishStrategy\x12&.ant.v1.UnpublishMarketStrategyRequest\x1a'.ant.v1.UnpublishMarketStrategyResponse\x12X\n" +
 	"\x11GetPublisherStats\x12 .ant.v1.GetPublisherStatsRequest\x1a!.ant.v1.GetPublisherStatsResponse\x12R\n" +
-	"\x11RunMarketBacktest\x12 .ant.v1.RunMarketBacktestRequest\x1a\x19.ant.v1.BacktestRunUpdate0\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x11RunMarketBacktest\x12 .ant.v1.RunMarketBacktestRequest\x1a\x19.ant.v1.BacktestRunUpdate0\x01\x12[\n" +
+	"\x12GetLivePerformance\x12!.ant.v1.GetLivePerformanceRequest\x1a\".ant.v1.GetLivePerformanceResponse\x12R\n" +
+	"\x0fLinkLiveAccount\x12\x1e.ant.v1.LinkLiveAccountRequest\x1a\x1f.ant.v1.LinkLiveAccountResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_marketplace_service_proto_rawDescOnce sync.Once
@@ -2435,7 +2870,7 @@ func file_marketplace_service_proto_rawDescGZIP() []byte {
 	return file_marketplace_service_proto_rawDescData
 }
 
-var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
+var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
 var file_marketplace_service_proto_goTypes = []any{
 	(*PublishStrategyRequest)(nil),          // 0: ant.v1.PublishStrategyRequest
 	(*BacktestSnapshot)(nil),                // 1: ant.v1.BacktestSnapshot
@@ -2469,57 +2904,69 @@ var file_marketplace_service_proto_goTypes = []any{
 	(*GetPublisherStatsRequest)(nil),        // 29: ant.v1.GetPublisherStatsRequest
 	(*GetPublisherStatsResponse)(nil),       // 30: ant.v1.GetPublisherStatsResponse
 	(*RunMarketBacktestRequest)(nil),        // 31: ant.v1.RunMarketBacktestRequest
-	(*timestamppb.Timestamp)(nil),           // 32: google.protobuf.Timestamp
-	(*BacktestExecutionConfig)(nil),         // 33: ant.v1.BacktestExecutionConfig
-	(*BacktestRunUpdate)(nil),               // 34: ant.v1.BacktestRunUpdate
+	(*GetLivePerformanceRequest)(nil),       // 32: ant.v1.GetLivePerformanceRequest
+	(*GetLivePerformanceResponse)(nil),      // 33: ant.v1.GetLivePerformanceResponse
+	(*LivePerformancePoint)(nil),            // 34: ant.v1.LivePerformancePoint
+	(*LivePerformanceSummary)(nil),          // 35: ant.v1.LivePerformanceSummary
+	(*LinkLiveAccountRequest)(nil),          // 36: ant.v1.LinkLiveAccountRequest
+	(*LinkLiveAccountResponse)(nil),         // 37: ant.v1.LinkLiveAccountResponse
+	(*timestamppb.Timestamp)(nil),           // 38: google.protobuf.Timestamp
+	(*BacktestExecutionConfig)(nil),         // 39: ant.v1.BacktestExecutionConfig
+	(*BacktestRunUpdate)(nil),               // 40: ant.v1.BacktestRunUpdate
 }
 var file_marketplace_service_proto_depIdxs = []int32{
 	1,  // 0: ant.v1.PublishStrategyRequest.backtest_snapshot:type_name -> ant.v1.BacktestSnapshot
-	32, // 1: ant.v1.BacktestSnapshot.snapshot_at:type_name -> google.protobuf.Timestamp
+	38, // 1: ant.v1.BacktestSnapshot.snapshot_at:type_name -> google.protobuf.Timestamp
 	11, // 2: ant.v1.ListPublishedResponse.strategies:type_name -> ant.v1.PublishedStrategy
-	32, // 3: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
+	38, // 3: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
 	1,  // 4: ant.v1.PublishedStrategy.backtest_snapshot:type_name -> ant.v1.BacktestSnapshot
 	14, // 5: ant.v1.ListSubscriptionsResponse.subscriptions:type_name -> ant.v1.SubscriptionItem
-	32, // 6: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
-	32, // 7: ant.v1.SubscriptionItem.expires_at:type_name -> google.protobuf.Timestamp
+	38, // 6: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
+	38, // 7: ant.v1.SubscriptionItem.expires_at:type_name -> google.protobuf.Timestamp
 	19, // 8: ant.v1.ListRatingsResponse.ratings:type_name -> ant.v1.RatingItem
-	32, // 9: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
+	38, // 9: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
 	24, // 10: ant.v1.ListCommentsResponse.comments:type_name -> ant.v1.CommentItem
-	32, // 11: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
-	33, // 12: ant.v1.RunMarketBacktestRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
-	0,  // 13: ant.v1.MarketplaceService.PublishStrategy:input_type -> ant.v1.PublishStrategyRequest
-	3,  // 14: ant.v1.MarketplaceService.Subscribe:input_type -> ant.v1.SubscribeRequest
-	5,  // 15: ant.v1.MarketplaceService.Unsubscribe:input_type -> ant.v1.UnsubscribeRequest
-	7,  // 16: ant.v1.MarketplaceService.PurchaseStrategy:input_type -> ant.v1.PurchaseStrategyRequest
-	9,  // 17: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
-	12, // 18: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
-	15, // 19: ant.v1.MarketplaceService.RateStrategy:input_type -> ant.v1.RateStrategyRequest
-	17, // 20: ant.v1.MarketplaceService.ListRatings:input_type -> ant.v1.ListRatingsRequest
-	20, // 21: ant.v1.MarketplaceService.CommentOnStrategy:input_type -> ant.v1.CommentOnStrategyRequest
-	22, // 22: ant.v1.MarketplaceService.ListComments:input_type -> ant.v1.ListCommentsRequest
-	25, // 23: ant.v1.MarketplaceService.SetStrategyPricing:input_type -> ant.v1.SetStrategyPricingRequest
-	27, // 24: ant.v1.MarketplaceService.UnpublishStrategy:input_type -> ant.v1.UnpublishMarketStrategyRequest
-	29, // 25: ant.v1.MarketplaceService.GetPublisherStats:input_type -> ant.v1.GetPublisherStatsRequest
-	31, // 26: ant.v1.MarketplaceService.RunMarketBacktest:input_type -> ant.v1.RunMarketBacktestRequest
-	2,  // 27: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
-	4,  // 28: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
-	6,  // 29: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
-	8,  // 30: ant.v1.MarketplaceService.PurchaseStrategy:output_type -> ant.v1.PurchaseStrategyResponse
-	10, // 31: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
-	13, // 32: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
-	16, // 33: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
-	18, // 34: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
-	21, // 35: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
-	23, // 36: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
-	26, // 37: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
-	28, // 38: ant.v1.MarketplaceService.UnpublishStrategy:output_type -> ant.v1.UnpublishMarketStrategyResponse
-	30, // 39: ant.v1.MarketplaceService.GetPublisherStats:output_type -> ant.v1.GetPublisherStatsResponse
-	34, // 40: ant.v1.MarketplaceService.RunMarketBacktest:output_type -> ant.v1.BacktestRunUpdate
-	27, // [27:41] is the sub-list for method output_type
-	13, // [13:27] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	38, // 11: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
+	39, // 12: ant.v1.RunMarketBacktestRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
+	34, // 13: ant.v1.GetLivePerformanceResponse.points:type_name -> ant.v1.LivePerformancePoint
+	35, // 14: ant.v1.GetLivePerformanceResponse.summary:type_name -> ant.v1.LivePerformanceSummary
+	0,  // 15: ant.v1.MarketplaceService.PublishStrategy:input_type -> ant.v1.PublishStrategyRequest
+	3,  // 16: ant.v1.MarketplaceService.Subscribe:input_type -> ant.v1.SubscribeRequest
+	5,  // 17: ant.v1.MarketplaceService.Unsubscribe:input_type -> ant.v1.UnsubscribeRequest
+	7,  // 18: ant.v1.MarketplaceService.PurchaseStrategy:input_type -> ant.v1.PurchaseStrategyRequest
+	9,  // 19: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
+	12, // 20: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
+	15, // 21: ant.v1.MarketplaceService.RateStrategy:input_type -> ant.v1.RateStrategyRequest
+	17, // 22: ant.v1.MarketplaceService.ListRatings:input_type -> ant.v1.ListRatingsRequest
+	20, // 23: ant.v1.MarketplaceService.CommentOnStrategy:input_type -> ant.v1.CommentOnStrategyRequest
+	22, // 24: ant.v1.MarketplaceService.ListComments:input_type -> ant.v1.ListCommentsRequest
+	25, // 25: ant.v1.MarketplaceService.SetStrategyPricing:input_type -> ant.v1.SetStrategyPricingRequest
+	27, // 26: ant.v1.MarketplaceService.UnpublishStrategy:input_type -> ant.v1.UnpublishMarketStrategyRequest
+	29, // 27: ant.v1.MarketplaceService.GetPublisherStats:input_type -> ant.v1.GetPublisherStatsRequest
+	31, // 28: ant.v1.MarketplaceService.RunMarketBacktest:input_type -> ant.v1.RunMarketBacktestRequest
+	32, // 29: ant.v1.MarketplaceService.GetLivePerformance:input_type -> ant.v1.GetLivePerformanceRequest
+	36, // 30: ant.v1.MarketplaceService.LinkLiveAccount:input_type -> ant.v1.LinkLiveAccountRequest
+	2,  // 31: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
+	4,  // 32: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
+	6,  // 33: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
+	8,  // 34: ant.v1.MarketplaceService.PurchaseStrategy:output_type -> ant.v1.PurchaseStrategyResponse
+	10, // 35: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
+	13, // 36: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
+	16, // 37: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
+	18, // 38: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
+	21, // 39: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
+	23, // 40: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
+	26, // 41: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
+	28, // 42: ant.v1.MarketplaceService.UnpublishStrategy:output_type -> ant.v1.UnpublishMarketStrategyResponse
+	30, // 43: ant.v1.MarketplaceService.GetPublisherStats:output_type -> ant.v1.GetPublisherStatsResponse
+	40, // 44: ant.v1.MarketplaceService.RunMarketBacktest:output_type -> ant.v1.BacktestRunUpdate
+	33, // 45: ant.v1.MarketplaceService.GetLivePerformance:output_type -> ant.v1.GetLivePerformanceResponse
+	37, // 46: ant.v1.MarketplaceService.LinkLiveAccount:output_type -> ant.v1.LinkLiveAccountResponse
+	31, // [31:47] is the sub-list for method output_type
+	15, // [15:31] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_marketplace_service_proto_init() }
@@ -2535,7 +2982,7 @@ func file_marketplace_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_marketplace_service_proto_rawDesc), len(file_marketplace_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   32,
+			NumMessages:   38,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
