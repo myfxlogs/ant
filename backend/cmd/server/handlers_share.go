@@ -29,4 +29,8 @@ func registerShareHandlers(
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
 	shareServer := user.NewShareServer(shareRepo, tradeRecordRepo, analyticsRepo, userRepo, mthubSvc, pool, jwtSecret, log)
 	mux.Handle(antv1c.NewShareServiceHandler(shareServer, withSency(otelInterceptor, authInterceptor)))
+
+	// OG image endpoint for social media crawlers (HTTP GET, not ConnectRPC).
+	ogServer := user.NewOGImageServer(shareRepo, tradeRecordRepo, analyticsRepo, userRepo, pool, log)
+	mux.Handle("/share/", ogServer)
 }

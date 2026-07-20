@@ -29,7 +29,8 @@ export default function Seo({
   const fullTitle = title ? `${title} — ${SITE_NAME}` : `${SITE_NAME} — AI-Powered MT4/MT5 Strategy Platform`;
   const desc = description || DEFAULT_DESCRIPTION;
   const url = path ? `${BASE_URL}${path}` : BASE_URL;
-  const image = ogImage || `${BASE_URL}${DEFAULT_OG_IMAGE}`;
+  const rawImage = ogImage || DEFAULT_OG_IMAGE;
+  const image = rawImage.startsWith('http') ? rawImage : `${BASE_URL}${rawImage}`;
 
   return (
     <Helmet>

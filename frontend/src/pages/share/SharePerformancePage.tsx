@@ -154,6 +154,8 @@ export default function SharePerformancePage() {
           ? `${data.userName}: ${signed(toNum(data.totalReturn))} total return, ${fmt(toNum(data.winRate), 1)}% win rate, ${data.totalTrades} trades on AlphaForge.`
           : 'View shared trading performance report on AlphaForge.'}
         path={`/share/${token}`}
+        ogImage={`/share/${token}/og-image`}
+        keywords={data ? [data.userName, 'trading performance', 'verified track record', 'AlphaForge', 'MT4', 'MT5'] : undefined}
       />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 'clamp(14px, 3vw, 20px)' }}>
         <BrandLogo name={appName} dark={isDark} />
