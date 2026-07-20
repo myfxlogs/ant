@@ -30,6 +30,13 @@ service MarketplaceService {
   // Live performance tracking
   rpc GetLivePerformance(GetLivePerformanceRequest) returns (GetLivePerformanceResponse);
   rpc LinkLiveAccount(LinkLiveAccountRequest) returns (LinkLiveAccountResponse);
+  // Phase 2: AI strategy generation → compile → backtest → quality gate → auto-publish.
+  // Streams progress events through all stages.
+  rpc GenerateAndPublish(GenerateAndPublishRequest) returns (stream GenerateAndPublishEvent);
+  // Phase 2: Generate from a parameter template.
+  rpc GenerateFromTemplate(GenerateFromTemplateRequest) returns (stream GenerateAndPublishEvent);
+  // Phase 2: List available strategy parameter templates.
+  rpc ListStrategyTemplates(ListStrategyTemplatesRequest) returns (ListStrategyTemplatesResponse);
 }
 
 message PublishStrategyRequest {
@@ -311,4 +318,70 @@ message LinkLiveAccountRequest {
 
 message LinkLiveAccountResponse {
   bool success = 1;
+}
+
+// ── Phase 2: AI Strategy Generation ──────────────────────────────────────────
+
+message GenerateAndPublishRequest {
+  string description = 1;           // natural language strategy description
+  string asset_class = 2;           // target asset class
+  repeated string symbols = 3;      // target symbols
+  string timeframe = 4;             // target timeframe
+  string risk_level = 5;            // conservative / moderate / aggressive
+  string strategy_type = 6;         // trend_following / mean_reversion / breakout / arbitrage / auto
+  bool auto_publish = 7;            // auto-publish after quality gate passes (default true)
+  string title_override = 8;        // optional custom strategy title
+  string language = 9;              // en / zh-cn
+}
+
+message GenerateAndPublishEvent {
+  string stage = 1;                 // generating | compiling | backtesting | evaluating | publishing | completed | failed
+  string message = 2;               // user-readable status message
+  double progress = 3;              // 0.0 ~ 1.0 estimated progress
+  // populated at stage=completed
+  string strategy_id = 4;           // generated strategy ID
+  string publish_id = 5;            // publish ID (if auto_publish=true)
+  BacktestSnapshot backtest = 6;    // backtest result summary
+  // populated at stage=failed
+  string error_stage = 7;           // which step failed
+  string error_detail = 8;          // failure reason
+  bool retryable = 9;               // user can retry
+  // populated at stage=generating (streamed text)
+  string delta = 10;                // streaming text delta from LLM
+  string python_source = 11;        // final generated source code
+  // populated at stage=evaluating
+  repeated QualityViolationInfo violations = 12;
+}
+
+message QualityViolationInfo {
+  string metric = 1;
+  string actual = 2;
+  string threshold = 3;
+}
+
+message GenerateFromTemplateRequest {
+  string template_id = 1;
+  string parameters_json = 2;       // user-filled parameter values {"fast_period":15,...}
+  string symbol = 3;
+  string timeframe = 4;
+  bool auto_publish = 5;
+}
+
+message ListStrategyTemplatesRequest {
+  string template_type = 1;         // optional filter
+}
+
+message ListStrategyTemplatesResponse {
+  repeated StrategyParameterTemplate templates = 1;
+}
+
+message StrategyParameterTemplate {
+  string id = 1;
+  string template_key = 2;
+  string template_type = 3;
+  string name = 4;                  // localized by Accept-Language
+  string description = 5;
+  string parameters_schema = 6;     // JSON string for frontend dynamic form rendering
+  string default_risk_level = 7;
+  string icon = 8;
 }

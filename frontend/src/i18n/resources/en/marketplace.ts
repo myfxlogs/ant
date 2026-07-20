@@ -84,6 +84,39 @@ const Marketplace = {
       "protected": "Strategy code is protected. Backtest runs on our servers.",
       "run": "Run Backtest",
       "idle": "Set parameters and run a backtest"
+    },
+    "autogen": {
+      "title": "AI Strategy Generation",
+      "subtitle": "Describe your strategy in natural language — AI will generate, compile, backtest, and publish it.",
+      "description": "Describe your strategy",
+      "placeholder": "e.g. Trend following on EURUSD H1 using EMA crossover, 50 pip stop loss, 100 pip take profit...",
+      "assetClass": "Asset Class",
+      "symbol": "Symbol",
+      "timeframe": "Timeframe",
+      "risk": "Risk Level",
+      "type": "Strategy Type",
+      "start": "Start Generation",
+      "cancel": "Cancel",
+      "autoPublishOn": "Auto-publish: ON",
+      "autoPublishOff": "Auto-publish: OFF",
+      "needDescription": "Please describe your strategy",
+      "failedAt": "Failed at",
+      "retry": "Retry",
+      "modify": "Modify Request",
+      "qualityFailed": "Strategy generated but did not pass quality gates",
+      "success": "Strategy generated and published successfully!",
+      "actual": "Actual",
+      "threshold": "Threshold",
+      "viewDetail": "View Strategy",
+      "generateAnother": "Generate Another",
+      "stages": {
+        "generating": "Generating",
+        "compiling": "Compiling",
+        "backtesting": "Backtesting",
+        "evaluating": "Quality Check",
+        "publishing": "Publishing",
+        "completed": "Completed"
+      }
     }
   }
 };

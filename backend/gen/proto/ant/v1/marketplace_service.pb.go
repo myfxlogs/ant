@@ -2635,6 +2635,574 @@ func (x *LinkLiveAccountResponse) GetSuccess() bool {
 	return false
 }
 
+type GenerateAndPublishRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Description   string                 `protobuf:"bytes,1,opt,name=description,proto3" json:"description,omitempty"`                          // natural language strategy description
+	AssetClass    string                 `protobuf:"bytes,2,opt,name=asset_class,json=assetClass,proto3" json:"asset_class,omitempty"`          // target asset class
+	Symbols       []string               `protobuf:"bytes,3,rep,name=symbols,proto3" json:"symbols,omitempty"`                                  // target symbols
+	Timeframe     string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`                              // target timeframe
+	RiskLevel     string                 `protobuf:"bytes,5,opt,name=risk_level,json=riskLevel,proto3" json:"risk_level,omitempty"`             // conservative / moderate / aggressive
+	StrategyType  string                 `protobuf:"bytes,6,opt,name=strategy_type,json=strategyType,proto3" json:"strategy_type,omitempty"`    // trend_following / mean_reversion / breakout / arbitrage / auto
+	AutoPublish   bool                   `protobuf:"varint,7,opt,name=auto_publish,json=autoPublish,proto3" json:"auto_publish,omitempty"`      // auto-publish after quality gate passes (default true)
+	TitleOverride string                 `protobuf:"bytes,8,opt,name=title_override,json=titleOverride,proto3" json:"title_override,omitempty"` // optional custom strategy title
+	Language      string                 `protobuf:"bytes,9,opt,name=language,proto3" json:"language,omitempty"`                                // en / zh-cn
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GenerateAndPublishRequest) Reset() {
+	*x = GenerateAndPublishRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GenerateAndPublishRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GenerateAndPublishRequest) ProtoMessage() {}
+
+func (x *GenerateAndPublishRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GenerateAndPublishRequest.ProtoReflect.Descriptor instead.
+func (*GenerateAndPublishRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *GenerateAndPublishRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishRequest) GetAssetClass() string {
+	if x != nil {
+		return x.AssetClass
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishRequest) GetSymbols() []string {
+	if x != nil {
+		return x.Symbols
+	}
+	return nil
+}
+
+func (x *GenerateAndPublishRequest) GetTimeframe() string {
+	if x != nil {
+		return x.Timeframe
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishRequest) GetRiskLevel() string {
+	if x != nil {
+		return x.RiskLevel
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishRequest) GetStrategyType() string {
+	if x != nil {
+		return x.StrategyType
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishRequest) GetAutoPublish() bool {
+	if x != nil {
+		return x.AutoPublish
+	}
+	return false
+}
+
+func (x *GenerateAndPublishRequest) GetTitleOverride() string {
+	if x != nil {
+		return x.TitleOverride
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishRequest) GetLanguage() string {
+	if x != nil {
+		return x.Language
+	}
+	return ""
+}
+
+type GenerateAndPublishEvent struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Stage    string                 `protobuf:"bytes,1,opt,name=stage,proto3" json:"stage,omitempty"`         // generating | compiling | backtesting | evaluating | publishing | completed | failed
+	Message  string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`     // user-readable status message
+	Progress float64                `protobuf:"fixed64,3,opt,name=progress,proto3" json:"progress,omitempty"` // 0.0 ~ 1.0 estimated progress
+	// populated at stage=completed
+	StrategyId string            `protobuf:"bytes,4,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"` // generated strategy ID
+	PublishId  string            `protobuf:"bytes,5,opt,name=publish_id,json=publishId,proto3" json:"publish_id,omitempty"`    // publish ID (if auto_publish=true)
+	Backtest   *BacktestSnapshot `protobuf:"bytes,6,opt,name=backtest,proto3" json:"backtest,omitempty"`                       // backtest result summary
+	// populated at stage=failed
+	ErrorStage  string `protobuf:"bytes,7,opt,name=error_stage,json=errorStage,proto3" json:"error_stage,omitempty"`    // which step failed
+	ErrorDetail string `protobuf:"bytes,8,opt,name=error_detail,json=errorDetail,proto3" json:"error_detail,omitempty"` // failure reason
+	Retryable   bool   `protobuf:"varint,9,opt,name=retryable,proto3" json:"retryable,omitempty"`                       // user can retry
+	// populated at stage=generating (streamed text)
+	Delta        string `protobuf:"bytes,10,opt,name=delta,proto3" json:"delta,omitempty"`                                   // streaming text delta from LLM
+	PythonSource string `protobuf:"bytes,11,opt,name=python_source,json=pythonSource,proto3" json:"python_source,omitempty"` // final generated source code
+	// populated at stage=evaluating
+	Violations    []*QualityViolationInfo `protobuf:"bytes,12,rep,name=violations,proto3" json:"violations,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GenerateAndPublishEvent) Reset() {
+	*x = GenerateAndPublishEvent{}
+	mi := &file_marketplace_service_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GenerateAndPublishEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GenerateAndPublishEvent) ProtoMessage() {}
+
+func (x *GenerateAndPublishEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GenerateAndPublishEvent.ProtoReflect.Descriptor instead.
+func (*GenerateAndPublishEvent) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *GenerateAndPublishEvent) GetStage() string {
+	if x != nil {
+		return x.Stage
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishEvent) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishEvent) GetProgress() float64 {
+	if x != nil {
+		return x.Progress
+	}
+	return 0
+}
+
+func (x *GenerateAndPublishEvent) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishEvent) GetPublishId() string {
+	if x != nil {
+		return x.PublishId
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishEvent) GetBacktest() *BacktestSnapshot {
+	if x != nil {
+		return x.Backtest
+	}
+	return nil
+}
+
+func (x *GenerateAndPublishEvent) GetErrorStage() string {
+	if x != nil {
+		return x.ErrorStage
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishEvent) GetErrorDetail() string {
+	if x != nil {
+		return x.ErrorDetail
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishEvent) GetRetryable() bool {
+	if x != nil {
+		return x.Retryable
+	}
+	return false
+}
+
+func (x *GenerateAndPublishEvent) GetDelta() string {
+	if x != nil {
+		return x.Delta
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishEvent) GetPythonSource() string {
+	if x != nil {
+		return x.PythonSource
+	}
+	return ""
+}
+
+func (x *GenerateAndPublishEvent) GetViolations() []*QualityViolationInfo {
+	if x != nil {
+		return x.Violations
+	}
+	return nil
+}
+
+type QualityViolationInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Metric        string                 `protobuf:"bytes,1,opt,name=metric,proto3" json:"metric,omitempty"`
+	Actual        string                 `protobuf:"bytes,2,opt,name=actual,proto3" json:"actual,omitempty"`
+	Threshold     string                 `protobuf:"bytes,3,opt,name=threshold,proto3" json:"threshold,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QualityViolationInfo) Reset() {
+	*x = QualityViolationInfo{}
+	mi := &file_marketplace_service_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QualityViolationInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QualityViolationInfo) ProtoMessage() {}
+
+func (x *QualityViolationInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QualityViolationInfo.ProtoReflect.Descriptor instead.
+func (*QualityViolationInfo) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *QualityViolationInfo) GetMetric() string {
+	if x != nil {
+		return x.Metric
+	}
+	return ""
+}
+
+func (x *QualityViolationInfo) GetActual() string {
+	if x != nil {
+		return x.Actual
+	}
+	return ""
+}
+
+func (x *QualityViolationInfo) GetThreshold() string {
+	if x != nil {
+		return x.Threshold
+	}
+	return ""
+}
+
+type GenerateFromTemplateRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	TemplateId     string                 `protobuf:"bytes,1,opt,name=template_id,json=templateId,proto3" json:"template_id,omitempty"`
+	ParametersJson string                 `protobuf:"bytes,2,opt,name=parameters_json,json=parametersJson,proto3" json:"parameters_json,omitempty"` // user-filled parameter values {"fast_period":15,...}
+	Symbol         string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Timeframe      string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
+	AutoPublish    bool                   `protobuf:"varint,5,opt,name=auto_publish,json=autoPublish,proto3" json:"auto_publish,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GenerateFromTemplateRequest) Reset() {
+	*x = GenerateFromTemplateRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GenerateFromTemplateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GenerateFromTemplateRequest) ProtoMessage() {}
+
+func (x *GenerateFromTemplateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GenerateFromTemplateRequest.ProtoReflect.Descriptor instead.
+func (*GenerateFromTemplateRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *GenerateFromTemplateRequest) GetTemplateId() string {
+	if x != nil {
+		return x.TemplateId
+	}
+	return ""
+}
+
+func (x *GenerateFromTemplateRequest) GetParametersJson() string {
+	if x != nil {
+		return x.ParametersJson
+	}
+	return ""
+}
+
+func (x *GenerateFromTemplateRequest) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *GenerateFromTemplateRequest) GetTimeframe() string {
+	if x != nil {
+		return x.Timeframe
+	}
+	return ""
+}
+
+func (x *GenerateFromTemplateRequest) GetAutoPublish() bool {
+	if x != nil {
+		return x.AutoPublish
+	}
+	return false
+}
+
+type ListStrategyTemplatesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TemplateType  string                 `protobuf:"bytes,1,opt,name=template_type,json=templateType,proto3" json:"template_type,omitempty"` // optional filter
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListStrategyTemplatesRequest) Reset() {
+	*x = ListStrategyTemplatesRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListStrategyTemplatesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListStrategyTemplatesRequest) ProtoMessage() {}
+
+func (x *ListStrategyTemplatesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListStrategyTemplatesRequest.ProtoReflect.Descriptor instead.
+func (*ListStrategyTemplatesRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *ListStrategyTemplatesRequest) GetTemplateType() string {
+	if x != nil {
+		return x.TemplateType
+	}
+	return ""
+}
+
+type ListStrategyTemplatesResponse struct {
+	state         protoimpl.MessageState       `protogen:"open.v1"`
+	Templates     []*StrategyParameterTemplate `protobuf:"bytes,1,rep,name=templates,proto3" json:"templates,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListStrategyTemplatesResponse) Reset() {
+	*x = ListStrategyTemplatesResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListStrategyTemplatesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListStrategyTemplatesResponse) ProtoMessage() {}
+
+func (x *ListStrategyTemplatesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListStrategyTemplatesResponse.ProtoReflect.Descriptor instead.
+func (*ListStrategyTemplatesResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *ListStrategyTemplatesResponse) GetTemplates() []*StrategyParameterTemplate {
+	if x != nil {
+		return x.Templates
+	}
+	return nil
+}
+
+type StrategyParameterTemplate struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TemplateKey      string                 `protobuf:"bytes,2,opt,name=template_key,json=templateKey,proto3" json:"template_key,omitempty"`
+	TemplateType     string                 `protobuf:"bytes,3,opt,name=template_type,json=templateType,proto3" json:"template_type,omitempty"`
+	Name             string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"` // localized by Accept-Language
+	Description      string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	ParametersSchema string                 `protobuf:"bytes,6,opt,name=parameters_schema,json=parametersSchema,proto3" json:"parameters_schema,omitempty"` // JSON string for frontend dynamic form rendering
+	DefaultRiskLevel string                 `protobuf:"bytes,7,opt,name=default_risk_level,json=defaultRiskLevel,proto3" json:"default_risk_level,omitempty"`
+	Icon             string                 `protobuf:"bytes,8,opt,name=icon,proto3" json:"icon,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *StrategyParameterTemplate) Reset() {
+	*x = StrategyParameterTemplate{}
+	mi := &file_marketplace_service_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StrategyParameterTemplate) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StrategyParameterTemplate) ProtoMessage() {}
+
+func (x *StrategyParameterTemplate) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StrategyParameterTemplate.ProtoReflect.Descriptor instead.
+func (*StrategyParameterTemplate) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *StrategyParameterTemplate) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *StrategyParameterTemplate) GetTemplateKey() string {
+	if x != nil {
+		return x.TemplateKey
+	}
+	return ""
+}
+
+func (x *StrategyParameterTemplate) GetTemplateType() string {
+	if x != nil {
+		return x.TemplateType
+	}
+	return ""
+}
+
+func (x *StrategyParameterTemplate) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *StrategyParameterTemplate) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *StrategyParameterTemplate) GetParametersSchema() string {
+	if x != nil {
+		return x.ParametersSchema
+	}
+	return ""
+}
+
+func (x *StrategyParameterTemplate) GetDefaultRiskLevel() string {
+	if x != nil {
+		return x.DefaultRiskLevel
+	}
+	return ""
+}
+
+func (x *StrategyParameterTemplate) GetIcon() string {
+	if x != nil {
+		return x.Icon
+	}
+	return ""
+}
+
 var File_marketplace_service_proto protoreflect.FileDescriptor
 
 const file_marketplace_service_proto_rawDesc = "" +
@@ -2878,8 +3446,62 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\n" +
 	"account_id\x18\x02 \x01(\tR\taccountId\"3\n" +
 	"\x17LinkLiveAccountResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xcb\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xc0\x02\n" +
+	"\x19GenerateAndPublishRequest\x12 \n" +
+	"\vdescription\x18\x01 \x01(\tR\vdescription\x12\x1f\n" +
+	"\vasset_class\x18\x02 \x01(\tR\n" +
+	"assetClass\x12\x18\n" +
+	"\asymbols\x18\x03 \x03(\tR\asymbols\x12\x1c\n" +
+	"\ttimeframe\x18\x04 \x01(\tR\ttimeframe\x12\x1d\n" +
 	"\n" +
+	"risk_level\x18\x05 \x01(\tR\triskLevel\x12#\n" +
+	"\rstrategy_type\x18\x06 \x01(\tR\fstrategyType\x12!\n" +
+	"\fauto_publish\x18\a \x01(\bR\vautoPublish\x12%\n" +
+	"\x0etitle_override\x18\b \x01(\tR\rtitleOverride\x12\x1a\n" +
+	"\blanguage\x18\t \x01(\tR\blanguage\"\xb6\x03\n" +
+	"\x17GenerateAndPublishEvent\x12\x14\n" +
+	"\x05stage\x18\x01 \x01(\tR\x05stage\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1a\n" +
+	"\bprogress\x18\x03 \x01(\x01R\bprogress\x12\x1f\n" +
+	"\vstrategy_id\x18\x04 \x01(\tR\n" +
+	"strategyId\x12\x1d\n" +
+	"\n" +
+	"publish_id\x18\x05 \x01(\tR\tpublishId\x124\n" +
+	"\bbacktest\x18\x06 \x01(\v2\x18.ant.v1.BacktestSnapshotR\bbacktest\x12\x1f\n" +
+	"\verror_stage\x18\a \x01(\tR\n" +
+	"errorStage\x12!\n" +
+	"\ferror_detail\x18\b \x01(\tR\verrorDetail\x12\x1c\n" +
+	"\tretryable\x18\t \x01(\bR\tretryable\x12\x14\n" +
+	"\x05delta\x18\n" +
+	" \x01(\tR\x05delta\x12#\n" +
+	"\rpython_source\x18\v \x01(\tR\fpythonSource\x12<\n" +
+	"\n" +
+	"violations\x18\f \x03(\v2\x1c.ant.v1.QualityViolationInfoR\n" +
+	"violations\"d\n" +
+	"\x14QualityViolationInfo\x12\x16\n" +
+	"\x06metric\x18\x01 \x01(\tR\x06metric\x12\x16\n" +
+	"\x06actual\x18\x02 \x01(\tR\x06actual\x12\x1c\n" +
+	"\tthreshold\x18\x03 \x01(\tR\tthreshold\"\xc0\x01\n" +
+	"\x1bGenerateFromTemplateRequest\x12\x1f\n" +
+	"\vtemplate_id\x18\x01 \x01(\tR\n" +
+	"templateId\x12'\n" +
+	"\x0fparameters_json\x18\x02 \x01(\tR\x0eparametersJson\x12\x16\n" +
+	"\x06symbol\x18\x03 \x01(\tR\x06symbol\x12\x1c\n" +
+	"\ttimeframe\x18\x04 \x01(\tR\ttimeframe\x12!\n" +
+	"\fauto_publish\x18\x05 \x01(\bR\vautoPublish\"C\n" +
+	"\x1cListStrategyTemplatesRequest\x12#\n" +
+	"\rtemplate_type\x18\x01 \x01(\tR\ftemplateType\"`\n" +
+	"\x1dListStrategyTemplatesResponse\x12?\n" +
+	"\ttemplates\x18\x01 \x03(\v2!.ant.v1.StrategyParameterTemplateR\ttemplates\"\x98\x02\n" +
+	"\x19StrategyParameterTemplate\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
+	"\ftemplate_key\x18\x02 \x01(\tR\vtemplateKey\x12#\n" +
+	"\rtemplate_type\x18\x03 \x01(\tR\ftemplateType\x12\x12\n" +
+	"\x04name\x18\x04 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12+\n" +
+	"\x11parameters_schema\x18\x06 \x01(\tR\x10parametersSchema\x12,\n" +
+	"\x12default_risk_level\x18\a \x01(\tR\x10defaultRiskLevel\x12\x12\n" +
+	"\x04icon\x18\b \x01(\tR\x04icon2\xed\f\n" +
 	"\x12MarketplaceService\x12R\n" +
 	"\x0fPublishStrategy\x12\x1e.ant.v1.PublishStrategyRequest\x1a\x1f.ant.v1.PublishStrategyResponse\x12@\n" +
 	"\tSubscribe\x12\x18.ant.v1.SubscribeRequest\x1a\x19.ant.v1.SubscribeResponse\x12F\n" +
@@ -2896,7 +3518,10 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x11GetPublisherStats\x12 .ant.v1.GetPublisherStatsRequest\x1a!.ant.v1.GetPublisherStatsResponse\x12R\n" +
 	"\x11RunMarketBacktest\x12 .ant.v1.RunMarketBacktestRequest\x1a\x19.ant.v1.BacktestRunUpdate0\x01\x12[\n" +
 	"\x12GetLivePerformance\x12!.ant.v1.GetLivePerformanceRequest\x1a\".ant.v1.GetLivePerformanceResponse\x12R\n" +
-	"\x0fLinkLiveAccount\x12\x1e.ant.v1.LinkLiveAccountRequest\x1a\x1f.ant.v1.LinkLiveAccountResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x0fLinkLiveAccount\x12\x1e.ant.v1.LinkLiveAccountRequest\x1a\x1f.ant.v1.LinkLiveAccountResponse\x12Z\n" +
+	"\x12GenerateAndPublish\x12!.ant.v1.GenerateAndPublishRequest\x1a\x1f.ant.v1.GenerateAndPublishEvent0\x01\x12^\n" +
+	"\x14GenerateFromTemplate\x12#.ant.v1.GenerateFromTemplateRequest\x1a\x1f.ant.v1.GenerateAndPublishEvent0\x01\x12d\n" +
+	"\x15ListStrategyTemplates\x12$.ant.v1.ListStrategyTemplatesRequest\x1a%.ant.v1.ListStrategyTemplatesResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_marketplace_service_proto_rawDescOnce sync.Once
@@ -2910,7 +3535,7 @@ func file_marketplace_service_proto_rawDescGZIP() []byte {
 	return file_marketplace_service_proto_rawDescData
 }
 
-var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
+var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 45)
 var file_marketplace_service_proto_goTypes = []any{
 	(*PublishStrategyRequest)(nil),          // 0: ant.v1.PublishStrategyRequest
 	(*BacktestSnapshot)(nil),                // 1: ant.v1.BacktestSnapshot
@@ -2950,63 +3575,79 @@ var file_marketplace_service_proto_goTypes = []any{
 	(*LivePerformanceSummary)(nil),          // 35: ant.v1.LivePerformanceSummary
 	(*LinkLiveAccountRequest)(nil),          // 36: ant.v1.LinkLiveAccountRequest
 	(*LinkLiveAccountResponse)(nil),         // 37: ant.v1.LinkLiveAccountResponse
-	(*timestamppb.Timestamp)(nil),           // 38: google.protobuf.Timestamp
-	(*BacktestExecutionConfig)(nil),         // 39: ant.v1.BacktestExecutionConfig
-	(*BacktestRunUpdate)(nil),               // 40: ant.v1.BacktestRunUpdate
+	(*GenerateAndPublishRequest)(nil),       // 38: ant.v1.GenerateAndPublishRequest
+	(*GenerateAndPublishEvent)(nil),         // 39: ant.v1.GenerateAndPublishEvent
+	(*QualityViolationInfo)(nil),            // 40: ant.v1.QualityViolationInfo
+	(*GenerateFromTemplateRequest)(nil),     // 41: ant.v1.GenerateFromTemplateRequest
+	(*ListStrategyTemplatesRequest)(nil),    // 42: ant.v1.ListStrategyTemplatesRequest
+	(*ListStrategyTemplatesResponse)(nil),   // 43: ant.v1.ListStrategyTemplatesResponse
+	(*StrategyParameterTemplate)(nil),       // 44: ant.v1.StrategyParameterTemplate
+	(*timestamppb.Timestamp)(nil),           // 45: google.protobuf.Timestamp
+	(*BacktestExecutionConfig)(nil),         // 46: ant.v1.BacktestExecutionConfig
+	(*BacktestRunUpdate)(nil),               // 47: ant.v1.BacktestRunUpdate
 }
 var file_marketplace_service_proto_depIdxs = []int32{
 	1,  // 0: ant.v1.PublishStrategyRequest.backtest_snapshot:type_name -> ant.v1.BacktestSnapshot
-	38, // 1: ant.v1.BacktestSnapshot.snapshot_at:type_name -> google.protobuf.Timestamp
+	45, // 1: ant.v1.BacktestSnapshot.snapshot_at:type_name -> google.protobuf.Timestamp
 	11, // 2: ant.v1.ListPublishedResponse.strategies:type_name -> ant.v1.PublishedStrategy
-	38, // 3: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
+	45, // 3: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
 	1,  // 4: ant.v1.PublishedStrategy.backtest_snapshot:type_name -> ant.v1.BacktestSnapshot
 	14, // 5: ant.v1.ListSubscriptionsResponse.subscriptions:type_name -> ant.v1.SubscriptionItem
-	38, // 6: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
-	38, // 7: ant.v1.SubscriptionItem.expires_at:type_name -> google.protobuf.Timestamp
+	45, // 6: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
+	45, // 7: ant.v1.SubscriptionItem.expires_at:type_name -> google.protobuf.Timestamp
 	19, // 8: ant.v1.ListRatingsResponse.ratings:type_name -> ant.v1.RatingItem
-	38, // 9: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
+	45, // 9: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
 	24, // 10: ant.v1.ListCommentsResponse.comments:type_name -> ant.v1.CommentItem
-	38, // 11: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
-	39, // 12: ant.v1.RunMarketBacktestRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
+	45, // 11: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
+	46, // 12: ant.v1.RunMarketBacktestRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
 	34, // 13: ant.v1.GetLivePerformanceResponse.points:type_name -> ant.v1.LivePerformancePoint
 	35, // 14: ant.v1.GetLivePerformanceResponse.summary:type_name -> ant.v1.LivePerformanceSummary
-	0,  // 15: ant.v1.MarketplaceService.PublishStrategy:input_type -> ant.v1.PublishStrategyRequest
-	3,  // 16: ant.v1.MarketplaceService.Subscribe:input_type -> ant.v1.SubscribeRequest
-	5,  // 17: ant.v1.MarketplaceService.Unsubscribe:input_type -> ant.v1.UnsubscribeRequest
-	7,  // 18: ant.v1.MarketplaceService.PurchaseStrategy:input_type -> ant.v1.PurchaseStrategyRequest
-	9,  // 19: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
-	12, // 20: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
-	15, // 21: ant.v1.MarketplaceService.RateStrategy:input_type -> ant.v1.RateStrategyRequest
-	17, // 22: ant.v1.MarketplaceService.ListRatings:input_type -> ant.v1.ListRatingsRequest
-	20, // 23: ant.v1.MarketplaceService.CommentOnStrategy:input_type -> ant.v1.CommentOnStrategyRequest
-	22, // 24: ant.v1.MarketplaceService.ListComments:input_type -> ant.v1.ListCommentsRequest
-	25, // 25: ant.v1.MarketplaceService.SetStrategyPricing:input_type -> ant.v1.SetStrategyPricingRequest
-	27, // 26: ant.v1.MarketplaceService.UnpublishStrategy:input_type -> ant.v1.UnpublishMarketStrategyRequest
-	29, // 27: ant.v1.MarketplaceService.GetPublisherStats:input_type -> ant.v1.GetPublisherStatsRequest
-	31, // 28: ant.v1.MarketplaceService.RunMarketBacktest:input_type -> ant.v1.RunMarketBacktestRequest
-	32, // 29: ant.v1.MarketplaceService.GetLivePerformance:input_type -> ant.v1.GetLivePerformanceRequest
-	36, // 30: ant.v1.MarketplaceService.LinkLiveAccount:input_type -> ant.v1.LinkLiveAccountRequest
-	2,  // 31: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
-	4,  // 32: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
-	6,  // 33: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
-	8,  // 34: ant.v1.MarketplaceService.PurchaseStrategy:output_type -> ant.v1.PurchaseStrategyResponse
-	10, // 35: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
-	13, // 36: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
-	16, // 37: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
-	18, // 38: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
-	21, // 39: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
-	23, // 40: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
-	26, // 41: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
-	28, // 42: ant.v1.MarketplaceService.UnpublishStrategy:output_type -> ant.v1.UnpublishMarketStrategyResponse
-	30, // 43: ant.v1.MarketplaceService.GetPublisherStats:output_type -> ant.v1.GetPublisherStatsResponse
-	40, // 44: ant.v1.MarketplaceService.RunMarketBacktest:output_type -> ant.v1.BacktestRunUpdate
-	33, // 45: ant.v1.MarketplaceService.GetLivePerformance:output_type -> ant.v1.GetLivePerformanceResponse
-	37, // 46: ant.v1.MarketplaceService.LinkLiveAccount:output_type -> ant.v1.LinkLiveAccountResponse
-	31, // [31:47] is the sub-list for method output_type
-	15, // [15:31] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	1,  // 15: ant.v1.GenerateAndPublishEvent.backtest:type_name -> ant.v1.BacktestSnapshot
+	40, // 16: ant.v1.GenerateAndPublishEvent.violations:type_name -> ant.v1.QualityViolationInfo
+	44, // 17: ant.v1.ListStrategyTemplatesResponse.templates:type_name -> ant.v1.StrategyParameterTemplate
+	0,  // 18: ant.v1.MarketplaceService.PublishStrategy:input_type -> ant.v1.PublishStrategyRequest
+	3,  // 19: ant.v1.MarketplaceService.Subscribe:input_type -> ant.v1.SubscribeRequest
+	5,  // 20: ant.v1.MarketplaceService.Unsubscribe:input_type -> ant.v1.UnsubscribeRequest
+	7,  // 21: ant.v1.MarketplaceService.PurchaseStrategy:input_type -> ant.v1.PurchaseStrategyRequest
+	9,  // 22: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
+	12, // 23: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
+	15, // 24: ant.v1.MarketplaceService.RateStrategy:input_type -> ant.v1.RateStrategyRequest
+	17, // 25: ant.v1.MarketplaceService.ListRatings:input_type -> ant.v1.ListRatingsRequest
+	20, // 26: ant.v1.MarketplaceService.CommentOnStrategy:input_type -> ant.v1.CommentOnStrategyRequest
+	22, // 27: ant.v1.MarketplaceService.ListComments:input_type -> ant.v1.ListCommentsRequest
+	25, // 28: ant.v1.MarketplaceService.SetStrategyPricing:input_type -> ant.v1.SetStrategyPricingRequest
+	27, // 29: ant.v1.MarketplaceService.UnpublishStrategy:input_type -> ant.v1.UnpublishMarketStrategyRequest
+	29, // 30: ant.v1.MarketplaceService.GetPublisherStats:input_type -> ant.v1.GetPublisherStatsRequest
+	31, // 31: ant.v1.MarketplaceService.RunMarketBacktest:input_type -> ant.v1.RunMarketBacktestRequest
+	32, // 32: ant.v1.MarketplaceService.GetLivePerformance:input_type -> ant.v1.GetLivePerformanceRequest
+	36, // 33: ant.v1.MarketplaceService.LinkLiveAccount:input_type -> ant.v1.LinkLiveAccountRequest
+	38, // 34: ant.v1.MarketplaceService.GenerateAndPublish:input_type -> ant.v1.GenerateAndPublishRequest
+	41, // 35: ant.v1.MarketplaceService.GenerateFromTemplate:input_type -> ant.v1.GenerateFromTemplateRequest
+	42, // 36: ant.v1.MarketplaceService.ListStrategyTemplates:input_type -> ant.v1.ListStrategyTemplatesRequest
+	2,  // 37: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
+	4,  // 38: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
+	6,  // 39: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
+	8,  // 40: ant.v1.MarketplaceService.PurchaseStrategy:output_type -> ant.v1.PurchaseStrategyResponse
+	10, // 41: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
+	13, // 42: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
+	16, // 43: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
+	18, // 44: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
+	21, // 45: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
+	23, // 46: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
+	26, // 47: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
+	28, // 48: ant.v1.MarketplaceService.UnpublishStrategy:output_type -> ant.v1.UnpublishMarketStrategyResponse
+	30, // 49: ant.v1.MarketplaceService.GetPublisherStats:output_type -> ant.v1.GetPublisherStatsResponse
+	47, // 50: ant.v1.MarketplaceService.RunMarketBacktest:output_type -> ant.v1.BacktestRunUpdate
+	33, // 51: ant.v1.MarketplaceService.GetLivePerformance:output_type -> ant.v1.GetLivePerformanceResponse
+	37, // 52: ant.v1.MarketplaceService.LinkLiveAccount:output_type -> ant.v1.LinkLiveAccountResponse
+	39, // 53: ant.v1.MarketplaceService.GenerateAndPublish:output_type -> ant.v1.GenerateAndPublishEvent
+	39, // 54: ant.v1.MarketplaceService.GenerateFromTemplate:output_type -> ant.v1.GenerateAndPublishEvent
+	43, // 55: ant.v1.MarketplaceService.ListStrategyTemplates:output_type -> ant.v1.ListStrategyTemplatesResponse
+	37, // [37:56] is the sub-list for method output_type
+	18, // [18:37] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_marketplace_service_proto_init() }
@@ -3022,7 +3663,7 @@ func file_marketplace_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_marketplace_service_proto_rawDesc), len(file_marketplace_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   38,
+			NumMessages:   45,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

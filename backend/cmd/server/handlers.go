@@ -257,6 +257,9 @@ func registerHandlers(
 	agentGateway := agent.NewGatewayServer(pool, marketDataRepo, aiSvc, log)
 	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, withSency(otelInterceptor, authInterceptor)))
 
+	// Phase 2: Wire AI generator into marketplace handler for GenerateAndPublish.
+	mktplaceHandler.SetGenerator(agentGateway.Generator())
+
 	// ADR-0025 §8: Load persisted hook configs from DB at startup.
 	if pool != nil && agentGateway.HookEngine() != nil {
 		if err := admin.LoadHookConfigsFromDB(ctx, pool, agentGateway.HookEngine()); err != nil {

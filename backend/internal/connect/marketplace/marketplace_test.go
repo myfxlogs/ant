@@ -147,6 +147,10 @@ func (s *stubMarketplaceSvc) LinkLiveAccount(_ context.Context, _, _, _ string) 
 	return s.err
 }
 
+func (s *stubMarketplaceSvc) ValidateBacktestQuality(_ context.Context, _ []byte, _ string) ([]marketplace.QualityViolation, error) {
+	return nil, nil
+}
+
 type stubAdminChecker struct{ isAdmin bool }
 
 func (a *stubAdminChecker) IsAdmin(_ context.Context, _ uuid.UUID) (bool, error) {

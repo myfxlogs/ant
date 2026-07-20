@@ -81,6 +81,15 @@ const (
 	// MarketplaceServiceLinkLiveAccountProcedure is the fully-qualified name of the
 	// MarketplaceService's LinkLiveAccount RPC.
 	MarketplaceServiceLinkLiveAccountProcedure = "/ant.v1.MarketplaceService/LinkLiveAccount"
+	// MarketplaceServiceGenerateAndPublishProcedure is the fully-qualified name of the
+	// MarketplaceService's GenerateAndPublish RPC.
+	MarketplaceServiceGenerateAndPublishProcedure = "/ant.v1.MarketplaceService/GenerateAndPublish"
+	// MarketplaceServiceGenerateFromTemplateProcedure is the fully-qualified name of the
+	// MarketplaceService's GenerateFromTemplate RPC.
+	MarketplaceServiceGenerateFromTemplateProcedure = "/ant.v1.MarketplaceService/GenerateFromTemplate"
+	// MarketplaceServiceListStrategyTemplatesProcedure is the fully-qualified name of the
+	// MarketplaceService's ListStrategyTemplates RPC.
+	MarketplaceServiceListStrategyTemplatesProcedure = "/ant.v1.MarketplaceService/ListStrategyTemplates"
 )
 
 // MarketplaceServiceClient is a client for the ant.v1.MarketplaceService service.
@@ -109,6 +118,13 @@ type MarketplaceServiceClient interface {
 	// Live performance tracking
 	GetLivePerformance(context.Context, *connect.Request[v1.GetLivePerformanceRequest]) (*connect.Response[v1.GetLivePerformanceResponse], error)
 	LinkLiveAccount(context.Context, *connect.Request[v1.LinkLiveAccountRequest]) (*connect.Response[v1.LinkLiveAccountResponse], error)
+	// Phase 2: AI strategy generation → compile → backtest → quality gate → auto-publish.
+	// Streams progress events through all stages.
+	GenerateAndPublish(context.Context, *connect.Request[v1.GenerateAndPublishRequest]) (*connect.ServerStreamForClient[v1.GenerateAndPublishEvent], error)
+	// Phase 2: Generate from a parameter template.
+	GenerateFromTemplate(context.Context, *connect.Request[v1.GenerateFromTemplateRequest]) (*connect.ServerStreamForClient[v1.GenerateAndPublishEvent], error)
+	// Phase 2: List available strategy parameter templates.
+	ListStrategyTemplates(context.Context, *connect.Request[v1.ListStrategyTemplatesRequest]) (*connect.Response[v1.ListStrategyTemplatesResponse], error)
 }
 
 // NewMarketplaceServiceClient constructs a client for the ant.v1.MarketplaceService service. By
@@ -218,27 +234,48 @@ func NewMarketplaceServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(marketplaceServiceMethods.ByName("LinkLiveAccount")),
 			connect.WithClientOptions(opts...),
 		),
+		generateAndPublish: connect.NewClient[v1.GenerateAndPublishRequest, v1.GenerateAndPublishEvent](
+			httpClient,
+			baseURL+MarketplaceServiceGenerateAndPublishProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("GenerateAndPublish")),
+			connect.WithClientOptions(opts...),
+		),
+		generateFromTemplate: connect.NewClient[v1.GenerateFromTemplateRequest, v1.GenerateAndPublishEvent](
+			httpClient,
+			baseURL+MarketplaceServiceGenerateFromTemplateProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("GenerateFromTemplate")),
+			connect.WithClientOptions(opts...),
+		),
+		listStrategyTemplates: connect.NewClient[v1.ListStrategyTemplatesRequest, v1.ListStrategyTemplatesResponse](
+			httpClient,
+			baseURL+MarketplaceServiceListStrategyTemplatesProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("ListStrategyTemplates")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // marketplaceServiceClient implements MarketplaceServiceClient.
 type marketplaceServiceClient struct {
-	publishStrategy    *connect.Client[v1.PublishStrategyRequest, v1.PublishStrategyResponse]
-	subscribe          *connect.Client[v1.SubscribeRequest, v1.SubscribeResponse]
-	unsubscribe        *connect.Client[v1.UnsubscribeRequest, v1.UnsubscribeResponse]
-	purchaseStrategy   *connect.Client[v1.PurchaseStrategyRequest, v1.PurchaseStrategyResponse]
-	listPublished      *connect.Client[v1.ListPublishedRequest, v1.ListPublishedResponse]
-	listSubscriptions  *connect.Client[v1.ListSubscriptionsRequest, v1.ListSubscriptionsResponse]
-	rateStrategy       *connect.Client[v1.RateStrategyRequest, v1.RateStrategyResponse]
-	listRatings        *connect.Client[v1.ListRatingsRequest, v1.ListRatingsResponse]
-	commentOnStrategy  *connect.Client[v1.CommentOnStrategyRequest, v1.CommentOnStrategyResponse]
-	listComments       *connect.Client[v1.ListCommentsRequest, v1.ListCommentsResponse]
-	setStrategyPricing *connect.Client[v1.SetStrategyPricingRequest, v1.SetStrategyPricingResponse]
-	unpublishStrategy  *connect.Client[v1.UnpublishMarketStrategyRequest, v1.UnpublishMarketStrategyResponse]
-	getPublisherStats  *connect.Client[v1.GetPublisherStatsRequest, v1.GetPublisherStatsResponse]
-	runMarketBacktest  *connect.Client[v1.RunMarketBacktestRequest, v1.BacktestRunUpdate]
-	getLivePerformance *connect.Client[v1.GetLivePerformanceRequest, v1.GetLivePerformanceResponse]
-	linkLiveAccount    *connect.Client[v1.LinkLiveAccountRequest, v1.LinkLiveAccountResponse]
+	publishStrategy       *connect.Client[v1.PublishStrategyRequest, v1.PublishStrategyResponse]
+	subscribe             *connect.Client[v1.SubscribeRequest, v1.SubscribeResponse]
+	unsubscribe           *connect.Client[v1.UnsubscribeRequest, v1.UnsubscribeResponse]
+	purchaseStrategy      *connect.Client[v1.PurchaseStrategyRequest, v1.PurchaseStrategyResponse]
+	listPublished         *connect.Client[v1.ListPublishedRequest, v1.ListPublishedResponse]
+	listSubscriptions     *connect.Client[v1.ListSubscriptionsRequest, v1.ListSubscriptionsResponse]
+	rateStrategy          *connect.Client[v1.RateStrategyRequest, v1.RateStrategyResponse]
+	listRatings           *connect.Client[v1.ListRatingsRequest, v1.ListRatingsResponse]
+	commentOnStrategy     *connect.Client[v1.CommentOnStrategyRequest, v1.CommentOnStrategyResponse]
+	listComments          *connect.Client[v1.ListCommentsRequest, v1.ListCommentsResponse]
+	setStrategyPricing    *connect.Client[v1.SetStrategyPricingRequest, v1.SetStrategyPricingResponse]
+	unpublishStrategy     *connect.Client[v1.UnpublishMarketStrategyRequest, v1.UnpublishMarketStrategyResponse]
+	getPublisherStats     *connect.Client[v1.GetPublisherStatsRequest, v1.GetPublisherStatsResponse]
+	runMarketBacktest     *connect.Client[v1.RunMarketBacktestRequest, v1.BacktestRunUpdate]
+	getLivePerformance    *connect.Client[v1.GetLivePerformanceRequest, v1.GetLivePerformanceResponse]
+	linkLiveAccount       *connect.Client[v1.LinkLiveAccountRequest, v1.LinkLiveAccountResponse]
+	generateAndPublish    *connect.Client[v1.GenerateAndPublishRequest, v1.GenerateAndPublishEvent]
+	generateFromTemplate  *connect.Client[v1.GenerateFromTemplateRequest, v1.GenerateAndPublishEvent]
+	listStrategyTemplates *connect.Client[v1.ListStrategyTemplatesRequest, v1.ListStrategyTemplatesResponse]
 }
 
 // PublishStrategy calls ant.v1.MarketplaceService.PublishStrategy.
@@ -321,6 +358,21 @@ func (c *marketplaceServiceClient) LinkLiveAccount(ctx context.Context, req *con
 	return c.linkLiveAccount.CallUnary(ctx, req)
 }
 
+// GenerateAndPublish calls ant.v1.MarketplaceService.GenerateAndPublish.
+func (c *marketplaceServiceClient) GenerateAndPublish(ctx context.Context, req *connect.Request[v1.GenerateAndPublishRequest]) (*connect.ServerStreamForClient[v1.GenerateAndPublishEvent], error) {
+	return c.generateAndPublish.CallServerStream(ctx, req)
+}
+
+// GenerateFromTemplate calls ant.v1.MarketplaceService.GenerateFromTemplate.
+func (c *marketplaceServiceClient) GenerateFromTemplate(ctx context.Context, req *connect.Request[v1.GenerateFromTemplateRequest]) (*connect.ServerStreamForClient[v1.GenerateAndPublishEvent], error) {
+	return c.generateFromTemplate.CallServerStream(ctx, req)
+}
+
+// ListStrategyTemplates calls ant.v1.MarketplaceService.ListStrategyTemplates.
+func (c *marketplaceServiceClient) ListStrategyTemplates(ctx context.Context, req *connect.Request[v1.ListStrategyTemplatesRequest]) (*connect.Response[v1.ListStrategyTemplatesResponse], error) {
+	return c.listStrategyTemplates.CallUnary(ctx, req)
+}
+
 // MarketplaceServiceHandler is an implementation of the ant.v1.MarketplaceService service.
 type MarketplaceServiceHandler interface {
 	PublishStrategy(context.Context, *connect.Request[v1.PublishStrategyRequest]) (*connect.Response[v1.PublishStrategyResponse], error)
@@ -347,6 +399,13 @@ type MarketplaceServiceHandler interface {
 	// Live performance tracking
 	GetLivePerformance(context.Context, *connect.Request[v1.GetLivePerformanceRequest]) (*connect.Response[v1.GetLivePerformanceResponse], error)
 	LinkLiveAccount(context.Context, *connect.Request[v1.LinkLiveAccountRequest]) (*connect.Response[v1.LinkLiveAccountResponse], error)
+	// Phase 2: AI strategy generation → compile → backtest → quality gate → auto-publish.
+	// Streams progress events through all stages.
+	GenerateAndPublish(context.Context, *connect.Request[v1.GenerateAndPublishRequest], *connect.ServerStream[v1.GenerateAndPublishEvent]) error
+	// Phase 2: Generate from a parameter template.
+	GenerateFromTemplate(context.Context, *connect.Request[v1.GenerateFromTemplateRequest], *connect.ServerStream[v1.GenerateAndPublishEvent]) error
+	// Phase 2: List available strategy parameter templates.
+	ListStrategyTemplates(context.Context, *connect.Request[v1.ListStrategyTemplatesRequest]) (*connect.Response[v1.ListStrategyTemplatesResponse], error)
 }
 
 // NewMarketplaceServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -452,6 +511,24 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 		connect.WithSchema(marketplaceServiceMethods.ByName("LinkLiveAccount")),
 		connect.WithHandlerOptions(opts...),
 	)
+	marketplaceServiceGenerateAndPublishHandler := connect.NewServerStreamHandler(
+		MarketplaceServiceGenerateAndPublishProcedure,
+		svc.GenerateAndPublish,
+		connect.WithSchema(marketplaceServiceMethods.ByName("GenerateAndPublish")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceGenerateFromTemplateHandler := connect.NewServerStreamHandler(
+		MarketplaceServiceGenerateFromTemplateProcedure,
+		svc.GenerateFromTemplate,
+		connect.WithSchema(marketplaceServiceMethods.ByName("GenerateFromTemplate")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceListStrategyTemplatesHandler := connect.NewUnaryHandler(
+		MarketplaceServiceListStrategyTemplatesProcedure,
+		svc.ListStrategyTemplates,
+		connect.WithSchema(marketplaceServiceMethods.ByName("ListStrategyTemplates")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.MarketplaceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case MarketplaceServicePublishStrategyProcedure:
@@ -486,6 +563,12 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 			marketplaceServiceGetLivePerformanceHandler.ServeHTTP(w, r)
 		case MarketplaceServiceLinkLiveAccountProcedure:
 			marketplaceServiceLinkLiveAccountHandler.ServeHTTP(w, r)
+		case MarketplaceServiceGenerateAndPublishProcedure:
+			marketplaceServiceGenerateAndPublishHandler.ServeHTTP(w, r)
+		case MarketplaceServiceGenerateFromTemplateProcedure:
+			marketplaceServiceGenerateFromTemplateHandler.ServeHTTP(w, r)
+		case MarketplaceServiceListStrategyTemplatesProcedure:
+			marketplaceServiceListStrategyTemplatesHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -557,4 +640,16 @@ func (UnimplementedMarketplaceServiceHandler) GetLivePerformance(context.Context
 
 func (UnimplementedMarketplaceServiceHandler) LinkLiveAccount(context.Context, *connect.Request[v1.LinkLiveAccountRequest]) (*connect.Response[v1.LinkLiveAccountResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.LinkLiveAccount is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) GenerateAndPublish(context.Context, *connect.Request[v1.GenerateAndPublishRequest], *connect.ServerStream[v1.GenerateAndPublishEvent]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.GenerateAndPublish is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) GenerateFromTemplate(context.Context, *connect.Request[v1.GenerateFromTemplateRequest], *connect.ServerStream[v1.GenerateAndPublishEvent]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.GenerateFromTemplate is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) ListStrategyTemplates(context.Context, *connect.Request[v1.ListStrategyTemplatesRequest]) (*connect.Response[v1.ListStrategyTemplatesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ListStrategyTemplates is not implemented"))
 }

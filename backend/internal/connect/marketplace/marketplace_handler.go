@@ -2,10 +2,12 @@ package marketplace
 
 import (
 	"context"
+	"sync"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
+	antv1 "alphaforge/gen/proto/ant/v1"
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
 	"alphaforge/internal/interceptor"
 	"alphaforge/internal/marketplace"
@@ -33,14 +35,23 @@ type marketplaceSvc interface {
 	GetPlatformFeeRate(ctx context.Context) string
 	GetLivePerformance(ctx context.Context, strategyID string, limit int) ([]marketplace.LivePerformancePoint, *marketplace.LivePerformanceSummary, error)
 	LinkLiveAccount(ctx context.Context, strategyID, accountID, userID string) error
+	ValidateBacktestQuality(ctx context.Context, snapshotProto []byte, strategyID string) ([]marketplace.QualityViolation, error)
+}
+
+// agentGenerator is the interface for the AI strategy generator (agent.Generator).
+type agentGenerator interface {
+	Generate(ctx context.Context, userID uuid.UUID, msg *antv1.AgentGenerateStrategyRequest, stream func(*antv1.AgentGenerateStrategyChunk) error) error
 }
 
 // MarketplaceServer implements ant.v1.MarketplaceServiceHandler.
 type MarketplaceServer struct {
-	svc      marketplaceSvc
-	admin    interceptor.AdminChecker
-	log      *zap.Logger
-	pgListen *pglisten.Listener // Push-First: PG LISTEN for backtest status updates
+	svc         marketplaceSvc
+	admin       interceptor.AdminChecker
+	log         *zap.Logger
+	pgListen    *pglisten.Listener // Push-First: PG LISTEN for backtest status updates
+	gen         agentGenerator     // Phase 2: AI strategy generator
+	autoLimiter *autoGenerateLimiter
+	limiterOnce sync.Once
 }
 
 var _ antv1c.MarketplaceServiceHandler = (*MarketplaceServer)(nil)
@@ -51,3 +62,6 @@ func NewMarketplaceServer(svc marketplaceSvc, admin interceptor.AdminChecker, lo
 
 // SetPgListen injects the PG listener for push-first SSE streaming.
 func (s *MarketplaceServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
+
+// SetGenerator injects the AI strategy generator for Phase 2 GenerateAndPublish.
+func (s *MarketplaceServer) SetGenerator(g agentGenerator) { s.gen = g }

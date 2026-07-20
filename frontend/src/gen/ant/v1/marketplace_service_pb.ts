@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file marketplace_service.proto.
  */
 export const file_marketplace_service: GenFile = /*@__PURE__*/
-  fileDesc("ChltYXJrZXRwbGFjZV9zZXJ2aWNlLnByb3RvEgZhbnQudjEixwIKFlB1Ymxpc2hTdHJhdGVneVJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCRITCgtzdHJhdGVneV9pZBgCIAEoCRINCgV0aXRsZRgDIAEoCRITCgtkZXNjcmlwdGlvbhgEIAEoCRITCgtwcmljZV9tb2RlbBgFIAEoCRIUCgxwcmljZV9hbW91bnQYBiABKAkSEwoLYXNzZXRfY2xhc3MYByABKAkSDwoHc3ltYm9scxgIIAMoCRIRCgl0aW1lZnJhbWUYCSABKAkSEgoKcmlza19sZXZlbBgKIAEoCRIMCgR0YWdzGAsgAygJEhQKDGNvZGVfc25pcHBldBgQIAEoCRIzChFiYWNrdGVzdF9zbmFwc2hvdBgRIAEoCzIYLmFudC52MS5CYWNrdGVzdFNuYXBzaG90EhIKCmRpc2NsYWltZXIYEiABKAki5wEKEEJhY2t0ZXN0U25hcHNob3QSFAoMdG90YWxfcmV0dXJuGAEgASgJEhUKDWFubnVhbF9yZXR1cm4YAiABKAkSFAoMbWF4X2RyYXdkb3duGAMgASgJEhQKDHNoYXJwZV9yYXRpbxgEIAEoCRIQCgh3aW5fcmF0ZRgFIAEoCRIUCgx0b3RhbF90cmFkZXMYBiABKAUSDgoGc3ltYm9sGAcgASgJEhEKCXRpbWVmcmFtZRgIIAEoCRIvCgtzbmFwc2hvdF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiLQoXUHVibGlzaFN0cmF0ZWd5UmVzcG9uc2USEgoKcHVibGlzaF9pZBgBIAEoCSJhChBTdWJzY3JpYmVSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSGQoRcHVibGlzaGVyX3VzZXJfaWQYAiABKAkSEwoLc3RyYXRlZ3lfaWQYAyABKAkSDAoEa2luZBgEIAEoCSIsChFTdWJzY3JpYmVSZXNwb25zZRIXCg9zdWJzY3JpcHRpb25faWQYASABKAkiPgoSVW5zdWJzY3JpYmVSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSFwoPc3Vic2NyaXB0aW9uX2lkGAIgASgJIhUKE1Vuc3Vic2NyaWJlUmVzcG9uc2UicwoXUHVyY2hhc2VTdHJhdGVneVJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCRITCgtzdHJhdGVneV9pZBgCIAEoCRIZChFwdWJsaXNoZXJfdXNlcl9pZBgDIAEoCRIXCg9pZGVtcG90ZW5jeV9rZXkYBCABKAkiegoYUHVyY2hhc2VTdHJhdGVneVJlc3BvbnNlEhcKD3N1YnNjcmlwdGlvbl9pZBgBIAEoCRIWCg50cmFuc2FjdGlvbl9pZBgCIAEoCRIWCg5hbW91bnRfY2hhcmdlZBgDIAEoCRIVCg1iYWxhbmNlX2FmdGVyGAQgASgJIn0KFExpc3RQdWJsaXNoZWRSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSDQoFbGltaXQYAiABKAUSEwoLYXNzZXRfY2xhc3MYAyABKAkSDwoHa2V5d29yZBgEIAEoCRIPCgdzb3J0X2J5GAUgASgJEg4KBm9mZnNldBgGIAEoBSJGChVMaXN0UHVibGlzaGVkUmVzcG9uc2USLQoKc3RyYXRlZ2llcxgBIAMoCzIZLmFudC52MS5QdWJsaXNoZWRTdHJhdGVneSLFBAoRUHVibGlzaGVkU3RyYXRlZ3kSEgoKcHVibGlzaF9pZBgBIAEoCRITCgtzdHJhdGVneV9pZBgCIAEoCRIVCg1zdHJhdGVneV9uYW1lGAMgASgJEhkKEXB1Ymxpc2hlcl91c2VyX2lkGAQgASgJEjAKDHB1Ymxpc2hlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFdGl0bGUYBiABKAkSEwoLZGVzY3JpcHRpb24YByABKAkSEwoLcHJpY2VfbW9kZWwYCCABKAkSFAoMcHJpY2VfYW1vdW50GAkgASgJEhMKC2Fzc2V0X2NsYXNzGAogASgJEg8KB3N5bWJvbHMYCyADKAkSEQoJdGltZWZyYW1lGAwgASgJEhIKCnJpc2tfbGV2ZWwYDSABKAkSDAoEdGFncxgOIAMoCRIZChF0b3RhbF9zdWJzY3JpYmVycxgPIAEoBRIQCgh3aW5fcmF0ZRgQIAEoARIRCgl0b3RhbF9wbmwYESABKAkSEgoKYXZnX3JhdGluZxgSIAEoARIUCgxyYXRpbmdfY291bnQYEyABKAUSFAoMY29kZV9zbmlwcGV0GBYgASgJEjMKEWJhY2t0ZXN0X3NuYXBzaG90GBcgASgLMhguYW50LnYxLkJhY2t0ZXN0U25hcHNob3QSGQoRcHJvdmlkZXJfdmVyaWZpZWQYGCABKAgSFQoNcHJvdmlkZXJfdHlwZRgZIAEoCRISCgpkaXNjbGFpbWVyGBogASgJIisKGExpc3RTdWJzY3JpcHRpb25zUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJIkwKGUxpc3RTdWJzY3JpcHRpb25zUmVzcG9uc2USLwoNc3Vic2NyaXB0aW9ucxgBIAMoCzIYLmFudC52MS5TdWJzY3JpcHRpb25JdGVtItYBChBTdWJzY3JpcHRpb25JdGVtEhcKD3N1YnNjcmlwdGlvbl9pZBgBIAEoCRIWCg50YXJnZXRfdXNlcl9pZBgCIAEoCRITCgtzdHJhdGVneV9pZBgDIAEoCRIMCgRraW5kGAQgASgJEg4KBmFjdGl2ZRgFIAEoCBIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpleHBpcmVzX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJLChNSYXRlU3RyYXRlZ3lSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSEwoLc3RyYXRlZ3lfaWQYAiABKAkSDgoGcmF0aW5nGAMgASgFIkAKFFJhdGVTdHJhdGVneVJlc3BvbnNlEhIKCmF2Z19yYXRpbmcYASABKAESFAoMcmF0aW5nX2NvdW50GAIgASgFIikKEkxpc3RSYXRpbmdzUmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCSJkChNMaXN0UmF0aW5nc1Jlc3BvbnNlEiMKB3JhdGluZ3MYASADKAsyEi5hbnQudjEuUmF0aW5nSXRlbRISCgphdmdfcmF0aW5nGAIgASgBEhQKDHJhdGluZ19jb3VudBgDIAEoBSJpCgpSYXRpbmdJdGVtEgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSDgoGcmF0aW5nGAMgASgFEi4KCmNyZWF0ZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIlEKGENvbW1lbnRPblN0cmF0ZWd5UmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhMKC3N0cmF0ZWd5X2lkGAIgASgJEg8KB2NvbnRlbnQYAyABKAkiJwoZQ29tbWVudE9uU3RyYXRlZ3lSZXNwb25zZRIKCgJpZBgBIAEoCSJJChNMaXN0Q29tbWVudHNSZXF1ZXN0EhMKC3N0cmF0ZWd5X2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBm9mZnNldBgDIAEoBSJMChRMaXN0Q29tbWVudHNSZXNwb25zZRIlCghjb21tZW50cxgBIAMoCzITLmFudC52MS5Db21tZW50SXRlbRINCgV0b3RhbBgCIAEoBSJ+CgtDb21tZW50SXRlbRIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhEKCXVzZXJfbmFtZRgDIAEoCRIPCgdjb250ZW50GAQgASgJEi4KCmNyZWF0ZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wInYKGVNldFN0cmF0ZWd5UHJpY2luZ1JlcXVlc3QSEwoLc3RyYXRlZ3lfaWQYASABKAkSEwoLcHJpY2VfbW9kZWwYAiABKAkSFAoMcHJpY2VfYW1vdW50GAMgASgJEhkKEXBsYXRmb3JtX2ZlZV9yYXRlGAQgASgBIncKGlNldFN0cmF0ZWd5UHJpY2luZ1Jlc3BvbnNlEhMKC3N0cmF0ZWd5X2lkGAEgASgJEhMKC3ByaWNlX21vZGVsGAIgASgJEhQKDHByaWNlX2Ftb3VudBgDIAEoCRIZChFwbGF0Zm9ybV9mZWVfcmF0ZRgEIAEoASI1Ch5VbnB1Ymxpc2hNYXJrZXRTdHJhdGVneVJlcXVlc3QSEwoLc3RyYXRlZ3lfaWQYASABKAkiRgofVW5wdWJsaXNoTWFya2V0U3RyYXRlZ3lSZXNwb25zZRITCgtzdHJhdGVneV9pZBgBIAEoCRIOCgZzdGF0dXMYAiABKAkiGgoYR2V0UHVibGlzaGVyU3RhdHNSZXF1ZXN0IuMBChlHZXRQdWJsaXNoZXJTdGF0c1Jlc3BvbnNlEhcKD3RvdGFsX3B1Ymxpc2hlZBgBIAEoBRIZChF0b3RhbF9zdWJzY3JpYmVycxgCIAEoBRIVCg10b3RhbF9yZXZlbnVlGAMgASgJEhcKD21vbnRobHlfcmV2ZW51ZRgEIAEoCRISCgphdmdfcmF0aW5nGAUgASgBEhcKD3RvcF9zdHJhdGVneV9pZBgGIAEoCRIaChJ0b3Bfc3RyYXRlZ3lfdGl0bGUYByABKAkSGQoRdG9wX3N0cmF0ZWd5X3N1YnMYCCABKAUi0gEKGFJ1bk1hcmtldEJhY2t0ZXN0UmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCRIOCgZzeW1ib2wYAiABKAkSEQoJdGltZWZyYW1lGAMgASgJEhUKDXN0YXJ0X2RhdGVfbXMYBCABKAMSEwoLZW5kX2RhdGVfbXMYBSABKAMSFwoPaW5pdGlhbF9jYXBpdGFsGAYgASgJEjkKEGV4ZWN1dGlvbl9jb25maWcYByABKAsyHy5hbnQudjEuQmFja3Rlc3RFeGVjdXRpb25Db25maWciPwoZR2V0TGl2ZVBlcmZvcm1hbmNlUmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCRINCgVsaW1pdBgCIAEoBSJ7ChpHZXRMaXZlUGVyZm9ybWFuY2VSZXNwb25zZRIsCgZwb2ludHMYASADKAsyHC5hbnQudjEuTGl2ZVBlcmZvcm1hbmNlUG9pbnQSLwoHc3VtbWFyeRgCIAEoCzIeLmFudC52MS5MaXZlUGVyZm9ybWFuY2VTdW1tYXJ5Ip0BChRMaXZlUGVyZm9ybWFuY2VQb2ludBIMCgRkYXRlGAEgASgJEhEKCWRhaWx5X3BubBgCIAEoCRIUCgxkYWlseV9yZXR1cm4YAyABKAkSDgoGZXF1aXR5GAQgASgJEhAKCGRyYXdkb3duGAUgASgJEhQKDHRvdGFsX3RyYWRlcxgGIAEoBRIWCg53aW5uaW5nX3RyYWRlcxgHIAEoBSLjAQoWTGl2ZVBlcmZvcm1hbmNlU3VtbWFyeRIUCgx0b3RhbF9yZXR1cm4YASABKAkSFQoNYW5udWFsX3JldHVybhgCIAEoCRIUCgxtYXhfZHJhd2Rvd24YAyABKAkSFAoMc2hhcnBlX3JhdGlvGAQgASgJEhAKCHdpbl9yYXRlGAUgASgJEhQKDHRvdGFsX3RyYWRlcxgGIAEoBRIaChJhdmdfbW9udGhseV9yZXR1cm4YByABKAkSFgoOdHJhY2tpbmdfc2luY2UYCCABKAkSFAoMbGFzdF91cGRhdGVkGAkgASgJIkEKFkxpbmtMaXZlQWNjb3VudFJlcXVlc3QSEwoLc3RyYXRlZ3lfaWQYASABKAkSEgoKYWNjb3VudF9pZBgCIAEoCSIqChdMaW5rTGl2ZUFjY291bnRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIMssKChJNYXJrZXRwbGFjZVNlcnZpY2USUgoPUHVibGlzaFN0cmF0ZWd5Eh4uYW50LnYxLlB1Ymxpc2hTdHJhdGVneVJlcXVlc3QaHy5hbnQudjEuUHVibGlzaFN0cmF0ZWd5UmVzcG9uc2USQAoJU3Vic2NyaWJlEhguYW50LnYxLlN1YnNjcmliZVJlcXVlc3QaGS5hbnQudjEuU3Vic2NyaWJlUmVzcG9uc2USRgoLVW5zdWJzY3JpYmUSGi5hbnQudjEuVW5zdWJzY3JpYmVSZXF1ZXN0GhsuYW50LnYxLlVuc3Vic2NyaWJlUmVzcG9uc2USVQoQUHVyY2hhc2VTdHJhdGVneRIfLmFudC52MS5QdXJjaGFzZVN0cmF0ZWd5UmVxdWVzdBogLmFudC52MS5QdXJjaGFzZVN0cmF0ZWd5UmVzcG9uc2USTAoNTGlzdFB1Ymxpc2hlZBIcLmFudC52MS5MaXN0UHVibGlzaGVkUmVxdWVzdBodLmFudC52MS5MaXN0UHVibGlzaGVkUmVzcG9uc2USWAoRTGlzdFN1YnNjcmlwdGlvbnMSIC5hbnQudjEuTGlzdFN1YnNjcmlwdGlvbnNSZXF1ZXN0GiEuYW50LnYxLkxpc3RTdWJzY3JpcHRpb25zUmVzcG9uc2USSQoMUmF0ZVN0cmF0ZWd5EhsuYW50LnYxLlJhdGVTdHJhdGVneVJlcXVlc3QaHC5hbnQudjEuUmF0ZVN0cmF0ZWd5UmVzcG9uc2USRgoLTGlzdFJhdGluZ3MSGi5hbnQudjEuTGlzdFJhdGluZ3NSZXF1ZXN0GhsuYW50LnYxLkxpc3RSYXRpbmdzUmVzcG9uc2USWAoRQ29tbWVudE9uU3RyYXRlZ3kSIC5hbnQudjEuQ29tbWVudE9uU3RyYXRlZ3lSZXF1ZXN0GiEuYW50LnYxLkNvbW1lbnRPblN0cmF0ZWd5UmVzcG9uc2USSQoMTGlzdENvbW1lbnRzEhsuYW50LnYxLkxpc3RDb21tZW50c1JlcXVlc3QaHC5hbnQudjEuTGlzdENvbW1lbnRzUmVzcG9uc2USWwoSU2V0U3RyYXRlZ3lQcmljaW5nEiEuYW50LnYxLlNldFN0cmF0ZWd5UHJpY2luZ1JlcXVlc3QaIi5hbnQudjEuU2V0U3RyYXRlZ3lQcmljaW5nUmVzcG9uc2USZAoRVW5wdWJsaXNoU3RyYXRlZ3kSJi5hbnQudjEuVW5wdWJsaXNoTWFya2V0U3RyYXRlZ3lSZXF1ZXN0GicuYW50LnYxLlVucHVibGlzaE1hcmtldFN0cmF0ZWd5UmVzcG9uc2USWAoRR2V0UHVibGlzaGVyU3RhdHMSIC5hbnQudjEuR2V0UHVibGlzaGVyU3RhdHNSZXF1ZXN0GiEuYW50LnYxLkdldFB1Ymxpc2hlclN0YXRzUmVzcG9uc2USUgoRUnVuTWFya2V0QmFja3Rlc3QSIC5hbnQudjEuUnVuTWFya2V0QmFja3Rlc3RSZXF1ZXN0GhkuYW50LnYxLkJhY2t0ZXN0UnVuVXBkYXRlMAESWwoSR2V0TGl2ZVBlcmZvcm1hbmNlEiEuYW50LnYxLkdldExpdmVQZXJmb3JtYW5jZVJlcXVlc3QaIi5hbnQudjEuR2V0TGl2ZVBlcmZvcm1hbmNlUmVzcG9uc2USUgoPTGlua0xpdmVBY2NvdW50Eh4uYW50LnYxLkxpbmtMaXZlQWNjb3VudFJlcXVlc3QaHy5hbnQudjEuTGlua0xpdmVBY2NvdW50UmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_backtest_execution_config, file_backtest_run_query]);
+  fileDesc("ChltYXJrZXRwbGFjZV9zZXJ2aWNlLnByb3RvEgZhbnQudjEixwIKFlB1Ymxpc2hTdHJhdGVneVJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCRITCgtzdHJhdGVneV9pZBgCIAEoCRINCgV0aXRsZRgDIAEoCRITCgtkZXNjcmlwdGlvbhgEIAEoCRITCgtwcmljZV9tb2RlbBgFIAEoCRIUCgxwcmljZV9hbW91bnQYBiABKAkSEwoLYXNzZXRfY2xhc3MYByABKAkSDwoHc3ltYm9scxgIIAMoCRIRCgl0aW1lZnJhbWUYCSABKAkSEgoKcmlza19sZXZlbBgKIAEoCRIMCgR0YWdzGAsgAygJEhQKDGNvZGVfc25pcHBldBgQIAEoCRIzChFiYWNrdGVzdF9zbmFwc2hvdBgRIAEoCzIYLmFudC52MS5CYWNrdGVzdFNuYXBzaG90EhIKCmRpc2NsYWltZXIYEiABKAki5wEKEEJhY2t0ZXN0U25hcHNob3QSFAoMdG90YWxfcmV0dXJuGAEgASgJEhUKDWFubnVhbF9yZXR1cm4YAiABKAkSFAoMbWF4X2RyYXdkb3duGAMgASgJEhQKDHNoYXJwZV9yYXRpbxgEIAEoCRIQCgh3aW5fcmF0ZRgFIAEoCRIUCgx0b3RhbF90cmFkZXMYBiABKAUSDgoGc3ltYm9sGAcgASgJEhEKCXRpbWVmcmFtZRgIIAEoCRIvCgtzbmFwc2hvdF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiLQoXUHVibGlzaFN0cmF0ZWd5UmVzcG9uc2USEgoKcHVibGlzaF9pZBgBIAEoCSJhChBTdWJzY3JpYmVSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSGQoRcHVibGlzaGVyX3VzZXJfaWQYAiABKAkSEwoLc3RyYXRlZ3lfaWQYAyABKAkSDAoEa2luZBgEIAEoCSIsChFTdWJzY3JpYmVSZXNwb25zZRIXCg9zdWJzY3JpcHRpb25faWQYASABKAkiPgoSVW5zdWJzY3JpYmVSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSFwoPc3Vic2NyaXB0aW9uX2lkGAIgASgJIhUKE1Vuc3Vic2NyaWJlUmVzcG9uc2UicwoXUHVyY2hhc2VTdHJhdGVneVJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCRITCgtzdHJhdGVneV9pZBgCIAEoCRIZChFwdWJsaXNoZXJfdXNlcl9pZBgDIAEoCRIXCg9pZGVtcG90ZW5jeV9rZXkYBCABKAkiegoYUHVyY2hhc2VTdHJhdGVneVJlc3BvbnNlEhcKD3N1YnNjcmlwdGlvbl9pZBgBIAEoCRIWCg50cmFuc2FjdGlvbl9pZBgCIAEoCRIWCg5hbW91bnRfY2hhcmdlZBgDIAEoCRIVCg1iYWxhbmNlX2FmdGVyGAQgASgJIn0KFExpc3RQdWJsaXNoZWRSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSDQoFbGltaXQYAiABKAUSEwoLYXNzZXRfY2xhc3MYAyABKAkSDwoHa2V5d29yZBgEIAEoCRIPCgdzb3J0X2J5GAUgASgJEg4KBm9mZnNldBgGIAEoBSJGChVMaXN0UHVibGlzaGVkUmVzcG9uc2USLQoKc3RyYXRlZ2llcxgBIAMoCzIZLmFudC52MS5QdWJsaXNoZWRTdHJhdGVneSLFBAoRUHVibGlzaGVkU3RyYXRlZ3kSEgoKcHVibGlzaF9pZBgBIAEoCRITCgtzdHJhdGVneV9pZBgCIAEoCRIVCg1zdHJhdGVneV9uYW1lGAMgASgJEhkKEXB1Ymxpc2hlcl91c2VyX2lkGAQgASgJEjAKDHB1Ymxpc2hlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFdGl0bGUYBiABKAkSEwoLZGVzY3JpcHRpb24YByABKAkSEwoLcHJpY2VfbW9kZWwYCCABKAkSFAoMcHJpY2VfYW1vdW50GAkgASgJEhMKC2Fzc2V0X2NsYXNzGAogASgJEg8KB3N5bWJvbHMYCyADKAkSEQoJdGltZWZyYW1lGAwgASgJEhIKCnJpc2tfbGV2ZWwYDSABKAkSDAoEdGFncxgOIAMoCRIZChF0b3RhbF9zdWJzY3JpYmVycxgPIAEoBRIQCgh3aW5fcmF0ZRgQIAEoARIRCgl0b3RhbF9wbmwYESABKAkSEgoKYXZnX3JhdGluZxgSIAEoARIUCgxyYXRpbmdfY291bnQYEyABKAUSFAoMY29kZV9zbmlwcGV0GBYgASgJEjMKEWJhY2t0ZXN0X3NuYXBzaG90GBcgASgLMhguYW50LnYxLkJhY2t0ZXN0U25hcHNob3QSGQoRcHJvdmlkZXJfdmVyaWZpZWQYGCABKAgSFQoNcHJvdmlkZXJfdHlwZRgZIAEoCRISCgpkaXNjbGFpbWVyGBogASgJIisKGExpc3RTdWJzY3JpcHRpb25zUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJIkwKGUxpc3RTdWJzY3JpcHRpb25zUmVzcG9uc2USLwoNc3Vic2NyaXB0aW9ucxgBIAMoCzIYLmFudC52MS5TdWJzY3JpcHRpb25JdGVtItYBChBTdWJzY3JpcHRpb25JdGVtEhcKD3N1YnNjcmlwdGlvbl9pZBgBIAEoCRIWCg50YXJnZXRfdXNlcl9pZBgCIAEoCRITCgtzdHJhdGVneV9pZBgDIAEoCRIMCgRraW5kGAQgASgJEg4KBmFjdGl2ZRgFIAEoCBIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpleHBpcmVzX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJLChNSYXRlU3RyYXRlZ3lSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSEwoLc3RyYXRlZ3lfaWQYAiABKAkSDgoGcmF0aW5nGAMgASgFIkAKFFJhdGVTdHJhdGVneVJlc3BvbnNlEhIKCmF2Z19yYXRpbmcYASABKAESFAoMcmF0aW5nX2NvdW50GAIgASgFIikKEkxpc3RSYXRpbmdzUmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCSJkChNMaXN0UmF0aW5nc1Jlc3BvbnNlEiMKB3JhdGluZ3MYASADKAsyEi5hbnQudjEuUmF0aW5nSXRlbRISCgphdmdfcmF0aW5nGAIgASgBEhQKDHJhdGluZ19jb3VudBgDIAEoBSJpCgpSYXRpbmdJdGVtEgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSDgoGcmF0aW5nGAMgASgFEi4KCmNyZWF0ZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIlEKGENvbW1lbnRPblN0cmF0ZWd5UmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhMKC3N0cmF0ZWd5X2lkGAIgASgJEg8KB2NvbnRlbnQYAyABKAkiJwoZQ29tbWVudE9uU3RyYXRlZ3lSZXNwb25zZRIKCgJpZBgBIAEoCSJJChNMaXN0Q29tbWVudHNSZXF1ZXN0EhMKC3N0cmF0ZWd5X2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBm9mZnNldBgDIAEoBSJMChRMaXN0Q29tbWVudHNSZXNwb25zZRIlCghjb21tZW50cxgBIAMoCzITLmFudC52MS5Db21tZW50SXRlbRINCgV0b3RhbBgCIAEoBSJ+CgtDb21tZW50SXRlbRIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhEKCXVzZXJfbmFtZRgDIAEoCRIPCgdjb250ZW50GAQgASgJEi4KCmNyZWF0ZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wInYKGVNldFN0cmF0ZWd5UHJpY2luZ1JlcXVlc3QSEwoLc3RyYXRlZ3lfaWQYASABKAkSEwoLcHJpY2VfbW9kZWwYAiABKAkSFAoMcHJpY2VfYW1vdW50GAMgASgJEhkKEXBsYXRmb3JtX2ZlZV9yYXRlGAQgASgBIncKGlNldFN0cmF0ZWd5UHJpY2luZ1Jlc3BvbnNlEhMKC3N0cmF0ZWd5X2lkGAEgASgJEhMKC3ByaWNlX21vZGVsGAIgASgJEhQKDHByaWNlX2Ftb3VudBgDIAEoCRIZChFwbGF0Zm9ybV9mZWVfcmF0ZRgEIAEoASI1Ch5VbnB1Ymxpc2hNYXJrZXRTdHJhdGVneVJlcXVlc3QSEwoLc3RyYXRlZ3lfaWQYASABKAkiRgofVW5wdWJsaXNoTWFya2V0U3RyYXRlZ3lSZXNwb25zZRITCgtzdHJhdGVneV9pZBgBIAEoCRIOCgZzdGF0dXMYAiABKAkiGgoYR2V0UHVibGlzaGVyU3RhdHNSZXF1ZXN0IuMBChlHZXRQdWJsaXNoZXJTdGF0c1Jlc3BvbnNlEhcKD3RvdGFsX3B1Ymxpc2hlZBgBIAEoBRIZChF0b3RhbF9zdWJzY3JpYmVycxgCIAEoBRIVCg10b3RhbF9yZXZlbnVlGAMgASgJEhcKD21vbnRobHlfcmV2ZW51ZRgEIAEoCRISCgphdmdfcmF0aW5nGAUgASgBEhcKD3RvcF9zdHJhdGVneV9pZBgGIAEoCRIaChJ0b3Bfc3RyYXRlZ3lfdGl0bGUYByABKAkSGQoRdG9wX3N0cmF0ZWd5X3N1YnMYCCABKAUi0gEKGFJ1bk1hcmtldEJhY2t0ZXN0UmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCRIOCgZzeW1ib2wYAiABKAkSEQoJdGltZWZyYW1lGAMgASgJEhUKDXN0YXJ0X2RhdGVfbXMYBCABKAMSEwoLZW5kX2RhdGVfbXMYBSABKAMSFwoPaW5pdGlhbF9jYXBpdGFsGAYgASgJEjkKEGV4ZWN1dGlvbl9jb25maWcYByABKAsyHy5hbnQudjEuQmFja3Rlc3RFeGVjdXRpb25Db25maWciPwoZR2V0TGl2ZVBlcmZvcm1hbmNlUmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCRINCgVsaW1pdBgCIAEoBSJ7ChpHZXRMaXZlUGVyZm9ybWFuY2VSZXNwb25zZRIsCgZwb2ludHMYASADKAsyHC5hbnQudjEuTGl2ZVBlcmZvcm1hbmNlUG9pbnQSLwoHc3VtbWFyeRgCIAEoCzIeLmFudC52MS5MaXZlUGVyZm9ybWFuY2VTdW1tYXJ5Ip0BChRMaXZlUGVyZm9ybWFuY2VQb2ludBIMCgRkYXRlGAEgASgJEhEKCWRhaWx5X3BubBgCIAEoCRIUCgxkYWlseV9yZXR1cm4YAyABKAkSDgoGZXF1aXR5GAQgASgJEhAKCGRyYXdkb3duGAUgASgJEhQKDHRvdGFsX3RyYWRlcxgGIAEoBRIWCg53aW5uaW5nX3RyYWRlcxgHIAEoBSLjAQoWTGl2ZVBlcmZvcm1hbmNlU3VtbWFyeRIUCgx0b3RhbF9yZXR1cm4YASABKAkSFQoNYW5udWFsX3JldHVybhgCIAEoCRIUCgxtYXhfZHJhd2Rvd24YAyABKAkSFAoMc2hhcnBlX3JhdGlvGAQgASgJEhAKCHdpbl9yYXRlGAUgASgJEhQKDHRvdGFsX3RyYWRlcxgGIAEoBRIaChJhdmdfbW9udGhseV9yZXR1cm4YByABKAkSFgoOdHJhY2tpbmdfc2luY2UYCCABKAkSFAoMbGFzdF91cGRhdGVkGAkgASgJIkEKFkxpbmtMaXZlQWNjb3VudFJlcXVlc3QSEwoLc3RyYXRlZ3lfaWQYASABKAkSEgoKYWNjb3VudF9pZBgCIAEoCSIqChdMaW5rTGl2ZUFjY291bnRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIItQBChlHZW5lcmF0ZUFuZFB1Ymxpc2hSZXF1ZXN0EhMKC2Rlc2NyaXB0aW9uGAEgASgJEhMKC2Fzc2V0X2NsYXNzGAIgASgJEg8KB3N5bWJvbHMYAyADKAkSEQoJdGltZWZyYW1lGAQgASgJEhIKCnJpc2tfbGV2ZWwYBSABKAkSFQoNc3RyYXRlZ3lfdHlwZRgGIAEoCRIUCgxhdXRvX3B1Ymxpc2gYByABKAgSFgoOdGl0bGVfb3ZlcnJpZGUYCCABKAkSEAoIbGFuZ3VhZ2UYCSABKAkitgIKF0dlbmVyYXRlQW5kUHVibGlzaEV2ZW50Eg0KBXN0YWdlGAEgASgJEg8KB21lc3NhZ2UYAiABKAkSEAoIcHJvZ3Jlc3MYAyABKAESEwoLc3RyYXRlZ3lfaWQYBCABKAkSEgoKcHVibGlzaF9pZBgFIAEoCRIqCghiYWNrdGVzdBgGIAEoCzIYLmFudC52MS5CYWNrdGVzdFNuYXBzaG90EhMKC2Vycm9yX3N0YWdlGAcgASgJEhQKDGVycm9yX2RldGFpbBgIIAEoCRIRCglyZXRyeWFibGUYCSABKAgSDQoFZGVsdGEYCiABKAkSFQoNcHl0aG9uX3NvdXJjZRgLIAEoCRIwCgp2aW9sYXRpb25zGAwgAygLMhwuYW50LnYxLlF1YWxpdHlWaW9sYXRpb25JbmZvIkkKFFF1YWxpdHlWaW9sYXRpb25JbmZvEg4KBm1ldHJpYxgBIAEoCRIOCgZhY3R1YWwYAiABKAkSEQoJdGhyZXNob2xkGAMgASgJIoQBChtHZW5lcmF0ZUZyb21UZW1wbGF0ZVJlcXVlc3QSEwoLdGVtcGxhdGVfaWQYASABKAkSFwoPcGFyYW1ldGVyc19qc29uGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFAoMYXV0b19wdWJsaXNoGAUgASgIIjUKHExpc3RTdHJhdGVneVRlbXBsYXRlc1JlcXVlc3QSFQoNdGVtcGxhdGVfdHlwZRgBIAEoCSJVCh1MaXN0U3RyYXRlZ3lUZW1wbGF0ZXNSZXNwb25zZRI0Cgl0ZW1wbGF0ZXMYASADKAsyIS5hbnQudjEuU3RyYXRlZ3lQYXJhbWV0ZXJUZW1wbGF0ZSK8AQoZU3RyYXRlZ3lQYXJhbWV0ZXJUZW1wbGF0ZRIKCgJpZBgBIAEoCRIUCgx0ZW1wbGF0ZV9rZXkYAiABKAkSFQoNdGVtcGxhdGVfdHlwZRgDIAEoCRIMCgRuYW1lGAQgASgJEhMKC2Rlc2NyaXB0aW9uGAUgASgJEhkKEXBhcmFtZXRlcnNfc2NoZW1hGAYgASgJEhoKEmRlZmF1bHRfcmlza19sZXZlbBgHIAEoCRIMCgRpY29uGAggASgJMu0MChJNYXJrZXRwbGFjZVNlcnZpY2USUgoPUHVibGlzaFN0cmF0ZWd5Eh4uYW50LnYxLlB1Ymxpc2hTdHJhdGVneVJlcXVlc3QaHy5hbnQudjEuUHVibGlzaFN0cmF0ZWd5UmVzcG9uc2USQAoJU3Vic2NyaWJlEhguYW50LnYxLlN1YnNjcmliZVJlcXVlc3QaGS5hbnQudjEuU3Vic2NyaWJlUmVzcG9uc2USRgoLVW5zdWJzY3JpYmUSGi5hbnQudjEuVW5zdWJzY3JpYmVSZXF1ZXN0GhsuYW50LnYxLlVuc3Vic2NyaWJlUmVzcG9uc2USVQoQUHVyY2hhc2VTdHJhdGVneRIfLmFudC52MS5QdXJjaGFzZVN0cmF0ZWd5UmVxdWVzdBogLmFudC52MS5QdXJjaGFzZVN0cmF0ZWd5UmVzcG9uc2USTAoNTGlzdFB1Ymxpc2hlZBIcLmFudC52MS5MaXN0UHVibGlzaGVkUmVxdWVzdBodLmFudC52MS5MaXN0UHVibGlzaGVkUmVzcG9uc2USWAoRTGlzdFN1YnNjcmlwdGlvbnMSIC5hbnQudjEuTGlzdFN1YnNjcmlwdGlvbnNSZXF1ZXN0GiEuYW50LnYxLkxpc3RTdWJzY3JpcHRpb25zUmVzcG9uc2USSQoMUmF0ZVN0cmF0ZWd5EhsuYW50LnYxLlJhdGVTdHJhdGVneVJlcXVlc3QaHC5hbnQudjEuUmF0ZVN0cmF0ZWd5UmVzcG9uc2USRgoLTGlzdFJhdGluZ3MSGi5hbnQudjEuTGlzdFJhdGluZ3NSZXF1ZXN0GhsuYW50LnYxLkxpc3RSYXRpbmdzUmVzcG9uc2USWAoRQ29tbWVudE9uU3RyYXRlZ3kSIC5hbnQudjEuQ29tbWVudE9uU3RyYXRlZ3lSZXF1ZXN0GiEuYW50LnYxLkNvbW1lbnRPblN0cmF0ZWd5UmVzcG9uc2USSQoMTGlzdENvbW1lbnRzEhsuYW50LnYxLkxpc3RDb21tZW50c1JlcXVlc3QaHC5hbnQudjEuTGlzdENvbW1lbnRzUmVzcG9uc2USWwoSU2V0U3RyYXRlZ3lQcmljaW5nEiEuYW50LnYxLlNldFN0cmF0ZWd5UHJpY2luZ1JlcXVlc3QaIi5hbnQudjEuU2V0U3RyYXRlZ3lQcmljaW5nUmVzcG9uc2USZAoRVW5wdWJsaXNoU3RyYXRlZ3kSJi5hbnQudjEuVW5wdWJsaXNoTWFya2V0U3RyYXRlZ3lSZXF1ZXN0GicuYW50LnYxLlVucHVibGlzaE1hcmtldFN0cmF0ZWd5UmVzcG9uc2USWAoRR2V0UHVibGlzaGVyU3RhdHMSIC5hbnQudjEuR2V0UHVibGlzaGVyU3RhdHNSZXF1ZXN0GiEuYW50LnYxLkdldFB1Ymxpc2hlclN0YXRzUmVzcG9uc2USUgoRUnVuTWFya2V0QmFja3Rlc3QSIC5hbnQudjEuUnVuTWFya2V0QmFja3Rlc3RSZXF1ZXN0GhkuYW50LnYxLkJhY2t0ZXN0UnVuVXBkYXRlMAESWwoSR2V0TGl2ZVBlcmZvcm1hbmNlEiEuYW50LnYxLkdldExpdmVQZXJmb3JtYW5jZVJlcXVlc3QaIi5hbnQudjEuR2V0TGl2ZVBlcmZvcm1hbmNlUmVzcG9uc2USUgoPTGlua0xpdmVBY2NvdW50Eh4uYW50LnYxLkxpbmtMaXZlQWNjb3VudFJlcXVlc3QaHy5hbnQudjEuTGlua0xpdmVBY2NvdW50UmVzcG9uc2USWgoSR2VuZXJhdGVBbmRQdWJsaXNoEiEuYW50LnYxLkdlbmVyYXRlQW5kUHVibGlzaFJlcXVlc3QaHy5hbnQudjEuR2VuZXJhdGVBbmRQdWJsaXNoRXZlbnQwARJeChRHZW5lcmF0ZUZyb21UZW1wbGF0ZRIjLmFudC52MS5HZW5lcmF0ZUZyb21UZW1wbGF0ZVJlcXVlc3QaHy5hbnQudjEuR2VuZXJhdGVBbmRQdWJsaXNoRXZlbnQwARJkChVMaXN0U3RyYXRlZ3lUZW1wbGF0ZXMSJC5hbnQudjEuTGlzdFN0cmF0ZWd5VGVtcGxhdGVzUmVxdWVzdBolLmFudC52MS5MaXN0U3RyYXRlZ3lUZW1wbGF0ZXNSZXNwb25zZUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp, file_backtest_execution_config, file_backtest_run_query]);
 
 /**
  * @generated from message ant.v1.PublishStrategyRequest
@@ -1334,6 +1334,341 @@ export const LinkLiveAccountResponseSchema: GenMessage<LinkLiveAccountResponse> 
   messageDesc(file_marketplace_service, 37);
 
 /**
+ * @generated from message ant.v1.GenerateAndPublishRequest
+ */
+export type GenerateAndPublishRequest = Message<"ant.v1.GenerateAndPublishRequest"> & {
+  /**
+   * natural language strategy description
+   *
+   * @generated from field: string description = 1;
+   */
+  description: string;
+
+  /**
+   * target asset class
+   *
+   * @generated from field: string asset_class = 2;
+   */
+  assetClass: string;
+
+  /**
+   * target symbols
+   *
+   * @generated from field: repeated string symbols = 3;
+   */
+  symbols: string[];
+
+  /**
+   * target timeframe
+   *
+   * @generated from field: string timeframe = 4;
+   */
+  timeframe: string;
+
+  /**
+   * conservative / moderate / aggressive
+   *
+   * @generated from field: string risk_level = 5;
+   */
+  riskLevel: string;
+
+  /**
+   * trend_following / mean_reversion / breakout / arbitrage / auto
+   *
+   * @generated from field: string strategy_type = 6;
+   */
+  strategyType: string;
+
+  /**
+   * auto-publish after quality gate passes (default true)
+   *
+   * @generated from field: bool auto_publish = 7;
+   */
+  autoPublish: boolean;
+
+  /**
+   * optional custom strategy title
+   *
+   * @generated from field: string title_override = 8;
+   */
+  titleOverride: string;
+
+  /**
+   * en / zh-cn
+   *
+   * @generated from field: string language = 9;
+   */
+  language: string;
+};
+
+/**
+ * Describes the message ant.v1.GenerateAndPublishRequest.
+ * Use `create(GenerateAndPublishRequestSchema)` to create a new message.
+ */
+export const GenerateAndPublishRequestSchema: GenMessage<GenerateAndPublishRequest> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 38);
+
+/**
+ * @generated from message ant.v1.GenerateAndPublishEvent
+ */
+export type GenerateAndPublishEvent = Message<"ant.v1.GenerateAndPublishEvent"> & {
+  /**
+   * generating | compiling | backtesting | evaluating | publishing | completed | failed
+   *
+   * @generated from field: string stage = 1;
+   */
+  stage: string;
+
+  /**
+   * user-readable status message
+   *
+   * @generated from field: string message = 2;
+   */
+  message: string;
+
+  /**
+   * 0.0 ~ 1.0 estimated progress
+   *
+   * @generated from field: double progress = 3;
+   */
+  progress: number;
+
+  /**
+   * populated at stage=completed
+   *
+   * generated strategy ID
+   *
+   * @generated from field: string strategy_id = 4;
+   */
+  strategyId: string;
+
+  /**
+   * publish ID (if auto_publish=true)
+   *
+   * @generated from field: string publish_id = 5;
+   */
+  publishId: string;
+
+  /**
+   * backtest result summary
+   *
+   * @generated from field: ant.v1.BacktestSnapshot backtest = 6;
+   */
+  backtest?: BacktestSnapshot | undefined;
+
+  /**
+   * populated at stage=failed
+   *
+   * which step failed
+   *
+   * @generated from field: string error_stage = 7;
+   */
+  errorStage: string;
+
+  /**
+   * failure reason
+   *
+   * @generated from field: string error_detail = 8;
+   */
+  errorDetail: string;
+
+  /**
+   * user can retry
+   *
+   * @generated from field: bool retryable = 9;
+   */
+  retryable: boolean;
+
+  /**
+   * populated at stage=generating (streamed text)
+   *
+   * streaming text delta from LLM
+   *
+   * @generated from field: string delta = 10;
+   */
+  delta: string;
+
+  /**
+   * final generated source code
+   *
+   * @generated from field: string python_source = 11;
+   */
+  pythonSource: string;
+
+  /**
+   * populated at stage=evaluating
+   *
+   * @generated from field: repeated ant.v1.QualityViolationInfo violations = 12;
+   */
+  violations: QualityViolationInfo[];
+};
+
+/**
+ * Describes the message ant.v1.GenerateAndPublishEvent.
+ * Use `create(GenerateAndPublishEventSchema)` to create a new message.
+ */
+export const GenerateAndPublishEventSchema: GenMessage<GenerateAndPublishEvent> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 39);
+
+/**
+ * @generated from message ant.v1.QualityViolationInfo
+ */
+export type QualityViolationInfo = Message<"ant.v1.QualityViolationInfo"> & {
+  /**
+   * @generated from field: string metric = 1;
+   */
+  metric: string;
+
+  /**
+   * @generated from field: string actual = 2;
+   */
+  actual: string;
+
+  /**
+   * @generated from field: string threshold = 3;
+   */
+  threshold: string;
+};
+
+/**
+ * Describes the message ant.v1.QualityViolationInfo.
+ * Use `create(QualityViolationInfoSchema)` to create a new message.
+ */
+export const QualityViolationInfoSchema: GenMessage<QualityViolationInfo> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 40);
+
+/**
+ * @generated from message ant.v1.GenerateFromTemplateRequest
+ */
+export type GenerateFromTemplateRequest = Message<"ant.v1.GenerateFromTemplateRequest"> & {
+  /**
+   * @generated from field: string template_id = 1;
+   */
+  templateId: string;
+
+  /**
+   * user-filled parameter values {"fast_period":15,...}
+   *
+   * @generated from field: string parameters_json = 2;
+   */
+  parametersJson: string;
+
+  /**
+   * @generated from field: string symbol = 3;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: string timeframe = 4;
+   */
+  timeframe: string;
+
+  /**
+   * @generated from field: bool auto_publish = 5;
+   */
+  autoPublish: boolean;
+};
+
+/**
+ * Describes the message ant.v1.GenerateFromTemplateRequest.
+ * Use `create(GenerateFromTemplateRequestSchema)` to create a new message.
+ */
+export const GenerateFromTemplateRequestSchema: GenMessage<GenerateFromTemplateRequest> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 41);
+
+/**
+ * @generated from message ant.v1.ListStrategyTemplatesRequest
+ */
+export type ListStrategyTemplatesRequest = Message<"ant.v1.ListStrategyTemplatesRequest"> & {
+  /**
+   * optional filter
+   *
+   * @generated from field: string template_type = 1;
+   */
+  templateType: string;
+};
+
+/**
+ * Describes the message ant.v1.ListStrategyTemplatesRequest.
+ * Use `create(ListStrategyTemplatesRequestSchema)` to create a new message.
+ */
+export const ListStrategyTemplatesRequestSchema: GenMessage<ListStrategyTemplatesRequest> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 42);
+
+/**
+ * @generated from message ant.v1.ListStrategyTemplatesResponse
+ */
+export type ListStrategyTemplatesResponse = Message<"ant.v1.ListStrategyTemplatesResponse"> & {
+  /**
+   * @generated from field: repeated ant.v1.StrategyParameterTemplate templates = 1;
+   */
+  templates: StrategyParameterTemplate[];
+};
+
+/**
+ * Describes the message ant.v1.ListStrategyTemplatesResponse.
+ * Use `create(ListStrategyTemplatesResponseSchema)` to create a new message.
+ */
+export const ListStrategyTemplatesResponseSchema: GenMessage<ListStrategyTemplatesResponse> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 43);
+
+/**
+ * @generated from message ant.v1.StrategyParameterTemplate
+ */
+export type StrategyParameterTemplate = Message<"ant.v1.StrategyParameterTemplate"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string template_key = 2;
+   */
+  templateKey: string;
+
+  /**
+   * @generated from field: string template_type = 3;
+   */
+  templateType: string;
+
+  /**
+   * localized by Accept-Language
+   *
+   * @generated from field: string name = 4;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string description = 5;
+   */
+  description: string;
+
+  /**
+   * JSON string for frontend dynamic form rendering
+   *
+   * @generated from field: string parameters_schema = 6;
+   */
+  parametersSchema: string;
+
+  /**
+   * @generated from field: string default_risk_level = 7;
+   */
+  defaultRiskLevel: string;
+
+  /**
+   * @generated from field: string icon = 8;
+   */
+  icon: string;
+};
+
+/**
+ * Describes the message ant.v1.StrategyParameterTemplate.
+ * Use `create(StrategyParameterTemplateSchema)` to create a new message.
+ */
+export const StrategyParameterTemplateSchema: GenMessage<StrategyParameterTemplate> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 44);
+
+/**
  * @generated from service ant.v1.MarketplaceService
  */
 export const MarketplaceService: GenService<{
@@ -1478,6 +1813,37 @@ export const MarketplaceService: GenService<{
     methodKind: "unary";
     input: typeof LinkLiveAccountRequestSchema;
     output: typeof LinkLiveAccountResponseSchema;
+  },
+  /**
+   * Phase 2: AI strategy generation → compile → backtest → quality gate → auto-publish.
+   * Streams progress events through all stages.
+   *
+   * @generated from rpc ant.v1.MarketplaceService.GenerateAndPublish
+   */
+  generateAndPublish: {
+    methodKind: "server_streaming";
+    input: typeof GenerateAndPublishRequestSchema;
+    output: typeof GenerateAndPublishEventSchema;
+  },
+  /**
+   * Phase 2: Generate from a parameter template.
+   *
+   * @generated from rpc ant.v1.MarketplaceService.GenerateFromTemplate
+   */
+  generateFromTemplate: {
+    methodKind: "server_streaming";
+    input: typeof GenerateFromTemplateRequestSchema;
+    output: typeof GenerateAndPublishEventSchema;
+  },
+  /**
+   * Phase 2: List available strategy parameter templates.
+   *
+   * @generated from rpc ant.v1.MarketplaceService.ListStrategyTemplates
+   */
+  listStrategyTemplates: {
+    methodKind: "unary";
+    input: typeof ListStrategyTemplatesRequestSchema;
+    output: typeof ListStrategyTemplatesResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_marketplace_service, 0);

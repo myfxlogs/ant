@@ -335,3 +335,6 @@ func (s *GatewayServer) SettingsStore() *SettingsStore { return s.settings }
 
 // HookEngine returns the shared hook engine instance.
 func (s *GatewayServer) HookEngine() *HookEngine { return s.hooks }
+
+// Generator returns the strategy generator for Phase 2 marketplace integration.
+func (s *GatewayServer) Generator() *Generator { return s.generator }

@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Tabs, Typography, Drawer } from 'antd';
-import { ShopOutlined, BookOutlined, UserOutlined } from '@ant-design/icons';
+import { ShopOutlined, BookOutlined, UserOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import Seo from '@/components/common/Seo';
 import { useMarketplace } from './hooks/useMarketplace';
@@ -8,6 +8,7 @@ import { MarketplaceProvider } from './MarketplaceContext';
 import MarketTab from './components/MarketTab';
 import PurchaseTab from './components/PurchaseTab';
 import AuthorTab from './components/AuthorTab';
+import AutoGeneratePanel from './components/AutoGeneratePanel';
 import StrategyDetailModal from './components/StrategyDetailModal';
 import PaymentModal from './components/PaymentModal';
 import ProtectedBacktestPanel from './components/ProtectedBacktestPanel';
@@ -17,6 +18,7 @@ const { Title, Text } = Typography;
 const MarketTabMemo = memo(MarketTab);
 const PurchaseTabMemo = memo(PurchaseTab);
 const AuthorTabMemo = memo(AuthorTab);
+const AutoGenerateMemo = memo(AutoGeneratePanel);
 
 function MarketplaceUI() {
   const { t } = useTranslation();
@@ -39,6 +41,7 @@ function MarketplaceUI() {
           </div>
           <Tabs activeKey={m.activeTab} onChange={k => m.setActiveTab(k as any)} items={[
             { key: 'market', label: <span><ShopOutlined /> {t('marketplace.tabs.marketplace')}</span>, children: <MarketTabMemo /> },
+            { key: 'ai', label: <span><RobotOutlined /> {t('marketplace.tabs.ai', { defaultValue: 'AI Generate' })}</span>, children: <AutoGenerateMemo /> },
             { key: 'purchases', label: <span><BookOutlined /> {t('marketplace.tabs.purchases', 'My Purchases')}</span>, children: <PurchaseTabMemo /> },
             { key: 'author', label: <span><UserOutlined /> {t('marketplace.tabs.author', 'Author Center')}</span>, children: <AuthorTabMemo /> },
           ]} />

@@ -29,7 +29,40 @@ const Marketplace = {
       "codeSnippetPlaceholder": "可选：分享策略的高层思路或代码片段（所有人可见）",
       "includeBacktestSnapshot": "附带最新回测成绩"
     },
-    "backtest": { "title": "策略回测", "protected": "策略代码受保护，回测在服务器端执行。", "run": "运行回测", "idle": "设置参数并运行回测" }
+    "backtest": { "title": "策略回测", "protected": "策略代码受保护，回测在服务器端执行。", "run": "运行回测", "idle": "设置参数并运行回测" },
+    "autogen": {
+      "title": "AI 策略生成",
+      "subtitle": "用自然语言描述策略需求 — AI 自动生成、编译、回测并上架。",
+      "description": "描述你的策略",
+      "placeholder": "如：EURUSD H1 趋势跟踪，EMA 交叉信号，止损 50 点，止盈 100 点...",
+      "assetClass": "资产类别",
+      "symbol": "品种",
+      "timeframe": "时间周期",
+      "risk": "风险等级",
+      "type": "策略类型",
+      "start": "开始生成",
+      "cancel": "取消",
+      "autoPublishOn": "自动上架：开",
+      "autoPublishOff": "自动上架：关",
+      "needDescription": "请描述你的策略",
+      "failedAt": "失败于",
+      "retry": "重试",
+      "modify": "修改需求",
+      "qualityFailed": "策略已生成但未通过质量门槛",
+      "success": "策略生成并上架成功！",
+      "actual": "实际值",
+      "threshold": "阈值",
+      "viewDetail": "查看策略",
+      "generateAnother": "再生成一个",
+      "stages": {
+        "generating": "生成中",
+        "compiling": "编译中",
+        "backtesting": "回测中",
+        "evaluating": "质量评估",
+        "publishing": "上架中",
+        "completed": "已完成"
+      }
+    }
   }
 };
 export default Marketplace;
