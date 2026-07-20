@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Modal, Descriptions, Tag, Button, Typography, Space, Divider, Input, List, Spin, Rate } from 'antd';
+import { Modal, Descriptions, Tag, Button, Typography, Space, Divider, Input, List, Spin, Rate, Tabs } from 'antd';
 import { ShoppingCartOutlined, DownloadOutlined, UserOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useStrategyDiscussion } from '../hooks/useStrategyDiscussion';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
+import LivePerformanceTab from './LivePerformanceTab';
 
 const { Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -40,6 +41,7 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
 
   const [commentText, setCommentText] = useState('');
   const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [perfTab, setPerfTab] = useState('backtest');
 
   // Load discussion data when a new strategy is opened
   useEffect(() => {
@@ -229,6 +231,31 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
           </Button>
         </div>
       </div>
+
+      <Divider />
+
+      {/* Performance tabs */}
+      <Tabs activeKey={perfTab} onChange={setPerfTab} size="small" style={{ marginBottom: 16 }} items={[
+        { key: 'backtest', label: t('marketplace.detail.backtestTab', { defaultValue: 'Backtest' }), children: (
+          <div>
+            {strategy.backtestSnapshot ? (
+              <Descriptions column={3} size="small">
+                <Descriptions.Item label={t('marketplace.backtest.totalReturn', { defaultValue: 'Total Return' })}>{strategy.backtestSnapshot.totalReturn || '-'}</Descriptions.Item>
+                <Descriptions.Item label={t('marketplace.backtest.maxDrawdown', { defaultValue: 'Max Drawdown' })}>{strategy.backtestSnapshot.maxDrawdown || '-'}</Descriptions.Item>
+                <Descriptions.Item label={t('marketplace.backtest.sharpe', { defaultValue: 'Sharpe' })}>{strategy.backtestSnapshot.sharpeRatio || '-'}</Descriptions.Item>
+                <Descriptions.Item label={t('marketplace.backtest.winRate', { defaultValue: 'Win Rate' })}>{strategy.backtestSnapshot.winRate || '-'}</Descriptions.Item>
+                <Descriptions.Item label={t('marketplace.backtest.totalTrades', { defaultValue: 'Total Trades' })}>{strategy.backtestSnapshot.totalTrades || '-'}</Descriptions.Item>
+                <Descriptions.Item label={t('marketplace.backtest.symbol', { defaultValue: 'Symbol' })}>{strategy.backtestSnapshot.symbol || '-'}</Descriptions.Item>
+              </Descriptions>
+            ) : (
+              <Empty description={t('marketplace.detail.noBacktest', { defaultValue: 'No backtest snapshot available' })} />
+            )}
+          </div>
+        )},
+        { key: 'live', label: t('marketplace.detail.liveTab', { defaultValue: 'Live Performance' }), children: (
+          <LivePerformanceTab strategyId={strategy.strategyId} isOwner={isOwner} />
+        )},
+      ]} />
 
       <Divider />
 
