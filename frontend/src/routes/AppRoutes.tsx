@@ -13,6 +13,7 @@ const Login = lazy(() => import('@/pages/auth/Login'));
 const Register = lazy(() => import('@/pages/auth/Register'));
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
 const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
+const LandingPage = lazy(() => import('@/pages/landing/LandingPage'));
 const AccountDetail = lazy(() => import('@/pages/accounts/AccountDetail'));
 const BindAccount = lazy(() => import('@/pages/accounts/BindAccount'));
 const AccountReport = lazy(() => import('@/pages/accounts/AccountReport'));
@@ -123,7 +124,7 @@ const adminRoutes = (
 
 // ── App content ──
 export function AppRoutes() {
-  const { _hasHydrated } = useAuthStore();
+  const { _hasHydrated, isAuthenticated } = useAuthStore();
   if (!_hasHydrated) {
     return <div className="min-h-screen flex items-center justify-center"><Spin size="large" /></div>;
   }
@@ -131,6 +132,10 @@ export function AppRoutes() {
     <Routes>
       {/* Public share page — standalone, no SSE, no auth */}
       <Route path="/share/:token" element={<SharePerformancePage />} />
+      {/* Public landing page — unauthenticated only; authenticated falls through to * */}
+      {!isAuthenticated && <Route path="/" element={<LandingPage />} />}
+      {/* Public marketplace — unauthenticated only; authenticated uses mainRoutes version with layout */}
+      {!isAuthenticated && <Route path="/marketplace" element={wrap(<MarketplacePage />)} />}
       {/* Everything else inside StreamProvider */}
       <Route path="*" element={
         <StreamProvider>

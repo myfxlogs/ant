@@ -148,7 +148,13 @@ export default function SharePerformancePage() {
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: 'clamp(10px, 3vw, 24px)', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', background: pageBg, color: pageColor, minHeight: '100vh' }}>
-      <Seo title="Shared Performance Report" description="View shared trading performance report on AlphaForge." path={`/share/${token}`} />
+      <Seo
+        title={data ? `${data.userName}'s Trading Performance` : 'Shared Performance Report'}
+        description={data
+          ? `${data.userName}: ${signed(toNum(data.totalReturn))} total return, ${fmt(toNum(data.winRate), 1)}% win rate, ${data.totalTrades} trades on AlphaForge.`
+          : 'View shared trading performance report on AlphaForge.'}
+        path={`/share/${token}`}
+      />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 'clamp(14px, 3vw, 20px)' }}>
         <BrandLogo name={appName} dark={isDark} />
         {langSelector}
