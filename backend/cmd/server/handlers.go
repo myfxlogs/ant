@@ -302,7 +302,7 @@ func registerHandlers(
 
 	// Phase 2.2: Batch generator — PG NOTIFY-driven AI strategy generation queue.
 	if agentGateway.Generator() != nil {
-		batchGen := marketplace.NewBatchGenerator(pool, log, agentGateway.Generator(), pgListen)
+		batchGen := marketplace.NewBatchGenerator(pool, log, agentGateway.Generator(), pgListen, mktplaceSvc)
 		mktplaceHandler.SetBatchGenerator(batchGen)
 		batchGen.Start(ctx) // background consumer goroutine
 	}

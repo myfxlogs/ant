@@ -2,11 +2,14 @@ package marketplace
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -19,12 +22,13 @@ import (
 // Producer: EnqueueBatch creates tasks for symbol×timeframe×type combinations.
 // Consumer: PG NOTIFY-driven worker picks up pending tasks and runs generation.
 type BatchGenerator struct {
-	pg      *pgxpool.Pool
-	log     *zap.Logger
-	gen     BatchAgentGenerator
+	pg       *pgxpool.Pool
+	log      *zap.Logger
+	gen      BatchAgentGenerator
 	pgListen *pglisten.Listener
-	stopCh  chan struct{}
-	wg      sync.WaitGroup
+	quality  QualityValidator
+	stopCh   chan struct{}
+	wg       sync.WaitGroup
 }
 
 // BatchAgentGenerator is the interface for AI generation within batch context.
@@ -35,6 +39,11 @@ type BatchAgentGenerator interface {
 // TaskPublisher is the interface for publishing approved batch tasks.
 type TaskPublisher interface {
 	Publish(ctx context.Context, params PublishParams) (string, error)
+}
+
+// QualityValidator is the interface for validating backtest quality.
+type QualityValidator interface {
+	ValidateBacktestQuality(ctx context.Context, snapshotProto []byte, strategyID string) ([]QualityViolation, error)
 }
 
 // AutoGenTask represents a row in auto_generation_tasks.
@@ -56,20 +65,27 @@ type AutoGenTask struct {
 const notifyChannel = "auto_generation_task_ready"
 
 // NewBatchGenerator creates the batch generator.
-func NewBatchGenerator(pg *pgxpool.Pool, log *zap.Logger, gen BatchAgentGenerator, pgListen *pglisten.Listener) *BatchGenerator {
+func NewBatchGenerator(pg *pgxpool.Pool, log *zap.Logger, gen BatchAgentGenerator, pgListen *pglisten.Listener, quality QualityValidator) *BatchGenerator {
 	return &BatchGenerator{
-		pg:      pg,
-		log:     log,
-		gen:     gen,
+		pg:       pg,
+		log:      log,
+		gen:      gen,
 		pgListen: pgListen,
-		stopCh:  make(chan struct{}),
+		quality:  quality,
+		stopCh:   make(chan struct{}),
 	}
 }
 
 // EnqueueBatch creates tasks for the cartesian product of symbols×timeframes×types.
 // Skips combinations that failed 3+ times in the last 7 days.
+// Uses a single multi-row INSERT for efficiency.
 func (b *BatchGenerator) EnqueueBatch(ctx context.Context, symbols, timeframes, strategyTypes []string, riskLevel string) (int, error) {
+	// Build values and args for a single batch INSERT.
+	var valueParts []string
+	var args []any
+	argIdx := 1
 	inserted := 0
+
 	for _, sym := range symbols {
 		for _, tf := range timeframes {
 			for _, st := range strategyTypes {
@@ -80,20 +96,27 @@ func (b *BatchGenerator) EnqueueBatch(ctx context.Context, symbols, timeframes, 
 				if skip {
 					continue
 				}
-				_, err = b.pg.Exec(ctx,
-					`INSERT INTO auto_generation_tasks (symbol, timeframe, strategy_type, risk_level, status)
-					 VALUES ($1, $2, $3, $4, 'pending')`,
-					sym, tf, st, riskLevel)
-				if err != nil {
-					return inserted, fmt.Errorf("batch: insert task: %w", err)
-				}
+				valueParts = append(valueParts, fmt.Sprintf("($%d, $%d, $%d, $%d, 'pending')", argIdx, argIdx+1, argIdx+2, argIdx+3))
+				args = append(args, sym, tf, st, riskLevel)
+				argIdx += 4
 				inserted++
 			}
 		}
 	}
-	if inserted > 0 {
-		pglisten.Notify(ctx, b.pg, notifyChannel, "")
+
+	if inserted == 0 {
+		b.log.Info("batch: no tasks to enqueue (all skipped)")
+		return 0, nil
 	}
+
+	query := `INSERT INTO auto_generation_tasks (symbol, timeframe, strategy_type, risk_level, status) VALUES ` +
+		strings.Join(valueParts, ", ")
+	_, err := b.pg.Exec(ctx, query, args...)
+	if err != nil {
+		return 0, fmt.Errorf("batch: batch insert tasks: %w", err)
+	}
+
+	pglisten.Notify(ctx, b.pg, notifyChannel, "")
 	b.log.Info("batch: enqueued tasks", zap.Int("count", inserted))
 	return inserted, nil
 }
@@ -184,7 +207,7 @@ func (b *BatchGenerator) claimNextTask(ctx context.Context) (*AutoGenTask, error
 	var t AutoGenTask
 	err := row.Scan(&t.ID, &t.Symbol, &t.Timeframe, &t.StrategyType, &t.RiskLevel, &t.Status)
 	if err != nil {
-		if err.Error() == "no rows in result set" {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -263,7 +286,23 @@ func (b *BatchGenerator) processTask(ctx context.Context, task *AutoGenTask) {
 		snapshotBytes, _ = proto.Marshal(snap)
 	}
 
-	b.completeTask(ctx, task.ID, snapshotBytes)
+	// Validate quality if a validator is configured.
+	qualityPassed := true
+	if b.quality != nil && len(snapshotBytes) > 0 {
+		violations, qErr := b.quality.ValidateBacktestQuality(ctx, snapshotBytes, "")
+		if qErr != nil {
+			b.log.Warn("batch: quality validation error", zap.Error(qErr))
+		} else {
+			qualityPassed = len(violations) == 0
+			if !qualityPassed {
+				b.log.Info("batch: task failed quality gate",
+					zap.String("task", task.ID.String()),
+					zap.Int("violations", len(violations)))
+			}
+		}
+	}
+
+	b.completeTask(ctx, task.ID, snapshotBytes, qualityPassed)
 }
 
 func (b *BatchGenerator) failTask(ctx context.Context, taskID uuid.UUID, errMsg string) {
@@ -278,16 +317,18 @@ func (b *BatchGenerator) failTask(ctx context.Context, taskID uuid.UUID, errMsg 
 	b.log.Warn("batch: task failed", zap.String("task", taskID.String()), zap.String("error", errMsg))
 }
 
-func (b *BatchGenerator) completeTask(ctx context.Context, taskID uuid.UUID, snapshot []byte) {
+func (b *BatchGenerator) completeTask(ctx context.Context, taskID uuid.UUID, snapshot []byte, qualityPassed bool) {
 	_, err := b.pg.Exec(ctx,
 		`UPDATE auto_generation_tasks
-		 SET status='awaiting_review', result_backtest_snapshot=$2, quality_passed=true, finished_at=now()
+		 SET status='awaiting_review', result_backtest_snapshot=$2, quality_passed=$3, finished_at=now()
 		 WHERE id=$1`,
-		taskID, snapshot)
+		taskID, snapshot, qualityPassed)
 	if err != nil {
 		b.log.Error("batch: completeTask DB error", zap.Error(err))
 	}
-	b.log.Info("batch: task completed, awaiting review", zap.String("task", taskID.String()))
+	b.log.Info("batch: task completed, awaiting review",
+		zap.String("task", taskID.String()),
+		zap.Bool("quality_passed", qualityPassed))
 }
 
 // ListTasks returns tasks filtered by status with pagination.
