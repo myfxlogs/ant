@@ -132,6 +132,8 @@ message PublishedStrategy {
   // Code protection & performance
   string code_snippet = 22;  // publisher-provided public code preview
   BacktestSnapshot backtest_snapshot = 23;  // snapshot of backtest results
+  bool provider_verified = 24;     // provider identity verified badge
+  string provider_type = 25;       // human | ai | hybrid
 }
 
 message ListSubscriptionsRequest {

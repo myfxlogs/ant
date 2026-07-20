@@ -160,6 +160,8 @@ func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Requ
 		}
 		item.AvgRating = p.AvgRating
 		item.RatingCount = p.RatingCount
+		item.ProviderVerified = p.ProviderVerified
+		item.ProviderType = p.ProviderType
 		resp.Strategies = append(resp.Strategies, item)
 	}
 	return connect.NewResponse(resp), nil

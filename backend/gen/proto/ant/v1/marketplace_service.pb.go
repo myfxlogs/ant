@@ -804,8 +804,10 @@ type PublishedStrategy struct {
 	AvgRating        float64  `protobuf:"fixed64,18,opt,name=avg_rating,json=avgRating,proto3" json:"avg_rating,omitempty"`
 	RatingCount      int32    `protobuf:"varint,19,opt,name=rating_count,json=ratingCount,proto3" json:"rating_count,omitempty"`
 	// Code protection & performance
-	CodeSnippet      string            `protobuf:"bytes,22,opt,name=code_snippet,json=codeSnippet,proto3" json:"code_snippet,omitempty"`                // publisher-provided public code preview
-	BacktestSnapshot *BacktestSnapshot `protobuf:"bytes,23,opt,name=backtest_snapshot,json=backtestSnapshot,proto3" json:"backtest_snapshot,omitempty"` // snapshot of backtest results
+	CodeSnippet      string            `protobuf:"bytes,22,opt,name=code_snippet,json=codeSnippet,proto3" json:"code_snippet,omitempty"`                 // publisher-provided public code preview
+	BacktestSnapshot *BacktestSnapshot `protobuf:"bytes,23,opt,name=backtest_snapshot,json=backtestSnapshot,proto3" json:"backtest_snapshot,omitempty"`  // snapshot of backtest results
+	ProviderVerified bool              `protobuf:"varint,24,opt,name=provider_verified,json=providerVerified,proto3" json:"provider_verified,omitempty"` // provider identity verified badge
+	ProviderType     string            `protobuf:"bytes,25,opt,name=provider_type,json=providerType,proto3" json:"provider_type,omitempty"`              // human | ai | hybrid
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -985,6 +987,20 @@ func (x *PublishedStrategy) GetBacktestSnapshot() *BacktestSnapshot {
 		return x.BacktestSnapshot
 	}
 	return nil
+}
+
+func (x *PublishedStrategy) GetProviderVerified() bool {
+	if x != nil {
+		return x.ProviderVerified
+	}
+	return false
+}
+
+func (x *PublishedStrategy) GetProviderType() string {
+	if x != nil {
+		return x.ProviderType
+	}
+	return ""
 }
 
 type ListSubscriptionsRequest struct {
@@ -2675,7 +2691,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x15ListPublishedResponse\x129\n" +
 	"\n" +
 	"strategies\x18\x01 \x03(\v2\x19.ant.v1.PublishedStrategyR\n" +
-	"strategies\"\xfc\x05\n" +
+	"strategies\"\xce\x06\n" +
 	"\x11PublishedStrategy\x12\x1d\n" +
 	"\n" +
 	"publish_id\x18\x01 \x01(\tR\tpublishId\x12\x1f\n" +
@@ -2704,7 +2720,9 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"avg_rating\x18\x12 \x01(\x01R\tavgRating\x12!\n" +
 	"\frating_count\x18\x13 \x01(\x05R\vratingCount\x12!\n" +
 	"\fcode_snippet\x18\x16 \x01(\tR\vcodeSnippet\x12E\n" +
-	"\x11backtest_snapshot\x18\x17 \x01(\v2\x18.ant.v1.BacktestSnapshotR\x10backtestSnapshot\"3\n" +
+	"\x11backtest_snapshot\x18\x17 \x01(\v2\x18.ant.v1.BacktestSnapshotR\x10backtestSnapshot\x12+\n" +
+	"\x11provider_verified\x18\x18 \x01(\bR\x10providerVerified\x12#\n" +
+	"\rprovider_type\x18\x19 \x01(\tR\fproviderType\"3\n" +
 	"\x18ListSubscriptionsRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"[\n" +
 	"\x19ListSubscriptionsResponse\x12>\n" +

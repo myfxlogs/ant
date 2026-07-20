@@ -232,7 +232,7 @@ func (s *Service) ListPublished(ctx context.Context, userID string, limit int, o
 			&p.Title, &p.Description, &p.PriceModel, &p.PriceAmount,
 			&p.AssetClass, &symbolsRaw, &p.Timeframe, &p.RiskLevel, &tagsRaw,
 			&p.TotalSubscribers, &p.WinRate, &p.TotalPnL, &p.AvgRating, &p.RatingCount,
-			&p.CodeSnippet, &snapshotRaw); err != nil {
+			&p.CodeSnippet, &snapshotRaw, &p.ProviderVerified, &p.ProviderType); err != nil {
 			return nil, err
 		}
 		p.Symbols = parseJSONStringArray(symbolsRaw)
@@ -262,7 +262,8 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit, offs
 			COALESCE(ms.symbols::text,'{}'), ms.timeframe, COALESCE(ms.risk_level,''),
 			COALESCE(ms.tags::text,'{}'), COALESCE(ms.total_subscribers,0), ms.win_rate, ms.total_pnl,
 			COALESCE(r.avg_rating,0), COALESCE(r.rating_count,0),
-			COALESCE(ms.code_snippet,''), ms.backtest_snapshot::text
+			COALESCE(ms.code_snippet,''), ms.backtest_snapshot::text,
+			COALESCE(u.verified_provider,false), COALESCE(u.provider_type,'human')
 		 FROM user_strategy_publishes usp
 		 LEFT JOIN marketplace_strategies ms ON ms.strategy_id=usp.platform_strategy_id
 		 LEFT JOIN strategy_templates st ON st.id::text=usp.platform_strategy_id::text

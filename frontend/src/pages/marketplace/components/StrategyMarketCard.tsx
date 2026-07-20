@@ -1,5 +1,5 @@
-import { Card, Tag, Typography, Rate, Space } from 'antd';
-import { CrownOutlined, StarFilled } from '@ant-design/icons';
+import { Card, Tag, Typography, Rate, Space, Tooltip } from 'antd';
+import { CrownOutlined, StarFilled, CheckCircleOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
 
@@ -57,9 +57,21 @@ export default function StrategyMarketCard({ strategy, isPurchased, isOwner, onO
       </div>
 
       {/* Author */}
-      <Text type="secondary" style={{ fontSize: 12 }}>
-        {String(strategy.publisherUserId || '').slice(0, 8)}
-      </Text>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          {String(strategy.publisherUserId || '').slice(0, 8)}
+        </Text>
+        {strategy.providerVerified && (
+          <Tooltip title={t('marketplace.card.verified', { defaultValue: 'Verified Provider' })}>
+            <CheckCircleOutlined style={{ color: '#1890ff', fontSize: 14 }} />
+          </Tooltip>
+        )}
+        {strategy.providerType === 'ai' && (
+          <Tooltip title={t('marketplace.card.aiProvider', { defaultValue: 'AI Provider' })}>
+            <RobotOutlined style={{ color: '#722ed1', fontSize: 12 }} />
+          </Tooltip>
+        )}
+      </div>
 
       {/* Rating */}
       {rating > 0 && (

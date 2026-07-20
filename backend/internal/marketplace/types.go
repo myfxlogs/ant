@@ -127,6 +127,8 @@ type PublishedStrategy struct {
 	RatingCount      int32
 	CodeSnippet          string              // publisher-provided code preview
 	BacktestSnapshotProto *antv1.BacktestSnapshot // optional backtest snapshot (proto)
+	ProviderVerified     bool                // provider identity verified
+	ProviderType         string              // human | ai | hybrid
 }
 
 // BacktestRunSnapshot is a lightweight read of a single backtest_runs row.
