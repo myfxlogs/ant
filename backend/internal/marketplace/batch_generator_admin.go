@@ -69,7 +69,7 @@ func (b *BatchGenerator) ApproveTask(ctx context.Context, taskID uuid.UUID, pub 
 	var templateID uuid.UUID
 	err = b.pg.QueryRow(ctx,
 		`INSERT INTO strategy_templates (user_id, name, description, code, is_public, is_system, tags, use_count)
-		 VALUES (NULL, $1, $2, $3, true, true, '{}', 0)
+		 VALUES (NULL, $1, $2, $3, false, true, '{}', 0)
 		 RETURNING id`,
 		fmt.Sprintf("%s %s %s", strategyType, symbol, timeframe),
 		fmt.Sprintf("AI-generated %s strategy for %s on %s", strategyType, symbol, timeframe),
