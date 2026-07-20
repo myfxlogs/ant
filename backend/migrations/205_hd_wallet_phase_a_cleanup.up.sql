@@ -20,7 +20,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_deposit_addr_one_per_user
 
 -- 6. New config items for watch-only + cold signing model (A9).
 INSERT INTO system_config (key, value, description, enabled)
-VALUES ('deposit_xpub', '', 'Account-level extended public key (m/44\'/195\'/0\'/0) for watch-only address derivation', true)
+VALUES ('deposit_xpub', '', 'Account-level extended public key (m/44''/195''/0''/0) for watch-only address derivation', true)
 ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO system_config (key, value, description, enabled)
