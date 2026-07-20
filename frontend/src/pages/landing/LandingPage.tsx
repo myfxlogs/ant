@@ -1,4 +1,5 @@
-import { Typography, Button, Row, Col, Card, Space } from 'antd';
+import { useEffect, useState } from 'react';
+import { Typography, Button, Row, Col, Card, Space, Select } from 'antd';
 import {
   BarChartOutlined, ThunderboltOutlined, RobotOutlined, SafetyOutlined,
   ShopOutlined, DashboardOutlined, RightOutlined, GlobalOutlined,
@@ -6,6 +7,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { normalizeLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
 import Seo from '@/components/common/Seo';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 
@@ -34,6 +36,22 @@ const platformIcons: CardIcon[] = [
 export default function LandingPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [lang, setLang] = useState<SupportedLanguage>(normalizeLanguage(navigator.language));
+
+  useEffect(() => { setLanguage(normalizeLanguage(navigator.language)); }, []);
+
+  const changeLang = (l: SupportedLanguage) => { setLang(l); setLanguage(l); };
+
+  const langSelector = (
+    <Select
+      size="small"
+      value={lang}
+      onChange={changeLang}
+      suffixIcon={<GlobalOutlined />}
+      style={{ minWidth: 120 }}
+      options={SUPPORTED_LANGUAGES.map(l => ({ value: l, label: l.toUpperCase() }))}
+    />
+  );
 
   return (
     <>
@@ -46,6 +64,7 @@ export default function LandingPage() {
             padding: '80px 24px 64px', textAlign: 'center', color: '#fff',
           }}
         >
+          <div style={{ position: 'absolute', top: 16, right: 24 }}>{langSelector}</div>
           <div style={{ maxWidth: 720, margin: '0 auto' }}>
             <Title level={1} style={{ color: '#fff', fontSize: 40, fontWeight: 800, marginBottom: 16 }}>
               <span style={{ background: PRIMARY_GRADIENT, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>

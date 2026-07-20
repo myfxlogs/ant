@@ -1,4 +1,5 @@
 const Landing = {
+  landing: {
   heroTitle: "AI-Powered MT4/MT5 Strategy Platform",
   heroSubtitle: "Create, backtest, and deploy MT4/MT5 trading strategies with AI optimization, built-in risk management, and real-time execution. No credit card required.",
   heroCTA: "Get Started Free",
@@ -39,5 +40,6 @@ const Landing = {
   ctaSubtitle: "Join traders who use AlphaForge to build, backtest, and deploy their strategies. Start for free — no credit card required.",
   ctaButton: "Create Free Account",
   footer: "AI-Powered MT4/MT5 Strategy Platform",
+  },
 };
 export default Landing;

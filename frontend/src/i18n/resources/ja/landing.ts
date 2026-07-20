@@ -1,4 +1,5 @@
 const Landing = {
+  landing: {
   heroTitle: "AI搭載 MT4/MT5 戦略プラットフォーム",
   heroSubtitle: "AI最適化、組込みリスク管理、リアルタイム執行でMT4/MT5取引戦略を作成、バックテスト、デプロイ。クレジットカード不要。",
   heroCTA: "無料で始める",
@@ -39,5 +40,6 @@ const Landing = {
   ctaSubtitle: "AlphaForgeで戦略を構築、バックテスト、デプロイするトレーダーに参加しましょう。無料で始められます。",
   ctaButton: "無料アカウントを作成",
   footer: "AI搭載 MT4/MT5 戦略プラットフォーム",
+  },
 };
 export default Landing;

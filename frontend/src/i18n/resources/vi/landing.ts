@@ -1,4 +1,5 @@
 const Landing = {
+  landing: {
   heroTitle: "Nền tảng Chiến lược MT4/MT5 Hỗ trợ AI",
   heroSubtitle: "Tạo, kiểm thử và triển khai chiến lược giao dịch MT4/MT5 với tối ưu hóa AI, quản lý rủi ro tích hợp và thực thi thời gian thực. Không cần thẻ tín dụng.",
   heroCTA: "Bắt đầu Miễn phí",
@@ -39,5 +40,6 @@ const Landing = {
   ctaSubtitle: "Tham gia cùng các nhà giao dịch sử dụng AlphaForge để xây dựng, kiểm thử và triển khai chiến lược. Bắt đầu miễn phí — không cần thẻ tín dụng.",
   ctaButton: "Tạo Tài khoản Miễn phí",
   footer: "Nền tảng Chiến lược MT4/MT5 Hỗ trợ AI",
+  },
 };
 export default Landing;

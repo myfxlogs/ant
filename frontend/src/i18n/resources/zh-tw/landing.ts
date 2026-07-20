@@ -1,4 +1,5 @@
 const Landing = {
+  landing: {
   heroTitle: "AI 驅動的 MT4/MT5 策略平台",
   heroSubtitle: "使用 AI 優化、內建風控和即時執行，創建、回測並部署 MT4/MT5 交易策略。無需信用卡。",
   heroCTA: "免費開始使用",
@@ -39,5 +40,6 @@ const Landing = {
   ctaSubtitle: "加入使用 AlphaForge 構建、回測和部署策略的交易者行列。免費開始 — 無需信用卡。",
   ctaButton: "創建免費帳戶",
   footer: "AI 驅動的 MT4/MT5 策略平台",
+  },
 };
 export default Landing;
