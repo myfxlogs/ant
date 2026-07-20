@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -12,7 +11,8 @@ import (
 	"alphaforge/internal/model"
 )
 
-// DepositAddressRepository manages the HD wallet address pool and deposit records.
+// DepositAddressRepository manages on-demand derived deposit addresses.
+// No address pool — addresses are derived from the account xpub as needed (ADR-0026 Q1).
 type DepositAddressRepository struct {
 	db DBTX
 }
@@ -21,46 +21,40 @@ func NewDepositAddressRepository(db DBTX) *DepositAddressRepository {
 	return &DepositAddressRepository{db: db}
 }
 
-// ClaimAddress atomically assigns an AVAILABLE address to a user.
-// Uses a single CTE to check for existing assignment AND claim a new one,
-// eliminating the TOCTOU race where concurrent calls could assign two
-// different addresses to the same user.
-func (r *DepositAddressRepository) ClaimAddress(ctx context.Context, userID uuid.UUID) (*model.DepositAddress, error) {
+// NextDerivationIndex allocates the next derivation index from deposit_addr_index_seq.
+// Uses PG SEQUENCE (nextval) — atomic, no MAX(index)+1 race (ADR-0026 Q1).
+func (r *DepositAddressRepository) NextDerivationIndex(ctx context.Context) (int, error) {
+	var idx int
+	err := r.db.QueryRow(ctx, `SELECT nextval('deposit_addr_index_seq')`).Scan(&idx)
+	if err != nil {
+		return 0, fmt.Errorf("deposit address repo: next derivation index: %w", err)
+	}
+	return idx, nil
+}
+
+// InsertDepositAddress inserts a new on-demand derived address for a user.
+// If a concurrent call already assigned an address to this user (caught by
+// the unique partial index on user_id WHERE status='ASSIGNED'), returns
+// the existing record instead — making GetOrCreateDepositAddress idempotent.
+func (r *DepositAddressRepository) InsertDepositAddress(
+	ctx context.Context, userID uuid.UUID, address, network string, derivationIndex int,
+) (*model.DepositAddress, error) {
 	var a model.DepositAddress
 	err := r.db.QueryRow(ctx, `
-		WITH existing AS (
-			SELECT id FROM user_deposit_addresses
-			WHERE user_id = $1 AND status = 'ASSIGNED'
-			LIMIT 1
-		),
-		claimed AS (
-			UPDATE user_deposit_addresses
-			SET user_id = $1, status = 'ASSIGNED', assigned_at = NOW(), updated_at = NOW()
-			WHERE id = (
-				SELECT id FROM user_deposit_addresses
-				WHERE status = 'AVAILABLE'
-				ORDER BY derivation_index
-				FOR UPDATE SKIP LOCKED
-				LIMIT 1
-			)
-			AND NOT EXISTS (SELECT 1 FROM existing)
-			RETURNING id
-		)
-		SELECT uda.id, uda.user_id, uda.address, uda.derivation_index, uda.encrypted_privkey,
-		       uda.network, uda.status, uda.has_received_usdt, uda.created_at, uda.updated_at, uda.assigned_at
-		FROM user_deposit_addresses uda
-		WHERE uda.id = (SELECT id FROM existing)
-		   OR uda.id = (SELECT id FROM claimed)
-		LIMIT 1
-	`, userID).Scan(
-		&a.ID, &a.UserID, &a.Address, &a.DerivationIndex, &a.EncryptedPrivkey,
+		INSERT INTO user_deposit_addresses (user_id, address, derivation_index, network, status, assigned_at)
+		VALUES ($1, $2, $3, $4, 'ASSIGNED', NOW())
+		ON CONFLICT (user_id) WHERE status = 'ASSIGNED' DO NOTHING
+		RETURNING id, user_id, address, derivation_index,
+		          network, status, has_received_usdt, created_at, updated_at, assigned_at
+	`, userID, address, derivationIndex, network).Scan(
+		&a.ID, &a.UserID, &a.Address, &a.DerivationIndex,
 		&a.Network, &a.Status, &a.HasReceivedUSDT, &a.CreatedAt, &a.UpdatedAt, &a.AssignedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrAddressPoolEmpty
+			return r.GetByUserID(ctx, userID)
 		}
-		return nil, fmt.Errorf("deposit address repo: claim: %w", err)
+		return nil, fmt.Errorf("deposit address repo: insert: %w", err)
 	}
 	return &a, nil
 }
@@ -69,12 +63,12 @@ func (r *DepositAddressRepository) ClaimAddress(ctx context.Context, userID uuid
 func (r *DepositAddressRepository) GetByUserID(ctx context.Context, userID uuid.UUID) (*model.DepositAddress, error) {
 	var a model.DepositAddress
 	err := r.db.QueryRow(ctx, `
-		SELECT id, user_id, address, derivation_index, encrypted_privkey,
+		SELECT id, user_id, address, derivation_index,
 		       network, status, has_received_usdt, created_at, updated_at, assigned_at
 		FROM user_deposit_addresses
 		WHERE user_id = $1 AND status = 'ASSIGNED'
 	`, userID).Scan(
-		&a.ID, &a.UserID, &a.Address, &a.DerivationIndex, &a.EncryptedPrivkey,
+		&a.ID, &a.UserID, &a.Address, &a.DerivationIndex,
 		&a.Network, &a.Status, &a.HasReceivedUSDT, &a.CreatedAt, &a.UpdatedAt, &a.AssignedAt,
 	)
 	if err != nil {
@@ -90,12 +84,12 @@ func (r *DepositAddressRepository) GetByUserID(ctx context.Context, userID uuid.
 func (r *DepositAddressRepository) GetByAddress(ctx context.Context, addr string) (*model.DepositAddress, error) {
 	var a model.DepositAddress
 	err := r.db.QueryRow(ctx, `
-		SELECT id, user_id, address, derivation_index, encrypted_privkey,
+		SELECT id, user_id, address, derivation_index,
 		       network, status, has_received_usdt, created_at, updated_at, assigned_at
 		FROM user_deposit_addresses
 		WHERE address = $1
 	`, addr).Scan(
-		&a.ID, &a.UserID, &a.Address, &a.DerivationIndex, &a.EncryptedPrivkey,
+		&a.ID, &a.UserID, &a.Address, &a.DerivationIndex,
 		&a.Network, &a.Status, &a.HasReceivedUSDT, &a.CreatedAt, &a.UpdatedAt, &a.AssignedAt,
 	)
 	if err != nil {
@@ -111,12 +105,12 @@ func (r *DepositAddressRepository) GetByAddress(ctx context.Context, addr string
 func (r *DepositAddressRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.DepositAddress, error) {
 	var a model.DepositAddress
 	err := r.db.QueryRow(ctx, `
-		SELECT id, user_id, address, derivation_index, encrypted_privkey,
+		SELECT id, user_id, address, derivation_index,
 		       network, status, has_received_usdt, created_at, updated_at, assigned_at
 		FROM user_deposit_addresses
 		WHERE id = $1
 	`, id).Scan(
-		&a.ID, &a.UserID, &a.Address, &a.DerivationIndex, &a.EncryptedPrivkey,
+		&a.ID, &a.UserID, &a.Address, &a.DerivationIndex,
 		&a.Network, &a.Status, &a.HasReceivedUSDT, &a.CreatedAt, &a.UpdatedAt, &a.AssignedAt,
 	)
 	if err != nil {
@@ -128,107 +122,22 @@ func (r *DepositAddressRepository) GetByID(ctx context.Context, id uuid.UUID) (*
 	return &a, nil
 }
 
-// CountAvailable returns the number of AVAILABLE addresses in the pool.
-func (r *DepositAddressRepository) CountAvailable(ctx context.Context) (int, error) {
-	var count int
-	err := r.db.QueryRow(ctx,
-		`SELECT count(*) FROM user_deposit_addresses WHERE status = 'AVAILABLE'`).Scan(&count)
-	if err != nil {
-		return 0, fmt.Errorf("deposit address repo: count available: %w", err)
-	}
-	return count, nil
-}
-
-// ImportBatch inserts a batch of offline-generated addresses into the pool.
-// All addresses start with status='AVAILABLE', user_id=NULL.
-func (r *DepositAddressRepository) ImportBatch(ctx context.Context, addrs []model.DepositAddress) error {
-	tx, ok := r.db.(pgx.Tx)
-	if !ok {
-		// Not in a transaction context, use individual inserts.
-		for _, a := range addrs {
-			_, err := r.db.Exec(ctx, `
-				INSERT INTO user_deposit_addresses (address, derivation_index, encrypted_privkey, network, status)
-				VALUES ($1, $2, $3, $4, 'AVAILABLE')
-				ON CONFLICT DO NOTHING
-			`, a.Address, a.DerivationIndex, a.EncryptedPrivkey, a.Network)
-			if err != nil {
-				return fmt.Errorf("deposit address repo: import batch: %w", err)
-			}
-		}
-		return nil
-	}
-
-	for _, a := range addrs {
-		_, err := tx.Exec(ctx, `
-			INSERT INTO user_deposit_addresses (address, derivation_index, encrypted_privkey, network, status)
-			VALUES ($1, $2, $3, $4, 'AVAILABLE')
-			ON CONFLICT DO NOTHING
-		`, a.Address, a.DerivationIndex, a.EncryptedPrivkey, a.Network)
-		if err != nil {
-			return fmt.Errorf("deposit address repo: import batch: %w", err)
-		}
-	}
-	return nil
-}
-
-// ImportBatchWithStats inserts addresses using batched multi-row INSERT.
-// Returns (imported, skipped) counts. Not wrapped in a transaction —
-// ON CONFLICT DO NOTHING makes re-imports idempotent, so partial failures
-// can be safely retried by re-uploading the same file.
-// Batches of 500 rows to stay within PG parameter limits (65535 params / 4 per row).
-func (r *DepositAddressRepository) ImportBatchWithStats(ctx context.Context, addrs []model.DepositAddress) (int, int, error) {
-	const batchSize = 500
-
-	imported := 0
-	skipped := 0
-
-	for i := 0; i < len(addrs); i += batchSize {
-		end := i + batchSize
-		if end > len(addrs) {
-			end = len(addrs)
-		}
-		chunk := addrs[i:end]
-
-		var b strings.Builder
-		b.WriteString(`INSERT INTO user_deposit_addresses (address, derivation_index, encrypted_privkey, network, status) VALUES `)
-		args := make([]interface{}, 0, len(chunk)*4)
-		for j, a := range chunk {
-			if j > 0 {
-				b.WriteByte(',')
-			}
-			base := j * 4
-			fmt.Fprintf(&b, `($%d,$%d,$%d,$%d,'AVAILABLE')`, base+1, base+2, base+3, base+4)
-			args = append(args, a.Address, a.DerivationIndex, a.EncryptedPrivkey, a.Network)
-		}
-		b.WriteString(` ON CONFLICT DO NOTHING`)
-
-		tag, err := r.db.Exec(ctx, b.String(), args...)
-		if err != nil {
-			return imported, skipped, fmt.Errorf("deposit address repo: import batch insert: %w", err)
-		}
-		affected := int(tag.RowsAffected())
-		imported += affected
-		skipped += len(chunk) - affected
-	}
-
-	return imported, skipped, nil
-}
-
 // AddressInfo holds the user ID and address ID for an assigned deposit address.
 type AddressInfo struct {
 	UserID uuid.UUID
 	AddrID uuid.UUID
 }
 
-// ListAssignedAddresses returns all ASSIGNED addresses with their user and address IDs.
-// Used by chain monitor to populate the in-memory address map.
-func (r *DepositAddressRepository) ListAssignedAddresses(ctx context.Context) (map[string]AddressInfo, error) {
+// ListAllDerivedAddresses returns ALL derived addresses (ASSIGNED + RETIRED) with their
+// user and address IDs. Used by chain monitor to populate the in-memory address map.
+// ADR §10.3: must monitor retired addresses too — users may send USDT to old addresses.
+func (r *DepositAddressRepository) ListAllDerivedAddresses(ctx context.Context) (map[string]AddressInfo, error) {
 	rows, err := r.db.Query(ctx, `
 		SELECT address, user_id, id FROM user_deposit_addresses
-		WHERE status = 'ASSIGNED' AND user_id IS NOT NULL
+		WHERE user_id IS NOT NULL
 	`)
 	if err != nil {
-		return nil, fmt.Errorf("deposit address repo: list assigned: %w", err)
+		return nil, fmt.Errorf("deposit address repo: list all derived: %w", err)
 	}
 	defer rows.Close()
 
@@ -237,7 +146,7 @@ func (r *DepositAddressRepository) ListAssignedAddresses(ctx context.Context) (m
 		var addr string
 		var info AddressInfo
 		if err := rows.Scan(&addr, &info.UserID, &info.AddrID); err != nil {
-			return nil, fmt.Errorf("deposit address repo: scan assigned: %w", err)
+			return nil, fmt.Errorf("deposit address repo: scan all derived: %w", err)
 		}
 		m[addr] = info
 	}
@@ -265,7 +174,7 @@ func (r *DepositAddressRepository) ListAllAddresses(ctx context.Context, status 
 			return nil, 0, fmt.Errorf("deposit address repo: count all: %w", err)
 		}
 		rows, err := r.db.Query(ctx, `
-			SELECT id, user_id, address, derivation_index, encrypted_privkey,
+			SELECT id, user_id, address, derivation_index,
 			       network, status, has_received_usdt, created_at, updated_at, assigned_at
 			FROM user_deposit_addresses
 			WHERE status = $1
@@ -286,7 +195,7 @@ func (r *DepositAddressRepository) ListAllAddresses(ctx context.Context, status 
 		return nil, 0, fmt.Errorf("deposit address repo: count all: %w", err)
 	}
 	rows, err := r.db.Query(ctx, `
-		SELECT id, user_id, address, derivation_index, encrypted_privkey,
+		SELECT id, user_id, address, derivation_index,
 		       network, status, has_received_usdt, created_at, updated_at, assigned_at
 		FROM user_deposit_addresses
 		ORDER BY derivation_index
@@ -304,7 +213,7 @@ func scanAddresses(rows pgx.Rows, total int64) ([]model.DepositAddress, int64, e
 	for rows.Next() {
 		var a model.DepositAddress
 		if err := rows.Scan(
-			&a.ID, &a.UserID, &a.Address, &a.DerivationIndex, &a.EncryptedPrivkey,
+			&a.ID, &a.UserID, &a.Address, &a.DerivationIndex,
 			&a.Network, &a.Status, &a.HasReceivedUSDT, &a.CreatedAt, &a.UpdatedAt, &a.AssignedAt,
 		); err != nil {
 			return nil, 0, fmt.Errorf("deposit address repo: scan: %w", err)
@@ -314,4 +223,31 @@ func scanAddresses(rows pgx.Rows, total int64) ([]model.DepositAddress, int64, e
 	return addrs, total, rows.Err()
 }
 
-var ErrAddressPoolEmpty = errors.New("address pool empty: no available addresses")
+// AddressWithIndex is a lightweight row for xpub audit (ADR-0026 §12.1).
+type AddressWithIndex struct {
+	Address         string
+	DerivationIndex uint32
+}
+
+// ListAllAddressesWithIndex returns all deposit addresses with their derivation indices.
+// Used by the xpub audit cron to verify DB addresses match xpub derivation (R5 runtime).
+func (r *DepositAddressRepository) ListAllAddressesWithIndex(ctx context.Context) ([]AddressWithIndex, error) {
+	rows, err := r.db.Query(ctx, `
+		SELECT address, derivation_index FROM user_deposit_addresses
+		ORDER BY derivation_index
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("deposit address repo: list all with index: %w", err)
+	}
+	defer rows.Close()
+
+	var out []AddressWithIndex
+	for rows.Next() {
+		var a AddressWithIndex
+		if err := rows.Scan(&a.Address, &a.DerivationIndex); err != nil {
+			return nil, fmt.Errorf("deposit address repo: scan with index: %w", err)
+		}
+		out = append(out, a)
+	}
+	return out, rows.Err()
+}

@@ -1,73 +1,83 @@
 package hdwallet
 
 import (
-	"testing"
+"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+"github.com/fbsobreira/go-bip39"
+"github.com/fbsobreira/gotron-sdk/pkg/address"
+"github.com/stretchr/testify/assert"
+"github.com/stretchr/testify/require"
 )
 
-// TestDeriveFromMnemonic verifies that a known mnemonic produces deterministic addresses.
-func TestDeriveFromMnemonic(t *testing.T) {
-	mnemonic := "test test test test test test test test test test test junk"
-
-	addr0, err := DeriveFromMnemonic(mnemonic, 0)
-	require.NoError(t, err)
-	assert.NotEmpty(t, addr0.Address)
-	assert.Len(t, addr0.PrivateKey, 32)
-	assert.Equal(t, 0, addr0.Index)
-
-	addr1, err := DeriveFromMnemonic(mnemonic, 1)
-	require.NoError(t, err)
-	assert.NotEmpty(t, addr1.Address)
-	assert.NotEqual(t, addr0.Address, addr1.Address)
-	assert.Equal(t, 1, addr1.Index)
+// TestGenerateMnemonic verifies that GenerateMnemonic produces a valid 24-word mnemonic.
+func TestGenerateMnemonic(t *testing.T) {
+m, err := GenerateMnemonic()
+require.NoError(t, err)
+assert.True(t, bip39.IsMnemonicValid(m), "generated mnemonic must be valid")
 }
 
-// TestDeriveDeterminism verifies the same mnemonic + index always produces the same address.
-func TestDeriveDeterminism(t *testing.T) {
-	mnemonic := "test test test test test test test test test test test junk"
+// TestDeriveDepositPrivKeyDeterminism verifies the same seed + index always produces the same private key.
+func TestDeriveDepositPrivKeyDeterminism(t *testing.T) {
+seed := bip39.NewSeed("test test test test test test test test test test test junk", "")
 
-	a1, err := DeriveFromMnemonic(mnemonic, 5)
-	require.NoError(t, err)
-
-	a2, err := DeriveFromMnemonic(mnemonic, 5)
-	require.NoError(t, err)
-
-	assert.Equal(t, a1.Address, a2.Address)
-	assert.Equal(t, a1.PrivateKey, a2.PrivateKey)
+sk1, err := DeriveDepositPrivKey(seed, 0)
+require.NoError(t, err)
+sk2, err := DeriveDepositPrivKey(seed, 0)
+require.NoError(t, err)
+assert.Equal(t, sk1.Serialize(), sk2.Serialize())
 }
 
-// TestDeriveBatch verifies batch derivation.
-func TestDeriveBatch(t *testing.T) {
-	mnemonic := "test test test test test test test test test test test junk"
+// TestDeriveDepositPrivKeyUnique verifies different indices produce different keys.
+func TestDeriveDepositPrivKeyUnique(t *testing.T) {
+seed := bip39.NewSeed("test test test test test test test test test test test junk", "")
 
-	addrs, err := DeriveBatch(mnemonic, 0, 5)
-	require.NoError(t, err)
-	assert.Len(t, addrs, 5)
-
-	seen := make(map[string]bool)
-	for i, a := range addrs {
-		assert.False(t, seen[a.Address], "duplicate address at index %d", i)
-		seen[a.Address] = true
-		assert.Equal(t, i, a.Index)
-	}
+sk0, err := DeriveDepositPrivKey(seed, 0)
+require.NoError(t, err)
+sk1, err := DeriveDepositPrivKey(seed, 1)
+require.NoError(t, err)
+assert.NotEqual(t, sk0.Serialize(), sk1.Serialize())
 }
 
-// TestAddressFromPrivateKey verifies address derivation from private key matches.
-func TestAddressFromPrivateKey(t *testing.T) {
-	mnemonic := "test test test test test test test test test test test junk"
+// TestDeriveDepositPrivKeyAddress verifies the derived private key produces a valid TRON address.
+func TestDeriveDepositPrivKeyAddress(t *testing.T) {
+seed := bip39.NewSeed("test test test test test test test test test test test junk", "")
 
-	derived, err := DeriveFromMnemonic(mnemonic, 0)
-	require.NoError(t, err)
-
-	addr, err := AddressFromPrivateKey(derived.PrivateKey)
-	require.NoError(t, err)
-	assert.Equal(t, derived.Address, addr)
+sk, err := DeriveDepositPrivKey(seed, 0)
+require.NoError(t, err)
+addr := address.BTCECPrivkeyToAddress(sk).String()
+assert.NotEmpty(t, addr)
+assert.True(t, len(addr) > 30, "address should be a valid TRON base58 string")
 }
 
-// TestInvalidIndex verifies error handling for out-of-range index.
-func TestInvalidIndex(t *testing.T) {
-	_, err := DeriveFromMnemonic("test test test test test test test test test test test junk", -1)
-	assert.Error(t, err)
+// TestDeriveEnergyAccountPrivKey verifies energy account key derivation.
+func TestDeriveEnergyAccountPrivKey(t *testing.T) {
+seed := bip39.NewSeed("test test test test test test test test test test test junk", "")
+
+sk, err := DeriveEnergyAccountPrivKey(seed)
+require.NoError(t, err)
+addr := address.BTCECPrivkeyToAddress(sk).String()
+assert.NotEmpty(t, addr)
+assert.True(t, len(addr) > 30, "address should be a valid TRON base58 string")
+}
+
+// TestDeriveEnergyAccountPrivKeyDeterminism verifies energy key is deterministic.
+func TestDeriveEnergyAccountPrivKeyDeterminism(t *testing.T) {
+seed := bip39.NewSeed("test test test test test test test test test test test junk", "")
+
+sk1, err := DeriveEnergyAccountPrivKey(seed)
+require.NoError(t, err)
+sk2, err := DeriveEnergyAccountPrivKey(seed)
+require.NoError(t, err)
+assert.Equal(t, sk1.Serialize(), sk2.Serialize())
+}
+
+// TestDeriveDepositPrivKeyDifferentFromEnergy verifies deposit and energy keys are different.
+func TestDeriveDepositPrivKeyDifferentFromEnergy(t *testing.T) {
+seed := bip39.NewSeed("test test test test test test test test test test test junk", "")
+
+depositSk, err := DeriveDepositPrivKey(seed, 0)
+require.NoError(t, err)
+energySk, err := DeriveEnergyAccountPrivKey(seed)
+require.NoError(t, err)
+assert.NotEqual(t, depositSk.Serialize(), energySk.Serialize())
 }

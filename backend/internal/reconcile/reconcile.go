@@ -24,7 +24,11 @@ type Reconciler struct {
 	grid          *chain.TronGridClient
 	log           *zap.Logger
 
-	alertThreshold float64
+	// Asymmetric thresholds (ADR-0026 §2.8, §11 Q12):
+	// shortageThreshold: on-chain < expected by more than this → immediate alert (solvency risk).
+	// surplusThreshold: on-chain > expected by more than this → informational alert (likely benign).
+	shortageThreshold float64
+	surplusThreshold  float64
 }
 
 func NewReconciler(
@@ -49,7 +53,9 @@ func (r *Reconciler) Run(ctx context.Context) error {
 		return fmt.Errorf("reconciler: load config: %w", err)
 	}
 
-	r.log.Info("reconciler started", zap.Float64("alert_threshold", r.alertThreshold))
+	r.log.Info("reconciler started",
+		zap.Float64("shortage_threshold", r.shortageThreshold),
+		zap.Float64("surplus_threshold", r.surplusThreshold))
 
 	internalTicker := time.NewTicker(6 * time.Hour)
 	defer internalTicker.Stop()
@@ -74,13 +80,29 @@ func (r *Reconciler) Run(ctx context.Context) error {
 }
 
 func (r *Reconciler) loadConfig(ctx context.Context) error {
-	if cfg, err := r.adminRepo.GetConfig(ctx, "reconcile_alert_threshold"); err == nil {
+	if cfg, err := r.adminRepo.GetConfig(ctx, "reconcile_shortage_threshold"); err == nil {
 		if v, err := strconv.ParseFloat(cfg.Value, 64); err == nil {
-			r.alertThreshold = v
+			r.shortageThreshold = v
 		}
 	}
-	if r.alertThreshold == 0 {
-		r.alertThreshold = 10.0
+	if cfg, err := r.adminRepo.GetConfig(ctx, "reconcile_surplus_threshold"); err == nil {
+		if v, err := strconv.ParseFloat(cfg.Value, 64); err == nil {
+			r.surplusThreshold = v
+		}
+	}
+	// Legacy fallback: if reconcile_alert_threshold exists, use it for surplus.
+	if r.surplusThreshold == 0 {
+		if cfg, err := r.adminRepo.GetConfig(ctx, "reconcile_alert_threshold"); err == nil {
+			if v, err := strconv.ParseFloat(cfg.Value, 64); err == nil {
+				r.surplusThreshold = v
+			}
+		}
+	}
+	if r.shortageThreshold == 0 {
+		r.shortageThreshold = 1.0
+	}
+	if r.surplusThreshold == 0 {
+		r.surplusThreshold = 10.0
 	}
 	return nil
 }
@@ -118,27 +140,32 @@ func (r *Reconciler) runInternalReconcile(ctx context.Context) {
 		zap.String("total_deposit_credits", credits.String()),
 		zap.String("diff", diff.String()))
 
-	if diff.Abs().GreaterThan(decimal.NewFromFloat(r.alertThreshold)) {
-		r.log.Error("reconcile ALERT: internal ledger mismatch",
+	if diff.IsNegative() && diff.Abs().GreaterThan(decimal.NewFromFloat(r.shortageThreshold)) {
+		r.log.Error("reconcile ALERT: internal ledger shortage (solvency risk)",
 			zap.String("diff", diff.String()),
-			zap.Float64("threshold", r.alertThreshold))
+			zap.Float64("threshold", r.shortageThreshold))
+	} else if diff.IsPositive() && diff.GreaterThan(decimal.NewFromFloat(r.surplusThreshold)) {
+		r.log.Warn("reconcile ALERT: internal ledger surplus (likely benign)",
+			zap.String("diff", diff.String()),
+			zap.Float64("threshold", r.surplusThreshold))
 	}
 }
 
 // runChainReconcile verifies on-chain balances match internal records.
-// Phase 2: queries TronGrid for actual USDT balances of all ASSIGNED deposit addresses,
-// then compares with expected: SUM(deposits WHERE status='CONFIRMED') - SUM(sweep_logs WHERE status='DONE').
-// The hot wallet is intentionally excluded — its balance includes swept funds plus any
-// outflows/initial deposits we don't track, so including it would make diff = hot_wallet_balance.
+// Phase 2: queries TronGrid for actual USDT balances of ALL derived deposit addresses
+// (ASSIGNED + RETIRED) + cold wallet, then compares with expected:
+// SUM(deposits WHERE status='CONFIRMED') - SUM(sweep_logs WHERE status='DONE').
+// ADR §2.8: on-chain custody = Σ(deposit address USDT) + cold wallet USDT.
+// Reconciliation covers all derived addresses, not just ASSIGNED.
 func (r *Reconciler) runChainReconcile(ctx context.Context) {
-	// Get all ASSIGNED addresses with their IDs for on-chain balance queries.
-	addrMap, err := r.addrRepo.ListAssignedAddresses(ctx)
+	// Get all derived addresses (ASSIGNED + RETIRED) for on-chain balance queries.
+	addrMap, err := r.addrRepo.ListAllDerivedAddresses(ctx)
 	if err != nil {
-		r.log.Error("reconcile: list assigned addresses", zap.Error(err))
+		r.log.Error("reconcile: list all derived addresses", zap.Error(err))
 		return
 	}
 
-	// Query on-chain USDT balance for each assigned address.
+	// Query on-chain USDT balance for each deposit address.
 	totalOnChain := decimal.Zero
 	for addrStr := range addrMap {
 		balance, err := r.grid.GetTRC20Balance(ctx, addrStr)
@@ -154,6 +181,26 @@ func (r *Reconciler) runChainReconcile(ctx context.Context) {
 			continue
 		}
 		totalOnChain = totalOnChain.Add(balDecimal)
+	}
+
+	// F2: Include cold wallet USDT balance — swept funds land here.
+	coldWalletCfg, err := r.adminRepo.GetConfig(ctx, "cold_wallet_address")
+	if err != nil || coldWalletCfg == nil || coldWalletCfg.Value == "" {
+		r.log.Warn("reconcile: cold_wallet_address not configured, skipping cold wallet balance")
+	} else {
+		coldBalance, err := r.grid.GetTRC20Balance(ctx, coldWalletCfg.Value)
+		if err != nil {
+			r.log.Warn("reconcile: skip cold wallet balance query",
+				zap.String("addr", coldWalletCfg.Value),
+				zap.Error(err))
+		} else {
+			coldDecimal, perr := decimal.NewFromString(coldBalance)
+			if perr != nil {
+				r.log.Warn("reconcile: parse cold wallet balance", zap.String("value", coldBalance), zap.Error(perr))
+			} else {
+				totalOnChain = totalOnChain.Add(coldDecimal)
+			}
+		}
 	}
 
 	// Get internal expected: confirmed deposits - swept amounts.
@@ -189,10 +236,16 @@ func (r *Reconciler) runChainReconcile(ctx context.Context) {
 		zap.String("diff", diff.String()),
 		zap.Int("queried_addresses", len(addrMap)))
 
-	if diff.Abs().GreaterThan(decimal.NewFromFloat(r.alertThreshold)) {
-		r.log.Error("reconcile ALERT: on-chain balance mismatch",
+	if diff.IsNegative() && diff.Abs().GreaterThan(decimal.NewFromFloat(r.shortageThreshold)) {
+		r.log.Error("reconcile ALERT: on-chain balance shortage (solvency risk)",
 			zap.String("diff", diff.String()),
-			zap.Float64("threshold", r.alertThreshold),
+			zap.Float64("threshold", r.shortageThreshold),
+			zap.String("on_chain", totalOnChain.String()),
+			zap.String("expected", expectedOnChain.String()))
+	} else if diff.IsPositive() && diff.GreaterThan(decimal.NewFromFloat(r.surplusThreshold)) {
+		r.log.Warn("reconcile ALERT: on-chain balance surplus (likely benign)",
+			zap.String("diff", diff.String()),
+			zap.Float64("threshold", r.surplusThreshold),
 			zap.String("on_chain", totalOnChain.String()),
 			zap.String("expected", expectedOnChain.String()))
 	}

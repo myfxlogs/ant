@@ -123,7 +123,7 @@ func (s *SubscriptionService) renewOnePlatformSubscription(ctx context.Context, 
 	}
 
 	_, err = walletRepo.AdjustBalanceTx(ctx, tx, wallet.ID, userID, price.Neg().String(), "purchase",
-		fmt.Sprintf("Platform subscription: %s (%s) - renewal", plan.DisplayName, billingCycle), nil)
+		fmt.Sprintf("Platform subscription: %s (%s) - renewal", plan.DisplayName, billingCycle), nil, "sub-renewal-"+subID.String())
 	if err != nil {
 		return fmt.Errorf("subscription renewal: charge wallet: %w", err)
 	}

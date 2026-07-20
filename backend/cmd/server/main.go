@@ -22,6 +22,7 @@ import (
 	"alphaforge/internal/config"
 	"alphaforge/internal/connect/strategy"
 	"alphaforge/internal/factor"
+	"alphaforge/internal/hdwallet"
 	"alphaforge/internal/interceptor"
 	"alphaforge/internal/mdgateway/adapter"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
@@ -33,10 +34,10 @@ import (
 	"alphaforge/internal/repository"
 	"alphaforge/internal/risksvc"
 	"alphaforge/internal/secrets"
+	"alphaforge/internal/sweep"
 	alphasentry "alphaforge/internal/sentry"
 	"alphaforge/internal/server"
 	"alphaforge/internal/service"
-	"alphaforge/internal/sweeper"
 	antredis "alphaforge/internal/storage/redis"
 )
 
@@ -245,8 +246,8 @@ func main() {
 	var workerCleanup func()                               // set after creation; calls worker.Stop() on shutdown
 	var scheduleEngine *strategy.ScheduleEngine              // set after creation; started below
 	var chainMonitor *chain.Monitor                          // set after creation; started below
-	var sweeperInst *sweeper.Sweeper                         // set after creation; started below
 	var reconcilerInst *reconcile.Reconciler                 // set after creation; started below
+	var sweepWorker *sweep.Worker                            // set after creation; started below
 
 	// M12-C2: multi-broker registry created early so both handler wiring
 	// and the mdgateway pipeline can reference the same instance.
@@ -271,8 +272,23 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	// ADR-0026 R5: Verify xpub fingerprint at startup to detect key substitution.
+	if cfg.DepositXpub != "" {
+		fp, err := hdwallet.XpubFingerprint(cfg.DepositXpub)
+		if err != nil {
+			log.Fatal("startup: invalid deposit xpub — refusing to start", zap.Error(err))
+		}
+		if cfg.DepositXpubFingerprint != "" && fp != cfg.DepositXpubFingerprint {
+			log.Fatal("startup: xpub fingerprint mismatch — potential key substitution",
+				zap.String("expected", cfg.DepositXpubFingerprint),
+				zap.String("actual", fp),
+			)
+		}
+		log.Info("startup: deposit xpub verified", zap.String("fingerprint", fp))
+	}
+
 	mux := http.NewServeMux()
-	reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup, chainMonitor, sweeperInst, reconcilerInst = registerHandlers(ctx, mux, log, pool, mdStore, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, otelInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg, secClient)
+	reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup, chainMonitor, reconcilerInst, sweepWorker = registerHandlers(ctx, mux, log, pool, mdStore, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, otelInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg, secClient)
 	accountSyncSvc.SetNotificationSender(notifSender)
 
 	go scheduleEngine.Start(ctx)
@@ -284,15 +300,13 @@ func main() {
 	// Start chain monitor for USDT deposit detection (cancelled on shutdown).
 	go chainMonitor.Run(ctx)
 
-	// Start sweeper for USDT fund consolidation (cancelled on shutdown).
-	if sweeperInst != nil {
-		go sweeperInst.Run(ctx)
-	} else {
-		log.Warn("sweeper not started — tron client initialization failed")
-	}
-
 	// Start deposit reconciler (cancelled on shutdown).
 	go reconcilerInst.Run(ctx)
+
+	// Start sweep worker for fund consolidation (cancelled on shutdown).
+	if sweepWorker != nil {
+		go sweepWorker.Run(ctx)
+	}
 
 	// Daily data retention cleanup — prevents unbounded disk growth.
 	go func() {

@@ -2,8 +2,8 @@
 // @generated from file deposit.proto (package ant.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file deposit.proto.
  */
 export const file_deposit: GenFile = /*@__PURE__*/
-  fileDesc("Cg1kZXBvc2l0LnByb3RvEgZhbnQudjEiggIKB0RlcG9zaXQSCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIaChJkZXBvc2l0X2FkZHJlc3NfaWQYAyABKAkSDwoHdHhfaGFzaBgEIAEoCRIOCgZhbW91bnQYBSABKAkSFAoMYmxvY2tfbnVtYmVyGAYgASgDEhUKDWNvbmZpcm1hdGlvbnMYByABKAUSDgoGc3RhdHVzGAggASgJEjAKDGNvbmZpcm1lZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiGgoYR2V0RGVwb3NpdEFkZHJlc3NSZXF1ZXN0Ij0KGUdldERlcG9zaXRBZGRyZXNzUmVzcG9uc2USDwoHYWRkcmVzcxgBIAEoCRIPCgduZXR3b3JrGAIgASgJIjgKFUxpc3RNeURlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJKChZMaXN0TXlEZXBvc2l0c1Jlc3BvbnNlEiEKCGRlcG9zaXRzGAEgAygLMg8uYW50LnYxLkRlcG9zaXQSDQoFdG90YWwYAiABKAMiQgofTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJUCiBMaXN0TWFudWFsUmV2aWV3RGVwb3NpdHNSZXNwb25zZRIhCghkZXBvc2l0cxgBIAMoCzIPLmFudC52MS5EZXBvc2l0Eg0KBXRvdGFsGAIgASgDIvUBCg5EZXBvc2l0QWRkcmVzcxIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEg8KB2FkZHJlc3MYAyABKAkSGAoQZGVyaXZhdGlvbl9pbmRleBgEIAEoBRIPCgduZXR3b3JrGAUgASgJEg4KBnN0YXR1cxgGIAEoCRIZChFoYXNfcmVjZWl2ZWRfdXNkdBgHIAEoCBIvCgthc3NpZ25lZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiTgobTGlzdERlcG9zaXRBZGRyZXNzZXNSZXF1ZXN0EgwKBHBhZ2UYASABKAUSEQoJcGFnZV9zaXplGAIgASgFEg4KBnN0YXR1cxgDIAEoCSJxChxMaXN0RGVwb3NpdEFkZHJlc3Nlc1Jlc3BvbnNlEikKCWFkZHJlc3NlcxgBIAMoCzIWLmFudC52MS5EZXBvc2l0QWRkcmVzcxINCgV0b3RhbBgCIAEoAxIXCg9hdmFpbGFibGVfY291bnQYAyABKAUiagoRQWRkcmVzc0JhdGNoRW50cnkSDwoHYWRkcmVzcxgBIAEoCRIYChBkZXJpdmF0aW9uX2luZGV4GAIgASgFEhkKEWVuY3J5cHRlZF9wcml2a2V5GAMgASgMEg8KB25ldHdvcmsYBCABKAkiOgoMQWRkcmVzc0JhdGNoEioKB2VudHJpZXMYASADKAsyGS5hbnQudjEuQWRkcmVzc0JhdGNoRW50cnkiMwodSW1wb3J0RGVwb3NpdEFkZHJlc3Nlc1JlcXVlc3QSEgoKYmF0Y2hfZGF0YRgBIAEoDCJDCh5JbXBvcnREZXBvc2l0QWRkcmVzc2VzUmVzcG9uc2USEAoIaW1wb3J0ZWQYASABKAUSDwoHc2tpcHBlZBgCIAEoBTL2AwoORGVwb3NpdFNlcnZpY2USWAoRR2V0RGVwb3NpdEFkZHJlc3MSIC5hbnQudjEuR2V0RGVwb3NpdEFkZHJlc3NSZXF1ZXN0GiEuYW50LnYxLkdldERlcG9zaXRBZGRyZXNzUmVzcG9uc2USTwoOTGlzdE15RGVwb3NpdHMSHS5hbnQudjEuTGlzdE15RGVwb3NpdHNSZXF1ZXN0Gh4uYW50LnYxLkxpc3RNeURlcG9zaXRzUmVzcG9uc2USbQoYTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzEicuYW50LnYxLkxpc3RNYW51YWxSZXZpZXdEZXBvc2l0c1JlcXVlc3QaKC5hbnQudjEuTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzUmVzcG9uc2USYQoUTGlzdERlcG9zaXRBZGRyZXNzZXMSIy5hbnQudjEuTGlzdERlcG9zaXRBZGRyZXNzZXNSZXF1ZXN0GiQuYW50LnYxLkxpc3REZXBvc2l0QWRkcmVzc2VzUmVzcG9uc2USZwoWSW1wb3J0RGVwb3NpdEFkZHJlc3NlcxIlLmFudC52MS5JbXBvcnREZXBvc2l0QWRkcmVzc2VzUmVxdWVzdBomLmFudC52MS5JbXBvcnREZXBvc2l0QWRkcmVzc2VzUmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("Cg1kZXBvc2l0LnByb3RvEgZhbnQudjEiggIKB0RlcG9zaXQSCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIaChJkZXBvc2l0X2FkZHJlc3NfaWQYAyABKAkSDwoHdHhfaGFzaBgEIAEoCRIOCgZhbW91bnQYBSABKAkSFAoMYmxvY2tfbnVtYmVyGAYgASgDEhUKDWNvbmZpcm1hdGlvbnMYByABKAUSDgoGc3RhdHVzGAggASgJEjAKDGNvbmZpcm1lZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiGgoYR2V0RGVwb3NpdEFkZHJlc3NSZXF1ZXN0Ij0KGUdldERlcG9zaXRBZGRyZXNzUmVzcG9uc2USDwoHYWRkcmVzcxgBIAEoCRIPCgduZXR3b3JrGAIgASgJIjgKFUxpc3RNeURlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJKChZMaXN0TXlEZXBvc2l0c1Jlc3BvbnNlEiEKCGRlcG9zaXRzGAEgAygLMg8uYW50LnYxLkRlcG9zaXQSDQoFdG90YWwYAiABKAMiQgofTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJUCiBMaXN0TWFudWFsUmV2aWV3RGVwb3NpdHNSZXNwb25zZRIhCghkZXBvc2l0cxgBIAMoCzIPLmFudC52MS5EZXBvc2l0Eg0KBXRvdGFsGAIgASgDIvUBCg5EZXBvc2l0QWRkcmVzcxIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEg8KB2FkZHJlc3MYAyABKAkSGAoQZGVyaXZhdGlvbl9pbmRleBgEIAEoBRIPCgduZXR3b3JrGAUgASgJEg4KBnN0YXR1cxgGIAEoCRIZChFoYXNfcmVjZWl2ZWRfdXNkdBgHIAEoCBIvCgthc3NpZ25lZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiTgobTGlzdERlcG9zaXRBZGRyZXNzZXNSZXF1ZXN0EgwKBHBhZ2UYASABKAUSEQoJcGFnZV9zaXplGAIgASgFEg4KBnN0YXR1cxgDIAEoCSJxChxMaXN0RGVwb3NpdEFkZHJlc3Nlc1Jlc3BvbnNlEikKCWFkZHJlc3NlcxgBIAMoCzIWLmFudC52MS5EZXBvc2l0QWRkcmVzcxINCgV0b3RhbBgCIAEoAxIXCg9hdmFpbGFibGVfY291bnQYAyABKAUiTwoRQWRkcmVzc0JhdGNoRW50cnkSDwoHYWRkcmVzcxgBIAEoCRIYChBkZXJpdmF0aW9uX2luZGV4GAIgASgFEg8KB25ldHdvcmsYAyABKAkiOgoMQWRkcmVzc0JhdGNoEioKB2VudHJpZXMYASADKAsyGS5hbnQudjEuQWRkcmVzc0JhdGNoRW50cnkiMwodSW1wb3J0RGVwb3NpdEFkZHJlc3Nlc1JlcXVlc3QSEgoKYmF0Y2hfZGF0YRgBIAEoDCJDCh5JbXBvcnREZXBvc2l0QWRkcmVzc2VzUmVzcG9uc2USEAoIaW1wb3J0ZWQYASABKAUSDwoHc2tpcHBlZBgCIAEoBSJACgpYcHViRXhwb3J0EgwKBHhwdWIYASABKAkSEwoLZmluZ2VycHJpbnQYAiABKAkSDwoHbmV0d29yaxgDIAEoCSJaCg5XaXRoZHJhd2FsQXV0aBIPCgd1c2VyX2lkGAEgASgJEg0KBW5vbmNlGAIgASgEEhUKDWNyZWRlbnRpYWxfaWQYAyABKAkSEQoJYXNzZXJ0aW9uGAQgASgMIjYKCkRlbGVnYXRlVHgSFgoOZW5lcmd5X2FjY291bnQYASABKAkSEAoIcmVzb3VyY2UYAiABKAkiSgoKVHJhbnNmZXJUeBIWCg50b2tlbl9jb250cmFjdBgBIAEoCRIkCgRhdXRoGAIgASgLMhYuYW50LnYxLldpdGhkcmF3YWxBdXRoIjgKDFVuZGVsZWdhdGVUeBIWCg5lbmVyZ3lfYWNjb3VudBgBIAEoCRIQCghyZXNvdXJjZRgCIAEoCSK6AgoKVW5zaWduZWRUeBIcCgRraW5kGAEgASgOMg4uYW50LnYxLlR4S2luZBIUCgxmcm9tX2FkZHJlc3MYAiABKAkSGAoQZGVyaXZhdGlvbl9pbmRleBgDIAEoDRISCgp0b19hZGRyZXNzGAQgASgJEg4KBmFtb3VudBgFIAEoCRIOCgZyYXdfdHgYBiABKAwSEQoJZXhwaXJ5X21zGAcgASgDEhUKDWV4cGVjdGVkX3R4aWQYCCABKAkSJgoIZGVsZWdhdGUYCiABKAsyEi5hbnQudjEuRGVsZWdhdGVUeEgAEiYKCHRyYW5zZmVyGAsgASgLMhIuYW50LnYxLlRyYW5zZmVyVHhIABIqCgp1bmRlbGVnYXRlGAwgASgLMhQuYW50LnYxLlVuZGVsZWdhdGVUeEgAQgQKAnR4IngKE1Vuc2lnbmVkU3dlZXBCdW5kbGUSHwoDdHhzGAEgAygLMhIuYW50LnYxLlVuc2lnbmVkVHgSEQoJYnVuZGxlX2lkGAIgASgJEhMKC2J1aWx0X2F0X21zGAMgASgDEhgKEHhwdWJfZmluZ2VycHJpbnQYBCABKAkiiwEKCFNpZ25lZFR4EhwKBGtpbmQYASABKA4yDi5hbnQudjEuVHhLaW5kEhQKDGZyb21fYWRkcmVzcxgCIAEoCRISCgp0b19hZGRyZXNzGAMgASgJEg4KBmFtb3VudBgEIAEoCRIWCg5zaWduZWRfdHhfZGF0YRgFIAEoDBIPCgd0eF9oYXNoGAYgASgJInIKEVNpZ25lZFN3ZWVwQnVuZGxlEh0KA3R4cxgBIAMoCzIQLmFudC52MS5TaWduZWRUeBIRCglidW5kbGVfaWQYAiABKAkSEQoJc2lnbmVkX2F0GAMgASgDEhgKEHhwdWJfZmluZ2VycHJpbnQYBCABKAkiawoWUGVuZGluZ1NpZ25CdW5kbGVFbnRyeRIQCghiYXRjaF9pZBgBIAEoCRIaChJkZXBvc2l0X2FkZHJlc3NfaWQYAiABKAkSEwoLYnVpbHRfYXRfbXMYAyABKAMSDgoGc3RhdHVzGAQgASgJIh8KHUxpc3RQZW5kaW5nU2lnbkJ1bmRsZXNSZXF1ZXN0IlEKHkxpc3RQZW5kaW5nU2lnbkJ1bmRsZXNSZXNwb25zZRIvCgdidW5kbGVzGAEgAygLMh4uYW50LnYxLlBlbmRpbmdTaWduQnVuZGxlRW50cnkiPgogRXhwb3J0VW5zaWduZWRTd2VlcEJ1bmRsZVJlcXVlc3QSGgoSZGVwb3NpdF9hZGRyZXNzX2lkGAEgASgJIjwKIUV4cG9ydFVuc2lnbmVkU3dlZXBCdW5kbGVSZXNwb25zZRIXCg91bnNpZ25lZF9idW5kbGUYASABKAwiNwoeSW1wb3J0U2lnbmVkU3dlZXBCdW5kbGVSZXF1ZXN0EhUKDXNpZ25lZF9idW5kbGUYASABKAwiTwofSW1wb3J0U2lnbmVkU3dlZXBCdW5kbGVSZXNwb25zZRIQCghiYXRjaF9pZBgBIAEoCRIaChJicm9hZGNhc3RfY29tcGxldGUYAiABKAgiowEKE1N3ZWVwRGFzaGJvYXJkRW50cnkSGgoSZGVwb3NpdF9hZGRyZXNzX2lkGAEgASgJEg8KB2FkZHJlc3MYAiABKAkSFgoOdW5zd2VwdF9hbW91bnQYAyABKAkSFwoPYWJvdmVfdGhyZXNob2xkGAQgASgIEhQKDHN3ZWVwX3N0YXR1cxgFIAEoCRIYChBkZXJpdmF0aW9uX2luZGV4GAYgASgFIjsKGEdldFN3ZWVwRGFzaGJvYXJkUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSKEAQoZR2V0U3dlZXBEYXNoYm9hcmRSZXNwb25zZRIuCglhZGRyZXNzZXMYASADKAsyGy5hbnQudjEuU3dlZXBEYXNoYm9hcmRFbnRyeRINCgV0b3RhbBgCIAEoAxIVCg10b3RhbF91bnN3ZXB0GAMgASgJEhEKCXRocmVzaG9sZBgEIAEoCSI/CiBCdWlsZFVuZGVsZWdhdGVPbmx5QnVuZGxlUmVxdWVzdBIbChNkZXBvc2l0X2FkZHJlc3NfaWRzGAEgAygJIjwKIUJ1aWxkVW5kZWxlZ2F0ZU9ubHlCdW5kbGVSZXNwb25zZRIXCg91bnNpZ25lZF9idW5kbGUYASABKAwqZQoGVHhLaW5kEhcKE1RYX0tJTkRfVU5TUEVDSUZJRUQQABIUChBUWF9LSU5EX0RFTEVHQVRFEAESFAoQVFhfS0lORF9UUkFOU0ZFUhACEhYKElRYX0tJTkRfVU5ERUxFR0FURRADMokICg5EZXBvc2l0U2VydmljZRJYChFHZXREZXBvc2l0QWRkcmVzcxIgLmFudC52MS5HZXREZXBvc2l0QWRkcmVzc1JlcXVlc3QaIS5hbnQudjEuR2V0RGVwb3NpdEFkZHJlc3NSZXNwb25zZRJPCg5MaXN0TXlEZXBvc2l0cxIdLmFudC52MS5MaXN0TXlEZXBvc2l0c1JlcXVlc3QaHi5hbnQudjEuTGlzdE15RGVwb3NpdHNSZXNwb25zZRJtChhMaXN0TWFudWFsUmV2aWV3RGVwb3NpdHMSJy5hbnQudjEuTGlzdE1hbnVhbFJldmlld0RlcG9zaXRzUmVxdWVzdBooLmFudC52MS5MaXN0TWFudWFsUmV2aWV3RGVwb3NpdHNSZXNwb25zZRJhChRMaXN0RGVwb3NpdEFkZHJlc3NlcxIjLmFudC52MS5MaXN0RGVwb3NpdEFkZHJlc3Nlc1JlcXVlc3QaJC5hbnQudjEuTGlzdERlcG9zaXRBZGRyZXNzZXNSZXNwb25zZRJnChZJbXBvcnREZXBvc2l0QWRkcmVzc2VzEiUuYW50LnYxLkltcG9ydERlcG9zaXRBZGRyZXNzZXNSZXF1ZXN0GiYuYW50LnYxLkltcG9ydERlcG9zaXRBZGRyZXNzZXNSZXNwb25zZRJnChZMaXN0UGVuZGluZ1NpZ25CdW5kbGVzEiUuYW50LnYxLkxpc3RQZW5kaW5nU2lnbkJ1bmRsZXNSZXF1ZXN0GiYuYW50LnYxLkxpc3RQZW5kaW5nU2lnbkJ1bmRsZXNSZXNwb25zZRJwChlFeHBvcnRVbnNpZ25lZFN3ZWVwQnVuZGxlEiguYW50LnYxLkV4cG9ydFVuc2lnbmVkU3dlZXBCdW5kbGVSZXF1ZXN0GikuYW50LnYxLkV4cG9ydFVuc2lnbmVkU3dlZXBCdW5kbGVSZXNwb25zZRJqChdJbXBvcnRTaWduZWRTd2VlcEJ1bmRsZRImLmFudC52MS5JbXBvcnRTaWduZWRTd2VlcEJ1bmRsZVJlcXVlc3QaJy5hbnQudjEuSW1wb3J0U2lnbmVkU3dlZXBCdW5kbGVSZXNwb25zZRJYChFHZXRTd2VlcERhc2hib2FyZBIgLmFudC52MS5HZXRTd2VlcERhc2hib2FyZFJlcXVlc3QaIS5hbnQudjEuR2V0U3dlZXBEYXNoYm9hcmRSZXNwb25zZRJwChlCdWlsZFVuZGVsZWdhdGVPbmx5QnVuZGxlEiguYW50LnYxLkJ1aWxkVW5kZWxlZ2F0ZU9ubHlCdW5kbGVSZXF1ZXN0GikuYW50LnYxLkJ1aWxkVW5kZWxlZ2F0ZU9ubHlCdW5kbGVSZXNwb25zZUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.Deposit
@@ -217,7 +217,7 @@ export type DepositAddress = Message<"ant.v1.DepositAddress"> & {
   id: string;
 
   /**
-   * empty if AVAILABLE
+   * empty if RETIRED
    *
    * @generated from field: string user_id = 2;
    */
@@ -241,7 +241,7 @@ export type DepositAddress = Message<"ant.v1.DepositAddress"> & {
   network: string;
 
   /**
-   * AVAILABLE / ASSIGNED / RETIRED
+   * ASSIGNED / RETIRED
    *
    * @generated from field: string status = 6;
    */
@@ -314,7 +314,7 @@ export type ListDepositAddressesResponse = Message<"ant.v1.ListDepositAddressesR
   total: bigint;
 
   /**
-   * total AVAILABLE in pool
+   * deprecated (no pool in Q1 model); kept for proto compatibility
    *
    * @generated from field: int32 available_count = 3;
    */
@@ -329,8 +329,9 @@ export const ListDepositAddressesResponseSchema: GenMessage<ListDepositAddresses
   messageDesc(file_deposit, 9);
 
 /**
- * AddressBatchEntry is a single offline-generated address with encrypted private key.
+ * AddressBatchEntry is a single offline-generated address.
  * Used by hdgen tool and ImportDepositAddresses RPC.
+ * No private key data — online system is watch-only (ADR-0026 R1).
  *
  * @generated from message ant.v1.AddressBatchEntry
  */
@@ -348,16 +349,9 @@ export type AddressBatchEntry = Message<"ant.v1.AddressBatchEntry"> & {
   derivationIndex: number;
 
   /**
-   * AES-256-GCM ciphertext
-   *
-   * @generated from field: bytes encrypted_privkey = 3;
-   */
-  encryptedPrivkey: Uint8Array;
-
-  /**
    * "TRC20"
    *
-   * @generated from field: string network = 4;
+   * @generated from field: string network = 3;
    */
   network: string;
 };
@@ -432,6 +426,729 @@ export const ImportDepositAddressesResponseSchema: GenMessage<ImportDepositAddre
   messageDesc(file_deposit, 13);
 
 /**
+ * XpubExport is the output of cmd/hdgen (air-gapped tool).
+ * Contains only the account-level extended public key + fingerprint.
+ * No private key material (ADR-0026 R1).
+ *
+ * @generated from message ant.v1.XpubExport
+ */
+export type XpubExport = Message<"ant.v1.XpubExport"> & {
+  /**
+   * account-level extended public key (m/44'/195'/0'/0)
+   *
+   * @generated from field: string xpub = 1;
+   */
+  xpub: string;
+
+  /**
+   * SHA-256 fingerprint for startup verification (R5)
+   *
+   * @generated from field: string fingerprint = 2;
+   */
+  fingerprint: string;
+
+  /**
+   * "TRC20"
+   *
+   * @generated from field: string network = 3;
+   */
+  network: string;
+};
+
+/**
+ * Describes the message ant.v1.XpubExport.
+ * Use `create(XpubExportSchema)` to create a new message.
+ */
+export const XpubExportSchema: GenMessage<XpubExport> = /*@__PURE__*/
+  messageDesc(file_deposit, 14);
+
+/**
+ * WithdrawalAuth holds the WebAuthn assertion for user-initiated withdrawals.
+ * Sweep transfers (no auth) are distinguished from withdrawal transfers (with auth).
+ * coldsign verifies the assertion against its self-held public key (R11/Q8).
+ *
+ * @generated from message ant.v1.WithdrawalAuth
+ */
+export type WithdrawalAuth = Message<"ant.v1.WithdrawalAuth"> & {
+  /**
+   * @generated from field: string user_id = 1;
+   */
+  userId: string;
+
+  /**
+   * @generated from field: uint64 nonce = 2;
+   */
+  nonce: bigint;
+
+  /**
+   * @generated from field: string credential_id = 3;
+   */
+  credentialId: string;
+
+  /**
+   * WebAuthn assertion blob
+   *
+   * @generated from field: bytes assertion = 4;
+   */
+  assertion: Uint8Array;
+};
+
+/**
+ * Describes the message ant.v1.WithdrawalAuth.
+ * Use `create(WithdrawalAuthSchema)` to create a new message.
+ */
+export const WithdrawalAuthSchema: GenMessage<WithdrawalAuth> = /*@__PURE__*/
+  messageDesc(file_deposit, 15);
+
+/**
+ * DelegateTx — energy delegation from energy account to deposit address.
+ * Derivation path: m/44'/195'/0'/1/0 (energy account fixed path, not derivation_index).
+ *
+ * @generated from message ant.v1.DelegateTx
+ */
+export type DelegateTx = Message<"ant.v1.DelegateTx"> & {
+  /**
+   * energy provider TRC20 address
+   *
+   * @generated from field: string energy_account = 1;
+   */
+  energyAccount: string;
+
+  /**
+   * "ENERGY" (TRON stake type)
+   *
+   * @generated from field: string resource = 2;
+   */
+  resource: string;
+};
+
+/**
+ * Describes the message ant.v1.DelegateTx.
+ * Use `create(DelegateTxSchema)` to create a new message.
+ */
+export const DelegateTxSchema: GenMessage<DelegateTx> = /*@__PURE__*/
+  messageDesc(file_deposit, 16);
+
+/**
+ * TransferTx — USDT or TRX transfer from a deposit address.
+ * If auth is nil → sweep to cold wallet (R4: to must == cold_wallet_address).
+ * If auth is set → user withdrawal (R11: verify WebAuthn assertion).
+ *
+ * @generated from message ant.v1.TransferTx
+ */
+export type TransferTx = Message<"ant.v1.TransferTx"> & {
+  /**
+   * TRC20 contract (empty for TRX)
+   *
+   * @generated from field: string token_contract = 1;
+   */
+  tokenContract: string;
+
+  /**
+   * nil for sweep, set for withdrawal
+   *
+   * @generated from field: ant.v1.WithdrawalAuth auth = 2;
+   */
+  auth?: WithdrawalAuth | undefined;
+};
+
+/**
+ * Describes the message ant.v1.TransferTx.
+ * Use `create(TransferTxSchema)` to create a new message.
+ */
+export const TransferTxSchema: GenMessage<TransferTx> = /*@__PURE__*/
+  messageDesc(file_deposit, 17);
+
+/**
+ * UndelegateTx — energy undelegation from deposit address back to energy account.
+ * Derivation path: m/44'/195'/0'/1/0 (energy account fixed path).
+ *
+ * @generated from message ant.v1.UndelegateTx
+ */
+export type UndelegateTx = Message<"ant.v1.UndelegateTx"> & {
+  /**
+   * energy provider TRC20 address
+   *
+   * @generated from field: string energy_account = 1;
+   */
+  energyAccount: string;
+
+  /**
+   * "ENERGY"
+   *
+   * @generated from field: string resource = 2;
+   */
+  resource: string;
+};
+
+/**
+ * Describes the message ant.v1.UndelegateTx.
+ * Use `create(UndelegateTxSchema)` to create a new message.
+ */
+export const UndelegateTxSchema: GenMessage<UndelegateTx> = /*@__PURE__*/
+  messageDesc(file_deposit, 18);
+
+/**
+ * UnsignedTx is a single unsigned transaction for cold signing.
+ * The online server constructs this; the cold signing machine signs it.
+ *
+ * Design: flat fields are the common header that coldsign reads for ALL tx types
+ * (address verification, key derivation, R4 whitelist, display/logging).
+ * The oneof tx carries only type-specific extras (auth for TransferTx,
+ * resource for Delegate/Undelegate). This is intentional — the flat fields
+ * are the single source of truth for cross-cutting concerns, while the oneof
+ * discriminates tx-specific parameters. coldsign MUST read flat fields for
+ * verification and use the oneof only for type-specific logic.
+ *
+ * @generated from message ant.v1.UnsignedTx
+ */
+export type UnsignedTx = Message<"ant.v1.UnsignedTx"> & {
+  /**
+   * @generated from field: ant.v1.TxKind kind = 1;
+   */
+  kind: TxKind;
+
+  /**
+   * deposit address (TRC20 Base58)
+   *
+   * @generated from field: string from_address = 2;
+   */
+  fromAddress: string;
+
+  /**
+   * BIP44 index for TransferTx private key derivation
+   *
+   * @generated from field: uint32 derivation_index = 3;
+   */
+  derivationIndex: number;
+
+  /**
+   * destination (cold wallet / user / energy provider)
+   *
+   * @generated from field: string to_address = 4;
+   */
+  toAddress: string;
+
+  /**
+   * human-readable amount (string for precision)
+   *
+   * @generated from field: string amount = 5;
+   */
+  amount: string;
+
+  /**
+   * raw unsigned TRON transaction data
+   *
+   * @generated from field: bytes raw_tx = 6;
+   */
+  rawTx: Uint8Array;
+
+  /**
+   * raw_tx expiration timestamp (ms) — near 24h per Q3
+   *
+   * @generated from field: int64 expiry_ms = 7;
+   */
+  expiryMs: bigint;
+
+  /**
+   * expected transaction hash (for idempotent broadcast)
+   *
+   * @generated from field: string expected_txid = 8;
+   */
+  expectedTxid: string;
+
+  /**
+   * @generated from oneof ant.v1.UnsignedTx.tx
+   */
+  tx: {
+    /**
+     * @generated from field: ant.v1.DelegateTx delegate = 10;
+     */
+    value: DelegateTx;
+    case: "delegate";
+  } | {
+    /**
+     * @generated from field: ant.v1.TransferTx transfer = 11;
+     */
+    value: TransferTx;
+    case: "transfer";
+  } | {
+    /**
+     * @generated from field: ant.v1.UndelegateTx undelegate = 12;
+     */
+    value: UndelegateTx;
+    case: "undelegate";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message ant.v1.UnsignedTx.
+ * Use `create(UnsignedTxSchema)` to create a new message.
+ */
+export const UnsignedTxSchema: GenMessage<UnsignedTx> = /*@__PURE__*/
+  messageDesc(file_deposit, 19);
+
+/**
+ * UnsignedSweepBundle is a batch of unsigned transactions exported by the
+ * online server for cold signing. Transferred via proto binary (USB/air gap).
+ *
+ * @generated from message ant.v1.UnsignedSweepBundle
+ */
+export type UnsignedSweepBundle = Message<"ant.v1.UnsignedSweepBundle"> & {
+  /**
+   * @generated from field: repeated ant.v1.UnsignedTx txs = 1;
+   */
+  txs: UnsignedTx[];
+
+  /**
+   * unique identifier for tracking
+   *
+   * @generated from field: string bundle_id = 2;
+   */
+  bundleId: string;
+
+  /**
+   * construction timestamp (ms)
+   *
+   * @generated from field: int64 built_at_ms = 3;
+   */
+  builtAtMs: bigint;
+
+  /**
+   * xpub fingerprint for identity verification
+   *
+   * @generated from field: string xpub_fingerprint = 4;
+   */
+  xpubFingerprint: string;
+};
+
+/**
+ * Describes the message ant.v1.UnsignedSweepBundle.
+ * Use `create(UnsignedSweepBundleSchema)` to create a new message.
+ */
+export const UnsignedSweepBundleSchema: GenMessage<UnsignedSweepBundle> = /*@__PURE__*/
+  messageDesc(file_deposit, 20);
+
+/**
+ * SignedTx is a single signed transaction from the cold signing machine.
+ *
+ * @generated from message ant.v1.SignedTx
+ */
+export type SignedTx = Message<"ant.v1.SignedTx"> & {
+  /**
+   * @generated from field: ant.v1.TxKind kind = 1;
+   */
+  kind: TxKind;
+
+  /**
+   * @generated from field: string from_address = 2;
+   */
+  fromAddress: string;
+
+  /**
+   * @generated from field: string to_address = 3;
+   */
+  toAddress: string;
+
+  /**
+   * @generated from field: string amount = 4;
+   */
+  amount: string;
+
+  /**
+   * raw signed TRON transaction data
+   *
+   * @generated from field: bytes signed_tx_data = 5;
+   */
+  signedTxData: Uint8Array;
+
+  /**
+   * expected transaction hash (matches expected_txid)
+   *
+   * @generated from field: string tx_hash = 6;
+   */
+  txHash: string;
+};
+
+/**
+ * Describes the message ant.v1.SignedTx.
+ * Use `create(SignedTxSchema)` to create a new message.
+ */
+export const SignedTxSchema: GenMessage<SignedTx> = /*@__PURE__*/
+  messageDesc(file_deposit, 21);
+
+/**
+ * SignedSweepBundle is the output of cmd/coldsign — a batch of signed
+ * transactions ready for broadcast by the online server.
+ *
+ * @generated from message ant.v1.SignedSweepBundle
+ */
+export type SignedSweepBundle = Message<"ant.v1.SignedSweepBundle"> & {
+  /**
+   * @generated from field: repeated ant.v1.SignedTx txs = 1;
+   */
+  txs: SignedTx[];
+
+  /**
+   * matches UnsignedSweepBundle.bundle_id
+   *
+   * @generated from field: string bundle_id = 2;
+   */
+  bundleId: string;
+
+  /**
+   * signing timestamp (ms)
+   *
+   * @generated from field: int64 signed_at = 3;
+   */
+  signedAt: bigint;
+
+  /**
+   * verified xpub fingerprint
+   *
+   * @generated from field: string xpub_fingerprint = 4;
+   */
+  xpubFingerprint: string;
+};
+
+/**
+ * Describes the message ant.v1.SignedSweepBundle.
+ * Use `create(SignedSweepBundleSchema)` to create a new message.
+ */
+export const SignedSweepBundleSchema: GenMessage<SignedSweepBundle> = /*@__PURE__*/
+  messageDesc(file_deposit, 22);
+
+/**
+ * PendingSignBundleEntry is a summary of a PENDING_SIGN bundle for admin listing.
+ *
+ * @generated from message ant.v1.PendingSignBundleEntry
+ */
+export type PendingSignBundleEntry = Message<"ant.v1.PendingSignBundleEntry"> & {
+  /**
+   * @generated from field: string batch_id = 1;
+   */
+  batchId: string;
+
+  /**
+   * first address (NULL for batch bundles)
+   *
+   * @generated from field: string deposit_address_id = 2;
+   */
+  depositAddressId: string;
+
+  /**
+   * @generated from field: int64 built_at_ms = 3;
+   */
+  builtAtMs: bigint;
+
+  /**
+   * @generated from field: string status = 4;
+   */
+  status: string;
+};
+
+/**
+ * Describes the message ant.v1.PendingSignBundleEntry.
+ * Use `create(PendingSignBundleEntrySchema)` to create a new message.
+ */
+export const PendingSignBundleEntrySchema: GenMessage<PendingSignBundleEntry> = /*@__PURE__*/
+  messageDesc(file_deposit, 23);
+
+/**
+ * @generated from message ant.v1.ListPendingSignBundlesRequest
+ */
+export type ListPendingSignBundlesRequest = Message<"ant.v1.ListPendingSignBundlesRequest"> & {
+};
+
+/**
+ * Describes the message ant.v1.ListPendingSignBundlesRequest.
+ * Use `create(ListPendingSignBundlesRequestSchema)` to create a new message.
+ */
+export const ListPendingSignBundlesRequestSchema: GenMessage<ListPendingSignBundlesRequest> = /*@__PURE__*/
+  messageDesc(file_deposit, 24);
+
+/**
+ * @generated from message ant.v1.ListPendingSignBundlesResponse
+ */
+export type ListPendingSignBundlesResponse = Message<"ant.v1.ListPendingSignBundlesResponse"> & {
+  /**
+   * @generated from field: repeated ant.v1.PendingSignBundleEntry bundles = 1;
+   */
+  bundles: PendingSignBundleEntry[];
+};
+
+/**
+ * Describes the message ant.v1.ListPendingSignBundlesResponse.
+ * Use `create(ListPendingSignBundlesResponseSchema)` to create a new message.
+ */
+export const ListPendingSignBundlesResponseSchema: GenMessage<ListPendingSignBundlesResponse> = /*@__PURE__*/
+  messageDesc(file_deposit, 25);
+
+/**
+ * @generated from message ant.v1.ExportUnsignedSweepBundleRequest
+ */
+export type ExportUnsignedSweepBundleRequest = Message<"ant.v1.ExportUnsignedSweepBundleRequest"> & {
+  /**
+   * @generated from field: string deposit_address_id = 1;
+   */
+  depositAddressId: string;
+};
+
+/**
+ * Describes the message ant.v1.ExportUnsignedSweepBundleRequest.
+ * Use `create(ExportUnsignedSweepBundleRequestSchema)` to create a new message.
+ */
+export const ExportUnsignedSweepBundleRequestSchema: GenMessage<ExportUnsignedSweepBundleRequest> = /*@__PURE__*/
+  messageDesc(file_deposit, 26);
+
+/**
+ * @generated from message ant.v1.ExportUnsignedSweepBundleResponse
+ */
+export type ExportUnsignedSweepBundleResponse = Message<"ant.v1.ExportUnsignedSweepBundleResponse"> & {
+  /**
+   * serialized UnsignedSweepBundle proto
+   *
+   * @generated from field: bytes unsigned_bundle = 1;
+   */
+  unsignedBundle: Uint8Array;
+};
+
+/**
+ * Describes the message ant.v1.ExportUnsignedSweepBundleResponse.
+ * Use `create(ExportUnsignedSweepBundleResponseSchema)` to create a new message.
+ */
+export const ExportUnsignedSweepBundleResponseSchema: GenMessage<ExportUnsignedSweepBundleResponse> = /*@__PURE__*/
+  messageDesc(file_deposit, 27);
+
+/**
+ * @generated from message ant.v1.ImportSignedSweepBundleRequest
+ */
+export type ImportSignedSweepBundleRequest = Message<"ant.v1.ImportSignedSweepBundleRequest"> & {
+  /**
+   * serialized SignedSweepBundle proto
+   *
+   * @generated from field: bytes signed_bundle = 1;
+   */
+  signedBundle: Uint8Array;
+};
+
+/**
+ * Describes the message ant.v1.ImportSignedSweepBundleRequest.
+ * Use `create(ImportSignedSweepBundleRequestSchema)` to create a new message.
+ */
+export const ImportSignedSweepBundleRequestSchema: GenMessage<ImportSignedSweepBundleRequest> = /*@__PURE__*/
+  messageDesc(file_deposit, 28);
+
+/**
+ * @generated from message ant.v1.ImportSignedSweepBundleResponse
+ */
+export type ImportSignedSweepBundleResponse = Message<"ant.v1.ImportSignedSweepBundleResponse"> & {
+  /**
+   * @generated from field: string batch_id = 1;
+   */
+  batchId: string;
+
+  /**
+   * @generated from field: bool broadcast_complete = 2;
+   */
+  broadcastComplete: boolean;
+};
+
+/**
+ * Describes the message ant.v1.ImportSignedSweepBundleResponse.
+ * Use `create(ImportSignedSweepBundleResponseSchema)` to create a new message.
+ */
+export const ImportSignedSweepBundleResponseSchema: GenMessage<ImportSignedSweepBundleResponse> = /*@__PURE__*/
+  messageDesc(file_deposit, 29);
+
+/**
+ * SweepDashboardEntry is a single address summary in the sweep dashboard.
+ *
+ * @generated from message ant.v1.SweepDashboardEntry
+ */
+export type SweepDashboardEntry = Message<"ant.v1.SweepDashboardEntry"> & {
+  /**
+   * @generated from field: string deposit_address_id = 1;
+   */
+  depositAddressId: string;
+
+  /**
+   * TRC20 Base58
+   *
+   * @generated from field: string address = 2;
+   */
+  address: string;
+
+  /**
+   * USDT amount (decimal string)
+   *
+   * @generated from field: string unswept_amount = 3;
+   */
+  unsweptAmount: string;
+
+  /**
+   * true if unswept_amount >= sweep_alert_threshold
+   *
+   * @generated from field: bool above_threshold = 4;
+   */
+  aboveThreshold: boolean;
+
+  /**
+   * highest sweep status for this address (PENDING/SWEEPING/DONE/MANUAL_REVIEW/none)
+   *
+   * @generated from field: string sweep_status = 5;
+   */
+  sweepStatus: string;
+
+  /**
+   * @generated from field: int32 derivation_index = 6;
+   */
+  derivationIndex: number;
+};
+
+/**
+ * Describes the message ant.v1.SweepDashboardEntry.
+ * Use `create(SweepDashboardEntrySchema)` to create a new message.
+ */
+export const SweepDashboardEntrySchema: GenMessage<SweepDashboardEntry> = /*@__PURE__*/
+  messageDesc(file_deposit, 30);
+
+/**
+ * @generated from message ant.v1.GetSweepDashboardRequest
+ */
+export type GetSweepDashboardRequest = Message<"ant.v1.GetSweepDashboardRequest"> & {
+  /**
+   * @generated from field: int32 page = 1;
+   */
+  page: number;
+
+  /**
+   * @generated from field: int32 page_size = 2;
+   */
+  pageSize: number;
+};
+
+/**
+ * Describes the message ant.v1.GetSweepDashboardRequest.
+ * Use `create(GetSweepDashboardRequestSchema)` to create a new message.
+ */
+export const GetSweepDashboardRequestSchema: GenMessage<GetSweepDashboardRequest> = /*@__PURE__*/
+  messageDesc(file_deposit, 31);
+
+/**
+ * @generated from message ant.v1.GetSweepDashboardResponse
+ */
+export type GetSweepDashboardResponse = Message<"ant.v1.GetSweepDashboardResponse"> & {
+  /**
+   * @generated from field: repeated ant.v1.SweepDashboardEntry addresses = 1;
+   */
+  addresses: SweepDashboardEntry[];
+
+  /**
+   * @generated from field: int64 total = 2;
+   */
+  total: bigint;
+
+  /**
+   * sum of all unswept amounts (decimal string)
+   *
+   * @generated from field: string total_unswept = 3;
+   */
+  totalUnswept: string;
+
+  /**
+   * current sweep_alert_threshold config value
+   *
+   * @generated from field: string threshold = 4;
+   */
+  threshold: string;
+};
+
+/**
+ * Describes the message ant.v1.GetSweepDashboardResponse.
+ * Use `create(GetSweepDashboardResponseSchema)` to create a new message.
+ */
+export const GetSweepDashboardResponseSchema: GenMessage<GetSweepDashboardResponse> = /*@__PURE__*/
+  messageDesc(file_deposit, 32);
+
+/**
+ * @generated from message ant.v1.BuildUndelegateOnlyBundleRequest
+ */
+export type BuildUndelegateOnlyBundleRequest = Message<"ant.v1.BuildUndelegateOnlyBundleRequest"> & {
+  /**
+   * addresses stuck in MANUAL_REVIEW with delegated energy
+   *
+   * @generated from field: repeated string deposit_address_ids = 1;
+   */
+  depositAddressIds: string[];
+};
+
+/**
+ * Describes the message ant.v1.BuildUndelegateOnlyBundleRequest.
+ * Use `create(BuildUndelegateOnlyBundleRequestSchema)` to create a new message.
+ */
+export const BuildUndelegateOnlyBundleRequestSchema: GenMessage<BuildUndelegateOnlyBundleRequest> = /*@__PURE__*/
+  messageDesc(file_deposit, 33);
+
+/**
+ * @generated from message ant.v1.BuildUndelegateOnlyBundleResponse
+ */
+export type BuildUndelegateOnlyBundleResponse = Message<"ant.v1.BuildUndelegateOnlyBundleResponse"> & {
+  /**
+   * serialized UnsignedSweepBundle proto (undelegate-only txs)
+   *
+   * @generated from field: bytes unsigned_bundle = 1;
+   */
+  unsignedBundle: Uint8Array;
+};
+
+/**
+ * Describes the message ant.v1.BuildUndelegateOnlyBundleResponse.
+ * Use `create(BuildUndelegateOnlyBundleResponseSchema)` to create a new message.
+ */
+export const BuildUndelegateOnlyBundleResponseSchema: GenMessage<BuildUndelegateOnlyBundleResponse> = /*@__PURE__*/
+  messageDesc(file_deposit, 34);
+
+/**
+ * TxKind classifies transaction types for cold signing (ADR-0026 §7/Q6).
+ *
+ * @generated from enum ant.v1.TxKind
+ */
+export enum TxKind {
+  /**
+   * @generated from enum value: TX_KIND_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * Energy delegation (FreezeBalanceV2)
+   *
+   * @generated from enum value: TX_KIND_DELEGATE = 1;
+   */
+  DELEGATE = 1,
+
+  /**
+   * USDT/TRX transfer (sweep to cold wallet or user withdrawal)
+   *
+   * @generated from enum value: TX_KIND_TRANSFER = 2;
+   */
+  TRANSFER = 2,
+
+  /**
+   * Energy undelegation (UnfreezeBalanceV2)
+   *
+   * @generated from enum value: TX_KIND_UNDELEGATE = 3;
+   */
+  UNDELEGATE = 3,
+}
+
+/**
+ * Describes the enum ant.v1.TxKind.
+ */
+export const TxKindSchema: GenEnum<TxKind> = /*@__PURE__*/
+  enumDesc(file_deposit, 0);
+
+/**
  * DepositService manages USDT deposits via HD wallet.
  * Users get a personal TRC20 address; deposits are auto-confirmed by chain monitor.
  *
@@ -469,7 +1186,7 @@ export const DepositService: GenService<{
     output: typeof ListManualReviewDepositsResponseSchema;
   },
   /**
-   * Admin: list all deposit addresses (assigned + available pool).
+   * Admin: list all deposit addresses (assigned + retired).
    *
    * @generated from rpc ant.v1.DepositService.ListDepositAddresses
    */
@@ -487,6 +1204,56 @@ export const DepositService: GenService<{
     methodKind: "unary";
     input: typeof ImportDepositAddressesRequestSchema;
     output: typeof ImportDepositAddressesResponseSchema;
+  },
+  /**
+   * Admin: list unsigned sweep bundles awaiting cold signing (PENDING_SIGN).
+   *
+   * @generated from rpc ant.v1.DepositService.ListPendingSignBundles
+   */
+  listPendingSignBundles: {
+    methodKind: "unary";
+    input: typeof ListPendingSignBundlesRequestSchema;
+    output: typeof ListPendingSignBundlesResponseSchema;
+  },
+  /**
+   * Admin: export an unsigned sweep bundle for a specific address (manual sweep).
+   *
+   * @generated from rpc ant.v1.DepositService.ExportUnsignedSweepBundle
+   */
+  exportUnsignedSweepBundle: {
+    methodKind: "unary";
+    input: typeof ExportUnsignedSweepBundleRequestSchema;
+    output: typeof ExportUnsignedSweepBundleResponseSchema;
+  },
+  /**
+   * Admin: import a signed sweep bundle from cold signing machine and broadcast.
+   *
+   * @generated from rpc ant.v1.DepositService.ImportSignedSweepBundle
+   */
+  importSignedSweepBundle: {
+    methodKind: "unary";
+    input: typeof ImportSignedSweepBundleRequestSchema;
+    output: typeof ImportSignedSweepBundleResponseSchema;
+  },
+  /**
+   * Admin: get sweep dashboard — addresses with unswept balances, sorted descending.
+   *
+   * @generated from rpc ant.v1.DepositService.GetSweepDashboard
+   */
+  getSweepDashboard: {
+    methodKind: "unary";
+    input: typeof GetSweepDashboardRequestSchema;
+    output: typeof GetSweepDashboardResponseSchema;
+  },
+  /**
+   * Admin: build undelegate-only bundle for energy recovery from stuck MANUAL_REVIEW addresses.
+   *
+   * @generated from rpc ant.v1.DepositService.BuildUndelegateOnlyBundle
+   */
+  buildUndelegateOnlyBundle: {
+    methodKind: "unary";
+    input: typeof BuildUndelegateOnlyBundleRequestSchema;
+    output: typeof BuildUndelegateOnlyBundleResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_deposit, 0);

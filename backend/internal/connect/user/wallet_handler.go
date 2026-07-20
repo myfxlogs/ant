@@ -148,7 +148,7 @@ func (s *WalletServer) AdjustBalance(ctx context.Context, req *connect.Request[a
 		txType = "withdrawal"
 	}
 
-	w, err := s.svc.AdjustBalance(ctx, userID, r.Amount, txType, r.Description, &operatorID)
+	w, err := s.svc.AdjustBalance(ctx, userID, r.Amount, txType, r.Description, &operatorID, "admin-"+uuid.New().String())
 	if err != nil {
 		if errors.Is(err, service.ErrWalletNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("wallet not found"))

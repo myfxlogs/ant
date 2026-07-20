@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -46,7 +47,8 @@ func (s *WalletService) CreateWallet(ctx context.Context, userID uuid.UUID) (*mo
 
 // AdjustBalance credits or debits a user's wallet and records the transaction.
 // amount is a numeric string; positive = credit, negative = debit.
-func (s *WalletService) AdjustBalance(ctx context.Context, userID uuid.UUID, amount, txType, description string, operatorID *uuid.UUID) (*model.Wallet, error) {
+// idemKey is a unique key for idempotency (R7); empty = auto-generate.
+func (s *WalletService) AdjustBalance(ctx context.Context, userID uuid.UUID, amount, txType, description string, operatorID *uuid.UUID, idemKey string) (*model.Wallet, error) {
 	w, err := s.repo.GetByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -61,8 +63,11 @@ func (s *WalletService) AdjustBalance(ctx context.Context, userID uuid.UUID, amo
 	}
 	defer tx.Rollback(ctx)
 
-	updated, err := s.repo.AdjustBalanceTx(ctx, tx, w.ID, userID, amount, txType, description, operatorID)
+	updated, err := s.repo.AdjustBalanceTx(ctx, tx, w.ID, userID, amount, txType, description, operatorID, idemKey)
 	if err != nil {
+		if errors.Is(err, model.ErrIdempotentReplay) {
+			return w, nil
+		}
 		return nil, err
 	}
 	if err := tx.Commit(ctx); err != nil {
@@ -79,6 +84,57 @@ func (s *WalletService) AdjustBalance(ctx context.Context, userID uuid.UUID, amo
 // ListTransactions returns a paginated list of wallet transactions.
 func (s *WalletService) ListTransactions(ctx context.Context, userID uuid.UUID, page, pageSize int) ([]model.WalletTransaction, int64, error) {
 	return s.repo.ListTransactions(ctx, userID, page, pageSize)
+}
+
+// FreezeForWithdrawal moves amount from balance to frozen_balance (R9).
+// idemKey must be unique per withdrawal (e.g. "withdrawal-{withdrawalID}").
+func (s *WalletService) FreezeForWithdrawal(ctx context.Context, userID uuid.UUID, amount, idemKey string) (*model.Wallet, error) {
+	return s.runFreezeTx(ctx, userID, amount, idemKey, true, "withdrawal_freeze", "Freeze for withdrawal")
+}
+
+// CompleteWithdrawal deducts frozen amount after successful broadcast (R9).
+func (s *WalletService) CompleteWithdrawal(ctx context.Context, userID uuid.UUID, amount, idemKey string) (*model.Wallet, error) {
+	return s.runFreezeTx(ctx, userID, amount, idemKey, false, "withdrawal_complete", "Withdrawal completed")
+}
+
+// CancelWithdrawal returns frozen amount to balance (R9).
+func (s *WalletService) CancelWithdrawal(ctx context.Context, userID uuid.UUID, amount, idemKey string) (*model.Wallet, error) {
+	return s.runFreezeTx(ctx, userID, amount, idemKey, false, "withdrawal_cancel", "Withdrawal cancelled")
+}
+
+func (s *WalletService) runFreezeTx(ctx context.Context, userID uuid.UUID, amount, idemKey string, freeze bool, txType, desc string) (*model.Wallet, error) {
+	w, err := s.repo.GetByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if w == nil {
+		return nil, ErrWalletNotFound
+	}
+
+	tx, err := s.pg.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	var updated *model.Wallet
+	if freeze {
+		updated, err = s.repo.FreezeForWithdrawal(ctx, tx, w.ID, userID, amount, idemKey)
+	} else if txType == "withdrawal_complete" {
+		updated, err = s.repo.CompleteWithdrawal(ctx, tx, w.ID, userID, amount, idemKey)
+	} else {
+		updated, err = s.repo.CancelWithdrawal(ctx, tx, w.ID, userID, amount, idemKey)
+	}
+	if err != nil {
+		if errors.Is(err, model.ErrIdempotentReplay) {
+			return w, nil
+		}
+		return nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return updated, nil
 }
 
 // ErrWalletNotFound is returned when a wallet doesn't exist for a user.

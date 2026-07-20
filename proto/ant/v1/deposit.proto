@@ -15,10 +15,20 @@ service DepositService {
   rpc ListMyDeposits(ListMyDepositsRequest) returns (ListMyDepositsResponse);
   // Admin: list deposits requiring manual review.
   rpc ListManualReviewDeposits(ListManualReviewDepositsRequest) returns (ListManualReviewDepositsResponse);
-  // Admin: list all deposit addresses (assigned + available pool).
+  // Admin: list all deposit addresses (assigned + retired).
   rpc ListDepositAddresses(ListDepositAddressesRequest) returns (ListDepositAddressesResponse);
   // Admin: import a batch of offline-generated addresses (proto binary).
   rpc ImportDepositAddresses(ImportDepositAddressesRequest) returns (ImportDepositAddressesResponse);
+  // Admin: list unsigned sweep bundles awaiting cold signing (PENDING_SIGN).
+  rpc ListPendingSignBundles(ListPendingSignBundlesRequest) returns (ListPendingSignBundlesResponse);
+  // Admin: export an unsigned sweep bundle for a specific address (manual sweep).
+  rpc ExportUnsignedSweepBundle(ExportUnsignedSweepBundleRequest) returns (ExportUnsignedSweepBundleResponse);
+  // Admin: import a signed sweep bundle from cold signing machine and broadcast.
+  rpc ImportSignedSweepBundle(ImportSignedSweepBundleRequest) returns (ImportSignedSweepBundleResponse);
+  // Admin: get sweep dashboard — addresses with unswept balances, sorted descending.
+  rpc GetSweepDashboard(GetSweepDashboardRequest) returns (GetSweepDashboardResponse);
+  // Admin: build undelegate-only bundle for energy recovery from stuck MANUAL_REVIEW addresses.
+  rpc BuildUndelegateOnlyBundle(BuildUndelegateOnlyBundleRequest) returns (BuildUndelegateOnlyBundleResponse);
 }
 
 message Deposit {
@@ -60,11 +70,11 @@ message ListManualReviewDepositsResponse {
 
 message DepositAddress {
   string id = 1;
-  string user_id = 2;          // empty if AVAILABLE
+  string user_id = 2;          // empty if RETIRED
   string address = 3;          // TRC20 Base58
   int32 derivation_index = 4;
   string network = 5;
-  string status = 6;           // AVAILABLE / ASSIGNED / RETIRED
+  string status = 6;           // ASSIGNED / RETIRED
   bool has_received_usdt = 7;
   google.protobuf.Timestamp assigned_at = 8;
   google.protobuf.Timestamp created_at = 9;
@@ -79,16 +89,16 @@ message ListDepositAddressesRequest {
 message ListDepositAddressesResponse {
   repeated DepositAddress addresses = 1;
   int64 total = 2;
-  int32 available_count = 3;   // total AVAILABLE in pool
+  int32 available_count = 3;   // deprecated (no pool in Q1 model); kept for proto compatibility
 }
 
-// AddressBatchEntry is a single offline-generated address with encrypted private key.
+// AddressBatchEntry is a single offline-generated address.
 // Used by hdgen tool and ImportDepositAddresses RPC.
+// No private key data — online system is watch-only (ADR-0026 R1).
 message AddressBatchEntry {
   string address = 1;              // TRC20 Base58
   int32 derivation_index = 2;
-  bytes encrypted_privkey = 3;     // AES-256-GCM ciphertext
-  string network = 4;             // "TRC20"
+  string network = 3;              // "TRC20"
 }
 
 message AddressBatch {
@@ -102,4 +112,166 @@ message ImportDepositAddressesRequest {
 message ImportDepositAddressesResponse {
   int32 imported = 1;     // number of addresses actually inserted
   int32 skipped = 2;      // number of duplicates skipped
+}
+
+// XpubExport is the output of cmd/hdgen (air-gapped tool).
+// Contains only the account-level extended public key + fingerprint.
+// No private key material (ADR-0026 R1).
+message XpubExport {
+  string xpub = 1;              // account-level extended public key (m/44'/195'/0'/0)
+  string fingerprint = 2;       // SHA-256 fingerprint for startup verification (R5)
+  string network = 3;           // "TRC20"
+}
+
+// TxKind classifies transaction types for cold signing (ADR-0026 §7/Q6).
+enum TxKind {
+  TX_KIND_UNSPECIFIED = 0;
+  TX_KIND_DELEGATE = 1;     // Energy delegation (FreezeBalanceV2)
+  TX_KIND_TRANSFER = 2;     // USDT/TRX transfer (sweep to cold wallet or user withdrawal)
+  TX_KIND_UNDELEGATE = 3;   // Energy undelegation (UnfreezeBalanceV2)
+}
+
+// WithdrawalAuth holds the WebAuthn assertion for user-initiated withdrawals.
+// Sweep transfers (no auth) are distinguished from withdrawal transfers (with auth).
+// coldsign verifies the assertion against its self-held public key (R11/Q8).
+message WithdrawalAuth {
+  string user_id = 1;
+  uint64 nonce = 2;
+  string credential_id = 3;
+  bytes assertion = 4;            // WebAuthn assertion blob
+}
+
+// DelegateTx — energy delegation from energy account to deposit address.
+// Derivation path: m/44'/195'/0'/1/0 (energy account fixed path, not derivation_index).
+message DelegateTx {
+  string energy_account = 1;      // energy provider TRC20 address
+  string resource = 2;            // "ENERGY" (TRON stake type)
+}
+
+// TransferTx — USDT or TRX transfer from a deposit address.
+// If auth is nil → sweep to cold wallet (R4: to must == cold_wallet_address).
+// If auth is set → user withdrawal (R11: verify WebAuthn assertion).
+message TransferTx {
+  string token_contract = 1;      // TRC20 contract (empty for TRX)
+  WithdrawalAuth auth = 2;        // nil for sweep, set for withdrawal
+}
+
+// UndelegateTx — energy undelegation from deposit address back to energy account.
+// Derivation path: m/44'/195'/0'/1/0 (energy account fixed path).
+message UndelegateTx {
+  string energy_account = 1;      // energy provider TRC20 address
+  string resource = 2;            // "ENERGY"
+}
+
+// UnsignedTx is a single unsigned transaction for cold signing.
+// The online server constructs this; the cold signing machine signs it.
+//
+// Design: flat fields are the common header that coldsign reads for ALL tx types
+// (address verification, key derivation, R4 whitelist, display/logging).
+// The oneof tx carries only type-specific extras (auth for TransferTx,
+// resource for Delegate/Undelegate). This is intentional — the flat fields
+// are the single source of truth for cross-cutting concerns, while the oneof
+// discriminates tx-specific parameters. coldsign MUST read flat fields for
+// verification and use the oneof only for type-specific logic.
+message UnsignedTx {
+  TxKind kind = 1;
+  string from_address = 2;        // deposit address (TRC20 Base58)
+  uint32 derivation_index = 3;    // BIP44 index for TransferTx private key derivation
+  string to_address = 4;          // destination (cold wallet / user / energy provider)
+  string amount = 5;              // human-readable amount (string for precision)
+  bytes raw_tx = 6;               // raw unsigned TRON transaction data
+  int64 expiry_ms = 7;            // raw_tx expiration timestamp (ms) — near 24h per Q3
+  string expected_txid = 8;       // expected transaction hash (for idempotent broadcast)
+
+  oneof tx {
+    DelegateTx delegate = 10;
+    TransferTx transfer = 11;
+    UndelegateTx undelegate = 12;
+  }
+}
+
+// UnsignedSweepBundle is a batch of unsigned transactions exported by the
+// online server for cold signing. Transferred via proto binary (USB/air gap).
+message UnsignedSweepBundle {
+  repeated UnsignedTx txs = 1;
+  string bundle_id = 2;           // unique identifier for tracking
+  int64 built_at_ms = 3;          // construction timestamp (ms)
+  string xpub_fingerprint = 4;    // xpub fingerprint for identity verification
+}
+
+// SignedTx is a single signed transaction from the cold signing machine.
+message SignedTx {
+  TxKind kind = 1;
+  string from_address = 2;
+  string to_address = 3;
+  string amount = 4;
+  bytes signed_tx_data = 5;       // raw signed TRON transaction data
+  string tx_hash = 6;             // expected transaction hash (matches expected_txid)
+}
+
+// SignedSweepBundle is the output of cmd/coldsign — a batch of signed
+// transactions ready for broadcast by the online server.
+message SignedSweepBundle {
+  repeated SignedTx txs = 1;
+  string bundle_id = 2;           // matches UnsignedSweepBundle.bundle_id
+  int64 signed_at = 3;            // signing timestamp (ms)
+  string xpub_fingerprint = 4;    // verified xpub fingerprint
+}
+
+// PendingSignBundleEntry is a summary of a PENDING_SIGN bundle for admin listing.
+message PendingSignBundleEntry {
+  string batch_id = 1;
+  string deposit_address_id = 2;  // first address (NULL for batch bundles)
+  int64 built_at_ms = 3;
+  string status = 4;
+}
+
+message ListPendingSignBundlesRequest {}
+message ListPendingSignBundlesResponse {
+  repeated PendingSignBundleEntry bundles = 1;
+}
+
+message ExportUnsignedSweepBundleRequest {
+  string deposit_address_id = 1;
+}
+message ExportUnsignedSweepBundleResponse {
+  bytes unsigned_bundle = 1;   // serialized UnsignedSweepBundle proto
+}
+
+message ImportSignedSweepBundleRequest {
+  bytes signed_bundle = 1;     // serialized SignedSweepBundle proto
+}
+message ImportSignedSweepBundleResponse {
+  string batch_id = 1;
+  bool broadcast_complete = 2;
+}
+
+// SweepDashboardEntry is a single address summary in the sweep dashboard.
+message SweepDashboardEntry {
+  string deposit_address_id = 1;
+  string address = 2;              // TRC20 Base58
+  string unswept_amount = 3;       // USDT amount (decimal string)
+  bool above_threshold = 4;       // true if unswept_amount >= sweep_alert_threshold
+  string sweep_status = 5;        // highest sweep status for this address (PENDING/SWEEPING/DONE/MANUAL_REVIEW/none)
+  int32 derivation_index = 6;
+}
+
+message GetSweepDashboardRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message GetSweepDashboardResponse {
+  repeated SweepDashboardEntry addresses = 1;
+  int64 total = 2;
+  string total_unswept = 3;       // sum of all unswept amounts (decimal string)
+  string threshold = 4;           // current sweep_alert_threshold config value
+}
+
+message BuildUndelegateOnlyBundleRequest {
+  repeated string deposit_address_ids = 1;  // addresses stuck in MANUAL_REVIEW with delegated energy
+}
+
+message BuildUndelegateOnlyBundleResponse {
+  bytes unsigned_bundle = 1;     // serialized UnsignedSweepBundle proto (undelegate-only txs)
 }

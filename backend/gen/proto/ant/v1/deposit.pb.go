@@ -22,6 +22,59 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// TxKind classifies transaction types for cold signing (ADR-0026 §7/Q6).
+type TxKind int32
+
+const (
+	TxKind_TX_KIND_UNSPECIFIED TxKind = 0
+	TxKind_TX_KIND_DELEGATE    TxKind = 1 // Energy delegation (FreezeBalanceV2)
+	TxKind_TX_KIND_TRANSFER    TxKind = 2 // USDT/TRX transfer (sweep to cold wallet or user withdrawal)
+	TxKind_TX_KIND_UNDELEGATE  TxKind = 3 // Energy undelegation (UnfreezeBalanceV2)
+)
+
+// Enum value maps for TxKind.
+var (
+	TxKind_name = map[int32]string{
+		0: "TX_KIND_UNSPECIFIED",
+		1: "TX_KIND_DELEGATE",
+		2: "TX_KIND_TRANSFER",
+		3: "TX_KIND_UNDELEGATE",
+	}
+	TxKind_value = map[string]int32{
+		"TX_KIND_UNSPECIFIED": 0,
+		"TX_KIND_DELEGATE":    1,
+		"TX_KIND_TRANSFER":    2,
+		"TX_KIND_UNDELEGATE":  3,
+	}
+)
+
+func (x TxKind) Enum() *TxKind {
+	p := new(TxKind)
+	*p = x
+	return p
+}
+
+func (x TxKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TxKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_deposit_proto_enumTypes[0].Descriptor()
+}
+
+func (TxKind) Type() protoreflect.EnumType {
+	return &file_deposit_proto_enumTypes[0]
+}
+
+func (x TxKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TxKind.Descriptor instead.
+func (TxKind) EnumDescriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{0}
+}
+
 type Deposit struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -437,11 +490,11 @@ func (x *ListManualReviewDepositsResponse) GetTotal() int64 {
 type DepositAddress struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId          string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // empty if AVAILABLE
+	UserId          string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // empty if RETIRED
 	Address         string                 `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`             // TRC20 Base58
 	DerivationIndex int32                  `protobuf:"varint,4,opt,name=derivation_index,json=derivationIndex,proto3" json:"derivation_index,omitempty"`
 	Network         string                 `protobuf:"bytes,5,opt,name=network,proto3" json:"network,omitempty"`
-	Status          string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"` // AVAILABLE / ASSIGNED / RETIRED
+	Status          string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"` // ASSIGNED / RETIRED
 	HasReceivedUsdt bool                   `protobuf:"varint,7,opt,name=has_received_usdt,json=hasReceivedUsdt,proto3" json:"has_received_usdt,omitempty"`
 	AssignedAt      *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=assigned_at,json=assignedAt,proto3" json:"assigned_at,omitempty"`
 	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
@@ -606,7 +659,7 @@ type ListDepositAddressesResponse struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Addresses      []*DepositAddress      `protobuf:"bytes,1,rep,name=addresses,proto3" json:"addresses,omitempty"`
 	Total          int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
-	AvailableCount int32                  `protobuf:"varint,3,opt,name=available_count,json=availableCount,proto3" json:"available_count,omitempty"` // total AVAILABLE in pool
+	AvailableCount int32                  `protobuf:"varint,3,opt,name=available_count,json=availableCount,proto3" json:"available_count,omitempty"` // deprecated (no pool in Q1 model); kept for proto compatibility
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -662,16 +715,16 @@ func (x *ListDepositAddressesResponse) GetAvailableCount() int32 {
 	return 0
 }
 
-// AddressBatchEntry is a single offline-generated address with encrypted private key.
+// AddressBatchEntry is a single offline-generated address.
 // Used by hdgen tool and ImportDepositAddresses RPC.
+// No private key data — online system is watch-only (ADR-0026 R1).
 type AddressBatchEntry struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Address          string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"` // TRC20 Base58
-	DerivationIndex  int32                  `protobuf:"varint,2,opt,name=derivation_index,json=derivationIndex,proto3" json:"derivation_index,omitempty"`
-	EncryptedPrivkey []byte                 `protobuf:"bytes,3,opt,name=encrypted_privkey,json=encryptedPrivkey,proto3" json:"encrypted_privkey,omitempty"` // AES-256-GCM ciphertext
-	Network          string                 `protobuf:"bytes,4,opt,name=network,proto3" json:"network,omitempty"`                                           // "TRC20"
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Address         string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"` // TRC20 Base58
+	DerivationIndex int32                  `protobuf:"varint,2,opt,name=derivation_index,json=derivationIndex,proto3" json:"derivation_index,omitempty"`
+	Network         string                 `protobuf:"bytes,3,opt,name=network,proto3" json:"network,omitempty"` // "TRC20"
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *AddressBatchEntry) Reset() {
@@ -716,13 +769,6 @@ func (x *AddressBatchEntry) GetDerivationIndex() int32 {
 		return x.DerivationIndex
 	}
 	return 0
-}
-
-func (x *AddressBatchEntry) GetEncryptedPrivkey() []byte {
-	if x != nil {
-		return x.EncryptedPrivkey
-	}
-	return nil
 }
 
 func (x *AddressBatchEntry) GetNetwork() string {
@@ -872,6 +918,1326 @@ func (x *ImportDepositAddressesResponse) GetSkipped() int32 {
 	return 0
 }
 
+// XpubExport is the output of cmd/hdgen (air-gapped tool).
+// Contains only the account-level extended public key + fingerprint.
+// No private key material (ADR-0026 R1).
+type XpubExport struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Xpub          string                 `protobuf:"bytes,1,opt,name=xpub,proto3" json:"xpub,omitempty"`               // account-level extended public key (m/44'/195'/0'/0)
+	Fingerprint   string                 `protobuf:"bytes,2,opt,name=fingerprint,proto3" json:"fingerprint,omitempty"` // SHA-256 fingerprint for startup verification (R5)
+	Network       string                 `protobuf:"bytes,3,opt,name=network,proto3" json:"network,omitempty"`         // "TRC20"
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *XpubExport) Reset() {
+	*x = XpubExport{}
+	mi := &file_deposit_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *XpubExport) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*XpubExport) ProtoMessage() {}
+
+func (x *XpubExport) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use XpubExport.ProtoReflect.Descriptor instead.
+func (*XpubExport) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *XpubExport) GetXpub() string {
+	if x != nil {
+		return x.Xpub
+	}
+	return ""
+}
+
+func (x *XpubExport) GetFingerprint() string {
+	if x != nil {
+		return x.Fingerprint
+	}
+	return ""
+}
+
+func (x *XpubExport) GetNetwork() string {
+	if x != nil {
+		return x.Network
+	}
+	return ""
+}
+
+// WithdrawalAuth holds the WebAuthn assertion for user-initiated withdrawals.
+// Sweep transfers (no auth) are distinguished from withdrawal transfers (with auth).
+// coldsign verifies the assertion against its self-held public key (R11/Q8).
+type WithdrawalAuth struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Nonce         uint64                 `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	CredentialId  string                 `protobuf:"bytes,3,opt,name=credential_id,json=credentialId,proto3" json:"credential_id,omitempty"`
+	Assertion     []byte                 `protobuf:"bytes,4,opt,name=assertion,proto3" json:"assertion,omitempty"` // WebAuthn assertion blob
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WithdrawalAuth) Reset() {
+	*x = WithdrawalAuth{}
+	mi := &file_deposit_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WithdrawalAuth) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WithdrawalAuth) ProtoMessage() {}
+
+func (x *WithdrawalAuth) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WithdrawalAuth.ProtoReflect.Descriptor instead.
+func (*WithdrawalAuth) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *WithdrawalAuth) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *WithdrawalAuth) GetNonce() uint64 {
+	if x != nil {
+		return x.Nonce
+	}
+	return 0
+}
+
+func (x *WithdrawalAuth) GetCredentialId() string {
+	if x != nil {
+		return x.CredentialId
+	}
+	return ""
+}
+
+func (x *WithdrawalAuth) GetAssertion() []byte {
+	if x != nil {
+		return x.Assertion
+	}
+	return nil
+}
+
+// DelegateTx — energy delegation from energy account to deposit address.
+// Derivation path: m/44'/195'/0'/1/0 (energy account fixed path, not derivation_index).
+type DelegateTx struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EnergyAccount string                 `protobuf:"bytes,1,opt,name=energy_account,json=energyAccount,proto3" json:"energy_account,omitempty"` // energy provider TRC20 address
+	Resource      string                 `protobuf:"bytes,2,opt,name=resource,proto3" json:"resource,omitempty"`                                // "ENERGY" (TRON stake type)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DelegateTx) Reset() {
+	*x = DelegateTx{}
+	mi := &file_deposit_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DelegateTx) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DelegateTx) ProtoMessage() {}
+
+func (x *DelegateTx) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DelegateTx.ProtoReflect.Descriptor instead.
+func (*DelegateTx) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *DelegateTx) GetEnergyAccount() string {
+	if x != nil {
+		return x.EnergyAccount
+	}
+	return ""
+}
+
+func (x *DelegateTx) GetResource() string {
+	if x != nil {
+		return x.Resource
+	}
+	return ""
+}
+
+// TransferTx — USDT or TRX transfer from a deposit address.
+// If auth is nil → sweep to cold wallet (R4: to must == cold_wallet_address).
+// If auth is set → user withdrawal (R11: verify WebAuthn assertion).
+type TransferTx struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TokenContract string                 `protobuf:"bytes,1,opt,name=token_contract,json=tokenContract,proto3" json:"token_contract,omitempty"` // TRC20 contract (empty for TRX)
+	Auth          *WithdrawalAuth        `protobuf:"bytes,2,opt,name=auth,proto3" json:"auth,omitempty"`                                        // nil for sweep, set for withdrawal
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TransferTx) Reset() {
+	*x = TransferTx{}
+	mi := &file_deposit_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransferTx) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransferTx) ProtoMessage() {}
+
+func (x *TransferTx) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransferTx.ProtoReflect.Descriptor instead.
+func (*TransferTx) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *TransferTx) GetTokenContract() string {
+	if x != nil {
+		return x.TokenContract
+	}
+	return ""
+}
+
+func (x *TransferTx) GetAuth() *WithdrawalAuth {
+	if x != nil {
+		return x.Auth
+	}
+	return nil
+}
+
+// UndelegateTx — energy undelegation from deposit address back to energy account.
+// Derivation path: m/44'/195'/0'/1/0 (energy account fixed path).
+type UndelegateTx struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EnergyAccount string                 `protobuf:"bytes,1,opt,name=energy_account,json=energyAccount,proto3" json:"energy_account,omitempty"` // energy provider TRC20 address
+	Resource      string                 `protobuf:"bytes,2,opt,name=resource,proto3" json:"resource,omitempty"`                                // "ENERGY"
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UndelegateTx) Reset() {
+	*x = UndelegateTx{}
+	mi := &file_deposit_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UndelegateTx) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UndelegateTx) ProtoMessage() {}
+
+func (x *UndelegateTx) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UndelegateTx.ProtoReflect.Descriptor instead.
+func (*UndelegateTx) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *UndelegateTx) GetEnergyAccount() string {
+	if x != nil {
+		return x.EnergyAccount
+	}
+	return ""
+}
+
+func (x *UndelegateTx) GetResource() string {
+	if x != nil {
+		return x.Resource
+	}
+	return ""
+}
+
+// UnsignedTx is a single unsigned transaction for cold signing.
+// The online server constructs this; the cold signing machine signs it.
+//
+// Design: flat fields are the common header that coldsign reads for ALL tx types
+// (address verification, key derivation, R4 whitelist, display/logging).
+// The oneof tx carries only type-specific extras (auth for TransferTx,
+// resource for Delegate/Undelegate). This is intentional — the flat fields
+// are the single source of truth for cross-cutting concerns, while the oneof
+// discriminates tx-specific parameters. coldsign MUST read flat fields for
+// verification and use the oneof only for type-specific logic.
+type UnsignedTx struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Kind            TxKind                 `protobuf:"varint,1,opt,name=kind,proto3,enum=ant.v1.TxKind" json:"kind,omitempty"`
+	FromAddress     string                 `protobuf:"bytes,2,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`              // deposit address (TRC20 Base58)
+	DerivationIndex uint32                 `protobuf:"varint,3,opt,name=derivation_index,json=derivationIndex,proto3" json:"derivation_index,omitempty"` // BIP44 index for TransferTx private key derivation
+	ToAddress       string                 `protobuf:"bytes,4,opt,name=to_address,json=toAddress,proto3" json:"to_address,omitempty"`                    // destination (cold wallet / user / energy provider)
+	Amount          string                 `protobuf:"bytes,5,opt,name=amount,proto3" json:"amount,omitempty"`                                           // human-readable amount (string for precision)
+	RawTx           []byte                 `protobuf:"bytes,6,opt,name=raw_tx,json=rawTx,proto3" json:"raw_tx,omitempty"`                                // raw unsigned TRON transaction data
+	ExpiryMs        int64                  `protobuf:"varint,7,opt,name=expiry_ms,json=expiryMs,proto3" json:"expiry_ms,omitempty"`                      // raw_tx expiration timestamp (ms) — near 24h per Q3
+	ExpectedTxid    string                 `protobuf:"bytes,8,opt,name=expected_txid,json=expectedTxid,proto3" json:"expected_txid,omitempty"`           // expected transaction hash (for idempotent broadcast)
+	// Types that are valid to be assigned to Tx:
+	//
+	//	*UnsignedTx_Delegate
+	//	*UnsignedTx_Transfer
+	//	*UnsignedTx_Undelegate
+	Tx            isUnsignedTx_Tx `protobuf_oneof:"tx"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UnsignedTx) Reset() {
+	*x = UnsignedTx{}
+	mi := &file_deposit_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnsignedTx) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnsignedTx) ProtoMessage() {}
+
+func (x *UnsignedTx) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnsignedTx.ProtoReflect.Descriptor instead.
+func (*UnsignedTx) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *UnsignedTx) GetKind() TxKind {
+	if x != nil {
+		return x.Kind
+	}
+	return TxKind_TX_KIND_UNSPECIFIED
+}
+
+func (x *UnsignedTx) GetFromAddress() string {
+	if x != nil {
+		return x.FromAddress
+	}
+	return ""
+}
+
+func (x *UnsignedTx) GetDerivationIndex() uint32 {
+	if x != nil {
+		return x.DerivationIndex
+	}
+	return 0
+}
+
+func (x *UnsignedTx) GetToAddress() string {
+	if x != nil {
+		return x.ToAddress
+	}
+	return ""
+}
+
+func (x *UnsignedTx) GetAmount() string {
+	if x != nil {
+		return x.Amount
+	}
+	return ""
+}
+
+func (x *UnsignedTx) GetRawTx() []byte {
+	if x != nil {
+		return x.RawTx
+	}
+	return nil
+}
+
+func (x *UnsignedTx) GetExpiryMs() int64 {
+	if x != nil {
+		return x.ExpiryMs
+	}
+	return 0
+}
+
+func (x *UnsignedTx) GetExpectedTxid() string {
+	if x != nil {
+		return x.ExpectedTxid
+	}
+	return ""
+}
+
+func (x *UnsignedTx) GetTx() isUnsignedTx_Tx {
+	if x != nil {
+		return x.Tx
+	}
+	return nil
+}
+
+func (x *UnsignedTx) GetDelegate() *DelegateTx {
+	if x != nil {
+		if x, ok := x.Tx.(*UnsignedTx_Delegate); ok {
+			return x.Delegate
+		}
+	}
+	return nil
+}
+
+func (x *UnsignedTx) GetTransfer() *TransferTx {
+	if x != nil {
+		if x, ok := x.Tx.(*UnsignedTx_Transfer); ok {
+			return x.Transfer
+		}
+	}
+	return nil
+}
+
+func (x *UnsignedTx) GetUndelegate() *UndelegateTx {
+	if x != nil {
+		if x, ok := x.Tx.(*UnsignedTx_Undelegate); ok {
+			return x.Undelegate
+		}
+	}
+	return nil
+}
+
+type isUnsignedTx_Tx interface {
+	isUnsignedTx_Tx()
+}
+
+type UnsignedTx_Delegate struct {
+	Delegate *DelegateTx `protobuf:"bytes,10,opt,name=delegate,proto3,oneof"`
+}
+
+type UnsignedTx_Transfer struct {
+	Transfer *TransferTx `protobuf:"bytes,11,opt,name=transfer,proto3,oneof"`
+}
+
+type UnsignedTx_Undelegate struct {
+	Undelegate *UndelegateTx `protobuf:"bytes,12,opt,name=undelegate,proto3,oneof"`
+}
+
+func (*UnsignedTx_Delegate) isUnsignedTx_Tx() {}
+
+func (*UnsignedTx_Transfer) isUnsignedTx_Tx() {}
+
+func (*UnsignedTx_Undelegate) isUnsignedTx_Tx() {}
+
+// UnsignedSweepBundle is a batch of unsigned transactions exported by the
+// online server for cold signing. Transferred via proto binary (USB/air gap).
+type UnsignedSweepBundle struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Txs             []*UnsignedTx          `protobuf:"bytes,1,rep,name=txs,proto3" json:"txs,omitempty"`
+	BundleId        string                 `protobuf:"bytes,2,opt,name=bundle_id,json=bundleId,proto3" json:"bundle_id,omitempty"`                      // unique identifier for tracking
+	BuiltAtMs       int64                  `protobuf:"varint,3,opt,name=built_at_ms,json=builtAtMs,proto3" json:"built_at_ms,omitempty"`                // construction timestamp (ms)
+	XpubFingerprint string                 `protobuf:"bytes,4,opt,name=xpub_fingerprint,json=xpubFingerprint,proto3" json:"xpub_fingerprint,omitempty"` // xpub fingerprint for identity verification
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *UnsignedSweepBundle) Reset() {
+	*x = UnsignedSweepBundle{}
+	mi := &file_deposit_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnsignedSweepBundle) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnsignedSweepBundle) ProtoMessage() {}
+
+func (x *UnsignedSweepBundle) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnsignedSweepBundle.ProtoReflect.Descriptor instead.
+func (*UnsignedSweepBundle) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *UnsignedSweepBundle) GetTxs() []*UnsignedTx {
+	if x != nil {
+		return x.Txs
+	}
+	return nil
+}
+
+func (x *UnsignedSweepBundle) GetBundleId() string {
+	if x != nil {
+		return x.BundleId
+	}
+	return ""
+}
+
+func (x *UnsignedSweepBundle) GetBuiltAtMs() int64 {
+	if x != nil {
+		return x.BuiltAtMs
+	}
+	return 0
+}
+
+func (x *UnsignedSweepBundle) GetXpubFingerprint() string {
+	if x != nil {
+		return x.XpubFingerprint
+	}
+	return ""
+}
+
+// SignedTx is a single signed transaction from the cold signing machine.
+type SignedTx struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Kind          TxKind                 `protobuf:"varint,1,opt,name=kind,proto3,enum=ant.v1.TxKind" json:"kind,omitempty"`
+	FromAddress   string                 `protobuf:"bytes,2,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	ToAddress     string                 `protobuf:"bytes,3,opt,name=to_address,json=toAddress,proto3" json:"to_address,omitempty"`
+	Amount        string                 `protobuf:"bytes,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	SignedTxData  []byte                 `protobuf:"bytes,5,opt,name=signed_tx_data,json=signedTxData,proto3" json:"signed_tx_data,omitempty"` // raw signed TRON transaction data
+	TxHash        string                 `protobuf:"bytes,6,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`                     // expected transaction hash (matches expected_txid)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SignedTx) Reset() {
+	*x = SignedTx{}
+	mi := &file_deposit_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SignedTx) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SignedTx) ProtoMessage() {}
+
+func (x *SignedTx) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SignedTx.ProtoReflect.Descriptor instead.
+func (*SignedTx) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *SignedTx) GetKind() TxKind {
+	if x != nil {
+		return x.Kind
+	}
+	return TxKind_TX_KIND_UNSPECIFIED
+}
+
+func (x *SignedTx) GetFromAddress() string {
+	if x != nil {
+		return x.FromAddress
+	}
+	return ""
+}
+
+func (x *SignedTx) GetToAddress() string {
+	if x != nil {
+		return x.ToAddress
+	}
+	return ""
+}
+
+func (x *SignedTx) GetAmount() string {
+	if x != nil {
+		return x.Amount
+	}
+	return ""
+}
+
+func (x *SignedTx) GetSignedTxData() []byte {
+	if x != nil {
+		return x.SignedTxData
+	}
+	return nil
+}
+
+func (x *SignedTx) GetTxHash() string {
+	if x != nil {
+		return x.TxHash
+	}
+	return ""
+}
+
+// SignedSweepBundle is the output of cmd/coldsign — a batch of signed
+// transactions ready for broadcast by the online server.
+type SignedSweepBundle struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Txs             []*SignedTx            `protobuf:"bytes,1,rep,name=txs,proto3" json:"txs,omitempty"`
+	BundleId        string                 `protobuf:"bytes,2,opt,name=bundle_id,json=bundleId,proto3" json:"bundle_id,omitempty"`                      // matches UnsignedSweepBundle.bundle_id
+	SignedAt        int64                  `protobuf:"varint,3,opt,name=signed_at,json=signedAt,proto3" json:"signed_at,omitempty"`                     // signing timestamp (ms)
+	XpubFingerprint string                 `protobuf:"bytes,4,opt,name=xpub_fingerprint,json=xpubFingerprint,proto3" json:"xpub_fingerprint,omitempty"` // verified xpub fingerprint
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *SignedSweepBundle) Reset() {
+	*x = SignedSweepBundle{}
+	mi := &file_deposit_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SignedSweepBundle) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SignedSweepBundle) ProtoMessage() {}
+
+func (x *SignedSweepBundle) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SignedSweepBundle.ProtoReflect.Descriptor instead.
+func (*SignedSweepBundle) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *SignedSweepBundle) GetTxs() []*SignedTx {
+	if x != nil {
+		return x.Txs
+	}
+	return nil
+}
+
+func (x *SignedSweepBundle) GetBundleId() string {
+	if x != nil {
+		return x.BundleId
+	}
+	return ""
+}
+
+func (x *SignedSweepBundle) GetSignedAt() int64 {
+	if x != nil {
+		return x.SignedAt
+	}
+	return 0
+}
+
+func (x *SignedSweepBundle) GetXpubFingerprint() string {
+	if x != nil {
+		return x.XpubFingerprint
+	}
+	return ""
+}
+
+// PendingSignBundleEntry is a summary of a PENDING_SIGN bundle for admin listing.
+type PendingSignBundleEntry struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	BatchId          string                 `protobuf:"bytes,1,opt,name=batch_id,json=batchId,proto3" json:"batch_id,omitempty"`
+	DepositAddressId string                 `protobuf:"bytes,2,opt,name=deposit_address_id,json=depositAddressId,proto3" json:"deposit_address_id,omitempty"` // first address (NULL for batch bundles)
+	BuiltAtMs        int64                  `protobuf:"varint,3,opt,name=built_at_ms,json=builtAtMs,proto3" json:"built_at_ms,omitempty"`
+	Status           string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *PendingSignBundleEntry) Reset() {
+	*x = PendingSignBundleEntry{}
+	mi := &file_deposit_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PendingSignBundleEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PendingSignBundleEntry) ProtoMessage() {}
+
+func (x *PendingSignBundleEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PendingSignBundleEntry.ProtoReflect.Descriptor instead.
+func (*PendingSignBundleEntry) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *PendingSignBundleEntry) GetBatchId() string {
+	if x != nil {
+		return x.BatchId
+	}
+	return ""
+}
+
+func (x *PendingSignBundleEntry) GetDepositAddressId() string {
+	if x != nil {
+		return x.DepositAddressId
+	}
+	return ""
+}
+
+func (x *PendingSignBundleEntry) GetBuiltAtMs() int64 {
+	if x != nil {
+		return x.BuiltAtMs
+	}
+	return 0
+}
+
+func (x *PendingSignBundleEntry) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type ListPendingSignBundlesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPendingSignBundlesRequest) Reset() {
+	*x = ListPendingSignBundlesRequest{}
+	mi := &file_deposit_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPendingSignBundlesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPendingSignBundlesRequest) ProtoMessage() {}
+
+func (x *ListPendingSignBundlesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPendingSignBundlesRequest.ProtoReflect.Descriptor instead.
+func (*ListPendingSignBundlesRequest) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{24}
+}
+
+type ListPendingSignBundlesResponse struct {
+	state         protoimpl.MessageState    `protogen:"open.v1"`
+	Bundles       []*PendingSignBundleEntry `protobuf:"bytes,1,rep,name=bundles,proto3" json:"bundles,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPendingSignBundlesResponse) Reset() {
+	*x = ListPendingSignBundlesResponse{}
+	mi := &file_deposit_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPendingSignBundlesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPendingSignBundlesResponse) ProtoMessage() {}
+
+func (x *ListPendingSignBundlesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPendingSignBundlesResponse.ProtoReflect.Descriptor instead.
+func (*ListPendingSignBundlesResponse) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *ListPendingSignBundlesResponse) GetBundles() []*PendingSignBundleEntry {
+	if x != nil {
+		return x.Bundles
+	}
+	return nil
+}
+
+type ExportUnsignedSweepBundleRequest struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	DepositAddressId string                 `protobuf:"bytes,1,opt,name=deposit_address_id,json=depositAddressId,proto3" json:"deposit_address_id,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *ExportUnsignedSweepBundleRequest) Reset() {
+	*x = ExportUnsignedSweepBundleRequest{}
+	mi := &file_deposit_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExportUnsignedSweepBundleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExportUnsignedSweepBundleRequest) ProtoMessage() {}
+
+func (x *ExportUnsignedSweepBundleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExportUnsignedSweepBundleRequest.ProtoReflect.Descriptor instead.
+func (*ExportUnsignedSweepBundleRequest) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *ExportUnsignedSweepBundleRequest) GetDepositAddressId() string {
+	if x != nil {
+		return x.DepositAddressId
+	}
+	return ""
+}
+
+type ExportUnsignedSweepBundleResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	UnsignedBundle []byte                 `protobuf:"bytes,1,opt,name=unsigned_bundle,json=unsignedBundle,proto3" json:"unsigned_bundle,omitempty"` // serialized UnsignedSweepBundle proto
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ExportUnsignedSweepBundleResponse) Reset() {
+	*x = ExportUnsignedSweepBundleResponse{}
+	mi := &file_deposit_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExportUnsignedSweepBundleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExportUnsignedSweepBundleResponse) ProtoMessage() {}
+
+func (x *ExportUnsignedSweepBundleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExportUnsignedSweepBundleResponse.ProtoReflect.Descriptor instead.
+func (*ExportUnsignedSweepBundleResponse) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *ExportUnsignedSweepBundleResponse) GetUnsignedBundle() []byte {
+	if x != nil {
+		return x.UnsignedBundle
+	}
+	return nil
+}
+
+type ImportSignedSweepBundleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SignedBundle  []byte                 `protobuf:"bytes,1,opt,name=signed_bundle,json=signedBundle,proto3" json:"signed_bundle,omitempty"` // serialized SignedSweepBundle proto
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ImportSignedSweepBundleRequest) Reset() {
+	*x = ImportSignedSweepBundleRequest{}
+	mi := &file_deposit_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ImportSignedSweepBundleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImportSignedSweepBundleRequest) ProtoMessage() {}
+
+func (x *ImportSignedSweepBundleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImportSignedSweepBundleRequest.ProtoReflect.Descriptor instead.
+func (*ImportSignedSweepBundleRequest) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *ImportSignedSweepBundleRequest) GetSignedBundle() []byte {
+	if x != nil {
+		return x.SignedBundle
+	}
+	return nil
+}
+
+type ImportSignedSweepBundleResponse struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	BatchId           string                 `protobuf:"bytes,1,opt,name=batch_id,json=batchId,proto3" json:"batch_id,omitempty"`
+	BroadcastComplete bool                   `protobuf:"varint,2,opt,name=broadcast_complete,json=broadcastComplete,proto3" json:"broadcast_complete,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *ImportSignedSweepBundleResponse) Reset() {
+	*x = ImportSignedSweepBundleResponse{}
+	mi := &file_deposit_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ImportSignedSweepBundleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImportSignedSweepBundleResponse) ProtoMessage() {}
+
+func (x *ImportSignedSweepBundleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImportSignedSweepBundleResponse.ProtoReflect.Descriptor instead.
+func (*ImportSignedSweepBundleResponse) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *ImportSignedSweepBundleResponse) GetBatchId() string {
+	if x != nil {
+		return x.BatchId
+	}
+	return ""
+}
+
+func (x *ImportSignedSweepBundleResponse) GetBroadcastComplete() bool {
+	if x != nil {
+		return x.BroadcastComplete
+	}
+	return false
+}
+
+// SweepDashboardEntry is a single address summary in the sweep dashboard.
+type SweepDashboardEntry struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	DepositAddressId string                 `protobuf:"bytes,1,opt,name=deposit_address_id,json=depositAddressId,proto3" json:"deposit_address_id,omitempty"`
+	Address          string                 `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`                                      // TRC20 Base58
+	UnsweptAmount    string                 `protobuf:"bytes,3,opt,name=unswept_amount,json=unsweptAmount,proto3" json:"unswept_amount,omitempty"`     // USDT amount (decimal string)
+	AboveThreshold   bool                   `protobuf:"varint,4,opt,name=above_threshold,json=aboveThreshold,proto3" json:"above_threshold,omitempty"` // true if unswept_amount >= sweep_alert_threshold
+	SweepStatus      string                 `protobuf:"bytes,5,opt,name=sweep_status,json=sweepStatus,proto3" json:"sweep_status,omitempty"`           // highest sweep status for this address (PENDING/SWEEPING/DONE/MANUAL_REVIEW/none)
+	DerivationIndex  int32                  `protobuf:"varint,6,opt,name=derivation_index,json=derivationIndex,proto3" json:"derivation_index,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *SweepDashboardEntry) Reset() {
+	*x = SweepDashboardEntry{}
+	mi := &file_deposit_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SweepDashboardEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SweepDashboardEntry) ProtoMessage() {}
+
+func (x *SweepDashboardEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SweepDashboardEntry.ProtoReflect.Descriptor instead.
+func (*SweepDashboardEntry) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *SweepDashboardEntry) GetDepositAddressId() string {
+	if x != nil {
+		return x.DepositAddressId
+	}
+	return ""
+}
+
+func (x *SweepDashboardEntry) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *SweepDashboardEntry) GetUnsweptAmount() string {
+	if x != nil {
+		return x.UnsweptAmount
+	}
+	return ""
+}
+
+func (x *SweepDashboardEntry) GetAboveThreshold() bool {
+	if x != nil {
+		return x.AboveThreshold
+	}
+	return false
+}
+
+func (x *SweepDashboardEntry) GetSweepStatus() string {
+	if x != nil {
+		return x.SweepStatus
+	}
+	return ""
+}
+
+func (x *SweepDashboardEntry) GetDerivationIndex() int32 {
+	if x != nil {
+		return x.DerivationIndex
+	}
+	return 0
+}
+
+type GetSweepDashboardRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSweepDashboardRequest) Reset() {
+	*x = GetSweepDashboardRequest{}
+	mi := &file_deposit_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSweepDashboardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSweepDashboardRequest) ProtoMessage() {}
+
+func (x *GetSweepDashboardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSweepDashboardRequest.ProtoReflect.Descriptor instead.
+func (*GetSweepDashboardRequest) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *GetSweepDashboardRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *GetSweepDashboardRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type GetSweepDashboardResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Addresses     []*SweepDashboardEntry `protobuf:"bytes,1,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	TotalUnswept  string                 `protobuf:"bytes,3,opt,name=total_unswept,json=totalUnswept,proto3" json:"total_unswept,omitempty"` // sum of all unswept amounts (decimal string)
+	Threshold     string                 `protobuf:"bytes,4,opt,name=threshold,proto3" json:"threshold,omitempty"`                           // current sweep_alert_threshold config value
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSweepDashboardResponse) Reset() {
+	*x = GetSweepDashboardResponse{}
+	mi := &file_deposit_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSweepDashboardResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSweepDashboardResponse) ProtoMessage() {}
+
+func (x *GetSweepDashboardResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSweepDashboardResponse.ProtoReflect.Descriptor instead.
+func (*GetSweepDashboardResponse) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *GetSweepDashboardResponse) GetAddresses() []*SweepDashboardEntry {
+	if x != nil {
+		return x.Addresses
+	}
+	return nil
+}
+
+func (x *GetSweepDashboardResponse) GetTotal() int64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *GetSweepDashboardResponse) GetTotalUnswept() string {
+	if x != nil {
+		return x.TotalUnswept
+	}
+	return ""
+}
+
+func (x *GetSweepDashboardResponse) GetThreshold() string {
+	if x != nil {
+		return x.Threshold
+	}
+	return ""
+}
+
+type BuildUndelegateOnlyBundleRequest struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	DepositAddressIds []string               `protobuf:"bytes,1,rep,name=deposit_address_ids,json=depositAddressIds,proto3" json:"deposit_address_ids,omitempty"` // addresses stuck in MANUAL_REVIEW with delegated energy
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *BuildUndelegateOnlyBundleRequest) Reset() {
+	*x = BuildUndelegateOnlyBundleRequest{}
+	mi := &file_deposit_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BuildUndelegateOnlyBundleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BuildUndelegateOnlyBundleRequest) ProtoMessage() {}
+
+func (x *BuildUndelegateOnlyBundleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BuildUndelegateOnlyBundleRequest.ProtoReflect.Descriptor instead.
+func (*BuildUndelegateOnlyBundleRequest) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *BuildUndelegateOnlyBundleRequest) GetDepositAddressIds() []string {
+	if x != nil {
+		return x.DepositAddressIds
+	}
+	return nil
+}
+
+type BuildUndelegateOnlyBundleResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	UnsignedBundle []byte                 `protobuf:"bytes,1,opt,name=unsigned_bundle,json=unsignedBundle,proto3" json:"unsigned_bundle,omitempty"` // serialized UnsignedSweepBundle proto (undelegate-only txs)
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *BuildUndelegateOnlyBundleResponse) Reset() {
+	*x = BuildUndelegateOnlyBundleResponse{}
+	mi := &file_deposit_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BuildUndelegateOnlyBundleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BuildUndelegateOnlyBundleResponse) ProtoMessage() {}
+
+func (x *BuildUndelegateOnlyBundleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BuildUndelegateOnlyBundleResponse.ProtoReflect.Descriptor instead.
+func (*BuildUndelegateOnlyBundleResponse) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *BuildUndelegateOnlyBundleResponse) GetUnsignedBundle() []byte {
+	if x != nil {
+		return x.UnsignedBundle
+	}
+	return nil
+}
+
 var File_deposit_proto protoreflect.FileDescriptor
 
 const file_deposit_proto_rawDesc = "" +
@@ -925,12 +2291,11 @@ const file_deposit_proto_rawDesc = "" +
 	"\x1cListDepositAddressesResponse\x124\n" +
 	"\taddresses\x18\x01 \x03(\v2\x16.ant.v1.DepositAddressR\taddresses\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\x12'\n" +
-	"\x0favailable_count\x18\x03 \x01(\x05R\x0eavailableCount\"\x9f\x01\n" +
+	"\x0favailable_count\x18\x03 \x01(\x05R\x0eavailableCount\"r\n" +
 	"\x11AddressBatchEntry\x12\x18\n" +
 	"\aaddress\x18\x01 \x01(\tR\aaddress\x12)\n" +
-	"\x10derivation_index\x18\x02 \x01(\x05R\x0fderivationIndex\x12+\n" +
-	"\x11encrypted_privkey\x18\x03 \x01(\fR\x10encryptedPrivkey\x12\x18\n" +
-	"\anetwork\x18\x04 \x01(\tR\anetwork\"C\n" +
+	"\x10derivation_index\x18\x02 \x01(\x05R\x0fderivationIndex\x12\x18\n" +
+	"\anetwork\x18\x03 \x01(\tR\anetwork\"C\n" +
 	"\fAddressBatch\x123\n" +
 	"\aentries\x18\x01 \x03(\v2\x19.ant.v1.AddressBatchEntryR\aentries\">\n" +
 	"\x1dImportDepositAddressesRequest\x12\x1d\n" +
@@ -938,13 +2303,116 @@ const file_deposit_proto_rawDesc = "" +
 	"batch_data\x18\x01 \x01(\fR\tbatchData\"V\n" +
 	"\x1eImportDepositAddressesResponse\x12\x1a\n" +
 	"\bimported\x18\x01 \x01(\x05R\bimported\x12\x18\n" +
-	"\askipped\x18\x02 \x01(\x05R\askipped2\xf6\x03\n" +
+	"\askipped\x18\x02 \x01(\x05R\askipped\"\\\n" +
+	"\n" +
+	"XpubExport\x12\x12\n" +
+	"\x04xpub\x18\x01 \x01(\tR\x04xpub\x12 \n" +
+	"\vfingerprint\x18\x02 \x01(\tR\vfingerprint\x12\x18\n" +
+	"\anetwork\x18\x03 \x01(\tR\anetwork\"\x82\x01\n" +
+	"\x0eWithdrawalAuth\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
+	"\x05nonce\x18\x02 \x01(\x04R\x05nonce\x12#\n" +
+	"\rcredential_id\x18\x03 \x01(\tR\fcredentialId\x12\x1c\n" +
+	"\tassertion\x18\x04 \x01(\fR\tassertion\"O\n" +
+	"\n" +
+	"DelegateTx\x12%\n" +
+	"\x0eenergy_account\x18\x01 \x01(\tR\renergyAccount\x12\x1a\n" +
+	"\bresource\x18\x02 \x01(\tR\bresource\"_\n" +
+	"\n" +
+	"TransferTx\x12%\n" +
+	"\x0etoken_contract\x18\x01 \x01(\tR\rtokenContract\x12*\n" +
+	"\x04auth\x18\x02 \x01(\v2\x16.ant.v1.WithdrawalAuthR\x04auth\"Q\n" +
+	"\fUndelegateTx\x12%\n" +
+	"\x0eenergy_account\x18\x01 \x01(\tR\renergyAccount\x12\x1a\n" +
+	"\bresource\x18\x02 \x01(\tR\bresource\"\xb0\x03\n" +
+	"\n" +
+	"UnsignedTx\x12\"\n" +
+	"\x04kind\x18\x01 \x01(\x0e2\x0e.ant.v1.TxKindR\x04kind\x12!\n" +
+	"\ffrom_address\x18\x02 \x01(\tR\vfromAddress\x12)\n" +
+	"\x10derivation_index\x18\x03 \x01(\rR\x0fderivationIndex\x12\x1d\n" +
+	"\n" +
+	"to_address\x18\x04 \x01(\tR\ttoAddress\x12\x16\n" +
+	"\x06amount\x18\x05 \x01(\tR\x06amount\x12\x15\n" +
+	"\x06raw_tx\x18\x06 \x01(\fR\x05rawTx\x12\x1b\n" +
+	"\texpiry_ms\x18\a \x01(\x03R\bexpiryMs\x12#\n" +
+	"\rexpected_txid\x18\b \x01(\tR\fexpectedTxid\x120\n" +
+	"\bdelegate\x18\n" +
+	" \x01(\v2\x12.ant.v1.DelegateTxH\x00R\bdelegate\x120\n" +
+	"\btransfer\x18\v \x01(\v2\x12.ant.v1.TransferTxH\x00R\btransfer\x126\n" +
+	"\n" +
+	"undelegate\x18\f \x01(\v2\x14.ant.v1.UndelegateTxH\x00R\n" +
+	"undelegateB\x04\n" +
+	"\x02tx\"\xa3\x01\n" +
+	"\x13UnsignedSweepBundle\x12$\n" +
+	"\x03txs\x18\x01 \x03(\v2\x12.ant.v1.UnsignedTxR\x03txs\x12\x1b\n" +
+	"\tbundle_id\x18\x02 \x01(\tR\bbundleId\x12\x1e\n" +
+	"\vbuilt_at_ms\x18\x03 \x01(\x03R\tbuiltAtMs\x12)\n" +
+	"\x10xpub_fingerprint\x18\x04 \x01(\tR\x0fxpubFingerprint\"\xc7\x01\n" +
+	"\bSignedTx\x12\"\n" +
+	"\x04kind\x18\x01 \x01(\x0e2\x0e.ant.v1.TxKindR\x04kind\x12!\n" +
+	"\ffrom_address\x18\x02 \x01(\tR\vfromAddress\x12\x1d\n" +
+	"\n" +
+	"to_address\x18\x03 \x01(\tR\ttoAddress\x12\x16\n" +
+	"\x06amount\x18\x04 \x01(\tR\x06amount\x12$\n" +
+	"\x0esigned_tx_data\x18\x05 \x01(\fR\fsignedTxData\x12\x17\n" +
+	"\atx_hash\x18\x06 \x01(\tR\x06txHash\"\x9c\x01\n" +
+	"\x11SignedSweepBundle\x12\"\n" +
+	"\x03txs\x18\x01 \x03(\v2\x10.ant.v1.SignedTxR\x03txs\x12\x1b\n" +
+	"\tbundle_id\x18\x02 \x01(\tR\bbundleId\x12\x1b\n" +
+	"\tsigned_at\x18\x03 \x01(\x03R\bsignedAt\x12)\n" +
+	"\x10xpub_fingerprint\x18\x04 \x01(\tR\x0fxpubFingerprint\"\x99\x01\n" +
+	"\x16PendingSignBundleEntry\x12\x19\n" +
+	"\bbatch_id\x18\x01 \x01(\tR\abatchId\x12,\n" +
+	"\x12deposit_address_id\x18\x02 \x01(\tR\x10depositAddressId\x12\x1e\n" +
+	"\vbuilt_at_ms\x18\x03 \x01(\x03R\tbuiltAtMs\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\"\x1f\n" +
+	"\x1dListPendingSignBundlesRequest\"Z\n" +
+	"\x1eListPendingSignBundlesResponse\x128\n" +
+	"\abundles\x18\x01 \x03(\v2\x1e.ant.v1.PendingSignBundleEntryR\abundles\"P\n" +
+	" ExportUnsignedSweepBundleRequest\x12,\n" +
+	"\x12deposit_address_id\x18\x01 \x01(\tR\x10depositAddressId\"L\n" +
+	"!ExportUnsignedSweepBundleResponse\x12'\n" +
+	"\x0funsigned_bundle\x18\x01 \x01(\fR\x0eunsignedBundle\"E\n" +
+	"\x1eImportSignedSweepBundleRequest\x12#\n" +
+	"\rsigned_bundle\x18\x01 \x01(\fR\fsignedBundle\"k\n" +
+	"\x1fImportSignedSweepBundleResponse\x12\x19\n" +
+	"\bbatch_id\x18\x01 \x01(\tR\abatchId\x12-\n" +
+	"\x12broadcast_complete\x18\x02 \x01(\bR\x11broadcastComplete\"\xfb\x01\n" +
+	"\x13SweepDashboardEntry\x12,\n" +
+	"\x12deposit_address_id\x18\x01 \x01(\tR\x10depositAddressId\x12\x18\n" +
+	"\aaddress\x18\x02 \x01(\tR\aaddress\x12%\n" +
+	"\x0eunswept_amount\x18\x03 \x01(\tR\runsweptAmount\x12'\n" +
+	"\x0fabove_threshold\x18\x04 \x01(\bR\x0eaboveThreshold\x12!\n" +
+	"\fsweep_status\x18\x05 \x01(\tR\vsweepStatus\x12)\n" +
+	"\x10derivation_index\x18\x06 \x01(\x05R\x0fderivationIndex\"K\n" +
+	"\x18GetSweepDashboardRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"\xaf\x01\n" +
+	"\x19GetSweepDashboardResponse\x129\n" +
+	"\taddresses\x18\x01 \x03(\v2\x1b.ant.v1.SweepDashboardEntryR\taddresses\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\x12#\n" +
+	"\rtotal_unswept\x18\x03 \x01(\tR\ftotalUnswept\x12\x1c\n" +
+	"\tthreshold\x18\x04 \x01(\tR\tthreshold\"R\n" +
+	" BuildUndelegateOnlyBundleRequest\x12.\n" +
+	"\x13deposit_address_ids\x18\x01 \x03(\tR\x11depositAddressIds\"L\n" +
+	"!BuildUndelegateOnlyBundleResponse\x12'\n" +
+	"\x0funsigned_bundle\x18\x01 \x01(\fR\x0eunsignedBundle*e\n" +
+	"\x06TxKind\x12\x17\n" +
+	"\x13TX_KIND_UNSPECIFIED\x10\x00\x12\x14\n" +
+	"\x10TX_KIND_DELEGATE\x10\x01\x12\x14\n" +
+	"\x10TX_KIND_TRANSFER\x10\x02\x12\x16\n" +
+	"\x12TX_KIND_UNDELEGATE\x10\x032\x89\b\n" +
 	"\x0eDepositService\x12X\n" +
 	"\x11GetDepositAddress\x12 .ant.v1.GetDepositAddressRequest\x1a!.ant.v1.GetDepositAddressResponse\x12O\n" +
 	"\x0eListMyDeposits\x12\x1d.ant.v1.ListMyDepositsRequest\x1a\x1e.ant.v1.ListMyDepositsResponse\x12m\n" +
 	"\x18ListManualReviewDeposits\x12'.ant.v1.ListManualReviewDepositsRequest\x1a(.ant.v1.ListManualReviewDepositsResponse\x12a\n" +
 	"\x14ListDepositAddresses\x12#.ant.v1.ListDepositAddressesRequest\x1a$.ant.v1.ListDepositAddressesResponse\x12g\n" +
-	"\x16ImportDepositAddresses\x12%.ant.v1.ImportDepositAddressesRequest\x1a&.ant.v1.ImportDepositAddressesResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x16ImportDepositAddresses\x12%.ant.v1.ImportDepositAddressesRequest\x1a&.ant.v1.ImportDepositAddressesResponse\x12g\n" +
+	"\x16ListPendingSignBundles\x12%.ant.v1.ListPendingSignBundlesRequest\x1a&.ant.v1.ListPendingSignBundlesResponse\x12p\n" +
+	"\x19ExportUnsignedSweepBundle\x12(.ant.v1.ExportUnsignedSweepBundleRequest\x1a).ant.v1.ExportUnsignedSweepBundleResponse\x12j\n" +
+	"\x17ImportSignedSweepBundle\x12&.ant.v1.ImportSignedSweepBundleRequest\x1a'.ant.v1.ImportSignedSweepBundleResponse\x12X\n" +
+	"\x11GetSweepDashboard\x12 .ant.v1.GetSweepDashboardRequest\x1a!.ant.v1.GetSweepDashboardResponse\x12p\n" +
+	"\x19BuildUndelegateOnlyBundle\x12(.ant.v1.BuildUndelegateOnlyBundleRequest\x1a).ant.v1.BuildUndelegateOnlyBundleResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_deposit_proto_rawDescOnce sync.Once
@@ -958,48 +2426,91 @@ func file_deposit_proto_rawDescGZIP() []byte {
 	return file_deposit_proto_rawDescData
 }
 
-var file_deposit_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_deposit_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_deposit_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
 var file_deposit_proto_goTypes = []any{
-	(*Deposit)(nil),                          // 0: ant.v1.Deposit
-	(*GetDepositAddressRequest)(nil),         // 1: ant.v1.GetDepositAddressRequest
-	(*GetDepositAddressResponse)(nil),        // 2: ant.v1.GetDepositAddressResponse
-	(*ListMyDepositsRequest)(nil),            // 3: ant.v1.ListMyDepositsRequest
-	(*ListMyDepositsResponse)(nil),           // 4: ant.v1.ListMyDepositsResponse
-	(*ListManualReviewDepositsRequest)(nil),  // 5: ant.v1.ListManualReviewDepositsRequest
-	(*ListManualReviewDepositsResponse)(nil), // 6: ant.v1.ListManualReviewDepositsResponse
-	(*DepositAddress)(nil),                   // 7: ant.v1.DepositAddress
-	(*ListDepositAddressesRequest)(nil),      // 8: ant.v1.ListDepositAddressesRequest
-	(*ListDepositAddressesResponse)(nil),     // 9: ant.v1.ListDepositAddressesResponse
-	(*AddressBatchEntry)(nil),                // 10: ant.v1.AddressBatchEntry
-	(*AddressBatch)(nil),                     // 11: ant.v1.AddressBatch
-	(*ImportDepositAddressesRequest)(nil),    // 12: ant.v1.ImportDepositAddressesRequest
-	(*ImportDepositAddressesResponse)(nil),   // 13: ant.v1.ImportDepositAddressesResponse
-	(*timestamppb.Timestamp)(nil),            // 14: google.protobuf.Timestamp
+	(TxKind)(0),                               // 0: ant.v1.TxKind
+	(*Deposit)(nil),                           // 1: ant.v1.Deposit
+	(*GetDepositAddressRequest)(nil),          // 2: ant.v1.GetDepositAddressRequest
+	(*GetDepositAddressResponse)(nil),         // 3: ant.v1.GetDepositAddressResponse
+	(*ListMyDepositsRequest)(nil),             // 4: ant.v1.ListMyDepositsRequest
+	(*ListMyDepositsResponse)(nil),            // 5: ant.v1.ListMyDepositsResponse
+	(*ListManualReviewDepositsRequest)(nil),   // 6: ant.v1.ListManualReviewDepositsRequest
+	(*ListManualReviewDepositsResponse)(nil),  // 7: ant.v1.ListManualReviewDepositsResponse
+	(*DepositAddress)(nil),                    // 8: ant.v1.DepositAddress
+	(*ListDepositAddressesRequest)(nil),       // 9: ant.v1.ListDepositAddressesRequest
+	(*ListDepositAddressesResponse)(nil),      // 10: ant.v1.ListDepositAddressesResponse
+	(*AddressBatchEntry)(nil),                 // 11: ant.v1.AddressBatchEntry
+	(*AddressBatch)(nil),                      // 12: ant.v1.AddressBatch
+	(*ImportDepositAddressesRequest)(nil),     // 13: ant.v1.ImportDepositAddressesRequest
+	(*ImportDepositAddressesResponse)(nil),    // 14: ant.v1.ImportDepositAddressesResponse
+	(*XpubExport)(nil),                        // 15: ant.v1.XpubExport
+	(*WithdrawalAuth)(nil),                    // 16: ant.v1.WithdrawalAuth
+	(*DelegateTx)(nil),                        // 17: ant.v1.DelegateTx
+	(*TransferTx)(nil),                        // 18: ant.v1.TransferTx
+	(*UndelegateTx)(nil),                      // 19: ant.v1.UndelegateTx
+	(*UnsignedTx)(nil),                        // 20: ant.v1.UnsignedTx
+	(*UnsignedSweepBundle)(nil),               // 21: ant.v1.UnsignedSweepBundle
+	(*SignedTx)(nil),                          // 22: ant.v1.SignedTx
+	(*SignedSweepBundle)(nil),                 // 23: ant.v1.SignedSweepBundle
+	(*PendingSignBundleEntry)(nil),            // 24: ant.v1.PendingSignBundleEntry
+	(*ListPendingSignBundlesRequest)(nil),     // 25: ant.v1.ListPendingSignBundlesRequest
+	(*ListPendingSignBundlesResponse)(nil),    // 26: ant.v1.ListPendingSignBundlesResponse
+	(*ExportUnsignedSweepBundleRequest)(nil),  // 27: ant.v1.ExportUnsignedSweepBundleRequest
+	(*ExportUnsignedSweepBundleResponse)(nil), // 28: ant.v1.ExportUnsignedSweepBundleResponse
+	(*ImportSignedSweepBundleRequest)(nil),    // 29: ant.v1.ImportSignedSweepBundleRequest
+	(*ImportSignedSweepBundleResponse)(nil),   // 30: ant.v1.ImportSignedSweepBundleResponse
+	(*SweepDashboardEntry)(nil),               // 31: ant.v1.SweepDashboardEntry
+	(*GetSweepDashboardRequest)(nil),          // 32: ant.v1.GetSweepDashboardRequest
+	(*GetSweepDashboardResponse)(nil),         // 33: ant.v1.GetSweepDashboardResponse
+	(*BuildUndelegateOnlyBundleRequest)(nil),  // 34: ant.v1.BuildUndelegateOnlyBundleRequest
+	(*BuildUndelegateOnlyBundleResponse)(nil), // 35: ant.v1.BuildUndelegateOnlyBundleResponse
+	(*timestamppb.Timestamp)(nil),             // 36: google.protobuf.Timestamp
 }
 var file_deposit_proto_depIdxs = []int32{
-	14, // 0: ant.v1.Deposit.confirmed_at:type_name -> google.protobuf.Timestamp
-	14, // 1: ant.v1.Deposit.created_at:type_name -> google.protobuf.Timestamp
-	0,  // 2: ant.v1.ListMyDepositsResponse.deposits:type_name -> ant.v1.Deposit
-	0,  // 3: ant.v1.ListManualReviewDepositsResponse.deposits:type_name -> ant.v1.Deposit
-	14, // 4: ant.v1.DepositAddress.assigned_at:type_name -> google.protobuf.Timestamp
-	14, // 5: ant.v1.DepositAddress.created_at:type_name -> google.protobuf.Timestamp
-	7,  // 6: ant.v1.ListDepositAddressesResponse.addresses:type_name -> ant.v1.DepositAddress
-	10, // 7: ant.v1.AddressBatch.entries:type_name -> ant.v1.AddressBatchEntry
-	1,  // 8: ant.v1.DepositService.GetDepositAddress:input_type -> ant.v1.GetDepositAddressRequest
-	3,  // 9: ant.v1.DepositService.ListMyDeposits:input_type -> ant.v1.ListMyDepositsRequest
-	5,  // 10: ant.v1.DepositService.ListManualReviewDeposits:input_type -> ant.v1.ListManualReviewDepositsRequest
-	8,  // 11: ant.v1.DepositService.ListDepositAddresses:input_type -> ant.v1.ListDepositAddressesRequest
-	12, // 12: ant.v1.DepositService.ImportDepositAddresses:input_type -> ant.v1.ImportDepositAddressesRequest
-	2,  // 13: ant.v1.DepositService.GetDepositAddress:output_type -> ant.v1.GetDepositAddressResponse
-	4,  // 14: ant.v1.DepositService.ListMyDeposits:output_type -> ant.v1.ListMyDepositsResponse
-	6,  // 15: ant.v1.DepositService.ListManualReviewDeposits:output_type -> ant.v1.ListManualReviewDepositsResponse
-	9,  // 16: ant.v1.DepositService.ListDepositAddresses:output_type -> ant.v1.ListDepositAddressesResponse
-	13, // 17: ant.v1.DepositService.ImportDepositAddresses:output_type -> ant.v1.ImportDepositAddressesResponse
-	13, // [13:18] is the sub-list for method output_type
-	8,  // [8:13] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	36, // 0: ant.v1.Deposit.confirmed_at:type_name -> google.protobuf.Timestamp
+	36, // 1: ant.v1.Deposit.created_at:type_name -> google.protobuf.Timestamp
+	1,  // 2: ant.v1.ListMyDepositsResponse.deposits:type_name -> ant.v1.Deposit
+	1,  // 3: ant.v1.ListManualReviewDepositsResponse.deposits:type_name -> ant.v1.Deposit
+	36, // 4: ant.v1.DepositAddress.assigned_at:type_name -> google.protobuf.Timestamp
+	36, // 5: ant.v1.DepositAddress.created_at:type_name -> google.protobuf.Timestamp
+	8,  // 6: ant.v1.ListDepositAddressesResponse.addresses:type_name -> ant.v1.DepositAddress
+	11, // 7: ant.v1.AddressBatch.entries:type_name -> ant.v1.AddressBatchEntry
+	16, // 8: ant.v1.TransferTx.auth:type_name -> ant.v1.WithdrawalAuth
+	0,  // 9: ant.v1.UnsignedTx.kind:type_name -> ant.v1.TxKind
+	17, // 10: ant.v1.UnsignedTx.delegate:type_name -> ant.v1.DelegateTx
+	18, // 11: ant.v1.UnsignedTx.transfer:type_name -> ant.v1.TransferTx
+	19, // 12: ant.v1.UnsignedTx.undelegate:type_name -> ant.v1.UndelegateTx
+	20, // 13: ant.v1.UnsignedSweepBundle.txs:type_name -> ant.v1.UnsignedTx
+	0,  // 14: ant.v1.SignedTx.kind:type_name -> ant.v1.TxKind
+	22, // 15: ant.v1.SignedSweepBundle.txs:type_name -> ant.v1.SignedTx
+	24, // 16: ant.v1.ListPendingSignBundlesResponse.bundles:type_name -> ant.v1.PendingSignBundleEntry
+	31, // 17: ant.v1.GetSweepDashboardResponse.addresses:type_name -> ant.v1.SweepDashboardEntry
+	2,  // 18: ant.v1.DepositService.GetDepositAddress:input_type -> ant.v1.GetDepositAddressRequest
+	4,  // 19: ant.v1.DepositService.ListMyDeposits:input_type -> ant.v1.ListMyDepositsRequest
+	6,  // 20: ant.v1.DepositService.ListManualReviewDeposits:input_type -> ant.v1.ListManualReviewDepositsRequest
+	9,  // 21: ant.v1.DepositService.ListDepositAddresses:input_type -> ant.v1.ListDepositAddressesRequest
+	13, // 22: ant.v1.DepositService.ImportDepositAddresses:input_type -> ant.v1.ImportDepositAddressesRequest
+	25, // 23: ant.v1.DepositService.ListPendingSignBundles:input_type -> ant.v1.ListPendingSignBundlesRequest
+	27, // 24: ant.v1.DepositService.ExportUnsignedSweepBundle:input_type -> ant.v1.ExportUnsignedSweepBundleRequest
+	29, // 25: ant.v1.DepositService.ImportSignedSweepBundle:input_type -> ant.v1.ImportSignedSweepBundleRequest
+	32, // 26: ant.v1.DepositService.GetSweepDashboard:input_type -> ant.v1.GetSweepDashboardRequest
+	34, // 27: ant.v1.DepositService.BuildUndelegateOnlyBundle:input_type -> ant.v1.BuildUndelegateOnlyBundleRequest
+	3,  // 28: ant.v1.DepositService.GetDepositAddress:output_type -> ant.v1.GetDepositAddressResponse
+	5,  // 29: ant.v1.DepositService.ListMyDeposits:output_type -> ant.v1.ListMyDepositsResponse
+	7,  // 30: ant.v1.DepositService.ListManualReviewDeposits:output_type -> ant.v1.ListManualReviewDepositsResponse
+	10, // 31: ant.v1.DepositService.ListDepositAddresses:output_type -> ant.v1.ListDepositAddressesResponse
+	14, // 32: ant.v1.DepositService.ImportDepositAddresses:output_type -> ant.v1.ImportDepositAddressesResponse
+	26, // 33: ant.v1.DepositService.ListPendingSignBundles:output_type -> ant.v1.ListPendingSignBundlesResponse
+	28, // 34: ant.v1.DepositService.ExportUnsignedSweepBundle:output_type -> ant.v1.ExportUnsignedSweepBundleResponse
+	30, // 35: ant.v1.DepositService.ImportSignedSweepBundle:output_type -> ant.v1.ImportSignedSweepBundleResponse
+	33, // 36: ant.v1.DepositService.GetSweepDashboard:output_type -> ant.v1.GetSweepDashboardResponse
+	35, // 37: ant.v1.DepositService.BuildUndelegateOnlyBundle:output_type -> ant.v1.BuildUndelegateOnlyBundleResponse
+	28, // [28:38] is the sub-list for method output_type
+	18, // [18:28] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_deposit_proto_init() }
@@ -1007,18 +2518,24 @@ func file_deposit_proto_init() {
 	if File_deposit_proto != nil {
 		return
 	}
+	file_deposit_proto_msgTypes[19].OneofWrappers = []any{
+		(*UnsignedTx_Delegate)(nil),
+		(*UnsignedTx_Transfer)(nil),
+		(*UnsignedTx_Undelegate)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_deposit_proto_rawDesc), len(file_deposit_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   14,
+			NumEnums:      1,
+			NumMessages:   35,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_deposit_proto_goTypes,
 		DependencyIndexes: file_deposit_proto_depIdxs,
+		EnumInfos:         file_deposit_proto_enumTypes,
 		MessageInfos:      file_deposit_proto_msgTypes,
 	}.Build()
 	File_deposit_proto = out.File

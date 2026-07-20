@@ -13,6 +13,8 @@ service AdminBillingService {
   rpc GetRevenueSummary(GetRevenueSummaryRequest) returns (GetRevenueSummaryResponse);
   // List all wallet transactions (platform-wide)
   rpc ListAdminWalletTransactions(ListAdminWalletTransactionsRequest) returns (ListAdminWalletTransactionsResponse);
+  // Get ledger summary for solvency checking (ADR-0026 R10)
+  rpc GetLedgerSummary(GetLedgerSummaryRequest) returns (GetLedgerSummaryResponse);
 }
 
 message ListAdminSubscriptionsRequest {
@@ -80,4 +82,17 @@ message AdminWalletTransactionDetail {
 message ListAdminWalletTransactionsResponse {
   repeated AdminWalletTransactionDetail transactions = 1;
   int64 total = 2;
+}
+
+message GetLedgerSummaryRequest {}
+
+message GetLedgerSummaryResponse {
+  // Total liabilities = SUM(balance + frozen_balance) across all user wallets
+  string total_liabilities = 1;
+  // Latest hash chain sequence number
+  int64 latest_seq = 2;
+  // Latest hash chain entry hash (hex-encoded)
+  string latest_entry_hash = 3;
+  // Timestamp of the latest entry
+  google.protobuf.Timestamp latest_entry_time = 4;
 }

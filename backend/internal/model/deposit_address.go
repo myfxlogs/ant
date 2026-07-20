@@ -6,15 +6,14 @@ import (
 	"github.com/google/uuid"
 )
 
-// DepositAddress represents a TRC20 address in the HD wallet address pool.
+// DepositAddress represents a TRC20 address derived on-demand from the account xpub.
 type DepositAddress struct {
 	ID              uuid.UUID  `db:"id"`
 	UserID          *uuid.UUID `db:"user_id"`
 	Address         string     `db:"address"`
 	DerivationIndex int        `db:"derivation_index"`
-	EncryptedPrivkey []byte    `db:"encrypted_privkey"`
 	Network         string     `db:"network"`
-	Status          string     `db:"status"` // AVAILABLE / ASSIGNED / RETIRED
+	Status          string     `db:"status"` // ASSIGNED / RETIRED
 	HasReceivedUSDT bool       `db:"has_received_usdt"`
 	CreatedAt       time.Time  `db:"created_at"`
 	UpdatedAt       time.Time  `db:"updated_at"`
@@ -35,14 +34,19 @@ type Deposit struct {
 	CreatedAt        time.Time `db:"created_at"`
 }
 
-// SweepLog represents a sweep (fund consolidation) operation record.
+// SweepLog represents a single leg of a sweep operation (ADR §2.3).
+// One sweep = 3 legs: delegate (leg_seq=0), transfer (leg_seq=1), undelegate (leg_seq=2).
+// All 3 legs share the same batch_id.
 type SweepLog struct {
 	ID               uuid.UUID  `db:"id"`
+	BatchID          uuid.UUID  `db:"batch_id"`
 	DepositAddressID uuid.UUID  `db:"deposit_address_id"`
+	LegType          string     `db:"leg_type"`   // delegate / transfer / undelegate
+	LegSeq           int        `db:"leg_seq"`    // 0 / 1 / 2
 	TxHash           string     `db:"tx_hash"`
 	Amount           string     `db:"amount"`
 	EnergyUsed       int64      `db:"energy_used"`
-	Status           string     `db:"status"` // PENDING / SWEEPING / DONE / FAILED
+	Status           string     `db:"status"` // PENDING / SWEEPING / DONE / FAILED / MANUAL_REVIEW
 	ErrorMessage     *string    `db:"error_message"`
 	CreatedAt        time.Time  `db:"created_at"`
 	UpdatedAt        time.Time  `db:"updated_at"`

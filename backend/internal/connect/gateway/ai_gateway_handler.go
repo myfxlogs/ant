@@ -296,7 +296,7 @@ func (s *AIGatewayServer) RecordTokenUsage(
 			return fmt.Errorf("insert token usage: %w", err)
 		}
 		desc := fmt.Sprintf("AI %s (%s): %d+%d tokens", feature, modelName, inputTokens, outputTokens)
-		if _, err := s.walletSvc.AdjustBalance(ctx, userID, "-"+cost, "ai_usage", desc, nil); err != nil {
+		if _, err := s.walletSvc.AdjustBalance(ctx, userID, "-"+cost, "ai_usage", desc, nil, "ai-"+rec.ID.String()); err != nil {
 			return fmt.Errorf("deduct wallet: %w", err)
 		}
 		return nil

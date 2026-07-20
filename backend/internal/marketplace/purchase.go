@@ -127,118 +127,67 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 	amountStr := priceDec.StringFixed(2)
 	negAmountStr := "-" + amountStr
 
-	// 5. Deduct buyer balance (DB enforces non-negative via CHECK constraint).
-	var buyerBalanceAfter string
-	err = tx.QueryRow(ctx,
-		`UPDATE user_wallets SET balance = balance - $1::numeric, updated_at = now()
-			 WHERE user_id = $2 AND balance >= $1::numeric
-			 RETURNING balance::text`,
-		amountStr, uid,
-	).Scan(&buyerBalanceAfter)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: insufficient balance")
-	}
-
-	// 6. Record buyer wallet_transaction.
-	buyerTxID := uuid.New()
+	// 5. Deduct buyer balance via AdjustBalanceTx (hash chain + idempotency + ledger_outbox).
 	buyerDesc := fmt.Sprintf("Purchase strategy: %s", strategyTitle)
-	err = tx.QueryRow(ctx,
-		`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
-			 VALUES ($1, $2, $3, $4, $5::numeric, $6::numeric, $7::numeric, $8)
-			 RETURNING id`,
-		buyerTxID, buyerWalletID, uid, TxTypePurchase, negAmountStr, buyerBalanceBefore, buyerBalanceAfter, buyerDesc,
-	).Scan(&buyerTxID)
+	buyerWallet, err := s.walletRepo.AdjustBalanceTx(ctx, tx, buyerWalletID, uid,
+		negAmountStr, TxTypePurchase, buyerDesc, nil, "mkt-buy-"+idempotencyKey)
 	if err != nil {
-		return nil, fmt.Errorf("marketplace: record buyer transaction: %w", err)
+		return nil, fmt.Errorf("marketplace: charge buyer: %w", err)
+	}
+	buyerBalanceAfter := buyerWallet.Balance
+	buyerTxID := uuid.Nil
+	if buyerWallet.LastTransactionID != nil {
+		buyerTxID = *buyerWallet.LastTransactionID
 	}
 
-	// 7. Credit publisher wallet (minus platform fee). Use decimal for precise arithmetic.
+	// 7. Credit publisher wallet via AdjustBalanceTx (hash chain + idempotency).
 	feeDec := priceDec.Mul(feeRateDec)
 	pubDec := priceDec.Sub(feeDec)
 	pubAmountStr := pubDec.StringFixed(2)
+
+	// Ensure publisher wallet exists.
 	var pubWalletID uuid.UUID
-	var pubBalanceBefore string
 	err = tx.QueryRow(ctx,
-		`SELECT id, balance::text FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
+		`INSERT INTO user_wallets (user_id) VALUES ($1)
+		 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
+		 RETURNING id`,
 		pid,
-	).Scan(&pubWalletID, &pubBalanceBefore)
+	).Scan(&pubWalletID)
 	if err != nil {
-		// Publisher may not have a wallet yet — create one (upsert always returns a row).
-		err = tx.QueryRow(ctx,
-			`INSERT INTO user_wallets (user_id) VALUES ($1)
-			 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
-			 RETURNING id, balance::text`,
-			pid,
-		).Scan(&pubWalletID, &pubBalanceBefore)
-		if err != nil {
-			return nil, fmt.Errorf("marketplace: publisher wallet: %w", err)
-		}
+		return nil, fmt.Errorf("marketplace: publisher wallet: %w", err)
 	}
 
-	var pubBalanceAfter string
-	err = tx.QueryRow(ctx,
-		`UPDATE user_wallets SET balance = balance + $1::numeric, updated_at = now()
-			 WHERE user_id = $2
-			 RETURNING balance::text`,
-		pubAmountStr, pid,
-	).Scan(&pubBalanceAfter)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: credit publisher: %w", err)
-	}
-
-	// 8. Record publisher wallet_transaction (sale credit).
-	pubTxID := uuid.New()
 	saleDesc := fmt.Sprintf("Strategy sale: %s", strategyTitle)
 	if feeDec.GreaterThan(decimal.Zero) {
 		saleDesc += fmt.Sprintf(" (platform fee: %s)", feeDec.StringFixed(2))
 	}
-	_, err = tx.Exec(ctx,
-		`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
-			 VALUES ($1, $2, $3, $4, $5::numeric, $6::numeric, $7::numeric, $8)`,
-		pubTxID, pubWalletID, pid, TxTypeSale, pubAmountStr, pubBalanceBefore, pubBalanceAfter, saleDesc,
-	)
+	_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pid,
+		pubAmountStr, TxTypeSale, saleDesc, nil, "mkt-sale-"+idempotencyKey)
 	if err != nil {
-		return nil, fmt.Errorf("marketplace: record publisher transaction: %w", err)
+		return nil, fmt.Errorf("marketplace: credit publisher: %w", err)
 	}
 
-	// 8b. Credit platform fee to system wallet with full balance tracking.
+	// 8b. Credit platform fee to system wallet via AdjustBalanceTx.
 	if feeDec.GreaterThan(decimal.Zero) {
 		feeStr := feeDec.StringFixed(2)
 
 		// Ensure system wallet exists.
 		var sysWalletID uuid.UUID
-		var sysBalBefore string
 		err = tx.QueryRow(ctx,
 			`INSERT INTO user_wallets (user_id) VALUES ($1)
 			 ON CONFLICT (user_id) DO UPDATE SET user_id = $1
-			 RETURNING id, balance::text`,
+			 RETURNING id`,
 			SystemUserID,
-		).Scan(&sysWalletID, &sysBalBefore)
+		).Scan(&sysWalletID)
 		if err != nil {
 			return nil, fmt.Errorf("marketplace: system wallet: %w", err)
 		}
 
-		// Credit system wallet.
-		var sysBalAfter string
-		err = tx.QueryRow(ctx,
-			`UPDATE user_wallets SET balance = balance + $1::numeric, updated_at = now()
-			 WHERE id = $2 RETURNING balance::text`,
-			feeStr, sysWalletID,
-		).Scan(&sysBalAfter)
-		if err != nil {
-			return nil, fmt.Errorf("marketplace: credit system wallet: %w", err)
-		}
-
-		// Record platform fee transaction.
-		feeTxID := uuid.New()
 		feeDesc := fmt.Sprintf("Platform fee from strategy sale: %s", strategyTitle)
-		_, err = tx.Exec(ctx,
-			`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
-				 VALUES ($1, $2, $3, $4, $5::numeric, $6::numeric, $7::numeric, $8)`,
-			feeTxID, sysWalletID, SystemUserID, TxTypePlatformFee, feeStr, sysBalBefore, sysBalAfter, feeDesc,
-		)
+		_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
+			feeStr, TxTypePlatformFee, feeDesc, nil, "mkt-fee-"+idempotencyKey)
 		if err != nil {
-			return nil, fmt.Errorf("marketplace: record platform fee: %w", err)
+			return nil, fmt.Errorf("marketplace: credit platform fee: %w", err)
 		}
 	}
 

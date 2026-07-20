@@ -174,3 +174,13 @@ func (s *PlatformService) GetUserAccountSnapshots(ctx context.Context, userID st
 func (s *PlatformService) GetUserAccountsSummary(ctx context.Context, userID string) (*UserAccountsSummary, error) {
 	return s.accountSvc.GetUserAccountsSummary(ctx, userID)
 }
+
+// GetUserEmail returns the email address for a user (used for 2FA confirmations).
+func (s *PlatformService) GetUserEmail(ctx context.Context, userID string) (string, error) {
+	var email string
+	err := s.pg.QueryRow(ctx, `SELECT email FROM users WHERE id = $1`, userID).Scan(&email)
+	if err != nil {
+		return "", fmt.Errorf("platform service: get user email: %w", err)
+	}
+	return email, nil
+}

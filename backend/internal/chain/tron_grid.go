@@ -144,6 +144,69 @@ func (c *TronGridClient) GetBlockEvents(ctx context.Context, contractAddress str
 	return allEvents, nil
 }
 
+// HasOutgoingTRC20Transfer checks if an address has any recent outgoing TRC20 transfer
+// to the specified destination. Used for double-spend prevention before re-sweeping (ADR §2.7).
+// Uses the account-specific TRC20 events endpoint for efficiency (not global contract events).
+func (c *TronGridClient) HasOutgoingTRC20Transfer(ctx context.Context, from, to, contract string) (bool, error) {
+	fingerprint := ""
+	for {
+		params := url.Values{}
+		params.Set("limit", "200")
+		params.Set("order_by", "block_timestamp,desc")
+		params.Set("only_confirmed", "true")
+		params.Set("contract_address", contract)
+		if fingerprint != "" {
+			params.Set("fingerprint", fingerprint)
+		}
+
+		reqURL := fmt.Sprintf("%s/v1/accounts/%s/events/trc20?%s",
+			c.baseURL, from, params.Encode())
+
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
+		if err != nil {
+			return false, fmt.Errorf("trongrid: create request: %w", err)
+		}
+		if c.apiKey != "" {
+			req.Header.Set("TRON-PRO-API-KEY", c.apiKey)
+		}
+
+		resp, err := c.httpClient.Do(req)
+		if err != nil {
+			return false, fmt.Errorf("trongrid: request: %w", err)
+		}
+		body, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			return false, fmt.Errorf("trongrid: read body: %w", err)
+		}
+		if resp.StatusCode != http.StatusOK {
+			return false, fmt.Errorf("trongrid: status %d: %s", resp.StatusCode, string(body))
+		}
+
+		var result tronGridEventResponse
+		if err := json.Unmarshal(body, &result); err != nil {
+			return false, fmt.Errorf("trongrid: unmarshal: %w", err)
+		}
+
+		for _, raw := range result.Data {
+			if raw.EventName != "Transfer" {
+				continue
+			}
+			evtTo := hexToBase58(raw.Result["1"])
+			if evtTo == to {
+				return true, nil
+			}
+		}
+
+		if result.Meta.Fingerprint == "" {
+			break
+		}
+		fingerprint = result.Meta.Fingerprint
+	}
+
+	return false, nil
+}
+
 // GetLatestBlock returns the latest block number from TronGrid.
 func (c *TronGridClient) GetLatestBlock(ctx context.Context) (int64, error) {
 	reqURL := fmt.Sprintf("%s/wallet/getnowblock", c.baseURL)

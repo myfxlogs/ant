@@ -42,6 +42,9 @@ const (
 	// AdminBillingServiceListAdminWalletTransactionsProcedure is the fully-qualified name of the
 	// AdminBillingService's ListAdminWalletTransactions RPC.
 	AdminBillingServiceListAdminWalletTransactionsProcedure = "/ant.v1.AdminBillingService/ListAdminWalletTransactions"
+	// AdminBillingServiceGetLedgerSummaryProcedure is the fully-qualified name of the
+	// AdminBillingService's GetLedgerSummary RPC.
+	AdminBillingServiceGetLedgerSummaryProcedure = "/ant.v1.AdminBillingService/GetLedgerSummary"
 )
 
 // AdminBillingServiceClient is a client for the ant.v1.AdminBillingService service.
@@ -52,6 +55,8 @@ type AdminBillingServiceClient interface {
 	GetRevenueSummary(context.Context, *connect.Request[v1.GetRevenueSummaryRequest]) (*connect.Response[v1.GetRevenueSummaryResponse], error)
 	// List all wallet transactions (platform-wide)
 	ListAdminWalletTransactions(context.Context, *connect.Request[v1.ListAdminWalletTransactionsRequest]) (*connect.Response[v1.ListAdminWalletTransactionsResponse], error)
+	// Get ledger summary for solvency checking (ADR-0026 R10)
+	GetLedgerSummary(context.Context, *connect.Request[v1.GetLedgerSummaryRequest]) (*connect.Response[v1.GetLedgerSummaryResponse], error)
 }
 
 // NewAdminBillingServiceClient constructs a client for the ant.v1.AdminBillingService service. By
@@ -83,6 +88,12 @@ func NewAdminBillingServiceClient(httpClient connect.HTTPClient, baseURL string,
 			connect.WithSchema(adminBillingServiceMethods.ByName("ListAdminWalletTransactions")),
 			connect.WithClientOptions(opts...),
 		),
+		getLedgerSummary: connect.NewClient[v1.GetLedgerSummaryRequest, v1.GetLedgerSummaryResponse](
+			httpClient,
+			baseURL+AdminBillingServiceGetLedgerSummaryProcedure,
+			connect.WithSchema(adminBillingServiceMethods.ByName("GetLedgerSummary")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -91,6 +102,7 @@ type adminBillingServiceClient struct {
 	listSubscriptions           *connect.Client[v1.ListAdminSubscriptionsRequest, v1.ListAdminSubscriptionsResponse]
 	getRevenueSummary           *connect.Client[v1.GetRevenueSummaryRequest, v1.GetRevenueSummaryResponse]
 	listAdminWalletTransactions *connect.Client[v1.ListAdminWalletTransactionsRequest, v1.ListAdminWalletTransactionsResponse]
+	getLedgerSummary            *connect.Client[v1.GetLedgerSummaryRequest, v1.GetLedgerSummaryResponse]
 }
 
 // ListSubscriptions calls ant.v1.AdminBillingService.ListSubscriptions.
@@ -108,6 +120,11 @@ func (c *adminBillingServiceClient) ListAdminWalletTransactions(ctx context.Cont
 	return c.listAdminWalletTransactions.CallUnary(ctx, req)
 }
 
+// GetLedgerSummary calls ant.v1.AdminBillingService.GetLedgerSummary.
+func (c *adminBillingServiceClient) GetLedgerSummary(ctx context.Context, req *connect.Request[v1.GetLedgerSummaryRequest]) (*connect.Response[v1.GetLedgerSummaryResponse], error) {
+	return c.getLedgerSummary.CallUnary(ctx, req)
+}
+
 // AdminBillingServiceHandler is an implementation of the ant.v1.AdminBillingService service.
 type AdminBillingServiceHandler interface {
 	// List all user subscriptions with plan details
@@ -116,6 +133,8 @@ type AdminBillingServiceHandler interface {
 	GetRevenueSummary(context.Context, *connect.Request[v1.GetRevenueSummaryRequest]) (*connect.Response[v1.GetRevenueSummaryResponse], error)
 	// List all wallet transactions (platform-wide)
 	ListAdminWalletTransactions(context.Context, *connect.Request[v1.ListAdminWalletTransactionsRequest]) (*connect.Response[v1.ListAdminWalletTransactionsResponse], error)
+	// Get ledger summary for solvency checking (ADR-0026 R10)
+	GetLedgerSummary(context.Context, *connect.Request[v1.GetLedgerSummaryRequest]) (*connect.Response[v1.GetLedgerSummaryResponse], error)
 }
 
 // NewAdminBillingServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -143,6 +162,12 @@ func NewAdminBillingServiceHandler(svc AdminBillingServiceHandler, opts ...conne
 		connect.WithSchema(adminBillingServiceMethods.ByName("ListAdminWalletTransactions")),
 		connect.WithHandlerOptions(opts...),
 	)
+	adminBillingServiceGetLedgerSummaryHandler := connect.NewUnaryHandler(
+		AdminBillingServiceGetLedgerSummaryProcedure,
+		svc.GetLedgerSummary,
+		connect.WithSchema(adminBillingServiceMethods.ByName("GetLedgerSummary")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.AdminBillingService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AdminBillingServiceListSubscriptionsProcedure:
@@ -151,6 +176,8 @@ func NewAdminBillingServiceHandler(svc AdminBillingServiceHandler, opts ...conne
 			adminBillingServiceGetRevenueSummaryHandler.ServeHTTP(w, r)
 		case AdminBillingServiceListAdminWalletTransactionsProcedure:
 			adminBillingServiceListAdminWalletTransactionsHandler.ServeHTTP(w, r)
+		case AdminBillingServiceGetLedgerSummaryProcedure:
+			adminBillingServiceGetLedgerSummaryHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -170,4 +197,8 @@ func (UnimplementedAdminBillingServiceHandler) GetRevenueSummary(context.Context
 
 func (UnimplementedAdminBillingServiceHandler) ListAdminWalletTransactions(context.Context, *connect.Request[v1.ListAdminWalletTransactionsRequest]) (*connect.Response[v1.ListAdminWalletTransactionsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminBillingService.ListAdminWalletTransactions is not implemented"))
+}
+
+func (UnimplementedAdminBillingServiceHandler) GetLedgerSummary(context.Context, *connect.Request[v1.GetLedgerSummaryRequest]) (*connect.Response[v1.GetLedgerSummaryResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminBillingService.GetLedgerSummary is not implemented"))
 }

@@ -44,7 +44,6 @@ import (
 	"alphaforge/internal/repository"
 	"alphaforge/internal/risk"
 	"alphaforge/internal/risksvc"
-	"alphaforge/internal/sweeper"
 	"alphaforge/internal/service"
 	systemai "alphaforge/internal/service/systemai"
 	usersvc "alphaforge/internal/service/user"
@@ -53,6 +52,7 @@ import (
 
 	alphasentry "alphaforge/internal/sentry"
 	"alphaforge/internal/secrets"
+	"alphaforge/internal/sweep"
 
 	connectrpc "connectrpc.com/connect"
 )
@@ -88,7 +88,7 @@ func registerHandlers(
 	analyticsCache *service.AnalyticsCache,
 	brokerReg *adapter.BrokerRegistry,
 	secClient secrets.Client,
-) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator, *notifpubsub.Sender, *strategy.ScheduleEngine, func(), *chain.Monitor, *sweeper.Sweeper, *reconcile.Reconciler) {
+) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator, *notifpubsub.Sender, *strategy.ScheduleEngine, func(), *chain.Monitor, *reconcile.Reconciler, *sweep.Worker) {
 
 	// ConnectRPC handlers
 	// Repositories for handler→service→repository layering (P1-2).
@@ -132,30 +132,41 @@ func registerHandlers(
 	// USDT deposit service: HD wallet with per-user addresses + auto-confirmation.
 	depositAddrRepo := repository.NewDepositAddressRepository(pool)
 	depositRepo := repository.NewDepositRepository(pool)
-	depositSvc := service.NewDepositService(depositAddrRepo, depositRepo, walletSvc, pool, secClient, log)
-	depositServer := user.NewDepositServer(depositSvc, platformSvc, log)
-	mux.Handle(antv1c.NewDepositServiceHandler(depositServer, withSency(otelInterceptor, authInterceptor)))
+	depositSvc := service.NewDepositService(depositAddrRepo, depositRepo, walletRepo, pool, cfg.DepositXpub, log)
 
 	// Chain monitor: scans TronGrid for USDT transfers to user deposit addresses.
 	adminRepo := repository.NewAdminRepository(pool)
 	tronGrid := chain.NewTronGridClient(cfg.TrongridAPIKey)
 	tronScan := chain.NewTronScanClient(cfg.TronscanAPIKey)
-	chainMonitor := chain.NewMonitor(tronGrid, tronScan, depositAddrRepo, adminRepo, depositSvc, depositRepo, log)
+	chainMonitor := chain.NewMonitor(tronGrid, tronScan, pool, depositAddrRepo, adminRepo, depositSvc, depositRepo, log)
 	depositSvc.OnAddressClaimed = chainMonitor.RegisterAddress
-
-	// Sweeper: consolidates USDT from deposit addresses to hot wallet.
-	sweepRepo := repository.NewSweepLogRepository(pool)
-	tronClient := sweeper.NewTronClient("grpc.trongrid.io:50051", cfg.TrongridAPIKey)
-	var sweeperInst *sweeper.Sweeper
-	if err := tronClient.Start(); err != nil {
-		log.Error("sweeper: tron client start failed — sweeper will not start", zap.Error(err))
-	} else {
-		sweeperInst = sweeper.NewSweeper(sweepRepo, depositAddrRepo, adminRepo, depositRepo, tronClient, secClient, log)
-	}
-
 	// Reconciler: two-phase deposit reconciliation (internal 6h + on-chain 24h).
 	reconcileRepo := repository.NewReconcileRepository(pool)
 	reconcilerInst := reconcile.NewReconciler(reconcileRepo, adminRepo, depositAddrRepo, tronGrid, log)
+	// Sweep worker: builds unsigned bundles, broadcasts signed bundles, crash recovery (ADR-0026 Phase C).
+	sweepLogRepo := repository.NewSweepLogRepository(pool)
+	sweepTronClient, err := sweep.NewTronClient(cfg.TronGridGRPCEndpoint, cfg.TrongridAPIKey)
+	if err != nil {
+		log.Warn("sweep tron client: failed to connect (sweep worker disabled)", zap.Error(err))
+	}
+	var sweepWorker *sweep.Worker
+	var sweepBundleRepo *sweep.BundleRepository
+	if sweepTronClient != nil {
+		sweepBuilder := sweep.NewBuilder(sweepTronClient, depositAddrRepo, adminRepo, log)
+		sweepBroadcaster := sweep.NewBroadcaster(sweepTronClient, sweepLogRepo, depositAddrRepo, adminRepo, log)
+		sweepState := sweep.NewStateMachine(sweepTronClient, sweepLogRepo, tronGrid, adminRepo, depositAddrRepo, log)
+		sweepBundleRepo = sweep.NewBundleRepository(pool)
+		sweepWorker = sweep.NewWorker(sweepBuilder, sweepBroadcaster, sweepState, sweepBundleRepo,
+			sweepLogRepo, depositRepo, depositAddrRepo, adminRepo, pool, log)
+	}
+
+	// ADR-0026 Phase E: WebAuthn withdrawal authorization (after sweep setup for WithdrawalBuilder).
+	wireWebAuthn(mux, pool, log, cfg, walletSvc, walletRepo, emailNotifier, platformSvc,
+		sweepBundleRepo, sweepTronClient, adminRepo, otelInterceptor, authInterceptor)
+
+	// Deposit server (with sweep worker wired in for admin sweep RPCs).
+	depositServer := user.NewDepositServer(depositSvc, platformSvc, sweepWorker, log)
+	mux.Handle(antv1c.NewDepositServiceHandler(depositServer, withSency(otelInterceptor, authInterceptor)))
 
 	// P3.1: Subscription service (Free/Pro/Enterprise plans).
 	subscriptionRepo := repository.NewSubscriptionRepository(pool)
@@ -186,7 +197,7 @@ func registerHandlers(
 	mktServer := mktplace.NewMarketServer(platformSvc, marketDataRepo, nc, log)
 	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, withSency(otelInterceptor, authInterceptor)))
 
-	mktplaceSvc := marketplace.New(pool, log)
+	mktplaceSvc := marketplace.New(pool, walletRepo, log)
 	mktplaceHandler := mktplace.NewMarketplaceServer(mktplaceSvc, platformSvc, log)
 	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, withSency(otelInterceptor, authInterceptor)))
 
@@ -432,16 +443,7 @@ func registerHandlers(
 		emailNotifier,
 	)
 
-	go startHardDeleteCleanup(ctx, pool, log)
+	startBackgroundServices(ctx, pool, emailNotifier, depositAddrRepo, adminRepo, depositSvc, cfg, log)
 
-	// Wrap workerCleanup to also close tronClient on shutdown.
-	origCleanup := workerCleanup
-	workerCleanup = func() {
-		tronClient.Close()
-		if origCleanup != nil {
-			origCleanup()
-		}
-	}
-
-	return reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup, chainMonitor, sweeperInst, reconcilerInst
+	return reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup, chainMonitor, reconcilerInst, sweepWorker
 }

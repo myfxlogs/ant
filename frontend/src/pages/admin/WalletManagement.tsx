@@ -172,7 +172,7 @@ export default function WalletManagement() {
                 <Text type="secondary">{wallet?.frozenBalance || '0'}</Text>
               </Descriptions.Item>
               <Descriptions.Item label={t('admin.wallet.columns.currency', { defaultValue: 'Currency' })}>
-                {wallet?.currency || 'USD'}
+                {wallet?.currency || 'USDT'}
               </Descriptions.Item>
             </Descriptions>
             <Button
@@ -227,7 +227,7 @@ export default function WalletManagement() {
               precision={8}
               style={{ width: 200 }}
               placeholder="0.00"
-              addonAfter="USD"
+              addonAfter="USDT"
             />
           </Space>
           <Input

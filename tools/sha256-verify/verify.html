@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHA256 File Verifier</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    background: #0d1117;
+    color: #c9d1d9;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; padding: 20px;
+  }
+  .card {
+    background: #161b22; border: 1px solid #30363d;
+    border-radius: 8px; padding: 32px; max-width: 700px; width: 100%;
+  }
+  h1 { font-size: 20px; margin-bottom: 24px; color: #f0f6fc; text-align: center; }
+  .file { border: 1px solid #30363d; border-radius: 6px; padding: 16px; margin-bottom: 12px; }
+  .file.pass { border-color: #238636; background: rgba(35,134,54,0.06); }
+  .file.fail { border-color: #da3633; background: rgba(218,54,51,0.06); }
+  .file-header { display: flex; align-items: center; margin-bottom: 8px; }
+  .file-name { font-weight: 600; font-size: 15px; flex: 1; color: #f0f6fc; }
+  .badge {
+    font-size: 12px; font-weight: 600; padding: 3px 10px;
+    border-radius: 12px; display: inline-block;
+  }
+  .badge.pass { background: #238636; color: #fff; }
+  .badge.fail { background: #da3633; color: #fff; }
+  .badge.miss { background: #6e7681; color: #fff; }
+  .hash-label { font-size: 11px; color: #8b949e; margin-top: 8px; }
+  .hash-value { font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; word-break: break-all; padding: 4px 0; color: #c9d1d9; }
+  .hash-value.mismatch { background: rgba(218,54,51,0.12); padding: 4px 6px; border-radius: 3px; }
+  .summary {
+    text-align: center; font-size: 16px; font-weight: 600;
+    padding: 16px; border-radius: 6px; margin-top: 8px;
+  }
+  .summary.pass { background: rgba(35,134,54,0.12); color: #3fb950; border: 1px solid #238636; }
+  .summary.fail { background: rgba(218,54,51,0.12); color: #f85149; border: 1px solid #da3633; }
+  .error { color: #f85149; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>SHA256 File Verifier</h1>
+  {{ range .Results }}
+  <div class="file {{ if not .Found }}fail{{ else if .Pass }}pass{{ else }}fail{{ end }}">
+    <div class="file-header">
+      <span class="file-name">{{ .Name }}</span>
+      {{ if not .Found }}
+        <span class="badge miss">MISSING</span>
+      {{ else if .Pass }}
+        <span class="badge pass">PASS</span>
+      {{ else }}
+        <span class="badge fail">FAIL</span>
+      {{ end }}
+    </div>
+    {{ if .Error }}
+      <div class="error">{{ .Error }}</div>
+    {{ end }}
+    {{ if .Found }}
+      {{ if not .Pass }}
+        <div class="hash-label">Expected</div>
+        <div class="hash-value">{{ .Expected }}</div>
+        <div class="hash-label">Actual</div>
+        <div class="hash-value mismatch">{{ .Actual }}</div>
+      {{ else }}
+        <div class="hash-label">SHA256</div>
+        <div class="hash-value">{{ .Actual }}</div>
+      {{ end }}
+    {{ end }}
+  </div>
+  {{ end }}
+  <div class="summary {{ if .AllPass }}pass{{ else }}fail{{ end }}">
+    {{ if .AllPass }}
+      ALL VERIFIED — Files are safe to use.
+    {{ else }}
+      VERIFICATION FAILED — DO NOT use affected files for signing.
+    {{ end }}
+  </div>
+</div>
+</body>
+</html>

@@ -117,8 +117,9 @@ func (s *SubscriptionService) Subscribe(ctx context.Context, userID uuid.UUID, p
 		return nil, &InsufficientBalanceError{Balance: wallet.Balance, Cost: priceStr}
 	}
 
+	subID := uuid.New()
 	updated, err := walletRepo.AdjustBalanceTx(ctx, tx, wallet.ID, userID, price.Neg().String(), "purchase",
-		fmt.Sprintf("Platform subscription: %s (%s)", plan.DisplayName, billingCycle), nil)
+		fmt.Sprintf("Platform subscription: %s (%s)", plan.DisplayName, billingCycle), nil, "sub-"+subID.String())
 	if err != nil {
 		return nil, fmt.Errorf("subscription: charge wallet: %w", err)
 	}
@@ -130,7 +131,7 @@ func (s *SubscriptionService) Subscribe(ctx context.Context, userID uuid.UUID, p
 		periodEnd = now.AddDate(1, 0, 0)
 	}
 	sub := &model.UserPlatformSubscription{
-		ID:                 uuid.New(),
+		ID:                 subID,
 		UserID:             userID,
 		PlanID:             plan.ID,
 		Status:             "active",
@@ -309,8 +310,9 @@ func (s *SubscriptionService) ChangePlan(ctx context.Context, userID uuid.UUID, 
 			if balance.LessThan(netCharge) {
 				return nil, &InsufficientBalanceError{Balance: wallet.Balance, Cost: netCharge.String()}
 			}
+			subID := uuid.New()
 			updated, err := walletRepo.AdjustBalanceTx(ctx, tx, wallet.ID, userID, netCharge.Neg().String(), "purchase",
-				fmt.Sprintf("Platform subscription: %s (%s)", newPlan.DisplayName, billingCycle), nil)
+				fmt.Sprintf("Platform subscription: %s (%s)", newPlan.DisplayName, billingCycle), nil, "sub-"+subID.String())
 			if err != nil {
 				return nil, fmt.Errorf("subscription: charge wallet: %w", err)
 			}
@@ -320,8 +322,9 @@ func (s *SubscriptionService) ChangePlan(ctx context.Context, userID uuid.UUID, 
 			}
 		} else {
 			creditAbs := netCharge.Abs()
+			refundID := uuid.New()
 			updated, err := walletRepo.AdjustBalanceTx(ctx, tx, wallet.ID, userID, creditAbs.String(), "refund",
-				fmt.Sprintf("Platform subscription proration credit from %s", oldPlan.DisplayName), nil)
+				fmt.Sprintf("Platform subscription proration credit from %s", oldPlan.DisplayName), nil, "sub-refund-"+refundID.String())
 			if err != nil {
 				return nil, fmt.Errorf("subscription: credit wallet: %w", err)
 			}

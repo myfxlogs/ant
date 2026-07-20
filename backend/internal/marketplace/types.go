@@ -12,22 +12,24 @@ import (
 	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/repository"
 )
 
 // Service implements the C2C marketplace (strategy publish + subscribe).
 // M12-B1: unified model — Publish writes to both user_strategy_publishes
 // and marketplace_strategies; ListPublished JOINs both for rich metadata.
 type Service struct {
-	pg  *pgxpool.Pool
-	log *zap.Logger
+	pg         *pgxpool.Pool
+	walletRepo *repository.WalletRepository
+	log        *zap.Logger
 }
 
 // SystemUserID is the designated platform system account for fee collection.
 var SystemUserID = uuid.Nil
 
 // New creates a marketplace service.
-func New(pg *pgxpool.Pool, log *zap.Logger) *Service {
-	return &Service{pg: pg, log: log}
+func New(pg *pgxpool.Pool, walletRepo *repository.WalletRepository, log *zap.Logger) *Service {
+	return &Service{pg: pg, walletRepo: walletRepo, log: log}
 }
 
 // GetPlatformFeeRate reads the marketplace platform fee rate from system_config.

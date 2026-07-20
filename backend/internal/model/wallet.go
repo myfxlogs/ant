@@ -6,6 +6,29 @@ import (
 	"github.com/google/uuid"
 )
 
+// ErrIdempotentReplay indicates an AdjustBalanceTx call was a no-op due to a duplicate idem_key.
+var ErrIdempotentReplay = errIdempotentReplay{}
+
+type errIdempotentReplay struct{}
+
+func (errIdempotentReplay) Error() string { return "idempotent replay: idem_key already exists" }
+func (errIdempotentReplay) Is(target error) bool {
+	_, ok := target.(errIdempotentReplay)
+	return ok
+}
+
+// ErrInsufficientBalance indicates a freeze/withdrawal operation failed because
+// the wallet balance or frozen_balance was less than the required amount.
+var ErrInsufficientBalance = errInsufficientBalance{}
+
+type errInsufficientBalance struct{}
+
+func (errInsufficientBalance) Error() string { return "insufficient balance for operation" }
+func (errInsufficientBalance) Is(target error) bool {
+	_, ok := target.(errInsufficientBalance)
+	return ok
+}
+
 // Wallet represents a user's platform wallet.
 type Wallet struct {
 	ID                uuid.UUID  `json:"id" db:"id"`
@@ -19,7 +42,8 @@ type Wallet struct {
 	LastTransactionID *uuid.UUID `json:"last_transaction_id,omitempty" db:"-"`
 }
 
-// WalletTransaction is an immutable record of a balance change.
+// WalletTransaction is an immutable (append-only) record of a balance change.
+// Hash chain: entry_hash = SHA256(prev_hash || seq || wallet_id || tx_type || amount || balance_before || balance_after || idem_key).
 type WalletTransaction struct {
 	ID            uuid.UUID  `json:"id" db:"id"`
 	WalletID      uuid.UUID  `json:"wallet_id" db:"wallet_id"`
@@ -31,4 +55,8 @@ type WalletTransaction struct {
 	Description   *string    `json:"description,omitempty" db:"description"`
 	OperatorID    *uuid.UUID `json:"operator_id,omitempty" db:"operator_id"`
 	CreatedAt     time.Time  `json:"created_at" db:"created_at"`
+	Seq           int64      `json:"seq" db:"seq"`
+	PrevHash      []byte     `json:"prev_hash,omitempty" db:"prev_hash"`
+	EntryHash     []byte     `json:"entry_hash,omitempty" db:"entry_hash"`
+	IdemKey       *string    `json:"idem_key,omitempty" db:"idem_key"`
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 
 	"alphaforge/internal/model"
 )
@@ -115,24 +116,30 @@ func (r *DepositRepository) ListManualReview(ctx context.Context, page, pageSize
 	return out, total, rows.Err()
 }
 
-var ErrDepositExists = errors.New("deposit already exists")
-
 // UnsweptAddress represents an address with unswept confirmed deposit balance.
 type UnsweptAddress struct {
 	AddrID uuid.UUID
 	Amount string
 }
 
+// SweepDashboardRow is a single row in the sweep dashboard (C4).
+type SweepDashboardRow struct {
+	AddrID          uuid.UUID
+	Address         string
+	DerivationIndex int32
+	UnsweptAmount   string
+	SweepStatus     string // highest-priority sweep status for this address
+}
+
 // ListUnsweptAddresses finds addresses with confirmed deposits that haven't been fully swept.
-// Correctly handles multiple deposits to the same address by comparing total deposits
-// minus total DONE sweep amounts, rather than just checking for any DONE sweep_log.
+// In the 3-leg model, only transfer legs carry USDT amounts (ADR §2.3).
 // Excludes addresses with active PENDING/SWEEPING sweep tasks.
 func (r *DepositRepository) ListUnsweptAddresses(ctx context.Context, threshold string, limit int) ([]UnsweptAddress, error) {
 	rows, err := r.db.Query(ctx, `
 		WITH addr_balance AS (
 			SELECT d.deposit_address_id,
 			       SUM(d.amount) AS total_deposits,
-			       COALESCE(SUM(sl.amount) FILTER (WHERE sl.status = 'DONE'), 0) AS total_swept
+			       COALESCE(SUM(sl.amount) FILTER (WHERE sl.status = 'DONE' AND sl.leg_type = 'transfer'), 0) AS total_swept
 			FROM deposits d
 			LEFT JOIN sweep_logs sl ON sl.deposit_address_id = d.deposit_address_id
 			WHERE d.status = 'CONFIRMED'
@@ -144,7 +151,7 @@ func (r *DepositRepository) ListUnsweptAddresses(ctx context.Context, threshold 
 		AND NOT EXISTS (
 			SELECT 1 FROM sweep_logs sl2
 			WHERE sl2.deposit_address_id = addr_balance.deposit_address_id
-			AND sl2.status IN ('PENDING', 'SWEEPING')
+			AND sl2.status IN ('PENDING', 'SWEEPING', 'MANUAL_REVIEW')
 		)
 		AND NOT EXISTS (
 			SELECT 1 FROM sweep_logs sl3
@@ -168,4 +175,121 @@ func (r *DepositRepository) ListUnsweptAddresses(ctx context.Context, threshold 
 		out = append(out, u)
 	}
 	return out, rows.Err()
+}
+
+// GetUnsweptBalance returns the unswept confirmed deposit balance for a single address.
+// Returns empty string if the address has no unswept balance.
+func (r *DepositRepository) GetUnsweptBalance(ctx context.Context, addrID uuid.UUID) (string, error) {
+	var amount string
+	err := r.db.QueryRow(ctx, `
+		SELECT (total_deposits - total_swept)::text FROM (
+			SELECT
+				COALESCE(SUM(d.amount), 0) AS total_deposits,
+				COALESCE(SUM(sl.amount) FILTER (WHERE sl.status = 'DONE' AND sl.leg_type = 'transfer'), 0) AS total_swept
+			FROM deposits d
+			LEFT JOIN sweep_logs sl ON sl.deposit_address_id = d.deposit_address_id
+			WHERE d.status = 'CONFIRMED' AND d.deposit_address_id = $1
+		) addr_balance
+		WHERE (total_deposits - total_swept) > 0
+	`, addrID).Scan(&amount)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", nil
+		}
+		return "", fmt.Errorf("deposit repo v2: get unswept balance: %w", err)
+	}
+	return amount, nil
+}
+
+// ListSweepDashboard returns all deposit addresses with their unswept balance
+// and highest-priority sweep status, ordered by unswept balance descending (C4).
+// Includes addresses with zero unswept balance if they have active sweep legs,
+// so the operator sees the full picture.
+func (r *DepositRepository) ListSweepDashboard(ctx context.Context, page, pageSize int) ([]SweepDashboardRow, int64, string, error) {
+	// Get total unswept across all addresses.
+	var totalUnswept string
+	err := r.db.QueryRow(ctx, `
+		SELECT COALESCE(SUM(unswept), 0)::text FROM (
+			SELECT d.deposit_address_id,
+			       SUM(d.amount) - COALESCE(SUM(sl.amount) FILTER (WHERE sl.status = 'DONE' AND sl.leg_type = 'transfer'), 0) AS unswept
+			FROM deposits d
+			LEFT JOIN sweep_logs sl ON sl.deposit_address_id = d.deposit_address_id
+			WHERE d.status = 'CONFIRMED'
+			GROUP BY d.deposit_address_id
+		) bal WHERE bal.unswept > 0
+	`).Scan(&totalUnswept)
+	if err != nil {
+		return nil, 0, "", fmt.Errorf("deposit repo v2: dashboard total: %w", err)
+	}
+
+	// Count total rows (addresses with unswept > 0 OR active sweep legs).
+	var total int64
+	err = r.db.QueryRow(ctx, `
+		SELECT COUNT(*) FROM (
+			SELECT da.id
+			FROM user_deposit_addresses da
+			WHERE EXISTS (
+				SELECT 1 FROM deposits d
+				WHERE d.deposit_address_id = da.id AND d.status = 'CONFIRMED'
+				GROUP BY d.deposit_address_id
+				HAVING SUM(d.amount) - COALESCE(SUM(0) FILTER (WHERE false), 0) > 0
+			)
+			OR EXISTS (
+				SELECT 1 FROM sweep_logs sl
+				WHERE sl.deposit_address_id = da.id AND sl.status IN ('PENDING', 'SWEEPING', 'MANUAL_REVIEW')
+			)
+		) cnt
+	`).Scan(&total)
+	if err != nil {
+		return nil, 0, "", fmt.Errorf("deposit repo v2: dashboard count: %w", err)
+	}
+
+	offset := (page - 1) * pageSize
+	rows, err := r.db.Query(ctx, `
+		WITH addr_balance AS (
+			SELECT d.deposit_address_id,
+			       SUM(d.amount) AS total_deposits,
+			       COALESCE(SUM(sl.amount) FILTER (WHERE sl.status = 'DONE' AND sl.leg_type = 'transfer'), 0) AS total_swept
+			FROM deposits d
+			LEFT JOIN sweep_logs sl ON sl.deposit_address_id = d.deposit_address_id
+			WHERE d.status = 'CONFIRMED'
+			GROUP BY d.deposit_address_id
+		),
+		addr_status AS (
+			SELECT deposit_address_id,
+			       CASE
+			           WHEN bool_or(status = 'MANUAL_REVIEW') THEN 'MANUAL_REVIEW'
+			           WHEN bool_or(status = 'SWEEPING') THEN 'SWEEPING'
+			           WHEN bool_or(status = 'PENDING') THEN 'PENDING'
+			           WHEN bool_or(status = 'DONE') THEN 'DONE'
+			           ELSE 'none'
+			       END AS sweep_status
+			FROM sweep_logs
+			GROUP BY deposit_address_id
+		)
+		SELECT da.id, da.address, da.derivation_index,
+		       COALESCE((ab.total_deposits - ab.total_swept)::text, '0') AS unswept_amount,
+		       COALESCE(ast.sweep_status, 'none') AS sweep_status
+		FROM user_deposit_addresses da
+		LEFT JOIN addr_balance ab ON ab.deposit_address_id = da.id
+		LEFT JOIN addr_status ast ON ast.deposit_address_id = da.id
+		WHERE COALESCE(ab.total_deposits - ab.total_swept, 0) > 0
+		   OR ast.sweep_status IN ('PENDING', 'SWEEPING', 'MANUAL_REVIEW')
+		ORDER BY COALESCE(ab.total_deposits - ab.total_swept, 0) DESC
+		LIMIT $1 OFFSET $2
+	`, pageSize, offset)
+	if err != nil {
+		return nil, 0, "", fmt.Errorf("deposit repo v2: dashboard query: %w", err)
+	}
+	defer rows.Close()
+
+	var out []SweepDashboardRow
+	for rows.Next() {
+		var row SweepDashboardRow
+		if err := rows.Scan(&row.AddrID, &row.Address, &row.DerivationIndex, &row.UnsweptAmount, &row.SweepStatus); err != nil {
+			return nil, 0, "", fmt.Errorf("deposit repo v2: dashboard scan: %w", err)
+		}
+		out = append(out, row)
+	}
+	return out, total, totalUnswept, rows.Err()
 }

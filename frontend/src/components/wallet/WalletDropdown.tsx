@@ -24,7 +24,7 @@ export default function WalletDropdown() {
 
   const hasWallet = !!wallet;
   const balance = wallet?.balance ?? '0';
-  const currency = wallet?.currency || 'USD';
+  const currency = wallet?.currency || 'USDT';
   const accountNumber = wallet?.accountNumber;
   const frozen = wallet?.frozenBalance ?? '0';
 

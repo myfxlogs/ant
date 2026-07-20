@@ -1,0 +1,206 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
+
+// WebAuthnService handles passkey registration and withdrawal authorization (ADR-0026 §9.4, R11/R12).
+//
+// Trust model: the online server is an untrusted relay. The real verification
+// happens on the air-gapped coldsign machine using its self-held public key copy.
+// The online server only stores credentials for the registration ceremony and
+// builds UnsignedTx with WithdrawalAuth for coldsign to verify.
+service WebAuthnService {
+  // User: begin passkey registration. Returns WebAuthn registration challenge.
+  rpc BeginRegistration(BeginRegistrationRequest) returns (BeginRegistrationResponse);
+  // User: finish passkey registration. Stores credential public key.
+  rpc FinishRegistration(FinishRegistrationRequest) returns (FinishRegistrationResponse);
+  // User: list own registered passkeys.
+  rpc ListCredentials(ListCredentialsRequest) returns (ListCredentialsResponse);
+  // User: remove a passkey (requires 2FA + cooldown, R12).
+  rpc RemoveCredential(RemoveCredentialRequest) returns (RemoveCredentialResponse);
+  // User: begin withdrawal — returns challenge for passkey to sign.
+  rpc BeginWithdrawal(BeginWithdrawalRequest) returns (BeginWithdrawalResponse);
+  // User: finish withdrawal — submit signed assertion, freeze funds, build TransferTx.
+  rpc FinishWithdrawal(FinishWithdrawalRequest) returns (FinishWithdrawalResponse);
+  // User: list own withdrawal requests.
+  rpc ListWithdrawals(ListWithdrawalsRequest) returns (ListWithdrawalsResponse);
+  // User: cancel a pending withdrawal (unfreeze funds).
+  rpc CancelWithdrawal(CancelWithdrawalRequest) returns (CancelWithdrawalResponse);
+  // User: add a withdrawal whitelist address (requires 2FA + cooldown, R12).
+  rpc AddWhitelistAddress(AddWhitelistAddressRequest) returns (AddWhitelistAddressResponse);
+  // User: list own whitelist addresses.
+  rpc ListWhitelistAddresses(ListWhitelistAddressesRequest) returns (ListWhitelistAddressesResponse);
+  // User: remove a whitelist address (requires 2FA + cooldown, R12).
+  rpc RemoveWhitelistAddress(RemoveWhitelistAddressRequest) returns (RemoveWhitelistAddressResponse);
+  // Admin: export all user credentials for coldsign USB sync (Q2/R12).
+  rpc ExportCredentialList(ExportCredentialListRequest) returns (ExportCredentialListResponse);
+  // Admin: export all whitelist entries for coldsign USB sync (R12).
+  rpc ExportWhitelist(ExportWhitelistRequest) returns (ExportWhitelistResponse);
+}
+
+message BeginRegistrationRequest {
+  string name = 1;  // optional label for the passkey
+}
+
+message BeginRegistrationResponse {
+  bytes credential_creation_options = 1;  // serialized webauthn.CredentialCreation JSON
+}
+
+message FinishRegistrationRequest {
+  bytes credential_response = 1;  // serialized authenticator response (JSON)
+  string name = 2;                // label for the credential
+}
+
+message FinishRegistrationResponse {
+  string credential_id = 1;
+  string name = 2;
+}
+
+message ListCredentialsRequest {}
+
+message CredentialEntry {
+  string credential_id = 1;
+  string name = 2;
+  int64 created_at_ts_ms = 3;
+  int64 sign_count = 4;
+}
+
+message ListCredentialsResponse {
+  repeated CredentialEntry credentials = 1;
+}
+
+message RemoveCredentialRequest {
+  string credential_id = 1;
+}
+
+message RemoveCredentialResponse {}
+
+message BeginWithdrawalRequest {
+  string amount = 1;       // USDT amount (decimal string)
+  string dest_address = 2; // TRC20 destination address
+}
+
+message BeginWithdrawalResponse {
+  bytes challenge = 1;     // challenge = sha256(amount|dest|nonce|user_id)
+  uint64 nonce = 2;        // unique nonce for this withdrawal
+  string withdrawal_id = 3; // pre-allocated withdrawal request ID
+}
+
+message FinishWithdrawalRequest {
+  string withdrawal_id = 1;
+  bytes assertion = 2;     // WebAuthn assertion blob
+  string credential_id = 3; // which passkey was used
+}
+
+message FinishWithdrawalResponse {
+  string withdrawal_id = 1;
+  string status = 2;       // PENDING (awaiting cold sign + broadcast)
+  bytes unsigned_bundle = 3; // serialized UnsignedSweepBundle with TransferTx.auth
+}
+
+message ListWithdrawalsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message WithdrawalEntry {
+  string id = 1;
+  string amount = 2;
+  string dest_address = 3;
+  uint64 nonce = 4;
+  string status = 5;
+  string tx_hash = 6;
+  int64 created_at_ts_ms = 7;
+  int64 completed_at_ts_ms = 8;
+}
+
+message ListWithdrawalsResponse {
+  repeated WithdrawalEntry withdrawals = 1;
+  int64 total = 2;
+}
+
+message CancelWithdrawalRequest {
+  string withdrawal_id = 1;
+}
+
+message CancelWithdrawalResponse {
+  string status = 1;  // CANCELLED
+}
+
+message AddWhitelistAddressRequest {
+  string address = 1;  // TRC20 Base58
+  string label = 2;    // user-assigned name
+}
+
+message AddWhitelistAddressResponse {
+  string status = 1;  // PENDING_CONFIRMATION (awaiting 2FA + cooldown)
+}
+
+message ListWhitelistAddressesRequest {}
+
+message WhitelistEntry {
+  string id = 1;
+  string address = 2;
+  string label = 3;
+  string status = 4;  // PENDING_CONFIRMATION / ACTIVE / REMOVED
+  int64 confirmed_at_ts_ms = 5;
+}
+
+message ListWhitelistAddressesResponse {
+  repeated WhitelistEntry addresses = 1;
+}
+
+message RemoveWhitelistAddressRequest {
+  string id = 1;  // whitelist entry ID
+}
+
+message RemoveWhitelistAddressResponse {
+  string status = 1;  // REMOVED
+}
+
+// UserCredentialEntry is a single credential in the export for coldsign sync (Q2).
+message UserCredentialEntry {
+  string user_id = 1;
+  string credential_id = 2;
+  bytes public_key = 3;       // COSE-encoded public key
+  int64 sign_count = 4;
+}
+
+message ExportCredentialListRequest {}
+
+message ExportCredentialListResponse {
+  repeated UserCredentialEntry credentials = 1;
+  int64 exported_at_ms = 2;
+}
+
+// ColdsignCredentialDB is the proto format for coldsign's self-held public key
+// database. Replaces JSON to comply with the proto-only serialization rule.
+// coldsign loads this from a local file populated via USB import of ExportCredentialList.
+message ColdsignCredentialDB {
+  repeated ColdsignCredentialEntry credentials = 1;
+}
+
+message ColdsignCredentialEntry {
+  string user_id = 1;
+  string credential_id = 2;
+  bytes public_key = 3;       // COSE-encoded public key
+  int64 sign_count = 4;
+}
+
+// ColdsignWhitelist is the proto format for coldsign's self-held whitelist.
+message ColdsignWhitelist {
+  map<string, ColdsignWhitelistEntry> users = 1; // user_id → entries
+}
+
+message ColdsignWhitelistEntry {
+  repeated string addresses = 1;
+}
+
+message ExportWhitelistRequest {}
+
+message ExportWhitelistResponse {
+  // Serialized ColdsignWhitelist proto — admin writes this to USB for coldsign import.
+  bytes whitelist_proto = 1;
+  int64 exported_at_ms = 2;
+}

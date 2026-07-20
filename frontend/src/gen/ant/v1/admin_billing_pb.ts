@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file admin_billing.proto.
  */
 export const file_admin_billing: GenFile = /*@__PURE__*/
-  fileDesc("ChNhZG1pbl9iaWxsaW5nLnByb3RvEgZhbnQudjEiXgodTGlzdEFkbWluU3Vic2NyaXB0aW9uc1JlcXVlc3QSDAoEcGFnZRgBIAEoBRIRCglwYWdlX3NpemUYAiABKAUSDAoEcGxhbhgDIAEoCRIOCgZzdGF0dXMYBCABKAki5AIKF0FkbWluU3Vic2NyaXB0aW9uRGV0YWlsEgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSEgoKdXNlcl9lbWFpbBgDIAEoCRIRCglwbGFuX25hbWUYBCABKAkSGQoRcGxhbl9kaXNwbGF5X25hbWUYBSABKAkSDgoGc3RhdHVzGAYgASgJEhUKDWJpbGxpbmdfY3ljbGUYByABKAkSOAoUY3VycmVudF9wZXJpb2Rfc3RhcnQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjYKEmN1cnJlbnRfcGVyaW9kX2VuZBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEgoKYXV0b19yZW5ldxgKIAEoCBINCgVwcmljZRgLIAEoCRIuCgpjcmVhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJnCh5MaXN0QWRtaW5TdWJzY3JpcHRpb25zUmVzcG9uc2USNgoNc3Vic2NyaXB0aW9ucxgBIAMoCzIfLmFudC52MS5BZG1pblN1YnNjcmlwdGlvbkRldGFpbBINCgV0b3RhbBgCIAEoAyIaChhHZXRSZXZlbnVlU3VtbWFyeVJlcXVlc3QifAoLUGxhblJldmVudWUSEQoJcGxhbl9uYW1lGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRIUCgxhY3RpdmVfY291bnQYAyABKAMSFwoPbW9udGhseV9yZXZlbnVlGAQgASgJEhUKDXRvdGFsX3JldmVudWUYBSABKAkidQoZR2V0UmV2ZW51ZVN1bW1hcnlSZXNwb25zZRIiCgVwbGFucxgBIAMoCzITLmFudC52MS5QbGFuUmV2ZW51ZRIdChV0b3RhbF9tb250aGx5X3JldmVudWUYAiABKAkSFQoNdG90YWxfcmV2ZW51ZRgDIAEoCSJnCiJMaXN0QWRtaW5XYWxsZXRUcmFuc2FjdGlvbnNSZXF1ZXN0EgwKBHBhZ2UYASABKAUSEQoJcGFnZV9zaXplGAIgASgFEg8KB3R4X3R5cGUYAyABKAkSDwoHdXNlcl9pZBgEIAEoCSLkAQocQWRtaW5XYWxsZXRUcmFuc2FjdGlvbkRldGFpbBIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhIKCnVzZXJfZW1haWwYAyABKAkSDwoHdHhfdHlwZRgEIAEoCRIOCgZhbW91bnQYBSABKAkSFgoOYmFsYW5jZV9iZWZvcmUYBiABKAkSFQoNYmFsYW5jZV9hZnRlchgHIAEoCRITCgtkZXNjcmlwdGlvbhgIIAEoCRIuCgpjcmVhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJwCiNMaXN0QWRtaW5XYWxsZXRUcmFuc2FjdGlvbnNSZXNwb25zZRI6Cgx0cmFuc2FjdGlvbnMYASADKAsyJC5hbnQudjEuQWRtaW5XYWxsZXRUcmFuc2FjdGlvbkRldGFpbBINCgV0b3RhbBgCIAEoAzLLAgoTQWRtaW5CaWxsaW5nU2VydmljZRJiChFMaXN0U3Vic2NyaXB0aW9ucxIlLmFudC52MS5MaXN0QWRtaW5TdWJzY3JpcHRpb25zUmVxdWVzdBomLmFudC52MS5MaXN0QWRtaW5TdWJzY3JpcHRpb25zUmVzcG9uc2USWAoRR2V0UmV2ZW51ZVN1bW1hcnkSIC5hbnQudjEuR2V0UmV2ZW51ZVN1bW1hcnlSZXF1ZXN0GiEuYW50LnYxLkdldFJldmVudWVTdW1tYXJ5UmVzcG9uc2USdgobTGlzdEFkbWluV2FsbGV0VHJhbnNhY3Rpb25zEiouYW50LnYxLkxpc3RBZG1pbldhbGxldFRyYW5zYWN0aW9uc1JlcXVlc3QaKy5hbnQudjEuTGlzdEFkbWluV2FsbGV0VHJhbnNhY3Rpb25zUmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChNhZG1pbl9iaWxsaW5nLnByb3RvEgZhbnQudjEiXgodTGlzdEFkbWluU3Vic2NyaXB0aW9uc1JlcXVlc3QSDAoEcGFnZRgBIAEoBRIRCglwYWdlX3NpemUYAiABKAUSDAoEcGxhbhgDIAEoCRIOCgZzdGF0dXMYBCABKAki5AIKF0FkbWluU3Vic2NyaXB0aW9uRGV0YWlsEgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSEgoKdXNlcl9lbWFpbBgDIAEoCRIRCglwbGFuX25hbWUYBCABKAkSGQoRcGxhbl9kaXNwbGF5X25hbWUYBSABKAkSDgoGc3RhdHVzGAYgASgJEhUKDWJpbGxpbmdfY3ljbGUYByABKAkSOAoUY3VycmVudF9wZXJpb2Rfc3RhcnQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjYKEmN1cnJlbnRfcGVyaW9kX2VuZBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEgoKYXV0b19yZW5ldxgKIAEoCBINCgVwcmljZRgLIAEoCRIuCgpjcmVhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJnCh5MaXN0QWRtaW5TdWJzY3JpcHRpb25zUmVzcG9uc2USNgoNc3Vic2NyaXB0aW9ucxgBIAMoCzIfLmFudC52MS5BZG1pblN1YnNjcmlwdGlvbkRldGFpbBINCgV0b3RhbBgCIAEoAyIaChhHZXRSZXZlbnVlU3VtbWFyeVJlcXVlc3QifAoLUGxhblJldmVudWUSEQoJcGxhbl9uYW1lGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRIUCgxhY3RpdmVfY291bnQYAyABKAMSFwoPbW9udGhseV9yZXZlbnVlGAQgASgJEhUKDXRvdGFsX3JldmVudWUYBSABKAkidQoZR2V0UmV2ZW51ZVN1bW1hcnlSZXNwb25zZRIiCgVwbGFucxgBIAMoCzITLmFudC52MS5QbGFuUmV2ZW51ZRIdChV0b3RhbF9tb250aGx5X3JldmVudWUYAiABKAkSFQoNdG90YWxfcmV2ZW51ZRgDIAEoCSJnCiJMaXN0QWRtaW5XYWxsZXRUcmFuc2FjdGlvbnNSZXF1ZXN0EgwKBHBhZ2UYASABKAUSEQoJcGFnZV9zaXplGAIgASgFEg8KB3R4X3R5cGUYAyABKAkSDwoHdXNlcl9pZBgEIAEoCSLkAQocQWRtaW5XYWxsZXRUcmFuc2FjdGlvbkRldGFpbBIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhIKCnVzZXJfZW1haWwYAyABKAkSDwoHdHhfdHlwZRgEIAEoCRIOCgZhbW91bnQYBSABKAkSFgoOYmFsYW5jZV9iZWZvcmUYBiABKAkSFQoNYmFsYW5jZV9hZnRlchgHIAEoCRITCgtkZXNjcmlwdGlvbhgIIAEoCRIuCgpjcmVhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJwCiNMaXN0QWRtaW5XYWxsZXRUcmFuc2FjdGlvbnNSZXNwb25zZRI6Cgx0cmFuc2FjdGlvbnMYASADKAsyJC5hbnQudjEuQWRtaW5XYWxsZXRUcmFuc2FjdGlvbkRldGFpbBINCgV0b3RhbBgCIAEoAyIZChdHZXRMZWRnZXJTdW1tYXJ5UmVxdWVzdCKbAQoYR2V0TGVkZ2VyU3VtbWFyeVJlc3BvbnNlEhkKEXRvdGFsX2xpYWJpbGl0aWVzGAEgASgJEhIKCmxhdGVzdF9zZXEYAiABKAMSGQoRbGF0ZXN0X2VudHJ5X2hhc2gYAyABKAkSNQoRbGF0ZXN0X2VudHJ5X3RpbWUYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wMqIDChNBZG1pbkJpbGxpbmdTZXJ2aWNlEmIKEUxpc3RTdWJzY3JpcHRpb25zEiUuYW50LnYxLkxpc3RBZG1pblN1YnNjcmlwdGlvbnNSZXF1ZXN0GiYuYW50LnYxLkxpc3RBZG1pblN1YnNjcmlwdGlvbnNSZXNwb25zZRJYChFHZXRSZXZlbnVlU3VtbWFyeRIgLmFudC52MS5HZXRSZXZlbnVlU3VtbWFyeVJlcXVlc3QaIS5hbnQudjEuR2V0UmV2ZW51ZVN1bW1hcnlSZXNwb25zZRJ2ChtMaXN0QWRtaW5XYWxsZXRUcmFuc2FjdGlvbnMSKi5hbnQudjEuTGlzdEFkbWluV2FsbGV0VHJhbnNhY3Rpb25zUmVxdWVzdBorLmFudC52MS5MaXN0QWRtaW5XYWxsZXRUcmFuc2FjdGlvbnNSZXNwb25zZRJVChBHZXRMZWRnZXJTdW1tYXJ5Eh8uYW50LnYxLkdldExlZGdlclN1bW1hcnlSZXF1ZXN0GiAuYW50LnYxLkdldExlZGdlclN1bW1hcnlSZXNwb25zZUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.ListAdminSubscriptionsRequest
@@ -329,6 +329,59 @@ export const ListAdminWalletTransactionsResponseSchema: GenMessage<ListAdminWall
   messageDesc(file_admin_billing, 8);
 
 /**
+ * @generated from message ant.v1.GetLedgerSummaryRequest
+ */
+export type GetLedgerSummaryRequest = Message<"ant.v1.GetLedgerSummaryRequest"> & {
+};
+
+/**
+ * Describes the message ant.v1.GetLedgerSummaryRequest.
+ * Use `create(GetLedgerSummaryRequestSchema)` to create a new message.
+ */
+export const GetLedgerSummaryRequestSchema: GenMessage<GetLedgerSummaryRequest> = /*@__PURE__*/
+  messageDesc(file_admin_billing, 9);
+
+/**
+ * @generated from message ant.v1.GetLedgerSummaryResponse
+ */
+export type GetLedgerSummaryResponse = Message<"ant.v1.GetLedgerSummaryResponse"> & {
+  /**
+   * Total liabilities = SUM(balance + frozen_balance) across all user wallets
+   *
+   * @generated from field: string total_liabilities = 1;
+   */
+  totalLiabilities: string;
+
+  /**
+   * Latest hash chain sequence number
+   *
+   * @generated from field: int64 latest_seq = 2;
+   */
+  latestSeq: bigint;
+
+  /**
+   * Latest hash chain entry hash (hex-encoded)
+   *
+   * @generated from field: string latest_entry_hash = 3;
+   */
+  latestEntryHash: string;
+
+  /**
+   * Timestamp of the latest entry
+   *
+   * @generated from field: google.protobuf.Timestamp latest_entry_time = 4;
+   */
+  latestEntryTime?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message ant.v1.GetLedgerSummaryResponse.
+ * Use `create(GetLedgerSummaryResponseSchema)` to create a new message.
+ */
+export const GetLedgerSummaryResponseSchema: GenMessage<GetLedgerSummaryResponse> = /*@__PURE__*/
+  messageDesc(file_admin_billing, 10);
+
+/**
  * @generated from service ant.v1.AdminBillingService
  */
 export const AdminBillingService: GenService<{
@@ -361,6 +414,16 @@ export const AdminBillingService: GenService<{
     methodKind: "unary";
     input: typeof ListAdminWalletTransactionsRequestSchema;
     output: typeof ListAdminWalletTransactionsResponseSchema;
+  },
+  /**
+   * Get ledger summary for solvency checking (ADR-0026 R10)
+   *
+   * @generated from rpc ant.v1.AdminBillingService.GetLedgerSummary
+   */
+  getLedgerSummary: {
+    methodKind: "unary";
+    input: typeof GetLedgerSummaryRequestSchema;
+    output: typeof GetLedgerSummaryResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_admin_billing, 0);

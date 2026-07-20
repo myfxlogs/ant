@@ -82,8 +82,17 @@ type Config struct {
 	RequireEmailVerification bool
 
 	// Tron chain monitoring (USDT deposit)
-	TrongridAPIKey string
-	TronscanAPIKey string
+	TrongridAPIKey     string
+	TronscanAPIKey     string
+	TronGridGRPCEndpoint string // e.g. grpc.trongrid.io:50051
+
+	// HD wallet deposit (ADR-0026)
+	DepositXpub           string
+	DepositXpubFingerprint string
+
+	// WebAuthn withdrawal authorization (ADR-0026 Phase E)
+	WebAuthnRPID    string
+	WebAuthnRPOrigin string
 }
 
 // Load reads all configuration from environment variables with defaults.
@@ -141,8 +150,15 @@ func Load() *Config {
 
 		RequireEmailVerification: getenvBool("REQUIRE_EMAIL_VERIFICATION", false),
 
-		TrongridAPIKey: getenv("TRONGRID_API_KEY", ""),
-		TronscanAPIKey: getenv("TRONSCAN_API_KEY", ""),
+		TrongridAPIKey:       getenv("TRONGRID_API_KEY", ""),
+		TronscanAPIKey:       getenv("TRONSCAN_API_KEY", ""),
+		TronGridGRPCEndpoint: getenv("TRONGRID_GRPC_ENDPOINT", "grpc.trongrid.io:50051"),
+
+		DepositXpub:            getenv("DEPOSIT_XPUB", ""),
+		DepositXpubFingerprint: getenv("DEPOSIT_XPUB_FINGERPRINT", ""),
+
+		WebAuthnRPID:    getenv("WEBAUTHN_RP_ID", "alfq.org"),
+		WebAuthnRPOrigin: getenv("WEBAUTHN_RP_ORIGIN", "https://alfq.org"),
 
 		RiskGateEnabled:          getenvBool("ALPHAFORGE_RISK_GATE_ENABLED", true),
 		RiskGateKillSwitch:       getenvBool("ALPHAFORGE_RISK_GATE_KILLSWITCH_DEFAULT", false),

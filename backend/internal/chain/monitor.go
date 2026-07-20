@@ -14,33 +14,37 @@ import (
 	"alphaforge/internal/repository"
 	"alphaforge/internal/service"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 )
 
 // Monitor scans TronGrid block events for USDT transfers to user deposit addresses.
-// It loads ASSIGNED addresses into memory at startup and refreshes periodically.
+// It loads ALL derived addresses (ASSIGNED + RETIRED) into memory at startup and
+// refreshes periodically. ADR §10.3: must monitor retired addresses too.
 type Monitor struct {
-	grid       *TronGridClient
-	scan       *TronScanClient
-	addrRepo   *repository.DepositAddressRepository
-	adminRepo  *repository.AdminRepository
-	depositSvc *service.DepositService
+	grid        *TronGridClient
+	scan        *TronScanClient
+	pool        *pgxpool.Pool
+	addrRepo    *repository.DepositAddressRepository
+	adminRepo   *repository.AdminRepository
+	depositSvc  *service.DepositService
 	depositRepo *repository.DepositRepository
-	log        *zap.Logger
+	log         *zap.Logger
 
-	mu       sync.RWMutex
-	addrMap  map[string]repository.AddressInfo // address → {userID, addrID}
+	mu      sync.RWMutex
+	addrMap map[string]repository.AddressInfo // address → {userID, addrID}
 
-	usdtContract   string
-	minConfirms    int
-	minDepositAmt  string
-	scanInterval   time.Duration
+	usdtContract    string
+	minConfirms     int
+	minDepositAmt   string
+	scanInterval    time.Duration
 	refreshInterval time.Duration
 }
 
 func NewMonitor(
 	grid *TronGridClient,
 	scan *TronScanClient,
+	pool *pgxpool.Pool,
 	addrRepo *repository.DepositAddressRepository,
 	adminRepo *repository.AdminRepository,
 	depositSvc *service.DepositService,
@@ -48,21 +52,47 @@ func NewMonitor(
 	log *zap.Logger,
 ) *Monitor {
 	return &Monitor{
-		grid:           grid,
-		scan:           scan,
-		addrRepo:       addrRepo,
-		adminRepo:      adminRepo,
-		depositSvc:     depositSvc,
-		depositRepo:    depositRepo,
-		log:            log,
-		addrMap:        make(map[string]repository.AddressInfo),
-		scanInterval:   3 * time.Second,
+		grid:            grid,
+		scan:            scan,
+		pool:            pool,
+		addrRepo:        addrRepo,
+		adminRepo:       adminRepo,
+		depositSvc:      depositSvc,
+		depositRepo:     depositRepo,
+		log:             log,
+		addrMap:         make(map[string]repository.AddressInfo),
+		scanInterval:    3 * time.Second,
 		refreshInterval: 30 * time.Second,
 	}
 }
 
+// advisoryLockID is a fixed constant for PG advisory lock (ADR-0026 R6).
+const advisoryLockID = int64(20260719)
+
 // Run starts the block scanning loop. It runs until ctx is cancelled.
+// Acquires a PG advisory lock to ensure single-instance execution (R6).
 func (m *Monitor) Run(ctx context.Context) error {
+	conn, err := m.pool.Acquire(ctx)
+	if err != nil {
+		return fmt.Errorf("chain monitor: acquire advisory lock conn: %w", err)
+	}
+	defer conn.Release()
+
+	var locked bool
+	err = conn.QueryRow(ctx, "SELECT pg_try_advisory_lock($1)", advisoryLockID).Scan(&locked)
+	if err != nil {
+		return fmt.Errorf("chain monitor: advisory lock query: %w", err)
+	}
+	if !locked {
+		m.log.Warn("chain monitor: another instance holds the advisory lock, not starting")
+		return nil
+	}
+	defer func() {
+		if _, err := conn.Exec(ctx, "SELECT pg_advisory_unlock($1)", advisoryLockID); err != nil {
+			m.log.Error("chain monitor: release advisory lock", zap.Error(err))
+		}
+	}()
+
 	if err := m.loadConfig(ctx); err != nil {
 		return fmt.Errorf("chain monitor: load config: %w", err)
 	}
@@ -132,9 +162,10 @@ func (m *Monitor) loadConfig(ctx context.Context) error {
 	return nil
 }
 
-// loadAddresses loads all ASSIGNED deposit addresses into the in-memory map.
+// loadAddresses loads ALL derived deposit addresses (ASSIGNED + RETIRED) into the in-memory map.
+// ADR §10.3: must monitor retired addresses too — users may send USDT to old addresses.
 func (m *Monitor) loadAddresses(ctx context.Context) error {
-	addrs, err := m.addrRepo.ListAssignedAddresses(ctx)
+	addrs, err := m.addrRepo.ListAllDerivedAddresses(ctx)
 	if err != nil {
 		return fmt.Errorf("load addresses: %w", err)
 	}
@@ -223,6 +254,11 @@ func (m *Monitor) processEvent(ctx context.Context, evt TransferEvent) {
 	info, ok := m.addrMap[evt.To]
 	m.mu.RUnlock()
 	if !ok {
+		m.log.Warn("transfer to unknown address (not in derived address set)",
+			zap.String("to", evt.To),
+			zap.String("tx_hash", evt.TxHash),
+			zap.String("amount", evt.AmountString),
+			zap.Int64("block", evt.BlockNumber))
 		return
 	}
 

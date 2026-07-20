@@ -4,218 +4,211 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
+	"time"
 
-	"github.com/fbsobreira/gotron-sdk/pkg/address"
+	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 
-	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/hdwallet"
 	"alphaforge/internal/model"
 	"alphaforge/internal/repository"
-	"alphaforge/internal/secrets"
 )
 
-// DepositService manages HD wallet deposits.
-// Users claim a personal TRC20 address; deposits are auto-confirmed by chain monitor.
-type DepositService struct {
-	addrRepo    *repository.DepositAddressRepository
-	depositRepo *repository.DepositRepository
-	walletSvc   *WalletService
-	pg          *pgxpool.Pool
-	sec         secrets.Client
-	log         *zap.Logger
+// CompromisedChecker returns true if xpub integrity is compromised (ADR-0026 §12.1).
+// Implemented by audit.XpubAuditor.
+type CompromisedChecker interface {
+	IsCompromised() bool
+}
 
-	// OnAddressClaimed is called after a successful address claim.
-	// Used by chain monitor to register the new address immediately.
+// DepositService manages USDT deposits via on-demand HD wallet address derivation.
+// The online server holds ONLY the account-level xpub — no private keys (ADR-0026 R1).
+type DepositService struct {
+	addrRepo   *repository.DepositAddressRepository
+	depRepo    *repository.DepositRepository
+	walletRepo *repository.WalletRepository
+	pg         *pgxpool.Pool
+	log        *zap.Logger
+	xpub       string
+	xpubKey    *hdkeychain.ExtendedKey // pre-parsed for hot-path derivation
+
+	// compromisedChecker blocks new address derivation if xpub audit fails (ADR-0026 §12.1).
+	compromisedChecker CompromisedChecker
+
+	// OnAddressClaimed is called when a new address is assigned to a user.
+	// Used by chain monitor to register the address for on-chain scanning.
 	OnAddressClaimed func(addr string, userID uuid.UUID, addrID uuid.UUID)
 }
 
+// NewDepositService creates a deposit service with watch-only xpub derivation.
+// xpub is the account-level extended public key (m/44'/195'/0'/0).
 func NewDepositService(
 	addrRepo *repository.DepositAddressRepository,
-	depositRepo *repository.DepositRepository,
-	walletSvc *WalletService,
+	depRepo *repository.DepositRepository,
+	walletRepo *repository.WalletRepository,
 	pg *pgxpool.Pool,
-	sec secrets.Client,
+	xpub string,
 	log *zap.Logger,
 ) *DepositService {
+	var parsedKey *hdkeychain.ExtendedKey
+	if xpub != "" {
+		if ext, err := hdwallet.ParseXpub(xpub); err == nil {
+			parsedKey = ext
+		} else {
+			log.Warn("failed to parse deposit xpub at init", zap.Error(err))
+		}
+	}
 	return &DepositService{
-		addrRepo:    addrRepo,
-		depositRepo: depositRepo,
-		walletSvc:   walletSvc,
-		pg:          pg,
-		sec:         sec,
-		log:         log,
+		addrRepo:   addrRepo,
+		depRepo:    depRepo,
+		walletRepo: walletRepo,
+		pg:         pg,
+		log:        log,
+		xpub:       xpub,
+		xpubKey:    parsedKey,
 	}
 }
 
-// GetOrClaimAddress returns the user's assigned deposit address, claiming one from the pool if needed.
-func (s *DepositService) GetOrClaimAddress(ctx context.Context, userID uuid.UUID) (addr, network string, err error) {
-	a, err := s.addrRepo.ClaimAddress(ctx, userID)
+// Xpub returns the account-level xpub string. Used by ImportDepositAddresses
+// for one-time cross-check of hdgen output against online derivation (ADR-0026 §7 step 5).
+func (s *DepositService) Xpub() string {
+	return s.xpub
+}
+
+// XpubKey returns the pre-parsed account-level extended public key.
+// Returns nil if xpub was not set or failed to parse at init.
+func (s *DepositService) XpubKey() *hdkeychain.ExtendedKey {
+	return s.xpubKey
+}
+
+// SetCompromisedChecker wires the xpub auditor to block address derivation on mismatch.
+func (s *DepositService) SetCompromisedChecker(c CompromisedChecker) {
+	s.compromisedChecker = c
+}
+
+// GetOrDeriveAddress returns the user's existing deposit address, or derives
+// a new one on-demand from the account xpub using a PG SEQUENCE for index
+// allocation (ADR-0026 Q1). Idempotent — concurrent calls for the same user
+// return the same address.
+func (s *DepositService) GetOrDeriveAddress(ctx context.Context, userID uuid.UUID) (addr, network string, err error) {
+	existing, err := s.addrRepo.GetByUserID(ctx, userID)
 	if err != nil {
-		if errors.Is(err, repository.ErrAddressPoolEmpty) {
-			return "", "", fmt.Errorf("deposit service: address pool exhausted, please contact support")
-		}
-		return "", "", fmt.Errorf("deposit service: claim address: %w", err)
+		return "", "", fmt.Errorf("deposit service: get existing: %w", err)
+	}
+	if existing != nil {
+		return existing.Address, existing.Network, nil
 	}
 
-	available, err := s.addrRepo.CountAvailable(ctx)
-	if err == nil && available < 100 {
-		s.log.Warn("address pool running low", zap.Int("available", available))
+	// ADR-0026 §12.1: block new address derivation if xpub audit detected mismatch.
+	if s.compromisedChecker != nil && s.compromisedChecker.IsCompromised() {
+		return "", "", fmt.Errorf("deposit service: xpub integrity compromised — address derivation blocked")
+	}
+
+	idx, err := s.addrRepo.NextDerivationIndex(ctx)
+	if err != nil {
+		return "", "", fmt.Errorf("deposit service: next index: %w", err)
+	}
+
+	if s.xpubKey != nil {
+		addr, err = hdwallet.DeriveAddressFromExtKey(s.xpubKey, uint32(idx))
+	} else {
+		addr, err = hdwallet.DeriveAddressFromXpub(s.xpub, uint32(idx))
+	}
+	if err != nil {
+		return "", "", fmt.Errorf("deposit service: derive address at index %d: %w", idx, err)
+	}
+
+	record, err := s.addrRepo.InsertDepositAddress(ctx, userID, addr, "TRC20", idx)
+	if err != nil {
+		return "", "", fmt.Errorf("deposit service: insert address: %w", err)
 	}
 
 	if s.OnAddressClaimed != nil {
-		s.OnAddressClaimed(a.Address, userID, a.ID)
+		s.OnAddressClaimed(record.Address, userID, record.ID)
 	}
 
-	return a.Address, a.Network, nil
+	s.log.Info("derived new deposit address",
+		zap.String("user_id", userID.String()),
+		zap.Int("derivation_index", idx),
+		zap.String("address", addr),
+	)
+
+	return record.Address, record.Network, nil
 }
 
-// ListMyDeposits returns paginated deposit history for a user.
+// ListMyDeposits returns confirmed deposits for a user.
 func (s *DepositService) ListMyDeposits(ctx context.Context, userID uuid.UUID, page, pageSize int) ([]model.Deposit, int64, error) {
-	return s.depositRepo.ListByUser(ctx, userID, page, pageSize)
+	return s.depRepo.ListByUser(ctx, userID, page, pageSize)
 }
 
-// ListManualReviewDeposits returns deposits requiring manual review (admin).
+// ListManualReviewDeposits returns deposits requiring manual review.
 func (s *DepositService) ListManualReviewDeposits(ctx context.Context, page, pageSize int) ([]model.Deposit, int64, error) {
-	return s.depositRepo.ListManualReview(ctx, page, pageSize)
+	return s.depRepo.ListManualReview(ctx, page, pageSize)
 }
 
-// ListDepositAddresses returns paginated deposit addresses with pool stats (admin).
+// ListDepositAddresses returns all deposit addresses with pagination.
 func (s *DepositService) ListDepositAddresses(ctx context.Context, status string, page, pageSize int) ([]model.DepositAddress, int64, int, error) {
 	addrs, total, err := s.addrRepo.ListAllAddresses(ctx, status, page, pageSize)
 	if err != nil {
 		return nil, 0, 0, err
 	}
-	available, err := s.addrRepo.CountAvailable(ctx)
-	if err != nil {
-		s.log.Warn("deposit service: count available", zap.Error(err))
-		available = 0
-	}
-	return addrs, total, available, nil
+	return addrs, total, 0, nil
 }
 
-// ImportDepositAddresses deserializes an AddressBatch proto and imports addresses into the pool.
-// It validates:
-//   - KEK correctness: decrypts each entry's private key to verify the server's KEK matches
-//   - Address-privkey match: derives address from decrypted privkey and compares to claimed address
-//   - TRON address format: each address must be a valid Base58 TRC20 address (T...)
-//   - Encrypted privkey non-empty: each entry must have a non-nil ciphertext
-func (s *DepositService) ImportDepositAddresses(ctx context.Context, batchData []byte) (int, int, error) {
-	var batch antv1.AddressBatch
-	if err := proto.Unmarshal(batchData, &batch); err != nil {
-		return 0, 0, fmt.Errorf("deposit service: unmarshal batch: %w", err)
-	}
-	if len(batch.Entries) == 0 {
-		return 0, 0, errors.New("deposit service: empty batch")
-	}
-	if len(batch.Entries) > 5000 {
-		return 0, 0, fmt.Errorf("deposit service: batch too large: %d entries (max 5000), split into multiple files", len(batch.Entries))
-	}
-	if s.sec == nil {
-		return 0, 0, errors.New("deposit service: secrets client not configured — cannot verify KEK")
-	}
-
-	// Validate and verify every entry: address format, KEK decryption, address-privkey match.
-	addrs := make([]model.DepositAddress, 0, len(batch.Entries))
-	for i, e := range batch.Entries {
-		if e.Address == "" || !strings.HasPrefix(e.Address, "T") {
-			return 0, 0, fmt.Errorf("deposit service: entry %d invalid address: %q (must be TRON Base58 starting with T)", i, e.Address)
-		}
-		if _, err := address.Base58ToAddress(e.Address); err != nil {
-			return 0, 0, fmt.Errorf("deposit service: entry %d invalid TRON address: %w", i, err)
-		}
-		if len(e.EncryptedPrivkey) == 0 {
-			return 0, 0, fmt.Errorf("deposit service: entry %d has empty encrypted_privkey", i)
-		}
-
-		// Decrypt private key and verify it matches the claimed address.
-		// This catches both wrong KEK and tampered .bin files (address swapped but privkey unchanged).
-		privKey, err := s.sec.Decrypt(ctx, secrets.PurposeDepositPrivKey, e.EncryptedPrivkey)
-		if err != nil {
-			return 0, 0, fmt.Errorf("deposit service: entry %d KEK decryption failed — server KEK does not match: %w", i, err)
-		}
-		if len(privKey) != 32 {
-			return 0, 0, fmt.Errorf("deposit service: entry %d decrypted private key is %d bytes, expected 32", i, len(privKey))
-		}
-		derivedAddr, err := hdwallet.AddressFromPrivateKey(privKey)
-		for j := range privKey {
-			privKey[j] = 0
-		}
-		if err != nil {
-			return 0, 0, fmt.Errorf("deposit service: entry %d derive address from privkey: %w", i, err)
-		}
-		if derivedAddr != e.Address {
-			return 0, 0, fmt.Errorf("deposit service: entry %d address mismatch: claimed %s but privkey derives to %s (tampered batch?)", i, e.Address, derivedAddr)
-		}
-
-		network := e.Network
-		if network == "" {
-			network = "TRC20"
-		}
-		addrs = append(addrs, model.DepositAddress{
-			Address:          e.Address,
-			DerivationIndex:  int(e.DerivationIndex),
-			EncryptedPrivkey: e.EncryptedPrivkey,
-			Network:          network,
-			Status:           "AVAILABLE",
-		})
-	}
-	return s.addrRepo.ImportBatchWithStats(ctx, addrs)
-}
-
-// ConfirmDeposit creates a deposit record and credits the user's wallet atomically.
-// Called by the chain monitor after on-chain verification.
-func (s *DepositService) ConfirmDeposit(ctx context.Context, userID uuid.UUID, addrID uuid.UUID, txHash string, amount string, blockNumber int64, confirmations int) error {
+// ConfirmDeposit records a confirmed on-chain deposit and credits the user's wallet
+// atomically in a single DB transaction. The tx_hash serves as idem_key for the
+// wallet credit (R7 idempotency): if the chain monitor re-processes the same event,
+// the deposit INSERT is skipped (ON CONFLICT DO NOTHING) and the wallet credit
+// returns ErrIdempotentReplay — both safe no-ops.
+func (s *DepositService) ConfirmDeposit(ctx context.Context, userID, addrID uuid.UUID, txHash, amount string, blockNumber int64, confirmations int) error {
 	tx, err := s.pg.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("deposit service: begin tx: %w", err)
 	}
 	defer tx.Rollback(ctx)
 
-	depositID := uuid.New()
-	tag, err := tx.Exec(ctx, `
-		INSERT INTO deposits (id, user_id, deposit_address_id, tx_hash, amount, block_number, confirmations, status, confirmed_at)
-		VALUES ($1, $2, $3, $4, $5::numeric, $6, $7, 'CONFIRMED', NOW())
-		ON CONFLICT (tx_hash) DO NOTHING
-	`, depositID, userID, addrID, txHash, amount, blockNumber, confirmations)
-	if err != nil {
-		return fmt.Errorf("deposit service: insert deposit: %w", err)
+	now := time.Now()
+	dep := &model.Deposit{
+		ID:               uuid.New(),
+		UserID:           userID,
+		DepositAddressID: addrID,
+		TxHash:           txHash,
+		Amount:           amount,
+		BlockNumber:      blockNumber,
+		Confirmations:    confirmations,
+		Status:           "CONFIRMED",
+		ConfirmedAt:      &now,
 	}
-	if tag.RowsAffected() == 0 {
-		// Deposit already exists (concurrent call), skip wallet credit.
-		return nil
+	if err := s.depRepo.Create(ctx, dep); err != nil {
+		return fmt.Errorf("deposit service: create deposit: %w", err)
 	}
 
-	walletRepo := s.walletSvc.Repo()
-	wallet, err := walletRepo.GetByUserIDTx(ctx, tx, userID)
+	wallet, err := s.walletRepo.GetByUserIDTx(ctx, tx, userID)
 	if err != nil {
 		return fmt.Errorf("deposit service: get wallet: %w", err)
 	}
 	if wallet == nil {
-		return ErrWalletNotFound
+		wallet, err = s.walletRepo.CreateWalletTx(ctx, tx, userID)
+		if err != nil {
+			return fmt.Errorf("deposit service: create wallet: %w", err)
+		}
 	}
 
-	_, err = walletRepo.AdjustBalanceTx(ctx, tx, wallet.ID, userID,
-		amount, "deposit",
-		fmt.Sprintf("USDT deposit confirmed (tx=%s)", txHash),
-		nil)
+	_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, wallet.ID, userID, amount, "deposit",
+		fmt.Sprintf("On-chain USDT deposit: %s", txHash), nil, "deposit-"+txHash)
 	if err != nil {
+		if errors.Is(err, model.ErrIdempotentReplay) {
+			tx.Rollback(ctx)
+			return nil
+		}
 		return fmt.Errorf("deposit service: credit wallet: %w", err)
 	}
 
-	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("deposit service: commit: %w", err)
-	}
+	return tx.Commit(ctx)
+}
 
-	s.log.Info("deposit confirmed",
-		zap.String("user_id", userID.String()),
-		zap.String("tx_hash", txHash),
-		zap.String("amount", amount),
-		zap.Int64("block", blockNumber))
-
-	return nil
+// MarkAddressReceived updates the has_received_usdt flag for an address.
+func (s *DepositService) MarkAddressReceived(ctx context.Context, addrID uuid.UUID) error {
+	return s.addrRepo.MarkReceivedUSDT(ctx, addrID)
 }

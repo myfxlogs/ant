@@ -38,12 +38,12 @@ func (r *ReconcileRepository) SumDepositCredits(ctx context.Context) (string, er
 	return total, nil
 }
 
-// SumSweptAmounts returns the total amount of all DONE sweep_logs.
-// Used by chain reconcile to compute expected on-chain balance: deposits - swept.
+// SumSweptAmounts returns the total amount of all DONE transfer-leg sweep_logs.
+// Only transfer legs carry USDT amounts (ADR §2.3 3-leg model).
 func (r *ReconcileRepository) SumSweptAmounts(ctx context.Context) (string, error) {
 	var total string
 	err := r.db.QueryRow(ctx,
-		`SELECT COALESCE(SUM(amount)::text, '0') FROM sweep_logs WHERE status = 'DONE'`,
+		`SELECT COALESCE(SUM(amount)::text, '0') FROM sweep_logs WHERE status = 'DONE' AND leg_type = 'transfer'`,
 	).Scan(&total)
 	if err != nil {
 		return "", fmt.Errorf("reconcile repo: sum swept: %w", err)
