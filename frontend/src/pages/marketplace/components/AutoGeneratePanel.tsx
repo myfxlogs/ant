@@ -399,12 +399,6 @@ export default function AutoGeneratePanel() {
               <Button onClick={handleReset}>{t('marketplace.autogen.generateAnother', { defaultValue: 'Generate Another' })}</Button>
             </Space>
           )}
-          {!result?.strategyId && violations.length > 0 && (
-            <Space>
-              <Button onClick={handleGenerate}>{t('marketplace.autogen.retry', { defaultValue: 'Retry' })}</Button>
-              <Button onClick={handleReset}>{t('marketplace.autogen.modify', { defaultValue: 'Modify Request' })}</Button>
-            </Space>
-          )}
         </div>
       )}
       <Modal

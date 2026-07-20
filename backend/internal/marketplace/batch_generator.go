@@ -331,4 +331,3 @@ func (b *BatchGenerator) completeTask(ctx context.Context, taskID uuid.UUID, sna
 		zap.String("task", taskID.String()),
 		zap.Bool("quality_passed", qualityPassed))
 }
-
