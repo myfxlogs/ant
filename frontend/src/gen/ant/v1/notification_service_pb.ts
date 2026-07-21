@@ -11,7 +11,7 @@ import type { JsonObject, Message } from "@bufbuild/protobuf";
  * Describes the file notification_service.proto.
  */
 export const file_notification_service: GenFile = /*@__PURE__*/
-  fileDesc("Chpub3RpZmljYXRpb25fc2VydmljZS5wcm90bxIGYW50LnYxIjEKGlN0cmVhbU5vdGlmaWNhdGlvbnNSZXF1ZXN0EhMKC3VucmVhZF9vbmx5GAEgASgIIqUBCgxOb3RpZmljYXRpb24SCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIMCgR0eXBlGAMgASgJEg0KBXRpdGxlGAQgASgJEg8KB21lc3NhZ2UYBSABKAkSJQoEZGF0YRgGIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHaXNfcmVhZBgHIAEoCBISCgpjcmVhdGVkX2F0GAggASgJIk4KGExpc3ROb3RpZmljYXRpb25zUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZvZmZzZXQYAiABKAUSEwoLdW5yZWFkX29ubHkYAyABKAgiXgoZTGlzdE5vdGlmaWNhdGlvbnNSZXNwb25zZRIrCg1ub3RpZmljYXRpb25zGAEgAygLMhQuYW50LnYxLk5vdGlmaWNhdGlvbhIUCgx0b3RhbF91bnJlYWQYAiABKAUiHQoPTWFya1JlYWRSZXF1ZXN0EgoKAmlkGAEgASgJIhIKEE1hcmtSZWFkUmVzcG9uc2UiFAoSTWFya0FsbFJlYWRSZXF1ZXN0IhUKE01hcmtBbGxSZWFkUmVzcG9uc2UifwoXU2VuZE5vdGlmaWNhdGlvblJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCRIMCgR0eXBlGAIgASgJEg0KBXRpdGxlGAMgASgJEg8KB21lc3NhZ2UYBCABKAkSJQoEZGF0YRgFIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QiJgoYU2VuZE5vdGlmaWNhdGlvblJlc3BvbnNlEgoKAmlkGAEgASgJMqADChNOb3RpZmljYXRpb25TZXJ2aWNlElgKEUxpc3ROb3RpZmljYXRpb25zEiAuYW50LnYxLkxpc3ROb3RpZmljYXRpb25zUmVxdWVzdBohLmFudC52MS5MaXN0Tm90aWZpY2F0aW9uc1Jlc3BvbnNlEj0KCE1hcmtSZWFkEhcuYW50LnYxLk1hcmtSZWFkUmVxdWVzdBoYLmFudC52MS5NYXJrUmVhZFJlc3BvbnNlEkYKC01hcmtBbGxSZWFkEhouYW50LnYxLk1hcmtBbGxSZWFkUmVxdWVzdBobLmFudC52MS5NYXJrQWxsUmVhZFJlc3BvbnNlElEKE1N0cmVhbU5vdGlmaWNhdGlvbnMSIi5hbnQudjEuU3RyZWFtTm90aWZpY2F0aW9uc1JlcXVlc3QaFC5hbnQudjEuTm90aWZpY2F0aW9uMAESVQoQU2VuZE5vdGlmaWNhdGlvbhIfLmFudC52MS5TZW5kTm90aWZpY2F0aW9uUmVxdWVzdBogLmFudC52MS5TZW5kTm90aWZpY2F0aW9uUmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_struct]);
+  fileDesc("Chpub3RpZmljYXRpb25fc2VydmljZS5wcm90bxIGYW50LnYxIjEKGlN0cmVhbU5vdGlmaWNhdGlvbnNSZXF1ZXN0EhMKC3VucmVhZF9vbmx5GAEgASgIIqUBCgxOb3RpZmljYXRpb24SCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIMCgR0eXBlGAMgASgJEg0KBXRpdGxlGAQgASgJEg8KB21lc3NhZ2UYBSABKAkSJQoEZGF0YRgGIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHaXNfcmVhZBgHIAEoCBISCgpjcmVhdGVkX2F0GAggASgJIk4KGExpc3ROb3RpZmljYXRpb25zUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZvZmZzZXQYAiABKAUSEwoLdW5yZWFkX29ubHkYAyABKAgiXgoZTGlzdE5vdGlmaWNhdGlvbnNSZXNwb25zZRIrCg1ub3RpZmljYXRpb25zGAEgAygLMhQuYW50LnYxLk5vdGlmaWNhdGlvbhIUCgx0b3RhbF91bnJlYWQYAiABKAUiHQoPTWFya1JlYWRSZXF1ZXN0EgoKAmlkGAEgASgJIhIKEE1hcmtSZWFkUmVzcG9uc2UiFAoSTWFya0FsbFJlYWRSZXF1ZXN0IhUKE01hcmtBbGxSZWFkUmVzcG9uc2UifwoXU2VuZE5vdGlmaWNhdGlvblJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCRIMCgR0eXBlGAIgASgJEg0KBXRpdGxlGAMgASgJEg8KB21lc3NhZ2UYBCABKAkSJQoEZGF0YRgFIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QiJgoYU2VuZE5vdGlmaWNhdGlvblJlc3BvbnNlEgoKAmlkGAEgASgJIh0KG0dldE5vdGlmaWNhdGlvblByZWZzUmVxdWVzdCK3AQocR2V0Tm90aWZpY2F0aW9uUHJlZnNSZXNwb25zZRIcChRuZXdfc3RyYXRlZ3lfZW5hYmxlZBgBIAEoCBIcChRwcmljZV9jaGFuZ2VfZW5hYmxlZBgCIAEoCBIcChRzdWJfZXhwaXJpbmdfZW5hYmxlZBgDIAEoCBIhChlwZXJmb3JtYW5jZV9hbGVydF9lbmFibGVkGAQgASgIEhoKEm5ld19yYXRpbmdfZW5hYmxlZBgFIAEoCCK2AQobU2V0Tm90aWZpY2F0aW9uUHJlZnNSZXF1ZXN0EhwKFG5ld19zdHJhdGVneV9lbmFibGVkGAEgASgIEhwKFHByaWNlX2NoYW5nZV9lbmFibGVkGAIgASgIEhwKFHN1Yl9leHBpcmluZ19lbmFibGVkGAMgASgIEiEKGXBlcmZvcm1hbmNlX2FsZXJ0X2VuYWJsZWQYBCABKAgSGgoSbmV3X3JhdGluZ19lbmFibGVkGAUgASgIIh4KHFNldE5vdGlmaWNhdGlvblByZWZzUmVzcG9uc2Uy5gQKE05vdGlmaWNhdGlvblNlcnZpY2USWAoRTGlzdE5vdGlmaWNhdGlvbnMSIC5hbnQudjEuTGlzdE5vdGlmaWNhdGlvbnNSZXF1ZXN0GiEuYW50LnYxLkxpc3ROb3RpZmljYXRpb25zUmVzcG9uc2USPQoITWFya1JlYWQSFy5hbnQudjEuTWFya1JlYWRSZXF1ZXN0GhguYW50LnYxLk1hcmtSZWFkUmVzcG9uc2USRgoLTWFya0FsbFJlYWQSGi5hbnQudjEuTWFya0FsbFJlYWRSZXF1ZXN0GhsuYW50LnYxLk1hcmtBbGxSZWFkUmVzcG9uc2USUQoTU3RyZWFtTm90aWZpY2F0aW9ucxIiLmFudC52MS5TdHJlYW1Ob3RpZmljYXRpb25zUmVxdWVzdBoULmFudC52MS5Ob3RpZmljYXRpb24wARJVChBTZW5kTm90aWZpY2F0aW9uEh8uYW50LnYxLlNlbmROb3RpZmljYXRpb25SZXF1ZXN0GiAuYW50LnYxLlNlbmROb3RpZmljYXRpb25SZXNwb25zZRJhChRHZXROb3RpZmljYXRpb25QcmVmcxIjLmFudC52MS5HZXROb3RpZmljYXRpb25QcmVmc1JlcXVlc3QaJC5hbnQudjEuR2V0Tm90aWZpY2F0aW9uUHJlZnNSZXNwb25zZRJhChRTZXROb3RpZmljYXRpb25QcmVmcxIjLmFudC52MS5TZXROb3RpZmljYXRpb25QcmVmc1JlcXVlc3QaJC5hbnQudjEuU2V0Tm90aWZpY2F0aW9uUHJlZnNSZXNwb25zZUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_struct]);
 
 /**
  * @generated from message ant.v1.StreamNotificationsRequest
@@ -262,6 +262,106 @@ export const SendNotificationResponseSchema: GenMessage<SendNotificationResponse
   messageDesc(file_notification_service, 9);
 
 /**
+ * @generated from message ant.v1.GetNotificationPrefsRequest
+ */
+export type GetNotificationPrefsRequest = Message<"ant.v1.GetNotificationPrefsRequest"> & {
+};
+
+/**
+ * Describes the message ant.v1.GetNotificationPrefsRequest.
+ * Use `create(GetNotificationPrefsRequestSchema)` to create a new message.
+ */
+export const GetNotificationPrefsRequestSchema: GenMessage<GetNotificationPrefsRequest> = /*@__PURE__*/
+  messageDesc(file_notification_service, 10);
+
+/**
+ * @generated from message ant.v1.GetNotificationPrefsResponse
+ */
+export type GetNotificationPrefsResponse = Message<"ant.v1.GetNotificationPrefsResponse"> & {
+  /**
+   * @generated from field: bool new_strategy_enabled = 1;
+   */
+  newStrategyEnabled: boolean;
+
+  /**
+   * @generated from field: bool price_change_enabled = 2;
+   */
+  priceChangeEnabled: boolean;
+
+  /**
+   * @generated from field: bool sub_expiring_enabled = 3;
+   */
+  subExpiringEnabled: boolean;
+
+  /**
+   * @generated from field: bool performance_alert_enabled = 4;
+   */
+  performanceAlertEnabled: boolean;
+
+  /**
+   * @generated from field: bool new_rating_enabled = 5;
+   */
+  newRatingEnabled: boolean;
+};
+
+/**
+ * Describes the message ant.v1.GetNotificationPrefsResponse.
+ * Use `create(GetNotificationPrefsResponseSchema)` to create a new message.
+ */
+export const GetNotificationPrefsResponseSchema: GenMessage<GetNotificationPrefsResponse> = /*@__PURE__*/
+  messageDesc(file_notification_service, 11);
+
+/**
+ * @generated from message ant.v1.SetNotificationPrefsRequest
+ */
+export type SetNotificationPrefsRequest = Message<"ant.v1.SetNotificationPrefsRequest"> & {
+  /**
+   * @generated from field: bool new_strategy_enabled = 1;
+   */
+  newStrategyEnabled: boolean;
+
+  /**
+   * @generated from field: bool price_change_enabled = 2;
+   */
+  priceChangeEnabled: boolean;
+
+  /**
+   * @generated from field: bool sub_expiring_enabled = 3;
+   */
+  subExpiringEnabled: boolean;
+
+  /**
+   * @generated from field: bool performance_alert_enabled = 4;
+   */
+  performanceAlertEnabled: boolean;
+
+  /**
+   * @generated from field: bool new_rating_enabled = 5;
+   */
+  newRatingEnabled: boolean;
+};
+
+/**
+ * Describes the message ant.v1.SetNotificationPrefsRequest.
+ * Use `create(SetNotificationPrefsRequestSchema)` to create a new message.
+ */
+export const SetNotificationPrefsRequestSchema: GenMessage<SetNotificationPrefsRequest> = /*@__PURE__*/
+  messageDesc(file_notification_service, 12);
+
+/**
+ * @generated from message ant.v1.SetNotificationPrefsResponse
+ */
+export type SetNotificationPrefsResponse = Message<"ant.v1.SetNotificationPrefsResponse"> & {
+};
+
+/**
+ * Describes the message ant.v1.SetNotificationPrefsResponse.
+ * Use `create(SetNotificationPrefsResponseSchema)` to create a new message.
+ */
+export const SetNotificationPrefsResponseSchema: GenMessage<SetNotificationPrefsResponse> = /*@__PURE__*/
+  messageDesc(file_notification_service, 13);
+
+/**
  * NotificationService is the user-facing in-app notification inbox.
  * Supports list, mark-read, SSE streaming, and server-side notification creation.
  *
@@ -307,6 +407,24 @@ export const NotificationService: GenService<{
     methodKind: "unary";
     input: typeof SendNotificationRequestSchema;
     output: typeof SendNotificationResponseSchema;
+  },
+  /**
+   * Phase 3.4: Notification preferences.
+   *
+   * @generated from rpc ant.v1.NotificationService.GetNotificationPrefs
+   */
+  getNotificationPrefs: {
+    methodKind: "unary";
+    input: typeof GetNotificationPrefsRequestSchema;
+    output: typeof GetNotificationPrefsResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.NotificationService.SetNotificationPrefs
+   */
+  setNotificationPrefs: {
+    methodKind: "unary";
+    input: typeof SetNotificationPrefsRequestSchema;
+    output: typeof SetNotificationPrefsResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_notification_service, 0);

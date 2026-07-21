@@ -1,3 +1,5 @@
+> ⚠️ 已迁移至 docs/blocks/strategy-marketplace/plans/phase-3-growth-engine.md。此文件保留为兼容旧引用。
+
 # Phase 3 · 增长引擎 · 落地排期清单
 
 > 权威依据：`docs/roadmaps/strategy-marketplace.md` Phase 3

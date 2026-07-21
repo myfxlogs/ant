@@ -2,11 +2,7 @@ package ai
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
-	"net/http"
-	"strings"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -36,35 +32,6 @@ func NewAIServer(systemSvc *systemai.Service, conversations *repository.AIConver
 }
 
 var _ antv1c.AIServiceHandler = (*AIServer)(nil)
-
-// userIDFromBearer extracts the user ID from an Authorization: Bearer header.
-func userIDFromBearer(r *http.Request) (uuid.UUID, error) {
-	auth := r.Header.Get("Authorization")
-	if auth == "" || !strings.HasPrefix(auth, "Bearer ") {
-		return uuid.Nil, fmt.Errorf("missing bearer token")
-	}
-	raw := strings.TrimPrefix(auth, "Bearer ")
-	parts := strings.Split(raw, ".")
-	if len(parts) != 3 {
-		return uuid.Nil, fmt.Errorf("invalid jwt format")
-	}
-	claimsJSON, err := base64.RawURLEncoding.DecodeString(parts[1])
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("decode jwt claims: %w", err)
-	}
-	var claims struct {
-		UserID string `json:"user_id"`
-		Sub    string `json:"sub"`
-	}
-	if err := json.Unmarshal(claimsJSON, &claims); err != nil {
-		return uuid.Nil, fmt.Errorf("parse jwt claims: %w", err)
-	}
-	userID := claims.UserID
-	if userID == "" {
-		userID = claims.Sub
-	}
-	return uuid.Parse(userID)
-}
 
 // ResolveSession resolves a strategy_key to a session UUID, creating one if needed.
 func (s *AIServer) ResolveSession(ctx context.Context, req *connect.Request[antv1.ResolveSessionRequest]) (*connect.Response[antv1.ResolveSessionResponse], error) {

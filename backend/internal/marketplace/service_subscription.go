@@ -26,7 +26,7 @@ type SubscriptionItem struct {
 // can be obtained via Subscribe; paid strategies must use PurchaseStrategy.
 //
 // publisherUserID is used as a fallback when the strategy is not found in
-// marketplace_strategies (e.g. internal/copy-trade subscriptions). When the
+// marketplace_strategies (e.g. internal subscriptions). When the
 // strategy is published, the actual publisher is read from the DB and the
 // parameter is overwritten.
 func (s *Service) Subscribe(ctx context.Context, userID, publisherUserID, strategyID, kind string) (string, error) {
@@ -76,7 +76,7 @@ func (s *Service) Unsubscribe(ctx context.Context, userID, subscriptionID string
 	if err != nil {
 		return fmt.Errorf("marketplace: unsubscribe begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	// Deactivate the subscription and get the strategy ID.
 	var strategyID string
@@ -109,6 +109,14 @@ func (s *Service) Unsubscribe(ctx context.Context, userID, subscriptionID string
 
 // ListSubscriptions returns active subscriptions for a user.
 func (s *Service) ListSubscriptions(ctx context.Context, userID string) ([]SubscriptionItem, error) {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: invalid user_id: %w", err)
+	}
+
+	// Lazily notify subscriptions expiring within 3 days (push-first, no cron).
+	go s.notifySubExpiring(context.Background(), uid)
+
 	rows, err := s.pg.Query(ctx, `
 		SELECT id, target_user_id, target_strategy_id, kind, active, created_at, expires_at
 		FROM user_subscriptions
@@ -174,7 +182,7 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 		// Parse amounts as decimal for precise arithmetic.
 		priceDec, decErr := decimal.NewFromString(p.priceAmount)
 		if decErr != nil {
-			tx.Rollback(ctx)
+			_ = tx.Rollback(ctx)
 			failed++
 			continue
 		}
@@ -192,7 +200,7 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 			`SELECT id FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
 			uid,
 		).Scan(&buyerWalletID); err != nil {
-			tx.Rollback(ctx)
+			_ = tx.Rollback(ctx)
 			failed++
 			continue
 		}
@@ -207,7 +215,7 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 			// otherwise the deactivation is lost and we retry forever).
 			if _, dErr := tx.Exec(ctx, `UPDATE user_subscriptions SET active = false WHERE id = $1`, p.subID); dErr != nil {
 				s.log.Warn("renewal: deactivate failed", zap.String("subID", p.subID), zap.Error(dErr))
-				tx.Rollback(ctx)
+				_ = tx.Rollback(ctx)
 				failed++
 				continue
 			}
@@ -229,7 +237,7 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 			pubID,
 		).Scan(&pubWalletID); err != nil {
 			s.log.Warn("renewal: publisher wallet failed", zap.String("subID", p.subID), zap.Error(err))
-			tx.Rollback(ctx)
+			_ = tx.Rollback(ctx)
 			failed++
 			continue
 		}
@@ -237,7 +245,7 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 		if _, err := s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pubID,
 			pubAmountStr, TxTypeSale, saleDesc, nil, "mkt-renew-sale-"+p.subID); err != nil {
 			s.log.Warn("renewal: credit publisher failed", zap.String("subID", p.subID), zap.Error(err))
-			tx.Rollback(ctx)
+			_ = tx.Rollback(ctx)
 			failed++
 			continue
 		}
@@ -253,7 +261,7 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 				SystemUserID,
 			).Scan(&sysWalletID); err != nil {
 				s.log.Warn("renewal: system wallet failed", zap.String("subID", p.subID), zap.Error(err))
-				tx.Rollback(ctx)
+				_ = tx.Rollback(ctx)
 				failed++
 				continue
 			}
@@ -261,7 +269,7 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 			if _, err := s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
 				feeStr, TxTypePlatformFee, feeDesc, nil, "mkt-renew-fee-"+p.subID); err != nil {
 				s.log.Warn("renewal: platform fee tx failed", zap.String("subID", p.subID), zap.Error(err))
-				tx.Rollback(ctx)
+				_ = tx.Rollback(ctx)
 				failed++
 				continue
 			}
@@ -273,7 +281,7 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 			p.subID,
 		); eErr != nil {
 			s.log.Warn("renewal: extend failed", zap.String("subID", p.subID), zap.Error(eErr))
-			tx.Rollback(ctx)
+			_ = tx.Rollback(ctx)
 			failed++
 			continue
 		}
@@ -331,8 +339,8 @@ func (s *Service) StartRenewalLoop(ctx context.Context, log *zap.Logger) {
 }
 
 // CanAccessCode returns true if the user can view the full strategy code.
-// Access is granted if the user is the template owner OR has an active
-// subscription/purchase to the published strategy.
+// Access is granted if the user is the template owner, has an active
+// subscription/purchase to the published strategy, or has an active free trial.
 func (s *Service) CanAccessCode(ctx context.Context, userID, strategyID string) (bool, error) {
 	// Check if user is the template owner.
 	var ownerID string
@@ -358,5 +366,11 @@ func (s *Service) CanAccessCode(ctx context.Context, userID, strategyID string) 
 	if err != nil {
 		return false, nil
 	}
-	return exists, nil
+	if exists {
+		return true, nil
+	}
+
+	// Check if user has an active free trial.
+	hasTrial, _ := s.HasActiveTrial(ctx, userID, strategyID)
+	return hasTrial, nil
 }

@@ -21,7 +21,7 @@ const Marketplace = {
       "descriptionPlaceholder": "描述你的策略逻辑、入场/出场规则...",
       "assetClass": { "label": "资产类别", "forex": "外汇", "crypto": "加密货币", "commodity": "大宗商品", "index": "指数", "stock": "股票" },
       "riskLevel": { "label": "风险等级", "low": "低", "medium": "中", "high": "高" },
-      "priceModel": { "label": "定价", "free": "免费", "monthly": "按月订阅", "once": "一次性购买" },
+      "priceModel": { "label": "定价", "free": "免费", "subscription": "按月订阅", "once": "一次性购买" },
       "priceAmount": "金额",
       "tags": "标签",
       "tagsPlaceholder": "输入并按回车添加标签",

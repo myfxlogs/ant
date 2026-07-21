@@ -14,6 +14,9 @@ service NotificationService {
   rpc MarkAllRead(MarkAllReadRequest) returns (MarkAllReadResponse);
   rpc StreamNotifications(StreamNotificationsRequest) returns (stream Notification);
   rpc SendNotification(SendNotificationRequest) returns (SendNotificationResponse);
+  // Phase 3.4: Notification preferences.
+  rpc GetNotificationPrefs(GetNotificationPrefsRequest) returns (GetNotificationPrefsResponse);
+  rpc SetNotificationPrefs(SetNotificationPrefsRequest) returns (SetNotificationPrefsResponse);
 }
 
 message StreamNotificationsRequest {
@@ -63,3 +66,25 @@ message SendNotificationRequest {
 message SendNotificationResponse {
   string id = 1;        // created notification id
 }
+
+// ── Phase 3.4: Notification Preferences ──────────────────────────────────────
+
+message GetNotificationPrefsRequest {}
+
+message GetNotificationPrefsResponse {
+  bool new_strategy_enabled = 1;
+  bool price_change_enabled = 2;
+  bool sub_expiring_enabled = 3;
+  bool performance_alert_enabled = 4;
+  bool new_rating_enabled = 5;
+}
+
+message SetNotificationPrefsRequest {
+  bool new_strategy_enabled = 1;
+  bool price_change_enabled = 2;
+  bool sub_expiring_enabled = 3;
+  bool performance_alert_enabled = 4;
+  bool new_rating_enabled = 5;
+}
+
+message SetNotificationPrefsResponse {}

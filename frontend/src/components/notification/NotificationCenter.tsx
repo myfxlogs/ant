@@ -10,11 +10,13 @@ import {
 import {
   BellOutlined,
   CheckOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useNotificationListener } from '@/hooks/useNotificationListener';
 import { useTranslation } from 'react-i18next';
 import { NotificationList } from './NotificationList';
+import NotificationPrefs from './NotificationPrefs';
 import type { Notification } from '@/types/notification';
 
 interface NotificationCenterProps {
@@ -34,6 +36,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className }) =>
 
   const [tab, setTab] = useState<string>('all');
   const [open, setOpen] = useState(false);
+  const [prefsOpen, setPrefsOpen] = useState(false);
 
   const filteredNotifications = useMemo(() => {
     if (tab === 'unread') return notifications.filter((n) => !n.read);
@@ -66,6 +69,12 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className }) =>
           />
         </Space>
         <Space>
+          <Button
+            type="text"
+            size="small"
+            icon={<SettingOutlined />}
+            onClick={() => setPrefsOpen(true)}
+          />
           {unreadCount > 0 && (
             <Button
               type="link"
@@ -113,6 +122,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className }) =>
           className={className}
         />
       </Badge>
+      <NotificationPrefs open={prefsOpen} onClose={() => setPrefsOpen(false)} />
     </Dropdown>
   );
 };

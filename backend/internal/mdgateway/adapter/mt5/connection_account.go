@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	pb "alphaforge/mt5"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mthub"
+	pb "alphaforge/mt5"
 	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/metadata"
 )
@@ -47,6 +48,48 @@ func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, 
 		Currency:   s.GetCurrency(),
 		IsInvestor: s.GetIsInvestor(),
 	}, nil
+}
+
+// RequiredMargin calls MT5 RequiredMargin RPC for the given symbol/lots/side/price.
+func (g *Gateway) RequiredMargin(ctx context.Context, symbol string, lots decimal.Decimal, side mthub.Side, price decimal.Decimal) (decimal.Decimal, error) {
+	g.mu.RLock()
+	client := g.client
+	sid := g.sessionID
+	g.mu.RUnlock()
+	if client == nil || sid == "" {
+		return decimal.Zero, fmt.Errorf("mt5: not connected")
+	}
+
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
+
+	var dealType pb.DealType
+	switch side {
+	case mthub.SideBuy:
+		dealType = pb.DealType_DealType_DealBuy
+	case mthub.SideSell:
+		dealType = pb.DealType_DealType_DealSell
+	default:
+		return decimal.Zero, fmt.Errorf("mt5: invalid side")
+	}
+
+	rmCtx := metadata.NewOutgoingContext(ctx, md)
+	resp, err := client.RequiredMargin(rmCtx, &pb.RequiredMarginRequest{
+		Id:     sid,
+		Symbol: symbol,
+		Lots:   lots.InexactFloat64(),
+		Type:   &dealType,
+		Price:  pfloat64(price),
+	})
+	if err != nil {
+		return decimal.Zero, fmt.Errorf("mt5 RequiredMargin: %w", err)
+	}
+	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		return decimal.Zero, fmt.Errorf("mt5 RequiredMargin: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+	}
+	return decimal.NewFromFloat(resp.GetResult()), nil
 }
 
 func (g *Gateway) HealthCheck(ctx context.Context) error {

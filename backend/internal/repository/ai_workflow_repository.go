@@ -84,7 +84,7 @@ func (r *AIWorkflowRepository) AppendStep(ctx context.Context, userID, runID uui
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	if err := authorizeRunOwnershipTx(ctx, tx, userID, runID); err != nil {
 		return nil, err

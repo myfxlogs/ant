@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+
+	protopkg "google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -183,11 +184,10 @@ func parseFeaturesToStruct(s string) *structpb.Struct {
 		st, _ := structpb.NewStruct(map[string]any{})
 		return st
 	}
-	var m map[string]any
-	if err := json.Unmarshal([]byte(s), &m); err != nil {
+	st := &structpb.Struct{}
+	if err := protopkg.Unmarshal([]byte(s), st); err != nil {
 		st, _ := structpb.NewStruct(map[string]any{})
 		return st
 	}
-	st, _ := structpb.NewStruct(m)
 	return st
 }

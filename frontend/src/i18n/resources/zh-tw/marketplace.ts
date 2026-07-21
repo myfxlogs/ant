@@ -21,7 +21,7 @@ const Marketplace = {
       "descriptionPlaceholder": "描述你的策略邏輯、入場/出場規則...",
       "assetClass": { "label": "資產類別", "forex": "外匯", "crypto": "加密貨幣", "commodity": "大宗商品", "index": "指數", "stock": "股票" },
       "riskLevel": { "label": "風險等級", "low": "低", "medium": "中", "high": "高" },
-      "priceModel": { "label": "定價", "free": "免費", "monthly": "按月訂閱", "once": "一次性購買" },
+      "priceModel": { "label": "定價", "free": "免費", "subscription": "按月訂閱", "once": "一次性購買" },
       "priceAmount": "金額",
       "tags": "標籤",
       "tagsPlaceholder": "輸入並按回車添加標籤",

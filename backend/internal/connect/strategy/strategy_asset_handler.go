@@ -1,7 +1,6 @@
 package strategy
 
 import (
-	"fmt"
 	"context"
 
 	"go.uber.org/zap"
@@ -27,18 +26,6 @@ var _ antv1c.StrategyAssetServiceHandler = (*StrategyAssetServer)(nil)
 
 func NewStrategyAssetServer(repo *repository.StrategyAssetRepository, userRepo *repository.UserRepository, log *zap.Logger) *StrategyAssetServer {
 	return &StrategyAssetServer{repo: repo, userRepo: userRepo, log: log}
-}
-
-// isAdmin checks if the given user ID belongs to an admin.
-func (s *StrategyAssetServer) isAdmin(ctx context.Context, uid uuid.UUID) bool {
-	if s.userRepo == nil {
-		return false
-	}
-	user, err := s.userRepo.GetByID(ctx, uid)
-	if err != nil {
-		return false
-	}
-	return user != nil && (user.Role == "super_admin" || user.Role == "admin")
 }
 
 func (s *StrategyAssetServer) userID(ctx context.Context) uuid.UUID {
@@ -217,13 +204,3 @@ func (s *StrategyAssetServer) ListAssetClones(ctx context.Context, req *connect.
 	return connect.NewResponse(&antv1.ListAssetClonesResponse{Clones: items}), nil
 }
 
-// ensureReviewer verifies the caller has admin-level permission to review strategy assets.
-func (s *StrategyAssetServer) ensureReviewer(ctx context.Context, uid uuid.UUID) error {
-	if uid == uuid.Nil {
-		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
-	}
-	if !s.isAdmin(ctx, uid) {
-		return connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin permission required"))
-	}
-	return nil
-}

@@ -1,6 +1,8 @@
+> ⚠️ 已迁移至 docs/blocks/strategy-marketplace/plans/phase-1-trust-infrastructure.md。此文件保留为兼容旧引用。
+
 # Phase 1 · 信任基础设施 + SEO · 落地排期清单
 
-> 权威依据：`docs/roadmaps/strategy-marketplace.md` Phase 1 + `docs/plan/marketplace/seo-strategy.md`
+> 权威依据：`docs/roadmaps/strategy-marketplace.md` Phase 1
 > 冲突时以本文为准。
 
 ## 0. 目标与边界

@@ -62,7 +62,7 @@ func (s *UserDeletionService) SoftDeleteUser(ctx context.Context, actorID, targe
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	if err := s.repo.InsertAuditLogTx(ctx, tx, actorID, "delete_user", targetID.String(), target.Email, affected); err != nil {
 		return fmt.Errorf("audit log: %w", err) // tx rolls back
@@ -140,7 +140,7 @@ func (s *UserDeletionService) SoftDeleteUsers(ctx context.Context, actorID uuid.
 	if err != nil {
 		return 0, len(ids), []string{fmt.Sprintf("begin tx: %v", err)}
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	for _, t := range targets {
 		if err := s.repo.InsertAuditLogTx(ctx, tx, actorID, "batch_delete", t.id.String(), t.email, t.affected); err != nil {
@@ -170,7 +170,7 @@ func (s *UserDeletionService) RestoreUser(ctx context.Context, actorID, targetID
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	if err := s.repo.RestoreUserTx(ctx, tx, targetID); err != nil {
 		if errors.Is(err, repository.ErrUserNotFound) {

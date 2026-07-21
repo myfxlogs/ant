@@ -86,7 +86,7 @@ func (s *SubscriptionService) Subscribe(ctx context.Context, userID uuid.UUID, p
 	if err != nil {
 		return nil, fmt.Errorf("subscription: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	// Lock and deactivate existing subscription within the transaction.
 	existing, err := s.repo.GetActiveSubscriptionTx(ctx, tx, userID)
@@ -169,7 +169,7 @@ func (s *SubscriptionService) subscribeFree(ctx context.Context, userID uuid.UUI
 	if err != nil {
 		return nil, fmt.Errorf("subscription: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	existing, err := s.repo.GetActiveSubscriptionTx(ctx, tx, userID)
 	if err != nil {
@@ -239,14 +239,14 @@ func (s *SubscriptionService) ChangePlan(ctx context.Context, userID uuid.UUID, 
 	if err != nil {
 		return nil, fmt.Errorf("subscription: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	existing, err := s.repo.GetActiveSubscriptionTx(ctx, tx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("subscription: check existing: %w", err)
 	}
 	if existing == nil {
-		tx.Rollback(ctx)
+		_ = tx.Rollback(ctx)
 		return s.Subscribe(ctx, userID, newPlanName, billingCycle, true)
 	}
 

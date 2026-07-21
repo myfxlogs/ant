@@ -61,7 +61,7 @@ func (s *WalletService) AdjustBalance(ctx context.Context, userID uuid.UUID, amo
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	updated, err := s.repo.AdjustBalanceTx(ctx, tx, w.ID, userID, amount, txType, description, operatorID, idemKey)
 	if err != nil {
@@ -115,7 +115,7 @@ func (s *WalletService) runFreezeTx(ctx context.Context, userID uuid.UUID, amoun
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	var updated *model.Wallet
 	if freeze {

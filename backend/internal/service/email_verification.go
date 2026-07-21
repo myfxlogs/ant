@@ -71,7 +71,7 @@ func (s *EmailVerificationService) VerifyToken(ctx context.Context, token string
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("email verification: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	var userID uuid.UUID
 	var usedAt *time.Time

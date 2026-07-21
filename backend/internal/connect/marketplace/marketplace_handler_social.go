@@ -146,6 +146,9 @@ func (s *MarketplaceServer) GetPublisherStats(ctx context.Context, req *connect.
 		TopStrategyId:    stats.TopStrategyID,
 		TopStrategyTitle: stats.TopStrategyTitle,
 		TopStrategySubs:  stats.TopStrategySubs,
+		RevenueTrend:     toProtoRevenueTrend(stats.RevenueTrend),
+		SubscriberTrend:  toProtoSubscriberTrend(stats.SubscriberTrend),
+		StrategyBreakdown: toProtoStrategyBreakdown(stats.StrategyBreakdown),
 	}), nil
 }
 
@@ -205,4 +208,46 @@ func parseDecimal(s string) decimal.Decimal {
 		return decimal.Zero
 	}
 	return d
+}
+
+func toProtoRevenueTrend(points []marketplace.RevenueTrendPoint) []*antv1.RevenueTrendPoint {
+	out := make([]*antv1.RevenueTrendPoint, 0, len(points))
+	for _, p := range points {
+		out = append(out, &antv1.RevenueTrendPoint{
+			DateMs:              p.DateMs,
+			SaleRevenue:         p.SaleRevenue,
+			SubscriptionRevenue: p.SubscriptionRevenue,
+		})
+	}
+	return out
+}
+
+func toProtoSubscriberTrend(points []marketplace.SubscriberTrendPoint) []*antv1.SubscriberTrendPoint {
+	out := make([]*antv1.SubscriberTrendPoint, 0, len(points))
+	for _, p := range points {
+		out = append(out, &antv1.SubscriberTrendPoint{
+			DateMs:         p.DateMs,
+			NewSubscribers: p.NewSubscribers,
+			Churned:        p.Churned,
+			Active:         p.Active,
+		})
+	}
+	return out
+}
+
+func toProtoStrategyBreakdown(items []marketplace.StrategyBreakdown) []*antv1.StrategyBreakdown {
+	out := make([]*antv1.StrategyBreakdown, 0, len(items))
+	for _, item := range items {
+		out = append(out, &antv1.StrategyBreakdown{
+			StrategyId:       item.StrategyID,
+			Title:            item.Title,
+			TotalSubscribers: item.TotalSubscribers,
+			Revenue:          item.Revenue,
+			AvgRating:        item.AvgRating,
+			RatingCount:      item.RatingCount,
+			PriceModel:       item.PriceModel,
+			PriceAmount:      item.PriceAmount,
+		})
+	}
+	return out
 }

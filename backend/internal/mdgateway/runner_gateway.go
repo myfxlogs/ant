@@ -29,6 +29,7 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 	default:
 		return nil, fmt.Errorf("unknown platform: %s", cfg.Platform)
 	}
+	gw.SetBreaker(mgr.GetOrCreateBreaker(cfg))
 
 	if err := gw.Connect(ctx); err != nil {
 		return nil, fmt.Errorf("connect: %w", err)
@@ -64,7 +65,7 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 	}
 
 	if err := mgr.AddGateway(ctx, gw, nil); err != nil {
-		gw.Disconnect(ctx)
+		_ = gw.Disconnect(ctx)
 		return gw, fmt.Errorf("add gateway: %w", err)
 	}
 
@@ -96,8 +97,8 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 		syms = defaultQuoteSymbols()
 	}
 	if err := gw.Subscribe(ctx, syms, mgr.HandleTick); err != nil {
-		mgr.RemoveGateway(ctx, accID)
-		gw.Disconnect(ctx)
+		_ = mgr.RemoveGateway(ctx, accID)
+		_ = gw.Disconnect(ctx)
 		return gw, fmt.Errorf("tick subscribe: %w", err)
 	}
 

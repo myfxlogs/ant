@@ -56,7 +56,9 @@ func (r *ShareRepository) GetByToken(ctx context.Context, token string) (*ShareT
 
 func (r *ShareRepository) ListAll(ctx context.Context, limit, offset int) ([]*ShareToken, int, error) {
 	var total int
-	r.db.QueryRow(ctx, `SELECT count(*) FROM share_tokens`).Scan(&total)
+	if err := r.db.QueryRow(ctx, `SELECT count(*) FROM share_tokens`).Scan(&total); err != nil {
+		return nil, 0, err
+	}
 	if limit <= 0 { limit = 20 }
 	if offset < 0 { offset = 0 }
 	rows, err := r.db.Query(ctx,

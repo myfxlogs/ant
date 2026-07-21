@@ -48,6 +48,12 @@ const (
 	// NotificationServiceSendNotificationProcedure is the fully-qualified name of the
 	// NotificationService's SendNotification RPC.
 	NotificationServiceSendNotificationProcedure = "/ant.v1.NotificationService/SendNotification"
+	// NotificationServiceGetNotificationPrefsProcedure is the fully-qualified name of the
+	// NotificationService's GetNotificationPrefs RPC.
+	NotificationServiceGetNotificationPrefsProcedure = "/ant.v1.NotificationService/GetNotificationPrefs"
+	// NotificationServiceSetNotificationPrefsProcedure is the fully-qualified name of the
+	// NotificationService's SetNotificationPrefs RPC.
+	NotificationServiceSetNotificationPrefsProcedure = "/ant.v1.NotificationService/SetNotificationPrefs"
 )
 
 // NotificationServiceClient is a client for the ant.v1.NotificationService service.
@@ -57,6 +63,9 @@ type NotificationServiceClient interface {
 	MarkAllRead(context.Context, *connect.Request[v1.MarkAllReadRequest]) (*connect.Response[v1.MarkAllReadResponse], error)
 	StreamNotifications(context.Context, *connect.Request[v1.StreamNotificationsRequest]) (*connect.ServerStreamForClient[v1.Notification], error)
 	SendNotification(context.Context, *connect.Request[v1.SendNotificationRequest]) (*connect.Response[v1.SendNotificationResponse], error)
+	// Phase 3.4: Notification preferences.
+	GetNotificationPrefs(context.Context, *connect.Request[v1.GetNotificationPrefsRequest]) (*connect.Response[v1.GetNotificationPrefsResponse], error)
+	SetNotificationPrefs(context.Context, *connect.Request[v1.SetNotificationPrefsRequest]) (*connect.Response[v1.SetNotificationPrefsResponse], error)
 }
 
 // NewNotificationServiceClient constructs a client for the ant.v1.NotificationService service. By
@@ -100,16 +109,30 @@ func NewNotificationServiceClient(httpClient connect.HTTPClient, baseURL string,
 			connect.WithSchema(notificationServiceMethods.ByName("SendNotification")),
 			connect.WithClientOptions(opts...),
 		),
+		getNotificationPrefs: connect.NewClient[v1.GetNotificationPrefsRequest, v1.GetNotificationPrefsResponse](
+			httpClient,
+			baseURL+NotificationServiceGetNotificationPrefsProcedure,
+			connect.WithSchema(notificationServiceMethods.ByName("GetNotificationPrefs")),
+			connect.WithClientOptions(opts...),
+		),
+		setNotificationPrefs: connect.NewClient[v1.SetNotificationPrefsRequest, v1.SetNotificationPrefsResponse](
+			httpClient,
+			baseURL+NotificationServiceSetNotificationPrefsProcedure,
+			connect.WithSchema(notificationServiceMethods.ByName("SetNotificationPrefs")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // notificationServiceClient implements NotificationServiceClient.
 type notificationServiceClient struct {
-	listNotifications   *connect.Client[v1.ListNotificationsRequest, v1.ListNotificationsResponse]
-	markRead            *connect.Client[v1.MarkReadRequest, v1.MarkReadResponse]
-	markAllRead         *connect.Client[v1.MarkAllReadRequest, v1.MarkAllReadResponse]
-	streamNotifications *connect.Client[v1.StreamNotificationsRequest, v1.Notification]
-	sendNotification    *connect.Client[v1.SendNotificationRequest, v1.SendNotificationResponse]
+	listNotifications    *connect.Client[v1.ListNotificationsRequest, v1.ListNotificationsResponse]
+	markRead             *connect.Client[v1.MarkReadRequest, v1.MarkReadResponse]
+	markAllRead          *connect.Client[v1.MarkAllReadRequest, v1.MarkAllReadResponse]
+	streamNotifications  *connect.Client[v1.StreamNotificationsRequest, v1.Notification]
+	sendNotification     *connect.Client[v1.SendNotificationRequest, v1.SendNotificationResponse]
+	getNotificationPrefs *connect.Client[v1.GetNotificationPrefsRequest, v1.GetNotificationPrefsResponse]
+	setNotificationPrefs *connect.Client[v1.SetNotificationPrefsRequest, v1.SetNotificationPrefsResponse]
 }
 
 // ListNotifications calls ant.v1.NotificationService.ListNotifications.
@@ -137,6 +160,16 @@ func (c *notificationServiceClient) SendNotification(ctx context.Context, req *c
 	return c.sendNotification.CallUnary(ctx, req)
 }
 
+// GetNotificationPrefs calls ant.v1.NotificationService.GetNotificationPrefs.
+func (c *notificationServiceClient) GetNotificationPrefs(ctx context.Context, req *connect.Request[v1.GetNotificationPrefsRequest]) (*connect.Response[v1.GetNotificationPrefsResponse], error) {
+	return c.getNotificationPrefs.CallUnary(ctx, req)
+}
+
+// SetNotificationPrefs calls ant.v1.NotificationService.SetNotificationPrefs.
+func (c *notificationServiceClient) SetNotificationPrefs(ctx context.Context, req *connect.Request[v1.SetNotificationPrefsRequest]) (*connect.Response[v1.SetNotificationPrefsResponse], error) {
+	return c.setNotificationPrefs.CallUnary(ctx, req)
+}
+
 // NotificationServiceHandler is an implementation of the ant.v1.NotificationService service.
 type NotificationServiceHandler interface {
 	ListNotifications(context.Context, *connect.Request[v1.ListNotificationsRequest]) (*connect.Response[v1.ListNotificationsResponse], error)
@@ -144,6 +177,9 @@ type NotificationServiceHandler interface {
 	MarkAllRead(context.Context, *connect.Request[v1.MarkAllReadRequest]) (*connect.Response[v1.MarkAllReadResponse], error)
 	StreamNotifications(context.Context, *connect.Request[v1.StreamNotificationsRequest], *connect.ServerStream[v1.Notification]) error
 	SendNotification(context.Context, *connect.Request[v1.SendNotificationRequest]) (*connect.Response[v1.SendNotificationResponse], error)
+	// Phase 3.4: Notification preferences.
+	GetNotificationPrefs(context.Context, *connect.Request[v1.GetNotificationPrefsRequest]) (*connect.Response[v1.GetNotificationPrefsResponse], error)
+	SetNotificationPrefs(context.Context, *connect.Request[v1.SetNotificationPrefsRequest]) (*connect.Response[v1.SetNotificationPrefsResponse], error)
 }
 
 // NewNotificationServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -183,6 +219,18 @@ func NewNotificationServiceHandler(svc NotificationServiceHandler, opts ...conne
 		connect.WithSchema(notificationServiceMethods.ByName("SendNotification")),
 		connect.WithHandlerOptions(opts...),
 	)
+	notificationServiceGetNotificationPrefsHandler := connect.NewUnaryHandler(
+		NotificationServiceGetNotificationPrefsProcedure,
+		svc.GetNotificationPrefs,
+		connect.WithSchema(notificationServiceMethods.ByName("GetNotificationPrefs")),
+		connect.WithHandlerOptions(opts...),
+	)
+	notificationServiceSetNotificationPrefsHandler := connect.NewUnaryHandler(
+		NotificationServiceSetNotificationPrefsProcedure,
+		svc.SetNotificationPrefs,
+		connect.WithSchema(notificationServiceMethods.ByName("SetNotificationPrefs")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.NotificationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case NotificationServiceListNotificationsProcedure:
@@ -195,6 +243,10 @@ func NewNotificationServiceHandler(svc NotificationServiceHandler, opts ...conne
 			notificationServiceStreamNotificationsHandler.ServeHTTP(w, r)
 		case NotificationServiceSendNotificationProcedure:
 			notificationServiceSendNotificationHandler.ServeHTTP(w, r)
+		case NotificationServiceGetNotificationPrefsProcedure:
+			notificationServiceGetNotificationPrefsHandler.ServeHTTP(w, r)
+		case NotificationServiceSetNotificationPrefsProcedure:
+			notificationServiceSetNotificationPrefsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -222,4 +274,12 @@ func (UnimplementedNotificationServiceHandler) StreamNotifications(context.Conte
 
 func (UnimplementedNotificationServiceHandler) SendNotification(context.Context, *connect.Request[v1.SendNotificationRequest]) (*connect.Response[v1.SendNotificationResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.NotificationService.SendNotification is not implemented"))
+}
+
+func (UnimplementedNotificationServiceHandler) GetNotificationPrefs(context.Context, *connect.Request[v1.GetNotificationPrefsRequest]) (*connect.Response[v1.GetNotificationPrefsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.NotificationService.GetNotificationPrefs is not implemented"))
+}
+
+func (UnimplementedNotificationServiceHandler) SetNotificationPrefs(context.Context, *connect.Request[v1.SetNotificationPrefsRequest]) (*connect.Response[v1.SetNotificationPrefsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.NotificationService.SetNotificationPrefs is not implemented"))
 }

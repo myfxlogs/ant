@@ -17,7 +17,7 @@ export interface PurchasedItem extends SubscriptionItem {
 
 export type PriceFilter = 'all' | 'free' | 'paid';
 export type SortBy = 'score' | 'newest' | 'popular' | 'rating' | 'price_asc' | 'price_desc';
-export type TabKey = 'market' | 'purchases' | 'author';
+export type TabKey = 'market' | 'leaderboard' | 'purchases' | 'author';
 
 export function useMarketplace(): MarketplaceCtx {
   const { t } = useTranslation();
@@ -98,7 +98,11 @@ export function useMarketplace(): MarketplaceCtx {
   const { data: authorStats } = useRpcQuery(
     ['marketplace', 'publisherStats', userId],
     async () => {
-      if (!userId) return { published: 0, totalSubscribers: 0, totalRevenue: '0', monthlyRevenue: '0', avgRating: 0, topStrategyTitle: '' };
+      if (!userId) return {
+        published: 0, totalSubscribers: 0, totalRevenue: '0', monthlyRevenue: '0',
+        avgRating: 0, topStrategyTitle: '',
+        revenueTrend: [], subscriberTrend: [], strategyBreakdown: [],
+      };
       const resp = await marketplaceClient.getPublisherStats({});
       return {
         published: resp.totalPublished || 0,
@@ -107,6 +111,9 @@ export function useMarketplace(): MarketplaceCtx {
         monthlyRevenue: resp.monthlyRevenue || '0',
         avgRating: resp.avgRating || 0,
         topStrategyTitle: resp.topStrategyTitle || '',
+        revenueTrend: resp.revenueTrend || [],
+        subscriberTrend: resp.subscriberTrend || [],
+        strategyBreakdown: resp.strategyBreakdown || [],
       };
     },
     { enabled: !!userId },
@@ -162,7 +169,7 @@ export function useMarketplace(): MarketplaceCtx {
     }
   }, [userId, t]);
 
-  const handleConfirmPayment = useCallback(async () => {
+  const handleConfirmPayment = useCallback(async (couponCode?: string) => {
     if (!paymentStrategy) return;
     setPaymentLoading(true);
     try {
@@ -170,6 +177,7 @@ export function useMarketplace(): MarketplaceCtx {
         userId,
         strategyId: paymentStrategy.strategyId,
         publisherUserId: paymentStrategy.publisherUserId,
+        couponCode: couponCode || undefined,
       });
       message.success(t('marketplace.payment.purchaseSuccess', 'Purchase successful! Strategy added to your library.'));
       setPaymentModalOpen(false);
@@ -202,7 +210,12 @@ export function useMarketplace(): MarketplaceCtx {
   }, []);
 
   return {
-    strategies, loading, error, purchases, purchasesLoading, myPublished, authorStats,
+    strategies, loading, error, purchases, purchasesLoading, myPublished,
+    authorStats: authorStats ?? {
+      published: 0, totalSubscribers: 0, avgRating: 0,
+      totalRevenue: '0', monthlyRevenue: '0', topStrategyTitle: '',
+      revenueTrend: [], subscriberTrend: [], strategyBreakdown: [],
+    },
     activeTab, setActiveTab, searchText, setSearchText,
     priceFilter, setPriceFilter, sortBy, setSortBy,
     page, pageSize, total, setPage, setPageSize,

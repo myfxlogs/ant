@@ -21,7 +21,7 @@ const Marketplace = {
       "descriptionPlaceholder": "戦略ロジック、エントリー/イグジットルールを記述...",
       "assetClass": { "label": "資産クラス", "forex": "外国為替", "crypto": "暗号通貨", "commodity": "コモディティ", "index": "指数", "stock": "株式" },
       "riskLevel": { "label": "リスクレベル", "low": "低", "medium": "中", "high": "高" },
-      "priceModel": { "label": "価格設定", "free": "無料", "monthly": "月額購読", "once": "買い切り" },
+      "priceModel": { "label": "価格設定", "free": "無料", "subscription": "月額購読", "once": "買い切り" },
       "priceAmount": "金額",
       "tags": "タグ",
       "tagsPlaceholder": "入力してEnterで追加",

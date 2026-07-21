@@ -97,7 +97,7 @@ func (r *StrategyVersionRepository) CreateVersion(ctx context.Context, strategyI
 	if err != nil {
 		return nil, fmt.Errorf("create strategy version: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 	v, err := createVersionInTx(ctx, tx, strategyID, userID, sourceCode, sourceLang, changeSummary)
 	if err != nil {
 		return nil, err
@@ -181,7 +181,7 @@ func (r *StrategyVersionRepository) RollbackToVersion(ctx context.Context, strat
 	if err != nil {
 		return nil, fmt.Errorf("rollback: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	// Update imported_strategies with the old code
 	tag, err := tx.Exec(ctx,
@@ -215,7 +215,7 @@ func (r *StrategyVersionRepository) UpdateStrategyCode(ctx context.Context, stra
 	if err != nil {
 		return nil, fmt.Errorf("update strategy code: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	// Update imported_strategies with the new code, returning source_lang for the version snapshot
 	var sourceLang string

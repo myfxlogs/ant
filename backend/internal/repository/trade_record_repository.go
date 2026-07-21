@@ -77,7 +77,7 @@ func (r *TradeRecordRepository) batchCreateChunk(ctx context.Context, records []
 	if err != nil {
 		return fmt.Errorf("batch create trade record: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	query := `
 		INSERT INTO trade_records (

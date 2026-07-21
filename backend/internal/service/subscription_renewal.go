@@ -103,7 +103,7 @@ func (s *SubscriptionService) renewOnePlatformSubscription(ctx context.Context, 
 	if err != nil {
 		return fmt.Errorf("subscription renewal: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	walletRepo := s.walletSvc.Repo()
 	wallet, err := walletRepo.GetByUserIDTx(ctx, tx, userID)

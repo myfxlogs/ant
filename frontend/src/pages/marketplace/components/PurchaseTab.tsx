@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Table, Tag, Typography, Button, Space, Empty, Drawer } from 'antd';
+import { Table, Tag, Typography, Button, Space, Empty, Drawer, Modal, Input, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { EyeOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { EyeOutlined, ThunderboltOutlined, RollbackOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 
 ;
@@ -9,6 +9,7 @@ import { formatDateTime } from '@/utils/date';
 import { useMarketplaceCtx } from '../MarketplaceContext';
 import type { PurchasedItem } from '../hooks/useMarketplace';
 import ProtectedBacktestPanel from './ProtectedBacktestPanel';
+import { marketplaceClient } from '@/client/connect';
 
 const { Text } = Typography;
 
@@ -17,6 +18,9 @@ export default function PurchaseTab() {
   const m = useMarketplaceCtx();
   const [backtestDrawerOpen, setBacktestDrawerOpen] = useState(false);
   const [backtestStrategyId, setBacktestStrategyId] = useState('');
+  const [refundTarget, setRefundTarget] = useState<PurchasedItem | null>(null);
+  const [refundReason, setRefundReason] = useState('');
+  const [refundLoading, setRefundLoading] = useState(false);
 
   if (!m.purchasesLoading && m.purchases.length === 0) {
     return <Empty description={t('marketplace.purchases.empty')} />;
@@ -62,6 +66,14 @@ export default function PurchaseTab() {
           }}>
             {t('marketplace.purchases.runBacktest', 'Run Backtest')}
           </Button>
+          {row.active && (
+            <Button size="small" danger icon={<RollbackOutlined />} onClick={() => {
+              setRefundTarget(row);
+              setRefundReason('');
+            }}>
+              {t('marketplace.purchases.refund', { defaultValue: 'Refund' })}
+            </Button>
+          )}
         </Space>
       ),
     },
@@ -87,6 +99,42 @@ export default function PurchaseTab() {
       >
         {backtestStrategyId && <ProtectedBacktestPanel strategyId={backtestStrategyId} />}
       </Drawer>
+
+      <Modal
+        title={t('marketplace.purchases.refundTitle', { defaultValue: 'Request Refund' })}
+        open={!!refundTarget}
+        onCancel={() => setRefundTarget(null)}
+        confirmLoading={refundLoading}
+        onOk={async () => {
+          if (!refundTarget) return;
+          if (!refundReason.trim()) {
+            message.warning(t('marketplace.purchases.refundReasonRequired', { defaultValue: 'Please provide a reason' }));
+            return;
+          }
+          setRefundLoading(true);
+          try {
+            await marketplaceClient.requestRefund({
+              subscriptionId: refundTarget.subscriptionId,
+              reason: refundReason,
+            });
+            message.success(t('marketplace.purchases.refundSubmitted', { defaultValue: 'Refund request submitted for review' }));
+            setRefundTarget(null);
+          } catch {
+            message.error(t('marketplace.purchases.refundFailed', { defaultValue: 'Failed to submit refund request' }));
+          } finally {
+            setRefundLoading(false);
+          }
+        }}
+      >
+        <Input.TextArea
+          rows={4}
+          placeholder={t('marketplace.purchases.refundReasonPlaceholder', { defaultValue: 'Please describe why you are requesting a refund...' })}
+          value={refundReason}
+          onChange={e => setRefundReason(e.target.value)}
+          maxLength={500}
+          showCount
+        />
+      </Modal>
     </>
   );
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
 
@@ -19,8 +20,8 @@ type RefundResult struct {
 }
 
 // RefundPurchase reverses a paid strategy purchase: credits the buyer back,
-// debits the publisher, deactivates the subscription, and decrements the
-// subscriber counter. All steps run in a single DB transaction.
+// debits the publisher and platform fee, deactivates the subscription, and
+// decrements the subscriber counter. All steps run in a single DB transaction.
 func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID string) (*RefundResult, error) {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
@@ -35,16 +36,29 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
+	result, err := s.refundPurchaseTx(ctx, tx, uid, sid)
+	if err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("marketplace: commit refund: %w", err)
+	}
+	s.pubCache.clear()
+
+	return result, nil
+}
+
+func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid.UUID) (*RefundResult, error) {
 	// 1. Look up subscription — must be an active purchase belonging to this user.
-	var subTargetUserID, subStrategyID, subKind string
+	var subTargetUserID, subStrategyID, subKind, idemKey string
 	var subActive bool
-	err = tx.QueryRow(ctx,
-		`SELECT target_user_id::text, target_strategy_id::text, kind, active
+	err := tx.QueryRow(ctx,
+		`SELECT target_user_id::text, target_strategy_id::text, kind, active, idempotency_key
 		 FROM user_subscriptions WHERE id = $1 AND subscriber_user_id = $2 FOR UPDATE`,
 		sid, uid,
-	).Scan(&subTargetUserID, &subStrategyID, &subKind, &subActive)
+	).Scan(&subTargetUserID, &subStrategyID, &subKind, &subActive, &idemKey)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: subscription not found")
 	}
@@ -54,17 +68,28 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 	if subKind != SubKindPurchase {
 		return nil, fmt.Errorf("marketplace: only purchased subscriptions can be refunded")
 	}
+	if idemKey == "" {
+		return nil, fmt.Errorf("marketplace: subscription missing idempotency key")
+	}
 
-	// 2. Find the original purchase transaction (buyer's debit).
+	buyKey := "mkt-buy-" + idemKey
+	saleKey := "mkt-sale-" + idemKey
+	feeKey := "mkt-fee-" + idemKey
+
+	// 2. Find the original purchase transaction by its unique idem_key.
 	var purchaseAmount string
 	err = tx.QueryRow(ctx,
-		`SELECT amount::text FROM wallet_transactions
-		 WHERE user_id = $1 AND tx_type = $2
-		 ORDER BY created_at DESC LIMIT 1`,
-		uid, TxTypePurchase,
+		`SELECT amount::text FROM wallet_transactions WHERE idem_key = $1`,
+		buyKey,
 	).Scan(&purchaseAmount)
 	if err != nil {
-		return nil, fmt.Errorf("marketplace: original purchase transaction not found")
+		return nil, fmt.Errorf("marketplace: original purchase transaction not found: %w", err)
+	}
+
+	// amount is negative in the transaction; use absolute value for credit.
+	absAmount := purchaseAmount
+	if len(absAmount) > 0 && absAmount[0] == '-' {
+		absAmount = absAmount[1:]
 	}
 
 	// 3. Refund buyer wallet via AdjustBalanceTx (hash chain + idempotency).
@@ -77,15 +102,9 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 		return nil, fmt.Errorf("marketplace: buyer wallet not found")
 	}
 
-	// amount is negative in the transaction; use absolute value for credit.
-	absAmount := purchaseAmount
-	if len(absAmount) > 0 && absAmount[0] == '-' {
-		absAmount = absAmount[1:]
-	}
-
-	refundDesc := fmt.Sprintf("Refund for subscription %s", subscriptionID)
+	refundDesc := fmt.Sprintf("Refund for subscription %s", sid)
 	buyerWallet, err := s.walletRepo.AdjustBalanceTx(ctx, tx, buyerWalletID, uid,
-		absAmount, TxTypeRefund, refundDesc, nil, "mkt-refund-"+subscriptionID)
+		absAmount, TxTypeRefund, refundDesc, nil, "mkt-refund-"+sid.String())
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: refund buyer: %w", err)
 	}
@@ -95,25 +114,20 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 		refundTxID = *buyerWallet.LastTransactionID
 	}
 
-	// 5. Find publisher's original sale transaction to get the net amount
-	//    they actually received (after platform fee deduction).
+	// 4. Find publisher's original sale transaction by idem_key.
 	var pubNetReceived string
 	err = tx.QueryRow(ctx,
-		`SELECT amount::text FROM wallet_transactions
-		 WHERE user_id = $1 AND tx_type = $2
-		 ORDER BY created_at DESC LIMIT 1`,
-		subTargetUserID, TxTypeSale,
+		`SELECT amount::text FROM wallet_transactions WHERE idem_key = $1`,
+		saleKey,
 	).Scan(&pubNetReceived)
 	if err != nil {
-		// No sale transaction found — skip publisher debit.
 		pubNetReceived = "0"
 	}
-	// Normalize: remove leading sign if present.
 	if len(pubNetReceived) > 0 && pubNetReceived[0] == '-' {
 		pubNetReceived = pubNetReceived[1:]
 	}
 
-	// 6. Debit publisher by the net amount they actually received.
+	// 5. Debit publisher by the net amount they actually received.
 	if pubNetReceived != "0" {
 		pubUUID, _ := uuid.Parse(subTargetUserID)
 		var pubWalletID uuid.UUID
@@ -123,13 +137,41 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 		).Scan(&pubWalletID)
 		if err == nil {
 			negNet := "-" + pubNetReceived
-			revDesc := fmt.Sprintf("Refund reversal for subscription %s", subscriptionID)
+			revDesc := fmt.Sprintf("Refund reversal for subscription %s", sid)
 			_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pubUUID,
-				negNet, TxTypeRefundReversal, revDesc, nil, "mkt-rev-"+subscriptionID)
+				negNet, TxTypeRefundReversal, revDesc, nil, "mkt-rev-"+sid.String())
 			if err != nil {
-				// Publisher has insufficient balance — still proceed with refund.
 				s.log.Warn("marketplace: refund reversal failed (insufficient publisher balance)",
-					zap.String("subID", subscriptionID), zap.Error(err))
+					zap.String("subID", sid.String()), zap.Error(err))
+			}
+		}
+	}
+
+	// 6. Reverse the platform fee credited to the system wallet at purchase time.
+	var feeReceived string
+	_ = tx.QueryRow(ctx,
+		`SELECT amount::text FROM wallet_transactions WHERE idem_key = $1`,
+		feeKey,
+	).Scan(&feeReceived)
+	if len(feeReceived) > 0 && feeReceived[0] == '-' {
+		feeReceived = feeReceived[1:]
+	}
+	if feeReceived != "" && feeReceived != "0" {
+		var sysWalletID uuid.UUID
+		err = tx.QueryRow(ctx,
+			`INSERT INTO user_wallets (user_id) VALUES ($1)
+			 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
+			 RETURNING id`,
+			SystemUserID,
+		).Scan(&sysWalletID)
+		if err == nil {
+			negFee := "-" + feeReceived
+			feeRevDesc := fmt.Sprintf("Platform fee reversal for subscription %s", sid)
+			_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
+				negFee, TxTypePlatformFee, feeRevDesc, nil, "mkt-fee-rev-"+sid.String())
+			if err != nil {
+				s.log.Warn("marketplace: platform fee reversal failed (insufficient system wallet)",
+					zap.String("subID", sid.String()), zap.Error(err))
 			}
 		}
 	}
@@ -153,13 +195,8 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 		return nil, fmt.Errorf("marketplace: decrement subscribers: %w", err)
 	}
 
-	if err := tx.Commit(ctx); err != nil {
-		return nil, fmt.Errorf("marketplace: commit refund: %w", err)
-	}
-	s.pubCache.clear()
-
 	return &RefundResult{
-		SubscriptionID: subscriptionID,
+		SubscriptionID: sid.String(),
 		RefundTxID:     refundTxID.String(),
 		AmountRefunded: absAmount,
 		BalanceAfter:   buyerBalAfter,

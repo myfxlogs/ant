@@ -129,17 +129,6 @@ type BarOHLCV struct {
 	Volume                 float64
 }
 
-func barsToOHLCV(bars []BarOHLCV) (opens, highs, lows, closes, volumes []decimal.Decimal) {
-	for _, b := range bars {
-		opens = append(opens, b.Open)
-		highs = append(highs, b.High)
-		lows = append(lows, b.Low)
-		closes = append(closes, b.Close)
-		volumes = append(volumes, decimal.NewFromFloat(b.Volume))
-	}
-	return
-}
-
 func safeFirst(v []decimal.Decimal) decimal.Decimal {
 	if len(v) == 0 {
 		return decimal.Zero
@@ -149,13 +138,6 @@ func safeFirst(v []decimal.Decimal) decimal.Decimal {
 
 func decimalMax(a, b decimal.Decimal) decimal.Decimal {
 	if a.GreaterThan(b) {
-		return a
-	}
-	return b
-}
-
-func decimalMin(a, b decimal.Decimal) decimal.Decimal {
-	if a.LessThan(b) {
 		return a
 	}
 	return b

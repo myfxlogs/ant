@@ -119,33 +119,3 @@ func RandomSearch(params []TunableParam, maxCandidates int) []map[string]interfa
 	return out
 }
 
-// paramCombo holds an index vector and its resolved parameter map.
-type paramCombo struct {
-	indices []int
-	params  map[string]interface{}
-}
-
-// buildCartesian recursively builds all index combinations, capped at maxSize.
-func buildCartesian(space ResolvedSpace, depth int, indices []int, out *[]paramCombo, rng *rand.Rand, maxSize int) {
-	if len(*out) >= maxSize {
-		return
-	}
-	if depth == len(space.Keys) {
-		idxCopy := make([]int, len(indices))
-		copy(idxCopy, indices)
-		pm := make(map[string]interface{}, len(indices))
-		for i, k := range space.Keys {
-			pm[k] = space.ValuesByKey[k][indices[i]]
-		}
-		*out = append(*out, paramCombo{idxCopy, pm})
-		return
-	}
-	k := space.Keys[depth]
-	for i := 0; i < len(space.ValuesByKey[k]); i++ {
-		indices[depth] = i
-		buildCartesian(space, depth+1, indices, out, rng, maxSize)
-		if len(*out) >= maxSize {
-			return
-		}
-	}
-}

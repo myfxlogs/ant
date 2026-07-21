@@ -90,7 +90,7 @@ func (s *MarketplaceServer) PurchaseStrategy(ctx context.Context, req *connect.R
 	if userID == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
 	}
-	result, err := s.svc.PurchaseStrategy(ctx, userID, m.StrategyId, m.IdempotencyKey)
+	result, err := s.svc.PurchaseStrategy(ctx, userID, m.StrategyId, m.CouponCode, m.IdempotencyKey)
 	if err != nil {
 		s.log.Error("PurchaseStrategy", zap.Error(err))
 		msg := err.Error()

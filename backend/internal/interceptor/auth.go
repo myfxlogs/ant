@@ -20,7 +20,8 @@ const APIKeyAuthenticatedKey contextKey = "api_key_authenticated"
 const ClientIPKey contextKey = "client_ip"
 
 type JWTClaims struct {
-	UserID string `json:"user_id"`
+	UserID       string `json:"user_id"`
+	TokenVersion int    `json:"token_version"`
 	jwt.RegisteredClaims
 }
 
@@ -50,7 +51,8 @@ func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 			// Marketplace read-only RPCs — public browsing for SEO (ADR-0026).
 			strings.HasSuffix(procLower, "/listpublished") ||
 			strings.HasSuffix(procLower, "/listratings") ||
-			strings.HasSuffix(procLower, "/listcomments") {
+			strings.HasSuffix(procLower, "/listcomments") ||
+			strings.HasSuffix(procLower, "/getstrategypublicinfo") {
 			return next(ctx, req)
 		}
 

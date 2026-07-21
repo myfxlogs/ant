@@ -18,6 +18,7 @@ type User struct {
 	EmailVerifiedAt *time.Time `json:"email_verified_at" db:"email_verified_at"`
 	LastLoginAt     *time.Time `json:"last_login_at" db:"last_login_at"`
 	DeletedAt       *time.Time `json:"deleted_at" db:"deleted_at"`
+	TokenVersion    int        `json:"token_version" db:"token_version"`
 	CreatedAt       time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt       time.Time  `json:"updated_at" db:"updated_at"`
 }

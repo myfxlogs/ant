@@ -2,15 +2,10 @@ package mdgateway
 
 import (
 	"context"
-	"os"
-	"runtime"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
 	"go.uber.org/zap"
-
 )
 
 // healthMonitor checks gateway health every 30s, monitors memory pressure
@@ -18,11 +13,6 @@ import (
 func healthMonitor(ctx context.Context, mgr *Manager, _ interface{}, log *zap.Logger, onDisconnect func(accountID string)) {
 	ticker := Clk.NewTicker(30 * time.Second)
 	defer ticker.Stop()
-
-	const (
-		highThreshold = 0.80
-		lowThreshold  = 0.60
-	)
 
 	for {
 		select {
@@ -120,54 +110,6 @@ func healthMonitor(ctx context.Context, mgr *Manager, _ interface{}, log *zap.Lo
 
 		}
 	}
-}
-
-// currentMemoryRatio returns the current process RSS as a fraction of the memory limit.
-func currentMemoryRatio() float64 {
-	limitBytes := cgroupMemoryLimit()
-	if limitBytes <= 0 {
-		return 0
-	}
-	data, err := os.ReadFile("/proc/self/status")
-	if err != nil {
-		return 0
-	}
-	for _, line := range strings.Split(string(data), "\n") {
-		if strings.HasPrefix(line, "VmRSS:") {
-			fields := strings.Fields(line)
-			if len(fields) >= 2 {
-				kb, err := strconv.ParseInt(fields[1], 10, 64)
-				if err == nil {
-					return float64(kb*1024) / float64(limitBytes)
-				}
-			}
-		}
-	}
-	return 0
-}
-
-// cgroupMemoryLimit returns the cgroup memory limit in bytes (v1 or v2).
-func cgroupMemoryLimit() int64 {
-	// cgroup v2
-	if data, err := os.ReadFile("/sys/fs/cgroup/memory.max"); err == nil {
-		val := strings.TrimSpace(string(data))
-		if val == "max" {
-			// No limit — fall through to system memory.
-		} else if limit, err := strconv.ParseInt(val, 10, 64); err == nil && limit > 0 {
-			return limit
-		}
-	}
-	// cgroup v1 fallback
-	if data, err := os.ReadFile("/sys/fs/cgroup/memory/memory.limit_in_bytes"); err == nil {
-		val := strings.TrimSpace(string(data))
-		if limit, err := strconv.ParseInt(val, 10, 64); err == nil && limit > 0 {
-			return limit
-		}
-	}
-	// Fallback: system total memory.
-	var ms runtime.MemStats
-	runtime.ReadMemStats(&ms)
-	return int64(ms.Sys)
 }
 
 // defaultQuoteSymbols returns a broad set of symbols for mtapi SymbolSubscribe

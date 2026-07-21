@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	pb "alphaforge/mt4"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
+	pb "alphaforge/mt4"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -29,17 +29,25 @@ type Gateway struct {
 	tradingCli           pb.TradingClient
 	serviceCli           pb.ServiceClient
 	sessionID            string
-	subscribedSymbols    []string             // symbols registered via Subscribe/AddSymbols; re-subscribed after reconnect
+	subscribedSymbols    []string // symbols registered via Subscribe/AddSymbols; re-subscribed after reconnect
 	cancelSub            context.CancelFunc
 	cancelProfitSub      context.CancelFunc
-	cancelOrderUpdateSub context.CancelFunc   // set by orderUpdateRecvLoop (SSE stream)
-	cancelHubOrderSub    context.CancelFunc   // set by SubscribeOrderEvents (Hub stream)
-	reconnecting         bool // true while reconnection is in progress (prevents recvLoop race)
+	cancelOrderUpdateSub context.CancelFunc           // set by orderUpdateRecvLoop (SSE stream)
+	cancelHubOrderSub    context.CancelFunc           // set by SubscribeOrderEvents (Hub stream)
+	reconnecting         bool                         // true while reconnection is in progress (prevents recvLoop race)
 	onStatusChange       func(status, message string) // connection state callback (nil-safe)
+	breaker              mdtick.Breaker
 }
 
 func New(cfg mdtick.AccountConfig, log *zap.Logger) *Gateway {
 	return &Gateway{cfg: cfg, log: log}
+}
+
+// SetBreaker injects the shared per-broker circuit breaker.
+func (g *Gateway) SetBreaker(b mdtick.Breaker) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.breaker = b
 }
 
 func (g *Gateway) Platform() string  { return "mt4" }
@@ -262,7 +270,6 @@ func minDuration(a, b time.Duration) time.Duration {
 	}
 	return b
 }
-
 
 func strToInt(s string) int {
 	v := 0

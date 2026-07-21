@@ -32,9 +32,6 @@ var validFirst = []byte{'1', '2', '3', '5', '6', '8', '9'}
 // validRest is the set of allowed digits for positions 2-6 (no 4, 7).
 var validRest = []byte{'0', '1', '2', '3', '5', '6', '8', '9'}
 
-// totalCapacity is 7 × 8⁵ = 229,376
-const totalCapacity = 7 * 8 * 8 * 8 * 8 * 8
-
 func NewAccountNumberService(pg *pgxpool.Pool) *AccountNumberService {
 	return &AccountNumberService{pg: pg}
 }

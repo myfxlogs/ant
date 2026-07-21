@@ -37,7 +37,7 @@ func (s *Service) recordProviderFailure(ctx context.Context, userID uuid.UUID, p
 	if s.cbDB == nil {
 		return
 	}
-	s.cbDB.Exec(ctx,
+	_, _ = s.cbDB.Exec(ctx,
 		`INSERT INTO ai_circuit_breaker (user_id, provider_id, consecutive_fails, opened_at)
 		 VALUES ($1, $2, 1, CASE WHEN 1 >= $3 THEN NOW() ELSE NULL END)
 		 ON CONFLICT (user_id, provider_id) DO UPDATE SET
@@ -50,7 +50,7 @@ func (s *Service) recordProviderSuccess(ctx context.Context, userID uuid.UUID, p
 	if s.cbDB == nil {
 		return
 	}
-	s.cbDB.Exec(ctx, `DELETE FROM ai_circuit_breaker WHERE user_id=$1 AND provider_id=$2`, userID, providerID)
+	_, _ = s.cbDB.Exec(ctx, `DELETE FROM ai_circuit_breaker WHERE user_id=$1 AND provider_id=$2`, userID, providerID)
 }
 
 func (s *Service) isCircuitOpen(ctx context.Context, userID uuid.UUID, providerID string) bool {

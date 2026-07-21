@@ -156,6 +156,19 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* ── Broker Compatibility ── */}
+        <section style={{ padding: '64px 24px', maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
+          <Title level={3} style={{ marginBottom: 16 }}>
+            {t('landing.brokersTitle', { defaultValue: 'Compatible with 30+ MT4/MT5 Brokers' })}
+          </Title>
+          <Paragraph type="secondary" style={{ marginBottom: 24 }}>
+            {t('landing.brokersDesc', { defaultValue: 'IC Markets, Pepperstone, XM, Exness, OANDA, FXTM, FBS, OctaFX, HotForex, Alpari, RoboForex and more. Connect your existing broker account in seconds.' })}
+          </Paragraph>
+          <Button type="link" onClick={() => navigate('/brokers')}>
+            {t('landing.brokersLink', { defaultValue: 'View all supported brokers' })} <RightOutlined />
+          </Button>
+        </section>
+
         {/* ── CTA ── */}
         <section style={{ padding: '80px 24px', textAlign: 'center', maxWidth: 640, margin: '0 auto' }}>
           <Title level={2}>{t('landing.ctaTitle')}</Title>

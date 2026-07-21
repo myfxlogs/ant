@@ -1,4 +1,8 @@
+> ⚠️ 已迁移至 docs/blocks/strategy-marketplace/plans/README.md。此文件保留为兼容旧引用。
+
 # 策略市场 · 施工入口
+
+> ⚠️ 本目录已迁移至 `docs/blocks/strategy-marketplace/plans/`。此文件保留为兼容旧引用，新施工请从新路径开始。
 
 > **目标读者**：GLM（执行端）
 > **角色**：你负责按本文档指明的顺序和约束，逐模块完成落地实现。
@@ -12,9 +16,10 @@
 docs/roadmaps/strategy-marketplace.md          ← 📐 设计文档（产品边界、收入模型、风险、Phase 摘要）
 docs/plan/marketplace/
   ├── README.md                                ← 🚪 你在这里
-  ├── phase-1-trust-infrastructure.md          ← 📋 Phase 1: 5 模块（信任 + SEO）
+  ├── seo-strategy.md                          ← 🔍 SEO 策略（关键词扩展、标签补全、sitemap）
+  ├── phase-1-trust-infrastructure.md          ← 📋 Phase 1: 5+2 模块（信任 + SEO）
   ├── phase-2-ai-strategy-supply.md            ← 📋 Phase 2: 4 模块（AI 生成管线）
-  ├── phase-3-growth-engine.md                 ← 📋 Phase 3: 5 模块（增长 + SEO）
+  ├── phase-3-growth-engine.md                 ← 📋 Phase 3: 5+2 模块（增长 + SEO）
   ├── phase-4-platform-ops.md                  ← 📋 Phase 4: 6 模块（运营）
   └── phase-5-moat.md                          ← 📋 Phase 5: 3 模块（AI 迭代+捆绑包+阶梯费率）
 ```

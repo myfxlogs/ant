@@ -131,7 +131,7 @@ func (r *StrategyAssetRepository) CreateClone(ctx context.Context, row *Strategy
 	if err != nil {
 		return fmt.Errorf("create asset clone: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	_, err = tx.Exec(ctx, `INSERT INTO strategy_asset_clones (id,asset_id,user_id,cloned_template_id,source_version,sync_available,last_sync_check_at,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`, row.ID, row.AssetID, row.UserID, row.ClonedTemplateID, row.SourceVersion, row.SyncAvailable, row.LastSyncCheckAt, row.CreatedAt)
 	if err != nil {

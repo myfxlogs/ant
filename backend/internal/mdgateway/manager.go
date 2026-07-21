@@ -3,13 +3,14 @@ package mdgateway
 import (
 	"context"
 	"fmt"
+	"net"
 	"sync"
 	"time"
 
 	"go.uber.org/zap"
 
-	anttrace "alphaforge/internal/trace"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
+	anttrace "alphaforge/internal/trace"
 )
 
 type Gateway interface {
@@ -26,6 +27,8 @@ type Gateway interface {
 	// connection state changes (connected → reconnecting → disconnected).
 	// The callback is concurrency-safe and must not block the caller.
 	SetStatusCallback(func(status, message string))
+	// SetBreaker injects the per-broker circuit breaker for this account's gateway.
+	SetBreaker(mdtick.Breaker)
 }
 
 type ManagerDeps struct {
@@ -99,6 +102,31 @@ func (m *Manager) startTrace(ctx context.Context, name string) (context.Context,
 		return ctx, &anttrace.Span{}
 	}
 	return m.otelTracer.StartSpan(ctx, name)
+}
+
+// GetOrCreateBreaker returns the per-broker circuit breaker for the account config,
+// creating one keyed by broker identity if it does not already exist.
+func (m *Manager) GetOrCreateBreaker(cfg mdtick.AccountConfig) *CircuitBreaker {
+	key := m.breakerKey(cfg)
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.breakers[key] == nil {
+		m.breakers[key] = NewCircuitBreaker(0, 0, 0)
+	}
+	return m.breakers[key]
+}
+
+func (m *Manager) breakerKey(cfg mdtick.AccountConfig) string {
+	host := cfg.BrokerHost
+	port := cfg.MtapiPort
+	if h, p, err := net.SplitHostPort(cfg.BrokerHost); err == nil {
+		host = h
+		port = p
+	}
+	if port == "" {
+		port = "443"
+	}
+	return BrokerKey(cfg.Broker, host, port)
 }
 
 // --- Gateway management ---

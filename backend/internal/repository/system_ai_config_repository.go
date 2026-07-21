@@ -212,7 +212,7 @@ func (r *SystemAIConfigRepository) SetAIPrimary(ctx context.Context, userID uuid
 	if err != nil {
 		return fmt.Errorf("begin tx for SetAIPrimary: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	// Remove "chat" from every provider owned by this user.
 	if _, err := tx.Exec(ctx, `

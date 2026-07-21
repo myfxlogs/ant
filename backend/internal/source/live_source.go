@@ -74,7 +74,7 @@ func (s *LiveSource) Subscribe(ctx context.Context, canonical, period string) (<
 
 	go func() {
 		<-ctx.Done()
-		sub.Unsubscribe()
+		_ = sub.Unsubscribe()
 		close(ch)
 	}()
 

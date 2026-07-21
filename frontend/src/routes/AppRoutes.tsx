@@ -46,11 +46,16 @@ const SRECanary = lazy(() => import('@/pages/admin/sre/CanaryPage'));
 const AIGatewayManagement = lazy(() => import('@/pages/admin/AIGatewayManagement'));
 const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage'));
 const AutoGenTaskReview = lazy(() => import('@/pages/admin/AutoGenTaskReview'));
+const MarketplaceManagement = lazy(() => import('@/pages/admin/MarketplaceManagement'));
+const RefundManagement = lazy(() => import('@/pages/admin/RefundManagement'));
+const MarketplaceAnalyticsPage = lazy(() => import('@/pages/admin/MarketplaceAnalytics'));
+const CouponManagement = lazy(() => import('@/pages/admin/CouponManagement'));
 const BillingManagement = lazy(() => import('@/pages/admin/BillingManagement'));
 const DepositManagement = lazy(() => import('@/pages/admin/DepositManagement'));
 const MonitoringPage = lazy(() => import('@/pages/admin/MonitoringPage'));
 const SRELayout = lazy(() => import('@/pages/admin/sre/SRELayout'));
 const SharePerformancePage = lazy(() => import('@/pages/share/SharePerformancePage'));
+const StrategySharePage = lazy(() => import('@/pages/marketplace/StrategySharePage'));
 
 // ── Route helpers ──
 const wrap = (el: React.ReactNode) => <PageWrapper>{el}</PageWrapper>;
@@ -116,6 +121,10 @@ const adminRoutes = (
     <Route path="monitoring" element={wrap(<MonitoringPage />)} />
     <Route path="agent-settings" element={wrap(<AdminSettingsPage />)} />
     <Route path="autogen-tasks" element={wrap(<AutoGenTaskReview />)} />
+    <Route path="marketplace" element={wrap(<MarketplaceManagement />)} />
+    <Route path="refunds" element={wrap(<RefundManagement />)} />
+    <Route path="analytics" element={wrap(<MarketplaceAnalyticsPage />)} />
+    <Route path="coupons" element={wrap(<CouponManagement />)} />
     <Route path="sre" element={<SRELayout />}>
       <Route index element={<Navigate to="/admin/sre/killswitch" replace />} />
       <Route path="killswitch" element={wrap(<SREKillSwitch />)} />
@@ -135,6 +144,8 @@ export function AppRoutes() {
     <Routes>
       {/* Public share page — standalone, no SSE, no auth */}
       <Route path="/share/:token" element={<SharePerformancePage />} />
+      {/* Public strategy share landing page — SEO + registration CTA */}
+      <Route path="/strategy/:strategyId" element={<StrategySharePage />} />
       {/* Public landing page — unauthenticated only; authenticated falls through to * */}
       {!isAuthenticated && <Route path="/" element={<LandingPage />} />}
       {/* Public marketplace — unauthenticated only; authenticated uses mainRoutes version with layout */}

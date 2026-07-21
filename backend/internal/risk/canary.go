@@ -197,7 +197,7 @@ func (c *CanaryController) RecordSuccessfulTrade() {
 	hoursElapsed := time.Since(c.stageEntered).Hours()
 	if c.successTrades >= c.config.TradesPerStep &&
 		hoursElapsed >= c.config.MinHoursPerStage {
-		c.stepUp()
+		_ = c.stepUp()
 	}
 }
 

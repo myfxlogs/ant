@@ -6,7 +6,6 @@ import (
 	"math"
 	"sort"
 	"strconv"
-	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -23,8 +22,6 @@ func marshalOverrides(overrides map[string]interface{}) ([]byte, error) {
 	}
 	return b, nil
 }
-
-func timePtr(t time.Time) *time.Time { return &t }
 
 // equityCurveToFloat64 converts a proto []string equity curve to []float64
 // for statistical computations (Spearman, R², etc.).

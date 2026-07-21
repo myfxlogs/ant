@@ -32,6 +32,13 @@ func (s *Service) Rate(ctx context.Context, userID, strategyID string, rating in
 	err = s.pg.QueryRow(ctx,
 		`SELECT COALESCE(AVG(rating),0), COUNT(*) FROM marketplace_ratings WHERE strategy_id=$1`, sid,
 	).Scan(&avg, &count)
+
+	// Notify the strategy publisher of the new rating.
+	var title string
+	_ = s.pg.QueryRow(ctx, `SELECT COALESCE(title,'') FROM marketplace_strategies WHERE strategy_id=$1`, sid).Scan(&title)
+	go s.notifyNewRating(context.Background(), sid, title, rating)
+
+	s.pubCache.clear()
 	return avg, count, err
 }
 
@@ -82,6 +89,7 @@ func (s *Service) Comment(ctx context.Context, userID, strategyID, content strin
 	if err != nil {
 		return "", fmt.Errorf("marketplace: comment: %w", err)
 	}
+	s.pubCache.clear()
 	return id.String(), nil
 }
 

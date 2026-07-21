@@ -2,6 +2,7 @@ syntax = "proto3";
 package ant.v1;
 option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 import "backtest_execution_config.proto";
 import "backtest_run_query.proto";
 
@@ -45,6 +46,36 @@ service MarketplaceService {
   rpc RejectAutoGenTask(RejectAutoGenTaskRequest) returns (RejectAutoGenTaskResponse);
   // Phase 2 Admin: Trigger batch generation (enqueue tasks).
   rpc TriggerBatchGeneration(TriggerBatchGenerationRequest) returns (TriggerBatchGenerationResponse);
+  // Phase 3.1: Strategy leaderboard.
+  rpc ListLeaderboard(ListLeaderboardRequest) returns (ListLeaderboardResponse);
+  // Phase 3.2: Start free trial for a strategy.
+  rpc StartTrial(StartTrialRequest) returns (StartTrialResponse);
+  // Phase 3.3: Compare strategies side by side.
+  rpc CompareStrategies(CompareStrategiesRequest) returns (CompareStrategiesResponse);
+  // Phase 3.5: Get public strategy info for share landing page (no auth required).
+  rpc GetStrategyPublicInfo(GetStrategyPublicInfoRequest) returns (GetStrategyPublicInfoResponse);
+  // Phase 1.3: Provider identity verification.
+  rpc RequestVerification(RequestVerificationRequest) returns (RequestVerificationResponse);
+  rpc AdminProcessVerification(AdminProcessVerificationRequest) returns (AdminProcessVerificationResponse);
+  // Phase 4.1: Admin strategy management.
+  rpc AdminListStrategies(AdminListStrategiesRequest) returns (AdminListStrategiesResponse);
+  rpc AdminFeatureStrategy(AdminFeatureStrategyRequest) returns (AdminFeatureStrategyResponse);
+  // Phase 4.2: Refund request workflow.
+  rpc RequestRefund(RequestRefundRequest) returns (RequestRefundResponse);
+  rpc AdminListRefundRequests(AdminListRefundRequestsRequest) returns (AdminListRefundRequestsResponse);
+  rpc AdminProcessRefund(AdminProcessRefundRequest) returns (AdminProcessRefundResponse);
+  // Phase 4.3: Marketplace analytics dashboard.
+  rpc GetMarketplaceAnalytics(GetMarketplaceAnalyticsRequest) returns (MarketplaceAnalytics);
+  rpc GetTopStrategies(google.protobuf.Empty) returns (TopStrategiesResponse);
+  rpc GetTopProviders(google.protobuf.Empty) returns (TopProvidersResponse);
+  // Phase 4.5: Coupon / discount codes.
+  rpc ValidateCoupon(ValidateCouponRequest) returns (ValidateCouponResponse);
+  rpc CreateCoupon(CreateCouponRequest) returns (CreateCouponResponse);
+  rpc ListCoupons(ListCouponsRequest) returns (ListCouponsResponse);
+  rpc DisableCoupon(DisableCouponRequest) returns (DisableCouponResponse);
+  // Phase 4.6: Provider earnings & withdrawal.
+  rpc GetProviderEarnings(google.protobuf.Empty) returns (ProviderEarnings);
+  rpc ListProviderTransactions(ListProviderTransactionsRequest) returns (ListProviderTransactionsResponse);
 }
 
 message PublishStrategyRequest {
@@ -67,6 +98,9 @@ message PublishStrategyRequest {
 }
 
 // BacktestSnapshot holds key backtest metrics at publish time.
+// Fields 1-9 are full-period (in-sample) metrics.
+// Fields 10-14 are out-of-sample (OOS) metrics from walk-forward validation.
+// OOS fields are empty if walk-forward was not performed.
 message BacktestSnapshot {
   string total_return = 1;
   string annual_return = 2;
@@ -77,6 +111,12 @@ message BacktestSnapshot {
   string symbol = 7;
   string timeframe = 8;
   google.protobuf.Timestamp snapshot_at = 9;
+  // Walk-forward out-of-sample metrics (empty = not performed).
+  string oos_sharpe_ratio = 10;
+  string oos_total_return = 11;
+  string oos_max_drawdown = 12;
+  string oos_win_rate = 13;
+  int32 oos_total_trades = 14;
 }
 message PublishStrategyResponse {
   string publish_id = 1;
@@ -103,6 +143,7 @@ message PurchaseStrategyRequest {
   string strategy_id = 2;        // publish_id
   string publisher_user_id = 3;
   string idempotency_key = 4;    // client-generated unique key to prevent double-charge on retry
+  string coupon_code = 5;        // optional discount code
 }
 
 message PurchaseStrategyResponse {
@@ -271,6 +312,34 @@ message GetPublisherStatsResponse {
   string top_strategy_id = 6;
   string top_strategy_title = 7;
   int32 top_strategy_subs = 8;
+  // Phase 2.4: Enhanced analytics
+  repeated RevenueTrendPoint revenue_trend = 9;
+  repeated SubscriberTrendPoint subscriber_trend = 10;
+  repeated StrategyBreakdown strategy_breakdown = 11;
+}
+
+message RevenueTrendPoint {
+  int64 date_ms = 1;          // day bucket (Unix ms, midnight UTC)
+  string sale_revenue = 2;    // one-time purchase revenue (decimal string)
+  string subscription_revenue = 3; // subscription revenue (decimal string)
+}
+
+message SubscriberTrendPoint {
+  int64 date_ms = 1;          // day bucket (Unix ms, midnight UTC)
+  int32 new_subscribers = 2;  // new subscriptions/purchases on this day
+  int32 churned = 3;          // cancellations/expirations on this day
+  int32 active = 4;           // total active at end of day
+}
+
+message StrategyBreakdown {
+  string strategy_id = 1;
+  string title = 2;
+  int32 total_subscribers = 3;
+  string revenue = 4;         // total revenue (decimal string)
+  double avg_rating = 5;
+  int32 rating_count = 6;
+  string price_model = 7;
+  string price_amount = 8;
 }
 
 // --- Marketplace Backtest ---
@@ -453,4 +522,364 @@ message TriggerBatchGenerationRequest {
 message TriggerBatchGenerationResponse {
   int32 enqueued = 1;
   string error = 2;
+}
+
+// ── Phase 3.1: Strategy Leaderboard ──────────────────────────────────────────
+
+message ListLeaderboardRequest {
+  string type = 1;       // return | popular | new
+  string period = 2;     // week | month | quarter | all
+  int32 limit = 3;       // default 50, max 100
+  string asset_class = 4; // optional filter
+}
+
+message LeaderboardEntry {
+  string strategy_id = 1;
+  string publish_id = 2;
+  string title = 3;
+  string publisher_name = 4;
+  string publisher_id = 5;
+  string price_model = 6;
+  string price_amount = 7;
+  string asset_class = 8;
+  string timeframe = 9;
+  string risk_level = 10;
+  int32 total_subscribers = 11;
+  double avg_rating = 12;
+  int32 rating_count = 13;
+  int32 rank = 14;
+  // Return leaderboard fields (populated for type=return)
+  string total_return = 15;     // decimal string
+  string max_drawdown = 16;     // decimal string
+  string sharpe_ratio = 17;     // decimal string, empty if N/A
+  string win_rate = 18;         // decimal string
+  int32 total_trades = 19;
+  string tracking_since = 20;   // ISO date, empty if no live tracking
+  // New/rising leaderboard fields
+  int64 published_at_ms = 21;
+  // Backtest summary
+  BacktestSnapshot backtest = 22;
+}
+
+message ListLeaderboardResponse {
+  repeated LeaderboardEntry entries = 1;
+}
+
+// ── Phase 3.2: Free Trial ────────────────────────────────────────────────────
+
+message StartTrialRequest {
+  string strategy_id = 1;
+}
+
+message StartTrialResponse {
+  string trial_id = 1;
+  int64 expires_at_ms = 2;
+  bool already_tried = 3;  // true if user already had a trial for this strategy
+}
+
+// ── Phase 3.3: Strategy Comparison ───────────────────────────────────────────
+
+message CompareStrategiesRequest {
+  repeated string strategy_ids = 1;  // max 4
+}
+
+message StrategyComparison {
+  string strategy_id = 1;
+  string title = 2;
+  string publisher_name = 3;
+  string price_model = 4;
+  string price_amount = 5;
+  string asset_class = 6;
+  string timeframe = 7;
+  string risk_level = 8;
+  int32 total_subscribers = 9;
+  double avg_rating = 10;
+  int32 rating_count = 11;
+  // Backtest metrics
+  string backtest_total_return = 12;
+  string backtest_max_drawdown = 13;
+  string backtest_sharpe_ratio = 14;
+  string backtest_win_rate = 15;
+  int32 backtest_total_trades = 16;
+  // Live performance (empty if no live tracking)
+  string live_total_return = 17;
+  string live_max_drawdown = 18;
+  string live_sharpe_ratio = 19;
+  int32 live_total_trades = 20;
+  string tracking_since = 21;
+}
+
+message CompareStrategiesResponse {
+  repeated StrategyComparison strategies = 1;
+}
+
+// ── Phase 3.5: Public Strategy Info (Share Landing Page) ─────────────────────
+
+message GetStrategyPublicInfoRequest {
+  string strategy_id = 1;
+}
+
+message GetStrategyPublicInfoResponse {
+  string strategy_id = 1;
+  string title = 2;
+  string description = 3;
+  string publisher_name = 4;
+  string price_model = 5;
+  string price_amount = 6;
+  string asset_class = 7;
+  string timeframe = 8;
+  string risk_level = 9;
+  int32 total_subscribers = 10;
+  double avg_rating = 11;
+  int32 rating_count = 12;
+  string code_snippet = 13;  // partial code preview (truncated)
+  BacktestSnapshot backtest = 14;
+  // Live performance summary (empty strings if no live tracking)
+  string live_total_return = 15;
+  string live_max_drawdown = 16;
+  string live_sharpe_ratio = 17;
+  string tracking_since = 18;
+}
+
+// ── Phase 1.3: Provider Verification ──────────────────────────────────────────
+
+message RequestVerificationRequest {
+  string provider_type = 1;  // human | ai | hybrid
+  string note = 2;           // optional message to reviewer
+}
+
+message RequestVerificationResponse {
+  string request_id = 1;
+  string status = 2;         // pending
+}
+
+message AdminProcessVerificationRequest {
+  string request_id = 1;
+  bool approve = 2;
+  string note = 3;
+}
+
+message AdminProcessVerificationResponse {
+  bool success = 1;
+}
+
+// ── Phase 4.1: Admin Strategy Management ──────────────────────────────────────
+
+message AdminListStrategiesRequest {
+  string status = 1;     // published / hidden / all
+  string keyword = 2;    // search title
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message AdminStrategyItem {
+  PublishedStrategy strategy = 1;
+  string status = 2;          // published / hidden
+  int32 total_sales = 3;
+  string total_revenue = 4;
+  string platform_revenue = 5;
+  string last_sale_at = 6;
+  bool is_featured = 7;
+  int32 featured_priority = 8;
+}
+
+message AdminListStrategiesResponse {
+  repeated AdminStrategyItem strategies = 1;
+  int32 total = 2;
+}
+
+message AdminFeatureStrategyRequest {
+  string strategy_id = 1;
+  bool featured = 2;
+  int32 priority = 3;
+}
+
+message AdminFeatureStrategyResponse {
+  bool success = 1;
+}
+
+// ── Phase 4.2: Refund Request Workflow ────────────────────────────────────────
+
+message RequestRefundRequest {
+  string subscription_id = 1;
+  string reason = 2;
+}
+
+message RequestRefundResponse {
+  string refund_id = 1;
+  string status = 2;           // pending_review
+}
+
+message AdminListRefundRequestsRequest {
+  string status = 1;           // pending / approved / rejected
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message RefundRequestItem {
+  string refund_id = 1;
+  string user_id = 2;
+  string user_name = 3;
+  string subscription_id = 4;
+  string strategy_title = 5;
+  string amount = 6;
+  string reason = 7;
+  string status = 8;
+  string created_at = 9;
+  string reviewed_by = 10;
+  string review_note = 11;
+}
+
+message AdminListRefundRequestsResponse {
+  repeated RefundRequestItem requests = 1;
+  int32 total = 2;
+}
+
+message AdminProcessRefundRequest {
+  string refund_id = 1;
+  bool approve = 2;            // true = approve & execute, false = reject
+  string review_note = 3;
+}
+
+message AdminProcessRefundResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+// ── Phase 4.3: Marketplace Analytics ──────────────────────────────────────────
+
+message GetMarketplaceAnalyticsRequest {
+  string period = 1;  // "7d" / "30d" / "90d" / "all"
+}
+
+message DailyAnalytics {
+  string date = 1;
+  string gmv = 2;
+  int32 transactions = 3;
+  int32 new_subscribers = 4;
+}
+
+message MarketplaceAnalytics {
+  string total_gmv = 1;
+  string platform_revenue = 2;
+  string provider_revenue = 3;
+  int32 total_transactions = 4;
+  int32 active_buyers = 5;
+  int32 new_subscribers = 6;
+  string arpu = 7;
+  int32 total_strategies = 8;
+  int32 new_strategies = 9;
+  string refund_rate = 10;
+  string renewal_rate = 11;
+  repeated DailyAnalytics daily = 12;
+}
+
+message TopItem {
+  string id = 1;
+  string name = 2;
+  string value = 3;
+  int32 rank = 4;
+}
+
+message TopStrategiesResponse {
+  repeated TopItem by_revenue = 1;
+  repeated TopItem by_subscribers = 2;
+}
+
+message TopProvidersResponse {
+  repeated TopItem by_revenue = 1;
+  repeated TopItem by_strategies = 2;
+}
+
+// ── Phase 4.5: Coupons / Discounts ────────────────────────────────────────────
+
+message ValidateCouponRequest {
+  string code = 1;
+  string strategy_id = 2;
+  string purchase_amount = 3;
+}
+
+message ValidateCouponResponse {
+  bool valid = 1;
+  string discount_type = 2;
+  string discount_amount = 3;
+  string final_amount = 4;
+  string error_message = 5;
+}
+
+message CouponInfo {
+  string id = 1;
+  string code = 2;
+  string discount_type = 3;
+  string discount_value = 4;
+  string min_purchase_amount = 5;
+  int32 max_uses = 6;
+  int32 used_count = 7;
+  string expires_at = 8;
+  bool enabled = 9;
+  repeated string applicable_strategy_ids = 10;
+}
+
+message CreateCouponRequest {
+  string code = 1;
+  string discount_type = 2;       // percentage / fixed
+  string discount_value = 3;
+  string min_purchase_amount = 4;
+  int32 max_uses = 5;
+  string expires_at = 6;          // ISO 8601, empty = never
+  repeated string applicable_strategy_ids = 7; // empty = all strategies
+}
+
+message CreateCouponResponse {
+  string id = 1;
+  bool success = 2;
+  string error = 3;
+}
+
+message ListCouponsRequest {
+  bool enabled_only = 1;
+}
+
+message ListCouponsResponse {
+  repeated CouponInfo coupons = 1;
+}
+
+message DisableCouponRequest {
+  string coupon_id = 1;
+}
+
+message DisableCouponResponse {
+  bool success = 1;
+}
+
+// ── Phase 4.6: Provider Earnings & Withdrawal ─────────────────────────────────
+
+message ProviderEarnings {
+  string total_earnings = 1;
+  string available_balance = 2;
+  string pending_withdrawal = 3;
+  string lifetime_withdrawn = 4;
+  int32 total_sales = 5;
+  int32 active_strategies = 6;
+  string next_payout_date = 7;
+}
+
+message ProviderTransactionItem {
+  string id = 1;
+  string tx_type = 2;       // sale / platform_fee / withdrawal / refund
+  string amount = 3;
+  string strategy_title = 4;
+  string buyer_name = 5;
+  string created_at = 6;
+  string status = 7;
+}
+
+message ListProviderTransactionsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListProviderTransactionsResponse {
+  repeated ProviderTransactionItem transactions = 1;
+  int32 total = 2;
 }

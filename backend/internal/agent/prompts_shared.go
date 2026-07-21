@@ -29,19 +29,3 @@ func writeProfileToPrompt(sb *strings.Builder, profile *antv1.StrategyProfile, h
 	sb.WriteString(fmt.Sprintf("Risk: %s\n", profile.RiskManagement))
 }
 
-// writeRequestContext writes symbol, timeframe, and params from a generate request.
-// Shared by plan_prompt and buildProfileFromNLPrompt.
-func writeRequestContext(sb *strings.Builder, msg *antv1.AgentGenerateStrategyRequest) {
-	if msg.Symbol != "" {
-		sb.WriteString(fmt.Sprintf("## Trading Symbol\n%s\n", msg.Symbol))
-	}
-	if msg.Timeframe != "" {
-		sb.WriteString(fmt.Sprintf("## Timeframe\n%s\n", msg.Timeframe))
-	}
-	if len(msg.Params) > 0 {
-		sb.WriteString("## Parameter Overrides\n")
-		for k, v := range msg.Params {
-			sb.WriteString(fmt.Sprintf("- %s: %s\n", k, v))
-		}
-	}
-}

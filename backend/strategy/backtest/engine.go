@@ -160,7 +160,9 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 	}
 
 	// OnDeinit
-	e.strategy.OnDeinit(btCtx, "backtest_complete")
+	if err := e.strategy.OnDeinit(btCtx, "backtest_complete"); err != nil {
+		return nil, err
+	}
 
 	// Merge trades from broker (strategy-closed) and engine (SL/TP-closed)
 	allTrades := append(e.trades, e.broker.Trades()...)
@@ -197,7 +199,7 @@ func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
 		if sig.Price.IsPositive() {
 			price = sig.Price
 		}
-		e.broker.OrderSend(sdk.OrderRequest{
+		_, _ = e.broker.OrderSend(sdk.OrderRequest{
 			Symbol:     sig.Symbol,
 			Side:       side,
 			Type:       ot,
@@ -211,7 +213,7 @@ func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
 	case sdk.ActionClose:
 		e.broker.PositionClose(sig.OrderTicket, decimal.Zero)
 	case sdk.ActionCancel:
-		e.broker.OrderDelete(sig.OrderTicket)
+		_, _ = e.broker.OrderDelete(sig.OrderTicket)
 	case sdk.ActionCloseAll:
 		for _, p := range e.broker.Positions(sig.Magic) {
 			e.broker.PositionClose(p.Ticket, decimal.Zero)

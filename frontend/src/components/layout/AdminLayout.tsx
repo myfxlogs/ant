@@ -18,6 +18,10 @@ import {
   ShareAltOutlined,
   MonitorOutlined,
   RobotOutlined,
+  ShopOutlined,
+  RollbackOutlined,
+  BarChartOutlined,
+  TagOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -63,6 +67,10 @@ export default function AdminLayout() {
     { key: '/admin/monitoring', icon: <MonitorOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.monitoring', { defaultValue: 'Monitoring & Alerts' }) },
     { key: '/admin/agent-settings', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.agentSettings', { defaultValue: 'Agent Settings' }) },
     { key: '/admin/autogen-tasks', icon: <RobotOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.autogenTasks', { defaultValue: 'AI Gen Tasks' }) },
+    { key: '/admin/marketplace', icon: <ShopOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.marketplace', { defaultValue: 'Marketplace' }) },
+    { key: '/admin/refunds', icon: <RollbackOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.refunds', { defaultValue: 'Refunds' }) },
+    { key: '/admin/analytics', icon: <BarChartOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.analytics', { defaultValue: 'Analytics' }) },
+    { key: '/admin/coupons', icon: <TagOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.coupons', { defaultValue: 'Coupons' }) },
     { key: '/admin/sre', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.sre', { defaultValue: 'SRE Controls' }) },
   ];
 

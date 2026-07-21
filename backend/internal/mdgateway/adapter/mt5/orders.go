@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	pb "alphaforge/mt5"
 	"alphaforge/internal/mthub"
+	pb "alphaforge/mt5"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
 )
-
 
 const orderTimeout = 30 * time.Second
 
@@ -22,6 +21,9 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 	g.mu.RUnlock()
 	if tc == nil || sid == "" {
 		return 0, fmt.Errorf("mt5 PlaceOrder: not connected")
+	}
+	if g.breaker != nil && !g.breaker.Allow() {
+		return 0, mthub.ErrCircuitOpen
 	}
 	ot := mt5OrderType(req.Side, req.OrderType)
 	price := req.Price.InexactFloat64()
@@ -34,21 +36,33 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 	callCtx = metadata.NewOutgoingContext(callCtx, md)
 	resp, err := tc.OrderSend(callCtx, &pb.OrderSendRequest{
 		Id: sid, Symbol: req.Canonical, Operation: ot,
-		Volume:    req.Volume.InexactFloat64(),
-		Price:     &price,
-		Stoploss:  pfloat64(req.StopLoss),
+		Volume:     req.Volume.InexactFloat64(),
+		Price:      &price,
+		Stoploss:   pfloat64(req.StopLoss),
 		Takeprofit: pfloat64(req.TakeProfit),
-		Comment:   &req.Comment,
-		ExpertID:  pInt64(int64(req.Magic)),
+		Comment:    &req.Comment,
+		ExpertID:   pInt64(int64(req.Magic)),
 	})
 	if err != nil {
+		if g.breaker != nil {
+			g.breaker.OnFailure()
+		}
 		return 0, fmt.Errorf("mt5 OrderSend: %w", err)
 	}
 	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		if g.breaker != nil {
+			g.breaker.OnFailure()
+		}
 		return 0, fmt.Errorf("mt5 OrderSend: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
 	}
 	if resp.GetResult() == nil {
+		if g.breaker != nil {
+			g.breaker.OnFailure()
+		}
 		return 0, fmt.Errorf("mt5 OrderSend: nil result")
+	}
+	if g.breaker != nil {
+		g.breaker.OnSuccess()
 	}
 	return resp.GetResult().GetTicket(), nil
 }
@@ -285,7 +299,11 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 	ctx, g.cancelHubOrderSub = context.WithCancel(ctx)
 	g.mu.Unlock()
 	go func() {
-		defer func() { if r := recover(); r != nil { g.log.Error("mt5 order event recv panic", zap.Any("panic", r)) } }()
+		defer func() {
+			if r := recover(); r != nil {
+				g.log.Error("mt5 order event recv panic", zap.Any("panic", r))
+			}
+		}()
 		for {
 			if ctx.Err() != nil {
 				return
@@ -318,6 +336,8 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 }
 
 func truncSid(s string) string {
-	if len(s) > 8 { return s[:8] + "..." }
+	if len(s) > 8 {
+		return s[:8] + "..."
+	}
 	return s
 }

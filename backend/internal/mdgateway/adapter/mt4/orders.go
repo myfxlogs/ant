@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	pb "alphaforge/mt4"
 	"alphaforge/internal/mthub"
+	pb "alphaforge/mt4"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
@@ -41,6 +41,9 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 	if tc == nil || sid == "" {
 		return 0, fmt.Errorf("mt4 PlaceOrder: not connected")
 	}
+	if g.breaker != nil && !g.breaker.Allow() {
+		return 0, mthub.ErrCircuitOpen
+	}
 	op := mt4Op(req.Side, req.OrderType)
 	price := req.Price.InexactFloat64()
 	md := metadata.New(map[string]string{"id": sid})
@@ -58,13 +61,25 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 		Takeprofit: req.TakeProfit.InexactFloat64(),
 	})
 	if err != nil {
+		if g.breaker != nil {
+			g.breaker.OnFailure()
+		}
 		return 0, fmt.Errorf("mt4 OrderSend: %w", err)
 	}
 	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		if g.breaker != nil {
+			g.breaker.OnFailure()
+		}
 		return 0, fmt.Errorf("mt4 OrderSend: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
 	}
 	if resp.GetResult() == nil {
+		if g.breaker != nil {
+			g.breaker.OnFailure()
+		}
 		return 0, fmt.Errorf("mt4 OrderSend: nil result")
+	}
+	if g.breaker != nil {
+		g.breaker.OnSuccess()
 	}
 	return int64(resp.GetResult().GetTicket()), nil
 }
@@ -290,6 +305,8 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 }
 
 func truncSid(s string) string {
-	if len(s) > 8 { return s[:8] + "..." }
+	if len(s) > 8 {
+		return s[:8] + "..."
+	}
 	return s
 }

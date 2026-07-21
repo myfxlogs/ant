@@ -1,3 +1,5 @@
+> ⚠️ 已迁移至 docs/blocks/strategy-marketplace/plans/phase-5-moat.md。此文件保留为兼容旧引用。
+
 # Phase 5 · AI 供给侧持续 + 增值 · 落地排期清单
 
 > 权威依据：`docs/roadmaps/strategy-marketplace.md` Phase 5 (v4)

@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
+import type { PublishedStrategy, RevenueTrendPoint, SubscriberTrendPoint, StrategyBreakdown } from '@/gen/ant/v1/marketplace_service_pb';
 import type { PriceFilter, SortBy, TabKey, PurchasedItem } from './hooks/useMarketplace';
 
 export interface MarketplaceCtx {
@@ -10,7 +10,13 @@ export interface MarketplaceCtx {
   purchases: PurchasedItem[];
   purchasesLoading: boolean;
   myPublished: PublishedStrategy[];
-  authorStats: { published: number; totalSubscribers: number; avgRating: number };
+  authorStats: {
+    published: number; totalSubscribers: number; avgRating: number;
+    totalRevenue: string; monthlyRevenue: string; topStrategyTitle: string;
+    revenueTrend: RevenueTrendPoint[];
+    subscriberTrend: SubscriberTrendPoint[];
+    strategyBreakdown: StrategyBreakdown[];
+  };
   // UI state
   activeTab: TabKey; setActiveTab: (t: TabKey) => void;
   searchText: string; setSearchText: (v: string) => void;
@@ -38,8 +44,11 @@ export interface MarketplaceCtx {
   paymentLoading: boolean;
   paymentStrategy: PublishedStrategy | null;
   walletBalance: string;
-  handleConfirmPayment: () => void;
+  handleConfirmPayment: (couponCode?: string) => void;
   handleCancelPayment: () => void;
+  // Compare selection
+  compareIds: string[];
+  toggleCompare: (id: string) => void;
 }
 
 const Ctx = createContext<MarketplaceCtx | null>(null);

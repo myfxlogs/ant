@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -75,6 +76,10 @@ func (s *RegistrationService) RegisterUser(ctx context.Context, email, password,
 	}
 	if exists {
 		return nil, "", ErrEmailAlreadyRegistered
+	}
+
+	if len(password) < 8 {
+		return nil, "", fmt.Errorf("password must be at least 8 characters")
 	}
 
 	passwordHash, err := hash.HashPassword(password)

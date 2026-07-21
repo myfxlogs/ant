@@ -72,7 +72,7 @@ type UserSubscription struct {
 	ID               string
 	TargetUserID     string
 	TargetStrategyID string
-	Kind             string // "copy_trade" | "signal" | "follow"
+	Kind             string // "strategy" | "signal" | "follow"
 }
 
 // ListSubscriptions returns all active subscriptions for a user.

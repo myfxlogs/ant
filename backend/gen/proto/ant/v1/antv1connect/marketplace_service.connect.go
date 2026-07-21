@@ -9,6 +9,7 @@ import (
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
 	strings "strings"
 )
@@ -102,6 +103,66 @@ const (
 	// MarketplaceServiceTriggerBatchGenerationProcedure is the fully-qualified name of the
 	// MarketplaceService's TriggerBatchGeneration RPC.
 	MarketplaceServiceTriggerBatchGenerationProcedure = "/ant.v1.MarketplaceService/TriggerBatchGeneration"
+	// MarketplaceServiceListLeaderboardProcedure is the fully-qualified name of the
+	// MarketplaceService's ListLeaderboard RPC.
+	MarketplaceServiceListLeaderboardProcedure = "/ant.v1.MarketplaceService/ListLeaderboard"
+	// MarketplaceServiceStartTrialProcedure is the fully-qualified name of the MarketplaceService's
+	// StartTrial RPC.
+	MarketplaceServiceStartTrialProcedure = "/ant.v1.MarketplaceService/StartTrial"
+	// MarketplaceServiceCompareStrategiesProcedure is the fully-qualified name of the
+	// MarketplaceService's CompareStrategies RPC.
+	MarketplaceServiceCompareStrategiesProcedure = "/ant.v1.MarketplaceService/CompareStrategies"
+	// MarketplaceServiceGetStrategyPublicInfoProcedure is the fully-qualified name of the
+	// MarketplaceService's GetStrategyPublicInfo RPC.
+	MarketplaceServiceGetStrategyPublicInfoProcedure = "/ant.v1.MarketplaceService/GetStrategyPublicInfo"
+	// MarketplaceServiceRequestVerificationProcedure is the fully-qualified name of the
+	// MarketplaceService's RequestVerification RPC.
+	MarketplaceServiceRequestVerificationProcedure = "/ant.v1.MarketplaceService/RequestVerification"
+	// MarketplaceServiceAdminProcessVerificationProcedure is the fully-qualified name of the
+	// MarketplaceService's AdminProcessVerification RPC.
+	MarketplaceServiceAdminProcessVerificationProcedure = "/ant.v1.MarketplaceService/AdminProcessVerification"
+	// MarketplaceServiceAdminListStrategiesProcedure is the fully-qualified name of the
+	// MarketplaceService's AdminListStrategies RPC.
+	MarketplaceServiceAdminListStrategiesProcedure = "/ant.v1.MarketplaceService/AdminListStrategies"
+	// MarketplaceServiceAdminFeatureStrategyProcedure is the fully-qualified name of the
+	// MarketplaceService's AdminFeatureStrategy RPC.
+	MarketplaceServiceAdminFeatureStrategyProcedure = "/ant.v1.MarketplaceService/AdminFeatureStrategy"
+	// MarketplaceServiceRequestRefundProcedure is the fully-qualified name of the MarketplaceService's
+	// RequestRefund RPC.
+	MarketplaceServiceRequestRefundProcedure = "/ant.v1.MarketplaceService/RequestRefund"
+	// MarketplaceServiceAdminListRefundRequestsProcedure is the fully-qualified name of the
+	// MarketplaceService's AdminListRefundRequests RPC.
+	MarketplaceServiceAdminListRefundRequestsProcedure = "/ant.v1.MarketplaceService/AdminListRefundRequests"
+	// MarketplaceServiceAdminProcessRefundProcedure is the fully-qualified name of the
+	// MarketplaceService's AdminProcessRefund RPC.
+	MarketplaceServiceAdminProcessRefundProcedure = "/ant.v1.MarketplaceService/AdminProcessRefund"
+	// MarketplaceServiceGetMarketplaceAnalyticsProcedure is the fully-qualified name of the
+	// MarketplaceService's GetMarketplaceAnalytics RPC.
+	MarketplaceServiceGetMarketplaceAnalyticsProcedure = "/ant.v1.MarketplaceService/GetMarketplaceAnalytics"
+	// MarketplaceServiceGetTopStrategiesProcedure is the fully-qualified name of the
+	// MarketplaceService's GetTopStrategies RPC.
+	MarketplaceServiceGetTopStrategiesProcedure = "/ant.v1.MarketplaceService/GetTopStrategies"
+	// MarketplaceServiceGetTopProvidersProcedure is the fully-qualified name of the
+	// MarketplaceService's GetTopProviders RPC.
+	MarketplaceServiceGetTopProvidersProcedure = "/ant.v1.MarketplaceService/GetTopProviders"
+	// MarketplaceServiceValidateCouponProcedure is the fully-qualified name of the MarketplaceService's
+	// ValidateCoupon RPC.
+	MarketplaceServiceValidateCouponProcedure = "/ant.v1.MarketplaceService/ValidateCoupon"
+	// MarketplaceServiceCreateCouponProcedure is the fully-qualified name of the MarketplaceService's
+	// CreateCoupon RPC.
+	MarketplaceServiceCreateCouponProcedure = "/ant.v1.MarketplaceService/CreateCoupon"
+	// MarketplaceServiceListCouponsProcedure is the fully-qualified name of the MarketplaceService's
+	// ListCoupons RPC.
+	MarketplaceServiceListCouponsProcedure = "/ant.v1.MarketplaceService/ListCoupons"
+	// MarketplaceServiceDisableCouponProcedure is the fully-qualified name of the MarketplaceService's
+	// DisableCoupon RPC.
+	MarketplaceServiceDisableCouponProcedure = "/ant.v1.MarketplaceService/DisableCoupon"
+	// MarketplaceServiceGetProviderEarningsProcedure is the fully-qualified name of the
+	// MarketplaceService's GetProviderEarnings RPC.
+	MarketplaceServiceGetProviderEarningsProcedure = "/ant.v1.MarketplaceService/GetProviderEarnings"
+	// MarketplaceServiceListProviderTransactionsProcedure is the fully-qualified name of the
+	// MarketplaceService's ListProviderTransactions RPC.
+	MarketplaceServiceListProviderTransactionsProcedure = "/ant.v1.MarketplaceService/ListProviderTransactions"
 )
 
 // MarketplaceServiceClient is a client for the ant.v1.MarketplaceService service.
@@ -145,6 +206,36 @@ type MarketplaceServiceClient interface {
 	RejectAutoGenTask(context.Context, *connect.Request[v1.RejectAutoGenTaskRequest]) (*connect.Response[v1.RejectAutoGenTaskResponse], error)
 	// Phase 2 Admin: Trigger batch generation (enqueue tasks).
 	TriggerBatchGeneration(context.Context, *connect.Request[v1.TriggerBatchGenerationRequest]) (*connect.Response[v1.TriggerBatchGenerationResponse], error)
+	// Phase 3.1: Strategy leaderboard.
+	ListLeaderboard(context.Context, *connect.Request[v1.ListLeaderboardRequest]) (*connect.Response[v1.ListLeaderboardResponse], error)
+	// Phase 3.2: Start free trial for a strategy.
+	StartTrial(context.Context, *connect.Request[v1.StartTrialRequest]) (*connect.Response[v1.StartTrialResponse], error)
+	// Phase 3.3: Compare strategies side by side.
+	CompareStrategies(context.Context, *connect.Request[v1.CompareStrategiesRequest]) (*connect.Response[v1.CompareStrategiesResponse], error)
+	// Phase 3.5: Get public strategy info for share landing page (no auth required).
+	GetStrategyPublicInfo(context.Context, *connect.Request[v1.GetStrategyPublicInfoRequest]) (*connect.Response[v1.GetStrategyPublicInfoResponse], error)
+	// Phase 1.3: Provider identity verification.
+	RequestVerification(context.Context, *connect.Request[v1.RequestVerificationRequest]) (*connect.Response[v1.RequestVerificationResponse], error)
+	AdminProcessVerification(context.Context, *connect.Request[v1.AdminProcessVerificationRequest]) (*connect.Response[v1.AdminProcessVerificationResponse], error)
+	// Phase 4.1: Admin strategy management.
+	AdminListStrategies(context.Context, *connect.Request[v1.AdminListStrategiesRequest]) (*connect.Response[v1.AdminListStrategiesResponse], error)
+	AdminFeatureStrategy(context.Context, *connect.Request[v1.AdminFeatureStrategyRequest]) (*connect.Response[v1.AdminFeatureStrategyResponse], error)
+	// Phase 4.2: Refund request workflow.
+	RequestRefund(context.Context, *connect.Request[v1.RequestRefundRequest]) (*connect.Response[v1.RequestRefundResponse], error)
+	AdminListRefundRequests(context.Context, *connect.Request[v1.AdminListRefundRequestsRequest]) (*connect.Response[v1.AdminListRefundRequestsResponse], error)
+	AdminProcessRefund(context.Context, *connect.Request[v1.AdminProcessRefundRequest]) (*connect.Response[v1.AdminProcessRefundResponse], error)
+	// Phase 4.3: Marketplace analytics dashboard.
+	GetMarketplaceAnalytics(context.Context, *connect.Request[v1.GetMarketplaceAnalyticsRequest]) (*connect.Response[v1.MarketplaceAnalytics], error)
+	GetTopStrategies(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.TopStrategiesResponse], error)
+	GetTopProviders(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.TopProvidersResponse], error)
+	// Phase 4.5: Coupon / discount codes.
+	ValidateCoupon(context.Context, *connect.Request[v1.ValidateCouponRequest]) (*connect.Response[v1.ValidateCouponResponse], error)
+	CreateCoupon(context.Context, *connect.Request[v1.CreateCouponRequest]) (*connect.Response[v1.CreateCouponResponse], error)
+	ListCoupons(context.Context, *connect.Request[v1.ListCouponsRequest]) (*connect.Response[v1.ListCouponsResponse], error)
+	DisableCoupon(context.Context, *connect.Request[v1.DisableCouponRequest]) (*connect.Response[v1.DisableCouponResponse], error)
+	// Phase 4.6: Provider earnings & withdrawal.
+	GetProviderEarnings(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.ProviderEarnings], error)
+	ListProviderTransactions(context.Context, *connect.Request[v1.ListProviderTransactionsRequest]) (*connect.Response[v1.ListProviderTransactionsResponse], error)
 }
 
 // NewMarketplaceServiceClient constructs a client for the ant.v1.MarketplaceService service. By
@@ -296,34 +387,174 @@ func NewMarketplaceServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(marketplaceServiceMethods.ByName("TriggerBatchGeneration")),
 			connect.WithClientOptions(opts...),
 		),
+		listLeaderboard: connect.NewClient[v1.ListLeaderboardRequest, v1.ListLeaderboardResponse](
+			httpClient,
+			baseURL+MarketplaceServiceListLeaderboardProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("ListLeaderboard")),
+			connect.WithClientOptions(opts...),
+		),
+		startTrial: connect.NewClient[v1.StartTrialRequest, v1.StartTrialResponse](
+			httpClient,
+			baseURL+MarketplaceServiceStartTrialProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("StartTrial")),
+			connect.WithClientOptions(opts...),
+		),
+		compareStrategies: connect.NewClient[v1.CompareStrategiesRequest, v1.CompareStrategiesResponse](
+			httpClient,
+			baseURL+MarketplaceServiceCompareStrategiesProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("CompareStrategies")),
+			connect.WithClientOptions(opts...),
+		),
+		getStrategyPublicInfo: connect.NewClient[v1.GetStrategyPublicInfoRequest, v1.GetStrategyPublicInfoResponse](
+			httpClient,
+			baseURL+MarketplaceServiceGetStrategyPublicInfoProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("GetStrategyPublicInfo")),
+			connect.WithClientOptions(opts...),
+		),
+		requestVerification: connect.NewClient[v1.RequestVerificationRequest, v1.RequestVerificationResponse](
+			httpClient,
+			baseURL+MarketplaceServiceRequestVerificationProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("RequestVerification")),
+			connect.WithClientOptions(opts...),
+		),
+		adminProcessVerification: connect.NewClient[v1.AdminProcessVerificationRequest, v1.AdminProcessVerificationResponse](
+			httpClient,
+			baseURL+MarketplaceServiceAdminProcessVerificationProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("AdminProcessVerification")),
+			connect.WithClientOptions(opts...),
+		),
+		adminListStrategies: connect.NewClient[v1.AdminListStrategiesRequest, v1.AdminListStrategiesResponse](
+			httpClient,
+			baseURL+MarketplaceServiceAdminListStrategiesProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("AdminListStrategies")),
+			connect.WithClientOptions(opts...),
+		),
+		adminFeatureStrategy: connect.NewClient[v1.AdminFeatureStrategyRequest, v1.AdminFeatureStrategyResponse](
+			httpClient,
+			baseURL+MarketplaceServiceAdminFeatureStrategyProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("AdminFeatureStrategy")),
+			connect.WithClientOptions(opts...),
+		),
+		requestRefund: connect.NewClient[v1.RequestRefundRequest, v1.RequestRefundResponse](
+			httpClient,
+			baseURL+MarketplaceServiceRequestRefundProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("RequestRefund")),
+			connect.WithClientOptions(opts...),
+		),
+		adminListRefundRequests: connect.NewClient[v1.AdminListRefundRequestsRequest, v1.AdminListRefundRequestsResponse](
+			httpClient,
+			baseURL+MarketplaceServiceAdminListRefundRequestsProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("AdminListRefundRequests")),
+			connect.WithClientOptions(opts...),
+		),
+		adminProcessRefund: connect.NewClient[v1.AdminProcessRefundRequest, v1.AdminProcessRefundResponse](
+			httpClient,
+			baseURL+MarketplaceServiceAdminProcessRefundProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("AdminProcessRefund")),
+			connect.WithClientOptions(opts...),
+		),
+		getMarketplaceAnalytics: connect.NewClient[v1.GetMarketplaceAnalyticsRequest, v1.MarketplaceAnalytics](
+			httpClient,
+			baseURL+MarketplaceServiceGetMarketplaceAnalyticsProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("GetMarketplaceAnalytics")),
+			connect.WithClientOptions(opts...),
+		),
+		getTopStrategies: connect.NewClient[emptypb.Empty, v1.TopStrategiesResponse](
+			httpClient,
+			baseURL+MarketplaceServiceGetTopStrategiesProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("GetTopStrategies")),
+			connect.WithClientOptions(opts...),
+		),
+		getTopProviders: connect.NewClient[emptypb.Empty, v1.TopProvidersResponse](
+			httpClient,
+			baseURL+MarketplaceServiceGetTopProvidersProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("GetTopProviders")),
+			connect.WithClientOptions(opts...),
+		),
+		validateCoupon: connect.NewClient[v1.ValidateCouponRequest, v1.ValidateCouponResponse](
+			httpClient,
+			baseURL+MarketplaceServiceValidateCouponProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("ValidateCoupon")),
+			connect.WithClientOptions(opts...),
+		),
+		createCoupon: connect.NewClient[v1.CreateCouponRequest, v1.CreateCouponResponse](
+			httpClient,
+			baseURL+MarketplaceServiceCreateCouponProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("CreateCoupon")),
+			connect.WithClientOptions(opts...),
+		),
+		listCoupons: connect.NewClient[v1.ListCouponsRequest, v1.ListCouponsResponse](
+			httpClient,
+			baseURL+MarketplaceServiceListCouponsProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("ListCoupons")),
+			connect.WithClientOptions(opts...),
+		),
+		disableCoupon: connect.NewClient[v1.DisableCouponRequest, v1.DisableCouponResponse](
+			httpClient,
+			baseURL+MarketplaceServiceDisableCouponProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("DisableCoupon")),
+			connect.WithClientOptions(opts...),
+		),
+		getProviderEarnings: connect.NewClient[emptypb.Empty, v1.ProviderEarnings](
+			httpClient,
+			baseURL+MarketplaceServiceGetProviderEarningsProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("GetProviderEarnings")),
+			connect.WithClientOptions(opts...),
+		),
+		listProviderTransactions: connect.NewClient[v1.ListProviderTransactionsRequest, v1.ListProviderTransactionsResponse](
+			httpClient,
+			baseURL+MarketplaceServiceListProviderTransactionsProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("ListProviderTransactions")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // marketplaceServiceClient implements MarketplaceServiceClient.
 type marketplaceServiceClient struct {
-	publishStrategy        *connect.Client[v1.PublishStrategyRequest, v1.PublishStrategyResponse]
-	subscribe              *connect.Client[v1.SubscribeRequest, v1.SubscribeResponse]
-	unsubscribe            *connect.Client[v1.UnsubscribeRequest, v1.UnsubscribeResponse]
-	purchaseStrategy       *connect.Client[v1.PurchaseStrategyRequest, v1.PurchaseStrategyResponse]
-	listPublished          *connect.Client[v1.ListPublishedRequest, v1.ListPublishedResponse]
-	listSubscriptions      *connect.Client[v1.ListSubscriptionsRequest, v1.ListSubscriptionsResponse]
-	rateStrategy           *connect.Client[v1.RateStrategyRequest, v1.RateStrategyResponse]
-	listRatings            *connect.Client[v1.ListRatingsRequest, v1.ListRatingsResponse]
-	commentOnStrategy      *connect.Client[v1.CommentOnStrategyRequest, v1.CommentOnStrategyResponse]
-	listComments           *connect.Client[v1.ListCommentsRequest, v1.ListCommentsResponse]
-	setStrategyPricing     *connect.Client[v1.SetStrategyPricingRequest, v1.SetStrategyPricingResponse]
-	unpublishStrategy      *connect.Client[v1.UnpublishMarketStrategyRequest, v1.UnpublishMarketStrategyResponse]
-	getPublisherStats      *connect.Client[v1.GetPublisherStatsRequest, v1.GetPublisherStatsResponse]
-	runMarketBacktest      *connect.Client[v1.RunMarketBacktestRequest, v1.BacktestRunUpdate]
-	getLivePerformance     *connect.Client[v1.GetLivePerformanceRequest, v1.GetLivePerformanceResponse]
-	linkLiveAccount        *connect.Client[v1.LinkLiveAccountRequest, v1.LinkLiveAccountResponse]
-	generateAndPublish     *connect.Client[v1.GenerateAndPublishRequest, v1.GenerateAndPublishEvent]
-	generateFromTemplate   *connect.Client[v1.GenerateFromTemplateRequest, v1.GenerateAndPublishEvent]
-	listStrategyTemplates  *connect.Client[v1.ListStrategyTemplatesRequest, v1.ListStrategyTemplatesResponse]
-	listAutoGenTasks       *connect.Client[v1.ListAutoGenTasksRequest, v1.ListAutoGenTasksResponse]
-	approveAutoGenTask     *connect.Client[v1.ApproveAutoGenTaskRequest, v1.ApproveAutoGenTaskResponse]
-	rejectAutoGenTask      *connect.Client[v1.RejectAutoGenTaskRequest, v1.RejectAutoGenTaskResponse]
-	triggerBatchGeneration *connect.Client[v1.TriggerBatchGenerationRequest, v1.TriggerBatchGenerationResponse]
+	publishStrategy          *connect.Client[v1.PublishStrategyRequest, v1.PublishStrategyResponse]
+	subscribe                *connect.Client[v1.SubscribeRequest, v1.SubscribeResponse]
+	unsubscribe              *connect.Client[v1.UnsubscribeRequest, v1.UnsubscribeResponse]
+	purchaseStrategy         *connect.Client[v1.PurchaseStrategyRequest, v1.PurchaseStrategyResponse]
+	listPublished            *connect.Client[v1.ListPublishedRequest, v1.ListPublishedResponse]
+	listSubscriptions        *connect.Client[v1.ListSubscriptionsRequest, v1.ListSubscriptionsResponse]
+	rateStrategy             *connect.Client[v1.RateStrategyRequest, v1.RateStrategyResponse]
+	listRatings              *connect.Client[v1.ListRatingsRequest, v1.ListRatingsResponse]
+	commentOnStrategy        *connect.Client[v1.CommentOnStrategyRequest, v1.CommentOnStrategyResponse]
+	listComments             *connect.Client[v1.ListCommentsRequest, v1.ListCommentsResponse]
+	setStrategyPricing       *connect.Client[v1.SetStrategyPricingRequest, v1.SetStrategyPricingResponse]
+	unpublishStrategy        *connect.Client[v1.UnpublishMarketStrategyRequest, v1.UnpublishMarketStrategyResponse]
+	getPublisherStats        *connect.Client[v1.GetPublisherStatsRequest, v1.GetPublisherStatsResponse]
+	runMarketBacktest        *connect.Client[v1.RunMarketBacktestRequest, v1.BacktestRunUpdate]
+	getLivePerformance       *connect.Client[v1.GetLivePerformanceRequest, v1.GetLivePerformanceResponse]
+	linkLiveAccount          *connect.Client[v1.LinkLiveAccountRequest, v1.LinkLiveAccountResponse]
+	generateAndPublish       *connect.Client[v1.GenerateAndPublishRequest, v1.GenerateAndPublishEvent]
+	generateFromTemplate     *connect.Client[v1.GenerateFromTemplateRequest, v1.GenerateAndPublishEvent]
+	listStrategyTemplates    *connect.Client[v1.ListStrategyTemplatesRequest, v1.ListStrategyTemplatesResponse]
+	listAutoGenTasks         *connect.Client[v1.ListAutoGenTasksRequest, v1.ListAutoGenTasksResponse]
+	approveAutoGenTask       *connect.Client[v1.ApproveAutoGenTaskRequest, v1.ApproveAutoGenTaskResponse]
+	rejectAutoGenTask        *connect.Client[v1.RejectAutoGenTaskRequest, v1.RejectAutoGenTaskResponse]
+	triggerBatchGeneration   *connect.Client[v1.TriggerBatchGenerationRequest, v1.TriggerBatchGenerationResponse]
+	listLeaderboard          *connect.Client[v1.ListLeaderboardRequest, v1.ListLeaderboardResponse]
+	startTrial               *connect.Client[v1.StartTrialRequest, v1.StartTrialResponse]
+	compareStrategies        *connect.Client[v1.CompareStrategiesRequest, v1.CompareStrategiesResponse]
+	getStrategyPublicInfo    *connect.Client[v1.GetStrategyPublicInfoRequest, v1.GetStrategyPublicInfoResponse]
+	requestVerification      *connect.Client[v1.RequestVerificationRequest, v1.RequestVerificationResponse]
+	adminProcessVerification *connect.Client[v1.AdminProcessVerificationRequest, v1.AdminProcessVerificationResponse]
+	adminListStrategies      *connect.Client[v1.AdminListStrategiesRequest, v1.AdminListStrategiesResponse]
+	adminFeatureStrategy     *connect.Client[v1.AdminFeatureStrategyRequest, v1.AdminFeatureStrategyResponse]
+	requestRefund            *connect.Client[v1.RequestRefundRequest, v1.RequestRefundResponse]
+	adminListRefundRequests  *connect.Client[v1.AdminListRefundRequestsRequest, v1.AdminListRefundRequestsResponse]
+	adminProcessRefund       *connect.Client[v1.AdminProcessRefundRequest, v1.AdminProcessRefundResponse]
+	getMarketplaceAnalytics  *connect.Client[v1.GetMarketplaceAnalyticsRequest, v1.MarketplaceAnalytics]
+	getTopStrategies         *connect.Client[emptypb.Empty, v1.TopStrategiesResponse]
+	getTopProviders          *connect.Client[emptypb.Empty, v1.TopProvidersResponse]
+	validateCoupon           *connect.Client[v1.ValidateCouponRequest, v1.ValidateCouponResponse]
+	createCoupon             *connect.Client[v1.CreateCouponRequest, v1.CreateCouponResponse]
+	listCoupons              *connect.Client[v1.ListCouponsRequest, v1.ListCouponsResponse]
+	disableCoupon            *connect.Client[v1.DisableCouponRequest, v1.DisableCouponResponse]
+	getProviderEarnings      *connect.Client[emptypb.Empty, v1.ProviderEarnings]
+	listProviderTransactions *connect.Client[v1.ListProviderTransactionsRequest, v1.ListProviderTransactionsResponse]
 }
 
 // PublishStrategy calls ant.v1.MarketplaceService.PublishStrategy.
@@ -441,6 +672,106 @@ func (c *marketplaceServiceClient) TriggerBatchGeneration(ctx context.Context, r
 	return c.triggerBatchGeneration.CallUnary(ctx, req)
 }
 
+// ListLeaderboard calls ant.v1.MarketplaceService.ListLeaderboard.
+func (c *marketplaceServiceClient) ListLeaderboard(ctx context.Context, req *connect.Request[v1.ListLeaderboardRequest]) (*connect.Response[v1.ListLeaderboardResponse], error) {
+	return c.listLeaderboard.CallUnary(ctx, req)
+}
+
+// StartTrial calls ant.v1.MarketplaceService.StartTrial.
+func (c *marketplaceServiceClient) StartTrial(ctx context.Context, req *connect.Request[v1.StartTrialRequest]) (*connect.Response[v1.StartTrialResponse], error) {
+	return c.startTrial.CallUnary(ctx, req)
+}
+
+// CompareStrategies calls ant.v1.MarketplaceService.CompareStrategies.
+func (c *marketplaceServiceClient) CompareStrategies(ctx context.Context, req *connect.Request[v1.CompareStrategiesRequest]) (*connect.Response[v1.CompareStrategiesResponse], error) {
+	return c.compareStrategies.CallUnary(ctx, req)
+}
+
+// GetStrategyPublicInfo calls ant.v1.MarketplaceService.GetStrategyPublicInfo.
+func (c *marketplaceServiceClient) GetStrategyPublicInfo(ctx context.Context, req *connect.Request[v1.GetStrategyPublicInfoRequest]) (*connect.Response[v1.GetStrategyPublicInfoResponse], error) {
+	return c.getStrategyPublicInfo.CallUnary(ctx, req)
+}
+
+// RequestVerification calls ant.v1.MarketplaceService.RequestVerification.
+func (c *marketplaceServiceClient) RequestVerification(ctx context.Context, req *connect.Request[v1.RequestVerificationRequest]) (*connect.Response[v1.RequestVerificationResponse], error) {
+	return c.requestVerification.CallUnary(ctx, req)
+}
+
+// AdminProcessVerification calls ant.v1.MarketplaceService.AdminProcessVerification.
+func (c *marketplaceServiceClient) AdminProcessVerification(ctx context.Context, req *connect.Request[v1.AdminProcessVerificationRequest]) (*connect.Response[v1.AdminProcessVerificationResponse], error) {
+	return c.adminProcessVerification.CallUnary(ctx, req)
+}
+
+// AdminListStrategies calls ant.v1.MarketplaceService.AdminListStrategies.
+func (c *marketplaceServiceClient) AdminListStrategies(ctx context.Context, req *connect.Request[v1.AdminListStrategiesRequest]) (*connect.Response[v1.AdminListStrategiesResponse], error) {
+	return c.adminListStrategies.CallUnary(ctx, req)
+}
+
+// AdminFeatureStrategy calls ant.v1.MarketplaceService.AdminFeatureStrategy.
+func (c *marketplaceServiceClient) AdminFeatureStrategy(ctx context.Context, req *connect.Request[v1.AdminFeatureStrategyRequest]) (*connect.Response[v1.AdminFeatureStrategyResponse], error) {
+	return c.adminFeatureStrategy.CallUnary(ctx, req)
+}
+
+// RequestRefund calls ant.v1.MarketplaceService.RequestRefund.
+func (c *marketplaceServiceClient) RequestRefund(ctx context.Context, req *connect.Request[v1.RequestRefundRequest]) (*connect.Response[v1.RequestRefundResponse], error) {
+	return c.requestRefund.CallUnary(ctx, req)
+}
+
+// AdminListRefundRequests calls ant.v1.MarketplaceService.AdminListRefundRequests.
+func (c *marketplaceServiceClient) AdminListRefundRequests(ctx context.Context, req *connect.Request[v1.AdminListRefundRequestsRequest]) (*connect.Response[v1.AdminListRefundRequestsResponse], error) {
+	return c.adminListRefundRequests.CallUnary(ctx, req)
+}
+
+// AdminProcessRefund calls ant.v1.MarketplaceService.AdminProcessRefund.
+func (c *marketplaceServiceClient) AdminProcessRefund(ctx context.Context, req *connect.Request[v1.AdminProcessRefundRequest]) (*connect.Response[v1.AdminProcessRefundResponse], error) {
+	return c.adminProcessRefund.CallUnary(ctx, req)
+}
+
+// GetMarketplaceAnalytics calls ant.v1.MarketplaceService.GetMarketplaceAnalytics.
+func (c *marketplaceServiceClient) GetMarketplaceAnalytics(ctx context.Context, req *connect.Request[v1.GetMarketplaceAnalyticsRequest]) (*connect.Response[v1.MarketplaceAnalytics], error) {
+	return c.getMarketplaceAnalytics.CallUnary(ctx, req)
+}
+
+// GetTopStrategies calls ant.v1.MarketplaceService.GetTopStrategies.
+func (c *marketplaceServiceClient) GetTopStrategies(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[v1.TopStrategiesResponse], error) {
+	return c.getTopStrategies.CallUnary(ctx, req)
+}
+
+// GetTopProviders calls ant.v1.MarketplaceService.GetTopProviders.
+func (c *marketplaceServiceClient) GetTopProviders(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[v1.TopProvidersResponse], error) {
+	return c.getTopProviders.CallUnary(ctx, req)
+}
+
+// ValidateCoupon calls ant.v1.MarketplaceService.ValidateCoupon.
+func (c *marketplaceServiceClient) ValidateCoupon(ctx context.Context, req *connect.Request[v1.ValidateCouponRequest]) (*connect.Response[v1.ValidateCouponResponse], error) {
+	return c.validateCoupon.CallUnary(ctx, req)
+}
+
+// CreateCoupon calls ant.v1.MarketplaceService.CreateCoupon.
+func (c *marketplaceServiceClient) CreateCoupon(ctx context.Context, req *connect.Request[v1.CreateCouponRequest]) (*connect.Response[v1.CreateCouponResponse], error) {
+	return c.createCoupon.CallUnary(ctx, req)
+}
+
+// ListCoupons calls ant.v1.MarketplaceService.ListCoupons.
+func (c *marketplaceServiceClient) ListCoupons(ctx context.Context, req *connect.Request[v1.ListCouponsRequest]) (*connect.Response[v1.ListCouponsResponse], error) {
+	return c.listCoupons.CallUnary(ctx, req)
+}
+
+// DisableCoupon calls ant.v1.MarketplaceService.DisableCoupon.
+func (c *marketplaceServiceClient) DisableCoupon(ctx context.Context, req *connect.Request[v1.DisableCouponRequest]) (*connect.Response[v1.DisableCouponResponse], error) {
+	return c.disableCoupon.CallUnary(ctx, req)
+}
+
+// GetProviderEarnings calls ant.v1.MarketplaceService.GetProviderEarnings.
+func (c *marketplaceServiceClient) GetProviderEarnings(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[v1.ProviderEarnings], error) {
+	return c.getProviderEarnings.CallUnary(ctx, req)
+}
+
+// ListProviderTransactions calls ant.v1.MarketplaceService.ListProviderTransactions.
+func (c *marketplaceServiceClient) ListProviderTransactions(ctx context.Context, req *connect.Request[v1.ListProviderTransactionsRequest]) (*connect.Response[v1.ListProviderTransactionsResponse], error) {
+	return c.listProviderTransactions.CallUnary(ctx, req)
+}
+
 // MarketplaceServiceHandler is an implementation of the ant.v1.MarketplaceService service.
 type MarketplaceServiceHandler interface {
 	PublishStrategy(context.Context, *connect.Request[v1.PublishStrategyRequest]) (*connect.Response[v1.PublishStrategyResponse], error)
@@ -482,6 +813,36 @@ type MarketplaceServiceHandler interface {
 	RejectAutoGenTask(context.Context, *connect.Request[v1.RejectAutoGenTaskRequest]) (*connect.Response[v1.RejectAutoGenTaskResponse], error)
 	// Phase 2 Admin: Trigger batch generation (enqueue tasks).
 	TriggerBatchGeneration(context.Context, *connect.Request[v1.TriggerBatchGenerationRequest]) (*connect.Response[v1.TriggerBatchGenerationResponse], error)
+	// Phase 3.1: Strategy leaderboard.
+	ListLeaderboard(context.Context, *connect.Request[v1.ListLeaderboardRequest]) (*connect.Response[v1.ListLeaderboardResponse], error)
+	// Phase 3.2: Start free trial for a strategy.
+	StartTrial(context.Context, *connect.Request[v1.StartTrialRequest]) (*connect.Response[v1.StartTrialResponse], error)
+	// Phase 3.3: Compare strategies side by side.
+	CompareStrategies(context.Context, *connect.Request[v1.CompareStrategiesRequest]) (*connect.Response[v1.CompareStrategiesResponse], error)
+	// Phase 3.5: Get public strategy info for share landing page (no auth required).
+	GetStrategyPublicInfo(context.Context, *connect.Request[v1.GetStrategyPublicInfoRequest]) (*connect.Response[v1.GetStrategyPublicInfoResponse], error)
+	// Phase 1.3: Provider identity verification.
+	RequestVerification(context.Context, *connect.Request[v1.RequestVerificationRequest]) (*connect.Response[v1.RequestVerificationResponse], error)
+	AdminProcessVerification(context.Context, *connect.Request[v1.AdminProcessVerificationRequest]) (*connect.Response[v1.AdminProcessVerificationResponse], error)
+	// Phase 4.1: Admin strategy management.
+	AdminListStrategies(context.Context, *connect.Request[v1.AdminListStrategiesRequest]) (*connect.Response[v1.AdminListStrategiesResponse], error)
+	AdminFeatureStrategy(context.Context, *connect.Request[v1.AdminFeatureStrategyRequest]) (*connect.Response[v1.AdminFeatureStrategyResponse], error)
+	// Phase 4.2: Refund request workflow.
+	RequestRefund(context.Context, *connect.Request[v1.RequestRefundRequest]) (*connect.Response[v1.RequestRefundResponse], error)
+	AdminListRefundRequests(context.Context, *connect.Request[v1.AdminListRefundRequestsRequest]) (*connect.Response[v1.AdminListRefundRequestsResponse], error)
+	AdminProcessRefund(context.Context, *connect.Request[v1.AdminProcessRefundRequest]) (*connect.Response[v1.AdminProcessRefundResponse], error)
+	// Phase 4.3: Marketplace analytics dashboard.
+	GetMarketplaceAnalytics(context.Context, *connect.Request[v1.GetMarketplaceAnalyticsRequest]) (*connect.Response[v1.MarketplaceAnalytics], error)
+	GetTopStrategies(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.TopStrategiesResponse], error)
+	GetTopProviders(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.TopProvidersResponse], error)
+	// Phase 4.5: Coupon / discount codes.
+	ValidateCoupon(context.Context, *connect.Request[v1.ValidateCouponRequest]) (*connect.Response[v1.ValidateCouponResponse], error)
+	CreateCoupon(context.Context, *connect.Request[v1.CreateCouponRequest]) (*connect.Response[v1.CreateCouponResponse], error)
+	ListCoupons(context.Context, *connect.Request[v1.ListCouponsRequest]) (*connect.Response[v1.ListCouponsResponse], error)
+	DisableCoupon(context.Context, *connect.Request[v1.DisableCouponRequest]) (*connect.Response[v1.DisableCouponResponse], error)
+	// Phase 4.6: Provider earnings & withdrawal.
+	GetProviderEarnings(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.ProviderEarnings], error)
+	ListProviderTransactions(context.Context, *connect.Request[v1.ListProviderTransactionsRequest]) (*connect.Response[v1.ListProviderTransactionsResponse], error)
 }
 
 // NewMarketplaceServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -629,6 +990,126 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 		connect.WithSchema(marketplaceServiceMethods.ByName("TriggerBatchGeneration")),
 		connect.WithHandlerOptions(opts...),
 	)
+	marketplaceServiceListLeaderboardHandler := connect.NewUnaryHandler(
+		MarketplaceServiceListLeaderboardProcedure,
+		svc.ListLeaderboard,
+		connect.WithSchema(marketplaceServiceMethods.ByName("ListLeaderboard")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceStartTrialHandler := connect.NewUnaryHandler(
+		MarketplaceServiceStartTrialProcedure,
+		svc.StartTrial,
+		connect.WithSchema(marketplaceServiceMethods.ByName("StartTrial")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceCompareStrategiesHandler := connect.NewUnaryHandler(
+		MarketplaceServiceCompareStrategiesProcedure,
+		svc.CompareStrategies,
+		connect.WithSchema(marketplaceServiceMethods.ByName("CompareStrategies")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceGetStrategyPublicInfoHandler := connect.NewUnaryHandler(
+		MarketplaceServiceGetStrategyPublicInfoProcedure,
+		svc.GetStrategyPublicInfo,
+		connect.WithSchema(marketplaceServiceMethods.ByName("GetStrategyPublicInfo")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceRequestVerificationHandler := connect.NewUnaryHandler(
+		MarketplaceServiceRequestVerificationProcedure,
+		svc.RequestVerification,
+		connect.WithSchema(marketplaceServiceMethods.ByName("RequestVerification")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceAdminProcessVerificationHandler := connect.NewUnaryHandler(
+		MarketplaceServiceAdminProcessVerificationProcedure,
+		svc.AdminProcessVerification,
+		connect.WithSchema(marketplaceServiceMethods.ByName("AdminProcessVerification")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceAdminListStrategiesHandler := connect.NewUnaryHandler(
+		MarketplaceServiceAdminListStrategiesProcedure,
+		svc.AdminListStrategies,
+		connect.WithSchema(marketplaceServiceMethods.ByName("AdminListStrategies")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceAdminFeatureStrategyHandler := connect.NewUnaryHandler(
+		MarketplaceServiceAdminFeatureStrategyProcedure,
+		svc.AdminFeatureStrategy,
+		connect.WithSchema(marketplaceServiceMethods.ByName("AdminFeatureStrategy")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceRequestRefundHandler := connect.NewUnaryHandler(
+		MarketplaceServiceRequestRefundProcedure,
+		svc.RequestRefund,
+		connect.WithSchema(marketplaceServiceMethods.ByName("RequestRefund")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceAdminListRefundRequestsHandler := connect.NewUnaryHandler(
+		MarketplaceServiceAdminListRefundRequestsProcedure,
+		svc.AdminListRefundRequests,
+		connect.WithSchema(marketplaceServiceMethods.ByName("AdminListRefundRequests")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceAdminProcessRefundHandler := connect.NewUnaryHandler(
+		MarketplaceServiceAdminProcessRefundProcedure,
+		svc.AdminProcessRefund,
+		connect.WithSchema(marketplaceServiceMethods.ByName("AdminProcessRefund")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceGetMarketplaceAnalyticsHandler := connect.NewUnaryHandler(
+		MarketplaceServiceGetMarketplaceAnalyticsProcedure,
+		svc.GetMarketplaceAnalytics,
+		connect.WithSchema(marketplaceServiceMethods.ByName("GetMarketplaceAnalytics")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceGetTopStrategiesHandler := connect.NewUnaryHandler(
+		MarketplaceServiceGetTopStrategiesProcedure,
+		svc.GetTopStrategies,
+		connect.WithSchema(marketplaceServiceMethods.ByName("GetTopStrategies")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceGetTopProvidersHandler := connect.NewUnaryHandler(
+		MarketplaceServiceGetTopProvidersProcedure,
+		svc.GetTopProviders,
+		connect.WithSchema(marketplaceServiceMethods.ByName("GetTopProviders")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceValidateCouponHandler := connect.NewUnaryHandler(
+		MarketplaceServiceValidateCouponProcedure,
+		svc.ValidateCoupon,
+		connect.WithSchema(marketplaceServiceMethods.ByName("ValidateCoupon")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceCreateCouponHandler := connect.NewUnaryHandler(
+		MarketplaceServiceCreateCouponProcedure,
+		svc.CreateCoupon,
+		connect.WithSchema(marketplaceServiceMethods.ByName("CreateCoupon")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceListCouponsHandler := connect.NewUnaryHandler(
+		MarketplaceServiceListCouponsProcedure,
+		svc.ListCoupons,
+		connect.WithSchema(marketplaceServiceMethods.ByName("ListCoupons")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceDisableCouponHandler := connect.NewUnaryHandler(
+		MarketplaceServiceDisableCouponProcedure,
+		svc.DisableCoupon,
+		connect.WithSchema(marketplaceServiceMethods.ByName("DisableCoupon")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceGetProviderEarningsHandler := connect.NewUnaryHandler(
+		MarketplaceServiceGetProviderEarningsProcedure,
+		svc.GetProviderEarnings,
+		connect.WithSchema(marketplaceServiceMethods.ByName("GetProviderEarnings")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceListProviderTransactionsHandler := connect.NewUnaryHandler(
+		MarketplaceServiceListProviderTransactionsProcedure,
+		svc.ListProviderTransactions,
+		connect.WithSchema(marketplaceServiceMethods.ByName("ListProviderTransactions")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.MarketplaceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case MarketplaceServicePublishStrategyProcedure:
@@ -677,6 +1158,46 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 			marketplaceServiceRejectAutoGenTaskHandler.ServeHTTP(w, r)
 		case MarketplaceServiceTriggerBatchGenerationProcedure:
 			marketplaceServiceTriggerBatchGenerationHandler.ServeHTTP(w, r)
+		case MarketplaceServiceListLeaderboardProcedure:
+			marketplaceServiceListLeaderboardHandler.ServeHTTP(w, r)
+		case MarketplaceServiceStartTrialProcedure:
+			marketplaceServiceStartTrialHandler.ServeHTTP(w, r)
+		case MarketplaceServiceCompareStrategiesProcedure:
+			marketplaceServiceCompareStrategiesHandler.ServeHTTP(w, r)
+		case MarketplaceServiceGetStrategyPublicInfoProcedure:
+			marketplaceServiceGetStrategyPublicInfoHandler.ServeHTTP(w, r)
+		case MarketplaceServiceRequestVerificationProcedure:
+			marketplaceServiceRequestVerificationHandler.ServeHTTP(w, r)
+		case MarketplaceServiceAdminProcessVerificationProcedure:
+			marketplaceServiceAdminProcessVerificationHandler.ServeHTTP(w, r)
+		case MarketplaceServiceAdminListStrategiesProcedure:
+			marketplaceServiceAdminListStrategiesHandler.ServeHTTP(w, r)
+		case MarketplaceServiceAdminFeatureStrategyProcedure:
+			marketplaceServiceAdminFeatureStrategyHandler.ServeHTTP(w, r)
+		case MarketplaceServiceRequestRefundProcedure:
+			marketplaceServiceRequestRefundHandler.ServeHTTP(w, r)
+		case MarketplaceServiceAdminListRefundRequestsProcedure:
+			marketplaceServiceAdminListRefundRequestsHandler.ServeHTTP(w, r)
+		case MarketplaceServiceAdminProcessRefundProcedure:
+			marketplaceServiceAdminProcessRefundHandler.ServeHTTP(w, r)
+		case MarketplaceServiceGetMarketplaceAnalyticsProcedure:
+			marketplaceServiceGetMarketplaceAnalyticsHandler.ServeHTTP(w, r)
+		case MarketplaceServiceGetTopStrategiesProcedure:
+			marketplaceServiceGetTopStrategiesHandler.ServeHTTP(w, r)
+		case MarketplaceServiceGetTopProvidersProcedure:
+			marketplaceServiceGetTopProvidersHandler.ServeHTTP(w, r)
+		case MarketplaceServiceValidateCouponProcedure:
+			marketplaceServiceValidateCouponHandler.ServeHTTP(w, r)
+		case MarketplaceServiceCreateCouponProcedure:
+			marketplaceServiceCreateCouponHandler.ServeHTTP(w, r)
+		case MarketplaceServiceListCouponsProcedure:
+			marketplaceServiceListCouponsHandler.ServeHTTP(w, r)
+		case MarketplaceServiceDisableCouponProcedure:
+			marketplaceServiceDisableCouponHandler.ServeHTTP(w, r)
+		case MarketplaceServiceGetProviderEarningsProcedure:
+			marketplaceServiceGetProviderEarningsHandler.ServeHTTP(w, r)
+		case MarketplaceServiceListProviderTransactionsProcedure:
+			marketplaceServiceListProviderTransactionsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -776,4 +1297,84 @@ func (UnimplementedMarketplaceServiceHandler) RejectAutoGenTask(context.Context,
 
 func (UnimplementedMarketplaceServiceHandler) TriggerBatchGeneration(context.Context, *connect.Request[v1.TriggerBatchGenerationRequest]) (*connect.Response[v1.TriggerBatchGenerationResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.TriggerBatchGeneration is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) ListLeaderboard(context.Context, *connect.Request[v1.ListLeaderboardRequest]) (*connect.Response[v1.ListLeaderboardResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ListLeaderboard is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) StartTrial(context.Context, *connect.Request[v1.StartTrialRequest]) (*connect.Response[v1.StartTrialResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.StartTrial is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) CompareStrategies(context.Context, *connect.Request[v1.CompareStrategiesRequest]) (*connect.Response[v1.CompareStrategiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.CompareStrategies is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) GetStrategyPublicInfo(context.Context, *connect.Request[v1.GetStrategyPublicInfoRequest]) (*connect.Response[v1.GetStrategyPublicInfoResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.GetStrategyPublicInfo is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) RequestVerification(context.Context, *connect.Request[v1.RequestVerificationRequest]) (*connect.Response[v1.RequestVerificationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.RequestVerification is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) AdminProcessVerification(context.Context, *connect.Request[v1.AdminProcessVerificationRequest]) (*connect.Response[v1.AdminProcessVerificationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.AdminProcessVerification is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) AdminListStrategies(context.Context, *connect.Request[v1.AdminListStrategiesRequest]) (*connect.Response[v1.AdminListStrategiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.AdminListStrategies is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) AdminFeatureStrategy(context.Context, *connect.Request[v1.AdminFeatureStrategyRequest]) (*connect.Response[v1.AdminFeatureStrategyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.AdminFeatureStrategy is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) RequestRefund(context.Context, *connect.Request[v1.RequestRefundRequest]) (*connect.Response[v1.RequestRefundResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.RequestRefund is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) AdminListRefundRequests(context.Context, *connect.Request[v1.AdminListRefundRequestsRequest]) (*connect.Response[v1.AdminListRefundRequestsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.AdminListRefundRequests is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) AdminProcessRefund(context.Context, *connect.Request[v1.AdminProcessRefundRequest]) (*connect.Response[v1.AdminProcessRefundResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.AdminProcessRefund is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) GetMarketplaceAnalytics(context.Context, *connect.Request[v1.GetMarketplaceAnalyticsRequest]) (*connect.Response[v1.MarketplaceAnalytics], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.GetMarketplaceAnalytics is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) GetTopStrategies(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.TopStrategiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.GetTopStrategies is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) GetTopProviders(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.TopProvidersResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.GetTopProviders is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) ValidateCoupon(context.Context, *connect.Request[v1.ValidateCouponRequest]) (*connect.Response[v1.ValidateCouponResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ValidateCoupon is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) CreateCoupon(context.Context, *connect.Request[v1.CreateCouponRequest]) (*connect.Response[v1.CreateCouponResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.CreateCoupon is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) ListCoupons(context.Context, *connect.Request[v1.ListCouponsRequest]) (*connect.Response[v1.ListCouponsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ListCoupons is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) DisableCoupon(context.Context, *connect.Request[v1.DisableCouponRequest]) (*connect.Response[v1.DisableCouponResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.DisableCoupon is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) GetProviderEarnings(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.ProviderEarnings], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.GetProviderEarnings is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) ListProviderTransactions(context.Context, *connect.Request[v1.ListProviderTransactionsRequest]) (*connect.Response[v1.ListProviderTransactionsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ListProviderTransactions is not implemented"))
 }

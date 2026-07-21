@@ -22,11 +22,6 @@ func paramsProtoToMap(raw []byte) map[string]string {
 	return sp.GetValues()
 }
 
-func parseFloat64(s string) float64 {
-	f, _ := strconv.ParseFloat(s, 64)
-	return f
-}
-
 func parseDecimal(s string) decimal.Decimal {
 	d, err := decimal.NewFromString(s)
 	if err != nil {

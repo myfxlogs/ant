@@ -8,13 +8,6 @@ import (
 
 // ── CST helpers (shared by compile_interp.go and compile_interp_expr.go) ──
 
-func nodeType(n *sitter.Node) string {
-	if n == nil {
-		return ""
-	}
-	return n.Type()
-}
-
 func nodeText(source string, n *sitter.Node) string {
 	if n == nil {
 		return ""
@@ -32,17 +25,6 @@ func childByType(n *sitter.Node, kind string) *sitter.Node {
 	return nil
 }
 
-func childrenByType(n *sitter.Node, kind string) []*sitter.Node {
-	var out []*sitter.Node
-	for i := 0; i < int(n.ChildCount()); i++ {
-		c := n.Child(i)
-		if c.Type() == kind {
-			out = append(out, c)
-		}
-	}
-	return out
-}
-
 func findNamedChild(n *sitter.Node, kinds ...string) *sitter.Node {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		c := n.NamedChild(i)
@@ -53,18 +35,6 @@ func findNamedChild(n *sitter.Node, kinds ...string) *sitter.Node {
 		}
 	}
 	return nil
-}
-
-func walkCST(n *sitter.Node, visitor func(*sitter.Node) bool) {
-	if n == nil {
-		return
-	}
-	if !visitor(n) {
-		return
-	}
-	for i := 0; i < int(n.ChildCount()); i++ {
-		walkCST(n.Child(i), visitor)
-	}
 }
 
 func callFuncName(source string, n *sitter.Node) string {
@@ -89,17 +59,6 @@ func callFuncName(source string, n *sitter.Node) string {
 }
 
 // ── Function extraction ─────────────────────────────────────────────
-
-func findFunctions(root *sitter.Node) []*sitter.Node {
-	var fns []*sitter.Node
-	walkCST(root, func(n *sitter.Node) bool {
-		if n.Type() == "function_definition" {
-			fns = append(fns, n)
-		}
-		return true
-	})
-	return fns
-}
 
 func funcName(source string, n *sitter.Node) string {
 	decl := childByType(n, "function_declarator")
@@ -146,42 +105,12 @@ func getNamedChildren(n *sitter.Node) []*sitter.Node {
 	return out
 }
 
-func containsNonASCII(s string) bool {
-	for _, r := range s {
-		if r > 127 {
-			return true
-		}
-	}
-	return false
-}
-
-func parseInt(s string) int {
-	var n int
-	for _, c := range s {
-		if c >= '0' && c <= '9' {
-			n = n*10 + int(c-'0')
-		}
-	}
-	return n
-}
-
 func isMQLPrimitiveType(t string) bool {
 	switch t {
 	case "int", "long", "uint", "ulong", "double", "float", "string", "bool", "char", "short", "uchar", "ushort":
 		return true
 	}
 	return false
-}
-
-// nonEmpty filters out empty strings.
-func nonEmpty(ss []string) []string {
-	var out []string
-	for _, s := range ss {
-		if s != "" {
-			out = append(out, s)
-		}
-	}
-	return out
 }
 
 // replaceWord replaces whole-word occurrences of old with new in s.

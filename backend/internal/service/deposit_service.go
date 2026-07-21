@@ -166,7 +166,7 @@ func (s *DepositService) ConfirmDeposit(ctx context.Context, userID, addrID uuid
 	if err != nil {
 		return fmt.Errorf("deposit service: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	now := time.Now()
 	dep := &model.Deposit{
@@ -199,7 +199,7 @@ func (s *DepositService) ConfirmDeposit(ctx context.Context, userID, addrID uuid
 		fmt.Sprintf("On-chain USDT deposit: %s", txHash), nil, "deposit-"+txHash)
 	if err != nil {
 		if errors.Is(err, model.ErrIdempotentReplay) {
-			tx.Rollback(ctx)
+			_ = tx.Rollback(ctx)
 			return nil
 		}
 		return fmt.Errorf("deposit service: credit wallet: %w", err)

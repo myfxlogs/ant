@@ -52,8 +52,8 @@ type MtHubService struct {
 	costEstimator  costsvc.CostEstimator // M10-BASE-D2: pre-trade cost estimation
 	killSwitch     KillSwitchGate        // V3-R-5: global kill switch
 
-	accountStateProvider  AccountStateProvider
-	accountOwnerVerifier  AccountOwnerVerifier
+	accountStateProvider AccountStateProvider
+	accountOwnerVerifier AccountOwnerVerifier
 
 	// D6-A: single-chokepoint risk gate evaluated before every order (Place/Close/Modify).
 	gate *risk.Gate
@@ -66,7 +66,7 @@ type MtHubService struct {
 	omsWriter      *OmsWriter
 	brokerRegistry BrokerRegistry // M12-C2: multi-broker registry (optional)
 	barBroker      *BarBroker
-	dropBroker     *BarDropBroker   // push-based bar drop notifications
+	dropBroker     *BarDropBroker // push-based bar drop notifications
 	tickBroker     *TickBroker
 	tradeBroker    *TradeBroker
 	statusBroker   *AccountStatusBroker
@@ -243,6 +243,8 @@ var ErrReconciling = errors.New("mthub: account reconciling, order rejected")
 // If an IdempotencyGuard is configured, duplicate client IDs are rejected before broker submission.
 var ErrKillSwitchEngaged = errors.New("mthub: global kill switch engaged")
 
+// ErrCircuitOpen is returned when the broker endpoint circuit breaker is open.
+var ErrCircuitOpen = errors.New("mthub: circuit breaker open")
 
 // platform resolves the account's broker platform name from the Hub.
 func platform(accountID string, hub *Hub) string {
@@ -344,4 +346,3 @@ func (s *MtHubService) PublishPositionSnapshot(ev *PositionSnapshot) {
 func (s *MtHubService) SubscribePositionSnapshots(ctx context.Context, accountID string) (<-chan *PositionSnapshot, func()) {
 	return s.snapshotBroker.Subscribe(accountID)
 }
-

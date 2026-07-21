@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	pb "alphaforge/mt5"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
+	pb "alphaforge/mt5"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
@@ -62,7 +62,10 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 			// Skip on context cancellation — normal teardown, not a stream error.
 			if err != context.Canceled && err != context.DeadlineExceeded {
 				g.reportStatus("reconnecting", err.Error())
-				g.Disconnect(ctx)
+				_ = g.Disconnect(ctx)
+				if g.breaker != nil {
+					g.breaker.OnFailure()
+				}
 			}
 			g.sleep(ctx, backoff)
 			backoff = minDuration(backoff*2, maxBackoff)
@@ -82,7 +85,10 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 				// Skip on context cancellation — normal teardown, not a stream error.
 				if err != context.Canceled && err != context.DeadlineExceeded {
 					g.reportStatus("reconnecting", err.Error())
-					g.Disconnect(ctx)
+					_ = g.Disconnect(ctx)
+					if g.breaker != nil {
+						g.breaker.OnFailure()
+					}
 				}
 				break
 			}

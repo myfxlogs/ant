@@ -1,16 +1,17 @@
-import { Card, Tag, Typography, Rate, Space, Tooltip } from 'antd';
-import { CrownOutlined, StarFilled, CheckCircleOutlined, RobotOutlined } from '@ant-design/icons';
+import { Card, Tag, Typography, Rate, Space, Tooltip, Checkbox } from 'antd';
+import { CheckCircleOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
+import { useMarketplaceCtx } from '../MarketplaceContext';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 interface Props {
   strategy: PublishedStrategy;
   isPurchased: boolean;
   isOwner: boolean;
   onOpenDetail: (s: PublishedStrategy) => void;
-  onGetFree: (s: PublishedStrategy) => void;
+  onGetFree?: (s: PublishedStrategy) => void;
 }
 
 function priceLabel(s: PublishedStrategy, t: (k: string) => string): { text: string; color: string } {
@@ -21,8 +22,9 @@ function priceLabel(s: PublishedStrategy, t: (k: string) => string): { text: str
   return { text: t('marketplace.card.buy', '¥{{amount}}', { amount: amount.toFixed(0) }), color: '#D4AF37' };
 }
 
-export default function StrategyMarketCard({ strategy, isPurchased, isOwner, onOpenDetail, onGetFree }: Props) {
+export default function StrategyMarketCard({ strategy, isPurchased, isOwner, onOpenDetail }: Props) {
   const { t } = useTranslation();
+  const ctx = useMarketplaceCtx();
   const price = priceLabel(strategy, t);
   const name = strategy.strategyName || strategy.title || 'Unknown';
   const rating = Number(strategy.avgRating || 0);
@@ -30,23 +32,33 @@ export default function StrategyMarketCard({ strategy, isPurchased, isOwner, onO
   const subscribers = Number(strategy.totalSubscribers || 0);
   const winRate = strategy.winRate != null ? (strategy.winRate * 100).toFixed(0) : null;
   const pnl = strategy.totalPnl != null ? Number(strategy.totalPnl).toFixed(0) : null;
+  const inCompare = ctx.compareIds.includes(strategy.strategyId);
 
   return (
     <Card
       hoverable
       size="small"
-      style={{ borderRadius: 12, height: '100%' }}
+      style={{ borderRadius: 12, height: '100%', position: 'relative' }}
       onClick={() => onOpenDetail(strategy)}
       extra={
-        isOwner ? (
-          <Tag color="blue" style={{ margin: 0, fontWeight: 600, fontSize: 12 }}>
-            {t('marketplace.card.yourStrategy', 'Your Strategy')}
-          </Tag>
-        ) : (
-          <Tag color={price.color} style={{ margin: 0, fontWeight: 600, fontSize: 12 }}>
-            {price.text}
-          </Tag>
-        )
+        <Space size={4}>
+          <Tooltip title={t('marketplace.compare.addToCompare', { defaultValue: 'Add to compare' })}>
+            <Checkbox
+              checked={inCompare}
+              onClick={e => e.stopPropagation()}
+              onChange={e => { e.stopPropagation(); ctx.toggleCompare(strategy.strategyId); }}
+            />
+          </Tooltip>
+          {isOwner ? (
+            <Tag color="blue" style={{ margin: 0, fontWeight: 600, fontSize: 12 }}>
+              {t('marketplace.card.yourStrategy', 'Your Strategy')}
+            </Tag>
+          ) : (
+            <Tag color={price.color} style={{ margin: 0, fontWeight: 600, fontSize: 12 }}>
+              {price.text}
+            </Tag>
+          )}
+        </Space>
       }
     >
       {/* Name */}

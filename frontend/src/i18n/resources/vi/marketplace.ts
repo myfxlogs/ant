@@ -21,7 +21,7 @@ const Marketplace = {
       "descriptionPlaceholder": "Mô tả logic chiến lược, quy tắc vào/ra...",
       "assetClass": { "label": "Loại Tài Sản", "forex": "Ngoại Hối", "crypto": "Tiền Điện Tử", "commodity": "Hàng Hóa", "index": "Chỉ Số", "stock": "Cổ Phiếu" },
       "riskLevel": { "label": "Mức Rủi Ro", "low": "Thấp", "medium": "Trung Bình", "high": "Cao" },
-      "priceModel": { "label": "Định Giá", "free": "Miễn Phí", "monthly": "Đăng Ký Tháng", "once": "Mua Một Lần" },
+      "priceModel": { "label": "Định Giá", "free": "Miễn Phí", "subscription": "Đăng Ký Tháng", "once": "Mua Một Lần" },
       "priceAmount": "Số Tiền",
       "tags": "Thẻ",
       "tagsPlaceholder": "Nhập và nhấn Enter để thêm",

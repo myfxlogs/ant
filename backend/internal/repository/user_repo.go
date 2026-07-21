@@ -39,7 +39,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.User
 	user := &model.User{}
 	query := `
 		SELECT id, email, password_hash, nickname, avatar, role, status,
-		       account_number, email_verified_at, last_login_at, created_at, updated_at
+		       account_number, email_verified_at, last_login_at, token_version, created_at, updated_at
 		FROM users WHERE id = $1 AND deleted_at IS NULL
 	`
 	err := r.db.QueryRow(ctx, query, id).Scan(
@@ -53,6 +53,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.User
 		&user.AccountNumber,
 		&user.EmailVerifiedAt,
 		&user.LastLoginAt,
+		&user.TokenVersion,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -176,6 +177,12 @@ func (r *UserRepository) UpdatePassword(ctx context.Context, id uuid.UUID, passw
 		return fmt.Errorf("update password: %w", err)
 	}
 	return nil
+}
+
+// IncrementTokenVersion bumps the user's token_version, invalidating all existing JWT refresh tokens.
+func (r *UserRepository) IncrementTokenVersion(ctx context.Context, id uuid.UUID) error {
+	_, err := r.db.Exec(ctx, `UPDATE users SET token_version = token_version + 1 WHERE id = $1`, id)
+	return err
 }
 
 // GetAIPrimary 读取用户在 /ai/settings 选定的「默认主模型」。

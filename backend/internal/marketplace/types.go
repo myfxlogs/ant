@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/notification"
 	"alphaforge/internal/repository"
 )
 
@@ -23,6 +24,7 @@ type Service struct {
 	log               *zap.Logger
 	livePerfCollector *LivePerformanceCollector
 	pubCache          *publishedCache
+	notifSender       *notification.Sender
 }
 
 // SystemUserID is the designated platform system account for fee collection.
@@ -44,6 +46,11 @@ func (s *Service) SetLivePerfCollector(c *LivePerformanceCollector) {
 // the wallet repo is only available later (inside registerHandlers).
 func (s *Service) SetWalletRepo(w *repository.WalletRepository) {
 	s.walletRepo = w
+}
+
+// SetNotificationSender injects the notification sender for marketplace events.
+func (s *Service) SetNotificationSender(ns *notification.Sender) {
+	s.notifSender = ns
 }
 
 // GetPlatformFeeRate reads the marketplace platform fee rate from system_config.
@@ -171,6 +178,34 @@ type PublisherStats struct {
 	TopStrategyID    string
 	TopStrategyTitle string
 	TopStrategySubs  int32
+	// Phase 2.4: Enhanced analytics
+	RevenueTrend       []RevenueTrendPoint
+	SubscriberTrend    []SubscriberTrendPoint
+	StrategyBreakdown  []StrategyBreakdown
+}
+
+type RevenueTrendPoint struct {
+	DateMs              int64
+	SaleRevenue         string // decimal string
+	SubscriptionRevenue string // decimal string
+}
+
+type SubscriberTrendPoint struct {
+	DateMs          int64
+	NewSubscribers  int32
+	Churned         int32
+	Active          int32
+}
+
+type StrategyBreakdown struct {
+	StrategyID      string
+	Title           string
+	TotalSubscribers int32
+	Revenue         string // decimal string
+	AvgRating       float64
+	RatingCount     int32
+	PriceModel      string
+	PriceAmount     string
 }
 
 // PurchaseResult holds the outcome of a paid strategy purchase.

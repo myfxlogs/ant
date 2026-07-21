@@ -329,7 +329,7 @@ func (r *WalletRepository) WriteCredentialChangeLedger(
 	if err != nil {
 		return fmt.Errorf("credential change ledger: begin: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	wallet, err := r.getWalletByUserIDTx(ctx, tx, userID)
 	if err != nil {

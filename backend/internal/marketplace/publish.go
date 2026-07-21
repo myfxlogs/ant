@@ -131,7 +131,7 @@ func (s *Service) GetPublisherStats(ctx context.Context, userID string) (*Publis
 	_ = s.pg.QueryRow(ctx,
 		`SELECT COALESCE(AVG(r.avg_rating),0)
 		 FROM marketplace_strategies ms
-		 LEFT JOIN (SELECT strategy_id, AVG(rating) AS avg_rating FROM marketplace_ratings GROUP BY strategy_id) r ON r.strategy_id = ms.id
+		 LEFT JOIN (SELECT strategy_id, AVG(rating) AS avg_rating FROM marketplace_ratings GROUP BY strategy_id) r ON r.strategy_id = ms.strategy_id
 		 WHERE ms.publisher_id::text = $1 AND ms.status = 'published'`,
 		userID,
 	).Scan(&stats.AvgRating)
@@ -144,6 +144,11 @@ func (s *Service) GetPublisherStats(ctx context.Context, userID string) (*Publis
 		 ORDER BY total_subscribers DESC LIMIT 1`,
 		userID,
 	).Scan(&stats.TopStrategyID, &stats.TopStrategyTitle, &stats.TopStrategySubs)
+
+	// Phase 2.4: Enhanced analytics
+	stats.RevenueTrend, _ = s.getRevenueTrend(ctx, userID)
+	stats.SubscriberTrend, _ = s.getSubscriberTrend(ctx, userID)
+	stats.StrategyBreakdown, _ = s.getStrategyBreakdown(ctx, userID)
 
 	return &stats, nil
 }
@@ -174,7 +179,7 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 	if err != nil {
 		return "", fmt.Errorf("marketplace: publish begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	publishID, stratID := uuid.New(), uuid.New()
 	_, err = tx.Exec(ctx, `INSERT INTO user_strategy_publishes (id, user_id, platform_strategy_id, published_at) VALUES ($1,$2,$3,now())`,
@@ -196,6 +201,12 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 		return "", fmt.Errorf("marketplace: publish commit: %w", err)
 	}
 	s.pubCache.clear()
+
+	// Notify users who opted into new strategy notifications.
+	if sid, err := uuid.Parse(params.StrategyID); err == nil {
+		go s.notifyNewStrategy(context.Background(), sid, params.Title, params.AssetClass)
+	}
+
 	return publishID.String(), nil
 }
 
@@ -306,11 +317,11 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit, offs
 	} else {
 		switch sortBy {
 		case "popular":
-			query += fmt.Sprintf(" ORDER BY COALESCE(ms.total_subscribers,0) DESC LIMIT $%d", next())
+			query += fmt.Sprintf(" ORDER BY COALESCE(ms.is_featured,false) DESC, COALESCE(ms.featured_priority,0) DESC, COALESCE(ms.total_subscribers,0) DESC LIMIT $%d", next())
 		case "performance":
-			query += fmt.Sprintf(" ORDER BY COALESCE(ms.win_rate,0) DESC LIMIT $%d", next())
+			query += fmt.Sprintf(" ORDER BY COALESCE(ms.is_featured,false) DESC, COALESCE(ms.featured_priority,0) DESC, COALESCE(ms.win_rate,0) DESC LIMIT $%d", next())
 		default:
-			query += fmt.Sprintf(" ORDER BY usp.published_at DESC LIMIT $%d", next())
+			query += fmt.Sprintf(" ORDER BY COALESCE(ms.is_featured,false) DESC, COALESCE(ms.featured_priority,0) DESC, usp.published_at DESC LIMIT $%d", next())
 		}
 		args = append(args, limit)
 	}

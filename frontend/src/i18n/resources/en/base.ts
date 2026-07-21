@@ -920,7 +920,7 @@ const Base = {
     "publish": {
       "priceModel": {
         "free": "Free",
-        "monthly": "Monthly Subscription",
+        "subscription": "Monthly Subscription",
         "once": "One-Time Purchase",
         "label": "Pricing"
       },

@@ -352,7 +352,7 @@ func (w *Worker) saveBatchBundleAndLegs(ctx context.Context, batchID uuid.UUID, 
 	if err != nil {
 		return fmt.Errorf("save batch bundle and legs: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	sweepRepoTx := repository.NewSweepLogRepository(tx)
 	legSeq := 0

@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { Card, Row, Col, Statistic, Table, Tag, Typography, Empty, Button, Space } from 'antd';
-import { ShopOutlined, StarOutlined, SendOutlined, PlusOutlined, DollarOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next'
+import { Card, Row, Col, Statistic, Table, Tag, Typography, Empty, Button, Space, Tooltip } from 'antd';
+import { ShopOutlined, StarOutlined, SendOutlined, PlusOutlined, DollarOutlined, WalletOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { TABLE_NAME_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
-;
 import { useMarketplaceCtx } from '../MarketplaceContext';
-import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
+import { RevenueTrendChart, SubscriberTrendChart } from './AuthorCharts';
+import ProviderEarningsPanel from './ProviderEarningsPanel';
+import type { PublishedStrategy, StrategyBreakdown } from '@/gen/ant/v1/marketplace_service_pb';
 
 const { Text } = Typography;
 
@@ -15,17 +16,33 @@ export default function AuthorTab() {
   const m = useMarketplaceCtx();
   const { myPublished, authorStats } = m;
 
+  const breakdown = authorStats.strategyBreakdown || [];
+  const subscriberTrend = authorStats.subscriberTrend || [];
+  const lastDay = subscriberTrend.length > 0 ? subscriberTrend[subscriberTrend.length - 1] : null;
+  const prevDay = subscriberTrend.length > 1 ? subscriberTrend[subscriberTrend.length - 2] : null;
+  const newToday = lastDay ? Number(lastDay.newSubscribers || 0) : 0;
+  const churnedToday = lastDay ? Number(lastDay.churned || 0) : 0;
+  const activeNow = lastDay ? Number(lastDay.active || 0) : authorStats.totalSubscribers;
+  const prevActive = prevDay ? Number(prevDay.active || 0) : activeNow;
+  const netChange = activeNow - prevActive;
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <Space>
           <Text strong style={{ fontSize: 15 }}>{t('marketplace.author.myStrategies', 'My Published Strategies')}</Text>
         </Space>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/strategy/library')}>
-          {t('marketplace.author.publishNew', 'Publish New Strategy')}
-        </Button>
+        <Space>
+          <Button icon={<WalletOutlined />} onClick={() => navigate('/wallet')}>
+            {t('marketplace.author.wallet', 'Wallet & Withdraw')}
+          </Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/strategy/library')}>
+            {t('marketplace.author.publishNew', 'Publish New Strategy')}
+          </Button>
+        </Space>
       </div>
 
+      {/* ── Summary stats ── */}
       <Row gutter={[12, 12]} style={{ marginBottom: 20 }}>
         <Col xs={12} sm={6}>
           <Card size="small" style={{ background: '#f6ffed', borderRadius: 12, border: 'none' }}>
@@ -34,7 +51,12 @@ export default function AuthorTab() {
         </Col>
         <Col xs={12} sm={6}>
           <Card size="small" style={{ background: '#e6f7ff', borderRadius: 12, border: 'none' }}>
-            <Statistic title={t('marketplace.author.subscribers')} value={authorStats.totalSubscribers} prefix={<ShopOutlined />} />
+            <Statistic title={t('marketplace.author.subscribers')} value={activeNow} prefix={<ShopOutlined />} />
+            {netChange !== 0 && (
+              <Text type={netChange > 0 ? 'success' : 'danger'} style={{ fontSize: 12 }}>
+                {netChange > 0 ? <RiseOutlined /> : <FallOutlined />} {Math.abs(netChange)} {t('marketplace.author.today', 'today')}
+              </Text>
+            )}
           </Card>
         </Col>
         <Col xs={12} sm={6}>
@@ -47,13 +69,57 @@ export default function AuthorTab() {
             <Statistic title={t('marketplace.author.monthlyRevenue', 'Monthly Revenue')} value={`¥${Number(authorStats.monthlyRevenue || 0).toFixed(2)}`} prefix={<DollarOutlined />} />
           </Card>
         </Col>
-        <Col xs={12} sm={6}>
-          <Card size="small" style={{ background: '#f9f0ff', borderRadius: 12, border: 'none' }}>
-            <Statistic title={t('marketplace.author.totalRevenue', 'Total Revenue')} value={`¥${Number(authorStats.totalRevenue || 0).toFixed(2)}`} prefix={<DollarOutlined />} />
+      </Row>
+
+      {/* ── Provider earnings & transaction history ── */}
+      <ProviderEarningsPanel />
+
+      {/* ── Charts: Revenue trend + Subscriber trend ── */}
+      <Row gutter={[12, 12]} style={{ marginBottom: 20 }}>
+        <Col xs={24} lg={12}>
+          <Card size="small" title={t('marketplace.author.revenueTrend', 'Revenue Trend (30 days)')}>
+            <RevenueTrendChart data={authorStats.revenueTrend || []} />
+          </Card>
+        </Col>
+        <Col xs={24} lg={12}>
+          <Card size="small" title={t('marketplace.author.subscriberTrend', 'Subscriber Trend (30 days)')}>
+            <SubscriberTrendChart data={subscriberTrend} />
+            <Space size="large" style={{ marginTop: 8 }}>
+              <Text type="success">+{newToday} {t('marketplace.author.newSubs', 'new')}</Text>
+              <Text type="danger">-{churnedToday} {t('marketplace.author.churned', 'churned')}</Text>
+            </Space>
           </Card>
         </Col>
       </Row>
 
+      {/* ── Strategy breakdown table ── */}
+      {breakdown.length > 0 && (
+        <Card size="small" style={{ marginBottom: 20 }} title={t('marketplace.author.strategyBreakdown', 'Per-Strategy Analysis')}>
+          <Table<StrategyBreakdown>
+            rowKey="strategyId"
+            dataSource={breakdown}
+            pagination={false}
+            size="small"
+            columns={[
+              { title: t('marketplace.author.strategyName', 'Strategy'), dataIndex: 'title', key: 'title', render: (v: string) => <Text strong>{v || '-'}</Text> },
+              { title: t('marketplace.detail.price'), key: 'price', render: (_: unknown, row: StrategyBreakdown) => (
+                <Tag color={row.priceModel === 'free' ? 'green' : 'gold'}>
+                  {row.priceModel === 'free' ? t('marketplace.card.free') : `¥${row.priceAmount || '0'}`}
+                </Tag>
+              )},
+              { title: t('marketplace.author.subscribers'), dataIndex: 'totalSubscribers', key: 'subs', width: 100 },
+              { title: t('marketplace.author.revenue', 'Revenue'), dataIndex: 'revenue', key: 'revenue', width: 100, render: (v: string) => `¥${Number(v || 0).toFixed(2)}` },
+              { title: t('marketplace.author.avgRating'), key: 'rating', width: 80, render: (_: unknown, row: StrategyBreakdown) => (
+                <Tooltip title={`${row.ratingCount || 0} ratings`}>
+                  {Number(row.avgRating || 0).toFixed(1)}
+                </Tooltip>
+              )},
+            ]}
+          />
+        </Card>
+      )}
+
+      {/* ── Published strategies list ── */}
       {myPublished.length === 0 ? (
         <Empty description={t('marketplace.author.empty')}>
           <Button type="primary" onClick={() => navigate('/strategy/library')}>

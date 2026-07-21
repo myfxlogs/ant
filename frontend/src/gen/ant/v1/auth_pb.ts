@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file auth.proto.
  */
 export const file_auth: GenFile = /*@__PURE__*/
-  fileDesc("CgphdXRoLnByb3RvEgZhbnQudjEiPgoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWxvZ2luGAMgASgJImwKDUxvZ2luUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSEgoKZXhwaXJlc19hdBgDIAEoAxIaCgR1c2VyGAQgASgLMgwuYW50LnYxLlVzZXIiLAoTUmVmcmVzaFRva2VuUmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJIlcKFFJlZnJlc2hUb2tlblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhIKCmV4cGlyZXNfYXQYAyABKAMiKwoNR2V0TWVSZXNwb25zZRIaCgR1c2VyGAEgASgLMgwuYW50LnYxLlVzZXIiRAoPUmVnaXN0ZXJSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWVtYWlsGAMgASgJIk8KEFJlZ2lzdGVyUmVzcG9uc2USGgoEdXNlchgBIAEoCzIMLmFudC52MS5Vc2VyEh8KF2VtYWlsX3ZlcmlmaWNhdGlvbl9zZW50GAIgASgIIv8BCgRVc2VyEgoKAmlkGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJEg0KBWVtYWlsGAMgASgJEgwKBHJvbGUYBCABKAkSLgoKY3JlYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLcGVybWlzc2lvbnMYByADKAkSFwoPY2FwYWJpbGl0eV90aWVyGAggASgFEhYKDmFjY291bnRfbnVtYmVyGAkgASgJEhYKDmVtYWlsX3ZlcmlmaWVkGAogASgIIiMKElZlcmlmeUVtYWlsUmVxdWVzdBINCgV0b2tlbhgBIAEoCSI3ChNWZXJpZnlFbWFpbFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCSIqChlSZXNlbmRWZXJpZmljYXRpb25SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJIj4KGlJlc2VuZFZlcmlmaWNhdGlvblJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCTK0BAoLQXV0aFNlcnZpY2USNAoFTG9naW4SFC5hbnQudjEuTG9naW5SZXF1ZXN0GhUuYW50LnYxLkxvZ2luUmVzcG9uc2USOAoGTG9nb3V0EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkkKDFJlZnJlc2hUb2tlbhIbLmFudC52MS5SZWZyZXNoVG9rZW5SZXF1ZXN0GhwuYW50LnYxLlJlZnJlc2hUb2tlblJlc3BvbnNlEk4KFlJlZnJlc2hUb2tlbkZyb21Db29raWUSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaHC5hbnQudjEuUmVmcmVzaFRva2VuUmVzcG9uc2USNgoFR2V0TWUSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFS5hbnQudjEuR2V0TWVSZXNwb25zZRI9CghSZWdpc3RlchIXLmFudC52MS5SZWdpc3RlclJlcXVlc3QaGC5hbnQudjEuUmVnaXN0ZXJSZXNwb25zZRJGCgtWZXJpZnlFbWFpbBIaLmFudC52MS5WZXJpZnlFbWFpbFJlcXVlc3QaGy5hbnQudjEuVmVyaWZ5RW1haWxSZXNwb25zZRJbChJSZXNlbmRWZXJpZmljYXRpb24SIS5hbnQudjEuUmVzZW5kVmVyaWZpY2F0aW9uUmVxdWVzdBoiLmFudC52MS5SZXNlbmRWZXJpZmljYXRpb25SZXNwb25zZUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp, file_google_protobuf_empty]);
+  fileDesc("CgphdXRoLnByb3RvEgZhbnQudjEiPgoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWxvZ2luGAMgASgJImwKDUxvZ2luUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSEgoKZXhwaXJlc19hdBgDIAEoAxIaCgR1c2VyGAQgASgLMgwuYW50LnYxLlVzZXIiLAoTUmVmcmVzaFRva2VuUmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJIlcKFFJlZnJlc2hUb2tlblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhIKCmV4cGlyZXNfYXQYAyABKAMiKwoNR2V0TWVSZXNwb25zZRIaCgR1c2VyGAEgASgLMgwuYW50LnYxLlVzZXIiRAoPUmVnaXN0ZXJSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWVtYWlsGAMgASgJIk8KEFJlZ2lzdGVyUmVzcG9uc2USGgoEdXNlchgBIAEoCzIMLmFudC52MS5Vc2VyEh8KF2VtYWlsX3ZlcmlmaWNhdGlvbl9zZW50GAIgASgIIv8BCgRVc2VyEgoKAmlkGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJEg0KBWVtYWlsGAMgASgJEgwKBHJvbGUYBCABKAkSLgoKY3JlYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLcGVybWlzc2lvbnMYByADKAkSFwoPY2FwYWJpbGl0eV90aWVyGAggASgFEhYKDmFjY291bnRfbnVtYmVyGAkgASgJEhYKDmVtYWlsX3ZlcmlmaWVkGAogASgIIiMKElZlcmlmeUVtYWlsUmVxdWVzdBINCgV0b2tlbhgBIAEoCSI3ChNWZXJpZnlFbWFpbFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCSIqChlSZXNlbmRWZXJpZmljYXRpb25SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJIj4KGlJlc2VuZFZlcmlmaWNhdGlvblJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCSImChVGb3Jnb3RQYXNzd29yZFJlcXVlc3QSDQoFZW1haWwYASABKAkiOgoWRm9yZ290UGFzc3dvcmRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEg8KB21lc3NhZ2UYAiABKAkiOwoUUmVzZXRQYXNzd29yZFJlcXVlc3QSDQoFdG9rZW4YASABKAkSFAoMbmV3X3Bhc3N3b3JkGAIgASgJIjkKFVJlc2V0UGFzc3dvcmRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEg8KB21lc3NhZ2UYAiABKAky0wUKC0F1dGhTZXJ2aWNlEjQKBUxvZ2luEhQuYW50LnYxLkxvZ2luUmVxdWVzdBoVLmFudC52MS5Mb2dpblJlc3BvbnNlEjgKBkxvZ291dBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJJCgxSZWZyZXNoVG9rZW4SGy5hbnQudjEuUmVmcmVzaFRva2VuUmVxdWVzdBocLmFudC52MS5SZWZyZXNoVG9rZW5SZXNwb25zZRJOChZSZWZyZXNoVG9rZW5Gcm9tQ29va2llEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhwuYW50LnYxLlJlZnJlc2hUb2tlblJlc3BvbnNlEjYKBUdldE1lEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhUuYW50LnYxLkdldE1lUmVzcG9uc2USPQoIUmVnaXN0ZXISFy5hbnQudjEuUmVnaXN0ZXJSZXF1ZXN0GhguYW50LnYxLlJlZ2lzdGVyUmVzcG9uc2USRgoLVmVyaWZ5RW1haWwSGi5hbnQudjEuVmVyaWZ5RW1haWxSZXF1ZXN0GhsuYW50LnYxLlZlcmlmeUVtYWlsUmVzcG9uc2USWwoSUmVzZW5kVmVyaWZpY2F0aW9uEiEuYW50LnYxLlJlc2VuZFZlcmlmaWNhdGlvblJlcXVlc3QaIi5hbnQudjEuUmVzZW5kVmVyaWZpY2F0aW9uUmVzcG9uc2USTwoORm9yZ290UGFzc3dvcmQSHS5hbnQudjEuRm9yZ290UGFzc3dvcmRSZXF1ZXN0Gh4uYW50LnYxLkZvcmdvdFBhc3N3b3JkUmVzcG9uc2USTAoNUmVzZXRQYXNzd29yZBIcLmFudC52MS5SZXNldFBhc3N3b3JkUmVxdWVzdBodLmFudC52MS5SZXNldFBhc3N3b3JkUmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_google_protobuf_empty]);
 
 /**
  * @generated from message ant.v1.LoginRequest
@@ -328,6 +328,91 @@ export const ResendVerificationResponseSchema: GenMessage<ResendVerificationResp
   messageDesc(file_auth, 11);
 
 /**
+ * @generated from message ant.v1.ForgotPasswordRequest
+ */
+export type ForgotPasswordRequest = Message<"ant.v1.ForgotPasswordRequest"> & {
+  /**
+   * @generated from field: string email = 1;
+   */
+  email: string;
+};
+
+/**
+ * Describes the message ant.v1.ForgotPasswordRequest.
+ * Use `create(ForgotPasswordRequestSchema)` to create a new message.
+ */
+export const ForgotPasswordRequestSchema: GenMessage<ForgotPasswordRequest> = /*@__PURE__*/
+  messageDesc(file_auth, 12);
+
+/**
+ * @generated from message ant.v1.ForgotPasswordResponse
+ */
+export type ForgotPasswordResponse = Message<"ant.v1.ForgotPasswordResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+
+  /**
+   * always success to prevent user enumeration
+   *
+   * @generated from field: string message = 2;
+   */
+  message: string;
+};
+
+/**
+ * Describes the message ant.v1.ForgotPasswordResponse.
+ * Use `create(ForgotPasswordResponseSchema)` to create a new message.
+ */
+export const ForgotPasswordResponseSchema: GenMessage<ForgotPasswordResponse> = /*@__PURE__*/
+  messageDesc(file_auth, 13);
+
+/**
+ * @generated from message ant.v1.ResetPasswordRequest
+ */
+export type ResetPasswordRequest = Message<"ant.v1.ResetPasswordRequest"> & {
+  /**
+   * @generated from field: string token = 1;
+   */
+  token: string;
+
+  /**
+   * @generated from field: string new_password = 2;
+   */
+  newPassword: string;
+};
+
+/**
+ * Describes the message ant.v1.ResetPasswordRequest.
+ * Use `create(ResetPasswordRequestSchema)` to create a new message.
+ */
+export const ResetPasswordRequestSchema: GenMessage<ResetPasswordRequest> = /*@__PURE__*/
+  messageDesc(file_auth, 14);
+
+/**
+ * @generated from message ant.v1.ResetPasswordResponse
+ */
+export type ResetPasswordResponse = Message<"ant.v1.ResetPasswordResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+
+  /**
+   * @generated from field: string message = 2;
+   */
+  message: string;
+};
+
+/**
+ * Describes the message ant.v1.ResetPasswordResponse.
+ * Use `create(ResetPasswordResponseSchema)` to create a new message.
+ */
+export const ResetPasswordResponseSchema: GenMessage<ResetPasswordResponse> = /*@__PURE__*/
+  messageDesc(file_auth, 15);
+
+/**
  * @generated from service ant.v1.AuthService
  */
 export const AuthService: GenService<{
@@ -394,6 +479,22 @@ export const AuthService: GenService<{
     methodKind: "unary";
     input: typeof ResendVerificationRequestSchema;
     output: typeof ResendVerificationResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.AuthService.ForgotPassword
+   */
+  forgotPassword: {
+    methodKind: "unary";
+    input: typeof ForgotPasswordRequestSchema;
+    output: typeof ForgotPasswordResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.AuthService.ResetPassword
+   */
+  resetPassword: {
+    methodKind: "unary";
+    input: typeof ResetPasswordRequestSchema;
+    output: typeof ResetPasswordResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_auth, 0);

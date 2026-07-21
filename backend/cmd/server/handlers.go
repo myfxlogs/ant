@@ -22,19 +22,16 @@ import (
 	assetanalysis "alphaforge/internal/connect/asset_analysis"
 	"alphaforge/internal/connect/autotrading"
 	"alphaforge/internal/connect/gateway"
-	mktplace "alphaforge/internal/connect/marketplace"
 	"alphaforge/internal/connect/notification"
 	paperhdr "alphaforge/internal/connect/paper"
 	"alphaforge/internal/connect/strategy"
 	subscriptionhdr "alphaforge/internal/connect/subscription"
 	"alphaforge/internal/connect/system"
-	"alphaforge/internal/connect/user"
 	"alphaforge/internal/reconcile"
 	"alphaforge/internal/interceptor"
 	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mdgateway"
 	"alphaforge/internal/mdgateway/adapter"
-	"alphaforge/internal/mdgateway/adapter/brokersearch"
 	"alphaforge/internal/mthub"
 	notifpubsub "alphaforge/internal/notification"
 	"alphaforge/internal/notifier"
@@ -115,20 +112,9 @@ func registerHandlers(
 		To:       splitAndTrim(cfg.SMTPTo, ","),
 	}, log)
 
-	authServer := user.NewAuthServer(userRepo, jwtSecret, log)
-	authServer.SetInsecureCookies(true) // no TLS in Docker deployment
-	authServer.WithRegistration(registrationSvc)
-	// Wire email verification if SMTP is configured.
-	if emailNotifier != nil {
-		emailVerifSvc := service.NewEmailVerificationService(pool, emailNotifier, cfg.AppURL, log)
-		authServer.WithEmailVerification(emailVerifSvc)
-		registrationSvc.SetEmailVerification(emailVerifSvc)
-	}
-	authServer.SetRequireEmailVerification(cfg.RequireEmailVerification)
-	mux.Handle(antv1c.NewAuthServiceHandler(authServer, withSency(otelInterceptor, rateLimitInterceptor, authInterceptor)))
+	authServer := registerAuthHandler(mux, pool, cfg, jwtSecret, userRepo, registrationSvc, emailNotifier, log, otelInterceptor, rateLimitInterceptor, authInterceptor)
 
-	walletServer := user.NewWalletServer(walletSvc, platformSvc, log)
-	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, withSency(otelInterceptor, authInterceptor)))
+	registerWalletHandler(mux, walletSvc, platformSvc, log, otelInterceptor, authInterceptor)
 
 	// USDT deposit service: HD wallet with per-user addresses + auto-confirmation.
 	depositAddrRepo := repository.NewDepositAddressRepository(pool)
@@ -165,9 +151,7 @@ func registerHandlers(
 	wireWebAuthn(mux, pool, log, cfg, walletSvc, walletRepo, emailNotifier, platformSvc,
 		sweepBundleRepo, sweepTronClient, adminRepo, otelInterceptor, authInterceptor)
 
-	// Deposit server (with sweep worker wired in for admin sweep RPCs).
-	depositServer := user.NewDepositServer(depositSvc, platformSvc, sweepWorker, log)
-	mux.Handle(antv1c.NewDepositServiceHandler(depositServer, withSency(otelInterceptor, authInterceptor)))
+	registerDepositHandler(mux, depositSvc, platformSvc, sweepWorker, log, otelInterceptor, authInterceptor)
 
 	// P3.1: Subscription service (Free/Pro/Enterprise plans).
 	subscriptionRepo := repository.NewSubscriptionRepository(pool)
@@ -187,22 +171,11 @@ func registerHandlers(
 	mthubServer := system.NewMtHubServer(mthubSvc, platformSvc, marketDataRepo, tradeRecordRepo, log)
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, withSency(otelInterceptor, authInterceptor)))
 
-	searcher := brokersearch.New("", "")
 	accountEventPub := mdgateway.NewAccountEventPublisher(js, log)
-	mtTester := user.NewMTConnectionTester(cfg.MtapiToken, log)
-	accountServer := user.NewAccountServer(accountSvc, searcher, accountEventPub, mtTester, log).
-		WithSessionWaiter(hub).
-		WithStopGateway(hub.RemoveGateway)
-	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, withSency(otelInterceptor, authInterceptor)))
+	registerAccountHandler(mux, cfg, accountSvc, accountEventPub, hub, log, otelInterceptor, authInterceptor)
 
-	mktServer := mktplace.NewMarketServer(platformSvc, marketDataRepo, nc, log)
-	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, withSency(otelInterceptor, authInterceptor)))
+	mktplaceHandler := registerMarketplaceHandlers(ctx, mux, nc, log, marketDataRepo, mktplaceSvc, walletRepo, platformSvc, otelInterceptor, authInterceptor)
 
-	mktplaceSvc.SetWalletRepo(walletRepo)
-	mktplaceHandler := mktplace.NewMarketplaceServer(mktplaceSvc, platformSvc, log)
-	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, withSency(otelInterceptor, authInterceptor)))
-
-	mktplaceSvc.StartRenewalLoop(ctx, log) // daily subscription renewal (background goroutine)
 	subscriptionSvc.StartPlatformRenewalLoop(ctx) // daily platform subscription auto-renewal/expiry
 
 	// M12-A2: Execution Algo handler (TWAP/VWAP/POV/Shortfall).
@@ -376,7 +349,7 @@ func registerHandlers(
 	mux.Handle(antv1c.NewJobServiceHandler(jobServer, withSency(otelInterceptor, authInterceptor)))
 	logServiceServer := system.NewLogServiceServer(logSvc, log)
 	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, withSency(otelInterceptor, authInterceptor)))
-	notifServer := notification.NewNotificationServer(notifRepo, notifSub, log)
+	notifServer := notification.NewNotificationServer(notifRepo, notifSub, pool, log)
 	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, withSency(otelInterceptor, authInterceptor)))
 	gateEvalServer.SetNotificationSender(notifSender)
 

@@ -81,7 +81,7 @@ func (s *stubMarketplaceSvc) Unsubscribe(_ context.Context, _, _ string) error {
 	}
 	return s.err
 }
-func (s *stubMarketplaceSvc) PurchaseStrategy(_ context.Context, _, _, _ string) (*marketplace.PurchaseResult, error) {
+func (s *stubMarketplaceSvc) PurchaseStrategy(_ context.Context, _, _, _, _ string) (*marketplace.PurchaseResult, error) {
 	if s.purchaseErr != nil {
 		return nil, s.purchaseErr
 	}
@@ -149,6 +149,70 @@ func (s *stubMarketplaceSvc) LinkLiveAccount(_ context.Context, _, _, _ string) 
 
 func (s *stubMarketplaceSvc) ValidateBacktestQuality(_ context.Context, _ []byte, _ string) ([]marketplace.QualityViolation, error) {
 	return nil, nil
+}
+
+func (s *stubMarketplaceSvc) ListLeaderboard(_ context.Context, _, _, _ string, _ int) ([]marketplace.LeaderboardEntry, error) {
+	return nil, s.err
+}
+
+func (s *stubMarketplaceSvc) StartTrial(_ context.Context, _, _ string) (string, time.Time, bool, error) {
+	return "", time.Time{}, false, s.err
+}
+
+func (s *stubMarketplaceSvc) CompareStrategies(_ context.Context, _ []string) ([]marketplace.StrategyComparison, error) {
+	return nil, s.err
+}
+
+func (s *stubMarketplaceSvc) GetStrategyPublicInfo(_ context.Context, _ string) (*antv1.GetStrategyPublicInfoResponse, error) {
+	return &antv1.GetStrategyPublicInfoResponse{}, s.err
+}
+func (s *stubMarketplaceSvc) RequestVerification(_ context.Context, _, _, _ string) (string, string, error) {
+	return "", "", s.err
+}
+func (s *stubMarketplaceSvc) ProcessVerification(_ context.Context, _, _ string, _ bool, _ string) error {
+	return s.err
+}
+func (s *stubMarketplaceSvc) AdminListStrategies(_ context.Context, _, _ string, _, _ int) ([]marketplace.AdminStrategyRow, int, error) {
+	return nil, 0, s.err
+}
+func (s *stubMarketplaceSvc) AdminFeatureStrategy(_ context.Context, _ string, _ bool, _ int32) error {
+	return s.err
+}
+func (s *stubMarketplaceSvc) CreateRefundRequest(_ context.Context, _, _, _ string) (string, error) {
+	return "", s.err
+}
+func (s *stubMarketplaceSvc) ListRefundRequests(_ context.Context, _ string, _, _ int) ([]marketplace.RefundRequestRow, int, error) {
+	return nil, 0, s.err
+}
+func (s *stubMarketplaceSvc) ProcessRefundRequest(_ context.Context, _, _ string, _ bool, _ string) error {
+	return s.err
+}
+func (s *stubMarketplaceSvc) GetMarketplaceAnalytics(_ context.Context, _ string) (*marketplace.AnalyticsResult, error) {
+	return nil, s.err
+}
+func (s *stubMarketplaceSvc) GetTopStrategies(_ context.Context) ([]marketplace.TopItemRow, []marketplace.TopItemRow, error) {
+	return nil, nil, s.err
+}
+func (s *stubMarketplaceSvc) GetTopProviders(_ context.Context) ([]marketplace.TopItemRow, []marketplace.TopItemRow, error) {
+	return nil, nil, s.err
+}
+func (s *stubMarketplaceSvc) ValidateCoupon(_ context.Context, _, _, _ string) (*marketplace.CouponResult, error) {
+	return nil, s.err
+}
+func (s *stubMarketplaceSvc) CreateCoupon(_ context.Context, _, _, _, _, _ string, _ int32, _ string, _ []string) (string, error) {
+	return "", s.err
+}
+func (s *stubMarketplaceSvc) ListCoupons(_ context.Context, _ bool) ([]marketplace.CouponRow, error) {
+	return nil, s.err
+}
+func (s *stubMarketplaceSvc) DisableCoupon(_ context.Context, _ string) error {
+	return s.err
+}
+func (s *stubMarketplaceSvc) GetProviderEarnings(_ context.Context, _ string) (*marketplace.ProviderEarningsResult, error) {
+	return nil, s.err
+}
+func (s *stubMarketplaceSvc) ListProviderTransactions(_ context.Context, _ string, _, _ int) ([]marketplace.ProviderTxRow, int, error) {
+	return nil, 0, s.err
 }
 
 type stubAdminChecker struct{ isAdmin bool }
@@ -439,6 +503,51 @@ func TestPurchaseStrategy_OwnStrategy(t *testing.T) {
 	ce, ok := err.(*connect.Error)
 	if !ok || ce.Code() != connect.CodeInvalidArgument {
 		t.Fatalf("expected CodeInvalidArgument, got %v", err)
+	}
+}
+
+func TestPurchaseStrategy_Subscription_Success(t *testing.T) {
+	t.Parallel()
+	svc := &stubMarketplaceSvc{
+		purchaseResult: &marketplace.PurchaseResult{
+			SubscriptionID: "sub-monthly",
+			TransactionID:  "tx-monthly",
+			AmountCharged:  "9.99",
+			BalanceAfter:   "90.01",
+		},
+	}
+	h := testMarketplaceHandler(svc)
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, "u1")
+	resp, err := h.PurchaseStrategy(ctx, connect.NewRequest(&antv1.PurchaseStrategyRequest{StrategyId: "s1"}))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.Msg.SubscriptionId != "sub-monthly" || resp.Msg.AmountCharged != "9.99" {
+		t.Fatalf("unexpected response: %+v", resp.Msg)
+	}
+}
+
+func TestPublishStrategy_InvalidPriceModel(t *testing.T) {
+	t.Parallel()
+	svc := &stubMarketplaceSvc{err: errors.New("marketplace: unsupported price_model")}
+	h := testMarketplaceHandler(svc)
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, "u1")
+	_, err := h.PublishStrategy(ctx, connect.NewRequest(&antv1.PublishStrategyRequest{
+		StrategyId: "s1", Title: "Bad", PriceModel: "monthly",
+	}))
+	if err == nil {
+		t.Fatal("expected error for invalid price_model")
+	}
+}
+
+func TestPurchaseStrategy_InvalidPriceModel(t *testing.T) {
+	t.Parallel()
+	svc := &stubMarketplaceSvc{purchaseErr: errors.New("marketplace: unsupported price_model")}
+	h := testMarketplaceHandler(svc)
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, "u1")
+	_, err := h.PurchaseStrategy(ctx, connect.NewRequest(&antv1.PurchaseStrategyRequest{StrategyId: "s1"}))
+	if err == nil {
+		t.Fatal("expected error for invalid price_model")
 	}
 }
 

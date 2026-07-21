@@ -32,7 +32,6 @@ type Runner struct {
 
 	mu       sync.Mutex
 	strategy sdk.Strategy
-	running  bool
 }
 
 // New creates a new Runner.

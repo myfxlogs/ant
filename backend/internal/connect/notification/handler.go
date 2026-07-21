@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 	"connectrpc.com/connect"
 
@@ -19,14 +20,15 @@ import (
 type NotificationServer struct {
 	repo *repository.NotificationRepository
 	sub  *notification.Subscriber
+	pg   *pgxpool.Pool
 	log  *zap.Logger
 }
 
 var _ antv1c.NotificationServiceHandler = (*NotificationServer)(nil)
 
 // NewNotificationServer creates a NotificationService handler.
-func NewNotificationServer(repo *repository.NotificationRepository, sub *notification.Subscriber, log *zap.Logger) *NotificationServer {
-	return &NotificationServer{repo: repo, sub: sub, log: log}
+func NewNotificationServer(repo *repository.NotificationRepository, sub *notification.Subscriber, pg *pgxpool.Pool, log *zap.Logger) *NotificationServer {
+	return &NotificationServer{repo: repo, sub: sub, pg: pg, log: log}
 }
 
 func (s *NotificationServer) userID(ctx context.Context) uuid.UUID {

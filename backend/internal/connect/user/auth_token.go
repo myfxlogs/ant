@@ -1,7 +1,4 @@
 // Package user (auth_token.go) — ConnectRPC handlers for token refresh and logout.
-// RefreshTokenFromCookie reads the refresh_token from the httpOnly cookie,
-// replacing the former REST /api/auth/refresh endpoint.
-
 package user
 
 import (
@@ -9,8 +6,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
 	"github.com/golang-jwt/jwt/v5"
@@ -29,17 +24,18 @@ const (
 )
 
 func (s *AuthServer) issueAccessToken(userID, email string) (string, error) {
-	return s.issueJWT(userID, email, accessTokenTTL)
+	return s.issueJWT(userID, email, accessTokenTTL, 0)
 }
 
-func (s *AuthServer) issueRefreshToken(userID, email string) (string, error) {
-	return s.issueJWT(userID, email, refreshTokenTTL)
+func (s *AuthServer) issueRefreshToken(userID, email string, tokenVersion int) (string, error) {
+	return s.issueJWT(userID, email, refreshTokenTTL, tokenVersion)
 }
 
-func (s *AuthServer) issueJWT(userID, email string, ttl time.Duration) (string, error) {
+func (s *AuthServer) issueJWT(userID, email string, ttl time.Duration, tokenVersion int) (string, error) {
 	now := time.Now()
 	claims := &interceptor.JWTClaims{
-		UserID: userID,
+		UserID:       userID,
+		TokenVersion: tokenVersion,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(now.Add(ttl)),
 			IssuedAt:  jwt.NewNumericDate(now),
@@ -68,37 +64,28 @@ func (s *AuthServer) clearRefreshCookie() string {
 	return fmt.Sprintf("%s=; HttpOnly%s; SameSite=Strict; Path=/; Max-Age=0", refreshCookie, secure)
 }
 
-// RefreshToken implements the ConnectRPC handler for token refresh.
+// RefreshToken validates the refresh token, checks token_version, and issues new tokens.
 func (s *AuthServer) RefreshToken(ctx context.Context, req *connect.Request[antv1.RefreshTokenRequest]) (*connect.Response[antv1.RefreshTokenResponse], error) {
 	claims, err := interceptor.ValidateToken(req.Msg.RefreshToken, s.jwtSecret)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid refresh token"))
 	}
-	uid, err := uuid.Parse(claims.UserID)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid token claims"))
-	}
+	uid, _ := uuid.Parse(claims.UserID)
 	user, err := s.users.GetByID(ctx, uid)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("user not found"))
 	}
-	accessToken, err := s.issueAccessToken(claims.UserID, user.Email)
-	if err != nil {
-		s.log.Error("RefreshToken: issue access token", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
+	if claims.TokenVersion != user.TokenVersion {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("token revoked"))
 	}
-	refreshToken, err := s.issueRefreshToken(claims.UserID, user.Email)
-	if err != nil {
-		s.log.Error("RefreshToken: issue refresh token", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
+	accessToken, _ := s.issueAccessToken(claims.UserID, user.Email)
+	refreshToken, _ := s.issueRefreshToken(claims.UserID, user.Email, user.TokenVersion)
 	resp := connect.NewResponse(&antv1.RefreshTokenResponse{AccessToken: accessToken, RefreshToken: refreshToken})
 	resp.Header().Set("Set-Cookie", s.makeRefreshCookie(refreshToken))
 	return resp, nil
 }
 
-// RefreshTokenFromCookie reads the refresh_token from the httpOnly cookie,
-// validates it, issues new tokens, and sets a new cookie via response header.
+// RefreshTokenFromCookie reads the refresh_token from cookie and issues new tokens.
 func (s *AuthServer) RefreshTokenFromCookie(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[antv1.RefreshTokenResponse], error) {
 	cookieStr := req.Header().Get("Cookie")
 	if cookieStr == "" {
@@ -119,24 +106,16 @@ func (s *AuthServer) RefreshTokenFromCookie(ctx context.Context, req *connect.Re
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid refresh token"))
 	}
-	uid, err := uuid.Parse(claims.UserID)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid token claims"))
-	}
+	uid, _ := uuid.Parse(claims.UserID)
 	user, err := s.users.GetByID(ctx, uid)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("user not found"))
 	}
-	accessToken, err := s.issueAccessToken(claims.UserID, user.Email)
-	if err != nil {
-		s.log.Error("RefreshTokenFromCookie: issue access token", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
+	if claims.TokenVersion != user.TokenVersion {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("token revoked"))
 	}
-	refreshToken, err := s.issueRefreshToken(claims.UserID, user.Email)
-	if err != nil {
-		s.log.Error("RefreshTokenFromCookie: issue refresh token", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
+	accessToken, _ := s.issueAccessToken(claims.UserID, user.Email)
+	refreshToken, _ := s.issueRefreshToken(claims.UserID, user.Email, user.TokenVersion)
 	resp := connect.NewResponse(&antv1.RefreshTokenResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,

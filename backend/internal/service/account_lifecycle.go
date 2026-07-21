@@ -3,213 +3,180 @@ package service
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
+
+	"alphaforge/internal/repository"
 )
 
-// ── Status Lifecycle ──
+// ── Account Info ──
 
-// SetStatus updates the account_status column and invalidates summary cache on disconnect.
+// GetAccountCredentials returns the credentials needed for MT password verification.
+// Does NOT return the decrypted password — callers verify against the broker directly.
+func (s *AccountService) GetAccountCredentials(ctx context.Context, userID uuid.UUID, id string) (*AccountCredentials, error) {
+	pgID, err := stringToPgUUID(id)
+	if err != nil {
+		return nil, fmt.Errorf("service: get account credentials: invalid account id: %w", err)
+	}
+	row, err := s.queries.GetAccountCredentials(ctx, repository.GetAccountCredentialsParams{ID: pgID, UserID: uuidToPgUUID(userID)})
+	if err != nil {
+		return nil, fmt.Errorf("service: get account credentials: %w", err)
+	}
+	return &AccountCredentials{
+		Login:      row.Login,
+		Platform:   row.MtType,
+		BrokerHost: row.BrokerHost,
+	}, nil
+}
+
+// UpdateAccountInfoTx updates balance/equity/margin/leverage/currency within a transaction.
+// Does NOT touch account_status — that is owned by the gateway lifecycle.
+func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin decimal.Decimal, leverage int64, currency string, isInvestor bool) error {
+	_, err := tx.Exec(ctx, `
+		UPDATE mt_accounts SET
+			balance = $3, equity = $4, credit = $5, margin = $6,
+			free_margin = $7, leverage = $8, currency = $9,
+			is_investor = $10, updated_at = CURRENT_TIMESTAMP
+		WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL
+	`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency, isInvestor)
+	if err != nil {
+		return fmt.Errorf("service: update account info: %w", err)
+	}
+	return nil
+}
+
+// UpdateAccountInfo updates balance/equity/margin/leverage/currency after MT verification.
+func (s *AccountService) UpdateAccountInfo(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin decimal.Decimal, leverage int64, currency string) error {
+	_, err := s.db.Exec(ctx, `
+		UPDATE mt_accounts SET
+			balance = $3, equity = $4, credit = $5, margin = $6,
+			free_margin = $7, leverage = $8, currency = $9,
+			updated_at = CURRENT_TIMESTAMP
+		WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL
+	`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency)
+	if err != nil {
+		return fmt.Errorf("service: update account info: %w", err)
+	}
+	return nil
+}
+
+// UpdateAccountMetrics updates runtime balance/equity/margin metrics from broker callbacks.
+func (s *AccountService) UpdateAccountMetrics(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin, marginLevel decimal.Decimal) error {
+	pgID, err := stringToPgUUID(id)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: invalid account id: %w", err)
+	}
+	balN, err := decimalToPgNumeric(balance)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: balance: %w", err)
+	}
+	eqN, err := decimalToPgNumeric(equity)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: equity: %w", err)
+	}
+	crN, err := decimalToPgNumeric(credit)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: credit: %w", err)
+	}
+	marginN, err := decimalToPgNumeric(margin)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: margin: %w", err)
+	}
+	fmN, err := decimalToPgNumeric(freeMargin)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: free_margin: %w", err)
+	}
+	mlN, err := decimalToPgNumeric(marginLevel)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: margin_level: %w", err)
+	}
+	return s.queries.UpdateAccountMetrics(ctx, repository.UpdateAccountMetricsParams{
+		ID:          pgID,
+		UserID:      uuidToPgUUID(userID),
+		Balance:     balN,
+		Equity:      eqN,
+		Credit:      crN,
+		Margin:      marginN,
+		FreeMargin:  fmN,
+		MarginLevel: mlN,
+	})
+}
+
+// UpdateBrokerThresholds updates broker margin_call/stop_out thresholds on an account.
+// This is a system callback (called from the gateway pipeline where only accountID
+// is available). Do not expose via ConnectRPC without adding a user_id check.
+func (s *AccountService) UpdateBrokerThresholds(ctx context.Context, id string, marginCallPct, stopOutPct decimal.Decimal) error {
+	_, err := s.db.Exec(ctx,
+		`UPDATE mt_accounts SET broker_margin_call_pct=$1, broker_stop_out_pct=$2,
+		 updated_at=CURRENT_TIMESTAMP WHERE id=$3 AND deleted_at IS NULL`, marginCallPct, stopOutPct, id)
+	if err != nil {
+		return fmt.Errorf("service: update broker thresholds: %w", err)
+	}
+	return nil
+}
+
+// LogAudit inserts an account audit event. Non-blocking — failures are logged but not returned.
+func (s *AccountService) LogAudit(ctx context.Context, accountID, userID uuid.UUID, action, detail string) {
+	if _, err := s.db.Exec(ctx,
+		`INSERT INTO account_audit_log (account_id, user_id, action, detail) VALUES ($1, $2, $3, $4)`,
+		accountID, userID, action, detail); err != nil && s.log != nil {
+		s.log.Warn("LogAudit: insert failed", zap.String("action", action), zap.Error(err))
+	}
+}
+
+// UserOwnsAccount checks if an account belongs to the given user.
+func (s *AccountService) UserOwnsAccount(ctx context.Context, userID, accountID string) (bool, error) {
+	pgUserID, err := stringToPgUUID(userID)
+	if err != nil {
+		return false, fmt.Errorf("service: user owns account: invalid user id: %w", err)
+	}
+	pgAccountID, err := stringToPgUUID(accountID)
+	if err != nil {
+		return false, fmt.Errorf("service: user owns account: invalid account id: %w", err)
+	}
+	return s.queries.UserOwnsAccount(ctx, repository.UserOwnsAccountParams{ID: pgAccountID, UserID: pgUserID})
+}
+
+// DisconnectAccountByID marks the given account as disconnected without a user_id check.
+// Intended for gateway lifecycle callbacks where only the account ID is known.
+func (s *AccountService) DisconnectAccountByID(ctx context.Context, accountID string) error {
+	_, err := s.db.Exec(ctx,
+		`UPDATE mt_accounts SET account_status = 'disconnected', updated_at = CURRENT_TIMESTAMP WHERE id = $1::uuid AND deleted_at IS NULL`,
+		accountID)
+	if err != nil {
+		return fmt.Errorf("service: disconnect account: %w", err)
+	}
+	return nil
+}
+
+// SetStatus updates the account_status for a user-owned account.
 func (s *AccountService) SetStatus(ctx context.Context, userID uuid.UUID, id string, status AccountStatus) error {
-	tag, err := s.db.Exec(ctx,
-		"UPDATE mt_accounts SET account_status = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL",
-		id, userID, string(status))
+	pgID, err := stringToPgUUID(id)
+	if err != nil {
+		return fmt.Errorf("service: set status: invalid account id: %w", err)
+	}
+	_, err = s.db.Exec(ctx,
+		`UPDATE mt_accounts SET account_status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2::uuid AND user_id = $3 AND deleted_at IS NULL`,
+		string(status), pgID, uuidToPgUUID(userID))
 	if err != nil {
 		return fmt.Errorf("service: set status: %w", err)
 	}
-	if tag.RowsAffected() == 0 {
-		return fmt.Errorf("account not found: %s", id)
-	}
-	if status == StatusDisconnected {
-		s.InvalidateSummaryCache(userID.String())
-	}
+	s.InvalidateSummaryCache(userID.String())
 	return nil
 }
 
-// DisconnectAccountByID sets the account status to disconnected by account ID only
-// (for system callbacks where userID is not available).
-func (s *AccountService) DisconnectAccountByID(ctx context.Context, id string) error {
-	_, err := s.db.Exec(ctx,
-		"UPDATE mt_accounts SET account_status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1::uuid AND deleted_at IS NULL",
-		id, string(StatusDisconnected))
+// CleanupOldSnapshots purges balance snapshot records older than the retention window.
+func (s *AccountService) CleanupOldSnapshots(ctx context.Context, log *zap.Logger) error {
+	tag, err := s.db.Exec(ctx,
+		`DELETE FROM account_balance_snapshots WHERE recorded_at < NOW() - INTERVAL '90 days'`)
 	if err != nil {
-		return fmt.Errorf("service: disconnect account by id: %w", err)
+		return fmt.Errorf("service: cleanup old snapshots: %w", err)
+	}
+	if log != nil {
+		log.Info("cleaned up old balance snapshots", zap.Int64("deleted", tag.RowsAffected()))
 	}
 	return nil
 }
-
-// ── Cleanup ──
-
-// CleanupOldSnapshots deletes account_balance_history rows older than retention
-// (default 90 days) and trade_records older than 2 years — keeps disk bounded.
-func (s *AccountService) CleanupOldSnapshots(ctx context.Context, log *zap.Logger) {
-	if _, err := s.db.Exec(ctx,
-		`DELETE FROM account_balance_history WHERE recorded_at < NOW() - INTERVAL '90 days'`); err != nil {
-		log.Warn("cleanup: account_balance_history", zap.Error(err))
-	}
-	if _, err := s.db.Exec(ctx,
-		`DELETE FROM trade_records WHERE close_time < NOW() - INTERVAL '2 years'`); err != nil {
-		log.Warn("cleanup: trade_records", zap.Error(err))
-	}
-}
-
-// ── Snapshots / Cache / Summary ──
-
-// RecordBalanceSnapshot inserts a throttled equity/balance snapshot row.
-// Writes at most once per hour per account to bound disk growth.
-func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, id, userID string, balance, equity, margin, freeMargin decimal.Decimal) error {
-	s.snapshotThrottleMu.Lock()
-	last, ok := s.snapshotThrottle[id]
-	if len(s.snapshotThrottle)%100 == 0 {
-		for k, v := range s.snapshotThrottle {
-			if time.Since(v) > 2*time.Hour {
-				delete(s.snapshotThrottle, k)
-			}
-		}
-	}
-	if ok && time.Since(last) < time.Hour {
-		s.snapshotThrottleMu.Unlock()
-		return nil
-	}
-	s.snapshotThrottle[id] = time.Now()
-	s.snapshotThrottleMu.Unlock()
-
-	_, err := s.db.Exec(ctx,
-		`INSERT INTO account_balance_history (account_id, user_id, balance, equity, margin, free_margin, recorded_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
-		id, userID, balance, equity, margin, freeMargin)
-	if err != nil {
-		return fmt.Errorf("service: record balance snapshot: %w", err)
-	}
-	return nil
-}
-
-// GetUserAccountSnapshots returns current state for all of a user's MT accounts.
-func (s *AccountService) GetUserAccountSnapshots(ctx context.Context, userID string) ([]AccountSnapshot, error) {
-	pgID, err := stringToPgUUID(userID)
-	if err != nil {
-		return nil, fmt.Errorf("service: get account snapshots: invalid user id: %w", err)
-	}
-	rows, err := s.queries.GetAccountSnapshots(ctx, pgID)
-	if err != nil {
-		return nil, err
-	}
-	out := make([]AccountSnapshot, len(rows))
-	for i, r := range rows {
-		out[i] = AccountSnapshot{
-			ID:          pgUUIDToString(r.ID),
-			Status:      r.AccountStatus,
-			Balance:     pgNumericToDecimal(r.Balance),
-			Equity:      pgNumericToDecimal(r.Equity),
-			Credit:      pgNumericToDecimal(r.Credit),
-			Margin:      pgNumericToDecimal(r.Margin),
-			FreeMargin:  pgNumericToDecimal(r.FreeMargin),
-			MarginLevel: pgNumericToDecimal(r.MarginLevel),
-		}
-	}
-	return out, nil
-}
-
-// UpdateSummaryCache incrementally updates the in-memory summary for a user
-// from a profit event.
-func (s *AccountService) UpdateSummaryCache(userID, accountID string, balance, equity decimal.Decimal, status string) {
-	s.summaryMu.Lock()
-	defer s.summaryMu.Unlock()
-
-	entry, ok := s.summaryCache[userID]
-	if !ok {
-		return
-	}
-
-	prev, existed := entry.accounts[accountID]
-	entry.accounts[accountID] = accountSummaryItem{balance: balance, equity: equity, status: status}
-
-	if !existed {
-		entry.summary.AccountCount++
-		entry.summary.TotalBalance = entry.summary.TotalBalance.Add(balance)
-		entry.summary.TotalEquity = entry.summary.TotalEquity.Add(equity)
-		entry.summary.TotalProfit = entry.summary.TotalProfit.Add(equity.Sub(balance))
-		if status == "connected" {
-			entry.summary.ConnectedCount++
-		}
-	} else {
-		entry.summary.TotalBalance = entry.summary.TotalBalance.Add(balance.Sub(prev.balance))
-		entry.summary.TotalEquity = entry.summary.TotalEquity.Add(equity.Sub(prev.equity))
-		entry.summary.TotalProfit = entry.summary.TotalProfit.Add(equity.Sub(balance).Sub(prev.equity.Sub(prev.balance)))
-		if prev.status != "connected" && status == "connected" {
-			entry.summary.ConnectedCount++
-		} else if prev.status == "connected" && status != "connected" {
-			entry.summary.ConnectedCount--
-		}
-	}
-}
-
-// InvalidateSummaryCache removes the cached summary for a user, forcing the next
-// GetUserAccountsSummary call to re-seed from DB.
-func (s *AccountService) InvalidateSummaryCache(userID string) {
-	s.summaryMu.Lock()
-	delete(s.summaryCache, userID)
-	s.summaryMu.Unlock()
-}
-
-// GetUserAccountsSummary computes an aggregated summary of a user's accounts.
-func (s *AccountService) GetUserAccountsSummary(ctx context.Context, userID string) (*UserAccountsSummary, error) {
-	s.summaryMu.RLock()
-	if entry, ok := s.summaryCache[userID]; ok {
-		cpy := entry.summary
-		s.summaryMu.RUnlock()
-		return &cpy, nil
-	}
-	s.summaryMu.RUnlock()
-
-	s.summaryMu.Lock()
-	defer s.summaryMu.Unlock()
-
-	if entry, ok := s.summaryCache[userID]; ok {
-		cpy := entry.summary
-		return &cpy, nil
-	}
-
-	rows, err := s.db.Query(ctx,
-		"SELECT id::text, balance, equity, account_status FROM mt_accounts WHERE user_id = $1 AND deleted_at IS NULL", userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	entry := &userSummaryCacheEntry{
-		accounts: make(map[string]accountSummaryItem),
-	}
-	for rows.Next() {
-		var id string
-		var balance, equity pgtype.Numeric
-		var status string
-		if err := rows.Scan(&id, &balance, &equity, &status); err != nil {
-			return nil, fmt.Errorf("service: get user accounts summary: scan row: %w", err)
-		}
-		bal := pgNumericToDecimal(balance)
-		eq := pgNumericToDecimal(equity)
-		entry.summary.TotalBalance = entry.summary.TotalBalance.Add(bal)
-		entry.summary.TotalEquity = entry.summary.TotalEquity.Add(eq)
-		entry.summary.TotalProfit = entry.summary.TotalProfit.Add(eq.Sub(bal))
-		entry.summary.AccountCount++
-		if status == "connected" {
-			entry.summary.ConnectedCount++
-		}
-		entry.accounts[id] = accountSummaryItem{
-			balance: bal, equity: eq, status: status,
-		}
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	s.summaryCache[userID] = entry
-	cpy := entry.summary
-	return &cpy, nil
-}
-

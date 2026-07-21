@@ -232,7 +232,7 @@ func withTx(ctx context.Context, db *pgxpool.Pool, fn func(tx pgx.Tx) error) err
 	if err != nil {
 		return fmt.Errorf("withTx begin: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 	if err := fn(tx); err != nil {
 		return fmt.Errorf("withTx: %w", err)
 	}

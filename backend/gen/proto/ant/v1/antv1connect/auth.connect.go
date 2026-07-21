@@ -53,6 +53,12 @@ const (
 	// AuthServiceResendVerificationProcedure is the fully-qualified name of the AuthService's
 	// ResendVerification RPC.
 	AuthServiceResendVerificationProcedure = "/ant.v1.AuthService/ResendVerification"
+	// AuthServiceForgotPasswordProcedure is the fully-qualified name of the AuthService's
+	// ForgotPassword RPC.
+	AuthServiceForgotPasswordProcedure = "/ant.v1.AuthService/ForgotPassword"
+	// AuthServiceResetPasswordProcedure is the fully-qualified name of the AuthService's ResetPassword
+	// RPC.
+	AuthServiceResetPasswordProcedure = "/ant.v1.AuthService/ResetPassword"
 )
 
 // AuthServiceClient is a client for the ant.v1.AuthService service.
@@ -65,6 +71,8 @@ type AuthServiceClient interface {
 	Register(context.Context, *connect.Request[v1.RegisterRequest]) (*connect.Response[v1.RegisterResponse], error)
 	VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error)
 	ResendVerification(context.Context, *connect.Request[v1.ResendVerificationRequest]) (*connect.Response[v1.ResendVerificationResponse], error)
+	ForgotPassword(context.Context, *connect.Request[v1.ForgotPasswordRequest]) (*connect.Response[v1.ForgotPasswordResponse], error)
+	ResetPassword(context.Context, *connect.Request[v1.ResetPasswordRequest]) (*connect.Response[v1.ResetPasswordResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the ant.v1.AuthService service. By default, it uses
@@ -126,6 +134,18 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("ResendVerification")),
 			connect.WithClientOptions(opts...),
 		),
+		forgotPassword: connect.NewClient[v1.ForgotPasswordRequest, v1.ForgotPasswordResponse](
+			httpClient,
+			baseURL+AuthServiceForgotPasswordProcedure,
+			connect.WithSchema(authServiceMethods.ByName("ForgotPassword")),
+			connect.WithClientOptions(opts...),
+		),
+		resetPassword: connect.NewClient[v1.ResetPasswordRequest, v1.ResetPasswordResponse](
+			httpClient,
+			baseURL+AuthServiceResetPasswordProcedure,
+			connect.WithSchema(authServiceMethods.ByName("ResetPassword")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -139,6 +159,8 @@ type authServiceClient struct {
 	register               *connect.Client[v1.RegisterRequest, v1.RegisterResponse]
 	verifyEmail            *connect.Client[v1.VerifyEmailRequest, v1.VerifyEmailResponse]
 	resendVerification     *connect.Client[v1.ResendVerificationRequest, v1.ResendVerificationResponse]
+	forgotPassword         *connect.Client[v1.ForgotPasswordRequest, v1.ForgotPasswordResponse]
+	resetPassword          *connect.Client[v1.ResetPasswordRequest, v1.ResetPasswordResponse]
 }
 
 // Login calls ant.v1.AuthService.Login.
@@ -181,6 +203,16 @@ func (c *authServiceClient) ResendVerification(ctx context.Context, req *connect
 	return c.resendVerification.CallUnary(ctx, req)
 }
 
+// ForgotPassword calls ant.v1.AuthService.ForgotPassword.
+func (c *authServiceClient) ForgotPassword(ctx context.Context, req *connect.Request[v1.ForgotPasswordRequest]) (*connect.Response[v1.ForgotPasswordResponse], error) {
+	return c.forgotPassword.CallUnary(ctx, req)
+}
+
+// ResetPassword calls ant.v1.AuthService.ResetPassword.
+func (c *authServiceClient) ResetPassword(ctx context.Context, req *connect.Request[v1.ResetPasswordRequest]) (*connect.Response[v1.ResetPasswordResponse], error) {
+	return c.resetPassword.CallUnary(ctx, req)
+}
+
 // AuthServiceHandler is an implementation of the ant.v1.AuthService service.
 type AuthServiceHandler interface {
 	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
@@ -191,6 +223,8 @@ type AuthServiceHandler interface {
 	Register(context.Context, *connect.Request[v1.RegisterRequest]) (*connect.Response[v1.RegisterResponse], error)
 	VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error)
 	ResendVerification(context.Context, *connect.Request[v1.ResendVerificationRequest]) (*connect.Response[v1.ResendVerificationResponse], error)
+	ForgotPassword(context.Context, *connect.Request[v1.ForgotPasswordRequest]) (*connect.Response[v1.ForgotPasswordResponse], error)
+	ResetPassword(context.Context, *connect.Request[v1.ResetPasswordRequest]) (*connect.Response[v1.ResetPasswordResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -248,6 +282,18 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("ResendVerification")),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServiceForgotPasswordHandler := connect.NewUnaryHandler(
+		AuthServiceForgotPasswordProcedure,
+		svc.ForgotPassword,
+		connect.WithSchema(authServiceMethods.ByName("ForgotPassword")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceResetPasswordHandler := connect.NewUnaryHandler(
+		AuthServiceResetPasswordProcedure,
+		svc.ResetPassword,
+		connect.WithSchema(authServiceMethods.ByName("ResetPassword")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServiceLoginProcedure:
@@ -266,6 +312,10 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceVerifyEmailHandler.ServeHTTP(w, r)
 		case AuthServiceResendVerificationProcedure:
 			authServiceResendVerificationHandler.ServeHTTP(w, r)
+		case AuthServiceForgotPasswordProcedure:
+			authServiceForgotPasswordHandler.ServeHTTP(w, r)
+		case AuthServiceResetPasswordProcedure:
+			authServiceResetPasswordHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -305,4 +355,12 @@ func (UnimplementedAuthServiceHandler) VerifyEmail(context.Context, *connect.Req
 
 func (UnimplementedAuthServiceHandler) ResendVerification(context.Context, *connect.Request[v1.ResendVerificationRequest]) (*connect.Response[v1.ResendVerificationResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AuthService.ResendVerification is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) ForgotPassword(context.Context, *connect.Request[v1.ForgotPasswordRequest]) (*connect.Response[v1.ForgotPasswordResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AuthService.ForgotPassword is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) ResetPassword(context.Context, *connect.Request[v1.ResetPasswordRequest]) (*connect.Response[v1.ResetPasswordResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AuthService.ResetPassword is not implemented"))
 }

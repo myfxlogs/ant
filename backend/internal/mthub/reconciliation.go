@@ -164,19 +164,3 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 	return nil
 }
 
-func orderStateToString(s OrderState) string {
-	switch s {
-	case OrderStatePending:
-		return "PENDING"
-	case OrderStateOpen:
-		return "OPEN"
-	case OrderStateClosed:
-		return "CLOSED"
-	case OrderStateCancelled:
-		return "CANCELLED"
-	case OrderStateRejected:
-		return "REJECTED"
-	default:
-		return "UNKNOWN"
-	}
-}

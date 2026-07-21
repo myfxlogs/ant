@@ -94,3 +94,8 @@ type OrderExecutor interface {
 	AddSymbols(ctx context.Context, symbols []string) error
 	SubscribeOrderEvents(ctx context.Context, h OrderEventHandler) error
 }
+
+// MarginRequirer is implemented by executors that can query the broker for required margin.
+type MarginRequirer interface {
+	RequiredMargin(ctx context.Context, symbol string, lots decimal.Decimal, side Side, price decimal.Decimal) (decimal.Decimal, error)
+}

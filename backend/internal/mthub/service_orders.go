@@ -10,6 +10,7 @@ import (
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/costsvc"
 	"alphaforge/internal/risk"
+	"alphaforge/internal/risksvc"
 	"alphaforge/internal/usermgr"
 )
 
@@ -131,6 +132,39 @@ func (s *MtHubService) submitToBroker(ctx context.Context, req *OrderRequest, or
 		s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)
 		return 0, ErrSessionNotFound
 	}
+
+	// P0-6: broker-backed margin precheck for MT5 accounts.
+	if mr, ok := exec.(MarginRequirer); ok && s.accountStateProvider != nil {
+		state, stateErr := s.accountStateProvider(ctx, req.AccountID)
+		if stateErr == nil && state != nil {
+			requiredMargin, rmErr := mr.RequiredMargin(ctx, req.Canonical, req.Volume, req.Side, req.Price)
+			if rmErr == nil {
+				check := &risksvc.CheckRequest{
+					UserID:    usermgr.GetUserID(ctx),
+					AccountID: req.AccountID,
+					Symbol:    req.Canonical,
+					Side:      sideToString(req.Side),
+					Volume:    req.Volume,
+					Price:     req.Price,
+					Balance:   state.Balance,
+					Equity:    state.Equity,
+					Margin:    state.UsedMargin,
+					Positions: state.OpenPositions + 1,
+				}
+				if result := risksvc.PreCheck(ctx, check, risksvc.DefaultRiskLimits(), 0, state.FreeMargin, requiredMargin); !result.Allowed {
+					s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)
+					return 0, fmt.Errorf("precheck rejected: %s", result.Reason)
+				}
+			} else {
+				s.logger.Warn("RequiredMargin RPC failed, skipping broker margin precheck",
+					zap.String("account", req.AccountID), zap.Error(rmErr))
+			}
+		} else if stateErr != nil {
+			s.logger.Warn("account state fetch failed for margin precheck",
+				zap.String("account", req.AccountID), zap.Error(stateErr))
+		}
+	}
+
 	ticket, err := exec.PlaceOrder(ctx, req)
 	if err != nil {
 		s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)
@@ -200,23 +234,23 @@ func (s *MtHubService) publishOrderCreatedEvent(ctx context.Context, req *OrderR
 		return
 	}
 	ev := &TradeEvent{
-		EventID:           fmt.Sprintf("ord-%d-created", ticket),
-		EventType:         TradeEventOrderCreated,
-		AccountID:         req.AccountID,
-		Ticket:            ticket,
-		ClientID:          req.ClientID,
-		Canonical:         req.Canonical,
-		Side:              sideToString(req.Side),
-		OrderType:         orderTypeToString(req.OrderType),
-		Volume:            req.Volume,
-		Price:             req.Price,
-		StopLoss:          req.StopLoss,
-		TakeProfit:        req.TakeProfit,
-		ToState:           "SUBMITTED",
-		FromState:         string(OMSStateRiskApproved),
-		Timestamp:         Clk.Now(),
-		Version:           1,
-		CostEstimate:     costEstimate,
+		EventID:      fmt.Sprintf("ord-%d-created", ticket),
+		EventType:    TradeEventOrderCreated,
+		AccountID:    req.AccountID,
+		Ticket:       ticket,
+		ClientID:     req.ClientID,
+		Canonical:    req.Canonical,
+		Side:         sideToString(req.Side),
+		OrderType:    orderTypeToString(req.OrderType),
+		Volume:       req.Volume,
+		Price:        req.Price,
+		StopLoss:     req.StopLoss,
+		TakeProfit:   req.TakeProfit,
+		ToState:      "SUBMITTED",
+		FromState:    string(OMSStateRiskApproved),
+		Timestamp:    Clk.Now(),
+		Version:      1,
+		CostEstimate: costEstimate,
 	}
 	if err := s.eventStore.Publish(ctx, ev); err != nil {
 		s.logger.Error("event store publish failed",

@@ -81,7 +81,7 @@ func startAccountEventSubscriber(ctx context.Context, deps RunnerDeps, mgr *Mana
 	}
 	go func() {
 		<-ctx.Done()
-		sub.Unsubscribe()
+		_ = sub.Unsubscribe()
 	}()
 	log.Info("mdgateway: account event subscriber started", zap.String("subject", "account.>"))
 }

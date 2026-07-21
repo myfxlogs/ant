@@ -510,18 +510,6 @@ func (b *SimBroker) recordDealPartial(rec *OrderRecord, vol decimal.Decimal, pro
 	})
 }
 
-// expirePending removes pending orders that have waited longer than maxBars bars.
-func (b *SimBroker) expirePending(currentBar int, maxBars int) {
-	for i := 0; i < len(b.pending); i++ {
-		if currentBar-b.pending[i].OpenBar > maxBars {
-			b.pending[i].State = OrderCancelled
-			b.history = append(b.history, b.pending[i])
-			b.pending = append(b.pending[:i], b.pending[i+1:]...)
-			i--
-		}
-	}
-}
-
 func (b *SimBroker) Account() sdk.AccountInfo {
 	contractSize := b.config.ContractSize
 	if contractSize.IsZero() {

@@ -550,6 +550,230 @@ func (x *SendNotificationResponse) GetId() string {
 	return ""
 }
 
+type GetNotificationPrefsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetNotificationPrefsRequest) Reset() {
+	*x = GetNotificationPrefsRequest{}
+	mi := &file_notification_service_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNotificationPrefsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNotificationPrefsRequest) ProtoMessage() {}
+
+func (x *GetNotificationPrefsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_notification_service_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNotificationPrefsRequest.ProtoReflect.Descriptor instead.
+func (*GetNotificationPrefsRequest) Descriptor() ([]byte, []int) {
+	return file_notification_service_proto_rawDescGZIP(), []int{10}
+}
+
+type GetNotificationPrefsResponse struct {
+	state                   protoimpl.MessageState `protogen:"open.v1"`
+	NewStrategyEnabled      bool                   `protobuf:"varint,1,opt,name=new_strategy_enabled,json=newStrategyEnabled,proto3" json:"new_strategy_enabled,omitempty"`
+	PriceChangeEnabled      bool                   `protobuf:"varint,2,opt,name=price_change_enabled,json=priceChangeEnabled,proto3" json:"price_change_enabled,omitempty"`
+	SubExpiringEnabled      bool                   `protobuf:"varint,3,opt,name=sub_expiring_enabled,json=subExpiringEnabled,proto3" json:"sub_expiring_enabled,omitempty"`
+	PerformanceAlertEnabled bool                   `protobuf:"varint,4,opt,name=performance_alert_enabled,json=performanceAlertEnabled,proto3" json:"performance_alert_enabled,omitempty"`
+	NewRatingEnabled        bool                   `protobuf:"varint,5,opt,name=new_rating_enabled,json=newRatingEnabled,proto3" json:"new_rating_enabled,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
+}
+
+func (x *GetNotificationPrefsResponse) Reset() {
+	*x = GetNotificationPrefsResponse{}
+	mi := &file_notification_service_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNotificationPrefsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNotificationPrefsResponse) ProtoMessage() {}
+
+func (x *GetNotificationPrefsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_notification_service_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNotificationPrefsResponse.ProtoReflect.Descriptor instead.
+func (*GetNotificationPrefsResponse) Descriptor() ([]byte, []int) {
+	return file_notification_service_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetNotificationPrefsResponse) GetNewStrategyEnabled() bool {
+	if x != nil {
+		return x.NewStrategyEnabled
+	}
+	return false
+}
+
+func (x *GetNotificationPrefsResponse) GetPriceChangeEnabled() bool {
+	if x != nil {
+		return x.PriceChangeEnabled
+	}
+	return false
+}
+
+func (x *GetNotificationPrefsResponse) GetSubExpiringEnabled() bool {
+	if x != nil {
+		return x.SubExpiringEnabled
+	}
+	return false
+}
+
+func (x *GetNotificationPrefsResponse) GetPerformanceAlertEnabled() bool {
+	if x != nil {
+		return x.PerformanceAlertEnabled
+	}
+	return false
+}
+
+func (x *GetNotificationPrefsResponse) GetNewRatingEnabled() bool {
+	if x != nil {
+		return x.NewRatingEnabled
+	}
+	return false
+}
+
+type SetNotificationPrefsRequest struct {
+	state                   protoimpl.MessageState `protogen:"open.v1"`
+	NewStrategyEnabled      bool                   `protobuf:"varint,1,opt,name=new_strategy_enabled,json=newStrategyEnabled,proto3" json:"new_strategy_enabled,omitempty"`
+	PriceChangeEnabled      bool                   `protobuf:"varint,2,opt,name=price_change_enabled,json=priceChangeEnabled,proto3" json:"price_change_enabled,omitempty"`
+	SubExpiringEnabled      bool                   `protobuf:"varint,3,opt,name=sub_expiring_enabled,json=subExpiringEnabled,proto3" json:"sub_expiring_enabled,omitempty"`
+	PerformanceAlertEnabled bool                   `protobuf:"varint,4,opt,name=performance_alert_enabled,json=performanceAlertEnabled,proto3" json:"performance_alert_enabled,omitempty"`
+	NewRatingEnabled        bool                   `protobuf:"varint,5,opt,name=new_rating_enabled,json=newRatingEnabled,proto3" json:"new_rating_enabled,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
+}
+
+func (x *SetNotificationPrefsRequest) Reset() {
+	*x = SetNotificationPrefsRequest{}
+	mi := &file_notification_service_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetNotificationPrefsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetNotificationPrefsRequest) ProtoMessage() {}
+
+func (x *SetNotificationPrefsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_notification_service_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetNotificationPrefsRequest.ProtoReflect.Descriptor instead.
+func (*SetNotificationPrefsRequest) Descriptor() ([]byte, []int) {
+	return file_notification_service_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SetNotificationPrefsRequest) GetNewStrategyEnabled() bool {
+	if x != nil {
+		return x.NewStrategyEnabled
+	}
+	return false
+}
+
+func (x *SetNotificationPrefsRequest) GetPriceChangeEnabled() bool {
+	if x != nil {
+		return x.PriceChangeEnabled
+	}
+	return false
+}
+
+func (x *SetNotificationPrefsRequest) GetSubExpiringEnabled() bool {
+	if x != nil {
+		return x.SubExpiringEnabled
+	}
+	return false
+}
+
+func (x *SetNotificationPrefsRequest) GetPerformanceAlertEnabled() bool {
+	if x != nil {
+		return x.PerformanceAlertEnabled
+	}
+	return false
+}
+
+func (x *SetNotificationPrefsRequest) GetNewRatingEnabled() bool {
+	if x != nil {
+		return x.NewRatingEnabled
+	}
+	return false
+}
+
+type SetNotificationPrefsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetNotificationPrefsResponse) Reset() {
+	*x = SetNotificationPrefsResponse{}
+	mi := &file_notification_service_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetNotificationPrefsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetNotificationPrefsResponse) ProtoMessage() {}
+
+func (x *SetNotificationPrefsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_notification_service_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetNotificationPrefsResponse.ProtoReflect.Descriptor instead.
+func (*SetNotificationPrefsResponse) Descriptor() ([]byte, []int) {
+	return file_notification_service_proto_rawDescGZIP(), []int{13}
+}
+
 var File_notification_service_proto protoreflect.FileDescriptor
 
 const file_notification_service_proto_rawDesc = "" +
@@ -588,13 +812,29 @@ const file_notification_service_proto_rawDesc = "" +
 	"\amessage\x18\x04 \x01(\tR\amessage\x12+\n" +
 	"\x04data\x18\x05 \x01(\v2\x17.google.protobuf.StructR\x04data\"*\n" +
 	"\x18SendNotificationResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id2\xa0\x03\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x1d\n" +
+	"\x1bGetNotificationPrefsRequest\"\x9e\x02\n" +
+	"\x1cGetNotificationPrefsResponse\x120\n" +
+	"\x14new_strategy_enabled\x18\x01 \x01(\bR\x12newStrategyEnabled\x120\n" +
+	"\x14price_change_enabled\x18\x02 \x01(\bR\x12priceChangeEnabled\x120\n" +
+	"\x14sub_expiring_enabled\x18\x03 \x01(\bR\x12subExpiringEnabled\x12:\n" +
+	"\x19performance_alert_enabled\x18\x04 \x01(\bR\x17performanceAlertEnabled\x12,\n" +
+	"\x12new_rating_enabled\x18\x05 \x01(\bR\x10newRatingEnabled\"\x9d\x02\n" +
+	"\x1bSetNotificationPrefsRequest\x120\n" +
+	"\x14new_strategy_enabled\x18\x01 \x01(\bR\x12newStrategyEnabled\x120\n" +
+	"\x14price_change_enabled\x18\x02 \x01(\bR\x12priceChangeEnabled\x120\n" +
+	"\x14sub_expiring_enabled\x18\x03 \x01(\bR\x12subExpiringEnabled\x12:\n" +
+	"\x19performance_alert_enabled\x18\x04 \x01(\bR\x17performanceAlertEnabled\x12,\n" +
+	"\x12new_rating_enabled\x18\x05 \x01(\bR\x10newRatingEnabled\"\x1e\n" +
+	"\x1cSetNotificationPrefsResponse2\xe6\x04\n" +
 	"\x13NotificationService\x12X\n" +
 	"\x11ListNotifications\x12 .ant.v1.ListNotificationsRequest\x1a!.ant.v1.ListNotificationsResponse\x12=\n" +
 	"\bMarkRead\x12\x17.ant.v1.MarkReadRequest\x1a\x18.ant.v1.MarkReadResponse\x12F\n" +
 	"\vMarkAllRead\x12\x1a.ant.v1.MarkAllReadRequest\x1a\x1b.ant.v1.MarkAllReadResponse\x12Q\n" +
 	"\x13StreamNotifications\x12\".ant.v1.StreamNotificationsRequest\x1a\x14.ant.v1.Notification0\x01\x12U\n" +
-	"\x10SendNotification\x12\x1f.ant.v1.SendNotificationRequest\x1a .ant.v1.SendNotificationResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x10SendNotification\x12\x1f.ant.v1.SendNotificationRequest\x1a .ant.v1.SendNotificationResponse\x12a\n" +
+	"\x14GetNotificationPrefs\x12#.ant.v1.GetNotificationPrefsRequest\x1a$.ant.v1.GetNotificationPrefsResponse\x12a\n" +
+	"\x14SetNotificationPrefs\x12#.ant.v1.SetNotificationPrefsRequest\x1a$.ant.v1.SetNotificationPrefsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_notification_service_proto_rawDescOnce sync.Once
@@ -608,36 +848,44 @@ func file_notification_service_proto_rawDescGZIP() []byte {
 	return file_notification_service_proto_rawDescData
 }
 
-var file_notification_service_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_notification_service_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_notification_service_proto_goTypes = []any{
-	(*StreamNotificationsRequest)(nil), // 0: ant.v1.StreamNotificationsRequest
-	(*Notification)(nil),               // 1: ant.v1.Notification
-	(*ListNotificationsRequest)(nil),   // 2: ant.v1.ListNotificationsRequest
-	(*ListNotificationsResponse)(nil),  // 3: ant.v1.ListNotificationsResponse
-	(*MarkReadRequest)(nil),            // 4: ant.v1.MarkReadRequest
-	(*MarkReadResponse)(nil),           // 5: ant.v1.MarkReadResponse
-	(*MarkAllReadRequest)(nil),         // 6: ant.v1.MarkAllReadRequest
-	(*MarkAllReadResponse)(nil),        // 7: ant.v1.MarkAllReadResponse
-	(*SendNotificationRequest)(nil),    // 8: ant.v1.SendNotificationRequest
-	(*SendNotificationResponse)(nil),   // 9: ant.v1.SendNotificationResponse
-	(*structpb.Struct)(nil),            // 10: google.protobuf.Struct
+	(*StreamNotificationsRequest)(nil),   // 0: ant.v1.StreamNotificationsRequest
+	(*Notification)(nil),                 // 1: ant.v1.Notification
+	(*ListNotificationsRequest)(nil),     // 2: ant.v1.ListNotificationsRequest
+	(*ListNotificationsResponse)(nil),    // 3: ant.v1.ListNotificationsResponse
+	(*MarkReadRequest)(nil),              // 4: ant.v1.MarkReadRequest
+	(*MarkReadResponse)(nil),             // 5: ant.v1.MarkReadResponse
+	(*MarkAllReadRequest)(nil),           // 6: ant.v1.MarkAllReadRequest
+	(*MarkAllReadResponse)(nil),          // 7: ant.v1.MarkAllReadResponse
+	(*SendNotificationRequest)(nil),      // 8: ant.v1.SendNotificationRequest
+	(*SendNotificationResponse)(nil),     // 9: ant.v1.SendNotificationResponse
+	(*GetNotificationPrefsRequest)(nil),  // 10: ant.v1.GetNotificationPrefsRequest
+	(*GetNotificationPrefsResponse)(nil), // 11: ant.v1.GetNotificationPrefsResponse
+	(*SetNotificationPrefsRequest)(nil),  // 12: ant.v1.SetNotificationPrefsRequest
+	(*SetNotificationPrefsResponse)(nil), // 13: ant.v1.SetNotificationPrefsResponse
+	(*structpb.Struct)(nil),              // 14: google.protobuf.Struct
 }
 var file_notification_service_proto_depIdxs = []int32{
-	10, // 0: ant.v1.Notification.data:type_name -> google.protobuf.Struct
+	14, // 0: ant.v1.Notification.data:type_name -> google.protobuf.Struct
 	1,  // 1: ant.v1.ListNotificationsResponse.notifications:type_name -> ant.v1.Notification
-	10, // 2: ant.v1.SendNotificationRequest.data:type_name -> google.protobuf.Struct
+	14, // 2: ant.v1.SendNotificationRequest.data:type_name -> google.protobuf.Struct
 	2,  // 3: ant.v1.NotificationService.ListNotifications:input_type -> ant.v1.ListNotificationsRequest
 	4,  // 4: ant.v1.NotificationService.MarkRead:input_type -> ant.v1.MarkReadRequest
 	6,  // 5: ant.v1.NotificationService.MarkAllRead:input_type -> ant.v1.MarkAllReadRequest
 	0,  // 6: ant.v1.NotificationService.StreamNotifications:input_type -> ant.v1.StreamNotificationsRequest
 	8,  // 7: ant.v1.NotificationService.SendNotification:input_type -> ant.v1.SendNotificationRequest
-	3,  // 8: ant.v1.NotificationService.ListNotifications:output_type -> ant.v1.ListNotificationsResponse
-	5,  // 9: ant.v1.NotificationService.MarkRead:output_type -> ant.v1.MarkReadResponse
-	7,  // 10: ant.v1.NotificationService.MarkAllRead:output_type -> ant.v1.MarkAllReadResponse
-	1,  // 11: ant.v1.NotificationService.StreamNotifications:output_type -> ant.v1.Notification
-	9,  // 12: ant.v1.NotificationService.SendNotification:output_type -> ant.v1.SendNotificationResponse
-	8,  // [8:13] is the sub-list for method output_type
-	3,  // [3:8] is the sub-list for method input_type
+	10, // 8: ant.v1.NotificationService.GetNotificationPrefs:input_type -> ant.v1.GetNotificationPrefsRequest
+	12, // 9: ant.v1.NotificationService.SetNotificationPrefs:input_type -> ant.v1.SetNotificationPrefsRequest
+	3,  // 10: ant.v1.NotificationService.ListNotifications:output_type -> ant.v1.ListNotificationsResponse
+	5,  // 11: ant.v1.NotificationService.MarkRead:output_type -> ant.v1.MarkReadResponse
+	7,  // 12: ant.v1.NotificationService.MarkAllRead:output_type -> ant.v1.MarkAllReadResponse
+	1,  // 13: ant.v1.NotificationService.StreamNotifications:output_type -> ant.v1.Notification
+	9,  // 14: ant.v1.NotificationService.SendNotification:output_type -> ant.v1.SendNotificationResponse
+	11, // 15: ant.v1.NotificationService.GetNotificationPrefs:output_type -> ant.v1.GetNotificationPrefsResponse
+	13, // 16: ant.v1.NotificationService.SetNotificationPrefs:output_type -> ant.v1.SetNotificationPrefsResponse
+	10, // [10:17] is the sub-list for method output_type
+	3,  // [3:10] is the sub-list for method input_type
 	3,  // [3:3] is the sub-list for extension type_name
 	3,  // [3:3] is the sub-list for extension extendee
 	0,  // [0:3] is the sub-list for field type_name
@@ -654,7 +902,7 @@ func file_notification_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_notification_service_proto_rawDesc), len(file_notification_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

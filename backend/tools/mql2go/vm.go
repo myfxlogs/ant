@@ -76,35 +76,6 @@ func (vm *VM) getSeriesHelper(name string, shift int) interp.Value {
 	return vm.getSeries(name, int32(shift))
 }
 
-// setSignalFromOrder creates a sdk.Signal from an order request and result.
-func (vm *VM) setSignalFromOrder(req sdk.OrderRequest, result sdk.OrderResult) {
-	sig := &sdk.Signal{
-		Symbol:    req.Symbol,
-		Volume:    req.Volume,
-		Price:     result.Price,
-		StopLoss:  req.StopLoss,
-		TakeProfit: req.TakeProfit,
-		Deviation: req.Deviation,
-		Magic:     req.Magic,
-		Comment:   req.Comment,
-	}
-	switch {
-	case req.Type == sdk.OrderMarket && req.Side == sdk.SideBuy:
-		sig.Action = sdk.ActionBuy
-	case req.Type == sdk.OrderMarket && req.Side == sdk.SideSell:
-		sig.Action = sdk.ActionSell
-	case req.Type == sdk.OrderLimit && req.Side == sdk.SideBuy:
-		sig.Action = sdk.ActionBuyLimit
-	case req.Type == sdk.OrderLimit && req.Side == sdk.SideSell:
-		sig.Action = sdk.ActionSellLimit
-	case req.Type == sdk.OrderStop && req.Side == sdk.SideBuy:
-		sig.Action = sdk.ActionBuyStop
-	case req.Type == sdk.OrderStop && req.Side == sdk.SideSell:
-		sig.Action = sdk.ActionSellStop
-	}
-	vm.signal = sig
-}
-
 // RunOnInit executes the OnInit event handler.
 func (vm *VM) RunOnInit(ctx context.Context) error {
 	if vm.bc.OnInit < 0 {

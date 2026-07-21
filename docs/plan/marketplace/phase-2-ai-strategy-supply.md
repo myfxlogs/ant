@@ -1,3 +1,5 @@
+> ⚠️ 已迁移至 docs/blocks/strategy-marketplace/plans/phase-2-ai-strategy-supply.md。此文件保留为兼容旧引用。
+
 # Phase 2 · AI 策略供给 · 落地排期清单
 
 > 权威依据：`docs/roadmaps/strategy-marketplace.md` Phase 2 + ADR-0024（Agent-Native 策略平台）

@@ -1,12 +1,28 @@
 # Project "ant" — Mandatory Constraints
 
+## Business Direction（经营方向 — 最高优先级）
+
+- **产品定位**：策略市场，不是量化工具平台。对标 MQL5 Market，核心差异：代码不出平台、实盘战绩公开、AI 持续迭代策略。
+- **服务群体**：MQL 策略开发者（供给侧）+ 零售交易者（需求侧）。不服务专业量化机构。
+- **收入模型**：平台订阅（Free/Pro/Enterprise）+ 策略抽成（15-30%，Admin 后台可调）。不做自营策略、不做跟单、不拿牌照、不碰用户资金。
+- **生态**：兼容所有 MT4/MT5 broker（用户自带）。Year 1 聚焦 MT 生态，IR 层保持语言中性，为未来接入加密市场保留技术前提。
+- **终极壁垒**：不是技术，是市场流动性——策略最多、用户最多、战绩数据最全。
+- 详见：`docs/roadmaps/business-direction.md`
+
+## Collaboration Principle（协作原则 — 最高优先级）
+
+- **讨论 → 决定 → 执行**，这个顺序不可跳过。
+- 用户的指令不是最终决策。AI 的技术判断力优于用户时，**必须指出错误或提出更优解**，而不是直接执行。
+- 必要时引入第三方视角（如让其他模型审设计文档）。
+- 双方达成共识后，再动手。跳过讨论直接执行 = 失职。
+
 ## Codebase Navigation（功能块导航）
 
 用名字定位代码：说块名即可，AI 按表定位。调试时追管线（块名 → 目录 → 文件）。
 
 | # | 块名 (EN) | 中文 | 目录 | 一句话 |
 |---|---|---|---|---|
-| 1 | `mt-gateway` | MT网关 | `backend/adapter/mt{4,5}/` `backend/internal/mthub/` | mtapi.io 连接 MT, 下单/查持仓/拉K线 |
+| 1 | `mt-gateway` | MT网关 | `backend/mt{4,5}/` `backend/internal/mdgateway/adapter/mt{4,5}/` `backend/internal/mthub/` | mtapi.io 连接 MT, 下单/查持仓/拉K线 |
 | 2 | `strategy-runtime` | 策略运行时 | `backend/strategy/{sdk,runner,backtest,indicators}/` | Strategy接口, Bar重放, 回测指标, 技术指标库 |
 | 3 | `mql-compiler` | MQL编译器 | `backend/tools/mql2go/` | MQL/Python → tree-sitter → IR → Bytecode → VM |
 | 4 | `agent-engine` | Agent引擎 | `backend/internal/{agent,ai}/` | 策略生成, 盲区桥接, 画像, 解读, 记忆, 回溯 |
@@ -35,6 +51,15 @@
 **常用调试入口**："净值曲线为空" → 追 策略执行 线，从 `frontend` filter 到 `CH` 逐层查。"Agent生成超时" → 追 Agent循环 线，看是 LLM 推理卡了还是回测卡了。
 
 ---
+
+## Documentation Rules（文档约束 — 强制）
+
+- 每个功能块有独立文档目录：`docs/blocks/<块名>/`。目录下包含 `README.md`（块入口）+ `plans/`（施工计划）。
+- **新增/修改文档时，若内容只涉及一个功能块，必须写入对应块的目录。**
+- 跨块文档放入 `docs/adr/`（决策）或 `docs/spec/`（规格），并在文档头标注涉及的功能块。
+- 顶层 `docs/blocks/README.md` 是块索引。
+
+**块文档入口**：说块名即可定位。`docs/blocks/<块名>/README.md` 包含代码位置、依赖、关键设计、施工计划。
 
 ## Mandatory Constraints
 
@@ -76,7 +101,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 
 - ❌ REST endpoints (except healthz/readyz/livez/metrics)
 - ❌ WebSocket
-- ❌ JSON 作为数据序列化/持久化/交换格式（包括 `json.load`/`json.dump`/`json.Marshal`/`json.Unmarshal`/`encoding/json`/`import json`）。所有跨进程数据交换用 proto，本地持久化用 PostgreSQL。豁免：自动生成产物（`gen/`、tree-sitter `grammar.json`/`node-types.json`）和 PG `JSONB` 列（由 DB 管理，不在应用层做 `json.Marshal`）
+- ❌ JSON 作为数据序列化/持久化/交换格式（包括 `json.load`/`json.dump`/`json.Marshal`/`json.Unmarshal`/`encoding/json`/`import json`）。所有跨进程数据交换用 proto，本地持久化用 PostgreSQL。豁免：自动生成产物（`gen/`、tree-sitter `grammar.json`/`node-types.json`）和 PG `JSONB` 列（由 DB 管理，不在应用层做 `json.Marshal`）。**追加豁免**：调用外部 LLM API（OpenAI/Anthropic 等）时，API 协议本身要求 JSON——此类外部边界调用不受此限
 - ❌ float64 in price calculations (use `decimal.Decimal` in Go)
 - ❌ Cross-scope changes (one task = one scope)
 - ❌ Hardcoded secrets / `.env` in repo

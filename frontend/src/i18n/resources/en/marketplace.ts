@@ -69,7 +69,7 @@ const Marketplace = {
       "priceModel": {
         "label": "Pricing",
         "free": "Free",
-        "monthly": "Monthly Subscription",
+        "subscription": "Monthly Subscription",
         "once": "One-Time Purchase"
       },
       "priceAmount": "Amount",

@@ -1,9 +1,10 @@
-import { Modal, Descriptions, Tag, Typography, Button, Space, Alert, Checkbox } from 'antd';
-import { WalletOutlined, ShoppingCartOutlined, WarningOutlined } from '@ant-design/icons';
+import { Modal, Descriptions, Tag, Typography, Button, Space, Alert, Checkbox, Input, message } from 'antd';
+import { WalletOutlined, ShoppingCartOutlined, WarningOutlined, TagOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
+import { marketplaceClient } from '@/client/connect';
 
 const { Text } = Typography;
 
@@ -12,7 +13,7 @@ interface Props {
   walletBalance: string;
   open: boolean;
   loading: boolean;
-  onConfirm: () => void;
+  onConfirm: (couponCode?: string) => void;
   onCancel: () => void;
 }
 
@@ -24,14 +25,44 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [riskAcknowledged, setRiskAcknowledged] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [discountedAmount, setDiscountedAmount] = useState<string | null>(null);
+  const [couponError, setCouponError] = useState('');
   if (!strategy) return null;
 
   const name = strategy.strategyName || strategy.title || 'Unknown';
-  const priceAmount = Number(strategy.priceAmount || 0);
-  const isFree = priceAmount <= 0;
+  const originalPrice = Number(strategy.priceAmount || 0);
+  const effectivePrice = discountedAmount ? Number(discountedAmount) : originalPrice;
+  const isFree = effectivePrice <= 0;
   const balanceNum = parseBalance(walletBalance);
-  const sufficient = balanceNum >= priceAmount;
-  const afterBalance = balanceNum - priceAmount;
+  const sufficient = balanceNum >= effectivePrice;
+  const afterBalance = balanceNum - effectivePrice;
+
+  const handleValidateCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponLoading(true);
+    setCouponError('');
+    try {
+      const resp = await marketplaceClient.validateCoupon({
+        code: couponCode.trim(),
+        strategyId: strategy.strategyId,
+        purchaseAmount: strategy.priceAmount || '0',
+      });
+      if (resp.valid) {
+        setDiscountedAmount(resp.finalAmount);
+        message.success(t('marketplace.payment.couponApplied', { defaultValue: 'Coupon applied! Discount: ' + resp.discountAmount }));
+      } else {
+        setCouponError(resp.errorMessage || 'Invalid coupon');
+        setDiscountedAmount(null);
+      }
+    } catch {
+      setCouponError(t('marketplace.payment.couponError', { defaultValue: 'Failed to validate coupon' }));
+      setDiscountedAmount(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
 
   return (
     <Modal
@@ -50,10 +81,34 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
           <Tag color={isFree ? 'green' : 'gold'} style={{ fontSize: 14, fontWeight: 600 }}>
             {isFree
               ? t('marketplace.card.free', '免费')
-              : t('marketplace.payment.oneTimePurchase', '¥{{amount}} 一次性买断', { amount: priceAmount.toFixed(2) })}
+              : t('marketplace.payment.oneTimePurchase', '¥{{amount}} 一次性买断', { amount: effectivePrice.toFixed(2) })}
           </Tag>
+          {discountedAmount && originalPrice > effectivePrice && (
+            <Text delete type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
+              ¥{originalPrice.toFixed(2)}
+            </Text>
+          )}
         </Descriptions.Item>
       </Descriptions>
+
+      {/* Coupon input */}
+      {!isFree && (
+        <div style={{ marginBottom: 16 }}>
+          <Space.Compact style={{ width: '100%' }}>
+            <Input
+              prefix={<TagOutlined />}
+              placeholder={t('marketplace.payment.couponPlaceholder', { defaultValue: 'Enter coupon code...' })}
+              value={couponCode}
+              onChange={e => { setCouponCode(e.target.value); setDiscountedAmount(null); setCouponError(''); }}
+              onPressEnter={handleValidateCoupon}
+            />
+            <Button loading={couponLoading} onClick={handleValidateCoupon}>
+              {t('marketplace.payment.applyCoupon', { defaultValue: 'Apply' })}
+            </Button>
+          </Space.Compact>
+          {couponError && <Text type="danger" style={{ fontSize: 12 }}>{couponError}</Text>}
+        </div>
+      )}
 
       <Descriptions column={1} size="small" bordered style={{ marginBottom: 16 }}>
         <Descriptions.Item label={<><WalletOutlined /> {t('marketplace.payment.walletBalance', '我的余额')}</>}>
@@ -114,7 +169,7 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
             icon={<ShoppingCartOutlined />}
             loading={loading}
             disabled={(!sufficient && !isFree) || !riskAcknowledged}
-            onClick={onConfirm}
+            onClick={() => onConfirm(couponCode.trim() || undefined)}
           >
             {loading
               ? t('marketplace.payment.purchasing', '处理中...')

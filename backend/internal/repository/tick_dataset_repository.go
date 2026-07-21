@@ -91,7 +91,7 @@ func (r *TickDatasetRepository) BatchInsertTicks(ctx context.Context, ticks []*T
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 	for _, t := range ticks {
 		if t == nil {
 			continue

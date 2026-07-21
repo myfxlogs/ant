@@ -1,29 +1,18 @@
 import { useState, useRef, useCallback } from 'react';
-import { Card, Input, Select, Button, Steps, Alert, Typography, Space, Tag, Statistic, Row, Col, Progress, Segmented, Modal, message } from 'antd';
-import { RobotOutlined, RocketOutlined, CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, AppstoreOutlined, EditOutlined, DollarOutlined } from '@ant-design/icons';
+import { Card, Input, Select, Button, Typography, Space, Segmented, Modal, message } from 'antd';
+import { RobotOutlined, RocketOutlined, AppstoreOutlined, EditOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
 import { create } from '@bufbuild/protobuf';
 import { GenerateAndPublishRequestSchema, GenerateFromTemplateRequestSchema, SetStrategyPricingRequestSchema } from '@/gen/ant/v1/marketplace_service_pb';
 import TemplateSelector from './TemplateSelector';
+import AutoGenerateProgress from './AutoGenerateProgress';
+import AutoGenerateResult from './AutoGenerateResult';
 
 const { TextArea } = Input;
 const { Text, Title } = Typography;
 
 type Stage = 'idle' | 'generating' | 'compiling' | 'backtesting' | 'evaluating' | 'publishing' | 'completed' | 'failed';
-
-interface StageInfo {
-  stage: Stage;
-  label: string;
-  status: 'wait' | 'process' | 'finish' | 'error';
-}
-
-const STAGE_ORDER: Stage[] = ['generating', 'compiling', 'backtesting', 'evaluating', 'publishing', 'completed'];
-
-function stageToStepIndex(stage: Stage): number {
-  const idx = STAGE_ORDER.indexOf(stage);
-  return idx < 0 ? 0 : idx;
-}
 
 export default function AutoGeneratePanel() {
   const { t } = useTranslation();
@@ -198,21 +187,6 @@ export default function AutoGeneratePanel() {
     setViolations([]);
   }, []);
 
-  const steps: StageInfo[] = STAGE_ORDER.map(s => {
-    const currentIdx = stageToStepIndex(stage);
-    const idx = STAGE_ORDER.indexOf(s);
-    let status: 'wait' | 'process' | 'finish' | 'error' = 'wait';
-    if (stage === 'failed') {
-      if (idx < currentIdx) status = 'finish';
-      else if (idx === currentIdx) status = 'error';
-    } else if (idx < currentIdx) {
-      status = 'finish';
-    } else if (idx === currentIdx) {
-      status = 'process';
-    }
-    return { stage: s, label: t(`marketplace.autogen.stages.${s}`, { defaultValue: s }), status };
-  });
-
   return (
     <Card>
       <div style={{ marginBottom: 16 }}>
@@ -313,93 +287,37 @@ export default function AutoGeneratePanel() {
       )}
 
       {isRunning && (
-        <div>
-          <Steps
-            current={stageToStepIndex(stage)}
-            items={steps.map(s => ({
-              title: s.label,
-              status: s.status,
-              icon: s.status === 'process' ? <LoadingOutlined /> : s.status === 'error' ? <CloseCircleOutlined /> : s.status === 'finish' ? <CheckCircleOutlined /> : undefined,
-            }))}
-            size="small"
-            style={{ marginBottom: 16 }}
-          />
-          <Progress percent={Math.round(progress * 100)} status="active" style={{ marginBottom: 16 }} />
-          {delta && (
-            <Card size="small" style={{ maxHeight: 200, overflow: 'auto', marginBottom: 16, background: 'var(--color-bg-secondary)' }}>
-              <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12, margin: 0 }}>{delta}</pre>
-            </Card>
-          )}
-          <Button onClick={handleCancel} danger>{t('marketplace.autogen.cancel', { defaultValue: 'Cancel' })}</Button>
-        </div>
+        <AutoGenerateProgress stage={stage} progress={progress} delta={delta} onCancel={handleCancel} t={t} />
       )}
 
       {stage === 'failed' && (
-        <div>
-          <Alert
-            type="error"
-            showIcon
-            message={`${t('marketplace.autogen.failedAt', { defaultValue: 'Failed at' })}: ${errorStage}`}
-            description={errorDetail}
-            style={{ marginBottom: 16 }}
-          />
-          <Space>
-            {retryable && <Button type="primary" onClick={handleGenerate}>{t('marketplace.autogen.retry', { defaultValue: 'Retry' })}</Button>}
-            <Button onClick={handleReset}>{t('marketplace.autogen.modify', { defaultValue: 'Modify Request' })}</Button>
-          </Space>
-        </div>
+        <AutoGenerateResult
+          stage="failed"
+          result={null}
+          violations={[]}
+          errorStage={errorStage}
+          errorDetail={errorDetail}
+          retryable={retryable}
+          onRetry={handleGenerate}
+          onReset={handleReset}
+          onEditPricing={() => {}}
+          t={t}
+        />
       )}
 
       {stage === 'completed' && (
-        <div>
-          {violations.length > 0 ? (
-            <Alert
-              type="warning"
-              showIcon
-              message={t('marketplace.autogen.qualityFailed', { defaultValue: 'Strategy generated but did not pass quality gates' })}
-              description={
-                <div>
-                  {violations.map((v, i) => (
-                    <div key={i}>
-                      <Tag color="orange">{v.metric}</Tag>
-                      <Text>{t('marketplace.autogen.actual', { defaultValue: 'Actual' })}: {v.actual} / {t('marketplace.autogen.threshold', { defaultValue: 'Threshold' })}: {v.threshold}</Text>
-                    </div>
-                  ))}
-                </div>
-              }
-              style={{ marginBottom: 16 }}
-            />
-          ) : (
-            <Alert
-              type="success"
-              showIcon
-              message={t('marketplace.autogen.success', { defaultValue: 'Strategy generated and published successfully!' })}
-              style={{ marginBottom: 16 }}
-            />
-          )}
-
-          {result?.backtest && (
-            <Row gutter={16} style={{ marginBottom: 16 }}>
-              <Col span={4}><Statistic title="Total Return" value={result.backtest.totalReturn} /></Col>
-              <Col span={4}><Statistic title="Max DD" value={result.backtest.maxDrawdown} /></Col>
-              <Col span={4}><Statistic title="Sharpe" value={result.backtest.sharpeRatio} /></Col>
-              <Col span={4}><Statistic title="Win Rate" value={result.backtest.winRate} /></Col>
-              <Col span={4}><Statistic title="Trades" value={result.backtest.totalTrades} /></Col>
-            </Row>
-          )}
-
-          {result?.strategyId && (
-            <Space>
-              <Button type="primary" href={`#/marketplace?strategy=${result.strategyId}`}>
-                {t('marketplace.autogen.viewDetail', { defaultValue: 'View Strategy' })}
-              </Button>
-              <Button icon={<DollarOutlined />} onClick={() => setPricingModalOpen(true)}>
-                {t('marketplace.autogen.editPricing', { defaultValue: 'Edit Pricing' })}
-              </Button>
-              <Button onClick={handleReset}>{t('marketplace.autogen.generateAnother', { defaultValue: 'Generate Another' })}</Button>
-            </Space>
-          )}
-        </div>
+        <AutoGenerateResult
+          stage="completed"
+          result={result}
+          violations={violations}
+          errorStage=""
+          errorDetail=""
+          retryable={false}
+          onRetry={() => {}}
+          onReset={handleReset}
+          onEditPricing={() => setPricingModalOpen(true)}
+          t={t}
+        />
       )}
       <Modal
         title={t('marketplace.autogen.editPricing', { defaultValue: 'Edit Pricing' })}

@@ -3,240 +3,245 @@ package service
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/structpb"
 
-	"alphaforge/internal/model"
-	"alphaforge/internal/mthub"
-	"alphaforge/internal/notification"
-	"alphaforge/internal/notifier"
-	"alphaforge/internal/repository"
+	"alphaforge/internal/secrets"
 )
 
-// MarginLevel represents severity levels for margin call detection (B-2.3).
-type MarginLevel int
-
-const (
-	MLevelWarn MarginLevel = 1 // Level 1 (预警): margin_level <= call_pct * 1.5
-	MLevelCall MarginLevel = 2 // Level 2 (警告): margin_level <= call_pct
-	MLevelCrit MarginLevel = 3 // Level 3 (危急): margin_level <= call_pct * 0.7
-)
-
-// CheckMarginCall evaluates margin level against per-broker thresholds and publishes
-// events + sends emails at 3 severity levels with independent cooldowns.
-func (s *AccountSyncService) CheckMarginCall(
-	accountID, userID string,
-	marginLevel, margin, equity, callPct decimal.Decimal,
-	mu *sync.Mutex,
-	lastSent map[string]map[int]time.Time,
-	eventStore *mthub.TradeEventStore,
-	emailNotifier *notifier.EmailNotifier,
-) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if lastSent[accountID] == nil {
-		lastSent[accountID] = make(map[int]time.Time)
+// GetDecryptedPassword returns the decrypted MT password for internal use (mdgateway connection).
+// The plaintext is never logged or persisted.
+func (s *AccountService) GetDecryptedPassword(ctx context.Context, accountID string) (string, error) {
+	if s.sec == nil {
+		return "", fmt.Errorf("service: get decrypted password: secrets client not configured")
 	}
-
-	now := time.Now()
-
-	// Determine current severity level.
-	var curLevel int
-	switch {
-	case marginLevel.LessThanOrEqual(callPct.Mul(decimal.NewFromFloat(0.7))):
-		curLevel = int(MLevelCrit)
-	case marginLevel.LessThanOrEqual(callPct):
-		curLevel = int(MLevelCall)
-	case marginLevel.LessThanOrEqual(callPct.Mul(decimal.NewFromFloat(1.5))):
-		curLevel = int(MLevelWarn)
-	default:
-		delete(lastSent, accountID)
-		return
-	}
-
-	cooldown := 5 * time.Minute
-	if curLevel == int(MLevelCrit) {
-		cooldown = 1 * time.Minute
-	}
-
-	if since := now.Sub(lastSent[accountID][curLevel]); since < cooldown {
-		return
-	}
-	lastSent[accountID][curLevel] = now
-
-	eventStore.Publish(context.Background(), &mthub.TradeEvent{
-		EventID:   fmt.Sprintf("mc-%s-%d-%d", accountID, now.Unix(), curLevel),
-		EventType: mthub.TradeEventOrderMarginCall,
-		AccountID: accountID,
-		UserID:    userID,
-	})
-
-	if curLevel >= int(MLevelCall) && emailNotifier != nil {
-		emailNotifier.MarginCallAlert(accountID, userID, margin, equity)
-	}
-
-	// Emit in-app notification for margin call events (all levels).
-	if s.notifSender != nil {
-		uid, err := uuid.Parse(userID)
-		if err == nil {
-			levelLabel := "Warning"
-			if curLevel == int(MLevelCrit) {
-				levelLabel = "Critical"
-			} else if curLevel == int(MLevelCall) {
-				levelLabel = "Margin Call"
-			}
-			data, _ := structpb.NewStruct(map[string]interface{}{
-				"account_id":   accountID,
-				"margin_level": marginLevel.InexactFloat64(),
-				"call_pct":     callPct.InexactFloat64(),
-				"severity":     curLevel,
-			})
-			_, _ = s.notifSender.Send(context.Background(), uid, "risk_alert",
-				fmt.Sprintf("Margin %s: %s", levelLabel, accountID),
-				fmt.Sprintf("Margin level %.1f%% (call level: %.1f%%)", marginLevel.InexactFloat64(), callPct.InexactFloat64()),
-				data)
-		}
-	}
-}
-
-// AccountSyncService handles syncing account history from MT brokers to PG.
-type AccountSyncService struct {
-	tradeRecordRepo *repository.TradeRecordRepository
-	mthubSvc        *mthub.MtHubService
-	analyticsCache  *AnalyticsCache
-	log             *zap.Logger
-	notifSender     *notification.Sender
-}
-
-// NewAccountSyncService creates a new AccountSyncService.
-func NewAccountSyncService(tradeRecordRepo *repository.TradeRecordRepository, mthubSvc *mthub.MtHubService, analyticsCache *AnalyticsCache, log *zap.Logger) *AccountSyncService {
-	return &AccountSyncService{
-		tradeRecordRepo: tradeRecordRepo,
-		mthubSvc:        mthubSvc,
-		analyticsCache:  analyticsCache,
-		log:             log,
-	}
-}
-
-// SetNotificationSender injects the notification sender for margin call events.
-func (s *AccountSyncService) SetNotificationSender(ns *notification.Sender) { s.notifSender = ns }
-
-// SyncAccountHistory fetches closed orders from MT broker in monthly chunks and
-// writes them to trade_records.  Each chunk is committed independently — if a
-// chunk fails (network timeout, broker error), earlier chunks are already saved
-// and the next sync resumes from the last successful month.
-func (s *AccountSyncService) SyncAccountHistory(accountID, userID string) {
-	uid, err := uuid.Parse(accountID)
+	var encPwd []byte
+	err := s.db.QueryRow(ctx,
+		`SELECT password_encrypted FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+		accountID).Scan(&encPwd)
 	if err != nil {
-		return
+		return "", fmt.Errorf("service: get decrypted password: %w", err)
 	}
-
-	// Determine start: last successful sync time or 1 year ago.
-	userUUID, _ := uuid.Parse(userID)
-	from := time.Now().AddDate(-1, 0, 0)
-	if t, err := s.tradeRecordRepo.GetLastSyncTime(context.Background(), userUUID, uid); err == nil && t != nil {
-		from = *t
+	if encPwd == nil {
+		return "", fmt.Errorf("service: get decrypted password: no encrypted password stored")
 	}
+	plain, err := s.sec.Decrypt(ctx, secrets.PurposeMTPassword, encPwd)
+	if err != nil {
+		return "", fmt.Errorf("service: get decrypted password: decrypt: %w", err)
+	}
+	return string(plain), nil
+}
 
-	// Sync in 3-month chunks to bound per-request latency and fault blast radius.
-	chunkStart := from
-	now := time.Now()
-	total := 0
-	for chunkStart.Before(now) {
-		chunkEnd := chunkStart.AddDate(0, 3, 0)
-		if chunkEnd.After(now) {
-			chunkEnd = now
+// BackfillPlaintextCredentials encrypts plaintext passwords for existing accounts.
+// Called once on startup to migrate legacy data before dropping plaintext columns.
+// No-ops if the plaintext password column has already been dropped.
+func (s *AccountService) BackfillPlaintextCredentials(ctx context.Context) (int, error) {
+	if s.sec == nil {
+		return 0, fmt.Errorf("service: backfill: secrets client not configured")
+	}
+	// Check if the password column still exists before querying it.
+	var hasCol bool
+	err := s.db.QueryRow(ctx,
+		`SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name = 'mt_accounts' AND column_name = 'password')`).Scan(&hasCol)
+	if err != nil {
+		return 0, fmt.Errorf("service: backfill: check column: %w", err)
+	}
+	if !hasCol {
+		if s.log != nil {
+			s.log.Info("service: plaintext credential backfill skipped (password column already dropped)")
 		}
-
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		records, err := s.mthubSvc.OrderHistory(ctx, accountID, chunkStart, chunkEnd)
-		cancel()
-		if err != nil {
-			s.log.Warn("syncHistory: chunk fetch failed",
-				zap.String("account", accountID),
-				zap.Time("chunkStart", chunkStart),
-				zap.Error(err))
-			return // resume from chunkStart next time
-		}
-
-		if len(records) > 0 {
-			platform := s.mthubSvc.Platform(accountID)
-			tradeRecs := s.convertRecords(accountID, uid, userUUID, platform, records)
-			if err := s.tradeRecordRepo.BatchCreate(context.Background(), tradeRecs); err != nil {
-				s.log.Warn("syncHistory: chunk insert failed",
-					zap.String("account", accountID),
-					zap.Time("chunkStart", chunkStart),
-					zap.Error(err))
-				return // resume from chunkStart next time
+		return 0, nil
+	}
+	if s.log != nil {
+		s.log.Info("service: starting plaintext credential backfill")
+	}
+	rows, err := s.db.Query(ctx,
+		`SELECT id::text, password FROM mt_accounts
+		 WHERE password_encrypted IS NULL AND password IS NOT NULL AND password <> '' AND deleted_at IS NULL`)
+	if err != nil {
+		return 0, fmt.Errorf("service: backfill: query: %w", err)
+	}
+	defer rows.Close()
+	count := 0
+	for rows.Next() {
+		var id, plaintext string
+		if err := rows.Scan(&id, &plaintext); err != nil {
+			if s.log != nil {
+				s.log.Warn("service: backfill: scan failed", zap.Error(err))
 			}
-			total += len(records)
+			continue
 		}
-
-		// Update checkpoint so next sync resumes after this chunk.
-		chunkStart = chunkEnd
+		enc, err := s.sec.Encrypt(ctx, secrets.PurposeMTPassword, []byte(plaintext))
+		if err != nil {
+			if s.log != nil {
+				s.log.Error("service: backfill: encrypt failed", zap.String("account", id), zap.Error(err))
+			}
+			continue
+		}
+		_, err = s.db.Exec(ctx,
+			`UPDATE mt_accounts SET password_encrypted = $2 WHERE id = $1::uuid AND password_encrypted IS NULL`,
+			id, enc)
+		if err != nil {
+			if s.log != nil {
+				s.log.Error("service: backfill: update failed", zap.String("account", id), zap.Error(err))
+			}
+			continue
+		}
+		count++
 	}
+	if s.log != nil {
+		s.log.Info("service: plaintext credential backfill complete", zap.Int("migrated", count))
+	}
+	return count, rows.Err()
+}
 
-	if total > 0 {
-		s.log.Info("syncHistory: synced", zap.String("account", accountID), zap.Int("count", total))
+// GetUserAccountIDs returns all account IDs belonging to a user.
+func (s *AccountService) GetUserAccountIDs(ctx context.Context, userID string) ([]string, error) {
+	rows, err := s.db.Query(ctx, "SELECT id FROM mt_accounts WHERE user_id = $1 AND deleted_at IS NULL", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var ids []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
+}
+
+// UpdateSummaryCache updates the in-memory account summary cache for a user.
+func (s *AccountService) UpdateSummaryCache(userID, accountID string, balance, equity decimal.Decimal, status string) {
+	s.summaryMu.Lock()
+	defer s.summaryMu.Unlock()
+	entry, ok := s.summaryCache[userID]
+	if !ok {
+		entry = &userSummaryCacheEntry{accounts: make(map[string]accountSummaryItem)}
+		s.summaryCache[userID] = entry
+	}
+	entry.accounts[accountID] = accountSummaryItem{balance: balance, equity: equity, status: status}
+	entry.summary = computeUserAccountsSummary(entry.accounts)
+}
+
+// InvalidateSummaryCache drops the cached summary for a user.
+func (s *AccountService) InvalidateSummaryCache(userID string) {
+	s.summaryMu.Lock()
+	defer s.summaryMu.Unlock()
+	delete(s.summaryCache, userID)
+}
+
+// computeUserAccountsSummary aggregates per-account items into a summary.
+func computeUserAccountsSummary(accounts map[string]accountSummaryItem) UserAccountsSummary {
+	var totalBalance, totalEquity decimal.Decimal
+	var connected int32
+	for _, a := range accounts {
+		totalBalance = totalBalance.Add(a.balance)
+		totalEquity = totalEquity.Add(a.equity)
+		if a.status == string(StatusConnected) {
+			connected++
+		}
+	}
+	return UserAccountsSummary{
+		TotalBalance:   totalBalance,
+		TotalEquity:    totalEquity,
+		TotalProfit:    totalEquity.Sub(totalBalance),
+		AccountCount:   int32(len(accounts)),
+		ConnectedCount: connected,
 	}
 }
 
-// convertRecords maps mthub OrderRecords to model TradeRecords.
-func (s *AccountSyncService) convertRecords(accountID string, uid, userID uuid.UUID, platform string, records []*mthub.OrderRecord) []*model.TradeRecord {
-	tradeRecs := make([]*model.TradeRecord, 0, len(records))
-	for _, r := range records {
-		ot := "BUY"
-		if r.Side == mthub.SideSell {
-			ot = "SELL"
+// GetUserAccountsSummary returns the aggregated summary for a user, using the cache when available.
+func (s *AccountService) GetUserAccountsSummary(ctx context.Context, userID string) (*UserAccountsSummary, error) {
+	s.summaryMu.RLock()
+	entry, ok := s.summaryCache[userID]
+	s.summaryMu.RUnlock()
+	if ok {
+		return &entry.summary, nil
+	}
+	var totalBalance, totalEquity pgtype.Numeric
+	var connected, total int32
+	err := s.db.QueryRow(ctx, `
+		SELECT COALESCE(SUM(balance),0), COALESCE(SUM(equity),0),
+		       COUNT(*) FILTER (WHERE account_status = 'connected'), COUNT(*)
+		FROM mt_accounts
+		WHERE user_id = $1::uuid AND deleted_at IS NULL
+	`, userID).Scan(&totalBalance, &totalEquity, &connected, &total)
+	if err != nil {
+		return nil, fmt.Errorf("service: get user accounts summary: %w", err)
+	}
+	bal := pgNumericToDecimal(totalBalance)
+	eq := pgNumericToDecimal(totalEquity)
+	summary := UserAccountsSummary{
+		TotalBalance:   bal,
+		TotalEquity:    eq,
+		TotalProfit:    eq.Sub(bal),
+		AccountCount:   total,
+		ConnectedCount: connected,
+	}
+	s.summaryMu.Lock()
+	s.summaryCache[userID] = &userSummaryCacheEntry{
+		accounts: make(map[string]accountSummaryItem),
+		summary:  summary,
+	}
+	s.summaryMu.Unlock()
+	return &summary, nil
+}
+
+// GetUserAccountSnapshots returns the current state of all MT accounts for a user.
+func (s *AccountService) GetUserAccountSnapshots(ctx context.Context, userID string) ([]AccountSnapshot, error) {
+	rows, err := s.db.Query(ctx, `
+		SELECT id::text, account_status, balance, equity, credit, margin, free_margin, margin_level
+		FROM mt_accounts
+		WHERE user_id = $1::uuid AND deleted_at IS NULL
+	`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("service: get account snapshots: %w", err)
+	}
+	defer rows.Close()
+	var out []AccountSnapshot
+	for rows.Next() {
+		var id, status string
+		var bal, eq, cr, mar, fm, ml pgtype.Numeric
+		if err := rows.Scan(&id, &status, &bal, &eq, &cr, &mar, &fm, &ml); err != nil {
+			return nil, fmt.Errorf("service: scan account snapshot: %w", err)
 		}
-		switch r.OrderType {
-		case mthub.OrderMarket:
-		case mthub.OrderLimit:
-			ot += "_LIMIT"
-		case mthub.OrderStop:
-			ot += "_STOP"
-		case mthub.OrderStopLimit:
-			ot += "_STOP_LIMIT"
-		case mthub.OrderBalance:
-			ot = "BALANCE"
-		case mthub.OrderCredit:
-			ot = "CREDIT"
-		}
-		tradeRecs = append(tradeRecs, &model.TradeRecord{
-			UserID:       userID,
-			AccountID:    uid,
-			Ticket:       r.Ticket,
-			Symbol:       r.SymbolRaw,
-			OrderType:    ot,
-			Volume:       r.Volume,
-			OpenPrice:    r.OpenPrice,
-			ClosePrice:   r.ClosePrice,
-			Profit:       r.Profit,
-			Swap:         r.Swap,
-			Commission:   r.Commission,
-			OpenTime:     r.OpenTime,
-			CloseTime:    r.CloseTime,
-			OrderComment: r.Comment,
-			MagicNumber:  int(r.Magic),
-			Platform:     platform,
+		out = append(out, AccountSnapshot{
+			ID:          id,
+			Status:      status,
+			Balance:     pgNumericToDecimal(bal),
+			Equity:      pgNumericToDecimal(eq),
+			Credit:      pgNumericToDecimal(cr),
+			Margin:      pgNumericToDecimal(mar),
+			FreeMargin:  pgNumericToDecimal(fm),
+			MarginLevel: pgNumericToDecimal(ml),
 		})
 	}
-	return tradeRecs
+	return out, rows.Err()
 }
 
-// MapSideToString converts an mthub.Side to a display string.
-func MapSideToString(s mthub.Side) string {
-	if s == mthub.SideBuy {
-		return "buy"
+// RecordBalanceSnapshot persists a balance sample to the time-series table, throttled per account.
+func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, accountID, userID string, balance, equity, margin, freeMargin decimal.Decimal) error {
+	const minInterval = 5 * time.Second
+	s.snapshotThrottleMu.Lock()
+	last, ok := s.snapshotThrottle[accountID]
+	if ok && time.Since(last) < minInterval {
+		s.snapshotThrottleMu.Unlock()
+		return nil
 	}
-	if s == mthub.SideSell {
-		return "sell"
+	s.snapshotThrottle[accountID] = time.Now()
+	s.snapshotThrottleMu.Unlock()
+	_, err := s.db.Exec(ctx, `
+		INSERT INTO account_balance_snapshots (account_id, user_id, balance, equity, margin, free_margin)
+		VALUES ($1::uuid, $2::uuid, $3, $4, $5, $6)
+	`, accountID, userID, balance, equity, margin, freeMargin)
+	if err != nil {
+		return fmt.Errorf("service: record balance snapshot: %w", err)
 	}
-	return "unknown"
+	return nil
 }

@@ -295,6 +295,7 @@ func main() {
 	mux := http.NewServeMux()
 	reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup, chainMonitor, reconcilerInst, sweepWorker = registerHandlers(ctx, mux, log, pool, mdStore, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, otelInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg, secClient, mktplaceSvc)
 	accountSyncSvc.SetNotificationSender(notifSender)
+	mktplaceSvc.SetNotificationSender(notifSender)
 
 	go scheduleEngine.Start(ctx)
 	defer workerCleanup()

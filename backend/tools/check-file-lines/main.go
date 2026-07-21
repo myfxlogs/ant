@@ -186,7 +186,7 @@ func collectFiles(root string) []string {
 	var files []string
 	for _, scope := range scopes {
 		base := filepath.Join(root, scope)
-		filepath.Walk(base, func(path string, info os.FileInfo, err error) error {
+		_ = filepath.Walk(base, func(path string, info os.FileInfo, err error) error {
 			if err != nil || info.IsDir() {
 				return nil
 			}

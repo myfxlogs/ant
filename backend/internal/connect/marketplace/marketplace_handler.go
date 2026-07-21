@@ -3,6 +3,7 @@ package marketplace
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -26,7 +27,7 @@ type marketplaceSvc interface {
 	ListComments(ctx context.Context, strategyID string, limit, offset int32) ([]marketplace.CommentItem, int32, error)
 	Subscribe(ctx context.Context, userID, publisherUserID, strategyID, kind string) (string, error)
 	Unsubscribe(ctx context.Context, userID, subscriptionID string) error
-	PurchaseStrategy(ctx context.Context, userID, strategyID, idempotencyKey string) (*marketplace.PurchaseResult, error)
+	PurchaseStrategy(ctx context.Context, userID, strategyID, couponCode, idempotencyKey string) (*marketplace.PurchaseResult, error)
 	ListSubscriptions(ctx context.Context, userID string) ([]marketplace.SubscriptionItem, error)
 	SetPricing(ctx context.Context, strategyID, priceModel, priceAmount, platformFeeRate string) error
 	Unpublish(ctx context.Context, strategyID, userID string, isAdmin bool) error
@@ -37,6 +38,26 @@ type marketplaceSvc interface {
 	GetLivePerformance(ctx context.Context, strategyID string, limit int) ([]marketplace.LivePerformancePoint, *marketplace.LivePerformanceSummary, error)
 	LinkLiveAccount(ctx context.Context, strategyID, accountID, userID string) error
 	ValidateBacktestQuality(ctx context.Context, snapshotProto []byte, strategyID string) ([]marketplace.QualityViolation, error)
+	ListLeaderboard(ctx context.Context, lbType, period, assetClass string, limit int) ([]marketplace.LeaderboardEntry, error)
+	StartTrial(ctx context.Context, userID, strategyID string) (trialID string, expiresAt time.Time, alreadyTried bool, err error)
+	CompareStrategies(ctx context.Context, strategyIDs []string) ([]marketplace.StrategyComparison, error)
+	GetStrategyPublicInfo(ctx context.Context, strategyID string) (*antv1.GetStrategyPublicInfoResponse, error)
+	RequestVerification(ctx context.Context, userID, providerType, note string) (string, string, error)
+	ProcessVerification(ctx context.Context, adminID, requestID string, approve bool, note string) error
+	AdminListStrategies(ctx context.Context, status, keyword string, limit, offset int) ([]marketplace.AdminStrategyRow, int, error)
+	AdminFeatureStrategy(ctx context.Context, strategyID string, featured bool, priority int32) error
+	CreateRefundRequest(ctx context.Context, userID, subscriptionID, reason string) (string, error)
+	ListRefundRequests(ctx context.Context, status string, limit, offset int) ([]marketplace.RefundRequestRow, int, error)
+	ProcessRefundRequest(ctx context.Context, adminID, refundID string, approve bool, reviewNote string) error
+	GetMarketplaceAnalytics(ctx context.Context, period string) (*marketplace.AnalyticsResult, error)
+	GetTopStrategies(ctx context.Context) ([]marketplace.TopItemRow, []marketplace.TopItemRow, error)
+	GetTopProviders(ctx context.Context) ([]marketplace.TopItemRow, []marketplace.TopItemRow, error)
+	ValidateCoupon(ctx context.Context, code, strategyID, amount string) (*marketplace.CouponResult, error)
+	CreateCoupon(ctx context.Context, adminID, code, discountType, discountValue, minPurchase string, maxUses int32, expiresAt string, applicableStrategyIDs []string) (string, error)
+	ListCoupons(ctx context.Context, enabledOnly bool) ([]marketplace.CouponRow, error)
+	DisableCoupon(ctx context.Context, couponID string) error
+	GetProviderEarnings(ctx context.Context, userID string) (*marketplace.ProviderEarningsResult, error)
+	ListProviderTransactions(ctx context.Context, userID string, limit, offset int) ([]marketplace.ProviderTxRow, int, error)
 }
 
 // agentGenerator is the interface for the AI strategy generator (agent.Generator).

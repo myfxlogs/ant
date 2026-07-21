@@ -184,7 +184,7 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 	if err != nil {
 		return fmt.Errorf("marketplace: upsert daily perf begin: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	// Get yesterday's closing equity to compute daily PnL and return.
 	var prevEquity decimal.Decimal
@@ -309,7 +309,16 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 		return fmt.Errorf("marketplace: upsert summary: %w", err)
 	}
 
-	return tx.Commit(ctx)
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("marketplace: upsert daily perf commit: %w", err)
+	}
+
+	// Notify subscribers of performance anomalies (push-first, no cron).
+	var title string
+	_ = s.pg.QueryRow(context.Background(), `SELECT COALESCE(title,'') FROM marketplace_strategies WHERE strategy_id = $1`, sid).Scan(&title)
+	go s.notifyPerformanceAnomaly(context.Background(), sid, title, dailyReturn, drawdown)
+
+	return nil
 }
 
 func nullDec(d *decimal.Decimal) interface{} {

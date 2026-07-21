@@ -8,6 +8,13 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// Breaker is the common interface for circuit breakers used by gateway adapters.
+type Breaker interface {
+	Allow() bool
+	OnSuccess()
+	OnFailure()
+}
+
 // TickHandler is the callback that receives ticks from a gateway adapter.
 type TickHandler func(t *Tick)
 
@@ -58,17 +65,17 @@ type MTAccountInfo struct {
 
 // ProfitUpdate represents an account profit/financial snapshot from mtapi OnOrderProfit.
 type ProfitUpdate struct {
-	AccountID    string
-	Platform     string
-	Balance      decimal.Decimal
-	Credit       decimal.Decimal
-	Equity       decimal.Decimal
-	Margin       decimal.Decimal
-	FreeMargin   decimal.Decimal
-	MarginLevel  decimal.Decimal
-	Profit       decimal.Decimal
+	AccountID     string
+	Platform      string
+	Balance       decimal.Decimal
+	Credit        decimal.Decimal
+	Equity        decimal.Decimal
+	Margin        decimal.Decimal
+	FreeMargin    decimal.Decimal
+	MarginLevel   decimal.Decimal
+	Profit        decimal.Decimal
 	ProfitPercent float64
-	Positions    []ProfitPosition
+	Positions     []ProfitPosition
 }
 
 // ProfitPosition is an open position snapshot within a ProfitUpdate.
@@ -83,14 +90,14 @@ type ProfitPosition struct {
 // OrderUpdate represents a real-time order change event from OnOrderUpdate stream.
 // Contains the triggering update + full account snapshot (metrics + opened positions).
 type OrderUpdate struct {
-	AccountID   string
-	Platform    string
+	AccountID string
+	Platform  string
 	// The specific order change.
-	UpdateTicket    int64
-	UpdateType      string // "open", "close", "modify", "delete", "pending_open", "pending_close", etc.
-	UpdateOrderType string // "buy", "sell", "buy_limit", "sell_limit", etc. (original order type)
-	UpdateSymbol    string
-	UpdateVolume  decimal.Decimal
+	UpdateTicket     int64
+	UpdateType       string // "open", "close", "modify", "delete", "pending_open", "pending_close", etc.
+	UpdateOrderType  string // "buy", "sell", "buy_limit", "sell_limit", etc. (original order type)
+	UpdateSymbol     string
+	UpdateVolume     decimal.Decimal
 	UpdateOpenPrice  decimal.Decimal
 	UpdateClosePrice decimal.Decimal
 	UpdateProfit     decimal.Decimal
@@ -119,7 +126,7 @@ type OrderUpdate struct {
 type OrderUpdatePosition struct {
 	Ticket       int64
 	Symbol       string
-	Type         string  // "buy", "sell", etc.
+	Type         string // "buy", "sell", etc.
 	Volume       decimal.Decimal
 	OpenPrice    decimal.Decimal
 	CurrentPrice decimal.Decimal
@@ -129,24 +136,24 @@ type OrderUpdatePosition struct {
 	Swap         decimal.Decimal
 	Commission   decimal.Decimal
 	Comment      string
-	OpenTime     int64   // unix seconds
+	OpenTime     int64 // unix seconds
 }
 
 // Tick is the canonical tick representation flowing into mdgateway.
 type Tick struct {
-	UserID        string          // ant user ID
-	AccountID     string          // ant account UUID
-	Broker        string          // broker unique identifier
-	Platform      string          // "mt4" or "mt5"
-	SymbolRaw     string          // broker-native symbol (e.g. "BTCUSDm")
-	Canonical     string          // normalized symbol; adapter leaves empty, mdgateway fills
-	TsUnixMs      int64           // broker timestamp (ms, UTC)
-	ArrivedUnixMs int64           // local arrival time (ms, UTC)
+	UserID        string // ant user ID
+	AccountID     string // ant account UUID
+	Broker        string // broker unique identifier
+	Platform      string // "mt4" or "mt5"
+	SymbolRaw     string // broker-native symbol (e.g. "BTCUSDm")
+	Canonical     string // normalized symbol; adapter leaves empty, mdgateway fills
+	TsUnixMs      int64  // broker timestamp (ms, UTC)
+	ArrivedUnixMs int64  // local arrival time (ms, UTC)
 	Bid           decimal.Decimal
 	Ask           decimal.Decimal
 	BidVolume     float64
 	AskVolume     float64
-	IsReplay      bool            // true when tick originates from spill_replay or backfiller (ADR-0009)
+	IsReplay      bool // true when tick originates from spill_replay or backfiller (ADR-0009)
 }
 
 // Bar is produced by mdgateway.bar_aggregator from accumulated ticks.
@@ -166,8 +173,8 @@ type Bar struct {
 	Ask           decimal.Decimal // latest ask for real-time quote
 	Volume        float64
 	TickCount     uint32
-	IsClosed      bool   // true when bar is finalized by AddTick; false for open bar snapshots
-	IsReplay      bool   // true when bar originates from spill_replay or backfiller (ADR-0009)
+	IsClosed      bool // true when bar is finalized by AddTick; false for open bar snapshots
+	IsReplay      bool // true when bar originates from spill_replay or backfiller (ADR-0009)
 }
 
 // PeriodMs returns the duration of a timeframe in milliseconds.
@@ -198,16 +205,16 @@ func PeriodMs(period string) int64 {
 // AccountConfig comes from PG mt_accounts_v2 view; runner decrypts and passes to adapter.
 // Field names strictly align with SQL column names (see spec/13 §4.1).
 type AccountConfig struct {
-	AccountID    string // mt_accounts_v2.id (UUID)
-	UserID       string // mt_accounts_v2.user_id
-	Broker       string // mt_accounts_v2.broker (from broker_company)
-	Platform     string // mt_accounts_v2.platform ("mt4" / "mt5")
-	Login        string // mt_accounts_v2.login
-	Password     string // password_encrypted decrypted plaintext (vault.Decrypt)
-	Server       string // mt_accounts_v2.server (from broker_server, display name)
-	BrokerHost   string // mt_accounts_v2.broker_host (actual broker IP:port for mtapi Connect)
-	MtapiHost    string // mt_accounts_v2.mtapi_host (mtapi gateway endpoint, empty=mtapi.io)
-	MtapiPort    string // mt_accounts_v2.mtapi_port
-	MtapiToken   string   // mt_token plaintext from DB
-	Symbols      []string // canonical_subscribed_symbols
+	AccountID  string   // mt_accounts_v2.id (UUID)
+	UserID     string   // mt_accounts_v2.user_id
+	Broker     string   // mt_accounts_v2.broker (from broker_company)
+	Platform   string   // mt_accounts_v2.platform ("mt4" / "mt5")
+	Login      string   // mt_accounts_v2.login
+	Password   string   // password_encrypted decrypted plaintext (vault.Decrypt)
+	Server     string   // mt_accounts_v2.server (from broker_server, display name)
+	BrokerHost string   // mt_accounts_v2.broker_host (actual broker IP:port for mtapi Connect)
+	MtapiHost  string   // mt_accounts_v2.mtapi_host (mtapi gateway endpoint, empty=mtapi.io)
+	MtapiPort  string   // mt_accounts_v2.mtapi_port
+	MtapiToken string   // mt_token plaintext from DB
+	Symbols    []string // canonical_subscribed_symbols
 }

@@ -1,10 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Modal, Descriptions, Tag, Button, Typography, Space, Divider, Input, List, Spin, Rate, Tabs, Alert, Empty } from 'antd';
-import { ShoppingCartOutlined, DownloadOutlined, UserOutlined, ThunderboltOutlined, WarningOutlined } from '@ant-design/icons';
+import { Modal, Descriptions, Tag, Button, Typography, Space, Divider, Input, List, Spin, Rate, Tabs, Alert, Empty, message } from 'antd';
+import { ShoppingCartOutlined, DownloadOutlined, UserOutlined, ThunderboltOutlined, WarningOutlined, ExperimentOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useStrategyDiscussion } from '../hooks/useStrategyDiscussion';
+import { marketplaceClient } from '@/client/connect';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
 import LivePerformanceTab from './LivePerformanceTab';
+import ShareButtons from './ShareButtons';
 
 const { Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -42,6 +44,7 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
   const [commentText, setCommentText] = useState('');
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [perfTab, setPerfTab] = useState('backtest');
+  const [trialLoading, setTrialLoading] = useState(false);
 
   // Load discussion data when a new strategy is opened
   useEffect(() => {
@@ -61,6 +64,24 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
       setCommentSubmitting(false);
     }
   }, [commentText, strategy, d]);
+
+  const handleStartTrial = useCallback(async () => {
+    if (!strategy) return;
+    setTrialLoading(true);
+    try {
+      const resp = await marketplaceClient.startTrial({ strategyId: strategy.strategyId });
+      if (resp.alreadyTried) {
+        message.info(t('marketplace.trial.alreadyTried', { defaultValue: 'You have already used your free trial for this strategy.' }));
+      } else {
+        const expires = new Date(Number(resp.expiresAtMs));
+        message.success(t('marketplace.trial.started', { defaultValue: 'Free trial started! Expires' }) + ' ' + expires.toLocaleDateString());
+      }
+    } catch {
+      message.error(t('marketplace.trial.failed', { defaultValue: 'Failed to start trial' }));
+    } finally {
+      setTrialLoading(false);
+    }
+  }, [strategy, t]);
 
   if (!strategy) return null;
 
@@ -272,7 +293,9 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
       <Divider />
 
       {/* Action buttons */}
-      <div style={{ textAlign: 'right', display: 'flex', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
+      <div style={{ textAlign: 'right', display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center' }}>
+        <ShareButtons strategyId={strategy.strategyId} title={name} />
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         {isOwner ? (
           <>
             <Tag color="blue" style={{ padding: '4px 16px', fontSize: 14 }}>{t('marketplace.card.yourStrategy', 'Your Strategy')}</Tag>
@@ -292,10 +315,16 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
             {t('marketplace.detail.getFree')}
           </Button>
         ) : (
-          <Button type="primary" icon={<ShoppingCartOutlined />} size="large" onClick={() => onBuy(strategy)}>
-            {t('marketplace.detail.buyNow')}
-          </Button>
+          <>
+            <Button icon={<ExperimentOutlined />} size="large" loading={trialLoading} onClick={handleStartTrial}>
+              {t('marketplace.trial.start', { defaultValue: 'Free Trial' })}
+            </Button>
+            <Button type="primary" icon={<ShoppingCartOutlined />} size="large" onClick={() => onBuy(strategy)}>
+              {t('marketplace.detail.buyNow')}
+            </Button>
+          </>
         )}
+        </div>
       </div>
     </Modal>
   );

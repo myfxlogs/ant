@@ -122,25 +122,6 @@ func (w *ExperimentWorker) backtestAndScore(
 	}, nil
 }
 
-// scoreFromBacktest extracts metrics from proto binary and scores with the given regime.
-func (w *ExperimentWorker) scoreFromBacktest(bt *repository.BacktestRun, overrides map[string]interface{}, regime ai.MarketRegime) candidateResult {
-	btMetrics := extractBacktestMetrics(bt.ProtoResponse)
-	scored := ai.Score(btMetrics, regime)
-
-	summary := "param search"
-	if scored.Trades < 5 {
-		summary = fmt.Sprintf("only %d trades", scored.Trades)
-	}
-
-	return candidateResult{
-		Overrides:       overrides,
-		Score:           scored.Score,
-		Grade:           scored.Grade,
-		ScoreComponents: scored.Components,
-		Summary:         summary,
-	}
-}
-
 // extractBacktestMetrics parses proto binary ExecuteBacktestResponse → BacktestMetrics.
 func extractBacktestMetrics(protoResp []byte) *ai.BacktestMetrics {
 	if len(protoResp) == 0 {
@@ -166,27 +147,6 @@ func extractBacktestMetrics(protoResp []byte) *ai.BacktestMetrics {
 func parseFloat(s string) float64 {
 	f, _ := strconv.ParseFloat(s, 64)
 	return f
-}
-
-// detectRegime fetches K-lines for the backtest run and detects market regime.
-// Falls back to Transition if data is insufficient or unavailable.
-func (w *ExperimentWorker) detectRegime(ctx context.Context, bt *repository.BacktestRun) ai.MarketRegime {
-	if w.marketDataRepo == nil || bt.Symbol == "" || bt.Timeframe == "" {
-		return ai.RegimeTransition
-	}
-	bars, err := w.marketDataRepo.GetKlines(
-		ctx, bt.Symbol, "", bt.Timeframe, bt.FromTs, bt.ToTs, 2000,
-	)
-	if err != nil || len(bars) < 30 {
-		return ai.RegimeTransition
-	}
-	ohlc := make([]ai.OHLCBar, len(bars))
-	for i := 0; i < len(bars); i++ {
-		b := bars[len(bars)-1-i] // reverse DESC→ASC
-		ohlc[i] = ai.OHLCBar{Open: b.Open.InexactFloat64(), High: b.High.InexactFloat64(), Low: b.Low.InexactFloat64(), Close: b.Close.InexactFloat64(), Volume: b.Volume}
-	}
-	result := ai.DetectRegime(ohlc)
-	return result.Regime
 }
 
 // detectRegimeForExperiment fetches K-lines for the experiment's symbol/timeframe/time-window

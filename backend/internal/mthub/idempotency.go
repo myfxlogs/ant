@@ -116,11 +116,11 @@ func (g *ThreeLayerGuard) tryAdvisoryLock(ctx context.Context, accountID, client
 	var ok bool
 	err = tx.QueryRow(ctx, "SELECT pg_try_advisory_xact_lock($1, $2)", k1, k2).Scan(&ok)
 	if err != nil {
-		tx.Rollback(ctx)
+		_ = tx.Rollback(ctx)
 		return false, nil, err
 	}
 	if !ok {
-		tx.Rollback(ctx)
+		_ = tx.Rollback(ctx)
 		return false, nil, nil
 	}
 

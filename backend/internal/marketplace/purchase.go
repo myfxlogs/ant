@@ -14,7 +14,7 @@ import (
 // PurchaseStrategy atomically charges the user's wallet, credits the publisher,
 // and creates a subscription — all in a single DB transaction with FOR UPDATE
 // row locking to prevent races.
-func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idempotencyKey string) (*PurchaseResult, error) {
+func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, couponCode, idempotencyKey string) (*PurchaseResult, error) {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: invalid user_id: %w", err)
@@ -28,7 +28,7 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	// 0. Idempotency check inside transaction — serialized to prevent races.
 	if idempotencyKey != "" {
@@ -36,14 +36,13 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 		err := tx.QueryRow(ctx,
 			`SELECT us.id::text, wt.id::text, ABS(wt.amount)::text, w.balance::text
 			 FROM user_subscriptions us
-			 JOIN wallet_transactions wt ON wt.user_id = us.subscriber_user_id AND wt.tx_type = $1
+			 LEFT JOIN wallet_transactions wt ON wt.idem_key = 'mkt-buy-' || us.idempotency_key
 			 JOIN user_wallets w ON w.user_id = us.subscriber_user_id
-			 WHERE us.idempotency_key = $2 AND us.subscriber_user_id = $3
-			 ORDER BY wt.created_at DESC LIMIT 1`,
-			TxTypePurchase, idempotencyKey, uid,
+			 WHERE us.idempotency_key = $1 AND us.subscriber_user_id = $2`,
+			idempotencyKey, uid,
 		).Scan(&existingSubID, &existingTxID, &existingAmount, &existingBalance)
 		if err == nil {
-			tx.Rollback(ctx)
+			_ = tx.Rollback(ctx)
 			return &PurchaseResult{
 				SubscriptionID: existingSubID,
 				TransactionID:  existingTxID,
@@ -78,6 +77,21 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 	}
 	if (priceModel != PriceModelOnce && priceModel != PriceModelSubscription) || !priceDec.IsPositive() {
 		return nil, fmt.Errorf("marketplace: strategy is not purchasable")
+	}
+
+	// Apply coupon if provided.
+	finalAmount := priceDec
+	var couponID string
+	if couponCode != "" {
+		cp, err := s.ValidateCoupon(ctx, couponCode, strategyID, priceDec.String())
+		if err != nil {
+			return nil, fmt.Errorf("marketplace: validate coupon: %w", err)
+		}
+		if !cp.Valid {
+			return nil, fmt.Errorf("marketplace: %s", cp.ErrorMessage)
+		}
+		finalAmount = cp.FinalAmount
+		couponID = cp.ID
 	}
 
 	// Determine subscription kind and expiry.
@@ -124,7 +138,7 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 		return nil, fmt.Errorf("marketplace: wallet balance unavailable")
 	}
 
-	amountStr := priceDec.StringFixed(2)
+	amountStr := finalAmount.StringFixed(2)
 	negAmountStr := "-" + amountStr
 
 	// 5. Deduct buyer balance via AdjustBalanceTx (hash chain + idempotency + ledger_outbox).
@@ -141,8 +155,8 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 	}
 
 	// 7. Credit publisher wallet via AdjustBalanceTx (hash chain + idempotency).
-	feeDec := priceDec.Mul(feeRateDec)
-	pubDec := priceDec.Sub(feeDec)
+	feeDec := finalAmount.Mul(feeRateDec)
+	pubDec := finalAmount.Sub(feeDec)
 	pubAmountStr := pubDec.StringFixed(2)
 
 	// Ensure publisher wallet exists.
@@ -203,16 +217,15 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 		// If unique violation on idempotency_key, another request won the race.
 		// Return the now-existing subscription gracefully.
 		if idempotencyKey != "" && isUniqueViolation(err) {
-			tx.Rollback(ctx)
+			_ = tx.Rollback(ctx)
 			var dupSubID, dupTxID, dupAmount, dupBalance string
 			if err2 := s.pg.QueryRow(ctx,
 				`SELECT us.id::text, wt.id::text, ABS(wt.amount)::text, w.balance::text
 				 FROM user_subscriptions us
-				 JOIN wallet_transactions wt ON wt.user_id = us.subscriber_user_id AND wt.tx_type = $1
+				 LEFT JOIN wallet_transactions wt ON wt.idem_key = 'mkt-buy-' || us.idempotency_key
 				 JOIN user_wallets w ON w.user_id = us.subscriber_user_id
-				 WHERE us.idempotency_key = $2 AND us.subscriber_user_id = $3
-				 ORDER BY wt.created_at DESC LIMIT 1`,
-				TxTypePurchase, idempotencyKey, uid,
+				 WHERE us.idempotency_key = $1 AND us.subscriber_user_id = $2`,
+				idempotencyKey, uid,
 			).Scan(&dupSubID, &dupTxID, &dupAmount, &dupBalance); err2 == nil {
 				return &PurchaseResult{
 					SubscriptionID: dupSubID, TransactionID: dupTxID,
@@ -230,6 +243,21 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, idem
 	)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: update subscriber count: %w", err)
+	}
+
+	// 11. If a coupon was applied, atomically consume it.
+	if couponID != "" {
+		var consumed bool
+		err = tx.QueryRow(ctx,
+			`UPDATE marketplace_coupons
+			 SET used_count = used_count + 1
+			 WHERE id = $1 AND (max_uses = 0 OR used_count < max_uses)
+			 RETURNING true`,
+			couponID,
+		).Scan(&consumed)
+		if err != nil {
+			return nil, fmt.Errorf("marketplace: coupon exhausted: %w", err)
+		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -258,11 +286,23 @@ func (s *Service) SetPricing(ctx context.Context, strategyID, priceModel, priceA
 	if err != nil {
 		return fmt.Errorf("marketplace: invalid strategy_id: %w", err)
 	}
+
+	// Read old price for notification.
+	var oldPrice, title string
+	_ = s.pg.QueryRow(ctx,
+		`SELECT COALESCE(price_amount::text,'0'), COALESCE(title,'') FROM marketplace_strategies WHERE strategy_id = $1`,
+		sid,
+	).Scan(&oldPrice, &title)
+
 	_, err = s.pg.Exec(ctx,
 		`UPDATE marketplace_strategies SET price_model=$2, price_amount=$3::numeric, platform_fee_rate=$4::numeric, updated_at=now() WHERE strategy_id=$1`,
 		sid, priceModel, priceAmount, platformFeeRate)
 	if err == nil {
 		s.pubCache.clear()
+		// Notify subscribers of price change.
+		if oldPrice != priceAmount {
+			go s.notifyPriceChange(context.Background(), sid, title, oldPrice, priceAmount)
+		}
 	}
 	return err
 }

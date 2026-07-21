@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { Tabs, Typography, Drawer } from 'antd';
-import { ShopOutlined, BookOutlined, UserOutlined, RobotOutlined } from '@ant-design/icons';
+import { Tabs, Typography, Drawer, Button, Badge } from 'antd';
+import { ShopOutlined, BookOutlined, UserOutlined, RobotOutlined, TrophyOutlined, SwapOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import Seo from '@/components/common/Seo';
 import { useMarketplace } from './hooks/useMarketplace';
@@ -9,9 +9,11 @@ import MarketTab from './components/MarketTab';
 import PurchaseTab from './components/PurchaseTab';
 import AuthorTab from './components/AuthorTab';
 import AutoGeneratePanel from './components/AutoGeneratePanel';
+import LeaderboardTab from './components/LeaderboardTab';
 import StrategyDetailModal from './components/StrategyDetailModal';
 import PaymentModal from './components/PaymentModal';
 import ProtectedBacktestPanel from './components/ProtectedBacktestPanel';
+import CompareModal, { useCompareSelection } from './components/CompareModal';
 
 const { Title, Text } = Typography;
 
@@ -19,13 +21,15 @@ const MarketTabMemo = memo(MarketTab);
 const PurchaseTabMemo = memo(PurchaseTab);
 const AuthorTabMemo = memo(AuthorTab);
 const AutoGenerateMemo = memo(AutoGeneratePanel);
+const LeaderboardTabMemo = memo(LeaderboardTab);
 
 function MarketplaceUI() {
   const { t } = useTranslation();
   const m = useMarketplace();
+  const compare = useCompareSelection();
 
   return (
-    <MarketplaceProvider value={m}>
+    <MarketplaceProvider value={{ ...m, compareIds: compare.compareIds, toggleCompare: compare.toggleCompare }}>
       <Seo title="Strategy Marketplace" description="Discover and purchase MT4/MT5 trading strategies. Supports IC Markets, Pepperstone, XM and 30+ brokers. AI-assisted strategy generation and optimization. Backtest verified, live performance tracked." path="/marketplace" keywords={[
         'strategy marketplace', 'buy forex EA', 'MT4 strategies', 'MT5 strategies',
         'trading robots', 'AI trading strategies', 'IC Markets', 'Pepperstone', 'XM',
@@ -41,6 +45,7 @@ function MarketplaceUI() {
           </div>
           <Tabs activeKey={m.activeTab} onChange={k => m.setActiveTab(k as any)} items={[
             { key: 'market', label: <span><ShopOutlined /> {t('marketplace.tabs.marketplace')}</span>, children: <MarketTabMemo /> },
+            { key: 'leaderboard', label: <span><TrophyOutlined /> {t('marketplace.tabs.leaderboard', { defaultValue: 'Leaderboard' })}</span>, children: <LeaderboardTabMemo /> },
             { key: 'ai', label: <span><RobotOutlined /> {t('marketplace.tabs.ai', { defaultValue: 'AI Generate' })}</span>, children: <AutoGenerateMemo /> },
             { key: 'purchases', label: <span><BookOutlined /> {t('marketplace.tabs.purchases', 'My Purchases')}</span>, children: <PurchaseTabMemo /> },
             { key: 'author', label: <span><UserOutlined /> {t('marketplace.tabs.author', 'Author Center')}</span>, children: <AuthorTabMemo /> },
@@ -69,8 +74,28 @@ function MarketplaceUI() {
             onConfirm={m.handleConfirmPayment}
             onCancel={m.handleCancelPayment}
           />
+          <CompareModal
+            open={compare.compareOpen}
+            strategyIds={compare.compareIds}
+            onClose={() => compare.setCompareOpen(false)}
+            onRemove={compare.removeFromCompare}
+          />
         </div>
       </div>
+      {compare.compareIds.length > 0 && (
+        <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1000 }}>
+          <Badge count={compare.compareIds.length}>
+            <Button
+              type="primary"
+              size="large"
+              icon={<SwapOutlined />}
+              onClick={() => compare.setCompareOpen(true)}
+            >
+              {t('marketplace.compare.button', { defaultValue: 'Compare' })}
+            </Button>
+          </Badge>
+        </div>
+      )}
     </MarketplaceProvider>
   );
 }

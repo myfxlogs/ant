@@ -57,54 +57,6 @@ func (n *Normalizer) Resolve(ctx context.Context, broker, raw string) string {
 	return canonical
 }
 
-// stripSuffix removes known broker symbol suffixes and uppercases the result.
-// Known dot suffixes: .m, .pro, .x, .c (stripped).
-// Known underscore suffixes: _i, _r, _institutional, _retail (stripped).
-// Unknown dot suffixes are preserved but uppercased.
-// This is intentionally NOT used in Resolve() — raw broker symbols are canonical.
-func stripSuffix(raw string) string {
-	if raw == "" {
-		return ""
-	}
-	upper := func(s string) string {
-		b := make([]byte, len(s))
-		for i := 0; i < len(s); i++ {
-			c := s[i]
-			if c >= 'a' && c <= 'z' {
-				c -= 32
-			}
-			b[i] = c
-		}
-		return string(b)
-	}
-
-	// Known dot suffixes to strip.
-	dotSuffixes := []string{".m", ".pro", ".x", ".c"}
-	upperRaw := upper(raw)
-	for _, s := range dotSuffixes {
-		if len(upperRaw) > len(s) && upperRaw[len(upperRaw)-len(s):] == upper(s) {
-			return upperRaw[:len(upperRaw)-len(s)]
-		}
-	}
-
-	// Unknown dot suffix: preserve but uppercase.
-	for i := len(raw) - 1; i >= 0; i-- {
-		if raw[i] == '.' {
-			return upperRaw
-		}
-	}
-
-	// Known underscore suffixes to strip.
-	underscoreSuffixes := []string{"_i", "_r", "_institutional", "_retail"}
-	for _, s := range underscoreSuffixes {
-		if len(upperRaw) > len(s) && upperRaw[len(upperRaw)-len(s):] == upper(s) {
-			return upperRaw[:len(upperRaw)-len(s)]
-		}
-	}
-
-	return upperRaw
-}
-
 // InvalidateCache removes a cached entry for (broker, symbol_raw).
 // Called by NormalizerInvalidator on PG NOTIFY events (ADR-0011 §2.3).
 func (n *Normalizer) InvalidateCache(broker, symbolRaw string) {

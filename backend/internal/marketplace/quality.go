@@ -51,6 +51,9 @@ func (s *Service) loadQualityGates(ctx context.Context) (qualityGates, error) {
 		}
 		m[k] = v
 	}
+	if err := rows.Err(); err != nil {
+		return qualityGates{}, nil
+	}
 
 	var g qualityGates
 	for k, v := range m {
@@ -146,6 +149,37 @@ func (s *Service) ValidateBacktestQuality(ctx context.Context, snapshotProto []b
 		violations = append(violations, QualityViolation{
 			Metric: "win_rate", Actual: winRate.String(), Threshold: gates.MinWinRate.String(),
 		})
+	}
+
+	// Walk-forward OOS degradation check (only if OOS data is present).
+	if gates.MaxIsOosDegradation.IsPositive() && snap.OosSharpeRatio != "" {
+		isSharpe, errIS := decimal.NewFromString(snap.SharpeRatio)
+		oosSharpe, errOOS := decimal.NewFromString(snap.OosSharpeRatio)
+		if errIS == nil && errOOS == nil && isSharpe.IsPositive() {
+			ratio := oosSharpe.Div(isSharpe)
+			degradation := decimal.NewFromInt(1).Sub(ratio)
+			if degradation.GreaterThan(gates.MaxIsOosDegradation) {
+				violations = append(violations, QualityViolation{
+					Metric:    "is_oos_sharpe_degradation",
+					Actual:    degradation.String(),
+					Threshold: gates.MaxIsOosDegradation.String(),
+				})
+			}
+		}
+
+		isReturn, errIS := decimal.NewFromString(snap.TotalReturn)
+		oosReturn, errOOS := decimal.NewFromString(snap.OosTotalReturn)
+		if errIS == nil && errOOS == nil && isReturn.IsPositive() {
+			ratio := oosReturn.Div(isReturn)
+			degradation := decimal.NewFromInt(1).Sub(ratio)
+			if degradation.GreaterThan(gates.MaxIsOosDegradation) {
+				violations = append(violations, QualityViolation{
+					Metric:    "is_oos_return_degradation",
+					Actual:    degradation.String(),
+					Threshold: gates.MaxIsOosDegradation.String(),
+				})
+			}
+		}
 	}
 
 	return violations, nil

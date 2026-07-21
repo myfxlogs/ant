@@ -45,10 +45,6 @@ func SpanIDFromContext(ctx context.Context) string {
 
 type loggerKey struct{}
 
-func withLogger(ctx context.Context, logger *zap.Logger) context.Context {
-	return context.WithValue(ctx, loggerKey{}, logger)
-}
-
 // LoggerFromContext extracts the request-scoped zap.Logger from ctx.
 // Falls back to the global zap logger if not found.
 func LoggerFromContext(ctx context.Context) *zap.Logger {
