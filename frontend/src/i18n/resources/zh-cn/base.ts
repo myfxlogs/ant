@@ -1234,7 +1234,11 @@ const Base = {
     "success": "成功",
     "failed": "失败",
     "reset": "重置",
-    "saving": "保存中…"
+    "saving": "保存中…",
+    "login": "登录",
+    "register": "注册",
+    "loginRequired": "需要登录",
+    "loginRequiredDesc": "请登录或注册后继续。"
   },
   "errors": {
     "ai": {

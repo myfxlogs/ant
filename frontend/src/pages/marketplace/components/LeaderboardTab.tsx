@@ -82,7 +82,7 @@ export default function LeaderboardTab() {
       title: t('marketplace.author.avgRating'), key: 'rating', width: 80,
       render: (_: unknown, row: LeaderboardEntry) => (
         <Tooltip title={`${row.ratingCount || 0} ratings`}>
-          {Number(row.avgRating || 0).toFixed(1)}
+          <span>{Number(row.avgRating || 0).toFixed(1)}</span>
         </Tooltip>
       ),
     },

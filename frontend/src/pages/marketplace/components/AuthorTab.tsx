@@ -111,7 +111,7 @@ export default function AuthorTab() {
               { title: t('marketplace.author.revenue'), dataIndex: 'revenue', key: 'revenue', width: 100, render: (v: string) => `¥${Number(v || 0).toFixed(2)}` },
               { title: t('marketplace.author.avgRating'), key: 'rating', width: 80, render: (_: unknown, row: StrategyBreakdown) => (
                 <Tooltip title={`${row.ratingCount || 0} ratings`}>
-                  {Number(row.avgRating || 0).toFixed(1)}
+                  <span>{Number(row.avgRating || 0).toFixed(1)}</span>
                 </Tooltip>
               )},
             ]}

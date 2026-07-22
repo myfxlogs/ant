@@ -1234,7 +1234,11 @@ const Base = {
     "success": "Success",
     "failed": "Failed",
     "reset": "Reset",
-    "saving": "saving..."
+    "saving": "saving...",
+    "login": "Login",
+    "register": "Register",
+    "loginRequired": "Login Required",
+    "loginRequiredDesc": "Please log in or register to continue."
   },
   "errors": {
     "ai": {

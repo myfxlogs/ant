@@ -2,8 +2,8 @@ import { memo, useState, useEffect } from 'react';
 import { Tabs, Typography, Drawer, Button, Badge, Select } from 'antd';
 import { ShopOutlined, BookOutlined, UserOutlined, RobotOutlined, TrophyOutlined, SwapOutlined, GiftOutlined, ThunderboltOutlined, PercentageOutlined, GlobalOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import i18n, { normalizeLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
 import Seo from '@/components/common/Seo';
-import { normalizeLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
 import { useMarketplace } from './hooks/useMarketplace';
 import { MarketplaceProvider } from './MarketplaceContext';
 import MarketTab from './components/MarketTab';
@@ -34,9 +34,13 @@ function MarketplaceUI() {
   const { t } = useTranslation();
   const m = useMarketplace();
   const compare = useCompareSelection();
-  const [lang, setLang] = useState<SupportedLanguage>(normalizeLanguage(navigator.language));
+  const [lang, setLang] = useState<SupportedLanguage>(normalizeLanguage(i18n.language));
 
-  useEffect(() => { setLanguage(normalizeLanguage(navigator.language)); }, []);
+  useEffect(() => {
+    const handler = (lng: string) => setLang(normalizeLanguage(lng));
+    i18n.on('languageChanged', handler);
+    return () => { i18n.off('languageChanged', handler); };
+  }, []);
 
   const langSelector = (
     <Select

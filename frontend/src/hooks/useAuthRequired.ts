@@ -17,10 +17,10 @@ export function useAuthRequired(): () => boolean {
   return useCallback(() => {
     if (isAuthenticated) return true;
     Modal.confirm({
-      title: t('common.loginRequired', { defaultValue: 'Login Required' }),
-      content: t('common.loginRequiredDesc', { defaultValue: 'Please log in or register to continue.' }),
-      okText: t('common.login', { defaultValue: 'Login' }),
-      cancelText: t('common.register', { defaultValue: 'Register' }),
+      title: t('common.loginRequired'),
+      content: t('common.loginRequiredDesc'),
+      okText: t('common.login'),
+      cancelText: t('common.register'),
       onOk: () => navigate('/login'),
       onCancel: () => navigate('/register'),
     });

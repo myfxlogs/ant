@@ -1234,7 +1234,11 @@ const Base = {
     "success": "Thành công",
     "failed": "Thất bại",
     "reset": "Đặt lại",
-    "saving": "Đang lưu..."
+    "saving": "Đang lưu...",
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "loginRequired": "Cần đăng nhập",
+    "loginRequiredDesc": "Vui lòng đăng nhập hoặc đăng ký để tiếp tục."
   },
   "errors": {
     "ai": {

@@ -168,7 +168,7 @@ export function useMarketplace(): Omit<MarketplaceCtx, 'compareIds' | 'toggleCom
       setPaymentStrategy(strategy);
       setPaymentModalOpen(true);
     } catch {
-      message.error(t('marketplace.payment.purchaseFailed', 'Purchase failed. Please try again.'));
+      message.error(t('marketplace.payment.purchaseFailed'));
     }
   }, [requireAuth, userId, t]);
 
@@ -182,25 +182,25 @@ export function useMarketplace(): Omit<MarketplaceCtx, 'compareIds' | 'toggleCom
         publisherUserId: paymentStrategy.publisherUserId,
         couponCode: couponCode || undefined,
       });
-      message.success(t('marketplace.payment.purchaseSuccess', 'Purchase successful! Strategy added to your library.'));
+      message.success(t('marketplace.payment.purchaseSuccess'));
       setPaymentModalOpen(false);
       setPaymentStrategy(null);
       refetchPurchases();
     } catch (err: unknown) {
       const msg = String((err as { message?: string })?.message || '');
       if (msg.includes('insufficient balance') || msg.includes('insufficient_balance')) {
-        message.error(t('marketplace.payment.insufficientBalance', 'Insufficient balance'));
+        message.error(t('marketplace.payment.insufficientBalance'));
         // Refresh wallet balance so the UI shows the latest amount.
         try {
           const wallet = await walletApi.getWallet(userId);
           if (wallet?.balance != null) setWalletBalance(wallet.balance);
         } catch { /* ignore refresh errors */ }
       } else if (msg.includes('already subscribed') || msg.includes('already_exists')) {
-        message.info(t('marketplace.payment.alreadyPurchased', 'You already own this strategy.'));
+        message.info(t('marketplace.payment.alreadyPurchased'));
         setPaymentModalOpen(false);
         setPaymentStrategy(null);
       } else {
-        message.error(t('marketplace.payment.purchaseFailed', 'Purchase failed. Please try again.'));
+        message.error(t('marketplace.payment.purchaseFailed'));
       }
     } finally {
       setPaymentLoading(false);
